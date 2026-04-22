@@ -123,6 +123,53 @@ All design artifacts: spec doc, 25-problem Tier 1 catalog YAML, 79-countermeasur
 
 ---
 
+## Phase 7 — UI Polish and UX ⬜ NOT STARTED
+
+### Navigation and Floor
+
+- ⬜ Animated player sprite: 4-directional walk cycle (replace solid rectangle)
+- ⬜ Station sprites with more visual detail: machine bodies, screens, conveyor belts per zone type
+- ⬜ Animated flow lines between stations: moving dots showing material in transit
+- ⬜ WIP pile visual: small stacked-unit icons near a station when `wip_in` is high
+- ⬜ Andon light on station sprite when the Andon countermeasure is active (blinking amber/red)
+- ⬜ Problem indicator animation: pulsing ! badge instead of static (draws the eye)
+- ⬜ Problem discovery notification: non-blocking toast in top-left when a new problem surfaces
+
+### Screens
+
+- ⬜ Start screen: game title, "New Game / Continue / Quit", version number
+- ⬜ Save/load screen: list of save slots with date and day number; manual save + load from menu
+- ⬜ Day summary popup: non-blocking end-of-day card showing output, OEE, WIP, FTR delta vs yesterday
+- ⬜ Pause screen overlay: visual darkening + "PAUSED" indicator + resume hint
+
+### Inspector and Panels
+
+- ⬜ Scrollable inspector panel: panels that exceed screen height should scroll (mouse wheel / arrow keys)
+- ⬜ Non-blocking toast notifications: CM decay warning, new problem visible, credits earned — shown as a timed banner, never freeze gameplay
+- ⬜ Keyboard shortcut reference: press [?] or [F1] to show overlay listing all controls
+- ⬜ Problem count HUD badge: active problem count visible at all times (e.g. "⚠ 12 active")
+- ⬜ Maturity/phase progress bar in HUD: zone scores visualised at a glance
+
+### NPC Interactions
+
+- ⬜ Multi-line NPC dialogue: NPCs have 3–5 rotating lines that change as factory matures or problems are solved
+- ⬜ NPC awareness: operators comment on nearby active problems when inspected ("that shelf's been a mess for weeks")
+- ⬜ Character portraits: small illustrated avatar per NPC role shown in the inspector panel
+- ⬜ "Walk-up" animation: brief highlight / icon appears above NPC head when player is in range
+
+### General UX
+
+- ⬜ No action should block gameplay for more than 1 second: all dialogs dismissible with Esc or Enter immediately
+- ⬜ Tooltip system: hovering over HUD metrics shows a one-line explanation (OEE = Availability × Performance × Quality)
+- ⬜ Minimap problem dots: active problem zones shown as coloured dots on the minimap
+- ⬜ Settings screen: simulation speed default, display options
+- ⬜ Sound cues: basic event sounds for problem discovered, countermeasure applied, score panel open, day end (using pygame mixer; keep subtle)
+- ⬜ Colour-blind friendly palette option: toggle accessible colours for problem badges and OEE indicators
+
+**Deliverable:** A game that feels polished enough to show to someone unfamiliar with the project — no raw rectangles, no frozen screen on dialog, no dead-end interactions.
+
+---
+
 ## Decisions Made
 - Tier 2–4 problem design: Claude designs, Merijn reviews and may revise
 - Anthropic API key: stored in `.env` as `ANTHROPIC_API_KEY`; all AI code reads from env var
