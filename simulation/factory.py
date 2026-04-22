@@ -7,16 +7,20 @@ Exposes plant-level KPI properties that the HUD reads.
 """
 from __future__ import annotations
 
+import random
 from typing import Dict, List, Optional
 
 from config.constants import (
     STATION_DEFINITIONS, OPERATOR_DEFINITIONS, STATION_FLOW_ORDER,
     SHIFTS_PER_DAY,
 )
-from simulation.station   import Station
-from simulation.operator  import Operator
-from simulation.flow      import MaterialFlow
+from simulation.station     import Station
+from simulation.operator    import Operator
+from simulation.flow        import MaterialFlow
 from simulation.time_engine import TimeEngine
+from problems.catalog       import load_all
+from problems.visibility    import evaluate_visibility
+from problems.problem       import Problem, ProblemState
 
 
 class DaySnapshot:
@@ -40,6 +44,8 @@ class Factory:
         self.credits:           int   = 0
         self.session_cost_eur:  float = 0.0
         self.day_history:       List[DaySnapshot] = []
+        self.problems:          Dict[str, Problem] = {}
+        self.inspection_log:    List[dict] = []   # accumulated for DQQ/EI scoring
 
         # Running plant-level totals (reset each day)
         self._daily_output:  int   = 0
@@ -50,6 +56,7 @@ class Factory:
         self._build_operators()
         self._build_flow()
         self._wire_events()
+        self._load_problems()
 
     # ── Construction ──────────────────────────────────────────────────────────
 
@@ -85,6 +92,12 @@ class Factory:
         self.time.on("on_shift_end",   self._on_shift_end)
         self.time.on("on_day_end",     self._on_day_end)
 
+    def _load_problems(self) -> None:
+        self.problems = load_all()
+        evaluate_visibility(self.problems, self)
+        for prob in self.active_problems.values():
+            self._apply_problem_modifiers(prob)
+
     # ── Simulation callbacks ──────────────────────────────────────────────────
 
     def _on_tick(self, sim_dt: float) -> None:
@@ -108,17 +121,10 @@ class Factory:
         self._inject_incoming(sim_dt)
 
     def _inject_incoming(self, sim_dt: float) -> None:
-        """
-        Push raw materials into the dock at a rate sufficient to keep the factory fed.
-        Deliveries arrive in batches (T1-006 problem simulation).
-        Simplified: constant trickle for Phase 1; batch logic wired later.
-        """
+        """Trickle raw materials into dock, gated by total WIP cap to prevent unbounded growth."""
         dock = self.stations.get("dock")
-        if dock and dock.wip_in < 12:
-            # Drip-feed: aim for one new unit every ~4000 sim-seconds at dock
-            import random
-            if random.random() < sim_dt / 4000.0:
-                dock.wip_in += 1
+        if dock and dock.wip_in < 10 and self.live_wip < 80 and random.random() < sim_dt / 5400.0:
+            dock.wip_in += 1
 
     def _on_shift_end(self, day: int, shift: int) -> None:
         for op in self.operators.values():
@@ -153,6 +159,33 @@ class Factory:
         self._daily_rework = 0
         self._daily_scrap  = 0
 
+        # Activate any newly visible problems
+        newly_active = evaluate_visibility(self.problems, self)
+        for pid in newly_active:
+            self._apply_problem_modifiers(self.problems[pid])
+
+    def _apply_problem_modifiers(self, prob: Problem) -> None:
+        st = self.stations.get(prob.station_id)
+        if st and prob.effect_modifiers:
+            st.apply_modifier(
+                avail_delta=prob.effect_modifiers.get("avail_delta", 0.0),
+                perf_delta=prob.effect_modifiers.get("perf_delta", 0.0),
+                quality_delta=prob.effect_modifiers.get("quality_delta", 0.0),
+            )
+
+    def _remove_problem_modifiers(self, prob: Problem) -> None:
+        st = self.stations.get(prob.station_id)
+        if st and prob.effect_modifiers:
+            st.remove_modifier(
+                avail_delta=prob.effect_modifiers.get("avail_delta", 0.0),
+                perf_delta=prob.effect_modifiers.get("perf_delta", 0.0),
+                quality_delta=prob.effect_modifiers.get("quality_delta", 0.0),
+            )
+
+    def log_inspection(self, entity_id: str, metric: str) -> None:
+        """Record that the player inspected entity_id and viewed metric (for DQQ/EI scoring)."""
+        self.inspection_log.append({"entity": entity_id, "metric": metric, "day": self.time.day})
+
     # ── KPI properties (live, for HUD) ───────────────────────────────────────
 
     @property
@@ -177,6 +210,13 @@ class Factory:
             return self.day_history[-1].ftr
         return 0.0
 
+    @property
+    def active_problems(self) -> Dict[str, Problem]:
+        return {
+            pid: p for pid, p in self.problems.items()
+            if p.state != ProblemState.DORMANT
+        }
+
     # ── Advance simulation (called by game loop) ───────────────────────────────
 
     def tick(self, real_dt: float) -> None:
@@ -186,12 +226,14 @@ class Factory:
 
     def run_headless(self, days: int = 1) -> None:
         """Run the factory for N simulated days and print metrics."""
-        from config.constants import DAY_DURATION
+        from config.constants import DAY_DURATION, SIM_SECONDS_PER_REAL_SECOND
         target_sim_time = self.time.sim_time + DAY_DURATION * days
 
-        tick_size = 60.0   # 60 real seconds per step → large sim jump
+        # 30 sim-seconds per step: precise enough for shortest CT (600 s)
+        # while keeping step count manageable (~2880/day).
+        tick_real = 30.0 / SIM_SECONDS_PER_REAL_SECOND
         while self.time.sim_time < target_sim_time:
-            self.time.tick(tick_size)
+            self.time.tick(tick_real)
 
     # ── Serialisation ─────────────────────────────────────────────────────────
 

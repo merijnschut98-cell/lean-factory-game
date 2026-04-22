@@ -151,19 +151,15 @@ class FactoryRenderer:
         pw = obj["w"]  * TILE_SIZE
         ph = obj["h"]  * TILE_SIZE
 
-        # Skip if completely off screen
         if px + pw < 0 or px > self.screen.get_width():
             return
         if py + ph < 0 or py > self.screen.get_height():
             return
 
         body_color = KIND_COLORS.get(obj.get("kind", ""), (120, 120, 120))
-
-        # Draw body
         rect = pygame.Rect(px + 2, py + 2, pw - 4, ph - 4)
         pygame.draw.rect(self.screen, body_color, rect, border_radius=3)
 
-        # Status dot for production stations
         if "station_id" in obj and factory:
             st = factory.stations.get(obj["station_id"])
             if st:
@@ -171,10 +167,24 @@ class FactoryRenderer:
                 dot_color = COLOR_RUNNING if oee > 0.5 else (COLOR_WAITING if oee > 0.25 else COLOR_BLOCKED)
                 pygame.draw.circle(self.screen, dot_color, (px + pw - 8, py + 8), 4)
 
-        # Label
+            # Problem indicator: red ! badge if station has an active problem
+            has_problem = any(
+                p.station_id == obj["station_id"]
+                for p in factory.active_problems.values()
+            )
+            if has_problem:
+                self._draw_problem_badge(px + pw - 10, py + ph - 10)
+
         font = pygame.font.SysFont("Courier New", 9)
         label_surf = font.render(obj.get("label", ""), True, (230, 225, 210))
         self.screen.blit(label_surf, (px + 4, py + 4))
+
+    def _draw_problem_badge(self, cx: int, cy: int) -> None:
+        """Red exclamation badge indicating an active problem on this station."""
+        pygame.draw.circle(self.screen, (220, 50, 50), (cx, cy), 7)
+        font = pygame.font.SysFont("Arial", 10, bold=True)
+        surf = font.render("!", True, (255, 255, 255))
+        self.screen.blit(surf, (cx - surf.get_width() // 2, cy - surf.get_height() // 2))
 
     def _draw_npc(self, npc: dict, cam_x: int, cam_y: int) -> None:
         px = npc["tx"] * TILE_SIZE + TILE_SIZE // 2 - cam_x

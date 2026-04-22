@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pandoc \"C:\\\\Users\\\\MerijnSchut\\\\Lean Game\\\\Lean_Factory_v2.0_Specification.docx\" -o - --to plain)",
+      "Bash(where pandoc *)",
+      "Bash(python -c \"import docx\")",
+      "Bash(python -c ' *)",
+      "Bash(python -c \"import pygame; print\\('pygame ok'\\)\")",
+      "Bash(python -c \"import pygame_gui; print\\('pygame_gui ok'\\)\")",
+      "Bash(pip install *)",
+      "Bash(python main.py --headless --days 1)",
+      "Bash(git init *)",
+      "Bash(git remote *)",
+      "Bash(git add *)",
+      "Bash(python -c \"from persistence.load import has_save; print\\(has_save\\(\\)\\)\")",
+      "Bash(ls *.db)",
+      "Bash(rm novoglide_save.db)",
+      "Bash(rm *.bak)",
+      "Bash(python main.py --headless --days 3)",
+      "Bash(rm -f novoglide_save.db *.bak)",
+      "Bash(python main.py --headless --days 5)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}

@@ -29,17 +29,17 @@ def _run_headless(days: int) -> None:
     from persistence.save import save
     save(factory)
 
-    print(f"\n── Day {factory.time.day} Summary ─────────────────────────")
+    print(f"\n-- Day {factory.time.day} Summary --------------------------")
     print(f"  Output (last day) : {factory.last_day_output:>4} hoverboards")
     print(f"  Plant OEE         : {factory.live_oee * 100:>6.1f}%")
     print(f"  Total WIP         : {factory.live_wip:>4} units in-system")
     print(f"  FTR (last day)    : {factory.last_day_ftr * 100:>6.1f}%")
     print(f"  Improvement Credits: {factory.credits:>5}")
     print()
-    print("── Station OEE breakdown ──────────────────────────")
+    print("-- Station OEE breakdown --------------------------")
     for st in factory.stations.values():
         bar_len = int(st.oee * 20)
-        bar = "█" * bar_len + "░" * (20 - bar_len)
+        bar = "#" * bar_len + "." * (20 - bar_len)
         print(f"  {st.id:<22} {bar}  {st.oee * 100:>4.1f}%")
 
 

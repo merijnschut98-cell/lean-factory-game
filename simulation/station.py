@@ -11,7 +11,7 @@ OEE = availability × performance × quality (all 0–1).
 from __future__ import annotations
 
 import random
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List, Optional
 
 from simulation.operator import Operator, OperatorState
@@ -86,7 +86,7 @@ class Station:
         self._acc_rework:         int   = 0
         self._acc_scrap:          int   = 0
         self._acc_ct_sum:         float = 0.0
-        self._acc_wip_samples:    List[float] = field(default_factory=list)
+        self._acc_wip_samples:    List[float] = []
 
         # Published snapshot
         self.metrics = StationMetrics(
@@ -149,10 +149,8 @@ class Station:
                 self._stopped = False
             return 0
 
-        # Randomly trigger a stop based on availability
-        # Modelled as: probability of stopping in dt = (1 - availability) × dt / mean_uptime
-        # Simplified: expected fraction of time stopped = 1 - availability
-        p_stop = (1.0 - self.availability) * dt / max(1.0, self.target_cycle_time)
+        # P(no stop in dt) = availability^(dt/CT) — step-size independent
+        p_stop = 1.0 - self.availability ** (dt / max(1.0, self.target_cycle_time))
         if random.random() < p_stop:
             self._stopped = True
             self._stop_timer = 0.0

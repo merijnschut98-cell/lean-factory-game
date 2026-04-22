@@ -108,7 +108,6 @@ class Inspector:
         factory = self._factory
         st      = factory.stations.get(obj["station_id"]) if factory else None
 
-        # 2×2 KPI grid
         oee     = f"{st.oee * 100:.1f}%" if st else "—"
         avail   = f"{st.availability * 100:.1f}%" if st else "—"
         perf    = f"{st.performance * 100:.1f}%" if st else "—"
@@ -116,17 +115,16 @@ class Inspector:
         wip_in  = str(st.wip_in) if st else "—"
         ops_cnt = str(len(st.operators)) if st else str(obj.get("ops", "—"))
         status  = obj.get("status", "run")
-        status_color = _status_color(status)
 
         kpis = [
-            ("OEE",        oee,    None),
-            ("AVAIL",      avail,  None),
-            ("PERFORMANCE",perf,   None),
-            ("QUALITY",    qual,   None),
-            ("WIP IN",     wip_in, None),
-            ("OPERATORS",  ops_cnt,None),
+            ("OEE",        oee),
+            ("AVAIL",      avail),
+            ("PERFORMANCE",perf),
+            ("QUALITY",    qual),
+            ("WIP IN",     wip_in),
+            ("OPERATORS",  ops_cnt),
         ]
-        for i, (k, v, _) in enumerate(kpis):
+        for i, (k, v) in enumerate(kpis):
             col = i % 2
             row = i // 2
             kx = 18 + col * 155
@@ -138,22 +136,73 @@ class Inspector:
         pygame.draw.line(surf, (40, 38, 30), (18, y), (PANEL_W - 18, y))
         y += 10
 
-        # Status badge
-        badge_surf = self._font_mono.render(f"● {status.upper()}", True, status_color)
-        surf.blit(badge_surf, (18, y))
+        surf.blit(self._font_mono.render(f"● {status.upper()}", True, _status_color(status)), (18, y))
         y += 20
 
-        # Details
-        details = [
+        for k, v in [
             ("Station ID", obj.get("id", "—")),
             ("Zone",       obj.get("zone", "—")),
             ("Cycle Time", f"{obj.get('ct', '—')} s (target)"),
-        ]
-        for k, v in details:
+        ]:
             surf.blit(self._font_mono.render(k, True, C_DIM), (18, y))
             surf.blit(self._font_body.render(v, True, C_PANEL_INK), (130, y))
             y += 18
 
+        # Log this inspection for DQQ/EI scoring
+        if factory and st and obj.get("station_id"):
+            zone_id = st.zone_id
+            factory.log_inspection(f"{zone_id}:{obj['station_id']}", "oee")
+
+        # Active problems panel
+        if factory:
+            problems = [
+                p for p in factory.active_problems.values()
+                if p.station_id == obj.get("station_id")
+            ]
+            if problems:
+                y += 8
+                pygame.draw.line(surf, (40, 38, 30), (18, y), (PANEL_W - 18, y))
+                y += 8
+                surf.blit(self._font_mono.render("ACTIVE PROBLEMS", True, (220, 80, 80)), (18, y))
+                y += 16
+                for prob in problems:
+                    y = self._draw_problem_card(surf, y, prob)
+
+        return y
+
+    def _draw_problem_card(self, surf: pygame.Surface, y: int, prob) -> int:
+        """Draw a compact problem card: name + first symptom."""
+        sev_colors = {
+            "critical": (220, 50, 50),
+            "high":     (220, 120, 50),
+            "medium":   (220, 180, 50),
+            "low":      (180, 180, 50),
+        }
+        sev_color = sev_colors.get(prob.severity, C_DIM)
+        surf.blit(self._font_mono.render(f"[{prob.severity.upper()}]", True, sev_color), (18, y))
+        y += 14
+        # Word-wrap the problem name
+        name_surf = self._font_body.render(prob.name, True, C_PANEL_INK)
+        surf.blit(name_surf, (18, y))
+        y += 16
+        # First symptom only
+        if prob.symptoms:
+            symptom = prob.symptoms[0]
+            words = symptom.split()
+            line, lines = "", []
+            for w in words:
+                test = f"{line} {w}".strip()
+                if self._font_body.size(test)[0] > PANEL_W - 36:
+                    lines.append(line)
+                    line = w
+                else:
+                    line = test
+            if line:
+                lines.append(line)
+            for ln in lines[:2]:  # max 2 lines
+                surf.blit(self._font_body.render(ln, True, C_DIM), (18, y))
+                y += 15
+        y += 4
         return y
 
     def _draw_npc(self, surf: pygame.Surface, y: int) -> int:
