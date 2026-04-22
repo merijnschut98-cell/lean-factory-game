@@ -1,161 +1,127 @@
 # Lean Factory — Build Plan
 
 Spec reference: `Lean_Factory_v2.0_Specification.docx`
-Update this file every time a task is completed.
+Update this file every time a task is completed or added.
 
 ---
 
-## Current Status: Phase 1 bugfix needed → then Phase 3
+## Current Status: Phase 4 — Countermeasures and Scoring (starting)
+
+Phase 3 complete. Next: countermeasure catalog loader → browser UI → mismatch calc → apply + score flow
 
 ---
 
 ## Phase 0 — Design Foundations ✅ COMPLETE
-All design artifacts exist: spec doc, problem catalog YAML (730 lines, 25 problems), countermeasures YAML, topology.
+All design artifacts: spec doc, 25-problem Tier 1 catalog YAML, 79-countermeasure YAML (merged), topology files.
 
 ---
 
 ## Phase 1 — Simulation Core (Headless) ✅ COMPLETE
-
-### Tasks
 - ✅ Station model (OEE, cycle time, WIP, quality)
 - ✅ Operator model (skill, fatigue, state)
-- ✅ Material flow between stations
-- ✅ Time engine with speed multipliers
-- ✅ Factory aggregator
-- ✅ Metrics calculation (live KPIs)
-- ✅ SQLite persistence (save/load)
-- ✅ Headless mode
-- ✅ Fixed `station.py` crash bug (`field()` → `[]`)
-- ✅ Fixed stop probability formula (step-size independent: `1 - avail^(dt/CT)`)
-- ✅ Calibrated headless tick (30 sim-sec/step) and injection rate
-- ✅ **VERIFIED**: Day 1 output=14 ✓, OEE≈39% (problems active), FTR≈83%, WIP≈52
+- ✅ Material flow, time engine with speed multipliers, factory aggregator
+- ✅ Metrics calculation (live KPIs), SQLite persistence (save/load), headless mode
+- ✅ Bug fixes: `field()` crash, stop probability formula, tick calibration, injection rate
+- ✅ Verified: Day 1 output = 14 hoverboards (exact spec target), OEE ≈ 39%, FTR ≈ 83%
 
-### Deliverable
-Headless mode runs cleanly for N days and prints metrics. ✅
+**Deliverable:** Headless mode runs cleanly for N days and prints metrics. ✅
 
 ---
 
 ## Phase 2 — Navigation and Rendering ✅ COMPLETE
-
-### Tasks
-- ✅ Tilemap definition from topology
-- ✅ Player sprite with four-directional movement
-- ✅ Camera following player
-- ✅ Collision detection
-- ✅ Interaction zones per station
+- ✅ Tilemap, player sprite, camera, collision detection, interaction zones
 - ✅ Factory rendering (zone colors, station sprites, operator sprites)
-- ✅ Basic HUD (clock, speed, KPI strip, minimap)
-- ✅ Inspector panel (station OEE/metrics, NPC dialogue)
-- ✅ Visual verified via code review (pygame install needed for runtime test)
+- ✅ HUD (clock, speed, KPI strip, minimap), inspector panel (station metrics, NPC dialogue)
+- ✅ Code-reviewed; runtime visual test pending first play session
 
-### Deliverable
-Walkable factory. Player navigates floor, sees stations, inspector opens on E. ✅
+**Deliverable:** Walkable factory. Player navigates floor, sees stations, inspector opens on E. ✅
 
 ---
 
-## Phase 3 — Problems and Inspection 🔧 ~60% COMPLETE
+## Phase 3 — Problems and Inspection ✅ COMPLETE
+- ✅ Problem data model, YAML catalog loader, 25 Tier 1 problems in YAML
+- ✅ Visibility logic: obvious → active Day 1; subtle → activates on first zone inspection; hidden → deferred to Phase 4
+- ✅ Problem state machine, effect modifiers applied to stations on activation
+- ✅ `Factory.active_problems`, `log_inspection()`, `recent_inspections()` on Factory
+- ✅ `MaturityEngine` wired into factory (register_cm/remove_cm API ready for Phase 4)
+- ✅ Red ! badge on stations with active problems (renderer)
+- ✅ Inspector panel: KPI grid, problem name/severity/symptom, Time Observation bar chart, Gemba Log
+- ✅ Inspection logged once on open (not per frame); subtle problems re-evaluated on each inspection
+- ✅ `ct_history` rolling window (last 20) on Station for Time Observation
 
-### Tasks
-- ✅ Problem data model (`problems/problem.py`)
-- ✅ YAML catalog loader (`problems/catalog.py`)
-- ✅ 25 Tier 1 problems in `data/problems_tier1.yaml`
-- ✅ Visibility logic: obvious auto-activate Day 1; subtle needs zone inspection; hidden deferred to Phase 4
-- ✅ Problem state machine (states defined)
-- ✅ Problems wired into `Factory.__init__`: load catalog, `evaluate_visibility` each day
-- ✅ Problem effect modifiers applied to stations on activation (`apply_modifier`)
-- ✅ `Factory.active_problems` property + `Factory.log_inspection()` for scoring
-- ✅ Visual problem indicators on factory floor (red ! badge on station object)
-- ✅ Inspector panel: shows problem name, severity, first symptom when station has active problem
-- ✅ Inspection logging wired in inspector (logs entity:station + metric on open)
-- ⬜ Gemba walk panel: show cumulative inspection path in inspector
-- ⬜ Diagnostic tool UI: "Time Observation" panel (cycle time trend per station)
-- ⬜ Maturity engine: `maturity_engine.py` `update()` real zone scores (needed for subtle/hidden problems and Phase 4)
-- ⬜ `subtle` problem activation: track which zones have been inspected (inspection_log used — just need evaluation on each open)
-
-### Deliverable
-Player walks to a problem station, sees ! indicator, opens inspector, reads symptoms, and can investigate.
+**Deliverable:** Player walks to a problem station, sees ! indicator, opens inspector, reads symptoms, sees cycle time history and inspection log. ✅
 
 ---
 
 ## Phase 4 — Countermeasures and Scoring ⬜ ~10% COMPLETE
 
-### Tasks
-- ✅ Scoring math functions (`scoring/metrics.py`) — DQQ, EI, RCA, CMP, LM, CIM stubs exist
-- ✅ Credit formula (`scoring/credits.py` exists)
-- ⬜ Load countermeasure catalog from `data/countermeasures_v1.yaml`
-- ⬜ Countermeasure browser UI panel (list, filter by tier, apply button)
-- ⬜ Maturity-mismatch effectiveness calculation (spec Section 7.1)
-- ⬜ Mismatch warning dialog before confirming application (spec Section 7.2)
-- ⬜ Countermeasure effect applied to station modifiers when confirmed
-- ⬜ Decay logic: tick decay timer per active countermeasure, reduce effect, notify player
-- ⬜ Side-effect triggering: harmful application activates linked problem from catalog
-- ⬜ Complete RCA scoring (keyword matching per problem)
-- ⬜ Score display panel: show all 6 metrics + total + credits earned after resolve
-- ⬜ Credits balance shown in HUD (already wired — just needs to update)
-- ⬜ "Proceed / Cancel / Ask Coach" dialog for mismatch warnings
-- ⬜ PDCA tracking for CIM score: detect if player re-inspects station after applying countermeasure
+### Done
+- ✅ Scoring math stubs: DQQ, EI, RCA, CMP, LM, CIM (`scoring/metrics.py`)
+- ✅ Credit formula (`scoring/credits.py`)
 
-### Deliverable
-First fully playable version. Walk → find problem → investigate → apply countermeasure → receive score → earn credits.
+### Remaining
+- ⬜ Load countermeasure catalog from `data/countermeasures_v1.yaml` into a `CountermeasureCatalog` class
+- ⬜ Countermeasure browser UI panel: list by tier, filter, show prerequisites, Apply button
+- ⬜ Mismatch effectiveness calculation (spec §7.1): zone_maturity vs cm_tier → multiplier
+- ⬜ Mismatch warning dialog before apply: "Proceed / Cancel / Ask Coach" (spec §7.2)
+- ⬜ Countermeasure effect applied to station on confirm: `apply_modifier` + record active CM
+- ⬜ Decay logic: per-CM tick timer; reduce effect over `decay.days` without sustain; notify player
+- ⬜ Side-effect triggering: harmful application activates linked problem from `side_effect_ref`
+- ⬜ Complete RCA scoring: keyword matching per problem's `root_cause` field
+- ⬜ Score display panel: 6 metrics + total + credits earned (shown after resolve)
+- ⬜ Credits balance live in HUD (factory.credits already wired — just needs countermeasure spending)
+- ⬜ PDCA tracking for CIM score: flag if player re-inspects station after applying CM
+- ⬜ Problem resolution flow: state → RESOLVED, modifiers removed, credits awarded, score shown
+
+**Deliverable:** First fully playable loop. Walk → find → investigate → apply CM → score → earn credits.
 
 ---
 
 ## Phase 5 — AI Integration ⬜ ~5% COMPLETE
 
-### Tasks
-- ✅ AI module files exist (`ai/agent.py`, `ai/coach.py`, `ai/problem_generator.py`, `ai/prompt.py`)
-- ⬜ `ai/prompt.py`: LGM-40 system prompt (use spec Section 10.3 persona)
-- ⬜ `ai/coach.py`: Coach consultation during investigation (75 credits/exchange)
-- ⬜ `ai/coach.py`: Post-score reflection dialogue (50 credits)
-- ⬜ "Ask Coach" button in problem inspector panel
-- ⬜ Coach dialogue UI panel (scrollable conversation)
-- ⬜ `ai/problem_generator.py`: Generate new problem from factory state (500 credits, catalog-exhausted gate)
-- ⬜ Session cost tracking: increment `factory.session_cost_eur` per API call, show in HUD
-- ⬜ Anthropic SDK wired with prompt caching (spec: under €0.50/hour target)
-- ⬜ Graceful offline fallback: coach unavailable message if API call fails
+### Done
+- ✅ AI module stubs exist (`ai/agent.py`, `ai/coach.py`, `ai/problem_generator.py`, `ai/prompt.py`)
 
-### Deliverable
-Game with AI coaching. Coach available on demand. Session cost visible in HUD.
+### Remaining
+- ⬜ LGM-40 system prompt in `ai/prompt.py` (spec §10.3 persona)
+- ⬜ `ai/coach.py`: coach consultation during investigation (75 credits/exchange, Socratic only)
+- ⬜ `ai/coach.py`: post-score reflection dialogue (50 credits, does not modify score)
+- ⬜ "Ask Coach" button in problem inspector panel → opens coach dialogue UI
+- ⬜ Coach dialogue UI: scrollable conversation panel with send field
+- ⬜ `ai/problem_generator.py`: generate problem from factory state (500 credits, gated on catalog exhausted)
+- ⬜ Session cost tracking: `factory.session_cost_eur` incremented per API call, shown in HUD
+- ⬜ Anthropic SDK with prompt caching (target: <€0.50/hour at average play intensity)
+- ⬜ Graceful offline fallback: show "Coach unavailable" if API call fails
+
+**Deliverable:** Game with full AI coaching. Coach on demand. Session cost visible in HUD.
 
 ---
 
-## Phase 6 — Tiers 2, 3, and 4 Content ⬜ NOT STARTED
+## Phase 6 — Tiers 2–4 Content + Final Packaging ⬜ NOT STARTED
 
-### Tasks
-- ⬜ Tier 2 problem catalog: 15–20 problems (design + YAML)
-- ⬜ Tier 3 problem catalog: 15–20 problems (design + YAML)
-- ⬜ Tier 4 problem catalog: 10–15 problems (design + YAML)
+### Content
+- ⬜ Tier 2 problem catalog: 15–20 problems (Claude designs, Merijn reviews)
+- ⬜ Tier 3 problem catalog: 15–20 problems
+- ⬜ Tier 4 problem catalog: 10–15 problems
 - ⬜ Tier progression visibility verified across all four tiers
-- ⬜ Tier 5 stub in UI (locked, "Coming in v2" label)
-- ⬜ Specialist hiring system (credits → hire → zone bonus)
-- ⬜ Full save/load coverage for all new state (Tiers 2–4 problems, specialists)
+- ⬜ Tier 5 stub in UI ("Coming in v2" — locked)
+- ⬜ Specialist hiring system (credits → hire → zone OEE bonus)
+- ⬜ Full save/load for all new state (Tiers 2–4 problems, specialists, CM history)
 
-### Deliverable
-Complete v1 game. All four tiers playable. 70–80 hand-designed problems.
+### Packaging
+- ⬜ Add icon (`assets/icon.ico`) — design or source one
+- ⬜ Populate `assets/sprites/`, `assets/tilesets/`, `assets/sounds/` with game assets
+- ⬜ Update `lean_factory.spec` to handle populated assets correctly
+- ⬜ Build `lean_factory.exe` with PyInstaller: `pyinstaller lean_factory.spec`
+- ⬜ Test standalone exe on a clean machine (no Python installed)
+- ⬜ Create installer or zip distribution
 
----
-
-## Project Setup ✅ COMPLETE
-
-- ✅ CLAUDE.md created (auto-loaded by Claude Code at session start)
-- ✅ PLAN.md created and linked
-- ✅ `data/countermeasures_v1.yaml` — merged two versions into one (79 entries: design content + numeric multipliers + applicable_to + decay_days)
-- ✅ Root `countermeasures_v1.yaml` deleted
-- ✅ `.env` created (paste new API key there as `ANTHROPIC_API_KEY=...`)
-- ✅ `.gitignore` created
-
----
-
-## Known Issues / Blockers
-
-| ID | Description | Blocking |
-|----|-------------|---------|
-| B-001 | `station.py:89` — `field(default_factory=list)` crashes headless mode | Phase 1 verify |
-| B-002 | `pygame` not installed in current env — needs `pip install pygame pygame_gui` | Phase 2 verify |
+**Deliverable:** Complete v1 game. All four tiers playable. 70–80 hand-designed problems. Standalone exe.
 
 ---
 
 ## Decisions Made
-
-- Tier 2–4 problem design (Phase 6): Claude designs, Merijn reviews and may revise
-- Anthropic API key: stored in `.env` as `ANTHROPIC_API_KEY`; code reads from env var
+- Tier 2–4 problem design: Claude designs, Merijn reviews and may revise
+- Anthropic API key: stored in `.env` as `ANTHROPIC_API_KEY`; all AI code reads from env var
+- Exe build deferred to Phase 6 (asset folders empty now; bat/vbs launchers used during development)
+- pygame-ce used as pygame drop-in (installed via pygame_gui dependency)

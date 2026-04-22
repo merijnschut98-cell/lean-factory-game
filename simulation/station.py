@@ -88,6 +88,9 @@ class Station:
         self._acc_ct_sum:         float = 0.0
         self._acc_wip_samples:    List[float] = []
 
+        # Rolling window of completed cycle times (last 20) for Time Observation diagnostic
+        self.ct_history:          List[float] = []
+
         # Published snapshot
         self.metrics = StationMetrics(
             availability=base_availability,
@@ -177,6 +180,9 @@ class Station:
                 self._processing = False
                 self._acc_total_units += 1
                 self._acc_ct_sum += self._current_ct
+                self.ct_history.append(round(self._current_ct, 1))
+                if len(self.ct_history) > 20:
+                    self.ct_history.pop(0)
 
                 # Quality check
                 if random.random() < self.quality:

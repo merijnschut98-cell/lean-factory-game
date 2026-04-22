@@ -58,6 +58,11 @@ class Inspector:
         self._obj     = obj
         self._factory = factory
         self._open    = True
+        # Log inspection once on open (not every frame)
+        if factory and obj.get("station_id"):
+            st = factory.stations.get(obj["station_id"])
+            if st:
+                factory.log_inspection(f"{st.zone_id}:{obj['station_id']}", "oee")
 
     def close(self) -> None:
         self._open = False
@@ -148,11 +153,6 @@ class Inspector:
             surf.blit(self._font_body.render(v, True, C_PANEL_INK), (130, y))
             y += 18
 
-        # Log this inspection for DQQ/EI scoring
-        if factory and st and obj.get("station_id"):
-            zone_id = st.zone_id
-            factory.log_inspection(f"{zone_id}:{obj['station_id']}", "oee")
-
         # Active problems panel
         if factory:
             problems = [
@@ -167,6 +167,30 @@ class Inspector:
                 y += 16
                 for prob in problems:
                     y = self._draw_problem_card(surf, y, prob)
+
+        # Time Observation diagnostic
+        if st and st.ct_history:
+            y += 8
+            pygame.draw.line(surf, (40, 38, 30), (18, y), (PANEL_W - 18, y))
+            y += 8
+            surf.blit(self._font_mono.render("TIME OBSERVATION", True, C_DIM), (18, y))
+            y += 14
+            y = self._draw_ct_history(surf, y, st)
+
+        # Gemba walk log (last 5 inspections in this session)
+        if factory and factory.inspection_log:
+            y += 8
+            pygame.draw.line(surf, (40, 38, 30), (18, y), (PANEL_W - 18, y))
+            y += 8
+            surf.blit(self._font_mono.render("GEMBA LOG", True, C_DIM), (18, y))
+            y += 14
+            recent = factory.recent_inspections(5)
+            for entry in reversed(recent):
+                entity = entry["entity"].split(":")[-1]  # show station id only
+                day = entry.get("day", "—")
+                txt = f"Day {day}  {entity}"
+                surf.blit(self._font_body.render(txt, True, C_DIM), (18, y))
+                y += 14
 
         return y
 
@@ -204,6 +228,32 @@ class Inspector:
                 y += 15
         y += 4
         return y
+
+    def _draw_ct_history(self, surf: pygame.Surface, y: int, st) -> int:
+        """Mini bar chart of the last 8 observed cycle times vs. target."""
+        history = st.ct_history[-8:]
+        target = st.target_cycle_time
+        avg = sum(history) / len(history) if history else target
+
+        avg_txt = f"avg {avg:.0f}s  target {target:.0f}s"
+        surf.blit(self._font_body.render(avg_txt, True, C_DIM), (18, y))
+        y += 14
+
+        bar_w = int((PANEL_W - 36) / max(len(history), 1))
+        max_ct = (max(max(history), target) if history else target) * 1.2
+        bar_area_h = 28
+
+        for i, ct in enumerate(history):
+            bx = 18 + i * bar_w
+            bar_h = int((ct / max_ct) * bar_area_h)
+            color = C_RUNNING if ct <= target else C_BLOCKED
+            pygame.draw.rect(surf, color, (bx, y + bar_area_h - bar_h, bar_w - 2, bar_h))
+
+        # Target line
+        target_y = y + bar_area_h - int((target / max_ct) * bar_area_h)
+        pygame.draw.line(surf, C_GOLD, (18, target_y), (PANEL_W - 18, target_y), 1)
+
+        return y + bar_area_h + 4
 
     def _draw_npc(self, surf: pygame.Surface, y: int) -> int:
         obj  = self._obj

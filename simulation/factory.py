@@ -21,6 +21,7 @@ from simulation.time_engine import TimeEngine
 from problems.catalog       import load_all
 from problems.visibility    import evaluate_visibility
 from problems.problem       import Problem, ProblemState
+from maturity.maturity_engine import MaturityEngine
 
 
 class DaySnapshot:
@@ -45,7 +46,8 @@ class Factory:
         self.session_cost_eur:  float = 0.0
         self.day_history:       List[DaySnapshot] = []
         self.problems:          Dict[str, Problem] = {}
-        self.inspection_log:    List[dict] = []   # accumulated for DQQ/EI scoring
+        self.inspection_log:    List[dict] = []
+        self.maturity:          MaturityEngine = MaturityEngine()
 
         # Running plant-level totals (reset each day)
         self._daily_output:  int   = 0
@@ -159,7 +161,7 @@ class Factory:
         self._daily_rework = 0
         self._daily_scrap  = 0
 
-        # Activate any newly visible problems
+        self.maturity.update(self)
         newly_active = evaluate_visibility(self.problems, self)
         for pid in newly_active:
             self._apply_problem_modifiers(self.problems[pid])
@@ -183,8 +185,14 @@ class Factory:
             )
 
     def log_inspection(self, entity_id: str, metric: str) -> None:
-        """Record that the player inspected entity_id and viewed metric (for DQQ/EI scoring)."""
+        """Record a player inspection and immediately check for newly visible problems."""
         self.inspection_log.append({"entity": entity_id, "metric": metric, "day": self.time.day})
+        newly_active = evaluate_visibility(self.problems, self)
+        for pid in newly_active:
+            self._apply_problem_modifiers(self.problems[pid])
+
+    def recent_inspections(self, n: int = 5) -> List[dict]:
+        return self.inspection_log[-n:]
 
     # ── KPI properties (live, for HUD) ───────────────────────────────────────
 

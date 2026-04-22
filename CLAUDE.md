@@ -6,16 +6,18 @@ Claude Code automatically loads this file into context at the start of every ses
 
 ---
 
-## 1. Check and Update the Plan
+## 1. Check and Update the Plan — CORE DIRECTIVE
 
-Before writing any code, read [PLAN.md](PLAN.md).
+Before writing any code, read [PLAN.md](PLAN.md) and state the current phase + next task.
 
-**Every session:**
-- State the current phase and next task in your first message
-- Mark tasks done (✅) immediately when complete — never batch updates
-- Add newly discovered tasks or sub-tasks as you find them
-- Remove tasks that are no longer needed (don't leave stale entries)
-- Keep PLAN.md honest: it should always reflect reality, not intent
+**PLAN.md must stay in sync with reality at all times:**
+- ✅ Mark a task done the moment it is complete — not at end of session
+- ➕ Add any newly discovered task or sub-task as soon as you discover it
+- 🗑 Remove or rewrite tasks that are no longer relevant
+- 🔄 Update the "Current Status" line at the top whenever the phase changes
+- ❌ Never leave stale blockers, outdated tasks, or wrong status indicators
+
+This is not an end-of-session cleanup — it is an inline, real-time habit. Every code change that completes or adds a task must be immediately followed by a PLAN.md edit.
 
 ---
 
