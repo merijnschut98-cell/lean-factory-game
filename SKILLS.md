@@ -3,10 +3,16 @@
 Skills live in `.claude/skills/` as `.skill` ZIP archives. This file contains the
 full content of each skill so Claude can apply them without extracting the archives.
 
-**When to use each skill** — see [CLAUDE.md](CLAUDE.md) for the trigger rules.  
-Continuous (every task): `simplicity`, `error-handling`, `data-validation`  
-End of session: `automated-testing`  
-On request / threshold: `architecture`, `security`, `technical-debt`, `daily-iterations`, `developer-experience`, `environment-parity`, `telemetry`
+**When to use each skill** — see [CLAUDE.md](CLAUDE.md) for the full trigger rules.  
+Every task: `simplify`  
+On I/O, external calls, missing-key risk: `error-handling`  
+On any new data entry point or deserialized structure: `data-validation`  
+On file paths, credentials, API calls, save schema changes, SQL: `security`  
+On mixed concerns, shotgun surgery, parameter sprawl: `architecture`  
+End of each phase: `automated-testing`  
+Before each new phase, when replacing stubs, after long gaps: `technical-debt`  
+On any `ai/` or Anthropic SDK change: `claude-api`  
+On setup/CI/launch script changes: `developer-experience`
 
 ---
 
@@ -28,8 +34,8 @@ Code should be as simple as it can be while still doing what it needs to do.
 | Function length | > 30 lines | Split |
 | Nesting depth | > 2 levels | Flatten |
 | Parameters | > 4 | Group into dataclass |
-| Lines per file | > 300 | Consider splitting |
 | Identical logic | 2+ places | Extract |
+| Mixed concerns | rendering + logic, UI + state | Separate into layers |
 
 **Simplification checklist:** name audit → function audit → nesting audit → duplication audit → dead code audit → magic values → imports → type hints → comments
 
