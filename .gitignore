@@ -1,6 +1,12 @@
 # Secrets — never commit
 .env
 
+# Claude Code local settings (machine-specific)
+.claude/
+
+# Design zip archives (large binary, not needed in repo)
+*.zip
+
 # Save files
 *.db
 *.db-shm
@@ -38,6 +44,7 @@ build/
 .DS_Store
 Thumbs.db
 desktop.ini
+*.lnk
 
 # Logs
 *.log
