@@ -73,8 +73,8 @@ All design artifacts: spec doc, 25-problem Tier 1 catalog YAML, 79-countermeasur
 ### Remaining
 - ⬜ **Per-CM modifier tuning**: current heuristic (avail+0.05, perf+0.05, qual+0.03 × eff_mult) is a baseline; tune per CM category in Phase 4 polish
 - ⬜ **Save/load for active CMs**: `active_countermeasures` dict not yet persisted to SQLite
-- ⬜ **Automated tests** for scoring, catalog loader, mismatch calc, and apply/resolve flow
-- ⬜ **Automated-testing skill** run (required before moving to Phase 5)
+- ✅ **Automated tests**: 77 tests covering scoring (all 6 metrics), catalog loader, mismatch calc, apply/resolve flow, wrap_text, decay
+- ⬜ Save/load for active CMs not yet persisted to SQLite
 
 **Deliverable:** First fully playable loop. Walk → find → investigate → apply CM → score → earn credits. ✅ (functionally complete, polish remaining)
 

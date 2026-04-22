@@ -56,7 +56,12 @@ This is not an end-of-session cleanup — it is an inline, real-time habit. Ever
 - A new module becomes a dependency of 3+ other modules
 - A function's parameter list grows beyond 4 parameters
 
-### `automated-testing` — run at the end of every phase before moving to the next
+### `automated-testing` — run in any of these situations
+- At the end of every phase before moving to the next (required gate)
+- When any new function with business logic is added (score functions, simulation logic, catalog loading, state machines)
+- When a bug is fixed — write a test that would have caught it
+- When a stub is replaced with a real implementation
+- Run `python -m pytest tests/ -v` to verify the full suite still passes after every commit
 
 ### `technical-debt` — run in any of these situations
 - Before starting each new phase
