@@ -1,0 +1,2345 @@
+# ============================================================
+# Lean Factory — Countermeasure Catalog v1.0 (MERGED)
+# 79 total: 10 Tier 1, 16 Tier 2, 24 Tier 3, 18 Tier 4, 11 Diagnostic
+#
+# SCHEMA per countermeasure:
+#   id, name, tier, category, description
+#   maturity_requirement: {tier, prerequisites: [CM-IDs]}
+#   effectiveness:
+#     full / reduced / minimal / no_effect: narrative string | null
+#     harmful: {condition, side_effect_ref} | null
+#     multipliers: {full, reduced, minimal}  ← numeric game values
+#   decay:
+#     enabled: bool
+#     days: int | null   ← simulated days until decay begins
+#     condition: narrative | null
+#     side_effect_ref: problem-ID | null
+#   applicable_to: [station-type, ...] | [all]
+#   notes: optional design note
+#
+# EFFECTIVENESS TIERS (narrative):
+#   full:     100% effect. Factory maturity meets or exceeds requirement.
+#   reduced:  ~50% effect. One tier below requirement.
+#   minimal:  ~20% effect. Two tiers below requirement.
+#   no_effect: ~5% effect. Three+ tiers below. No side-effect triggered.
+#   harmful:  Applies countermeasure but triggers a side-effect problem.
+#
+# DIAGNOSTIC TOOLS: maturity_requirement: none. effectiveness: always_full.
+#   cost_credits: 0 unless specified. Reveal problems, do not fix them.
+# ============================================================
+
+countermeasures:
+
+  # ==========================================================
+  # TIER 1 — STABLE FOUNDATION
+  # ==========================================================
+
+  - id: CM-T1-001
+    name: "5S System"
+    tier: 1
+    category: workplace_organization
+    description: >
+      Sort, Set in order, Shine, Standardize, Sustain.
+      Applied per zone. Decays without active Standardize
+      and Sustain measures.
+    maturity_requirement:
+      tier: 1
+      prerequisites: []
+    effectiveness:
+      full: "Zone maturity >= Tier 1"
+      reduced: "Zone maturity below Tier 1 but Sort/Set have been applied"
+      minimal: "No prior workplace organization in zone"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.80
+        reduced: 0.35
+        minimal: 0.15
+    decay:
+      enabled: true
+      days: 30
+      condition: >
+        Decays if Standard Work Definition and Basic Documentation Control
+        are not active in the same zone. 5S Sort and Set phases hold,
+        but Shine and Sustain phases regress within 30 simulated days.
+      side_effect_ref: null
+    applicable_to: [all]
+    notes: >
+      The most commonly misapplied Tier 1 tool. Players who apply 5S
+      without sustain mechanisms will see the zone deteriorate and the
+      problem resurface. This is intentional — it teaches that 5S is a
+      system, not a one-time event.
+
+  - id: CM-T1-002
+    name: "Standard Work Definition"
+    tier: 1
+    category: process_standardization
+    description: >
+      Documented work sequence, takt time, and WIP target for each station.
+      Foundation for most Tier 2+ tools.
+    maturity_requirement:
+      tier: 1
+      prerequisites: []
+    effectiveness:
+      full: "Zone maturity >= Tier 1"
+      reduced: "Partial documentation exists but not at station"
+      minimal: "No documentation infrastructure in zone"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.85
+        reduced: 0.40
+        minimal: 0.20
+    decay:
+      enabled: true
+      days: null
+      condition: >
+        Decays if Basic Documentation Control is not active.
+        Standard work documents become outdated as process changes
+        occur without update procedures.
+      side_effect_ref: null
+    applicable_to: [all]
+    notes: >
+      Prerequisite for SMED, Line Balancing, TPM, and most
+      Tier 3+ countermeasures. Without it, advanced tools
+      operate without a baseline.
+
+  - id: CM-T1-003
+    name: "Safety Routines"
+    tier: 1
+    category: safety
+    description: >
+      PPE checks, LOTO procedures, near-miss reporting.
+      Non-negotiable foundation. No harmful tier — safety
+      routines applied at any maturity level produce at
+      least minimal effect.
+    maturity_requirement:
+      tier: 1
+      prerequisites: []
+    effectiveness:
+      full: "Zone maturity >= Tier 1"
+      reduced: "Routines defined but not consistently followed"
+      minimal: "Routines posted but no training or enforcement"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.85
+        reduced: 0.40
+        minimal: 0.20
+    decay:
+      enabled: true
+      days: 21
+      condition: >
+        Decays without active Psychological Safety Routines
+        and regular audit. Near-miss reporting atrophies
+        if reports are seen to produce no action.
+      side_effect_ref: null
+    applicable_to: [all]
+    notes: >
+      The only Tier 1 tool with no harmful tier. Applying to
+      an immature zone always produces some effect, even if minimal.
+
+  - id: CM-T1-004
+    name: "Basic Quality Gates"
+    tier: 1
+    category: quality
+    description: >
+      Go/no-go checks at critical points, basic incoming inspection.
+      Prevents defects from advancing downstream.
+    maturity_requirement:
+      tier: 1
+      prerequisites: []
+    effectiveness:
+      full: "Zone maturity >= Tier 1"
+      reduced: "Gates exist but criteria are inconsistently applied"
+      minimal: "Gates defined but operators have no training"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.82
+        reduced: 0.42
+        minimal: 0.20
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+    notes: >
+      Prerequisite for Poka-Yoke and Jidoka. Basic quality gates
+      establish the detection points that more advanced tools
+      then automate or error-proof.
+
+  - id: CM-T1-005
+    name: "Workplace Organization"
+    tier: 1
+    category: workplace_organization
+    description: >
+      Shadow boards, labeling, color coding, floor marking.
+      Defines where things belong. Prerequisite for flow tools
+      that depend on visual clarity.
+    maturity_requirement:
+      tier: 1
+      prerequisites: []
+    effectiveness:
+      full: "Zone maturity >= Tier 1"
+      reduced: "Partial organization — some areas labeled, others not"
+      minimal: "Organization attempted but no standards applied"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.75
+        reduced: 0.35
+        minimal: 0.15
+    decay:
+      enabled: true
+      days: 45
+      condition: >
+        Decays without 5S System active. Floor markings fade,
+        labels become outdated, shadow boards stop reflecting
+        current tool inventory.
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T1-006
+    name: "Visual Labels and Signs"
+    tier: 1
+    category: visual_management
+    description: >
+      Clear naming of areas, equipment, bins, routes.
+      Foundation for visual factory — everything has a name and a place.
+    maturity_requirement:
+      tier: 1
+      prerequisites: []
+    effectiveness:
+      full: "Zone maturity >= Tier 1"
+      reduced: "Labels exist but inconsistent format or outdated"
+      minimal: "Ad-hoc labels only"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.72
+        reduced: 0.33
+        minimal: 0.15
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T1-007
+    name: "Tool Location Systems"
+    tier: 1
+    category: workplace_organization
+    description: >
+      Foam cutouts, dedicated tool holders, tool tethering.
+      Eliminates search time for tools between tasks.
+    maturity_requirement:
+      tier: 1
+      prerequisites: []
+    effectiveness:
+      full: "Zone maturity >= Tier 1"
+      reduced: "Locations defined but not all tools have homes"
+      minimal: "Some tools stored deliberately, most ad-hoc"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.80
+        reduced: 0.38
+        minimal: 0.18
+    decay:
+      enabled: true
+      days: 30
+      condition: >
+        Decays without 5S System active. Tool locations drift
+        as operators find personal preferences.
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T1-008
+    name: "Cleanliness Standards"
+    tier: 1
+    category: workplace_organization
+    description: >
+      Scheduled cleaning routines, contamination control.
+      Foundational for equipment reliability and quality.
+    maturity_requirement:
+      tier: 1
+      prerequisites: []
+    effectiveness:
+      full: "Zone maturity >= Tier 1"
+      reduced: "Standards defined but schedule not followed"
+      minimal: "Reactive cleaning only"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.78
+        reduced: 0.35
+        minimal: 0.15
+    decay:
+      enabled: true
+      days: 14
+      condition: >
+        Decays without operator ownership. Without 5S Sustain
+        active, cleaning reverts to reactive after ~14 simulated days.
+      side_effect_ref: null
+    applicable_to: [component_prep, final_assembly, testing]
+
+  - id: CM-T1-009
+    name: "Basic Documentation Control"
+    tier: 1
+    category: information
+    description: >
+      Current work instructions visible at station. Version-controlled
+      and updated when process changes. Prevents the silent drift of
+      informal practice.
+    maturity_requirement:
+      tier: 1
+      prerequisites: []
+    effectiveness:
+      full: "Zone maturity >= Tier 1"
+      reduced: "Documents exist but not at station or not current"
+      minimal: "Documents exist in system but not on floor"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.80
+        reduced: 0.40
+        minimal: 0.20
+    decay:
+      enabled: true
+      days: null
+      condition: >
+        Decays when process changes occur without document updates.
+        Without active ownership, documents become outdated within
+        20–30 simulated days.
+      side_effect_ref: null
+    applicable_to: [all]
+    notes: >
+      Prerequisite for Standard Work Definition. Without
+      documentation control, standard work documents decay
+      into historical artifacts.
+
+  - id: CM-T1-010
+    name: "Skill Matrix"
+    tier: 1
+    category: people
+    description: >
+      Tracks who is trained on what, with visible gaps.
+      Foundation for operator assignment and cross-training decisions.
+    maturity_requirement:
+      tier: 1
+      prerequisites: []
+    effectiveness:
+      full: "Zone maturity >= Tier 1"
+      reduced: "Matrix exists but not maintained or not visible"
+      minimal: "Informal knowledge of skills, nothing documented"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.80
+        reduced: 0.40
+        minimal: 0.20
+    decay:
+      enabled: true
+      days: null
+      condition: >
+        Decays as operators join, leave, or develop new skills
+        without updates. Becomes misleading rather than useful.
+      side_effect_ref: null
+    applicable_to: [all]
+
+  # ==========================================================
+  # TIER 2 — CONTINUOUS IMPROVEMENT CULTURE
+  # ==========================================================
+
+  - id: CM-T2-001
+    name: "Daily Management System"
+    tier: 2
+    category: management_system
+    description: >
+      Tier meetings, daily huddles, cascading information.
+      Creates a structured cadence for problem visibility and response.
+    maturity_requirement:
+      tier: 2
+      prerequisites:
+        - CM-T1-009
+        - CM-T1-006
+    effectiveness:
+      full: "Zone maturity >= Tier 2, documentation and visual controls active"
+      reduced: "Zone maturity Tier 1, basic controls in place"
+      minimal: "Zone maturity Tier 1, no documentation or visual controls"
+      no_effect: "Zone maturity below Tier 1"
+      harmful:
+        condition: >
+          Applied when reporting metrics are known to be inaccurate
+          and no correction mechanism exists. Institutionalizes bad data.
+        side_effect_ref: T1-025
+      multipliers:
+        full: 0.82
+        reduced: 0.40
+        minimal: 0.20
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+    notes: >
+      Harmful tier triggers if the player builds a daily management
+      system around corrupted metrics (T1-025 — The Number Nobody Believes).
+
+  - id: CM-T2-002
+    name: "Performance Management Boards"
+    tier: 2
+    category: visual_management
+    description: >
+      KPIs visible, ownership clear, action logs maintained.
+      Turns data into daily accountability.
+    maturity_requirement:
+      tier: 2
+      prerequisites:
+        - CM-T1-006
+        - CM-T1-009
+    effectiveness:
+      full: "Zone maturity >= Tier 2"
+      reduced: "Boards installed but metrics not owned or actioned"
+      minimal: "Boards installed, metrics posted, no daily review"
+      no_effect: "No visual management foundation in zone"
+      harmful: null
+      multipliers:
+        full: 0.75
+        reduced: 0.40
+        minimal: 0.20
+    decay:
+      enabled: true
+      days: 15
+      condition: >
+        Decays if Daily Management System is not active.
+        Boards without a review cadence become wallpaper
+        within 15 simulated days.
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T2-003
+    name: "PDCA Cycles"
+    tier: 2
+    category: problem_solving
+    description: >
+      Plan, Do, Check, Act. Structured improvement cycles
+      that build organizational learning.
+    maturity_requirement:
+      tier: 2
+      prerequisites:
+        - CM-T1-002
+    effectiveness:
+      full: "Zone maturity >= Tier 2, standard work established"
+      reduced: "Zone maturity Tier 1, standard work partial"
+      minimal: "No baseline process to improve against"
+      no_effect: null
+      harmful:
+        condition: >
+          Applied without a measurable baseline. PDCA cycles run but
+          produce no verifiable improvement — operators learn that
+          improvement activity is theatre.
+        side_effect_ref: null
+      multipliers:
+        full: 0.78
+        reduced: 0.38
+        minimal: 0.18
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T2-004
+    name: "Kaizen Events"
+    tier: 2
+    category: improvement_events
+    description: >
+      Focused multi-day improvement workshops on a defined scope.
+      Requires a stable enough baseline to improve.
+    maturity_requirement:
+      tier: 2
+      prerequisites:
+        - CM-T1-001
+        - CM-T1-002
+    effectiveness:
+      full: "Zone maturity >= Tier 2, 5S and standard work active"
+      reduced: "Zone maturity Tier 1, 5S active but standard work partial"
+      minimal: "5S Sort complete but zone not stable"
+      no_effect: null
+      harmful:
+        condition: >
+          Applied to a zone where red tags are present and 5S Sort has
+          not been completed. Kaizen workshop spends improvement time
+          doing what Sort should have done.
+        side_effect_ref: T1-013
+      multipliers:
+        full: 0.85
+        reduced: 0.45
+        minimal: 0.25
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T2-005
+    name: "Suggestion Systems"
+    tier: 2
+    category: people
+    description: >
+      Operator-driven ideas captured, evaluated, implemented.
+      Builds improvement ownership from the floor up.
+    maturity_requirement:
+      tier: 2
+      prerequisites:
+        - CM-T2-010
+    effectiveness:
+      full: "Zone maturity >= Tier 2, psychological safety active"
+      reduced: "System installed, safety culture partial"
+      minimal: "System installed, no safety culture — submissions rare"
+      no_effect: null
+      harmful:
+        condition: >
+          Applied without psychological safety. Suggestions are submitted,
+          ignored, or visibly unrewarded. Operators conclude the system
+          is performative and disengage.
+        side_effect_ref: null
+      multipliers:
+        full: 0.72
+        reduced: 0.30
+        minimal: 0.12
+    decay:
+      enabled: true
+      days: 10
+      condition: >
+        Decays if suggestions are not responded to within a defined window.
+        Participation drops sharply after 10 simulated days of no response.
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T2-006
+    name: "5 Whys Analysis"
+    tier: 2
+    category: problem_solving
+    description: >
+      Root cause drilling through causal questioning.
+      Structured technique for problem investigation.
+    maturity_requirement:
+      tier: 2
+      prerequisites: []
+    effectiveness:
+      full: "Zone maturity >= Tier 2"
+      reduced: "Zone maturity Tier 1 — analysis valid but shallower"
+      minimal: "No data available to validate causal chain"
+      no_effect: null
+      harmful:
+        condition: >
+          Applied to a problem with no documented baseline. 5 Whys
+          produces a causal chain built on assumption rather than
+          evidence. Wrong root cause identified.
+        side_effect_ref: null
+      multipliers:
+        full: 0.78
+        reduced: 0.38
+        minimal: 0.18
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T2-007
+    name: "Ishikawa / Fishbone Diagrams"
+    tier: 2
+    category: problem_solving
+    description: >
+      Structured cause categorization using 4M or 6M framework.
+      Broadens investigation beyond the obvious.
+    maturity_requirement:
+      tier: 2
+      prerequisites: []
+    effectiveness:
+      full: "Zone maturity >= Tier 2"
+      reduced: "Zone maturity Tier 1 — categories populated but data thin"
+      minimal: "No data to populate categories meaningfully"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.72
+        reduced: 0.35
+        minimal: 0.15
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T2-008
+    name: "A3 Thinking / A3 Reporting"
+    tier: 2
+    category: problem_solving
+    description: >
+      One-page structured problem-solving format. Forces clarity of
+      problem definition, analysis, and countermeasure before action.
+    maturity_requirement:
+      tier: 2
+      prerequisites:
+        - CM-T1-009
+    effectiveness:
+      full: "Zone maturity >= Tier 2, documentation control active"
+      reduced: "Zone maturity Tier 1"
+      minimal: "No documentation infrastructure"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.80
+        reduced: 0.42
+        minimal: 0.20
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T2-009
+    name: "Gemba Walks"
+    tier: 2
+    category: management_system
+    description: >
+      Leadership observation routines on the floor. Builds direct
+      connection between management decisions and operational reality.
+    maturity_requirement:
+      tier: 2
+      prerequisites: []
+    effectiveness:
+      full: "Zone maturity >= Tier 2"
+      reduced: "Walks happen but no structured observation format"
+      minimal: "Informal floor visits without purpose or follow-up"
+      no_effect: null
+      harmful:
+        condition: >
+          Gemba walks happen in a zone with no visual management or
+          performance boards. Leaders observe chaos but have no reference
+          standard to compare against. Walks produce reactive firefighting.
+        side_effect_ref: null
+      multipliers:
+        full: 0.72
+        reduced: 0.35
+        minimal: 0.18
+    decay:
+      enabled: false
+      days: 21
+      condition: >
+        Effectiveness degrades if walks become irregular or lose
+        structured follow-up within 21 simulated days.
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T2-010
+    name: "Psychological Safety Routines"
+    tier: 2
+    category: people
+    description: >
+      Blameless reviews, near-miss celebrations, open problem reporting.
+      Creates the cultural foundation for honest improvement.
+    maturity_requirement:
+      tier: 2
+      prerequisites: []
+    effectiveness:
+      full: "Zone maturity >= Tier 2"
+      reduced: "Routines started but leadership behavior inconsistent"
+      minimal: "Declared intent only — no behavioral change visible"
+      no_effect: null
+      harmful:
+        condition: >
+          Safety reporting is encouraged but reports lead to blame or
+          punishment. Trust collapses faster than it would have without
+          the initiative.
+        side_effect_ref: T1-019
+      multipliers:
+        full: 0.80
+        reduced: 0.35
+        minimal: 0.15
+    decay:
+      enabled: true
+      days: null
+      condition: >
+        Decays rapidly if any high-visibility blame event occurs.
+        A single public blame response undoes weeks of safety
+        culture building.
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T2-011
+    name: "Andon Systems"
+    tier: 2
+    category: visual_management
+    description: >
+      Operator-triggered alerts for quality, supply, or help.
+      Makes problems visible the moment they occur.
+    maturity_requirement:
+      tier: 2
+      prerequisites:
+        - CM-T1-006
+        - CM-T2-001
+    effectiveness:
+      full: "Zone maturity >= Tier 2, visual management and response system active"
+      reduced: "Andon installed, response system partial"
+      minimal: "Andon installed, no defined response — signals ignored"
+      no_effect: null
+      harmful:
+        condition: >
+          Andon installed with no response protocol. Operators pull andon,
+          nothing happens. Operators stop pulling within 5 simulated days.
+          Problem visibility is worse than before.
+        side_effect_ref: null
+      multipliers:
+        full: 0.80
+        reduced: 0.40
+        minimal: 0.20
+    decay:
+      enabled: true
+      days: null
+      condition: >
+        Decays if response times exceed acceptable threshold consistently.
+        Operators self-select out of using the system.
+      side_effect_ref: null
+    applicable_to: [final_assembly, testing]
+
+  - id: CM-T2-012
+    name: "Team Leader Routines"
+    tier: 2
+    category: management_system
+    description: >
+      Structured shift start/end routines, handover protocols.
+      Closes the shift-boundary gap and builds team leader capability.
+    maturity_requirement:
+      tier: 2
+      prerequisites:
+        - CM-T1-002
+        - CM-T1-009
+    effectiveness:
+      full: "Zone maturity >= Tier 2"
+      reduced: "Routines defined but team leader not yet consistent"
+      minimal: "Routines exist as documents, not practiced"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.78
+        reduced: 0.38
+        minimal: 0.18
+    decay:
+      enabled: false
+      days: 30
+      condition: >
+        Effectiveness degrades without consistent adherence.
+        New team leaders may not follow inherited routines.
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T2-013
+    name: "Problem Escalation Protocols"
+    tier: 2
+    category: management_system
+    description: >
+      Clear rules for when and to whom problems escalate. Prevents both
+      under-escalation (hidden problems) and over-escalation (every issue
+      reaches the top).
+    maturity_requirement:
+      tier: 2
+      prerequisites:
+        - CM-T2-001
+    effectiveness:
+      full: "Zone maturity >= Tier 2, daily management active"
+      reduced: "Protocols defined but escalation paths unclear"
+      minimal: "No daily management system to escalate within"
+      no_effect: null
+      harmful:
+        condition: >
+          Escalation protocols applied before operator decision authority is
+          defined. Every problem escalates regardless of severity.
+          Supervisors become bottlenecks.
+        side_effect_ref: T1-017
+      multipliers:
+        full: 0.78
+        reduced: 0.40
+        minimal: 0.20
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T2-014
+    name: "Cross-Training Programs"
+    tier: 2
+    category: people
+    description: >
+      Deliberately expanding operator skill coverage. Reduces single-point
+      dependencies and enables flexible deployment.
+    maturity_requirement:
+      tier: 2
+      prerequisites:
+        - CM-T1-010
+    effectiveness:
+      full: "Zone maturity >= Tier 2, skill matrix active"
+      reduced: "Training happens without skill matrix tracking"
+      minimal: "Informal cross-training, no structure or verification"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.75
+        reduced: 0.35
+        minimal: 0.15
+    decay:
+      enabled: true
+      days: 30
+      condition: >
+        Skills decay if not practiced. Without rotation schedules,
+        cross-trained operators lose proficiency within 30 simulated
+        days of inactivity on secondary stations.
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T2-015
+    name: "Leader Standard Work"
+    tier: 2
+    category: management_system
+    description: >
+      Documented routines for supervisors and managers. Ensures leadership
+      behavior is consistent and purposeful rather than reactive.
+    maturity_requirement:
+      tier: 2
+      prerequisites:
+        - CM-T1-002
+        - CM-T2-009
+    effectiveness:
+      full: "Zone maturity >= Tier 2, operator standard work and gemba active"
+      reduced: "Leader routines defined but not followed consistently"
+      minimal: "Leader standard work exists on paper only"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.76
+        reduced: 0.38
+        minimal: 0.18
+    decay:
+      enabled: false
+      days: 30
+      condition: >
+        Effectiveness degrades without accountability. New leaders
+        may not adopt inherited routines.
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T2-016
+    name: "Catchball / Hoshin Kanri Light"
+    tier: 2
+    category: management_system
+    description: >
+      Cascading goal-setting conversations between levels. Aligns team
+      targets with plant objectives through dialogue rather than
+      top-down mandate.
+    maturity_requirement:
+      tier: 2
+      prerequisites:
+        - CM-T2-001
+        - CM-T2-002
+    effectiveness:
+      full: "Zone maturity >= Tier 2, management system active"
+      reduced: "Goals cascaded but without dialogue or buy-in"
+      minimal: "Goals posted, no catchball conversation"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.72
+        reduced: 0.35
+        minimal: 0.15
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  # ==========================================================
+  # TIER 3 — STABLE AND PREDICTABLE PROCESSES
+  # ==========================================================
+
+  - id: CM-T3-001
+    name: "Value Stream Mapping"
+    tier: 3
+    category: flow_analysis
+    description: >
+      Current state mapping of material and information flow. Identifies
+      waste, bottlenecks, and improvement priorities across the full
+      value stream.
+    maturity_requirement:
+      tier: 3
+      prerequisites:
+        - CM-T1-002
+        - CM-T1-009
+    effectiveness:
+      full: "Zone maturity >= Tier 3, stable documented processes"
+      reduced: "Zone maturity Tier 2, processes partially documented"
+      minimal: "Zone maturity Tier 1, processes undocumented — map reflects chaos"
+      no_effect: null
+      harmful:
+        condition: >
+          VSM conducted on a zone with no standard work. The current-state
+          map correctly documents a chaotic process. The future-state map
+          optimizes around the wrong baseline.
+        side_effect_ref: null
+      multipliers:
+        full: 0.80
+        reduced: 0.38
+        minimal: 0.20
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T3-002
+    name: "Future-State VSM Design"
+    tier: 3
+    category: flow_analysis
+    description: >
+      Target condition for the value stream. Defines the improved flow,
+      pull signals, and inventory targets.
+    maturity_requirement:
+      tier: 3
+      prerequisites:
+        - CM-T3-001
+    effectiveness:
+      full: "Current-state VSM complete and accurate"
+      reduced: "Current-state VSM incomplete"
+      minimal: "No current-state VSM — future state is hypothetical"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.78
+        reduced: 0.35
+        minimal: 0.15
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T3-003
+    name: "Kanban Systems"
+    tier: 3
+    category: flow
+    description: >
+      Pull signals between stations or zones, WIP limits enforced.
+      Replaces push scheduling with demand-driven flow.
+    maturity_requirement:
+      tier: 3
+      prerequisites:
+        - CM-T1-002
+        - CM-T1-005
+        - CM-T3-007
+    effectiveness:
+      full: "Zone maturity >= Tier 3, standard work and WIP limits active"
+      reduced: "Zone maturity Tier 2, standard work active, WIP informal"
+      minimal: "Zone maturity Tier 1, no standard work"
+      no_effect: null
+      harmful:
+        condition: >
+          Kanban applied to a zone with undefined WIP limits and no standard
+          work. Cards circulate but operators have no reference for what the
+          signal means. WIP accumulates behind the Kanban facade.
+        side_effect_ref: T1-001
+      multipliers:
+        full: 0.88
+        reduced: 0.40
+        minimal: 0.20
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T3-004
+    name: "Supermarket Pull Systems"
+    tier: 3
+    category: flow
+    description: >
+      Decoupling points with controlled inventory between processes with
+      mismatched cycle times.
+    maturity_requirement:
+      tier: 3
+      prerequisites:
+        - CM-T3-003
+    effectiveness:
+      full: "Zone maturity >= Tier 3, Kanban active"
+      reduced: "Kanban partial, supermarket sizes unvalidated"
+      minimal: "No Kanban — supermarket is an uncontrolled buffer"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.82
+        reduced: 0.40
+        minimal: 0.20
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T3-005
+    name: "FIFO Lanes"
+    tier: 3
+    category: flow
+    description: >
+      Strict first-in-first-out queueing between stations. Prevents queue
+      manipulation and ensures oldest work advances first.
+    maturity_requirement:
+      tier: 3
+      prerequisites:
+        - CM-T1-005
+    effectiveness:
+      full: "Zone maturity >= Tier 3, workplace organization active"
+      reduced: "FIFO lanes installed, WIP limit undefined"
+      minimal: "FIFO lanes installed, no WIP limit — queue still grows"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.80
+        reduced: 0.38
+        minimal: 0.18
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T3-006
+    name: "Line Balancing"
+    tier: 3
+    category: flow
+    description: >
+      Redistributing work content across stations to match takt time.
+      Eliminates local overburden and idle time.
+    maturity_requirement:
+      tier: 3
+      prerequisites:
+        - CM-T1-002
+        - CM-T1-010
+    effectiveness:
+      full: "Zone maturity >= Tier 3, standard work and skill data active"
+      reduced: "Zone maturity Tier 2, standard work partial"
+      minimal: "No standard work — balance is based on observation only"
+      no_effect: null
+      harmful:
+        condition: >
+          Line balancing applied without skill matrix. Work redistributed
+          without regard to operator capability. Stations receive tasks
+          operators cannot perform to standard.
+        side_effect_ref: T1-005
+      multipliers:
+        full: 0.85
+        reduced: 0.40
+        minimal: 0.18
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [final_assembly]
+
+  - id: CM-T3-007
+    name: "Standard WIP Definition"
+    tier: 3
+    category: flow
+    description: >
+      Explicit inventory targets between stations. Defines maximum and
+      minimum WIP per flow segment.
+    maturity_requirement:
+      tier: 3
+      prerequisites:
+        - CM-T1-002
+    effectiveness:
+      full: "Zone maturity >= Tier 3"
+      reduced: "Zone maturity Tier 2, targets defined but not enforced"
+      minimal: "Zone maturity Tier 1 — WIP targets exist on paper only"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.78
+        reduced: 0.35
+        minimal: 0.15
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T3-008
+    name: "SMED"
+    tier: 3
+    category: flow
+    description: >
+      Single-Minute Exchange of Die. Changeover time reduction through
+      separation of internal and external setup.
+    maturity_requirement:
+      tier: 3
+      prerequisites:
+        - CM-T1-002
+        - CM-T1-007
+    effectiveness:
+      full: "Zone maturity >= Tier 3, standard work and tool locations active"
+      reduced: "Zone maturity Tier 2, standard work active, tools partial"
+      minimal: "Zone maturity Tier 1, no standard work"
+      no_effect: null
+      harmful:
+        condition: >
+          SMED applied without standard work. Changeover procedure is
+          optimized but operators have no documented baseline to follow.
+          Improvement regresses within days.
+        side_effect_ref: null
+      multipliers:
+        full: 0.85
+        reduced: 0.40
+        minimal: 0.18
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [component_prep, final_assembly]
+
+  - id: CM-T3-009
+    name: "Heijunka"
+    tier: 3
+    category: flow
+    description: >
+      Production leveling by mix and volume. Smooths demand variation
+      into a predictable production pattern.
+    maturity_requirement:
+      tier: 3
+      prerequisites:
+        - CM-T1-002
+        - CM-T3-008
+    effectiveness:
+      full: "Zone maturity >= Tier 3, SMED and standard work active"
+      reduced: "SMED partial, leveling possible but limited mix"
+      minimal: "No SMED — changeover times prevent leveling"
+      no_effect: null
+      harmful:
+        condition: >
+          Heijunka applied to a zone where delivery schedule is still
+          flood/drought. Leveled internal schedule cannot be maintained
+          against irregular inbound supply.
+        side_effect_ref: T1-006
+      multipliers:
+        full: 0.82
+        reduced: 0.38
+        minimal: 0.18
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T3-010
+    name: "Milk Runs / Water Spider Routes"
+    tier: 3
+    category: flow
+    description: >
+      Scheduled material replenishment rounds. Separates material handler
+      work from operator production work.
+    maturity_requirement:
+      tier: 3
+      prerequisites:
+        - CM-T1-005
+        - CM-T1-006
+    effectiveness:
+      full: "Zone maturity >= Tier 3, visual signals for replenishment active"
+      reduced: "Route defined, signals absent — timing based on schedule not demand"
+      minimal: "Route defined, no visual signals — stockouts continue"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.80
+        reduced: 0.38
+        minimal: 0.18
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T3-011
+    name: "Cell Design / One-Piece Flow Cells"
+    tier: 3
+    category: flow
+    description: >
+      Reconfiguring layout to enable one-piece flow. Collocates process
+      steps and eliminates transport waste.
+    maturity_requirement:
+      tier: 3
+      prerequisites:
+        - CM-T1-002
+        - CM-T3-006
+        - CM-T3-001
+    effectiveness:
+      full: "Zone maturity >= Tier 3, VSM and line balance complete"
+      reduced: "VSM complete, line balance partial"
+      minimal: "No VSM — cell designed without flow analysis"
+      no_effect: null
+      harmful:
+        condition: >
+          Cell designed without line balance data. Stations collocated
+          but work content imbalanced. One operator becomes the constraint
+          within the cell, creating a bottleneck more visible than before.
+        side_effect_ref: null
+      multipliers:
+        full: 0.82
+        reduced: 0.38
+        minimal: 0.15
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T3-012
+    name: "Poka-Yoke"
+    tier: 3
+    category: quality
+    description: >
+      Error-proofing devices that prevent defects from occurring.
+      Moves quality from detection to prevention.
+    maturity_requirement:
+      tier: 3
+      prerequisites:
+        - CM-T1-004
+        - CM-T1-002
+    effectiveness:
+      full: "Zone maturity >= Tier 3, quality gates and standard work active"
+      reduced: "Standard work partial — poka-yoke addresses symptom not cause"
+      minimal: "No standard work — defect mechanism not fully understood"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.88
+        reduced: 0.42
+        minimal: 0.20
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T3-013
+    name: "Jidoka"
+    tier: 3
+    category: quality
+    description: >
+      Autonomation — machines that detect abnormalities and stop
+      automatically. Separates human work from machine monitoring.
+    maturity_requirement:
+      tier: 3
+      prerequisites:
+        - CM-T1-004
+        - CM-T3-012
+        - CM-T2-011
+    effectiveness:
+      full: "Zone maturity >= Tier 3, quality gates, poka-yoke, and andon active"
+      reduced: "Andon active, poka-yoke partial"
+      minimal: "No andon — machine stops but no response system"
+      no_effect: null
+      harmful:
+        condition: >
+          Jidoka implemented without andon response protocol. Machine stops
+          correctly but no one responds. Line halts repeatedly with no
+          resolution mechanism. Output drops sharply.
+        side_effect_ref: null
+      multipliers:
+        full: 0.85
+        reduced: 0.40
+        minimal: 0.18
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [final_assembly, testing]
+
+  - id: CM-T3-014
+    name: "Takt-Time Management"
+    tier: 3
+    category: flow
+    description: >
+      Continuously aligning output rate to customer demand. Makes takt
+      the governing rhythm of the factory.
+    maturity_requirement:
+      tier: 3
+      prerequisites:
+        - CM-T1-002
+        - CM-T3-006
+    effectiveness:
+      full: "Zone maturity >= Tier 3, line balance active"
+      reduced: "Line balance partial — takt visible but not followed"
+      minimal: "No line balance — takt is theoretical only"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.80
+        reduced: 0.38
+        minimal: 0.18
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T3-015
+    name: "Bottleneck Analysis / Theory of Constraints"
+    tier: 3
+    category: flow_analysis
+    description: >
+      Finding, elevating, and exploiting the system constraint. Focuses
+      improvement energy where it has maximum impact.
+    maturity_requirement:
+      tier: 3
+      prerequisites:
+        - CM-T1-002
+    effectiveness:
+      full: "Zone maturity >= Tier 3, stable measurable processes"
+      reduced: "Zone maturity Tier 2 — constraint identifiable but unstable"
+      minimal: "Zone maturity Tier 1 — everything is a bottleneck"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.78
+        reduced: 0.38
+        minimal: 0.18
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T3-016
+    name: "Waste Elimination (TIMWOODS)"
+    tier: 3
+    category: flow_analysis
+    description: >
+      Systematic removal of the eight wastes. Applied as a structured
+      review of each waste category across the zone.
+    maturity_requirement:
+      tier: 3
+      prerequisites:
+        - CM-T3-001
+    effectiveness:
+      full: "Zone maturity >= Tier 3, VSM complete"
+      reduced: "VSM partial — waste visible but not fully mapped"
+      minimal: "No VSM — waste elimination is ad-hoc observation"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.75
+        reduced: 0.35
+        minimal: 0.15
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T3-017
+    name: "Pareto Analysis / ABC Analysis"
+    tier: 3
+    category: flow_analysis
+    description: >
+      Focusing improvement effort on the highest-impact items.
+      Separates the vital few from the trivial many.
+    maturity_requirement:
+      tier: 3
+      prerequisites:
+        - CM-T1-009
+    effectiveness:
+      full: "Zone maturity >= Tier 3, reliable data available"
+      reduced: "Zone maturity Tier 2, data partial"
+      minimal: "Zone maturity Tier 1 — data unreliable, Pareto misleads"
+      no_effect: null
+      harmful:
+        condition: >
+          Pareto applied to data from a corrupted reporting system. The wrong
+          problems are prioritized. Improvement effort is focused on the most
+          frequently reported issues, which are not the highest-impact issues.
+        side_effect_ref: T1-025
+      multipliers:
+        full: 0.78
+        reduced: 0.38
+        minimal: 0.18
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T3-018
+    name: "Runner-Repeater-Stranger Analysis"
+    tier: 3
+    category: flow_analysis
+    description: >
+      Classifying products by volume and frequency to inform scheduling,
+      layout, and inventory strategy.
+    maturity_requirement:
+      tier: 3
+      prerequisites:
+        - CM-T1-009
+    effectiveness:
+      full: "Zone maturity >= Tier 3, reliable production data"
+      reduced: "Zone maturity Tier 2, data partial"
+      minimal: "Data unreliable — classification is approximate"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.75
+        reduced: 0.35
+        minimal: 0.15
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T3-019
+    name: "Spaghetti Diagrams"
+    tier: 3
+    category: flow_analysis
+    description: >
+      Mapping physical movement paths to identify motion waste. Input to
+      layout redesign and operator assignment decisions.
+    maturity_requirement:
+      tier: 3
+      prerequisites: []
+    effectiveness:
+      full: "Zone maturity >= Tier 3"
+      reduced: "Zone maturity Tier 2 — movement patterns partially stable"
+      minimal: "Zone maturity Tier 1 — movement is chaotic, map reflects noise"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.72
+        reduced: 0.33
+        minimal: 0.15
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T3-020
+    name: "Load Leveling"
+    tier: 3
+    category: flow
+    description: >
+      Smoothing operator workload across shifts and stations. Prevents
+      overburden (muri) and idle time within a shift.
+    maturity_requirement:
+      tier: 3
+      prerequisites:
+        - CM-T1-010
+        - CM-T3-006
+    effectiveness:
+      full: "Zone maturity >= Tier 3"
+      reduced: "Line balance active, skill matrix partial"
+      minimal: "No line balance — load leveling is guesswork"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.78
+        reduced: 0.35
+        minimal: 0.15
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T3-021
+    name: "Pitch Management"
+    tier: 3
+    category: flow
+    description: >
+      Breaking takt into manageable intervals for real-time monitoring
+      and response. Makes problems visible within the shift.
+    maturity_requirement:
+      tier: 3
+      prerequisites:
+        - CM-T3-014
+        - CM-T2-011
+    effectiveness:
+      full: "Zone maturity >= Tier 3, takt management and andon active"
+      reduced: "Takt active, andon absent — deviations noticed late"
+      minimal: "No takt management — pitch intervals are arbitrary"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.75
+        reduced: 0.35
+        minimal: 0.15
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T3-022
+    name: "EPEI (Every Part Every Interval)"
+    tier: 3
+    category: flow
+    description: >
+      Reducing lot sizes toward mixed-model flow. Measures and drives
+      down the interval between producing each product variant.
+    maturity_requirement:
+      tier: 3
+      prerequisites:
+        - CM-T3-008
+        - CM-T3-009
+    effectiveness:
+      full: "Zone maturity >= Tier 3, SMED and heijunka active"
+      reduced: "SMED active, heijunka partial"
+      minimal: "No SMED — changeover prevents lot size reduction"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.78
+        reduced: 0.35
+        minimal: 0.15
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T3-023
+    name: "Process Mining"
+    tier: 3
+    category: flow_analysis
+    description: >
+      Discovery and analysis of actual process execution from system logs.
+      Reveals the real process vs. the assumed process.
+    maturity_requirement:
+      tier: 3
+      prerequisites:
+        - CM-T1-009
+    effectiveness:
+      full: "Zone maturity >= Tier 3, reliable system data"
+      reduced: "Zone maturity Tier 2, data partial or inconsistent"
+      minimal: "Zone maturity Tier 1, system data unreliable"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.78
+        reduced: 0.35
+        minimal: 0.18
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T3-024
+    name: "Process Automation / RPA"
+    tier: 3
+    category: flow
+    description: >
+      Automating stable, rule-based, repetitive work. Requires a stable,
+      documented process before automation.
+    maturity_requirement:
+      tier: 3
+      prerequisites:
+        - CM-T1-002
+        - CM-T3-001
+    effectiveness:
+      full: "Zone maturity >= Tier 3, stable documented process"
+      reduced: "Standard work partial — automation built on unstable process"
+      minimal: "No standard work — automation locks in variation"
+      no_effect: null
+      harmful:
+        condition: >
+          Automation applied to an undocumented process. The automated
+          system replicates the current broken process at machine speed.
+          Defect rate increases. Rollback is expensive.
+        side_effect_ref: null
+      multipliers:
+        full: 0.80
+        reduced: 0.35
+        minimal: 0.15
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  # ==========================================================
+  # TIER 4 — CAPABLE PROCESSES
+  # ==========================================================
+
+  - id: CM-T4-001
+    name: "Statistical Process Control (SPC)"
+    tier: 4
+    category: quality
+    description: >
+      Control charts tracking process variation over time. Distinguishes
+      special cause from common cause variation.
+    maturity_requirement:
+      tier: 4
+      prerequisites:
+        - CM-T1-002
+        - CM-T1-004
+        - CM-T4-004
+    effectiveness:
+      full: "Zone maturity >= Tier 4, MSA validated, standard work active"
+      reduced: "Zone maturity Tier 3, MSA not yet done"
+      minimal: "Zone maturity Tier 2, measurement system unreliable"
+      no_effect: "Zone maturity Tier 1"
+      harmful:
+        condition: >
+          SPC applied without MSA. Control charts show variation in a
+          measurement system that is itself unreliable. Special causes
+          identified that do not exist. Process tampered based on false signals.
+        side_effect_ref: T1-008
+      multipliers:
+        full: 0.88
+        reduced: 0.40
+        minimal: 0.18
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T4-002
+    name: "Process Capability Analysis"
+    tier: 4
+    category: quality
+    description: >
+      Cp, Cpk, Pp, Ppk. Quantifies process performance relative to
+      specification limits.
+    maturity_requirement:
+      tier: 4
+      prerequisites:
+        - CM-T4-001
+        - CM-T4-004
+    effectiveness:
+      full: "Zone maturity >= Tier 4, SPC and MSA active"
+      reduced: "SPC active, process not yet in control"
+      minimal: "No SPC — capability index calculated on unstable process"
+      no_effect: null
+      harmful:
+        condition: >
+          Capability calculated on an out-of-control process. Cpk appears
+          acceptable but masks special cause variation.
+        side_effect_ref: null
+      multipliers:
+        full: 0.82
+        reduced: 0.38
+        minimal: 0.18
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T4-003
+    name: "DMAIC"
+    tier: 4
+    category: problem_solving
+    description: >
+      Define, Measure, Analyze, Improve, Control. Structured Six Sigma
+      project methodology for breakthrough improvement.
+    maturity_requirement:
+      tier: 4
+      prerequisites:
+        - CM-T1-002
+        - CM-T1-009
+        - CM-T2-003
+    effectiveness:
+      full: "Zone maturity >= Tier 4, stable documented processes"
+      reduced: "Zone maturity Tier 3, processes stable but not capable"
+      minimal: "Zone maturity Tier 2 — DMAIC runs but Measure phase fails"
+      no_effect: "Zone maturity Tier 1"
+      harmful:
+        condition: >
+          DMAIC applied to an undocumented process with no measurement
+          baseline. The project consumes significant resources and closes
+          without a validated improvement.
+        side_effect_ref: null
+      multipliers:
+        full: 0.88
+        reduced: 0.40
+        minimal: 0.18
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T4-004
+    name: "Measurement System Analysis (MSA / Gage R&R)"
+    tier: 4
+    category: quality
+    description: >
+      Validates that measurement systems are reliable before drawing
+      conclusions from measurement data.
+    maturity_requirement:
+      tier: 4
+      prerequisites:
+        - CM-T1-004
+    effectiveness:
+      full: "Zone maturity >= Tier 4, quality gates active"
+      reduced: "Zone maturity Tier 3 — MSA valid but fewer measurement points"
+      minimal: "Zone maturity Tier 2 — measurement too informal for MSA"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.85
+        reduced: 0.40
+        minimal: 0.20
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [testing, inspection]
+
+  - id: CM-T4-005
+    name: "Design of Experiments (DOE)"
+    tier: 4
+    category: quality
+    description: >
+      Systematic testing of multiple factors simultaneously. Reveals
+      interaction effects invisible to one-factor-at-a-time experimentation.
+    maturity_requirement:
+      tier: 4
+      prerequisites:
+        - CM-T4-004
+        - CM-T1-002
+    effectiveness:
+      full: "Zone maturity >= Tier 4, MSA validated, stable process"
+      reduced: "MSA active, process partially stable"
+      minimal: "No MSA — experimental results uninterpretable"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.85
+        reduced: 0.38
+        minimal: 0.18
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T4-006
+    name: "FMEA"
+    tier: 4
+    category: quality
+    description: >
+      Failure Mode and Effects Analysis. Systematic risk identification
+      for processes or products before problems occur.
+    maturity_requirement:
+      tier: 4
+      prerequisites:
+        - CM-T1-002
+        - CM-T1-004
+    effectiveness:
+      full: "Zone maturity >= Tier 4, documented stable process"
+      reduced: "Zone maturity Tier 3, process stable but not fully documented"
+      minimal: "Zone maturity Tier 2 — FMEA lists risks with no data to rank them"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.80
+        reduced: 0.38
+        minimal: 0.18
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T4-007
+    name: "Control Plans"
+    tier: 4
+    category: quality
+    description: >
+      Documented monitoring and response plans for each critical variable.
+      Sustains improved process performance after a DMAIC or improvement project.
+    maturity_requirement:
+      tier: 4
+      prerequisites:
+        - CM-T4-001
+        - CM-T1-009
+    effectiveness:
+      full: "Zone maturity >= Tier 4, SPC and documentation active"
+      reduced: "SPC active, documentation partial"
+      minimal: "No SPC — control plan has no monitoring mechanism"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.82
+        reduced: 0.40
+        minimal: 0.18
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T4-008
+    name: "8D Problem Solving"
+    tier: 4
+    category: problem_solving
+    description: >
+      Eight-discipline structured problem-solving for complex, recurring
+      defects with customer impact.
+    maturity_requirement:
+      tier: 4
+      prerequisites:
+        - CM-T2-003
+        - CM-T1-004
+    effectiveness:
+      full: "Zone maturity >= Tier 4"
+      reduced: "Zone maturity Tier 3 — 8D valid but data thin"
+      minimal: "Zone maturity Tier 2 — D4 root cause analysis fails"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.85
+        reduced: 0.40
+        minimal: 0.20
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T4-009
+    name: "Hypothesis Testing"
+    tier: 4
+    category: quality
+    description: >
+      Statistical validation of improvement claims. Confirms whether
+      observed changes are real or noise.
+    maturity_requirement:
+      tier: 4
+      prerequisites:
+        - CM-T4-004
+    effectiveness:
+      full: "Zone maturity >= Tier 4, MSA validated"
+      reduced: "MSA active, sample sizes insufficient"
+      minimal: "No MSA — test results uninterpretable"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.80
+        reduced: 0.38
+        minimal: 0.18
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T4-010
+    name: "Regression Analysis"
+    tier: 4
+    category: quality
+    description: >
+      Identifying and quantifying relationships between process inputs
+      and outputs.
+    maturity_requirement:
+      tier: 4
+      prerequisites:
+        - CM-T4-004
+        - CM-T1-009
+    effectiveness:
+      full: "Zone maturity >= Tier 4, reliable data and MSA active"
+      reduced: "Data available, MSA not validated"
+      minimal: "Insufficient data — regression produces noise"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.78
+        reduced: 0.35
+        minimal: 0.15
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T4-011
+    name: "ANOVA"
+    tier: 4
+    category: quality
+    description: >
+      Analysis of variance. Compares performance across groups — shifts,
+      operators, machines, suppliers.
+    maturity_requirement:
+      tier: 4
+      prerequisites:
+        - CM-T4-004
+    effectiveness:
+      full: "Zone maturity >= Tier 4, MSA validated"
+      reduced: "Data available, MSA not validated"
+      minimal: "No MSA — group differences may be measurement artefacts"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.78
+        reduced: 0.35
+        minimal: 0.15
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T4-012
+    name: "Quality Function Deployment (QFD)"
+    tier: 4
+    category: quality
+    description: >
+      Translating customer requirements into process specifications.
+      Connects voice of customer to process control parameters.
+    maturity_requirement:
+      tier: 4
+      prerequisites:
+        - CM-T1-004
+        - CM-T1-002
+    effectiveness:
+      full: "Zone maturity >= Tier 4, stable documented process"
+      reduced: "Zone maturity Tier 3, process stable but not capable"
+      minimal: "Zone maturity Tier 2 — specifications defined on unstable process"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.82
+        reduced: 0.38
+        minimal: 0.18
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [receiving, testing]
+
+  - id: CM-T4-013
+    name: "Reliability Analysis"
+    tier: 4
+    category: maintenance
+    description: >
+      MTBF analysis, predictive maintenance windows. Moves from planned
+      to predictive maintenance.
+    maturity_requirement:
+      tier: 4
+      prerequisites:
+        - CM-T1-008
+        - CM-T4-014
+    effectiveness:
+      full: "Zone maturity >= Tier 4, TPM and cleanliness active"
+      reduced: "Cleanliness active, TPM partial"
+      minimal: "No TPM baseline — failure data is too noisy for prediction"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.80
+        reduced: 0.38
+        minimal: 0.18
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T4-014
+    name: "TPM (Total Productive Maintenance)"
+    tier: 4
+    category: maintenance
+    description: >
+      Structured maintenance discipline including autonomous operator-led
+      care, planned maintenance, and predictive maintenance.
+    maturity_requirement:
+      tier: 4
+      prerequisites:
+        - CM-T1-008
+        - CM-T1-002
+    effectiveness:
+      full: "Zone maturity >= Tier 4, cleanliness and standard work active"
+      reduced: "Zone maturity Tier 3, cleanliness active"
+      minimal: "Zone maturity Tier 2, no cleanliness standards"
+      no_effect: "Zone maturity Tier 1"
+      harmful:
+        condition: >
+          TPM launched without basic cleanliness standards. Autonomous
+          maintenance audits reveal operator non-compliance on day one.
+          Program loses credibility before the first step is complete.
+        side_effect_ref: T1-010
+      multipliers:
+        full: 0.90
+        reduced: 0.40
+        minimal: 0.18
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [component_prep, final_assembly, testing]
+
+  - id: CM-T4-015
+    name: "OEE Optimization (Advanced)"
+    tier: 4
+    category: quality
+    description: >
+      Systematic drill-down into Availability, Performance, and Quality
+      loss categories. Connects OEE improvement to specific countermeasures.
+    maturity_requirement:
+      tier: 4
+      prerequisites:
+        - CM-T4-014
+        - CM-T4-001
+    effectiveness:
+      full: "Zone maturity >= Tier 4, TPM and SPC active"
+      reduced: "TPM active, SPC partial"
+      minimal: "No TPM — OEE drill-down identifies losses with no fix mechanism"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.78
+        reduced: 0.40
+        minimal: 0.20
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T4-016
+    name: "Shainin Red X"
+    tier: 4
+    category: quality
+    description: >
+      Isolation of the dominant cause of variation through strategic
+      multi-vari analysis and component search.
+    maturity_requirement:
+      tier: 4
+      prerequisites:
+        - CM-T4-004
+        - CM-T1-002
+    effectiveness:
+      full: "Zone maturity >= Tier 4, MSA validated"
+      reduced: "MSA active, process partially stable"
+      minimal: "No MSA — dominant cause cannot be isolated from measurement noise"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.82
+        reduced: 0.38
+        minimal: 0.15
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T4-017
+    name: "Advanced Analytics Dashboards"
+    tier: 4
+    category: information
+    description: >
+      Predictive monitoring of key process variables. Connects real-time
+      process data to leading indicators.
+    maturity_requirement:
+      tier: 4
+      prerequisites:
+        - CM-T1-009
+        - CM-T4-001
+    effectiveness:
+      full: "Zone maturity >= Tier 4, reliable data and SPC active"
+      reduced: "SPC partial, dashboard shows descriptive not predictive"
+      minimal: "No SPC — dashboard shows data without analytical value"
+      no_effect: null
+      harmful:
+        condition: >
+          Dashboard built on a corrupted reporting system. Advanced
+          visualization of wrong data. Decisions made with confidence
+          on false information.
+        side_effect_ref: T1-025
+      multipliers:
+        full: 0.80
+        reduced: 0.35
+        minimal: 0.15
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  - id: CM-T4-018
+    name: "Hypothesis-Driven Kaizen"
+    tier: 4
+    category: improvement_events
+    description: >
+      Statistically rigorous short-cycle improvement experiments. Kaizen
+      with a hypothesis, measurement plan, and statistical verification.
+    maturity_requirement:
+      tier: 4
+      prerequisites:
+        - CM-T2-004
+        - CM-T4-009
+    effectiveness:
+      full: "Zone maturity >= Tier 4, hypothesis testing and kaizen active"
+      reduced: "Kaizen active, hypothesis testing partial"
+      minimal: "No hypothesis testing — results are anecdotal"
+      no_effect: null
+      harmful: null
+      multipliers:
+        full: 0.85
+        reduced: 0.40
+        minimal: 0.18
+    decay:
+      enabled: false
+      days: null
+      condition: null
+      side_effect_ref: null
+    applicable_to: [all]
+
+  # ==========================================================
+  # DIAGNOSTIC TOOLS — NO MATURITY REQUIREMENT
+  # effectiveness: always_full (multiplier: 1.0)
+  # These reveal problems; they do not fix them.
+  # ==========================================================
+
+  - id: CM-DX-001
+    name: "5 Whys Analysis"
+    tier: diagnostic
+    category: problem_solving
+    description: >
+      Root cause drilling through causal questioning. Always available.
+      Quality of output scales with quality of data available in the zone.
+    maturity_requirement: none
+    effectiveness: always_full
+    scales_with_maturity: >
+      At Tier 1, produces a shallow causal chain limited by data availability.
+      At Tier 3+, produces validated root causes traceable to measurement data.
+    cost_credits: 0
+    decay:
+      enabled: false
+
+  - id: CM-DX-002
+    name: "Ishikawa / Fishbone Diagrams"
+    tier: diagnostic
+    category: problem_solving
+    description: >
+      Structured cause categorization using 4M or 6M framework. Always
+      available. Richer output as data density increases.
+    maturity_requirement: none
+    effectiveness: always_full
+    scales_with_maturity: >
+      At Tier 1, categories populated by observation. At Tier 3+, populated
+      by measurement data. Both are valid — output quality differs.
+    cost_credits: 0
+    decay:
+      enabled: false
+
+  - id: CM-DX-003
+    name: "Time Observation / Time Study"
+    tier: diagnostic
+    category: flow_analysis
+    description: >
+      Direct measurement of cycle time, value-adding time, and wait time
+      at a station. Always available. Core data collection tool.
+    maturity_requirement: none
+    effectiveness: always_full
+    scales_with_maturity: >
+      At Tier 1, observations show high variation. At Tier 2+, standard work
+      makes observations more meaningful and comparable across operators.
+    cost_credits: 0
+    decay:
+      enabled: false
+
+  - id: CM-DX-004
+    name: "Work Sampling"
+    tier: diagnostic
+    category: flow_analysis
+    description: >
+      Statistical sampling of what operators are actually doing across a time
+      period. Reveals proportion of value-adding vs. non-value-adding activity.
+    maturity_requirement: none
+    effectiveness: always_full
+    scales_with_maturity: >
+      At Tier 1, high variation requires larger samples for reliable results.
+      At Tier 2+, stable processes improve sample validity.
+    cost_credits: 0
+    decay:
+      enabled: false
+
+  - id: CM-DX-005
+    name: "Root Cause Analysis (General)"
+    tier: diagnostic
+    category: problem_solving
+    description: >
+      Meta-category including 5 Whys, fishbone, and fault tree analysis.
+      Always available as an investigation starting point.
+    maturity_requirement: none
+    effectiveness: always_full
+    scales_with_maturity: >
+      Quality of root cause identification scales with available data.
+      See individual diagnostic tool entries.
+    cost_credits: 0
+    decay:
+      enabled: false
+
+  - id: CM-DX-006
+    name: "A3 Thinking / A3 Reporting"
+    tier: diagnostic
+    category: problem_solving
+    description: >
+      One-page structured problem-solving format. Always available as a
+      thinking and communication tool. Requires Basic Documentation Control
+      to persist output.
+    maturity_requirement: none
+    effectiveness: always_full
+    scales_with_maturity: >
+      At Tier 1, A3 surfaces problems without data to confirm root cause.
+      At Tier 3+, data fields are populated from measurement systems.
+    cost_credits: 0
+    decay:
+      enabled: false
+
+  - id: CM-DX-007
+    name: "Gemba Walk"
+    tier: diagnostic
+    category: management_system
+    description: >
+      Direct observation of the process at the point of work. Always
+      available. The most fundamental diagnostic act.
+    maturity_requirement: none
+    effectiveness: always_full
+    scales_with_maturity: >
+      At Tier 1, gemba reveals obvious waste and chaos. At Tier 3+, gemba
+      reveals subtle deviations from standard. The discipline is the same;
+      what is visible changes.
+    cost_credits: 0
+    decay:
+      enabled: false
+
+  - id: CM-DX-008
+    name: "Spaghetti Diagram"
+    tier: diagnostic
+    category: flow_analysis
+    description: >
+      Mapping physical movement paths to reveal motion waste. Always
+      available. Requires observation time at the zone.
+    maturity_requirement: none
+    effectiveness: always_full
+    scales_with_maturity: >
+      At Tier 1, movement patterns are chaotic. At Tier 3+, patterns are
+      more stable and optimization opportunities are more precise.
+    cost_credits: 20
+    decay:
+      enabled: false
+
+  - id: CM-DX-009
+    name: "Value Stream Mapping (Diagnostic)"
+    tier: diagnostic
+    category: flow_analysis
+    description: >
+      Used as a diagnostic observation tool — mapping the current state to
+      see it clearly before deciding how to improve. Distinct from VSM as a
+      countermeasure (CM-T3-001).
+    maturity_requirement: none
+    effectiveness: always_full
+    scales_with_maturity: >
+      At Tier 1, VSM maps chaos. At Tier 3+, it maps a process stable enough
+      to optimize. Both are valid. The diagnostic version has no maturity
+      requirement; the improvement version (CM-T3-001) does.
+    cost_credits: 0
+    decay:
+      enabled: false
+
+  - id: CM-DX-010
+    name: "Coach Consultation"
+    tier: diagnostic
+    category: coaching
+    description: >
+      Call the LGM-40 coach for Socratic guidance during active problem
+      investigation. Never provides direct answers — asks better questions.
+    maturity_requirement: none
+    effectiveness: always_full
+    scales_with_maturity: >
+      At Tier 1, questions focus on observation and waste identification.
+      At Tier 4, questions focus on statistical reasoning and systemic thinking.
+    cost_credits: 75
+    decay:
+      enabled: false
+
+  - id: CM-DX-011
+    name: "Review Consultation"
+    tier: diagnostic
+    category: coaching
+    description: >
+      After a problem is solved and scored, ask the coach to reflect on
+      the diagnostic path and countermeasure choice. Does not modify score.
+    maturity_requirement: none
+    effectiveness: always_full
+    scales_with_maturity: null
+    cost_credits: 50
+    decay:
+      enabled: false

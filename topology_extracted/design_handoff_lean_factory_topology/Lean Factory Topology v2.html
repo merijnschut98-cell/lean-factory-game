@@ -1,0 +1,1103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Lean Factory — Topology v2 (Game View)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --concrete:    #cfc6b2;
+    --concrete-2:  #c5bca7;
+    --concrete-dk: #a89e86;
+    --grout:       #b8ae96;
+    --ink:         #1c1b17;
+    --ink-2:       #3a3830;
+    --ink-3:       #6b6858;
+    --rule:        #2a2823;
+    --paint-yel:   #e8c34a;
+    --paint-yel-d: #b7942b;
+    --paint-red:   #c14a3a;
+    --hi-vis:      #ff8a1f;
+    --hi-vis-d:    #c45f06;
+
+    /* Zone floor paint (slightly desaturated, sit on concrete) */
+    --z-recv:    #e5cf9a;
+    --z-prep:    #c9d6a3;
+    --z-sub:     #a9d4b8;
+    --z-final:   #a9c3d6;
+    --z-test:    #c3b5d6;
+    --z-pack:    #d6a9a9;
+
+    --z-recv-ink:   #8a6a22;
+    --z-prep-ink:   #5d7a2a;
+    --z-sub-ink:    #2a6b4a;
+    --z-final-ink:  #2b5d7c;
+    --z-test-ink:   #533f79;
+    --z-pack-ink:   #7c3434;
+
+    --panel:     #1e1d1a;
+    --panel-2:   #2a2823;
+    --panel-ink: #e9e3d2;
+    --panel-hi:  #ffb84d;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background:#201e1a; color:var(--ink); font-family:'Inter', system-ui, sans-serif; overflow:hidden; height:100%; }
+  .app {
+    position: fixed; inset: 0;
+    display: grid;
+    grid-template-columns: minmax(0,1fr) 340px;
+    grid-template-rows: 48px minmax(0,1fr);
+  }
+
+  /* ============ TOP BAR ============ */
+  .topbar {
+    grid-column: 1 / -1;
+    background: #15140f;
+    color: #e9e3d2;
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 0 18px;
+    border-bottom: 1px solid #000;
+    font-size: 12px;
+  }
+  .topbar .title { display:flex; align-items:center; gap: 10px; }
+  .topbar .title b { font-weight: 700; letter-spacing: 0.02em;}
+  .topbar .title .v { font-family:'JetBrains Mono', monospace; color:#8c8878; font-size: 11px; }
+  .topbar .stats { display:flex; gap: 22px; font-family:'JetBrains Mono', monospace; font-size: 11px; color:#b8b29f;}
+  .topbar .stats b { color:#fff; font-weight:600; margin-left:4px;}
+  .topbar .legend-inline { display:flex; gap:14px; font-size:11px; color:#b8b29f; align-items:center;}
+  .topbar .legend-inline .s { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:5px; vertical-align:-1px;}
+
+  /* ============ FLOOR ============ */
+  .floor-wrap {
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse at 50% 40%, #2e2b24 0%, #15140f 80%);
+  }
+  .floor {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 1600px;
+    height: 960px;
+    background:
+      /* subtle large tiles */
+      linear-gradient(var(--grout) 1px, transparent 1px) 0 0 / 80px 80px,
+      linear-gradient(90deg, var(--grout) 1px, transparent 1px) 0 0 / 80px 80px,
+      /* grain */
+      radial-gradient(circle at 20% 30%, rgba(0,0,0,0.05), transparent 45%),
+      radial-gradient(circle at 80% 70%, rgba(0,0,0,0.05), transparent 45%),
+      linear-gradient(180deg, var(--concrete) 0%, var(--concrete-2) 100%);
+    box-shadow:
+      inset 0 0 0 6px #6a6250,
+      inset 0 0 0 8px #39352c,
+      0 30px 90px rgba(0,0,0,0.55);
+  }
+  /* Exterior walls (a darker ring under the floor) */
+  .floor::before {
+    content:"";
+    position: absolute;
+    inset: -14px;
+    background: #3b372e;
+    border-radius: 4px;
+    z-index: -1;
+    box-shadow: 0 40px 120px rgba(0,0,0,0.6);
+  }
+
+  /* ============ ZONE PAINT ============ */
+  .zone-paint {
+    position:absolute;
+    border-radius: 6px;
+    box-shadow: inset 0 0 0 3px rgba(0,0,0,0.04);
+    /* painted-floor feel: slight texture */
+  }
+  .zone-paint::before {
+    content:"";
+    position:absolute; inset: 6px;
+    border: 1.5px dashed rgba(0,0,0,0.2);
+    border-radius: 3px;
+    pointer-events:none;
+  }
+  .zone-label {
+    position: absolute;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    font-weight: 600;
+    text-transform: uppercase;
+    background: rgba(255,255,255,0.82);
+    padding: 3px 8px;
+    border-radius: 2px;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.15);
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  /* ============ MACHINES / STATIONS ============ */
+  .m {
+    position: absolute;
+    cursor: pointer;
+    transition: transform 0.12s ease, filter 0.12s ease;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.25));
+  }
+  .m:hover { transform: translateY(-1px); filter: drop-shadow(0 6px 10px rgba(0,0,0,0.35)) brightness(1.04); }
+  .m.selected .outline {
+    stroke: #ffb84d !important;
+    stroke-width: 3 !important;
+    stroke-dasharray: 5 3;
+    animation: march 0.6s linear infinite;
+  }
+  @keyframes march { to { stroke-dashoffset: -8; } }
+
+  .m .lbl {
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    transform: translate(-50%, 2px);
+    background: #1c1b17;
+    color: #f3ecd9;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    padding: 2px 6px;
+    border-radius: 2px;
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.25);
+  }
+  .m .lbl::before {
+    content:""; position:absolute; top:-4px; left:50%; transform:translateX(-50%);
+    border: 4px solid transparent; border-bottom-color: #1c1b17;
+  }
+  .m .idtag {
+    position:absolute; right: 3px; top: 3px;
+    background: rgba(0,0,0,0.55); color:#ffd683;
+    font-family:'JetBrains Mono', monospace; font-size:8.5px;
+    padding:1px 4px; border-radius:2px; letter-spacing:0.05em;
+    pointer-events:none;
+  }
+
+  /* Operator pin */
+  .op {
+    position: absolute;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--hi-vis);
+    border: 2px solid var(--ink);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.45);
+    pointer-events: none;
+  }
+  .op::after {
+    content:"";
+    position:absolute; left:50%; top:-6px; transform: translateX(-50%);
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #f2d1a8;
+    border: 1.5px solid var(--ink);
+  }
+
+  /* Flow paint on floor */
+  .floor-svg { position:absolute; inset:0; pointer-events:none; }
+
+  /* Dock & truck */
+  .truck {
+    position: absolute;
+    filter: drop-shadow(0 3px 4px rgba(0,0,0,0.35));
+  }
+
+  /* Support buildings */
+  .bldg {
+    position: absolute;
+    background: linear-gradient(180deg, #efe7d2, #dccfb0);
+    border: 2px solid #5a5344;
+    border-radius: 3px;
+    color: #3a3830;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 8px 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.25), inset 0 0 0 1px rgba(255,255,255,0.4);
+    letter-spacing: 0.04em;
+  }
+  .bldg .tag { font-size: 9px; color: #8a7e5f; letter-spacing: 0.14em; }
+  .bldg .nm { font-size: 11.5px; font-weight: 700; color: #2a2823; display:block; line-height: 1.2; margin-top: 2px; white-space: normal; overflow: hidden; text-overflow: ellipsis;}
+  .bldg.desk { background: linear-gradient(180deg, #fff8e6, #f0e4c0); border-color: #7a6a3a; }
+
+  /* Pan/zoom controls */
+  .ctrls {
+    position: absolute; right: 14px; bottom: 14px;
+    display: flex; gap: 4px;
+    background: #1e1d1a; border: 1px solid #000; border-radius: 6px; padding: 4px;
+    z-index: 20;
+  }
+  .ctrls button {
+    width: 28px; height: 28px;
+    background: #2a2823; color: #e9e3d2;
+    border: 1px solid #0c0c09;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family:'JetBrains Mono', monospace; font-size: 14px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .ctrls button:hover { background: #3a3830; }
+  .hint {
+    position: absolute; left: 14px; bottom: 14px;
+    background: rgba(21,20,15,0.7); color: #e9e3d2;
+    font-family:'JetBrains Mono', monospace; font-size: 10.5px;
+    padding: 5px 9px; border-radius: 4px;
+    letter-spacing: 0.04em;
+    z-index: 20;
+  }
+
+  /* ============ INSPECTOR PANEL ============ */
+  .inspector {
+    background: var(--panel);
+    color: var(--panel-ink);
+    border-left: 1px solid #000;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .insp-head {
+    padding: 14px 18px 10px;
+    border-bottom: 1px solid #000;
+    background: #15140f;
+  }
+  .insp-head .eyebrow {
+    font-family:'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.18em;
+    color: #8c8878; text-transform: uppercase;
+  }
+  .insp-head .title {
+    font-size: 18px; font-weight: 700; margin-top: 3px; line-height: 1.15;
+  }
+  .insp-head .crumb {
+    margin-top: 6px;
+    font-family:'JetBrains Mono', monospace; font-size: 10.5px; color: #b8b29f;
+  }
+  .insp-head .crumb .chip {
+    display:inline-block; padding: 1px 6px; border-radius: 2px; color:#15140f; font-weight:600;
+    margin-right: 4px;
+  }
+  .insp-body { padding: 14px 18px; overflow-y:auto; flex:1; }
+
+  .kpi-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+  .kpi {
+    background: var(--panel-2);
+    border: 1px solid #0c0c09;
+    border-radius: 4px;
+    padding: 9px 11px;
+  }
+  .kpi .k { font-size: 10px; color: #8c8878; letter-spacing: 0.14em; text-transform: uppercase; font-family:'JetBrains Mono', monospace;}
+  .kpi .v { font-size: 18px; font-weight: 700; margin-top: 2px; font-family:'JetBrains Mono', monospace;}
+  .kpi .sub { font-size: 10px; color: #8c8878; margin-top: 1px; }
+
+  .insp-section { margin-top: 14px; }
+  .insp-section h4 {
+    font-family:'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: #b8b29f; margin: 0 0 8px; font-weight: 600;
+  }
+  .row { display:flex; justify-content:space-between; align-items:center; padding: 5px 0; border-bottom: 1px dashed #2a2823; font-size: 12.5px; }
+  .row:last-child { border-bottom: 0; }
+  .row .k { color: #b8b29f; }
+  .row .v { font-family:'JetBrains Mono', monospace; color: #f3ecd9; }
+
+  .status-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; vertical-align:1px;}
+  .status-run { background:#6fd36f; box-shadow: 0 0 6px #6fd36f;}
+  .status-wait { background:#ffb84d;}
+  .status-block { background:#e8604a;}
+
+  .ops-list {display:flex; gap:6px; margin-top:6px;}
+  .ops-list .op-mini {
+    width:14px; height:14px; border-radius:50%;
+    background: var(--hi-vis); border: 2px solid #0c0c09;
+  }
+
+  .empty-hint {
+    padding: 20px;
+    font-size: 12px;
+    color: #8c8878;
+    line-height: 1.6;
+    text-align: center;
+    border: 1px dashed #3a3830;
+    border-radius: 4px;
+    margin-top: 16px;
+  }
+  .empty-hint b { color: #e9e3d2; display:block; margin-bottom: 6px; font-size: 13px;}
+
+  .legend-mini {
+    display:grid; grid-template-columns: auto 1fr; gap: 6px 10px;
+    font-size: 11px; color: #b8b29f;
+    margin-top: 12px;
+  }
+  .legend-mini .s {
+    width: 16px; height: 10px; border-radius: 2px;
+  }
+
+  /* Tweaks panel */
+  .tweaks {
+    position: fixed; right: 360px; bottom: 20px;
+    width: 240px;
+    background: #1e1d1a;
+    color: #e9e3d2;
+    border: 1px solid #000;
+    border-radius: 6px;
+    padding: 12px 14px 10px;
+    z-index: 50;
+    display: none;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+  }
+  .tweaks.on { display: block; }
+  .tweaks h4 { margin: 0 0 8px; font-size: 10.5px; font-weight: 600; letter-spacing:0.14em; text-transform:uppercase; color: #b8b29f;}
+  .tweak-row { display:flex; justify-content:space-between; align-items:center; gap:10px; padding: 5px 0; font-size: 12px; border-bottom: 1px dashed #2a2823; }
+  .tweak-row:last-of-type { border-bottom: 0; }
+  .tweak-row input { accent-color: var(--panel-hi);}
+
+  svg { display: block; }
+
+  .flow-label {
+    position:absolute;
+    background: #1c1b17;
+    color:#ffd683;
+    font-family:'JetBrains Mono', monospace; font-size:9.5px;
+    padding: 2px 5px; border-radius: 2px;
+    letter-spacing: 0.08em;
+    pointer-events:none;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ================ TOP BAR ================ -->
+  <div class="topbar">
+    <div class="title">
+      <b>NovaGlide Plant 01</b>
+      <span class="v">TOPOLOGY v2 · U-CELL</span>
+    </div>
+    <div class="legend-inline">
+      <span><span class="s" style="background:var(--z-recv)"></span>Receiving</span>
+      <span><span class="s" style="background:var(--z-prep)"></span>Prep</span>
+      <span><span class="s" style="background:var(--z-sub)"></span>Subassy</span>
+      <span><span class="s" style="background:var(--z-final)"></span>Final Assy</span>
+      <span><span class="s" style="background:var(--z-test)"></span>Testing</span>
+      <span><span class="s" style="background:var(--z-pack)"></span>Pack/Ship</span>
+    </div>
+    <div class="stats">
+      <span>ZONES<b>6</b></span>
+      <span>STATIONS<b>19</b></span>
+      <span>OPERATORS<b>24</b></span>
+      <span>SHIFT<b>1/3</b></span>
+    </div>
+  </div>
+
+  <!-- ================ FLOOR ================ -->
+  <div class="floor-wrap" id="wrap">
+    <div class="floor" id="floor">
+      <!-- All zones, machines, flow rendered into this by JS -->
+      <svg class="floor-svg" id="floorSvg" viewBox="0 0 1600 960" preserveAspectRatio="none"></svg>
+    </div>
+
+    <div class="ctrls">
+      <button id="zo" title="Zoom out">−</button>
+      <button id="zi" title="Zoom in">+</button>
+      <button id="zr" title="Reset view">⟳</button>
+    </div>
+    <div class="hint">DRAG to pan · SCROLL to zoom · CLICK a machine</div>
+  </div>
+
+  <!-- ================ INSPECTOR ================ -->
+  <aside class="inspector">
+    <div class="insp-head">
+      <div class="eyebrow" id="ih-eyebrow">Overview</div>
+      <div class="title" id="ih-title">NovaGlide Plant 01</div>
+      <div class="crumb" id="ih-crumb">6 zones · 19 stations · U-shape cell</div>
+    </div>
+    <div class="insp-body" id="ib">
+      <div class="kpi-grid">
+        <div class="kpi"><div class="k">Throughput</div><div class="v">14/day</div><div class="sub">target 30</div></div>
+        <div class="kpi"><div class="k">OEE</div><div class="v">41%</div><div class="sub">low</div></div>
+        <div class="kpi"><div class="k">WIP</div><div class="v">62</div><div class="sub">high</div></div>
+        <div class="kpi"><div class="k">Defect</div><div class="v">8.2%</div><div class="sub">high</div></div>
+      </div>
+      <div class="insp-section">
+        <h4>Zones</h4>
+        <div id="zoneList"></div>
+      </div>
+      <div class="insp-section">
+        <h4>Legend</h4>
+        <div class="legend-mini">
+          <span class="s" style="background:#6e6258"></span><span>Conveyor / Line segment</span>
+          <span class="s" style="background:#9a8e78"></span><span>Workbench / Fixture</span>
+          <span class="s" style="background:var(--hi-vis)"></span><span>Operator on station</span>
+          <span class="s" style="background:var(--paint-yel); outline: 1px dashed #b7942b;"></span><span>Painted flow line</span>
+        </div>
+      </div>
+      <div class="empty-hint">
+        <b>Click any machine or line</b>
+        The inspector will show station KPIs, assigned operators, cycle time, and upstream/downstream neighbours.
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<!-- Tweaks panel -->
+<div class="tweaks" id="tweaks">
+  <h4>Tweaks</h4>
+  <div class="tweak-row"><label for="tw-labels">Machine labels</label><input type="checkbox" id="tw-labels" checked></div>
+  <div class="tweak-row"><label for="tw-flow">Painted flow lines</label><input type="checkbox" id="tw-flow" checked></div>
+  <div class="tweak-row"><label for="tw-ops">Operator pins</label><input type="checkbox" id="tw-ops" checked></div>
+  <div class="tweak-row"><label for="tw-zones">Zone floor paint</label><input type="checkbox" id="tw-zones" checked></div>
+</div>
+
+<script>
+/* =========================================================
+   TOPOLOGY DATA — U-shape cell
+   Coordinates are in floor px (1600 × 960).
+   Material enters NW, sweeps right across top, drops down on
+   the right, runs back to the left across bottom, exits SW.
+   ========================================================= */
+
+const ZONES = [
+  { id:'recv',  name:'Receiving',        code:'Z1', x:  60, y:  70, w: 340, h: 290, color:'#e5cf9a', ink:'#8a6a22' },
+  { id:'prep',  name:'Component Prep',   code:'Z2', x: 440, y:  70, w: 360, h: 290, color:'#c9d6a3', ink:'#5d7a2a' },
+  { id:'sub',   name:'Subassembly',      code:'Z3', x: 840, y:  70, w: 700, h: 290, color:'#a9d4b8', ink:'#2a6b4a' },
+  { id:'final', name:'Final Assembly',   code:'Z4', x: 260, y: 540, w:1280, h: 180, color:'#a9c3d6', ink:'#2b5d7c' },
+  { id:'test',  name:'Testing',          code:'Z5', x: 260, y: 760, w: 720, h: 160, color:'#c3b5d6', ink:'#533f79' },
+  { id:'pack',  name:'Packaging & Ship', code:'Z6', x:1020, y: 760, w: 520, h: 160, color:'#d6a9a9', ink:'#7c3434' },
+];
+
+// Stations with explicit geometry (rectangles + machine type)
+// type: 'bench' | 'conveyor' | 'dock' | 'rig' | 'box' | 'line'
+// ops: array of [x,y] offsets from station origin
+const STATIONS = [
+  // ===== Receiving =====
+  { id:'R-01', zone:'recv', name:'Dock',           type:'dock',     x: 80,  y: 130, w: 90,  h:170, ct:120, status:'run',   ops:[[45,40]] },
+  { id:'R-02', zone:'recv', name:'Incoming QA',    type:'bench',    x:200,  y: 150, w: 80,  h: 60, ct:90,  status:'run',   ops:[[40,-18]] },
+  { id:'R-03', zone:'recv', name:'Staging',        type:'rack',     x:200,  y: 240, w:170,  h: 80, ct:60,  status:'wait',  ops:[[80,-18]] },
+
+  // ===== Component Prep =====
+  { id:'P-01', zone:'prep', name:'Coil Winding',   type:'machine',  x:460,  y: 140, w: 90,  h:100, ct:180, status:'run',   ops:[[45,-18]] },
+  { id:'P-02', zone:'prep', name:'PCB Prep',       type:'bench',    x:580,  y: 140, w: 90,  h:100, ct:150, status:'run',   ops:[[45,-18]] },
+  { id:'P-03', zone:'prep', name:'Deck Cutting',   type:'cnc',      x:700,  y: 140, w: 90,  h:120, ct:200, status:'run',   ops:[[45,-18]] },
+
+  // ===== Subassembly =====
+  { id:'S-01', zone:'sub',  name:'Propulsion Build', type:'cell',   x:880,  y: 140, w:180,  h:140, ct:240, status:'run',   ops:[[90,-18]] },
+  { id:'S-02', zone:'sub',  name:'Battery Assembly', type:'cell',   x:1090, y: 140, w:180,  h:140, ct:220, status:'run',   ops:[[90,-18]] },
+  { id:'S-03', zone:'sub',  name:'Deck Assembly',    type:'cell',   x:1300, y: 140, w:220,  h:140, ct:260, status:'wait',  ops:[[110,-18]] },
+
+  // ===== Final Assembly — Integration Line R→L =====
+  // The integration line is ONE conveyor with 5 stations over it.
+  { id:'FA-01', zone:'final', name:'Integration 1 · Prop. Mount', type:'line', x:1300, y: 590, w:200, h: 90, ct:300, status:'run',   ops:[[100,-18]] },
+  { id:'FA-02', zone:'final', name:'Integration 2 · Battery/Wire', type:'line', x:1080, y: 590, w:200, h: 90, ct:320, status:'run',   ops:[[100,-18]] },
+  { id:'FA-03', zone:'final', name:'Integration 3 · Control',     type:'line', x: 860, y: 590, w:200, h: 90, ct:360, status:'block', ops:[[60,-18],[140,-18]] },
+  { id:'FA-04', zone:'final', name:'Integration 4 · Electronics', type:'line', x: 640, y: 590, w:200, h: 90, ct:340, status:'wait',  ops:[[60,-18],[140,-18]] },
+  { id:'FA-05', zone:'final', name:'Integration 5 · Shell/Close', type:'line', x: 420, y: 590, w:200, h: 90, ct:280, status:'run',   ops:[[100,-18]] },
+
+  // ===== Testing =====
+  { id:'T-01', zone:'test',  name:'Burn-in',      type:'rig',   x: 290, y: 800, w: 140, h:100, ct:600, status:'run',   ops:[[70,-18]] },
+  { id:'T-02', zone:'test',  name:'Flight Test',  type:'pad',   x: 470, y: 790, w: 220, h:120, ct:420, status:'run',   ops:[[110,-18]] },
+  { id:'T-03', zone:'test',  name:'Final QA',     type:'bench', x: 730, y: 800, w: 220, h:100, ct:300, status:'run',   ops:[[80,-18],[150,-18]] },
+
+  // ===== Packaging & Ship =====
+  { id:'PK-01', zone:'pack', name:'Packaging',        type:'packline', x:1050, y: 800, w: 240, h:100, ct:180, status:'run', ops:[[120,-18]] },
+  { id:'PK-02', zone:'pack', name:'Dispatch Staging', type:'dock',     x:1330, y: 800, w: 180, h:100, ct:120, status:'wait',ops:[[90,-18]] },
+];
+
+// Support buildings (non-station)
+const BLDGS = [
+  { type:'desk', x: 100, y: 380, w:180, h: 40, tag:'TL · Z1', name:'Team Leader · Receiving' },
+  { type:'desk', x: 480, y: 380, w:180, h: 40, tag:'TL · Z2', name:'Team Leader · Prep' },
+  { type:'desk', x: 880, y: 380, w:180, h: 40, tag:'TL · Z3', name:'Team Leader · Subassy' },
+  { type:'desk', x:1280, y: 380, w:180, h: 40, tag:'TL · Z4', name:'Team Leader · Final' },
+  { type:'desk', x:  80, y: 860, w:180, h: 40, tag:'TL · Z5', name:'Team Leader · Testing' },
+  { type:'desk', x:1340, y: 740, w:200, h: 36, tag:'TL · Z6', name:'Team Leader · Pack' },
+
+  { type:'smkt', x: 400, y: 420, w:100, h:100, tag:'SUPERMARKET', name:'Materials Staging' },
+
+  { type:'maint', x: 560, y: 430, w:260, h: 90, tag:'SUPPORT', name:'Maintenance & Tooling Crib' },
+  { type:'office', x: 860, y: 430, w:300, h: 90, tag:'SUPPORT', name:'Plant Office · Daily Mgmt Board' },
+
+  { type:'outdock', x: 80, y: 790, w:0, h:0, hidden:true },
+];
+
+// Flow segments (painted lines + arrows)
+// points are polylines in floor coords
+const FLOW = [
+  // Receiving → Supermarket → Prep
+  { kind:'mat', label:'RAW', pts:[[170,215],[400,215],[400,440],[450,440]] },
+  // Supermarket → Prep
+  { kind:'mat', pts:[[500,440],[550,440],[550,240],[460,240]] },
+  { kind:'mat', pts:[[550,240],[580,240]] },
+  // Prep internal R→...→ Sub
+  { kind:'mat', pts:[[790,200],[880,200]] },
+  // Sub internal S01→S02→S03
+  { kind:'mat', pts:[[1060,210],[1090,210]] },
+  { kind:'mat', pts:[[1270,210],[1300,210]] },
+  // Sub → Final (right side U-turn)
+  { kind:'mat', label:'TO FINAL', pts:[[1410,280],[1410,470],[1400,470],[1400,590]] },
+  // Final integration line R→L
+  { kind:'line', pts:[[1500,635],[420,635]] },
+  // Final → Testing (left side U-turn)
+  { kind:'mat', label:'TO TEST', pts:[[420,680],[360,680],[360,800]] },
+  // Testing chain
+  { kind:'mat', pts:[[430,850],[470,850]] },
+  { kind:'mat', pts:[[690,850],[730,850]] },
+  { kind:'mat', pts:[[950,850],[1050,850]] },
+  // Packaging → Dispatch
+  { kind:'mat', pts:[[1290,850],[1330,850]] },
+  // Kanban pulls (dashed)
+  { kind:'pull', label:'PULL', pts:[[450,470],[400,470],[400,430]] },
+  { kind:'pull', pts:[[900,570],[900,300]] },
+];
+
+const FLOOR_W = 1600, FLOOR_H = 960;
+
+/* =========================================================
+   RENDER
+   ========================================================= */
+const floor = document.getElementById('floor');
+const svg = document.getElementById('floorSvg');
+
+// Zones paint
+ZONES.forEach(z => {
+  const d = document.createElement('div');
+  d.className = 'zone-paint zone-' + z.id;
+  d.style.cssText = `left:${z.x}px; top:${z.y}px; width:${z.w}px; height:${z.h}px; background:${z.color};`;
+  d.dataset.zone = z.id;
+  floor.appendChild(d);
+
+  const lbl = document.createElement('div');
+  lbl.className = 'zone-label';
+  lbl.style.cssText = `left:${z.x + 12}px; top:${z.y - 10}px; color:${z.ink};`;
+  lbl.textContent = `${z.code} · ${z.name}`;
+  floor.appendChild(lbl);
+});
+
+// Flow paint (painted yellow floor stripes + arrows)
+function renderFlow(){
+  const NS = 'http://www.w3.org/2000/svg';
+  svg.innerHTML = '';
+  const defs = document.createElementNS(NS, 'defs');
+  defs.innerHTML = `
+    <marker id="arrM" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#8a6e18"/>
+    </marker>
+    <marker id="arrP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#7a6a5c"/>
+    </marker>
+  `;
+  svg.appendChild(defs);
+
+  FLOW.forEach(f => {
+    if (f.kind === 'line') return; // the conveyor line renders as machines; skip paint
+    const d = f.pts.map((p,i)=> (i===0?'M':'L')+p[0]+' '+p[1]).join(' ');
+    // base yellow painted line
+    if (f.kind === 'mat') {
+      const p1 = document.createElementNS(NS,'path');
+      p1.setAttribute('d', d);
+      p1.setAttribute('fill','none');
+      p1.setAttribute('stroke','#e8c34a');
+      p1.setAttribute('stroke-width','10');
+      p1.setAttribute('stroke-linecap','round');
+      p1.setAttribute('opacity','0.88');
+      svg.appendChild(p1);
+      const p2 = document.createElementNS(NS,'path');
+      p2.setAttribute('d', d);
+      p2.setAttribute('fill','none');
+      p2.setAttribute('stroke','#8a6e18');
+      p2.setAttribute('stroke-width','2');
+      p2.setAttribute('stroke-linecap','round');
+      p2.setAttribute('stroke-dasharray','8 6');
+      p2.setAttribute('marker-end','url(#arrM)');
+      svg.appendChild(p2);
+    } else if (f.kind === 'pull') {
+      const p1 = document.createElementNS(NS,'path');
+      p1.setAttribute('d', d);
+      p1.setAttribute('fill','none');
+      p1.setAttribute('stroke','#7a6a5c');
+      p1.setAttribute('stroke-width','2');
+      p1.setAttribute('stroke-dasharray','5 4');
+      p1.setAttribute('marker-end','url(#arrP)');
+      svg.appendChild(p1);
+    }
+  });
+}
+renderFlow();
+
+/* =========================================================
+   Machine drawing helpers — each returns an SVG string sized
+   to (w,h). They're flat top-down w/ subtle inner shadow.
+   ========================================================= */
+function svgWrap(w, h, inner) {
+  return `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
+}
+function mDock(w,h){
+  // roll-up door + hazard stripes + bollards
+  return svgWrap(w,h, `
+    <rect class="outline" x="1" y="1" width="${w-2}" height="${h-2}" rx="3" fill="#6b6356" stroke="#2a2620" stroke-width="2"/>
+    <rect x="6" y="6" width="${w-12}" height="18" fill="#8a8170"/>
+    <g stroke="#2a2620" stroke-width="1" opacity="0.25">
+      ${Array.from({length:8},(_,i)=>`<line x1="6" x2="${w-6}" y1="${10+i*1.6}" y2="${10+i*1.6}"/>`).join('')}
+    </g>
+    <!-- hazard edge -->
+    <rect x="0" y="${h-10}" width="${w}" height="10" fill="url(#haz)"/>
+    <defs>
+      <pattern id="haz" width="14" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(0)">
+        <rect width="14" height="10" fill="#1c1b17"/>
+        <polygon points="0,0 7,0 0,10" fill="#e8c34a"/>
+        <polygon points="7,0 14,0 14,10 0,10 0,10 7,0" fill="none"/>
+        <polygon points="7,0 14,0 7,10 0,10" fill="#e8c34a"/>
+      </pattern>
+    </defs>
+    <!-- bollards -->
+    <circle cx="10" cy="${h-18}" r="4" fill="#ffb84d" stroke="#1c1b17" stroke-width="1.5"/>
+    <circle cx="${w-10}" cy="${h-18}" r="4" fill="#ffb84d" stroke="#1c1b17" stroke-width="1.5"/>
+  `);
+}
+function mBench(w,h){
+  return svgWrap(w,h, `
+    <rect class="outline" x="1" y="1" width="${w-2}" height="${h-2}" rx="3" fill="#b0a58c" stroke="#3a3830" stroke-width="2"/>
+    <rect x="4" y="4" width="${w-8}" height="${h-8}" rx="2" fill="#9a8e75" stroke="#3a3830" stroke-width="0.5"/>
+    <!-- tool shadows -->
+    <g fill="#3a3830" opacity="0.55">
+      <rect x="8" y="8" width="${Math.max(12, w*0.22)}" height="6" rx="1"/>
+      <rect x="${w*0.45}" y="8" width="${Math.max(10, w*0.18)}" height="6" rx="1"/>
+      <circle cx="${w-14}" cy="14" r="5"/>
+    </g>
+    <line x1="4" y1="${h*0.55}" x2="${w-4}" y2="${h*0.55}" stroke="#3a3830" stroke-width="0.5" stroke-dasharray="3 3" opacity="0.4"/>
+  `);
+}
+function mRack(w,h){
+  const bays = 3;
+  let inner = `<rect class="outline" x="1" y="1" width="${w-2}" height="${h-2}" rx="3" fill="#7e6f54" stroke="#2a2620" stroke-width="2"/>`;
+  for (let i=0;i<bays;i++){
+    const bw = (w-8)/bays;
+    inner += `<rect x="${4+i*bw}" y="6" width="${bw-2}" height="${h-12}" fill="#9b8a66" stroke="#3a3830" stroke-width="1"/>`;
+    // pallets
+    inner += `<rect x="${8+i*bw}" y="10" width="${bw-10}" height="10" fill="#c6a15e" stroke="#3a3830" stroke-width="0.5"/>`;
+    inner += `<rect x="${8+i*bw}" y="${h-22}" width="${bw-10}" height="10" fill="#c6a15e" stroke="#3a3830" stroke-width="0.5"/>`;
+  }
+  return svgWrap(w,h, inner);
+}
+function mMachine(w,h){
+  return svgWrap(w,h, `
+    <rect class="outline" x="1" y="1" width="${w-2}" height="${h-2}" rx="4" fill="#49586b" stroke="#1a1f27" stroke-width="2"/>
+    <rect x="5" y="5" width="${w-10}" height="${h-10}" rx="3" fill="#5b6a7e" stroke="#1a1f27" stroke-width="0.5"/>
+    <!-- spool / rotor -->
+    <circle cx="${w*0.5}" cy="${h*0.5}" r="${Math.min(w,h)*0.28}" fill="#2e3845" stroke="#1a1f27" stroke-width="1"/>
+    <circle cx="${w*0.5}" cy="${h*0.5}" r="${Math.min(w,h)*0.14}" fill="#ffb84d" stroke="#1a1f27" stroke-width="1"/>
+    <!-- indicator lights -->
+    <circle cx="10" cy="10" r="2.5" fill="#6fd36f"/>
+    <circle cx="18" cy="10" r="2.5" fill="#ffb84d"/>
+    <circle cx="26" cy="10" r="2.5" fill="#e8604a"/>
+    <!-- control panel -->
+    <rect x="${w-18}" y="${h-14}" width="14" height="10" fill="#1a1f27" stroke="#0c0f14" stroke-width="0.5"/>
+    <rect x="${w-16}" y="${h-12}" width="10" height="3" fill="#6fd36f" opacity="0.7"/>
+  `);
+}
+function mCNC(w,h){
+  return svgWrap(w,h, `
+    <rect class="outline" x="1" y="1" width="${w-2}" height="${h-2}" rx="4" fill="#4a4a47" stroke="#1c1b17" stroke-width="2"/>
+    <rect x="5" y="5" width="${w-10}" height="${h-10}" rx="2" fill="#5c5c58"/>
+    <!-- bed -->
+    <rect x="10" y="${h*0.25}" width="${w-20}" height="${h*0.5}" fill="#2a2a28" stroke="#1c1b17" stroke-width="1"/>
+    <!-- gantry -->
+    <rect x="${w*0.3}" y="8" width="8" height="${h-16}" fill="#8a8578" stroke="#1c1b17" stroke-width="0.5"/>
+    <rect x="${w*0.3 - 4}" y="${h*0.45}" width="16" height="14" fill="#ffb84d" stroke="#1c1b17" stroke-width="1"/>
+    <!-- lights -->
+    <circle cx="${w-10}" cy="10" r="2.5" fill="#6fd36f"/>
+  `);
+}
+function mCell(w,h){
+  // A subassembly "cell": workbench with fixture, jig, screen
+  return svgWrap(w,h, `
+    <rect class="outline" x="1" y="1" width="${w-2}" height="${h-2}" rx="4" fill="#8a8170" stroke="#2a2620" stroke-width="2"/>
+    <!-- floor of cell -->
+    <rect x="5" y="5" width="${w-10}" height="${h-10}" rx="3" fill="#9e927a" stroke="#2a2620" stroke-width="0.5"/>
+    <!-- fixture -->
+    <rect x="${w*0.1}" y="${h*0.25}" width="${w*0.35}" height="${h*0.5}" fill="#49586b" stroke="#1c1b17" stroke-width="1"/>
+    <rect x="${w*0.14}" y="${h*0.33}" width="${w*0.27}" height="${h*0.34}" fill="#5b6a7e"/>
+    <circle cx="${w*0.275}" cy="${h*0.5}" r="${h*0.12}" fill="#ffb84d" stroke="#1c1b17" stroke-width="1"/>
+    <!-- bench -->
+    <rect x="${w*0.55}" y="${h*0.2}" width="${w*0.35}" height="${h*0.6}" fill="#6e6350" stroke="#2a2620" stroke-width="1"/>
+    <!-- screen -->
+    <rect x="${w*0.6}" y="${h*0.28}" width="${w*0.18}" height="${h*0.25}" fill="#1c1b17" stroke="#0c0c09" stroke-width="1"/>
+    <rect x="${w*0.61}" y="${h*0.3}" width="${w*0.16}" height="${h*0.2}" fill="#3a5c6b"/>
+    <!-- tool outlines -->
+    <circle cx="${w*0.8}" cy="${h*0.7}" r="5" fill="#3a3830"/>
+    <rect x="${w*0.68}" y="${h*0.66}" width="10" height="5" fill="#3a3830"/>
+  `);
+}
+function mLineSegment(w,h){
+  // Integration conveyor segment — the top bay of the big FA conveyor
+  return svgWrap(w,h, `
+    <!-- side rails -->
+    <rect class="outline" x="1" y="1" width="${w-2}" height="${h-2}" rx="3" fill="#3a3830" stroke="#0c0c09" stroke-width="2"/>
+    <!-- belt -->
+    <rect x="4" y="8" width="${w-8}" height="${h-16}" fill="#2a2620"/>
+    <!-- chevrons along belt -->
+    ${Array.from({length: Math.floor((w-20)/22)},(_,i)=>{
+      const x = 12 + i*22;
+      return `<path d="M${x} ${h/2 - 6} L${x+10} ${h/2} L${x} ${h/2+6}" stroke="#5a5040" stroke-width="2" fill="none"/>`;
+    }).join('')}
+    <!-- work platform on the side (where operator stands) -->
+    <rect x="4" y="${h-8}" width="${w-8}" height="6" fill="#8a8170"/>
+    <rect x="4" y="2" width="${w-8}" height="6" fill="#8a8170"/>
+    <!-- fixture over belt in the middle -->
+    <rect x="${w*0.4}" y="${h*0.25}" width="${w*0.2}" height="${h*0.5}" fill="#49586b" stroke="#0c0c09" stroke-width="1"/>
+    <circle cx="${w*0.5}" cy="${h*0.5}" r="6" fill="#ffb84d" stroke="#0c0c09" stroke-width="1"/>
+    <!-- station marker -->
+    <rect x="6" y="10" width="20" height="10" fill="#ffb84d" stroke="#0c0c09" stroke-width="0.5"/>
+  `);
+}
+function mRig(w,h){
+  // Burn-in rig: domed chamber
+  return svgWrap(w,h, `
+    <rect class="outline" x="1" y="1" width="${w-2}" height="${h-2}" rx="6" fill="#4e4a40" stroke="#1c1b17" stroke-width="2"/>
+    <rect x="5" y="5" width="${w-10}" height="${h-10}" rx="4" fill="#5c584d"/>
+    <ellipse cx="${w/2}" cy="${h/2}" rx="${w*0.32}" ry="${h*0.32}" fill="#2a2620" stroke="#1c1b17" stroke-width="1"/>
+    <ellipse cx="${w/2}" cy="${h/2}" rx="${w*0.22}" ry="${h*0.22}" fill="#3a5c6b" opacity="0.8"/>
+    <circle cx="${w/2}" cy="${h/2}" r="4" fill="#e8604a"/>
+    <!-- cable runs -->
+    <path d="M4 ${h*0.2} Q ${w*0.25} ${h*0.25}, ${w*0.4} ${h*0.5}" stroke="#2a2620" stroke-width="2" fill="none"/>
+    <path d="M${w-4} ${h*0.2} Q ${w*0.75} ${h*0.25}, ${w*0.6} ${h*0.5}" stroke="#2a2620" stroke-width="2" fill="none"/>
+    <!-- indicator -->
+    <circle cx="10" cy="10" r="2.5" fill="#e8604a"/>
+  `);
+}
+function mPad(w,h){
+  // Flight-test pad: painted circle target + fencing
+  return svgWrap(w,h, `
+    <rect class="outline" x="1" y="1" width="${w-2}" height="${h-2}" rx="4" fill="#7a7264" stroke="#2a2620" stroke-width="2"/>
+    <rect x="5" y="5" width="${w-10}" height="${h-10}" fill="#8a8170" stroke="#2a2620" stroke-width="0.5"/>
+    <circle cx="${w/2}" cy="${h/2}" r="${Math.min(w,h)*0.38}" fill="none" stroke="#e8c34a" stroke-width="4" stroke-dasharray="6 4"/>
+    <circle cx="${w/2}" cy="${h/2}" r="${Math.min(w,h)*0.22}" fill="none" stroke="#e8c34a" stroke-width="3"/>
+    <text x="${w/2}" y="${h/2 + 5}" text-anchor="middle" font-family="JetBrains Mono" font-size="14" font-weight="700" fill="#3a3830">H</text>
+    <!-- corner safety cones -->
+    <polygon points="10,${h-12} 16,${h-12} 13,${h-22}" fill="#ff8a1f" stroke="#2a2620" stroke-width="0.5"/>
+    <polygon points="${w-16},${h-12} ${w-10},${h-12} ${w-13},${h-22}" fill="#ff8a1f" stroke="#2a2620" stroke-width="0.5"/>
+  `);
+}
+function mPackline(w,h){
+  // Packaging line: conveyor + box stamps
+  return svgWrap(w,h, `
+    <rect class="outline" x="1" y="1" width="${w-2}" height="${h-2}" rx="3" fill="#3a3830" stroke="#0c0c09" stroke-width="2"/>
+    <rect x="4" y="8" width="${w-8}" height="${h-16}" fill="#6b6258"/>
+    ${Array.from({length: Math.floor((w-20)/28)},(_,i)=>{
+      const x = 14 + i*28;
+      return `<rect x="${x}" y="${h/2 - 10}" width="20" height="20" fill="#c6a15e" stroke="#3a2a1f" stroke-width="1.5"/>
+              <line x1="${x+10}" y1="${h/2-10}" x2="${x+10}" y2="${h/2+10}" stroke="#3a2a1f" stroke-width="0.5"/>
+              <line x1="${x}" y1="${h/2}" x2="${x+20}" y2="${h/2}" stroke="#3a2a1f" stroke-width="0.5"/>`;
+    }).join('')}
+    <rect x="4" y="${h-6}" width="${w-8}" height="4" fill="#8a8170"/>
+  `);
+}
+
+function drawMachine(st){
+  const type = st.type;
+  if (type==='dock') return mDock(st.w, st.h);
+  if (type==='bench') return mBench(st.w, st.h);
+  if (type==='rack') return mRack(st.w, st.h);
+  if (type==='machine') return mMachine(st.w, st.h);
+  if (type==='cnc') return mCNC(st.w, st.h);
+  if (type==='cell') return mCell(st.w, st.h);
+  if (type==='line') return mLineSegment(st.w, st.h);
+  if (type==='rig') return mRig(st.w, st.h);
+  if (type==='pad') return mPad(st.w, st.h);
+  if (type==='packline') return mPackline(st.w, st.h);
+  return mBench(st.w, st.h);
+}
+
+// Stations
+STATIONS.forEach(st => {
+  const d = document.createElement('div');
+  d.className = 'm';
+  d.style.cssText = `left:${st.x}px; top:${st.y}px; width:${st.w}px; height:${st.h}px;`;
+  d.dataset.id = st.id;
+  d.innerHTML =
+    drawMachine(st) +
+    `<span class="idtag">${st.id}</span>` +
+    `<span class="lbl">${st.name}</span>`;
+  floor.appendChild(d);
+
+  // operators
+  st.ops.forEach(([ox,oy])=>{
+    const op = document.createElement('div');
+    op.className = 'op';
+    // positive offsets = relative to station box; negative oy means above
+    const absX = st.x + ox;
+    const absY = st.y + (oy < 0 ? -Math.abs(oy) : oy);
+    op.style.cssText = `left:${absX}px; top:${absY}px;`;
+    floor.appendChild(op);
+  });
+});
+
+// Buildings
+BLDGS.forEach(b => {
+  if (b.hidden) return;
+  const d = document.createElement('div');
+  d.className = 'bldg ' + (b.type === 'desk' ? 'desk' : '');
+  d.style.cssText = `left:${b.x}px; top:${b.y}px; width:${b.w}px; height:${b.h}px;`;
+  d.innerHTML = `<span class="tag">${b.tag}</span><span class="nm">${b.name}</span>`;
+  floor.appendChild(d);
+});
+
+// Add trucks at docks
+floor.insertAdjacentHTML('beforeend', `
+  <div class="truck" style="left:-28px; top:160px;">
+    <svg width="110" height="80" viewBox="0 0 110 80">
+      <rect x="6" y="10" width="70" height="55" fill="#dcd0b0" stroke="#2a2620" stroke-width="2" rx="2"/>
+      <rect x="10" y="14" width="62" height="47" fill="none" stroke="#2a2620" stroke-width="0.5" stroke-dasharray="4 3"/>
+      <rect x="76" y="20" width="26" height="30" fill="#6fa3c0" stroke="#2a2620" stroke-width="2" rx="2"/>
+      <rect x="80" y="24" width="18" height="12" fill="#a8cfe0"/>
+      <circle cx="22" cy="66" r="6" fill="#1c1b17"/><circle cx="22" cy="66" r="2" fill="#6b6258"/>
+      <circle cx="60" cy="66" r="6" fill="#1c1b17"/><circle cx="60" cy="66" r="2" fill="#6b6258"/>
+      <circle cx="92" cy="55" r="6" fill="#1c1b17"/><circle cx="92" cy="55" r="2" fill="#6b6258"/>
+    </svg>
+  </div>
+`);
+// Outbound truck at dispatch dock (right side bottom)
+floor.insertAdjacentHTML('beforeend', `
+  <div class="truck" style="left:1520px; top:815px;">
+    <svg width="110" height="80" viewBox="0 0 110 80">
+      <rect x="34" y="10" width="70" height="55" fill="#dcd0b0" stroke="#2a2620" stroke-width="2" rx="2"/>
+      <rect x="38" y="14" width="62" height="47" fill="none" stroke="#2a2620" stroke-width="0.5" stroke-dasharray="4 3"/>
+      <rect x="8" y="20" width="26" height="30" fill="#6fa3c0" stroke="#2a2620" stroke-width="2" rx="2"/>
+      <rect x="12" y="24" width="18" height="12" fill="#a8cfe0"/>
+      <circle cx="50" cy="66" r="6" fill="#1c1b17"/><circle cx="50" cy="66" r="2" fill="#6b6258"/>
+      <circle cx="88" cy="66" r="6" fill="#1c1b17"/><circle cx="88" cy="66" r="2" fill="#6b6258"/>
+      <circle cx="18" cy="55" r="6" fill="#1c1b17"/><circle cx="18" cy="55" r="2" fill="#6b6258"/>
+    </svg>
+  </div>
+`);
+
+/* =========================================================
+   ZONE LIST (right panel overview state)
+   ========================================================= */
+function renderZoneList(){
+  const host = document.getElementById('zoneList');
+  host.innerHTML = '';
+  ZONES.forEach(z => {
+    const stations = STATIONS.filter(s => s.zone === z.id);
+    const opsCount = stations.reduce((a,s)=>a + s.ops.length, 0);
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.style.cursor = 'pointer';
+    row.innerHTML = `
+      <span class="k"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${z.color};margin-right:8px;border:1px solid ${z.ink};"></span>${z.code} ${z.name}</span>
+      <span class="v">${stations.length} st · ${opsCount} op</span>
+    `;
+    row.addEventListener('click', ()=> focusZone(z.id));
+    host.appendChild(row);
+  });
+}
+renderZoneList();
+
+/* =========================================================
+   PAN / ZOOM
+   ========================================================= */
+const wrap = document.getElementById('wrap');
+let scale = 1, tx = 0, ty = 0;
+
+function applyTransform(){
+  floor.style.transform = `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) scale(${scale})`;
+}
+function fitToView(){
+  const r = wrap.getBoundingClientRect();
+  const sx = (r.width - 40) / FLOOR_W;
+  const sy = (r.height - 40) / FLOOR_H;
+  scale = Math.min(sx, sy, 1);
+  tx = 0; ty = 0;
+  applyTransform();
+}
+window.addEventListener('resize', fitToView);
+requestAnimationFrame(fitToView);
+
+document.getElementById('zi').onclick = () => { scale = Math.min(2.5, scale*1.2); applyTransform(); };
+document.getElementById('zo').onclick = () => { scale = Math.max(0.3, scale/1.2); applyTransform(); };
+document.getElementById('zr').onclick = fitToView;
+
+wrap.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const delta = -Math.sign(e.deltaY) * 0.1;
+  scale = Math.min(2.5, Math.max(0.3, scale * (1 + delta)));
+  applyTransform();
+}, { passive: false });
+
+let dragging = false, sx0=0, sy0=0, tx0=0, ty0=0;
+wrap.addEventListener('pointerdown', (e) => {
+  if (e.target.closest('.m')) return; // don't pan when clicking a machine
+  dragging = true; sx0 = e.clientX; sy0 = e.clientY; tx0 = tx; ty0 = ty;
+  wrap.setPointerCapture(e.pointerId);
+  wrap.style.cursor = 'grabbing';
+});
+wrap.addEventListener('pointermove', (e) => {
+  if (!dragging) return;
+  tx = tx0 + (e.clientX - sx0);
+  ty = ty0 + (e.clientY - sy0);
+  applyTransform();
+});
+wrap.addEventListener('pointerup', () => { dragging = false; wrap.style.cursor = 'default'; });
+wrap.addEventListener('pointercancel', () => { dragging = false; wrap.style.cursor = 'default'; });
+
+function focusZone(zid){
+  const z = ZONES.find(z=>z.id===zid);
+  if (!z) return;
+  selectNone();
+  // show zone KPIs in inspector
+  const stations = STATIONS.filter(s=>s.zone===zid);
+  const opsCount = stations.reduce((a,s)=>a+s.ops.length,0);
+  document.getElementById('ih-eyebrow').textContent = 'Zone · ' + z.code;
+  document.getElementById('ih-title').textContent = z.name;
+  document.getElementById('ih-crumb').innerHTML =
+    `<span class="chip" style="background:${z.color}">${z.code}</span> ${stations.length} stations · ${opsCount} operators`;
+  const body = document.getElementById('ib');
+  body.innerHTML = `
+    <div class="kpi-grid">
+      <div class="kpi"><div class="k">Stations</div><div class="v">${stations.length}</div></div>
+      <div class="kpi"><div class="k">Operators</div><div class="v">${opsCount}</div></div>
+      <div class="kpi"><div class="k">Avg CT</div><div class="v">${Math.round(stations.reduce((a,s)=>a+s.ct,0)/stations.length)}s</div></div>
+      <div class="kpi"><div class="k">Maturity</div><div class="v">T1</div><div class="sub">chaotic start</div></div>
+    </div>
+    <div class="insp-section"><h4>Stations in this zone</h4>
+      ${stations.map(s=>`
+        <div class="row" data-st="${s.id}" style="cursor:pointer">
+          <span class="k"><span class="status-dot status-${s.status}"></span>${s.id} · ${s.name}</span>
+          <span class="v">${s.ct}s · ${s.ops.length}op</span>
+        </div>`).join('')}
+    </div>
+  `;
+  body.querySelectorAll('[data-st]').forEach(r=>{
+    r.addEventListener('click', ()=> selectStation(r.dataset.st));
+  });
+}
+
+/* =========================================================
+   SELECTION / INSPECTOR
+   ========================================================= */
+function selectNone(){
+  document.querySelectorAll('.m.selected').forEach(n=>n.classList.remove('selected'));
+}
+
+function upstreamOf(id){
+  // simple ordered chain deduced from id prefixes
+  const order = ['R-01','R-02','R-03','P-01','P-02','P-03','S-01','S-02','S-03',
+                 'FA-01','FA-02','FA-03','FA-04','FA-05','T-01','T-02','T-03','PK-01','PK-02'];
+  const i = order.indexOf(id);
+  return { up: i>0 ? order[i-1] : null, dn: i>=0 && i<order.length-1 ? order[i+1] : null };
+}
+
+function selectStation(id){
+  const st = STATIONS.find(s=>s.id===id);
+  if (!st) return;
+  selectNone();
+  const node = document.querySelector(`.m[data-id="${id}"]`);
+  if (node) node.classList.add('selected');
+  const z = ZONES.find(z=>z.id===st.zone);
+  const chain = upstreamOf(id);
+  const upSt = chain.up ? STATIONS.find(s=>s.id===chain.up) : null;
+  const dnSt = chain.dn ? STATIONS.find(s=>s.id===chain.dn) : null;
+
+  document.getElementById('ih-eyebrow').textContent = `Station · ${st.id}`;
+  document.getElementById('ih-title').textContent = st.name;
+  document.getElementById('ih-crumb').innerHTML =
+    `<span class="chip" style="background:${z.color}">${z.code}</span> ${z.name}`;
+  const body = document.getElementById('ib');
+  const sLabel = {run:'Running', wait:'Waiting', block:'Blocked'}[st.status];
+  body.innerHTML = `
+    <div class="kpi-grid">
+      <div class="kpi"><div class="k">Status</div><div class="v" style="font-size:14px"><span class="status-dot status-${st.status}"></span>${sLabel}</div></div>
+      <div class="kpi"><div class="k">Cycle Time</div><div class="v">${st.ct}s</div><div class="sub">target ${Math.round(st.ct*0.8)}s</div></div>
+      <div class="kpi"><div class="k">Operators</div><div class="v">${st.ops.length}</div>
+        <div class="ops-list">${st.ops.map(()=>`<span class="op-mini"></span>`).join('')}</div>
+      </div>
+      <div class="kpi"><div class="k">WIP</div><div class="v">${st.status==='block'?18: st.status==='wait'?6:3}</div></div>
+    </div>
+    <div class="insp-section">
+      <h4>Details</h4>
+      <div class="row"><span class="k">ID</span><span class="v">${st.id}</span></div>
+      <div class="row"><span class="k">Type</span><span class="v">${st.type}</span></div>
+      <div class="row"><span class="k">Zone</span><span class="v">${z.code} ${z.name}</span></div>
+      <div class="row"><span class="k">Shift</span><span class="v">1 of 3</span></div>
+    </div>
+    <div class="insp-section">
+      <h4>Flow neighbours</h4>
+      <div class="row" ${upSt?`data-st="${upSt.id}" style="cursor:pointer"`:''}>
+        <span class="k">← Upstream</span><span class="v">${upSt?upSt.id+' · '+upSt.name:'—'}</span>
+      </div>
+      <div class="row" ${dnSt?`data-st="${dnSt.id}" style="cursor:pointer"`:''}>
+        <span class="k">Downstream →</span><span class="v">${dnSt?dnSt.id+' · '+dnSt.name:'—'}</span>
+      </div>
+    </div>
+    ${st.status!=='run' ? `
+    <div class="insp-section">
+      <h4>Observed issue</h4>
+      <div style="font-size:12px; line-height:1.5; color:#d7cfb8;">
+        ${st.status==='block'
+          ? `Downstream queue full. Operators idle 20% of cycle. Likely root: unbalanced CT at Integration 3.`
+          : `Waiting for upstream. Suggests pull signal timing or supermarket gap.`}
+      </div>
+    </div>` : ''}
+  `;
+  body.querySelectorAll('[data-st]').forEach(r=>{
+    r.addEventListener('click', ()=> selectStation(r.dataset.st));
+  });
+}
+
+// Click handling
+floor.addEventListener('click', (e) => {
+  const m = e.target.closest('.m');
+  if (m) {
+    selectStation(m.dataset.id);
+    e.stopPropagation();
+    return;
+  }
+  const zp = e.target.closest('.zone-paint');
+  if (zp) {
+    focusZone(zp.dataset.zone);
+    return;
+  }
+});
+
+/* =========================================================
+   TWEAKS
+   ========================================================= */
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "showLabels": true,
+  "showFlow": true,
+  "showOps": true,
+  "showZones": true
+}/*EDITMODE-END*/;
+
+const tweaks = Object.assign({}, TWEAK_DEFAULTS);
+function applyTweaks(){
+  document.querySelectorAll('.lbl, .idtag').forEach(el => el.style.display = tweaks.showLabels ? '' : 'none');
+  document.getElementById('floorSvg').style.display = tweaks.showFlow ? '' : 'none';
+  document.querySelectorAll('.op').forEach(el => el.style.display = tweaks.showOps ? '' : 'none');
+  document.querySelectorAll('.zone-paint').forEach(el => el.style.opacity = tweaks.showZones ? '' : '0.15');
+}
+applyTweaks();
+window.addEventListener('message', (e) => {
+  const d = e.data || {};
+  if (d.type === '__activate_edit_mode') document.getElementById('tweaks').classList.add('on');
+  if (d.type === '__deactivate_edit_mode') document.getElementById('tweaks').classList.remove('on');
+});
+window.parent.postMessage({type:'__edit_mode_available'}, '*');
+function bind(id,key){
+  const el = document.getElementById(id);
+  el.checked = tweaks[key];
+  el.addEventListener('change', () => {
+    tweaks[key] = el.checked;
+    applyTweaks();
+    window.parent.postMessage({type:'__edit_mode_set_keys', edits:{[key]:el.checked}}, '*');
+  });
+}
+bind('tw-labels','showLabels');
+bind('tw-flow','showFlow');
+bind('tw-ops','showOps');
+bind('tw-zones','showZones');
+
+</script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+# Secrets — never commit
+.env
+
+# Save files
+*.db
+*.db-shm
+*.db-wal
+lean_factory_save/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# PyInstaller output
+*.spec.bak
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log

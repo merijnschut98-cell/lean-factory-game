@@ -1,0 +1,1398 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Lean Factory — Topology v3 (Walkable)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --panel:     #1e1d1a;
+    --panel-2:   #2a2823;
+    --panel-ink: #e9e3d2;
+    --panel-hi:  #ffb84d;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background:#0a0908; color:#e9e3d2; font-family:'Inter', system-ui, sans-serif; overflow:hidden; height:100%; }
+  .app {
+    position: fixed; inset: 0;
+    display: grid;
+    grid-template-columns: minmax(0,1fr) 340px;
+    grid-template-rows: 44px minmax(0,1fr);
+  }
+  .topbar {
+    grid-column: 1 / -1;
+    background: #100f0c;
+    color: #e9e3d2;
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 0 16px;
+    border-bottom: 1px solid #000;
+    font-size: 12px;
+  }
+  .topbar .title { display:flex; align-items:center; gap: 10px;}
+  .topbar .title b { font-weight: 700;}
+  .topbar .title .v { font-family:'JetBrains Mono', monospace; color:#8c8878; font-size: 11px; }
+  .topbar .stats { display:flex; gap: 18px; font-family:'JetBrains Mono', monospace; font-size: 11px; color:#b8b29f;}
+  .topbar .stats b { color:#fff; margin-left:4px;}
+  .topbar .hint { font-family:'JetBrains Mono', monospace; font-size:10.5px; color:#8c8878; letter-spacing:0.06em;}
+  .topbar .key { background:#2a2823; border:1px solid #000; padding:1px 5px; border-radius:2px; color:#ffd683; margin:0 2px;}
+
+  .stage {
+    position: relative;
+    overflow: hidden;
+    background: #0a0908;
+  }
+  canvas#world {
+    position:absolute; inset:0;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    width:100%; height:100%;
+    cursor: default;
+  }
+  .prompt {
+    position: absolute;
+    left: 50%; bottom: 28px; transform: translateX(-50%);
+    background: rgba(16,15,12,0.92);
+    color: #f3ecd9;
+    border: 1px solid #000;
+    border-radius: 4px;
+    padding: 8px 14px;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    pointer-events:none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+    z-index: 3;
+  }
+  .prompt.on { opacity: 1; }
+  .prompt .kb {
+    display:inline-block; background:#2a2823; color:#ffd683; border:1px solid #000;
+    padding:1px 6px; border-radius:2px; margin-right:8px; font-weight:600;
+  }
+
+  .hud {
+    position: absolute; left: 12px; top: 12px;
+    background: rgba(16,15,12,0.82);
+    border: 1px solid #000;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color:#e9e3d2;
+    z-index: 3;
+    line-height: 1.5;
+  }
+  .hud .room { color: #ffd683; font-weight:600;}
+  .hud .sub { color: #8c8878; font-size: 10.5px; }
+
+  /* Inspector panel (right) — shows when player interacts */
+  .inspector {
+    background: var(--panel);
+    color: var(--panel-ink);
+    border-left: 1px solid #000;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .insp-head {
+    padding: 14px 18px 10px;
+    border-bottom: 1px solid #000;
+    background: #15140f;
+  }
+  .insp-head .eyebrow {
+    font-family:'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.18em;
+    color: #8c8878; text-transform: uppercase;
+  }
+  .insp-head .title {
+    font-size: 17px; font-weight: 700; margin-top: 3px; line-height: 1.15;
+  }
+  .insp-head .crumb {
+    margin-top: 5px;
+    font-family:'JetBrains Mono', monospace; font-size: 10.5px; color: #b8b29f;
+  }
+  .insp-body { padding: 14px 18px; overflow-y:auto; flex:1; }
+
+  .kpi-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .kpi {
+    background: var(--panel-2);
+    border: 1px solid #0c0c09;
+    border-radius: 4px;
+    padding: 9px 11px;
+  }
+  .kpi .k { font-size: 10px; color: #8c8878; letter-spacing: 0.14em; text-transform: uppercase; font-family:'JetBrains Mono', monospace;}
+  .kpi .v { font-size: 17px; font-weight: 700; margin-top: 2px; font-family:'JetBrains Mono', monospace;}
+  .kpi .sub { font-size: 10px; color: #8c8878; margin-top: 1px; }
+
+  .insp-section { margin-top: 14px; }
+  .insp-section h4 {
+    font-family:'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: #b8b29f; margin: 0 0 8px; font-weight: 600;
+  }
+  .row { display:flex; justify-content:space-between; align-items:center; padding: 5px 0; border-bottom: 1px dashed #2a2823; font-size: 12.5px; }
+  .row:last-child { border-bottom: 0; }
+  .row .k { color: #b8b29f; }
+  .row .v { font-family:'JetBrains Mono', monospace; color: #f3ecd9; }
+  .status-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; vertical-align:1px;}
+  .status-run { background:#6fd36f; box-shadow: 0 0 6px #6fd36f;}
+  .status-wait { background:#ffb84d;}
+  .status-block { background:#e8604a;}
+
+  .empty-hint {
+    padding: 18px;
+    font-size: 12px;
+    color: #8c8878;
+    line-height: 1.6;
+    text-align: center;
+    border: 1px dashed #3a3830;
+    border-radius: 4px;
+  }
+  .empty-hint b { color: #e9e3d2; display:block; margin-bottom: 6px; font-size: 13px;}
+
+  .keymap { display:grid; grid-template-columns: auto 1fr; gap: 4px 10px; font-size: 11px; color:#b8b29f; margin-top: 12px;}
+  .keymap .kb { font-family:'JetBrains Mono', monospace; background:#2a2823; border:1px solid #000; padding:1px 5px; border-radius:2px; color:#ffd683; text-align:center; justify-self: start;}
+
+  .minimap {
+    position:absolute; right:12px; top:12px;
+    width: 220px; height: 140px;
+    background: rgba(16,15,12,0.82);
+    border: 1px solid #000;
+    border-radius: 4px;
+    overflow:hidden;
+    z-index:3;
+  }
+  .minimap canvas { width:100%; height:100%; image-rendering: pixelated;}
+  .minimap .mm-label {
+    position:absolute; left:6px; top:4px;
+    font-family:'JetBrains Mono', monospace; font-size:9px;
+    color:#8c8878; letter-spacing:0.14em;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="topbar">
+    <div class="title">
+      <b>NovaGlide Plant 01</b>
+      <span class="v">TOPOLOGY v3 · WALKABLE</span>
+    </div>
+    <div class="hint">
+      MOVE <span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span>
+      or <span class="key">↑</span><span class="key">←</span><span class="key">↓</span><span class="key">→</span>
+      &nbsp;·&nbsp; INTERACT <span class="key">E</span> / <span class="key">Space</span>
+      &nbsp;·&nbsp; CLOSE <span class="key">Esc</span>
+    </div>
+    <div class="stats">
+      <span>ROOMS<b>10</b></span>
+      <span>STATIONS<b>19</b></span>
+      <span>NPCs<b>8</b></span>
+    </div>
+  </div>
+
+  <div class="stage" id="stage">
+    <canvas id="world"></canvas>
+    <div class="hud" id="hud">
+      <div class="room" id="hud-room">Factory Floor</div>
+      <div class="sub" id="hud-sub">Step up to a machine, press E</div>
+    </div>
+    <div class="minimap">
+      <div class="mm-label">MAP</div>
+      <canvas id="mini"></canvas>
+    </div>
+    <div class="prompt" id="prompt"><span class="kb">E</span><span id="prompt-text">Interact</span></div>
+  </div>
+
+  <aside class="inspector">
+    <div class="insp-head">
+      <div class="eyebrow" id="ih-eyebrow">Overview</div>
+      <div class="title" id="ih-title">NovaGlide Plant 01</div>
+      <div class="crumb" id="ih-crumb">Walk around · E to interact</div>
+    </div>
+    <div class="insp-body" id="ib">
+      <div class="empty-hint">
+        <b>Walk around the plant</b>
+        Move the plant manager with WASD or arrows. Approach any machine, team-leader desk, or office NPC — a prompt will appear. Press <b>E</b> to open the inspector.
+      </div>
+      <div class="insp-section">
+        <h4>Rooms</h4>
+        <div class="row"><span class="k">Factory Floor</span><span class="v">19 stations</span></div>
+        <div class="row"><span class="k">Operations</span><span class="v">Plant mgr · scheduler</span></div>
+        <div class="row"><span class="k">Quality</span><span class="v">QA lead · metrology</span></div>
+        <div class="row"><span class="k">IT</span><span class="v">MES / server rack</span></div>
+        <div class="row"><span class="k">Finance</span><span class="v">Controller</span></div>
+        <div class="row"><span class="k">HR</span><span class="v">People ops</span></div>
+        <div class="row"><span class="k">Maintenance</span><span class="v">Crib · TPM board</span></div>
+        <div class="row"><span class="k">Break Room</span><span class="v">Rest · info board</span></div>
+        <div class="row"><span class="k">Locker Room</span><span class="v">PPE · clock-in</span></div>
+        <div class="row"><span class="k">Exterior Yard</span><span class="v">Inbound dock</span></div>
+      </div>
+      <div class="insp-section">
+        <h4>Controls</h4>
+        <div class="keymap">
+          <span class="kb">W A S D</span><span>Walk (or arrow keys)</span>
+          <span class="kb">E</span><span>Interact with highlighted target</span>
+          <span class="kb">Space</span><span>Same as E</span>
+          <span class="kb">Shift</span><span>Run (2× speed)</span>
+          <span class="kb">Esc</span><span>Close inspector</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+/* =========================================================
+   TILE-BASED WORLD
+   Tile size: 24px. Map: 100 × 60 tiles = 2400 × 1440 world px.
+
+   Layout (reading top-to-bottom, left-to-right):
+
+     Rows 0-3   : Exterior yard (parking + loading)
+     Rows 4-30  : Main factory floor (existing U-shape)
+     Rows 31-59 : Office wing south of the floor with corridor
+
+     Columns 0-69 : Factory (matches v2 topology scaled)
+     Columns 70-99: Office rooms (stacked vertically with corridor)
+
+   Tile codes:
+      0 = void (outside)
+      1 = concrete floor
+      2 = wall
+      3 = carpet-gray (office corridor)
+      4 = carpet-blue (operations)
+      5 = carpet-green (quality)
+      6 = carpet-purple (IT)
+      7 = carpet-teal (finance)
+      8 = carpet-orange (HR)
+      9 = carpet-brown (break)
+     10 = tile-white (locker)
+     11 = tile-yellow (maintenance)
+     12 = asphalt (yard)
+     13 = painted recv zone
+     14 = painted prep zone
+     15 = painted sub zone
+     16 = painted final zone
+     17 = painted test zone
+     18 = painted pack zone
+     19 = door (walkable marker)
+     20 = grass
+     21 = hazard stripe (yellow/black)
+
+   Collision codes (parallel grid):
+      0 = walkable
+      1 = solid
+
+   Objects layer (sparse): machines, desks, NPCs, signs, doors
+   Each has {tx, ty, w, h, draw(ctx), interact} — interact adds
+   an entry to the interactionMap tiles around it (collision=1 on
+   the object footprint, and marks surrounding tiles as "near").
+   ========================================================= */
+
+const TS = 24;                 // tile size in px
+const MAP_W = 100, MAP_H = 60; // tiles
+const WORLD_W = MAP_W * TS, WORLD_H = MAP_H * TS;
+
+// ---- Colors / tile palette ----
+const TILE_COLORS = {
+  0:  '#0a0908',        // void
+  1:  '#cfc6b2',        // concrete (factory floor)
+  2:  '#3a3830',        // wall
+  3:  '#bdb49e',        // carpet-gray office corridor
+  4:  '#b6c8da',        // blue operations
+  5:  '#bfd5bf',        // green quality
+  6:  '#c9bcdc',        // purple IT
+  7:  '#bcd6d0',        // teal finance
+  8:  '#e4c8b3',        // orange HR
+  9:  '#c9b59a',        // brown break
+ 10:  '#e3dccb',        // locker
+ 11:  '#d8c37a',        // maintenance
+ 12:  '#5c564b',        // asphalt yard
+ 13:  '#e5cf9a',        // recv paint
+ 14:  '#c9d6a3',        // prep paint
+ 15:  '#a9d4b8',        // sub paint
+ 16:  '#a9c3d6',        // final paint
+ 17:  '#c3b5d6',        // test paint
+ 18:  '#d6a9a9',        // pack paint
+ 19:  '#caa24a',        // door
+ 20:  '#5d7a3c',        // grass
+ 21:  '#f0c646',        // hazard
+};
+
+// Room metadata — used for HUD label based on player position
+const ROOMS = [
+  { id:'yard',   name:'Exterior Yard',   x1: 0, y1: 0,  x2:69, y2: 3 },
+  { id:'factory',name:'Factory Floor',   x1: 0, y1: 4,  x2:69, y2:30 },
+  { id:'corr',   name:'Main Corridor',   x1:70, y1: 4,  x2:77, y2:59 },
+  { id:'ops',    name:'Operations',      x1:78, y1: 4,  x2:99, y2:12 },
+  { id:'qua',    name:'Quality',         x1:78, y1:13,  x2:99, y2:21 },
+  { id:'it',     name:'IT',              x1:78, y1:22,  x2:99, y2:30 },
+  { id:'fin',    name:'Finance',         x1:78, y1:31,  x2:99, y2:39 },
+  { id:'hr',     name:'HR',              x1:78, y1:40,  x2:99, y2:48 },
+  { id:'brk',    name:'Break Room',      x1:78, y1:49,  x2:99, y2:59 },
+  { id:'mnt',    name:'Maintenance',     x1: 0, y1:31,  x2:29, y2:59 },
+  { id:'lkr',    name:'Locker Room',     x1:30, y1:48,  x2:69, y2:59 },
+];
+
+/* ---------- Build tile & collision maps procedurally ---------- */
+const tiles = Array.from({length: MAP_H}, ()=> new Uint8Array(MAP_W));
+const solid = Array.from({length: MAP_H}, ()=> new Uint8Array(MAP_W));
+
+function fillRect(arr, x1,y1,x2,y2, val){
+  for (let y=y1;y<=y2;y++) for (let x=x1;x<=x2;x++) if (arr[y]&&x<MAP_W&&y<MAP_H) arr[y][x]=val;
+}
+function strokeRect(arr, x1,y1,x2,y2, val){
+  for (let x=x1;x<=x2;x++){ arr[y1][x]=val; arr[y2][x]=val; }
+  for (let y=y1;y<=y2;y++){ arr[y][x1]=val; arr[y][x2]=val; }
+}
+
+// everything solid by default (void), then carve
+fillRect(tiles, 0,0, MAP_W-1, MAP_H-1, 0);
+
+// --- Grass strip across the very top ---
+fillRect(tiles, 0,0, MAP_W-1, 0, 20);
+
+// --- Exterior yard (rows 0..3 inside factory width) ---
+fillRect(tiles, 0,1, 69,3, 12);
+
+// --- Factory floor (rows 4..30) ---
+fillRect(tiles, 0,4, 69,30, 1);
+
+// Factory outer walls
+strokeRect(tiles, 0,4, 69,30, 2);
+// but dock openings top edge — remove walls at receiving gate (cols 4..10 row 4)
+for (let x=4;x<=10;x++) tiles[4][x]=12;
+
+// --- Paint zone colours on factory floor (match v2 U-shape topology, tile coords) ---
+// Receiving (x:3..16, y:6..15)
+fillRect(tiles, 3,6, 16,15, 13);
+// Component Prep (x:18..33, y:6..15)
+fillRect(tiles, 18,6, 33,15, 14);
+// Subassembly (x:35..65, y:6..15)
+fillRect(tiles, 35,6, 65,15, 15);
+// Final Assembly (x:11..65, y:22..26)
+fillRect(tiles, 11,22, 65,26, 16);
+// Testing (x:11..39, y:28..30) — will extend below the wall into lower factory row? keep in floor
+fillRect(tiles, 11,28, 39,30, 17);
+// Packaging (x:43..65, y:28..30)
+fillRect(tiles, 43,28, 65,30, 18);
+
+// Hazard stripes at dock openings
+for (let x=4;x<=10;x++) { tiles[5][x]=21; }
+
+// --- Office wing (cols 70..99, rows 4..59) ---
+// Corridor (cols 70..77) — gray carpet, full height
+fillRect(tiles, 70,4, 77,59, 3);
+
+// Operations (78..99, 4..12)
+fillRect(tiles, 78,4, 99,12, 4);
+// Quality (78..99, 13..21)
+fillRect(tiles, 78,13, 99,21, 5);
+// IT (78..99, 22..30)
+fillRect(tiles, 78,22, 99,30, 6);
+// Finance (78..99, 31..39)
+fillRect(tiles, 78,31, 99,39, 7);
+// HR (78..99, 40..48)
+fillRect(tiles, 78,40, 99,48, 8);
+// Break (78..99, 49..59)
+fillRect(tiles, 78,49, 99,59, 9);
+
+// Office wing walls — outer ring + room separators
+strokeRect(tiles, 70,4, 99,59, 2);
+// Room separators (horizontal walls between office rooms, cols 78..99)
+for (let y of [13, 22, 31, 40, 49]) {
+  for (let x=78; x<=99; x++) tiles[y][x]=2;
+}
+// Wall between corridor and rooms (col 78), with doors at middle of each room
+for (let y=4;y<=59;y++) tiles[y][78]=2;
+// Carve doors into col 78 at each room center
+function door(y){ tiles[y][78]=19; solid[y][78]=0; }
+door(8); door(17); door(26); door(35); door(44); door(54);
+
+// Connection between factory floor and corridor — wall at col 69..70 boundary with a door
+// Factory right wall (col 69, rows 4..30) already solid
+// Drill a door at (col 69, row 17) and (col 70 just continues as corridor)
+tiles[17][69] = 19; solid[17][69] = 0;
+// Make sure corridor has floor tile at that row
+tiles[17][70] = 3;
+
+// South wing — Maintenance (cols 0..29, rows 31..59) + Locker (30..69, 48..59)
+// Lower area: carve from void
+fillRect(tiles, 0,31, 69,59, 11); // maintenance tile fill (yellow shop)
+strokeRect(tiles, 0,31, 69,59, 2);
+// Locker room is the right half of the lower wing (cols 30..69, rows 48..59)
+fillRect(tiles, 30,48, 69,59, 10);
+strokeRect(tiles, 30,48, 69,59, 2);
+// Inner walls between maintenance and locker — keep the col 30 wall except a door at row 54
+for (let y=31;y<=59;y++) tiles[y][30] = (y===54) ? 19 : 2;
+
+// Door between factory floor and maintenance (row 31 boundary)
+// row 30 is factory south wall; add a door at col 14 and col 48
+tiles[30][14] = 19; // leads to maintenance
+tiles[30][48] = 19; // leads to locker
+// and make sure the first cell of the south room at those cols is floor
+tiles[31][14] = 11;
+tiles[31][48] = 10;
+
+// Door between locker (upper edge) and corridor at col 69 row 54
+// Corridor already at col 70; put door at col 69 row 54
+tiles[54][69] = 19;
+
+// Re-apply walls for factory south edge (row 30 is factory south wall)
+for (let x=0;x<=69;x++) if (tiles[30][x]!==19) tiles[30][x]=2;
+// And factory east wall (col 69, rows 4..30)
+for (let y=4;y<=30;y++) if (tiles[y][69]!==19) tiles[y][69]=2;
+
+/* ---------- Collision: walls are solid, everything else walkable (objects add their own) ---------- */
+for (let y=0;y<MAP_H;y++) for (let x=0;x<MAP_W;x++) {
+  const t = tiles[y][x];
+  solid[y][x] = (t===2 || t===0 || t===20) ? 1 : 0;
+}
+
+/* =========================================================
+   OBJECTS — machines, desks, NPCs, signs
+   tx, ty = top-left in tile coords
+   w, h  = size in tiles
+   kind  = drawing style
+   data  = payload for inspector
+   ========================================================= */
+
+const OBJECTS = [];
+
+function addObj(o){
+  OBJECTS.push(o);
+  // mark footprint solid (so player can't walk through)
+  for (let y=o.ty; y<o.ty+o.h; y++)
+    for (let x=o.tx; x<o.tx+o.w; x++)
+      if (y<MAP_H && x<MAP_W) solid[y][x]=1;
+}
+
+// --- Factory Floor stations ---
+// Receiving
+addObj({tx:4, ty:6, w:3, h:5, kind:'dock',  id:'R-01', label:'Dock',          z:'Z1 Receiving', ct:120, ops:1, status:'run'});
+addObj({tx:9, ty:7, w:3, h:2, kind:'bench', id:'R-02', label:'Incoming QA',   z:'Z1 Receiving', ct: 90, ops:1, status:'run'});
+addObj({tx:9, ty:11,w:6, h:3, kind:'rack',  id:'R-03', label:'Staging',       z:'Z1 Receiving', ct: 60, ops:1, status:'wait'});
+
+// Component Prep
+addObj({tx:19, ty:7, w:3, h:4, kind:'machine', id:'P-01', label:'Coil Winding',  z:'Z2 Prep', ct:180, ops:1, status:'run'});
+addObj({tx:24, ty:7, w:3, h:4, kind:'machine', id:'P-02', label:'PCB Prep',      z:'Z2 Prep', ct:150, ops:1, status:'run'});
+addObj({tx:29, ty:7, w:3, h:5, kind:'cnc',     id:'P-03', label:'Deck Cutting',  z:'Z2 Prep', ct:200, ops:1, status:'run'});
+
+// Subassembly
+addObj({tx:36, ty:7, w:6, h:5, kind:'cell',    id:'S-01', label:'Propulsion Build',  z:'Z3 Subassy', ct:240, ops:1, status:'run'});
+addObj({tx:44, ty:7, w:6, h:5, kind:'cell',    id:'S-02', label:'Battery Assembly',  z:'Z3 Subassy', ct:220, ops:1, status:'run'});
+addObj({tx:52, ty:7, w:7, h:5, kind:'cell',    id:'S-03', label:'Deck Assembly',     z:'Z3 Subassy', ct:260, ops:1, status:'wait'});
+
+// Final Assembly — R->L integration line (5 stations)
+addObj({tx:55, ty:23, w:8, h:3, kind:'line',   id:'FA-01', label:'Integration 1',    z:'Z4 Final', ct:300, ops:1, status:'run'});
+addObj({tx:46, ty:23, w:8, h:3, kind:'line',   id:'FA-02', label:'Integration 2',    z:'Z4 Final', ct:320, ops:1, status:'run'});
+addObj({tx:37, ty:23, w:8, h:3, kind:'line',   id:'FA-03', label:'Integration 3',    z:'Z4 Final', ct:360, ops:2, status:'block'});
+addObj({tx:28, ty:23, w:8, h:3, kind:'line',   id:'FA-04', label:'Integration 4',    z:'Z4 Final', ct:340, ops:2, status:'wait'});
+addObj({tx:19, ty:23, w:8, h:3, kind:'line',   id:'FA-05', label:'Integration 5',    z:'Z4 Final', ct:280, ops:1, status:'run'});
+
+// Testing
+addObj({tx:13, ty:28, w:5, h:2, kind:'rig',    id:'T-01', label:'Burn-in',     z:'Z5 Testing', ct:600, ops:1, status:'run'});
+addObj({tx:20, ty:28, w:7, h:2, kind:'pad',    id:'T-02', label:'Flight Test', z:'Z5 Testing', ct:420, ops:1, status:'run'});
+addObj({tx:29, ty:28, w:8, h:2, kind:'bench',  id:'T-03', label:'Final QA',    z:'Z5 Testing', ct:300, ops:2, status:'run'});
+
+// Packaging
+addObj({tx:45, ty:28, w:10, h:2, kind:'packline', id:'PK-01', label:'Packaging',        z:'Z6 Pack', ct:180, ops:1, status:'run'});
+addObj({tx:58, ty:28, w:6,  h:2, kind:'dock',     id:'PK-02', label:'Dispatch Staging', z:'Z6 Pack', ct:120, ops:1, status:'wait'});
+
+// --- Team Leader desks (one per zone) ---
+addObj({tx:4,  ty:17, w:3, h:1, kind:'desk', id:'TL-Z1', label:'TL Desk · Receiving', z:'Z1', role:'Team Leader'});
+addObj({tx:20, ty:17, w:3, h:1, kind:'desk', id:'TL-Z2', label:'TL Desk · Prep',      z:'Z2', role:'Team Leader'});
+addObj({tx:40, ty:17, w:3, h:1, kind:'desk', id:'TL-Z3', label:'TL Desk · Subassy',   z:'Z3', role:'Team Leader'});
+addObj({tx:60, ty:17, w:3, h:1, kind:'desk', id:'TL-Z4', label:'TL Desk · Final',     z:'Z4', role:'Team Leader'});
+
+// --- Office desks / NPCs ---
+// Operations (room 78..99, 4..12)
+addObj({tx:82, ty:7,  w:3, h:1, kind:'desk-exec', id:'OPS-MGR', label:'Plant Manager Desk', z:'Operations', role:'Plant Manager (you)'});
+addObj({tx:90, ty:7,  w:3, h:1, kind:'desk',      id:'OPS-SCH', label:'Scheduler Desk',      z:'Operations', role:'Scheduler'});
+addObj({tx:86, ty:10, w:4, h:1, kind:'board',     id:'OPS-BRD', label:'Ops Daily Board',     z:'Operations'});
+
+// Quality (78..99, 13..21)
+addObj({tx:82, ty:16, w:3, h:1, kind:'desk', id:'QA-LEAD', label:'QA Lead Desk', z:'Quality', role:'QA Lead'});
+addObj({tx:90, ty:16, w:4, h:2, kind:'metro', id:'METRO',   label:'Metrology Bench', z:'Quality'});
+
+// IT (78..99, 22..30)
+addObj({tx:82, ty:25, w:3, h:1, kind:'desk', id:'IT-ENG', label:'IT Engineer Desk', z:'IT', role:'IT Engineer'});
+addObj({tx:92, ty:25, w:3, h:3, kind:'server', id:'SRV',  label:'Server Rack · MES', z:'IT'});
+
+// Finance (78..99, 31..39)
+addObj({tx:82, ty:34, w:3, h:1, kind:'desk', id:'FIN-CTRL', label:'Controller Desk', z:'Finance', role:'Controller'});
+addObj({tx:91, ty:34, w:4, h:2, kind:'shelf', id:'FIN-SHELF', label:'Records Shelf', z:'Finance'});
+
+// HR (78..99, 40..48)
+addObj({tx:82, ty:43, w:3, h:1, kind:'desk', id:'HR-MGR', label:'HR Manager Desk', z:'HR', role:'HR Manager'});
+addObj({tx:91, ty:43, w:4, h:2, kind:'sofa', id:'HR-SOFA', label:'Interview Area', z:'HR'});
+
+// Break room (78..99, 49..59)
+addObj({tx:82, ty:52, w:4, h:2, kind:'table', id:'BR-TABLE', label:'Lunch Table', z:'Break Room'});
+addObj({tx:90, ty:52, w:3, h:1, kind:'vend',  id:'BR-VEND',  label:'Vending Machine', z:'Break Room'});
+addObj({tx:90, ty:56, w:4, h:1, kind:'board', id:'BR-BRD',   label:'Info Board · Takt Rhythm', z:'Break Room'});
+
+// Maintenance (0..29, 31..59)
+addObj({tx:4,  ty:36, w:6, h:2, kind:'tools',  id:'MNT-CRIB', label:'Tool Crib', z:'Maintenance'});
+addObj({tx:14, ty:36, w:4, h:2, kind:'desk',   id:'MNT-LEAD', label:'Maintenance Lead Desk', z:'Maintenance', role:'Maintenance Lead'});
+addObj({tx:4,  ty:42, w:10,h:4, kind:'mill',   id:'MNT-MILL', label:'Repair Bay · Mill/Lathe', z:'Maintenance'});
+addObj({tx:18, ty:42, w:8, h:4, kind:'parts',  id:'MNT-PARTS',label:'Spare Parts Shelves', z:'Maintenance'});
+addObj({tx:4,  ty:50, w:6, h:2, kind:'board',  id:'MNT-BRD',  label:'TPM Daily Board', z:'Maintenance'});
+
+// Locker room (30..69, 48..59)
+addObj({tx:35, ty:51, w:18,h:2, kind:'lockers', id:'LKR-ROW1', label:'Lockers A–M', z:'Locker Room'});
+addObj({tx:35, ty:55, w:18,h:2, kind:'lockers', id:'LKR-ROW2', label:'Lockers N–Z', z:'Locker Room'});
+addObj({tx:58, ty:53, w:4, h:2, kind:'clock',   id:'CLOCK',    label:'Clock-in Terminal', z:'Locker Room'});
+
+// Exterior yard — inbound truck
+addObj({tx:2,  ty:1, w:6, h:2, kind:'truck',  id:'YARD-TRK', label:'Inbound Truck', z:'Yard'});
+
+// --- NPCs (walking characters, stand still for now) ---
+const NPCS = [
+  { tx: 5, ty:18, color:'#4a90d8', name:'TL · Receiving',  role:'Team Leader',        dir:'down' },
+  { tx:21, ty:18, color:'#4a90d8', name:'TL · Prep',       role:'Team Leader',        dir:'down' },
+  { tx:41, ty:18, color:'#4a90d8', name:'TL · Subassy',    role:'Team Leader',        dir:'down' },
+  { tx:61, ty:18, color:'#4a90d8', name:'TL · Final',      role:'Team Leader',        dir:'left' },
+  { tx:83, ty: 8, color:'#d8a14a', name:'Maya · Scheduler',role:'Scheduler',          dir:'down' },
+  { tx:83, ty:17, color:'#6ab26a', name:'Sven · QA Lead',  role:'Quality Lead',       dir:'down' },
+  { tx:83, ty:26, color:'#9a6adb', name:'Priya · IT',      role:'IT Engineer',        dir:'right' },
+  { tx:83, ty:35, color:'#4ab3a6', name:'Jon · Finance',   role:'Controller',         dir:'down' },
+  { tx:83, ty:44, color:'#c86a4a', name:'Lin · HR',        role:'HR Manager',         dir:'down' },
+  { tx:15, ty:37, color:'#9a8a4a', name:'Rico · Maint.',   role:'Maintenance Lead',   dir:'right' },
+];
+NPCS.forEach(n => {
+  OBJECTS.push({
+    tx:n.tx, ty:n.ty, w:1, h:1,
+    kind:'npc', id:'NPC-'+n.name, label:n.name, z:n.role, npcColor:n.color, dir:n.dir,
+    isNPC:true
+  });
+  solid[n.ty][n.tx] = 1;
+});
+
+/* =========================================================
+   RENDER
+   ========================================================= */
+const stage  = document.getElementById('stage');
+const canvas = document.getElementById('world');
+const ctx    = canvas.getContext('2d');
+const mini   = document.getElementById('mini');
+const mctx   = mini.getContext('2d');
+
+let viewW = 0, viewH = 0, dpr = Math.min(2, window.devicePixelRatio || 1);
+function resize(){
+  const r = stage.getBoundingClientRect();
+  viewW = r.width; viewH = r.height;
+  canvas.width = viewW * dpr;
+  canvas.height = viewH * dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  mini.width = 220; mini.height = 140;
+}
+window.addEventListener('resize', resize);
+resize();
+
+/* ------- Pre-render the static world layer to an offscreen canvas ------- */
+const bg = document.createElement('canvas');
+bg.width = WORLD_W; bg.height = WORLD_H;
+const bgx = bg.getContext('2d');
+
+function drawWorldBackground(){
+  // base void
+  bgx.fillStyle = TILE_COLORS[0];
+  bgx.fillRect(0,0,WORLD_W,WORLD_H);
+
+  // draw tiles
+  for (let y=0;y<MAP_H;y++){
+    for (let x=0;x<MAP_W;x++){
+      const t = tiles[y][x];
+      bgx.fillStyle = TILE_COLORS[t] || '#000';
+      bgx.fillRect(x*TS, y*TS, TS, TS);
+
+      // subtle texture per tile
+      if (t===1) { // concrete grout
+        bgx.strokeStyle = 'rgba(0,0,0,0.06)';
+        bgx.lineWidth = 1;
+        bgx.strokeRect(x*TS+0.5, y*TS+0.5, TS-1, TS-1);
+      } else if (t===12) { // asphalt grain
+        bgx.fillStyle = 'rgba(255,255,255,0.02)';
+        bgx.fillRect(x*TS+2, y*TS+2, TS-4, 1);
+      } else if (t===2) { // wall brick
+        bgx.fillStyle = 'rgba(0,0,0,0.25)';
+        bgx.fillRect(x*TS, y*TS+TS-3, TS, 3);
+        bgx.fillStyle = 'rgba(255,255,255,0.07)';
+        bgx.fillRect(x*TS, y*TS, TS, 2);
+      } else if (t===19) { // door
+        bgx.fillStyle = '#8a6a22';
+        bgx.fillRect(x*TS+4, y*TS+3, TS-8, TS-6);
+        bgx.fillStyle = '#ffd683';
+        bgx.fillRect(x*TS+TS-9, y*TS+TS/2-1, 3, 3);
+      } else if (t===3) { // carpet stipple
+        bgx.fillStyle = 'rgba(0,0,0,0.06)';
+        for (let i=0;i<3;i++) bgx.fillRect(x*TS+3+i*8, y*TS+4+((i*7)%12), 2,2);
+      } else if (t===20) { // grass tufts
+        bgx.strokeStyle = 'rgba(255,255,255,0.15)';
+        bgx.beginPath();
+        bgx.moveTo(x*TS+6, y*TS+TS-2); bgx.lineTo(x*TS+6, y*TS+TS-8);
+        bgx.moveTo(x*TS+14, y*TS+TS-2); bgx.lineTo(x*TS+14, y*TS+TS-9);
+        bgx.stroke();
+      } else if (t===21) { // hazard
+        bgx.fillStyle = '#1c1b17';
+        for (let i=0;i<3;i++) bgx.fillRect(x*TS + i*8, y*TS, 4, TS);
+      } else if (t>=13 && t<=18) { // painted zone — dashed inner border
+        bgx.fillStyle = 'rgba(0,0,0,0.04)';
+        bgx.fillRect(x*TS+2, y*TS+2, TS-4, TS-4);
+      } else if (t===11) { // maintenance tile cross pattern
+        bgx.strokeStyle = 'rgba(0,0,0,0.08)';
+        bgx.beginPath();
+        bgx.moveTo(x*TS, y*TS+TS/2); bgx.lineTo(x*TS+TS, y*TS+TS/2);
+        bgx.stroke();
+      } else if (t===10) { // locker tile
+        bgx.strokeStyle = 'rgba(0,0,0,0.10)';
+        bgx.strokeRect(x*TS+0.5, y*TS+0.5, TS-1, TS-1);
+      }
+    }
+  }
+
+  // Zone name labels painted on the floor (big, subtle)
+  function paintLabel(txt, cx, cy, color){
+    bgx.save();
+    bgx.font = 'bold 12px JetBrains Mono, monospace';
+    bgx.textAlign = 'center';
+    bgx.textBaseline = 'middle';
+    bgx.fillStyle = color;
+    bgx.globalAlpha = 0.55;
+    bgx.fillText(txt, cx*TS, cy*TS);
+    bgx.restore();
+  }
+  paintLabel('Z1 · RECEIVING',       9.5,  5.3, '#8a6a22');
+  paintLabel('Z2 · COMPONENT PREP', 25.5,  5.3, '#5d7a2a');
+  paintLabel('Z3 · SUBASSEMBLY',    50,    5.3, '#2a6b4a');
+  paintLabel('Z4 · FINAL ASSEMBLY', 38,   21.3, '#2b5d7c');
+  paintLabel('Z5 · TESTING',        25,   27.3, '#533f79');
+  paintLabel('Z6 · PACK & SHIP',    54,   27.3, '#7c3434');
+  paintLabel('OPERATIONS',          88,    4.7, '#2a4a6e');
+  paintLabel('QUALITY',             88,   13.6, '#3a6a3a');
+  paintLabel('IT',                  88,   22.6, '#4a2a7a');
+  paintLabel('FINANCE',             88,   31.6, '#2a5a5a');
+  paintLabel('HR',                  88,   40.6, '#7a3a1a');
+  paintLabel('BREAK ROOM',          88,   49.6, '#5a3a1a');
+  paintLabel('MAINTENANCE',         15,   31.6, '#6a5018');
+  paintLabel('LOCKER ROOM',         48,   48.6, '#3a3830');
+  paintLabel('EXTERIOR YARD',       35,    1.5, '#e9e3d2');
+}
+drawWorldBackground();
+
+/* =========================================================
+   OBJECT DRAWING
+   Each kind has a small painter that runs in world-space.
+   ========================================================= */
+function drawObj(ctx, o){
+  const x = o.tx*TS, y = o.ty*TS, w = o.w*TS, h = o.h*TS;
+  ctx.save();
+  ctx.translate(x,y);
+
+  // shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.18)';
+  ctx.fillRect(2, h-2, w, 3);
+
+  switch (o.kind) {
+    case 'dock': {
+      ctx.fillStyle = '#6b6356'; ctx.fillRect(0,0,w,h);
+      ctx.fillStyle = '#8a8170'; ctx.fillRect(3,3,w-6,h*0.4);
+      ctx.strokeStyle='rgba(0,0,0,0.35)'; ctx.lineWidth=1;
+      for (let i=0;i<6;i++){ ctx.beginPath(); ctx.moveTo(3, 5+i*3); ctx.lineTo(w-3, 5+i*3); ctx.stroke(); }
+      // hazard strip at front
+      ctx.fillStyle='#1c1b17'; ctx.fillRect(0,h-6,w,6);
+      ctx.fillStyle='#ffcf55';
+      for (let i=0;i<w;i+=10) ctx.fillRect(i, h-6, 5, 6);
+      // bollards
+      ctx.fillStyle='#ff8a1f'; ctx.strokeStyle='#1c1b17'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.arc(5,h-10,3,0,Math.PI*2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(w-5,h-10,3,0,Math.PI*2); ctx.fill(); ctx.stroke();
+      break;
+    }
+    case 'bench': {
+      ctx.fillStyle = '#b0a58c'; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle = '#3a3830'; ctx.lineWidth=1; ctx.strokeRect(0.5,0.5,w-1,h-1);
+      ctx.fillStyle = '#9a8e75'; ctx.fillRect(3,3,w-6,h-6);
+      ctx.fillStyle='#3a3830';
+      ctx.fillRect(5,5,Math.max(10,w*0.25),4);
+      ctx.fillRect(w*0.5,5,Math.max(8,w*0.18),4);
+      ctx.beginPath(); ctx.arc(w-10,9,3,0,Math.PI*2); ctx.fill();
+      break;
+    }
+    case 'rack': {
+      ctx.fillStyle = '#7e6f54'; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle = '#2a2620'; ctx.lineWidth=1; ctx.strokeRect(0.5,0.5,w-1,h-1);
+      const bays = 3;
+      for (let i=0;i<bays;i++){
+        const bw = (w-6)/bays;
+        ctx.fillStyle='#9b8a66'; ctx.fillRect(3 + i*bw, 4, bw-2, h-8);
+        ctx.fillStyle='#c6a15e';
+        ctx.fillRect(5 + i*bw, 6, bw-6, 8);
+        ctx.fillRect(5 + i*bw, h-14, bw-6, 8);
+      }
+      break;
+    }
+    case 'machine': {
+      ctx.fillStyle='#49586b'; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle='#1a1f27'; ctx.lineWidth=1.5; ctx.strokeRect(0.5,0.5,w-1,h-1);
+      ctx.fillStyle='#5b6a7e'; ctx.fillRect(3,3,w-6,h-6);
+      ctx.fillStyle='#2e3845';
+      ctx.beginPath(); ctx.arc(w/2,h/2,Math.min(w,h)*0.3,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#ffb84d';
+      ctx.beginPath(); ctx.arc(w/2,h/2,Math.min(w,h)*0.12,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#6fd36f'; ctx.fillRect(4,4,3,3);
+      ctx.fillStyle='#ffb84d'; ctx.fillRect(10,4,3,3);
+      ctx.fillStyle='#e8604a'; ctx.fillRect(16,4,3,3);
+      break;
+    }
+    case 'cnc': {
+      ctx.fillStyle='#4a4a47'; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle='#1c1b17'; ctx.strokeRect(0.5,0.5,w-1,h-1);
+      ctx.fillStyle='#2a2a28'; ctx.fillRect(5,h*0.25,w-10,h*0.5);
+      ctx.fillStyle='#8a8578'; ctx.fillRect(w*0.3, 4, 6, h-8);
+      ctx.fillStyle='#ffb84d'; ctx.fillRect(w*0.3 - 4, h*0.45, 14, 12);
+      break;
+    }
+    case 'cell': {
+      ctx.fillStyle='#8a8170'; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle='#2a2620'; ctx.strokeRect(0.5,0.5,w-1,h-1);
+      ctx.fillStyle='#9e927a'; ctx.fillRect(3,3,w-6,h-6);
+      // Fixture
+      ctx.fillStyle='#49586b'; ctx.fillRect(w*0.1, h*0.25, w*0.32, h*0.5);
+      ctx.fillStyle='#ffb84d';
+      ctx.beginPath(); ctx.arc(w*0.26, h*0.5, Math.min(w,h)*0.08, 0, Math.PI*2); ctx.fill();
+      // bench with screen
+      ctx.fillStyle='#6e6350'; ctx.fillRect(w*0.55, h*0.2, w*0.35, h*0.6);
+      ctx.fillStyle='#1c1b17'; ctx.fillRect(w*0.6, h*0.28, w*0.18, h*0.26);
+      ctx.fillStyle='#3a5c6b'; ctx.fillRect(w*0.61, h*0.3, w*0.16, h*0.22);
+      break;
+    }
+    case 'line': {
+      // Conveyor bay
+      ctx.fillStyle='#3a3830'; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle='#0c0c09'; ctx.strokeRect(0.5,0.5,w-1,h-1);
+      ctx.fillStyle='#8a8170'; ctx.fillRect(0,0,w,4);
+      ctx.fillStyle='#8a8170'; ctx.fillRect(0,h-4,w,4);
+      ctx.fillStyle='#2a2620'; ctx.fillRect(2,4,w-4,h-8);
+      // chevrons
+      ctx.strokeStyle='#5a5040'; ctx.lineWidth=1.5;
+      for (let xx=6; xx<w-6; xx+=18){
+        ctx.beginPath();
+        ctx.moveTo(xx, h*0.35); ctx.lineTo(xx+8, h*0.5); ctx.lineTo(xx, h*0.65);
+        ctx.stroke();
+      }
+      // fixture
+      ctx.fillStyle='#49586b'; ctx.fillRect(w*0.45, h*0.3, w*0.12, h*0.4);
+      ctx.fillStyle='#ffb84d';
+      ctx.beginPath(); ctx.arc(w*0.51, h*0.5, 3, 0, Math.PI*2); ctx.fill();
+      // station marker
+      ctx.fillStyle='#ffb84d'; ctx.fillRect(3, 5, 14, 6);
+      break;
+    }
+    case 'rig': {
+      ctx.fillStyle='#4e4a40'; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle='#1c1b17'; ctx.strokeRect(0.5,0.5,w-1,h-1);
+      ctx.fillStyle='#5c584d'; ctx.fillRect(3,3,w-6,h-6);
+      ctx.fillStyle='#2a2620';
+      ctx.beginPath(); ctx.ellipse(w/2, h/2, w*0.3, h*0.3, 0, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle='#3a5c6b';
+      ctx.beginPath(); ctx.ellipse(w/2, h/2, w*0.2, h*0.2, 0, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle='#e8604a';
+      ctx.beginPath(); ctx.arc(w/2,h/2,3,0,Math.PI*2); ctx.fill();
+      break;
+    }
+    case 'pad': {
+      ctx.fillStyle='#7a7264'; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle='#2a2620'; ctx.strokeRect(0.5,0.5,w-1,h-1);
+      ctx.fillStyle='#8a8170'; ctx.fillRect(3,3,w-6,h-6);
+      ctx.strokeStyle='#e8c34a'; ctx.lineWidth=2; ctx.setLineDash([5,4]);
+      ctx.beginPath(); ctx.arc(w/2,h/2,Math.min(w,h)*0.36,0,Math.PI*2); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.beginPath(); ctx.arc(w/2,h/2,Math.min(w,h)*0.2,0,Math.PI*2); ctx.stroke();
+      ctx.fillStyle='#3a3830'; ctx.font='bold 14px JetBrains Mono'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('H', w/2, h/2+1);
+      break;
+    }
+    case 'packline': {
+      ctx.fillStyle='#3a3830'; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle='#0c0c09'; ctx.strokeRect(0.5,0.5,w-1,h-1);
+      ctx.fillStyle='#6b6258'; ctx.fillRect(2,4,w-4,h-8);
+      for (let xx=4; xx<w-20; xx+=22){
+        ctx.fillStyle='#c6a15e'; ctx.fillRect(xx, h/2-7, 16, 14);
+        ctx.strokeStyle='#3a2a1f'; ctx.strokeRect(xx+0.5, h/2-6.5, 15, 13);
+        ctx.beginPath(); ctx.moveTo(xx+8, h/2-7); ctx.lineTo(xx+8, h/2+7); ctx.stroke();
+      }
+      break;
+    }
+    case 'desk':
+    case 'desk-exec': {
+      // top-down desk: wood top + chair behind
+      ctx.fillStyle = o.kind==='desk-exec' ? '#5a3a1f' : '#8a6a3a';
+      ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle='#2a1a0a'; ctx.strokeRect(0.5,0.5,w-1,h-1);
+      // monitor
+      ctx.fillStyle='#1c1b17';
+      ctx.fillRect(w*0.3, 2, w*0.4, h*0.45);
+      ctx.fillStyle='#3a5c6b';
+      ctx.fillRect(w*0.31, 3, w*0.38, h*0.4);
+      // keyboard
+      ctx.fillStyle='#2a2823'; ctx.fillRect(w*0.25, h*0.55, w*0.5, 4);
+      // mug
+      ctx.fillStyle='#c14a3a';
+      ctx.beginPath(); ctx.arc(w*0.85, h*0.5, 3,0,Math.PI*2); ctx.fill();
+      // chair in front (slightly below footprint — visual only)
+      ctx.fillStyle = '#2a2823';
+      ctx.fillRect(w*0.35, h-2, w*0.3, 6);
+      break;
+    }
+    case 'board': {
+      ctx.fillStyle='#e9dfc0'; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle='#5a4a2a'; ctx.lineWidth=2; ctx.strokeRect(1,1,w-2,h-2);
+      // sticky notes
+      ctx.fillStyle='#ffe26a'; ctx.fillRect(4,4,10,8);
+      ctx.fillStyle='#ffa6a6'; ctx.fillRect(18,4,10,8);
+      ctx.fillStyle='#a6d6a6'; ctx.fillRect(32,4,10,8);
+      break;
+    }
+    case 'metro': {
+      ctx.fillStyle='#c9d4dc'; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle='#3a4a5a'; ctx.strokeRect(0.5,0.5,w-1,h-1);
+      // calipers silhouette
+      ctx.fillStyle='#4a4a47'; ctx.fillRect(4, h/2-2, w-8, 4);
+      ctx.fillRect(4, 4, 3, h-8);
+      ctx.fillRect(w*0.35, 4, 3, h-8);
+      break;
+    }
+    case 'server': {
+      ctx.fillStyle='#1c1b17'; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle='#000'; ctx.strokeRect(0.5,0.5,w-1,h-1);
+      // rack units
+      for (let i=0;i<8;i++){
+        ctx.fillStyle = i%2 ? '#2a2823' : '#3a3830';
+        ctx.fillRect(3, 3+i*((h-6)/8), w-6, (h-6)/8-1);
+        ctx.fillStyle = '#6fd36f';
+        ctx.fillRect(w-8, 5+i*((h-6)/8), 2, 2);
+      }
+      break;
+    }
+    case 'shelf': {
+      ctx.fillStyle='#8a6a3a'; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle='#3a2a1a'; ctx.strokeRect(0.5,0.5,w-1,h-1);
+      for (let i=0;i<3;i++){
+        ctx.fillStyle='#c6a15e'; ctx.fillRect(3, 4+i*((h-4)/3), w-6, 3);
+      }
+      // binders
+      for (let i=0;i<6;i++){
+        ctx.fillStyle = ['#c14a3a','#4a90d8','#6ab26a','#c86a4a','#9a6adb','#c6a15e'][i%6];
+        ctx.fillRect(4+i*((w-8)/6), 2, (w-8)/6 - 1, h-4);
+      }
+      break;
+    }
+    case 'sofa': {
+      ctx.fillStyle='#5a4a3a'; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle='#2a1a0a'; ctx.strokeRect(0.5,0.5,w-1,h-1);
+      ctx.fillStyle='#8a6a4a'; ctx.fillRect(3,3,w-6,h-6);
+      // cushions
+      ctx.fillStyle='#c6a15e';
+      ctx.fillRect(5,5,(w-10)/3 - 2, h-10);
+      ctx.fillRect(5 + (w-10)/3, 5, (w-10)/3 - 2, h-10);
+      ctx.fillRect(5 + 2*(w-10)/3, 5, (w-10)/3 - 2, h-10);
+      break;
+    }
+    case 'table': {
+      ctx.fillStyle='#8a6a3a'; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle='#2a1a0a'; ctx.strokeRect(0.5,0.5,w-1,h-1);
+      ctx.fillStyle='#b08850'; ctx.fillRect(3,3,w-6,h-6);
+      // plates
+      ctx.fillStyle='#e9dfc0';
+      ctx.beginPath(); ctx.arc(w*0.25,h/2,6,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(w*0.5, h/2,6,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(w*0.75,h/2,6,0,Math.PI*2); ctx.fill();
+      break;
+    }
+    case 'vend': {
+      ctx.fillStyle='#c14a3a'; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle='#2a1a1a'; ctx.strokeRect(0.5,0.5,w-1,h-1);
+      ctx.fillStyle='#1c1b17'; ctx.fillRect(4,4,w-8,h*0.6);
+      ctx.fillStyle='#ffb84d';
+      for (let i=0;i<3;i++) for (let j=0;j<2;j++)
+        ctx.fillRect(6+i*((w-12)/3), 6+j*((h*0.6-4)/2), (w-12)/3 - 2, (h*0.6-4)/2 - 2);
+      break;
+    }
+    case 'tools': {
+      ctx.fillStyle='#6b6258'; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle='#1c1b17'; ctx.strokeRect(0.5,0.5,w-1,h-1);
+      // shadow board outlines
+      for (let i=0;i<4;i++){
+        ctx.strokeStyle='rgba(0,0,0,0.35)'; ctx.lineWidth=1;
+        ctx.strokeRect(4 + i*((w-8)/4), 4, (w-8)/4 - 2, h-8);
+      }
+      // wrench silhouette
+      ctx.fillStyle='#2a2823';
+      ctx.fillRect(8, 8, (w-8)/4 - 6, h-16);
+      break;
+    }
+    case 'mill': {
+      ctx.fillStyle='#4a4a47'; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle='#1c1b17'; ctx.strokeRect(0.5,0.5,w-1,h-1);
+      ctx.fillStyle='#5c5c58'; ctx.fillRect(4,4,w-8,h-8);
+      ctx.fillStyle='#2a2a28'; ctx.fillRect(10, h*0.3, w-20, h*0.4);
+      ctx.fillStyle='#ffb84d'; ctx.fillRect(w*0.4, h*0.4, 10, 8);
+      break;
+    }
+    case 'parts': {
+      ctx.fillStyle='#8a6a3a'; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle='#3a2a1a'; ctx.strokeRect(0.5,0.5,w-1,h-1);
+      for (let r=0;r<3;r++){
+        ctx.fillStyle='#b08850'; ctx.fillRect(4, 4+r*((h-4)/3), w-8, 3);
+        for (let b=0;b<6;b++){
+          ctx.fillStyle = ['#c14a3a','#4a90d8','#6ab26a','#c86a4a','#9a6adb','#c6a15e'][(r*6+b)%6];
+          ctx.fillRect(6 + b*((w-12)/6), 8+r*((h-4)/3), (w-12)/6 - 2, ((h-4)/3)-6);
+        }
+      }
+      break;
+    }
+    case 'lockers': {
+      ctx.fillStyle='#6a7a8a'; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle='#2a3a4a'; ctx.strokeRect(0.5,0.5,w-1,h-1);
+      const cols = Math.floor(w/18);
+      for (let i=0;i<cols;i++){
+        const lx = 2 + i*((w-4)/cols);
+        ctx.fillStyle='#7a8a9a'; ctx.fillRect(lx, 3, ((w-4)/cols) - 2, h-6);
+        ctx.strokeStyle='#2a3a4a'; ctx.strokeRect(lx, 3, ((w-4)/cols) - 2, h-6);
+        ctx.fillStyle='#ffd683'; ctx.fillRect(lx+((w-4)/cols)-7, h/2-1, 3, 2);
+      }
+      break;
+    }
+    case 'clock': {
+      ctx.fillStyle='#1c1b17'; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle='#000'; ctx.strokeRect(0.5,0.5,w-1,h-1);
+      ctx.fillStyle='#3a5c6b'; ctx.fillRect(4,4,w-8,h*0.4);
+      ctx.fillStyle='#ffd683'; ctx.font='bold 10px JetBrains Mono'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('07:24', w/2, 4 + (h*0.4)/2);
+      for (let i=0;i<9;i++){
+        ctx.fillStyle='#8c8878';
+        ctx.fillRect(5 + (i%3)*((w-10)/3), h*0.5 + Math.floor(i/3)*((h*0.5 - 2)/3),
+                     (w-10)/3 - 2, ((h*0.5 - 2)/3) - 2);
+      }
+      break;
+    }
+    case 'truck': {
+      // cargo box
+      ctx.fillStyle='#dcd0b0'; ctx.fillRect(0,0,w*0.75,h);
+      ctx.strokeStyle='#2a2620'; ctx.strokeRect(0.5,0.5,w*0.75 - 1,h-1);
+      // cab
+      ctx.fillStyle='#6fa3c0'; ctx.fillRect(w*0.75,h*0.1,w*0.25,h*0.8);
+      ctx.strokeStyle='#2a2620'; ctx.strokeRect(w*0.75+0.5,h*0.1+0.5,w*0.25-1,h*0.8-1);
+      ctx.fillStyle='#a8cfe0'; ctx.fillRect(w*0.78,h*0.18,w*0.18,h*0.3);
+      // wheels
+      ctx.fillStyle='#1c1b17';
+      ctx.beginPath(); ctx.arc(w*0.15, h, 4,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(w*0.5,  h, 4,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(w*0.85, h, 4,0,Math.PI*2); ctx.fill();
+      break;
+    }
+    case 'npc': {
+      drawCharacter(ctx, w/2, h/2 + 2, o.npcColor || '#4a90d8', o.dir || 'down', false);
+      break;
+    }
+    default: {
+      ctx.fillStyle='#aa9966'; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle='#332211'; ctx.strokeRect(0.5,0.5,w-1,h-1);
+    }
+  }
+
+  // label tag (small) floating above larger objects (skip NPCs & single-cell desks)
+  if (o.kind !== 'npc' && (o.w>=2 || o.h>=2)) {
+    const tag = o.id;
+    ctx.font = 'bold 9px JetBrains Mono';
+    ctx.textAlign='left'; ctx.textBaseline='top';
+    const tw = ctx.measureText(tag).width + 6;
+    ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(2,2,tw,12);
+    ctx.fillStyle='#ffd683'; ctx.fillText(tag, 5, 4);
+  }
+  ctx.restore();
+}
+
+/* =========================================================
+   CHARACTER DRAWING (player & NPCs)
+   Top-down, drawn at (cx, cy=feet).
+   ========================================================= */
+function drawCharacter(ctx, cx, cy, bodyColor, dir, isPlayer){
+  // shadow
+  ctx.fillStyle='rgba(0,0,0,0.25)';
+  ctx.beginPath(); ctx.ellipse(cx, cy+1, 6, 3, 0, 0, Math.PI*2); ctx.fill();
+
+  // body (torso)
+  ctx.fillStyle = bodyColor;
+  ctx.strokeStyle='#1c1b17'; ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.roundRect ? ctx.roundRect(cx-5, cy-9, 10, 10, 2) :
+    (function(){ ctx.rect(cx-5, cy-9, 10, 10); })();
+  ctx.fill(); ctx.stroke();
+
+  // legs hint
+  ctx.fillStyle='#2a2823';
+  ctx.fillRect(cx-4, cy+1, 3, 2);
+  ctx.fillRect(cx+1, cy+1, 3, 2);
+
+  // head
+  ctx.fillStyle='#f2d1a8';
+  ctx.beginPath(); ctx.arc(cx, cy-12, 4, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#1c1b17'; ctx.stroke();
+
+  // hair
+  ctx.fillStyle= isPlayer ? '#3a2818' : '#2a2218';
+  ctx.beginPath();
+  ctx.arc(cx, cy-13.5, 4, Math.PI, Math.PI*2); ctx.fill();
+
+  // eyes (based on dir)
+  ctx.fillStyle='#1c1b17';
+  if (dir === 'down') {
+    ctx.fillRect(cx-2, cy-12, 1, 2);
+    ctx.fillRect(cx+1, cy-12, 1, 2);
+  } else if (dir === 'up') {
+    // no eyes visible (back)
+  } else if (dir === 'left') {
+    ctx.fillRect(cx-3, cy-12, 1, 2);
+  } else if (dir === 'right') {
+    ctx.fillRect(cx+2, cy-12, 1, 2);
+  }
+
+  // hi-vis collar for player (plant manager)
+  if (isPlayer){
+    ctx.fillStyle='#ff8a1f';
+    ctx.fillRect(cx-5, cy-9, 10, 2);
+    ctx.fillStyle='#ffd683';
+    ctx.fillRect(cx-5, cy-6, 10, 1);
+  }
+}
+
+/* =========================================================
+   PLAYER STATE / INPUT
+   ========================================================= */
+const keys = new Set();
+window.addEventListener('keydown', e => {
+  keys.add(e.key.toLowerCase());
+  if (['arrowup','arrowdown','arrowleft','arrowright',' '].includes(e.key.toLowerCase())) e.preventDefault();
+  if (e.key.toLowerCase()==='e' || e.key===' ') tryInteract();
+  if (e.key === 'Escape') closeInspector();
+});
+window.addEventListener('keyup', e => { keys.delete(e.key.toLowerCase()); });
+window.addEventListener('blur', () => keys.clear());
+
+const player = {
+  // spawn near the plant-office door inside the factory floor
+  x: 72 * TS + TS/2,
+  y: 17 * TS + TS/2,
+  w: 10, h: 14,
+  speed: 2.0,
+  dir: 'left'
+};
+
+function canMoveTo(px, py){
+  // player footprint is a small circle at feet
+  const r = 6;
+  const samples = [
+    [px-r, py-2], [px+r, py-2],
+    [px-r, py+2], [px+r, py+2]
+  ];
+  for (const [x,y] of samples) {
+    const tx = Math.floor(x/TS), ty = Math.floor(y/TS);
+    if (tx<0||ty<0||tx>=MAP_W||ty>=MAP_H) return false;
+    if (solid[ty][tx]) return false;
+  }
+  return true;
+}
+
+/* =========================================================
+   INTERACTION
+   Find the closest object whose footprint is within 1 tile
+   of the player's facing tile.
+   ========================================================= */
+function facingTile(){
+  const cx = player.x, cy = player.y;
+  let fx = cx, fy = cy;
+  if (player.dir==='up') fy -= TS;
+  if (player.dir==='down') fy += TS;
+  if (player.dir==='left') fx -= TS;
+  if (player.dir==='right') fx += TS;
+  return { tx: Math.floor(fx/TS), ty: Math.floor(fy/TS) };
+}
+
+function interactableAt(ft){
+  // also check the four surrounding tiles (so standing near a wall with a
+  // desk immediately behind it still works).
+  const candidates = [ft,
+    {tx:ft.tx-1,ty:ft.ty},{tx:ft.tx+1,ty:ft.ty},
+    {tx:ft.tx,ty:ft.ty-1},{tx:ft.tx,ty:ft.ty+1}];
+  for (const c of candidates){
+    for (const o of OBJECTS){
+      if (c.tx>=o.tx && c.tx<o.tx+o.w && c.ty>=o.ty && c.ty<o.ty+o.h){
+        return o;
+      }
+    }
+  }
+  return null;
+}
+
+function currentRoom(){
+  const tx = Math.floor(player.x/TS), ty = Math.floor(player.y/TS);
+  for (const r of ROOMS){
+    if (tx>=r.x1 && tx<=r.x2 && ty>=r.y1 && ty<=r.y2) return r;
+  }
+  return { name:'—', id:'' };
+}
+
+let activeTarget = null;
+
+function updatePrompt(){
+  const ft = facingTile();
+  const target = interactableAt(ft);
+  activeTarget = target;
+  const prompt = document.getElementById('prompt');
+  const ptxt   = document.getElementById('prompt-text');
+  if (target) {
+    ptxt.textContent = target.label || target.id;
+    prompt.classList.add('on');
+  } else {
+    prompt.classList.remove('on');
+  }
+}
+
+function tryInteract(){
+  if (!activeTarget) return;
+  openInspector(activeTarget);
+}
+
+function openInspector(o){
+  document.getElementById('ih-eyebrow').textContent = o.z || 'Object';
+  document.getElementById('ih-title').textContent = o.label || o.id;
+  document.getElementById('ih-crumb').textContent = o.id || '';
+  const body = document.getElementById('ib');
+
+  // Station-style card (has CT/ops/status)
+  if (typeof o.ct === 'number') {
+    const sLabel = {run:'Running', wait:'Waiting', block:'Blocked'}[o.status] || o.status;
+    body.innerHTML = `
+      <div class="kpi-grid">
+        <div class="kpi"><div class="k">Status</div><div class="v" style="font-size:14px"><span class="status-dot status-${o.status}"></span>${sLabel}</div></div>
+        <div class="kpi"><div class="k">Cycle Time</div><div class="v">${o.ct}s</div><div class="sub">target ${Math.round(o.ct*0.8)}s</div></div>
+        <div class="kpi"><div class="k">Operators</div><div class="v">${o.ops}</div></div>
+        <div class="kpi"><div class="k">WIP</div><div class="v">${o.status==='block'?18: o.status==='wait'?6:3}</div></div>
+      </div>
+      <div class="insp-section">
+        <h4>Details</h4>
+        <div class="row"><span class="k">Station ID</span><span class="v">${o.id}</span></div>
+        <div class="row"><span class="k">Zone</span><span class="v">${o.z}</span></div>
+        <div class="row"><span class="k">Shift</span><span class="v">1 of 3</span></div>
+      </div>
+      ${o.status!=='run' ? `
+      <div class="insp-section">
+        <h4>Observed issue</h4>
+        <div style="font-size:12px; line-height:1.5; color:#d7cfb8;">
+          ${o.status==='block'
+            ? 'Downstream queue full. Operators idle ~20% of cycle. Likely root: unbalanced CT across the integration line.'
+            : 'Waiting for upstream. Suggests pull-signal timing or supermarket gap.'}
+        </div>
+      </div>` : ''}
+    `;
+    return;
+  }
+
+  // NPC / role
+  if (o.isNPC || o.role) {
+    body.innerHTML = `
+      <div class="insp-section">
+        <h4>Character</h4>
+        <div class="row"><span class="k">Name</span><span class="v">${o.label}</span></div>
+        <div class="row"><span class="k">Role</span><span class="v">${o.role || '—'}</span></div>
+        <div class="row"><span class="k">Location</span><span class="v">${o.z || '—'}</span></div>
+      </div>
+      <div class="insp-section">
+        <h4>Talk</h4>
+        <div style="font-size:12px; line-height:1.55; color:#d7cfb8;">
+          "${npcLine(o)}"
+        </div>
+      </div>
+      <div class="insp-section">
+        <h4>Actions</h4>
+        <div class="row"><span class="k">Ask for report</span><span class="v">—</span></div>
+        <div class="row"><span class="k">Request support</span><span class="v">—</span></div>
+        <div class="row"><span class="k">Assign countermeasure</span><span class="v">—</span></div>
+      </div>
+    `;
+    return;
+  }
+
+  // Generic object
+  body.innerHTML = `
+    <div class="insp-section">
+      <h4>Object</h4>
+      <div class="row"><span class="k">ID</span><span class="v">${o.id}</span></div>
+      <div class="row"><span class="k">Location</span><span class="v">${o.z || '—'}</span></div>
+      <div class="row"><span class="k">Kind</span><span class="v">${o.kind}</span></div>
+    </div>
+    <div class="empty-hint">
+      <b>Placeholder object</b>
+      Detailed inspector UI for this object type arrives in a later iteration.
+    </div>
+  `;
+}
+
+function npcLine(o){
+  const lines = {
+    'Team Leader': 'Morning check — FA-03 is stacking up, I need another operator or a CT review.',
+    'Scheduler': 'We\'re at 14 boards a day, target is 30. Something\'s got to give.',
+    'Quality Lead': 'Defect rate is 8.2%. Most of it is cosmetic but Final QA is catching wiring slip at FA-04.',
+    'IT Engineer': 'MES is fine but no-one actually reads the andon dashboard. Shall we mount it on the floor?',
+    'Controller': 'Labour variance is ugly. Idle time at FA-02 shows up as direct cost.',
+    'HR Manager': 'Two hires pending. You tell me where — I\'ll post it today.',
+    'Maintenance Lead': 'TPM board is dusty. Operators aren\'t doing daily checks yet. Tier-1 problem.',
+  };
+  return lines[o.role] || 'Hey. Let me know when you need anything.';
+}
+
+function closeInspector(){
+  document.getElementById('ih-eyebrow').textContent = 'Overview';
+  document.getElementById('ih-title').textContent = 'NovaGlide Plant 01';
+  document.getElementById('ih-crumb').textContent = 'Walk around · E to interact';
+  const body = document.getElementById('ib');
+  body.innerHTML = `
+    <div class="empty-hint">
+      <b>Walk around the plant</b>
+      Move the plant manager with WASD or arrows. Approach any machine, team-leader desk, or office NPC — a prompt will appear. Press <b>E</b> to open the inspector.
+    </div>
+  `;
+}
+
+/* =========================================================
+   MAIN LOOP
+   ========================================================= */
+let camX = 0, camY = 0;
+function updateCamera(){
+  // Follow player, clamp to world
+  const targetX = player.x - viewW/2;
+  const targetY = player.y - viewH/2;
+  camX += (targetX - camX) * 0.18;
+  camY += (targetY - camY) * 0.18;
+  camX = Math.max(0, Math.min(WORLD_W - viewW, camX));
+  camY = Math.max(0, Math.min(WORLD_H - viewH, camY));
+}
+
+function step(){
+  // Movement
+  let dx=0, dy=0;
+  if (keys.has('w') || keys.has('arrowup'))    dy -= 1;
+  if (keys.has('s') || keys.has('arrowdown'))  dy += 1;
+  if (keys.has('a') || keys.has('arrowleft'))  dx -= 1;
+  if (keys.has('d') || keys.has('arrowright')) dx += 1;
+  if (dx && dy) { dx*=0.7071; dy*=0.7071; }
+
+  let sp = player.speed * (keys.has('shift') ? 2 : 1);
+  if (dx || dy) {
+    // Prefer horizontal then vertical so we slide along walls
+    const nx = player.x + dx*sp;
+    const ny = player.y + dy*sp;
+    if (canMoveTo(nx, player.y)) player.x = nx;
+    if (canMoveTo(player.x, ny)) player.y = ny;
+    if (Math.abs(dx) > Math.abs(dy)) player.dir = dx<0 ? 'left' : 'right';
+    else player.dir = dy<0 ? 'up' : 'down';
+  }
+
+  updateCamera();
+  updatePrompt();
+  render();
+  // HUD
+  const r = currentRoom();
+  document.getElementById('hud-room').textContent = r.name;
+  document.getElementById('hud-sub').textContent =
+    activeTarget ? 'Press E to inspect · ' + activeTarget.label :
+    'Plant manager · walking';
+
+  requestAnimationFrame(step);
+}
+
+function render(){
+  // Clear
+  ctx.fillStyle='#0a0908';
+  ctx.fillRect(0,0,viewW,viewH);
+
+  // Draw background subregion
+  const sx = Math.floor(camX), sy = Math.floor(camY);
+  const sw = Math.ceil(viewW) + 2, sh = Math.ceil(viewH) + 2;
+  ctx.drawImage(bg, sx, sy, sw, sh, 0, 0, sw, sh);
+
+  // Draw objects in the visible window
+  const viewL = camX, viewR = camX + viewW;
+  const viewT = camY, viewB = camY + viewH;
+  // Depth-sort by ty (top) so NPCs overlap correctly
+  const visible = OBJECTS.filter(o => {
+    const ox = o.tx*TS, oy = o.ty*TS, ow = o.w*TS, oh = o.h*TS;
+    return (ox+ow > viewL-40 && ox < viewR+40 && oy+oh > viewT-40 && oy < viewB+40);
+  }).sort((a,b)=> (a.ty+a.h) - (b.ty+b.h));
+
+  for (const o of visible) {
+    ctx.save();
+    ctx.translate(-camX, -camY);
+    drawObj(ctx, o);
+    ctx.restore();
+  }
+
+  // Player
+  ctx.save();
+  ctx.translate(-camX, -camY);
+  drawCharacter(ctx, player.x, player.y, '#4a90d8', player.dir, true);
+  ctx.restore();
+
+  // Highlight the interaction target (outline on its footprint)
+  if (activeTarget) {
+    const o = activeTarget;
+    ctx.save();
+    ctx.translate(-camX, -camY);
+    ctx.strokeStyle='#ffd683';
+    ctx.lineWidth=2;
+    ctx.setLineDash([5,3]);
+    const dashOffset = (performance.now()/60) % 8;
+    ctx.lineDashOffset = -dashOffset;
+    ctx.strokeRect(o.tx*TS - 2, o.ty*TS - 2, o.w*TS + 4, o.h*TS + 4);
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+
+  drawMinimap();
+}
+
+function drawMinimap(){
+  mctx.clearRect(0,0,220,140);
+  // scaled tilemap
+  const sx = 220 / MAP_W, sy = 140 / MAP_H;
+  for (let y=0;y<MAP_H;y++) for (let x=0;x<MAP_W;x++) {
+    const t = tiles[y][x];
+    mctx.fillStyle = TILE_COLORS[t] || '#000';
+    mctx.fillRect(x*sx, y*sy, Math.ceil(sx), Math.ceil(sy));
+  }
+  // player blip
+  const px = (player.x/TS) * sx;
+  const py = (player.y/TS) * sy;
+  mctx.fillStyle='#ff8a1f';
+  mctx.beginPath(); mctx.arc(px, py, 3, 0, Math.PI*2); mctx.fill();
+  mctx.strokeStyle='#1c1b17'; mctx.lineWidth=1; mctx.stroke();
+  // view rect
+  const vx = (camX / WORLD_W) * 220;
+  const vy = (camY / WORLD_H) * 140;
+  const vw = (viewW / WORLD_W) * 220;
+  const vh = (viewH / WORLD_H) * 140;
+  mctx.strokeStyle='rgba(255,255,255,0.5)'; mctx.strokeRect(vx,vy,vw,vh);
+}
+
+requestAnimationFrame(step);
+
+</script>
+</body>
+</html>

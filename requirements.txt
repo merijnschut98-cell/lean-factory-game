@@ -1,0 +1,5 @@
+pygame>=2.5.0
+pygame_gui>=0.6.9
+anthropic>=0.40.0
+pyyaml>=6.0.2
+pyinstaller>=6.0.0

@@ -1,0 +1,730 @@
+# Tier 1 Problem Catalog — 25 hand-designed problems
+# Translated from "Problem Catalog - Tier 1.docx"
+#
+# Fields:
+#   id, name, category, severity, visibility, zone_id, station_id
+#   symptoms (list), root_cause, effective_countermeasures (list)
+#   maturity_prerequisite, mismatch_note
+#   effect_modifiers: dict of simulation adjustments while problem is active
+#     keys: avail_delta, perf_delta, quality_delta (applied to station)
+
+problems:
+
+  - id: T1-001
+    name: "The Graveyard Shelf"
+    category: Waste
+    severity: medium
+    visibility: obvious
+    zone_id: z2
+    station_id: coil_winding
+    symptoms:
+      - "Unlabeled shelf of partially-wound coils beside Coil Winding station"
+      - "WIP metric for Component Prep elevated"
+      - "Cycle time at Coil Winding inconsistent"
+    root_cause: >
+      No standard WIP definition at this station. Operators self-manage
+      work-in-progress, masking rework, lost components, and idle time.
+    effective_countermeasures:
+      - Standard WIP Definition
+      - 5S System
+      - Standard Work Definition
+    maturity_prerequisite: null
+    mismatch_note: >
+      Applying Kanban (Tier 3) without first defining standard WIP produces
+      a pull signal attached to an undefined quantity. Kanban loop oscillates
+      and triggers a new problem.
+    side_effect_ref: null
+    effect_modifiers:
+      perf_delta: -0.08
+      quality_delta: -0.04
+
+  - id: T1-002
+    name: "Nobody Knows Where Anything Is"
+    category: Waste
+    severity: medium
+    visibility: obvious
+    zone_id: z3
+    station_id: deck_assembly
+    symptoms:
+      - "Operators visibly searching for tools between tasks (45–90 s per cycle)"
+      - "Cycle time at Deck Assembly consistently above takt"
+      - "Shadow boards absent; tools shared informally"
+    root_cause: >
+      No tool location system in place. Tools are shared without structure,
+      returned inconsistently, and their absence is only discovered when needed.
+    effective_countermeasures:
+      - Tool Location Systems
+      - 5S System
+      - Workplace Organization
+    maturity_prerequisite: null
+    mismatch_note: >
+      Applying Standard Work Definition (Tier 1) without establishing tool
+      locations produces a documented procedure referencing tools frequently
+      unavailable. Operators deviate to compensate.
+    side_effect_ref: null
+    effect_modifiers:
+      perf_delta: -0.12
+
+  - id: T1-003
+    name: "The Rework Corner"
+    category: Quality
+    severity: high
+    visibility: obvious
+    zone_id: z4
+    station_id: integration_4
+    symptoms:
+      - "Pile of finished hoverboards awaiting rework beside Integration 4"
+      - "FTR drops visibly when this station is active"
+      - "Operators at Integration 4 appear rushed"
+    root_cause: >
+      No quality gate between Integration 3 and 4. Defects from Integration 3
+      (incorrect torque on propulsion mount) are not caught until final function
+      check at Integration 4, at which point rework is significant.
+    effective_countermeasures:
+      - Basic Quality Gates
+      - Poka-Yoke
+      - Standard Work Definition
+    maturity_prerequisite: null
+    mismatch_note: >
+      Applying SPC (Tier 4) produces control charts on a process with no
+      standard work. Charts show variation but cannot distinguish operator
+      deviation, tooling variation, and upstream defects.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.10
+      perf_delta: -0.05
+
+  - id: T1-004
+    name: "The Invisible Handover"
+    category: Behavior
+    severity: medium
+    visibility: obvious
+    zone_id: z4
+    station_id: integration_1
+    symptoms:
+      - "Production drops 20–35 min at every shift change in Final Assembly"
+      - "Operators arriving on new shift spend time locating materials"
+      - "Some in-progress units restarted because their status is unclear"
+    root_cause: >
+      No shift handover protocol exists. Status of in-progress work lives in the
+      heads of departing operators; incoming operators have no structured receive.
+    effective_countermeasures:
+      - Team Leader Routines
+      - Standard Work Definition
+      - Basic Documentation Control
+    maturity_prerequisite: null
+    mismatch_note: >
+      Applying Daily Management System (Tier 2) without handover protocols
+      produces a daily meeting that identifies the symptom every day without
+      resolving the root cause.
+    side_effect_ref: null
+    effect_modifiers:
+      avail_delta: -0.08
+
+  - id: T1-005
+    name: "The Overqualified Packager"
+    category: Waste
+    severity: low
+    visibility: obvious
+    zone_id: z6
+    station_id: packaging
+    symptoms:
+      - "Most experienced operator permanently assigned to Packaging"
+      - "Packaging cycle time well below takt; operator idle 30–40% of time"
+      - "Downstream stations stall waiting for operator's informal guidance"
+    root_cause: >
+      No skill matrix exists. Operator assignment is historical and informal.
+      The most skilled operator was placed at Packaging years ago and no one
+      has revisited the decision.
+    effective_countermeasures:
+      - Skill Matrix
+      - Operator Rebalancing
+      - Cross-Training Programs
+    maturity_prerequisite: null
+    mismatch_note: >
+      Applying Line Balancing (Tier 3) without a skill matrix rebalances
+      workload while ignoring operator capability. New imbalances emerge
+      immediately.
+    side_effect_ref: T1-005_linebuild_variant
+    effect_modifiers:
+      perf_delta: 0.0   # waste, not a perf hit at this station
+
+  - id: T1-006
+    name: "The Flood Before the Drought"
+    category: Flow
+    severity: high
+    visibility: obvious
+    zone_id: z1
+    station_id: dock
+    symptoms:
+      - "Twice weekly large component deliveries overflow the Staging area"
+      - "Between deliveries Staging is nearly empty; Component Prep starves"
+      - "Incoming QA overwhelmed; clears backlog over two days"
+    root_cause: >
+      Delivery schedule driven by supplier convenience and PO batching.
+      No leveled receiving schedule. Factory absorbs all variation.
+    effective_countermeasures:
+      - Workplace Organization
+      - Basic Documentation Control
+      - Standard WIP Definition
+    maturity_prerequisite: null
+    mismatch_note: >
+      Applying Heijunka (Tier 3) to the production schedule without first
+      stabilizing incoming material flow produces a leveled internal schedule
+      disrupted by flood/drought delivery patterns.
+    side_effect_ref: null
+    effect_modifiers:
+      avail_delta: -0.10
+
+  - id: T1-007
+    name: "Instructions? What Instructions?"
+    category: Quality / Behavior
+    severity: high
+    visibility: obvious
+    zone_id: z3
+    station_id: battery_assembly
+    symptoms:
+      - "Three operators assemble battery pack in three different sequences"
+      - "One skips connector check; one applies thermal paste differently"
+      - "FTR at Battery Assembly varies significantly by operator and shift"
+      - "No work instructions visible at station"
+    root_cause: >
+      Work instructions exist on a shared drive no one accesses. Station has
+      never had posted instructions. Each operator learned from their trainer,
+      inheriting personal variation.
+    effective_countermeasures:
+      - Basic Documentation Control
+      - Standard Work Definition
+      - Safety Routines
+    maturity_prerequisite: null
+    mismatch_note: >
+      Applying DMAIC (Tier 4) before standard work is established produces a
+      project that correctly identifies operator variation as root cause but
+      recommends advanced statistical controls on a process with no baseline.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.08
+      perf_delta: -0.06
+
+  - id: T1-008
+    name: "The Phantom Defect"
+    category: Quality
+    severity: medium
+    visibility: obvious
+    zone_id: z5
+    station_id: final_qa
+    symptoms:
+      - "Final QA rejects ~12% for 'flight instability'"
+      - "~Half pass when re-tested minutes later with no modification"
+      - "Re-test pass rate varies by inspector; defect rate higher on certain shifts"
+      - "Scrap cost elevated"
+    root_cause: >
+      No measurement system validation. Flight test procedure inconsistently
+      applied — inspector technique, test duration, and pass/fail criteria vary.
+      The measurement system itself is the source of variation.
+    effective_countermeasures:
+      - Basic Quality Gates
+      - Standard Work Definition
+      - Basic Documentation Control
+    maturity_prerequisite: null
+    mismatch_note: >
+      Applying MSA/Gage R&R (Tier 4) is correct but premature. The MSA will
+      confirm the measurement system is unreliable — which observation already
+      shows — but the fix is simply a standardized test procedure.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.12
+
+  - id: T1-009
+    name: "The Island Station"
+    category: Flow
+    severity: medium
+    visibility: obvious
+    zone_id: z3
+    station_id: propulsion_build
+    symptoms:
+      - "Propulsion Build physically isolated from stations it feeds"
+      - "Material arrives in large batches pushed by Component Prep"
+      - "Finished propulsion cores queue in trolley; operator has no downstream visibility"
+      - "WIP between Propulsion Build and Final Assembly consistently high"
+    root_cause: >
+      Station layout designed around equipment footprint, not flow. Push
+      scheduling and physical isolation combine to create a local island with
+      no connection to downstream pull signals.
+    effective_countermeasures:
+      - Workplace Organization
+      - Standard WIP Definition
+      - Visual Labels & Signs
+    maturity_prerequisite: null
+    mismatch_note: >
+      Applying a Kanban system (Tier 3) without first establishing standard WIP
+      creates a pull system attached to an island. Kanban cards accumulate
+      unanswered because the operator has no context for the signal.
+    side_effect_ref: null
+    effect_modifiers:
+      perf_delta: -0.07
+
+  - id: T1-010
+    name: "The Dirty Machine"
+    category: Maintenance / Quality
+    severity: medium
+    visibility: obvious
+    zone_id: z2
+    station_id: pcb_prep
+    symptoms:
+      - "Visible contamination buildup around PCB Prep soldering heads"
+      - "Reject rate at PCB Prep climbing slowly over six weeks"
+      - "Handwritten note taped to machine: 'needs cleaning — maintenance called' (3 weeks old)"
+    root_cause: >
+      No operator-led cleaning routine exists. Maintenance is reactive and
+      overloaded. Machine degrades gradually between emergency interventions.
+    effective_countermeasures:
+      - Cleanliness Standards
+      - Safety Routines
+      - Basic Documentation Control
+    maturity_prerequisite: null
+    mismatch_note: >
+      Applying TPM (Tier 4) without first establishing basic cleaning standards
+      attempts to build a full planned maintenance program on a foundation
+      where operators don't yet own basic machine care.
+    side_effect_ref: null
+    effect_modifiers:
+      avail_delta: -0.12
+      quality_delta: -0.06
+
+  - id: T1-011
+    name: "The Unofficial Queue"
+    category: Flow / Waste
+    severity: medium
+    visibility: obvious
+    zone_id: z4
+    station_id: integration_3
+    symptoms:
+      - "8–25 units of WIP permanently accumulate between Integration 2 and 3"
+      - "Operators at Integration 3 pull from queue; Integration 2 pushes regardless of readiness"
+      - "Aisle space partially obstructed; nobody manages the queue"
+    root_cause: >
+      Integration 2 cycle time is shorter than Integration 3 and no WIP limit
+      exists between them. Overproduction at Integration 2 is default behavior
+      because stopping feels wrong to the operator.
+    effective_countermeasures:
+      - Standard WIP Definition
+      - Visual Labels & Signs
+      - Workplace Organization
+    maturity_prerequisite: null
+    mismatch_note: >
+      Applying FIFO Lanes (Tier 3) without first defining a WIP limit organizes
+      waste without eliminating it. The queue now has structure but still grows
+      unchecked.
+    side_effect_ref: null
+    effect_modifiers:
+      perf_delta: -0.06
+
+  - id: T1-012
+    name: "The Hero Operator"
+    category: Behavior
+    severity: medium
+    visibility: obvious
+    zone_id: z4
+    station_id: integration_5
+    symptoms:
+      - "One operator at Integration 5 consistently outperforms all others"
+      - "When absent, Integration 5 performance drops sharply"
+      - "Other operators defer to this operator constantly, interrupting their own work"
+      - "Hero operator appears tired and occasionally frustrated"
+    root_cause: >
+      Critical knowledge and skill concentrated in a single person. No
+      cross-training exists and no effort has been made to capture or distribute
+      what this operator knows.
+    effective_countermeasures:
+      - Skill Matrix
+      - Cross-Training Programs
+      - Basic Documentation Control
+    maturity_prerequisite: null
+    mismatch_note: >
+      Applying Leader Standard Work (Tier 2) without first addressing the
+      knowledge concentration promotes the hero operator to an informal lead
+      role, deepening the dependency.
+    side_effect_ref: null
+    effect_modifiers:
+      perf_delta: -0.03
+
+  - id: T1-013
+    name: "Red Tags Everywhere, Nothing Done"
+    category: Waste / Safety
+    severity: medium
+    visibility: obvious
+    zone_id: z2
+    station_id: coil_winding
+    symptoms:
+      - "~15 red-tagged items throughout Component Prep (obsolete jigs, broken fixtures)"
+      - "Tags have been there for months; nothing removed or dispositioned"
+      - "Operators work around tagged items as a matter of habit"
+    root_cause: >
+      A partial 5S Sort phase was started but never completed. No owner was
+      assigned, no deadline set, and no management follow-through happened.
+    effective_countermeasures:
+      - 5S System
+      - Workplace Organization
+      - Basic Documentation Control
+    maturity_prerequisite: null
+    mismatch_note: >
+      Applying a Kaizen Event (Tier 2) before the incomplete 5S is resolved
+      uses a team improvement workshop to do what a basic Sort completion should
+      have achieved. Score reflects sequencing cost.
+    side_effect_ref: null
+    effect_modifiers:
+      perf_delta: -0.05
+
+  - id: T1-014
+    name: "The Missing Measurement"
+    category: Quality / Information
+    severity: medium
+    visibility: subtle
+    zone_id: z5
+    station_id: burn_in
+    symptoms:
+      - "Burn-in station reports pass/fail but records nothing else"
+      - "No duration data, no temperature readings, no failure codes"
+      - "Quality investigations start from scratch every time"
+    root_cause: >
+      Burn-in test was designed as a binary gate — pass or fail — with no data
+      capture infrastructure. No one specified what data was needed or why.
+    effective_countermeasures:
+      - Basic Documentation Control
+      - Basic Quality Gates
+      - Standard Work Definition
+    maturity_prerequisite: >
+      Player must have inspected the Testing zone at least once and observed
+      elevated reject rates.
+    mismatch_note: >
+      Applying Advanced Analytics Dashboards (Tier 4) to a station with no data
+      capture produces a dashboard connected to a binary input — same information
+      already visible on the floor.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.03
+
+  - id: T1-015
+    name: "Nobody Told Receiving"
+    category: Information / Flow
+    severity: medium
+    visibility: subtle
+    zone_id: z1
+    station_id: incoming_qa
+    symptoms:
+      - "Incoming QA passes components flagged for known supplier quality issue"
+      - "Dimensional variance on propulsion core housing known to Engineering and Final Assembly"
+      - "Informal workaround at Final Assembly adds 4–7 min per unit"
+    root_cause: >
+      No formal mechanism to communicate known supplier quality issues to
+      Receiving. Information lives in informal networks and individual memories.
+    effective_countermeasures:
+      - Basic Documentation Control
+      - Basic Quality Gates
+      - Visual Labels & Signs
+    maturity_prerequisite: >
+      Player must have inspected Final Assembly and observed the informal
+      workaround behavior.
+    mismatch_note: >
+      Applying Process Mining (Tier 3) correctly maps the gap but the fix is a
+      one-page documented alert at Incoming QA — a Tier 1 countermeasure.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.05
+
+  - id: T1-016
+    name: "The Shrinking Bin"
+    category: Waste / Flow
+    severity: low
+    visibility: obvious
+    zone_id: z3
+    station_id: battery_assembly
+    symptoms:
+      - "Component bins at Battery Assembly refilled irregularly"
+      - "Operators visibly slow pace when bins get low"
+      - "2–3 times per shift, work stops 3–5 min while components are located"
+    root_cause: >
+      No replenishment trigger system exists. Operators self-manage component
+      supply, creating reactive retrieval behavior and interrupting flow. The
+      water spider role operates on a fixed time route disconnected from
+      actual consumption.
+    effective_countermeasures:
+      - Visual Labels & Signs
+      - Workplace Organization
+      - Standard WIP Definition
+    maturity_prerequisite: null
+    mismatch_note: >
+      Applying Milk Runs/Water Spider Routes (Tier 3) without first establishing
+      visual replenishment signals produces a more disciplined water spider who
+      still doesn't know when bins need filling.
+    side_effect_ref: null
+    effect_modifiers:
+      avail_delta: -0.07
+
+  - id: T1-017
+    name: "The Approval Bottleneck"
+    category: Flow / Behavior
+    severity: high
+    visibility: obvious
+    zone_id: z5
+    station_id: flight_test
+    symptoms:
+      - "Every flight test failure requires supervisor sign-off before rework"
+      - "Supervisor covers three zones; frequently unavailable"
+      - "Failed units wait 30–60 min for approval; operators idle during wait"
+    root_cause: >
+      The approval requirement was a temporary measure after a quality escape 18
+      months ago. Never revisited. No standard for when operator-level decisions
+      are acceptable. All failures, regardless of severity, follow the same path.
+    effective_countermeasures:
+      - Basic Documentation Control
+      - Standard Work Definition
+      - Basic Quality Gates
+    maturity_prerequisite: null
+    mismatch_note: >
+      Applying Problem Escalation Protocols (Tier 2) without first defining
+      operator decision authority creates a more structured escalation path for
+      a problem that should not be escalated at all in most cases.
+    side_effect_ref: null
+    effect_modifiers:
+      avail_delta: -0.15
+
+  - id: T1-018
+    name: "The Unlabeled Everything"
+    category: Waste / Safety
+    severity: low
+    visibility: obvious
+    zone_id: z6
+    station_id: packaging
+    symptoms:
+      - "Packaging materials, finished goods, returns, and consumables share floor space with no demarcation"
+      - "Two near-misses in past month involving forklifts and pedestrian areas"
+      - "No floor markings indicate traffic lanes, storage areas, or hazard zones"
+    root_cause: >
+      Zone expanded six months ago to accommodate increased volume. Layout was
+      improvised and no 5S or workplace organization activity was carried out
+      after the expansion.
+    effective_countermeasures:
+      - 5S System
+      - Workplace Organization
+      - Safety Routines
+      - Visual Labels & Signs
+    maturity_prerequisite: null
+    mismatch_note: >
+      Applying a Kaizen Event (Tier 2) on an unlabeled, undemarcated zone spends
+      improvement energy deciding where things should go rather than optimizing an
+      already-functional layout.
+    side_effect_ref: null
+    effect_modifiers:
+      avail_delta: -0.04
+
+  - id: T1-019
+    name: "The Forgotten Near-Miss"
+    category: Safety / Behavior
+    severity: high
+    visibility: subtle
+    zone_id: z2
+    station_id: deck_cutting
+    symptoms:
+      - "Operators occasionally bypass blade guard on non-standard deck profiles"
+      - "Workaround not documented, not reported, not visible without direct observation"
+      - "Near-miss log not updated in four months"
+    root_cause: >
+      Safety procedure designed for standard deck profiles only. When non-standard
+      profiles introduced, no procedure update occurred. Operators developed a
+      workaround and normalized it. Near-miss reporting atrophied.
+    effective_countermeasures:
+      - Safety Routines
+      - Basic Documentation Control
+      - Standard Work Definition
+    maturity_prerequisite: >
+      Player must observe the Deck Cutting station during a non-standard cut
+      cycle — only occurs during certain production mix conditions.
+    mismatch_note: >
+      Applying Psychological Safety Routines (Tier 2) without first fixing the
+      underlying procedure gap produces a culture initiative built on a broken
+      foundation. Operators will not report near-misses on a workaround they
+      depend on to do their job.
+    side_effect_ref: T1-019
+    effect_modifiers:
+      quality_delta: -0.02
+
+  - id: T1-020
+    name: "The Ghost Inventory"
+    category: Waste / Information
+    severity: medium
+    visibility: subtle
+    zone_id: z1
+    station_id: incoming_qa
+    symptoms:
+      - "System inventory records don't match physical counts"
+      - "Operators and planners distrust system; do informal counts before committing to schedule"
+      - "Occasional shortages on components system shows as fully stocked"
+    root_cause: >
+      No cycle counting routine exists. Discrepancies accumulated from unreported
+      scrap, informal borrowing, and receiving errors corrected physically but not
+      in the system.
+    effective_countermeasures:
+      - Basic Documentation Control
+      - Workplace Organization
+      - Standard Work Definition
+    maturity_prerequisite: >
+      Player must have attempted to analyze a production shortage and discovered
+      the system record was incorrect.
+    mismatch_note: >
+      Applying Process Mining (Tier 3) generates a detailed audit of a problem
+      solvable with a clipboard and a weekly routine.
+    side_effect_ref: null
+    effect_modifiers:
+      avail_delta: -0.05
+
+  - id: T1-021
+    name: "The Cold Start"
+    category: Variation / Behavior
+    severity: medium
+    visibility: obvious
+    zone_id: z4
+    station_id: integration_1
+    symptoms:
+      - "First 45–60 min of every shift shows lower output and higher defect rate at Integration 1"
+      - "Operators visibly less settled at shift start — checking materials, adjusting workspace"
+      - "Pattern consistent across all operators regardless of experience"
+    root_cause: >
+      No pre-shift readiness standard for Integration 1. Previous shift does not
+      restore station to a defined ready state. Each incoming operator rebuilds
+      readiness from scratch.
+    effective_countermeasures:
+      - Standard Work Definition
+      - Team Leader Routines
+      - 5S System
+    maturity_prerequisite: null
+    mismatch_note: >
+      Applying Daily Management System (Tier 2) without a station readiness
+      standard adds a daily meeting that will reliably surface the cold start
+      pattern every morning without resolving it.
+    side_effect_ref: null
+    effect_modifiers:
+      avail_delta: -0.06
+      quality_delta: -0.03
+
+  - id: T1-022
+    name: "The Inspection That Inspects Nothing"
+    category: Quality / Information
+    severity: medium
+    visibility: obvious
+    zone_id: z1
+    station_id: incoming_qa
+    symptoms:
+      - "Every delivery logged as 'inspected' but only quantity against PO is checked"
+      - "No dimensional check, visual inspection, or sampling protocol"
+      - "Defective components regularly reach Component Prep before discovered"
+    root_cause: >
+      Incoming QA procedure was written to confirm delivery quantity, not quality.
+      No sampling plan or inspection criteria exist for incoming components.
+      The appearance of inspection provides false assurance without its substance.
+    effective_countermeasures:
+      - Basic Quality Gates
+      - Standard Work Definition
+      - Basic Documentation Control
+    maturity_prerequisite: null
+    mismatch_note: >
+      Applying QFD (Tier 4) to translate customer requirements into incoming
+      inspection criteria is directionally correct but architecturally premature.
+      The factory does not yet have a stable measurement system at Incoming QA.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.06
+
+  - id: T1-023
+    name: "The Workaround That Became the Process"
+    category: Behavior / Quality
+    severity: high
+    visibility: subtle
+    zone_id: z3
+    station_id: propulsion_build
+    symptoms:
+      - "Experienced operators insert an undocumented adjustment step at Propulsion Build"
+      - "New operators skip it; produce higher defect rate"
+      - "Experienced operators cannot explain why the step is necessary"
+    root_cause: >
+      A component tolerance issue two years ago causes propulsion housings to fit
+      inconsistently. A skilled operator discovered an adjustment that compensates.
+      The fix was passed on informally and became embedded practice without
+      anyone investigating the root cause.
+    effective_countermeasures:
+      - Standard Work Definition
+      - Basic Documentation Control
+      - Basic Quality Gates
+    maturity_prerequisite: >
+      Player must have observed both experienced and new operators at Propulsion
+      Build and noticed the performance gap.
+    mismatch_note: >
+      Applying 5 Whys (Tier 2) without first documenting current actual practice
+      — including the workaround — produces a root cause investigation built on
+      an incomplete process description.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.07
+
+  - id: T1-024
+    name: "The Shifting Standard"
+    category: Variation / Behavior
+    severity: medium
+    visibility: subtle
+    zone_id: z5
+    station_id: final_qa
+    symptoms:
+      - "Final QA pass rates vary significantly between day and night shifts on identical product"
+      - "Both shifts believe they are applying the correct standard"
+      - "Defect escapes occur predominantly from one shift but not consistently"
+    root_cause: >
+      Final QA acceptance criteria revised three times in the past year. Not all
+      operators received each revision. Different operators working from different
+      versions of the standard. No version control or controlled distribution.
+    effective_countermeasures:
+      - Basic Documentation Control
+      - Standard Work Definition
+      - Basic Quality Gates
+    maturity_prerequisite: >
+      Player must have observed Final QA across both shifts and noticed the
+      pass rate discrepancy.
+    mismatch_note: >
+      Applying SPC (Tier 4) correctly identifies shift-to-shift variation as
+      special cause but cannot explain it because the measurement system itself
+      is inconsistent.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.05
+
+  - id: T1-025
+    name: "The Number Nobody Believes"
+    category: Information / Behavior
+    severity: high
+    visibility: hidden
+    zone_id: z1
+    station_id: dock
+    symptoms:
+      - "None visible initially — daily output report shows consistently strong numbers"
+      - "As factory improves, actual measured output begins to diverge from reported output"
+      - "Gap widens: report systematically overstates output by counting Integration 4 as 'completed'"
+    root_cause: >
+      The reporting definition of 'completed unit' was set years ago to include
+      units at Integration 4 rather than units passing Final QA. A deliberate
+      decision to make numbers look better. Operators and team leaders know the
+      definition is wrong but have never been empowered to change it.
+    effective_countermeasures:
+      - Basic Documentation Control
+      - Performance Management Boards
+      - Standard Work Definition
+    maturity_prerequisite: >
+      Player must have improved overall factory output measurably and installed
+      at least one Performance Management Board — the ghost only appears when
+      real performance data becomes visible enough to contradict the report.
+    mismatch_note: >
+      Applying Daily Management System (Tier 2) structures a management cadence
+      around the existing report before the reporting definition is corrected.
+      The system amplifies a lie. Fix the metric before you build a management
+      system around it.
+    side_effect_ref: T1-025_dms_variant
+    effect_modifiers: {}
