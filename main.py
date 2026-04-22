@@ -53,6 +53,10 @@ def _run_game() -> None:
     from rendering.factory_renderer import FactoryRenderer
     from ui.hud import HUD
     from ui.inspector import Inspector
+    from ui.catalog_panel import CatalogPanel
+    from ui.warning_dialog import WarningDialog
+    from ui.score_panel import ScorePanel
+    from maturity.mismatch import mismatch_warning
     from persistence.load import has_save, load
     from persistence.save import save
 
@@ -61,29 +65,70 @@ def _run_game() -> None:
     screen = pygame.display.set_mode((1280, 720))
     clock  = pygame.time.Clock()
 
-    # Build world
-    tilemap  = Tilemap()
-    factory  = Factory()
+    tilemap   = Tilemap()
+    factory   = Factory()
     if has_save():
         load(factory)
 
-    player   = Player(PLAYER_SPAWN_TILE, tilemap)
-    renderer = FactoryRenderer(screen, tilemap)
-    hud      = HUD(screen)
-    inspector = Inspector(screen)
+    player        = Player(PLAYER_SPAWN_TILE, tilemap)
+    renderer      = FactoryRenderer(screen, tilemap)
+    hud           = HUD(screen)
+    inspector     = Inspector(screen)
+    catalog_panel = CatalogPanel(screen)
+    warning_dlg   = WarningDialog(screen)
+    score_panel   = ScorePanel(screen)
 
-    running  = True
+    # Tracks which problem_id is pending CM application after warning
+    _pending_cm: dict = {}   # {problem_id, cm_id}
+
+    running    = True
     save_timer = 0.0
 
     while running:
-        real_dt = clock.tick(60) / 1000.0   # seconds
+        real_dt = clock.tick(60) / 1000.0
 
         # ── Events ────────────────────────────────────────────────────────────
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-            elif event.type == pygame.KEYDOWN:
+            # Score panel dismissal (any key)
+            if score_panel.is_open:
+                score_panel.handle_event(event)
+                score_panel.consume_dismiss()
+                continue
+
+            # Warning dialog
+            if warning_dlg.is_open:
+                warning_dlg.handle_event(event)
+                result = warning_dlg.consume_result()
+                if result == "proceed" and _pending_cm:
+                    res = factory.apply_countermeasure(
+                        _pending_cm["problem_id"], _pending_cm["cm_id"])
+                    if res.get("success"):
+                        inspector.close()
+                _pending_cm = {}
+                continue
+
+            # Catalog panel
+            if catalog_panel.is_open:
+                catalog_panel.handle_event(event)
+                sel = catalog_panel.consume_selection()
+                if sel:
+                    prob_id = catalog_panel.problem_id
+                    catalog_panel.close()
+                    prob = factory.problems.get(prob_id or "")
+                    zone_m = factory.maturity.zone_maturity(prob.zone_id) if prob else 1.0
+                    warn = mismatch_warning(sel.name, sel.tier_int, zone_m)
+                    if warn:
+                        _pending_cm = {"problem_id": prob_id, "cm_id": sel.id}
+                        warning_dlg.show(warn)
+                    else:
+                        factory.apply_countermeasure(prob_id, sel.id)
+                        inspector.close()
+                continue
+
+            if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     if inspector.is_open:
                         inspector.close()
@@ -103,18 +148,41 @@ def _run_game() -> None:
                 elif event.key == pygame.K_TAB:
                     factory.time.cycle_speed()
 
-        # ── Movement ──────────────────────────────────────────────────────────
-        keys = pygame.key.get_pressed()
-        dx, dy = 0.0, 0.0
-        if keys[pygame.K_w] or keys[pygame.K_UP]:    dy -= 1
-        if keys[pygame.K_s] or keys[pygame.K_DOWN]:  dy += 1
-        if keys[pygame.K_a] or keys[pygame.K_LEFT]:  dx -= 1
-        if keys[pygame.K_d] or keys[pygame.K_RIGHT]: dx += 1
-        player.running = keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]
-        if dx or dy:
-            player.move(dx, dy)
+                elif inspector.is_open:
+                    if event.key == pygame.K_c:
+                        inspector.handle_action_key(event.key)
+                        action = inspector.consume_action()
+                        if action and action["type"] == "apply_cm":
+                            prob = factory.problems.get(action["problem_id"])
+                            if prob:
+                                station_type = factory.stations[prob.station_id].station_type
+                                cms = factory.cm_catalog.applicable_to_station(station_type)
+                                catalog_panel.open(action["problem_id"], cms)
 
-        # Detect facing interactable
+                    elif event.key == pygame.K_r:
+                        inspector.handle_action_key(event.key)
+                        action = inspector.consume_action()
+                        if action and action["type"] == "resolve":
+                            result = factory.resolve_problem(action["problem_id"])
+                            if result:
+                                prob = factory.problems[action["problem_id"]]
+                                inspector.close()
+                                score_panel.show(
+                                    prob.name, result["scores"],
+                                    result["total"], result["credits_earned"])
+
+        # ── Movement ──────────────────────────────────────────────────────────
+        if not catalog_panel.is_open and not warning_dlg.is_open and not score_panel.is_open:
+            keys = pygame.key.get_pressed()
+            dx, dy = 0.0, 0.0
+            if keys[pygame.K_w] or keys[pygame.K_UP]:    dy -= 1
+            if keys[pygame.K_s] or keys[pygame.K_DOWN]:  dy += 1
+            if keys[pygame.K_a] or keys[pygame.K_LEFT]:  dx -= 1
+            if keys[pygame.K_d] or keys[pygame.K_RIGHT]: dx += 1
+            player.running = keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]
+            if dx or dy:
+                player.move(dx, dy)
+
         facing = player.detect_facing(OBJECTS)
 
         # ── Simulation tick ───────────────────────────────────────────────────
@@ -130,6 +198,9 @@ def _run_game() -> None:
         renderer.draw(player, factory)
         hud.draw(factory, player, facing)
         inspector.draw()
+        catalog_panel.draw(factory)
+        warning_dlg.draw()
+        score_panel.draw()
 
         pygame.display.flip()
 

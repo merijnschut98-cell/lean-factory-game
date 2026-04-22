@@ -5,9 +5,9 @@ Update this file every time a task is completed or added.
 
 ---
 
-## Current Status: Phase 4 — Countermeasures and Scoring (starting)
+## Current Status: Phase 4 — Countermeasures and Scoring (~70% done)
 
-Phase 3 complete. Next: countermeasure catalog loader → browser UI → mismatch calc → apply + score flow
+Next: automated-testing skill run → per-CM modifier tuning → save/load for CMs → Phase 5 AI
 
 ---
 
@@ -53,27 +53,30 @@ All design artifacts: spec doc, 25-problem Tier 1 catalog YAML, 79-countermeasur
 
 ---
 
-## Phase 4 — Countermeasures and Scoring ⬜ ~10% COMPLETE
+## Phase 4 — Countermeasures and Scoring 🔧 ~70% COMPLETE
 
 ### Done
-- ✅ Scoring math stubs: DQQ, EI, RCA, CMP, LM, CIM (`scoring/metrics.py`)
-- ✅ Credit formula (`scoring/credits.py`)
+- ✅ `CountermeasureCatalog` + `Countermeasure` dataclass in `problems/countermeasure.py` (loads all 79 CMs)
+- ✅ All six scoring metrics complete: DQQ, EI, RCA, CMP, LM, CIM (`scoring/metrics.py`)
+- ✅ `calculate_all()` orchestrator; `credits_earned()` formula
+- ✅ Full mismatch effectiveness table (`maturity/mismatch.py`): full/reduced/minimal/no_effect tiers
+- ✅ Mismatch warning dialog UI (`ui/warning_dialog.py`): Proceed / Cancel
+- ✅ Countermeasure browser UI (`ui/catalog_panel.py`): scroll, tier color, prereq indicator
+- ✅ Score display panel (`ui/score_panel.py`): 6 metrics with dot bars + total + credits
+- ✅ `Factory.apply_countermeasure()`: mismatch mult, station modifier, maturity register, side effects
+- ✅ `Factory.resolve_problem()`: scores, awards credits, removes modifiers, RESOLVED state
+- ✅ Decay logic (`_tick_decay`): per-CM day timer, removes modifier + maturity on expiry
+- ✅ Problem card in inspector: state badge (ACTIVE/CM APPLIED), [C] and [R] action hints
+- ✅ Game loop fully orchestrated: inspector → catalog → warning → apply → resolve → score
+- ✅ `ui/text_utils.py`: shared `wrap_text()` used across all panels
 
 ### Remaining
-- ⬜ Load countermeasure catalog from `data/countermeasures_v1.yaml` into a `CountermeasureCatalog` class
-- ⬜ Countermeasure browser UI panel: list by tier, filter, show prerequisites, Apply button
-- ⬜ Mismatch effectiveness calculation (spec §7.1): zone_maturity vs cm_tier → multiplier
-- ⬜ Mismatch warning dialog before apply: "Proceed / Cancel / Ask Coach" (spec §7.2)
-- ⬜ Countermeasure effect applied to station on confirm: `apply_modifier` + record active CM
-- ⬜ Decay logic: per-CM tick timer; reduce effect over `decay.days` without sustain; notify player
-- ⬜ Side-effect triggering: harmful application activates linked problem from `side_effect_ref`
-- ⬜ Complete RCA scoring: keyword matching per problem's `root_cause` field
-- ⬜ Score display panel: 6 metrics + total + credits earned (shown after resolve)
-- ⬜ Credits balance live in HUD (factory.credits already wired — just needs countermeasure spending)
-- ⬜ PDCA tracking for CIM score: flag if player re-inspects station after applying CM
-- ⬜ Problem resolution flow: state → RESOLVED, modifiers removed, credits awarded, score shown
+- ⬜ **Per-CM modifier tuning**: current heuristic (avail+0.05, perf+0.05, qual+0.03 × eff_mult) is a baseline; tune per CM category in Phase 4 polish
+- ⬜ **Save/load for active CMs**: `active_countermeasures` dict not yet persisted to SQLite
+- ⬜ **Automated tests** for scoring, catalog loader, mismatch calc, and apply/resolve flow
+- ⬜ **Automated-testing skill** run (required before moving to Phase 5)
 
-**Deliverable:** First fully playable loop. Walk → find → investigate → apply CM → score → earn credits.
+**Deliverable:** First fully playable loop. Walk → find → investigate → apply CM → score → earn credits. ✅ (functionally complete, polish remaining)
 
 ---
 

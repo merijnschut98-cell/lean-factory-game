@@ -12,6 +12,8 @@ from typing import Optional
 
 import pygame
 
+from ui.text_utils import wrap_text
+
 C_PANEL      = (21, 20, 15, 240)
 C_PANEL_INK  = (220, 215, 200)
 C_GOLD       = (255, 214, 131)
@@ -58,7 +60,7 @@ class Inspector:
         self._obj     = obj
         self._factory = factory
         self._open    = True
-        # Log inspection once on open (not every frame)
+        self._pending_action: Optional[dict] = None
         if factory and obj.get("station_id"):
             st = factory.stations.get(obj["station_id"])
             if st:
@@ -71,6 +73,36 @@ class Inspector:
     @property
     def is_open(self) -> bool:
         return self._open
+
+    def consume_action(self) -> Optional[dict]:
+        """Returns and clears a pending action dict, e.g. {type:'apply_cm', problem_id:...}."""
+        action = self._pending_action
+        self._pending_action = None
+        return action
+
+    def handle_action_key(self, key: int) -> None:
+        """Called by game loop for keys that are inspector-specific actions."""
+        if not self._open or not self._obj or not self._factory:
+            return
+        factory = self._factory
+        station_id = self._obj.get("station_id")
+        if not station_id:
+            return
+
+        from problems.problem import ProblemState
+        problems = [p for p in factory.active_problems.values()
+                    if p.station_id == station_id]
+
+        if key == pygame.K_c:
+            active = [p for p in problems if p.state == ProblemState.ACTIVE]
+            if active:
+                self._pending_action = {"type": "apply_cm", "problem_id": active[0].id}
+
+        elif key == pygame.K_r:
+            applied = [p for p in problems
+                       if p.state == ProblemState.COUNTERMEASURE_APPLIED]
+            if applied:
+                self._pending_action = {"type": "resolve", "problem_id": applied[0].id}
 
     # ── Draw ──────────────────────────────────────────────────────────────────
 
@@ -195,7 +227,9 @@ class Inspector:
         return y
 
     def _draw_problem_card(self, surf: pygame.Surface, y: int, prob) -> int:
-        """Draw a compact problem card: name + first symptom."""
+        """Problem card: severity badge, name, first symptom, state + action hint."""
+        from problems.problem import ProblemState
+
         sev_colors = {
             "critical": (220, 50, 50),
             "high":     (220, 120, 50),
@@ -204,28 +238,35 @@ class Inspector:
         }
         sev_color = sev_colors.get(prob.severity, C_DIM)
         surf.blit(self._font_mono.render(f"[{prob.severity.upper()}]", True, sev_color), (18, y))
+
+        state_labels = {
+            ProblemState.ACTIVE:                 ("ACTIVE",     (220, 180, 50)),
+            ProblemState.UNDER_INVESTIGATION:    ("DIAGNOSING", (255, 214, 131)),
+            ProblemState.COUNTERMEASURE_APPLIED: ("CM APPLIED", (111, 211, 111)),
+            ProblemState.RESOLVED:               ("RESOLVED",   (111, 211, 111)),
+        }
+        state_lbl, state_col = state_labels.get(prob.state, ("UNKNOWN", C_DIM))
+        surf.blit(self._font_mono.render(state_lbl, True, state_col), (PANEL_W - 90, y))
         y += 14
-        # Word-wrap the problem name
-        name_surf = self._font_body.render(prob.name, True, C_PANEL_INK)
-        surf.blit(name_surf, (18, y))
+
+        surf.blit(self._font_body.render(prob.name, True, C_PANEL_INK), (18, y))
         y += 16
-        # First symptom only
+
         if prob.symptoms:
-            symptom = prob.symptoms[0]
-            words = symptom.split()
-            line, lines = "", []
-            for w in words:
-                test = f"{line} {w}".strip()
-                if self._font_body.size(test)[0] > PANEL_W - 36:
-                    lines.append(line)
-                    line = w
-                else:
-                    line = test
-            if line:
-                lines.append(line)
-            for ln in lines[:2]:  # max 2 lines
+            for ln in wrap_text(prob.symptoms[0], self._font_body, PANEL_W - 36)[:2]:
                 surf.blit(self._font_body.render(ln, True, C_DIM), (18, y))
                 y += 15
+
+        # Action hint
+        if prob.state == ProblemState.ACTIVE:
+            hint = "[C]  Apply Countermeasure"
+            surf.blit(self._font_mono.render(hint, True, C_GOLD), (18, y))
+            y += 14
+        elif prob.state == ProblemState.COUNTERMEASURE_APPLIED:
+            hint = "[R]  Resolve & Score"
+            surf.blit(self._font_mono.render(hint, True, (111, 211, 111)), (18, y))
+            y += 14
+
         y += 4
         return y
 
@@ -263,23 +304,9 @@ class Inspector:
         surf.blit(self._font_body.render(role, True, C_PANEL_INK), (18, y + 14))
         y += 38
 
-        line = NPC_LINES.get(role, "No comment.")
-        # Word-wrap line
-        words = line.split()
-        lines_out, current = [], ""
-        for w in words:
-            test = current + (" " if current else "") + w
-            if self._font_body.size(test)[0] > PANEL_W - 36:
-                lines_out.append(current)
-                current = w
-            else:
-                current = test
-        if current:
-            lines_out.append(current)
-
         surf.blit(self._font_mono.render("TALK", True, C_DIM), (18, y))
         y += 14
-        for line_txt in lines_out:
+        for line_txt in wrap_text(NPC_LINES.get(role, "No comment."), self._font_body, PANEL_W - 36):
             surf.blit(self._font_body.render(line_txt, True, C_PANEL_INK), (18, y))
             y += 16
         return y + 8

@@ -18,10 +18,12 @@ from simulation.station     import Station
 from simulation.operator    import Operator
 from simulation.flow        import MaterialFlow
 from simulation.time_engine import TimeEngine
-from problems.catalog       import load_all
-from problems.visibility    import evaluate_visibility
-from problems.problem       import Problem, ProblemState
+from problems.catalog         import load_all
+from problems.visibility      import evaluate_visibility
+from problems.problem         import Problem, ProblemState
+from problems.countermeasure  import CountermeasureCatalog
 from maturity.maturity_engine import MaturityEngine
+from maturity.mismatch        import effectiveness_multiplier
 
 
 class DaySnapshot:
@@ -48,6 +50,9 @@ class Factory:
         self.problems:          Dict[str, Problem] = {}
         self.inspection_log:    List[dict] = []
         self.maturity:          MaturityEngine = MaturityEngine()
+        self.cm_catalog:        CountermeasureCatalog = CountermeasureCatalog()
+        # cm_id → {zone_id, eff_multiplier, applied_day, decay_days, avail_d, perf_d, qual_d}
+        self.active_countermeasures: Dict[str, dict] = {}
 
         # Running plant-level totals (reset each day)
         self._daily_output:  int   = 0
@@ -59,6 +64,7 @@ class Factory:
         self._build_flow()
         self._wire_events()
         self._load_problems()
+        self.cm_catalog.load()
 
     # ── Construction ──────────────────────────────────────────────────────────
 
@@ -161,6 +167,7 @@ class Factory:
         self._daily_rework = 0
         self._daily_scrap  = 0
 
+        self._tick_decay()
         self.maturity.update(self)
         newly_active = evaluate_visibility(self.problems, self)
         for pid in newly_active:
@@ -193,6 +200,114 @@ class Factory:
 
     def recent_inspections(self, n: int = 5) -> List[dict]:
         return self.inspection_log[-n:]
+
+    # ── Countermeasure application ────────────────────────────────────────────
+
+    def apply_countermeasure(self, problem_id: str, cm_id: str) -> dict:
+        """
+        Apply a countermeasure to a problem's station.
+        Returns a result dict with keys: success, eff_multiplier, warning, side_effect_id.
+        """
+        prob = self.problems.get(problem_id)
+        cm   = self.cm_catalog.get(cm_id)
+        if not prob or not cm:
+            return {"success": False, "error": "Unknown problem or countermeasure"}
+
+        zone_maturity = self.maturity.zone_maturity(prob.zone_id)
+        eff_mult = effectiveness_multiplier(cm.tier_int, zone_maturity)
+
+        # Side-effect: harmful tier triggers a linked problem
+        side_effect_id = None
+        if eff_mult == 0.0 and cm.effectiveness and cm.effectiveness.harmful_side_effect_ref:
+            side_effect_id = cm.effectiveness.harmful_side_effect_ref
+            linked = self.problems.get(side_effect_id)
+            if linked and linked.state == ProblemState.DORMANT:
+                linked.state = ProblemState.ACTIVE
+                linked.first_seen_day = self.time.day
+                self._apply_problem_modifiers(linked)
+
+        # Scale station modifiers by effectiveness multiplier
+        eff = cm.effectiveness
+        if eff and self.stations.get(prob.station_id):
+            st = self.stations[prob.station_id]
+            # TODO (Phase 4 polish): derive per-CM modifiers from cm.category and cm.effectiveness
+            # rather than a flat heuristic. Current values are a calibration baseline.
+            base_avail  = 0.05 * eff_mult
+            base_perf   = 0.05 * eff_mult
+            base_qual   = 0.03 * eff_mult
+            st.apply_modifier(avail_delta=base_avail, perf_delta=base_perf,
+                              quality_delta=base_qual)
+            self.active_countermeasures[cm_id] = {
+                "zone_id":      prob.zone_id,
+                "station_id":   prob.station_id,
+                "eff_mult":     eff_mult,
+                "applied_day":  self.time.day,
+                "decay_days":   cm.decay_days if cm.decay_enabled else None,
+                "avail_d":      base_avail,
+                "perf_d":       base_perf,
+                "qual_d":       base_qual,
+            }
+
+        self.maturity.register_cm(prob.zone_id, cm_id, cm.tier_int)
+        prob.applied_countermeasure = cm_id
+        prob.state = ProblemState.COUNTERMEASURE_APPLIED
+
+        return {
+            "success":       True,
+            "eff_multiplier": eff_mult,
+            "side_effect_id": side_effect_id,
+        }
+
+    def resolve_problem(self, problem_id: str) -> Optional[dict]:
+        """
+        Score and resolve a problem. Returns score dict, or None if not resolvable.
+        """
+        from scoring.metrics import calculate_all, total_score, credits_earned
+
+        prob = self.problems.get(problem_id)
+        if not prob or prob.state != ProblemState.COUNTERMEASURE_APPLIED:
+            return None
+
+        cm_id = prob.applied_countermeasure
+        cm    = self.cm_catalog.get(cm_id) if cm_id else None
+        cm_record = self.active_countermeasures.get(cm_id, {})
+
+        scores = calculate_all(
+            inspection_log    = self.inspection_log,
+            problem           = prob,
+            applied_cm_id     = cm_id or "",
+            applied_cm_tier   = cm.tier_int if cm else 0,
+            applied_cm_category = cm.category if cm else "",
+            applied_cm_zone_id  = cm_record.get("zone_id", prob.zone_id),
+            applied_day       = cm_record.get("applied_day", self.time.day),
+            zone_maturity     = self.maturity.zone_maturity(prob.zone_id),
+        )
+        total = total_score(scores)
+        earned = credits_earned(total, prob.severity)
+
+        self.credits += earned
+        self._remove_problem_modifiers(prob)
+        prob.solved_day = self.time.day
+        prob.score = scores
+        prob.state = ProblemState.RESOLVED
+
+        return {"scores": scores, "total": total, "credits_earned": earned}
+
+    def _tick_decay(self) -> None:
+        """Reduce effectiveness of decaying countermeasures each day."""
+        decayed = []
+        for cm_id, rec in self.active_countermeasures.items():
+            if rec["decay_days"] is None:
+                continue
+            days_active = self.time.day - rec["applied_day"]
+            if days_active >= rec["decay_days"]:
+                st = self.stations.get(rec["station_id"])
+                if st:
+                    st.remove_modifier(rec["avail_d"], rec["perf_d"], rec["qual_d"])
+                self.maturity.remove_cm(rec["zone_id"], cm_id)
+                decayed.append(cm_id)
+        for cm_id in decayed:
+            del self.active_countermeasures[cm_id]
 
     # ── KPI properties (live, for HUD) ───────────────────────────────────────
 
