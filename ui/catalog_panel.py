@@ -26,8 +26,8 @@ C_HIGHLIGHT = (50, 48, 40)
 C_TIER      = {1: (111, 211, 111), 2: (255, 214, 131),
                3: (255, 170, 80),  4: (232, 96, 74), 0: (160, 160, 180)}
 
-ROW_H   = 54
-VISIBLE = 10   # rows visible at once
+ROW_H   = 58
+VISIBLE = 9    # rows visible at once
 
 
 class CatalogPanel:
@@ -44,9 +44,11 @@ class CatalogPanel:
         self._selected:  Optional[Countermeasure] = None
         self._overlay    = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
 
-        self._font_title = pygame.font.SysFont("Arial", 15, bold=True)
-        self._font_mono  = pygame.font.SysFont("Courier New", 10, bold=True)
-        self._font_body  = pygame.font.SysFont("Arial", 12)
+        from ui.fonts import make as _fonts
+        f = _fonts()
+        self._font_title = f["title"]
+        self._font_mono  = f["mono"]
+        self._font_body  = f["body"]
 
     # ── Control ───────────────────────────────────────────────────────────────
 

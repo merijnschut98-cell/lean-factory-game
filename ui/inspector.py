@@ -49,10 +49,12 @@ class Inspector:
         self._obj: Optional[dict] = None
         self._factory = None
 
-        self._font_mono  = pygame.font.SysFont("Courier New", 10, bold=True)
-        self._font_body  = pygame.font.SysFont("Arial", 12)
-        self._font_title = pygame.font.SysFont("Arial", 14, bold=True)
-        self._font_kpi   = pygame.font.SysFont("Arial", 20, bold=True)
+        from ui.fonts import make as _fonts
+        f = _fonts()
+        self._font_mono  = f["mono"]
+        self._font_body  = f["body"]
+        self._font_title = f["title"]
+        self._font_kpi   = f["kpi"]
 
     # ── Control ───────────────────────────────────────────────────────────────
 
@@ -61,6 +63,7 @@ class Inspector:
         self._factory = factory
         self._open    = True
         self._pending_action: Optional[dict] = None
+        self._revealed_choice: Optional[dict] = None  # {problem_id, choice} shown after pick
         if factory and obj.get("station_id"):
             st = factory.stations.get(obj["station_id"])
             if st:
@@ -86,6 +89,12 @@ class Inspector:
             return
         factory = self._factory
         station_id = self._obj.get("station_id")
+
+        # Acknowledge a revealed dialogue choice result
+        if self._revealed_choice and key == pygame.K_RETURN:
+            self._revealed_choice = None
+            return
+
         if not station_id:
             return
 
@@ -103,6 +112,21 @@ class Inspector:
                        if p.state == ProblemState.COUNTERMEASURE_APPLIED]
             if applied:
                 self._pending_action = {"type": "resolve", "problem_id": applied[0].id}
+
+        elif key in (pygame.K_1, pygame.K_2, pygame.K_3):
+            choice_index = key - pygame.K_1   # 0, 1, or 2
+            # Find the first active problem at this station with an open fork
+            for prob in problems:
+                session = factory.investigation_sessions.get(prob.id)
+                fork = prob.dialogue.investigation if prob.dialogue else None
+                if fork and (session is None or not session.fork_complete):
+                    if choice_index < len(fork.choices):
+                        self._pending_action = {
+                            "type":        "dialogue_choice",
+                            "problem_id":  prob.id,
+                            "choice_index": choice_index,
+                        }
+                    break
 
     # ── Draw ──────────────────────────────────────────────────────────────────
 
@@ -261,13 +285,79 @@ class Inspector:
         if prob.state == ProblemState.ACTIVE:
             hint = "[C]  Apply Countermeasure"
             surf.blit(self._font_mono.render(hint, True, C_GOLD), (18, y))
-            y += 14
+            y += 16
         elif prob.state == ProblemState.COUNTERMEASURE_APPLIED:
             hint = "[R]  Resolve & Score"
             surf.blit(self._font_mono.render(hint, True, (111, 211, 111)), (18, y))
-            y += 14
+            y += 16
 
+        # Dialogue fork section
+        if self._factory and prob.dialogue and prob.dialogue.investigation:
+            y = self._draw_dialogue_fork(surf, y, prob)
+
+        y += 6
+        return y
+
+    def _draw_dialogue_fork(self, surf: pygame.Surface, y: int, prob) -> int:
+        from problems.dialogue import ChoiceOutcome
+        factory = self._factory
+        fork    = prob.dialogue.investigation
+        session = factory.investigation_sessions.get(prob.id)
+
+        pygame.draw.line(surf, (40, 38, 30), (18, y), (PANEL_W - 18, y))
+        y += 8
+
+        # Revealed-choice panel (shown after player makes a pick)
+        if (self._revealed_choice and
+                self._revealed_choice.get("problem_id") == prob.id):
+            choice = self._revealed_choice["choice"]
+            outcome_colors = {
+                ChoiceOutcome.CORRECT:  (111, 211, 111),
+                ChoiceOutcome.PLAUSIBLE:(255, 214, 131),
+                ChoiceOutcome.WRONG:    (232, 96,  74),
+            }
+            o_color = outcome_colors.get(choice.outcome, C_DIM)
+            surf.blit(self._font_mono.render(
+                choice.outcome.value, True, o_color), (18, y))
+            y += 18
+            if choice.evidence:
+                for ln in wrap_text(choice.evidence, self._font_body, PANEL_W - 36)[:3]:
+                    surf.blit(self._font_body.render(ln, True, C_PANEL_INK), (18, y))
+                    y += 16
+            y += 4
+            for ln in wrap_text(choice.hint, self._font_body, PANEL_W - 36)[:3]:
+                surf.blit(self._font_body.render(ln, True, C_DIM), (18, y))
+                y += 16
+            surf.blit(self._font_mono.render("[Enter]  Continue", True, C_GOLD), (18, y))
+            y += 18
+            return y
+
+        # Completed fork summary
+        if session and session.fork_complete:
+            surf.blit(self._font_mono.render(
+                "✓ INVESTIGATION COMPLETE", True, (111, 211, 111)), (18, y))
+            y += 16
+            if session.earned_rally_bonus:
+                surf.blit(self._font_body.render(
+                    "+10% credit bonus (Learning Rally)", True, (255, 214, 131)), (18, y))
+                y += 16
+            return y
+
+        # Fork prompt + choices
+        npc_header = f"[ {fork.npc} ]"
+        surf.blit(self._font_mono.render(npc_header, True, C_GOLD), (18, y))
+        y += 18
+        for ln in wrap_text(fork.prompt, self._font_body, PANEL_W - 36)[:3]:
+            surf.blit(self._font_body.render(ln, True, C_PANEL_INK), (18, y))
+            y += 16
         y += 4
+        for i, choice in enumerate(fork.choices[:3]):
+            key_lbl = f"[{i + 1}]"
+            surf.blit(self._font_mono.render(key_lbl, True, C_GOLD), (18, y))
+            for ln in wrap_text(choice.text, self._font_body, PANEL_W - 56)[:2]:
+                surf.blit(self._font_body.render(ln, True, C_PANEL_INK), (44, y))
+                y += 16
+            y += 2
         return y
 
     def _draw_ct_history(self, surf: pygame.Surface, y: int, st) -> int:

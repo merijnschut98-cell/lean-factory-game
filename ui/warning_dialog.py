@@ -30,9 +30,11 @@ class WarningDialog:
         self._result: Optional[str] = None   # "proceed" | "cancel"
         self._overlay = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
 
-        self._font_title = pygame.font.SysFont("Arial", 14, bold=True)
-        self._font_body  = pygame.font.SysFont("Arial", 12)
-        self._font_mono  = pygame.font.SysFont("Courier New", 10, bold=True)
+        from ui.fonts import make as _fonts
+        f = _fonts()
+        self._font_title = f["title"]
+        self._font_body  = f["body"]
+        self._font_mono  = f["mono"]
 
     def show(self, warning_text: str) -> None:
         self._text   = warning_text
@@ -66,7 +68,7 @@ class WarningDialog:
             return
 
         sw, sh = self.screen.get_width(), self.screen.get_height()
-        w, h = 560, 220
+        w, h = 580, 240
         x, y = (sw - w) // 2, (sh - h) // 2
 
         self._overlay.fill((0, 0, 0, 160))
@@ -80,10 +82,10 @@ class WarningDialog:
             (x + 20, y + 18),
         )
 
-        ty = y + 50
+        ty = y + 56
         for ln in wrap_text(self._text, self._font_body, w - 40)[:5]:
             self.screen.blit(self._font_body.render(ln, True, C_INK), (x + 20, ty))
-            ty += 18
+            ty += 20
 
         self.screen.blit(
             self._font_mono.render("[Enter / P]  Proceed    [Esc / C]  Cancel",

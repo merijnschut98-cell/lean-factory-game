@@ -25,7 +25,7 @@ C_GOOD   = (111, 211, 111)
 C_WARN   = (255, 184,  77)
 C_BAD    = (232,  96,  74)
 
-HUD_H    = 44   # top bar height in px
+HUD_H    = 50   # top bar height in px
 
 
 class HUD:
@@ -34,9 +34,11 @@ class HUD:
         self.sw       = screen.get_width()
         self.sh       = screen.get_height()
 
-        self._font_mono  = pygame.font.SysFont("Courier New", 11, bold=True)
-        self._font_body  = pygame.font.SysFont("Arial", 12)
-        self._font_large = pygame.font.SysFont("Arial", 13, bold=True)
+        from ui.fonts import make as _fonts
+        f = _fonts()
+        self._font_mono  = f["mono"]
+        self._font_body  = f["body"]
+        self._font_large = f["large"]
 
         self._minimap_surf: Optional[pygame.Surface] = None
         self._mm_dirty = True
@@ -62,7 +64,7 @@ class HUD:
         clock_txt = factory.time.format_clock() if factory else "Day 1  Shift 1  00:00"
         speed_txt = factory.time.speed_label if factory else "1×"
         left = f"NovaGlide Plant 01   {clock_txt}   [{speed_txt}]"
-        self.screen.blit(self._font_mono.render(left, True, C_GOLD), (12, 10))
+        self.screen.blit(self._font_mono.render(left, True, C_GOLD), (12, 11))
 
         # KPI strip
         if factory:
@@ -73,13 +75,13 @@ class HUD:
                 ("FTR",    f"{factory.last_day_ftr * 100:>5.1f}%"),
                 ("CREDITS",f"{factory.credits:>6}"),
             ]
-            x = self.sw // 2 - 280
+            x = self.sw // 2 - 300
             for key, val in kpis:
                 k_surf = self._font_mono.render(key, True, C_DIM)
                 v_surf = self._font_mono.render(val, True, C_INK)
                 self.screen.blit(k_surf, (x, 8))
-                self.screen.blit(v_surf, (x, 24))
-                x += 120
+                self.screen.blit(v_surf, (x, 26))
+                x += 130
 
     # ── Room HUD (top-left, over world) ──────────────────────────────────────
 

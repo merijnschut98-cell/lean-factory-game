@@ -46,11 +46,13 @@ class ScorePanel:
         self._dismissed = False
         self._overlay = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
 
-        self._font_title = pygame.font.SysFont("Arial", 16, bold=True)
-        self._font_label = pygame.font.SysFont("Arial", 12, bold=True)
-        self._font_body  = pygame.font.SysFont("Arial", 12)
-        self._font_big   = pygame.font.SysFont("Arial", 28, bold=True)
-        self._font_mono  = pygame.font.SysFont("Courier New", 10, bold=True)
+        from ui.fonts import make as _fonts
+        f = _fonts()
+        self._font_title = f["title"]
+        self._font_label = f["label"]
+        self._font_body  = f["body"]
+        self._font_big   = f["big"]
+        self._font_mono  = f["mono"]
 
     def show(self, problem_name: str, scores: dict, total: int, credits_earned: int) -> None:
         self._problem_name   = problem_name
@@ -85,7 +87,7 @@ class ScorePanel:
             return
 
         sw, sh = self.screen.get_width(), self.screen.get_height()
-        w, h = 560, 440
+        w, h = 580, 470
         x, y = (sw - w) // 2, (sh - h) // 2
 
         self._overlay.fill((0, 0, 0, 180))
@@ -117,7 +119,7 @@ class ScorePanel:
                                    (x + w - 90 + dot_i * 18, ty + 7), 6)
             score_txt = self._font_label.render(f"{score}/5", True, color)
             self.screen.blit(score_txt, (x + w - 40, ty))
-            ty += 24
+            ty += 28
 
         pygame.draw.line(self.screen, (40, 38, 30), (x + 12, ty + 4), (x + w - 12, ty + 4))
         ty += 16

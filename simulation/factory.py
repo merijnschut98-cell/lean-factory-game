@@ -22,6 +22,7 @@ from problems.catalog         import load_all
 from problems.visibility      import evaluate_visibility
 from problems.problem         import Problem, ProblemState
 from problems.countermeasure  import CountermeasureCatalog
+from problems.dialogue        import InvestigationSession
 from maturity.maturity_engine import MaturityEngine
 from maturity.mismatch        import effectiveness_multiplier
 
@@ -80,6 +81,8 @@ class Factory:
         self.cm_catalog:        CountermeasureCatalog = CountermeasureCatalog()
         # cm_id → {zone_id, eff_multiplier, applied_day, decay_days, avail_d, perf_d, qual_d}
         self.active_countermeasures: Dict[str, dict] = {}
+        # problem_id → InvestigationSession (Phase 5 learning fork tracking)
+        self.investigation_sessions: Dict[str, InvestigationSession] = {}
 
         # Running plant-level totals (reset each day)
         self._daily_output:  int   = 0
@@ -217,6 +220,15 @@ class Factory:
                 perf_delta=prob.effect_modifiers.get("perf_delta", 0.0),
                 quality_delta=prob.effect_modifiers.get("quality_delta", 0.0),
             )
+
+    def get_or_create_session(self, problem_id: str) -> Optional[InvestigationSession]:
+        """Return existing session, or create one if the problem has a dialogue fork."""
+        prob = self.problems.get(problem_id)
+        if not prob or not prob.dialogue or not prob.dialogue.investigation:
+            return None
+        if problem_id not in self.investigation_sessions:
+            self.investigation_sessions[problem_id] = InvestigationSession(problem_id=problem_id)
+        return self.investigation_sessions[problem_id]
 
     def log_inspection(self, entity_id: str, metric: str) -> None:
         """Record a player inspection and immediately check for newly visible problems."""
@@ -396,10 +408,11 @@ class Factory:
                  "wip": s.total_wip, "ftr": s.ftr}
                 for s in self.day_history
             ],
-            "problems":              {pid: p.to_save_dict() for pid, p in self.problems.items()},
+            "problems":               {pid: p.to_save_dict() for pid, p in self.problems.items()},
             "active_countermeasures": dict(self.active_countermeasures),
             "inspection_log":         list(self.inspection_log),
             "maturity":               self.maturity.to_dict(),
+            "investigation_sessions": {pid: s.to_dict() for pid, s in self.investigation_sessions.items()},
         }
 
     def from_dict(self, d: dict) -> None:
@@ -429,3 +442,5 @@ class Factory:
         self.inspection_log = d.get("inspection_log", [])
         if d.get("maturity"):
             self.maturity.from_dict(d["maturity"])
+        for pid, s_d in d.get("investigation_sessions", {}).items():
+            self.investigation_sessions[pid] = InvestigationSession.from_dict(s_d)

@@ -100,6 +100,7 @@ Drives the three Learning Pillars into concrete mechanics. NPC forks are **deter
 - ✅ `dialogue:` investigation forks on T1-001 through T1-005 (CORRECT / PLAUSIBLE / WRONG with evidence, hint, teaches)
 - ✅ `Problem.from_dict()` parses `teaches` and `dialogue` fields; `Problem` carries both
 - ✅ 31 new tests covering: YAML parsing, choice tagging, InvestigationSession (rally, concepts, serialisation)
+- ⬜ Interaction indicators: visual `[?]` speech-bubble marker above NPCs that have an active investigation fork for the current problem; pulsing ring around stations that have an unread fork — players must always know where to go next
 - ⬜ Dialogue fork UI: choice panel rendered inside inspector when NPC has an active fork for this problem
 - ⬜ `InvestigationSession` wired to factory state: created on inspector open, stored on `factory`, persisted in save
 - ⬜ Score boost on correct fork: `score_feed` field maps to metric bonus (e.g. RCA +1 on CORRECT)
@@ -204,6 +205,7 @@ Content design happens *after* Phase 5 so every new problem and NPC can immediat
 ### General UX
 
 - ⬜ No action should block gameplay for more than 1 second: all dialogs dismissible with Esc or Enter immediately
+- ✅ UI text sizes: all panels audited and bumped to minimum 14px body / 13px mono (inspector, HUD, catalog, score panel, warning dialog were 10–12px — unreadable at 1280×720)
 - ⬜ Tooltip system: hovering over HUD metrics shows a one-line explanation (OEE = Availability × Performance × Quality)
 - ⬜ Minimap problem dots: active problem zones shown as coloured dots on the minimap
 - ⬜ Settings screen: simulation speed default, display options

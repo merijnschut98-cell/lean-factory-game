@@ -171,6 +171,25 @@ def _run_game() -> None:
                                     prob.name, result["scores"],
                                     result["total"], result["credits_earned"])
 
+                elif event.key in (pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_RETURN):
+                        inspector.handle_action_key(event.key)
+                        action = inspector.consume_action()
+                        if action and action["type"] == "dialogue_choice":
+                            prob_id = action["problem_id"]
+                            idx     = action["choice_index"]
+                            prob    = factory.problems.get(prob_id)
+                            if prob and prob.dialogue and prob.dialogue.investigation:
+                                choices = prob.dialogue.investigation.choices
+                                if idx < len(choices):
+                                    session = factory.get_or_create_session(prob_id)
+                                    if session and not session.fork_complete:
+                                        chosen = choices[idx]
+                                        session.record_choice(chosen)
+                                        inspector._revealed_choice = {
+                                            "problem_id": prob_id,
+                                            "choice":     chosen,
+                                        }
+
         # ── Movement ──────────────────────────────────────────────────────────
         if not catalog_panel.is_open and not warning_dlg.is_open and not score_panel.is_open:
             keys = pygame.key.get_pressed()

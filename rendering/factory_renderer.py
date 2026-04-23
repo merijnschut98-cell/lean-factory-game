@@ -143,6 +143,10 @@ class FactoryRenderer:
         if player.facing_object:
             self._draw_highlight(player.facing_object, cam_x, cam_y)
 
+        # 6. Interaction indicators (dialogue fork available)
+        if factory:
+            self._draw_interaction_indicators(factory, cam_x, cam_y)
+
     # ── Object drawing ────────────────────────────────────────────────────────
 
     def _draw_object(self, obj: dict, cam_x: int, cam_y: int, factory) -> None:
@@ -206,6 +210,60 @@ class FactoryRenderer:
         pygame.draw.circle(self.screen, (240, 210, 175), (sx, sy - 10), 5)
 
     # ── Interaction highlight ─────────────────────────────────────────────────
+
+    def _draw_interaction_indicators(self, factory, cam_x: int, cam_y: int) -> None:
+        """
+        Draw [?] badges on stations and role-desks that have an unread dialogue fork.
+        Pulse alpha based on game time so badges draw the eye without being distracting.
+        """
+        ticks = pygame.time.get_ticks()
+        pulse = int(180 + 75 * abs(__import__("math").sin(ticks / 700.0)))
+
+        # Collect NPC roles that have an available (incomplete) fork
+        roles_with_fork: set = set()
+        stations_with_fork: set = set()
+        for prob in factory.active_problems.values():
+            if not prob.dialogue or not prob.dialogue.investigation:
+                continue
+            session = factory.investigation_sessions.get(prob.id)
+            if session and session.fork_complete:
+                continue
+            roles_with_fork.add(prob.dialogue.investigation.npc)
+            stations_with_fork.add(prob.station_id)
+
+        if not roles_with_fork and not stations_with_fork:
+            return
+
+        font = pygame.font.SysFont("Arial", 11, bold=True)
+
+        for obj in OBJECTS:
+            has_indicator = False
+            if obj.get("station_id") in stations_with_fork:
+                has_indicator = True
+            elif obj.get("role") in roles_with_fork:
+                has_indicator = True
+
+            if not has_indicator:
+                continue
+
+            px = obj["tx"] * TILE_SIZE - cam_x
+            py = obj["ty"] * TILE_SIZE - cam_y
+            pw = obj["w"]  * TILE_SIZE
+
+            # Skip off-screen
+            if px + pw < 0 or px > self.screen.get_width():
+                continue
+
+            # Pulsing ring above the object
+            cx = px + pw // 2
+            cy = py - 6
+            ring_surf = pygame.Surface((20, 20), pygame.SRCALPHA)
+            pygame.draw.circle(ring_surf, (255, 214, 131, pulse), (10, 10), 9, 2)
+            # [?] label inside
+            q = font.render("?", True, (255, 214, 131))
+            ring_surf.set_alpha(pulse)
+            self.screen.blit(ring_surf, (cx - 10, cy - 10))
+            self.screen.blit(q, (cx - q.get_width() // 2, cy - q.get_height() // 2))
 
     def _draw_highlight(self, obj: dict, cam_x: int, cam_y: int) -> None:
         px = obj["tx"] * TILE_SIZE - cam_x - 2
