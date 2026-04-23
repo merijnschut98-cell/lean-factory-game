@@ -12,7 +12,7 @@ from typing import Dict, List, Optional
 
 from config.constants import (
     STATION_DEFINITIONS, OPERATOR_DEFINITIONS, STATION_FLOW_ORDER,
-    SHIFTS_PER_DAY,
+    SHIFTS_PER_DAY, CREDIT_BASE,
 )
 from simulation.station     import Station
 from simulation.operator    import Operator
@@ -371,17 +371,21 @@ class Factory:
         return {"scores": scores, "total": total, "credits_earned": earned,
                 "rally_bonus": rally_bonus}
 
+    @property
+    def active_mission_count(self) -> int:
+        return sum(1 for m in self.missions.values() if m.active and not m.completed)
+
     def _check_mission_triggers(self) -> None:
         """Activate missions whose trigger conditions are now met (max 2 active at once)."""
-        active_count = sum(1 for m in self.missions.values() if m.active and not m.completed)
+        count = self.active_mission_count
         for mission in self.missions.values():
             if mission.active or mission.completed:
                 continue
-            if active_count >= 2:
+            if count >= 2:
                 break
             if self._mission_trigger_met(mission):
                 mission.active = True
-                active_count += 1
+                count += 1
 
     def _mission_trigger_met(self, mission: Mission) -> bool:
         t = mission.trigger
@@ -392,9 +396,8 @@ class Factory:
         if t.type == "kpi":
             val = {"oee": self.live_oee, "ftr": self.last_day_ftr,
                    "wip": float(self.live_wip)}.get(t.metric, 0.0)
-            return val <= t.threshold if t.metric != "wip" else val >= t.threshold
+            return val >= t.threshold if t.direction == "gte" else val <= t.threshold
         if t.type == "npc":
-            # Checked externally when player interacts with the NPC
             return False
         if t.type == "inspect":
             return any(e["entity"].startswith(t.zone_id) for e in self.inspection_log)
@@ -402,14 +405,14 @@ class Factory:
 
     def trigger_npc_mission(self, npc_role: str) -> Optional[str]:
         """Called when player talks to an NPC. Activates any pending NPC-triggered mission."""
-        active_count = sum(1 for m in self.missions.values() if m.active and not m.completed)
+        if self.active_mission_count >= 2:
+            return None
         for mission in self.missions.values():
             if mission.active or mission.completed:
                 continue
             if mission.trigger.type == "npc" and mission.trigger.npc_role == npc_role:
-                if active_count < 2:
-                    mission.active = True
-                    return mission.id
+                mission.active = True
+                return mission.id
         return None
 
     def active_mission_hint(self) -> str:
@@ -420,34 +423,29 @@ class Factory:
         return ""
 
     def _check_circuit_breakers(self) -> None:
-        """
-        Simulation safety nets — prevent runaway states without punishing the player.
-        All effects are temporary and narrated via circuit_breaker_events.
-        """
-        # WIP ceiling: auto-slow when WIP > 100 to prevent unbounded growth
+        """Simulation safety nets — record events and slow simulation. No station mutation."""
+        # WIP ceiling: auto-slow to 1× when WIP > 100
         if self.live_wip > 100 and not self.time.paused:
             if self.time._speed_index > 1:
                 self.time.set_speed(1)
-            self.circuit_breaker_events.append({
-                "type": "wip_ceiling", "day": self.time.day,
-                "message": "Lines backing up — simulation slowed to 1×.",
-            })
+            self._add_circuit_event("wip_ceiling", "Lines backing up — simulation slowed to 1×.")
 
-        # Active problem cap: max 3 active, max 1 critical
-        active = [p for p in self.problems.values()
-                  if p.state not in (ProblemState.DORMANT, ProblemState.RESOLVED)]
-        critical_count = sum(1 for p in active if p.severity == "critical")
+        # Update caps for visibility.py to read
+        active = list(self.active_problems.values())
         self._active_problem_cap_reached = len(active) >= 3
-        self._critical_cap_reached = critical_count >= 1
+        self._critical_cap_reached = sum(1 for p in active if p.severity == "critical") >= 1
 
-        # OEE floor: apply temporary free stabilizer when plant OEE < 20%
+        # OEE floor: record event for NPC notification (no station mutation — avoids accumulation)
         if self.live_oee < 0.20:
             worst = min(self.stations.values(), key=lambda s: s.oee)
-            worst.apply_modifier(avail_delta=0.04, perf_delta=0.04)
-            self.circuit_breaker_events.append({
-                "type": "oee_floor", "day": self.time.day,
-                "message": f"Crisis stabilizer active on {worst.name}.",
-            })
+            self._add_circuit_event("oee_floor", f"Critical OEE on {worst.name} — check immediately.")
+
+    def _add_circuit_event(self, event_type: str, message: str) -> None:
+        self.circuit_breaker_events.append(
+            {"type": event_type, "day": self.time.day, "message": message}
+        )
+        if len(self.circuit_breaker_events) > 50:
+            self.circuit_breaker_events = self.circuit_breaker_events[-50:]
 
     def rollback_countermeasure(self, problem_id: str) -> Optional[dict]:
         """
@@ -455,7 +453,6 @@ class Factory:
         Re-activates the problem so the player can try a different approach.
         Returns None if the problem has no CM applied.
         """
-        from config.constants import CREDIT_BASE
         prob = self.problems.get(problem_id)
         if not prob or prob.state != ProblemState.COUNTERMEASURE_APPLIED:
             return None

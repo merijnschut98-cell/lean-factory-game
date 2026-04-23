@@ -84,6 +84,7 @@ missions:
       type: kpi
       metric: wip
       threshold: 65.0
+      direction: gte
     problem_ids:
       - T1-006
       - T1-009

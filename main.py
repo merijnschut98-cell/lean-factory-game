@@ -46,6 +46,7 @@ def _run_headless(days: int) -> None:
 def _run_game() -> None:
     import pygame
     from config.world_data import OBJECTS, NPCS, PLAYER_SPAWN_TILE
+    _INTERACTABLES = OBJECTS + NPCS   # pre-computed once — used every frame
     from simulation.factory import Factory
     from navigation.tilemap import Tilemap
     from navigation.player import Player
@@ -229,7 +230,7 @@ def _run_game() -> None:
             if dx or dy:
                 player.move(dx, dy)
 
-        facing = player.detect_facing(OBJECTS + NPCS)
+        facing = player.detect_facing(_INTERACTABLES)
 
         # ── Simulation tick ───────────────────────────────────────────────────
         factory.tick(real_dt)

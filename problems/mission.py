@@ -22,7 +22,8 @@ class MissionTrigger:
     type: str               # "npc" | "kpi" | "day" | "inspect" | "auto"
     npc_role: str = ""      # for type "npc": role name that must be interacted with
     metric: str = ""        # for type "kpi": "oee" | "ftr" | "wip"
-    threshold: float = 0.0  # for type "kpi": trigger when metric <= threshold
+    threshold: float = 0.0  # for type "kpi": trigger value
+    direction: str = "lte"  # for type "kpi": "lte" (<=) or "gte" (>=)
     after_day: int = 0      # for type "day": trigger after this many in-game days
     zone_id: str = ""       # for type "inspect": trigger after player inspects zone
 
@@ -44,15 +45,17 @@ class Mission:
     hint_index: int = 0
     problems_resolved: List[str] = field(default_factory=list)
 
-    def record_resolved(self, problem_id: str) -> bool:
-        """Mark a problem resolved. Returns True if mission is now complete."""
+    def record_resolved(self, problem_id: str) -> None:
+        """Record that a problem in this mission was resolved."""
         if problem_id in self.problem_ids and problem_id not in self.problems_resolved:
             self.problems_resolved.append(problem_id)
+            self.completed = self.is_complete
+
+    @property
+    def is_complete(self) -> bool:
         if self.completion_condition == "any":
-            self.completed = bool(self.problems_resolved)
-        else:
-            self.completed = all(pid in self.problems_resolved for pid in self.problem_ids)
-        return self.completed
+            return bool(self.problems_resolved)
+        return all(pid in self.problems_resolved for pid in self.problem_ids)
 
     @property
     def current_hint(self) -> str:
@@ -105,6 +108,7 @@ def _parse_mission(raw: dict) -> Mission:
         npc_role  = str(trig_raw.get("npc_role", "")),
         metric    = str(trig_raw.get("metric", "")),
         threshold = float(trig_raw.get("threshold", 0.0)),
+        direction = str(trig_raw.get("direction", "lte")),
         after_day = int(trig_raw.get("after_day", 0)),
         zone_id   = str(trig_raw.get("zone_id", "")),
     )

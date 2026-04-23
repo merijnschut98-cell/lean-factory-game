@@ -13,7 +13,7 @@ from navigation.tilemap import Tilemap
 
 TILE_SIZE   = 24     # px — matches v3.html TS
 WALK_SPEED  = 2.0    # px per frame at 60 fps → 120 px/s
-RUN_MULT    = 2.0
+RUN_MULT    = 2.5
 FOOT_RADIUS = 6      # px — collision sample circle radius
 
 
