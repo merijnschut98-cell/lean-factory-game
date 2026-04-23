@@ -42,6 +42,7 @@ All design artifacts: spec doc, 25-problem Tier 1 catalog YAML, 79-countermeasur
 - ✅ Tilemap, player sprite, camera, collision detection, interaction zones
 - ✅ Factory rendering (zone colors, station sprites, operator sprites)
 - ✅ HUD (clock, speed, KPI strip, minimap), inspector panel (station metrics, NPC dialogue)
+- ✅ Shift-to-run: holding Shift moves at 2.5× speed (RUN_MULT = 2.5 in player.py)
 - ✅ Code-reviewed; runtime visual test pending first play session
 
 **Deliverable:** Walkable factory. Player navigates floor, sees stations, inspector opens on E. ✅
@@ -76,13 +77,13 @@ All design artifacts: spec doc, 25-problem Tier 1 catalog YAML, 79-countermeasur
 - ✅ Game loop fully orchestrated: inspector → catalog → warning → apply → resolve → score
 - ✅ Save/load for full game state: problems runtime state, active_countermeasures, inspection_log, maturity engine
 - ✅ Per-CM modifier tuning: 14-category modifier table in `_CM_CATEGORY_MODIFIERS`
-- ✅ 91 automated tests (scoring, catalog, mismatch, apply/resolve, save/load round-trips)
+- ✅ 138 automated tests (scoring, catalog, mismatch, apply/resolve, save/load, missions, rollback)
 
 **Deliverable:** First fully playable loop. Walk → find → investigate → apply CM → score → earn credits. ✅
 
 ---
 
-## Phase 5 — Guided Learning, Decision Forks, and Mistake Recovery 🔧 ~35% COMPLETE
+## Phase 5 — Guided Learning, Decision Forks, and Mistake Recovery 🔧 ~75% COMPLETE
 
 NPC forks are **deterministic, YAML-driven dialogue trees** — separate from the AI coach (Phase 8). Forks scaffold the *decision*; the coach reflects on it.
 
@@ -90,118 +91,83 @@ NPC forks are **deterministic, YAML-driven dialogue trees** — separate from th
 
 - ✅ `problems/dialogue.py`: `DialogueChoice`, `InvestigationFork`, `FiveWhysStep`, `ProblemDialogue`, `InvestigationSession` with Learning Rally detection and round-trip serialisation
 - ✅ `teaches:` tags on all 25 Tier 1 problems
-- ✅ `dialogue:` investigation forks authored for T1-001 through T1-025 (3 choices each: CORRECT / PLAUSIBLE / WRONG with evidence, hint, teaches, score_feed)
+- ✅ `dialogue:` investigation forks on all 25 Tier 1 problems (CORRECT / PLAUSIBLE / WRONG with evidence, hint, teaches, score_feed)
 - ✅ `Problem` carries `teaches` and `dialogue`; loader parses both
 - ✅ `factory.investigation_sessions` dict + `get_or_create_session()`; persisted in save
-- ✅ Pulsing `[?]` interaction indicator on stations and role-desks with an unread fork (`factory_renderer.py`)
+- ✅ Pulsing `[?]` interaction indicator on stations and role-desks with an unread fork
 - ✅ Dialogue fork UI in inspector: NPC prompt → `[1][2][3]` choices → reveal evidence/hint → `[Enter]` continue
+- ✅ `score_feed` wired: correct fork choice applies +1 bonus (capped at 5) to named scoring metric
+- ✅ Learning Rally bonus wired: +10% credits when player solves after an initial wrong attempt
 - ✅ `InvestigationSession.choices_made` tracks decision log per problem
+- ✅ `factory.discovered_concepts` registry: populated from fork choices and station inspections; persisted
+- ✅ Concept codex panel: `[K]` opens `ui/codex_panel.py` — 62 concepts; unlocked with definitions, locked as `???`
+- ✅ Rollback action: `[U]` in inspector — costs 25% of base credit, re-activates problem, clears session
+- ✅ NPC sprites interactable: all NPCs have `w=1, h=1` + `label`; `detect_facing(OBJECTS + NPCS)` — walking up to any NPC opens inspector
+- ✅ Role-name mismatch fixed: all sources now use `"Quality Lead"` consistently
+- ✅ Inspector scroll: mouse wheel + arrow keys scroll; 2400px off-screen surface; scroll indicator
 - ✅ `ui/fonts.py`: single source for all UI font sizes (mono 13px, body 14px, title 16px)
-- ✅ 31 tests covering dialogue engine (108 total)
+- ✅ Mission system: `problems/mission.py` — `Mission`, `MissionTrigger` with direction field; YAML loader
+- ✅ Tier 1 mission pack: 5 missions in `data/missions_tier1.yaml` (auto/npc/kpi/day/inspect triggers)
+- ✅ Progressive problem visibility: problems gated behind active missions; sorted by severity; cap enforced
+- ✅ Active problem cap: max 3 active, max 1 critical (enforced in `visibility.py`)
+- ✅ Mission flood cap: max 2 active missions at once
+- ✅ WIP ceiling circuit breaker: WIP > 100 auto-slows simulation to 1×; events capped at 50
+- ✅ OEE floor circuit breaker: OEE < 20% logs a critical event (no station mutation — avoids accumulation)
+- ✅ Mission state persisted in `factory.to_dict()`/`from_dict()`
+- ✅ `active_mission_count` property on Factory eliminates duplicated sum
+- ✅ 30 new tests: mission triggers, completion, NPC activation, rollback, visibility caps (138 total)
 
-### Bugs found while coding — fix before continuing
+### Remaining — guided decision flow
 
-- ✅ **Role-name mismatch**: fixed — `world_data.py` desk now uses `"Quality Lead"` matching NPC sprite, NPC_LINES, and T1-003 dialogue
-- ✅ **Inspector panel overflow**: fixed — inspector now renders to a 2400px tall off-screen surface and blits a scrollable window; mouse wheel + arrow keys scroll; scroll indicator shown when content exceeds screen height
-- ✅ **NPC sprites interactable**: NPCS now have `w=1, h=1` + `label` field; `detect_facing(OBJECTS + NPCS)` in main.py — walking up to any NPC sprite opens the inspector
+- ⬜ **`teaches:` tags on all 79 countermeasures**: CMs need them so codex unlocks fire when a CM is applied, not just when a fork is triggered
+- ⬜ **5 Whys guided flow**: author `five_whys:` sections in YAML for root-cause problems (data model ready); render as follow-up fork after investigation fork completes
+- ⬜ **Gemba walk decision tree**: player chooses who to talk to, what to time, what to measure — each NPC gives a different partial perspective; full picture requires multiple stops
+- ⬜ **CM selection fork**: when catalog opens from a specific NPC, NPC proposes shortlist (correct / off-tier / unrelated) with post-selection explanation
+- ⬜ **DMAIC workflow scaffold**: Define → Measure → Analyze → Improve → Control as multi-stage A3 form; unlocks gradually
 
-### Guided decision flow — remaining
+### Remaining — mission system
 
-- ✅ **Wire `score_feed` into scoring**: correct fork choice with `score_feed: "RCA"` now applies +1 bonus (capped at 5) to that metric in `resolve_problem()`
-- ✅ **Wire Learning Rally bonus into scoring**: `InvestigationSession.earned_rally_bonus` now applies +10% to `credits_earned` in `resolve_problem()`
-- ✅ **Dialogue forks for all 25 Tier 1 problems**: all problems have authored investigation forks (3 choices each: CORRECT / PLAUSIBLE / WRONG)
-- ⬜ **`teaches:` tags on all 79 countermeasures**: problems have tags; CMs need them too so codex unlocks fire when a CM is applied, not just when a fork is triggered
-- ⬜ 5 Whys guided flow: author `five_whys:` sections in YAML for root-cause problems (data model already supports it); render as follow-up fork after investigation fork is complete
-- ⬜ Gemba walk decision tree: player chooses who to talk to, what to time, what to measure — each NPC gives a different partial perspective; full picture requires multiple stops
-- ⬜ CM selection fork: when catalog opens from a specific NPC, NPC proposes shortlist (correct / off-tier / unrelated) with post-selection explanation
-- ⬜ DMAIC workflow scaffold: Define → Measure → Analyze → Improve → Control as multi-stage A3 form; unlocks gradually
+- ⬜ **Mission HUD indicator**: small active mission title + current hint shown in a corner of the HUD when a mission is active; nothing shown when no mission is active
+- ⬜ **Mission briefing dialogue**: when a mission activates via NPC interaction, the NPC delivers the narrative briefing as a short dialogue exchange (framed as invitation, never a command)
+- ⬜ **Mission completion notification**: resolving the key problem triggers a brief debriefing from the source NPC
+- ⬜ **Lean Coach NPC**: add a Black Belt / Lean Coach character to the office wing; delivers kaizen and DMAIC missions with structured methodical framing; distinct from operational floor NPCs
+- ⬜ **NPC awareness hints**: while a mission is active, NPCs near affected zones make context-appropriate ambient comments that hint toward the problem without naming it
 
-### Safety net, pacing governor, and stop-gaps
+### Remaining — safety nets
 
-The game has no lose state and no timers. Urgency is created by KPI degradation and NPC ambient comments, not countdown clocks. The following safeguards ensure the game stays doable regardless of how the player plays.
+- ⬜ **FTR floor circuit breaker**: if plant FTR drops below 60%, log a critical event and briefly pause the Final QA output with narrative framing ("too many failures — pausing final test")
+- ⬜ **Side-effect suppression**: if at active problem cap, harmful CM side-effects downgraded to warnings rather than spawning new problems
+- ⬜ **Daily auto-snapshot**: currently auto-saves every 5 real minutes — change to trigger on in-game day boundary so player can always restart from yesterday's state
+- ⬜ **No hard fail state for bankruptcy**: zero credits triggers "back-to-basics" week — simpler problems, free coach consults, narrative framing as learning reset
 
-**Problem / mission throttle**
-- ✅ **Active problem cap**: max 3 active problems, max 1 CRITICAL — enforced in `visibility.py`; new problems queue behind the cap
-- ✅ **Mission flood cap**: max 2 active missions at once — enforced in `_check_mission_triggers()`
-- ⬜ **Side-effect suppression**: if at active problem cap, harmful CM side-effects should be downgraded to warnings rather than spawning new problems
+### Remaining — mistake tolerance
 
-**Simulation overflow circuit breakers**
-- ✅ **WIP ceiling**: if WIP > 100, simulation auto-slows to 1× speed and logs a `circuit_breaker_events` entry
-- ✅ **OEE floor**: if plant OEE < 20%, temporary +4% avail/perf modifier applied to worst station
-- ✅ **Credit floor**: credits capped at 0 in `rollback_countermeasure()` and bankruptcy checks
-- ⬜ **FTR floor**: if plant FTR drops below 60%, add a narrative "Final QA paused" event and briefly halt the packaging station output
+- ⬜ Soft-punishment ladder: first wrong CM = floor manager tip; second = 10% refund penalty; third = score penalty. Never game-over
+- ⬜ Recovery coach dialogue: after failed/mismatched CM, NPC offers "want to talk through what happened?"
 
-**No timers rule**
-- ⬜ **No mission timers**: missions have no deadlines, countdowns, or expiry. Urgency comes only from KPI degradation (the simulation naturally worsening) and NPC ambient comments — never from a visible clock
-- ⬜ **No session time pressure**: the game can be paused at any point; closing the game saves state and the player resumes exactly where they left off
-- ⬜ **Pace indicators only**: the HUD may show "days since problem first appeared" for context, but this is informational — it never triggers a penalty or a timer-based event
+### Remaining — learning content
 
-### Mission system
-
-Problems do not all surface at once. The player discovers them through **missions** — thematic clusters of 2–5 related problems unlocked by talking to NPCs, observing dashboards, or noticing floor conditions. The mission system provides hints (not answers) that guide the player toward the next observation without removing the discovery experience.
-
-- ✅ **Mission data model**: `problems/mission.py` — `Mission`, `MissionTrigger` dataclasses with YAML load from `data/missions_tier1.yaml`; `to_save_dict()`/`restore_runtime_state()` for persistence
-- ✅ **Mission trigger types**: auto, npc, day, kpi, inspect — all implemented in `_mission_trigger_met()`
-- ✅ **Progressive problem visibility**: `visibility.py` gates problem activation behind active missions; max 2 missions active simultaneously; `_check_mission_triggers()` fires on `__init__` and each day boundary
-- ✅ **Tier 1 mission pack**: 5 missions authored in `data/missions_tier1.yaml` covering all 25 Tier 1 problems with narrative briefs and progressive hints
-- ⬜ **Hint system**: active mission emits context-appropriate hints shown as NPC ambient dialogue or a subtle HUD nudge (not a tooltip or instruction popup). Example: "The Team Leader in Z2 looked worried this morning" or "Scheduler mentioned the dock numbers don't add up" — hints that point toward the right zone/person without naming the problem
-- ⬜ **Mission sources** — missions can originate from multiple NPCs depending on the theme:
-  - **Plant Manager** (the player's own desk) — strategic missions: "We're losing ground on quality. I need you to find out why."
-  - **Lean Coach (Black Belt)** — a new NPC not yet in world_data; gives structured kaizen / six sigma missions with a more methodical framing: "Let's run a DMAIC on the testing zone."
-  - **Floor NPCs** (team leaders, quality lead, scheduler, IT engineer, maintenance lead) — operational missions triggered by specific pain points they observe
-- ⬜ **Lean Coach NPC**: add a Black Belt / Lean Coach NPC to the world (office wing, near the Plant Manager desk); this NPC is the game's lean expert character — more formal than floor NPCs, more structured in their guidance, initiates kaizen workshops and multi-problem missions
-- ⬜ **Mission briefing dialogue**: missions start with an NPC inviting the player to investigate: "There's something off in Component Prep — the numbers look fine but the floor feels wrong. Can you take a look?" — always framed as an invitation, never a command
-- ⬜ **No mission timers**: missions have no deadlines or expiry dates. A mission stays open until the player resolves it. The only "pressure" is the factory getting slightly worse over time as problems compound — this is natural simulation consequence, not a countdown
-- ⬜ **Mission completion**: resolved when the key problem(s) in the cluster are resolved. Triggers a short debriefing conversation with the NPC who started it
-- ⬜ **Tier 1 mission pack** (5 missions, covers all 25 Tier 1 problems):
-  - "The Invisible Waste" — 5S and workplace problems (T1-001, T1-002, T1-013, T1-018)
-  - "The Quality Gap" — quality and measurement (T1-003, T1-008, T1-010, T1-014, T1-022)
-  - "The Flow Problem" — flow and scheduling (T1-006, T1-009, T1-011, T1-016, T1-017)
-  - "The Knowledge Risk" — people and skills (T1-005, T1-007, T1-012, T1-019, T1-021)
-  - "The Hidden Information" — data and process transparency (T1-004, T1-015, T1-020, T1-023, T1-024, T1-025)
-- ⬜ **Mission HUD indicator**: small mission title and hint shown in HUD corner when a mission is active; does not show when no mission is active (no overwhelming quest tracker)
-- ⬜ **Mission persistence**: active mission state and progress saved in `factory.to_dict()`
-
-### Follow-up and verification loop (PDCA)
-
-The game models the full Plan → Do → Check → Act cycle. Currently only Plan (investigation fork) and Do (apply CM) are implemented. Check and Act are missing — and they are the most important learning moments.
-
-- ⬜ **Follow-up indicator**: N in-game days after a CM is applied, a pulsing clock badge (`↻`) appears on the station prompting the player to return and observe the effect. Stays until the player re-inspects.
-- ⬜ **Effect verification fork**: when player re-inspects a station post-CM, the NPC offers a "Check" fork: "What do you observe now?" — CORRECT identifies the specific measurable improvement; PLAUSIBLE acknowledges something changed but misses the mechanism; WRONG declares the problem solved without checking residual issues. This directly boosts the CIM (Continuous Improvement Mindset) score.
-- ⬜ **Standardize action**: if the follow-up fork is resolved CORRECT, NPC offers "Standardize this practice?" — accepting locks the CM benefit permanently (overrides decay) and unlocks the next-tier CM category for that zone
-- ⬜ **Adjust action**: if follow-up reveals the CM had less effect than expected, NPC offers to re-open the root-cause investigation — player picks a different fork path without losing all credits (partial score preserved, Learning Rally bonus still possible)
-- ⬜ **Daily management board follow-up**: decisions made at the Ops Board or during a Kaizen event generate a "verify on floor" indicator on the relevant station — player must close the loop by walking to the station and observing
-- ⬜ **PDCA completion bonus**: completing all four phases (Plan/investigate → Do/apply → Check/observe → Act/standardize-or-adjust) on a single problem awards a bonus multiplier on credits and registers the full cycle in the knowledge score
-
-### Mistake tolerance and recovery
-
-- ✅ Rollback action: `factory.rollback_countermeasure()` — `[U]` in inspector when CM applied, costs 25% of base credit for severity, re-activates problem, clears session so player can re-investigate
-- ⬜ Soft-punishment ladder: first wrong CM = floor manager tip (no credit loss); second = 10% refund penalty; third = score penalty. Never a game-over
-- ⬜ Recovery coach dialogue: after failed/mismatched CM, designated NPC offers "want to talk through what happened?" and explains in lean terms
-- ⬜ Daily auto-snapshot: currently auto-saves every 5 real minutes — change to trigger on every in-game day boundary so player can always restart from yesterday
-- ⬜ No hard fail state for bankruptcy: zero credits triggers "back-to-basics" week — simpler problems, free coach consults, narrative framing as learning reset
-
-### Lean / Six Sigma / digitalization learning content
-
-- ✅ `factory.discovered_concepts` registry: set on factory; populated from fork choices (main.py) and station inspections (log_inspection); persisted in save/load
-- ✅ Concept codex panel: `[K]` key opens `ui/codex_panel.py` — 62 concepts defined; unlocked shown with definitions, locked shown as `???`; scrollable; `[Esc]` or `[K]` to close
-- ⬜ Micro-lesson intros: first time a concept appears (via `discovered_concepts` check), NPC offers optional 3–5 sentence in-fiction explanation (skippable, one-time per concept)
-- ⬜ Digitalization decision forks: explicit analog-vs-digital choice forks (paper Andon vs digital, clipboard vs MES); pros/cons surfaced via NPC
+- ⬜ Micro-lesson intros: first time a concept appears via `discovered_concepts`, NPC offers optional 3–5 sentence in-fiction explanation (skippable, one-time per concept)
+- ⬜ Knowledge score in HUD: `len(factory.discovered_concepts)` shown as a learning-progress indicator separate from economic credits
+- ⬜ Digitalization decision forks: explicit analog-vs-digital choice forks (paper Andon vs digital, clipboard vs MES)
 - ⬜ Data-literacy moments: when SPC chart / Pareto / histogram first appears, NPC walks through reading it as a fork
 
-### Kaizen event structure
+### Remaining — PDCA verification loop
+
+The game currently implements Plan (investigation fork) and Do (apply CM). Check and Act are missing.
+
+- ⬜ **Follow-up indicator**: N days after CM applied, a pulsing `↻` badge prompts the player to return and observe
+- ⬜ **Effect verification fork**: when player re-inspects post-CM, NPC offers "What do you observe now?" fork — boosts CIM metric; CORRECT names the specific improvement
+- ⬜ **Standardize action**: correct follow-up → NPC offers "Standardize this?" — accepts locks benefit permanently (overrides decay) and unlocks next-tier CM category
+- ⬜ **Adjust action**: weak follow-up → NPC offers to re-open investigation without losing all credits
+- ⬜ **PDCA completion bonus**: completing all four phases awards a multiplier on credits
+
+### Remaining — kaizen events
 
 - ⬜ Kaizen workshop trigger: NPC proposes multi-day kaizen when 2+ related problems active in a zone
-- ⬜ Team composition choice: player chooses who to invite (operator / supervisor / engineer / quality) — composition affects which hints surface
-- ⬜ Workshop stages as forks: Gemba → Analyze → Experiment → Standardize — each with NPC-led branches
-- ⬜ Anti-pattern dialogue: wrong choices surface realistic failure modes (blame culture, data-faking, over-engineering) without losing the workshop
-
-### Scoring that rewards learning
-
-- ✅ Decision log: `InvestigationSession.choices_made` tracks every fork choice per problem
-- ⬜ Learning Rally bonus applied: wire `earned_rally_bonus` → +10% credits in `resolve_problem()` (tracked, not yet wired)
-- ⬜ Knowledge score in HUD: `len(factory.discovered_concepts)` shown as a learning-progress counter distinct from economic credits
-- ⬜ Score boost from correct fork: `score_feed` field on `DialogueChoice` maps to +1 on named metric in `resolve_problem()`
+- ⬜ Team composition choice: player chooses who to invite — affects which hints surface
+- ⬜ Workshop stages as forks: Gemba → Analyze → Experiment → Standardize
+- ⬜ Anti-pattern dialogue: wrong choices surface realistic failure modes without losing the workshop
 
 **Deliverable:** Every problem-solving loop is a guided, mistake-tolerant learning journey. Player leaves each session having *understood* a lean concept.
 
@@ -209,10 +175,10 @@ The game models the full Plan → Do → Check → Act cycle. Currently only Pla
 
 ## Phase 6 — Tiers 2–4 Content + Final Packaging ⬜ NOT STARTED
 
-Content design happens *after* Phase 5 so every new problem and NPC can immediately use the settled dialogue-fork YAML schema (including `teaches:`, `dialogue:`, and `five_whys:` from day one).
+Content design happens *after* Phase 5 so every new problem uses the settled dialogue-fork YAML schema (`teaches:`, `dialogue:`, `five_whys:`) from day one.
 
 ### Content
-- ⬜ Tier 2 problem catalog: 15–20 problems (Claude designs, Merijn reviews) — `teaches:` + `dialogue:` forks included from the start
+- ⬜ Tier 2 problem catalog: 15–20 problems (Claude designs, Merijn reviews) — `teaches:` + `dialogue:` forks from the start
 - ⬜ Tier 3 problem catalog: 15–20 problems
 - ⬜ Tier 4 problem catalog: 10–15 problems
 - ⬜ Tier progression visibility verified across all four tiers
@@ -221,6 +187,7 @@ Content design happens *after* Phase 5 so every new problem and NPC can immediat
 - ⬜ Full save/load for all new state (Tiers 2–4 problems, specialists, CM history)
 
 ### Packaging
+- ⬜ Fix `requirements.txt`: replace `pygame>=2.5.0` with `pygame-ce>=2.5.3` to prevent install conflict (pygame and pygame-ce share the same namespace; plain pygame must not be installed alongside)
 - ⬜ Add icon (`assets/icon.ico`)
 - ⬜ Populate `assets/sprites/`, `assets/tilesets/`, `assets/sounds/`
 - ⬜ Update `lean_factory.spec` for populated assets
@@ -253,10 +220,10 @@ Content design happens *after* Phase 5 so every new problem and NPC can immediat
 
 ### Inspector and Panels
 
-- ⬜ Scrollable inspector panel: panels that exceed screen height scroll with mouse wheel / arrow keys (urgent: dialogue fork section already pushes panel beyond 720px on some stations)
+- ✅ Scrollable inspector panel: mouse wheel + arrow keys scroll; 2400px off-screen surface with scroll indicator
 - ⬜ Non-blocking toast notifications: CM decay warning, new problem visible, credits earned — timed banner, never freeze gameplay
-- ⬜ Keyboard shortcut reference: `[?]` or `[F1]` shows overlay listing all controls
-- ⬜ Problem count HUD badge: active problem count visible at all times (e.g. "⚠ 12 active")
+- ⬜ Keyboard shortcut reference: `[?]` or `[F1]` shows overlay listing all controls (currently undocumented: E=inspect, C=apply CM, R=resolve, U=rollback, K=codex, Tab=speed, P=pause, Shift=run)
+- ⬜ Problem count HUD badge: active problem count visible at all times (e.g. "⚠ 3 active")
 - ⬜ Maturity/phase progress bar in HUD: zone scores visualised at a glance
 
 ### NPC Interactions
@@ -270,11 +237,13 @@ Content design happens *after* Phase 5 so every new problem and NPC can immediat
 
 - ⬜ No action should block gameplay for more than 1 second: all dialogs dismissible with Esc or Enter immediately
 - ✅ UI text sizes: all panels bumped to minimum 14px body / 13px mono via `ui/fonts.py`
+- ✅ Shift-to-run: player holds Shift for 2.5× movement speed
 - ⬜ Tooltip system: hovering over HUD metrics shows a one-line explanation (OEE = Availability × Performance × Quality)
 - ⬜ Minimap problem dots: active problem zones shown as coloured dots on the minimap
 - ⬜ Settings screen: simulation speed default, display options
 - ⬜ Sound cues: basic event sounds (problem discovered, CM applied, score panel open, day end)
 - ⬜ Colour-blind friendly palette option: toggle accessible colours for problem badges and OEE indicators
+- ⬜ Circuit breaker notifications: when WIP ceiling or OEE floor circuit breaker fires, show a non-blocking toast explaining what happened and why the simulation slowed
 
 **Deliverable:** A game that feels polished enough to show to someone unfamiliar with the project — no raw rectangles, no frozen screen on dialog, no dead-end interactions.
 
@@ -304,12 +273,14 @@ AI is introduced last so the generator has maximum reference material: all four 
 ## Decisions Made
 - **Learning-first design**: game is a teaching tool for lean / six sigma / digitalization. Mistakes must be survivable and recoverable; NPC decision forks are the primary learning scaffold; concepts are introduced in-fiction before mechanics (see Learning Pillars)
 - **Phase ordering rationale**: learning mechanics (Phase 5) before content expansion (Phase 6) so the dialogue-fork YAML schema is settled before Tier 2–4 problems are written. AI (Phase 8) last so it generates against a complete reference corpus
-- **NPC interaction model**: players interact with NPCs via their associated role-desks (objects with `role` field), not by clicking NPC sprites directly. NPC sprites are visual only in Phase 2–5; sprite interactability is a Phase 7 task
-- **PDCA as the core game loop**: every problem-solving sequence follows Plan (investigation fork) → Do (apply CM) → Check (follow-up verification fork) → Act (standardize or adjust). The game is only teaching lean if all four phases are playable — not just Plan + Do.
-- **Mission system as the discovery layer**: problems are not listed on a quest tracker — they are discovered through missions triggered by NPC conversations, floor observation, and KPI signals. The mission system hints, never instructs. The player must still figure out what is wrong and why.
-- **No timers, no game-over**: the game has no countdown timers, no deadline pressure, and no lose state. Urgency comes from the simulation naturally degrading when problems go unresolved. Active problem cap (max 3, max 1 critical) and simulation circuit breakers (WIP ceiling, OEE floor, FTR floor) ensure the game stays playable regardless of player pace.
-- **Doable pace by design**: the player is never overwhelmed. New problems queue behind active ones. Overflow safeguards slow the simulation and provide NPC assistance before situations become unmanageable.
+- **NPC interaction model**: players can interact with both NPC sprites directly (implemented Phase 5) AND their associated role-desks. Both open the inspector with the same NPC role panel
+- **PDCA as the core game loop**: every problem-solving sequence follows Plan (investigation fork) → Do (apply CM) → Check (follow-up verification fork) → Act (standardize or adjust). The game is only teaching lean if all four phases are playable — not just Plan + Do
+- **Mission system as the discovery layer**: problems are not listed on a quest tracker — they are discovered through missions triggered by NPC conversations, floor observation, and KPI signals. The mission system hints, never instructs. The player must still figure out what is wrong and why
+- **No timers, no game-over**: the game has no countdown timers, no deadline pressure, and no lose state. Urgency comes from the simulation naturally degrading when problems go unresolved. Active problem cap (max 3, max 1 critical) and simulation circuit breakers (WIP ceiling, OEE floor) ensure the game stays playable regardless of player pace
+- **Doable pace by design**: the player is never overwhelmed. New problems queue behind active ones. Problems are sorted by severity before cap check so critical/high surface first
+- **Circuit breaker design**: circuit breakers record events and slow simulation only — no permanent station modifier mutations, which would accumulate silently across days
+- **Mission trigger direction**: KPI triggers encode comparison direction as `direction: lte/gte` on the `MissionTrigger` dataclass, not hard-coded by metric name
+- **pygame-ce over pygame**: pygame-ce used as pygame drop-in (installed via pygame_gui dependency); `requirements.txt` lists `pygame>=2.5.0` which is stale — will be fixed in Phase 6 packaging
 - Tier 2–4 problem design: Claude designs, Merijn reviews and may revise
 - Anthropic API key: stored in `.env` as `ANTHROPIC_API_KEY`; all AI code reads from env var
 - Exe build deferred to Phase 6 (asset folders empty now; bat/vbs launchers used during development)
-- pygame-ce used as pygame drop-in (installed via pygame_gui dependency)
