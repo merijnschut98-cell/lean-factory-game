@@ -5,9 +5,9 @@ Update this file every time a task is completed or added.
 
 ---
 
-## Current Status: Phase 5 — Guided Learning (~95% done)
+## Current Status: Phase 5 Complete ✅ → Phase 6 Content
 
-Next: recovery coach dialogue → gemba walk decision tree → start/pause/save screen (Phase 7 preview)
+Next: Tier 2 problem catalog (15–20 problems with dialogue forks) → Tier 3 → Tier 4
 
 ---
 
@@ -132,19 +132,19 @@ NPC forks are **deterministic, YAML-driven dialogue trees** — separate from th
 - ✅ **Mission ordering / availability cap**: `visible_after:` prerequisite field on `Mission` gates each mission behind a predecessor. Chain: M-T1-001 (auto) → M-T1-002 + M-T1-003 (need M-T1-001 done) → M-T1-004 (needs M-T1-002) → M-T1-005 (needs M-T1-003). Only M-T1-001 surfaces on day 1; subsequent missions unlock progressively.
 - ✅ **Mission completion notification**: source NPC panel shows "MISSION COMPLETE" + per-mission debrief text when mission is completed (`_MISSION_DEBRIEFS` dict in inspector)
 - ⬜ **Lean Coach NPC**: add a Black Belt / Lean Coach character to the office wing; delivers kaizen and DMAIC missions with structured methodical framing; distinct from operational floor NPCs
-- ⬜ **NPC awareness hints**: while a mission is active, NPCs near affected zones make context-appropriate ambient comments that hint toward the problem without naming it
+- ✅ **NPC awareness hints**: `_NPC_AWARENESS` dict in inspector; 12 (role, mission_id) entries; ambient line replaces static NPC quote when a nearby mission is active
 
 ### Remaining — safety nets
 
 - ✅ **FTR floor circuit breaker**: FTR < 60% logs `ftr_floor` event and slows simulation to 1× (consistent with WIP ceiling pattern)
-- ⬜ **Side-effect suppression**: if at active problem cap, harmful CM side-effects downgraded to warnings rather than spawning new problems
+- ✅ **Side-effect suppression**: `_active_problem_cap_reached` guard in `apply_countermeasure` — harmful side-effects suppressed when at cap
 - ✅ **Daily auto-snapshot**: currently auto-saves every 5 real minutes — change to trigger on in-game day boundary so player can always restart from yesterday's state
 - ⬜ **No hard fail state for bankruptcy**: zero credits triggers "back-to-basics" week — simpler problems, free coach consults, narrative framing as learning reset
 
 ### Remaining — mistake tolerance
 
 - ✅ Soft-punishment ladder: wrong CM tip shown in inspector; count=2 → 10% penalty; count=3 → 20% penalty (capped at 40%). Never game-over
-- ⬜ Recovery coach dialogue: after failed/mismatched CM, NPC offers "want to talk through what happened?"
+- ✅ Recovery coach dialogue: source NPC shows "CM REVIEW" section with escalating advice when `wrong_cm_count >= 1` on a mission problem
 
 ### Remaining — learning content
 
@@ -196,6 +196,10 @@ Content design happens *after* Phase 5 so every new problem uses the settled dia
 - ⬜ Test standalone exe on a clean machine (no Python installed)
 - ⬜ Create installer or zip distribution
 
+### Architecture debt (tracked from skills audit 2026-04-23)
+- ⬜ **`ui/inspector.py` split** (819 lines → ~250 + ~550): extract all `_draw_*` methods + module-level content dicts into `ui/inspector_drawing.py` as `InspectorDrawMixin`; `Inspector` inherits it. No behavior change.
+- ⬜ **`simulation/factory.py` split** (686 lines → ~350 core + extracted engines): extract `apply_countermeasure`/`rollback` → `simulation/countermeasure_engine.py`; mission triggers → `simulation/mission_engine.py`. Factory becomes a cleaner orchestrator.
+
 **Deliverable:** Complete v1 game. All four tiers playable. 70–80 hand-designed problems, all with dialogue forks. Standalone exe.
 
 ---
@@ -234,8 +238,8 @@ The player is a newly hired **Continuous Improvement Specialist** at NovaGlide. 
 
 ### Screens
 
-- ⬜ **Start screen** *(requested 2026-04-23)*: game title, "New Game / Continue / Quit" — required before anything else; new game wipes save, continue loads existing. Block entry directly into game loop.
-- ⬜ **Save/load screen** *(requested 2026-04-23)*: accessible from in-game pause menu (`[Esc]` → menu); shows current day number and timestamp; manual save slot + reset-to-start option. Reset should prompt confirmation ("This will erase all progress.").
+- ✅ **Start screen** *(2026-04-23)*: `ui/menu.py` — `start_screen()` with [N] New Game / [C] Continue (greyed if no save) / [Q] Quit. Blocks game loop entry.
+- ✅ **Save/load/reset via pause menu** *(2026-04-23)*: `[Esc]` → `pause_menu()` overlay with Resume / Save / Load / New Game (with confirmation prompt) / Quit. New Game deletes save file after confirmation.
 - ⬜ Day summary popup: non-blocking end-of-day card showing output, OEE, WIP, FTR delta vs yesterday
 - ⬜ Pause screen overlay: `[Esc]` opens overlay with Resume / Save / Load / Quit options; visual darkening + "PAUSED" indicator
 

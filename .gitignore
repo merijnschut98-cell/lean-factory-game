@@ -11,6 +11,7 @@
 *.db
 *.db-shm
 *.db-wal
+*.bak
 lean_factory_save/
 
 # Python

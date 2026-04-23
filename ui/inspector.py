@@ -79,6 +79,77 @@ _MISSION_DEBRIEFS = {
 
 _PANEL_SURF_H = 2400   # tall enough for any inspector content
 
+# Ambient comments from NPCs who are NEAR an active mission's affected zones
+# but are NOT the mission's source. Keyed by (npc_role, mission_id).
+_NPC_AWARENESS: dict = {
+    ("Team Leader", "M-T1-002"): (
+        "Something's off in the integration area. Product comes through looking fine "
+        "but it's going back for rework — twice on the same defect."
+    ),
+    ("Team Leader", "M-T1-003"): (
+        "The dock flooded again. Third time this week. "
+        "Then it'll be empty for three days and Component Prep will be guessing."
+    ),
+    ("Team Leader", "M-T1-001"): (
+        "The area's not right. I can't put my finger on it, but it takes longer "
+        "than it should to get anything done in there."
+    ),
+    ("Scheduler", "M-T1-001"): (
+        "Input from Component Prep is unpredictable. "
+        "I've tried leveling the schedule but I can't plan around this variance."
+    ),
+    ("Scheduler", "M-T1-002"): (
+        "FTR issues are hitting our schedule — rework takes time we didn't plan for. "
+        "The numbers say one thing; what I see on the floor says another."
+    ),
+    ("Quality Lead", "M-T1-003"): (
+        "High WIP means quality problems have more places to hide. "
+        "By the time a defect surfaces, it's already been in three stations."
+    ),
+    ("Quality Lead", "M-T1-004"): (
+        "When the same operator isn't there, the output quality changes noticeably. "
+        "That kind of variation shouldn't depend on a single person."
+    ),
+    ("IT Engineer", "M-T1-001"): (
+        "Utilization data shows the prep area burning capacity on non-value activity. "
+        "I can see it in the numbers but I can't tell you what it is from here."
+    ),
+    ("IT Engineer", "M-T1-003"): (
+        "The WIP inventory counts don't match what the system expects. "
+        "There's a buffer somewhere that isn't being tracked properly."
+    ),
+    ("Controller", "M-T1-002"): (
+        "Cost of poor quality is ticking up. Rework labour isn't free — "
+        "it just doesn't show up on the right line."
+    ),
+    ("Controller", "M-T1-003"): (
+        "Working capital tied up in WIP is money sitting on the floor. "
+        "Every unit in a queue is a unit that hasn't been sold yet."
+    ),
+    ("Controller", "M-T1-005"): (
+        "The daily output report looks better than the floor. "
+        "When the numbers and reality disagree, trust the floor."
+    ),
+}
+
+_RECOVERY_ADVICE = {
+    1: (
+        "That countermeasure didn't land quite right — but that's information. "
+        "Check the zone maturity: the CM tier needs to match where this zone actually is, "
+        "not where you'd like it to be. Roll back if it's not helping."
+    ),
+    2: (
+        "Two mismatches on the same problem. Before picking another CM, "
+        "go back to the investigation fork and verify you've identified the real root cause. "
+        "The wrong diagnosis leads to the wrong fix every time."
+    ),
+    3: (
+        "Three attempts, none landing. Step back completely. "
+        "Roll back the current CM, re-read the symptoms, and walk the station again. "
+        "The answer is in the gemba — it's not in the catalog."
+    ),
+}
+
 _WRONG_CM_TIPS = {
     1: "Floor Manager: That CM tier doesn't match this problem — check the zone maturity.",
     2: "Floor Manager: Another mismatch. Credits penalty will apply on resolve.",
@@ -646,7 +717,19 @@ class Inspector:
 
         surf.blit(self._font_mono.render("TALK", True, C_DIM), (18, y))
         y += 14
-        for line_txt in wrap_text(NPC_LINES.get(role, "No comment."), self._font_body, PANEL_W - 36):
+        # Ambient awareness: first active non-source mission wins (insertion order, max 2 active)
+        ambient = ""
+        if self._factory:
+            nearby = next(
+                (m for m in self._factory.missions.values()
+                 if m.active and not m.completed and m.source_npc != role
+                 and _NPC_AWARENESS.get((role, m.id))),
+                None,
+            )
+            if nearby:
+                ambient = _NPC_AWARENESS[(role, nearby.id)]
+        talk_line = ambient or NPC_LINES.get(role, "No comment.")
+        for line_txt in wrap_text(talk_line, self._font_body, PANEL_W - 36):
             surf.blit(self._font_body.render(line_txt, True, C_PANEL_INK), (18, y))
             y += 16
 
@@ -694,6 +777,25 @@ class Inspector:
                     y += 14
                     for line_txt in wrap_text(mission.current_hint, self._font_body, PANEL_W - 36):
                         surf.blit(self._font_body.render(line_txt, True, C_DIM), (18, y))
+                        y += 16
+
+            # Recovery coach — shown when a mission problem had wrong CM applications
+            if mission:
+                wrong_sessions = [
+                    s for pid in mission.problem_ids
+                    if (s := self._factory.investigation_sessions.get(pid))
+                    and s.wrong_cm_count >= 1
+                ]
+                if wrong_sessions:
+                    worst = max(wrong_sessions, key=lambda s: s.wrong_cm_count)
+                    y += 8
+                    pygame.draw.line(surf, (40, 38, 30), (18, y), (PANEL_W - 18, y))
+                    y += 10
+                    surf.blit(self._font_mono.render("CM REVIEW", True, C_WAITING), (18, y))
+                    y += 14
+                    advice = _RECOVERY_ADVICE.get(worst.wrong_cm_count, _RECOVERY_ADVICE[3])
+                    for line_txt in wrap_text(advice, self._font_body, PANEL_W - 36):
+                        surf.blit(self._font_body.render(line_txt, True, C_PANEL_INK), (18, y))
                         y += 16
 
         return y + 8

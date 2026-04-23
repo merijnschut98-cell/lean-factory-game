@@ -280,12 +280,13 @@ class Factory:
         zone_maturity = self.maturity.zone_maturity(prob.zone_id)
         eff_mult = effectiveness_multiplier(cm.tier_int, zone_maturity)
 
-        # Side-effect: harmful tier triggers a linked problem
+        # Side-effect: harmful tier triggers a linked problem.
+        # Suppressed when already at the active problem cap — avoids overwhelming the player.
         side_effect_id = None
         if eff_mult == 0.0 and cm.effectiveness and cm.effectiveness.harmful_side_effect_ref:
             side_effect_id = cm.effectiveness.harmful_side_effect_ref
             linked = self.problems.get(side_effect_id)
-            if linked and linked.state == ProblemState.DORMANT:
+            if linked and linked.state == ProblemState.DORMANT and not self._active_problem_cap_reached:
                 linked.state = ProblemState.ACTIVE
                 linked.first_seen_day = self.time.day
                 self._apply_problem_modifiers(linked)

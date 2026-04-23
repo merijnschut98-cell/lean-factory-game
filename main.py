@@ -7,40 +7,46 @@ Usage:
   python main.py --headless --days 5  # run 5 simulated days
 """
 import argparse
+import logging
 import sys
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s — %(message)s",
+    datefmt="%H:%M:%S",
+)
+log = logging.getLogger("lean_factory")
 
 
 def _run_headless(days: int) -> None:
     from simulation.factory import Factory
     from persistence.load import has_save, load
 
-    print(f"Lean Factory — Headless Simulation ({days} day(s))")
-    print("=" * 52)
+    log.info("Lean Factory — Headless Simulation (%d day(s))", days)
 
     factory = Factory()
     if has_save():
         load(factory)
-        print(f"Loaded save — continuing from Day {factory.time.day}")
+        log.info("Loaded save — continuing from Day %d", factory.time.day)
     else:
-        print("New factory — starting from Day 1")
+        log.info("New factory — starting from Day 1")
 
     factory.run_headless(days)
 
     from persistence.save import save
     save(factory)
 
-    print(f"\n-- Day {factory.time.day} Summary --------------------------")
-    print(f"  Output (last day) : {factory.last_day_output:>4} hoverboards")
-    print(f"  Plant OEE         : {factory.live_oee * 100:>6.1f}%")
-    print(f"  Total WIP         : {factory.live_wip:>4} units in-system")
-    print(f"  FTR (last day)    : {factory.last_day_ftr * 100:>6.1f}%")
-    print(f"  Improvement Credits: {factory.credits:>5}")
-    print()
-    print("-- Station OEE breakdown --------------------------")
+    log.info("Day %d Summary", factory.time.day)
+    log.info("  Output (last day) : %4d hoverboards", factory.last_day_output)
+    log.info("  Plant OEE         : %6.1f%%", factory.live_oee * 100)
+    log.info("  Total WIP         : %4d units in-system", factory.live_wip)
+    log.info("  FTR (last day)    : %6.1f%%", factory.last_day_ftr * 100)
+    log.info("  Improvement Credits: %5d", factory.credits)
+    log.info("Station OEE breakdown:")
     for st in factory.stations.values():
         bar_len = int(st.oee * 20)
         bar = "#" * bar_len + "." * (20 - bar_len)
-        print(f"  {st.id:<22} {bar}  {st.oee * 100:>4.1f}%")
+        log.info("  %-22s %s  %4.1f%%", st.id, bar, st.oee * 100)
 
 
 def _run_game() -> None:
@@ -58,18 +64,27 @@ def _run_game() -> None:
     from ui.warning_dialog import WarningDialog
     from ui.score_panel import ScorePanel
     from ui.codex_panel import CodexPanel
+    from ui.menu import start_screen, pause_menu
     from maturity.mismatch import mismatch_warning
     from persistence.load import has_save, load
     from persistence.save import save
+    from config.constants import DB_FILENAME
+    from pathlib import Path
 
     pygame.init()
     pygame.display.set_caption("Lean Factory — NovaGlide Plant 01")
     screen = pygame.display.set_mode((1280, 720))
     clock  = pygame.time.Clock()
 
-    tilemap   = Tilemap()
-    factory   = Factory()
-    if has_save():
+    # ── Start screen ──────────────────────────────────────────────────────────
+    choice = start_screen(screen, clock, has_save())
+    if choice == "quit":
+        pygame.quit()
+        return
+
+    tilemap  = Tilemap()
+    factory  = Factory()
+    if choice == "continue" and has_save():
         load(factory)
 
     player        = Player(PLAYER_SPAWN_TILE, tilemap)
@@ -146,7 +161,22 @@ def _run_game() -> None:
                     elif inspector.is_open:
                         inspector.close()
                     else:
-                        running = False
+                        result = pause_menu(screen, clock)
+                        if result == "save":
+                            save(factory)
+                        elif result == "load":
+                            factory = Factory()
+                            if has_save():
+                                load(factory)
+                            inspector.close()
+                            inspector._factory = factory
+                        elif result == "new_game":
+                            Path(DB_FILENAME).unlink(missing_ok=True)
+                            factory = Factory()
+                            inspector.close()
+                            inspector._factory = factory
+                        elif result == "quit":
+                            running = False
 
                 elif event.key == pygame.K_k:
                     codex_panel.toggle()
