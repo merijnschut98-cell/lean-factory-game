@@ -41,6 +41,9 @@ NPC_LINES = {
 }
 
 
+_PANEL_SURF_H = 2400   # tall enough for any inspector content
+
+
 class Inspector:
     def __init__(self, screen: pygame.Surface) -> None:
         self.screen = screen
@@ -48,6 +51,9 @@ class Inspector:
         self._open  = False
         self._obj: Optional[dict] = None
         self._factory = None
+        self._scroll_y   = 0
+        self._content_h  = 0
+        self._panel_surf = pygame.Surface((PANEL_W, _PANEL_SURF_H), pygame.SRCALPHA)
 
         from ui.fonts import make as _fonts
         f = _fonts()
@@ -62,6 +68,7 @@ class Inspector:
         self._obj     = obj
         self._factory = factory
         self._open    = True
+        self._scroll_y  = 0
         self._pending_action: Optional[dict] = None
         self._revealed_choice: Optional[dict] = None  # {problem_id, choice} shown after pick
         if factory and obj.get("station_id"):
@@ -82,6 +89,20 @@ class Inspector:
         action = self._pending_action
         self._pending_action = None
         return action
+
+    def handle_event(self, event: pygame.event.Event) -> None:
+        """Handle scroll events (mouse wheel and keyboard) when inspector is open."""
+        if not self._open:
+            return
+        if event.type == pygame.MOUSEWHEEL:
+            max_scroll = max(0, self._content_h - self.sh + 20)
+            self._scroll_y = max(0, min(max_scroll, self._scroll_y - event.y * 28))
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                self._scroll_y = max(0, self._scroll_y - 28)
+            elif event.key == pygame.K_DOWN:
+                max_scroll = max(0, self._content_h - self.sh + 20)
+                self._scroll_y = min(max_scroll, self._scroll_y + 28)
 
     def handle_action_key(self, key: int) -> None:
         """Called by game loop for keys that are inspector-specific actions."""
@@ -134,11 +155,10 @@ class Inspector:
         if not self._open or not self._obj:
             return
 
-        sw = self.screen.get_width()
-        panel_x = sw - PANEL_W
-        surf = pygame.Surface((PANEL_W, self.sh), pygame.SRCALPHA)
+        surf = self._panel_surf
+        surf.fill((0, 0, 0, 0))
         surf.fill(C_PANEL)
-        pygame.draw.line(surf, (0, 0, 0), (0, 0), (0, self.sh), 1)
+        pygame.draw.line(surf, (0, 0, 0), (0, 0), (0, _PANEL_SURF_H), 1)
 
         y = 0
         y = self._draw_header(surf, y)
@@ -151,7 +171,28 @@ class Inspector:
         else:
             y = self._draw_generic(surf, y)
 
-        self.screen.blit(surf, (panel_x, 0))
+        self._content_h = y + 10
+
+        sw = self.screen.get_width()
+        panel_x = sw - PANEL_W
+
+        # Clamp scroll
+        max_scroll = max(0, self._content_h - self.sh + 20)
+        self._scroll_y = min(self._scroll_y, max_scroll)
+
+        # Blit a window of the tall surface to the screen
+        src_rect = pygame.Rect(0, self._scroll_y, PANEL_W, self.sh)
+        self.screen.blit(surf, (panel_x, 0), src_rect)
+
+        # Scroll indicator (draw directly on screen, not on surf)
+        if self._content_h > self.sh:
+            track_h = self.sh - 8
+            thumb_h = max(24, int(track_h * self.sh / self._content_h))
+            thumb_y = 4 + int((self._scroll_y / max(1, max_scroll)) * (track_h - thumb_h))
+            pygame.draw.rect(self.screen, (60, 58, 48),
+                             (panel_x + PANEL_W - 5, 4, 3, track_h), border_radius=2)
+            pygame.draw.rect(self.screen, (140, 130, 100),
+                             (panel_x + PANEL_W - 5, thumb_y, 3, thumb_h), border_radius=2)
 
     def _draw_header(self, surf: pygame.Surface, y: int) -> int:
         obj = self._obj

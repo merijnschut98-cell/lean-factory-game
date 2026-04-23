@@ -114,7 +114,7 @@ OBJECTS = [
     {"tx": 82, "ty":  7, "w": 3, "h": 1, "kind": "desk-exec", "id": "OPS-MGR","label": "Plant Manager Desk",  "role": "Plant Manager (you)"},
     {"tx": 90, "ty":  7, "w": 3, "h": 1, "kind": "desk",      "id": "OPS-SCH","label": "Scheduler Desk",       "role": "Scheduler"},
     {"tx": 86, "ty": 10, "w": 4, "h": 1, "kind": "board",     "id": "OPS-BRD","label": "Ops Daily Board"},
-    {"tx": 82, "ty": 16, "w": 3, "h": 1, "kind": "desk",      "id": "QA-LEAD","label": "QA Lead Desk",         "role": "QA Lead"},
+    {"tx": 82, "ty": 16, "w": 3, "h": 1, "kind": "desk",      "id": "QA-LEAD","label": "QA Lead Desk",         "role": "Quality Lead"},
     {"tx": 90, "ty": 16, "w": 4, "h": 2, "kind": "metro",     "id": "METRO",  "label": "Metrology Bench"},
     {"tx": 82, "ty": 25, "w": 3, "h": 1, "kind": "desk",      "id": "IT-ENG", "label": "IT Engineer Desk",     "role": "IT Engineer"},
     {"tx": 92, "ty": 25, "w": 3, "h": 3, "kind": "server",    "id": "SRV",    "label": "Server Rack — MES"},

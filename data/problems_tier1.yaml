@@ -380,6 +380,41 @@ problems:
       - leveled_production
       - waste_muri
       - flow
+    dialogue:
+      investigation:
+        npc: "Scheduler"
+        prompt: >
+          The dock floods twice a week then starves for days.
+          Component Prep can't plan around it. What's the right first step?
+        choices:
+          - text: "Map the actual delivery schedule against daily takt requirements"
+            outcome: CORRECT
+            evidence: >
+              The supplier delivers 60% of weekly volume on Monday and 35% on
+              Thursday. Takt requires roughly equal daily input. The factory
+              absorbs all variation with no buffer plan.
+            hint: >
+              Understanding the current delivery pattern vs. required flow is
+              the first step in Heijunka — you can't level what you haven't
+              measured.
+            teaches: [heijunka, takt_time, leveled_production, gemba]
+            score_feed: RCA
+          - text: "Expand the staging area to buffer the Monday floods"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              A bigger buffer hides the variation — it doesn't eliminate it.
+              You'd need a much larger area, and the drought period wouldn't
+              improve.
+            teaches: [waste_muri, flow]
+          - text: "Call the supplier and ask them to deliver daily starting next week"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Good instinct but premature. Without delivery data, you can't
+              build a business case — and the supplier will need contract terms
+              reviewed before changing cadence.
+            teaches: []
 
   - id: T1-007
     name: "Instructions? What Instructions?"
@@ -415,6 +450,41 @@ problems:
       - documentation
       - operator_variation
       - quality_gate
+    dialogue:
+      investigation:
+        npc: "Quality Lead"
+        prompt: >
+          Three operators at Battery Assembly each assemble the pack in a
+          different sequence. FTR varies by operator and shift. Where do we start?
+        choices:
+          - text: "Observe all three operators in one shift and document every difference"
+            outcome: CORRECT
+            evidence: >
+              Operator A applies thermal paste before connectors. Operator B
+              reverses this. Operator C skips the paste on 30% of units. The
+              differences are subtle, consistent, and only visible by watching.
+            hint: >
+              Standard work always starts with documenting actual current
+              practice — all variants — before writing a standard. You can't
+              standardize what you haven't observed.
+            teaches: [standard_work, gemba, operator_variation]
+            score_feed: RCA
+          - text: "Pull the existing work instruction and compare it to what operators do"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Smart — but the instruction lives on a drive nobody accesses.
+              Checking a document tells you the gap, not why each operator
+              diverged.
+            teaches: [standard_work, documentation]
+          - text: "Identify the operator with the best FTR and have them train the others"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Training from one operator embeds their personal variation, not a
+              true standard. It also doesn't address why the work instruction
+              was never used.
+            teaches: []
 
   - id: T1-008
     name: "The Phantom Defect"
@@ -449,6 +519,41 @@ problems:
       - standard_work
       - quality_gate
       - measurement_system
+    dialogue:
+      investigation:
+        npc: "Quality Lead"
+        prompt: >
+          Final QA rejects 12% for flight instability — but half of those pass
+          immediately on retest without modification. What is happening?
+        choices:
+          - text: "Run the test yourself three times on the same unit and record every variable"
+            outcome: CORRECT
+            evidence: >
+              Three tests on the same board: fail, pass, pass. Test duration
+              varied from 45 to 80 seconds. No standard for how long to hold the
+              board or at what angle.
+            hint: >
+              When the same unit produces different results on repeat test, the
+              measurement system is the variable — not the product. That is the
+              root cause.
+            teaches: [MSA, measurement_system, standard_work, quality_gate]
+            score_feed: RCA
+          - text: "Interview inspectors about how they conduct the test"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Good direction — but talking about a procedure is not the same
+              as watching it. Inspectors often cannot articulate their own
+              technique differences.
+            teaches: [standard_work, operator_variation]
+          - text: "Implement a mandatory second test for all failed units"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Re-testing a broken measurement system generates more unreliable
+              data. You would double inspection time and still not know which
+              result to trust.
+            teaches: [waste_muda]
 
   - id: T1-009
     name: "The Island Station"
@@ -483,6 +588,40 @@ problems:
       - kanban
       - push_vs_pull
       - WIP
+    dialogue:
+      investigation:
+        npc: "Team Leader"
+        prompt: >
+          WIP between Propulsion Build and Final Assembly is always high. The
+          station seems to run fine in isolation. What do we check first?
+        choices:
+          - text: "Walk the material path and count WIP at every handoff point"
+            outcome: CORRECT
+            evidence: >
+              Propulsion Build output queue: 0 units waiting. Trolley between
+              stations: 23 units. Final Assembly input queue: 3 units. The
+              buildup is entirely in the handoff — not at the station itself.
+            hint: >
+              High WIP between stations reveals a push system with no
+              connection to downstream pull. Walking the flow makes the
+              disconnect visible.
+            teaches: [flow, push_vs_pull, WIP, gemba]
+            score_feed: RCA
+          - text: "Review Propulsion Build cycle time data to see if it is overproducing"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Cycle time analysis is useful — but a spreadsheet will not show
+              you that the trolley between stations holds 23 units. Walk the
+              floor first.
+            teaches: [flow, OEE]
+          - text: "Speed up Final Assembly to consume the WIP backlog"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Consuming the backlog faster does not fix the push dynamic that
+              created it. The trolley will fill again immediately.
+            teaches: [waste_muda]
 
   - id: T1-010
     name: "The Dirty Machine"
@@ -516,6 +655,42 @@ problems:
       - autonomous_maintenance
       - 5S
       - OEE
+    dialogue:
+      investigation:
+        npc: "Maintenance Lead"
+        prompt: >
+          PCB Prep reject rate has climbed for six weeks. There is a maintenance
+          note on the machine that has been there for three weeks. What do we do
+          first?
+        choices:
+          - text: "Inspect the machine closely and measure contamination at the soldering heads"
+            outcome: CORRECT
+            evidence: >
+              Flux residue covers 40% of the soldering head surface, worse on
+              the right side. Two joints on that side show cold-solder defects
+              that match the reject pattern.
+            hint: >
+              Before planning a cleaning program, understand the scale and
+              pattern. Measurement before action — this is the TPM principle
+              of understanding machine condition before prescribing the fix.
+            teaches: [TPM, autonomous_maintenance, gemba, OEE]
+            score_feed: RCA
+          - text: "Schedule a full machine overhaul with maintenance"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              An overhaul may be needed — but scheduling it without inspecting
+              first risks over-specifying the work. It also does not address
+              why basic cleaning was never done.
+            teaches: [TPM, maintenance]
+          - text: "Move the handwritten note to the maintenance backlog system"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Moving a note to a backlog delays action without improving
+              visibility. The note is evidence the informal system failed —
+              it needs a formal response, not a filing.
+            teaches: []
 
   - id: T1-011
     name: "The Unofficial Queue"
@@ -549,6 +724,41 @@ problems:
       - flow
       - overproduction
       - FIFO
+    dialogue:
+      investigation:
+        npc: "Team Leader"
+        prompt: >
+          There are always 8 to 25 units between Integration 2 and 3. Operators
+          call it normal. Is it?
+        choices:
+          - text: "Time how long a unit waits in the queue before Integration 3 picks it up"
+            outcome: CORRECT
+            evidence: >
+              Average queue wait: 47 minutes. Longest observed: 2 hours 20
+              minutes. Integration 2 cycle time is 320 s; Integration 3 is
+              360 s. The 40-second gap compounds into hours of waiting WIP.
+            hint: >
+              Timing the queue makes waste visible and quantifiable. The
+              40-second CT gap explains exactly why the queue grows. Now
+              you have a number to improve against.
+            teaches: [WIP, flow, overproduction, takt_time, time_study]
+            score_feed: RCA
+          - text: "Ask Integration 2 operators to slow down slightly to match Integration 3"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Asking operators to slow down is a workaround, not a fix. There
+              is no standard for slightly slower and it creates a different
+              waste — underutilized operator capacity.
+            teaches: [standard_work, waste_mura]
+          - text: "Add floor markings to organize the queue area"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Organizing waste makes it look acceptable. Marked floor space
+              for a queue signals the queue is expected — and therefore
+              permanent.
+            teaches: [visual_management]
 
   - id: T1-012
     name: "The Hero Operator"
@@ -583,6 +793,41 @@ problems:
       - cross_training
       - knowledge_management
       - waste_muda
+    dialogue:
+      investigation:
+        npc: "HR Manager"
+        prompt: >
+          One operator at Integration 5 carries the whole team. Output drops 30%
+          when they are absent. What is the real risk, and where do we start?
+        choices:
+          - text: "Map what specific skills this operator has that others do not"
+            outcome: CORRECT
+            evidence: >
+              Skill matrix reveals the hero operator is the only one certified
+              on the torque verification jig, knows the undocumented propulsion
+              housing fix, and handles supplier escalations directly.
+            hint: >
+              Concentrated knowledge is a single point of failure. Before you
+              can distribute it, you need to make it visible — the skill matrix
+              is that visibility tool.
+            teaches: [skill_matrix, knowledge_management, waste_muda]
+            score_feed: RCA
+          - text: "Ask the hero operator to write down everything they know"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Better than nothing — but asking someone to document their own
+              tacit knowledge usually produces incomplete results. Structured
+              observation and a skill matrix are more reliable.
+            teaches: [tacit_knowledge, standard_work, documentation]
+          - text: "Give the hero operator a pay rise to ensure they stay"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Retention may improve — but it does not solve the knowledge
+              concentration. If they leave anyway, you are in the same
+              situation.
+            teaches: []
 
   - id: T1-013
     name: "Red Tags Everywhere, Nothing Done"
@@ -615,6 +860,40 @@ problems:
       - 5S_sort
       - kaizen
       - workplace_organization
+    dialogue:
+      investigation:
+        npc: "Team Leader"
+        prompt: >
+          There are 15 red-tagged items in Component Prep that have been here
+          for months. Nothing has been actioned. What do we do?
+        choices:
+          - text: "Find out who owns each tag and what decision is blocking disposition"
+            outcome: CORRECT
+            evidence: >
+              Of 15 tags: 8 need a scrapping decision (manager sign-off never
+              obtained), 4 need an engineering part number check (pending three
+              months), 3 have no owner assigned at all.
+            hint: >
+              Red tags without owners become permanent fixtures. Identifying
+              the specific blocker for each turns a vague mess into actionable
+              requests with named owners.
+            teaches: [5S, 5S_sort, kaizen, waste_muda]
+            score_feed: RCA
+          - text: "Run a 5S event to clear everything tagged and untagged in one day"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              A 5S event might work — but without understanding why tags were
+              never actioned, the same dynamic will recur within weeks.
+            teaches: [5S, kaizen]
+          - text: "Remove the red tags since nothing has happened anyway"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Removing the tags erases the evidence that the problem exists.
+              The items will still be there, invisible to the next improvement
+              cycle.
+            teaches: []
 
   - id: T1-014
     name: "The Missing Measurement"
@@ -649,6 +928,41 @@ problems:
       - MSA
       - digitalization
       - measurement_system
+    dialogue:
+      investigation:
+        npc: "IT Engineer"
+        prompt: >
+          Burn-in records only pass or fail — nothing else. Before we think
+          about capturing more data, how do we know what data we actually need?
+        choices:
+          - text: "Talk to the engineers who designed the burn-in test and ask what failure modes it detects"
+            outcome: CORRECT
+            evidence: >
+              The burn-in was designed to catch thermal stress failures. The
+              critical variables are temperature, duration, and load cycling.
+              None of these are currently recorded.
+            hint: >
+              Before digitizing, understand the physics. The data you need
+              flows from the failure mode you are trying to detect — not from
+              what is easy to capture.
+            teaches: [data_capture, measurement_system, digitalization, MSA]
+            score_feed: RCA
+          - text: "Review the last 100 failure records to find patterns"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Good instinct — but the records are just pass/fail checkboxes.
+              There is no pattern to find in binary data. You need to define
+              what to capture first.
+            teaches: [data_capture, MSA]
+          - text: "Install sensors to capture everything — temperature, vibration, current, voltage"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Capturing everything sounds thorough but produces noise. Data
+              without a question is storage, not insight. Define the failure
+              mode first, then choose the measurement.
+            teaches: [digitalization]
 
   - id: T1-015
     name: "Nobody Told Receiving"
@@ -682,6 +996,41 @@ problems:
       - quality_gate
       - documentation
       - supplier_quality
+    dialogue:
+      investigation:
+        npc: "Quality Lead"
+        prompt: >
+          Incoming QA is passing components with a known supplier defect that
+          Final Assembly has been working around for weeks. How did this happen?
+        choices:
+          - text: "Map how quality alerts currently travel from Final Assembly to Incoming QA"
+            outcome: CORRECT
+            evidence: >
+              There is no formal channel. Final Assembly sends a Slack message
+              to the supervisor, who sometimes tells the team leader, who
+              sometimes tells Incoming QA. The alert reached Incoming QA zero
+              times in the last six weeks.
+            hint: >
+              Information flow failures are often invisible until you map them.
+              The fix is not a tool — it is a defined channel with a defined
+              owner.
+            teaches: [information_flow, quality_gate, documentation, supplier_quality]
+            score_feed: RCA
+          - text: "Hold a meeting between Final Assembly and Incoming QA to share the alert"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              One meeting transmits one alert. Without a repeatable channel,
+              the next alert will follow the same broken path.
+            teaches: [information_flow]
+          - text: "Reject the current batch and return it to the supplier"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Rejection addresses this batch — but Incoming QA will pass the
+              next batch the same way because they still have no inspection
+              criteria for this defect.
+            teaches: [supplier_quality]
 
   - id: T1-016
     name: "The Shrinking Bin"
@@ -716,6 +1065,41 @@ problems:
       - replenishment
       - kanban
       - waste_muda
+    dialogue:
+      investigation:
+        npc: "Team Leader"
+        prompt: >
+          Battery Assembly stops 2 to 3 times per shift while operators go find
+          components. What is the right first step?
+        choices:
+          - text: "Observe one full shift and record every time an operator leaves the station for components"
+            outcome: CORRECT
+            evidence: >
+              11 interruptions in one shift. Total time lost: 34 minutes.
+              Average bin empties every 48 minutes. No visual signal triggers
+              replenishment before the bin runs out.
+            hint: >
+              Observation quantifies the problem and reveals the trigger gap:
+              replenishment happens too late because there is no early warning
+              signal. That is the kanban point.
+            teaches: [visual_management, replenishment, kanban, time_study, waste_muda]
+            score_feed: RCA
+          - text: "Ask the water spider to check Battery Assembly bins more frequently"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              More frequent visits may help short-term — but more frequently
+              is not a standard. Without a visual signal, the water spider is
+              still guessing when to refill.
+            teaches: [kanban, visual_management]
+          - text: "Double the bin size so operators run out less often"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Bigger bins delay the problem — they do not eliminate it. Larger
+              bins also increase WIP and make the replenishment cycle less
+              predictable.
+            teaches: [WIP, waste_muda]
 
   - id: T1-017
     name: "The Approval Bottleneck"
@@ -749,6 +1133,42 @@ problems:
       - decision_authority
       - flow
       - waste_muda
+    dialogue:
+      investigation:
+        npc: "Scheduler"
+        prompt: >
+          Every flight test failure waits 30 to 60 minutes for supervisor
+          sign-off. The supervisor covers three zones. What is the right
+          question to ask first?
+        choices:
+          - text: "Understand what the supervisor actually decides when approving and whether an operator could decide instead"
+            outcome: CORRECT
+            evidence: >
+              In 40 observed approvals: 35 were rework-and-retry decisions an
+              operator could make with a simple decision tree. Only 5 required
+              escalation to engineering. The approval process was designed for
+              5 cases but applies to all 40.
+            hint: >
+              Authority structures often expand beyond their original scope.
+              Mapping actual decisions against required authority levels reveals
+              which approvals add value and which are just delay.
+            teaches: [standard_work, decision_authority, flow, waste_muda]
+            score_feed: RCA
+          - text: "Ask the supervisor to delegate sign-off to a senior operator"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Delegation is likely the solution — but delegating without clear
+              criteria means the senior operator inherits ambiguity. Define the
+              decision rules first.
+            teaches: [standard_work, leader_standard_work]
+          - text: "Hire a second supervisor to cover flight test specifically"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              A second supervisor doubles the cost of an approval process that
+              should not require approval at all for 87% of cases.
+            teaches: [waste_muda]
 
   - id: T1-018
     name: "The Unlabeled Everything"
@@ -783,6 +1203,42 @@ problems:
       - workplace_organization
       - visual_management
       - safety
+    dialogue:
+      investigation:
+        npc: "HR Manager"
+        prompt: >
+          Packaging has no floor markings, no demarcation, and two near-misses
+          last month. What is the first priority?
+        choices:
+          - text: "Walk the zone with a safety checklist and document every unmarked hazard and traffic conflict"
+            outcome: CORRECT
+            evidence: >
+              You identify: 4 areas where forklifts and pedestrians share
+              unmarked space, 2 fire exit routes partially blocked by returned
+              goods, 1 area where finished goods and scrap are
+              indistinguishable.
+            hint: >
+              Before marking anything, you need a full hazard inventory.
+              Marking the wrong things gives false assurance — and near-misses
+              tell you the current layout is actively dangerous.
+            teaches: [5S, safety, workplace_organization, visual_management]
+            score_feed: RCA
+          - text: "Order floor marking tape and get operators to mark their own areas"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Operator involvement is valuable — but without a safety-led
+              hazard inventory first, operators will mark what looks tidy, not
+              what is dangerous.
+            teaches: [5S, workplace_organization]
+          - text: "Write a safety incident report about the near-misses and submit to HR"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Reporting is required — but it is a lagging indicator response.
+              The hazards that caused the near-misses are still present while
+              the report is being processed.
+            teaches: [safety]
 
   - id: T1-019
     name: "The Forgotten Near-Miss"
@@ -819,6 +1275,42 @@ problems:
       - standard_work
       - documentation
       - near_miss_reporting
+    dialogue:
+      investigation:
+        npc: "Maintenance Lead"
+        prompt: >
+          Operators bypass the blade guard on non-standard deck cuts. The
+          near-miss log has not been updated in four months. Where do we start?
+        choices:
+          - text: "Observe a non-standard cut cycle and understand exactly why the guard gets bypassed"
+            outcome: CORRECT
+            evidence: >
+              When lowered, the guard contacts the non-standard deck edge and
+              deflects the cut by 2 to 3 mm. Operators discovered this months
+              ago. Removing the guard gives accurate cuts. The guard geometry
+              does not accommodate non-standard profiles.
+            hint: >
+              The bypass has a reason — operators are not reckless, they are
+              solving a real problem. Understanding why reveals the fix: a
+              guard design that works for all profiles.
+            teaches: [safety, standard_work, poka_yoke, gemba]
+            score_feed: RCA
+          - text: "Retrain operators on the safety procedure and reinforce the guard rule"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Retraining treats the behaviour, not the cause. If the guard
+              prevents accurate cuts, operators will bypass it again as soon
+              as the trainer leaves.
+            teaches: [safety, standard_work]
+          - text: "Remove non-standard deck profiles from the production schedule"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Eliminating the profile removes the immediate trigger — but does
+              not fix the guard design or the near-miss reporting culture.
+              Non-standard profiles may return.
+            teaches: []
 
   - id: T1-020
     name: "The Ghost Inventory"
@@ -853,6 +1345,43 @@ problems:
       - documentation
       - inventory_management
       - digitalization
+    dialogue:
+      investigation:
+        npc: "IT Engineer"
+        prompt: >
+          The system shows 340 units of a key component. The floor count is
+          closer to 200. Planners have stopped trusting the system. What is
+          the first step?
+        choices:
+          - text: "Do a physical count right now and compare it precisely to the system record"
+            outcome: CORRECT
+            evidence: >
+              Physical count: 187 units. System: 340. Delta: 153 units.
+              Cross-referencing recent transactions reveals the gap grew over
+              8 weeks from 3 unreported scrap events, 1 unrecorded rework
+              batch, and 2 receiving discrepancies.
+            hint: >
+              You cannot fix a data accuracy problem without first measuring
+              the gap. The count gives you the magnitude — and tracing
+              discrepancies reveals the failure modes.
+            teaches: [data_accuracy, inventory_management, gemba]
+            score_feed: RCA
+          - text: "Ask the ERP team to reconcile the system record with the last GRN"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              ERP reconciliation helps — but it only covers receiving events.
+              The gap also includes scrap, rework, and informal borrowing that
+              never touched the GRN process.
+            teaches: [data_accuracy, digitalization]
+          - text: "Switch to a manual spreadsheet until the system is trusted"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              A parallel manual system creates two sources of truth, both of
+              which become unreliable over time. The system needs to be fixed,
+              not bypassed.
+            teaches: [digitalization, information_flow]
 
   - id: T1-021
     name: "The Cold Start"
@@ -887,6 +1416,43 @@ problems:
       - shift_readiness
       - variation
       - 5S
+    dialogue:
+      investigation:
+        npc: "Team Leader"
+        prompt: >
+          Every shift at Integration 1 starts with 45 to 60 minutes of lower
+          output and higher defects. It happens regardless of who is operating.
+          What do we investigate first?
+        choices:
+          - text: "Time and document exactly what operators do in the first 10 minutes of a shift before the first unit is processed"
+            outcome: CORRECT
+            evidence: >
+              Operators spend: 8 min locating consumables stored in a shared
+              cabinet not at the station, 4 min checking in-progress unit
+              status left by the previous shift, 3 min reconfiguring a jig
+              that departing operators put away incorrectly.
+            hint: >
+              The cold-start is consistent across all operators, which means
+              it is environmental, not skill-based. Observing the first 10
+              minutes reveals the missing station readiness standard.
+            teaches: [standard_work, shift_readiness, 5S, variation]
+            score_feed: RCA
+          - text: "Implement a 5-minute team briefing at shift start"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Briefings add information — but the problem is the physical
+              state of the station, not the knowledge state of operators.
+              Briefings do not put consumables in the right place.
+            teaches: [standard_work, leader_standard_work]
+          - text: "Add output targets for the first hour to incentivize faster ramp-up"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Targets pressure operators to rush through an unresolved setup
+              problem. Quality typically drops further when cold-start
+              conditions meet pressure instead of a fix.
+            teaches: [waste_muri]
 
   - id: T1-022
     name: "The Inspection That Inspects Nothing"
@@ -920,6 +1486,42 @@ problems:
       - inspection
       - standard_work
       - supplier_quality
+    dialogue:
+      investigation:
+        npc: "Quality Lead"
+        prompt: >
+          Incoming QA marks every delivery inspected — but only counts boxes.
+          Defective components reach the floor. What is the root issue?
+        choices:
+          - text: "Pull the Incoming QA procedure and check what it actually specifies"
+            outcome: CORRECT
+            evidence: >
+              The procedure states: Verify quantity against PO. That is all.
+              There is no sampling plan, no dimensional check, no visual
+              inspection criteria. The process was designed to confirm
+              delivery quantity, not quality.
+            hint: >
+              When a process gives the wrong output, check the procedure
+              first. If the procedure specifies the wrong output, the operators
+              are not the problem — the specification is.
+            teaches: [quality_gate, inspection, standard_work, documentation]
+            score_feed: RCA
+          - text: "Observe Incoming QA operators and see if they follow the procedure"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Observation is valuable — but here the procedure itself is wrong.
+              Operators correctly following a bad procedure is not the root
+              cause.
+            teaches: [gemba, standard_work]
+          - text: "Add a quality engineer to Incoming QA to catch defects"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Adding a person to a broken process makes it slightly less
+              broken, not fixed. The engineer would have no defined criteria
+              to inspect against.
+            teaches: [waste_muri, quality_gate]
 
   - id: T1-023
     name: "The Workaround That Became the Process"
@@ -956,6 +1558,43 @@ problems:
       - documentation
       - tacit_knowledge
       - quality_gate
+    dialogue:
+      investigation:
+        npc: "Quality Lead"
+        prompt: >
+          Experienced operators at Propulsion Build perform an undocumented
+          adjustment step. New operators skip it and produce more defects.
+          Nobody can explain why the step exists. What do we do?
+        choices:
+          - text: "Film an experienced operator performing the full process and identify the exact adjustment"
+            outcome: CORRECT
+            evidence: >
+              The adjustment is a 3 to 4 mm repositioning of the housing
+              before torquing the rear mount. It happens when the housing
+              feels slightly too tight. An experienced operator does this
+              in under 5 seconds without conscious thought.
+            hint: >
+              Tacit knowledge becomes explicit only when made visible. Filming
+              the actual behaviour reveals what the operator does, not what
+              they say they do.
+            teaches: [tacit_knowledge, standard_work, gemba, quality_gate]
+            score_feed: RCA
+          - text: "Interview experienced operators to document what they do differently"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Interviews capture intent, not behaviour. The experienced
+              operator likely cannot fully articulate the micro-adjustment —
+              it is below conscious awareness. Observation is more reliable.
+            teaches: [tacit_knowledge, standard_work, documentation]
+          - text: "Promote the experienced operator to trainer and have them pass on the technique"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Training from a tacit-knowledge holder transfers the knowledge
+              but not the understanding of why it is needed. The next operator
+              still will not know when to apply it.
+            teaches: [tacit_knowledge, knowledge_management]
 
   - id: T1-024
     name: "The Shifting Standard"
@@ -991,6 +1630,42 @@ problems:
       - version_control
       - standard_work
       - variation
+    dialogue:
+      investigation:
+        npc: "Quality Lead"
+        prompt: >
+          Final QA pass rates differ significantly between day and night shift
+          on identical product. Both shifts believe they are applying the
+          correct standard. What is the root cause?
+        choices:
+          - text: "Collect the acceptance criteria document used by both shifts and compare version dates"
+            outcome: CORRECT
+            evidence: >
+              Day shift uses v3 of the acceptance spec, revised 4 months ago.
+              Night shift uses v1, the original from 18 months ago. Version 3
+              tightened two dimensional tolerances and added a new visual
+              defect category. Night shift never received it.
+            hint: >
+              When two groups apply the same process differently and both
+              believe they are correct, the first question is whether they
+              are working from the same document.
+            teaches: [documentation, version_control, standard_work, variation]
+            score_feed: RCA
+          - text: "Have both shifts test the same set of borderline units and compare results"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              A cross-shift comparison confirms measurement variation — but
+              it will not tell you why they differ. Document version first.
+            teaches: [MSA, variation]
+          - text: "Instruct both shift supervisors to align and reach a consensus standard"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Asking two groups with different documents to reach consensus
+              produces a negotiated compromise, not the correct standard. The
+              spec owner needs to confirm the right version.
+            teaches: [standard_work, documentation]
 
   - id: T1-025
     name: "The Number Nobody Believes"
@@ -1028,3 +1703,40 @@ problems:
       - data_integrity
       - management_system
       - OEE
+    dialogue:
+      investigation:
+        npc: "Controller"
+        prompt: >
+          Your daily output report looks better than what you observe on the
+          floor — and the gap is growing as you make improvements. What is
+          happening?
+        choices:
+          - text: "Trace exactly how the completed unit number in the report is calculated"
+            outcome: CORRECT
+            evidence: >
+              The report counts units that reach Integration 4 as completed.
+              Units that fail Final QA or sit in rework at Integration 5 are
+              not subtracted. As FTR improves, more units reach Integration 4
+              — inflating reported output even when actual shipped output
+              stays flat.
+            hint: >
+              When a metric looks better than reality, the metric definition
+              is wrong. Tracing the calculation is more reliable than trusting
+              the number.
+            teaches: [performance_reporting, data_integrity, OEE, management_system]
+            score_feed: RCA
+          - text: "Compare the report against physical shipment records from Dispatch"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Good cross-check — and it will confirm the gap exists. But it
+              will not explain why or where the over-count happens.
+            teaches: [data_integrity, performance_reporting]
+          - text: "Accept the report numbers since they show progress and the team needs motivation"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Managing to a wrong metric amplifies the distortion. If the
+              system rewards Integration 4 throughput rather than shipped
+              quality, that is where effort will concentrate.
+            teaches: [management_system, data_integrity]

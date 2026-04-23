@@ -92,6 +92,10 @@ def _run_game() -> None:
             if event.type == pygame.QUIT:
                 running = False
 
+            # Inspector scroll (mouse wheel / up-down keys handled before other keys)
+            if inspector.is_open:
+                inspector.handle_event(event)
+
             # Score panel dismissal (any key)
             if score_panel.is_open:
                 score_panel.handle_event(event)
@@ -185,6 +189,7 @@ def _run_game() -> None:
                                     if session and not session.fork_complete:
                                         chosen = choices[idx]
                                         session.record_choice(chosen)
+                                        factory.discover(chosen.teaches)
                                         inspector._revealed_choice = {
                                             "problem_id": prob_id,
                                             "choice":     chosen,

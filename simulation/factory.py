@@ -83,6 +83,8 @@ class Factory:
         self.active_countermeasures: Dict[str, dict] = {}
         # problem_id → InvestigationSession (Phase 5 learning fork tracking)
         self.investigation_sessions: Dict[str, InvestigationSession] = {}
+        # Concepts the player has encountered (teaches: tags from problems, forks, CMs)
+        self.discovered_concepts: set = set()
 
         # Running plant-level totals (reset each day)
         self._daily_output:  int   = 0
@@ -230,12 +232,22 @@ class Factory:
             self.investigation_sessions[problem_id] = InvestigationSession(problem_id=problem_id)
         return self.investigation_sessions[problem_id]
 
+    def discover(self, tags) -> None:
+        """Add concept tags to the discovered_concepts registry."""
+        if tags:
+            self.discovered_concepts.update(tags)
+
     def log_inspection(self, entity_id: str, metric: str) -> None:
         """Record a player inspection and immediately check for newly visible problems."""
         self.inspection_log.append({"entity": entity_id, "metric": metric, "day": self.time.day})
         newly_active = evaluate_visibility(self.problems, self)
         for pid in newly_active:
             self._apply_problem_modifiers(self.problems[pid])
+        # Discover concepts from active problems at the inspected station
+        station_id = entity_id.split(":")[-1] if ":" in entity_id else entity_id
+        for prob in self.active_problems.values():
+            if prob.station_id == station_id:
+                self.discover(prob.teaches)
 
     def recent_inspections(self, n: int = 5) -> List[dict]:
         return self.inspection_log[-n:]
@@ -317,8 +329,22 @@ class Factory:
             applied_day       = cm_record.get("applied_day", self.time.day),
             zone_maturity     = self.maturity.zone_maturity(prob.zone_id),
         )
+
+        # Phase 5: apply +1 boost for each correct fork choice that names a score metric
+        session = self.investigation_sessions.get(problem_id)
+        if session:
+            for choice in session.choices_made:
+                feed = choice.get("score_feed")
+                if choice.get("outcome") == "CORRECT" and feed and feed in scores:
+                    scores[feed] = min(5, scores[feed] + 1)
+
         total = total_score(scores)
         earned = credits_earned(total, prob.severity)
+
+        # Phase 5: Learning Rally bonus — +10% for solving after an initial wrong attempt
+        rally_bonus = session.earned_rally_bonus if session else False
+        if rally_bonus:
+            earned = round(earned * 1.1)
 
         self.credits += earned
         self._remove_problem_modifiers(prob)
@@ -326,7 +352,8 @@ class Factory:
         prob.score = scores
         prob.state = ProblemState.RESOLVED
 
-        return {"scores": scores, "total": total, "credits_earned": earned}
+        return {"scores": scores, "total": total, "credits_earned": earned,
+                "rally_bonus": rally_bonus}
 
     def _tick_decay(self) -> None:
         """Reduce effectiveness of decaying countermeasures each day."""
@@ -413,6 +440,7 @@ class Factory:
             "inspection_log":         list(self.inspection_log),
             "maturity":               self.maturity.to_dict(),
             "investigation_sessions": {pid: s.to_dict() for pid, s in self.investigation_sessions.items()},
+            "discovered_concepts":    sorted(self.discovered_concepts),
         }
 
     def from_dict(self, d: dict) -> None:
@@ -444,3 +472,4 @@ class Factory:
             self.maturity.from_dict(d["maturity"])
         for pid, s_d in d.get("investigation_sessions", {}).items():
             self.investigation_sessions[pid] = InvestigationSession.from_dict(s_d)
+        self.discovered_concepts = set(d.get("discovered_concepts", []))
