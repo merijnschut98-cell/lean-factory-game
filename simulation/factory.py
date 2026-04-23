@@ -26,6 +26,33 @@ from maturity.maturity_engine import MaturityEngine
 from maturity.mismatch        import effectiveness_multiplier
 
 
+# Per-category station modifier baselines (avail, perf, qual) at eff_mult=1.0.
+# These are scaled by eff_mult at apply time.
+_CM_CATEGORY_MODIFIERS: dict = {
+    "workplace_organization":  (0.02, 0.06, 0.03),
+    "process_standardization": (0.02, 0.07, 0.05),
+    "quality":                 (0.01, 0.02, 0.10),
+    "visual_management":       (0.01, 0.05, 0.02),
+    "maintenance":             (0.09, 0.04, 0.02),
+    "flow":                    (0.02, 0.08, 0.02),
+    "flow_analysis":           (0.01, 0.04, 0.02),
+    "problem_solving":         (0.02, 0.04, 0.05),
+    "management_system":       (0.03, 0.05, 0.03),
+    "people":                  (0.02, 0.06, 0.03),
+    "information":             (0.01, 0.03, 0.04),
+    "improvement_events":      (0.03, 0.06, 0.04),
+    "coaching":                (0.01, 0.03, 0.02),
+    "safety":                  (0.04, 0.02, 0.02),
+}
+_CM_DEFAULT_MODIFIERS = (0.04, 0.04, 0.03)
+
+
+def _cm_modifiers(category: str, eff_mult: float) -> tuple[float, float, float]:
+    """Return (avail_delta, perf_delta, qual_delta) scaled by effectiveness multiplier."""
+    a, p, q = _CM_CATEGORY_MODIFIERS.get(category, _CM_DEFAULT_MODIFIERS)
+    return a * eff_mult, p * eff_mult, q * eff_mult
+
+
 class DaySnapshot:
     """Plant-level metrics snapshot at end of a simulated day."""
     def __init__(self) -> None:
@@ -230,11 +257,7 @@ class Factory:
         eff = cm.effectiveness
         if eff and self.stations.get(prob.station_id):
             st = self.stations[prob.station_id]
-            # TODO (Phase 4 polish): derive per-CM modifiers from cm.category and cm.effectiveness
-            # rather than a flat heuristic. Current values are a calibration baseline.
-            base_avail  = 0.05 * eff_mult
-            base_perf   = 0.05 * eff_mult
-            base_qual   = 0.03 * eff_mult
+            base_avail, base_perf, base_qual = _cm_modifiers(cm.category, eff_mult)
             st.apply_modifier(avail_delta=base_avail, perf_delta=base_perf,
                               quality_delta=base_qual)
             self.active_countermeasures[cm_id] = {
@@ -373,6 +396,10 @@ class Factory:
                  "wip": s.total_wip, "ftr": s.ftr}
                 for s in self.day_history
             ],
+            "problems":              {pid: p.to_save_dict() for pid, p in self.problems.items()},
+            "active_countermeasures": dict(self.active_countermeasures),
+            "inspection_log":         list(self.inspection_log),
+            "maturity":               self.maturity.to_dict(),
         }
 
     def from_dict(self, d: dict) -> None:
@@ -395,3 +422,10 @@ class Factory:
             s.total_wip  = snap_d["wip"]
             s.ftr        = snap_d["ftr"]
             self.day_history.append(s)
+        for pid, state_d in d.get("problems", {}).items():
+            if pid in self.problems:
+                self.problems[pid].restore_runtime_state(state_d)
+        self.active_countermeasures = d.get("active_countermeasures", {})
+        self.inspection_log = d.get("inspection_log", [])
+        if d.get("maturity"):
+            self.maturity.from_dict(d["maturity"])

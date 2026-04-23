@@ -5,9 +5,19 @@ Update this file every time a task is completed or added.
 
 ---
 
-## Current Status: Phase 4 — Countermeasures and Scoring (~70% done)
+## Current Status: Phase 4 ✅ COMPLETE → Phase 5 started (~15%)
 
-Next: automated-testing skill run → per-CM modifier tuning → save/load for CMs → Phase 5 AI
+Next: dialogue fork UI (choice panel in inspector) → InvestigationSession wired to factory → codex unlock tracking → rollback action
+
+---
+
+## Learning Pillars (design principles — applies to every phase)
+
+This game is a **learning tool** for lean, six sigma, and factory digitalization. Every feature must serve these three pillars. When a task in any phase conflicts with a pillar, the pillar wins.
+
+1. **Learn by doing — safely.** The player must be able to make mistakes without instant hard punishment. Wrong choices reduce effectiveness, surface a lesson, and allow recovery (rollback, retry, NPC redirect). No dead-ends. No game-over from a single bad call. Recovery is always possible — often it *is* the lesson.
+2. **NPC-guided decision forks.** Key moments — investigation, 5 Whys, kaizen, countermeasure selection, digitalization choices — are presented as **multiple-choice branches** offered by NPCs: "what should we check next?", "what should we verify?", "what should we implement?". Every fork must include at least one correct option, one plausible-but-wrong option, and optionally a clearly-wrong option. Wrong options still teach: the NPC explains *why* in lean terms, then lets the player try again.
+3. **Teach the concept, not just the button.** When a lean, six sigma, or digitalization concept first appears in play (kanban, SMED, SPC, jidoka, MES, digital twin, etc.), introduce it in-fiction through an NPC — one short, skippable explanation. The button comes after the concept, never before it.
 
 ---
 
@@ -53,7 +63,7 @@ All design artifacts: spec doc, 25-problem Tier 1 catalog YAML, 79-countermeasur
 
 ---
 
-## Phase 4 — Countermeasures and Scoring 🔧 ~70% COMPLETE
+## Phase 4 — Countermeasures and Scoring 🔧 ~80% COMPLETE
 
 ### Done
 - ✅ `CountermeasureCatalog` + `Countermeasure` dataclass in `problems/countermeasure.py` (loads all 79 CMs)
@@ -69,41 +79,75 @@ All design artifacts: spec doc, 25-problem Tier 1 catalog YAML, 79-countermeasur
 - ✅ Problem card in inspector: state badge (ACTIVE/CM APPLIED), [C] and [R] action hints
 - ✅ Game loop fully orchestrated: inspector → catalog → warning → apply → resolve → score
 - ✅ `ui/text_utils.py`: shared `wrap_text()` used across all panels
+- ✅ Automated tests: 77 tests covering all 6 metrics, catalog loader, mismatch calc, apply/resolve flow, wrap_text, decay
 
-### Remaining
-- ⬜ **Per-CM modifier tuning**: current heuristic (avail+0.05, perf+0.05, qual+0.03 × eff_mult) is a baseline; tune per CM category in Phase 4 polish
-- ⬜ **Save/load for active CMs**: `active_countermeasures` dict not yet persisted to SQLite
-- ✅ **Automated tests**: 77 tests covering scoring (all 6 metrics), catalog loader, mismatch calc, apply/resolve flow, wrap_text, decay
-- ⬜ Save/load for active CMs not yet persisted to SQLite
+### Done (completed this session)
+- ✅ **Save/load for full game state**: `to_dict()`/`from_dict()` now covers problems runtime state, active_countermeasures, inspection_log, maturity engine — 14 new round-trip tests all pass
+- ✅ **Per-CM modifier tuning**: flat heuristic replaced with 14-category modifier table in `_CM_CATEGORY_MODIFIERS` (`simulation/factory.py`)
 
-**Deliverable:** First fully playable loop. Walk → find → investigate → apply CM → score → earn credits. ✅ (functionally complete, polish remaining)
+**Deliverable:** First fully playable loop. Walk → find → investigate → apply CM → score → earn credits. ✅ COMPLETE
 
 ---
 
-## Phase 5 — AI Integration ⬜ ~5% COMPLETE
+## Phase 5 — Guided Learning, Decision Forks, and Mistake Recovery 🔧 ~15% COMPLETE
 
-### Done
-- ✅ AI module stubs exist (`ai/agent.py`, `ai/coach.py`, `ai/problem_generator.py`, `ai/prompt.py`)
+Drives the three Learning Pillars into concrete mechanics. NPC forks are **deterministic, YAML-driven dialogue trees** — separate from the AI coach (Phase 8). Forks scaffold the *decision*; the coach reflects on it.
 
-### Remaining
-- ⬜ LGM-40 system prompt in `ai/prompt.py` (spec §10.3 persona)
-- ⬜ `ai/coach.py`: coach consultation during investigation (75 credits/exchange, Socratic only)
-- ⬜ `ai/coach.py`: post-score reflection dialogue (50 credits, does not modify score)
-- ⬜ "Ask Coach" button in problem inspector panel → opens coach dialogue UI
-- ⬜ Coach dialogue UI: scrollable conversation panel with send field
-- ⬜ `ai/problem_generator.py`: generate problem from factory state (500 credits, gated on catalog exhausted)
-- ⬜ Session cost tracking: `factory.session_cost_eur` incremented per API call, shown in HUD
-- ⬜ Anthropic SDK with prompt caching (target: <€0.50/hour at average play intensity)
-- ⬜ Graceful offline fallback: show "Coach unavailable" if API call fails
+### Guided decision flow (NPC dialogue as learning scaffold)
 
-**Deliverable:** Game with full AI coaching. Coach on demand. Session cost visible in HUD.
+- ✅ Dialogue choice engine: `problems/dialogue.py` — `DialogueChoice`, `InvestigationFork`, `FiveWhysStep`, `ProblemDialogue`, `InvestigationSession` data model; YAML parse; round-trip serialisation
+- ✅ `teaches:` tags on all 25 Tier 1 problems in `data/problems_tier1.yaml`
+- ✅ `dialogue:` investigation forks on T1-001 through T1-005 (CORRECT / PLAUSIBLE / WRONG with evidence, hint, teaches)
+- ✅ `Problem.from_dict()` parses `teaches` and `dialogue` fields; `Problem` carries both
+- ✅ 31 new tests covering: YAML parsing, choice tagging, InvestigationSession (rally, concepts, serialisation)
+- ⬜ Dialogue fork UI: choice panel rendered inside inspector when NPC has an active fork for this problem
+- ⬜ `InvestigationSession` wired to factory state: created on inspector open, stored on `factory`, persisted in save
+- ⬜ Score boost on correct fork: `score_feed` field maps to metric bonus (e.g. RCA +1 on CORRECT)
+- ⬜ "What should we check next?" fork: NPC offers 3 investigation targets (e.g. supplier log, shift schedule, SPC chart). Correct choice unlocks evidence that feeds RCA/CMP scoring; wrong choices surface a lean-principle hint and let the player try again
+- ⬜ 5 Whys guided flow: for root-cause problems, operators walk the player through each "why" as a multiple-choice branch. A wrong answer is explained as a symptom, not a cause, and the player re-picks
+- ⬜ Gemba walk decision tree: player chooses who to talk to, what to time, what to measure — each NPC gives a different partial perspective; full picture requires multiple stops
+- ⬜ CM selection fork: when the catalog is opened from a specific NPC, the NPC proposes a shortlist (one correct CM, one off-tier CM, one unrelated CM) with a post-selection explanation
+- ⬜ DMAIC workflow scaffold: Define → Measure → Analyze → Improve → Control presented as a multi-stage A3-style form with NPC-suggested options at each step; unlocks gradually as the player progresses
+
+### Mistake tolerance and recovery
+
+- ⬜ Rollback action: "Undo this countermeasure" button costs ~25% of the credits earned, restores previous station modifiers, re-activates the problem. Always available
+- ⬜ Soft-punishment ladder: first wrong CM on a problem = tip from floor manager; second = reduced credit refund; third = score penalty. Never a game-over
+- ⬜ Recovery coach dialogue: after a failed or mismatched CM, a designated NPC offers "want to talk through what happened?" and explains in lean terms why it didn't land
+- ⬜ Daily auto-snapshot: auto-save every in-game day so the player can restart a day without losing a week
+- ⬜ No hard fail state for bankruptcy: zero credits triggers a "back-to-basics" week — simpler problems, free coach consults, narrative framing of the setback as a learning reset
+
+### Lean / Six Sigma / digitalization learning content
+
+- ⬜ Concept codex: unlockable glossary of lean/SS/digitalization concepts (JIT, Heijunka, Jidoka, Poka-Yoke, SMED, TPM, VSM, SPC, Cp/Cpk, DMAIC, MES, digital Andon, digital twin, etc.). Entry unlocks the first time the concept appears in play
+- ⬜ Micro-lesson intros: first time a major concept is relevant, NPC offers an optional 3–5 sentence in-fiction explanation (skippable, one-time per concept)
+- ⬜ Digitalization decision forks: explicit choices between analog and digital (paper Andon vs digital, clipboard vs MES, manual vs SCADA data), pros/cons surfaced via NPC before the choice is made
+- ⬜ Data-literacy moments: when an SPC chart / Pareto / histogram first appears, NPC walks the player through reading it as a fork ("which bar represents the biggest loss?")
+- ✅ Lean principle tags on every Tier 1 problem: all 25 problems in `data/problems_tier1.yaml` have `teaches: [...]` tags — drives future codex unlock and micro-lesson triggers
+
+### Kaizen event structure
+
+- ⬜ Kaizen workshop trigger: an NPC proposes a multi-day kaizen event when 2+ related problems are active in a zone
+- ⬜ Team composition choice: player chooses who to invite (operator / supervisor / engineer / quality). Composition affects which hints surface during the workshop
+- ⬜ Workshop stages as decision forks: Gemba → Analyze → Experiment → Standardize — each stage has NPC-led option branches with learning consequences
+- ⬜ Anti-pattern dialogue: deliberately-wrong options surface realistic failure modes (blame culture, data-faking, over-engineering) so the player sees what *not* to do and why, without losing the workshop
+
+### Scoring that rewards learning (not just luck)
+
+- ⬜ Decision log per problem: track each fork choice (CORRECT/PLAUSIBLE/WRONG) during investigation
+- ⬜ Learning Rally bonus: +10% credits on problems solved correctly *after* an initial wrong attempt — rewards recovery + reflection over first-try guesses
+- ⬜ Knowledge score: separate from credits. Tracks concepts encountered, codex entries read, correct forks taken. Shown in HUD as a learning-progress indicator distinct from economic progress
+
+**Deliverable:** Every problem-solving loop is a guided, mistake-tolerant learning journey. The player leaves each session having *understood* a lean, six sigma, or digitalization concept, not just clicked through it.
 
 ---
 
 ## Phase 6 — Tiers 2–4 Content + Final Packaging ⬜ NOT STARTED
 
+Content design happens *after* Phase 5 so every new problem and NPC can immediately use the dialogue-fork YAML schema.
+
 ### Content
-- ⬜ Tier 2 problem catalog: 15–20 problems (Claude designs, Merijn reviews)
+- ⬜ Tier 2 problem catalog: 15–20 problems (Claude designs, Merijn reviews) — include `teaches:` tags and dialogue fork YAML from the start
 - ⬜ Tier 3 problem catalog: 15–20 problems
 - ⬜ Tier 4 problem catalog: 10–15 problems
 - ⬜ Tier progression visibility verified across all four tiers
@@ -119,7 +163,7 @@ All design artifacts: spec doc, 25-problem Tier 1 catalog YAML, 79-countermeasur
 - ⬜ Test standalone exe on a clean machine (no Python installed)
 - ⬜ Create installer or zip distribution
 
-**Deliverable:** Complete v1 game. All four tiers playable. 70–80 hand-designed problems. Standalone exe.
+**Deliverable:** Complete v1 game. All four tiers playable. 70–80 hand-designed problems, all with dialogue forks. Standalone exe.
 
 ---
 
@@ -170,7 +214,31 @@ All design artifacts: spec doc, 25-problem Tier 1 catalog YAML, 79-countermeasur
 
 ---
 
+## Phase 8 — AI Integration ⬜ ~5% COMPLETE
+
+AI is introduced last so the generator has maximum reference material: all four tiers of hand-designed problems and dialogue fork YAML exist before it runs.
+
+### Done
+- ✅ AI module stubs exist (`ai/agent.py`, `ai/coach.py`, `ai/problem_generator.py`, `ai/prompt.py`)
+
+### Remaining
+- ⬜ LGM-40 system prompt in `ai/prompt.py` (spec §10.3 persona)
+- ⬜ `ai/coach.py`: coach consultation during investigation (75 credits/exchange, Socratic only)
+- ⬜ `ai/coach.py`: post-score reflection dialogue (50 credits, does not modify score)
+- ⬜ "Ask Coach" button in problem inspector panel → opens coach dialogue UI
+- ⬜ Coach dialogue UI: scrollable conversation panel with send field
+- ⬜ `ai/problem_generator.py`: generate problem from factory state (500 credits, gated on catalog exhausted); uses existing Tiers 1–4 as reference material for style/quality
+- ⬜ Session cost tracking: `factory.session_cost_eur` incremented per API call, shown in HUD
+- ⬜ Anthropic SDK with prompt caching (target: <€0.50/hour at average play intensity)
+- ⬜ Graceful offline fallback: show "Coach unavailable" if API call fails
+
+**Deliverable:** Game with full AI coaching. Coach on demand. New problems generated from factory state when hand-designed catalog is exhausted. Session cost visible in HUD.
+
+---
+
 ## Decisions Made
+- **Learning-first design**: game is a teaching tool for lean / six sigma / digitalization. Mistakes must be survivable and recoverable; NPC decision forks are the primary learning scaffold; concepts are introduced in-fiction before mechanics (see Learning Pillars)
+- **Phase ordering rationale**: learning mechanics (Phase 5) before content expansion (Phase 6) so the dialogue-fork YAML schema is settled before Tier 2–4 problems are written. AI (Phase 8) last so it generates against a complete reference corpus
 - Tier 2–4 problem design: Claude designs, Merijn reviews and may revise
 - Anthropic API key: stored in `.env` as `ANTHROPIC_API_KEY`; all AI code reads from env var
 - Exe build deferred to Phase 6 (asset folders empty now; bat/vbs launchers used during development)

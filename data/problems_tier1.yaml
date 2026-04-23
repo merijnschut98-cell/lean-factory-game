@@ -37,6 +37,47 @@ problems:
     effect_modifiers:
       perf_delta: -0.08
       quality_delta: -0.04
+    teaches:
+      - 5S
+      - standard_work
+      - WIP
+      - waste_muda
+    dialogue:
+      investigation:
+        npc: "Team Leader"
+        prompt: >
+          The Graveyard Shelf has been here forever. Let's figure out why before
+          we touch it. What should we check first?
+        choices:
+          - text: "Count and categorize what's actually on the shelf"
+            outcome: CORRECT
+            evidence: >
+              You count 23 partially-wound coils — 20% to 95% complete. No
+              labels, no dates, no owner. Someone was interrupted 23 times
+              and never came back.
+            hint: >
+              Making waste visible is always step one. You now have a number,
+              a question, and proof. This is the 5S Sort phase in practice.
+            teaches: [gemba, 5S_sort, waste_muda]
+            score_feed: RCA
+          - text: "Check whether a WIP standard was ever defined for this station"
+            outcome: PLAUSIBLE
+            evidence: >
+              HR records show no WIP standard has been documented for Coil
+              Winding — ever.
+            hint: >
+              This is the root cause direction, but without first counting the
+              pile you can't quantify the scale. Measure the problem before
+              diagnosing it.
+            teaches: [standard_work, WIP]
+          - text: "Ask the operators to clear the shelf immediately"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Moving the pile is not the same as solving the problem. It will
+              return — probably within a week — unless you understand why it
+              formed.
+            teaches: []
 
   - id: T1-002
     name: "Nobody Knows Where Anything Is"
@@ -64,6 +105,44 @@ problems:
     side_effect_ref: null
     effect_modifiers:
       perf_delta: -0.12
+    teaches:
+      - 5S
+      - workplace_organization
+      - visual_management
+      - waste_muda
+    dialogue:
+      investigation:
+        npc: "Team Leader"
+        prompt: >
+          Operators are losing 45–90 seconds per cycle searching for tools.
+          What's the right first move?
+        choices:
+          - text: "Do a time study — time every tool search across one full shift"
+            outcome: CORRECT
+            evidence: >
+              34 search events in one shift. Average 67 s each. 15 events over
+              2 minutes. Total: 47 minutes of lost production time in a single
+              shift.
+            hint: >
+              Measure before you fix. These numbers convince everyone — and
+              give you a baseline to prove improvement against.
+            teaches: [time_study, gemba, waste_muda]
+            score_feed: RCA
+          - text: "Order shadow boards and tool holders immediately"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Right direction — but without measuring first, you don't know
+              which tools to shadow or how many. You'll likely buy the wrong
+              things.
+            teaches: [5S, visual_management]
+          - text: "Send operators to a 5S training course"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Training without changing the workplace doesn't change the
+              workplace. The problem is the environment, not the operators.
+            teaches: []
 
   - id: T1-003
     name: "The Rework Corner"
@@ -93,6 +172,45 @@ problems:
     effect_modifiers:
       quality_delta: -0.10
       perf_delta: -0.05
+    teaches:
+      - quality_gate
+      - poka_yoke
+      - FTR
+      - rework_waste
+    dialogue:
+      investigation:
+        npc: "Quality Lead"
+        prompt: >
+          The rework pile at Integration 4 keeps growing. FTR is dropping.
+          Where do we start?
+        choices:
+          - text: "Go to Integration 4 and inspect the rework pile right now"
+            outcome: CORRECT
+            evidence: >
+              57% of rework units have the same defect: propulsion mount torque
+              applied at wrong angle. Every single one traces back to Integration 3.
+            hint: >
+              The pile is evidence — it just needed to be read. Gemba first,
+              always. Now you know exactly where the defect originates.
+            teaches: [gemba, FTR, rework_waste, quality_gate]
+            score_feed: RCA
+          - text: "Walk back to Integration 3 and observe what's happening"
+            outcome: PLAUSIBLE
+            evidence: >
+              Operators at Integration 3 apply the mount by feel, without a
+              fixture. Torque angle varies visibly between operators.
+            hint: >
+              Good instinct to look upstream — but reading the rework pile
+              first would have told you exactly where to look, faster.
+            teaches: [gemba, poka_yoke, standard_work]
+          - text: "Set up a digital tracking system to log each rework type"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              A tracking system captures data about a problem that still exists.
+              Fix the root cause first — then track to confirm it's gone.
+              Digitalization accelerates learning; it doesn't replace it.
+            teaches: [digitalization]
 
   - id: T1-004
     name: "The Invisible Handover"
@@ -120,6 +238,47 @@ problems:
     side_effect_ref: null
     effect_modifiers:
       avail_delta: -0.08
+    teaches:
+      - standard_work
+      - shift_handover
+      - leader_standard_work
+      - variation
+    dialogue:
+      investigation:
+        npc: "Scheduler"
+        prompt: >
+          Output drops 20–35 minutes at every shift change. I've tracked it
+          for weeks. What do we verify first?
+        choices:
+          - text: "Observe a shift change live — time exactly what happens during the handover"
+            outcome: CORRECT
+            evidence: >
+              Departing operator leaves 4 in-progress units unlabeled. Incoming
+              operator spends 8 min locating materials and 12 min checking unit
+              status by asking colleagues. No information is ever written down.
+            hint: >
+              Direct observation turns a vague complaint into a specific,
+              actionable problem definition. Now you know the exact 20 minutes
+              being lost and why.
+            teaches: [gemba, shift_handover, standard_work, waste_muda]
+            score_feed: RCA
+          - text: "Ask the supervisor to document the current handover procedure"
+            outcome: PLAUSIBLE
+            evidence: >
+              The supervisor confirms there is no written procedure. Each team
+              leader runs handover differently.
+            hint: >
+              This confirms the problem — but you still need to observe actual
+              behavior to understand what specifically needs to be standardized.
+            teaches: [standard_work, documentation]
+          - text: "Add a WIP buffer before Integration 1 so the new shift has material to work with"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              The buffer hides the symptom. The problem isn't a shortage of
+              material — it's the knowledge gap at handover. More WIP doesn't
+              fix missing information.
+            teaches: [WIP]
 
   - id: T1-005
     name: "The Overqualified Packager"
@@ -148,6 +307,47 @@ problems:
     side_effect_ref: T1-005_linebuild_variant
     effect_modifiers:
       perf_delta: 0.0   # waste, not a perf hit at this station
+    teaches:
+      - skill_matrix
+      - line_balancing
+      - waste_mura
+    dialogue:
+      investigation:
+        npc: "HR Manager"
+        prompt: >
+          Your best operator is running a station that doesn't need them.
+          Where do we start?
+        choices:
+          - text: "Map all operator skills against all station requirements"
+            outcome: CORRECT
+            evidence: >
+              You build a 4×24 skill matrix. Your best operator has 4 advanced
+              skills needed only at Integration 5 — a station running below
+              capacity. Packaging needs zero of those skills.
+            hint: >
+              The skill matrix makes the mismatch visible to everyone, not just
+              you. That's how you build consensus to make a difficult move.
+            teaches: [skill_matrix, waste_mura, line_balancing]
+            score_feed: RCA
+          - text: "Time the workload at each station to see who's idle and who's stretched"
+            outcome: PLAUSIBLE
+            evidence: >
+              Integration 5 runs at 62% capacity; Coil Winding at 110%. The
+              imbalance is clear — but workload data alone doesn't show which
+              operator skills are needed where.
+            hint: >
+              Time study reveals the workload imbalance but not the skill gap.
+              Without a skill matrix, moving operators blindly can create new
+              problems.
+            teaches: [time_study, line_balancing, waste_mura]
+          - text: "Move the skilled operator to Integration 5 immediately"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Without a skill matrix, you're guessing. The move might fix
+              Integration 5 and quietly break Coil Winding or Battery Assembly.
+              Measure first.
+            teaches: []
 
   - id: T1-006
     name: "The Flood Before the Drought"
@@ -175,6 +375,11 @@ problems:
     side_effect_ref: null
     effect_modifiers:
       avail_delta: -0.10
+    teaches:
+      - heijunka
+      - leveled_production
+      - waste_muri
+      - flow
 
   - id: T1-007
     name: "Instructions? What Instructions?"
@@ -205,6 +410,11 @@ problems:
     effect_modifiers:
       quality_delta: -0.08
       perf_delta: -0.06
+    teaches:
+      - standard_work
+      - documentation
+      - operator_variation
+      - quality_gate
 
   - id: T1-008
     name: "The Phantom Defect"
@@ -234,6 +444,11 @@ problems:
     side_effect_ref: null
     effect_modifiers:
       quality_delta: -0.12
+    teaches:
+      - MSA
+      - standard_work
+      - quality_gate
+      - measurement_system
 
   - id: T1-009
     name: "The Island Station"
@@ -263,6 +478,11 @@ problems:
     side_effect_ref: null
     effect_modifiers:
       perf_delta: -0.07
+    teaches:
+      - flow
+      - kanban
+      - push_vs_pull
+      - WIP
 
   - id: T1-010
     name: "The Dirty Machine"
@@ -291,6 +511,11 @@ problems:
     effect_modifiers:
       avail_delta: -0.12
       quality_delta: -0.06
+    teaches:
+      - TPM
+      - autonomous_maintenance
+      - 5S
+      - OEE
 
   - id: T1-011
     name: "The Unofficial Queue"
@@ -319,6 +544,11 @@ problems:
     side_effect_ref: null
     effect_modifiers:
       perf_delta: -0.06
+    teaches:
+      - WIP
+      - flow
+      - overproduction
+      - FIFO
 
   - id: T1-012
     name: "The Hero Operator"
@@ -348,6 +578,11 @@ problems:
     side_effect_ref: null
     effect_modifiers:
       perf_delta: -0.03
+    teaches:
+      - skill_matrix
+      - cross_training
+      - knowledge_management
+      - waste_muda
 
   - id: T1-013
     name: "Red Tags Everywhere, Nothing Done"
@@ -375,6 +610,11 @@ problems:
     side_effect_ref: null
     effect_modifiers:
       perf_delta: -0.05
+    teaches:
+      - 5S
+      - 5S_sort
+      - kaizen
+      - workplace_organization
 
   - id: T1-014
     name: "The Missing Measurement"
@@ -404,6 +644,11 @@ problems:
     side_effect_ref: null
     effect_modifiers:
       quality_delta: -0.03
+    teaches:
+      - data_capture
+      - MSA
+      - digitalization
+      - measurement_system
 
   - id: T1-015
     name: "Nobody Told Receiving"
@@ -432,6 +677,11 @@ problems:
     side_effect_ref: null
     effect_modifiers:
       quality_delta: -0.05
+    teaches:
+      - information_flow
+      - quality_gate
+      - documentation
+      - supplier_quality
 
   - id: T1-016
     name: "The Shrinking Bin"
@@ -461,6 +711,11 @@ problems:
     side_effect_ref: null
     effect_modifiers:
       avail_delta: -0.07
+    teaches:
+      - visual_management
+      - replenishment
+      - kanban
+      - waste_muda
 
   - id: T1-017
     name: "The Approval Bottleneck"
@@ -489,6 +744,11 @@ problems:
     side_effect_ref: null
     effect_modifiers:
       avail_delta: -0.15
+    teaches:
+      - standard_work
+      - decision_authority
+      - flow
+      - waste_muda
 
   - id: T1-018
     name: "The Unlabeled Everything"
@@ -518,6 +778,11 @@ problems:
     side_effect_ref: null
     effect_modifiers:
       avail_delta: -0.04
+    teaches:
+      - 5S
+      - workplace_organization
+      - visual_management
+      - safety
 
   - id: T1-019
     name: "The Forgotten Near-Miss"
@@ -549,6 +814,11 @@ problems:
     side_effect_ref: T1-019
     effect_modifiers:
       quality_delta: -0.02
+    teaches:
+      - safety
+      - standard_work
+      - documentation
+      - near_miss_reporting
 
   - id: T1-020
     name: "The Ghost Inventory"
@@ -578,6 +848,11 @@ problems:
     side_effect_ref: null
     effect_modifiers:
       avail_delta: -0.05
+    teaches:
+      - data_accuracy
+      - documentation
+      - inventory_management
+      - digitalization
 
   - id: T1-021
     name: "The Cold Start"
@@ -607,6 +882,11 @@ problems:
     effect_modifiers:
       avail_delta: -0.06
       quality_delta: -0.03
+    teaches:
+      - standard_work
+      - shift_readiness
+      - variation
+      - 5S
 
   - id: T1-022
     name: "The Inspection That Inspects Nothing"
@@ -635,6 +915,11 @@ problems:
     side_effect_ref: null
     effect_modifiers:
       quality_delta: -0.06
+    teaches:
+      - quality_gate
+      - inspection
+      - standard_work
+      - supplier_quality
 
   - id: T1-023
     name: "The Workaround That Became the Process"
@@ -666,6 +951,11 @@ problems:
     side_effect_ref: null
     effect_modifiers:
       quality_delta: -0.07
+    teaches:
+      - standard_work
+      - documentation
+      - tacit_knowledge
+      - quality_gate
 
   - id: T1-024
     name: "The Shifting Standard"
@@ -696,6 +986,11 @@ problems:
     side_effect_ref: null
     effect_modifiers:
       quality_delta: -0.05
+    teaches:
+      - documentation
+      - version_control
+      - standard_work
+      - variation
 
   - id: T1-025
     name: "The Number Nobody Believes"
@@ -728,3 +1023,8 @@ problems:
       system around it.
     side_effect_ref: T1-025_dms_variant
     effect_modifiers: {}
+    teaches:
+      - performance_reporting
+      - data_integrity
+      - management_system
+      - OEE

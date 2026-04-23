@@ -55,3 +55,20 @@ class MaturityEngine:
 
     def plant_maturity(self) -> float:
         return round(sum(self.scores.values()) / len(self.scores), 2)
+
+    def to_dict(self) -> dict:
+        return {
+            "scores": dict(self.scores),
+            "active_cms": {
+                zone: [[t, cid] for t, cid in entries]
+                for zone, entries in self._active_cms.items()
+            },
+        }
+
+    def from_dict(self, d: dict) -> None:
+        for zone, score in d.get("scores", {}).items():
+            if zone in self.scores:
+                self.scores[zone] = float(score)
+        for zone, entries in d.get("active_cms", {}).items():
+            if zone in self._active_cms:
+                self._active_cms[zone] = [(int(t), str(cid)) for t, cid in entries]
