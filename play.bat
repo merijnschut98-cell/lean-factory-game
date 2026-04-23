@@ -3,7 +3,7 @@ title Lean Factory — Dev Mode
 cd /d "%~dp0"
 echo Starting Lean Factory (dev mode — errors shown here)
 echo.
-python main.py
+".venv\Scripts\python.exe" main.py
 echo.
 echo Game exited.
 pause
