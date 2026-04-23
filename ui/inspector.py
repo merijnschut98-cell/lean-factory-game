@@ -134,6 +134,12 @@ class Inspector:
             if applied:
                 self._pending_action = {"type": "resolve", "problem_id": applied[0].id}
 
+        elif key == pygame.K_u:
+            applied = [p for p in problems
+                       if p.state == ProblemState.COUNTERMEASURE_APPLIED]
+            if applied:
+                self._pending_action = {"type": "rollback", "problem_id": applied[0].id}
+
         elif key in (pygame.K_1, pygame.K_2, pygame.K_3):
             choice_index = key - pygame.K_1   # 0, 1, or 2
             # Find the first active problem at this station with an open fork
@@ -328,8 +334,9 @@ class Inspector:
             surf.blit(self._font_mono.render(hint, True, C_GOLD), (18, y))
             y += 16
         elif prob.state == ProblemState.COUNTERMEASURE_APPLIED:
-            hint = "[R]  Resolve & Score"
-            surf.blit(self._font_mono.render(hint, True, (111, 211, 111)), (18, y))
+            surf.blit(self._font_mono.render("[R]  Resolve & Score", True, (111, 211, 111)), (18, y))
+            y += 16
+            surf.blit(self._font_mono.render("[U]  Rollback CM  (-25% credits)", True, (200, 120, 60)), (18, y))
             y += 16
 
         # Dialogue fork section

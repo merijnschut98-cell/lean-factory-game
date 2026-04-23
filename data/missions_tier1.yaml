@@ -1,0 +1,157 @@
+# Tier 1 Mission Pack — 5 missions covering all 25 Tier 1 problems
+#
+# Each mission is a thematic cluster. Problems in a mission stay DORMANT
+# until the mission is active. No timers. No deadlines.
+#
+# trigger types:
+#   auto    — activates immediately on game start (first mission only)
+#   npc     — activates when player interacts with the named NPC role
+#   day     — activates after N in-game days
+#   kpi     — activates when a metric drops below/above a threshold
+#   inspect — activates after player inspects a specific zone
+#
+# completion_condition:
+#   any  — mission completes when at least one problem is resolved
+#   all  — mission completes only when all problems in the cluster are resolved
+
+missions:
+
+  # ── Mission 1: The Invisible Waste ──────────────────────────────────────────
+  # Opens on day 1 automatically. 5S and workplace organization cluster.
+  # Entry point: Team Leader in Z2 (Prep zone) flags disorganization.
+  - id: M-T1-001
+    title: "The Invisible Waste"
+    description: >
+      The Team Leader in Component Prep pulled you aside this morning.
+      "The area looks fine on the board — but walk through it yourself.
+      Something's not right. The numbers don't tell the whole story."
+    source_npc: "Team Leader"
+    trigger:
+      type: auto
+    problem_ids:
+      - T1-001
+      - T1-002
+      - T1-013
+      - T1-018
+    completion_condition: any
+    hints:
+      - "The Team Leader in Component Prep mentioned the area 'feels cluttered.' Have you walked through Z2 yet?"
+      - "There appears to be a shelf of half-finished parts beside Coil Winding that nobody seems to own."
+      - "Tool searches are adding time to Deck Assembly cycles. Operators know where everything isn't."
+      - "Component Prep has red tags that have been sitting for months. Someone tagged them — but nobody came back."
+
+  # ── Mission 2: The Quality Gap ───────────────────────────────────────────────
+  # Triggers after day 3 or when FTR drops below 85%.
+  # Quality and measurement cluster. Introduced by Quality Lead.
+  - id: M-T1-002
+    title: "The Quality Gap"
+    description: >
+      Sven, the Quality Lead, stopped by your desk.
+      "FTR is drifting. I've seen this pattern before — it usually means
+      something upstream isn't right. The defect is there; we're just
+      not seeing it clearly yet."
+    source_npc: "Quality Lead"
+    trigger:
+      type: kpi
+      metric: ftr
+      threshold: 0.88
+    problem_ids:
+      - T1-003
+      - T1-008
+      - T1-010
+      - T1-014
+      - T1-022
+    completion_condition: any
+    hints:
+      - "FTR is drifting. The Quality Lead thinks something upstream isn't right."
+      - "Integration 4 has a visible rework pile. It's been growing for a while."
+      - "Final QA is rejecting units for flight instability — but some pass immediately on retest. Strange."
+      - "PCB Prep reject rate has climbed for six weeks. There's a note on the machine that nobody has actioned."
+      - "Burn-in only records pass/fail. No data. No way to understand what's actually failing."
+
+  # ── Mission 3: The Flow Problem ──────────────────────────────────────────────
+  # Triggers when live WIP exceeds 65 or after day 5.
+  # Flow and scheduling cluster. Introduced by Scheduler.
+  - id: M-T1-003
+    title: "The Flow Problem"
+    description: >
+      Maya from Scheduling sent you a note:
+      "I keep leveling the schedule but the factory doesn't respond.
+      WIP keeps building in places it shouldn't. Something in the flow
+      isn't connected the way I expect. Can you take a look?"
+    source_npc: "Scheduler"
+    trigger:
+      type: kpi
+      metric: wip
+      threshold: 65.0
+    problem_ids:
+      - T1-006
+      - T1-009
+      - T1-011
+      - T1-016
+      - T1-017
+    completion_condition: any
+    hints:
+      - "The Scheduler flagged that the flow doesn't respond to schedule changes. Something is disconnected."
+      - "The dock floods twice a week then dries up. Component Prep can't plan around it."
+      - "WIP between Propulsion Build and Final Assembly is always high — but the station seems fine."
+      - "There are always 8–25 units queued between Integration 2 and 3. Operators call it normal."
+      - "Battery Assembly stops multiple times per shift to fetch components. The bin runs out with no warning."
+
+  # ── Mission 4: The Knowledge Risk ────────────────────────────────────────────
+  # Triggers when player interacts with HR Manager NPC or after day 7.
+  # People, skills, and behavior cluster. Introduced by HR Manager.
+  - id: M-T1-004
+    title: "The Knowledge Risk"
+    description: >
+      The HR Manager flagged something that's been on their mind for a while.
+      "We have 24 operators, but our resilience is thinner than the headcount
+      suggests. There are a few people carrying knowledge that nobody else has.
+      If they're out sick, we feel it immediately."
+    source_npc: "HR Manager"
+    trigger:
+      type: npc
+      npc_role: "HR Manager"
+    problem_ids:
+      - T1-005
+      - T1-007
+      - T1-012
+      - T1-019
+      - T1-021
+    completion_condition: any
+    hints:
+      - "HR flagged that some operators carry critical knowledge nobody else has."
+      - "Your most experienced operator is at Packaging — a station that doesn't need their skills."
+      - "Battery Assembly has three operators assembling the same pack three different ways."
+      - "Integration 5 output drops 30% when one specific operator is absent."
+      - "Every shift at Integration 1 starts with 45–60 minutes of lower output. It happens every day."
+
+  # ── Mission 5: The Hidden Information ───────────────────────────────────────
+  # Triggers after player has inspected all 6 zones or after day 10.
+  # Data, information flow, and process transparency cluster. Introduced by IT Engineer.
+  - id: M-T1-005
+    title: "The Hidden Information"
+    description: >
+      Priya from IT stopped you in the corridor.
+      "MES says one thing. The floor says another. I've been trying to
+      reconcile the numbers for weeks. The data isn't reliable enough to
+      make good decisions with — and I think it's been that way for longer
+      than anyone realizes."
+    source_npc: "IT Engineer"
+    trigger:
+      type: day
+      after_day: 10
+    problem_ids:
+      - T1-004
+      - T1-015
+      - T1-020
+      - T1-023
+      - T1-024
+      - T1-025
+    completion_condition: any
+    hints:
+      - "The IT Engineer can't reconcile system data with floor reality. The gap is systematic."
+      - "Output drops 20–35 minutes at every shift change in Final Assembly. It happens like clockwork."
+      - "Incoming QA is passing components with a known defect that Final Assembly has been working around."
+      - "Physical inventory counts don't match the system. Planners have stopped trusting the numbers."
+      - "The daily output report looks better than the floor. The gap is growing as things improve."

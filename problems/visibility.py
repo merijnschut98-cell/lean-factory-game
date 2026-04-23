@@ -17,20 +17,48 @@ def evaluate_visibility(problems: dict, factory) -> List[str]:
     newly_active = []
     inspected_zones = {entry["entity"].split(":")[0] for entry in factory.inspection_log}
 
+    # Circuit breaker: don't activate new problems beyond the cap (max 3 active, max 1 critical)
+    active_now = [p for p in problems.values()
+                  if p.state not in (ProblemState.DORMANT, ProblemState.RESOLVED)]
+    active_count   = len(active_now)
+    critical_count = sum(1 for p in active_now if p.severity == "critical")
+
+    # Build set of problem IDs unlocked by active/completed missions
+    gated_problems: set = set()
+    if hasattr(factory, "missions") and factory.missions:
+        for mission in factory.missions.values():
+            if mission.active or mission.completed:
+                gated_problems.update(mission.problem_ids)
+        mission_system_active = True
+    else:
+        mission_system_active = False
+
     for prob in problems.values():
         if prob.state != ProblemState.DORMANT:
+            continue
+        if active_count >= 3:
+            break
+        if prob.severity == "critical" and critical_count >= 1:
+            continue
+        # Mission gate: if missions are loaded, only activate problems in active missions
+        if mission_system_active and prob.id not in gated_problems:
             continue
 
         if prob.visibility == "obvious":
             _activate(prob, factory, newly_active)
+            active_count += 1
+            if prob.severity == "critical":
+                critical_count += 1
 
         elif prob.visibility == "subtle":
             if prob.zone_id in inspected_zones:
                 _activate(prob, factory, newly_active)
+                active_count += 1
+                if prob.severity == "critical":
+                    critical_count += 1
 
         elif prob.visibility == "hidden":
-            # Hidden problems require maturity engine (Phase 4). Kept dormant until then.
-            pass
+            pass  # gated by mission system and maturity (Phase 5/6)
 
     return newly_active
 

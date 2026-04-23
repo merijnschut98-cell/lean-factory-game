@@ -56,6 +56,7 @@ def _run_game() -> None:
     from ui.catalog_panel import CatalogPanel
     from ui.warning_dialog import WarningDialog
     from ui.score_panel import ScorePanel
+    from ui.codex_panel import CodexPanel
     from maturity.mismatch import mismatch_warning
     from persistence.load import has_save, load
     from persistence.save import save
@@ -77,6 +78,7 @@ def _run_game() -> None:
     catalog_panel = CatalogPanel(screen)
     warning_dlg   = WarningDialog(screen)
     score_panel   = ScorePanel(screen)
+    codex_panel   = CodexPanel(screen)
 
     # Tracks which problem_id is pending CM application after warning
     _pending_cm: dict = {}   # {problem_id, cm_id}
@@ -91,6 +93,10 @@ def _run_game() -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
+            # Codex scroll events
+            if codex_panel.is_open:
+                codex_panel.handle_event(event)
 
             # Inspector scroll (mouse wheel / up-down keys handled before other keys)
             if inspector.is_open:
@@ -134,15 +140,23 @@ def _run_game() -> None:
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    if inspector.is_open:
+                    if codex_panel.is_open:
+                        codex_panel.close()
+                    elif inspector.is_open:
                         inspector.close()
                     else:
                         running = False
+
+                elif event.key == pygame.K_k:
+                    codex_panel.toggle()
 
                 elif event.key in (pygame.K_e, pygame.K_SPACE):
                     target = player.request_interact()
                     if target:
                         inspector.open(target, factory)
+                        # Trigger any NPC-gated missions when player talks to this role
+                        if target.get("role"):
+                            factory.trigger_npc_mission(target["role"])
                     elif inspector.is_open:
                         inspector.close()
 
@@ -174,6 +188,14 @@ def _run_game() -> None:
                                 score_panel.show(
                                     prob.name, result["scores"],
                                     result["total"], result["credits_earned"])
+
+                elif event.key == pygame.K_u:
+                        inspector.handle_action_key(event.key)
+                        action = inspector.consume_action()
+                        if action and action["type"] == "rollback":
+                            result = factory.rollback_countermeasure(action["problem_id"])
+                            if result:
+                                inspector.close()
 
                 elif event.key in (pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_RETURN):
                         inspector.handle_action_key(event.key)
@@ -207,7 +229,7 @@ def _run_game() -> None:
             if dx or dy:
                 player.move(dx, dy)
 
-        facing = player.detect_facing(OBJECTS)
+        facing = player.detect_facing(OBJECTS + NPCS)
 
         # ── Simulation tick ───────────────────────────────────────────────────
         factory.tick(real_dt)
@@ -225,6 +247,7 @@ def _run_game() -> None:
         catalog_panel.draw(factory)
         warning_dlg.draw()
         score_panel.draw()
+        codex_panel.draw(factory)
 
         pygame.display.flip()
 

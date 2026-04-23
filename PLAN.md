@@ -5,9 +5,9 @@ Update this file every time a task is completed or added.
 
 ---
 
-## Current Status: Phase 5 — Guided Learning (~50% done)
+## Current Status: Phase 5 — Guided Learning (~75% done)
 
-Next: NPC sprite interactability → concept codex panel → rollback action → mission system data model → WIP/OEE circuit breakers
+Next: mission HUD indicator → NPC mission briefing dialogue → daily auto-snapshot → codex micro-lessons → 5 Whys YAML content
 
 ---
 
@@ -103,7 +103,7 @@ NPC forks are **deterministic, YAML-driven dialogue trees** — separate from th
 
 - ✅ **Role-name mismatch**: fixed — `world_data.py` desk now uses `"Quality Lead"` matching NPC sprite, NPC_LINES, and T1-003 dialogue
 - ✅ **Inspector panel overflow**: fixed — inspector now renders to a 2400px tall off-screen surface and blits a scrollable window; mouse wheel + arrow keys scroll; scroll indicator shown when content exceeds screen height
-- ⬜ **NPC sprites not interactable**: `player.detect_facing(OBJECTS)` detects desks/machines only — walking up to an NPC sprite does nothing. Need to include NPCS in facing detection so players can interact with NPCs directly, not just their desks.
+- ✅ **NPC sprites interactable**: NPCS now have `w=1, h=1` + `label` field; `detect_facing(OBJECTS + NPCS)` in main.py — walking up to any NPC sprite opens the inspector
 
 ### Guided decision flow — remaining
 
@@ -121,16 +121,15 @@ NPC forks are **deterministic, YAML-driven dialogue trees** — separate from th
 The game has no lose state and no timers. Urgency is created by KPI degradation and NPC ambient comments, not countdown clocks. The following safeguards ensure the game stays doable regardless of how the player plays.
 
 **Problem / mission throttle**
-- ⬜ **Active problem cap**: no more than 3 active problems visible at once; new problems queue and activate only when the player resolves one (mission system controls this)
-- ⬜ **Severity cap**: no more than 1 CRITICAL problem active at any time. If a second critical would trigger, it is held at HIGH severity until the first is resolved
-- ⬜ **Side-effect suppression**: if the player is already at the active problem cap, harmful side-effects from mismatched CMs are downgraded to warnings rather than spawning new problems
-- ⬜ **Mission flood cap**: no more than 2 missions offered simultaneously. New missions queue behind active ones. Player is never overwhelmed with simultaneous urgency
+- ✅ **Active problem cap**: max 3 active problems, max 1 CRITICAL — enforced in `visibility.py`; new problems queue behind the cap
+- ✅ **Mission flood cap**: max 2 active missions at once — enforced in `_check_mission_triggers()`
+- ⬜ **Side-effect suppression**: if at active problem cap, harmful CM side-effects should be downgraded to warnings rather than spawning new problems
 
 **Simulation overflow circuit breakers**
-- ⬜ **WIP ceiling**: if total live WIP exceeds 100 units (well above normal ~50), the simulation automatically steps down to 0.5× speed and a team leader NPC appears with a one-line ambient comment: "Lines are backing up — something's not flowing." The slow-down prevents a runaway WIP spiral
-- ⬜ **OEE floor**: if plant OEE drops below 20% (severe degradation), a "crisis stabilizer" event fires — a helper NPC (Lean Coach or Maintenance Lead) temporarily takes ownership of the worst station, applying a small free corrective modifier for 3 in-game days, giving the player time to react
-- ⬜ **FTR floor**: if plant FTR drops below 60%, Final QA line halts temporarily with a narrative framing: "We've had to pause final test — too many failures coming through." This is not a penalty; it is a pause that creates urgency without crashing the game
-- ⬜ **Credit floor**: credits never go below zero. Negative-credit events (wrong CM penalties, etc.) are capped at zero. The player can always take action.
+- ✅ **WIP ceiling**: if WIP > 100, simulation auto-slows to 1× speed and logs a `circuit_breaker_events` entry
+- ✅ **OEE floor**: if plant OEE < 20%, temporary +4% avail/perf modifier applied to worst station
+- ✅ **Credit floor**: credits capped at 0 in `rollback_countermeasure()` and bankruptcy checks
+- ⬜ **FTR floor**: if plant FTR drops below 60%, add a narrative "Final QA paused" event and briefly halt the packaging station output
 
 **No timers rule**
 - ⬜ **No mission timers**: missions have no deadlines, countdowns, or expiry. Urgency comes only from KPI degradation (the simulation naturally worsening) and NPC ambient comments — never from a visible clock
@@ -141,9 +140,10 @@ The game has no lose state and no timers. Urgency is created by KPI degradation 
 
 Problems do not all surface at once. The player discovers them through **missions** — thematic clusters of 2–5 related problems unlocked by talking to NPCs, observing dashboards, or noticing floor conditions. The mission system provides hints (not answers) that guide the player toward the next observation without removing the discovery experience.
 
-- ⬜ **Mission data model**: `Mission` class with id, title, description, trigger conditions, problem_ids (the cluster), hint sequence, and completion condition. Stored in `data/missions_tier1.yaml`
-- ⬜ **Mission trigger types**: (a) NPC conversation trigger — talking to a specific NPC unlocks a mission; (b) floor observation trigger — player inspects a specific station/zone; (c) KPI threshold trigger — OEE / FTR drops below a threshold; (d) day trigger — mission becomes available after N in-game days
-- ⬜ **Progressive problem visibility**: replace the current "all obvious problems active on Day 1" model — obvious problems only activate when their parent mission is active. The player starts with 2–3 problems visible; new missions unlock as earlier ones progress
+- ✅ **Mission data model**: `problems/mission.py` — `Mission`, `MissionTrigger` dataclasses with YAML load from `data/missions_tier1.yaml`; `to_save_dict()`/`restore_runtime_state()` for persistence
+- ✅ **Mission trigger types**: auto, npc, day, kpi, inspect — all implemented in `_mission_trigger_met()`
+- ✅ **Progressive problem visibility**: `visibility.py` gates problem activation behind active missions; max 2 missions active simultaneously; `_check_mission_triggers()` fires on `__init__` and each day boundary
+- ✅ **Tier 1 mission pack**: 5 missions authored in `data/missions_tier1.yaml` covering all 25 Tier 1 problems with narrative briefs and progressive hints
 - ⬜ **Hint system**: active mission emits context-appropriate hints shown as NPC ambient dialogue or a subtle HUD nudge (not a tooltip or instruction popup). Example: "The Team Leader in Z2 looked worried this morning" or "Scheduler mentioned the dock numbers don't add up" — hints that point toward the right zone/person without naming the problem
 - ⬜ **Mission sources** — missions can originate from multiple NPCs depending on the theme:
   - **Plant Manager** (the player's own desk) — strategic missions: "We're losing ground on quality. I need you to find out why."
@@ -175,7 +175,7 @@ The game models the full Plan → Do → Check → Act cycle. Currently only Pla
 
 ### Mistake tolerance and recovery
 
-- ⬜ Rollback action: "Undo this countermeasure" — costs ~25% of credits earned, restores station modifiers, re-activates problem. Show as `[U]` hint in inspector when CM is applied
+- ✅ Rollback action: `factory.rollback_countermeasure()` — `[U]` in inspector when CM applied, costs 25% of base credit for severity, re-activates problem, clears session so player can re-investigate
 - ⬜ Soft-punishment ladder: first wrong CM = floor manager tip (no credit loss); second = 10% refund penalty; third = score penalty. Never a game-over
 - ⬜ Recovery coach dialogue: after failed/mismatched CM, designated NPC offers "want to talk through what happened?" and explains in lean terms
 - ⬜ Daily auto-snapshot: currently auto-saves every 5 real minutes — change to trigger on every in-game day boundary so player can always restart from yesterday
@@ -184,7 +184,7 @@ The game models the full Plan → Do → Check → Act cycle. Currently only Pla
 ### Lean / Six Sigma / digitalization learning content
 
 - ✅ `factory.discovered_concepts` registry: set on factory; populated from fork choices (main.py) and station inspections (log_inspection); persisted in save/load
-- ⬜ Concept codex panel: accessible via `[K]` key; lists all discovered concepts with short definition, unlocked per `discovered_concepts`; locked entries shown as `???`
+- ✅ Concept codex panel: `[K]` key opens `ui/codex_panel.py` — 62 concepts defined; unlocked shown with definitions, locked shown as `???`; scrollable; `[Esc]` or `[K]` to close
 - ⬜ Micro-lesson intros: first time a concept appears (via `discovered_concepts` check), NPC offers optional 3–5 sentence in-fiction explanation (skippable, one-time per concept)
 - ⬜ Digitalization decision forks: explicit analog-vs-digital choice forks (paper Andon vs digital, clipboard vs MES); pros/cons surfaced via NPC
 - ⬜ Data-literacy moments: when SPC chart / Pareto / histogram first appears, NPC walks through reading it as a fork

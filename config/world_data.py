@@ -141,14 +141,14 @@ OBJECTS = [
 
 # ── NPCs ──────────────────────────────────────────────────────────────────────
 NPCS = [
-    {"tx":  5, "ty": 18, "color": (74,  144, 216), "name": "TL — Receiving",  "role": "Team Leader",   "dir": "down"},
-    {"tx": 21, "ty": 18, "color": (74,  144, 216), "name": "TL — Prep",       "role": "Team Leader",   "dir": "down"},
-    {"tx": 41, "ty": 18, "color": (74,  144, 216), "name": "TL — Subassy",    "role": "Team Leader",   "dir": "down"},
-    {"tx": 61, "ty": 18, "color": (74,  144, 216), "name": "TL — Final",      "role": "Team Leader",   "dir": "left"},
-    {"tx": 83, "ty":  8, "color": (216, 161, 74),  "name": "Maya — Scheduler","role": "Scheduler",     "dir": "down"},
-    {"tx": 83, "ty": 17, "color": (106, 178, 106), "name": "Sven — QA Lead",  "role": "Quality Lead",  "dir": "down"},
-    {"tx": 83, "ty": 26, "color": (154, 106, 219), "name": "Priya — IT",      "role": "IT Engineer",   "dir": "right"},
-    {"tx": 83, "ty": 35, "color": (74,  179, 166), "name": "Jon — Finance",   "role": "Controller",    "dir": "down"},
+    {"tx":  5, "ty": 18, "w": 1, "h": 1, "color": (74,  144, 216), "name": "TL — Receiving",  "role": "Team Leader",   "label": "Team Leader",   "dir": "down"},
+    {"tx": 21, "ty": 18, "w": 1, "h": 1, "color": (74,  144, 216), "name": "TL — Prep",       "role": "Team Leader",   "label": "Team Leader",   "dir": "down"},
+    {"tx": 41, "ty": 18, "w": 1, "h": 1, "color": (74,  144, 216), "name": "TL — Subassy",    "role": "Team Leader",   "label": "Team Leader",   "dir": "down"},
+    {"tx": 61, "ty": 18, "w": 1, "h": 1, "color": (74,  144, 216), "name": "TL — Final",      "role": "Team Leader",   "label": "Team Leader",   "dir": "left"},
+    {"tx": 83, "ty":  8, "w": 1, "h": 1, "color": (216, 161, 74),  "name": "Maya — Scheduler","role": "Scheduler",     "label": "Scheduler",     "dir": "down"},
+    {"tx": 83, "ty": 17, "w": 1, "h": 1, "color": (106, 178, 106), "name": "Sven — QA Lead",  "role": "Quality Lead",  "label": "Quality Lead",  "dir": "down"},
+    {"tx": 83, "ty": 26, "w": 1, "h": 1, "color": (154, 106, 219), "name": "Priya — IT",      "role": "IT Engineer",   "label": "IT Engineer",   "dir": "right"},
+    {"tx": 83, "ty": 35, "w": 1, "h": 1, "color": (74,  179, 166), "name": "Jon — Finance",   "role": "Controller",    "label": "Controller",    "dir": "down"},
 ]
 
 # Station IDs that appear in production flow

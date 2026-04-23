@@ -23,6 +23,7 @@ from problems.visibility      import evaluate_visibility
 from problems.problem         import Problem, ProblemState
 from problems.countermeasure  import CountermeasureCatalog
 from problems.dialogue        import InvestigationSession
+from problems.mission         import Mission, load_missions
 from maturity.maturity_engine import MaturityEngine
 from maturity.mismatch        import effectiveness_multiplier
 
@@ -85,6 +86,12 @@ class Factory:
         self.investigation_sessions: Dict[str, InvestigationSession] = {}
         # Concepts the player has encountered (teaches: tags from problems, forks, CMs)
         self.discovered_concepts: set = set()
+        # Circuit breaker flags and event log
+        self.circuit_breaker_events: List[dict] = []
+        self._active_problem_cap_reached: bool = False
+        self._critical_cap_reached: bool = False
+        # Mission system
+        self.missions: Dict[str, Mission] = load_missions()
 
         # Running plant-level totals (reset each day)
         self._daily_output:  int   = 0
@@ -134,6 +141,7 @@ class Factory:
 
     def _load_problems(self) -> None:
         self.problems = load_all()
+        self._check_mission_triggers()   # activate auto/day-0 missions before first visibility pass
         evaluate_visibility(self.problems, self)
         for prob in self.active_problems.values():
             self._apply_problem_modifiers(prob)
@@ -201,6 +209,8 @@ class Factory:
 
         self._tick_decay()
         self.maturity.update(self)
+        self._check_mission_triggers()
+        self._check_circuit_breakers()
         newly_active = evaluate_visibility(self.problems, self)
         for pid in newly_active:
             self._apply_problem_modifiers(self.problems[pid])
@@ -352,8 +362,125 @@ class Factory:
         prob.score = scores
         prob.state = ProblemState.RESOLVED
 
+        # Update mission progress
+        for mission in self.missions.values():
+            if mission.active and problem_id in mission.problem_ids:
+                mission.record_resolved(problem_id)
+                mission.advance_hint()
+
         return {"scores": scores, "total": total, "credits_earned": earned,
                 "rally_bonus": rally_bonus}
+
+    def _check_mission_triggers(self) -> None:
+        """Activate missions whose trigger conditions are now met (max 2 active at once)."""
+        active_count = sum(1 for m in self.missions.values() if m.active and not m.completed)
+        for mission in self.missions.values():
+            if mission.active or mission.completed:
+                continue
+            if active_count >= 2:
+                break
+            if self._mission_trigger_met(mission):
+                mission.active = True
+                active_count += 1
+
+    def _mission_trigger_met(self, mission: Mission) -> bool:
+        t = mission.trigger
+        if t.type == "auto":
+            return True
+        if t.type == "day":
+            return self.time.day >= t.after_day
+        if t.type == "kpi":
+            val = {"oee": self.live_oee, "ftr": self.last_day_ftr,
+                   "wip": float(self.live_wip)}.get(t.metric, 0.0)
+            return val <= t.threshold if t.metric != "wip" else val >= t.threshold
+        if t.type == "npc":
+            # Checked externally when player interacts with the NPC
+            return False
+        if t.type == "inspect":
+            return any(e["entity"].startswith(t.zone_id) for e in self.inspection_log)
+        return False
+
+    def trigger_npc_mission(self, npc_role: str) -> Optional[str]:
+        """Called when player talks to an NPC. Activates any pending NPC-triggered mission."""
+        active_count = sum(1 for m in self.missions.values() if m.active and not m.completed)
+        for mission in self.missions.values():
+            if mission.active or mission.completed:
+                continue
+            if mission.trigger.type == "npc" and mission.trigger.npc_role == npc_role:
+                if active_count < 2:
+                    mission.active = True
+                    return mission.id
+        return None
+
+    def active_mission_hint(self) -> str:
+        """Returns the current hint from the highest-priority active mission."""
+        for mission in self.missions.values():
+            if mission.active and not mission.completed:
+                return mission.current_hint
+        return ""
+
+    def _check_circuit_breakers(self) -> None:
+        """
+        Simulation safety nets — prevent runaway states without punishing the player.
+        All effects are temporary and narrated via circuit_breaker_events.
+        """
+        # WIP ceiling: auto-slow when WIP > 100 to prevent unbounded growth
+        if self.live_wip > 100 and not self.time.paused:
+            if self.time._speed_index > 1:
+                self.time.set_speed(1)
+            self.circuit_breaker_events.append({
+                "type": "wip_ceiling", "day": self.time.day,
+                "message": "Lines backing up — simulation slowed to 1×.",
+            })
+
+        # Active problem cap: max 3 active, max 1 critical
+        active = [p for p in self.problems.values()
+                  if p.state not in (ProblemState.DORMANT, ProblemState.RESOLVED)]
+        critical_count = sum(1 for p in active if p.severity == "critical")
+        self._active_problem_cap_reached = len(active) >= 3
+        self._critical_cap_reached = critical_count >= 1
+
+        # OEE floor: apply temporary free stabilizer when plant OEE < 20%
+        if self.live_oee < 0.20:
+            worst = min(self.stations.values(), key=lambda s: s.oee)
+            worst.apply_modifier(avail_delta=0.04, perf_delta=0.04)
+            self.circuit_breaker_events.append({
+                "type": "oee_floor", "day": self.time.day,
+                "message": f"Crisis stabilizer active on {worst.name}.",
+            })
+
+    def rollback_countermeasure(self, problem_id: str) -> Optional[dict]:
+        """
+        Undo an applied countermeasure. Costs 25% of base credit for this severity.
+        Re-activates the problem so the player can try a different approach.
+        Returns None if the problem has no CM applied.
+        """
+        from config.constants import CREDIT_BASE
+        prob = self.problems.get(problem_id)
+        if not prob or prob.state != ProblemState.COUNTERMEASURE_APPLIED:
+            return None
+
+        cm_id = prob.applied_countermeasure
+        rec   = self.active_countermeasures.pop(cm_id, {})
+
+        st = self.stations.get(rec.get("station_id", prob.station_id))
+        if st:
+            st.remove_modifier(rec.get("avail_d", 0.0),
+                               rec.get("perf_d",  0.0),
+                               rec.get("qual_d",  0.0))
+
+        if rec.get("zone_id"):
+            self.maturity.remove_cm(rec["zone_id"], cm_id or "")
+
+        penalty = round(CREDIT_BASE.get(prob.severity, 150) * 0.25)
+        self.credits = max(0, self.credits - penalty)
+
+        prob.state = ProblemState.ACTIVE
+        prob.applied_countermeasure = None
+        self._apply_problem_modifiers(prob)
+        self.investigation_sessions.pop(problem_id, None)
+
+        return {"penalty_paid": penalty, "problem_id": problem_id}
 
     def _tick_decay(self) -> None:
         """Reduce effectiveness of decaying countermeasures each day."""
@@ -441,6 +568,7 @@ class Factory:
             "maturity":               self.maturity.to_dict(),
             "investigation_sessions": {pid: s.to_dict() for pid, s in self.investigation_sessions.items()},
             "discovered_concepts":    sorted(self.discovered_concepts),
+            "missions":               {mid: m.to_save_dict() for mid, m in self.missions.items()},
         }
 
     def from_dict(self, d: dict) -> None:
@@ -473,3 +601,6 @@ class Factory:
         for pid, s_d in d.get("investigation_sessions", {}).items():
             self.investigation_sessions[pid] = InvestigationSession.from_dict(s_d)
         self.discovered_concepts = set(d.get("discovered_concepts", []))
+        for mid, state_d in d.get("missions", {}).items():
+            if mid in self.missions:
+                self.missions[mid].restore_runtime_state(state_d)
