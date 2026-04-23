@@ -14,6 +14,7 @@ Drawing order (painter's algorithm):
 """
 from __future__ import annotations
 
+import math
 from typing import Optional, Tuple, List
 
 import pygame
@@ -72,6 +73,11 @@ class FactoryRenderer:
 
         # Sorted object list for painter's algorithm
         self._sorted_objects = sorted(OBJECTS, key=lambda o: o["ty"] + o["h"])
+
+        # Cached fonts for hot-path rendering (SysFont is expensive to build per-frame)
+        self._font_label       = pygame.font.SysFont("Courier New", 9)
+        self._font_badge       = pygame.font.SysFont("Arial", 10, bold=True)
+        self._font_indicator   = pygame.font.SysFont("Arial", 11, bold=True)
 
     # ── Background prerender ──────────────────────────────────────────────────
 
@@ -143,9 +149,10 @@ class FactoryRenderer:
         if player.facing_object:
             self._draw_highlight(player.facing_object, cam_x, cam_y)
 
-        # 6. Interaction indicators (dialogue fork available)
+        # 6. Interaction indicators (dialogue fork available + PDCA follow-up due)
         if factory:
             self._draw_interaction_indicators(factory, cam_x, cam_y)
+            self._draw_followup_badges(factory, cam_x, cam_y)
 
     # ── Object drawing ────────────────────────────────────────────────────────
 
@@ -179,15 +186,13 @@ class FactoryRenderer:
             if has_problem:
                 self._draw_problem_badge(px + pw - 10, py + ph - 10)
 
-        font = pygame.font.SysFont("Courier New", 9)
-        label_surf = font.render(obj.get("label", ""), True, (230, 225, 210))
+        label_surf = self._font_label.render(obj.get("label", ""), True, (230, 225, 210))
         self.screen.blit(label_surf, (px + 4, py + 4))
 
     def _draw_problem_badge(self, cx: int, cy: int) -> None:
         """Red exclamation badge indicating an active problem on this station."""
         pygame.draw.circle(self.screen, (220, 50, 50), (cx, cy), 7)
-        font = pygame.font.SysFont("Arial", 10, bold=True)
-        surf = font.render("!", True, (255, 255, 255))
+        surf = self._font_badge.render("!", True, (255, 255, 255))
         self.screen.blit(surf, (cx - surf.get_width() // 2, cy - surf.get_height() // 2))
 
     def _draw_npc(self, npc: dict, cam_x: int, cam_y: int) -> None:
@@ -217,7 +222,7 @@ class FactoryRenderer:
         Pulse alpha based on game time so badges draw the eye without being distracting.
         """
         ticks = pygame.time.get_ticks()
-        pulse = int(180 + 75 * abs(__import__("math").sin(ticks / 700.0)))
+        pulse = int(180 + 75 * abs(math.sin(ticks / 700.0)))
 
         # Collect NPC roles that have an available (incomplete) fork
         roles_with_fork: set = set()
@@ -233,8 +238,6 @@ class FactoryRenderer:
 
         if not roles_with_fork and not stations_with_fork:
             return
-
-        font = pygame.font.SysFont("Arial", 11, bold=True)
 
         for obj in OBJECTS:
             has_indicator = False
@@ -260,10 +263,40 @@ class FactoryRenderer:
             ring_surf = pygame.Surface((20, 20), pygame.SRCALPHA)
             pygame.draw.circle(ring_surf, (255, 214, 131, pulse), (10, 10), 9, 2)
             # [?] label inside
-            q = font.render("?", True, (255, 214, 131))
+            q = self._font_indicator.render("?", True, (255, 214, 131))
             ring_surf.set_alpha(pulse)
             self.screen.blit(ring_surf, (cx - 10, cy - 10))
             self.screen.blit(q, (cx - q.get_width() // 2, cy - q.get_height() // 2))
+
+    def _draw_followup_badges(self, factory, cam_x: int, cam_y: int) -> None:
+        """Pulsing ↻ badge on stations where a CM follow-up check (PDCA Check) is due."""
+        due = factory.follow_up_due_stations
+        if not due:
+            return
+
+        ticks = pygame.time.get_ticks()
+        pulse = int(160 + 95 * abs(math.sin(ticks / 900.0)))
+        color = (111, 211, 111)   # green — positive prompt, not a warning
+
+        for obj in OBJECTS:
+            if obj.get("station_id") not in due:
+                continue
+            px = obj["tx"] * TILE_SIZE - cam_x
+            py = obj["ty"] * TILE_SIZE - cam_y
+            pw = obj["w"]  * TILE_SIZE
+
+            if px + pw < 0 or px > self.screen.get_width():
+                continue
+
+            cx = px + pw // 2
+            cy = py - 6
+
+            ring_surf = pygame.Surface((20, 20), pygame.SRCALPHA)
+            pygame.draw.circle(ring_surf, (*color, pulse), (10, 10), 9, 2)
+            lbl = self._font_indicator.render("↻", True, color)
+            ring_surf.set_alpha(pulse)
+            self.screen.blit(ring_surf, (cx - 10, cy - 22))
+            self.screen.blit(lbl, (cx - lbl.get_width() // 2, cy - 22 - lbl.get_height() // 2 + 10))
 
     def _draw_highlight(self, obj: dict, cam_x: int, cam_y: int) -> None:
         px = obj["tx"] * TILE_SIZE - cam_x - 2

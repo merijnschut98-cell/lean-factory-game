@@ -15,6 +15,7 @@ import pygame
 
 from navigation.camera import MAP_W, MAP_H, TILE_SIZE
 from config.world_data import TILE_COLORS, ROOMS
+from ui.text_utils import wrap_text
 
 # Colors
 C_DARK   = (16,  15,  12, 220)
@@ -44,12 +45,16 @@ class HUD:
         self._mm_dirty = True
         self._mm_w, self._mm_h = 200, 128
 
+        # Cache for mission indicator hint lines — re-wrap only when hint changes
+        self._mission_hint_cache: tuple = ("", [])  # (last_hint, wrapped_lines)
+
     # ── Main draw ─────────────────────────────────────────────────────────────
 
     def draw(self, factory, player, facing_obj: Optional[dict] = None) -> None:
         self._draw_top_bar(factory, player)
         self._draw_minimap(player)
         self._draw_room_hud(player, facing_obj)
+        self._draw_mission_indicator(factory)
         if facing_obj:
             self._draw_interact_prompt(facing_obj)
 
@@ -69,11 +74,12 @@ class HUD:
         # KPI strip
         if factory:
             kpis = [
-                ("OUTPUT", f"{factory.last_day_output:>3} / day"),
-                ("OEE",    f"{factory.live_oee * 100:>4.1f}%"),
-                ("WIP",    f"{factory.live_wip:>3} units"),
-                ("FTR",    f"{factory.last_day_ftr * 100:>5.1f}%"),
-                ("CREDITS",f"{factory.credits:>6}"),
+                ("OUTPUT",   f"{factory.last_day_output:>3} / day"),
+                ("OEE",      f"{factory.live_oee * 100:>4.1f}%"),
+                ("WIP",      f"{factory.live_wip:>3} units"),
+                ("FTR",      f"{factory.last_day_ftr * 100:>5.1f}%"),
+                ("CREDITS",  f"{factory.credits:>6}"),
+                ("CONCEPTS", f"{len(factory.discovered_concepts):>3} / 62"),
             ]
             x = self.sw // 2 - 300
             for key, val in kpis:
@@ -157,6 +163,47 @@ class HUD:
             color = id_colors.get(room["id"], (100, 100, 100))
             pygame.draw.rect(surf, color, (x1, y1, x2 - x1, y2 - y1))
         return surf
+
+    # ── Mission indicator (bottom-left) ──────────────────────────────────────
+
+    def _draw_mission_indicator(self, factory) -> None:
+        if not factory:
+            return
+        active = [m for m in factory.missions.values() if m.active and not m.completed]
+        if not active:
+            return
+
+        PAD = 10
+        W   = 390
+        mission = active[0]
+
+        hint = mission.current_hint
+        if hint != self._mission_hint_cache[0]:
+            self._mission_hint_cache = (hint, wrap_text(hint, self._font_body, W - PAD * 2))
+        hint_lines = self._mission_hint_cache[1]
+        body_h  = self._font_body.get_height()
+        title_h = self._font_large.get_height()
+        card_h  = PAD + title_h + (4 + len(hint_lines) * body_h if hint_lines else 0) + PAD
+
+        surf = pygame.Surface((W, card_h), pygame.SRCALPHA)
+        surf.fill((16, 15, 12, 200))
+        pygame.draw.rect(surf, C_GOLD, (0, 0, W, card_h), 1, border_radius=5)
+
+        label = self._font_mono.render("MISSION", True, C_DIM)
+        surf.blit(label, (PAD, PAD))
+        title = self._font_large.render(mission.title, True, C_GOLD)
+        surf.blit(title, (PAD + label.get_width() + 8, PAD))
+
+        cy = PAD + title_h + 4
+        for line in hint_lines:
+            surf.blit(self._font_body.render(line, True, C_DIM), (PAD, cy))
+            cy += body_h
+
+        if len(active) > 1:
+            more = self._font_body.render(f"+{len(active) - 1} more mission active", True, C_DIM)
+            surf.blit(more, (PAD, cy))
+
+        self.screen.blit(surf, (10, self.sh - card_h - 10))
 
     # ── Interaction prompt (bottom-centre) ────────────────────────────────────
 

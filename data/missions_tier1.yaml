@@ -41,9 +41,10 @@ missions:
       - "Component Prep has red tags that have been sitting for months. Someone tagged them — but nobody came back."
 
   # ── Mission 2: The Quality Gap ───────────────────────────────────────────────
-  # Triggers after day 3 or when FTR drops below 85%.
-  # Quality and measurement cluster. Introduced by Quality Lead.
+  # Gated: only available after The Invisible Waste is completed.
+  # Triggers when FTR drops below 88%. Quality and measurement cluster.
   - id: M-T1-002
+    visible_after: M-T1-001
     title: "The Quality Gap"
     description: >
       Sven, the Quality Lead, stopped by your desk.
@@ -70,9 +71,10 @@ missions:
       - "Burn-in only records pass/fail. No data. No way to understand what's actually failing."
 
   # ── Mission 3: The Flow Problem ──────────────────────────────────────────────
-  # Triggers when live WIP exceeds 65 or after day 5.
-  # Flow and scheduling cluster. Introduced by Scheduler.
+  # Gated: only available after The Invisible Waste is completed.
+  # Triggers when live WIP exceeds 65. Flow and scheduling cluster.
   - id: M-T1-003
+    visible_after: M-T1-001
     title: "The Flow Problem"
     description: >
       Maya from Scheduling sent you a note:
@@ -100,9 +102,10 @@ missions:
       - "Battery Assembly stops multiple times per shift to fetch components. The bin runs out with no warning."
 
   # ── Mission 4: The Knowledge Risk ────────────────────────────────────────────
-  # Triggers when player interacts with HR Manager NPC or after day 7.
-  # People, skills, and behavior cluster. Introduced by HR Manager.
+  # Gated: only available after The Quality Gap is completed.
+  # Triggers when player talks to HR Manager. People and skills cluster.
   - id: M-T1-004
+    visible_after: M-T1-002
     title: "The Knowledge Risk"
     description: >
       The HR Manager flagged something that's been on their mind for a while.
@@ -128,9 +131,10 @@ missions:
       - "Every shift at Integration 1 starts with 45–60 minutes of lower output. It happens every day."
 
   # ── Mission 5: The Hidden Information ───────────────────────────────────────
-  # Triggers after player has inspected all 6 zones or after day 10.
-  # Data, information flow, and process transparency cluster. Introduced by IT Engineer.
+  # Gated: only available after The Flow Problem is completed.
+  # Triggers after day 10. Data and information transparency cluster.
   - id: M-T1-005
+    visible_after: M-T1-003
     title: "The Hidden Information"
     description: >
       Priya from IT stopped you in the corridor.

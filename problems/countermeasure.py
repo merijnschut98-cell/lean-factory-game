@@ -41,6 +41,7 @@ class Countermeasure:
     decay_days: Optional[int] = None
     applicable_to: List[str] = field(default_factory=lambda: ["all"])
     cost_credits: int = 0    # only non-zero for some diagnostic tools
+    teaches: List[str] = field(default_factory=list)  # codex concept tags unlocked on apply
 
     @property
     def is_diagnostic(self) -> bool:
@@ -108,6 +109,96 @@ class CountermeasureCatalog:
         return len(self._cms)
 
 
+# Codex concept tags unlocked when a CM is applied for the first time.
+# Keyed by CM ID. YAML teaches: field overrides if present.
+_CM_TEACHES_MAP: Dict[str, List[str]] = {
+    # Tier 1
+    "CM-T1-001": ["5S", "5S_sort", "workplace_organization", "waste_muda"],
+    "CM-T1-002": ["standard_work", "operator_variation", "documentation"],
+    "CM-T1-003": ["safety", "near_miss_reporting", "standard_work"],
+    "CM-T1-004": ["quality_gate", "inspection", "FTR"],
+    "CM-T1-005": ["workplace_organization", "5S", "waste_muda"],
+    "CM-T1-006": ["visual_management", "workplace_organization"],
+    "CM-T1-007": ["workplace_organization", "5S", "waste_muda"],
+    "CM-T1-008": ["5S", "workplace_organization"],
+    "CM-T1-009": ["documentation", "version_control", "standard_work"],
+    "CM-T1-010": ["skill_matrix", "cross_training", "knowledge_management"],
+    # Tier 2
+    "CM-T2-001": ["management_system", "leader_standard_work", "visual_management"],
+    "CM-T2-002": ["visual_management", "performance_reporting", "management_system"],
+    "CM-T2-003": ["kaizen", "standard_work"],
+    "CM-T2-004": ["kaizen", "waste_muda", "standard_work"],
+    "CM-T2-005": ["kaizen", "decision_authority"],
+    "CM-T2-006": ["kaizen", "waste_muda", "gemba"],
+    "CM-T2-007": ["variation", "waste_muda", "kaizen"],
+    "CM-T2-008": ["DMAIC", "standard_work", "documentation"],
+    "CM-T2-009": ["gemba", "waste_muda", "visual_management"],
+    "CM-T2-010": ["safety", "near_miss_reporting", "decision_authority"],
+    "CM-T2-011": ["andon", "jidoka", "visual_management"],
+    "CM-T2-012": ["leader_standard_work", "management_system"],
+    "CM-T2-013": ["decision_authority", "management_system"],
+    "CM-T2-014": ["cross_training", "skill_matrix", "knowledge_management"],
+    "CM-T2-015": ["leader_standard_work", "management_system", "standard_work"],
+    "CM-T2-016": ["management_system", "leader_standard_work"],
+    # Tier 3
+    "CM-T3-001": ["VSM", "flow", "waste_muda", "information_flow"],
+    "CM-T3-002": ["VSM", "flow", "kaizen"],
+    "CM-T3-003": ["kanban", "replenishment", "push_vs_pull", "WIP"],
+    "CM-T3-004": ["kanban", "replenishment", "push_vs_pull"],
+    "CM-T3-005": ["FIFO", "flow", "inventory_management"],
+    "CM-T3-006": ["line_balancing", "flow", "takt_time", "waste_mura"],
+    "CM-T3-007": ["WIP", "flow", "standard_work"],
+    "CM-T3-008": ["SMED", "flow", "waste_muda"],
+    "CM-T3-009": ["heijunka", "leveled_production", "flow", "waste_mura"],
+    "CM-T3-010": ["flow", "replenishment", "waste_muda"],
+    "CM-T3-011": ["flow", "line_balancing", "waste_muda"],
+    "CM-T3-012": ["poka_yoke", "quality_gate", "jidoka"],
+    "CM-T3-013": ["jidoka", "quality_gate", "poka_yoke", "andon"],
+    "CM-T3-014": ["takt_time", "flow", "line_balancing"],
+    "CM-T3-015": ["flow", "line_balancing", "waste_mura"],
+    "CM-T3-016": ["waste_muda", "waste_mura", "waste_muri", "kaizen"],
+    "CM-T3-017": ["data_capture", "waste_muda"],
+    "CM-T3-018": ["heijunka", "flow", "leveled_production"],
+    "CM-T3-019": ["gemba", "waste_muda", "flow"],
+    "CM-T3-020": ["heijunka", "leveled_production", "waste_mura"],
+    "CM-T3-021": ["takt_time", "flow", "management_system"],
+    "CM-T3-022": ["heijunka", "leveled_production", "flow"],
+    "CM-T3-023": ["digitalization", "data_capture", "information_flow"],
+    "CM-T3-024": ["digitalization", "standard_work"],
+    # Tier 4
+    "CM-T4-001": ["SPC", "variation", "quality_gate", "measurement_system"],
+    "CM-T4-002": ["SPC", "variation", "quality_gate"],
+    "CM-T4-003": ["DMAIC", "variation", "standard_work"],
+    "CM-T4-004": ["MSA", "measurement_system", "variation"],
+    "CM-T4-005": ["variation", "DMAIC"],
+    "CM-T4-006": ["quality_gate", "poka_yoke", "safety"],
+    "CM-T4-007": ["standard_work", "quality_gate", "documentation"],
+    "CM-T4-008": ["DMAIC", "waste_muda"],
+    "CM-T4-009": ["variation", "DMAIC", "measurement_system"],
+    "CM-T4-010": ["variation", "data_capture", "measurement_system"],
+    "CM-T4-011": ["variation", "DMAIC"],
+    "CM-T4-012": ["quality_gate", "standard_work"],
+    "CM-T4-013": ["TPM", "OEE"],
+    "CM-T4-014": ["TPM", "OEE", "autonomous_maintenance"],
+    "CM-T4-015": ["OEE", "TPM", "waste_muda"],
+    "CM-T4-016": ["variation", "DMAIC"],
+    "CM-T4-017": ["digitalization", "data_capture", "performance_reporting", "information_flow"],
+    "CM-T4-018": ["DMAIC", "kaizen"],
+    # Diagnostic
+    "CM-DX-001": ["waste_muda", "kaizen", "gemba"],
+    "CM-DX-002": ["variation", "waste_muda"],
+    "CM-DX-003": ["standard_work", "takt_time", "gemba"],
+    "CM-DX-004": ["standard_work", "waste_muda", "gemba"],
+    "CM-DX-005": ["waste_muda", "kaizen"],
+    "CM-DX-006": ["DMAIC", "standard_work"],
+    "CM-DX-007": ["gemba", "waste_muda", "visual_management"],
+    "CM-DX-008": ["gemba", "waste_muda", "flow"],
+    "CM-DX-009": ["VSM", "flow", "waste_muda"],
+    "CM-DX-010": ["kaizen", "DMAIC"],
+    "CM-DX-011": ["DMAIC", "management_system"],
+}
+
+
 def _parse_cm(raw: dict) -> Countermeasure:
     cm_id = str(raw["id"])
     tier  = raw["tier"]
@@ -135,6 +226,8 @@ def _parse_cm(raw: dict) -> Countermeasure:
     mat_req = raw.get("maturity_requirement")
     prereqs = mat_req.get("prerequisites") or [] if isinstance(mat_req, dict) else []
 
+    teaches = list(raw["teaches"]) if raw.get("teaches") else _CM_TEACHES_MAP.get(cm_id, [])
+
     return Countermeasure(
         id=cm_id,
         name=str(raw.get("name", "")),
@@ -147,4 +240,5 @@ def _parse_cm(raw: dict) -> Countermeasure:
         decay_days=int(decay["days"]) if decay.get("days") else None,
         applicable_to=list(raw.get("applicable_to", ["all"])),
         cost_credits=int(raw.get("cost_credits", 0)),
+        teaches=teaches,
     )

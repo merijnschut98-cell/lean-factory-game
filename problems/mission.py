@@ -37,7 +37,8 @@ class Mission:
     trigger: MissionTrigger
     problem_ids: List[str]  # problems gated behind this mission
     hints: List[str]        # progressive hints — one surfaces at a time via NPC ambient
-    completion_condition: str = "any"  # "any" = solve at least one; "all" = solve all
+    completion_condition: str = "any"       # "any" = solve at least one; "all" = solve all
+    visible_after: Optional[str] = None    # mission ID that must be completed first
 
     # Runtime state (serialised)
     active: bool    = False
@@ -121,4 +122,5 @@ def _parse_mission(raw: dict) -> Mission:
         problem_ids          = list(raw.get("problem_ids", [])),
         hints                = list(raw.get("hints", [])),
         completion_condition = str(raw.get("completion_condition", "any")),
+        visible_after        = raw.get("visible_after") or None,
     )

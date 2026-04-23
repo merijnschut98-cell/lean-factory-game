@@ -84,8 +84,8 @@ def _run_game() -> None:
     # Tracks which problem_id is pending CM application after warning
     _pending_cm: dict = {}   # {problem_id, cm_id}
 
-    running    = True
-    save_timer = 0.0
+    running          = True
+    _last_saved_day  = factory.time.day
 
     while running:
         real_dt = clock.tick(60) / 1000.0
@@ -190,7 +190,7 @@ def _run_game() -> None:
                                     prob.name, result["scores"],
                                     result["total"], result["credits_earned"])
 
-                elif event.key == pygame.K_u:
+                    elif event.key == pygame.K_u:
                         inspector.handle_action_key(event.key)
                         action = inspector.consume_action()
                         if action and action["type"] == "rollback":
@@ -198,7 +198,19 @@ def _run_game() -> None:
                             if result:
                                 inspector.close()
 
-                elif event.key in (pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_RETURN):
+                    elif event.key == pygame.K_s:
+                        inspector.handle_action_key(event.key)
+                        action = inspector.consume_action()
+                        if action and action["type"] == "standardize":
+                            factory.standardize_cm(action["problem_id"])
+
+                    elif event.key == pygame.K_a:
+                        inspector.handle_action_key(event.key)
+                        action = inspector.consume_action()
+                        if action and action["type"] == "adjust":
+                            factory.adjust_verification(action["problem_id"])
+
+                    elif event.key in (pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_RETURN):
                         inspector.handle_action_key(event.key)
                         action = inspector.consume_action()
                         if action and action["type"] == "dialogue_choice":
@@ -212,10 +224,56 @@ def _run_game() -> None:
                                     if session and not session.fork_complete:
                                         chosen = choices[idx]
                                         session.record_choice(chosen)
-                                        factory.discover(chosen.teaches)
+                                        new_concepts = factory.discover(chosen.teaches)
                                         inspector._revealed_choice = {
-                                            "problem_id": prob_id,
-                                            "choice":     chosen,
+                                            "problem_id":   prob_id,
+                                            "choice":       chosen,
+                                            "new_concepts": new_concepts,
+                                        }
+
+                        elif action and action["type"] == "five_whys_choice":
+                            prob_id = action["problem_id"]
+                            idx     = action["choice_index"]
+                            prob    = factory.problems.get(prob_id)
+                            if prob and prob.dialogue and prob.dialogue.five_whys:
+                                session = factory.get_or_create_session(prob_id)
+                                if session and not session.five_whys_complete:
+                                    step = prob.dialogue.five_whys[session.five_whys_step]
+                                    if idx < len(step.choices):
+                                        chosen = step.choices[idx]
+                                        new_concepts = factory.discover(chosen.teaches)
+                                        session.record_five_whys_choice(
+                                            chosen, len(prob.dialogue.five_whys))
+                                        inspector._revealed_choice = {
+                                            "problem_id":   prob_id,
+                                            "choice":       chosen,
+                                            "new_concepts": new_concepts,
+                                        }
+
+                        elif action and action["type"] == "verification_choice":
+                            from problems.dialogue import build_verification_fork
+                            prob_id = action["problem_id"]
+                            idx     = action["choice_index"]
+                            prob    = factory.problems.get(prob_id)
+                            session = factory.investigation_sessions.get(prob_id) if prob else None
+                            if prob and session and not session.verification_complete:
+                                cm_rec = factory.active_countermeasures.get(
+                                    prob.applied_countermeasure or "")
+                                cm = factory.cm_catalog.get(prob.applied_countermeasure or "")
+                                if cm and cm_rec and prob.dialogue:
+                                    npc = (prob.dialogue.investigation.npc
+                                           if prob.dialogue.investigation else "Team Leader")
+                                    days = factory.time.day - cm_rec["applied_day"]
+                                    vfork = build_verification_fork(
+                                        npc, cm.category, cm.name, days)
+                                    if idx < len(vfork.choices):
+                                        chosen = vfork.choices[idx]
+                                        new_concepts = factory.discover(chosen.teaches)
+                                        session.record_verification_choice(chosen)
+                                        inspector._revealed_choice = {
+                                            "problem_id":   prob_id,
+                                            "choice":       chosen,
+                                            "new_concepts": new_concepts,
                                         }
 
         # ── Movement ──────────────────────────────────────────────────────────
@@ -235,11 +293,10 @@ def _run_game() -> None:
         # ── Simulation tick ───────────────────────────────────────────────────
         factory.tick(real_dt)
 
-        # ── Auto-save every 5 real minutes ────────────────────────────────────
-        save_timer += real_dt
-        if save_timer >= 300.0:
+        # ── Auto-save on in-game day boundary ────────────────────────────────
+        if factory.time.day != _last_saved_day:
             save(factory)
-            save_timer = 0.0
+            _last_saved_day = factory.time.day
 
         # ── Render ────────────────────────────────────────────────────────────
         renderer.draw(player, factory)

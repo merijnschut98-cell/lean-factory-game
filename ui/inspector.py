@@ -12,6 +12,9 @@ from typing import Optional
 
 import pygame
 
+from problems.dialogue import ChoiceOutcome, build_verification_fork
+from problems.problem import ProblemState
+from ui.micro_lessons import MICRO_LESSONS
 from ui.text_utils import wrap_text
 
 C_PANEL      = (21, 20, 15, 240)
@@ -41,7 +44,46 @@ NPC_LINES = {
 }
 
 
+_DEFAULT_DEBRIEF = (
+    "Good work. The cluster is closed for now — keep an eye on it as conditions change."
+)
+
+_MISSION_DEBRIEFS = {
+    "M-T1-001": (
+        "That's exactly what I was hoping for. The waste was there all along — "
+        "it just needed someone to stop and look. Zone 2 already feels different. "
+        "Let's keep the discipline."
+    ),
+    "M-T1-002": (
+        "FTR is moving. I've been watching that number for months. "
+        "What you found was upstream of where we were looking — that's the lesson. "
+        "Don't trust the defect location; trust the root cause."
+    ),
+    "M-T1-003": (
+        "The schedule is responding now. WIP isn't piling the way it was. "
+        "Maya says the dock is smoother. I think you've found the lever — "
+        "now we just have to hold it."
+    ),
+    "M-T1-004": (
+        "We won't fully know the impact until the next time that operator is out. "
+        "But the knowledge is out of one person's head and into the system now. "
+        "That's a real improvement in resilience."
+    ),
+    "M-T1-005": (
+        "The numbers are starting to agree with each other again. "
+        "Priya says the gap between MES and the floor is closing. "
+        "Trust in data is slow to build and fast to destroy — you've started rebuilding it."
+    ),
+}
+
+
 _PANEL_SURF_H = 2400   # tall enough for any inspector content
+
+_WRONG_CM_TIPS = {
+    1: "Floor Manager: That CM tier doesn't match this problem — check the zone maturity.",
+    2: "Floor Manager: Another mismatch. Credits penalty will apply on resolve.",
+    3: "Floor Manager: Third wrong CM. Score will be reduced — consider rolling back.",
+}
 
 
 class Inspector:
@@ -51,9 +93,11 @@ class Inspector:
         self._open  = False
         self._obj: Optional[dict] = None
         self._factory = None
-        self._scroll_y   = 0
-        self._content_h  = 0
-        self._panel_surf = pygame.Surface((PANEL_W, _PANEL_SURF_H), pygame.SRCALPHA)
+        self._scroll_y    = 0
+        self._content_h   = 0
+        self._panel_surf  = pygame.Surface((PANEL_W, _PANEL_SURF_H), pygame.SRCALPHA)
+        # Cache: (problem_id, cm_category, days_active) → InvestigationFork
+        self._vfork_cache: dict = {}
 
         from ui.fonts import make as _fonts
         f = _fonts()
@@ -79,6 +123,7 @@ class Inspector:
     def close(self) -> None:
         self._open = False
         self._obj  = None
+        self._vfork_cache.clear()
 
     @property
     def is_open(self) -> bool:
@@ -119,7 +164,6 @@ class Inspector:
         if not station_id:
             return
 
-        from problems.problem import ProblemState
         problems = [p for p in factory.active_problems.values()
                     if p.station_id == station_id]
 
@@ -140,17 +184,62 @@ class Inspector:
             if applied:
                 self._pending_action = {"type": "rollback", "problem_id": applied[0].id}
 
-        elif key in (pygame.K_1, pygame.K_2, pygame.K_3):
-            choice_index = key - pygame.K_1   # 0, 1, or 2
-            # Find the first active problem at this station with an open fork
+        elif key == pygame.K_s:
             for prob in problems:
                 session = factory.investigation_sessions.get(prob.id)
-                fork = prob.dialogue.investigation if prob.dialogue else None
+                if (session and session.verification_complete
+                        and session.verification_correct and not session.standardized):
+                    self._pending_action = {"type": "standardize", "problem_id": prob.id}
+                    break
+
+        elif key == pygame.K_a:
+            for prob in problems:
+                session = factory.investigation_sessions.get(prob.id)
+                if (session and session.verification_complete
+                        and not session.verification_correct and not session.standardized):
+                    self._pending_action = {"type": "adjust", "problem_id": prob.id}
+                    break
+
+        elif key in (pygame.K_1, pygame.K_2, pygame.K_3):
+            choice_index = key - pygame.K_1   # 0, 1, or 2
+            for prob in problems:
+                if not prob.dialogue:
+                    continue
+                session   = factory.investigation_sessions.get(prob.id)
+                fork      = prob.dialogue.investigation
+                five_whys = prob.dialogue.five_whys
+
+                # Active 5 Whys step
+                if (fork and session and session.fork_complete and
+                        five_whys and not session.five_whys_complete):
+                    step = five_whys[session.five_whys_step]
+                    if choice_index < len(step.choices):
+                        self._pending_action = {
+                            "type":         "five_whys_choice",
+                            "problem_id":   prob.id,
+                            "choice_index": choice_index,
+                        }
+                    break
+
+                # Active verification fork (PDCA Check)
+                cm_rec = factory.active_countermeasures.get(prob.applied_countermeasure or "")
+                if (session and session.fork_complete
+                        and self._should_show_verification(prob, session, cm_rec, factory)):
+                    vfork = self._get_verification_fork(prob, cm_rec, factory)
+                    if vfork and choice_index < len(vfork.choices):
+                            self._pending_action = {
+                                "type":         "verification_choice",
+                                "problem_id":   prob.id,
+                                "choice_index": choice_index,
+                            }
+                    break
+
+                # Active investigation fork
                 if fork and (session is None or not session.fork_complete):
                     if choice_index < len(fork.choices):
                         self._pending_action = {
-                            "type":        "dialogue_choice",
-                            "problem_id":  prob.id,
+                            "type":         "dialogue_choice",
+                            "problem_id":   prob.id,
                             "choice_index": choice_index,
                         }
                     break
@@ -299,8 +388,6 @@ class Inspector:
 
     def _draw_problem_card(self, surf: pygame.Surface, y: int, prob) -> int:
         """Problem card: severity badge, name, first symptom, state + action hint."""
-        from problems.problem import ProblemState
-
         sev_colors = {
             "critical": (220, 50, 50),
             "high":     (220, 120, 50),
@@ -330,14 +417,23 @@ class Inspector:
 
         # Action hint
         if prob.state == ProblemState.ACTIVE:
-            hint = "[C]  Apply Countermeasure"
-            surf.blit(self._font_mono.render(hint, True, C_GOLD), (18, y))
+            surf.blit(self._font_mono.render("[C]  Apply Countermeasure", True, C_GOLD), (18, y))
             y += 16
         elif prob.state == ProblemState.COUNTERMEASURE_APPLIED:
             surf.blit(self._font_mono.render("[R]  Resolve & Score", True, (111, 211, 111)), (18, y))
             y += 16
             surf.blit(self._font_mono.render("[U]  Rollback CM  (-25% credits)", True, (200, 120, 60)), (18, y))
             y += 16
+
+        # Soft-punishment tip after wrong CM applications
+        if self._factory:
+            session = self._factory.investigation_sessions.get(prob.id)
+            if session and session.wrong_cm_count > 0:
+                tip = _WRONG_CM_TIPS.get(session.wrong_cm_count, _WRONG_CM_TIPS[3])
+                y += 4
+                for ln in wrap_text(tip, self._font_body, PANEL_W - 36)[:2]:
+                    surf.blit(self._font_body.render(ln, True, C_WAITING), (18, y))
+                    y += 15
 
         # Dialogue fork section
         if self._factory and prob.dialogue and prob.dialogue.investigation:
@@ -346,8 +442,32 @@ class Inspector:
         y += 6
         return y
 
+    def _get_verification_fork(self, prob, cm_rec, factory):
+        """Return cached verification fork; rebuild only when CM/days changes."""
+        cm = factory.cm_catalog.get(prob.applied_countermeasure)
+        if not cm:
+            return None
+        fork = prob.dialogue.investigation if prob.dialogue else None
+        npc  = fork.npc if fork else "Team Leader"
+        days = factory.time.day - cm_rec["applied_day"]
+        key  = (prob.id, cm.category, days)
+        if key not in self._vfork_cache:
+            self._vfork_cache[key] = build_verification_fork(npc, cm.category, cm.name, days)
+        return self._vfork_cache[key]
+
+    @staticmethod
+    def _should_show_verification(prob, session, cm_rec, factory) -> bool:
+        five_whys = prob.dialogue.five_whys if prob.dialogue else []
+        five_whys_done = not five_whys or session.five_whys_complete
+        return (
+            five_whys_done
+            and prob.state == ProblemState.COUNTERMEASURE_APPLIED
+            and cm_rec is not None
+            and factory.time.day - cm_rec.get("applied_day", factory.time.day) >= 3
+            and not session.verification_complete
+        )
+
     def _draw_dialogue_fork(self, surf: pygame.Surface, y: int, prob) -> int:
-        from problems.dialogue import ChoiceOutcome
         factory = self._factory
         fork    = prob.dialogue.investigation
         session = factory.investigation_sessions.get(prob.id)
@@ -376,15 +496,97 @@ class Inspector:
             for ln in wrap_text(choice.hint, self._font_body, PANEL_W - 36)[:3]:
                 surf.blit(self._font_body.render(ln, True, C_DIM), (18, y))
                 y += 16
+
+            # Micro-lesson for the first newly discovered concept
+            new_concepts = self._revealed_choice.get("new_concepts") or set()
+            lesson_concept = next(
+                (c for c in (choice.teaches or []) if c in new_concepts and c in MICRO_LESSONS),
+                None,
+            )
+            if lesson_concept:
+                y += 6
+                pygame.draw.line(surf, (40, 38, 30), (18, y), (PANEL_W - 18, y))
+                y += 8
+                surf.blit(self._font_mono.render(
+                    f"CONCEPT: {lesson_concept.upper().replace('_', ' ')}", True, C_GOLD), (18, y))
+                y += 14
+                for ln in wrap_text(MICRO_LESSONS[lesson_concept], self._font_body, PANEL_W - 36):
+                    surf.blit(self._font_body.render(ln, True, C_PANEL_INK), (18, y))
+                    y += 15
+
             surf.blit(self._font_mono.render("[Enter]  Continue", True, C_GOLD), (18, y))
             y += 18
             return y
 
-        # Completed fork summary
+        # Completed fork — show 5 Whys drill or completion summary
         if session and session.fork_complete:
+            five_whys = prob.dialogue.five_whys if prob.dialogue else []
+
+            if five_whys and not session.five_whys_complete:
+                step      = five_whys[session.five_whys_step]
+                step_num  = session.five_whys_step + 1
+                total     = len(five_whys)
+                surf.blit(self._font_mono.render(
+                    f"5 WHYS  —  STEP {step_num} / {total}", True, C_GOLD), (18, y))
+                y += 18
+                for ln in wrap_text(step.why, self._font_body, PANEL_W - 36)[:3]:
+                    surf.blit(self._font_body.render(ln, True, C_PANEL_INK), (18, y))
+                    y += 16
+                y += 4
+                for i, choice in enumerate(step.choices[:3]):
+                    surf.blit(self._font_mono.render(f"[{i + 1}]", True, C_GOLD), (18, y))
+                    for ln in wrap_text(choice.text, self._font_body, PANEL_W - 56)[:2]:
+                        surf.blit(self._font_body.render(ln, True, C_PANEL_INK), (44, y))
+                        y += 16
+                    y += 2
+                return y
+
+            # Verification fork (PDCA Check) — shown after investigation + optional 5 Whys
+            cm_rec = factory.active_countermeasures.get(prob.applied_countermeasure or "")
+            if self._should_show_verification(prob, session, cm_rec, factory):
+                vfork = self._get_verification_fork(prob, cm_rec, factory)
+                if vfork:
+                    surf.blit(self._font_mono.render(
+                        "PDCA  —  CHECK", True, (111, 211, 111)), (18, y))
+                    y += 18
+                    surf.blit(self._font_mono.render(
+                        f"[ {vfork.npc} ]", True, C_GOLD), (18, y))
+                    y += 16
+                    for ln in wrap_text(vfork.prompt, self._font_body, PANEL_W - 36)[:2]:
+                        surf.blit(self._font_body.render(ln, True, C_PANEL_INK), (18, y))
+                        y += 16
+                    y += 4
+                    for i, choice in enumerate(vfork.choices[:3]):
+                        surf.blit(self._font_mono.render(f"[{i + 1}]", True, C_GOLD), (18, y))
+                        for ln in wrap_text(choice.text, self._font_body, PANEL_W - 56)[:2]:
+                            surf.blit(self._font_body.render(ln, True, C_PANEL_INK), (44, y))
+                            y += 16
+                        y += 2
+                    return y
+
             surf.blit(self._font_mono.render(
                 "✓ INVESTIGATION COMPLETE", True, (111, 211, 111)), (18, y))
             y += 16
+            if session.five_whys_complete:
+                surf.blit(self._font_mono.render(
+                    "✓ ROOT CAUSE IDENTIFIED", True, (111, 211, 111)), (18, y))
+                y += 16
+            if session.verification_complete:
+                surf.blit(self._font_mono.render(
+                    "✓ EFFECT VERIFIED", True, (111, 211, 111)), (18, y))
+                y += 16
+                if session.standardized:
+                    surf.blit(self._font_mono.render(
+                        "✓ STANDARDIZED  (+15% bonus on resolve)", True, (111, 211, 111)), (18, y))
+                    y += 16
+                elif session.verification_correct:
+                    surf.blit(self._font_mono.render(
+                        "[S]  Standardize — lock benefit, disable decay", True, C_GOLD), (18, y))
+                    y += 16
+                else:
+                    surf.blit(self._font_mono.render(
+                        "[A]  Adjust — observe again", True, C_WAITING), (18, y))
+                    y += 16
             if session.earned_rally_bonus:
                 surf.blit(self._font_body.render(
                     "+10% credit bonus (Learning Rally)", True, (255, 214, 131)), (18, y))
@@ -447,6 +649,53 @@ class Inspector:
         for line_txt in wrap_text(NPC_LINES.get(role, "No comment."), self._font_body, PANEL_W - 36):
             surf.blit(self._font_body.render(line_txt, True, C_PANEL_INK), (18, y))
             y += 16
+
+        # Mission briefing: shown whenever this NPC's mission is active
+        if self._factory:
+            # Completed mission debriefing — shown after player resolves the mission cluster
+            completed = next(
+                (m for m in self._factory.missions.values()
+                 if m.source_npc == role and m.completed),
+                None,
+            )
+            if completed:
+                y += 8
+                pygame.draw.line(surf, (40, 38, 30), (18, y), (PANEL_W - 18, y))
+                y += 10
+                surf.blit(self._font_mono.render("MISSION COMPLETE", True, (111, 211, 111)), (18, y))
+                y += 14
+                surf.blit(self._font_title.render(completed.title, True, C_GOLD), (18, y))
+                y += 22
+                debrief = _MISSION_DEBRIEFS.get(completed.id, _DEFAULT_DEBRIEF)
+                for line_txt in wrap_text(debrief, self._font_body, PANEL_W - 36):
+                    surf.blit(self._font_body.render(line_txt, True, C_PANEL_INK), (18, y))
+                    y += 16
+
+            # Active mission briefing — shown while mission is running
+            mission = next(
+                (m for m in self._factory.missions.values()
+                 if m.source_npc == role and m.active and not m.completed),
+                None,
+            )
+            if mission:
+                y += 8
+                pygame.draw.line(surf, (40, 38, 30), (18, y), (PANEL_W - 18, y))
+                y += 10
+                surf.blit(self._font_mono.render("ACTIVE MISSION", True, C_GOLD), (18, y))
+                y += 14
+                surf.blit(self._font_title.render(mission.title, True, C_GOLD), (18, y))
+                y += 22
+                for line_txt in wrap_text(mission.description.strip(), self._font_body, PANEL_W - 36):
+                    surf.blit(self._font_body.render(line_txt, True, C_PANEL_INK), (18, y))
+                    y += 16
+                if mission.current_hint:
+                    y += 4
+                    surf.blit(self._font_mono.render("HINT", True, C_DIM), (18, y))
+                    y += 14
+                    for line_txt in wrap_text(mission.current_hint, self._font_body, PANEL_W - 36):
+                        surf.blit(self._font_body.render(line_txt, True, C_DIM), (18, y))
+                        y += 16
+
         return y + 8
 
     def _draw_generic(self, surf: pygame.Surface, y: int) -> int:
@@ -461,20 +710,8 @@ class Inspector:
             y += 18
 
         placeholder = "Detailed inspector panel arrives in a later iteration."
-        words = placeholder.split()
-        lines_out, current = [], ""
-        for w in words:
-            test = current + (" " if current else "") + w
-            if self._font_body.size(test)[0] > PANEL_W - 36:
-                lines_out.append(current)
-                current = w
-            else:
-                current = test
-        if current:
-            lines_out.append(current)
-
         y += 8
-        for line_txt in lines_out:
+        for line_txt in wrap_text(placeholder, self._font_body, PANEL_W - 36):
             surf.blit(self._font_body.render(line_txt, True, C_DIM), (18, y))
             y += 16
         return y

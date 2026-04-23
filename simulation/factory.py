@@ -242,10 +242,13 @@ class Factory:
             self.investigation_sessions[problem_id] = InvestigationSession(problem_id=problem_id)
         return self.investigation_sessions[problem_id]
 
-    def discover(self, tags) -> None:
-        """Add concept tags to the discovered_concepts registry."""
-        if tags:
-            self.discovered_concepts.update(tags)
+    def discover(self, tags) -> set:
+        """Add concept tags; returns the set of concepts newly discovered this call."""
+        if not tags:
+            return set()
+        new = set(tags) - self.discovered_concepts
+        self.discovered_concepts.update(tags)
+        return new
 
     def log_inspection(self, entity_id: str, metric: str) -> None:
         """Record a player inspection and immediately check for newly visible problems."""
@@ -308,9 +311,16 @@ class Factory:
         self.maturity.register_cm(prob.zone_id, cm_id, cm.tier_int)
         prob.applied_countermeasure = cm_id
         prob.state = ProblemState.COUNTERMEASURE_APPLIED
+        self.discover(cm.teaches)
+
+        # Track wrong CM applications for soft-punishment ladder (only if player investigated)
+        if eff_mult < 0.5:
+            session = self.investigation_sessions.get(prob.id)
+            if session:
+                session.wrong_cm_count += 1
 
         return {
-            "success":       True,
+            "success":        True,
             "eff_multiplier": eff_mult,
             "side_effect_id": side_effect_id,
         }
@@ -340,10 +350,15 @@ class Factory:
             zone_maturity     = self.maturity.zone_maturity(prob.zone_id),
         )
 
-        # Phase 5: apply +1 boost for each correct fork choice that names a score metric
+        # Phase 5: +1 boost per correct choice (investigation, 5 Whys, and verification)
         session = self.investigation_sessions.get(problem_id)
         if session:
-            for choice in session.choices_made:
+            all_choices = (
+                session.choices_made
+                + session.five_whys_choices
+                + session.verification_choices
+            )
+            for choice in all_choices:
                 feed = choice.get("score_feed")
                 if choice.get("outcome") == "CORRECT" and feed and feed in scores:
                     scores[feed] = min(5, scores[feed] + 1)
@@ -351,10 +366,26 @@ class Factory:
         total = total_score(scores)
         earned = credits_earned(total, prob.severity)
 
-        # Phase 5: Learning Rally bonus — +10% for solving after an initial wrong attempt
+        # Soft-punishment: count=2 → 10%, count=3 → 20% (capped at 40%)
+        if session and session.wrong_cm_count >= 2:
+            penalty = 0.10 * (session.wrong_cm_count - 1)
+            earned  = round(earned * max(0.6, 1.0 - min(penalty, 0.40)))
+
+        # Learning Rally bonus — +10% for solving after an initial wrong attempt
         rally_bonus = session.earned_rally_bonus if session else False
         if rally_bonus:
             earned = round(earned * 1.1)
+
+        # PDCA completion bonus — +15% when all four phases complete
+        pdca_complete = (
+            session is not None
+            and session.fork_complete
+            and session.verification_complete
+            and session.verification_correct
+            and session.standardized
+        )
+        if pdca_complete:
+            earned = round(earned * 1.15)
 
         self.credits += earned
         self._remove_problem_modifiers(prob)
@@ -369,7 +400,38 @@ class Factory:
                 mission.advance_hint()
 
         return {"scores": scores, "total": total, "credits_earned": earned,
-                "rally_bonus": rally_bonus}
+                "rally_bonus": rally_bonus, "pdca_complete": pdca_complete}
+
+    @property
+    def follow_up_due_stations(self) -> set:
+        """Station IDs where a CM has been active >= 3 days — PDCA Check phase due."""
+        due: set = set()
+        for rec in self.active_countermeasures.values():
+            if self.time.day - rec.get("applied_day", self.time.day) >= 3:
+                due.add(rec["station_id"])
+        return due
+
+    def standardize_cm(self, problem_id: str) -> bool:
+        """Lock CM benefit permanently (disables decay). Returns True on success."""
+        prob = self.problems.get(problem_id)
+        if not prob or not prob.applied_countermeasure:
+            return False
+        cm_id = prob.applied_countermeasure
+        if cm_id in self.active_countermeasures:
+            self.active_countermeasures[cm_id]["decay_days"] = None
+        session = self.investigation_sessions.get(problem_id)
+        if session:
+            session.standardized = True
+        return True
+
+    def adjust_verification(self, problem_id: str) -> bool:
+        """Reset verification so the player can observe again (PDCA Adjust). Returns True on success."""
+        session = self.investigation_sessions.get(problem_id)
+        if not session or not session.verification_complete:
+            return False
+        session.verification_complete = False
+        session.verification_choices = []
+        return True
 
     @property
     def active_mission_count(self) -> int:
@@ -383,6 +445,11 @@ class Factory:
                 continue
             if count >= 2:
                 break
+            # Prerequisite gate: visible_after must be completed first
+            if mission.visible_after:
+                prereq = self.missions.get(mission.visible_after)
+                if not (prereq and prereq.completed):
+                    continue
             if self._mission_trigger_met(mission):
                 mission.active = True
                 count += 1
@@ -410,9 +477,14 @@ class Factory:
         for mission in self.missions.values():
             if mission.active or mission.completed:
                 continue
-            if mission.trigger.type == "npc" and mission.trigger.npc_role == npc_role:
-                mission.active = True
-                return mission.id
+            if mission.trigger.type != "npc" or mission.trigger.npc_role != npc_role:
+                continue
+            if mission.visible_after:
+                prereq = self.missions.get(mission.visible_after)
+                if not (prereq and prereq.completed):
+                    continue
+            mission.active = True
+            return mission.id
         return None
 
     def active_mission_hint(self) -> str:
@@ -439,6 +511,16 @@ class Factory:
         if self.live_oee < 0.20:
             worst = min(self.stations.values(), key=lambda s: s.oee)
             self._add_circuit_event("oee_floor", f"Critical OEE on {worst.name} — check immediately.")
+
+        # FTR floor: too many defects reaching Final QA — slow and log.
+        # Guard > 0.0 skips day 1 when last_day_ftr is not yet computed (defaults to 0.0).
+        if self.last_day_ftr < 0.60 and self.last_day_ftr > 0.0:
+            if not self.time.paused and self.time._speed_index > 1:
+                self.time.set_speed(1)
+            self._add_circuit_event(
+                "ftr_floor",
+                "Too many failures reaching Final QA — slowed to 1× while defect rate is critical.",
+            )
 
     def _add_circuit_event(self, event_type: str, message: str) -> None:
         self.circuit_breaker_events.append(

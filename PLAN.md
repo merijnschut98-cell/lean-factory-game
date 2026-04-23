@@ -5,9 +5,9 @@ Update this file every time a task is completed or added.
 
 ---
 
-## Current Status: Phase 5 — Guided Learning (~75% done)
+## Current Status: Phase 5 — Guided Learning (~95% done)
 
-Next: mission HUD indicator → NPC mission briefing dialogue → daily auto-snapshot → codex micro-lessons → 5 Whys YAML content
+Next: recovery coach dialogue → gemba walk decision tree → start/pause/save screen (Phase 7 preview)
 
 ---
 
@@ -119,36 +119,37 @@ NPC forks are **deterministic, YAML-driven dialogue trees** — separate from th
 
 ### Remaining — guided decision flow
 
-- ⬜ **`teaches:` tags on all 79 countermeasures**: CMs need them so codex unlocks fire when a CM is applied, not just when a fork is triggered
-- ⬜ **5 Whys guided flow**: author `five_whys:` sections in YAML for root-cause problems (data model ready); render as follow-up fork after investigation fork completes
+- ✅ **`teaches:` tags on all 79 countermeasures**: `_CM_TEACHES_MAP` in `countermeasure.py`; `factory.discover(cm.teaches)` called in `apply_countermeasure`
+- ✅ **5 Whys guided flow**: `five_whys:` YAML authored for T1-003/006/008/012 (3 steps each, 3 choices per step); session tracking + inspector rendering; follows investigation fork completion
 - ⬜ **Gemba walk decision tree**: player chooses who to talk to, what to time, what to measure — each NPC gives a different partial perspective; full picture requires multiple stops
 - ⬜ **CM selection fork**: when catalog opens from a specific NPC, NPC proposes shortlist (correct / off-tier / unrelated) with post-selection explanation
 - ⬜ **DMAIC workflow scaffold**: Define → Measure → Analyze → Improve → Control as multi-stage A3 form; unlocks gradually
 
 ### Remaining — mission system
 
-- ⬜ **Mission HUD indicator**: small active mission title + current hint shown in a corner of the HUD when a mission is active; nothing shown when no mission is active
-- ⬜ **Mission briefing dialogue**: when a mission activates via NPC interaction, the NPC delivers the narrative briefing as a short dialogue exchange (framed as invitation, never a command)
-- ⬜ **Mission completion notification**: resolving the key problem triggers a brief debriefing from the source NPC
+- ✅ **Mission HUD indicator**: small active mission title + current hint shown in a corner of the HUD when a mission is active; nothing shown when no mission is active
+- ✅ **Mission briefing dialogue**: when a mission activates via NPC interaction, the NPC delivers the narrative briefing as a short dialogue exchange (framed as invitation, never a command)
+- ✅ **Mission ordering / availability cap**: `visible_after:` prerequisite field on `Mission` gates each mission behind a predecessor. Chain: M-T1-001 (auto) → M-T1-002 + M-T1-003 (need M-T1-001 done) → M-T1-004 (needs M-T1-002) → M-T1-005 (needs M-T1-003). Only M-T1-001 surfaces on day 1; subsequent missions unlock progressively.
+- ✅ **Mission completion notification**: source NPC panel shows "MISSION COMPLETE" + per-mission debrief text when mission is completed (`_MISSION_DEBRIEFS` dict in inspector)
 - ⬜ **Lean Coach NPC**: add a Black Belt / Lean Coach character to the office wing; delivers kaizen and DMAIC missions with structured methodical framing; distinct from operational floor NPCs
 - ⬜ **NPC awareness hints**: while a mission is active, NPCs near affected zones make context-appropriate ambient comments that hint toward the problem without naming it
 
 ### Remaining — safety nets
 
-- ⬜ **FTR floor circuit breaker**: if plant FTR drops below 60%, log a critical event and briefly pause the Final QA output with narrative framing ("too many failures — pausing final test")
+- ✅ **FTR floor circuit breaker**: FTR < 60% logs `ftr_floor` event and slows simulation to 1× (consistent with WIP ceiling pattern)
 - ⬜ **Side-effect suppression**: if at active problem cap, harmful CM side-effects downgraded to warnings rather than spawning new problems
-- ⬜ **Daily auto-snapshot**: currently auto-saves every 5 real minutes — change to trigger on in-game day boundary so player can always restart from yesterday's state
+- ✅ **Daily auto-snapshot**: currently auto-saves every 5 real minutes — change to trigger on in-game day boundary so player can always restart from yesterday's state
 - ⬜ **No hard fail state for bankruptcy**: zero credits triggers "back-to-basics" week — simpler problems, free coach consults, narrative framing as learning reset
 
 ### Remaining — mistake tolerance
 
-- ⬜ Soft-punishment ladder: first wrong CM = floor manager tip; second = 10% refund penalty; third = score penalty. Never game-over
+- ✅ Soft-punishment ladder: wrong CM tip shown in inspector; count=2 → 10% penalty; count=3 → 20% penalty (capped at 40%). Never game-over
 - ⬜ Recovery coach dialogue: after failed/mismatched CM, NPC offers "want to talk through what happened?"
 
 ### Remaining — learning content
 
-- ⬜ Micro-lesson intros: first time a concept appears via `discovered_concepts`, NPC offers optional 3–5 sentence in-fiction explanation (skippable, one-time per concept)
-- ⬜ Knowledge score in HUD: `len(factory.discovered_concepts)` shown as a learning-progress indicator separate from economic credits
+- ✅ Micro-lesson intros: first time a concept appears via `discovered_concepts`, NPC offers optional 3–5 sentence in-fiction explanation (skippable, one-time per concept)
+- ✅ Knowledge score in HUD: `CONCEPTS X / 62` shown in the KPI strip alongside OUTPUT/OEE/WIP/FTR/CREDITS
 - ⬜ Digitalization decision forks: explicit analog-vs-digital choice forks (paper Andon vs digital, clipboard vs MES)
 - ⬜ Data-literacy moments: when SPC chart / Pareto / histogram first appears, NPC walks through reading it as a fork
 
@@ -156,11 +157,11 @@ NPC forks are **deterministic, YAML-driven dialogue trees** — separate from th
 
 The game currently implements Plan (investigation fork) and Do (apply CM). Check and Act are missing.
 
-- ⬜ **Follow-up indicator**: N days after CM applied, a pulsing `↻` badge prompts the player to return and observe
-- ⬜ **Effect verification fork**: when player re-inspects post-CM, NPC offers "What do you observe now?" fork — boosts CIM metric; CORRECT names the specific improvement
-- ⬜ **Standardize action**: correct follow-up → NPC offers "Standardize this?" — accepts locks benefit permanently (overrides decay) and unlocks next-tier CM category
-- ⬜ **Adjust action**: weak follow-up → NPC offers to re-open investigation without losing all credits
-- ⬜ **PDCA completion bonus**: completing all four phases awards a multiplier on credits
+- ✅ **Follow-up indicator**: 3 days after CM applied, pulsing green `↻` badge appears above station; clears on resolve. `factory.follow_up_due_stations` property; rendered in `_draw_followup_badges`
+- ✅ **Effect verification fork**: 3 days post-CM, `_should_show_verification` gates a generated PDCA-Check fork; `build_verification_fork` generates per-category NPC prompt + 3 choices; CORRECT boosts CIM via score_feed; 37 new tests
+- ✅ **Standardize action**: `[S]` after correct verification locks CM decay permanently; `session.standardized` flag; `factory.standardize_cm()`
+- ✅ **Adjust action**: `[A]` after wrong/plausible verification resets `verification_complete` + clears `verification_choices` for retry; `factory.adjust_verification()`
+- ✅ **PDCA completion bonus**: +15% credits when all four phases done (fork + verification correct + standardized); stacks with rally bonus
 
 ### Remaining — kaizen events
 
@@ -199,7 +200,27 @@ Content design happens *after* Phase 5 so every new problem uses the settled dia
 
 ---
 
-## Phase 7 — UI Polish and UX ⬜ NOT STARTED
+## Phase 7 — UI Polish, Progression, and Story ⬜ NOT STARTED
+
+> **Design note (from session 2026-04-23):** Current UI is functional but not inviting — raw rectangles, low contrast, no visual hierarchy between panels and world. Phase 7 should feel like a different product. The deliverable is a game someone unfamiliar with the project can sit down with and find visually clear, progression they can feel, and a story that makes them care. Defer all visual work until Phase 6 content is done.
+
+### Narrative and Story
+
+The player is a newly hired **Continuous Improvement Specialist** at NovaGlide. Day 1 they walk into a plant that produces hoverboards but struggles with quality, flow, and hidden waste. Over the course of Tiers 1–4 they transform it into a benchmark operation. The story provides motivation: people to care about, a plant worth saving, and a sense of pride when it works.
+
+- ⬜ **Opening narrative**: Day 1 cutscene / text scroll — player character arrives, Plant Manager (you) greets them, gives first mission. Sets tone: this is a learning journey, not a battle
+- ⬜ **NPC character arcs**: each source NPC (Team Leader, Quality Lead, Scheduler, HR Manager, IT Engineer) has a 3-stage story arc — skeptic → engaged → champion — revealed as their mission cluster completes
+- ⬜ **Day summary narrative line**: end-of-day card includes a one-sentence flavour from an NPC reflecting on the day ("The rework pile shrank today. First time in weeks." — Quality Lead)
+- ⬜ **Milestone events**: at key progression points (first problem resolved, first mission complete, first Tier 2 CM, all Tier 1 done), a short congratulatory line from Plant Manager
+
+### Progression and Leveling
+
+- ⬜ **CI Level system**: player earns XP from: resolving problems (base), correct fork choices (+bonus), completing 5 Whys (+bonus), mission completions (big bonus), codex concepts unlocked. Level displayed in HUD (e.g. "Lvl 4 — Lean Practitioner"). Level names: Observer → Practitioner → Analyst → Expert → Black Belt → Sensei
+- ⬜ **Mission progress tracker**: a persistent panel or screen (hotkey `[M]`) listing all missions — status (locked / available / active / complete), problems solved count, source NPC icon
+- ⬜ **KPI dashboard screen**: `[Tab]` or `[F2]` opens a full-screen dashboard — OEE/FTR/WIP/OUTPUT trend charts (last 30 days), mission completion bars, concept coverage pie, CI Level XP bar
+- ⬜ **Tier progression bar**: visual indicator in HUD or dashboard showing progress toward Tier 2 unlock (X/10 Tier 1 problems resolved), Tier 3, Tier 4
+- ⬜ **Achievement system**: hidden milestones that pop up as toast notifications: "First Gemba", "5S Complete", "Learning Rally", "Root Cause Found". No rewards — just recognition
+- ⬜ **Problem history log**: `[H]` opens a log of all resolved problems with day, CM applied, score — the player's personal improvement record
 
 ### Navigation and Floor
 
@@ -213,10 +234,10 @@ Content design happens *after* Phase 5 so every new problem uses the settled dia
 
 ### Screens
 
-- ⬜ Start screen: game title, "New Game / Continue / Quit", version number
-- ⬜ Save/load screen: list of save slots with date and day number; manual save + load from menu
+- ⬜ **Start screen** *(requested 2026-04-23)*: game title, "New Game / Continue / Quit" — required before anything else; new game wipes save, continue loads existing. Block entry directly into game loop.
+- ⬜ **Save/load screen** *(requested 2026-04-23)*: accessible from in-game pause menu (`[Esc]` → menu); shows current day number and timestamp; manual save slot + reset-to-start option. Reset should prompt confirmation ("This will erase all progress.").
 - ⬜ Day summary popup: non-blocking end-of-day card showing output, OEE, WIP, FTR delta vs yesterday
-- ⬜ Pause screen overlay: visual darkening + "PAUSED" indicator + resume hint
+- ⬜ Pause screen overlay: `[Esc]` opens overlay with Resume / Save / Load / Quit options; visual darkening + "PAUSED" indicator
 
 ### Inspector and Panels
 

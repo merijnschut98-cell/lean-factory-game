@@ -211,6 +211,97 @@ problems:
               Fix the root cause first — then track to confirm it's gone.
               Digitalization accelerates learning; it doesn't replace it.
             teaches: [digitalization]
+      five_whys:
+        - why: >
+            The rework pile shows 57% of units have the same defect — propulsion
+            mount torque applied at wrong angle, all from Integration 3.
+            Why is the torque being applied incorrectly?
+          choices:
+            - text: "Operators apply the mount by hand with no fixture — angle varies between people"
+              outcome: CORRECT
+              evidence: >
+                Observed four operators at Integration 3. Each holds the mount
+                at a slightly different angle. No jig, no fixture, no reference mark.
+              hint: >
+                Hand assembly without fixturing is the source of variation. The
+                defect is not random — it's predictable from the method.
+              teaches: [poka_yoke, standard_work, operator_variation]
+              score_feed: RCA
+            - text: "The torque specification is too tight for manual assembly"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                The spec may be tight — but four operators produce four different
+                results, which means the process, not the spec, is the variable.
+              teaches: [standard_work, variation]
+            - text: "Operators are rushing because of production pressure"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                Pressure affects pace — but all four operators showed the same
+                angular variation even when observed at normal speed. It's a
+                method problem, not a pace problem.
+              teaches: [waste_muri]
+        - why: >
+            Operators at Integration 3 use no fixture and apply the mount by feel.
+            Why is there no fixture or reference method at this station?
+          choices:
+            - text: "There is no standard work document specifying a fixture for this step"
+              outcome: CORRECT
+              evidence: >
+                Station file contains a general assembly diagram from product
+                launch — no fixture requirement, no reference angle, no method note.
+              hint: >
+                The absence of standard work means the best method was never
+                captured. Every operator improvised and variation accumulated.
+              teaches: [standard_work, documentation, operator_variation]
+              score_feed: RCA
+            - text: "A fixture was removed when it slowed cycle time"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                Possible — but there is no fixture in the station record and no
+                one recalls removing one. This assumption needs evidence.
+              teaches: [standard_work, waste_muda]
+            - text: "The fixture room does not have the right fixture available"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                The fixture room is not the bottleneck — the station was never
+                designed to require one. The problem is upstream in the method design.
+              teaches: [standard_work]
+        - why: >
+            There is no standard work document specifying the correct mount method.
+            Why was this operation never standardized?
+          choices:
+            - text: >
+                The station was designed around one experienced operator's technique —
+                it was never translated into a transferable standard
+              outcome: CORRECT
+              evidence: >
+                The original operator trained their replacement verbally. That
+                person trained the next. Three generations of verbal handover with
+                no written baseline.
+              hint: >
+                Tacit knowledge handed down verbally creates compounding variation.
+                Standard work converts expert technique into something anyone can
+                learn and improve.
+              teaches: [standard_work, tacit_knowledge, documentation, operator_variation]
+              score_feed: RCA
+            - text: "The standard work document was created but lost during a system migration"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                Even if true, the result is the same: no documented standard in use
+                today. Focus on creating one now.
+              teaches: [documentation, version_control]
+            - text: "Standard work documents are not required for manual assembly operations"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                Manual assembly with variation in technique is exactly where
+                standard work matters most. Complexity is not a reason to skip it.
+              teaches: [standard_work]
 
   - id: T1-004
     name: "The Invisible Handover"
@@ -415,6 +506,100 @@ problems:
               build a business case — and the supplier will need contract terms
               reviewed before changing cadence.
             teaches: []
+      five_whys:
+        - why: >
+            The map shows 60% of weekly volume arrives Monday, 35% Thursday.
+            Takt requires roughly equal daily input. Why are deliveries batched
+            this way?
+          choices:
+            - text: "Purchase orders are placed once a week — the order timing drives the delivery pattern"
+              outcome: CORRECT
+              evidence: >
+                PO review log: orders raised every Monday morning for the coming
+                week's forecast. Supplier ships immediately on receipt.
+              hint: >
+                The delivery pattern is a symptom of the ordering process. Change
+                the trigger, and the delivery pattern follows.
+              teaches: [kanban, replenishment, leveled_production, heijunka]
+              score_feed: RCA
+            - text: "The supplier's distribution center only dispatches on Mondays and Thursdays"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                Possible — but the order data shows Monday POs arriving Monday
+                afternoon. The supplier dispatches same-day. The batch is ours.
+              teaches: [information_flow, leveled_production]
+            - text: "Delivery vehicles can only carry a full week's volume in two trips"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                Volume per delivery is less than 40% of a standard truck capacity.
+                Logistics is not the constraint.
+              teaches: [waste_muda]
+        - why: >
+            Purchase orders are placed weekly from a forecast, not from actual
+            consumption. Why is there no consumption-based signal to purchasing?
+          choices:
+            - text: >
+                There is no pull trigger between Component Prep and purchasing —
+                orders run from a weekly forecast, independent of actual use
+              outcome: CORRECT
+              evidence: >
+                Component Prep depletes bins as production runs. No signal travels
+                back to purchasing until the Monday review. Gap can be 4-7 days.
+              hint: >
+                Without a consumption signal, purchasing is guessing. A kanban
+                or minimum-stock trigger would connect actual consumption to
+                replenishment automatically.
+              teaches: [kanban, push_vs_pull, replenishment, information_flow]
+              score_feed: RCA
+            - text: "The ERP system generates orders automatically on a weekly cycle"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                The ERP does run weekly — but it runs because no one has changed
+                the cycle. The system follows the process; the process is the problem.
+              teaches: [digitalization, information_flow]
+            - text: "The purchasing team doesn't have time to review orders daily"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                A pull system eliminates the need for daily review — it triggers
+                automatically when a bin empties. Bandwidth is not the constraint.
+              teaches: [kanban, waste_muda]
+        - why: >
+            There is no consumption signal between Component Prep and purchasing.
+            Why was no pull system ever set up?
+          choices:
+            - text: >
+                The replenishment process was never redesigned when the factory
+                moved to continuous production — it still runs like a batch shop
+              outcome: CORRECT
+              evidence: >
+                Original plant records show a weekly batch production model from
+                2014. Continuous flow was introduced in 2019. Replenishment
+                logic was not updated.
+              hint: >
+                Legacy processes outlive the conditions they were designed for.
+                The factory changed; the supply logic didn't. That gap is now
+                the Flood Before the Drought.
+              teaches: [push_vs_pull, kanban, leveled_production, heijunka]
+              score_feed: RCA
+            - text: "A kanban system was proposed but rejected by the supplier"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                Supplier engagement would be needed eventually — but internal
+                pull signaling between Component Prep and purchasing doesn't
+                require supplier agreement at all.
+              teaches: [kanban, replenishment]
+            - text: "Digital kanban requires a system upgrade that hasn't been approved"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                Physical kanban cards work without any digital system. The
+                method does not depend on technology.
+              teaches: [kanban, digitalization]
 
   - id: T1-007
     name: "Instructions? What Instructions?"
@@ -554,6 +739,101 @@ problems:
               data. You would double inspection time and still not know which
               result to trust.
             teaches: [waste_muda]
+      five_whys:
+        - why: >
+            Three tests on the same board: fail, pass, pass. Test duration
+            varied from 45 to 80 seconds. Why does test duration vary between
+            inspectors?
+          choices:
+            - text: "There is no standard for how long to hold the board or at what angle"
+              outcome: CORRECT
+              evidence: >
+                Observed four inspectors back-to-back. Durations: 45s, 62s, 80s,
+                53s. Angles ranged from vertical to 20 degrees. No reference in
+                the test procedure.
+              hint: >
+                Without a defined setup, every inspector creates their own version
+                of the test. The measurement system varies with the person, not
+                the product.
+              teaches: [MSA, standard_work, measurement_system, operator_variation]
+              score_feed: RCA
+            - text: "Units with more battery charge require longer test duration"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                Battery state may affect results — but test duration is set by
+                inspector habit, not battery level. Separate the variables.
+              teaches: [measurement_system, variation]
+            - text: "The test timer was removed to speed up inspection"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                There was never a timer — the procedure never specified duration.
+                The absence is original, not deliberate removal.
+              teaches: [standard_work, documentation]
+        - why: >
+            Inspectors use different durations and angles because there is no
+            defined test setup. Why is the setup not standardized?
+          choices:
+            - text: >
+                The test procedure was created verbally — each inspector trained
+                the next one, and technique drifted with each handover
+              outcome: CORRECT
+              evidence: >
+                Asked three inspectors who trained them. Each names the previous
+                inspector. The original training record is a single-sentence note
+                from product launch.
+              hint: >
+                Verbal training is tacit knowledge passed forward with no anchor.
+                A documented standard breaks the chain of drift.
+              teaches: [standard_work, documentation, tacit_knowledge, operator_variation]
+              score_feed: RCA
+            - text: "The test rig was installed by an external vendor who did not provide setup docs"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                The vendor provided hardware documentation. The measurement
+                procedure is an internal responsibility — nobody wrote it.
+              teaches: [documentation, standard_work]
+            - text: "The test requires judgment that cannot be reduced to fixed parameters"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                The MSA result shows the test IS reducible to parameters — the
+                variation in results is method variation, not product complexity.
+              teaches: [MSA, measurement_system]
+        - why: >
+            No standard test procedure exists and no MSA was ever performed.
+            Why was the measurement system never validated?
+          choices:
+            - text: >
+                No one questioned the measurement system — the test was accepted
+                as reliable because it had always been used
+              outcome: CORRECT
+              evidence: >
+                QA records show the flight stability test was set up at product
+                launch and never reviewed. Pass/fail rates were tracked, not
+                measurement consistency.
+              hint: >
+                Measurement systems that are never challenged accumulate drift
+                silently. MSA is the tool that makes the system's reliability visible
+                before it misleads a decision.
+              teaches: [MSA, measurement_system, standard_work]
+              score_feed: RCA
+            - text: "MSA was planned but deprioritized in the last improvement cycle"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                Even if true — the result is the same: no validation today. The
+                cause of the omission matters less than closing the gap.
+              teaches: [MSA, management_system]
+            - text: "Quality engineering assumed the procedure was obvious enough to work reliably"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                Assumption is how measurement systems silently fail. The MSA result
+                is the data that replaces the assumption.
+              teaches: [MSA, standard_work]
 
   - id: T1-009
     name: "The Island Station"
@@ -828,6 +1108,105 @@ problems:
               concentration. If they leave anyway, you are in the same
               situation.
             teaches: []
+      five_whys:
+        - why: >
+            The skill matrix shows this operator is the only one certified on
+            three critical skills at Integration 5. Why has no one else been
+            trained to this level?
+          choices:
+            - text: >
+                The operator learned by doing over years — the skills were never
+                captured as trainable standards others could follow
+              outcome: CORRECT
+              evidence: >
+                Asked three other operators to perform the torque verification
+                step. None could locate the undocumented housing fix. The method
+                exists only in one person's hands.
+              hint: >
+                You cannot train from knowledge that has not been externalized.
+                The skill gap and the documentation gap are the same problem.
+              teaches: [tacit_knowledge, standard_work, documentation, skill_matrix]
+              score_feed: RCA
+            - text: "Integration 5 has had no time for cross-training under current demand"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                Demand pressure is real — but the barrier is documentation, not
+                time. Without a standard to train from, more time doesn't help.
+              teaches: [cross_training, standard_work]
+            - text: "Other operators didn't volunteer for Integration 5 certification"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                Two operators expressed interest in previous reviews. The blocker
+                is not willingness — it's the absence of a training material.
+              teaches: [cross_training, skill_matrix]
+        - why: >
+            The hero operator's skills were never captured as standard work.
+            Why was the technique never documented?
+          choices:
+            - text: >
+                There was no process for converting tacit operator knowledge into
+                documented standards — the assumption was the operator would stay
+              outcome: CORRECT
+              evidence: >
+                Process improvement log reviewed. No standard work update
+                initiated for Integration 5 in five years. No owner assigned to
+                document the housing fix.
+              hint: >
+                Tacit knowledge is invisible on any report until the person who
+                holds it is absent. A structured knowledge-capture process makes
+                the risk visible before it becomes a crisis.
+              teaches: [tacit_knowledge, knowledge_management, standard_work, documentation]
+              score_feed: RCA
+            - text: "The skills are too complex and intuitive to document in a standard format"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                Complex skills take more effort to document — but the torque
+                verification step and housing fix are procedural steps, not
+                uncodifiable intuition.
+              teaches: [standard_work, tacit_knowledge]
+            - text: "The operator was unwilling to share their method"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                The operator expressed frustration at being the single point of
+                failure. They are not the barrier — the process for capturing
+                their knowledge is.
+              teaches: [tacit_knowledge, knowledge_management]
+        - why: >
+            No process exists for capturing tacit knowledge as standard work.
+            Why was this never established?
+          choices:
+            - text: >
+                Knowledge transfer was treated as informal — experts trained
+                newcomers by example with no expectation of creating lasting records
+              outcome: CORRECT
+              evidence: >
+                HR onboarding records show informal "buddy system" as the standard
+                training method for all stations. No formal knowledge-capture
+                protocol exists for any role in the facility.
+              hint: >
+                Informal knowledge transfer works in stable teams. It fails when
+                people move, are absent, or retire. A structured approach replaces
+                the assumption with a system.
+              teaches: [knowledge_management, standard_work, documentation, skill_matrix]
+              score_feed: RCA
+            - text: "Knowledge transfer was planned but never prioritized on the improvement roadmap"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                A common pattern — the improvement roadmap captures visible waste.
+                Tacit knowledge risk is invisible until it isn't.
+              teaches: [knowledge_management, leader_standard_work]
+            - text: "Management did not believe structured knowledge transfer was necessary"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                The three-generation verbal chain that produced this problem
+                suggests the belief was wrong — and the evidence is now on the floor.
+              teaches: [knowledge_management, standard_work]
 
   - id: T1-013
     name: "Red Tags Everywhere, Nothing Done"
