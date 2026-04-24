@@ -1,0 +1,144 @@
+# Tier 2 Mission Pack — 5 missions covering all 15 Tier 2 problems
+#
+# Tier 2 missions surface management-layer and cultural gaps.
+# They unlock progressively as Tier 1 problems are addressed —
+# the factory's basic housekeeping is in order, but the management
+# system running it is still operating on habit, not structure.
+#
+# visible_after chains:
+#   M-T1-001 done → M-T2-001 + M-T2-002 unlock
+#   M-T2-001 done → M-T2-003 unlocks
+#   M-T2-002 done → M-T2-004 unlocks
+#   M-T2-003 done → M-T2-005 unlocks
+
+missions:
+
+  # ── Mission 1: Management in the Dark ──────────────────────────────────────
+  # Unlocks after The Invisible Waste (M-T1-001) is resolved.
+  # Trigger: time-based — 5 days into the game the management gaps show.
+  - id: M-T2-001
+    title: "Management in the Dark"
+    description: >
+      You've started improving the floor — and that's exactly when you
+      notice the gap above it. Reports arrive a week after the fact.
+      Supervisors appear at their desks. The KPI board in Propulsion Build
+      hasn't moved in 18 days. The people who should be responding to
+      problems aren't where problems happen.
+    source_npc: "Team Leader"
+    visible_after: M-T1-001
+    trigger:
+      type: day
+      after_day: 5
+    problem_ids:
+      - T2-004
+      - T2-006
+      - T2-011
+    completion_condition: any
+    hints:
+      - "The KPI board in Propulsion Build hasn't been updated in weeks. Does anyone own it?"
+      - "Your team leaders are making calls they shouldn't have to — management isn't reaching the floor."
+      - "The supervisor's schedule is full. Floor visits aren't in it."
+
+  # ── Mission 2: No Signal, No Response ──────────────────────────────────────
+  # Unlocks after The Invisible Waste (M-T1-001) is resolved.
+  # Trigger: player inspects Zone 4 (Integration area) where Andon gaps live.
+  - id: M-T2-002
+    title: "No Signal, No Response"
+    description: >
+      There's something wrong with how this floor communicates. A quality
+      stop happens and the operator stands there — waiting. A shift change
+      happens and half the context disappears. A problem gets raised in a
+      meeting and never leaves the room. The signals aren't getting through.
+    source_npc: "Quality Lead"
+    visible_after: M-T1-001
+    trigger:
+      type: inspect
+      zone_id: z4
+    problem_ids:
+      - T2-001
+      - T2-002
+      - T2-014
+    completion_condition: any
+    hints:
+      - "Quality stoppages at Integration 3 take too long to respond to. What's the alerting mechanism?"
+      - "Night shift consistently starts late — the first 20 minutes are lost to coordination. Why?"
+      - "Defect escapes cluster after shift changes at Final QA. The operator handover works — the team leader handover doesn't."
+
+  # ── Mission 3: The Culture Below the Surface ───────────────────────────────
+  # Unlocks after Management in the Dark (M-T2-001) is resolved.
+  # Trigger: talking to Quality Lead — they've noticed something harder to see.
+  - id: M-T2-003
+    title: "The Culture Below the Surface"
+    description: >
+      Sven pulled you aside, quieter than usual. "The defect log hasn't
+      had an operator entry in three weeks. I've been watching the rework
+      pile — it doesn't match. Something is stopping people from reporting
+      what they're seeing. And it's not the form."
+    source_npc: "Quality Lead"
+    visible_after: M-T2-001
+    trigger:
+      type: npc
+      npc_role: "Quality Lead"
+    problem_ids:
+      - T2-005
+      - T2-007
+      - T2-009
+    completion_condition: any
+    hints:
+      - "Operators are noticing defects but not reporting them. What's stopping them?"
+      - "The solder mask issue at PCB Prep has been 'handled' nine times. It keeps coming back."
+      - "Propulsion Build operators have improvement ideas. Nobody has ever acted on one."
+
+  # ── Mission 4: Improvement Without Traction ───────────────────────────────
+  # Unlocks after No Signal, No Response (M-T2-002) is resolved.
+  # Trigger: OEE plateauing — improvements are happening but not holding.
+  - id: M-T2-004
+    title: "Improvement Without Traction"
+    description: >
+      OEE has plateaued. Individual problems get fixed, then quietly drift
+      back. Packaging has been on the meeting agenda for eleven weeks.
+      Integration 3 quality improved last month — then fell back. The
+      fixes are real, but they're not sticking. Something structural is
+      preventing sustained improvement.
+    source_npc: "Team Leader"
+    visible_after: M-T2-002
+    trigger:
+      type: kpi
+      metric: oee
+      threshold: 0.75
+      direction: lte
+    problem_ids:
+      - T2-003
+      - T2-008
+      - T2-012
+    completion_condition: any
+    hints:
+      - "Countermeasures are being applied — but they're not being verified. What happens after 'done'?"
+      - "The packaging improvement has been discussed a dozen times. A kaizen event has never been started."
+      - "Flight test backs up whenever one specific operator is absent. Nobody else can do the calibration."
+
+  # ── Mission 5: The Alignment Gap ─────────────────────────────────────────
+  # Unlocks after The Culture Below the Surface (M-T2-003) is resolved.
+  # Trigger: Scheduler flags a metric conflict.
+  - id: M-T2-005
+    title: "The Alignment Gap"
+    description: >
+      Maya from Scheduling flagged something that's been nagging at her.
+      "Deck Cutting throughput is up. Their team leader is happy. FTR is
+      down. I asked why and got blank stares. I don't think they know their
+      targets are working against each other — and I'm not sure they ever
+      had a reason to know."
+    source_npc: "Scheduler"
+    visible_after: M-T2-003
+    trigger:
+      type: npc
+      npc_role: "Scheduler"
+    problem_ids:
+      - T2-010
+      - T2-013
+      - T2-015
+    completion_condition: any
+    hints:
+      - "Deck Cutting throughput is up — and FTR is down. Does the team leader know those numbers are connected?"
+      - "Root cause investigations in Burn-in stop at 'operator error.' The 5 Whys worksheets don't ask why enough times."
+      - "Propulsion Build investigations always reach the same conclusion. That suggests a method problem, not a facts problem."

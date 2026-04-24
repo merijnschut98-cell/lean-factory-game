@@ -1,0 +1,123 @@
+# Tier 4 Mission Pack — 4 missions covering all 12 Tier 4 problems
+#
+# Tier 4 missions surface capability and measurement gaps at the top of
+# the improvement journey. The flow is stable, the management system is
+# disciplined — but residual quality variation points to a deeper level:
+# the measurement systems, statistical capability, and risk structures
+# that govern whether data can be trusted and whether improvements hold.
+#
+# visible_after chains:
+#   M-T3-001 done → M-T4-001 unlocks
+#   M-T4-001 done → M-T4-002 + M-T4-003 unlock
+#   M-T4-002 done → M-T4-004 unlocks
+
+missions:
+
+  # ── Mission 1: The Numbers We Can't Trust ────────────────────────────────
+  # Unlocks after The Flow That Pushes Back (M-T3-001).
+  # Trigger: Quality Lead raises measurement inconsistency.
+  - id: M-T4-001
+    title: "The Numbers We Can't Trust"
+    description: >
+      "I have a problem I don't know how to raise," Sven said. "Our Cpk
+      looks fine. Customers are complaining. Those two facts can't both be
+      true — unless our measurement is the variable, not the product. I
+      need someone to ask the question we've been avoiding: are we measuring
+      correctly?"
+    source_npc: "Quality Lead"
+    visible_after: M-T3-001
+    trigger:
+      type: npc
+      npc_role: "Quality Lead"
+    problem_ids:
+      - T4-002
+      - T4-003
+      - T4-011
+    completion_condition: any
+    hints:
+      - "The same unit passes Final QA on one shift and fails on the next. The product hasn't changed. Something else has."
+      - "Cpk at PCB Prep shows 1.38. Customer complaint rate has tripled. A Cpk calculated on an out-of-control process is not a Cpk."
+      - "Integration 4 OEE is stuck at 74–76%. Availability and Performance are healthy. All quality losses are in a single 'Reject' bucket. Something in there is driving everything."
+
+  # ── Mission 2: The Method Gap ────────────────────────────────────────────
+  # Unlocks after The Numbers We Can't Trust (M-T4-001).
+  # Trigger: Player inspects Zone 4 — SPC charts visible on Integration 3 wall.
+  - id: M-T4-002
+    title: "The Method Gap"
+    description: >
+      The tools are in place — SPC charts on the wall, DMAIC projects in
+      the file, 8D reports being written. But quality is still drifting.
+      You start to wonder: are the tools working, or are people following
+      the format without understanding the method? A tool installed without
+      its underlying logic is decoration with a label.
+    source_npc: "Quality Lead"
+    visible_after: M-T4-001
+    trigger:
+      type: inspect
+      zone_id: z4
+    problem_ids:
+      - T4-001
+      - T4-004
+      - T4-009
+    completion_condition: any
+    hints:
+      - "SPC charts are on the wall at Integration 3. Operators are adjusting the process every time the chart moves. That's not how SPC works."
+      - "A DMAIC project improved Propulsion Build FTR by 12 points. It's almost back to baseline. The Improve phase was complete. The Control phase was blank."
+      - "An 8D has been open for four weeks and is stuck on D4. Three root causes have been proposed, none tested. Data would settle this in a week."
+
+  # ── Mission 3: Risk and Prevention ──────────────────────────────────────
+  # Unlocks after The Numbers We Can't Trust (M-T4-001).
+  # Trigger: Team Leader raises a recurring unexplained failure.
+  - id: M-T4-003
+    title: "Risk and Prevention"
+    description: >
+      Three unplanned failures on the burn-in oven this month — despite
+      monthly maintenance. A flight test failure mode appeared that wasn't
+      in the FMEA. Battery Assembly defect rate jumped six months ago and
+      no investigation has found the cause. These aren't random. They share
+      a pattern: the risk management system failed to anticipate them,
+      and the control system failed to catch the change that caused them.
+    source_npc: "Team Leader"
+    visible_after: M-T4-001
+    trigger:
+      type: npc
+      npc_role: "Team Leader"
+    problem_ids:
+      - T4-005
+      - T4-007
+      - T4-012
+    completion_condition: any
+    hints:
+      - "A flight test failure mode occurred that isn't in the FMEA. The fixture was redesigned two years ago — was the FMEA updated?"
+      - "Burn-in oven failures cluster in the first three days after maintenance. The maintenance itself may be introducing the risk."
+      - "Battery Assembly defect rate jumped six months ago and never recovered. Every investigation has looked at the process. Has anyone checked whether the material changed?"
+
+  # ── Mission 4: Finding the Real Factor ──────────────────────────────────
+  # Unlocks after The Method Gap (M-T4-002).
+  # Trigger: FTR drops — residual variation from unknown causes.
+  - id: M-T4-004
+    title: "Finding the Real Factor"
+    description: >
+      You've resolved a lot. The remaining quality problems have one thing
+      in common: nobody knows what's actually causing them. Teams are
+      guessing — rotating through plausible factors, trying one at a time,
+      finding small effects, combining them and finding surprises. The right
+      tool for finding the dominant factor in a multi-variable system is not
+      intuition. It requires data, structure, and a willingness to test
+      combinations rather than assumptions.
+    source_npc: "Quality Lead"
+    visible_after: M-T4-002
+    trigger:
+      type: kpi
+      metric: ftr
+      threshold: 0.85
+      direction: lte
+    problem_ids:
+      - T4-006
+      - T4-008
+      - T4-010
+    completion_condition: any
+    hints:
+      - "Deck Cutting has had 7 months of one-factor experiments. Each factor improves in isolation. Combinations fail. Interaction effects are invisible to one-factor-at-a-time."
+      - "Integration 5 defect rate varies by operator, machine, shift, and material batch — and nobody has measured all four together. The dominant factor is probably the one nobody has measured."
+      - "The new customer weight spec is ±2g. Current process variation is ±5g. This specification was accepted without a capability check."

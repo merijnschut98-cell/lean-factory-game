@@ -23,7 +23,7 @@ from problems.visibility      import evaluate_visibility
 from problems.problem         import Problem, ProblemState
 from problems.countermeasure  import CountermeasureCatalog
 from problems.dialogue        import InvestigationSession
-from problems.mission         import Mission, load_missions
+from problems.mission         import Mission, load_all_missions
 from maturity.maturity_engine import MaturityEngine
 from maturity.mismatch        import effectiveness_multiplier
 
@@ -91,7 +91,7 @@ class Factory:
         self._active_problem_cap_reached: bool = False
         self._critical_cap_reached: bool = False
         # Mission system
-        self.missions: Dict[str, Mission] = load_missions()
+        self.missions: Dict[str, Mission] = load_all_missions()
 
         # Running plant-level totals (reset each day)
         self._daily_output:  int   = 0

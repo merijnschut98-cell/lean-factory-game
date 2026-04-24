@@ -74,6 +74,77 @@ _MISSION_DEBRIEFS = {
         "Priya says the gap between MES and the floor is closing. "
         "Trust in data is slow to build and fast to destroy — you've started rebuilding it."
     ),
+    # Tier 2 debriefs
+    "M-T2-001": (
+        "Management was operating from reports. Now it's operating from observation. "
+        "The floor looks the same — but decisions are arriving faster, closer to where "
+        "the problem is. That's the difference."
+    ),
+    "M-T2-002": (
+        "The signals are connected now. Quality stops get a response. "
+        "Shift handovers transfer what matters. A factory that can't signal "
+        "can't improve — and now this one can."
+    ),
+    "M-T2-003": (
+        "Culture is the hardest thing to change and the one that lasts longest. "
+        "People are reporting again. Ideas are being heard. "
+        "That's not a process improvement — it's a change in what this place is."
+    ),
+    "M-T2-004": (
+        "The improvements are holding now. That's not the same as just making them — "
+        "it's harder, and it matters more. PDCA without Check and Act is just PD."
+    ),
+    "M-T2-005": (
+        "Targets are aligned. Analysis is reaching systemic causes. "
+        "When teams optimise for the same thing and investigations go deep enough, "
+        "the same problems stop coming back."
+    ),
+    # Tier 3 debriefs
+    "M-T3-001": (
+        "The flow is pulling now — not pushing. Units move when the next step needs them, "
+        "not when the previous step finishes. That's not a small change. "
+        "It changes how waste accumulates and where it's visible."
+    ),
+    "M-T3-002": (
+        "Operators are at their stations. Material comes to them. "
+        "The spaghetti diagram from three months ago would look completely different today. "
+        "Motion and transport waste are the most invisible costs in a factory — "
+        "until you draw the lines."
+    ),
+    "M-T3-003": (
+        "Changeover is fast enough to level the schedule. "
+        "The schedule is level enough to reduce WIP. "
+        "WIP is low enough that quality feedback is immediate. "
+        "Those three things connect."
+    ),
+    "M-T3-004": (
+        "Quality at source. That's the phrase. Defects prevented where they form — "
+        "not caught four stations later. The cost difference between detection and prevention "
+        "is an order of magnitude. You've moved the line."
+    ),
+    # Tier 4 debriefs
+    "M-T4-001": (
+        "The data can be trusted now. That sentence sounds simple — "
+        "but every decision made before this was made on numbers that were telling "
+        "the wrong story. Measurement system analysis isn't glamorous. "
+        "It's foundational."
+    ),
+    "M-T4-002": (
+        "Tools used correctly. PDCA running all four phases. "
+        "SPC interpreted by people who understand what control limits mean. "
+        "The difference between a tool and a method is whether the thinking comes with it."
+    ),
+    "M-T4-003": (
+        "Risk is managed now — prospectively, not reactively. "
+        "The FMEA updates when the process changes. The supplier changes are reviewed. "
+        "Maintenance intervals follow failure patterns, not calendar habits. "
+        "Prevention is invisible: the failures that didn't happen."
+    ),
+    "M-T4-004": (
+        "The dominant factor was found. Not guessed, not debated — found. "
+        "Data, structure, and the willingness to test combinations rather than assumptions. "
+        "That's the difference between a year of experiments and a week of DOE."
+    ),
 }
 
 
@@ -129,6 +200,62 @@ _NPC_AWARENESS: dict = {
     ("Controller", "M-T1-005"): (
         "The daily output report looks better than the floor. "
         "When the numbers and reality disagree, trust the floor."
+    ),
+    # Tier 2 awareness
+    ("Quality Lead", "M-T2-001"): (
+        "Management decisions are a week behind the floor. "
+        "By the time a problem reaches the weekly report, we've already lived with it."
+    ),
+    ("Scheduler", "M-T2-002"): (
+        "Shift handovers are losing context. I get different numbers from morning and night "
+        "for the same production window. Someone isn't passing information."
+    ),
+    ("Team Leader", "M-T2-003"): (
+        "Operators have stopped raising issues in the log. "
+        "I don't know if it's the form or something else."
+    ),
+    ("HR Manager", "M-T2-004"): (
+        "Improvement projects are closing on paper but I keep seeing the same problems "
+        "come back in the satisfaction surveys. Something isn't holding."
+    ),
+    ("Quality Lead", "M-T2-005"): (
+        "Throughput is up in one zone and quality is down in another. "
+        "I don't think those two teams are talking to each other."
+    ),
+    # Tier 3 awareness
+    ("Quality Lead", "M-T3-001"): (
+        "WIP is accumulating in front of Integration 4 again. "
+        "Every time we improve something upstream, it feeds the pile faster."
+    ),
+    ("Scheduler", "M-T3-002"): (
+        "Operators are leaving stations to fetch materials. "
+        "I can see it in the cycle time variance — it spikes when the bin runs out."
+    ),
+    ("Team Leader", "M-T3-003"): (
+        "Changeover is consuming a significant chunk of available time. "
+        "We're avoiding short runs because the setup cost isn't worth it."
+    ),
+    ("Quality Lead", "M-T3-004"): (
+        "FTR is dropping again — and it's correlating with throughput improvement. "
+        "Faster flow is surfacing quality gaps that the slower pace was hiding."
+    ),
+    # Tier 4 awareness
+    ("Team Leader", "M-T4-001"): (
+        "Final QA pass/fail feels inconsistent. Same product, different shift, "
+        "different outcome. I've stopped fully trusting the inspection numbers."
+    ),
+    ("Scheduler", "M-T4-002"): (
+        "DMAIC results looked great for a month. Now we're back to where we started. "
+        "I don't understand what changed — or why it didn't hold."
+    ),
+    ("Quality Lead", "M-T4-003"): (
+        "Battery Assembly defect rate hasn't recovered since the increase six months ago. "
+        "Every investigation finds nothing. Something changed that nobody noticed."
+    ),
+    ("Team Leader", "M-T4-004"): (
+        "Seven months of experiments and we still don't know what's driving "
+        "Deck Cutting defects. Each factor looks fine individually. "
+        "Combined, they fail."
     ),
 }
 

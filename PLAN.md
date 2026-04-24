@@ -184,7 +184,7 @@ Content design happens *after* Phase 5 so every new problem uses the settled dia
 - ✅ Tier 3 problem catalog: 15 problems in `data/problems_tier3.yaml` (session 2026-04-24) — all have `teaches:` + `dialogue:`; T3-002/007/009 have `five_whys:` (2 steps each); pending Merijn review
 - ✅ Tier 4 problem catalog: 12 problems in `data/problems_tier4.yaml` (session 2026-04-24) — SPC/MSA/DMAIC/FMEA/DOE/8D/regression/reliability; T4-002/004/012 have `five_whys:` (2 steps each); pending Merijn review
 - ✅ Codex fully covers Tiers 1–4: 197 concepts, all 196 teaches tags mapped (session 2026-04-24)
-- ⬜ Tier progression visibility verified across all four tiers
+- ✅ Tier progression visibility verified (session 2026-04-24): 18 missions across 4 tiers; multi-tier loader; hidden problems activate after peer resolved; 23 new tests; 198 total passing
 - ⬜ Tier 5 stub in UI ("Coming in v2" — locked)
 - ⬜ Specialist hiring system (credits → hire → zone OEE bonus)
 - ⬜ Full save/load for all new state (Tiers 2–4 problems, specialists, CM history)

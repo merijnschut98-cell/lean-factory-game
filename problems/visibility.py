@@ -37,6 +37,15 @@ def evaluate_visibility(problems: dict, factory) -> List[str]:
         key=lambda p: _SEVERITY_PRIORITY.get(p.severity, 9),
     )
 
+    # For each problem in an active/completed mission, count how many peers are resolved.
+    # Hidden problems surface only after >= 1 peer in the same mission is resolved,
+    # creating a progressive reveal: obvious→subtle→hidden as investigation deepens.
+    mission_resolved_counts: dict = {}
+    for mission in factory.missions.values():
+        if mission.active or mission.completed:
+            for pid in mission.problem_ids:
+                mission_resolved_counts[pid] = len(mission.problems_resolved)
+
     for prob in dormant:
         if active_count >= 3:
             break
@@ -45,19 +54,16 @@ def evaluate_visibility(problems: dict, factory) -> List[str]:
         if mission_system_active and prob.id not in gated_problems:
             continue
 
-        if prob.visibility == "obvious":
+        should_activate = (
+            prob.visibility == "obvious"
+            or (prob.visibility == "subtle" and prob.zone_id in inspected_zones)
+            or (prob.visibility == "hidden" and mission_resolved_counts.get(prob.id, 0) >= 1)
+        )
+        if should_activate:
             _activate(prob, factory, newly_active)
             active_count += 1
             if prob.severity == "critical":
                 critical_count += 1
-
-        elif prob.visibility == "subtle" and prob.zone_id in inspected_zones:
-            _activate(prob, factory, newly_active)
-            active_count += 1
-            if prob.severity == "critical":
-                critical_count += 1
-
-        # hidden: gated by mission system and maturity (Phase 5/6)
 
     return newly_active
 

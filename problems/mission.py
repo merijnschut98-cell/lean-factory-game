@@ -86,10 +86,10 @@ class Mission:
 
 # ── YAML loading ──────────────────────────────────────────────────────────────
 
-_MISSIONS_PATH = Path(__file__).parent.parent / "data" / "missions_tier1.yaml"
+_DATA_DIR = Path(__file__).parent.parent / "data"
 
 
-def load_missions(path: Path = _MISSIONS_PATH) -> Dict[str, Mission]:
+def load_missions(path: Path) -> Dict[str, Mission]:
     if not path.exists():
         return {}
     raw = yaml.safe_load(path.read_text(encoding="utf-8"))
@@ -99,6 +99,13 @@ def load_missions(path: Path = _MISSIONS_PATH) -> Dict[str, Mission]:
     for entry in raw["missions"]:
         mission = _parse_mission(entry)
         result[mission.id] = mission
+    return result
+
+
+def load_all_missions() -> Dict[str, Mission]:
+    result: Dict[str, Mission] = {}
+    for tier in range(1, 5):
+        result.update(load_missions(_DATA_DIR / f"missions_tier{tier}.yaml"))
     return result
 
 

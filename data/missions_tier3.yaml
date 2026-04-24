@@ -1,0 +1,129 @@
+# Tier 3 Mission Pack — 4 missions covering all 15 Tier 3 problems
+#
+# Tier 3 missions surface flow, pull, and layout gaps that become visible
+# once the management system is functioning (Tier 2 stable). The factory
+# is better managed now — but the physical flow design is still a Tier 1
+# factory: push scheduling, no pull signals, layout built by department
+# rather than by product flow.
+#
+# visible_after chains:
+#   M-T2-001 done → M-T3-001 unlocks
+#   M-T3-001 done → M-T3-002 + M-T3-003 unlock
+#   M-T3-002 done → M-T3-004 unlocks
+
+missions:
+
+  # ── Mission 1: The Flow That Pushes Back ──────────────────────────────────
+  # Unlocks after Management in the Dark (M-T2-001) is resolved.
+  # Trigger: OEE plateauing — Tier 2 improvements haven't moved the system constraint.
+  - id: M-T3-001
+    title: "The Flow That Pushes Back"
+    description: >
+      The management system is more disciplined now. But OEE is stuck.
+      You can feel it — a ceiling nobody can quite name. Maya's schedule
+      is tighter than ever and the line still doesn't respond. The problem
+      isn't in anyone's head anymore; it's in the physics of how the floor
+      is connected.
+    source_npc: "Scheduler"
+    visible_after: M-T2-001
+    trigger:
+      type: kpi
+      metric: oee
+      threshold: 0.78
+      direction: lte
+    problem_ids:
+      - T3-001
+      - T3-005
+      - T3-010
+    completion_condition: any
+    hints:
+      - "WIP between Integration 1 and 2 is erratic — a pile one hour, nothing the next. Something is pushing rather than pulling."
+      - "Integration 4 always has a queue. Improving other stations doesn't reduce it. That's the system constraint."
+      - "Integration 5 is idle for a quarter of its planned time. It's not a skills or equipment problem — it's a feed problem."
+
+  # ── Mission 2: Motion and Material ───────────────────────────────────────
+  # Unlocks after The Flow That Pushes Back (M-T3-001).
+  # Trigger: Team Leader notices operator motion waste.
+  - id: M-T3-002
+    title: "Motion and Material"
+    description: >
+      Your Team Leader put it simply: "Output per operator is lower than
+      the cycle time justifies. The time is going somewhere — I just can't
+      see where." Walk the floor with fresh eyes. Watch what people do
+      between value-adding steps. The waste isn't in the work; it's in
+      what happens between the work.
+    source_npc: "Team Leader"
+    visible_after: M-T3-001
+    trigger:
+      type: npc
+      npc_role: "Team Leader"
+    problem_ids:
+      - T3-004
+      - T3-008
+      - T3-011
+      - T3-013
+    completion_condition: any
+    hints:
+      - "Propulsion Build operators walk 2+ km per shift to fetch materials. That's not cycle time — that's motion waste."
+      - "The PCB supermarket overflows some weeks and runs dry in others. There's no demand signal controlling replenishment."
+      - "Burn-in rack utilisation drops every time the operator leaves for materials. They're leaving 6–8 times per shift."
+      - "Battery Assembly and Propulsion Build are sequentially dependent but 18 metres apart. Transport damage is the tell."
+
+  # ── Mission 3: The Schedule and the Setup ────────────────────────────────
+  # Unlocks after The Flow That Pushes Back (M-T3-001).
+  # Trigger: Scheduler raises changeover and batch scheduling issues.
+  - id: M-T3-003
+    title: "The Schedule and the Setup"
+    description: >
+      "I've been trying to level the schedule for months," Maya said, "but
+      Deck Cutting changeovers alone cost us 40 minutes of availability a
+      day. And the batch sizes I'm forced to use because of changeover time
+      are creating the WIP oscillation you've been fighting. Fix the setup
+      time and I can fix the schedule."
+    source_npc: "Scheduler"
+    visible_after: M-T3-001
+    trigger:
+      type: npc
+      npc_role: "Scheduler"
+    problem_ids:
+      - T3-002
+      - T3-003
+      - T3-015
+    completion_condition: any
+    hints:
+      - "Deck Cutting changeovers take 42–55 minutes — and most of that time, the machine is stopped for steps that don't need the machine stopped."
+      - "Battery Assembly output swings 40 to 110 units per shift. The swing follows the batch schedule, not the demand."
+      - "Flight test processes all of Model A, then all of Model B. Model C causes disproportionate disruption. Not all variants need the same scheduling strategy."
+
+  # ── Mission 4: Quality at the Source ─────────────────────────────────────
+  # Unlocks after Motion and Material (M-T3-002).
+  # Trigger: FTR drops as flow improvements push throughput through quality gaps.
+  - id: M-T3-004
+    title: "Quality at the Source"
+    description: >
+      FTR is dropping again — not because people are working worse, but
+      because the improved flow is surfacing quality problems that were
+      hidden by the slower pace. Faster throughput through an uncontrolled
+      process finds every quality gap faster. The source of the defect
+      is upstream. The detection is downstream. That gap is where the
+      cost lives.
+    source_npc: "Quality Lead"
+    visible_after: M-T3-002
+    trigger:
+      type: kpi
+      metric: ftr
+      threshold: 0.82
+      direction: lte
+    problem_ids:
+      - T3-006
+      - T3-007
+      - T3-009
+      - T3-012
+      - T3-014
+    completion_condition: any
+    hints:
+      - "Coil Winding escapes trace to WIP age. Units from different days are being mixed. First-in-first-out isn't being enforced."
+      - "FTR at Final QA drops consistently — and the defect traces to Integration 3, four stations upstream. It's preventable at source."
+      - "A VSM was done last year. OEE barely moved. The bottleneck is upstream of where the map started."
+      - "Packaging rework is 15–20% of units — and the defect is present from unit one of each batch. Batch processing is amplifying a single-unit problem."
+      - "A Pareto of PCB defects exists. The top-3 defects haven't been addressed. Improvement projects are scattered across 11 defect types equally."
