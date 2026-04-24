@@ -190,11 +190,14 @@ Content design happens *after* Phase 5 so every new problem uses the settled dia
 - ✅ Full save/load verified (session 2026-04-24): T2–T4 problem runtime state, specialists, missions all persist correctly via existing by-ID mechanism
 
 ### Packaging
+
+> **When to switch to .exe:** Build the first exe at the end of Phase 6 — once all game content is stable and 198 tests pass — so Phase 7 UI work can be tested as a real build rather than via Python scripts. The exe gate is: all four tiers playable, no open bugs, assets folder populated. Don't build earlier; assets are empty until Phase 7 graphics work begins.
+
 - ✅ `requirements.txt`: already uses `pygame-ce==2.5.7` (pinned, correct)
 - ⬜ Add icon (`assets/icon.ico`)
 - ⬜ Populate `assets/sprites/`, `assets/tilesets/`, `assets/sounds/`
 - ⬜ Update `lean_factory.spec` for populated assets
-- ⬜ Build `lean_factory.exe` with PyInstaller
+- ⬜ Build `lean_factory.exe` with PyInstaller — **trigger: Phase 6 complete, assets populated**
 - ⬜ Test standalone exe on a clean machine (no Python installed)
 - ⬜ Create installer or zip distribution
 
