@@ -105,7 +105,7 @@ class CountermeasuresMixin:
         return {"success": True, "eff_multiplier": eff_mult, "side_effect_id": side_effect_id}
 
     def resolve_problem(self, problem_id: str):
-        from scoring.metrics import calculate_all, total_score, credits_earned
+        from scoring.metrics import calculate_all, total_score, credits_earned, explain_scores
         from config.constants import CREDIT_BASE
 
         prob = self.problems.get(problem_id)
@@ -171,8 +171,20 @@ class CountermeasuresMixin:
                 mission.record_resolved(problem_id)
                 mission.advance_hint()
 
+        explanations = explain_scores(
+            scores              = scores,
+            inspection_log      = self.inspection_log,
+            problem             = prob,
+            applied_cm_id       = cm_id or "",
+            applied_cm_tier     = cm.tier_int if cm else 0,
+            applied_cm_category = cm.category if cm else "",
+            applied_cm_zone_id  = cm_record.get("zone_id", prob.zone_id),
+            zone_maturity       = self.maturity.zone_maturity(prob.zone_id),
+        )
+
         return {"scores": scores, "total": total, "credits_earned": earned,
-                "rally_bonus": rally_bonus, "pdca_complete": pdca_complete}
+                "rally_bonus": rally_bonus, "pdca_complete": pdca_complete,
+                "explanations": explanations}
 
     @property
     def follow_up_due_stations(self) -> set:

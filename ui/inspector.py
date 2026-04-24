@@ -12,6 +12,7 @@ import pygame
 from problems.problem import ProblemState
 from ui.inspector_drawing import (
     InspectorDrawMixin, C_PANEL, PANEL_W, _PANEL_SURF_H,
+    _investigation_required,
 )
 
 
@@ -96,9 +97,14 @@ class Inspector(InspectorDrawMixin):
                     if p.station_id == station_id]
 
         if key == pygame.K_c:
-            active = [p for p in problems if p.state == ProblemState.ACTIVE]
-            if active:
-                self._pending_action = {"type": "apply_cm", "problem_id": active[0].id}
+            for prob in problems:
+                if prob.state != ProblemState.ACTIVE:
+                    continue
+                session = factory.investigation_sessions.get(prob.id)
+                if _investigation_required(prob, session):
+                    continue
+                self._pending_action = {"type": "apply_cm", "problem_id": prob.id}
+                break
 
         elif key == pygame.K_r:
             applied = [p for p in problems if p.state == ProblemState.COUNTERMEASURE_APPLIED]

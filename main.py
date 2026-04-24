@@ -218,7 +218,8 @@ def _run_game() -> None:
                                 inspector.close()
                                 score_panel.show(
                                     prob.name, result["scores"],
-                                    result["total"], result["credits_earned"])
+                                    result["total"], result["credits_earned"],
+                                    result.get("explanations", {}))
 
                     elif event.key == pygame.K_u:
                         inspector.handle_action_key(event.key)
@@ -313,7 +314,9 @@ def _run_game() -> None:
                                         }
 
         # ── Movement ──────────────────────────────────────────────────────────
-        if not catalog_panel.is_open and not warning_dlg.is_open and not score_panel.is_open:
+        # Inspector included so arrow keys scroll the panel without also moving the player.
+        if (not catalog_panel.is_open and not warning_dlg.is_open
+                and not score_panel.is_open and not inspector.is_open):
             keys = pygame.key.get_pressed()
             dx, dy = 0.0, 0.0
             if keys[pygame.K_w] or keys[pygame.K_UP]:    dy -= 1

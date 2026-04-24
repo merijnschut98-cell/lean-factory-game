@@ -182,3 +182,83 @@ def total_score(scores: dict) -> int:
 def credits_earned(total: int, severity: str) -> int:
     base = CREDIT_BASE.get(severity, 150)
     return round((total / 30) * base)
+
+
+# ── Score explanations ───────────────────────────────────────────────────────
+# One short line per metric matching its achieved tier (1/3/5). Shown under
+# the score bars on the resolve panel so the player learns *why* they got
+# that score — not just the number.
+
+def _explain_dqq(score: int, unique_entities: int, zones: int) -> str:
+    if score == 5:
+        return f"Strong investigation — {unique_entities} entities across {zones} zones, diagnostic tool used."
+    if score == 3:
+        return f"Partial investigation — {unique_entities} entities, single zone. Try diagnostic tools next time."
+    return f"Too little gemba work — only {unique_entities} entities inspected before acting."
+
+
+def _explain_ei(score: int, unique_entities: int, cm_category: str) -> str:
+    if score == 5:
+        return f"Evidence matched the {cm_category} countermeasure — {unique_entities} entities with relevant metrics."
+    if score == 3:
+        return "Some data collected, but not enough variety to ground the countermeasure choice."
+    return "Almost no observation before applying — the choice wasn't backed by evidence."
+
+
+def _explain_rca(score: int) -> str:
+    if score == 5:
+        return "Countermeasure is in the problem's effective list — diagnosis was correct."
+    if score == 3:
+        return "Countermeasure is related but not the best fit — adjacent understanding."
+    return "Countermeasure is unrelated to the root cause — diagnosis missed the mark."
+
+
+def _explain_cmp(score: int, in_effective: bool, correct_zone: bool) -> str:
+    if score == 5:
+        return "Right tool applied in the right zone — full practicality."
+    if score == 3 and in_effective:
+        return "Right countermeasure, but applied to the wrong zone — reduced impact."
+    elif score == 3 and correct_zone:
+        return "Right zone, but the countermeasure doesn't address the root cause — reduced impact."
+    return "Wrong tool in the wrong zone — no practical match."
+
+
+def _explain_lm(score: int, cm_tier: int, zone_maturity: float) -> str:
+    gap = cm_tier - zone_maturity
+    if score == 5:
+        return f"Tier {cm_tier} CM on a Tier {zone_maturity:.1f} zone — appropriate stretch."
+    if score == 3:
+        return f"Tier {cm_tier} CM on a Tier {zone_maturity:.1f} zone — one tier ahead of maturity."
+    return f"Tier {cm_tier} CM on a Tier {zone_maturity:.1f} zone — applied too early in the journey."
+
+
+def _explain_cim(score: int) -> str:
+    if score == 5:
+        return "Re-inspected the station after applying — closed the PDCA Check loop."
+    if score == 3:
+        return "Station was inspected at some point, but not after applying the fix."
+    return "No re-inspection after applying — the effect was never verified."
+
+
+def explain_scores(
+    scores: dict,
+    inspection_log: List[dict],
+    problem,
+    applied_cm_id: str,
+    applied_cm_tier: int,
+    applied_cm_category: str,
+    applied_cm_zone_id: str,
+    zone_maturity: float,
+) -> dict:
+    unique_entities = len({e["entity"] for e in inspection_log})
+    zones           = len({e["entity"].split(":")[0] for e in inspection_log})
+    in_effective    = applied_cm_id in problem.effective_countermeasures
+    correct_zone    = applied_cm_zone_id == problem.zone_id
+    return {
+        "DQQ": _explain_dqq(scores["DQQ"], unique_entities, zones),
+        "EI":  _explain_ei(scores["EI"], unique_entities, applied_cm_category),
+        "RCA": _explain_rca(scores["RCA"]),
+        "CMP": _explain_cmp(scores["CMP"], in_effective, correct_zone),
+        "LM":  _explain_lm(scores["LM"], applied_cm_tier, zone_maturity),
+        "CIM": _explain_cim(scores["CIM"]),
+    }

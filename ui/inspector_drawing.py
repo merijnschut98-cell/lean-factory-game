@@ -278,6 +278,18 @@ def _status_color(status: str) -> tuple:
     return {"run": C_RUNNING, "wait": C_WAITING, "block": C_BLOCKED}.get(status, C_DIM)
 
 
+def _investigation_required(prob, session) -> bool:
+    """True if prob has an investigation fork that isn't complete yet.
+
+    Gates [C] Apply Countermeasure — the player must go through the fork
+    (pick 1/2/3) before applying a CM. Problems without a dialogue fork
+    skip this gate (return False).
+    """
+    if not prob.dialogue or not prob.dialogue.investigation:
+        return False
+    return session is None or not session.fork_complete
+
+
 # ── Draw mixin ────────────────────────────────────────────────────────────────
 
 class InspectorDrawMixin:
@@ -401,8 +413,14 @@ class InspectorDrawMixin:
                 y += 15
 
         if prob.state == ProblemState.ACTIVE:
-            surf.blit(self._font_mono.render("[C]  Apply Countermeasure", True, C_GOLD), (18, y))
-            y += 16
+            session = self._factory.investigation_sessions.get(prob.id) if self._factory else None
+            if _investigation_required(prob, session):
+                surf.blit(self._font_mono.render(
+                    "Investigate first — pick [1][2][3] below", True, C_DIM), (18, y))
+                y += 16
+            else:
+                surf.blit(self._font_mono.render("[C]  Apply Countermeasure", True, C_GOLD), (18, y))
+                y += 16
         elif prob.state == ProblemState.COUNTERMEASURE_APPLIED:
             surf.blit(self._font_mono.render("[R]  Resolve & Score", True, (111, 211, 111)), (18, y))
             y += 16

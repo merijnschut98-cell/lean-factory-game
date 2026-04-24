@@ -253,9 +253,9 @@ The player is a newly hired **Continuous Improvement Specialist** at NovaGlide. 
 ### Inspector and Panels
 
 - ✅ Scrollable inspector panel: mouse wheel + arrow keys scroll; 2400px off-screen surface with scroll indicator
-- ⬜ **Arrow key conflict fix**: when the inspector is open, arrow keys must scroll the panel only — not move the player simultaneously. Currently both happen at once, breaking the inspection experience. Fix: consume arrow key events in inspector before they reach the movement handler.
-- ⬜ **Enforce investigation-before-countermeasure sequence**: `[C]` (Apply CM) must be hidden until the investigation fork is complete. Currently the player can skip investigation entirely and apply a CM straight away — this breaks the learning flow and makes the game feel arbitrary. Required sequence: (1) Walk to station → (2) Complete investigation fork (1/2/3 choices) → (3) Apply countermeasure `[C]` → (4) Verify (PDCA Check) → (5) Resolve `[R]`. Each step should only appear in the inspector after the previous step is done. The inspector panel should clearly label which phase the player is in.
-- ⬜ **Score explanation on resolve**: when `[R]` resolves a problem, the score panel shows numbers but not why. Add a brief explanation next to each metric: what the player did well, what was missing, and what the dominant driver of the total was. Investigation fork choices already give feedback (1/2/3); resolution should too.
+- ✅ **Arrow key conflict fix** (session 2026-04-24): movement guard in `main.py` now includes `inspector.is_open`; arrow keys scroll the panel cleanly, no simultaneous player movement.
+- ✅ **Enforce investigation-before-countermeasure sequence** (session 2026-04-24): `_investigation_required()` helper in `ui/inspector_drawing.py` gates `[C]` — the hint reads "Investigate first — pick [1][2][3] below" until the fork is complete. Same gate in `handle_action_key` prevents pressing [C] early. Problems without a dialogue fork bypass the gate.
+- ✅ **Score explanation on resolve** (session 2026-04-24): `scoring.metrics.explain_scores()` returns one short reason per metric (DQQ/EI/RCA/CMP/LM/CIM) matching the achieved tier. `resolve_problem()` returns `explanations` in the result dict; `ScorePanel.show()` renders the reason under each score bar.
 - ⬜ Non-blocking toast notifications: CM decay warning, new problem visible, credits earned — timed banner, never freeze gameplay
 - ⬜ Keyboard shortcut reference: `[?]` or `[F1]` shows overlay listing all controls (currently undocumented: E=inspect, C=apply CM, R=resolve, U=rollback, K=codex, Tab=speed, P=pause, Shift=run)
 - ⬜ Problem count HUD badge: active problem count visible at all times (e.g. "⚠ 3 active")
@@ -278,7 +278,7 @@ The player is a newly hired **Continuous Improvement Specialist** at NovaGlide. 
 
 ### General UX
 
-- ⬜ **[BUG] Arrow key conflict when inspector is open**: arrow keys currently move the player AND scroll the inspector simultaneously. Fix at the start of Phase 7 — consume arrow events in the inspector event handler so they don't propagate to the player movement handler.
+- ✅ **[BUG] Arrow key conflict when inspector is open** (session 2026-04-24): fixed — see Inspector and Panels section above.
 - ⬜ No action should block gameplay for more than 1 second: all dialogs dismissible with Esc or Enter immediately
 - ✅ UI text sizes: all panels bumped to minimum 14px body / 13px mono via `ui/fonts.py`
 - ✅ Shift-to-run: player holds Shift for 2.5× movement speed

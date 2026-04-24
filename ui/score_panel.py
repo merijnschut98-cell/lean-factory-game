@@ -9,6 +9,8 @@ from typing import Optional
 
 import pygame
 
+from ui.text_utils import wrap_text
+
 C_BG    = (14, 13, 10, 245)
 C_GOLD  = (255, 214, 131)
 C_DIM   = (140, 135, 120)
@@ -43,6 +45,8 @@ class ScorePanel:
         self._total  = 0
         self._credits_earned = 0
         self._problem_name = ""
+        self._explanations: dict = {}
+        self._wrapped_lines: dict = {}
         self._dismissed = False
         self._overlay = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
 
@@ -54,13 +58,21 @@ class ScorePanel:
         self._font_big   = f["big"]
         self._font_mono  = f["mono"]
 
-    def show(self, problem_name: str, scores: dict, total: int, credits_earned: int) -> None:
+    def show(self, problem_name: str, scores: dict, total: int,
+             credits_earned: int, explanations: Optional[dict] = None) -> None:
         self._problem_name   = problem_name
         self._scores         = scores
         self._total          = total
         self._credits_earned = credits_earned
-        self._dismissed      = False
-        self._open           = True
+        self._explanations   = explanations or {}
+        # Pre-wrap explanation lines once — static while the panel is open.
+        panel_inner_w = 640 - 40
+        self._wrapped_lines = {
+            metric: wrap_text(text, self._font_body, panel_inner_w)[:2]
+            for metric, text in self._explanations.items() if text
+        }
+        self._dismissed = False
+        self._open      = True
 
     def close(self) -> None:
         self._open = False
@@ -87,8 +99,8 @@ class ScorePanel:
             return
 
         sw, sh = self.screen.get_width(), self.screen.get_height()
-        w, h = 580, 470
-        x, y = (sw - w) // 2, (sh - h) // 2
+        w, h   = 640, 660
+        x, y   = (sw - w) // 2, (sh - h) // 2
 
         self._overlay.fill((0, 0, 0, 180))
         self.screen.blit(self._overlay, (0, 0))
@@ -97,11 +109,9 @@ class ScorePanel:
         pygame.draw.rect(self.screen, C_GOLD, (x, y, w, h), 1, border_radius=6)
 
         ty = y + 18
-        self.screen.blit(
-            self._font_title.render("PROBLEM RESOLVED", True, C_GOLD), (x + 20, ty))
+        self.screen.blit(self._font_title.render("PROBLEM RESOLVED", True, C_GOLD), (x + 20, ty))
         ty += 22
-        self.screen.blit(
-            self._font_body.render(self._problem_name, True, C_DIM), (x + 20, ty))
+        self.screen.blit(self._font_body.render(self._problem_name, True, C_DIM), (x + 20, ty))
         ty += 28
 
         pygame.draw.line(self.screen, (40, 38, 30), (x + 12, ty), (x + w - 12, ty))
@@ -112,24 +122,27 @@ class ScorePanel:
             color = _score_color(score)
 
             self.screen.blit(self._font_label.render(label, True, C_INK), (x + 20, ty))
-            # Score dots
             for dot_i in range(5):
                 dot_color = color if dot_i < score else (50, 48, 40)
                 pygame.draw.circle(self.screen, dot_color,
                                    (x + w - 90 + dot_i * 18, ty + 7), 6)
-            score_txt = self._font_label.render(f"{score}/5", True, color)
-            self.screen.blit(score_txt, (x + w - 40, ty))
-            ty += 28
+            self.screen.blit(self._font_label.render(f"{score}/5", True, color),
+                             (x + w - 40, ty))
+            ty += 18
+
+            for ln in self._wrapped_lines.get(metric_key, []):
+                self.screen.blit(self._font_body.render(ln, True, C_DIM), (x + 28, ty))
+                ty += 15
+            ty += 4
 
         pygame.draw.line(self.screen, (40, 38, 30), (x + 12, ty + 4), (x + w - 12, ty + 4))
         ty += 16
 
-        total_txt = self._font_big.render(f"{self._total}  /  30", True, C_GOLD)
-        self.screen.blit(total_txt, (x + 20, ty))
-
-        credits_txt = self._font_title.render(
-            f"+{self._credits_earned} improvement credits", True, C_GOOD)
-        self.screen.blit(credits_txt, (x + 20, ty + 38))
+        self.screen.blit(self._font_big.render(f"{self._total}  /  30", True, C_GOLD), (x + 20, ty))
+        self.screen.blit(
+            self._font_title.render(f"+{self._credits_earned} improvement credits", True, C_GOOD),
+            (x + 20, ty + 38),
+        )
 
         self.screen.blit(
             self._font_mono.render("Press any key to continue", True, C_DIM),
