@@ -15,6 +15,7 @@ import pygame
 
 from navigation.camera import MAP_W, MAP_H, TILE_SIZE
 from config.world_data import TILE_COLORS, ROOMS
+from ui.codex_panel import _CODEX_SIZE
 from ui.text_utils import wrap_text
 
 # Colors
@@ -79,7 +80,7 @@ class HUD:
                 ("WIP",      f"{factory.live_wip:>3} units"),
                 ("FTR",      f"{factory.last_day_ftr * 100:>5.1f}%"),
                 ("CREDITS",  f"{factory.credits:>6}"),
-                ("CONCEPTS", f"{len(factory.discovered_concepts):>3} / 62"),
+                ("CONCEPTS", f"{len(factory.discovered_concepts):>3} / {_CODEX_SIZE}"),
             ]
             x = self.sw // 2 - 300
             for key, val in kpis:

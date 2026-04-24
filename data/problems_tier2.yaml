@@ -1,0 +1,1441 @@
+# Tier 2 Problem Catalog — 15 hand-designed problems
+#
+# Tier 2 problems surface management-layer and cultural gaps that become
+# visible after Tier 1 foundations (5S, Standard Work, Quality Gates) are
+# established. They are systemic rather than acute — harder to see, harder
+# to fix, and harder to sustain once fixed.
+#
+# Schema: identical to problems_tier1.yaml
+# Fields: id, name, category, severity, visibility, zone_id, station_id
+#         symptoms, root_cause, effective_countermeasures, maturity_prerequisite
+#         mismatch_note, side_effect_ref, effect_modifiers
+#         teaches (list), dialogue (investigation fork + optional five_whys)
+
+problems:
+
+  - id: T2-001
+    name: "The Invisible Andon"
+    category: Quality
+    severity: high
+    visibility: subtle
+    zone_id: z4
+    station_id: integration_3
+    symptoms:
+      - "Quality stoppages last 15–25 minutes before the team leader notices"
+      - "Operators wait silently when a defect appears — no alert mechanism exists"
+      - "Availability at Integration 3 is lower than cycle time data alone explains"
+    root_cause: >
+      No Andon signal system exists at Integration 3. When an operator
+      detects a quality issue they stop work and wait for a team leader
+      to notice — there is no alert. Response lag accumulates directly
+      as lost availability.
+    effective_countermeasures:
+      - Andon Systems
+      - Daily Management System
+      - Visual Labels and Signs
+    maturity_prerequisite: null
+    mismatch_note: >
+      Installing an Andon light without a defined response protocol
+      (who responds, in what timeframe, with what authority) creates
+      alert fatigue within days. The light gets ignored.
+    side_effect_ref: null
+    effect_modifiers:
+      avail_delta: -0.08
+      quality_delta: -0.05
+    teaches:
+      - andon
+      - jidoka
+      - quick_response
+      - visual_management
+      - alert_fatigue
+    dialogue:
+      investigation:
+        npc: "Quality Lead"
+        prompt: >
+          Availability at Integration 3 is lower than I can explain from
+          cycle time data alone. What should we look at first?
+        choices:
+          - text: "Time how long it takes for a quality stop to be noticed and responded to"
+            outcome: CORRECT
+            evidence: >
+              Observed three stoppages. Average time from operator stopping
+              to team leader arriving: 18 minutes. No signal was ever
+              triggered — the operator simply waited.
+            hint: >
+              Measuring the response gap gives you an undeniable number.
+              18 minutes of silent waiting per quality event is waste you
+              can see and fix. This is the availability loss made visible.
+            teaches: [andon, quick_response, availability, gemba]
+            score_feed: RCA
+          - text: "Check if there is a documented quality stop procedure at this station"
+            outcome: PLAUSIBLE
+            evidence: >
+              The station file has a general 'stop and report' instruction
+              from product launch — but no contact, no signal, no response
+              time expectation.
+            hint: >
+              The procedure exists — but without a signal mechanism,
+              operators have no way to call for help without leaving their
+              station. The how is missing, not just the what.
+            teaches: [standard_work, andon]
+          - text: "Increase quality inspection frequency at the station"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              More inspections catch defects — but they don't reduce the
+              response lag when the operator stops. The waste is the
+              waiting time, not the detection gap.
+            teaches: [quality_gate]
+      five_whys:
+        - why: >
+            Quality stoppages last an average of 18 minutes before any
+            response. Why does it take 18 minutes for a team leader to arrive?
+          choices:
+            - text: "There is no signal mechanism — the operator has no way to alert anyone without leaving their post"
+              outcome: CORRECT
+              evidence: >
+                Operator confirmed: 'I stop the line and wait. There's no
+                light, no button, nothing. I just hope someone walks by.'
+              hint: >
+                The operator is not passive — they simply have no tool.
+                This is a systems failure, not a behaviour problem.
+              teaches: [andon, jidoka, operator_support]
+              score_feed: RCA
+            - text: "The team leader is usually occupied with another station during this time"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                Team leader occupancy contributes — but even with a better
+                schedule, an 18-minute wait is only explained by the absence
+                of an alert mechanism.
+              teaches: [leader_standard_work, quick_response]
+            - text: "Operators don't want to draw attention to problems on their station"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                Cultural factors matter — but this operator actively wants
+                help and has no way to get it. The barrier is structural,
+                not psychological.
+              teaches: [psychological_safety]
+        - why: >
+            There is no signal mechanism at Integration 3.
+            Why has no Andon system been installed here?
+          choices:
+            - text: "The station was skipped during the Visual Management rollout and the deferral was never revisited"
+              outcome: CORRECT
+              evidence: >
+                Visual management rollout records show Integration 3 was
+                deferred 'pending workload assessment' two years ago.
+                The assessment never happened.
+              hint: >
+                A deferred rollout that is never revisited becomes a
+                permanent gap. The correct follow-up action is the one
+                that never came.
+              teaches: [visual_management, change_management, PDCA]
+              score_feed: RCA
+            - text: "The team leader decided an Andon system was not needed at this station"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                A team leader may have made that judgment — but without
+                a formal decision record, it is not a policy, it is an
+                omission.
+              teaches: [leader_standard_work, visual_management]
+            - text: "Andon systems are expensive and require specialist installation"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                Modern Andon systems range from a pull-cord to a tablet
+                app. Cost is not the barrier — visibility of the gap is.
+              teaches: [andon, cost_vs_value]
+
+  - id: T2-002
+    name: "The Missing Huddle"
+    category: Management
+    severity: medium
+    visibility: subtle
+    zone_id: z5
+    station_id: burn_in
+    symptoms:
+      - "Shift starts with 20–30 minutes of self-directed coordination overhead"
+      - "Priorities vary between operators on the same station in the same shift"
+      - "Defects from the previous shift are re-discovered mid-shift rather than at handover"
+    root_cause: >
+      No daily start-of-shift team meeting exists. Information about
+      the previous shift's issues, today's targets, and ongoing quality
+      concerns is passed ad-hoc or not at all. Each shift re-discovers
+      context the previous shift already knew.
+    effective_countermeasures:
+      - Daily Management System
+      - Team Leader Routines
+    maturity_prerequisite: null
+    mismatch_note: >
+      Installing performance boards without a daily review cadence
+      creates boards that are updated but never actioned — decoration
+      rather than a management tool.
+    side_effect_ref: null
+    effect_modifiers:
+      perf_delta: -0.06
+      quality_delta: -0.04
+    teaches:
+      - daily_management
+      - huddle
+      - tier_meetings
+      - information_flow
+      - shift_coordination
+    dialogue:
+      investigation:
+        npc: "Team Leader"
+        prompt: >
+          Burn-in output is uneven between shifts — same station, same
+          operators, different results. What's driving the variation?
+        choices:
+          - text: "Observe the first 20 minutes of two consecutive shifts back to back"
+            outcome: CORRECT
+            evidence: >
+              Morning shift: team leader briefs the crew for 4 minutes,
+              priorities are clear, first unit enters burn-in within
+              10 minutes. Night shift: team leader arrives at their desk,
+              operators debate which units to run, start 26 minutes late.
+            hint: >
+              The delta is in the start. One shift has a ritual that aligns
+              the team; the other doesn't. The fix is not technical —
+              it is behavioural and structural.
+            teaches: [daily_management, huddle, leader_standard_work, gemba]
+            score_feed: RCA
+          - text: "Compare the technical skill levels of operators across shifts"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Skill differences exist — but the same operators on the
+              structured shift outperform the same operators on the
+              unstructured one. The method is the variable, not the people.
+            teaches: [cross_training, standard_work]
+          - text: "Check whether the burn-in equipment is calibrated consistently"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Equipment calibration matters — but it would show up as a
+              systematic bias, not a shift-dependent variation. The pattern
+              points to the management layer.
+            teaches: [equipment_management, TPM]
+
+  - id: T2-003
+    name: "The Lone Expert"
+    category: People
+    severity: high
+    visibility: subtle
+    zone_id: z5
+    station_id: flight_test
+    symptoms:
+      - "Flight test output drops sharply on certain shifts"
+      - "Units queue at flight test when one specific operator is absent"
+      - "Other operators decline or cannot perform the calibration steps alone"
+    root_cause: >
+      Flight test calibration knowledge is held by a single operator.
+      No documentation of the calibration procedure exists; no other
+      operator has been trained. When this person is absent, the station
+      loses most of its capacity.
+    effective_countermeasures:
+      - Cross-Training Programs
+      - Standard Work Definition
+    maturity_prerequisite: null
+    mismatch_note: >
+      Cross-training without a documented standard to train against
+      produces inconsistent results — each trainee learns a slightly
+      different version, reintroducing the variation the training
+      was meant to eliminate.
+    side_effect_ref: null
+    effect_modifiers:
+      avail_delta: -0.15
+    teaches:
+      - cross_training
+      - knowledge_transfer
+      - single_point_failure
+      - operator_flexibility
+      - tacit_knowledge
+    dialogue:
+      investigation:
+        npc: "HR Manager"
+        prompt: >
+          Flight test has a coverage risk I want to understand better.
+          Where should we start?
+        choices:
+          - text: "Map which tasks at flight test only one person can currently perform"
+            outcome: CORRECT
+            evidence: >
+              Skill matrix for flight test: calibration setup can only be
+              performed by one operator. Seven others are rated 'untrained'
+              or 'not assessed' for that task.
+            hint: >
+              The skill matrix makes the exposure visible. One task, one
+              person, zero backup — a single-point-failure waiting to
+              activate. Based on the attendance data, it already has.
+            teaches: [cross_training, skill_matrix, single_point_failure, knowledge_transfer]
+            score_feed: RCA
+          - text: "Ask the expert operator to write down their calibration process"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              A written process helps — but asking one person to self-document
+              without structure often produces an incomplete result. Map the
+              gap first, then build the documentation.
+            teaches: [standard_work, tacit_knowledge, documentation]
+          - text: "Hire a second flight test specialist from outside"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              External hire takes months and is expensive. The knowledge
+              already exists in your plant — it just isn't shared yet.
+            teaches: [cross_training, make_vs_buy]
+      five_whys:
+        - why: >
+            Only one operator can perform flight test calibration.
+            Why has no one else been trained in this task?
+          choices:
+            - text: "There is no documented calibration procedure — nothing to train against"
+              outcome: CORRECT
+              evidence: >
+                Checked the station file and training records. No calibration
+                procedure document exists. The expert learned by doing and
+                has never written it down.
+              hint: >
+                You cannot train to an undocumented standard. The knowledge
+                exists as tacit expertise — it cannot be transferred until
+                it is made explicit.
+              teaches: [tacit_knowledge, standard_work, documentation]
+              score_feed: RCA
+            - text: "Cross-training has been planned but not scheduled due to production pressure"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                Production pressure is real — but even if training time
+                existed, there is no procedure to train against. The
+                constraint is documentation, not time.
+              teaches: [cross_training, production_vs_improvement]
+            - text: "Other operators are not interested in learning calibration"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                Three operators said they would train if material existed.
+                Motivation is not the constraint.
+              teaches: [cross_training, psychological_safety]
+        - why: >
+            No calibration procedure document exists.
+            Why has this task never been documented?
+          choices:
+            - text: >
+                The calibration was developed by the founding technician and
+                passed down verbally — it was never treated as a formal work
+                instruction
+              outcome: CORRECT
+              evidence: >
+                HR record confirms: the current expert was trained by the
+                original technician through side-by-side working. That
+                technician retired three years ago.
+              hint: >
+                Tacit knowledge handed down through direct apprenticeship
+                disappears when the chain breaks. Standard work converts
+                personal technique into organisational knowledge.
+              teaches: [tacit_knowledge, standard_work, knowledge_transfer, operator_variation]
+              score_feed: RCA
+            - text: "The calibration procedure is in a system that only one engineer can access"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                Access restrictions matter — but no document was found in
+                any system. The issue is creation, not access.
+              teaches: [documentation, version_control]
+            - text: "The process is too complex to document without specialist support"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                Complexity is a reason to document carefully, not a reason
+                to skip it. If it is too complex to document, it is too
+                complex to rely on a single person for.
+              teaches: [standard_work, documentation]
+  
+  - id: T2-004
+    name: "Blind Management"
+    category: Management
+    severity: medium
+    visibility: hidden
+    zone_id: z1
+    station_id: incoming_qa
+    symptoms:
+      - "Management decisions reference week-old report data while floor state has changed"
+      - "Problems raised on the floor this week first appear in management conversation next week"
+      - "Team leaders improvise on decisions that should involve engineering or management"
+    root_cause: >
+      No scheduled gemba walk routine exists for supervisors or managers.
+      Leadership operates from reports and second-hand information rather
+      than direct observation, creating a lag between floor reality and
+      decision-making.
+    effective_countermeasures:
+      - Gemba Walks
+      - Leader Standard Work
+    maturity_prerequisite: null
+    mismatch_note: >
+      Conducting gemba walks without standard observation criteria
+      produces tours rather than improvement activity — the same walk
+      every week that confirms existing assumptions without challenging them.
+    side_effect_ref: null
+    effect_modifiers:
+      perf_delta: -0.05
+      quality_delta: -0.05
+    teaches:
+      - gemba
+      - direct_observation
+      - leader_standard_work
+      - management_information_lag
+      - go_see
+    dialogue:
+      investigation:
+        npc: "Team Leader"
+        prompt: >
+          I keep getting pulled into decisions I shouldn't be making.
+          What's the underlying issue?
+        choices:
+          - text: "Track when management last physically visited the production floor and what they observed"
+            outcome: CORRECT
+            evidence: >
+              Asked four team leaders and two supervisors. Last documented
+              floor visit by any supervisor: 11 days ago, unplanned, for
+              a visitor tour. No structured observation in the past month.
+            hint: >
+              The data shows management is absent from the floor as a
+              routine. Decisions are being made from a distance with
+              information that is already stale.
+            teaches: [gemba, leader_standard_work, direct_observation, go_see]
+            score_feed: RCA
+          - text: "Review the weekly KPI report to find where the decision lag is worst"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              The KPI report is the system that's creating the lag. You
+              can't discover the floor reality gap by reading the document
+              that is causing it.
+            teaches: [gemba, direct_observation]
+          - text: "Add a daily management summary email to keep leadership informed"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              More reports create more reading, not more insight. The gap
+              is between floor reality and what reports describe — only
+              physical presence closes that gap.
+            teaches: [gemba, go_see, information_vs_knowledge]
+
+  - id: T2-005
+    name: "The Blame Game"
+    category: People
+    severity: high
+    visibility: hidden
+    zone_id: z4
+    station_id: integration_5
+    symptoms:
+      - "Formal defect log has not received an operator-submitted entry in three weeks"
+      - "Quality Lead believes the defect rate is understated — rework pile does not match the official log"
+      - "Operators are evasive when asked about problems they have noticed"
+    root_cause: >
+      A blame culture has developed. Operators who report problems have
+      experienced negative consequences — questioning, implicit blame,
+      extra scrutiny. Near-misses and small defects go unreported to
+      avoid this. The defect rate in formal systems is significantly
+      understated.
+    effective_countermeasures:
+      - Psychological Safety Routines
+      - Daily Management System
+      - Problem Escalation Protocols
+    maturity_prerequisite: null
+    mismatch_note: >
+      Launching a 'report problems' campaign without addressing the blame
+      dynamic first produces a brief spike in reports followed by a return
+      to silence. Trust cannot be mandated.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.10
+    teaches:
+      - psychological_safety
+      - blameless_culture
+      - near_miss_reporting
+      - quality_culture
+      - hidden_factory
+    dialogue:
+      investigation:
+        npc: "Quality Lead"
+        prompt: >
+          The rework pile at Integration 5 does not match the official
+          defect log. Someone is not reporting. What's the right approach?
+        choices:
+          - text: "Have private, informal conversations with 2–3 operators about what happens when they notice a problem"
+            outcome: CORRECT
+            evidence: >
+              Three separate operators, independently, described being
+              questioned and blamed after their last report. One said:
+              'I stopped writing things down. It's not worth it.'
+            hint: >
+              Direct, private conversation reveals what no report ever
+              will. The operators are telling you there is a trust problem
+              — and that is more important than any individual defect count.
+            teaches: [psychological_safety, blameless_culture, near_miss_reporting, hidden_factory]
+            score_feed: RCA
+          - text: "Review the formal defect log and compare it to the rework record"
+            outcome: PLAUSIBLE
+            evidence: >
+              The discrepancy is confirmed: 47 rework events in the
+              physical record vs 12 in the formal log over the same period.
+            hint: >
+              The numbers confirm something is wrong — but they don't
+              explain why. You need to speak with the people involved to
+              understand what is preventing reporting.
+            teaches: [hidden_factory, quality_data]
+          - text: "Launch an anonymous reporting system so operators can report without being identified"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Anonymous systems treat the symptom. Operators know who
+              is near each defect — anonymity rarely feels truly safe in
+              a small team. The fix is cultural, not technical.
+            teaches: [psychological_safety, trust]
+      five_whys:
+        - why: >
+            Operators are not reporting near-misses and small defects.
+            Why are operators choosing not to report?
+          choices:
+            - text: "They have experienced blame or negative consequences when reporting in the past"
+              outcome: CORRECT
+              evidence: >
+                All three operators described an incident where a report
+                led to an escalation that felt punitive rather than
+                exploratory.
+              hint: >
+                Behaviour follows consequence. If the last time someone
+                reported a problem they got scrutinised, they will stop
+                reporting. This is rational behaviour in a broken system.
+              teaches: [psychological_safety, blameless_culture, feedback_loops]
+              score_feed: RCA
+            - text: "Operators do not understand that small defects need to be reported"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                Operators clearly understand — they described the specific
+                defects they decided not to report. Knowledge is not the
+                constraint.
+              teaches: [near_miss_reporting, quality_culture]
+            - text: "The reporting system is too time-consuming to use"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                Process friction reduces reporting — but operators described
+                skipping the system entirely, not struggling with it.
+                The barrier is trust, not usability.
+              teaches: [process_design, psychological_safety]
+        - why: >
+            Past reporting has led to blame and negative consequences.
+            Why do problems get handled punitively rather than analytically?
+          choices:
+            - text: "There is no formal blameless investigation process — each incident is handled differently by whoever is nearby"
+              outcome: CORRECT
+              evidence: >
+                Reviewed five past incident records. No structured format.
+                Operator names appear prominently next to defect descriptions
+                in four of the five.
+              hint: >
+                Without a blameless investigation protocol, the response
+                to a problem is whoever's instinct is active that day.
+                Consistency requires a structured process.
+              teaches: [blameless_culture, investigation_process, psychological_safety]
+              score_feed: RCA
+            - text: "Management has explicitly told supervisors to identify who made the mistake"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                Management tone matters — but the records show inconsistency,
+                not a uniform directive. The absence of a standard process
+                is what creates the problem.
+              teaches: [leader_standard_work, blameless_culture]
+            - text: "Operators in this zone have a difficult interpersonal history"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                Team dynamics affect culture — but the investigators in
+                these incidents were supervisors, not peers. The structure
+                of the response process is the root cause.
+              teaches: [psychological_safety, blameless_culture]
+  
+  - id: T2-006
+    name: "The KPI Graveyard Board"
+    category: Management
+    severity: medium
+    visibility: obvious
+    zone_id: z3
+    station_id: propulsion_build
+    symptoms:
+      - "Performance board on the wall shows data that is 18 days old"
+      - "The action log on the board has the same three items that have been there for weeks"
+      - "No one references the board during team conversations"
+    root_cause: >
+      The performance board was installed without establishing ownership
+      or an update routine. No one is accountable for keeping it current
+      and no daily review ritual exists. The board is decoration rather
+      than a management tool.
+    effective_countermeasures:
+      - Performance Management Boards
+      - Daily Management System
+    maturity_prerequisite: null
+    mismatch_note: >
+      Installing a digital KPI dashboard before establishing a daily
+      review habit produces a more expensive version of the same
+      ignored board.
+    side_effect_ref: null
+    effect_modifiers:
+      perf_delta: -0.05
+    teaches:
+      - visual_management
+      - KPI_ownership
+      - daily_management
+      - accountability
+      - management_systems
+    dialogue:
+      investigation:
+        npc: "Team Leader"
+        prompt: >
+          That performance board has been on the wall for eight months.
+          But I don't think it's actually helping anyone. What's wrong
+          with it?
+        choices:
+          - text: "Find out when the board was last updated and who is responsible for updating it"
+            outcome: CORRECT
+            evidence: >
+              Last update: 18 days ago by a visiting quality engineer
+              during audit preparation. There is no designated owner.
+              The team leader thought it was 'a quality department thing'.
+            hint: >
+              A tool with no owner has no future. The board is not failing
+              because of the data — it is failing because no one's job
+              it is. Ownership and cadence come before content.
+            teaches: [visual_management, accountability, KPI_ownership, daily_management]
+            score_feed: RCA
+          - text: "Update the board right now with today's numbers"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Updating it solves today's problem — but in three days it
+              will be stale again without a routine. A one-time update
+              is a symptom treatment.
+            teaches: [daily_management, accountability]
+          - text: "Replace the physical board with a digital screen connected to the MES"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Technology can automate the data — but the management ritual
+              of reviewing and acting on it is a human behaviour. A digital
+              screen of ignored data is still ignored data.
+            teaches: [digitalization, daily_management, tool_vs_system]
+
+  - id: T2-007
+    name: "The Escalation Vacuum"
+    category: Management
+    severity: medium
+    visibility: subtle
+    zone_id: z2
+    station_id: pcb_prep
+    symptoms:
+      - "The same solder mask defect type has appeared in the problem log 9 times in 12 weeks"
+      - "Each entry is marked 'handled' with no detail and no recurrence prevention"
+      - "Process engineers are unaware of the recurring issue"
+    root_cause: >
+      No escalation protocol defines when a problem moves beyond the
+      team leader tier. Problems that exceed team leader authority to
+      fix are marked 'handled' locally and recur. There is no trigger
+      that moves a recurring issue to a higher problem-solving tier.
+    effective_countermeasures:
+      - Problem Escalation Protocols
+      - Daily Management System
+    maturity_prerequisite: null
+    mismatch_note: >
+      Creating an escalation path without training team leaders on when
+      to use it produces under-escalation for complex technical issues
+      and over-escalation for trivial ones.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.07
+      perf_delta: -0.06
+    teaches:
+      - escalation
+      - tiered_accountability
+      - problem_ownership
+      - chronic_vs_acute
+      - daily_management
+    dialogue:
+      investigation:
+        npc: "Quality Lead"
+        prompt: >
+          This solder mask issue keeps coming back. Nine times in 12
+          weeks — each marked 'handled'. What's actually happening?
+        choices:
+          - text: "Trace the full history of the solder mask defect — what was done each of the nine times?"
+            outcome: CORRECT
+            evidence: >
+              Reviewed all nine entries. Six were 'sort and rework'.
+              Two were 'spoke to operator'. One was 'checked material
+              batch'. None of the actions changed the underlying process.
+              No entry was ever escalated above team leader level.
+            hint: >
+              Nine treatments, zero root cause investigations. The pattern
+              reveals a structural problem: team leaders have no rule
+              telling them when this becomes someone else's problem too.
+            teaches: [escalation, tiered_accountability, PDCA, chronic_vs_acute, problem_ownership]
+            score_feed: RCA
+          - text: "Ask the team leader what they tried each time"
+            outcome: PLAUSIBLE
+            evidence: >
+              Team leader described each action accurately. 'I just didn't
+              know I was supposed to get someone else involved.'
+            hint: >
+              The team leader is being honest and competent within their
+              understanding of their role. The gap is in the rules,
+              not the person.
+            teaches: [escalation, leader_standard_work]
+          - text: "Escalate directly to the Plant Manager to resolve the solder mask defect"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Bypassing the escalation tiers creates a different problem:
+              if every team leader issue reaches the top, the Plant Manager
+              becomes the only person who can resolve things. Structured
+              escalation — not top-down escalation — is the fix.
+            teaches: [escalation, tiered_accountability]
+
+  - id: T2-008
+    name: "The Reactive Loop"
+    category: Quality
+    severity: high
+    visibility: subtle
+    zone_id: z4
+    station_id: integration_3
+    symptoms:
+      - "OEE at Integration 3 improves after each countermeasure, then regresses within 2 weeks"
+      - "The same defect type re-emerges in a slightly different form each cycle"
+      - "Previous countermeasures are on record as 'applied' but no follow-up exists"
+    root_cause: >
+      Countermeasures are applied (Plan, Do) but never verified or
+      standardized (Check, Act). Without a defined check phase, teams
+      cannot confirm whether a fix held — and without standardization,
+      improvements degrade over time. The improvement loop has only
+      two phases running.
+    effective_countermeasures:
+      - PDCA Cycles
+      - A3 Thinking / A3 Reporting
+    maturity_prerequisite: null
+    mismatch_note: >
+      Applying A3 as a documentation exercise after the fact rather
+      than as a thinking discipline produces reports that describe what
+      happened rather than driving what happens next.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.09
+      perf_delta: -0.07
+    teaches:
+      - PDCA
+      - check_act
+      - A3
+      - structured_problem_solving
+      - sustain
+      - standardize
+    dialogue:
+      investigation:
+        npc: "Quality Lead"
+        prompt: >
+          Look at this trend chart — Integration 3 quality improves,
+          holds for two weeks, then falls back. Every time. What is
+          the pattern telling us?
+        choices:
+          - text: "Find the most recent countermeasure that fixed the problem and trace what happened in the two weeks after it was applied"
+            outcome: CORRECT
+            evidence: >
+              Last applied CM: Basic Quality Gates, Day 47. Review of
+              the following 14 days shows no inspection records, no
+              follow-up conversation, no updated standard work. The CM
+              was applied and then forgotten.
+            hint: >
+              The improvement is real — but without a defined Check phase,
+              you will never know if the fix is holding or degrading.
+              The two-week drop is unmonitored decay showing up.
+            teaches: [PDCA, check_act, follow_up, standardize, A3]
+            score_feed: RCA
+          - text: "Identify which countermeasure is causing the regression"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              A CM causing regression is possible — but the pattern here
+              is improvement followed by slow decay, not a step-change
+              drop. That pattern points to sustain failure, not CM
+              side-effects.
+            teaches: [PDCA, CM_decay, sustain]
+          - text: "Apply a stronger countermeasure with a higher effectiveness multiplier"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              A stronger CM applied to an un-maintained process decays
+              at the same rate. You are trying to outrun a structural gap
+              with increasing force — it will not hold.
+            teaches: [PDCA, root_cause_analysis, standardize]
+      five_whys:
+        - why: >
+            The most recent countermeasure showed no follow-up activity
+            in the 14 days after application. Why is the Check phase
+            not happening?
+          choices:
+            - text: "There is no defined follow-up step in the countermeasure process — once applied, it is considered done"
+              outcome: CORRECT
+              evidence: >
+                Reviewed 12 CM application records. None have a scheduled
+                review date. The apply action has a timestamp; the outcome
+                field is empty in all 12 cases.
+              hint: >
+                The system has a gap at the Check step. It is not that
+                people forget to check — the check was never designed in.
+                PDCA without Check is just PD.
+              teaches: [PDCA, check_act, process_design, structured_problem_solving]
+              score_feed: RCA
+            - text: "Team leaders are too busy to schedule follow-up reviews"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                Capacity is a real constraint — but no one designed a check
+                step. Even if time existed, no one would know what to check
+                or when.
+              teaches: [PDCA, leader_standard_work, process_design]
+            - text: "The applied CMs have already solved the root cause — the regression is coincidence"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                Six consecutive regressions in the same station with the
+                same pattern is not coincidence. The hypothesis needs a
+                Check phase to test it.
+              teaches: [PDCA, data_driven, hypothesis_testing]
+        - why: >
+            No follow-up step was ever designed into the countermeasure
+            process. Why was the Check phase never built in?
+          choices:
+            - text: >
+                The CM process was designed for speed — Plan and Do were
+                prioritised because they show visible action; Check and
+                Act were seen as overhead
+              outcome: CORRECT
+              evidence: >
+                Reviewed the original CM rollout documentation. Explicitly
+                states: 'apply and observe'. No review cadence defined.
+                The observation step was intended but never specified.
+              hint: >
+                'Apply and observe' is not Check. Observation without a
+                standard, a frequency, and an owner is not a process —
+                it is wishful thinking.
+              teaches: [PDCA, structured_problem_solving, process_design, check_act]
+              score_feed: RCA
+            - text: "The team responsible was not trained in PDCA"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                Training gaps contribute — but the documentation shows
+                intent to observe without the structure to do so. The gap
+                is in execution design, not awareness.
+              teaches: [PDCA, training, process_design]
+            - text: "PDCA Check phases require specialist quality engineer time that was not budgeted"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                PDCA Check is a team leader and operator activity — not
+                specialist work. A structured 5-minute review after 3 days
+                is sufficient and requires no external resource.
+              teaches: [PDCA, leader_standard_work, check_act]
+  
+  - id: T2-009
+    name: "Nobody Asked Us"
+    category: People
+    severity: medium
+    visibility: hidden
+    zone_id: z3
+    station_id: propulsion_build
+    symptoms:
+      - "An operator raised a layout improvement idea 6 months ago — nothing happened, no response given"
+      - "Team engagement surveys show low scores on 'my ideas are heard'"
+      - "Improvement ideas raised to team leaders are absorbed without action or feedback"
+    root_cause: >
+      No formal suggestion system exists. Operator improvement ideas
+      are absorbed by the team leader tier with no tracking, no
+      evaluation process, and no feedback loop. Ideas disappear —
+      and after a few attempts, operators stop offering them.
+    effective_countermeasures:
+      - Suggestion Systems
+      - Psychological Safety Routines
+    maturity_prerequisite: null
+    mismatch_note: >
+      Launching a suggestion system with no commitment to response
+      time or implementation rate produces a suggestion box that fills
+      with paper and teaches operators their ideas are still ignored.
+    side_effect_ref: null
+    effect_modifiers:
+      perf_delta: -0.04
+    teaches:
+      - suggestion_system
+      - operator_involvement
+      - improvement_ownership
+      - kaizen_mindset
+      - employee_engagement
+    dialogue:
+      investigation:
+        npc: "HR Manager"
+        prompt: >
+          Engagement is low in Propulsion Build. The survey shows
+          'ideas not heard' as the top theme. What should we investigate?
+        choices:
+          - text: "Speak directly with 3–5 operators: 'Have you ever had an idea for improvement that wasn't implemented?'"
+            outcome: CORRECT
+            evidence: >
+              Five operators. Five separate improvement ideas — layout,
+              tool positioning, material sequence, temperature check
+              sequence, and a safety improvement. All raised informally.
+              None progressed. None received a response.
+            hint: >
+              The ideas exist. The engagement exists. What's missing is
+              the system to receive, evaluate, and respond. Operators are
+              not disengaged — they have been trained to be silent.
+            teaches: [suggestion_system, operator_involvement, kaizen_mindset, employee_engagement]
+            score_feed: RCA
+          - text: "Post a suggestion box at the entrance to Propulsion Build"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              A box is a start — but without a defined review process,
+              response time commitment, and visible action rate, it will
+              feel like a different way to be ignored.
+            teaches: [suggestion_system, kaizen_mindset]
+          - text: "Implement the layout improvement the operator suggested without analysis"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              One idea needs investigation before implementation — and
+              four other ideas are waiting too. Ad-hoc implementation
+              of a single idea does not solve the system gap.
+            teaches: [suggestion_system, structured_improvement]
+
+  - id: T2-010
+    name: "The Fishbone in the Drawer"
+    category: Quality
+    severity: medium
+    visibility: subtle
+    zone_id: z5
+    station_id: burn_in
+    symptoms:
+      - "Root cause investigation reports consistently conclude with 'operator error' or 'material issue'"
+      - "The same failure mode reappears in a new variant within weeks of being 'resolved'"
+      - "No structured analysis tool has been used in any investigation in the past quarter"
+    root_cause: >
+      Problem investigations are conducted verbally and informally.
+      Without a structured tool like Ishikawa analysis, investigations
+      stop at the first plausible cause — usually 'operator error' or
+      'bad material' — and miss systemic 4M contributors. The fix
+      addresses a symptom, not the cause.
+    effective_countermeasures:
+      - Ishikawa / Fishbone Diagrams
+      - 5 Whys Analysis
+    maturity_prerequisite: null
+    mismatch_note: >
+      Using a Fishbone as a post-hoc documentation exercise after the
+      root cause has been decided produces a diagram that confirms
+      existing assumptions rather than challenging them.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.07
+    teaches:
+      - fishbone
+      - root_cause_analysis
+      - 4M_6M
+      - structured_analysis
+      - beyond_operator_error
+      - confirmation_bias
+    dialogue:
+      investigation:
+        npc: "Quality Lead"
+        prompt: >
+          I've pulled a folder of investigation reports from this
+          quarter. Every single one concludes with 'operator error'.
+          Does that seem right to you?
+        choices:
+          - text: "Take the most recent recurring defect and map all possible contributing factors across Man, Machine, Method, and Material"
+            outcome: CORRECT
+            evidence: >
+              4M analysis on the burn-in thermal cycling failure:
+              Man (one operator trains all others — variation source),
+              Machine (thermal probe calibrated 8 months ago),
+              Method (no hold-time specified for partial cycles),
+              Material (supplier batch variation with no incoming test).
+              Four real contributors. None are 'operator error'.
+            hint: >
+              When every investigation concludes the same way, the
+              conclusion is telling you about the investigation method,
+              not the problem. A structured tool forces you out of
+              the obvious answer.
+            teaches: [fishbone, 4M_6M, root_cause_analysis, structured_analysis, beyond_operator_error]
+            score_feed: RCA
+          - text: "Ask the team leader to write a more detailed investigation report"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              More detail in the same informal format still produces an
+              informal conclusion. You need a different analysis method,
+              not a longer version of the current one.
+            teaches: [structured_analysis, fishbone]
+          - text: "Send the Quality Lead to a root cause analysis training course"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Training helps — but the root cause analysis tool needs
+              to be applied now, on this problem. The Quality Lead is
+              asking the right question — the problem is the method,
+              not the person.
+            teaches: [structured_analysis, gemba, just_do_it]
+
+  - id: T2-011
+    name: "The Manager's Ghost"
+    category: Management
+    severity: high
+    visibility: hidden
+    zone_id: z1
+    station_id: dock
+    symptoms:
+      - "Team leaders are making decisions that belong one level above their authority"
+      - "Supervisor spends over 80% of each shift at their desk according to time observation"
+      - "Floor problems without management escalation wait an average of 3 days for resolution"
+    root_cause: >
+      The supervisor has no defined standard work for floor time. All
+      available time is consumed by email, reporting, and scheduled
+      meetings. No floor visit routine exists — without one, management
+      presence is reactive (crises only) rather than proactive.
+    effective_countermeasures:
+      - Leader Standard Work
+      - Gemba Walks
+    maturity_prerequisite: null
+    mismatch_note: >
+      Defining leader standard work without protected time blocks
+      produces a document that is immediately displaced by the meeting
+      culture it was meant to complement.
+    side_effect_ref: null
+    effect_modifiers:
+      perf_delta: -0.08
+      avail_delta: -0.05
+    teaches:
+      - leader_standard_work
+      - gemba
+      - management_presence
+      - tiered_accountability
+      - time_allocation
+    dialogue:
+      investigation:
+        npc: "Team Leader"
+        prompt: >
+          I keep making calls I shouldn't have to make. Nobody else
+          is here. What's really going on?
+        choices:
+          - text: "Track exactly how the supervisor spends their time across one full shift — in 30-minute blocks"
+            outcome: CORRECT
+            evidence: >
+              Time observation over one shift: 6.2 hours at desk
+              (email, reporting, meetings). 1.8 hours on floor
+              (one crisis response, one visitor tour). Zero proactive
+              floor observation.
+            hint: >
+              Time data doesn't lie. The supervisor is not neglecting
+              the floor deliberately — the system of demands fills all
+              available time. Standard work for leadership time is the fix.
+            teaches: [leader_standard_work, time_allocation, gemba, management_presence]
+            score_feed: RCA
+          - text: "Talk to the supervisor about spending more time on the floor"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              The conversation might raise awareness — but without data
+              on where time is going, the supervisor cannot make a
+              structured case for protecting floor time in their schedule.
+            teaches: [leader_standard_work, gemba, direct_observation]
+          - text: "Promote the Team Leader to Supervisor level to close the authority gap"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Promoting someone to fill a gap created by another person's
+              absence does not fix the absence. It creates a new gap
+              one level down.
+            teaches: [leader_standard_work, structural_fix, escalation]
+
+  - id: T2-012
+    name: "The Kaizen That Never Happened"
+    category: Management
+    severity: medium
+    visibility: obvious
+    zone_id: z6
+    station_id: packaging
+    symptoms:
+      - "Packaging efficiency improvement has been on the weekly meeting agenda for 11 weeks in a row"
+      - "No structured improvement activity has been initiated at this station"
+      - "Team is cynical about improvement discussion — 'we've talked about it a dozen times'"
+    root_cause: >
+      There is no structured framework for running a focused improvement
+      event. Improvement ideas surface in meetings but die there because
+      no one knows how to convert a discussion into a bounded,
+      time-limited workshop with defined outputs.
+    effective_countermeasures:
+      - Kaizen Events
+      - PDCA Cycles
+    maturity_prerequisite: null
+    mismatch_note: >
+      Running a kaizen event without a stable baseline (5S, standard
+      work) produces improvement activity that cannot be sustained —
+      the kaizen improves a moving target.
+    side_effect_ref: null
+    effect_modifiers:
+      perf_delta: -0.07
+    teaches:
+      - kaizen
+      - improvement_event
+      - waste_elimination
+      - workshop_structure
+      - just_do_it
+    dialogue:
+      investigation:
+        npc: "HR Manager"
+        prompt: >
+          The packaging team keeps raising the same efficiency issue
+          in every meeting. Why isn't anything changing?
+        choices:
+          - text: "Interview the team members who raised the packaging issue — what happened after they raised it each time?"
+            outcome: CORRECT
+            evidence: >
+              Three team members interviewed. Consistent account: issue
+              raised, acknowledged, added to next meeting agenda, repeated.
+              No one was ever assigned to lead an improvement. No output
+              was ever expected from the discussion.
+            hint: >
+              Meetings are for decisions and accountability — not for
+              doing the improvement. A kaizen event takes the improvement
+              offline and gives it time, space, and a scope.
+            teaches: [kaizen, workshop_structure, improvement_ownership, just_do_it]
+            score_feed: RCA
+          - text: "Schedule a dedicated meeting to resolve the packaging issue"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Another meeting is the pattern that isn't working. The
+              issue has been discussed in eleven meetings already. What's
+              needed is an event that produces a change, not a
+              conversation that produces another agenda item.
+            teaches: [kaizen, just_do_it, improvement_event]
+          - text: "Implement the packaging change immediately during the next shift"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Immediate implementation without structured analysis can
+              make things worse. The kaizen event process exists precisely
+              because unstructured change in production creates new
+              problems faster than it solves old ones.
+            teaches: [kaizen, structured_improvement, waste_elimination]
+
+  - id: T2-013
+    name: "Misaligned Targets"
+    category: Management
+    severity: medium
+    visibility: hidden
+    zone_id: z2
+    station_id: deck_cutting
+    symptoms:
+      - "Deck Cutting cycle count is up 15% this month — team leader reports it as good news"
+      - "Plant FTR has dropped 8% over the same period, correlated with the throughput increase"
+      - "The team leader and the Quality Lead have different views on whether things are improving"
+    root_cause: >
+      Team leader targets were set locally and never cascaded from
+      plant-level objectives. The team leader is optimising for their
+      declared metric (cycle count) while the plant KPI (FTR) suffers
+      because downstream quality from the accelerated throughput
+      is declining.
+    effective_countermeasures:
+      - Catchball / Hoshin Kanri Light
+      - Daily Management System
+      - Performance Management Boards
+    maturity_prerequisite: null
+    mismatch_note: >
+      Setting aligned targets without a regular review cadence allows
+      the environment to change while targets stay the same — alignment
+      at the start does not guarantee alignment over time.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.08
+      perf_delta: -0.05
+    teaches:
+      - hoshin_kanri
+      - target_cascading
+      - local_vs_global_optimization
+      - policy_deployment
+      - systems_thinking
+    dialogue:
+      investigation:
+        npc: "Scheduler"
+        prompt: >
+          Deck Cutting throughput is up but FTR is down. The team
+          leader thinks they're winning. What's actually happening?
+        choices:
+          - text: "Compare the team leader's declared daily target against the plant-level KPI report side by side"
+            outcome: CORRECT
+            evidence: >
+              Team leader target: 'achieve 220 cut decks per shift'.
+              Plant KPI: FTR ≥ 92%. The team leader's target has no
+              FTR component. Cutting faster introduces micro-burrs that
+              cause downstream defects — not visible at Deck Cutting
+              but counted at Final QA.
+            hint: >
+              Both the team leader and the Quality Lead are correct —
+              within their own frame of reference. The problem is that
+              the frames were never connected. Target cascading closes
+              that gap.
+            teaches: [hoshin_kanri, target_cascading, local_vs_global_optimization, systems_thinking]
+            score_feed: RCA
+          - text: "Ask the team leader to explain why their metrics are improving while FTR drops"
+            outcome: PLAUSIBLE
+            evidence: >
+              Team leader is surprised: 'I didn't know my throughput
+              was causing the FTR issue — I've never seen those numbers
+              together.'
+            hint: >
+              The team leader's honest response shows the problem: they
+              have never seen the connected picture. That is an information
+              and goal-setting failure, not a performance failure.
+            teaches: [hoshin_kanri, target_cascading, daily_management]
+          - text: "Change the team leader's performance bonus metric from cycle count to FTR"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Changing the metric for one person does not change the
+              target-setting process for the organisation. Next year a
+              different team leader will get the same misaligned targets
+              unless the cascading process changes.
+            teaches: [hoshin_kanri, policy_deployment, systems_thinking]
+
+  - id: T2-014
+    name: "Silent Shift Change"
+    category: Management
+    severity: medium
+    visibility: subtle
+    zone_id: z5
+    station_id: final_qa
+    symptoms:
+      - "Quality escapes cluster in the first 30 minutes after each shift change at Final QA"
+      - "Team leaders hand over verbally in the corridor — escalated issues often not transferred"
+      - "The incoming team leader re-discovers open investigations the outgoing leader knew about"
+    root_cause: >
+      Team leaders have no standard work for shift handover at the
+      leadership level. The T1 operator handover protocol was improved,
+      but the team leader to team leader exchange remains verbal and
+      informal — escalated problems and open investigations are not
+      reliably transferred.
+    effective_countermeasures:
+      - Team Leader Routines
+      - Leader Standard Work
+    maturity_prerequisite: null
+    mismatch_note: >
+      Standardising team leader handover without connecting it to the
+      daily management system produces a handover document that is not
+      referenced in daily meetings and decays within weeks.
+    side_effect_ref: null
+    effect_modifiers:
+      avail_delta: -0.06
+      quality_delta: -0.05
+    teaches:
+      - leader_standard_work
+      - shift_handover
+      - information_transfer
+      - escalation
+      - management_rituals
+    dialogue:
+      investigation:
+        npc: "Quality Lead"
+        prompt: >
+          Defect escapes cluster right after shift change. We fixed
+          operator handover in Tier 1 — but this pattern is at the
+          leadership level. What should we check?
+        choices:
+          - text: "Observe two consecutive shift changes from the team leader perspective — what information is transferred and how?"
+            outcome: CORRECT
+            evidence: >
+              Observed three handovers. Average duration: 90 seconds in
+              the corridor. Outgoing team leader mentions one or two
+              operational items. Three open quality investigations — none
+              mentioned. Incoming team leader unaware of all three.
+            hint: >
+              The handover captures operational continuity but drops
+              management continuity. Escalated issues and open investigations
+              require a structured format with a physical or digital record.
+            teaches: [leader_standard_work, shift_handover, information_transfer, escalation]
+            score_feed: RCA
+          - text: "Check whether the operator handover protocol from Tier 1 is being followed"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              The operator handover improvement is working — the quality
+              cluster occurs at the team leader level, not the operator
+              level. The gap is one tier up.
+            teaches: [leader_standard_work, tiered_accountability]
+          - text: "Add a quality check step at the start of each shift to catch the escape pattern"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Adding an inspection step treats the symptom. The escapes
+              are caused by information not transferring — that information
+              needs to reach the incoming team leader before the shift
+              starts, not be caught after the fact.
+            teaches: [leader_standard_work, root_cause_analysis]
+
+  - id: T2-015
+    name: "The Unfinished Root Cause"
+    category: Quality
+    severity: medium
+    visibility: subtle
+    zone_id: z2
+    station_id: coil_winding
+    symptoms:
+      - "5 Whys worksheets are on file — but most stop at Why 2 or Why 3"
+      - "Root cause conclusions are superficial: 'material inconsistency', 'operator inattention'"
+      - "Problems that were 'root-cause resolved' reappear in a new form within 4 weeks"
+    root_cause: >
+      5 Whys analysis is practiced but poorly executed. Without
+      facilitation or training, investigations stop at the first
+      plausible cause and never reach systemic contributors. The
+      technique is present in name only — its purpose (a systemic
+      root cause) is not being fulfilled.
+    effective_countermeasures:
+      - 5 Whys Analysis
+      - Ishikawa / Fishbone Diagrams
+      - A3 Thinking / A3 Reporting
+    maturity_prerequisite: null
+    mismatch_note: >
+      Mandating 5 Whys without training on what a systemic root cause
+      looks like produces worksheets with five questions where Why 3
+      repeats Why 2 in different words.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.07
+      perf_delta: -0.05
+    teaches:
+      - 5_whys
+      - root_cause_depth
+      - structured_problem_solving
+      - systemic_vs_symptomatic
+      - countermeasure_quality
+    dialogue:
+      investigation:
+        npc: "Quality Lead"
+        prompt: >
+          We've been doing 5 Whys at this station for six months.
+          But the same problems keep coming back. What's wrong
+          with the analysis?
+        choices:
+          - text: "Take the most recently 'resolved' problem and check whether the stated root cause actually changed anything in the process"
+            outcome: CORRECT
+            evidence: >
+              Pulled the last three 5 Whys sheets. Problem A concluded
+              'operator inattention' — standard work unchanged after the
+              investigation. Problem B concluded 'material batch variation'
+              — supplier qualification unchanged. Both problems reappeared
+              within 3 weeks.
+            hint: >
+              A root cause is only a root cause if removing it prevents
+              recurrence. If nothing in the process changed, the root
+              cause was not real — it was a plausible answer that stopped
+              the questioning.
+            teaches: [5_whys, root_cause_depth, countermeasure_quality, structured_problem_solving]
+            score_feed: RCA
+          - text: "Review the last 5 Whys document and count whether it has five questions"
+            outcome: PLAUSIBLE
+            evidence: >
+              The latest worksheet has five questions. Why 4 and Why 5
+              are: 'Because of material variation (again)' and 'Because
+              material quality is inconsistent'. Circular.
+            hint: >
+              Five whys on the form does not mean five whys in practice.
+              Circular answers reveal the analysis stopped thinking at
+              Why 2 and filled in remaining lines to satisfy the format.
+            teaches: [5_whys, root_cause_depth, analysis_quality]
+          - text: "Purchase a 5 Whys software tool to guide the team through the process"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              A software template produces the same answers in a different
+              box. The constraint is the thinking, not the format.
+            teaches: [5_whys, structured_problem_solving, tool_vs_thinking]
+      five_whys:
+        - why: >
+            The last three 5 Whys analyses stopped before reaching a
+            systemic root cause. Why do investigations stop at a
+            symptomatic answer?
+          choices:
+            - text: "Investigators accept the first answer that feels complete — there is no criterion for when to keep asking"
+              outcome: CORRECT
+              evidence: >
+                Spoke with two facilitators. Both described stopping when
+                'it felt like we found the cause'. Neither had been trained
+                on what a systemic root cause looks like vs a symptomatic one.
+              hint: >
+                'It feels like the cause' is not a stopping criterion. A
+                real criterion is: 'Would removing this cause prevent all
+                future occurrences?' Until that test passes, keep asking.
+              teaches: [5_whys, root_cause_depth, systemic_vs_symptomatic, analysis_quality]
+              score_feed: RCA
+            - text: "The investigation is stopped by a manager who wants a quick resolution"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                Managerial pressure is real — but the facilitators described
+                the stopping decision as their own. The constraint is
+                knowledge, not pressure.
+              teaches: [5_whys, psychological_safety, management_pressure]
+            - text: "5 Whys is not the right tool for these types of problems"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                5 Whys is appropriate here. The tool is not the constraint —
+                the same method properly applied reached a systemic cause
+                in the Tier 1 cases. It works when applied correctly.
+              teaches: [5_whys, structured_problem_solving]
+        - why: >
+            Investigators lack a clear criterion for what counts as a
+            systemic root cause. Why has no training or guidance been
+            provided?
+          choices:
+            - text: "The 5 Whys method was adopted from a checklist without any facilitation training or worked examples"
+              outcome: CORRECT
+              evidence: >
+                Found the original rollout email: 'We will now use 5 Whys.
+                See attached blank template. Start using from Monday.'
+                No training session. No worked example. No coaching follow-up.
+              hint: >
+                A tool without a methodology is a form without understanding.
+                5 Whys is a facilitation skill — not a template to fill.
+                The rollout gave people the hammer, not the technique.
+              teaches: [5_whys, training, tacit_knowledge, structured_problem_solving]
+              score_feed: RCA
+            - text: "Training was provided but the operators did not retain it"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                The rollout records show no training was provided. Assuming
+                training happened is incorrect — and it means no one is
+                looking for the gap.
+              teaches: [training, documentation, process_design]
+            - text: "The Quality Lead should be running all 5 Whys sessions personally"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                Centralising 5 Whys to one person creates a bottleneck
+                and does not develop organisational capability. The goal
+                is for every team leader to facilitate a credible 5 Whys
+                — not to have one expert.
+              teaches: [5_whys, capability_building, decentralized_improvement]

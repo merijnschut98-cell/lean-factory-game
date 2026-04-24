@@ -1,0 +1,1396 @@
+# Tier 3 Problem Catalog — 15 hand-designed problems
+#
+# Tier 3 problems surface flow, pull, and advanced quality gaps that
+# become visible once Tier 1 (foundations) and Tier 2 (management systems)
+# are stable. They are analytical — solving them requires understanding
+# value streams, scheduling dynamics, and error-proofing.
+#
+# Schema: identical to problems_tier1.yaml
+
+problems:
+
+  - id: T3-001
+    name: "The Push Flood"
+    category: Flow
+    severity: high
+    visibility: obvious
+    zone_id: z4
+    station_id: integration_1
+    symptoms:
+      - "WIP accumulates unevenly between Integration 1 and Integration 2 — sometimes a pile, sometimes nothing"
+      - "Integration 2 is sometimes idle waiting; sometimes backed up with nowhere to put finished units"
+      - "Production plan is driven by the schedule rather than by what Integration 2 actually needs"
+    root_cause: >
+      Production is scheduled by forecast and pushed through the line
+      regardless of downstream readiness. Integration 1 produces to plan;
+      Integration 2 receives units when Integration 1 finishes them,
+      not when Integration 2 needs them. No pull signal exists.
+    effective_countermeasures:
+      - Kanban Systems
+      - Standard WIP Definition
+      - Value Stream Mapping
+    maturity_prerequisite: null
+    mismatch_note: >
+      Installing Kanban cards without first defining standard WIP limits
+      and stable cycle times produces Kanban that oscillates — the card
+      circulates but the signal it carries is wrong.
+    side_effect_ref: null
+    effect_modifiers:
+      perf_delta: -0.10
+      quality_delta: -0.05
+    teaches:
+      - kanban
+      - push_vs_pull
+      - WIP
+      - flow
+      - standard_WIP
+      - overproduction
+    dialogue:
+      investigation:
+        npc: "Scheduler"
+        prompt: >
+          The WIP between Integration 1 and 2 is erratic — sometimes
+          I see a pile of 30 units, sometimes the area is empty and
+          Integration 2 is waiting. What's driving this?
+        choices:
+          - text: "Map the actual flow between Integration 1 and 2 — observe when units move and why"
+            outcome: CORRECT
+            evidence: >
+              Observed for 4 hours. Integration 1 produces to a daily
+              schedule target. When Integration 2 is busy, units stack
+              up. When Integration 2 has capacity, Integration 1 may be
+              on a break or awaiting materials. The two stations have
+              never been connected by a signal.
+            hint: >
+              Integration 1 produces when it can; Integration 2 consumes
+              when it can. Without a signal connecting them, the gap
+              between their rhythms becomes the WIP pile you see.
+              This is push production — and the pile is its cost.
+            teaches: [push_vs_pull, WIP, kanban, flow, overproduction]
+            score_feed: RCA
+          - text: "Check whether the production schedule is accurate for both stations"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              The schedule may be accurate — but it is the schedule
+              itself that is the problem. Push scheduling produces
+              accurate piles in the wrong places. The answer is a
+              pull signal, not a better schedule.
+            teaches: [push_vs_pull, kanban]
+          - text: "Speed up Integration 2 to consume the WIP pile"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Speeding up Integration 2 temporarily empties the pile —
+              but as long as Integration 1 pushes without a signal,
+              the pile returns. You have not changed the system,
+              only its current state.
+            teaches: [push_vs_pull, standard_WIP]
+
+  - id: T3-002
+    name: "The Never-Ending Changeover"
+    category: Flow
+    severity: high
+    visibility: obvious
+    zone_id: z2
+    station_id: deck_cutting
+    symptoms:
+      - "Deck Cutting changeovers take 42–55 minutes — planned production time is consumed by setup"
+      - "Short production runs are avoided to minimise the frequency of changeovers"
+      - "Operators wait during changeover; no parallel preparation activity visible"
+    root_cause: >
+      No SMED analysis has been applied to the Deck Cutting changeover.
+      All setup steps — including preparation that could happen while
+      the machine runs — are done with the line stopped. Internal and
+      external setup have never been separated.
+    effective_countermeasures:
+      - SMED
+      - Standard Work Definition
+    maturity_prerequisite: null
+    mismatch_note: >
+      Applying Heijunka before completing SMED locks the plant into
+      a leveled schedule it cannot execute — the changeover time
+      prevents the mix frequency the level schedule requires.
+    side_effect_ref: null
+    effect_modifiers:
+      avail_delta: -0.15
+    teaches:
+      - SMED
+      - changeover
+      - internal_external_setup
+      - availability
+      - waste_muda
+      - standard_work
+    dialogue:
+      investigation:
+        npc: "Team Leader"
+        prompt: >
+          Deck Cutting changeovers are killing our availability.
+          42 minutes minimum, every time. What should we actually
+          look at first?
+        choices:
+          - text: "Time every changeover step in detail — separate which steps require the machine to be stopped"
+            outcome: CORRECT
+            evidence: >
+              Timed 12 changeover steps. Eight require the machine stopped
+              (internal). Four can be done while the machine runs (external).
+              The four external steps are currently done after shutdown:
+              fetching the next die, checking the die condition, setting
+              up the material feeder, pre-heating the press plate.
+              Moving these four external steps could save 18–22 minutes.
+            hint: >
+              Internal setup must happen with the machine off — external
+              setup does not. The first SMED move is always to separate
+              them. You have just found 18 minutes without changing
+              a single internal step.
+            teaches: [SMED, changeover, internal_external_setup, waste_muda, availability]
+            score_feed: RCA
+          - text: "Ask the operator how the changeover has always been done"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              The operator's account is useful context — but it will
+              describe the current method, not whether that method is
+              optimal. Timing is more revealing than recollection.
+            teaches: [gemba, standard_work, time_study]
+          - text: "Order faster changeover tooling to reduce setup time"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              New tooling may help — but without separating internal
+              and external setup first, you will spend money on
+              faster tools for steps that could be eliminated.
+              SMED analysis always precedes tooling investment.
+            teaches: [SMED, cost_vs_value]
+      five_whys:
+        - why: >
+            External setup steps are currently done after machine shutdown.
+            Why are preparatory steps not completed while the machine is
+            still running?
+          choices:
+            - text: "There is no standard changeover procedure — operators have always done the steps in the same order without questioning it"
+              outcome: CORRECT
+              evidence: >
+                The changeover 'procedure' is an informal handover learned
+                from a predecessor. No written sequence exists. When observed
+                from outside, the current order has no logic that requires
+                the machine to be stopped for the preparation steps.
+              hint: >
+                When a procedure is undocumented and unanalysed, it fossilises
+                at whatever order it was first done. Documenting and analysing
+                it is the first step toward improving it.
+              teaches: [SMED, standard_work, tacit_knowledge, changeover]
+              score_feed: RCA
+            - text: "The operator does not have access to the next die while the machine is running"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                This may contribute — but the analysis showed four external
+                steps, not just die access. The fundamental gap is that
+                external/internal has never been separated as a concept.
+              teaches: [SMED, workplace_organization]
+            - text: "The changeover is too complex to split into parallel steps"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                Complexity varies — but the timed analysis found four steps
+                with no technical reason to require machine-off status.
+                Complexity is often used to avoid analysis, not to describe it.
+              teaches: [SMED, structured_analysis]
+        - why: >
+            There is no standard changeover procedure at Deck Cutting.
+            Why has no changeover standard been written?
+          choices:
+            - text: "Changeovers were seen as a skilled operator task — expertise was assumed to guarantee efficiency"
+              outcome: CORRECT
+              evidence: >
+                Previous Team Leader comment in the operations log from
+                two years ago: 'Changeovers are fine — the operator has
+                been doing this for eight years.'
+              hint: >
+                Expert execution is not the same as optimal execution.
+                An expert repeating a suboptimal sequence efficiently
+                is still a suboptimal sequence. Standard work captures
+                the best known method — which requires analysis to find.
+              teaches: [SMED, tacit_knowledge, standard_work, operator_variation]
+              score_feed: RCA
+            - text: "No one has had time to document the changeover"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                Time pressure is real — but the changeover is consuming
+                15% of planned production time every day. If there were
+                ever a task worth investing time in, it is this one.
+              teaches: [SMED, production_vs_improvement, standard_work]
+            - text: "The changeover varies too much between die types to standardise"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                Variation between die types is a reason to create type-specific
+                standards, not to forgo standards. Runner-Repeater-Stranger
+                analysis can identify which changeover types to standardise first.
+              teaches: [SMED, standard_work, RRS_analysis]
+  
+  - id: T3-003
+    name: "The Production Rollercoaster"
+    category: Flow
+    severity: medium
+    visibility: subtle
+    zone_id: z3
+    station_id: battery_assembly
+    symptoms:
+      - "Battery Assembly output swings between 40 and 110 units per shift — same station, same operators"
+      - "High-volume orders cause overproduction that fills the buffer; gaps cause starvation downstream"
+      - "The schedule oscillates between large batches of one model variant and another"
+    root_cause: >
+      Batch scheduling groups similar orders to minimise changeover
+      frequency. This creates waves of one model variant followed by
+      another, producing a flood/drought cycle that propagates through
+      all downstream stations. No production leveling mechanism exists.
+    effective_countermeasures:
+      - Heijunka
+      - SMED
+    maturity_prerequisite: null
+    mismatch_note: >
+      Applying Heijunka before reducing changeover time forces a leveled
+      schedule that the line cannot execute — changeover time will
+      consume all the time gained from leveling.
+    side_effect_ref: null
+    effect_modifiers:
+      perf_delta: -0.08
+      quality_delta: -0.05
+    teaches:
+      - heijunka
+      - leveled_production
+      - waste_mura
+      - batch_vs_flow
+      - SMED
+      - takt_time
+    dialogue:
+      investigation:
+        npc: "Scheduler"
+        prompt: >
+          Battery Assembly output is all over the place — 40 units one
+          shift, 110 the next. Demand hasn't changed. What's happening?
+        choices:
+          - text: "Plot the production schedule against output for the last 4 weeks and look for the pattern"
+            outcome: CORRECT
+            evidence: >
+              The schedule shows large blocks of Model A followed by
+              large blocks of Model B. Output is high during the middle
+              of each block; low at the transitions (changeover losses)
+              and at the start of each block (warm-up variation).
+              The oscillation is the batch schedule made visible.
+            hint: >
+              The variation is not random — it is the batch schedule.
+              Every batch boundary is a changeover. Every changeover
+              is an output trough. Leveling the schedule levels the output.
+            teaches: [heijunka, leveled_production, waste_mura, batch_vs_flow, SMED]
+            score_feed: RCA
+          - text: "Investigate whether the variation is caused by operator skill differences between shifts"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Operator differences contribute at the margins — but the
+              swing between 40 and 110 is too large and too regular
+              to be explained by people. The pattern points to the
+              schedule, not the operators.
+            teaches: [operator_variation, standard_work]
+          - text: "Increase the buffer between Battery Assembly and the next station"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              A bigger buffer absorbs the oscillation — but it does not
+              stop it. Inventory hides the problem rather than solving it.
+              The downstream station still receives an uneven signal;
+              it just arrives delayed.
+            teaches: [push_vs_pull, WIP, heijunka]
+
+  - id: T3-004
+    name: "The Motion Marathon"
+    category: Flow
+    severity: medium
+    visibility: subtle
+    zone_id: z3
+    station_id: propulsion_build
+    symptoms:
+      - "Operators leave their station 6–10 times per shift to fetch materials from a central store"
+      - "Each fetch takes 4–8 minutes; operators are away from value-adding work for 15–20% of their shift"
+      - "Materials arrive at the station irregularly — sometimes the operator waits, sometimes they stockpile"
+    root_cause: >
+      No material replenishment route (milk run / water spider) exists.
+      Operators are responsible for fetching their own materials, which
+      requires them to leave value-adding work and disrupt their flow.
+      The transport waste is invisible in official cycle time measurements
+      because it is classified as operator activity.
+    effective_countermeasures:
+      - Milk Runs / Water Spider Routes
+      - Spaghetti Diagrams
+    maturity_prerequisite: null
+    mismatch_note: >
+      A milk run without visual replenishment signals creates a scheduled
+      route that delivers material before it is needed and misses
+      replenishment when it is needed urgently.
+    side_effect_ref: null
+    effect_modifiers:
+      perf_delta: -0.10
+    teaches:
+      - milk_run
+      - waste_muda
+      - motion_waste
+      - flow
+      - replenishment
+      - operator_flexibility
+    dialogue:
+      investigation:
+        npc: "Team Leader"
+        prompt: >
+          Propulsion Build output per operator is lower than I expect
+          given the cycle time. Where is the time actually going?
+        choices:
+          - text: "Draw a spaghetti diagram — trace the physical path of one operator over an entire shift"
+            outcome: CORRECT
+            evidence: >
+              Spaghetti diagram for one shift: the operator walked
+              2.3 km. Of that, 1.4 km was to and from the materials
+              store — 9 separate trips. The station is 22 m from the
+              store. Each round trip costs 6 minutes including waiting
+              for the store keeper.
+            hint: >
+              The spaghetti diagram makes motion waste visible as
+              physical distance. 1.4 km of unnecessary walking per
+              operator per shift is 14% of their available time.
+              That is not a cycle time problem — it is a material
+              supply problem.
+            teaches: [spaghetti_diagram, motion_waste, waste_muda, milk_run, flow]
+            score_feed: RCA
+          - text: "Review the standard work document to see whether material fetching is part of the cycle"
+            outcome: PLAUSIBLE
+            evidence: >
+              Standard work does not mention material replenishment.
+              The operator is performing a task that is invisible to
+              both the standard and the performance measurement system.
+            hint: >
+              The invisibility is part of the problem — material fetching
+              is not in the standard, so it does not appear in cycle time,
+              but it is consuming almost a sixth of the shift.
+            teaches: [standard_work, waste_muda, motion_waste]
+          - text: "Move the materials store closer to Propulsion Build"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Moving the store reduces trip distance — but the operator
+              still interrupts value-adding work to fetch material.
+              A milk run separates material handling from production
+              work entirely, which is the higher-value fix.
+            teaches: [milk_run, flow, waste_elimination]
+
+  - id: T3-005
+    name: "The Invisible Bottleneck"
+    category: Flow
+    severity: high
+    visibility: hidden
+    zone_id: z4
+    station_id: integration_4
+    symptoms:
+      - "Integration 4 always has a queue of 8–15 units in front of it"
+      - "Stations downstream of Integration 4 are frequently idle"
+      - "Improvement projects are spread equally across all stations — Integration 4 receives no more attention than others"
+    root_cause: >
+      No formal bottleneck analysis has been conducted. Integration 4
+      is the system constraint — its cycle time limits total output —
+      but improvement energy is distributed equally across all stations.
+      Improving non-constraints increases their inventory-building speed
+      without improving total output.
+    effective_countermeasures:
+      - Bottleneck Analysis / Theory of Constraints
+      - Value Stream Mapping
+    maturity_prerequisite: null
+    mismatch_note: >
+      Improving the bottleneck station without protecting it (buffer
+      in front, process discipline behind) produces intermittent gains
+      that are wiped out each time upstream variation starves the
+      constraint.
+    side_effect_ref: null
+    effect_modifiers:
+      perf_delta: -0.12
+    teaches:
+      - bottleneck
+      - theory_of_constraints
+      - VSM
+      - flow
+      - local_vs_global_optimization
+      - systems_thinking
+    dialogue:
+      investigation:
+        npc: "Scheduler"
+        prompt: >
+          We keep improving stations but total output barely moves.
+          Integration 4 always has a queue. Why doesn't improving
+          other stations help?
+        choices:
+          - text: "Map cycle times for every station and find which one limits total throughput"
+            outcome: CORRECT
+            evidence: >
+              Cycle times mapped across all integration stations.
+              Integration 4: 4.2 minutes cycle time. All others: 2.8–3.5
+              minutes. Integration 4 can process a maximum of 14.3 units
+              per hour. The whole line produces at 14.3 units per hour —
+              every other station's improvement only increases the rate
+              at which units queue in front of Integration 4.
+            hint: >
+              The constraint sets the pace of the whole system. Until
+              its cycle time drops below 3.5 minutes, no other improvement
+              increases output. Improvement energy must follow the
+              constraint, not be distributed equally.
+            teaches: [bottleneck, theory_of_constraints, local_vs_global_optimization, systems_thinking, VSM]
+            score_feed: RCA
+          - text: "Check whether Integration 4 has equipment issues affecting its speed"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Equipment issues at a bottleneck matter more than anywhere
+              else — but this investigation starts by confirming Integration 4
+              is the constraint, then finding its causes. The question
+              before 'why is it slow?' is 'is this the constraint?'
+            teaches: [bottleneck, TPM, equipment_management]
+          - text: "Increase staffing at all stations to raise overall output"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Adding people to non-constraint stations increases their
+              output rate — which means they feed Integration 4 faster.
+              The queue in front of Integration 4 grows; total output
+              does not change. Adding to the constraint is the only
+              staffing move that matters.
+            teaches: [bottleneck, theory_of_constraints, local_vs_global_optimization]
+
+  - id: T3-006
+    name: "Queue Jumpers"
+    category: Quality
+    severity: medium
+    visibility: subtle
+    zone_id: z2
+    station_id: coil_winding
+    symptoms:
+      - "Urgent orders are pulled from the middle of the queue and processed ahead of older units"
+      - "Traceability records show units from two to three different production days are sometimes mixed in the same batch"
+      - "Coil Winding quality escapes trace back to mixed-age WIP — older material behaves differently"
+    root_cause: >
+      No FIFO mechanism exists in the Coil Winding queue. Units are
+      selected by urgency or operator convenience, not by arrival order.
+      Mixed-age WIP creates quality variation that appears random but
+      is caused by uncontrolled queue access.
+    effective_countermeasures:
+      - FIFO Lanes
+      - Standard WIP Definition
+    maturity_prerequisite: null
+    mismatch_note: >
+      Applying FIFO lanes without also defining WIP limits creates a
+      controlled queue that is still too long — the lane enforces order
+      but the WIP still accumulates to the point where material age
+      creates quality risk.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.08
+      perf_delta: -0.05
+    teaches:
+      - FIFO
+      - WIP
+      - standard_WIP
+      - traceability
+      - quality_gate
+      - flow
+    dialogue:
+      investigation:
+        npc: "Quality Lead"
+        prompt: >
+          We keep getting coil quality escapes that are hard to explain.
+          They don't correlate with operator or shift. What else could
+          be causing them?
+        choices:
+          - text: "Check the age of the WIP units at the time of the escapes — when were they produced vs. when they were processed?"
+            outcome: CORRECT
+            evidence: >
+              Cross-referenced 18 escape events with production records.
+              Fourteen had WIP age greater than 3 days at the time of
+              processing. Eight had units from two different production
+              days mixed in the same Coil Winding batch. Older coil
+              substrate absorbs ambient humidity and behaves differently
+              than fresh material.
+            hint: >
+              The escapes are not random — they correlate with WIP age.
+              The root cause is the queue: without FIFO control, old
+              units wait indefinitely while newer ones jump ahead.
+            teaches: [FIFO, WIP, traceability, quality_gate, flow]
+            score_feed: RCA
+          - text: "Analyse escape data by operator to identify skill gaps"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Operator analysis was the natural first step — but the
+              age-based pattern reveals a queue management cause, not
+              a skill cause. The same operator processes good units and
+              escape units depending on WIP age, not operator quality.
+            teaches: [FIFO, data_driven, traceability]
+          - text: "Increase final inspection frequency at Coil Winding"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              More inspection catches more escapes — but the cause
+              (queue jumping mixing WIP ages) continues producing more
+              defects. Inspection treats the symptom while the
+              root cause continues unchecked.
+            teaches: [FIFO, quality_gate, root_cause_analysis]
+
+  - id: T3-007
+    name: "Defects Discovered Too Late"
+    category: Quality
+    severity: high
+    visibility: subtle
+    zone_id: z4
+    station_id: integration_3
+    symptoms:
+      - "FTR drops consistently at Final QA — the majority of escapes trace to propulsion mount angle"
+      - "The defect originates at Integration 3 but is not caught until Final QA, 4 stations later"
+      - "Rework at Final QA is extensive because the mount is already fully assembled by then"
+    root_cause: >
+      No error-proofing exists at the source step (Integration 3).
+      The propulsion mount angle is applied by hand with no fixture or
+      sensor. A defect is only detectable at final inspection, when
+      rework is expensive and the assembly is complete.
+    effective_countermeasures:
+      - Poka-Yoke
+      - Jidoka
+    maturity_prerequisite: null
+    mismatch_note: >
+      Implementing Jidoka (machine stop on defect) without Poka-Yoke
+      (defect prevention) at the source stops the line on every defect
+      but does not prevent defects from forming. Line stops increase
+      without defect reduction.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.12
+      perf_delta: -0.05
+    teaches:
+      - poka_yoke
+      - jidoka
+      - quality_gate
+      - defect_prevention
+      - FTR
+      - rework_waste
+    dialogue:
+      investigation:
+        npc: "Quality Lead"
+        prompt: >
+          Final QA FTR has been below 88% for three weeks and the
+          same defect keeps appearing. We've investigated the symptom —
+          now we need to fix the source. Where should we act?
+        choices:
+          - text: "Design a fixture or sensor at Integration 3 that prevents or detects the incorrect angle at the source"
+            outcome: CORRECT
+            evidence: >
+              A simple angle-reference jig can be fitted to the Integration 3
+              workbench in one day. With the jig, the operator's grip
+              naturally positions the mount within tolerance. Bench test
+              shows zero angle escapes in 50 trial assemblies.
+            hint: >
+              Prevention at source is always more effective than detection
+              at final check. The rework cost you are paying now comes
+              from catching defects four stations too late. A jig stops
+              the defect forming, not just discovering it.
+            teaches: [poka_yoke, jidoka, quality_gate, defect_prevention, FTR]
+            score_feed: RCA
+          - text: "Add an inspection step between Integration 3 and Integration 4"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              An intermediate inspection step catches the defect earlier —
+              reducing rework cost. But it does not prevent the defect.
+              Poka-Yoke prevents; inspection detects. Detection one step
+              earlier is better; prevention at source is the highest value.
+            teaches: [poka_yoke, quality_gate, defect_prevention]
+          - text: "Retrain Integration 3 operators on the correct mount angle"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Training improves average performance — but not to zero.
+              The angle is applied by hand feel; human variation is
+              irreducible without a physical reference. Poka-Yoke replaces
+              reliance on training with a physical guide.
+            teaches: [poka_yoke, standard_work, operator_variation]
+      five_whys:
+        - why: >
+            The propulsion mount angle defect originates at Integration 3
+            but is not caught until Final QA. Why is there no detection at
+            the source step?
+          choices:
+            - text: "No quality check was designed into Integration 3 — the process relies on operator technique and downstream inspection"
+              outcome: CORRECT
+              evidence: >
+                Reviewed Integration 3 station design documents. Quality
+                check: 'visual confirmation by operator'. No fixture, no
+                sensor, no gauge, no independent verification. The station
+                was designed at product launch before the angle defect
+                was known.
+              hint: >
+                A quality check that says 'operator confirms visually'
+                is not a quality check — it is an assumption. When the
+                angle defect was first discovered, the station design
+                should have been updated. It wasn't.
+              teaches: [poka_yoke, quality_gate, process_design, defect_prevention]
+              score_feed: RCA
+            - text: "The defect is too subtle to be detected by any method available at Integration 3"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                The bench test showed that a simple jig prevents the defect
+                entirely. Subtlety is often used to explain why error-proofing
+                was not designed — but 'hard to see' is exactly the condition
+                that poka-yoke is designed for.
+              teaches: [poka_yoke, defect_prevention]
+            - text: "Integration 3 operators are the most experienced and assumed not to make angle errors"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                Experience reduces error frequency — it does not eliminate it.
+                A process that depends on experienced operators to prevent
+                defects is fragile to turnover, fatigue, and training gaps.
+              teaches: [poka_yoke, standard_work, tacit_knowledge, operator_variation]
+        - why: >
+            No quality check was designed into Integration 3.
+            Why was error-proofing not specified at station design?
+          choices:
+            - text: "The angle defect was not known at product launch — the station was designed before the failure mode was discovered"
+              outcome: CORRECT
+              evidence: >
+                Product launch records show zero angle defects in the
+                first three months — the defect emerged as a second
+                operator cohort was trained with less direct supervision.
+                The station design was never revisited after the defect
+                first appeared.
+              hint: >
+                Failure modes emerge over time. A station designed before
+                a failure mode was known should be redesigned once it is
+                known. The mistake is not the original design — it is
+                the failure to update it.
+              teaches: [poka_yoke, process_design, PDCA, change_management]
+              score_feed: RCA
+            - text: "Poka-Yoke was considered but rejected as too expensive to implement"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                Cost assessment is valid — but the current rework cost is
+                already significant. A jig that costs one day to build
+                and prevents all angle defects should compare favorably
+                to the rework cost it eliminates.
+              teaches: [poka_yoke, cost_vs_value, defect_prevention]
+            - text: "Poka-Yoke is only applicable to automated processes, not manual assembly"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                Poka-Yoke originated in manual assembly at Toyota —
+                fixtures, guides, and reference marks are all poka-yoke
+                devices for human processes. Manual assembly often
+                benefits more from error-proofing than automation does.
+              teaches: [poka_yoke, standard_work]
+  
+  - id: T3-008
+    name: "The Orphaned Supermarket"
+    category: Flow
+    severity: medium
+    visibility: subtle
+    zone_id: z1
+    station_id: incoming_qa
+    symptoms:
+      - "The PCB supermarket buffer sometimes overflows (units sitting for days), sometimes runs empty"
+      - "Incoming QA replenishes the supermarket on a fixed weekly schedule regardless of consumption"
+      - "Downstream stations occasionally stop work waiting for PCBs despite the supermarket being installed"
+    root_cause: >
+      The PCB supermarket was installed as a physical buffer without
+      Kanban signals to govern replenishment. The replenishment schedule
+      is time-based (weekly) rather than demand-based. Without a
+      consumption signal, the supermarket oscillates between excess and
+      stockout.
+    effective_countermeasures:
+      - Supermarket Pull Systems
+      - Kanban Systems
+    maturity_prerequisite: null
+    mismatch_note: >
+      Adding more supermarket capacity without Kanban signals creates
+      a larger version of the same oscillation — the excess inventory
+      peaks are higher and the stockout events are masked longer.
+    side_effect_ref: null
+    effect_modifiers:
+      perf_delta: -0.07
+      avail_delta: -0.06
+    teaches:
+      - kanban
+      - push_vs_pull
+      - replenishment
+      - WIP
+      - flow
+      - standard_WIP
+    dialogue:
+      investigation:
+        npc: "Scheduler"
+        prompt: >
+          The PCB supermarket was supposed to smooth our supply.
+          Instead we still get stockouts. What's wrong with how
+          it's operating?
+        choices:
+          - text: "Trace exactly what triggers a replenishment — is it a consumption signal or a time schedule?"
+            outcome: CORRECT
+            evidence: >
+              Replenishment record: 'Monday and Thursday, full restock
+              to capacity.' No consumption signal is used. On weeks
+              with high demand, the supermarket runs out by Wednesday.
+              On weeks with low demand, Monday's delivery adds to
+              an already-full buffer. The time schedule ignores demand.
+            hint: >
+              A supermarket that replenishes on a schedule is still a
+              push system. The purpose of a supermarket is to decouple
+              supply from consumption using a Kanban signal — replenish
+              when consumed, not when the calendar says so.
+            teaches: [kanban, push_vs_pull, replenishment, WIP, flow]
+            score_feed: RCA
+          - text: "Increase the supermarket capacity to absorb the demand spikes"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              More capacity delays the stockout — but the time-based
+              replenishment still doesn't respond to actual demand.
+              Stockouts will still occur at the next high-demand peak.
+            teaches: [kanban, push_vs_pull, standard_WIP]
+          - text: "Reduce replenishment lead time by sourcing PCBs from a closer supplier"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Lead time reduction helps — but the fundamental problem
+              is that replenishment is triggered by schedule, not demand.
+              Even with zero lead time, a push schedule would still
+              create the same oscillation.
+            teaches: [kanban, push_vs_pull, replenishment]
+
+  - id: T3-009
+    name: "The Misread Value Stream"
+    category: Flow
+    severity: medium
+    visibility: hidden
+    zone_id: z1
+    station_id: dock
+    symptoms:
+      - "A VSM was completed last year and improvements implemented — but OEE has not improved significantly"
+      - "The VSM mapped Battery Assembly in detail but the dock-to-dispatch flow was not included"
+      - "The most significant queue in the plant — at Dock receiving — was not visible in the VSM"
+    root_cause: >
+      The value stream map covered one zone in isolation. The true
+      constraint and largest source of flow waste is at the Dock
+      (incoming material processing) — upstream of where the VSM
+      started. Improvements downstream of an unmapped bottleneck
+      produce no system-level benefit.
+    effective_countermeasures:
+      - Value Stream Mapping
+      - Future-State VSM Design
+      - Bottleneck Analysis / Theory of Constraints
+    maturity_prerequisite: null
+    mismatch_note: >
+      Drawing a future-state VSM before validating the current-state
+      map end-to-end produces a target condition optimising the wrong
+      scope. The future state is achieved but system performance is
+      unchanged.
+    side_effect_ref: null
+    effect_modifiers:
+      perf_delta: -0.08
+    teaches:
+      - VSM
+      - flow
+      - bottleneck
+      - systems_thinking
+      - value_stream
+      - waste_muda
+    dialogue:
+      investigation:
+        npc: "Scheduler"
+        prompt: >
+          We spent three months on VSM improvements in Battery Assembly.
+          OEE moved maybe 2%. What did we miss?
+        choices:
+          - text: "Walk the complete flow from dock to dispatch and map everything — including what happens before Battery Assembly"
+            outcome: CORRECT
+            evidence: >
+              Walking the full flow: incoming material arrives at dock,
+              waits an average of 2.1 days in the receiving queue before
+              QA inspection, then 0.8 days before release to production.
+              Battery Assembly is starved periodically by this upstream
+              delay — not by its own inefficiency. The VSM started
+              inside the plant and missed the upstream constraint.
+            hint: >
+              Value stream maps must start at the supplier and end at
+              the customer. Any scope shorter than end-to-end risks
+              optimising a sub-section while the true constraint is
+              outside the frame.
+            teaches: [VSM, flow, bottleneck, systems_thinking, value_stream, waste_muda]
+            score_feed: RCA
+          - text: "Re-do the Battery Assembly VSM with more detail to find the missed waste"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              More detail in the same scope will not reveal what is
+              outside the scope. The issue is not VSM quality — it is
+              VSM boundaries. The flow starts upstream of Battery Assembly.
+            teaches: [VSM, systems_thinking, value_stream]
+          - text: "Accept the 2% improvement and move the VSM focus to another zone"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Moving focus to another zone extends the sub-optimisation.
+              The dock constraint will continue to starve every downstream
+              zone regardless of how much those zones are improved.
+            teaches: [VSM, bottleneck, systems_thinking, local_vs_global_optimization]
+      five_whys:
+        - why: >
+            The VSM mapped Battery Assembly in isolation and missed the
+            dock constraint. Why was the scope limited to one zone?
+          choices:
+            - text: "The VSM team was drawn from Battery Assembly — they mapped what they knew and what they had access to"
+              outcome: CORRECT
+              evidence: >
+                VSM team roster: two Battery Assembly team leaders, one
+                quality engineer from z3, the Battery Assembly supervisor.
+                No one from receiving, dock, or QA was included.
+                The scope followed the team's knowledge boundary.
+              hint: >
+                The team mapped their world accurately. The error was
+                in team composition — a VSM team must cross the boundaries
+                it is drawing. Dock and QA should have been represented.
+              teaches: [VSM, systems_thinking, cross_functional, value_stream]
+              score_feed: RCA
+            - text: "The VSM facilitator did not explain that the map should cover the full value stream"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                Facilitation quality matters — but the more fundamental
+                error is team composition. Even a well-facilitated workshop
+                cannot map what the team doesn't know.
+              teaches: [VSM, structured_problem_solving, cross_functional]
+            - text: "Dock and receiving are managed by a separate department and could not be included"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                Departmental boundaries are real constraints — but they
+                are constraints on the process, not on the map. Mapping
+                the full flow, then negotiating access to the constrained
+                area, is more effective than mapping a shorter flow.
+              teaches: [VSM, value_stream, systems_thinking]
+        - why: >
+            The VSM team was drawn entirely from Battery Assembly, excluding
+            dock and receiving. Why was the team scope not challenged?
+          choices:
+            - text: "No formal VSM scoping process defined who needed to be included — it was assembled informally by the local supervisor"
+              outcome: CORRECT
+              evidence: >
+                VSM project notes: 'Team assembled by Battery Assembly supervisor
+                to address zone performance.' No cross-functional scoping review,
+                no end-to-end flow walk before team formation.
+              hint: >
+                Scoping a VSM should start with a flow walk — not with
+                deciding who is 'responsible' for the problem. The flow
+                walk defines the scope; the scope defines the team.
+              teaches: [VSM, value_stream, process_design, structured_problem_solving]
+              score_feed: RCA
+            - text: "The Plant Manager approved the scope without reviewing it"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                Management approval matters — but the design error was
+                in how the scope was conceived, not approved. The improvement
+                is in the scoping process, not the approval chain.
+              teaches: [VSM, leader_standard_work, management_systems]
+            - text: "VSM workshops are always zone-specific — a multi-zone VSM is too complex"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                VSM was designed as an end-to-end tool. Zonal VSMs are
+                useful for deep analysis of a known scope — but the first
+                VSM must always establish the full picture before zooming in.
+              teaches: [VSM, value_stream, systems_thinking]
+  
+  - id: T3-010
+    name: "The Starved Station"
+    category: Flow
+    severity: medium
+    visibility: subtle
+    zone_id: z4
+    station_id: integration_5
+    symptoms:
+      - "Integration 5 is idle for 15–25% of its planned production time — not due to breakdowns"
+      - "Integration 4 (upstream) builds small queues intermittently before releasing batches"
+      - "The total output of the Integration zone is lower than the sum of individual station capacities suggests"
+    root_cause: >
+      Work content at Integration 4 is significantly lower than takt
+      time; it overproduces and then pauses. This irregular rhythm
+      creates an uneven flow to Integration 5, which alternates between
+      overload and idle. No line rebalancing has been done since
+      product launch.
+    effective_countermeasures:
+      - Line Balancing
+      - Takt-Time Management
+    maturity_prerequisite: null
+    mismatch_note: >
+      Rebalancing a line without accurate cycle time data distributes
+      work content based on observed averages that include both
+      value-adding and non-value-adding time — the balance is wrong
+      from the start.
+    side_effect_ref: null
+    effect_modifiers:
+      perf_delta: -0.10
+    teaches:
+      - line_balancing
+      - takt_time
+      - flow
+      - waste_mura
+      - bottleneck
+      - standard_work
+    dialogue:
+      investigation:
+        npc: "Team Leader"
+        prompt: >
+          Integration 5 is idle far too often. The operators aren't
+          slacking — there's just nothing to work on. What's
+          actually going on?
+        choices:
+          - text: "Time the actual cycle time at Integration 4 and Integration 5 and compare them to takt"
+            outcome: CORRECT
+            evidence: >
+              Integration 4 cycle time: 2.1 minutes. Takt time: 3.4
+              minutes. Integration 5 cycle time: 3.2 minutes. Integration 4
+              processes units 62% faster than takt — it builds ahead,
+              pauses, builds ahead, pauses. Integration 5 receives an
+              uneven feed and idles during the pauses.
+            hint: >
+              When a station is faster than takt, it produces inventory
+              in bursts. The station after it receives the burst followed
+              by nothing. The fix is rebalancing — moving work from
+              Integration 5 to Integration 4 until both are at takt.
+            teaches: [line_balancing, takt_time, flow, waste_mura, standard_work]
+            score_feed: RCA
+          - text: "Investigate whether Integration 5 has a skill or equipment issue causing slowness"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Integration 5 is not the problem — it is fast enough. The
+              problem is the uneven feed from Integration 4. Investigating
+              the idle station is looking in the wrong place.
+            teaches: [line_balancing, takt_time, flow, bottleneck]
+          - text: "Add a second operator to Integration 5 to absorb the workload"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Adding a person to an idle station increases cost without
+              increasing output — the station is idle because its feed
+              is irregular, not because it lacks capacity.
+            teaches: [line_balancing, takt_time, waste_muri]
+
+  - id: T3-011
+    name: "Material Interruptions"
+    category: Flow
+    severity: medium
+    visibility: subtle
+    zone_id: z5
+    station_id: burn_in
+    symptoms:
+      - "Burn-in flow is interrupted 4–8 times per shift for material replenishment"
+      - "Each interruption involves the operator leaving their station for 5–10 minutes"
+      - "Units in burn-in racks are sometimes under-loaded because the operator is away during a replenishment cycle"
+    root_cause: >
+      No material handler (water spider) route covers Burn-in.
+      Operators manage their own replenishment, which requires them
+      to leave value-adding work. The interruptions are invisible in
+      the cycle time record because they are categorised as part of
+      the operator's role.
+    effective_countermeasures:
+      - Milk Runs / Water Spider Routes
+      - Standard WIP Definition
+    maturity_prerequisite: null
+    mismatch_note: >
+      Assigning a water spider without defining replenishment trigger
+      signals (Kanban cards or visual indicators) results in a route
+      that delivers material on schedule rather than on demand.
+    side_effect_ref: null
+    effect_modifiers:
+      perf_delta: -0.09
+    teaches:
+      - milk_run
+      - flow
+      - waste_muda
+      - motion_waste
+      - standard_WIP
+      - operator_flexibility
+    dialogue:
+      investigation:
+        npc: "Team Leader"
+        prompt: >
+          Burn-in utilisation is lower than it should be. Racks are
+          filling unevenly and there are gaps I can't explain.
+          Where should we look?
+        choices:
+          - text: "Observe Burn-in for a full shift and log every time the operator leaves the station and why"
+            outcome: CORRECT
+            evidence: >
+              Logged 7 departures from Burn-in in one shift. All were
+              material-related: 4 to replenish test fixtures, 2 to
+              collect spare components, 1 to return materials. Total
+              time away: 52 minutes. Rack loading dropped to 60%
+              during the three longest absences.
+            hint: >
+              The rack gaps are the operator absences made visible.
+              52 minutes is 11% of a shift — spent on material handling
+              that someone else should be doing. A water spider route
+              would return that time to value-adding work.
+            teaches: [milk_run, flow, waste_muda, motion_waste, standard_WIP]
+            score_feed: RCA
+          - text: "Check whether the burn-in racks have a mechanical issue reducing their capacity"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Equipment issues would produce a consistent utilisation
+              pattern — the gaps here correlate with operator absences,
+              not equipment state. The cause is material supply, not
+              rack capacity.
+            teaches: [gemba, equipment_management, TPM]
+          - text: "Increase burn-in rack capacity so the operator can load more units before leaving for materials"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              More rack capacity means longer intervals between trips
+              but the same number of interruptions. The operator still
+              leaves; the flow is still broken. The fix is separating
+              material handling from production work, not expanding
+              the buffer before each interruption.
+            teaches: [milk_run, flow, waste_muda]
+
+  - id: T3-012
+    name: "The Batch Trap"
+    category: Quality
+    severity: high
+    visibility: obvious
+    zone_id: z6
+    station_id: packaging
+    symptoms:
+      - "Packaging processes units in batches of 40–60 before any quality check is performed"
+      - "When a defect is found at final packaging check, the entire batch must be reworked"
+      - "Rework volume at Packaging is the highest in the plant — 15–20% of all units processed"
+    root_cause: >
+      Packaging builds large batches because the process was designed
+      to minimise setup frequency. Units are processed en masse;
+      quality feedback arrives at the end of the batch. A single-unit
+      defect affects an entire batch because the defect is only visible
+      after 40+ units have been produced with the same fault.
+    effective_countermeasures:
+      - FIFO Lanes
+      - Waste Elimination (TIMWOODS)
+      - Poka-Yoke
+    maturity_prerequisite: null
+    mismatch_note: >
+      Reducing batch size without improving setup time only moves the
+      rework problem closer to the source — the batches are smaller but
+      the setup cost per unit increases.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.10
+      perf_delta: -0.07
+    teaches:
+      - batch_vs_flow
+      - flow
+      - waste_muda
+      - FIFO
+      - poka_yoke
+      - rework_waste
+      - one_piece_flow
+    dialogue:
+      investigation:
+        npc: "Team Leader"
+        prompt: >
+          Packaging rework is out of control — 15–20% of units processed.
+          That can't all be incoming defects. What's happening inside
+          Packaging itself?
+        choices:
+          - text: "Trace the exact point in the packaging process where defects are first detectable vs. when they are actually detected"
+            outcome: CORRECT
+            evidence: >
+              Mapped detection timing for 22 defect events. Defect
+              became detectable at unit 1 of each batch in 18 of 22
+              cases. Average detection point: unit 43 of the batch.
+              In every case, the defect was present in the first unit
+              but not checked until the batch was complete.
+            hint: >
+              The defect isn't random across the batch — it is present
+              from unit one. The rework is caused by batch processing
+              delaying the feedback loop. Checking unit one before
+              proceeding to unit two would reduce each 40-unit rework
+              to a single-unit correction.
+            teaches: [batch_vs_flow, flow, waste_muda, FIFO, one_piece_flow, rework_waste]
+            score_feed: RCA
+          - text: "Investigate whether the incoming units from Final Assembly have quality issues"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Incoming quality matters — but the batch-rework pattern
+              points to a Packaging process issue. If the defect were
+              incoming, it would appear randomly across the batch, not
+              consistently from unit one.
+            teaches: [batch_vs_flow, quality_gate, flow]
+          - text: "Implement a sample-check every 10 units within each batch"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Sampling every 10 units catches the defect earlier —
+              reducing average rework from 40 to 10 units. But the
+              defect is detectable at unit one. The right target is
+              a check at unit one — which effectively means flowing
+              one unit at a time.
+            teaches: [batch_vs_flow, one_piece_flow, flow]
+
+  - id: T3-013
+    name: "The Layout That Doesn't Flow"
+    category: Flow
+    severity: medium
+    visibility: hidden
+    zone_id: z3
+    station_id: battery_assembly
+    symptoms:
+      - "Battery assemblies are transported 18 metres to Propulsion Build after each operation"
+      - "Transport between Battery Assembly and Propulsion Build takes 6–12 minutes per batch"
+      - "Damage during transport is the second most common defect type in Zone 3"
+    root_cause: >
+      Zone 3 layout was designed by process type (all battery operations
+      together, all propulsion operations together) rather than by
+      product flow. Battery Assembly and Propulsion Build are sequentially
+      dependent but physically separated. Transport waste is built into
+      the layout.
+    effective_countermeasures:
+      - Cell Design / One-Piece Flow Cells
+      - Spaghetti Diagrams
+      - Value Stream Mapping
+    maturity_prerequisite: null
+    mismatch_note: >
+      Redesigning the layout without first conducting a flow analysis
+      (VSM + spaghetti diagram) risks replicating the same functional
+      grouping in a different arrangement — changing the floor plan
+      without changing the flow logic.
+    side_effect_ref: null
+    effect_modifiers:
+      perf_delta: -0.08
+      quality_delta: -0.05
+    teaches:
+      - cell_design
+      - one_piece_flow
+      - flow
+      - motion_waste
+      - waste_muda
+      - VSM
+      - spaghetti_diagram
+    dialogue:
+      investigation:
+        npc: "Team Leader"
+        prompt: >
+          Transport damage between Battery Assembly and Propulsion
+          Build is a significant defect source. Is this just a
+          handling issue or is something deeper going on?
+        choices:
+          - text: "Draw a spaghetti diagram of the Zone 3 product flow and measure the transport distance between sequential operations"
+            outcome: CORRECT
+            evidence: >
+              Spaghetti diagram: Battery Assembly → (18 m) → Propulsion
+              Build → (12 m) → Integration 1. Total transport distance
+              per unit within Zone 3: 34 metres. These two steps are
+              sequentially connected in the product build but physically
+              separated by department boundaries from an earlier factory
+              layout design.
+            hint: >
+              The damage is a consequence of the distance — but the
+              distance is a consequence of the layout. Handling training
+              will not reduce 34 metres of transport per unit. Cell design
+              collocates sequential steps to eliminate transport waste
+              rather than manage it.
+            teaches: [cell_design, one_piece_flow, flow, motion_waste, waste_muda, spaghetti_diagram]
+            score_feed: RCA
+          - text: "Improve the transport containers to prevent damage during the 18-metre journey"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Better containers reduce damage — but 18 metres of transport
+              per unit is still 18 metres. You are improving how you
+              perform a waste rather than eliminating it.
+            teaches: [waste_muda, cell_design, flow]
+          - text: "Increase inspection between Battery Assembly and Propulsion Build to catch transport damage"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Inspecting for transport damage verifies that the transport
+              is still causing damage. It does not reduce the distance,
+              the handling frequency, or the defect rate.
+            teaches: [cell_design, waste_muda, root_cause_analysis]
+
+  - id: T3-014
+    name: "The Pareto Nobody Reads"
+    category: Quality
+    severity: medium
+    visibility: subtle
+    zone_id: z2
+    station_id: pcb_prep
+    symptoms:
+      - "A Pareto chart of PCB defect types is maintained and updated weekly"
+      - "The top 3 defect types account for 71% of all escapes — the same three for six months"
+      - "Improvement projects in PCB Prep address 11 different defect types with roughly equal effort"
+    root_cause: >
+      The Pareto chart exists as a reporting tool but has no mechanism
+      connecting it to improvement prioritisation. Improvement project
+      selection is based on team leader judgment and availability, not
+      on defect impact. The data is collected but never actioned.
+    effective_countermeasures:
+      - Pareto Analysis / ABC Analysis
+      - Value Stream Mapping
+    maturity_prerequisite: null
+    mismatch_note: >
+      Applying Pareto on unreliable data produces a chart that prioritises
+      the most-reported defects rather than the most-impactful ones.
+      Data quality must be verified before Pareto drives decisions.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.06
+      perf_delta: -0.05
+    teaches:
+      - pareto
+      - data_driven
+      - prioritization
+      - improvement_ownership
+      - structured_improvement
+      - quality_data
+    dialogue:
+      investigation:
+        npc: "Quality Lead"
+        prompt: >
+          We have excellent Pareto data on PCB defects. But the same
+          top-3 defects have been there for six months. Something is
+          wrong. What's the gap?
+        choices:
+          - text: "Map which defect types each current improvement project addresses and compare that to the Pareto chart"
+            outcome: CORRECT
+            evidence: >
+              Current improvement projects: 7 projects across 11 defect
+              types. Top-3 defects (71% of impact): addressed by 1 project,
+              partially, with no completion date. Bottom-8 defects (29%):
+              addressed by 6 projects with active owners and weekly
+              reviews. The priority of effort is inverted relative to
+              impact.
+            hint: >
+              The Pareto is correct. The problem is that project selection
+              is not connected to the Pareto. Easy-to-address defects
+              attract projects; high-impact defects wait. Data without
+              decision discipline is just a chart.
+            teaches: [pareto, data_driven, prioritization, improvement_ownership, structured_improvement]
+            score_feed: RCA
+          - text: "Improve the accuracy of the Pareto data — check whether defects are being categorised correctly"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Data accuracy is always worth checking — but the Pareto
+              has been stable for six months. If the data were wrong,
+              the pattern would shift. The stable pattern suggests the
+              data is reliable; the issue is that it is not being used.
+            teaches: [pareto, quality_data, data_driven]
+          - text: "Remove the bottom-8 defect types from the Pareto to focus attention on the top-3"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Removing items from the Pareto does not change the
+              improvement project allocation. The fix is connecting
+              project prioritisation to the Pareto — not editing
+              the chart.
+            teaches: [pareto, data_driven, prioritization]
+
+  - id: T3-015
+    name: "One Product, All the Setup"
+    category: Flow
+    severity: medium
+    visibility: hidden
+    zone_id: z5
+    station_id: flight_test
+    symptoms:
+      - "Flight test processes model variants in full batch sequences — all of Model A, then all of Model B"
+      - "Transitions between model variants cause 35–50 minutes of disruption per changeover"
+      - "Model C (a low-volume variant) causes disproportionate disruption when it enters the schedule"
+    root_cause: >
+      No Runner-Repeater-Stranger analysis has been applied to the
+      flight test schedule. All variants are treated equally in planning.
+      Model A (high volume, daily) should be scheduled continuously;
+      Model B (moderate volume) can be scheduled in short runs; Model C
+      (low volume, infrequent) requires dedicated batch scheduling.
+      Treating all three identically maximises total changeover cost.
+    effective_countermeasures:
+      - Runner-Repeater-Stranger Analysis
+      - Heijunka
+      - SMED
+    maturity_prerequisite: null
+    mismatch_note: >
+      Applying Heijunka to a line that processes runners, repeaters,
+      and strangers without differentiating them levels the schedule
+      but forces frequent changeovers to Model C, which produces
+      more disruption than the leveling saves.
+    side_effect_ref: null
+    effect_modifiers:
+      avail_delta: -0.10
+      perf_delta: -0.06
+    teaches:
+      - RRS_analysis
+      - heijunka
+      - leveled_production
+      - SMED
+      - changeover
+      - batch_vs_flow
+      - takt_time
+    dialogue:
+      investigation:
+        npc: "Scheduler"
+        prompt: >
+          Flight test schedule is chaotic — changeovers vary wildly
+          depending on which model we're switching to. Is there a
+          pattern here I'm not seeing?
+        choices:
+          - text: "Classify each model variant by volume and frequency — identify runners, repeaters, and strangers"
+            outcome: CORRECT
+            evidence: >
+              Analysis of last 90 days: Model A — 68% of volume,
+              scheduled every day (Runner). Model B — 24% of volume,
+              scheduled 3x per week (Repeater). Model C — 8% of volume,
+              scheduled irregularly, 2-3x per month (Stranger). Current
+              schedule mixes all three daily, generating Model C
+              changeovers far more frequently than the demand requires.
+            hint: >
+              The three variants need three different scheduling strategies.
+              A runner should flow continuously; a repeater should be
+              scheduled in predictable short runs; a stranger should
+              be batched into dedicated slots. Treating them identically
+              applies the stranger's cost to every day.
+            teaches: [RRS_analysis, heijunka, leveled_production, SMED, changeover, batch_vs_flow]
+            score_feed: RCA
+          - text: "Reduce all changeover times through a SMED programme"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              SMED is needed — but without RRS analysis, you will apply
+              SMED effort equally to all changeovers. Reducing Model C
+              changeover time is less valuable than reducing Model C
+              changeover frequency. Both tools are needed; RRS comes first.
+            teaches: [RRS_analysis, SMED, changeover]
+          - text: "Schedule all model variants by demand volume — highest volume first"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Sorting by volume produces a long Model A run, then Model B,
+              then Model C — which is exactly the large-batch sequencing
+              that creates downstream WIP flooding and starvation.
+              Scheduling by volume maximises batch size, not flow.
+            teaches: [RRS_analysis, heijunka, leveled_production, batch_vs_flow]
