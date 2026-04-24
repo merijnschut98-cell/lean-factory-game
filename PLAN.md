@@ -294,45 +294,45 @@ The player is a newly hired **Continuous Improvement Specialist** at NovaGlide. 
 
 ---
 
-## Phase 7b — Player Experience Ideas (parked for consideration)
+## Phase 7b — Player Experience Enhancements ⬜ NOT STARTED
 
-> **Added 2026-04-24.** Ideas that would meaningfully improve player experience, learning depth, or emotional investment. Not yet scoped into Phase 7 proper — review and promote the highest-value ones when Phase 7 is started. Ordered roughly by expected impact on first-time-player experience.
+> **Scope:** follows Phase 7 polish. Phase 7 takes the game from "raw rectangles" to "looks like a game"; Phase 7b takes it from "looks like a game" to "actually teaches someone who picks it up cold." Where Phase 7 is about surface (sprites, HUD, story), Phase 7b is about depth (onboarding, reflection, progression feedback, emotional investment). Items listed in approximate order of expected impact on first-time-player experience.
 
 ### Onboarding and guidance
 
-- ⬜ **Day 1 tutorial / onboarding flow**: currently a new player is dropped in with no explanation of the control scheme, the mission system, or what the goal is. A short guided Day 1 (Plant Manager greets → walk to first NPC → try your first investigation → resolve your first problem) would dramatically reduce the friction for anyone new to the game. Could be a skippable intro path gated by save-file-is-empty.
-- ⬜ **Context-sensitive help `[F1]`**: overlay listing the keys relevant to the current state. Inspector open → shows E/C/R/U/1/2/3/S/A/H; catalog open → shows ↑/↓/E/Esc; free roaming → shows W/A/S/D/Shift/Esc/K/Tab. Removes the need to memorise a long key list.
+- ⬜ **Day 1 tutorial / onboarding flow**: a new player is currently dropped in with no explanation of the control scheme, the mission system, or what the goal is. A short guided Day 1 (Plant Manager greets → walk to first NPC → try your first investigation → resolve your first problem) dramatically reduces friction for anyone new. Implement as a skippable intro gated on save-file-is-empty.
+- ⬜ **Context-sensitive help `[F1]`**: overlay listing the keys relevant to the current state. Inspector open → E/C/R/U/1/2/3/S/A/H; catalog open → ↑/↓/E/Esc; free roaming → W/A/S/D/Shift/Esc/K/Tab. Removes the memorisation tax. Replaces the generic "keyboard shortcut reference" item in Phase 7 Inspector section.
 - ⬜ **Active mission marker on map/floor**: subtle indicator above the NPC or station relevant to the current mission's active hint — reduces "where do I go next?" dead time.
 
 ### Rewards and progression depth
 
-- ⬜ **Mission log screen `[M]`**: a full-screen overview of every mission (locked / available / active / complete) with source NPC, hints so far, problems-solved count, and completion date. Lets the player see their whole journey at once instead of having to interrogate each NPC to understand state. (Referenced in Progression section but worth emphasising.)
-- ⬜ **Unlockable diagnostic tools**: currently the player has one investigation approach (walk + inspect). Unlocking new tools as tiers progress — e.g. "Spaghetti Diagram tool" at Tier 3, "SPC chart tool" at Tier 4 — gives a sense of growing capability separate from credits. Tools show up in the inspector as extra actions when inspecting a station.
-- ⬜ **NPC reputation / relationship tracking**: per-source-NPC relationship score that rises with well-handled missions and affects subsequent dialogue warmth/openness. Gives weight to player decisions over time and makes NPC interactions feel more than transactional.
+- ⬜ **Mission log screen `[M]`**: a full-screen overview of every mission (locked / available / active / complete) with source NPC, hints so far, problems-solved count, and completion date. Lets the player see their whole journey at once without interrogating each NPC for state. (This is the detailed spec; the one-line Phase 7 "mission progress tracker" is superseded by this.)
+- ⬜ **Unlockable diagnostic tools**: currently the player has one investigation approach (walk + inspect). Unlocking new tools as tiers progress — "Spaghetti Diagram tool" at Tier 3, "SPC chart tool" at Tier 4 — gives a sense of growing capability separate from credits. Tools appear in the inspector as extra actions.
+- ⬜ **NPC reputation / relationship tracking**: per-source-NPC relationship score that rises with well-handled missions and affects subsequent dialogue warmth/openness. Gives weight to player decisions over time and makes NPC interactions feel more than transactional. Pairs with the Phase 7 "NPC character arcs" item.
 - ⬜ **Credit uses beyond specialists**: expand the credit sink — training programs (permanent operator skill bump), equipment upgrades (permanent station perf/availability bump), or rapid Lean Coach consultation (hint on current problem). Gives credits more meaning than just passing a gate.
 
 ### Reflection and takeaways
 
-- ⬜ **A3 report export on resolve**: after a problem is resolved, offer to export a one-page A3 in the game's UI or as a PDF — problem statement, investigation choices made, root cause (from 5 Whys), countermeasure applied, verification result, final score. Mirrors real lean practice and gives the player a concrete takeaway per problem. Powerful for the game's learning-tool framing.
+- ⬜ **A3 report export on resolve**: after a problem is resolved, offer to export a one-page A3 in the game's UI or as a PDF — problem statement, investigation choices made, root cause (from 5 Whys), countermeasure applied, verification result, final score. Mirrors real lean practice and gives the player a concrete takeaway per problem. High leverage for the game's learning-tool framing.
 - ⬜ **Replay-solved-problems sandbox**: optional mode accessed from the pause menu — pick any resolved problem and re-run the investigation with different choices to see how the score changes. Learning reinforcement without affecting the main save file.
 - ⬜ **End-of-week Plant Manager review**: every 5 in-game days, a short dialogue from the Plant Manager summarises what changed (KPI deltas, missions completed, concepts learned) and sets a light narrative tone for the next week. Periodic structured reflection.
 
 ### Humanising the plant
 
 - ⬜ **Named operators with small bios**: give each of the 24 floor operators a name and one-line bio. When an NPC mentions a problem, they can reference specific operators ("Maria at Integration 3 has been flagging this for weeks"). Tiny change, large boost to emotional investment.
-- ⬜ **NPC character portraits**: already in Phase 7 NPC Interactions section, flagged here again because it's low-cost-high-impact for humanising the source NPCs.
 - ⬜ **Plant backstory via in-world artifacts**: occasional emails, memos, or old reports that appear in the inspector to give the plant a history ("Project NovaGlide Q3 2024 retrospective — 9 chronic issues identified, 3 resolved"). Small narrative hooks that reward exploration.
 
 ### Quality of life
 
-- ⬜ **Settings screen** (already in Phase 7): adjust font size, colour palette, default sim speed, key bindings.
-- ⬜ **Circuit-breaker explanation toast**: when WIP ceiling / OEE floor / FTR floor fires, a non-blocking toast explains *why* the sim slowed and what the player can do about it. Currently already listed in Phase 7 General UX — emphasised here because a slowed sim with no explanation is a major UX friction point for new players.
+- ⬜ **Circuit-breaker explanation toast**: when WIP ceiling / OEE floor / FTR floor fires, a non-blocking toast explains *why* the sim slowed and what the player can do. A slowed sim with no explanation is a major UX friction point for new players. Supersedes the terser Phase 7 item.
 - ⬜ **Auto-pause when idle**: if no key pressed for 5+ minutes, pause automatically and show a gentle "paused — welcome back" banner. Respects the player's time and prevents unwanted progression in the background.
 
 ### Content depth
 
-- ⬜ **Seasonal / themed in-game events**: "Quality Week", "Safety Month" — themed arcs that surface a specific category of problems with bonus credits for solving them in the theme. Reuses existing problem catalog with different framing.
+- ⬜ **Seasonal / themed in-game events**: "Quality Week", "Safety Month" — themed arcs that surface a specific category of problems with bonus credits for solving them in the theme. Reuses the existing problem catalog with different framing, no new content authoring required.
 - ⬜ **Customer feedback loop**: occasional customer returns / complaints that trigger 8D-style problems with their own framing. Connects the factory to a downstream customer reality — reinforces that quality problems have consequences outside the plant.
+
+**Deliverable:** A game that a lean-curious stranger can sit down with cold, understand within 5 minutes, and want to spend an evening on. The feature bar is no longer "does it work?" but "does the player keep playing, and do they leave having learned something they can articulate?"
 
 ---
 
