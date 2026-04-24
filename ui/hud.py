@@ -56,6 +56,7 @@ class HUD:
         self._draw_minimap(player)
         self._draw_room_hud(player, facing_obj)
         self._draw_mission_indicator(factory)
+        self._draw_recovery_banner(factory)
         if facing_obj:
             self._draw_interact_prompt(facing_obj)
 
@@ -205,6 +206,26 @@ class HUD:
             surf.blit(more, (PAD, cy))
 
         self.screen.blit(surf, (10, self.sh - card_h - 10))
+
+    # ── Recovery-mode banner (top-centre, below top bar) ─────────────────────
+
+    def _draw_recovery_banner(self, factory) -> None:
+        if not factory or not getattr(factory, "recovery_mode", False):
+            return
+        title = "RECOVERY WEEK"
+        sub   = "Rollbacks are free. Take a breath — solve the obvious ones first."
+        t_surf = self._font_large.render(title, True, C_WARN)
+        s_surf = self._font_body.render(sub, True, C_INK)
+        w = max(t_surf.get_width(), s_surf.get_width()) + 24
+        h = t_surf.get_height() + s_surf.get_height() + 14
+        x = (self.sw - w) // 2
+        y = HUD_H + 8
+        bg = pygame.Surface((w, h), pygame.SRCALPHA)
+        bg.fill((40, 24, 18, 220))
+        pygame.draw.rect(bg, C_WARN, (0, 0, w, h), 1, border_radius=5)
+        self.screen.blit(bg, (x, y))
+        self.screen.blit(t_surf, (x + (w - t_surf.get_width()) // 2, y + 4))
+        self.screen.blit(s_surf, (x + (w - s_surf.get_width()) // 2, y + 4 + t_surf.get_height() + 2))
 
     # ── Interaction prompt (bottom-centre) ────────────────────────────────────
 

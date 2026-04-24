@@ -25,6 +25,9 @@ class Player:
         self.y = spawn_tile[1] * TILE_SIZE + TILE_SIZE // 2
         self.dir = "left"       # "up" / "down" / "left" / "right"
         self.running = False
+        # Distance walked since spawn, in pixels — drives the walk-cycle frame.
+        self.step_phase: float = 0.0
+        self.moving_this_frame: bool = False
 
         # Interaction detection
         self.facing_object: Optional[dict] = None   # world_data OBJECTS entry
@@ -52,6 +55,7 @@ class Player:
             self.dir = "down" if dy > 0 else "up"
 
         # Try full move, then axis-by-axis for wall sliding
+        prev_x, prev_y = self.x, self.y
         if not self._is_blocked(self.x + dx, self.y + dy):
             self.x += dx
             self.y += dy
@@ -59,6 +63,9 @@ class Player:
             self.x += dx
         elif not self._is_blocked(self.x, self.y + dy):
             self.y += dy
+        travelled = math.hypot(self.x - prev_x, self.y - prev_y)
+        self.step_phase += travelled
+        self.moving_this_frame = travelled > 0.1
 
     def _is_blocked(self, px: float, py: float) -> bool:
         """Test foot-circle sample points against the solid grid."""
@@ -98,7 +105,13 @@ class Player:
         """
         Find the nearest interactable object adjacent to the player.
         Checks the facing tile and its 4 neighbours.
+        Also the once-per-frame latch for `moving_this_frame`: move() sets it
+        True when velocity lands; the next detect_facing resets it so idle
+        frames correctly report "not walking".
         """
+        was_moving = self.moving_this_frame
+        self.moving_this_frame = False  # cleared each frame; move() re-sets if travelling
+
         fx, fy = self.facing_tile
         check_tiles = [(fx, fy), (fx-1, fy), (fx+1, fy), (fx, fy-1), (fx, fy+1)]
 

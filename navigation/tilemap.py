@@ -110,11 +110,16 @@ class Tilemap:
                 if y == 54:
                     self.solid[y][30] = 0
 
-        # Doors in factory south wall to sub-wings
-        self._door(14, 30)
-        self._door(48, 30)
-        if 0 <= 31 < MAP_H: self.tiles[31][14] = T["maintenance"]
-        if 0 <= 31 < MAP_H: self.tiles[31][48] = T["locker"]
+        # Doors in factory south wall to sub-wings.
+        # Columns are chosen to sit between test/packaging station footprints
+        # at rows 28-29 so the player can actually walk up to the door.
+        # (14, 30) / (48, 30) were blocked by Burn-in and Packaging respectively.
+        MNT_DOOR_X = 11
+        LKR_DOOR_X = 40
+        self._door(MNT_DOOR_X, 30)
+        self._door(LKR_DOOR_X, 30)
+        if 0 <= 31 < MAP_H: self.tiles[31][MNT_DOOR_X] = T["maintenance"]
+        if 0 <= 31 < MAP_H: self.tiles[31][LKR_DOOR_X] = T["locker"]
 
         # Locker → corridor door
         self._door(69, 54)

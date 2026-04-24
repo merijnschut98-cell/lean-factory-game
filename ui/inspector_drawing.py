@@ -37,6 +37,7 @@ NPC_LINES = {
     "HR Manager":           "We have 24 operators. 1 of them carries the whole line.",
     "Maintenance Lead":     "Reactive maintenance is a tax. Nobody reads the invoice.",
     "Plant Manager (you)":  "Your plant. Your call. Walk the floor first.",
+    "Lean Coach":           "Show me the problem. Not the report — the problem.",
 }
 
 # ── Content dicts ─────────────────────────────────────────────────────────────
@@ -249,6 +250,16 @@ _NPC_AWARENESS: dict = {
     ),
 }
 
+_ZONE_FRIENDLY_NAMES = {
+    "z1": "Receiving",
+    "z2": "Component Prep",
+    "z3": "Subassembly",
+    "z4": "Final Assembly",
+    "z5": "Testing",
+    "z6": "Packaging",
+}
+
+
 _RECOVERY_ADVICE = {
     1: (
         "That countermeasure didn't land quite right — but that's information. "
@@ -351,6 +362,7 @@ class InspectorDrawMixin:
             problems = [
                 p for p in factory.active_problems.values()
                 if p.station_id == obj.get("station_id")
+                and p.state != ProblemState.RESOLVED
             ]
             if problems:
                 y += 8
@@ -358,8 +370,24 @@ class InspectorDrawMixin:
                 y += 8
                 surf.blit(self._font_mono.render("ACTIVE PROBLEMS", True, (220, 80, 80)), (18, y))
                 y += 16
+                active_q_prob = next(
+                    (p for p in problems if self._problem_has_pending_question(p, factory)),
+                    None,
+                )
                 for prob in problems:
-                    y = self._draw_problem_card(surf, y, prob)
+                    suppress_fork = active_q_prob is not None and prob is not active_q_prob
+                    y = self._draw_problem_card(surf, y, prob, suppress_fork=suppress_fork)
+            else:
+                hint = self._floor_hint_for_mission(factory, obj.get("station_id"))
+                if hint:
+                    y += 8
+                    pygame.draw.line(surf, (40, 38, 30), (18, y), (PANEL_W - 18, y))
+                    y += 8
+                    surf.blit(self._font_mono.render("FLOOR NOTE", True, C_GOLD), (18, y))
+                    y += 16
+                    for ln in wrap_text(hint, self._font_body, PANEL_W - 36)[:4]:
+                        surf.blit(self._font_body.render(ln, True, C_PANEL_INK), (18, y))
+                        y += 16
 
         if st and st.ct_history:
             y += 8
@@ -384,7 +412,42 @@ class InspectorDrawMixin:
 
         return y
 
-    def _draw_problem_card(self, surf: pygame.Surface, y: int, prob) -> int:
+    def _floor_hint_for_mission(self, factory, skip_station_id: str) -> str:
+        for mission in factory.missions.values():
+            if not mission.active or mission.completed:
+                continue
+            for pid in mission.problem_ids:
+                p = factory.problems.get(pid)
+                if (p is None or p.state == ProblemState.RESOLVED
+                        or p.state == ProblemState.DORMANT
+                        or p.station_id == skip_station_id):
+                    continue
+                zone_name = _ZONE_FRIENDLY_NAMES.get(p.zone_id, p.zone_id)
+                return (
+                    f"Nothing obviously wrong here. Someone on the floor mentions "
+                    f"the real issues have been over in {zone_name} lately — "
+                    f"worth walking through that area."
+                )
+        return ""
+
+    def _problem_has_pending_question(self, prob, factory) -> bool:
+        if not prob.dialogue or not prob.dialogue.investigation:
+            return False
+        if (self._revealed_choice
+                and self._revealed_choice.get("problem_id") == prob.id):
+            return True
+        session = factory.investigation_sessions.get(prob.id)
+        if session is None or not session.fork_complete:
+            return True
+        five_whys = prob.dialogue.five_whys
+        if five_whys and not session.five_whys_complete:
+            return True
+        cm_rec = factory.active_countermeasures.get(prob.applied_countermeasure or "")
+        if self._should_show_verification(prob, session, cm_rec, factory):
+            return True
+        return False
+
+    def _draw_problem_card(self, surf: pygame.Surface, y: int, prob, suppress_fork: bool = False) -> int:
         sev_colors = {
             "critical": (220, 50, 50),
             "high":     (220, 120, 50),
@@ -437,7 +500,15 @@ class InspectorDrawMixin:
                     y += 15
 
         if self._factory and prob.dialogue and prob.dialogue.investigation:
-            y = self._draw_dialogue_fork(surf, y, prob)
+            if suppress_fork and self._problem_has_pending_question(prob, self._factory):
+                pygame.draw.line(surf, (40, 38, 30), (18, y), (PANEL_W - 18, y))
+                y += 8
+                surf.blit(self._font_mono.render(
+                    "Queued — finish the current question first",
+                    True, C_DIM), (18, y))
+                y += 16
+            else:
+                y = self._draw_dialogue_fork(surf, y, prob)
 
         y += 6
         return y

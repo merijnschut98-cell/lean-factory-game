@@ -18,6 +18,43 @@ logging.basicConfig(
 log = logging.getLogger("lean_factory")
 
 
+def _build_shortlist(problem, cms: list) -> list:
+    """Pick up to 3 CMs: one correct, plus two plausible-but-incorrect distractors.
+
+    Correct: first CM whose name matches problem.effective_countermeasures.
+    Distractor 1: same-category CM outside the effective list (looks similar).
+    Distractor 2: different-category CM (clearly the wrong type of tool).
+    Distractors fall through tier preference if category matches are thin.
+    """
+    eff_names = set(problem.effective_countermeasures)
+    playable  = [cm for cm in cms if not cm.is_diagnostic]
+
+    correct = next((cm for cm in playable if cm.name in eff_names), None)
+    if not correct:
+        return []
+
+    shortlist = [correct]
+    same_cat = next(
+        (cm for cm in playable
+         if cm.category == correct.category
+         and cm.name not in eff_names
+         and cm is not correct),
+        None,
+    )
+    if same_cat:
+        shortlist.append(same_cat)
+    diff_cat = next(
+        (cm for cm in playable
+         if cm.category != correct.category
+         and cm.name not in eff_names
+         and cm not in shortlist),
+        None,
+    )
+    if diff_cat:
+        shortlist.append(diff_cat)
+    return shortlist
+
+
 def _run_headless(days: int) -> None:
     from simulation.factory import Factory
     from persistence.load import has_save, load
@@ -64,6 +101,7 @@ def _run_game() -> None:
     from ui.warning_dialog import WarningDialog
     from ui.score_panel import ScorePanel
     from ui.codex_panel import CodexPanel
+    from ui.help_panel import HelpPanel
     from ui.quiz_panel import QuizPanel
     from ui.menu import start_screen, pause_menu
     from maturity.mismatch import mismatch_warning
@@ -96,6 +134,7 @@ def _run_game() -> None:
     warning_dlg   = WarningDialog(screen)
     score_panel   = ScorePanel(screen)
     codex_panel   = CodexPanel(screen)
+    help_panel    = HelpPanel(screen)
     quiz_panel    = QuizPanel(screen)
 
     # Tracks which problem_id is pending CM application after warning
@@ -111,6 +150,14 @@ def _run_game() -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
+            # F1 toggles the help overlay from anywhere; while open it absorbs input.
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_F1:
+                help_panel.toggle()
+                continue
+            if help_panel.is_open:
+                help_panel.handle_event(event)
+                continue
 
             # Codex scroll events
             if codex_panel.is_open:
@@ -236,7 +283,11 @@ def _run_game() -> None:
                             if prob:
                                 station_type = factory.stations[prob.station_id].station_type
                                 cms = factory.cm_catalog.applicable_to_station(station_type)
-                                catalog_panel.open(action["problem_id"], cms)
+                                shortlist = _build_shortlist(prob, cms)
+                                npc = prob.dialogue.investigation.npc if (
+                                    prob.dialogue and prob.dialogue.investigation) else "Team Leader"
+                                catalog_panel.open(action["problem_id"], cms,
+                                                   shortlist=shortlist, npc_name=npc)
 
                     elif event.key == pygame.K_r:
                         inspector.handle_action_key(event.key)
@@ -347,7 +398,7 @@ def _run_game() -> None:
         # Inspector included so arrow keys scroll the panel without also moving the player.
         if (not catalog_panel.is_open and not warning_dlg.is_open
                 and not score_panel.is_open and not inspector.is_open
-                and not quiz_panel.is_open):
+                and not quiz_panel.is_open and not help_panel.is_open):
             keys = pygame.key.get_pressed()
             dx, dy = 0.0, 0.0
             if keys[pygame.K_w] or keys[pygame.K_UP]:    dy -= 1
@@ -377,6 +428,7 @@ def _run_game() -> None:
         score_panel.draw()
         quiz_panel.draw()
         codex_panel.draw(factory)
+        help_panel.draw()
 
         pygame.display.flip()
 

@@ -5,9 +5,11 @@ Update this file every time a task is completed or added.
 
 ---
 
-## Current Status: Phase 5 Complete ✅ → Phase 6 Content
+## Current Status: Phase 6 Content Complete ✅ → Phase 7 Polish in progress
 
-Next: Tier 2 problem catalog (15–20 problems with dialogue forks) → Tier 3 → Tier 4
+All four problem tiers are authored (T1+T2+T3+T4 = ~67 problems) with dialogue forks. Codex covers 197 concepts. Specialist system, multi-tier missions, tier progression gating all done and save/load verified. Current work is Phase 7 UI polish: CM implementation quiz content (5/10 Tier 1 CMs authored, 5 remaining), arrow-key/investigation-gate/score-explanation fixes landed. Tracked bug on `score_rca` name-vs-id fixed session 2026-04-24.
+
+Next: decide between continuing Phase 7 UI polish (day summary popup, non-blocking toasts, shortcut reference overlay, station sprites) vs starting Phase 7b onboarding items (Day 1 tutorial, context-sensitive F1 help, mission log screen), now that the Tier 1 CM quiz content is complete.
 
 ---
 
@@ -122,7 +124,7 @@ NPC forks are **deterministic, YAML-driven dialogue trees** — separate from th
 - ✅ **`teaches:` tags on all 79 countermeasures**: `_CM_TEACHES_MAP` in `countermeasure.py`; `factory.discover(cm.teaches)` called in `apply_countermeasure`
 - ✅ **5 Whys guided flow**: `five_whys:` YAML authored for T1-003/006/008/012 (3 steps each, 3 choices per step); session tracking + inspector rendering; follows investigation fork completion
 - ⬜ **Gemba walk decision tree**: player chooses who to talk to, what to time, what to measure — each NPC gives a different partial perspective; full picture requires multiple stops
-- ⬜ **CM selection fork**: when catalog opens from a specific NPC, NPC proposes shortlist (correct / off-tier / unrelated) with post-selection explanation
+- ✅ **CM selection fork** (session 2026-04-24): when the catalog opens, the source NPC (from the problem's investigation fork) proposes a 3-CM shortlist at the top of the panel — correct + same-category distractor + different-category distractor. Selectable via `[1][2][3]` or the usual arrow-scroll. `_build_shortlist` in `main.py`; rendered via `CatalogPanel._draw_shortlist`.
 - ⬜ **DMAIC workflow scaffold**: Define → Measure → Analyze → Improve → Control as multi-stage A3 form; unlocks gradually
 
 ### Remaining — mission system
@@ -131,15 +133,16 @@ NPC forks are **deterministic, YAML-driven dialogue trees** — separate from th
 - ✅ **Mission briefing dialogue**: when a mission activates via NPC interaction, the NPC delivers the narrative briefing as a short dialogue exchange (framed as invitation, never a command)
 - ✅ **Mission ordering / availability cap**: `visible_after:` prerequisite field on `Mission` gates each mission behind a predecessor. Chain: M-T1-001 (auto) → M-T1-002 + M-T1-003 (need M-T1-001 done) → M-T1-004 (needs M-T1-002) → M-T1-005 (needs M-T1-003). Only M-T1-001 surfaces on day 1; subsequent missions unlock progressively.
 - ✅ **Mission completion notification**: source NPC panel shows "MISSION COMPLETE" + per-mission debrief text when mission is completed (`_MISSION_DEBRIEFS` dict in inspector)
-- ⬜ **Lean Coach NPC**: add a Black Belt / Lean Coach character to the office wing; delivers kaizen and DMAIC missions with structured methodical framing; distinct from operational floor NPCs
+- 🔧 **Lean Coach NPC** (session 2026-04-24, character added): Alex the Lean Coach now stands at tile (95, 8) in the Operations room with their own desk (OPS-COACH). Signature flavor line: "Show me the problem. Not the report — the problem." Sprite + role-look mapping done. **Still to author**: dedicated kaizen/DMAIC missions with Lean Coach as source NPC (Phase 6 content authoring).
 - ✅ **NPC awareness hints**: `_NPC_AWARENESS` dict in inspector; 12 (role, mission_id) entries; ambient line replaces static NPC quote when a nearby mission is active
+- ✅ **[BUG] Progression stalls after the first 3 problems solved** (fixed 2026-04-24): root cause was a "good play soft-lock" — M-T1-002 triggers on `ftr <= 0.88`, M-T1-003 on `wip >= 65`; a player who applied good CMs pushed FTR above 0.88 and WIP below 65, so the KPI triggers never fired after M-T1-001 completed. Fix (option a from the previous plan): added `trigger_ever_met: bool` sticky flag to `Mission` (`problems/mission.py`) plus save/restore, reworked `_check_mission_triggers` in `simulation/mission_engine.py` to always call `_mission_trigger_met` (even before the `visible_after` prereq completes) so the sticky flag tracks KPI crossings across the full session. Also wired `_check_mission_triggers()` + `evaluate_visibility()` into `resolve_problem` so downstream missions activate immediately on resolve instead of only at day-end. Verified with a scripted scenario: good-KPI factory state + resolve first problem → M-T1-002 and M-T1-003 both activate, new problem T1-003 surfaces.
 
 ### Remaining — safety nets
 
 - ✅ **FTR floor circuit breaker**: FTR < 60% logs `ftr_floor` event and slows simulation to 1× (consistent with WIP ceiling pattern)
 - ✅ **Side-effect suppression**: `_active_problem_cap_reached` guard in `apply_countermeasure` — harmful side-effects suppressed when at cap
 - ✅ **Daily auto-snapshot**: currently auto-saves every 5 real minutes — change to trigger on in-game day boundary so player can always restart from yesterday's state
-- ⬜ **No hard fail state for bankruptcy**: zero credits triggers "back-to-basics" week — simpler problems, free coach consults, narrative framing as learning reset
+- ✅ **No hard fail state for bankruptcy** (session 2026-04-24): `Factory.recovery_mode` flag flips True when credits hit zero; exits when credits climb back past 150 OR 7 in-game days elapse. During recovery, rollbacks are free (no 25% penalty) so the player can re-experiment freely. HUD shows a warning-styled "RECOVERY WEEK" banner under the top bar. Entry/exit logged as circuit-breaker events for narrative framing. Save/load persists the state. 5 regression tests in `tests/test_factory_cm_flow.py`.
 
 ### Remaining — mistake tolerance
 
@@ -215,6 +218,8 @@ Content design happens *after* Phase 5 so every new problem uses the settled dia
 
 > **Graphics priority (added 2026-04-24):** The current visuals — solid-colour rectangles for player and stations, flat HUD panels, no sprite art — need a full overhaul before the game can be shown to anyone outside the project. Phase 7 must replace all raw rectangles with illustrated sprites, give each zone a distinct visual identity, and bring inspector panels and HUD up to a modern game standard. This is non-negotiable for the Phase 7 deliverable.
 
+> **Aesthetic target (added 2026-04-24):** The reference is Pokémon DS — top-down, small characters with visible arms and legs, tilemap that reads as a real place. For Lean Factory specifically that means: player and NPC sprites look human (head, body, arms, legs, hi-vis vest for operators), production lines animate hoverboard parts actually moving along them (deck → coils → board → battery → test → box), and the HUD/inspector panels feel like a game not a spreadsheet. Implementation approach: programmatic sprites drawn from pygame primitives (layered shapes, hand-chosen palette) since no pixel-art pipeline exists. Upgrade path later: swap primitives for sprite sheets if Merijn commissions or sources art.
+
 ### Narrative and Story
 
 The player is a newly hired **Continuous Improvement Specialist** at NovaGlide. Day 1 they walk into a plant that produces hoverboards but struggles with quality, flow, and hidden waste. Over the course of Tiers 1–4 they transform it into a benchmark operation. The story provides motivation: people to care about, a plant worth saving, and a sense of pride when it works.
@@ -235,9 +240,12 @@ The player is a newly hired **Continuous Improvement Specialist** at NovaGlide. 
 
 ### Navigation and Floor
 
-- ⬜ Animated player sprite: 4-directional walk cycle (replace solid rectangle)
-- ⬜ Station sprites with more visual detail: machine bodies, screens, conveyor belts per zone type
-- ⬜ Animated flow lines between stations: moving dots showing material in transit
+- ✅ **[BUG] Bottom-left of layout is unreachable** (fixed 2026-04-24): both south-wall doors from the factory floor to the south wing were placed at cols 14 and 48, which sit directly underneath the Burn-in rig (cols 13–17 rows 28–29) and the Packaging line (cols 45–54 rows 28–29). Player could never approach either door — no path existed. Fix in `navigation/tilemap.py`: moved maintenance door to col 11 and locker door to col 40, both in clear channels between testing stations. BFS reachability check from spawn now reaches all five maintenance objects (Tool Crib, Maintenance Lead Desk, Repair Bay, Spare Parts Shelves, TPM Board) and all locker tiles.
+- ✅ **Kenney CC0 sprite packs integrated** (session 2026-04-24): four packs unzipped to `assets/kenney/` — RPG Urban (characters + urban tiles), Tiny Town (village tiles), 1-Bit (monochrome misc), Industrial Expansion (conveyors, chains, pipes, hazard signs). `rendering/sprites.py` loader extracts tiles from each pack's packed tilemap PNG and caches scaled surfaces at TILE_SIZE (24).
+- ✅ **Animated player sprite** (session 2026-04-24): 2-frame walk cycle driven by `Player.step_phase`; sprite sourced from RPG Urban character row 4. Side-view sprite is mirrored for left-facing. Falls back to a single frame when the player is idle. The earlier programmatic `rendering/chibi.py` kept as a fallback.
+- ✅ **Animated NPC sprites** (session 2026-04-24): each role is mapped to a distinct RPG Urban character row via `_ROLE_CHAR_ROW` — Team Leaders, Scheduler, Quality Lead, IT Engineer, HR Manager, Maintenance Lead, Controller, Plant Manager. Rendered facing the direction specified on the NPC object.
+- 🔧 **Station sprites with more visual detail** (partial 2026-04-24): each station now shows a centered industrial-expansion tile (conveyor belts for packaging + integration lines, gears for machining, control boxes for assembly cells, chains for dock/shelves, alarm for burn-in, warning sign for flight test). The underlying station body is still a solid rounded rectangle — a full zone-specific station sprite overhaul is future work.
+- ⬜ **Animated hoverboard-parts on production lines**: render material flow along Final Assembly and Packaging lines — small deck/coil/battery/board icons that move stage-to-stage at the live simulation rate. Needs a flow-engine hook to know which station is producing.
 - ⬜ WIP pile visual: small stacked-unit icons near a station when `wip_in` is high
 - ⬜ Andon light on station sprite when the Andon countermeasure is active (blinking amber/red)
 - ⬜ Problem indicator animation: pulsing ! badge instead of static (draws the eye)
@@ -256,9 +264,14 @@ The player is a newly hired **Continuous Improvement Specialist** at NovaGlide. 
 - ✅ **Arrow key conflict fix** (session 2026-04-24): movement guard in `main.py` now includes `inspector.is_open`; arrow keys scroll the panel cleanly, no simultaneous player movement.
 - ✅ **Enforce investigation-before-countermeasure sequence** (session 2026-04-24): `_investigation_required()` helper in `ui/inspector_drawing.py` gates `[C]` — the hint reads "Investigate first — pick [1][2][3] below" until the fork is complete. Same gate in `handle_action_key` prevents pressing [C] early. Problems without a dialogue fork bypass the gate.
 - ✅ **Score explanation on resolve** (session 2026-04-24): `scoring.metrics.explain_scores()` returns one short reason per metric (DQQ/EI/RCA/CMP/LM/CIM) matching the achieved tier. `resolve_problem()` returns `explanations` in the result dict; `ScorePanel.show()` renders the reason under each score bar.
-- ⬜ **[BUG] `score_rca` ID-vs-name mismatch**: `score_rca(applied_cm_id, problem)` compares `applied_cm_id` (e.g. "CM-T1-001") against `problem.effective_countermeasures` which holds CM *names* (e.g. "5S System"). The direct `in` check always fails and the fuzzy word match rarely succeeds. Result: RCA almost always scores 1 even when the correct CM is applied. Fix: look up CM name via `cm_catalog.get(cm_id).name` in `resolve_problem`, pass the name to `score_rca`. Uncovered while testing the implementation quiz.
+- ✅ **One question at a time per station** (session 2026-04-24): when a station has multiple active problems, the inspector used to render every problem's dialogue fork stacked vertically — ambiguous which `[1][2][3]` a keypress answered. `InspectorDrawMixin._problem_has_pending_question()` now identifies the single problem owning the active question (investigation fork, 5 Whys, verification, or revealed-choice reveal), and only that one renders its fork. Other problems with pending questions show "Queued — finish the current question first" instead. Input routing already picked first-match via `break`, so the draw now matches the input behaviour.
+- ✅ **[BUG] `score_rca` / `score_cmp` ID-vs-name mismatch** (session 2026-04-24): both functions compared the CM id against `problem.effective_countermeasures` (a list of CM *names*), so RCA and CMP almost always scored 1 even when the correct CM was applied. Fixed in `scoring/metrics.py` (parameter renamed `applied_cm_name`) and `simulation/countermeasure_engine.py` (`resolve_problem` now resolves `cm.name` via the catalog and passes it through). Regression test added in `tests/test_factory_cm_flow.py` — applying 5S System (CM-T1-001) to a problem whose `effective_countermeasures` contains "5S System" now scores RCA=5 and CMP=5. 212 tests passing.
+- ✅ **[BUG] Every fork / quiz answer always in position 1** (session 2026-04-24): when the user reported "the answer is always 1" persisting, root cause turned out to be entirely separate from the scoring bug — every one of 67 investigation forks, 34 5-Whys steps, and 40 implementation-quiz questions authored CORRECT as choice 1. Players learned "press 1" within minutes. Fix: `random.shuffle` added at parse time in `problems/dialogue.py` (`_parse_investigation`, `_parse_five_whys_step`, `build_verification_fork`) and `problems/countermeasure.py` (`_parse_quiz`). Choice recording is by content (`outcome`/`text`/`teaches`), not index, so shuffling is safe across save/load. Existing positional tests in `tests/test_dialogue.py` and `tests/test_phase5_pdca.py` updated to assert by outcome instead of position.
+- ⬜ **[Known] DQQ=5 unreachable in Phase 6 gameplay**: `score_dqq` requires at least one `diagnostic_*` metric in the inspection log, but no runtime code logs one. Deliberate: reserved for Phase 7b "Unlockable diagnostic tools" (Spaghetti Diagram, SPC chart). Until then, DQQ tops out at 3. Tracked here so it is not mistaken for a bug.
+- ⬜ **[Known] EI=5 only reachable for flow/people CMs**: `score_ei` metric_match requires "quality" observed for quality/maintenance CMs, but the inspection log only ever records `metric="oee"`. Flow CMs pass because "oee" satisfies the flow branch. Consider later: log multiple metrics per inspection (oee + quality + wip) or relax metric_match to treat "oee" as universal evidence.
+- ✅ **Station inspection gives contextual hint** (done 2026-04-24, option a): inspector now shows a "FLOOR NOTE" section on stations without an active problem, pointing to the zone where the nearest active-mission problem lives. `_floor_hint_for_mission` helper in `ui/inspector_drawing.py` walks active missions' `problem_ids`, skips resolved/dormant problems and the current station, and produces a one-line hint using friendly zone names (`_ZONE_FRIENDLY_NAMES`). Exploration now provides learning feedback instead of silence.
 - ⬜ Non-blocking toast notifications: CM decay warning, new problem visible, credits earned — timed banner, never freeze gameplay
-- ⬜ Keyboard shortcut reference: `[?]` or `[F1]` shows overlay listing all controls (currently undocumented: E=inspect, C=apply CM, R=resolve, U=rollback, K=codex, Tab=speed, P=pause, Shift=run)
+- ✅ **Keyboard shortcut reference** (session 2026-04-24): `[F1]` toggles a non-blocking overlay listing every control grouped by context — Movement, Time, Panels, Inspector, Catalog, Dialogs. `ui/help_panel.py`; wired at the top of the event loop in `main.py` so F1 is available globally and the overlay absorbs all non-F1/Esc keys while open. Movement and other panels are gated on `not help_panel.is_open`.
 - ⬜ Problem count HUD badge: active problem count visible at all times (e.g. "⚠ 3 active")
 - ⬜ Maturity/phase progress bar in HUD: zone scores visualised at a glance
 
@@ -267,7 +280,7 @@ The player is a newly hired **Continuous Improvement Specialist** at NovaGlide. 
 > **Design note (added 2026-04-24):** Applying a CM should be a learning moment, not just a button press. The player should understand *how* to implement the chosen countermeasure, not just *that* they applied it. This closes the gap between "I clicked 5S" and "I understand what 5S implementation involves."
 
 - ✅ **CM implementation quiz infrastructure** (session 2026-04-24): `QuizStep` + `QuizChoice` dataclasses in `problems/countermeasure.py`; loader parses `implementation_quiz:` YAML; `ui/quiz_panel.py` renders 2-question fork with CORRECT/PLAUSIBLE/WRONG choices and feedback. Wired catalog → quiz → warning → apply in `main.py`. Correct answers boost CIM at resolve time (capped at 5) and unlock teaches tags via `factory.discover()`; `session.quiz_correct_count` persists across save/load. 13 new tests.
-- 🔧 **CM implementation quiz content**: 5 Tier 1 CMs authored (5S, Standard Work, Quality Gates, Visual Labels, Tool Locations) — 10 quiz questions total. Still to author: CM-T1-003/005/008/009/010 (5 more Tier 1), plus Tier 2/3/4 CMs as they are prioritised by playtesting.
+- ✅ **CM implementation quiz content — Tier 1 complete** (session 2026-04-24): all 10 Tier 1 CMs now have 2-question quizzes. New this session: CM-T1-003 Safety Routines (HR Manager), CM-T1-005 Workplace Organization (Team Leader), CM-T1-008 Cleanliness Standards (Team Leader), CM-T1-009 Basic Documentation Control (IT Engineer), CM-T1-010 Skill Matrix (HR Manager). Tier 2/3/4 CM quizzes still to author as prioritised by playtesting.
 - ⬜ **Quiz skip penalty**: currently [Esc] skips the remaining questions with no CIM bonus (correct behaviour). Consider adding a small credit cost on skip to discourage power-skipping once playtesting shows it's actually abused.
 
 ### NPC Interactions
@@ -354,6 +367,19 @@ AI is introduced last so the generator has maximum reference material: all four 
 - ⬜ Graceful offline fallback: "Coach unavailable" if API call fails
 
 **Deliverable:** Game with full AI coaching. Coach on demand. New problems generated from factory state when hand-designed catalog is exhausted. Session cost visible in HUD.
+
+---
+
+## Phase 9 — World Expansion (future, parked 2026-04-24)
+
+> **User goal:** a bigger map and a more realistic factory layout. The current 100×60 tile map reads as a diagram — zones are colour blocks with a handful of stations each. A more believable plant would have: intermediate buffer areas between zones, a proper office wing with more rooms, a real loading bay with multiple trucks, a cafeteria, a training room, maybe a quality lab wing, and corridors that feel walked rather than rectangular. Scope this after Phases 7/7b ship because it touches the tilemap, camera, NPC routing, and every renderer — a big change that should land on a stable content/UI base.
+
+- ⬜ **Enlarge map** (target ~200×120 tiles): keep current zones but add intermediate buffer/flow areas, a larger outdoor yard with 2–3 truck bays, an extended office wing, a quality lab, a training room, a cafeteria. Revisit `MAP_W`/`MAP_H` in `navigation/tilemap.py` and `config/world_data.py`.
+- ⬜ **Realistic factory detail**: populate each zone with operator walk paths, material carts between stations, wall-mounted visual boards, break-room furniture, safety signage, fire-extinguisher points. Use Kenney Industrial + Urban tiles already in `assets/kenney/`.
+- ⬜ **Routing/pathfinding upgrade**: operators (24 total) could roam between stations on realistic paths rather than staying pinned — requires A* and station-to-station routes.
+- ⬜ **Zone-specific floor textures**: instead of the current flat colour blocks, tile each zone with appropriate Kenney floor tiles (concrete for prep, epoxy for assembly, metal grid for testing).
+
+**Deliverable:** a plant that looks lived-in from the first screen.
 
 ---
 

@@ -45,6 +45,10 @@ class Mission:
     completed: bool = False
     hint_index: int = 0
     problems_resolved: List[str] = field(default_factory=list)
+    # Sticky: once a KPI trigger is ever crossed, the mission stays eligible.
+    # Without this, applying a good countermeasure that lifts FTR above its
+    # threshold permanently locks the downstream mission out of activation.
+    trigger_ever_met: bool = False
 
     def record_resolved(self, problem_id: str) -> None:
         """Record that a problem in this mission was resolved."""
@@ -75,6 +79,7 @@ class Mission:
             "completed":         self.completed,
             "hint_index":        self.hint_index,
             "problems_resolved": list(self.problems_resolved),
+            "trigger_ever_met":  self.trigger_ever_met,
         }
 
     def restore_runtime_state(self, d: dict) -> None:
@@ -82,6 +87,7 @@ class Mission:
         self.completed         = d.get("completed", False)
         self.hint_index        = d.get("hint_index", 0)
         self.problems_resolved = d.get("problems_resolved", [])
+        self.trigger_ever_met  = d.get("trigger_ever_met", False)
 
 
 # ── YAML loading ──────────────────────────────────────────────────────────────

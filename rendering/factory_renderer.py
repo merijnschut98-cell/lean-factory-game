@@ -23,6 +23,8 @@ from config.world_data import TILE_COLORS, OBJECTS, NPCS, TILE
 from navigation.camera import Camera, TILE_SIZE, MAP_W, MAP_H
 from navigation.tilemap import Tilemap
 from navigation.player import Player
+from rendering.chibi import draw_chibi
+from rendering import sprites
 
 # ── Palette ───────────────────────────────────────────────────────────────────
 COLOR_INK      = (28,  27,  23)
@@ -31,6 +33,28 @@ COLOR_ORANGE   = (255, 138, 31)
 COLOR_RUNNING  = (111, 211, 111)
 COLOR_WAITING  = (255, 184, 77)
 COLOR_BLOCKED  = (232, 96,  74)
+
+# Role → (shirt colour, hat colour or None, prop name or None)
+_ROLE_LOOK = {
+    "Team Leader":     ((74, 144, 216), (232, 190, 60), "clipboard"),
+    "Scheduler":       ((216, 161, 74), None,           "paper"),
+    "Quality Lead":    ((106, 178, 106), None,          "scope"),
+    "IT Engineer":     ((154, 106, 219), None,          "tablet"),
+    "Controller":      ((74, 179, 166), None,           "paper"),
+    "HR Manager":      ((216, 140, 170), None,          "binder"),
+    "Maintenance Lead":((160, 160, 160), (232, 190, 60), "wrench"),
+    "Plant Manager (you)": ((90, 90, 110), None,        "clipboard"),
+    "Lean Coach":      ((200, 100, 100), None,          "clipboard"),
+}
+
+
+def _role_look(role: str, fallback_color: tuple | None = None):
+    """Look up (shirt, hat, prop) for an NPC role, with a sensible default."""
+    if role in _ROLE_LOOK:
+        return _ROLE_LOOK[role]
+    shirt = fallback_color or (180, 140, 100)
+    return (shirt, None, None)
+
 
 # Machine kind → fill color (body of the machine sprite)
 KIND_COLORS = {
@@ -171,6 +195,12 @@ class FactoryRenderer:
         rect = pygame.Rect(px + 2, py + 2, pw - 4, ph - 4)
         pygame.draw.rect(self.screen, body_color, rect, border_radius=3)
 
+        decor = sprites.station_decor(obj.get("kind", ""))
+        if decor is not None:
+            dx = px + (pw - decor.get_width()) // 2
+            dy = py + (ph - decor.get_height()) // 2
+            self.screen.blit(decor, (dx, dy))
+
         if "station_id" in obj and factory:
             st = factory.stations.get(obj["station_id"])
             if st:
@@ -198,21 +228,17 @@ class FactoryRenderer:
     def _draw_npc(self, npc: dict, cam_x: int, cam_y: int) -> None:
         px = npc["tx"] * TILE_SIZE + TILE_SIZE // 2 - cam_x
         py = npc["ty"] * TILE_SIZE + TILE_SIZE // 2 - cam_y
-        color = npc.get("color", (180, 140, 100))
-        pygame.draw.circle(self.screen, color, (px, py), 7)
-        pygame.draw.circle(self.screen, COLOR_INK, (px, py), 7, 1)
+        role   = npc.get("role", "")
+        facing = npc.get("dir", "down")
+        spr = sprites.character(role, facing)
+        self.screen.blit(spr, (px - spr.get_width() // 2, py - spr.get_height() // 2))
 
     def _draw_player(self, player: Player, cam_x: int, cam_y: int) -> None:
         sx = int(player.x) - cam_x
         sy = int(player.y) - cam_y
-        # Body
-        pygame.draw.rect(self.screen, (245, 240, 225),
-                         (sx - 5, sy - 7, 10, 14), border_radius=2)
-        # Hi-vis collar
-        pygame.draw.rect(self.screen, COLOR_ORANGE,
-                         (sx - 5, sy - 7, 10, 4), border_radius=2)
-        # Head
-        pygame.draw.circle(self.screen, (240, 210, 175), (sx, sy - 10), 5)
+        frame = int(player.step_phase / 8) & 1 if player.moving_this_frame else 0
+        spr   = sprites.character("player", player.dir, frame)
+        self.screen.blit(spr, (sx - spr.get_width() // 2, sy - spr.get_height() // 2))
 
     # ── Interaction highlight ─────────────────────────────────────────────────
 

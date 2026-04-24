@@ -39,6 +39,8 @@ class CatalogPanel:
 
         self._open       = False
         self._cms:       List[Countermeasure] = []
+        self._shortlist: List[Countermeasure] = []
+        self._npc_name:  str = ""
         self._cursor     = 0
         self._scroll     = 0
         self._problem_id: Optional[str] = None
@@ -53,9 +55,13 @@ class CatalogPanel:
 
     # ── Control ───────────────────────────────────────────────────────────────
 
-    def open(self, problem_id: str, cms: List[Countermeasure]) -> None:
+    def open(self, problem_id: str, cms: List[Countermeasure],
+             shortlist: Optional[List[Countermeasure]] = None,
+             npc_name: str = "") -> None:
         self._problem_id = problem_id
         self._cms        = cms
+        self._shortlist  = list(shortlist or [])
+        self._npc_name   = npc_name
         self._cursor     = 0
         self._scroll     = 0
         self._selected   = None
@@ -102,6 +108,10 @@ class CatalogPanel:
         elif event.key in (pygame.K_RETURN, pygame.K_e):
             if 0 <= self._cursor < len(self._cms):
                 self._selected = self._cms[self._cursor]
+        elif event.key in (pygame.K_1, pygame.K_2, pygame.K_3):
+            idx = event.key - pygame.K_1
+            if idx < len(self._shortlist):
+                self._selected = self._shortlist[idx]
 
     def _clamp_scroll(self) -> None:
         if self._cursor < self._scroll:
@@ -132,8 +142,8 @@ class CatalogPanel:
             self._font_title.render("COUNTERMEASURE CATALOG", True, C_GOLD),
             (panel_x + 20, y),
         )
-        hint = "[↑↓] scroll   [E/Enter] apply   [Esc] cancel"
-        self.screen.blit(self._font_mono.render(hint, True, C_DIM),
+        hint_keys = "[1/2/3] pick suggestion   [↑↓] scroll   [E/Enter] apply   [Esc] cancel"
+        self.screen.blit(self._font_mono.render(hint_keys, True, C_DIM),
                          (panel_x + 20, y + 20))
         y += 46
 
@@ -141,8 +151,14 @@ class CatalogPanel:
                          (panel_x + 12, y), (panel_x + panel_w - 12, y))
         y += 8
 
-        list_area_h = VISIBLE * ROW_H
-        visible_cms = self._cms[self._scroll: self._scroll + VISIBLE]
+        if self._shortlist:
+            y = self._draw_shortlist(panel_x, y, panel_w)
+            visible_rows = max(4, VISIBLE - 3)
+        else:
+            visible_rows = VISIBLE
+
+        list_area_h = visible_rows * ROW_H
+        visible_cms = self._cms[self._scroll: self._scroll + visible_rows]
 
         for i, cm in enumerate(visible_cms):
             abs_i = self._scroll + i
@@ -192,6 +208,28 @@ class CatalogPanel:
         if self._cms and 0 <= self._cursor < len(self._cms):
             self._draw_detail(panel_x, y + list_area_h + 8,
                               panel_w, panel_h - list_area_h - 56, factory)
+
+    def _draw_shortlist(self, px: int, py: int, pw: int) -> int:
+        who = self._npc_name or "Floor"
+        header = f"[ {who} ]  \"Three I'd pick from — what do you think?\""
+        self.screen.blit(self._font_mono.render(header, True, C_GOLD), (px + 20, py))
+        py += 18
+        for i, cm in enumerate(self._shortlist[:3]):
+            row_h = 30
+            pygame.draw.rect(self.screen, (32, 30, 24),
+                             (px + 16, py, pw - 32, row_h - 2), border_radius=3)
+            self.screen.blit(self._font_mono.render(f"[{i + 1}]", True, C_GOLD),
+                             (px + 24, py + 6))
+            tier_color = C_TIER.get(cm.tier_int, C_DIM)
+            tier_label = f"T{cm.tier}" if not cm.is_diagnostic else "DX"
+            self.screen.blit(self._font_mono.render(tier_label, True, tier_color),
+                             (px + 52, py + 6))
+            self.screen.blit(self._font_title.render(cm.name, True, C_INK),
+                             (px + 84, py + 4))
+            py += row_h
+        pygame.draw.line(self.screen, (40, 38, 30),
+                         (px + 12, py + 4), (px + pw - 12, py + 4))
+        return py + 12
 
     def _draw_tier5_stub(self, px: int, py: int, pw: int) -> None:
         self.screen.blit(

@@ -35,9 +35,8 @@ class TestParseDialogue:
         assert result is not None
         assert result.investigation is not None
         assert result.investigation.npc == "Team Leader"
-        assert len(result.investigation.choices) == 2
-        assert result.investigation.choices[0].outcome == ChoiceOutcome.CORRECT
-        assert result.investigation.choices[1].outcome == ChoiceOutcome.WRONG
+        outcomes = {c.outcome for c in result.investigation.choices}
+        assert outcomes == {ChoiceOutcome.CORRECT, ChoiceOutcome.WRONG}
 
     def test_parses_five_whys(self):
         raw = {
@@ -68,6 +67,7 @@ class TestParseDialogue:
             }
         }
         result = parse_dialogue(raw)
+        # Single-choice fork — shuffle is a no-op; the one choice is WRONG.
         assert result.investigation.choices[0].outcome == ChoiceOutcome.WRONG
 
     def test_score_feed_parsed(self):

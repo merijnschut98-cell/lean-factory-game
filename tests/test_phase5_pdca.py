@@ -51,18 +51,21 @@ class TestBuildVerificationFork:
         vfork = build_verification_fork("IT", "information", "Docs", 4)
         assert len(vfork.choices) == 3
 
-    def test_first_choice_is_correct(self):
+    def test_one_correct_choice_present(self):
         vfork = build_verification_fork("IT", "quality", "Docs", 4)
-        assert vfork.choices[0].outcome == ChoiceOutcome.CORRECT
+        outcomes = [c.outcome for c in vfork.choices]
+        assert outcomes.count(ChoiceOutcome.CORRECT) == 1
 
     def test_correct_choice_has_cim_score_feed(self):
         vfork = build_verification_fork("IT", "quality", "Docs", 4)
-        assert vfork.choices[0].score_feed == "CIM"
+        correct = next(c for c in vfork.choices if c.outcome == ChoiceOutcome.CORRECT)
+        assert correct.score_feed == "CIM"
 
     def test_plausible_and_wrong_have_no_score_feed(self):
         vfork = build_verification_fork("IT", "quality", "Docs", 4)
-        assert vfork.choices[1].score_feed is None
-        assert vfork.choices[2].score_feed is None
+        for c in vfork.choices:
+            if c.outcome != ChoiceOutcome.CORRECT:
+                assert c.score_feed is None
 
     def test_unknown_category_falls_back_to_problem_solving(self):
         vfork = build_verification_fork("NPC", "nonexistent_category", "CM", 2)
@@ -70,7 +73,8 @@ class TestBuildVerificationFork:
 
     def test_correct_choice_teaches_at_least_one_concept(self):
         vfork = build_verification_fork("NPC", "quality", "CM", 2)
-        assert len(vfork.choices[0].teaches) >= 1
+        correct = next(c for c in vfork.choices if c.outcome == ChoiceOutcome.CORRECT)
+        assert len(correct.teaches) >= 1
 
 
 # ── InvestigationSession verification tracking ────────────────────────────────

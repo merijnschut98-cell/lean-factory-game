@@ -114,12 +114,13 @@ class CountermeasuresMixin:
 
         cm_id     = prob.applied_countermeasure
         cm        = self.cm_catalog.get(cm_id) if cm_id else None
+        cm_name   = cm.name if cm else ""
         cm_record = self.active_countermeasures.get(cm_id, {})
 
         scores = calculate_all(
             inspection_log      = self.inspection_log,
             problem             = prob,
-            applied_cm_id       = cm_id or "",
+            applied_cm_name     = cm_name,
             applied_cm_tier     = cm.tier_int if cm else 0,
             applied_cm_category = cm.category if cm else "",
             applied_cm_zone_id  = cm_record.get("zone_id", prob.zone_id),
@@ -174,11 +175,14 @@ class CountermeasuresMixin:
                 mission.record_resolved(problem_id)
                 mission.advance_hint()
 
+        self._check_mission_triggers()
+        self._reevaluate_visibility()
+
         explanations = explain_scores(
             scores              = scores,
             inspection_log      = self.inspection_log,
             problem             = prob,
-            applied_cm_id       = cm_id or "",
+            applied_cm_name     = cm_name,
             applied_cm_tier     = cm.tier_int if cm else 0,
             applied_cm_category = cm.category if cm else "",
             applied_cm_zone_id  = cm_record.get("zone_id", prob.zone_id),
@@ -233,7 +237,9 @@ class CountermeasuresMixin:
         if rec.get("zone_id"):
             self.maturity.remove_cm(rec["zone_id"], cm_id or "")
 
-        penalty = round(CREDIT_BASE.get(prob.severity, 150) * 0.25)
+        # Rollbacks are free during recovery mode — the player needs room
+        # to experiment without further credit damage while they rebuild.
+        penalty = 0 if self.recovery_mode else round(CREDIT_BASE.get(prob.severity, 150) * 0.25)
         self.credits = max(0, self.credits - penalty)
 
         prob.state                  = ProblemState.ACTIVE

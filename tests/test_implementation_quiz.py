@@ -32,11 +32,15 @@ class TestImplementationQuizLoading:
         assert len(cm.implementation_quiz) == 2
 
     def test_cm_without_quiz_has_empty_list(self, catalog):
-        cm = catalog.get("CM-T1-003")
+        # All Tier 1 CMs have quizzes; use a Tier 2 CM as the "no quiz" fixture.
+        cm = catalog.get("CM-T2-001")
         assert cm.implementation_quiz == []
 
     def test_each_question_has_three_choices(self, catalog):
-        for cid in ("CM-T1-001", "CM-T1-002", "CM-T1-004", "CM-T1-006", "CM-T1-007"):
+        for cid in (
+            "CM-T1-001", "CM-T1-002", "CM-T1-003", "CM-T1-004", "CM-T1-005",
+            "CM-T1-006", "CM-T1-007", "CM-T1-008", "CM-T1-009", "CM-T1-010",
+        ):
             cm = catalog.get(cid)
             for step in cm.implementation_quiz:
                 assert len(step.choices) == 3, f"{cid} question has wrong choice count"

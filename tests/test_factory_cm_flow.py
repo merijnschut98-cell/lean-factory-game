@@ -98,6 +98,16 @@ class TestResolveProblem:
         # Net result: OEE should be higher than before (problem degradation gone, CM still active).
         assert st.oee > oee_before
 
+    def test_rca_and_cmp_score_5_when_correct_cm_name_matches(self, factory):
+        target = next(
+            p for p in factory.active_problems.values()
+            if "5S System" in p.effective_countermeasures
+        )
+        factory.apply_countermeasure(target.id, "CM-T1-001")
+        result = factory.resolve_problem(target.id)
+        assert result["scores"]["RCA"] == 5
+        assert result["scores"]["CMP"] == 5
+
 
 class TestDecay:
     def test_decay_removes_cm_after_days_elapsed(self, factory):
@@ -109,3 +119,46 @@ class TestDecay:
             factory.time._sim_time += rec["decay_days"] * 86400 + 1
             factory._tick_decay()
             assert "CM-T1-001" not in factory.active_countermeasures
+
+
+class TestRecoveryMode:
+    def test_zero_credits_enters_recovery(self, factory):
+        factory.credits = 0
+        factory._check_recovery_state()
+        assert factory.recovery_mode is True
+        assert factory.recovery_started_day == factory.time.day
+        assert any(e["type"] == "recovery_begin" for e in factory.circuit_breaker_events)
+
+    def test_rollback_is_free_during_recovery(self, factory):
+        prob_id = next(iter(factory.active_problems))
+        factory.credits = 0
+        factory._check_recovery_state()
+        factory.credits = 100
+        factory.apply_countermeasure(prob_id, "CM-T1-001")
+        factory.rollback_countermeasure(prob_id)
+        assert factory.credits == 100
+
+    def test_rollback_deducts_penalty_outside_recovery(self, factory):
+        prob_id = next(iter(factory.active_problems))
+        factory.credits = 500
+        factory.apply_countermeasure(prob_id, "CM-T1-001")
+        factory.rollback_countermeasure(prob_id)
+        assert factory.credits < 500
+
+    def test_recovery_exits_when_credits_restored(self, factory):
+        factory.credits = 0
+        factory._check_recovery_state()
+        factory.credits = 200
+        factory._check_recovery_state()
+        assert factory.recovery_mode is False
+        assert any(e["type"] == "recovery_end" for e in factory.circuit_breaker_events)
+
+    def test_recovery_persists_across_save_load(self, factory):
+        factory.credits = 0
+        factory._check_recovery_state()
+        saved = factory.to_dict()
+        from simulation.factory import Factory as _F
+        f2 = _F()
+        f2.from_dict(saved)
+        assert f2.recovery_mode is True
+        assert f2.recovery_started_day == factory.recovery_started_day

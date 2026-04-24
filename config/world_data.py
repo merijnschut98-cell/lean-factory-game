@@ -113,6 +113,7 @@ OBJECTS = [
     # ── Office wing ───────────────────────────────────────────────────────────
     {"tx": 82, "ty":  7, "w": 3, "h": 1, "kind": "desk-exec", "id": "OPS-MGR","label": "Plant Manager Desk",  "role": "Plant Manager (you)"},
     {"tx": 90, "ty":  7, "w": 3, "h": 1, "kind": "desk",      "id": "OPS-SCH","label": "Scheduler Desk",       "role": "Scheduler"},
+    {"tx": 94, "ty":  7, "w": 3, "h": 1, "kind": "desk",      "id": "OPS-COACH","label": "Lean Coach Desk",    "role": "Lean Coach"},
     {"tx": 86, "ty": 10, "w": 4, "h": 1, "kind": "board",     "id": "OPS-BRD","label": "Ops Daily Board"},
     {"tx": 82, "ty": 16, "w": 3, "h": 1, "kind": "desk",      "id": "QA-LEAD","label": "QA Lead Desk",         "role": "Quality Lead"},
     {"tx": 90, "ty": 16, "w": 4, "h": 2, "kind": "metro",     "id": "METRO",  "label": "Metrology Bench"},
@@ -146,6 +147,7 @@ NPCS = [
     {"tx": 41, "ty": 18, "w": 1, "h": 1, "color": (74,  144, 216), "name": "TL — Subassy",    "role": "Team Leader",   "label": "Team Leader",   "dir": "down"},
     {"tx": 61, "ty": 18, "w": 1, "h": 1, "color": (74,  144, 216), "name": "TL — Final",      "role": "Team Leader",   "label": "Team Leader",   "dir": "left"},
     {"tx": 83, "ty":  8, "w": 1, "h": 1, "color": (216, 161, 74),  "name": "Maya — Scheduler","role": "Scheduler",     "label": "Scheduler",     "dir": "down"},
+    {"tx": 95, "ty":  8, "w": 1, "h": 1, "color": (200, 100, 100), "name": "Alex — Lean Coach","role": "Lean Coach",   "label": "Lean Coach",    "dir": "down"},
     {"tx": 83, "ty": 17, "w": 1, "h": 1, "color": (106, 178, 106), "name": "Sven — QA Lead",  "role": "Quality Lead",  "label": "Quality Lead",  "dir": "down"},
     {"tx": 83, "ty": 26, "w": 1, "h": 1, "color": (154, 106, 219), "name": "Priya — IT",      "role": "IT Engineer",   "label": "IT Engineer",   "dir": "right"},
     {"tx": 83, "ty": 35, "w": 1, "h": 1, "color": (74,  179, 166), "name": "Jon — Finance",   "role": "Controller",    "label": "Controller",    "dir": "down"},

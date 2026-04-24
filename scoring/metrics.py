@@ -69,7 +69,7 @@ def score_ei(inspection_log: List[dict], applied_cm_category: str) -> int:
     return 1
 
 
-def score_rca(applied_cm_id: str, problem) -> int:
+def score_rca(applied_cm_name: str, problem) -> int:
     """
     Root Cause Accuracy — does the countermeasure choice reveal correct diagnosis?
 
@@ -77,15 +77,14 @@ def score_rca(applied_cm_id: str, problem) -> int:
     If they chose from the problem's effective list, they diagnosed correctly.
 
     5 — applied CM is in the problem's effective_countermeasures list
-    3 — applied CM is in the same tier as an effective CM (adjacent understanding)
+    3 — applied CM shares a word with an effective CM name (adjacent understanding)
     1 — applied CM has no relationship to the problem's root cause
     """
-    if applied_cm_id in problem.effective_countermeasures:
+    if applied_cm_name in problem.effective_countermeasures:
         return 5
 
-    # Check if the CM name keyword-matches any effective CM name
     effective_set = {cm.lower() for cm in problem.effective_countermeasures}
-    applied_words = set(applied_cm_id.lower().replace("-", " ").split())
+    applied_words = set(applied_cm_name.lower().replace("-", " ").split())
     for eff in effective_set:
         eff_words = set(eff.lower().replace("-", " ").split())
         if applied_words & eff_words:
@@ -94,7 +93,7 @@ def score_rca(applied_cm_id: str, problem) -> int:
     return 1
 
 
-def score_cmp(applied_cm_id: str, problem, zone_maturity: float, cm_zone_id: str) -> int:
+def score_cmp(applied_cm_name: str, problem, zone_maturity: float, cm_zone_id: str) -> int:
     """
     Countermeasure Practicality — right tool, right zone.
 
@@ -103,7 +102,7 @@ def score_cmp(applied_cm_id: str, problem, zone_maturity: float, cm_zone_id: str
         but applied to wrong zone
     1 — CM is unrelated to the root cause
     """
-    in_effective_list = applied_cm_id in problem.effective_countermeasures
+    in_effective_list = applied_cm_name in problem.effective_countermeasures
     correct_zone = cm_zone_id == problem.zone_id
 
     if in_effective_list and correct_zone:
@@ -157,7 +156,7 @@ def score_cim(inspection_log: List[dict], problem_station_id: str, applied_day: 
 def calculate_all(
     inspection_log: List[dict],
     problem,
-    applied_cm_id: str,
+    applied_cm_name: str,
     applied_cm_tier: int,
     applied_cm_category: str,
     applied_cm_zone_id: str,
@@ -168,8 +167,8 @@ def calculate_all(
     return {
         "DQQ": score_dqq(inspection_log, problem.zone_id),
         "EI":  score_ei(inspection_log, applied_cm_category),
-        "RCA": score_rca(applied_cm_id, problem),
-        "CMP": score_cmp(applied_cm_id, problem, zone_maturity, applied_cm_zone_id),
+        "RCA": score_rca(applied_cm_name, problem),
+        "CMP": score_cmp(applied_cm_name, problem, zone_maturity, applied_cm_zone_id),
         "LM":  score_lm(applied_cm_tier, zone_maturity),
         "CIM": score_cim(inspection_log, problem.station_id, applied_day),
     }
@@ -244,7 +243,7 @@ def explain_scores(
     scores: dict,
     inspection_log: List[dict],
     problem,
-    applied_cm_id: str,
+    applied_cm_name: str,
     applied_cm_tier: int,
     applied_cm_category: str,
     applied_cm_zone_id: str,
@@ -252,7 +251,7 @@ def explain_scores(
 ) -> dict:
     unique_entities = len({e["entity"] for e in inspection_log})
     zones           = len({e["entity"].split(":")[0] for e in inspection_log})
-    in_effective    = applied_cm_id in problem.effective_countermeasures
+    in_effective    = applied_cm_name in problem.effective_countermeasures
     correct_zone    = applied_cm_zone_id == problem.zone_id
     return {
         "DQQ": _explain_dqq(scores["DQQ"], unique_entities, zones),

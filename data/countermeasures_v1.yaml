@@ -250,6 +250,60 @@ countermeasures:
     notes: >
       The only Tier 1 tool with no harmful tier. Applying to
       an immature zone always produces some effect, even if minimal.
+    implementation_quiz:
+      - question: >
+          You're starting a safety routine overhaul in the zone. Which
+          first move produces the deepest change in how people behave?
+        npc: "HR Manager"
+        choices:
+          - text: "Establish a no-blame near-miss reporting channel and publicly act on what's reported"
+            outcome: CORRECT
+            feedback: >
+              Near-miss reporting exposes the hazards people already
+              know about. Visible follow-up — the report leads to a
+              fix — is what builds trust. Without that trust, nothing
+              else you do on safety will stick.
+            teaches: [near_miss_reporting, psychological_safety, safety]
+          - text: "Audit PPE compliance across all stations and close the gaps"
+            outcome: PLAUSIBLE
+            feedback: >
+              PPE audits matter, but they only address the visible layer.
+              The hazards operators live with every day don't surface
+              through audits — they surface through reports.
+            teaches: [safety]
+          - text: "Post the safety rules at every station and hold a mandatory kickoff meeting"
+            outcome: WRONG
+            feedback: >
+              Communication alone doesn't change behaviour. People
+              comply under surveillance, not from posters — and
+              posters don't reveal the hazards already present.
+            teaches: [safety]
+      - question: >
+          Near-misses are being reported but nothing visibly changes.
+          What's the most likely failure mode within a month?
+        npc: "HR Manager"
+        choices:
+          - text: "Reporting stops — operators decide the system is performative and don't bother"
+            outcome: CORRECT
+            feedback: >
+              The fastest way to kill a reporting system is to let
+              reports vanish. Every closed report, however small,
+              needs a visible outcome, or the channel atrophies.
+            teaches: [accountability, management_system, near_miss_reporting]
+          - text: "Incident rate stays flat because the reports aren't detailed enough"
+            outcome: PLAUSIBLE
+            feedback: >
+              Report detail matters, but the dominant failure mode
+              isn't report quality — it's report volume. Operators
+              silently stop reporting first, then quality becomes moot.
+            teaches: [near_miss_reporting]
+          - text: "The reports pile up in a backlog that management eventually triages"
+            outcome: WRONG
+            feedback: >
+              A backlog implies reports are still coming in.
+              Unacknowledged reports don't queue — they stop.
+              Silence, not backlog, is the real symptom.
+            teaches: [safety]
 
   - id: CM-T1-004
     name: "Basic Quality Gates"
@@ -372,6 +426,60 @@ countermeasures:
         current tool inventory.
       side_effect_ref: null
     applicable_to: [all]
+    implementation_quiz:
+      - question: >
+          You're planning shadow boards and floor marking for the zone.
+          What should you do before any tape goes down?
+        npc: "Team Leader"
+        choices:
+          - text: "Walk the zone with operators and observe where tools are actually used during a shift"
+            outcome: CORRECT
+            feedback: >
+              Organization has to match real work, not the idealised
+              spec. Shadowing a shift shows which tools are reached
+              for constantly and which are collecting dust — that's
+              what determines where things belong.
+            teaches: [gemba, workplace_organization]
+          - text: "Choose a colour-code scheme that matches the plant's other zones for consistency"
+            outcome: PLAUSIBLE
+            feedback: >
+              Cross-zone consistency helps later. But colours
+              chosen without observation produce a pretty floor
+              that doesn't reflect the actual flow of work.
+            teaches: [visual_management]
+          - text: "Buy shadow boards based on the tool lists in the equipment spec"
+            outcome: WRONG
+            feedback: >
+              Spec lists show what should be there. Observation
+              shows what's actually used. Always organise around
+              the work that's really happening.
+            teaches: [workplace_organization]
+      - question: >
+          Shadow boards are installed and labelled. What prevents the
+          organization from decaying within two months?
+        npc: "Team Leader"
+        choices:
+          - text: "Pair this with 5S System so the Sustain audit keeps labels and positions current"
+            outcome: CORRECT
+            feedback: >
+              Workplace Organization is the what — 5S Sustain is the
+              how-we-hold-it. Without a recurring audit, labels go
+              stale and shadow boards stop reflecting actual tools.
+            teaches: [5S, sustain, workplace_organization]
+          - text: "Run a single large workshop to train every operator on the new organization"
+            outcome: PLAUSIBLE
+            feedback: >
+              Training at launch helps, but it doesn't detect drift.
+              A trained operator in an unaudited zone follows the
+              standard for a week, then slowly diverges.
+            teaches: [training]
+          - text: "Apply a protective varnish over the floor markings to extend their life"
+            outcome: WRONG
+            feedback: >
+              The physical markings aren't what decays. What decays
+              is the match between the markings and the reality of
+              work. A varnish preserves the wrong thing.
+            teaches: [visual_management]
 
   - id: CM-T1-006
     name: "Visual Labels and Signs"
@@ -572,6 +680,62 @@ countermeasures:
         active, cleaning reverts to reactive after ~14 simulated days.
       side_effect_ref: null
     applicable_to: [component_prep, final_assembly, testing]
+    implementation_quiz:
+      - question: >
+          You're rolling out cleanliness standards across the zone.
+          What's the most important element to define up front?
+        npc: "Team Leader"
+        choices:
+          - text: "Who owns each area, at what frequency, and what 'clean' specifically means"
+            outcome: CORRECT
+            feedback: >
+              Cleanliness without a named owner is everyone's job
+              and therefore no-one's. Ownership, cadence, and a
+              concrete definition of clean are the three elements
+              that turn a poster into a routine.
+            teaches: [ownership, standards, workplace_organization]
+          - text: "The chemicals, brushes, and rags the cleaning crews should use"
+            outcome: PLAUSIBLE
+            feedback: >
+              Equipment matters. But without named ownership and a
+              clear standard, the equipment sits in the cabinet and
+              the zone stays dirty.
+            teaches: [workplace_organization]
+          - text: "A weekly deep-clean schedule run by the central maintenance team"
+            outcome: WRONG
+            feedback: >
+              Centralised cleaning detaches operators from their
+              own workspace. They stop noticing small issues and
+              wait for the crew. The routine has to live with the
+              people who work there.
+            teaches: [ownership]
+      - question: >
+          Standards are defined but the zone deteriorates again within
+          two weeks. What's the most likely cause?
+        npc: "Team Leader"
+        choices:
+          - text: "5S Sustain isn't active — there's no audit catching the drift back to reactive cleaning"
+            outcome: CORRECT
+            feedback: >
+              Cleanliness Standards decay the fastest of any Tier 1
+              tool. Without a Sustain audit to notice when the
+              schedule slips, the zone reverts to reactive mode
+              inside a fortnight.
+            teaches: [sustain, 5S, management_system]
+          - text: "The operators need another round of cleanliness training"
+            outcome: PLAUSIBLE
+            feedback: >
+              Retraining is a recurring cost that masks a missing
+              audit routine. Train once, audit always. The audit
+              is what holds the standard in place.
+            teaches: [training, sustain]
+          - text: "Cleaning supplies aren't being restocked frequently enough"
+            outcome: WRONG
+            feedback: >
+              Supplies are downstream of the real issue. If nobody
+              is checking that cleaning is happening, nobody notices
+              when supplies run out either.
+            teaches: [workplace_organization]
 
   - id: CM-T1-009
     name: "Basic Documentation Control"
@@ -607,6 +771,64 @@ countermeasures:
       Prerequisite for Standard Work Definition. Without
       documentation control, standard work documents decay
       into historical artifacts.
+    implementation_quiz:
+      - question: >
+          You want current work instructions at every station. What's
+          the first decision that prevents future decay?
+        npc: "IT Engineer"
+        choices:
+          - text: "Assign a single document owner responsible for updates, and version every change"
+            outcome: CORRECT
+            feedback: >
+              Documents without a named owner become ambiguous
+              artefacts — multiple versions floating around, no-one
+              sure which is current. An owner plus version control
+              is what makes a document a reliable source of truth.
+            teaches: [document_control, ownership, standards]
+          - text: "Print large, laminated copies and post them at each station"
+            outcome: PLAUSIBLE
+            feedback: >
+              Laminated copies are the visible part. Without a
+              named owner you'll be posting different copies a
+              month apart with no traceability back to which
+              version is current.
+            teaches: [visual_management]
+          - text: "Move all documents into the company intranet so everyone has access"
+            outcome: WRONG
+            feedback: >
+              Documents in the intranet aren't at the station —
+              they're somewhere the operator has to go look. The
+              goal is the document meets the work, not the other
+              way around.
+            teaches: [document_control]
+      - question: >
+          Documents are posted at stations but operators still work
+          from memory. What do you do?
+        npc: "IT Engineer"
+        choices:
+          - text: "Observe the gap between what's documented and what's actually done, then align the two"
+            outcome: CORRECT
+            feedback: >
+              Operators work from memory when the document doesn't
+              match reality. Gemba observation reveals which side
+              is wrong — sometimes the memory is right and the
+              document is stale, sometimes the reverse.
+            teaches: [gemba, standards, document_control]
+          - text: "Add a compliance audit to confirm operators are reading the document"
+            outcome: PLAUSIBLE
+            feedback: >
+              Audits detect non-compliance but don't explain it.
+              The cause is almost always document-vs-reality drift,
+              not operator defiance. Fix the drift before auditing
+              the behaviour.
+            teaches: [management_system]
+          - text: "Reprint the documents in a larger, bolder font so they're easier to follow"
+            outcome: WRONG
+            feedback: >
+              Format rarely matters. Operators skip documents when
+              the documents don't reflect the work — not because
+              the font was too small.
+            teaches: [document_control]
 
   - id: CM-T1-010
     name: "Skill Matrix"
@@ -636,6 +858,63 @@ countermeasures:
         without updates. Becomes misleading rather than useful.
       side_effect_ref: null
     applicable_to: [all]
+    implementation_quiz:
+      - question: >
+          You're building the zone's skill matrix for the first time.
+          Besides "trained / not trained", what's the most important
+          column to include?
+        npc: "HR Manager"
+        choices:
+          - text: "Date of last qualification and the planned requalification date"
+            outcome: CORRECT
+            feedback: >
+              A skill isn't a one-time stamp — it needs renewal.
+              Without dates, the matrix can't tell you who's about
+              to lapse or who qualified so long ago they should
+              be reassessed.
+            teaches: [skill_matrix, standards, cross_training]
+          - text: "A free-text comment field from each operator's supervisor"
+            outcome: PLAUSIBLE
+            feedback: >
+              Subjective notes feel valuable, but they make the
+              matrix non-comparable between supervisors and age
+              badly. The matrix works when every column is a
+              fact, not an opinion.
+            teaches: [management_system]
+          - text: "The operator's shift and home department for easier contact"
+            outcome: WRONG
+            feedback: >
+              Useful for scheduling, but unrelated to the matrix's
+              purpose. The matrix exists to make skill coverage
+              visible, not to be a staff directory.
+            teaches: [skill_matrix]
+      - question: >
+          The matrix has been live for three months but most columns
+          are unchanged. What went wrong?
+        npc: "HR Manager"
+        choices:
+          - text: "No-one is updating it as skills develop, so the matrix has drifted from reality"
+            outcome: CORRECT
+            feedback: >
+              Skill Matrix decays silently. The columns look stable
+              but the underlying reality has changed — operators
+              trained, lapsed, or left. Without a named owner
+              keeping it current, it becomes misleading.
+            teaches: [ownership, management_system, skill_matrix]
+          - text: "Not enough cross-training has happened yet to fill the visible gaps"
+            outcome: PLAUSIBLE
+            feedback: >
+              Possibly true — but a stale matrix hides the answer.
+              Fix the update routine first, then the matrix will
+              tell you honestly whether cross-training is on track.
+            teaches: [cross_training]
+          - text: "The matrix format is too complex for operators to read"
+            outcome: WRONG
+            feedback: >
+              Format rarely matters here. If nobody maintains the
+              matrix, changing its format just produces a prettier
+              outdated artefact.
+            teaches: [visual_management]
 
   # ==========================================================
   # TIER 2 — CONTINUOUS IMPROVEMENT CULTURE

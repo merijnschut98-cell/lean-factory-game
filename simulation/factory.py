@@ -50,6 +50,10 @@ class Factory(CountermeasuresMixin, MissionsMixin):
 
         self.credits:          int   = 0
         self.session_cost_eur: float = 0.0
+        # Recovery mode: triggered when credits hit 0. Rollbacks are free and
+        # a HUD banner frames the week as a learning reset, not a punishment.
+        self.recovery_mode:         bool = False
+        self.recovery_started_day:  Optional[int] = None
         self.day_history:      List[DaySnapshot] = []
         self.problems:         Dict[str, Problem] = {}
         self.inspection_log:   List[dict] = []
@@ -164,6 +168,10 @@ class Factory(CountermeasuresMixin, MissionsMixin):
         self.maturity.update(self)
         self._check_mission_triggers()
         self._check_circuit_breakers()
+        self._check_recovery_state()
+        self._reevaluate_visibility()
+
+    def _reevaluate_visibility(self) -> None:
         newly_active = evaluate_visibility(self.problems, self)
         for pid in newly_active:
             self._apply_problem_modifiers(self.problems[pid])
@@ -229,6 +237,25 @@ class Factory(CountermeasuresMixin, MissionsMixin):
         )
         if len(self.circuit_breaker_events) > 50:
             self.circuit_breaker_events = self.circuit_breaker_events[-50:]
+
+    def _check_recovery_state(self) -> None:
+        if not self.recovery_mode and self.credits <= 0:
+            self.recovery_mode = True
+            self.recovery_started_day = self.time.day
+            self._add_circuit_event(
+                "recovery_begin",
+                "Back to basics — credit balance hit zero. Rollbacks are free this week. "
+                "Try the obvious fixes first; it's a learning reset, not a failure.",
+            )
+        elif self.recovery_mode:
+            days_in_recovery = self.time.day - (self.recovery_started_day or self.time.day)
+            if self.credits >= 150 or days_in_recovery >= 7:
+                self.recovery_mode = False
+                self.recovery_started_day = None
+                self._add_circuit_event(
+                    "recovery_end",
+                    "Recovery week complete. You're back on your feet — keep going.",
+                )
 
     # ── Specialist hiring ─────────────────────────────────────────────────────
 
@@ -310,6 +337,8 @@ class Factory(CountermeasuresMixin, MissionsMixin):
             "discovered_concepts":    sorted(self.discovered_concepts),
             "missions":               {mid: m.to_save_dict() for mid, m in self.missions.items()},
             "specialists":            {zid: s.to_dict() for zid, s in self.specialists.items()},
+            "recovery_mode":          self.recovery_mode,
+            "recovery_started_day":   self.recovery_started_day,
         }
 
     def from_dict(self, d: dict) -> None:
@@ -349,3 +378,5 @@ class Factory(CountermeasuresMixin, MissionsMixin):
             specialist = Specialist.from_dict(spec_d)
             self.specialists[zid] = specialist
             self._apply_specialist_modifiers(zid, specialist)
+        self.recovery_mode        = d.get("recovery_mode", False)
+        self.recovery_started_day = d.get("recovery_started_day")

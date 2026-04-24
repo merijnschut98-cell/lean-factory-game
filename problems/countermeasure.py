@@ -7,6 +7,7 @@ reference; application state lives on Factory.active_countermeasures.
 from __future__ import annotations
 
 import logging
+import random
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -287,6 +288,7 @@ def _parse_quiz(raw) -> List[QuizStep]:
             for c in (entry.get("choices") or [])
             if isinstance(c, dict)
         ]
+        random.shuffle(choices)
         steps.append(QuizStep(
             question=str(entry.get("question", "")).strip(),
             npc=str(entry.get("npc", "Team Leader")),

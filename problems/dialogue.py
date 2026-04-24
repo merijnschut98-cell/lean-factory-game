@@ -7,6 +7,7 @@ No LLM involved here; forks are deterministic authored content.
 """
 from __future__ import annotations
 
+import random
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Dict, List, Optional
@@ -70,17 +71,21 @@ def parse_dialogue(raw: dict) -> Optional[ProblemDialogue]:
 def _parse_investigation(raw: dict) -> Optional[InvestigationFork]:
     if not isinstance(raw, dict):
         return None
+    choices = [_parse_choice(c) for c in raw.get("choices", [])]
+    random.shuffle(choices)
     return InvestigationFork(
         npc=str(raw.get("npc", "")),
         prompt=str(raw.get("prompt", "")),
-        choices=[_parse_choice(c) for c in raw.get("choices", [])],
+        choices=choices,
     )
 
 
 def _parse_five_whys_step(index: int, raw: dict) -> FiveWhysStep:
+    choices = [_parse_choice(c) for c in raw.get("choices", [])]
+    random.shuffle(choices)
     return FiveWhysStep(
         why=str(raw.get("why", "")),
-        choices=[_parse_choice(c) for c in raw.get("choices", [])],
+        choices=choices,
         step=index,
     )
 
@@ -233,48 +238,46 @@ def build_verification_fork(
         "Walk the station. What do you observe?"
     )
 
-    return InvestigationFork(
-        npc=npc,
-        prompt=prompt,
-        choices=[
-            DialogueChoice(
-                text=correct_txt,
-                outcome=ChoiceOutcome.CORRECT,
-                evidence=None,
-                hint=(
-                    "Correct. Observing the specific effect confirms the countermeasure "
-                    "is working and completes the Check phase of PDCA. "
-                    "Now decide: standardize it, or adjust."
-                ),
-                teaches=correct_teaches,
-                score_feed="CIM",
+    choices = [
+        DialogueChoice(
+            text=correct_txt,
+            outcome=ChoiceOutcome.CORRECT,
+            evidence=None,
+            hint=(
+                "Correct. Observing the specific effect confirms the countermeasure "
+                "is working and completes the Check phase of PDCA. "
+                "Now decide: standardize it, or adjust."
             ),
-            DialogueChoice(
-                text=plausible_txt,
-                outcome=ChoiceOutcome.PLAUSIBLE,
-                evidence=None,
-                hint=(
-                    "Close — but vague observation isn't enough. "
-                    "Check the specific metric the countermeasure targeted. "
-                    "What was the expected improvement? Is it there?"
-                ),
-                teaches=[plausible_teach],
-                score_feed=None,
+            teaches=correct_teaches,
+            score_feed="CIM",
+        ),
+        DialogueChoice(
+            text=plausible_txt,
+            outcome=ChoiceOutcome.PLAUSIBLE,
+            evidence=None,
+            hint=(
+                "Close — but vague observation isn't enough. "
+                "Check the specific metric the countermeasure targeted. "
+                "What was the expected improvement? Is it there?"
             ),
-            DialogueChoice(
-                text=wrong_txt,
-                outcome=ChoiceOutcome.WRONG,
-                evidence=None,
-                hint=(
-                    "Go back and look again — carefully. "
-                    "What metric was this countermeasure supposed to move? "
-                    "Compare before and after. Gemba first."
-                ),
-                teaches=_VERIFICATION_WRONG_TEACHES,
-                score_feed=None,
+            teaches=[plausible_teach],
+            score_feed=None,
+        ),
+        DialogueChoice(
+            text=wrong_txt,
+            outcome=ChoiceOutcome.WRONG,
+            evidence=None,
+            hint=(
+                "Go back and look again — carefully. "
+                "What metric was this countermeasure supposed to move? "
+                "Compare before and after. Gemba first."
             ),
-        ],
-    )
+            teaches=_VERIFICATION_WRONG_TEACHES,
+            score_feed=None,
+        ),
+    ]
+    random.shuffle(choices)
+    return InvestigationFork(npc=npc, prompt=prompt, choices=choices)
 
 
 # ── Runtime state ─────────────────────────────────────────────────────────────
