@@ -253,10 +253,21 @@ The player is a newly hired **Continuous Improvement Specialist** at NovaGlide. 
 ### Inspector and Panels
 
 - ✅ Scrollable inspector panel: mouse wheel + arrow keys scroll; 2400px off-screen surface with scroll indicator
+- ⬜ **Arrow key conflict fix**: when the inspector is open, arrow keys must scroll the panel only — not move the player simultaneously. Currently both happen at once, breaking the inspection experience. Fix: consume arrow key events in inspector before they reach the movement handler.
+- ⬜ **Enforce investigation-before-countermeasure sequence**: `[C]` (Apply CM) must be hidden until the investigation fork is complete. Currently the player can skip investigation entirely and apply a CM straight away — this breaks the learning flow and makes the game feel arbitrary. Required sequence: (1) Walk to station → (2) Complete investigation fork (1/2/3 choices) → (3) Apply countermeasure `[C]` → (4) Verify (PDCA Check) → (5) Resolve `[R]`. Each step should only appear in the inspector after the previous step is done. The inspector panel should clearly label which phase the player is in.
+- ⬜ **Score explanation on resolve**: when `[R]` resolves a problem, the score panel shows numbers but not why. Add a brief explanation next to each metric: what the player did well, what was missing, and what the dominant driver of the total was. Investigation fork choices already give feedback (1/2/3); resolution should too.
 - ⬜ Non-blocking toast notifications: CM decay warning, new problem visible, credits earned — timed banner, never freeze gameplay
 - ⬜ Keyboard shortcut reference: `[?]` or `[F1]` shows overlay listing all controls (currently undocumented: E=inspect, C=apply CM, R=resolve, U=rollback, K=codex, Tab=speed, P=pause, Shift=run)
 - ⬜ Problem count HUD badge: active problem count visible at all times (e.g. "⚠ 3 active")
 - ⬜ Maturity/phase progress bar in HUD: zone scores visualised at a glance
+
+### Countermeasure Learning Flow
+
+> **Design note (added 2026-04-24):** Applying a CM should be a learning moment, not just a button press. The player should understand *how* to implement the chosen countermeasure, not just *that* they applied it. This closes the gap between "I clicked 5S" and "I understand what 5S implementation involves."
+
+- ⬜ **CM implementation quiz**: when the player selects a countermeasure in the catalog and confirms, before it is applied a short implementation fork appears — 2 questions about how this CM is correctly implemented (e.g. for 5S: "What is the correct first step when running a 5S Sort phase?" with CORRECT/PLAUSIBLE/WRONG choices). Correct answers give a small CIM score bonus; wrong answers still apply the CM but the NPC explains the correct approach. This is not a barrier — the CM always gets applied regardless of answers. The quiz is the teaching moment.
+- ⬜ **CM implementation YAML**: add `implementation_quiz:` field to countermeasures in `countermeasures_v1.yaml` — 2 questions per CM, each with 3 choices (CORRECT/PLAUSIBLE/WRONG), NPC delivering them, and a `teaches:` tag. Prioritise Tier 1–2 CMs first (most commonly applied). Format mirrors the existing `dialogue:` investigation fork schema.
+- ⬜ **Implementation quiz UI**: rendered in the catalog panel or as an inspector overlay between CM selection and application. Dismissible with correct answer or `[Skip]` (skip costs a small credit penalty to discourage ignoring it). Not a hard gate — the game is still about flow, not exams.
 
 ### NPC Interactions
 
@@ -267,6 +278,7 @@ The player is a newly hired **Continuous Improvement Specialist** at NovaGlide. 
 
 ### General UX
 
+- ⬜ **[BUG] Arrow key conflict when inspector is open**: arrow keys currently move the player AND scroll the inspector simultaneously. Fix at the start of Phase 7 — consume arrow events in the inspector event handler so they don't propagate to the player movement handler.
 - ⬜ No action should block gameplay for more than 1 second: all dialogs dismissible with Esc or Enter immediately
 - ✅ UI text sizes: all panels bumped to minimum 14px body / 13px mono via `ui/fonts.py`
 - ✅ Shift-to-run: player holds Shift for 2.5× movement speed
