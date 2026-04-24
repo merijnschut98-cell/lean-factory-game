@@ -240,6 +240,12 @@ def _run_game() -> None:
                         if action and action["type"] == "adjust":
                             factory.adjust_verification(action["problem_id"])
 
+                    elif event.key == pygame.K_h:
+                        inspector.handle_action_key(event.key)
+                        action = inspector.consume_action()
+                        if action and action["type"] == "hire_specialist":
+                            factory.hire_specialist(action["zone_id"])
+
                     elif event.key in (pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_RETURN):
                         inspector.handle_action_key(event.key)
                         action = inspector.consume_action()

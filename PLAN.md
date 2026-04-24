@@ -185,12 +185,12 @@ Content design happens *after* Phase 5 so every new problem uses the settled dia
 - ✅ Tier 4 problem catalog: 12 problems in `data/problems_tier4.yaml` (session 2026-04-24) — SPC/MSA/DMAIC/FMEA/DOE/8D/regression/reliability; T4-002/004/012 have `five_whys:` (2 steps each); pending Merijn review
 - ✅ Codex fully covers Tiers 1–4: 197 concepts, all 196 teaches tags mapped (session 2026-04-24)
 - ✅ Tier progression visibility verified (session 2026-04-24): 18 missions across 4 tiers; multi-tier loader; hidden problems activate after peer resolved; 23 new tests; 198 total passing
-- ⬜ Tier 5 stub in UI ("Coming in v2" — locked)
-- ⬜ Specialist hiring system (credits → hire → zone OEE bonus)
-- ⬜ Full save/load for all new state (Tiers 2–4 problems, specialists, CM history)
+- ✅ Tier 5 stub in UI: locked "Coming in v2" row at bottom of catalog panel (session 2026-04-24)
+- ✅ Specialist hiring system (session 2026-04-24): `simulation/specialist.py`; 6 zone types; `factory.hire_specialist()`; [H] key in inspector; save/load; 500 credits each
+- ✅ Full save/load verified (session 2026-04-24): T2–T4 problem runtime state, specialists, missions all persist correctly via existing by-ID mechanism
 
 ### Packaging
-- ⬜ Fix `requirements.txt`: replace `pygame>=2.5.0` with `pygame-ce>=2.5.3` to prevent install conflict (pygame and pygame-ce share the same namespace; plain pygame must not be installed alongside)
+- ✅ `requirements.txt`: already uses `pygame-ce==2.5.7` (pinned, correct)
 - ⬜ Add icon (`assets/icon.ico`)
 - ⬜ Populate `assets/sprites/`, `assets/tilesets/`, `assets/sounds/`
 - ⬜ Update `lean_factory.spec` for populated assets

@@ -26,6 +26,7 @@ from problems.dialogue        import InvestigationSession
 from problems.mission         import Mission, load_all_missions
 from maturity.maturity_engine import MaturityEngine
 from maturity.mismatch        import effectiveness_multiplier
+from simulation.specialist    import Specialist, ZONE_SPECIALIST, SPECIALIST_COST
 
 
 # Per-category station modifier baselines (avail, perf, qual) at eff_mult=1.0.
@@ -92,6 +93,7 @@ class Factory:
         self._critical_cap_reached: bool = False
         # Mission system
         self.missions: Dict[str, Mission] = load_all_missions()
+        self.specialists: Dict[str, Specialist] = {}
 
         # Running plant-level totals (reset each day)
         self._daily_output:  int   = 0
@@ -602,6 +604,25 @@ class Factory:
             return self.day_history[-1].ftr
         return 0.0
 
+    def hire_specialist(self, zone_id: str) -> dict:
+        if zone_id not in ZONE_SPECIALIST:
+            return {"success": False, "reason": "No specialist available for this zone."}
+        if zone_id in self.specialists:
+            return {"success": False, "reason": "A specialist is already hired for this zone."}
+        if self.credits < SPECIALIST_COST:
+            return {"success": False, "reason": f"Not enough credits (need {SPECIALIST_COST})."}
+
+        specialist = Specialist.for_zone(zone_id, self.time.day)
+        self.specialists[zone_id] = specialist
+        self.credits -= SPECIALIST_COST
+        self._apply_specialist_modifiers(zone_id, specialist)
+        return {"success": True, "reason": ""}
+
+    def _apply_specialist_modifiers(self, zone_id: str, specialist: Specialist) -> None:
+        for st in self.stations.values():
+            if st.zone_id == zone_id:
+                st.apply_modifier(specialist.avail_bonus, specialist.perf_bonus, specialist.qual_bonus)
+
     @property
     def active_problems(self) -> Dict[str, Problem]:
         return {
@@ -649,6 +670,7 @@ class Factory:
             "investigation_sessions": {pid: s.to_dict() for pid, s in self.investigation_sessions.items()},
             "discovered_concepts":    sorted(self.discovered_concepts),
             "missions":               {mid: m.to_save_dict() for mid, m in self.missions.items()},
+            "specialists":            {zid: s.to_dict() for zid, s in self.specialists.items()},
         }
 
     def from_dict(self, d: dict) -> None:
@@ -684,3 +706,7 @@ class Factory:
         for mid, state_d in d.get("missions", {}).items():
             if mid in self.missions:
                 self.missions[mid].restore_runtime_state(state_d)
+        for zid, spec_d in d.get("specialists", {}).items():
+            specialist = Specialist.from_dict(spec_d)
+            self.specialists[zid] = specialist
+            self._apply_specialist_modifiers(zid, specialist)

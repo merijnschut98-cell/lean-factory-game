@@ -14,6 +14,7 @@ import pygame
 
 from problems.dialogue import ChoiceOutcome, build_verification_fork
 from problems.problem import ProblemState
+from simulation.specialist import Specialist, ZONE_SPECIALIST, SPECIALIST_COST
 from ui.micro_lessons import MICRO_LESSONS
 from ui.text_utils import wrap_text
 
@@ -442,6 +443,11 @@ class Inspector:
                         }
                     break
 
+        elif key == pygame.K_h:
+            st = factory.stations.get(station_id)
+            if st:
+                self._pending_action = {"type": "hire_specialist", "zone_id": st.zone_id}
+
     # ── Draw ──────────────────────────────────────────────────────────────────
 
     def draw(self) -> None:
@@ -463,6 +469,9 @@ class Inspector:
             y = self._draw_npc(surf, y)
         else:
             y = self._draw_generic(surf, y)
+
+        if "station_id" in obj and self._factory:
+            y = self._draw_specialist(surf, y)
 
         self._content_h = y + 10
 
@@ -926,6 +935,45 @@ class Inspector:
                         y += 16
 
         return y + 8
+
+    def _draw_specialist(self, surf: pygame.Surface, y: int) -> int:
+        factory = self._factory
+        station_id = self._obj.get("station_id")
+        st = factory.stations.get(station_id)
+        if not st or st.zone_id not in ZONE_SPECIALIST:
+            return y
+
+        zone_id = st.zone_id
+        y += 10
+        pygame.draw.line(surf, (40, 38, 30), (12, y), (PANEL_W - 12, y))
+        y += 10
+        surf.blit(self._font_title.render("SPECIALISTS", True, C_GOLD), (18, y))
+        y += 20
+
+        existing = factory.specialists.get(zone_id)
+        if existing:
+            surf.blit(
+                self._font_mono.render(f"✓ {existing.display_name}  (hired Day {existing.hired_day})",
+                                       True, (111, 211, 111)),
+                (18, y),
+            )
+            y += 18
+            surf.blit(self._font_body.render(existing.description, True, C_DIM), (18, y))
+            y += 18
+        else:
+            stub = Specialist.for_zone(zone_id, 0)
+            surf.blit(
+                self._font_body.render(f"Available: {stub.display_name}  —  {SPECIALIST_COST} credits",
+                                       True, C_PANEL_INK),
+                (18, y),
+            )
+            y += 18
+            surf.blit(self._font_body.render(stub.description, True, C_DIM), (18, y))
+            y += 18
+            hint_col = (111, 211, 111) if factory.credits >= SPECIALIST_COST else (232, 96, 74)
+            surf.blit(self._font_mono.render("[H] Hire Specialist", True, hint_col), (18, y))
+            y += 18
+        return y
 
     def _draw_generic(self, surf: pygame.Surface, y: int) -> int:
         obj = self._obj

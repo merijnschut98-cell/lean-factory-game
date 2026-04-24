@@ -25,6 +25,7 @@ C_INK       = (220, 215, 200)
 C_HIGHLIGHT = (50, 48, 40)
 C_TIER      = {1: (111, 211, 111), 2: (255, 214, 131),
                3: (255, 170, 80),  4: (232, 96, 74), 0: (160, 160, 180)}
+C_LOCKED    = (55, 52, 44)
 
 ROW_H   = 58
 VISIBLE = 9    # rows visible at once
@@ -180,10 +181,34 @@ class CatalogPanel:
                     (panel_x + panel_w - 40, row_y + 14),
                 )
 
+        # Tier 5 locked stub — shown when player has scrolled to the bottom
+        end_reached = self._scroll + len(visible_cms) >= len(self._cms)
+        if end_reached:
+            stub_y = y + len(visible_cms) * ROW_H
+            if stub_y + ROW_H <= y + list_area_h:
+                self._draw_tier5_stub(panel_x, stub_y, panel_w)
+
         # Detail pane for highlighted CM
         if self._cms and 0 <= self._cursor < len(self._cms):
             self._draw_detail(panel_x, y + list_area_h + 8,
                               panel_w, panel_h - list_area_h - 56, factory)
+
+    def _draw_tier5_stub(self, px: int, py: int, pw: int) -> None:
+        self.screen.blit(
+            self._font_mono.render("T5", True, C_LOCKED),
+            (px + 20, py + 6),
+        )
+        self.screen.blit(
+            self._font_title.render("Tier 5  —  Coming in v2", True, C_LOCKED),
+            (px + 60, py + 4),
+        )
+        self.screen.blit(
+            self._font_body.render(
+                "Advanced digital integration, AI-driven quality systems, and autonomous improvement loops.",
+                True, C_LOCKED,
+            ),
+            (px + 60, py + 24),
+        )
 
     def _draw_detail(self, px: int, py: int, pw: int, ph: int, factory) -> None:
         if ph < 30:
