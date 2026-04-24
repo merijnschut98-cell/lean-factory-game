@@ -199,8 +199,8 @@ Content design happens *after* Phase 5 so every new problem uses the settled dia
 - ⬜ Create installer or zip distribution
 
 ### Architecture debt (tracked from skills audit 2026-04-23)
-- ⬜ **`ui/inspector.py` split** (819 lines → ~250 + ~550): extract all `_draw_*` methods + module-level content dicts into `ui/inspector_drawing.py` as `InspectorDrawMixin`; `Inspector` inherits it. No behavior change.
-- ⬜ **`simulation/factory.py` split** (686 lines → ~350 core + extracted engines): extract `apply_countermeasure`/`rollback` → `simulation/countermeasure_engine.py`; mission triggers → `simulation/mission_engine.py`. Factory becomes a cleaner orchestrator.
+- ✅ **`ui/inspector.py` split** (994 → 218 lines): all `_draw_*` methods + content dicts in `ui/inspector_drawing.py` as `InspectorDrawMixin`; `Inspector(InspectorDrawMixin)`. No behaviour change. (session 2026-04-24)
+- ✅ **`simulation/factory.py` split** (712 → 351 lines): `apply_countermeasure`/`rollback`/`resolve`/`decay` → `simulation/countermeasure_engine.py` (245 lines); mission triggers → `simulation/mission_engine.py` (70 lines). Factory is a clean orchestrator. (session 2026-04-24)
 
 **Deliverable:** Complete v1 game. All four tiers playable. 70–80 hand-designed problems, all with dialogue forks. Standalone exe.
 
