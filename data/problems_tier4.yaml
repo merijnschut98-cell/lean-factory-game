@@ -1,0 +1,1217 @@
+# Tier 4 Problem Catalog — 12 hand-designed problems
+#
+# Tier 4 problems surface capability and measurement gaps that become
+# visible only once flow is stable (Tier 3). They are predominantly hidden:
+# they require data collection, statistical analysis, or structured
+# problem-solving to detect. Solving them teaches Six Sigma methods,
+# measurement systems, and advanced quality engineering.
+#
+# Schema: identical to problems_tier1.yaml
+
+problems:
+
+  - id: T4-001
+    name: "The Chart Nobody Understands"
+    category: Quality
+    severity: medium
+    visibility: obvious
+    zone_id: z4
+    station_id: integration_3
+    symptoms:
+      - "SPC control charts are posted on the wall at Integration 3 — operators never look at them"
+      - "Out-of-control points go unresponded to; operators continue adjusting the process after every unit"
+      - "Quality variation at Integration 3 is higher than the process data suggests it should be"
+    root_cause: >
+      SPC charts were installed as a reporting tool without operator
+      training on interpretation or a defined response plan. Operators
+      cannot distinguish common cause from special cause variation —
+      and without that distinction, they adjust the process in response
+      to noise, adding variation instead of removing it.
+    effective_countermeasures:
+      - Statistical Process Control (SPC)
+      - Control Plans
+    maturity_prerequisite: null
+    mismatch_note: >
+      Replacing SPC with a digital dashboard without teaching the
+      underlying concepts produces an operator who watches animated
+      charts they still cannot interpret. The tool changed; the gap
+      did not.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.08
+      perf_delta: -0.04
+    teaches:
+      - SPC
+      - control_charts
+      - common_cause_variation
+      - special_cause_variation
+      - overadjustment
+      - control_plan
+    dialogue:
+      investigation:
+        npc: "Quality Lead"
+        prompt: >
+          We have SPC charts everywhere but Integration 3 quality is
+          still erratic. Something is wrong with how we're using them.
+          Where do we start?
+        choices:
+          - text: "Observe an operator during a quality deviation and watch what they do with the SPC chart"
+            outcome: CORRECT
+            evidence: >
+              Watched for 30 minutes. Three process readings. Each time
+              the reading varied from the previous one, the operator
+              made a small adjustment. Asked why: 'The chart moved, so
+              I corrected it.' The operator has never been told what
+              control limits mean or when not to adjust.
+            hint: >
+              Adjusting a process in response to common cause variation
+              increases variation — the opposite of the intent. This is
+              tampering. SPC only works when operators know the difference
+              between a signal and noise. The tool is installed; the
+              understanding is not.
+            teaches: [SPC, control_charts, common_cause_variation, overadjustment]
+            score_feed: RCA
+          - text: "Check whether the SPC charts are up to date with current process data"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Stale charts are a problem — but the observations show
+              operators are actively using the charts and responding
+              incorrectly. Currency is not the issue; interpretation is.
+            teaches: [SPC, control_charts]
+          - text: "Replace the manual SPC charts with a digital real-time system"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              A digital system shows the same data more clearly — but
+              an operator who cannot interpret a manual chart will not
+              interpret a digital one correctly either. The tool is
+              not the constraint; the knowledge is.
+            teaches: [SPC, digitalization, tool_vs_thinking]
+
+  - id: T4-002
+    name: "The Lying Gage"
+    category: Quality
+    severity: high
+    visibility: hidden
+    zone_id: z5
+    station_id: final_qa
+    symptoms:
+      - "The same unit sometimes passes Final QA on one shift and fails on the next"
+      - "Two inspectors using the same gauge give different readings on the same part"
+      - "Customer returns correlate with inspector shift, not with the manufacturing date"
+    root_cause: >
+      Gage R&R (Measurement System Analysis) has never been conducted
+      at Final QA. The gauge contributes more than 35% of observed
+      measurement variation — far above the 10% threshold for an
+      acceptable measurement system. Pass/fail decisions are being
+      made on data that is mostly noise.
+    effective_countermeasures:
+      - Measurement System Analysis (MSA / Gage R&R)
+      - Statistical Process Control (SPC)
+    maturity_prerequisite: null
+    mismatch_note: >
+      Adding more inspectors to a Final QA station with an unreliable
+      measurement system produces more inconsistent decisions at higher
+      cost. Gauge reproducibility must be validated before adding
+      inspection resource.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.12
+    teaches:
+      - MSA
+      - gage_RR
+      - measurement_system
+      - measurement_variation
+      - repeatability
+      - reproducibility
+    dialogue:
+      investigation:
+        npc: "Quality Lead"
+        prompt: >
+          Customer returns are clustering by inspector shift, not by
+          production date. That makes no sense unless the inspection
+          itself is the variable. What should we check?
+        choices:
+          - text: "Have three inspectors each measure the same 10 units twice and compare the results"
+            outcome: CORRECT
+            evidence: >
+              Inspector A range across 10 units: 0.8 mm. Inspector B
+              same 10 units: 1.3 mm. Inspector C: 0.9 mm. Average
+              difference between inspectors on the same unit: 0.6 mm.
+              The tolerance window is 1.0 mm. The measurement system
+              variation consumes 60% of the tolerance before production
+              variation is even counted.
+            hint: >
+              The units are not changing between inspectors — the
+              measurement is. When the measurement system variation
+              is larger than the tolerance, the gauge determines pass/fail
+              as much as the product does. You need MSA before you can
+              trust any quality decision.
+            teaches: [MSA, gage_RR, measurement_variation, repeatability, reproducibility]
+            score_feed: RCA
+          - text: "Review the calibration records to check whether the gauge is in calibration"
+            outcome: PLAUSIBLE
+            evidence: >
+              Gauge is in calibration — calibrated 3 weeks ago. Calibration
+              confirms the gauge reads correctly against a reference standard.
+              It does not confirm that different operators use it consistently.
+            hint: >
+              Calibration checks accuracy against a standard; Gage R&R
+              checks reproducibility between operators and repeatability
+              within an operator. A calibrated gauge can still have
+              unacceptable R&R.
+            teaches: [MSA, gage_RR, measurement_system]
+          - text: "Standardise the inspection procedure to ensure all inspectors use the gauge the same way"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Standard procedure reduces reproducibility error — but
+              without a Gage R&R study, you cannot quantify how much
+              of the variation is reproducibility vs. repeatability vs.
+              genuine gauge limitation. Standardise, then validate.
+            teaches: [MSA, gage_RR, standard_work]
+      five_whys:
+        - why: >
+            The measurement system contributes 60% of observed variation.
+            Why has no Gage R&R been conducted at Final QA?
+          choices:
+            - text: "MSA was not in the quality system requirements when Final QA was designed — it has never been part of the station setup process"
+              outcome: CORRECT
+              evidence: >
+                Reviewed quality system documentation for Final QA station
+                design. No MSA requirement listed. The calibration schedule
+                exists, but MSA is absent from the setup checklist entirely.
+              hint: >
+                MSA and calibration are different activities. A system that
+                requires calibration but not MSA will produce calibrated
+                gauges that are still unreliable in production use. The
+                station was never designed to validate measurement system
+                performance.
+              teaches: [MSA, gage_RR, process_design, measurement_system]
+              score_feed: RCA
+            - text: "Gage R&R was considered too time-consuming to run on every gauge"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                MSA effort is proportional to gauge criticality. A Final
+                QA gauge making accept/reject decisions on every unit is
+                the highest-criticality gauge in the plant. If any gauge
+                merits MSA, it is this one.
+              teaches: [MSA, cost_vs_value, prioritization]
+            - text: "The quality engineers assumed the gauge was accurate because it was calibrated"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                This is a common misunderstanding: calibration = accuracy
+                against a standard; MSA = fitness for purpose in the hands
+                of multiple operators over time. Calibration does not
+                imply acceptable R&R.
+              teaches: [MSA, gage_RR, measurement_system]
+        - why: >
+            MSA was absent from the Final QA station design requirements.
+            Why was it not included when the station was set up?
+          choices:
+            - text: "The station was designed by production engineers without Six Sigma or metrology expertise — MSA was simply not part of their toolkit"
+              outcome: CORRECT
+              evidence: >
+                Station design sign-off sheet: production engineering,
+                safety, standard work review. No quality engineer or
+                metrology sign-off required at the time.
+              hint: >
+                Station design gates that do not require measurement system
+                validation will consistently produce uninspected measurement
+                risk. The fix is adding MSA to the station commissioning
+                checklist — not just this station, but all future ones.
+              teaches: [MSA, process_design, capability_building, cross_functional]
+              score_feed: RCA
+            - text: "The Six Sigma programme was not active when the station was set up"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                Timing matters — but the corrective action is forward-looking.
+                Once MSA is understood, all critical measurement stations
+                should be retroactively assessed, regardless of when they
+                were installed.
+              teaches: [MSA, change_management, structured_problem_solving]
+            - text: "MSA requires specialist equipment that was not available at the time"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                A basic Gage R&R study requires only a gauge, a sample
+                of parts, and multiple operators. No specialist equipment
+                beyond what Final QA already uses. The barrier was knowledge,
+                not equipment.
+              teaches: [MSA, cost_vs_value]
+  
+  - id: T4-003
+    name: "The Capability Mirage"
+    category: Quality
+    severity: high
+    visibility: hidden
+    zone_id: z2
+    station_id: pcb_prep
+    symptoms:
+      - "Monthly Cpk report shows PCB solder paste deposition at 1.38 — well within the Six Sigma target"
+      - "Customer complaints about PCB soldering failures have increased 3x over the same period"
+      - "The Cpk calculation is based on all data collected regardless of process stability"
+    root_cause: >
+      Process capability (Cpk) was calculated on a process that is
+      not yet in statistical control. The capability index averages
+      over both common cause and special cause periods, producing
+      an artificially high index. The process has special causes —
+      assignable sources of variation — that make the true capability
+      significantly lower than reported.
+    effective_countermeasures:
+      - Process Capability Analysis
+      - Statistical Process Control (SPC)
+      - Measurement System Analysis (MSA / Gage R&R)
+    maturity_prerequisite: null
+    mismatch_note: >
+      Publishing Cpk targets without a process for verifying control
+      state first creates a reporting environment where out-of-control
+      processes appear capable. The number is used for compliance
+      rather than improvement.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.10
+    teaches:
+      - process_capability
+      - SPC
+      - control_state
+      - special_cause_variation
+      - common_cause_variation
+      - statistical_thinking
+    dialogue:
+      investigation:
+        npc: "Quality Lead"
+        prompt: >
+          Cpk says 1.38. Customers are complaining. These two facts
+          cannot both be correct. What are we missing?
+        choices:
+          - text: "Plot the solder paste data as a time-series control chart and look for patterns before calculating Cpk"
+            outcome: CORRECT
+            evidence: >
+              Control chart of 90 days of solder paste deposition data.
+              Clear pattern: 8 points in a row below the centre line
+              around Day 34, a step change around Day 61. Two assignable
+              causes present. When the out-of-control periods are removed
+              and Cpk recalculated on the stable periods only: Cpk = 0.91.
+            hint: >
+              Cpk calculated on an out-of-control process averages the
+              good and the bad into a misleading index. The rule is
+              always: verify control before calculating capability.
+              The 1.38 is real data — it is just the wrong analysis.
+            teaches: [process_capability, SPC, control_state, special_cause_variation, statistical_thinking]
+            score_feed: RCA
+          - text: "Re-run the Cpk calculation with a larger sample to improve precision"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              A larger sample increases precision — but precision on an
+              out-of-control process produces a more precisely wrong
+              answer. The issue is the analysis method, not the sample
+              size.
+            teaches: [process_capability, SPC, statistical_thinking]
+          - text: "Audit the customer complaints to check whether they are caused by a different failure mode"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Auditing complaints is useful — but the Cpk/complaint gap
+              is a signal that the capability analysis itself is flawed.
+              Until the analysis method is validated, correlating it to
+              complaints is adding noise to noise.
+            teaches: [process_capability, data_driven, SPC]
+
+  - id: T4-004
+    name: "The DMAIC That Stopped Too Soon"
+    category: Quality
+    severity: high
+    visibility: subtle
+    zone_id: z3
+    station_id: propulsion_build
+    symptoms:
+      - "Propulsion build FTR improved by 12 percentage points 3 months ago following a DMAIC project"
+      - "FTR has regressed to within 4 points of the pre-project level over the past 6 weeks"
+      - "The DMAIC project was formally closed after the Improve phase"
+    root_cause: >
+      The DMAIC project closed after demonstrating improvement in the
+      Improve phase. The Control phase — implementing SPC monitoring,
+      a response plan, and a control plan to sustain the gain — was
+      not executed. Without control mechanisms, the improved process
+      drifted back to its previous state as operators reverted to
+      familiar habits and the improvement measures were discontinued.
+    effective_countermeasures:
+      - DMAIC
+      - Control Plans
+      - Statistical Process Control (SPC)
+    maturity_prerequisite: null
+    mismatch_note: >
+      Re-running the same DMAIC project without implementing the Control
+      phase produces the same improvement followed by the same regression.
+      The Improve phase finding was correct — the system needs control,
+      not more analysis.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.09
+      perf_delta: -0.06
+    teaches:
+      - DMAIC
+      - control_phase
+      - control_plan
+      - SPC
+      - sustain
+      - standardize
+    dialogue:
+      investigation:
+        npc: "Team Leader"
+        prompt: >
+          The DMAIC win from 3 months ago is almost gone. We're nearly
+          back to where we started. How does that happen?
+        choices:
+          - text: "Review the DMAIC project documentation — specifically what the team did after the Improve phase"
+            outcome: CORRECT
+            evidence: >
+              DMAIC project file: Define ✓, Measure ✓, Analyze ✓,
+              Improve ✓, Control — blank. Project was closed with a
+              note: 'FTR target achieved.' No control plan was created.
+              No SPC charts were installed. No response plan documented.
+              The improvement was real; the control mechanism was never built.
+            hint: >
+              DMAIC without Control is a four-letter method. The C in
+              DMAIC is not optional — it is the phase that converts
+              a one-time result into a permanent improvement. Without
+              it, improvements decay at the rate of habit change.
+            teaches: [DMAIC, control_phase, control_plan, SPC, sustain]
+            score_feed: RCA
+          - text: "Investigate whether the root cause found in the DMAIC Analyze phase was wrong"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              A wrong root cause would produce no improvement at all.
+              The 12-point FTR gain confirms the root cause was correct.
+              The regression after closure points to Control, not Analyze.
+            teaches: [DMAIC, control_phase, root_cause_analysis]
+          - text: "Restart the DMAIC project from the Define phase"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Restarting wastes the valid work already done. The Analyze
+              and Improve phases were correct. What is missing is the
+              Control phase — implement that, not a full restart.
+            teaches: [DMAIC, control_phase, structured_problem_solving]
+      five_whys:
+        - why: >
+            The DMAIC project closed without completing the Control phase.
+            Why was Control skipped?
+          choices:
+            - text: "The project was declared complete when the Improve target was hit — there was no gate requiring Control phase completion before closure"
+              outcome: CORRECT
+              evidence: >
+                Project governance records: closure approval required
+                'Improve phase target met'. No Control phase deliverable
+                listed as a closure requirement.
+              hint: >
+                The governance system allowed DMAIC projects to close
+                without Control. That is not a DMAIC programme — it is
+                a five-step analysis with an optional last step. The gate
+                criteria must require a Control plan before project closure.
+              teaches: [DMAIC, control_phase, process_design, structured_problem_solving]
+              score_feed: RCA
+            - text: "The team did not have enough time to complete the Control phase before the project deadline"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                Time pressure is real — but the root cause is the closure
+                gate. If meeting the Improve target was sufficient to close,
+                no team will spend additional time on Control under deadline
+                pressure.
+              teaches: [DMAIC, control_phase, management_pressure]
+            - text: "The team believed the Improve phase changes would hold on their own"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                Process improvements hold because control mechanisms hold
+                them — not because the improvement was good. Every DMAIC
+                project that has ever regressed was believed to be
+                self-sustaining by the team that ran it.
+              teaches: [DMAIC, control_phase, sustain, standardize]
+        - why: >
+            The project governance gate did not require a Control plan
+            before closure. Why was this gate not defined?
+          choices:
+            - text: "The DMAIC programme was designed without input from someone with Six Sigma Black Belt experience — the Control phase was treated as optional documentation"
+              outcome: CORRECT
+              evidence: >
+                DMAIC programme design records: authored by the Quality
+                Manager and two Green Belts. No Black Belt review of the
+                governance structure. The Control phase section in the
+                template says 'optional — complete if required by project scope'.
+              hint: >
+                An 'optional' Control phase in a DMAIC template is an
+                error in the programme design. Control is the phase that
+                justifies all the effort in the preceding four. Making
+                it optional removes the one gate that prevents regression.
+              teaches: [DMAIC, control_phase, capability_building, structured_problem_solving]
+              score_feed: RCA
+            - text: "Previous DMAIC projects did not require Control plans and their improvements held"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                Some improvements hold without formal control — usually
+                those with permanent physical changes. Process-behaviour
+                improvements almost always regress without control
+                mechanisms. Survivorship bias shapes this assumption.
+              teaches: [DMAIC, control_phase, confirmation_bias]
+            - text: "Control plans require specialist quality engineer support that was not budgeted"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                A control plan is a document specifying what to measure,
+                how often, and what to do when out-of-control. Team leaders
+                and quality leads write them routinely. No specialist
+                resource is required beyond the DMAIC team.
+              teaches: [DMAIC, control_plan, cost_vs_value]
+  
+  - id: T4-005
+    name: "The FMEA on the Shelf"
+    category: Quality
+    severity: medium
+    visibility: hidden
+    zone_id: z5
+    station_id: flight_test
+    symptoms:
+      - "A flight test failure mode occurred that is absent from the FMEA — the failure mode was not anticipated"
+      - "The current FMEA was last updated two years ago when the test fixture was redesigned"
+      - "Process changes since then have not triggered an FMEA review"
+    root_cause: >
+      The FMEA was created at product launch and is treated as a
+      static document. No change management process triggers an FMEA
+      review when the process changes. The fixture redesign two years
+      ago introduced new failure modes that are not in the current FMEA
+      risk register.
+    effective_countermeasures:
+      - FMEA
+      - Control Plans
+    maturity_prerequisite: null
+    mismatch_note: >
+      Updating the FMEA to document the failure mode that already
+      occurred is retrospective risk management — it records the past,
+      not the future. FMEA value comes from prospective identification
+      before failures occur, triggered by every process change.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.07
+    teaches:
+      - FMEA
+      - risk_management
+      - change_management
+      - control_plan
+      - process_design
+    dialogue:
+      investigation:
+        npc: "Quality Lead"
+        prompt: >
+          A failure mode just occurred that isn't anywhere in our FMEA.
+          How did we miss it, and what do we do about it?
+        choices:
+          - text: "Trace the history of the failed process step — when was it last changed, and was the FMEA reviewed at the time of that change?"
+            outcome: CORRECT
+            evidence: >
+              Process change log: flight test fixture redesigned 24 months
+              ago. FMEA review log for that change: no entry. The change
+              introduced a new probe contact sequence not present in the
+              original design — the new sequence has a failure mode that
+              the original FMEA could not have anticipated.
+            hint: >
+              The FMEA was not wrong when it was written — it became
+              wrong when the process changed and the FMEA was not updated.
+              Every process change is an FMEA trigger. The gap is in the
+              change management process, not the original FMEA.
+            teaches: [FMEA, change_management, risk_management, process_design]
+            score_feed: RCA
+          - text: "Update the FMEA with the new failure mode that just occurred"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Updating the FMEA is necessary — but it is reactive. The
+              systemic fix is a change management gate that requires
+              FMEA review for every process change, so the next fixture
+              redesign does not produce another unregistered failure mode.
+            teaches: [FMEA, change_management, risk_management]
+          - text: "Commission a full FMEA re-do covering all flight test failure modes"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              A full FMEA re-do is a significant investment — and the
+              finding is that the root cause is a change management gap,
+              not a coverage gap in the original FMEA. Fix the change
+              trigger first; the full re-do may not be required.
+            teaches: [FMEA, change_management, prioritization]
+
+  - id: T4-006
+    name: "The One-Variable Trap"
+    category: Quality
+    severity: medium
+    visibility: subtle
+    zone_id: z2
+    station_id: deck_cutting
+    symptoms:
+      - "Seven months of one-factor-at-a-time experiments on blade speed, temperature, and pressure at Deck Cutting"
+      - "Each factor shows a small individual improvement; combining the optimised levels produces unexpected failure rates"
+      - "No experiment has tested more than one factor at a time"
+    root_cause: >
+      One-factor-at-a-time (OFAT) experimentation cannot detect
+      interaction effects between factors. Blade speed, temperature,
+      and pressure interact — the optimum speed depends on temperature,
+      and vice versa. OFAT optimises each factor independently at a
+      fixed (possibly non-optimal) level of the others, missing the
+      true optimum entirely.
+    effective_countermeasures:
+      - Design of Experiments (DOE)
+      - Measurement System Analysis (MSA / Gage R&R)
+    maturity_prerequisite: null
+    mismatch_note: >
+      DOE on a process with an unvalidated measurement system produces
+      experimental results that may be measuring gauge noise rather
+      than process response. MSA must precede DOE for interpretable
+      results.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.08
+      perf_delta: -0.05
+    teaches:
+      - DOE
+      - interaction_effects
+      - OFAT
+      - MSA
+      - experimental_design
+      - statistical_thinking
+    dialogue:
+      investigation:
+        npc: "Quality Lead"
+        prompt: >
+          Seven months of experiments and we still can't hold the
+          Deck Cutting quality. Every individual parameter looks
+          better in isolation — then we combine them and it falls
+          apart. What are we doing wrong?
+        choices:
+          - text: "Check whether any experiment has ever tested two factors simultaneously to see if they interact"
+            outcome: CORRECT
+            evidence: >
+              Reviewed all 23 experiments conducted over 7 months.
+              Every single one changed one variable while holding others
+              constant. No interaction study has been run. Pulled the
+              data from the last 6 months and plotted temperature vs.
+              speed on defect rate: clear interaction — at high
+              temperature, the optimum speed is lower than at low
+              temperature. OFAT found the wrong optimum.
+            hint: >
+              Interaction effects are the blind spot of one-factor
+              experimentation. When the best level of Factor A depends
+              on the level of Factor B, OFAT will always give a
+              misleading answer. DOE tests combinations — that is the
+              only way to find the true optimum.
+            teaches: [DOE, interaction_effects, OFAT, experimental_design, statistical_thinking]
+            score_feed: RCA
+          - text: "Add a fourth factor (blade angle) to the experiment set to expand the search space"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Adding more factors to an OFAT programme makes the problem
+              worse, not better — more interactions go unstudied. The
+              answer is to change the experimental method (to DOE),
+              not to add more variables to the same flawed approach.
+            teaches: [DOE, interaction_effects, OFAT]
+          - text: "Accept the current parameter settings as the best available given the data"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              The data shows the settings are suboptimal — the combined
+              setting produces unexpected failures. Accepting a known
+              suboptimal state forecloses the improvement that DOE
+              can find in a fraction of the 7-month experiment history.
+            teaches: [DOE, data_driven, experimental_design]
+
+  - id: T4-007
+    name: "The Unpredictable Machine"
+    category: Maintenance
+    severity: high
+    visibility: subtle
+    zone_id: z5
+    station_id: burn_in
+    symptoms:
+      - "Burn-in oven has 3–4 unplanned failures per month despite monthly planned maintenance"
+      - "Maintenance intervals are calendar-based: 30 days regardless of run time or cycle count"
+      - "Most failures occur at the beginning of the month — shortly after maintenance"
+    root_cause: >
+      Maintenance intervals are set by convention (30 days) rather
+      than by reliability data. No MTBF analysis has been conducted.
+      The oven has a characteristic failure pattern that correlates
+      with thermal cycles rather than calendar days — but the calendar-
+      based interval misses this entirely. Post-maintenance failures
+      suggest some maintenance activities are introducing disturbances.
+    effective_countermeasures:
+      - Reliability Analysis
+      - TPM (Total Productive Maintenance)
+    maturity_prerequisite: null
+    mismatch_note: >
+      Increasing maintenance frequency without reliability data produces
+      more maintenance-induced disturbances without reducing failure
+      rate. Maintenance frequency should be driven by failure mode
+      analysis, not calendar intuition.
+    side_effect_ref: null
+    effect_modifiers:
+      avail_delta: -0.12
+    teaches:
+      - reliability_analysis
+      - MTBF
+      - predictive_maintenance
+      - TPM
+      - maintenance_induced_failures
+      - availability
+    dialogue:
+      investigation:
+        npc: "Team Leader"
+        prompt: >
+          We maintain that oven every month and it still fails 3–4
+          times a month. What's going on?
+        choices:
+          - text: "Plot every failure event by day-of-month and by thermal cycle count since last maintenance"
+            outcome: CORRECT
+            evidence: >
+              Plotted 18 months of failure data. Day-of-month analysis:
+              11 of 52 failures occurred within 3 days of a maintenance
+              event. Thermal cycle analysis: failure probability rises
+              steeply after 1,200 thermal cycles regardless of calendar
+              date. Monthly maintenance averages 1,450 cycles — the
+              machine is already past its reliability threshold before
+              maintenance is triggered.
+            hint: >
+              Two signals: failures cluster after maintenance (maintenance-
+              induced), and failure rate correlates with thermal cycles
+              not calendar days. The interval is wrong in both direction
+              and unit. MTBF analysis gives the evidence needed to set
+              the correct interval and identify which maintenance steps
+              introduce risk.
+            teaches: [reliability_analysis, MTBF, predictive_maintenance, maintenance_induced_failures, availability]
+            score_feed: RCA
+          - text: "Increase maintenance frequency to every 2 weeks to catch failures earlier"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              More frequent maintenance will increase the frequency of
+              maintenance-induced failures — which are already 21% of
+              all failures. Without data on which maintenance steps
+              introduce risk, increasing frequency may increase failures.
+            teaches: [reliability_analysis, MTBF, maintenance_induced_failures]
+          - text: "Assign a dedicated maintenance engineer to the burn-in oven"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              A dedicated resource improves response time but does not
+              change the failure pattern. The issue is the maintenance
+              strategy — calendar-based intervals that miss the thermal-
+              cycle failure mode. More people following the wrong plan
+              is still the wrong plan.
+            teaches: [reliability_analysis, TPM, MTBF]
+
+  - id: T4-008
+    name: "The Invisible Input"
+    category: Quality
+    severity: high
+    visibility: hidden
+    zone_id: z4
+    station_id: integration_5
+    symptoms:
+      - "Integration 5 defect rate varies significantly and unpredictably between operators, machines, and shifts"
+      - "The quality team debates which factor is responsible — temperature, operator, machine age, or material batch — with no data to decide"
+      - "Improvement projects have targeted each suspected factor in turn with marginal results"
+    root_cause: >
+      No regression or ANOVA analysis has been conducted to quantify
+      the contribution of each input factor to the defect rate. The
+      dominant factor may be one that has not even been considered.
+      Without statistical analysis, effort is distributed by intuition
+      across factors that may have little actual influence.
+    effective_countermeasures:
+      - Regression Analysis
+      - ANOVA
+      - Measurement System Analysis (MSA / Gage R&R)
+    maturity_prerequisite: null
+    mismatch_note: >
+      Regression analysis without a validated measurement system may
+      find a strong correlation between an input and measurement noise
+      rather than a real process output. MSA is the prerequisite for
+      interpretable regression.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.09
+    teaches:
+      - regression_analysis
+      - ANOVA
+      - MSA
+      - statistical_thinking
+      - data_driven
+      - factor_analysis
+    dialogue:
+      investigation:
+        npc: "Quality Lead"
+        prompt: >
+          Four different theories about what's driving Integration 5
+          defects. Each project targets a different factor. None of
+          them have made a significant difference. How do we break
+          this pattern?
+        choices:
+          - text: "Collect structured data on all four suspected factors simultaneously and run a correlation analysis"
+            outcome: CORRECT
+            evidence: >
+              90-day data collection: operator, machine ID, shift,
+              material batch number, temperature, and defect rate logged
+              per unit. ANOVA on shift and operator: no statistically
+              significant effect (p > 0.20). Regression on material
+              batch temperature: R² = 0.71. The dominant factor is
+              incoming material batch temperature at the point of delivery
+              — a variable no one had proposed or measured before.
+            hint: >
+              The four debated factors were all plausible — and all
+              statistically insignificant. The real driver was a variable
+              no one had thought to measure. Statistical analysis found
+              it in 90 days; intuition-based experimentation missed it
+              in over a year.
+            teaches: [regression_analysis, ANOVA, statistical_thinking, data_driven, factor_analysis]
+            score_feed: RCA
+          - text: "Run a designed experiment testing all four factors at two levels"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              DOE is a good approach — but it tests only the factors
+              included in the design. If the dominant factor is not on
+              the list (as it turned out to be), DOE will also miss it.
+              Broad data collection first, then targeted DOE, is the
+              more reliable sequence.
+            teaches: [DOE, statistical_thinking, factor_analysis]
+          - text: "Focus improvement effort on the operator factor since it is the most controllable"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Controllability is an implementation consideration — it
+              should not drive factor prioritisation before the factors
+              are ranked by impact. Controlling a low-impact factor
+              produces controlled outputs with no quality improvement.
+            teaches: [data_driven, factor_analysis, statistical_thinking]
+
+  - id: T4-009
+    name: "The 8D Stuck at D4"
+    category: Quality
+    severity: medium
+    visibility: obvious
+    zone_id: z1
+    station_id: incoming_qa
+    symptoms:
+      - "Customer returned 47 units with documented failure — an 8D report was opened 4 weeks ago"
+      - "The 8D is stuck on D4 (Root Cause) — proposed root cause has been revised three times"
+      - "Customer is waiting for D5 (Corrective Action) and the team cannot agree on what the root cause is"
+    root_cause: >
+      The 8D team is debating root cause based on intuition and
+      verbal argument. No hypothesis has been tested with data. Without
+      statistical hypothesis testing, competing theories cannot be
+      distinguished from each other — the team cycles through plausible
+      explanations without ever confirming one.
+    effective_countermeasures:
+      - 8D Problem Solving
+      - Hypothesis Testing
+      - Statistical Process Control (SPC)
+    maturity_prerequisite: null
+    mismatch_note: >
+      Adding more team members to an 8D debate produces more opinions,
+      not more data. D4 requires evidence, not consensus. The team
+      size is not the constraint — the evidence standard is.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.08
+    teaches:
+      - 8D
+      - hypothesis_testing
+      - statistical_thinking
+      - data_driven
+      - root_cause_analysis
+      - structured_problem_solving
+    dialogue:
+      investigation:
+        npc: "Quality Lead"
+        prompt: >
+          Four weeks, three different root causes proposed, zero D4
+          agreement. The customer is waiting. What are we doing wrong
+          in this 8D?
+        choices:
+          - text: "Take the three proposed root causes and design a test that would distinguish between them"
+            outcome: CORRECT
+            evidence: >
+              Three candidates: (A) incoming material out-of-spec,
+              (B) assembly torque drift on night shift, (C) temperature
+              during transit. Designed a test: compared failure rate
+              across material lots, across shifts, and across shipment
+              routes with temperature logging. Candidate C: no correlation.
+              Candidate A: no correlation. Candidate B: night shift
+              failures 4.7× day shift rate on the specific torque step.
+              D4 confirmed in 8 days.
+            hint: >
+              The team had the right root cause in their list from the
+              start — they just couldn't distinguish it from the others
+              by discussion. A designed test eliminated two candidates
+              in a week. Hypothesis testing is the discipline of making
+              root cause debate answerable.
+            teaches: [hypothesis_testing, 8D, statistical_thinking, data_driven, root_cause_analysis]
+            score_feed: RCA
+          - text: "Escalate the 8D to a Black Belt to break the deadlock"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              A Black Belt brings statistical tools — which is exactly
+              what the team needs. But the tools can be applied by the
+              current team with guidance. Escalation is a slower route
+              to the same statistical analysis.
+            teaches: [8D, hypothesis_testing, capability_building]
+          - text: "Choose the most plausible of the three root cause candidates and proceed to D5"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Proceeding to D5 on an unvalidated root cause produces
+              a corrective action for the wrong cause. If the customer
+              failure recurs, a second 8D will be needed — having spent
+              resources on an ineffective D5. The cost of a proper D4
+              test is lower than the cost of a failed D5.
+            teaches: [8D, hypothesis_testing, data_driven]
+
+  - id: T4-010
+    name: "The Spec Nobody Can Meet"
+    category: Quality
+    severity: high
+    visibility: obvious
+    zone_id: z6
+    station_id: packaging
+    symptoms:
+      - "New customer specification requires hoverboard weight tolerance ±2g — current process averages ±5g variation"
+      - "Every batch at Packaging has out-of-spec units; the reject rate at the final weight check is 22%"
+      - "The specification was accepted commercially 6 months ago without a capability assessment"
+    root_cause: >
+      The customer specification was accepted without verifying that
+      the current process is capable of meeting it. No QFD or
+      capability pre-assessment was conducted at the time of
+      specification acceptance. The process cannot produce to ±2g
+      without fundamental changes to assembly method and component
+      selection.
+    effective_countermeasures:
+      - Quality Function Deployment (QFD)
+      - Process Capability Analysis
+      - Design of Experiments (DOE)
+    maturity_prerequisite: null
+    mismatch_note: >
+      Attempting SPC on a process that is not capable of meeting the
+      specification produces control charts that confirm the process
+      is out of specification on every run. SPC cannot make an
+      incapable process capable — it can only reveal how incapable
+      it is.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.14
+    teaches:
+      - QFD
+      - process_capability
+      - voice_of_customer
+      - specification_gap
+      - statistical_thinking
+      - data_driven
+    dialogue:
+      investigation:
+        npc: "Scheduler"
+        prompt: >
+          22% rejection rate at the weight check. This spec came in 6
+          months ago and we've been struggling ever since. What's the
+          actual problem here?
+        choices:
+          - text: "Calculate the current process Cpk for weight against the ±2g specification and compare it to the capability at acceptance"
+            outcome: CORRECT
+            evidence: >
+              Current weight variation: ±5g (3-sigma). Specification: ±2g.
+              Cpk against ±2g spec: 0.41. This process was never capable
+              of meeting this specification. Review of the commercial
+              acceptance records: no capability check was requested
+              or performed at time of agreement. The spec was accepted
+              on the commercial team's confidence that 'production would
+              figure it out.'
+            hint: >
+              A Cpk of 0.41 means this specification requires a process
+              that is 3.5× more capable than what exists. That is not
+              an operations problem — it is a product/process design
+              problem and a commercial acceptance process problem.
+              QFD translates customer requirements into process capability
+              requirements before they become contractual obligations.
+            teaches: [process_capability, QFD, voice_of_customer, specification_gap, statistical_thinking]
+            score_feed: RCA
+          - text: "Increase inspection frequency at the final weight check to catch out-of-spec units earlier"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Earlier detection reduces the cost per out-of-spec unit —
+              but the 22% rejection rate does not change. The process is
+              incapable of the specification regardless of when the check
+              happens. Detection efficiency and process capability are
+              different problems.
+            teaches: [process_capability, QFD, data_driven]
+          - text: "Negotiate a wider tolerance with the customer"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Tolerance renegotiation may be appropriate — but only after
+              understanding whether the specification reflects a real
+              customer need (via QFD) or was set arbitrarily. If the
+              ±2g is driven by a critical function, it cannot be widened
+              without customer risk. If it is arbitrary, renegotiation
+              is valid. Neither can be known without VOC analysis.
+            teaches: [QFD, voice_of_customer, process_capability]
+
+  - id: T4-011
+    name: "The OEE That Won't Move"
+    category: Quality
+    severity: medium
+    visibility: subtle
+    zone_id: z4
+    station_id: integration_4
+    symptoms:
+      - "Integration 4 OEE has been at 74–76% for 8 months despite multiple improvement projects"
+      - "Availability and Performance components are both above 90%; Quality is at 88%"
+      - "Defect losses are categorised as a single 'Reject' bucket with no sub-analysis"
+    root_cause: >
+      The Quality component of OEE is the limiting factor, but all
+      defects are recorded in a single category. Without sub-categorising
+      quality losses (by defect type, occurrence time, and contributing
+      factor), improvement energy cannot be focused. The single-bucket
+      recording hides which quality losses are worth attacking.
+    effective_countermeasures:
+      - OEE Optimization (Advanced)
+      - Statistical Process Control (SPC)
+      - Pareto Analysis / ABC Analysis
+    maturity_prerequisite: null
+    mismatch_note: >
+      Applying SPC to overall OEE without first categorising the quality
+      losses produces a control chart tracking the net effect of
+      multiple independent loss categories — a chart that is difficult
+      to interpret and impossible to drive improvement from.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.08
+    teaches:
+      - OEE
+      - quality_loss_analysis
+      - SPC
+      - pareto
+      - data_driven
+      - stratification
+    dialogue:
+      investigation:
+        npc: "Quality Lead"
+        prompt: >
+          Eight months at 74–76% OEE. Availability and Performance are
+          healthy. Quality is the anchor. But we can't seem to move it.
+          What's missing from our analysis?
+        choices:
+          - text: "Break down the Quality OEE losses into specific defect categories and plot each as a Pareto"
+            outcome: CORRECT
+            evidence: >
+              Recoded 3 months of rejection data into 8 defect categories.
+              Pareto: Category A (connector seating failure) — 44% of all
+              quality losses. Category B (torque out of spec) — 21%.
+              Categories C–H — combined 35%. Category A had never been
+              identified as a distinct loss type before. It correlates
+              with a specific fixture that has not been recalibrated
+              in 11 months.
+            hint: >
+              The Reject bucket was hiding the most actionable signal
+              in the data. Stratifying losses into categories is always
+              the first step in quality OEE analysis. Without it, you
+              are improving an average of problems that have very
+              different causes and very different fixes.
+            teaches: [OEE, quality_loss_analysis, pareto, data_driven, stratification]
+            score_feed: RCA
+          - text: "Increase the OEE target to create urgency and drive improvement activity"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Higher targets motivate effort — but effort in the wrong
+              direction produces no OEE improvement. The constraint
+              is the analysis method, not the ambition level.
+            teaches: [OEE, data_driven, prioritization]
+          - text: "Apply SPC to the OEE trend to detect when improvement projects are having an effect"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              SPC on overall OEE will detect statistically significant
+              shifts — but a shift in the aggregate says nothing about
+              which quality loss category moved. SPC on the right
+              stratification is valuable; SPC on the undifferentiated
+              aggregate is not.
+            teaches: [OEE, SPC, stratification, data_driven]
+
+  - id: T4-012
+    name: "The Change Nobody Recorded"
+    category: Quality
+    severity: high
+    visibility: hidden
+    zone_id: z3
+    station_id: battery_assembly
+    symptoms:
+      - "Battery Assembly defect rate increased significantly 6 months ago and has not recovered"
+      - "All investigations since the increase have focused on process behaviour and found no cause"
+      - "A multi-vari analysis reveals the dominant variation source is correlated with material batch"
+    root_cause: >
+      A supplier for the battery cell coating was changed 6 months ago
+      for cost reasons. The change was authorised commercially but
+      was not reviewed against the FMEA, not captured in the control
+      plan, and not communicated to the quality team. The new supplier's
+      coating thickness distribution is wider than the original — this
+      is the dominant cause of the defect increase, but it was invisible
+      to all investigations because no one knew the material had changed.
+    effective_countermeasures:
+      - FMEA
+      - Control Plans
+      - Measurement System Analysis (MSA / Gage R&R)
+    maturity_prerequisite: null
+    mismatch_note: >
+      Conducting a supplier audit after discovering the defect is
+      reactive risk management. The FMEA and control plan should
+      have flagged incoming material specification as a critical
+      controlled characteristic — requiring qualification of any
+      new supplier before production use.
+    side_effect_ref: null
+    effect_modifiers:
+      quality_delta: -0.10
+    teaches:
+      - FMEA
+      - control_plan
+      - supplier_quality
+      - change_management
+      - multi_vari
+      - risk_management
+    dialogue:
+      investigation:
+        npc: "Team Leader"
+        prompt: >
+          Six months of the same defect and no one can find the cause.
+          The process hasn't changed — or so we thought. What are
+          we not looking at?
+        choices:
+          - text: "Collect material batch numbers for all production in the 6 months before and after the defect increase and check for any supplier or specification changes"
+            outcome: CORRECT
+            evidence: >
+              Traced material batches to supplier records. Battery cell
+              coating supplier changed from Supplier A to Supplier B on
+              exactly the date the defect rate increased. Supplier B's
+              coating specification: same nominal, tolerance ±0.05 mm.
+              Supplier A's actual distribution: ±0.02 mm. Supplier B's
+              actual distribution: ±0.07 mm. The wider incoming tolerance
+              is directly causing the defects. Change was never captured
+              in the FMEA or control plan.
+            hint: >
+              The process had changed — at the material level. Investigations
+              that look only at production process behaviour will miss
+              changes in incoming material. The control plan should list
+              material batch qualification as a controlled characteristic.
+              It did not.
+            teaches: [FMEA, control_plan, supplier_quality, change_management, multi_vari, risk_management]
+            score_feed: RCA
+          - text: "Run a full capability study on all Battery Assembly process parameters"
+            outcome: PLAUSIBLE
+            evidence: null
+            hint: >
+              Capability analysis on process parameters will confirm
+              the process parameters are stable — because they are.
+              The variation is coming from incoming material, not the
+              process. An analysis that excludes incoming material
+              will not find this cause.
+            teaches: [process_capability, supplier_quality, factor_analysis]
+          - text: "Assign an engineer to monitor Battery Assembly full-time until the cause is found"
+            outcome: WRONG
+            evidence: null
+            hint: >
+              Continuous observation of the production process will not
+              reveal a supplier change that happened 6 months ago.
+              The cause is historical and material-level — it requires
+              traceability analysis, not floor observation.
+            teaches: [traceability, supplier_quality, data_driven]
+      five_whys:
+        - why: >
+            The battery cell coating supplier was changed without review
+            against the FMEA or control plan. Why was the change not
+            subject to quality review?
+          choices:
+            - text: "The supplier change was authorised as a commercial decision — quality review was not a required step in the approval process"
+              outcome: CORRECT
+              evidence: >
+                Supplier change approval record: signed by Procurement
+                and Finance. Quality Engineering sign-off not required
+                per current procedure. The approval process has no gate
+                requiring FMEA or control plan review for supplier changes.
+              hint: >
+                Commercial decisions that change process inputs should
+                require quality review — especially for inputs listed
+                as critical in the FMEA. The approval process gap
+                allowed a material risk to enter production undetected.
+              teaches: [FMEA, control_plan, change_management, risk_management, cross_functional]
+              score_feed: RCA
+            - text: "The quality team was not informed of the supplier change"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                The communication failure is a symptom of the process
+                gap. If the approval process required quality sign-off,
+                information would have flowed automatically. The root
+                cause is the missing gate, not the absent notification.
+              teaches: [change_management, cross_functional, process_design]
+            - text: "The new supplier had the same specification on paper — the change appeared equivalent"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                Same nominal specification does not mean same performance.
+                Supplier qualification requires MSA on incoming material
+                from the new source — same spec on paper often means
+                different distribution in practice.
+              teaches: [MSA, supplier_quality, specification_gap]
+        - why: >
+            The approval process has no quality gate for supplier changes.
+            Why was this gate never added?
+          choices:
+            - text: "Supplier changes were treated as a procurement function with no cross-functional impact — quality's scope was defined as the production process, not the supply chain"
+              outcome: CORRECT
+              evidence: >
+                Quality system scope document: 'Quality Engineering is
+                responsible for in-process and outgoing quality.' No
+                mention of incoming material qualification or supplier
+                change review. The scope was drawn too narrowly at system
+                implementation.
+              hint: >
+                Quality system scope that excludes incoming material creates
+                a structural blind spot. Any change upstream of where
+                quality is defined falls outside the system's protection.
+                Extending the scope to include supplier qualification
+                closes this gap prospectively.
+              teaches: [FMEA, control_plan, supplier_quality, cross_functional, systems_thinking]
+              score_feed: RCA
+            - text: "Previous supplier changes had no quality impact, establishing a precedent"
+              outcome: PLAUSIBLE
+              evidence: null
+              hint: >
+                Previous uneventful changes create survivorship bias.
+                The absence of past incidents does not mean the risk
+                does not exist — it means the risk has not materialised
+                yet. The first incident is the evidence the gate was needed.
+              teaches: [risk_management, FMEA, confirmation_bias]
+            - text: "The quality team didn't have enough capacity to review all supplier changes"
+              outcome: WRONG
+              evidence: null
+              hint: >
+                Not all supplier changes require equal review — a risk-
+                tiered approach (critical characteristics trigger review;
+                low-impact changes do not) makes the gate proportionate.
+                Capacity is not the constraint; risk triage is.
+              teaches: [FMEA, risk_management, prioritization]
