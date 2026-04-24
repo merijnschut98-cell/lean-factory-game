@@ -64,6 +64,7 @@ def _run_game() -> None:
     from ui.warning_dialog import WarningDialog
     from ui.score_panel import ScorePanel
     from ui.codex_panel import CodexPanel
+    from ui.quiz_panel import QuizPanel
     from ui.menu import start_screen, pause_menu
     from maturity.mismatch import mismatch_warning
     from persistence.load import has_save, load
@@ -95,6 +96,7 @@ def _run_game() -> None:
     warning_dlg   = WarningDialog(screen)
     score_panel   = ScorePanel(screen)
     codex_panel   = CodexPanel(screen)
+    quiz_panel    = QuizPanel(screen)
 
     # Tracks which problem_id is pending CM application after warning
     _pending_cm: dict = {}   # {problem_id, cm_id}
@@ -136,6 +138,30 @@ def _run_game() -> None:
                 _pending_cm = {}
                 continue
 
+            # Implementation quiz — shown between catalog selection and warning/apply
+            if quiz_panel.is_open:
+                quiz_panel.handle_event(event)
+                qres = quiz_panel.consume_result()
+                if qres and _pending_cm:
+                    prob_id = _pending_cm["problem_id"]
+                    cm_id   = _pending_cm["cm_id"]
+                    session = factory.get_or_create_session(prob_id)
+                    if session:
+                        session.quiz_correct_count = qres["correct_count"]
+                    if qres.get("teaches_earned"):
+                        factory.discover(qres["teaches_earned"])
+                    cm = factory.cm_catalog.get(cm_id)
+                    prob = factory.problems.get(prob_id or "")
+                    zone_m = factory.maturity.zone_maturity(prob.zone_id) if prob else 1.0
+                    warn = mismatch_warning(cm.name, cm.tier_int, zone_m) if cm else None
+                    if warn:
+                        warning_dlg.show(warn)
+                    else:
+                        factory.apply_countermeasure(prob_id, cm_id)
+                        inspector.close()
+                        _pending_cm = {}
+                continue
+
             # Catalog panel
             if catalog_panel.is_open:
                 catalog_panel.handle_event(event)
@@ -143,15 +169,19 @@ def _run_game() -> None:
                 if sel:
                     prob_id = catalog_panel.problem_id
                     catalog_panel.close()
-                    prob = factory.problems.get(prob_id or "")
-                    zone_m = factory.maturity.zone_maturity(prob.zone_id) if prob else 1.0
-                    warn = mismatch_warning(sel.name, sel.tier_int, zone_m)
-                    if warn:
+                    if sel.implementation_quiz:
                         _pending_cm = {"problem_id": prob_id, "cm_id": sel.id}
-                        warning_dlg.show(warn)
+                        quiz_panel.open(sel)
                     else:
-                        factory.apply_countermeasure(prob_id, sel.id)
-                        inspector.close()
+                        prob = factory.problems.get(prob_id or "")
+                        zone_m = factory.maturity.zone_maturity(prob.zone_id) if prob else 1.0
+                        warn = mismatch_warning(sel.name, sel.tier_int, zone_m)
+                        if warn:
+                            _pending_cm = {"problem_id": prob_id, "cm_id": sel.id}
+                            warning_dlg.show(warn)
+                        else:
+                            factory.apply_countermeasure(prob_id, sel.id)
+                            inspector.close()
                 continue
 
             if event.type == pygame.KEYDOWN:
@@ -316,7 +346,8 @@ def _run_game() -> None:
         # ── Movement ──────────────────────────────────────────────────────────
         # Inspector included so arrow keys scroll the panel without also moving the player.
         if (not catalog_panel.is_open and not warning_dlg.is_open
-                and not score_panel.is_open and not inspector.is_open):
+                and not score_panel.is_open and not inspector.is_open
+                and not quiz_panel.is_open):
             keys = pygame.key.get_pressed()
             dx, dy = 0.0, 0.0
             if keys[pygame.K_w] or keys[pygame.K_UP]:    dy -= 1
@@ -344,6 +375,7 @@ def _run_game() -> None:
         catalog_panel.draw(factory)
         warning_dlg.draw()
         score_panel.draw()
+        quiz_panel.draw()
         codex_panel.draw(factory)
 
         pygame.display.flip()

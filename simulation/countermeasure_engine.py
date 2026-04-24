@@ -138,6 +138,9 @@ class CountermeasuresMixin:
                 feed = choice.get("score_feed")
                 if choice.get("outcome") == "CORRECT" and feed and feed in scores:
                     scores[feed] = min(5, scores[feed] + 1)
+            # Implementation-quiz correct answers boost CIM (capped at 5)
+            if session.quiz_correct_count > 0:
+                scores["CIM"] = min(5, scores["CIM"] + session.quiz_correct_count)
 
         total  = total_score(scores)
         earned = credits_earned(total, prob.severity)

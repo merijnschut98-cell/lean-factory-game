@@ -69,6 +69,59 @@ countermeasures:
       without sustain mechanisms will see the zone deteriorate and the
       problem resurface. This is intentional — it teaches that 5S is a
       system, not a one-time event.
+    implementation_quiz:
+      - question: >
+          You're ready to implement 5S in the zone. What's the first
+          action for the Sort phase specifically?
+        npc: "Team Leader"
+        choices:
+          - text: "Walk the area and red-tag everything that isn't needed for the current work"
+            outcome: CORRECT
+            feedback: >
+              That's Sort — the first S. Every item in the workspace
+              gets a decision: keep, relocate, or remove. The red tags
+              make the decision visible and auditable.
+            teaches: [5S_sort, workplace_organization]
+          - text: "Organize the tools that are staying into shadow-board positions"
+            outcome: PLAUSIBLE
+            feedback: >
+              That's Set in order — the second S. Valuable, but it's
+              wasted effort if you Set tools you'll red-tag an hour later.
+              Always Sort before you Set.
+            teaches: [5S, workplace_organization]
+          - text: "Deep-clean the whole area first to see what you're working with"
+            outcome: WRONG
+            feedback: >
+              That's Shine — the third S. Cleaning first means scrubbing
+              around items that shouldn't even be there. Sort first,
+              then you'll have less to clean.
+            teaches: [5S]
+      - question: >
+          Sort and Set in order are done. What prevents the zone from
+          drifting back to its previous state within a month?
+        npc: "Team Leader"
+        choices:
+          - text: "Schedule recurring 5S audits with a named owner and visible scorecard"
+            outcome: CORRECT
+            feedback: >
+              Sustain — the fifth S — is a management system, not a
+              poster. Audits, owners, and visibility are the three
+              structural elements that hold 5S in place.
+            teaches: [sustain, management_system, accountability]
+          - text: "Run a 5S training workshop for all operators in the zone"
+            outcome: PLAUSIBLE
+            feedback: >
+              Training helps — but untrained operators can sustain a
+              well-audited zone, and trained operators can't sustain
+              an unaudited one. The audit routine does the work.
+            teaches: [sustain, training]
+          - text: "Take a photograph of the organized state as a reference"
+            outcome: WRONG
+            feedback: >
+              Photos help with Set in order (showing where things go)
+              but do nothing for Sustain. A photo doesn't notice when
+              drift happens — only an audit does.
+            teaches: [sustain, visual_management]
 
   - id: CM-T1-002
     name: "Standard Work Definition"
@@ -103,6 +156,65 @@ countermeasures:
       Prerequisite for SMED, Line Balancing, TPM, and most
       Tier 3+ countermeasures. Without it, advanced tools
       operate without a baseline.
+    implementation_quiz:
+      - question: >
+          You're about to write the standard work for a station. What
+          should you capture first?
+        npc: "Team Leader"
+        choices:
+          - text: "Time each step of the current best-known method with a stopwatch, then document the sequence"
+            outcome: CORRECT
+            feedback: >
+              Standard work starts from observation, not from theory.
+              The best-known method — timed and verified — becomes the
+              baseline that everyone can improve against.
+            teaches: [standard_work, time_study, gemba]
+          - text: "Write down what the most experienced operator describes doing"
+            outcome: PLAUSIBLE
+            feedback: >
+              An operator's description is tacit knowledge — useful,
+              but incomplete. They often omit the hundreds of small
+              decisions they make without thinking. Observation
+              captures what words miss.
+            teaches: [standard_work, tacit_knowledge]
+          - text: "Draft the procedure based on the engineering specification"
+            outcome: WRONG
+            feedback: >
+              The spec describes intent, not execution. Standard work
+              documents what actually works on the floor — which is
+              often different from what engineering designed. Observe
+              first, reconcile with the spec later.
+            teaches: [standard_work, gemba]
+      - question: >
+          A new operator reaches a consistently lower cycle time than
+          the documented standard, using a slightly different method.
+          What's the right response?
+        npc: "Team Leader"
+        choices:
+          - text: "Observe carefully, verify quality holds, then update the standard to the new method"
+            outcome: CORRECT
+            feedback: >
+              Standard work is the best-known method — until a better
+              one is discovered. A faster, equally-high-quality method
+              becomes the new baseline. Standard work is living, not
+              frozen.
+            teaches: [standard_work, kaizen, continuous_improvement]
+          - text: "Retrain the operator to follow the documented standard exactly"
+            outcome: PLAUSIBLE
+            feedback: >
+              Consistency matters — but locking in a suboptimal method
+              when a better one is visible teaches everyone that the
+              document matters more than the outcome. The standard
+              should chase the best method, not the other way around.
+            teaches: [standard_work]
+          - text: "Let each operator develop their own method as long as output is acceptable"
+            outcome: WRONG
+            feedback: >
+              Now you have N methods and N cycle times. Variation is
+              the enemy of quality data and improvement targets.
+              Standard work exists to converge on one best method —
+              updated when a better one is found.
+            teaches: [standard_work, operator_variation]
 
   - id: CM-T1-003
     name: "Safety Routines"
@@ -169,6 +281,66 @@ countermeasures:
       Prerequisite for Poka-Yoke and Jidoka. Basic quality gates
       establish the detection points that more advanced tools
       then automate or error-proof.
+    implementation_quiz:
+      - question: >
+          You're installing quality gates on a line that has defects
+          reaching the customer. Where does the first gate belong?
+        npc: "Quality Lead"
+        choices:
+          - text: "Immediately after the process step that creates the most common defect"
+            outcome: CORRECT
+            feedback: >
+              Catching the defect next to its source means you still
+              know what caused it. Every station the defect travels
+              through before detection adds noise to the investigation.
+              Close to the source is close to the answer.
+            teaches: [quality_gate, FTR, root_cause_analysis]
+          - text: "At the end of the line, where all defects can be caught together"
+            outcome: PLAUSIBLE
+            feedback: >
+              End-of-line catches everything, but by then the unit has
+              had 15 stations' worth of value added. Rework is
+              expensive. And the cause is buried under 15 steps of
+              variation. This is detection, not prevention.
+            teaches: [quality_gate, rework_waste]
+          - text: "Before the process step, so incoming material can be checked"
+            outcome: WRONG
+            feedback: >
+              Incoming inspection is useful — but it can't catch defects
+              the process itself creates. If the station is introducing
+              the defect, no amount of incoming check will find it.
+              The gate needs to be downstream of the cause.
+            teaches: [quality_gate, inspection]
+      - question: >
+          An operator detects a defect at a quality gate. What's the
+          right immediate response?
+        npc: "Quality Lead"
+        choices:
+          - text: "Stop the flow, contain the batch since the last good check, and investigate upstream"
+            outcome: CORRECT
+            feedback: >
+              Stop-and-contain is the Jidoka principle. You don't know
+              how long the defect has been occurring, so everything
+              since the last good check is suspect. Investigate before
+              resuming — the cause might still be producing defects
+              right now.
+            teaches: [jidoka, quality_gate, containment]
+          - text: "Reroute the defective unit for rework and keep the line running"
+            outcome: PLAUSIBLE
+            feedback: >
+              Keeping the line running feels right — but if the defect's
+              cause is still active, you're making more rework every
+              minute. Short-term throughput, long-term cost. A quick
+              investigation beats rework volume.
+            teaches: [quality_gate, rework_waste]
+          - text: "Log the defect and pass the unit along for the next shift to handle"
+            outcome: WRONG
+            feedback: >
+              A logged-but-unactioned defect becomes background noise.
+              By the next shift, the cause has drifted and the context
+              is lost. A quality gate that doesn't stop the line is
+              just a counter.
+            teaches: [quality_gate, jidoka]
 
   - id: CM-T1-005
     name: "Workplace Organization"
@@ -227,6 +399,63 @@ countermeasures:
       condition: null
       side_effect_ref: null
     applicable_to: [all]
+    implementation_quiz:
+      - question: >
+          You're labelling storage bins and routes in the zone.
+          What makes a visual label actually effective on the floor?
+        npc: "Team Leader"
+        choices:
+          - text: "It communicates status at a glance — colour, shape, or position alone carries the meaning"
+            outcome: CORRECT
+            feedback: >
+              A visual label should be readable at walking speed from
+              across the floor. Colour and position carry meaning
+              without reading. This is why good visual management
+              works even for operators who don't share a first language.
+            teaches: [visual_management, workplace_organization]
+          - text: "It uses clear language and fonts large enough to read from a few metres away"
+            outcome: PLAUSIBLE
+            feedback: >
+              Readable labels help — but reading takes a second or two
+              per label. Multiplied across a shift, that's real waste.
+              Visual management aims for zero-second comprehension.
+            teaches: [visual_management]
+          - text: "It includes detailed instructions for every possible scenario"
+            outcome: WRONG
+            feedback: >
+              Detailed instructions belong in standard work documents,
+              not on labels. A label crammed with instructions gets
+              ignored after the first week. Less text, more signal.
+            teaches: [visual_management, standard_work]
+      - question: >
+          Six weeks after installation, labels have started being
+          ignored. What's typically the root cause?
+        npc: "Team Leader"
+        choices:
+          - text: "No daily routine references the labels — they're not part of how work gets done"
+            outcome: CORRECT
+            feedback: >
+              Visual management lives when it's embedded in routines —
+              shift handovers, audits, replenishment triggers. Without
+              a routine that uses them, labels become decoration.
+              Labels + routine = system; labels alone = wallpaper.
+            teaches: [visual_management, management_system, sustain]
+          - text: "The labels are too small or poorly positioned"
+            outcome: PLAUSIBLE
+            feedback: >
+              Position matters — but well-placed labels still decay
+              when no routine refers to them. If the routine is right,
+              the labels can be imperfect and still work. If the
+              routine is absent, perfect labels still fade.
+            teaches: [visual_management]
+          - text: "Operators don't understand what the labels mean"
+            outcome: WRONG
+            feedback: >
+              The labels were installed six weeks ago — if operators
+              don't understand them by now, the labels themselves
+              failed the comprehension test. The drift is usually not
+              understanding, it's relevance.
+            teaches: [visual_management]
 
   - id: CM-T1-007
     name: "Tool Location Systems"
@@ -256,6 +485,64 @@ countermeasures:
         as operators find personal preferences.
       side_effect_ref: null
     applicable_to: [all]
+    implementation_quiz:
+      - question: >
+          You're about to build shadow boards for a station. What's
+          the first step that avoids rework later?
+        npc: "Team Leader"
+        choices:
+          - text: "Observe which tools the operator actually uses during real work — count frequency and sequence"
+            outcome: CORRECT
+            feedback: >
+              Shadow boards are only useful if they match the actual
+              work. Observation first — then the board reflects reality
+              instead of assumptions. Operators keep using boards that
+              match how they work.
+            teaches: [workplace_organization, gemba, standard_work]
+          - text: "Ask operators which tools they want closest to hand"
+            outcome: PLAUSIBLE
+            feedback: >
+              Operator input matters — but self-reported preferences
+              often don't match actual usage. Observation shows what
+              people do; asking shows what they think they do. Use both,
+              starting with observation.
+            teaches: [workplace_organization, gemba]
+          - text: "Buy the shadow boards and arrange tools alphabetically or by size"
+            outcome: WRONG
+            feedback: >
+              An alphabetical tool layout ignores how work actually
+              flows. Operators will either stop using the board or
+              adapt it informally. The order has to match the work.
+            teaches: [workplace_organization]
+      - question: >
+          A week after installation, tools aren't being returned to
+          their shadow positions. What's typically the root cause?
+        npc: "Team Leader"
+        choices:
+          - text: "The shadow positions don't match the actual sequence of work — returning tools interrupts flow"
+            outcome: CORRECT
+            feedback: >
+              If returning a tool costs a detour, operators won't do
+              it. The shadow layout must align with the work flow —
+              where you last used a tool should be close to where it
+              goes. Observation first would have prevented this.
+            teaches: [workplace_organization, flow, motion_waste]
+          - text: "Operators are too rushed to return tools properly"
+            outcome: PLAUSIBLE
+            feedback: >
+              'Rushed' usually means 'the system punishes returning tools.'
+              If return is low-friction, it happens. If it costs a
+              15-second walk, it doesn't. The issue is rarely
+              motivation — it's design.
+            teaches: [workplace_organization, motion_waste]
+          - text: "Operators don't know where the tools are supposed to go"
+            outcome: WRONG
+            feedback: >
+              Shadow boards make location self-evident — every tool has
+              a visible outline of its home. 'Not knowing' isn't usually
+              the problem with a well-designed shadow board. The drift
+              points to friction, not knowledge.
+            teaches: [workplace_organization, visual_management]
 
   - id: CM-T1-008
     name: "Cleanliness Standards"

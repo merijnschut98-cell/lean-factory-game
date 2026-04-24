@@ -295,6 +295,7 @@ class InvestigationSession:
     verification_choices:    List[dict] = field(default_factory=list)
     standardized:            bool = False
     wrong_cm_count:          int  = 0
+    quiz_correct_count:      int  = 0
 
     def record_choice(self, choice: DialogueChoice) -> None:
         self.choices_made.append({
@@ -373,6 +374,7 @@ class InvestigationSession:
             "verification_choices":  self.verification_choices,
             "standardized":          self.standardized,
             "wrong_cm_count":        self.wrong_cm_count,
+            "quiz_correct_count":    self.quiz_correct_count,
         }
 
     @classmethod
@@ -387,4 +389,5 @@ class InvestigationSession:
         s.verification_choices   = d.get("verification_choices", [])
         s.standardized           = d.get("standardized", False)
         s.wrong_cm_count         = d.get("wrong_cm_count", 0)
+        s.quiz_correct_count     = d.get("quiz_correct_count", 0)
         return s

@@ -29,6 +29,21 @@ class Effectiveness:
 
 
 @dataclass
+class QuizChoice:
+    text: str
+    outcome: "ChoiceOutcome"    # imported lazily below to avoid a circular import at module load
+    feedback: str      # shown after the player picks this choice
+    teaches: List[str] = field(default_factory=list)
+
+
+@dataclass
+class QuizStep:
+    question: str
+    npc: str           # role name (e.g. "Team Leader")
+    choices: List[QuizChoice] = field(default_factory=list)
+
+
+@dataclass
 class Countermeasure:
     id: str
     name: str
@@ -42,6 +57,7 @@ class Countermeasure:
     applicable_to: List[str] = field(default_factory=lambda: ["all"])
     cost_credits: int = 0    # only non-zero for some diagnostic tools
     teaches: List[str] = field(default_factory=list)  # codex concept tags unlocked on apply
+    implementation_quiz: List[QuizStep] = field(default_factory=list)
 
     @property
     def is_diagnostic(self) -> bool:
@@ -227,6 +243,7 @@ def _parse_cm(raw: dict) -> Countermeasure:
     prereqs = mat_req.get("prerequisites") or [] if isinstance(mat_req, dict) else []
 
     teaches = list(raw["teaches"]) if raw.get("teaches") else _CM_TEACHES_MAP.get(cm_id, [])
+    quiz = _parse_quiz(raw.get("implementation_quiz"))
 
     return Countermeasure(
         id=cm_id,
@@ -241,4 +258,38 @@ def _parse_cm(raw: dict) -> Countermeasure:
         applicable_to=list(raw.get("applicable_to", ["all"])),
         cost_credits=int(raw.get("cost_credits", 0)),
         teaches=teaches,
+        implementation_quiz=quiz,
     )
+
+
+def _parse_quiz(raw) -> List[QuizStep]:
+    from problems.dialogue import ChoiceOutcome
+    if not isinstance(raw, list):
+        return []
+
+    def _to_outcome(v) -> ChoiceOutcome:
+        try:
+            return ChoiceOutcome(str(v).upper())
+        except ValueError:
+            return ChoiceOutcome.WRONG
+
+    steps: List[QuizStep] = []
+    for entry in raw:
+        if not isinstance(entry, dict):
+            continue
+        choices = [
+            QuizChoice(
+                text=str(c.get("text", "")),
+                outcome=_to_outcome(c.get("outcome", "WRONG")),
+                feedback=str(c.get("feedback", "")).strip(),
+                teaches=list(c.get("teaches") or []),
+            )
+            for c in (entry.get("choices") or [])
+            if isinstance(c, dict)
+        ]
+        steps.append(QuizStep(
+            question=str(entry.get("question", "")).strip(),
+            npc=str(entry.get("npc", "Team Leader")),
+            choices=choices,
+        ))
+    return steps

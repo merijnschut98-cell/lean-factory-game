@@ -256,6 +256,7 @@ The player is a newly hired **Continuous Improvement Specialist** at NovaGlide. 
 - ✅ **Arrow key conflict fix** (session 2026-04-24): movement guard in `main.py` now includes `inspector.is_open`; arrow keys scroll the panel cleanly, no simultaneous player movement.
 - ✅ **Enforce investigation-before-countermeasure sequence** (session 2026-04-24): `_investigation_required()` helper in `ui/inspector_drawing.py` gates `[C]` — the hint reads "Investigate first — pick [1][2][3] below" until the fork is complete. Same gate in `handle_action_key` prevents pressing [C] early. Problems without a dialogue fork bypass the gate.
 - ✅ **Score explanation on resolve** (session 2026-04-24): `scoring.metrics.explain_scores()` returns one short reason per metric (DQQ/EI/RCA/CMP/LM/CIM) matching the achieved tier. `resolve_problem()` returns `explanations` in the result dict; `ScorePanel.show()` renders the reason under each score bar.
+- ⬜ **[BUG] `score_rca` ID-vs-name mismatch**: `score_rca(applied_cm_id, problem)` compares `applied_cm_id` (e.g. "CM-T1-001") against `problem.effective_countermeasures` which holds CM *names* (e.g. "5S System"). The direct `in` check always fails and the fuzzy word match rarely succeeds. Result: RCA almost always scores 1 even when the correct CM is applied. Fix: look up CM name via `cm_catalog.get(cm_id).name` in `resolve_problem`, pass the name to `score_rca`. Uncovered while testing the implementation quiz.
 - ⬜ Non-blocking toast notifications: CM decay warning, new problem visible, credits earned — timed banner, never freeze gameplay
 - ⬜ Keyboard shortcut reference: `[?]` or `[F1]` shows overlay listing all controls (currently undocumented: E=inspect, C=apply CM, R=resolve, U=rollback, K=codex, Tab=speed, P=pause, Shift=run)
 - ⬜ Problem count HUD badge: active problem count visible at all times (e.g. "⚠ 3 active")
@@ -265,9 +266,9 @@ The player is a newly hired **Continuous Improvement Specialist** at NovaGlide. 
 
 > **Design note (added 2026-04-24):** Applying a CM should be a learning moment, not just a button press. The player should understand *how* to implement the chosen countermeasure, not just *that* they applied it. This closes the gap between "I clicked 5S" and "I understand what 5S implementation involves."
 
-- ⬜ **CM implementation quiz**: when the player selects a countermeasure in the catalog and confirms, before it is applied a short implementation fork appears — 2 questions about how this CM is correctly implemented (e.g. for 5S: "What is the correct first step when running a 5S Sort phase?" with CORRECT/PLAUSIBLE/WRONG choices). Correct answers give a small CIM score bonus; wrong answers still apply the CM but the NPC explains the correct approach. This is not a barrier — the CM always gets applied regardless of answers. The quiz is the teaching moment.
-- ⬜ **CM implementation YAML**: add `implementation_quiz:` field to countermeasures in `countermeasures_v1.yaml` — 2 questions per CM, each with 3 choices (CORRECT/PLAUSIBLE/WRONG), NPC delivering them, and a `teaches:` tag. Prioritise Tier 1–2 CMs first (most commonly applied). Format mirrors the existing `dialogue:` investigation fork schema.
-- ⬜ **Implementation quiz UI**: rendered in the catalog panel or as an inspector overlay between CM selection and application. Dismissible with correct answer or `[Skip]` (skip costs a small credit penalty to discourage ignoring it). Not a hard gate — the game is still about flow, not exams.
+- ✅ **CM implementation quiz infrastructure** (session 2026-04-24): `QuizStep` + `QuizChoice` dataclasses in `problems/countermeasure.py`; loader parses `implementation_quiz:` YAML; `ui/quiz_panel.py` renders 2-question fork with CORRECT/PLAUSIBLE/WRONG choices and feedback. Wired catalog → quiz → warning → apply in `main.py`. Correct answers boost CIM at resolve time (capped at 5) and unlock teaches tags via `factory.discover()`; `session.quiz_correct_count` persists across save/load. 13 new tests.
+- 🔧 **CM implementation quiz content**: 5 Tier 1 CMs authored (5S, Standard Work, Quality Gates, Visual Labels, Tool Locations) — 10 quiz questions total. Still to author: CM-T1-003/005/008/009/010 (5 more Tier 1), plus Tier 2/3/4 CMs as they are prioritised by playtesting.
+- ⬜ **Quiz skip penalty**: currently [Esc] skips the remaining questions with no CIM bonus (correct behaviour). Consider adding a small credit cost on skip to discourage power-skipping once playtesting shows it's actually abused.
 
 ### NPC Interactions
 
@@ -290,6 +291,48 @@ The player is a newly hired **Continuous Improvement Specialist** at NovaGlide. 
 - ⬜ Circuit breaker notifications: when WIP ceiling or OEE floor circuit breaker fires, show a non-blocking toast explaining what happened and why the simulation slowed
 
 **Deliverable:** A game that feels polished enough to show to someone unfamiliar with the project — no raw rectangles, no frozen screen on dialog, no dead-end interactions.
+
+---
+
+## Phase 7b — Player Experience Ideas (parked for consideration)
+
+> **Added 2026-04-24.** Ideas that would meaningfully improve player experience, learning depth, or emotional investment. Not yet scoped into Phase 7 proper — review and promote the highest-value ones when Phase 7 is started. Ordered roughly by expected impact on first-time-player experience.
+
+### Onboarding and guidance
+
+- ⬜ **Day 1 tutorial / onboarding flow**: currently a new player is dropped in with no explanation of the control scheme, the mission system, or what the goal is. A short guided Day 1 (Plant Manager greets → walk to first NPC → try your first investigation → resolve your first problem) would dramatically reduce the friction for anyone new to the game. Could be a skippable intro path gated by save-file-is-empty.
+- ⬜ **Context-sensitive help `[F1]`**: overlay listing the keys relevant to the current state. Inspector open → shows E/C/R/U/1/2/3/S/A/H; catalog open → shows ↑/↓/E/Esc; free roaming → shows W/A/S/D/Shift/Esc/K/Tab. Removes the need to memorise a long key list.
+- ⬜ **Active mission marker on map/floor**: subtle indicator above the NPC or station relevant to the current mission's active hint — reduces "where do I go next?" dead time.
+
+### Rewards and progression depth
+
+- ⬜ **Mission log screen `[M]`**: a full-screen overview of every mission (locked / available / active / complete) with source NPC, hints so far, problems-solved count, and completion date. Lets the player see their whole journey at once instead of having to interrogate each NPC to understand state. (Referenced in Progression section but worth emphasising.)
+- ⬜ **Unlockable diagnostic tools**: currently the player has one investigation approach (walk + inspect). Unlocking new tools as tiers progress — e.g. "Spaghetti Diagram tool" at Tier 3, "SPC chart tool" at Tier 4 — gives a sense of growing capability separate from credits. Tools show up in the inspector as extra actions when inspecting a station.
+- ⬜ **NPC reputation / relationship tracking**: per-source-NPC relationship score that rises with well-handled missions and affects subsequent dialogue warmth/openness. Gives weight to player decisions over time and makes NPC interactions feel more than transactional.
+- ⬜ **Credit uses beyond specialists**: expand the credit sink — training programs (permanent operator skill bump), equipment upgrades (permanent station perf/availability bump), or rapid Lean Coach consultation (hint on current problem). Gives credits more meaning than just passing a gate.
+
+### Reflection and takeaways
+
+- ⬜ **A3 report export on resolve**: after a problem is resolved, offer to export a one-page A3 in the game's UI or as a PDF — problem statement, investigation choices made, root cause (from 5 Whys), countermeasure applied, verification result, final score. Mirrors real lean practice and gives the player a concrete takeaway per problem. Powerful for the game's learning-tool framing.
+- ⬜ **Replay-solved-problems sandbox**: optional mode accessed from the pause menu — pick any resolved problem and re-run the investigation with different choices to see how the score changes. Learning reinforcement without affecting the main save file.
+- ⬜ **End-of-week Plant Manager review**: every 5 in-game days, a short dialogue from the Plant Manager summarises what changed (KPI deltas, missions completed, concepts learned) and sets a light narrative tone for the next week. Periodic structured reflection.
+
+### Humanising the plant
+
+- ⬜ **Named operators with small bios**: give each of the 24 floor operators a name and one-line bio. When an NPC mentions a problem, they can reference specific operators ("Maria at Integration 3 has been flagging this for weeks"). Tiny change, large boost to emotional investment.
+- ⬜ **NPC character portraits**: already in Phase 7 NPC Interactions section, flagged here again because it's low-cost-high-impact for humanising the source NPCs.
+- ⬜ **Plant backstory via in-world artifacts**: occasional emails, memos, or old reports that appear in the inspector to give the plant a history ("Project NovaGlide Q3 2024 retrospective — 9 chronic issues identified, 3 resolved"). Small narrative hooks that reward exploration.
+
+### Quality of life
+
+- ⬜ **Settings screen** (already in Phase 7): adjust font size, colour palette, default sim speed, key bindings.
+- ⬜ **Circuit-breaker explanation toast**: when WIP ceiling / OEE floor / FTR floor fires, a non-blocking toast explains *why* the sim slowed and what the player can do about it. Currently already listed in Phase 7 General UX — emphasised here because a slowed sim with no explanation is a major UX friction point for new players.
+- ⬜ **Auto-pause when idle**: if no key pressed for 5+ minutes, pause automatically and show a gentle "paused — welcome back" banner. Respects the player's time and prevents unwanted progression in the background.
+
+### Content depth
+
+- ⬜ **Seasonal / themed in-game events**: "Quality Week", "Safety Month" — themed arcs that surface a specific category of problems with bonus credits for solving them in the theme. Reuses existing problem catalog with different framing.
+- ⬜ **Customer feedback loop**: occasional customer returns / complaints that trigger 8D-style problems with their own framing. Connects the factory to a downstream customer reality — reinforces that quality problems have consequences outside the plant.
 
 ---
 
