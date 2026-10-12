@@ -294,7 +294,9 @@ streams:
         kind: work
         pool: meter_office
         touch_hours: 0.25
-        ftr: 0.9
+        ftr: 0.9              # a meter that sends no data
+        rework_to: appointment  # a silent meter needs a new visit
+        rework_wait_days: 2
 
   - id: congestion
     name: Congestiemanagement

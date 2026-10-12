@@ -313,3 +313,57 @@ problems:
       - {tool: documents, key: true, depth: 1, at: connections.close_out, text: "De afhandeling (EAN aanmelden, dossier sluiten) gebeurt één keer per maand, in één keer voor alle dossiers."}
       - {tool: listen_in, key: true, depth: 1, at: customer_contact.answer, text: "'Mijn aansluiting is vorige week aangelegd, maar de leverancier zegt dat mijn EAN niet bestaat.'"}
       - {tool: conversation, key: true, depth: 2, at: connections.close_out, text: "'We doen het maandelijks; dan hoef je maar één keer in te loggen in het registratiesysteem.'"}
+
+  - id: grid_study_queue
+    tier: 1
+    name: De netstudie-wachtrij
+    step: connections.grid_study
+    waste: waiting
+    severity: high
+    visibility: subtle
+    kpi: throughput
+    symptoms:
+      - Op het bord van Netstrategie staan tientallen netstudies in de wachtrij.
+      - Grootzakelijke klanten wachten maanden op een antwoord over capaciteit.
+    root_cause: Elke aanvraag boven 3x25A krijgt een volledige netstudie, ook als de aansluiting ruim binnen de vrije capaciteit valt; er is geen triage vooraf.
+    plausible_causes:
+      - Er zijn te weinig netanalisten.
+      - De rekensoftware is te traag.
+    mismatch_note: Meer analisten werken de stapel sneller weg, maar een groot deel van de studies is niet nodig.
+    countermeasures: {triage_fast_lane: 1.0, calculation_templates: 0.7}
+    teaches: [triage, theory_of_constraints, overprocessing]
+    effects:
+      - {target: connections.grid_study, property: applies, value: 0.15}  # 40% of connections instead of 25%
+    clues:
+      - {tool: data, key: true, depth: 0, text: "Vier op de tien nieuwe aansluitingen krijgen een netstudie; vorig jaar was dat een kwart."}
+      - {tool: shadow, key: false, depth: 0, text: "De analisten maken lange dagen en werken geconcentreerd; niemand zit stil."}
+      - {tool: documents, key: true, depth: 1, text: "De werkinstructie zegt: netstudie bij elke aanvraag boven 3x25A. Een grens voor de vrije capaciteit in de wijk staat er niet in."}
+      - {tool: conversation, key: true, depth: 1, text: "'Bij de meeste studies weten we na vijf minuten al dat het past. Maar de procedure is de procedure.'"}
+      - {tool: time_study, key: true, depth: 2, text: "Een volledige netstudie kost vier uur; een snelle check op de vrije capaciteit van het station kost een kwartier."}
+
+  - id: silent_meter
+    tier: 1
+    name: De zwijgende meter
+    step: meters.registration
+    waste: defects
+    severity: medium
+    visibility: subtle
+    kpi: first_time_right
+    symptoms:
+      - Bij Meetdata & registratie komen nieuwe meters binnen die geen standen sturen.
+      - Monteurs moeten terug naar adressen waar ze vorige week al een meter plaatsten.
+    root_cause: De communicatiemodule wordt gekozen zonder dekkingscheck, en niemand test de verbinding voordat de monteur vertrekt.
+    plausible_causes:
+      - De meters van de nieuwe leverancier zijn slecht.
+      - Het mobiele netwerk is onbetrouwbaar.
+    mismatch_note: De meters zijn in orde; de fout wordt pas ontdekt als de monteur al weg is.
+    countermeasures: {on_site_comm_test: 1.0, coverage_check_in_planning: 0.8}
+    teaches: [jidoka, quality_at_the_source]
+    effects:
+      - {target: meters.registration, property: ftr, value: -0.2}  # three in ten new meters stay silent
+    clues:
+      - {tool: data, key: true, depth: 0, text: "Drie op de tien nieuwe meters sturen de eerste week geen standen."}
+      - {tool: queue_count, key: false, depth: 0, text: "Bij Meetdata & registratie ligt weinig werk; de lijst is kort en netjes op volgorde."}
+      - {tool: shadow, key: true, depth: 1, at: meters.visit, text: "De monteur plaatst de meter, sluit de kast en rijdt door. Of de meter verbinding maakt, kijkt niemand na."}
+      - {tool: documents, key: true, depth: 1, at: meters.appointment, text: "Bij het plannen gaat standaard een GPRS-module mee; de dekkingskaart van het adres wordt niet bekeken."}
+      - {tool: conversation, key: true, depth: 2, at: meters.visit, text: "'Testen? Dan sta ik er tien minuten langer. Als hij niet werkt, hoor ik het vanzelf.'"}

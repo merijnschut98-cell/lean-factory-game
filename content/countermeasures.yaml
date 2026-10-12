@@ -256,3 +256,51 @@ countermeasures:
     multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
     effects:
       - {target: connections.close_out, property: touch_time, value: 0.4}
+
+  - id: triage_fast_lane
+    name: Triage met snelle baan
+    tier: 1
+    category: flow
+    description: Bij de intake bepaalt een korte checklist of een aanvraag ruim binnen de vrije capaciteit van het station valt. Alleen twijfelgevallen krijgen een volledige netstudie.
+    budget: 3000
+    team_hours: {grid_analysts: 20, intake: 10}
+    decay_days: 45
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+
+  - id: calculation_templates
+    name: Standaard rekentemplates
+    tier: 2
+    category: standard_work
+    description: Vaste rekentemplates per type aansluiting en station. Een studie is invullen en controleren in plaats van opnieuw modelleren, ook voor congestieonderzoek.
+    budget: 9000
+    team_hours: {grid_analysts: 40}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: connections.grid_study, property: touch_time, value: 0.8}
+      - {target: congestion.congestion_study, property: touch_time, value: 0.85}
+
+  - id: on_site_comm_test
+    name: Communicatietest voor vertrek
+    tier: 1
+    category: quality
+    description: De monteur vertrekt pas als de meter zijn eerste stand heeft verstuurd. Werkt de verbinding niet, dan wisselt hij de module ter plekke (jidoka).
+    budget: 2500
+    team_hours: {monteurs: 20}
+    decay_days: 45
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: meters.visit, property: touch_time, value: 1.05}   # ten minutes for the test
+      - {target: meters.registration, property: ftr, value: 0.05}   # also catches the base's silent meters
+
+  - id: coverage_check_in_planning
+    name: Dekkingscheck bij het plannen
+    tier: 2
+    category: standard_work
+    description: Planning kiest de communicatiemodule op basis van de dekkingskaart van het adres, zodat de juiste module meegaat.
+    budget: 6000
+    team_hours: {planners: 20}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []

@@ -429,6 +429,8 @@
      "kind": "work",
      "name": "Registratie meter & EAN",
      "pool": "meter_office",
+     "rework_to": "appointment",
+     "rework_wait_days": 2,
      "touch_hours": 0.25
     }
    ]

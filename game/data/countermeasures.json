@@ -466,6 +466,101 @@
     "meter_office": 30
    },
    "tier": 3
+  },
+  {
+   "budget": 3000,
+   "category": "flow",
+   "decay_days": 45,
+   "description": "Bij de intake bepaalt een korte checklist of een aanvraag ruim binnen de vrije capaciteit van het station valt. Alleen twijfelgevallen krijgen een volledige netstudie.",
+   "effects": [],
+   "id": "triage_fast_lane",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Triage met snelle baan",
+   "team_hours": {
+    "grid_analysts": 20,
+    "intake": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 9000,
+   "category": "standard_work",
+   "decay_days": null,
+   "description": "Vaste rekentemplates per type aansluiting en station. Een studie is invullen en controleren in plaats van opnieuw modelleren, ook voor congestieonderzoek.",
+   "effects": [
+    {
+     "property": "touch_time",
+     "target": "connections.grid_study",
+     "value": 0.8
+    },
+    {
+     "property": "touch_time",
+     "target": "congestion.congestion_study",
+     "value": 0.85
+    }
+   ],
+   "id": "calculation_templates",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Standaard rekentemplates",
+   "team_hours": {
+    "grid_analysts": 40
+   },
+   "tier": 2
+  },
+  {
+   "budget": 2500,
+   "category": "quality",
+   "decay_days": 45,
+   "description": "De monteur vertrekt pas als de meter zijn eerste stand heeft verstuurd. Werkt de verbinding niet, dan wisselt hij de module ter plekke (jidoka).",
+   "effects": [
+    {
+     "property": "touch_time",
+     "target": "meters.visit",
+     "value": 1.05
+    },
+    {
+     "property": "ftr",
+     "target": "meters.registration",
+     "value": 0.05
+    }
+   ],
+   "id": "on_site_comm_test",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Communicatietest voor vertrek",
+   "team_hours": {
+    "monteurs": 20
+   },
+   "tier": 1
+  },
+  {
+   "budget": 6000,
+   "category": "standard_work",
+   "decay_days": null,
+   "description": "Planning kiest de communicatiemodule op basis van de dekkingskaart van het adres, zodat de juiste module meegaat.",
+   "effects": [],
+   "id": "coverage_check_in_planning",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Dekkingscheck bij het plannen",
+   "team_hours": {
+    "planners": 20
+   },
+   "tier": 2
   }
  ]
 }

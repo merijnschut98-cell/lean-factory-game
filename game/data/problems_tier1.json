@@ -761,6 +761,144 @@
    "tier": 1,
    "visibility": "subtle",
    "waste": "inventory"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Vier op de tien nieuwe aansluitingen krijgen een netstudie; vorig jaar was dat een kwart.",
+     "tool": "data"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "De analisten maken lange dagen en werken geconcentreerd; niemand zit stil.",
+     "tool": "shadow"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "De werkinstructie zegt: netstudie bij elke aanvraag boven 3x25A. Een grens voor de vrije capaciteit in de wijk staat er niet in.",
+     "tool": "documents"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "'Bij de meeste studies weten we na vijf minuten al dat het past. Maar de procedure is de procedure.'",
+     "tool": "conversation"
+    },
+    {
+     "depth": 2,
+     "key": true,
+     "text": "Een volledige netstudie kost vier uur; een snelle check op de vrije capaciteit van het station kost een kwartier.",
+     "tool": "time_study"
+    }
+   ],
+   "countermeasures": {
+    "calculation_templates": 0.7,
+    "triage_fast_lane": 1.0
+   },
+   "effects": [
+    {
+     "property": "applies",
+     "target": "connections.grid_study",
+     "value": 0.15
+    }
+   ],
+   "id": "grid_study_queue",
+   "kpi": "throughput",
+   "mismatch_note": "Meer analisten werken de stapel sneller weg, maar een groot deel van de studies is niet nodig.",
+   "name": "De netstudie-wachtrij",
+   "plausible_causes": [
+    "Er zijn te weinig netanalisten.",
+    "De rekensoftware is te traag."
+   ],
+   "root_cause": "Elke aanvraag boven 3x25A krijgt een volledige netstudie, ook als de aansluiting ruim binnen de vrije capaciteit valt; er is geen triage vooraf.",
+   "severity": "high",
+   "step": "connections.grid_study",
+   "symptoms": [
+    "Op het bord van Netstrategie staan tientallen netstudies in de wachtrij.",
+    "Grootzakelijke klanten wachten maanden op een antwoord over capaciteit."
+   ],
+   "teaches": [
+    "triage",
+    "theory_of_constraints",
+    "overprocessing"
+   ],
+   "tier": 1,
+   "visibility": "subtle",
+   "waste": "waiting"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Drie op de tien nieuwe meters sturen de eerste week geen standen.",
+     "tool": "data"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "Bij Meetdata & registratie ligt weinig werk; de lijst is kort en netjes op volgorde.",
+     "tool": "queue_count"
+    },
+    {
+     "at": "meters.visit",
+     "depth": 1,
+     "key": true,
+     "text": "De monteur plaatst de meter, sluit de kast en rijdt door. Of de meter verbinding maakt, kijkt niemand na.",
+     "tool": "shadow"
+    },
+    {
+     "at": "meters.appointment",
+     "depth": 1,
+     "key": true,
+     "text": "Bij het plannen gaat standaard een GPRS-module mee; de dekkingskaart van het adres wordt niet bekeken.",
+     "tool": "documents"
+    },
+    {
+     "at": "meters.visit",
+     "depth": 2,
+     "key": true,
+     "text": "'Testen? Dan sta ik er tien minuten langer. Als hij niet werkt, hoor ik het vanzelf.'",
+     "tool": "conversation"
+    }
+   ],
+   "countermeasures": {
+    "coverage_check_in_planning": 0.8,
+    "on_site_comm_test": 1.0
+   },
+   "effects": [
+    {
+     "property": "ftr",
+     "target": "meters.registration",
+     "value": -0.2
+    }
+   ],
+   "id": "silent_meter",
+   "kpi": "first_time_right",
+   "mismatch_note": "De meters zijn in orde; de fout wordt pas ontdekt als de monteur al weg is.",
+   "name": "De zwijgende meter",
+   "plausible_causes": [
+    "De meters van de nieuwe leverancier zijn slecht.",
+    "Het mobiele netwerk is onbetrouwbaar."
+   ],
+   "root_cause": "De communicatiemodule wordt gekozen zonder dekkingscheck, en niemand test de verbinding voordat de monteur vertrekt.",
+   "severity": "medium",
+   "step": "meters.registration",
+   "symptoms": [
+    "Bij Meetdata & registratie komen nieuwe meters binnen die geen standen sturen.",
+    "Monteurs moeten terug naar adressen waar ze vorige week al een meter plaatsten."
+   ],
+   "teaches": [
+    "jidoka",
+    "quality_at_the_source"
+   ],
+   "tier": 1,
+   "visibility": "subtle",
+   "waste": "defects"
   }
  ]
 }
