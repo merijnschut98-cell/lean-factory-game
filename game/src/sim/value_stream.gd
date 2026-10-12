@@ -10,6 +10,8 @@ var norm_minutes: int
 var priority: int
 ## Urgent work (outages) interrupts lower-priority work in progress.
 var preempts := false
+## Multiplies every arrival source (a problem effect or event, e.g. a new housing project).
+var demand := 1.0
 var steps: Array[SimStep] = []
 ## Orders in the stream right now (the backlog / WIP).
 var active := 0
@@ -32,7 +34,7 @@ func per_week() -> float:
 	var total := 0.0
 	for a in arrivals:
 		total += a.per_week
-	return total
+	return total * demand
 
 
 ## KPIs over the last `window_days` calendar days.

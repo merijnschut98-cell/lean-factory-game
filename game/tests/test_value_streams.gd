@@ -36,6 +36,16 @@ func test_design_is_the_starting_constraint_at_about_full_load() -> void:
 	assert_between(r["pools"]["monteurs"]["utilisation"], 0.6, 0.8, "the obvious suspect is not the constraint")
 
 
+func test_standard_designs_move_the_constraint_to_gis() -> void:
+	var net := _net()
+	assert_eq(net.set_effects("cm:standard_designs", [
+		{"target": "connections.design", "property": "touch_time", "value": 0.7},
+	]), "")
+	var c: Dictionary = Capacity.analyse(net)["streams"]["connections"]
+	assert_eq(c["constraint_pool"], "gis", "fix the constraint and the next one shows")
+	assert_between(c["capacity_per_week"], 30.0, 34.0, "only a little more output: Revisie & GIS is close behind")
+
+
 func test_queue_builds_at_the_constraint() -> void:
 	var net := _run_120_days()
 	var s := net.stream("connections")

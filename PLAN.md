@@ -6,13 +6,13 @@ Game text is **Dutch** (with sector terms). Code, comments and this plan stay in
 
 ---
 
-## Current Status: Phase A — Engine (Godot) 🔧 steps 1–3 done
+## Current Status: Phase A — Engine (Godot) 🔧 steps 1–4 done
 
 Pivot agreed 2026-10-12: from a hoverboard factory to a grid operator. The 3D factory prototype is archived in `archive/factory-3d/` (also git commit `b3a4c8c`). Its investigation / A3 / PDCA / bottleneck logic will be carried over and generalised.
 
 This is a multi-month project, built the right way: research → design (reviewed by Merijn) → engine → content → world → UI, in small tested increments. No publishing deadline. Built in **Godot 4 + GDScript** from the start (decided 2026-10-12).
 
-**Next task:** Phase A step 4 — generic problem effects (modifier layer over base content values).
+**Next task:** Phase A step 4b — structural levers for the flow countermeasures (WIP limit, reserved outage capacity, frozen planning window, parallel steps).
 
 ---
 
@@ -84,15 +84,21 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
   - Results: Werkvoorbereiding still the constraint (104%), monteurs 69%, outages p85 ≈ 3.8 h, no stock-outs in 30 seeds × 120 days. 50 Godot tests; a simulated year 1.3 s (four streams).
 - ✅ Simplify pass on step 3: day 0 starts in `create()` (no first-tick special case), O(1) `WeekSchedule.next_start`, busy check before schedule lookups, pool list instead of per-tick `values()`, handover folded into the work loop, `SimCalendar.hours()`, shared test helpers in `NetFixture`, dead calendar helpers removed (year 1.7 s → 1.3 s). Kept by choice: the Capacity split of multi-pool steps by arrival hours (an estimate, documented), and the validator rule against rework loops through a material step (an explicit authoring rule instead of per-order material state)
   - Weekly demand patterns (e.g. Monday peaks) and demand multipliers are deferred to step 4 (demand is a problem effect).
-- ⬜ Step 4: generic problem effects (target a step, pool, stock item or stream; modify touch time, FTR, availability, headcount, wait days, demand). Design point: keep content values as base values and read them through effective accessors (base + active modifiers), so effects can be removed, saved and compared
+- ✅ Step 4 (plan: `docs/superpowers/plans/2026-10-12-phase-a-step-4-problem-effects.md`): problem effects as removable modifiers.
+  - `SimModifiers`: effects `{target, property, value}` grouped by source (`problem:…`, `cm:…`, `event:…`); content values stay the base; every change recomputes `clamp(base × factors + additions)` into the plain sim fields, so the simulation and `Capacity` need no lookups.
+  - Properties: `touch_time`, `ftr`, `applies`, `wait_time` (steps, as `stream.step`); `availability`, `headcount` (pools); `lead_time`, `reorder_point` (stock); `demand` (streams).
+  - `Network.set_effects` / `clear_effects` (atomic: an invalid list changes nothing); `SimModifiers.scaled` for partial effectiveness (step 5); `sources()` for saves (step 6).
+  - Lesson test on real content: 30% faster design moves the connections constraint from Werkvoorbereiding to Revisie & GIS, for only ~2 more connections a week. 60 Godot tests.
+- ⬜ Step 4b: structural levers, so the tier-3 flow countermeasures can be simulated, not only parameter effects: WIP limit per step or pool (orders wait upstream), reserved capacity (people of a pool kept for a stream, e.g. outage reserve), frozen planning window, steps in parallel instead of in sequence (permits during design)
+- ⬜ Decision for Phase B: are the content values the healthy process (with the starting problems switched on as active effects at game start), or the starting state (with countermeasures improving on it)? The modifier layer supports both; it decides how problem effects are authored
 - ⬜ Step 5: port investigation / A3 / PDCA / scoring from the factory prototype (`archive/factory-3d/src/sim/`) to GDScript; tools renamed for a service organisation; Check compares stream KPIs and capacity before/after. Design point: time-windowed per-step statistics (queue time, touch time, rework) for the before/after comparison and the value stream map
 - ⬜ Step 6: save/load of the simulation and rules state (JSON, versioned, validated)
 - ⬜ Gate: four value streams run headless with realistic KPIs; tests cover flow, pre-emption, rework, stock-outs, capacity, the PDCA loop and save/load
 
 ## Phase B — Content (Dutch) ⬜
-- ⬜ `data/grid/problems_tier1.yaml`: ~16 problems across the four streams (well-known and less-known), each with symptoms, clues per tool (key + red herrings, 5 Whys depth), waste, root cause, effective countermeasures, effect
-- ⬜ `data/grid/countermeasures.yaml`: Lean countermeasures in DSO context (triage at intake, poka-yoke application form, standard designs, frozen planning window, WIP limits, two-bin van stock, appointment confirmation, revision at the source, cross-training, daily start / visual management, proactive status updates against failure demand, …)
-- ⬜ `data/grid/missions.yaml`, `data/grid/concepts.yaml` (Lean + sector glossary, Dutch)
+- ⬜ `content/problems_tier1.yaml`: ~16 problems across the four streams (well-known and less-known), each with symptoms, clues per tool (key + red herrings, 5 Whys depth), waste, root cause, effective countermeasures, effect
+- ⬜ `content/countermeasures.yaml`: Lean countermeasures in DSO context (triage at intake, poka-yoke application form, standard designs, frozen planning window, WIP limits, two-bin van stock, appointment confirmation, revision at the source, cross-training, daily start / visual management, proactive status updates against failure demand, …)
+- ⬜ `content/missions.yaml`, `content/concepts.yaml` (Lean + sector glossary, Dutch)
 - ⬜ Merijn reviews content for realism
 
 ## Problem ideas backlog (keep growing)

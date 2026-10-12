@@ -69,6 +69,7 @@ Generalises the factory prototype's `FlowSim` (`archive/factory-3d/src/sim/flow.
 | `SimStock` | level, reorder point, order quantity, lead time, open deliveries, orders waiting for stock |
 | `ValueStream` | ordered steps, arrival sources (`per_week` within a `WeekSchedule`), norm, priority and `preempts`, backlog and finished-order records, KPIs (throughput, backlog, lead time p50/p85, on time, first-time-right) |
 | `Network` | loads `value_streams.json`, advances time, schedules arrivals, moves orders, assigns people (priority, then longest-waiting; only `preempts` streams interrupt work), hands unfinished work over at the end of a shift, keeps the queues, emits events |
+| `SimModifiers` | problem, countermeasure and event effects by source on top of the content's base values (see below) |
 | `Capacity` | expected visits per step (including `applies` and rework loops), people-hours per week needed vs available per pool (a step served by several pools is split by how much of the stream's arrival time each pool covers), constraint and capacity per stream |
 | `Rng` | seeded PRNG; the only source of randomness |
 
@@ -91,7 +92,10 @@ Ports of the prototype's tested logic, adapted to a service organisation:
 | `game.ts`: missions, problem phases, A3, Check/Act, recurrence | `rules/site_game.gd`, `rules/missions.gd`, plus `rules/story.gd` for the narrative arc |
 | `progression.ts`: belts, regions | `rules/progression.gd` |
 
-Problem effects become generic modifiers on a target (`step`, `pool`, `stock`, `stream`): touch time, FTR, availability, external delay, demand, headcount.
+Problem effects are generic modifiers (`sim/modifiers.gd`):
+- An effect is `{target, property, value}`, e.g. `{target: "connections.design", property: "touch_time", value: 1.3}`. The property decides the kind of target and how effects combine: factors for times and demand; additions for FTR, `applies`, availability, headcount and reorder point. Results are clamped to sensible bounds.
+- Effects are grouped by source (`problem:…`, `cm:…`, `event:…`), so a problem's effect can be switched off when it is solved, a countermeasure's can be added, and both can be saved and compared. `SimModifiers.scaled` gives partial strength (countermeasure effectiveness).
+- Content values stay the base. Every change recomputes the touched fields from base and writes the effective value into the plain sim field, so the tick loop and `Capacity` stay free of lookups. Effects apply to work from then on; attendance follows a headcount change the next day.
 
 ## Content pipeline
 
