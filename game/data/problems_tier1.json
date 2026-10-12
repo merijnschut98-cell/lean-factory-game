@@ -1,0 +1,425 @@
+{
+ "problems": [
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Van de laatste twintig aanvragen missen er negen het aansluitvermogen of de gegevens van de installateur.",
+     "tool": "documents"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "In de intake-wachtrij liggen maar een paar aanvragen. Het team werkt ze snel weg.",
+     "tool": "queue_count"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "Bijna de helft van de aanvragen gaat terug naar de klant voor aanvulling; die wachten gemiddeld een week.",
+     "tool": "data"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "'Het webformulier laat je gewoon doorklikken zonder vermogen of meterkastfoto. Wij zien het pas als we het dossier openen.'",
+     "tool": "conversation"
+    },
+    {
+     "depth": 2,
+     "key": true,
+     "text": "Een klant aan de telefoon: 'Ik wist niet dat ik dat moest invullen, het formulier vroeg er niet om.'",
+     "tool": "listen_in"
+    }
+   ],
+   "countermeasures": {
+    "intake_checklist": 0.6,
+    "poka_yoke_application": 1.0
+   },
+   "effects": [
+    {
+     "property": "ftr",
+     "target": "connections.intake",
+     "value": -0.2
+    }
+   ],
+   "id": "incomplete_application",
+   "kpi": "lead_time",
+   "mismatch_note": "Sneller of strenger controleren verandert niets aan wat er binnenkomt. De fout ontstaat in het formulier.",
+   "name": "De onvolledige aanvraag",
+   "plausible_causes": [
+    "Klanten lezen de instructies niet.",
+    "De intakemedewerkers controleren niet zorgvuldig genoeg."
+   ],
+   "root_cause": "Het webformulier accepteert aanvragen zonder vermogen, installateur en meterkastgegevens; niemand voorkomt de fout aan de bron.",
+   "severity": "medium",
+   "step": "connections.intake",
+   "symptoms": [
+    "Veel aanvragen gaan terug naar de klant met een verzoek om aanvulling.",
+    "Klanten bellen na weken om te vragen waar hun aansluiting blijft."
+   ],
+   "teaches": [
+    "quality_at_the_source",
+    "poka_yoke"
+   ],
+   "tier": 1,
+   "visibility": "obvious",
+   "waste": "defects"
+  },
+  {
+   "clues": [
+    {
+     "de installateur is nog niet geweest). De monteur rijdt onverrichter zake terug.": null,
+     "depth": 0,
+     "geen aarding": null,
+     "key": true,
+     "text": "Op twee van de vijf adressen is de meterkast niet klaar (geen ruimte",
+     "tool": "shadow"
+    },
+    {
+     "binnen de norm.": null,
+     "depth": 0,
+     "key": false,
+     "text": "Een aansluiting maken kost de monteur ruim vier uur",
+     "tool": "time_study"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "Van de herplande klussen heeft zeventig procent als reden 'meterkast niet gereed'.",
+     "tool": "data"
+    },
+    {
+     "at": "connections.planning",
+     "depth": 1,
+     "key": true,
+     "text": "Planning plant op de datum van het offerte-akkoord. Nergens staat of de installateur klaar is.",
+     "tool": "documents"
+    },
+    {
+     "at": "connections.planning",
+     "depth": 2,
+     "key": true,
+     "text": "'We bellen de klant nooit vooraf. We weten pas dat het niet klaar is als de monteur er staat.'",
+     "tool": "conversation"
+    }
+   ],
+   "countermeasures": {
+    "installer_photo_upload": 0.9,
+    "readiness_check": 1.0
+   },
+   "effects": [
+    {
+     "property": "ftr",
+     "target": "connections.execution",
+     "value": -0.25
+    }
+   ],
+   "id": "installer_not_ready",
+   "kpi": "lead_time",
+   "mismatch_note": "De monteur doet zijn werk goed; het probleem ontstaat bij het plannen, voordat hij rijdt.",
+   "name": "Meterkast niet gereed",
+   "plausible_causes": [
+    "De monteurs zijn te laat op locatie.",
+    "Klanten zeggen hun afspraak af."
+   ],
+   "root_cause": "Klussen worden ingepland zonder te controleren of de installateur en de meterkast klaar zijn.",
+   "severity": "high",
+   "step": "connections.execution",
+   "symptoms": [
+    "Monteurs rijden terug zonder dat de aansluiting is gemaakt.",
+    "Klussen worden steeds opnieuw ingepland."
+   ],
+   "teaches": [
+    "readiness_check",
+    "quality_at_the_source"
+   ],
+   "tier": 1,
+   "visibility": "subtle",
+   "waste": "waiting"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Bij een kabelstoring ligt de juiste mof niet in de bus. De monteur rijdt veertig minuten heen en terug naar het magazijn.",
+     "tool": "shadow"
+    },
+    {
+     "at": "outages.locate",
+     "depth": 0,
+     "key": false,
+     "text": "Het lokaliseren van de fout duurt steeds rond het uur.",
+     "tool": "time_study"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "Geen twee bussen hebben dezelfde voorraad. Er is geen lijst van wat erin hoort.",
+     "tool": "material_check"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "In een kwart van de storingslogboeken staat 'materiaal halen'.",
+     "tool": "data"
+    },
+    {
+     "depth": 2,
+     "key": true,
+     "text": "'Wat op is, vul ik aan als ik toevallig langs het magazijn kom. Niemand houdt bij wat eruit gaat.'",
+     "tool": "conversation"
+    }
+   ],
+   "countermeasures": {
+    "standard_van_stock": 0.8,
+    "two_bin_van_kanban": 1.0
+   },
+   "effects": [
+    {
+     "property": "touch_time",
+     "target": "outages.repair",
+     "value": 1.5
+    }
+   ],
+   "id": "wrong_joint_in_van",
+   "kpi": "on_time",
+   "mismatch_note": "Het magazijn heeft de moffen wel; ze liggen alleen niet in de bus op het moment dat het nodig is.",
+   "name": "De verkeerde mof in de bus",
+   "plausible_causes": [
+    "De monteurs pakken de verkeerde mof mee.",
+    "Het magazijn levert te laat."
+   ],
+   "root_cause": "Er is geen standaard busvoorraad en geen aanvulsignaal; wat op is, merkt de monteur pas bij de storing.",
+   "severity": "medium",
+   "step": "outages.repair",
+   "symptoms": [
+    "Storingen duren soms ruim langer dan vier uur.",
+    "Monteurs rijden tijdens een storing naar het magazijn."
+   ],
+   "teaches": [
+    "5s",
+    "kanban",
+    "standard_work"
+   ],
+   "tier": 1,
+   "visibility": "subtle",
+   "waste": "transport"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "net zoveel als een bedrijfsaansluiting.": null,
+     "text": "Een gewone woningaansluiting kost vijf uur ontwerp",
+     "tool": "time_study"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "In de bak liggen meer dan honderd dossiers te wachten.",
+     "tool": "queue_count"
+    },
+    {
+     "depth": 1,
+     "gaat langs drie handtekeningen.": null,
+     "key": true,
+     "ook een standaard huisaansluiting": null,
+     "text": "Elk ontwerp",
+     "tool": "documents"
+    },
+    {
+     "at": "connections.intake",
+     "depth": 1,
+     "key": true,
+     "text": "'Wij vragen nooit of het een standaardaansluiting is. Alles gaat als maatwerk door.'",
+     "tool": "conversation"
+    },
+    {
+     "depth": 2,
+     "key": true,
+     "text": "Driekwart van de ontwerpen is een standaard 3x25A-aansluiting zonder netuitbreiding.",
+     "tool": "data"
+    }
+   ],
+   "countermeasures": {
+    "delegated_approval": 0.6,
+    "standard_designs": 1.0
+   },
+   "effects": [
+    {
+     "property": "touch_time",
+     "target": "connections.design",
+     "value": 1.3
+    }
+   ],
+   "id": "custom_design",
+   "kpi": "throughput",
+   "mismatch_note": "Harder werken of betere software verandert niets aan de hoeveelheid werk per standaardaansluiting.",
+   "name": "Maatwerk voor standaardwerk",
+   "plausible_causes": [
+    "De werkvoorbereiders werken te langzaam.",
+    "De ontwerpsoftware is verouderd."
+   ],
+   "root_cause": "Standaardaansluitingen krijgen een volledig maatwerkontwerp met drie goedkeuringen.",
+   "severity": "high",
+   "step": "connections.design",
+   "symptoms": [
+    "De stapel ontwerpen bij Werkvoorbereiding groeit elke week.",
+    "Werkvoorbereiders maken overuren, en toch duurt een aansluiting langer."
+   ],
+   "teaches": [
+    "standard_work",
+    "overprocessing"
+   ],
+   "tier": 1,
+   "visibility": "obvious",
+   "waste": "overprocessing"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Bij drie van de acht adressen doet niemand open. De monteur laat een kaartje achter.",
+     "tool": "shadow"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "ruim binnen de planning.": null,
+     "text": "Een meterwissel zelf duurt vijfendertig minuten",
+     "tool": "time_study"
+    },
+    {
+     "at": "meters.appointment",
+     "depth": 1,
+     "key": true,
+     "text": "Klanten krijgen een tijdvak van 8 tot 17 uur en geen bevestiging of herinnering.",
+     "tool": "documents"
+    },
+    {
+     "at": "meters.appointment",
+     "depth": 1,
+     "key": true,
+     "text": "'Ik heb een halve dag vrij genomen en er kwam niemand.' En: 'Ik wist niet dat het vandaag was.'",
+     "tool": "listen_in"
+    },
+    {
+     "depth": 2,
+     "key": true,
+     "text": "Van de mislukte bezoeken had tachtig procent geen herinnering ontvangen.",
+     "tool": "data"
+    }
+   ],
+   "countermeasures": {
+    "appointment_reminder": 1.0,
+    "two_hour_window": 0.9
+   },
+   "effects": [
+    {
+     "property": "ftr",
+     "target": "meters.visit",
+     "value": -0.15
+    }
+   ],
+   "id": "not_at_home",
+   "kpi": "first_time_right",
+   "mismatch_note": "De klanten willen wel thuis zijn; ze weten niet wanneer.",
+   "name": "Niet thuis",
+   "plausible_causes": [
+    "Klanten zijn onbetrouwbaar.",
+    "De monteurs komen te laat."
+   ],
+   "root_cause": "Afspraken hebben een tijdvak van een hele dag en worden niet bevestigd of herinnerd.",
+   "severity": "medium",
+   "step": "meters.visit",
+   "symptoms": [
+    "Monteurs laten veel kaartjes 'helaas niet thuis' achter.",
+    "De planning van meterwissels loopt steeds verder uit."
+   ],
+   "teaches": [
+    "failure_demand",
+    "customer_value"
+   ],
+   "tier": 1,
+   "visibility": "obvious",
+   "waste": "transport"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Vergunningsaanvragen gaan alleen op maandag de deur uit. Een dossier dat dinsdag klaar is",
+     "tool": "data",
+     "wacht bijna een week.": null
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "De gemeente haalt haar wettelijke termijn bijna altijd.",
+     "tool": "documents"
+    },
+    {
+     "at": "connections.design",
+     "depth": 1,
+     "key": true,
+     "text": "'Ik verzamel de aanvragen en stuur ze op maandag in één keer op; dat scheelt inloggen in het portaal.'",
+     "tool": "conversation"
+    },
+    {
+     "at": "connections.design",
+     "depth": 1,
+     "key": true,
+     "terwijl de gemeente alleen het tracé nodig heeft.": null,
+     "text": "De vergunning wordt pas aangevraagd als het ontwerp helemaal af is",
+     "tool": "documents"
+    },
+    {
+     "at": "connections.design",
+     "depth": 2,
+     "key": true,
+     "text": "Een aanvraag indienen kost tien minuten; het tracé is al na een uur ontwerpen bekend.",
+     "tool": "time_study"
+    }
+   ],
+   "countermeasures": {
+    "parallel_permits": 1.0,
+    "request_permits_daily": 1.0
+   },
+   "effects": [
+    {
+     "property": "batch_days",
+     "target": "connections.permit",
+     "value": 7
+    }
+   ],
+   "id": "permits_in_batches",
+   "kpi": "lead_time",
+   "mismatch_note": "De gemeente is niet het knelpunt; de aanvraag ligt al stil voordat zij hem krijgt.",
+   "name": "Vergunningen in batches",
+   "plausible_causes": [
+    "De gemeente werkt te langzaam.",
+    "Het vergunningsportaal is te ingewikkeld."
+   ],
+   "root_cause": "Vergunningen worden wekelijks in een batch aangevraagd, en pas als het ontwerp helemaal af is.",
+   "severity": "medium",
+   "step": "connections.permit",
+   "symptoms": [
+    "Dossiers liggen dagen stil tussen ontwerp en vergunning.",
+    "De doorlooptijd van aansluitingen is lang, terwijl de gemeente haar termijn haalt."
+   ],
+   "teaches": [
+    "batching",
+    "flow"
+   ],
+   "tier": 1,
+   "visibility": "subtle",
+   "waste": "waiting"
+  }
+ ]
+}

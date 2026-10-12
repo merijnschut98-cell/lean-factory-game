@@ -1,0 +1,146 @@
+# Countermeasures: what a player can try in the A3, in a grid-operator setting.
+# Game text is Dutch; ids and keys are English. Built by tools/build_content.py.
+#
+# tier         1 Stabiel · 2 Zichtbaar · 3 Flow · 4 Systeem (GDD, Countermeasures).
+#              Above the region's maturity a countermeasure only partly works.
+# budget       improvement budget in euros
+# team_hours   hours the team spends on the improvement: taken from daily
+#              work while the experiment runs
+# decay_days   days until the gain fades if it is not standardised (null: it stays)
+# multipliers  effectiveness at a maturity gap of 0, 1 and 2
+# effects      what it changes in the simulation once it works (on top of
+#              removing the problem): its own shape of a healthier process
+
+countermeasures:
+  # ── Nieuwe aansluitingen ──────────────────────────────────────────────────
+  - id: poka_yoke_application
+    name: Poka-yoke aanvraagformulier
+    tier: 1
+    category: quality
+    description: Het webformulier gaat pas verder als vermogen, installateur en een foto van de meterkast zijn ingevuld. Fouten worden aan de bron voorkomen in plaats van later gevonden.
+    budget: 6000
+    team_hours: {intake: 30}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: connections.intake, property: ftr, value: 0.05}
+  - id: intake_checklist
+    name: Checklist bij de intake
+    tier: 1
+    category: standard_work
+    description: De intakemedewerker loopt elke aanvraag na met een checklist en vraagt ontbrekende gegevens direct op.
+    budget: 1000
+    team_hours: {intake: 10}
+    decay_days: 30
+    multipliers: {full: 0.8, reduced: 0.45, minimal: 0.2}
+    effects: []
+  - id: readiness_check
+    name: Gereedheidscheck 48 uur vooraf
+    tier: 1
+    category: standard_work
+    description: Planning belt of mailt de klant twee dagen voor de uitvoering met een korte checklist. Is de meterkast niet klaar, dan wordt de klus verplaatst voordat de monteur rijdt.
+    budget: 2000
+    team_hours: {planners: 20}
+    decay_days: 45
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: installer_photo_upload
+    name: Foto-upload door de installateur
+    tier: 2
+    category: quality
+    description: De installateur meldt de meterkast gereed met een foto in het portaal; pas dan kan de klus worden ingepland.
+    budget: 9000
+    team_hours: {planners: 30, intake: 20}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: connections.execution, property: ftr, value: 0.03}
+  - id: standard_designs
+    name: Standaardontwerpen voor standaardwerk
+    tier: 1
+    category: standard_work
+    description: Een vast ontwerp voor standaard woningaansluitingen (tot 3x25A, zonder netuitbreiding), zonder extra goedkeuringen.
+    budget: 8000
+    team_hours: {work_prep: 60}
+    decay_days: 60
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: connections.design, property: touch_time, value: 0.85}
+  - id: delegated_approval
+    name: Gedelegeerde goedkeuring
+    tier: 1
+    category: flow
+    description: De werkvoorbereider keurt standaardontwerpen zelf goed; alleen afwijkingen gaan naar de teamleider.
+    budget: 1500
+    team_hours: {work_prep: 10}
+    decay_days: 30
+    multipliers: {full: 0.85, reduced: 0.45, minimal: 0.2}
+    effects: []
+  - id: request_permits_daily
+    name: Vergunning direct aanvragen
+    tier: 1
+    category: flow
+    description: Een vergunningsaanvraag gaat de deur uit zodra het dossier klaar is, niet meer verzameld op maandag.
+    budget: 500
+    team_hours: {work_prep: 5}
+    decay_days: 30
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: parallel_permits
+    name: Vergunning parallel aan het ontwerp
+    tier: 3
+    category: flow
+    description: Zodra het tracé bekend is, gaat de vergunningsaanvraag eruit; het ontwerp wordt intussen afgemaakt. Wachten en werken lopen naast elkaar.
+    budget: 12000
+    team_hours: {work_prep: 40}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: connections.permit, property: starts_with, value: design}
+
+  # ── Storingen ─────────────────────────────────────────────────────────────
+  - id: standard_van_stock
+    name: Standaard busvoorraad
+    tier: 1
+    category: workplace_organization
+    description: Elke storingsbus heeft dezelfde vaste lijst materialen, op een vaste plek. Wat eruit gaat, wordt aan het eind van de dienst aangevuld.
+    budget: 4000
+    team_hours: {monteurs: 40}
+    decay_days: 45
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: outages.repair, property: touch_time, value: 0.95}
+  - id: two_bin_van_kanban
+    name: Two-bin kanban in de bus
+    tier: 3
+    category: flow
+    description: Twee bakken per artikel; een lege bak is het bestelsignaal voor het magazijn. Aanvullen hangt niet meer van het geheugen af.
+    budget: 10000
+    team_hours: {monteurs: 30}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: outages.repair, property: touch_time, value: 0.9}
+
+  # ── Veldservice & slimme meters ───────────────────────────────────────────
+  - id: appointment_reminder
+    name: Bevestiging en herinnering van de afspraak
+    tier: 1
+    category: quality
+    description: De klant krijgt een bevestiging bij het plannen en de dag ervoor een herinnering, met een knop om te verzetten.
+    budget: 3000
+    team_hours: {planners: 15}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: two_hour_window
+    name: Tijdvak van twee uur en een onderweg-bericht
+    tier: 2
+    category: flow
+    description: Een afspraak in een tijdvak van twee uur, en een bericht als de monteur onderweg is.
+    budget: 8000
+    team_hours: {planners: 30}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: meters.visit, property: ftr, value: 0.05}

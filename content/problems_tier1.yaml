@@ -1,0 +1,177 @@
+# Tier-1 problems of region Zuidmark (GDD, Problem catalogue v1).
+# Game text is Dutch; ids and keys are English. Built by tools/build_content.py.
+#
+# step            where the problem shows ("stream.step"): the gemba place to spot it
+# effects         what it does to the simulation while it is active
+#                 (property → see game/src/sim/modifiers.gd)
+# countermeasures countermeasure id → fit (0–1): several can help, some more
+#                 than others; each shapes the process in its own way
+# clues           tool, depth (the 5 Whys as an investigation: depth n shows
+#                 once a key clue at depth n − 1 is found), key (points at the
+#                 real cause) or not (a red herring: true, but not causal),
+#                 at (a place upstream or downstream; default: step)
+# kpi             what a good prediction names
+# plausible_causes  wrong but believable causes for the A3's cause bank
+
+problems:
+  - id: incomplete_application
+    tier: 1
+    name: De onvolledige aanvraag
+    step: connections.intake
+    waste: defects
+    severity: medium
+    visibility: obvious
+    kpi: lead_time
+    symptoms:
+      - Veel aanvragen gaan terug naar de klant met een verzoek om aanvulling.
+      - Klanten bellen na weken om te vragen waar hun aansluiting blijft.
+    root_cause: Het webformulier accepteert aanvragen zonder vermogen, installateur en meterkastgegevens; niemand voorkomt de fout aan de bron.
+    plausible_causes:
+      - Klanten lezen de instructies niet.
+      - De intakemedewerkers controleren niet zorgvuldig genoeg.
+    mismatch_note: Sneller of strenger controleren verandert niets aan wat er binnenkomt. De fout ontstaat in het formulier.
+    countermeasures: {poka_yoke_application: 1.0, intake_checklist: 0.6}
+    teaches: [quality_at_the_source, poka_yoke]
+    effects:
+      - {target: connections.intake, property: ftr, value: -0.2}
+    clues:
+      - {tool: documents, key: true, depth: 0, text: Van de laatste twintig aanvragen missen er negen het aansluitvermogen of de gegevens van de installateur.}
+      - {tool: queue_count, key: false, depth: 0, text: In de intake-wachtrij liggen maar een paar aanvragen. Het team werkt ze snel weg.}
+      - {tool: data, key: true, depth: 1, text: Bijna de helft van de aanvragen gaat terug naar de klant voor aanvulling; die wachten gemiddeld een week.}
+      - {tool: conversation, key: true, depth: 1, text: "'Het webformulier laat je gewoon doorklikken zonder vermogen of meterkastfoto. Wij zien het pas als we het dossier openen.'"}
+      - {tool: listen_in, key: true, depth: 2, text: "Een klant aan de telefoon: 'Ik wist niet dat ik dat moest invullen, het formulier vroeg er niet om.'"}
+
+  - id: installer_not_ready
+    tier: 1
+    name: Meterkast niet gereed
+    step: connections.execution
+    waste: waiting
+    severity: high
+    visibility: subtle
+    kpi: lead_time
+    symptoms:
+      - Monteurs rijden terug zonder dat de aansluiting is gemaakt.
+      - Klussen worden steeds opnieuw ingepland.
+    root_cause: Klussen worden ingepland zonder te controleren of de installateur en de meterkast klaar zijn.
+    plausible_causes:
+      - De monteurs zijn te laat op locatie.
+      - Klanten zeggen hun afspraak af.
+    mismatch_note: De monteur doet zijn werk goed; het probleem ontstaat bij het plannen, voordat hij rijdt.
+    countermeasures: {readiness_check: 1.0, installer_photo_upload: 0.9}
+    teaches: [readiness_check, quality_at_the_source]
+    effects:
+      - {target: connections.execution, property: ftr, value: -0.25}  # 2 of 5 addresses not ready
+    clues:
+      - {tool: shadow, key: true, depth: 0, text: Op twee van de vijf adressen is de meterkast niet klaar (geen ruimte, geen aarding, de installateur is nog niet geweest). De monteur rijdt onverrichter zake terug.}
+      - {tool: time_study, key: false, depth: 0, text: Een aansluiting maken kost de monteur ruim vier uur, binnen de norm.}
+      - {tool: data, key: true, depth: 1, text: Van de herplande klussen heeft zeventig procent als reden 'meterkast niet gereed'.}
+      - {tool: documents, key: true, depth: 1, at: connections.planning, text: Planning plant op de datum van het offerte-akkoord. Nergens staat of de installateur klaar is.}
+      - {tool: conversation, key: true, depth: 2, at: connections.planning, text: "'We bellen de klant nooit vooraf. We weten pas dat het niet klaar is als de monteur er staat.'"}
+
+  - id: wrong_joint_in_van
+    tier: 1
+    name: De verkeerde mof in de bus
+    step: outages.repair
+    waste: transport
+    severity: medium
+    visibility: subtle
+    kpi: on_time
+    symptoms:
+      - Storingen duren soms ruim langer dan vier uur.
+      - Monteurs rijden tijdens een storing naar het magazijn.
+    root_cause: Er is geen standaard busvoorraad en geen aanvulsignaal; wat op is, merkt de monteur pas bij de storing.
+    plausible_causes:
+      - De monteurs pakken de verkeerde mof mee.
+      - Het magazijn levert te laat.
+    mismatch_note: Het magazijn heeft de moffen wel; ze liggen alleen niet in de bus op het moment dat het nodig is.
+    countermeasures: {standard_van_stock: 0.8, two_bin_van_kanban: 1.0}
+    teaches: [5s, kanban, standard_work]
+    effects:
+      - {target: outages.repair, property: touch_time, value: 1.5}
+    clues:
+      - {tool: shadow, key: true, depth: 0, text: Bij een kabelstoring ligt de juiste mof niet in de bus. De monteur rijdt veertig minuten heen en terug naar het magazijn.}
+      - {tool: time_study, key: false, depth: 0, at: outages.locate, text: Het lokaliseren van de fout duurt steeds rond het uur.}
+      - {tool: material_check, key: true, depth: 1, text: Geen twee bussen hebben dezelfde voorraad. Er is geen lijst van wat erin hoort.}
+      - {tool: data, key: true, depth: 1, text: In een kwart van de storingslogboeken staat 'materiaal halen'.}
+      - {tool: conversation, key: true, depth: 2, text: "'Wat op is, vul ik aan als ik toevallig langs het magazijn kom. Niemand houdt bij wat eruit gaat.'"}
+
+  - id: custom_design
+    tier: 1
+    name: Maatwerk voor standaardwerk
+    step: connections.design
+    waste: overprocessing
+    severity: high
+    visibility: obvious
+    kpi: throughput
+    symptoms:
+      - De stapel ontwerpen bij Werkvoorbereiding groeit elke week.
+      - Werkvoorbereiders maken overuren, en toch duurt een aansluiting langer.
+    root_cause: Standaardaansluitingen krijgen een volledig maatwerkontwerp met drie goedkeuringen.
+    plausible_causes:
+      - De werkvoorbereiders werken te langzaam.
+      - De ontwerpsoftware is verouderd.
+    mismatch_note: Harder werken of betere software verandert niets aan de hoeveelheid werk per standaardaansluiting.
+    countermeasures: {standard_designs: 1.0, delegated_approval: 0.6}
+    teaches: [standard_work, overprocessing]
+    effects:
+      - {target: connections.design, property: touch_time, value: 1.3}
+    clues:
+      - {tool: time_study, key: true, depth: 0, text: Een gewone woningaansluiting kost vijf uur ontwerp, net zoveel als een bedrijfsaansluiting.}
+      - {tool: queue_count, key: false, depth: 0, text: In de bak liggen meer dan honderd dossiers te wachten.}
+      - {tool: documents, key: true, depth: 1, text: Elk ontwerp, ook een standaard huisaansluiting, gaat langs drie handtekeningen.}
+      - {tool: conversation, key: true, depth: 1, at: connections.intake, text: "'Wij vragen nooit of het een standaardaansluiting is. Alles gaat als maatwerk door.'"}
+      - {tool: data, key: true, depth: 2, text: Driekwart van de ontwerpen is een standaard 3x25A-aansluiting zonder netuitbreiding.}
+
+  - id: not_at_home
+    tier: 1
+    name: Niet thuis
+    step: meters.visit
+    waste: transport
+    severity: medium
+    visibility: obvious
+    kpi: first_time_right
+    symptoms:
+      - Monteurs laten veel kaartjes 'helaas niet thuis' achter.
+      - De planning van meterwissels loopt steeds verder uit.
+    root_cause: Afspraken hebben een tijdvak van een hele dag en worden niet bevestigd of herinnerd.
+    plausible_causes:
+      - Klanten zijn onbetrouwbaar.
+      - De monteurs komen te laat.
+    mismatch_note: De klanten willen wel thuis zijn; ze weten niet wanneer.
+    countermeasures: {appointment_reminder: 1.0, two_hour_window: 0.9}
+    teaches: [failure_demand, customer_value]
+    effects:
+      - {target: meters.visit, property: ftr, value: -0.15}
+    clues:
+      - {tool: shadow, key: true, depth: 0, text: Bij drie van de acht adressen doet niemand open. De monteur laat een kaartje achter.}
+      - {tool: time_study, key: false, depth: 0, text: Een meterwissel zelf duurt vijfendertig minuten, ruim binnen de planning.}
+      - {tool: documents, key: true, depth: 1, at: meters.appointment, text: Klanten krijgen een tijdvak van 8 tot 17 uur en geen bevestiging of herinnering.}
+      - {tool: listen_in, key: true, depth: 1, at: meters.appointment, text: "'Ik heb een halve dag vrij genomen en er kwam niemand.' En: 'Ik wist niet dat het vandaag was.'"}
+      - {tool: data, key: true, depth: 2, text: Van de mislukte bezoeken had tachtig procent geen herinnering ontvangen.}
+
+  - id: permits_in_batches
+    tier: 1
+    name: Vergunningen in batches
+    step: connections.permit
+    waste: waiting
+    severity: medium
+    visibility: subtle
+    kpi: lead_time
+    symptoms:
+      - Dossiers liggen dagen stil tussen ontwerp en vergunning.
+      - De doorlooptijd van aansluitingen is lang, terwijl de gemeente haar termijn haalt.
+    root_cause: Vergunningen worden wekelijks in een batch aangevraagd, en pas als het ontwerp helemaal af is.
+    plausible_causes:
+      - De gemeente werkt te langzaam.
+      - Het vergunningsportaal is te ingewikkeld.
+    mismatch_note: De gemeente is niet het knelpunt; de aanvraag ligt al stil voordat zij hem krijgt.
+    countermeasures: {request_permits_daily: 1.0, parallel_permits: 1.0}
+    teaches: [batching, flow]
+    effects:
+      - {target: connections.permit, property: batch_days, value: 7}
+    clues:
+      - {tool: data, key: true, depth: 0, text: Vergunningsaanvragen gaan alleen op maandag de deur uit. Een dossier dat dinsdag klaar is, wacht bijna een week.}
+      - {tool: documents, key: false, depth: 0, text: De gemeente haalt haar wettelijke termijn bijna altijd.}
+      - {tool: conversation, key: true, depth: 1, at: connections.design, text: "'Ik verzamel de aanvragen en stuur ze op maandag in één keer op; dat scheelt inloggen in het portaal.'"}
+      - {tool: documents, key: true, depth: 1, at: connections.design, text: De vergunning wordt pas aangevraagd als het ontwerp helemaal af is, terwijl de gemeente alleen het tracé nodig heeft.}
+      - {tool: time_study, key: true, depth: 2, at: connections.design, text: Een aanvraag indienen kost tien minuten; het tracé is al na een uur ontwerpen bekend.}

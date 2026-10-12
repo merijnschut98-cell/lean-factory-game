@@ -1,0 +1,263 @@
+{
+ "countermeasures": [
+  {
+   "budget": 6000,
+   "category": "quality",
+   "decay_days": null,
+   "description": "Het webformulier gaat pas verder als vermogen, installateur en een foto van de meterkast zijn ingevuld. Fouten worden aan de bron voorkomen in plaats van later gevonden.",
+   "effects": [
+    {
+     "property": "ftr",
+     "target": "connections.intake",
+     "value": 0.05
+    }
+   ],
+   "id": "poka_yoke_application",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Poka-yoke aanvraagformulier",
+   "team_hours": {
+    "intake": 30
+   },
+   "tier": 1
+  },
+  {
+   "budget": 1000,
+   "category": "standard_work",
+   "decay_days": 30,
+   "description": "De intakemedewerker loopt elke aanvraag na met een checklist en vraagt ontbrekende gegevens direct op.",
+   "effects": [],
+   "id": "intake_checklist",
+   "multipliers": {
+    "full": 0.8,
+    "minimal": 0.2,
+    "reduced": 0.45
+   },
+   "name": "Checklist bij de intake",
+   "team_hours": {
+    "intake": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 2000,
+   "category": "standard_work",
+   "decay_days": 45,
+   "description": "Planning belt of mailt de klant twee dagen voor de uitvoering met een korte checklist. Is de meterkast niet klaar, dan wordt de klus verplaatst voordat de monteur rijdt.",
+   "effects": [],
+   "id": "readiness_check",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Gereedheidscheck 48 uur vooraf",
+   "team_hours": {
+    "planners": 20
+   },
+   "tier": 1
+  },
+  {
+   "budget": 9000,
+   "category": "quality",
+   "decay_days": null,
+   "description": "De installateur meldt de meterkast gereed met een foto in het portaal; pas dan kan de klus worden ingepland.",
+   "effects": [
+    {
+     "property": "ftr",
+     "target": "connections.execution",
+     "value": 0.03
+    }
+   ],
+   "id": "installer_photo_upload",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Foto-upload door de installateur",
+   "team_hours": {
+    "intake": 20,
+    "planners": 30
+   },
+   "tier": 2
+  },
+  {
+   "budget": 8000,
+   "category": "standard_work",
+   "decay_days": 60,
+   "description": "Een vast ontwerp voor standaard woningaansluitingen (tot 3x25A, zonder netuitbreiding), zonder extra goedkeuringen.",
+   "effects": [
+    {
+     "property": "touch_time",
+     "target": "connections.design",
+     "value": 0.85
+    }
+   ],
+   "id": "standard_designs",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Standaardontwerpen voor standaardwerk",
+   "team_hours": {
+    "work_prep": 60
+   },
+   "tier": 1
+  },
+  {
+   "budget": 1500,
+   "category": "flow",
+   "decay_days": 30,
+   "description": "De werkvoorbereider keurt standaardontwerpen zelf goed; alleen afwijkingen gaan naar de teamleider.",
+   "effects": [],
+   "id": "delegated_approval",
+   "multipliers": {
+    "full": 0.85,
+    "minimal": 0.2,
+    "reduced": 0.45
+   },
+   "name": "Gedelegeerde goedkeuring",
+   "team_hours": {
+    "work_prep": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 500,
+   "category": "flow",
+   "decay_days": 30,
+   "description": "Een vergunningsaanvraag gaat de deur uit zodra het dossier klaar is, niet meer verzameld op maandag.",
+   "effects": [],
+   "id": "request_permits_daily",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Vergunning direct aanvragen",
+   "team_hours": {
+    "work_prep": 5
+   },
+   "tier": 1
+  },
+  {
+   "budget": 12000,
+   "category": "flow",
+   "decay_days": null,
+   "description": "Zodra het tracé bekend is, gaat de vergunningsaanvraag eruit; het ontwerp wordt intussen afgemaakt. Wachten en werken lopen naast elkaar.",
+   "effects": [
+    {
+     "property": "starts_with",
+     "target": "connections.permit",
+     "value": "design"
+    }
+   ],
+   "id": "parallel_permits",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Vergunning parallel aan het ontwerp",
+   "team_hours": {
+    "work_prep": 40
+   },
+   "tier": 3
+  },
+  {
+   "budget": 4000,
+   "category": "workplace_organization",
+   "decay_days": 45,
+   "description": "Elke storingsbus heeft dezelfde vaste lijst materialen, op een vaste plek. Wat eruit gaat, wordt aan het eind van de dienst aangevuld.",
+   "effects": [
+    {
+     "property": "touch_time",
+     "target": "outages.repair",
+     "value": 0.95
+    }
+   ],
+   "id": "standard_van_stock",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Standaard busvoorraad",
+   "team_hours": {
+    "monteurs": 40
+   },
+   "tier": 1
+  },
+  {
+   "budget": 10000,
+   "category": "flow",
+   "decay_days": null,
+   "description": "Twee bakken per artikel; een lege bak is het bestelsignaal voor het magazijn. Aanvullen hangt niet meer van het geheugen af.",
+   "effects": [
+    {
+     "property": "touch_time",
+     "target": "outages.repair",
+     "value": 0.9
+    }
+   ],
+   "id": "two_bin_van_kanban",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Two-bin kanban in de bus",
+   "team_hours": {
+    "monteurs": 30
+   },
+   "tier": 3
+  },
+  {
+   "budget": 3000,
+   "category": "quality",
+   "decay_days": null,
+   "description": "De klant krijgt een bevestiging bij het plannen en de dag ervoor een herinnering, met een knop om te verzetten.",
+   "effects": [],
+   "id": "appointment_reminder",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Bevestiging en herinnering van de afspraak",
+   "team_hours": {
+    "planners": 15
+   },
+   "tier": 1
+  },
+  {
+   "budget": 8000,
+   "category": "flow",
+   "decay_days": null,
+   "description": "Een afspraak in een tijdvak van twee uur, en een bericht als de monteur onderweg is.",
+   "effects": [
+    {
+     "property": "ftr",
+     "target": "meters.visit",
+     "value": 0.05
+    }
+   ],
+   "id": "two_hour_window",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Tijdvak van twee uur en een onderweg-bericht",
+   "team_hours": {
+    "planners": 30
+   },
+   "tier": 2
+  }
+ ]
+}

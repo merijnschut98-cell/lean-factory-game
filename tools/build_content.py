@@ -226,13 +226,210 @@ def _check_rework_loops(steps: list[dict], step_ids: list[str], where: str) -> N
                                        f"passes '{between['id']}' and takes material twice")
 
 
+# ── problems_tier*.yaml and countermeasures.yaml ─────────────────────────────
+# Vocabularies the game also defines (game/src/rules/investigation.gd,
+# game/src/sim/modifiers.gd); the Godot content test fails if they diverge.
+
+TOOLS = {"shadow", "time_study", "queue_count", "data", "documents", "listen_in", "material_check", "conversation"}
+WASTES = ["transport", "inventory", "motion", "waiting", "overproduction", "overprocessing", "defects", "skills"]
+KPIS = ["throughput", "lead_time", "first_time_right", "on_time"]
+SEVERITIES = ["low", "medium", "high", "critical"]
+VISIBILITIES = ["obvious", "subtle", "hidden"]
+# property → (target kind, required step kind or None, value type: factor | number | bool | count | reserve | step)
+EFFECT_PROPERTIES = {
+    "touch_time": ("step", "work", "factor"), "ftr": ("step", "work", "number"),
+    "applies": ("step", None, "number"), "wait_time": ("step", "wait", "factor"),
+    "availability": ("pool", None, "number"), "headcount": ("pool", None, "number"),
+    "lead_time": ("stock", None, "factor"), "reorder_point": ("stock", None, "number"),
+    "demand": ("stream", None, "factor"), "reserve": ("pool", None, "reserve"),
+    "preempts": ("stream", None, "bool"), "wip_limit": ("stream", None, "count"),
+    "batch_days": ("step", "wait", "number"), "starts_with": ("step", "wait", "step"),
+}
+
+
+def _string_list(item: dict, key: str, where: str, allow_empty: bool = True) -> list:
+    value = item.get(key, [])
+    if not isinstance(value, list) or not all(isinstance(v, str) and v.strip() for v in value) or (not allow_empty and not value):
+        raise ContentError(f"{where}: '{key}' must be a {'' if allow_empty else 'non-empty '}list of texts")
+    return value
+
+
+def _one_of(item: dict, key: str, options: list, where: str) -> None:
+    if item.get(key) not in options:
+        raise ContentError(f"{where}: '{key}' must be one of {list(options)} (got {item.get(key)!r})")
+
+
+def _effects_shape(item: dict, where: str) -> list:
+    effects = item.get("effects", [])
+    if not isinstance(effects, list) or not all(isinstance(e, dict) for e in effects):
+        raise ContentError(f"{where}: 'effects' must be a list of mappings")
+    for e in effects:
+        if not isinstance(e.get("target"), str) or "value" not in e:
+            raise ContentError(f"{where}: every effect needs a target and a value")
+        if e.get("property") not in EFFECT_PROPERTIES:
+            raise ContentError(f"{where}: unknown effect property {e.get('property')!r}")
+    return effects
+
+
+def validate_countermeasures(doc: Any, source: str) -> None:
+    _require_strings(doc, [], source)
+    for cm in _entries(doc, "countermeasures", source):
+        where = f"{source}: countermeasure '{cm['id']}'"
+        _require_strings(cm, ["category", "description"], where)
+        _number(cm, "tier", where, 1, 4, integer=True)
+        _number(cm, "budget", where, 0, integer=True)
+        hours = cm.get("team_hours", {})
+        if not isinstance(hours, dict):
+            raise ContentError(f"{where}: 'team_hours' must map pools to hours")
+        for pool in hours:
+            _number(hours, pool, f"{where} team_hours", 0.5)
+        if cm.get("decay_days") is not None:
+            _number(cm, "decay_days", where, 1, integer=True)
+        m = cm.get("multipliers")
+        if not isinstance(m, dict):
+            raise ContentError(f"{where}: 'multipliers' needs full, reduced and minimal")
+        for level in ("full", "reduced", "minimal"):
+            _number(m, level, f"{where} multipliers", 0, 1)
+        if not m["full"] >= m["reduced"] >= m["minimal"]:
+            raise ContentError(f"{where}: multipliers must be full >= reduced >= minimal")
+        _effects_shape(cm, where)
+
+
+def validate_problems(doc: Any, source: str) -> None:
+    _require_strings(doc, [], source)
+    for p in _entries(doc, "problems", source):
+        where = f"{source}: problem '{p['id']}'"
+        _require_strings(p, ["step", "root_cause", "mismatch_note"], where)
+        _number(p, "tier", where, 1, 4, integer=True)
+        _one_of(p, "waste", WASTES, where)
+        _one_of(p, "severity", SEVERITIES, where)
+        _one_of(p, "visibility", VISIBILITIES, where)
+        _one_of(p, "kpi", KPIS, where)
+        _string_list(p, "symptoms", where, allow_empty=False)
+        _string_list(p, "plausible_causes", where)
+        _string_list(p, "teaches", where)
+        fits = p.get("countermeasures")
+        if not isinstance(fits, dict) or not fits:
+            raise ContentError(f"{where}: 'countermeasures' must map countermeasure ids to a fit")
+        for cm in fits:
+            _number(fits, cm, f"{where} countermeasure '{cm}' fit", 0.05, 1)
+        _effects_shape(p, where)
+        _validate_clues(p, where)
+
+
+def _validate_clues(p: dict, where: str) -> None:
+    clues = p.get("clues")
+    if not isinstance(clues, list) or not clues or not all(isinstance(c, dict) for c in clues):
+        raise ContentError(f"{where}: 'clues' must be a non-empty list of mappings")
+    keys_at = set()
+    for i, c in enumerate(clues):
+        if c.get("tool") not in TOOLS:
+            raise ContentError(f"{where} clue {i}: unknown tool {c.get('tool')!r}")
+        _require_strings(c, ["text"], f"{where} clue {i}")
+        if not isinstance(c.get("key"), bool):
+            raise ContentError(f"{where} clue {i}: 'key' must be true or false")
+        _number(c, "depth", f"{where} clue {i}", 0, integer=True)
+        if c["key"]:
+            keys_at.add(c["depth"])
+    if 0 not in keys_at:
+        raise ContentError(f"{where}: needs a key clue at depth 0 (where the investigation starts)")
+    for c in clues:
+        if c["depth"] > 0 and c["depth"] - 1 not in keys_at:
+            raise ContentError(f"{where}: a clue at depth {c['depth']} needs a key clue at depth {c['depth'] - 1}")
+
+
+def _network_index(streams_doc: dict) -> dict:
+    """What effects and places can refer to: steps by 'stream.step' with their order, pools, stock, streams."""
+    steps = {}
+    for stream in streams_doc["streams"]:
+        ids = [s["id"] for s in stream["steps"]]
+        for i, step in enumerate(stream["steps"]):
+            steps[f"{stream['id']}.{step['id']}"] = {"kind": step["kind"], "index": i, "stream_ids": ids}
+    return {
+        "steps": steps,
+        "pools": {p["id"]: p for p in streams_doc["pools"]},
+        "stock": {s["id"] for s in streams_doc["stock"]},
+        "streams": {s["id"] for s in streams_doc["streams"]},
+    }
+
+
+def _check_effect(e: dict, where: str, net: dict) -> None:
+    kind, step_kind, value_type = EFFECT_PROPERTIES[e["property"]]
+    target, value = e["target"], e["value"]
+    if kind == "step":
+        step = net["steps"].get(target)
+        if step is None:
+            raise ContentError(f"{where}: unknown step {target!r}")
+        if step_kind and step["kind"] != step_kind:
+            raise ContentError(f"{where}: {target} is not a {step_kind} step (for {e['property']})")
+    elif target not in net[{"pool": "pools", "stock": "stock", "stream": "streams"}[kind]]:
+        raise ContentError(f"{where}: unknown {kind} {target!r}")
+    number = isinstance(value, (int, float)) and not isinstance(value, bool)
+    if value_type == "factor" and not (number and value > 0):
+        raise ContentError(f"{where}: {e['property']} needs a factor above 0")
+    if value_type == "number" and not number:
+        raise ContentError(f"{where}: {e['property']} needs a number")
+    if value_type == "bool" and not isinstance(value, bool):
+        raise ContentError(f"{where}: {e['property']} needs true or false")
+    if value_type == "count" and not (isinstance(value, int) and not isinstance(value, bool) and value >= 0):
+        raise ContentError(f"{where}: {e['property']} needs a whole number >= 0")
+    if value_type == "reserve":
+        pool = net["pools"].get(target, {})
+        if not (isinstance(value, dict) and value.get("stream") in net["streams"]
+                and isinstance(value.get("people"), int) and 0 <= value["people"] <= pool.get("headcount", 0)):
+            raise ContentError(f"{where}: a reserve is {{stream, people}} with people up to the headcount")
+    if value_type == "step":
+        step = net["steps"][target]
+        if value != "" and value not in step["stream_ids"][:step["index"]]:
+            raise ContentError(f"{where}: {target} can only start with an earlier step (got {value!r})")
+
+
+def check_problems(docs: dict[str, Any]) -> None:
+    """Problems and countermeasures against the value streams and each other."""
+    if "value_streams" not in docs or "countermeasures" not in docs:
+        return
+    net = _network_index(docs["value_streams"])
+    cms = {c["id"]: c for c in docs["countermeasures"]["countermeasures"]}
+    for cm in cms.values():
+        where = f"countermeasures.yaml: '{cm['id']}'"
+        for pool in cm.get("team_hours", {}):
+            if pool not in net["pools"]:
+                raise ContentError(f"{where}: team_hours for unknown pool {pool!r}")
+        for e in cm["effects"]:
+            _check_effect(e, where, net)
+    for stem, doc in docs.items():
+        if not stem.startswith("problems_"):
+            continue
+        for p in doc["problems"]:
+            where = f"{stem}.yaml: problem '{p['id']}'"
+            if p["step"] not in net["steps"]:
+                raise ContentError(f"{where}: unknown step {p['step']!r}")
+            for e in p["effects"]:
+                _check_effect(e, where, net)
+            for i, c in enumerate(p["clues"]):
+                at = c.get("at", p["step"])
+                if at not in net["steps"]:
+                    raise ContentError(f"{where} clue {i}: unknown step {at!r}")
+                if c["tool"] == "conversation" and net["steps"][at]["kind"] != "work":
+                    raise ContentError(f"{where} clue {i}: a conversation clue at a step without a team ({at})")
+            for cm_id in p["countermeasures"]:
+                if cm_id not in cms:
+                    raise ContentError(f"{where}: unknown countermeasure {cm_id!r}")
+            if not any(cms[c]["tier"] <= p["tier"] and cms[c]["multipliers"]["full"] * fit >= 0.5
+                       for c, fit in p["countermeasures"].items()):
+                raise ContentError(f"{where}: no countermeasure that can solve it at its tier "
+                                   "(needs tier <= the problem's and full multiplier x fit >= 0.5)")
+
+
 VALIDATORS: dict[str, Callable[[Any, str], None]] = {
     "game": validate_game,
     "value_streams": validate_value_streams,
+    "countermeasures": validate_countermeasures,
+    "problems_tier1": validate_problems,
 }
 
 # Checks that need several files at once. Each gets {stem: document}.
-CROSS_CHECKS: list[Callable[[dict[str, Any]], None]] = []
+CROSS_CHECKS: list[Callable[[dict[str, Any]], None]] = [check_problems]
 
 
 def load_content(content_dir: Path | None = None) -> dict[str, Any]:

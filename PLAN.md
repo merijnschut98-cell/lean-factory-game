@@ -12,7 +12,7 @@ Pivot agreed 2026-10-12: from a hoverboard factory to a grid operator. The 3D fa
 
 This is a multi-month project, built the right way: research → design (reviewed by Merijn) → engine → content → world → UI, in small tested increments. No publishing deadline. Built in **Godot 4 + GDScript** from the start (decided 2026-10-12).
 
-**Next task:** Phase B — the content pipeline for problems and countermeasures (`content/problems_tier1.yaml`, `content/countermeasures.yaml`: validator, cross-checks against the value streams, loader into `ProblemDef`/`CountermeasureDef`), then the first tier-1 problems from the GDD catalogue.
+**Next task:** Phase B — review round for Merijn on the first six problems and the healthy base; then the remaining tier-1 problems from the GDD catalogue (`content/problems_tier1.yaml`).
 
 ---
 
@@ -144,7 +144,27 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
     - Dependencies: dev dependencies (`pytest>=`) are unpinned while the legacy runtime dependencies are pinned. Low risk; pin when CI shows drift.
 
 ## Phase B — Content (Dutch) ⬜
-- ⬜ `content/problems_tier1.yaml`: ~16 problems across the four streams (well-known and less-known), each with symptoms, clues per tool (key + red herrings, 5 Whys depth), waste, root cause, effective countermeasures, effect
+- ✅ Problem pipeline (plan: `docs/superpowers/plans/2026-10-12-phase-b-1-problem-pipeline.md`):
+  - `content/problems_tier1.yaml` + `content/countermeasures.yaml`;
+  - validator with cross-checks (steps, places, teams, tools, effects, the clue depth chain, a solvable countermeasure per problem);
+  - the `Catalog` loader.
+  - Godot content tests: everything loads and fits the real network; an expert can solve every problem (all key clues reachable, the Check passes); every problem hurts its stream through its mechanism (capacity, team load or wait) and, where strong enough, its named KPI.
+- ✅ First six tier-1 problems (Dutch), 12 countermeasures, several per problem with different fits and shapes:
+  - De onvolledige aanvraag
+  - Meterkast niet gereed
+  - De verkeerde mof in de bus
+  - Maatwerk voor standaardwerk
+  - Niet thuis
+  - Vergunningen in batches: request daily, or in parallel with the design (`starts_with`), two healthier processes of a different shape
+- ✅ Healthy base (Merijn's decision applied, 2026-10-12):
+  - `value_streams.yaml` now has no team above ~85% (design 3.2 h, revision 1.6 h), so the flow is stable.
+  - The starting constraint comes from the custom_design problem (Werkvoorbereiding ~110%).
+  - Fixing it shows the next constraint: Intake at 86%.
+  - Regression tests check the base and the starting state separately.
+- ⬜ Merijn reviews the six problems for realism (texts, clues, effects) and the healthy base
+- ⬜ Remaining tier-1 catalogue problems: de statusbellers, de revisieberg, graafschade, storing gooit de planning om, klaar maar niet af, de laatste kennisdrager, KPI's die elkaar bevechten
+- ⬜ Common random numbers (a random stream per purpose), so A/B comparisons of two runs stay comparable. Today runs diverge after the first different draw, which is why the content test measures mechanisms instead of lead-time KPIs
+: ~16 problems across the four streams (well-known and less-known), each with symptoms, clues per tool (key + red herrings, 5 Whys depth), waste, root cause, effective countermeasures, effect
 - ⬜ `content/countermeasures.yaml`: Lean countermeasures in DSO context (triage at intake, poka-yoke application form, standard designs, frozen planning window, WIP limits, two-bin van stock, appointment confirmation, revision at the source, cross-training, daily start / visual management, proactive status updates against failure demand, …)
 - ⬜ `content/missions.yaml`, `content/concepts.yaml` (Lean + sector glossary, Dutch)
 - ⬜ Merijn reviews content for realism

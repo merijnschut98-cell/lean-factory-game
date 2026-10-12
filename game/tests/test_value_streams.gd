@@ -1,6 +1,8 @@
 extends TestCase
-## The real value streams from content/value_streams.yaml.
-## Fixed seed, so these are exact regression checks on the tuned starting state.
+## The real value streams from content/value_streams.yaml: a healthy base,
+## and the starting state (the base with the custom_design problem switched
+## on, which makes Werkvoorbereiding the constraint).
+## Fixed seed, so these are exact regression checks on the tuned content.
 
 const SEED := 11
 
@@ -10,6 +12,15 @@ static var _after_120_days: Network
 
 func _net() -> Network:
 	return Network.load_file(Network.DEFAULT_PATH, SEED)
+
+
+## The base with the custom_design problem active (as at the start of the game).
+func _starting_state() -> Network:
+	var net := _net()
+	for p in Catalog.load_from().problems:
+		if p.id == "custom_design":
+			net.set_effects("problem:custom_design", p.effects)
+	return net
 
 
 func _run_120_days() -> Network:
@@ -26,26 +37,33 @@ func test_content_loads() -> void:
 		assert_ne(net.stream(id), null, id)
 
 
-func test_design_is_the_starting_constraint_at_about_full_load() -> void:
+func test_the_base_is_healthy() -> void:
 	var r := Capacity.analyse(_net())
-	var c: Dictionary = r["streams"]["connections"]
-	assert_eq(c["constraint_pool"], "work_prep")
-	assert_eq(c["constraint_step"], "design")
-	assert_between(c["utilisation"], 0.95, 1.15)
-	assert_between(r["pools"]["gis"]["utilisation"], 0.85, 1.0, "Revisie & GIS is close behind")
+	for pool: String in r["pools"]:
+		assert_true(r["pools"][pool]["utilisation"] < 0.9, "%s at %.0f%%" % [pool, 100 * r["pools"][pool]["utilisation"]])
 	assert_between(r["pools"]["monteurs"]["utilisation"], 0.6, 0.8, "the obvious suspect is not the constraint")
 
 
-func test_standard_designs_move_the_constraint_to_gis() -> void:
-	var net := _net()
-	assert_eq(net.set_effects("cm:standard_designs", [NetFixture.effect("connections.design", "touch_time", 0.7)]), "")
+func test_design_is_the_starting_constraint() -> void:
+	var r := Capacity.analyse(_starting_state())
+	var c: Dictionary = r["streams"]["connections"]
+	assert_eq(c["constraint_pool"], "work_prep")
+	assert_eq(c["constraint_step"], "design")
+	assert_between(c["utilisation"], 1.0, 1.2, "overloaded: the queue grows")
+
+
+func test_fixing_the_constraint_shows_the_next_one() -> void:
+	var net := _starting_state()
+	var before: float = Capacity.analyse(net)["streams"]["connections"]["capacity_per_week"]
+	net.clear_effects("problem:custom_design")
 	var c: Dictionary = Capacity.analyse(net)["streams"]["connections"]
-	assert_eq(c["constraint_pool"], "gis", "fix the constraint and the next one shows")
-	assert_between(c["capacity_per_week"], 30.0, 34.0, "only a little more output: Revisie & GIS is close behind")
+	assert_eq(c["constraint_pool"], "intake", "fix the constraint and the next one shows")
+	assert_between(c["capacity_per_week"] / before, 1.15, 1.4, "more output, until intake sets the pace")
 
 
 func test_queue_builds_at_the_constraint() -> void:
-	var net := _run_120_days()
+	var net := _starting_state()
+	net.advance_days(120)
 	var s := net.stream("connections")
 	var design_queue := 0
 	var other_max := 0
@@ -62,9 +80,9 @@ func test_queue_builds_at_the_constraint() -> void:
 func test_kpis_are_in_a_realistic_range() -> void:
 	var net := _run_120_days()
 	var k := net.stream("connections").kpis(net.time, 28)
-	assert_between(k["throughput_per_week"], 20.0, 32.0, "demand is 30 a week")
-	assert_between(k["lead_days_p50"], 15.0, 80.0)
-	assert_true(k["backlog"] > 100, "backlog %d" % k["backlog"])
+	assert_between(k["throughput_per_week"], 24.0, 36.0, "demand is 30 a week")
+	assert_between(k["lead_days_p50"], 15.0, 45.0, "permits and the customer's signature take weeks")
+	assert_between(k["backlog"], 60, 200)
 	assert_between(k["first_time_right"], 0.3, 0.7)
 
 

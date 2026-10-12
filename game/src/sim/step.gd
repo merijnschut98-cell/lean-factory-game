@@ -7,7 +7,7 @@ extends RefCounted
 
 enum Kind { WORK, WAIT, MATERIAL }
 ## What the daily statistics count (see record / stats_since).
-enum Stat { ENTERED, DONE, REWORKED, STARTED, QUEUE_MINUTES, STALE }
+enum Stat { ENTERED, DONE, REWORKED, STARTED, QUEUE_MINUTES, STALE, WAIT_MINUTES }
 
 var id: String
 var name: String
@@ -76,8 +76,9 @@ func forget_day(day: int) -> void:
 	_daily.erase(day)
 
 
-## Totals from `day` on: {entered, done, reworked, queue_hours (mean wait
-## before the first start, for work steps)}.
+## Totals from `day` on: {entered, done, reworked, stale, queue_hours (mean
+## wait before the first start, for work steps), wait_hours (mean external
+## wait per order, for wait steps)}.
 func stats_since(day: int) -> Dictionary:
 	var totals := PackedInt64Array()
 	totals.resize(Stat.size())
@@ -92,4 +93,5 @@ func stats_since(day: int) -> Dictionary:
 		"reworked": totals[Stat.REWORKED],
 		"queue_hours": totals[Stat.QUEUE_MINUTES] / 60.0 / started if started > 0 else 0.0,
 		"stale": totals[Stat.STALE],
+		"wait_hours": totals[Stat.WAIT_MINUTES] / 60.0 / totals[Stat.ENTERED] if totals[Stat.ENTERED] > 0 else 0.0,
 	}

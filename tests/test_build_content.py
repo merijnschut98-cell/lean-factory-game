@@ -27,6 +27,9 @@ def dirs(tmp_path: Path) -> tuple[Path, Path]:
     content.mkdir()
     (content / "game.yaml").write_text(GAME_YAML, encoding="utf-8")
     (content / "value_streams.yaml").write_text(REAL_STREAMS, encoding="utf-8")
+    for stem in ("countermeasures", "problems_tier1"):
+        (content / f"{stem}.yaml").write_text(
+            (Path(__file__).resolve().parent.parent / "content" / f"{stem}.yaml").read_text(encoding="utf-8"), encoding="utf-8")
     return content, data
 
 
@@ -39,7 +42,7 @@ def test_repo_content_is_valid_and_built():
 def test_write_then_check_is_clean(dirs):
     content, data = dirs
     docs = bc.load_content(content)
-    assert bc.stale_files(docs, data) == ["game.json", "value_streams.json"]
+    assert bc.stale_files(docs, data) == sorted(f"{stem}.json" for stem in docs)
     bc.write(docs, data)
     assert bc.stale_files(docs, data) == []
     assert '"town": "Nova"' in (data / "game.json").read_text(encoding="utf-8")
@@ -81,7 +84,7 @@ def test_cross_checks_see_all_files(dirs, monkeypatch):
     seen = []
     monkeypatch.setattr(bc, "CROSS_CHECKS", [lambda docs: seen.append(sorted(docs))])
     bc.load_content(content)
-    assert seen == [["game", "value_streams"]]
+    assert seen == [sorted(bc.VALIDATORS)]
 
 
 def test_cross_check_failure_is_reported(dirs, monkeypatch):
@@ -196,3 +199,115 @@ def test_unquoted_time_in_yaml_is_caught():
 def test_real_streams_cover_the_four_value_streams():
     ids = [s["id"] for s in _streams()["streams"]]
     assert ids == ["connections", "outages", "meters", "congestion"]
+
+
+# ── problems and countermeasures ─────────────────────────────────────────────
+
+CMS_YAML = """countermeasures:
+  - id: standard_designs
+    name: Standaardontwerpen
+    tier: 1
+    category: standard_work
+    description: Een standaardontwerp voor standaardaansluitingen.
+    budget: 8000
+    team_hours: {work_prep: 40}
+    decay_days: 45
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: connections.design, property: touch_time, value: 0.75}
+  - id: weekly_meeting
+    name: Wekelijks overleg
+    tier: 1
+    category: visual_management
+    description: Elke week bespreken.
+    budget: 1000
+    team_hours: {}
+    decay_days: null
+    multipliers: {full: 0.6, reduced: 0.3, minimal: 0.1}
+    effects: []
+"""
+
+PROBLEMS_YAML = """problems:
+  - id: custom_design
+    tier: 1
+    name: Maatwerk voor standaardwerk
+    step: connections.design
+    waste: overprocessing
+    severity: high
+    visibility: obvious
+    kpi: throughput
+    symptoms: [De stapel ontwerpen groeit.]
+    root_cause: Standaardaansluitingen krijgen een volledig maatwerkontwerp.
+    plausible_causes: [De werkvoorbereiders zijn te langzaam.]
+    mismatch_note: Het werk zelf is niet veranderd.
+    countermeasures: {standard_designs: 1.0}
+    teaches: [standard_work]
+    effects:
+      - {target: connections.design, property: touch_time, value: 1.3}
+    clues:
+      - {tool: time_study, key: true, depth: 0, text: Een standaardaansluiting kost vijf uur ontwerp.}
+      - {tool: queue_count, key: false, depth: 0, text: Er liggen veertig dossiers.}
+      - {tool: documents, key: true, depth: 1, text: Elk dossier heeft drie handtekeningen.}
+      - {tool: conversation, key: true, depth: 1, at: connections.intake, text: Intake vraagt nooit of het standaard is.}
+"""
+
+
+@pytest.fixture
+def rules_dirs(dirs):
+    content, data = dirs
+    (content / "countermeasures.yaml").write_text(CMS_YAML, encoding="utf-8")
+    (content / "problems_tier1.yaml").write_text(PROBLEMS_YAML, encoding="utf-8")
+    return content, data
+
+
+def _rules(content, mutate) -> None:
+    docs = {stem: yaml.safe_load((content / f"{stem}.yaml").read_text(encoding="utf-8"))
+            for stem in ("game", "value_streams", "countermeasures", "problems_tier1")}
+    mutate(docs)
+    for stem, doc in docs.items():
+        (content / f"{stem}.yaml").write_text(yaml.safe_dump(doc, allow_unicode=True), encoding="utf-8")
+    bc.load_content(content)
+
+
+def _problem(docs: dict) -> dict:
+    return docs["problems_tier1"]["problems"][0]
+
+
+def _cm(docs: dict) -> dict:
+    return docs["countermeasures"]["countermeasures"][0]
+
+
+def test_sample_problems_are_valid(rules_dirs):
+    content, _ = rules_dirs
+    docs = bc.load_content(content)
+    assert docs["problems_tier1"]["problems"][0]["id"] == "custom_design"
+
+
+@pytest.mark.parametrize("mutate, message", [
+    (lambda d: _problem(d).update(waste="laziness"), "'waste' must be one of"),
+    (lambda d: _problem(d).update(kpi="happiness"), "'kpi' must be one of"),
+    (lambda d: _problem(d).update(step="connections.nowhere"), "unknown step 'connections.nowhere'"),
+    (lambda d: _problem(d)["clues"][0].update(tool="crystal_ball"), "unknown tool 'crystal_ball'"),
+    (lambda d: _problem(d)["clues"][0].update(key=False), "needs a key clue at depth 0"),
+    (lambda d: _problem(d)["clues"][2].update(depth=3), "depth 3 needs a key clue at depth 2"),
+    (lambda d: _problem(d)["clues"][3].update(at="connections.permit"), "conversation clue at a step without a team"),
+    (lambda d: _problem(d)["clues"][1].update(at="ghosts.step"), "unknown step 'ghosts.step'"),
+    (lambda d: _problem(d).update(countermeasures={"magic_wand": 1.0}), "unknown countermeasure 'magic_wand'"),
+    (lambda d: _problem(d).update(countermeasures={"standard_designs": 1.5}), "fit"),
+    (lambda d: _problem(d).update(countermeasures={"weekly_meeting": 0.5}), "no countermeasure that can solve it"),
+    (lambda d: _problem(d)["effects"][0].update(property="speed"), "unknown effect property 'speed'"),
+    (lambda d: _problem(d)["effects"][0].update(target="connections.permit"), "is not a work step"),
+    (lambda d: _problem(d)["effects"][0].update(target="nobody"), "unknown step 'nobody'"),
+    (lambda d: _problem(d)["effects"][0].update(value=0), "factor above 0"),
+    (lambda d: _problem(d)["effects"].append({"target": "outages", "property": "preempts", "value": "yes"}), "true or false"),
+    (lambda d: _problem(d).update(symptoms=[]), "'symptoms' must be a non-empty list"),
+    (lambda d: _cm(d).update(tier=5), "'tier' must be between 1 and 4"),
+    (lambda d: _cm(d).update(team_hours={"wizards": 10}), "unknown pool 'wizards'"),
+    (lambda d: _cm(d).update(multipliers={"full": 0.5, "reduced": 0.7, "minimal": 0.1}), "full >= reduced >= minimal"),
+    (lambda d: _cm(d).update(decay_days=0), "'decay_days' must be"),
+    (lambda d: d["countermeasures"]["countermeasures"].append(dict(_cm(d))), "duplicate countermeasures ids"),
+])
+def test_problem_errors_are_caught(rules_dirs, mutate, message):
+    content, _ = rules_dirs
+    with pytest.raises(bc.ContentError, match=message.replace("(", r"\(")):
+        _rules(content, mutate)

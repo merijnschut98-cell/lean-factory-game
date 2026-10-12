@@ -223,7 +223,7 @@
      "pool": "work_prep",
      "stale_after_days": 60,
      "stale_to": "quote",
-     "touch_hours": 4.0
+     "touch_hours": 3.2
     },
     {
      "applies": 0.6,
@@ -274,7 +274,7 @@
      "kind": "work",
      "name": "Revisie & administratie",
      "pool": "gis",
-     "touch_hours": 2.0
+     "touch_hours": 1.6
     }
    ]
   },

@@ -39,9 +39,11 @@
 #             Put it before the step rework returns to, or rework takes twice.
 # Any step may have `applies` (0–1): the share of orders that need it.
 #
-# Starting numbers are tuned so Werkvoorbereiding is the constraint of the
-# connections stream at about 100% load, with Revisie & GIS close behind,
-# and the monteurs (the obvious suspect) at about 70%.
+# A reasonably healthy base (Merijn, 2026-10-12): no team above ~85% load, so
+# the flow is stable. Today's constraints come from the starting problems in
+# content/problems_tier*.yaml, switched on as effects (e.g. custom_design
+# puts Werkvoorbereiding at ~110%). The monteurs (the obvious suspect) sit
+# at about 70%.
 
 pools:
   - id: intake
@@ -154,7 +156,7 @@ streams:
         name: Werkvoorbereiding & ontwerp
         kind: work
         pool: work_prep
-        touch_hours: 4.0
+        touch_hours: 3.2      # healthy base; the custom_design problem makes it 4.2
         ftr: 0.85
         stale_after_days: 60  # quote and grid data out of date: re-quote, the customer signs again
         stale_to: quote
@@ -195,7 +197,7 @@ streams:
         name: Revisie & administratie
         kind: work
         pool: gis
-        touch_hours: 2.0
+        touch_hours: 1.6
         ftr: 0.95
 
   - id: outages

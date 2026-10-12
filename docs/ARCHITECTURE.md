@@ -111,6 +111,7 @@ Problem effects are generic modifiers (`sim/modifiers.gd`):
 ## Content pipeline
 
 - **Authoring:** content is written in **YAML** under `content/`. YAML is readable for review, handles long Dutch texts well, and keeps comments. Game text is Dutch; keys and field names are English.
+- **Files so far:** `game.yaml`, `value_streams.yaml` (a healthy base), `countermeasures.yaml` and `problems_tier1.yaml` (the problems switched on as effects on top of the base). `rules/catalog.gd` loads the last two.
 - **Build:** `tools/build_content.py` validates everything in two passes (each file against its own validator, then `CROSS_CHECKS` over all files for references between them) and writes JSON to `game/data/`. Godot parses JSON natively, so the game needs no YAML parser. Validation covers:
   - required fields;
   - every problem has at least one key clue at depth 0;

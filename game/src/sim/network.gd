@@ -335,6 +335,7 @@ func _enter(order: WorkOrder, index: int) -> void:
 		SimStep.Kind.WAIT:
 			# A wait that started in parallel only costs what is left of it.
 			var ready: int = order.early[index] if order.early.has(index) else _wait_ready(step)
+			_record(step, SimStep.Stat.WAIT_MINUTES, maxi(0, ready - time))
 			if ready > time:
 				_wait(order, ready - time, index + 1)
 			else:
