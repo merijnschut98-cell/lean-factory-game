@@ -6,13 +6,13 @@ Game text is **Dutch** (with sector terms). Code, comments and this plan stay in
 
 ---
 
-## Current Status: Phase A — Engine (Godot) 🔧 steps 1–5 and 4c done
+## Current Status: Phase A — Engine (Godot) 🔧 steps 1–6 done, gate next
 
 Pivot agreed 2026-10-12: from a hoverboard factory to a grid operator. The 3D factory prototype is archived in `archive/factory-3d/` (also git commit `b3a4c8c`). Its investigation / A3 / PDCA / bottleneck logic will be carried over and generalised.
 
 This is a multi-month project, built the right way: research → design (reviewed by Merijn) → engine → content → world → UI, in small tested increments. No publishing deadline. Built in **Godot 4 + GDScript** from the start (decided 2026-10-12).
 
-**Next task:** Phase A step 6 — save/load of the simulation and rules state (JSON, versioned, validated).
+**Next task:** Phase A gate — automated-testing and technical-debt review of the whole engine before Phase B.
 
 ---
 
@@ -119,7 +119,10 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
   - dead state removed (incl. the duplicate step counters; daily statistics are the one source);
   - bounded `stats_since`;
   - `_score_inputs` split out of `act`.
-- ⬜ Step 6: save/load of the simulation and rules state (JSON, versioned, validated)
+- ✅ Step 6: save/load.
+  - `NetworkState` and `RegionState` capture everything needed to continue exactly; `SaveFile` writes versioned JSON per slot (restricted slot names, atomic write).
+  - Loading restores by id into fresh content and reports what the content no longer has.
+  - Tests: a restored network continues 30 days identically (orders, events, effects, statistics); a restored region finishes its experiment with the same Check and score; corrupt data, unknown ids, a wrong version and path escape are refused. 109 Godot tests.
 - ⬜ Gate: four value streams run headless with realistic KPIs; tests cover flow, pre-emption, rework, stock-outs, capacity, the PDCA loop and save/load
 
 ## Phase B — Content (Dutch) ⬜

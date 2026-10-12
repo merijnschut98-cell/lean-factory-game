@@ -124,10 +124,26 @@ UI strings that are not content (button labels, HUD) go through Godot's translat
 
 ## Saves
 
-- JSON in `user://saves/`, with a schema version.
-- Autosave at every dagstart (sessions are 15–40 minutes and can end at any morning).
-- Loading validates every field and ignores ids that no longer exist in the content, the same approach as the prototype's `save.ts`.
-- The world state is rebuilt from the simulation, never saved separately.
+- **Files:** JSON in `user://saves/<slot>.json` with a schema version (`save/save_file.gd`).
+  - Slot names are restricted to `[a-z0-9_]`, so a path never leaves the folder.
+  - Writes go to a temporary file that is then renamed, so a crash never leaves half a save.
+- **Serializers next to their layers:** `sim/network_state.gd` (`NetworkState`) and `rules/region_state.gd` (`RegionState`) capture and restore everything needed to continue exactly:
+  - the clock and the random state;
+  - effects;
+  - every order wherever it is (queues, busy, waits, stock, held);
+  - stock, finished records and daily statistics;
+  - every problem's place in the PDCA loop;
+  - trust, clues found and the profile.
+  A test proves a restored game continues identically.
+- **Loading** restores into a Network and Region freshly built from the current content.
+  - Everything is matched by id (`stream.step`), never by index. What the content no longer has is dropped and reported (`dropped`), never guessed at.
+  - Structural damage returns an `error` and the caller discards the half-built game.
+- **JSON gotchas handled:**
+  - numbers come back as floats and are converted where the logic needs ints;
+  - the 64-bit random state is stored as text;
+  - tests compare restored data by value (`TestCase.assert_data_eq`).
+- **Not saved:** transient events. The world state is rebuilt from the simulation, never saved separately.
+- **Later:** autosave at every dagstart (sessions are 15–40 minutes and can end at any morning).
 
 ## Testing
 
