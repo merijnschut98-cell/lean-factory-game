@@ -31,6 +31,8 @@ var finished: Array[Dictionary] = []
 ## A source of new orders: `per_week` on average, spread evenly over the
 ## moments of `when` (e.g. working days 08:00–17:00, or around the clock).
 class Arrivals:
+	## Optional, for effects on one source ("outages.daytime").
+	var id := ""
 	var per_week: float
 	var when: WeekSchedule
 	var rng: Rng

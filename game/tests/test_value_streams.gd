@@ -95,6 +95,9 @@ func test_kpis_are_in_a_realistic_range() -> void:
 	assert_between(k["lead_days_p50"], 15.0, 45.0, "permits and the customer's signature take weeks")
 	assert_between(k["backlog"], 60, 200)
 	assert_between(k["first_time_right"], 0.3, 0.7)
+	# The six-week promise is met most of the time, not always (0.82–0.91 over
+	# seeds 11–15), so a problem shows in on-time instead of hiding under a far norm.
+	assert_between(k["on_time"], 0.7, 0.97)
 
 
 func test_outages_are_restored_within_hours_by_day_and_night() -> void:

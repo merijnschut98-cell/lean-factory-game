@@ -183,17 +183,18 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
   - Found by the report: *Checklist bij de intake* could never pass the Check (0.8 × fit 0.6 = 0.48). Every listed countermeasure must now be able to pass at full strength (validator + Godot test on the real formula); fit raised to 0.7.
   - Region and the report share one rule for what a treated problem does to the sim (`Pdca.treated_effects`)
   - Found while writing the review: 12 clue texts were cut off in the game. An unquoted comma inside `{…}` split the text and YAML turned the rest into an extra key. The content loader now refuses that pattern and duplicate keys (`_StrictLoader`). Problems, countermeasures, clues and effects also reject unknown keys (typos). The clue texts are quoted.
-- ⬜ Merijn reviews the eleven problems for realism in the review doc (texts, clues, effect sizes, the close-out spiral, the healthy base). Open questions raised by the report: connections never miss the 126-day norm (on time is always 100%); outage problems barely move outage KPIs
+- ✅ Review findings fixed with Claude's judgement while Merijn is away (his instruction, 2026-10-12): see "Claude's calls, pending Merijn" under Decisions Made
+- ⬜ Merijn reviews the problems for realism in the review doc (https://claude.ai/code/artifact/120bfc8c-75b6-4a56-86d9-2c5c3148112a) and answers the open questions there; each has a default already built in
 - ⬜ Catalogue problems that need a new mechanism first:
   - storing gooit de planning om: planned monteur work at 100%; needs the base to keep slack that the problem removes, or a planning-horizon mechanic;
   - KPI's die elkaar bevechten: overproduction, departments pushing work in; needs a release decision per department
+- ✅ Graafschade and the norm (review findings): outage arrival sources have ids, and a `demand` effect can target one (`outages.daytime`). Graafschade adds half again to daytime outages (a third of them), so the harm is monteurs pulled off planned work. De revisieberg also adds 10% daytime outages (outdated KLIC maps), so fixing GIS reduces digging damage. Connections are measured against a six-week promise (healthy base about 0.85–0.9 on time). Delegated approval fit 0.6 → 0.65.
 - ✅ A failed attempt costs its own time (`fail_hours`; review question on Meterkast niet gereed): a wasted trip to a meterkast that is not ready costs 1.5 h, not the 5 h job; niet thuis costs 0.5 h. The outcome is drawn when work starts; `Capacity` counts it too.
 - ✅ Actual load per team (`SimPool.load_since`): busy over present people-minutes per day, next to the planned load from `Capacity`. The status-callers review showed why: planned 55% while the queue explodes. Step statistics and pool load share `DailyCounts`.
-- ✅ Common random numbers: one random sequence per purpose (`Network.rng_for`), so a change in one place leaves every other stream's draws alone (test: slower congestion offers leave connections, outages, meters and the contact centre identical). Three tests that leaned on the old shared sequence got honest margins (measured over seeds 1–10).
-: ~16 problems across the four streams (well-known and less-known), each with symptoms, clues per tool (key + red herrings, 5 Whys depth), waste, root cause, effective countermeasures, effect
-- ⬜ `content/countermeasures.yaml`: Lean countermeasures in DSO context (triage at intake, poka-yoke application form, standard designs, frozen planning window, WIP limits, two-bin van stock, appointment confirmation, revision at the source, cross-training, daily start / visual management, proactive status updates against failure demand, …)
-- ⬜ `content/missions.yaml`, `content/concepts.yaml` (Lean + sector glossary, Dutch)
-- ⬜ Merijn reviews content for realism
+- ✅ Common random numbers: one random sequence per purpose (`Rng.for_purpose`, registered by the network for saves), so a change in one place leaves every other stream's draws alone (test: a slower contact centre leaves connections, outages, meters and congestion identical). Three tests that leaned on the old shared sequence got honest margins (measured over seeds 1–10).
+- 🔧 `content/problems_tier1.yaml`: 11 of the 18 catalogue problems done; next: De netstudie-wachtrij (#9) and De zwijgende meter (#12); "storing gooit de planning om" and "KPI's die elkaar bevechten" need a mechanism first (above)
+- 🔧 `content/countermeasures.yaml`: 22 countermeasures; grows with each problem
+- ⬜ `content/missions.yaml`, `content/concepts.yaml` (Lean + sector glossary, Dutch); story hook from the review: Henk, the last expert on old cable networks, really retires after N weeks (De laatste kennisdrager)
 
 ## Problem ideas backlog (keep growing)
 
@@ -243,6 +244,15 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 ---
 
 ## Decisions Made
+
+### Claude's calls, pending Merijn (2026-10-12)
+Merijn asked me to fix the content review's findings with my own judgement while he is away. Each call is easy to reverse, and the same questions sit in the review doc.
+- **Connections norm: six weeks (42 days)**, Voltana's own promise, instead of the former legal 18 weeks; otherwise on-time never shows a connections problem. Question: six or eight weeks, or a different promise per connection type?
+- **Graafschade hurts through pulled monteurs**: daytime outages ×1.5, and planned connection work is interrupted and re-planned. Question: should it also cost outage minutes or claims?
+- **A failed trip costs the trip** (1.5 h at a meterkast that is not ready, 0.5 h when nobody is home), not the full job.
+- **De revisieberg feeds Graafschade in the simulation** (+10% daytime outages), not only in the clues.
+- **Kept as they are, plausible and grounded:** the contact-centre spiral of Klaar maar niet af, the monthly EAN batch, three times as many calls from late customers, 40 minutes to the warehouse, two of five meterkasten not ready, three of eight not at home, 240 open revisions.
+- **Henk becomes a story hook** for the missions; the buddy system's team hours stay as they are.
 
 - **Many healthier processes, not one (2026-10-12).** Problems list several countermeasures with a fit (0–1); each countermeasure brings its own effects and levers, so different players end up with different, all improved, processes. Content values are a reasonable base; the starting problems are active effects on top.
 - **What WIP costs (2026-10-12).** Dossiers go stale when they wait too long (quotes, permits, designs need work again); this is what makes WIP limits pay off in the simulation.

@@ -129,7 +129,10 @@ streams:
   - id: connections
     name: Nieuwe aansluitingen
     arrivals: [{per_week: 30, days: mon-fri, from: "08:00", to: "17:00"}]
-    norm_days: 126          # the former legal term of 18 weeks
+    # Voltana's own promise for a standard connection: six weeks, well inside
+    # the former legal term of 18 weeks (126 days). Claude's call while Merijn
+    # reviews; the healthy base makes about 90% of it.
+    norm_days: 42
     priority: 2
     # Failure demand: after three weeks without news, customers call to ask
     # where their connection stands.
@@ -223,8 +226,8 @@ streams:
   - id: outages
     name: Storingen
     arrivals:
-      - {per_week: 10, days: mon-fri, from: "07:00", to: "17:00"}  # incl. graafschade during working hours
-      - {per_week: 8, days: mon-sun, from: "00:00", to: "24:00"}
+      - {id: daytime, per_week: 10, days: mon-fri, from: "07:00", to: "17:00"}  # incl. graafschade during working hours
+      - {id: around_the_clock, per_week: 8, days: mon-sun, from: "00:00", to: "24:00"}
     norm_hours: 4           # compensation is due for outages longer than 4 hours
     priority: 3
     preempts: true          # a monteur leaves planned work for an outage

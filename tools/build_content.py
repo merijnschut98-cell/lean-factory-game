@@ -221,8 +221,15 @@ def validate_value_streams(doc: Any, source: str) -> None:
     pool_ids, stock_ids = {p["id"] for p in pools}, {s["id"] for s in stock}
     for stream in streams:
         where = f"{source}: stream '{stream['id']}'"
+        source_ids = set()
         for arrival in _blocks(stream, "arrivals", where):
             _number(arrival, "per_week", f"{where} arrivals", 0)
+            if "id" in arrival:
+                if not isinstance(arrival["id"], str) or not _ID.match(arrival["id"]):
+                    raise ContentError(f"{where}: arrival source 'id' must be lowercase snake_case (got {arrival['id']!r})")
+                if arrival["id"] in source_ids:
+                    raise ContentError(f"{where}: duplicate arrival source {arrival['id']!r}")
+                source_ids.add(arrival["id"])
         if ("norm_days" in stream) == ("norm_hours" in stream):
             raise ContentError(f"{where}: give exactly one of 'norm_days' or 'norm_hours'")
         _number(stream, "norm_days" if "norm_days" in stream else "norm_hours", where, 0.1)
@@ -282,7 +289,7 @@ EFFECT_PROPERTIES = {
     "applies": ("step", None, "number"), "wait_time": ("step", "wait", "factor"),
     "availability": ("pool", None, "number"), "headcount": ("pool", None, "number"),
     "lead_time": ("stock", None, "factor"), "reorder_point": ("stock", None, "number"),
-    "demand": ("stream", None, "factor"), "reserve": ("pool", None, "reserve"),
+    "demand": ("arrivals", None, "factor"), "reserve": ("pool", None, "reserve"),
     "preempts": ("stream", None, "bool"), "wip_limit": ("stream", None, "count"),
     "call_rate": ("stream", None, "factor"),
     "batch_days": ("step", "wait", "number"), "starts_with": ("step", "wait", "step"),
@@ -386,7 +393,8 @@ def _validate_clues(p: dict, where: str) -> None:
 
 def _network_index(streams_doc: dict) -> dict:
     """What effects and places can refer to, by target kind: steps ('stream.step',
-    with their kind and their stream's step ids), pools, stock items, streams."""
+    with their kind and their stream's step ids), pools, stock items, streams,
+    and arrivals (a stream, or one of its sources with an id: 'stream.source')."""
     steps = {}
     for stream in streams_doc["streams"]:
         ids = [s["id"] for s in stream["steps"]]
@@ -397,6 +405,8 @@ def _network_index(streams_doc: dict) -> dict:
         "pool": {p["id"]: p for p in streams_doc["pools"]},
         "stock": {s["id"] for s in streams_doc["stock"]},
         "stream": {s["id"] for s in streams_doc["streams"]},
+        "arrivals": {s["id"] for s in streams_doc["streams"]} | {
+            f"{s['id']}.{a['id']}" for s in streams_doc["streams"] for a in s["arrivals"] if "id" in a},
     }
 
 

@@ -97,8 +97,13 @@ static func targets(net: Network, property: String, target: String) -> Array:
 			var s := net.stream(target)
 			return [s] if s != null else []
 		"arrivals":
-			var s := net.stream(target)
-			return s.arrivals.duplicate() if s != null else []
+			# "stream": all its sources; "stream.source": the source with that id.
+			var s := net.stream(target.get_slice(".", 0))
+			if s == null:
+				return []
+			if not "." in target:
+				return s.arrivals.duplicate()
+			return s.arrivals.filter(func(a: ValueStream.Arrivals) -> bool: return a.id == target.get_slice(".", 1))
 	var step := net.step_at(target)
 	return [step] if step != null else []
 
@@ -111,7 +116,7 @@ func _check(net: Network, e: Variant) -> String:
 		return "unknown property %s" % e["property"]
 	var found := targets(net, e["property"], e["target"])
 	if found.is_empty():
-		return "no %s called %s" % ["stream" if spec["kind"] == "arrivals" else spec["kind"], e["target"]]
+		return "no %s called %s" % ["stream or arrival source" if spec["kind"] == "arrivals" else spec["kind"], e["target"]]
 	if spec.has("step_kind") and (found[0] as SimStep).kind != spec["step_kind"]:
 		return "step %s has no %s" % [e["target"], e["property"]]
 	var value: Variant = e["value"]

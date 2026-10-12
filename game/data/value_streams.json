@@ -192,7 +192,7 @@
    ],
    "id": "connections",
    "name": "Nieuwe aansluitingen",
-   "norm_days": 126,
+   "norm_days": 42,
    "priority": 2,
    "status_calls": {
     "after_days": 21,
@@ -317,12 +317,14 @@
     {
      "days": "mon-fri",
      "from": "07:00",
+     "id": "daytime",
      "per_week": 10,
      "to": "17:00"
     },
     {
      "days": "mon-sun",
      "from": "00:00",
+     "id": "around_the_clock",
      "per_week": 8,
      "to": "24:00"
     }

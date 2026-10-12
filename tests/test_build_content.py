@@ -170,6 +170,9 @@ def test_real_value_streams_are_valid():
     (lambda d: d["pools"][0].pop("schedule"), "'schedule' must be a non-empty list"),
     (lambda d: _connections(d)["arrivals"][0].pop("per_week"), "'per_week' must be a number"),
     (lambda d: _connections(d).pop("arrivals"), "'arrivals' must be a non-empty list"),
+    (lambda d: _connections(d)["arrivals"][0].update(id="Day Time"), "arrival source 'id' must be"),
+    (lambda d: _connections(d)["arrivals"].append(dict(_connections(d)["arrivals"][0], id="a")) or
+     _connections(d)["arrivals"][0].update(id="a"), "duplicate arrival source 'a'"),
     (lambda d: _connections(d).update(norm_hours=4), "exactly one of 'norm_days' or 'norm_hours'"),
     (lambda d: _connections(d).pop("norm_days"), "exactly one of 'norm_days' or 'norm_hours'"),
     (lambda d: _connections(d).update(preempts="yes"), "'preempts' must be true or false"),
@@ -314,6 +317,8 @@ def test_sample_problems_are_valid(rules_dirs):
     (lambda d: _problem(d).update(countermeasures={"standard_designs": 1.0, "weekly_meeting": 0.5}),
      "'weekly_meeting' can never pass the Check"),
     (lambda d: _problem(d)["effects"][0].update(property="speed"), "unknown effect property 'speed'"),
+    (lambda d: _problem(d)["effects"][0].update(target="connections.ghost", property="demand", value=1.5),
+     "unknown arrivals 'connections.ghost'"),
     (lambda d: _problem(d)["effects"][0].update(target="connections.permit"), "is not a work step"),
     (lambda d: _problem(d)["effects"][0].update(target="nobody"), "unknown step 'nobody'"),
     (lambda d: _problem(d)["effects"][0].update(value=0), "factor above 0"),

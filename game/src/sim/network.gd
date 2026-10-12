@@ -116,7 +116,8 @@ func _build_stream(v: Dictionary) -> ValueStream:
 			error = "stream %s: bad arrival schedule" % stream.id
 			return null
 		var source := ValueStream.Arrivals.new(float(a["per_week"]), when)
-		source.rng = _new_rng("arrivals:%s.%d" % [stream.id, stream.arrivals.size()])
+		source.id = str(a.get("id", ""))
+		source.rng = _new_rng("arrivals:%s.%s" % [stream.id, source.id if source.id else str(stream.arrivals.size())])
 		stream.arrivals.append(source)
 	var ids: Array = v["steps"].map(func(s: Dictionary) -> String: return s["id"])
 	for s: Dictionary in v["steps"]:

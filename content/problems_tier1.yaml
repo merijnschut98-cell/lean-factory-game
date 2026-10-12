@@ -113,7 +113,7 @@ problems:
       - De werkvoorbereiders werken te langzaam.
       - De ontwerpsoftware is verouderd.
     mismatch_note: Harder werken of betere software verandert niets aan de hoeveelheid werk per standaardaansluiting.
-    countermeasures: {standard_designs: 1.0, delegated_approval: 0.6}
+    countermeasures: {standard_designs: 1.0, delegated_approval: 0.65}
     teaches: [standard_work, overprocessing]
     effects:
       - {target: connections.design, property: touch_time, value: 1.3}
@@ -198,6 +198,7 @@ problems:
     teaches: [inventory, quality_at_the_source]
     effects:
       - {target: connections.revision, property: touch_time, value: 1.4}
+      - {target: outages.daytime, property: demand, value: 1.1}  # outdated KLIC maps: more cables hit
     clues:
       - {tool: data, key: true, depth: 0, text: "Er staan 240 opgeleverde aansluitingen open in GIS; de oudste is vier maanden oud."}
       - {tool: queue_count, key: false, depth: 0, text: "De bak met schetsen is overzichtelijk geordend op datum."}
@@ -224,7 +225,7 @@ problems:
     countermeasures: {standard_test_trenches: 0.8, contractor_briefing: 0.7, revision_at_source: 0.6}
     teaches: [defects, systems_thinking]
     effects:
-      - {target: outages, property: demand, value: 1.35}
+      - {target: outages.daytime, property: demand, value: 1.5}  # a third of daytime outages
     clues:
       - {tool: data, key: true, depth: 0, text: "Een derde van de storingen overdag is graafschade; zeven procent van de graafwerken raakt een kabel."}
       - {tool: shadow, key: false, depth: 0, text: "De monteurs herstellen graafschade snel en vakkundig."}

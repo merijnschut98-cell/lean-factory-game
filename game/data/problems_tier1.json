@@ -240,7 +240,7 @@
     }
    ],
    "countermeasures": {
-    "delegated_approval": 0.6,
+    "delegated_approval": 0.65,
     "standard_designs": 1.0
    },
    "effects": [
@@ -456,6 +456,11 @@
      "property": "touch_time",
      "target": "connections.revision",
      "value": 1.4
+    },
+    {
+     "property": "demand",
+     "target": "outages.daytime",
+     "value": 1.1
     }
    ],
    "id": "revision_backlog",
@@ -523,8 +528,8 @@
    "effects": [
     {
      "property": "demand",
-     "target": "outages",
-     "value": 1.35
+     "target": "outages.daytime",
+     "value": 1.5
     }
    ],
    "id": "digging_damage",

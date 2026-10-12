@@ -137,3 +137,19 @@ func test_scaled() -> void:
 	assert_near(half[0]["value"], 1.2, 1e-9)
 	assert_near(half[1]["value"], -1.0, 1e-9)
 	assert_eq(half[0]["target"], "a.b")
+
+
+## An arrival source with an id can be targeted on its own ("stream.source"),
+## e.g. digging damage only adds daytime outages.
+func test_demand_can_target_one_arrival_source() -> void:
+	var day := NetFixture.block("mon-fri", "08:00", "17:00")
+	day.merge({"id": "daytime", "per_week": 10.0})
+	var night := NetFixture.block("mon-sun", "00:00", "24:00")
+	night.merge({"id": "around_the_clock", "per_week": 8.0})
+	var net := NetFixture.net([NetFixture.pool("crew", 4)], [
+		NetFixture.stream("outages", [NetFixture.work("repair", "crew", 1.0)], 0.0, 3, {"arrivals": [day, night]}),
+	])
+	assert_eq(net.set_effects("problem:digging", [NetFixture.effect("outages.daytime", "demand", 1.5)]), "")
+	assert_near(net.stream("outages").per_week(), 23.0, 1e-9, "15 by day + 8 around the clock")
+	assert_ne(net.set_effects("bad", [NetFixture.effect("outages.ghost", "demand", 2.0)]), "")
+

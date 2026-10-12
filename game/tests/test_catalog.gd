@@ -155,6 +155,6 @@ func test_the_game_knows_the_content_vocabulary() -> void:
 	for property: String in SimModifiers.PROPERTIES:
 		var spec: Dictionary = SimModifiers.PROPERTIES[property]
 		assert_true(properties.has(property), property)
-		var kind: String = "stream" if spec["kind"] == "arrivals" else spec["kind"]
+		var kind: String = spec["kind"]
 		var step_kind: String = ["work", "wait", "material"][spec["step_kind"]] if spec.has("step_kind") else ""
 		assert_eq({"kind": kind, "step_kind": step_kind}, properties.get(property), property)

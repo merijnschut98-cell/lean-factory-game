@@ -18,7 +18,7 @@
    "step_kind": ""
   },
   "demand": {
-   "kind": "stream",
+   "kind": "arrivals",
    "step_kind": ""
   },
   "ftr": {
