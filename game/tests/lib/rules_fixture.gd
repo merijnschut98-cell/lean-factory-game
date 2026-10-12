@@ -1,0 +1,103 @@
+class_name RulesFixture
+## A small network with problems and countermeasures in the shape the Phase B
+## content (problems.json, countermeasures.json) will have.
+
+
+static func net(seed_value: int = 5) -> Network:
+	return NetFixture.net([
+		NetFixture.pool("intake", 2), NetFixture.pool("prep", 2), NetFixture.pool("crew", 4), NetFixture.pool("gis", 2),
+	], [
+		NetFixture.stream("connections", [
+			NetFixture.work("intake", "intake", 1.0, 0.9),
+			NetFixture.work("design", "prep", 4.0),
+			NetFixture.wait("permit", 5.0),
+			NetFixture.work("build", "crew", 4.0),
+			NetFixture.work("revision", "gis", 1.0),
+		], 15.0, 2),
+		NetFixture.stream("meters", [NetFixture.work("visit", "crew", 1.5)], 20.0, 2),
+	], [], seed_value)
+
+
+static func clue(tool: String, key: bool, depth: int, at: String = "") -> Dictionary:
+	var d := {"tool": tool, "text": "%s %s %d" % [tool, "key" if key else "herring", depth], "key": key, "depth": depth}
+	if not at.is_empty():
+		d["at"] = at
+	return d
+
+
+static func problems() -> Array:
+	return [
+		{
+			"id": "custom_design", "tier": 1, "name": "Maatwerk voor standaardwerk", "step": "connections.design",
+			"waste": "overprocessing", "severity": "high", "visibility": "obvious", "kpi": "throughput",
+			"root_cause": "Standard jobs get a full custom design",
+			"plausible_causes": ["The preparers are too slow", "The design software is old"],
+			# Several healthier processes: both help, one more than the other.
+			"countermeasures": {"standard_designs": 1.0, "delegated_approval": 0.6}, "teaches": ["standard_work"],
+			"effects": [NetFixture.effect("connections.design", "touch_time", 1.5)],
+			"clues": [
+				clue("time_study", true, 0), clue("queue_count", false, 0),
+				clue("documents", true, 1), clue("conversation", true, 1, "connections.intake"),
+				clue("data", true, 2),
+			],
+		},
+		{
+			"id": "incomplete_application", "tier": 1, "name": "De onvolledige aanvraag", "step": "connections.intake",
+			"waste": "defects", "severity": "medium", "visibility": "obvious", "kpi": "first_time_right",
+			"root_cause": "The online form accepts incomplete applications",
+			"plausible_causes": ["Customers do not read the instructions"],
+			"countermeasures": {"poka_yoke_form": 1.0}, "teaches": ["poka_yoke"],
+			"effects": [NetFixture.effect("connections.intake", "ftr", -0.3)],
+			"clues": [clue("documents", true, 0), clue("conversation", true, 0)],
+		},
+		{
+			"id": "revision_backlog", "tier": 1, "name": "De revisieberg", "step": "connections.revision",
+			"waste": "inventory", "severity": "low", "visibility": "hidden", "kpi": "lead_time",
+			"root_cause": "As-built changes are typed in weeks later",
+			"plausible_causes": [], "countermeasures": {"revision_at_source": 1.0}, "teaches": [],
+			"effects": [NetFixture.effect("connections.revision", "touch_time", 1.5)],
+			"clues": [clue("data", true, 0)],
+		},
+	]
+
+
+static func countermeasures() -> Array:
+	return [
+		{
+			"id": "standard_designs", "tier": 1, "name": "Standaardontwerpen", "category": "standard_work",
+			"budget": 8000, "team_hours": {"prep": 40}, "decay_days": 30,
+			"multipliers": {"full": 0.9, "reduced": 0.5, "minimal": 0.25},
+			"effects": [NetFixture.effect("connections.design", "touch_time", 0.8)],
+		},
+		{
+			"id": "poka_yoke_form", "tier": 1, "name": "Poka-yoke aanvraagformulier", "category": "quality",
+			"budget": 5000, "team_hours": {"intake": 20}, "decay_days": null,
+			"multipliers": {"full": 0.85, "reduced": 0.45, "minimal": 0.2},
+			"effects": [NetFixture.effect("connections.intake", "ftr", 0.05)],
+		},
+		{
+			"id": "delegated_approval", "tier": 1, "name": "Gedelegeerde goedkeuring", "category": "flow",
+			"budget": 2000, "team_hours": {"prep": 10}, "decay_days": 20,
+			"multipliers": {"full": 0.9, "reduced": 0.5, "minimal": 0.25},
+			"effects": [NetFixture.effect("connections.design", "touch_time", 0.9)],
+		},
+		{
+			"id": "revision_at_source", "tier": 3, "name": "Revisie aan de bron", "category": "flow",
+			"budget": 15000, "team_hours": {"gis": 40}, "decay_days": null,
+			"multipliers": {"full": 0.9, "reduced": 0.5, "minimal": 0.25}, "effects": [],
+		},
+	]
+
+
+static func problem_defs() -> Array[ProblemDef]:
+	var out: Array[ProblemDef] = []
+	for d: Dictionary in problems():
+		out.append(ProblemDef.from_dict(d))
+	return out
+
+
+static func countermeasure_defs() -> Array[CountermeasureDef]:
+	var out: Array[CountermeasureDef] = []
+	for d: Dictionary in countermeasures():
+		out.append(CountermeasureDef.from_dict(d))
+	return out

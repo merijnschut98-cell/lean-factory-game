@@ -97,8 +97,8 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
   - Batching (`batch_days`) and waits in parallel (`starts_with`) for problem 8.
   - Validator covers all of it, incl. interruption loops through material. 70 Godot tests; with the levers off, results are unchanged.
 - ✅ Simplify pass on step 4b: the reserve is one lever `{stream, people}` (same shape as the content, so a half-set reserve cannot exist), one `_send_back` for rework and re-planning, the parallel-wait sentinel removed, Capacity computes the idle reserve once per pool, shared `_earlier` check in the validator
-- ⬜ Decision for Merijn: what does work in progress *cost* in the simulation? Today an order loses nothing by waiting and people work one order at a time, so a WIP limit would only move the queue upstream. Options: multitasking overhead (touch time grows with open dossiers per person), dossiers going stale (FTR drops or a quote/permit expires after N days), or failure demand (late orders cause status calls). Needed for WIP limits and heijunka (then implement both)
-- ⬜ Decision for Phase B: are the content values the healthy process (with the starting problems switched on as active effects at game start), or the starting state (with countermeasures improving on it)? The modifier layer supports both; it decides how problem effects are authored
+- ⬜ Step 4c: the cost of work in progress, then WIP limits (Merijn, 2026-10-12: implement). Chosen model: dossiers go stale; a quote, permit or design that waited longer than N days needs (part of) its work again (an FTR drop or a send-back). Then a WIP limit per step (orders wait upstream, not yet started) shows a real gain. Heijunka after that
+- ✅ Decided (Merijn, 2026-10-12): `value_streams.yaml` holds a healthy process *to an extent*; the starting problems are active effects on top. There is no single healthy process: several countermeasures can help one problem (each with a fit 0–1), each shapes the process differently through its own effects and levers, and some improve more than others. Players must not be pushed down one dedicated path
 - ⬜ Step 5: port investigation / A3 / PDCA / scoring from the factory prototype (`archive/factory-3d/src/sim/`) to GDScript; tools renamed for a service organisation; Check compares stream KPIs and capacity before/after. Design point: time-windowed per-step statistics (queue time, touch time, rework) for the before/after comparison and the value stream map
 - ⬜ Step 6: save/load of the simulation and rules state (JSON, versioned, validated)
 - ⬜ Gate: four value streams run headless with realistic KPIs; tests cover flow, pre-emption, rework, stock-outs, capacity, the PDCA loop and save/load
@@ -157,6 +157,9 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 ---
 
 ## Decisions Made
+
+- **Many healthier processes, not one (2026-10-12).** Problems list several countermeasures with a fit (0–1); each countermeasure brings its own effects and levers, so different players end up with different, all improved, processes. Content values are a reasonable base; the starting problems are active effects on top.
+- **What WIP costs (2026-10-12).** Dossiers go stale when they wait too long (quotes, permits, designs need work again); this is what makes WIP limits pay off in the simulation.
 - **GDD answers from Merijn (2026-10-12)**: company name Voltana Netbeheer stays; the town is called Nova; a narrative arc with side quests and some open-world freedom; improvements cost both euros and team hours; model ACM regulation and ISO / NTA 8120 asset management; no own energy-sector cases, so content is research-based; sessions of 15–40 minutes; desktop first
 - **Problem catalogue keeps growing (2026-10-12)**: the v1 mix is approved; new problems are added continuously via the backlog above, per difficulty tier
 - **Pace (2026-10-12)**: multi-month project; design first, reviewed increments, no publishing deadline
