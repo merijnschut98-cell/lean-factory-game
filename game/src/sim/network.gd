@@ -422,9 +422,11 @@ func _next_step_for(pool: SimPool) -> SimStep:
 	if top == null:
 		return null
 	var urgent := queue_of(top)[0].stream
-	if pool.free_for(urgent) > 0 or (urgent.preempts and _preempt_for(pool, urgent.priority)):
+	if pool.free_for(urgent) > 0:
 		return top
-	return _most_urgent_step(pool, true)
+	if pool.free_people() <= 0:
+		return top if urgent.preempts and _preempt_for(pool, urgent.priority) else null
+	return _most_urgent_step(pool, true)  # people are free, but held in reserve
 
 
 ## The step with the most urgent first order; with `startable`, only steps
