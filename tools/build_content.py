@@ -19,6 +19,7 @@ import argparse
 import json
 import re
 import sys
+from collections import Counter
 from pathlib import Path
 from typing import Any, Callable
 
@@ -73,9 +74,8 @@ def _entries(doc: dict, key: str, source: str) -> list[dict]:
     for i, item in zip(ids, items):
         if not isinstance(i, str) or not _ID.match(i):
             raise ContentError(f"{source}: every {key} entry needs a lowercase snake_case 'id' (got {i!r})")
-        if not isinstance(item.get("name"), str) or not item["name"].strip():
-            raise ContentError(f"{source}: {key} '{i}' needs a 'name'")
-    dupes = sorted({i for i in ids if ids.count(i) > 1})
+        _require_strings(item, ["name"], f"{source}: {key} '{i}'")
+    dupes = sorted(i for i, n in Counter(ids).items() if n > 1)
     if dupes:
         raise ContentError(f"{source}: duplicate {key} ids: {', '.join(dupes)}")
     return items
@@ -112,8 +112,7 @@ def _validate_step(step: dict, where: str, pools: set[str], stock: set[str], ste
 
 
 def validate_value_streams(doc: Any, source: str) -> None:
-    if not isinstance(doc, dict):
-        raise ContentError(f"{source}: expected a mapping at the top level")
+    _require_strings(doc, [], source)
     pools = _entries(doc, "pools", source)
     for pool in pools:
         where = f"{source}: pool '{pool['id']}'"

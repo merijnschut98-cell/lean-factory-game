@@ -21,9 +21,10 @@ func kpis(now: int, window_days: int = 28) -> Dictionary:
 	var leads: Array[float] = []
 	var on_time := 0
 	var first_time_right := 0
-	for f in finished:
-		if f["done_at"] < since:
-			continue
+	# `finished` is in completion order: binary-search the window start.
+	var first := finished.bsearch_custom({"done_at": since},
+		func(a: Dictionary, b: Dictionary) -> bool: return a["done_at"] < b["done_at"])
+	for f in finished.slice(first):
 		leads.append(f["lead_minutes"] / float(SimCalendar.MINUTES_PER_DAY))
 		on_time += 1 if f["on_time"] else 0
 		first_time_right += 1 if f["reworks"] == 0 else 0

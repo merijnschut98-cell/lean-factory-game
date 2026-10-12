@@ -74,7 +74,7 @@ func test_applies_skips_a_share_of_orders() -> void:
 
 
 func test_stockout_makes_orders_wait_for_delivery() -> void:
-	var kit := {"id": "kit", "name": "kit", "level": 0, "reorder_point": 2, "order_quantity": 50, "lead_days": 10}
+	var kit := NetFixture.stock("kit", 0, 2, 50, 10)
 	var net := NetFixture.net([NetFixture.pool("team", 2)], [NetFixture.stream("s", [NetFixture.material("take", "kit"), NetFixture.work("do", "team", 0.5)])], [kit])
 	net.advance_days(4)
 	assert_eq(net.stream("s").finished.size(), 0, "nothing finishes before the delivery")

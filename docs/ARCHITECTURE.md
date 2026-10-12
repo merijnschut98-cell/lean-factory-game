@@ -62,7 +62,7 @@ Generalises the factory prototype's `FlowSim` (`archive/factory-3d/src/sim/flow.
 | Class | Responsibility |
 | --- | --- |
 | `SimCalendar` | minutes since Monday 00:00 of week 1, working days, `"HH:MM"` parsing, the 10-minute tick |
-| `WorkOrder` | id, stream, birth and due time, current step, state, remaining touch time, rework count |
+| `WorkOrder` | id, stream, birth and due time, current step, remaining touch time, rework count (where it is follows from the queue or list holding it) |
 | `SimStep` | definition of one step (work / wait / material, `applies`, FTR, rework target) and its statistics |
 | `SimPool` | headcount, daily attendance, shift, the orders being worked on now |
 | `SimStock` | level, reorder point, order quantity, lead time, open deliveries, orders waiting for stock |
@@ -72,6 +72,8 @@ Generalises the factory prototype's `FlowSim` (`archive/factory-3d/src/sim/flow.
 | `Rng` | seeded PRNG; the only source of randomness |
 
 **No reference cycles.** Godot frees `RefCounted` objects by reference counting, so a loop (step → pool → busy order → stream → step) leaks every network that is replaced. Steps therefore refer to pools and stock by id, and queues live in the `Network`. The test runner shows leaks at exit, so a new cycle is noticed straight away.
+
+The network skips idle stretches (nights, weekends) by jumping to the next moment anything can happen; a test proves the results are identical to stepping every tick. A simulated year takes about 0.7 s.
 
 Time runs in fixed simulated steps, independent of the frame rate: `Game` advances `n` steps per frame based on the speed setting (pause, 1×, 4×, 16×) and pauses at the dagstart.
 

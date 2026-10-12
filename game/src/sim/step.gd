@@ -25,13 +25,7 @@ var spread := 0.0
 var item_id := ""
 var quantity := 1
 
-# Statistics since the start of the run.
+# Counters since the start of the run (time-windowed statistics for the
+# PDCA Check come with the rules layer).
 var entered := 0
-var completed := 0
 var reworked := 0
-var queue_minutes := 0
-var started := 0
-
-
-func average_queue_hours() -> float:
-	return queue_minutes / 60.0 / started if started > 0 else 0.0

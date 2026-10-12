@@ -19,9 +19,13 @@ var stock: Dictionary[String, SimStock] = {}
 var streams: Array[ValueStream] = []
 ## Something wrong in the configuration; the network is unusable when set.
 var error := ""
+## Jump over idle stretches (nights, weekends). Only switched off to prove in
+## tests that skipping changes nothing.
+var skip_idle := true
 ## Recent happenings for the world/UI to animate: {t, type, ...}.
 var events: Array[Dictionary] = []
 
+## Orders in an external wait, sorted by `wait_until` (earliest first).
 var _waiting: Array[WorkOrder] = []
 ## Queue per work step (kept here, not on the step, to avoid reference cycles).
 var _queues: Dictionary[SimStep, Array] = {}
@@ -32,13 +36,12 @@ var _next_id := 1
 
 
 static func load_file(path: String = DEFAULT_PATH, seed_value: int = 1) -> Network:
-	var text := FileAccess.get_file_as_string(path)
-	var parsed: Variant = JSON.parse_string(text) if not text.is_empty() else null
-	if not parsed is Dictionary:
+	var file := JsonFile.read_dict(path)
+	if not file["error"].is_empty():
 		var net := Network.new()
-		net.error = "cannot read %s as a JSON object" % path
+		net.error = file["error"]
 		return net
-	return Network.create(parsed, seed_value)
+	return Network.create(file["data"], seed_value)
 
 
 ## Build from the value_streams.json structure (validated by build_content.py;
@@ -120,7 +123,7 @@ func _build_stream(v: Dictionary) -> ValueStream:
 
 ## Orders waiting at a work step (empty for other kinds).
 func queue_of(step: SimStep) -> Array[WorkOrder]:
-	return _queues.get(step, [] as Array[WorkOrder])
+	return _queues[step]
 
 
 func stream(stream_id: String) -> ValueStream:
@@ -135,8 +138,31 @@ func stream(stream_id: String) -> ValueStream:
 func advance(minutes: int) -> void:
 	var end := time + minutes
 	while time < end:
-		time += SimCalendar.TICK
+		var next := _next_busy_tick() if skip_idle else time + SimCalendar.TICK
+		time = mini(end, maxi(time + SimCalendar.TICK, next))
 		_tick()
+
+
+## Outside every shift only arrivals, waits, deliveries and the new day can
+## change anything, so the clock can jump straight to the earliest of those
+## (on the tick grid). Results are identical to stepping tick by tick.
+func _next_busy_tick() -> int:
+	var next := (SimCalendar.day_of(time) + 1) * SimCalendar.MINUTES_PER_DAY
+	for pool: SimPool in pools.values():
+		if pool.is_on_shift(time + SimCalendar.TICK):
+			return time + SimCalendar.TICK
+		var start := SimCalendar.day_of(time) * SimCalendar.MINUTES_PER_DAY + pool.shift_start
+		if start > time:
+			next = mini(next, start)
+	if not _arrivals.is_empty():
+		next = mini(next, _arrivals[0]["at"])
+	if not _waiting.is_empty():
+		next = mini(next, _waiting[0].wait_until)
+	for item: SimStock in stock.values():
+		if not item.deliveries.is_empty():
+			next = mini(next, item.deliveries[0]["at"])
+	# Round up to the tick grid so events land on the same ticks as before.
+	return ceili(next / float(SimCalendar.TICK)) * SimCalendar.TICK
 
 
 func advance_days(n: float) -> void:
@@ -162,20 +188,10 @@ func _start_day() -> void:
 		return
 	var day_start := SimCalendar.day_of(time) * SimCalendar.MINUTES_PER_DAY
 	for s in streams:
-		for i in _poisson(s.arrivals_per_day):
-			var at := day_start + ARRIVAL_WINDOW[0] + int(rng.next() * (ARRIVAL_WINDOW[1] - ARRIVAL_WINDOW[0]))
+		for i in rng.poisson(s.arrivals_per_day):
+			var at := day_start + rng.int_range(ARRIVAL_WINDOW[0], ARRIVAL_WINDOW[1] - 1)
 			_arrivals.append({"at": at, "stream": s})
 	_arrivals.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["at"] < b["at"])
-
-
-func _poisson(mean: float) -> int:
-	var limit := exp(-mean)
-	var k := 0
-	var p := rng.next()
-	while p > limit:
-		k += 1
-		p *= rng.next()
-	return k
 
 
 # ── Flow ────────────────────────────────────────────────────────────────────
@@ -203,7 +219,6 @@ func _enter(order: WorkOrder, index: int) -> void:
 	step.entered += 1
 	match step.kind:
 		SimStep.Kind.WORK:
-			order.state = WorkOrder.State.QUEUED
 			order.remaining = step.touch_minutes
 			order.queued_at = time
 			queue_of(step).append(order)
@@ -214,21 +229,16 @@ func _enter(order: WorkOrder, index: int) -> void:
 
 
 func _wait(order: WorkOrder, minutes: int, then_step: int) -> void:
-	order.state = WorkOrder.State.WAITING
 	order.wait_until = time + minutes
 	order.pending_step = then_step
-	_waiting.append(order)
+	# Insert after equal times so orders that wait equally long leave in FIFO order.
+	var at := _waiting.bsearch_custom(order, func(a: WorkOrder, b: WorkOrder) -> bool: return a.wait_until <= b.wait_until)
+	_waiting.insert(at, order)
 
 
 func _finish_waits() -> void:
-	if _waiting.is_empty():
-		return
-	var still: Array[WorkOrder] = []
-	var done: Array[WorkOrder] = []
-	for order in _waiting:
-		(done if order.wait_until <= time else still).append(order)
-	_waiting = still
-	for order in done:
+	while not _waiting.is_empty() and _waiting[0].wait_until <= time:
+		var order: WorkOrder = _waiting.pop_front()
 		_enter(order, order.pending_step)
 
 
@@ -239,7 +249,6 @@ func _take_material(order: WorkOrder, step: SimStep) -> void:
 		_reorder_if_needed(item)
 		_enter(order, order.step_index + 1)
 		return
-	order.state = WorkOrder.State.STOCK
 	item.waiting.append(order)
 	_emit("stockout", order, {"item": item.id})
 	_reorder_if_needed(item)
@@ -247,18 +256,17 @@ func _take_material(order: WorkOrder, step: SimStep) -> void:
 
 func _reorder_if_needed(item: SimStock) -> void:
 	if item.needs_reorder():
+		# Lead time is fixed, so appending keeps deliveries in arrival order.
 		item.deliveries.append({"at": time + item.lead_minutes, "quantity": item.order_quantity})
-		events.append({"t": time, "type": "reordered", "item": item.id})
+		_emit("reordered", null, {"item": item.id})
 
 
 func _deliver_stock() -> void:
 	for item: SimStock in stock.values():
-		var arrived := item.deliveries.filter(func(d: Dictionary) -> bool: return d["at"] <= time)
-		if arrived.is_empty():
+		if item.deliveries.is_empty() or item.deliveries[0]["at"] > time:
 			continue
-		item.deliveries = item.deliveries.filter(func(d: Dictionary) -> bool: return d["at"] > time)
-		for d: Dictionary in arrived:
-			item.level += d["quantity"]
+		while not item.deliveries.is_empty() and item.deliveries[0]["at"] <= time:
+			item.level += item.deliveries.pop_front()["quantity"]
 		while not item.waiting.is_empty():
 			var order := item.waiting[0]
 			var need := order.current_step().quantity
@@ -274,16 +282,16 @@ func _progress_work() -> void:
 	for pool: SimPool in pools.values():
 		if pool.busy.is_empty() or not pool.is_on_shift(time):
 			continue
-		for order: WorkOrder in pool.busy.duplicate():
+		for i in range(pool.busy.size() - 1, -1, -1):
+			var order := pool.busy[i]
 			order.remaining -= SimCalendar.TICK
 			if order.remaining <= 0:
-				pool.busy.erase(order)
+				pool.busy.remove_at(i)
 				_complete_work(order)
 
 
 func _complete_work(order: WorkOrder) -> void:
 	var step := order.current_step()
-	step.completed += 1
 	if step.ftr < 1.0 and not rng.chance(step.ftr):
 		order.reworks += 1
 		step.reworked += 1
@@ -310,11 +318,7 @@ func _assign_work() -> void:
 			var queue := queue_of(step)
 			if pool.free_people() <= 0 and not _preempt_for(pool, queue[0].stream.priority):
 				break
-			var order: WorkOrder = queue.pop_front()
-			order.state = WorkOrder.State.WORKING
-			step.started += 1
-			step.queue_minutes += time - order.queued_at
-			pool.busy.append(order)
+			pool.busy.append(queue.pop_front())
 
 
 func _most_urgent_step(pool: SimPool) -> SimStep:
@@ -343,7 +347,6 @@ func _preempt_for(pool: SimPool, priority: int) -> bool:
 	if victim == null:
 		return false
 	pool.busy.erase(victim)
-	victim.state = WorkOrder.State.QUEUED
 	victim.queued_at = time
 	queue_of(victim.current_step()).push_front(victim)
 	_emit("preempted", victim)
@@ -351,7 +354,6 @@ func _preempt_for(pool: SimPool, priority: int) -> bool:
 
 
 func _finish_order(order: WorkOrder) -> void:
-	order.state = WorkOrder.State.DONE
 	order.stream.active -= 1
 	var lead := time - order.born
 	order.stream.finished.append({
@@ -360,12 +362,16 @@ func _finish_order(order: WorkOrder) -> void:
 	_emit("finished", order)
 
 
+## The single way events are recorded: {t, type, order?, stream?, step?, ...extra}.
+## When nobody drains them (headless runs), the oldest half is dropped at once.
 func _emit(type: String, order: WorkOrder, extra: Dictionary = {}) -> void:
-	var e := {"t": time, "type": type, "order": order.id, "stream": order.stream.id, "step": order.step_index}
+	var e := {"t": time, "type": type}
+	if order != null:
+		e.merge({"order": order.id, "stream": order.stream.id, "step": order.step_index})
 	e.merge(extra)
 	events.append(e)
 	if events.size() > MAX_EVENTS:
-		events = events.slice(events.size() - MAX_EVENTS)
+		events = events.slice(MAX_EVENTS / 2)
 
 
 ## Hand recent events to the caller and forget them.

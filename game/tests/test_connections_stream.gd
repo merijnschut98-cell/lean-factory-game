@@ -4,9 +4,19 @@ extends TestCase
 
 const SEED := 11
 
+## One 120-day run shared by the tests that only read its outcome.
+static var _after_120_days: Network
+
 
 func _net() -> Network:
 	return Network.load_file(Network.DEFAULT_PATH, SEED)
+
+
+func _run_120_days() -> Network:
+	if _after_120_days == null:
+		_after_120_days = _net()
+		_after_120_days.advance_days(120)
+	return _after_120_days
 
 
 func test_content_loads() -> void:
@@ -25,8 +35,7 @@ func test_design_is_the_starting_constraint_at_about_full_load() -> void:
 
 
 func test_queue_builds_at_the_constraint() -> void:
-	var net := _net()
-	net.advance_days(120)
+	var net := _run_120_days()
 	var s := net.stream("connections")
 	var design_queue := 0
 	var other_max := 0
@@ -41,8 +50,7 @@ func test_queue_builds_at_the_constraint() -> void:
 
 
 func test_kpis_are_in_a_realistic_range() -> void:
-	var net := _net()
-	net.advance_days(120)
+	var net := _run_120_days()
 	var k := net.stream("connections").kpis(net.time, 28)
 	assert_between(k["throughput_per_week"], 20.0, 32.0, "demand is 30 a week")
 	assert_between(k["lead_days_p50"], 15.0, 80.0)
@@ -51,7 +59,17 @@ func test_kpis_are_in_a_realistic_range() -> void:
 
 
 func test_starting_stock_does_not_run_out() -> void:
-	var net := _net()
-	net.advance_days(120)
-	var stockouts := net.drain_events().filter(func(e: Dictionary) -> bool: return e["type"] == "stockout")
+	var net := _run_120_days()
+	var stockouts := net.events.filter(func(e: Dictionary) -> bool: return e["type"] == "stockout")
 	assert_eq(stockouts.size(), 0, "stock-outs are a problem to discover later, not the starting state")
+	assert_true(net.stock["connection_kit"].level > 0)
+
+
+func test_skipping_idle_time_changes_nothing() -> void:
+	var fast := _net()
+	var slow := _net()
+	slow.skip_idle = false
+	fast.advance_days(30)
+	slow.advance_days(30)
+	assert_eq(fast.stream("connections").finished, slow.stream("connections").finished)
+	assert_eq(fast.events, slow.events)

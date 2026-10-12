@@ -18,14 +18,11 @@ var error := ""
 
 static func load_from(path: String = PATH) -> GameInfo:
 	var info := GameInfo.new()
-	var text := FileAccess.get_file_as_string(path)
-	if text.is_empty():
-		info.error = "cannot read %s (%s)" % [path, error_string(FileAccess.get_open_error())]
+	var file := JsonFile.read_dict(path)
+	info.error = file["error"]
+	if not info.error.is_empty():
 		return info
-	var parsed: Variant = JSON.parse_string(text)
-	if not parsed is Dictionary:
-		info.error = "%s is not a JSON object" % path
-		return info
+	var parsed: Dictionary = file["data"]
 	for key in info._content_fields():
 		var value: Variant = parsed.get(key)
 		if not value is String or (value as String).strip_edges().is_empty():

@@ -23,6 +23,11 @@ static func material(id: String, item: String, quantity: int = 1) -> Dictionary:
 	return {"id": id, "name": id, "kind": "material", "item": item, "quantity": quantity}
 
 
+static func stock(id: String, level: int, reorder_point: int, order_quantity: int, lead_days: float) -> Dictionary:
+	return {"id": id, "name": id, "level": level, "reorder_point": reorder_point,
+		"order_quantity": order_quantity, "lead_days": lead_days}
+
+
 static func stream(id: String, steps: Array, arrivals: float = 4.0, priority: int = 1, norm_days: float = 30.0) -> Dictionary:
 	return {"id": id, "name": id, "arrivals_per_day": arrivals, "norm_days": norm_days, "priority": priority, "steps": steps}
 

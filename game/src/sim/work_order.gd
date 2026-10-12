@@ -3,14 +3,13 @@ extends RefCounted
 ## One unit of work (a connection request, later an outage or a meter job)
 ## travelling through the steps of its value stream.
 
-enum State { QUEUED, WORKING, WAITING, STOCK, DONE }
-
 var id: int
 var stream: ValueStream
 var born: int
 var due: int
-var state := State.QUEUED
 var step_index := 0
+## Where an order is follows from the container holding it (a step queue,
+## a pool's busy list, the network's waiting list or a stock's waiting list).
 ## Minutes of touch time left at the current work step.
 var remaining := 0
 ## When the order joined the current queue (for queue-time statistics).
