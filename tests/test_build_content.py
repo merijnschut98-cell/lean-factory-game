@@ -147,8 +147,21 @@ def test_real_value_streams_are_valid():
     (lambda d: _step(d, "permit").update(applies=0), "'applies' must be between"),
     (lambda d: _step(d, "design").update(kind="dance"), "'kind' must be one of"),
     (lambda d: _step(d, "materials").update(quantity=1.5), "'quantity' must be an integer"),
-    (lambda d: d["pools"][0].update(shift=["07:30", 930]), 'two quoted "HH:MM" times'),
-    (lambda d: d["pools"][0].update(shift=["16:00", "08:00"]), "end after it starts"),
+    (lambda d: d["pools"][0]["schedule"][0].update(to=930), 'quoted "HH:MM"'),
+    (lambda d: d["pools"][0]["schedule"][0].update({"from": "16:00", "to": "08:00"}), "end after it starts"),
+    (lambda d: d["pools"][0]["schedule"][0].update({"from": "24:00"}), 'quoted "HH:MM"'),
+    (lambda d: d["pools"][0]["schedule"][0].update({"from": "07:35"}), "10-minute grid"),
+    (lambda d: d["pools"][0]["schedule"][0].update(days="maandag"), "'days'"),
+    (lambda d: d["pools"][0]["schedule"][0].update(days="fri-mon"), "'days'"),
+    (lambda d: d["pools"][0].pop("schedule"), "'schedule' must be a non-empty list"),
+    (lambda d: _connections(d)["arrivals"][0].pop("per_week"), "'per_week' must be a number"),
+    (lambda d: _connections(d).pop("arrivals"), "'arrivals' must be a non-empty list"),
+    (lambda d: _connections(d).update(norm_hours=4), "exactly one of 'norm_days' or 'norm_hours'"),
+    (lambda d: _connections(d).pop("norm_days"), "exactly one of 'norm_days' or 'norm_hours'"),
+    (lambda d: _connections(d).update(preempts="yes"), "'preempts' must be true or false"),
+    (lambda d: _step(d, "design").update(pool=["work_prep", "ghost"]), "unknown pool 'ghost'"),
+    (lambda d: _step(d, "design").update(pool=[]), "unknown pool"),
+    (lambda d: _step(d, "execution").update(rework_to="design"), "takes material twice"),
     (lambda d: d["pools"][0].update(headcount=True), "'headcount' must be an integer"),
     (lambda d: d["pools"].append(dict(d["pools"][0])), "duplicate pools ids: intake"),
     (lambda d: d["pools"][0].update(id="Intake Team"), "snake_case"),
@@ -162,6 +175,11 @@ def test_value_stream_errors_are_caught(mutate, message):
 
 
 def test_unquoted_time_in_yaml_is_caught():
-    doc = yaml.safe_load(REAL_STREAMS.replace('shift: ["07:30", "15:30"]', "shift: [07:30, 15:30]", 1))
+    doc = yaml.safe_load(REAL_STREAMS.replace('to: "15:30"', "to: 15:30", 1))
     with pytest.raises(bc.ContentError, match="HH:MM"):
         bc.validate_value_streams(doc, "value_streams.yaml")
+
+
+def test_real_streams_cover_the_four_value_streams():
+    ids = [s["id"] for s in _streams()["streams"]]
+    assert ids == ["connections", "outages", "meters", "congestion"]

@@ -2,69 +2,116 @@
 # Game text (name fields) is Dutch; keys and ids are English.
 # Built into game/data/value_streams.json by tools/build_content.py.
 #
-# Times are quoted "HH:MM" strings (unquoted YAML reads 15:30 as the number 930).
+# Schedules are lists of blocks {days, from, to}: days is a day or a range
+# (mon-fri, sat-sun, mon-sun); times are quoted "HH:MM" strings on the
+# 10-minute grid (unquoted YAML reads 15:30 as the number 930); "24:00" ends a
+# day. A shift through midnight is two blocks.
+#
 # Units: hours of touch time per order, days for external waits (calendar
-# days), arrivals per working day. Working days are Monday–Friday.
+# days), arrivals per week spread evenly over their blocks.
+#
+# Streams: `priority` decides who goes first when streams share people;
+# `preempts: true` (outages only) also interrupts lower-priority work in
+# progress. Work still in progress at the end of a shift is handed over: it
+# goes back to the front of its queue for the next shift.
 #
 # Step kinds:
-#   work      people from `pool` spend `touch_hours`; `ftr` = first-time-right
-#             chance; on failure the order returns to `rework_to` (default:
-#             the same step), after `rework_wait_days` if given (e.g. waiting
-#             for the customer to supply missing details)
+#   work      people from `pool` spend `touch_hours`; `pool` may list several
+#             pools (the monteurs by day, the on-call crew at night); `ftr` =
+#             first-time-right chance; on failure the order returns to
+#             `rework_to` (default: the same step), after `rework_wait_days`
+#             if given (e.g. waiting for the customer to supply missing details)
 #   wait      an external delay of `days` (± `spread` fraction); nobody at
 #             Voltana works on it, it can only be managed
-#   material  takes `quantity` of `item` from stock; waits if out of stock
+#   material  takes `quantity` of `item` from stock; waits if out of stock.
+#             Put it before the step rework returns to, or rework takes twice.
 # Any step may have `applies` (0–1): the share of orders that need it.
 #
 # Starting numbers are tuned so Werkvoorbereiding is the constraint of the
-# connections stream at about 100% load, with Revisie & GIS close behind.
+# connections stream at about 100% load, with Revisie & GIS close behind,
+# and the monteurs (the obvious suspect) at about 70%.
 
 pools:
   - id: intake
     name: Intake & aanvraagbeheer
     headcount: 3
     availability: 0.85
-    shift: ["07:30", "15:30"]
+    schedule: [{days: mon-fri, from: "07:30", to: "15:30"}]
   - id: grid_analysts
     name: Netstudies
     headcount: 2
     availability: 0.85
-    shift: ["08:00", "16:00"]
+    schedule: [{days: mon-fri, from: "08:00", to: "16:00"}]
   - id: work_prep
     name: Werkvoorbereiding
     headcount: 4
     availability: 0.85
-    shift: ["07:30", "15:30"]
+    schedule: [{days: mon-fri, from: "07:30", to: "15:30"}]
   - id: planners
     name: Planning
     headcount: 2
     availability: 0.9
-    shift: ["07:30", "15:30"]
+    schedule: [{days: mon-fri, from: "07:30", to: "15:30"}]
   - id: monteurs
     name: Monteurs
     headcount: 14
     availability: 0.85
-    shift: ["07:00", "15:00"]
+    schedule: [{days: mon-fri, from: "07:00", to: "15:00"}]
+  - id: on_call
+    name: Storingsdienst (consignatie)
+    headcount: 2
+    availability: 1.0       # rostered: a sick colleague is replaced
+    schedule:
+      - {days: mon-fri, from: "00:00", to: "07:00"}
+      - {days: mon-fri, from: "15:00", to: "24:00"}
+      - {days: sat-sun, from: "00:00", to: "24:00"}
+  - id: control_room
+    name: Bedrijfsvoeringscentrum
+    headcount: 2
+    availability: 1.0       # only their outage handling is modelled, not monitoring and switching
+    schedule: [{days: mon-sun, from: "00:00", to: "24:00"}]
   - id: gis
     name: Revisie & GIS
     headcount: 2
     availability: 0.85
-    shift: ["08:00", "16:00"]
+    schedule: [{days: mon-fri, from: "08:00", to: "16:00"}]
+  - id: meter_office
+    name: Meetdata & registratie
+    headcount: 1
+    availability: 0.85
+    schedule: [{days: mon-fri, from: "08:00", to: "16:00"}]
+  - id: key_accounts
+    name: Grootzakelijke klanten
+    headcount: 1
+    availability: 0.85
+    schedule: [{days: mon-fri, from: "08:00", to: "16:00"}]
 
 stock:
   - id: connection_kit
     name: Aansluitset (kabel, mof, aansluitkast)
     level: 120
-    reorder_point: 70       # covers ~11 working days of demand during the 15-day lead time
+    reorder_point: 95       # up to 12 working days in the 15-day lead time × 6 a day ≈ 72, plus ~2.5 sigma
     order_quantity: 120
     lead_days: 15
+  - id: cable_joint
+    name: Storingsmof (kabelverbinding)
+    level: 50
+    reorder_point: 25       # ~13 used in the lead time (9 a week) plus ~2.5 sigma safety
+    order_quantity: 50
+    lead_days: 10
+  - id: smart_meter
+    name: Slimme meter
+    level: 200
+    reorder_point: 95       # up to 9 working days in the 10-day lead time × 8 a day ≈ 72, plus ~2.5 sigma
+    order_quantity: 200
+    lead_days: 10
 
 streams:
   - id: connections
     name: Nieuwe aansluitingen
-    arrivals_per_day: 6
+    arrivals: [{per_week: 30, days: mon-fri, from: "08:00", to: "17:00"}]
     norm_days: 126          # the former legal term of 18 weeks
-    priority: 2             # outages (later) get a higher number and go first
+    priority: 2
     steps:
       - id: intake
         name: Aanvraag & intake
@@ -134,3 +181,118 @@ streams:
         pool: gis
         touch_hours: 2.0
         ftr: 0.95
+
+  - id: outages
+    name: Storingen
+    arrivals:
+      - {per_week: 10, days: mon-fri, from: "07:00", to: "17:00"}  # incl. graafschade during working hours
+      - {per_week: 8, days: mon-sun, from: "00:00", to: "24:00"}
+    norm_hours: 4           # compensation is due for outages longer than 4 hours
+    priority: 3
+    preempts: true          # a monteur leaves planned work for an outage
+    steps:
+      - id: report
+        name: Melding & schakelen
+        kind: work
+        pool: control_room
+        touch_hours: 0.25
+        ftr: 1.0
+      - id: joint
+        name: Storingsmof meenemen
+        kind: material
+        item: cable_joint
+        quantity: 1
+        applies: 0.5          # cable faults (known from the report); the rest are fuses, connections, switchgear
+      - id: locate
+        name: Uitrukken & lokaliseren
+        kind: work
+        pool: [monteurs, on_call]
+        touch_hours: 1.0      # including travel
+        ftr: 0.9              # wrong section: search again
+      - id: repair
+        name: Herstellen
+        kind: work
+        pool: [monteurs, on_call]
+        touch_hours: 1.5
+        ftr: 0.95
+        rework_to: locate     # a second fault further along the cable
+
+  - id: meters
+    name: Veldservice & slimme meters
+    arrivals: [{per_week: 40, days: mon-fri, from: "08:00", to: "17:00"}]
+    norm_days: 21           # internal service norm
+    priority: 2
+    steps:
+      - id: reserve_meter
+        name: Meter reserveren
+        kind: material
+        item: smart_meter
+        quantity: 1
+      - id: appointment
+        name: Afspraak plannen
+        kind: work
+        pool: planners
+        touch_hours: 0.25
+        ftr: 1.0
+      - id: customer_window
+        name: Wachten op afspraak
+        kind: wait
+        days: 7
+        spread: 0.5
+      - id: visit
+        name: Bezoek & meterwissel
+        kind: work
+        pool: monteurs
+        touch_hours: 1.5      # including travel
+        ftr: 0.8              # niet thuis or meterkast unreachable
+        rework_to: appointment
+        rework_wait_days: 2
+      - id: registration
+        name: Registratie meter & EAN
+        kind: work
+        pool: meter_office
+        touch_hours: 0.25
+        ftr: 0.9
+
+  - id: congestion
+    name: Congestiemanagement
+    arrivals: [{per_week: 4, days: mon-fri, from: "08:00", to: "17:00"}]
+    norm_days: 126          # indicative: large-consumer requests follow the same 18-week idea
+    priority: 1
+    steps:
+      - id: intake
+        name: Aanvraag transportcapaciteit
+        kind: work
+        pool: key_accounts
+        touch_hours: 1.0
+        ftr: 0.7              # missing load profile or EAN details
+        rework_wait_days: 10
+      - id: congestion_study
+        name: Congestieonderzoek
+        kind: work
+        pool: grid_analysts   # shared with the connections grid studies
+        touch_hours: 6.0
+        ftr: 0.9
+      - id: capacity_queue
+        name: Wachtrij netcapaciteit
+        kind: wait
+        days: 90
+        spread: 0.8
+        applies: 0.7          # the rest fits on the grid straight away
+      - id: offer
+        name: Aanbod (vast, non-firm of tijdsduurgebonden)
+        kind: work
+        pool: key_accounts
+        touch_hours: 2.0
+        ftr: 0.9
+      - id: customer_signs
+        name: Akkoord klant
+        kind: wait
+        days: 20
+        spread: 0.5
+      - id: register
+        name: Capaciteit registreren
+        kind: work
+        pool: key_accounts
+        touch_hours: 0.5
+        ftr: 1.0

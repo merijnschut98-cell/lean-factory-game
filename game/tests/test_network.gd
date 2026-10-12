@@ -10,6 +10,9 @@ func test_config_errors_are_reported() -> void:
 	var bad := NetFixture.net([NetFixture.pool("team")], [NetFixture.stream("s", [NetFixture.work("do", "nobody", 1.0)])])
 	assert_true("unknown pool" in bad.error, bad.error)
 	assert_true("cannot read" in Network.load_file("res://data/nope.json").error)
+	var no_hours := NetFixture.pool("team")
+	no_hours.erase("schedule")
+	assert_true("bad schedule" in NetFixture.net([no_hours], [NetFixture.stream("s", [NetFixture.work("do", "team", 1.0)])]).error)
 
 
 func test_orders_flow_through_and_finish() -> void:
@@ -88,15 +91,82 @@ func test_stockout_makes_orders_wait_for_delivery() -> void:
 func test_urgent_stream_preempts_planned_work() -> void:
 	var net := NetFixture.net([NetFixture.pool("crew", 1)], [
 		NetFixture.stream("planned", [NetFixture.work("job", "crew", 6.0)], 3.0, 1),
-		NetFixture.stream("outage", [NetFixture.work("fix", "crew", 1.0)], 1.0, 5),
+		NetFixture.stream("outage", [NetFixture.work("fix", "crew", 1.0)], 1.0, 5, {"preempts": true}),
 	])
 	net.advance_days(28)
 	var planned := net.stream("planned").kpis(net.time, 28)
 	var outage := net.stream("outage").kpis(net.time, 28)
 	assert_true(outage["lead_days_p85"] < 1.0, "outages fixed within the day: %s" % outage["lead_days_p85"])
 	assert_true(planned["lead_days_p50"] > outage["lead_days_p50"])
-	var preempted := net.drain_events().filter(func(e: Dictionary) -> bool: return e["type"] == "preempted")
-	assert_true(preempted.size() > 0, "some planned work was interrupted")
+	assert_true(_events(net, "preempted").size() > 0, "some planned work was interrupted")
+
+
+func test_priority_alone_does_not_interrupt_work() -> void:
+	var net := NetFixture.net([NetFixture.pool("crew", 1)], [
+		NetFixture.stream("planned", [NetFixture.work("job", "crew", 6.0)], 3.0, 1),
+		NetFixture.stream("urgent", [NetFixture.work("fix", "crew", 1.0)], 1.0, 5),
+	])
+	net.advance_days(28)
+	assert_eq(_events(net, "preempted").size(), 0, "only streams with preempts interrupt work in progress")
+
+
+func test_around_the_clock_pool_works_at_the_weekend() -> void:
+	var net := NetFixture.net([NetFixture.pool("on_call", 1, 1.0, [NetFixture.block("mon-sun", "00:00", "24:00")])],
+		[NetFixture.stream("outages", [NetFixture.work("fix", "on_call", 1.0)], 0.0, 3, {"arrivals": NetFixture.always(14.0)})])
+	net.advance_days(5)
+	var before := net.stream("outages").finished.size()
+	net.advance_days(2)
+	assert_true(net.stream("outages").finished.size() > before, "outages are fixed on Saturday and Sunday")
+
+
+func test_arrivals_follow_their_schedule() -> void:
+	var net := NetFixture.net([NetFixture.pool("team", 4, 1.0, [NetFixture.block("mon-sun", "00:00", "24:00")])], [
+		NetFixture.stream("office", [NetFixture.work("a", "team", 0.1)], 6.0),
+		NetFixture.stream("outages", [NetFixture.work("b", "team", 0.1)], 0.0, 1, {"arrivals": NetFixture.always(30.0)}),
+	])
+	net.advance_days(28)
+	var weekend := {"office": 0, "outages": 0}
+	var night := {"office": 0, "outages": 0}
+	for e in _events(net, "arrived"):
+		var m := SimCalendar.minute_of_day(e["t"])
+		weekend[e["stream"]] += 0 if SimCalendar.is_workday(e["t"]) else 1
+		night[e["stream"]] += 1 if m < 480 or m > 1020 else 0
+	assert_eq(weekend["office"], 0)
+	assert_eq(night["office"], 0)
+	assert_true(weekend["outages"] > 10, "outages arrive at the weekend: %d" % weekend["outages"])
+	assert_true(night["outages"] > 20, "and at night: %d" % night["outages"])
+
+
+## Two pools serving one step: the night crew until 07:00, the day crew after.
+func _relay() -> Network:
+	return NetFixture.net([
+		NetFixture.pool("night", 1, 1.0, [NetFixture.block("mon-sun", "00:00", "07:00"), NetFixture.block("mon-sun", "22:00", "24:00")]),
+		NetFixture.pool("day", 1, 1.0, [NetFixture.block("mon-fri", "07:00", "15:00")]),
+	], [NetFixture.stream("outages", [NetFixture.work("fix", ["night", "day"], 2.0)], 0.0, 3)])
+
+
+func test_unfinished_work_is_handed_over_at_the_end_of_a_shift() -> void:
+	var net := _relay()
+	net.advance(360)  # Monday 06:00
+	net.open_order(net.stream("outages"))
+	net.advance(180)
+	assert_eq(_events(net, "handover").size(), 1, "the night crew hands over at 07:00")
+	var done := net.stream("outages").finished
+	assert_eq(done.size(), 1, "the day crew finishes it the same morning")
+	assert_between(done[0]["done_at"], 470, 500)
+
+
+func test_midnight_inside_a_shift_is_no_handover() -> void:
+	var net := _relay()
+	net.advance(23 * 60 + 30)  # Monday 23:30
+	net.open_order(net.stream("outages"))
+	net.advance(180)
+	assert_eq(_events(net, "handover").size(), 0)
+	assert_eq(net.stream("outages").finished.size(), 1, "finished around 01:30")
+
+
+func _events(net: Network, type: String) -> Array[Dictionary]:
+	return net.events.filter(func(e: Dictionary) -> bool: return e["type"] == type)
 
 
 func test_events_can_be_drained() -> void:

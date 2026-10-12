@@ -4,15 +4,35 @@ extends RefCounted
 
 var id: String
 var name: String
-var arrivals_per_day: float
+var arrivals: Array[Arrivals] = []
 var norm_minutes: int
 ## Higher goes first when streams compete for the same people.
 var priority: int
+## Urgent work (outages) interrupts lower-priority work in progress.
+var preempts := false
 var steps: Array[SimStep] = []
 ## Orders in the stream right now (the backlog / WIP).
 var active := 0
 ## One record per finished order: {done_at, lead_minutes, on_time, reworks}.
 var finished: Array[Dictionary] = []
+
+
+## A source of new orders: `per_week` on average, spread evenly over the
+## moments of `when` (e.g. working days 08:00–17:00, or around the clock).
+class Arrivals:
+	var per_week: float
+	var when: WeekSchedule
+
+	func _init(rate: float, schedule: WeekSchedule) -> void:
+		per_week = rate
+		when = schedule
+
+
+func per_week() -> float:
+	var total := 0.0
+	for a in arrivals:
+		total += a.per_week
+	return total
 
 
 ## KPIs over the last `window_days` calendar days.

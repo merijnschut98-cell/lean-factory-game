@@ -1,5 +1,5 @@
 extends TestCase
-## The real connections value stream from content/value_streams.yaml.
+## The real value streams from content/value_streams.yaml.
 ## Fixed seed, so these are exact regression checks on the tuned starting state.
 
 const SEED := 11
@@ -22,7 +22,8 @@ func _run_120_days() -> Network:
 func test_content_loads() -> void:
 	var net := _net()
 	assert_eq(net.error, "")
-	assert_ne(net.stream("connections"), null)
+	for id in ["connections", "outages", "meters", "congestion"]:
+		assert_ne(net.stream(id), null, id)
 
 
 func test_design_is_the_starting_constraint_at_about_full_load() -> void:
@@ -32,6 +33,7 @@ func test_design_is_the_starting_constraint_at_about_full_load() -> void:
 	assert_eq(c["constraint_step"], "design")
 	assert_between(c["utilisation"], 0.95, 1.15)
 	assert_between(r["pools"]["gis"]["utilisation"], 0.85, 1.0, "Revisie & GIS is close behind")
+	assert_between(r["pools"]["monteurs"]["utilisation"], 0.6, 0.8, "the obvious suspect is not the constraint")
 
 
 func test_queue_builds_at_the_constraint() -> void:
@@ -58,11 +60,35 @@ func test_kpis_are_in_a_realistic_range() -> void:
 	assert_between(k["first_time_right"], 0.3, 0.7)
 
 
+func test_outages_are_restored_within_hours_by_day_and_night() -> void:
+	var net := _run_120_days()
+	var k := net.stream("outages").kpis(net.time, 28)
+	assert_true(k["completed"] > 40, "completed %d" % k["completed"])
+	assert_true(k["lead_days_p85"] < 0.25, "p85 %.2f days" % k["lead_days_p85"])
+	assert_true(k["on_time"] > 0.8, "within the 4-hour norm: %.2f" % k["on_time"])
+
+
+func test_outages_interrupt_planned_monteur_work() -> void:
+	var net := _run_120_days()
+	assert_true(net.events.any(func(e: Dictionary) -> bool: return e["type"] == "preempted"))
+
+
+func test_meters_and_congestion_flow() -> void:
+	var net := _run_120_days()
+	var meters := net.stream("meters").kpis(net.time, 28)
+	var congestion := net.stream("congestion").kpis(net.time, 28)
+	assert_between(meters["throughput_per_week"], 30.0, 50.0, "demand is 40 a week")
+	assert_between(meters["first_time_right"], 0.6, 0.9, "niet thuis")
+	assert_true(congestion["completed"] > 0)
+	assert_true(congestion["lead_days_p50"] > meters["lead_days_p50"], "the capacity queue is long")
+
+
 func test_starting_stock_does_not_run_out() -> void:
 	var net := _run_120_days()
 	var stockouts := net.events.filter(func(e: Dictionary) -> bool: return e["type"] == "stockout")
 	assert_eq(stockouts.size(), 0, "stock-outs are a problem to discover later, not the starting state")
-	assert_true(net.stock["connection_kit"].level > 0)
+	for item: SimStock in net.stock.values():
+		assert_true(item.level > 0, item.id)
 
 
 func test_skipping_idle_time_changes_nothing() -> void:
@@ -71,5 +97,6 @@ func test_skipping_idle_time_changes_nothing() -> void:
 	slow.skip_idle = false
 	fast.advance_days(30)
 	slow.advance_days(30)
-	assert_eq(fast.stream("connections").finished, slow.stream("connections").finished)
+	for s in fast.streams:
+		assert_eq(s.finished, slow.stream(s.id).finished, s.id)
 	assert_eq(fast.events, slow.events)

@@ -6,13 +6,13 @@ Game text is **Dutch** (with sector terms). Code, comments and this plan stay in
 
 ---
 
-## Current Status: Phase A — Engine (Godot) 🔧 steps 1–2 done
+## Current Status: Phase A — Engine (Godot) 🔧 steps 1–3 done
 
 Pivot agreed 2026-10-12: from a hoverboard factory to a grid operator. The 3D factory prototype is archived in `archive/factory-3d/` (also git commit `b3a4c8c`). Its investigation / A3 / PDCA / bottleneck logic will be carried over and generalised.
 
 This is a multi-month project, built the right way: research → design (reviewed by Merijn) → engine → content → world → UI, in small tested increments. No publishing deadline. Built in **Godot 4 + GDScript** from the start (decided 2026-10-12).
 
-**Next task:** Phase A step 3 — the outage stream (24/7 on-call, pre-empting planned monteur work) and the meter stream, sharing the monteurs with connections.
+**Next task:** Phase A step 4 — generic problem effects (modifier layer over base content values).
 
 ---
 
@@ -75,7 +75,14 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 - ⬜ Tech debt (tracked): the `game.yaml` field list exists in Python (authority) and as `GameInfo` properties; revisit if content schemas multiply (a shared schema file)
 - ✅ Step 2: work-order simulation core in `game/src/sim/` (calendar, work orders, pools with attendance and pre-emption, external waits, stock with reorder point, rework loops with customer waits, arrivals, KPIs) and `Capacity` (expected visits incl. rework, pool load, constraint per stream); connections stream in `content/value_streams.yaml` with validator; 35 Godot tests; a simulated year runs in ~3 s
 - ✅ Simplify pass on step 2: one event path, sorted waits and deliveries, idle-time skipping (proven identical by a test; a simulated year 3.2 s → 0.7 s), random helpers in `Rng`, shared `JsonFile` loader, dead state removed, cached test run (suite 2.9 s → 0.7 s)
-- ⬜ Step 3: outage stream and meter stream sharing the monteurs; congestion stream. Design points from the step-2 review: replace the single pool `shift` with a weekly `schedule` (incl. 24/7 on-call) used by `is_on_shift`, `available_hours` and `Capacity`; move the global `ARRIVAL_WINDOW` into per-stream `arrivals` (window, days, weekly pattern, demand multiplier)
+- ✅ Step 3 (plan: `docs/superpowers/plans/2026-10-12-phase-a-step-3-shared-streams.md`): outage, meter and congestion streams next to connections.
+  - `WeekSchedule` (weekly 10-minute slots) replaces the daily shift: pools have schedules incl. 24/7 and on-call through midnight; streams have arrival sources `{per_week, days, from, to}`.
+  - A work step can be served by several pools (monteurs by day, storingsdienst at night); unfinished work is handed over at the end of a shift.
+  - `preempts` (outages only) separates interrupting work from queue priority.
+  - `Capacity` per week; multi-pool load split by schedule overlap.
+  - Validator: schedules, arrivals, norm in days or hours, rework loops that would take material twice.
+  - Results: Werkvoorbereiding still the constraint (104%), monteurs 69%, outages p85 ≈ 3.8 h, no stock-outs in 30 seeds × 120 days. 50 Godot tests; a simulated year 1.7 s (four streams).
+  - Weekly demand patterns (e.g. Monday peaks) and demand multipliers are deferred to step 4 (demand is a problem effect).
 - ⬜ Step 4: generic problem effects (target a step, pool, stock item or stream; modify touch time, FTR, availability, headcount, wait days, demand). Design point: keep content values as base values and read them through effective accessors (base + active modifiers), so effects can be removed, saved and compared
 - ⬜ Step 5: port investigation / A3 / PDCA / scoring from the factory prototype (`archive/factory-3d/src/sim/`) to GDScript; tools renamed for a service organisation; Check compares stream KPIs and capacity before/after. Design point: time-windowed per-step statistics (queue time, touch time, rework) for the before/after comparison and the value stream map
 - ⬜ Step 6: save/load of the simulation and rules state (JSON, versioned, validated)
@@ -103,6 +110,8 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 | 4 | Power theft and grid losses: cannabis farms hidden in the data | grid · defects | ~1 billion kWh a year |
 | 4 | NTA 8120 / ISO 55001 audit finding: maintenance not risk-based (oil-paper cables, old joints) | assets · over-processing | NN-CAM 5.0 |
 | 4 | Gas-grid maintenance while the grid is being phased out (heat transition) | gas (later) · over-processing | — |
+| 2 | Safety stock sized on calendar days while demand only comes on working days: a 10-day lead time holds 8–9 working days, so the reorder point is too low and meters or kits run out "unexpectedly" | meters, connections · waiting | found while tuning the simulation (2026-10-12) |
+| 2 | Work in progress handed over at the end of a shift without notes: the next crew starts the fault-finding again | outages · over-processing | handover is now simulated |
 | IT | Field app releases twice a year; every fix waits for the release train | IT · waiting | Phase G |
 | IT | Test environments scarce; teams queue for them | IT · waiting | Phase G |
 

@@ -1,15 +1,13 @@
 class_name Network
 extends RefCounted
 ## The work-order simulation: value streams of steps, pools of people,
-## external waits and stock, advanced in fixed ticks on a working-day calendar.
+## external waits and stock, advanced in fixed ticks on a weekly calendar.
 ##
 ## Pure logic: no nodes, no rendering, all randomness from `rng`, so a run
 ## replays exactly from its seed. The world and UI read the state and drain
 ## `events`; they never change it directly.
 
 const DEFAULT_PATH := "res://data/value_streams.json"
-## Customer requests arrive between 08:00 and 17:00 on working days.
-const ARRIVAL_WINDOW := [480, 1020]
 const MAX_EVENTS := 2000
 
 var time := 0
@@ -19,7 +17,7 @@ var stock: Dictionary[String, SimStock] = {}
 var streams: Array[ValueStream] = []
 ## Something wrong in the configuration; the network is unusable when set.
 var error := ""
-## Jump over idle stretches (nights, weekends). Only switched off to prove in
+## Jump over idle stretches (nights, quiet weekends). Only switched off to prove in
 ## tests that skipping changes nothing.
 var skip_idle := true
 ## Recent happenings for the world/UI to animate: {t, type, ...}.
@@ -55,8 +53,11 @@ static func create(config: Dictionary, seed_value: int = 1) -> Network:
 		pool.name = p["name"]
 		pool.headcount = int(p["headcount"])
 		pool.availability = float(p["availability"])
-		pool.shift_start = SimCalendar.parse_hhmm(p["shift"][0])
-		pool.shift_end = SimCalendar.parse_hhmm(p["shift"][1])
+		var blocks: Array = p.get("schedule", [])
+		pool.schedule = WeekSchedule.from_blocks(blocks)
+		if pool.schedule == null or blocks.is_empty():
+			net.error = "pool %s: bad schedule" % pool.id
+			return net
 		net.pools[pool.id] = pool
 	for s: Dictionary in config.get("stock", []):
 		var item := SimStock.new()
@@ -81,9 +82,18 @@ func _build_stream(v: Dictionary) -> ValueStream:
 	var stream := ValueStream.new()
 	stream.id = v["id"]
 	stream.name = v["name"]
-	stream.arrivals_per_day = float(v["arrivals_per_day"])
-	stream.norm_minutes = SimCalendar.days(float(v["norm_days"]))
+	if v.has("norm_hours"):
+		stream.norm_minutes = roundi(float(v["norm_hours"]) * 60.0)
+	else:
+		stream.norm_minutes = SimCalendar.days(float(v["norm_days"]))
 	stream.priority = int(v["priority"])
+	stream.preempts = bool(v.get("preempts", false))
+	for a: Dictionary in v.get("arrivals", []):
+		var when := WeekSchedule.from_blocks([a])
+		if when == null:
+			error = "stream %s: bad arrival schedule" % stream.id
+			return null
+		stream.arrivals.append(ValueStream.Arrivals.new(float(a["per_week"]), when))
 	var ids: Array = v["steps"].map(func(s: Dictionary) -> String: return s["id"])
 	for s: Dictionary in v["steps"]:
 		var step := SimStep.new()
@@ -93,15 +103,16 @@ func _build_stream(v: Dictionary) -> ValueStream:
 		match s["kind"]:
 			"work":
 				step.kind = SimStep.Kind.WORK
-				step.pool_id = s["pool"]
+				step.pool_ids = PackedStringArray(s["pool"] if s["pool"] is Array else [s["pool"]])
 				step.touch_minutes = roundi(float(s["touch_hours"]) * 60.0)
 				step.ftr = float(s["ftr"])
 				step.rework_index = ids.find(s.get("rework_to", step.id))
 				step.rework_wait_minutes = SimCalendar.days(float(s.get("rework_wait_days", 0.0)))
-				if not pools.has(step.pool_id):
-					error = "step %s: unknown pool %s" % [step.id, step.pool_id]
-					return null
-				pools[step.pool_id].steps.append(step)
+				for pool_id in step.pool_ids:
+					if not pools.has(pool_id):
+						error = "step %s: unknown pool %s" % [step.id, pool_id]
+						return null
+					pools[pool_id].steps.append(step)
 				_queues[step] = [] as Array[WorkOrder]
 			"wait":
 				step.kind = SimStep.Kind.WAIT
@@ -143,17 +154,20 @@ func advance(minutes: int) -> void:
 		_tick()
 
 
-## Outside every shift only arrivals, waits, deliveries and the new day can
-## change anything, so the clock can jump straight to the earliest of those
-## (on the tick grid). Results are identical to stepping tick by tick.
+## While nobody is working, only arrivals, waits, deliveries, a new day
+## (attendance) or a shift starting for a pool with queued work can change
+## anything, so the clock can jump straight to the earliest of those (on the
+## tick grid). Results are identical to stepping tick by tick.
 func _next_busy_tick() -> int:
+	var after := time + SimCalendar.TICK
+	if _day != SimCalendar.day_of(time):
+		return after  # today has not started yet (the very first tick)
 	var next := (SimCalendar.day_of(time) + 1) * SimCalendar.MINUTES_PER_DAY
 	for pool: SimPool in pools.values():
-		if pool.is_on_shift(time + SimCalendar.TICK):
-			return time + SimCalendar.TICK
-		var start := SimCalendar.day_of(time) * SimCalendar.MINUTES_PER_DAY + pool.shift_start
-		if start > time:
-			next = mini(next, start)
+		if not pool.busy.is_empty():
+			return after
+		if pool.present > 0 and _has_queued_work(pool):
+			next = mini(next, pool.schedule.next_start(after))
 	if not _arrivals.is_empty():
 		next = mini(next, _arrivals[0]["at"])
 	if not _waiting.is_empty():
@@ -165,6 +179,13 @@ func _next_busy_tick() -> int:
 	return ceili(next / float(SimCalendar.TICK)) * SimCalendar.TICK
 
 
+func _has_queued_work(pool: SimPool) -> bool:
+	for step in pool.steps:
+		if not queue_of(step).is_empty():
+			return true
+	return false
+
+
 func advance_days(n: float) -> void:
 	advance(SimCalendar.days(n))
 
@@ -174,6 +195,7 @@ func _tick() -> void:
 	if day != _day:
 		_day = day
 		_start_day()
+	_hand_over()
 	_release_arrivals()
 	_finish_waits()
 	_deliver_stock()
@@ -184,13 +206,17 @@ func _tick() -> void:
 func _start_day() -> void:
 	for pool: SimPool in pools.values():
 		pool.roll_presence(rng)
-	if not SimCalendar.is_workday(time):
-		return
 	var day_start := SimCalendar.day_of(time) * SimCalendar.MINUTES_PER_DAY
 	for s in streams:
-		for i in rng.poisson(s.arrivals_per_day):
-			var at := day_start + rng.int_range(ARRIVAL_WINDOW[0], ARRIVAL_WINDOW[1] - 1)
-			_arrivals.append({"at": at, "stream": s})
+		for source in s.arrivals:
+			var slots := source.when.slots_on_day(SimCalendar.weekday(time))
+			if slots.is_empty():
+				continue
+			# Today's share of the weekly rate, at random moments within today's slots.
+			var mean := source.per_week * slots.size() * SimCalendar.TICK / 60.0 / source.when.hours()
+			for i in rng.poisson(mean):
+				var at := day_start + slots[rng.int_range(0, slots.size() - 1)] + rng.int_range(0, SimCalendar.TICK - 1)
+				_arrivals.append({"at": at, "stream": s})
 	_arrivals.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["at"] < b["at"])
 
 
@@ -198,12 +224,18 @@ func _start_day() -> void:
 
 func _release_arrivals() -> void:
 	while not _arrivals.is_empty() and _arrivals[0]["at"] <= time:
-		var s: ValueStream = _arrivals.pop_front()["stream"]
-		var order := WorkOrder.new(_next_id, s, time)
-		_next_id += 1
-		s.active += 1
-		_emit("arrived", order)
-		_enter(order, 0)
+		open_order(_arrivals.pop_front()["stream"])
+
+
+## A new order enters stream `s` now (scheduled arrivals, and later events
+## such as a storm).
+func open_order(s: ValueStream) -> WorkOrder:
+	var order := WorkOrder.new(_next_id, s, time)
+	_next_id += 1
+	s.active += 1
+	_emit("arrived", order)
+	_enter(order, 0)
+	return order
 
 
 ## Put an order into step `index`, skipping steps it does not need.
@@ -278,9 +310,26 @@ func _deliver_stock() -> void:
 		_reorder_if_needed(item)
 
 
+## At the end of a shift, unfinished work goes back to the front of its queue
+## for the next shift (or another pool serving the step) to pick up.
+func _hand_over() -> void:
+	for pool: SimPool in pools.values():
+		if pool.busy.is_empty() or pool.is_on_shift(time):
+			continue
+		for i in range(pool.busy.size() - 1, -1, -1):
+			_requeue(pool.busy[i], "handover")
+		pool.busy.clear()
+
+
+## Put interrupted work back at the front of its queue.
+func _requeue(order: WorkOrder, why: String) -> void:
+	queue_of(order.current_step()).push_front(order)
+	_emit(why, order)
+
+
 func _progress_work() -> void:
 	for pool: SimPool in pools.values():
-		if pool.busy.is_empty() or not pool.is_on_shift(time):
+		if pool.busy.is_empty():
 			continue
 		for i in range(pool.busy.size() - 1, -1, -1):
 			var order := pool.busy[i]
@@ -306,7 +355,8 @@ func _complete_work(order: WorkOrder) -> void:
 
 ## Give free people the most urgent waiting work: highest stream priority
 ## first, then the order that has queued longest. When nobody is free, an
-## urgent order pre-empts the least urgent order in progress.
+## order of a pre-empting stream (outages) interrupts the least urgent
+## lower-priority order in progress.
 func _assign_work() -> void:
 	for pool: SimPool in pools.values():
 		if not pool.is_on_shift(time):
@@ -316,7 +366,8 @@ func _assign_work() -> void:
 			if step == null:
 				break
 			var queue := queue_of(step)
-			if pool.free_people() <= 0 and not _preempt_for(pool, queue[0].stream.priority):
+			var urgent := queue[0].stream
+			if pool.free_people() <= 0 and not (urgent.preempts and _preempt_for(pool, urgent.priority)):
 				break
 			pool.busy.append(queue.pop_front())
 
@@ -347,9 +398,7 @@ func _preempt_for(pool: SimPool, priority: int) -> bool:
 	if victim == null:
 		return false
 	pool.busy.erase(victim)
-	victim.queued_at = time
-	queue_of(victim.current_step()).push_front(victim)
-	_emit("preempted", victim)
+	_requeue(victim, "preempted")
 	return true
 
 

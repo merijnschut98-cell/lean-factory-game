@@ -5,9 +5,12 @@
    "headcount": 3,
    "id": "intake",
    "name": "Intake & aanvraagbeheer",
-   "shift": [
-    "07:30",
-    "15:30"
+   "schedule": [
+    {
+     "days": "mon-fri",
+     "from": "07:30",
+     "to": "15:30"
+    }
    ]
   },
   {
@@ -15,9 +18,12 @@
    "headcount": 2,
    "id": "grid_analysts",
    "name": "Netstudies",
-   "shift": [
-    "08:00",
-    "16:00"
+   "schedule": [
+    {
+     "days": "mon-fri",
+     "from": "08:00",
+     "to": "16:00"
+    }
    ]
   },
   {
@@ -25,9 +31,12 @@
    "headcount": 4,
    "id": "work_prep",
    "name": "Werkvoorbereiding",
-   "shift": [
-    "07:30",
-    "15:30"
+   "schedule": [
+    {
+     "days": "mon-fri",
+     "from": "07:30",
+     "to": "15:30"
+    }
    ]
   },
   {
@@ -35,9 +44,12 @@
    "headcount": 2,
    "id": "planners",
    "name": "Planning",
-   "shift": [
-    "07:30",
-    "15:30"
+   "schedule": [
+    {
+     "days": "mon-fri",
+     "from": "07:30",
+     "to": "15:30"
+    }
    ]
   },
   {
@@ -45,9 +57,48 @@
    "headcount": 14,
    "id": "monteurs",
    "name": "Monteurs",
-   "shift": [
-    "07:00",
-    "15:00"
+   "schedule": [
+    {
+     "days": "mon-fri",
+     "from": "07:00",
+     "to": "15:00"
+    }
+   ]
+  },
+  {
+   "availability": 1.0,
+   "headcount": 2,
+   "id": "on_call",
+   "name": "Storingsdienst (consignatie)",
+   "schedule": [
+    {
+     "days": "mon-fri",
+     "from": "00:00",
+     "to": "07:00"
+    },
+    {
+     "days": "mon-fri",
+     "from": "15:00",
+     "to": "24:00"
+    },
+    {
+     "days": "sat-sun",
+     "from": "00:00",
+     "to": "24:00"
+    }
+   ]
+  },
+  {
+   "availability": 1.0,
+   "headcount": 2,
+   "id": "control_room",
+   "name": "Bedrijfsvoeringscentrum",
+   "schedule": [
+    {
+     "days": "mon-sun",
+     "from": "00:00",
+     "to": "24:00"
+    }
    ]
   },
   {
@@ -55,9 +106,38 @@
    "headcount": 2,
    "id": "gis",
    "name": "Revisie & GIS",
-   "shift": [
-    "08:00",
-    "16:00"
+   "schedule": [
+    {
+     "days": "mon-fri",
+     "from": "08:00",
+     "to": "16:00"
+    }
+   ]
+  },
+  {
+   "availability": 0.85,
+   "headcount": 1,
+   "id": "meter_office",
+   "name": "Meetdata & registratie",
+   "schedule": [
+    {
+     "days": "mon-fri",
+     "from": "08:00",
+     "to": "16:00"
+    }
+   ]
+  },
+  {
+   "availability": 0.85,
+   "headcount": 1,
+   "id": "key_accounts",
+   "name": "Grootzakelijke klanten",
+   "schedule": [
+    {
+     "days": "mon-fri",
+     "from": "08:00",
+     "to": "16:00"
+    }
    ]
   }
  ],
@@ -68,12 +148,35 @@
    "level": 120,
    "name": "Aansluitset (kabel, mof, aansluitkast)",
    "order_quantity": 120,
-   "reorder_point": 70
+   "reorder_point": 95
+  },
+  {
+   "id": "cable_joint",
+   "lead_days": 10,
+   "level": 50,
+   "name": "Storingsmof (kabelverbinding)",
+   "order_quantity": 50,
+   "reorder_point": 25
+  },
+  {
+   "id": "smart_meter",
+   "lead_days": 10,
+   "level": 200,
+   "name": "Slimme meter",
+   "order_quantity": 200,
+   "reorder_point": 95
   }
  ],
  "streams": [
   {
-   "arrivals_per_day": 6,
+   "arrivals": [
+    {
+     "days": "mon-fri",
+     "from": "08:00",
+     "per_week": 30,
+     "to": "17:00"
+    }
+   ],
    "id": "connections",
    "name": "Nieuwe aansluitingen",
    "norm_days": 126,
@@ -168,6 +271,188 @@
      "name": "Revisie & administratie",
      "pool": "gis",
      "touch_hours": 2.0
+    }
+   ]
+  },
+  {
+   "arrivals": [
+    {
+     "days": "mon-fri",
+     "from": "07:00",
+     "per_week": 10,
+     "to": "17:00"
+    },
+    {
+     "days": "mon-sun",
+     "from": "00:00",
+     "per_week": 8,
+     "to": "24:00"
+    }
+   ],
+   "id": "outages",
+   "name": "Storingen",
+   "norm_hours": 4,
+   "preempts": true,
+   "priority": 3,
+   "steps": [
+    {
+     "ftr": 1.0,
+     "id": "report",
+     "kind": "work",
+     "name": "Melding & schakelen",
+     "pool": "control_room",
+     "touch_hours": 0.25
+    },
+    {
+     "applies": 0.5,
+     "id": "joint",
+     "item": "cable_joint",
+     "kind": "material",
+     "name": "Storingsmof meenemen",
+     "quantity": 1
+    },
+    {
+     "ftr": 0.9,
+     "id": "locate",
+     "kind": "work",
+     "name": "Uitrukken & lokaliseren",
+     "pool": [
+      "monteurs",
+      "on_call"
+     ],
+     "touch_hours": 1.0
+    },
+    {
+     "ftr": 0.95,
+     "id": "repair",
+     "kind": "work",
+     "name": "Herstellen",
+     "pool": [
+      "monteurs",
+      "on_call"
+     ],
+     "rework_to": "locate",
+     "touch_hours": 1.5
+    }
+   ]
+  },
+  {
+   "arrivals": [
+    {
+     "days": "mon-fri",
+     "from": "08:00",
+     "per_week": 40,
+     "to": "17:00"
+    }
+   ],
+   "id": "meters",
+   "name": "Veldservice & slimme meters",
+   "norm_days": 21,
+   "priority": 2,
+   "steps": [
+    {
+     "id": "reserve_meter",
+     "item": "smart_meter",
+     "kind": "material",
+     "name": "Meter reserveren",
+     "quantity": 1
+    },
+    {
+     "ftr": 1.0,
+     "id": "appointment",
+     "kind": "work",
+     "name": "Afspraak plannen",
+     "pool": "planners",
+     "touch_hours": 0.25
+    },
+    {
+     "days": 7,
+     "id": "customer_window",
+     "kind": "wait",
+     "name": "Wachten op afspraak",
+     "spread": 0.5
+    },
+    {
+     "ftr": 0.8,
+     "id": "visit",
+     "kind": "work",
+     "name": "Bezoek & meterwissel",
+     "pool": "monteurs",
+     "rework_to": "appointment",
+     "rework_wait_days": 2,
+     "touch_hours": 1.5
+    },
+    {
+     "ftr": 0.9,
+     "id": "registration",
+     "kind": "work",
+     "name": "Registratie meter & EAN",
+     "pool": "meter_office",
+     "touch_hours": 0.25
+    }
+   ]
+  },
+  {
+   "arrivals": [
+    {
+     "days": "mon-fri",
+     "from": "08:00",
+     "per_week": 4,
+     "to": "17:00"
+    }
+   ],
+   "id": "congestion",
+   "name": "Congestiemanagement",
+   "norm_days": 126,
+   "priority": 1,
+   "steps": [
+    {
+     "ftr": 0.7,
+     "id": "intake",
+     "kind": "work",
+     "name": "Aanvraag transportcapaciteit",
+     "pool": "key_accounts",
+     "rework_wait_days": 10,
+     "touch_hours": 1.0
+    },
+    {
+     "ftr": 0.9,
+     "id": "congestion_study",
+     "kind": "work",
+     "name": "Congestieonderzoek",
+     "pool": "grid_analysts",
+     "touch_hours": 6.0
+    },
+    {
+     "applies": 0.7,
+     "days": 90,
+     "id": "capacity_queue",
+     "kind": "wait",
+     "name": "Wachtrij netcapaciteit",
+     "spread": 0.8
+    },
+    {
+     "ftr": 0.9,
+     "id": "offer",
+     "kind": "work",
+     "name": "Aanbod (vast, non-firm of tijdsduurgebonden)",
+     "pool": "key_accounts",
+     "touch_hours": 2.0
+    },
+    {
+     "days": 20,
+     "id": "customer_signs",
+     "kind": "wait",
+     "name": "Akkoord klant",
+     "spread": 0.5
+    },
+    {
+     "ftr": 1.0,
+     "id": "register",
+     "kind": "work",
+     "name": "Capaciteit registreren",
+     "pool": "key_accounts",
+     "touch_hours": 0.5
     }
    ]
   }

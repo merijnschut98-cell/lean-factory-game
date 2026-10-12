@@ -13,7 +13,8 @@ var kind: Kind
 ## Share of orders that need this step (the rest skip it).
 var applies := 1.0
 # WORK
-var pool_id := ""
+## Pools that can do this work (e.g. the monteurs by day, the on-call crew at night).
+var pool_ids := PackedStringArray()
 var touch_minutes := 0
 var ftr := 1.0
 var rework_index := 0

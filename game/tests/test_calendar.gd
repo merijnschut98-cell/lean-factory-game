@@ -11,15 +11,66 @@ func test_week_starts_monday_and_weekend_is_off() -> void:
 
 func test_parse_hhmm() -> void:
 	assert_eq(SimCalendar.parse_hhmm("07:30"), 450)
-	assert_eq(SimCalendar.parse_hhmm("16:00"), 960)
+	assert_eq(SimCalendar.parse_hhmm("24:00"), 1440)
 	assert_eq(SimCalendar.parse_hhmm("930"), -1)
 	assert_eq(SimCalendar.parse_hhmm("ab:cd"), -1)
 
 
-func test_pool_shift() -> void:
-	var p := SimPool.new()
-	p.shift_start = 450
-	p.shift_end = 930
-	assert_true(p.is_on_shift(500))
-	assert_false(p.is_on_shift(940))
-	assert_false(p.is_on_shift(SimCalendar.days(5) + 500), "Saturday")
+func test_parse_days() -> void:
+	assert_eq(SimCalendar.parse_days("mon-fri"), PackedInt32Array([0, 1, 2, 3, 4]))
+	assert_eq(SimCalendar.parse_days("sat"), PackedInt32Array([5]))
+	assert_eq(SimCalendar.parse_days("mon-sun").size(), 7)
+	assert_eq(SimCalendar.parse_days("fri-mon"), PackedInt32Array(), "ranges do not wrap")
+	assert_eq(SimCalendar.parse_days("x"), PackedInt32Array())
+
+
+func _day_shift() -> WeekSchedule:
+	return WeekSchedule.from_blocks([{"days": "mon-fri", "from": "07:00", "to": "15:00"}])
+
+
+func _on_call() -> WeekSchedule:
+	return WeekSchedule.from_blocks([
+		{"days": "mon-fri", "from": "00:00", "to": "07:00"},
+		{"days": "mon-fri", "from": "15:00", "to": "24:00"},
+		{"days": "sat-sun", "from": "00:00", "to": "24:00"},
+	])
+
+
+func test_week_schedule_hours_and_membership() -> void:
+	var day := _day_shift()
+	assert_near(day.hours(), 40.0, 1e-9)
+	assert_true(day.contains(SimCalendar.parse_hhmm("07:00")))
+	assert_false(day.contains(SimCalendar.parse_hhmm("15:00")), "the end is exclusive")
+	assert_false(day.contains(SimCalendar.days(5) + 500), "Saturday")
+	assert_true(day.contains(SimCalendar.WEEK + 500), "repeats every week")
+
+
+func test_week_schedule_runs_through_midnight() -> void:
+	var on_call := _on_call()
+	assert_near(on_call.hours(), 128.0, 1e-9)
+	assert_true(on_call.contains(SimCalendar.parse_hhmm("23:55")))
+	assert_true(on_call.contains(SimCalendar.days(1) + 5), "Tuesday 00:05")
+	assert_false(on_call.contains(SimCalendar.days(1) + 600), "Tuesday 10:00 is day shift")
+
+
+func test_next_start() -> void:
+	var day := _day_shift()
+	var friday_4pm := SimCalendar.days(4) + 960
+	assert_eq(day.next_start(friday_4pm), SimCalendar.WEEK + 420, "Monday 07:00")
+	assert_eq(day.next_start(500), 500, "already on")
+	assert_eq(WeekSchedule.from_blocks([]).next_start(10), 10 + SimCalendar.WEEK, "never")
+
+
+func test_overlap_and_day_slots() -> void:
+	var always := WeekSchedule.from_blocks([{"days": "mon-sun", "from": "00:00", "to": "24:00"}])
+	assert_near(_day_shift().overlap_hours(always), 40.0, 1e-9)
+	assert_near(_day_shift().overlap_hours(_on_call()), 0.0, 1e-9)
+	assert_eq(_day_shift().slots_on_day(0).size(), 48)
+	assert_eq(_day_shift().slots_on_day(0)[0], 420)
+	assert_eq(_day_shift().slots_on_day(6).size(), 0)
+
+
+func test_bad_blocks_are_refused() -> void:
+	assert_eq(WeekSchedule.from_blocks([{"days": "mon", "from": "15:00", "to": "07:00"}]), null)
+	assert_eq(WeekSchedule.from_blocks([{"days": "maandag", "from": "07:00", "to": "15:00"}]), null)
+	assert_eq(WeekSchedule.from_blocks([{"days": "mon", "from": "07:00"}]), null)

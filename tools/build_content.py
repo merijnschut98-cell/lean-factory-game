@@ -52,6 +52,8 @@ def validate_game(doc: Any, source: str) -> None:
 _TIME = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
 _ID = re.compile(r"^[a-z][a-z0-9_]*$")
 STEP_KINDS = {"work", "wait", "material"}
+DAY_NAMES = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+TICK_MINUTES = 10  # the simulation step; schedule times must sit on its grid
 
 
 def _number(item: dict, key: str, where: str, low: float, high: float | None = None,
@@ -86,6 +88,37 @@ def _minutes(hhmm: str) -> int:
     return int(hours) * 60 + int(minutes)
 
 
+def _valid_days(text: Any) -> bool:
+    """'mon-fri', 'sat-sun', 'wed': a day or a non-wrapping range of days."""
+    ends = text.split("-") if isinstance(text, str) else []
+    return (0 < len(ends) <= 2 and all(e in DAY_NAMES for e in ends)
+            and DAY_NAMES.index(ends[0]) <= DAY_NAMES.index(ends[-1]))
+
+
+def _validate_block(block: Any, where: str) -> None:
+    """One schedule block: {days, from, to}; 'to' may be "24:00" (end of the day)."""
+    if not isinstance(block, dict):
+        raise ContentError(f"{where}: each block must be a mapping with days, from and to")
+    if not _valid_days(block.get("days")):
+        raise ContentError(f"{where}: 'days' must be a day or a range like mon-fri (got {block.get('days')!r})")
+    start, end = block.get("from"), block.get("to")
+    if not (isinstance(start, str) and _TIME.match(start) and isinstance(end, str) and (_TIME.match(end) or end == "24:00")):
+        raise ContentError(f'{where}: \'from\' and \'to\' must be quoted "HH:MM" times')
+    if _minutes(start) % TICK_MINUTES or _minutes(end) % TICK_MINUTES:
+        raise ContentError(f"{where}: times must be on the {TICK_MINUTES}-minute grid")
+    if _minutes(start) >= _minutes(end):
+        raise ContentError(f"{where}: a block must end after it starts (split blocks at midnight)")
+
+
+def _blocks(item: dict, key: str, where: str) -> list:
+    blocks = item.get(key)
+    if not isinstance(blocks, list) or not blocks:
+        raise ContentError(f"{where}: '{key}' must be a non-empty list of blocks")
+    for block in blocks:
+        _validate_block(block, f"{where} {key}")
+    return blocks
+
+
 def _validate_step(step: dict, where: str, pools: set[str], stock: set[str], step_ids: list[str]) -> None:
     kind = step.get("kind")
     if kind not in STEP_KINDS:
@@ -93,8 +126,11 @@ def _validate_step(step: dict, where: str, pools: set[str], stock: set[str], ste
     if "applies" in step:
         _number(step, "applies", where, 0.01, 1)
     if kind == "work":
-        if step.get("pool") not in pools:
-            raise ContentError(f"{where}: unknown pool {step.get('pool')!r}")
+        served_by = step.get("pool")
+        served_by = served_by if isinstance(served_by, list) else [served_by]
+        for pool in served_by or [None]:
+            if pool not in pools:
+                raise ContentError(f"{where}: unknown pool {pool!r}")
         _number(step, "touch_hours", where, 0.05)
         _number(step, "ftr", where, 0.05, 1)
         target = step.get("rework_to", step["id"])
@@ -118,11 +154,7 @@ def validate_value_streams(doc: Any, source: str) -> None:
         where = f"{source}: pool '{pool['id']}'"
         _number(pool, "headcount", where, 1, integer=True)
         _number(pool, "availability", where, 0.1, 1)
-        shift = pool.get("shift")
-        if not (isinstance(shift, list) and len(shift) == 2 and all(isinstance(t, str) and _TIME.match(t) for t in shift)):
-            raise ContentError(f'{where}: \'shift\' must be two quoted "HH:MM" times')
-        if _minutes(shift[0]) >= _minutes(shift[1]):
-            raise ContentError(f"{where}: shift must end after it starts")
+        _blocks(pool, "schedule", where)
     stock = _entries(doc, "stock", source)
     for item in stock:
         where = f"{source}: stock '{item['id']}'"
@@ -133,15 +165,33 @@ def validate_value_streams(doc: Any, source: str) -> None:
     pool_ids, stock_ids = {p["id"] for p in pools}, {s["id"] for s in stock}
     for stream in _entries(doc, "streams", source):
         where = f"{source}: stream '{stream['id']}'"
-        _number(stream, "arrivals_per_day", where, 0)
-        _number(stream, "norm_days", where, 1)
+        for arrival in _blocks(stream, "arrivals", where):
+            _number(arrival, "per_week", f"{where} arrivals", 0)
+        if ("norm_days" in stream) == ("norm_hours" in stream):
+            raise ContentError(f"{where}: give exactly one of 'norm_days' or 'norm_hours'")
+        _number(stream, "norm_days" if "norm_days" in stream else "norm_hours", where, 0.1)
         _number(stream, "priority", where, 0, integer=True)
+        if not isinstance(stream.get("preempts", False), bool):
+            raise ContentError(f"{where}: 'preempts' must be true or false")
         steps = _entries(stream, "steps", where)
         if not steps:
             raise ContentError(f"{where}: needs at least one step")
         step_ids = [s["id"] for s in steps]
         for step in steps:
             _validate_step(step, f"{where} step '{step['id']}'", pool_ids, stock_ids, step_ids)
+        _check_rework_loops(steps, step_ids, where)
+
+
+def _check_rework_loops(steps: list[dict], step_ids: list[str], where: str) -> None:
+    """A rework loop must not pass a material step: every retry would take stock again."""
+    for i, step in enumerate(steps):
+        if step["kind"] != "work":
+            continue
+        start = step_ids.index(step.get("rework_to", step["id"]))
+        for between in steps[start:i]:
+            if between["kind"] == "material":
+                raise ContentError(f"{where} step '{step['id']}': rework to '{steps[start]['id']}' "
+                                   f"passes '{between['id']}' and takes material twice")
 
 
 VALIDATORS: dict[str, Callable[[Any, str], None]] = {

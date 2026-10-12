@@ -61,19 +61,22 @@ Generalises the factory prototype's `FlowSim` (`archive/factory-3d/src/sim/flow.
 
 | Class | Responsibility |
 | --- | --- |
-| `SimCalendar` | minutes since Monday 00:00 of week 1, working days, `"HH:MM"` parsing, the 10-minute tick |
+| `SimCalendar` | minutes since Monday 00:00 of week 1, the 10-minute tick, `"HH:MM"` and day-range (`mon-fri`) parsing |
+| `WeekSchedule` | which 10-minute slots of the week are on: pool working hours (incl. 24/7 and on-call through midnight) and stream arrival hours; hours per week, next start, overlap |
 | `WorkOrder` | id, stream, birth and due time, current step, remaining touch time, rework count (where it is follows from the queue or list holding it) |
-| `SimStep` | definition of one step (work / wait / material, `applies`, FTR, rework target) and its statistics |
-| `SimPool` | headcount, daily attendance, shift, the orders being worked on now |
+| `SimStep` | definition of one step (work / wait / material, `applies`, FTR, rework target, the pool or pools that do the work) and its statistics |
+| `SimPool` | headcount, daily attendance, weekly schedule, the orders being worked on now |
 | `SimStock` | level, reorder point, order quantity, lead time, open deliveries, orders waiting for stock |
-| `ValueStream` | ordered steps, arrivals, priority, backlog and finished-order records, KPIs (throughput, backlog, lead time p50/p85, on time, first-time-right) |
-| `Network` | loads `value_streams.json`, advances time, schedules arrivals, moves orders, assigns people (priority, then longest-waiting, with pre-emption), keeps the queues, emits events |
-| `Capacity` | expected visits per step (including `applies` and rework loops), load vs available hours per pool, constraint and capacity per stream |
+| `ValueStream` | ordered steps, arrival sources (`per_week` within a `WeekSchedule`), norm, priority and `preempts`, backlog and finished-order records, KPIs (throughput, backlog, lead time p50/p85, on time, first-time-right) |
+| `Network` | loads `value_streams.json`, advances time, schedules arrivals, moves orders, assigns people (priority, then longest-waiting; only `preempts` streams interrupt work), hands unfinished work over at the end of a shift, keeps the queues, emits events |
+| `Capacity` | expected visits per step (including `applies` and rework loops), people-hours per week needed vs available per pool (a step served by several pools is split by how much of the stream's arrival time each pool covers), constraint and capacity per stream |
 | `Rng` | seeded PRNG; the only source of randomness |
 
 **No reference cycles.** Godot frees `RefCounted` objects by reference counting, so a loop (step → pool → busy order → stream → step) leaks every network that is replaced. Steps therefore refer to pools and stock by id, and queues live in the `Network`. The test runner shows leaks at exit, so a new cycle is noticed straight away.
 
-The network skips idle stretches (nights, weekends) by jumping to the next moment anything can happen; a test proves the results are identical to stepping every tick. A simulated year takes about 0.7 s.
+**Shared people.** The monteurs serve connections, meters and outages. Queue order is stream priority, then longest waiting. Only a stream with `preempts` (outages) interrupts work in progress; the interrupted order goes back to the front of its queue. The same happens at the end of a shift (a *handover* event), so the next shift or another pool serving the step picks it up, e.g. the on-call crew hands a fault over to the monteurs at 07:00.
+
+The network skips idle stretches by jumping to the next moment anything can happen: an arrival, the end of a wait, a delivery, a new day, or a shift starting for a pool with queued work. A test proves the results are identical to stepping every tick. A simulated year of the four streams takes about 1.7 s.
 
 Time runs in fixed simulated steps, independent of the frame rate: `Game` advances `n` steps per frame based on the speed setting (pause, 1×, 4×, 16×) and pauses at the dagstart.
 

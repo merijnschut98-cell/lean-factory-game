@@ -1,6 +1,6 @@
 class_name Capacity
 ## Static capacity analysis of a Network: how many people-hours each pool
-## needs per working day against what it has, and which pool constrains each
+## needs per week against what it has, and which pool constrains each
 ## value stream end to end. Rework loops count: a step with 80% first-time-
 ## right is visited 1.25 times per order, plus any loops coming back from later steps.
 
@@ -34,34 +34,59 @@ static func expected_visits(stream: ValueStream) -> PackedFloat64Array:
 	return visits
 
 
-## People-hours per working day that `stream` needs from each pool: {pool_id: hours}.
+## People-hours per week that `stream` needs from each pool: {pool_id: hours}.
 ## Pass `visits` when already computed; otherwise it is solved here.
-static func stream_load(stream: ValueStream, visits: PackedFloat64Array = PackedFloat64Array()) -> Dictionary[String, float]:
+static func stream_load(stream: ValueStream, pools: Dictionary[String, SimPool],
+		visits: PackedFloat64Array = PackedFloat64Array()) -> Dictionary[String, float]:
 	if visits.is_empty():
 		visits = expected_visits(stream)
 	var load: Dictionary[String, float] = {}
 	for i in stream.steps.size():
 		var step := stream.steps[i]
-		if step.kind == SimStep.Kind.WORK:
-			load[step.pool_id] = load.get(step.pool_id, 0.0) + stream.arrivals_per_day * visits[i] * step.touch_minutes / 60.0
+		if step.kind != SimStep.Kind.WORK:
+			continue
+		var hours := stream.per_week() * visits[i] * step.touch_minutes / 60.0
+		var shares := _pool_shares(stream, step.pool_ids, pools)
+		for j in step.pool_ids.size():
+			load[step.pool_ids[j]] = load.get(step.pool_ids[j], 0.0) + hours * shares[j]
 	return load
+
+
+## How a step served by several pools divides its work: by the share of the
+## stream's arrivals that falls in each pool's hours. Exact for quick work
+## such as outages (done around the moment it arrives); an estimate otherwise.
+static func _pool_shares(stream: ValueStream, pool_ids: PackedStringArray, pools: Dictionary[String, SimPool]) -> PackedFloat64Array:
+	var shares := PackedFloat64Array()
+	shares.resize(pool_ids.size())
+	if pool_ids.size() == 1:
+		shares[0] = 1.0
+		return shares
+	var total := 0.0
+	for j in pool_ids.size():
+		for a in stream.arrivals:
+			shares[j] += a.per_week * a.when.overlap_hours(pools[pool_ids[j]].schedule) / a.when.hours()
+		total += shares[j]
+	for j in pool_ids.size():
+		shares[j] = shares[j] / total if total > 0.0 else 1.0 / pool_ids.size()
+	return shares
 
 
 ## Full analysis:
 ## {pools: {id: {available, load, utilisation}},
-##  streams: {id: {constraint_pool, constraint_step, utilisation, capacity_per_day}}}
+##  streams: {id: {constraint_pool, constraint_step, utilisation, capacity_per_week}}}
+## Hours are people-hours per week.
 static func analyse(net: Network) -> Dictionary:
 	var loads := {}
 	var visits := {}
 	var total: Dictionary[String, float] = {}
 	for s in net.streams:
 		visits[s.id] = expected_visits(s)
-		loads[s.id] = stream_load(s, visits[s.id])
+		loads[s.id] = stream_load(s, net.pools, visits[s.id])
 		for pool_id: String in loads[s.id]:
 			total[pool_id] = total.get(pool_id, 0.0) + loads[s.id][pool_id]
 	var pools := {}
 	for pool: SimPool in net.pools.values():
-		var available := pool.available_hours()
+		var available := pool.hours_per_week()
 		pools[pool.id] = {
 			"available": available,
 			"load": total.get(pool.id, 0.0),
@@ -81,8 +106,8 @@ static func _stream_constraint(s: ValueStream, own: Dictionary[String, float], v
 		var p: Dictionary = pools[pool_id]
 		if worst == "" or p["utilisation"] > pools[worst]["utilisation"]:
 			worst = pool_id
-		# Orders per day this stream could push through the pool, given the others' load.
-		var hours_per_order: float = own[pool_id] / s.arrivals_per_day if s.arrivals_per_day > 0.0 else 0.0
+		# Orders per week this stream could push through the pool, given the others' load.
+		var hours_per_order: float = own[pool_id] / s.per_week() if s.per_week() > 0.0 else 0.0
 		if hours_per_order > 0.0:
 			var spare: float = p["available"] - (p["load"] - own[pool_id])
 			capacity = minf(capacity, maxf(0.0, spare) / hours_per_order)
@@ -90,12 +115,12 @@ static func _stream_constraint(s: ValueStream, own: Dictionary[String, float], v
 	var step_load := -1.0
 	for i in s.steps.size():
 		var step := s.steps[i]
-		if step.kind == SimStep.Kind.WORK and step.pool_id == worst and visits[i] * step.touch_minutes > step_load:
+		if step.kind == SimStep.Kind.WORK and worst in step.pool_ids and visits[i] * step.touch_minutes > step_load:
 			step_load = visits[i] * step.touch_minutes
 			step_id = step.id
 	return {
 		"constraint_pool": worst,
 		"constraint_step": step_id,
 		"utilisation": pools[worst]["utilisation"] if worst != "" else 0.0,
-		"capacity_per_day": capacity,
+		"capacity_per_week": capacity,
 	}
