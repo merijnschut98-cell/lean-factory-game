@@ -19,7 +19,7 @@ static func capture(net: Network) -> Dictionary:
 	var to_dicts := func(orders: Array) -> Array: return orders.map(func(o: WorkOrder) -> Dictionary: return o.to_dict())
 	var pools := {}
 	for pool in net._pool_list:
-		pools[pool.id] = {"present": pool.present, "busy": to_dicts.call(pool.busy)}
+		pools[pool.id] = {"present": pool.present, "busy": to_dicts.call(pool.busy), "daily": pool.daily.export_days()}
 	var queues := {}
 	var held := {}
 	var streams := {}
@@ -27,7 +27,7 @@ static func capture(net: Network) -> Dictionary:
 		held[s.id] = to_dicts.call(net._held[s.id])
 		var daily := {}
 		for step in s.steps:
-			daily[step.id] = step.export_daily()
+			daily[step.id] = step.daily.export_days()
 			if step.kind == SimStep.Kind.WORK:
 				queues[s.id + "." + step.id] = to_dicts.call(net.queue_of(step))
 		streams[s.id] = {"finished": s.finished.duplicate(true), "daily": daily}
@@ -80,7 +80,7 @@ static func restore(net: Network, d: Dictionary) -> Dictionary:
 		s.finished.assign(saved.get("finished", []))
 		var daily: Dictionary = saved.get("daily", {})
 		for step in s.steps:
-			step.import_daily(daily.get(step.id, {}))
+			step.daily.import_days(daily.get(step.id, {}))
 	return {"error": "", "dropped": dropped}
 
 
@@ -110,6 +110,7 @@ static func _restore_pools(net: Network, saved: Dictionary, dropped: Array[Strin
 			dropped.append("pool " + pool_id)
 			continue
 		pool.present = int(saved[pool_id].get("present", 0))
+		pool.daily.import_days(saved[pool_id].get("daily", {}))
 		for o in _orders(net, saved[pool_id].get("busy", []), dropped):
 			if pool_id in o.current_step().pool_ids:
 				pool.busy.append(o)

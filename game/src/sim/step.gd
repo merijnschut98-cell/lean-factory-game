@@ -46,48 +46,18 @@ var quantity := 1
 
 ## Per simulated day: counts by Stat, for before/after comparisons and the
 ## value stream map.
-var _daily: Dictionary[int, PackedInt64Array] = {}
-var _last_day := 0
+var daily := DailyCounts.new(Stat.size())
 
 
 func record(day: int, stat: Stat, amount: int = 1) -> void:
-	var counts: PackedInt64Array = _daily.get(day, PackedInt64Array())
-	if counts.is_empty():
-		counts.resize(Stat.size())
-		_last_day = maxi(_last_day, day)
-	counts[stat] += amount
-	_daily[day] = counts
-
-
-## The daily statistics for a save file: {day: counts by Stat}.
-func export_daily() -> Dictionary:
-	return _daily.duplicate(true)
-
-
-## Restore export_daily() output; malformed days are skipped.
-func import_daily(saved: Dictionary) -> void:
-	_daily.clear()
-	_last_day = 0
-	for day: Variant in saved:
-		if day is int and saved[day] is PackedInt64Array and saved[day].size() == Stat.size():
-			_daily[day] = saved[day]
-			_last_day = maxi(_last_day, day)
-
-
-func forget_day(day: int) -> void:
-	_daily.erase(day)
+	daily.add(day, stat, amount)
 
 
 ## Totals from `day` on: {entered, done, reworked, stale, queue_hours (mean
 ## wait before the first start, for work steps), wait_hours (mean external
 ## wait per order, for wait steps)}.
 func stats_since(day: int) -> Dictionary:
-	var totals := PackedInt64Array()
-	totals.resize(Stat.size())
-	for d in range(maxi(0, day), _last_day + 1):
-		if _daily.has(d):
-			for i in Stat.size():
-				totals[i] += _daily[d][i]
+	var totals := daily.since(day)
 	var started := totals[Stat.STARTED]
 	return {
 		"entered": totals[Stat.ENTERED],

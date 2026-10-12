@@ -32,6 +32,7 @@ func test_a_restored_network_continues_exactly() -> void:
 	assert_eq(restored.effects(), original.effects())
 	assert_eq(restored.stream("connections").step("design").stats_since(0),
 		original.stream("connections").step("design").stats_since(0))
+	assert_eq(restored.pools["monteurs"].load_since(0), original.pools["monteurs"].load_since(0), "actual load history")
 
 
 func test_history_is_bounded() -> void:

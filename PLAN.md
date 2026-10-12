@@ -187,6 +187,7 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 - ⬜ Catalogue problems that need a new mechanism first:
   - storing gooit de planning om: planned monteur work at 100%; needs the base to keep slack that the problem removes, or a planning-horizon mechanic;
   - KPI's die elkaar bevechten: overproduction, departments pushing work in; needs a release decision per department
+- ✅ Actual load per team (`SimPool.load_since`): busy over present people-minutes per day, next to the planned load from `Capacity`. The status-callers review showed why: planned 55% while the queue explodes. Step statistics and pool load share `DailyCounts`.
 - ✅ Common random numbers: one random sequence per purpose (`Network.rng_for`), so a change in one place leaves every other stream's draws alone (test: slower congestion offers leave connections, outages, meters and the contact centre identical). Three tests that leaned on the old shared sequence got honest margins (measured over seeds 1–10).
 : ~16 problems across the four streams (well-known and less-known), each with symptoms, clues per tool (key + red herrings, 5 Whys depth), waste, root cause, effective countermeasures, effect
 - ⬜ `content/countermeasures.yaml`: Lean countermeasures in DSO context (triage at intake, poka-yoke application form, standard designs, frozen planning window, WIP limits, two-bin van stock, appointment confirmation, revision at the source, cross-training, daily start / visual management, proactive status updates against failure demand, …)

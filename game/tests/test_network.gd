@@ -194,3 +194,17 @@ func test_step_statistics_count_rework() -> void:
 	var stats := net.stream("s").step("do").stats_since(0)
 	assert_eq(stats["reworked"], NetFixture.events(net, "rework").size())
 	assert_between(stats["reworked"] / float(stats["done"] + stats["reworked"]), 0.4, 0.6)
+
+
+## Actual load: busy people-hours over present people-hours, per day.
+## 2 people × 40 h a week; 40 one-hour jobs a week → about half.
+func test_actual_load_is_measured() -> void:
+	var net := NetFixture.net([NetFixture.pool("crew", 2)], [
+		NetFixture.stream("jobs", [NetFixture.work("job", "crew", 1.0)], 40.0),
+	])
+	net.advance_days(56)
+	var crew: SimPool = net.pools["crew"]
+	assert_between(crew.load_since(0), 0.45, 0.55)
+	assert_between(crew.load_since(28), 0.4, 0.6, "a window of the last four weeks")
+	assert_eq(crew.load_since(1000), 0.0, "no days, no load")
+

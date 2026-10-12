@@ -3,6 +3,10 @@ extends RefCounted
 ## A team of interchangeable people (e.g. the monteurs) with a weekly
 ## schedule, daily attendance and the orders they are working on right now.
 
+## Slots of `daily`.
+const PRESENT := 0
+const BUSY := 1
+
 var id: String
 var name: String
 var headcount: int
@@ -18,6 +22,8 @@ var reserve: Dictionary = {}
 var steps: Array[SimStep] = []
 ## Daily attendance draws.
 var rng: Rng
+## Per simulated day: people-minutes present and busy (actual load).
+var daily := DailyCounts.new(2)
 
 
 func is_on_shift(t: int) -> bool:
@@ -46,6 +52,13 @@ func roll_presence() -> void:
 	for i in headcount:
 		if rng.chance(availability):
 			present += 1
+
+
+## Busy people-hours over present people-hours from `day` on (0 when nobody
+## was present). Planned load is Capacity.analyse; this is what happened.
+func load_since(day: int) -> float:
+	var totals := daily.since(day)
+	return totals[BUSY] / float(totals[PRESENT]) if totals[PRESENT] > 0 else 0.0
 
 
 ## Productive people-hours per week on average.

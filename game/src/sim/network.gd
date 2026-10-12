@@ -294,6 +294,8 @@ func _start_day() -> void:
 	_forget_old_history()
 	for pool in _pool_list:
 		pool.roll_presence()
+		var slots := pool.schedule.slots_on_day(SimCalendar.weekday(time)).size()
+		pool.daily.add(_day, SimPool.PRESENT, pool.present * slots * SimCalendar.TICK)
 	for s in streams:
 		for source in s.arrivals:
 			_schedule_arrivals(s, source.when, source.per_week, source.rng)
@@ -308,7 +310,9 @@ func _forget_old_history() -> void:
 	for s in streams:
 		s.forget_before(SimCalendar.days(day + 1))
 		for step in s.steps:
-			step.forget_day(day)
+			step.daily.forget_day(day)
+	for pool in _pool_list:
+		pool.daily.forget_day(day)
 
 
 ## Today's share of a weekly rate `per_week`, at random moments within
@@ -502,6 +506,7 @@ func _progress_work() -> void:
 				queue_of(pool.busy[i].current_step()).push_front(pool.busy[i])
 			pool.busy.clear()
 			continue
+		pool.daily.add(_day, SimPool.BUSY, pool.busy.size() * SimCalendar.TICK)
 		for i in range(pool.busy.size() - 1, -1, -1):
 			var order := pool.busy[i]
 			order.remaining -= SimCalendar.TICK

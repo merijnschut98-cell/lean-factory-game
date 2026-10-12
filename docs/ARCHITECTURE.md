@@ -66,7 +66,8 @@ Generalises the factory prototype's `FlowSim` (`archive/factory-3d/src/sim/flow.
 | `WeekSchedule` | which 10-minute slots of the week are on: pool working hours (incl. 24/7 and on-call through midnight) and stream arrival hours; hours per week, next start, overlap |
 | `WorkOrder` | id, stream, birth and due time, current step, remaining touch time, rework count (where it is follows from the queue or list holding it) |
 | `SimStep` | definition of one step (work / wait / material, `applies`, FTR, rework target, the pool or pools that do the work) and its statistics |
-| `SimPool` | headcount, daily attendance, weekly schedule, the orders being worked on now |
+| `SimPool` | headcount, daily attendance, weekly schedule, the orders being worked on now, actual load per day (busy over present people-minutes; `Capacity` is the planned load) |
+| `DailyCounts` | integer counters per simulated day for time windows (step statistics, pool load); bounded by `HISTORY_DAYS`, saved |
 | `SimStock` | level, reorder point, order quantity, lead time, open deliveries, orders waiting for stock |
 | `ValueStream` | ordered steps, arrival sources (`per_week` within a `WeekSchedule`), norm, priority and `preempts`, backlog and finished-order records, KPIs (throughput, backlog, lead time p50/p85, on time, first-time-right) |
 | `Network` | loads `value_streams.json`, advances time, schedules arrivals, moves orders, assigns people (priority, then longest-waiting; only `preempts` streams interrupt work), hands unfinished work over at the end of a shift, keeps the queues, emits events |
