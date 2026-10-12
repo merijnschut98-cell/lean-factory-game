@@ -16,6 +16,8 @@ var busy: Array[WorkOrder] = []
 var reserve: Dictionary = {}
 ## Work steps (in any stream) served by this pool. Steps do not point back.
 var steps: Array[SimStep] = []
+## Daily attendance draws.
+var rng: Rng
 
 
 func is_on_shift(t: int) -> bool:
@@ -39,7 +41,7 @@ func free_for(stream: ValueStream) -> int:
 	return free_people() - maxi(0, mini(held, present) - reserved_busy)
 
 
-func roll_presence(rng: Rng) -> void:
+func roll_presence() -> void:
 	present = 0
 	for i in headcount:
 		if rng.chance(availability):

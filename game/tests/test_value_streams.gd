@@ -26,6 +26,20 @@ func _run_120_days() -> Network:
 	return _after_120_days
 
 
+## Common random numbers: each stream, team and step draws from its own random
+## sequence, so a change in one place leaves the others' randomness alone and
+## two runs differ only where the change reaches.
+func test_a_change_leaves_unrelated_streams_identical() -> void:
+	var base := _net()
+	var changed := _net()
+	changed.set_effects("problem:slow_offers", [NetFixture.effect("congestion.offer", "touch_time", 2.0)])
+	base.advance_days(60)
+	changed.advance_days(60)
+	assert_ne(changed.stream("congestion").finished, base.stream("congestion").finished, "the change reaches congestion")
+	for id: String in ["connections", "outages", "meters", "customer_contact"]:
+		assert_eq(changed.stream(id).finished, base.stream(id).finished, id + " is untouched")
+
+
 func test_content_loads() -> void:
 	var net := _net()
 	assert_eq(net.error, "")

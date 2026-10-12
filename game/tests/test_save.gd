@@ -21,7 +21,7 @@ func test_a_restored_network_continues_exactly() -> void:
 	var result := NetworkState.restore(restored, _via_file(NetworkState.capture(original)))
 	assert_eq(result["error"], "")
 	assert_eq(result["dropped"], [])
-	assert_eq(restored.rng.get_state(), original.rng.get_state(), "the 64-bit random state survives")
+	assert_eq(restored.random_states(), original.random_states(), "every 64-bit random state survives")
 	original.drain_events()
 	original.advance_days(30)
 	restored.advance_days(30)

@@ -19,6 +19,8 @@ var wip_limit := 0
 var calls_to := ""
 var call_after_minutes := 0
 var call_rate := 0.0
+## When this stream's late customers call (see Rng: one sequence per purpose).
+var calls_rng: Rng
 var steps: Array[SimStep] = []
 ## Orders in the stream right now (the backlog / WIP), held ones included.
 var active := 0
@@ -31,6 +33,7 @@ var finished: Array[Dictionary] = []
 class Arrivals:
 	var per_week: float
 	var when: WeekSchedule
+	var rng: Rng
 
 	func _init(rate: float, schedule: WeekSchedule) -> void:
 		per_week = rate

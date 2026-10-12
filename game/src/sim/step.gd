@@ -14,6 +14,8 @@ var name: String
 var kind: Kind
 ## Share of orders that need this step (the rest skip it).
 var applies := 1.0
+## This step's draws: whether it applies, wait durations, first time right.
+var rng: Rng
 # WORK
 ## Pools that can do this work (e.g. the monteurs by day, the on-call crew at night).
 var pool_ids := PackedStringArray()

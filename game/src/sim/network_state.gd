@@ -9,7 +9,7 @@ class_name NetworkState
 ## Native Godot types throughout: SaveFile keeps them exact (var_to_bytes).
 
 const SHAPE := {
-	"time": TYPE_INT, "day": TYPE_INT, "next_id": TYPE_INT, "rng": TYPE_INT, "effects": TYPE_DICTIONARY,
+	"time": TYPE_INT, "day": TYPE_INT, "next_id": TYPE_INT, "rng": TYPE_DICTIONARY, "effects": TYPE_DICTIONARY,
 	"pools": TYPE_DICTIONARY, "queues": TYPE_DICTIONARY, "waiting": TYPE_ARRAY, "held": TYPE_DICTIONARY,
 	"arrivals": TYPE_ARRAY, "stock": TYPE_DICTIONARY, "streams": TYPE_DICTIONARY,
 }
@@ -35,7 +35,7 @@ static func capture(net: Network) -> Dictionary:
 	for item: SimStock in net.stock.values():
 		stock[item.id] = {"level": item.level, "deliveries": item.deliveries.duplicate(true), "waiting": to_dicts.call(item.waiting)}
 	return {
-		"time": net.time, "day": net._day, "next_id": net._next_id, "rng": net.rng.get_state(),
+		"time": net.time, "day": net._day, "next_id": net._next_id, "rng": net.random_states(),
 		"effects": net.effects(), "pools": pools, "queues": queues, "waiting": to_dicts.call(net._waiting),
 		"held": held, "arrivals": net._arrivals.map(func(a: Dictionary) -> Dictionary:
 			return {"at": a["at"], "stream": a["stream"].id, "failure_demand": a.get("failure_demand", false)}),
@@ -55,7 +55,9 @@ static func restore(net: Network, d: Dictionary) -> Dictionary:
 	net.time = d["time"]
 	net._day = d["day"]
 	net._next_id = d["next_id"]
-	net.rng.set_state(d["rng"])
+	for purpose: String in d["rng"]:
+		if not net.restore_random_state(purpose, d["rng"][purpose]):
+			dropped.append("random sequence " + purpose)
 	for source: String in d["effects"]:
 		var effect_error := net.set_effects(source, d["effects"][source])
 		if not effect_error.is_empty():

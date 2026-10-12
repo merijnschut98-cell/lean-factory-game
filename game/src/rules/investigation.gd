@@ -55,18 +55,11 @@ static func cause_options(problem: ProblemDef, all: Array[ProblemDef], n: int = 
 		var b_same := b.stream_id() == problem.stream_id()
 		if a_same != b_same:
 			return a_same
-		return _hash(problem.id + a.id) < _hash(problem.id + b.id))
+		return Rng.fnv1a(problem.id + a.id) < Rng.fnv1a(problem.id + b.id))
 	var options: Array[String] = [problem.root_cause]
 	for cause in Array(problem.plausible_causes).slice(0, 2) + others.map(func(o: ProblemDef) -> String: return o.root_cause):
 		if options.size() < n and not cause in options:
 			options.append(cause)
-	options.sort_custom(func(a: String, b: String) -> bool: return _hash(problem.id + a) < _hash(problem.id + b))
+	options.sort_custom(func(a: String, b: String) -> bool: return Rng.fnv1a(problem.id + a) < Rng.fnv1a(problem.id + b))
 	return {"options": options, "correct": options.find(problem.root_cause)}
 
-
-## FNV-1a, 32 bit: a stable hash for deterministic orderings.
-static func _hash(text: String) -> int:
-	var h := 2166136261
-	for i in text.length():
-		h = ((h ^ text.unicode_at(i)) * 16777619) & 0xFFFFFFFF
-	return h

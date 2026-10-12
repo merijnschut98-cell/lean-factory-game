@@ -72,7 +72,7 @@ Generalises the factory prototype's `FlowSim` (`archive/factory-3d/src/sim/flow.
 | `Network` | loads `value_streams.json`, advances time, schedules arrivals, moves orders, assigns people (priority, then longest-waiting; only `preempts` streams interrupt work), hands unfinished work over at the end of a shift, keeps the queues, emits events |
 | `SimModifiers` | problem, countermeasure and event effects by source on top of the content's base values (see below) |
 | `Capacity` | expected visits per step (including `applies` and rework loops), people-hours per week needed vs available per pool (a step served by several pools is split by how much of the stream's arrival time each pool covers), constraint and capacity per stream |
-| `Rng` | seeded PRNG; the only source of randomness |
+| `Rng` | seeded PRNG; the only source of randomness. The network keeps one per purpose (each arrival source, each team's attendance, each step's outcomes, each stream's status calls), seeded from the run seed and the purpose: common random numbers, so two runs differ only where a change reaches |
 
 **No reference cycles.** Godot frees `RefCounted` objects by reference counting, so a loop (step → pool → busy order → stream → step) leaks every network that is replaced. Steps therefore refer to pools and stock by id, and queues live in the `Network`. The test runner shows leaks at exit, so a new cycle is noticed straight away.
 
@@ -136,7 +136,7 @@ UI strings that are not content (button labels, HUD) go through Godot's translat
   - Slot names are restricted to `[a-z0-9_]`, so a path never leaves the folder.
   - Writes go to a temporary file that is then renamed, so a crash never leaves half a save.
 - **Serializers next to their layers:** `sim/network_state.gd` (`NetworkState`) and `rules/region_state.gd` (`RegionState`, which includes its network) capture and restore everything needed to continue exactly. `WorkOrder` and `ProblemState` own their `to_dict`/`from_dict`. Together they cover:
-  - the clock and the random state;
+  - the clock and every random sequence's state;
   - effects;
   - every order wherever it is (queues, busy, waits, stock, held);
   - stock, finished records and daily statistics (the simulation keeps `Network.HISTORY_DAYS` = 120 days, so memory and saves stay bounded);

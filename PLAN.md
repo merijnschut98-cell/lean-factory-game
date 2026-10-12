@@ -187,7 +187,7 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 - ⬜ Catalogue problems that need a new mechanism first:
   - storing gooit de planning om: planned monteur work at 100%; needs the base to keep slack that the problem removes, or a planning-horizon mechanic;
   - KPI's die elkaar bevechten: overproduction, departments pushing work in; needs a release decision per department
-- ⬜ Common random numbers (a random stream per purpose), so A/B comparisons of two runs stay comparable. Today runs diverge after the first different draw, which is why the content test measures mechanisms instead of lead-time KPIs
+- ✅ Common random numbers: one random sequence per purpose (`Network.rng_for`), so a change in one place leaves every other stream's draws alone (test: slower congestion offers leave connections, outages, meters and the contact centre identical). Three tests that leaned on the old shared sequence got honest margins (measured over seeds 1–10).
 : ~16 problems across the four streams (well-known and less-known), each with symptoms, clues per tool (key + red herrings, 5 Whys depth), waste, root cause, effective countermeasures, effect
 - ⬜ `content/countermeasures.yaml`: Lean countermeasures in DSO context (triage at intake, poka-yoke application form, standard designs, frozen planning window, WIP limits, two-bin van stock, appointment confirmation, revision at the source, cross-training, daily start / visual management, proactive status updates against failure demand, …)
 - ⬜ `content/missions.yaml`, `content/concepts.yaml` (Lean + sector glossary, Dutch)

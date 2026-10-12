@@ -3,9 +3,9 @@ extends RefCounted
 ## The work-order simulation: value streams of steps, pools of people,
 ## external waits and stock, advanced in fixed ticks on a weekly calendar.
 ##
-## Pure logic: no nodes, no rendering, all randomness from `rng`, so a run
-## replays exactly from its seed. The world and UI read the state and drain
-## `events`; they never change it directly.
+## Pure logic: no nodes, no rendering, all randomness from seeded Rngs (one
+## per purpose, see _new_rng), so a run replays exactly from its seed. The
+## world and UI read the state and drain `events`; they never change it directly.
 
 const DEFAULT_PATH := "res://data/value_streams.json"
 const MAX_EVENTS := 2000
@@ -14,7 +14,9 @@ const MAX_EVENTS := 2000
 const HISTORY_DAYS := 120
 
 var time := 0
-var rng: Rng
+var run_seed := 1
+## One random sequence per purpose ("step:connections.design", …), see _new_rng.
+var _rngs: Dictionary[String, Rng] = {}
 var pools: Dictionary[String, SimPool] = {}
 var stock: Dictionary[String, SimStock] = {}
 var streams: Array[ValueStream] = []
@@ -55,7 +57,7 @@ static func load_file(path: String = DEFAULT_PATH, seed_value: int = 1) -> Netwo
 ## rechecked here only as far as needed to fail loudly instead of misbehaving).
 static func create(config: Dictionary, seed_value: int = 1) -> Network:
 	var net := Network.new()
-	net.rng = Rng.new(seed_value)
+	net.run_seed = seed_value
 	for p: Dictionary in config.get("pools", []):
 		var pool := SimPool.new()
 		pool.id = p["id"]
@@ -67,6 +69,7 @@ static func create(config: Dictionary, seed_value: int = 1) -> Network:
 			net.error = "pool %s: bad schedule" % pool.id
 			return net
 		pool.reserve = p.get("reserve", {})
+		pool.rng = net._new_rng("presence:" + pool.id)
 		net.pools[pool.id] = pool
 		net._pool_list.append(pool)
 	for s: Dictionary in config.get("stock", []):
@@ -105,19 +108,23 @@ func _build_stream(v: Dictionary) -> ValueStream:
 	stream.calls_to = calls.get("to", "")
 	stream.call_after_minutes = _days(calls, "after_days")
 	stream.call_rate = float(calls.get("per_week", 0.0))
+	stream.calls_rng = _new_rng("calls:" + stream.id)
 	_held[stream.id] = [] as Array[WorkOrder]
 	for a: Dictionary in v.get("arrivals", []):
 		var when := WeekSchedule.from_blocks([a])
 		if when == null:
 			error = "stream %s: bad arrival schedule" % stream.id
 			return null
-		stream.arrivals.append(ValueStream.Arrivals.new(float(a["per_week"]), when))
+		var source := ValueStream.Arrivals.new(float(a["per_week"]), when)
+		source.rng = _new_rng("arrivals:%s.%d" % [stream.id, stream.arrivals.size()])
+		stream.arrivals.append(source)
 	var ids: Array = v["steps"].map(func(s: Dictionary) -> String: return s["id"])
 	for s: Dictionary in v["steps"]:
 		var step := SimStep.new()
 		step.id = s["id"]
 		step.name = s["name"]
 		step.applies = float(s.get("applies", 1.0))
+		step.rng = _new_rng("step:%s.%s" % [stream.id, step.id])
 		match s["kind"]:
 			"work":
 				step.kind = SimStep.Kind.WORK
@@ -157,6 +164,29 @@ func _build_stream(v: Dictionary) -> ValueStream:
 				return null
 		stream.steps.append(step)
 	return stream
+
+
+## A random sequence of its own for `purpose`, registered for saves (built
+## once per arrival source, team, step and stream while creating the network).
+func _new_rng(purpose: String) -> Rng:
+	_rngs[purpose] = Rng.for_purpose(run_seed, purpose)
+	return _rngs[purpose]
+
+
+## Continue a saved sequence. False when the content no longer has it.
+func restore_random_state(purpose: String, state: int) -> bool:
+	if not _rngs.has(purpose):
+		return false
+	_rngs[purpose].set_state(state)
+	return true
+
+
+## Every sequence's state, for saves: purpose → state.
+func random_states() -> Dictionary:
+	var out := {}
+	for purpose: String in _rngs:
+		out[purpose] = _rngs[purpose].get_state()
+	return out
 
 
 static func _days(d: Dictionary, key: String) -> int:
@@ -263,12 +293,11 @@ func _tick() -> void:
 func _start_day() -> void:
 	_forget_old_history()
 	for pool in _pool_list:
-		pool.roll_presence(rng)
-	var day_start := SimCalendar.day_of(time) * SimCalendar.MINUTES_PER_DAY
+		pool.roll_presence()
 	for s in streams:
 		for source in s.arrivals:
-			_schedule_arrivals(s, source.when, source.per_week, day_start)
-		_schedule_status_calls(s, day_start)
+			_schedule_arrivals(s, source.when, source.per_week, source.rng)
+		_schedule_status_calls(s)
 	_arrivals.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["at"] < b["at"])
 
 
@@ -284,10 +313,11 @@ func _forget_old_history() -> void:
 
 ## Today's share of a weekly rate `per_week`, at random moments within
 ## today's slots of `when`.
-func _schedule_arrivals(s: ValueStream, when: WeekSchedule, per_week: float, day_start: int, failure_demand: bool = false) -> void:
+func _schedule_arrivals(s: ValueStream, when: WeekSchedule, per_week: float, rng: Rng, failure_demand: bool = false) -> void:
 	var slots := when.slots_on_day(SimCalendar.weekday(time))
 	if slots.is_empty() or per_week <= 0.0:
 		return
+	var day_start := SimCalendar.day_of(time) * SimCalendar.MINUTES_PER_DAY
 	for i in rng.poisson(per_week * slots.size() * SimCalendar.TICK / 60.0 / when.hours()):
 		var at := day_start + slots[rng.int_range(0, slots.size() - 1)] + rng.int_range(0, SimCalendar.TICK - 1)
 		_arrivals.append({"at": at, "stream": s, "failure_demand": failure_demand})
@@ -296,12 +326,12 @@ func _schedule_arrivals(s: ValueStream, when: WeekSchedule, per_week: float, day
 ## Failure demand: customers of late orders call the contact stream, at its
 ## opening hours (its first arrival schedule). "Late" is the customer's
 ## patience (`call_after_minutes`), not the legal norm.
-func _schedule_status_calls(s: ValueStream, day_start: int) -> void:
+func _schedule_status_calls(s: ValueStream) -> void:
 	var contact := stream(s.calls_to) if s.call_rate > 0.0 else null
 	if contact == null or contact.arrivals.is_empty():
 		return
 	var late := _orders_born_before(s, time - s.call_after_minutes)
-	_schedule_arrivals(contact, contact.arrivals[0].when, late * s.call_rate, day_start, true)
+	_schedule_arrivals(contact, contact.arrivals[0].when, late * s.call_rate, s.calls_rng, true)
 
 
 ## Open orders of `s` that arrived before `t`, wherever they are.
@@ -387,7 +417,7 @@ func _enter(order: WorkOrder, index: int) -> void:
 
 ## Whether this order needs the step (`applies` is the share that does).
 func _needed(step: SimStep) -> bool:
-	return step.applies >= 1.0 or rng.chance(step.applies)
+	return step.applies >= 1.0 or step.rng.chance(step.applies)
 
 
 ## Start the waits that run in parallel with step `index` (once per order:
@@ -406,7 +436,7 @@ func _wait_ready(step: SimStep) -> int:
 	var start := time
 	if step.batch_minutes > 0:
 		start = ceili(time / float(step.batch_minutes)) * step.batch_minutes
-	return start + int(rng.around(step.wait_minutes, step.spread))
+	return start + int(step.rng.around(step.wait_minutes, step.spread))
 
 
 func _wait(order: WorkOrder, minutes: int, then_step: int) -> void:
@@ -482,7 +512,7 @@ func _progress_work() -> void:
 
 func _complete_work(order: WorkOrder) -> void:
 	var step := order.current_step()
-	if step.ftr < 1.0 and not rng.chance(step.ftr):
+	if step.ftr < 1.0 and not step.rng.chance(step.ftr):
 		order.reworks += 1
 		_record(step, SimStep.Stat.REWORKED)
 		_emit("rework", order)

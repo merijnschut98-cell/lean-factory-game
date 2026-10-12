@@ -94,7 +94,10 @@ func test_blame_costs_a_teams_trust_and_respect_repairs_it() -> void:
 func test_open_questions_without_a_clue_describe_the_work() -> void:
 	var r := _region()
 	r.activate("custom_design")
-	r.net.advance_days(30)  # at 112% load the design queue grows by a few orders a week
+	# A rush of applications on top: design at ~180% load, so its queue grows
+	# whatever the random draws (37–70 orders after 30 days over seeds 1–10).
+	r.net.set_effects("event:rush", [NetFixture.effect("connections", "demand", 1.6)])
+	r.net.advance_days(30)
 	var reply := r.ask("connections.design", "obstacle")
 	assert_eq(reply["reply"], "observation")
 	assert_eq(reply["observation"]["kind"], "queue")
