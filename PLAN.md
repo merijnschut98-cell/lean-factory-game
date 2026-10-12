@@ -1,21 +1,124 @@
-# Lean Factory — Build Plan
+# Spanning — Build Plan
 
-Spec reference: `Lean_Factory_v2.0_Specification.docx`
-Update this file every time a task is completed or added.
+*Spanning* (Dutch: voltage, and tension) is a 3D browser game where you practise Lean and continuous improvement at **Voltana Netbeheer**, a fictional Dutch regional grid operator (DSO) in the spirit of Enexis. It is built first for Merijn's own learning: practise Lean on realistic problems from the energy sector, including the less-known ones.
 
----
-
-## Current Status: 🔄 PIVOT — rebuilding as a 3D browser game set at a fictional energy grid operator (DSO)
-
-Session 2026-10-12: Merijn asked for a complete overhaul (3D, characters, deeper problem solving), then redirected the setting from a hoverboard factory to a fictional Enexis-like grid operator, for his own learning about energy-industry problems.
-
-- The **Python/Pygame factory game** (Phases 0–7) is frozen as the legacy build. It still runs and its 217 tests pass.
-- The **3D factory prototype** (`web/`, Three.js + TypeScript) is backed up at git tag `factory-3d-backup`. Engine, investigation, A3 and value-stream logic are done and tested (57 tests); UI panels were mid-build and it is not yet playable.
-- Next: agree the grid-operator design with Merijn, then rebuild `web/` on the same engine with new energy-domain content.
+Game text is **Dutch** (with sector terms). Code, comments and this plan stay in English.
 
 ---
 
-## Learning Pillars (design principles — applies to every phase)
+## Current Status: Phase 0 — Research and Game Design Document 🔧
+
+Pivot agreed 2026-10-12: from a hoverboard factory to a grid operator. The 3D factory prototype is archived in `archive/factory-3d/` (also git commit `b3a4c8c`). Its investigation / A3 / PDCA / bottleneck logic will be carried over and generalised.
+
+This is a multi-month project, built the right way: research → design (reviewed by Merijn) → engine → content → world → UI, in small tested increments. No publishing deadline.
+
+**Next task:** research how Dutch DSOs actually work and struggle, and write the Game Design Document (`docs/GDD.md`) for Merijn's review.
+
+---
+
+## Vision and Learning Pillars
+
+1. **Learn by doing, safely.** Mistakes cost time, credits and trust, never the game. Recovery is always possible, and often it *is* the lesson.
+2. **Problem solving is thinking, not quizzing.** Clues are earned through gemba actions (meelopen, data analyseren, tijdstudie, gesprekken) and good questions. You write the A3 yourself: waste, evidence, root cause, countermeasure, prediction. The simulation judges the result.
+3. **Respect for people.** Problems live in the process, not the person. Blaming questions cost trust and information.
+4. **Quality first.** Rework loops (incomplete applications, wrong GIS data, failed commissioning, repeat visits) are simulated and visible.
+5. **See the 8 wastes (TIMWOODS)** in a service and field organisation: waiting for permits, the backlog itself, travel, searching for materials, approvals nobody needs, rework, unused expertise.
+6. **Bottleneck first, end to end.** Each value stream is mapped end to end; improving a non-constraint is shown to be no real gain. The value stream map is built by walking it.
+7. **Real sector problems.** Grid congestion is one of many. The catalogue covers the well-known and the less-known struggles of Dutch DSOs.
+
+---
+
+## Setting
+
+- **Company:** Voltana Netbeheer (fictional), region *Zuidmark*.
+- **Player:** newly hired continuous improvement lead (CI-lead).
+- **World at start:** the operations campus in *Brakenburg* (customer service, intake & planning, engineering/werkvoorbereiding, bedrijfsvoeringscentrum/control room, warehouse, workshop, training yard) plus the town of Brakenburg (homes with solar panels, heat pumps and EV chargers, an industrial estate, MS/LS cables, distribution substations, a primary substation). Vans drive from the campus to jobs in town.
+- **Later:** more regions unlock as your CI maturity grows.
+
+## Value streams
+
+| # | Value stream | Units flowing | Typical constraint |
+|---|---|---|---|
+| 1 | **Nieuwe aansluitingen & netverzwaring** | connection requests | grid studies, monteurs, materials, permits |
+| 2 | **Storingen** (outage response) | faults | detection/localisation, on-call travel time, joints in the van |
+| 3 | **Veldservice & slimme meters** | meter and service jobs | appointments / niet-thuis, travel |
+| 4 | **Congestiemanagement** | capacity requests (grootverbruik) | congestion studies, contracts, unused reserved capacity |
+| 5 | **IT-waardestromen** (later phase) | features, incidents | release trains, dependencies, test environments |
+
+Streams share people (monteurs serve outages, connections and meters), so outages preempting planned work is simulated, not scripted.
+
+## Issue catalogue themes (to be authored as problems)
+
+Well-known: netcongestie and the wachtrij; long aansluittermijnen (legal 18 weeks, compensation payments); technician shortage and aging workforce; transformer/cable lead times.
+
+Less-known: incomplete applications and installers not ready (meterkast niet gereed); failure demand at the call centre (customers chasing status); as-built/GIS revision backlog causing design errors and graafschade; permits requested in batches; administrative close-out backlog (EAN not registered, customer can't get a contract); planned work wrecked by storingen; van stock unknown, trips back to the depot; standard jobs over-prepared; 2G/3G network sunset forcing smart-meter module swaps; LS overvoltage tripping solar inverters; reserved-but-unused capacity; power theft (hennepteelt) and grid losses; ondergrondse drukte (no space in the street); stikstof permits delaying substations; LMRA as a tick-box; contractor quality and rework; departmental KPIs that fight each other; knowledge leaving with retiring monteurs; heatwave transformer overload; gas-grid maintenance during the heat transition.
+
+---
+
+## Phase 0 — Research and Game Design Document 🔧
+- ⬜ Domain research: DSO value streams, the well-known and less-known problems, realistic numbers (lead times, legal norms, outage minutes, staffing), sources noted
+- ⬜ `docs/GDD.md`: core loop, player role, world, value streams and their steps, simulation model, problem/clue/A3 design, progression, UI flows, art direction
+- ⬜ Merijn reviews the GDD → decisions recorded below
+- ⬜ Architecture note: module boundaries (content / sim / world / ui), save format, testing strategy
+
+## Phase A — Engine for work-order flow ⬜
+- ⬜ `sim/network.ts`: value streams of steps; people pools (capacity, availability, priority, preemption); external delay steps (permits, customer); material stock with reorder point and supplier lead time; first-time-right with rework loops back to earlier steps; arrivals with variability; KPIs per stream (throughput, backlog, lead time, on-time vs norm, FTR)
+- ⬜ End-to-end capacity and constraint per value stream (generalised from the factory `lineCapacity`)
+- ⬜ Generic problem effects: target a step, pool, stock item or stream; modify work time, FTR, availability, delay, demand, people
+- ⬜ Port investigation / A3 / PDCA / scoring from the factory engine; tools renamed for a service organisation
+- ⬜ Tests for flow, preemption, rework, stockouts, capacity, PDCA loop, save/load
+
+## Phase B — Content (Dutch) ⬜
+- ⬜ `data/grid/problems_tier1.yaml`: ~16 problems across the four streams (well-known and less-known), each with symptoms, clues per tool (key + red herrings, 5 Whys depth), waste, root cause, effective countermeasures, effect
+- ⬜ `data/grid/countermeasures.yaml`: Lean countermeasures in DSO context (triage at intake, poka-yoke application form, standard designs, frozen planning window, WIP limits, two-bin van stock, appointment confirmation, revision at the source, cross-training, daily start / visual management, proactive status updates against failure demand, …)
+- ⬜ `data/grid/missions.yaml`, `data/grid/concepts.yaml` (Lean + sector glossary, Dutch)
+- ⬜ Merijn reviews content for realism
+
+## Phase C — World: campus + town ⬜
+- ⬜ Campus buildings and rooms with visible WIP (in-trays, planning boards, warehouse racks)
+- ⬜ Town: streets, homes with solar/heat pumps/EV chargers, substations, industrial estate
+- ⬜ Vans driving to jobs; crews working at sites; outages darken streets
+- ⬜ NPCs per department; pathfinding across campus and town
+
+## Phase D — UI (Dutch) ⬜
+- ⬜ HUD (week/day clock, KPIs per stream), gemba toolkit, conversations, A3, Check/Act, value stream map per stream (built by walking it), notebook, codex, NPC dialogue, onboarding by the Lean coach
+
+## Phase E — First playable and playtest ⬜
+- ⬜ First playable vertical slice (one value stream end to end), shared privately with Merijn once it is worth playing
+- ⬜ Playtest round with Merijn → tuning backlog
+
+## Phase F — Depth and regions ⬜
+- ⬜ Tier 2–4 problem catalogues; more regions unlock with maturity; strategic layer (prioritisation framework, capacity investments, contract types)
+
+## Phase G — IT value streams: SAFe / Agile / DevOps ⬜
+- ⬜ IT department on campus; value streams for field-app features and incident handling
+- ⬜ Problems: long release cycles, dependencies between teams, PI planning theatre, manual testing, environment scarcity, ops/dev handoffs, technical debt
+- ⬜ Countermeasures: ART alignment, WIP limits, CI/CD, DORA metrics, value stream identification
+
+## Phase H — AI coach and free-text conversations ⬜
+- ⬜ Optional Claude-powered conversations with NPCs, grounded in each problem's hidden facts, so "asking the right question" can be fully free text
+
+## Phase I — Godot desktop port (optional) ⬜
+- ⬜ Port rendering to Godot 4; reuse simulation and content
+
+---
+
+## Decisions Made
+- **Pace (2026-10-12)**: multi-month project; design first, reviewed increments, no publishing deadline
+- **Grid operator setting (2026-10-12)**: fictional DSO "Voltana Netbeheer", campus + one town; player is CI-lead; game text Dutch
+- **3D web edition (2026-10-12)**: Three.js + TypeScript in `web/`, playable from a link. Simulation and content are engine-agnostic so a later Godot port only replaces rendering
+- **Problem solving is action-based, not multiple choice (2026-10-12)**: clues are earned through tools and questions; the player writes the A3; the simulation judges the countermeasure
+- **Bottleneck first (2026-10-12)**: Check always shows end-to-end capacity per value stream; improving a non-constraint is called out
+- **Shared resources (2026-10-12)**: monteurs are one pool across streams with priorities, so outage-driven disruption of planned work emerges from the simulation
+- **Factory work archived (2026-10-12)**: `archive/factory-3d/` + commit `b3a4c8c`; the Python factory game stays runnable as the legacy build
+
+---
+
+# Legacy build plan — Python factory game (frozen)
+
+Spec reference: `Lean_Factory_v2.0_Specification.docx`. Kept for history; no further work planned.
+
+### Learning Pillars (design principles — applies to every phase)
 
 This game is a **learning tool** for lean, six sigma, and factory digitalization. Every feature must serve these three pillars. When a task in any phase conflicts with a pillar, the pillar wins.
 
@@ -25,12 +128,12 @@ This game is a **learning tool** for lean, six sigma, and factory digitalization
 
 ---
 
-## Phase 0 — Design Foundations ✅ COMPLETE
+### Phase 0 — Design Foundations ✅ COMPLETE
 All design artifacts: spec doc, 25-problem Tier 1 catalog YAML, 79-countermeasure YAML (merged), topology files.
 
 ---
 
-## Phase 1 — Simulation Core (Headless) ✅ COMPLETE
+### Phase 1 — Simulation Core (Headless) ✅ COMPLETE
 - ✅ Station model (OEE, cycle time, WIP, quality)
 - ✅ Operator model (skill, fatigue, state)
 - ✅ Material flow, time engine with speed multipliers, factory aggregator
@@ -42,7 +145,7 @@ All design artifacts: spec doc, 25-problem Tier 1 catalog YAML, 79-countermeasur
 
 ---
 
-## Phase 2 — Navigation and Rendering ✅ COMPLETE
+### Phase 2 — Navigation and Rendering ✅ COMPLETE
 - ✅ Tilemap, player sprite, camera, collision detection, interaction zones
 - ✅ Factory rendering (zone colors, station sprites, operator sprites)
 - ✅ HUD (clock, speed, KPI strip, minimap), inspector panel (station metrics, NPC dialogue)
@@ -53,7 +156,7 @@ All design artifacts: spec doc, 25-problem Tier 1 catalog YAML, 79-countermeasur
 
 ---
 
-## Phase 3 — Problems and Inspection ✅ COMPLETE
+### Phase 3 — Problems and Inspection ✅ COMPLETE
 - ✅ Problem data model, YAML catalog loader, 25 Tier 1 problems in YAML
 - ✅ Visibility logic: obvious → active Day 1; subtle → activates on first zone inspection; hidden → deferred to Phase 4
 - ✅ Problem state machine, effect modifiers applied to stations on activation
@@ -68,7 +171,7 @@ All design artifacts: spec doc, 25-problem Tier 1 catalog YAML, 79-countermeasur
 
 ---
 
-## Phase 4 — Countermeasures and Scoring ✅ COMPLETE
+### Phase 4 — Countermeasures and Scoring ✅ COMPLETE
 - ✅ `CountermeasureCatalog` + `Countermeasure` dataclass — loads all 79 CMs
 - ✅ All six scoring metrics: DQQ, EI, RCA, CMP, LM, CIM (`scoring/metrics.py`)
 - ✅ `calculate_all()` orchestrator; `credits_earned()` formula
@@ -87,11 +190,11 @@ All design artifacts: spec doc, 25-problem Tier 1 catalog YAML, 79-countermeasur
 
 ---
 
-## Phase 5 — Guided Learning, Decision Forks, and Mistake Recovery 🔧 ~75% COMPLETE
+### Phase 5 — Guided Learning, Decision Forks, and Mistake Recovery 🔧 ~75% COMPLETE
 
 NPC forks are **deterministic, YAML-driven dialogue trees** — separate from the AI coach (Phase 8). Forks scaffold the *decision*; the coach reflects on it.
 
-### Done
+#### Done
 
 - ✅ `problems/dialogue.py`: `DialogueChoice`, `InvestigationFork`, `FiveWhysStep`, `ProblemDialogue`, `InvestigationSession` with Learning Rally detection and round-trip serialisation
 - ✅ `teaches:` tags on all 25 Tier 1 problems
@@ -179,7 +282,7 @@ The game currently implements Plan (investigation fork) and Do (apply CM). Check
 
 ---
 
-## Phase 6 — Tiers 2–4 Content + Final Packaging ⬜ NOT STARTED
+### Phase 6 — Tiers 2–4 Content + Final Packaging ⬜ NOT STARTED
 
 Content design happens *after* Phase 5 so every new problem uses the settled dialogue-fork YAML schema (`teaches:`, `dialogue:`, `five_whys:`) from day one.
 
@@ -214,7 +317,7 @@ Content design happens *after* Phase 5 so every new problem uses the settled dia
 
 ---
 
-## Phase 7 — UI Polish, Progression, and Story ⬜ NOT STARTED
+### Phase 7 — UI Polish, Progression, and Story ⬜ NOT STARTED
 
 > **Design note (from session 2026-04-23):** Current UI is functional but not inviting — raw rectangles, low contrast, no visual hierarchy between panels and world. Phase 7 should feel like a different product. The deliverable is a game someone unfamiliar with the project can sit down with and find visually clear, progression they can feel, and a story that makes them care. Defer all visual work until Phase 6 content is done.
 
@@ -309,7 +412,7 @@ The player is a newly hired **Continuous Improvement Specialist** at NovaGlide. 
 
 ---
 
-## Phase 7b — Player Experience Enhancements ⬜ NOT STARTED
+### Phase 7b — Player Experience Enhancements ⬜ NOT STARTED
 
 > **Scope:** follows Phase 7 polish. Phase 7 takes the game from "raw rectangles" to "looks like a game"; Phase 7b takes it from "looks like a game" to "actually teaches someone who picks it up cold." Where Phase 7 is about surface (sprites, HUD, story), Phase 7b is about depth (onboarding, reflection, progression feedback, emotional investment). Items listed in approximate order of expected impact on first-time-player experience.
 
@@ -351,11 +454,11 @@ The player is a newly hired **Continuous Improvement Specialist** at NovaGlide. 
 
 ---
 
-## Phase 8 — AI Integration ⬜ ~5% COMPLETE
+### Phase 8 — AI Integration ⬜ ~5% COMPLETE
 
 AI is introduced last so the generator has maximum reference material: all four tiers of hand-designed problems and dialogue fork YAML exist before it runs.
 
-### Done
+#### Done
 - ✅ AI module stubs (`ai/agent.py`, `ai/coach.py`, `ai/problem_generator.py`, `ai/prompt.py`)
 
 ### Remaining
@@ -372,7 +475,7 @@ AI is introduced last so the generator has maximum reference material: all four 
 
 ---
 
-## Phase 9 — World Expansion (future, parked 2026-04-24)
+### Phase 9 — World Expansion (future, parked 2026-04-24)
 
 > **User goal:** a bigger map and a more realistic factory layout. The current 100×60 tile map reads as a diagram — zones are colour blocks with a handful of stations each. A more believable plant would have: intermediate buffer areas between zones, a proper office wing with more rooms, a real loading bay with multiple trucks, a cafeteria, a training room, maybe a quality lab wing, and corridors that feel walked rather than rectangular. Scope this after Phases 7/7b ship because it touches the tilemap, camera, NPC routing, and every renderer — a big change that should land on a stable content/UI base.
 
@@ -385,7 +488,7 @@ AI is introduced last so the generator has maximum reference material: all four 
 
 ---
 
-## Phase 10 — 3D Web Edition (factory prototype) ⏸ BACKED UP
+### Phase 10 — 3D Web Edition (factory prototype) ⏸ BACKED UP
 
 Built 2026-10-12 in `web/` and tagged `factory-3d-backup`. Kept as a reference and fallback.
 
@@ -400,7 +503,7 @@ Built 2026-10-12 in `web/` and tagged `factory-3d-backup`. Kept as a reference a
 
 ---
 
-## Decisions Made
+### Decisions Made
 - **3D web edition (2026-10-12)**: Three.js + TypeScript in `web/`, playable from a link (no install). Simulation and content are kept engine-agnostic so a later Godot 4 desktop port only replaces rendering
 - **Problem solving is action-based, not multiple choice (2026-10-12)**: clues are earned through gemba tools and good questions; the player writes the A3; the simulation judges the countermeasure
 - **Bottleneck first (2026-10-12)**: Check always shows end-to-end capacity; improving a non-constraint is called out as no real gain
