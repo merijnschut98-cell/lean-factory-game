@@ -170,9 +170,9 @@ def test_real_value_streams_are_valid():
     (lambda d: d["pools"][0].pop("schedule"), "'schedule' must be a non-empty list"),
     (lambda d: _connections(d)["arrivals"][0].pop("per_week"), "'per_week' must be a number"),
     (lambda d: _connections(d).pop("arrivals"), "'arrivals' must be a non-empty list"),
-    (lambda d: _connections(d)["arrivals"][0].update(id="Day Time"), "arrival source 'id' must be"),
+    (lambda d: _connections(d)["arrivals"][0].update(id="Day Time"), "arrival source entry needs a lowercase snake_case 'id'"),
     (lambda d: _connections(d)["arrivals"].append(dict(_connections(d)["arrivals"][0], id="a")) or
-     _connections(d)["arrivals"][0].update(id="a"), "duplicate arrival source 'a'"),
+     _connections(d)["arrivals"][0].update(id="a"), "duplicate arrival source ids: a"),
     (lambda d: _connections(d).update(norm_hours=4), "exactly one of 'norm_days' or 'norm_hours'"),
     (lambda d: _connections(d).pop("norm_days"), "exactly one of 'norm_days' or 'norm_hours'"),
     (lambda d: _connections(d).update(preempts="yes"), "'preempts' must be true or false"),

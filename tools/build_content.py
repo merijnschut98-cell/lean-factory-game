@@ -94,18 +94,22 @@ def _known_keys(d: dict, allowed: set[str], where: str) -> None:
         raise ContentError(f"{where}: unknown key(s) {', '.join(map(repr, unknown))}")
 
 
+def _check_ids(ids: list, label: str, where: str) -> None:
+    for i in ids:
+        if not isinstance(i, str) or not _ID.match(i):
+            raise ContentError(f"{where}: every {label} entry needs a lowercase snake_case 'id' (got {i!r})")
+    dupes = sorted(i for i, n in Counter(ids).items() if n > 1)
+    if dupes:
+        raise ContentError(f"{where}: duplicate {label} ids: {', '.join(dupes)}")
+
+
 def _entries(doc: dict, key: str, source: str) -> list[dict]:
     items = doc.get(key)
     if not isinstance(items, list) or not all(isinstance(i, dict) for i in items):
         raise ContentError(f"{source}: '{key}' must be a list of mappings")
-    ids = [i.get("id") for i in items]
-    for i, item in zip(ids, items):
-        if not isinstance(i, str) or not _ID.match(i):
-            raise ContentError(f"{source}: every {key} entry needs a lowercase snake_case 'id' (got {i!r})")
-        _require_strings(item, ["name"], f"{source}: {key} '{i}'")
-    dupes = sorted(i for i, n in Counter(ids).items() if n > 1)
-    if dupes:
-        raise ContentError(f"{source}: duplicate {key} ids: {', '.join(dupes)}")
+    _check_ids([i.get("id") for i in items], key, source)
+    for item in items:
+        _require_strings(item, ["name"], f"{source}: {key} '{item['id']}'")
     return items
 
 
@@ -221,15 +225,10 @@ def validate_value_streams(doc: Any, source: str) -> None:
     pool_ids, stock_ids = {p["id"] for p in pools}, {s["id"] for s in stock}
     for stream in streams:
         where = f"{source}: stream '{stream['id']}'"
-        source_ids = set()
-        for arrival in _blocks(stream, "arrivals", where):
+        arrivals = _blocks(stream, "arrivals", where)
+        for arrival in arrivals:
             _number(arrival, "per_week", f"{where} arrivals", 0)
-            if "id" in arrival:
-                if not isinstance(arrival["id"], str) or not _ID.match(arrival["id"]):
-                    raise ContentError(f"{where}: arrival source 'id' must be lowercase snake_case (got {arrival['id']!r})")
-                if arrival["id"] in source_ids:
-                    raise ContentError(f"{where}: duplicate arrival source {arrival['id']!r}")
-                source_ids.add(arrival["id"])
+        _check_ids([a["id"] for a in arrivals if "id" in a], "arrival source", where)
         if ("norm_days" in stream) == ("norm_hours" in stream):
             raise ContentError(f"{where}: give exactly one of 'norm_days' or 'norm_hours'")
         _number(stream, "norm_days" if "norm_days" in stream else "norm_hours", where, 0.1)

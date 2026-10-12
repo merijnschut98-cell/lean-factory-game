@@ -406,7 +406,6 @@ func _enter(order: WorkOrder, index: int) -> void:
 	match step.kind:
 		SimStep.Kind.WORK:
 			order.remaining = step.touch_minutes
-			order.failing = false
 			order.queued_at = time
 			order.started = false
 			queue_of(step).append(order)
@@ -522,14 +521,13 @@ func _progress_work() -> void:
 ## can cost less than the job (`fail_minutes`).
 func _draw_outcome(order: WorkOrder, step: SimStep) -> void:
 	order.failing = step.ftr < 1.0 and not step.rng.chance(step.ftr)
-	if order.failing and step.fail_minutes > 0:
-		order.remaining = mini(order.remaining, step.fail_minutes)
+	if order.failing:
+		order.remaining = step.failed_minutes()
 
 
 func _complete_work(order: WorkOrder) -> void:
 	var step := order.current_step()
 	if order.failing:
-		order.failing = false
 		order.reworks += 1
 		_record(step, SimStep.Stat.REWORKED)
 		_emit("rework", order)

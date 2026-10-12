@@ -56,10 +56,14 @@ func record(day: int, stat: Stat, amount: int = 1) -> void:
 	daily.add(day, stat, amount)
 
 
+## What one failed attempt takes.
+func failed_minutes() -> int:
+	return mini(fail_minutes, touch_minutes) if fail_minutes > 0 else touch_minutes
+
+
 ## Expected minutes of work per visit, failed attempts included.
 func minutes_per_visit() -> float:
-	var failed := mini(fail_minutes, touch_minutes) if fail_minutes > 0 else touch_minutes
-	return ftr * touch_minutes + (1.0 - ftr) * failed
+	return ftr * touch_minutes + (1.0 - ftr) * failed_minutes()
 
 
 ## Totals from `day` on: {entered, done, reworked, stale, queue_hours (mean

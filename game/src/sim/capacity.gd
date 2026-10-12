@@ -130,8 +130,11 @@ static func _stream_constraint(s: ValueStream, own: Dictionary[String, float], v
 	var step_load := -1.0
 	for i in s.steps.size():
 		var step := s.steps[i]
-		if step.kind == SimStep.Kind.WORK and worst in step.pool_ids and visits[i] * step.minutes_per_visit() > step_load:
-			step_load = visits[i] * step.minutes_per_visit()
+		if step.kind != SimStep.Kind.WORK or not worst in step.pool_ids:
+			continue
+		var load := visits[i] * step.minutes_per_visit()
+		if load > step_load:
+			step_load = load
 			step_id = step.id
 	return {
 		"constraint_pool": worst,

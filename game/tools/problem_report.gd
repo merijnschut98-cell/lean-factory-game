@@ -3,13 +3,14 @@ extends SceneTree
 ##   godot --headless --path game --script res://tools/problem_report.gd -- [out.json]
 ## For each problem: the healthy base, the problem active, and the problem
 ## treated by each fitting countermeasure at full strength (Pdca.treated_effects,
-## as after a passed Check). KPIs are means over SEEDS runs, measured over the
-## last WINDOW of DAYS simulated days. Writes JSON (stdout by default).
+## as after a passed Check). Every stream's KPIs and every team's actual load
+## are means over SEEDS runs, measured over the last WINDOW of DAYS simulated
+## days; planned load is Capacity's. Runs share random numbers per purpose, so
+## differences come from the effects. Writes JSON (stdout by default).
 
 const DAYS := 90
 const WINDOW := 56
 const SEEDS := [11, 12, 13, 14, 15]
-const CONTACT := "customer_contact"
 
 var _config: Dictionary
 
@@ -51,48 +52,51 @@ func _run() -> int:
 	return 0
 
 
-## Utilisation per team and the KPIs of every stream, without any problem.
+## The healthy base: headcount per team, and what _measure gives.
 func _base() -> Dictionary:
 	var net := _net({}, SEEDS[0])
-	var cap: Dictionary = Capacity.analyse(net)["pools"]
-	var pools := {}
-	for pool_id: String in cap:
-		pools[pool_id] = {"headcount": net.pools[pool_id].headcount, "utilisation": cap[pool_id]["utilisation"]}
-	return {"pools": pools, "streams": _mean_kpis({})}
+	var headcount := {}
+	for pool in net.pools.values():
+		headcount[pool.id] = pool.headcount
+	var out := _measure_sources({})
+	out["headcount"] = headcount
+	return out
 
 
-## The problem's stream, the contact centre (where failure demand lands) and
-## the load on the problem's team and the stream's constraint.
+## A problem scenario: everything _measure_sources gives, plus the problem's
+## team (where it shows; none at a wait) and its stream's constraint.
 func _measure(p: ProblemDef, sources: Dictionary) -> Dictionary:
-	var net := _net(sources, SEEDS[0])
-	var kpis := _mean_kpis(sources)
-	var cap := Capacity.analyse(net)
-	var stream_cap: Dictionary = cap["streams"][p.stream_id()]
-	var step := net.step_at(p.step)
-	var team: String = step.pool_ids[0] if step.kind == SimStep.Kind.WORK else ""
-	return {
-		"stream": kpis[p.stream_id()],
-		"contact": kpis[CONTACT],
-		"team": team,
-		"team_utilisation": cap["pools"][team]["utilisation"] if team != "" else null,
-		"constraint": stream_cap["constraint_pool"],
-		"constraint_utilisation": stream_cap["utilisation"],
-		"capacity_per_week": stream_cap["capacity_per_week"],
-	}
+	var out := _measure_sources(sources)
+	var stream_cap: Dictionary = Capacity.analyse(_net(sources, SEEDS[0]))["streams"][p.stream_id()]
+	var step := _net({}, SEEDS[0]).step_at(p.step)
+	out["team"] = step.pool_ids[0] if step.kind == SimStep.Kind.WORK else ""
+	out["constraint"] = stream_cap["constraint_pool"]
+	out["capacity_per_week"] = stream_cap["capacity_per_week"]
+	return out
 
 
-## Every stream's KPIs, averaged over the seeds: {stream_id: kpis}.
-func _mean_kpis(sources: Dictionary) -> Dictionary:
-	var mean := {}
+## {streams: {id: KPIs}, actual_load: {pool: share}} averaged over the seeds,
+## and planned_load: {pool: share} from Capacity.
+func _measure_sources(sources: Dictionary) -> Dictionary:
+	var streams := {}
+	var actual := {}
+	var k := 1.0 / SEEDS.size()
 	for seed_value: int in SEEDS:
 		var net := _net(sources, seed_value)
 		net.advance_days(DAYS)
+		var from_day := DAYS - WINDOW
 		for s in net.streams:
 			var kpis := s.kpis(net.time, WINDOW)
-			var sum: Dictionary = mean.get_or_add(s.id, {})
+			var sum: Dictionary = streams.get_or_add(s.id, {})
 			for key: String in kpis:
-				sum[key] = sum.get(key, 0.0) + kpis[key] / float(SEEDS.size())
-	return mean
+				sum[key] = sum.get(key, 0.0) + kpis[key] * k
+		for pool in net.pools.values():
+			actual[pool.id] = actual.get(pool.id, 0.0) + pool.load_since(from_day) * k
+	var planned := {}
+	var cap: Dictionary = Capacity.analyse(_net(sources, SEEDS[0]))["pools"]
+	for pool_id: String in cap:
+		planned[pool_id] = cap[pool_id]["utilisation"]
+	return {"streams": streams, "actual_load": actual, "planned_load": planned}
 
 
 func _net(sources: Dictionary, seed_value: int) -> Network:

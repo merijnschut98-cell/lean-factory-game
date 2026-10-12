@@ -103,7 +103,8 @@ static func targets(net: Network, property: String, target: String) -> Array:
 				return []
 			if not "." in target:
 				return s.arrivals.duplicate()
-			return s.arrivals.filter(func(a: ValueStream.Arrivals) -> bool: return a.id == target.get_slice(".", 1))
+			var source_id := target.get_slice(".", 1)
+			return s.arrivals.filter(func(a: ValueStream.Arrivals) -> bool: return a.id == source_id)
 	var step := net.step_at(target)
 	return [step] if step != null else []
 
