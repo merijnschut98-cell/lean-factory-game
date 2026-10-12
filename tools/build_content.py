@@ -120,6 +120,13 @@ def _blocks(item: dict, key: str, where: str) -> list:
     return blocks
 
 
+def _earlier(step_ids: list[str], target: Any, here: str, or_same: bool = False) -> bool:
+    """Whether `target` names a step before `here` (or `here` itself)."""
+    if target not in step_ids:
+        return False
+    return step_ids.index(target) < step_ids.index(here) + (1 if or_same else 0)
+
+
 def _validate_step(step: dict, where: str, pools: set[str], stock: set[str], step_ids: list[str]) -> None:
     kind = step.get("kind")
     if kind not in STEP_KINDS:
@@ -138,7 +145,7 @@ def _validate_step(step: dict, where: str, pools: set[str], stock: set[str], ste
         _number(step, "ftr", where, 0.05, 1)
         for key in ("rework_to", "interrupt_to"):
             target = step.get(key, step["id"])
-            if target not in step_ids or step_ids.index(target) > step_ids.index(step["id"]):
+            if not _earlier(step_ids, target, step["id"], or_same=True):
                 raise ContentError(f"{where}: '{key}' must name this step or an earlier one (got {target!r})")
         for key in ("rework_wait_days", "interrupt_wait_days"):
             if key in step:
@@ -147,7 +154,7 @@ def _validate_step(step: dict, where: str, pools: set[str], stock: set[str], ste
         _number(step, "days", where, 0)
         _number(step, "spread", where, 0, 0.95, default=0)
         _number(step, "batch_days", where, 0, default=0)
-        if "starts_with" in step and step["starts_with"] not in step_ids[:step_ids.index(step["id"])]:
+        if "starts_with" in step and not _earlier(step_ids, step["starts_with"], step["id"]):
             raise ContentError(f"{where}: 'starts_with' must name an earlier step (got {step['starts_with']!r})")
     else:
         if step.get("item") not in stock:

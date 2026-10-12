@@ -32,8 +32,7 @@ const PROPERTIES := {
 	"lead_time": {"kind": "stock", "field": "lead_minutes", "op": Op.MUL, "min": 0.0},
 	"reorder_point": {"kind": "stock", "field": "reorder_point", "op": Op.ADD, "min": 0.0},
 	"demand": {"kind": "arrivals", "field": "per_week", "op": Op.MUL, "min": 0.0},
-	"reserve": {"kind": "pool", "field": "reserve", "op": Op.ADD, "min": 0.0},
-	"reserve_for": {"kind": "pool", "field": "reserve_for", "op": Op.SET, "valid": "stream"},
+	"reserve": {"kind": "pool", "field": "reserve", "op": Op.SET, "valid": "reserve"},
 	"preempts": {"kind": "stream", "field": "preempts", "op": Op.SET, "valid": "bool"},
 	"batch_days": {"kind": "step", "step_kind": SimStep.Kind.WAIT, "field": "batch_minutes", "op": Op.ADD,
 		"min": 0.0, "unit": SimCalendar.MINUTES_PER_DAY},
@@ -117,7 +116,7 @@ func _check(net: Network, e: Variant) -> String:
 		return "step %s has no %s" % [e["target"], e["property"]]
 	var value: Variant = e["value"]
 	if spec["op"] == Op.SET:
-		return _check_lever(net, spec["valid"], e["target"], value)
+		return _check_lever(net, spec["valid"], e["target"], found[0], value)
 	if not (value is float or value is int):
 		return "%s needs a number (got %s)" % [e["property"], value]
 	if spec["op"] == Op.MUL and value <= 0:
@@ -125,16 +124,20 @@ func _check(net: Network, e: Variant) -> String:
 	return ""
 
 
-func _check_lever(net: Network, valid: String, target: String, value: Variant) -> String:
+func _check_lever(net: Network, valid: String, target: String, obj: Object, value: Variant) -> String:
 	match valid:
 		"bool":
 			return "" if value is bool else "needs true or false (got %s)" % [value]
-		"stream":
-			return "" if value is String and (value == "" or net.stream(value) != null) else "no stream called %s" % [value]
+		"reserve":
+			# {} (no reserve) or {stream, people} with people up to the headcount.
+			if value is Dictionary and (value.is_empty() or (net.stream(value.get("stream", "")) != null
+					and (value.get("people") is int or value.get("people") is float)
+					and value["people"] >= 0 and value["people"] <= (obj as SimPool).headcount)):
+				return ""
+			return "a reserve is {stream, people} with a known stream and people up to the headcount (got %s)" % [value]
 	# earlier_step: "" (in sequence) or a step before the target in the same stream.
-	var parts := target.split(".")
-	var steps := net.stream(parts[0]).steps
-	var at := steps.find(net.stream(parts[0]).step(parts[1]))
+	var steps := net.stream(target.get_slice(".", 0)).steps
+	var at := steps.find(obj)
 	if value is String and (value == "" or steps.slice(0, at).any(func(s: SimStep) -> bool: return s.id == value)):
 		return ""
 	return "%s can only start with an earlier step (got %s)" % [target, value]

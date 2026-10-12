@@ -61,9 +61,7 @@ static func create(config: Dictionary, seed_value: int = 1) -> Network:
 		if pool.schedule == null:
 			net.error = "pool %s: bad schedule" % pool.id
 			return net
-		var reserve: Dictionary = p.get("reserve", {})
-		pool.reserve = int(reserve.get("people", 0))
-		pool.reserve_for = reserve.get("stream", "")
+		pool.reserve = p.get("reserve", {})
 		net.pools[pool.id] = pool
 		net._pool_list.append(pool)
 	for s: Dictionary in config.get("stock", []):
@@ -260,7 +258,7 @@ func open_order(s: ValueStream) -> WorkOrder:
 ## Put an order into step `index`, skipping steps it does not need.
 func _enter(order: WorkOrder, index: int) -> void:
 	var steps := order.stream.steps
-	while index < steps.size() and _skips(order, index):
+	while index < steps.size() and not _needed(steps[index]):
 		index += 1
 	if index >= steps.size():
 		_finish_order(order)
@@ -285,13 +283,9 @@ func _enter(order: WorkOrder, index: int) -> void:
 			_take_material(order, step)
 
 
-## Whether the order skips step `index`: decided by `applies`, or, for a wait
-## that already started in parallel, when it started.
-func _skips(order: WorkOrder, index: int) -> bool:
-	if order.early.has(index):
-		return order.early[index] < 0
-	var step := order.stream.steps[index]
-	return step.applies < 1.0 and not rng.chance(step.applies)
+## Whether this order needs the step (`applies` is the share that does).
+func _needed(step: SimStep) -> bool:
+	return step.applies >= 1.0 or rng.chance(step.applies)
 
 
 ## Start the waits that run in parallel with step `index` (once per order:
@@ -301,7 +295,7 @@ func _start_parallel_waits(order: WorkOrder, index: int) -> void:
 	for j in range(index + 1, steps.size()):
 		var w := steps[j]
 		if w.starts_with == steps[index].id and not order.early.has(j):
-			order.early[j] = _wait_ready(w) if w.applies >= 1.0 or rng.chance(w.applies) else -1
+			order.early[j] = _wait_ready(w)
 
 
 ## When a wait starting now is over: from the next batch moment, plus the
@@ -363,12 +357,6 @@ func _deliver_stock() -> void:
 		_reorder_if_needed(item)
 
 
-## Put interrupted work back at the front of its queue.
-func _requeue(order: WorkOrder, why: String) -> void:
-	queue_of(order.current_step()).push_front(order)
-	_emit(why, order)
-
-
 ## People on shift work another tick on their orders. At the end of a shift,
 ## unfinished work goes back to the front of its queue for the next shift (or
 ## another pool serving the step) to pick up.
@@ -378,7 +366,8 @@ func _progress_work() -> void:
 			continue
 		if not pool.is_on_shift(time):
 			for i in range(pool.busy.size() - 1, -1, -1):
-				_requeue(pool.busy[i], "handover")
+				_emit("handover", pool.busy[i])
+				queue_of(pool.busy[i].current_step()).push_front(pool.busy[i])
 			pool.busy.clear()
 			continue
 		for i in range(pool.busy.size() - 1, -1, -1):
@@ -395,12 +384,18 @@ func _complete_work(order: WorkOrder) -> void:
 		order.reworks += 1
 		step.reworked += 1
 		_emit("rework", order)
-		if step.rework_wait_minutes > 0:
-			_wait(order, step.rework_wait_minutes, step.rework_index)
-		else:
-			_enter(order, step.rework_index)
+		_send_back(order, step.rework_index, step.rework_wait_minutes)
 		return
 	_enter(order, order.step_index + 1)
+
+
+## Send an order back to an earlier step (rework, re-planning), after
+## `wait_minutes` if there is a wait (e.g. for the customer).
+func _send_back(order: WorkOrder, index: int, wait_minutes: int) -> void:
+	if wait_minutes > 0:
+		_wait(order, wait_minutes, index)
+	else:
+		_enter(order, index)
 
 
 ## Give free people the most urgent waiting work: highest stream priority
@@ -460,13 +455,13 @@ func _preempt_for(pool: SimPool, priority: int) -> bool:
 	if victim == null:
 		return false
 	pool.busy.erase(victim)
+	_emit("preempted", victim)
 	var step := victim.current_step()
 	if step.interrupt_index < 0:
-		_requeue(victim, "preempted")
+		queue_of(step).push_front(victim)  # resumes first
 	else:
 		# Pulled away: the job has to be planned again (a new appointment).
-		_emit("preempted", victim)
-		_wait(victim, step.interrupt_wait_minutes, step.interrupt_index)
+		_send_back(victim, step.interrupt_index, step.interrupt_wait_minutes)
 	return true
 
 

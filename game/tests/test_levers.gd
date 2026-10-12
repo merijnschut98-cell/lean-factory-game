@@ -25,7 +25,7 @@ func _busy_crew(reserve: int = 0, interrupt: Dictionary = {}) -> Network:
 
 func _max_planned_busy(net: Network, days: int) -> int:
 	var most := 0
-	for i in days * 144:
+	for i in SimCalendar.days(days) / SimCalendar.TICK:
 		net.advance(SimCalendar.TICK)
 		var planned := net.pools["crew"].busy.filter(func(o: WorkOrder) -> bool: return o.stream.id == "planned")
 		most = maxi(most, planned.size())
@@ -106,14 +106,15 @@ func test_rework_does_not_restart_a_parallel_wait() -> void:
 func test_levers_switch_by_effect() -> void:
 	var net := _busy_crew()
 	var crew := net.pools["crew"]
-	assert_eq(net.set_effects("cm:outage_reserve", [
-		NetFixture.effect("crew", "reserve_for", "outages"), NetFixture.effect("crew", "reserve", 2),
-	]), "")
-	assert_eq([crew.reserve_for, crew.reserve], ["outages", 2])
+	var reserve := {"stream": "outages", "people": 2}
+	assert_eq(net.set_effects("cm:outage_reserve", [NetFixture.effect("crew", "reserve", reserve)]), "")
+	assert_eq(crew.reserve, reserve)
 	net.clear_effects("cm:outage_reserve")
-	assert_eq([crew.reserve_for, crew.reserve], ["", 0])
+	assert_eq(crew.reserve, {})
 	for bad: Dictionary in [
-		NetFixture.effect("crew", "reserve_for", "ghost"),
+		NetFixture.effect("crew", "reserve", {"stream": "ghost", "people": 1}),
+		NetFixture.effect("crew", "reserve", {"stream": "outages", "people": 4}),
+		NetFixture.effect("crew", "reserve", 2),
 		NetFixture.effect("outages", "preempts", "yes"),
 		NetFixture.effect("planned.plan", "batch_days", 7),
 	]:
@@ -140,5 +141,5 @@ func test_reserve_lowers_capacity_for_other_streams() -> void:
 		NetFixture.stream("outages", [NetFixture.work("fix", "crew", 1.0)], 10.0, 3, {"preempts": true}),
 	])
 	assert_near(Capacity.analyse(net)["streams"]["planned"]["capacity_per_week"], 70.0 / 6.0, 1e-6)  # (80 − 10) / 6
-	net.set_effects("cm:reserve", [NetFixture.effect("crew", "reserve_for", "outages"), NetFixture.effect("crew", "reserve", 1)])
+	net.set_effects("cm:reserve", [NetFixture.effect("crew", "reserve", {"stream": "outages", "people": 1})])
 	assert_near(Capacity.analyse(net)["streams"]["planned"]["capacity_per_week"], 40.0 / 6.0, 1e-6)  # (80 − 40 held) / 6

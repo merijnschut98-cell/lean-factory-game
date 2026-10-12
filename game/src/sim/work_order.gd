@@ -18,7 +18,7 @@ var queued_at := 0
 var wait_until := 0
 var pending_step := 0
 var reworks := 0
-## Waits started in parallel: wait step index → when it is over (-1: not needed).
+## Waits started in parallel: wait step index → when it is over.
 var early: Dictionary[int, int] = {}
 
 

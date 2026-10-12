@@ -43,9 +43,14 @@ func test_clearing_restores_base_exactly() -> void:
 			"arrivals": "connections"}[spec["kind"]]
 		if spec.get("step_kind") == SimStep.Kind.WAIT:
 			target = "connections.permit"
-		var value: Variant = {SimModifiers.Op.MUL: 1.37, SimModifiers.Op.ADD: 2}.get(spec["op"])
-		if spec["op"] == SimModifiers.Op.SET:
-			value = {"reserve_for": "congestion", "preempts": true, "starts_with": "intake"}[property]
+		var value: Variant
+		match spec["op"]:
+			SimModifiers.Op.MUL:
+				value = 1.37
+			SimModifiers.Op.ADD:
+				value = 2
+			SimModifiers.Op.SET:
+				value = {"reserve": {"stream": "congestion", "people": 1}, "preempts": true, "starts_with": "intake"}[property]
 		effects.append(NetFixture.effect(target, property, value))
 	var before := _fields(net, effects)
 	assert_eq(net.set_effects("a", effects), "")
