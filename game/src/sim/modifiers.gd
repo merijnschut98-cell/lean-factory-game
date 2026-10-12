@@ -12,12 +12,13 @@ extends RefCounted
 ## attendance follows a headcount change from the next day.
 ##
 ## Holds no reference to the Network (that would be a cycle): the Network
-## passes itself in.
+## passes itself in. Read the active effects through Network.effects().
 
 enum Op { ADD, MUL }
 
 ## What each property changes, how effects combine, and the bounds.
 ## `step_kind` limits a step property to the steps that have that field.
+## `demand` scales every arrival source of the stream.
 const PROPERTIES := {
 	"touch_time": {"kind": "step", "step_kind": SimStep.Kind.WORK, "field": "touch_minutes", "op": Op.MUL, "min": 1.0},
 	"ftr": {"kind": "step", "step_kind": SimStep.Kind.WORK, "field": "ftr", "op": Op.ADD, "min": 0.05, "max": 1.0},
@@ -27,7 +28,7 @@ const PROPERTIES := {
 	"headcount": {"kind": "pool", "field": "headcount", "op": Op.ADD, "min": 0.0},
 	"lead_time": {"kind": "stock", "field": "lead_minutes", "op": Op.MUL, "min": 0.0},
 	"reorder_point": {"kind": "stock", "field": "reorder_point", "op": Op.ADD, "min": 0.0},
-	"demand": {"kind": "stream", "field": "demand", "op": Op.MUL, "min": 0.0},
+	"demand": {"kind": "stream", "field": "per_week", "op": Op.MUL, "min": 0.0},
 }
 
 ## source → its effects.
@@ -68,6 +69,24 @@ static func scaled(effects: Array, k: float) -> Array:
 		return out)
 
 
+## The objects an effect changes: a pool, stock item or step ("stream.step";
+## step ids repeat across streams), or for a stream every arrival source.
+## Empty when the target does not exist.
+static func targets(net: Network, property: String, target: String) -> Array:
+	match PROPERTIES[property]["kind"]:
+		"pool":
+			return [net.pools[target]] if net.pools.has(target) else []
+		"stock":
+			return [net.stock[target]] if net.stock.has(target) else []
+		"stream":
+			var s := net.stream(target)
+			return s.arrivals.duplicate() if s != null else []
+	var parts := target.split(".")
+	var owner := net.stream(parts[0]) if parts.size() == 2 else null
+	var step := owner.step(parts[1]) if owner != null else null
+	return [step] if step != null else []
+
+
 func _check(net: Network, e: Variant) -> String:
 	if not (e is Dictionary and e.get("target") is String and e.get("property") is String
 			and (e.get("value") is float or e.get("value") is int)):
@@ -77,56 +96,36 @@ func _check(net: Network, e: Variant) -> String:
 		return "unknown property %s" % e["property"]
 	if spec["op"] == Op.MUL and e["value"] <= 0:
 		return "%s is a factor and must be above 0" % e["property"]
-	var target := _resolve(net, spec["kind"], e["target"])
-	if target == null:
+	var found := targets(net, e["property"], e["target"])
+	if found.is_empty():
 		return "no %s called %s" % [spec["kind"], e["target"]]
-	if spec.has("step_kind") and (target as SimStep).kind != spec["step_kind"]:
+	if spec.has("step_kind") and (found[0] as SimStep).kind != spec["step_kind"]:
 		return "step %s has no %s" % [e["target"], e["property"]]
 	return ""
 
 
-## Pools, stock items and streams by id; steps as "stream.step" (step ids
-## repeat across streams).
-static func _resolve(net: Network, kind: String, target: String) -> Object:
-	match kind:
-		"pool":
-			return net.pools.get(target)
-		"stock":
-			return net.stock.get(target)
-		"stream":
-			return net.stream(target)
-	var parts := target.split(".")
-	var s := net.stream(parts[0]) if parts.size() == 2 else null
-	if s != null:
-		for step in s.steps:
-			if step.id == parts[1]:
-				return step
-	return null
-
-
-## Back to base values, then combine every source's effects per field.
+## Combine every source's effects per field (factors multiply, additions
+## add), then write base-with-effects into every field ever touched, so a
+## field whose effects were all cleared gets its base value back.
 func _apply(net: Network) -> void:
-	for obj in _base:
-		for field: String in _base[obj]:
-			obj.set(field, _base[obj][field])
-	# {object: {field: [factor, addition, spec]}}
-	var combined: Dictionary[Object, Dictionary] = {}
+	var combined: Dictionary[Object, Dictionary] = {}  # {object: {property: factor or addition}}
 	for effects in _sources.values():
 		for e: Dictionary in effects:
 			var spec: Dictionary = PROPERTIES[e["property"]]
-			var obj := _resolve(net, spec["kind"], e["target"])
-			var field: String = spec["field"]
-			var base: Dictionary = _base.get_or_add(obj, {})
-			if not base.has(field):
-				base[field] = obj.get(field)
-			var c: Array = combined.get_or_add(obj, {}).get_or_add(field, [1.0, 0.0, spec])
-			if spec["op"] == Op.MUL:
-				c[0] *= e["value"]
-			else:
-				c[1] += e["value"]
-	for obj in combined:
-		for field: String in combined[obj]:
-			var c: Array = combined[obj][field]
-			var base: Variant = _base[obj][field]
-			var value := clampf(float(base) * c[0] + c[1], c[2]["min"], c[2].get("max", INF))
-			obj.set(field, roundi(value) if base is int else value)
+			for obj: Object in targets(net, e["property"], e["target"]):
+				_base.get_or_add(obj, {}).get_or_add(spec["field"], obj.get(spec["field"]))
+				var by_property: Dictionary = combined.get_or_add(obj, {})
+				if spec["op"] == Op.MUL:
+					by_property[e["property"]] = by_property.get(e["property"], 1.0) * e["value"]
+				else:
+					by_property[e["property"]] = by_property.get(e["property"], 0.0) + e["value"]
+	for obj in _base:
+		for field: String in _base[obj]:
+			obj.set(field, _base[obj][field])
+		for property: String in combined.get(obj, {}):
+			var spec: Dictionary = PROPERTIES[property]
+			var base: Variant = _base[obj][spec["field"]]
+			var change: float = combined[obj][property]
+			var value := float(base) * change if spec["op"] == Op.MUL else float(base) + change
+			value = clampf(value, spec["min"], spec.get("max", INF))
+			obj.set(spec["field"], roundi(value) if base is int else value)

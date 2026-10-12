@@ -49,6 +49,11 @@ static func on_call() -> Array:
 	return [block("mon-fri", "00:00", "07:00"), block("mon-fri", "15:00", "24:00"), block("sat-sun", "00:00", "24:00")]
 
 
+## A problem/countermeasure effect (see SimModifiers).
+static func effect(target: String, property: String, value: float) -> Dictionary:
+	return {"target": target, "property": property, "value": value}
+
+
 ## Events of one type still in `net.events`.
 static func events(net: Network, type: String) -> Array[Dictionary]:
 	return net.events.filter(func(e: Dictionary) -> bool: return e["type"] == type)

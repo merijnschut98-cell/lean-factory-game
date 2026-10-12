@@ -38,9 +38,7 @@ func test_design_is_the_starting_constraint_at_about_full_load() -> void:
 
 func test_standard_designs_move_the_constraint_to_gis() -> void:
 	var net := _net()
-	assert_eq(net.set_effects("cm:standard_designs", [
-		{"target": "connections.design", "property": "touch_time", "value": 0.7},
-	]), "")
+	assert_eq(net.set_effects("cm:standard_designs", [NetFixture.effect("connections.design", "touch_time", 0.7)]), "")
 	var c: Dictionary = Capacity.analyse(net)["streams"]["connections"]
 	assert_eq(c["constraint_pool"], "gis", "fix the constraint and the next one shows")
 	assert_between(c["capacity_per_week"], 30.0, 34.0, "only a little more output: Revisie & GIS is close behind")

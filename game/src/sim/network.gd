@@ -15,13 +15,13 @@ var rng: Rng
 var pools: Dictionary[String, SimPool] = {}
 var stock: Dictionary[String, SimStock] = {}
 var streams: Array[ValueStream] = []
+## Problem, countermeasure and event effects (see set_effects).
+var _modifiers := SimModifiers.new()
 ## Something wrong in the configuration; the network is unusable when set.
 var error := ""
 ## Jump over idle stretches (nights, quiet weekends). Only switched off to prove in
 ## tests that skipping changes nothing.
 var skip_idle := true
-## Problem and countermeasure effects; change them through set_effects / clear_effects.
-var modifiers := SimModifiers.new()
 ## Recent happenings for the world/UI to animate: {t, type, ...}.
 var events: Array[Dictionary] = []
 
@@ -146,11 +146,16 @@ func queue_of(step: SimStep) -> Array[WorkOrder]:
 ## Turn on, or replace, the effects of one source (a problem, a countermeasure,
 ## an event). Returns an error and changes nothing if any effect is invalid.
 func set_effects(source: String, effects: Array) -> String:
-	return modifiers.set_source(self, source, effects)
+	return _modifiers.set_source(self, source, effects)
 
 
 func clear_effects(source: String) -> void:
-	modifiers.clear_source(self, source)
+	_modifiers.clear_source(self, source)
+
+
+## Active effects by source (a copy), for saves and the UI.
+func effects() -> Dictionary[String, Array]:
+	return _modifiers.sources()
 
 
 func stream(stream_id: String) -> ValueStream:
@@ -220,7 +225,7 @@ func _start_day() -> void:
 			if slots.is_empty():
 				continue
 			# Today's share of the weekly rate, at random moments within today's slots.
-			var mean := source.per_week * s.demand * slots.size() * SimCalendar.TICK / 60.0 / source.when.hours()
+			var mean := source.per_week * slots.size() * SimCalendar.TICK / 60.0 / source.when.hours()
 			for i in rng.poisson(mean):
 				var at := day_start + slots[rng.int_range(0, slots.size() - 1)] + rng.int_range(0, SimCalendar.TICK - 1)
 				_arrivals.append({"at": at, "stream": s})
