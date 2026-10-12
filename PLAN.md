@@ -6,13 +6,13 @@ Game text is **Dutch** (with sector terms). Code, comments and this plan stay in
 
 ---
 
-## Current Status: Phase 0 — Research and Game Design Document 🔧
+## Current Status: Phase 0 complete ✅ → Phase A — Engine (Godot) next
 
 Pivot agreed 2026-10-12: from a hoverboard factory to a grid operator. The 3D factory prototype is archived in `archive/factory-3d/` (also git commit `b3a4c8c`). Its investigation / A3 / PDCA / bottleneck logic will be carried over and generalised.
 
 This is a multi-month project, built the right way: research → design (reviewed by Merijn) → engine → content → world → UI, in small tested increments. No publishing deadline. Built in **Godot 4 + GDScript** from the start (decided 2026-10-12).
 
-**Next task:** Merijn reviews the GDD (shared Claude Doc "Spanning — Game Design Document"); meanwhile write `docs/ARCHITECTURE.md` for the Godot project.
+**Next task:** Phase A step 1 — Godot 4.7.2 project skeleton in `game/`, the headless test runner, `tools/build_content.py`, and CI (see `docs/ARCHITECTURE.md`).
 
 ---
 
@@ -55,16 +55,18 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 
 ---
 
-## Phase 0 — Research and Game Design Document 🔧
+## Phase 0 — Research and Game Design Document ✅
 - ✅ Domain research round 1: value streams, well-known and less-known problems, norms and numbers, sources (findings also in `docs/energy-notes.md`)
 - ⬜ Verify key figures against the source pages themselves (this environment's network policy blocks the news sites; only search extracts were available)
 - ✅ GDD drafted as a shared Claude Doc: vision, core loop, world, value streams, simulation model, problem solving, catalogue v1 (18 problems), countermeasures, progression, UI, art, roadmap, open questions
-- ⬜ Merijn reviews the GDD → decisions recorded below → synced to `docs/GDD.md`
-- ⬜ `docs/ARCHITECTURE.md` for the Godot project: scenes vs pure-logic scripts, data format (YAML → Godot resources or JSON), headless test runner, save format, CI export builds
+- ✅ Merijn reviewed the GDD and answered all open questions → decisions recorded below
+- ✅ Reviewed GDD synced to `docs/GDD.md` (shared Claude Doc remains the place for comments)
+- ✅ `docs/ARCHITECTURE.md`: Godot 4.7.2 + typed GDScript, Compatibility renderer, pure `sim/` + `rules/` separated from `world/` + `ui/`, YAML → validated JSON content pipeline, custom headless test runner, JSON saves, CI with export builds
 - ✅ Weekly energy-sector digest for Merijn: notes in `docs/energy-notes.md`, routine every Friday 15:47 (Amsterdam)
 
 ## Phase A — Engine for work-order flow (Godot, GDScript) ⬜
-- ⬜ Godot 4 project skeleton, headless test runner, CI export (Windows/Linux/web) via GitHub Actions
+- ⬜ Godot 4.7.2 project skeleton (`game/`), headless test runner, `tools/build_content.py`, CI (tests on push; Windows/Linux/web exports on demand)
+- ⬜ Add the Godot test command to CLAUDE.md's testing rule (ask Merijn first; it is his rules file)
 - ⬜ `sim/network.gd` (pure logic, no nodes): value streams of steps; people pools (capacity, availability, priority, preemption); external delay steps (permits, customer); material stock with reorder point and supplier lead time; first-time-right with rework loops back to earlier steps; arrivals with variability; KPIs per stream (throughput, backlog, lead time, on-time vs norm, FTR)
 - ⬜ End-to-end capacity and constraint per value stream (generalised from the factory `lineCapacity`)
 - ⬜ Generic problem effects: target a step, pool, stock item or stream; modify work time, FTR, availability, delay, demand, people
@@ -76,6 +78,25 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 - ⬜ `data/grid/countermeasures.yaml`: Lean countermeasures in DSO context (triage at intake, poka-yoke application form, standard designs, frozen planning window, WIP limits, two-bin van stock, appointment confirmation, revision at the source, cross-training, daily start / visual management, proactive status updates against failure demand, …)
 - ⬜ `data/grid/missions.yaml`, `data/grid/concepts.yaml` (Lean + sector glossary, Dutch)
 - ⬜ Merijn reviews content for realism
+
+## Problem ideas backlog (keep growing)
+
+Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine, but the game needs more as it grows. Whenever a new problem idea fits the game or a difficulty tier, add it here, then promote it into the catalogue for the tier being built.
+
+| Tier | Idea | Stream · waste | Grounding / note |
+| --- | --- | --- | --- |
+| 1 | LMRA as a tick-box: the last-minute risk analysis is a long generic form signed without looking | field work · over-processing | safety culture; stop-the-work |
+| 1 | Contractor rework: jobs by contractors fail inspection and need a second visit | connections · defects | contractor model |
+| 2 | Cause recorded as "onbekend": most outage causes are never classified, so repeat faults stay invisible | outages · defects | Nestor outage registration |
+| 2 | Control-room shift handover loses open actions | outages · waiting | — |
+| 2 | Heatwave transformer overload: no load monitoring on distribution transformers | congestion · defects | summer events |
+| 3 | No space under the street (ondergrondse drukte): coordination with gemeente and other utilities | connections · waiting | — |
+| 3 | Nitrogen permits delay a substation project | reinforcement · waiting | construction exemption scrapped; >300 Liander projects late |
+| 4 | Power theft and grid losses: cannabis farms hidden in the data | grid · defects | ~1 billion kWh a year |
+| 4 | NTA 8120 / ISO 55001 audit finding: maintenance not risk-based (oil-paper cables, old joints) | assets · over-processing | NN-CAM 5.0 |
+| 4 | Gas-grid maintenance while the grid is being phased out (heat transition) | gas (later) · over-processing | — |
+| IT | Field app releases twice a year; every fix waits for the release train | IT · waiting | Phase G |
+| IT | Test environments scarce; teams queue for them | IT · waiting | Phase G |
 
 ## Phase C — World: campus + town ⬜
 - ⬜ Campus buildings and rooms with visible WIP (in-trays, planning boards, warehouse racks)
@@ -105,6 +126,7 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 
 ## Decisions Made
 - **GDD answers from Merijn (2026-10-12)**: company name Voltana Netbeheer stays; the town is called Nova; a narrative arc with side quests and some open-world freedom; improvements cost both euros and team hours; model ACM regulation and ISO / NTA 8120 asset management; no own energy-sector cases, so content is research-based; sessions of 15–40 minutes; desktop first
+- **Problem catalogue keeps growing (2026-10-12)**: the v1 mix is approved; new problems are added continuously via the backlog above, per difficulty tier
 - **Pace (2026-10-12)**: multi-month project; design first, reviewed increments, no publishing deadline
 - **Grid operator setting (2026-10-12)**: fictional DSO "Voltana Netbeheer", campus + one town; player is CI-lead; game text Dutch
 - **Engine: Godot 4 + GDScript from the start (2026-10-12)**, at Merijn's suggestion. The goal is a desktop game, and porting a TypeScript simulation later would mean rewriting all logic. GDScript (not C#) keeps a web export possible. Godot runs headless here, so logic tests run and scenes can be screenshotted (Xvfb + OpenGL compatibility renderer, verified with 4.4.1). The Three.js prototype in `web/` is superseded (kept in `archive/factory-3d/`)
