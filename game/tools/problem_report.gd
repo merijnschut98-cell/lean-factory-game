@@ -8,8 +8,8 @@ extends SceneTree
 ## days; planned load is Capacity's. Runs share random numbers per purpose, so
 ## differences come from the effects. Writes JSON (stdout by default).
 
-const DAYS := 90
-const WINDOW := 56
+const DAYS := 180  # connections settle after half a year (months of external waits)
+const WINDOW := 84
 const SEEDS := [11, 12, 13, 14, 15]
 
 var _config: Dictionary

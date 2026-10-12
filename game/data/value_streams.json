@@ -192,11 +192,11 @@
    ],
    "id": "connections",
    "name": "Nieuwe aansluitingen",
-   "norm_days": 42,
+   "norm_days": 126,
    "priority": 2,
    "status_calls": {
-    "after_days": 21,
-    "per_week": 1.0,
+    "after_days": 63,
+    "per_week": 0.5,
     "to": "customer_contact"
    },
    "steps": [
@@ -227,7 +227,7 @@
      "touch_hours": 1.5
     },
     {
-     "days": 10,
+     "days": 14,
      "id": "customer_signs",
      "kind": "wait",
      "name": "Akkoord klant",
@@ -245,10 +245,18 @@
     },
     {
      "applies": 0.6,
-     "days": 15,
+     "days": 30,
      "id": "permit",
      "kind": "wait",
      "name": "Vergunning & KLIC",
+     "spread": 0.5
+    },
+    {
+     "applies": 0.15,
+     "days": 120,
+     "id": "grid_reinforcement",
+     "kind": "wait",
+     "name": "Wachten op netverzwaring",
      "spread": 0.5
     },
     {

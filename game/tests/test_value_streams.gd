@@ -89,15 +89,18 @@ func test_queue_builds_at_the_constraint() -> void:
 
 
 func test_kpis_are_in_a_realistic_range() -> void:
-	var net := _run_120_days()
-	var k := net.stream("connections").kpis(net.time, 28)
+	# Realistic external waits run to months (permits, grid reinforcement), so
+	# connections only settle after half a year; measured over seeds 11–15.
+	var net := _net()
+	net.advance_days(240)
+	var k := net.stream("connections").kpis(net.time, 56)
 	assert_between(k["throughput_per_week"], 24.0, 36.0, "demand is 30 a week")
-	assert_between(k["lead_days_p50"], 15.0, 45.0, "permits and the customer's signature take weeks")
-	assert_between(k["backlog"], 60, 200)
+	assert_between(k["lead_days_p50"], 30.0, 70.0, "the customer's approval, permits and reinforcement take months")
+	assert_between(k["backlog"], 150, 350, "about seven weeks of work in progress (Little's law)")
 	assert_between(k["first_time_right"], 0.3, 0.7)
-	# The six-week promise is met most of the time, not always (0.82–0.91 over
-	# seeds 11–15), so a problem shows in on-time instead of hiding under a far norm.
-	assert_between(k["on_time"], 0.7, 0.97)
+	# The 18-week norm is met most of the time, not always (streets that need
+	# grid reinforcement run late), so problems show in on-time.
+	assert_between(k["on_time"], 0.8, 0.97)
 
 
 func test_outages_are_restored_within_hours_by_day_and_night() -> void:

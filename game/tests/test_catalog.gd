@@ -4,7 +4,9 @@ extends TestCase
 ## every problem visibly hurts what it claims to hurt.
 
 const SEED := 11
-const DAYS := 90
+## Long enough for connections to settle: realistic waits run to months, and
+## late customers only start calling after nine weeks.
+const DAYS := 150
 
 
 func _region(c: Catalog) -> Region:
@@ -135,8 +137,8 @@ func test_problems_hurt_their_named_kpi_in_the_simulation() -> void:
 		if not p.kpi in ["first_time_right", "on_time"]:
 			continue
 		var hurt := _hurt_after_days(p)
-		var before: float = base.stream(p.stream_id()).kpis(base.time, DAYS - 30)[p.kpi]
-		var after: float = hurt.stream(p.stream_id()).kpis(hurt.time, DAYS - 30)[p.kpi]
+		var before: float = base.stream(p.stream_id()).kpis(base.time, 60)[p.kpi]
+		var after: float = hurt.stream(p.stream_id()).kpis(hurt.time, 60)[p.kpi]
 		assert_true(after < before - 0.05, "%s: %s %.2f → %.2f" % [p.id, p.kpi, before, after])
 
 

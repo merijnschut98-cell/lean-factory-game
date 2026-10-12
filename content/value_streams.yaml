@@ -129,14 +129,15 @@ streams:
   - id: connections
     name: Nieuwe aansluitingen
     arrivals: [{per_week: 30, days: mon-fri, from: "08:00", to: "17:00"}]
-    # Voltana's own promise for a standard connection: six weeks, well inside
-    # the former legal term of 18 weeks (126 days). Claude's call while Merijn
-    # reviews; the healthy base makes about 90% of it.
-    norm_days: 42
+    # The industry norm: 18 weeks (the former legal term, art. 23 E-wet, removed
+    # Feb 2025; the ACM still uses 18-22 weeks as reference in disputes).
+    # Real average waits were ~40-44 weeks in 2024-2025, mostly from grid
+    # capacity (Netbeheer Nederland); the healthy base meets the norm ~90%.
+    norm_days: 126
     priority: 2
-    # Failure demand: after three weeks without news, customers call to ask
-    # where their connection stands.
-    status_calls: {to: customer_contact, after_days: 21, per_week: 1.0}
+    # Failure demand: after nine weeks (half the norm) without news, customers
+    # call every two weeks to ask where their connection stands.
+    status_calls: {to: customer_contact, after_days: 63, per_week: 0.5}
     steps:
       - id: intake
         name: Aanvraag & intake
@@ -161,7 +162,7 @@ streams:
       - id: customer_signs
         name: Akkoord klant
         kind: wait
-        days: 10
+        days: 14
         spread: 0.6
       - id: design
         name: Werkvoorbereiding & ontwerp
@@ -174,9 +175,15 @@ streams:
       - id: permit
         name: Vergunning & KLIC
         kind: wait
-        days: 15
+        days: 30              # municipal consent (instemming) for cable work: typically 4-8 weeks
         spread: 0.5
         applies: 0.6          # digging in public space
+      - id: grid_reinforcement
+        name: Wachten op netverzwaring
+        kind: wait
+        days: 120             # the local grid must be reinforced first
+        spread: 0.5
+        applies: 0.15         # streets where the low-voltage grid is full
       - id: materials
         name: Materiaal reserveren
         kind: material
