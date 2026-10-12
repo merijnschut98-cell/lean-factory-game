@@ -18,7 +18,7 @@ locale: nl
 """
 
 
-REAL_STREAMS = (Path(__file__).resolve().parent.parent / "content" / "value_streams.yaml").read_text(encoding="utf-8")
+REAL_STREAMS = (bc.CONTENT_DIR / "value_streams.yaml").read_text(encoding="utf-8")
 
 
 @pytest.fixture
@@ -28,8 +28,7 @@ def dirs(tmp_path: Path) -> tuple[Path, Path]:
     (content / "game.yaml").write_text(GAME_YAML, encoding="utf-8")
     (content / "value_streams.yaml").write_text(REAL_STREAMS, encoding="utf-8")
     for stem in ("countermeasures", "problems_tier1"):
-        (content / f"{stem}.yaml").write_text(
-            (Path(__file__).resolve().parent.parent / "content" / f"{stem}.yaml").read_text(encoding="utf-8"), encoding="utf-8")
+        (content / f"{stem}.yaml").write_text((bc.CONTENT_DIR / f"{stem}.yaml").read_text(encoding="utf-8"), encoding="utf-8")
     return content, data
 
 
@@ -84,7 +83,7 @@ def test_cross_checks_see_all_files(dirs, monkeypatch):
     seen = []
     monkeypatch.setattr(bc, "CROSS_CHECKS", [lambda docs: seen.append(sorted(docs))])
     bc.load_content(content)
-    assert seen == [sorted(bc.VALIDATORS)]
+    assert seen == [sorted(path.stem for path in content.glob("*.yaml"))]
 
 
 def test_cross_check_failure_is_reported(dirs, monkeypatch):
@@ -299,6 +298,8 @@ def test_sample_problems_are_valid(rules_dirs):
     (lambda d: _problem(d)["effects"][0].update(target="connections.permit"), "is not a work step"),
     (lambda d: _problem(d)["effects"][0].update(target="nobody"), "unknown step 'nobody'"),
     (lambda d: _problem(d)["effects"][0].update(value=0), "factor above 0"),
+    (lambda d: _problem(d)["effects"].append({"target": "connections", "property": "wip_limit", "value": 2.5}), "'value' must be an integer"),
+    (lambda d: _problem(d)["effects"].append({"target": "monteurs", "property": "reserve", "value": {"stream": "outages", "people": 99}}), "'people' must be between"),
     (lambda d: _problem(d)["effects"].append({"target": "outages", "property": "preempts", "value": "yes"}), "true or false"),
     (lambda d: _problem(d).update(symptoms=[]), "'symptoms' must be a non-empty list"),
     (lambda d: _cm(d).update(tier=5), "'tier' must be between 1 and 4"),
@@ -311,3 +312,16 @@ def test_problem_errors_are_caught(rules_dirs, mutate, message):
     content, _ = rules_dirs
     with pytest.raises(bc.ContentError, match=message.replace("(", r"\(")):
         _rules(content, mutate)
+
+
+def test_vocabulary_is_written_for_the_game():
+    docs = bc.load_content()
+    assert "conversation" in docs["vocabulary"]["tools"]
+    assert docs["vocabulary"]["effect_properties"]["touch_time"] == {"kind": "step", "step_kind": "work"}
+
+
+def test_any_problems_tier_file_is_validated(rules_dirs):
+    content, _ = rules_dirs
+    (content / "problems_tier2.yaml").write_text("problems: [{}]\n", encoding="utf-8")
+    with pytest.raises(bc.ContentError, match="problems_tier2.yaml"):
+        bc.load_content(content)

@@ -4,6 +4,8 @@ extends RefCounted
 ## content/problems_tier*.yaml and countermeasures.yaml), as definitions.
 
 const DATA_DIR := "res://data"
+## One file per tier (the same rule as tools/build_content.py).
+const PROBLEM_FILES := "problems_tier"
 
 var problems: Array[ProblemDef] = []
 var countermeasures: Array[CountermeasureDef] = []
@@ -18,9 +20,11 @@ static func load_from(dir: String = DATA_DIR) -> Catalog:
 		c.error = cms["error"]
 		return c
 	for d: Variant in cms["data"].get("countermeasures", []):
-		c._add_countermeasure(CountermeasureDef.from_dict(d if d is Dictionary else {}))
+		var cm := CountermeasureDef.from_dict(_dict(d))
+		c._keep_first(cm.error)
+		c.countermeasures.append(cm)
 	var files := Array(DirAccess.get_files_at(dir)).filter(func(f: String) -> bool:
-		return f.begins_with("problems_tier") and f.ends_with(".json"))
+		return f.begins_with(PROBLEM_FILES) and f.ends_with(".json"))
 	files.sort()
 	for file: String in files:
 		var doc := JsonFile.read_dict(dir + "/" + file)
@@ -28,17 +32,16 @@ static func load_from(dir: String = DATA_DIR) -> Catalog:
 			c.error = doc["error"]
 			return c
 		for d: Variant in doc["data"].get("problems", []):
-			c._add_problem(ProblemDef.from_dict(d if d is Dictionary else {}))
+			var p := ProblemDef.from_dict(_dict(d))
+			c._keep_first(p.error)
+			c.problems.append(p)
 	return c
 
 
-func _add_problem(p: ProblemDef) -> void:
-	if not p.error.is_empty() and error.is_empty():
-		error = p.error
-	problems.append(p)
+func _keep_first(definition_error: String) -> void:
+	if error.is_empty():
+		error = definition_error
 
 
-func _add_countermeasure(cm: CountermeasureDef) -> void:
-	if not cm.error.is_empty() and error.is_empty():
-		error = cm.error
-	countermeasures.append(cm)
+static func _dict(d: Variant) -> Dictionary:
+	return d if d is Dictionary else {}

@@ -72,7 +72,7 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 - ✅ CI (`.github/workflows/ci.yml`): content check, Godot tests, legacy Python tests on every push; Windows/Linux/web export on demand. All three exports verified locally
 - ✅ CLAUDE.md testing rule lists the Godot, content and Python commands (approved by Merijn)
 - ✅ Simplify pass: shared cached Godot setup + export matrix in CI, project-wide default environment and `Palette`, `TestCase` moved to `tests/lib/`, two-pass content validation (`CROSS_CHECKS`), schema fields derived in `GameInfo`
-- ⬜ Tech debt (tracked): content rules live twice, in Python (validation, the authority) and in GDScript (loading): the `game.yaml` field list vs `GameInfo`, and since step 3 the day-range, "HH:MM"/"24:00" and `pool`-as-string-or-list rules. Option: let `build_content.py` emit canonical JSON (schedules as minute intervals, `pool` always a list, one `norm_minutes`) so the game parses nothing; decide when the problem/countermeasure schemas arrive (step 4–5)
+- ⬜ Tech debt (tracked; vocabularies now guarded by a test, `game/data/vocabulary.json`): content rules live twice, in Python (validation, the authority) and in GDScript (loading): the `game.yaml` field list vs `GameInfo`, and since step 3 the day-range, "HH:MM"/"24:00" and `pool`-as-string-or-list rules. Option: let `build_content.py` emit canonical JSON (schedules as minute intervals, `pool` always a list, one `norm_minutes`) so the game parses nothing; decide when the problem/countermeasure schemas arrive (step 4–5)
 - ✅ Step 2: work-order simulation core in `game/src/sim/` (calendar, work orders, pools with attendance and pre-emption, external waits, stock with reorder point, rework loops with customer waits, arrivals, KPIs) and `Capacity` (expected visits incl. rework, pool load, constraint per stream); connections stream in `content/value_streams.yaml` with validator; 35 Godot tests; a simulated year runs in ~3 s
 - ✅ Simplify pass on step 2: one event path, sorted waits and deliveries, idle-time skipping (proven identical by a test; a simulated year 3.2 s → 0.7 s), random helpers in `Rng`, shared `JsonFile` loader, dead state removed, cached test run (suite 2.9 s → 0.7 s)
 - ✅ Step 3 (plan: `docs/superpowers/plans/2026-10-12-phase-a-step-3-shared-streams.md`): outage, meter and congestion streams next to connections.
@@ -161,6 +161,11 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
   - The starting constraint comes from the custom_design problem (Werkvoorbereiding ~110%).
   - Fixing it shows the next constraint: Intake at 86%.
   - Regression tests check the base and the starting state separately.
+- ✅ Simplify pass on the pipeline:
+  - `vocabulary.json` generated from the validator, with a Godot test that fails if the two languages' vocabularies differ;
+  - one `problems_tier*` file rule (validator, cross-check, Catalog);
+  - validator helpers per job, reusing `_number` and `_earlier`;
+  - a shared real-network fixture and a shared base run (suite ~5.8 s).
 - ⬜ Merijn reviews the six problems for realism (texts, clues, effects) and the healthy base
 - ⬜ Remaining tier-1 catalogue problems: de statusbellers, de revisieberg, graafschade, storing gooit de planning om, klaar maar niet af, de laatste kennisdrager, KPI's die elkaar bevechten
 - ⬜ Common random numbers (a random stream per purpose), so A/B comparisons of two runs stay comparable. Today runs diverge after the first different draw, which is why the content test measures mechanisms instead of lead-time KPIs

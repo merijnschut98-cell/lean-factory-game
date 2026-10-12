@@ -7,23 +7,19 @@ const SEED := 11
 const DAYS := 90
 
 
-func _catalog() -> Catalog:
-	return Catalog.load_from()
-
-
 func _region(c: Catalog) -> Region:
 	return Region.new(Network.load_file(Network.DEFAULT_PATH, SEED), c.problems, c.countermeasures, Profile.new())
 
 
 func test_the_catalogue_loads() -> void:
-	var c := _catalog()
+	var c := Catalog.load_from()
 	assert_eq(c.error, "")
 	assert_true(c.problems.size() >= 6, "problems: %d" % c.problems.size())
 	assert_true(c.countermeasures.size() >= 6)
 
 
 func test_every_effect_fits_the_real_network() -> void:
-	var c := _catalog()
+	var c := Catalog.load_from()
 	var net := Network.load_file(Network.DEFAULT_PATH)
 	for p in c.problems:
 		assert_eq(net.set_effects("problem:" + p.id, p.effects), "", p.id)
@@ -62,62 +58,85 @@ func _solve(c: Catalog, p: ProblemDef) -> Dictionary:
 
 
 func test_an_expert_can_solve_every_problem() -> void:
-	var c := _catalog()
+	var c := Catalog.load_from()
 	for p in c.problems:
 		var score := _solve(c, p)
 		assert_true(score.get("root_cause", 0) >= 4 and score.get("plan", 0) >= 4,
 			"%s: %s" % [p.id, score.get("notes")])
 
 
-## How hard the problem's stream is hit, through the mechanism it works by.
-## Lead-time KPIs of two separate runs over a few months are too noisy to
-## compare (the random sequences diverge after the first different draw), so:
-## throughput problems by capacity; rework and slow work by the extra load on
-## a team (deterministic: Capacity); waiting problems by the measured wait at
-## their step.
-static func _harm(p: ProblemDef) -> Dictionary:
-	var base := Network.load_file(Network.DEFAULT_PATH, SEED)
-	var hurt := Network.load_file(Network.DEFAULT_PATH, SEED)
-	hurt.set_effects("problem:" + p.id, p.effects)
-	var before := Capacity.analyse(base)
-	var after := Capacity.analyse(hurt)
+## The base network after DAYS days, shared by the tests that compare against it.
+static var _base_run: Network
+
+
+static func _base_after_days() -> Network:
+	if _base_run == null:
+		_base_run = RulesFixture.real_network([], SEED)
+		_base_run.advance_days(DAYS)
+	return _base_run
+
+
+static func _hurt_after_days(p: ProblemDef) -> Network:
+	var net := RulesFixture.real_network([p.id], SEED)
+	net.advance_days(DAYS)
+	return net
+
+
+## How much worse the problem makes its stream, as a ratio above 1, through
+## the mechanism it works by. Lead-time KPIs of two runs over a few months
+## are too noisy to compare (the random sequences diverge after the first
+## different draw), so: throughput problems by capacity; rework and slow work
+## by the extra load on the team it hits hardest (deterministic: Capacity);
+## waiting problems by the measured wait at their step.
+static func _harm(p: ProblemDef) -> float:
+	var before := Capacity.analyse(RulesFixture.real_network([], SEED))
+	var after := Capacity.analyse(RulesFixture.real_network([p.id], SEED))
 	if p.kpi == "throughput":
-		var stream := p.stream_id()
-		return {"before": before["streams"][stream]["capacity_per_week"], "after": after["streams"][stream]["capacity_per_week"], "more_is_worse": false}
-	# The team whose load grows the most, relatively.
-	var most := {"before": 1.0, "after": 1.0, "more_is_worse": true}
+		return before["streams"][p.stream_id()]["capacity_per_week"] / after["streams"][p.stream_id()]["capacity_per_week"]
+	var worst := 1.0
 	for pool: String in before["pools"]:
-		var was: float = before["pools"][pool]["load"]
-		var now: float = after["pools"][pool]["load"]
-		if was > 0.0 and now / was > most["after"] / most["before"]:
-			most = {"before": was, "after": now, "more_is_worse": true}
-	if most["after"] > most["before"]:
-		return most
-	base.advance_days(DAYS)
-	hurt.advance_days(DAYS)
+		if before["pools"][pool]["load"] > 0.0:
+			worst = maxf(worst, after["pools"][pool]["load"] / before["pools"][pool]["load"])
+	if worst > 1.0:
+		return worst
 	var step := p.step.get_slice(".", 1)
-	return {"before": base.stream(p.stream_id()).step(step).stats_since(0)["wait_hours"],
-		"after": hurt.stream(p.stream_id()).step(step).stats_since(0)["wait_hours"], "more_is_worse": true}
+	return _hurt_after_days(p).stream(p.stream_id()).step(step).stats_since(0)["wait_hours"] \
+		/ _base_after_days().stream(p.stream_id()).step(step).stats_since(0)["wait_hours"]
 
 
 func test_every_problem_hurts_its_stream() -> void:
-	for p in _catalog().problems:
-		var h := _harm(p)
-		var worse: bool = h["after"] > h["before"] * 1.03 if h["more_is_worse"] else h["after"] < h["before"] * 0.97
-		assert_true(worse, "%s should hurt its stream: %.2f → %.2f" % [p.id, h["before"], h["after"]])
+	for p in Catalog.load_from().problems:
+		var harm := _harm(p)
+		assert_true(harm > 1.03, "%s should hurt its stream (×%.3f)" % [p.id, harm])
 
 
 func test_problems_hurt_their_named_kpi_in_the_simulation() -> void:
 	# Where the effect is strong enough to show over one run (first-time-right
 	# and on-time problems), check the KPI the problem names as well.
-	for p in _catalog().problems:
+	var base := _base_after_days()
+	for p in Catalog.load_from().problems:
 		if not p.kpi in ["first_time_right", "on_time"]:
 			continue
-		var base := Network.load_file(Network.DEFAULT_PATH, SEED)
-		var hurt := Network.load_file(Network.DEFAULT_PATH, SEED)
-		hurt.set_effects("problem:" + p.id, p.effects)
-		base.advance_days(DAYS)
-		hurt.advance_days(DAYS)
+		var hurt := _hurt_after_days(p)
 		var before: float = base.stream(p.stream_id()).kpis(base.time, DAYS - 30)[p.kpi]
 		var after: float = hurt.stream(p.stream_id()).kpis(hurt.time, DAYS - 30)[p.kpi]
 		assert_true(after < before - 0.05, "%s: %s %.2f → %.2f" % [p.id, p.kpi, before, after])
+
+
+func test_the_game_knows_the_content_vocabulary() -> void:
+	var vocab: Dictionary = JsonFile.read_dict("res://data/vocabulary.json")["data"]
+	var tools: Array = Investigation.TOOLS.keys()
+	tools.sort()
+	assert_eq(tools, vocab["tools"])
+	assert_eq(Investigation.WASTES, vocab["wastes"])
+	assert_eq(Investigation.KPIS, vocab["kpis"])
+	assert_eq(ProblemDef.SEVERITIES, vocab["severities"])
+	assert_eq(ProblemDef.VISIBILITIES, vocab["visibilities"])
+	var properties: Dictionary = vocab["effect_properties"]
+	assert_eq(SimModifiers.PROPERTIES.keys().size(), properties.size())
+	for property: String in SimModifiers.PROPERTIES:
+		var spec: Dictionary = SimModifiers.PROPERTIES[property]
+		assert_true(properties.has(property), property)
+		var kind: String = "stream" if spec["kind"] == "arrivals" else spec["kind"]
+		var step_kind: String = ["work", "wait", "material"][spec["step_kind"]] if spec.has("step_kind") else ""
+		assert_eq({"kind": kind, "step_kind": step_kind}, properties.get(property), property)

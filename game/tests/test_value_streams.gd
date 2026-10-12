@@ -16,11 +16,7 @@ func _net() -> Network:
 
 ## The base with the custom_design problem active (as at the start of the game).
 func _starting_state() -> Network:
-	var net := _net()
-	for p in Catalog.load_from().problems:
-		if p.id == "custom_design":
-			net.set_effects("problem:custom_design", p.effects)
-	return net
+	return RulesFixture.real_network(["custom_design"], SEED)
 
 
 func _run_120_days() -> Network:
@@ -63,7 +59,7 @@ func test_fixing_the_constraint_shows_the_next_one() -> void:
 
 func test_queue_builds_at_the_constraint() -> void:
 	var net := _starting_state()
-	net.advance_days(120)
+	net.advance_days(60)  # the design queue is clearly the longest by then
 	var s := net.stream("connections")
 	var design_queue := 0
 	var other_max := 0

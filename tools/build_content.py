@@ -339,97 +339,115 @@ def _validate_clues(p: dict, where: str) -> None:
 
 
 def _network_index(streams_doc: dict) -> dict:
-    """What effects and places can refer to: steps by 'stream.step' with their order, pools, stock, streams."""
+    """What effects and places can refer to, by target kind: steps ('stream.step',
+    with their kind and their stream's step ids), pools, stock items, streams."""
     steps = {}
     for stream in streams_doc["streams"]:
         ids = [s["id"] for s in stream["steps"]]
-        for i, step in enumerate(stream["steps"]):
-            steps[f"{stream['id']}.{step['id']}"] = {"kind": step["kind"], "index": i, "stream_ids": ids}
+        for step in stream["steps"]:
+            steps[f"{stream['id']}.{step['id']}"] = {"kind": step["kind"], "id": step["id"], "stream_ids": ids}
     return {
-        "steps": steps,
-        "pools": {p["id"]: p for p in streams_doc["pools"]},
+        "step": steps,
+        "pool": {p["id"]: p for p in streams_doc["pools"]},
         "stock": {s["id"] for s in streams_doc["stock"]},
-        "streams": {s["id"] for s in streams_doc["streams"]},
+        "stream": {s["id"] for s in streams_doc["streams"]},
     }
 
 
 def _check_effect(e: dict, where: str, net: dict) -> None:
     kind, step_kind, value_type = EFFECT_PROPERTIES[e["property"]]
     target, value = e["target"], e["value"]
-    if kind == "step":
-        step = net["steps"].get(target)
-        if step is None:
-            raise ContentError(f"{where}: unknown step {target!r}")
-        if step_kind and step["kind"] != step_kind:
-            raise ContentError(f"{where}: {target} is not a {step_kind} step (for {e['property']})")
-    elif target not in net[{"pool": "pools", "stock": "stock", "stream": "streams"}[kind]]:
+    if target not in net[kind]:
         raise ContentError(f"{where}: unknown {kind} {target!r}")
-    number = isinstance(value, (int, float)) and not isinstance(value, bool)
-    if value_type == "factor" and not (number and value > 0):
-        raise ContentError(f"{where}: {e['property']} needs a factor above 0")
-    if value_type == "number" and not number:
-        raise ContentError(f"{where}: {e['property']} needs a number")
+    if step_kind and net["step"][target]["kind"] != step_kind:
+        raise ContentError(f"{where}: {target} is not a {step_kind} step (for {e['property']})")
+    where = f"{where} {e['property']} on {target}"
+    if value_type == "factor" and not (isinstance(value, (int, float)) and not isinstance(value, bool) and value > 0):
+        raise ContentError(f"{where}: needs a factor above 0")
+    if value_type == "number":
+        _number(e, "value", where, float("-inf"))
+    if value_type == "count":
+        _number(e, "value", where, 0, integer=True)
     if value_type == "bool" and not isinstance(value, bool):
-        raise ContentError(f"{where}: {e['property']} needs true or false")
-    if value_type == "count" and not (isinstance(value, int) and not isinstance(value, bool) and value >= 0):
-        raise ContentError(f"{where}: {e['property']} needs a whole number >= 0")
+        raise ContentError(f"{where}: needs true or false")
     if value_type == "reserve":
-        pool = net["pools"].get(target, {})
-        if not (isinstance(value, dict) and value.get("stream") in net["streams"]
-                and isinstance(value.get("people"), int) and 0 <= value["people"] <= pool.get("headcount", 0)):
-            raise ContentError(f"{where}: a reserve is {{stream, people}} with people up to the headcount")
-    if value_type == "step":
-        step = net["steps"][target]
-        if value != "" and value not in step["stream_ids"][:step["index"]]:
-            raise ContentError(f"{where}: {target} can only start with an earlier step (got {value!r})")
+        if not isinstance(value, dict) or value.get("stream") not in net["stream"]:
+            raise ContentError(f"{where}: a reserve is {{stream, people}} with a known stream")
+        _number(value, "people", where, 0, net["pool"][target]["headcount"], integer=True)
+    if value_type == "step" and value != "":
+        step = net["step"][target]
+        if not _earlier(step["stream_ids"], value, step["id"]):
+            raise ContentError(f"{where}: can only start with an earlier step (got {value!r})")
+
+
+def _check_countermeasure(cm: dict, net: dict) -> None:
+    where = f"countermeasures.yaml: '{cm['id']}'"
+    for pool in cm.get("team_hours", {}):
+        if pool not in net["pool"]:
+            raise ContentError(f"{where}: team_hours for unknown pool {pool!r}")
+    for e in cm["effects"]:
+        _check_effect(e, where, net)
+
+
+def _check_problem(p: dict, where: str, net: dict, cms: dict) -> None:
+    if p["step"] not in net["step"]:
+        raise ContentError(f"{where}: unknown step {p['step']!r}")
+    for e in p["effects"]:
+        _check_effect(e, where, net)
+    for i, c in enumerate(p["clues"]):
+        at = c.get("at", p["step"])
+        if at not in net["step"]:
+            raise ContentError(f"{where} clue {i}: unknown step {at!r}")
+        if c["tool"] == "conversation" and net["step"][at]["kind"] != "work":
+            raise ContentError(f"{where} clue {i}: a conversation clue at a step without a team ({at})")
+    for cm_id in p["countermeasures"]:
+        if cm_id not in cms:
+            raise ContentError(f"{where}: unknown countermeasure {cm_id!r}")
+    if not any(cms[c]["tier"] <= p["tier"] and cms[c]["multipliers"]["full"] * fit >= 0.5
+               for c, fit in p["countermeasures"].items()):
+        raise ContentError(f"{where}: no countermeasure that can solve it at its tier "
+                           "(needs tier <= the problem's and full multiplier x fit >= 0.5)")
+
+
+PROBLEM_FILES = "problems_tier"
 
 
 def check_problems(docs: dict[str, Any]) -> None:
     """Problems and countermeasures against the value streams and each other."""
-    if "value_streams" not in docs or "countermeasures" not in docs:
-        return
     net = _network_index(docs["value_streams"])
     cms = {c["id"]: c for c in docs["countermeasures"]["countermeasures"]}
     for cm in cms.values():
-        where = f"countermeasures.yaml: '{cm['id']}'"
-        for pool in cm.get("team_hours", {}):
-            if pool not in net["pools"]:
-                raise ContentError(f"{where}: team_hours for unknown pool {pool!r}")
-        for e in cm["effects"]:
-            _check_effect(e, where, net)
+        _check_countermeasure(cm, net)
     for stem, doc in docs.items():
-        if not stem.startswith("problems_"):
-            continue
-        for p in doc["problems"]:
-            where = f"{stem}.yaml: problem '{p['id']}'"
-            if p["step"] not in net["steps"]:
-                raise ContentError(f"{where}: unknown step {p['step']!r}")
-            for e in p["effects"]:
-                _check_effect(e, where, net)
-            for i, c in enumerate(p["clues"]):
-                at = c.get("at", p["step"])
-                if at not in net["steps"]:
-                    raise ContentError(f"{where} clue {i}: unknown step {at!r}")
-                if c["tool"] == "conversation" and net["steps"][at]["kind"] != "work":
-                    raise ContentError(f"{where} clue {i}: a conversation clue at a step without a team ({at})")
-            for cm_id in p["countermeasures"]:
-                if cm_id not in cms:
-                    raise ContentError(f"{where}: unknown countermeasure {cm_id!r}")
-            if not any(cms[c]["tier"] <= p["tier"] and cms[c]["multipliers"]["full"] * fit >= 0.5
-                       for c, fit in p["countermeasures"].items()):
-                raise ContentError(f"{where}: no countermeasure that can solve it at its tier "
-                                   "(needs tier <= the problem's and full multiplier x fit >= 0.5)")
+        if stem.startswith(PROBLEM_FILES):
+            for p in doc["problems"]:
+                _check_problem(p, f"{stem}.yaml: problem '{p['id']}'", net, cms)
 
 
+def vocabulary() -> dict[str, Any]:
+    """The words content may use, written to game/data so a Godot test can
+    check the game knows exactly the same ones."""
+    return {
+        "tools": sorted(TOOLS), "wastes": WASTES, "kpis": KPIS, "severities": SEVERITIES,
+        "visibilities": VISIBILITIES,
+        "effect_properties": {p: {"kind": k, "step_kind": sk or ""} for p, (k, sk, _) in sorted(EFFECT_PROPERTIES.items())},
+    }
+
+
+# Required files and their validators; problems_tier<n>.yaml files (one per
+# tier) all use validate_problems.
 VALIDATORS: dict[str, Callable[[Any, str], None]] = {
     "game": validate_game,
     "value_streams": validate_value_streams,
     "countermeasures": validate_countermeasures,
-    "problems_tier1": validate_problems,
 }
 
 # Checks that need several files at once. Each gets {stem: document}.
 CROSS_CHECKS: list[Callable[[dict[str, Any]], None]] = [check_problems]
+
+
+def _validator_for(stem: str) -> Callable[[Any, str], None] | None:
+    return validate_problems if stem.startswith(PROBLEM_FILES) else VALIDATORS.get(stem)
 
 
 def load_content(content_dir: Path | None = None) -> dict[str, Any]:
@@ -437,7 +455,7 @@ def load_content(content_dir: Path | None = None) -> dict[str, Any]:
     content_dir = content_dir or CONTENT_DIR
     docs: dict[str, Any] = {}
     for path in sorted(content_dir.glob("*.yaml")):
-        validator = VALIDATORS.get(path.stem)
+        validator = _validator_for(path.stem)
         if validator is None:
             raise ContentError(f"{path.name}: no validator registered in tools/build_content.py")
         try:
@@ -451,6 +469,7 @@ def load_content(content_dir: Path | None = None) -> dict[str, Any]:
         raise ContentError(f"missing content files: {', '.join(m + '.yaml' for m in missing)}")
     for check in CROSS_CHECKS:
         check(docs)
+    docs["vocabulary"] = vocabulary()
     return docs
 
 

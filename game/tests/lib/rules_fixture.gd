@@ -89,6 +89,15 @@ static func countermeasures() -> Array:
 	]
 
 
+## The real network with some real catalogue problems switched on.
+static func real_network(problem_ids: Array = [], seed_value: int = 11) -> Network:
+	var net := Network.load_file(Network.DEFAULT_PATH, seed_value)
+	for p in Catalog.load_from().problems:
+		if p.id in problem_ids:
+			net.set_effects("problem:" + p.id, p.effects)
+	return net
+
+
 static func region(budget: int = 50000, seed_value: int = 5) -> Region:
 	var profile := Profile.new()
 	profile.budget = budget

@@ -1,0 +1,97 @@
+{
+ "effect_properties": {
+  "applies": {
+   "kind": "step",
+   "step_kind": ""
+  },
+  "availability": {
+   "kind": "pool",
+   "step_kind": ""
+  },
+  "batch_days": {
+   "kind": "step",
+   "step_kind": "wait"
+  },
+  "demand": {
+   "kind": "stream",
+   "step_kind": ""
+  },
+  "ftr": {
+   "kind": "step",
+   "step_kind": "work"
+  },
+  "headcount": {
+   "kind": "pool",
+   "step_kind": ""
+  },
+  "lead_time": {
+   "kind": "stock",
+   "step_kind": ""
+  },
+  "preempts": {
+   "kind": "stream",
+   "step_kind": ""
+  },
+  "reorder_point": {
+   "kind": "stock",
+   "step_kind": ""
+  },
+  "reserve": {
+   "kind": "pool",
+   "step_kind": ""
+  },
+  "starts_with": {
+   "kind": "step",
+   "step_kind": "wait"
+  },
+  "touch_time": {
+   "kind": "step",
+   "step_kind": "work"
+  },
+  "wait_time": {
+   "kind": "step",
+   "step_kind": "wait"
+  },
+  "wip_limit": {
+   "kind": "stream",
+   "step_kind": ""
+  }
+ },
+ "kpis": [
+  "throughput",
+  "lead_time",
+  "first_time_right",
+  "on_time"
+ ],
+ "severities": [
+  "low",
+  "medium",
+  "high",
+  "critical"
+ ],
+ "tools": [
+  "conversation",
+  "data",
+  "documents",
+  "listen_in",
+  "material_check",
+  "queue_count",
+  "shadow",
+  "time_study"
+ ],
+ "visibilities": [
+  "obvious",
+  "subtle",
+  "hidden"
+ ],
+ "wastes": [
+  "transport",
+  "inventory",
+  "motion",
+  "waiting",
+  "overproduction",
+  "overprocessing",
+  "defects",
+  "skills"
+ ]
+}
