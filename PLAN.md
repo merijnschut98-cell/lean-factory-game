@@ -6,13 +6,13 @@ Game text is **Dutch** (with sector terms). Code, comments and this plan stay in
 
 ---
 
-## Current Status: Phase 0 complete ✅ → Phase A — Engine (Godot) next
+## Current Status: Phase A — Engine (Godot) 🔧 step 1 done
 
 Pivot agreed 2026-10-12: from a hoverboard factory to a grid operator. The 3D factory prototype is archived in `archive/factory-3d/` (also git commit `b3a4c8c`). Its investigation / A3 / PDCA / bottleneck logic will be carried over and generalised.
 
 This is a multi-month project, built the right way: research → design (reviewed by Merijn) → engine → content → world → UI, in small tested increments. No publishing deadline. Built in **Godot 4 + GDScript** from the start (decided 2026-10-12).
 
-**Next task:** Phase A step 1 — Godot 4.7.2 project skeleton in `game/`, the headless test runner, `tools/build_content.py`, and CI (see `docs/ARCHITECTURE.md`).
+**Next task:** Phase A step 2 — the work-order simulation core (`sim/`): work orders, steps, people pools with priorities, external waits, stock, rework, arrivals, KPIs, starting with the connections value stream.
 
 ---
 
@@ -64,9 +64,13 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 - ✅ `docs/ARCHITECTURE.md`: Godot 4.7.2 + typed GDScript, Compatibility renderer, pure `sim/` + `rules/` separated from `world/` + `ui/`, YAML → validated JSON content pipeline, custom headless test runner, JSON saves, CI with export builds
 - ✅ Weekly energy-sector digest for Merijn: notes in `docs/energy-notes.md`, routine every Friday 15:47 (Amsterdam)
 
-## Phase A — Engine for work-order flow (Godot, GDScript) ⬜
-- ⬜ Godot 4.7.2 project skeleton (`game/`), headless test runner, `tools/build_content.py`, CI (tests on push; Windows/Linux/web exports on demand)
-- ⬜ Add the Godot test command to CLAUDE.md's testing rule (ask Merijn first; it is his rules file)
+## Phase A — Engine for work-order flow (Godot, GDScript) 🔧
+- ✅ Step 1: Godot 4.7.2 project skeleton (`game/`, Compatibility renderer), boot scene that loads content and renders
+- ✅ Headless test runner with `TestCase` asserts; catches failed asserts, syntax errors and runtime errors (via `Logger`); 10 tests (`Rng`, `GameInfo`)
+- ✅ `tools/build_content.py`: YAML → validated JSON with a drift check; 9 pytest tests; first content file `content/game.yaml`
+- ✅ `game/tools/screenshot.gd` for visual checks under Xvfb; rendering tuned (linear tone mapping, neutral ambient)
+- ✅ CI (`.github/workflows/ci.yml`): content check, Godot tests, legacy Python tests on every push; Windows/Linux/web export on demand. All three exports verified locally
+- ✅ CLAUDE.md testing rule lists the Godot, content and Python commands (approved by Merijn)
 - ⬜ `sim/network.gd` (pure logic, no nodes): value streams of steps; people pools (capacity, availability, priority, preemption); external delay steps (permits, customer); material stock with reorder point and supplier lead time; first-time-right with rework loops back to earlier steps; arrivals with variability; KPIs per stream (throughput, backlog, lead time, on-time vs norm, FTR)
 - ⬜ End-to-end capacity and constraint per value stream (generalised from the factory `lineCapacity`)
 - ⬜ Generic problem effects: target a step, pool, stock item or stream; modify work time, FTR, availability, delay, demand, people

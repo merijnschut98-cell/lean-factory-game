@@ -27,10 +27,11 @@ game/                      Godot project (res://)
   data/                    generated JSON (never edited by hand)
   assets/                  models, textures, fonts, audio (with licence files)
   tests/                   headless test runner + test_*.gd
+  tools/screenshot.gd      renders a scene to PNG under Xvfb for visual checks
+  export_presets.cfg       Windows, Linux and web export presets
 content/                   authored content, YAML, Dutch game text (problems, countermeasures, missions, story, codex)
 tools/
   build_content.py         YAML → validated JSON in game/data/
-  screenshot.gd            renders a scene to PNG under Xvfb for visual checks
 docs/                      GDD, architecture, research notes
 archive/factory-3d/        the Three.js factory prototype (reference only)
 (root)                     the legacy Python factory game, unchanged
@@ -106,7 +107,10 @@ UI strings that are not content (button labels, HUD) go through Godot's translat
 
 ## Testing
 
-- **Logic tests:** a small custom runner (`tests/run_tests.gd`, a `SceneTree` script) runs every `test_*.gd` headless: `godot --headless --path game --script res://tests/run_tests.gd`. It exits non-zero on failure. No third-party test addon, so nothing to keep compatible.
+- **Logic tests:** a small custom runner (`game/tests/run_tests.gd`, a `SceneTree` script) runs every `test_*.gd` headless: `godot --headless --path game --script res://tests/run_tests.gd` (append `-- rng` to run only matching files). It exits non-zero on failure. No third-party test addon, so nothing to keep compatible.
+  - Tests extend `TestCase` (`assert_eq`, `assert_near`, `assert_between`, …).
+  - GDScript cannot catch runtime errors, so the runner registers a `Logger` (Godot 4.5+). A test that crashes halfway, for example on a null access, fails instead of silently passing.
+  - A file with a syntax error fails the run.
 - **What gets tested:** every rule with business meaning:
   - flow and pre-emption;
   - rework and stock-outs;
@@ -116,7 +120,7 @@ UI strings that are not content (button labels, HUD) go through Godot's translat
   - scoring, saves;
   - content validity.
   This mirrors the prototype's 57 tests.
-- **Visual checks:** `tools/screenshot.gd` renders a named scene to PNG under Xvfb, so world and UI changes are reviewed as pictures before they are committed.
+- **Visual checks:** `game/tools/screenshot.gd` renders a named scene to PNG under Xvfb, so world and UI changes are reviewed as pictures before they are committed: `xvfb-run -a godot --path game --rendering-driver opengl3 --resolution 1600x900 --script res://tools/screenshot.gd -- res://src/boot/boot.tscn out.png`.
 - **Legacy:** the Python factory game keeps its own `pytest` suite.
 
 ## CI and builds (GitHub Actions)
@@ -126,6 +130,13 @@ UI strings that are not content (button labels, HUD) go through Godot's translat
   - run the Godot logic tests headless;
   - run the legacy Python tests.
 - **On demand and on milestone tags:** export Windows, Linux and web builds and attach them as downloadable artifacts, so you never compile anything yourself.
+
+## Rendering notes (measured, 2026-10-12)
+
+- **Linear tone mapping.** Filmic noticeably lifts colours in the Compatibility renderer (authored `#6f9a4c` grass rendered as `#8ab767`); Linear keeps authored colours true, which stylised art depends on.
+- **A neutral ambient colour, not the sky.** Sky-sourced ambient light tinted grey asphalt blue and overexposed everything.
+- **The colour pipeline itself is exact:** an unlit `#6f9a4c` surface renders as `#6f9a4c` in screenshots.
+- **Still to check in Phase C:** directional shadows were not visible in the first boot-scene angle.
 
 ## Assets
 

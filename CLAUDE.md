@@ -61,7 +61,10 @@ This is not an end-of-session cleanup — it is an inline, real-time habit. Ever
 - When any new function with business logic is added (score functions, simulation logic, catalog loading, state machines)
 - When a bug is fixed — write a test that would have caught it
 - When a stub is replaced with a real implementation
-- Run `python -m pytest tests/ -v` to verify the full suite still passes after every commit
+- Verify the full suite still passes after every commit:
+  - Godot logic tests (Spanning): `godot --headless --path game --script res://tests/run_tests.gd`
+  - Content pipeline: `python tools/build_content.py --check`
+  - Python tests (legacy factory game + content tools): `python -m pytest tests/ -v`
 
 ### `technical-debt` — run in any of these situations
 - Before starting each new phase
