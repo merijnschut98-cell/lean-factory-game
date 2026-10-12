@@ -424,6 +424,48 @@
     "planners": 20
    },
    "tier": 2
+  },
+  {
+   "budget": 1500,
+   "category": "flow",
+   "decay_days": 45,
+   "description": "Elk dossier wordt afgehandeld op de dag dat het klaar is, met een korte checklist; geen maandelijkse batch meer (one-piece flow).",
+   "effects": [],
+   "id": "close_out_at_completion",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Afhandelen bij oplevering",
+   "team_hours": {
+    "meter_office": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 25000,
+   "category": "flow",
+   "decay_days": null,
+   "description": "Bij gereedmelding wordt de EAN automatisch aangemeld in het centraal aansluitregister; handwerk alleen bij afwijkingen.",
+   "effects": [
+    {
+     "property": "touch_time",
+     "target": "connections.close_out",
+     "value": 0.4
+    }
+   ],
+   "id": "automatic_ean_registration",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Automatische EAN-aanmelding",
+   "team_hours": {
+    "meter_office": 30
+   },
+   "tier": 3
   }
  ]
 }

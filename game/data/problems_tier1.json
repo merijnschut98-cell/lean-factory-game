@@ -697,6 +697,80 @@
    "tier": 1,
    "visibility": "obvious",
    "waste": "defects"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "staan gemiddeld twee weken op 'administratief open'.": null,
+     "text": "Aansluitingen die technisch klaar zijn",
+     "tool": "data"
+    },
+    {
+     "at": "connections.close_out",
+     "depth": 0,
+     "key": false,
+     "text": "Bij Meetdata & registratie ligt weinig werk; het team heeft tijd over.",
+     "tool": "queue_count"
+    },
+    {
+     "at": "connections.close_out",
+     "depth": 1,
+     "dossier sluiten) gebeurt één keer per maand": null,
+     "in één keer voor alle dossiers.": null,
+     "key": true,
+     "text": "De afhandeling (EAN aanmelden",
+     "tool": "documents"
+    },
+    {
+     "at": "customer_contact.answer",
+     "depth": 1,
+     "key": true,
+     "text": "'Mijn aansluiting is vorige week aangelegd, maar de leverancier zegt dat mijn EAN niet bestaat.'",
+     "tool": "listen_in"
+    },
+    {
+     "at": "connections.close_out",
+     "depth": 2,
+     "key": true,
+     "text": "'We doen het maandelijks; dan hoef je maar één keer in te loggen in het registratiesysteem.'",
+     "tool": "conversation"
+    }
+   ],
+   "countermeasures": {
+    "automatic_ean_registration": 0.9,
+    "close_out_at_completion": 1.0
+   },
+   "effects": [
+    {
+     "property": "batch_days",
+     "target": "connections.close_out_wait",
+     "value": 28
+    }
+   ],
+   "id": "done_but_not_closed",
+   "kpi": "lead_time",
+   "mismatch_note": "Het team heeft genoeg tijd; het werk wacht op de maandelijkse batch, niet op mensen.",
+   "name": "Klaar maar niet af",
+   "plausible_causes": [
+    "De energieleverancier is traag.",
+    "Meetdata & registratie heeft te weinig mensen."
+   ],
+   "root_cause": "De administratieve afhandeling gebeurt één keer per maand in een batch, en het aanmelden van de EAN gaat met de hand.",
+   "severity": "medium",
+   "step": "connections.close_out_wait",
+   "symptoms": [
+    "Klanten met een nieuwe aansluiting kunnen nog geen energiecontract afsluiten.",
+    "Aansluitingen staan weken op 'technisch gereed, administratief open'."
+   ],
+   "teaches": [
+    "batching",
+    "one_piece_flow"
+   ],
+   "tier": 1,
+   "visibility": "subtle",
+   "waste": "inventory"
   }
  ]
 }

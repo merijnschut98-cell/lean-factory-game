@@ -207,6 +207,17 @@ streams:
         pool: gis
         touch_hours: 1.6
         ftr: 0.95
+      - id: close_out_wait
+        name: Wachten op administratieve verwerking
+        kind: wait
+        days: 1
+        spread: 0.5
+      - id: close_out
+        name: Administratieve afhandeling (EAN aanmelden)
+        kind: work
+        pool: meter_office
+        touch_hours: 0.25
+        ftr: 0.95
 
   - id: outages
     name: Storingen

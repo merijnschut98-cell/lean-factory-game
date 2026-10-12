@@ -283,3 +283,30 @@ problems:
       - {tool: data, key: true, depth: 1, text: Statusvragen komen bijna allemaal van klanten die al meer dan drie weken wachten; sommigen bellen elke week.}
       - {tool: documents, key: true, depth: 1, at: connections.intake, text: Na de ontvangstbevestiging hoort de klant niets meer, tot de monteur belt voor een afspraak.}
       - {tool: conversation, key: true, depth: 2, at: connections.design, text: "'Wij weten zelf ook niet wanneer het klaar is. Er is geen planning die we met de klant kunnen delen.'"}
+
+  - id: done_but_not_closed
+    tier: 1
+    name: Klaar maar niet af
+    step: connections.close_out_wait
+    waste: inventory
+    severity: medium
+    visibility: subtle
+    kpi: lead_time
+    symptoms:
+      - Klanten met een nieuwe aansluiting kunnen nog geen energiecontract afsluiten.
+      - Aansluitingen staan weken op 'technisch gereed, administratief open'.
+    root_cause: De administratieve afhandeling gebeurt één keer per maand in een batch, en het aanmelden van de EAN gaat met de hand.
+    plausible_causes:
+      - De energieleverancier is traag.
+      - Meetdata & registratie heeft te weinig mensen.
+    mismatch_note: Het team heeft genoeg tijd; het werk wacht op de maandelijkse batch, niet op mensen.
+    countermeasures: {close_out_at_completion: 1.0, automatic_ean_registration: 0.9}
+    teaches: [batching, one_piece_flow]
+    effects:
+      - {target: connections.close_out_wait, property: batch_days, value: 28}
+    clues:
+      - {tool: data, key: true, depth: 0, text: Aansluitingen die technisch klaar zijn, staan gemiddeld twee weken op 'administratief open'.}
+      - {tool: queue_count, key: false, depth: 0, at: connections.close_out, text: Bij Meetdata & registratie ligt weinig werk; het team heeft tijd over.}
+      - {tool: documents, key: true, depth: 1, at: connections.close_out, text: De afhandeling (EAN aanmelden, dossier sluiten) gebeurt één keer per maand, in één keer voor alle dossiers.}
+      - {tool: listen_in, key: true, depth: 1, at: customer_contact.answer, text: "'Mijn aansluiting is vorige week aangelegd, maar de leverancier zegt dat mijn EAN niet bestaat.'"}
+      - {tool: conversation, key: true, depth: 2, at: connections.close_out, text: "'We doen het maandelijks; dan hoef je maar één keer in te loggen in het registratiesysteem.'"}

@@ -233,3 +233,26 @@ countermeasures:
     multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
     effects:
       - {target: connections, property: call_rate, value: 0.5}
+
+  # ── Administratie ────────────────────────────────────────────────────────
+  - id: close_out_at_completion
+    name: Afhandelen bij oplevering
+    tier: 1
+    category: flow
+    description: Elk dossier wordt afgehandeld op de dag dat het klaar is, met een korte checklist; geen maandelijkse batch meer (one-piece flow).
+    budget: 1500
+    team_hours: {meter_office: 10}
+    decay_days: 45
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: automatic_ean_registration
+    name: Automatische EAN-aanmelding
+    tier: 3
+    category: flow
+    description: Bij gereedmelding wordt de EAN automatisch aangemeld in het centraal aansluitregister; handwerk alleen bij afwijkingen.
+    budget: 25000
+    team_hours: {meter_office: 30}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: connections.close_out, property: touch_time, value: 0.4}

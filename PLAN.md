@@ -174,9 +174,13 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 - ✅ De statusbellers (problem 10): late orders call three times as often. Failure demand rises to 25–30% of calls; on time falls from ~0.9 to ~0.5, and with some seeds the centre tips into a spiral. Countermeasures: realistic promise date (tier 1) or proactive status updates (tier 2, halves even the base failure demand: a healthier shape than before the problem)
 - ✅ Simplify pass on failure demand: one arrival-scheduling helper for value and failure demand; lateness counted without temporary arrays; the failure flag lives on the order (saved, and in finished records, so KPIs can separate failure from value demand)
 - ⬜ Performance note: the contact stream adds ~20k call orders a year, so a simulated year now takes ~2.8 s (was ~1.7 s). Fine for play (a game year takes hours); revisit if the tests or fast-forward feel slow (e.g. calls as small batches)
-- ⬜ Merijn reviews the ten problems for realism (texts, clues, effects) and the healthy base
+- ✅ Klaar maar niet af (problem 11):
+  - connections got an administrative close-out (a short wait, then EAN registration by Meetdata & registratie);
+  - the problem makes it a monthly batch.
+  - Systemic effect, emergent rather than scripted: connections lead p50 29 → 49 days, status calls 37 → 118 a week, contact centre on time 0.84 → 0.19. The contact centre's crisis comes from an admin batch two departments upstream.
+  - Countermeasures: close-out at completion (tier 1) or automatic EAN registration (tier 3).
+- ⬜ Merijn reviews the eleven problems for realism (texts, clues, effects, and whether the close-out spiral is too strong) and the healthy base
 - ⬜ Catalogue problems that need a new mechanism first:
-  - klaar maar niet af: an administrative close-out step (EAN registration) in the connections stream;
   - storing gooit de planning om: planned monteur work at 100%; needs the base to keep slack that the problem removes, or a planning-horizon mechanic;
   - KPI's die elkaar bevechten: overproduction, departments pushing work in; needs a release decision per department
 - ⬜ Common random numbers (a random stream per purpose), so A/B comparisons of two runs stay comparable. Today runs diverge after the first different draw, which is why the content test measures mechanisms instead of lead-time KPIs

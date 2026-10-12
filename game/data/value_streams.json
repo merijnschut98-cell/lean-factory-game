@@ -293,6 +293,21 @@
      "name": "Revisie & administratie",
      "pool": "gis",
      "touch_hours": 1.6
+    },
+    {
+     "days": 1,
+     "id": "close_out_wait",
+     "kind": "wait",
+     "name": "Wachten op administratieve verwerking",
+     "spread": 0.5
+    },
+    {
+     "ftr": 0.95,
+     "id": "close_out",
+     "kind": "work",
+     "name": "Administratieve afhandeling (EAN aanmelden)",
+     "pool": "meter_office",
+     "touch_hours": 0.25
     }
    ]
   },
