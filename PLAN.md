@@ -32,7 +32,7 @@ This is a multi-month project, built the right way: research → design (reviewe
 
 - **Company:** Voltana Netbeheer (fictional), region *Zuidmark*.
 - **Player:** newly hired continuous improvement lead (CI-lead).
-- **World at start:** the operations campus in *Brakenburg* (customer service, intake & planning, engineering/werkvoorbereiding, bedrijfsvoeringscentrum/control room, warehouse, workshop, training yard) plus the town of Brakenburg (homes with solar panels, heat pumps and EV chargers, an industrial estate, MS/LS cables, distribution substations, a primary substation). Vans drive from the campus to jobs in town.
+- **World at start:** the operations campus in *Nova* (customer service, intake & planning, engineering/werkvoorbereiding, bedrijfsvoeringscentrum/control room, warehouse, workshop, training yard) plus the town of Nova (homes with solar panels, heat pumps and EV chargers, an industrial estate, MS/LS cables, distribution substations, a primary substation). Vans drive from the campus to jobs in town.
 - **Later:** more regions unlock as your CI maturity grows.
 
 ## Value streams
@@ -104,7 +104,7 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 ---
 
 ## Decisions Made
-- **GDD answers from Merijn (2026-10-12)**: company name Voltana Netbeheer stays; the town needs a shorter, modern name; a narrative arc with side quests and some open-world freedom; improvements cost both euros and team hours; model ACM regulation and ISO / NTA 8120 asset management; no own energy-sector cases, so content is research-based; sessions of 15–40 minutes; desktop first
+- **GDD answers from Merijn (2026-10-12)**: company name Voltana Netbeheer stays; the town is called Nova; a narrative arc with side quests and some open-world freedom; improvements cost both euros and team hours; model ACM regulation and ISO / NTA 8120 asset management; no own energy-sector cases, so content is research-based; sessions of 15–40 minutes; desktop first
 - **Pace (2026-10-12)**: multi-month project; design first, reviewed increments, no publishing deadline
 - **Grid operator setting (2026-10-12)**: fictional DSO "Voltana Netbeheer", campus + one town; player is CI-lead; game text Dutch
 - **Engine: Godot 4 + GDScript from the start (2026-10-12)**, at Merijn's suggestion. The goal is a desktop game, and porting a TypeScript simulation later would mean rewriting all logic. GDScript (not C#) keeps a web export possible. Godot runs headless here, so logic tests run and scenes can be screenshotted (Xvfb + OpenGL compatibility renderer, verified with 4.4.1). The Three.js prototype in `web/` is superseded (kept in `archive/factory-3d/`)
