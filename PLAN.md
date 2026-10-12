@@ -120,9 +120,15 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
   - bounded `stats_since`;
   - `_score_inputs` split out of `act`.
 - ✅ Step 6: save/load.
-  - `NetworkState` and `RegionState` capture everything needed to continue exactly; `SaveFile` writes versioned JSON per slot (restricted slot names, atomic write).
+  - `NetworkState` and `RegionState` capture everything needed to continue exactly; `SaveFile` writes a versioned file per slot (restricted slot names, atomic write).
   - Loading restores by id into fresh content and reports what the content no longer has.
   - Tests: a restored network continues 30 days identically (orders, events, effects, statistics); a restored region finishes its experiment with the same Check and score; corrupt data, unknown ids, a wrong version and path escape are refused. 109 Godot tests.
+- ✅ Simplify pass on step 6:
+  - binary saves (`var_to_bytes`), because Godot's JSON rounds floats; checked in the engine;
+  - `WorkOrder` and `ProblemState` own their `to_dict`/`from_dict`;
+  - `RegionState` includes its network, so callers save one thing;
+  - the simulation keeps 120 days of history (a two-year save would otherwise be about 1 MB and growing);
+  - one shape check (`JsonFile.shape_error`), `ValueStream.step_index`, shared rules fixtures.
 - ⬜ Gate: four value streams run headless with realistic KPIs; tests cover flow, pre-emption, rework, stock-outs, capacity, the PDCA loop and save/load
 
 ## Phase B — Content (Dutch) ⬜

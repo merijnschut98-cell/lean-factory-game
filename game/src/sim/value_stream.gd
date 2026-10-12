@@ -39,10 +39,24 @@ func per_week() -> float:
 
 
 func step(step_id: String) -> SimStep:
-	for s in steps:
-		if s.id == step_id:
-			return s
-	return null
+	var at := step_index(step_id)
+	return steps[at] if at >= 0 else null
+
+
+## Position of a step in the stream; -1 if there is none.
+func step_index(step_id: String) -> int:
+	for i in steps.size():
+		if steps[i].id == step_id:
+			return i
+	return -1
+
+
+## Drop finished records from before `t` (keeps history and saves bounded).
+func forget_before(t: int) -> void:
+	var first := finished.bsearch_custom({"done_at": t},
+		func(a: Dictionary, b: Dictionary) -> bool: return a["done_at"] < b["done_at"])
+	if first > 0:
+		finished = finished.slice(first)
 
 
 ## KPIs over the last `window_days` calendar days.

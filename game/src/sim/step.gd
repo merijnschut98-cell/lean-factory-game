@@ -57,26 +57,23 @@ func record(day: int, stat: Stat, amount: int = 1) -> void:
 	_daily[day] = counts
 
 
-## The daily statistics for a save file: {"day": [counts by Stat]}.
+## The daily statistics for a save file: {day: counts by Stat}.
 func export_daily() -> Dictionary:
-	var out := {}
-	for day in _daily:
-		out[str(day)] = Array(_daily[day])
-	return out
+	return _daily.duplicate(true)
 
 
-## Restore export_daily() output (after JSON: numbers may be floats).
+## Restore export_daily() output; malformed days are skipped.
 func import_daily(saved: Dictionary) -> void:
 	_daily.clear()
 	_last_day = 0
-	for key: String in saved:
-		var counts := PackedInt64Array()
-		counts.resize(Stat.size())
-		var values: Array = saved[key]
-		for i in mini(values.size(), Stat.size()):
-			counts[i] = int(values[i])
-		_daily[int(key)] = counts
-		_last_day = maxi(_last_day, int(key))
+	for day: Variant in saved:
+		if day is int and saved[day] is PackedInt64Array and saved[day].size() == Stat.size():
+			_daily[day] = saved[day]
+			_last_day = maxi(_last_day, day)
+
+
+func forget_day(day: int) -> void:
+	_daily.erase(day)
 
 
 ## Totals from `day` on: {entered, done, reworked, queue_hours (mean wait

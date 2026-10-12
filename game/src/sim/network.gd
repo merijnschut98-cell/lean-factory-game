@@ -9,6 +9,9 @@ extends RefCounted
 
 const DEFAULT_PATH := "res://data/value_streams.json"
 const MAX_EVENTS := 2000
+## Days of finished records and step statistics kept (KPI windows, Check,
+## the value stream map); older history is dropped so memory and saves stay bounded.
+const HISTORY_DAYS := 120
 
 var time := 0
 var rng: Rng
@@ -254,6 +257,7 @@ func _tick() -> void:
 
 
 func _start_day() -> void:
+	_forget_old_history()
 	for pool in _pool_list:
 		pool.roll_presence(rng)
 	var day_start := SimCalendar.day_of(time) * SimCalendar.MINUTES_PER_DAY
@@ -268,6 +272,16 @@ func _start_day() -> void:
 				var at := day_start + slots[rng.int_range(0, slots.size() - 1)] + rng.int_range(0, SimCalendar.TICK - 1)
 				_arrivals.append({"at": at, "stream": s})
 	_arrivals.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["at"] < b["at"])
+
+
+func _forget_old_history() -> void:
+	var day := SimCalendar.day_of(time) - HISTORY_DAYS - 1
+	if day < 0:
+		return
+	for s in streams:
+		s.forget_before(SimCalendar.days(day + 1))
+		for step in s.steps:
+			step.forget_day(day)
 
 
 # ── Flow ────────────────────────────────────────────────────────────────────

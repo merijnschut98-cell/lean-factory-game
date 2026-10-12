@@ -89,6 +89,18 @@ static func countermeasures() -> Array:
 	]
 
 
+static func region(budget: int = 50000, seed_value: int = 5) -> Region:
+	var profile := Profile.new()
+	profile.budget = budget
+	return Region.new(net(seed_value), problem_defs(), countermeasure_defs(), profile)
+
+
+## An A3 for `problem_id` naming its real root cause.
+static func a3(r: Region, problem_id: String, waste: String, cm: String, evidence: Array, prediction: String) -> Dictionary:
+	var options: Dictionary = Investigation.cause_options(r.problems[problem_id], r.problem_list())
+	return {"waste": waste, "cause": options["correct"], "evidence": evidence, "cm": cm, "prediction": prediction}
+
+
 static func problem_defs() -> Array[ProblemDef]:
 	var out: Array[ProblemDef] = []
 	for d: Dictionary in problems():

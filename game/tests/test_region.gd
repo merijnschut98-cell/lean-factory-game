@@ -3,9 +3,7 @@ extends TestCase
 
 
 func _region(budget: int = 50000) -> Region:
-	var profile := Profile.new()
-	profile.budget = budget
-	return Region.new(RulesFixture.net(), RulesFixture.problem_defs(), RulesFixture.countermeasure_defs(), profile)
+	return RulesFixture.region(budget)
 
 
 func _clue_ids(clues: Array) -> Array:
@@ -21,8 +19,7 @@ func _investigate(r: Region) -> void:
 
 
 func _a3(r: Region, cm: String, evidence: Array = ["custom_design:0", "custom_design:2", "custom_design:4"]) -> Dictionary:
-	var options: Dictionary = Investigation.cause_options(r.problems["custom_design"], r.problem_list())
-	return {"waste": "overprocessing", "cause": options["correct"], "evidence": evidence, "cm": cm, "prediction": "throughput"}
+	return RulesFixture.a3(r, "custom_design", "overprocessing", cm, evidence, "throughput")
 
 
 func test_activating_a_problem_hits_the_simulation() -> void:

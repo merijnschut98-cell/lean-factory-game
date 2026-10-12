@@ -34,3 +34,42 @@ func _init(order_id: int, of_stream: ValueStream, now: int) -> void:
 
 func current_step() -> SimStep:
 	return stream.steps[step_index]
+
+
+## For save files: steps by id, never by index.
+func to_dict() -> Dictionary:
+	var steps := stream.steps
+	var early_ids := {}
+	for index in early:
+		early_ids[steps[index].id] = early[index]
+	return {
+		"id": id, "stream": stream.id, "step": steps[step_index].id, "born": born, "due": due,
+		"remaining": remaining, "queued_at": queued_at, "started": started, "wait_until": wait_until,
+		"pending": steps[pending_step].id if pending_step < steps.size() else "", "reworks": reworks,
+		"early": early_ids,
+	}
+
+
+## Rebuild a saved order in stream `s`; null if its steps no longer exist.
+static func from_dict(d: Dictionary, s: ValueStream) -> WorkOrder:
+	var at := s.step_index(str(d.get("step", "")))
+	var pending := str(d.get("pending", ""))
+	var pending_at := s.steps.size() if pending.is_empty() else s.step_index(pending)
+	if at < 0 or pending_at < 0:
+		return null
+	var o := WorkOrder.new(int(d.get("id", 0)), s, int(d.get("born", 0)))
+	o.due = int(d.get("due", o.due))
+	o.step_index = at
+	o.pending_step = pending_at
+	o.remaining = int(d.get("remaining", 0))
+	o.queued_at = int(d.get("queued_at", 0))
+	o.started = bool(d.get("started", false))
+	o.wait_until = int(d.get("wait_until", 0))
+	o.reworks = int(d.get("reworks", 0))
+	var early: Variant = d.get("early", {})
+	if early is Dictionary:
+		for step_id: Variant in early:
+			var index := s.step_index(str(step_id))
+			if index >= 0:
+				o.early[index] = int(early[step_id])
+	return o

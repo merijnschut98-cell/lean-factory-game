@@ -31,6 +31,35 @@ func _init(problem_id: String) -> void:
 	id = problem_id
 
 
+## For save files (the phase by name).
+func to_dict() -> Dictionary:
+	return {
+		"phase": Phase.keys()[phase], "blamed": blamed, "a3": a3, "cause_correct": cause_correct,
+		"waste_right": waste_right, "eff": eff, "level": level, "failed_checks": failed_checks,
+		"check_at": check_at, "baseline": baseline, "recur_at": recur_at, "score": score,
+	}
+
+
+## Restore to_dict() output; false (and nothing changed) if the phase is unknown.
+func load_dict(d: Dictionary) -> bool:
+	var saved_phase := Phase.keys().find(d.get("phase", ""))
+	if saved_phase < 0:
+		return false
+	phase = saved_phase
+	blamed = bool(d.get("blamed", false))
+	a3 = d.get("a3", {}) if d.get("a3") is Dictionary else {}
+	cause_correct = bool(d.get("cause_correct", false))
+	waste_right = bool(d.get("waste_right", false))
+	eff = float(d.get("eff", 0.0))
+	level = str(d.get("level", ""))
+	failed_checks = int(d.get("failed_checks", 0))
+	check_at = int(d.get("check_at", 0))
+	baseline = d.get("baseline", {}) if d.get("baseline") is Dictionary else {}
+	recur_at = int(d.get("recur_at", -1))
+	score = d.get("score", {}) if d.get("score") is Dictionary else {}
+	return true
+
+
 func is_open() -> bool:
 	return phase != Phase.DORMANT and phase != Phase.RESOLVED
 
