@@ -83,14 +83,24 @@ Time runs in fixed simulated steps, independent of the frame rate: `Game` advanc
 
 ## Rules (`rules/`)
 
-Ports of the prototype's tested logic, adapted to a service organisation:
+Ports of the prototype's tested logic, adapted to a service organisation (plan: `docs/superpowers/plans/2026-10-12-phase-a-step-5-rules.md`):
 
 | Prototype (TypeScript) | Godot (GDScript) |
 | --- | --- |
-| `investigation.ts`: tools, clues with depth, questions and trust, cause bank, prediction | `rules/investigation.gd`, `rules/conversation.gd` |
-| `pdca.ts`: effectiveness by maturity, score with five dimensions incl. flow impact | `rules/pdca.gd` |
-| `game.ts`: missions, problem phases, A3, Check/Act, recurrence | `rules/site_game.gd`, `rules/missions.gd`, plus `rules/story.gd` for the narrative arc |
-| `progression.ts`: belts, regions | `rules/progression.gd` |
+| content types | `ProblemDef`, `CountermeasureDef`, `Clue`: the shape of the Phase B content |
+| `investigation.ts`: tools, clues with depth, questions, cause bank | `Investigation` (ids only; the UI words them) |
+| `pdca.ts`: effectiveness by maturity, five-dimension score | `Pdca` (effectiveness = maturity multiplier × the countermeasure's fit for the problem) |
+| `game.ts`: problem phases, A3, Check/Act, recurrence | `Region` + `ProblemState` + `Profile` |
+| `progression.ts`: belts | `Progression` |
+| missions, story | later (`rules/missions.gd`, `rules/story.gd`) |
+
+How the rules differ from the factory:
+- **Places are value-stream steps** (`connections.design`). Walking another step of the same stream counts as scouting. A clue can sit upstream of where the problem shows.
+- **Trust is per team** (pool).
+- **Several countermeasures can help one problem**, each with a fit. Each shapes the process differently through its own effects and levers, so there is no single healthy process.
+- **An experiment costs** improvement budget (€) and team hours. The hours become an availability effect (`do:<id>`) on that team while it runs: improvement work competes with daily work.
+- **Check compares** the stream's end-to-end KPIs and capacity before and after, plus the problem's own step (per-step daily statistics). A fix away from the constraint is flagged and scores low on flow impact.
+- **Results are codes and numbers** (reply `guarded`, lesson `mismatch`, note `impact_not_constraint`). The UI words them in Dutch.
 
 Problem effects are generic modifiers (`sim/modifiers.gd`):
 - An effect is `{target, property, value}`, e.g. `{target: "connections.design", property: "touch_time", value: 1.3}`. The property decides the kind of target and how effects combine: factors for times and demand; additions for FTR, `applies`, availability, headcount and reorder point. Results are clamped to sensible bounds.

@@ -6,13 +6,13 @@ Game text is **Dutch** (with sector terms). Code, comments and this plan stay in
 
 ---
 
-## Current Status: Phase A — Engine (Godot) 🔧 steps 1–4b done
+## Current Status: Phase A — Engine (Godot) 🔧 steps 1–5 done
 
 Pivot agreed 2026-10-12: from a hoverboard factory to a grid operator. The 3D factory prototype is archived in `archive/factory-3d/` (also git commit `b3a4c8c`). Its investigation / A3 / PDCA / bottleneck logic will be carried over and generalised.
 
 This is a multi-month project, built the right way: research → design (reviewed by Merijn) → engine → content → world → UI, in small tested increments. No publishing deadline. Built in **Godot 4 + GDScript** from the start (decided 2026-10-12).
 
-**Next task:** Phase A step 5 — port investigation / A3 / PDCA / scoring from the factory prototype, with time-windowed per-step statistics.
+**Next task:** Phase A step 4c — the cost of work in progress (stale dossiers), then WIP limits.
 
 ---
 
@@ -99,7 +99,13 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 - ✅ Simplify pass on step 4b: the reserve is one lever `{stream, people}` (same shape as the content, so a half-set reserve cannot exist), one `_send_back` for rework and re-planning, the parallel-wait sentinel removed, Capacity computes the idle reserve once per pool, shared `_earlier` check in the validator
 - ⬜ Step 4c: the cost of work in progress, then WIP limits (Merijn, 2026-10-12: implement). Chosen model: dossiers go stale; a quote, permit or design that waited longer than N days needs (part of) its work again (an FTR drop or a send-back). Then a WIP limit per step (orders wait upstream, not yet started) shows a real gain. Heijunka after that
 - ✅ Decided (Merijn, 2026-10-12): `value_streams.yaml` holds a healthy process *to an extent*; the starting problems are active effects on top. There is no single healthy process: several countermeasures can help one problem (each with a fit 0–1), each shapes the process differently through its own effects and levers, and some improve more than others. Players must not be pushed down one dedicated path
-- ⬜ Step 5: port investigation / A3 / PDCA / scoring from the factory prototype (`archive/factory-3d/src/sim/`) to GDScript; tools renamed for a service organisation; Check compares stream KPIs and capacity before/after. Design point: time-windowed per-step statistics (queue time, touch time, rework) for the before/after comparison and the value stream map
+- ✅ Step 5 (plan: `docs/superpowers/plans/2026-10-12-phase-a-step-5-rules.md`): the problem-solving rules in `game/src/rules/`.
+  - `Region` runs the loop over the live simulation: activate (max 3 open), gemba tools at value-stream steps, questions with trust per team, A3 (waste, cause bank, evidence, countermeasure, Kata prediction), experiment, Check, Act, recurrence.
+  - Several countermeasures per problem, each with a fit (Merijn's "many healthier processes").
+  - Improvement budget plus team hours (an availability effect while the experiment runs).
+  - Check on end-to-end KPIs and capacity plus per-step daily statistics; five-dimension score, budget and XP, belts.
+  - Lesson test on real content: fixing Planning (≈40% load) scores flow impact ≤ 2 with "not the constraint"; fixing Werkvoorbereiding scores ≥ 4. 98 Godot tests.
+  - Missions and the story arc follow with the Phase B content
 - ⬜ Step 6: save/load of the simulation and rules state (JSON, versioned, validated)
 - ⬜ Gate: four value streams run headless with realistic KPIs; tests cover flow, pre-emption, rework, stock-outs, capacity, the PDCA loop and save/load
 

@@ -108,3 +108,37 @@ func test_skipping_idle_time_changes_nothing() -> void:
 	for s in fast.streams:
 		assert_eq(s.finished, slow.stream(s.id).finished, s.id)
 	assert_eq(fast.events, slow.events)
+
+
+## Solve one made-up problem at `step` on the real network; returns the score.
+func _solve_at(step: String) -> Dictionary:
+	var problem := ProblemDef.from_dict({
+		"id": "slow", "tier": 1, "name": "Traag", "step": step, "waste": "overprocessing", "severity": "medium",
+		"visibility": "obvious", "kpi": "throughput", "root_cause": "Too many approvals",
+		"countermeasures": {"fix": 1.0},
+		"effects": [NetFixture.effect(step, "touch_time", 1.2)],
+		"clues": [{"tool": "time_study", "text": "t", "key": true, "depth": 0}],
+	})
+	var fix := CountermeasureDef.from_dict({
+		"id": "fix", "name": "Fix", "tier": 1, "budget": 1000, "decay_days": null,
+		"multipliers": {"full": 0.9, "reduced": 0.5, "minimal": 0.25},
+		"effects": [NetFixture.effect(step, "touch_time", 0.7)],
+	})
+	var defs: Array[ProblemDef] = [problem]
+	var cms: Array[CountermeasureDef] = [fix]
+	var r := Region.new(_net(), defs, cms, Profile.new())
+	r.activate("slow")
+	r.use_tool(step, "time_study")
+	r.submit_a3("slow", {"waste": "overprocessing", "cause": Investigation.cause_options(problem, defs)["correct"],
+		"evidence": ["slow:0"], "cm": "fix", "prediction": "throughput"})
+	r.advance_days(Region.CHECK_DAYS)
+	assert_true(r.check("slow")["passed"])
+	return r.act("slow", true)
+
+
+func test_only_improving_the_constraint_scores_on_flow() -> void:
+	var planning := _solve_at("connections.planning")
+	assert_true(planning["impact"] <= 2, "planning is at ~40%%: impact %d" % planning["impact"])
+	assert_true("impact_not_constraint" in planning["notes"])
+	var design := _solve_at("connections.design")
+	assert_true(design["impact"] >= 4, "design is the constraint: impact %d" % design["impact"])
