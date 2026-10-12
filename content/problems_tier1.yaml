@@ -12,6 +12,8 @@
 #                 at (a place upstream or downstream; default: step)
 # kpi             what a good prediction names
 # plausible_causes  wrong but believable causes for the A3's cause bank
+#
+# Quote clue texts: inside {…} an unquoted comma ends the text (the build refuses it).
 
 problems:
   - id: incomplete_application
@@ -35,9 +37,9 @@ problems:
     effects:
       - {target: connections.intake, property: ftr, value: -0.2}
     clues:
-      - {tool: documents, key: true, depth: 0, text: Van de laatste twintig aanvragen missen er negen het aansluitvermogen of de gegevens van de installateur.}
-      - {tool: queue_count, key: false, depth: 0, text: In de intake-wachtrij liggen maar een paar aanvragen. Het team werkt ze snel weg.}
-      - {tool: data, key: true, depth: 1, text: Bijna de helft van de aanvragen gaat terug naar de klant voor aanvulling; die wachten gemiddeld een week.}
+      - {tool: documents, key: true, depth: 0, text: "Van de laatste twintig aanvragen missen er negen het aansluitvermogen of de gegevens van de installateur."}
+      - {tool: queue_count, key: false, depth: 0, text: "In de intake-wachtrij liggen maar een paar aanvragen. Het team werkt ze snel weg."}
+      - {tool: data, key: true, depth: 1, text: "Bijna de helft van de aanvragen gaat terug naar de klant voor aanvulling; die wachten gemiddeld een week."}
       - {tool: conversation, key: true, depth: 1, text: "'Het webformulier laat je gewoon doorklikken zonder vermogen of meterkastfoto. Wij zien het pas als we het dossier openen.'"}
       - {tool: listen_in, key: true, depth: 2, text: "Een klant aan de telefoon: 'Ik wist niet dat ik dat moest invullen, het formulier vroeg er niet om.'"}
 
@@ -62,10 +64,10 @@ problems:
     effects:
       - {target: connections.execution, property: ftr, value: -0.25}  # 2 of 5 addresses not ready
     clues:
-      - {tool: shadow, key: true, depth: 0, text: Op twee van de vijf adressen is de meterkast niet klaar (geen ruimte, geen aarding, de installateur is nog niet geweest). De monteur rijdt onverrichter zake terug.}
-      - {tool: time_study, key: false, depth: 0, text: Een aansluiting maken kost de monteur ruim vier uur, binnen de norm.}
-      - {tool: data, key: true, depth: 1, text: Van de herplande klussen heeft zeventig procent als reden 'meterkast niet gereed'.}
-      - {tool: documents, key: true, depth: 1, at: connections.planning, text: Planning plant op de datum van het offerte-akkoord. Nergens staat of de installateur klaar is.}
+      - {tool: shadow, key: true, depth: 0, text: "Op twee van de vijf adressen is de meterkast niet klaar (geen ruimte, geen aarding, de installateur is nog niet geweest). De monteur rijdt onverrichter zake terug."}
+      - {tool: time_study, key: false, depth: 0, text: "Een aansluiting maken kost de monteur ruim vier uur, binnen de norm."}
+      - {tool: data, key: true, depth: 1, text: "Van de herplande klussen heeft zeventig procent als reden 'meterkast niet gereed'."}
+      - {tool: documents, key: true, depth: 1, at: connections.planning, text: "Planning plant op de datum van het offerte-akkoord. Nergens staat of de installateur klaar is."}
       - {tool: conversation, key: true, depth: 2, at: connections.planning, text: "'We bellen de klant nooit vooraf. We weten pas dat het niet klaar is als de monteur er staat.'"}
 
   - id: wrong_joint_in_van
@@ -89,10 +91,10 @@ problems:
     effects:
       - {target: outages.repair, property: touch_time, value: 1.5}
     clues:
-      - {tool: shadow, key: true, depth: 0, text: Bij een kabelstoring ligt de juiste mof niet in de bus. De monteur rijdt veertig minuten heen en terug naar het magazijn.}
-      - {tool: time_study, key: false, depth: 0, at: outages.locate, text: Het lokaliseren van de fout duurt steeds rond het uur.}
-      - {tool: material_check, key: true, depth: 1, text: Geen twee bussen hebben dezelfde voorraad. Er is geen lijst van wat erin hoort.}
-      - {tool: data, key: true, depth: 1, text: In een kwart van de storingslogboeken staat 'materiaal halen'.}
+      - {tool: shadow, key: true, depth: 0, text: "Bij een kabelstoring ligt de juiste mof niet in de bus. De monteur rijdt veertig minuten heen en terug naar het magazijn."}
+      - {tool: time_study, key: false, depth: 0, at: outages.locate, text: "Het lokaliseren van de fout duurt steeds rond het uur."}
+      - {tool: material_check, key: true, depth: 1, text: "Geen twee bussen hebben dezelfde voorraad. Er is geen lijst van wat erin hoort."}
+      - {tool: data, key: true, depth: 1, text: "In een kwart van de storingslogboeken staat 'materiaal halen'."}
       - {tool: conversation, key: true, depth: 2, text: "'Wat op is, vul ik aan als ik toevallig langs het magazijn kom. Niemand houdt bij wat eruit gaat.'"}
 
   - id: custom_design
@@ -116,11 +118,11 @@ problems:
     effects:
       - {target: connections.design, property: touch_time, value: 1.3}
     clues:
-      - {tool: time_study, key: true, depth: 0, text: Een gewone woningaansluiting kost vijf uur ontwerp, net zoveel als een bedrijfsaansluiting.}
-      - {tool: queue_count, key: false, depth: 0, text: In de bak liggen meer dan honderd dossiers te wachten.}
-      - {tool: documents, key: true, depth: 1, text: Elk ontwerp, ook een standaard huisaansluiting, gaat langs drie handtekeningen.}
+      - {tool: time_study, key: true, depth: 0, text: "Een gewone woningaansluiting kost vijf uur ontwerp, net zoveel als een bedrijfsaansluiting."}
+      - {tool: queue_count, key: false, depth: 0, text: "In de bak liggen meer dan honderd dossiers te wachten."}
+      - {tool: documents, key: true, depth: 1, text: "Elk ontwerp, ook een standaard huisaansluiting, gaat langs drie handtekeningen."}
       - {tool: conversation, key: true, depth: 1, at: connections.intake, text: "'Wij vragen nooit of het een standaardaansluiting is. Alles gaat als maatwerk door.'"}
-      - {tool: data, key: true, depth: 2, text: Driekwart van de ontwerpen is een standaard 3x25A-aansluiting zonder netuitbreiding.}
+      - {tool: data, key: true, depth: 2, text: "Driekwart van de ontwerpen is een standaard 3x25A-aansluiting zonder netuitbreiding."}
 
   - id: not_at_home
     tier: 1
@@ -143,11 +145,11 @@ problems:
     effects:
       - {target: meters.visit, property: ftr, value: -0.15}
     clues:
-      - {tool: shadow, key: true, depth: 0, text: Bij drie van de acht adressen doet niemand open. De monteur laat een kaartje achter.}
-      - {tool: time_study, key: false, depth: 0, text: Een meterwissel zelf duurt vijfendertig minuten, ruim binnen de planning.}
-      - {tool: documents, key: true, depth: 1, at: meters.appointment, text: Klanten krijgen een tijdvak van 8 tot 17 uur en geen bevestiging of herinnering.}
+      - {tool: shadow, key: true, depth: 0, text: "Bij drie van de acht adressen doet niemand open. De monteur laat een kaartje achter."}
+      - {tool: time_study, key: false, depth: 0, text: "Een meterwissel zelf duurt vijfendertig minuten, ruim binnen de planning."}
+      - {tool: documents, key: true, depth: 1, at: meters.appointment, text: "Klanten krijgen een tijdvak van 8 tot 17 uur en geen bevestiging of herinnering."}
       - {tool: listen_in, key: true, depth: 1, at: meters.appointment, text: "'Ik heb een halve dag vrij genomen en er kwam niemand.' En: 'Ik wist niet dat het vandaag was.'"}
-      - {tool: data, key: true, depth: 2, text: Van de mislukte bezoeken had tachtig procent geen herinnering ontvangen.}
+      - {tool: data, key: true, depth: 2, text: "Van de mislukte bezoeken had tachtig procent geen herinnering ontvangen."}
 
   - id: permits_in_batches
     tier: 1
@@ -170,11 +172,11 @@ problems:
     effects:
       - {target: connections.permit, property: batch_days, value: 7}
     clues:
-      - {tool: data, key: true, depth: 0, text: Vergunningsaanvragen gaan alleen op maandag de deur uit. Een dossier dat dinsdag klaar is, wacht bijna een week.}
-      - {tool: documents, key: false, depth: 0, text: De gemeente haalt haar wettelijke termijn bijna altijd.}
+      - {tool: data, key: true, depth: 0, text: "Vergunningsaanvragen gaan alleen op maandag de deur uit. Een dossier dat dinsdag klaar is, wacht bijna een week."}
+      - {tool: documents, key: false, depth: 0, text: "De gemeente haalt haar wettelijke termijn bijna altijd."}
       - {tool: conversation, key: true, depth: 1, at: connections.design, text: "'Ik verzamel de aanvragen en stuur ze op maandag in één keer op; dat scheelt inloggen in het portaal.'"}
-      - {tool: documents, key: true, depth: 1, at: connections.design, text: De vergunning wordt pas aangevraagd als het ontwerp helemaal af is, terwijl de gemeente alleen het tracé nodig heeft.}
-      - {tool: time_study, key: true, depth: 2, at: connections.design, text: Een aanvraag indienen kost tien minuten; het tracé is al na een uur ontwerpen bekend.}
+      - {tool: documents, key: true, depth: 1, at: connections.design, text: "De vergunning wordt pas aangevraagd als het ontwerp helemaal af is, terwijl de gemeente alleen het tracé nodig heeft."}
+      - {tool: time_study, key: true, depth: 2, at: connections.design, text: "Een aanvraag indienen kost tien minuten; het tracé is al na een uur ontwerpen bekend."}
 
   - id: revision_backlog
     tier: 1
@@ -197,10 +199,10 @@ problems:
     effects:
       - {target: connections.revision, property: touch_time, value: 1.4}
     clues:
-      - {tool: data, key: true, depth: 0, text: Er staan 240 opgeleverde aansluitingen open in GIS; de oudste is vier maanden oud.}
-      - {tool: queue_count, key: false, depth: 0, text: De bak met schetsen is overzichtelijk geordend op datum.}
-      - {tool: time_study, key: true, depth: 1, text: Een schets overtekenen kost anderhalf uur, onder meer door uitzoeken wat er bedoeld is.}
-      - {tool: documents, key: true, depth: 1, at: connections.commissioning, text: De monteur schetst het as-built met de hand op een A4; foto's en maten ontbreken vaak.}
+      - {tool: data, key: true, depth: 0, text: "Er staan 240 opgeleverde aansluitingen open in GIS; de oudste is vier maanden oud."}
+      - {tool: queue_count, key: false, depth: 0, text: "De bak met schetsen is overzichtelijk geordend op datum."}
+      - {tool: time_study, key: true, depth: 1, text: "Een schets overtekenen kost anderhalf uur, onder meer door uitzoeken wat er bedoeld is."}
+      - {tool: documents, key: true, depth: 1, at: connections.commissioning, text: "De monteur schetst het as-built met de hand op een A4; foto's en maten ontbreken vaak."}
       - {tool: conversation, key: true, depth: 2, at: connections.commissioning, text: "'Ik teken het op de motorkap. Of ze het later kunnen lezen? Ze bellen me wel als het niet klopt.'"}
 
   - id: digging_damage
@@ -224,11 +226,11 @@ problems:
     effects:
       - {target: outages, property: demand, value: 1.35}
     clues:
-      - {tool: data, key: true, depth: 0, text: Een derde van de storingen overdag is graafschade; zeven procent van de graafwerken raakt een kabel.}
-      - {tool: shadow, key: false, depth: 0, text: De monteurs herstellen graafschade snel en vakkundig.}
-      - {tool: documents, key: true, depth: 1, text: Bij de helft van de schades lag de kabel anders dan op de KLIC-kaart.}
+      - {tool: data, key: true, depth: 0, text: "Een derde van de storingen overdag is graafschade; zeven procent van de graafwerken raakt een kabel."}
+      - {tool: shadow, key: false, depth: 0, text: "De monteurs herstellen graafschade snel en vakkundig."}
+      - {tool: documents, key: true, depth: 1, text: "Bij de helft van de schades lag de kabel anders dan op de KLIC-kaart."}
       - {tool: conversation, key: true, depth: 1, text: "'Proefsleuven? Daar is in de planning van de aannemer nooit tijd voor.'"}
-      - {tool: data, key: true, depth: 2, at: connections.revision, text: De kabels die anders lagen dan op de kaart, zijn bijna allemaal nog niet gerevideerd.}
+      - {tool: data, key: true, depth: 2, at: connections.revision, text: "De kabels die anders lagen dan op de kaart, zijn bijna allemaal nog niet gerevideerd."}
 
   - id: knowledge_drain
     tier: 1
@@ -251,11 +253,11 @@ problems:
     effects:
       - {target: outages.locate, property: ftr, value: -0.3}
     clues:
-      - {tool: shadow, key: true, depth: 0, text: Een jonge monteur zoekt anderhalf uur naar de fout in een oliedrukkabel en belt dan een collega.}
-      - {tool: time_study, key: false, depth: 0, text: Het herstel zelf duurt bij iedereen ongeveer even lang.}
-      - {tool: data, key: true, depth: 1, text: Storingen in netten van voor 1970 worden twee keer zo vaak opnieuw gelokaliseerd.}
+      - {tool: shadow, key: true, depth: 0, text: "Een jonge monteur zoekt anderhalf uur naar de fout in een oliedrukkabel en belt dan een collega."}
+      - {tool: time_study, key: false, depth: 0, text: "Het herstel zelf duurt bij iedereen ongeveer even lang."}
+      - {tool: data, key: true, depth: 1, text: "Storingen in netten van voor 1970 worden twee keer zo vaak opnieuw gelokaliseerd."}
       - {tool: conversation, key: true, depth: 1, text: "'Als Henk het niet weet, weet niemand het. En Henk gaat in maart met pensioen.'"}
-      - {tool: documents, key: true, depth: 2, text: Er is geen overzicht van wie welke kabeltypes en schakelingen beheerst.}
+      - {tool: documents, key: true, depth: 2, text: "Er is geen overzicht van wie welke kabeltypes en schakelingen beheerst."}
 
   - id: status_callers
     tier: 1
@@ -279,9 +281,9 @@ problems:
       - {target: connections, property: call_rate, value: 3.0}
     clues:
       - {tool: listen_in, key: true, depth: 0, text: "Van de tien gesprekken gaan er vier over één vraag: 'Waar blijft mijn aansluiting?'"}
-      - {tool: time_study, key: false, depth: 0, text: Een gesprek duurt gemiddeld vijftien minuten; de agents zijn vriendelijk en snel.}
-      - {tool: data, key: true, depth: 1, text: Statusvragen komen bijna allemaal van klanten die al meer dan drie weken wachten; sommigen bellen elke week.}
-      - {tool: documents, key: true, depth: 1, at: connections.intake, text: Na de ontvangstbevestiging hoort de klant niets meer, tot de monteur belt voor een afspraak.}
+      - {tool: time_study, key: false, depth: 0, text: "Een gesprek duurt gemiddeld vijftien minuten; de agents zijn vriendelijk en snel."}
+      - {tool: data, key: true, depth: 1, text: "Statusvragen komen bijna allemaal van klanten die al meer dan drie weken wachten; sommigen bellen elke week."}
+      - {tool: documents, key: true, depth: 1, at: connections.intake, text: "Na de ontvangstbevestiging hoort de klant niets meer, tot de monteur belt voor een afspraak."}
       - {tool: conversation, key: true, depth: 2, at: connections.design, text: "'Wij weten zelf ook niet wanneer het klaar is. Er is geen planning die we met de klant kunnen delen.'"}
 
   - id: done_but_not_closed
@@ -305,8 +307,8 @@ problems:
     effects:
       - {target: connections.close_out_wait, property: batch_days, value: 28}
     clues:
-      - {tool: data, key: true, depth: 0, text: Aansluitingen die technisch klaar zijn, staan gemiddeld twee weken op 'administratief open'.}
-      - {tool: queue_count, key: false, depth: 0, at: connections.close_out, text: Bij Meetdata & registratie ligt weinig werk; het team heeft tijd over.}
-      - {tool: documents, key: true, depth: 1, at: connections.close_out, text: De afhandeling (EAN aanmelden, dossier sluiten) gebeurt één keer per maand, in één keer voor alle dossiers.}
+      - {tool: data, key: true, depth: 0, text: "Aansluitingen die technisch klaar zijn, staan gemiddeld twee weken op 'administratief open'."}
+      - {tool: queue_count, key: false, depth: 0, at: connections.close_out, text: "Bij Meetdata & registratie ligt weinig werk; het team heeft tijd over."}
+      - {tool: documents, key: true, depth: 1, at: connections.close_out, text: "De afhandeling (EAN aanmelden, dossier sluiten) gebeurt één keer per maand, in één keer voor alle dossiers."}
       - {tool: listen_in, key: true, depth: 1, at: customer_contact.answer, text: "'Mijn aansluiting is vorige week aangelegd, maar de leverancier zegt dat mijn EAN niet bestaat.'"}
       - {tool: conversation, key: true, depth: 2, at: connections.close_out, text: "'We doen het maandelijks; dan hoef je maar één keer in te loggen in het registratiesysteem.'"}

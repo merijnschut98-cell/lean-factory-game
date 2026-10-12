@@ -69,6 +69,31 @@ def _number(item: dict, key: str, where: str, low: float, high: float | None = N
     return value
 
 
+class _StrictLoader(yaml.SafeLoader):
+    """safe_load that refuses YAML which silently loses text: a duplicate key
+    (the last one wins), or an unquoted comma inside {…}, which splits a text
+    and turns the rest into a key without a value."""
+
+    def construct_mapping(self, node: yaml.MappingNode, deep: bool = False) -> dict:
+        seen = set()
+        for key_node, value_node in node.value:
+            key = self.construct_object(key_node, deep=deep)
+            line = key_node.start_mark.line + 1
+            if key in seen:
+                raise ContentError(f"line {line}: duplicate key {key!r}")
+            seen.add(key)
+            if node.flow_style and value_node.tag == "tag:yaml.org,2002:null" and value_node.value == "":
+                raise ContentError(f"line {line}: {key!r} has no value (a comma in unquoted text? quote the text)")
+        return super().construct_mapping(node, deep)
+
+
+def _known_keys(d: dict, allowed: set[str], where: str) -> None:
+    """Reject keys nobody reads, such as a misspelt optional field."""
+    unknown = sorted(str(k) for k in d if k not in allowed)
+    if unknown:
+        raise ContentError(f"{where}: unknown key(s) {', '.join(map(repr, unknown))}")
+
+
 def _entries(doc: dict, key: str, source: str) -> list[dict]:
     items = doc.get(key)
     if not isinstance(items, list) or not all(isinstance(i, dict) for i in items):
@@ -242,6 +267,12 @@ WASTES = ["transport", "inventory", "motion", "waiting", "overproduction", "over
 KPIS = ["throughput", "lead_time", "first_time_right", "on_time"]
 SEVERITIES = ["low", "medium", "high", "critical"]
 VISIBILITIES = ["obvious", "subtle", "hidden"]
+PROBLEM_KEYS = {"id", "tier", "name", "step", "waste", "severity", "visibility", "kpi", "symptoms", "root_cause",
+                "plausible_causes", "mismatch_note", "countermeasures", "teaches", "effects", "clues"}
+COUNTERMEASURE_KEYS = {"id", "tier", "name", "category", "description", "budget", "team_hours", "decay_days",
+                       "multipliers", "effects"}
+CLUE_KEYS = {"tool", "text", "key", "depth", "at"}
+EFFECT_KEYS = {"target", "property", "value"}
 CHECK_PASS = 0.5  # the effectiveness a Check needs to pass (Pdca.CHECK_PASS)
 # property → (target kind, required step kind or None, value type: factor | number | bool | count | reserve | step)
 EFFECT_PROPERTIES = {
@@ -272,7 +303,8 @@ def _effects_shape(item: dict, where: str) -> list:
     effects = item.get("effects", [])
     if not isinstance(effects, list) or not all(isinstance(e, dict) for e in effects):
         raise ContentError(f"{where}: 'effects' must be a list of mappings")
-    for e in effects:
+    for i, e in enumerate(effects):
+        _known_keys(e, EFFECT_KEYS, f"{where} effect {i}")
         if not isinstance(e.get("target"), str) or "value" not in e:
             raise ContentError(f"{where}: every effect needs a target and a value")
         if e.get("property") not in EFFECT_PROPERTIES:
@@ -284,6 +316,7 @@ def validate_countermeasures(doc: Any, source: str) -> None:
     _require_strings(doc, [], source)
     for cm in _entries(doc, "countermeasures", source):
         where = f"{source}: countermeasure '{cm['id']}'"
+        _known_keys(cm, COUNTERMEASURE_KEYS, where)
         _require_strings(cm, ["category", "description"], where)
         _number(cm, "tier", where, 1, 4, integer=True)
         _number(cm, "budget", where, 0, integer=True)
@@ -308,6 +341,7 @@ def validate_problems(doc: Any, source: str) -> None:
     _require_strings(doc, [], source)
     for p in _entries(doc, "problems", source):
         where = f"{source}: problem '{p['id']}'"
+        _known_keys(p, PROBLEM_KEYS, where)
         _require_strings(p, ["step", "root_cause", "mismatch_note"], where)
         _number(p, "tier", where, 1, 4, integer=True)
         _one_of(p, "waste", WASTES, where)
@@ -332,6 +366,7 @@ def _validate_clues(p: dict, where: str) -> None:
         raise ContentError(f"{where}: 'clues' must be a non-empty list of mappings")
     keys_at = set()
     for i, c in enumerate(clues):
+        _known_keys(c, CLUE_KEYS, f"{where} clue {i}")
         if c.get("tool") not in TOOLS:
             raise ContentError(f"{where} clue {i}: unknown tool {c.get('tool')!r}")
         _require_strings(c, ["text"], f"{where} clue {i}")
@@ -471,9 +506,11 @@ def load_content(content_dir: Path | None = None) -> dict[str, Any]:
         if validator is None:
             raise ContentError(f"{path.name}: no validator registered in tools/build_content.py")
         try:
-            doc = yaml.safe_load(path.read_text(encoding="utf-8"))
+            doc = yaml.load(path.read_text(encoding="utf-8"), Loader=_StrictLoader)
         except yaml.YAMLError as exc:
             raise ContentError(f"{path.name}: invalid YAML — {exc}") from exc
+        except ContentError as exc:
+            raise ContentError(f"{path.name}: {exc}") from exc
         validator(doc, path.name)
         docs[path.stem] = doc
     missing = sorted(set(VALIDATORS) - set(docs))

@@ -118,6 +118,7 @@ Problem effects are generic modifiers (`sim/modifiers.gd`):
 - **Build:** `tools/build_content.py` validates everything in two passes (each file against its own validator, then `CROSS_CHECKS` over all files for references between them) and writes JSON to `game/data/`. Godot parses JSON natively, so the game needs no YAML parser. Validation covers:
   - required fields;
   - every problem has at least one key clue at depth 0;
+  - YAML that would silently lose text is refused at load: duplicate keys, and an unquoted comma inside `{…}` (it splits the text into a key without a value); problems, countermeasures, clues and effects reject unknown keys;
   - every listed countermeasure can pass the Check at full strength (`Pdca.CHECK_PASS`, mirrored in `vocabulary.json`);
   - countermeasure references resolve;
   - every tool and waste is a known value;

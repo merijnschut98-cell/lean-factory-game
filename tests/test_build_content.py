@@ -71,6 +71,18 @@ def test_file_without_validator_is_rejected(dirs):
         bc.load_content(content)
 
 
+@pytest.mark.parametrize("text, message", [
+    # A comma in unquoted text inside {…} splits it: the rest becomes a key without a value.
+    ("company: {name: Voltana, motto: Licht, warmte en vooruitgang}\n", "line 1: 'warmte en vooruitgang' has no value"),
+    ("company: Voltana\ncompany: Enexis\n", "line 2: duplicate key 'company'"),
+])
+def test_yaml_that_would_lose_text_is_reported(dirs, text, message):
+    content, _ = dirs
+    (content / "game.yaml").write_text(text, encoding="utf-8")
+    with pytest.raises(bc.ContentError, match=message):
+        bc.load_content(content)
+
+
 def test_invalid_yaml_is_reported(dirs):
     content, _ = dirs
     (content / "game.yaml").write_text("company: [unclosed\n", encoding="utf-8")
@@ -311,6 +323,11 @@ def test_sample_problems_are_valid(rules_dirs):
     (lambda d: _cm(d).update(team_hours={"wizards": 10}), "unknown pool 'wizards'"),
     (lambda d: _cm(d).update(multipliers={"full": 0.5, "reduced": 0.7, "minimal": 0.1}), "full >= reduced >= minimal"),
     (lambda d: _cm(d).update(decay_days=0), "'decay_days' must be"),
+    # Misspelt fields would be ignored silently.
+    (lambda d: _problem(d)["clues"][0].update(dept=1), "clue 0: unknown key.s. 'dept'"),
+    (lambda d: _problem(d)["effects"][0].update(strength=2), "effect 0: unknown key.s. 'strength'"),
+    (lambda d: _problem(d).update(teach=["flow"]), "unknown key.s. 'teach'"),
+    (lambda d: _cm(d).update(decay=30), "unknown key.s. 'decay'"),
     (lambda d: d["countermeasures"]["countermeasures"].append(dict(_cm(d))), "duplicate countermeasures ids"),
 ])
 def test_problem_errors_are_caught(rules_dirs, mutate, message):

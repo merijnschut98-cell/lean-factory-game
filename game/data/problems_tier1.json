@@ -70,18 +70,15 @@
   {
    "clues": [
     {
-     "de installateur is nog niet geweest). De monteur rijdt onverrichter zake terug.": null,
      "depth": 0,
-     "geen aarding": null,
      "key": true,
-     "text": "Op twee van de vijf adressen is de meterkast niet klaar (geen ruimte",
+     "text": "Op twee van de vijf adressen is de meterkast niet klaar (geen ruimte, geen aarding, de installateur is nog niet geweest). De monteur rijdt onverrichter zake terug.",
      "tool": "shadow"
     },
     {
-     "binnen de norm.": null,
      "depth": 0,
      "key": false,
-     "text": "Een aansluiting maken kost de monteur ruim vier uur",
+     "text": "Een aansluiting maken kost de monteur ruim vier uur, binnen de norm.",
      "tool": "time_study"
     },
     {
@@ -213,8 +210,7 @@
     {
      "depth": 0,
      "key": true,
-     "net zoveel als een bedrijfsaansluiting.": null,
-     "text": "Een gewone woningaansluiting kost vijf uur ontwerp",
+     "text": "Een gewone woningaansluiting kost vijf uur ontwerp, net zoveel als een bedrijfsaansluiting.",
      "tool": "time_study"
     },
     {
@@ -225,10 +221,8 @@
     },
     {
      "depth": 1,
-     "gaat langs drie handtekeningen.": null,
      "key": true,
-     "ook een standaard huisaansluiting": null,
-     "text": "Elk ontwerp",
+     "text": "Elk ontwerp, ook een standaard huisaansluiting, gaat langs drie handtekeningen.",
      "tool": "documents"
     },
     {
@@ -290,8 +284,7 @@
     {
      "depth": 0,
      "key": false,
-     "ruim binnen de planning.": null,
-     "text": "Een meterwissel zelf duurt vijfendertig minuten",
+     "text": "Een meterwissel zelf duurt vijfendertig minuten, ruim binnen de planning.",
      "tool": "time_study"
     },
     {
@@ -354,9 +347,8 @@
     {
      "depth": 0,
      "key": true,
-     "text": "Vergunningsaanvragen gaan alleen op maandag de deur uit. Een dossier dat dinsdag klaar is",
-     "tool": "data",
-     "wacht bijna een week.": null
+     "text": "Vergunningsaanvragen gaan alleen op maandag de deur uit. Een dossier dat dinsdag klaar is, wacht bijna een week.",
+     "tool": "data"
     },
     {
      "depth": 0,
@@ -375,8 +367,7 @@
      "at": "connections.design",
      "depth": 1,
      "key": true,
-     "terwijl de gemeente alleen het tracé nodig heeft.": null,
-     "text": "De vergunning wordt pas aangevraagd als het ontwerp helemaal af is",
+     "text": "De vergunning wordt pas aangevraagd als het ontwerp helemaal af is, terwijl de gemeente alleen het tracé nodig heeft.",
      "tool": "documents"
     },
     {
@@ -438,8 +429,7 @@
     {
      "depth": 1,
      "key": true,
-     "onder meer door uitzoeken wat er bedoeld is.": null,
-     "text": "Een schets overtekenen kost anderhalf uur",
+     "text": "Een schets overtekenen kost anderhalf uur, onder meer door uitzoeken wat er bedoeld is.",
      "tool": "time_study"
     },
     {
@@ -521,9 +511,8 @@
      "at": "connections.revision",
      "depth": 2,
      "key": true,
-     "text": "De kabels die anders lagen dan op de kaart",
-     "tool": "data",
-     "zijn bijna allemaal nog niet gerevideerd.": null
+     "text": "De kabels die anders lagen dan op de kaart, zijn bijna allemaal nog niet gerevideerd.",
+     "tool": "data"
     }
    ],
    "countermeasures": {
@@ -652,9 +641,8 @@
      "at": "connections.intake",
      "depth": 1,
      "key": true,
-     "text": "Na de ontvangstbevestiging hoort de klant niets meer",
-     "tool": "documents",
-     "tot de monteur belt voor een afspraak.": null
+     "text": "Na de ontvangstbevestiging hoort de klant niets meer, tot de monteur belt voor een afspraak.",
+     "tool": "documents"
     },
     {
      "at": "connections.design",
@@ -703,8 +691,7 @@
     {
      "depth": 0,
      "key": true,
-     "staan gemiddeld twee weken op 'administratief open'.": null,
-     "text": "Aansluitingen die technisch klaar zijn",
+     "text": "Aansluitingen die technisch klaar zijn, staan gemiddeld twee weken op 'administratief open'.",
      "tool": "data"
     },
     {
@@ -717,10 +704,8 @@
     {
      "at": "connections.close_out",
      "depth": 1,
-     "dossier sluiten) gebeurt één keer per maand": null,
-     "in één keer voor alle dossiers.": null,
      "key": true,
-     "text": "De afhandeling (EAN aanmelden",
+     "text": "De afhandeling (EAN aanmelden, dossier sluiten) gebeurt één keer per maand, in één keer voor alle dossiers.",
      "tool": "documents"
     },
     {

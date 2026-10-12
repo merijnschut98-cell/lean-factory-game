@@ -182,6 +182,7 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 - ✅ Content review prepared: `game/tools/problem_report.gd` measures every problem on the real network (base, problem, each countermeasure at full strength; 5 seeds × 90 days); the shared doc shows texts, clues, effects, countermeasures and the measured impact per problem, with review questions
   - Found by the report: *Checklist bij de intake* could never pass the Check (0.8 × fit 0.6 = 0.48). Every listed countermeasure must now be able to pass at full strength (validator + Godot test on the real formula); fit raised to 0.7.
   - Region and the report share one rule for what a treated problem does to the sim (`Pdca.treated_effects`)
+  - Found while writing the review: 12 clue texts were cut off in the game. An unquoted comma inside `{…}` split the text and YAML turned the rest into an extra key. The content loader now refuses that pattern and duplicate keys (`_StrictLoader`). Problems, countermeasures, clues and effects also reject unknown keys (typos). The clue texts are quoted.
 - ⬜ Merijn reviews the eleven problems for realism in the review doc (texts, clues, effect sizes, the close-out spiral, the healthy base). Open questions raised by the report: connections never miss the 126-day norm (on time is always 100%); outage problems barely move outage KPIs
 - ⬜ Catalogue problems that need a new mechanism first:
   - storing gooit de planning om: planned monteur work at 100%; needs the base to keep slack that the problem removes, or a planning-horizon mechanic;
