@@ -210,3 +210,26 @@ countermeasures:
     multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
     effects:
       - {target: outages.locate, property: ftr, value: 0.03}
+
+  # ── Klantcontact ─────────────────────────────────────────────────────────
+  - id: realistic_promise
+    name: Realistische toezegging en statuspagina
+    tier: 1
+    category: visual_management
+    description: De klant krijgt bij de aanvraag een realistische datum en kan de stand van zijn aanvraag online volgen.
+    budget: 6000
+    team_hours: {contact_centre: 20, intake: 10}
+    decay_days: 60
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: proactive_status_updates
+    name: Proactieve statusberichten
+    tier: 2
+    category: flow
+    description: Bij elke stap in het proces krijgt de klant uit zichzelf een bericht, ook als het langer duurt. Faalvraag meten naast waardevraag.
+    budget: 12000
+    team_hours: {contact_centre: 30, planners: 20}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: connections, property: call_rate, value: 0.5}

@@ -129,6 +129,19 @@
   },
   {
    "availability": 0.85,
+   "headcount": 5,
+   "id": "contact_centre",
+   "name": "Klantcontactcentrum",
+   "schedule": [
+    {
+     "days": "mon-fri",
+     "from": "08:00",
+     "to": "17:00"
+    }
+   ]
+  },
+  {
+   "availability": 0.85,
    "headcount": 1,
    "id": "key_accounts",
    "name": "Grootzakelijke klanten",
@@ -181,6 +194,11 @@
    "name": "Nieuwe aansluitingen",
    "norm_days": 126,
    "priority": 2,
+   "status_calls": {
+    "after_days": 21,
+    "per_week": 1.0,
+    "to": "customer_contact"
+   },
    "steps": [
     {
      "ftr": 0.75,
@@ -457,6 +475,30 @@
      "name": "Capaciteit registreren",
      "pool": "key_accounts",
      "touch_hours": 0.5
+    }
+   ]
+  },
+  {
+   "arrivals": [
+    {
+     "days": "mon-fri",
+     "from": "08:00",
+     "per_week": 380,
+     "to": "17:00"
+    }
+   ],
+   "id": "customer_contact",
+   "name": "Klantvragen",
+   "norm_hours": 2,
+   "priority": 1,
+   "steps": [
+    {
+     "ftr": 0.9,
+     "id": "answer",
+     "kind": "work",
+     "name": "Vraag beantwoorden",
+     "pool": "contact_centre",
+     "touch_hours": 0.25
     }
    ]
   }

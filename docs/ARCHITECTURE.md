@@ -75,6 +75,8 @@ Generalises the factory prototype's `FlowSim` (`archive/factory-3d/src/sim/flow.
 
 **No reference cycles.** Godot frees `RefCounted` objects by reference counting, so a loop (step → pool → busy order → stream → step) leaks every network that is replaced. Steps therefore refer to pools and stock by id, and queues live in the `Network`. The test runner shows leaks at exit, so a new cycle is noticed straight away.
 
+**Failure demand.** A stream with `status_calls` makes customers of orders older than `after_days` call another stream (the contact centre) `per_week` times, at that stream's opening hours. These calls are orders like any other, marked `failure_demand` in the arrival event. The static `Capacity` analysis does not see them; the simulation does, which is itself a lesson.
+
 **Shared people.** The monteurs serve connections, meters and outages. Queue order is stream priority, then longest waiting. Only a stream with `preempts` (outages) interrupts work in progress; the interrupted order goes back to the front of its queue. The same happens at the end of a shift (a *handover* event), so the next shift or another pool serving the step picks it up, e.g. the on-call crew hands a fault over to the monteurs at 07:00.
 
 The network skips idle stretches by jumping to the next moment anything can happen: an arrival, the end of a wait, a delivery, a new day, or a shift starting for a pool with queued work. A test proves the results are identical to stepping every tick. A simulated year of the four streams takes about 1.4 s.

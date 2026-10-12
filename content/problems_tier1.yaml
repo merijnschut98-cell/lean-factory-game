@@ -256,3 +256,30 @@ problems:
       - {tool: data, key: true, depth: 1, text: Storingen in netten van voor 1970 worden twee keer zo vaak opnieuw gelokaliseerd.}
       - {tool: conversation, key: true, depth: 1, text: "'Als Henk het niet weet, weet niemand het. En Henk gaat in maart met pensioen.'"}
       - {tool: documents, key: true, depth: 2, text: Er is geen overzicht van wie welke kabeltypes en schakelingen beheerst.}
+
+  - id: status_callers
+    tier: 1
+    name: De statusbellers
+    step: customer_contact.answer
+    waste: defects
+    severity: high
+    visibility: obvious
+    kpi: on_time
+    symptoms:
+      - Het klantcontactcentrum is onbereikbaar; klanten hangen lang in de wacht.
+      - Agents beantwoorden steeds dezelfde vraag.
+    root_cause: Klanten horen na hun aanvraag niets meer over de voortgang, dus bellen ze; de vragen komen voort uit de wachttijd, niet uit het contactcentrum.
+    plausible_causes:
+      - Het contactcentrum heeft te weinig agents.
+      - Klanten zijn ongeduldig.
+    mismatch_note: Meer agents beantwoorden de vragen sneller, maar de vragen blijven komen. Dit is faalvraag.
+    countermeasures: {realistic_promise: 0.7, proactive_status_updates: 1.0}
+    teaches: [failure_demand, value_demand]
+    effects:
+      - {target: connections, property: call_rate, value: 3.0}
+    clues:
+      - {tool: listen_in, key: true, depth: 0, text: "Van de tien gesprekken gaan er vier over één vraag: 'Waar blijft mijn aansluiting?'"}
+      - {tool: time_study, key: false, depth: 0, text: Een gesprek duurt gemiddeld vijftien minuten; de agents zijn vriendelijk en snel.}
+      - {tool: data, key: true, depth: 1, text: Statusvragen komen bijna allemaal van klanten die al meer dan drie weken wachten; sommigen bellen elke week.}
+      - {tool: documents, key: true, depth: 1, at: connections.intake, text: Na de ontvangstbevestiging hoort de klant niets meer, tot de monteur belt voor een afspraak.}
+      - {tool: conversation, key: true, depth: 2, at: connections.design, text: "'Wij weten zelf ook niet wanneer het klaar is. Er is geen planning die we met de klant kunnen delen.'"}

@@ -167,9 +167,13 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
   - validator helpers per job, reusing `_number` and `_earlier`;
   - a shared real-network fixture and a shared base run (suite ~5.8 s).
 - ✅ Three more tier-1 problems: de revisieberg (hidden; makes Revisie & GIS the constraint), graafschade (its root cause links to the revisieberg: outdated KLIC maps, so revision at the source also helps here) and de laatste kennisdrager. 9 problems, 18 countermeasures
-- ⬜ Merijn reviews the nine problems for realism (texts, clues, effects) and the healthy base
+- ✅ Failure demand (GDD simulation model):
+  - a stream's `status_calls: {to, after_days, per_week}` makes customers of late orders call the contact stream; `call_rate` is a lever;
+  - content: a klantcontactcentrum (5 agents) and a stream Klantvragen (380 questions a week, answered within 2 hours);
+  - connections customers call weekly after three weeks; about 9% of calls in the healthy base.
+- ✅ De statusbellers (problem 10): late orders call three times as often. Failure demand rises to 25–30% of calls; on time falls from ~0.9 to ~0.5, and with some seeds the centre tips into a spiral. Countermeasures: realistic promise date (tier 1) or proactive status updates (tier 2, halves even the base failure demand: a healthier shape than before the problem)
+- ⬜ Merijn reviews the ten problems for realism (texts, clues, effects) and the healthy base
 - ⬜ Catalogue problems that need a new mechanism first:
-  - de statusbellers: failure demand; late orders cause status calls that load the contact centre (a klantcontact pool + calls generated from late orders);
   - klaar maar niet af: an administrative close-out step (EAN registration) in the connections stream;
   - storing gooit de planning om: planned monteur work at 100%; needs the base to keep slack that the problem removes, or a planning-horizon mechanic;
   - KPI's die elkaar bevechten: overproduction, departments pushing work in; needs a release decision per department

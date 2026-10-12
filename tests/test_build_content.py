@@ -176,6 +176,8 @@ def test_real_value_streams_are_valid():
     (lambda d: _step(d, "execution").update(stale_after_days=60, stale_to="design"), "takes material twice"),
     (lambda d: _connections(d).update(wip_limit=-1), "'wip_limit' must be >= 0"),
     (lambda d: _connections(d).update(wip_limit=2.5), "'wip_limit' must be an integer"),
+    (lambda d: _connections(d).update(status_calls={"to": "connections", "after_days": 21, "per_week": 1}), "'status_calls' needs 'to': another stream"),
+    (lambda d: _connections(d)["status_calls"].update(after_days=0), "'after_days' must be >= 1"),
     (lambda d: d["pools"][4].update(reserve={"stream": "outages", "people": 99}), "'people' must be between 1 and 14"),
     (lambda d: d["pools"][0].update(headcount=True), "'headcount' must be an integer"),
     (lambda d: d["pools"].append(dict(d["pools"][0])), "duplicate pools ids: intake"),
@@ -195,9 +197,9 @@ def test_unquoted_time_in_yaml_is_caught():
         bc.validate_value_streams(doc, "value_streams.yaml")
 
 
-def test_real_streams_cover_the_four_value_streams():
+def test_real_streams_cover_the_four_value_streams_and_customer_contact():
     ids = [s["id"] for s in _streams()["streams"]]
-    assert ids == ["connections", "outages", "meters", "congestion"]
+    assert ids == ["connections", "outages", "meters", "congestion", "customer_contact"]
 
 
 # ── problems and countermeasures ─────────────────────────────────────────────

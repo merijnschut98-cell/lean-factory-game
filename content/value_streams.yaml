@@ -94,6 +94,11 @@ pools:
     headcount: 1
     availability: 0.85
     schedule: [{days: mon-fri, from: "08:00", to: "16:00"}]
+  - id: contact_centre
+    name: Klantcontactcentrum
+    headcount: 5
+    availability: 0.85
+    schedule: [{days: mon-fri, from: "08:00", to: "17:00"}]
   - id: key_accounts
     name: Grootzakelijke klanten
     headcount: 1
@@ -126,6 +131,9 @@ streams:
     arrivals: [{per_week: 30, days: mon-fri, from: "08:00", to: "17:00"}]
     norm_days: 126          # the former legal term of 18 weeks
     priority: 2
+    # Failure demand: after three weeks without news, customers call to ask
+    # where their connection stands.
+    status_calls: {to: customer_contact, after_days: 21, per_week: 1.0}
     steps:
       - id: intake
         name: Aanvraag & intake
@@ -314,3 +322,18 @@ streams:
         pool: key_accounts
         touch_hours: 0.5
         ftr: 1.0
+
+  - id: customer_contact
+    name: Klantvragen
+    # Value demand: questions about connections, meters, bills and outages.
+    # Status calls from late orders (failure demand) come on top.
+    arrivals: [{per_week: 380, days: mon-fri, from: "08:00", to: "17:00"}]
+    norm_hours: 2           # answered within two hours
+    priority: 1
+    steps:
+      - id: answer
+        name: Vraag beantwoorden
+        kind: work
+        pool: contact_centre
+        touch_hours: 0.25
+        ftr: 0.9              # unclear answer: the customer calls back

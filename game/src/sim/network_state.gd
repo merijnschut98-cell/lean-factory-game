@@ -37,7 +37,8 @@ static func capture(net: Network) -> Dictionary:
 	return {
 		"time": net.time, "day": net._day, "next_id": net._next_id, "rng": net.rng.get_state(),
 		"effects": net.effects(), "pools": pools, "queues": queues, "waiting": to_dicts.call(net._waiting),
-		"held": held, "arrivals": net._arrivals.map(func(a: Dictionary) -> Dictionary: return {"at": a["at"], "stream": a["stream"].id}),
+		"held": held, "arrivals": net._arrivals.map(func(a: Dictionary) -> Dictionary:
+			return {"at": a["at"], "stream": a["stream"].id, "failure_demand": a.get("failure_demand", false)}),
 		"stock": stock, "streams": streams,
 	}
 
@@ -70,7 +71,7 @@ static func restore(net: Network, d: Dictionary) -> Dictionary:
 		if s == null:
 			dropped.append("arrival for %s" % a.get("stream"))
 		else:
-			net._arrivals.append({"at": int(a.get("at", 0)), "stream": s})
+			net._arrivals.append({"at": int(a.get("at", 0)), "stream": s, "failure_demand": bool(a.get("failure_demand", false))})
 	_restore_stock(net, d["stock"], dropped)
 	for s in net.streams:
 		var saved: Dictionary = d["streams"].get(s.id, {})

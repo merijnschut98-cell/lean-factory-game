@@ -203,6 +203,13 @@ def validate_value_streams(doc: Any, source: str) -> None:
         if not isinstance(stream.get("preempts", False), bool):
             raise ContentError(f"{where}: 'preempts' must be true or false")
         _number(stream, "wip_limit", where, 0, integer=True, default=0)
+        calls = stream.get("status_calls")
+        if calls is not None:
+            # Failure demand: late orders make customers call another stream.
+            if not isinstance(calls, dict) or calls.get("to") not in {s.get("id") for s in streams} or calls.get("to") == stream["id"]:
+                raise ContentError(f"{where}: 'status_calls' needs 'to': another stream")
+            _number(calls, "after_days", f"{where} status_calls", 1)
+            _number(calls, "per_week", f"{where} status_calls", 0)
         steps = _entries(stream, "steps", where)
         if not steps:
             raise ContentError(f"{where}: needs at least one step")
@@ -243,6 +250,7 @@ EFFECT_PROPERTIES = {
     "lead_time": ("stock", None, "factor"), "reorder_point": ("stock", None, "number"),
     "demand": ("stream", None, "factor"), "reserve": ("pool", None, "reserve"),
     "preempts": ("stream", None, "bool"), "wip_limit": ("stream", None, "count"),
+    "call_rate": ("stream", None, "factor"),
     "batch_days": ("step", "wait", "number"), "starts_with": ("step", "wait", "step"),
 }
 

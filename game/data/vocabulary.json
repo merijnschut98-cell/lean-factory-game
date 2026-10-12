@@ -12,6 +12,10 @@
    "kind": "step",
    "step_kind": "wait"
   },
+  "call_rate": {
+   "kind": "stream",
+   "step_kind": ""
+  },
   "demand": {
    "kind": "stream",
    "step_kind": ""

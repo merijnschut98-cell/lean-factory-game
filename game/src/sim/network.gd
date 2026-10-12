@@ -101,6 +101,10 @@ func _build_stream(v: Dictionary) -> ValueStream:
 	stream.priority = int(v["priority"])
 	stream.preempts = bool(v.get("preempts", false))
 	stream.wip_limit = int(v.get("wip_limit", 0))
+	var calls: Dictionary = v.get("status_calls", {})
+	stream.calls_to = calls.get("to", "")
+	stream.call_after_minutes = _days(calls, "after_days")
+	stream.call_rate = float(calls.get("per_week", 0.0))
 	_held[stream.id] = [] as Array[WorkOrder]
 	for a: Dictionary in v.get("arrivals", []):
 		var when := WeekSchedule.from_blocks([a])
@@ -271,6 +275,8 @@ func _start_day() -> void:
 			for i in rng.poisson(mean):
 				var at := day_start + slots[rng.int_range(0, slots.size() - 1)] + rng.int_range(0, SimCalendar.TICK - 1)
 				_arrivals.append({"at": at, "stream": s})
+		if s.call_rate > 0.0 and stream(s.calls_to) != null:
+			_schedule_status_calls(s, stream(s.calls_to), day_start)
 	_arrivals.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["at"] < b["at"])
 
 
@@ -284,20 +290,59 @@ func _forget_old_history() -> void:
 			step.forget_day(day)
 
 
+## Failure demand: customers of late orders call the contact stream, at its
+## opening hours (its first arrival schedule).
+func _schedule_status_calls(s: ValueStream, contact: ValueStream, day_start: int) -> void:
+	var late := _orders_born_before(s, time - s.call_after_minutes)
+	if late == 0 or contact.arrivals.is_empty():
+		return
+	var open := contact.arrivals[0].when
+	var slots := open.slots_on_day(SimCalendar.weekday(time))
+	if slots.is_empty():
+		return
+	var mean := late * s.call_rate * slots.size() * SimCalendar.TICK / 60.0 / open.hours()
+	for i in rng.poisson(mean):
+		var at := day_start + slots[rng.int_range(0, slots.size() - 1)] + rng.int_range(0, SimCalendar.TICK - 1)
+		_arrivals.append({"at": at, "stream": contact, "failure_demand": true})
+
+
+## Open orders of `s` that arrived before `t`, wherever they are.
+func _orders_born_before(s: ValueStream, t: int) -> int:
+	var n := _count_born_before(_held[s.id], t) + _count_born_before(_waiting.filter(func(o: WorkOrder) -> bool: return o.stream == s), t)
+	for step in s.steps:
+		if step.kind == SimStep.Kind.WORK:
+			n += _count_born_before(queue_of(step), t)
+	for pool in _pool_list:
+		n += _count_born_before(pool.busy.filter(func(o: WorkOrder) -> bool: return o.stream == s), t)
+	for item: SimStock in stock.values():
+		n += _count_born_before(item.waiting.filter(func(o: WorkOrder) -> bool: return o.stream == s), t)
+	return n
+
+
+static func _count_born_before(orders: Array, t: int) -> int:
+	var n := 0
+	for o: WorkOrder in orders:
+		if o.born < t:
+			n += 1
+	return n
+
+
 # ── Flow ────────────────────────────────────────────────────────────────────
 
 func _release_arrivals() -> void:
 	while not _arrivals.is_empty() and _arrivals[0]["at"] <= time:
-		open_order(_arrivals.pop_front()["stream"])
+		var a: Dictionary = _arrivals.pop_front()
+		open_order(a["stream"], a.get("failure_demand", false))
 
 
-## A new order enters stream `s` now (scheduled arrivals, and later events
-## such as a storm).
-func open_order(s: ValueStream) -> WorkOrder:
+## A new order enters stream `s` now (scheduled arrivals, status calls, and
+## later events such as a storm). `failure_demand`: caused by a failure
+## elsewhere (a customer asking where their order stands), not new value.
+func open_order(s: ValueStream, failure_demand: bool = false) -> WorkOrder:
 	var order := WorkOrder.new(_next_id, s, time)
 	_next_id += 1
 	s.active += 1
-	_emit("arrived", order)
+	_emit("arrived", order, {"failure_demand": true} if failure_demand else {})
 	_held[s.id].append(order)
 	_release_held(s)
 	return order

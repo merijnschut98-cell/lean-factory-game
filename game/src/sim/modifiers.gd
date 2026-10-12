@@ -35,6 +35,7 @@ const PROPERTIES := {
 	"reserve": {"kind": "pool", "field": "reserve", "op": Op.SET, "valid": "reserve"},
 	"preempts": {"kind": "stream", "field": "preempts", "op": Op.SET, "valid": "bool"},
 	"wip_limit": {"kind": "stream", "field": "wip_limit", "op": Op.SET, "valid": "count"},
+	"call_rate": {"kind": "stream", "field": "call_rate", "op": Op.MUL, "min": 0.0},
 	"batch_days": {"kind": "step", "step_kind": SimStep.Kind.WAIT, "field": "batch_minutes", "op": Op.ADD,
 		"min": 0.0, "unit": SimCalendar.MINUTES_PER_DAY},
 	"starts_with": {"kind": "step", "step_kind": SimStep.Kind.WAIT, "field": "starts_with", "op": Op.SET,

@@ -199,3 +199,43 @@ func test_wip_limit_is_a_lever() -> void:
 	assert_eq(net.held("s"), 0, "lifting the limit releases every held order at once")
 	assert_ne(net.set_effects("bad", [NetFixture.effect("s", "wip_limit", -1)]), "")
 	assert_ne(net.set_effects("bad", [NetFixture.effect("s", "wip_limit", 2.5)]), "")
+
+
+## Connections that wait too long make customers call the contact centre.
+func _with_status_calls(call_rate: float, slow: bool) -> Network:
+	return NetFixture.net([NetFixture.pool("prep", 1), NetFixture.pool("agents", 1)], [
+		# 10 a week of 7 hours each overload one person (70 of 40 hours): orders get late.
+		NetFixture.stream("connections", [NetFixture.work("design", "prep", 7.0 if slow else 1.0)], 10.0, 2,
+			{"status_calls": {"to": "contact", "after_days": 7, "per_week": call_rate}}),
+		NetFixture.stream("contact", [NetFixture.work("answer", "agents", 0.25)], 20.0, 1),
+	])
+
+
+func _failure_calls(net: Network) -> int:
+	return NetFixture.events(net, "arrived").filter(func(e: Dictionary) -> bool: return e.get("failure_demand", false)).size()
+
+
+func test_late_orders_cause_status_calls() -> void:
+	var fast := _with_status_calls(1.0, false)
+	var slow := _with_status_calls(1.0, true)
+	fast.advance_days(42)
+	slow.advance_days(42)
+	assert_eq(_failure_calls(fast), 0, "nobody calls about an order that is on its way")
+	assert_true(_failure_calls(slow) > 20, "every late order calls about once a week: %d" % _failure_calls(slow))
+
+
+func test_failure_demand_loads_the_contact_centre() -> void:
+	var quiet := _with_status_calls(0.0, true)
+	var calling := _with_status_calls(3.0, true)
+	quiet.advance_days(42)
+	calling.advance_days(42)
+	var answer_quiet := quiet.stream("contact").step("answer").stats_since(0)
+	var answer_calling := calling.stream("contact").step("answer").stats_since(0)
+	assert_true(answer_calling["entered"] > answer_quiet["entered"] * 1.5)
+	assert_true(answer_calling["queue_hours"] > answer_quiet["queue_hours"], "real questions wait longer")
+
+
+func test_status_call_rate_is_a_lever() -> void:
+	var net := _with_status_calls(1.0, true)
+	assert_eq(net.set_effects("cm:status_updates", [NetFixture.effect("connections", "call_rate", 0.2)]), "")
+	assert_near(net.stream("connections").call_rate, 0.2, 1e-9)

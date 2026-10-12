@@ -627,6 +627,76 @@
    "tier": 1,
    "visibility": "subtle",
    "waste": "skills"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Van de tien gesprekken gaan er vier over één vraag: 'Waar blijft mijn aansluiting?'",
+     "tool": "listen_in"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "Een gesprek duurt gemiddeld vijftien minuten; de agents zijn vriendelijk en snel.",
+     "tool": "time_study"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "Statusvragen komen bijna allemaal van klanten die al meer dan drie weken wachten; sommigen bellen elke week.",
+     "tool": "data"
+    },
+    {
+     "at": "connections.intake",
+     "depth": 1,
+     "key": true,
+     "text": "Na de ontvangstbevestiging hoort de klant niets meer",
+     "tool": "documents",
+     "tot de monteur belt voor een afspraak.": null
+    },
+    {
+     "at": "connections.design",
+     "depth": 2,
+     "key": true,
+     "text": "'Wij weten zelf ook niet wanneer het klaar is. Er is geen planning die we met de klant kunnen delen.'",
+     "tool": "conversation"
+    }
+   ],
+   "countermeasures": {
+    "proactive_status_updates": 1.0,
+    "realistic_promise": 0.7
+   },
+   "effects": [
+    {
+     "property": "call_rate",
+     "target": "connections",
+     "value": 3.0
+    }
+   ],
+   "id": "status_callers",
+   "kpi": "on_time",
+   "mismatch_note": "Meer agents beantwoorden de vragen sneller, maar de vragen blijven komen. Dit is faalvraag.",
+   "name": "De statusbellers",
+   "plausible_causes": [
+    "Het contactcentrum heeft te weinig agents.",
+    "Klanten zijn ongeduldig."
+   ],
+   "root_cause": "Klanten horen na hun aanvraag niets meer over de voortgang, dus bellen ze; de vragen komen voort uit de wachttijd, niet uit het contactcentrum.",
+   "severity": "high",
+   "step": "customer_contact.answer",
+   "symptoms": [
+    "Het klantcontactcentrum is onbereikbaar; klanten hangen lang in de wacht.",
+    "Agents beantwoorden steeds dezelfde vraag."
+   ],
+   "teaches": [
+    "failure_demand",
+    "value_demand"
+   ],
+   "tier": 1,
+   "visibility": "obvious",
+   "waste": "defects"
   }
  ]
 }

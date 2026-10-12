@@ -87,7 +87,7 @@ static func _hurt_after_days(p: ProblemDef) -> Network:
 ## are too noisy to compare (the random sequences diverge after the first
 ## different draw), so: throughput problems by capacity; rework and slow work
 ## by the extra load on the team it hits hardest (deterministic: Capacity);
-## waiting problems by the measured wait at their step.
+## the rest by the measured waiting at their step.
 static func _harm(p: ProblemDef) -> float:
 	var before := Capacity.analyse(RulesFixture.real_network([], SEED))
 	var after := Capacity.analyse(RulesFixture.real_network([p.id], SEED))
@@ -99,9 +99,13 @@ static func _harm(p: ProblemDef) -> float:
 			worst = maxf(worst, after["pools"][pool]["load"] / before["pools"][pool]["load"])
 	if worst > 1.0:
 		return worst
+	# Waiting at the problem's own step: an external wait, or the queue in
+	# front of a team (e.g. failure demand loading the contact centre, which a
+	# static capacity analysis does not see).
 	var step := p.step.get_slice(".", 1)
-	return _hurt_after_days(p).stream(p.stream_id()).step(step).stats_since(0)["wait_hours"] \
-		/ _base_after_days().stream(p.stream_id()).step(step).stats_since(0)["wait_hours"]
+	var hurt: Dictionary = _hurt_after_days(p).stream(p.stream_id()).step(step).stats_since(0)
+	var base: Dictionary = _base_after_days().stream(p.stream_id()).step(step).stats_since(0)
+	return (hurt["wait_hours"] + hurt["queue_hours"]) / (base["wait_hours"] + base["queue_hours"])
 
 
 func test_every_problem_hurts_its_stream() -> void:

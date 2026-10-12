@@ -13,6 +13,12 @@ var preempts := false
 ## At most this many started orders at once (CONWIP); new orders beyond it
 ## wait, not yet started. 0 = no limit.
 var wip_limit := 0
+## Failure demand: an open order older than `call_after_minutes` makes its
+## customer call stream `calls_to` (the contact centre) `call_rate` times a
+## week, asking where it stands. 0 = nobody calls.
+var calls_to := ""
+var call_after_minutes := 0
+var call_rate := 0.0
 var steps: Array[SimStep] = []
 ## Orders in the stream right now (the backlog / WIP), held ones included.
 var active := 0

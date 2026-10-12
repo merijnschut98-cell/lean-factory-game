@@ -380,6 +380,50 @@
     "monteurs": 80
    },
    "tier": 2
+  },
+  {
+   "budget": 6000,
+   "category": "visual_management",
+   "decay_days": 60,
+   "description": "De klant krijgt bij de aanvraag een realistische datum en kan de stand van zijn aanvraag online volgen.",
+   "effects": [],
+   "id": "realistic_promise",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Realistische toezegging en statuspagina",
+   "team_hours": {
+    "contact_centre": 20,
+    "intake": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 12000,
+   "category": "flow",
+   "decay_days": null,
+   "description": "Bij elke stap in het proces krijgt de klant uit zichzelf een bericht, ook als het langer duurt. Faalvraag meten naast waardevraag.",
+   "effects": [
+    {
+     "property": "call_rate",
+     "target": "connections",
+     "value": 0.5
+    }
+   ],
+   "id": "proactive_status_updates",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Proactieve statusberichten",
+   "team_hours": {
+    "contact_centre": 30,
+    "planners": 20
+   },
+   "tier": 2
   }
  ]
 }
