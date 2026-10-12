@@ -12,7 +12,7 @@ Pivot agreed 2026-10-12: from a hoverboard factory to a grid operator. The 3D fa
 
 This is a multi-month project, built the right way: research → design (reviewed by Merijn) → engine → content → world → UI, in small tested increments. No publishing deadline. Built in **Godot 4 + GDScript** from the start (decided 2026-10-12).
 
-**Next task:** Phase B — Merijn reviews the eleven tier-1 problems and the healthy base in the shared content review doc (https://claude.ai/code/artifact/120bfc8c-75b6-4a56-86d9-2c5c3148112a); then fold his answers into the content before writing more problems.
+**Next task:** Phase B — catalogue problems #13–#15 (Omvormers die afschakelen, Gereserveerd maar ongebruikt, Wachten op de trafo), each with its mission in the campaign. Merijn's review answers are built in; one question is still open in the review doc (https://claude.ai/code/artifact/120bfc8c-75b6-4a56-86d9-2c5c3148112a): is the close-out spiral too strong?
 
 ---
 
@@ -184,7 +184,8 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
   - Region and the report share one rule for what a treated problem does to the sim (`Pdca.treated_effects`)
   - Found while writing the review: 12 clue texts were cut off in the game. An unquoted comma inside `{…}` split the text and YAML turned the rest into an extra key. The content loader now refuses that pattern and duplicate keys (`_StrictLoader`). Problems, countermeasures, clues and effects also reject unknown keys (typos). The clue texts are quoted.
 - ✅ Review findings fixed with Claude's judgement while Merijn is away (his instruction, 2026-10-12): see "Claude's calls, pending Merijn" under Decisions Made
-- ⬜ Merijn reviews the problems for realism in the review doc (https://claude.ai/code/artifact/120bfc8c-75b6-4a56-86d9-2c5c3148112a) and answers the open questions there; each has a default already built in
+- ✅ Merijn answered the review's main questions (see Decisions Made); the review doc shows the recalibrated numbers (report over 5 seeds × 180 days, measured over the last 84) and the answers built in
+- ⬜ Open in the review doc: is the close-out spiral too strong (default: milder after recalibration), and the per-problem questions
 - ⬜ Catalogue problems that need a new mechanism first:
   - storing gooit de planning om: planned monteur work at 100%; needs the base to keep slack that the problem removes, or a planning-horizon mechanic;
   - KPI's die elkaar bevechten: overproduction, departments pushing work in; needs a release decision per department
@@ -198,7 +199,7 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 - ⬜ Missions beyond tier 1; story events (storm week, ACM visit, NTA 8120 audit) as missions
 - ✅ Problems can cost money (Merijn: "claims should count"): `cost_per_week` is charged to the budget every day while the problem is open, weakened by a working countermeasure; the Check shows cost before and after; saved. Graafschade €4,250 a week (~5 extra damages × ~€850 direct repair; Wibon evaluation: €38.8M over 46,799 damages in 2022). De revisieberg: daytime outages ×1.05 (estimate from Bouwend Nederland's ~60% "not known what lies where"; marked as an estimate in the content), €425 a week.
 - ✅ Evidence-based connection times (Merijn: "the industry norm"): norm back to 18 weeks (the former legal term, removed Feb 2025; the ACM still uses 18–22 weeks as reference). Real waits were ~40–44 weeks (Netbeheer Nederland 2024–2025), mostly from grid capacity, so the healthy base gets realistic external waits: customer approval 14 d, municipal consent 30 d, grid reinforcement 120 d for 15% of streets. Base: p50 ~7 weeks, ~92% within the norm. Customers call after nine weeks without news, every two weeks (32 calls a week in the base). Content tests and the report measure over 150–180 days so connections can settle.
-- ✅ Graafschade and the norm (review findings): outage arrival sources have ids, and a `demand` effect can target one (`outages.daytime`). Graafschade adds half again to daytime outages (a third of them), so the harm is monteurs pulled off planned work. De revisieberg also adds 10% daytime outages (outdated KLIC maps), so fixing GIS reduces digging damage. Connections are measured against a six-week promise (healthy base about 0.85–0.9 on time). Delegated approval fit 0.6 → 0.65.
+- ✅ Graafschade and the norm (review findings): outage arrival sources have ids, and a `demand` effect can target one (`outages.daytime`). Graafschade adds half again to daytime outages (a third of them), so the harm is monteurs pulled off planned work. De revisieberg also adds daytime outages (outdated KLIC maps; now ×1.05, see costs below), so fixing GIS reduces digging damage. Delegated approval fit 0.6 → 0.65. (The interim six-week norm was replaced by the 18-week industry norm below.)
 - ✅ Graafschade's harm made visible: steps count interruptions (`interrupted`), and stream KPIs include `lead_hours_per_week` (for outages: the hours customers are without power, count × duration, what the regulator measures). Monteurs 14 → 13 (~67% busy, back where the base was before cheaper failed trips; the technician shortage leaves little slack). Planned connection work absorbs interruptions (a two-day re-plan against a 40-day lead time), so Graafschade shows as outage hours and interrupted jobs, not as connection lead time.
 - ✅ Short jobs use the whole tick (found by measuring actual load): a person who finishes mid-tick starts the next job in the minutes left. Before, a 15-minute call held an agent for 20 minutes, so short-task teams lost a quarter of their capacity (contact centre: actual 81% vs planned 55%). The contact centre is recalibrated to 4 agents (77% actually busy, 0.86 answered within 2 h); De statusbellers now takes it to 0.57 and Klaar maar niet af to 0.67 (was 0.40, which Merijn's review asked about).
 - ✅ A failed attempt costs its own time (`fail_hours`; review question on Meterkast niet gereed): a wasted trip to a meterkast that is not ready costs 1.5 h, not the 5 h job; niet thuis costs 0.5 h. The outcome is drawn when work starts; `Capacity` counts it too.
@@ -208,7 +209,9 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 - ✅ De zwijgende meter (catalogue #12): nobody tests the meter's connection before leaving; three in ten new meters stay silent and need a return visit (base: a failed registration now goes back to the appointment). Meters on time 0.88 → 0.75. Countermeasures: communication test before leaving (jidoka, tier 1, better than the base), coverage check in planning (tier 2).
 - 🔧 `content/problems_tier1.yaml`: 13 of the 18 catalogue problems done; next: Omvormers die afschakelen (#13), Gereserveerd maar ongebruikt (#14), Wachten op de trafo (#15); "storing gooit de planning om" and "KPI's die elkaar bevechten" need a mechanism first (above)
 - 🔧 `content/countermeasures.yaml`: 26 countermeasures; grows with each problem
-- ⬜ `content/missions.yaml`, `content/concepts.yaml` (Lean + sector glossary, Dutch); story hook from the review: Henk, the last expert on old cable networks, really retires after N weeks (De laatste kennisdrager)
+- ✅ `content/missions.yaml`: the tier-1 campaign, with Henk's retirement as a 56-day deadline mission (De laatste kennisdrager)
+- ⬜ What happens when Henk's mission fails: today the mission fails and the problem stays open; later his knowledge could be lost for good (a harder countermeasure set)
+- ⬜ `content/concepts.yaml` (Lean + sector glossary, Dutch)
 
 ## Problem ideas backlog (keep growing)
 
@@ -270,12 +273,13 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 
 ### Claude's calls, pending Merijn (2026-10-12)
 Merijn asked me to fix the content review's findings with my own judgement while he is away. Each call is easy to reverse, and the same questions sit in the review doc.
-- **Connections norm: six weeks (42 days)**, Voltana's own promise, instead of the former legal 18 weeks; otherwise on-time never shows a connections problem. Question: six or eight weeks, or a different promise per connection type?
-- **Graafschade hurts through pulled monteurs**: daytime outages ×1.5, and planned connection work is interrupted and re-planned. Question: should it also cost outage minutes or claims?
+- ~~Connections norm: six weeks~~ → answered: the 18-week industry norm.
+- **Graafschade hurts through pulled monteurs**: daytime outages ×1.5, and planned connection work is interrupted and re-planned. Answered: claims count too (€4,250 a week).
 - **A failed trip costs the trip** (1.5 h at a meterkast that is not ready, 0.5 h when nobody is home), not the full job.
-- **De revisieberg feeds Graafschade in the simulation** (+10% daytime outages), not only in the clues.
+- **De revisieberg feeds Graafschade in the simulation**, not only in the clues. Answered: base it on evidence; now +5% daytime outages and €425 a week, marked as an estimate.
 - **Kept as they are, plausible and grounded:** the contact-centre spiral of Klaar maar niet af, the monthly EAN batch, three times as many calls from late customers, 40 minutes to the warehouse, two of five meterkasten not ready, three of eight not at home, 240 open revisions.
-- **Henk becomes a story hook** for the missions; the buddy system's team hours stay as they are.
+- **Henk becomes a story hook** for the missions (built: a deadline mission); the buddy system's team hours stay as they are.
+- **Still open:** is the contact-centre spiral of Klaar maar niet af too strong? Default: milder after the recalibration (contact on time 0.82 → 0.80).
 
 - **Many healthier processes, not one (2026-10-12).** Problems list several countermeasures with a fit (0–1); each countermeasure brings its own effects and levers, so different players end up with different, all improved, processes. Content values are a reasonable base; the starting problems are active effects on top.
 - **What WIP costs (2026-10-12).** Dossiers go stale when they wait too long (quotes, permits, designs need work again); this is what makes WIP limits pay off in the simulation.
