@@ -1,6 +1,6 @@
 class_name SimCalendar
 ## Simulation time: integer minutes since Monday 00:00 of week 1.
-## Working days are Monday–Friday.
+## Which days and hours count (working days, shifts) is up to a WeekSchedule.
 
 const MINUTES_PER_DAY := 1440
 const WEEK := 7 * MINUTES_PER_DAY
@@ -18,14 +18,6 @@ static func weekday(t: int) -> int:
 	return day_of(t) % 7
 
 
-static func is_workday(t: int) -> bool:
-	return weekday(t) < 5
-
-
-static func minute_of_day(t: int) -> int:
-	return t % MINUTES_PER_DAY
-
-
 ## "07:30" → 450 ("24:00" → 1440, for the end of a day). Returns -1 for anything else.
 static func parse_hhmm(text: String) -> int:
 	var parts := text.split(":")
@@ -36,6 +28,10 @@ static func parse_hhmm(text: String) -> int:
 
 static func days(n: float) -> int:
 	return roundi(n * MINUTES_PER_DAY)
+
+
+static func hours(n: float) -> int:
+	return roundi(n * 60.0)
 
 
 ## "mon-fri" → [0, 1, 2, 3, 4]; "sat" → [5]. Ranges do not wrap. Empty on error.

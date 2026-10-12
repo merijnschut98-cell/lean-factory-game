@@ -9,11 +9,16 @@ const SLOTS := SimCalendar.WEEK / SimCalendar.TICK
 const SLOTS_PER_DAY := SimCalendar.MINUTES_PER_DAY / SimCalendar.TICK
 
 var _on := PackedByteArray()
+## Per slot: how many slots until the next on-slot (0 when on).
+var _to_next := PackedInt32Array()
 var _count := 0
 
 
-## Null when a block is malformed (validated by build_content.py already).
+## Null when there are no blocks or a block is malformed (validated by
+## build_content.py already).
 static func from_blocks(blocks: Array) -> WeekSchedule:
+	if blocks.is_empty():
+		return null
 	var w := WeekSchedule.new()
 	w._on.resize(SLOTS)
 	for b: Dictionary in blocks:
@@ -26,6 +31,11 @@ static func from_blocks(blocks: Array) -> WeekSchedule:
 			for slot in range(d * SLOTS_PER_DAY + start / SimCalendar.TICK, d * SLOTS_PER_DAY + ceili(end / float(SimCalendar.TICK))):
 				w._on[slot] = 1
 	w._count = w._on.count(1)
+	w._to_next.resize(SLOTS)
+	var gap := SLOTS  # walk the week backwards twice so the gaps wrap around Sunday night
+	for i in range(2 * SLOTS - 1, -1, -1):
+		gap = 0 if w._on[i % SLOTS] == 1 else gap + 1
+		w._to_next[i % SLOTS] = gap
 	return w
 
 
@@ -38,16 +48,10 @@ func hours() -> float:
 	return _count * SimCalendar.TICK / 60.0
 
 
-## The first moment at or after `t` that is on; `t + WEEK` if never.
+## The first moment at or after `t` that is on.
 func next_start(t: int) -> int:
-	if contains(t):
-		return t
-	var slot := _slot(t)
-	var base := t - posmod(t, SimCalendar.TICK)
-	for i in range(1, SLOTS):
-		if _on[(slot + i) % SLOTS] == 1:
-			return base + i * SimCalendar.TICK
-	return t + SimCalendar.WEEK
+	var gap := _to_next[_slot(t)]
+	return t if gap == 0 else t - posmod(t, SimCalendar.TICK) + gap * SimCalendar.TICK
 
 
 func overlap_hours(other: WeekSchedule) -> float:

@@ -76,7 +76,7 @@ Generalises the factory prototype's `FlowSim` (`archive/factory-3d/src/sim/flow.
 
 **Shared people.** The monteurs serve connections, meters and outages. Queue order is stream priority, then longest waiting. Only a stream with `preempts` (outages) interrupts work in progress; the interrupted order goes back to the front of its queue. The same happens at the end of a shift (a *handover* event), so the next shift or another pool serving the step picks it up, e.g. the on-call crew hands a fault over to the monteurs at 07:00.
 
-The network skips idle stretches by jumping to the next moment anything can happen: an arrival, the end of a wait, a delivery, a new day, or a shift starting for a pool with queued work. A test proves the results are identical to stepping every tick. A simulated year of the four streams takes about 1.7 s.
+The network skips idle stretches by jumping to the next moment anything can happen: an arrival, the end of a wait, a delivery, a new day, or a shift starting for a pool with queued work. A test proves the results are identical to stepping every tick. A simulated year of the four streams takes about 1.3 s.
 
 Time runs in fixed simulated steps, independent of the frame rate: `Game` advances `n` steps per frame based on the speed setting (pause, 1×, 4×, 16×) and pauses at the dagstart.
 

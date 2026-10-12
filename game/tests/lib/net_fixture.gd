@@ -34,14 +34,24 @@ static func stock(id: String, level: int, reorder_point: int, order_quantity: in
 		"order_quantity": order_quantity, "lead_days": lead_days}
 
 
-## `per_day` arrivals on working days between 08:00 and 17:00; `extra` overrides
+## `per_week` arrivals on working days between 08:00 and 17:00; `extra` overrides
 ## or adds fields (e.g. {"preempts": true} or a different "arrivals" list).
-static func stream(id: String, steps: Array, per_day: float = 4.0, priority: int = 1, extra: Dictionary = {}) -> Dictionary:
+static func stream(id: String, steps: Array, per_week: float = 20.0, priority: int = 1, extra: Dictionary = {}) -> Dictionary:
 	var arrivals := block("mon-fri", "08:00", "17:00")
-	arrivals["per_week"] = per_day * 5.0
+	arrivals["per_week"] = per_week
 	var d := {"id": id, "name": id, "arrivals": [arrivals], "norm_days": 30.0, "priority": priority, "steps": steps}
 	d.merge(extra, true)
 	return d
+
+
+## Weeknights and weekends: the schedule of the storingsdienst (on-call crew).
+static func on_call() -> Array:
+	return [block("mon-fri", "00:00", "07:00"), block("mon-fri", "15:00", "24:00"), block("sat-sun", "00:00", "24:00")]
+
+
+## Events of one type still in `net.events`.
+static func events(net: Network, type: String) -> Array[Dictionary]:
+	return net.events.filter(func(e: Dictionary) -> bool: return e["type"] == type)
 
 
 ## Around-the-clock arrivals, `per_week` on average.

@@ -41,11 +41,12 @@ static func stream_load(stream: ValueStream, pools: Dictionary[String, SimPool],
 	if visits.is_empty():
 		visits = expected_visits(stream)
 	var load: Dictionary[String, float] = {}
+	var per_week := stream.per_week()
 	for i in stream.steps.size():
 		var step := stream.steps[i]
 		if step.kind != SimStep.Kind.WORK:
 			continue
-		var hours := stream.per_week() * visits[i] * step.touch_minutes / 60.0
+		var hours := per_week * visits[i] * step.touch_minutes / 60.0
 		var shares := _pool_shares(stream, step.pool_ids, pools)
 		for j in step.pool_ids.size():
 			load[step.pool_ids[j]] = load.get(step.pool_ids[j], 0.0) + hours * shares[j]
@@ -102,12 +103,13 @@ static func _stream_constraint(s: ValueStream, own: Dictionary[String, float], v
 		pools: Dictionary) -> Dictionary:
 	var worst := ""
 	var capacity := INF
+	var per_week := s.per_week()
 	for pool_id: String in own:
 		var p: Dictionary = pools[pool_id]
 		if worst == "" or p["utilisation"] > pools[worst]["utilisation"]:
 			worst = pool_id
 		# Orders per week this stream could push through the pool, given the others' load.
-		var hours_per_order: float = own[pool_id] / s.per_week() if s.per_week() > 0.0 else 0.0
+		var hours_per_order: float = own[pool_id] / per_week if per_week > 0.0 else 0.0
 		if hours_per_order > 0.0:
 			var spare: float = p["available"] - (p["load"] - own[pool_id])
 			capacity = minf(capacity, maxf(0.0, spare) / hours_per_order)

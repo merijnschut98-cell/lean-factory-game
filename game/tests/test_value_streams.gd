@@ -70,7 +70,7 @@ func test_outages_are_restored_within_hours_by_day_and_night() -> void:
 
 func test_outages_interrupt_planned_monteur_work() -> void:
 	var net := _run_120_days()
-	assert_true(net.events.any(func(e: Dictionary) -> bool: return e["type"] == "preempted"))
+	assert_true(NetFixture.events(net, "preempted").size() > 0)
 
 
 func test_meters_and_congestion_flow() -> void:
@@ -85,7 +85,7 @@ func test_meters_and_congestion_flow() -> void:
 
 func test_starting_stock_does_not_run_out() -> void:
 	var net := _run_120_days()
-	var stockouts := net.events.filter(func(e: Dictionary) -> bool: return e["type"] == "stockout")
+	var stockouts := NetFixture.events(net, "stockout")
 	assert_eq(stockouts.size(), 0, "stock-outs are a problem to discover later, not the starting state")
 	for item: SimStock in net.stock.values():
 		assert_true(item.level > 0, item.id)

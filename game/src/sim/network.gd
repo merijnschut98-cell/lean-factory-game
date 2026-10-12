@@ -29,7 +29,9 @@ var _waiting: Array[WorkOrder] = []
 var _queues: Dictionary[SimStep, Array] = {}
 ## Today's scheduled arrivals: [{at: int, stream: ValueStream}], sorted by time.
 var _arrivals: Array[Dictionary] = []
-var _day := -1
+## `pools` as a list, for the per-tick loops (iterating a Dictionary's values allocates).
+var _pool_list: Array[SimPool] = []
+var _day := 0
 var _next_id := 1
 
 
@@ -53,12 +55,12 @@ static func create(config: Dictionary, seed_value: int = 1) -> Network:
 		pool.name = p["name"]
 		pool.headcount = int(p["headcount"])
 		pool.availability = float(p["availability"])
-		var blocks: Array = p.get("schedule", [])
-		pool.schedule = WeekSchedule.from_blocks(blocks)
-		if pool.schedule == null or blocks.is_empty():
+		pool.schedule = WeekSchedule.from_blocks(p.get("schedule", []))
+		if pool.schedule == null:
 			net.error = "pool %s: bad schedule" % pool.id
 			return net
 		net.pools[pool.id] = pool
+		net._pool_list.append(pool)
 	for s: Dictionary in config.get("stock", []):
 		var item := SimStock.new()
 		item.id = s["id"]
@@ -75,6 +77,8 @@ static func create(config: Dictionary, seed_value: int = 1) -> Network:
 		net.streams.append(stream)
 	if net.streams.is_empty():
 		net.error = "no value streams in configuration"
+	else:
+		net._start_day()  # day 0; later days start on their first tick
 	return net
 
 
@@ -83,7 +87,7 @@ func _build_stream(v: Dictionary) -> ValueStream:
 	stream.id = v["id"]
 	stream.name = v["name"]
 	if v.has("norm_hours"):
-		stream.norm_minutes = roundi(float(v["norm_hours"]) * 60.0)
+		stream.norm_minutes = SimCalendar.hours(float(v["norm_hours"]))
 	else:
 		stream.norm_minutes = SimCalendar.days(float(v["norm_days"]))
 	stream.priority = int(v["priority"])
@@ -104,7 +108,7 @@ func _build_stream(v: Dictionary) -> ValueStream:
 			"work":
 				step.kind = SimStep.Kind.WORK
 				step.pool_ids = PackedStringArray(s["pool"] if s["pool"] is Array else [s["pool"]])
-				step.touch_minutes = roundi(float(s["touch_hours"]) * 60.0)
+				step.touch_minutes = SimCalendar.hours(float(s["touch_hours"]))
 				step.ftr = float(s["ftr"])
 				step.rework_index = ids.find(s.get("rework_to", step.id))
 				step.rework_wait_minutes = SimCalendar.days(float(s.get("rework_wait_days", 0.0)))
@@ -160,13 +164,12 @@ func advance(minutes: int) -> void:
 ## tick grid). Results are identical to stepping tick by tick.
 func _next_busy_tick() -> int:
 	var after := time + SimCalendar.TICK
-	if _day != SimCalendar.day_of(time):
-		return after  # today has not started yet (the very first tick)
-	var next := (SimCalendar.day_of(time) + 1) * SimCalendar.MINUTES_PER_DAY
-	for pool: SimPool in pools.values():
+	for pool in _pool_list:
 		if not pool.busy.is_empty():
 			return after
-		if pool.present > 0 and _has_queued_work(pool):
+	var next := (SimCalendar.day_of(time) + 1) * SimCalendar.MINUTES_PER_DAY
+	for pool in _pool_list:
+		if pool.present > 0 and _most_urgent_step(pool) != null:
 			next = mini(next, pool.schedule.next_start(after))
 	if not _arrivals.is_empty():
 		next = mini(next, _arrivals[0]["at"])
@@ -179,13 +182,6 @@ func _next_busy_tick() -> int:
 	return ceili(next / float(SimCalendar.TICK)) * SimCalendar.TICK
 
 
-func _has_queued_work(pool: SimPool) -> bool:
-	for step in pool.steps:
-		if not queue_of(step).is_empty():
-			return true
-	return false
-
-
 func advance_days(n: float) -> void:
 	advance(SimCalendar.days(n))
 
@@ -195,7 +191,6 @@ func _tick() -> void:
 	if day != _day:
 		_day = day
 		_start_day()
-	_hand_over()
 	_release_arrivals()
 	_finish_waits()
 	_deliver_stock()
@@ -204,7 +199,7 @@ func _tick() -> void:
 
 
 func _start_day() -> void:
-	for pool: SimPool in pools.values():
+	for pool in _pool_list:
 		pool.roll_presence(rng)
 	var day_start := SimCalendar.day_of(time) * SimCalendar.MINUTES_PER_DAY
 	for s in streams:
@@ -310,26 +305,23 @@ func _deliver_stock() -> void:
 		_reorder_if_needed(item)
 
 
-## At the end of a shift, unfinished work goes back to the front of its queue
-## for the next shift (or another pool serving the step) to pick up.
-func _hand_over() -> void:
-	for pool: SimPool in pools.values():
-		if pool.busy.is_empty() or pool.is_on_shift(time):
-			continue
-		for i in range(pool.busy.size() - 1, -1, -1):
-			_requeue(pool.busy[i], "handover")
-		pool.busy.clear()
-
-
 ## Put interrupted work back at the front of its queue.
 func _requeue(order: WorkOrder, why: String) -> void:
 	queue_of(order.current_step()).push_front(order)
 	_emit(why, order)
 
 
+## People on shift work another tick on their orders. At the end of a shift,
+## unfinished work goes back to the front of its queue for the next shift (or
+## another pool serving the step) to pick up.
 func _progress_work() -> void:
-	for pool: SimPool in pools.values():
+	for pool in _pool_list:
 		if pool.busy.is_empty():
+			continue
+		if not pool.is_on_shift(time):
+			for i in range(pool.busy.size() - 1, -1, -1):
+				_requeue(pool.busy[i], "handover")
+			pool.busy.clear()
 			continue
 		for i in range(pool.busy.size() - 1, -1, -1):
 			var order := pool.busy[i]
@@ -358,7 +350,7 @@ func _complete_work(order: WorkOrder) -> void:
 ## order of a pre-empting stream (outages) interrupts the least urgent
 ## lower-priority order in progress.
 func _assign_work() -> void:
-	for pool: SimPool in pools.values():
+	for pool in _pool_list:
 		if not pool.is_on_shift(time):
 			continue
 		while true:

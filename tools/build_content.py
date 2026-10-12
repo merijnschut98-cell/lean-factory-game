@@ -50,6 +50,7 @@ def validate_game(doc: Any, source: str) -> None:
 # ── value_streams.yaml ───────────────────────────────────────────────────────
 
 _TIME = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
+_END_TIME = re.compile(r"^(([01]\d|2[0-3]):[0-5]\d|24:00)$")  # "24:00" ends a day
 _ID = re.compile(r"^[a-z][a-z0-9_]*$")
 STEP_KINDS = {"work", "wait", "material"}
 DAY_NAMES = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
@@ -102,7 +103,7 @@ def _validate_block(block: Any, where: str) -> None:
     if not _valid_days(block.get("days")):
         raise ContentError(f"{where}: 'days' must be a day or a range like mon-fri (got {block.get('days')!r})")
     start, end = block.get("from"), block.get("to")
-    if not (isinstance(start, str) and _TIME.match(start) and isinstance(end, str) and (_TIME.match(end) or end == "24:00")):
+    if not (isinstance(start, str) and _TIME.match(start) and isinstance(end, str) and _END_TIME.match(end)):
         raise ContentError(f'{where}: \'from\' and \'to\' must be quoted "HH:MM" times')
     if _minutes(start) % TICK_MINUTES or _minutes(end) % TICK_MINUTES:
         raise ContentError(f"{where}: times must be on the {TICK_MINUTES}-minute grid")

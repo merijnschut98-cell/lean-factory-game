@@ -32,7 +32,7 @@ func test_applies_scales_visits() -> void:
 func test_constraint_is_the_most_loaded_pool_on_the_route() -> void:
 	var net := NetFixture.net([NetFixture.pool("fast", 2), NetFixture.pool("slow", 1)], [NetFixture.stream("s", [
 		NetFixture.work("a", "fast", 2.0), NetFixture.work("b", "slow", 4.0),
-	], 2.0)])
+	], 10.0)])
 	var r := Capacity.analyse(net)
 	assert_near(r["pools"]["slow"]["utilisation"], 1.0, 1e-6)  # 10/week × 4 h vs 1 × 40 h
 	assert_near(r["pools"]["fast"]["utilisation"], 0.25, 1e-6)
@@ -43,8 +43,8 @@ func test_constraint_is_the_most_loaded_pool_on_the_route() -> void:
 
 func test_shared_pool_load_counts_for_both_streams() -> void:
 	var net := NetFixture.net([NetFixture.pool("crew", 2)], [
-		NetFixture.stream("x", [NetFixture.work("a", "crew", 4.0)], 2.0),
-		NetFixture.stream("y", [NetFixture.work("b", "crew", 2.0)], 2.0),
+		NetFixture.stream("x", [NetFixture.work("a", "crew", 4.0)], 10.0),
+		NetFixture.stream("y", [NetFixture.work("b", "crew", 2.0)], 10.0),
 	])
 	var r := Capacity.analyse(net)
 	assert_near(r["pools"]["crew"]["utilisation"], 0.75, 1e-6)  # (40 + 20) / 80 hours a week
@@ -54,10 +54,7 @@ func test_shared_pool_load_counts_for_both_streams() -> void:
 func test_a_step_served_by_two_pools_splits_its_load_by_the_hours_they_cover() -> void:
 	var net := NetFixture.net([
 		NetFixture.pool("day", 1, 1.0, [NetFixture.block("mon-fri", "07:00", "15:00")]),
-		NetFixture.pool("on_call", 1, 1.0, [
-			NetFixture.block("mon-fri", "00:00", "07:00"), NetFixture.block("mon-fri", "15:00", "24:00"),
-			NetFixture.block("sat-sun", "00:00", "24:00"),
-		]),
+		NetFixture.pool("on_call", 1, 1.0, NetFixture.on_call()),
 	], [NetFixture.stream("outages", [NetFixture.work("fix", ["day", "on_call"], 1.0)], 0.0, 3, {"arrivals": NetFixture.always(168.0)})])
 	var r := Capacity.analyse(net)
 	assert_near(r["pools"]["day"]["load"], 40.0, 1e-6)  # the 40 of 168 hours the day crew covers
