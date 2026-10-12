@@ -348,6 +348,40 @@ streams:
         touch_hours: 0.5
         ftr: 1.0
 
+  - id: voltage_complaints
+    name: Spanningsklachten
+    # Customers report voltage problems (flickering lights, inverters that trip).
+    # The voltage must stay within 230 V ±10% (Netcode, EN 50160); a complaint
+    # is answered with a week of measurement at the address.
+    arrivals: [{per_week: 2, days: mon-fri, from: "08:00", to: "17:00"}]
+    norm_days: 28           # internal: a measured answer within four weeks
+    priority: 1
+    steps:
+      - id: analysis
+        name: Klacht analyseren
+        kind: work
+        pool: meter_office
+        touch_hours: 0.5
+        ftr: 0.95
+      - id: measurement
+        name: Spanningsmeter plaatsen
+        kind: work
+        pool: monteurs
+        touch_hours: 1.5      # including travel
+        ftr: 0.95
+      - id: measurement_week
+        name: Meetweek
+        kind: wait
+        days: 7
+        spread: 0.2
+      - id: tap_change
+        name: Aftakking trafo aanpassen
+        kind: work
+        pool: monteurs
+        touch_hours: 2.0
+        ftr: 0.9
+        applies: 0.4          # the rest is within limits or the customer's own installation
+
   - id: customer_contact
     name: Klantvragen
     # Value demand: questions about connections, meters, bills and outages.

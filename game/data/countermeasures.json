@@ -561,6 +561,213 @@
     "planners": 20
    },
    "tier": 2
+  },
+  {
+   "budget": 4000,
+   "category": "standard_work",
+   "decay_days": null,
+   "description": "In wijken met veel zonnepanelen gaat de aftakking van de wijktransformator een stand lager, op basis van een meetweek. De spanning klopt dan voor de hele straat in plaats van voor één klant.",
+   "effects": [],
+   "id": "tap_review_per_neighbourhood",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Trafo-aftakkingen per wijk herzien",
+   "team_hours": {
+    "grid_analysts": 10,
+    "monteurs": 30
+   },
+   "tier": 1
+  },
+  {
+   "budget": 8000,
+   "category": "visual_management",
+   "decay_days": null,
+   "description": "Meetdata bewaakt de spanning die slimme meters elk kwartier registreren. Een te hoge spanning is zichtbaar voordat er een klacht komt, en de meetweek bij het adres is meestal niet meer nodig.",
+   "effects": [
+    {
+     "property": "touch_time",
+     "target": "voltage_complaints.measurement",
+     "value": 0.5
+    },
+    {
+     "property": "wait_time",
+     "target": "voltage_complaints.measurement_week",
+     "value": 0.3
+    }
+   ],
+   "id": "smart_meter_voltage_data",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Spanningsdata uit slimme meters",
+   "team_hours": {
+    "meter_office": 30
+   },
+   "tier": 2
+  },
+  {
+   "budget": 60000,
+   "category": "flow",
+   "decay_days": null,
+   "description": "De straten met de meeste zonnepanelen krijgen een zwaardere kabel of een extra station. Duur, maar de spanning blijft ook bij nog meer panelen binnen de norm.",
+   "effects": [
+    {
+     "property": "demand",
+     "target": "voltage_complaints",
+     "value": 0.7
+    }
+   ],
+   "id": "targeted_reinforcement",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Gerichte netverzwaring in de drukste straten",
+   "team_hours": {
+    "grid_analysts": 20,
+    "work_prep": 20
+   },
+   "tier": 3
+  },
+  {
+   "budget": 2000,
+   "category": "flow",
+   "decay_days": 45,
+   "description": "Zodra de netstudie laat zien dat een straat verzwaard moet worden, gaat de bestelling van de transformator de deur uit. Ontwerp en levertijd lopen naast elkaar in plaats van na elkaar.",
+   "effects": [],
+   "id": "early_transformer_order",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Trafo bestellen bij de netstudie",
+   "team_hours": {
+    "grid_analysts": 10,
+    "work_prep": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 12000,
+   "category": "flow",
+   "decay_days": null,
+   "description": "Een raamcontract met de fabrikant voor standaardtransformatoren, met afgesproken aantallen en een vaste levertijd. Bestellen is afroepen in plaats van een aanbesteding per project.",
+   "effects": [
+    {
+     "property": "wait_time",
+     "target": "connections.grid_reinforcement",
+     "value": 0.9
+    }
+   ],
+   "id": "framework_contracts",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Raamcontract met vaste levertijd",
+   "team_hours": {
+    "work_prep": 20
+   },
+   "tier": 2
+  },
+  {
+   "budget": 40000,
+   "category": "flow",
+   "decay_days": null,
+   "description": "Een kleine voorraad standaardtransformatoren op het magazijn, aangevuld via de fabrikant. Een verzwaring hoeft niet meer op de levering te wachten; de voorraad kost wel geld.",
+   "effects": [
+    {
+     "property": "wait_time",
+     "target": "connections.grid_reinforcement",
+     "value": 0.85
+    },
+    {
+     "property": "wait_time",
+     "target": "congestion.capacity_queue",
+     "value": 0.95
+    }
+   ],
+   "id": "strategic_transformer_stock",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Strategische voorraad transformatoren",
+   "team_hours": {
+    "work_prep": 10
+   },
+   "tier": 3
+  },
+  {
+   "budget": 3000,
+   "category": "visual_management",
+   "decay_days": 45,
+   "description": "Per klant en per station staan het gecontracteerde en het werkelijk gebruikte vermogen naast elkaar, elke week bijgewerkt uit de meetdata. Ongebruikte capaciteit wordt zichtbaar; teruggeven gebeurt nog per geval.",
+   "effects": [],
+   "id": "capacity_usage_dashboard",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Dashboard gecontracteerd versus gebruikt",
+   "team_hours": {
+    "grid_analysts": 10,
+    "key_accounts": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 5000,
+   "category": "flow",
+   "decay_days": null,
+   "description": "Klanten die structureel veel minder gebruiken dan ze gecontracteerd hebben, krijgen een gesprek en een voorstel om capaciteit terug te geven, zoals de ACM toestaat. Wat vrijkomt, gaat naar de wachtrij.",
+   "effects": [],
+   "id": "use_it_or_lose_it",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Use-it-or-lose-it-gesprekken",
+   "team_hours": {
+    "grid_analysts": 10,
+    "key_accounts": 30
+   },
+   "tier": 2
+  },
+  {
+   "budget": 8000,
+   "category": "flow",
+   "decay_days": null,
+   "description": "Nieuwe klanten krijgen naast vaste capaciteit ook non-firm en tijdsduurgebonden contracten aangeboden. Meer aanvragen passen meteen, buiten de drukste uren.",
+   "effects": [
+    {
+     "property": "applies",
+     "target": "congestion.capacity_queue",
+     "value": -0.1
+    }
+   ],
+   "id": "flexible_contracts",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Flexibele en tijdsduurgebonden contracten",
+   "team_hours": {
+    "key_accounts": 40
+   },
+   "tier": 3
   }
  ]
 }

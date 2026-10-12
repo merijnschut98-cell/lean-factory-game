@@ -544,7 +544,8 @@ def validate_missions(doc: Any, source: str) -> None:
 
 def check_missions(docs: dict[str, Any]) -> None:
     """Missions against problems and value streams, and the campaign as a
-    whole: no cycles, a way in, and every mission reachable."""
+    whole: every problem solved by one mission, no cycles, a way in, and
+    every mission reachable."""
     missions = {m["id"]: m for m in docs["missions"]["missions"]}
     streams = {s["id"] for s in docs["value_streams"]["streams"]}
     problems = {p["id"]: p for _, p in _all_problems(docs)}
@@ -568,6 +569,9 @@ def check_missions(docs: dict[str, Any]) -> None:
                 if goal["problem"] in solved:
                     raise ContentError(f"{where}: problem {goal['problem']!r} is already solved in mission {solved[goal['problem']]!r}")
                 solved[goal["problem"]] = m["id"]
+    unsolved = sorted(set(problems) - set(solved))
+    if unsolved:
+        raise ContentError(f"missions.yaml: no mission solves {', '.join(unsolved)} (the campaign reaches every problem)")
     # Play the campaign forward: complete whatever is unlocked, earning only
     # the missions' own XP (problems give more, so this is the hard case).
     done: set[str] = set()

@@ -248,6 +248,56 @@
    "tier": 1
   },
   {
+   "briefing": "De netstudies lopen weer, maar klanten in volle straten wachten nog steeds een half jaar op hun aansluiting. Iedereen wijst naar de fabrikant van de transformatoren.",
+   "debrief": "De fabrikant is niet sneller geworden. We bestellen alleen niet meer te laat.",
+   "goal": {
+    "problem": "transformer_wait",
+    "type": "solve"
+   },
+   "id": "fix_transformer_wait",
+   "insights": {
+    "reflect": "Welke andere wachttijden lopen na elkaar terwijl ze naast elkaar zouden kunnen?",
+    "understand": "Wanneer weten we dat er een trafo nodig is, en wanneer bestellen we hem?"
+   },
+   "kind": "main",
+   "name": "Wachten op de trafo",
+   "requires": {
+    "missions": [
+     "fix_grid_study_queue"
+    ]
+   },
+   "rewards": {
+    "budget": 12000,
+    "xp": 1300
+   },
+   "tier": 1
+  },
+  {
+   "briefing": "De wachtlijst voor transportcapaciteit is de langste ooit. Grootzakelijke klanten dreigen naar de ACM te stappen. Volgens Netstrategie is het net vol.",
+   "debrief": "Het net was op papier vol. Nu komt ongebruikte capaciteit terug bij wie erop wacht.",
+   "goal": {
+    "problem": "unused_capacity",
+    "type": "solve"
+   },
+   "id": "fix_unused_capacity",
+   "insights": {
+    "go_see": "Kijk eens naar wat er werkelijk door de stations gaat, niet naar wat er gecontracteerd is.",
+    "understand": "Is het net vol, of zijn de contracten vol?"
+   },
+   "kind": "main",
+   "name": "Gereserveerd maar ongebruikt",
+   "requires": {
+    "missions": [
+     "fix_transformer_wait"
+    ]
+   },
+   "rewards": {
+    "budget": 12000,
+    "xp": 1400
+   },
+   "tier": 1
+  },
+  {
    "briefing": "Loop een dag mee met de storingsdienst, van melding tot herstel.",
    "debrief": "Nu weet je wat er gebeurt als het licht uitgaat.",
    "goal": {
@@ -410,6 +460,27 @@
    },
    "rewards": {
     "xp": 250
+   },
+   "tier": 1
+  },
+  {
+   "briefing": "Er komen steeds meer klachten van klanten wiens zonnepanelen op zonnige middagen niets opleveren. De monteurs meten adres na adres.",
+   "debrief": "Eén aftakking per wijk lost honderd klachten op. De slimme meters hadden het al die tijd gezien.",
+   "goal": {
+    "problem": "inverters_tripping",
+    "type": "solve"
+   },
+   "id": "fix_inverters_tripping",
+   "kind": "side",
+   "name": "Omvormers die afschakelen",
+   "requires": {
+    "missions": [
+     "fix_silent_meter"
+    ]
+   },
+   "rewards": {
+    "budget": 4000,
+    "xp": 400
    },
    "tier": 1
   }

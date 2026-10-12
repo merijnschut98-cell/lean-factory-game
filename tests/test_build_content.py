@@ -214,9 +214,9 @@ def test_unquoted_time_in_yaml_is_caught():
         bc.validate_value_streams(doc, "value_streams.yaml")
 
 
-def test_real_streams_cover_the_four_value_streams_and_customer_contact():
+def test_real_streams_cover_the_value_streams_and_customer_contact():
     ids = [s["id"] for s in _streams()["streams"]]
-    assert ids == ["connections", "outages", "meters", "congestion", "customer_contact"]
+    assert ids == ["connections", "outages", "meters", "congestion", "voltage_complaints", "customer_contact"]
 
 
 # ── problems and countermeasures ─────────────────────────────────────────────
@@ -398,6 +398,8 @@ def test_problem_errors_are_caught(rules_dirs, mutate, message):
     (lambda d: _mission(d, 0)["goal"].update(stream="ghosts"), "unknown stream 'ghosts'"),
     (lambda d: _mission(d, 2)["goal"].update(clues=9), "asks for 9 key clues"),
     (lambda d: _mission(d, 2).update(goal={"type": "solve", "problem": "custom_design"}), "already solved in mission"),
+    (lambda d: _mission(d, 1).update(goal={"type": "investigate", "problem": "custom_design", "clues": 1}),
+     "no mission solves custom_design"),
     (lambda d: _mission(d, 2).update(insights={"go_see": "Kijk."}), "only main missions get the coach"),
     (lambda d: _mission(d).update(deadline_days=30), "'fail' must be a non-empty string"),
     (lambda d: _mission(d)["goal"].update(type="dance"), "'goal' needs a type"),

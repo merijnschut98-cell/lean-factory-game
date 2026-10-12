@@ -512,6 +512,54 @@
     {
      "days": "mon-fri",
      "from": "08:00",
+     "per_week": 2,
+     "to": "17:00"
+    }
+   ],
+   "id": "voltage_complaints",
+   "name": "Spanningsklachten",
+   "norm_days": 28,
+   "priority": 1,
+   "steps": [
+    {
+     "ftr": 0.95,
+     "id": "analysis",
+     "kind": "work",
+     "name": "Klacht analyseren",
+     "pool": "meter_office",
+     "touch_hours": 0.5
+    },
+    {
+     "ftr": 0.95,
+     "id": "measurement",
+     "kind": "work",
+     "name": "Spanningsmeter plaatsen",
+     "pool": "monteurs",
+     "touch_hours": 1.5
+    },
+    {
+     "days": 7,
+     "id": "measurement_week",
+     "kind": "wait",
+     "name": "Meetweek",
+     "spread": 0.2
+    },
+    {
+     "applies": 0.4,
+     "ftr": 0.9,
+     "id": "tap_change",
+     "kind": "work",
+     "name": "Aftakking trafo aanpassen",
+     "pool": "monteurs",
+     "touch_hours": 2.0
+    }
+   ]
+  },
+  {
+   "arrivals": [
+    {
+     "days": "mon-fri",
+     "from": "08:00",
      "per_week": 380,
      "to": "17:00"
     }

@@ -901,6 +901,222 @@
    "tier": 1,
    "visibility": "subtle",
    "waste": "defects"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Negen van de tien spanningsklachten komen binnen tussen elf en drie uur, op zonnige dagen.",
+     "tool": "data"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "'Het zijn die goedkope omvormers. Met een goed merk heb je hier geen last van.'",
+     "tool": "conversation"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "De meting bij het adres laat zien dat de spanning 's middags oploopt tot 254 volt. Boven 253 volt moet een omvormer afschakelen; dat is de norm.",
+     "tool": "shadow"
+    },
+    {
+     "at": "voltage_complaints.tap_change",
+     "depth": 1,
+     "key": true,
+     "text": "De aftakking van de wijktrafo staat sinds 2009 op dezelfde stand. Inmiddels liggen er op de helft van de daken zonnepanelen.",
+     "tool": "documents"
+    },
+    {
+     "at": "voltage_complaints.analysis",
+     "depth": 2,
+     "key": true,
+     "text": "De slimme meters in de straat registreren elk kwartier de spanning. Niemand bij Voltana kijkt ernaar.",
+     "tool": "data"
+    }
+   ],
+   "countermeasures": {
+    "smart_meter_voltage_data": 0.8,
+    "tap_review_per_neighbourhood": 1.0,
+    "targeted_reinforcement": 0.7
+   },
+   "effects": [
+    {
+     "property": "demand",
+     "target": "voltage_complaints",
+     "value": 3.0
+    }
+   ],
+   "id": "inverters_tripping",
+   "kpi": "lead_time",
+   "mismatch_note": "Elke klacht apart meten en oplossen bestrijdt het symptoom. De spanning is te hoog in de hele straat.",
+   "name": "Omvormers die afschakelen",
+   "plausible_causes": [
+    "Goedkope omvormers zijn slecht afgesteld.",
+    "Klanten hebben te veel panelen voor hun aansluiting."
+   ],
+   "root_cause": "De aftakkingen van de wijktransformatoren staan nog zoals voor de zonnepanelen, en niemand kijkt naar de spanning in het laagspanningsnet. Elke klacht wordt los opgelost met een meting bij één adres.",
+   "severity": "medium",
+   "step": "voltage_complaints.measurement",
+   "symptoms": [
+    "Het aantal spanningsklachten is in twee jaar verdrievoudigd, vooral op zonnige middagen.",
+    "Klanten melden dat hun omvormer uitvalt en hun zonnepanelen niets opleveren."
+   ],
+   "teaches": [
+    "root_cause",
+    "systems_thinking"
+   ],
+   "tier": 1,
+   "visibility": "obvious",
+   "waste": "defects"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Een netverzwaring duurt gemiddeld zeven maanden. Het werk in de straat zelf duurt twee weken.",
+     "tool": "data"
+    },
+    {
+     "at": "connections.design",
+     "depth": 0,
+     "key": false,
+     "text": "'De fabrikanten hebben het druk. Heel Europa wil transformatoren.'",
+     "tool": "conversation"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "Het bestelproces: eerst het ontwerp van de verzwaring afronden en laten goedkeuren, dan pas de transformator bestellen. Levertijd: zes maanden.",
+     "tool": "documents"
+    },
+    {
+     "at": "connections.grid_study",
+     "depth": 2,
+     "key": true,
+     "text": "'Bij de netstudie weten we al dat er een trafo bij moet. Maar bestellen mag pas met een goedgekeurd ontwerp; zo is het altijd gegaan.'",
+     "tool": "conversation"
+    }
+   ],
+   "countermeasures": {
+    "early_transformer_order": 1.0,
+    "framework_contracts": 0.9,
+    "strategic_transformer_stock": 0.8
+   },
+   "effects": [
+    {
+     "property": "wait_time",
+     "target": "connections.grid_reinforcement",
+     "value": 1.75
+    },
+    {
+     "property": "wait_time",
+     "target": "congestion.capacity_queue",
+     "value": 1.2
+    }
+   ],
+   "id": "transformer_wait",
+   "kpi": "lead_time",
+   "mismatch_note": "De levertijd van de fabrikant kun je niet veranderen. Wanneer je bestelt wel.",
+   "name": "Wachten op de trafo",
+   "plausible_causes": [
+    "De fabrikant levert te traag.",
+    "Er zijn te weinig monteurs voor netverzwaring."
+   ],
+   "root_cause": "Transformatoren worden per project besteld, pas als het ontwerp van de verzwaring is goedgekeurd. De levertijd van de fabrikant komt daardoor na het ontwerp in plaats van ernaast.",
+   "severity": "high",
+   "step": "connections.grid_reinforcement",
+   "symptoms": [
+    "Aansluitingen in volle straten wachten een half jaar of langer op netverzwaring.",
+    "Het projectteam netverzwaring zegt dat de fabrikant niet op tijd levert."
+   ],
+   "teaches": [
+    "waiting",
+    "flow"
+   ],
+   "tier": 1,
+   "visibility": "subtle",
+   "waste": "waiting"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Op het drukste kwartier van het jaar gebruiken de grootzakelijke klanten samen 62% van het vermogen dat ze gecontracteerd hebben.",
+     "tool": "data"
+    },
+    {
+     "at": "congestion.congestion_study",
+     "depth": 0,
+     "key": false,
+     "text": "'Het net is vol. Tot de verzwaring klaar is, kunnen we niets doen.'",
+     "tool": "conversation"
+    },
+    {
+     "at": "congestion.intake",
+     "depth": 1,
+     "key": true,
+     "text": "Een ondernemer aan de telefoon: 'Mijn buurman heeft twee megawatt gecontracteerd en zijn hal staat leeg.'",
+     "tool": "listen_in"
+    },
+    {
+     "at": "congestion.congestion_study",
+     "depth": 1,
+     "key": true,
+     "text": "Het congestieonderzoek rekent met het gecontracteerde vermogen van iedereen, niet met wat er werkelijk loopt.",
+     "tool": "documents"
+    },
+    {
+     "at": "congestion.offer",
+     "depth": 2,
+     "key": true,
+     "text": "In de contracten staat niets over ongebruikte capaciteit, en niemand heeft de taak om contract en meting naast elkaar te leggen.",
+     "tool": "documents"
+    }
+   ],
+   "countermeasures": {
+    "capacity_usage_dashboard": 0.7,
+    "flexible_contracts": 0.8,
+    "use_it_or_lose_it": 1.0
+   },
+   "effects": [
+    {
+     "property": "wait_time",
+     "target": "congestion.capacity_queue",
+     "value": 1.4
+    },
+    {
+     "property": "applies",
+     "target": "congestion.capacity_queue",
+     "value": 0.1
+    }
+   ],
+   "id": "unused_capacity",
+   "kpi": "lead_time",
+   "mismatch_note": "Op papier is het net vol, in werkelijkheid niet. Wie alleen verzwaart, laat de ongebruikte reserveringen liggen.",
+   "name": "Gereserveerd maar ongebruikt",
+   "plausible_causes": [
+    "Het net is gewoon vol; alleen verzwaren helpt.",
+    "De congestieonderzoeken rekenen te voorzichtig."
+   ],
+   "root_cause": "Gecontracteerde transportcapaciteit wordt nooit vergeleken met het werkelijke gebruik, dus ongebruikte capaciteit komt niet terug voor de wachtrij.",
+   "severity": "high",
+   "step": "congestion.capacity_queue",
+   "symptoms": [
+    "De wachtrij voor transportcapaciteit groeit, terwijl de stations op het drukste moment niet vol zitten.",
+    "Ondernemers op de wachtlijst vragen waarom hun buurman wel capaciteit heeft en die niet gebruikt."
+   ],
+   "teaches": [
+    "inventory",
+    "visual_management"
+   ],
+   "tier": 1,
+   "visibility": "hidden",
+   "waste": "inventory"
   }
  ]
 }

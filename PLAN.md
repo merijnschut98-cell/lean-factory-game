@@ -12,7 +12,7 @@ Pivot agreed 2026-10-12: from a hoverboard factory to a grid operator. The 3D fa
 
 This is a multi-month project, built the right way: research → design (reviewed by Merijn) → engine → content → world → UI, in small tested increments. No publishing deadline. Built in **Godot 4 + GDScript** from the start (decided 2026-10-12).
 
-**Next task:** Phase B — catalogue problems #13–#15 (Omvormers die afschakelen, Gereserveerd maar ongebruikt, Wachten op de trafo), each with its mission in the campaign. Merijn's review answers are built in; one question is still open in the review doc (https://claude.ai/code/artifact/120bfc8c-75b6-4a56-86d9-2c5c3148112a): is the close-out spiral too strong?
+**Next task:** Phase B — the mechanisms for the last two catalogue problems (storing gooit de planning om; KPI's die elkaar bevechten), then `content/concepts.yaml`. Merijn's review answers are built in; one question is still open in the review doc (https://claude.ai/code/artifact/120bfc8c-75b6-4a56-86d9-2c5c3148112a): is the close-out spiral too strong?
 
 ---
 
@@ -207,8 +207,13 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 - ✅ Common random numbers: one random sequence per purpose (`Rng.for_purpose`, registered by the network for saves), so a change in one place leaves every other stream's draws alone (test: a slower contact centre leaves connections, outages, meters and congestion identical). Three tests that leaned on the old shared sequence got honest margins (measured over seeds 1–10).
 - ✅ De netstudie-wachtrij (catalogue #9): four in ten connections get a full grid study instead of a quarter. The grid analysts (shared with congestion) run 97% busy; connections keep their priority, so congestion throughput drops 43%: large consumers pay for the queue. Countermeasures: triage with a fast lane (tier 1), standard calculation templates (tier 2, also speeds up congestion studies).
 - ✅ De zwijgende meter (catalogue #12): nobody tests the meter's connection before leaving; three in ten new meters stay silent and need a return visit (base: a failed registration now goes back to the appointment). Meters on time 0.88 → 0.75. Countermeasures: communication test before leaving (jidoka, tier 1, better than the base), coverage check in planning (tier 2).
-- 🔧 `content/problems_tier1.yaml`: 13 of the 18 catalogue problems done; next: Omvormers die afschakelen (#13), Gereserveerd maar ongebruikt (#14), Wachten op de trafo (#15); "storing gooit de planning om" and "KPI's die elkaar bevechten" need a mechanism first (above)
-- 🔧 `content/countermeasures.yaml`: 26 countermeasures; grows with each problem
+- ✅ Three more catalogue problems, each with a mission:
+  - Omvormers die afschakelen (#13): a new small stream Spanningsklachten (2 a week: analysis by Meetdata, a measuring week at the address, sometimes a tap change by the monteurs); the problem triples the complaints (Solar Magazine). Countermeasures: review the transformer taps per neighbourhood (tier 1), voltage data from smart meters (tier 2), targeted reinforcement (tier 3). Side mission after De zwijgende meter.
+  - Wachten op de trafo (#15): transformers ordered only after the reinforcement design is approved, so the reinforcement wait goes from four to seven months (an estimate) and the congestion queue slows. Countermeasures: order at the grid study (tier 1), a framework contract (tier 2), strategic stock (tier 3). Main mission after De netstudie-wachtrij.
+  - Gereserveerd maar ongebruikt (#14): contracted capacity is never compared with use, so the congestion queue moves slower and more requests must wait. Countermeasures: a usage dashboard (tier 1), use-it-or-lose-it conversations (tier 2, the ACM allows it), flexible contracts (tier 3). Main mission after Wachten op de trafo.
+  - The validator now requires a mission for every problem, so the campaign reaches the whole catalogue.
+- 🔧 `content/problems_tier1.yaml`: 16 of the 18 catalogue problems done; "storing gooit de planning om" and "KPI's die elkaar bevechten" need a mechanism first (above)
+- 🔧 `content/countermeasures.yaml`: 35 countermeasures; grows with each problem
 - ✅ `content/missions.yaml`: the tier-1 campaign, with Henk's retirement as a 56-day deadline mission (De laatste kennisdrager)
 - ⬜ What happens when Henk's mission fails: today the mission fails and the problem stays open; later his knowledge could be lost for good (a harder countermeasure set)
 - ⬜ `content/concepts.yaml` (Lean + sector glossary, Dutch)

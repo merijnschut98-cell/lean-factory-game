@@ -375,3 +375,89 @@ problems:
       - {tool: shadow, key: true, depth: 1, at: meters.visit, text: "De monteur plaatst de meter, sluit de kast en rijdt door. Of de meter verbinding maakt, kijkt niemand na."}
       - {tool: documents, key: true, depth: 1, at: meters.appointment, text: "Bij het plannen gaat standaard een GPRS-module mee; de dekkingskaart van het adres wordt niet bekeken."}
       - {tool: conversation, key: true, depth: 2, at: meters.visit, text: "'Testen? Dan sta ik er tien minuten langer. Als hij niet werkt, hoor ik het vanzelf.'"}
+
+  - id: inverters_tripping
+    tier: 1
+    name: Omvormers die afschakelen
+    step: voltage_complaints.measurement
+    waste: defects
+    severity: medium
+    visibility: obvious
+    kpi: lead_time
+    symptoms:
+      - Het aantal spanningsklachten is in twee jaar verdrievoudigd, vooral op zonnige middagen.
+      - Klanten melden dat hun omvormer uitvalt en hun zonnepanelen niets opleveren.
+    root_cause: De aftakkingen van de wijktransformatoren staan nog zoals voor de zonnepanelen, en niemand kijkt naar de spanning in het laagspanningsnet. Elke klacht wordt los opgelost met een meting bij één adres.
+    plausible_causes:
+      - Goedkope omvormers zijn slecht afgesteld.
+      - Klanten hebben te veel panelen voor hun aansluiting.
+    mismatch_note: Elke klacht apart meten en oplossen bestrijdt het symptoom. De spanning is te hoog in de hele straat.
+    countermeasures: {tap_review_per_neighbourhood: 1.0, smart_meter_voltage_data: 0.8, targeted_reinforcement: 0.7}
+    teaches: [root_cause, systems_thinking]
+    effects:
+      - {target: voltage_complaints, property: demand, value: 3.0}  # complaints tripled (Solar Magazine)
+    clues:
+      - {tool: data, key: true, depth: 0, text: "Negen van de tien spanningsklachten komen binnen tussen elf en drie uur, op zonnige dagen."}
+      - {tool: conversation, key: false, depth: 0, text: "'Het zijn die goedkope omvormers. Met een goed merk heb je hier geen last van.'"}
+      - {tool: shadow, key: true, depth: 1, text: "De meting bij het adres laat zien dat de spanning 's middags oploopt tot 254 volt. Boven 253 volt moet een omvormer afschakelen; dat is de norm."}
+      - {tool: documents, key: true, depth: 1, at: voltage_complaints.tap_change, text: "De aftakking van de wijktrafo staat sinds 2009 op dezelfde stand. Inmiddels liggen er op de helft van de daken zonnepanelen."}
+      - {tool: data, key: true, depth: 2, at: voltage_complaints.analysis, text: "De slimme meters in de straat registreren elk kwartier de spanning. Niemand bij Voltana kijkt ernaar."}
+
+  - id: transformer_wait
+    tier: 1
+    name: Wachten op de trafo
+    step: connections.grid_reinforcement
+    waste: waiting
+    severity: high
+    visibility: subtle
+    kpi: lead_time
+    symptoms:
+      - Aansluitingen in volle straten wachten een half jaar of langer op netverzwaring.
+      - Het projectteam netverzwaring zegt dat de fabrikant niet op tijd levert.
+    root_cause: Transformatoren worden per project besteld, pas als het ontwerp van de verzwaring is goedgekeurd. De levertijd van de fabrikant komt daardoor na het ontwerp in plaats van ernaast.
+    plausible_causes:
+      - De fabrikant levert te traag.
+      - Er zijn te weinig monteurs voor netverzwaring.
+    mismatch_note: De levertijd van de fabrikant kun je niet veranderen. Wanneer je bestelt wel.
+    countermeasures: {early_transformer_order: 1.0, framework_contracts: 0.9, strategic_transformer_stock: 0.8}
+    teaches: [waiting, flow]
+    effects:
+      # Estimate: about six months of supplier lead time after the design, where
+      # four months is the reinforcement itself.
+      - {target: connections.grid_reinforcement, property: wait_time, value: 1.75}
+      - {target: congestion.capacity_queue, property: wait_time, value: 1.2}
+    clues:
+      - {tool: data, key: true, depth: 0, text: "Een netverzwaring duurt gemiddeld zeven maanden. Het werk in de straat zelf duurt twee weken."}
+      - {tool: conversation, key: false, depth: 0, at: connections.design, text: "'De fabrikanten hebben het druk. Heel Europa wil transformatoren.'"}
+      - {tool: documents, key: true, depth: 1, text: "Het bestelproces: eerst het ontwerp van de verzwaring afronden en laten goedkeuren, dan pas de transformator bestellen. Levertijd: zes maanden."}
+      - {tool: conversation, key: true, depth: 2, at: connections.grid_study, text: "'Bij de netstudie weten we al dat er een trafo bij moet. Maar bestellen mag pas met een goedgekeurd ontwerp; zo is het altijd gegaan.'"}
+
+  - id: unused_capacity
+    tier: 1
+    name: Gereserveerd maar ongebruikt
+    step: congestion.capacity_queue
+    waste: inventory
+    severity: high
+    visibility: hidden
+    kpi: lead_time
+    symptoms:
+      - De wachtrij voor transportcapaciteit groeit, terwijl de stations op het drukste moment niet vol zitten.
+      - Ondernemers op de wachtlijst vragen waarom hun buurman wel capaciteit heeft en die niet gebruikt.
+    root_cause: Gecontracteerde transportcapaciteit wordt nooit vergeleken met het werkelijke gebruik, dus ongebruikte capaciteit komt niet terug voor de wachtrij.
+    plausible_causes:
+      - Het net is gewoon vol; alleen verzwaren helpt.
+      - De congestieonderzoeken rekenen te voorzichtig.
+    mismatch_note: Op papier is het net vol, in werkelijkheid niet. Wie alleen verzwaart, laat de ongebruikte reserveringen liggen.
+    countermeasures: {use_it_or_lose_it: 1.0, capacity_usage_dashboard: 0.7, flexible_contracts: 0.8}
+    teaches: [inventory, visual_management]
+    effects:
+      # Capacity frees up only through reinforcement, so the queue moves slower
+      # and fewer requests fit straight away (an estimate).
+      - {target: congestion.capacity_queue, property: wait_time, value: 1.4}
+      - {target: congestion.capacity_queue, property: applies, value: 0.1}
+    clues:
+      - {tool: data, key: true, depth: 0, text: "Op het drukste kwartier van het jaar gebruiken de grootzakelijke klanten samen 62% van het vermogen dat ze gecontracteerd hebben."}
+      - {tool: conversation, key: false, depth: 0, at: congestion.congestion_study, text: "'Het net is vol. Tot de verzwaring klaar is, kunnen we niets doen.'"}
+      - {tool: listen_in, key: true, depth: 1, at: congestion.intake, text: "Een ondernemer aan de telefoon: 'Mijn buurman heeft twee megawatt gecontracteerd en zijn hal staat leeg.'"}
+      - {tool: documents, key: true, depth: 1, at: congestion.congestion_study, text: "Het congestieonderzoek rekent met het gecontracteerde vermogen van iedereen, niet met wat er werkelijk loopt."}
+      - {tool: documents, key: true, depth: 2, at: congestion.offer, text: "In de contracten staat niets over ongebruikte capaciteit, en niemand heeft de taak om contract en meting naast elkaar te leggen."}

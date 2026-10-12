@@ -37,14 +37,14 @@ func test_a_change_leaves_unrelated_streams_identical() -> void:
 	base.advance_days(60)
 	changed.advance_days(60)
 	assert_ne(changed.stream("customer_contact").finished, base.stream("customer_contact").finished, "the change reaches contact")
-	for id: String in ["connections", "outages", "meters", "congestion"]:
+	for id: String in ["connections", "outages", "meters", "congestion", "voltage_complaints"]:
 		assert_eq(changed.stream(id).finished, base.stream(id).finished, id + " is untouched")
 
 
 func test_content_loads() -> void:
 	var net := _net()
 	assert_eq(net.error, "")
-	for id in ["connections", "outages", "meters", "congestion"]:
+	for id in ["connections", "outages", "meters", "congestion", "voltage_complaints"]:
 		assert_ne(net.stream(id), null, id)
 
 

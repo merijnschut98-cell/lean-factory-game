@@ -304,3 +304,111 @@ countermeasures:
     decay_days: null
     multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
     effects: []
+
+  # ── Spanningsklachten ─────────────────────────────────────────────────────
+  - id: tap_review_per_neighbourhood
+    name: Trafo-aftakkingen per wijk herzien
+    tier: 1
+    category: standard_work
+    description: In wijken met veel zonnepanelen gaat de aftakking van de wijktransformator een stand lager, op basis van een meetweek. De spanning klopt dan voor de hele straat in plaats van voor één klant.
+    budget: 4000
+    team_hours: {monteurs: 30, grid_analysts: 10}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+
+  - id: smart_meter_voltage_data
+    name: Spanningsdata uit slimme meters
+    tier: 2
+    category: visual_management
+    description: Meetdata bewaakt de spanning die slimme meters elk kwartier registreren. Een te hoge spanning is zichtbaar voordat er een klacht komt, en de meetweek bij het adres is meestal niet meer nodig.
+    budget: 8000
+    team_hours: {meter_office: 30}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: voltage_complaints.measurement, property: touch_time, value: 0.5}     # only a check at the address
+      - {target: voltage_complaints.measurement_week, property: wait_time, value: 0.3}
+
+  - id: targeted_reinforcement
+    name: Gerichte netverzwaring in de drukste straten
+    tier: 3
+    category: flow
+    description: De straten met de meeste zonnepanelen krijgen een zwaardere kabel of een extra station. Duur, maar de spanning blijft ook bij nog meer panelen binnen de norm.
+    budget: 60000
+    team_hours: {grid_analysts: 20, work_prep: 20}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: voltage_complaints, property: demand, value: 0.7}
+
+  # ── Netverzwaring en congestie ────────────────────────────────────────────
+  - id: early_transformer_order
+    name: Trafo bestellen bij de netstudie
+    tier: 1
+    category: flow
+    description: Zodra de netstudie laat zien dat een straat verzwaard moet worden, gaat de bestelling van de transformator de deur uit. Ontwerp en levertijd lopen naast elkaar in plaats van na elkaar.
+    budget: 2000
+    team_hours: {grid_analysts: 10, work_prep: 10}
+    decay_days: 45
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+
+  - id: framework_contracts
+    name: Raamcontract met vaste levertijd
+    tier: 2
+    category: flow
+    description: Een raamcontract met de fabrikant voor standaardtransformatoren, met afgesproken aantallen en een vaste levertijd. Bestellen is afroepen in plaats van een aanbesteding per project.
+    budget: 12000
+    team_hours: {work_prep: 20}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: connections.grid_reinforcement, property: wait_time, value: 0.9}
+
+  - id: strategic_transformer_stock
+    name: Strategische voorraad transformatoren
+    tier: 3
+    category: flow
+    description: Een kleine voorraad standaardtransformatoren op het magazijn, aangevuld via de fabrikant. Een verzwaring hoeft niet meer op de levering te wachten; de voorraad kost wel geld.
+    budget: 40000
+    team_hours: {work_prep: 10}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: connections.grid_reinforcement, property: wait_time, value: 0.85}
+      - {target: congestion.capacity_queue, property: wait_time, value: 0.95}
+
+  - id: capacity_usage_dashboard
+    name: Dashboard gecontracteerd versus gebruikt
+    tier: 1
+    category: visual_management
+    description: Per klant en per station staan het gecontracteerde en het werkelijk gebruikte vermogen naast elkaar, elke week bijgewerkt uit de meetdata. Ongebruikte capaciteit wordt zichtbaar; teruggeven gebeurt nog per geval.
+    budget: 3000
+    team_hours: {grid_analysts: 10, key_accounts: 10}
+    decay_days: 45
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+
+  - id: use_it_or_lose_it
+    name: Use-it-or-lose-it-gesprekken
+    tier: 2
+    category: flow
+    description: Klanten die structureel veel minder gebruiken dan ze gecontracteerd hebben, krijgen een gesprek en een voorstel om capaciteit terug te geven, zoals de ACM toestaat. Wat vrijkomt, gaat naar de wachtrij.
+    budget: 5000
+    team_hours: {key_accounts: 30, grid_analysts: 10}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+
+  - id: flexible_contracts
+    name: Flexibele en tijdsduurgebonden contracten
+    tier: 3
+    category: flow
+    description: Nieuwe klanten krijgen naast vaste capaciteit ook non-firm en tijdsduurgebonden contracten aangeboden. Meer aanvragen passen meteen, buiten de drukste uren.
+    budget: 8000
+    team_hours: {key_accounts: 40}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: congestion.capacity_queue, property: applies, value: -0.1}

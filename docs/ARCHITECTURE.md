@@ -133,7 +133,7 @@ Problem effects are generic modifiers (`sim/modifiers.gd`):
   - every listed countermeasure can pass the Check at full strength (`Pdca.CHECK_PASS`, mirrored in `vocabulary.json`);
   - countermeasure references resolve;
   - every tool and waste is a known value;
-  - missions point at real problems.
+  - missions point at real problems and streams, every problem is solved by exactly one mission, and the campaign has a way in and no mission that can never unlock.
 - **Load:** `src/content/` loads the JSON and checks references again, so a corrupt or outdated data file fails loudly in tests, never silently in play.
 - **Drift guard:** a test fails if `game/data/` is out of date with `content/`.
 

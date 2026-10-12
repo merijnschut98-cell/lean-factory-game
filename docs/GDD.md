@@ -336,7 +336,7 @@ Built in Godot 4 with GDScript from the start (decided 12 Oct 2026): desktop bui
 | Phase | What | Gate to move on |
 | --- | --- | --- |
 | 0 · Design | research, this GDD, architecture note | open questions answered (done 12 Oct 2026) |
-| A · Engine | Godot project, headless tests, work-order simulation, problem/A3/PDCA logic | four value streams run headless with realistic KPIs |
+| A · Engine | Godot project, headless tests, work-order simulation, problem/A3/PDCA logic | the value streams run headless with realistic KPIs |
 | B · Content | 18 problems in Dutch, countermeasures, missions, codex | Merijn has reviewed the content for realism |
 | C · World | campus and town in 3D, characters, vans, visible WIP | screenshots approved |
 | D · UI | dagstart, gemba toolkit, A3, Check & Act, value stream map | one problem playable end to end |
