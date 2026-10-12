@@ -89,8 +89,8 @@ func kpis(now: int, window_days: int = 28) -> Dictionary:
 		"completed": n,
 		"throughput_per_week": n * 7.0 / window_days,
 		"backlog": active,
-		"lead_days_p50": _percentile(leads, 0.5),
-		"lead_days_p85": _percentile(leads, 0.85),
+		"lead_days_p50": percentile(leads, 0.5),
+		"lead_days_p85": percentile(leads, 0.85),
 		# All finished orders' lead time per week: for outages, the hours
 		# customers are without power (count × duration).
 		"lead_hours_per_week": leads.reduce(func(sum: float, d: float) -> float: return sum + d, 0.0) * 24.0 * 7.0 / window_days,
@@ -99,7 +99,7 @@ func kpis(now: int, window_days: int = 28) -> Dictionary:
 	}
 
 
-static func _percentile(sorted_values: Array[float], q: float) -> float:
+static func percentile(sorted_values: Array[float], q: float) -> float:
 	if sorted_values.is_empty():
 		return 0.0
 	return sorted_values[mini(sorted_values.size() - 1, floori(q * sorted_values.size()))]

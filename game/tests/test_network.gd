@@ -245,3 +245,15 @@ func test_short_jobs_use_the_whole_tick() -> void:
 	assert_between(net.pools["agent"].load_since(0), 0.85, 1.0)
 	assert_true(net.stream("calls").active < 40, "the queue does not run away: %d open" % net.stream("calls").active)
 
+
+
+## Lead time is measured over finished orders, so a long wait hides the work
+## that waits longest (survivorship). The age of open work shows it.
+func test_the_age_of_open_work_shows_what_finished_orders_hide() -> void:
+	var net := NetFixture.net([NetFixture.pool("team", 2)],
+		[NetFixture.stream("jobs", [NetFixture.work("do", "team", 0.5), NetFixture.wait("supplier", 60.0)])])
+	net.advance_days(40)
+	assert_eq(net.stream("jobs").kpis(net.time, 28)["completed"], 0, "nothing has come through the wait yet")
+	assert_between(net.open_age_days(net.stream("jobs"), 0.85), 30.0, 40.0, "the oldest open work is over a month old")
+	var idle := NetFixture.net([NetFixture.pool("team")], [NetFixture.stream("idle", [NetFixture.work("do", "team", 1.0)], 0.0)])
+	assert_eq(idle.open_age_days(idle.stream("idle"), 0.85), 0.0, "no open work")

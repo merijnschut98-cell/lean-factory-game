@@ -265,3 +265,15 @@ func test_problem_costs_can_push_the_region_into_a_bad_period() -> void:
 	r.advance_days(14)
 	assert_eq(r.profile.budget, 1000 - 1400)
 	assert_true(r.in_bad_period())
+
+
+## The Check shows the age of the open work too (wip_age), so a long wait is
+## visible before its orders finish.
+func test_the_snapshot_measures_the_age_of_open_work() -> void:
+	var r := _region()
+	r.activate("custom_design")
+	r.advance_days(30)
+	var s := r.snapshot("custom_design")
+	assert_near(s["wip_age"], r.net.open_age_days(r.net.stream("connections"), 0.85), 1e-9)
+	assert_true(s["wip_age"] > 0.0)
+	assert_true("wip_age" in Investigation.KPIS, "a prediction can name it")

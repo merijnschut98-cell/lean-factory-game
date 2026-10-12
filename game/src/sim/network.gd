@@ -336,12 +336,13 @@ func _schedule_status_calls(s: ValueStream) -> void:
 	var contact := stream(s.calls_to) if s.call_rate > 0.0 else null
 	if contact == null or contact.arrivals.is_empty():
 		return
-	var late := _orders_born_before(s, time - s.call_after_minutes)
+	var since := time - s.call_after_minutes
+	var late := open_orders(s).filter(func(o: WorkOrder) -> bool: return o.born < since).size()
 	_schedule_arrivals(contact, contact.arrivals[0].when, late * s.call_rate, s.calls_rng, true)
 
 
-## Open orders of `s` that arrived before `t`, wherever they are.
-func _orders_born_before(s: ValueStream, t: int) -> int:
+## Open orders of `s`, wherever they are: held, queued, in work, waiting.
+func open_orders(s: ValueStream) -> Array[WorkOrder]:
 	var lists: Array = [_held[s.id], _waiting]
 	for step in s.steps:
 		if step.kind == SimStep.Kind.WORK:
@@ -350,12 +351,23 @@ func _orders_born_before(s: ValueStream, t: int) -> int:
 		lists.append(pool.busy)
 	for item: SimStock in stock.values():
 		lists.append(item.waiting)
-	var n := 0
+	var out: Array[WorkOrder] = []
 	for orders: Array in lists:
 		for o: WorkOrder in orders:
-			if o.stream == s and o.born < t:
-				n += 1
-	return n
+			if o.stream == s:
+				out.append(o)
+	return out
+
+
+## The age in days of the open work at quantile `q` (0 with none). Lead time
+## counts finished orders only, so a long wait hides the oldest work; this
+## shows it (the KPI wip_age).
+func open_age_days(s: ValueStream, q: float) -> float:
+	var ages: Array[float] = []
+	for o in open_orders(s):
+		ages.append((time - o.born) / float(SimCalendar.MINUTES_PER_DAY))
+	ages.sort()
+	return ValueStream.percentile(ages, q)
 
 
 # ── Flow ────────────────────────────────────────────────────────────────────
