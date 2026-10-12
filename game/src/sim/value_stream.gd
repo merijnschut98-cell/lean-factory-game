@@ -74,7 +74,6 @@ func forget_before(t: int) -> void:
 func kpis(now: int, window_days: int = 28) -> Dictionary:
 	var since := now - SimCalendar.days(window_days)
 	var leads: Array[float] = []
-	var lead_hours := 0.0
 	var on_time := 0
 	var first_time_right := 0
 	# `finished` is in completion order: binary-search the window start.
@@ -82,7 +81,6 @@ func kpis(now: int, window_days: int = 28) -> Dictionary:
 		func(a: Dictionary, b: Dictionary) -> bool: return a["done_at"] < b["done_at"])
 	for f in finished.slice(first):
 		leads.append(f["lead_minutes"] / float(SimCalendar.MINUTES_PER_DAY))
-		lead_hours += f["lead_minutes"] / 60.0
 		on_time += 1 if f["on_time"] else 0
 		first_time_right += 1 if f["reworks"] == 0 else 0
 	leads.sort()
@@ -95,7 +93,7 @@ func kpis(now: int, window_days: int = 28) -> Dictionary:
 		"lead_days_p85": _percentile(leads, 0.85),
 		# All finished orders' lead time per week: for outages, the hours
 		# customers are without power (count × duration).
-		"lead_hours_per_week": lead_hours * 7.0 / window_days,
+		"lead_hours_per_week": leads.reduce(func(sum: float, d: float) -> float: return sum + d, 0.0) * 24.0 * 7.0 / window_days,
 		"on_time": on_time / float(n) if n > 0 else 0.0,
 		"first_time_right": first_time_right / float(n) if n > 0 else 0.0,
 	}
