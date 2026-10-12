@@ -96,7 +96,7 @@ pools:
     schedule: [{days: mon-fri, from: "08:00", to: "16:00"}]
   - id: contact_centre
     name: Klantcontactcentrum
-    headcount: 5
+    headcount: 4            # ~77% actually busy in the healthy base, so failure demand shows
     availability: 0.85
     schedule: [{days: mon-fri, from: "08:00", to: "17:00"}]
   - id: key_accounts

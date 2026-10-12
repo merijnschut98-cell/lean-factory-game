@@ -508,13 +508,17 @@ func _progress_work() -> void:
 				queue_of(pool.busy[i].current_step()).push_front(pool.busy[i])
 			pool.busy.clear()
 			continue
-		pool.daily.add(_day, SimPool.BUSY, pool.busy.size() * SimCalendar.TICK)
+		var worked := 0
 		for i in range(pool.busy.size() - 1, -1, -1):
 			var order := pool.busy[i]
+			worked += mini(order.remaining, SimCalendar.TICK)
 			order.remaining -= SimCalendar.TICK
 			if order.remaining <= 0:
 				pool.busy.remove_at(i)
+				if order.remaining < 0:
+					pool.spare.append(-order.remaining)
 				_complete_work(order)
+		pool.daily.add(_day, SimPool.BUSY, worked)
 
 
 ## Whether this attempt fails is known when work starts, so a failed attempt
@@ -582,6 +586,23 @@ func _assign_work() -> void:
 				_record(step, SimStep.Stat.STARTED)
 				_record(step, SimStep.Stat.QUEUE_MINUTES, time - order.queued_at)
 			pool.busy.append(order)
+			if not pool.spare.is_empty():
+				_work_ahead(pool, pool.spare.pop_back())
+		pool.spare.clear()
+
+
+## The job just started gets the `minutes` its person had left in this tick.
+## A job that fits in them is done now, and the rest carries on again.
+func _work_ahead(pool: SimPool, minutes: int) -> void:
+	var order: WorkOrder = pool.busy.back()
+	var used := mini(minutes, order.remaining)
+	order.remaining -= used
+	pool.daily.add(_day, SimPool.BUSY, used)
+	if order.remaining <= 0:
+		pool.busy.pop_back()
+		if minutes > used:
+			pool.spare.append(minutes - used)
+		_complete_work(order)
 
 
 ## The step whose first order someone in `pool` starts now: the most urgent

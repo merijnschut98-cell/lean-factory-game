@@ -15,6 +15,9 @@ var schedule: WeekSchedule
 ## People present today (re-rolled each morning from `availability`).
 var present := 0
 var busy: Array[WorkOrder] = []
+## Minutes left in this tick by people who just finished a job; the next job
+## each of them starts uses them (short jobs are not rounded up to ticks).
+var spare: Array[int] = []
 ## People held for one stream (an outage reserve), {stream, people}; while
 ## idle they take no other work. Empty: no reserve.
 var reserve: Dictionary = {}

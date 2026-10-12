@@ -227,3 +227,16 @@ func test_a_failed_attempt_costs_only_its_own_time() -> void:
 		5.0 / 8.0, 1e-6)
 	assert_between(nets[1].stream("jobs").kpis(nets[1].time, 84)["first_time_right"], 0.35, 0.65, "half fail")
 
+
+## Someone who finishes a 15-minute job halfway through a 10-minute tick
+## starts the next one in the minutes left, so short jobs are not rounded up
+## to whole ticks. One person, 40 h a week, 150 jobs of 15 min: 94% busy,
+## and the work keeps up (rounded to 20 min it would be 125%).
+func test_short_jobs_use_the_whole_tick() -> void:
+	var net := NetFixture.net([NetFixture.pool("agent", 1)], [
+		NetFixture.stream("calls", [NetFixture.work("answer", "agent", 0.25)], 150.0),
+	])
+	net.advance_days(56)
+	assert_between(net.pools["agent"].load_since(0), 0.85, 1.0)
+	assert_true(net.stream("calls").active < 40, "the queue does not run away: %d open" % net.stream("calls").active)
+
