@@ -172,6 +172,8 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
   - content: a klantcontactcentrum (5 agents) and a stream Klantvragen (380 questions a week, answered within 2 hours);
   - connections customers call weekly after three weeks; about 9% of calls in the healthy base.
 - ✅ De statusbellers (problem 10): late orders call three times as often. Failure demand rises to 25–30% of calls; on time falls from ~0.9 to ~0.5, and with some seeds the centre tips into a spiral. Countermeasures: realistic promise date (tier 1) or proactive status updates (tier 2, halves even the base failure demand: a healthier shape than before the problem)
+- ✅ Simplify pass on failure demand: one arrival-scheduling helper for value and failure demand; lateness counted without temporary arrays; the failure flag lives on the order (saved, and in finished records, so KPIs can separate failure from value demand)
+- ⬜ Performance note: the contact stream adds ~20k call orders a year, so a simulated year now takes ~2.8 s (was ~1.7 s). Fine for play (a game year takes hours); revisit if the tests or fast-forward feel slow (e.g. calls as small batches)
 - ⬜ Merijn reviews the ten problems for realism (texts, clues, effects) and the healthy base
 - ⬜ Catalogue problems that need a new mechanism first:
   - klaar maar niet af: an administrative close-out step (EAN registration) in the connections stream;

@@ -22,7 +22,7 @@ var call_rate := 0.0
 var steps: Array[SimStep] = []
 ## Orders in the stream right now (the backlog / WIP), held ones included.
 var active := 0
-## One record per finished order: {done_at, lead_minutes, on_time, reworks}.
+## One record per finished order: {done_at, lead_minutes, on_time, reworks, failure_demand}.
 var finished: Array[Dictionary] = []
 
 

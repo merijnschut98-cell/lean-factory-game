@@ -206,7 +206,7 @@ def validate_value_streams(doc: Any, source: str) -> None:
         calls = stream.get("status_calls")
         if calls is not None:
             # Failure demand: late orders make customers call another stream.
-            if not isinstance(calls, dict) or calls.get("to") not in {s.get("id") for s in streams} or calls.get("to") == stream["id"]:
+            if not isinstance(calls, dict) or calls.get("to") not in stream_ids or calls.get("to") == stream["id"]:
                 raise ContentError(f"{where}: 'status_calls' needs 'to': another stream")
             _number(calls, "after_days", f"{where} status_calls", 1)
             _number(calls, "per_week", f"{where} status_calls", 0)

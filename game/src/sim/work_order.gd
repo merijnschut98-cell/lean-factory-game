@@ -21,6 +21,9 @@ var started := false
 var wait_until := 0
 var pending_step := 0
 var reworks := 0
+## Caused by a failure elsewhere (a customer asking where their order
+## stands), not new value demand.
+var failure_demand := false
 ## Waits started in parallel: wait step index → when it is over.
 var early: Dictionary[int, int] = {}
 
@@ -46,7 +49,7 @@ func to_dict() -> Dictionary:
 		"id": id, "stream": stream.id, "step": steps[step_index].id, "born": born, "due": due,
 		"remaining": remaining, "queued_at": queued_at, "started": started, "wait_until": wait_until,
 		"pending": steps[pending_step].id if pending_step < steps.size() else "", "reworks": reworks,
-		"early": early_ids,
+		"early": early_ids, "failure_demand": failure_demand,
 	}
 
 
@@ -66,6 +69,7 @@ static func from_dict(d: Dictionary, s: ValueStream) -> WorkOrder:
 	o.started = bool(d.get("started", false))
 	o.wait_until = int(d.get("wait_until", 0))
 	o.reworks = int(d.get("reworks", 0))
+	o.failure_demand = bool(d.get("failure_demand", false))
 	var early: Variant = d.get("early", {})
 	if early is Dictionary:
 		for step_id: Variant in early:
