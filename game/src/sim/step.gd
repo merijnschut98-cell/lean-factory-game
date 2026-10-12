@@ -6,6 +6,8 @@ extends RefCounted
 ## graph loops back to its owner (RefCounted cannot free cycles).
 
 enum Kind { WORK, WAIT, MATERIAL }
+## What the daily statistics count (see record / stats_since).
+enum Stat { ENTERED, DONE, REWORKED, STARTED, QUEUE_MINUTES }
 
 var id: String
 var name: String
@@ -34,7 +36,35 @@ var starts_with := ""
 var item_id := ""
 var quantity := 1
 
-# Counters since the start of the run (time-windowed statistics for the
-# PDCA Check come with the rules layer).
+# Counters since the start of the run.
 var entered := 0
 var reworked := 0
+## Per simulated day: counts by Stat, for before/after comparisons and the
+## value stream map.
+var _daily: Dictionary[int, PackedInt64Array] = {}
+
+
+func record(day: int, stat: Stat, amount: int = 1) -> void:
+	if not _daily.has(day):
+		var counts := PackedInt64Array()
+		counts.resize(Stat.size())
+		_daily[day] = counts
+	_daily[day][stat] += amount
+
+
+## Totals from `day` on: {entered, done, reworked, queue_hours (mean wait
+## before the first start, for work steps)}.
+func stats_since(day: int) -> Dictionary:
+	var totals := PackedInt64Array()
+	totals.resize(Stat.size())
+	for d in _daily:
+		if d >= day:
+			for i in Stat.size():
+				totals[i] += _daily[d][i]
+	var started := totals[Stat.STARTED]
+	return {
+		"entered": totals[Stat.ENTERED],
+		"done": totals[Stat.DONE],
+		"reworked": totals[Stat.REWORKED],
+		"queue_hours": totals[Stat.QUEUE_MINUTES] / 60.0 / started if started > 0 else 0.0,
+	}

@@ -266,6 +266,7 @@ func _enter(order: WorkOrder, index: int) -> void:
 	order.step_index = index
 	var step := steps[index]
 	step.entered += 1
+	step.record(SimCalendar.day_of(time), SimStep.Stat.ENTERED)
 	_start_parallel_waits(order, index)
 	match step.kind:
 		SimStep.Kind.WORK:
@@ -383,9 +384,11 @@ func _complete_work(order: WorkOrder) -> void:
 	if step.ftr < 1.0 and not rng.chance(step.ftr):
 		order.reworks += 1
 		step.reworked += 1
+		step.record(SimCalendar.day_of(time), SimStep.Stat.REWORKED)
 		_emit("rework", order)
 		_send_back(order, step.rework_index, step.rework_wait_minutes)
 		return
+	step.record(SimCalendar.day_of(time), SimStep.Stat.DONE)
 	_enter(order, order.step_index + 1)
 
 
@@ -410,7 +413,11 @@ func _assign_work() -> void:
 			var step := _next_step_for(pool)
 			if step == null:
 				break
-			pool.busy.append(queue_of(step).pop_front())
+			var order: WorkOrder = queue_of(step).pop_front()
+			if order.remaining == step.touch_minutes:  # a first start, not a resume
+				step.record(SimCalendar.day_of(time), SimStep.Stat.STARTED)
+				step.record(SimCalendar.day_of(time), SimStep.Stat.QUEUE_MINUTES, time - order.queued_at)
+			pool.busy.append(order)
 
 
 ## The step whose first order someone in `pool` starts now: the most urgent

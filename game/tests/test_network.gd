@@ -170,3 +170,27 @@ func test_events_can_be_drained() -> void:
 	net.advance_days(1)
 	assert_true(net.drain_events().size() > 0)
 	assert_eq(net.events.size(), 0)
+
+
+func test_step_statistics_by_window() -> void:
+	var net := NetFixture.net([NetFixture.pool("team", 1)], [NetFixture.stream("s", [NetFixture.work("do", "team", 2.0)], 0.0)])
+	net.advance(480)  # Monday 08:00
+	net.open_order(net.stream("s"))
+	net.open_order(net.stream("s"))
+	net.advance_days(1)
+	var step := net.stream("s").step("do")
+	var monday := step.stats_since(0)
+	assert_eq([monday["entered"], monday["done"], monday["reworked"]], [2, 2, 0])
+	assert_near(monday["queue_hours"], 1.0, 0.2, "the second order waited two hours, the first none")
+	net.open_order(net.stream("s"))
+	net.advance_days(1)
+	var tuesday := step.stats_since(1)
+	assert_eq([tuesday["entered"], tuesday["done"]], [1, 1], "only Tuesday's order in Tuesday's window")
+
+
+func test_step_statistics_count_rework() -> void:
+	var net := _simple(0.5, 30.0)
+	net.advance_days(28)
+	var stats := net.stream("s").step("do").stats_since(0)
+	assert_eq(stats["reworked"], net.stream("s").steps[0].reworked)
+	assert_between(stats["reworked"] / float(stats["done"] + stats["reworked"]), 0.4, 0.6)
