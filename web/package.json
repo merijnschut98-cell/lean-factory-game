@@ -1,0 +1,27 @@
+{
+  "name": "lean-factory-3d",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Lean Factory — a 3D gemba-walk game for learning Lean and Six Sigma",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "shot": "node scripts/screenshot.mjs"
+  },
+  "dependencies": {
+    "three": "^0.186.1",
+    "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "@types/three": "^0.186.0",
+    "playwright-core": "^1.64.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.4"
+  }
+}

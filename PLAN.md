@@ -5,11 +5,13 @@ Update this file every time a task is completed or added.
 
 ---
 
-## Current Status: Phase 6 Content Complete ✅ → Phase 7 Polish in progress
+## Current Status: 🔄 PIVOT — rebuilding as a 3D browser game set at a fictional energy grid operator (DSO)
 
-All four problem tiers are authored (T1+T2+T3+T4 = ~67 problems) with dialogue forks. Codex covers 197 concepts. Specialist system, multi-tier missions, tier progression gating all done and save/load verified. Current work is Phase 7 UI polish: CM implementation quiz content (5/10 Tier 1 CMs authored, 5 remaining), arrow-key/investigation-gate/score-explanation fixes landed. Tracked bug on `score_rca` name-vs-id fixed session 2026-04-24.
+Session 2026-10-12: Merijn asked for a complete overhaul (3D, characters, deeper problem solving), then redirected the setting from a hoverboard factory to a fictional Enexis-like grid operator, for his own learning about energy-industry problems.
 
-Next: decide between continuing Phase 7 UI polish (day summary popup, non-blocking toasts, shortcut reference overlay, station sprites) vs starting Phase 7b onboarding items (Day 1 tutorial, context-sensitive F1 help, mission log screen), now that the Tier 1 CM quiz content is complete.
+- The **Python/Pygame factory game** (Phases 0–7) is frozen as the legacy build. It still runs and its 217 tests pass.
+- The **3D factory prototype** (`web/`, Three.js + TypeScript) is backed up at git tag `factory-3d-backup`. Engine, investigation, A3 and value-stream logic are done and tested (57 tests); UI panels were mid-build and it is not yet playable.
+- Next: agree the grid-operator design with Merijn, then rebuild `web/` on the same engine with new energy-domain content.
 
 ---
 
@@ -383,7 +385,25 @@ AI is introduced last so the generator has maximum reference material: all four 
 
 ---
 
+## Phase 10 — 3D Web Edition (factory prototype) ⏸ BACKED UP
+
+Built 2026-10-12 in `web/` and tagged `factory-3d-backup`. Kept as a reference and fallback.
+
+- ✅ Content loader for the shared YAML with validation (`web/src/content/`)
+- ✅ Unit-level flow simulation: push vs CONWIP release, breakdowns, scrap, WIP piles, line capacity and constraint (`web/src/sim/flow.ts`)
+- ✅ Investigation-by-doing: gemba tools reveal clues (`tool:` tags in problem YAML), deeper 5-Whys clues unlock progressively, operator questions (open, closed, blaming) with a trust mechanic
+- ✅ A3: name the waste (TIMWOODS, `waste:` tag on every problem), link evidence, choose the root cause, countermeasure and prediction; Check compares before/after, including whole-line capacity
+- ✅ PDCA score with five dimensions, including flow impact (fixing a non-bottleneck scores low)
+- ✅ 3D world: procedural characters, 10 station models, conveyors, WIP stacks, andon lights, office wing, yard, A* click-to-move
+- ⬜ UI panels (A3, value stream map, NPC dialogue, HUD) — unfinished at backup time
+- Data fixes that also help the Python build: "Visual Labels & Signs" → "Visual Labels and Signs"; removed nonexistent "Operator Rebalancing"; codex moved to `data/concepts.yaml`
+
+---
+
 ## Decisions Made
+- **3D web edition (2026-10-12)**: Three.js + TypeScript in `web/`, playable from a link (no install). Simulation and content are kept engine-agnostic so a later Godot 4 desktop port only replaces rendering
+- **Problem solving is action-based, not multiple choice (2026-10-12)**: clues are earned through gemba tools and good questions; the player writes the A3; the simulation judges the countermeasure
+- **Bottleneck first (2026-10-12)**: Check always shows end-to-end capacity; improving a non-constraint is called out as no real gain
 - **Learning-first design**: game is a teaching tool for lean / six sigma / digitalization. Mistakes must be survivable and recoverable; NPC decision forks are the primary learning scaffold; concepts are introduced in-fiction before mechanics (see Learning Pillars)
 - **Phase ordering rationale**: learning mechanics (Phase 5) before content expansion (Phase 6) so the dialogue-fork YAML schema is settled before Tier 2–4 problems are written. AI (Phase 8) last so it generates against a complete reference corpus
 - **NPC interaction model**: players can interact with both NPC sprites directly (implemented Phase 5) AND their associated role-desks. Both open the inspector with the same NPC role panel
