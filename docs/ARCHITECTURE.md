@@ -113,7 +113,7 @@ How the rules differ from the factory:
 - Missions unlock by completed missions and the player's belt.
 - At most one main mission and three side missions are active (`Region.MAX_OPEN` is 4 to match).
 - A goal is `walk` (see every work step of a stream), `investigate` (find N key clues) or `solve` (resolve a problem). Accepting a mission activates its problem.
-- A deadline fails a mission for good (Henk retires).
+- A deadline is a real event: its clock starts when the mission opens, whether or not the player takes it on (`Missions.opened_at`). Missing it fails the mission for good and closes the countermeasures it names (`fail_closes` → `Region.closed`, saved): Henk retires and his knowledge transfer is gone. The validator makes sure another countermeasure still solves the problem.
 - The coach (a senior manager) only talks about the main mission. Its stage (`go_see`, `understand`, `experiment`, `reflect`) follows from the problem's PDCA phase; it asks the stage's Kata questions in turn, and every third time shares the mission's insight for that stage.
 - `Missions` holds the Region; the Region does not know about missions (no reference cycle). Saved with `to_dict`/`load_dict`; missions the content no longer has are dropped and reported.
 

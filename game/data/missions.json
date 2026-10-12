@@ -196,33 +196,6 @@
    "tier": 1
   },
   {
-   "briefing": "Henk werkt veertig jaar bij Voltana en kent elk oud kabelnet in Zuidmark. Over acht weken gaat hij met pensioen. Zorg dat zijn kennis niet met hem de deur uit gaat.",
-   "deadline_days": 56,
-   "debrief": "Henk kan met een gerust hart met pensioen. Zijn kennis zit nu in het team.",
-   "fail": "Henk is met pensioen. Zijn kennis van de oude netten is met hem vertrokken.",
-   "goal": {
-    "problem": "knowledge_drain",
-    "type": "solve"
-   },
-   "id": "save_henks_knowledge",
-   "insights": {
-    "experiment": "Hoe weet je of een jonge monteur het nu zelf kan?",
-    "understand": "Wat weet Henk dat nergens is opgeschreven?"
-   },
-   "kind": "main",
-   "name": "Henks kennis",
-   "requires": {
-    "missions": [
-     "fix_digging_damage"
-    ]
-   },
-   "rewards": {
-    "budget": 10000,
-    "xp": 1200
-   },
-   "tier": 1
-  },
-  {
    "briefing": "Grootzakelijke klanten wachten maanden op een antwoord over capaciteit. Netstrategie zegt dat ze te weinig analisten hebben.",
    "debrief": "Niet elke aanvraag heeft een volledige studie nodig. Nu is er weer ruimte voor de studies die er echt toe doen.",
    "goal": {
@@ -481,6 +454,32 @@
    "rewards": {
     "budget": 4000,
     "xp": 400
+   },
+   "tier": 1
+  },
+  {
+   "briefing": "Henk werkt veertig jaar bij Voltana en kent elk oud kabelnet in Zuidmark. Over acht weken gaat hij met pensioen. Zorg dat zijn kennis niet met hem de deur uit gaat.",
+   "deadline_days": 56,
+   "debrief": "Henk kan met een gerust hart met pensioen. Zijn kennis zit nu in het team.",
+   "fail": "Henk is met pensioen. Zijn kennis van de oude netten is met hem vertrokken; een buddy die het kan voordoen is er niet meer.",
+   "fail_closes": [
+    "skills_matrix_buddy"
+   ],
+   "goal": {
+    "problem": "knowledge_drain",
+    "type": "solve"
+   },
+   "id": "save_henks_knowledge",
+   "kind": "side",
+   "name": "Henks kennis",
+   "requires": {
+    "missions": [
+     "fix_wrong_joint"
+    ]
+   },
+   "rewards": {
+    "budget": 6000,
+    "xp": 600
    },
    "tier": 1
   }

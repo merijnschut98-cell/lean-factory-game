@@ -9,7 +9,10 @@
 # goal       walk {stream}: see every work step of a stream at the gemba
 #            investigate {problem, clues}: find that many key clues
 #            solve {problem}: resolve the problem (Check passed, Act done)
-# deadline_days  days to complete after accepting; then `fail` is told
+# deadline_days  days to complete from when the mission opens (a real event:
+#                the clock runs whether or not it is taken on); then `fail` is told
+# fail_closes    countermeasures a missed deadline closes for good (never all
+#                of the problem's: it can still be solved another way)
 # insights   main missions only: what the coach shares now and then at a
 #            stage (go_see, understand, experiment, reflect)
 
@@ -124,21 +127,6 @@ missions:
     insights:
       understand: "Hoe weet een aannemer waar onze kabels liggen, en klopt dat?"
       reflect: "Welk probleem dat je eerder oploste hielp hier mee?"
-
-  - id: save_henks_knowledge
-    name: Henks kennis
-    kind: main
-    tier: 1
-    requires: {missions: [fix_digging_damage]}
-    briefing: "Henk werkt veertig jaar bij Voltana en kent elk oud kabelnet in Zuidmark. Over acht weken gaat hij met pensioen. Zorg dat zijn kennis niet met hem de deur uit gaat."
-    debrief: "Henk kan met een gerust hart met pensioen. Zijn kennis zit nu in het team."
-    fail: "Henk is met pensioen. Zijn kennis van de oude netten is met hem vertrokken."
-    goal: {type: solve, problem: knowledge_drain}
-    deadline_days: 56
-    rewards: {xp: 1200, budget: 10000}
-    insights:
-      understand: "Wat weet Henk dat nergens is opgeschreven?"
-      experiment: "Hoe weet je of een jonge monteur het nu zelf kan?"
 
   - id: fix_grid_study_queue
     name: De netstudie-wachtrij
@@ -268,3 +256,19 @@ missions:
     debrief: "Eén aftakking per wijk lost honderd klachten op. De slimme meters hadden het al die tijd gezien."
     goal: {type: solve, problem: inverters_tripping}
     rewards: {xp: 400, budget: 4000}
+
+  # A real event (Merijn, 2026-10-12): Henk retires 56 days after this mission
+  # opens, taken on or not. Miss it and the knowledge transfer is gone; the
+  # problem can still be solved another way.
+  - id: save_henks_knowledge
+    name: Henks kennis
+    kind: side
+    tier: 1
+    requires: {missions: [fix_wrong_joint]}
+    briefing: "Henk werkt veertig jaar bij Voltana en kent elk oud kabelnet in Zuidmark. Over acht weken gaat hij met pensioen. Zorg dat zijn kennis niet met hem de deur uit gaat."
+    debrief: "Henk kan met een gerust hart met pensioen. Zijn kennis zit nu in het team."
+    fail: "Henk is met pensioen. Zijn kennis van de oude netten is met hem vertrokken; een buddy die het kan voordoen is er niet meer."
+    goal: {type: solve, problem: knowledge_drain}
+    deadline_days: 56
+    fail_closes: [skills_matrix_buddy]
+    rewards: {xp: 600, budget: 6000}

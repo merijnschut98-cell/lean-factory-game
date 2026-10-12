@@ -33,6 +33,8 @@ var state: Dictionary[String, ProblemState] = {}
 ## Places the player has worked at, and clue ids found.
 var observed: Dictionary[String, bool] = {}
 var found: Dictionary[String, bool] = {}
+## Countermeasures closed for good (a missed deadline: Henk has retired).
+var closed: Dictionary[String, bool] = {}
 ## Trust per team (pool id), -2..1: below 0 they stop sharing.
 var trust: Dictionary[String, int] = {}
 ## {type: activated | check_ready | recurred | belt | bad_period, ...} for the world and UI.
@@ -283,14 +285,20 @@ func _team(place: String) -> String:
 
 # ── Plan → Do: the A3 ───────────────────────────────────────────────────────
 
-## Countermeasures this region can try: up to one tier above its maturity.
+## Countermeasures this region can try: up to one tier above its maturity,
+## and not closed.
 func available_countermeasures() -> Array[CountermeasureDef]:
 	var m := maturity()
 	var out: Array[CountermeasureDef] = []
 	for c: CountermeasureDef in countermeasures.values():
-		if c.tier <= m + 1:
+		if c.tier <= m + 1 and not closed.has(c.id):
 			out.append(c)
 	return out
+
+
+func close_countermeasures(ids: PackedStringArray) -> void:
+	for id in ids:
+		closed[id] = true
 
 
 ## Submit the A3 {waste, cause (index into the cause bank), evidence (clue

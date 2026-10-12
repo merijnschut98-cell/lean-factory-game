@@ -194,7 +194,7 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
   - Goals: walk / investigate / solve. Deadlines (Henk).
   - A coach (Marleen Verhoef, Directeur Netbeheer regio Zuidmark) who asks Kata questions per stage and shares an insight every third ask, about the main mission only.
   - Saves. The validator checks references, one mission per solved problem, a way in, and that every mission can unlock.
-  - Tier-1 campaign: 9 main missions (walk the stream → the bottleneck chain → Henk's knowledge with a 56-day deadline → the grid-study queue at green belt) and 8 side missions.
+  - Tier-1 campaign: 10 main missions (walk the stream → the bottleneck chain → the grid-study queue at green belt → waiting for transformers → unused capacity) and 10 side missions, among them Henk's knowledge (a 56-day real event).
 - ⬜ Mission UI: briefing and debrief dialogues, the coach conversation, a quest log with 1 + 3 slots (Phase D)
 - ⬜ Missions beyond tier 1; story events (storm week, ACM visit, NTA 8120 audit) as missions
 - ✅ Never game over (Merijn, 2026-10-12): an experiment can be paid into debt; in debt the region is in a bad period (every team −3 points availability, an estimate; no money to standardise) until the debt is paid off. Tests: paying into debt, costs causing a bad period, the period ending.
@@ -216,7 +216,7 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 - 🔧 `content/problems_tier1.yaml`: 16 of the 18 catalogue problems done; "storing gooit de planning om" and "KPI's die elkaar bevechten" need a mechanism first (above)
 - 🔧 `content/countermeasures.yaml`: 35 countermeasures; grows with each problem
 - ✅ `content/missions.yaml`: the tier-1 campaign, with Henk's retirement as a 56-day deadline mission (De laatste kennisdrager)
-- ⬜ What happens when Henk's mission fails: today the mission fails and the problem stays open; later his knowledge could be lost for good (a harder countermeasure set)
+- ✅ Henk is a real event (Merijn, 2026-10-12): a side mission that opens after De verkeerde mof in de bus; Henk retires 56 days later, taken on or not. Missing it closes the buddy system (`fail_closes`) for good; work instructions with video still solve the problem. Deadlines count from when a mission opens; the validator requires another way to solve the problem.
 - ⬜ `content/concepts.yaml` (Lean + sector glossary, Dutch)
 
 ## Problem ideas backlog (keep growing)

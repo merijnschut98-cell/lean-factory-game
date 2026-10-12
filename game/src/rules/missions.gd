@@ -20,9 +20,11 @@ var region: Region
 var defs: Dictionary[String, MissionDef] = {}
 ## {name, role, stages: {stage: [questions]}}
 var coach: Dictionary
-## Missions the player has accepted: id → {status: active | completed |
-## failed, accepted_at (minutes), asks: {stage: count}}.
+## Missions the player has accepted, or whose deadline passed: id → {status:
+## active | completed | failed, asks: {stage: count}}.
 var progress: Dictionary[String, Dictionary] = {}
+## When each mission with a deadline opened (minutes): its clock starts there.
+var opened_at: Dictionary[String, int] = {}
 ## {type: accepted | completed | failed, mission} for the UI (a new belt is a
 ## Region event).
 var events: Array[Dictionary] = []
@@ -77,7 +79,7 @@ func accept(id: String) -> String:
 		var st: ProblemState = region.state.get(m.goal_problem)
 		if st == null or st.phase == P.RESOLVED or (st.phase == P.DORMANT and not region.activate(m.goal_problem)):
 			return "problem_unavailable"
-	progress[id] = {"status": "active", "accepted_at": region.net.time, "asks": {}}
+	progress[id] = {"status": "active", "asks": {}}
 	events.append({"type": "accepted", "mission": id})
 	return ""
 
@@ -90,15 +92,26 @@ func abandon(id: String) -> bool:
 	return true
 
 
-## Complete the missions whose goal is met and fail those past their
-## deadline. The game loop calls it after every Region action and time step.
+## Complete the missions whose goal is met, start the clock of missions with
+## a deadline that just opened, and fail those past it (taken on or not).
+## The game loop calls it after every Region action and time step.
 func update() -> void:
 	for m in active():
 		if _goal_met(m):
 			_complete(m)
-		elif m.deadline_days >= 0 and region.net.time > progress[m.id]["accepted_at"] + SimCalendar.days(m.deadline_days):
-			progress[m.id]["status"] = "failed"
-			events.append({"type": "failed", "mission": m.id})
+	for m: MissionDef in defs.values():
+		if m.deadline_days < 0 or not status(m.id) in ["available", "active"]:
+			continue
+		if not opened_at.has(m.id):
+			opened_at[m.id] = region.net.time
+		elif region.net.time > opened_at[m.id] + SimCalendar.days(m.deadline_days):
+			_fail(m)
+
+
+func _fail(m: MissionDef) -> void:
+	progress[m.id] = {"status": "failed", "asks": progress.get(m.id, {}).get("asks", {})}
+	region.close_countermeasures(m.fail_closes)
+	events.append({"type": "failed", "mission": m.id})
 
 
 ## Ask the coach. With no mission named, about the main mission. Returns
@@ -143,13 +156,18 @@ func drain_events() -> Array[Dictionary]:
 
 
 func to_dict() -> Dictionary:
-	return {"progress": progress.duplicate(true)}
+	return {"progress": progress.duplicate(true), "opened_at": opened_at.duplicate()}
 
 
 ## Restore to_dict() output. Returns the mission ids the content no longer
 ## has (dropped).
 func load_dict(d: Dictionary) -> Array[String]:
 	progress.clear()
+	opened_at.clear()
+	var opened := JsonFile.dict_or_empty(d.get("opened_at"))
+	for id: Variant in opened:
+		if defs.has(str(id)):
+			opened_at[str(id)] = int(opened[id])
 	var dropped: Array[String] = []
 	var saved: Variant = d.get("progress", {})
 	if not saved is Dictionary:
@@ -157,8 +175,7 @@ func load_dict(d: Dictionary) -> Array[String]:
 	for id: Variant in saved:
 		var entry: Variant = saved[id]
 		if defs.has(str(id)) and entry is Dictionary and entry.get("status") in ["active", "completed", "failed"]:
-			progress[str(id)] = {"status": entry["status"], "accepted_at": int(entry.get("accepted_at", 0)),
-				"asks": JsonFile.dict_or_empty(entry.get("asks"))}
+			progress[str(id)] = {"status": entry["status"], "asks": JsonFile.dict_or_empty(entry.get("asks"))}
 		else:
 			dropped.append(str(id))
 	return dropped

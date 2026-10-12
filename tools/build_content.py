@@ -500,7 +500,7 @@ MISSION_GOALS = {"walk": {"stream"}, "investigate": {"problem", "clues"}, "solve
 COACH_STAGES = ["go_see", "understand", "experiment", "reflect"]  # Missions.STAGES
 BELT_XP = [0, 1200, 3500, 7000, 12000]  # Progression.BELTS
 MISSION_KEYS = {"id", "name", "kind", "tier", "requires", "briefing", "debrief", "fail", "goal", "deadline_days",
-                "rewards", "insights"}
+                "fail_closes", "rewards", "insights"}
 
 
 def validate_missions(doc: Any, source: str) -> None:
@@ -532,6 +532,9 @@ def validate_missions(doc: Any, source: str) -> None:
         if "deadline_days" in m:
             _number(m, "deadline_days", where, 1, integer=True)
             _require_strings(m, ["fail"], where)
+        _string_list(m, "fail_closes", where)
+        if m.get("fail_closes") and "deadline_days" not in m:
+            raise ContentError(f"{where}: 'fail_closes' needs a deadline")
         rewards = _mapping(m, "rewards", {"xp", "budget"}, where)
         for key in ("xp", "budget"):
             _number(rewards, key, f"{where} rewards", 0, integer=True, default=0)
@@ -563,6 +566,12 @@ def check_missions(docs: dict[str, Any]) -> None:
             if p is None:
                 raise ContentError(f"{where}: unknown problem {goal['problem']!r}")
             keys = sum(1 for c in p["clues"] if c["key"])
+            # A missed deadline closes a door, never the last one (CLAUDE.md §2).
+            for cm in m.get("fail_closes", []):
+                if cm not in p["countermeasures"]:
+                    raise ContentError(f"{where}: closes {cm!r}, which problem {p['id']!r} does not list")
+            if set(p["countermeasures"]) <= set(m.get("fail_closes", [])):
+                raise ContentError(f"{where}: a missed deadline leaves no other way to solve {p['id']!r}")
             if goal["type"] == "investigate" and goal["clues"] > keys:
                 raise ContentError(f"{where}: asks for {goal['clues']} key clues, the problem has {keys}")
             if goal["type"] == "solve":

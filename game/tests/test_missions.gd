@@ -29,7 +29,7 @@ func test_only_unlocked_missions_are_available() -> void:
 	assert_eq(log.accept("walk_connections"), "")
 	_walk_connections(log)
 	assert_eq(log.status("walk_connections"), "completed")
-	assert_eq(_ids(log.available()), ["fix_design", "fix_revision", "henk", "look_at_intake", "walk_meters"])
+	assert_eq(_ids(log.available()), ["deep_dive", "fix_design", "fix_revision", "henk", "look_at_intake", "walk_meters"])
 	assert_eq(log.accept("green_only"), "locked", "needs the green belt")
 	log.region.profile.xp = Progression.BELTS[2]["xp"]
 	assert_true(log.available().any(func(m: MissionDef) -> bool: return m.id == "green_only"))
@@ -41,7 +41,7 @@ func test_one_main_and_at_most_three_side_missions() -> void:
 	_walk_connections(log)
 	log.region.profile.xp = Progression.BELTS[2]["xp"]
 	assert_eq(log.accept("fix_design"), "")
-	assert_eq(log.accept("henk"), "main_active", "one main mission at a time")
+	assert_eq(log.accept("deep_dive"), "main_active", "one main mission at a time")
 	for id in ["look_at_intake", "fix_revision", "walk_meters"]:
 		assert_eq(log.accept(id), "", id)
 	assert_eq(log.accept("green_only"), "side_full", "at most three side missions")
@@ -113,6 +113,35 @@ func test_a_missed_deadline_fails_the_mission_for_good() -> void:
 	assert_eq(log.drain_events().back(), {"type": "failed", "mission": "henk"})
 
 
+## A deadline is a real event: the clock runs from the moment the mission
+## opens, whether or not the player takes it on. Henk retires anyway.
+func test_a_deadline_runs_from_when_the_mission_opens() -> void:
+	var log := _log()
+	log.accept("walk_connections")
+	_walk_connections(log)
+	assert_eq(log.status("henk"), "available")
+	log.region.advance_days(11)
+	log.update()
+	assert_eq(log.status("henk"), "failed")
+	assert_eq(log.accept("henk"), "not_available")
+
+
+## Missing the deadline closes a door: the countermeasures that needed Henk
+## are gone for good. The problem can still be solved another way.
+func test_a_missed_deadline_closes_the_countermeasures_it_names() -> void:
+	var log := _log()
+	log.accept("walk_connections")
+	_walk_connections(log)
+	var poka_yoke := log.region.countermeasures["poka_yoke_form"]
+	assert_true(poka_yoke in log.region.available_countermeasures())
+	log.region.advance_days(11)
+	log.update()
+	assert_false(poka_yoke in log.region.available_countermeasures(), "the knowledge transfer is no longer possible")
+	var restored := RulesFixture.region()
+	RegionState.restore(restored, bytes_to_var(var_to_bytes(RegionState.capture(log.region))))
+	assert_false(restored.countermeasures["poka_yoke_form"] in restored.available_countermeasures(), "saved")
+
+
 func test_abandoning_a_mission_makes_room() -> void:
 	var log := _log()
 	log.accept("walk_connections")
@@ -127,6 +156,8 @@ func test_missions_survive_save_and_load() -> void:
 	_walk_connections(log)
 	log.accept("fix_design")
 	log.ask_coach()
+	log.region.advance_days(3)
+	log.update()  # the deadline clock of an open mission is saved too
 	var restored := _log()
 	assert_eq(restored.load_dict(bytes_to_var(var_to_bytes(log.to_dict()))), [])
 	assert_eq(restored.to_dict(), log.to_dict())

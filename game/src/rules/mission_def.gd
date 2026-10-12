@@ -23,8 +23,11 @@ var goal_type: String
 var goal_stream: String
 var goal_problem: String
 var goal_clues := 0
-## Days to complete after accepting; -1: no deadline.
+## Days to complete from when the mission opens (a real event: the clock runs
+## whether or not the player takes it on); -1: no deadline.
 var deadline_days := -1
+## Countermeasures a missed deadline closes for good (Henk's knowledge transfer).
+var fail_closes := PackedStringArray()
 var reward_xp := 0
 var reward_budget := 0
 ## Main missions: what the coach may tell at a stage, now and then.
@@ -50,6 +53,7 @@ static func from_dict(d: Dictionary) -> MissionDef:
 	m.goal_problem = str(goal.get("problem", ""))
 	m.goal_clues = int(goal.get("clues", 0))
 	m.deadline_days = int(d.get("deadline_days", -1))
+	m.fail_closes = PackedStringArray(d.get("fail_closes", []))
 	var rewards := JsonFile.dict_or_empty(d.get("rewards"))
 	m.reward_xp = int(rewards.get("xp", 0))
 	m.reward_budget = int(rewards.get("budget", 0))

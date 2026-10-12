@@ -402,6 +402,11 @@ def test_problem_errors_are_caught(rules_dirs, mutate, message):
      "no mission solves custom_design"),
     (lambda d: _mission(d, 2).update(insights={"go_see": "Kijk."}), "only main missions get the coach"),
     (lambda d: _mission(d).update(deadline_days=30), "'fail' must be a non-empty string"),
+    (lambda d: _mission(d).update(fail_closes=["standard_designs"]), "'fail_closes' needs a deadline"),
+    (lambda d: _mission(d).update(deadline_days=30, fail="Weg.", fail_closes=["weekly_meeting"]),
+     "closes 'weekly_meeting', which problem 'custom_design' does not list"),
+    (lambda d: _mission(d).update(deadline_days=30, fail="Weg.", fail_closes=["standard_designs"]),
+     "no other way to solve 'custom_design'"),
     (lambda d: _mission(d)["goal"].update(type="dance"), "'goal' needs a type"),
     (lambda d: d["missions"]["coach"]["stages"].pop("reflect"), "'stages' must give questions"),
 ])
