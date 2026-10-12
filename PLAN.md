@@ -218,9 +218,9 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 - ✅ `content/missions.yaml`: the tier-1 campaign, with Henk's retirement as a 56-day deadline mission (De laatste kennisdrager)
 - ✅ Henk is a real event (Merijn, 2026-10-12): a side mission that opens after De verkeerde mof in de bus; Henk retires 56 days later, taken on or not. Missing it closes the buddy system (`fail_closes`) for good; work instructions with video still solve the problem. Deadlines count from when a mission opens; the validator requires another way to solve the problem.
 - ⬜ `content/concepts.yaml` (Lean + sector glossary, Dutch)
-- ✅ `Network.open_age_days` (age of open work): lead time counts finished orders only, so long waits hide the oldest work (survivorship). Tested; not yet a KPI.
+- ✅ KPI `wip_age` (`Network.open_age_days`, in `Region.snapshot`): the age of open work. Lead time counts finished orders only, so long waits hide the oldest work (survivorship).
 - ⬜ Next session (found by report7, 5 seeds × 180 days):
-  - make `wip_age` a KPI (Investigation.KPIS, Python KPIS, `Region.snapshot`, report) and name it in Wachten op de trafo: its harm is invisible in finished-order lead time (43.5 vs 46.9 days) and shows only as throughput 26.9 → 25.5;
+  - name `wip_age` in Wachten op de trafo and add it to the report: its harm is invisible in finished-order lead time (43.5 vs 46.9 days) and shows only as throughput 26.9 → 25.5;
   - Omvormers die afschakelen barely moves lead time (8.7 → 8.9 days): model per-address fixes that do not hold (tap_change ftr down, KPI first_time_right);
   - simplify findings: `early_transformer_order` via `starts_with: design`; reason for (or drop) Wachten op de trafo's congestion ×1.2; one stream-id list in the tests;
   - review doc sections for problems 14–16 (notes ready in the scratchpad's `review_md.py`).

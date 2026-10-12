@@ -281,7 +281,7 @@ def _check_rework_loops(steps: list[dict], step_ids: list[str], where: str) -> N
 
 TOOLS = {"shadow", "time_study", "queue_count", "data", "documents", "listen_in", "material_check", "conversation"}
 WASTES = ["transport", "inventory", "motion", "waiting", "overproduction", "overprocessing", "defects", "skills"]
-KPIS = ["throughput", "lead_time", "first_time_right", "on_time"]
+KPIS = ["throughput", "lead_time", "first_time_right", "on_time", "wip_age"]
 SEVERITIES = ["low", "medium", "high", "critical"]
 VISIBILITIES = ["obvious", "subtle", "hidden"]
 PROBLEM_KEYS = {"id", "tier", "name", "step", "waste", "severity", "visibility", "kpi", "symptoms", "root_cause",

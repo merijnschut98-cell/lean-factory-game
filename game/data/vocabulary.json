@@ -79,7 +79,8 @@
   "throughput",
   "lead_time",
   "first_time_right",
-  "on_time"
+  "on_time",
+  "wip_age"
  ],
  "mission_goals": [
   "investigate",

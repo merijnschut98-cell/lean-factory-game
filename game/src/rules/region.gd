@@ -367,6 +367,8 @@ func snapshot(problem_id: String) -> Dictionary:
 		"throughput": k["throughput_per_week"], "lead_time": k["lead_days_p50"],
 		"cost_per_week": _cost_of(state[problem_id]),
 		"first_time_right": k["first_time_right"], "on_time": k["on_time"],
+		# The age of the open work: long waits show before their orders finish.
+		"wip_age": net.open_age_days(stream, 0.85),
 		"step": _recent_stats(net.step_at(p.step)),
 	}
 
