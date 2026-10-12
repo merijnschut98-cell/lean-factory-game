@@ -99,6 +99,11 @@ func test_urgent_stream_preempts_planned_work() -> void:
 	assert_true(outage["lead_days_p85"] < 1.0, "outages fixed within the day: %s" % outage["lead_days_p85"])
 	assert_true(planned["lead_days_p50"] > outage["lead_days_p50"])
 	assert_true(NetFixture.events(net, "preempted").size() > 0, "some planned work was interrupted")
+	assert_eq(net.stream("planned").step("job").stats_since(0)["interrupted"], NetFixture.events(net, "preempted").size(),
+		"the step counts its interruptions")
+	# Hours of outage per week: what customers feel, the count times the duration.
+	var hours: float = outage["lead_hours_per_week"]
+	assert_between(hours, 0.5 * 5.0, 5.0 * 24.0, "5 outages a week of hours each: %.1f" % hours)
 
 
 func test_priority_alone_does_not_interrupt_work() -> void:

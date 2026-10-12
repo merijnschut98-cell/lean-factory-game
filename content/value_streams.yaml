@@ -68,7 +68,7 @@ pools:
     schedule: [{days: mon-fri, from: "07:30", to: "15:30"}]
   - id: monteurs
     name: Monteurs
-    headcount: 14
+    headcount: 13           # ~67% busy: the technician shortage leaves little slack
     availability: 0.85
     schedule: [{days: mon-fri, from: "07:00", to: "15:00"}]
   - id: on_call

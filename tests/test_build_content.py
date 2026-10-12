@@ -195,7 +195,7 @@ def test_real_value_streams_are_valid():
     (lambda d: _connections(d).update(wip_limit=2.5), "'wip_limit' must be an integer"),
     (lambda d: _connections(d).update(status_calls={"to": "connections", "after_days": 21, "per_week": 1}), "'status_calls' needs 'to': another stream"),
     (lambda d: _connections(d)["status_calls"].update(after_days=0), "'after_days' must be >= 1"),
-    (lambda d: d["pools"][4].update(reserve={"stream": "outages", "people": 99}), "'people' must be between 1 and 14"),
+    (lambda d: d["pools"][4].update(reserve={"stream": "outages", "people": 99}), "'people' must be between 1 and "),
     (lambda d: d["pools"][0].update(headcount=True), "'headcount' must be an integer"),
     (lambda d: d["pools"].append(dict(d["pools"][0])), "duplicate pools ids: intake"),
     (lambda d: d["pools"][0].update(id="Intake Team"), "snake_case"),

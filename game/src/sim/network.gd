@@ -651,6 +651,7 @@ func _preempt_for(pool: SimPool, priority: int) -> bool:
 	pool.busy.erase(victim)
 	_emit("preempted", victim)
 	var step := victim.current_step()
+	_record(step, SimStep.Stat.INTERRUPTED)
 	if step.interrupt_index < 0:
 		queue_of(step).push_front(victim)  # resumes first
 	else:
