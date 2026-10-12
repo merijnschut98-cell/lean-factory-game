@@ -103,9 +103,12 @@ func _open_count() -> int:
 	return state.values().filter(func(s: ProblemState) -> bool: return s.is_open()).size()
 
 
-## The problem hurts the simulation at the strength a countermeasure leaves.
-func _apply_problem(st: ProblemState) -> void:
-	net.set_effects("problem:" + st.id, SimModifiers.scaled(problems[st.id].effects, 1.0 - st.eff))
+## The problem hurts the simulation at the strength a countermeasure leaves;
+## with `cm`, the countermeasure's own effects start too.
+func _apply_problem(st: ProblemState, cm: CountermeasureDef = null) -> void:
+	var sources := Pdca.treated_effects(problems[st.id], cm, st.eff)
+	for source: String in sources:
+		net.set_effects(source, sources[source])
 
 
 # ── Plan: Go & See ──────────────────────────────────────────────────────────
@@ -269,9 +272,7 @@ func submit_a3(problem_id: String, a3: Dictionary) -> String:
 	st.level = e["level"]
 	st.phase = P.DOING
 	st.check_at = net.time + SimCalendar.days(CHECK_DAYS)
-	_apply_problem(st)
-	if st.eff >= Pdca.CHECK_PASS:
-		net.set_effects("cm:" + problem_id, SimModifiers.scaled(cm.effects, st.eff))
+	_apply_problem(st, cm)
 	net.set_effects("do:" + problem_id, _team_hours(cm))
 	profile.learn(["A3", "kata_prediction"])
 	return ""

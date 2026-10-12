@@ -30,7 +30,7 @@ problems:
       - Klanten lezen de instructies niet.
       - De intakemedewerkers controleren niet zorgvuldig genoeg.
     mismatch_note: Sneller of strenger controleren verandert niets aan wat er binnenkomt. De fout ontstaat in het formulier.
-    countermeasures: {poka_yoke_application: 1.0, intake_checklist: 0.6}
+    countermeasures: {poka_yoke_application: 1.0, intake_checklist: 0.7}
     teaches: [quality_at_the_source, poka_yoke]
     effects:
       - {target: connections.intake, property: ftr, value: -0.2}

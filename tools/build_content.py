@@ -242,6 +242,7 @@ WASTES = ["transport", "inventory", "motion", "waiting", "overproduction", "over
 KPIS = ["throughput", "lead_time", "first_time_right", "on_time"]
 SEVERITIES = ["low", "medium", "high", "critical"]
 VISIBILITIES = ["obvious", "subtle", "hidden"]
+CHECK_PASS = 0.5  # the effectiveness a Check needs to pass (Pdca.CHECK_PASS)
 # property → (target kind, required step kind or None, value type: factor | number | bool | count | reserve | step)
 EFFECT_PROPERTIES = {
     "touch_time": ("step", "work", "factor"), "ftr": ("step", "work", "number"),
@@ -408,13 +409,16 @@ def _check_problem(p: dict, where: str, net: dict, cms: dict) -> None:
             raise ContentError(f"{where} clue {i}: unknown step {at!r}")
         if c["tool"] == "conversation" and net["step"][at]["kind"] != "work":
             raise ContentError(f"{where} clue {i}: a conversation clue at a step without a team ({at})")
-    for cm_id in p["countermeasures"]:
+    for cm_id, fit in p["countermeasures"].items():
         if cm_id not in cms:
             raise ContentError(f"{where}: unknown countermeasure {cm_id!r}")
-    if not any(cms[c]["tier"] <= p["tier"] and cms[c]["multipliers"]["full"] * fit >= 0.5
-               for c, fit in p["countermeasures"].items()):
-        raise ContentError(f"{where}: no countermeasure that can solve it at its tier "
-                           "(needs tier <= the problem's and full multiplier x fit >= 0.5)")
+        # Each listed countermeasure is an improvement, so each must be able
+        # to pass the Check (Pdca.CHECK_PASS) at full strength.
+        if cms[cm_id]["multipliers"]["full"] * fit < CHECK_PASS:
+            raise ContentError(f"{where}: {cm_id!r} can never pass the Check "
+                               f"(full multiplier x fit < {CHECK_PASS})")
+    if not any(cms[c]["tier"] <= p["tier"] for c in p["countermeasures"]):
+        raise ContentError(f"{where}: no countermeasure that can solve it at its tier")
 
 
 PROBLEM_FILES = "problems_tier"
@@ -437,7 +441,7 @@ def vocabulary() -> dict[str, Any]:
     check the game knows exactly the same ones."""
     return {
         "tools": sorted(TOOLS), "wastes": WASTES, "kpis": KPIS, "severities": SEVERITIES,
-        "visibilities": VISIBILITIES,
+        "visibilities": VISIBILITIES, "check_pass": CHECK_PASS,
         "effect_properties": {p: {"kind": k, "step_kind": sk or ""} for p, (k, sk, _) in sorted(EFFECT_PROPERTIES.items())},
     }
 

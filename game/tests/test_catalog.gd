@@ -57,6 +57,19 @@ func _solve(c: Catalog, p: ProblemDef) -> Dictionary:
 	return r.act(p.id, true)
 
 
+## Each listed countermeasure is an improvement (some more than others), so
+## each can pass the Check at full strength.
+func test_every_listed_countermeasure_can_pass_the_check() -> void:
+	var c := Catalog.load_from()
+	var cms := {}
+	for cm in c.countermeasures:
+		cms[cm.id] = cm
+	for p in c.problems:
+		for cm_id: String in p.countermeasures:
+			var cm: CountermeasureDef = cms[cm_id]
+			assert_true(Pdca.effectiveness(p, cm, cm.tier)["eff"] >= Pdca.CHECK_PASS, "%s → %s" % [p.id, cm_id])
+
+
 func test_an_expert_can_solve_every_problem() -> void:
 	var c := Catalog.load_from()
 	for p in c.problems:
@@ -136,6 +149,7 @@ func test_the_game_knows_the_content_vocabulary() -> void:
 	assert_eq(Investigation.KPIS, vocab["kpis"])
 	assert_eq(ProblemDef.SEVERITIES, vocab["severities"])
 	assert_eq(ProblemDef.VISIBILITIES, vocab["visibilities"])
+	assert_eq(Pdca.CHECK_PASS, vocab["check_pass"])
 	var properties: Dictionary = vocab["effect_properties"]
 	assert_eq(SimModifiers.PROPERTIES.keys().size(), properties.size())
 	for property: String in SimModifiers.PROPERTIES:

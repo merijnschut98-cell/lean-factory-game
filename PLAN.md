@@ -12,7 +12,7 @@ Pivot agreed 2026-10-12: from a hoverboard factory to a grid operator. The 3D fa
 
 This is a multi-month project, built the right way: research → design (reviewed by Merijn) → engine → content → world → UI, in small tested increments. No publishing deadline. Built in **Godot 4 + GDScript** from the start (decided 2026-10-12).
 
-**Next task:** Phase B — review round for Merijn on the first six problems and the healthy base; then the remaining tier-1 problems from the GDD catalogue (`content/problems_tier1.yaml`).
+**Next task:** Phase B — Merijn reviews the eleven tier-1 problems and the healthy base in the shared content review doc (https://claude.ai/code/artifact/120bfc8c-75b6-4a56-86d9-2c5c3148112a); then fold his answers into the content before writing more problems.
 
 ---
 
@@ -179,7 +179,10 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
   - the problem makes it a monthly batch.
   - Systemic effect, emergent rather than scripted: connections lead p50 29 → 49 days, status calls 37 → 118 a week, contact centre on time 0.84 → 0.19. The contact centre's crisis comes from an admin batch two departments upstream.
   - Countermeasures: close-out at completion (tier 1) or automatic EAN registration (tier 3).
-- ⬜ Merijn reviews the eleven problems for realism (texts, clues, effects, and whether the close-out spiral is too strong) and the healthy base
+- ✅ Content review prepared: `game/tools/problem_report.gd` measures every problem on the real network (base, problem, each countermeasure at full strength; 5 seeds × 90 days); the shared doc shows texts, clues, effects, countermeasures and the measured impact per problem, with review questions
+  - Found by the report: *Checklist bij de intake* could never pass the Check (0.8 × fit 0.6 = 0.48). Every listed countermeasure must now be able to pass at full strength (validator + Godot test on the real formula); fit raised to 0.7.
+  - Region and the report share one rule for what a treated problem does to the sim (`Pdca.treated_effects`)
+- ⬜ Merijn reviews the eleven problems for realism in the review doc (texts, clues, effect sizes, the close-out spiral, the healthy base). Open questions raised by the report: connections never miss the 126-day norm (on time is always 100%); outage problems barely move outage KPIs
 - ⬜ Catalogue problems that need a new mechanism first:
   - storing gooit de planning om: planned monteur work at 100%; needs the base to keep slack that the problem removes, or a planning-horizon mechanic;
   - KPI's die elkaar bevechten: overproduction, departments pushing work in; needs a release decision per department

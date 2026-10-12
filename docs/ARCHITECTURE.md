@@ -29,6 +29,7 @@ game/                      Godot project (res://)
   tests/                   headless test runner + test_*.gd (helpers such as TestCase in tests/lib/)
   tools/screenshot.gd      renders a scene to PNG under Xvfb for visual checks
   tools/make_default_env.gd  regenerates src/world/default_environment.tres
+  tools/problem_report.gd  measures every catalogue problem and countermeasure on the real network (JSON, for content reviews)
   export_presets.cfg       Windows, Linux and web export presets
 content/                   authored content, YAML, Dutch game text (problems, countermeasures, missions, story, codex)
 tools/
@@ -117,6 +118,7 @@ Problem effects are generic modifiers (`sim/modifiers.gd`):
 - **Build:** `tools/build_content.py` validates everything in two passes (each file against its own validator, then `CROSS_CHECKS` over all files for references between them) and writes JSON to `game/data/`. Godot parses JSON natively, so the game needs no YAML parser. Validation covers:
   - required fields;
   - every problem has at least one key clue at depth 0;
+  - every listed countermeasure can pass the Check at full strength (`Pdca.CHECK_PASS`, mirrored in `vocabulary.json`);
   - countermeasure references resolve;
   - every tool and waste is a known value;
   - missions point at real problems.

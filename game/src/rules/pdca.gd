@@ -25,6 +25,17 @@ static func effectiveness(problem: ProblemDef, cm: CountermeasureDef, maturity: 
 	return {"eff": cm.multipliers[level] * fit, "level": level, "fit": fit}
 
 
+## What a treated problem does to the simulation, by effect source: the
+## problem at the strength the countermeasure leaves (1 − eff), and the
+## countermeasure's own effects at eff once that passes the Check. `cm` null
+## means untreated.
+static func treated_effects(problem: ProblemDef, cm: CountermeasureDef, eff: float) -> Dictionary[String, Array]:
+	var out: Dictionary[String, Array] = {"problem:" + problem.id: SimModifiers.scaled(problem.effects, 1.0 - eff)}
+	if cm != null and eff >= CHECK_PASS:
+		out["cm:" + problem.id] = SimModifiers.scaled(cm.effects, eff)
+	return out
+
+
 ## The score of one solved problem. Inputs:
 ## key_found, key_total, scouted (walked another step of the stream), blamed,
 ## cause_correct, key_linked, herrings_linked, eff, failed_checks,

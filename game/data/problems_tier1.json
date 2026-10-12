@@ -34,7 +34,7 @@
     }
    ],
    "countermeasures": {
-    "intake_checklist": 0.6,
+    "intake_checklist": 0.7,
     "poka_yoke_application": 1.0
    },
    "effects": [

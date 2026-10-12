@@ -32,6 +32,17 @@ func test_several_countermeasures_can_work_some_better() -> void:
 	assert_true(delegated["eff"] >= Pdca.CHECK_PASS and standard["eff"] > delegated["eff"])
 
 
+func test_treated_effects() -> void:
+	var p: ProblemDef = RulesFixture.problem_defs()[0]
+	var cm: CountermeasureDef = RulesFixture.countermeasure_defs()[0]
+	var passed := Pdca.treated_effects(p, cm, 0.8)
+	assert_eq(passed.keys(), ["problem:custom_design", "cm:custom_design"])
+	assert_near(passed["problem:custom_design"][0]["value"], 1.1, 1e-9, "the problem at strength 1 − 0.8")
+	assert_near(passed["cm:custom_design"][0]["value"], 0.84, 1e-9, "the countermeasure at strength 0.8")
+	assert_eq(Pdca.treated_effects(p, cm, 0.4).keys(), ["problem:custom_design"], "below the Check, no fix")
+	assert_eq(Pdca.treated_effects(p, null, 0.0), {"problem:custom_design": p.effects}, "untreated: at full strength")
+
+
 func test_scores_range_from_6_to_25() -> void:
 	var best := Pdca.score(_best())
 	assert_eq(best["total"], 25)

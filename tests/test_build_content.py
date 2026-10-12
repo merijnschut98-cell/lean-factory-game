@@ -295,7 +295,10 @@ def test_sample_problems_are_valid(rules_dirs):
     (lambda d: _problem(d)["clues"][1].update(at="ghosts.step"), "unknown step 'ghosts.step'"),
     (lambda d: _problem(d).update(countermeasures={"magic_wand": 1.0}), "unknown countermeasure 'magic_wand'"),
     (lambda d: _problem(d).update(countermeasures={"standard_designs": 1.5}), "fit"),
-    (lambda d: _problem(d).update(countermeasures={"weekly_meeting": 0.5}), "no countermeasure that can solve it"),
+    (lambda d: _cm(d).update(tier=2), "no countermeasure that can solve it"),
+    # Every listed countermeasure is an improvement (some more than others), so each can pass the Check.
+    (lambda d: _problem(d).update(countermeasures={"standard_designs": 1.0, "weekly_meeting": 0.5}),
+     "'weekly_meeting' can never pass the Check"),
     (lambda d: _problem(d)["effects"][0].update(property="speed"), "unknown effect property 'speed'"),
     (lambda d: _problem(d)["effects"][0].update(target="connections.permit"), "is not a work step"),
     (lambda d: _problem(d)["effects"][0].update(target="nobody"), "unknown step 'nobody'"),
