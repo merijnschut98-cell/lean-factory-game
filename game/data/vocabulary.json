@@ -1,5 +1,18 @@
 {
+ "belt_xp": [
+  0,
+  1200,
+  3500,
+  7000,
+  12000
+ ],
  "check_pass": 0.5,
+ "coach_stages": [
+  "go_see",
+  "understand",
+  "experiment",
+  "reflect"
+ ],
  "effect_properties": {
   "applies": {
    "kind": "step",
@@ -67,6 +80,15 @@
   "lead_time",
   "first_time_right",
   "on_time"
+ ],
+ "mission_goals": [
+  "investigate",
+  "solve",
+  "walk"
+ ],
+ "mission_kinds": [
+  "main",
+  "side"
  ],
  "severities": [
   "low",

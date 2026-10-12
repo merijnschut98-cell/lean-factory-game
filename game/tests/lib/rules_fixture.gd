@@ -123,3 +123,42 @@ static func countermeasure_defs() -> Array[CountermeasureDef]:
 	for d: Dictionary in countermeasures():
 		out.append(CountermeasureDef.from_dict(d))
 	return out
+
+
+## The coach and missions in the shape of content/missions.yaml.
+static func coach() -> Dictionary:
+	return {
+		"name": "Marleen", "role": "manager",
+		"stages": {
+			"go_see": ["go_see 1", "go_see 2"], "understand": ["understand 1", "understand 2"],
+			"experiment": ["experiment 1"], "reflect": ["reflect 1"],
+		},
+	}
+
+
+static func missions() -> Array:
+	var m := func(id: String, kind: String, goal: Dictionary, requires: Dictionary = {}, extra: Dictionary = {}) -> Dictionary:
+		var d := {"id": id, "name": id, "kind": kind, "tier": 1, "requires": requires, "goal": goal,
+			"briefing": "briefing " + id, "debrief": "debrief " + id, "rewards": {"xp": 300, "budget": 2000}}
+		d.merge(extra, true)
+		return d
+	return [
+		m.call("walk_connections", "main", {"type": "walk", "stream": "connections"}),
+		m.call("fix_design", "main", {"type": "solve", "problem": "custom_design"}, {"missions": ["walk_connections"]},
+			{"insights": {"understand": "insight understand"}}),
+		m.call("look_at_intake", "side", {"type": "investigate", "problem": "incomplete_application", "clues": 1},
+			{"missions": ["walk_connections"]}),
+		m.call("fix_revision", "side", {"type": "solve", "problem": "revision_backlog"}, {"missions": ["walk_connections"]}),
+		m.call("walk_meters", "side", {"type": "walk", "stream": "meters"}),
+		m.call("henk", "main", {"type": "solve", "problem": "incomplete_application"}, {"missions": ["walk_connections"]},
+			{"deadline_days": 10, "fail": "fail henk"}),
+		m.call("green_only", "side", {"type": "walk", "stream": "meters"}, {"belt": 2}),
+	]
+
+
+static func mission_log(r: Region) -> Missions:
+	var defs: Array[MissionDef] = []
+	for d: Dictionary in missions():
+		defs.append(MissionDef.from_dict(d))
+	return Missions.new(r, defs, coach())
+

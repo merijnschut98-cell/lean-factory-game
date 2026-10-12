@@ -27,7 +27,7 @@ def dirs(tmp_path: Path) -> tuple[Path, Path]:
     content.mkdir()
     (content / "game.yaml").write_text(GAME_YAML, encoding="utf-8")
     (content / "value_streams.yaml").write_text(REAL_STREAMS, encoding="utf-8")
-    for stem in ("countermeasures", "problems_tier1"):
+    for stem in ("countermeasures", "problems_tier1", "missions"):
         (content / f"{stem}.yaml").write_text((bc.CONTENT_DIR / f"{stem}.yaml").read_text(encoding="utf-8"), encoding="utf-8")
     return content, data
 
@@ -270,17 +270,55 @@ PROBLEMS_YAML = """problems:
 """
 
 
+MISSIONS_YAML = """coach:
+  name: Marleen
+  role: Directeur
+  stages:
+    go_see: ["Wat zie je?"]
+    understand: ["Wat is het obstakel?"]
+    experiment: ["Wat verwacht je?"]
+    reflect: ["Wat heb je geleerd?"]
+missions:
+  - id: walk_connections
+    name: Loop de stroom
+    kind: main
+    tier: 1
+    briefing: Loop mee.
+    debrief: Goed gedaan.
+    goal: {type: walk, stream: connections}
+    rewards: {xp: 300}
+  - id: fix_design
+    name: De stapel
+    kind: main
+    tier: 1
+    requires: {missions: [walk_connections]}
+    briefing: Zoek het uit.
+    debrief: Opgelost.
+    goal: {type: solve, problem: custom_design}
+    insights: {understand: Vergelijk eens.}
+  - id: peek
+    name: Een kijkje
+    kind: side
+    tier: 1
+    requires: {missions: [walk_connections]}
+    briefing: Ga kijken.
+    debrief: Gezien.
+    goal: {type: investigate, problem: custom_design, clues: 1}
+"""
+
+
 @pytest.fixture
 def rules_dirs(dirs):
     content, data = dirs
     (content / "countermeasures.yaml").write_text(CMS_YAML, encoding="utf-8")
     (content / "problems_tier1.yaml").write_text(PROBLEMS_YAML, encoding="utf-8")
+    (content / "missions.yaml").write_text(MISSIONS_YAML, encoding="utf-8")
     return content, data
 
 
 def _rules(content, mutate) -> None:
     docs = {stem: yaml.safe_load((content / f"{stem}.yaml").read_text(encoding="utf-8"))
-            for stem in ("game", "value_streams", "countermeasures", "problems_tier1")}
+            for stem in ("game", "value_streams", "countermeasures", "problems_tier1", "missions")}
     mutate(docs)
     for stem, doc in docs.items():
         (content / f"{stem}.yaml").write_text(yaml.safe_dump(doc, allow_unicode=True), encoding="utf-8")
@@ -293,6 +331,10 @@ def _problem(docs: dict) -> dict:
 
 def _cm(docs: dict) -> dict:
     return docs["countermeasures"]["countermeasures"][0]
+
+
+def _mission(docs: dict, i: int = 1) -> dict:
+    return docs["missions"]["missions"][i]
 
 
 def test_sample_problems_are_valid(rules_dirs):
@@ -343,6 +385,33 @@ def test_problem_errors_are_caught(rules_dirs, mutate, message):
     content, _ = rules_dirs
     with pytest.raises(bc.ContentError, match=message.replace("(", r"\(")):
         _rules(content, mutate)
+
+
+@pytest.mark.parametrize("mutate, message", [
+    (lambda d: _mission(d).update(kind="epic"), "'kind' must be one of"),
+    (lambda d: _mission(d)["requires"].update(missions=["ghost"]), "requires unknown mission 'ghost'"),
+    (lambda d: _mission(d, 0).update(requires={"missions": ["fix_design"]}), "no main mission is open from the start"),
+    (lambda d: _mission(d).update(requires={"missions": ["peek"]}) or _mission(d, 2).update(requires={"missions": ["fix_design"]}),
+     "can never unlock"),
+    (lambda d: _mission(d).update(requires={"missions": ["walk_connections"], "belt": 2}), "can never unlock"),
+    (lambda d: _mission(d)["goal"].update(problem="ghost"), "unknown problem 'ghost'"),
+    (lambda d: _mission(d, 0)["goal"].update(stream="ghosts"), "unknown stream 'ghosts'"),
+    (lambda d: _mission(d, 2)["goal"].update(clues=9), "asks for 9 key clues"),
+    (lambda d: _mission(d, 2).update(goal={"type": "solve", "problem": "custom_design"}), "already solved in mission"),
+    (lambda d: _mission(d, 2).update(insights={"go_see": "Kijk."}), "only main missions get the coach"),
+    (lambda d: _mission(d).update(deadline_days=30), "'fail' must be a non-empty string"),
+    (lambda d: _mission(d)["goal"].update(type="dance"), "'goal' needs a type"),
+    (lambda d: d["missions"]["coach"]["stages"].pop("reflect"), "'stages' must give questions"),
+])
+def test_mission_errors_are_caught(rules_dirs, mutate, message):
+    content, _ = rules_dirs
+    with pytest.raises(bc.ContentError, match=message):
+        _rules(content, mutate)
+
+
+def test_fixture_campaign_is_valid(rules_dirs):
+    content, _ = rules_dirs
+    assert [m["id"] for m in bc.load_content(content)["missions"]["missions"]] == ["walk_connections", "fix_design", "peek"]
 
 
 def test_vocabulary_is_written_for_the_game():

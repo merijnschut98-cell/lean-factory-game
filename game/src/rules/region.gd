@@ -13,7 +13,8 @@ extends RefCounted
 ## spent on the experiment).
 
 const P := ProblemState.Phase
-const MAX_OPEN := 3
+## One main mission and three side missions can each have a problem open.
+const MAX_OPEN := 4
 const CHECK_DAYS := 14
 const STANDARDISE_BUDGET := 3000
 ## A region's maturity rises when this share of a tier's problems is resolved.

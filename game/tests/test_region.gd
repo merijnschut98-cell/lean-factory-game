@@ -30,7 +30,7 @@ func test_activating_a_problem_hits_the_simulation() -> void:
 	assert_false(r.activate("custom_design"), "already active")
 
 
-func test_at_most_three_problems_open() -> void:
+func test_at_most_four_problems_open() -> void:
 	var defs := RulesFixture.problem_defs()
 	for i in 3:
 		var d: Dictionary = RulesFixture.problems()[1].duplicate(true)

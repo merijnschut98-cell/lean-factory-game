@@ -1,0 +1,64 @@
+class_name MissionDef
+extends RefCounted
+## One mission from content/missions.yaml: a main mission (one at a time,
+## with the coach) or a small side mission, unlocked by earlier missions and
+## the player's belt, with a goal the rules can check.
+
+const KINDS := ["main", "side"]
+const GOALS := ["walk", "investigate", "solve"]
+
+var id: String
+var name: String
+var kind: String
+var tier: int
+var requires_missions := PackedStringArray()
+## Belt index (Progression.BELTS) the player needs.
+var requires_belt := 0
+var briefing: String
+var debrief: String
+## Said when the deadline passes (e.g. Henk has retired).
+var fail_text: String
+## walk {stream} · investigate {problem, clues} · solve {problem}
+var goal_type: String
+var goal_stream: String
+var goal_problem: String
+var goal_clues := 0
+## Days to complete after accepting; -1: no deadline.
+var deadline_days := -1
+var reward_xp := 0
+var reward_budget := 0
+## Main missions: what the coach may tell at a stage, now and then.
+var insights: Dictionary[String, String] = {}
+var error := ""
+
+
+static func from_dict(d: Dictionary) -> MissionDef:
+	var m := MissionDef.new()
+	m.id = str(d.get("id", ""))
+	m.name = str(d.get("name", ""))
+	m.kind = str(d.get("kind", ""))
+	m.tier = int(d.get("tier", 1))
+	var requires: Dictionary = d.get("requires", {}) if d.get("requires") is Dictionary else {}
+	m.requires_missions = PackedStringArray(requires.get("missions", []))
+	m.requires_belt = int(requires.get("belt", 0))
+	m.briefing = str(d.get("briefing", ""))
+	m.debrief = str(d.get("debrief", ""))
+	m.fail_text = str(d.get("fail", ""))
+	var goal: Dictionary = d.get("goal", {}) if d.get("goal") is Dictionary else {}
+	m.goal_type = str(goal.get("type", ""))
+	m.goal_stream = str(goal.get("stream", ""))
+	m.goal_problem = str(goal.get("problem", ""))
+	m.goal_clues = int(goal.get("clues", 0))
+	m.deadline_days = int(d.get("deadline_days", -1))
+	var rewards: Dictionary = d.get("rewards", {}) if d.get("rewards") is Dictionary else {}
+	m.reward_xp = int(rewards.get("xp", 0))
+	m.reward_budget = int(rewards.get("budget", 0))
+	var insights: Variant = d.get("insights", {})
+	if insights is Dictionary:
+		for stage: Variant in insights:
+			m.insights[str(stage)] = str(insights[stage])
+	if m.id.is_empty() or m.name.is_empty():
+		m.error = "mission %s: needs an id and a name" % m.id
+	elif not m.kind in KINDS or not m.goal_type in GOALS:
+		m.error = "mission %s: unknown kind %s or goal %s" % [m.id, m.kind, m.goal_type]
+	return m

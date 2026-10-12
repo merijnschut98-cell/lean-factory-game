@@ -9,6 +9,9 @@ const PROBLEM_FILES := "problems_tier"
 
 var problems: Array[ProblemDef] = []
 var countermeasures: Array[CountermeasureDef] = []
+var missions: Array[MissionDef] = []
+## The senior manager who coaches the main mission: {name, role, stages}.
+var coach: Dictionary = {}
 ## The first thing wrong with the files; "" when the catalogue is usable.
 var error := ""
 
@@ -23,6 +26,15 @@ static func load_from(dir: String = DATA_DIR) -> Catalog:
 		var cm := CountermeasureDef.from_dict(_dict(d))
 		c._keep_first(cm.error)
 		c.countermeasures.append(cm)
+	var campaign := JsonFile.read_dict(dir + "/missions.json")
+	if not campaign["error"].is_empty():
+		c.error = campaign["error"]
+		return c
+	c.coach = _dict(campaign["data"].get("coach"))
+	for d: Variant in campaign["data"].get("missions", []):
+		var m := MissionDef.from_dict(_dict(d))
+		c._keep_first(m.error)
+		c.missions.append(m)
 	var files := Array(DirAccess.get_files_at(dir)).filter(func(f: String) -> bool:
 		return f.begins_with(PROBLEM_FILES) and f.ends_with(".json"))
 	files.sort()

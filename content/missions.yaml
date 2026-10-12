@@ -1,0 +1,234 @@
+# The campaign of region Zuidmark (CLAUDE.md §2): missions unlock new and
+# harder missions as the player progresses. At most one main mission and
+# three side missions are active at once. The coach, a senior manager, mostly
+# asks questions (Toyota Kata), and only about the main mission.
+# Game text is Dutch; ids and keys are English. Built by tools/build_content.py.
+#
+# requires   missions that must be completed first, and a belt (0 white,
+#            1 yellow, 2 green, 3 black, 4 master black)
+# goal       walk {stream}: see every work step of a stream at the gemba
+#            investigate {problem, clues}: find that many key clues
+#            solve {problem}: resolve the problem (Check passed, Act done)
+# deadline_days  days to complete after accepting; then `fail` is told
+# insights   main missions only: what the coach shares now and then at a
+#            stage (go_see, understand, experiment, reflect)
+
+coach:
+  name: Marleen Verhoef
+  role: Directeur Netbeheer regio Zuidmark
+  stages:
+    go_see:
+      - "Wat wil je bereiken? Hoe ziet het eruit als het hier goed loopt?"
+      - "Wat heb je zelf gezien op de werkvloer, niet in het rapport?"
+      - "Waar in de stroom ligt het werk stil?"
+    understand:
+      - "Hoe is de situatie nu, in cijfers?"
+      - "Welke obstakels staan tussen jou en de doelsituatie? Welke pak je nu aan?"
+      - "Hoe weet je dat dit de oorzaak is, en niet een symptoom?"
+      - "Met wie heb je gesproken die het werk zelf doet?"
+    experiment:
+      - "Wat is je volgende stap, en wat verwacht je dat er gebeurt?"
+      - "Wanneer kunnen we zien wat je van die stap hebt geleerd?"
+      - "Welk getal vertelt je of het werkt?"
+    reflect:
+      - "Wat had je verwacht, en wat gebeurde er echt?"
+      - "Wat heb je geleerd?"
+      - "Hoe zorg je dat de verbetering blijft?"
+
+missions:
+  # ── Main missions: the story of the first months, with the coach ──────────
+  - id: walk_connections
+    name: "Eerste week: loop de stroom"
+    kind: main
+    tier: 1
+    briefing: "Welkom bij Voltana. Voordat je iets verandert, wil ik dat je de weg van een nieuwe aansluiting van begin tot eind hebt gezien. Loop mee bij elke stap, van intake tot administratieve afhandeling."
+    debrief: "Nu weet je hoe een aansluiting door ons huis gaat. Onthoud waar het werk stil lag; daar beginnen we."
+    goal: {type: walk, stream: connections}
+    rewards: {xp: 300}
+    insights:
+      go_see: "Kijk niet alleen naar de mensen. Kijk naar het werk dat ligt te wachten."
+
+  - id: fix_custom_design
+    name: De stapel bij Werkvoorbereiding
+    kind: main
+    tier: 1
+    requires: {missions: [walk_connections]}
+    briefing: "Werkvoorbereiding maakt overuren en toch groeit de stapel ontwerpen. De teamleider vraagt om twee extra mensen. Zoek uit wat er echt aan de hand is voordat we iemand aannemen."
+    debrief: "Geen extra mensen nodig: het werk zelf was te zwaar gemaakt. Kijk nu waar de aansluitingen op wachten."
+    goal: {type: solve, problem: custom_design}
+    rewards: {xp: 600, budget: 10000}
+    insights:
+      understand: "Vergelijk eens hoeveel ontwerptijd een gewone woningaansluiting kost met een bedrijfsaansluiting."
+      experiment: "Een goede voorspelling noemt een getal en een moment waarop je het kunt zien."
+      reflect: "Als dit knelpunt weg is, waar staat het werk dan nu te wachten?"
+
+  - id: fix_incomplete_application
+    name: Het knelpunt verschuift
+    kind: main
+    tier: 1
+    requires: {missions: [fix_custom_design]}
+    briefing: "Werkvoorbereiding loopt weer. Nu staat het werk bij de intake, en daar gaat bijna de helft van de aanvragen terug naar de klant."
+    debrief: "De fout wordt nu voorkomen waar hij ontstaat. Zo kost kwaliteit minder dan controle."
+    goal: {type: solve, problem: incomplete_application}
+    rewards: {xp: 700, budget: 8000}
+    insights:
+      understand: "Waar ontstaat de fout: bij de intake, of al eerder?"
+      reflect: "Wat is het verschil tussen een fout vinden en een fout voorkomen?"
+
+  - id: fix_status_callers
+    name: De telefoon staat roodgloeiend
+    kind: main
+    tier: 1
+    requires: {missions: [fix_incomplete_application]}
+    briefing: "Het klantcontactcentrum is onbereikbaar. De manager vraagt om meer agents. Voordat we dat doen: waarom bellen al die mensen?"
+    debrief: "De vragen kwamen voort uit stilte, niet uit het contactcentrum. Faalvraag los je op bij de bron."
+    goal: {type: solve, problem: status_callers}
+    rewards: {xp: 800, budget: 8000}
+    insights:
+      go_see: "Luister eens mee met een paar gesprekken."
+      understand: "Waarover bellen klanten eigenlijk, en hoe lang wachten ze al?"
+
+  - id: fix_done_but_not_closed
+    name: Klaar maar niet af
+    kind: main
+    tier: 1
+    requires: {missions: [fix_status_callers], belt: 1}
+    briefing: "Klanten bellen dat ze geen energiecontract kunnen afsluiten, terwijl hun aansluiting er al ligt. Ergens blijft werk liggen dat niemand ziet."
+    debrief: "Een batch op een afdeling werd een crisis bij een andere. Kijk altijd naar de hele stroom."
+    goal: {type: solve, problem: done_but_not_closed}
+    rewards: {xp: 900, budget: 8000}
+    insights:
+      understand: "Waar ligt een aansluiting die technisch klaar is, en waarop wacht hij?"
+
+  - id: fix_revision_backlog
+    name: De revisieberg
+    kind: main
+    tier: 1
+    requires: {missions: [fix_done_but_not_closed]}
+    briefing: "Bij Revisie & GIS ligt een stapel schetsen van maanden. Het lijkt een administratief probleem, maar onze kaarten worden er onbetrouwbaar van."
+    debrief: "De kaart klopt weer bij oplevering. Dat merken straks ook de aannemers die graven."
+    goal: {type: solve, problem: revision_backlog}
+    rewards: {xp: 900, budget: 10000}
+    insights:
+      understand: "Waarom wordt hetzelfde werk twee keer gedaan?"
+
+  - id: fix_digging_damage
+    name: Graafschade
+    kind: main
+    tier: 1
+    requires: {missions: [fix_revision_backlog]}
+    briefing: "Overdag komen er steeds meer storingen binnen door kabelschade bij graafwerk. Elke schade kost ons geld en klanten zitten zonder stroom."
+    debrief: "Minder schade, minder kosten, minder uitval. En de aannemers werken veiliger."
+    goal: {type: solve, problem: digging_damage}
+    rewards: {xp: 1000, budget: 12000}
+    insights:
+      understand: "Hoe weet een aannemer waar onze kabels liggen, en klopt dat?"
+      reflect: "Welk probleem dat je eerder oploste hielp hier mee?"
+
+  - id: save_henks_knowledge
+    name: Henks kennis
+    kind: main
+    tier: 1
+    requires: {missions: [fix_digging_damage]}
+    briefing: "Henk werkt veertig jaar bij Voltana en kent elk oud kabelnet in Zuidmark. Over acht weken gaat hij met pensioen. Zorg dat zijn kennis niet met hem de deur uit gaat."
+    debrief: "Henk kan met een gerust hart met pensioen. Zijn kennis zit nu in het team."
+    fail: "Henk is met pensioen. Zijn kennis van de oude netten is met hem vertrokken."
+    goal: {type: solve, problem: knowledge_drain}
+    deadline_days: 56
+    rewards: {xp: 1200, budget: 10000}
+    insights:
+      understand: "Wat weet Henk dat nergens is opgeschreven?"
+      experiment: "Hoe weet je of een jonge monteur het nu zelf kan?"
+
+  - id: fix_grid_study_queue
+    name: De netstudie-wachtrij
+    kind: main
+    tier: 1
+    requires: {missions: [fix_digging_damage], belt: 2}
+    briefing: "Grootzakelijke klanten wachten maanden op een antwoord over capaciteit. Netstrategie zegt dat ze te weinig analisten hebben."
+    debrief: "Niet elke aanvraag heeft een volledige studie nodig. Nu is er weer ruimte voor de studies die er echt toe doen."
+    goal: {type: solve, problem: grid_study_queue}
+    rewards: {xp: 1200, budget: 12000}
+    insights:
+      understand: "Hoeveel van de studies leveren een ander antwoord op dan 'het past'?"
+
+  # ── Side missions: small, without the coach ────────────────────────────────
+  - id: walk_outages
+    name: Mee met de storingsdienst
+    kind: side
+    tier: 1
+    requires: {missions: [walk_connections]}
+    briefing: "Loop een dag mee met de storingsdienst, van melding tot herstel."
+    debrief: "Nu weet je wat er gebeurt als het licht uitgaat."
+    goal: {type: walk, stream: outages}
+    rewards: {xp: 200}
+
+  - id: walk_meters
+    name: Mee met de meterwisselaars
+    kind: side
+    tier: 1
+    requires: {missions: [walk_connections]}
+    briefing: "Loop mee met een meterwissel, van afspraak tot registratie."
+    debrief: "Je hebt gezien hoe een meter van de bus in de meterkast komt."
+    goal: {type: walk, stream: meters}
+    rewards: {xp: 200}
+
+  - id: fix_wrong_joint
+    name: De verkeerde mof in de bus
+    kind: side
+    tier: 1
+    requires: {missions: [walk_outages]}
+    briefing: "Storingen duren soms ruim langer dan vier uur. De monteurs zeggen dat het magazijn te laat levert."
+    debrief: "Wat in de bus hoort, ligt er nu ook."
+    goal: {type: solve, problem: wrong_joint_in_van}
+    rewards: {xp: 400, budget: 4000}
+
+  - id: fix_not_at_home
+    name: Niet thuis
+    kind: side
+    tier: 1
+    requires: {missions: [walk_meters]}
+    briefing: "De monteurs laten veel kaartjes 'helaas niet thuis' achter en de planning van meterwissels loopt uit."
+    debrief: "Klanten zijn thuis als ze weten wanneer we komen."
+    goal: {type: solve, problem: not_at_home}
+    rewards: {xp: 400, budget: 4000}
+
+  - id: fix_silent_meter
+    name: De zwijgende meter
+    kind: side
+    tier: 1
+    requires: {missions: [fix_not_at_home]}
+    briefing: "Nieuwe meters sturen geen standen en monteurs moeten terug naar adressen waar ze net waren."
+    debrief: "Een meter is pas klaar als hij praat."
+    goal: {type: solve, problem: silent_meter}
+    rewards: {xp: 400, budget: 4000}
+
+  - id: fix_permits_in_batches
+    name: Vergunningen in batches
+    kind: side
+    tier: 1
+    requires: {missions: [fix_custom_design]}
+    briefing: "Dossiers liggen dagen stil tussen ontwerp en vergunning, terwijl de gemeente haar termijn haalt."
+    debrief: "Wachten en werken lopen nu naast elkaar."
+    goal: {type: solve, problem: permits_in_batches}
+    rewards: {xp: 400, budget: 4000}
+
+  - id: fix_installer_not_ready
+    name: Meterkast niet gereed
+    kind: side
+    tier: 1
+    requires: {missions: [fix_custom_design]}
+    briefing: "Monteurs rijden terug zonder dat de aansluiting is gemaakt. Klussen worden steeds opnieuw ingepland."
+    debrief: "Er rijdt pas een monteur als de meterkast klaar is."
+    goal: {type: solve, problem: installer_not_ready}
+    rewards: {xp: 500, budget: 5000}
+
+  - id: look_at_grid_study
+    name: Een kijkje bij Netstrategie
+    kind: side
+    tier: 1
+    requires: {missions: [fix_status_callers]}
+    briefing: "Bij Netstrategie hangt een vol bord met netstudies. Ga kijken en zoek twee feiten over waarom het zo vol is."
+    debrief: "Goed gezien. Dit wordt later een grote klus."
+    goal: {type: investigate, problem: grid_study_queue, clues: 2}
+    rewards: {xp: 250}

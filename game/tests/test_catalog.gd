@@ -152,6 +152,13 @@ func test_the_game_knows_the_content_vocabulary() -> void:
 	assert_eq(ProblemDef.SEVERITIES, vocab["severities"])
 	assert_eq(ProblemDef.VISIBILITIES, vocab["visibilities"])
 	assert_eq(Pdca.CHECK_PASS, vocab["check_pass"])
+	assert_eq(MissionDef.KINDS, vocab["mission_kinds"])
+	var goals := MissionDef.GOALS.duplicate()
+	goals.sort()
+	assert_eq(goals, vocab["mission_goals"])
+	assert_eq(Missions.STAGES, vocab["coach_stages"])
+	assert_eq(Progression.BELTS.map(func(b: Dictionary) -> int: return b["xp"]),
+		vocab["belt_xp"].map(func(xp: float) -> int: return int(xp)), "JSON has no integers")
 	var properties: Dictionary = vocab["effect_properties"]
 	assert_eq(SimModifiers.PROPERTIES.keys().size(), properties.size())
 	for property: String in SimModifiers.PROPERTIES:
@@ -160,3 +167,21 @@ func test_the_game_knows_the_content_vocabulary() -> void:
 		var kind: String = spec["kind"]
 		var step_kind: String = ["work", "wait", "material"][spec["step_kind"]] if spec.has("step_kind") else ""
 		assert_eq({"kind": kind, "step_kind": step_kind}, properties.get(property), property)
+
+
+## The real campaign: it opens with the first main mission only, the coach
+## speaks Dutch about it, and walking the connections stream completes it.
+func test_the_campaign_opens_with_the_first_main_mission() -> void:
+	var c := Catalog.load_from()
+	var log := Missions.new(_region(c), c.missions, c.coach)
+	assert_eq(log.available().map(func(m: MissionDef) -> String: return m.id), ["walk_connections"])
+	assert_eq(log.accept("walk_connections"), "")
+	assert_eq(log.ask_coach()["text"], c.coach["stages"]["go_see"][0])
+	for step in log.region.net.stream("connections").steps:
+		if step.kind == SimStep.Kind.WORK:
+			log.region.use_tool("connections." + step.id, "shadow")
+	log.update()
+	assert_eq(log.status("walk_connections"), "completed")
+	assert_true(log.available().size() >= 3, "new missions unlock: the main story and side missions")
+	assert_eq(log.active("main").size(), 0)
+

@@ -188,6 +188,14 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 - ⬜ Catalogue problems that need a new mechanism first:
   - storing gooit de planning om: planned monteur work at 100%; needs the base to keep slack that the problem removes, or a planning-horizon mechanic;
   - KPI's die elkaar bevechten: overproduction, departments pushing work in; needs a release decision per department
+- ✅ Mission system (Merijn's design, CLAUDE.md §2): `MissionDef` + `Missions`.
+  - At most one main and three side missions; unlocks by mission and belt.
+  - Goals: walk / investigate / solve. Deadlines (Henk).
+  - A coach (Marleen Verhoef, Directeur Netbeheer regio Zuidmark) who asks Kata questions per stage and shares an insight every third ask, about the main mission only.
+  - Saves. The validator checks references, one mission per solved problem, a way in, and that every mission can unlock.
+  - Tier-1 campaign: 9 main missions (walk the stream → the bottleneck chain → Henk's knowledge with a 56-day deadline → the grid-study queue at green belt) and 8 side missions.
+- ⬜ Mission UI: briefing and debrief dialogues, the coach conversation, a quest log with 1 + 3 slots (Phase D)
+- ⬜ Missions beyond tier 1; story events (storm week, ACM visit, NTA 8120 audit) as missions
 - ✅ Problems can cost money (Merijn: "claims should count"): `cost_per_week` is charged to the budget every day while the problem is open, weakened by a working countermeasure; the Check shows cost before and after; saved. Graafschade €4,250 a week (~5 extra damages × ~€850 direct repair; Wibon evaluation: €38.8M over 46,799 damages in 2022). De revisieberg: daytime outages ×1.05 (estimate from Bouwend Nederland's ~60% "not known what lies where"; marked as an estimate in the content), €425 a week.
 - ✅ Evidence-based connection times (Merijn: "the industry norm"): norm back to 18 weeks (the former legal term, removed Feb 2025; the ACM still uses 18–22 weeks as reference). Real waits were ~40–44 weeks (Netbeheer Nederland 2024–2025), mostly from grid capacity, so the healthy base gets realistic external waits: customer approval 14 d, municipal consent 30 d, grid reinforcement 120 d for 15% of streets. Base: p50 ~7 weeks, ~92% within the norm. Customers call after nine weeks without news, every two weeks (32 calls a week in the base). Content tests and the report measure over 150–180 days so connections can settle.
 - ✅ Graafschade and the norm (review findings): outage arrival sources have ids, and a `demand` effect can target one (`outages.daytime`). Graafschade adds half again to daytime outages (a third of them), so the harm is monteurs pulled off planned work. De revisieberg also adds 10% daytime outages (outdated KLIC maps), so fixing GIS reduces digging damage. Connections are measured against a six-week promise (healthy base about 0.85–0.9 on time). Delegated approval fit 0.6 → 0.65.

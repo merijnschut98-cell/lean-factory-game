@@ -483,12 +483,117 @@ def check_problems(docs: dict[str, Any]) -> None:
                 _check_problem(p, f"{stem}.yaml: problem '{p['id']}'", net, cms)
 
 
+MISSION_KINDS = ["main", "side"]
+MISSION_GOALS = {"walk": {"stream"}, "investigate": {"problem", "clues"}, "solve": {"problem"}}
+COACH_STAGES = ["go_see", "understand", "experiment", "reflect"]  # Missions.STAGES
+BELT_XP = [0, 1200, 3500, 7000, 12000]  # Progression.BELTS
+MISSION_KEYS = {"id", "name", "kind", "tier", "requires", "briefing", "debrief", "fail", "goal", "deadline_days",
+                "rewards", "insights"}
+
+
+def validate_missions(doc: Any, source: str) -> None:
+    """The campaign: the coach's questions per stage and the missions (CLAUDE.md §2)."""
+    _require_strings(doc, [], source)
+    coach = doc.get("coach")
+    if not isinstance(coach, dict):
+        raise ContentError(f"{source}: 'coach' must be a mapping")
+    _known_keys(coach, {"name", "role", "stages"}, f"{source} coach")
+    _require_strings(coach, ["name", "role"], f"{source} coach")
+    stages = coach.get("stages")
+    if not isinstance(stages, dict) or sorted(stages) != sorted(COACH_STAGES):
+        raise ContentError(f"{source} coach: 'stages' must give questions for {', '.join(COACH_STAGES)}")
+    for stage in COACH_STAGES:
+        _string_list(stages, stage, f"{source} coach stages", allow_empty=False)
+    for m in _entries(doc, "missions", source):
+        where = f"{source}: mission '{m['id']}'"
+        _known_keys(m, MISSION_KEYS, where)
+        _one_of(m, "kind", MISSION_KINDS, where)
+        _number(m, "tier", where, 1, 4, integer=True)
+        _require_strings(m, ["briefing", "debrief"], where)
+        requires = m.get("requires", {})
+        if not isinstance(requires, dict):
+            raise ContentError(f"{where}: 'requires' must be a mapping")
+        _known_keys(requires, {"missions", "belt"}, f"{where} requires")
+        _string_list(requires, "missions", f"{where} requires")
+        _number(requires, "belt", f"{where} requires", 0, len(BELT_XP) - 1, integer=True, default=0)
+        goal = m.get("goal")
+        if not isinstance(goal, dict) or goal.get("type") not in MISSION_GOALS:
+            raise ContentError(f"{where}: 'goal' needs a type: {', '.join(MISSION_GOALS)}")
+        _known_keys(goal, {"type"} | MISSION_GOALS[goal["type"]], f"{where} goal")
+        _require_strings(goal, sorted(MISSION_GOALS[goal["type"]] - {"clues"}), f"{where} goal")
+        if goal["type"] == "investigate":
+            _number(goal, "clues", f"{where} goal", 1, integer=True)
+        if "deadline_days" in m:
+            _number(m, "deadline_days", where, 1, integer=True)
+            _require_strings(m, ["fail"], where)
+        rewards = m.get("rewards", {})
+        if not isinstance(rewards, dict):
+            raise ContentError(f"{where}: 'rewards' must be a mapping")
+        _known_keys(rewards, {"xp", "budget"}, f"{where} rewards")
+        for key in ("xp", "budget"):
+            _number(rewards, key, f"{where} rewards", 0, integer=True, default=0)
+        insights = m.get("insights", {})
+        if insights and m["kind"] != "main":
+            raise ContentError(f"{where}: only main missions get the coach's insights")
+        if not isinstance(insights, dict) or any(s not in COACH_STAGES or not isinstance(t, str) for s, t in insights.items()):
+            raise ContentError(f"{where}: 'insights' maps a coach stage to a text")
+
+
+def check_missions(docs: dict[str, Any]) -> None:
+    """Missions against problems and value streams, and the campaign as a
+    whole: no cycles, a way in, and every mission reachable."""
+    missions = {m["id"]: m for m in docs["missions"]["missions"]}
+    streams = {s["id"] for s in docs["value_streams"]["streams"]}
+    problems = {p["id"]: p for stem, doc in docs.items() if stem.startswith(PROBLEM_FILES) for p in doc["problems"]}
+    solved: dict[str, str] = {}
+    for m in missions.values():
+        where = f"missions.yaml: mission '{m['id']}'"
+        for req in m.get("requires", {}).get("missions", []):
+            if req not in missions:
+                raise ContentError(f"{where}: requires unknown mission {req!r}")
+        goal = m["goal"]
+        if goal["type"] == "walk" and goal["stream"] not in streams:
+            raise ContentError(f"{where}: unknown stream {goal['stream']!r}")
+        if "problem" in goal:
+            p = problems.get(goal["problem"])
+            if p is None:
+                raise ContentError(f"{where}: unknown problem {goal['problem']!r}")
+            keys = sum(1 for c in p["clues"] if c["key"])
+            if goal["type"] == "investigate" and goal["clues"] > keys:
+                raise ContentError(f"{where}: asks for {goal['clues']} key clues, the problem has {keys}")
+            if goal["type"] == "solve":
+                if goal["problem"] in solved:
+                    raise ContentError(f"{where}: problem {goal['problem']!r} is already solved in mission {solved[goal['problem']]!r}")
+                solved[goal["problem"]] = m["id"]
+    # Play the campaign forward: complete whatever is unlocked, earning only
+    # the missions' own XP (problems give more, so this is the hard case).
+    done: set[str] = set()
+    xp = 0
+    progressed = True
+    while progressed:
+        progressed = False
+        for m in missions.values():
+            req = m.get("requires", {})
+            belt_xp = BELT_XP[req.get("belt", 0)]
+            if m["id"] not in done and xp >= belt_xp and all(r in done for r in req.get("missions", [])):
+                done.add(m["id"])
+                xp += m.get("rewards", {}).get("xp", 0)
+                progressed = True
+    if not any(m["kind"] == "main" and not m.get("requires") for m in missions.values()):
+        raise ContentError("missions.yaml: no main mission is open from the start")
+    stuck = sorted(set(missions) - done)
+    if stuck:
+        raise ContentError(f"missions.yaml: missions that can never unlock (a cycle or too little XP): {', '.join(stuck)}")
+
+
 def vocabulary() -> dict[str, Any]:
     """The words content may use, written to game/data so a Godot test can
     check the game knows exactly the same ones."""
     return {
         "tools": sorted(TOOLS), "wastes": WASTES, "kpis": KPIS, "severities": SEVERITIES,
         "visibilities": VISIBILITIES, "check_pass": CHECK_PASS,
+        "mission_kinds": MISSION_KINDS, "mission_goals": sorted(MISSION_GOALS), "coach_stages": COACH_STAGES,
+        "belt_xp": BELT_XP,
         "effect_properties": {p: {"kind": k, "step_kind": sk or ""} for p, (k, sk, _) in sorted(EFFECT_PROPERTIES.items())},
     }
 
@@ -499,10 +604,11 @@ VALIDATORS: dict[str, Callable[[Any, str], None]] = {
     "game": validate_game,
     "value_streams": validate_value_streams,
     "countermeasures": validate_countermeasures,
+    "missions": validate_missions,
 }
 
 # Checks that need several files at once. Each gets {stem: document}.
-CROSS_CHECKS: list[Callable[[dict[str, Any]], None]] = [check_problems]
+CROSS_CHECKS: list[Callable[[dict[str, Any]], None]] = [check_problems, check_missions]
 
 
 def _validator_for(stem: str) -> Callable[[Any, str], None] | None:

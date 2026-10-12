@@ -96,7 +96,8 @@ Ports of the prototype's tested logic, adapted to a service organisation (plan: 
 | `pdca.ts`: effectiveness by maturity, five-dimension score | `Pdca` (effectiveness = maturity multiplier × the countermeasure's fit for the problem) |
 | `game.ts`: problem phases, A3, Check/Act, recurrence | `Region` + `ProblemState` + `Profile` |
 | `progression.ts`: belts | `Progression` |
-| missions, story | later (`rules/missions.gd`, `rules/story.gd`) |
+| missions | `MissionDef` + `Missions` (the campaign; see below) |
+| story | later (`rules/story.gd`) |
 
 How the rules differ from the factory:
 - **Places are value-stream steps** (`connections.design`). Walking another step of the same stream counts as scouting. A clue can sit upstream of where the problem shows.
@@ -105,6 +106,15 @@ How the rules differ from the factory:
 - **An experiment costs** improvement budget (€) and team hours. The hours become an availability effect (`do:<id>`) on that team while it runs: improvement work competes with daily work.
 - **Check compares** the stream's end-to-end KPIs and capacity before and after, plus the problem's own step (per-step daily statistics). A fix away from the constraint is flagged and scores low on flow impact.
 - **Results are codes and numbers** (reply `guarded`, lesson `mismatch`, note `impact_not_constraint`). The UI words them in Dutch.
+- **Problems can cost money** every week they are open (`cost_per_week`: damage repairs, claims), weakened by a working countermeasure; Region charges it to the budget day by day.
+
+**The campaign** (`rules/missions.gd`, content `missions.yaml`; design rules in CLAUDE.md §2):
+- Missions unlock by completed missions and the player's belt.
+- At most one main mission and three side missions are active (`Region.MAX_OPEN` is 4 to match).
+- A goal is `walk` (see every work step of a stream), `investigate` (find N key clues) or `solve` (resolve a problem). Accepting a mission activates its problem.
+- A deadline fails a mission for good (Henk retires).
+- The coach (a senior manager) only talks about the main mission. Its stage (`go_see`, `understand`, `experiment`, `reflect`) follows from the problem's PDCA phase; it asks the stage's Kata questions in turn, and every third time shares the mission's insight for that stage.
+- `Missions` holds the Region; the Region does not know about missions (no reference cycle). Saved with `to_dict`/`load_dict`; missions the content no longer has are dropped and reported.
 
 Problem effects are generic modifiers (`sim/modifiers.gd`):
 - An effect is `{target, property, value}`, e.g. `{target: "connections.design", property: "touch_time", value: 1.3}`. The property decides the kind of target and how effects combine: factors for times and demand; additions for FTR, `applies`, availability, headcount and reorder point. Results are clamped to sensible bounds.
