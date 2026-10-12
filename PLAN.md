@@ -1,6 +1,6 @@
 # Spanning — Build Plan
 
-*Spanning* (Dutch: voltage, and tension) is a 3D browser game where you practise Lean and continuous improvement at **Voltana Netbeheer**, a fictional Dutch regional grid operator (DSO) in the spirit of Enexis. It is built first for Merijn's own learning: practise Lean on realistic problems from the energy sector, including the less-known ones.
+*Spanning* (Dutch: voltage, and tension) is a 3D game (Godot 4, desktop + web export) where you practise Lean and continuous improvement at **Voltana Netbeheer**, a fictional Dutch regional grid operator (DSO) in the spirit of Enexis. It is built first for Merijn's own learning: practise Lean on realistic problems from the energy sector, including the less-known ones.
 
 Game text is **Dutch** (with sector terms). Code, comments and this plan stay in English.
 
@@ -10,9 +10,9 @@ Game text is **Dutch** (with sector terms). Code, comments and this plan stay in
 
 Pivot agreed 2026-10-12: from a hoverboard factory to a grid operator. The 3D factory prototype is archived in `archive/factory-3d/` (also git commit `b3a4c8c`). Its investigation / A3 / PDCA / bottleneck logic will be carried over and generalised.
 
-This is a multi-month project, built the right way: research → design (reviewed by Merijn) → engine → content → world → UI, in small tested increments. No publishing deadline.
+This is a multi-month project, built the right way: research → design (reviewed by Merijn) → engine → content → world → UI, in small tested increments. No publishing deadline. Built in **Godot 4 + GDScript** from the start (decided 2026-10-12).
 
-**Next task:** research how Dutch DSOs actually work and struggle, and write the Game Design Document (`docs/GDD.md`) for Merijn's review.
+**Next task:** Merijn reviews the GDD (shared Claude Doc "Spanning — Game Design Document"); meanwhile write `docs/ARCHITECTURE.md` for the Godot project.
 
 ---
 
@@ -56,16 +56,19 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 ---
 
 ## Phase 0 — Research and Game Design Document 🔧
-- ⬜ Domain research: DSO value streams, the well-known and less-known problems, realistic numbers (lead times, legal norms, outage minutes, staffing), sources noted
-- ⬜ `docs/GDD.md`: core loop, player role, world, value streams and their steps, simulation model, problem/clue/A3 design, progression, UI flows, art direction
-- ⬜ Merijn reviews the GDD → decisions recorded below
-- ⬜ Architecture note: module boundaries (content / sim / world / ui), save format, testing strategy
+- ✅ Domain research round 1: value streams, well-known and less-known problems, norms and numbers, sources (findings also in `docs/energy-notes.md`)
+- ⬜ Verify key figures against the source pages themselves (this environment's network policy blocks the news sites; only search extracts were available)
+- ✅ GDD drafted as a shared Claude Doc: vision, core loop, world, value streams, simulation model, problem solving, catalogue v1 (18 problems), countermeasures, progression, UI, art, roadmap, open questions
+- ⬜ Merijn reviews the GDD → decisions recorded below → synced to `docs/GDD.md`
+- ⬜ `docs/ARCHITECTURE.md` for the Godot project: scenes vs pure-logic scripts, data format (YAML → Godot resources or JSON), headless test runner, save format, CI export builds
+- ✅ Weekly energy-sector digest for Merijn: notes in `docs/energy-notes.md`, routine every Friday 15:47 (Amsterdam)
 
-## Phase A — Engine for work-order flow ⬜
-- ⬜ `sim/network.ts`: value streams of steps; people pools (capacity, availability, priority, preemption); external delay steps (permits, customer); material stock with reorder point and supplier lead time; first-time-right with rework loops back to earlier steps; arrivals with variability; KPIs per stream (throughput, backlog, lead time, on-time vs norm, FTR)
+## Phase A — Engine for work-order flow (Godot, GDScript) ⬜
+- ⬜ Godot 4 project skeleton, headless test runner, CI export (Windows/Linux/web) via GitHub Actions
+- ⬜ `sim/network.gd` (pure logic, no nodes): value streams of steps; people pools (capacity, availability, priority, preemption); external delay steps (permits, customer); material stock with reorder point and supplier lead time; first-time-right with rework loops back to earlier steps; arrivals with variability; KPIs per stream (throughput, backlog, lead time, on-time vs norm, FTR)
 - ⬜ End-to-end capacity and constraint per value stream (generalised from the factory `lineCapacity`)
 - ⬜ Generic problem effects: target a step, pool, stock item or stream; modify work time, FTR, availability, delay, demand, people
-- ⬜ Port investigation / A3 / PDCA / scoring from the factory engine; tools renamed for a service organisation
+- ⬜ Port investigation / A3 / PDCA / scoring from the factory prototype (`archive/factory-3d/src/sim/`) to GDScript; tools renamed for a service organisation
 - ⬜ Tests for flow, preemption, rework, stockouts, capacity, PDCA loop, save/load
 
 ## Phase B — Content (Dutch) ⬜
@@ -98,15 +101,13 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 ## Phase H — AI coach and free-text conversations ⬜
 - ⬜ Optional Claude-powered conversations with NPCs, grounded in each problem's hidden facts, so "asking the right question" can be fully free text
 
-## Phase I — Godot desktop port (optional) ⬜
-- ⬜ Port rendering to Godot 4; reuse simulation and content
-
 ---
 
 ## Decisions Made
+- **GDD answers from Merijn (2026-10-12)**: company name Voltana Netbeheer stays; the town needs a shorter, modern name; a narrative arc with side quests and some open-world freedom; improvements cost both euros and team hours; model ACM regulation and ISO / NTA 8120 asset management; no own energy-sector cases, so content is research-based; sessions of 15–40 minutes; desktop first
 - **Pace (2026-10-12)**: multi-month project; design first, reviewed increments, no publishing deadline
 - **Grid operator setting (2026-10-12)**: fictional DSO "Voltana Netbeheer", campus + one town; player is CI-lead; game text Dutch
-- **3D web edition (2026-10-12)**: Three.js + TypeScript in `web/`, playable from a link. Simulation and content are engine-agnostic so a later Godot port only replaces rendering
+- **Engine: Godot 4 + GDScript from the start (2026-10-12)**, at Merijn's suggestion. The goal is a desktop game, and porting a TypeScript simulation later would mean rewriting all logic. GDScript (not C#) keeps a web export possible. Godot runs headless here, so logic tests run and scenes can be screenshotted (Xvfb + OpenGL compatibility renderer, verified with 4.4.1). The Three.js prototype in `web/` is superseded (kept in `archive/factory-3d/`)
 - **Problem solving is action-based, not multiple choice (2026-10-12)**: clues are earned through tools and questions; the player writes the A3; the simulation judges the countermeasure
 - **Bottleneck first (2026-10-12)**: Check always shows end-to-end capacity per value stream; improving a non-constraint is called out
 - **Shared resources (2026-10-12)**: monteurs are one pool across streams with priorities, so outage-driven disruption of planned work emerges from the simulation
@@ -490,10 +491,10 @@ AI is introduced last so the generator has maximum reference material: all four 
 
 ### Phase 10 — 3D Web Edition (factory prototype) ⏸ BACKED UP
 
-Built 2026-10-12 in `web/` and tagged `factory-3d-backup`. Kept as a reference and fallback.
+Built 2026-10-12 as `web/` (git commit `b3a4c8c`), now archived in `archive/factory-3d/`. Kept as a reference; the game is rebuilt in Godot 4.
 
-- ✅ Content loader for the shared YAML with validation (`web/src/content/`)
-- ✅ Unit-level flow simulation: push vs CONWIP release, breakdowns, scrap, WIP piles, line capacity and constraint (`web/src/sim/flow.ts`)
+- ✅ Content loader for the shared YAML with validation (`archive/factory-3d/src/content/`)
+- ✅ Unit-level flow simulation: push vs CONWIP release, breakdowns, scrap, WIP piles, line capacity and constraint (`archive/factory-3d/src/sim/flow.ts`)
 - ✅ Investigation-by-doing: gemba tools reveal clues (`tool:` tags in problem YAML), deeper 5-Whys clues unlock progressively, operator questions (open, closed, blaming) with a trust mechanic
 - ✅ A3: name the waste (TIMWOODS, `waste:` tag on every problem), link evidence, choose the root cause, countermeasure and prediction; Check compares before/after, including whole-line capacity
 - ✅ PDCA score with five dimensions, including flow impact (fixing a non-bottleneck scores low)
@@ -504,7 +505,7 @@ Built 2026-10-12 in `web/` and tagged `factory-3d-backup`. Kept as a reference a
 ---
 
 ### Decisions Made
-- **3D web edition (2026-10-12)**: Three.js + TypeScript in `web/`, playable from a link (no install). Simulation and content are kept engine-agnostic so a later Godot 4 desktop port only replaces rendering
+- **3D web edition (2026-10-12)**: Three.js + TypeScript prototype, superseded the same day by the decision to build in Godot 4 (see the Spanning plan above); archived in `archive/factory-3d/`
 - **Problem solving is action-based, not multiple choice (2026-10-12)**: clues are earned through gemba tools and good questions; the player writes the A3; the simulation judges the countermeasure
 - **Bottleneck first (2026-10-12)**: Check always shows end-to-end capacity; improving a non-constraint is called out as no real gain
 - **Learning-first design**: game is a teaching tool for lean / six sigma / digitalization. Mistakes must be survivable and recoverable; NPC decision forks are the primary learning scaffold; concepts are introduced in-fiction before mechanics (see Learning Pillars)

@@ -10,5 +10,6 @@ waste/evidence/root cause/prediction, PDCA scoring incl. flow impact, and the 3D
 world (procedural characters, stations, conveyors, WIP stacks). UI panels were
 unfinished, so it is not playable.
 
-To run it again, restore it into place: `git checkout b3a4c8c -- web`, then
+The live `web/` folder was removed once the project moved to Godot 4. To run the
+prototype again, restore it from history: `git checkout b3a4c8c -- web`, then
 `cd web && npm install && npx vitest run` (it reads the factory content in `data/`).
