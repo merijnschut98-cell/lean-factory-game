@@ -6,13 +6,13 @@ Game text is **Dutch** (with sector terms). Code, comments and this plan stay in
 
 ---
 
-## Current Status: Phase A — Engine (Godot) 🔧 steps 1–4 done
+## Current Status: Phase A — Engine (Godot) 🔧 steps 1–4b done
 
 Pivot agreed 2026-10-12: from a hoverboard factory to a grid operator. The 3D factory prototype is archived in `archive/factory-3d/` (also git commit `b3a4c8c`). Its investigation / A3 / PDCA / bottleneck logic will be carried over and generalised.
 
 This is a multi-month project, built the right way: research → design (reviewed by Merijn) → engine → content → world → UI, in small tested increments. No publishing deadline. Built in **Godot 4 + GDScript** from the start (decided 2026-10-12).
 
-**Next task:** Phase A step 4b — structural levers for the flow countermeasures (WIP limit, reserved outage capacity, frozen planning window, parallel steps).
+**Next task:** Phase A step 5 — port investigation / A3 / PDCA / scoring from the factory prototype, with time-windowed per-step statistics.
 
 ---
 
@@ -90,7 +90,13 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
   - `Network.set_effects` / `clear_effects` (atomic: an invalid list changes nothing); `SimModifiers.scaled` for partial effectiveness (step 5); `sources()` for saves (step 6).
   - Lesson test on real content: 30% faster design moves the connections constraint from Werkvoorbereiding to Revisie & GIS, for only ~2 more connections a week. 60 Godot tests.
 - ✅ Simplify pass on step 4: `demand` fans out to each arrival source's `per_week` (no separate demand factor for readers to remember), `ValueStream.step()` lookup, one accumulator per property in `_apply`, `Network.effects()` as the single read path, a snapshot-based restore test over every property and a test that every property names a real field
-- ⬜ Step 4b: structural levers, so the tier-3 flow countermeasures can be simulated, not only parameter effects: WIP limit per step or pool (orders wait upstream), reserved capacity (people of a pool kept for a stream, e.g. outage reserve), frozen planning window, steps in parallel instead of in sequence (permits during design)
+- ✅ Step 4b (plan: `docs/superpowers/plans/2026-10-12-phase-a-step-4b-structural-levers.md`): structural levers, switchable by countermeasures through effects (new SET operation: the most recent source wins).
+  - Reserved capacity: pool `reserve: {stream, people}`; idle reserved people take no other work; `Capacity` subtracts the idle reserve from other streams' spare hours.
+  - Frozen planning window: `preempts` as a lever.
+  - Cost of interruption: `interrupt_to` + `interrupt_wait_days` (connections execution → back to planning, 2 days for a new appointment).
+  - Batching (`batch_days`) and waits in parallel (`starts_with`) for problem 8.
+  - Validator covers all of it, incl. interruption loops through material. 70 Godot tests; with the levers off, results are unchanged.
+- ⬜ Decision for Merijn: what does work in progress *cost* in the simulation? Today an order loses nothing by waiting and people work one order at a time, so a WIP limit would only move the queue upstream. Options: multitasking overhead (touch time grows with open dossiers per person), dossiers going stale (FTR drops or a quote/permit expires after N days), or failure demand (late orders cause status calls). Needed for WIP limits and heijunka (then implement both)
 - ⬜ Decision for Phase B: are the content values the healthy process (with the starting problems switched on as active effects at game start), or the starting state (with countermeasures improving on it)? The modifier layer supports both; it decides how problem effects are authored
 - ⬜ Step 5: port investigation / A3 / PDCA / scoring from the factory prototype (`archive/factory-3d/src/sim/`) to GDScript; tools renamed for a service organisation; Check compares stream KPIs and capacity before/after. Design point: time-windowed per-step statistics (queue time, touch time, rework) for the before/after comparison and the value stream map
 - ⬜ Step 6: save/load of the simulation and rules state (JSON, versioned, validated)

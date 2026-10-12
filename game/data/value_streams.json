@@ -249,6 +249,8 @@
     {
      "ftr": 0.85,
      "id": "execution",
+     "interrupt_to": "planning",
+     "interrupt_wait_days": 2,
      "kind": "work",
      "name": "Uitvoering",
      "pool": "monteurs",

@@ -126,6 +126,8 @@ def _validate_step(step: dict, where: str, pools: set[str], stock: set[str], ste
         raise ContentError(f"{where}: 'kind' must be one of {sorted(STEP_KINDS)}")
     if "applies" in step:
         _number(step, "applies", where, 0.01, 1)
+    if kind != "wait" and ("starts_with" in step or "batch_days" in step):
+        raise ContentError(f"{where}: only a wait step can start in parallel or in batches")
     if kind == "work":
         served_by = step.get("pool")
         served_by = served_by if isinstance(served_by, list) else [served_by]
@@ -134,14 +136,19 @@ def _validate_step(step: dict, where: str, pools: set[str], stock: set[str], ste
                 raise ContentError(f"{where}: unknown pool {pool!r}")
         _number(step, "touch_hours", where, 0.05)
         _number(step, "ftr", where, 0.05, 1)
-        target = step.get("rework_to", step["id"])
-        if target not in step_ids or step_ids.index(target) > step_ids.index(step["id"]):
-            raise ContentError(f"{where}: 'rework_to' must name this step or an earlier one (got {target!r})")
-        if "rework_wait_days" in step:
-            _number(step, "rework_wait_days", where, 0)
+        for key in ("rework_to", "interrupt_to"):
+            target = step.get(key, step["id"])
+            if target not in step_ids or step_ids.index(target) > step_ids.index(step["id"]):
+                raise ContentError(f"{where}: '{key}' must name this step or an earlier one (got {target!r})")
+        for key in ("rework_wait_days", "interrupt_wait_days"):
+            if key in step:
+                _number(step, key, where, 0)
     elif kind == "wait":
         _number(step, "days", where, 0)
         _number(step, "spread", where, 0, 0.95, default=0)
+        _number(step, "batch_days", where, 0, default=0)
+        if "starts_with" in step and step["starts_with"] not in step_ids[:step_ids.index(step["id"])]:
+            raise ContentError(f"{where}: 'starts_with' must name an earlier step (got {step['starts_with']!r})")
     else:
         if step.get("item") not in stock:
             raise ContentError(f"{where}: unknown stock item {step.get('item')!r}")
@@ -156,6 +163,15 @@ def validate_value_streams(doc: Any, source: str) -> None:
         _number(pool, "headcount", where, 1, integer=True)
         _number(pool, "availability", where, 0.1, 1)
         _blocks(pool, "schedule", where)
+    streams = _entries(doc, "streams", source)
+    stream_ids = {s["id"] for s in streams}
+    for pool in pools:
+        if "reserve" in pool:
+            where = f"{source}: pool '{pool['id']}' reserve"
+            reserve = pool["reserve"] if isinstance(pool["reserve"], dict) else {}
+            if reserve.get("stream") not in stream_ids:
+                raise ContentError(f"{where}: unknown stream {reserve.get('stream')!r}")
+            _number(reserve, "people", where, 1, pool["headcount"], integer=True)
     stock = _entries(doc, "stock", source)
     for item in stock:
         where = f"{source}: stock '{item['id']}'"
@@ -164,7 +180,7 @@ def validate_value_streams(doc: Any, source: str) -> None:
         _number(item, "order_quantity", where, 1, integer=True)
         _number(item, "lead_days", where, 0)
     pool_ids, stock_ids = {p["id"] for p in pools}, {s["id"] for s in stock}
-    for stream in _entries(doc, "streams", source):
+    for stream in streams:
         where = f"{source}: stream '{stream['id']}'"
         for arrival in _blocks(stream, "arrivals", where):
             _number(arrival, "per_week", f"{where} arrivals", 0)
@@ -184,15 +200,17 @@ def validate_value_streams(doc: Any, source: str) -> None:
 
 
 def _check_rework_loops(steps: list[dict], step_ids: list[str], where: str) -> None:
-    """A rework loop must not pass a material step: every retry would take stock again."""
+    """A loop back (rework, or re-planning after an interruption) must not pass
+    a material step: every pass would take stock again."""
     for i, step in enumerate(steps):
         if step["kind"] != "work":
             continue
-        start = step_ids.index(step.get("rework_to", step["id"]))
-        for between in steps[start:i]:
-            if between["kind"] == "material":
-                raise ContentError(f"{where} step '{step['id']}': rework to '{steps[start]['id']}' "
-                                   f"passes '{between['id']}' and takes material twice")
+        for key in ("rework_to", "interrupt_to"):
+            start = step_ids.index(step.get(key, step["id"]))
+            for between in steps[start:i]:
+                if between["kind"] == "material":
+                    raise ContentError(f"{where} step '{step['id']}': {key} '{steps[start]['id']}' "
+                                       f"passes '{between['id']}' and takes material twice")
 
 
 VALIDATORS: dict[str, Callable[[Any, str], None]] = {

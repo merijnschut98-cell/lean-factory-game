@@ -38,11 +38,15 @@ func test_clearing_restores_base_exactly() -> void:
 	var net := _net()
 	var effects: Array = []
 	for property: String in SimModifiers.PROPERTIES:
-		var kind: String = SimModifiers.PROPERTIES[property]["kind"]
-		var target: String = {"step": "connections.intake", "pool": "crew", "stock": "kit", "stream": "connections"}[kind]
-		if property == "wait_time":
+		var spec: Dictionary = SimModifiers.PROPERTIES[property]
+		var target: String = {"step": "connections.intake", "pool": "crew", "stock": "kit", "stream": "connections",
+			"arrivals": "connections"}[spec["kind"]]
+		if spec.get("step_kind") == SimStep.Kind.WAIT:
 			target = "connections.permit"
-		effects.append(NetFixture.effect(target, property, 1.37 if SimModifiers.PROPERTIES[property]["op"] == SimModifiers.Op.MUL else -0.3))
+		var value: Variant = {SimModifiers.Op.MUL: 1.37, SimModifiers.Op.ADD: 2}.get(spec["op"])
+		if spec["op"] == SimModifiers.Op.SET:
+			value = {"reserve_for": "congestion", "preempts": true, "starts_with": "intake"}[property]
+		effects.append(NetFixture.effect(target, property, value))
 	var before := _fields(net, effects)
 	assert_eq(net.set_effects("a", effects), "")
 	assert_ne(_fields(net, effects), before)
@@ -54,7 +58,7 @@ func test_clearing_restores_base_exactly() -> void:
 func test_every_property_names_a_real_field() -> void:
 	var net := _net()
 	var objects := {"step": _step(net, "connections", "intake"), "pool": net.pools["crew"], "stock": net.stock["kit"],
-		"stream": net.stream("connections").arrivals[0]}
+		"stream": net.stream("connections"), "arrivals": net.stream("connections").arrivals[0]}
 	for property: String in SimModifiers.PROPERTIES:
 		var spec: Dictionary = SimModifiers.PROPERTIES[property]
 		assert_true(spec["field"] in objects[spec["kind"]], "%s → %s" % [property, spec["field"]])

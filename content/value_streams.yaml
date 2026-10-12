@@ -15,6 +15,13 @@
 # progress. Work still in progress at the end of a shift is handed over: it
 # goes back to the front of its queue for the next shift.
 #
+# Levers (optional; countermeasures can also switch them through effects):
+#   pool `reserve: {stream, people}`  people held for one stream (outage reserve)
+#   work step `interrupt_to` (+ `interrupt_wait_days`)  where an order goes when
+#             urgent work interrupts it; without it the order simply resumes
+#   wait step `batch_days`  requests go out in batches (e.g. weekly)
+#   wait step `starts_with: <earlier step>`  the wait runs in parallel from there
+#
 # Step kinds:
 #   work      people from `pool` spend `touch_hours`; `pool` may list several
 #             pools (the monteurs by day, the on-call crew at night); `ftr` =
@@ -169,6 +176,8 @@ streams:
         ftr: 0.85
         rework_to: planning   # meterkast niet gereed: replan after the installer is ready
         rework_wait_days: 5
+        interrupt_to: planning  # pulled away to an outage: the job needs a new appointment
+        interrupt_wait_days: 2
       - id: commissioning
         name: Inbedrijfname & meter
         kind: work

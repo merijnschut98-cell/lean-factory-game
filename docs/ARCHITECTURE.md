@@ -77,7 +77,7 @@ Generalises the factory prototype's `FlowSim` (`archive/factory-3d/src/sim/flow.
 
 **Shared people.** The monteurs serve connections, meters and outages. Queue order is stream priority, then longest waiting. Only a stream with `preempts` (outages) interrupts work in progress; the interrupted order goes back to the front of its queue. The same happens at the end of a shift (a *handover* event), so the next shift or another pool serving the step picks it up, e.g. the on-call crew hands a fault over to the monteurs at 07:00.
 
-The network skips idle stretches by jumping to the next moment anything can happen: an arrival, the end of a wait, a delivery, a new day, or a shift starting for a pool with queued work. A test proves the results are identical to stepping every tick. A simulated year of the four streams takes about 1.3 s.
+The network skips idle stretches by jumping to the next moment anything can happen: an arrival, the end of a wait, a delivery, a new day, or a shift starting for a pool with queued work. A test proves the results are identical to stepping every tick. A simulated year of the four streams takes about 1.4 s.
 
 Time runs in fixed simulated steps, independent of the frame rate: `Game` advances `n` steps per frame based on the speed setting (pause, 1×, 4×, 16×) and pauses at the dagstart.
 
@@ -95,6 +95,7 @@ Ports of the prototype's tested logic, adapted to a service organisation:
 Problem effects are generic modifiers (`sim/modifiers.gd`):
 - An effect is `{target, property, value}`, e.g. `{target: "connections.design", property: "touch_time", value: 1.3}`. The property decides the kind of target and how effects combine: factors for times and demand; additions for FTR, `applies`, availability, headcount and reorder point. Results are clamped to sensible bounds.
 - Effects are grouped by source (`problem:…`, `cm:…`, `event:…`), so a problem's effect can be switched off when it is solved, a countermeasure's can be added, and both can be saved and compared. `SimModifiers.scaled` gives partial strength (countermeasure effectiveness).
+- Levers change how work flows rather than how fast (SET: the most recent source wins): `reserve` / `reserve_for` (people held for one stream), `preempts` (frozen planning window), `batch_days` and `starts_with` (a wait in batches, or in parallel from an earlier step). Content can also set them; `interrupt_to` (where interrupted work goes back to) is content only.
 - Content values stay the base. Every change recomputes the touched fields from base and writes the effective value into the plain sim field, so the tick loop and `Capacity` stay free of lookups. Effects apply to work from then on; attendance follows a headcount change the next day.
 
 ## Content pipeline

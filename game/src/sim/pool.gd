@@ -11,6 +11,9 @@ var schedule: WeekSchedule
 ## People present today (re-rolled each morning from `availability`).
 var present := 0
 var busy: Array[WorkOrder] = []
+## People held for one stream (an outage reserve): while idle they take no other work.
+var reserve := 0
+var reserve_for := ""
 ## Work steps (in any stream) served by this pool. Steps do not point back.
 var steps: Array[SimStep] = []
 
@@ -21,6 +24,18 @@ func is_on_shift(t: int) -> bool:
 
 func free_people() -> int:
 	return present - busy.size()
+
+
+## People free to start work of `stream` now: idle reserved people only count
+## for the stream they are held for.
+func free_for(stream: ValueStream) -> int:
+	if reserve == 0 or stream.id == reserve_for:
+		return free_people()
+	var reserved_busy := 0
+	for order in busy:
+		if order.stream.id == reserve_for:
+			reserved_busy += 1
+	return free_people() - maxi(0, mini(reserve, present) - reserved_busy)
 
 
 func roll_presence(rng: Rng) -> void:

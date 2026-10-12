@@ -90,17 +90,21 @@ static func analyse(net: Network) -> Dictionary:
 		var available := pool.hours_per_week()
 		pools[pool.id] = {
 			"available": available,
+			# People-hours held for one stream (an outage reserve).
+			"held": mini(pool.reserve, pool.headcount) * pool.availability * pool.schedule.hours(),
+			"held_for": pool.reserve_for,
 			"load": total.get(pool.id, 0.0),
 			"utilisation": total.get(pool.id, 0.0) / available if available > 0.0 else INF,
 		}
 	var result_streams := {}
 	for s in net.streams:
-		result_streams[s.id] = _stream_constraint(s, loads[s.id], visits[s.id], pools)
+		result_streams[s.id] = _stream_constraint(s, loads, visits[s.id], pools)
 	return {"pools": pools, "streams": result_streams}
 
 
-static func _stream_constraint(s: ValueStream, own: Dictionary[String, float], visits: PackedFloat64Array,
+static func _stream_constraint(s: ValueStream, loads: Dictionary, visits: PackedFloat64Array,
 		pools: Dictionary) -> Dictionary:
+	var own: Dictionary[String, float] = loads[s.id]
 	var worst := ""
 	var capacity := INF
 	var per_week := s.per_week()
@@ -111,7 +115,11 @@ static func _stream_constraint(s: ValueStream, own: Dictionary[String, float], v
 		# Orders per week this stream could push through the pool, given the others' load.
 		var hours_per_order: float = own[pool_id] / per_week if per_week > 0.0 else 0.0
 		if hours_per_order > 0.0:
-			var spare: float = p["available"] - (p["load"] - own[pool_id])
+			var others: float = p["load"] - own[pool_id]
+			if p["held"] > 0.0 and p["held_for"] != s.id and loads.has(p["held_for"]):
+				# Reserved people who are idle do no other work.
+				others += maxf(0.0, p["held"] - loads[p["held_for"]].get(pool_id, 0.0))
+			var spare: float = p["available"] - others
 			capacity = minf(capacity, maxf(0.0, spare) / hours_per_order)
 	var step_id := ""
 	var step_load := -1.0

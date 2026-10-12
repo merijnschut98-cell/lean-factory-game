@@ -3,7 +3,9 @@ extends RefCounted
 ## Problem and countermeasure effects on top of the content's base values.
 ##
 ## An effect is {target, property, value}, e.g. {target: "connections.design",
-## property: "touch_time", value: 1.3}. Effects are grouped by source
+## property: "touch_time", value: 1.3}. Factors multiply, additions add, and
+## levers (SET: an outage reserve, a frozen planning window, permits in
+## parallel) take the value of the most recently set source. Effects are grouped by source
 ## ("problem:custom_design", "cm:standard_designs"), so each can be switched
 ## off, saved and compared. Every change recomputes the touched fields from
 ## their untouched base values (clamp(base × factors + additions)) and writes
@@ -14,11 +16,12 @@ extends RefCounted
 ## Holds no reference to the Network (that would be a cycle): the Network
 ## passes itself in. Read the active effects through Network.effects().
 
-enum Op { ADD, MUL }
+enum Op { ADD, MUL, SET }
 
 ## What each property changes, how effects combine, and the bounds.
-## `step_kind` limits a step property to the steps that have that field.
-## `demand` scales every arrival source of the stream.
+## `step_kind` limits a step property to the steps that have that field;
+## `unit` converts the value (days) to the field (minutes); `valid` names the
+## check for a lever's value. `demand` scales every arrival source of the stream.
 const PROPERTIES := {
 	"touch_time": {"kind": "step", "step_kind": SimStep.Kind.WORK, "field": "touch_minutes", "op": Op.MUL, "min": 1.0},
 	"ftr": {"kind": "step", "step_kind": SimStep.Kind.WORK, "field": "ftr", "op": Op.ADD, "min": 0.05, "max": 1.0},
@@ -28,7 +31,14 @@ const PROPERTIES := {
 	"headcount": {"kind": "pool", "field": "headcount", "op": Op.ADD, "min": 0.0},
 	"lead_time": {"kind": "stock", "field": "lead_minutes", "op": Op.MUL, "min": 0.0},
 	"reorder_point": {"kind": "stock", "field": "reorder_point", "op": Op.ADD, "min": 0.0},
-	"demand": {"kind": "stream", "field": "per_week", "op": Op.MUL, "min": 0.0},
+	"demand": {"kind": "arrivals", "field": "per_week", "op": Op.MUL, "min": 0.0},
+	"reserve": {"kind": "pool", "field": "reserve", "op": Op.ADD, "min": 0.0},
+	"reserve_for": {"kind": "pool", "field": "reserve_for", "op": Op.SET, "valid": "stream"},
+	"preempts": {"kind": "stream", "field": "preempts", "op": Op.SET, "valid": "bool"},
+	"batch_days": {"kind": "step", "step_kind": SimStep.Kind.WAIT, "field": "batch_minutes", "op": Op.ADD,
+		"min": 0.0, "unit": SimCalendar.MINUTES_PER_DAY},
+	"starts_with": {"kind": "step", "step_kind": SimStep.Kind.WAIT, "field": "starts_with", "op": Op.SET,
+		"valid": "earlier_step"},
 }
 
 ## source → its effects.
@@ -60,12 +70,16 @@ func clear_source(net: Network, source: String) -> void:
 
 
 ## The effects at strength `k` (0 = none, 1 = full), e.g. a problem partly
-## removed by a countermeasure: a factor f becomes 1 + (f − 1)·k, an addition v becomes v·k.
+## removed by a countermeasure: a factor f becomes 1 + (f − 1)·k, an addition
+## v becomes v·k. A lever is in place or not, so it stays as it is.
 static func scaled(effects: Array, k: float) -> Array:
 	return effects.map(func(e: Dictionary) -> Dictionary:
 		var out := e.duplicate()
-		var v: float = e["value"]
-		out["value"] = 1.0 + (v - 1.0) * k if PROPERTIES[e["property"]]["op"] == Op.MUL else v * k
+		match PROPERTIES[e["property"]]["op"]:
+			Op.MUL:
+				out["value"] = 1.0 + (e["value"] - 1.0) * k
+			Op.ADD:
+				out["value"] = e["value"] * k
 		return out)
 
 
@@ -80,6 +94,9 @@ static func targets(net: Network, property: String, target: String) -> Array:
 			return [net.stock[target]] if net.stock.has(target) else []
 		"stream":
 			var s := net.stream(target)
+			return [s] if s != null else []
+		"arrivals":
+			var s := net.stream(target)
 			return s.arrivals.duplicate() if s != null else []
 	var parts := target.split(".")
 	var owner := net.stream(parts[0]) if parts.size() == 2 else null
@@ -88,20 +105,39 @@ static func targets(net: Network, property: String, target: String) -> Array:
 
 
 func _check(net: Network, e: Variant) -> String:
-	if not (e is Dictionary and e.get("target") is String and e.get("property") is String
-			and (e.get("value") is float or e.get("value") is int)):
-		return "an effect needs a target, a property and a numeric value (got %s)" % [e]
+	if not (e is Dictionary and e.get("target") is String and e.get("property") is String and e.has("value")):
+		return "an effect needs a target, a property and a value (got %s)" % [e]
 	var spec: Dictionary = PROPERTIES.get(e["property"], {})
 	if spec.is_empty():
 		return "unknown property %s" % e["property"]
-	if spec["op"] == Op.MUL and e["value"] <= 0:
-		return "%s is a factor and must be above 0" % e["property"]
 	var found := targets(net, e["property"], e["target"])
 	if found.is_empty():
-		return "no %s called %s" % [spec["kind"], e["target"]]
+		return "no %s called %s" % ["stream" if spec["kind"] == "arrivals" else spec["kind"], e["target"]]
 	if spec.has("step_kind") and (found[0] as SimStep).kind != spec["step_kind"]:
 		return "step %s has no %s" % [e["target"], e["property"]]
+	var value: Variant = e["value"]
+	if spec["op"] == Op.SET:
+		return _check_lever(net, spec["valid"], e["target"], value)
+	if not (value is float or value is int):
+		return "%s needs a number (got %s)" % [e["property"], value]
+	if spec["op"] == Op.MUL and value <= 0:
+		return "%s is a factor and must be above 0" % e["property"]
 	return ""
+
+
+func _check_lever(net: Network, valid: String, target: String, value: Variant) -> String:
+	match valid:
+		"bool":
+			return "" if value is bool else "needs true or false (got %s)" % [value]
+		"stream":
+			return "" if value is String and (value == "" or net.stream(value) != null) else "no stream called %s" % [value]
+	# earlier_step: "" (in sequence) or a step before the target in the same stream.
+	var parts := target.split(".")
+	var steps := net.stream(parts[0]).steps
+	var at := steps.find(net.stream(parts[0]).step(parts[1]))
+	if value is String and (value == "" or steps.slice(0, at).any(func(s: SimStep) -> bool: return s.id == value)):
+		return ""
+	return "%s can only start with an earlier step (got %s)" % [target, value]
 
 
 ## Combine every source's effects per field (factors multiply, additions
@@ -115,15 +151,21 @@ func _apply(net: Network) -> void:
 			for obj: Object in targets(net, e["property"], e["target"]):
 				_base.get_or_add(obj, {}).get_or_add(spec["field"], obj.get(spec["field"]))
 				var by_property: Dictionary = combined.get_or_add(obj, {})
-				if spec["op"] == Op.MUL:
-					by_property[e["property"]] = by_property.get(e["property"], 1.0) * e["value"]
-				else:
-					by_property[e["property"]] = by_property.get(e["property"], 0.0) + e["value"]
+				match spec["op"]:
+					Op.MUL:
+						by_property[e["property"]] = by_property.get(e["property"], 1.0) * e["value"]
+					Op.ADD:
+						by_property[e["property"]] = by_property.get(e["property"], 0.0) + e["value"] * spec.get("unit", 1)
+					Op.SET:
+						by_property[e["property"]] = e["value"]
 	for obj in _base:
 		for field: String in _base[obj]:
 			obj.set(field, _base[obj][field])
 		for property: String in combined.get(obj, {}):
 			var spec: Dictionary = PROPERTIES[property]
+			if spec["op"] == Op.SET:
+				obj.set(spec["field"], combined[obj][property])
+				continue
 			var base: Variant = _base[obj][spec["field"]]
 			var change: float = combined[obj][property]
 			var value := float(base) * change if spec["op"] == Op.MUL else float(base) + change

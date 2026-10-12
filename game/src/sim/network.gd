@@ -61,6 +61,9 @@ static func create(config: Dictionary, seed_value: int = 1) -> Network:
 		if pool.schedule == null:
 			net.error = "pool %s: bad schedule" % pool.id
 			return net
+		var reserve: Dictionary = p.get("reserve", {})
+		pool.reserve = int(reserve.get("people", 0))
+		pool.reserve_for = reserve.get("stream", "")
 		net.pools[pool.id] = pool
 		net._pool_list.append(pool)
 	for s: Dictionary in config.get("stock", []):
@@ -114,6 +117,8 @@ func _build_stream(v: Dictionary) -> ValueStream:
 				step.ftr = float(s["ftr"])
 				step.rework_index = ids.find(s.get("rework_to", step.id))
 				step.rework_wait_minutes = SimCalendar.days(float(s.get("rework_wait_days", 0.0)))
+				step.interrupt_index = ids.find(s["interrupt_to"]) if s.has("interrupt_to") else -1
+				step.interrupt_wait_minutes = SimCalendar.days(float(s.get("interrupt_wait_days", 0.0)))
 				for pool_id in step.pool_ids:
 					if not pools.has(pool_id):
 						error = "step %s: unknown pool %s" % [step.id, pool_id]
@@ -124,6 +129,8 @@ func _build_stream(v: Dictionary) -> ValueStream:
 				step.kind = SimStep.Kind.WAIT
 				step.wait_minutes = SimCalendar.days(float(s["days"]))
 				step.spread = float(s.get("spread", 0.0))
+				step.batch_minutes = SimCalendar.days(float(s.get("batch_days", 0.0)))
+				step.starts_with = s.get("starts_with", "")
 			"material":
 				step.kind = SimStep.Kind.MATERIAL
 				step.item_id = s["item"]
@@ -253,7 +260,7 @@ func open_order(s: ValueStream) -> WorkOrder:
 ## Put an order into step `index`, skipping steps it does not need.
 func _enter(order: WorkOrder, index: int) -> void:
 	var steps := order.stream.steps
-	while index < steps.size() and steps[index].applies < 1.0 and not rng.chance(steps[index].applies):
+	while index < steps.size() and _skips(order, index):
 		index += 1
 	if index >= steps.size():
 		_finish_order(order)
@@ -261,15 +268,49 @@ func _enter(order: WorkOrder, index: int) -> void:
 	order.step_index = index
 	var step := steps[index]
 	step.entered += 1
+	_start_parallel_waits(order, index)
 	match step.kind:
 		SimStep.Kind.WORK:
 			order.remaining = step.touch_minutes
 			order.queued_at = time
 			queue_of(step).append(order)
 		SimStep.Kind.WAIT:
-			_wait(order, int(rng.around(step.wait_minutes, step.spread)), index + 1)
+			# A wait that started in parallel only costs what is left of it.
+			var ready: int = order.early[index] if order.early.has(index) else _wait_ready(step)
+			if ready > time:
+				_wait(order, ready - time, index + 1)
+			else:
+				_enter(order, index + 1)
 		SimStep.Kind.MATERIAL:
 			_take_material(order, step)
+
+
+## Whether the order skips step `index`: decided by `applies`, or, for a wait
+## that already started in parallel, when it started.
+func _skips(order: WorkOrder, index: int) -> bool:
+	if order.early.has(index):
+		return order.early[index] < 0
+	var step := order.stream.steps[index]
+	return step.applies < 1.0 and not rng.chance(step.applies)
+
+
+## Start the waits that run in parallel with step `index` (once per order:
+## rework that passes the step again does not request a permit twice).
+func _start_parallel_waits(order: WorkOrder, index: int) -> void:
+	var steps := order.stream.steps
+	for j in range(index + 1, steps.size()):
+		var w := steps[j]
+		if w.starts_with == steps[index].id and not order.early.has(j):
+			order.early[j] = _wait_ready(w) if w.applies >= 1.0 or rng.chance(w.applies) else -1
+
+
+## When a wait starting now is over: from the next batch moment, plus the
+## (varying) duration.
+func _wait_ready(step: SimStep) -> int:
+	var start := time
+	if step.batch_minutes > 0:
+		start = ceili(time / float(step.batch_minutes)) * step.batch_minutes
+	return start + int(rng.around(step.wait_minutes, step.spread))
 
 
 func _wait(order: WorkOrder, minutes: int, then_step: int) -> void:
@@ -371,21 +412,33 @@ func _assign_work() -> void:
 		if not pool.is_on_shift(time):
 			continue
 		while true:
-			var step := _most_urgent_step(pool)
+			var step := _next_step_for(pool)
 			if step == null:
 				break
-			var queue := queue_of(step)
-			var urgent := queue[0].stream
-			if pool.free_people() <= 0 and not (urgent.preempts and _preempt_for(pool, urgent.priority)):
-				break
-			pool.busy.append(queue.pop_front())
+			pool.busy.append(queue_of(step).pop_front())
 
 
-func _most_urgent_step(pool: SimPool) -> SimStep:
+## The step whose first order someone in `pool` starts now: the most urgent
+## one if someone is free for it (or it may interrupt lower-priority work),
+## otherwise the most urgent one someone is free for (reserved people only
+## take the work they are held for).
+func _next_step_for(pool: SimPool) -> SimStep:
+	var top := _most_urgent_step(pool)
+	if top == null:
+		return null
+	var urgent := queue_of(top)[0].stream
+	if pool.free_for(urgent) > 0 or (urgent.preempts and _preempt_for(pool, urgent.priority)):
+		return top
+	return _most_urgent_step(pool, true)
+
+
+## The step with the most urgent first order; with `startable`, only steps
+## someone is free for.
+func _most_urgent_step(pool: SimPool, startable: bool = false) -> SimStep:
 	var best: SimStep = null
 	for step in pool.steps:
 		var queue := queue_of(step)
-		if queue.is_empty():
+		if queue.is_empty() or (startable and pool.free_for(queue[0].stream) <= 0):
 			continue
 		if best == null or _more_urgent(queue[0], queue_of(best)[0]):
 			best = step
@@ -407,7 +460,13 @@ func _preempt_for(pool: SimPool, priority: int) -> bool:
 	if victim == null:
 		return false
 	pool.busy.erase(victim)
-	_requeue(victim, "preempted")
+	var step := victim.current_step()
+	if step.interrupt_index < 0:
+		_requeue(victim, "preempted")
+	else:
+		# Pulled away: the job has to be planned again (a new appointment).
+		_emit("preempted", victim)
+		_wait(victim, step.interrupt_wait_minutes, step.interrupt_index)
 	return true
 
 

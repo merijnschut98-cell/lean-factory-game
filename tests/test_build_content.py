@@ -162,6 +162,13 @@ def test_real_value_streams_are_valid():
     (lambda d: _step(d, "design").update(pool=["work_prep", "ghost"]), "unknown pool 'ghost'"),
     (lambda d: _step(d, "design").update(pool=[]), "unknown pool"),
     (lambda d: _step(d, "execution").update(rework_to="design"), "takes material twice"),
+    (lambda d: _step(d, "execution").update(interrupt_to="design"), "takes material twice"),
+    (lambda d: _step(d, "intake").update(interrupt_to="revision"), "'interrupt_to' must name this step or an earlier one"),
+    (lambda d: _step(d, "permit").update(starts_with="revision"), "'starts_with' must name an earlier step"),
+    (lambda d: _step(d, "design").update(starts_with="intake"), "only a wait step"),
+    (lambda d: _step(d, "permit").update(batch_days=-1), "'batch_days' must be >= 0"),
+    (lambda d: d["pools"][4].update(reserve={"stream": "ghost", "people": 2}), "reserve.*unknown stream 'ghost'"),
+    (lambda d: d["pools"][4].update(reserve={"stream": "outages", "people": 99}), "'people' must be between 1 and 14"),
     (lambda d: d["pools"][0].update(headcount=True), "'headcount' must be an integer"),
     (lambda d: d["pools"].append(dict(d["pools"][0])), "duplicate pools ids: intake"),
     (lambda d: d["pools"][0].update(id="Intake Team"), "snake_case"),
@@ -170,7 +177,7 @@ def test_real_value_streams_are_valid():
 def test_value_stream_errors_are_caught(mutate, message):
     doc = _streams()
     mutate(doc)
-    with pytest.raises(bc.ContentError, match=message.replace("(", r"\(").replace("'", "'")):
+    with pytest.raises(bc.ContentError, match=message.replace("(", r"\(")):
         bc.validate_value_streams(doc, "value_streams.yaml")
 
 

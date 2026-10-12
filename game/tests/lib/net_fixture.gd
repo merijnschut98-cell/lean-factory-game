@@ -50,7 +50,7 @@ static func on_call() -> Array:
 
 
 ## A problem/countermeasure effect (see SimModifiers).
-static func effect(target: String, property: String, value: float) -> Dictionary:
+static func effect(target: String, property: String, value: Variant) -> Dictionary:
 	return {"target": target, "property": property, "value": value}
 
 
