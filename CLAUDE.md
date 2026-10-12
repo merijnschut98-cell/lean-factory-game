@@ -25,6 +25,16 @@ This is not an end-of-session cleanup — it is an inline, real-time habit. Ever
 
 Merijn's design decisions that every feature, content file and test must respect. Change one only when Merijn says so; record the change in PLAN.md "Decisions Made".
 
+### Core directives (the game's purpose)
+- **A learning game about continuous improvement**: Lean first, later IT / Agile / DevOps / SAFe, set in the energy sector (a Dutch grid operator).
+- **People are the most valuable resource.** Problems live in the process, not the person; countermeasures develop people rather than replace them.
+- **An RPG where the main character has to search and think** to find out what is wrong and how to fix it. Nothing is handed over.
+- **Fix processes end to end.** Improving a step that is not the bottleneck brings no gain, and the simulation must show that.
+- **Measure.** KPIs and OKRs come up often: predictions name a KPI, the Check measures it, missions and the coach ask for numbers.
+- **The 8 wastes come up often** (TIMWOODS, in a service and field organisation).
+- **Sector-specific issues come up often**: congestion, permits, the technician shortage, regulation (ACM, NTA 8120), the energy transition.
+
+### Rules
 - **Progressive RPG through missions.** The player advances by completing missions. New and harder missions unlock as the player progresses; nothing is open from the start.
 - **One main quest, at most three side quests.** Never more than one main mission active at once, and at most three side missions. Side missions are small.
 - **A senior manager is the coach.** The player can talk to the coach for insight. The coach mostly answers with a question (Toyota Kata style: target, actual condition, obstacles, next experiment, what did you learn), rarely with an answer.
@@ -32,6 +42,8 @@ Merijn's design decisions that every feature, content file and test must respect
 - **Action-based problem solving.** Clues are earned with gemba tools and questions; the player writes the A3; the simulation judges. No multiple-choice answers with one marked correct.
 - **Many healthier processes, not one.** Every problem lists several countermeasures with a fit; each one is a real improvement that can pass the Check, some more than others.
 - **Evidence first.** Numbers in content (norms, rates, durations, costs) come from public sources or industry norms where they exist; estimates are marked as estimates, with their reasoning, in the content file.
+- **Setbacks, never game over.** Costs and claims can push the budget into debt and the region into a bad period, but the company never goes down and the game never ends in failure. Recovery is always possible.
+- **Missed deadlines have lasting consequences.** A failed mission closes a door (e.g. Henk retires and his knowledge transfer is no longer possible); the problem can still be solved another way.
 - **Dutch game text; English code and docs.**
 
 ---
@@ -39,6 +51,7 @@ Merijn's design decisions that every feature, content file and test must respect
 ## 3. Skill Triggers
 
 ### Always — every task, no exceptions
+- **Superpowers** — a core skill (Merijn, 2026-10-12). Check the superpowers skills before every task and use the ones that apply: `brainstorming` before designing a feature, `writing-plans` / `executing-plans` for multi-step work, `test-driven-development` for every behaviour change (watch the test fail first), `systematic-debugging` for every bug, `verification-before-completion` before calling anything done, `requesting-code-review` before a phase ends.
 - **`simplify`** — run after every code change. No exceptions. Code must pass the simplification checklist before the task is considered done.
 
 ### `error-handling` — run whenever any of these are true

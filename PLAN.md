@@ -267,6 +267,10 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 
 ## Decisions Made
 
+- **Core directives (Merijn, 2026-10-12).** A learning game about continuous improvement (Lean, later IT/Agile/DevOps/SAFe) in the energy sector; people are the most valuable resource; an RPG where the player searches and thinks; fix processes end to end (a non-bottleneck fix brings nothing); a strong focus on measuring (KPIs, OKRs); the 8 wastes and sector issues come up often. Recorded in CLAUDE.md §2.
+- **Never game over (Merijn, 2026-10-12).** Claims cost money and the region can go into debt and a bad period, but the company never goes down.
+- **Henk is a side mission with a deadline (Merijn, 2026-10-12).** Missing it means doing without the knowledge transfer: the countermeasures that need Henk are gone; the problem can still be solved another way.
+- **Superpowers is a core skill (Merijn, 2026-10-12)**, in CLAUDE.md §3.
 - **Mission system (Merijn, 2026-10-12).** The game is a progressive RPG: missions unlock new and harder missions as the player progresses. At most one main mission and three side missions are active at once. A senior manager coaches, mostly by asking questions, and only on the main mission. Recorded as a standing rule in CLAUDE.md §2.
 - **Review answers (Merijn, 2026-10-12):**
   - connections norm: the industry norm (the 18-week term the ACM still uses as reference);
