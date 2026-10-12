@@ -29,6 +29,8 @@ var events: Array[Dictionary] = []
 var _waiting: Array[WorkOrder] = []
 ## Queue per work step (kept here, not on the step, to avoid reference cycles).
 var _queues: Dictionary[SimStep, Array] = {}
+## Orders held back by a stream's WIP limit, not yet started: stream id → orders.
+var _held: Dictionary[String, Array] = {}
 ## Today's scheduled arrivals: [{at: int, stream: ValueStream}], sorted by time.
 var _arrivals: Array[Dictionary] = []
 ## `pools` as a list, for the per-tick loops (iterating a Dictionary's values allocates).
@@ -95,6 +97,8 @@ func _build_stream(v: Dictionary) -> ValueStream:
 		stream.norm_minutes = SimCalendar.days(float(v["norm_days"]))
 	stream.priority = int(v["priority"])
 	stream.preempts = bool(v.get("preempts", false))
+	stream.wip_limit = int(v.get("wip_limit", 0))
+	_held[stream.id] = [] as Array[WorkOrder]
 	for a: Dictionary in v.get("arrivals", []):
 		var when := WeekSchedule.from_blocks([a])
 		if when == null:
@@ -117,6 +121,9 @@ func _build_stream(v: Dictionary) -> ValueStream:
 				step.rework_wait_minutes = SimCalendar.days(float(s.get("rework_wait_days", 0.0)))
 				step.interrupt_index = ids.find(s["interrupt_to"]) if s.has("interrupt_to") else -1
 				step.interrupt_wait_minutes = SimCalendar.days(float(s.get("interrupt_wait_days", 0.0)))
+				step.stale_after_minutes = SimCalendar.days(float(s.get("stale_after_days", 0.0)))
+				step.stale_index = ids.find(s["stale_to"]) if s.has("stale_to") else -1
+				step.stale_wait_minutes = SimCalendar.days(float(s.get("stale_wait_days", 0.0)))
 				for pool_id in step.pool_ids:
 					if not pools.has(pool_id):
 						error = "step %s: unknown pool %s" % [step.id, pool_id]
@@ -169,6 +176,11 @@ func step_at(place: String) -> SimStep:
 	return s.step(place.get_slice(".", 1)) if s != null and place.get_slice_count(".") == 2 else null
 
 
+## Orders of a stream waiting for its WIP limit, not yet started.
+func held(stream_id: String) -> int:
+	return _held[stream_id].size()
+
+
 func stream(stream_id: String) -> ValueStream:
 	for s in streams:
 		if s.id == stream_id:
@@ -195,6 +207,9 @@ func _next_busy_tick() -> int:
 	for pool in _pool_list:
 		if not pool.busy.is_empty():
 			return after
+	for s in streams:
+		if _can_release(s):
+			return after
 	var next := (SimCalendar.day_of(time) + 1) * SimCalendar.MINUTES_PER_DAY
 	for pool in _pool_list:
 		if pool.present > 0 and _most_urgent_step(pool) != null:
@@ -219,6 +234,8 @@ func _tick() -> void:
 	if day != _day:
 		_day = day
 		_start_day()
+	for s in streams:
+		_release_held(s)
 	_release_arrivals()
 	_finish_waits()
 	_deliver_stock()
@@ -257,8 +274,20 @@ func open_order(s: ValueStream) -> WorkOrder:
 	_next_id += 1
 	s.active += 1
 	_emit("arrived", order)
-	_enter(order, 0)
+	_held[s.id].append(order)
+	_release_held(s)
 	return order
+
+
+## Start held orders while the stream's WIP limit allows.
+func _release_held(s: ValueStream) -> void:
+	while _can_release(s):
+		_enter(_held[s.id].pop_front(), 0)
+
+
+func _can_release(s: ValueStream) -> bool:
+	var held_orders: Array = _held[s.id]
+	return not held_orders.is_empty() and (s.wip_limit <= 0 or s.active - held_orders.size() < s.wip_limit)
 
 
 ## Put an order into step `index`, skipping steps it does not need.
@@ -397,6 +426,17 @@ func _complete_work(order: WorkOrder) -> void:
 	_enter(order, order.step_index + 1)
 
 
+## A dossier that waited too long is out of date when work would start: it
+## goes back (e.g. the customer confirms their details again).
+func _went_stale(order: WorkOrder, step: SimStep) -> bool:
+	if step.stale_after_minutes <= 0 or time - order.queued_at <= step.stale_after_minutes:
+		return false
+	_emit("stale", order)
+	_record(step, SimStep.Stat.STALE)
+	_send_back(order, step.stale_index, step.stale_wait_minutes)
+	return true
+
+
 func _record(step: SimStep, stat: SimStep.Stat, amount: int = 1) -> void:
 	step.record(_day, stat, amount)
 
@@ -423,6 +463,8 @@ func _assign_work() -> void:
 			if step == null:
 				break
 			var order: WorkOrder = queue_of(step).pop_front()
+			if not order.started and _went_stale(order, step):
+				continue
 			if not order.started:
 				order.started = true
 				_record(step, SimStep.Stat.STARTED)
@@ -491,6 +533,7 @@ func _finish_order(order: WorkOrder) -> void:
 		"done_at": time, "lead_minutes": lead, "on_time": time <= order.due, "reworks": order.reworks,
 	})
 	_emit("finished", order)
+	_release_held(order.stream)
 
 
 ## The single way events are recorded: {t, type, order?, stream?, step?, ...extra}.

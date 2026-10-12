@@ -6,13 +6,13 @@ Game text is **Dutch** (with sector terms). Code, comments and this plan stay in
 
 ---
 
-## Current Status: Phase A — Engine (Godot) 🔧 steps 1–5 done
+## Current Status: Phase A — Engine (Godot) 🔧 steps 1–5 and 4c done
 
 Pivot agreed 2026-10-12: from a hoverboard factory to a grid operator. The 3D factory prototype is archived in `archive/factory-3d/` (also git commit `b3a4c8c`). Its investigation / A3 / PDCA / bottleneck logic will be carried over and generalised.
 
 This is a multi-month project, built the right way: research → design (reviewed by Merijn) → engine → content → world → UI, in small tested increments. No publishing deadline. Built in **Godot 4 + GDScript** from the start (decided 2026-10-12).
 
-**Next task:** Phase A step 4c — the cost of work in progress (stale dossiers), then WIP limits.
+**Next task:** Phase A step 6 — save/load of the simulation and rules state (JSON, versioned, validated).
 
 ---
 
@@ -97,7 +97,11 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
   - Batching (`batch_days`) and waits in parallel (`starts_with`) for problem 8.
   - Validator covers all of it, incl. interruption loops through material. 70 Godot tests; with the levers off, results are unchanged.
 - ✅ Simplify pass on step 4b: the reserve is one lever `{stream, people}` (same shape as the content, so a half-set reserve cannot exist), one `_send_back` for rework and re-planning, the parallel-wait sentinel removed, Capacity computes the idle reserve once per pool, shared `_earlier` check in the validator
-- ⬜ Step 4c: the cost of work in progress, then WIP limits (Merijn, 2026-10-12: implement). Chosen model: dossiers go stale; a quote, permit or design that waited longer than N days needs (part of) its work again (an FTR drop or a send-back). Then a WIP limit per step (orders wait upstream, not yet started) shows a real gain. Heijunka after that
+- ✅ Step 4c: what waiting costs, and WIP limits (Merijn, 2026-10-12: implement).
+  - Stale dossiers: a work step's `stale_after_days` + `stale_to`. A dossier that waited longer is out of date when work would start and goes back (connections design: after 60 days back to the quote; the customer signs again). Nothing goes stale in today's process; a problem that slows design starts the spiral (32 stale dossiers a year with design 25% slower).
+  - WIP limit (CONWIP): stream `wip_limit` (content or a lever); new orders beyond it wait, not yet started.
+  - Measured on real content with design 25% slower: a limit of ~100 removes the stale rework (+4% connections a year); a limit of 60 starves the constraint (throughput 24 → 15 a week), which is Little's Law. That is the lesson: a WIP limit must be sized as throughput × flow time and does not replace fixing the constraint. 102 Godot tests.
+- ⬜ Heijunka (levelling the release of planned work), after the content shows where it is needed
 - ✅ Decided (Merijn, 2026-10-12): `value_streams.yaml` holds a healthy process *to an extent*; the starting problems are active effects on top. There is no single healthy process: several countermeasures can help one problem (each with a fit 0–1), each shapes the process differently through its own effects and levers, and some improve more than others. Players must not be pushed down one dedicated path
 - ✅ Step 5 (plan: `docs/superpowers/plans/2026-10-12-phase-a-step-5-rules.md`): the problem-solving rules in `game/src/rules/`.
   - `Region` runs the loop over the live simulation: activate (max 3 open), gemba tools at value-stream steps, questions with trust per team, A3 (waste, cause bank, evidence, countermeasure, Kata prediction), experiment, Check, Act, recurrence.

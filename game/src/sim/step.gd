@@ -7,7 +7,7 @@ extends RefCounted
 
 enum Kind { WORK, WAIT, MATERIAL }
 ## What the daily statistics count (see record / stats_since).
-enum Stat { ENTERED, DONE, REWORKED, STARTED, QUEUE_MINUTES }
+enum Stat { ENTERED, DONE, REWORKED, STARTED, QUEUE_MINUTES, STALE }
 
 var id: String
 var name: String
@@ -25,6 +25,12 @@ var rework_wait_minutes := 0
 ## for a new appointment), and after how long; -1 = it simply resumes.
 var interrupt_index := -1
 var interrupt_wait_minutes := 0
+## A dossier that waited longer than this in the queue is out of date when
+## work starts: it goes back to `stale_index` (after `stale_wait_minutes`,
+## e.g. for the customer to confirm their details again). 0 = never.
+var stale_after_minutes := 0
+var stale_index := -1
+var stale_wait_minutes := 0
 # WAIT
 var wait_minutes := 0
 var spread := 0.0
@@ -66,4 +72,5 @@ func stats_since(day: int) -> Dictionary:
 		"done": totals[Stat.DONE],
 		"reworked": totals[Stat.REWORKED],
 		"queue_hours": totals[Stat.QUEUE_MINUTES] / 60.0 / started if started > 0 else 0.0,
+		"stale": totals[Stat.STALE],
 	}

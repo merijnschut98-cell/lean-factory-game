@@ -221,6 +221,8 @@
      "kind": "work",
      "name": "Werkvoorbereiding & ontwerp",
      "pool": "work_prep",
+     "stale_after_days": 60,
+     "stale_to": "quote",
      "touch_hours": 4.0
     },
     {

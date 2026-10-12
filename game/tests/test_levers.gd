@@ -143,3 +143,59 @@ func test_reserve_lowers_capacity_for_other_streams() -> void:
 	assert_near(Capacity.analyse(net)["streams"]["planned"]["capacity_per_week"], 70.0 / 6.0, 1e-6)  # (80 − 10) / 6
 	net.set_effects("cm:reserve", [NetFixture.effect("crew", "reserve", {"stream": "outages", "people": 1})])
 	assert_near(Capacity.analyse(net)["streams"]["planned"]["capacity_per_week"], 40.0 / 6.0, 1e-6)  # (80 − 40 held) / 6
+
+
+## One overloaded team: 80 hours of second-step work a week for 40 hours of
+## people. Dossiers waiting longer than 5 days (a weekend fits within that)
+## at `second` go stale and go back to `first`.
+func _overloaded(extra: Dictionary = {}) -> Network:
+	return NetFixture.net([NetFixture.pool("team", 1)], [NetFixture.stream("s", [
+		NetFixture.work("first", "team", 0.5),
+		NetFixture.work("second", "team", 8.0, 1.0, {"stale_after_days": 5, "stale_to": "first", "stale_wait_days": 1}),
+	], 10.0, 1, extra)])
+
+
+func test_dossiers_that_wait_too_long_go_stale() -> void:
+	var net := _overloaded()
+	net.advance_days(42)
+	var stale := NetFixture.events(net, "stale")
+	assert_true(stale.size() > 0, "long waits make the dossier stale")
+	var first := net.stream("s").step("first").stats_since(0)
+	assert_eq(first["entered"] - (net.stream("s").active + net.stream("s").finished.size()), stale.size(),
+		"every stale dossier went back to the first step once more")
+
+
+func _max_started(net: Network, days: int) -> int:
+	var most := 0
+	for i in SimCalendar.days(days) / SimCalendar.TICK:
+		net.advance(SimCalendar.TICK)
+		most = maxi(most, net.stream("s").active - net.held("s"))
+	return most
+
+
+func test_a_wip_limit_holds_new_orders_before_they_start() -> void:
+	var limited := _overloaded({"wip_limit": 3})
+	assert_true(_max_started(limited, 42) <= 3)
+	assert_true(limited.held("s") > 0, "the rest wait, not yet started")
+	assert_eq(NetFixture.events(limited, "stale").size(), 0, "nothing started waits long enough to go stale")
+
+
+func test_limiting_wip_finishes_more_when_waiting_costs_rework() -> void:
+	var pushed := _overloaded()
+	var limited := _overloaded({"wip_limit": 3})
+	pushed.advance_days(56)
+	limited.advance_days(56)
+	assert_true(limited.stream("s").finished.size() > pushed.stream("s").finished.size(),
+		"%d vs %d" % [limited.stream("s").finished.size(), pushed.stream("s").finished.size()])
+
+
+func test_wip_limit_is_a_lever() -> void:
+	var net := _overloaded()
+	assert_eq(net.set_effects("cm:conwip", [NetFixture.effect("s", "wip_limit", 3)]), "")
+	net.advance_days(14)
+	assert_true(net.held("s") > 0)
+	net.clear_effects("cm:conwip")
+	net.advance(SimCalendar.TICK)
+	assert_eq(net.held("s"), 0, "lifting the limit releases every held order")
+	assert_ne(net.set_effects("bad", [NetFixture.effect("s", "wip_limit", -1)]), "")
+	assert_ne(net.set_effects("bad", [NetFixture.effect("s", "wip_limit", 2.5)]), "")

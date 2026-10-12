@@ -19,6 +19,11 @@
 #   pool `reserve: {stream, people}`  people held for one stream (outage reserve)
 #   work step `interrupt_to` (+ `interrupt_wait_days`)  where an order goes when
 #             urgent work interrupts it; without it the order simply resumes
+#   work step `stale_after_days` + `stale_to` (+ `stale_wait_days`)  a dossier
+#             that waited longer in the queue is out of date when work would
+#             start and goes back to an earlier step: what waiting costs
+#   stream `wip_limit`  at most this many started orders (CONWIP); new ones
+#             wait, not yet started
 #   wait step `batch_days`  requests go out in batches (e.g. weekly)
 #   wait step `starts_with: <earlier step>`  the wait runs in parallel from there
 #
@@ -151,6 +156,8 @@ streams:
         pool: work_prep
         touch_hours: 4.0
         ftr: 0.85
+        stale_after_days: 60  # quote and grid data out of date: re-quote, the customer signs again
+        stale_to: quote
       - id: permit
         name: Vergunning & KLIC
         kind: wait

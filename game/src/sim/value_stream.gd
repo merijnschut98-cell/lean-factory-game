@@ -10,8 +10,11 @@ var norm_minutes: int
 var priority: int
 ## Urgent work (outages) interrupts lower-priority work in progress.
 var preempts := false
+## At most this many started orders at once (CONWIP); new orders beyond it
+## wait, not yet started. 0 = no limit.
+var wip_limit := 0
 var steps: Array[SimStep] = []
-## Orders in the stream right now (the backlog / WIP).
+## Orders in the stream right now (the backlog / WIP), held ones included.
 var active := 0
 ## One record per finished order: {done_at, lead_minutes, on_time, reworks}.
 var finished: Array[Dictionary] = []

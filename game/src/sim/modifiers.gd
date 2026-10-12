@@ -34,6 +34,7 @@ const PROPERTIES := {
 	"demand": {"kind": "arrivals", "field": "per_week", "op": Op.MUL, "min": 0.0},
 	"reserve": {"kind": "pool", "field": "reserve", "op": Op.SET, "valid": "reserve"},
 	"preempts": {"kind": "stream", "field": "preempts", "op": Op.SET, "valid": "bool"},
+	"wip_limit": {"kind": "stream", "field": "wip_limit", "op": Op.SET, "valid": "count"},
 	"batch_days": {"kind": "step", "step_kind": SimStep.Kind.WAIT, "field": "batch_minutes", "op": Op.ADD,
 		"min": 0.0, "unit": SimCalendar.MINUTES_PER_DAY},
 	"starts_with": {"kind": "step", "step_kind": SimStep.Kind.WAIT, "field": "starts_with", "op": Op.SET,
@@ -126,6 +127,9 @@ func _check_lever(net: Network, valid: String, target: String, obj: Object, valu
 	match valid:
 		"bool":
 			return "" if value is bool else "needs true or false (got %s)" % [value]
+		"count":
+			var whole: bool = value is int or (value is float and value == floorf(value))
+			return "" if whole and value >= 0 else "needs a whole number of 0 or more (got %s)" % [value]
 		"reserve":
 			# {} (no reserve) or {stream, people} with people up to the headcount.
 			if value is Dictionary and (value.is_empty() or (net.stream(value.get("stream", "")) != null
@@ -164,10 +168,11 @@ func _apply(net: Network) -> void:
 			obj.set(field, _base[obj][field])
 		for property: String in combined.get(obj, {}):
 			var spec: Dictionary = PROPERTIES[property]
-			if spec["op"] == Op.SET:
-				obj.set(spec["field"], combined[obj][property])
-				continue
 			var base: Variant = _base[obj][spec["field"]]
+			if spec["op"] == Op.SET:
+				var lever: Variant = combined[obj][property]
+				obj.set(spec["field"], int(lever) if base is int else lever)
+				continue
 			var change: float = combined[obj][property]
 			var value := float(base) * change if spec["op"] == Op.MUL else float(base) + change
 			value = clampf(value, spec["min"], spec.get("max", INF))

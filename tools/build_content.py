@@ -147,9 +147,14 @@ def _validate_step(step: dict, where: str, pools: set[str], stock: set[str], ste
             target = step.get(key, step["id"])
             if not _earlier(step_ids, target, step["id"], or_same=True):
                 raise ContentError(f"{where}: '{key}' must name this step or an earlier one (got {target!r})")
-        for key in ("rework_wait_days", "interrupt_wait_days"):
+        for key in ("rework_wait_days", "interrupt_wait_days", "stale_wait_days"):
             if key in step:
                 _number(step, key, where, 0)
+        if "stale_after_days" in step or "stale_to" in step:
+            # A dossier that waited too long goes back to an earlier step.
+            _number(step, "stale_after_days", where, 1)
+            if not _earlier(step_ids, step.get("stale_to"), step["id"]):
+                raise ContentError(f"{where}: 'stale_to' must name an earlier step (got {step.get('stale_to')!r})")
     elif kind == "wait":
         _number(step, "days", where, 0)
         _number(step, "spread", where, 0, 0.95, default=0)
@@ -197,6 +202,7 @@ def validate_value_streams(doc: Any, source: str) -> None:
         _number(stream, "priority", where, 0, integer=True)
         if not isinstance(stream.get("preempts", False), bool):
             raise ContentError(f"{where}: 'preempts' must be true or false")
+        _number(stream, "wip_limit", where, 0, integer=True, default=0)
         steps = _entries(stream, "steps", where)
         if not steps:
             raise ContentError(f"{where}: needs at least one step")
@@ -212,7 +218,7 @@ def _check_rework_loops(steps: list[dict], step_ids: list[str], where: str) -> N
     for i, step in enumerate(steps):
         if step["kind"] != "work":
             continue
-        for key in ("rework_to", "interrupt_to"):
+        for key in ("rework_to", "interrupt_to", "stale_to"):
             start = step_ids.index(step.get(key, step["id"]))
             for between in steps[start:i]:
                 if between["kind"] == "material":
