@@ -117,7 +117,7 @@ func _solve_at(step: String) -> Dictionary:
 		"visibility": "obvious", "kpi": "throughput", "root_cause": "Too many approvals",
 		"countermeasures": {"fix": 1.0},
 		"effects": [NetFixture.effect(step, "touch_time", 1.2)],
-		"clues": [{"tool": "time_study", "text": "t", "key": true, "depth": 0}],
+		"clues": [RulesFixture.clue("time_study", true, 0)],
 	})
 	var fix := CountermeasureDef.from_dict({
 		"id": "fix", "name": "Fix", "tier": 1, "budget": 1000, "decay_days": null,

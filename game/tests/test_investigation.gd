@@ -12,7 +12,7 @@ func test_definitions_load() -> void:
 	for c in RulesFixture.countermeasure_defs():
 		assert_eq(c.error, "", c.id)
 	var p := _custom_design()
-	assert_eq(p.place(), "connections.design")
+	assert_eq(p.step, "connections.design")
 	assert_eq(p.stream_id(), "connections")
 	assert_eq(p.clues.size(), 5)
 	assert_eq(p.clues[0].id, "custom_design:0")

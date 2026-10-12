@@ -56,7 +56,6 @@ static func from_dict(d: Dictionary) -> ProblemDef:
 		var c: Dictionary = d["clues"][i]
 		var clue := Clue.new()
 		clue.id = "%s:%d" % [p.id, i]
-		clue.problem_id = p.id
 		clue.tool = c.get("tool", "")
 		clue.text = c.get("text", "")
 		clue.key = bool(c.get("key", false))
@@ -77,7 +76,3 @@ static func from_dict(d: Dictionary) -> ProblemDef:
 func stream_id() -> String:
 	return step.get_slice(".", 0)
 
-
-## The gemba place where it shows.
-func place() -> String:
-	return step

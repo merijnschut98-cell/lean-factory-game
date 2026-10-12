@@ -97,9 +97,7 @@ static func targets(net: Network, property: String, target: String) -> Array:
 		"arrivals":
 			var s := net.stream(target)
 			return s.arrivals.duplicate() if s != null else []
-	var parts := target.split(".")
-	var owner := net.stream(parts[0]) if parts.size() == 2 else null
-	var step := owner.step(parts[1]) if owner != null else null
+	var step := net.step_at(target)
 	return [step] if step != null else []
 
 

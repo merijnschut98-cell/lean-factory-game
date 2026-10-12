@@ -7,7 +7,6 @@ extends RefCounted
 ## which may be upstream of where the problem shows.
 
 var id: String
-var problem_id: String
 var tool: String
 var text: String
 var key: bool

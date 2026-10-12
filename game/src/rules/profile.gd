@@ -7,7 +7,6 @@ extends RefCounted
 var budget := 50000
 var xp := 0
 var concepts := PackedStringArray()
-var resolved := 0
 
 
 func learn(tags: PackedStringArray) -> void:

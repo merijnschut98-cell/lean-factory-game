@@ -48,7 +48,7 @@ func test_rework_lowers_first_time_right() -> void:
 	net.advance_days(56)
 	var k := net.stream("s").kpis(net.time, 56)
 	assert_between(k["first_time_right"], 0.4, 0.6)
-	assert_true(net.stream("s").steps[0].reworked > 0)
+	assert_true(net.stream("s").steps[0].stats_since(0)["reworked"] > 0)
 
 
 func test_rework_can_wait_for_the_customer() -> void:
@@ -73,7 +73,7 @@ func test_applies_skips_a_share_of_orders() -> void:
 	], 50.0)])
 	net.advance_days(56)
 	var steps := net.stream("s").steps
-	assert_between(steps[0].entered / float(steps[1].entered), 0.18, 0.32)
+	assert_between(steps[0].stats_since(0)["entered"] / float(steps[1].stats_since(0)["entered"]), 0.18, 0.32)
 
 
 func test_stockout_makes_orders_wait_for_delivery() -> void:
@@ -192,5 +192,5 @@ func test_step_statistics_count_rework() -> void:
 	var net := _simple(0.5, 30.0)
 	net.advance_days(28)
 	var stats := net.stream("s").step("do").stats_since(0)
-	assert_eq(stats["reworked"], net.stream("s").steps[0].reworked)
+	assert_eq(stats["reworked"], NetFixture.events(net, "rework").size())
 	assert_between(stats["reworked"] / float(stats["done"] + stats["reworked"]), 0.4, 0.6)

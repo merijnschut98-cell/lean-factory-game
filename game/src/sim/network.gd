@@ -163,6 +163,12 @@ func effects() -> Dictionary[String, Array]:
 	return _modifiers.sources()
 
 
+## The step at a place "stream.step" (null if there is none).
+func step_at(place: String) -> SimStep:
+	var s := stream(place.get_slice(".", 0))
+	return s.step(place.get_slice(".", 1)) if s != null and place.get_slice_count(".") == 2 else null
+
+
 func stream(stream_id: String) -> ValueStream:
 	for s in streams:
 		if s.id == stream_id:
@@ -265,13 +271,13 @@ func _enter(order: WorkOrder, index: int) -> void:
 		return
 	order.step_index = index
 	var step := steps[index]
-	step.entered += 1
-	step.record(SimCalendar.day_of(time), SimStep.Stat.ENTERED)
+	_record(step, SimStep.Stat.ENTERED)
 	_start_parallel_waits(order, index)
 	match step.kind:
 		SimStep.Kind.WORK:
 			order.remaining = step.touch_minutes
 			order.queued_at = time
+			order.started = false
 			queue_of(step).append(order)
 		SimStep.Kind.WAIT:
 			# A wait that started in parallel only costs what is left of it.
@@ -383,13 +389,16 @@ func _complete_work(order: WorkOrder) -> void:
 	var step := order.current_step()
 	if step.ftr < 1.0 and not rng.chance(step.ftr):
 		order.reworks += 1
-		step.reworked += 1
-		step.record(SimCalendar.day_of(time), SimStep.Stat.REWORKED)
+		_record(step, SimStep.Stat.REWORKED)
 		_emit("rework", order)
 		_send_back(order, step.rework_index, step.rework_wait_minutes)
 		return
-	step.record(SimCalendar.day_of(time), SimStep.Stat.DONE)
+	_record(step, SimStep.Stat.DONE)
 	_enter(order, order.step_index + 1)
+
+
+func _record(step: SimStep, stat: SimStep.Stat, amount: int = 1) -> void:
+	step.record(_day, stat, amount)
 
 
 ## Send an order back to an earlier step (rework, re-planning), after
@@ -414,9 +423,10 @@ func _assign_work() -> void:
 			if step == null:
 				break
 			var order: WorkOrder = queue_of(step).pop_front()
-			if order.remaining == step.touch_minutes:  # a first start, not a resume
-				step.record(SimCalendar.day_of(time), SimStep.Stat.STARTED)
-				step.record(SimCalendar.day_of(time), SimStep.Stat.QUEUE_MINUTES, time - order.queued_at)
+			if not order.started:
+				order.started = true
+				_record(step, SimStep.Stat.STARTED)
+				_record(step, SimStep.Stat.QUEUE_MINUTES, time - order.queued_at)
 			pool.busy.append(order)
 
 

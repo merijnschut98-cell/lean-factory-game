@@ -12,6 +12,7 @@ extends RefCounted
 ## working countermeasure), cm:<id> (the improvement), do:<id> (team hours
 ## spent on the experiment).
 
+const P := ProblemState.Phase
 const MAX_OPEN := 3
 const CHECK_DAYS := 14
 const STANDARDISE_BUDGET := 3000
@@ -57,7 +58,7 @@ func maturity() -> int:
 	var m := 1
 	while m < 4:
 		var tier := problem_list().filter(func(p: ProblemDef) -> bool: return p.tier == m)
-		var done := tier.filter(func(p: ProblemDef) -> bool: return state[p.id].phase == "resolved")
+		var done := tier.filter(func(p: ProblemDef) -> bool: return state[p.id].phase == P.RESOLVED)
 		if tier.is_empty() or done.size() < tier.size() * MATURITY_STEP:
 			break
 		m += 1
@@ -77,10 +78,10 @@ func advance_days(n: float) -> void:
 func advance(minutes: int) -> void:
 	net.advance(minutes)
 	for st: ProblemState in state.values():
-		if st.phase == "doing" and net.time >= st.check_at:
-			st.phase = "check_ready"
+		if st.phase == P.DOING and net.time >= st.check_at:
+			st.phase = P.CHECK_READY
 			events.append({"type": "check_ready", "problem": st.id})
-		elif st.phase == "resolved" and st.recur_at >= 0 and net.time >= st.recur_at:
+		elif st.phase == P.RESOLVED and st.recur_at >= 0 and net.time >= st.recur_at:
 			_recur(st)
 
 
@@ -90,12 +91,16 @@ func advance(minutes: int) -> void:
 ## False when it is not dormant or MAX_OPEN problems are already open.
 func activate(problem_id: String) -> bool:
 	var st: ProblemState = state.get(problem_id)
-	if st == null or st.phase != "dormant" or state.values().filter(func(s: ProblemState) -> bool: return s.is_open()).size() >= MAX_OPEN:
+	if st == null or st.phase != P.DORMANT or _open_count() >= MAX_OPEN:
 		return false
-	st.phase = "active"
+	st.phase = P.ACTIVE
 	_apply_problem(st)
 	events.append({"type": "activated", "problem": problem_id})
 	return true
+
+
+func _open_count() -> int:
+	return state.values().filter(func(s: ProblemState) -> bool: return s.is_open()).size()
 
 
 ## The problem hurts the simulation at the strength a countermeasure leaves.
@@ -113,9 +118,6 @@ func use_tool(place: String, tool: String) -> Dictionary:
 	var clues := _ready_clues(place, tool)
 	for c in clues:
 		_reveal(c)
-	for p in _known_at(place):
-		if not tool in state[p.id].tools_used:
-			state[p.id].tools_used.append(tool)
 	return {"spotted": spotted, "clues": clues, "hidden_signal": spotted.is_empty() and _hidden_at(place)}
 
 
@@ -160,8 +162,8 @@ func _spot(place: String, deep: bool) -> Array[String]:
 	var spotted: Array[String] = []
 	for p in problem_list():
 		var st := state[p.id]
-		if st.phase == "active" and p.step == place and (deep or p.visibility != "hidden"):
-			st.phase = "spotted"
+		if st.phase == P.ACTIVE and p.step == place and (deep or p.visibility != "hidden"):
+			st.phase = P.SPOTTED
 			spotted.append(p.id)
 	if not spotted.is_empty():
 		profile.learn(["gemba"])
@@ -186,34 +188,31 @@ func _reveal(c: Clue) -> void:
 	profile.learn(c.teaches)
 
 
-func _known_at(place: String) -> Array[ProblemDef]:
-	return problem_list().filter(func(p: ProblemDef) -> bool: return p.step == place and state[p.id].is_known())
-
-
 func _hidden_at(place: String) -> bool:
 	return problem_list().any(func(p: ProblemDef) -> bool:
-		return p.step == place and state[p.id].phase == "active" and p.visibility == "hidden")
+		return p.step == place and state[p.id].phase == P.ACTIVE and p.visibility == "hidden")
 
 
 ## What the team at a place truthfully sees in their work right now.
 func _observation(place: String) -> Dictionary:
-	var step := _step(place)
+	var step := net.step_at(place)
 	var queue := net.queue_of(step).size()
 	if queue > 10:
 		return {"kind": "queue", "value": queue}
-	var recent := step.stats_since(SimCalendar.day_of(net.time) - CHECK_DAYS)
+	var recent := _recent_stats(step)
 	var attempts: int = recent["done"] + recent["reworked"]
 	if attempts > 0 and recent["reworked"] / float(attempts) > 0.2:
 		return {"kind": "rework", "value": recent["reworked"] / float(attempts)}
 	return {"kind": "quiet", "value": queue}
 
 
-func _step(place: String) -> SimStep:
-	return net.stream(place.get_slice(".", 0)).step(place.get_slice(".", 1))
+## The step's statistics over the last CHECK_DAYS.
+func _recent_stats(step: SimStep) -> Dictionary:
+	return step.stats_since(SimCalendar.day_of(net.time) - CHECK_DAYS)
 
 
 func _pools_at(place: String) -> PackedStringArray:
-	var step := _step(place)
+	var step := net.step_at(place)
 	return step.pool_ids if step != null else PackedStringArray()
 
 
@@ -240,7 +239,7 @@ func available_countermeasures() -> Array[CountermeasureDef]:
 ## not: not_spotted | waste | cause | evidence | countermeasure | prediction | budget.
 func submit_a3(problem_id: String, a3: Dictionary) -> String:
 	var st := state[problem_id]
-	if st.phase != "spotted":
+	if st.phase != P.SPOTTED:
 		return "not_spotted"
 	if not a3.get("waste") in Investigation.WASTES:
 		return "waste"
@@ -258,14 +257,17 @@ func submit_a3(problem_id: String, a3: Dictionary) -> String:
 	if profile.budget < cm.budget:
 		return "budget"
 
+	var p := problems[problem_id]
 	profile.budget -= cm.budget
 	st.baseline = snapshot(problem_id)
-	var e := Pdca.effectiveness(problems[problem_id], cm, maturity())
+	var e := Pdca.effectiveness(p, cm, maturity())
 	st.a3 = a3.duplicate()
 	st.a3["evidence"] = evidence
+	st.cause_correct = options[a3["cause"]] == p.root_cause
+	st.waste_right = a3["waste"] == p.waste
 	st.eff = e["eff"]
 	st.level = e["level"]
-	st.phase = "doing"
+	st.phase = P.DOING
 	st.check_at = net.time + SimCalendar.days(CHECK_DAYS)
 	_apply_problem(st)
 	if st.eff >= Pdca.CHECK_PASS:
@@ -288,7 +290,8 @@ func _team_hours(cm: CountermeasureDef) -> Array:
 
 
 ## The end-to-end numbers of the problem's stream: KPIs over the last
-## CHECK_DAYS, capacity and constraint, and the problem's own step.
+## CHECK_DAYS, capacity and constraint (and whether the problem's team is
+## it), and the problem's own step.
 func snapshot(problem_id: String) -> Dictionary:
 	var p := problems[problem_id]
 	var stream := net.stream(p.stream_id())
@@ -296,9 +299,10 @@ func snapshot(problem_id: String) -> Dictionary:
 	var k := stream.kpis(net.time, CHECK_DAYS)
 	return {
 		"capacity": c["capacity_per_week"], "constraint_pool": c["constraint_pool"],
+		"at_constraint": c["constraint_pool"] in _pools_at(p.step),
 		"throughput": k["throughput_per_week"], "lead_time": k["lead_days_p50"],
 		"first_time_right": k["first_time_right"], "on_time": k["on_time"],
-		"step": _step(p.step).stats_since(SimCalendar.day_of(net.time) - CHECK_DAYS),
+		"step": _recent_stats(net.step_at(p.step)),
 	}
 
 
@@ -309,32 +313,29 @@ func snapshot(problem_id: String) -> Dictionary:
 ## cause_right | cause_wrong | mismatch | too_early.
 func check(problem_id: String) -> Dictionary:
 	var st := state[problem_id]
-	if st.phase != "check_ready":
+	if st.phase != P.CHECK_READY:
 		return {}
 	var p := problems[problem_id]
 	net.clear_effects("do:" + problem_id)
 	var after := snapshot(problem_id)
-	var cause_correct: bool = Investigation.cause_options(p, problem_list())["correct"] == st.a3["cause"]
 	var result := {
 		"passed": st.eff >= Pdca.CHECK_PASS, "before": st.baseline, "after": after, "level": st.level,
-		"cause_correct": cause_correct, "waste_right": st.a3["waste"] == p.waste,
-		"lesson": "cause_right" if cause_correct else "cause_wrong",
+		"cause_correct": st.cause_correct, "waste_right": st.waste_right,
+		"lesson": "cause_right" if st.cause_correct else "cause_wrong",
 		# The step got better, but the stream still waits on another team.
-		"not_constraint": not st.baseline["constraint_pool"] in _pools_at(p.step)
-			and after["capacity"] < st.baseline["capacity"] * 1.01,
+		"not_constraint": not st.baseline["at_constraint"] and after["capacity"] < st.baseline["capacity"] * 1.01,
 	}
 	profile.learn(["PDCA", "eight_wastes", "waste_" + p.waste])
 	if result["not_constraint"]:
 		profile.learn(["bottleneck_focus", "theory_of_constraints"])
 	if result["passed"]:
-		st.phase = "checked"
+		st.phase = P.CHECKED
 		return result
 	result["lesson"] = "mismatch" if st.level == "mismatch" else "too_early"
 	st.failed_checks += 1
-	st.tried.append(st.a3["cm"])
 	st.eff = 0.0
 	st.level = ""
-	st.phase = "spotted"
+	st.phase = P.SPOTTED
 	net.clear_effects("cm:" + problem_id)
 	_apply_problem(st)
 	return result
@@ -346,52 +347,56 @@ func check(problem_id: String) -> Dictionary:
 ## not (the fix fades after the countermeasure's decay). Returns the score.
 func act(problem_id: String, standardise: bool) -> Dictionary:
 	var st := state[problem_id]
-	if st.phase != "checked":
+	if st.phase != P.CHECKED:
 		return {}
 	var p := problems[problem_id]
-	var cm := countermeasures[st.a3["cm"]]
 	standardise = standardise and profile.budget >= STANDARDISE_BUDGET
 	if standardise:
 		profile.budget -= STANDARDISE_BUDGET
+	st.score = Pdca.score(_score_inputs(st, p, standardise))
+	st.phase = P.RESOLVED
+	var decay := countermeasures[st.a3["cm"]].decay_days
+	st.recur_at = net.time + SimCalendar.days(decay) if not standardise and decay >= 0 else -1
+	net.clear_effects("problem:" + problem_id)
+	profile.learn(p.teaches + (PackedStringArray(["standard_work"]) if standardise else PackedStringArray()))
+	var belt := Progression.belt_index(profile.xp)
+	profile.budget += Pdca.budget_for(st.score, p.severity)
+	profile.xp += Pdca.xp_for(st.score, p.tier)
+	if Progression.belt_index(profile.xp) > belt:
+		events.append({"type": "belt", "belt": Progression.belt_index(profile.xp)})
+	return st.score
+
+
+func _score_inputs(st: ProblemState, p: ProblemDef, standardise: bool) -> Dictionary:
 	var keys := p.clues.filter(func(c: Clue) -> bool: return c.key).map(func(c: Clue) -> String: return c.id)
 	var evidence: Array = st.a3["evidence"]
-	var capacity: float = snapshot(problem_id)["capacity"]
 	var before: float = st.baseline["capacity"]
-	st.score = Pdca.score({
+	var capacity: float = snapshot(p.id)["capacity"]
+	return {
 		"key_found": keys.filter(func(id: String) -> bool: return found.has(id)).size(),
 		"key_total": keys.size(),
-		"scouted": observed.keys().any(func(place: String) -> bool: return place != p.step and place.get_slice(".", 0) == p.stream_id()),
+		# Walked another step of the same value stream.
+		"scouted": observed.keys().any(func(place: String) -> bool:
+			return place != p.step and place.get_slice(".", 0) == p.stream_id()),
 		"blamed": st.blamed,
-		"cause_correct": Investigation.cause_options(p, problem_list())["correct"] == st.a3["cause"],
+		"cause_correct": st.cause_correct,
 		"key_linked": evidence.filter(func(id: String) -> bool: return id in keys).size(),
 		"herrings_linked": evidence.filter(func(id: String) -> bool: return not id in keys).size(),
 		"eff": st.eff,
 		"failed_checks": st.failed_checks,
 		"prediction_right": st.a3["prediction"] == p.kpi,
 		"standardised": standardise,
-		"waste_right": st.a3["waste"] == p.waste,
+		"waste_right": st.waste_right,
 		"capacity_gain": (capacity - before) / before if before > 0.0 else 0.0,
-		"at_constraint": st.baseline["constraint_pool"] in _pools_at(p.step),
-	})
-	st.standardised = standardise
-	st.phase = "resolved"
-	st.recur_at = net.time + SimCalendar.days(cm.decay_days) if not standardise and cm.decay_days >= 0 else -1
-	net.clear_effects("problem:" + problem_id)
-	profile.learn(p.teaches + (PackedStringArray(["standard_work"]) if standardise else PackedStringArray()))
-	var belt := Progression.belt_index(profile.xp)
-	profile.budget += Pdca.budget_for(st.score, p.severity)
-	profile.xp += Pdca.xp_for(st.score, p.tier)
-	profile.resolved += 1
-	if Progression.belt_index(profile.xp) > belt:
-		events.append({"type": "belt", "belt": Progression.belt_index(profile.xp)})
-	return st.score
+		"at_constraint": st.baseline["at_constraint"],
+	}
 
 
 ## An unstandardised fix fades: the improvement goes, the problem returns.
 func _recur(st: ProblemState) -> void:
 	net.clear_effects("cm:" + st.id)
 	var fresh := ProblemState.new(st.id)
-	fresh.phase = "active"
+	fresh.phase = P.ACTIVE
 	state[st.id] = fresh
 	_apply_problem(fresh)
 	events.append({"type": "recurred", "problem": st.id})

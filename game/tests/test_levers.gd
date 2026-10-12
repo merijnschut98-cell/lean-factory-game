@@ -56,7 +56,7 @@ func test_interrupted_work_is_replanned() -> void:
 	var planned := net.stream("planned")
 	var interrupted := NetFixture.events(net, "preempted").size()
 	assert_true(interrupted > 0)
-	assert_eq(planned.step("plan").entered - (planned.finished.size() + planned.active), interrupted,
+	assert_eq(planned.step("plan").stats_since(0)["entered"] - (planned.finished.size() + planned.active), interrupted,
 		"every interrupted job went back to planning once more")
 
 

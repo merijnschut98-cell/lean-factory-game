@@ -106,6 +106,14 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
   - Check on end-to-end KPIs and capacity plus per-step daily statistics; five-dimension score, budget and XP, belts.
   - Lesson test on real content: fixing Planning (≈40% load) scores flow impact ≤ 2 with "not the constraint"; fixing Werkvoorbereiding scores ≥ 4. 98 Godot tests.
   - Missions and the story arc follow with the Phase B content
+- ✅ Simplify pass on step 5:
+  - a `started` flag (not a guess from remaining time) for queue statistics;
+  - phases as an enum;
+  - A3 verdicts fixed at submit;
+  - one `Network.step_at(place)`;
+  - dead state removed (incl. the duplicate step counters; daily statistics are the one source);
+  - bounded `stats_since`;
+  - `_score_inputs` split out of `act`.
 - ⬜ Step 6: save/load of the simulation and rules state (JSON, versioned, validated)
 - ⬜ Gate: four value streams run headless with realistic KPIs; tests cover flow, pre-emption, rework, stock-outs, capacity, the PDCA loop and save/load
 

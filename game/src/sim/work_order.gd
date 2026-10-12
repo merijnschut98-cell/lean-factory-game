@@ -12,8 +12,11 @@ var step_index := 0
 ## a pool's busy list, the network's waiting list or a stock's waiting list).
 ## Minutes of touch time left at the current work step.
 var remaining := 0
-## When the order joined the current queue (for queue-time statistics).
+## When the order joined the current queue (for queue-time statistics), and
+## whether work on it has started there (a resume after an interruption is
+## no new start).
 var queued_at := 0
+var started := false
 ## For WAITING orders: when the wait ends and which step comes next.
 var wait_until := 0
 var pending_step := 0

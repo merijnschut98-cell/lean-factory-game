@@ -36,20 +36,19 @@ var starts_with := ""
 var item_id := ""
 var quantity := 1
 
-# Counters since the start of the run.
-var entered := 0
-var reworked := 0
 ## Per simulated day: counts by Stat, for before/after comparisons and the
 ## value stream map.
 var _daily: Dictionary[int, PackedInt64Array] = {}
+var _last_day := 0
 
 
 func record(day: int, stat: Stat, amount: int = 1) -> void:
-	if not _daily.has(day):
-		var counts := PackedInt64Array()
+	var counts: PackedInt64Array = _daily.get(day, PackedInt64Array())
+	if counts.is_empty():
 		counts.resize(Stat.size())
-		_daily[day] = counts
-	_daily[day][stat] += amount
+		_last_day = maxi(_last_day, day)
+	counts[stat] += amount
+	_daily[day] = counts
 
 
 ## Totals from `day` on: {entered, done, reworked, queue_hours (mean wait
@@ -57,8 +56,8 @@ func record(day: int, stat: Stat, amount: int = 1) -> void:
 func stats_since(day: int) -> Dictionary:
 	var totals := PackedInt64Array()
 	totals.resize(Stat.size())
-	for d in _daily:
-		if d >= day:
+	for d in range(maxi(0, day), _last_day + 1):
+		if _daily.has(d):
 			for i in Stat.size():
 				totals[i] += _daily[d][i]
 	var started := totals[Stat.STARTED]
