@@ -73,7 +73,7 @@ static func create(config: Dictionary, seed_value: int = 1) -> Network:
 		item.level = int(s["level"])
 		item.reorder_point = int(s["reorder_point"])
 		item.order_quantity = int(s["order_quantity"])
-		item.lead_minutes = SimCalendar.days(float(s["lead_days"]))
+		item.lead_minutes = _days(s, "lead_days")
 		net.stock[item.id] = item
 	for v: Dictionary in config.get("streams", []):
 		var stream := net._build_stream(v)
@@ -94,7 +94,7 @@ func _build_stream(v: Dictionary) -> ValueStream:
 	if v.has("norm_hours"):
 		stream.norm_minutes = SimCalendar.hours(float(v["norm_hours"]))
 	else:
-		stream.norm_minutes = SimCalendar.days(float(v["norm_days"]))
+		stream.norm_minutes = _days(v, "norm_days")
 	stream.priority = int(v["priority"])
 	stream.preempts = bool(v.get("preempts", false))
 	stream.wip_limit = int(v.get("wip_limit", 0))
@@ -117,13 +117,15 @@ func _build_stream(v: Dictionary) -> ValueStream:
 				step.pool_ids = PackedStringArray(s["pool"] if s["pool"] is Array else [s["pool"]])
 				step.touch_minutes = SimCalendar.hours(float(s["touch_hours"]))
 				step.ftr = float(s["ftr"])
+				# Where an order goes back to, and after how long: on rework, after an
+				# interruption, or when its dossier went stale.
 				step.rework_index = ids.find(s.get("rework_to", step.id))
-				step.rework_wait_minutes = SimCalendar.days(float(s.get("rework_wait_days", 0.0)))
-				step.interrupt_index = ids.find(s["interrupt_to"]) if s.has("interrupt_to") else -1
-				step.interrupt_wait_minutes = SimCalendar.days(float(s.get("interrupt_wait_days", 0.0)))
-				step.stale_after_minutes = SimCalendar.days(float(s.get("stale_after_days", 0.0)))
-				step.stale_index = ids.find(s["stale_to"]) if s.has("stale_to") else -1
-				step.stale_wait_minutes = SimCalendar.days(float(s.get("stale_wait_days", 0.0)))
+				step.rework_wait_minutes = _days(s, "rework_wait_days")
+				step.interrupt_index = ids.find(s.get("interrupt_to", ""))
+				step.interrupt_wait_minutes = _days(s, "interrupt_wait_days")
+				step.stale_index = ids.find(s.get("stale_to", ""))
+				step.stale_wait_minutes = _days(s, "stale_wait_days")
+				step.stale_after_minutes = _days(s, "stale_after_days")
 				for pool_id in step.pool_ids:
 					if not pools.has(pool_id):
 						error = "step %s: unknown pool %s" % [step.id, pool_id]
@@ -132,9 +134,9 @@ func _build_stream(v: Dictionary) -> ValueStream:
 				_queues[step] = [] as Array[WorkOrder]
 			"wait":
 				step.kind = SimStep.Kind.WAIT
-				step.wait_minutes = SimCalendar.days(float(s["days"]))
+				step.wait_minutes = _days(s, "days")
 				step.spread = float(s.get("spread", 0.0))
-				step.batch_minutes = SimCalendar.days(float(s.get("batch_days", 0.0)))
+				step.batch_minutes = _days(s, "batch_days")
 				step.starts_with = s.get("starts_with", "")
 			"material":
 				step.kind = SimStep.Kind.MATERIAL
@@ -150,6 +152,10 @@ func _build_stream(v: Dictionary) -> ValueStream:
 	return stream
 
 
+static func _days(d: Dictionary, key: String) -> int:
+	return SimCalendar.days(float(d.get(key, 0.0)))
+
+
 ## Orders waiting at a work step (empty for other kinds).
 func queue_of(step: SimStep) -> Array[WorkOrder]:
 	return _queues[step]
@@ -158,11 +164,20 @@ func queue_of(step: SimStep) -> Array[WorkOrder]:
 ## Turn on, or replace, the effects of one source (a problem, a countermeasure,
 ## an event). Returns an error and changes nothing if any effect is invalid.
 func set_effects(source: String, effects: Array) -> String:
-	return _modifiers.set_source(self, source, effects)
+	var error := _modifiers.set_source(self, source, effects)
+	_release_all_held()
+	return error
 
 
 func clear_effects(source: String) -> void:
 	_modifiers.clear_source(self, source)
+	_release_all_held()
+
+
+## Held orders start on an arrival, a finish, or here: a changed WIP limit.
+func _release_all_held() -> void:
+	for s in streams:
+		_release_held(s)
 
 
 ## Active effects by source (a copy), for saves and the UI.
@@ -207,9 +222,6 @@ func _next_busy_tick() -> int:
 	for pool in _pool_list:
 		if not pool.busy.is_empty():
 			return after
-	for s in streams:
-		if _can_release(s):
-			return after
 	var next := (SimCalendar.day_of(time) + 1) * SimCalendar.MINUTES_PER_DAY
 	for pool in _pool_list:
 		if pool.present > 0 and _most_urgent_step(pool) != null:
@@ -234,8 +246,6 @@ func _tick() -> void:
 	if day != _day:
 		_day = day
 		_start_day()
-	for s in streams:
-		_release_held(s)
 	_release_arrivals()
 	_finish_waits()
 	_deliver_stock()
@@ -463,9 +473,9 @@ func _assign_work() -> void:
 			if step == null:
 				break
 			var order: WorkOrder = queue_of(step).pop_front()
-			if not order.started and _went_stale(order, step):
-				continue
 			if not order.started:
+				if _went_stale(order, step):
+					continue
 				order.started = true
 				_record(step, SimStep.Stat.STARTED)
 				_record(step, SimStep.Stat.QUEUE_MINUTES, time - order.queued_at)

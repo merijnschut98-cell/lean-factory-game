@@ -23,13 +23,18 @@ func _busy_crew(reserve: int = 0, interrupt: Dictionary = {}) -> Network:
 	])
 
 
-func _max_planned_busy(net: Network, days: int) -> int:
+## The largest value `measure` takes while stepping the network tick by tick.
+func _max_over(net: Network, days: int, measure: Callable) -> int:
 	var most := 0
 	for i in SimCalendar.days(days) / SimCalendar.TICK:
 		net.advance(SimCalendar.TICK)
-		var planned := net.pools["crew"].busy.filter(func(o: WorkOrder) -> bool: return o.stream.id == "planned")
-		most = maxi(most, planned.size())
+		most = maxi(most, measure.call())
 	return most
+
+
+func _max_planned_busy(net: Network, days: int) -> int:
+	return _max_over(net, days, func() -> int:
+		return net.pools["crew"].busy.filter(func(o: WorkOrder) -> bool: return o.stream.id == "planned").size())
 
 
 func test_reserve_keeps_people_free_for_outages() -> void:
@@ -166,11 +171,7 @@ func test_dossiers_that_wait_too_long_go_stale() -> void:
 
 
 func _max_started(net: Network, days: int) -> int:
-	var most := 0
-	for i in SimCalendar.days(days) / SimCalendar.TICK:
-		net.advance(SimCalendar.TICK)
-		most = maxi(most, net.stream("s").active - net.held("s"))
-	return most
+	return _max_over(net, days, func() -> int: return net.stream("s").active - net.held("s"))
 
 
 func test_a_wip_limit_holds_new_orders_before_they_start() -> void:
@@ -195,7 +196,6 @@ func test_wip_limit_is_a_lever() -> void:
 	net.advance_days(14)
 	assert_true(net.held("s") > 0)
 	net.clear_effects("cm:conwip")
-	net.advance(SimCalendar.TICK)
-	assert_eq(net.held("s"), 0, "lifting the limit releases every held order")
+	assert_eq(net.held("s"), 0, "lifting the limit releases every held order at once")
 	assert_ne(net.set_effects("bad", [NetFixture.effect("s", "wip_limit", -1)]), "")
 	assert_ne(net.set_effects("bad", [NetFixture.effect("s", "wip_limit", 2.5)]), "")
