@@ -6,13 +6,13 @@ Game text is **Dutch** (with sector terms). Code, comments and this plan stay in
 
 ---
 
-## Current Status: Phase A — Engine (Godot) 🔧 steps 1–6 done, gate next
+## Current Status: Phase A — Engine (Godot) ✅ done · Phase B — Content 🔧 next
 
 Pivot agreed 2026-10-12: from a hoverboard factory to a grid operator. The 3D factory prototype is archived in `archive/factory-3d/` (also git commit `b3a4c8c`). Its investigation / A3 / PDCA / bottleneck logic will be carried over and generalised.
 
 This is a multi-month project, built the right way: research → design (reviewed by Merijn) → engine → content → world → UI, in small tested increments. No publishing deadline. Built in **Godot 4 + GDScript** from the start (decided 2026-10-12).
 
-**Next task:** Phase A gate — automated-testing and technical-debt review of the whole engine before Phase B.
+**Next task:** Phase B — the content pipeline for problems and countermeasures (`content/problems_tier1.yaml`, `content/countermeasures.yaml`: validator, cross-checks against the value streams, loader into `ProblemDef`/`CountermeasureDef`), then the first tier-1 problems from the GDD catalogue.
 
 ---
 
@@ -129,7 +129,19 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
   - `RegionState` includes its network, so callers save one thing;
   - the simulation keeps 120 days of history (a two-year save would otherwise be about 1 MB and growing);
   - one shape check (`JsonFile.shape_error`), `ValueStream.step_index`, shared rules fixtures.
-- ⬜ Gate: four value streams run headless with realistic KPIs; tests cover flow, pre-emption, rework, stock-outs, capacity, the PDCA loop and save/load
+- ✅ Gate (2026-10-12): four value streams run headless with realistic KPIs; tests cover flow, pre-emption, rework, stock-outs, capacity, the PDCA loop and save/load. 107 Godot tests (about 1.5 s), 270 Python tests, content check clean.
+  - Automated-testing review: every sim and rules class has tests for the happy path, invalid input and boundaries:
+    - bounds and clamps;
+    - corrupt saves, unknown ids, path escape;
+    - weekends and midnight;
+    - the WIP-limit sizing trap.
+    Missions, story and UI are untested because they do not exist yet.
+  - Technical-debt review:
+    - Dead code: `Rng.exp_mean`, `pick`, `next` (factory leftovers) removed. Everything else unused in `src/` is the Region's public player API, waiting for the UI.
+    - Annotations: no TODO/FIXME/HACK.
+    - Docs: every script has a header comment; ARCHITECTURE.md is current.
+    - Duplication: content rules live in both Python and GDScript (tracked above; decide with the Phase B schemas).
+    - Dependencies: dev dependencies (`pytest>=`) are unpinned while the legacy runtime dependencies are pinned. Low risk; pin when CI shows drift.
 
 ## Phase B — Content (Dutch) ⬜
 - ⬜ `content/problems_tier1.yaml`: ~16 problems across the four streams (well-known and less-known), each with symptoms, clues per tool (key + red herrings, 5 Whys depth), waste, root cause, effective countermeasures, effect
