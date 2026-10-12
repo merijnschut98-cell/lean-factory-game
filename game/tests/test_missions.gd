@@ -14,10 +14,11 @@ func _ids(defs: Array) -> Array:
 	return ids
 
 
-## Walk every work step of the connections stream (the fixture has four).
+## Walk every work step of the connections stream.
 func _walk_connections(log: Missions) -> void:
-	for step in ["intake", "design", "build", "revision"]:
-		log.region.use_tool("connections." + step, "shadow")
+	for step in log.region.net.stream("connections").steps:
+		if step.kind == SimStep.Kind.WORK:
+			log.region.use_tool("connections." + step.id, "shadow")
 	log.update()
 
 

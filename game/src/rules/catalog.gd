@@ -18,42 +18,36 @@ var error := ""
 
 static func load_from(dir: String = DATA_DIR) -> Catalog:
 	var c := Catalog.new()
-	var cms := JsonFile.read_dict(dir + "/countermeasures.json")
-	if not cms["error"].is_empty():
-		c.error = cms["error"]
+	if c._load(dir + "/countermeasures.json", "countermeasures", CountermeasureDef.from_dict, c.countermeasures).is_empty():
 		return c
-	for d: Variant in cms["data"].get("countermeasures", []):
-		var cm := CountermeasureDef.from_dict(_dict(d))
-		c._keep_first(cm.error)
-		c.countermeasures.append(cm)
-	var campaign := JsonFile.read_dict(dir + "/missions.json")
-	if not campaign["error"].is_empty():
-		c.error = campaign["error"]
+	var campaign := c._load(dir + "/missions.json", "missions", MissionDef.from_dict, c.missions)
+	if campaign.is_empty():
 		return c
-	c.coach = _dict(campaign["data"].get("coach"))
-	for d: Variant in campaign["data"].get("missions", []):
-		var m := MissionDef.from_dict(_dict(d))
-		c._keep_first(m.error)
-		c.missions.append(m)
+	c.coach = JsonFile.dict_or_empty(campaign.get("coach"))
 	var files := Array(DirAccess.get_files_at(dir)).filter(func(f: String) -> bool:
 		return f.begins_with(PROBLEM_FILES) and f.ends_with(".json"))
 	files.sort()
 	for file: String in files:
-		var doc := JsonFile.read_dict(dir + "/" + file)
-		if not doc["error"].is_empty():
-			c.error = doc["error"]
+		if c._load(dir + "/" + file, "problems", ProblemDef.from_dict, c.problems).is_empty():
 			return c
-		for d: Variant in doc["data"].get("problems", []):
-			var p := ProblemDef.from_dict(_dict(d))
-			c._keep_first(p.error)
-			c.problems.append(p)
 	return c
+
+
+## Read definitions under `key` of a JSON file into `into` (each made by
+## `from_dict`, keeping the first error). Returns the document; empty (and
+## `error` set) when the file cannot be read.
+func _load(path: String, key: String, from_dict: Callable, into: Array) -> Dictionary:
+	var doc := JsonFile.read_dict(path)
+	if not doc["error"].is_empty():
+		error = doc["error"]
+		return {}
+	for d: Variant in doc["data"].get(key, []):
+		var def: Variant = from_dict.call(JsonFile.dict_or_empty(d))
+		_keep_first(def.error)
+		into.append(def)
+	return doc["data"]
 
 
 func _keep_first(definition_error: String) -> void:
 	if error.is_empty():
 		error = definition_error
-
-
-static func _dict(d: Variant) -> Dictionary:
-	return d if d is Dictionary else {}

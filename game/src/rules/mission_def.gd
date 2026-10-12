@@ -38,25 +38,24 @@ static func from_dict(d: Dictionary) -> MissionDef:
 	m.name = str(d.get("name", ""))
 	m.kind = str(d.get("kind", ""))
 	m.tier = int(d.get("tier", 1))
-	var requires: Dictionary = d.get("requires", {}) if d.get("requires") is Dictionary else {}
+	var requires := JsonFile.dict_or_empty(d.get("requires"))
 	m.requires_missions = PackedStringArray(requires.get("missions", []))
 	m.requires_belt = int(requires.get("belt", 0))
 	m.briefing = str(d.get("briefing", ""))
 	m.debrief = str(d.get("debrief", ""))
 	m.fail_text = str(d.get("fail", ""))
-	var goal: Dictionary = d.get("goal", {}) if d.get("goal") is Dictionary else {}
+	var goal := JsonFile.dict_or_empty(d.get("goal"))
 	m.goal_type = str(goal.get("type", ""))
 	m.goal_stream = str(goal.get("stream", ""))
 	m.goal_problem = str(goal.get("problem", ""))
 	m.goal_clues = int(goal.get("clues", 0))
 	m.deadline_days = int(d.get("deadline_days", -1))
-	var rewards: Dictionary = d.get("rewards", {}) if d.get("rewards") is Dictionary else {}
+	var rewards := JsonFile.dict_or_empty(d.get("rewards"))
 	m.reward_xp = int(rewards.get("xp", 0))
 	m.reward_budget = int(rewards.get("budget", 0))
-	var insights: Variant = d.get("insights", {})
-	if insights is Dictionary:
-		for stage: Variant in insights:
-			m.insights[str(stage)] = str(insights[stage])
+	var insights := JsonFile.dict_or_empty(d.get("insights"))
+	for stage: Variant in insights:
+		m.insights[str(stage)] = str(insights[stage])
 	if m.id.is_empty() or m.name.is_empty():
 		m.error = "mission %s: needs an id and a name" % m.id
 	elif not m.kind in KINDS or not m.goal_type in GOALS:

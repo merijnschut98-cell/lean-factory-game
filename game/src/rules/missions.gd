@@ -23,7 +23,8 @@ var coach: Dictionary
 ## Missions the player has accepted: id → {status: active | completed |
 ## failed, accepted_at (minutes), asks: {stage: count}}.
 var progress: Dictionary[String, Dictionary] = {}
-## {type: accepted | completed | failed | belt, mission?, belt?} for the UI.
+## {type: accepted | completed | failed, mission} for the UI (a new belt is a
+## Region event).
 var events: Array[Dictionary] = []
 
 
@@ -90,7 +91,7 @@ func abandon(id: String) -> bool:
 
 
 ## Complete the missions whose goal is met and fail those past their
-## deadline. Call after the player acts or time passes.
+## deadline. The game loop calls it after every Region action and time step.
 func update() -> void:
 	for m in active():
 		if _goal_met(m):
@@ -98,11 +99,6 @@ func update() -> void:
 		elif m.deadline_days >= 0 and region.net.time > progress[m.id]["accepted_at"] + SimCalendar.days(m.deadline_days):
 			progress[m.id]["status"] = "failed"
 			events.append({"type": "failed", "mission": m.id})
-
-
-func advance_days(n: float) -> void:
-	region.advance_days(n)
-	update()
 
 
 ## Ask the coach. With no mission named, about the main mission. Returns
@@ -137,7 +133,7 @@ func stage_of(m: MissionDef) -> String:
 			return "experiment"
 		P.CHECKED, P.RESOLVED:
 			return "reflect"
-	return "understand" if _key_clues_found(m.goal_problem) > 0 else "go_see"
+	return "understand" if region.key_clues_found(m.goal_problem) > 0 else "go_see"
 
 
 func drain_events() -> Array[Dictionary]:
@@ -162,7 +158,7 @@ func load_dict(d: Dictionary) -> Array[String]:
 		var entry: Variant = saved[id]
 		if defs.has(str(id)) and entry is Dictionary and entry.get("status") in ["active", "completed", "failed"]:
 			progress[str(id)] = {"status": entry["status"], "accepted_at": int(entry.get("accepted_at", 0)),
-				"asks": entry.get("asks", {}) if entry.get("asks") is Dictionary else {}}
+				"asks": JsonFile.dict_or_empty(entry.get("asks"))}
 		else:
 			dropped.append(str(id))
 	return dropped
@@ -185,22 +181,13 @@ func _goal_met(m: MissionDef) -> bool:
 					return false
 			return true
 		"investigate":
-			return _key_clues_found(m.goal_problem) >= m.goal_clues
+			return region.key_clues_found(m.goal_problem) >= m.goal_clues
 		"solve":
 			return region.state[m.goal_problem].phase == P.RESOLVED
 	return false
 
 
-func _key_clues_found(problem_id: String) -> int:
-	return region.problems[problem_id].clues.filter(func(c: Clue) -> bool:
-		return c.key and region.found.has(c.id)).size()
-
-
 func _complete(m: MissionDef) -> void:
 	progress[m.id]["status"] = "completed"
-	var belt := Progression.belt_index(region.profile.xp)
-	region.profile.xp += m.reward_xp
-	region.profile.budget += m.reward_budget
+	region.grant(m.reward_xp, m.reward_budget)
 	events.append({"type": "completed", "mission": m.id})
-	if Progression.belt_index(region.profile.xp) > belt:
-		events.append({"type": "belt", "belt": Progression.belt_index(region.profile.xp)})

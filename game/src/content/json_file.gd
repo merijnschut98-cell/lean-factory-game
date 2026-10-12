@@ -10,6 +10,11 @@ static func shape_error(d: Dictionary, shape: Dictionary) -> String:
 	return ""
 
 
+## `v` if it is a Dictionary, else an empty one (for optional parts of a document).
+static func dict_or_empty(v: Variant) -> Dictionary:
+	return v if v is Dictionary else {}
+
+
 ## Returns {"data": Dictionary, "error": String}; `error` is empty on success.
 static func read_dict(path: String) -> Dictionary:
 	var text := FileAccess.get_file_as_string(path)

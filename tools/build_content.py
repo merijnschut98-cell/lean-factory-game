@@ -87,6 +87,15 @@ class _StrictLoader(yaml.SafeLoader):
         return super().construct_mapping(node, deep)
 
 
+def _mapping(item: dict, key: str, allowed: set[str], where: str) -> dict:
+    """An optional mapping under `key` with only `allowed` keys ({} when absent)."""
+    value = item.get(key, {})
+    if not isinstance(value, dict):
+        raise ContentError(f"{where}: '{key}' must be a mapping")
+    _known_keys(value, allowed, f"{where} {key}")
+    return value
+
+
 def _known_keys(d: dict, allowed: set[str], where: str) -> None:
     """Reject keys nobody reads, such as a misspelt optional field."""
     unknown = sorted(str(k) for k in d if k not in allowed)
@@ -477,10 +486,13 @@ def check_problems(docs: dict[str, Any]) -> None:
     cms = {c["id"]: c for c in docs["countermeasures"]["countermeasures"]}
     for cm in cms.values():
         _check_countermeasure(cm, net)
-    for stem, doc in docs.items():
-        if stem.startswith(PROBLEM_FILES):
-            for p in doc["problems"]:
-                _check_problem(p, f"{stem}.yaml: problem '{p['id']}'", net, cms)
+    for stem, p in _all_problems(docs):
+        _check_problem(p, f"{stem}.yaml: problem '{p['id']}'", net, cms)
+
+
+def _all_problems(docs: dict[str, Any]) -> list[tuple[str, dict]]:
+    """(file stem, problem) for every problem in every problems_tier* file."""
+    return [(stem, p) for stem, doc in docs.items() if stem.startswith(PROBLEM_FILES) for p in doc["problems"]]
 
 
 MISSION_KINDS = ["main", "side"]
@@ -494,10 +506,7 @@ MISSION_KEYS = {"id", "name", "kind", "tier", "requires", "briefing", "debrief",
 def validate_missions(doc: Any, source: str) -> None:
     """The campaign: the coach's questions per stage and the missions (CLAUDE.md §2)."""
     _require_strings(doc, [], source)
-    coach = doc.get("coach")
-    if not isinstance(coach, dict):
-        raise ContentError(f"{source}: 'coach' must be a mapping")
-    _known_keys(coach, {"name", "role", "stages"}, f"{source} coach")
+    coach = _mapping(doc, "coach", {"name", "role", "stages"}, source)
     _require_strings(coach, ["name", "role"], f"{source} coach")
     stages = coach.get("stages")
     if not isinstance(stages, dict) or sorted(stages) != sorted(COACH_STAGES):
@@ -510,10 +519,7 @@ def validate_missions(doc: Any, source: str) -> None:
         _one_of(m, "kind", MISSION_KINDS, where)
         _number(m, "tier", where, 1, 4, integer=True)
         _require_strings(m, ["briefing", "debrief"], where)
-        requires = m.get("requires", {})
-        if not isinstance(requires, dict):
-            raise ContentError(f"{where}: 'requires' must be a mapping")
-        _known_keys(requires, {"missions", "belt"}, f"{where} requires")
+        requires = _mapping(m, "requires", {"missions", "belt"}, where)
         _string_list(requires, "missions", f"{where} requires")
         _number(requires, "belt", f"{where} requires", 0, len(BELT_XP) - 1, integer=True, default=0)
         goal = m.get("goal")
@@ -526,10 +532,7 @@ def validate_missions(doc: Any, source: str) -> None:
         if "deadline_days" in m:
             _number(m, "deadline_days", where, 1, integer=True)
             _require_strings(m, ["fail"], where)
-        rewards = m.get("rewards", {})
-        if not isinstance(rewards, dict):
-            raise ContentError(f"{where}: 'rewards' must be a mapping")
-        _known_keys(rewards, {"xp", "budget"}, f"{where} rewards")
+        rewards = _mapping(m, "rewards", {"xp", "budget"}, where)
         for key in ("xp", "budget"):
             _number(rewards, key, f"{where} rewards", 0, integer=True, default=0)
         insights = m.get("insights", {})
@@ -544,7 +547,7 @@ def check_missions(docs: dict[str, Any]) -> None:
     whole: no cycles, a way in, and every mission reachable."""
     missions = {m["id"]: m for m in docs["missions"]["missions"]}
     streams = {s["id"] for s in docs["value_streams"]["streams"]}
-    problems = {p["id"]: p for stem, doc in docs.items() if stem.startswith(PROBLEM_FILES) for p in doc["problems"]}
+    problems = {p["id"]: p for _, p in _all_problems(docs)}
     solved: dict[str, str] = {}
     for m in missions.values():
         where = f"missions.yaml: mission '{m['id']}'"

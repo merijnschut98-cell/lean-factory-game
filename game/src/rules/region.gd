@@ -13,7 +13,7 @@ extends RefCounted
 ## spent on the experiment).
 
 const P := ProblemState.Phase
-## One main mission and three side missions can each have a problem open.
+## At most this many problems are open at once.
 const MAX_OPEN := 4
 const CHECK_DAYS := 14
 const STANDARDISE_BUDGET := 3000
@@ -32,9 +32,8 @@ var found: Dictionary[String, bool] = {}
 var trust: Dictionary[String, int] = {}
 ## {type: activated | check_ready | recurred | belt, ...} for the world and UI.
 var events: Array[Dictionary] = []
-## Problem costs not yet taken from the budget (charged in whole euros per day).
+## Problem costs not yet taken from the budget (charged in whole euros).
 var _cost_owed := 0.0
-var _cost_day := 0
 
 
 func _init(network: Network, problem_defs: Array[ProblemDef], cm_defs: Array[CountermeasureDef], player: Profile) -> void:
@@ -80,8 +79,9 @@ func advance_days(n: float) -> void:
 
 
 func advance(minutes: int) -> void:
+	var day := SimCalendar.day_of(net.time)
 	net.advance(minutes)
-	_charge_costs()
+	_charge_costs(SimCalendar.day_of(net.time) - day)
 	for st: ProblemState in state.values():
 		if st.phase == P.DOING and net.time >= st.check_at:
 			st.phase = P.CHECK_READY
@@ -96,17 +96,19 @@ func weekly_cost() -> float:
 	var total := 0.0
 	for st: ProblemState in state.values():
 		if st.is_open():
-			total += problems[st.id].cost_per_week * (1.0 - st.eff)
+			total += _cost_of(st)
 	return total
 
 
-## Take each passed day's share of the weekly cost from the budget.
-func _charge_costs() -> void:
-	var today := SimCalendar.day_of(net.time)
-	if today <= _cost_day:
+func _cost_of(st: ProblemState) -> float:
+	return problems[st.id].cost_per_week * (1.0 - st.eff)
+
+
+## Take the weekly cost's share for `days` passed days from the budget.
+func _charge_costs(days: int) -> void:
+	if days <= 0:
 		return
-	_cost_owed += weekly_cost() * (today - _cost_day) / 7.0
-	_cost_day = today
+	_cost_owed += weekly_cost() * days / 7.0
 	var whole := floori(_cost_owed)
 	profile.budget -= whole
 	_cost_owed -= whole
@@ -329,7 +331,7 @@ func snapshot(problem_id: String) -> Dictionary:
 		"capacity": c["capacity_per_week"], "constraint_pool": c["constraint_pool"],
 		"at_constraint": c["constraint_pool"] in _pools_at(p.step),
 		"throughput": k["throughput_per_week"], "lead_time": k["lead_days_p50"],
-		"cost_per_week": p.cost_per_week * (1.0 - state[problem_id].eff),
+		"cost_per_week": _cost_of(state[problem_id]),
 		"first_time_right": k["first_time_right"], "on_time": k["on_time"],
 		"step": _recent_stats(net.step_at(p.step)),
 	}
@@ -388,12 +390,23 @@ func act(problem_id: String, standardise: bool) -> Dictionary:
 	st.recur_at = net.time + SimCalendar.days(decay) if not standardise and decay >= 0 else -1
 	net.clear_effects("problem:" + problem_id)
 	profile.learn(p.teaches + (PackedStringArray(["standard_work"]) if standardise else PackedStringArray()))
+	grant(Pdca.xp_for(st.score, p.tier), Pdca.budget_for(st.score, p.severity))
+	return st.score
+
+
+## Reward the player (a resolved problem, a completed mission); a new belt
+## is an event.
+func grant(xp: int, budget: int) -> void:
 	var belt := Progression.belt_index(profile.xp)
-	profile.budget += Pdca.budget_for(st.score, p.severity)
-	profile.xp += Pdca.xp_for(st.score, p.tier)
+	profile.xp += xp
+	profile.budget += budget
 	if Progression.belt_index(profile.xp) > belt:
 		events.append({"type": "belt", "belt": Progression.belt_index(profile.xp)})
-	return st.score
+
+
+## Key clues of a problem the player has found.
+func key_clues_found(problem_id: String) -> int:
+	return problems[problem_id].clues.filter(func(c: Clue) -> bool: return c.key and found.has(c.id)).size()
 
 
 func _score_inputs(st: ProblemState, p: ProblemDef, standardise: bool) -> Dictionary:
@@ -402,7 +415,7 @@ func _score_inputs(st: ProblemState, p: ProblemDef, standardise: bool) -> Dictio
 	var before: float = st.baseline["capacity"]
 	var capacity: float = snapshot(p.id)["capacity"]
 	return {
-		"key_found": keys.filter(func(id: String) -> bool: return found.has(id)).size(),
+		"key_found": key_clues_found(p.id),
 		"key_total": keys.size(),
 		# Walked another step of the same value stream.
 		"scouted": observed.keys().any(func(place: String) -> bool:
