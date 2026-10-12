@@ -144,3 +144,69 @@ countermeasures:
     multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
     effects:
       - {target: meters.visit, property: ftr, value: 0.05}
+
+  # ── Revisie & GIS, graafschade ────────────────────────────────────────────
+  - id: revision_at_source
+    name: Revisie aan de bron
+    tier: 3
+    category: flow
+    description: De monteur legt het as-built direct bij oplevering vast op een tablet; geen papieren schets die weken later wordt overgetekend.
+    budget: 18000
+    team_hours: {gis: 40, monteurs: 30}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: connections.revision, property: touch_time, value: 0.8}
+  - id: daily_revision_template
+    name: Standaard revisieschets en dagelijks verwerken
+    tier: 1
+    category: standard_work
+    description: Eén vaste schets per standaardaansluiting, elke dag verwerkt in plaats van per maand opgespaard.
+    budget: 2500
+    team_hours: {gis: 15, monteurs: 10}
+    decay_days: 45
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: standard_test_trenches
+    name: Proefsleuven als standaard
+    tier: 1
+    category: safety
+    description: Bij graven in de buurt van kabels altijd eerst een proefsleuf; de opdrachtgever plant er tijd voor in.
+    budget: 3000
+    team_hours: {key_accounts: 10}
+    decay_days: 60
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: contractor_briefing
+    name: Briefing van graafaannemers
+    tier: 1
+    category: people
+    description: Aannemers krijgen voor de start een briefing met actuele kaarten en de afspraak over proefsleuven.
+    budget: 1500
+    team_hours: {key_accounts: 8}
+    decay_days: 30
+    multipliers: {full: 0.8, reduced: 0.4, minimal: 0.2}
+    effects: []
+
+  # ── Kennis en vakmanschap ─────────────────────────────────────────────────
+  - id: work_instruction_videos
+    name: Werkinstructies met video
+    tier: 1
+    category: standard_work
+    description: De ervaren monteurs leggen het lokaliseren in oude kabelnetten vast in korte video's en werkinstructies.
+    budget: 5000
+    team_hours: {monteurs: 40}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: skills_matrix_buddy
+    name: Skills-matrix en buddysysteem
+    tier: 2
+    category: people
+    description: Zichtbaar wie wat kan; elke jonge monteur draait mee met een ervaren buddy op storingen in oude netten.
+    budget: 7000
+    team_hours: {monteurs: 80}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: outages.locate, property: ftr, value: 0.03}

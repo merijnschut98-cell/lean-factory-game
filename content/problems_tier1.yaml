@@ -175,3 +175,84 @@ problems:
       - {tool: conversation, key: true, depth: 1, at: connections.design, text: "'Ik verzamel de aanvragen en stuur ze op maandag in één keer op; dat scheelt inloggen in het portaal.'"}
       - {tool: documents, key: true, depth: 1, at: connections.design, text: De vergunning wordt pas aangevraagd als het ontwerp helemaal af is, terwijl de gemeente alleen het tracé nodig heeft.}
       - {tool: time_study, key: true, depth: 2, at: connections.design, text: Een aanvraag indienen kost tien minuten; het tracé is al na een uur ontwerpen bekend.}
+
+  - id: revision_backlog
+    tier: 1
+    name: De revisieberg
+    step: connections.revision
+    waste: inventory
+    severity: medium
+    visibility: hidden
+    kpi: throughput
+    symptoms:
+      - Bij Revisie & GIS ligt een stapel schetsen van opgeleverde aansluitingen.
+      - Aansluitingen zijn technisch klaar maar administratief nog niet af.
+    root_cause: Wijzigingen worden na de klus op papier geschetst en weken later door een klein team overgetekend; het werk wordt dubbel gedaan.
+    plausible_causes:
+      - Het GIS-team is te klein.
+      - De monteurs leveren hun schetsen te laat in.
+    mismatch_note: Meer mensen bij GIS verwerken de stapel sneller, maar het overtekenen blijft dubbel werk.
+    countermeasures: {revision_at_source: 1.0, daily_revision_template: 0.7}
+    teaches: [inventory, quality_at_the_source]
+    effects:
+      - {target: connections.revision, property: touch_time, value: 1.4}
+    clues:
+      - {tool: data, key: true, depth: 0, text: Er staan 240 opgeleverde aansluitingen open in GIS; de oudste is vier maanden oud.}
+      - {tool: queue_count, key: false, depth: 0, text: De bak met schetsen is overzichtelijk geordend op datum.}
+      - {tool: time_study, key: true, depth: 1, text: Een schets overtekenen kost anderhalf uur, onder meer door uitzoeken wat er bedoeld is.}
+      - {tool: documents, key: true, depth: 1, at: connections.commissioning, text: De monteur schetst het as-built met de hand op een A4; foto's en maten ontbreken vaak.}
+      - {tool: conversation, key: true, depth: 2, at: connections.commissioning, text: "'Ik teken het op de motorkap. Of ze het later kunnen lezen? Ze bellen me wel als het niet klopt.'"}
+
+  - id: digging_damage
+    tier: 1
+    name: Graafschade
+    step: outages.locate
+    waste: defects
+    severity: high
+    visibility: obvious
+    kpi: lead_time
+    symptoms:
+      - Overdag komen veel storingen binnen door kabelschade bij graafwerk.
+      - Monteurs worden voor graafschade van gepland werk gehaald.
+    root_cause: KLIC-kaarten zijn verouderd (de revisieberg) en proefsleuven worden onder tijdsdruk overgeslagen.
+    plausible_causes:
+      - Aannemers graven onvoorzichtig.
+      - De KLIC-melding wordt niet gedaan.
+    mismatch_note: Aannemers doen wel een KLIC-melding; de kaart die ze krijgen klopt niet en de planning laat geen tijd voor proefsleuven.
+    countermeasures: {standard_test_trenches: 0.8, contractor_briefing: 0.7, revision_at_source: 0.6}
+    teaches: [defects, systems_thinking]
+    effects:
+      - {target: outages, property: demand, value: 1.35}
+    clues:
+      - {tool: data, key: true, depth: 0, text: Een derde van de storingen overdag is graafschade; zeven procent van de graafwerken raakt een kabel.}
+      - {tool: shadow, key: false, depth: 0, text: De monteurs herstellen graafschade snel en vakkundig.}
+      - {tool: documents, key: true, depth: 1, text: Bij de helft van de schades lag de kabel anders dan op de KLIC-kaart.}
+      - {tool: conversation, key: true, depth: 1, text: "'Proefsleuven? Daar is in de planning van de aannemer nooit tijd voor.'"}
+      - {tool: data, key: true, depth: 2, at: connections.revision, text: De kabels die anders lagen dan op de kaart, zijn bijna allemaal nog niet gerevideerd.}
+
+  - id: knowledge_drain
+    tier: 1
+    name: De laatste kennisdrager
+    step: outages.locate
+    waste: skills
+    severity: high
+    visibility: subtle
+    kpi: on_time
+    symptoms:
+      - Storingen in oude wijken duren veel langer dan elders.
+      - Bij lastige storingen wordt steeds dezelfde oudere monteur gebeld.
+    root_cause: Kennis van oude kabeltypes en schakelingen zit bij een paar monteurs die met pensioen gaan; er is geen skills-matrix en geen overdracht.
+    plausible_causes:
+      - De jonge monteurs zijn onvoldoende opgeleid.
+      - De meetapparatuur is verouderd.
+    mismatch_note: Een opleiding alleen leert niet wat alleen in de hoofden van de ervaren monteurs zit.
+    countermeasures: {work_instruction_videos: 0.8, skills_matrix_buddy: 1.0}
+    teaches: [skills, respect_for_people]
+    effects:
+      - {target: outages.locate, property: ftr, value: -0.3}
+    clues:
+      - {tool: shadow, key: true, depth: 0, text: Een jonge monteur zoekt anderhalf uur naar de fout in een oliedrukkabel en belt dan een collega.}
+      - {tool: time_study, key: false, depth: 0, text: Het herstel zelf duurt bij iedereen ongeveer even lang.}
+      - {tool: data, key: true, depth: 1, text: Storingen in netten van voor 1970 worden twee keer zo vaak opnieuw gelokaliseerd.}
+      - {tool: conversation, key: true, depth: 1, text: "'Als Henk het niet weet, weet niemand het. En Henk gaat in maart met pensioen.'"}
+      - {tool: documents, key: true, depth: 2, text: Er is geen overzicht van wie welke kabeltypes en schakelingen beheerst.}

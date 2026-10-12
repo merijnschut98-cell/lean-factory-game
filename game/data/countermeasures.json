@@ -258,6 +258,128 @@
     "planners": 30
    },
    "tier": 2
+  },
+  {
+   "budget": 18000,
+   "category": "flow",
+   "decay_days": null,
+   "description": "De monteur legt het as-built direct bij oplevering vast op een tablet; geen papieren schets die weken later wordt overgetekend.",
+   "effects": [
+    {
+     "property": "touch_time",
+     "target": "connections.revision",
+     "value": 0.8
+    }
+   ],
+   "id": "revision_at_source",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Revisie aan de bron",
+   "team_hours": {
+    "gis": 40,
+    "monteurs": 30
+   },
+   "tier": 3
+  },
+  {
+   "budget": 2500,
+   "category": "standard_work",
+   "decay_days": 45,
+   "description": "Eén vaste schets per standaardaansluiting, elke dag verwerkt in plaats van per maand opgespaard.",
+   "effects": [],
+   "id": "daily_revision_template",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Standaard revisieschets en dagelijks verwerken",
+   "team_hours": {
+    "gis": 15,
+    "monteurs": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 3000,
+   "category": "safety",
+   "decay_days": 60,
+   "description": "Bij graven in de buurt van kabels altijd eerst een proefsleuf; de opdrachtgever plant er tijd voor in.",
+   "effects": [],
+   "id": "standard_test_trenches",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Proefsleuven als standaard",
+   "team_hours": {
+    "key_accounts": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 1500,
+   "category": "people",
+   "decay_days": 30,
+   "description": "Aannemers krijgen voor de start een briefing met actuele kaarten en de afspraak over proefsleuven.",
+   "effects": [],
+   "id": "contractor_briefing",
+   "multipliers": {
+    "full": 0.8,
+    "minimal": 0.2,
+    "reduced": 0.4
+   },
+   "name": "Briefing van graafaannemers",
+   "team_hours": {
+    "key_accounts": 8
+   },
+   "tier": 1
+  },
+  {
+   "budget": 5000,
+   "category": "standard_work",
+   "decay_days": null,
+   "description": "De ervaren monteurs leggen het lokaliseren in oude kabelnetten vast in korte video's en werkinstructies.",
+   "effects": [],
+   "id": "work_instruction_videos",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Werkinstructies met video",
+   "team_hours": {
+    "monteurs": 40
+   },
+   "tier": 1
+  },
+  {
+   "budget": 7000,
+   "category": "people",
+   "decay_days": null,
+   "description": "Zichtbaar wie wat kan; elke jonge monteur draait mee met een ervaren buddy op storingen in oude netten.",
+   "effects": [
+    {
+     "property": "ftr",
+     "target": "outages.locate",
+     "value": 0.03
+    }
+   ],
+   "id": "skills_matrix_buddy",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Skills-matrix en buddysysteem",
+   "team_hours": {
+    "monteurs": 80
+   },
+   "tier": 2
   }
  ]
 }

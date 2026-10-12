@@ -166,8 +166,13 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
   - one `problems_tier*` file rule (validator, cross-check, Catalog);
   - validator helpers per job, reusing `_number` and `_earlier`;
   - a shared real-network fixture and a shared base run (suite ~5.8 s).
-- ⬜ Merijn reviews the six problems for realism (texts, clues, effects) and the healthy base
-- ⬜ Remaining tier-1 catalogue problems: de statusbellers, de revisieberg, graafschade, storing gooit de planning om, klaar maar niet af, de laatste kennisdrager, KPI's die elkaar bevechten
+- ✅ Three more tier-1 problems: de revisieberg (hidden; makes Revisie & GIS the constraint), graafschade (its root cause links to the revisieberg: outdated KLIC maps, so revision at the source also helps here) and de laatste kennisdrager. 9 problems, 18 countermeasures
+- ⬜ Merijn reviews the nine problems for realism (texts, clues, effects) and the healthy base
+- ⬜ Catalogue problems that need a new mechanism first:
+  - de statusbellers: failure demand; late orders cause status calls that load the contact centre (a klantcontact pool + calls generated from late orders);
+  - klaar maar niet af: an administrative close-out step (EAN registration) in the connections stream;
+  - storing gooit de planning om: planned monteur work at 100%; needs the base to keep slack that the problem removes, or a planning-horizon mechanic;
+  - KPI's die elkaar bevechten: overproduction, departments pushing work in; needs a release decision per department
 - ⬜ Common random numbers (a random stream per purpose), so A/B comparisons of two runs stay comparable. Today runs diverge after the first different draw, which is why the content test measures mechanisms instead of lead-time KPIs
 : ~16 problems across the four streams (well-known and less-known), each with symptoms, clues per tool (key + red herrings, 5 Whys depth), waste, root cause, effective countermeasures, effect
 - ⬜ `content/countermeasures.yaml`: Lean countermeasures in DSO context (triage at intake, poka-yoke application form, standard designs, frozen planning window, WIP limits, two-bin van stock, appointment confirmation, revision at the source, cross-training, daily start / visual management, proactive status updates against failure demand, …)
