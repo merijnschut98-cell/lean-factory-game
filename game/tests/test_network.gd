@@ -208,3 +208,22 @@ func test_actual_load_is_measured() -> void:
 	assert_between(crew.load_since(28), 0.4, 0.6, "a window of the last four weeks")
 	assert_eq(crew.load_since(1000), 0.0, "no days, no load")
 
+
+## A failed attempt (nobody home, meterkast not ready) costs the trip, not
+## the whole job: 4 h work, half the visits fail after 1 h → about 5 h per
+## order instead of 8 h. Planned load (Capacity) agrees.
+func test_a_failed_attempt_costs_only_its_own_time() -> void:
+	var nets := []
+	for extra: Dictionary in [{}, {"fail_hours": 1.0}]:
+		var net := NetFixture.net([NetFixture.pool("crew", 3)], [
+			NetFixture.stream("jobs", [NetFixture.work("visit", "crew", 4.0, 0.5, extra)], 10.0),
+		])
+		net.advance_days(84)
+		nets.append(net)
+	var full: float = nets[0].pools["crew"].load_since(0)
+	var partial: float = nets[1].pools["crew"].load_since(0)
+	assert_between(partial / full, 0.5, 0.75, "%.2f vs %.2f" % [partial, full])
+	assert_near(Capacity.analyse(nets[1])["pools"]["crew"]["load"] / Capacity.analyse(nets[0])["pools"]["crew"]["load"],
+		5.0 / 8.0, 1e-6)
+	assert_between(nets[1].stream("jobs").kpis(nets[1].time, 84)["first_time_right"], 0.35, 0.65, "half fail")
+

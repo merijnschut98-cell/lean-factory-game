@@ -65,7 +65,7 @@ Generalises the factory prototype's `FlowSim` (`archive/factory-3d/src/sim/flow.
 | `SimCalendar` | minutes since Monday 00:00 of week 1, the 10-minute tick, `"HH:MM"` and day-range (`mon-fri`) parsing |
 | `WeekSchedule` | which 10-minute slots of the week are on: pool working hours (incl. 24/7 and on-call through midnight) and stream arrival hours; hours per week, next start, overlap |
 | `WorkOrder` | id, stream, birth and due time, current step, remaining touch time, rework count (where it is follows from the queue or list holding it) |
-| `SimStep` | definition of one step (work / wait / material, `applies`, FTR, rework target, the pool or pools that do the work) and its statistics |
+| `SimStep` | definition of one step (work / wait / material, `applies`, FTR, what a failed attempt costs (`fail_minutes`: the trip, not the job; drawn when work starts), rework target, the pool or pools that do the work) and its statistics |
 | `SimPool` | headcount, daily attendance, weekly schedule, the orders being worked on now, actual load per day (busy over present people-minutes; `Capacity` is the planned load) |
 | `DailyCounts` | integer counters per simulated day for time windows (step statistics, pool load); bounded by `HISTORY_DAYS`, saved |
 | `SimStock` | level, reorder point, order quantity, lead time, open deliveries, orders waiting for stock |

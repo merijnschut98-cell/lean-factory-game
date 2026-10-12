@@ -181,6 +181,8 @@ def test_real_value_streams_are_valid():
     (lambda d: _step(d, "permit").update(starts_with="revision"), "'starts_with' must name an earlier step"),
     (lambda d: _step(d, "design").update(starts_with="intake"), "only a wait step"),
     (lambda d: _step(d, "permit").update(batch_days=-1), "'batch_days' must be >= 0"),
+    (lambda d: _step(d, "execution").update(fail_hours=0), "'fail_hours' must be between"),
+    (lambda d: _step(d, "execution").update(fail_hours=99), "'fail_hours' must be between"),
     (lambda d: d["pools"][4].update(reserve={"stream": "ghost", "people": 2}), "reserve.*unknown stream 'ghost'"),
     (lambda d: _step(d, "design").pop("stale_to"), "'stale_to' must name an earlier step"),
     (lambda d: _step(d, "design").update(stale_after_days=60, stale_to="design"), "'stale_to' must name an earlier step"),

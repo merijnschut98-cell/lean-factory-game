@@ -21,6 +21,9 @@ var rng: Rng
 var pool_ids := PackedStringArray()
 var touch_minutes := 0
 var ftr := 1.0
+## What a failed attempt costs (the trip to an address where nobody is home);
+## 0: the full touch time (work done, then found wrong).
+var fail_minutes := 0
 var rework_index := 0
 var rework_wait_minutes := 0
 ## Where an order goes when urgent work interrupts it (e.g. back to planning
@@ -51,6 +54,12 @@ var daily := DailyCounts.new(Stat.size())
 
 func record(day: int, stat: Stat, amount: int = 1) -> void:
 	daily.add(day, stat, amount)
+
+
+## Expected minutes of work per visit, failed attempts included.
+func minutes_per_visit() -> float:
+	var failed := mini(fail_minutes, touch_minutes) if fail_minutes > 0 else touch_minutes
+	return ftr * touch_minutes + (1.0 - ftr) * failed
 
 
 ## Totals from `day` on: {entered, done, reworked, stale, queue_hours (mean

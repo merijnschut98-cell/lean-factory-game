@@ -191,6 +191,7 @@ streams:
         pool: monteurs
         touch_hours: 5.0      # including travel
         ftr: 0.85
+        fail_hours: 1.5       # a wasted trip: drive there, find the meterkast not ready, drive back
         rework_to: planning   # meterkast niet gereed: replan after the installer is ready
         rework_wait_days: 5
         interrupt_to: planning  # pulled away to an outage: the job needs a new appointment
@@ -282,6 +283,7 @@ streams:
         pool: monteurs
         touch_hours: 1.5      # including travel
         ftr: 0.8              # niet thuis or meterkast unreachable
+        fail_hours: 0.5       # the trip and a card through the door
         rework_to: appointment
         rework_wait_days: 2
       - id: registration

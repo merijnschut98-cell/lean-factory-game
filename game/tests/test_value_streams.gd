@@ -32,11 +32,12 @@ func _run_120_days() -> Network:
 func test_a_change_leaves_unrelated_streams_identical() -> void:
 	var base := _net()
 	var changed := _net()
-	changed.set_effects("problem:slow_offers", [NetFixture.effect("congestion.offer", "touch_time", 2.0)])
+	# The contact centre serves only its own stream, and nothing flows on from it.
+	changed.set_effects("problem:slow_answers", [NetFixture.effect("customer_contact.answer", "touch_time", 1.5)])
 	base.advance_days(60)
 	changed.advance_days(60)
-	assert_ne(changed.stream("congestion").finished, base.stream("congestion").finished, "the change reaches congestion")
-	for id: String in ["connections", "outages", "meters", "customer_contact"]:
+	assert_ne(changed.stream("customer_contact").finished, base.stream("customer_contact").finished, "the change reaches contact")
+	for id: String in ["connections", "outages", "meters", "congestion"]:
 		assert_eq(changed.stream(id).finished, base.stream(id).finished, id + " is untouched")
 
 

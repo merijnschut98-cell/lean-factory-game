@@ -131,6 +131,7 @@ func _build_stream(v: Dictionary) -> ValueStream:
 				step.pool_ids = PackedStringArray(s["pool"] if s["pool"] is Array else [s["pool"]])
 				step.touch_minutes = SimCalendar.hours(float(s["touch_hours"]))
 				step.ftr = float(s["ftr"])
+				step.fail_minutes = SimCalendar.hours(float(s.get("fail_hours", 0.0)))
 				# Where an order goes back to, and after how long: on rework, after an
 				# interruption, or when its dossier went stale.
 				step.rework_index = ids.find(s.get("rework_to", step.id))
@@ -404,6 +405,7 @@ func _enter(order: WorkOrder, index: int) -> void:
 	match step.kind:
 		SimStep.Kind.WORK:
 			order.remaining = step.touch_minutes
+			order.failing = false
 			order.queued_at = time
 			order.started = false
 			queue_of(step).append(order)
@@ -515,9 +517,18 @@ func _progress_work() -> void:
 				_complete_work(order)
 
 
+## Whether this attempt fails is known when work starts, so a failed attempt
+## can cost less than the job (`fail_minutes`).
+func _draw_outcome(order: WorkOrder, step: SimStep) -> void:
+	order.failing = step.ftr < 1.0 and not step.rng.chance(step.ftr)
+	if order.failing and step.fail_minutes > 0:
+		order.remaining = mini(order.remaining, step.fail_minutes)
+
+
 func _complete_work(order: WorkOrder) -> void:
 	var step := order.current_step()
-	if step.ftr < 1.0 and not step.rng.chance(step.ftr):
+	if order.failing:
+		order.failing = false
 		order.reworks += 1
 		_record(step, SimStep.Stat.REWORKED)
 		_emit("rework", order)
@@ -568,6 +579,7 @@ func _assign_work() -> void:
 				if _went_stale(order, step):
 					continue
 				order.started = true
+				_draw_outcome(order, step)
 				_record(step, SimStep.Stat.STARTED)
 				_record(step, SimStep.Stat.QUEUE_MINUTES, time - order.queued_at)
 			pool.busy.append(order)

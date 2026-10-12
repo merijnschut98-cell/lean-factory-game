@@ -46,7 +46,7 @@ static func stream_load(stream: ValueStream, pools: Dictionary[String, SimPool],
 		var step := stream.steps[i]
 		if step.kind != SimStep.Kind.WORK:
 			continue
-		var hours := per_week * visits[i] * step.touch_minutes / 60.0
+		var hours := per_week * visits[i] * step.minutes_per_visit() / 60.0
 		var shares := _pool_shares(stream, step.pool_ids, pools)
 		for j in step.pool_ids.size():
 			load[step.pool_ids[j]] = load.get(step.pool_ids[j], 0.0) + hours * shares[j]
@@ -130,8 +130,8 @@ static func _stream_constraint(s: ValueStream, own: Dictionary[String, float], v
 	var step_load := -1.0
 	for i in s.steps.size():
 		var step := s.steps[i]
-		if step.kind == SimStep.Kind.WORK and worst in step.pool_ids and visits[i] * step.touch_minutes > step_load:
-			step_load = visits[i] * step.touch_minutes
+		if step.kind == SimStep.Kind.WORK and worst in step.pool_ids and visits[i] * step.minutes_per_visit() > step_load:
+			step_load = visits[i] * step.minutes_per_visit()
 			step_id = step.id
 	return {
 		"constraint_pool": worst,

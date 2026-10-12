@@ -267,6 +267,7 @@
      "touch_hours": 0.5
     },
     {
+     "fail_hours": 1.5,
      "ftr": 0.85,
      "id": "execution",
      "interrupt_to": "planning",
@@ -410,6 +411,7 @@
      "spread": 0.5
     },
     {
+     "fail_hours": 0.5,
      "ftr": 0.8,
      "id": "visit",
      "kind": "work",

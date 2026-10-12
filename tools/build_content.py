@@ -168,6 +168,8 @@ def _validate_step(step: dict, where: str, pools: set[str], stock: set[str], ste
                 raise ContentError(f"{where}: unknown pool {pool!r}")
         _number(step, "touch_hours", where, 0.05)
         _number(step, "ftr", where, 0.05, 1)
+        if "fail_hours" in step:  # what a failed attempt costs (default: the full touch time)
+            _number(step, "fail_hours", where, 0.05, step["touch_hours"])
         for key in ("rework_to", "interrupt_to"):
             target = step.get(key, step["id"])
             if not _earlier(step_ids, target, step["id"], or_same=True):
