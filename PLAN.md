@@ -71,6 +71,8 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 - ✅ `game/tools/screenshot.gd` for visual checks under Xvfb; rendering tuned (linear tone mapping, neutral ambient)
 - ✅ CI (`.github/workflows/ci.yml`): content check, Godot tests, legacy Python tests on every push; Windows/Linux/web export on demand. All three exports verified locally
 - ✅ CLAUDE.md testing rule lists the Godot, content and Python commands (approved by Merijn)
+- ✅ Simplify pass: shared cached Godot setup + export matrix in CI, project-wide default environment and `Palette`, `TestCase` moved to `tests/lib/`, two-pass content validation (`CROSS_CHECKS`), schema fields derived in `GameInfo`
+- ⬜ Tech debt (tracked): the `game.yaml` field list exists in Python (authority) and as `GameInfo` properties; revisit if content schemas multiply (a shared schema file)
 - ⬜ `sim/network.gd` (pure logic, no nodes): value streams of steps; people pools (capacity, availability, priority, preemption); external delay steps (permits, customer); material stock with reorder point and supplier lead time; first-time-right with rework loops back to earlier steps; arrivals with variability; KPIs per stream (throughput, backlog, lead time, on-time vs norm, FTR)
 - ⬜ End-to-end capacity and constraint per value stream (generalised from the factory `lineCapacity`)
 - ⬜ Generic problem effects: target a step, pool, stock item or stream; modify work time, FTR, availability, delay, demand, people

@@ -1,5 +1,6 @@
 extends SceneTree
-## Headless test runner. Finds every res://tests/test_*.gd, runs each test_*
+## Headless test runner. Finds every res://tests/test_*.gd (helpers live in
+## tests/lib/, outside that pattern), runs each test_*
 ## method on a fresh instance, prints a summary and exits non-zero on failure.
 ##   godot --headless --path game --script res://tests/run_tests.gd
 ## Optional filter: append `-- <substring>` to run only matching test files.
@@ -66,7 +67,7 @@ func _initialize() -> void:
 func _test_files(filter: String) -> PackedStringArray:
 	var out: PackedStringArray = []
 	for file in DirAccess.get_files_at(TEST_DIR):
-		if file.begins_with("test_") and file.ends_with(".gd") and file != "test_case.gd" and (filter.is_empty() or filter in file):
+		if file.begins_with("test_") and file.ends_with(".gd") and (filter.is_empty() or filter in file):
 			out.append(TEST_DIR.path_join(file))
 	out.sort()
 	return out

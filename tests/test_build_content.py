@@ -1,13 +1,11 @@
 """Tests for tools/build_content.py — the YAML → JSON content pipeline of Spanning."""
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
-import build_content as bc  # noqa: E402
+import build_content as bc  # tools/ is on pytest's pythonpath (pytest.ini)
 
 GAME_YAML = """company: Voltana Netbeheer
 region: Zuidmark
@@ -69,6 +67,25 @@ def test_invalid_yaml_is_reported(dirs):
     content, _ = dirs
     (content / "game.yaml").write_text("company: [unclosed\n", encoding="utf-8")
     with pytest.raises(bc.ContentError, match="invalid YAML"):
+        bc.load_content(content)
+
+
+def test_cross_checks_see_all_files(dirs, monkeypatch):
+    content, _ = dirs
+    seen = []
+    monkeypatch.setattr(bc, "CROSS_CHECKS", [lambda docs: seen.append(sorted(docs))])
+    bc.load_content(content)
+    assert seen == [["game"]]
+
+
+def test_cross_check_failure_is_reported(dirs, monkeypatch):
+    content, _ = dirs
+
+    def fail(docs):
+        raise bc.ContentError("mission M1 names unknown problem P9")
+
+    monkeypatch.setattr(bc, "CROSS_CHECKS", [fail])
+    with pytest.raises(bc.ContentError, match="unknown problem"):
         bc.load_content(content)
 
 

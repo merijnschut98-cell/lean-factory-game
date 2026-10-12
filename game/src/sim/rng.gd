@@ -22,7 +22,7 @@ func exp_mean(mean: float) -> float:
 
 ## Uniform in [mean·(1−spread), mean·(1+spread)].
 func around(mean: float, spread: float) -> float:
-	return mean * (1.0 + spread * (_rng.randf() * 2.0 - 1.0))
+	return _rng.randf_range(mean * (1.0 - spread), mean * (1.0 + spread))
 
 
 ## True with the given probability.

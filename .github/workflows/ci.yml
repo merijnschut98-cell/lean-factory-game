@@ -1,10 +1,11 @@
-# Spanning CI: content, Godot logic tests and the legacy Python suite on every
-# push; downloadable Windows/Linux/web builds on demand (Actions → CI → Run
-# workflow → "export builds").
+# Spanning CI: Godot logic tests, the content check and the Python suite on
+# every push to master and every PR; downloadable Windows/Linux/web builds on
+# demand (Actions → CI → Run workflow).
 name: CI
 
 on:
   push:
+    branches: [master]
   pull_request:
   workflow_dispatch:
     inputs:
@@ -17,87 +18,59 @@ env:
   GODOT_VERSION: 4.7.2
 
 jobs:
-  content:
-    name: Content (YAML → JSON)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-      - run: pip install PyYAML==6.0.3
-      - run: python tools/build_content.py --check
-
   godot-tests:
     name: Godot logic tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Cache Godot
-        id: cache-godot
-        uses: actions/cache@v4
+      - uses: ./.github/actions/setup-godot
         with:
-          path: ~/godot
-          key: godot-${{ env.GODOT_VERSION }}
-      - name: Download Godot
-        if: steps.cache-godot.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p ~/godot && cd ~/godot
-          curl -sSLo godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
-          unzip -q godot.zip && rm godot.zip
-          mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot
-      - name: Import project
-        run: ~/godot/godot --headless --path game --import
-      - name: Run tests
-        run: ~/godot/godot --headless --path game --script res://tests/run_tests.gd
+          version: ${{ env.GODOT_VERSION }}
+      - run: godot --headless --path game --import
+      - run: godot --headless --path game --script res://tests/run_tests.gd
 
-  python-legacy:
-    name: Legacy Python game tests
+  python:
+    name: Content pipeline + legacy Python game
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - run: pip install pygame-ce==2.5.7 pygame_gui==0.6.14 PyYAML==6.0.3 pytest
-      - run: python -m pytest tests -q
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - run: pip install -r requirements-dev.txt
+      - name: Content is valid and game/data is up to date
+        run: python tools/build_content.py --check
+      - run: python -m pytest tests
         env:
           SDL_VIDEODRIVER: dummy
           SDL_AUDIODRIVER: dummy
 
   export:
-    name: Export builds
+    name: Export ${{ matrix.preset }}
     if: github.event_name == 'workflow_dispatch' && inputs.export
-    needs: [content, godot-tests]
+    needs: [godot-tests, python]
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - { preset: "Windows Desktop", dir: windows }
+          - { preset: "Linux", dir: linux }
+          - { preset: "Web", dir: web }
     steps:
       - uses: actions/checkout@v4
-      - name: Download Godot and export templates
+      - uses: ./.github/actions/setup-godot
+        with:
+          version: ${{ env.GODOT_VERSION }}
+          templates: "true"
+      - name: Export (output path comes from game/export_presets.cfg)
         run: |
-          mkdir -p ~/godot && cd ~/godot
-          base="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable"
-          curl -sSLo godot.zip "$base/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
-          unzip -q godot.zip && mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot
-          curl -sSLo templates.tpz "$base/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
-          dest=~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
-          mkdir -p "$dest" && unzip -q templates.tpz -d /tmp/tpl && mv /tmp/tpl/templates/* "$dest"/
-      - name: Export
-        run: |
-          ~/godot/godot --headless --path game --import
-          mkdir -p build/windows build/linux build/web
-          ~/godot/godot --headless --path game --export-release "Windows Desktop" ../build/windows/Spanning.exe
-          ~/godot/godot --headless --path game --export-release "Linux" ../build/linux/Spanning.x86_64
-          ~/godot/godot --headless --path game --export-release "Web" ../build/web/index.html
-          ls -la build/*
+          godot --headless --path game --import
+          mkdir -p build/${{ matrix.dir }}
+          godot --headless --path game --export-release "${{ matrix.preset }}"
+          ls -la build/${{ matrix.dir }}
       - uses: actions/upload-artifact@v4
         with:
-          name: Spanning-windows
-          path: build/windows
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Spanning-linux
-          path: build/linux
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Spanning-web
-          path: build/web
+          name: Spanning-${{ matrix.dir }}
+          path: build/${{ matrix.dir }}

@@ -8,8 +8,10 @@ Usage:
     python tools/build_content.py           # validate and write game/data/*.json
     python tools/build_content.py --check   # validate and fail if game/data is out of date (CI)
 
-Add a validator for each new content file in VALIDATORS. A file without a
-validator is refused, so nothing reaches the game unchecked.
+Validation runs in two passes: each file against its own validator
+(VALIDATORS; a file without one is refused, so nothing reaches the game
+unchecked), then CROSS_CHECKS over all files together (references between
+files, e.g. a mission naming a problem).
 """
 from __future__ import annotations
 
@@ -47,6 +49,9 @@ VALIDATORS: dict[str, Callable[[Any, str], None]] = {
     "game": validate_game,
 }
 
+# Checks that need several files at once. Each gets {stem: document}.
+CROSS_CHECKS: list[Callable[[dict[str, Any]], None]] = []
+
 
 def load_content(content_dir: Path | None = None) -> dict[str, Any]:
     """Parse and validate every YAML file. Returns {stem: document}."""
@@ -65,6 +70,8 @@ def load_content(content_dir: Path | None = None) -> dict[str, Any]:
     missing = sorted(set(VALIDATORS) - set(docs))
     if missing:
         raise ContentError(f"missing content files: {', '.join(m + '.yaml' for m in missing)}")
+    for check in CROSS_CHECKS:
+        check(docs)
     return docs
 
 
@@ -73,17 +80,20 @@ def render(doc: Any) -> str:
     return json.dumps(doc, ensure_ascii=False, indent=1, sort_keys=True) + "\n"
 
 
+def _orphans(docs: dict[str, Any], data_dir: Path) -> list[Path]:
+    """Data files whose content file no longer exists."""
+    return [p for p in sorted(data_dir.glob("*.json")) if p.stem not in docs]
+
+
 def stale_files(docs: dict[str, Any], data_dir: Path | None = None) -> list[str]:
     """Names of data files that are missing, different, or no longer produced."""
     data_dir = data_dir or DATA_DIR
-    stale = [
-        f"{stem}.json"
-        for stem, doc in docs.items()
-        if not (data_dir / f"{stem}.json").is_file()
-        or (data_dir / f"{stem}.json").read_text(encoding="utf-8") != render(doc)
-    ]
-    stale += [p.name for p in sorted(data_dir.glob("*.json")) if p.stem not in docs]
-    return stale
+    stale = []
+    for stem, doc in docs.items():
+        path = data_dir / f"{stem}.json"
+        if not path.is_file() or path.read_text(encoding="utf-8") != render(doc):
+            stale.append(path.name)
+    return stale + [p.name for p in _orphans(docs, data_dir)]
 
 
 def write(docs: dict[str, Any], data_dir: Path | None = None) -> None:
@@ -91,9 +101,8 @@ def write(docs: dict[str, Any], data_dir: Path | None = None) -> None:
     data_dir.mkdir(parents=True, exist_ok=True)
     for stem, doc in docs.items():
         (data_dir / f"{stem}.json").write_text(render(doc), encoding="utf-8")
-    for orphan in data_dir.glob("*.json"):
-        if orphan.stem not in docs:
-            orphan.unlink()
+    for orphan in _orphans(docs, data_dir):
+        orphan.unlink()
 
 
 def main(argv: list[str] | None = None) -> int:
