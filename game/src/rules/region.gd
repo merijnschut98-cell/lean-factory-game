@@ -19,6 +19,11 @@ const CHECK_DAYS := 14
 const STANDARDISE_BUDGET := 3000
 ## A region's maturity rises when this share of a tier's problems is resolved.
 const MATURITY_STEP := 0.6
+## In debt the region is in a bad period, never out of the game (CLAUDE.md
+## §2): no money for overtime or temporary staff, more sickness absence, so
+## every team has a little less time (an estimate: 3 points of availability).
+const BAD_PERIOD_AVAILABILITY := 0.03
+const BAD_PERIOD_SOURCE := "region:bad_period"
 
 var net: Network
 var profile: Profile
@@ -30,7 +35,7 @@ var observed: Dictionary[String, bool] = {}
 var found: Dictionary[String, bool] = {}
 ## Trust per team (pool id), -2..1: below 0 they stop sharing.
 var trust: Dictionary[String, int] = {}
-## {type: activated | check_ready | recurred | belt, ...} for the world and UI.
+## {type: activated | check_ready | recurred | belt | bad_period, ...} for the world and UI.
 var events: Array[Dictionary] = []
 ## Problem costs not yet taken from the budget (charged in whole euros).
 var _cost_owed := 0.0
@@ -110,8 +115,30 @@ func _charge_costs(days: int) -> void:
 		return
 	_cost_owed += weekly_cost() * days / 7.0
 	var whole := floori(_cost_owed)
-	profile.budget -= whole
 	_cost_owed -= whole
+	_add_budget(-whole)
+
+
+## Debt is allowed; it starts a bad period, and paying it off ends it.
+func in_bad_period() -> bool:
+	return profile.budget < 0
+
+
+func _add_budget(amount: int) -> void:
+	var was_bad := in_bad_period()
+	profile.budget += amount
+	if in_bad_period() != was_bad:
+		_apply_bad_period()
+		events.append({"type": "bad_period", "started": in_bad_period()})
+
+
+## The bad period's effect on the teams follows the budget (also after a load).
+func _apply_bad_period() -> void:
+	var effects := []
+	if in_bad_period():
+		for pool_id: String in net.pools:
+			effects.append({"target": pool_id, "property": "availability", "value": -BAD_PERIOD_AVAILABILITY})
+	net.set_effects(BAD_PERIOD_SOURCE, effects)
 
 
 # ── Problems ────────────────────────────────────────────────────────────────
@@ -267,8 +294,9 @@ func available_countermeasures() -> Array[CountermeasureDef]:
 
 
 ## Submit the A3 {waste, cause (index into the cause bank), evidence (clue
-## ids), cm, prediction (a KPI)} and start the experiment. Returns "" or why
-## not: not_spotted | waste | cause | evidence | countermeasure | prediction | budget.
+## ids), cm, prediction (a KPI)} and start the experiment; it may be paid
+## into debt. Returns "" or why not: not_spotted | waste | cause | evidence |
+## countermeasure | prediction.
 func submit_a3(problem_id: String, a3: Dictionary) -> String:
 	var st := state[problem_id]
 	if st.phase != P.SPOTTED:
@@ -286,11 +314,9 @@ func submit_a3(problem_id: String, a3: Dictionary) -> String:
 		return "countermeasure"
 	if not a3.get("prediction") in Investigation.KPIS:
 		return "prediction"
-	if profile.budget < cm.budget:
-		return "budget"
 
 	var p := problems[problem_id]
-	profile.budget -= cm.budget
+	_add_budget(-cm.budget)
 	st.baseline = snapshot(problem_id)
 	var e := Pdca.effectiveness(p, cm, maturity())
 	st.a3 = a3.duplicate()
@@ -383,7 +409,7 @@ func act(problem_id: String, standardise: bool) -> Dictionary:
 	var p := problems[problem_id]
 	standardise = standardise and profile.budget >= STANDARDISE_BUDGET
 	if standardise:
-		profile.budget -= STANDARDISE_BUDGET
+		_add_budget(-STANDARDISE_BUDGET)
 	st.score = Pdca.score(_score_inputs(st, p, standardise))
 	st.phase = P.RESOLVED
 	var decay := countermeasures[st.a3["cm"]].decay_days
@@ -399,7 +425,7 @@ func act(problem_id: String, standardise: bool) -> Dictionary:
 func grant(xp: int, budget: int) -> void:
 	var belt := Progression.belt_index(profile.xp)
 	profile.xp += xp
-	profile.budget += budget
+	_add_budget(budget)
 	if Progression.belt_index(profile.xp) > belt:
 		events.append({"type": "belt", "belt": Progression.belt_index(profile.xp)})
 

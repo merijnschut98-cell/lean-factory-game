@@ -115,7 +115,6 @@ func test_the_a3_refuses_weak_plans() -> void:
 	var no_waste := _a3(r, "standard_designs")
 	no_waste["waste"] = "laziness"
 	assert_eq(r.submit_a3("custom_design", no_waste), "waste")
-	assert_eq(r.submit_a3("custom_design", _a3(r, "standard_designs")), "budget")
 
 
 func test_an_expert_run_resolves_the_problem() -> void:
@@ -229,3 +228,40 @@ func test_an_active_problem_costs_money_every_week() -> void:
 	r.advance_days(7)
 	assert_eq(r.profile.budget, budget)
 
+
+
+## The company never goes down (CLAUDE.md §2): an improvement can be paid on
+## credit, and debt brings a bad period instead of the end of the game.
+func test_an_improvement_can_be_paid_into_debt() -> void:
+	var r := _region(1000)
+	r.activate("custom_design")
+	_investigate(r)
+	assert_eq(r.submit_a3("custom_design", _a3(r, "standard_designs")), "")
+	assert_eq(r.profile.budget, 1000 - 8000)
+	assert_true(r.in_bad_period())
+
+
+## In a bad period there is no money for overtime or temporary staff, and
+## sickness absence rises: every team has a little less time. Paying off the
+## debt ends it.
+func test_debt_brings_a_bad_period_until_it_is_paid_off() -> void:
+	var r := _region(1000)
+	var before := r.net.pools["prep"].availability
+	r.grant(0, -2000)
+	assert_true(r.in_bad_period())
+	assert_near(r.net.pools["prep"].availability, before - Region.BAD_PERIOD_AVAILABILITY, 1e-9)
+	assert_eq(r.drain_events(), [{"type": "bad_period", "started": true}])
+	r.grant(0, 500)
+	assert_eq(r.drain_events(), [], "still in debt")
+	r.grant(0, 1000)
+	assert_false(r.in_bad_period())
+	assert_near(r.net.pools["prep"].availability, before, 1e-9)
+	assert_eq(r.drain_events(), [{"type": "bad_period", "started": false}])
+
+
+func test_problem_costs_can_push_the_region_into_a_bad_period() -> void:
+	var r := _region(1000)
+	r.activate("custom_design")  # 700 a week
+	r.advance_days(14)
+	assert_eq(r.profile.budget, 1000 - 1400)
+	assert_true(r.in_bad_period())

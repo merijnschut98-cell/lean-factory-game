@@ -107,6 +107,7 @@ How the rules differ from the factory:
 - **Check compares** the stream's end-to-end KPIs and capacity before and after, plus the problem's own step (per-step daily statistics). A fix away from the constraint is flagged and scores low on flow impact.
 - **Results are codes and numbers** (reply `guarded`, lesson `mismatch`, note `impact_not_constraint`). The UI words them in Dutch.
 - **Problems can cost money** every week they are open (`cost_per_week`: damage repairs, claims), weakened by a working countermeasure; Region charges it to the budget day by day.
+- **Never game over** (CLAUDE.md §2): the budget may go into debt (an experiment can be paid on credit). In debt the region is in a bad period: every team loses 3 points of availability (`region:bad_period`; no overtime or temporary staff, more absence) and there is no money to standardise. Paying off the debt ends it; both moments are `bad_period` events.
 
 **The campaign** (`rules/missions.gd`, content `missions.yaml`; design rules in CLAUDE.md §2):
 - Missions unlock by completed missions and the player's belt.
