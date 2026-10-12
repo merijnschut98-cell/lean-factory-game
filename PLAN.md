@@ -249,6 +249,15 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 
 ## Decisions Made
 
+- **Mission system (Merijn, 2026-10-12).** The game is a progressive RPG: missions unlock new and harder missions as the player progresses. At most one main mission and three side missions are active at once. A senior manager coaches, mostly by asking questions, and only on the main mission. Recorded as a standing rule in CLAUDE.md §2.
+- **Review answers (Merijn, 2026-10-12):**
+  - connections norm: the industry norm (the 18-week term the ACM still uses as reference);
+  - digging-damage claims count as money;
+  - failed trips 1.5 h / 0.5 h: fine;
+  - the revision backlog's effect on digging damage is based on evidence where it exists;
+  - the intake checklist is a real but weak improvement;
+  - Henk: explained (the retiring expert in De laatste kennisdrager's clues), proposed as a deadline mission.
+
 ### Claude's calls, pending Merijn (2026-10-12)
 Merijn asked me to fix the content review's findings with my own judgement while he is away. Each call is easy to reverse, and the same questions sit in the review doc.
 - **Connections norm: six weeks (42 days)**, Voltana's own promise, instead of the former legal 18 weeks; otherwise on-time never shows a connections problem. Question: six or eight weeks, or a different promise per connection type?

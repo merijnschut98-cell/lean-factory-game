@@ -21,7 +21,22 @@ This is not an end-of-session cleanup — it is an inline, real-time habit. Ever
 
 ---
 
-## 2. Skill Triggers
+## 2. Game Design Rules — uphold in every change
+
+Merijn's design decisions that every feature, content file and test must respect. Change one only when Merijn says so; record the change in PLAN.md "Decisions Made".
+
+- **Progressive RPG through missions.** The player advances by completing missions. New and harder missions unlock as the player progresses; nothing is open from the start.
+- **One main quest, at most three side quests.** Never more than one main mission active at once, and at most three side missions. Side missions are small.
+- **A senior manager is the coach.** The player can talk to the coach for insight. The coach mostly answers with a question (Toyota Kata style: target, actual condition, obstacles, next experiment, what did you learn), rarely with an answer.
+- **The coach helps only with the main quest.** Asking about a side mission gets no coaching.
+- **Action-based problem solving.** Clues are earned with gemba tools and questions; the player writes the A3; the simulation judges. No multiple-choice answers with one marked correct.
+- **Many healthier processes, not one.** Every problem lists several countermeasures with a fit; each one is a real improvement that can pass the Check, some more than others.
+- **Evidence first.** Numbers in content (norms, rates, durations, costs) come from public sources or industry norms where they exist; estimates are marked as estimates, with their reasoning, in the content file.
+- **Dutch game text; English code and docs.**
+
+---
+
+## 3. Skill Triggers
 
 ### Always — every task, no exceptions
 - **`simplify`** — run after every code change. No exceptions. Code must pass the simplification checklist before the task is considered done.
