@@ -61,14 +61,17 @@ Generalises the factory prototype's `FlowSim` (`archive/factory-3d/src/sim/flow.
 
 | Class | Responsibility |
 | --- | --- |
-| `WorkOrder` | id, type, stream, birth time, due date, current step, rework count, history |
-| `StepDef` / `Step` | touch hours, FTR, rework target, pool or external wait, queue, in-progress |
-| `PeoplePool` | headcount, hours per day, availability, skills, priority rules (outages pre-empt planned work) |
-| `StockItem` | level, reorder point, order quantity, supplier lead time |
-| `ValueStream` | ordered steps, arrivals model, KPIs (throughput, backlog, lead time p50/p85, on time, FTR) |
-| `Network` | advances time in fixed steps (one simulated minute), assigns people, moves orders, records events |
-| `Capacity` | end-to-end capacity per stream and the constraint (generalised `lineCapacity`) |
+| `SimCalendar` | minutes since Monday 00:00 of week 1, working days, `"HH:MM"` parsing, the 10-minute tick |
+| `WorkOrder` | id, stream, birth and due time, current step, state, remaining touch time, rework count |
+| `SimStep` | definition of one step (work / wait / material, `applies`, FTR, rework target) and its statistics |
+| `SimPool` | headcount, daily attendance, shift, the orders being worked on now |
+| `SimStock` | level, reorder point, order quantity, lead time, open deliveries, orders waiting for stock |
+| `ValueStream` | ordered steps, arrivals, priority, backlog and finished-order records, KPIs (throughput, backlog, lead time p50/p85, on time, first-time-right) |
+| `Network` | loads `value_streams.json`, advances time, schedules arrivals, moves orders, assigns people (priority, then longest-waiting, with pre-emption), keeps the queues, emits events |
+| `Capacity` | expected visits per step (including `applies` and rework loops), load vs available hours per pool, constraint and capacity per stream |
 | `Rng` | seeded PRNG; the only source of randomness |
+
+**No reference cycles.** Godot frees `RefCounted` objects by reference counting, so a loop (step → pool → busy order → stream → step) leaks every network that is replaced. Steps therefore refer to pools and stock by id, and queues live in the `Network`. The test runner shows leaks at exit, so a new cycle is noticed straight away.
 
 Time runs in fixed simulated steps, independent of the frame rate: `Game` advances `n` steps per frame based on the speed setting (pause, 1×, 4×, 16×) and pauses at the dagstart.
 

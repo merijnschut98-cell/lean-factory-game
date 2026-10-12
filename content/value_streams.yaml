@@ -1,0 +1,136 @@
+# People pools, stock and value streams of region Zuidmark (Campus Nova).
+# Game text (name fields) is Dutch; keys and ids are English.
+# Built into game/data/value_streams.json by tools/build_content.py.
+#
+# Times are quoted "HH:MM" strings (unquoted YAML reads 15:30 as the number 930).
+# Units: hours of touch time per order, days for external waits (calendar
+# days), arrivals per working day. Working days are Monday–Friday.
+#
+# Step kinds:
+#   work      people from `pool` spend `touch_hours`; `ftr` = first-time-right
+#             chance; on failure the order returns to `rework_to` (default:
+#             the same step), after `rework_wait_days` if given (e.g. waiting
+#             for the customer to supply missing details)
+#   wait      an external delay of `days` (± `spread` fraction); nobody at
+#             Voltana works on it, it can only be managed
+#   material  takes `quantity` of `item` from stock; waits if out of stock
+# Any step may have `applies` (0–1): the share of orders that need it.
+#
+# Starting numbers are tuned so Werkvoorbereiding is the constraint of the
+# connections stream at about 100% load, with Revisie & GIS close behind.
+
+pools:
+  - id: intake
+    name: Intake & aanvraagbeheer
+    headcount: 3
+    availability: 0.85
+    shift: ["07:30", "15:30"]
+  - id: grid_analysts
+    name: Netstudies
+    headcount: 2
+    availability: 0.85
+    shift: ["08:00", "16:00"]
+  - id: work_prep
+    name: Werkvoorbereiding
+    headcount: 4
+    availability: 0.85
+    shift: ["07:30", "15:30"]
+  - id: planners
+    name: Planning
+    headcount: 2
+    availability: 0.9
+    shift: ["07:30", "15:30"]
+  - id: monteurs
+    name: Monteurs
+    headcount: 14
+    availability: 0.85
+    shift: ["07:00", "15:00"]
+  - id: gis
+    name: Revisie & GIS
+    headcount: 2
+    availability: 0.85
+    shift: ["08:00", "16:00"]
+
+stock:
+  - id: connection_kit
+    name: Aansluitset (kabel, mof, aansluitkast)
+    level: 120
+    reorder_point: 70       # covers ~11 working days of demand during the 15-day lead time
+    order_quantity: 120
+    lead_days: 15
+
+streams:
+  - id: connections
+    name: Nieuwe aansluitingen
+    arrivals_per_day: 6
+    norm_days: 126          # the former legal term of 18 weeks
+    priority: 2             # outages (later) get a higher number and go first
+    steps:
+      - id: intake
+        name: Aanvraag & intake
+        kind: work
+        pool: intake
+        touch_hours: 1.0
+        ftr: 0.75
+        rework_wait_days: 5   # asking the customer for missing details
+      - id: grid_study
+        name: Netstudie
+        kind: work
+        pool: grid_analysts
+        touch_hours: 4.0
+        ftr: 0.95
+        applies: 0.25         # only requests near the capacity limit
+      - id: quote
+        name: Offerte
+        kind: work
+        pool: intake
+        touch_hours: 1.5
+        ftr: 0.95
+      - id: customer_signs
+        name: Akkoord klant
+        kind: wait
+        days: 10
+        spread: 0.6
+      - id: design
+        name: Werkvoorbereiding & ontwerp
+        kind: work
+        pool: work_prep
+        touch_hours: 4.0
+        ftr: 0.85
+      - id: permit
+        name: Vergunning & KLIC
+        kind: wait
+        days: 15
+        spread: 0.5
+        applies: 0.6          # digging in public space
+      - id: materials
+        name: Materiaal reserveren
+        kind: material
+        item: connection_kit
+        quantity: 1
+      - id: planning
+        name: Planning
+        kind: work
+        pool: planners
+        touch_hours: 0.5
+        ftr: 1.0
+      - id: execution
+        name: Uitvoering
+        kind: work
+        pool: monteurs
+        touch_hours: 5.0      # including travel
+        ftr: 0.85
+        rework_to: planning   # meterkast niet gereed: replan after the installer is ready
+        rework_wait_days: 5
+      - id: commissioning
+        name: Inbedrijfname & meter
+        kind: work
+        pool: monteurs
+        touch_hours: 1.5
+        ftr: 0.95
+      - id: revision
+        name: Revisie & administratie
+        kind: work
+        pool: gis
+        touch_hours: 2.0
+        ftr: 0.95

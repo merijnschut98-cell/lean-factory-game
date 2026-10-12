@@ -6,13 +6,13 @@ Game text is **Dutch** (with sector terms). Code, comments and this plan stay in
 
 ---
 
-## Current Status: Phase A — Engine (Godot) 🔧 step 1 done
+## Current Status: Phase A — Engine (Godot) 🔧 steps 1–2 done
 
 Pivot agreed 2026-10-12: from a hoverboard factory to a grid operator. The 3D factory prototype is archived in `archive/factory-3d/` (also git commit `b3a4c8c`). Its investigation / A3 / PDCA / bottleneck logic will be carried over and generalised.
 
 This is a multi-month project, built the right way: research → design (reviewed by Merijn) → engine → content → world → UI, in small tested increments. No publishing deadline. Built in **Godot 4 + GDScript** from the start (decided 2026-10-12).
 
-**Next task:** Phase A step 2 — the work-order simulation core (`sim/`): work orders, steps, people pools with priorities, external waits, stock, rework, arrivals, KPIs, starting with the connections value stream.
+**Next task:** Phase A step 3 — the outage stream (24/7 on-call, pre-empting planned monteur work) and the meter stream, sharing the monteurs with connections.
 
 ---
 
@@ -73,11 +73,12 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 - ✅ CLAUDE.md testing rule lists the Godot, content and Python commands (approved by Merijn)
 - ✅ Simplify pass: shared cached Godot setup + export matrix in CI, project-wide default environment and `Palette`, `TestCase` moved to `tests/lib/`, two-pass content validation (`CROSS_CHECKS`), schema fields derived in `GameInfo`
 - ⬜ Tech debt (tracked): the `game.yaml` field list exists in Python (authority) and as `GameInfo` properties; revisit if content schemas multiply (a shared schema file)
-- ⬜ `sim/network.gd` (pure logic, no nodes): value streams of steps; people pools (capacity, availability, priority, preemption); external delay steps (permits, customer); material stock with reorder point and supplier lead time; first-time-right with rework loops back to earlier steps; arrivals with variability; KPIs per stream (throughput, backlog, lead time, on-time vs norm, FTR)
-- ⬜ End-to-end capacity and constraint per value stream (generalised from the factory `lineCapacity`)
-- ⬜ Generic problem effects: target a step, pool, stock item or stream; modify work time, FTR, availability, delay, demand, people
-- ⬜ Port investigation / A3 / PDCA / scoring from the factory prototype (`archive/factory-3d/src/sim/`) to GDScript; tools renamed for a service organisation
-- ⬜ Tests for flow, preemption, rework, stockouts, capacity, PDCA loop, save/load
+- ✅ Step 2: work-order simulation core in `game/src/sim/` (calendar, work orders, pools with attendance and pre-emption, external waits, stock with reorder point, rework loops with customer waits, arrivals, KPIs) and `Capacity` (expected visits incl. rework, pool load, constraint per stream); connections stream in `content/value_streams.yaml` with validator; 35 Godot tests; a simulated year runs in ~3 s
+- ⬜ Step 3: outage stream (24/7 on-call shift model) and meter stream sharing the monteurs; congestion stream
+- ⬜ Step 4: generic problem effects (target a step, pool, stock item or stream; modify touch time, FTR, availability, headcount, wait days, demand)
+- ⬜ Step 5: port investigation / A3 / PDCA / scoring from the factory prototype (`archive/factory-3d/src/sim/`) to GDScript; tools renamed for a service organisation; Check compares stream KPIs and capacity before/after
+- ⬜ Step 6: save/load of the simulation and rules state (JSON, versioned, validated)
+- ⬜ Gate: four value streams run headless with realistic KPIs; tests cover flow, pre-emption, rework, stock-outs, capacity, the PDCA loop and save/load
 
 ## Phase B — Content (Dutch) ⬜
 - ⬜ `data/grid/problems_tier1.yaml`: ~16 problems across the four streams (well-known and less-known), each with symptoms, clues per tool (key + red herrings, 5 Whys depth), waste, root cause, effective countermeasures, effect

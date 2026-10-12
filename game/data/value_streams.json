@@ -1,0 +1,175 @@
+{
+ "pools": [
+  {
+   "availability": 0.85,
+   "headcount": 3,
+   "id": "intake",
+   "name": "Intake & aanvraagbeheer",
+   "shift": [
+    "07:30",
+    "15:30"
+   ]
+  },
+  {
+   "availability": 0.85,
+   "headcount": 2,
+   "id": "grid_analysts",
+   "name": "Netstudies",
+   "shift": [
+    "08:00",
+    "16:00"
+   ]
+  },
+  {
+   "availability": 0.85,
+   "headcount": 4,
+   "id": "work_prep",
+   "name": "Werkvoorbereiding",
+   "shift": [
+    "07:30",
+    "15:30"
+   ]
+  },
+  {
+   "availability": 0.9,
+   "headcount": 2,
+   "id": "planners",
+   "name": "Planning",
+   "shift": [
+    "07:30",
+    "15:30"
+   ]
+  },
+  {
+   "availability": 0.85,
+   "headcount": 14,
+   "id": "monteurs",
+   "name": "Monteurs",
+   "shift": [
+    "07:00",
+    "15:00"
+   ]
+  },
+  {
+   "availability": 0.85,
+   "headcount": 2,
+   "id": "gis",
+   "name": "Revisie & GIS",
+   "shift": [
+    "08:00",
+    "16:00"
+   ]
+  }
+ ],
+ "stock": [
+  {
+   "id": "connection_kit",
+   "lead_days": 15,
+   "level": 120,
+   "name": "Aansluitset (kabel, mof, aansluitkast)",
+   "order_quantity": 120,
+   "reorder_point": 70
+  }
+ ],
+ "streams": [
+  {
+   "arrivals_per_day": 6,
+   "id": "connections",
+   "name": "Nieuwe aansluitingen",
+   "norm_days": 126,
+   "priority": 2,
+   "steps": [
+    {
+     "ftr": 0.75,
+     "id": "intake",
+     "kind": "work",
+     "name": "Aanvraag & intake",
+     "pool": "intake",
+     "rework_wait_days": 5,
+     "touch_hours": 1.0
+    },
+    {
+     "applies": 0.25,
+     "ftr": 0.95,
+     "id": "grid_study",
+     "kind": "work",
+     "name": "Netstudie",
+     "pool": "grid_analysts",
+     "touch_hours": 4.0
+    },
+    {
+     "ftr": 0.95,
+     "id": "quote",
+     "kind": "work",
+     "name": "Offerte",
+     "pool": "intake",
+     "touch_hours": 1.5
+    },
+    {
+     "days": 10,
+     "id": "customer_signs",
+     "kind": "wait",
+     "name": "Akkoord klant",
+     "spread": 0.6
+    },
+    {
+     "ftr": 0.85,
+     "id": "design",
+     "kind": "work",
+     "name": "Werkvoorbereiding & ontwerp",
+     "pool": "work_prep",
+     "touch_hours": 4.0
+    },
+    {
+     "applies": 0.6,
+     "days": 15,
+     "id": "permit",
+     "kind": "wait",
+     "name": "Vergunning & KLIC",
+     "spread": 0.5
+    },
+    {
+     "id": "materials",
+     "item": "connection_kit",
+     "kind": "material",
+     "name": "Materiaal reserveren",
+     "quantity": 1
+    },
+    {
+     "ftr": 1.0,
+     "id": "planning",
+     "kind": "work",
+     "name": "Planning",
+     "pool": "planners",
+     "touch_hours": 0.5
+    },
+    {
+     "ftr": 0.85,
+     "id": "execution",
+     "kind": "work",
+     "name": "Uitvoering",
+     "pool": "monteurs",
+     "rework_to": "planning",
+     "rework_wait_days": 5,
+     "touch_hours": 5.0
+    },
+    {
+     "ftr": 0.95,
+     "id": "commissioning",
+     "kind": "work",
+     "name": "Inbedrijfname & meter",
+     "pool": "monteurs",
+     "touch_hours": 1.5
+    },
+    {
+     "ftr": 0.95,
+     "id": "revision",
+     "kind": "work",
+     "name": "Revisie & administratie",
+     "pool": "gis",
+     "touch_hours": 2.0
+    }
+   ]
+  }
+ ]
+}

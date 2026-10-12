@@ -1,9 +1,11 @@
 """Tests for tools/build_content.py — the YAML → JSON content pipeline of Spanning."""
 from __future__ import annotations
 
+import copy
 from pathlib import Path
 
 import pytest
+import yaml
 
 import build_content as bc  # tools/ is on pytest's pythonpath (pytest.ini)
 
@@ -16,11 +18,15 @@ locale: nl
 """
 
 
+REAL_STREAMS = (Path(__file__).resolve().parent.parent / "content" / "value_streams.yaml").read_text(encoding="utf-8")
+
+
 @pytest.fixture
 def dirs(tmp_path: Path) -> tuple[Path, Path]:
     content, data = tmp_path / "content", tmp_path / "data"
     content.mkdir()
     (content / "game.yaml").write_text(GAME_YAML, encoding="utf-8")
+    (content / "value_streams.yaml").write_text(REAL_STREAMS, encoding="utf-8")
     return content, data
 
 
@@ -33,7 +39,7 @@ def test_repo_content_is_valid_and_built():
 def test_write_then_check_is_clean(dirs):
     content, data = dirs
     docs = bc.load_content(content)
-    assert bc.stale_files(docs, data) == ["game.json"]
+    assert bc.stale_files(docs, data) == ["game.json", "value_streams.json"]
     bc.write(docs, data)
     assert bc.stale_files(docs, data) == []
     assert '"town": "Nova"' in (data / "game.json").read_text(encoding="utf-8")
@@ -75,7 +81,7 @@ def test_cross_checks_see_all_files(dirs, monkeypatch):
     seen = []
     monkeypatch.setattr(bc, "CROSS_CHECKS", [lambda docs: seen.append(sorted(docs))])
     bc.load_content(content)
-    assert seen == [["game"]]
+    assert seen == [["game", "value_streams"]]
 
 
 def test_cross_check_failure_is_reported(dirs, monkeypatch):
@@ -112,3 +118,50 @@ def test_cli_reports_content_errors(dirs, monkeypatch):
     monkeypatch.setattr(bc, "DATA_DIR", data)
     assert bc.main([]) == 1
     assert not data.exists()
+
+
+# ── value_streams.yaml ───────────────────────────────────────────────────────
+
+def _streams() -> dict:
+    return copy.deepcopy(yaml.safe_load(REAL_STREAMS))
+
+
+def _connections(doc: dict) -> dict:
+    return next(s for s in doc["streams"] if s["id"] == "connections")
+
+
+def _step(doc: dict, step_id: str) -> dict:
+    return next(s for s in _connections(doc)["steps"] if s["id"] == step_id)
+
+
+def test_real_value_streams_are_valid():
+    bc.validate_value_streams(_streams(), "value_streams.yaml")
+
+
+@pytest.mark.parametrize("mutate, message", [
+    (lambda d: _step(d, "design").update(pool="nobody"), "unknown pool 'nobody'"),
+    (lambda d: _step(d, "materials").update(item="ghost"), "unknown stock item 'ghost'"),
+    (lambda d: _step(d, "intake").update(rework_to="revision"), "earlier one"),
+    (lambda d: _step(d, "intake").update(rework_to="nope"), "earlier one"),
+    (lambda d: _step(d, "design").update(ftr=1.5), "'ftr' must be between"),
+    (lambda d: _step(d, "permit").update(applies=0), "'applies' must be between"),
+    (lambda d: _step(d, "design").update(kind="dance"), "'kind' must be one of"),
+    (lambda d: _step(d, "materials").update(quantity=1.5), "'quantity' must be an integer"),
+    (lambda d: d["pools"][0].update(shift=["07:30", 930]), 'two quoted "HH:MM" times'),
+    (lambda d: d["pools"][0].update(shift=["16:00", "08:00"]), "end after it starts"),
+    (lambda d: d["pools"][0].update(headcount=True), "'headcount' must be an integer"),
+    (lambda d: d["pools"].append(dict(d["pools"][0])), "duplicate pools ids: intake"),
+    (lambda d: d["pools"][0].update(id="Intake Team"), "snake_case"),
+    (lambda d: _connections(d).update(steps=[]), "at least one step"),
+])
+def test_value_stream_errors_are_caught(mutate, message):
+    doc = _streams()
+    mutate(doc)
+    with pytest.raises(bc.ContentError, match=message.replace("(", r"\(").replace("'", "'")):
+        bc.validate_value_streams(doc, "value_streams.yaml")
+
+
+def test_unquoted_time_in_yaml_is_caught():
+    doc = yaml.safe_load(REAL_STREAMS.replace('shift: ["07:30", "15:30"]', "shift: [07:30, 15:30]", 1))
+    with pytest.raises(bc.ContentError, match="HH:MM"):
+        bc.validate_value_streams(doc, "value_streams.yaml")
