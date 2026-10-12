@@ -18,6 +18,7 @@ static func capture(r: Region) -> Dictionary:
 		"network": NetworkState.capture(r.net),
 		"profile": {"budget": r.profile.budget, "xp": r.profile.xp, "concepts": r.profile.concepts},
 		"observed": r.observed.keys(), "found": r.found.keys(), "trust": r.trust, "problems": problems,
+		"costs": {"owed": r._cost_owed, "day": r._cost_day},
 	}
 
 
@@ -38,6 +39,9 @@ static func restore(r: Region, d: Dictionary) -> Dictionary:
 		r.observed[str(place)] = true
 	for clue_id: Variant in d["found"]:
 		r.found[str(clue_id)] = true
+	var costs: Dictionary = d.get("costs", {}) if d.get("costs") is Dictionary else {}
+	r._cost_owed = float(costs.get("owed", 0.0))
+	r._cost_day = int(costs.get("day", SimCalendar.day_of(r.net.time)))
 	for team: Variant in d["trust"]:
 		r.trust[str(team)] = int(d["trust"][team])
 	for id: String in d["problems"]:

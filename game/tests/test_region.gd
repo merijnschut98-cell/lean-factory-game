@@ -205,3 +205,27 @@ func test_a_standardised_fix_stays() -> void:
 	r.act("custom_design", true)
 	r.advance_days(60)
 	assert_eq(r.state["custom_design"].phase, ProblemState.Phase.RESOLVED)
+
+
+## A problem can cost money every week it is active (overtime, damage
+## repairs, claims), weakened by a working countermeasure and gone once it is
+## resolved. The Check shows the cost before and after.
+func test_an_active_problem_costs_money_every_week() -> void:
+	var r := _region()
+	r.activate("custom_design")
+	assert_eq(r.weekly_cost(), 700.0)
+	r.advance_days(7)
+	assert_eq(r.profile.budget, 50000 - 700, "a week of overtime")
+	_investigate(r)
+	assert_eq(r.submit_a3("custom_design", _a3(r, "standard_designs")), "")
+	assert_near(r.weekly_cost(), 70.0, 1e-6, "the fix takes away 90%")
+	r.advance_days(Region.CHECK_DAYS)
+	var result := r.check("custom_design")
+	assert_eq(result["before"]["cost_per_week"], 700.0)
+	assert_near(result["after"]["cost_per_week"], 70.0, 1e-6)
+	r.act("custom_design", true)
+	assert_eq(r.weekly_cost(), 0.0, "resolved: no more cost")
+	var budget := r.profile.budget
+	r.advance_days(7)
+	assert_eq(r.profile.budget, budget)
+

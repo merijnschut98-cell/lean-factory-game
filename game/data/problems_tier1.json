@@ -447,6 +447,7 @@
      "tool": "conversation"
     }
    ],
+   "cost_per_week": 425,
    "countermeasures": {
     "daily_revision_template": 0.7,
     "revision_at_source": 1.0
@@ -460,7 +461,7 @@
     {
      "property": "demand",
      "target": "outages.daytime",
-     "value": 1.1
+     "value": 1.05
     }
    ],
    "id": "revision_backlog",
@@ -520,6 +521,7 @@
      "tool": "data"
     }
    ],
+   "cost_per_week": 4250,
    "countermeasures": {
     "contractor_briefing": 0.7,
     "revision_at_source": 0.6,

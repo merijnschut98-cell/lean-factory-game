@@ -34,6 +34,7 @@ static func problems() -> Array:
 			"plausible_causes": ["The preparers are too slow", "The design software is old"],
 			# Several healthier processes: both help, one more than the other.
 			"countermeasures": {"standard_designs": 1.0, "delegated_approval": 0.6}, "teaches": ["standard_work"],
+			"cost_per_week": 700,  # overtime
 			"effects": [NetFixture.effect("connections.design", "touch_time", 1.5)],
 			"clues": [
 				clue("time_study", true, 0), clue("queue_count", false, 0),

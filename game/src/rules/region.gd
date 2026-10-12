@@ -31,6 +31,9 @@ var found: Dictionary[String, bool] = {}
 var trust: Dictionary[String, int] = {}
 ## {type: activated | check_ready | recurred | belt, ...} for the world and UI.
 var events: Array[Dictionary] = []
+## Problem costs not yet taken from the budget (charged in whole euros per day).
+var _cost_owed := 0.0
+var _cost_day := 0
 
 
 func _init(network: Network, problem_defs: Array[ProblemDef], cm_defs: Array[CountermeasureDef], player: Profile) -> void:
@@ -77,12 +80,35 @@ func advance_days(n: float) -> void:
 
 func advance(minutes: int) -> void:
 	net.advance(minutes)
+	_charge_costs()
 	for st: ProblemState in state.values():
 		if st.phase == P.DOING and net.time >= st.check_at:
 			st.phase = P.CHECK_READY
 			events.append({"type": "check_ready", "problem": st.id})
 		elif st.phase == P.RESOLVED and st.recur_at >= 0 and net.time >= st.recur_at:
 			_recur(st)
+
+
+## What the open problems cost per week now: each one's cost, weakened by
+## a working countermeasure.
+func weekly_cost() -> float:
+	var total := 0.0
+	for st: ProblemState in state.values():
+		if st.is_open():
+			total += problems[st.id].cost_per_week * (1.0 - st.eff)
+	return total
+
+
+## Take each passed day's share of the weekly cost from the budget.
+func _charge_costs() -> void:
+	var today := SimCalendar.day_of(net.time)
+	if today <= _cost_day:
+		return
+	_cost_owed += weekly_cost() * (today - _cost_day) / 7.0
+	_cost_day = today
+	var whole := floori(_cost_owed)
+	profile.budget -= whole
+	_cost_owed -= whole
 
 
 # ── Problems ────────────────────────────────────────────────────────────────
@@ -302,6 +328,7 @@ func snapshot(problem_id: String) -> Dictionary:
 		"capacity": c["capacity_per_week"], "constraint_pool": c["constraint_pool"],
 		"at_constraint": c["constraint_pool"] in _pools_at(p.step),
 		"throughput": k["throughput_per_week"], "lead_time": k["lead_days_p50"],
+		"cost_per_week": p.cost_per_week * (1.0 - state[problem_id].eff),
 		"first_time_right": k["first_time_right"], "on_time": k["on_time"],
 		"step": _recent_stats(net.step_at(p.step)),
 	}

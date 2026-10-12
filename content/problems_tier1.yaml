@@ -198,7 +198,12 @@ problems:
     teaches: [inventory, quality_at_the_source]
     effects:
       - {target: connections.revision, property: touch_time, value: 1.4}
-      - {target: outages.daytime, property: demand, value: 1.1}  # outdated KLIC maps: more cables hit
+      # Outdated KLIC maps: more cables hit. Estimate: ~60% of digging damage
+      # comes from not knowing exactly what lies where (Bouwend Nederland); a
+      # four-month backlog leaves a few percent of cables unmapped, mostly in
+      # new-build streets where digging happens.
+      - {target: outages.daytime, property: demand, value: 1.05}
+    cost_per_week: 425  # ~0.5 extra damage a week x EUR 850
     clues:
       - {tool: data, key: true, depth: 0, text: "Er staan 240 opgeleverde aansluitingen open in GIS; de oudste is vier maanden oud."}
       - {tool: queue_count, key: false, depth: 0, text: "De bak met schetsen is overzichtelijk geordend op datum."}
@@ -226,6 +231,9 @@ problems:
     teaches: [defects, systems_thinking]
     effects:
       - {target: outages.daytime, property: demand, value: 1.5}  # a third of daytime outages
+    # Repairs and claims: ~5 extra damages a week x ~EUR 850 direct repair cost
+    # each (Wibon evaluation: EUR 38.8M a year over 46,799 damages, 2022).
+    cost_per_week: 4250
     clues:
       - {tool: data, key: true, depth: 0, text: "Een derde van de storingen overdag is graafschade; zeven procent van de graafwerken raakt een kabel."}
       - {tool: shadow, key: false, depth: 0, text: "De monteurs herstellen graafschade snel en vakkundig."}

@@ -276,10 +276,10 @@ KPIS = ["throughput", "lead_time", "first_time_right", "on_time"]
 SEVERITIES = ["low", "medium", "high", "critical"]
 VISIBILITIES = ["obvious", "subtle", "hidden"]
 PROBLEM_KEYS = {"id", "tier", "name", "step", "waste", "severity", "visibility", "kpi", "symptoms", "root_cause",
-                "plausible_causes", "mismatch_note", "countermeasures", "teaches", "effects", "clues"}
+                "plausible_causes", "mismatch_note", "countermeasures", "teaches", "effects", "clues", "cost_per_week"}
 COUNTERMEASURE_KEYS = {"id", "tier", "name", "category", "description", "budget", "team_hours", "decay_days",
                        "multipliers", "effects"}
-CLUE_KEYS = {"tool", "text", "key", "depth", "at"}
+CLUE_KEYS = {"tool", "text", "key", "depth", "at", "note", "teaches"}
 EFFECT_KEYS = {"target", "property", "value"}
 CHECK_PASS = 0.5  # the effectiveness a Check needs to pass (Pdca.CHECK_PASS)
 # property → (target kind, required step kind or None, value type: factor | number | bool | count | reserve | step)
@@ -352,6 +352,7 @@ def validate_problems(doc: Any, source: str) -> None:
         _known_keys(p, PROBLEM_KEYS, where)
         _require_strings(p, ["step", "root_cause", "mismatch_note"], where)
         _number(p, "tier", where, 1, 4, integer=True)
+        _number(p, "cost_per_week", where, 0, integer=True, default=0)
         _one_of(p, "waste", WASTES, where)
         _one_of(p, "severity", SEVERITIES, where)
         _one_of(p, "visibility", VISIBILITIES, where)

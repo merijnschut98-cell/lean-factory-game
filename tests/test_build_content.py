@@ -335,6 +335,8 @@ def test_sample_problems_are_valid(rules_dirs):
     (lambda d: _problem(d)["effects"][0].update(strength=2), "effect 0: unknown key.s. 'strength'"),
     (lambda d: _problem(d).update(teach=["flow"]), "unknown key.s. 'teach'"),
     (lambda d: _cm(d).update(decay=30), "unknown key.s. 'decay'"),
+    (lambda d: _problem(d).update(cost_per_week=-5), "'cost_per_week' must be >= 0"),
+    (lambda d: _problem(d).update(cost_per_week=99.5), "'cost_per_week' must be an integer"),
     (lambda d: d["countermeasures"]["countermeasures"].append(dict(_cm(d))), "duplicate countermeasures ids"),
 ])
 def test_problem_errors_are_caught(rules_dirs, mutate, message):

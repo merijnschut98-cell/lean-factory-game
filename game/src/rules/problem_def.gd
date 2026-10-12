@@ -24,6 +24,8 @@ var plausible_causes: PackedStringArray
 var countermeasures: Dictionary[String, float] = {}
 var mismatch_note: String
 var effects: Array = []
+## Euros it costs every week while active (overtime, damage repairs, claims).
+var cost_per_week := 0
 var teaches: PackedStringArray
 var clues: Array[Clue] = []
 ## Why the definition is unusable; "" when fine.
@@ -48,6 +50,7 @@ static func from_dict(d: Dictionary) -> ProblemDef:
 	p.plausible_causes = PackedStringArray(d.get("plausible_causes", []))
 	p.mismatch_note = d.get("mismatch_note", "")
 	p.effects = d.get("effects", []).duplicate(true)
+	p.cost_per_week = int(d.get("cost_per_week", 0))
 	p.teaches = PackedStringArray(d.get("teaches", []))
 	var fits: Dictionary = d.get("countermeasures", {})
 	for cm: String in fits:
