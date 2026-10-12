@@ -37,6 +37,15 @@ func test_every_effect_fits_the_real_network() -> void:
 func _solve(c: Catalog, p: ProblemDef) -> Dictionary:
 	var r := _region(c)
 	assert_true(r.activate(p.id), p.id)
+	_experiment(r, p, _investigate(r, p))
+	r.advance_days(Region.CHECK_DAYS)
+	var check := r.check(p.id)
+	assert_true(check.get("passed", false), "%s: check passes" % p.id)
+	return r.act(p.id, true)
+
+
+## Find every key clue like an expert: a deep look first, then by depth.
+func _investigate(r: Region, p: ProblemDef) -> Array:
 	r.use_tool(p.step, "data")  # a deep look spots even hidden problems
 	var keys := p.clues.filter(func(k: Clue) -> bool: return k.key)
 	keys.sort_custom(func(a: Clue, b: Clue) -> bool: return a.depth < b.depth)
@@ -47,16 +56,18 @@ func _solve(c: Catalog, p: ProblemDef) -> Dictionary:
 			r.use_tool(k.at, k.tool)
 	for k: Clue in keys:
 		assert_true(r.found.has(k.id), "%s: key clue %s is reachable" % [p.id, k.id])
+	return keys
+
+
+## Submit an A3 with the real cause, all key evidence and the best fitting
+## countermeasure available at the problem's tier.
+func _experiment(r: Region, p: ProblemDef, keys: Array) -> void:
 	var best := ""
 	for cm in r.available_countermeasures():
 		if cm.tier <= p.tier and p.countermeasures.get(cm.id, 0.0) > p.countermeasures.get(best, 0.0):
 			best = cm.id
 	var a3 := RulesFixture.a3(r, p.id, p.waste, best, keys.map(func(k: Clue) -> String: return k.id), p.kpi)
 	assert_eq(r.submit_a3(p.id, a3), "", p.id)
-	r.advance_days(Region.CHECK_DAYS)
-	var check := r.check(p.id)
-	assert_true(check.get("passed", false), "%s: check passes with %s" % [p.id, best])
-	return r.act(p.id, true)
 
 
 ## Each listed countermeasure is an improvement (some more than others), so
@@ -184,4 +195,35 @@ func test_the_campaign_opens_with_the_first_main_mission() -> void:
 	assert_eq(log.status("walk_connections"), "completed")
 	assert_true(log.available().size() >= 3, "new missions unlock: the main story and side missions")
 	assert_eq(log.active("main").size(), 0)
+
+
+## Play the opening of the real campaign like an expert: the coach follows
+## the PDCA loop of the main mission, and each solved problem unlocks the
+## next part of the story.
+func test_an_expert_plays_the_opening_of_the_campaign() -> void:
+	var c := Catalog.load_from()
+	var log := Missions.new(_region(c), c.missions, c.coach)
+	var r := log.region
+	log.accept("walk_connections")
+	for step in r.net.stream("connections").steps:
+		if step.kind == SimStep.Kind.WORK:
+			r.use_tool("connections." + step.id, "shadow")
+	log.update()
+	for id in ["fix_custom_design", "fix_incomplete_application", "fix_status_callers"]:
+		assert_eq(log.accept(id), "", id)
+		var p: ProblemDef = r.problems[log.defs[id].goal_problem]
+		var stages := [log.ask_coach()["stage"]]
+		var keys := _investigate(r, p)
+		stages.append(log.ask_coach()["stage"])
+		_experiment(r, p, keys)
+		stages.append(log.ask_coach()["stage"])
+		r.advance_days(Region.CHECK_DAYS)
+		assert_true(r.check(p.id).get("passed", false), id)
+		stages.append(log.ask_coach()["stage"])
+		assert_eq(stages, ["go_see", "understand", "experiment", "reflect"], id)
+		r.act(p.id, true)
+		log.update()
+		assert_eq(log.status(id), "completed", id)
+	assert_true(Progression.belt_index(r.profile.xp) >= 1, "yellow belt after the opening")
+	assert_eq(log.status("fix_done_but_not_closed"), "available", "the story goes on")
 
