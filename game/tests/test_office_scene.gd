@@ -196,3 +196,129 @@ func test_one_panel_at_a_time_and_closing_frees_the_player() -> void:
 	office.ui.close_panels()
 	assert_false(office.ui.is_busy())
 	_close(office)
+
+
+# ── Review fixes ──────────────────────────────────────────────────────────────
+
+func test_over_bad_content_the_keys_do_nothing_and_the_error_stays() -> void:
+	var office: Office = load(SCENE).instantiate()
+	office.data_dir = "res://does_not_exist"
+	office.build()
+	assert_ne(office.session.error, "")
+	office.player.journal_pressed.emit()
+	office.player.interact_pressed.emit()
+	office.player.escape_pressed.emit()
+	office.ui.open_a3()
+	office.ui.open_coach()
+	office.ui.open_mission_board()
+	office.ui.open_place("connections.design")
+	assert_false(office.ui.is_busy(), "no panel opens")
+	assert_true(office.ui.hud.prompt_label.text.begins_with("De inhoud kon niet worden geladen"), "the error stays")
+	assert_true(office.ui.hud.prompt_label.visible)
+	_close(office)
+
+
+func _a3_open(office: Office) -> A3Form:
+	office.ui.mission_board.accept(MISSION)
+	office.interact(office.interactable(DESIGN))
+	office.ui.place_menu.use_tool("time_study")
+	office.interact(office.interactable("obeya"))
+	return office.ui.a3_form
+
+
+func test_a_refused_a3_keeps_the_players_draft() -> void:
+	var office := _office()
+	var form := _a3_open(office)
+	var draft := {"waste": "waiting", "cause": 1, "evidence": [], "cm": "standard_designs", "prediction": "lead_time"}
+	form.fill(draft)
+	assert_eq(form.submit(form.selected_a3()), "evidence")
+	assert_eq(form.selected_a3(), draft, "the answers survive the refusal")
+	_close(office)
+
+
+func test_closing_and_reopening_the_a3_keeps_the_draft() -> void:
+	var office := _office()
+	var form := _a3_open(office)
+	var clue: String = office.session.clues_found(PROBLEM)[0].id
+	var draft := {"waste": "overprocessing", "cause": 2, "evidence": [clue], "cm": "", "prediction": "throughput"}
+	form.fill(draft)
+	office.ui.close_panels()
+	office.interact(office.interactable("obeya"))
+	assert_eq(form.selected_a3(), draft)
+	_close(office)
+
+
+func test_the_a3_message_is_set_before_the_ui_hears_of_the_action() -> void:
+	var office := _office()
+	var form := _a3_open(office)
+	var heard := []
+	form.acted.connect(func() -> void: heard.append(form.message))
+	form.check()
+	assert_eq(heard, [UiText.a3_error("not_check_ready")])
+	_close(office)
+
+
+func test_a_refused_tool_or_question_is_worded_in_dutch() -> void:
+	var office := _office()
+	office.interact(office.interactable(DESIGN))
+	assert_eq(office.ui.place_menu.use_tool("crystal_ball"), UiText.place_error("unknown_tool"))
+	assert_eq(office.ui.place_menu.use_tool("conversation"), UiText.place_error("use_ask"))
+	assert_eq(office.ui.place_menu.ask("what_is_wrong"), UiText.place_error("unknown_question"))
+	_close(office)
+
+
+func test_the_journal_lists_clues_by_place_then_as_found_not_per_problem() -> void:
+	var office := _office()
+	var s := office.session
+	# Two clues of different problems at one place, and one elsewhere.
+	var first: Clue = null
+	var second: Clue = null
+	var elsewhere: Clue = null
+	for p in s.region.problem_list():
+		for c in p.clues:
+			if first == null:
+				first = c
+			elif second == null and c.at == first.at and p.clues.find(first) < 0:
+				second = c
+	for p in s.region.problem_list():
+		for c in p.clues:
+			if elsewhere == null and c.at != first.at:
+				elsewhere = c
+	assert_true(second != null and elsewhere != null, "the content has such clues")
+	for c in [second, elsewhere, first]:
+		s.region.found[c.id] = true
+	var ids := ClueJournal.found(s).map(func(c: Clue) -> String: return c.id)
+	assert_eq(ids, [second.id, first.id, elsewhere.id], "the later problem's clue, found first, comes first")
+	_close(office)
+
+
+func test_toasts_keep_only_the_latest_few() -> void:
+	var office := _office()
+	for n in Hud.MAX_TOASTS + 3:
+		office.ui.hud.toast("bericht %d" % n)
+	var texts := office.ui.hud.toast_texts()
+	assert_eq(texts.size(), Hud.MAX_TOASTS)
+	assert_eq(texts[-1], "bericht %d" % (Hud.MAX_TOASTS + 2), "the newest is kept")
+	_close(office)
+
+
+func test_after_esc_a_click_on_the_view_catches_the_mouse_again() -> void:
+	var office := _office()
+	assert_true(office.mouse_captured)
+	assert_false(office.ui.hud.mouse_hint.visible)
+	office.player.escape_pressed.emit()
+	assert_false(office.mouse_captured, "Esc frees the mouse")
+	assert_true(office.ui.hud.mouse_hint.visible, "a hint says how to get it back")
+	assert_eq(office.ui.hud.mouse_hint.text, "Klik om verder te lopen")
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	office._unhandled_input(click)
+	assert_true(office.mouse_captured, "a click catches it")
+	assert_false(office.ui.hud.mouse_hint.visible)
+	office.interact(office.interactable("coach"))
+	assert_false(office.mouse_captured, "a panel frees the mouse")
+	assert_false(office.ui.hud.mouse_hint.visible, "but needs no hint")
+	office._unhandled_input(click)
+	assert_false(office.mouse_captured, "a click with a panel open is for the panel")
+	_close(office)

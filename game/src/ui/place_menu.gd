@@ -23,7 +23,7 @@ func open_at(at_place: String) -> void:
 ## Use a gemba tool here. Returns the Dutch result text.
 func use_tool(tool: String) -> String:
 	var result := session.use_tool(place, tool)
-	var text: String = UiText.tool_result(result) if not result.has("error") else result["error"]
+	var text: String = UiText.tool_result(result) if not result.has("error") else UiText.place_error(result["error"])
 	_record(UiText.tool_label(tool), text)
 	return text
 
@@ -31,7 +31,7 @@ func use_tool(tool: String) -> String:
 ## Ask the team here a question. Returns the Dutch reply.
 func ask(question_id: String) -> String:
 	var result := session.ask(place, question_id)
-	var text: String = UiText.reply(result) if not result.has("error") else result["error"]
+	var text: String = UiText.reply(result) if not result.has("error") else UiText.place_error(result["error"])
 	_record("Jij: \"%s\"" % UiText.question(question_id), text)
 	return text
 

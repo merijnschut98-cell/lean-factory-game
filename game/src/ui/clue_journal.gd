@@ -9,11 +9,24 @@ func _init() -> void:
 	super("Aanwijzingen", Vector2(1000, 0))
 
 
-## Every clue found so far, in the content's order.
+## Every clue found so far: by place (the first place a clue was found there
+## first), then in the order found. Not per problem: the order must not say
+## which clues belong together.
 static func found(s: GameSession) -> Array[Clue]:
-	var out: Array[Clue] = []
+	var clues := {}
 	for p in s.region.problem_list():
-		out.append_array(s.clues_found(p.id))
+		for c in p.clues:
+			clues[c.id] = c
+	var places := {}
+	for id in s.region.found:
+		var c: Clue = clues.get(id)
+		if c != null:
+			if not places.has(c.at):
+				places[c.at] = []
+			places[c.at].append(c)
+	var out: Array[Clue] = []
+	for at in places:
+		out.append_array(places[at])
 	return out
 
 

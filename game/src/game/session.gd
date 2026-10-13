@@ -166,7 +166,7 @@ func clock_text() -> String:
 		Time.get_unix_time_from_datetime_dict(PLAY_START_DATE) + SimCalendar.day_of(played) * 86400)
 	var minute_of_day := played % SimCalendar.MINUTES_PER_DAY
 	return "%s %d %s, %02d:%02d" % [WEEKDAYS[SimCalendar.weekday(played)], date["day"], MONTHS[date["month"] - 1],
-		minute_of_day / 60, minute_of_day % 60]
+		int(minute_of_day / 60.0), minute_of_day % 60]
 
 
 func budget() -> int:

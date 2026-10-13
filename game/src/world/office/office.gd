@@ -20,6 +20,11 @@ const SUN_DIRECTION := Vector3(0.36, -0.53, -0.77)
 
 ## The simulation's luck for a new game.
 @export var seed_value := 1
+## Where the content is read from (tests point it at bad content).
+@export var data_dir := Catalog.DATA_DIR
+
+## Whether the mouse steers the view (else it is free: Esc, or a panel).
+var mouse_captured := false
 
 var session: GameSession
 var geometry: Node3D
@@ -37,7 +42,7 @@ func _ready() -> void:
 func build() -> void:
 	if session != null:
 		return
-	session = GameSession.new_game(seed_value)
+	session = GameSession.new_game(seed_value, data_dir)
 	geometry = _load_geometry()
 	add_child(geometry)
 	_add_light()
@@ -183,7 +188,14 @@ func _add_player() -> void:
 		if ui.is_busy():
 			ui.close_panels()
 		else:
-			_capture_mouse(Input.mouse_mode != Input.MOUSE_MODE_CAPTURED))
+			_capture_mouse(not mouse_captured))
+
+
+## A left click on the view (no panel took it) catches a mouse Esc freed.
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT \
+			and not mouse_captured and not ui.is_busy():
+		_capture_mouse(true)
 
 
 ## The sun through the windows and the sky's ambient light.
@@ -214,5 +226,7 @@ func _on_panels_closed() -> void:
 
 
 func _capture_mouse(capture: bool) -> void:
+	mouse_captured = capture
+	ui.hud.show_mouse_hint(not capture and not ui.is_busy())
 	if DisplayServer.get_name() != "headless":
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if capture else Input.MOUSE_MODE_VISIBLE

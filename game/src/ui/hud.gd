@@ -6,6 +6,7 @@ extends Control
 ## over the panels.
 
 const TOAST_SECONDS := 7.0
+const MAX_TOASTS := 4
 
 var session: GameSession
 var clock_label: Label
@@ -13,6 +14,8 @@ var budget_label: Label
 var xp_label: Label
 var mission_label: Label
 var prompt_label: Label
+## "Klik om verder te lopen", while Esc has freed the mouse.
+var mouse_hint: Label
 var _toasts: VBoxContainer
 var _crosshair: ColorRect
 
@@ -83,6 +86,18 @@ func _build_centre() -> void:
 	prompt_label.visible = false
 	add_child(prompt_label)
 
+	mouse_hint = prompt_label.duplicate()
+	mouse_hint.text = "Klik om verder te lopen"
+	mouse_hint.add_theme_font_size_override("font_size", 22)
+	mouse_hint.set_anchors_preset(Control.PRESET_CENTER)
+	mouse_hint.grow_vertical = Control.GROW_DIRECTION_END
+	mouse_hint.offset_left = 0
+	mouse_hint.offset_right = 0
+	mouse_hint.offset_top = 40
+	mouse_hint.offset_bottom = 40
+	mouse_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(mouse_hint)
+
 	var help := Label.new()
 	help.text = "WASD lopen   ·   muis kijken   ·   E gebruiken   ·   J aanwijzingen   ·   Esc muis los"
 	help.add_theme_font_size_override("font_size", 16)
@@ -145,8 +160,24 @@ func toast(text: String) -> void:
 	style.content_margin_bottom = 8
 	l.add_theme_stylebox_override("normal", style)
 	_toasts.add_child(l)
+	while _toasts.get_child_count() > MAX_TOASTS:
+		var oldest := _toasts.get_child(0)
+		_toasts.remove_child(oldest)
+		oldest.queue_free()
 	if is_inside_tree():
 		get_tree().create_timer(TOAST_SECONDS).timeout.connect(l.queue_free)
+
+
+## The toasts on screen, oldest first.
+func toast_texts() -> Array[String]:
+	var out: Array[String] = []
+	for l: Label in _toasts.get_children():
+		out.append(l.text)
+	return out
+
+
+func show_mouse_hint(on: bool) -> void:
+	mouse_hint.visible = on
 
 
 func _bar_label(text: String, color: Color = Color.WHITE) -> Label:

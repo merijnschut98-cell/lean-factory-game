@@ -75,6 +75,14 @@ const A3_ERRORS := {
 	"not_checked": "Doe eerst de Check.",
 }
 
+## Refusals at a team's place (GameSession.use_tool and ask).
+const PLACE_ERRORS := {
+	"unknown_tool": "Dat instrument ken je niet.",
+	"use_ask": "Een gesprek voer je door een vraag te stellen.",
+	"unknown_place": "Hier werkt geen team.",
+	"unknown_question": "Die vraag kun je hier niet stellen.",
+}
+
 const ACCEPT_ERRORS := {
 	"unknown": "Deze missie bestaat niet.",
 	"not_available": "Deze missie is niet meer beschikbaar.",
@@ -133,6 +141,8 @@ static func tool_name(tool: String) -> String:
 
 ## "Tijdstudie (2 uur)": the tool with the time it takes.
 static func tool_label(tool: String) -> String:
+	if not Investigation.TOOLS.has(tool):
+		return tool_name(tool)
 	return "%s (%s)" % [tool_name(tool), duration(Investigation.TOOLS[tool]["minutes"])]
 
 
@@ -154,6 +164,10 @@ static func belt(id: String) -> String:
 
 static func a3_error(code: String) -> String:
 	return A3_ERRORS.get(code, code)
+
+
+static func place_error(code: String) -> String:
+	return PLACE_ERRORS.get(code, code)
 
 
 static func accept_error(code: String) -> String:

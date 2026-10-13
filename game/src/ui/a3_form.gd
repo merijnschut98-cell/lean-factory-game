@@ -18,6 +18,11 @@ var message := ""
 var message_ok := false
 ## Check results per problem, kept until Act (a Check is done once).
 var results: Dictionary[String, Dictionary] = {}
+## What the player has filled in per problem, kept while the form is rebuilt
+## (a refusal, closing and reopening the wall) until the A3 is accepted.
+var drafts: Dictionary[String, Dictionary] = {}
+## The problem whose form is on the wall now ("" when none is).
+var _form_problem := ""
 
 var _waste: OptionButton
 var _causes := ButtonGroup.new()
@@ -45,6 +50,9 @@ func submit(a3: Dictionary) -> String:
 	var refused := session.submit_a3(problem_id, a3)
 	message_ok = refused.is_empty()
 	message = "Het experiment loopt. Over twee weken doe je de Check." if message_ok else UiText.a3_error(refused)
+	if message_ok:
+		drafts.erase(problem_id)
+		_form_problem = ""
 	acted.emit()
 	refresh()
 	return refused
@@ -63,13 +71,12 @@ func wait() -> String:
 ## Do the Check: the result goes to the Check panel.
 func check() -> Dictionary:
 	var result := session.check(problem_id)
-	acted.emit()
 	message_ok = false
+	message = UiText.a3_error(result["error"]) if result.has("error") else ""
+	acted.emit()
 	if result.has("error"):
-		message = UiText.a3_error(result["error"])
 		refresh()
 		return result
-	message = ""
 	results[problem_id] = result
 	checked.emit(problem_id, result)
 	return result
@@ -107,6 +114,9 @@ func fill(a3: Dictionary) -> void:
 
 
 func refresh() -> void:
+	if not _form_problem.is_empty():
+		drafts[_form_problem] = selected_a3()
+		_form_problem = ""
 	clear(body)
 	var m := mission()
 	problem_id = m.goal_problem if m != null else ""
@@ -119,6 +129,8 @@ func refresh() -> void:
 	match session.phase_of(problem_id):
 		"spotted":
 			_build_form(m)
+			_form_problem = problem_id
+			fill(drafts.get(problem_id, {}))
 		"active":
 			body.add_child(paragraph(UiText.a3_error("not_spotted"), Palette.INK))
 		"doing":

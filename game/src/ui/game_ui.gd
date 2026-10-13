@@ -53,27 +53,43 @@ func setup(of_session: GameSession) -> void:
 	after_action()
 
 
+## False when the content could not be loaded: no panels exist, and the
+## error stays on screen.
+func playable() -> bool:
+	return session.error.is_empty()
+
+
 func open_mission_board() -> void:
+	if not playable():
+		return
 	mission_board.message = ""
 	_open(mission_board)
 
 
 func open_place(place: String) -> void:
+	if not playable():
+		return
 	place_menu.open_at(place)
 	_open(place_menu)
 
 
 func open_a3() -> void:
+	if not playable():
+		return
 	a3_form.message = ""
 	_open(a3_form)
 
 
 func open_coach() -> void:
+	if not playable():
+		return
 	coach_panel.reply = ""
 	_open(coach_panel)
 
 
 func toggle_journal() -> void:
+	if not playable():
+		return
 	if journal.visible:
 		close_panels()
 	else:

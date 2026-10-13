@@ -56,6 +56,8 @@ func test_every_reply_and_refusal_has_words() -> void:
 		assert_false(UiText.a3_error(code).is_empty(), code)
 	for code in ["unknown", "not_available", "locked", "main_active", "side_full", "problem_unavailable"]:
 		assert_false(UiText.accept_error(code).is_empty(), code)
+	for code in ["unknown_tool", "use_ask", "unknown_place", "unknown_question"]:
+		assert_ne(UiText.place_error(code), code, code)
 	for kind in ["no_main", "not_main"]:
 		assert_false(UiText.coach_reply({"kind": kind}).is_empty(), kind)
 	for note in ["coverage", "not_scouted", "blamed", "herrings_linked", "thin_evidence", "cause_wrong", "waste_wrong",
