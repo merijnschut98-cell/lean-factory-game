@@ -37,6 +37,8 @@ Merijn's design decisions that every feature, content file and test must respect
 ### Rules
 - **Progressive RPG through missions.** The player advances by completing missions. New and harder missions unlock as the player progresses; nothing is open from the start.
 - **One main quest, at most three side quests.** Never more than one main mission active at once, and at most three side missions. Side missions are small.
+- **Problems only arrive through missions.** The player never faces a list of problems to choose from: what is wrong right now is the active main mission's problem and at most three side missions' problems. Nothing else may switch a problem on (a fix that fades comes back through its mission).
+- **Sometimes the main quest forks.** Two main missions open at once: one tackles the bottleneck, the other a non-bottleneck problem. The player has to think and prioritise; the Check shows that fixing a non-bottleneck brings no flow gain. Use forks now and then, not everywhere.
 - **A senior manager is the coach.** The player can talk to the coach for insight. The coach mostly answers with a question (Toyota Kata style: target, actual condition, obstacles, next experiment, what did you learn), rarely with an answer.
 - **The coach helps only with the main quest.** Asking about a side mission gets no coaching.
 - **Action-based problem solving.** Clues are earned with gemba tools and questions; the player writes the A3; the simulation judges. No multiple-choice answers with one marked correct.

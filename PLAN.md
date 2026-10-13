@@ -186,6 +186,8 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 - ✅ Review findings fixed with Claude's judgement while Merijn is away (his instruction, 2026-10-12): see "Claude's calls, pending Merijn" under Decisions Made
 - ✅ Merijn answered the review's main questions (see Decisions Made); the review doc shows the recalibrated numbers (report over 5 seeds × 180 days, measured over the last 84) and the answers built in
 - ✅ Review doc questions answered (2026-10-13, see Decisions Made)
+- ⬜ A fading fix brings its problem back through its mission (today `Region._recur` re-activates it outside the mission limit), and the recurrence respects the open-problem limit
+- ⬜ First fork in the main quest: after De stapel bij Werkvoorbereiding, choose between Het knelpunt verschuift (intake: the bottleneck) and Meterkast niet gereed (monteurs: not the bottleneck)
 - ⬜ Catalogue problems that need a new mechanism first:
   - KPI's die elkaar bevechten: overproduction, departments pushing work in; needs a release decision per department
 - ✅ Mission system (Merijn's design, CLAUDE.md §2): `MissionDef` + `Missions`.
@@ -274,6 +276,7 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 
 ## Decisions Made
 
+- **Problems only through missions; occasional forks (Merijn, 2026-10-13).** Never more than one main and three side problems at a time, and no free menu of problems. Sometimes the main quest forks into a bottleneck and a non-bottleneck problem, so the player has to prioritise. Recorded in CLAUDE.md §2.
 - **Review answers, round 2 (Merijn, 2026-10-13, multiple choice).**
   - **Kept as built:** the close-out spiral (mild); Henk; the bad period (−3 points); trafo ×1.75; 3 in 10 tap changes that don't hold; 62% use of contracted capacity; use-it-or-lose-it at tier 2; 9 in 20 incomplete applications; the wrong joint ×1.5; three signatures; design +30%; a two-day re-plan for pulled monteurs; 4 in 10 grid studies; 3 in 10 silent meters; 1 in 10 failed registrations in the base; a measuring week, with 4 in 10 ending in a tap change. The earlier "kept as they are" values were also confirmed.
   - **Changed:** voltage complaints 2 → 5 a week in the base (15 with the problem); permits batched per project (about every two weeks, an estimate) instead of a weekly run; the grid analysts serve congestion requests before connections, so connections now pay for De netstudie-wachtrij.
