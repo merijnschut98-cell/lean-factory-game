@@ -119,8 +119,21 @@ static func _hurt_after_days(p: ProblemDef) -> Network:
 ## are too noisy to compare (the random sequences diverge after the first
 ## different draw), so: throughput problems by capacity; rework and slow work
 ## by the extra load on the team it hits hardest (deterministic: Capacity);
-## the rest by the measured waiting at their step.
+## the rest by the measured waiting at their step. A first-time-right problem
+## is also measured by the drop in first-time-right (base over hurt, over the
+## last 60 days of the same runs as the named-KPI test), since quality can fall
+## while load and waiting do not.
 static func _harm(p: ProblemDef) -> float:
+	var harm := _flow_harm(p)
+	if p.kpi == "first_time_right":
+		var base: float = _base_after_days().stream(p.stream_id()).kpis(_base_after_days().time, 60)["first_time_right"]
+		var hurt_run := _hurt_after_days(p)
+		var hurt: float = hurt_run.stream(p.stream_id()).kpis(hurt_run.time, 60)["first_time_right"]
+		harm = maxf(harm, base / hurt)
+	return harm
+
+
+static func _flow_harm(p: ProblemDef) -> float:
 	var before := Capacity.analyse(RulesFixture.real_network([], SEED))
 	var after := Capacity.analyse(RulesFixture.real_network([p.id], SEED))
 	if p.kpi == "throughput":
