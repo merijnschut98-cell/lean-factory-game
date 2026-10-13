@@ -321,10 +321,9 @@ func test_the_obeya_unlocks_the_kpi_board() -> void:
 	assert_eq(r.net.pools["intake"].pull_limit_days, c.kpis.pull_limit_days)
 	r.advance_days(Region.CHECK_DAYS)
 	assert_true(r.check("silo_kpis")["passed"])
-	assert_true(r.board.unlocked)
+	assert_true(r.board.review_due(r.net.time), "the baseline review is due at once")
 	var choices := {}
 	for pool: String in c.kpis.menus:
 		choices[pool] = c.kpis.menus[pool].slice(0, 2).map(func(k: KpiDef) -> String: return k.id)
-	r.board.next_review_at = r.net.time  # skip the quarter: only the real effects are under test here
 	assert_eq(r.kpi_review(choices)["error"], "")
 	assert_false(r.net.effects()[KpiBoard.SOURCE].is_empty())

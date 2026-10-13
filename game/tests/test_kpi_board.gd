@@ -31,12 +31,11 @@ func _region() -> Region:
 	return r
 
 
-## A region whose board was unlocked a quarter ago: the first review is due.
+## A region whose board was just unlocked: the first review (the baseline) is due.
 func _due_region() -> Region:
 	var r := _region()
 	r.advance_days(30)
-	r.board.unlock(r.net)
-	r.advance_days(KpiBoard.REVIEW_DAYS)
+	r.board.unlock(r.net.time)
 	return r
 
 
@@ -49,7 +48,9 @@ func test_the_review_opens_only_when_unlocked_and_due() -> void:
 	assert_false(r.board.review_due(r.net.time))
 	assert_eq(r.kpi_review(GOOD)["error"], "locked")
 	r.advance_days(10)
-	r.board.unlock(r.net)
+	r.board.unlock(r.net.time)
+	assert_true(r.board.review_due(r.net.time), "the first review is due at once")
+	assert_eq(r.kpi_review(GOOD)["error"], "")
 	assert_eq(r.board.next_review_at, r.net.time + SimCalendar.days(KpiBoard.REVIEW_DAYS))
 	assert_eq(r.kpi_review(GOOD)["error"], "not_due")
 	r.advance_days(KpiBoard.REVIEW_DAYS - 1)
@@ -60,7 +61,7 @@ func test_the_review_opens_only_when_unlocked_and_due() -> void:
 	assert_eq(_reviews(r), 0, "announced once")
 	assert_true(r.board.review_due(r.net.time), "it stays due until it is done: no skipping, no penalty")
 	var due_at := r.board.next_review_at
-	r.board.unlock(r.net)
+	r.board.unlock(r.net.time)
 	assert_eq(r.board.next_review_at, due_at, "unlocking again changes nothing")
 	assert_eq(r.kpi_review(GOOD)["error"], "")
 	assert_false(r.board.review_due(r.net.time))
@@ -109,7 +110,40 @@ func test_chosen_kpis_change_the_work_rules() -> void:
 	assert_eq([intake.start_rule, intake.order_rule], ["push", "shortest"])
 
 
-## A quarter measured against the one before it, with the same KPIs chosen;
+func test_a_board_without_a_menu_grants_nothing() -> void:
+	var r := RulesFixture.region()  # never given use_kpis
+	r.board.unlock(r.net.time)
+	assert_eq(r.kpi_review({})["error"], "choose_two")
+
+
+## The first review chooses the KPIs and measures the baseline; the Check
+## already rewarded the fix that unlocked the board, so it pays nothing.
+func test_the_first_review_sets_the_baseline() -> void:
+	var r := _region()
+	r.advance_days(KpiBoard.REVIEW_DAYS)
+	r.board.unlock(r.net.time)
+	var xp := r.profile.xp
+	var budget := r.profile.budget
+	var first := r.kpi_review(GOOD)
+	assert_eq(first["error"], "")
+	assert_true(first["baseline"])
+	assert_eq([first["improvement"], first["xp"], first["budget"]], [0.0, 0, 0])
+	assert_eq([r.profile.xp, r.profile.budget], [xp, budget])
+	var baseline: Dictionary = first["after"].duplicate(true)
+	assert_true(baseline["connections"]["completed"] > 0, "measured")
+	first["after"]["connections"]["completed"] = -1
+	assert_eq(r.board.snapshot, baseline, "the caller cannot change the baseline")
+	r.advance_days(KpiBoard.REVIEW_DAYS)
+	var second := r.kpi_review(GOOD)
+	assert_eq(second["error"], "")
+	assert_false(second["baseline"])
+	assert_eq(second["before"], baseline, "compared with the first review")
+	assert_eq(second["improvement"], KpiBoard.improvement(baseline, second["after"]))
+	assert_eq(r.profile.xp - xp, second["xp"])
+
+
+## A quarter measured against the one before it (the baseline review), with
+## the same KPIs chosen;
 ## `bad_first` puts the bad first-time-right (in both streams: they share the
 ## crew) in the first quarter, else in the second.
 func _quarter(bad_first: bool) -> Dictionary:
@@ -118,7 +152,8 @@ func _quarter(bad_first: bool) -> Dictionary:
 	if bad_first:
 		r.net.set_effects("test", bad)
 	r.advance_days(KpiBoard.REVIEW_DAYS)
-	r.board.unlock(r.net)
+	r.board.unlock(r.net.time)
+	assert_true(r.kpi_review(GOOD)["baseline"])
 	if bad_first:
 		r.net.clear_effects("test")
 	else:
@@ -148,10 +183,12 @@ func test_the_reward_follows_the_measured_change() -> void:
 
 func test_a_quiet_stream_counts_as_no_change() -> void:
 	var r := _region()
-	r.board.unlock(r.net)  # day 0: nothing has finished yet
+	r.board.unlock(r.net.time)
+	assert_true(r.kpi_review(GOOD)["baseline"], "day 0: nothing has finished yet")
 	r.advance_days(KpiBoard.REVIEW_DAYS)
 	var result := r.kpi_review(GOOD)
 	assert_eq(result["error"], "")
+	assert_false(result["baseline"])
 	assert_eq(result["improvement"], 0.0)
 	var busy := {"completed": 10, "lead_days_p50": 10.0, "on_time": 0.0, "first_time_right": 0.5,
 		"throughput_per_week": 2.0, "wip_age": 5.0}
@@ -212,7 +249,8 @@ func test_a_passed_check_unlocks_the_board() -> void:
 	assert_false(r.board.unlocked, "not before the Check")
 	assert_true(r.check("custom_design")["passed"])
 	assert_true(r.board.unlocked)
-	assert_eq(r.board.next_review_at, r.net.time + SimCalendar.days(KpiBoard.REVIEW_DAYS))
+	assert_true(r.board.review_due(r.net.time), "the first review is due at once")
+	assert_eq(_reviews(r), 1, "the unlock is announced as the first review")
 
 
 func test_the_board_survives_save_and_load() -> void:
@@ -243,15 +281,32 @@ func test_old_or_damaged_board_saves_load_safely() -> void:
 	assert_eq(RegionState.restore(r, saved)["error"], "")
 	assert_false(r.board.unlocked)
 	saved["kpi_board"] = {
-		"unlocked": true, "next_review_at": "soon",
-		"chosen": {"nobody": ["x"], "intake": ["intake_oldest", "prep_due", 7], "prep": "prep_due"},
+		"unlocked": true, "next_review_at": "soon", "has_baseline": "yes",
+		"chosen": {"nobody": ["x"], "intake": ["intake_oldest", "prep_due", 7, "intake_output"], "prep": ["prep_due"],
+			"intake_twice": ["intake_oldest", "intake_oldest"]},
 		"snapshot": {"connections": {"completed": "many", "on_time": 0.5}, "ghost": 3},
 	}
 	r = _region()
 	assert_eq(RegionState.restore(r, saved)["error"], "")
 	assert_true(r.board.unlocked)
 	assert_eq(r.board.next_review_at, 0)
-	assert_eq(r.board.chosen, {"intake": PackedStringArray(["intake_oldest"])} as Dictionary[String, PackedStringArray])
+	assert_false(r.board.has_baseline)
+	assert_eq(r.board.chosen, {"intake": PackedStringArray(["intake_oldest", "intake_output"])} as Dictionary[String, PackedStringArray],
+		"unknown ids dropped; a department left with fewer than two is dropped")
 	var result := r.kpi_review(GOOD)
 	assert_eq(result["error"], "", "a damaged board still reviews")
-	assert_eq(result["improvement"], 0.0, "nothing usable to compare with")
+	assert_true(result["baseline"], "and measures again before it rewards")
+
+
+## A JSON round trip turns ints into floats; the review must not come early.
+func test_a_json_round_trip_keeps_the_review_date() -> void:
+	var r := _due_region()
+	r.kpi_review(GOOD)
+	r.advance_days(30)
+	var fresh := _region()
+	var saved: Dictionary = JSON.parse_string(JSON.stringify(r.board.to_dict()))
+	fresh.board.load_dict(saved)
+	assert_eq(fresh.board.next_review_at, r.board.next_review_at)
+	assert_false(fresh.board.review_due(r.net.time))
+	assert_true(fresh.board.has_baseline)
+	assert_eq(fresh.board.chosen, r.board.chosen)

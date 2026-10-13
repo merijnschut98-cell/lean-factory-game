@@ -122,7 +122,7 @@ How the rules differ from the factory:
 **Department KPIs and the KPI board** (`rules/kpi_menu.gd`, `rules/kpi_board.gd`, content `kpis.yaml`):
 - Each department (pool) has a menu of up to 5 KPIs (`KpiMenu`, `Catalog.kpis`). A KPI sets work rules for its team: start (push / pull), order, care. Two KPIs that disagree on a rule leave the habit. A `kpis` effect in content is expanded into those rule effects at load.
 - `Region.use_kpis(menu)` gives the Region its `KpiBoard` and every team the menu's kanban limit (`pull_limit_days`). The board starts locked; a passed Check of a countermeasure with `unlocks: kpi_board` (Obeya with end-to-end KPIs) unlocks it.
-- **The quarterly review** is due every 91 days (`kpi_review` event once; it stays due until done, with no penalty). `Region.kpi_review(choices)` takes two distinct KPIs from each department's own menu, for every department; anything else is an error code and changes nothing. The choice becomes the effect source `board:kpis`, so it is saved and switched like any other effect.
+- **The quarterly review:** the first is due at the unlock (the `kpi_review` event, which is also the UI's unlock signal) and only sets the KPIs and the baseline: no reward, since the Check already rewarded the fix that unlocked the board. After that a review is due every 91 days (`kpi_review` event once; it stays due until done, with no penalty). `Region.kpi_review(choices)` takes two distinct KPIs from each department's own menu, for every department; anything else is an error code and changes nothing. The choice becomes the effect source `board:kpis`, so it is saved and switched like any other effect.
 - **The reward follows the measurement, not the labels:** per stream that finished at least 10 orders in both quarters (`MIN_COMPLETED`), the mean relative change of lead p50 and `wip_age` (lower is better) and on time, first-time-right and throughput (higher is better), averaged over streams (equal weight) and clamped at 0. Each KPI's change counts for at most ±50 % (`MAX_CHANGE`): small denominators make relative changes explode. Both limits are estimates. A KPI that was 0 before counts as no change. The snapshot taken at the unlock and at each review is saved with the board (`RegionState` key `kpi_board`).
 - The `kpi_review` event is transient (not saved): after a load the UI checks `board.review_due(net.time)`.
 - When the Region is wired into the game, call `use_kpis(catalog.kpis)` before `RegionState.restore`; the board loads its save against that menu.
@@ -164,7 +164,7 @@ UI strings that are not content (button labels, HUD) go through Godot's translat
   - stock, finished records and daily statistics (the simulation keeps `Network.HISTORY_DAYS` = 120 days, so memory and saves stay bounded);
   - every problem's place in the PDCA loop;
   - trust, clues found and the profile;
-  - the KPI board (unlocked, chosen KPIs, next review, last snapshot).
+  - the KPI board (unlocked, chosen KPIs, next review, last snapshot, whether the baseline is set).
   A test proves a restored game continues identically.
 - **Loading** restores into a Network and Region freshly built from the current content.
   - Everything is matched by id (`stream.step`), never by index. What the content no longer has is dropped and reported (`dropped`), never guessed at.

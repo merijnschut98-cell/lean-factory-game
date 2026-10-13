@@ -3,8 +3,10 @@ extends RefCounted
 ## The KPI board, unlocked by a countermeasure (Obeya with end-to-end KPIs).
 ## At each quarterly review every department on the menu follows two of its
 ## KPIs; they become the work rules of effect source `board:kpis`, saved with
-## the network. The reward follows only the measured end-to-end change since
-## the last review (or the unlock), never the labels chosen.
+## the network. The first review only sets the baseline (the Check already
+## rewarded the fix that unlocked the board); from the second on, the reward
+## follows only the measured end-to-end change since the last review, never
+## the labels chosen.
 
 const SOURCE := "board:kpis"
 ## A quarter of 13 weeks: the OKR cycle.
@@ -30,21 +32,22 @@ var unlocked := false
 var chosen: Dictionary[String, PackedStringArray] = {}
 ## When the next review is due (minutes).
 var next_review_at := 0
-## Stream id → its MEASURES and `completed` over the quarter before the last
-## review (or the unlock).
+## Stream id → its MEASURES and `completed` over the quarter before the last review.
 var snapshot: Dictionary = {}
+## The first review has measured the baseline; later reviews are rewarded.
+var has_baseline := false
 
 
 func _init(kpi_menu: KpiMenu) -> void:
 	menu = kpi_menu
 
 
-## Open the board; the first review is due a quarter from now. Idempotent.
-func unlock(net: Network) -> void:
+## Open the board; the first review (the baseline) is due at once. Idempotent.
+func unlock(now: int) -> void:
 	if unlocked:
 		return
 	unlocked = true
-	_start_quarter(net)
+	next_review_at = now
 
 
 func review_due(now: int) -> bool:
@@ -52,8 +55,9 @@ func review_due(now: int) -> bool:
 
 
 ## The quarterly review: `choices` maps every department on the menu to two
-## distinct KPI ids from its menu. Returns {error, improvement, xp, budget,
-## question, before, after}; error is "" or a code (locked | not_due |
+## distinct KPI ids from its menu. Returns {error, baseline, improvement, xp,
+## budget, question, before, after}; the first review is the baseline and
+## earns nothing. Error is "" or a code (locked | not_due |
 ## unknown_department | choose_two | not_on_menu, or the network's message
 ## for a menu effect it refuses), and on an error nothing changes. The caller
 ## grants the reward.
@@ -71,10 +75,13 @@ func review(net: Network, choices: Dictionary) -> Dictionary:
 		chosen[pool] = _ids(choices[pool])
 	var before := snapshot
 	_start_quarter(net)
-	var gain := improvement(before, snapshot)
+	var baseline := not has_baseline
+	has_baseline = true
+	var gain := 0.0 if baseline else improvement(before, snapshot)
 	return {
-		"error": "", "improvement": gain, "xp": roundi(gain * REVIEW_XP), "budget": roundi(gain * REVIEW_BUDGET),
-		"question": menu.review_question, "before": before, "after": snapshot,
+		"error": "", "baseline": baseline, "improvement": gain, "xp": roundi(gain * REVIEW_XP),
+		"budget": roundi(gain * REVIEW_BUDGET), "question": menu.review_question, "before": before,
+		"after": snapshot.duplicate(true),
 	}
 
 
@@ -83,16 +90,23 @@ func _choice_error(now: int, choices: Dictionary) -> String:
 		return "locked"
 	if not review_due(now):
 		return "not_due"
+	if menu.menus.is_empty():
+		return "choose_two"  # nothing to choose: a board without a menu grants nothing
 	for pool: Variant in choices:
 		if not _on_menu(pool):
 			return "unknown_department"
 	for pool: String in menu.menus:
-		var ids := _ids(choices.get(pool))
-		if ids.size() != 2 or ids[0] == ids[1]:
-			return "choose_two"
-		if _known(pool, ids).size() != 2:
-			return "not_on_menu"
+		var error := _pair_error(pool, _ids(choices.get(pool)))
+		if not error.is_empty():
+			return error
 	return ""
+
+
+## Why `ids` is not two distinct KPIs from `pool`'s menu; "" when it is.
+func _pair_error(pool: String, ids: PackedStringArray) -> String:
+	if ids.size() != 2 or ids[0] == ids[1]:
+		return "choose_two"
+	return "" if _known(pool, ids).size() == 2 else "not_on_menu"
 
 
 func _on_menu(pool: Variant) -> bool:
@@ -146,19 +160,25 @@ static func improvement(before: Dictionary, after: Dictionary) -> float:
 
 func to_dict() -> Dictionary:
 	return {"unlocked": unlocked, "chosen": chosen.duplicate(), "next_review_at": next_review_at,
-		"snapshot": snapshot.duplicate(true)}
+		"snapshot": snapshot.duplicate(true), "has_baseline": has_baseline}
 
 
 ## Restore to_dict() output, untrusted: departments and KPI ids the menu
-## does not have are dropped, and damaged values fall back to "nothing measured".
+## does not have are dropped (and a department left without two of them),
+## and damaged values fall back to "nothing measured": the next review sets
+## the baseline again.
 func load_dict(d: Dictionary) -> void:
 	unlocked = d.get("unlocked") is bool and d["unlocked"]
-	next_review_at = d["next_review_at"] if d.get("next_review_at") is int else 0
+	# A JSON round trip makes ints floats.
+	next_review_at = int(_number(d.get("next_review_at")))
+	has_baseline = d.get("has_baseline") is bool and d["has_baseline"]
 	chosen.clear()
 	var saved_chosen := JsonFile.dict_or_empty(d.get("chosen"))
 	for pool: Variant in saved_chosen:
-		var known := _known(pool, _ids(saved_chosen[pool])) if _on_menu(pool) else PackedStringArray()
-		if not known.is_empty():
+		if not _on_menu(pool):
+			continue
+		var known := _known(pool, _ids(saved_chosen[pool]))
+		if _pair_error(pool, known).is_empty():
 			chosen[pool] = known
 	snapshot = {}
 	var saved_snapshot := JsonFile.dict_or_empty(d.get("snapshot"))

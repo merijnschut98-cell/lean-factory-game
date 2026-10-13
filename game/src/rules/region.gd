@@ -415,8 +415,9 @@ func check(problem_id: String) -> Dictionary:
 		profile.learn(["bottleneck_focus", "theory_of_constraints"])
 	if result["passed"]:
 		st.phase = P.CHECKED
-		if countermeasures[st.a3["cm"]].unlocks == "kpi_board":
-			board.unlock(net)
+		if countermeasures[st.a3["cm"]].unlocks == "kpi_board" and not board.unlocked:
+			board.unlock(net.time)
+			events.append({"type": "kpi_review"})  # the first review, the baseline, is due at once
 		return result
 	result["lesson"] = "mismatch" if st.level == "mismatch" else "too_early"
 	st.failed_checks += 1
