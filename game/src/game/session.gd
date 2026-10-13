@@ -13,9 +13,12 @@ extends RefCounted
 ## When `error` is not empty (the content could not be loaded) nothing else
 ## is built: show the message and do not call anything.
 
-## Whole weeks of simulated work before play starts, so queues exist and the
-## first day of play is a Monday (the simulation's week starts on Monday).
-const WARMUP_DAYS := 63
+## Whole weeks of simulated work before play starts, so the first day of play
+## is a Monday (the simulation's week starts on Monday). Half a year: the
+## connections stream settles only after months of external waits (as in
+## tools/problem_report.gd); a shorter warm-up starts play on a network that
+## is still filling up, and every Check then shows lead time drifting worse.
+const WARMUP_DAYS := 182
 ## Play starts at half past eight.
 const START_MINUTE := 8 * 60 + 30
 ## The story so far: the stream was walked before the game starts.
