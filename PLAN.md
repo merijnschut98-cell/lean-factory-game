@@ -12,7 +12,7 @@ Pivot agreed 2026-10-12: from a hoverboard factory to a grid operator. The 3D fa
 
 This is a multi-month project, built the right way: research → design (reviewed by Merijn) → engine → content → world → UI, in small tested increments. No publishing deadline. Built in **Godot 4 + GDScript** from the start (decided 2026-10-12).
 
-**Next task:** Merijn playtests the office slice (`fix_custom_design`) and reviews the pending calls; then a whole-branch review of the slice, or the next 3D piece (people, a second mission); the glossary (`content/concepts.yaml`) is built. The office slice is built (2026-10-13): Blender model (`tools/blender/`), `GameSession`, first-person scene and Dutch UI, screenshots in `docs/screenshots/`.
+**Next task:** Merijn playtests the office slice and answers the open questions (training arc, pending calls). Then: the training arc, people in the office, or a second mission. Done 2026-10-13 night: slice review and fixes, the player map (M), `content/concepts.yaml` (61 entries), re-baked lighting, and the training arc draft.
 
 ---
 
@@ -346,6 +346,14 @@ Merijn asked me to fix the content review's findings with my own judgement while
 - **Kept as they are, plausible and grounded:** the contact-centre spiral of Klaar maar niet af, the monthly EAN batch, three times as many calls from late customers, 40 minutes to the warehouse, two of five meterkasten not ready, three of eight not at home, 240 open revisions.
 - **Henk becomes a story hook** for the missions (built: a deadline mission); the buddy system's team hours stay as they are.
 - ~~Still open: the contact-centre spiral~~ → answered 2026-10-13: keep it mild.
+
+### Claude's calls, pending Merijn (2026-10-13 night, office slice)
+Made on my own while you were away; each is easy to reverse.
+- **The map marks the active mission's places in orange**, including the place where its problem shows. Today every briefing names that place already; a later mission that keeps its place secret would need the marker off.
+- **The map is a panel:** you stand still while it is open; there is no mini-map while walking.
+- **Problems teach `waste_<waste>`** (renamed from bare waste ids) so each waste has one glossary entry. Saves made before tonight may hold the old ids; harmless, they no longer match a glossary entry.
+- **Two glossary sources to verify:** `ean_code` (eancodeboek.nl) and `middenspanningsruimte` (typical 10 kV / 400 V values, an estimate) are marked `verify: true`.
+- **Training arc:** a draft only (`docs/superpowers/specs/2026-10-14-training-arc-design.md`), with four questions for you.
 
 ### Claude's calls, pending Merijn (2026-10-13, department KPIs)
 Rulings I made while building the KPI board without you; each is easy to reverse.
