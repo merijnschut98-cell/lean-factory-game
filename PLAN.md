@@ -12,7 +12,7 @@ Pivot agreed 2026-10-12: from a hoverboard factory to a grid operator. The 3D fa
 
 This is a multi-month project, built the right way: research → design (reviewed by Merijn) → engine → content → world → UI, in small tested increments. No publishing deadline. Built in **Godot 4 + GDScript** from the start (decided 2026-10-12).
 
-**Next task:** the counterfactual KPI reward, then Phase C's first piece: the 3D connections office with one playable mission. `content/concepts.yaml` comes after. All review questions are answered and built in (review doc: https://claude.ai/code/artifact/120bfc8c-75b6-4a56-86d9-2c5c3148112a).
+**Next task:** finish the office vertical slice (the 3D connections office with one playable mission): the office model (task 1) and a review of the slice, then share it with Merijn. The session (task 2) and the scene, player and UI (task 3) are built. `content/concepts.yaml` comes after. All review questions are answered and built in (review doc: https://claude.ai/code/artifact/120bfc8c-75b6-4a56-86d9-2c5c3148112a).
 
 ---
 
@@ -285,7 +285,10 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 ## Phase E — First playable and playtest ⬜
 - ⬜ First playable vertical slice (one value stream end to end), shared privately with Merijn once it is worth playing
   - ✅ Office slice, task 2 (2026-10-13): `GameSession` (`game/src/game/session.gd`), the one facade for the 3D world and UI, tested end to end on `fix_custom_design`. Day 0 of play is Monday 2026-10-12 (a doc-comment choice, not yet confirmed by Merijn).
-  - ⬜ Office slice, task 3: the office scene, player and UI on top of `GameSession` (plan: `docs/superpowers/plans/2026-10-13-office-vertical-slice.md`)
+  - ✅ Office slice, task 3 (2026-10-13): the office scene, player and UI on top of `GameSession` (plan: `docs/superpowers/plans/2026-10-13-office-vertical-slice.md`). `game/src/world/office/` (first person: WASD, mouse, E, J for the clue journal, Esc), markers found in `office.glb` by glTF extras or name (a code-built stand-in when the model is missing), `game/src/ui/` (HUD, prompt, team menu, clue journal, A3, Check/Act, coach, mission board; Dutch words only in `UiText`). Main scene is now the office; boot stays as the title. Tests: `test_office_scene.gd`, `test_ui_text.gd`. Screenshots: `docs/screenshots/play_*.png` via `game/tools/play_shot.gd`.
+  - ⬜ Merijn to confirm Claude's UI calls for the slice: interaction by standing at a marker (within 1.6 m, a green ring on the floor) rather than by looking at it; the clue journal groups clues by place and never says which problem or which clues matter; the A3 evidence list offers every found clue (red herrings and other problems' clues too); the coach is the content's Marleen Verhoef (the spec said Ingrid).
+  - ⬜ The Check panel shows the stream's two-week KPIs before and after; on `fix_custom_design` capacity rises ~26% while lead time, first-time-right and WIP age get worse in the same window. Explain this in the panel (a lag, small samples) or tune the Check window, so the numbers don't seem to contradict "Check geslaagd".
+  - ⬜ Office slice UI: no save/load, no settings, no key rebinding, no pause menu yet; gamepad not supported.
 - ⬜ Playtest round with Merijn → tuning backlog
 
 ## Phase F — Depth and regions ⬜
