@@ -36,7 +36,7 @@
    "id": "intake_oldest",
    "kind": "leading",
    "name": "Oudste aanvraag in de bak",
-   "note": "Leeftijd van het oudste openstaande werk (wip_age). Regel is een schatting.",
+   "note": "Leeftijd van het oudste openstaande werk (wip_age). Wie op het oudste werk stuurt, pakt het oudste eerst. Regel is een schatting.",
    "pool": "intake",
    "rules": {
     "order": "oldest"
@@ -98,7 +98,7 @@
    "id": "work_prep_oldest",
    "kind": "leading",
    "name": "Oudste dossier",
-   "note": "Leeftijd van het oudste openstaande dossier (wip_age). Regel is een schatting.",
+   "note": "Leeftijd van het oudste openstaande dossier (wip_age). Wie op het oudste dossier stuurt, pakt het oudste eerst. Regel is een schatting.",
    "pool": "work_prep",
    "rules": {
     "order": "oldest"
@@ -108,7 +108,7 @@
    "id": "work_prep_utilisation",
    "kind": "leading",
    "name": "Bezettingsgraad",
-   "note": "Gangbare KPI voor capaciteitsbenutting. Regel is een schatting.",
+   "note": "Gangbare KPI voor capaciteitsbenutting. Wie op bezetting stuurt, houdt iedereen bezig: werk duwen. Regel is een schatting.",
    "pool": "work_prep",
    "rules": {
     "start": "push"
@@ -138,7 +138,7 @@
    "id": "planners_on_time",
    "kind": "lagging",
    "name": "Klussen op tijd",
-   "note": "Aandeel klussen binnen de afgesproken termijn (on_time). Regel is een schatting.",
+   "note": "Aandeel klussen binnen de afgesproken termijn (on_time). Wie op op tijd stuurt, plant eerst de klus waarvan de termijn het eerst verloopt. Regel is een schatting.",
    "pool": "planners",
    "rules": {
     "order": "due"
@@ -148,7 +148,7 @@
    "id": "planners_oldest",
    "kind": "leading",
    "name": "Oudste klus",
-   "note": "Leeftijd van de oudste openstaande klus (wip_age). Regel is een schatting.",
+   "note": "Leeftijd van de oudste openstaande klus (wip_age). Wie op de oudste klus stuurt, plant de oudste eerst. Regel is een schatting.",
    "pool": "planners",
    "rules": {
     "order": "oldest"
@@ -178,7 +178,7 @@
    "id": "contact_centre_reachable",
    "kind": "lagging",
    "name": "Bereikbaar binnen 2 uur",
-   "note": "Klantvragen worden binnen twee uur beantwoord (norm van deze stroom, norm_hours). Regel is een schatting.",
+   "note": "Klantvragen worden binnen twee uur beantwoord (norm van deze stroom, norm_hours). Wie op die termijn stuurt, beantwoordt eerst de vraag die het dichtst bij de twee uur zit. Regel is een schatting.",
    "pool": "contact_centre",
    "rules": {
     "order": "due"

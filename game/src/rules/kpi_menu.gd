@@ -36,6 +36,18 @@ static func from_docs(defs: Array, doc: Dictionary, streams: Dictionary) -> KpiM
 	return m
 
 
+## The streams in which a department on the menu has a work step: the ones
+## its KPIs can steer.
+func streams() -> PackedStringArray:
+	var out := PackedStringArray()
+	for pool: String in menus:
+		for place: String in pool_steps.get(pool, PackedStringArray()):
+			var id := place.get_slice(".", 0)
+			if not out.has(id):
+				out.append(id)
+	return out
+
+
 ## The rule effects of a department following these KPIs: start and order on
 ## the pool, care on each of its work steps. A rule the KPIs disagree on is
 ## left out (the habit), as is care that comes out normal.

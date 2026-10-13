@@ -7,6 +7,9 @@ const SEED := 11
 ## Long enough for connections to settle: realistic waits run to months, and
 ## late customers only start calling after nine weeks.
 const DAYS := 150
+## The window, at the end of those runs, over which a problem's named KPI is
+## compared with the healthy base.
+const KPI_WINDOW_DAYS := 60
 
 
 func _region(c: Catalog) -> Region:
@@ -121,14 +124,15 @@ static func _hurt_after_days(p: ProblemDef) -> Network:
 ## by the extra load on the team it hits hardest (deterministic: Capacity);
 ## the rest by the measured waiting at their step. A first-time-right problem
 ## is also measured by the drop in first-time-right (base over hurt, over the
-## last 60 days of the same runs as the named-KPI test), since quality can fall
+## last KPI_WINDOW_DAYS of the same runs as the named-KPI test), since quality can fall
 ## while load and waiting do not.
 static func _harm(p: ProblemDef) -> float:
 	var harm := _flow_harm(p)
 	if p.kpi == "first_time_right":
-		var base: float = _base_after_days().stream(p.stream_id()).kpis(_base_after_days().time, 60)["first_time_right"]
+		var base_run := _base_after_days()
+		var base: float = base_run.stream(p.stream_id()).kpis(base_run.time, KPI_WINDOW_DAYS)["first_time_right"]
 		var hurt_run := _hurt_after_days(p)
-		var hurt: float = hurt_run.stream(p.stream_id()).kpis(hurt_run.time, 60)["first_time_right"]
+		var hurt: float = hurt_run.stream(p.stream_id()).kpis(hurt_run.time, KPI_WINDOW_DAYS)["first_time_right"]
 		harm = maxf(harm, base / hurt)
 	return harm
 
@@ -173,8 +177,8 @@ func test_problems_hurt_their_named_kpi_in_the_simulation() -> void:
 		if not p.kpi in ["first_time_right", "on_time"]:
 			continue
 		var hurt := _hurt_after_days(p)
-		var before: float = base.stream(p.stream_id()).kpis(base.time, 60)[p.kpi]
-		var after: float = hurt.stream(p.stream_id()).kpis(hurt.time, 60)[p.kpi]
+		var before: float = base.stream(p.stream_id()).kpis(base.time, KPI_WINDOW_DAYS)[p.kpi]
+		var after: float = hurt.stream(p.stream_id()).kpis(hurt.time, KPI_WINDOW_DAYS)[p.kpi]
 		assert_true(after < before - 0.05, "%s: %s %.2f → %.2f" % [p.id, p.kpi, before, after])
 
 

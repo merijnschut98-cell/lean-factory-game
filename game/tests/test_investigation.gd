@@ -33,6 +33,11 @@ func test_bad_definitions_are_reported() -> void:
 	var c: Dictionary = RulesFixture.countermeasures()[0]
 	c.erase("multipliers")
 	assert_true("multipliers" in CountermeasureDef.from_dict(c).error)
+	c = RulesFixture.countermeasures()[0]
+	c["unlocks"] = "secret_door"
+	assert_true("'unlocks' must be one of" in CountermeasureDef.from_dict(c).error)
+	c["unlocks"] = "kpi_board"
+	assert_eq(CountermeasureDef.from_dict(c).error, "")
 
 
 func test_deeper_clues_need_the_shallower_key_clue() -> void:

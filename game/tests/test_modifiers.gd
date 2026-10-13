@@ -153,3 +153,22 @@ func test_demand_can_target_one_arrival_source() -> void:
 	assert_near(net.stream("outages").per_week(), 23.0, 1e-9, "15 by day + 8 around the clock")
 	assert_ne(net.set_effects("bad", [NetFixture.effect("outages.ghost", "demand", 2.0)]), "")
 
+
+
+## A lever takes the value of the latest source. Setting a source again keeps
+## its place; moving it last makes it the latest without switching anything off.
+func test_moving_a_source_last_makes_its_lever_win() -> void:
+	var net := _net()
+	var board := [NetFixture.effect("prep", "order_rule", "oldest")]
+	net.set_effects("board", board)
+	net.set_effects("cm", [NetFixture.effect("prep", "order_rule", "due"), NetFixture.effect("connections", "wip_limit", 3)])
+	var prep := net.pools["prep"]
+	assert_eq(prep.order_rule, "due", "the latest source wins")
+	net.set_effects("board", board)
+	assert_eq(prep.order_rule, "due", "setting it again keeps its place")
+	net.move_effects_last(["board"])
+	assert_eq(prep.order_rule, "oldest")
+	assert_eq(net.effects().keys(), ["cm", "board"])
+	assert_eq(net.stream("connections").wip_limit, 3, "the other sources stay on")
+	net.move_effects_last(["ghost"])
+	assert_eq(net.effects().keys(), ["cm", "board"], "an unknown source changes nothing")

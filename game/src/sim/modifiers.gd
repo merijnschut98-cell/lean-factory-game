@@ -5,7 +5,8 @@ extends RefCounted
 ## An effect is {target, property, value}, e.g. {target: "connections.design",
 ## property: "touch_time", value: 1.3}. Factors multiply, additions add, and
 ## levers (SET: an outage reserve, a frozen planning window, permits in
-## parallel) take the value of the most recently set source. Effects are grouped by source
+## parallel) take the value of the last source in order: a new source goes
+## last, a source set again keeps its place, move_last moves one. Effects are grouped by source
 ## ("problem:custom_design", "cm:standard_designs"), so each can be switched
 ## off, saved and compared. Every change recomputes the touched fields from
 ## their untouched base values (clamp(base × factors + additions)) and writes
@@ -70,6 +71,17 @@ func set_source(net: Network, source: String, effects: Array) -> String:
 func clear_source(net: Network, source: String) -> void:
 	if _sources.erase(source):
 		_apply(net)
+
+
+## Move `ids` (in this order) after every other source, so their levers win.
+## Nothing is switched off on the way; unknown sources are skipped.
+func move_last(net: Network, ids: Array) -> void:
+	for source: String in ids:
+		if _sources.has(source):
+			var effects: Array = _sources[source]
+			_sources.erase(source)
+			_sources[source] = effects
+	_apply(net)
 
 
 ## The effects at strength `k` (0 = none, 1 = full), e.g. a problem partly

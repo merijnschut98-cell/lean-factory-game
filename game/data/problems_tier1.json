@@ -1214,7 +1214,7 @@
     {
      "depth": 0,
      "key": false,
-     "text": "Een ontwerp maken kost de werkvoorbereider ruim drie uur, binnen de norm.",
+     "text": "Een ontwerp maken kost de werkvoorbereider bijna drie uur, binnen de norm.",
      "tool": "time_study"
     },
     {
@@ -1233,7 +1233,7 @@
     {
      "depth": 1,
      "key": true,
-     "text": "'Mijn doel is dertig ontwerpen per week. De korte pak ik eerst, dan haal ik het. Dat de monteur er later iets aan moet aanpassen, staat niet in mijn cijfers.'",
+     "text": "'Mijn doel is dertig ontwerpen per week. Ik werk ze zo snel mogelijk weg, dan haal ik het. Dat de monteur er later iets aan moet aanpassen, staat niet in mijn cijfers.'",
      "tool": "conversation"
     },
     {

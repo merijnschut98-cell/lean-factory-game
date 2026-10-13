@@ -213,6 +213,12 @@ func clear_effects(source: String) -> void:
 	_release_all_held()
 
 
+## Move these effect sources after all others: a later lever wins.
+func move_effects_last(sources: Array) -> void:
+	_modifiers.move_last(self, sources)
+	_release_all_held()
+
+
 ## Held orders start on an arrival, a finish, or here: a changed WIP limit.
 func _release_all_held() -> void:
 	for s in streams:

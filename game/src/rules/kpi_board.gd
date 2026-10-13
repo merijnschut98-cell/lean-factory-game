@@ -5,8 +5,11 @@ extends RefCounted
 ## KPIs; they become the work rules of effect source `board:kpis`, saved with
 ## the network. The first review only sets the baseline (the Check already
 ## rewarded the fix that unlocked the board); from the second on, the reward
-## follows only the measured end-to-end change since the last review, never
-## the labels chosen.
+## follows only the measured end-to-end change, never the labels chosen, and
+## only a real, lasting gain pays: the change is measured against the best
+## level reached so far (a high-water mark, so recovering from a bad quarter
+## pays nothing), only in the streams the departments on the menu work in,
+## and only the part beyond the quarter-to-quarter noise (DEAD_BAND) pays.
 
 const SOURCE := "board:kpis"
 ## A quarter of 13 weeks: the OKR cycle.
@@ -25,6 +28,12 @@ const MAX_CHANGE := 0.5
 ## ESTIMATE: a stream counts only with at least this many finished orders in
 ## both quarters; below it, chance moves the KPIs more than the work rules do.
 const MIN_COMPLETED := 10
+## ESTIMATE: the quarter-to-quarter noise. On the real network, with nothing
+## changed, one quarter's improvement over the last reached 0.06 (branch
+## review); the reward is only the improvement beyond this band. Against the
+## best levels, unchanged steady-state quarters paid 0.002 once in 24 reviews
+## (probe: 4 seeds, 6 quarters each after a year).
+const DEAD_BAND := 0.05
 
 var menu: KpiMenu
 var unlocked := false
@@ -34,6 +43,10 @@ var chosen: Dictionary[String, PackedStringArray] = {}
 var next_review_at := 0
 ## Stream id → its MEASURES and `completed` over the quarter before the last review.
 var snapshot: Dictionary = {}
+## Stream id → the best level of each MEASURE reached at a review so far
+## (lowest lead time and age of open work, highest of the rest) and the
+## `completed` of the quarter that set the mark; it starts at the baseline.
+var best: Dictionary = {}
 ## The first review has measured the baseline; later reviews are rewarded.
 var has_baseline := false
 
@@ -55,8 +68,10 @@ func review_due(now: int) -> bool:
 
 
 ## The quarterly review: `choices` maps every department on the menu to two
-## distinct KPI ids from its menu. Returns {error, baseline, improvement, xp,
-## budget, question, before, after}; the first review is the baseline and
+## distinct KPI ids from its menu. Returns {error, baseline, improvement
+## (the raw measured change against the best levels), paid (the part beyond
+## DEAD_BAND), xp, budget, question, before (the last quarter), best (the
+## levels compared against), after}; the first review is the baseline and
 ## earns nothing. Error is "" or a code (locked | not_due |
 ## unknown_department | choose_two | not_on_menu, or the network's message
 ## for a menu effect it refuses), and on an error nothing changes. The caller
@@ -74,14 +89,17 @@ func review(net: Network, choices: Dictionary) -> Dictionary:
 	for pool: String in menu.menus:
 		chosen[pool] = _ids(choices[pool])
 	var before := snapshot
+	var mark := best
 	_start_quarter(net)
 	var baseline := not has_baseline
 	has_baseline = true
-	var gain := 0.0 if baseline else improvement(before, snapshot)
+	var gain := 0.0 if baseline else improvement(mark, snapshot, menu.streams())
+	best = snapshot.duplicate(true) if baseline else raised(mark, snapshot)
+	var pay := paid(gain)
 	return {
-		"error": "", "baseline": baseline, "improvement": gain, "xp": roundi(gain * REVIEW_XP),
-		"budget": roundi(gain * REVIEW_BUDGET), "question": menu.review_question, "before": before,
-		"after": snapshot.duplicate(true),
+		"error": "", "baseline": baseline, "improvement": gain, "paid": pay, "xp": roundi(pay * REVIEW_XP),
+		"budget": roundi(pay * REVIEW_BUDGET), "question": menu.review_question, "before": before,
+		"best": mark.duplicate(true), "after": snapshot.duplicate(true),
 	}
 
 
@@ -137,15 +155,20 @@ func _start_quarter(net: Network) -> void:
 	next_review_at = net.time + SimCalendar.days(REVIEW_DAYS)
 
 
-## The mean relative change of the MEASURES (better is positive, each
-## within ±MAX_CHANGE), averaged over the streams that finished at least
-## MIN_COMPLETED orders in both quarters; at least 0. A KPI that was 0 before
-## counts as no change, as does a quiet or thin stream.
-static func improvement(before: Dictionary, after: Dictionary) -> float:
+## The rewarded part of a measured improvement: what lies beyond the noise.
+static func paid(gain: float) -> float:
+	return maxf(0.0, gain - DEAD_BAND)
+
+
+## The mean relative change from `best_levels` to `after` of the MEASURES (better
+## is positive, each within ±MAX_CHANGE), averaged over `streams` that
+## finished at least MIN_COMPLETED orders in both; negative when worse. A
+## KPI whose mark is 0 counts as no change, as does a quiet or thin stream.
+static func improvement(best_levels: Dictionary, after: Dictionary, streams: PackedStringArray) -> float:
 	var total := 0.0
-	var streams := 0
-	for id: String in before:
-		var b: Dictionary = before[id]
+	var counted := 0
+	for id in streams:
+		var b: Dictionary = best_levels.get(id, {})
 		var a: Dictionary = after.get(id, {})
 		if b.get("completed", 0) < MIN_COMPLETED or a.get("completed", 0) < MIN_COMPLETED:
 			continue
@@ -154,19 +177,38 @@ static func improvement(before: Dictionary, after: Dictionary) -> float:
 			if b[m] != 0.0:
 				change += clampf(MEASURES[m] * (a[m] - b[m]) / b[m], -MAX_CHANGE, MAX_CHANGE)
 		total += change / MEASURES.size()
-		streams += 1
-	return maxf(0.0, total / streams) if streams > 0 else 0.0
+		counted += 1
+	return total / counted if counted > 0 else 0.0
+
+
+## `best_levels` raised to `after`'s better levels, per stream and measure.
+## A thin quarter (below MIN_COMPLETED) sets no mark, and a mark set by one
+## is replaced by the next quarter that is not thin.
+static func raised(best_levels: Dictionary, after: Dictionary) -> Dictionary:
+	var out := best_levels.duplicate(true)
+	for id: String in after:
+		var a: Dictionary = after[id]
+		if a["completed"] < MIN_COMPLETED:
+			continue
+		var b: Dictionary = out.get(id, {})
+		if b.get("completed", 0) < MIN_COMPLETED:
+			out[id] = a.duplicate()
+			continue
+		for m: String in MEASURES:
+			if MEASURES[m] * a[m] > MEASURES[m] * b[m]:
+				b[m] = a[m]
+	return out
 
 
 func to_dict() -> Dictionary:
 	return {"unlocked": unlocked, "chosen": chosen.duplicate(), "next_review_at": next_review_at,
-		"snapshot": snapshot.duplicate(true), "has_baseline": has_baseline}
+		"snapshot": snapshot.duplicate(true), "best": best.duplicate(true), "has_baseline": has_baseline}
 
 
 ## Restore to_dict() output, untrusted: departments and KPI ids the menu
 ## does not have are dropped (and a department left without two of them),
-## and damaged values fall back to "nothing measured": the next review sets
-## the baseline again.
+## damaged values fall back to "nothing measured" (the next review sets the
+## baseline again), and missing or damaged best levels to the snapshot.
 func load_dict(d: Dictionary) -> void:
 	unlocked = d.get("unlocked") is bool and d["unlocked"]
 	# A JSON round trip makes ints floats.
@@ -180,15 +222,25 @@ func load_dict(d: Dictionary) -> void:
 		var known := _known(pool, _ids(saved_chosen[pool]))
 		if _pair_error(pool, known).is_empty():
 			chosen[pool] = known
-	snapshot = {}
-	var saved_snapshot := JsonFile.dict_or_empty(d.get("snapshot"))
-	for id: Variant in saved_snapshot:
-		var saved: Variant = saved_snapshot[id]
+	snapshot = _measured(d.get("snapshot"))
+	best = _measured(d.get("best"))
+	for id: String in snapshot:
+		if not best.has(id):
+			best[id] = snapshot[id].duplicate()
+
+
+## Stream id → MEASURES and `completed` from a save; damaged streams dropped.
+static func _measured(v: Variant) -> Dictionary:
+	var out := {}
+	var saved_streams := JsonFile.dict_or_empty(v)
+	for id: Variant in saved_streams:
+		var saved: Variant = saved_streams[id]
 		if saved is Dictionary:
 			var measured := {"completed": int(_number(saved.get("completed")))}
 			for m: String in MEASURES:
 				measured[m] = _number(saved.get(m))
-			snapshot[str(id)] = measured
+			out[str(id)] = measured
+	return out
 
 
 ## A finite number from a save; 0 for anything else.

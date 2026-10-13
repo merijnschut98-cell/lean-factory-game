@@ -27,6 +27,10 @@ review_question: "Welke van deze KPI's stuurt het werk van morgen, en welke laat
 # Care, applied to every work step of the team as a step effect.
 # ESTIMATE: taking ten percent more time per job costs capacity and buys five
 # points of first-time-right; hurrying does the reverse. Rework is the cost.
+# Care stacks: it is a factor and an addition (MUL/ADD), not a lever like start
+# and order, where the latest source wins. A countermeasure that sets care
+# through KPIs adds to the board's: careful + careful = touch time x1.21 and
+# first-time-right +0.10.
 care:
   careful: {touch_time: 1.1, ftr: 0.05}
   hasty: {touch_time: 0.9, ftr: -0.05}
@@ -50,7 +54,7 @@ kpis:
     pool: intake
     kind: leading
     rules: {order: oldest}
-    note: "Leeftijd van het oudste openstaande werk (wip_age). Regel is een schatting."
+    note: "Leeftijd van het oudste openstaande werk (wip_age). Wie op het oudste werk stuurt, pakt het oudste eerst. Regel is een schatting."
   - id: intake_complete
     name: Compleet doorgezet
     pool: intake
@@ -88,13 +92,13 @@ kpis:
     pool: work_prep
     kind: leading
     rules: {order: oldest}
-    note: "Leeftijd van het oudste openstaande dossier (wip_age). Regel is een schatting."
+    note: "Leeftijd van het oudste openstaande dossier (wip_age). Wie op het oudste dossier stuurt, pakt het oudste eerst. Regel is een schatting."
   - id: work_prep_utilisation
     name: Bezettingsgraad
     pool: work_prep
     kind: leading
     rules: {start: push}
-    note: "Gangbare KPI voor capaciteitsbenutting. Regel is een schatting."
+    note: "Gangbare KPI voor capaciteitsbenutting. Wie op bezetting stuurt, houdt iedereen bezig: werk duwen. Regel is een schatting."
 
   # ── Planners ──────────────────────────────────────────────────────────────
   - id: planners_hours
@@ -114,13 +118,13 @@ kpis:
     pool: planners
     kind: lagging
     rules: {order: due}
-    note: "Aandeel klussen binnen de afgesproken termijn (on_time). Regel is een schatting."
+    note: "Aandeel klussen binnen de afgesproken termijn (on_time). Wie op op tijd stuurt, plant eerst de klus waarvan de termijn het eerst verloopt. Regel is een schatting."
   - id: planners_oldest
     name: Oudste klus
     pool: planners
     kind: leading
     rules: {order: oldest}
-    note: "Leeftijd van de oudste openstaande klus (wip_age). Regel is een schatting."
+    note: "Leeftijd van de oudste openstaande klus (wip_age). Wie op de oudste klus stuurt, plant de oudste eerst. Regel is een schatting."
 
   # ── Klantcontact ──────────────────────────────────────────────────────────
   - id: contact_centre_handle_time
@@ -140,4 +144,4 @@ kpis:
     pool: contact_centre
     kind: lagging
     rules: {order: due}
-    note: "Klantvragen worden binnen twee uur beantwoord (norm van deze stroom, norm_hours). Regel is een schatting."
+    note: "Klantvragen worden binnen twee uur beantwoord (norm van deze stroom, norm_hours). Wie op die termijn stuurt, beantwoordt eerst de vraag die het dichtst bij de twee uur zit. Regel is een schatting."
