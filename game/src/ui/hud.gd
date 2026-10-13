@@ -99,7 +99,7 @@ func _build_centre() -> void:
 	add_child(mouse_hint)
 
 	var help := Label.new()
-	help.text = "WASD lopen   ·   muis kijken   ·   E gebruiken   ·   J aanwijzingen   ·   Esc muis los"
+	help.text = controls_text()
 	help.add_theme_font_size_override("font_size", 16)
 	help.add_theme_color_override("font_color", Color(1, 1, 1, 0.8))
 	help.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.6))
@@ -125,6 +125,10 @@ func refresh() -> void:
 	budget_label.text = "Budget " + UiText.money(session.budget())
 	xp_label.text = "%d XP  ·  %s" % [session.xp(), UiText.belt(session.belt())]
 	mission_label.text = mission_text()
+
+
+func controls_text() -> String:
+	return "WASD lopen   ·   muis kijken   ·   E gebruiken   ·   J aanwijzingen   ·   M kaart   ·   Esc muis los"
 
 
 ## The active missions in the top bar: the main one first.

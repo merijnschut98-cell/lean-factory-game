@@ -23,7 +23,7 @@ const DESK := Color("#c8b291")
 static func build() -> Node3D:
 	var root := Node3D.new()
 	root.name = "OfficePlaceholder"
-	_box(root, Vector3(W, 0.1, D), Vector3(W / 2, -0.05, -D / 2), Color("#8a9099"))
+	_box(root, Vector3(W, 0.1, D), Vector3(W / 2, -0.05, -D / 2), Color("#8a9099")).name = "shell_floor"
 	_box(root, Vector3(W, 0.1, D), Vector3(W / 2, H + 0.05, -D / 2), Color("#f4f4f2"))
 	_box(root, Vector3(W, H, 0.2), Vector3(W / 2, H / 2, 0.1), WALL)
 	_box(root, Vector3(W, H, 0.2), Vector3(W / 2, H / 2, -D - 0.1), WALL)
@@ -48,7 +48,7 @@ static func build() -> Node3D:
 	return root
 
 
-static func _box(parent: Node3D, size: Vector3, at: Vector3, color: Color) -> void:
+static func _box(parent: Node3D, size: Vector3, at: Vector3, color: Color) -> StaticBody3D:
 	var mesh := BoxMesh.new()
 	mesh.size = size
 	var mat := StandardMaterial3D.new()
@@ -65,3 +65,4 @@ static func _box(parent: Node3D, size: Vector3, at: Vector3, color: Color) -> vo
 	(shape.shape as BoxShape3D).size = size
 	body.add_child(shape)
 	parent.add_child(body)
+	return body

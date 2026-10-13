@@ -1,12 +1,13 @@
 class_name Player
 extends CharacterBody3D
 ## The first-person CI-lead: WASD to walk, the mouse to look, E to interact,
-## J for the clue journal, Esc to free (or catch) the mouse. While a panel
+## J for the clue journal, M for the map, Esc to free (or catch) the mouse. While a panel
 ## is open the player stands still (`active` is false) and the keys only
 ## signal the office.
 
 signal interact_pressed
 signal journal_pressed
+signal map_pressed
 signal escape_pressed
 
 const EYE_HEIGHT := 1.65
@@ -52,6 +53,8 @@ func _unhandled_input(event: InputEvent) -> void:
 				interact_pressed.emit()
 			KEY_J:
 				journal_pressed.emit()
+			KEY_M:
+				map_pressed.emit()
 			KEY_ESCAPE:
 				escape_pressed.emit()
 

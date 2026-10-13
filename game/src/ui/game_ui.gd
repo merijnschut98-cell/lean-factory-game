@@ -2,7 +2,7 @@ class_name GameUI
 extends CanvasLayer
 ## Everything on screen over the 3D office: the HUD and one panel at a time
 ## (mission board, a team's place, the A3, the Check, the coach, the clue
-## journal). The world asks it to open a panel; the panels act on the
+## journal, the map). The world asks it to open a panel; the panels act on the
 ## session, and after each action the HUD refreshes and events show as
 ## toasts.
 
@@ -17,6 +17,7 @@ var a3_form: A3Form
 var check_panel: CheckPanel
 var coach_panel: CoachPanel
 var journal: ClueJournal
+var office_map: OfficeMap
 var _panels: Array[UiPanel] = []
 
 
@@ -39,7 +40,8 @@ func setup(of_session: GameSession) -> void:
 	check_panel = CheckPanel.new()
 	coach_panel = CoachPanel.new()
 	journal = ClueJournal.new()
-	_panels = [mission_board, place_menu, a3_form, check_panel, coach_panel, journal]
+	office_map = OfficeMap.new()
+	_panels = [mission_board, place_menu, a3_form, check_panel, coach_panel, journal, office_map]
 	for p in _panels:
 		p.session = session
 		p.acted.connect(after_action)
@@ -88,12 +90,20 @@ func open_coach() -> void:
 
 
 func toggle_journal() -> void:
+	_toggle(journal)
+
+
+func toggle_map() -> void:
+	_toggle(office_map)
+
+
+func _toggle(panel: UiPanel) -> void:
 	if not playable():
 		return
-	if journal.visible:
+	if panel.visible:
 		close_panels()
 	else:
-		_open(journal)
+		_open(panel)
 
 
 func is_busy() -> bool:

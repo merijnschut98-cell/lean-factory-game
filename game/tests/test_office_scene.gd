@@ -212,6 +212,7 @@ func test_over_bad_content_the_keys_do_nothing_and_the_error_stays() -> void:
 	office.ui.open_coach()
 	office.ui.open_mission_board()
 	office.ui.open_place("connections.design")
+	office.ui.toggle_map()
 	assert_false(office.ui.is_busy(), "no panel opens")
 	assert_true(office.ui.hud.prompt_label.text.begins_with("De inhoud kon niet worden geladen"), "the error stays")
 	assert_true(office.ui.hud.prompt_label.visible)

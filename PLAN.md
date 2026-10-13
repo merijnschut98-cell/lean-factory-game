@@ -279,7 +279,7 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 - ⬜ Town: streets, homes with solar/heat pumps/EV chargers, substations, industrial estate
 - ⬜ Vans driving to jobs; crews working at sites; outages darken streets
 - ⬜ NPCs per department; pathfinding across campus and town
-- ⬜ **Player map** (Merijn, 2026-10-13; planned, not yet scheduled): a map of the office layout showing the places (Intake, Werkvoorbereiding, Obeya wall, coach's room, mission board) and where the player stands; it grows to the campus and the town of Nova later. Built from the glb's place markers (`office.gd` already reads them), so it follows the model. Opens with M; the active mission's places are marked.
+- 🔧 **Player map** (Merijn, 2026-10-13; office ✅ 2026-10-13: M opens `OfficeMap` with the floor, furniture, coach's room, places, the player and the active mission's places; campus and town later): a map of the office layout showing the places (Intake, Werkvoorbereiding, Obeya wall, coach's room, mission board) and where the player stands; it grows to the campus and the town of Nova later. Built from the glb's place markers (`office.gd` already reads them), so it follows the model. Opens with M; the active mission's places are marked.
 
 ## Phase D — UI (Dutch) ⬜
 - ⬜ HUD (week/day clock, KPIs per stream), gemba toolkit, conversations, A3, Check/Act, value stream map per stream (built by walking it), notebook, codex, NPC dialogue, onboarding by the Lean coach

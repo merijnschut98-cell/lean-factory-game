@@ -10,6 +10,8 @@ const MODEL := "res://assets/office/office.glb"
 ## The interaction markers to find (the spawn marker is found separately).
 const INTERACTIONS: Array[String] = ["place:connections.intake", "place:connections.design", "obeya", "coach", "mission_board"]
 const SPAWN := "spawn"
+## The floor's mesh in the geometry (the map's outline).
+const FLOOR := "shell_floor"
 ## How close (m, on the floor) the player must stand to a marker to use it.
 const REACH := 1.6
 ## The model's own sky and ambient light (made with it); the project's
@@ -60,6 +62,9 @@ func build() -> void:
 	ui.setup(session)
 	ui.panel_opened.connect(_on_panel_opened)
 	ui.panels_closed.connect(_on_panels_closed)
+	if ui.playable():
+		ui.office_map.show_office(floor_rect(), map_places(), player)
+		ui.office_map.footprints = map_footprints()
 	_capture_mouse(true)
 
 
@@ -145,16 +150,70 @@ func prompt_for(target: Interactable) -> String:
 	if target == null:
 		return ""
 	match target.kind:
-		"place":
-			var step := session.region.net.step_at(target.place)
-			return "E — " + (step.name if step != null else target.place)
 		"obeya":
 			return "E — Obeya-wand: A3 en Check"
 		"coach":
 			return "E — Coach: " + str(session.catalog.coach.get("name", ""))
+	return "E — " + label_for(target)
+
+
+## An interaction point's Dutch name: "Werkvoorbereiding & ontwerp".
+func label_for(target: Interactable) -> String:
+	match target.kind:
+		"place":
+			var step := session.region.net.step_at(target.place)
+			return step.name if step != null else target.place
+		"obeya":
+			return "Obeya-wand"
+		"coach":
+			return "Coach: " + str(session.catalog.coach.get("name", ""))
 		"mission_board":
-			return "E — Missiebord"
-	return ""
+			return "Missiebord"
+	return target.id
+
+
+## The interaction points for the map: [{id, label, at (x, z)}].
+func map_places() -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for i in interactables:
+		out.append({"id": i.id, "label": label_for(i), "at": Vector2(i.position.x, i.position.z)})
+	return out
+
+
+## What stands on the floor, seen from above, for the map: [{rect (x, z),
+## room}]. A room is a tall, wide frame smaller than half the floor (the
+## coach's glass room); the rest is furniture. The shell, walls and things off the floor are left out.
+func map_footprints() -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	var floor_area := floor_rect()
+	for n in geometry.find_children("*", "MeshInstance3D", true, false):
+		var b: AABB = in_office(n) * (n as MeshInstance3D).get_aabb()
+		var rect := Rect2(b.position.x, b.position.z, b.size.x, b.size.z)
+		if absf(b.position.y) > 0.05 or b.size.y < 0.3 or not floor_area.encloses(rect.grow(-0.01)):
+			continue
+		var room := b.size.y >= 2.0 and rect.size.x > 2.0 and rect.size.y > 2.0 \
+			and rect.size.x < floor_area.size.x / 2.0 and rect.size.y < floor_area.size.y / 2.0
+		if room or (b.size.y < 2.0 and rect.get_area() > 0.15 and rect.get_area() < 6.0):
+			out.append({"rect": rect, "room": room})
+	return out
+
+
+## The floor in the office's (x, z) plane: the floor mesh's bounds, else
+## the markers' with a margin.
+func floor_rect() -> Rect2:
+	var floor_node := find_marker(FLOOR)
+	if floor_node != null:
+		var box := AABB()
+		for n in [floor_node] + floor_node.find_children("*", "MeshInstance3D"):
+			if n is MeshInstance3D:
+				var b: AABB = in_office(n) * (n as MeshInstance3D).get_aabb()
+				box = b if box.size == Vector3.ZERO else box.merge(b)
+		if box.size.x > 0 and box.size.z > 0:
+			return Rect2(box.position.x, box.position.z, box.size.x, box.size.z)
+	var r := Rect2(Vector2(player.position.x, player.position.z), Vector2.ZERO)
+	for i in interactables:
+		r = r.expand(Vector2(i.position.x, i.position.z))
+	return r.grow(2.0)
 
 
 ## Use an interaction point: open its panel.
@@ -184,6 +243,7 @@ func _add_player() -> void:
 		if not ui.is_busy():
 			interact(interactable_near(player.position)))
 	player.journal_pressed.connect(func() -> void: ui.toggle_journal())
+	player.map_pressed.connect(func() -> void: ui.toggle_map())
 	player.escape_pressed.connect(func() -> void:
 		if ui.is_busy():
 			ui.close_panels()
