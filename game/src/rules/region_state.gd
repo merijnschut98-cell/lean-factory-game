@@ -1,7 +1,7 @@
 class_name RegionState
 ## Captures and restores a whole Region: its network (NetworkState) and the
 ## rules state (the player's progress, clues found, trust, every problem's
-## place in the PDCA loop). Problems the content no longer has are dropped
+## place in the PDCA loop, the KPI board). Problems the content no longer has are dropped
 ## and reported.
 
 const SHAPE := {
@@ -18,7 +18,7 @@ static func capture(r: Region) -> Dictionary:
 		"network": NetworkState.capture(r.net),
 		"profile": {"budget": r.profile.budget, "xp": r.profile.xp, "concepts": r.profile.concepts},
 		"observed": r.observed.keys(), "found": r.found.keys(), "trust": r.trust, "problems": problems,
-		"cost_owed": r._cost_owed,
+		"cost_owed": r._cost_owed, "kpi_board": r.board.to_dict(),
 	}
 
 
@@ -41,6 +41,8 @@ static func restore(r: Region, d: Dictionary) -> Dictionary:
 		r.found[str(clue_id)] = true
 	r._cost_owed = float(d.get("cost_owed", 0.0))
 	r._apply_bad_period()
+	# Saves from before the board have none; its work rules come back with the network's effects.
+	r.board.load_dict(JsonFile.dict_or_empty(d.get("kpi_board")))
 	for team: Variant in d["trust"]:
 		r.trust[str(team)] = int(d["trust"][team])
 	for id: String in d["problems"]:

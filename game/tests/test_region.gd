@@ -281,12 +281,11 @@ func test_the_snapshot_measures_the_age_of_open_work() -> void:
 	assert_true("wip_age" in Investigation.KPIS, "a prediction can name it")
 
 
-## The real catalogue: the countermeasure's work rules replace the ones the
-## problem set (a set lever takes the value of the latest source), already
-## while the experiment runs.
-func test_the_countermeasure_rules_override_the_problem() -> void:
-	var c := Catalog.load_from()
+## The real catalogue: silo_kpis investigated like an expert, with Obeya
+## with end-to-end KPIs as the experiment.
+func _obeya_experiment(c: Catalog) -> Region:
 	var r := Region.new(Network.load_file(Network.DEFAULT_PATH, 11), c.problems, c.countermeasures, Profile.new())
+	r.use_kpis(c.kpis)
 	assert_true(r.activate("silo_kpis"))
 	var intake := r.net.pools["intake"]
 	assert_eq([intake.start_rule, intake.order_rule], ["push", "shortest"], "the siloed KPIs steer by volume")
@@ -302,5 +301,30 @@ func test_the_countermeasure_rules_override_the_problem() -> void:
 		keys.map(func(k: Clue) -> String: return k.id), "first_time_right")
 	assert_eq(r.submit_a3("silo_kpis", a3), "")
 	assert_eq(r.state["silo_kpis"].phase, ProblemState.Phase.DOING)
+	return r
+
+
+## The countermeasure's work rules replace the ones the problem set (a set
+## lever takes the value of the latest source), already while the experiment runs.
+func test_the_countermeasure_rules_override_the_problem() -> void:
+	var r := _obeya_experiment(Catalog.load_from())
+	var intake := r.net.pools["intake"]
 	assert_eq([intake.start_rule, intake.order_rule], ["pull", "oldest"], "the countermeasure's KPIs win")
 	assert_eq(r.net.pools["work_prep"].start_rule, "pull")
+
+
+## A passed Check of the Obeya unlocks the board, and the real menus' work
+## rules fit the real network.
+func test_the_obeya_unlocks_the_kpi_board() -> void:
+	var c := Catalog.load_from()
+	var r := _obeya_experiment(c)
+	assert_eq(r.net.pools["intake"].pull_limit_days, c.kpis.pull_limit_days)
+	r.advance_days(Region.CHECK_DAYS)
+	assert_true(r.check("silo_kpis")["passed"])
+	assert_true(r.board.unlocked)
+	var choices := {}
+	for pool: String in c.kpis.menus:
+		choices[pool] = c.kpis.menus[pool].slice(0, 2).map(func(k: KpiDef) -> String: return k.id)
+	r.board.next_review_at = r.net.time  # skip the quarter: only the real effects are under test here
+	assert_eq(r.kpi_review(choices)["error"], "")
+	assert_false(r.net.effects()[KpiBoard.SOURCE].is_empty())

@@ -10,7 +10,8 @@ extends RefCounted
 ##
 ## Effect sources on the Network: problem:<id> (the problem, weakened by a
 ## working countermeasure), cm:<id> (the improvement), do:<id> (team hours
-## spent on the experiment).
+## spent on the experiment), board:kpis (the KPIs chosen at the last
+## quarterly review, see KpiBoard).
 
 const P := ProblemState.Phase
 ## At most this many problems are open at once.
@@ -38,8 +39,10 @@ var found: Dictionary[String, bool] = {}
 var closed: Dictionary[String, bool] = {}
 ## Trust per team (pool id), -2..1: below 0 they stop sharing.
 var trust: Dictionary[String, int] = {}
-## {type: activated | check_ready | recurred | belt | bad_period, ...} for the world and UI.
+## {type: activated | check_ready | recurred | belt | bad_period | kpi_review, ...} for the world and UI.
 var events: Array[Dictionary] = []
+## The KPI board; its menu comes from use_kpis.
+var board := KpiBoard.new(KpiMenu.new())
 ## Problem costs not yet taken from the budget (charged in whole euros).
 var _cost_owed := 0.0
 
@@ -52,6 +55,14 @@ func _init(network: Network, problem_defs: Array[ProblemDef], cm_defs: Array[Cou
 		state[p.id] = ProblemState.new(p.id)
 	for c in cm_defs:
 		countermeasures[c.id] = c
+
+
+## Take the department KPI menus (Catalog.kpis): a fresh board, and the
+## kanban limit every team pulls by.
+func use_kpis(menu: KpiMenu) -> void:
+	board = KpiBoard.new(menu)
+	for pool: SimPool in net.pools.values():
+		pool.pull_limit_days = menu.pull_limit_days
 
 
 func problem_list() -> Array[ProblemDef]:
@@ -88,7 +99,10 @@ func advance_days(n: float) -> void:
 
 func advance(minutes: int) -> void:
 	var day := SimCalendar.day_of(net.time)
+	var was_due := board.review_due(net.time)
 	net.advance(minutes)
+	if not was_due and board.review_due(net.time):
+		events.append({"type": "kpi_review"})
 	_charge_costs(SimCalendar.day_of(net.time) - day)
 	for st: ProblemState in state.values():
 		if st.phase == P.DOING and net.time >= st.check_at:
@@ -401,6 +415,8 @@ func check(problem_id: String) -> Dictionary:
 		profile.learn(["bottleneck_focus", "theory_of_constraints"])
 	if result["passed"]:
 		st.phase = P.CHECKED
+		if countermeasures[st.a3["cm"]].unlocks == "kpi_board":
+			board.unlock(net)
 		return result
 	result["lesson"] = "mismatch" if st.level == "mismatch" else "too_early"
 	st.failed_checks += 1
@@ -442,6 +458,15 @@ func grant(xp: int, budget: int) -> void:
 	_add_budget(budget)
 	if Progression.belt_index(profile.xp) > belt:
 		events.append({"type": "belt", "belt": Progression.belt_index(profile.xp)})
+
+
+## The quarterly review on the KPI board (see KpiBoard.review); the measured
+## improvement is rewarded.
+func kpi_review(choices: Dictionary) -> Dictionary:
+	var result := board.review(net, choices)
+	if result["error"].is_empty():
+		grant(result["xp"], result["budget"])
+	return result
 
 
 ## Key clues of a problem the player has found.

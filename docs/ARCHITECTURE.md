@@ -119,6 +119,12 @@ How the rules differ from the factory:
 - The main quest sometimes forks: two main missions open at once, one at the bottleneck and one not (after De stapel bij Werkvoorbereiding: the intake or the meterkasten).
 - `Missions` holds the Region; the Region does not know about missions (no reference cycle). Saved with `to_dict`/`load_dict`; missions the content no longer has are dropped and reported.
 
+**Department KPIs and the KPI board** (`rules/kpi_menu.gd`, `rules/kpi_board.gd`, content `kpis.yaml`):
+- Each department (pool) has a menu of up to 5 KPIs (`KpiMenu`, `Catalog.kpis`). A KPI sets work rules for its team: start (push / pull), order, care. Two KPIs that disagree on a rule leave the habit. A `kpis` effect in content is expanded into those rule effects at load.
+- `Region.use_kpis(menu)` gives the Region its `KpiBoard` and every team the menu's kanban limit (`pull_limit_days`). The board starts locked; a passed Check of a countermeasure with `unlocks: kpi_board` (Obeya with end-to-end KPIs) unlocks it.
+- **The quarterly review** is due every 91 days (`kpi_review` event once; it stays due until done, with no penalty). `Region.kpi_review(choices)` takes two distinct KPIs from each department's own menu, for every department; anything else is an error code and changes nothing. The choice becomes the effect source `board:kpis`, so it is saved and switched like any other effect.
+- **The reward follows the measurement, not the labels:** per stream that finished work in both quarters, the mean relative change of lead p50 and `wip_age` (lower is better) and on time, first-time-right and throughput (higher is better), averaged over streams and clamped at 0. A KPI that was 0 before counts as no change. The snapshot taken at the unlock and at each review is saved with the board (`RegionState` key `kpi_board`).
+
 Problem effects are generic modifiers (`sim/modifiers.gd`):
 - An effect is `{target, property, value}`, e.g. `{target: "connections.design", property: "touch_time", value: 1.3}`. The property decides the kind of target and how effects combine: factors for times and demand; additions for FTR, `applies`, availability, headcount and reorder point. Results are clamped to sensible bounds.
 - Effects are grouped by source (`problem:…`, `cm:…`, `event:…`), so a problem's effect can be switched off when it is solved, a countermeasure's can be added, and both can be saved and compared. `SimModifiers.scaled` gives partial strength (countermeasure effectiveness).
@@ -155,7 +161,8 @@ UI strings that are not content (button labels, HUD) go through Godot's translat
   - every order wherever it is (queues, busy, waits, stock, held);
   - stock, finished records and daily statistics (the simulation keeps `Network.HISTORY_DAYS` = 120 days, so memory and saves stay bounded);
   - every problem's place in the PDCA loop;
-  - trust, clues found and the profile.
+  - trust, clues found and the profile;
+  - the KPI board (unlocked, chosen KPIs, next review, last snapshot).
   A test proves a restored game continues identically.
 - **Loading** restores into a Network and Region freshly built from the current content.
   - Everything is matched by id (`stream.step`), never by index. What the content no longer has is dropped and reported (`dropped`), never guessed at.
