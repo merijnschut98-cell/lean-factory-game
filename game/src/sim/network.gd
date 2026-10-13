@@ -15,6 +15,8 @@ const HISTORY_DAYS := 120
 
 var time := 0
 var run_seed := 1
+## The value_streams.json structure this network was built from (copies are built from it too).
+var config: Dictionary = {}
 ## One random sequence per purpose ("step:connections.design", …), see _new_rng.
 var _rngs: Dictionary[String, Rng] = {}
 var pools: Dictionary[String, SimPool] = {}
@@ -58,6 +60,7 @@ static func load_file(path: String = DEFAULT_PATH, seed_value: int = 1) -> Netwo
 static func create(config: Dictionary, seed_value: int = 1) -> Network:
 	var net := Network.new()
 	net.run_seed = seed_value
+	net.config = config
 	for p: Dictionary in config.get("pools", []):
 		var pool := SimPool.new()
 		pool.id = p["id"]

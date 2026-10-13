@@ -43,6 +43,20 @@ static func capture(net: Network) -> Dictionary:
 	}
 
 
+## A network that continues exactly like `net` from here (a "what if" runs on
+## it): built from the same content, restored from capture(net), with the
+## pool settings that are not effects. `net` itself is only read.
+static func copy(net: Network) -> Network:
+	var twin := Network.create(net.config, net.run_seed)
+	twin.skip_idle = net.skip_idle
+	for pool: SimPool in net._pool_list:
+		twin.pools[pool.id].pull_limit_days = pool.pull_limit_days
+	var result := restore(twin, capture(net))
+	if not result["error"].is_empty():
+		twin.error = result["error"]
+	return twin
+
+
 ## Restore a capture() into `net`, a Network freshly built from content.
 ## Returns {error, dropped}: error means the data is unusable (discard the
 ## network); dropped lists what the current content no longer has.

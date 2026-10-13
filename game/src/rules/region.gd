@@ -416,7 +416,7 @@ func check(problem_id: String) -> Dictionary:
 	if result["passed"]:
 		st.phase = P.CHECKED
 		if countermeasures[st.a3["cm"]].unlocks == KpiBoard.UNLOCK and board.unlock(net.time):
-			events.append({"type": "kpi_review"})  # the first review, the baseline, is due at once
+			events.append({"type": "kpi_review"})  # the first review is due at once
 		return result
 	result["lesson"] = "mismatch" if st.level == "mismatch" else "too_early"
 	st.failed_checks += 1
@@ -480,8 +480,8 @@ func grant(xp: int, budget: int) -> void:
 		events.append({"type": "belt", "belt": Progression.belt_index(profile.xp)})
 
 
-## The quarterly review on the KPI board (see KpiBoard.review); the measured
-## improvement is rewarded.
+## The quarterly review on the KPI board (see KpiBoard.review); the forecast
+## gain of the chosen KPIs over the habit is rewarded.
 func kpi_review(choices: Dictionary) -> Dictionary:
 	var result := board.review(net, choices)
 	if result["error"].is_empty():

@@ -1,13 +1,18 @@
 extends TestCase
 ## The KPI board and the quarterly review: every department follows two KPIs
-## from its menu, chosen each quarter; the reward follows only the measured
-## end-to-end change against the best level reached so far, in the streams
-## the departments on the menu work in, beyond the quarter-to-quarter noise.
+## from its menu, chosen each quarter. The reward is a forecast: the coming
+## quarter run twice from the review, with the habit and with the chosen
+## KPIs (common random numbers, so only the work rules differ), and only the
+## measured gain in the streams the departments on the menu work in pays.
 
 const QUESTION := "Welke KPI stuurt het werk van morgen?"
 ## One stream, "a", that a department on the menu works in.
 const A: PackedStringArray = ["a"]
 const GOOD := {"intake": ["intake_lead_time", "intake_oldest"], "prep": ["prep_lead_time", "prep_due"]}
+## Every rule the same as the habit: push, first come first served, normal care.
+const HABIT := {"intake": ["intake_volume", "intake_queue"], "prep": ["prep_output", "prep_queue"]}
+const CAREFUL := {"intake": ["intake_volume", "intake_careful"], "prep": ["prep_output", "prep_queue"]}
+const HASTY := {"intake": ["intake_volume", "intake_hasty"], "prep": ["prep_output", "prep_queue"]}
 
 
 ## A small menu for the fixture network's intake and prep teams.
@@ -20,11 +25,19 @@ static func _menu() -> KpiMenu:
 		{"id": "prep_output", "pool": "prep", "kind": "lagging", "rules": {"start": "push"}},
 		{"id": "prep_lead_time", "pool": "prep", "kind": "lagging", "rules": {"start": "pull"}},
 		{"id": "prep_due", "pool": "prep", "kind": "leading", "rules": {"order": "due"}},
+		# The habit's own rules, and care, which the tests below make strong.
+		{"id": "intake_volume", "pool": "intake", "kind": "lagging", "rules": {"start": "push"}},
+		{"id": "intake_queue", "pool": "intake", "kind": "leading", "rules": {"order": "first_come"}},
+		{"id": "intake_careful", "pool": "intake", "kind": "leading", "rules": {"care": "careful"}},
+		{"id": "intake_hasty", "pool": "intake", "kind": "leading", "rules": {"care": "hasty"}},
+		{"id": "prep_queue", "pool": "prep", "kind": "leading", "rules": {"order": "first_come"}},
 	]:
 		d["name"] = d["id"]
 		m.menus.get_or_add(d["pool"], []).append(KpiDef.from_dict(d))
 	m.pull_limit_days = 2.0
 	m.review_question = QUESTION
+	# Strong care, so its effect is unmistakable: the same time, far fewer or far more mistakes.
+	m.care = {"careful": {"touch_time": 1.0, "ftr": 0.3}, "hasty": {"touch_time": 1.0, "ftr": -0.3}}
 	m.pool_steps["intake"] = PackedStringArray(["connections.intake"])
 	m.pool_steps["prep"] = PackedStringArray(["connections.design"])
 	return m
@@ -36,7 +49,7 @@ func _region() -> Region:
 	return r
 
 
-## A region whose board was just unlocked: the first review (the baseline) is due.
+## A region whose board was just unlocked: the first review is due.
 func _due_region() -> Region:
 	var r := _region()
 	r.advance_days(30)
@@ -121,130 +134,83 @@ func test_a_board_without_a_menu_grants_nothing() -> void:
 	assert_eq(r.kpi_review({})["error"], "locked")
 
 
-## The first review chooses the KPIs and measures the baseline; the Check
-## already rewarded the fix that unlocked the board, so it pays nothing.
-func test_the_first_review_sets_the_baseline() -> void:
+## A choice whose rules are the habit's changes nothing in the paired runs,
+## so it pays exactly nothing.
+func test_the_habit_pays_nothing() -> void:
 	var r := _region()
-	r.advance_days(KpiBoard.REVIEW_DAYS)
+	r.advance_days(60)
 	r.board.unlock(r.net.time)
 	var xp := r.profile.xp
-	var budget := r.profile.budget
-	var first := r.kpi_review(GOOD)
-	assert_eq(first["error"], "")
-	assert_true(first["baseline"])
-	assert_eq([first["improvement"], first["xp"], first["budget"]], [0.0, 0, 0])
-	assert_eq([r.profile.xp, r.profile.budget], [xp, budget])
-	var baseline: Dictionary = first["after"].duplicate(true)
-	assert_true(baseline["connections"]["completed"] > 0, "measured")
-	first["after"]["connections"]["completed"] = -1
-	assert_eq(r.board.snapshot, baseline, "the caller cannot change the baseline")
-	r.advance_days(KpiBoard.REVIEW_DAYS)
-	var second := r.kpi_review(GOOD)
-	assert_eq(second["error"], "")
-	assert_false(second["baseline"])
-	assert_eq(second["before"], baseline, "the quarter before")
-	assert_eq(second["best"], baseline, "the first best levels are the baseline")
-	assert_eq(second["improvement"], KpiBoard.improvement(baseline, second["after"], r.board.menu.streams()))
-	assert_eq(second["paid"], KpiBoard.paid(second["improvement"]))
-	assert_eq(r.profile.xp - xp, second["xp"])
-
-
-## A quarter measured against the one before it (the baseline review), with
-## the same KPIs chosen;
-## `bad_first` puts the bad first-time-right (in both streams: they share the
-## crew) in the first quarter, else in the second.
-func _quarter(bad_first: bool) -> Dictionary:
-	var r := _region()
-	var bad := [NetFixture.effect("connections.intake", "ftr", -0.4), NetFixture.effect("meters.visit", "ftr", -0.4)]
-	if bad_first:
-		r.net.set_effects("test", bad)
-	r.advance_days(KpiBoard.REVIEW_DAYS)
-	r.board.unlock(r.net.time)
-	assert_true(r.kpi_review(GOOD)["baseline"])
-	if bad_first:
-		r.net.clear_effects("test")
-	else:
-		r.net.set_effects("test", bad)
-	r.advance_days(KpiBoard.REVIEW_DAYS)
-	var xp := r.profile.xp
-	var budget := r.profile.budget
-	var result := r.kpi_review(GOOD)
+	var result := r.kpi_review(HABIT)
 	assert_eq(result["error"], "")
-	assert_eq(r.profile.xp - xp, result["xp"], "granted")
-	assert_eq(r.profile.budget - budget, result["budget"], "granted")
-	return result
+	assert_eq(result["habit"], result["chosen"], "the same rules, the same quarter")
+	assert_eq([result["improvement"], result["paid"], result["xp"], result["budget"]], [0.0, 0.0, 0, 0])
+	assert_eq(r.profile.xp, xp)
+	assert_true(result["habit"]["connections"]["completed"] > 0, "measured")
 
 
-func test_the_reward_follows_the_measured_change() -> void:
-	var worse := _quarter(false)
-	assert_true(worse["after"]["connections"]["first_time_right"] < worse["before"]["connections"]["first_time_right"])
-	assert_true(worse["improvement"] < 0.0, "measured: worse")
-	assert_eq([worse["paid"], worse["xp"], worse["budget"]], [0.0, 0, 0], "a worse quarter earns nothing, and costs nothing")
-	var better := _quarter(true)
-	assert_true(better["after"]["connections"]["first_time_right"] > better["before"]["connections"]["first_time_right"])
-	assert_true(better["improvement"] > KpiBoard.DEAD_BAND, "a real gain, beyond the noise: %.3f" % better["improvement"])
-	assert_near(better["paid"], better["improvement"] - KpiBoard.DEAD_BAND, 1e-9, "only the part beyond the noise pays")
-	assert_eq(better["xp"], roundi(better["paid"] * KpiBoard.REVIEW_XP))
-	assert_eq(better["budget"], roundi(better["paid"] * KpiBoard.REVIEW_BUDGET))
-	assert_eq(better["question"], QUESTION, "the coach asks about leading and lagging")
-
-
-## A bad quarter costs nothing, so climbing back out of it must not pay
-## either: the review compares with the best level reached so far.
-func test_a_recovery_after_a_bad_quarter_pays_nothing() -> void:
+## A choice that beats the habit in the paired runs pays the measured gain,
+## and keeps paying while it is kept: good management is a lasting dividend.
+func test_a_choice_that_beats_the_habit_pays_every_quarter() -> void:
 	var r := _region()
-	r.advance_days(KpiBoard.REVIEW_DAYS)
+	r.advance_days(60)
 	r.board.unlock(r.net.time)
-	assert_true(r.kpi_review(GOOD)["baseline"])
-	r.net.set_effects("test", [NetFixture.effect("connections.intake", "ftr", -0.4)])
-	r.advance_days(KpiBoard.REVIEW_DAYS)
-	var bad := r.kpi_review(GOOD)
-	assert_eq(bad["xp"], 0, "the bad quarter")
-	r.net.clear_effects("test")
-	r.advance_days(KpiBoard.REVIEW_DAYS)
 	var xp := r.profile.xp
 	var budget := r.profile.budget
-	var recovered := r.kpi_review(GOOD)
-	assert_eq(recovered["error"], "")
-	assert_true(recovered["after"]["connections"]["first_time_right"] > bad["after"]["connections"]["first_time_right"] + 0.1,
-		"it did recover")
-	assert_eq([recovered["xp"], recovered["budget"]], [0, 0], "back to the old level is no gain: %.3f" % recovered["improvement"])
-	assert_eq(recovered["paid"], 0.0)
-	assert_eq([r.profile.xp, r.profile.budget], [xp, budget])
+	var first := r.kpi_review(CAREFUL)
+	assert_eq(first["error"], "")
+	assert_true(first["chosen"]["connections"]["first_time_right"] > first["habit"]["connections"]["first_time_right"])
+	assert_eq(first["improvement"], KpiBoard.improvement(first["habit"], first["chosen"], r.board.menu.streams()))
+	assert_true(first["paid"] > 0.0, "a real gain: %.3f" % first["paid"])
+	assert_eq(first["xp"], roundi(first["paid"] * KpiBoard.REVIEW_XP))
+	assert_eq(first["budget"], roundi(first["paid"] * KpiBoard.REVIEW_BUDGET))
+	assert_eq([r.profile.xp - xp, r.profile.budget - budget], [first["xp"], first["budget"]], "granted")
+	assert_eq(first["question"], QUESTION, "the coach asks about leading and lagging")
+	r.advance_days(KpiBoard.REVIEW_DAYS)
+	assert_true(r.kpi_review(CAREFUL)["paid"] > 0.0, "the same good choice pays again")
 
 
-## Quarter-to-quarter noise is not a gain: only the part beyond the dead band pays.
-func test_a_gain_inside_the_dead_band_pays_nothing() -> void:
-	assert_eq(KpiBoard.paid(KpiBoard.DEAD_BAND * 0.9), 0.0, "inside the noise")
-	assert_eq(KpiBoard.paid(KpiBoard.DEAD_BAND), 0.0)
-	assert_eq(KpiBoard.paid(-0.2), 0.0, "worse costs nothing")
-	assert_near(KpiBoard.paid(KpiBoard.DEAD_BAND + 0.03), 0.03, 1e-9)
-	assert_true(KpiBoard.DEAD_BAND > 0.0)
-
-
-## The best levels: per stream and per measure, the lowest lead time and age
-## of open work and the highest on time, first-time-right and throughput.
-func test_the_best_levels_rise_only() -> void:
+## A worse choice than the habit costs nothing, and pays nothing.
+func test_a_worse_choice_pays_nothing() -> void:
 	var r := _region()
-	r.advance_days(KpiBoard.REVIEW_DAYS)
+	r.advance_days(60)
 	r.board.unlock(r.net.time)
-	var first := r.kpi_review(GOOD)
-	assert_eq(r.board.best, first["after"], "the baseline is the first mark")
-	r.advance_days(KpiBoard.REVIEW_DAYS)
-	var second := r.kpi_review(GOOD)
-	for id: String in ["connections", "meters"]:
-		var b: Dictionary = first["after"][id]
-		var a: Dictionary = second["after"][id]
-		for m: String in KpiBoard.MEASURES:
-			var want: float = minf(b[m], a[m]) if KpiBoard.MEASURES[m] < 0 else maxf(b[m], a[m])
-			assert_eq(r.board.best[id][m], want, "%s %s" % [id, m])
-	var mark := {"completed": 20, "lead_days_p50": 10.0, "on_time": 0.5, "first_time_right": 0.5,
+	var xp := r.profile.xp
+	var result := r.kpi_review(HASTY)
+	assert_true(result["improvement"] < 0.0, "measured: worse")
+	assert_eq([result["paid"], result["xp"], result["budget"]], [0.0, 0, 0])
+	assert_eq(r.profile.xp, xp)
+
+
+## The forecast runs on copies: the region's own network goes on untouched,
+## with the chosen rules in force.
+func test_the_forecast_leaves_the_region_alone() -> void:
+	var r := _region()
+	r.advance_days(60)
+	r.board.unlock(r.net.time)
+	var time := r.net.time
+	var finished: Array = r.net.stream("connections").finished.duplicate(true)
+	assert_eq(r.kpi_review(CAREFUL)["error"], "")
+	assert_eq(r.net.time, time, "no time passes")
+	assert_eq(r.net.stream("connections").finished, finished)
+	assert_true(r.net.effects().has(KpiBoard.SOURCE))
+
+
+func test_a_quiet_stream_counts_as_no_change() -> void:
+	var r := _region()
+	r.board.unlock(r.net.time)
+	assert_eq(r.kpi_review(GOOD)["error"], "", "day 0: nothing has finished yet, the forecast still runs")
+	var busy := {"completed": 10, "lead_days_p50": 10.0, "on_time": 0.0, "first_time_right": 0.5,
 		"throughput_per_week": 2.0, "wip_age": 5.0}
-	var worse := mark.duplicate()
-	worse["first_time_right"] = 0.4
-	var back := mark.duplicate()
-	assert_true(KpiBoard.improvement({"a": mark}, {"a": worse}, PackedStringArray(["a"])) < 0.0)
-	assert_eq(KpiBoard.improvement({"a": mark}, {"a": back}, PackedStringArray(["a"])), 0.0, "the old level again")
+	var quiet := {"completed": 0, "lead_days_p50": 0.0, "on_time": 0.0, "first_time_right": 0.0,
+		"throughput_per_week": 0.0, "wip_age": 0.0}
+	var better := busy.duplicate()
+	better["on_time"] = 0.5  # was 0: no measurable change
+	better["first_time_right"] = 0.6  # +20 %
+	var ab := PackedStringArray(["a", "b"])
+	assert_near(KpiBoard.improvement({"a": quiet, "b": busy}, {"a": busy, "b": better}, ab), 0.2 / 5, 1e-9)
+	assert_eq(KpiBoard.improvement({"a": busy}, {"a": quiet}, ab), 0.0)
+	assert_eq(KpiBoard.improvement({}, {"a": busy}, ab), 0.0)
 
 
 ## Only the streams a department on the menu works in count; the rest
@@ -259,28 +225,6 @@ func test_an_untouched_stream_is_ignored() -> void:
 	assert_eq(KpiBoard.improvement(both, {"a": busy, "b": better}, PackedStringArray(["a"])), 0.0, "b is not touched")
 	assert_near(KpiBoard.improvement(both, {"a": busy, "b": better}, PackedStringArray(["a", "b"])), 0.2 / 5 / 2, 1e-9)
 	assert_near(KpiBoard.improvement(both, {"a": better, "b": busy}, PackedStringArray(["a"])), 0.2 / 5, 1e-9)
-
-
-func test_a_quiet_stream_counts_as_no_change() -> void:
-	var r := _region()
-	r.board.unlock(r.net.time)
-	assert_true(r.kpi_review(GOOD)["baseline"], "day 0: nothing has finished yet")
-	r.advance_days(KpiBoard.REVIEW_DAYS)
-	var result := r.kpi_review(GOOD)
-	assert_eq(result["error"], "")
-	assert_false(result["baseline"])
-	assert_eq([result["improvement"], result["xp"]], [0.0, 0])
-	var busy := {"completed": 10, "lead_days_p50": 10.0, "on_time": 0.0, "first_time_right": 0.5,
-		"throughput_per_week": 2.0, "wip_age": 5.0}
-	var quiet := {"completed": 0, "lead_days_p50": 0.0, "on_time": 0.0, "first_time_right": 0.0,
-		"throughput_per_week": 0.0, "wip_age": 0.0}
-	var better := busy.duplicate()
-	better["on_time"] = 0.5  # was 0: no measurable change
-	better["first_time_right"] = 0.6  # +20 %
-	var ab := PackedStringArray(["a", "b"])
-	assert_near(KpiBoard.improvement({"a": quiet, "b": busy}, {"a": busy, "b": better}, ab), 0.2 / 5, 1e-9)
-	assert_eq(KpiBoard.improvement({"a": busy}, {"a": quiet}, ab), 0.0)
-	assert_eq(KpiBoard.improvement({}, {"a": busy}, ab), 0.0)
 
 
 ## A low-volume stream: on time from 5 % to 50 % is +900 %, but one KPI's
@@ -402,7 +346,7 @@ func test_old_or_damaged_board_saves_load_safely() -> void:
 	assert_eq(RegionState.restore(r, saved)["error"], "")
 	assert_false(r.board.unlocked)
 	saved["kpi_board"] = {
-		"unlocked": true, "next_review_at": "soon", "has_baseline": "yes",
+		"unlocked": true, "next_review_at": "soon",
 		"chosen": {"nobody": ["x"], "intake": ["intake_oldest", "prep_due", 7, "intake_output"], "prep": ["prep_due"],
 			"intake_twice": ["intake_oldest", "intake_oldest"]},
 		"snapshot": {"connections": {"completed": "many", "on_time": 0.5}, "ghost": 3},
@@ -411,42 +355,9 @@ func test_old_or_damaged_board_saves_load_safely() -> void:
 	assert_eq(RegionState.restore(r, saved)["error"], "")
 	assert_true(r.board.unlocked)
 	assert_eq(r.board.next_review_at, 0)
-	assert_false(r.board.has_baseline)
 	assert_eq(r.board.chosen, {"intake": PackedStringArray(["intake_oldest", "intake_output"])} as Dictionary[String, PackedStringArray],
 		"unknown ids dropped; a department left with fewer than two is dropped")
-	var result := r.kpi_review(GOOD)
-	assert_eq(result["error"], "", "a damaged board still reviews")
-	assert_true(result["baseline"], "and measures again before it rewards")
-
-
-## The best levels are saved: a reload must not lower the mark and pay a recovery.
-func test_the_best_levels_survive_save_and_load() -> void:
-	var r := _due_region()
-	r.kpi_review(GOOD)
-	r.advance_days(KpiBoard.REVIEW_DAYS)
-	r.kpi_review(GOOD)
-	r.board.best["connections"]["first_time_right"] = 0.99  # a mark the last quarter did not reach
-	assert_ne(r.board.best, r.board.snapshot)
-	var fresh := _region()
-	fresh.board.load_dict(bytes_to_var(var_to_bytes(r.board.to_dict())))  # as SaveFile stores it
-	assert_eq(fresh.board.best, r.board.best)
-	var restored := RulesFixture.region(0, 123)
-	restored.use_kpis(_menu())
-	assert_eq(RegionState.restore(restored, RegionState.capture(r))["error"], "")
-	assert_eq(restored.board.best, r.board.best)
-	# An old save has no best levels: the last snapshot is the mark.
-	var old := r.board.to_dict()
-	old.erase("best")
-	fresh = _region()
-	fresh.board.load_dict(old)
-	assert_eq(fresh.board.best, r.board.snapshot)
-	# Damaged best levels count as missing; damaged numbers as 0.
-	old["best"] = {"connections": "garbage", "meters": {"completed": 30, "on_time": "high", "wip_age": 2}}
-	fresh = _region()
-	fresh.board.load_dict(old)
-	assert_eq(fresh.board.best["connections"], r.board.snapshot["connections"])
-	assert_eq(fresh.board.best["meters"], {"completed": 30, "lead_days_p50": 0.0, "on_time": 0.0,
-		"first_time_right": 0.0, "throughput_per_week": 0.0, "wip_age": 2.0})
+	assert_eq(r.kpi_review(GOOD)["error"], "", "a damaged board still reviews")
 
 
 ## A JSON round trip turns ints into floats; the review must not come early.
@@ -459,5 +370,4 @@ func test_a_json_round_trip_keeps_the_review_date() -> void:
 	fresh.board.load_dict(saved)
 	assert_eq(fresh.board.next_review_at, r.board.next_review_at)
 	assert_false(fresh.board.review_due(r.net.time))
-	assert_true(fresh.board.has_baseline)
 	assert_eq(fresh.board.chosen, r.board.chosen)

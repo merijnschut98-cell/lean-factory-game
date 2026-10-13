@@ -35,6 +35,22 @@ func test_a_restored_network_continues_exactly() -> void:
 	assert_eq(restored.pools["monteurs"].load_since(0), original.pools["monteurs"].load_since(0), "actual load history")
 
 
+## A copy runs on exactly like the original (a "what if" runs on the copy),
+## keeps the pool settings that are not effects, and leaves the original alone.
+func test_a_copy_runs_like_the_original_and_leaves_it_alone() -> void:
+	var original := _busy_network()
+	original.pools["work_prep"].pull_limit_days = 2.0
+	var before := NetworkState.capture(original)
+	var copy := NetworkState.copy(original)
+	assert_eq(copy.error, "")
+	assert_eq(copy.pools["work_prep"].pull_limit_days, 2.0, "pool settings that are not effects")
+	copy.advance_days(30)
+	assert_eq(NetworkState.capture(original), before, "running the copy changes nothing in the original")
+	original.advance_days(30)
+	for s in original.streams:
+		assert_eq(copy.stream(s.id).finished, s.finished, s.id)
+
+
 func test_history_is_bounded() -> void:
 	var net := Network.load_file(Network.DEFAULT_PATH, 11)
 	net.advance_days(Network.HISTORY_DAYS + 60)
