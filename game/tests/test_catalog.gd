@@ -209,23 +209,24 @@ func test_the_campaign_opens_with_the_first_main_mission() -> void:
 	assert_eq(log.active("main").size(), 0)
 
 
-## Play the opening of the real campaign like an expert: the coach follows
-## the PDCA loop of the main mission, and each solved problem unlocks the
-## next part of the story.
 ## The main quest forks after the first bottleneck: the next bottleneck
 ## (intake) or a problem that is not one (the monteurs). The player has to
 ## prioritise (CLAUDE.md §2).
 func test_the_main_quest_forks_after_the_first_bottleneck() -> void:
 	var c := Catalog.load_from()
 	var log := Missions.new(_region(c), c.missions, c.coach)
-	log.progress["walk_connections"] = {"status": "completed", "asks": {}}
-	log.progress["fix_custom_design"] = {"status": "completed", "asks": {}}
+	for id in ["walk_connections", "fix_custom_design"]:
+		log.progress[id] = {"status": "completed", "asks": {}}
+		log.done_once[id] = true
 	var mains := log.available().filter(func(m: MissionDef) -> bool: return m.kind == "main").map(
 		func(m: MissionDef) -> String: return m.id)
 	mains.sort()
 	assert_eq(mains, ["fix_incomplete_application", "fix_installer_not_ready"])
 
 
+## Play the opening of the real campaign like an expert: the coach follows
+## the PDCA loop of the main mission, and each solved problem unlocks the
+## next part of the story.
 func test_an_expert_plays_the_opening_of_the_campaign() -> void:
 	var c := Catalog.load_from()
 	var log := Missions.new(_region(c), c.missions, c.coach)

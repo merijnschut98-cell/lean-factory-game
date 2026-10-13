@@ -191,3 +191,21 @@ func test_a_faded_fix_reopens_its_mission() -> void:
 	log.update()
 	assert_eq(log.status("fix_design"), "completed")
 	assert_eq(r.profile.budget, budget, "no second reward")
+
+
+## A reopened mission has no deadline: Henk passed on his knowledge before the
+## fix faded, so nothing closes now.
+func test_a_reopened_mission_runs_no_deadline() -> void:
+	var log := _log()
+	log.accept("walk_connections")
+	_walk_connections(log)
+	assert_eq(log.accept("henk"), "")
+	var r := log.region
+	r.state["incomplete_application"].phase = ProblemState.Phase.RESOLVED
+	r.state["incomplete_application"].recur_at = r.net.time + SimCalendar.days(20)
+	log.update()
+	assert_eq(log.status("henk"), "completed")
+	r.advance_days(21)
+	log.update()
+	assert_eq(log.status("henk"), "available", "reopened after the deadline would have passed")
+	assert_true(r.countermeasures["poka_yoke_form"] in r.available_countermeasures(), "no door closes")

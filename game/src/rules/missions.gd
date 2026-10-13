@@ -21,14 +21,18 @@ var defs: Dictionary[String, MissionDef] = {}
 ## {name, role, stages: {stage: [questions]}}
 var coach: Dictionary
 ## Missions the player has accepted, or whose deadline passed: id → {status:
-## active | completed | failed | available (reopened: its fix faded), asks:
-## {stage: count}, repeat (reopened: no second reward)}.
+## active | completed | failed, asks: {stage: count}}. A mission whose fix
+## faded is erased from it, so it is available again.
 var progress: Dictionary[String, Dictionary] = {}
+## Missions completed at least once: rewarded, unlocking what follows, and
+## past any deadline, even when a faded fix reopens them.
+var done_once: Dictionary[String, bool] = {}
 ## When each mission with a deadline opened (minutes): its clock starts there.
 ## Kept after the mission ends (small, and harmless).
 var opened_at: Dictionary[String, int] = {}
-## {type: accepted | completed | failed, mission} for the UI (a new belt is a
-## Region event).
+## {type: accepted | completed | failed | reopened, mission} for the UI (a
+## new belt is a Region event; tell the player about a faded fix by
+## `reopened`, not Region's `recurred`).
 var events: Array[Dictionary] = []
 
 
@@ -69,7 +73,7 @@ func accept(id: String) -> String:
 	var m: MissionDef = defs.get(id)
 	if m == null:
 		return "unknown"
-	if progress.has(id) and progress[id]["status"] != "available":
+	if progress.has(id):
 		return "not_available"
 	if not _unlocked(m):
 		return "locked"
@@ -81,7 +85,7 @@ func accept(id: String) -> String:
 		var st: ProblemState = region.state.get(m.goal_problem)
 		if st == null or st.phase == P.RESOLVED or (st.phase == P.DORMANT and not region.activate(m.goal_problem)):
 			return "problem_unavailable"
-	progress[id] = {"status": "active", "asks": {}, "repeat": progress.get(id, {}).get("repeat", false)}
+	progress[id] = {"status": "active", "asks": {}}
 	events.append({"type": "accepted", "mission": id})
 	return ""
 
@@ -90,10 +94,7 @@ func accept(id: String) -> String:
 func abandon(id: String) -> bool:
 	if status(id) != "active":
 		return false
-	if progress[id].get("repeat", false):
-		progress[id]["status"] = "available"
-	else:
-		progress.erase(id)
+	progress.erase(id)
 	return true
 
 
@@ -106,7 +107,7 @@ func update() -> void:
 		if _goal_met(m):
 			_complete(m)
 	for m: MissionDef in defs.values():
-		if m.deadline_days < 0 or not status(m.id) in ["available", "active"]:
+		if m.deadline_days < 0 or done_once.has(m.id) or not status(m.id) in ["available", "active"]:
 			continue
 		if not opened_at.has(m.id):
 			opened_at[m.id] = region.net.time
@@ -117,16 +118,16 @@ func update() -> void:
 ## A completed solve mission whose problem is dormant again (the fix faded)
 ## opens again: the problem comes back through it.
 func _reopen_faded() -> void:
-	for id: String in progress:
+	for id: String in progress.keys():
 		var m := defs[id]
 		if progress[id]["status"] == "completed" and m.goal_type == "solve" \
 				and region.state[m.goal_problem].phase == P.DORMANT:
-			progress[id] = {"status": "available", "asks": {}, "repeat": true}
+			progress.erase(id)
 			events.append({"type": "reopened", "mission": id})
 
 
 func _fail(m: MissionDef) -> void:
-	progress[m.id] = {"status": "failed", "asks": {}, "repeat": false}
+	progress[m.id] = {"status": "failed", "asks": {}}
 	region.close_countermeasures(m.fail_closes)
 	events.append({"type": "failed", "mission": m.id})
 
@@ -173,7 +174,7 @@ func drain_events() -> Array[Dictionary]:
 
 
 func to_dict() -> Dictionary:
-	return {"progress": progress.duplicate(true), "opened_at": opened_at.duplicate()}
+	return {"progress": progress.duplicate(true), "opened_at": opened_at.duplicate(), "done_once": done_once.keys()}
 
 
 ## Restore to_dict() output. Returns the mission ids the content no longer
@@ -181,6 +182,11 @@ func to_dict() -> Dictionary:
 func load_dict(d: Dictionary) -> Array[String]:
 	progress.clear()
 	opened_at.clear()
+	done_once.clear()
+	var once: Variant = d.get("done_once", [])
+	for id: Variant in once if once is Array else []:
+		if defs.has(str(id)):
+			done_once[str(id)] = true
 	var opened := JsonFile.dict_or_empty(d.get("opened_at"))
 	for id: Variant in opened:
 		if defs.has(str(id)):
@@ -191,9 +197,8 @@ func load_dict(d: Dictionary) -> Array[String]:
 		return dropped
 	for id: Variant in saved:
 		var entry: Variant = saved[id]
-		if defs.has(str(id)) and entry is Dictionary and entry.get("status") in ["available", "active", "completed", "failed"]:
-			progress[str(id)] = {"status": entry["status"], "asks": JsonFile.dict_or_empty(entry.get("asks")),
-				"repeat": entry.get("repeat") == true}
+		if defs.has(str(id)) and entry is Dictionary and entry.get("status") in ["active", "completed", "failed"]:
+			progress[str(id)] = {"status": entry["status"], "asks": JsonFile.dict_or_empty(entry.get("asks"))}
 		else:
 			dropped.append(str(id))
 	# A missed deadline closed its doors for good.
@@ -207,7 +212,7 @@ func _unlocked(m: MissionDef) -> bool:
 	if Progression.belt_index(region.profile.xp) < m.requires_belt:
 		return false
 	for id in m.requires_missions:
-		if status(id) != "completed":
+		if not done_once.has(id):
 			return false
 	return true
 
@@ -228,6 +233,7 @@ func _goal_met(m: MissionDef) -> bool:
 
 func _complete(m: MissionDef) -> void:
 	progress[m.id]["status"] = "completed"
-	if not progress[m.id].get("repeat", false):
+	if not done_once.has(m.id):
+		done_once[m.id] = true
 		region.grant(m.reward_xp, m.reward_budget)
 	events.append({"type": "completed", "mission": m.id})
