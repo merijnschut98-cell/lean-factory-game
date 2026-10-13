@@ -347,7 +347,7 @@
     {
      "depth": 0,
      "key": true,
-     "text": "Vergunningsaanvragen gaan alleen op maandag de deur uit. Een dossier dat dinsdag klaar is, wacht bijna een week.",
+     "text": "Vergunningsaanvragen gaan per project de deur uit. Een dossier dat klaar is, wacht gemiddeld een week op de rest van de straat.",
      "tool": "data"
     },
     {
@@ -360,7 +360,7 @@
      "at": "connections.design",
      "depth": 1,
      "key": true,
-     "text": "'Ik verzamel de aanvragen en stuur ze op maandag in één keer op; dat scheelt inloggen in het portaal.'",
+     "text": "'Ik vraag de vergunning aan als het hele project ontworpen is; dan hoeft de gemeente maar één tracé te beoordelen.'",
      "tool": "conversation"
     },
     {
@@ -386,7 +386,7 @@
     {
      "property": "batch_days",
      "target": "connections.permit",
-     "value": 7
+     "value": 14
     }
    ],
    "id": "permits_in_batches",
@@ -397,7 +397,7 @@
     "De gemeente werkt te langzaam.",
     "Het vergunningsportaal is te ingewikkeld."
    ],
-   "root_cause": "Vergunningen worden wekelijks in een batch aangevraagd, en pas als het ontwerp helemaal af is.",
+   "root_cause": "Vergunningen worden per project in één batch aangevraagd, pas als het laatste ontwerp van het project af is.",
    "severity": "medium",
    "step": "connections.permit",
    "symptoms": [
@@ -821,7 +821,7 @@
    "step": "connections.grid_study",
    "symptoms": [
     "Op het bord van Netstrategie staan tientallen netstudies in de wachtrij.",
-    "Grootzakelijke klanten wachten maanden op een antwoord over capaciteit."
+    "Nieuwe aansluitingen wachten weken op een netstudie, omdat congestieonderzoeken voorgaan."
    ],
    "teaches": [
     "triage",

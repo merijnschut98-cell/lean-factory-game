@@ -131,7 +131,7 @@
    "budget": 500,
    "category": "flow",
    "decay_days": 30,
-   "description": "Een vergunningsaanvraag gaat de deur uit zodra het dossier klaar is, niet meer verzameld op maandag.",
+   "description": "Een vergunningsaanvraag gaat de deur uit zodra het dossier klaar is, niet meer verzameld per project.",
    "effects": [],
    "id": "request_permits_daily",
    "multipliers": {

@@ -196,7 +196,7 @@
    "tier": 1
   },
   {
-   "briefing": "Grootzakelijke klanten wachten maanden op een antwoord over capaciteit. Netstrategie zegt dat ze te weinig analisten hebben.",
+   "briefing": "Aansluitingen liggen weken stil bij Netstrategie: de congestieonderzoeken voor grootzakelijke klanten gaan voor. Netstrategie zegt dat ze te weinig analisten hebben.",
    "debrief": "Niet elke aanvraag heeft een volledige studie nodig. Nu is er weer ruimte voor de studies die er echt toe doen.",
    "goal": {
     "problem": "grid_study_queue",

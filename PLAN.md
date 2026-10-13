@@ -185,7 +185,7 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
   - Found while writing the review: 12 clue texts were cut off in the game. An unquoted comma inside `{…}` split the text and YAML turned the rest into an extra key. The content loader now refuses that pattern and duplicate keys (`_StrictLoader`). Problems, countermeasures, clues and effects also reject unknown keys (typos). The clue texts are quoted.
 - ✅ Review findings fixed with Claude's judgement while Merijn is away (his instruction, 2026-10-12): see "Claude's calls, pending Merijn" under Decisions Made
 - ✅ Merijn answered the review's main questions (see Decisions Made); the review doc shows the recalibrated numbers (report over 5 seeds × 180 days, measured over the last 84) and the answers built in
-- ⬜ Open in the review doc: is the close-out spiral too strong (default: milder after recalibration), and the per-problem questions
+- ✅ Review doc questions answered (2026-10-13, see Decisions Made)
 - ⬜ Catalogue problems that need a new mechanism first:
   - storing gooit de planning om: planned monteur work at 100%; needs the base to keep slack that the problem removes, or a planning-horizon mechanic;
   - KPI's die elkaar bevechten: overproduction, departments pushing work in; needs a release decision per department
@@ -274,6 +274,9 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 
 ## Decisions Made
 
+- **Review answers, round 2 (Merijn, 2026-10-13, multiple choice).**
+  - **Kept as built:** the close-out spiral (mild); Henk; the bad period (−3 points); trafo ×1.75; 3 in 10 tap changes that don't hold; 62% use of contracted capacity; use-it-or-lose-it at tier 2; 9 in 20 incomplete applications; the wrong joint ×1.5; three signatures; design +30%; a two-day re-plan for pulled monteurs; 4 in 10 grid studies; 3 in 10 silent meters; 1 in 10 failed registrations in the base; a measuring week, with 4 in 10 ending in a tap change. The earlier "kept as they are" values were also confirmed.
+  - **Changed:** voltage complaints 2 → 5 a week in the base (15 with the problem); permits batched per project (about every two weeks, an estimate) instead of a weekly run; the grid analysts serve congestion requests before connections, so connections now pay for De netstudie-wachtrij.
 - **Core directives (Merijn, 2026-10-12).** A learning game about continuous improvement (Lean, later IT/Agile/DevOps/SAFe) in the energy sector; people are the most valuable resource; an RPG where the player searches and thinks; fix processes end to end (a non-bottleneck fix brings nothing); a strong focus on measuring (KPIs, OKRs); the 8 wastes and sector issues come up often. Recorded in CLAUDE.md §2.
 - **Never game over (Merijn, 2026-10-12).** Claims cost money and the region can go into debt and a bad period, but the company never goes down.
 - **Henk is a side mission with a deadline (Merijn, 2026-10-12).** Missing it means doing without the knowledge transfer: the countermeasures that need Henk are gone; the problem can still be solved another way.
@@ -295,7 +298,7 @@ Merijn asked me to fix the content review's findings with my own judgement while
 - **De revisieberg feeds Graafschade in the simulation**, not only in the clues. Answered: base it on evidence; now +5% daytime outages and €425 a week, marked as an estimate.
 - **Kept as they are, plausible and grounded:** the contact-centre spiral of Klaar maar niet af, the monthly EAN batch, three times as many calls from late customers, 40 minutes to the warehouse, two of five meterkasten not ready, three of eight not at home, 240 open revisions.
 - **Henk becomes a story hook** for the missions (built: a deadline mission); the buddy system's team hours stay as they are.
-- **Still open:** is the contact-centre spiral of Klaar maar niet af too strong? Default: milder after the recalibration (contact on time 0.82 → 0.80).
+- ~~Still open: the contact-centre spiral~~ → answered 2026-10-13: keep it mild.
 
 - **Many healthier processes, not one (2026-10-12).** Problems list several countermeasures with a fit (0–1); each countermeasure brings its own effects and levers, so different players end up with different, all improved, processes. Content values are a reasonable base; the starting problems are active effects on top.
 - **What WIP costs (2026-10-12).** Dossiers go stale when they wait too long (quotes, permits, designs need work again); this is what makes WIP limits pay off in the simulation.

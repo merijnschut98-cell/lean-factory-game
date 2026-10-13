@@ -133,7 +133,7 @@ missions:
     kind: main
     tier: 1
     requires: {missions: [fix_digging_damage], belt: 2}
-    briefing: "Grootzakelijke klanten wachten maanden op een antwoord over capaciteit. Netstrategie zegt dat ze te weinig analisten hebben."
+    briefing: "Aansluitingen liggen weken stil bij Netstrategie: de congestieonderzoeken voor grootzakelijke klanten gaan voor. Netstrategie zegt dat ze te weinig analisten hebben."
     debrief: "Niet elke aanvraag heeft een volledige studie nodig. Nu is er weer ruimte voor de studies die er echt toe doen."
     goal: {type: solve, problem: grid_study_queue}
     rewards: {xp: 1200, budget: 12000}

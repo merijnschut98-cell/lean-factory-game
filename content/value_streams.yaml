@@ -309,7 +309,7 @@ streams:
     name: Congestiemanagement
     arrivals: [{per_week: 4, days: mon-fri, from: "08:00", to: "17:00"}]
     norm_days: 126          # indicative: large-consumer requests follow the same 18-week idea
-    priority: 1
+    priority: 3             # before connections at the grid analysts (Merijn, 2026-10-13)
     steps:
       - id: intake
         name: Aanvraag transportcapaciteit
@@ -353,7 +353,8 @@ streams:
     # Customers report voltage problems (flickering lights, inverters that trip).
     # The voltage must stay within 230 V ±10% (Netcode, EN 50160); a complaint
     # is answered with a week of measurement at the address.
-    arrivals: [{per_week: 2, days: mon-fri, from: "08:00", to: "17:00"}]
+    # About 5 a week (Merijn, 2026-10-13; scaled from Liander's ~6,000 a year).
+    arrivals: [{per_week: 5, days: mon-fri, from: "08:00", to: "17:00"}]
     norm_days: 28           # internal: a measured answer within four weeks
     priority: 1
     steps:

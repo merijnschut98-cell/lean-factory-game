@@ -80,7 +80,7 @@ countermeasures:
     name: Vergunning direct aanvragen
     tier: 1
     category: flow
-    description: Een vergunningsaanvraag gaat de deur uit zodra het dossier klaar is, niet meer verzameld op maandag.
+    description: Een vergunningsaanvraag gaat de deur uit zodra het dossier klaar is, niet meer verzameld per project.
     budget: 500
     team_hours: {work_prep: 5}
     decay_days: 30

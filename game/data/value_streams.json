@@ -455,7 +455,7 @@
    "id": "congestion",
    "name": "Congestiemanagement",
    "norm_days": 126,
-   "priority": 1,
+   "priority": 3,
    "steps": [
     {
      "ftr": 0.7,
@@ -512,7 +512,7 @@
     {
      "days": "mon-fri",
      "from": "08:00",
-     "per_week": 2,
+     "per_week": 5,
      "to": "17:00"
     }
    ],

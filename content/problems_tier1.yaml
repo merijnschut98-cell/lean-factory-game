@@ -163,7 +163,7 @@ problems:
     symptoms:
       - Dossiers liggen dagen stil tussen ontwerp en vergunning.
       - De doorlooptijd van aansluitingen is lang, terwijl de gemeente haar termijn haalt.
-    root_cause: Vergunningen worden wekelijks in een batch aangevraagd, en pas als het ontwerp helemaal af is.
+    root_cause: Vergunningen worden per project in één batch aangevraagd, pas als het laatste ontwerp van het project af is.
     plausible_causes:
       - De gemeente werkt te langzaam.
       - Het vergunningsportaal is te ingewikkeld.
@@ -171,11 +171,13 @@ problems:
     countermeasures: {request_permits_daily: 1.0, parallel_permits: 1.0}
     teaches: [batching, flow]
     effects:
-      - {target: connections.permit, property: batch_days, value: 7}
+      # Per project (Merijn, 2026-10-13): a street's connections go together once
+      # the last design is done; about every two weeks (an estimate).
+      - {target: connections.permit, property: batch_days, value: 14}
     clues:
-      - {tool: data, key: true, depth: 0, text: "Vergunningsaanvragen gaan alleen op maandag de deur uit. Een dossier dat dinsdag klaar is, wacht bijna een week."}
+      - {tool: data, key: true, depth: 0, text: "Vergunningsaanvragen gaan per project de deur uit. Een dossier dat klaar is, wacht gemiddeld een week op de rest van de straat."}
       - {tool: documents, key: false, depth: 0, text: "De gemeente haalt haar wettelijke termijn bijna altijd."}
-      - {tool: conversation, key: true, depth: 1, at: connections.design, text: "'Ik verzamel de aanvragen en stuur ze op maandag in één keer op; dat scheelt inloggen in het portaal.'"}
+      - {tool: conversation, key: true, depth: 1, at: connections.design, text: "'Ik vraag de vergunning aan als het hele project ontworpen is; dan hoeft de gemeente maar één tracé te beoordelen.'"}
       - {tool: documents, key: true, depth: 1, at: connections.design, text: "De vergunning wordt pas aangevraagd als het ontwerp helemaal af is, terwijl de gemeente alleen het tracé nodig heeft."}
       - {tool: time_study, key: true, depth: 2, at: connections.design, text: "Een aanvraag indienen kost tien minuten; het tracé is al na een uur ontwerpen bekend."}
 
@@ -333,7 +335,7 @@ problems:
     kpi: throughput
     symptoms:
       - Op het bord van Netstrategie staan tientallen netstudies in de wachtrij.
-      - Grootzakelijke klanten wachten maanden op een antwoord over capaciteit.
+      - Nieuwe aansluitingen wachten weken op een netstudie, omdat congestieonderzoeken voorgaan.
     root_cause: Elke aanvraag boven 3x25A krijgt een volledige netstudie, ook als de aansluiting ruim binnen de vrije capaciteit valt; er is geen triage vooraf.
     plausible_causes:
       - Er zijn te weinig netanalisten.
