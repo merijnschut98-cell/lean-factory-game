@@ -1191,6 +1191,8 @@ def build_collision() -> None:
 
 # --------------------------------------------------------------------------- lightmap bake
 
+AO_DISTANCE = 0.6    # m: how far furniture occludes the floor/walls
+AO_STRENGTH = 0.65   # 0 = no contact AO, 1 = fully black in the tightest corner
 LIGHTMAPS = {"shell_floor": "lightmap_floor", "shell_walls": "lightmap_walls", "shell_ceiling": "lightmap_ceiling"}
 
 
@@ -1214,6 +1216,7 @@ def bake_lightmaps(spots, samples: int, size: int = 1024) -> None:
     scene.cycles.diffuse_bounces = 3
     scene.render.bake.margin = 6
     world = bpy.data.worlds.new("bake_sky")
+    world.light_settings.distance = AO_DISTANCE
     scene.world = world
     bg = world.node_tree.nodes["Background"]
     bg.inputs["Color"].default_value = (0.62, 0.74, 0.95, 1)
@@ -1251,8 +1254,19 @@ def bake_lightmaps(spots, samples: int, size: int = 1024) -> None:
         bpy.context.view_layer.objects.active = ob
         print(f"baking {obname} ({samples} samples) ...", flush=True)
         bpy.ops.object.bake(type="DIFFUSE", pass_filter={"DIRECT", "INDIRECT"}, margin=6, use_clear=True)
+        ao = None
+        if obname != "shell_ceiling":
+            # contact AO: short-range occlusion from furniture and props, folded into the same map
+            ao_img = bpy.data.images.new(imname + "_ao", size, size, alpha=False, float_buffer=True)
+            for mat in ob.data.materials:
+                mat.node_tree.nodes["lightmap"].image = ao_img
+            scene.cycles.samples = max(16, samples // 3)
+            print(f"baking {obname} contact AO ...", flush=True)
+            bpy.ops.object.bake(type="AO", margin=6, use_clear=True)
+            scene.cycles.samples = samples
+            ao = _read_rgb(ao_img).mean(-1)
         ob.data.uv_layers["UVMap"].active = True
-        save_lightmap(img, TEX / f"{imname}.png", blur=1.0 if obname == "shell_walls" else 2.5)
+        save_lightmap(img, TEX / f"{imname}.png", blur=1.0 if obname == "shell_walls" else 2.5, ao=ao)
     for o in hidden:
         o.hide_render = False
     for lo in lights:
@@ -1272,17 +1286,24 @@ def _blur(a: np.ndarray, sigma: float) -> np.ndarray:
     return a
 
 
-def save_lightmap(img: bpy.types.Image, path: Path, blur: float) -> None:
-    """Irradiance -> 0..1 multiplier: denoise, divide by a high percentile, keep a floor
-    (Godot's ambient still fills the room), gamma for an sRGB PNG."""
+def _read_rgb(img: bpy.types.Image) -> np.ndarray:
     w, h = img.size
     px = np.empty(w * h * 4, dtype=np.float32)
     img.pixels.foreach_get(px)
-    px = _blur(px.reshape(h, w, 4)[..., :3], blur)
+    return px.reshape(h, w, 4)[..., :3]
+
+
+def save_lightmap(img: bpy.types.Image, path: Path, blur: float, ao: np.ndarray | None = None) -> None:
+    """Irradiance -> 0..1 multiplier: denoise, divide by a high percentile, keep a floor
+    (Godot's ambient still fills the room), gamma for an sRGB PNG. `ao` (h, w, 0..1) darkens
+    contact zones under and beside furniture."""
+    px = _blur(_read_rgb(img), blur)
     lum = px.mean(-1)
     valid = lum[lum > 1e-4]
     ref = np.percentile(valid, 99.5) if valid.size else 1.0
     lm = np.clip(px / ref, 0, 1) ** 0.8
+    if ao is not None:
+        lm = lm * (1 - AO_STRENGTH * (1 - _blur(ao[..., None], 1.5)))
     lm = 0.15 + 0.85 * lm                    # never black: Godot's ambient still fills
     out = np.clip(lm, 0, 1) ** (1 / 2.2)
     write_png(path, out[::-1])
