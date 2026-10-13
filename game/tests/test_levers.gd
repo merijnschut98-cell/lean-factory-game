@@ -363,3 +363,42 @@ func test_rule_values_are_checked() -> void:
 	assert_eq(net.pools["fast"].order_rule, "due")
 	net.clear_effects("ok")
 	assert_eq(net.pools["fast"].order_rule, "first_come", "lifting the rule restores the habit")
+
+
+## Work handed over at the end of a shift is started: it resumes first,
+## whatever the order rule says about the orders behind it.
+func test_a_started_order_resumes_first_under_any_order_rule() -> void:
+	for rule: String in ["oldest", "shortest", "due"]:
+		var net := NetFixture.net([NetFixture.pool("team", 1)], [
+			NetFixture.stream("long", [NetFixture.work("job", "team", 12.0)], 0.0, 1),
+			NetFixture.stream("short", [NetFixture.work("job", "team", 0.5)], 0.0, 1, {"norm_days": 1.0}),
+		])
+		assert_eq(net.set_effects("cm:rule", [NetFixture.effect("team", "order_rule", rule)]), "")
+		net.advance(MONDAY_8)
+		var long_order := net.open_order(net.stream("long"))
+		net.advance(60)
+		net.open_order(net.stream("short"))
+		net.advance(SimCalendar.days(1) + 10)  # Tuesday 09:10: the long job was handed over at 16:00 with hours left
+		assert_true(net.pools["team"].busy.size() == 1 and net.pools["team"].busy[0] == long_order, rule + ": the long job carries on")
+		assert_eq(net.stream("short").finished.size(), 0, rule)
+
+
+## Pull only decides whether to start something new.
+func test_pull_never_holds_started_work() -> void:
+	var net := NetFixture.net([NetFixture.pool("fast", 1), NetFixture.pool("slow", 1, 1.0, [NetFixture.block("sat-sun", "08:00", "16:00")])], [
+		NetFixture.stream("s", [NetFixture.work("a", "fast", 12.0), NetFixture.work("b", "slow", 4.0)], 0.0, 1),
+	])
+	var stream := net.stream("s")
+	net.advance(MONDAY_8)
+	var order := net.open_order(stream)
+	net.advance(60)
+	for i in 8:  # a full queue downstream: 8 × 4 h over 8 h a working day
+		var queued := WorkOrder.new(1000 + i, stream, net.time)
+		queued.step_index = 1
+		queued.remaining = SimCalendar.hours(4.0)
+		queued.queued_at = net.time
+		net.queue_of(stream.steps[1]).append(queued)
+	assert_true(net.queue_days(stream.steps[1]) >= net.pools["fast"].pull_limit_days)
+	assert_eq(net.set_effects("cm:rule", [NetFixture.effect("fast", "start_rule", "pull")]), "")
+	net.advance(SimCalendar.days(1) + 10)  # Tuesday 09:10, after the 16:00 handover
+	assert_true(net.pools["fast"].busy.size() == 1 and net.pools["fast"].busy[0] == order, "the started order is not held back")

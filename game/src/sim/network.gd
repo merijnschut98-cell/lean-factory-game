@@ -637,7 +637,8 @@ func _next_step_for(pool: SimPool) -> SimStep:
 
 
 ## The step with the most urgent head order; with `startable`, only steps
-## someone is free for. A `pull` pool skips steps whose next work step is full.
+## someone is free for. A `pull` pool does not start new work while the next
+## work step is full.
 func _most_urgent_step(pool: SimPool, startable: bool = false) -> SimStep:
 	var best: SimStep = null
 	var best_head: WorkOrder = null
@@ -646,7 +647,7 @@ func _most_urgent_step(pool: SimPool, startable: bool = false) -> SimStep:
 		if queue.is_empty() or (startable and pool.free_for(queue[0].stream) <= 0):
 			continue
 		var head := queue[_head_index(pool, queue)]
-		if pool.start_rule == "pull" and _downstream_is_full(head, pool.pull_limit_days):
+		if pool.start_rule == "pull" and not head.started and _downstream_is_full(head, pool.pull_limit_days):
 			continue
 		if best == null or _more_urgent(head, best_head, pool.order_rule):
 			best = step
@@ -655,9 +656,10 @@ func _most_urgent_step(pool: SimPool, startable: bool = false) -> SimStep:
 
 
 ## Where in `queue` the order that `pool` takes first sits, by its order rule.
-## First come is the front of the queue (a paused order resumes first).
+## Started work (handed over at shift end, or paused) waits at the front and
+## resumes first; the rule only ranks orders not yet started.
 func _head_index(pool: SimPool, queue: Array[WorkOrder]) -> int:
-	if pool.order_rule == "first_come":
+	if pool.order_rule == "first_come" or queue[0].started:
 		return 0
 	var best := 0
 	for i in range(1, queue.size()):
@@ -681,6 +683,8 @@ func _rule_key(order: WorkOrder, rule: String) -> int:
 func _more_urgent(a: WorkOrder, b: WorkOrder, rule: String) -> bool:
 	if a.stream.priority != b.stream.priority:
 		return a.stream.priority > b.stream.priority
+	if rule != "first_come" and a.started != b.started:
+		return a.started  # unfinished work resumes before the rule picks something new
 	return _rule_key(a, rule) < _rule_key(b, rule)
 
 
