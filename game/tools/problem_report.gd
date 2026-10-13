@@ -75,7 +75,7 @@ func _measure(p: ProblemDef, sources: Dictionary) -> Dictionary:
 	return out
 
 
-## {streams: {id: KPIs + interrupted_per_week}, actual_load: {pool: share}}
+## {streams: {id: KPIs + interrupted_per_week + wip_age}, actual_load: {pool: share}}
 ## averaged over the seeds,
 ## and planned_load: {pool: share} from Capacity.
 func _measure_sources(sources: Dictionary) -> Dictionary:
@@ -92,6 +92,7 @@ func _measure_sources(sources: Dictionary) -> Dictionary:
 			for step in s.steps:
 				interrupted += step.stats_since(from_day)["interrupted"]
 			kpis["interrupted_per_week"] = interrupted * 7.0 / WINDOW
+			kpis["wip_age"] = net.open_age_days(s, 0.85)
 			var sum: Dictionary = streams.get_or_add(s.id, {})
 			for key: String in kpis:
 				sum[key] = sum.get(key, 0.0) + kpis[key] * k

@@ -10,7 +10,8 @@
 #                 once a key clue at depth n − 1 is found), key (points at the
 #                 real cause) or not (a red herring: true, but not causal),
 #                 at (a place upstream or downstream; default: step)
-# kpi             what a good prediction names
+# kpi             what a good prediction names (wip_age: the age of open work,
+#                 for problems whose harm hides in orders that have not finished)
 # plausible_causes  wrong but believable causes for the A3's cause bank
 #
 # Quote clue texts: inside {…} an unquoted comma ends the text (the build refuses it).
@@ -410,7 +411,7 @@ problems:
     waste: waiting
     severity: high
     visibility: subtle
-    kpi: lead_time
+    kpi: wip_age            # finished-order lead time hides the orders still waiting
     symptoms:
       - Aansluitingen in volle straten wachten een half jaar of langer op netverzwaring.
       - Het projectteam netverzwaring zegt dat de fabrikant niet op tijd levert.

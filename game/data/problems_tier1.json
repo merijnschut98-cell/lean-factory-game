@@ -1019,7 +1019,7 @@
     }
    ],
    "id": "transformer_wait",
-   "kpi": "lead_time",
+   "kpi": "wip_age",
    "mismatch_note": "De levertijd van de fabrikant kun je niet veranderen. Wanneer je bestelt wel.",
    "name": "Wachten op de trafo",
    "plausible_causes": [

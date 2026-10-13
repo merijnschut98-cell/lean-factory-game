@@ -141,10 +141,16 @@ func test_every_problem_hurts_its_stream() -> void:
 
 
 func test_problems_hurt_their_named_kpi_in_the_simulation() -> void:
-	# Where the effect is strong enough to show over one run (first-time-right
-	# and on-time problems), check the KPI the problem names as well.
+	# Where the effect is strong enough to show over one run (first-time-right,
+	# on-time and the age of open work), check the KPI the problem names as well.
 	var base := _base_after_days()
 	for p in Catalog.load_from().problems:
+		if p.kpi == "wip_age":
+			var older := _hurt_after_days(p)
+			var age_before := base.open_age_days(base.stream(p.stream_id()), 0.85)
+			var age_after := older.open_age_days(older.stream(p.stream_id()), 0.85)
+			assert_true(age_after > age_before * 1.05, "%s: open work p85 %.0f → %.0f days" % [p.id, age_before, age_after])
+			continue
 		if not p.kpi in ["first_time_right", "on_time"]:
 			continue
 		var hurt := _hurt_after_days(p)
