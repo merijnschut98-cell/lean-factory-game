@@ -296,6 +296,33 @@
    "tier": 1
   },
   {
+   "briefing": "Intake en Werkvoorbereiding halen allebei hun weekdoel, en toch komen de aansluitingen niet sneller klaar. De teamleiders wijzen naar elkaar. Kijk wat hun cijfers van hen vragen.",
+   "debrief": "De teams sturen nu op de aansluiting als geheel, niet op hun eigen aantallen. Wat je meet, bepaalt wat mensen doen.",
+   "goal": {
+    "problem": "silo_kpis",
+    "type": "solve"
+   },
+   "id": "fix_silo_kpis",
+   "insights": {
+    "experiment": "Welk getal zou beide teams naar hetzelfde doel laten kijken?",
+    "go_see": "Vraag eens aan twee teams waar ze op worden beoordeeld. Passen die doelen bij elkaar?",
+    "reflect": "Wat gebeurt er als je een team op één getal afrekent: wat verbetert, en wat gaat er stilletjes mis?",
+    "understand": "Wat doe jij als je op aantallen wordt afgerekend en het werk is bijna niet te halen?"
+   },
+   "kind": "main",
+   "name": "KPI's die elkaar bevechten",
+   "requires": {
+    "missions": [
+     "fix_unused_capacity"
+    ]
+   },
+   "rewards": {
+    "budget": 12000,
+    "xp": 1500
+   },
+   "tier": 1
+  },
+  {
    "briefing": "Loop een dag mee met de storingsdienst, van melding tot herstel.",
    "debrief": "Nu weet je wat er gebeurt als het licht uitgaat.",
    "goal": {

@@ -37,8 +37,8 @@ kpis:
     name: Aanvragen per week
     pool: intake
     kind: lagging
-    rules: {start: push, order: shortest}
-    note: "Gangbare productiviteits-KPI. Regels (duwen, korte aanvragen eerst) zijn een schatting: wie op aantallen stuurt, pakt het makkelijke werk."
+    rules: {start: push, order: shortest, care: hasty}
+    note: "Gangbare productiviteits-KPI. Wie op aantallen stuurt, pakt het makkelijke werk en haast zich: een aanvraag die snel de deur uit moet, komt later fout terug (de wet van Goodhart). Regels en haast zijn een schatting, zie care."
   - id: intake_lead_time
     name: Doorlooptijd end-to-end
     pool: intake
@@ -69,8 +69,8 @@ kpis:
     name: Ontwerpen per week
     pool: work_prep
     kind: lagging
-    rules: {start: push, order: shortest}
-    note: "Gangbare productiviteits-KPI. Regels (duwen, korte ontwerpen eerst) zijn een schatting."
+    rules: {start: push, order: shortest, care: hasty}
+    note: "Gangbare productiviteits-KPI. Wie op aantallen stuurt, pakt de korte ontwerpen en haast zich: wat snel af moet, komt later fout terug (de wet van Goodhart). Regels en haast zijn een schatting, zie care."
   - id: work_prep_lead_time
     name: Doorlooptijd end-to-end
     pool: work_prep

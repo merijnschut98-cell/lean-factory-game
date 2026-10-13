@@ -447,3 +447,46 @@ countermeasures:
     multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
     effects:
       - {target: connections.planning, property: touch_time, value: 0.9}
+
+  # ── Afdelingsdoelen ───────────────────────────────────────────────────────
+  - id: obeya_end_to_end
+    name: Obeya aansluitingen van begin tot eind
+    tier: 1
+    category: visual_management
+    description: Intake, Werkvoorbereiding, Planning en Uitvoering hangen één bord op met de aansluitingen van begin tot eind. De teams worden samen beoordeeld op doorlooptijd en op de oudste aanvraag in plaats van op hun eigen aantallen, en starten nieuw werk pas als het volgende team er ruimte voor heeft.
+    budget: 4000
+    team_hours: {intake: 10, work_prep: 10, planners: 5}
+    decay_days: 45
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    unlocks: kpi_board
+    effects:
+      - {target: intake, property: kpis, value: [intake_lead_time, intake_oldest]}
+      - {target: work_prep, property: kpis, value: [work_prep_lead_time, work_prep_oldest]}
+
+  - id: connections_wip_limit
+    name: Maximum aantal aansluitingen in uitvoering
+    tier: 2
+    category: flow
+    description: Er mogen niet meer aansluitingen tegelijk in behandeling zijn dan het team aankan. Nieuwe aanvragen wachten aan de poort tot er een klaar is, zodat afdelingen niet meer kunnen opstapelen.
+    budget: 1000
+    team_hours: {intake: 5, planners: 5}
+    decay_days: 45
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      # ESTIMATE: about the base backlog. The healthy base holds 230-270
+      # started connections (measured, 3 seeds, 150 days), so the limit only
+      # bites when work piles up.
+      - {target: connections, property: wip_limit, value: 300}
+
+  - id: shared_team_goals
+    name: Gezamenlijke teamdoelen
+    tier: 2
+    category: standard_work
+    description: Intake en Werkvoorbereiding krijgen als doel de doorlooptijd van een aansluiting en een complete overdracht (compleet doorgezet, eerste keer goed bij uitvoering). Aantallen per week blijven zichtbaar, maar sturen niet meer.
+    budget: 2000
+    team_hours: {intake: 10, work_prep: 10}
+    decay_days: 45
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: intake, property: kpis, value: [intake_lead_time, intake_complete]}
+      - {target: work_prep, property: kpis, value: [work_prep_lead_time, work_prep_ftr]}

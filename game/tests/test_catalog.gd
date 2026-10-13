@@ -182,6 +182,7 @@ func test_the_game_knows_the_content_vocabulary() -> void:
 	assert_eq(Missions.STAGES, vocab["coach_stages"])
 	assert_eq(SimPool.START_RULES, vocab["start_rules"])
 	assert_eq(SimPool.ORDER_RULES, vocab["order_rules"])
+	assert_eq(CountermeasureDef.UNLOCKS, vocab["countermeasure_unlocks"])
 	assert_eq(KpiDef.KINDS, vocab["kpi_kinds"])
 	assert_eq(KpiDef.CARE_RULES, vocab["care_rules"])
 	assert_eq(Progression.BELTS.map(func(b: Dictionary) -> int: return b["xp"]),

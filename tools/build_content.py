@@ -288,7 +288,8 @@ VISIBILITIES = ["obvious", "subtle", "hidden"]
 PROBLEM_KEYS = {"id", "tier", "name", "step", "waste", "severity", "visibility", "kpi", "symptoms", "root_cause",
                 "plausible_causes", "mismatch_note", "countermeasures", "teaches", "effects", "clues", "cost_per_week"}
 COUNTERMEASURE_KEYS = {"id", "tier", "name", "category", "description", "budget", "team_hours", "decay_days",
-                       "multipliers", "effects"}
+                       "multipliers", "effects", "unlocks"}
+UNLOCKS = ["kpi_board"]  # CountermeasureDef.UNLOCKS: what a countermeasure opens in the game
 CLUE_KEYS = {"tool", "text", "key", "depth", "at", "note", "teaches"}
 EFFECT_KEYS = {"target", "property", "value"}
 START_RULES = ["push", "pull"]  # SimPool.START_RULES
@@ -362,6 +363,8 @@ def validate_countermeasures(doc: Any, source: str) -> None:
             _number(m, level, f"{where} multipliers", 0, 1)
         if not m["full"] >= m["reduced"] >= m["minimal"]:
             raise ContentError(f"{where}: multipliers must be full >= reduced >= minimal")
+        if "unlocks" in cm:
+            _one_of(cm, "unlocks", UNLOCKS, where)
         _effects_shape(cm, where)
 
 
@@ -683,7 +686,7 @@ def vocabulary() -> dict[str, Any]:
     check the game knows exactly the same ones."""
     return {
         "tools": sorted(TOOLS), "wastes": WASTES, "kpis": KPIS, "severities": SEVERITIES,
-        "visibilities": VISIBILITIES, "check_pass": CHECK_PASS,
+        "visibilities": VISIBILITIES, "check_pass": CHECK_PASS, "countermeasure_unlocks": UNLOCKS,
         "mission_kinds": MISSION_KINDS, "mission_goals": sorted(MISSION_GOALS), "coach_stages": COACH_STAGES,
         "belt_xp": BELT_XP, "start_rules": START_RULES, "order_rules": ORDER_RULES,
         "care_rules": CARE_RULES, "kpi_kinds": KPI_KINDS,

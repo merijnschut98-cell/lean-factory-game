@@ -182,6 +182,21 @@ missions:
       go_see: "Kijk eens naar wat er werkelijk door de stations gaat, niet naar wat er gecontracteerd is."
       understand: "Is het net vol, of zijn de contracten vol?"
 
+  - id: fix_silo_kpis
+    name: KPI's die elkaar bevechten
+    kind: main
+    tier: 1
+    requires: {missions: [fix_unused_capacity]}
+    briefing: "Intake en Werkvoorbereiding halen allebei hun weekdoel, en toch komen de aansluitingen niet sneller klaar. De teamleiders wijzen naar elkaar. Kijk wat hun cijfers van hen vragen."
+    debrief: "De teams sturen nu op de aansluiting als geheel, niet op hun eigen aantallen. Wat je meet, bepaalt wat mensen doen."
+    goal: {type: solve, problem: silo_kpis}
+    rewards: {xp: 1500, budget: 12000}
+    insights:
+      go_see: "Vraag eens aan twee teams waar ze op worden beoordeeld. Passen die doelen bij elkaar?"
+      understand: "Wat doe jij als je op aantallen wordt afgerekend en het werk is bijna niet te halen?"
+      experiment: "Welk getal zou beide teams naar hetzelfde doel laten kijken?"
+      reflect: "Wat gebeurt er als je een team op één getal afrekent: wat verbetert, en wat gaat er stilletjes mis?"
+
   # ── Side missions: small, without the coach ────────────────────────────────
   - id: walk_outages
     name: Mee met de storingsdienst

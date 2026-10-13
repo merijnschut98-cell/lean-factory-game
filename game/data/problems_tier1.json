@@ -1202,6 +1202,102 @@
    "tier": 1,
    "visibility": "subtle",
    "waste": "waiting"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Intake zette vorige maand een record aan aanvragen door en Werkvoorbereiding leverde een record aan ontwerpen af. Toch gaan er niet meer aansluitingen per week uit, en er komt meer terug.",
+     "tool": "data"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "Een ontwerp maken kost de werkvoorbereider ruim drie uur, binnen de norm.",
+     "tool": "time_study"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "Het aandeel ontwerpen dat de monteur zonder aanpassing kan bouwen is in een kwartaal gezakt van 85% naar 80%, en bij Intake van 75% naar 70%.",
+     "tool": "data"
+    },
+    {
+     "at": "connections.intake",
+     "depth": 1,
+     "key": true,
+     "text": "Het weekrapport van Intake telt aanvragen per week en bezettingsgraad. Hoeveel er later terugkomt voor aanvulling, staat er niet in.",
+     "tool": "documents"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "'Mijn doel is dertig ontwerpen per week. De korte pak ik eerst, dan haal ik het. Dat de monteur er later iets aan moet aanpassen, staat niet in mijn cijfers.'",
+     "tool": "conversation"
+    },
+    {
+     "at": "connections.intake",
+     "depth": 2,
+     "key": true,
+     "text": "In het teamoverleg: 'Nog vier aanvragen voor vrijdag, dan halen we het weekdoel. Ontbrekende gegevens vragen we later wel op.'",
+     "tool": "listen_in"
+    },
+    {
+     "at": "connections.execution",
+     "depth": 2,
+     "key": true,
+     "text": "'Intake en Werkvoorbereiding zijn tevreden, hun cijfers zijn goed. Maar niemand kijkt naar mijn terugrit, of naar de klant die wacht tot de aansluiting echt klaar is.'",
+     "tool": "conversation"
+    }
+   ],
+   "countermeasures": {
+    "connections_wip_limit": 0.8,
+    "obeya_end_to_end": 1.0,
+    "shared_team_goals": 0.7
+   },
+   "effects": [
+    {
+     "property": "kpis",
+     "target": "intake",
+     "value": [
+      "intake_output",
+      "intake_utilisation"
+     ]
+    },
+    {
+     "property": "kpis",
+     "target": "work_prep",
+     "value": [
+      "work_prep_output",
+      "work_prep_utilisation"
+     ]
+    }
+   ],
+   "id": "silo_kpis",
+   "kpi": "first_time_right",
+   "mismatch_note": "Meer overleg of rustiger werken verandert niets zolang elk team op eigen aantallen wordt beoordeeld. De mensen doen precies wat hun cijfers vragen.",
+   "name": "KPI's die elkaar bevechten",
+   "plausible_causes": [
+    "De afdelingen willen niet samenwerken.",
+    "De teams werken te snel; ze moeten gewoon rustiger aan doen.",
+    "Er is te weinig overleg tussen de teamleiders."
+   ],
+   "root_cause": "Elke afdeling wordt afgerekend op haar eigen aantallen (aanvragen of ontwerpen per week, bezetting), niet op de aansluiting als geheel. Wat een afdeling sneller doorzet, komt als fout of als stapel bij de volgende terug.",
+   "severity": "medium",
+   "step": "connections.design",
+   "symptoms": [
+    "Intake en Werkvoorbereiding halen allebei hun weekdoel, maar de aansluitingen komen niet sneller klaar.",
+    "Monteurs krijgen ontwerpen die ze ter plekke moeten aanpassen, en aanvragen komen terug voor aanvulling."
+   ],
+   "teaches": [
+    "flow",
+    "overproduction",
+    "kpi_alignment"
+   ],
+   "tier": 1,
+   "visibility": "subtle",
+   "waste": "overproduction"
   }
  ]
 }

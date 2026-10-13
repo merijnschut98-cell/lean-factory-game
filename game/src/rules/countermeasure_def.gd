@@ -4,6 +4,9 @@ extends RefCounted
 ## euros and team hours), what it changes in the simulation once it works,
 ## and how well it works at each maturity gap.
 
+## What a countermeasure can open in the game (mirrored in build_content.py).
+const UNLOCKS: Array[String] = ["kpi_board"]
+
 var id: String
 var name: String
 ## 1–4: the maturity a region needs to sustain it.
@@ -17,6 +20,9 @@ var effects: Array = []
 var multipliers: Dictionary = {}
 ## Days until an unstandardised fix fades (-1: it does not fade).
 var decay_days := -1
+## What it opens in the game once it works: "" or "kpi_board" (the quarterly
+## KPI review of the departments).
+var unlocks := ""
 var error := ""
 
 
@@ -40,4 +46,7 @@ static func from_dict(d: Dictionary) -> CountermeasureDef:
 		c.team_hours[pool] = float(hours[pool])
 	c.effects = d.get("effects", []).duplicate(true)
 	c.decay_days = int(d["decay_days"]) if d.get("decay_days") != null else -1
+	c.unlocks = str(d.get("unlocks", ""))
+	if not c.unlocks.is_empty() and not UNLOCKS.has(c.unlocks):
+		c.error = "countermeasure %s: 'unlocks' must be one of %s" % [c.id, UNLOCKS]
 	return c

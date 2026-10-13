@@ -842,6 +842,105 @@
     "planners": 40
    },
    "tier": 3
+  },
+  {
+   "budget": 4000,
+   "category": "visual_management",
+   "decay_days": 45,
+   "description": "Intake, Werkvoorbereiding, Planning en Uitvoering hangen één bord op met de aansluitingen van begin tot eind. De teams worden samen beoordeeld op doorlooptijd en op de oudste aanvraag in plaats van op hun eigen aantallen, en starten nieuw werk pas als het volgende team er ruimte voor heeft.",
+   "effects": [
+    {
+     "property": "kpis",
+     "target": "intake",
+     "value": [
+      "intake_lead_time",
+      "intake_oldest"
+     ]
+    },
+    {
+     "property": "kpis",
+     "target": "work_prep",
+     "value": [
+      "work_prep_lead_time",
+      "work_prep_oldest"
+     ]
+    }
+   ],
+   "id": "obeya_end_to_end",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Obeya aansluitingen van begin tot eind",
+   "team_hours": {
+    "intake": 10,
+    "planners": 5,
+    "work_prep": 10
+   },
+   "tier": 1,
+   "unlocks": "kpi_board"
+  },
+  {
+   "budget": 1000,
+   "category": "flow",
+   "decay_days": 45,
+   "description": "Er mogen niet meer aansluitingen tegelijk in behandeling zijn dan het team aankan. Nieuwe aanvragen wachten aan de poort tot er een klaar is, zodat afdelingen niet meer kunnen opstapelen.",
+   "effects": [
+    {
+     "property": "wip_limit",
+     "target": "connections",
+     "value": 300
+    }
+   ],
+   "id": "connections_wip_limit",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Maximum aantal aansluitingen in uitvoering",
+   "team_hours": {
+    "intake": 5,
+    "planners": 5
+   },
+   "tier": 2
+  },
+  {
+   "budget": 2000,
+   "category": "standard_work",
+   "decay_days": 45,
+   "description": "Intake en Werkvoorbereiding krijgen als doel de doorlooptijd van een aansluiting en een complete overdracht (compleet doorgezet, eerste keer goed bij uitvoering). Aantallen per week blijven zichtbaar, maar sturen niet meer.",
+   "effects": [
+    {
+     "property": "kpis",
+     "target": "intake",
+     "value": [
+      "intake_lead_time",
+      "intake_complete"
+     ]
+    },
+    {
+     "property": "kpis",
+     "target": "work_prep",
+     "value": [
+      "work_prep_lead_time",
+      "work_prep_ftr"
+     ]
+    }
+   ],
+   "id": "shared_team_goals",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Gezamenlijke teamdoelen",
+   "team_hours": {
+    "intake": 10,
+    "work_prep": 10
+   },
+   "tier": 2
   }
  ]
 }

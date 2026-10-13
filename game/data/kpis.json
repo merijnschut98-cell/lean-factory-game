@@ -14,9 +14,10 @@
    "id": "intake_output",
    "kind": "lagging",
    "name": "Aanvragen per week",
-   "note": "Gangbare productiviteits-KPI. Regels (duwen, korte aanvragen eerst) zijn een schatting: wie op aantallen stuurt, pakt het makkelijke werk.",
+   "note": "Gangbare productiviteits-KPI. Wie op aantallen stuurt, pakt het makkelijke werk en haast zich: een aanvraag die snel de deur uit moet, komt later fout terug (de wet van Goodhart). Regels en haast zijn een schatting, zie care.",
    "pool": "intake",
    "rules": {
+    "care": "hasty",
     "order": "shortest",
     "start": "push"
    }
@@ -65,9 +66,10 @@
    "id": "work_prep_output",
    "kind": "lagging",
    "name": "Ontwerpen per week",
-   "note": "Gangbare productiviteits-KPI. Regels (duwen, korte ontwerpen eerst) zijn een schatting.",
+   "note": "Gangbare productiviteits-KPI. Wie op aantallen stuurt, pakt de korte ontwerpen en haast zich: wat snel af moet, komt later fout terug (de wet van Goodhart). Regels en haast zijn een schatting, zie care.",
    "pool": "work_prep",
    "rules": {
+    "care": "hasty",
     "order": "shortest",
     "start": "push"
    }

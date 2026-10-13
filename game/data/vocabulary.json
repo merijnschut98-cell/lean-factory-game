@@ -18,6 +18,9 @@
   "experiment",
   "reflect"
  ],
+ "countermeasure_unlocks": [
+  "kpi_board"
+ ],
  "effect_properties": {
   "applies": {
    "kind": "step",

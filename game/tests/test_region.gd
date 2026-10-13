@@ -279,3 +279,28 @@ func test_the_snapshot_measures_the_age_of_open_work() -> void:
 	assert_near(s["wip_age"], r.net.open_age_days(r.net.stream("connections")), 1e-9)
 	assert_true(s["wip_age"] > 0.0)
 	assert_true("wip_age" in Investigation.KPIS, "a prediction can name it")
+
+
+## The real catalogue: the countermeasure's work rules replace the ones the
+## problem set (a set lever takes the value of the latest source), already
+## while the experiment runs.
+func test_the_countermeasure_rules_override_the_problem() -> void:
+	var c := Catalog.load_from()
+	var r := Region.new(Network.load_file(Network.DEFAULT_PATH, 11), c.problems, c.countermeasures, Profile.new())
+	assert_true(r.activate("silo_kpis"))
+	var intake := r.net.pools["intake"]
+	assert_eq([intake.start_rule, intake.order_rule], ["push", "shortest"], "the siloed KPIs steer by volume")
+	var keys := r.problems["silo_kpis"].clues.filter(func(k: Clue) -> bool: return k.key)
+	keys.sort_custom(func(a: Clue, b: Clue) -> bool: return a.depth < b.depth)
+	r.use_tool("connections.design", "data")  # a deep look spots it
+	for k: Clue in keys:
+		if k.tool == "conversation":
+			r.ask(k.at, "walk")
+		else:
+			r.use_tool(k.at, k.tool)
+	var a3 := RulesFixture.a3(r, "silo_kpis", "overproduction", "obeya_end_to_end",
+		keys.map(func(k: Clue) -> String: return k.id), "first_time_right")
+	assert_eq(r.submit_a3("silo_kpis", a3), "")
+	assert_eq(r.state["silo_kpis"].phase, ProblemState.Phase.DOING)
+	assert_eq([intake.start_rule, intake.order_rule], ["pull", "oldest"], "the countermeasure's KPIs win")
+	assert_eq(r.net.pools["work_prep"].start_rule, "pull")

@@ -500,3 +500,38 @@ problems:
       - {tool: shadow, key: true, depth: 1, at: connections.execution, text: "Om tien uur komt een storing binnen. De monteur rijdt weg en zijn klussen van die middag vervallen; de planner belt de klanten af."}
       - {tool: documents, key: true, depth: 1, text: "De weekplanning vult elke monteur voor 100%. Ruimte voor storingen staat er niet in, terwijl die altijd voorgaan."}
       - {tool: conversation, key: true, depth: 2, at: outages.locate, text: "'Er zijn elke dag storingen, dat weet iedereen. Maar in de planning bestaan ze niet.'"}
+
+  - id: silo_kpis
+    tier: 1
+    name: KPI's die elkaar bevechten
+    step: connections.design
+    waste: overproduction
+    severity: medium
+    visibility: subtle
+    kpi: first_time_right   # the harm shows in the share of work that is right the first time
+    symptoms:
+      - Intake en Werkvoorbereiding halen allebei hun weekdoel, maar de aansluitingen komen niet sneller klaar.
+      - Monteurs krijgen ontwerpen die ze ter plekke moeten aanpassen, en aanvragen komen terug voor aanvulling.
+    root_cause: Elke afdeling wordt afgerekend op haar eigen aantallen (aanvragen of ontwerpen per week, bezetting), niet op de aansluiting als geheel. Wat een afdeling sneller doorzet, komt als fout of als stapel bij de volgende terug.
+    plausible_causes:
+      - De afdelingen willen niet samenwerken.
+      - De teams werken te snel; ze moeten gewoon rustiger aan doen.
+      - Er is te weinig overleg tussen de teamleiders.
+    mismatch_note: Meer overleg of rustiger werken verandert niets zolang elk team op eigen aantallen wordt beoordeeld. De mensen doen precies wat hun cijfers vragen.
+    countermeasures: {obeya_end_to_end: 1.0, connections_wip_limit: 0.8, shared_team_goals: 0.7}
+    teaches: [flow, overproduction, kpi_alignment]
+    effects:
+      # Two departments steered by volume and utilisation (KPI menus in
+      # content/kpis.yaml): they push work in, take the short jobs first and
+      # hurry (hasty care). Rushing to hit a weekly number causes errors
+      # downstream (Goodhart's law); the care values are estimates.
+      - {target: intake, property: kpis, value: [intake_output, intake_utilisation]}
+      - {target: work_prep, property: kpis, value: [work_prep_output, work_prep_utilisation]}
+    clues:
+      - {tool: data, key: true, depth: 0, text: "Intake zette vorige maand een record aan aanvragen door en Werkvoorbereiding leverde een record aan ontwerpen af. Toch gaan er niet meer aansluitingen per week uit, en er komt meer terug."}
+      - {tool: time_study, key: false, depth: 0, text: "Een ontwerp maken kost de werkvoorbereider ruim drie uur, binnen de norm."}
+      - {tool: data, key: true, depth: 1, text: "Het aandeel ontwerpen dat de monteur zonder aanpassing kan bouwen is in een kwartaal gezakt van 85% naar 80%, en bij Intake van 75% naar 70%."}
+      - {tool: documents, key: true, depth: 1, at: connections.intake, text: "Het weekrapport van Intake telt aanvragen per week en bezettingsgraad. Hoeveel er later terugkomt voor aanvulling, staat er niet in."}
+      - {tool: conversation, key: true, depth: 1, text: "'Mijn doel is dertig ontwerpen per week. De korte pak ik eerst, dan haal ik het. Dat de monteur er later iets aan moet aanpassen, staat niet in mijn cijfers.'"}
+      - {tool: listen_in, key: true, depth: 2, at: connections.intake, text: "In het teamoverleg: 'Nog vier aanvragen voor vrijdag, dan halen we het weekdoel. Ontbrekende gegevens vragen we later wel op.'"}
+      - {tool: conversation, key: true, depth: 2, at: connections.execution, text: "'Intake en Werkvoorbereiding zijn tevreden, hun cijfers zijn goed. Maar niemand kijkt naar mijn terugrit, of naar de klant die wacht tot de aansluiting echt klaar is.'"}
