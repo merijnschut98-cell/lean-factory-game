@@ -1,6 +1,6 @@
 # Design: Department KPIs and work rules ("KPI's die elkaar bevechten")
 
-> Status: approved by Merijn in brainstorming sections 1–3 (2026-10-13); spec awaiting his review.
+> Status: approved by Merijn in brainstorming sections 1–3 (2026-10-13); spec approved, built in tasks 1–6 (see PLAN.md).
 
 ## Context
 - **The last catalogue problem,** *KPI's die elkaar bevechten*: each department is judged on its own output instead of end-to-end lead time, which leads to overproduction.
