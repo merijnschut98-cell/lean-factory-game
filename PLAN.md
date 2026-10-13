@@ -12,7 +12,7 @@ Pivot agreed 2026-10-12: from a hoverboard factory to a grid operator. The 3D fa
 
 This is a multi-month project, built the right way: research → design (reviewed by Merijn) → engine → content → world → UI, in small tested increments. No publishing deadline. Built in **Godot 4 + GDScript** from the start (decided 2026-10-12).
 
-**Next task:** Phase B — the final review of the department-KPI branch, then `content/concepts.yaml`. All review questions are answered and built in (review doc: https://claude.ai/code/artifact/120bfc8c-75b6-4a56-86d9-2c5c3148112a).
+**Next task:** the counterfactual KPI reward, then Phase C's first piece: the 3D connections office with one playable mission. `content/concepts.yaml` comes after. All review questions are answered and built in (review doc: https://claude.ai/code/artifact/120bfc8c-75b6-4a56-86d9-2c5c3148112a).
 
 ---
 
@@ -300,6 +300,12 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 
 ## Decisions Made
 
+- **Prototype and KPI reward (Merijn, 2026-10-13, multiple choice).**
+  - **The 3D world comes first** for the prototype (est. 1.5–2 months to first play). The first piece is **one building with one mission**: the connections office (Intake, Werkvoorbereiding), walkable, with its gemba tools and one mission playable end to end.
+  - **3D style: semi-realistic.** Models are built by script in Blender (`bpy` from PyPI) and exported to Godot as glTF. CC0 textures (Poly Haven, ambientCG) are used once the environment allows their domains.
+  - **KPI board reward: counterfactual, paid at the review.** From the same moment, the coming quarter is simulated twice with common random numbers, once with the old KPIs and once with the new ones, and the review pays the difference. The coach words it as a forecast.
+  - **Autonomy: design, then build.** Claude writes the designs and builds; calls Merijn hasn't made are listed under "Claude's calls, pending Merijn".
+
 - **Problems only through missions; occasional forks (Merijn, 2026-10-13).** Never more than one main and three side problems at a time, and no free menu of problems. Sometimes the main quest forks into a bottleneck and a non-bottleneck problem, so the player has to prioritise. Recorded in CLAUDE.md §2.
 - **Review answers, round 2 (Merijn, 2026-10-13, multiple choice).**
   - **Kept as built:** the close-out spiral (mild); Henk; the bad period (−3 points); trafo ×1.75; 3 in 10 tap changes that don't hold; 62% use of contracted capacity; use-it-or-lose-it at tier 2; 9 in 20 incomplete applications; the wrong joint ×1.5; three signatures; design +30%; a two-day re-plan for pulled monteurs; 4 in 10 grid studies; 3 in 10 silent meters; 1 in 10 failed registrations in the base; a measuring week, with 4 in 10 ending in a tap change. The earlier "kept as they are" values were also confirmed.
@@ -333,7 +339,7 @@ Rulings I made while building the KPI board without you; each is easy to reverse
 - **KPI's die elkaar bevechten names first-time-right** as its KPI instead of the age of open work: the harm shows as rework (FTR 42% → 35%), not as waiting, because design is not the bottleneck.
 - **The first review only sets the baseline** (no reward): the Check already paid for the Obeya fix that unlocks the board.
 - **The reward only pays for real, lasting gains**: each measure is compared with the best level reached so far, only on streams the departments touch, and only the part above a 5% dead band pays; each KPI's change is capped at ±50% and a stream needs 10+ completions in both quarters (all estimates). The final review measured that without this the board paid for noise and for recovering from a bad quarter.
-- **Open question for you:** in the simulation a department's KPI choice moves the end-to-end numbers less than quarter-to-quarter noise, so with the guard above the board almost never pays (measured: 1 payout of 0.002 in 24 quarterly reviews with nothing changed; each measure's best level is set by a lucky quarter). Options: (a) keep it: the lesson is that targets matter less than fixing the process; (b) a counterfactual reward: at the review, simulate the quarter with the old and the new KPIs and pay the difference; (c) stronger KPI effects (care, pull) so the choice shows in the numbers. The board also cannot tell a KPI gain from another mission's fix in the same quarter.
+- ~~**Open question for you:**~~ → answered 2026-10-13: (b), the counterfactual reward, paid at the review (it replaces the best-level guard above). The question was: in the simulation a department's KPI choice moves the end-to-end numbers less than quarter-to-quarter noise, so with the guard above the board almost never pays (measured: 1 payout of 0.002 in 24 quarterly reviews with nothing changed; each measure's best level is set by a lucky quarter). Options: (a) keep it: the lesson is that targets matter less than fixing the process; (b) a counterfactual reward: at the review, simulate the quarter with the old and the new KPIs and pay the difference; (c) stronger KPI effects (care, pull) so the choice shows in the numbers. The board also cannot tell a KPI gain from another mission's fix in the same quarter.
 - **Precedence:** an open problem's rules beat the board; the board beats a solved problem's countermeasure (reordered with `Network.move_effects_last`, so a running WIP limit is never released); a running experiment still overrides the board.
 
 - **Many healthier processes, not one (2026-10-12).** Problems list several countermeasures with a fit (0–1); each countermeasure brings its own effects and levers, so different players end up with different, all improved, processes. Content values are a reasonable base; the starting problems are active effects on top.
