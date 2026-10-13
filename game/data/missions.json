@@ -482,6 +482,27 @@
     "xp": 600
    },
    "tier": 1
+  },
+  {
+   "briefing": "Klanten klagen dat monteurs op het laatste moment afzeggen. De planners zeggen dat ze harder werken dan ooit.",
+   "debrief": "Storingen komen elke dag. Nu staan ze ook in de planning.",
+   "goal": {
+    "problem": "planning_reshuffle",
+    "type": "solve"
+   },
+   "id": "fix_planning_reshuffle",
+   "kind": "side",
+   "name": "De planning die nooit klopt",
+   "requires": {
+    "missions": [
+     "walk_outages"
+    ]
+   },
+   "rewards": {
+    "budget": 5000,
+    "xp": 500
+   },
+   "tier": 1
   }
  ]
 }

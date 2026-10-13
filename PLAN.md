@@ -12,7 +12,7 @@ Pivot agreed 2026-10-12: from a hoverboard factory to a grid operator. The 3D fa
 
 This is a multi-month project, built the right way: research → design (reviewed by Merijn) → engine → content → world → UI, in small tested increments. No publishing deadline. Built in **Godot 4 + GDScript** from the start (decided 2026-10-12).
 
-**Next task:** Phase B — the mechanisms for the last two catalogue problems (storing gooit de planning om; KPI's die elkaar bevechten), then `content/concepts.yaml`. Merijn's review answers are built in; one question is still open in the review doc (https://claude.ai/code/artifact/120bfc8c-75b6-4a56-86d9-2c5c3148112a): is the close-out spiral too strong?
+**Next task:** Phase B — the review doc for problems 14–17, then the last catalogue problem (KPI's die elkaar bevechten), then `content/concepts.yaml`. Merijn's review answers are built in; one question is still open in the review doc (https://claude.ai/code/artifact/120bfc8c-75b6-4a56-86d9-2c5c3148112a): is the close-out spiral too strong?
 
 ---
 
@@ -187,7 +187,6 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 - ✅ Merijn answered the review's main questions (see Decisions Made); the review doc shows the recalibrated numbers (report over 5 seeds × 180 days, measured over the last 84) and the answers built in
 - ✅ Review doc questions answered (2026-10-13, see Decisions Made)
 - ⬜ Catalogue problems that need a new mechanism first:
-  - storing gooit de planning om: planned monteur work at 100%; needs the base to keep slack that the problem removes, or a planning-horizon mechanic;
   - KPI's die elkaar bevechten: overproduction, departments pushing work in; needs a release decision per department
 - ✅ Mission system (Merijn's design, CLAUDE.md §2): `MissionDef` + `Missions`.
   - At most one main and three side missions; unlocks by mission and belt.
@@ -213,8 +212,9 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
   - Wachten op de trafo (#15): transformers ordered only after the reinforcement design is approved, so the reinforcement wait goes from four to seven months (an estimate) and the congestion queue slows. Countermeasures: order at the grid study (tier 1), a framework contract (tier 2), strategic stock (tier 3). Main mission after De netstudie-wachtrij.
   - Gereserveerd maar ongebruikt (#14): contracted capacity is never compared with use, so the congestion queue moves slower and more requests must wait. Countermeasures: a usage dashboard (tier 1), use-it-or-lose-it conversations (tier 2, the ACM allows it), flexible contracts (tier 3). Main mission after Wachten op de trafo.
   - The validator now requires a mission for every problem, so the campaign reaches the whole catalogue.
-- 🔧 `content/problems_tier1.yaml`: 16 of the 18 catalogue problems done; "storing gooit de planning om" and "KPI's die elkaar bevechten" need a mechanism first (above)
-- 🔧 `content/countermeasures.yaml`: 35 countermeasures; grows with each problem
+- ✅ Storing gooit de planning om (2026-10-13, Merijn chose to approximate it): every monteur planned at 100%, so outages move appointments that do not hold (connections execution ftr −0.25, meter visits −0.1, re-planning doubles the planners' work; estimates). Countermeasures: a daytime outage crew (the existing `reserve` lever, tier 1), planning with fault windows (tier 2), heijunka (tier 3). Side mission after the outage walk. A real day-planning mechanic (an outage cancels the rest of a monteur's day) is left for later.
+- 🔧 `content/problems_tier1.yaml`: 17 of the 18 catalogue problems done; "KPI's die elkaar bevechten" needs a mechanism first (a release decision per department)
+- 🔧 `content/countermeasures.yaml`: 38 countermeasures; grows with each problem
 - ✅ `content/missions.yaml`: the tier-1 campaign, with Henk's retirement as a 56-day deadline mission (De laatste kennisdrager)
 - ✅ Henk is a real event (Merijn, 2026-10-12): a side mission that opens after De verkeerde mof in de bus; Henk retires 56 days later, taken on or not. Missing it closes the buddy system (`fail_closes`) for good; work instructions with video still solve the problem. Deadlines count from when a mission opens; the validator requires another way to solve the problem.
 - ⬜ `content/concepts.yaml` (Lean + sector glossary, Dutch)

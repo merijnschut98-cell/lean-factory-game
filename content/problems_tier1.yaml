@@ -469,3 +469,34 @@ problems:
       - {tool: listen_in, key: true, depth: 1, at: congestion.intake, text: "Een ondernemer aan de telefoon: 'Mijn buurman heeft twee megawatt gecontracteerd en zijn hal staat leeg.'"}
       - {tool: documents, key: true, depth: 1, at: congestion.congestion_study, text: "Het congestieonderzoek rekent met het gecontracteerde vermogen van iedereen, niet met wat er werkelijk loopt."}
       - {tool: documents, key: true, depth: 2, at: congestion.offer, text: "In de contracten staat niets over ongebruikte capaciteit, en niemand heeft de taak om contract en meting naast elkaar te leggen."}
+
+  - id: planning_reshuffle
+    tier: 1
+    name: Storing gooit de planning om
+    step: connections.planning
+    waste: waiting
+    severity: medium
+    visibility: subtle
+    kpi: first_time_right
+    symptoms:
+      - Klanten krijgen op de dag zelf te horen dat de monteur niet komt.
+      - De planners zijn de halve week bezig met omplannen.
+    root_cause: Elke monteur wordt voor 100% ingepland, zonder ruimte voor storingen. Elke storing trekt een monteur weg en zet de rest van zijn dag om, en daarmee die van de klanten.
+    plausible_causes:
+      - Klanten zijn niet flexibel genoeg.
+      - Er zijn te weinig planners.
+    mismatch_note: Sneller omplannen bestrijdt het symptoom. Storingen komen elke dag; de planning houdt er geen rekening mee.
+    countermeasures: {daytime_outage_crew: 1.0, planning_with_fault_windows: 0.85, heijunka_release: 0.7}
+    teaches: [heijunka, capacity_planning]
+    effects:
+      # Estimates: about ten daytime outages a week each cancel the rest of a
+      # monteur's day; the moved appointments often do not hold.
+      - {target: connections.execution, property: ftr, value: -0.25}  # a quarter of the planned jobs need a new appointment
+      - {target: meters.visit, property: ftr, value: -0.1}
+      - {target: connections.planning, property: touch_time, value: 2.0}  # re-planning the week
+    clues:
+      - {tool: data, key: true, depth: 0, text: "Een op de drie geplande klussen van vorige week is verschoven, de meeste op de dag zelf."}
+      - {tool: conversation, key: false, depth: 0, text: "'Klanten zijn gewoon niet flexibel. Als we een nieuwe afspraak voorstellen, kan het nooit.'"}
+      - {tool: shadow, key: true, depth: 1, at: connections.execution, text: "Om tien uur komt een storing binnen. De monteur rijdt weg en zijn klussen van die middag vervallen; de planner belt de klanten af."}
+      - {tool: documents, key: true, depth: 1, text: "De weekplanning vult elke monteur voor 100%. Ruimte voor storingen staat er niet in, terwijl die altijd voorgaan."}
+      - {tool: conversation, key: true, depth: 2, at: outages.locate, text: "'Er zijn elke dag storingen, dat weet iedereen. Maar in de planning bestaan ze niet.'"}

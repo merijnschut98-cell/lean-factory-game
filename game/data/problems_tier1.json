@@ -1122,6 +1122,86 @@
    "tier": 1,
    "visibility": "hidden",
    "waste": "inventory"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Een op de drie geplande klussen van vorige week is verschoven, de meeste op de dag zelf.",
+     "tool": "data"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "'Klanten zijn gewoon niet flexibel. Als we een nieuwe afspraak voorstellen, kan het nooit.'",
+     "tool": "conversation"
+    },
+    {
+     "at": "connections.execution",
+     "depth": 1,
+     "key": true,
+     "text": "Om tien uur komt een storing binnen. De monteur rijdt weg en zijn klussen van die middag vervallen; de planner belt de klanten af.",
+     "tool": "shadow"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "De weekplanning vult elke monteur voor 100%. Ruimte voor storingen staat er niet in, terwijl die altijd voorgaan.",
+     "tool": "documents"
+    },
+    {
+     "at": "outages.locate",
+     "depth": 2,
+     "key": true,
+     "text": "'Er zijn elke dag storingen, dat weet iedereen. Maar in de planning bestaan ze niet.'",
+     "tool": "conversation"
+    }
+   ],
+   "countermeasures": {
+    "daytime_outage_crew": 1.0,
+    "heijunka_release": 0.7,
+    "planning_with_fault_windows": 0.85
+   },
+   "effects": [
+    {
+     "property": "ftr",
+     "target": "connections.execution",
+     "value": -0.25
+    },
+    {
+     "property": "ftr",
+     "target": "meters.visit",
+     "value": -0.1
+    },
+    {
+     "property": "touch_time",
+     "target": "connections.planning",
+     "value": 2.0
+    }
+   ],
+   "id": "planning_reshuffle",
+   "kpi": "first_time_right",
+   "mismatch_note": "Sneller omplannen bestrijdt het symptoom. Storingen komen elke dag; de planning houdt er geen rekening mee.",
+   "name": "Storing gooit de planning om",
+   "plausible_causes": [
+    "Klanten zijn niet flexibel genoeg.",
+    "Er zijn te weinig planners."
+   ],
+   "root_cause": "Elke monteur wordt voor 100% ingepland, zonder ruimte voor storingen. Elke storing trekt een monteur weg en zet de rest van zijn dag om, en daarmee die van de klanten.",
+   "severity": "medium",
+   "step": "connections.planning",
+   "symptoms": [
+    "Klanten krijgen op de dag zelf te horen dat de monteur niet komt.",
+    "De planners zijn de halve week bezig met omplannen."
+   ],
+   "teaches": [
+    "heijunka",
+    "capacity_planning"
+   ],
+   "tier": 1,
+   "visibility": "subtle",
+   "waste": "waiting"
   }
  ]
 }

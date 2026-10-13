@@ -272,3 +272,13 @@ missions:
     deadline_days: 56
     fail_closes: [skills_matrix_buddy]
     rewards: {xp: 600, budget: 6000}
+
+  - id: fix_planning_reshuffle
+    name: De planning die nooit klopt
+    kind: side
+    tier: 1
+    requires: {missions: [walk_outages]}
+    briefing: "Klanten klagen dat monteurs op het laatste moment afzeggen. De planners zeggen dat ze harder werken dan ooit."
+    debrief: "Storingen komen elke dag. Nu staan ze ook in de planning."
+    goal: {type: solve, problem: planning_reshuffle}
+    rewards: {xp: 500, budget: 5000}

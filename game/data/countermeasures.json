@@ -774,6 +774,74 @@
     "key_accounts": 40
    },
    "tier": 3
+  },
+  {
+   "budget": 2000,
+   "category": "flow",
+   "decay_days": 45,
+   "description": "Elke dag staan twee monteurs ingeroosterd voor storingen. Is er geen storing, dan doen ze klein onderhoud dat kan wachten. De rest van de planning blijft staan.",
+   "effects": [
+    {
+     "property": "reserve",
+     "target": "monteurs",
+     "value": {
+      "people": 2,
+      "stream": "outages"
+     }
+    }
+   ],
+   "id": "daytime_outage_crew",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Vaste storingsploeg overdag",
+   "team_hours": {
+    "monteurs": 10,
+    "planners": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 3000,
+   "category": "standard_work",
+   "description": "De planners vullen een monteur voor ongeveer 85%. Het vrije venster vangt storingen op, zodat een storing de dag niet meer omgooit.",
+   "effects": [],
+   "id": "planning_with_fault_windows",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Planning met dagvensters voor storingen",
+   "team_hours": {
+    "planners": 30
+   },
+   "tier": 2
+  },
+  {
+   "budget": 6000,
+   "category": "flow",
+   "description": "Gepland werk wordt gelijkmatig over de week vrijgegeven, met een vaste mix van aansluitingen en meterwissels per dag. Pieken en gaten verdwijnen, en er blijft ruimte voor het onverwachte.",
+   "effects": [
+    {
+     "property": "touch_time",
+     "target": "connections.planning",
+     "value": 0.9
+    }
+   ],
+   "id": "heijunka_release",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Heijunka-planning",
+   "team_hours": {
+    "planners": 40
+   },
+   "tier": 3
   }
  ]
 }
