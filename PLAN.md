@@ -284,6 +284,8 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 
 ## Phase E — First playable and playtest ⬜
 - ⬜ First playable vertical slice (one value stream end to end), shared privately with Merijn once it is worth playing
+  - ✅ Office slice, task 2 (2026-10-13): `GameSession` (`game/src/game/session.gd`), the one facade for the 3D world and UI, tested end to end on `fix_custom_design`. Day 0 of play is Monday 2026-10-12 (a doc-comment choice, not yet confirmed by Merijn).
+  - ⬜ Office slice, task 3: the office scene, player and UI on top of `GameSession` (plan: `docs/superpowers/plans/2026-10-13-office-vertical-slice.md`)
 - ⬜ Playtest round with Merijn → tuning backlog
 
 ## Phase F — Depth and regions ⬜
