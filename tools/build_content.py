@@ -191,10 +191,11 @@ def _validate_step(step: dict, where: str, pools: set[str], stock: set[str], ste
             if key in step:
                 _number(step, key, where, 0)
         if "stale_after_days" in step or "stale_to" in step:
-            # A dossier that waited too long goes back to an earlier step.
+            # A dossier that waited too long goes back to this step (the first
+            # step of a stream: the customer checks the application again) or an earlier one.
             _number(step, "stale_after_days", where, 1)
-            if not _earlier(step_ids, step.get("stale_to"), step["id"]):
-                raise ContentError(f"{where}: 'stale_to' must name an earlier step (got {step.get('stale_to')!r})")
+            if not _earlier(step_ids, step.get("stale_to"), step["id"], or_same=True):
+                raise ContentError(f"{where}: 'stale_to' must name this step or an earlier one (got {step.get('stale_to')!r})")
     elif kind == "wait":
         _number(step, "days", where, 0)
         _number(step, "spread", where, 0, 0.95, default=0)

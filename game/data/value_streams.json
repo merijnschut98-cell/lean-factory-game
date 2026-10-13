@@ -207,6 +207,9 @@
      "name": "Aanvraag & intake",
      "pool": "intake",
      "rework_wait_days": 5,
+     "stale_after_days": 30,
+     "stale_to": "intake",
+     "stale_wait_days": 5,
      "touch_hours": 1.0
     },
     {

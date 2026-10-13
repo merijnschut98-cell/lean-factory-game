@@ -146,6 +146,16 @@ streams:
         touch_hours: 1.0
         ftr: 0.75
         rework_wait_days: 5   # asking the customer for missing details
+        # ESTIMATE: an application that sat unopened for over a month needs the
+        # customer's check again (address, connection size and plans change).
+        # The simulation otherwise lets waiting cost nothing here, so pull or
+        # oldest-first could never show a gain at the front door. 30 days and
+        # a 5-day customer wait mirror the 5-day rework wait above; no source.
+        # Measured (probe, 3 seeds x 180 days): intake queues ~1 day, so at the
+        # base load this never fires; it bites only when intake backs up.
+        stale_after_days: 30
+        stale_to: intake
+        stale_wait_days: 5
       - id: grid_study
         name: Netstudie
         kind: work

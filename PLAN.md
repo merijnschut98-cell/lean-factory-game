@@ -190,6 +190,25 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 - ✅ First fork in the main quest (2026-10-13): after De stapel bij Werkvoorbereiding, Het knelpunt verschuift (intake: the bottleneck) and Meterkast niet gereed (monteurs: not the bottleneck, now a main mission with coach insights) open together
 - ⬜ Catalogue problems that need a new mechanism first:
   - KPI's die elkaar bevechten: overproduction, departments pushing work in. Design approved (2026-10-13): departments get KPIs that set work rules (start push/pull, order, care); the player picks 2 of up to 5 per department at a quarterly review; the reward follows the measured improvement. Spec: `docs/superpowers/specs/2026-10-13-department-kpis-design.md` (awaiting Merijn's review), then the implementation plan
+  - ✅ Department KPIs, task 2: probe of the work rules on the real network (2026-10-13). Intake + work_prep, 3 seeds (11-13) x 180 days, last 84 days, connections stream, means over seeds. (a) push + shortest + hasty care (touch 0.9, ftr -0.05 on intake/quote/design); (b) pull + oldest; (c) pull + first_come; (d) the habit. Run 1 is the content as it was, run 2 adds `stale_after_days: 30` at connections.intake (see below).
+
+    | Run 1 (no stale rule) | lead p50 | lead p85 | on time | FTR | per week | wip_age | stale at design |
+    |---|---|---|---|---|---|---|---|
+    | (a) push + shortest + hasty | 46.5 | 68.6 | 97.4% | 34.6% | 26.47 | 90.9 | 0.0 |
+    | (b) pull + oldest | 45.6 | 66.9 | 97.6% | 41.9% | 26.39 | 95.5 | 0.0 |
+    | (c) pull + first_come | 45.6 | 66.2 | 97.8% | 42.3% | 26.39 | 96.2 | 0.0 |
+    | (d) habit | 45.9 | 66.2 | 97.8% | 41.9% | 26.39 | 96.2 | 0.0 |
+
+    Gate: (b) beats (a) on lead time but NOT on wip_age (95.5 vs 90.9: the hasty care of (a) also shortens the open age), so the stale rule was added: an application older than 30 days at intake goes back to intake and waits 5 days for the customer (estimate, marked in the YAML; never a bonus). `build_content.py` now allows `stale_to` to name the step itself (the first step has no earlier one); the validator test follows.
+
+    | Run 2 (stale rule) | lead p50 | lead p85 | on time | FTR | per week | wip_age | stale at intake |
+    |---|---|---|---|---|---|---|---|
+    | (a) | 46.5 | 68.6 | 97.4% | 34.6% | 26.47 | 90.9 | 0.0 |
+    | (b) | 45.6 | 66.9 | 97.6% | 41.9% | 26.39 | 95.5 | 0.0 |
+    | (c) | 45.6 | 66.2 | 97.8% | 42.3% | 26.39 | 96.2 | 0.0 |
+    | (d) | 45.9 | 66.2 | 97.8% | 41.9% | 26.39 | 96.2 | 0.0 |
+
+    Findings: run 2 is identical to run 1 - intake queues only ~1 day (12-27 h), so no application waits 30 days and the stale rule never fires at base load. Pull and the order rules barely move the base: p50 45.6-46.5 days, throughput 26.4-26.5 a week. The open age (84-115 days) is mostly external waits (customer 14 d, permit 30 d, reinforcement 120 d), which no department rule touches. The real department effect is therefore care: hasty care (a) cuts first-time right from 42% to 35%. The department KPI mechanism has to rest on care and on the measured KPI, not on pull or order alone; the Check should name the KPI it expects to move.
 - ✅ Department KPIs, task 1: work rules in the simulation (2026-10-13). A pool gets `start_rule` (push / pull: hold a job while the next work step downstream has `pull_limit_days` = 3 or more queued, see `Network.queue_days`) and `order_rule` (first_come / oldest / shortest / due) as SET levers; push and first_come leave the base bit-identical. Mirrored in `build_content.py` (`start_rule`, `order_rule`, vocabulary). Next: the KPI definitions and effects on top (plan: `docs/superpowers/plans/2026-10-13-department-kpis.md`).
 - ✅ Mission system (Merijn's design, CLAUDE.md §2): `MissionDef` + `Missions`.
   - At most one main and three side missions; unlocks by mission and belt.
