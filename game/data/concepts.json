@@ -1,0 +1,535 @@
+{
+ "concepts": [
+  {
+   "category": "lean",
+   "example": "Werkvoorbereiding probeert twee weken standaardontwerpen. In de Check blijkt de doorlooptijd van ontwerp gehalveerd, dus in de Act wordt het de nieuwe werkwijze.",
+   "id": "PDCA",
+   "name": "PDCA (Plan-Do-Check-Act)",
+   "short": "De verbetercyclus: plan een experiment, voer het uit, meet het effect en borg wat werkt.",
+   "text": "PDCA is de motor van continu verbeteren. Je maakt een plan met een voorspelling, je probeert het klein uit, je meet of de voorspelling uitkwam en je besluit dan: borgen, bijstellen of opnieuw beginnen. Een verbetering zonder Check is een gok."
+  },
+  {
+   "category": "lean",
+   "example": "Voor de stapel bij Werkvoorbereiding schrijf je een A3 met de verspilling (overbewerking), het bewijs uit je tijdstudie en de KPI die je in de Check volgt.",
+   "id": "A3",
+   "name": "A3-rapport",
+   "short": "Een probleem, de oorzaak en de tegenmaatregel op één vel papier.",
+   "text": "Een A3 dwingt je om kort en helder te denken: wat is het probleem, hoe is de situatie nu, wat is de grondoorzaak, wat ga je proberen en hoe meet je het. Het vel is vooral een gesprek: je bespreekt het met de mensen die het werk doen en met je coach."
+  },
+  {
+   "category": "lean",
+   "example": "Het dashboard zegt dat Planning traag is. Op de gemba zie je dat monteurs 's ochtends een uur wachten op de juiste mof uit het magazijn.",
+   "id": "gemba",
+   "name": "Gemba",
+   "short": "De plek waar het werk echt gebeurt: ga kijken voordat je conclusies trekt.",
+   "text": "Gemba is Japans voor 'de echte plek'. Rapporten en dashboards vertellen wat er gemeld is; op de gemba zie je wat er gebeurt. Ga kijken, vraag en luister, met respect voor de mensen die het werk doen."
+  },
+  {
+   "category": "lean",
+   "example": "De aansluiting is te laat. Waarom? De monteur kon niet aansluiten. Waarom? De meterkast was niet gereed. Waarom? De installateur wist niet wanneer we kwamen. Waarom? Niemand vraagt vooraf of de klant klaar is.",
+   "id": "five_whys",
+   "name": "5x waarom",
+   "short": "Vraag steeds 'waarom?' tot je bij een oorzaak in het proces komt.",
+   "text": "Bij een probleem vraag je waarom het gebeurt, en bij het antwoord weer waarom, ongeveer vijf keer. Zo kom je van het symptoom bij de grondoorzaak. Stop bij een oorzaak in het proces, niet bij een persoon."
+  },
+  {
+   "category": "lean",
+   "example": "Omvormers schakelen af bij zonnige middagen. Het symptoom is spanningsklachten; de grondoorzaak is een trafo-instelling die nooit is aangepast aan de vele zonnepanelen in de wijk.",
+   "id": "root_cause",
+   "name": "Grondoorzaak",
+   "short": "De oorzaak in het proces die het probleem steeds opnieuw veroorzaakt.",
+   "text": "Een symptoom is wat je ziet; de grondoorzaak is waarom het blijft gebeuren. Als je alleen het symptoom bestrijdt, komt het probleem terug. Een goede grondoorzaak kun je aanwijzen in het proces en met bewijs onderbouwen."
+  },
+  {
+   "category": "lean",
+   "example": "Een standaardaansluiting tot 3x25 A krijgt een standaardontwerp uit de bibliotheek in plaats van een volledig maatwerkontwerp.",
+   "id": "standard_work",
+   "name": "Standaard werk",
+   "short": "De huidige beste manier om het werk te doen, vastgelegd zodat iedereen hem kent.",
+   "text": "Standaard werk beschrijft de volgorde, de tijd en wat er klaar moet liggen. Het is geen keurslijf maar het startpunt voor verbetering: zonder standaard kun je niet zien of een verandering beter is. De mensen die het werk doen schrijven de standaard mee."
+  },
+  {
+   "category": "lean",
+   "example": "Een aansluitaanvraag kost bij elkaar twee dagen werk, maar doet er twintig weken over: de rest is wachten op ontwerp, vergunning en planning.",
+   "id": "flow",
+   "name": "Flow",
+   "short": "Werk stroomt zonder wachten van stap naar stap naar de klant.",
+   "text": "In een proces met flow ligt het werk zelden stil. De meeste doorlooptijd zit meestal niet in het werk zelf maar in het wachten ertussen. Wie flow verbetert, kijkt naar de hele stroom en niet naar één afdeling."
+  },
+  {
+   "category": "lean",
+   "example": "Revisie & GIS verwerkt elke afgeronde klus dezelfde week, in plaats van eens per maand een stapel tekeningen.",
+   "id": "one_piece_flow",
+   "name": "Stuk-voor-stuk-flow",
+   "short": "Eén dossier tegelijk doorzetten in plaats van stapels verzamelen.",
+   "text": "Bij stuk-voor-stuk-flow gaat elk werkstuk meteen door naar de volgende stap. Fouten komen sneller aan het licht en de klant wacht korter. Het vraagt wel dat de stappen goed op elkaar aansluiten."
+  },
+  {
+   "category": "lean",
+   "example": "Werkvoorbereiding vraagt vergunningen één keer per maand aan bij de gemeente. Een dossier dat net na die dag klaar is, wacht vier weken extra.",
+   "id": "batching",
+   "name": "Werken in batches",
+   "short": "Werk opsparen en in één keer afhandelen, wat wachten veroorzaakt.",
+   "text": "Batches voelen efficiënt, maar elk dossier wacht op het langzaamste in de stapel. Grote batches verlengen de doorlooptijd en verbergen fouten. Kleinere batches maken de stroom sneller en voorspelbaarder."
+  },
+  {
+   "category": "lean",
+   "example": "Intake zet pas een nieuw dossier door naar Netstudies als daar minder dan vijf studies wachten.",
+   "id": "pull",
+   "name": "Pull (trekken)",
+   "short": "Pas nieuw werk starten als de volgende stap erom vraagt.",
+   "text": "Bij push duw je werk door zodra jij klaar bent, ook als de volgende stap vol zit. Bij pull begin je pas als er ruimte is. Zo stapelt het werk zich niet op en komt de echte capaciteit van het proces in beeld."
+  },
+  {
+   "category": "lean",
+   "example": "Planning heeft driehonderd aansluitingen 'in behandeling'. Door minder tegelijk te starten worden er per week net zoveel afgerond, maar elk dossier sneller.",
+   "id": "wip",
+   "name": "Onderhanden werk (WIP)",
+   "short": "Al het werk dat gestart is maar nog niet af.",
+   "text": "Veel onderhanden werk betekent lange wachttijden: volgens de wet van Little is de doorlooptijd gelijk aan het onderhanden werk gedeeld door de doorstroom. Een WIP-limiet beperkt hoeveel er tegelijk loopt, zodat werk sneller af is."
+  },
+  {
+   "category": "lean",
+   "example": "In elke bus ligt een vaste bak met moffen. Is de bak leeg, dan gaat de kaart naar het magazijn en ligt de volgende ochtend een volle bak klaar.",
+   "id": "kanban",
+   "name": "Kanban",
+   "short": "Een zichtbaar signaal dat aangeeft wanneer er iets aangevuld of gestart moet worden.",
+   "text": "Een kanban is een kaart, bak of veld op een bord dat zegt: hier is ruimte, vul aan. Zo wordt er alleen aangevuld wat echt gebruikt is. Het werkt voor materiaal en voor werk."
+  },
+  {
+   "category": "lean",
+   "example": "De bussen van de monteurs krijgen een vaste indeling met labels, zodat iedereen ziet welke mof ontbreekt voordat hij de weg op gaat.",
+   "id": "5s",
+   "name": "5S",
+   "short": "Scheiden, schikken, schoonmaken, standaardiseren en standhouden van de werkplek.",
+   "text": "Met 5S richt je een werkplek zo in dat alles een vaste plek heeft en een afwijking meteen opvalt. Het scheelt zoeken en lopen. De vijfde S, standhouden, is de moeilijkste."
+  },
+  {
+   "category": "lean",
+   "example": "Een bord bij Revisie & GIS toont hoeveel tekeningen ouder dan twee weken zijn; boven de rode lijn helpt het team elkaar eerst.",
+   "id": "visual_management",
+   "name": "Visueel management",
+   "short": "De stand van het werk in één oogopslag zichtbaar maken.",
+   "text": "Met borden, kleuren en lijnen zie je meteen of het goed of fout gaat. Een probleem dat iedereen ziet, wordt sneller opgepakt. Het vervangt zoeken in systemen en geheugen."
+  },
+  {
+   "category": "lean",
+   "example": "Planning reserveert elke dag een vaste ruimte voor storingen, zodat één drukke storingsdag niet de hele weekplanning van aansluitingen omgooit.",
+   "id": "heijunka",
+   "name": "Heijunka (werk egaliseren)",
+   "short": "Het werk gelijkmatig verdelen in plaats van pieken en dalen.",
+   "text": "Pieken overbelasten mensen, dalen verspillen capaciteit. Door werk te egaliseren wordt de stroom rustiger en voorspelbaarder. Je plant bijvoorbeeld elke dag een vaste mix in plaats van alles van één soort tegelijk."
+  },
+  {
+   "category": "lean",
+   "example": "Intake checkt bij binnenkomst of een aanvraag compleet is, in plaats van dat Werkvoorbereiding het drie weken later ontdekt.",
+   "id": "quality_at_the_source",
+   "name": "Kwaliteit aan de bron",
+   "short": "Fouten voorkomen of vangen waar ze ontstaan, niet verderop in het proces.",
+   "text": "Een fout die pas aan het eind wordt ontdekt, kost veel meer dan een fout die meteen wordt gezien. Daarom check je bij het begin of het werk compleet en goed is. Iedere stap levert goed werk af aan de volgende."
+  },
+  {
+   "category": "lean",
+   "example": "Het aanvraagformulier gaat pas door als het gevraagde vermogen en de EAN-code zijn ingevuld.",
+   "id": "poka_yoke",
+   "name": "Poka-yoke (foutbestendig maken)",
+   "short": "Het proces zo inrichten dat een fout niet gemaakt kan worden.",
+   "text": "Poka-yoke is Japans voor 'fouten vermijden'. In plaats van mensen te vragen beter op te letten, maak je de fout onmogelijk of meteen zichtbaar. Het is een verbetering van het proces, niet van de persoon."
+  },
+  {
+   "category": "lean",
+   "example": "Als een slimme meter na plaatsing geen data stuurt, meldt de monteur dat ter plekke in plaats van dat Meetdata het weken later merkt.",
+   "id": "jidoka",
+   "name": "Jidoka (stoppen bij een afwijking)",
+   "short": "Bij een afwijking stoppen en hulp vragen, in plaats van het probleem doorgeven.",
+   "text": "Jidoka betekent dat werk stopt zodra er iets misgaat, zodat het probleem meteen wordt opgelost. Zo stapelen fouten zich niet op. Het vraagt een cultuur waarin stoppen en melden wordt gewaardeerd."
+  },
+  {
+   "category": "lean",
+   "example": "Twee dagen voor de afspraak belt Planning de installateur om te checken of de meterkast gereed is.",
+   "id": "readiness_check",
+   "name": "Gereedheidscheck",
+   "short": "Vooraf controleren of alles klaar is voordat je met het werk begint.",
+   "text": "Een gereedheidscheck voorkomt een vergeefse rit of een halve klus. Je vraagt vooraf na of materiaal, vergunning en klant klaar zijn. Een paar minuten bellen scheelt uren monteurswerk."
+  },
+  {
+   "category": "lean",
+   "example": "Netstudies kijkt eerst of een aanvraag een volledige netstudie nodig heeft; een kleine aansluiting in een wijk met ruimte gaat meteen door.",
+   "id": "triage",
+   "name": "Triage",
+   "short": "Werk bij binnenkomst sorteren, zodat eenvoudig werk niet wacht op complex werk.",
+   "text": "Niet elk dossier heeft dezelfde behandeling nodig. Door bij binnenkomst te sorteren gaat eenvoudig werk via een snelle route en krijgt complex werk de aandacht die het nodig heeft."
+  },
+  {
+   "category": "lean",
+   "example": "Een bewoner wil niet weten welke afdeling zijn dossier heeft; hij wil weten wanneer de monteur komt.",
+   "id": "customer_value",
+   "name": "Klantwaarde",
+   "short": "Wat de klant echt nodig heeft en waarvoor hij zou willen betalen.",
+   "text": "Lean begint bij de vraag wat waarde is voor de klant. Alles wat daar niet aan bijdraagt is verspilling of ondersteunend werk. Voor een netbeheerder is dat vaak simpel: een werkende aansluiting, op tijd, en weten waar je aan toe bent."
+  },
+  {
+   "category": "lean",
+   "example": "'Ik wil een laadpaal aansluiten' is waardevraag voor het Klantcontactcentrum.",
+   "id": "value_demand",
+   "name": "Waardevraag",
+   "short": "Een klantvraag die je moet beantwoorden omdat de klant iets nieuws nodig heeft.",
+   "text": "Waardevraag is werk waarvoor je organisatie bestaat: een nieuwe aanvraag, een storing melden. Het tegenovergestelde is faalvraag. Door ze te scheiden zie je hoeveel van je werk eigenlijk vermijdbaar is."
+  },
+  {
+   "category": "lean",
+   "example": "Klanten die al tien weken wachten bellen 'hoe staat het ervoor?'. Die telefoontjes kosten het Klantcontactcentrum uren die naar nieuwe vragen hadden gekund.",
+   "id": "failure_demand",
+   "name": "Faalvraag",
+   "short": "Een klantvraag die ontstaat omdat iets eerder niet goed ging.",
+   "text": "Faalvraag ontstaat als je iets niet of niet goed hebt gedaan voor de klant: hij belt omdat hij niets hoort of omdat het misging. Het is werk dat niemand wil. De oplossing zit niet bij het telefoonteam maar eerder in de stroom."
+  },
+  {
+   "category": "lean",
+   "example": "Graafschade lijkt een probleem van de aannemer, maar ontstaat ook doordat onze kabeltekeningen achterlopen bij Revisie & GIS.",
+   "id": "systems_thinking",
+   "name": "Systeemdenken",
+   "short": "Kijken naar het geheel: een verandering op één plek werkt door op andere plekken.",
+   "text": "Een organisatie is een systeem van stappen die op elkaar ingrijpen. Een afdeling optimaliseren kan het geheel slechter maken. Daarom kijk je naar de hele stroom en naar hoe de delen elkaar beïnvloeden."
+  },
+  {
+   "category": "lean",
+   "example": "Henk is de laatste die de oude kabelnetten kent. In plaats van te klagen dat het allemaal in zijn hoofd zit, organiseer je dat hij jonge monteurs meeneemt.",
+   "id": "respect_for_people",
+   "name": "Respect voor mensen",
+   "short": "Problemen zitten in het proces, niet in de persoon.",
+   "text": "Mensen zijn de waardevolste bron van een organisatie. Wie schuld zoekt, krijgt zwijgen; wie het proces onderzoekt samen met de mensen, krijgt de echte oorzaak. Tegenmaatregelen ontwikkelen mensen in plaats van ze te vervangen."
+  },
+  {
+   "category": "measure",
+   "example": "Werkvoorbereiding stuurt op 'aantal ontwerpen per week' en maakt er te veel, terwijl Planning ze niet kan inplannen. De stapel groeit, de klant wacht.",
+   "id": "kpi_alignment",
+   "name": "Samenhangende KPI's",
+   "short": "KPI's van afdelingen moeten samen de klant dienen, niet elkaar tegenwerken.",
+   "text": "Als elke afdeling op haar eigen getal stuurt, kan iedereen 'groen' staan terwijl de klant te lang wacht. Goede KPI's sluiten aan op de hele stroom. Een gezamenlijk doel helpt afdelingen samen te werken."
+  },
+  {
+   "category": "lean",
+   "example": "Intake, Werkvoorbereiding, Planning en de monteurs bespreken elke week bij één bord hoe de aansluitingen van begin tot eind lopen.",
+   "id": "obeya",
+   "name": "Obeya",
+   "short": "Een gezamenlijke ruimte waar de hele stroom, de doelen en de problemen zichtbaar zijn.",
+   "text": "Obeya is Japans voor 'grote kamer'. Teams uit de hele stroom komen er samen kijken naar dezelfde cijfers en problemen. Zo verschuift het gesprek van 'mijn afdeling' naar 'onze klant'."
+  },
+  {
+   "category": "measure",
+   "example": "De monteurs zijn op papier vijf dagen beschikbaar, maar door storingsdiensten en cursussen gemiddeld nog geen vier.",
+   "id": "capacity_planning",
+   "name": "Capaciteitsplanning",
+   "short": "Het werk afstemmen op wat mensen en middelen echt aankunnen.",
+   "text": "Een planning die uitgaat van 100% beschikbaarheid loopt altijd vast: er zijn storingen, ziekte en opleidingen. Goede capaciteitsplanning rekent met de echte beschikbaarheid en houdt ruimte voor het onverwachte."
+  },
+  {
+   "category": "lean",
+   "example": "Intake versnellen helpt niet zolang Werkvoorbereiding de stapel niet wegwerkt: de dossiers liggen dan alleen eerder in de wachtrij.",
+   "id": "bottleneck_focus",
+   "name": "Knelpunt eerst",
+   "short": "Verbeter eerst de stap die de hele stroom tegenhoudt.",
+   "text": "Het knelpunt is de stap met de minste capaciteit; die bepaalt hoeveel de hele stroom kan leveren. Een stap verbeteren die geen knelpunt is, levert de klant niets op: het werk wacht dan gewoon langer bij het knelpunt."
+  },
+  {
+   "category": "lean",
+   "example": "Na de standaardontwerpen is Werkvoorbereiding geen knelpunt meer; nu wachten de dossiers bij Intake. Het knelpunt is verschoven.",
+   "id": "theory_of_constraints",
+   "name": "Theory of Constraints",
+   "short": "Een stroom is zo sterk als zijn zwakste schakel.",
+   "text": "De Theory of Constraints van Goldratt geeft vijf stappen: vind het knelpunt, haal er alles uit, stem de rest erop af, vergroot het knelpunt, en zoek dan het volgende. Na een verbetering verschuift het knelpunt vaak naar een andere stap."
+  },
+  {
+   "category": "lean",
+   "example": "In één aansluitdossier vind je er vaak meerdere: wachten op een vergunning, overbewerking in het ontwerp en een fout in de aanvraag.",
+   "id": "eight_wastes",
+   "name": "De 8 verspillingen (TIMWOODS)",
+   "short": "Acht soorten werk dat geen waarde toevoegt voor de klant.",
+   "text": "TIMWOODS staat voor Transport, Inventory (voorraad), Motion (beweging), Waiting (wachten), Overproduction, Overprocessing, Defects (fouten) en Skills (onbenut talent). Ze komen voor in fabrieken én in kantoren en buitendienst. Wie ze herkent, ziet waar verbetering zit."
+  },
+  {
+   "category": "lean",
+   "example": "Een monteur rijdt terug naar het magazijn in Nova omdat de juiste mof niet in de bus lag.",
+   "id": "waste_transport",
+   "name": "Transport",
+   "short": "Werk, informatie of materiaal onnodig verplaatsen.",
+   "text": "Transport voegt geen waarde toe: het dossier of de mof wordt er niet beter van. In een kantoor gaat het om overdrachten tussen systemen en afdelingen, in de buitendienst om ritten en materiaal heen en weer."
+  },
+  {
+   "category": "lean",
+   "example": "Bij Revisie & GIS liggen honderden tekeningen van afgeronde klussen; ondertussen kloppen de kaarten voor de graafploegen niet.",
+   "id": "waste_inventory",
+   "name": "Voorraad",
+   "short": "Meer werk of materiaal dan nu nodig is, dat ligt te wachten.",
+   "text": "Voorraad is niet alleen materiaal in het magazijn; ook een stapel dossiers is voorraad. Het verbergt problemen, veroudert en kost ruimte en aandacht."
+  },
+  {
+   "category": "lean",
+   "example": "Een werkvoorbereider zoekt dezelfde netgegevens in drie systemen op voor elk ontwerp.",
+   "id": "waste_motion",
+   "name": "Beweging",
+   "short": "Onnodig zoeken, lopen, klikken of schakelen tijdens het werk.",
+   "text": "Beweging is verspilling binnen de werkplek: zoeken naar gereedschap, steeds wisselen tussen schermen, informatie overtypen. Het lijkt klein, maar telt per dag flink op."
+  },
+  {
+   "category": "lean",
+   "example": "Een aansluiting wacht maanden op een nieuwe trafo omdat die pas besteld wordt als het ontwerp klaar is.",
+   "id": "waste_waiting",
+   "name": "Wachten",
+   "short": "Werk of mensen die stilstaan omdat iets of iemand nog niet klaar is.",
+   "text": "Wachten is vaak de grootste verspilling in een dienstverlenend proces: het dossier ligt stil tussen de stappen. Ook mensen wachten, op een handtekening, een vergunning of een collega."
+  },
+  {
+   "category": "lean",
+   "example": "Werkvoorbereiding maakt zoveel mogelijk ontwerpen per week, maar Planning kan er maar de helft inplannen. Ontwerpen verouderen voordat ze worden uitgevoerd.",
+   "id": "waste_overproduction",
+   "name": "Overproductie",
+   "short": "Meer of eerder maken dan de volgende stap nodig heeft.",
+   "text": "Overproductie heet de ergste verspilling, omdat ze andere verspillingen veroorzaakt: voorraad, wachten en fouten die laat ontdekt worden. Het ontstaat vaak doordat een afdeling stuurt op haar eigen productie."
+  },
+  {
+   "category": "lean",
+   "example": "Een standaard huisaansluiting krijgt hetzelfde uitgebreide ontwerp als een aansluiting voor een bedrijf.",
+   "id": "waste_overprocessing",
+   "name": "Overbewerking",
+   "short": "Meer doen dan de klant nodig heeft.",
+   "text": "Overbewerking is extra werk dat geen waarde toevoegt: dubbele controles, te veel handtekeningen, maatwerk waar een standaard volstaat. Het voelt vaak als zorgvuldig werken."
+  },
+  {
+   "category": "lean",
+   "example": "Een aannemer graaft een kabel stuk omdat de kabel niet op de KLIC-tekening stond.",
+   "id": "waste_defects",
+   "name": "Fouten",
+   "short": "Werk dat over moet omdat het de eerste keer niet goed was.",
+   "text": "Elke fout kost dubbel: het werk zelf en het herstel. In een netbedrijf gaat het om onvolledige aanvragen, verkeerde tekeningen en klussen die over moeten. De oorzaak zit meestal eerder in de stroom dan waar de fout zichtbaar wordt."
+  },
+  {
+   "category": "lean",
+   "example": "Een ervaren monteur weet waarom een oude wijk steeds storingen heeft, maar die kennis staat nergens beschreven.",
+   "id": "waste_skills",
+   "name": "Onbenut talent",
+   "short": "Kennis, ideeën en vaardigheden van mensen die niet gebruikt worden.",
+   "text": "De mensen die het werk doen weten vaak precies wat er beter kan, maar niemand vraagt het. Ook kennis die bij één persoon zit en niet wordt gedeeld is verspilling, zeker bij een tekort aan technici."
+  },
+  {
+   "category": "kata",
+   "example": "Je oefent dagelijks: wat is de doelsituatie bij Werkvoorbereiding, waar staan we nu, en wat is het volgende kleine experiment?",
+   "id": "toyota_kata",
+   "name": "Toyota Kata",
+   "short": "Een dagelijkse oefenroutine om wetenschappelijk te leren verbeteren.",
+   "text": "Toyota Kata, beschreven door Mike Rother, bestaat uit de verbeterkata en de coachingkata. Een kata is een routine die je oefent tot hij vanzelf gaat. Het doel is niet één oplossing, maar leren hoe je stap voor stap verbetert."
+  },
+  {
+   "category": "kata",
+   "example": "Uitdaging: elke aansluiting binnen de servicenorm. Huidig: gemiddeld veel langer. Doelsituatie over vier weken: ontwerpen binnen vijf werkdagen.",
+   "id": "improvement_kata",
+   "name": "Verbeterkata",
+   "short": "Vier stappen: richting, huidige situatie, doelsituatie en experimenten.",
+   "text": "De verbeterkata begint met de richting of uitdaging. Daarna breng je de huidige situatie in kaart, kies je een volgende doelsituatie en zet je kleine experimenten in om er te komen. Je weet vooraf niet precies hoe; dat ontdek je onderweg."
+  },
+  {
+   "category": "kata",
+   "example": "Marleen vraagt niet 'heb je het al opgelost?', maar 'wat verwacht je dat er gebeurt als je dit probeert?'.",
+   "id": "coaching_kata",
+   "name": "Coachingkata",
+   "short": "Vijf vaste vragen waarmee een coach iemand leert verbeteren.",
+   "text": "De coach vraagt: wat is de doelsituatie, wat is de huidige situatie, welke obstakels houden je tegen, wat is je volgende stap en wat verwacht je, en wanneer kunnen we zien wat je geleerd hebt? De coach geeft zelden het antwoord."
+  },
+  {
+   "category": "kata",
+   "example": "Over vier weken gaan standaardaansluitingen zonder wachtrij door het ontwerp, en is de doorlooptijd van ontwerp maximaal vijf werkdagen.",
+   "id": "target_condition",
+   "name": "Doelsituatie",
+   "short": "Hoe het proces er op een bepaalde datum uit moet zien, met een meetbaar getal.",
+   "text": "Een doelsituatie beschrijft hoe het werk dan loopt, niet alleen een uitkomst. Ze ligt net buiten wat je nu weet te bereiken en heeft een datum. Zo weet je waar de experimenten naartoe werken."
+  },
+  {
+   "category": "kata",
+   "example": "'Als we standaardontwerpen invoeren, verwacht ik dat de doorlooptijd van ontwerp binnen twee weken halveert.'",
+   "id": "kata_prediction",
+   "name": "Voorspellen voor je experimenteert",
+   "short": "Zeg vooraf wat je verwacht, dan leer je van het verschil.",
+   "text": "Een experiment zonder voorspelling leert je weinig: alles lijkt achteraf logisch. Als je vooraf zegt welk getal hoe verandert, zie je in de Check of je het proces begreep. Een verkeerde voorspelling is geen falen maar informatie."
+  },
+  {
+   "category": "kata",
+   "example": "Vraag de werkvoorbereider 'hoe ziet jouw dag eruit?' in plaats van 'waarom duurt het zo lang?'.",
+   "id": "open_questions",
+   "name": "Open vragen",
+   "short": "Vragen die uitnodigen tot een verhaal, niet tot ja of nee.",
+   "text": "Met 'hoe', 'wat' en 'waar' krijg je te horen hoe het werk echt gaat. Gesloten of beschuldigende vragen ('waarom doe je dit fout?') leveren zwijgen op. Luisteren is een gembagereedschap."
+  },
+  {
+   "category": "measure",
+   "example": "Het percentage aansluitingen dat binnen de servicenorm wordt opgeleverd.",
+   "id": "kpi",
+   "name": "KPI (kritieke prestatie-indicator)",
+   "short": "Een getal dat laat zien of een proces doet wat het moet doen.",
+   "text": "Een KPI meet wat belangrijk is voor de klant of het bedrijf, zoals doorlooptijd of first time right. Een goede KPI is eenduidig, regelmatig gemeten en iemand kan er iets mee. Meet je iets, dan ga je erop sturen: kies dus zorgvuldig."
+  },
+  {
+   "category": "measure",
+   "example": "Werkvoorbereiding kijkt elke ochtend naar het oudste ontwerp in de stapel (voorlopend) en elke maand naar de gemiddelde doorlooptijd (nalopend).",
+   "id": "leading_lagging",
+   "name": "Voorlopende en nalopende indicatoren",
+   "short": "Voorlopende indicatoren voorspellen het resultaat, nalopende meten het achteraf.",
+   "text": "Een nalopende indicator (lagging) laat het resultaat zien als het al gebeurd is, zoals de doorlooptijd van afgeronde klussen. Een voorlopende indicator (leading) zegt nu al iets over straks en kan een team vandaag beïnvloeden, zoals het oudste dossier in de wachtrij. Je hebt ze allebei nodig."
+  },
+  {
+   "category": "measure",
+   "example": "Objective: klanten in Zuidmark weten waar ze aan toe zijn. Key result: 90% van de aansluitingen binnen de toegezegde datum; statusvragen gehalveerd.",
+   "id": "okr",
+   "name": "OKR (Objectives and Key Results)",
+   "short": "Een ambitieus doel met een paar meetbare resultaten die laten zien of je het haalt.",
+   "text": "Een Objective zegt wat je wilt bereiken, in woorden die inspireren. De Key Results zijn twee tot vier getallen die laten zien of het gelukt is. OKR's gelden voor een korte periode, vaak een kwartaal, en verbinden teams aan een gezamenlijk doel."
+  },
+  {
+   "category": "measure",
+   "example": "Van aanvraag tot werkende aansluiting duurt het in Zuidmark maanden, terwijl het werk zelf een paar dagen is.",
+   "id": "lead_time",
+   "name": "Doorlooptijd",
+   "short": "De tijd van aanvraag tot levering, zoals de klant hem ervaart.",
+   "text": "Doorlooptijd telt alles mee: werk én wachten. Het is meestal veel langer dan de bewerkingstijd. Een korte doorlooptijd is vaak het beste teken van een gezond proces."
+  },
+  {
+   "category": "measure",
+   "example": "Van de aanvragen die bij Intake binnenkomen, is maar een deel in één keer compleet.",
+   "id": "first_time_right",
+   "name": "First time right",
+   "short": "Het deel van het werk dat de eerste keer in één keer goed is.",
+   "text": "First time right laat zien hoeveel werk zonder herstel of terugsturen door de stroom gaat. Een lage score betekent verborgen extra werk. Het verbeteren ervan maakt vaak capaciteit vrij zonder extra mensen."
+  },
+  {
+   "category": "sector",
+   "example": "Voltana Netbeheer is de (fictieve) regionale netbeheerder van Zuidmark.",
+   "id": "netbeheerder",
+   "name": "Netbeheerder",
+   "short": "Het bedrijf dat het elektriciteits- of gasnet in een gebied aanlegt, onderhoudt en beheert.",
+   "source": {
+    "title": "Netbeheer Nederland, de vereniging van netbeheerders",
+    "url": "https://www.netbeheernederland.nl"
+   },
+   "text": "Nederland heeft één landelijke netbeheerder voor het hoogspanningsnet, TenneT, en een aantal regionale netbeheerders (in het Engels DSO, distribution system operator) zoals Liander, Enexis en Stedin. Netbeheerders hebben in hun gebied geen concurrentie en staan daarom onder toezicht van de ACM. Ze sluiten klanten aan, lossen storingen op en breiden het net uit."
+  },
+  {
+   "category": "sector",
+   "example": "Op het bedrijventerrein van Nova wacht een bedrijf op een lege kavel tot er transportcapaciteit vrij komt.",
+   "id": "netcongestie",
+   "name": "Netcongestie",
+   "short": "Het net zit vol: er is (tijdelijk) geen ruimte voor meer transport van stroom.",
+   "source": {
+    "title": "Netbeheer Nederland — Capaciteitskaart elektriciteitsnet",
+    "url": "https://capaciteitskaart.netbeheernederland.nl"
+   },
+   "text": "Bij netcongestie kan het net de gevraagde stroom niet meer veilig vervoeren. Nieuwe bedrijven of zonneparken komen dan op een wachtlijst tot het net is verzwaard. Netbeheerders tonen op de capaciteitskaart waar ruimte is en waar niet."
+  },
+  {
+   "category": "sector",
+   "example": "Voltana stuurt op 18 weken voor een nieuwe huisaansluiting, maar waar het net eerst verzwaard moet worden, duurt het veel langer.",
+   "id": "aansluittermijn",
+   "name": "Aansluittermijn",
+   "short": "De tijd die een netbeheerder heeft om een klant aan te sluiten.",
+   "source": {
+    "title": "Rechtspraak — CBb, ACM-besluit over aansluittermijnen kleinverbruikers houdt geen stand (2024)",
+    "url": "https://www.rechtspraak.nl/organisatie-en-contact/organisatie/college-van-beroep-voor-het-bedrijfsleven/nieuws/2024/09/-acm-besluit-over-aansluittermijnen-kleinverbruikers-op-het-elektriciteitsnet-houdt-geen-stand"
+   },
+   "text": "De norm was lang 18 weken voor een kleinverbruikaansluiting. Het College van Beroep voor het bedrijfsleven (CBb) vernietigde in september 2024 het ACM-besluit over die aansluittermijnen; een nieuw besluit wordt verwacht. In de sector wordt de 18 weken nog steeds als referentie gebruikt."
+  },
+  {
+   "category": "sector",
+   "example": "Als Voltana klanten te lang laat wachten op een aansluiting, kan de ACM daarop toezien.",
+   "id": "acm",
+   "name": "ACM (Autoriteit Consument & Markt)",
+   "short": "De toezichthouder die onder meer de netbeheerders controleert.",
+   "source": {
+    "title": "ACM — Aansluiting op elektriciteitsnet en gasnet",
+    "url": "https://www.acm.nl/nl/energie/elektriciteit-en-gas/netbeheer/aansluiting-op-elektriciteitsnet-en-gasnet"
+   },
+   "text": "Omdat netbeheerders een monopolie hebben, houdt de ACM toezicht. De ACM stelt onder meer de tarieven en regels vast voor aansluiten en transport, en controleert of netbeheerders zich eraan houden."
+  },
+  {
+   "category": "sector",
+   "example": "Een achterstand bij Revisie & GIS is niet alleen lastig voor graafploegen, maar ook een punt bij de NTA 8120-audit.",
+   "id": "nta_8120",
+   "name": "NTA 8120",
+   "short": "De norm voor het asset management-systeem van netbeheerders.",
+   "source": {
+    "title": "Netbeheer Nederland — NN-CAM versie 5.0 (certificatieschema NTA 8120)",
+    "url": "https://netbeheernederland.nl/sites/default/files/2024-10/nn-cam_versie_5.0.pdf"
+   },
+   "text": "NTA 8120 beschrijft eisen aan hoe een netbeheerder zijn netten beheert: risico's, onderhoud, gegevens en verbeteren. Netbeheerders laten zich hierop certificeren. Kloppende netgegevens, zoals revisietekeningen, horen daarbij."
+  },
+  {
+   "category": "sector",
+   "example": "In een wijk in Nova liggen ineens op honderden daken zonnepanelen; op zonnige middagen loopt de spanning op en schakelen omvormers af.",
+   "id": "energietransitie",
+   "name": "Energietransitie",
+   "short": "De overstap van fossiele energie naar duurzame energie.",
+   "source": {
+    "title": "Rijksoverheid — Klimaatverandering beperken",
+    "url": "https://www.rijksoverheid.nl/onderwerpen/klimaatverandering/klimaatverandering-beperken"
+   },
+   "text": "Volgens de Klimaatwet moet Nederland in 2030 55% minder broeikasgassen uitstoten dan in 1990, en in 2050 klimaatneutraal zijn. Daardoor komen er veel zonnepanelen, warmtepompen, laadpalen en elektrische bedrijven bij. Het net moet sneller groeien dan ooit."
+  },
+  {
+   "category": "sector",
+   "example": "Een monteur van Voltana die een uur wacht op materiaal, is een uur dat de wijk niet wordt aangesloten.",
+   "id": "monteurstekort",
+   "name": "Monteurstekort",
+   "short": "Er zijn te weinig technici om al het werk aan het net te doen.",
+   "source": {
+    "title": "Solar Magazine — Netbeheerders en aannemers werven 5.000 extra technici via opschalingsplan",
+    "url": "https://solarmagazine.nl/nieuws-zonne-energie/i42206/netbeheerders-en-aannemers-werven-5-000-extra-technici-via-opschalingsplan"
+   },
+   "text": "Netbeheerders en aannemers hebben duizenden extra technici nodig om het net uit te breiden. Opleiden kost jaren, en ervaren monteurs gaan met pensioen. Daarom is elk uur van een monteur kostbaar en is verspilling in de buitendienst extra pijnlijk."
+  },
+  {
+   "category": "sector",
+   "example": "Een nieuwe woonwijk in Nova kan pas worden aangesloten als de bestelde trafo binnen is.",
+   "id": "transformator",
+   "name": "Transformator (trafo)",
+   "short": "Een apparaat dat de spanning omzet, bijvoorbeeld van middenspanning naar laagspanning.",
+   "source": {
+    "title": "Omroep Brabant — Verzwaring van het stroomnet in Brabant loopt ernstige vertraging op",
+    "url": "https://www.omroepbrabant.nl/nieuws/4676647/Verzwaring-van-het-stroomnet-in-Brabant-loopt-ernstige-vertraging-op"
+   },
+   "text": "Een trafo zet stroom om van de ene spanning naar de andere. In de wijk zet hij middenspanning om naar de laagspanning in huis. Nieuwe trafo's hebben lange levertijden, waardoor netuitbreiding vertraging oploopt."
+  },
+  {
+   "category": "sector",
+   "estimate": "Gangbare indeling van Nederlandse distributienetten (middenspanning, vaak 10 kV, naar laagspanning 230/400 V in de wijk); geen specifieke bron gebruikt, de getallen zijn typische waarden en niet per netbeheerder gecontroleerd.",
+   "example": "Klachten over omvormers in één straat van Nova komen allemaal uit hetzelfde MSR-gebied.",
+   "id": "middenspanningsruimte",
+   "name": "Middenspanningsruimte (MSR)",
+   "short": "Het kleine stationnetje in de wijk met de trafo die de straten van stroom voorziet.",
+   "text": "Een middenspanningsruimte, vaak een huisje of kast in de wijk, bevat een trafo en schakelapparatuur. Van daaruit lopen de laagspanningskabels naar de huizen. Als een wijk veel zonnepanelen, warmtepompen of laadpalen krijgt, raakt de MSR vol.",
+   "verify": true
+  },
+  {
+   "category": "sector",
+   "example": "Een aanvraag voor een zwaardere aansluiting zonder EAN-code blijft bij Intake liggen tot de klant hem opzoekt.",
+   "id": "ean_code",
+   "name": "EAN-code",
+   "short": "Het unieke nummer van 18 cijfers van een elektriciteits- of gasaansluiting.",
+   "source": {
+    "title": "EAN-codeboek (EDSN) — EAN-code van een aansluiting opzoeken",
+    "url": "https://www.eancodeboek.nl"
+   },
+   "text": "Elke elektriciteits- en gasaansluiting heeft een eigen EAN-code. Met die code weten netbeheerder, leverancier en meetbedrijf over welke aansluiting het gaat. Een verkeerde of ontbrekende code geeft fouten in aanvraag en meetdata.",
+   "verify": true
+  },
+  {
+   "category": "sector",
+   "example": "Een aannemer deed netjes een KLIC-melding, maar raakte toch een kabel van Voltana: de kabel was verlegd en de revisie nooit verwerkt.",
+   "id": "klic_melding",
+   "name": "KLIC-melding",
+   "short": "De verplichte graafmelding bij het Kadaster voordat je machinaal graaft.",
+   "source": {
+    "title": "Rijksoverheid — Graafschade",
+    "url": "https://www.rijksoverheid.nl/onderwerpen/bodem-en-ondergrond/graafschade"
+   },
+   "text": "Wie machinaal graaft, moet vooraf een KLIC-melding doen bij het Kadaster (op grond van de WIBON). Je krijgt dan tekeningen van de kabels en leidingen in de grond. Kloppen die tekeningen niet, dan is de kans op graafschade groot."
+  }
+ ]
+}

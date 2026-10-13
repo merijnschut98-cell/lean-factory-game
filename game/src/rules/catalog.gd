@@ -1,7 +1,8 @@
 class_name Catalog
 extends RefCounted
 ## The problem and countermeasure catalogue from game/data (built from
-## content/problems_tier*.yaml and countermeasures.yaml), as definitions.
+## content/problems_tier*.yaml and countermeasures.yaml), as definitions,
+## with the campaign, the KPI menus and the glossary.
 
 const DATA_DIR := "res://data"
 ## One file per tier (the same rule as tools/build_content.py).
@@ -13,6 +14,8 @@ var missions: Array[MissionDef] = []
 ## The KPI menus per department; `kpis` effects of problems and
 ## countermeasures are expanded into rule effects when the catalogue loads.
 var kpis := KpiMenu.new()
+## The glossary (content/concepts.yaml): concept id → ConceptDef.
+var concepts: Dictionary[String, ConceptDef] = {}
 ## The senior manager who coaches the main mission: {name, role, stages}.
 var coach: Dictionary = {}
 ## The first thing wrong with the files; "" when the catalogue is usable.
@@ -29,6 +32,11 @@ static func load_from(dir: String = DATA_DIR) -> Catalog:
 	c.coach = JsonFile.dict_or_empty(campaign.get("coach"))
 	if not c._load_kpis(dir):
 		return c
+	var glossary: Array[ConceptDef] = []
+	if c._load(dir + "/concepts.json", "concepts", ConceptDef.from_dict, glossary).is_empty():
+		return c
+	for concept in glossary:
+		c.concepts[concept.id] = concept
 	var files := Array(DirAccess.get_files_at(dir)).filter(func(f: String) -> bool:
 		return f.begins_with(PROBLEM_FILES) and f.ends_with(".json"))
 	files.sort()

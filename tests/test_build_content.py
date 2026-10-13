@@ -27,7 +27,7 @@ def dirs(tmp_path: Path) -> tuple[Path, Path]:
     content.mkdir()
     (content / "game.yaml").write_text(GAME_YAML, encoding="utf-8")
     (content / "value_streams.yaml").write_text(REAL_STREAMS, encoding="utf-8")
-    for stem in ("countermeasures", "problems_tier1", "missions", "kpis"):
+    for stem in ("countermeasures", "problems_tier1", "missions", "kpis", "concepts"):
         (content / f"{stem}.yaml").write_text((bc.CONTENT_DIR / f"{stem}.yaml").read_text(encoding="utf-8"), encoding="utf-8")
     return content, data
 
@@ -318,7 +318,7 @@ def rules_dirs(dirs):
 
 def _rules(content, mutate) -> None:
     docs = {stem: yaml.safe_load((content / f"{stem}.yaml").read_text(encoding="utf-8"))
-            for stem in ("game", "value_streams", "countermeasures", "problems_tier1", "missions", "kpis")}
+            for stem in ("game", "value_streams", "countermeasures", "problems_tier1", "missions", "kpis", "concepts")}
     mutate(docs)
     for stem, doc in docs.items():
         (content / f"{stem}.yaml").write_text(yaml.safe_dump(doc, allow_unicode=True), encoding="utf-8")
@@ -500,3 +500,55 @@ def test_any_problems_tier_file_is_validated(rules_dirs):
     (content / "problems_tier2.yaml").write_text("problems: [{}]\n", encoding="utf-8")
     with pytest.raises(bc.ContentError, match="problems_tier2.yaml"):
         bc.load_content(content)
+
+
+# ── concepts.yaml ────────────────────────────────────────────────────────────
+
+def _concept(docs: dict, concept_id: str) -> dict:
+    return next(c for c in docs["concepts"]["concepts"] if c["id"] == concept_id)
+
+
+def _drop_concept(docs: dict, concept_id: str) -> None:
+    docs["concepts"]["concepts"].remove(_concept(docs, concept_id))
+
+
+@pytest.mark.parametrize("mutate, message", [
+    (lambda d: _problem(d).update(teaches=["ghost"]), "teaches unknown concept 'ghost'"),
+    (lambda d: _problem(d)["clues"][0].update(teaches=["ghost"]), "clue 0: teaches unknown concept 'ghost'"),
+    (lambda d: _drop_concept(d, "PDCA"), "missing concept 'PDCA'"),
+    (lambda d: _drop_concept(d, "waste_waiting"), "missing concept 'waste_waiting'"),
+    (lambda d: _concept(d, "flow").update(category="magic"), "'category' must be one of"),
+    (lambda d: _concept(d, "flow").update(example=""), "'example' must be a non-empty string"),
+    (lambda d: _concept(d, "flow").update(exampel="x"), "unknown key.s. 'exampel'"),
+    (lambda d: [_concept(d, "netcongestie").pop(k, None) for k in ("source", "estimate")], "needs a 'source' or an 'estimate'"),
+    (lambda d: _concept(d, "netcongestie").update(source={"title": "Kaart"}), "'source' needs a title and an https url"),
+    (lambda d: _concept(d, "netcongestie").update(source={"title": "Kaart", "url": "http://x.nl"}), "'source' needs a title and an https url"),
+    (lambda d: _concept(d, "netcongestie").update(verify="yes"), "'verify' must be true or false"),
+    (lambda d: _concept(d, "flow").update(id="Flow-x"), "needs an id of letters"),
+    (lambda d: d["concepts"]["concepts"].append(dict(_concept(d, "flow"))), "duplicate concepts ids"),
+])
+def test_concept_errors_are_caught(rules_dirs, mutate, message):
+    content, _ = rules_dirs
+    with pytest.raises(bc.ContentError, match=message):
+        _rules(content, mutate)
+
+
+GLOSSARY = {
+    # Lean and the 8 wastes (TIMWOODS)
+    "PDCA", "A3", "gemba", "five_whys", "standard_work", "flow", "pull", "wip", "bottleneck_focus",
+    "theory_of_constraints", "obeya", "eight_wastes", *(f"waste_{w}" for w in bc.WASTES),
+    # Measure and Kata
+    "kpi", "leading_lagging", "okr", "toyota_kata", "improvement_kata", "coaching_kata", "target_condition",
+    # The sector
+    "netbeheerder", "netcongestie", "aansluittermijn", "acm", "nta_8120", "energietransitie", "monteurstekort",
+    "transformator", "middenspanningsruimte", "ean_code", "klic_melding",
+}
+
+
+def test_real_concepts_cover_the_glossary():
+    concepts = {c["id"]: c for c in bc.load_content()["concepts"]["concepts"]}
+    assert GLOSSARY <= set(concepts), sorted(GLOSSARY - set(concepts))
+    assert {c["category"] for c in concepts.values()} == set(bc.CONCEPT_CATEGORIES)
+    for c in concepts.values():
+        if c["category"] == "sector":
+            assert "source" in c or "estimate" in c, c["id"]

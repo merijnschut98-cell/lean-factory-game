@@ -102,7 +102,7 @@ func test_a_bad_kpi_definition_reports_its_error() -> void:
 func test_the_catalog_expands_kpi_effects() -> void:
 	var dir := "user://kpi_catalog_test"
 	DirAccess.make_dir_recursive_absolute(dir)
-	for file in ["countermeasures", "missions", "value_streams", "kpis"]:
+	for file in ["countermeasures", "missions", "value_streams", "kpis", "concepts"]:
 		assert_eq(DirAccess.copy_absolute("res://data/%s.json" % file, "%s/%s.json" % [dir, file]), OK)
 	var kpi_effect := {"target": "intake", "property": "kpis", "value": ["intake_lead_time", "intake_oldest"]}
 	var problem: Dictionary = JsonFile.read_dict("res://data/problems_tier1.json")["data"]["problems"][0]

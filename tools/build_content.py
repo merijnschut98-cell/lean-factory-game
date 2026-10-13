@@ -103,10 +103,11 @@ def _known_keys(d: dict, allowed: set[str], where: str) -> None:
         raise ContentError(f"{where}: unknown key(s) {', '.join(map(repr, unknown))}")
 
 
-def _check_ids(ids: list, label: str, where: str) -> None:
+def _check_ids(ids: list, label: str, where: str, pattern: re.Pattern = _ID,
+               rule: str = "a lowercase snake_case 'id'") -> None:
     for i in ids:
-        if not isinstance(i, str) or not _ID.match(i):
-            raise ContentError(f"{where}: every {label} entry needs a lowercase snake_case 'id' (got {i!r})")
+        if not isinstance(i, str) or not pattern.match(i):
+            raise ContentError(f"{where}: every {label} entry needs {rule} (got {i!r})")
     dupes = sorted(i for i, n in Counter(ids).items() if n > 1)
     if dupes:
         raise ContentError(f"{where}: duplicate {label} ids: {', '.join(dupes)}")
@@ -405,6 +406,7 @@ def _validate_clues(p: dict, where: str) -> None:
         if not isinstance(c.get("key"), bool):
             raise ContentError(f"{where} clue {i}: 'key' must be true or false")
         _number(c, "depth", f"{where} clue {i}", 0, integer=True)
+        _string_list(c, "teaches", f"{where} clue {i}")
         if c["key"]:
             keys_at.add(c["depth"])
     if 0 not in keys_at:
@@ -680,6 +682,60 @@ def check_kpis(docs: dict[str, Any]) -> None:
             raise ContentError(f"kpis.yaml: kpi '{k['id']}': unknown pool {k['pool']!r}")
 
 
+# ── concepts.yaml ────────────────────────────────────────────────────────────
+# The glossary (the game's codex): every concept a problem, clue or the rules
+# teach. Ids are what `teaches` lists and Profile.learn() use; acronyms keep
+# their capitals (PDCA, A3).
+
+_CONCEPT_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_]*$")
+CONCEPT_CATEGORIES = ["lean", "sector", "kata", "measure"]
+CONCEPT_KEYS = {"id", "name", "category", "short", "text", "example", "source", "estimate", "verify"}
+# Concepts the rules teach by id (game/src/rules/region.gd, profile.learn), plus
+# waste_<waste> for every waste.
+CODE_CONCEPTS = ["respect_for_people", "open_questions", "gemba", "A3", "kata_prediction", "PDCA",
+                 "eight_wastes", "bottleneck_focus", "theory_of_constraints", "standard_work"]
+
+
+def validate_concepts(doc: Any, source: str) -> None:
+    _require_strings(doc, [], source)
+    items = doc.get("concepts")
+    if not isinstance(items, list) or not all(isinstance(i, dict) for i in items):
+        raise ContentError(f"{source}: 'concepts' must be a list of mappings")
+    _check_ids([i.get("id") for i in items], "concepts", source, _CONCEPT_ID, "an id of letters, digits and _")
+    for c in items:
+        where = f"{source}: concept '{c['id']}'"
+        _known_keys(c, CONCEPT_KEYS, where)
+        _require_strings(c, ["name", "short", "text", "example"], where)
+        _one_of(c, "category", CONCEPT_CATEGORIES, where)
+        if not isinstance(c.get("verify", False), bool):
+            raise ContentError(f"{where}: 'verify' must be true or false")
+        if "source" in c:
+            src = c["source"]
+            if not isinstance(src, dict) or set(src) != {"title", "url"} or not str(src["url"]).startswith("https://") \
+                    or not isinstance(src["title"], str) or not src["title"].strip():
+                raise ContentError(f"{where}: 'source' needs a title and an https url")
+        if "estimate" in c:
+            _require_strings(c, ["estimate"], where)
+        if c["category"] == "sector" and "source" not in c and "estimate" not in c:
+            raise ContentError(f"{where}: a sector fact needs a 'source' or an 'estimate' (CLAUDE.md §2, evidence first)")
+
+
+def check_concepts(docs: dict[str, Any]) -> None:
+    """Everything the game teaches has a glossary entry."""
+    known = {c["id"] for c in docs["concepts"]["concepts"]}
+    for concept_id in CODE_CONCEPTS + [f"waste_{w}" for w in WASTES]:
+        if concept_id not in known:
+            raise ContentError(f"concepts.yaml: missing concept {concept_id!r} (the rules teach it)")
+    for stem, p in _all_problems(docs):
+        where = f"{stem}.yaml: problem '{p['id']}'"
+        taught = [(where, p.get("teaches", []))] + [
+            (f"{where} clue {i}", c.get("teaches", [])) for i, c in enumerate(p["clues"])]
+        for at, ids in taught:
+            for concept_id in ids:
+                if concept_id not in known:
+                    raise ContentError(f"{at}: teaches unknown concept {concept_id!r}")
+
+
 def vocabulary() -> dict[str, Any]:
     """The words content may use, written to game/data so a Godot test can
     check the game knows exactly the same ones."""
@@ -701,10 +757,11 @@ VALIDATORS: dict[str, Callable[[Any, str], None]] = {
     "countermeasures": validate_countermeasures,
     "missions": validate_missions,
     "kpis": validate_kpis,
+    "concepts": validate_concepts,
 }
 
 # Checks that need several files at once. Each gets {stem: document}.
-CROSS_CHECKS: list[Callable[[dict[str, Any]], None]] = [check_kpis, check_problems, check_missions]
+CROSS_CHECKS: list[Callable[[dict[str, Any]], None]] = [check_kpis, check_problems, check_missions, check_concepts]
 
 
 def _validator_for(stem: str) -> Callable[[Any, str], None] | None:

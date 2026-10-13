@@ -115,7 +115,7 @@ problems:
       - De ontwerpsoftware is verouderd.
     mismatch_note: Harder werken of betere software verandert niets aan de hoeveelheid werk per standaardaansluiting.
     countermeasures: {standard_designs: 1.0, delegated_approval: 0.65}
-    teaches: [standard_work, overprocessing]
+    teaches: [standard_work, waste_overprocessing]
     effects:
       - {target: connections.design, property: touch_time, value: 1.3}
     clues:
@@ -198,7 +198,7 @@ problems:
       - De monteurs leveren hun schetsen te laat in.
     mismatch_note: Meer mensen bij GIS verwerken de stapel sneller, maar het overtekenen blijft dubbel werk.
     countermeasures: {revision_at_source: 1.0, daily_revision_template: 0.7}
-    teaches: [inventory, quality_at_the_source]
+    teaches: [waste_inventory, quality_at_the_source]
     effects:
       - {target: connections.revision, property: touch_time, value: 1.4}
       # Outdated KLIC maps: more cables hit. Estimate: ~60% of digging damage
@@ -231,7 +231,7 @@ problems:
       - De KLIC-melding wordt niet gedaan.
     mismatch_note: Aannemers doen wel een KLIC-melding; de kaart die ze krijgen klopt niet en de planning laat geen tijd voor proefsleuven.
     countermeasures: {standard_test_trenches: 0.8, contractor_briefing: 0.7, revision_at_source: 0.6}
-    teaches: [defects, systems_thinking]
+    teaches: [waste_defects, systems_thinking]
     effects:
       - {target: outages.daytime, property: demand, value: 1.5}  # a third of daytime outages
     # Repairs and claims: ~5 extra damages a week x ~EUR 850 direct repair cost
@@ -261,7 +261,7 @@ problems:
       - De meetapparatuur is verouderd.
     mismatch_note: Een opleiding alleen leert niet wat alleen in de hoofden van de ervaren monteurs zit.
     countermeasures: {work_instruction_videos: 0.8, skills_matrix_buddy: 1.0}
-    teaches: [skills, respect_for_people]
+    teaches: [waste_skills, respect_for_people]
     effects:
       - {target: outages.locate, property: ftr, value: -0.3}
     clues:
@@ -342,7 +342,7 @@ problems:
       - De rekensoftware is te traag.
     mismatch_note: Meer analisten werken de stapel sneller weg, maar een groot deel van de studies is niet nodig.
     countermeasures: {triage_fast_lane: 1.0, calculation_templates: 0.7}
-    teaches: [triage, theory_of_constraints, overprocessing]
+    teaches: [triage, theory_of_constraints, waste_overprocessing]
     effects:
       - {target: connections.grid_study, property: applies, value: 0.15}  # 40% of connections instead of 25%
     clues:
@@ -426,7 +426,7 @@ problems:
       - Er zijn te weinig monteurs voor netverzwaring.
     mismatch_note: De levertijd van de fabrikant kun je niet veranderen. Wanneer je bestelt wel.
     countermeasures: {early_transformer_order: 1.0, framework_contracts: 0.9, strategic_transformer_stock: 0.8}
-    teaches: [waiting, flow]
+    teaches: [waste_waiting, flow]
     effects:
       # Estimate: about six months of supplier lead time after the design, where
       # four months is the reinforcement itself.
@@ -457,7 +457,7 @@ problems:
       - De congestieonderzoeken rekenen te voorzichtig.
     mismatch_note: Op papier is het net vol, in werkelijkheid niet. Wie alleen verzwaart, laat de ongebruikte reserveringen liggen.
     countermeasures: {use_it_or_lose_it: 1.0, capacity_usage_dashboard: 0.7, flexible_contracts: 0.8}
-    teaches: [inventory, visual_management]
+    teaches: [waste_inventory, visual_management]
     effects:
       # Capacity frees up only through reinforcement, so the queue moves slower
       # and fewer requests fit straight away (an estimate).
@@ -519,7 +519,7 @@ problems:
       - Er is te weinig overleg tussen de teamleiders.
     mismatch_note: Meer overleg of rustiger werken verandert niets zolang elk team op eigen aantallen wordt beoordeeld. De mensen doen precies wat hun cijfers vragen.
     countermeasures: {obeya_end_to_end: 1.0, connections_wip_limit: 0.8, shared_team_goals: 0.7}
-    teaches: [flow, overproduction, kpi_alignment]
+    teaches: [flow, waste_overproduction, kpi_alignment]
     effects:
       # Two departments steered by volume and utilisation (KPI menus in
       # content/kpis.yaml): they push work in, take the short jobs first and

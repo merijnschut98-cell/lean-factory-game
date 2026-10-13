@@ -12,7 +12,7 @@ Pivot agreed 2026-10-12: from a hoverboard factory to a grid operator. The 3D fa
 
 This is a multi-month project, built the right way: research → design (reviewed by Merijn) → engine → content → world → UI, in small tested increments. No publishing deadline. Built in **Godot 4 + GDScript** from the start (decided 2026-10-12).
 
-**Next task:** Merijn playtests the office slice (`fix_custom_design`) and reviews the pending calls; then a whole-branch review of the slice, the next 3D piece (people, a second mission) or `content/concepts.yaml`. The office slice is built (2026-10-13): Blender model (`tools/blender/`), `GameSession`, first-person scene and Dutch UI, screenshots in `docs/screenshots/`.
+**Next task:** Merijn playtests the office slice (`fix_custom_design`) and reviews the pending calls; then a whole-branch review of the slice, or the next 3D piece (people, a second mission); the glossary (`content/concepts.yaml`) is built. The office slice is built (2026-10-13): Blender model (`tools/blender/`), `GameSession`, first-person scene and Dutch UI, screenshots in `docs/screenshots/`.
 
 ---
 
@@ -244,7 +244,8 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 - 🔧 `content/countermeasures.yaml`: 41 countermeasures; grows with each problem
 - ✅ `content/missions.yaml`: the tier-1 campaign, with Henk's retirement as a 56-day deadline mission (De laatste kennisdrager)
 - ✅ Henk is a real event (Merijn, 2026-10-12): a side mission that opens after De verkeerde mof in de bus; Henk retires 56 days later, taken on or not. Missing it closes the buddy system (`fail_closes`) for good; work instructions with video still solve the problem. Deadlines count from when a mission opens; the validator requires another way to solve the problem.
-- ⬜ `content/concepts.yaml` (Lean + sector glossary, Dutch)
+- ✅ `content/concepts.yaml` (2026-10-13): 61-entry Dutch glossary (lean, the 8 wastes as `waste_<waste>`, Toyota Kata, measure, sector with a public `source:` or marked `estimate:`); the validator requires every `teaches` id (problems and clues) and every id the rules learn; `Catalog.concepts`. Problem `teaches` now use `waste_<waste>` instead of bare waste names
+  - ⬜ Verify the two sector sources marked `verify: true` (`ean_code`, `middenspanningsruimte`) and the codex UI that shows `Catalog.concepts`
 - ✅ KPI `wip_age` (`Network.open_age_days`, in `Region.snapshot`): the age of open work. Lead time counts finished orders only, so long waits hide the oldest work (survivorship).
 - ⬜ Next session (found by report7, 5 seeds × 180 days):
   - ✅ `wip_age` named in Wachten op de trafo and in the report (2026-10-13). Why: its harm is invisible in finished-order lead time (43.5 vs 46.9 days) and shows only as throughput 26.9 → 25.5;

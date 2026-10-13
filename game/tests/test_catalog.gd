@@ -276,3 +276,23 @@ func test_an_expert_plays_the_opening_of_the_campaign() -> void:
 	assert_true(Progression.belt_index(r.profile.xp) >= 1, "yellow belt after the opening")
 	assert_eq(log.status("fix_done_but_not_closed"), "available", "the story goes on")
 
+
+
+## The glossary (content/concepts.yaml): everything the game teaches has an
+## entry the codex can show.
+func test_every_taught_concept_is_in_the_glossary() -> void:
+	var c := Catalog.load_from()
+	assert_eq(c.error, "")
+	var taught := PackedStringArray(["PDCA", "A3", "gemba", "eight_wastes", "bottleneck_focus", "theory_of_constraints",
+		"standard_work", "respect_for_people", "open_questions", "kata_prediction"])  # Region's profile.learn calls
+	for w: String in Investigation.WASTES:
+		taught.append("waste_" + w)
+	for p in c.problems:
+		taught.append_array(p.teaches)
+		for clue in p.clues:
+			taught.append_array(clue.teaches)
+	for id in taught:
+		assert_true(c.concepts.has(id), "concept %s" % id)
+	var flow: ConceptDef = c.concepts["flow"]
+	assert_eq(flow.category, "lean")
+	assert_false(flow.name.is_empty() or flow.short.is_empty() or flow.text.is_empty() or flow.example.is_empty())
