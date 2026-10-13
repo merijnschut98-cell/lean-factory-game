@@ -51,7 +51,7 @@ func test_clearing_restores_base_exactly() -> void:
 				value = 2
 			SimModifiers.Op.SET:
 				value = {"reserve": {"stream": "congestion", "people": 1}, "preempts": true, "starts_with": "intake",
-					"wip_limit": 2}[property]
+					"wip_limit": 2, "start_rule": "pull", "order_rule": "shortest"}[property]
 		effects.append(NetFixture.effect(target, property, value))
 	var before := _fields(net, effects)
 	assert_eq(net.set_effects("a", effects), "")

@@ -244,3 +244,122 @@ func test_status_call_rate_is_a_lever() -> void:
 	var net := _with_status_calls(1.0, 7.0)
 	assert_eq(net.set_effects("cm:status_updates", [NetFixture.effect("connections", "call_rate", 0.2)]), "")
 	assert_near(net.stream("connections").call_rate, 0.2, 1e-9)
+
+
+## One person serving `streams`, each a single work step on the shared pool.
+func _shared_person(streams: Array, rule: String) -> Network:
+	var net := NetFixture.net([NetFixture.pool("team", 1)], streams)
+	assert_eq(net.set_effects("cm:rule", [NetFixture.effect("team", "order_rule", rule)]), "")
+	return net
+
+
+func _done(net: Network, stream_id: String) -> int:
+	return net.stream(stream_id).finished.size()
+
+
+func test_shortest_first_picks_the_quickest_job() -> void:
+	var streams := func() -> Array:
+		return [
+			NetFixture.stream("long", [NetFixture.work("job", "team", 4.0)], 20.0, 1),
+			NetFixture.stream("short", [NetFixture.work("job", "team", 0.5)], 20.0, 1),
+		]
+	var fifo: Network = _shared_person(streams.call(), "first_come")
+	var quickest: Network = _shared_person(streams.call(), "shortest")
+	fifo.advance_days(7)
+	quickest.advance_days(7)
+	assert_true(_done(fifo, "short") <= _done(fifo, "long") + 1, "first come: %d short, %d long" % [_done(fifo, "short"), _done(fifo, "long")])
+	assert_true(_done(quickest, "short") > _done(quickest, "long"), "shortest first: %d short, %d long" % [_done(quickest, "short"), _done(quickest, "long")])
+
+
+## Reworked orders re-enter the back of their queue but were born earlier.
+func _rework_and_fresh(rule: String) -> Network:
+	var net := NetFixture.net([NetFixture.pool("team", 1)], [
+		NetFixture.stream("reworked", [NetFixture.work("check", "team", 1.0, 0.5)], 5.0, 1),
+		NetFixture.stream("fresh", [NetFixture.work("job", "team", 1.0)], 25.0, 1),
+	])
+	assert_eq(net.set_effects("cm:rule", [NetFixture.effect("team", "order_rule", rule)]), "")
+	return net
+
+
+func test_oldest_first_picks_the_earliest_born() -> void:
+	var fifo := _rework_and_fresh("first_come")
+	var oldest := _rework_and_fresh("oldest")
+	fifo.advance_days(56)
+	oldest.advance_days(56)
+	var fifo_lead: float = fifo.stream("reworked").kpis(fifo.time, 56)["lead_days_p85"]
+	var oldest_lead: float = oldest.stream("reworked").kpis(oldest.time, 56)["lead_days_p85"]
+	assert_true(oldest_lead < fifo_lead, "the reworked order, born earlier, goes first: %.2f vs %.2f days" % [oldest_lead, fifo_lead])
+
+
+func test_due_first_picks_the_earliest_due_date() -> void:
+	var streams := func() -> Array:
+		return [
+			NetFixture.stream("urgent", [NetFixture.work("job", "team", 2.0)], 10.0, 1, {"norm_days": 2.0}),
+			NetFixture.stream("relaxed", [NetFixture.work("job", "team", 2.0)], 10.0, 1, {"norm_days": 30.0}),
+		]
+	var fifo: Network = _shared_person(streams.call(), "first_come")
+	var due: Network = _shared_person(streams.call(), "due")
+	fifo.advance_days(56)
+	due.advance_days(56)
+	var fifo_on_time: float = fifo.stream("urgent").kpis(fifo.time, 56)["on_time"]
+	var due_on_time: float = due.stream("urgent").kpis(due.time, 56)["on_time"]
+	assert_true(due_on_time > fifo_on_time, "on time %.2f vs %.2f" % [due_on_time, fifo_on_time])
+
+
+## `fast` feeds a slower `slow` team.
+func _fast_into_slow(start_rule: String) -> Network:
+	var net := NetFixture.net([NetFixture.pool("fast", 1), NetFixture.pool("slow", 1)], [
+		NetFixture.stream("s", [
+			NetFixture.work("a", "fast", 0.5),
+			NetFixture.work("b", "slow", 4.0),
+		], 20.0, 1),
+	])
+	assert_eq(net.set_effects("cm:rule", [NetFixture.effect("fast", "start_rule", start_rule)]), "")
+	return net
+
+
+func test_pull_waits_for_room_downstream() -> void:
+	var pushed := _fast_into_slow("push")
+	var pulled := _fast_into_slow("pull")
+	pushed.advance_days(10)
+	pulled.advance_days(10)
+	var b_step := pulled.stream("s").step("b")
+	var limit: float = pulled.pools["fast"].pull_limit_days
+	assert_true(pulled.queue_days(b_step) <= limit + 0.5, "pull: %.2f days queued" % pulled.queue_days(b_step))
+	assert_true(pushed.queue_days(pushed.stream("s").step("b")) > limit + 0.5, "push: %.2f days queued" % pushed.queue_days(pushed.stream("s").step("b")))
+
+
+func test_queue_days_is_queued_work_over_the_first_pool_per_day() -> void:
+	var net := _fast_into_slow("push")
+	var b_step := net.stream("s").step("b")
+	assert_eq(net.queue_days(b_step), 0.0)
+	for i in 3:
+		net.open_order(net.stream("s"))
+	net.advance(SimCalendar.days(1) + 600)  # Tuesday 10:00: all three passed `a`, one is in progress at `b`
+	assert_true(net.queue_of(b_step).size() >= 1)
+	var minutes := 0
+	for o in net.queue_of(b_step):
+		minutes += o.remaining
+	assert_near(net.queue_days(b_step), minutes / (8.0 * 60.0), 1e-9, "one monteur, 8 hours a working day")
+
+
+func test_pull_never_blocks_a_last_step() -> void:
+	var net := NetFixture.net([NetFixture.pool("team", 1)], [
+		NetFixture.stream("s", [NetFixture.work("only", "team", 1.0)], 10.0, 1),
+	])
+	assert_eq(net.set_effects("cm:rule", [NetFixture.effect("team", "start_rule", "pull")]), "")
+	net.advance_days(14)
+	assert_true(_done(net, "s") > 5, "%d done" % _done(net, "s"))
+
+
+func test_rule_values_are_checked() -> void:
+	var net := _fast_into_slow("push")
+	assert_ne(net.set_effects("bad", [NetFixture.effect("fast", "order_rule", "random")]), "")
+	assert_ne(net.set_effects("bad", [NetFixture.effect("fast", "start_rule", "first_come")]), "")
+	assert_ne(net.set_effects("bad", [NetFixture.effect("fast", "order_rule", 1)]), "")
+	assert_eq(net.pools["fast"].order_rule, "first_come", "nothing changed")
+	assert_eq(net.pools["fast"].start_rule, "push")
+	assert_eq(net.set_effects("ok", [NetFixture.effect("fast", "order_rule", "due")]), "")
+	assert_eq(net.pools["fast"].order_rule, "due")
+	net.clear_effects("ok")
+	assert_eq(net.pools["fast"].order_rule, "first_come", "lifting the rule restores the habit")

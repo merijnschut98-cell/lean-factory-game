@@ -46,6 +46,10 @@
    "kind": "stock",
    "step_kind": ""
   },
+  "order_rule": {
+   "kind": "pool",
+   "step_kind": ""
+  },
   "preempts": {
    "kind": "stream",
    "step_kind": ""
@@ -55,6 +59,10 @@
    "step_kind": ""
   },
   "reserve": {
+   "kind": "pool",
+   "step_kind": ""
+  },
+  "start_rule": {
    "kind": "pool",
    "step_kind": ""
   },
@@ -91,11 +99,21 @@
   "main",
   "side"
  ],
+ "order_rules": [
+  "first_come",
+  "oldest",
+  "shortest",
+  "due"
+ ],
  "severities": [
   "low",
   "medium",
   "high",
   "critical"
+ ],
+ "start_rules": [
+  "push",
+  "pull"
  ],
  "tools": [
   "conversation",

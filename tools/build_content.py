@@ -290,8 +290,11 @@ COUNTERMEASURE_KEYS = {"id", "tier", "name", "category", "description", "budget"
                        "multipliers", "effects"}
 CLUE_KEYS = {"tool", "text", "key", "depth", "at", "note", "teaches"}
 EFFECT_KEYS = {"target", "property", "value"}
+START_RULES = ["push", "pull"]  # SimPool.START_RULES
+ORDER_RULES = ["first_come", "oldest", "shortest", "due"]  # SimPool.ORDER_RULES
+WORK_RULES = {"start_rule": START_RULES, "order_rule": ORDER_RULES}  # value type → its values
 CHECK_PASS = 0.5  # the effectiveness a Check needs to pass (Pdca.CHECK_PASS)
-# property → (target kind, required step kind or None, value type: factor | number | bool | count | reserve | step)
+# property → (target kind, required step kind or None, value type: factor | number | bool | count | reserve | step | start_rule | order_rule)
 EFFECT_PROPERTIES = {
     "touch_time": ("step", "work", "factor"), "ftr": ("step", "work", "number"),
     "applies": ("step", None, "number"), "wait_time": ("step", "wait", "factor"),
@@ -300,6 +303,7 @@ EFFECT_PROPERTIES = {
     "demand": ("arrivals", None, "factor"), "reserve": ("pool", None, "reserve"),
     "preempts": ("stream", None, "bool"), "wip_limit": ("stream", None, "count"),
     "call_rate": ("stream", None, "factor"),
+    "start_rule": ("pool", None, "start_rule"), "order_rule": ("pool", None, "order_rule"),
     "batch_days": ("step", "wait", "number"), "starts_with": ("step", "wait", "step"),
 }
 
@@ -439,6 +443,8 @@ def _check_effect(e: dict, where: str, net: dict) -> None:
         if not isinstance(value, dict) or value.get("stream") not in net["stream"]:
             raise ContentError(f"{where}: a reserve is {{stream, people}} with a known stream")
         _number(value, "people", where, 0, net["pool"][target]["headcount"], integer=True)
+    if value_type in WORK_RULES and value not in WORK_RULES[value_type]:
+        raise ContentError(f"{where}: needs one of {WORK_RULES[value_type]} (got {value!r})")
     if value_type == "step" and value != "":
         step = net["step"][target]
         if not _earlier(step["stream_ids"], value, step["id"]):
@@ -611,7 +617,7 @@ def vocabulary() -> dict[str, Any]:
         "tools": sorted(TOOLS), "wastes": WASTES, "kpis": KPIS, "severities": SEVERITIES,
         "visibilities": VISIBILITIES, "check_pass": CHECK_PASS,
         "mission_kinds": MISSION_KINDS, "mission_goals": sorted(MISSION_GOALS), "coach_stages": COACH_STAGES,
-        "belt_xp": BELT_XP,
+        "belt_xp": BELT_XP, "start_rules": START_RULES, "order_rules": ORDER_RULES,
         "effect_properties": {p: {"kind": k, "step_kind": sk or ""} for p, (k, sk, _) in sorted(EFFECT_PROPERTIES.items())},
     }
 

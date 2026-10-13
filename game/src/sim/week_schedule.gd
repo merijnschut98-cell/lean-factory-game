@@ -48,6 +48,14 @@ func hours() -> float:
 	return _count * SimCalendar.TICK / 60.0
 
 
+## Days of the week with any on-time.
+func days_on() -> int:
+	var n := 0
+	for weekday in 7:
+		n += 1 if not slots_on_day(weekday).is_empty() else 0
+	return n
+
+
 ## The first moment at or after `t` that is on.
 func next_start(t: int) -> int:
 	var gap := _to_next[_slot(t)]

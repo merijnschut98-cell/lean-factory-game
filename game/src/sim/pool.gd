@@ -6,6 +6,9 @@ extends RefCounted
 ## Slots of `daily`.
 const PRESENT := 0
 const BUSY := 1
+## Work rules a team can follow (see `start_rule` and `order_rule`).
+const START_RULES := ["push", "pull"]
+const ORDER_RULES := ["first_come", "oldest", "shortest", "due"]
 
 var id: String
 var name: String
@@ -21,6 +24,14 @@ var spare: Array[int] = []
 ## People held for one stream (an outage reserve), {stream, people}; while
 ## idle they take no other work. Empty: no reserve.
 var reserve: Dictionary = {}
+## How the team starts work (levers, see SimModifiers): "push" starts whatever
+## is queued; "pull" holds a job back while the next work step downstream has
+## `pull_limit_days` or more of work queued. And which queued job it takes
+## first: "first_come" (longest in this queue), "oldest" (earliest born),
+## "shortest" (least touch time left) or "due" (earliest due date).
+var start_rule := "push"
+var order_rule := "first_come"
+var pull_limit_days := 3.0
 ## Work steps (in any stream) served by this pool. Steps do not point back.
 var steps: Array[SimStep] = []
 ## Daily attendance draws.
@@ -62,6 +73,11 @@ func roll_presence() -> void:
 func load_since(day: int) -> float:
 	var totals := daily.since(day)
 	return totals[BUSY] / float(totals[PRESENT]) if totals[PRESENT] > 0 else 0.0
+
+
+## Productive people-minutes per working day on average.
+func minutes_per_day() -> float:
+	return hours_per_week() * 60.0 / schedule.days_on()
 
 
 ## Productive people-hours per week on average.

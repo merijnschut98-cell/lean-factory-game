@@ -592,7 +592,8 @@ func _send_back(order: WorkOrder, index: int, wait_minutes: int) -> void:
 
 
 ## Give free people the most urgent waiting work: highest stream priority
-## first, then the order that has queued longest. When nobody is free, an
+## first, then by the pool's order rule (by default the order that has queued
+## longest), skipping work a pull pool holds back. When nobody is free, an
 ## order of a pre-empting stream (outages) interrupts the least urgent
 ## lower-priority order in progress.
 func _assign_work() -> void:
@@ -602,7 +603,8 @@ func _assign_work() -> void:
 			var step := _next_step_for(pool)
 			if step == null:
 				break
-			var order: WorkOrder = queue_of(step).pop_front()
+			var queue := queue_of(step)
+			var order: WorkOrder = queue.pop_at(_head_index(pool, queue))
 			if not order.started:
 				if _went_stale(order, step):
 					continue
@@ -618,7 +620,7 @@ func _assign_work() -> void:
 			pool.daily.add(_day, SimPool.BUSY, worked)
 
 
-## The step whose first order someone in `pool` starts now: the most urgent
+## The step whose head order someone in `pool` starts now: the most urgent
 ## one if someone is free for it (or it may interrupt lower-priority work),
 ## otherwise the most urgent one someone is free for (reserved people only
 ## take the work they are held for).
@@ -626,7 +628,7 @@ func _next_step_for(pool: SimPool) -> SimStep:
 	var top := _most_urgent_step(pool)
 	if top == null:
 		return null
-	var urgent := queue_of(top)[0].stream
+	var urgent := queue_of(top)[0].stream  # one stream per step: any order will do
 	if pool.free_for(urgent) > 0:
 		return top
 	if pool.free_people() <= 0:
@@ -634,23 +636,74 @@ func _next_step_for(pool: SimPool) -> SimStep:
 	return _most_urgent_step(pool, true)  # people are free, but held in reserve
 
 
-## The step with the most urgent first order; with `startable`, only steps
-## someone is free for.
+## The step with the most urgent head order; with `startable`, only steps
+## someone is free for. A `pull` pool skips steps whose next work step is full.
 func _most_urgent_step(pool: SimPool, startable: bool = false) -> SimStep:
 	var best: SimStep = null
+	var best_head: WorkOrder = null
 	for step in pool.steps:
 		var queue := queue_of(step)
 		if queue.is_empty() or (startable and pool.free_for(queue[0].stream) <= 0):
 			continue
-		if best == null or _more_urgent(queue[0], queue_of(best)[0]):
+		var head := queue[_head_index(pool, queue)]
+		if pool.start_rule == "pull" and _downstream_is_full(head, pool.pull_limit_days):
+			continue
+		if best == null or _more_urgent(head, best_head, pool.order_rule):
 			best = step
+			best_head = head
 	return best
 
 
-func _more_urgent(a: WorkOrder, b: WorkOrder) -> bool:
+## Where in `queue` the order that `pool` takes first sits, by its order rule.
+## First come is the front of the queue (a paused order resumes first).
+func _head_index(pool: SimPool, queue: Array[WorkOrder]) -> int:
+	if pool.order_rule == "first_come":
+		return 0
+	var best := 0
+	for i in range(1, queue.size()):
+		if _rule_key(queue[i], pool.order_rule) < _rule_key(queue[best], pool.order_rule):
+			best = i
+	return best
+
+
+## Smaller goes first.
+func _rule_key(order: WorkOrder, rule: String) -> int:
+	match rule:
+		"oldest":
+			return order.born
+		"shortest":
+			return order.remaining
+		"due":
+			return order.due
+	return order.queued_at
+
+
+func _more_urgent(a: WorkOrder, b: WorkOrder, rule: String) -> bool:
 	if a.stream.priority != b.stream.priority:
 		return a.stream.priority > b.stream.priority
-	return a.queued_at < b.queued_at
+	return _rule_key(a, rule) < _rule_key(b, rule)
+
+
+## Whether the next work step after `order`'s has `limit_days` or more queued
+## (never for the last work step: nothing downstream to overload).
+func _downstream_is_full(order: WorkOrder, limit_days: float) -> bool:
+	var steps := order.stream.steps
+	for i in range(order.step_index + 1, steps.size()):
+		if steps[i].kind == SimStep.Kind.WORK:
+			return queue_days(steps[i]) >= limit_days
+	return false
+
+
+## Days of work queued at `step`: its waiting touch minutes over what its
+## first pool does in a working day. Infinite when that pool has no capacity.
+func queue_days(step: SimStep) -> float:
+	var minutes := 0
+	for order in queue_of(step):
+		minutes += order.remaining
+	if minutes == 0:
+		return 0.0
+	var capacity := pools[step.pool_ids[0]].minutes_per_day()
+	return minutes / capacity if capacity > 0.0 else INF
 
 
 ## Pause the least urgent busy order with a lower priority. True if one was paused.

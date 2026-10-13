@@ -190,6 +190,7 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 - ✅ First fork in the main quest (2026-10-13): after De stapel bij Werkvoorbereiding, Het knelpunt verschuift (intake: the bottleneck) and Meterkast niet gereed (monteurs: not the bottleneck, now a main mission with coach insights) open together
 - ⬜ Catalogue problems that need a new mechanism first:
   - KPI's die elkaar bevechten: overproduction, departments pushing work in. Design approved (2026-10-13): departments get KPIs that set work rules (start push/pull, order, care); the player picks 2 of up to 5 per department at a quarterly review; the reward follows the measured improvement. Spec: `docs/superpowers/specs/2026-10-13-department-kpis-design.md` (awaiting Merijn's review), then the implementation plan
+- ✅ Department KPIs, task 1: work rules in the simulation (2026-10-13). A pool gets `start_rule` (push / pull: hold a job while the next work step downstream has `pull_limit_days` = 3 or more queued, see `Network.queue_days`) and `order_rule` (first_come / oldest / shortest / due) as SET levers; push and first_come leave the base bit-identical. Mirrored in `build_content.py` (`start_rule`, `order_rule`, vocabulary). Next: the KPI definitions and effects on top (plan: `docs/superpowers/plans/2026-10-13-department-kpis.md`).
 - ✅ Mission system (Merijn's design, CLAUDE.md §2): `MissionDef` + `Missions`.
   - At most one main and three side missions; unlocks by mission and belt.
   - Goals: walk / investigate / solve. Deadlines (Henk).

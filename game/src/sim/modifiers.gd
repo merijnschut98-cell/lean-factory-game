@@ -33,6 +33,8 @@ const PROPERTIES := {
 	"reorder_point": {"kind": "stock", "field": "reorder_point", "op": Op.ADD, "min": 0.0},
 	"demand": {"kind": "arrivals", "field": "per_week", "op": Op.MUL, "min": 0.0},
 	"reserve": {"kind": "pool", "field": "reserve", "op": Op.SET, "valid": "reserve"},
+	"start_rule": {"kind": "pool", "field": "start_rule", "op": Op.SET, "valid": "start_rule"},
+	"order_rule": {"kind": "pool", "field": "order_rule", "op": Op.SET, "valid": "order_rule"},
 	"preempts": {"kind": "stream", "field": "preempts", "op": Op.SET, "valid": "bool"},
 	"wip_limit": {"kind": "stream", "field": "wip_limit", "op": Op.SET, "valid": "count"},
 	"call_rate": {"kind": "stream", "field": "call_rate", "op": Op.MUL, "min": 0.0},
@@ -137,6 +139,10 @@ func _check_lever(net: Network, valid: String, target: String, obj: Object, valu
 		"count":
 			var whole: bool = value is int or (value is float and value == floorf(value))
 			return "" if whole and value >= 0 else "needs a whole number of 0 or more (got %s)" % [value]
+		"start_rule":
+			return "" if value in SimPool.START_RULES else "needs one of %s (got %s)" % [SimPool.START_RULES, value]
+		"order_rule":
+			return "" if value in SimPool.ORDER_RULES else "needs one of %s (got %s)" % [SimPool.ORDER_RULES, value]
 		"reserve":
 			# {} (no reserve) or {stream, people} with people up to the headcount.
 			if value is Dictionary and (value.is_empty() or (net.stream(value.get("stream", "")) != null
