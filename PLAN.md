@@ -278,9 +278,15 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 - ⬜ Town: streets, homes with solar/heat pumps/EV chargers, substations, industrial estate
 - ⬜ Vans driving to jobs; crews working at sites; outages darken streets
 - ⬜ NPCs per department; pathfinding across campus and town
+- ⬜ **Player map** (Merijn, 2026-10-13; planned, not yet scheduled): a map of the office layout showing the places (Intake, Werkvoorbereiding, Obeya wall, coach's room, mission board) and where the player stands; it grows to the campus and the town of Nova later. Built from the glb's place markers (`office.gd` already reads them), so it follows the model. Opens with M; the active mission's places are marked.
 
 ## Phase D — UI (Dutch) ⬜
 - ⬜ HUD (week/day clock, KPIs per stream), gemba toolkit, conversations, A3, Check/Act, value stream map per stream (built by walking it), notebook, codex, NPC dialogue, onboarding by the Lean coach
+- ⬜ **Training arc** (Merijn, 2026-10-13; planned, not yet scheduled): a short tutorial chain before the first real mission.
+  - **How the game works:** walking, gemba tools and their time cost, the clue journal, the A3, Check/Act, the coach, the KPI board.
+  - **What choices do:** time, budget and trust; a fix that fades when it is not standardised; bottleneck versus non-bottleneck.
+  - **A little about the energy sector:** the role of a grid operator (DSO), grid congestion, the connection term, the technician shortage, the ACM, the energy transition.
+  - It follows CLAUDE.md §2: action-based, Kata-style coaching, no multiple choice with a marked answer, Dutch text. It ties in with `content/concepts.yaml` (the glossary).
 
 ## Phase E — First playable and playtest ⬜
 - ⬜ First playable vertical slice (one value stream end to end), shared privately with Merijn once it is worth playing
@@ -306,6 +312,7 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 
 ## Decisions Made
 
+- **Player map and training arc (Merijn, 2026-10-13).** Both go into the plan (Phase C and Phase D), not to be built right away.
 - **Prototype and KPI reward (Merijn, 2026-10-13, multiple choice).**
   - **The 3D world comes first** for the prototype (est. 1.5–2 months to first play). The first piece is **one building with one mission**: the connections office (Intake, Werkvoorbereiding), walkable, with its gemba tools and one mission playable end to end.
   - **3D style: semi-realistic.** Models are built by script in Blender (`bpy` from PyPI) and exported to Godot as glTF. CC0 textures (Poly Haven, ambientCG) are used once the environment allows their domains.
