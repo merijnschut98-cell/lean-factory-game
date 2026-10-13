@@ -48,11 +48,16 @@ func streams() -> PackedStringArray:
 	return out
 
 
+## The KPIs of `pool_id`'s menu among `kpi_ids`, in menu order.
+func defs_for(pool_id: String, kpi_ids: PackedStringArray) -> Array:
+	return (menus.get(pool_id, []) as Array).filter(func(k: KpiDef) -> bool: return kpi_ids.has(k.id))
+
+
 ## The rule effects of a department following these KPIs: start and order on
 ## the pool, care on each of its work steps. A rule the KPIs disagree on is
 ## left out (the habit), as is care that comes out normal.
 func effects_for(pool_id: String, kpi_ids: PackedStringArray) -> Array:
-	var chosen := (menus.get(pool_id, []) as Array).filter(func(k: KpiDef) -> bool: return kpi_ids.has(k.id))
+	var chosen := defs_for(pool_id, kpi_ids)
 	var effects := []
 	for rule in ["start", "order"]:
 		var value := _agreed(chosen, rule)

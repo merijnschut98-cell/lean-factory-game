@@ -99,10 +99,13 @@ static func real_network(problem_ids: Array = [], seed_value: int = 11) -> Netwo
 	return net
 
 
-static func region(budget: int = 50000, seed_value: int = 5) -> Region:
+## A region over the fixture network; `problem_data` / `cm_data` replace the
+## fixture's problems() / countermeasures() (e.g. a tweaked copy).
+static func region(budget: int = 50000, seed_value: int = 5, problem_data: Array = problems(),
+		cm_data: Array = countermeasures()) -> Region:
 	var profile := Profile.new()
 	profile.budget = budget
-	return Region.new(net(seed_value), problem_defs(), countermeasure_defs(), profile)
+	return Region.new(net(seed_value), problem_defs(problem_data), countermeasure_defs(cm_data), profile)
 
 
 ## An A3 for `problem_id` naming its real root cause.
@@ -111,16 +114,16 @@ static func a3(r: Region, problem_id: String, waste: String, cm: String, evidenc
 	return {"waste": waste, "cause": options["correct"], "evidence": evidence, "cm": cm, "prediction": prediction}
 
 
-static func problem_defs() -> Array[ProblemDef]:
+static func problem_defs(data: Array = problems()) -> Array[ProblemDef]:
 	var out: Array[ProblemDef] = []
-	for d: Dictionary in problems():
+	for d: Dictionary in data:
 		out.append(ProblemDef.from_dict(d))
 	return out
 
 
-static func countermeasure_defs() -> Array[CountermeasureDef]:
+static func countermeasure_defs(data: Array = countermeasures()) -> Array[CountermeasureDef]:
 	var out: Array[CountermeasureDef] = []
-	for d: Dictionary in countermeasures():
+	for d: Dictionary in data:
 		out.append(CountermeasureDef.from_dict(d))
 	return out
 

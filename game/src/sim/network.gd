@@ -668,9 +668,12 @@ func _head_index(pool: SimPool, queue: Array[WorkOrder]) -> int:
 	if pool.order_rule == "first_come" or queue[0].started:
 		return 0
 	var best := 0
+	var best_key := _rule_key(queue[0], pool.order_rule)
 	for i in range(1, queue.size()):
-		if _rule_key(queue[i], pool.order_rule) < _rule_key(queue[best], pool.order_rule):
+		var key := _rule_key(queue[i], pool.order_rule)
+		if key < best_key:
 			best = i
+			best_key = key
 	return best
 
 

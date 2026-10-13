@@ -415,9 +415,7 @@ func check(problem_id: String) -> Dictionary:
 		profile.learn(["bottleneck_focus", "theory_of_constraints"])
 	if result["passed"]:
 		st.phase = P.CHECKED
-		# A board without department menus has nothing to review: it stays shut.
-		if countermeasures[st.a3["cm"]].unlocks == "kpi_board" and not board.unlocked and not board.menu.menus.is_empty():
-			board.unlock(net.time)
+		if countermeasures[st.a3["cm"]].unlocks == KpiBoard.UNLOCK and board.unlock(net.time):
 			events.append({"type": "kpi_review"})  # the first review, the baseline, is due at once
 		return result
 	result["lesson"] = "mismatch" if st.level == "mismatch" else "too_early"
@@ -467,7 +465,7 @@ func _reassert_board() -> void:
 	var later: Array[String] = [KpiBoard.SOURCE]
 	for source: String in sources:
 		var st: ProblemState = state.get(source.get_slice(":", 1))
-		if source.get_slice(":", 0) in ["problem", "cm", "do"] and st != null and st.is_open():
+		if st != null and st.is_open():
 			later.append(source)
 	net.move_effects_last(later)
 

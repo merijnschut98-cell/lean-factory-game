@@ -46,15 +46,14 @@ func test_a_change_leaves_unrelated_streams_identical() -> void:
 ## Push and first come, first served are what the departments do today:
 ## naming them changes nothing.
 func test_habit_rules_leave_the_base_identical() -> void:
-	var base := _net()
 	var habits := _net()
 	var effects: Array = []
 	for id: String in habits.pools:
 		effects.append(NetFixture.effect(id, "start_rule", "push"))
 		effects.append(NetFixture.effect(id, "order_rule", "first_come"))
 	assert_eq(habits.set_effects("habit", effects), "")
-	base.advance_days(60)
-	habits.advance_days(60)
+	habits.advance_days(120)
+	var base := _run_120_days()
 	for id: String in STREAMS:
 		assert_eq(habits.stream(id).finished, base.stream(id).finished, id)
 

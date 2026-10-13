@@ -472,8 +472,8 @@ def _check_effect(e: dict, where: str, net: dict) -> None:
         if not isinstance(value, dict) or value.get("stream") not in net["stream"]:
             raise ContentError(f"{where}: a reserve is {{stream, people}} with a known stream")
         _number(value, "people", where, 0, net["pool"][target]["headcount"], integer=True)
-    if value_type in WORK_RULES and value not in WORK_RULES[value_type]:
-        raise ContentError(f"{where}: needs one of {WORK_RULES[value_type]} (got {value!r})")
+    if value_type in WORK_RULES:
+        _one_of(e, "value", WORK_RULES[value_type], where)
     if value_type == "step" and value != "":
         step = net["step"][target]
         if not _earlier(step["stream_ids"], value, step["id"]):
@@ -665,9 +665,8 @@ def validate_kpis(doc: Any, source: str) -> None:
         rules = _mapping(k, "rules", set(KPI_RULES), where)
         if not rules:
             raise ContentError(f"{where}: needs at least one rule")
-        for rule, value in rules.items():
-            if value not in KPI_RULES[rule]:
-                raise ContentError(f"{where} rules: {rule} must be one of {KPI_RULES[rule]} (got {value!r})")
+        for rule in rules:
+            _one_of(rules, rule, KPI_RULES[rule], f"{where} rules")
     for pool, n in Counter(k["pool"] for k in kpis).items():
         if n > KPIS_PER_POOL:
             raise ContentError(f"{source}: '{pool}' has {n} KPIs; at most {KPIS_PER_POOL} KPIs per department")

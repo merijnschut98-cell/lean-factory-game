@@ -5,7 +5,7 @@ extends RefCounted
 ## and how well it works at each maturity gap.
 
 ## What a countermeasure can open in the game (mirrored in build_content.py).
-const UNLOCKS: Array[String] = ["kpi_board"]
+const UNLOCKS: Array[String] = [KpiBoard.UNLOCK]
 
 var id: String
 var name: String

@@ -117,8 +117,8 @@ func test_chosen_kpis_change_the_work_rules() -> void:
 
 func test_a_board_without_a_menu_grants_nothing() -> void:
 	var r := RulesFixture.region()  # never given use_kpis
-	r.board.unlock(r.net.time)
-	assert_eq(r.kpi_review({})["error"], "choose_two")
+	assert_false(r.board.unlock(r.net.time), "a board without menus stays shut")
+	assert_eq(r.kpi_review({})["error"], "locked")
 
 
 ## The first review chooses the KPIs and measures the baseline; the Check
@@ -313,13 +313,8 @@ func test_a_thin_sample_counts_as_no_change() -> void:
 ## unlocks the board, is ready for its Check.
 func _unlocking_experiment(menu: KpiMenu) -> Region:
 	var cms := RulesFixture.countermeasures()
-	cms[0]["unlocks"] = "kpi_board"  # standard_designs
-	var defs: Array[CountermeasureDef] = []
-	for d: Dictionary in cms:
-		defs.append(CountermeasureDef.from_dict(d))
-	var profile := Profile.new()
-	profile.budget = 50000
-	var r := Region.new(RulesFixture.net(), RulesFixture.problem_defs(), defs, profile)
+	cms[0]["unlocks"] = KpiBoard.UNLOCK  # standard_designs
+	var r := RulesFixture.region(50000, 5, RulesFixture.problems(), cms)
 	r.use_kpis(menu)
 	r.activate("custom_design")
 	r.use_tool("connections.design", "time_study")
@@ -358,15 +353,7 @@ func test_the_board_rules_win_over_a_resolved_fix() -> void:
 	problems[2]["effects"].append(NetFixture.effect("intake", "order_rule", "due"))  # revision_backlog
 	var cms := RulesFixture.countermeasures()
 	cms[1]["effects"].append(NetFixture.effect("intake", "start_rule", "push"))  # poka_yoke_form
-	var problem_defs: Array[ProblemDef] = []
-	for d: Dictionary in problems:
-		problem_defs.append(ProblemDef.from_dict(d))
-	var cm_defs: Array[CountermeasureDef] = []
-	for d: Dictionary in cms:
-		cm_defs.append(CountermeasureDef.from_dict(d))
-	var profile := Profile.new()
-	profile.budget = 50000
-	var r := Region.new(RulesFixture.net(), problem_defs, cm_defs, profile)
+	var r := RulesFixture.region(50000, 5, problems, cms)
 	r.use_kpis(_menu())
 	r.board.unlock(r.net.time)
 	assert_eq(r.kpi_review(GOOD)["error"], "")

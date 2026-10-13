@@ -12,6 +12,8 @@ extends RefCounted
 ## and only the part beyond the quarter-to-quarter noise (DEAD_BAND) pays.
 
 const SOURCE := "board:kpis"
+## What a countermeasure's `unlocks` names to open this board.
+const UNLOCK := "kpi_board"
 ## A quarter of 13 weeks: the OKR cycle.
 const REVIEW_DAYS := 91
 ## The reward for a 100 % average improvement (an estimate, the size of a
@@ -55,12 +57,14 @@ func _init(kpi_menu: KpiMenu) -> void:
 	menu = kpi_menu
 
 
-## Open the board; the first review (the baseline) is due at once. Idempotent.
-func unlock(now: int) -> void:
-	if unlocked:
-		return
+## Open the board; the first review (the baseline) is due at once. False
+## when it was already open or has no menu to choose from (it stays shut).
+func unlock(now: int) -> bool:
+	if unlocked or menu.menus.is_empty():
+		return false
 	unlocked = true
 	next_review_at = now
+	return true
 
 
 func review_due(now: int) -> bool:
@@ -99,7 +103,7 @@ func review(net: Network, choices: Dictionary) -> Dictionary:
 	return {
 		"error": "", "baseline": baseline, "improvement": gain, "paid": pay, "xp": roundi(pay * REVIEW_XP),
 		"budget": roundi(pay * REVIEW_BUDGET), "question": menu.review_question, "before": before,
-		"best": mark.duplicate(true), "after": snapshot.duplicate(true),
+		"best": mark, "after": snapshot.duplicate(true),
 	}
 
 
@@ -136,10 +140,10 @@ static func _ids(v: Variant) -> PackedStringArray:
 	return PackedStringArray(v) if v is Array or v is PackedStringArray else PackedStringArray()
 
 
-## The ids of `ids` on `pool`'s menu.
+## The ids of `ids` on `pool`'s menu, in the order given.
 func _known(pool: String, ids: PackedStringArray) -> PackedStringArray:
-	var menu_ids: Array = menu.menus[pool].map(func(k: KpiDef) -> String: return k.id)
-	return PackedStringArray(Array(ids).filter(func(id: String) -> bool: return menu_ids.has(id)))
+	var known: Array = menu.defs_for(pool, ids).map(func(k: KpiDef) -> String: return k.id)
+	return PackedStringArray(Array(ids).filter(func(id: String) -> bool: return known.has(id)))
 
 
 ## Measure every stream over the last quarter; the next review is due a quarter from now.

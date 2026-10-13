@@ -12,6 +12,8 @@ var _on := PackedByteArray()
 ## Per slot: how many slots until the next on-slot (0 when on).
 var _to_next := PackedInt32Array()
 var _count := 0
+## Days of the week with any on-time (fixed once built).
+var _days_on := 0
 
 
 ## Null when there are no blocks or a block is malformed (validated by
@@ -31,6 +33,8 @@ static func from_blocks(blocks: Array) -> WeekSchedule:
 			for slot in range(d * SLOTS_PER_DAY + start / SimCalendar.TICK, d * SLOTS_PER_DAY + ceili(end / float(SimCalendar.TICK))):
 				w._on[slot] = 1
 	w._count = w._on.count(1)
+	for weekday in 7:
+		w._days_on += 1 if not w.slots_on_day(weekday).is_empty() else 0
 	w._to_next.resize(SLOTS)
 	var gap := SLOTS  # walk the week backwards twice so the gaps wrap around Sunday night
 	for i in range(2 * SLOTS - 1, -1, -1):
@@ -50,10 +54,7 @@ func hours() -> float:
 
 ## Days of the week with any on-time.
 func days_on() -> int:
-	var n := 0
-	for weekday in 7:
-		n += 1 if not slots_on_day(weekday).is_empty() else 0
-	return n
+	return _days_on
 
 
 ## The first moment at or after `t` that is on.
