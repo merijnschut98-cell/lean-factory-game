@@ -10,17 +10,24 @@ At a review, after the KPIs are chosen, the board runs the coming quarter twice 
 - **Habit run:** without the board's rules (the effect source `board:kpis` removed). Each department works as it always did, under whatever problems, experiments and fixes are in force.
 - **Chosen run:** with the chosen KPIs' rules.
 
-The reward is the measured difference between the two runs: `improvement(habit, chosen)` over the streams the departments touch, with each KPI's change capped at ±50% and thin streams (fewer than 10 finished orders) ignored. A negative difference pays nothing. The coach words the result as a forecast: "Met deze KPI's verwachten we …".
+The reward is the measured difference between the two runs: `improvement(habit, chosen)` over the streams the departments touch, with each KPI's change capped at ±50% and thin streams (fewer than 10 finished orders) ignored.
+- **Pairing noise:** sharing random sequences does not make the pairing perfect. A different order or start rule changes which order draws next from a step's sequence, so the same choice's gain varies by about ±0.5% between seeds. Only the part beyond a dead band of 0.3% pays. A negative difference pays nothing.
+- **Measured over 5 seeds:**
+  - silo KPIs: always negative (mean −0.8%);
+  - lead time + complete handover: always positive (+0.76%);
+  - Obeya's lead time + oldest: about zero (+0.06%).
+
+The coach words the result as a forecast: "Met deze KPI's verwachten we …".
 
 ## Claude's calls (pending Merijn)
 1. **Compare with the habit, not with last quarter's choice.** Comparing with the previous choice opens an exploit: pick bad KPIs one quarter, good ones the next, and get paid for the swing. Against the habit, the same good choice pays every quarter, as a dividend on good management, and a choice no better than the habit pays nothing. That includes picking the same rules the Obeya already set, because the fix was paid at the Check.
-2. **No baseline review, no best levels, no dead band.** The paired runs carry no quarter-to-quarter noise, so these guards go, and so does the saved snapshot. The first review pays like any other.
+2. **No baseline review and no best levels.** The paired runs carry no quarter-to-quarter noise, so these guards go, and so does the saved snapshot; only the small band against the pairing noise stays. The first review pays like any other.
 3. **The forecast is the reward**; the real quarter that follows is not re-measured. Merijn chose to pay at the review.
 
 ## Mechanism
 - `NetworkState.copy(net) -> Network`: a fresh network from the same content (`Network.config`, kept by `Network.create`), restored from `capture(net)`. Pool settings that are not effects (the menu's `pull_limit_days`) are copied too. Reading the original changes nothing in it.
 - `KpiBoard.forecast(net) -> {habit, chosen}`: two copies, the habit one with `board:kpis` cleared, each advanced `REVIEW_DAYS`, then measured per stream (the existing measures plus `wip_age`).
-- `review()` validates, sets the real `board:kpis`, calls `forecast`, pays `max(0, improvement)` × 1,000 XP / €10,000, and returns `{error, improvement, paid, xp, budget, question, habit, chosen}`.
+- `review()` validates, forecasts on copies first (atomic: nothing changes on an error), then sets the real `board:kpis` and pays `max(0, improvement − 0.003)` × 30,000 XP / €300,000 (an estimate: the best choice earns about 140 XP and €1,400 a quarter), and returns `{error, improvement, paid, xp, budget, question, habit, chosen}`.
 - Save: the board keeps `unlocked`, `chosen` and `next_review_at`. Old saves' `snapshot`, `best` and `has_baseline` are ignored.
 - Cost: two 91-day runs per review, about 1–2 s on the real network, once a quarter.
 

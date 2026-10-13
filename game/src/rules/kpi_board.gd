@@ -15,12 +15,19 @@ const SOURCE := "board:kpis"
 const UNLOCK := "kpi_board"
 ## A quarter of 13 weeks: the OKR cycle.
 const REVIEW_DAYS := 91
-## ESTIMATE: the reward per 100 % forecast gain. On the real network the
-## best realistic choice gains about 0.6 % over the habit (lead time +
-## complete handover, probe 2026-10-13), which should earn about a small side
-## mission each quarter it is kept: 0.6 % → about 180 XP and €1,800.
+## ESTIMATE: the reward per 100 % forecast gain beyond DEAD_BAND. On the
+## real network (probe 2026-10-13, 5 seeds) the best realistic choice, lead
+## time + complete handover, gains 0.76 % over the habit on average; it should
+## earn about a small side mission each quarter it is kept: about 140 XP and
+## €1,400 after the band.
 const REVIEW_XP := 30000
 const REVIEW_BUDGET := 300000
+## ESTIMATE: the forecast runs share their random sequences per purpose, but a
+## different order or start rule changes which order draws next, so the
+## pairing is not perfect: the same choice's gain varies by about ±0.5 %
+## between seeds, and Obeya's lead time + oldest averages +0.06 % (noise).
+## Only the gain beyond this band pays.
+const DEAD_BAND := 0.003
 ## The end-to-end KPIs a review compares per stream: +1 when higher is
 ## better, −1 when lower is.
 const MEASURES := {"lead_days_p50": -1, "on_time": 1, "first_time_right": 1, "throughput_per_week": 1, "wip_age": -1}
@@ -31,6 +38,7 @@ const MAX_CHANGE := 0.5
 ## ESTIMATE: a stream counts only with at least this many finished orders in
 ## both quarters; below it, chance moves the KPIs more than the work rules do.
 const MIN_COMPLETED := 10
+
 var menu: KpiMenu
 var unlocked := false
 ## Department (pool id) → the two KPI ids it follows.
@@ -38,11 +46,12 @@ var chosen: Dictionary[String, PackedStringArray] = {}
 ## When the next review is due (minutes).
 var next_review_at := 0
 
+
 func _init(kpi_menu: KpiMenu) -> void:
 	menu = kpi_menu
 
 
-## Open the board; the first review (the baseline) is due at once. False
+## Open the board; the first review is due at once. False
 ## when it was already open or has no menu to choose from (it stays shut).
 func unlock(now: int) -> bool:
 	if unlocked or menu.menus.is_empty():
@@ -58,11 +67,12 @@ func review_due(now: int) -> bool:
 
 ## The quarterly review: `choices` maps every department on the menu to two
 ## distinct KPI ids from its menu. Returns {error, improvement (the forecast
-## gain of the chosen KPIs over the habit), paid, xp, budget, question, habit
-## and chosen (each stream's measures in the two forecast runs)}. Error is ""
-## or a code (locked | not_due | unknown_department | choose_two |
-## not_on_menu, or the network's message for a menu effect it refuses), and
-## on an error nothing changes. The caller grants the reward.
+## gain of the chosen KPIs over the habit), paid (the part beyond DEAD_BAND),
+## xp, budget, question, habit and chosen (each stream's measures in the two
+## forecast runs)}. Error is "" or a code (locked | not_due |
+## unknown_department | choose_two | not_on_menu, or a message from the
+## network), and on an error nothing changes: the forecast runs first, on
+## copies, and only then is the choice put in force. The caller grants the reward.
 func review(net: Network, choices: Dictionary) -> Dictionary:
 	var error := _choice_error(net.time, choices)
 	if not error.is_empty():
@@ -70,15 +80,15 @@ func review(net: Network, choices: Dictionary) -> Dictionary:
 	var effects := []
 	for pool: String in menu.menus:
 		effects.append_array(menu.effects_for(pool, _ids(choices[pool])))
-	error = net.set_effects(SOURCE, effects)
-	if not error.is_empty():
-		return {"error": error}
+	var runs := forecast(net, effects)
+	if not runs["error"].is_empty():
+		return {"error": runs["error"]}
+	net.set_effects(SOURCE, effects)  # accepted on the copy, so accepted here
 	for pool: String in menu.menus:
 		chosen[pool] = _ids(choices[pool])
 	next_review_at = net.time + SimCalendar.days(REVIEW_DAYS)
-	var runs := forecast(net)
 	var gain := improvement(runs["habit"], runs["chosen"], menu.streams())
-	var pay := maxf(0.0, gain)
+	var pay := maxf(0.0, gain - DEAD_BAND)
 	return {
 		"error": "", "improvement": gain, "paid": pay, "xp": roundi(pay * REVIEW_XP),
 		"budget": roundi(pay * REVIEW_BUDGET), "question": menu.review_question,
@@ -86,18 +96,26 @@ func review(net: Network, choices: Dictionary) -> Dictionary:
 	}
 
 
-## The coming quarter run twice on copies of `net`: {habit: without the
-## board's rules, chosen: with the rules now in force}, each as every
-## stream's MEASURES and `completed` at the end. `net` is only read.
-static func forecast(net: Network) -> Dictionary:
-	var runs := {}
+## The coming quarter run twice on copies of `net`: {error, habit: without
+## the board's rules, chosen: with `effects` as the board's rules}, each as
+## every stream's MEASURES and `completed` at the end. `net` is only read.
+## Only the network runs on: fixes fading and problems recurring are the
+## Region's, so the forecast holds today's problems and fixes for the quarter.
+static func forecast(net: Network, effects: Array) -> Dictionary:
+	var habit := NetworkState.copy(net)
+	var chosen_run := NetworkState.copy(net)
+	var error := habit.error if not habit.error.is_empty() else chosen_run.error
+	if error.is_empty():
+		error = chosen_run.set_effects(SOURCE, effects)
+	if not error.is_empty():
+		return {"error": error}
+	habit.clear_effects(SOURCE)
+	var out := {"error": ""}
 	for run: String in ["habit", "chosen"]:
-		var twin := NetworkState.copy(net)
-		if run == "habit":
-			twin.clear_effects(SOURCE)
+		var twin: Network = habit if run == "habit" else chosen_run
 		twin.advance_days(REVIEW_DAYS)
-		runs[run] = _measured_now(twin)
-	return runs
+		out[run] = _measured_now(twin)
+	return out
 
 
 func _choice_error(now: int, choices: Dictionary) -> String:
@@ -179,8 +197,7 @@ func to_dict() -> Dictionary:
 
 ## Restore to_dict() output, untrusted: departments and KPI ids the menu
 ## does not have are dropped (and a department left without two of them).
-## Saves from the quarter-over-quarter board also hold `snapshot`, `best`
-## and `has_baseline`; the forecast needs none of them.
+## Keys this board no longer keeps are ignored.
 func load_dict(d: Dictionary) -> void:
 	unlocked = d.get("unlocked") is bool and d["unlocked"]
 	# A JSON round trip makes ints floats.

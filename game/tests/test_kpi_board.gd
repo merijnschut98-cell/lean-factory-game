@@ -162,6 +162,7 @@ func test_a_choice_that_beats_the_habit_pays_every_quarter() -> void:
 	assert_true(first["chosen"]["connections"]["first_time_right"] > first["habit"]["connections"]["first_time_right"])
 	assert_eq(first["improvement"], KpiBoard.improvement(first["habit"], first["chosen"], r.board.menu.streams()))
 	assert_true(first["paid"] > 0.0, "a real gain: %.3f" % first["paid"])
+	assert_eq(first["paid"], first["improvement"] - KpiBoard.DEAD_BAND, "only the part beyond the band pays")
 	assert_eq(first["xp"], roundi(first["paid"] * KpiBoard.REVIEW_XP))
 	assert_eq(first["budget"], roundi(first["paid"] * KpiBoard.REVIEW_BUDGET))
 	assert_eq([r.profile.xp - xp, r.profile.budget - budget], [first["xp"], first["budget"]], "granted")
@@ -180,6 +181,37 @@ func test_a_worse_choice_pays_nothing() -> void:
 	assert_true(result["improvement"] < 0.0, "measured: worse")
 	assert_eq([result["paid"], result["xp"], result["budget"]], [0.0, 0, 0])
 	assert_eq(r.profile.xp, xp)
+
+
+## The forecast of the chosen KPIs is what then really happens, as long as
+## nothing else changes in the quarter.
+func test_the_forecast_is_what_then_happens() -> void:
+	var r := _region()
+	r.advance_days(60)
+	r.board.unlock(r.net.time)
+	var result := r.kpi_review(CAREFUL)
+	r.advance_days(KpiBoard.REVIEW_DAYS)
+	assert_eq(KpiBoard._measured_now(r.net), result["chosen"])
+
+
+## A gain inside the pairing noise pays nothing.
+func test_only_the_gain_beyond_the_band_pays() -> void:
+	assert_true(KpiBoard.DEAD_BAND > 0.0)
+	var r := _region()
+	r.advance_days(60)
+	r.board.unlock(r.net.time)
+	var result := r.kpi_review(HABIT)
+	assert_eq(result["paid"], maxf(0.0, result["improvement"] - KpiBoard.DEAD_BAND))
+
+
+## A refused review changes nothing: not the rules, not the date, not the board.
+func test_a_refused_review_changes_nothing() -> void:
+	var r := _due_region()
+	var due_at := r.board.next_review_at
+	var effects := r.net.effects()
+	var refused := r.kpi_review({"intake": GOOD["intake"], "prep": ["prep_due"]})
+	assert_eq(refused["error"], "choose_two")
+	assert_eq([r.board.next_review_at, r.net.effects(), r.board.chosen.is_empty()], [due_at, effects, true])
 
 
 ## The forecast runs on copies: the region's own network goes on untouched,

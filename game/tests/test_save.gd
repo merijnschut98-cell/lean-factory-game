@@ -47,8 +47,9 @@ func test_a_copy_runs_like_the_original_and_leaves_it_alone() -> void:
 	copy.advance_days(30)
 	assert_eq(NetworkState.capture(original), before, "running the copy changes nothing in the original")
 	original.advance_days(30)
-	for s in original.streams:
-		assert_eq(copy.stream(s.id).finished, s.finished, s.id)
+	original.drain_events()
+	copy.drain_events()
+	assert_eq(NetworkState.capture(copy), NetworkState.capture(original), "the same state, to the last random number")
 
 
 func test_history_is_bounded() -> void:

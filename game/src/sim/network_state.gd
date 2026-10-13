@@ -52,8 +52,8 @@ static func copy(net: Network) -> Network:
 	for pool: SimPool in net._pool_list:
 		twin.pools[pool.id].pull_limit_days = pool.pull_limit_days
 	var result := restore(twin, capture(net))
-	if not result["error"].is_empty():
-		twin.error = result["error"]
+	if not result["error"].is_empty() or not result["dropped"].is_empty():
+		twin.error = "copy: %s" % (result["error"] if not result["error"].is_empty() else ", ".join(result["dropped"]))
 	return twin
 
 
