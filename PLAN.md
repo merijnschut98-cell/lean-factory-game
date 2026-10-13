@@ -221,7 +221,7 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 - ✅ KPI `wip_age` (`Network.open_age_days`, in `Region.snapshot`): the age of open work. Lead time counts finished orders only, so long waits hide the oldest work (survivorship).
 - ⬜ Next session (found by report7, 5 seeds × 180 days):
   - ✅ `wip_age` named in Wachten op de trafo and in the report (2026-10-13). Why: its harm is invisible in finished-order lead time (43.5 vs 46.9 days) and shows only as throughput 26.9 → 25.5;
-  - Omvormers die afschakelen barely moves lead time (8.7 → 8.9 days): model per-address fixes that do not hold (tap_change ftr down, KPI first_time_right);
+  - ✅ Omvormers (2026-10-13): a tap set for one address does not hold for the street (tap_change ftr −0.3, an estimate; a failed change goes back to measuring); KPI first_time_right, checked by the content test;
   - ✅ simplify findings (2026-10-13): `early_transformer_order` runs the reinforcement wait from the design (`starts_with`); the congestion ×1.2 is a marked estimate (station reinforcements wait for the same transformers); one stream list in the tests;
   - review doc sections for problems 14–16 (notes ready in the scratchpad's `review_md.py`).
 

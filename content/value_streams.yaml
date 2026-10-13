@@ -380,6 +380,7 @@ streams:
         pool: monteurs
         touch_hours: 2.0
         ftr: 0.9
+        rework_to: measurement  # the complaint comes back: measure again
         applies: 0.4          # the rest is within limits or the customer's own installation
 
   - id: customer_contact

@@ -384,7 +384,7 @@ problems:
     waste: defects
     severity: medium
     visibility: obvious
-    kpi: lead_time
+    kpi: first_time_right
     symptoms:
       - Het aantal spanningsklachten is in twee jaar verdrievoudigd, vooral op zonnige middagen.
       - Klanten melden dat hun omvormer uitvalt en hun zonnepanelen niets opleveren.
@@ -397,6 +397,9 @@ problems:
     teaches: [root_cause, systems_thinking]
     effects:
       - {target: voltage_complaints, property: demand, value: 3.0}  # complaints tripled (Solar Magazine)
+      # A tap set for one address does not hold for the street: three in ten
+      # complaints come back after the change (an estimate).
+      - {target: voltage_complaints.tap_change, property: ftr, value: -0.3}
     clues:
       - {tool: data, key: true, depth: 0, text: "Negen van de tien spanningsklachten komen binnen tussen elf en drie uur, op zonnige dagen."}
       - {tool: conversation, key: false, depth: 0, text: "'Het zijn die goedkope omvormers. Met een goed merk heb je hier geen last van.'"}

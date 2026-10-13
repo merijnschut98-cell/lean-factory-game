@@ -551,6 +551,7 @@
      "kind": "work",
      "name": "Aftakking trafo aanpassen",
      "pool": "monteurs",
+     "rework_to": "measurement",
      "touch_hours": 2.0
     }
    ]

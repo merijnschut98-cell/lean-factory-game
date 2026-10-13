@@ -947,10 +947,15 @@
      "property": "demand",
      "target": "voltage_complaints",
      "value": 3.0
+    },
+    {
+     "property": "ftr",
+     "target": "voltage_complaints.tap_change",
+     "value": -0.3
     }
    ],
    "id": "inverters_tripping",
-   "kpi": "lead_time",
+   "kpi": "first_time_right",
    "mismatch_note": "Elke klacht apart meten en oplossen bestrijdt het symptoom. De spanning is te hoog in de hele straat.",
    "name": "Omvormers die afschakelen",
    "plausible_causes": [
