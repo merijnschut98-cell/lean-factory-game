@@ -24,6 +24,7 @@ var coach: Dictionary
 ## active | completed | failed, asks: {stage: count}}.
 var progress: Dictionary[String, Dictionary] = {}
 ## When each mission with a deadline opened (minutes): its clock starts there.
+## Kept after the mission ends (small, and harmless).
 var opened_at: Dictionary[String, int] = {}
 ## {type: accepted | completed | failed, mission} for the UI (a new belt is a
 ## Region event).
@@ -109,7 +110,7 @@ func update() -> void:
 
 
 func _fail(m: MissionDef) -> void:
-	progress[m.id] = {"status": "failed", "asks": progress.get(m.id, {}).get("asks", {})}
+	progress[m.id] = {"status": "failed", "asks": {}}
 	region.close_countermeasures(m.fail_closes)
 	events.append({"type": "failed", "mission": m.id})
 
@@ -178,6 +179,10 @@ func load_dict(d: Dictionary) -> Array[String]:
 			progress[str(id)] = {"status": entry["status"], "asks": JsonFile.dict_or_empty(entry.get("asks"))}
 		else:
 			dropped.append(str(id))
+	# A missed deadline closed its doors for good.
+	for id: String in progress:
+		if progress[id]["status"] == "failed":
+			region.close_countermeasures(defs[id].fail_closes)
 	return dropped
 
 

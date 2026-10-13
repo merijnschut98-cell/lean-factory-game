@@ -281,7 +281,7 @@ def _check_rework_loops(steps: list[dict], step_ids: list[str], where: str) -> N
 
 TOOLS = {"shadow", "time_study", "queue_count", "data", "documents", "listen_in", "material_check", "conversation"}
 WASTES = ["transport", "inventory", "motion", "waiting", "overproduction", "overprocessing", "defects", "skills"]
-KPIS = ["throughput", "lead_time", "first_time_right", "on_time", "wip_age"]
+KPIS = ["throughput", "lead_time", "first_time_right", "on_time", "wip_age"]  # Investigation.KPIS
 SEVERITIES = ["low", "medium", "high", "critical"]
 VISIBILITIES = ["obvious", "subtle", "hidden"]
 PROBLEM_KEYS = {"id", "tier", "name", "step", "waste", "severity", "visibility", "kpi", "symptoms", "root_cause",
@@ -532,8 +532,8 @@ def validate_missions(doc: Any, source: str) -> None:
         if "deadline_days" in m:
             _number(m, "deadline_days", where, 1, integer=True)
             _require_strings(m, ["fail"], where)
-        _string_list(m, "fail_closes", where)
-        if m.get("fail_closes") and "deadline_days" not in m:
+        fail_closes = _string_list(m, "fail_closes", where)
+        if fail_closes and "deadline_days" not in m:
             raise ContentError(f"{where}: 'fail_closes' needs a deadline")
         rewards = _mapping(m, "rewards", {"xp", "budget"}, where)
         for key in ("xp", "budget"):
@@ -566,12 +566,14 @@ def check_missions(docs: dict[str, Any]) -> None:
             if p is None:
                 raise ContentError(f"{where}: unknown problem {goal['problem']!r}")
             keys = sum(1 for c in p["clues"] if c["key"])
-            # A missed deadline closes a door, never the last one (CLAUDE.md §2).
-            for cm in m.get("fail_closes", []):
-                if cm not in p["countermeasures"]:
-                    raise ContentError(f"{where}: closes {cm!r}, which problem {p['id']!r} does not list")
-            if set(p["countermeasures"]) <= set(m.get("fail_closes", [])):
-                raise ContentError(f"{where}: a missed deadline leaves no other way to solve {p['id']!r}")
+            # A missed deadline closes a door, never the last one (CLAUDE.md §2),
+            # for every problem that shares a closed countermeasure.
+            closes = set(m.get("fail_closes", []))
+            for cm in closes - set(p["countermeasures"]):
+                raise ContentError(f"{where}: closes {cm!r}, which problem {p['id']!r} does not list")
+            for other in problems.values():
+                if closes & set(other["countermeasures"]) and set(other["countermeasures"]) <= closes:
+                    raise ContentError(f"{where}: a missed deadline leaves no other way to solve {other['id']!r}")
             if goal["type"] == "investigate" and goal["clues"] > keys:
                 raise ContentError(f"{where}: asks for {goal['clues']} key clues, the problem has {keys}")
             if goal["type"] == "solve":

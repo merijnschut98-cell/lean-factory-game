@@ -337,7 +337,10 @@ func _schedule_status_calls(s: ValueStream) -> void:
 	if contact == null or contact.arrivals.is_empty():
 		return
 	var since := time - s.call_after_minutes
-	var late := open_orders(s).filter(func(o: WorkOrder) -> bool: return o.born < since).size()
+	var late := 0
+	for o in open_orders(s):
+		if o.born < since:
+			late += 1
 	_schedule_arrivals(contact, contact.arrivals[0].when, late * s.call_rate, s.calls_rng, true)
 
 
@@ -359,10 +362,14 @@ func open_orders(s: ValueStream) -> Array[WorkOrder]:
 	return out
 
 
+## The KPI wip_age: the age of the open work at this quantile.
+const WIP_AGE_QUANTILE := 0.85
+
+
 ## The age in days of the open work at quantile `q` (0 with none). Lead time
 ## counts finished orders only, so a long wait hides the oldest work; this
 ## shows it (the KPI wip_age).
-func open_age_days(s: ValueStream, q: float) -> float:
+func open_age_days(s: ValueStream, q: float = WIP_AGE_QUANTILE) -> float:
 	var ages: Array[float] = []
 	for o in open_orders(s):
 		ages.append((time - o.born) / float(SimCalendar.MINUTES_PER_DAY))

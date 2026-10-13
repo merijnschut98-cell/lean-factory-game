@@ -102,10 +102,16 @@ static func _base_after_days() -> Network:
 	return _base_run
 
 
+## One run per problem, shared by the tests that only read its outcome.
+static var _hurt_runs: Dictionary[String, Network] = {}
+
+
 static func _hurt_after_days(p: ProblemDef) -> Network:
-	var net := RulesFixture.real_network([p.id], SEED)
-	net.advance_days(DAYS)
-	return net
+	if not _hurt_runs.has(p.id):
+		var net := RulesFixture.real_network([p.id], SEED)
+		net.advance_days(DAYS)
+		_hurt_runs[p.id] = net
+	return _hurt_runs[p.id]
 
 
 ## How much worse the problem makes its stream, as a ratio above 1, through
@@ -147,8 +153,8 @@ func test_problems_hurt_their_named_kpi_in_the_simulation() -> void:
 	for p in Catalog.load_from().problems:
 		if p.kpi == "wip_age":
 			var older := _hurt_after_days(p)
-			var age_before := base.open_age_days(base.stream(p.stream_id()), 0.85)
-			var age_after := older.open_age_days(older.stream(p.stream_id()), 0.85)
+			var age_before := base.open_age_days(base.stream(p.stream_id()))
+			var age_after := older.open_age_days(older.stream(p.stream_id()))
 			assert_true(age_after > age_before * 1.05, "%s: open work p85 %.0f → %.0f days" % [p.id, age_before, age_after])
 			continue
 		if not p.kpi in ["first_time_right", "on_time"]:

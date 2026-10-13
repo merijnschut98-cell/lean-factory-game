@@ -274,6 +274,6 @@ func test_the_snapshot_measures_the_age_of_open_work() -> void:
 	r.activate("custom_design")
 	r.advance_days(30)
 	var s := r.snapshot("custom_design")
-	assert_near(s["wip_age"], r.net.open_age_days(r.net.stream("connections"), 0.85), 1e-9)
+	assert_near(s["wip_age"], r.net.open_age_days(r.net.stream("connections")), 1e-9)
 	assert_true(s["wip_age"] > 0.0)
 	assert_true("wip_age" in Investigation.KPIS, "a prediction can name it")

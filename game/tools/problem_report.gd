@@ -92,7 +92,7 @@ func _measure_sources(sources: Dictionary) -> Dictionary:
 			for step in s.steps:
 				interrupted += step.stats_since(from_day)["interrupted"]
 			kpis["interrupted_per_week"] = interrupted * 7.0 / WINDOW
-			kpis["wip_age"] = net.open_age_days(s, 0.85)
+			kpis["wip_age"] = net.open_age_days(s)
 			var sum: Dictionary = streams.get_or_add(s.id, {})
 			for key: String in kpis:
 				sum[key] = sum.get(key, 0.0) + kpis[key] * k

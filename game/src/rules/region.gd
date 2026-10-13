@@ -34,6 +34,7 @@ var state: Dictionary[String, ProblemState] = {}
 var observed: Dictionary[String, bool] = {}
 var found: Dictionary[String, bool] = {}
 ## Countermeasures closed for good (a missed deadline: Henk has retired).
+## Derived from the failed missions (Missions.load_dict restores it).
 var closed: Dictionary[String, bool] = {}
 ## Trust per team (pool id), -2..1: below 0 they stop sharing.
 var trust: Dictionary[String, int] = {}
@@ -134,12 +135,15 @@ func _add_budget(amount: int) -> void:
 		events.append({"type": "bad_period", "started": in_bad_period()})
 
 
-## The bad period's effect on the teams follows the budget (also after a load).
+## The bad period's effect on the teams follows the budget. Idempotent:
+## RegionState.restore calls it too.
 func _apply_bad_period() -> void:
+	if not in_bad_period():
+		net.clear_effects(BAD_PERIOD_SOURCE)
+		return
 	var effects := []
-	if in_bad_period():
-		for pool_id: String in net.pools:
-			effects.append({"target": pool_id, "property": "availability", "value": -BAD_PERIOD_AVAILABILITY})
+	for pool_id: String in net.pools:
+		effects.append({"target": pool_id, "property": "availability", "value": -BAD_PERIOD_AVAILABILITY})
 	net.set_effects(BAD_PERIOD_SOURCE, effects)
 
 
@@ -368,7 +372,7 @@ func snapshot(problem_id: String) -> Dictionary:
 		"cost_per_week": _cost_of(state[problem_id]),
 		"first_time_right": k["first_time_right"], "on_time": k["on_time"],
 		# The age of the open work: long waits show before their orders finish.
-		"wip_age": net.open_age_days(stream, 0.85),
+		"wip_age": net.open_age_days(stream),
 		"step": _recent_stats(net.step_at(p.step)),
 	}
 

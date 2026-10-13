@@ -18,7 +18,7 @@ static func capture(r: Region) -> Dictionary:
 		"network": NetworkState.capture(r.net),
 		"profile": {"budget": r.profile.budget, "xp": r.profile.xp, "concepts": r.profile.concepts},
 		"observed": r.observed.keys(), "found": r.found.keys(), "trust": r.trust, "problems": problems,
-		"cost_owed": r._cost_owed, "closed": r.closed.keys(),
+		"cost_owed": r._cost_owed,
 	}
 
 
@@ -40,9 +40,7 @@ static func restore(r: Region, d: Dictionary) -> Dictionary:
 	for clue_id: Variant in d["found"]:
 		r.found[str(clue_id)] = true
 	r._cost_owed = float(d.get("cost_owed", 0.0))
-	var closed: Variant = d.get("closed", [])
-	for cm_id: Variant in closed if closed is Array else []:
-		r.closed[str(cm_id)] = true
+	r._apply_bad_period()
 	for team: Variant in d["trust"]:
 		r.trust[str(team)] = int(d["trust"][team])
 	for id: String in d["problems"]:

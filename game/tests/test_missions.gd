@@ -137,9 +137,9 @@ func test_a_missed_deadline_closes_the_countermeasures_it_names() -> void:
 	log.region.advance_days(11)
 	log.update()
 	assert_false(poka_yoke in log.region.available_countermeasures(), "the knowledge transfer is no longer possible")
-	var restored := RulesFixture.region()
-	RegionState.restore(restored, bytes_to_var(var_to_bytes(RegionState.capture(log.region))))
-	assert_false(restored.countermeasures["poka_yoke_form"] in restored.available_countermeasures(), "saved")
+	var restored := RulesFixture.mission_log(RulesFixture.region())
+	restored.load_dict(bytes_to_var(var_to_bytes(log.to_dict())))
+	assert_false(poka_yoke in restored.region.available_countermeasures(), "still closed after a load")
 
 
 func test_abandoning_a_mission_makes_room() -> void:
