@@ -474,11 +474,10 @@ func _score_inputs(st: ProblemState, p: ProblemDef, standardise: bool) -> Dictio
 	}
 
 
-## An unstandardised fix fades: the improvement goes, the problem returns.
+## An unstandardised fix fades: the improvement goes, and the problem waits,
+## dormant, until its mission brings it back (problems only arrive through
+## missions, CLAUDE.md §2).
 func _recur(st: ProblemState) -> void:
 	net.clear_effects("cm:" + st.id)
-	var fresh := ProblemState.new(st.id)
-	fresh.phase = P.ACTIVE
-	state[st.id] = fresh
-	_apply_problem(fresh)
+	state[st.id] = ProblemState.new(st.id)
 	events.append({"type": "recurred", "problem": st.id})

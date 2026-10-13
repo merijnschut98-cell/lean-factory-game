@@ -78,6 +78,22 @@ missions:
       understand: "Waar ontstaat de fout: bij de intake, of al eerder?"
       reflect: "Wat is het verschil tussen een fout vinden en een fout voorkomen?"
 
+  # The fork (Merijn, 2026-10-13): after the first bottleneck two main missions
+  # open. The intake is the next bottleneck; the monteurs are not, so fixing
+  # them first helps quality but not the flow, and the Check shows it.
+  - id: fix_installer_not_ready
+    name: Meterkast niet gereed
+    kind: main
+    tier: 1
+    requires: {missions: [fix_custom_design]}
+    briefing: "Monteurs rijden terug zonder dat de aansluiting is gemaakt. De teamleider monteurs wil dat dit eerst wordt opgelost; de teamleider intake zegt dat bij haar de stapel groeit. Jij kiest."
+    debrief: "Er rijdt pas een monteur als de meterkast klaar is. Kijk nog eens naar de doorstroom: waar staat het werk nu te wachten?"
+    goal: {type: solve, problem: installer_not_ready}
+    rewards: {xp: 500, budget: 5000}
+    insights:
+      go_see: "Twee teams vragen om je aandacht. Waar staat het werk het langst te wachten?"
+      reflect: "Gaan er nu meer aansluitingen per week door? Waarom wel of niet?"
+
   - id: fix_status_callers
     name: De telefoon staat roodgloeiend
     kind: main
@@ -226,16 +242,6 @@ missions:
     debrief: "Wachten en werken lopen nu naast elkaar."
     goal: {type: solve, problem: permits_in_batches}
     rewards: {xp: 400, budget: 4000}
-
-  - id: fix_installer_not_ready
-    name: Meterkast niet gereed
-    kind: side
-    tier: 1
-    requires: {missions: [fix_custom_design]}
-    briefing: "Monteurs rijden terug zonder dat de aansluiting is gemaakt. Klussen worden steeds opnieuw ingepland."
-    debrief: "Er rijdt pas een monteur als de meterkast klaar is."
-    goal: {type: solve, problem: installer_not_ready}
-    rewards: {xp: 500, budget: 5000}
 
   - id: look_at_grid_study
     name: Een kijkje bij Netstrategie

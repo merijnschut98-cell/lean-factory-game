@@ -188,9 +188,11 @@ func test_an_unstandardised_fix_comes_back() -> void:
 	r.advance_days(29)
 	assert_eq(r.state["custom_design"].phase, ProblemState.Phase.RESOLVED)
 	r.advance_days(2)
-	assert_eq(r.state["custom_design"].phase, ProblemState.Phase.ACTIVE, "Sustain is the hardest S")
-	assert_true(r.net.effects().has("problem:custom_design"))
+	# Sustain is the hardest S: the gain is gone. The problem comes back
+	# through its mission (CLAUDE.md §2), so it waits, dormant, until then.
+	assert_eq(r.state["custom_design"].phase, ProblemState.Phase.DORMANT)
 	assert_false(r.net.effects().has("cm:custom_design"))
+	assert_true(r.activate("custom_design"), "the mission can switch it on again")
 	assert_true(r.drain_events().any(func(e: Dictionary) -> bool: return e["type"] == "recurred"))
 
 

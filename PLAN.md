@@ -186,8 +186,8 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 - ✅ Review findings fixed with Claude's judgement while Merijn is away (his instruction, 2026-10-12): see "Claude's calls, pending Merijn" under Decisions Made
 - ✅ Merijn answered the review's main questions (see Decisions Made); the review doc shows the recalibrated numbers (report over 5 seeds × 180 days, measured over the last 84) and the answers built in
 - ✅ Review doc questions answered (2026-10-13, see Decisions Made)
-- ⬜ A fading fix brings its problem back through its mission (today `Region._recur` re-activates it outside the mission limit), and the recurrence respects the open-problem limit
-- ⬜ First fork in the main quest: after De stapel bij Werkvoorbereiding, choose between Het knelpunt verschuift (intake: the bottleneck) and Meterkast niet gereed (monteurs: not the bottleneck)
+- ✅ A fading fix brings its problem back through its mission (2026-10-13): the problem goes dormant, the solve mission reopens (no second reward), accepting it switches the problem on within the 1 + 3 limit
+- ✅ First fork in the main quest (2026-10-13): after De stapel bij Werkvoorbereiding, Het knelpunt verschuift (intake: the bottleneck) and Meterkast niet gereed (monteurs: not the bottleneck, now a main mission with coach insights) open together
 - ⬜ Catalogue problems that need a new mechanism first:
   - KPI's die elkaar bevechten: overproduction, departments pushing work in; needs a release decision per department
 - ✅ Mission system (Merijn's design, CLAUDE.md §2): `MissionDef` + `Missions`.
@@ -195,7 +195,7 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
   - Goals: walk / investigate / solve. Deadlines (Henk).
   - A coach (Marleen Verhoef, Directeur Netbeheer regio Zuidmark) who asks Kata questions per stage and shares an insight every third ask, about the main mission only.
   - Saves. The validator checks references, one mission per solved problem, a way in, and that every mission can unlock.
-  - Tier-1 campaign: 10 main missions (walk the stream → the bottleneck chain → the grid-study queue at green belt → waiting for transformers → unused capacity) and 10 side missions, among them Henk's knowledge (a 56-day real event).
+  - Tier-1 campaign: 11 main missions (walk the stream → the bottleneck chain with a fork after the first bottleneck → the grid-study queue at green belt → waiting for transformers → unused capacity) and 10 side missions, among them Henk's knowledge (a 56-day real event) and De planning die nooit klopt.
 - ⬜ Mission UI: briefing and debrief dialogues, the coach conversation, a quest log with 1 + 3 slots (Phase D)
 - ⬜ Missions beyond tier 1; story events (storm week, ACM visit, NTA 8120 audit) as missions
 - ✅ Never game over (Merijn, 2026-10-12): an experiment can be paid into debt; in debt the region is in a bad period (every team −3 points availability, an estimate; no money to standardise) until the debt is paid off. Tests: paying into debt, costs causing a bad period, the period ending.

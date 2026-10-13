@@ -165,3 +165,29 @@ func test_missions_survive_save_and_load() -> void:
 	var saved := log.to_dict()
 	saved["progress"]["ghost"] = {"status": "active"}
 	assert_eq(_log().load_dict(saved), ["ghost"], "missions the content no longer has are dropped")
+
+
+## A fix that fades brings its problem back through its mission, never on
+## its own (CLAUDE.md §2). Doing it again earns no second reward.
+func test_a_faded_fix_reopens_its_mission() -> void:
+	var log := _log()
+	log.accept("walk_connections")
+	_walk_connections(log)
+	log.accept("fix_design")
+	var r := log.region
+	r.state["custom_design"].phase = ProblemState.Phase.RESOLVED
+	r.state["custom_design"].recur_at = r.net.time + SimCalendar.days(5)
+	log.update()
+	assert_eq(log.status("fix_design"), "completed")
+	r.advance_days(6)
+	log.update()
+	assert_eq(log.status("fix_design"), "available", "the problem is back")
+	assert_eq(r.state["custom_design"].phase, ProblemState.Phase.DORMANT, "only the mission switches it on")
+	assert_eq(log.drain_events().back(), {"type": "reopened", "mission": "fix_design"})
+	assert_eq(log.accept("fix_design"), "")
+	assert_eq(r.state["custom_design"].phase, ProblemState.Phase.ACTIVE)
+	var budget := r.profile.budget
+	r.state["custom_design"].phase = ProblemState.Phase.RESOLVED
+	log.update()
+	assert_eq(log.status("fix_design"), "completed")
+	assert_eq(r.profile.budget, budget, "no second reward")

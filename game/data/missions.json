@@ -97,6 +97,31 @@
    "tier": 1
   },
   {
+   "briefing": "Monteurs rijden terug zonder dat de aansluiting is gemaakt. De teamleider monteurs wil dat dit eerst wordt opgelost; de teamleider intake zegt dat bij haar de stapel groeit. Jij kiest.",
+   "debrief": "Er rijdt pas een monteur als de meterkast klaar is. Kijk nog eens naar de doorstroom: waar staat het werk nu te wachten?",
+   "goal": {
+    "problem": "installer_not_ready",
+    "type": "solve"
+   },
+   "id": "fix_installer_not_ready",
+   "insights": {
+    "go_see": "Twee teams vragen om je aandacht. Waar staat het werk het langst te wachten?",
+    "reflect": "Gaan er nu meer aansluitingen per week door? Waarom wel of niet?"
+   },
+   "kind": "main",
+   "name": "Meterkast niet gereed",
+   "requires": {
+    "missions": [
+     "fix_custom_design"
+    ]
+   },
+   "rewards": {
+    "budget": 5000,
+    "xp": 500
+   },
+   "tier": 1
+  },
+  {
    "briefing": "Het klantcontactcentrum is onbereikbaar. De manager vraagt om meer agents. Voordat we dat doen: waarom bellen al die mensen?",
    "debrief": "De vragen kwamen voort uit stilte, niet uit het contactcentrum. Faalvraag los je op bij de bron.",
    "goal": {
@@ -391,27 +416,6 @@
    "rewards": {
     "budget": 4000,
     "xp": 400
-   },
-   "tier": 1
-  },
-  {
-   "briefing": "Monteurs rijden terug zonder dat de aansluiting is gemaakt. Klussen worden steeds opnieuw ingepland.",
-   "debrief": "Er rijdt pas een monteur als de meterkast klaar is.",
-   "goal": {
-    "problem": "installer_not_ready",
-    "type": "solve"
-   },
-   "id": "fix_installer_not_ready",
-   "kind": "side",
-   "name": "Meterkast niet gereed",
-   "requires": {
-    "missions": [
-     "fix_custom_design"
-    ]
-   },
-   "rewards": {
-    "budget": 5000,
-    "xp": 500
    },
    "tier": 1
   },
