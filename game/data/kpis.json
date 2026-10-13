@@ -1,0 +1,188 @@
+{
+ "care": {
+  "careful": {
+   "ftr": 0.05,
+   "touch_time": 1.1
+  },
+  "hasty": {
+   "ftr": -0.05,
+   "touch_time": 0.9
+  }
+ },
+ "kpis": [
+  {
+   "id": "intake_output",
+   "kind": "lagging",
+   "name": "Aanvragen per week",
+   "note": "Gangbare productiviteits-KPI. Regels (duwen, korte aanvragen eerst) zijn een schatting: wie op aantallen stuurt, pakt het makkelijke werk.",
+   "pool": "intake",
+   "rules": {
+    "order": "shortest",
+    "start": "push"
+   }
+  },
+  {
+   "id": "intake_lead_time",
+   "kind": "lagging",
+   "name": "Doorlooptijd end-to-end",
+   "note": "Doorlooptijd van aanvraag tot aansluiting (wet van Little: meer werk in uitvoering is langere doorlooptijd). Regel is een schatting.",
+   "pool": "intake",
+   "rules": {
+    "start": "pull"
+   }
+  },
+  {
+   "id": "intake_oldest",
+   "kind": "leading",
+   "name": "Oudste aanvraag in de bak",
+   "note": "Leeftijd van het oudste openstaande werk (wip_age). Regel is een schatting.",
+   "pool": "intake",
+   "rules": {
+    "order": "oldest"
+   }
+  },
+  {
+   "id": "intake_complete",
+   "kind": "leading",
+   "name": "Compleet doorgezet",
+   "note": "Aandeel aanvragen dat zonder ontbrekende gegevens doorgaat. Zorgvuldig werken is een schatting, zie care.",
+   "pool": "intake",
+   "rules": {
+    "care": "careful"
+   }
+  },
+  {
+   "id": "intake_utilisation",
+   "kind": "leading",
+   "name": "Bezettingsgraad",
+   "note": "Gangbare KPI voor capaciteitsbenutting. Wie op bezetting stuurt, houdt iedereen bezig: werk duwen. Regel is een schatting.",
+   "pool": "intake",
+   "rules": {
+    "start": "push"
+   }
+  },
+  {
+   "id": "work_prep_output",
+   "kind": "lagging",
+   "name": "Ontwerpen per week",
+   "note": "Gangbare productiviteits-KPI. Regels (duwen, korte ontwerpen eerst) zijn een schatting.",
+   "pool": "work_prep",
+   "rules": {
+    "order": "shortest",
+    "start": "push"
+   }
+  },
+  {
+   "id": "work_prep_lead_time",
+   "kind": "lagging",
+   "name": "Doorlooptijd end-to-end",
+   "note": "Doorlooptijd van aanvraag tot aansluiting (wet van Little). Regel is een schatting.",
+   "pool": "work_prep",
+   "rules": {
+    "start": "pull"
+   }
+  },
+  {
+   "id": "work_prep_ftr",
+   "kind": "lagging",
+   "name": "Eerste keer goed bij uitvoering",
+   "note": "Aandeel ontwerpen dat de monteur zonder aanpassing kan bouwen (first-time-right). Zorgvuldig werken is een schatting, zie care.",
+   "pool": "work_prep",
+   "rules": {
+    "care": "careful"
+   }
+  },
+  {
+   "id": "work_prep_oldest",
+   "kind": "leading",
+   "name": "Oudste dossier",
+   "note": "Leeftijd van het oudste openstaande dossier (wip_age). Regel is een schatting.",
+   "pool": "work_prep",
+   "rules": {
+    "order": "oldest"
+   }
+  },
+  {
+   "id": "work_prep_utilisation",
+   "kind": "leading",
+   "name": "Bezettingsgraad",
+   "note": "Gangbare KPI voor capaciteitsbenutting. Regel is een schatting.",
+   "pool": "work_prep",
+   "rules": {
+    "start": "push"
+   }
+  },
+  {
+   "id": "planners_hours",
+   "kind": "leading",
+   "name": "Ingeplande monteursuren",
+   "note": "Gangbare KPI voor volle agenda's. Wie op ingeplande uren stuurt, plant door. Regel is een schatting.",
+   "pool": "planners",
+   "rules": {
+    "start": "push"
+   }
+  },
+  {
+   "id": "planners_kept",
+   "kind": "lagging",
+   "name": "Afspraak nagekomen",
+   "note": "Aandeel afspraken dat de klant krijgt zoals toegezegd. Zorgvuldig plannen is een schatting, zie care.",
+   "pool": "planners",
+   "rules": {
+    "care": "careful"
+   }
+  },
+  {
+   "id": "planners_on_time",
+   "kind": "lagging",
+   "name": "Klussen op tijd",
+   "note": "Aandeel klussen binnen de afgesproken termijn (on_time). Regel is een schatting.",
+   "pool": "planners",
+   "rules": {
+    "order": "due"
+   }
+  },
+  {
+   "id": "planners_oldest",
+   "kind": "leading",
+   "name": "Oudste klus",
+   "note": "Leeftijd van de oudste openstaande klus (wip_age). Regel is een schatting.",
+   "pool": "planners",
+   "rules": {
+    "order": "oldest"
+   }
+  },
+  {
+   "id": "contact_centre_handle_time",
+   "kind": "leading",
+   "name": "Gemiddelde afhandeltijd",
+   "note": "Gangbare callcenter-KPI (AHT). Wie op korte gesprekken stuurt, jaagt door. Haast is een schatting, zie care.",
+   "pool": "contact_centre",
+   "rules": {
+    "care": "hasty"
+   }
+  },
+  {
+   "id": "contact_centre_resolved",
+   "kind": "lagging",
+   "name": "In één keer opgelost",
+   "note": "First contact resolution, gangbare callcenter-KPI. Zorgvuldig werken is een schatting, zie care.",
+   "pool": "contact_centre",
+   "rules": {
+    "care": "careful"
+   }
+  },
+  {
+   "id": "contact_centre_reachable",
+   "kind": "lagging",
+   "name": "Bereikbaar binnen 2 uur",
+   "note": "Klantvragen worden binnen twee uur beantwoord (norm van deze stroom, norm_hours). Regel is een schatting.",
+   "pool": "contact_centre",
+   "rules": {
+    "order": "due"
+   }
+  }
+ ],
+ "pull_limit_days": 3,
+ "review_question": "Welke van deze KPI's stuurt het werk van morgen, en welke laat zien of je strategie klopt?"
+}

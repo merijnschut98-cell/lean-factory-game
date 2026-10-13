@@ -10,6 +10,9 @@ const PROBLEM_FILES := "problems_tier"
 var problems: Array[ProblemDef] = []
 var countermeasures: Array[CountermeasureDef] = []
 var missions: Array[MissionDef] = []
+## The KPI menus per department; `kpis` effects of problems and
+## countermeasures are expanded into rule effects when the catalogue loads.
+var kpis := KpiMenu.new()
 ## The senior manager who coaches the main mission: {name, role, stages}.
 var coach: Dictionary = {}
 ## The first thing wrong with the files; "" when the catalogue is usable.
@@ -24,13 +27,32 @@ static func load_from(dir: String = DATA_DIR) -> Catalog:
 	if campaign.is_empty():
 		return c
 	c.coach = JsonFile.dict_or_empty(campaign.get("coach"))
+	if not c._load_kpis(dir):
+		return c
 	var files := Array(DirAccess.get_files_at(dir)).filter(func(f: String) -> bool:
 		return f.begins_with(PROBLEM_FILES) and f.ends_with(".json"))
 	files.sort()
 	for file: String in files:
 		if c._load(dir + "/" + file, "problems", ProblemDef.from_dict, c.problems).is_empty():
 			return c
+	for p in c.problems:
+		p.effects = c.kpis.expand(p.effects)
+	for cm in c.countermeasures:
+		cm.effects = c.kpis.expand(cm.effects)
 	return c
+
+
+## The KPI menus, with the work steps of each department from the value
+## streams (no network needed). False (and `error` set) when unusable.
+func _load_kpis(dir: String) -> bool:
+	var defs: Array[KpiDef] = []
+	var doc := _load(dir + "/kpis.json", "kpis", KpiDef.from_dict, defs)
+	var streams := JsonFile.read_dict(dir + "/value_streams.json")
+	if doc.is_empty() or not streams["error"].is_empty():
+		_keep_first(streams["error"])
+		return false
+	kpis = KpiMenu.from_docs(defs, doc, streams["data"])
+	return true
 
 
 ## Read definitions under `key` of a JSON file into `into` (each made by

@@ -27,7 +27,7 @@ def dirs(tmp_path: Path) -> tuple[Path, Path]:
     content.mkdir()
     (content / "game.yaml").write_text(GAME_YAML, encoding="utf-8")
     (content / "value_streams.yaml").write_text(REAL_STREAMS, encoding="utf-8")
-    for stem in ("countermeasures", "problems_tier1", "missions"):
+    for stem in ("countermeasures", "problems_tier1", "missions", "kpis"):
         (content / f"{stem}.yaml").write_text((bc.CONTENT_DIR / f"{stem}.yaml").read_text(encoding="utf-8"), encoding="utf-8")
     return content, data
 
@@ -318,7 +318,7 @@ def rules_dirs(dirs):
 
 def _rules(content, mutate) -> None:
     docs = {stem: yaml.safe_load((content / f"{stem}.yaml").read_text(encoding="utf-8"))
-            for stem in ("game", "value_streams", "countermeasures", "problems_tier1", "missions")}
+            for stem in ("game", "value_streams", "countermeasures", "problems_tier1", "missions", "kpis")}
     mutate(docs)
     for stem, doc in docs.items():
         (content / f"{stem}.yaml").write_text(yaml.safe_dump(doc, allow_unicode=True), encoding="utf-8")
@@ -416,6 +416,58 @@ def test_mission_errors_are_caught(rules_dirs, mutate, message):
         _rules(content, mutate)
 
 
+def _kpi(docs: dict, kpi_id: str = "intake_output") -> dict:
+    return next(k for k in docs["kpis"]["kpis"] if k["id"] == kpi_id)
+
+
+def _kpis_effect(docs: dict, target: str, value) -> None:
+    _problem(docs)["effects"].append({"target": target, "property": "kpis", "value": value})
+
+
+def test_kpis_effect_on_the_menu_is_valid(rules_dirs):
+    content, _ = rules_dirs
+    _rules(content, lambda d: _kpis_effect(d, "intake", ["intake_lead_time", "intake_oldest"]))
+    _rules(content, lambda d: _kpis_effect(d, "work_prep", ["work_prep_oldest"]))
+
+
+@pytest.mark.parametrize("mutate, message", [
+    (lambda d: d["kpis"]["kpis"].append({**_kpi(d), "id": "intake_sixth"}), "at most 5 KPIs"),
+    (lambda d: _kpi(d).update(pool="wizards"), "unknown pool 'wizards'"),
+    (lambda d: _kpi(d).update(kind="medium"), "'kind' must be one of"),
+    (lambda d: _kpi(d).update(rules={"order": "random"}), "order must be one of"),
+    (lambda d: _kpi(d).update(rules={"care": "reckless"}), "care must be one of"),
+    (lambda d: _kpi(d).update(rules={"speed": "fast"}), "unknown key.s. 'speed'"),
+    (lambda d: _kpi(d).update(rules={}), "needs at least one rule"),
+    (lambda d: _kpi(d).update(note=""), "'note' must be a non-empty string"),
+    (lambda d: d["kpis"]["kpis"].append(dict(_kpi(d))), "duplicate kpis ids"),
+    (lambda d: _kpi(d).update(foo=1), "unknown key.s. 'foo'"),
+    (lambda d: d["kpis"].update(pull_limit_days=0), "'pull_limit_days' must be"),
+    (lambda d: d["kpis"]["care"].pop("hasty"), "'care' needs exactly"),
+    (lambda d: d["kpis"]["care"]["careful"].update(touch_time=0), "'touch_time' must be"),
+    (lambda d: d["kpis"].update(review_question=""), "'review_question' must be a non-empty string"),
+    (lambda d: _kpis_effect(d, "intake", ["work_prep_oldest"]), "not on the menu of 'intake'"),
+    (lambda d: _kpis_effect(d, "intake", ["intake_output", "intake_oldest", "intake_complete"]), "one or two KPIs"),
+    (lambda d: _kpis_effect(d, "intake", []), "one or two KPIs"),
+    (lambda d: _kpis_effect(d, "intake", ["intake_output", "intake_output"]), "two different KPIs"),
+    (lambda d: _kpis_effect(d, "intake", "intake_output"), "one or two KPIs"),
+    (lambda d: _kpis_effect(d, "wizards", ["intake_output"]), "unknown pool 'wizards'"),
+])
+def test_kpi_errors_are_caught(rules_dirs, mutate, message):
+    content, _ = rules_dirs
+    with pytest.raises(bc.ContentError, match=message):
+        _rules(content, mutate)
+
+
+def test_real_kpi_menus_have_at_most_five_and_both_kinds_per_pool():
+    menus = {}
+    for k in bc.load_content()["kpis"]["kpis"]:
+        menus.setdefault(k["pool"], []).append(k)
+    assert sorted(menus) == ["contact_centre", "intake", "planners", "work_prep"]
+    for pool, kpis in menus.items():
+        assert len(kpis) <= 5, pool
+        assert {k["kind"] for k in kpis} == {"leading", "lagging"}, pool
+
+
 def test_fixture_campaign_is_valid(rules_dirs):
     content, _ = rules_dirs
     assert [m["id"] for m in bc.load_content(content)["missions"]["missions"]] == ["walk_connections", "fix_design", "peek"]
@@ -425,6 +477,10 @@ def test_vocabulary_is_written_for_the_game():
     docs = bc.load_content()
     assert "conversation" in docs["vocabulary"]["tools"]
     assert docs["vocabulary"]["effect_properties"]["touch_time"] == {"kind": "step", "step_kind": "work"}
+    assert docs["vocabulary"]["kpi_kinds"] == ["leading", "lagging"]
+    assert docs["vocabulary"]["care_rules"] == ["normal", "careful", "hasty"]
+    # `kpis` effects are expanded by the game into rule effects, so the sim vocabulary never lists them.
+    assert "kpis" not in docs["vocabulary"]["effect_properties"]
 
 
 def test_any_problems_tier_file_is_validated(rules_dirs):

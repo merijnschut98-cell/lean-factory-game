@@ -294,6 +294,12 @@ EFFECT_KEYS = {"target", "property", "value"}
 START_RULES = ["push", "pull"]  # SimPool.START_RULES
 ORDER_RULES = ["first_come", "oldest", "shortest", "due"]  # SimPool.ORDER_RULES
 WORK_RULES = {"start_rule": START_RULES, "order_rule": ORDER_RULES}  # value type → its values
+CARE_RULES = ["normal", "careful", "hasty"]  # KpiDef.CARE_RULES
+KPI_KINDS = ["leading", "lagging"]  # KpiDef.KINDS
+KPI_RULES = {"start": START_RULES, "order": ORDER_RULES, "care": CARE_RULES}  # a KPI's rule → its values
+KPI_KEYS = {"id", "name", "pool", "kind", "rules", "note"}
+KPIS_PER_POOL = 5
+KPI_EFFECT = "kpis"  # not a simulation property: the game expands it into the KPIs' rule effects
 CHECK_PASS = 0.5  # the effectiveness a Check needs to pass (Pdca.CHECK_PASS)
 # property → (target kind, required step kind or None, value type: factor | number | bool | count | reserve | step | start_rule | order_rule)
 EFFECT_PROPERTIES = {
@@ -329,7 +335,7 @@ def _effects_shape(item: dict, where: str) -> list:
         _known_keys(e, EFFECT_KEYS, f"{where} effect {i}")
         if not isinstance(e.get("target"), str) or "value" not in e:
             raise ContentError(f"{where}: every effect needs a target and a value")
-        if e.get("property") not in EFFECT_PROPERTIES:
+        if e.get("property") not in EFFECT_PROPERTIES and e.get("property") != KPI_EFFECT:
             raise ContentError(f"{where}: unknown effect property {e.get('property')!r}")
     return effects
 
@@ -405,10 +411,11 @@ def _validate_clues(p: dict, where: str) -> None:
             raise ContentError(f"{where}: a clue at depth {c['depth']} needs a key clue at depth {c['depth'] - 1}")
 
 
-def _network_index(streams_doc: dict) -> dict:
+def _network_index(streams_doc: dict, kpis_doc: dict) -> dict:
     """What effects and places can refer to, by target kind: steps ('stream.step',
     with their kind and their stream's step ids), pools, stock items, streams,
-    and arrivals (a stream, or one of its sources with an id: 'stream.source')."""
+    and arrivals (a stream, or one of its sources with an id: 'stream.source').
+    Also `menu`: pool id → the ids of its KPIs."""
     steps = {}
     for stream in streams_doc["streams"]:
         ids = [s["id"] for s in stream["steps"]]
@@ -421,10 +428,28 @@ def _network_index(streams_doc: dict) -> dict:
         "stream": {s["id"] for s in streams_doc["streams"]},
         "arrivals": {s["id"] for s in streams_doc["streams"]} | {
             f"{s['id']}.{a['id']}" for s in streams_doc["streams"] for a in s["arrivals"] if "id" in a},
+        "menu": {pool: {k["id"] for k in kpis_doc["kpis"] if k["pool"] == pool} for pool in {k["pool"] for k in kpis_doc["kpis"]}},
     }
 
 
+def _check_kpis_effect(e: dict, where: str, net: dict) -> None:
+    """A department follows one or two KPIs, both from its own menu."""
+    target, ids = e["target"], e["value"]
+    where = f"{where} {KPI_EFFECT} on {target}"
+    if target not in net["pool"]:
+        raise ContentError(f"{where}: unknown pool {target!r}")
+    if not isinstance(ids, list) or not 1 <= len(ids) <= 2 or not all(isinstance(i, str) for i in ids):
+        raise ContentError(f"{where}: needs a list of one or two KPIs")
+    if len(set(ids)) != len(ids):
+        raise ContentError(f"{where}: needs two different KPIs")
+    for i in ids:
+        if i not in net["menu"].get(target, set()):
+            raise ContentError(f"{where}: {i!r} is not on the menu of {target!r}")
+
+
 def _check_effect(e: dict, where: str, net: dict) -> None:
+    if e["property"] == KPI_EFFECT:
+        return _check_kpis_effect(e, where, net)
     kind, step_kind, value_type = EFFECT_PROPERTIES[e["property"]]
     target, value = e["target"], e["value"]
     if target not in net[kind]:
@@ -489,7 +514,7 @@ PROBLEM_FILES = "problems_tier"
 
 def check_problems(docs: dict[str, Any]) -> None:
     """Problems and countermeasures against the value streams and each other."""
-    net = _network_index(docs["value_streams"])
+    net = _network_index(docs["value_streams"], docs["kpis"])
     cms = {c["id"]: c for c in docs["countermeasures"]["countermeasures"]}
     for cm in cms.values():
         _check_countermeasure(cm, net)
@@ -611,6 +636,48 @@ def check_missions(docs: dict[str, Any]) -> None:
         raise ContentError(f"missions.yaml: missions that can never unlock (a cycle or too little XP): {', '.join(stuck)}")
 
 
+# ── kpis.yaml ────────────────────────────────────────────────────────────────
+
+def validate_kpis(doc: Any, source: str) -> None:
+    _require_strings(doc, ["review_question"], source)
+    _known_keys(doc, {"pull_limit_days", "review_question", "care", "kpis"}, source)
+    _number(doc, "pull_limit_days", source, 0.5)
+    care = doc.get("care")
+    levels = [c for c in CARE_RULES if c != "normal"]  # normal is the habit: no effects
+    if not isinstance(care, dict) or sorted(care) != sorted(levels):
+        raise ContentError(f"{source}: 'care' needs exactly {', '.join(levels)}")
+    for level, change in care.items():
+        where = f"{source}: care '{level}'"
+        if not isinstance(change, dict):
+            raise ContentError(f"{where}: needs touch_time and ftr")
+        _known_keys(change, {"touch_time", "ftr"}, where)
+        _number(change, "touch_time", where, 0.1)
+        _number(change, "ftr", where, -0.5, 0.5)
+    kpis = _entries(doc, "kpis", source)
+    for k in kpis:
+        where = f"{source}: kpi '{k['id']}'"
+        _known_keys(k, KPI_KEYS, where)
+        _require_strings(k, ["pool", "note"], where)
+        _one_of(k, "kind", KPI_KINDS, where)
+        rules = _mapping(k, "rules", set(KPI_RULES), where)
+        if not rules:
+            raise ContentError(f"{where}: needs at least one rule")
+        for rule, value in rules.items():
+            if value not in KPI_RULES[rule]:
+                raise ContentError(f"{where} rules: {rule} must be one of {KPI_RULES[rule]} (got {value!r})")
+    for pool, n in Counter(k["pool"] for k in kpis).items():
+        if n > KPIS_PER_POOL:
+            raise ContentError(f"{source}: '{pool}' has {n} KPIs; at most {KPIS_PER_POOL} KPIs per department")
+
+
+def check_kpis(docs: dict[str, Any]) -> None:
+    """KPIs against the value streams: each belongs to a team."""
+    pools = {p["id"] for p in docs["value_streams"]["pools"]}
+    for k in docs["kpis"]["kpis"]:
+        if k["pool"] not in pools:
+            raise ContentError(f"kpis.yaml: kpi '{k['id']}': unknown pool {k['pool']!r}")
+
+
 def vocabulary() -> dict[str, Any]:
     """The words content may use, written to game/data so a Godot test can
     check the game knows exactly the same ones."""
@@ -619,6 +686,7 @@ def vocabulary() -> dict[str, Any]:
         "visibilities": VISIBILITIES, "check_pass": CHECK_PASS,
         "mission_kinds": MISSION_KINDS, "mission_goals": sorted(MISSION_GOALS), "coach_stages": COACH_STAGES,
         "belt_xp": BELT_XP, "start_rules": START_RULES, "order_rules": ORDER_RULES,
+        "care_rules": CARE_RULES, "kpi_kinds": KPI_KINDS,
         "effect_properties": {p: {"kind": k, "step_kind": sk or ""} for p, (k, sk, _) in sorted(EFFECT_PROPERTIES.items())},
     }
 
@@ -630,10 +698,11 @@ VALIDATORS: dict[str, Callable[[Any, str], None]] = {
     "value_streams": validate_value_streams,
     "countermeasures": validate_countermeasures,
     "missions": validate_missions,
+    "kpis": validate_kpis,
 }
 
 # Checks that need several files at once. Each gets {stem: document}.
-CROSS_CHECKS: list[Callable[[dict[str, Any]], None]] = [check_problems, check_missions]
+CROSS_CHECKS: list[Callable[[dict[str, Any]], None]] = [check_kpis, check_problems, check_missions]
 
 
 def _validator_for(stem: str) -> Callable[[Any, str], None] | None:

@@ -6,6 +6,11 @@
   7000,
   12000
  ],
+ "care_rules": [
+  "normal",
+  "careful",
+  "hasty"
+ ],
  "check_pass": 0.5,
  "coach_stages": [
   "go_see",
@@ -83,6 +88,10 @@
    "step_kind": ""
   }
  },
+ "kpi_kinds": [
+  "leading",
+  "lagging"
+ ],
  "kpis": [
   "throughput",
   "lead_time",

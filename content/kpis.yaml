@@ -1,0 +1,143 @@
+# Department KPIs: what each team can be steered by, and the work rules each
+# KPI sets. Game text is Dutch; ids and keys are English. Built by
+# tools/build_content.py.
+#
+# A department is a pool. Per pool at most 5 KPIs, of which the player follows
+# 2 (a quarterly choice). A KPI sets one or more WORK RULES of its team:
+#   start  push (start whatever waits: the habit) | pull (start only while the
+#          next work step's queue holds less than `pull_limit_days` of work)
+#   order  first_come (the habit) | oldest | shortest | due
+#   care   normal (the habit) | careful | hasty, see `care` below
+# Lagging KPIs (results) usually set the direction (start); leading KPIs
+# (what the team controls today) set the daily choices (order, care). Two KPIs
+# that set the same rule differently give mixed signals: that rule keeps the
+# habit. Which choice is better is measured in the simulation, never awarded.
+#
+# ESTIMATE: all numbers below are estimates without a public source; they are
+# chosen to make the trade-off visible, and checked by probe on the real
+# network (docs: PLAN.md, "Department KPIs, task 2").
+
+# Pull holds a job while the next work step has this many days of that team's
+# work queued. ESTIMATE: a kanban limit of three working days.
+pull_limit_days: 3
+
+# What the quarterly review and the coach ask (Toyota Kata style).
+review_question: "Welke van deze KPI's stuurt het werk van morgen, en welke laat zien of je strategie klopt?"
+
+# Care, applied to every work step of the team as a step effect.
+# ESTIMATE: taking ten percent more time per job costs capacity and buys five
+# points of first-time-right; hurrying does the reverse. Rework is the cost.
+care:
+  careful: {touch_time: 1.1, ftr: 0.05}
+  hasty: {touch_time: 0.9, ftr: -0.05}
+
+kpis:
+  # ── Intake & aanvraagbeheer ───────────────────────────────────────────────
+  - id: intake_output
+    name: Aanvragen per week
+    pool: intake
+    kind: lagging
+    rules: {start: push, order: shortest}
+    note: "Gangbare productiviteits-KPI. Regels (duwen, korte aanvragen eerst) zijn een schatting: wie op aantallen stuurt, pakt het makkelijke werk."
+  - id: intake_lead_time
+    name: Doorlooptijd end-to-end
+    pool: intake
+    kind: lagging
+    rules: {start: pull}
+    note: "Doorlooptijd van aanvraag tot aansluiting (wet van Little: meer werk in uitvoering is langere doorlooptijd). Regel is een schatting."
+  - id: intake_oldest
+    name: Oudste aanvraag in de bak
+    pool: intake
+    kind: leading
+    rules: {order: oldest}
+    note: "Leeftijd van het oudste openstaande werk (wip_age). Regel is een schatting."
+  - id: intake_complete
+    name: Compleet doorgezet
+    pool: intake
+    kind: leading
+    rules: {care: careful}
+    note: "Aandeel aanvragen dat zonder ontbrekende gegevens doorgaat. Zorgvuldig werken is een schatting, zie care."
+  - id: intake_utilisation
+    name: Bezettingsgraad
+    pool: intake
+    kind: leading
+    rules: {start: push}
+    note: "Gangbare KPI voor capaciteitsbenutting. Wie op bezetting stuurt, houdt iedereen bezig: werk duwen. Regel is een schatting."
+
+  # ── Werkvoorbereiding ─────────────────────────────────────────────────────
+  - id: work_prep_output
+    name: Ontwerpen per week
+    pool: work_prep
+    kind: lagging
+    rules: {start: push, order: shortest}
+    note: "Gangbare productiviteits-KPI. Regels (duwen, korte ontwerpen eerst) zijn een schatting."
+  - id: work_prep_lead_time
+    name: Doorlooptijd end-to-end
+    pool: work_prep
+    kind: lagging
+    rules: {start: pull}
+    note: "Doorlooptijd van aanvraag tot aansluiting (wet van Little). Regel is een schatting."
+  - id: work_prep_ftr
+    name: Eerste keer goed bij uitvoering
+    pool: work_prep
+    kind: lagging
+    rules: {care: careful}
+    note: "Aandeel ontwerpen dat de monteur zonder aanpassing kan bouwen (first-time-right). Zorgvuldig werken is een schatting, zie care."
+  - id: work_prep_oldest
+    name: Oudste dossier
+    pool: work_prep
+    kind: leading
+    rules: {order: oldest}
+    note: "Leeftijd van het oudste openstaande dossier (wip_age). Regel is een schatting."
+  - id: work_prep_utilisation
+    name: Bezettingsgraad
+    pool: work_prep
+    kind: leading
+    rules: {start: push}
+    note: "Gangbare KPI voor capaciteitsbenutting. Regel is een schatting."
+
+  # ── Planners ──────────────────────────────────────────────────────────────
+  - id: planners_hours
+    name: Ingeplande monteursuren
+    pool: planners
+    kind: leading
+    rules: {start: push}
+    note: "Gangbare KPI voor volle agenda's. Wie op ingeplande uren stuurt, plant door. Regel is een schatting."
+  - id: planners_kept
+    name: Afspraak nagekomen
+    pool: planners
+    kind: lagging
+    rules: {care: careful}
+    note: "Aandeel afspraken dat de klant krijgt zoals toegezegd. Zorgvuldig plannen is een schatting, zie care."
+  - id: planners_on_time
+    name: Klussen op tijd
+    pool: planners
+    kind: lagging
+    rules: {order: due}
+    note: "Aandeel klussen binnen de afgesproken termijn (on_time). Regel is een schatting."
+  - id: planners_oldest
+    name: Oudste klus
+    pool: planners
+    kind: leading
+    rules: {order: oldest}
+    note: "Leeftijd van de oudste openstaande klus (wip_age). Regel is een schatting."
+
+  # ── Klantcontact ──────────────────────────────────────────────────────────
+  - id: contact_centre_handle_time
+    name: Gemiddelde afhandeltijd
+    pool: contact_centre
+    kind: leading
+    rules: {care: hasty}
+    note: "Gangbare callcenter-KPI (AHT). Wie op korte gesprekken stuurt, jaagt door. Haast is een schatting, zie care."
+  - id: contact_centre_resolved
+    name: In één keer opgelost
+    pool: contact_centre
+    kind: lagging
+    rules: {care: careful}
+    note: "First contact resolution, gangbare callcenter-KPI. Zorgvuldig werken is een schatting, zie care."
+  - id: contact_centre_reachable
+    name: Bereikbaar binnen 2 uur
+    pool: contact_centre
+    kind: lagging
+    rules: {order: due}
+    note: "Klantvragen worden binnen twee uur beantwoord (norm van deze stroom, norm_hours). Regel is een schatting."
