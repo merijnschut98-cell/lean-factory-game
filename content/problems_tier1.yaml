@@ -426,6 +426,8 @@ problems:
       # Estimate: about six months of supplier lead time after the design, where
       # four months is the reinforcement itself.
       - {target: connections.grid_reinforcement, property: wait_time, value: 1.75}
+      # Estimate: the station reinforcements that free capacity for large
+      # consumers wait for the same late-ordered transformers.
       - {target: congestion.capacity_queue, property: wait_time, value: 1.2}
     clues:
       - {tool: data, key: true, depth: 0, text: "Een netverzwaring duurt gemiddeld zeven maanden. Het werk in de straat zelf duurt twee weken."}

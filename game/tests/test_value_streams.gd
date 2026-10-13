@@ -5,6 +5,8 @@ extends TestCase
 ## Fixed seed, so these are exact regression checks on the tuned content.
 
 const SEED := 11
+## The value streams the player improves (customer contact serves them all).
+const STREAMS := ["connections", "outages", "meters", "congestion", "voltage_complaints"]
 
 ## One 120-day run shared by the tests that only read its outcome.
 static var _after_120_days: Network
@@ -37,14 +39,14 @@ func test_a_change_leaves_unrelated_streams_identical() -> void:
 	base.advance_days(60)
 	changed.advance_days(60)
 	assert_ne(changed.stream("customer_contact").finished, base.stream("customer_contact").finished, "the change reaches contact")
-	for id: String in ["connections", "outages", "meters", "congestion", "voltage_complaints"]:
+	for id: String in STREAMS:
 		assert_eq(changed.stream(id).finished, base.stream(id).finished, id + " is untouched")
 
 
 func test_content_loads() -> void:
 	var net := _net()
 	assert_eq(net.error, "")
-	for id in ["connections", "outages", "meters", "congestion", "voltage_complaints"]:
+	for id: String in STREAMS:
 		assert_ne(net.stream(id), null, id)
 
 

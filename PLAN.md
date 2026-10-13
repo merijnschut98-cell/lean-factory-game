@@ -222,7 +222,7 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 - ⬜ Next session (found by report7, 5 seeds × 180 days):
   - ✅ `wip_age` named in Wachten op de trafo and in the report (2026-10-13). Why: its harm is invisible in finished-order lead time (43.5 vs 46.9 days) and shows only as throughput 26.9 → 25.5;
   - Omvormers die afschakelen barely moves lead time (8.7 → 8.9 days): model per-address fixes that do not hold (tap_change ftr down, KPI first_time_right);
-  - simplify findings: `early_transformer_order` via `starts_with: design`; reason for (or drop) Wachten op de trafo's congestion ×1.2; one stream-id list in the tests;
+  - ✅ simplify findings (2026-10-13): `early_transformer_order` runs the reinforcement wait from the design (`starts_with`); the congestion ×1.2 is a marked estimate (station reinforcements wait for the same transformers); one stream list in the tests;
   - review doc sections for problems 14–16 (notes ready in the scratchpad's `review_md.py`).
 
 ## Problem ideas backlog (keep growing)

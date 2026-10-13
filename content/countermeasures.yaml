@@ -352,7 +352,8 @@ countermeasures:
     team_hours: {grid_analysts: 10, work_prep: 10}
     decay_days: 45
     multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
-    effects: []
+    effects:
+      - {target: connections.grid_reinforcement, property: starts_with, value: design}  # ordered as the design starts
 
   - id: framework_contracts
     name: Raamcontract met vaste levertijd

@@ -640,7 +640,13 @@
    "category": "flow",
    "decay_days": 45,
    "description": "Zodra de netstudie laat zien dat een straat verzwaard moet worden, gaat de bestelling van de transformator de deur uit. Ontwerp en levertijd lopen naast elkaar in plaats van na elkaar.",
-   "effects": [],
+   "effects": [
+    {
+     "property": "starts_with",
+     "target": "connections.grid_reinforcement",
+     "value": "design"
+    }
+   ],
    "id": "early_transformer_order",
    "multipliers": {
     "full": 0.9,
