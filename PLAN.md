@@ -223,7 +223,7 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
   - ✅ `wip_age` named in Wachten op de trafo and in the report (2026-10-13). Why: its harm is invisible in finished-order lead time (43.5 vs 46.9 days) and shows only as throughput 26.9 → 25.5;
   - ✅ Omvormers (2026-10-13): a tap set for one address does not hold for the street (tap_change ftr −0.3, an estimate; a failed change goes back to measuring); KPI first_time_right, checked by the content test;
   - ✅ simplify findings (2026-10-13): `early_transformer_order` runs the reinforcement wait from the design (`starts_with`); the congestion ×1.2 is a marked estimate (station reinforcements wait for the same transformers); one stream list in the tests;
-  - review doc sections for problems 14–16 (notes ready in the scratchpad's `review_md.py`).
+  - review doc sections for problems 14–16: still open (the overnight report run was stopped to keep to the usage limit; notes ready in the scratchpad's `review_md.py`; re-run `game/tools/problem_report.gd` first).
 
 ## Problem ideas backlog (keep growing)
 
