@@ -12,7 +12,7 @@ Pivot agreed 2026-10-12: from a hoverboard factory to a grid operator. The 3D fa
 
 This is a multi-month project, built the right way: research → design (reviewed by Merijn) → engine → content → world → UI, in small tested increments. No publishing deadline. Built in **Godot 4 + GDScript** from the start (decided 2026-10-12).
 
-**Next task:** Phase B — the last catalogue problem (KPI's die elkaar bevechten), then `content/concepts.yaml`. Merijn's review answers are built in; one question is still open in the review doc (https://claude.ai/code/artifact/120bfc8c-75b6-4a56-86d9-2c5c3148112a): is the close-out spiral too strong?
+**Next task:** Phase B — the last catalogue problem (KPI's die elkaar bevechten), then `content/concepts.yaml`. All review questions are answered and built in (review doc: https://claude.ai/code/artifact/120bfc8c-75b6-4a56-86d9-2c5c3148112a).
 
 ---
 
