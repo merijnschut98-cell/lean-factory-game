@@ -138,7 +138,7 @@
    "id": "planners_on_time",
    "kind": "lagging",
    "name": "Klussen op tijd",
-   "note": "Aandeel klussen binnen de afgesproken termijn (on_time). Wie op op tijd stuurt, plant eerst de klus waarvan de termijn het eerst verloopt. Regel is een schatting.",
+   "note": "Aandeel klussen binnen de afgesproken termijn (on_time). Wie op tijd stuurt, plant eerst de klus waarvan de termijn het eerst verloopt. Regel is een schatting.",
    "pool": "planners",
    "rules": {
     "order": "due"

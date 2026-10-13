@@ -118,7 +118,7 @@ kpis:
     pool: planners
     kind: lagging
     rules: {order: due}
-    note: "Aandeel klussen binnen de afgesproken termijn (on_time). Wie op op tijd stuurt, plant eerst de klus waarvan de termijn het eerst verloopt. Regel is een schatting."
+    note: "Aandeel klussen binnen de afgesproken termijn (on_time). Wie op tijd stuurt, plant eerst de klus waarvan de termijn het eerst verloopt. Regel is een schatting."
   - id: planners_oldest
     name: Oudste klus
     pool: planners
