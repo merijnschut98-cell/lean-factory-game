@@ -165,6 +165,32 @@ func test_a_quiet_stream_counts_as_no_change() -> void:
 	assert_eq(KpiBoard.improvement({}, {"a": busy}), 0.0)
 
 
+## A low-volume stream: on time from 5 % to 50 % is +900 %, but one KPI's
+## change counts for at most MAX_CHANGE.
+func test_a_huge_swing_counts_for_at_most_the_cap() -> void:
+	var before := {"completed": 20, "lead_days_p50": 10.0, "on_time": 0.05, "first_time_right": 0.5,
+		"throughput_per_week": 2.0, "wip_age": 5.0}
+	var after := before.duplicate()
+	after["on_time"] = 0.5
+	assert_near(KpiBoard.improvement({"a": before}, {"a": after}), KpiBoard.MAX_CHANGE / 5, 1e-9)
+	after["on_time"] = 0.0  # and down: −100 % counts as −MAX_CHANGE
+	after["first_time_right"] = 1.0  # +100 %
+	assert_eq(KpiBoard.improvement({"a": before}, {"a": after}), 0.0, "the capped swings cancel out")
+
+
+func test_a_thin_sample_counts_as_no_change() -> void:
+	var before := {"completed": KpiBoard.MIN_COMPLETED - 1, "lead_days_p50": 10.0, "on_time": 0.5,
+		"first_time_right": 0.5, "throughput_per_week": 2.0, "wip_age": 5.0}
+	var after := before.duplicate()
+	after["completed"] = KpiBoard.MIN_COMPLETED
+	after["first_time_right"] = 0.6
+	assert_eq(KpiBoard.improvement({"a": before}, {"a": after}), 0.0, "too few finished before")
+	assert_eq(KpiBoard.improvement({"a": after}, {"a": before}), 0.0, "too few finished after")
+	var enough := before.duplicate()
+	enough["completed"] = KpiBoard.MIN_COMPLETED
+	assert_true(KpiBoard.improvement({"a": enough}, {"a": after}) > 0.0, "the minimum sample counts")
+
+
 func test_a_passed_check_unlocks_the_board() -> void:
 	var cms := RulesFixture.countermeasures()
 	cms[0]["unlocks"] = "kpi_board"  # standard_designs

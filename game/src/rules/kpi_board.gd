@@ -16,6 +16,13 @@ const REVIEW_BUDGET := 10000
 ## The end-to-end KPIs a review compares per stream: +1 when higher is
 ## better, −1 when lower is.
 const MEASURES := {"lead_days_p50": -1, "on_time": 1, "first_time_right": 1, "throughput_per_week": 1, "wip_age": -1}
+## ESTIMATE: one KPI's relative change counts for at most ±50 %. Small
+## denominators make relative changes explode (on time from 5 % to 50 % is
+## +900 %), and the reward must follow only a real gain.
+const MAX_CHANGE := 0.5
+## ESTIMATE: a stream counts only with at least this many finished orders in
+## both quarters; below it, chance moves the KPIs more than the work rules do.
+const MIN_COMPLETED := 10
 
 var menu: KpiMenu
 var unlocked := false
@@ -116,21 +123,22 @@ func _start_quarter(net: Network) -> void:
 	next_review_at = net.time + SimCalendar.days(REVIEW_DAYS)
 
 
-## The mean relative change of the MEASURES (better is positive), averaged
-## over the streams that finished work in both quarters; at least 0. A KPI
-## that was 0 before counts as no change, as does a quiet stream.
+## The mean relative change of the MEASURES (better is positive, each
+## within ±MAX_CHANGE), averaged over the streams that finished at least
+## MIN_COMPLETED orders in both quarters; at least 0. A KPI that was 0 before
+## counts as no change, as does a quiet or thin stream.
 static func improvement(before: Dictionary, after: Dictionary) -> float:
 	var total := 0.0
 	var streams := 0
 	for id: String in before:
 		var b: Dictionary = before[id]
 		var a: Dictionary = after.get(id, {})
-		if b.get("completed", 0) <= 0 or a.get("completed", 0) <= 0:
+		if b.get("completed", 0) < MIN_COMPLETED or a.get("completed", 0) < MIN_COMPLETED:
 			continue
 		var change := 0.0
 		for m: String in MEASURES:
 			if b[m] != 0.0:
-				change += MEASURES[m] * (a[m] - b[m]) / b[m]
+				change += clampf(MEASURES[m] * (a[m] - b[m]) / b[m], -MAX_CHANGE, MAX_CHANGE)
 		total += change / MEASURES.size()
 		streams += 1
 	return maxf(0.0, total / streams) if streams > 0 else 0.0
