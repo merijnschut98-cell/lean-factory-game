@@ -12,7 +12,7 @@ Pivot agreed 2026-10-12: from a hoverboard factory to a grid operator. The 3D fa
 
 This is a multi-month project, built the right way: research → design (reviewed by Merijn) → engine → content → world → UI, in small tested increments. No publishing deadline. Built in **Godot 4 + GDScript** from the start (decided 2026-10-12).
 
-**Next task:** Phase B — the review doc for problems 14–17, then the last catalogue problem (KPI's die elkaar bevechten), then `content/concepts.yaml`. Merijn's review answers are built in; one question is still open in the review doc (https://claude.ai/code/artifact/120bfc8c-75b6-4a56-86d9-2c5c3148112a): is the close-out spiral too strong?
+**Next task:** Phase B — the last catalogue problem (KPI's die elkaar bevechten), then `content/concepts.yaml`. Merijn's review answers are built in; one question is still open in the review doc (https://claude.ai/code/artifact/120bfc8c-75b6-4a56-86d9-2c5c3148112a): is the close-out spiral too strong?
 
 ---
 
@@ -225,7 +225,7 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
   - ✅ `wip_age` named in Wachten op de trafo and in the report (2026-10-13). Why: its harm is invisible in finished-order lead time (43.5 vs 46.9 days) and shows only as throughput 26.9 → 25.5;
   - ✅ Omvormers (2026-10-13): a tap set for one address does not hold for the street (tap_change ftr −0.3, an estimate; a failed change goes back to measuring); KPI first_time_right, checked by the content test;
   - ✅ simplify findings (2026-10-13): `early_transformer_order` runs the reinforcement wait from the design (`starts_with`); the congestion ×1.2 is a marked estimate (station reinforcements wait for the same transformers); one stream list in the tests;
-  - review doc sections for problems 14–16: still open (the overnight report run was stopped to keep to the usage limit; notes ready in the scratchpad's `review_md.py`; re-run `game/tools/problem_report.gd` first).
+  - ✅ review doc (2026-10-13): sections 6 and 12 re-measured, sections 14–17 added, answered questions closed, Update 3 at the top
 
 ## Problem ideas backlog (keep growing)
 
