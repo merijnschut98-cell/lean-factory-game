@@ -301,7 +301,8 @@ func test_skipping_training_opens_the_campaign_without_rewards() -> void:
 
 
 ## The whole week as a player would play it: walk, look, count, a practice A3
-## with a short Check, and the Act with the time-lapse.
+## with a short Check at the bottleneck Wednesday found, and the Act with the
+## month-ahead forecast of the fade.
 func test_the_training_week_is_played_end_to_end() -> void:
 	var s := _training()
 	# Monday: visit the two teams.
@@ -317,7 +318,7 @@ func test_the_training_week_is_played_end_to_end() -> void:
 	assert_eq(s.missions.status("training_tue"), "active", "two different tools")
 	s.use_tool(DESIGN, "documents")
 	assert_eq(_active_ids(s), ["training_wed"])
-	# Wednesday: count the queues at two steps.
+	# Wednesday: count the queues at two steps (the week's course makes design the bottleneck).
 	assert_true(s.clock_text().begins_with("wo 14 okt"))
 	s.drain_events()
 	var counted := [s.use_tool(INTAKE, "queue_count")["queue"]]
@@ -330,13 +331,15 @@ func test_the_training_week_is_played_end_to_end() -> void:
 		"the training setup makes design clearly the longer wait")
 	assert_true(s.clock_text().begins_with("do 15 okt"))
 	assert_eq(s.phase_of(TRAY), "active", "the practice problem arrives through Thursday's mission")
-	# Thursday: the practice A3 and a three-day Check.
-	s.use_tool(INTAKE, "shadow")
-	s.use_tool(INTAKE, "time_study")
-	s.ask(INTAKE, "walk")
+	# Thursday: the practice A3 at the bottleneck Wednesday found, and a three-day Check.
+	assert_eq(s.region.problems[TRAY].step, DESIGN, "the practice problem sits where the work waits")
+	assert_true(s.region.net.pools["work_prep"].availability < 0.5, "the course lasts the whole week")
+	s.use_tool(DESIGN, "shadow")
+	s.use_tool(DESIGN, "time_study")
+	s.ask(DESIGN, "walk")
 	var problem: ProblemDef = s.region.problems[TRAY]
 	var keys := problem.clues.filter(func(c: Clue) -> bool: return c.key)
-	assert_eq(s.clues_found(TRAY).size(), keys.size(), "every key clue found at the intake")
+	assert_eq(s.clues_found(TRAY).size(), keys.size(), "every key clue found at Werkvoorbereiding")
 	assert_eq(s.ask_coach()["stage"], "understand")
 	var a3 := {"waste": problem.waste, "cause": Investigation.cause_options(problem, s.region.problem_list())["correct"],
 		"evidence": s.clues_found(TRAY).map(func(c: Clue) -> String: return c.id), "cm": "one_tray_fifo",
@@ -345,55 +348,94 @@ func test_the_training_week_is_played_end_to_end() -> void:
 	assert_eq(s.submit_a3(TRAY, a3), "")
 	assert_eq(s.region.state[TRAY].check_at - submitted_at, SimCalendar.days(3), "a short Check for practice")
 	assert_eq(s.wait_for_check(TRAY), "")
-	assert_true(s.check(TRAY)["passed"])
+	var checked := s.check(TRAY)
+	assert_true(checked["passed"])
+	assert_true(checked["before"]["at_constraint"] and not checked["not_constraint"],
+		"the Check agrees: Thursday worked on the bottleneck")
+	assert_true(checked["after"][problem.kpi] > checked["before"][problem.kpi],
+		"the leading indicator predicted shows the fix within three days")
 	assert_eq(s.missions.status("training_thu"), "completed")
 	assert_eq(_active_ids(s), ["training_fri"])
-	# Friday: Act without standardising, then watch it fade.
+	# Friday: the three-day Check ended in the weekend; the day starts on the next working morning.
+	assert_eq(s.clock_text(), "ma 19 okt, 08:30")
+	assert_eq(s.training_weekday("training_fri"), "ma", "the day is named by the day it started")
+	assert_eq(s.training_weekday("training_thu"), "do")
+	assert_true(s.region.net.pools["work_prep"].availability < 0.5, "the course still runs: the week is not over")
 	assert_false(s.act(TRAY, false).has("error"))
 	assert_eq(s.missions.status("training_fri"), "completed")
 	assert_false(s.in_training())
+	assert_eq(s.region.net.pools["work_prep"].availability, _campaign().region.net.pools["work_prep"].availability,
+		"the week is over: the course with it")
 	assert_eq(s.missions.status(GameSession.STORY_MISSION), "completed", "the week's walk stands in for the story's")
 	assert_eq(s.missions.status(MISSION), "available", "the campaign opens")
 	assert_true(s.xp() >= 250, "the five days' rewards and the practice score")
-	var lapse := s.time_lapse(30)
-	assert_false(lapse.has("error"))
-	assert_eq([lapse["problem"], lapse["kpi"], lapse["phase_before"], lapse["phase_after"], lapse["faded"]],
-		[TRAY, "lead_time", "resolved", "dormant", true], "not standardised: the fix fades")
-	assert_true(lapse["before"].has("lead_time") and lapse["after"].has("lead_time"))
-	assert_true(lapse["after"]["step"]["queue_hours"] >= 0.0)
+	var time_before := s.region.net.time
+	var forecast := s.fade_forecast(30)
+	assert_false(forecast.has("error"))
+	assert_eq([forecast["problem"], forecast["kpi"], forecast["place"], forecast["standardised"]],
+		[TRAY, "capacity", DESIGN, false])
+	assert_true(forecast["faded"]["capacity"] < forecast["held"]["capacity"], "without a standard the month is worse")
+	assert_true(forecast["held"]["queue"].has("count") and forecast["faded"]["queue"].has("days"))
+	assert_eq(s.region.net.time, time_before, "a forecast does not move the game on")
+	assert_eq(s.phase_of(TRAY), "resolved")
 	assert_eq(s.missions.status("training_fri"), "completed", "the practice problem is retired: Friday does not reopen")
-	assert_eq(s.phase_of(TRAY), "dormant")
 	assert_eq(s.accept("training_fri"), "not_available")
 	assert_false(s.drain_events().any(func(e: Dictionary) -> bool: return e["type"] == "reopened"))
 	assert_eq(s.region.maturity(), 1, "practice does not raise the region's maturity")
 
 
-func test_a_standardised_practice_fix_holds_through_the_time_lapse() -> void:
-	var s := _training()
-	s.skip_training()
-	# Straight to Friday's choice on a checked practice problem.
-	var st: ProblemState = s.region.state[TRAY]
+## The practice problem resolved on the given seed, standardised or not.
+func _practice_acted(seed_value: int, cm: String, standardise: bool) -> GameSession:
+	var s := GameSession.new_game(seed_value, Catalog.DATA_DIR, false)
 	s.region.activate(TRAY)
-	s.use_tool(INTAKE, "shadow")
+	s.use_tool(DESIGN, "shadow")
 	var problem: ProblemDef = s.region.problems[TRAY]
 	var a3 := {"waste": problem.waste, "cause": Investigation.cause_options(problem, s.region.problem_list())["correct"],
-		"evidence": s.clues_found(TRAY).map(func(c: Clue) -> String: return c.id), "cm": "tray_labels",
-		"prediction": problem.kpi}
+		"evidence": s.clues_found(TRAY).map(func(c: Clue) -> String: return c.id), "cm": cm, "prediction": problem.kpi}
 	assert_eq(s.submit_a3(TRAY, a3), "")
 	s.wait_for_check(TRAY)
-	assert_true(s.check(TRAY)["passed"], "the second countermeasure passes the Check too")
-	s.act(TRAY, true)
-	var lapse := s.time_lapse(30)
-	assert_eq([lapse["phase_after"], lapse["faded"]], ["resolved", false], "standard work keeps the gain")
-	assert_eq(st, s.region.state[TRAY])
+	assert_true(s.check(TRAY)["passed"], "%s passes the practice Check" % cm)
+	assert_false(s.act(TRAY, standardise).has("error"))
+	return s
 
 
-func test_a_time_lapse_refuses_bad_input_without_spending_time() -> void:
+## The Friday lesson in numbers: the month without a standard is measurably
+## worse on the practice KPI than the month with one, on every seed, and the
+## forecast runs on copies: the region's own network is untouched.
+func test_the_fade_forecast_shows_the_fade_in_the_numbers() -> void:
+	for seed_value in [11, 12, 13]:
+		var s := _practice_acted(seed_value, "one_tray_fifo", false)
+		var before := NetworkState.capture(s.region.net)
+		var events_before := s.region.events.size()
+		var forecast := s.fade_forecast(30)
+		assert_false(forecast.has("error"), "seed %d" % seed_value)
+		var kpi: String = forecast["kpi"]
+		var held: float = forecast["held"][kpi]
+		var faded: float = forecast["faded"][kpi]
+		assert_true(faded < held * 0.95, "seed %d: without a standard %s falls (%.1f vs %.1f)" % [seed_value, kpi, faded, held])
+		assert_true(forecast["faded"]["queue"]["days"] >= forecast["held"]["queue"]["days"],
+			"seed %d: the work waits at least as long at Werkvoorbereiding" % seed_value)
+		assert_eq(forecast["fade_days"], s.region.countermeasures["one_tray_fifo"].decay_days, "the fix fades after its decay")
+		assert_eq(NetworkState.capture(s.region.net), before, "seed %d: the region's network is untouched" % seed_value)
+		assert_eq(s.region.events.size(), events_before)
+		assert_eq(s.phase_of(TRAY), "resolved")
+
+
+func test_a_standardised_practice_fix_still_gets_its_counterfactual() -> void:
+	var s := _practice_acted(11, "tray_labels", true)
+	var forecast := s.fade_forecast(30)
+	assert_true(forecast["standardised"], "the player's Act is reported")
+	assert_true(forecast["faded"]["capacity"] < forecast["held"]["capacity"], "what the standard saves is shown too")
+	assert_eq(s.region.state[TRAY].recur_at, -1, "standard work keeps the gain in the game itself")
+
+
+func test_a_fade_forecast_refuses_bad_input_without_spending_time() -> void:
 	var s := _training()
 	var before := s.region.net.time
-	assert_eq(s.time_lapse(0), {"error": "bad_days"})
-	assert_eq(s.time_lapse(GameSession.MAX_TIME_LAPSE_DAYS + 1), {"error": "bad_days"})
-	assert_eq(s.time_lapse(5, "no_such_problem"), {"error": "unknown_problem"})
+	assert_eq(s.fade_forecast(0), {"error": "bad_days"})
+	assert_eq(s.fade_forecast(GameSession.MAX_FORECAST_DAYS + 1), {"error": "bad_days"})
+	assert_eq(s.fade_forecast(5, "no_such_problem"), {"error": "unknown_problem"})
+	assert_eq(s.fade_forecast(5), {"error": "not_resolved"}, "only after the Act")
 	assert_eq(s.region.net.time, before)
 
 

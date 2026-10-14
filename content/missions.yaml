@@ -23,8 +23,9 @@
 #            mission brings when it is accepted
 # check_days a shorter Check for this mission's problem (training only; the
 #            real Check takes Region.CHECK_DAYS, 14)
-# setup      training only: a staged situation for the day's lesson, effects on
-#            the simulation while the day is active (not real numbers)
+# setup      training only: a staged situation for the week's lessons, effects
+#            on the simulation from the day it is accepted until the training
+#            week ends or is skipped (not real numbers)
 #
 # kind training: the Inwerkweek (docs/superpowers/specs/2026-10-14-training-arc-design.md),
 # five small Starter Kata days before the campaign, in order Monday to Friday
@@ -65,6 +66,14 @@ missions:
     debrief: "Nu ken je de plekken waar een aanvraag langs komt. Morgen gaan we beter kijken."
     goal: {type: observe, places: [connections.intake, connections.design]}
     teaches: [netbeheerder, aansluiting, aansluittermijn]
+    # TRAINING SETUP (staged, not a real number): this week three of the four
+    # work preparers are on a course, so Werkvoorbereiding is clearly the
+    # bottleneck all week: Wednesday counts it, Thursday's practice problem
+    # sits there. At the base load the intake and design queues are too close
+    # to call (a few orders each). It holds Monday to Friday and goes when the
+    # week ends or is skipped.
+    setup:
+      - {target: work_prep, property: availability, value: -0.75}
     rewards: {xp: 50}
     insights:
       go_see: "Een aanvraag doet er maanden over. Waar denk je dat die tijd zit: in het werk, of ertussen?"
@@ -90,12 +99,8 @@ missions:
     briefing: "Tel de wachtrij bij Intake en bij Werkvoorbereiding. Waar wacht het werk het langst? Dat is de plek die de hele stroom ophoudt."
     debrief: "Een stroom gaat zo snel als zijn knelpunt. Verbeteren op een andere plek maakt de stapel niet kleiner."
     goal: {type: observe, places: [connections.intake, connections.design], tool: queue_count}
-    # TRAINING SETUP (staged, not a real number): this week three of the four
-    # work preparers are on a course, so the counts give a clear answer. At the
-    # base load the two queues are too close to call (a few orders each).
-    # The debrief adds what the player measured and names the longer queue.
-    setup:
-      - {target: work_prep, property: availability, value: -0.75}
+    # The week's training setup (on Monday) makes the counts give a clear
+    # answer; the debrief adds what the player measured and names the longer queue.
     teaches: [flow, wip, bottleneck_focus, netcongestie]
     rewards: {xp: 50}
     insights:
@@ -106,14 +111,14 @@ missions:
     kind: training
     tier: 1
     requires: {missions: [training_wed]}
-    briefing: "Bij de Intake gaat iets kleins mis met het binnenkomende werk. Zoek uit wat, schrijf een oefen-A3 met een voorspelling en probeer een tegenmaatregel. Over drie dagen kijken we in de Check of je voorspelling uitkwam."
+    briefing: "Gisteren telde je waar het werk het langst wacht. Deze week zit bij Werkvoorbereiding maar één van de vier werkvoorbereiders; de anderen volgen een cursus. Juist daar gaat ook iets kleins mis met het binnenkomende werk. Zoek uit wat, schrijf een oefen-A3 met een voorspelling en probeer een tegenmaatregel. Over drie dagen kijken we in de Check of je voorspelling uitkwam."
     debrief: "Je voorspelling is getoetst aan wat er echt gebeurde. Zo leer je van elk experiment, ook als het tegenvalt."
     goal: {type: check, problem: training_tray}
     check_days: 3
     teaches: [PDCA, A3, leading_lagging]
     rewards: {xp: 50}
     insights:
-      understand: "Wat zie je de medewerker doen voordat het echte werk aan een aanvraag begint?"
+      understand: "Wat zie je de werkvoorbereider doen voordat het echte werk aan een dossier begint?"
       experiment: "Welk getal laat over drie dagen zien of het werkt?"
 
   - id: training_fri
@@ -121,7 +126,7 @@ missions:
     kind: training
     tier: 1
     requires: {missions: [training_thu]}
-    briefing: "Je experiment werkt. Nu beslis je: borg je het als standaard werk (dat kost budget), of laat je het zo? Kijk daarna in het versnelde verloop wat er gebeurt."
+    briefing: "Je experiment werkt. Nu beslis je: borg je het als standaard werk (dat kost budget), of laat je het zo? Kijk daarna een maand vooruit: hoe loopt het werk met en zonder borgen?"
     debrief: "Een verbetering blijft alleen als iemand haar borgt. Je inwerkweek zit erop: volgende week begint het echte werk."
     goal: {type: solve, problem: training_tray}
     check_days: 3

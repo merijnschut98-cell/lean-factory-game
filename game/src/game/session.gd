@@ -29,11 +29,11 @@ const STORY_MISSION := "walk_connections"
 const PLAY_START_DATE := {"year": 2026, "month": 10, "day": 12, "hour": 0, "minute": 0, "second": 0}
 const WEEKDAYS: Array[String] = ["ma", "di", "wo", "do", "vr", "za", "zo"]
 const MONTHS: Array[String] = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"]
-## The training week's first day, and its practice problem (time_lapse's default).
+## The training week's first day, and its practice problem (fade_forecast's default).
 const TRAINING_FIRST := "training_mon"
 const TRAINING_PROBLEM := "training_tray"
-## A time-lapse shows at most a quarter.
-const MAX_TIME_LAPSE_DAYS := 91
+## A fade forecast looks at most a quarter ahead.
+const MAX_FORECAST_DAYS := 91
 
 var catalog: Catalog
 var region: Region
@@ -179,23 +179,48 @@ func skip_training() -> String:
 	return ""
 
 
-## Fast-forward `days` (the Friday lesson: does an unstandardised fix fade?)
-## and compare the problem's numbers before and after: {problem, kpi (the
-## one the problem names), before, after (Region.snapshot), phase_before,
-## phase_after, faded}, or an error: bad_days | unknown_problem.
-func time_lapse(days: int, problem_id: String = TRAINING_PROBLEM) -> Dictionary:
-	if days < 1 or days > MAX_TIME_LAPSE_DAYS:
+## The Friday lesson in numbers, as a counterfactual (the pattern of
+## KpiBoard.forecast): the coming `days` run twice on copies of the network
+## from now, "held" (the fix kept: the countermeasure's effects, not the
+## problem's) and "faded" (after the countermeasure's decay_days the fix is
+## gone and the problem's effects are back). Both copies continue the same
+## random sequences, so they differ only in the fix. The game itself does
+## not move on. Returns {problem, kpi (the one the problem names), place,
+## standardised (the player's Act), fade_days, held, faded (each
+## Region.measures at the end)}, or an error: bad_days | unknown_problem |
+## not_resolved (no Act yet) | a copy's error.
+func fade_forecast(days: int, problem_id: String = TRAINING_PROBLEM) -> Dictionary:
+	if days < 1 or days > MAX_FORECAST_DAYS:
 		return {"error": "bad_days"}
-	if not region.problems.has(problem_id):
+	var p: ProblemDef = region.problems.get(problem_id)
+	if p == null:
 		return {"error": "unknown_problem"}
-	var phase_before := phase_of(problem_id)
-	var before := region.snapshot(problem_id)
-	_after(SimCalendar.days(days))
-	var phase_after := phase_of(problem_id)
+	var st: ProblemState = region.state[problem_id]
+	if st.phase != ProblemState.Phase.RESOLVED:
+		return {"error": "not_resolved"}
+	var cm: CountermeasureDef = region.countermeasures[st.a3["cm"]]
+	var fixed := Pdca.treated_effects(p, cm, st.eff)
+	var problem_source := "problem:" + problem_id
+	var cm_source := "cm:" + problem_id
+	var runs := {}
+	for run: String in ["held", "faded"]:
+		var twin := NetworkState.copy(region.net)
+		if not twin.error.is_empty():
+			return {"error": twin.error}
+		twin.clear_effects(problem_source)
+		twin.set_effects(cm_source, fixed.get(cm_source, []))
+		runs[run] = twin
+	var fade_days := clampi(cm.decay_days, 0, days) if cm.decay_days >= 0 else 0
+	var faded: Network = runs["faded"]
+	faded.advance_days(fade_days)
+	faded.clear_effects(cm_source)
+	faded.set_effects(problem_source, p.effects)
+	faded.advance_days(days - fade_days)
+	runs["held"].advance_days(days)
 	return {
-		"problem": problem_id, "kpi": region.problems[problem_id].kpi, "before": before,
-		"after": region.snapshot(problem_id), "phase_before": phase_before, "phase_after": phase_after,
-		"faded": phase_before == "resolved" and phase_after == "dormant",
+		"problem": problem_id, "kpi": p.kpi, "place": p.step, "standardised": st.recur_at < 0,
+		"fade_days": fade_days,
+		"held": Region.measures(runs["held"], p.step), "faded": Region.measures(faded, p.step),
 	}
 
 
@@ -247,6 +272,17 @@ func in_training() -> bool:
 func training_day(mission_id: String) -> int:
 	var week := missions.defs.values().filter(func(m: MissionDef) -> bool: return m.kind == "training")
 	return week.map(func(m: MissionDef) -> String: return m.id).find(mission_id)
+
+
+## A training day's weekday as the player saw it ("ma" … "vr"): the day it
+## started, or its place in the week before then; "" for any other mission.
+func training_weekday(mission_id: String) -> String:
+	var day := training_day(mission_id)
+	if day < 0:
+		return ""
+	if not missions.opened_at.has(mission_id):
+		return WEEKDAYS[day]
+	return WEEKDAYS[SimCalendar.weekday(missions.opened_at[mission_id])]
 
 
 ## A problem only the training week opens (Region.practice).
@@ -316,14 +352,22 @@ func _after(minutes: int) -> void:
 		missions.done_once[STORY_MISSION] = true
 
 
-## The clock moves on to the active training day's morning (Monday to Friday
-## of the first week of play) when it is still earlier.
+## A training day handed out starts on its own morning (Monday to Friday of
+## the first week of play) when that is still ahead, or on the next working
+## day's morning when the clock stands in a weekend (Thursday's three-day
+## Check ends on a Sunday). When it started is kept (Missions.opened_at): its
+## weekday names the day (training_weekday).
 func _start_training_day() -> void:
 	for m in missions.active("training"):
+		if missions.opened_at.has(m.id):
+			continue
 		var morning := SimCalendar.days(WARMUP_DAYS + training_day(m.id)) + START_MINUTE
+		if region.net.time > morning and SimCalendar.weekday(region.net.time) >= 5:
+			morning = SimCalendar.days(SimCalendar.day_of(region.net.time) + 7 - SimCalendar.weekday(region.net.time)) + START_MINUTE
 		if region.net.time < morning:
 			region.advance(morning - region.net.time)
 			missions.update()
+		missions.opened_at[m.id] = region.net.time
 
 
 ## The A3 as the rules read it: evidence a list of clue ids, cm an id.

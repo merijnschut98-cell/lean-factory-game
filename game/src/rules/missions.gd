@@ -35,7 +35,8 @@ var progress: Dictionary[String, Dictionary] = {}
 ## past any deadline, even when a faded fix reopens them.
 var done_once: Dictionary[String, bool] = {}
 ## When each mission with a deadline opened (minutes): its clock starts there.
-## Kept after the mission ends (small, and harmless).
+## Also when each training day started (GameSession keeps it: its weekday
+## names the day). Kept after the mission ends (small, and harmless).
 var opened_at: Dictionary[String, int] = {}
 ## {type: accepted | completed | failed | reopened, mission} for the UI (a
 ## new belt is a Region event; tell the player about a faded fix by
@@ -131,9 +132,9 @@ func skip_training() -> void:
 			continue
 		if status(m.id) == "active" and not m.goal_problem.is_empty():
 			region.deactivate(m.goal_problem)
-		_clear_setup(m)
 		progress[m.id] = {"status": "completed", "asks": {}, "seen": {}}
 		done_once[m.id] = true
+	_clear_week_setup()
 
 
 ## Stop an active mission; it becomes available again. Its problem stays.
@@ -165,7 +166,7 @@ func update() -> void:
 ## A completed solve mission whose problem is dormant again (the fix faded)
 ## opens again: the problem comes back through it. Not a training day: its
 ## practice problem is retired once the day is done (the Friday lesson's
-## fade only shows in the time-lapse).
+## fade shows in its forecast, GameSession.fade_forecast).
 func _reopen_faded() -> void:
 	for id: String in progress.keys():
 		var m := defs[id]
@@ -305,14 +306,17 @@ func _complete(m: MissionDef) -> void:
 		for place in m.goal_places:
 			queues[place] = region.queue_at(place)
 		event["queues"] = queues
-	_clear_setup(m)
 	events.append(event)
 	if m.kind == "training":
 		_hand_out_next_day(m)
+	if not in_training():
+		_clear_week_setup()
 
 
-## A training day's staged situation goes onto the simulation while it is
-## active (content validates it; a refusal would only lose the staging).
+## A training day's staged situation goes onto the simulation when it is
+## accepted and holds until the week ends (Wednesday counts the bottleneck
+## Monday's setup makes, Thursday works on it). Content validates it; a
+## refusal would only lose the staging.
 func _set_up(m: MissionDef) -> void:
 	if m.setup.is_empty():
 		return
@@ -324,6 +328,13 @@ func _set_up(m: MissionDef) -> void:
 func _clear_setup(m: MissionDef) -> void:
 	if not m.setup.is_empty():
 		region.net.clear_effects(SETUP_SOURCE + m.id)
+
+
+## The week is over or skipped: every training day's staging goes.
+func _clear_week_setup() -> void:
+	for m: MissionDef in defs.values():
+		if m.kind == "training":
+			_clear_setup(m)
 
 
 ## The coach hands out the next training day as soon as one is done, so the

@@ -355,6 +355,14 @@ Merijn asked me to fix the content review's findings with my own judgement while
 - **Henk becomes a story hook** for the missions (built: a deadline mission); the buddy system's team hours stay as they are.
 - ~~Still open: the contact-centre spiral~~ → answered 2026-10-13: keep it mild.
 
+### Claude's calls, pending Merijn (2026-10-14, training week)
+- **"Capaciteit" is now a KPI the A3 can predict** (needed so the practice problem's fade shows within 30 days). This also affects scoring for the real problems; confirm or revert.
+- **The practice problem now sits at Werkvoorbereiding**, and the course setup (three of four work preparers away) runs all week, so Wednesday's bottleneck and Thursday's fix tell one story. Its harm is touch time ×1.12 (invented, training only).
+- **Friday's lesson compares two futures** on copies of the network ("Met borgen" / "Zonder borgen", 30 days); in a probe, capacity was 35.0 vs 31.4 a week. The game clock does not move.
+- **Friday starts Monday 19 Oct** when Thursday's 3-day Check ends on a Sunday; the day title follows the real weekday.
+- Earlier calls from this week: `walk_connections` counts as done after the week (the office only has Intake and Werkvoorbereiding); Monday visits those two places only.
+- Screenshots `play_training_board.png` and `play_timelapse.png` still show the earlier version; they need refreshing.
+
 ### Claude's calls, pending Merijn (2026-10-13 night, office slice)
 Made on my own while you were away; each is easy to reverse.
 - **The map marks the active mission's places in orange**, including the place where its problem shows. Today every briefing names that place already; a later mission that keeps its place secret would need the marker off.

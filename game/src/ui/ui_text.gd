@@ -217,10 +217,10 @@ static func kpi_value(id: String, value: float) -> String:
 
 
 ## A mission's name as the player sees it: a training day with its weekday
-## ("Inwerkweek — ma: Rondleiding", see GameSession.training_day).
+## ("Inwerkweek — ma: Rondleiding", see GameSession.training_weekday).
 static func mission_title(m: MissionDef, s: GameSession) -> String:
-	var day := s.training_day(m.id)
-	return TRAINING_TITLE % [GameSession.WEEKDAYS[day], m.name] if day >= 0 else m.name
+	var weekday := s.training_weekday(m.id)
+	return TRAINING_TITLE % [weekday, m.name] if not weekday.is_empty() else m.name
 
 
 ## "twee weken", "drie dagen".

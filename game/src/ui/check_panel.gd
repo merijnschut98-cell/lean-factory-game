@@ -3,8 +3,8 @@ extends UiPanel
 ## Check and Act: the stream's numbers before and after the experiment,
 ## what the Check says, then the choice to standardise; after Act, the score
 ## and the coach's debrief. On the training week's practice problem the
-## player can then fast-forward a month (the Friday lesson: does the fix
-## hold without a standard?).
+## player can then look a month ahead, with and without the standard (the
+## Friday lesson: does the fix hold without one?).
 
 signal back_to_a3
 
@@ -27,24 +27,23 @@ const KIND_GROUPS := {
 const LAGGING_NOTE := "Volgindicatoren lopen achter: ze meten werk dat grotendeels vóór je verbetering is gestart."
 ## Numbers where lower is better.
 const LOWER_IS_BETTER := ["lead_time", "wip_age"]
-const FADED := "De verbetering is weggezakt: zonder standaard viel het team na een paar dagen terug in de oude gewoonte. De cijfers zien dat pas later; in het echte werk komt het probleem dan terug via zijn missie."
-const HELD := "De verbetering is gebleven: de standaard houdt haar vast, ook als het druk wordt."
+## The Friday lesson's verdict, by the player's Act (GameSession.fade_forecast).
+const NOT_KEPT := "Jij borgde niet. Zonder standaard valt het team na %s terug in de oude gewoonte: de maand loopt dan zoals \"Zonder borgen\"."
+const KEPT := "Jij borgde de verbetering: de standaard houdt haar vast, ook als het druk wordt. De maand loopt zoals \"Met borgen\"."
+const FORECAST_LAGGING := "De doorlooptijd (een volgindicator) laat dit pas na maanden zien: het werk dat deze maand klaar is, ging lang geleden door deze stap."
 const SCORE_PARTS := {
 	"plan": "Plan: onderzoek op de gemba", "root_cause": "Oorzaak en bewijs", "countermeasure": "Tegenmaatregel",
 	"check_act": "Check en Act", "impact": "Impact op de hele stroom",
 }
 
-## How far the practice time-lapse fast-forwards.
-const TIME_LAPSE_DAYS := 30
-## The practice time-lapse's rows: the stream's capacity (leading) next to
-## the KPI the problem names.
-const LAPSE_ROWS := ["capacity"]
+## How far the practice forecast looks ahead.
+const FORECAST_DAYS := 30
 
 var problem_id := ""
 var result: Dictionary = {}
 var score: Dictionary = {}
-## GameSession.time_lapse's result once fast-forwarded (empty before).
-var lapse: Dictionary = {}
+## GameSession.fade_forecast's result once asked for (empty before).
+var forecast: Dictionary = {}
 
 
 func _init() -> void:
@@ -55,7 +54,7 @@ func show_result(of_problem: String, check_result: Dictionary) -> void:
 	problem_id = of_problem
 	result = check_result
 	score = {}
-	lapse = {}
+	forecast = {}
 	refresh()
 
 
@@ -68,13 +67,13 @@ func act(standardise: bool) -> Dictionary:
 	return score
 
 
-## Fast-forward a month on the practice problem and show what happened.
-## Returns GameSession.time_lapse's result.
-func time_lapse() -> Dictionary:
-	lapse = session.time_lapse(TIME_LAPSE_DAYS, problem_id)
-	acted.emit()
+## Look a month ahead on the practice problem, with and without the
+## standard (the game itself does not move on). Returns
+## GameSession.fade_forecast's result.
+func fade_forecast() -> Dictionary:
+	forecast = session.fade_forecast(FORECAST_DAYS, problem_id)
 	refresh()
-	return lapse
+	return forecast
 
 
 ## "leading" or "lagging" for a number in the table.
@@ -96,8 +95,8 @@ func refresh() -> void:
 	title_label.text = "Check geslaagd" if passed else "Check niet geslaagd"
 	title_label.add_theme_color_override("font_color", Palette.GREEN_DARK if passed else Palette.SAFETY_ORANGE)
 
-	if not lapse.is_empty():
-		_lapse_view()  # the month later replaces the Check's table: it was read before
+	if not forecast.is_empty():
+		_forecast_view()  # the month ahead replaces the Check's table: it was read before
 		_score_view()
 		return
 	var columns := HBoxContainer.new()
@@ -178,36 +177,45 @@ func _score_view() -> void:
 		if m.goal_problem == problem_id and m.goal_type == "solve" and session.missions.status(m.id) == "completed":
 			var debrief := add_card(body, session.catalog.coach.get("name", "Coach"), Palette.BLUE_PALE)
 			debrief.add_child(paragraph("'%s'" % m.debrief))
-	if session.is_practice(problem_id) and lapse.is_empty():
-		_lapse_view()
+	if session.is_practice(problem_id) and forecast.is_empty():
+		_forecast_view()
 
 
-## The Friday lesson: a button to fast-forward, then before and after.
-func _lapse_view() -> void:
-	if lapse.is_empty():
+## The Friday lesson: a button to look ahead, then the month with and
+## without the standard side by side: the KPI the problem names and the
+## queue at its step, both leading indicators.
+func _forecast_view() -> void:
+	if forecast.is_empty():
 		var row := HBoxContainer.new()
-		row.add_child(button("Spoel %d dagen vooruit" % TIME_LAPSE_DAYS, time_lapse))
-		row.add_child(label("  Wat gebeurt er met je verbetering als niemand erop let?", UiTheme.SMALL, Palette.MUTED))
+		row.add_child(button("Kijk %d dagen vooruit" % FORECAST_DAYS, fade_forecast))
+		row.add_child(label("  Wat doet je verbetering in een maand, met en zonder borgen?", UiTheme.SMALL, Palette.MUTED))
 		body.add_child(row)
 		return
-	if lapse.has("error"):
-		body.add_child(paragraph(UiText.a3_error(lapse["error"]), Palette.SAFETY_ORANGE))
+	if forecast.has("error"):
+		body.add_child(paragraph(UiText.a3_error(forecast["error"]), Palette.SAFETY_ORANGE))
 		return
-	var card := add_card(body, "%d dagen later" % TIME_LAPSE_DAYS)
+	var card := add_card(body, "Over %d dagen: met en zonder borgen" % FORECAST_DAYS)
 	var grid := GridContainer.new()
 	grid.columns = 4
 	grid.add_theme_constant_override("h_separation", 26)
+	grid.add_theme_constant_override("v_separation", 6)
 	card.add_child(grid)
-	for heading in ["", "Voor", "Na", ""]:
+	for heading in ["", "Met borgen", "Zonder borgen", ""]:
 		grid.add_child(label(heading, UiTheme.SMALL, Palette.MUTED))
-	for row: String in LAPSE_ROWS + [lapse["kpi"]]:
-		var before: float = lapse["before"][row]
-		var after: float = lapse["after"][row]
-		grid.add_child(label(UiText.kpi(row), UiTheme.SMALL))
-		_add_before_after(grid, row, before, after)
-	var faded: bool = lapse["faded"]
-	card.add_child(paragraph(FADED if faded else HELD, Palette.SAFETY_ORANGE if faded else Palette.GREEN_DARK))
-	card.add_child(paragraph(LAGGING_NOTE, Palette.MUTED, UiTheme.SMALL))
+	var kpi: String = forecast["kpi"]
+	grid.add_child(label(UiText.kpi(kpi) + "   (jouw voorspelling)", UiTheme.SMALL, Palette.VOLTANA_BLUE))
+	_add_before_after(grid, kpi, forecast["held"][kpi], forecast["faded"][kpi])
+	var held_queue: Dictionary = forecast["held"]["queue"]
+	var faded_queue: Dictionary = forecast["faded"]["queue"]
+	grid.add_child(label("Wachtrij bij " + session.region.net.step_at(forecast["place"]).name, UiTheme.SMALL))
+	grid.add_child(label(UiText.queue(held_queue)))
+	grid.add_child(label(UiText.queue(faded_queue), UiTheme.FONT_SIZE,
+		Palette.SAFETY_ORANGE if faded_queue["days"] > held_queue["days"] else Palette.INK))
+	grid.add_child(label(KIND_TAGS[LEADING], UiTheme.SMALL, Palette.MUTED))
+	var kept: bool = forecast["standardised"]
+	card.add_child(paragraph(KEPT if kept else NOT_KEPT % UiText.period(forecast["fade_days"]),
+		Palette.GREEN_DARK if kept else Palette.SAFETY_ORANGE))
+	card.add_child(paragraph(FORECAST_LAGGING, Palette.MUTED, UiTheme.SMALL))
 
 
 ## Every text on the panel, for tests.

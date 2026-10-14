@@ -33,8 +33,9 @@ var goal_uses := 1
 ## A shorter Check for the goal's problem while this mission is active (the
 ## training week); -1: Region.CHECK_DAYS.
 var check_days := -1
-## Training only: a staged situation for the day's lesson, effects on the
-## simulation ({target, property, value}) while the mission is active.
+## Training only: a staged situation for the week's lessons, effects on the
+## simulation ({target, property, value}) from the day it is accepted until
+## the training week ends or is skipped.
 var setup: Array = []
 ## Concept ids whose glossary cards the mission brings when accepted.
 var teaches := PackedStringArray()

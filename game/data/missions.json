@@ -46,6 +46,13 @@
    "rewards": {
     "xp": 50
    },
+   "setup": [
+    {
+     "property": "availability",
+     "target": "work_prep",
+     "value": -0.75
+    }
+   ],
    "teaches": [
     "netbeheerder",
     "aansluiting",
@@ -109,13 +116,6 @@
    "rewards": {
     "xp": 50
    },
-   "setup": [
-    {
-     "property": "availability",
-     "target": "work_prep",
-     "value": -0.75
-    }
-   ],
    "teaches": [
     "flow",
     "wip",
@@ -125,7 +125,7 @@
    "tier": 1
   },
   {
-   "briefing": "Bij de Intake gaat iets kleins mis met het binnenkomende werk. Zoek uit wat, schrijf een oefen-A3 met een voorspelling en probeer een tegenmaatregel. Over drie dagen kijken we in de Check of je voorspelling uitkwam.",
+   "briefing": "Gisteren telde je waar het werk het langst wacht. Deze week zit bij Werkvoorbereiding maar één van de vier werkvoorbereiders; de anderen volgen een cursus. Juist daar gaat ook iets kleins mis met het binnenkomende werk. Zoek uit wat, schrijf een oefen-A3 met een voorspelling en probeer een tegenmaatregel. Over drie dagen kijken we in de Check of je voorspelling uitkwam.",
    "check_days": 3,
    "debrief": "Je voorspelling is getoetst aan wat er echt gebeurde. Zo leer je van elk experiment, ook als het tegenvalt.",
    "goal": {
@@ -135,7 +135,7 @@
    "id": "training_thu",
    "insights": {
     "experiment": "Welk getal laat over drie dagen zien of het werkt?",
-    "understand": "Wat zie je de medewerker doen voordat het echte werk aan een aanvraag begint?"
+    "understand": "Wat zie je de werkvoorbereider doen voordat het echte werk aan een dossier begint?"
    },
    "kind": "training",
    "name": "Een klein experiment",
@@ -155,7 +155,7 @@
    "tier": 1
   },
   {
-   "briefing": "Je experiment werkt. Nu beslis je: borg je het als standaard werk (dat kost budget), of laat je het zo? Kijk daarna in het versnelde verloop wat er gebeurt.",
+   "briefing": "Je experiment werkt. Nu beslis je: borg je het als standaard werk (dat kost budget), of laat je het zo? Kijk daarna een maand vooruit: hoe loopt het werk met en zonder borgen?",
    "check_days": 3,
    "debrief": "Een verbetering blijft alleen als iemand haar borgt. Je inwerkweek zit erop: volgende week begint het echte werk.",
    "goal": {

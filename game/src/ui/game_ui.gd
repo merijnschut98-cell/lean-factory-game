@@ -147,7 +147,7 @@ func after_action() -> void:
 		names[m.id] = UiText.mission_title(m, session)
 	for e in session.drain_events():
 		if e["type"] == "recurred" and session.is_practice(e.get("problem", "")):
-			continue  # the practice problem is retired; the time-lapse tells the fade
+			continue  # the practice problem is retired; the Friday forecast tells the fade
 		var text := UiText.event(e, names)
 		if not text.is_empty():
 			hud.toast(text)

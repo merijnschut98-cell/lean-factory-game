@@ -403,18 +403,31 @@ func _team_hours(cm: CountermeasureDef, check_days: int) -> Array:
 ## it), and the problem's own step.
 func snapshot(problem_id: String) -> Dictionary:
 	var p := problems[problem_id]
-	var stream := net.stream(p.stream_id())
-	var c: Dictionary = Capacity.analyse(net)["streams"][stream.id]
-	var k := stream.kpis(net.time, CHECK_DAYS)
+	var out := measures(net, p.step)
+	out["at_constraint"] = out["constraint_pool"] in _pools_at(p.step)
+	out["cost_per_week"] = _cost_of(state[problem_id])
+	return out
+
+
+## The end-to-end numbers of the stream through `place` on any network (the
+## region's own, or a forecast's copy): KPIs over the last CHECK_DAYS,
+## capacity and constraint, and the place's step: its statistics and queue
+## now (as queue_at).
+static func measures(network: Network, place: String) -> Dictionary:
+	var stream := network.stream(place.get_slice(".", 0))
+	var step := network.step_at(place)
+	var c: Dictionary = Capacity.analyse(network)["streams"][stream.id]
+	var k := stream.kpis(network.time, CHECK_DAYS)
 	return {
 		"capacity": c["capacity_per_week"], "constraint_pool": c["constraint_pool"],
-		"at_constraint": c["constraint_pool"] in _pools_at(p.step),
 		"throughput": k["throughput_per_week"], "lead_time": k["lead_days_p50"],
-		"cost_per_week": _cost_of(state[problem_id]),
 		"first_time_right": k["first_time_right"], "on_time": k["on_time"],
 		# The age of the open work: long waits show before their orders finish.
-		"wip_age": net.open_age_days(stream),
-		"step": _recent_stats(net.step_at(p.step)),
+		"wip_age": network.open_age_days(stream),
+		"step": step.stats_since(SimCalendar.day_of(network.time) - CHECK_DAYS),
+		# A wait step (a permit, a delivery) has no queue of its own.
+		"queue": {"count": network.queue_of(step).size(), "days": network.queue_days(step)}
+			if step.kind == SimStep.Kind.WORK else {"count": 0, "days": 0.0},
 	}
 
 

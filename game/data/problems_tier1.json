@@ -1304,25 +1304,25 @@
     {
      "depth": 0,
      "key": true,
-     "text": "Bij elke nieuwe aanvraag kijkt de medewerker eerst in twee bakken welke aanvraag het oudst is, en sorteert dan om.",
+     "text": "Bij elk dossier kijkt de werkvoorbereider eerst in twee bakken welk dossier het oudst is, en sorteert dan om.",
      "tool": "shadow"
     },
     {
      "depth": 0,
      "key": false,
-     "text": "In de twee bakken samen liggen maar een stuk of tien aanvragen. De stapel is het probleem niet.",
+     "text": "De stapel is groot nu drie van de vier werkvoorbereiders op cursus zijn. Aan de cursus verander jij deze week niets; aan wat de ene werkvoorbereider met haar tijd doet misschien wel.",
      "tool": "queue_count"
     },
     {
      "depth": 1,
      "key": true,
-     "text": "Zoeken, omsorteren en terugleggen kost een paar minuten per aanvraag: ongeveer een zevende bovenop een uur werk.",
+     "text": "Zoeken, omsorteren en uitzoeken welke versie van een dossier geldt kost zo'n half uur per dossier: ongeveer een zevende bovenop ruim drie uur ontwerpwerk.",
      "tool": "time_study"
     },
     {
      "depth": 1,
      "key": true,
-     "text": "'De ene bak is voor de post, de andere voor geprinte webformulieren. Zo is het ooit gegroeid; niemand weet meer waarom.'",
+     "text": "'De ene bak is voor nieuwe dossiers van de Intake, de andere voor dossiers die terugkomen met aanvullingen van de klant. Zo is het ooit gegroeid; niemand weet meer waarom.'",
      "tool": "conversation"
     }
    ],
@@ -1333,23 +1333,23 @@
    "effects": [
     {
      "property": "touch_time",
-     "target": "connections.intake",
-     "value": 1.15
+     "target": "connections.design",
+     "value": 1.12
     }
    ],
    "id": "training_tray",
-   "kpi": "lead_time",
+   "kpi": "capacity",
    "mismatch_note": "Harder of sneller werken haalt het zoeken niet weg. Het zit in hoe het werk binnenkomt, niet in de mensen.",
    "name": "Twee bakken voor hetzelfde werk",
    "plausible_causes": [
-    "De intakemedewerkers werken te traag.",
+    "De werkvoorbereiders werken te traag.",
     "Er komen te veel aanvragen tegelijk binnen."
    ],
-   "root_cause": "Er zijn twee bakken voor hetzelfde werk zonder vaste volgorde; zoeken en omsorteren kost bij elke aanvraag extra tijd.",
+   "root_cause": "Er zijn twee bakken voor hetzelfde werk zonder vaste volgorde; zoeken en omsorteren kost bij elk dossier extra tijd.",
    "severity": "low",
-   "step": "connections.intake",
+   "step": "connections.design",
    "symptoms": [
-    "Bij de Intake zoeken medewerkers eerst in twee bakken voordat ze een aanvraag oppakken."
+    "Bij Werkvoorbereiding zoekt de werkvoorbereider eerst in twee bakken voordat ze een dossier oppakt."
    ],
    "teaches": [
     "waste_motion",

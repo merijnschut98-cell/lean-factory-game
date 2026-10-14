@@ -299,7 +299,7 @@ func test_the_practice_problem_hurts_a_little_and_both_fixes_pass() -> void:
 	for cm in c.countermeasures:
 		if tray.countermeasures.has(cm.id):
 			assert_true(Pdca.effectiveness(tray, cm, 1)["eff"] >= Pdca.CHECK_PASS, cm.id)
-			assert_true(cm.decay_days > 0 and cm.decay_days <= 14, "%s fades within the time-lapse" % cm.id)
+			assert_true(cm.decay_days > 0 and cm.decay_days <= 14, "%s fades within the month of the Friday forecast" % cm.id)
 
 
 ## Every concept a training day brings has a glossary card.

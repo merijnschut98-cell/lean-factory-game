@@ -450,8 +450,8 @@ func test_the_training_week_is_played_through_the_ui() -> void:
 	var lesson := ui.hud.card_texts().filter(func(t: String) -> bool: return t.contains("wacht het werk het langst"))
 	assert_eq(lesson.size(), 1, "the debrief reports the measured queues")
 	assert_true(lesson[0].contains("langst bij Werkvoorbereiding & ontwerp"), lesson[0])
-	# Thursday: the practice A3 with a three-day Check.
-	office.interact(office.interactable(INTAKE))
+	# Thursday: the practice A3 at the bottleneck Wednesday found, with a three-day Check.
+	office.interact(office.interactable(DESIGN))
 	ui.place_menu.use_tool("shadow")
 	ui.place_menu.use_tool("time_study")
 	ui.place_menu.ask("walk")
@@ -465,24 +465,28 @@ func test_the_training_week_is_played_through_the_ui() -> void:
 	assert_true(_shows(ui.a3_form, "Wacht tot de Check (drie dagen)"))
 	ui.a3_form.wait()
 	assert_true(ui.a3_form.check().get("passed", false))
-	assert_true(ui.hud.mission_text().contains("vr: Borgen of laten wegzakken"))
-	# Friday: Act without the standard, then fast-forward.
-	assert_false(_shows(ui.check_panel, "Spoel 30 dagen vooruit"), "only after the Act")
+	assert_false(_shows(ui.check_panel, "niet het knelpunt"), "the Check agrees with Wednesday's count")
+	assert_true(ui.hud.mission_text().contains("ma: Borgen of laten wegzakken"), "Friday's work starts Monday morning")
+	assert_true(ui.hud.clock_label.text.begins_with("ma 19 okt"), ui.hud.clock_label.text)
+	# Friday: Act without the standard, then look a month ahead.
+	assert_false(_shows(ui.check_panel, "Kijk 30 dagen vooruit"), "only after the Act")
 	ui.check_panel.act(false)
 	assert_false(s.in_training())
-	assert_true(_shows(ui.check_panel, "Spoel 30 dagen vooruit"))
-	var lapse := ui.check_panel.time_lapse()
-	assert_true(lapse["faded"])
-	assert_true(_shows(ui.check_panel, "weggezakt"), "the fade is told")
-	assert_true(_shows(ui.check_panel, UiText.kpi(problem.kpi)), "the practice KPI before and after")
-	assert_true(_shows(ui.check_panel, "Volgindicator"), "tagged like the Check")
-	assert_false(_shows(ui.check_panel, "Spoel 30 dagen vooruit"), "once")
+	assert_true(_shows(ui.check_panel, "Kijk 30 dagen vooruit"))
+	var time_before := s.region.net.time
+	var forecast := ui.check_panel.fade_forecast()
+	assert_false(forecast["standardised"])
+	assert_eq(s.region.net.time, time_before, "looking ahead does not move the game on")
+	for text in ["Met borgen", "Zonder borgen", "Jij borgde niet", UiText.kpi(problem.kpi), "Wachtrij bij Werkvoorbereiding"]:
+		assert_true(_shows(ui.check_panel, text), text)
+	assert_true(_shows(ui.check_panel, "Stuurindicator"), "tagged like the Check")
+	assert_false(_shows(ui.check_panel, "Kijk 30 dagen vooruit"), "once")
 	office.interact(office.interactable("mission_board"))
 	assert_true(MISSION in ui.mission_board.listed(), "the campaign opens")
 	_close(office)
 
 
-func test_a_real_problem_has_no_time_lapse() -> void:
+func test_a_real_problem_has_no_fade_forecast() -> void:
 	var office := _office()
 	var ui := office.ui
 	ui.mission_board.accept(MISSION)
@@ -500,5 +504,5 @@ func test_a_real_problem_has_no_time_lapse() -> void:
 	ui.a3_form.wait()
 	ui.a3_form.check()
 	ui.check_panel.act(true)
-	assert_false(_shows(ui.check_panel, "Spoel 30 dagen vooruit"))
+	assert_false(_shows(ui.check_panel, "Kijk 30 dagen vooruit"))
 	_close(office)

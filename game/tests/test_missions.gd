@@ -223,10 +223,11 @@ func _training_log() -> Missions:
 		return d
 	data.append_array([
 		day.call("t_look", {"type": "observe", "places": ["connections.intake", "connections.design"]}, [],
-			{"teaches": ["gemba"], "insights": {"go_see": "insight t_look"}}),
+			{"teaches": ["gemba"], "insights": {"go_see": "insight t_look"},
+			"setup": [{"target": "prep", "property": "availability", "value": -0.75}]}),
 		day.call("t_tools", {"type": "observe", "places": ["connections.design"], "uses": 2}, ["t_look"]),
 		day.call("t_count", {"type": "observe", "places": ["connections.intake", "connections.design"], "tool": "queue_count"},
-			["t_tools"], {"setup": [{"target": "prep", "property": "availability", "value": -0.75}]}),
+			["t_tools"]),
 		day.call("t_check", {"type": "check", "problem": "custom_design"}, ["t_count"], {"check_days": 3}),
 		day.call("t_fix", {"type": "solve", "problem": "custom_design"}, ["t_check"], {"check_days": 3}),
 	])
@@ -404,23 +405,31 @@ func test_a_faded_practice_fix_does_not_reopen_its_training_day() -> void:
 	assert_eq(log.region.state["custom_design"].phase, ProblemState.Phase.DORMANT, "the practice problem stays asleep")
 
 
-## A training setup (a staged situation for the lesson) holds while its day
-## is active, and goes when the day is done or skipped.
-func test_a_training_days_setup_holds_while_the_day_is_active() -> void:
+## A training setup (a staged situation for the week's lessons) holds from
+## its day to the end of the week, and goes when the week is done or skipped.
+func test_a_training_setup_holds_for_the_whole_week() -> void:
 	var log := _training_log()
-	log.done_once["t_tools"] = true
 	var prep: SimPool = log.region.net.pools["prep"]
 	assert_eq(prep.availability, 1.0)
-	assert_eq(log.accept("t_count"), "")
+	assert_eq(log.accept("t_look"), "")
 	assert_near(prep.availability, 0.25, 0.001, "three of four on a course")
-	log.note_use("connections.intake", "queue_count")
-	log.note_use("connections.design", "queue_count")
+	log.note_use("connections.intake", "walk")
+	log.note_use("connections.design", "walk")
 	log.update()
-	assert_eq(log.status("t_count"), "completed")
-	assert_eq(prep.availability, 1.0, "back once the day is done")
+	assert_eq(log.status("t_look"), "completed")
+	assert_eq(log.status("t_tools"), "active", "the next day is handed out")
+	assert_near(prep.availability, 0.25, 0.001, "the course lasts the whole week")
+	for id in ["t_tools", "t_count", "t_check"]:
+		log.progress[id] = {"status": "completed", "asks": {}, "seen": {}}
+		log.done_once[id] = true
+	log.progress["t_fix"] = {"status": "active", "asks": {}, "seen": {}}
+	log.region.state["custom_design"].phase = ProblemState.Phase.RESOLVED
+	log.update()
+	assert_eq(log.status("t_fix"), "completed", "Friday's goal met")
+	assert_false(log.in_training())
+	assert_eq(prep.availability, 1.0, "back once the week is over")
 	var skipped := _training_log()
-	skipped.done_once["t_tools"] = true
-	skipped.accept("t_count")
+	skipped.accept("t_look")
 	skipped.skip_training()
 	assert_eq(skipped.region.net.pools["prep"].availability, 1.0, "and when the week is skipped")
 

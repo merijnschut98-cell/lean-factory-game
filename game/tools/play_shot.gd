@@ -9,7 +9,8 @@ extends SceneTree
 ## player map with the mission taken) · codex (the glossary after some
 ## gemba work and an extra few concepts) · free (the mouse freed with Esc) ·
 ## training_board (Monday of the training week: the board with the skip) ·
-## timelapse (the week played to Friday: the Act and the 30-day fast-forward).
+## timelapse (the week played to Friday: the Act and the month ahead, with and
+## without the standard).
 ## The mission is played through the UI's own handlers, as a player would;
 ## only the training states start with the training week.
 
@@ -74,7 +75,7 @@ func _run() -> void:
 		"timelapse":
 			_play_week(office)
 			office.ui.check_panel.act(false)
-			office.ui.check_panel.time_lapse()
+			office.ui.check_panel.fade_forecast()
 		_:
 			printerr("unknown state ", state)
 			quit(2)
@@ -118,7 +119,7 @@ func _play_week(office: Office) -> void:
 	var ui := office.ui
 	var s := office.session
 	for step: Array in [[INTAKE, "shadow"], [DESIGN, "walk"], [DESIGN, "time_study"], [DESIGN, "documents"],
-			[INTAKE, "queue_count"], [DESIGN, "queue_count"], [INTAKE, "shadow"], [INTAKE, "time_study"], [INTAKE, "walk"]]:
+			[INTAKE, "queue_count"], [DESIGN, "queue_count"], [DESIGN, "shadow"], [DESIGN, "time_study"], [DESIGN, "walk"]]:
 		office.interact(office.interactable(step[0]))
 		if step[1] == "walk":
 			ui.place_menu.ask("walk")

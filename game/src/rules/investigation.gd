@@ -29,7 +29,7 @@ const QUESTIONS := {
 const WASTES := ["transport", "inventory", "motion", "waiting", "overproduction", "overprocessing", "defects", "skills"]
 
 ## What a prediction can name.
-const KPIS := ["throughput", "lead_time", "first_time_right", "on_time", "wip_age"]
+const KPIS := ["throughput", "lead_time", "first_time_right", "on_time", "wip_age", "capacity"]
 
 
 ## Whether `clue` can be found now: not yet found, and at depth 0 or with a

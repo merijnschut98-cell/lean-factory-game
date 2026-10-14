@@ -544,29 +544,38 @@ problems:
   # ── Inwerkweek: the practice problem (Thursday and Friday) ──────────────────
   # Invented and harmless (Merijn's decision, 2026-10-14): it exists only to
   # practise the A3, the Check and the Act. Opened only by the training week.
+  # It sits at Werkvoorbereiding, the step Wednesday's count shows as the
+  # bottleneck this week (the training setup: three of four work preparers on
+  # a course), so Thursday's experiment works on the bottleneck.
   - id: training_tray
     tier: 1
     name: Twee bakken voor hetzelfde werk
-    step: connections.intake
+    step: connections.design
     waste: motion
     severity: low
     visibility: obvious
-    kpi: lead_time
+    # A leading indicator: the three-day Check and Friday's month-ahead
+    # forecast can only see one. Lead time lags by about one lead time
+    # (months here: the permit wait follows design), so it cannot show this
+    # week's fix, nor its fade within a month.
+    kpi: capacity
     symptoms:
-      - Bij de Intake zoeken medewerkers eerst in twee bakken voordat ze een aanvraag oppakken.
-    root_cause: Er zijn twee bakken voor hetzelfde werk zonder vaste volgorde; zoeken en omsorteren kost bij elke aanvraag extra tijd.
+      - Bij Werkvoorbereiding zoekt de werkvoorbereider eerst in twee bakken voordat ze een dossier oppakt.
+    root_cause: Er zijn twee bakken voor hetzelfde werk zonder vaste volgorde; zoeken en omsorteren kost bij elk dossier extra tijd.
     plausible_causes:
-      - De intakemedewerkers werken te traag.
+      - De werkvoorbereiders werken te traag.
       - Er komen te veel aanvragen tegelijk binnen.
     mismatch_note: Harder of sneller werken haalt het zoeken niet weg. Het zit in hoe het werk binnenkomt, niet in de mensen.
     countermeasures: {one_tray_fifo: 1.0, tray_labels: 0.7}
     teaches: [waste_motion, 5s]
     effects:
-      # ESTIMATE (invented for the training week): a few minutes of searching
-      # and re-sorting on about an hour of intake work, roughly a seventh extra.
-      - {target: connections.intake, property: touch_time, value: 1.15}
+      # ESTIMATE (invented for the training week): searching two trays for the
+      # oldest dossier, re-sorting, and checking which version of a returned
+      # dossier holds, about half an hour on the 3.2 h design touch time
+      # (value_streams.yaml): roughly a seventh extra.
+      - {target: connections.design, property: touch_time, value: 1.12}
     clues:
-      - {tool: shadow, key: true, depth: 0, text: "Bij elke nieuwe aanvraag kijkt de medewerker eerst in twee bakken welke aanvraag het oudst is, en sorteert dan om."}
-      - {tool: queue_count, key: false, depth: 0, text: "In de twee bakken samen liggen maar een stuk of tien aanvragen. De stapel is het probleem niet."}
-      - {tool: time_study, key: true, depth: 1, text: "Zoeken, omsorteren en terugleggen kost een paar minuten per aanvraag: ongeveer een zevende bovenop een uur werk."}
-      - {tool: conversation, key: true, depth: 1, text: "'De ene bak is voor de post, de andere voor geprinte webformulieren. Zo is het ooit gegroeid; niemand weet meer waarom.'"}
+      - {tool: shadow, key: true, depth: 0, text: "Bij elk dossier kijkt de werkvoorbereider eerst in twee bakken welk dossier het oudst is, en sorteert dan om."}
+      - {tool: queue_count, key: false, depth: 0, text: "De stapel is groot nu drie van de vier werkvoorbereiders op cursus zijn. Aan de cursus verander jij deze week niets; aan wat de ene werkvoorbereider met haar tijd doet misschien wel."}
+      - {tool: time_study, key: true, depth: 1, text: "Zoeken, omsorteren en uitzoeken welke versie van een dossier geldt kost zo'n half uur per dossier: ongeveer een zevende bovenop ruim drie uur ontwerpwerk."}
+      - {tool: conversation, key: true, depth: 1, text: "'De ene bak is voor nieuwe dossiers van de Intake, de andere voor dossiers die terugkomen met aanvullingen van de klant. Zo is het ooit gegroeid; niemand weet meer waarom.'"}

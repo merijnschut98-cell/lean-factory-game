@@ -19,9 +19,9 @@ countermeasures:
     name: Eén bak, op volgorde van binnenkomst
     tier: 1
     category: flow
-    description: Alle nieuwe aanvragen gaan in één bak; wie een aanvraag pakt, neemt de oudste. Niemand hoeft meer te zoeken of om te sorteren.
+    description: Alle dossiers voor Werkvoorbereiding gaan in één bak; wie een dossier pakt, neemt het oudste. Niemand hoeft meer te zoeken of om te sorteren.
     budget: 200
-    team_hours: {intake: 2}
+    team_hours: {work_prep: 2}
     decay_days: 10
     multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
     effects: []
@@ -29,9 +29,9 @@ countermeasures:
     name: Vaste plek en labels voor de bakken
     tier: 1
     category: visual_management
-    description: Elke bak krijgt een vaste plek en een duidelijk label (5S), zodat iedereen ziet waar welke aanvraag ligt.
+    description: Elke bak krijgt een vaste plek en een duidelijk label (5S), zodat iedereen ziet waar welk dossier ligt.
     budget: 100
-    team_hours: {intake: 1}
+    team_hours: {work_prep: 1}
     decay_days: 7
     multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
     effects: []

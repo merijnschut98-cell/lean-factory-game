@@ -4,7 +4,7 @@
    "budget": 200,
    "category": "flow",
    "decay_days": 10,
-   "description": "Alle nieuwe aanvragen gaan in één bak; wie een aanvraag pakt, neemt de oudste. Niemand hoeft meer te zoeken of om te sorteren.",
+   "description": "Alle dossiers voor Werkvoorbereiding gaan in één bak; wie een dossier pakt, neemt het oudste. Niemand hoeft meer te zoeken of om te sorteren.",
    "effects": [],
    "id": "one_tray_fifo",
    "multipliers": {
@@ -14,7 +14,7 @@
    },
    "name": "Eén bak, op volgorde van binnenkomst",
    "team_hours": {
-    "intake": 2
+    "work_prep": 2
    },
    "tier": 1
   },
@@ -22,7 +22,7 @@
    "budget": 100,
    "category": "visual_management",
    "decay_days": 7,
-   "description": "Elke bak krijgt een vaste plek en een duidelijk label (5S), zodat iedereen ziet waar welke aanvraag ligt.",
+   "description": "Elke bak krijgt een vaste plek en een duidelijk label (5S), zodat iedereen ziet waar welk dossier ligt.",
    "effects": [],
    "id": "tray_labels",
    "multipliers": {
@@ -32,7 +32,7 @@
    },
    "name": "Vaste plek en labels voor de bakken",
    "team_hours": {
-    "intake": 1
+    "work_prep": 1
    },
    "tier": 1
   },
