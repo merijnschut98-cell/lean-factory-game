@@ -23,9 +23,12 @@
 #            mission brings when it is accepted
 # check_days a shorter Check for this mission's problem (training only; the
 #            real Check takes Region.CHECK_DAYS, 14)
+# setup      training only: a staged situation for the day's lesson, effects on
+#            the simulation while the day is active (not real numbers)
 #
 # kind training: the Inwerkweek (docs/superpowers/specs/2026-10-14-training-arc-design.md),
-# five small Starter Kata days before the campaign. Each day opens the next;
+# five small Starter Kata days before the campaign, in order Monday to Friday
+# (the game shows them as "Inwerkweek — ma: <name>"). Each day opens the next;
 # they take no side slot, have no deadline, and the coach helps with them.
 # A returning player skips the week (GameSession.skip_training): done, without
 # rewards, and the campaign opens.
@@ -55,19 +58,19 @@ coach:
 missions:
   # ── Inwerkweek: five safe days in the connections office ──────────────────
   - id: training_mon
-    name: "Maandag: rondleiding"
+    name: Rondleiding
     kind: training
     tier: 1
-    briefing: "Welkom bij Voltana Netbeheer. Deze week oefen je in het klein, zonder risico. Vandaag kijk je alleen rond: loop met de kaart (M) langs Intake, Werkvoorbereiding en Planning, en kijk of vraag bij elk team hoe het werk binnenkomt."
+    briefing: "Welkom bij Voltana Netbeheer. Deze week oefen je in het klein, zonder risico. Vandaag kijk je alleen rond: zoek met de kaart (M) de Intake en Werkvoorbereiding op, en kijk of vraag bij elk team hoe het werk binnenkomt."
     debrief: "Nu ken je de plekken waar een aanvraag langs komt. Morgen gaan we beter kijken."
-    goal: {type: observe, places: [connections.intake, connections.design, connections.planning]}
+    goal: {type: observe, places: [connections.intake, connections.design]}
     teaches: [netbeheerder, aansluiting, aansluittermijn]
     rewards: {xp: 50}
     insights:
       go_see: "Een aanvraag doet er maanden over. Waar denk je dat die tijd zit: in het werk, of ertussen?"
 
   - id: training_tue
-    name: "Dinsdag: kijken zonder oordeel"
+    name: Kijken zonder oordeel
     kind: training
     tier: 1
     requires: {missions: [training_mon]}
@@ -80,20 +83,26 @@ missions:
       go_see: "Welk hulpmiddel liet je iets zien dat je met het andere niet zag?"
 
   - id: training_wed
-    name: "Woensdag: waar zit de stapel?"
+    name: Waar zit de stapel?
     kind: training
     tier: 1
     requires: {missions: [training_tue]}
     briefing: "Tel de wachtrij bij Intake en bij Werkvoorbereiding. Waar wacht het werk het langst? Dat is de plek die de hele stroom ophoudt."
     debrief: "Een stroom gaat zo snel als zijn knelpunt. Verbeteren op een andere plek maakt de stapel niet kleiner."
     goal: {type: observe, places: [connections.intake, connections.design], tool: queue_count}
+    # TRAINING SETUP (staged, not a real number): this week three of the four
+    # work preparers are on a course, so the counts give a clear answer. At the
+    # base load the two queues are too close to call (a few orders each).
+    # The debrief adds what the player measured and names the longer queue.
+    setup:
+      - {target: work_prep, property: availability, value: -0.75}
     teaches: [flow, wip, bottleneck_focus, netcongestie]
     rewards: {xp: 50}
     insights:
       go_see: "Als Intake morgen twee keer zo snel werkt, waar ligt het werk dan overmorgen?"
 
   - id: training_thu
-    name: "Donderdag: een klein experiment"
+    name: Een klein experiment
     kind: training
     tier: 1
     requires: {missions: [training_wed]}
@@ -108,7 +117,7 @@ missions:
       experiment: "Welk getal laat over drie dagen zien of het werkt?"
 
   - id: training_fri
-    name: "Vrijdag: borgen of laten wegzakken"
+    name: Borgen of laten wegzakken
     kind: training
     tier: 1
     requires: {missions: [training_thu]}

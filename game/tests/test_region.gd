@@ -327,3 +327,15 @@ func test_the_obeya_unlocks_the_kpi_board() -> void:
 		choices[pool] = c.kpis.menus[pool].slice(0, 2).map(func(k: KpiDef) -> String: return k.id)
 	assert_eq(r.kpi_review(choices)["error"], "")
 	assert_false(r.net.effects()[KpiBoard.SOURCE].is_empty())
+
+
+## Counting the queue measures it: how many orders wait and how many days of
+## the team's work that is.
+func test_counting_a_queue_measures_it() -> void:
+	var r := _region()
+	r.advance_days(3)
+	var step := r.net.step_at("connections.design")
+	var counted: Dictionary = r.use_tool("connections.design", "queue_count")["queue"]
+	assert_eq(counted, {"count": r.net.queue_of(step).size(), "days": r.net.queue_days(step)})
+	assert_eq(counted, r.queue_at("connections.design"))
+	assert_false(r.use_tool("connections.design", "shadow").has("queue"), "other tools do not count")

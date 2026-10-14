@@ -37,6 +37,9 @@ var found: Dictionary[String, bool] = {}
 ## Countermeasures closed for good (a missed deadline: Henk has retired).
 ## Derived from the failed missions (Missions.load_dict restores it).
 var closed: Dictionary[String, bool] = {}
+## Problems only the training week opens (Missions marks them): practice,
+## so they say nothing about the region's maturity.
+var practice: Dictionary[String, bool] = {}
 ## Trust per team (pool id), -2..1: below 0 they stop sharing.
 var trust: Dictionary[String, int] = {}
 ## {type: activated | check_ready | recurred | belt | bad_period | kpi_review, ...} for the world and UI.
@@ -75,11 +78,12 @@ func drain_events() -> Array[Dictionary]:
 	return out
 
 
-## The region's maturity (1–4): a tier counts once most of its problems are resolved.
+## The region's maturity (1–4): a tier counts once most of its problems are
+## resolved. Practice problems do not count.
 func maturity() -> int:
 	var m := 1
 	while m < 4:
-		var tier := problem_list().filter(func(p: ProblemDef) -> bool: return p.tier == m)
+		var tier := problem_list().filter(func(p: ProblemDef) -> bool: return p.tier == m and not practice.has(p.id))
 		var done := tier.filter(func(p: ProblemDef) -> bool: return state[p.id].phase == P.RESOLVED)
 		if tier.is_empty() or done.size() < tier.size() * MATURITY_STEP:
 			break
@@ -202,13 +206,24 @@ func _apply_problem(st: ProblemState, cm: CountermeasureDef = null) -> void:
 
 ## Spend time at a place with a gemba tool (the caller advances the clock by
 ## Investigation.TOOLS[tool].minutes). One use goes one "why" deeper.
-## Returns {spotted: problem ids, clues: Array[Clue], hidden_signal}.
+## Returns {spotted: problem ids, clues: Array[Clue], hidden_signal}, and
+## for queue_count the queue counted (queue_at).
 func use_tool(place: String, tool: String) -> Dictionary:
 	var spotted := _spot(place, Investigation.TOOLS[tool]["deep"])
 	var clues := _ready_clues(place, tool)
 	for c in clues:
 		_reveal(c)
-	return {"spotted": spotted, "clues": clues, "hidden_signal": spotted.is_empty() and _hidden_at(place)}
+	var result := {"spotted": spotted, "clues": clues, "hidden_signal": spotted.is_empty() and _hidden_at(place)}
+	if tool == "queue_count":
+		result["queue"] = queue_at(place)
+	return result
+
+
+## The queue at a place now: {count (orders waiting), days (of the team's
+## work they hold, Network.queue_days)}.
+func queue_at(place: String) -> Dictionary:
+	var step := net.step_at(place)
+	return {"count": net.queue_of(step).size(), "days": net.queue_days(step)}
 
 
 ## Talk to the team at a place. How you ask decides what you learn.

@@ -19,6 +19,8 @@ const INSIGHT_EVERY := 3
 const P := ProblemState.Phase
 ## Where the player stands, as the coach sees it (see stage_of).
 const STAGES := ["go_see", "understand", "experiment", "reflect"]
+## The effects source of a training day's setup.
+const SETUP_SOURCE := "setup:"
 
 var region: Region
 var defs: Dictionary[String, MissionDef] = {}
@@ -46,6 +48,8 @@ func _init(of_region: Region, mission_defs: Array[MissionDef], coach_def: Dictio
 	coach = coach_def
 	for m in mission_defs:
 		defs[m.id] = m
+		if m.kind == "training" and not m.goal_problem.is_empty():
+			region.practice[m.goal_problem] = true
 
 
 ## available | active | completed | failed | locked
@@ -91,6 +95,7 @@ func accept(id: String) -> String:
 		if st == null or st.phase == P.RESOLVED or (st.phase == P.DORMANT and not region.activate(m.goal_problem)):
 			return "problem_unavailable"
 	progress[id] = {"status": "active", "asks": {}, "seen": {}}
+	_set_up(m)
 	region.profile.learn(m.teaches)
 	events.append({"type": "accepted", "mission": id})
 	return ""
@@ -126,6 +131,7 @@ func skip_training() -> void:
 			continue
 		if status(m.id) == "active" and not m.goal_problem.is_empty():
 			region.deactivate(m.goal_problem)
+		_clear_setup(m)
 		progress[m.id] = {"status": "completed", "asks": {}, "seen": {}}
 		done_once[m.id] = true
 
@@ -135,6 +141,7 @@ func abandon(id: String) -> bool:
 	if status(id) != "active":
 		return false
 	progress.erase(id)
+	_clear_setup(defs[id])
 	return true
 
 
@@ -156,11 +163,13 @@ func update() -> void:
 
 
 ## A completed solve mission whose problem is dormant again (the fix faded)
-## opens again: the problem comes back through it.
+## opens again: the problem comes back through it. Not a training day: its
+## practice problem is retired once the day is done (the Friday lesson's
+## fade only shows in the time-lapse).
 func _reopen_faded() -> void:
 	for id: String in progress.keys():
 		var m := defs[id]
-		if progress[id]["status"] == "completed" and m.goal_type == "solve" \
+		if progress[id]["status"] == "completed" and m.goal_type == "solve" and m.kind != "training" \
 				and region.state[m.goal_problem].phase == P.DORMANT:
 			progress.erase(id)
 			events.append({"type": "reopened", "mission": id})
@@ -282,14 +291,39 @@ func _goal_met(m: MissionDef) -> bool:
 	return false
 
 
+## A completed day reports what it measured: an observe goal with
+## queue_count gives the queues at its places now (Region.queue_at), so the
+## lesson names what the numbers say.
 func _complete(m: MissionDef) -> void:
 	progress[m.id]["status"] = "completed"
 	if not done_once.has(m.id):
 		done_once[m.id] = true
 		region.grant(m.reward_xp, m.reward_budget)
-	events.append({"type": "completed", "mission": m.id})
+	var event := {"type": "completed", "mission": m.id}
+	if m.goal_type == "observe" and m.goal_tool == "queue_count":
+		var queues := {}
+		for place in m.goal_places:
+			queues[place] = region.queue_at(place)
+		event["queues"] = queues
+	_clear_setup(m)
+	events.append(event)
 	if m.kind == "training":
 		_hand_out_next_day(m)
+
+
+## A training day's staged situation goes onto the simulation while it is
+## active (content validates it; a refusal would only lose the staging).
+func _set_up(m: MissionDef) -> void:
+	if m.setup.is_empty():
+		return
+	var refused := region.net.set_effects(SETUP_SOURCE + m.id, m.setup)
+	if not refused.is_empty():
+		push_warning("mission %s: setup refused: %s" % [m.id, refused])
+
+
+func _clear_setup(m: MissionDef) -> void:
+	if not m.setup.is_empty():
+		region.net.clear_effects(SETUP_SOURCE + m.id)
 
 
 ## The coach hands out the next training day as soon as one is done, so the

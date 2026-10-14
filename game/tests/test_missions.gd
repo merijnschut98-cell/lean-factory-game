@@ -226,8 +226,9 @@ func _training_log() -> Missions:
 			{"teaches": ["gemba"], "insights": {"go_see": "insight t_look"}}),
 		day.call("t_tools", {"type": "observe", "places": ["connections.design"], "uses": 2}, ["t_look"]),
 		day.call("t_count", {"type": "observe", "places": ["connections.intake", "connections.design"], "tool": "queue_count"},
-			["t_tools"]),
+			["t_tools"], {"setup": [{"target": "prep", "property": "availability", "value": -0.75}]}),
 		day.call("t_check", {"type": "check", "problem": "custom_design"}, ["t_count"], {"check_days": 3}),
+		day.call("t_fix", {"type": "solve", "problem": "custom_design"}, ["t_check"], {"check_days": 3}),
 	])
 	var defs: Array[MissionDef] = []
 	for d: Dictionary in data:
@@ -318,6 +319,8 @@ func test_a_check_goal_completes_once_the_check_passed() -> void:
 	st.phase = ProblemState.Phase.CHECKED
 	log.update()
 	assert_eq(log.status("t_check"), "completed")
+	assert_eq(log.status("t_fix"), "active", "the next day was handed out")
+	log.abandon("t_fix")
 	assert_eq(log.check_days_for("custom_design"), -1, "no active mission shortens its Check any more")
 
 
@@ -368,3 +371,75 @@ func test_observations_survive_save_and_load() -> void:
 	restored.note_use("connections.design", "shadow")
 	restored.update()
 	assert_eq(restored.status("t_look"), "completed", "the intake visit was kept")
+
+
+## A training day's goal problem is practice: resolving it says nothing about
+## the region's maturity.
+func test_a_practice_problem_does_not_count_toward_maturity() -> void:
+	var log := _training_log()
+	assert_true(log.region.practice.has("custom_design"), "the training week's problem is practice")
+	assert_false(log.region.practice.has("incomplete_application"))
+	for id in ["custom_design", "incomplete_application"]:
+		log.region.state[id].phase = ProblemState.Phase.RESOLVED
+	assert_eq(log.region.maturity(), 1, "one real problem of two is not yet most of the tier")
+	log.region.state["revision_backlog"].phase = ProblemState.Phase.RESOLVED
+	assert_eq(log.region.maturity(), 2, "two of the two real ones are")
+
+
+## After the week the practice problem is retired: a faded practice fix
+## brings neither its day nor its problem back.
+func test_a_faded_practice_fix_does_not_reopen_its_training_day() -> void:
+	var log := _training_log()
+	log.done_once["t_check"] = true
+	assert_eq(log.accept("t_fix"), "")
+	log.region.state["custom_design"].phase = ProblemState.Phase.RESOLVED
+	log.update()
+	assert_eq(log.status("t_fix"), "completed")
+	log.drain_events()
+	log.region.state["custom_design"] = ProblemState.new("custom_design")  # the fix faded (Region._recur)
+	log.update()
+	assert_eq(log.status("t_fix"), "completed", "the training day stays done")
+	assert_eq(log.drain_events(), [], "nothing reopens")
+	assert_eq(log.accept("t_fix"), "not_available")
+	assert_eq(log.region.state["custom_design"].phase, ProblemState.Phase.DORMANT, "the practice problem stays asleep")
+
+
+## A training setup (a staged situation for the lesson) holds while its day
+## is active, and goes when the day is done or skipped.
+func test_a_training_days_setup_holds_while_the_day_is_active() -> void:
+	var log := _training_log()
+	log.done_once["t_tools"] = true
+	var prep: SimPool = log.region.net.pools["prep"]
+	assert_eq(prep.availability, 1.0)
+	assert_eq(log.accept("t_count"), "")
+	assert_near(prep.availability, 0.25, 0.001, "three of four on a course")
+	log.note_use("connections.intake", "queue_count")
+	log.note_use("connections.design", "queue_count")
+	log.update()
+	assert_eq(log.status("t_count"), "completed")
+	assert_eq(prep.availability, 1.0, "back once the day is done")
+	var skipped := _training_log()
+	skipped.done_once["t_tools"] = true
+	skipped.accept("t_count")
+	skipped.skip_training()
+	assert_eq(skipped.region.net.pools["prep"].availability, 1.0, "and when the week is skipped")
+
+
+## The bottleneck lesson is the measurement's, not the script's: the day's
+## completion reports the queues measured at its places.
+func test_a_queue_count_day_reports_the_measured_queues() -> void:
+	var log := _training_log()
+	log.done_once["t_tools"] = true
+	log.accept("t_count")
+	log.region.advance_days(2)
+	log.drain_events()
+	var expected := {}
+	for place in ["connections.intake", "connections.design"]:
+		log.note_use(place, "queue_count")
+		expected[place] = log.region.queue_at(place)
+	log.update()
+	var done := log.drain_events().filter(func(e: Dictionary) -> bool: return e["type"] == "completed")
+	assert_eq(done.size(), 1)
+	assert_eq(done[0]["queues"], expected)
+	assert_true(expected["connections.design"]["days"] > expected["connections.intake"]["days"],
+		"with most of the designers away the work waits at design")

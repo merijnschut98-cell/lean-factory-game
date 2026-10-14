@@ -10,6 +10,7 @@ const DESIGN := "place:connections.design"
 func _office() -> Office:
 	var office: Office = load(SCENE).instantiate()
 	office.seed_value = 11
+	office.training = false  # a returning player: straight to the campaign
 	office.build()
 	return office
 

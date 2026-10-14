@@ -28,13 +28,12 @@
  },
  "missions": [
   {
-   "briefing": "Welkom bij Voltana Netbeheer. Deze week oefen je in het klein, zonder risico. Vandaag kijk je alleen rond: loop met de kaart (M) langs Intake, Werkvoorbereiding en Planning, en kijk of vraag bij elk team hoe het werk binnenkomt.",
+   "briefing": "Welkom bij Voltana Netbeheer. Deze week oefen je in het klein, zonder risico. Vandaag kijk je alleen rond: zoek met de kaart (M) de Intake en Werkvoorbereiding op, en kijk of vraag bij elk team hoe het werk binnenkomt.",
    "debrief": "Nu ken je de plekken waar een aanvraag langs komt. Morgen gaan we beter kijken.",
    "goal": {
     "places": [
      "connections.intake",
-     "connections.design",
-     "connections.planning"
+     "connections.design"
     ],
     "type": "observe"
    },
@@ -43,7 +42,7 @@
     "go_see": "Een aanvraag doet er maanden over. Waar denk je dat die tijd zit: in het werk, of ertussen?"
    },
    "kind": "training",
-   "name": "Maandag: rondleiding",
+   "name": "Rondleiding",
    "rewards": {
     "xp": 50
    },
@@ -69,7 +68,7 @@
     "go_see": "Welk hulpmiddel liet je iets zien dat je met het andere niet zag?"
    },
    "kind": "training",
-   "name": "Dinsdag: kijken zonder oordeel",
+   "name": "Kijken zonder oordeel",
    "requires": {
     "missions": [
      "training_mon"
@@ -101,7 +100,7 @@
     "go_see": "Als Intake morgen twee keer zo snel werkt, waar ligt het werk dan overmorgen?"
    },
    "kind": "training",
-   "name": "Woensdag: waar zit de stapel?",
+   "name": "Waar zit de stapel?",
    "requires": {
     "missions": [
      "training_tue"
@@ -110,6 +109,13 @@
    "rewards": {
     "xp": 50
    },
+   "setup": [
+    {
+     "property": "availability",
+     "target": "work_prep",
+     "value": -0.75
+    }
+   ],
    "teaches": [
     "flow",
     "wip",
@@ -132,7 +138,7 @@
     "understand": "Wat zie je de medewerker doen voordat het echte werk aan een aanvraag begint?"
    },
    "kind": "training",
-   "name": "Donderdag: een klein experiment",
+   "name": "Een klein experiment",
    "requires": {
     "missions": [
      "training_wed"
@@ -161,7 +167,7 @@
     "reflect": "Wat gebeurt er met de nieuwe werkwijze als het team het druk krijgt en niemand erop let?"
    },
    "kind": "training",
-   "name": "Vrijdag: borgen of laten wegzakken",
+   "name": "Borgen of laten wegzakken",
    "requires": {
     "missions": [
      "training_thu"

@@ -8,8 +8,13 @@ const DESIGN := "connections.design"
 const INTAKE := "connections.intake"
 
 
+## A returning player's game: the training week skipped, the campaign open.
+func _campaign() -> GameSession:
+	return GameSession.new_game(11, Catalog.DATA_DIR, false)
+
+
 func _accepted() -> GameSession:
-	var s := GameSession.new_game(11)
+	var s := _campaign()
 	assert_eq(s.error, "")
 	assert_eq(s.accept(MISSION), "")
 	return s
@@ -31,7 +36,7 @@ func _a3(s: GameSession, cm: String) -> Dictionary:
 
 
 func test_a_new_game_starts_on_a_monday_morning_with_the_story_begun() -> void:
-	var s := GameSession.new_game(11)
+	var s := _campaign()
 	assert_eq(s.error, "")
 	assert_eq(s.clock_text(), "ma 12 okt, 08:30")
 	assert_eq(s.budget(), 50000)
@@ -52,7 +57,7 @@ func test_a_session_over_missing_content_reports_the_error() -> void:
 
 
 func test_the_clock_is_dutch_and_follows_the_simulation() -> void:
-	var s := GameSession.new_game(11)
+	var s := _campaign()
 	s.region.advance(60)
 	assert_eq(s.clock_text(), "ma 12 okt, 09:30")
 	s.region.advance(SimCalendar.days(2))
@@ -93,7 +98,7 @@ func test_bad_input_is_refused_without_spending_time() -> void:
 
 
 func test_missions_cannot_be_accepted_out_of_turn() -> void:
-	var s := GameSession.new_game(11)
+	var s := _campaign()
 	assert_eq(s.accept("no_such_mission"), "unknown")
 	assert_eq(s.accept("fix_incomplete_application"), "locked", "it opens after the first bottleneck is fixed")
 	assert_eq(s.accept(MISSION), "")
@@ -101,7 +106,7 @@ func test_missions_cannot_be_accepted_out_of_turn() -> void:
 
 
 func test_the_a3_errors_pass_through() -> void:
-	var s := GameSession.new_game(11)
+	var s := _campaign()
 	assert_eq(s.submit_a3("no_such_problem", {}), "unknown_problem")
 	assert_eq(s.submit_a3(PROBLEM, {}), "not_spotted", "problems only arrive through missions")
 	s.accept(MISSION)
@@ -134,7 +139,7 @@ func test_check_act_and_waiting_need_a_running_experiment() -> void:
 
 
 func test_the_coach_asks_about_the_main_mission_only() -> void:
-	var s := GameSession.new_game(11)
+	var s := _campaign()
 	assert_eq(s.ask_coach()["kind"], "no_main")
 	s.accept(MISSION)
 	var first := s.ask_coach()
@@ -250,7 +255,6 @@ func test_the_second_mission_is_played_end_to_end() -> void:
 # ── The training week (Inwerkweek) ──────────────────────────────────────────
 
 const TRAY := "training_tray"
-const PLANNING := "connections.planning"
 
 
 func _training() -> GameSession:
@@ -264,7 +268,7 @@ func _active_ids(s: GameSession) -> Array:
 
 
 func test_without_training_the_week_counts_as_skipped() -> void:
-	var s := GameSession.new_game(11)
+	var s := _campaign()
 	assert_false(s.in_training())
 	assert_eq(s.missions.status("training_mon"), "completed")
 	assert_eq(s.missions.status("training_fri"), "completed")
@@ -289,7 +293,9 @@ func test_skipping_training_opens_the_campaign_without_rewards() -> void:
 	assert_eq(s.xp(), 0, "no rewards for skipped days")
 	assert_eq(s.budget(), 50000)
 	assert_eq(s.missions.status("training_thu"), "completed")
-	assert_eq(s.missions.status(GameSession.STORY_MISSION), "available", "a returning player starts the campaign")
+	assert_eq(s.missions.status(GameSession.STORY_MISSION), "completed", "the story's walk, as without the week")
+	assert_eq(s.missions.status(MISSION), "available", "a returning player starts the campaign")
+	assert_eq(s.xp(), 0, "the story's walk is not rewarded")
 	assert_eq(s.active_missions().size(), 0)
 	assert_eq(s.skip_training(), "not_in_training")
 
@@ -298,13 +304,13 @@ func test_skipping_training_opens_the_campaign_without_rewards() -> void:
 ## with a short Check, and the Act with the time-lapse.
 func test_the_training_week_is_played_end_to_end() -> void:
 	var s := _training()
-	# Monday: visit the three teams.
+	# Monday: visit the two teams.
 	s.use_tool(INTAKE, "shadow")
-	s.use_tool(DESIGN, "shadow")
 	assert_eq(s.missions.status("training_mon"), "active")
-	assert_false(s.ask(PLANNING, "walk").has("error"))
+	assert_false(s.ask(DESIGN, "walk").has("error"))
 	assert_eq(s.missions.status("training_mon"), "completed")
 	assert_eq(_active_ids(s), ["training_tue"])
+	assert_eq(s.clock_text(), "di 13 okt, 08:30", "each day of the week starts on its own morning")
 	# Tuesday: two tools at Werkvoorbereiding.
 	s.use_tool(DESIGN, "time_study")
 	s.use_tool(DESIGN, "time_study")
@@ -312,9 +318,17 @@ func test_the_training_week_is_played_end_to_end() -> void:
 	s.use_tool(DESIGN, "documents")
 	assert_eq(_active_ids(s), ["training_wed"])
 	# Wednesday: count the queues at two steps.
-	s.use_tool(INTAKE, "queue_count")
-	s.use_tool(DESIGN, "queue_count")
+	assert_true(s.clock_text().begins_with("wo 14 okt"))
+	s.drain_events()
+	var counted := [s.use_tool(INTAKE, "queue_count")["queue"]]
+	counted.append(s.use_tool(DESIGN, "queue_count")["queue"])
 	assert_eq(_active_ids(s), ["training_thu"])
+	var wed: Array = s.drain_events().filter(func(e: Dictionary) -> bool: return e.get("mission") == "training_wed")
+	var queues: Dictionary = wed[0]["queues"]
+	assert_eq(queues[DESIGN], counted[1], "the lesson reports what was counted")
+	assert_true(queues[DESIGN]["days"] > 2.0 * queues[INTAKE]["days"] and queues[DESIGN]["count"] > 0,
+		"the training setup makes design clearly the longer wait")
+	assert_true(s.clock_text().begins_with("do 15 okt"))
 	assert_eq(s.phase_of(TRAY), "active", "the practice problem arrives through Thursday's mission")
 	# Thursday: the practice A3 and a three-day Check.
 	s.use_tool(INTAKE, "shadow")
@@ -338,7 +352,8 @@ func test_the_training_week_is_played_end_to_end() -> void:
 	assert_false(s.act(TRAY, false).has("error"))
 	assert_eq(s.missions.status("training_fri"), "completed")
 	assert_false(s.in_training())
-	assert_eq(s.missions.status(GameSession.STORY_MISSION), "available", "the campaign opens")
+	assert_eq(s.missions.status(GameSession.STORY_MISSION), "completed", "the week's walk stands in for the story's")
+	assert_eq(s.missions.status(MISSION), "available", "the campaign opens")
 	assert_true(s.xp() >= 250, "the five days' rewards and the practice score")
 	var lapse := s.time_lapse(30)
 	assert_false(lapse.has("error"))
@@ -346,6 +361,11 @@ func test_the_training_week_is_played_end_to_end() -> void:
 		[TRAY, "lead_time", "resolved", "dormant", true], "not standardised: the fix fades")
 	assert_true(lapse["before"].has("lead_time") and lapse["after"].has("lead_time"))
 	assert_true(lapse["after"]["step"]["queue_hours"] >= 0.0)
+	assert_eq(s.missions.status("training_fri"), "completed", "the practice problem is retired: Friday does not reopen")
+	assert_eq(s.phase_of(TRAY), "dormant")
+	assert_eq(s.accept("training_fri"), "not_available")
+	assert_false(s.drain_events().any(func(e: Dictionary) -> bool: return e["type"] == "reopened"))
+	assert_eq(s.region.maturity(), 1, "practice does not raise the region's maturity")
 
 
 func test_a_standardised_practice_fix_holds_through_the_time_lapse() -> void:
@@ -375,3 +395,32 @@ func test_a_time_lapse_refuses_bad_input_without_spending_time() -> void:
 	assert_eq(s.time_lapse(GameSession.MAX_TIME_LAPSE_DAYS + 1), {"error": "bad_days"})
 	assert_eq(s.time_lapse(5, "no_such_problem"), {"error": "unknown_problem"})
 	assert_eq(s.region.net.time, before)
+
+
+func test_a_new_game_starts_with_the_training_week_by_default() -> void:
+	var s := GameSession.new_game(11)
+	assert_true(s.in_training())
+	assert_eq(_active_ids(s), ["training_mon"])
+
+
+func test_the_check_takes_the_missions_check_days() -> void:
+	var s := _campaign()
+	assert_eq(s.check_days(PROBLEM), Region.CHECK_DAYS, "the real Check")
+	var t := _training()
+	assert_eq(t.check_days(TRAY), Region.CHECK_DAYS, "no training day shortens it yet")
+	t.missions.done_once["training_wed"] = true
+	t.missions.skip_training()
+	t.missions.progress.erase("training_thu")
+	t.missions.done_once.erase("training_thu")
+	assert_eq(t.accept("training_thu"), "")
+	assert_eq(t.check_days(TRAY), 3, "Thursday's short practice Check")
+
+
+func test_training_days_are_numbered_monday_to_friday() -> void:
+	var s := _training()
+	var days := ["training_mon", "training_tue", "training_wed", "training_thu", "training_fri"].map(
+		func(id: String) -> int: return s.training_day(id))
+	assert_eq(days, [0, 1, 2, 3, 4])
+	assert_eq(s.training_day(MISSION), -1, "not a training day")
+	assert_true(s.is_practice(TRAY))
+	assert_false(s.is_practice(PROBLEM))

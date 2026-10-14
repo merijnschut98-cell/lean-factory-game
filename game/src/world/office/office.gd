@@ -24,6 +24,9 @@ const SUN_DIRECTION := Vector3(0.36, -0.53, -0.77)
 @export var seed_value := 1
 ## Where the content is read from (tests point it at bad content).
 @export var data_dir := Catalog.DATA_DIR
+## Start with the training week (Inwerkweek); a returning player skips it on
+## the mission board.
+@export var training := true
 
 ## Whether the mouse steers the view (else it is free: Esc, or a panel).
 var mouse_captured := false
@@ -44,7 +47,7 @@ func _ready() -> void:
 func build() -> void:
 	if session != null:
 		return
-	session = GameSession.new_game(seed_value, data_dir)
+	session = GameSession.new_game(seed_value, data_dir, training)
 	geometry = _load_geometry()
 	add_child(geometry)
 	_add_light()

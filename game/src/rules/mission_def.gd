@@ -33,6 +33,9 @@ var goal_uses := 1
 ## A shorter Check for the goal's problem while this mission is active (the
 ## training week); -1: Region.CHECK_DAYS.
 var check_days := -1
+## Training only: a staged situation for the day's lesson, effects on the
+## simulation ({target, property, value}) while the mission is active.
+var setup: Array = []
 ## Concept ids whose glossary cards the mission brings when accepted.
 var teaches := PackedStringArray()
 ## Days to complete from when the mission opens (a real event: the clock runs
@@ -69,6 +72,8 @@ static func from_dict(d: Dictionary) -> MissionDef:
 	m.goal_uses = int(goal.get("uses", 1))
 	m.check_days = int(d.get("check_days", -1))
 	m.teaches = PackedStringArray(d.get("teaches", []))
+	var setup: Variant = d.get("setup", [])
+	m.setup = setup.duplicate(true) if setup is Array else []
 	m.deadline_days = int(d.get("deadline_days", -1))
 	m.fail_closes = PackedStringArray(d.get("fail_closes", []))
 	var rewards := JsonFile.dict_or_empty(d.get("rewards"))
@@ -83,4 +88,6 @@ static func from_dict(d: Dictionary) -> MissionDef:
 		m.error = "mission %s: unknown kind %s or goal %s" % [m.id, m.kind, m.goal_type]
 	elif m.goal_type == "observe" and m.goal_places.is_empty():
 		m.error = "mission %s: an observe goal needs places" % m.id
+	elif not m.setup.is_empty() and m.kind != "training":
+		m.error = "mission %s: only a training day has a setup" % m.id
 	return m

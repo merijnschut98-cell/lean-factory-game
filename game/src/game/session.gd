@@ -44,8 +44,9 @@ var error := ""
 
 ## A new game on the real content. `seed_value` fixes the simulation's luck.
 ## `training`: start with the training week (Inwerkweek), its first day handed
-## out; without it the week counts as skipped and the story's walk as done.
-static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, training: bool = false) -> GameSession:
+## out; without it (a returning player) the week counts as skipped. Either
+## way the story's walk counts as done once the week is over.
+static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, training: bool = true) -> GameSession:
 	var s := GameSession.new()
 	s.catalog = Catalog.load_from(data_dir)
 	var net := Network.load_file(data_dir + "/value_streams.json", seed_value)
@@ -63,11 +64,9 @@ static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, t
 	net.advance(SimCalendar.days(WARMUP_DAYS) + START_MINUTE)
 	if training:
 		s.missions.accept(TRAINING_FIRST)
-		return s
-	s.missions.skip_training()
-	# Done without a reward: it happened before the game starts.
-	s.missions.progress[STORY_MISSION] = {"status": "completed", "asks": {}, "seen": {}}
-	s.missions.done_once[STORY_MISSION] = true
+	else:
+		s.missions.skip_training()
+	s._after(0)
 	return s
 
 
@@ -109,6 +108,13 @@ func ask(place: String, question_id: String) -> Dictionary:
 	return result
 
 
+## The Check's days for a problem: an active mission's (the training week's
+## short practice Check) or Region.CHECK_DAYS.
+func check_days(problem_id: String) -> int:
+	var days := missions.check_days_for(problem_id)
+	return days if days > 0 else Region.CHECK_DAYS
+
+
 ## Submit the A3 {waste, cause (index into cause_options), evidence (clue
 ## ids), cm, prediction (a KPI)} and start the experiment. "" or why not:
 ## unknown_problem | not_spotted | waste | cause | evidence | countermeasure |
@@ -116,8 +122,7 @@ func ask(place: String, question_id: String) -> Dictionary:
 func submit_a3(problem_id: String, a3: Dictionary) -> String:
 	if not region.state.has(problem_id):
 		return "unknown_problem"
-	var days := missions.check_days_for(problem_id)
-	var refused := region.submit_a3(problem_id, _cleaned(a3), days if days > 0 else Region.CHECK_DAYS)
+	var refused := region.submit_a3(problem_id, _cleaned(a3), check_days(problem_id))
 	_after(0)
 	return refused
 
@@ -237,6 +242,18 @@ func in_training() -> bool:
 	return missions.in_training()
 
 
+## A training day's place in the week: 0 (Monday) to 4 (Friday), in content
+## order; -1 for any other mission.
+func training_day(mission_id: String) -> int:
+	var week := missions.defs.values().filter(func(m: MissionDef) -> bool: return m.kind == "training")
+	return week.map(func(m: MissionDef) -> String: return m.id).find(mission_id)
+
+
+## A problem only the training week opens (Region.practice).
+func is_practice(problem_id: String) -> bool:
+	return region.practice.has(problem_id)
+
+
 ## The active missions: the main one first, then the training day, then the
 ## side missions.
 func active_missions() -> Array[MissionDef]:
@@ -284,11 +301,29 @@ func _is_place(place: String) -> bool:
 	return region.net.step_at(place) != null
 
 
-## Time passes, then the missions notice what happened.
+## Time passes, then the missions notice what happened. A training day just
+## handed out starts on its own morning; once the week is over the story's
+## walk counts as done.
 func _after(minutes: int) -> void:
 	if minutes > 0:
 		region.advance(minutes)
 	missions.update()
+	_start_training_day()
+	if not missions.in_training() and not missions.done_once.has(STORY_MISSION):
+		# Done without a reward: it happened before the campaign starts (the
+		# office cannot walk the whole stream; Monday's walk stands in for it).
+		missions.progress[STORY_MISSION] = {"status": "completed", "asks": {}, "seen": {}}
+		missions.done_once[STORY_MISSION] = true
+
+
+## The clock moves on to the active training day's morning (Monday to Friday
+## of the first week of play) when it is still earlier.
+func _start_training_day() -> void:
+	for m in missions.active("training"):
+		var morning := SimCalendar.days(WARMUP_DAYS + training_day(m.id)) + START_MINUTE
+		if region.net.time < morning:
+			region.advance(morning - region.net.time)
+			missions.update()
 
 
 ## The A3 as the rules read it: evidence a list of clue ids, cm an id.

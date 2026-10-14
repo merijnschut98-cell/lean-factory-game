@@ -21,6 +21,7 @@ func test_every_row_is_classified_and_the_lagging_ones_are_the_finished_order_me
 func test_the_result_shows_a_tag_per_measure_and_the_explanation() -> void:
 	var office: Office = load(SCENE).instantiate()
 	office.seed_value = 11
+	office.training = false  # a returning player: straight to the campaign
 	office.build()
 	var ui := office.ui
 	ui.mission_board.accept(MISSION)

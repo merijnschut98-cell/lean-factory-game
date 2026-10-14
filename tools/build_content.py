@@ -547,7 +547,7 @@ MAX_CHECK_DAYS = 14  # Region.CHECK_DAYS: a mission may only shorten the Check
 COACH_STAGES = ["go_see", "understand", "experiment", "reflect"]  # Missions.STAGES
 BELT_XP = [0, 1200, 3500, 7000, 12000]  # Progression.BELTS
 MISSION_KEYS = {"id", "name", "kind", "tier", "requires", "briefing", "debrief", "fail", "goal", "deadline_days",
-                "fail_closes", "rewards", "insights", "teaches", "check_days"}
+                "fail_closes", "rewards", "insights", "teaches", "check_days", "setup"}
 
 
 def validate_missions(doc: Any, source: str) -> None:
@@ -583,6 +583,13 @@ def validate_missions(doc: Any, source: str) -> None:
                 raise ContentError(f"{where}: 'check_days' needs a goal with a problem")
             _number(m, "check_days", where, 1, MAX_CHECK_DAYS, integer=True)
         _string_list(m, "teaches", where)
+        if "setup" in m:
+            # A staged situation for a training day's lesson (not a real number).
+            if m["kind"] != "training":
+                raise ContentError(f"{where}: only a training day has a setup")
+            setup = _effects_shape({"effects": m["setup"]}, f"{where} setup")
+            if any(e["property"] == KPI_EFFECT for e in setup):
+                raise ContentError(f"{where} setup: a setup changes the simulation, not the KPI board")
         rewards = _mapping(m, "rewards", {"xp", "budget"}, where)
         for key in ("xp", "budget"):
             _number(rewards, key, f"{where} rewards", 0, integer=True, default=0)
@@ -618,7 +625,8 @@ def check_missions(docs: dict[str, Any]) -> None:
     every mission reachable."""
     missions = {m["id"]: m for m in docs["missions"]["missions"]}
     streams = {s["id"] for s in docs["value_streams"]["streams"]}
-    steps = _network_index(docs["value_streams"], docs["kpis"])["step"]
+    net = _network_index(docs["value_streams"], docs["kpis"])
+    steps = net["step"]
     problems = {p["id"]: p for _, p in _all_problems(docs)}
     solved: dict[str, str] = {}
     for m in missions.values():
@@ -626,6 +634,8 @@ def check_missions(docs: dict[str, Any]) -> None:
         for req in m.get("requires", {}).get("missions", []):
             if req not in missions:
                 raise ContentError(f"{where}: requires unknown mission {req!r}")
+        for e in m.get("setup", []):
+            _check_effect(e, f"{where} setup", net)
         goal = m["goal"]
         if goal["type"] == "walk" and goal["stream"] not in streams:
             raise ContentError(f"{where}: unknown stream {goal['stream']!r}")

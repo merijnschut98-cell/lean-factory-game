@@ -510,7 +510,26 @@ def test_a_training_check_goal_may_shorten_the_check(rules_dirs):
     assert bc.load_content(content)["missions"]["missions"][0]["check_days"] == 3
 
 
+def test_a_training_day_may_stage_a_setup(rules_dirs):
+    content, _ = rules_dirs
+    setup = [{"target": "work_prep", "property": "availability", "value": -0.75}]
+    _rules(content, _add_training({"type": "observe", "places": ["connections.design"]}, setup=setup))
+    assert bc.load_content(content)["missions"]["missions"][0]["setup"] == setup
+
+
+def test_only_a_training_day_has_a_setup(rules_dirs):
+    content, _ = rules_dirs
+    def mutate(d):
+        d["missions"]["missions"][0]["setup"] = [{"target": "work_prep", "property": "availability", "value": -0.5}]
+    with pytest.raises(bc.ContentError, match="only a training day has a setup"):
+        _rules(content, mutate)
+
+
 @pytest.mark.parametrize("goal, extra, message", [
+    ({"type": "observe", "places": ["connections.intake"]},
+     {"setup": [{"target": "nobody", "property": "availability", "value": -0.5}]}, "unknown pool 'nobody'"),
+    ({"type": "observe", "places": ["connections.intake"]},
+     {"setup": [{"target": "work_prep", "property": "magic", "value": 1}]}, "unknown effect property 'magic'"),
     ({"type": "observe", "places": []}, {}, "'places' must be a non-empty list"),
     ({"type": "observe", "places": ["connections.nowhere"]}, {}, "unknown place 'connections.nowhere'"),
     ({"type": "observe", "places": ["connections.permit"]}, {}, "'connections.permit' has no team to watch"),
