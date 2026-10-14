@@ -532,12 +532,22 @@ def _all_problems(docs: dict[str, Any]) -> list[tuple[str, dict]]:
     return [(stem, p) for stem, doc in docs.items() if stem.startswith(PROBLEM_FILES) for p in doc["problems"]]
 
 
-MISSION_KINDS = ["main", "side"]
-MISSION_GOALS = {"walk": {"stream"}, "investigate": {"problem", "clues"}, "solve": {"problem"}}
+# training: the Inwerkweek before the campaign; it takes no side slot and the
+# coach helps with it (Missions).
+MISSION_KINDS = ["main", "side", "training"]
+COACHED_KINDS = ["main", "training"]
+# goal type → (required keys, optional keys). observe: use a gemba tool (or any,
+# without `tool`) at each place, `uses` distinct place-tool pairs in all;
+# check: the problem's Check passed.
+MISSION_GOALS = {
+    "walk": ({"stream"}, set()), "investigate": ({"problem", "clues"}, set()), "solve": ({"problem"}, set()),
+    "observe": ({"places"}, {"tool", "uses"}), "check": ({"problem"}, set()),
+}
+MAX_CHECK_DAYS = 14  # Region.CHECK_DAYS: a mission may only shorten the Check
 COACH_STAGES = ["go_see", "understand", "experiment", "reflect"]  # Missions.STAGES
 BELT_XP = [0, 1200, 3500, 7000, 12000]  # Progression.BELTS
 MISSION_KEYS = {"id", "name", "kind", "tier", "requires", "briefing", "debrief", "fail", "goal", "deadline_days",
-                "fail_closes", "rewards", "insights"}
+                "fail_closes", "rewards", "insights", "teaches", "check_days"}
 
 
 def validate_missions(doc: Any, source: str) -> None:
@@ -559,27 +569,47 @@ def validate_missions(doc: Any, source: str) -> None:
         requires = _mapping(m, "requires", {"missions", "belt"}, where)
         _string_list(requires, "missions", f"{where} requires")
         _number(requires, "belt", f"{where} requires", 0, len(BELT_XP) - 1, integer=True, default=0)
-        goal = m.get("goal")
-        if not isinstance(goal, dict) or goal.get("type") not in MISSION_GOALS:
-            raise ContentError(f"{where}: 'goal' needs a type: {', '.join(MISSION_GOALS)}")
-        _known_keys(goal, {"type"} | MISSION_GOALS[goal["type"]], f"{where} goal")
-        _require_strings(goal, sorted(MISSION_GOALS[goal["type"]] - {"clues"}), f"{where} goal")
-        if goal["type"] == "investigate":
-            _number(goal, "clues", f"{where} goal", 1, integer=True)
+        _validate_goal(m.get("goal"), where)
         if "deadline_days" in m:
+            if m["kind"] == "training":
+                raise ContentError(f"{where}: a training mission has no deadline (it is practice)")
             _number(m, "deadline_days", where, 1, integer=True)
             _require_strings(m, ["fail"], where)
         fail_closes = _string_list(m, "fail_closes", where)
         if fail_closes and "deadline_days" not in m:
             raise ContentError(f"{where}: 'fail_closes' needs a deadline")
+        if "check_days" in m:
+            if "problem" not in m["goal"]:
+                raise ContentError(f"{where}: 'check_days' needs a goal with a problem")
+            _number(m, "check_days", where, 1, MAX_CHECK_DAYS, integer=True)
+        _string_list(m, "teaches", where)
         rewards = _mapping(m, "rewards", {"xp", "budget"}, where)
         for key in ("xp", "budget"):
             _number(rewards, key, f"{where} rewards", 0, integer=True, default=0)
         insights = m.get("insights", {})
-        if insights and m["kind"] != "main":
-            raise ContentError(f"{where}: only main missions get the coach's insights")
+        if insights and m["kind"] not in COACHED_KINDS:
+            raise ContentError(f"{where}: only main and training missions get the coach's insights")
         if not isinstance(insights, dict) or any(s not in COACH_STAGES or not isinstance(t, str) for s, t in insights.items()):
             raise ContentError(f"{where}: 'insights' maps a coach stage to a text")
+
+
+def _validate_goal(goal: Any, where: str) -> None:
+    if not isinstance(goal, dict) or goal.get("type") not in MISSION_GOALS:
+        raise ContentError(f"{where}: 'goal' needs a type: {', '.join(MISSION_GOALS)}")
+    required, optional = MISSION_GOALS[goal["type"]]
+    _known_keys(goal, {"type"} | required | optional, f"{where} goal")
+    for key in required:
+        if key not in goal:
+            raise ContentError(f"{where} goal: needs '{key}'")
+    _require_strings(goal, sorted(required & {"stream", "problem"}), f"{where} goal")
+    if goal["type"] == "investigate":
+        _number(goal, "clues", f"{where} goal", 1, integer=True)
+    if goal["type"] == "observe":
+        places = _string_list(goal, "places", f"{where} goal", allow_empty=False)
+        if "tool" in goal and goal["tool"] not in TOOLS:
+            raise ContentError(f"{where} goal: unknown tool {goal['tool']!r}")
+        tools = 1 if "tool" in goal else len(TOOLS)
+        _number(goal, "uses", f"{where} goal", 1, tools * len(places), integer=True, default=1)
 
 
 def check_missions(docs: dict[str, Any]) -> None:
@@ -588,6 +618,7 @@ def check_missions(docs: dict[str, Any]) -> None:
     every mission reachable."""
     missions = {m["id"]: m for m in docs["missions"]["missions"]}
     streams = {s["id"] for s in docs["value_streams"]["streams"]}
+    steps = _network_index(docs["value_streams"], docs["kpis"])["step"]
     problems = {p["id"]: p for _, p in _all_problems(docs)}
     solved: dict[str, str] = {}
     for m in missions.values():
@@ -598,6 +629,11 @@ def check_missions(docs: dict[str, Any]) -> None:
         goal = m["goal"]
         if goal["type"] == "walk" and goal["stream"] not in streams:
             raise ContentError(f"{where}: unknown stream {goal['stream']!r}")
+        for place in goal.get("places", []):
+            if place not in steps:
+                raise ContentError(f"{where}: unknown place {place!r}")
+            if steps[place]["kind"] != "work":
+                raise ContentError(f"{where}: {place!r} has no team to watch (not a work step)")
         if "problem" in goal:
             p = problems.get(goal["problem"])
             if p is None:
@@ -634,8 +670,8 @@ def check_missions(docs: dict[str, Any]) -> None:
                 done.add(m["id"])
                 xp += m.get("rewards", {}).get("xp", 0)
                 progressed = True
-    if not any(m["kind"] == "main" and not m.get("requires") for m in missions.values()):
-        raise ContentError("missions.yaml: no main mission is open from the start")
+    if not any(m["kind"] in COACHED_KINDS and not m.get("requires") for m in missions.values()):
+        raise ContentError("missions.yaml: no main or training mission is open from the start")
     stuck = sorted(set(missions) - done)
     if stuck:
         raise ContentError(f"missions.yaml: missions that can never unlock (a cycle or too little XP): {', '.join(stuck)}")
@@ -726,14 +762,16 @@ def check_concepts(docs: dict[str, Any]) -> None:
     for concept_id in CODE_CONCEPTS + [f"waste_{w}" for w in WASTES]:
         if concept_id not in known:
             raise ContentError(f"concepts.yaml: missing concept {concept_id!r} (the rules teach it)")
+    taught_by: list[tuple[str, list]] = [(f"missions.yaml: mission '{m['id']}'", m.get("teaches", []))
+                                         for m in docs["missions"]["missions"]]
     for stem, p in _all_problems(docs):
         where = f"{stem}.yaml: problem '{p['id']}'"
-        taught = [(where, p.get("teaches", []))] + [
+        taught_by += [(where, p.get("teaches", []))] + [
             (f"{where} clue {i}", c.get("teaches", [])) for i, c in enumerate(p["clues"])]
-        for at, ids in taught:
-            for concept_id in ids:
-                if concept_id not in known:
-                    raise ContentError(f"{at}: teaches unknown concept {concept_id!r}")
+    for at, ids in taught_by:
+        for concept_id in ids:
+            if concept_id not in known:
+                raise ContentError(f"{at}: teaches unknown concept {concept_id!r}")
 
 
 def vocabulary() -> dict[str, Any]:

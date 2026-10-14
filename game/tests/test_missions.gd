@@ -209,3 +209,162 @@ func test_a_reopened_mission_runs_no_deadline() -> void:
 	log.update()
 	assert_eq(log.status("henk"), "available", "reopened after the deadline would have passed")
 	assert_true(r.countermeasures["poka_yoke_form"] in r.available_countermeasures(), "no door closes")
+
+
+# ── The training week (Inwerkweek) ──────────────────────────────────────────
+
+## The fixture campaign with a three-day training week before it.
+func _training_log() -> Missions:
+	var data := RulesFixture.missions()
+	var day := func(id: String, goal: Dictionary, requires: Array, extra: Dictionary = {}) -> Dictionary:
+		var d := {"id": id, "name": id, "kind": "training", "tier": 1, "goal": goal, "requires": {"missions": requires},
+			"briefing": "briefing " + id, "debrief": "debrief " + id, "rewards": {"xp": 50}}
+		d.merge(extra, true)
+		return d
+	data.append_array([
+		day.call("t_look", {"type": "observe", "places": ["connections.intake", "connections.design"]}, [],
+			{"teaches": ["gemba"], "insights": {"go_see": "insight t_look"}}),
+		day.call("t_tools", {"type": "observe", "places": ["connections.design"], "uses": 2}, ["t_look"]),
+		day.call("t_count", {"type": "observe", "places": ["connections.intake", "connections.design"], "tool": "queue_count"},
+			["t_tools"]),
+		day.call("t_check", {"type": "check", "problem": "custom_design"}, ["t_count"], {"check_days": 3}),
+	])
+	var defs: Array[MissionDef] = []
+	for d: Dictionary in data:
+		defs.append(MissionDef.from_dict(d))
+	return Missions.new(RulesFixture.region(), defs, RulesFixture.coach())
+
+
+func test_training_missions_read_their_new_fields() -> void:
+	var log := _training_log()
+	assert_eq(log.defs["t_look"].error, "")
+	assert_eq(log.defs["t_look"].teaches, PackedStringArray(["gemba"]))
+	assert_eq(log.defs["t_count"].goal_places, PackedStringArray(["connections.intake", "connections.design"]))
+	assert_eq(log.defs["t_count"].goal_tool, "queue_count")
+	assert_eq(log.defs["t_tools"].goal_uses, 2)
+	assert_eq(log.defs["t_look"].goal_uses, 1, "by default one use in all")
+	assert_eq(log.defs["t_check"].check_days, 3)
+	assert_eq(log.defs["fix_design"].check_days, -1, "the real Check unless a mission shortens it")
+	assert_ne(MissionDef.from_dict({"id": "x", "name": "x", "kind": "training", "goal": {"type": "observe"}}).error, "",
+		"an observe goal needs places")
+
+
+func test_training_missions_take_no_side_slot() -> void:
+	var log := _training_log()
+	log.accept("walk_connections")
+	_walk_connections(log)
+	for id in ["look_at_intake", "fix_revision", "walk_meters"]:
+		assert_eq(log.accept(id), "", id)
+	assert_eq(log.accept("t_look"), "", "the training week does not count against the three side missions")
+	assert_eq(log.active("side").size(), 3)
+	assert_eq(_ids(log.active("training")), ["t_look"])
+
+
+func test_an_observe_goal_needs_every_place_while_the_mission_is_active() -> void:
+	var log := _training_log()
+	log.note_use("connections.intake", "shadow")  # before it was taken on: does not count
+	assert_eq(log.accept("t_look"), "")
+	log.note_use("connections.intake", "shadow")
+	log.update()
+	assert_eq(log.status("t_look"), "active", "one of two places")
+	log.note_use("connections.design", "documents")
+	log.update()
+	assert_eq(log.status("t_look"), "completed")
+
+
+func test_an_observe_goal_can_ask_for_one_tool_or_for_different_tools() -> void:
+	var log := _training_log()
+	log.accept("t_look")
+	log.note_use("connections.intake", "shadow")
+	log.note_use("connections.design", "shadow")
+	log.update()
+	assert_eq(log.status("t_tools"), "active", "the next day was handed out")
+	log.note_use("connections.design", "time_study")
+	log.note_use("connections.design", "time_study")
+	log.update()
+	assert_eq(log.status("t_tools"), "active", "the same tool twice is one use")
+	log.note_use("connections.design", "documents")
+	log.update()
+	assert_eq(log.status("t_tools"), "completed")
+	log.note_use("connections.intake", "shadow")
+	log.note_use("connections.design", "queue_count")
+	log.update()
+	assert_eq(log.status("t_count"), "active", "the queue at the intake is not counted yet")
+	log.note_use("connections.intake", "queue_count")
+	log.update()
+	assert_eq(log.status("t_count"), "completed")
+
+
+func test_finishing_a_training_day_hands_out_the_next() -> void:
+	var log := _training_log()
+	log.accept("t_look")
+	log.drain_events()
+	log.note_use("connections.intake", "shadow")
+	log.note_use("connections.design", "shadow")
+	log.update()
+	assert_eq(log.drain_events(), [{"type": "completed", "mission": "t_look"}, {"type": "accepted", "mission": "t_tools"}])
+	assert_eq(log.region.profile.xp, 50, "a small reward per day")
+
+
+func test_a_check_goal_completes_once_the_check_passed() -> void:
+	var log := _training_log()
+	log.done_once["t_count"] = true
+	assert_eq(log.accept("t_check"), "")
+	var st: ProblemState = log.region.state["custom_design"]
+	assert_eq(st.phase, ProblemState.Phase.ACTIVE, "accepting brings the problem")
+	st.phase = ProblemState.Phase.CHECK_READY
+	log.update()
+	assert_eq(log.status("t_check"), "active")
+	st.phase = ProblemState.Phase.CHECKED
+	log.update()
+	assert_eq(log.status("t_check"), "completed")
+	assert_eq(log.check_days_for("custom_design"), -1, "no active mission shortens its Check any more")
+
+
+func test_an_active_mission_can_shorten_its_problems_check() -> void:
+	var log := _training_log()
+	log.done_once["t_count"] = true
+	log.accept("t_check")
+	assert_eq(log.check_days_for("custom_design"), 3)
+	assert_eq(log.check_days_for("incomplete_application"), -1)
+
+
+func test_a_training_mission_brings_its_glossary_cards() -> void:
+	var log := _training_log()
+	assert_false("gemba" in log.region.profile.concepts)
+	log.accept("t_look")
+	assert_true("gemba" in log.region.profile.concepts)
+
+
+## The training week is with the coach (the spec's Starter Kata); side
+## missions still get no coaching.
+func test_the_coach_helps_with_the_training_week() -> void:
+	var log := _training_log()
+	log.accept("t_look")
+	assert_eq(log.ask_coach()["kind"], "question", "no main mission yet: the coach asks about the training day")
+	assert_eq(log.ask_coach("t_look")["kind"], "question")
+	assert_eq(log.ask_coach()["kind"], "insight")
+	assert_eq(log.ask_coach("walk_meters")["kind"], "not_main")
+
+
+func test_skipping_the_training_week_opens_the_campaign_without_rewards() -> void:
+	var log := _training_log()
+	log.done_once["t_count"] = true
+	log.accept("t_check")
+	log.skip_training()
+	for id in ["t_look", "t_tools", "t_count", "t_check"]:
+		assert_eq(log.status(id), "completed", id)
+	assert_eq(log.region.profile.xp, 0, "no rewards for skipped days")
+	assert_eq(log.region.state["custom_design"].phase, ProblemState.Phase.DORMANT, "the practice problem goes back to sleep")
+	assert_false(log.in_training())
+
+
+func test_observations_survive_save_and_load() -> void:
+	var log := _training_log()
+	log.accept("t_look")
+	log.note_use("connections.intake", "shadow")
+	var restored := _training_log()
+	assert_eq(restored.load_dict(bytes_to_var(var_to_bytes(log.to_dict()))), [])
+	restored.note_use("connections.design", "shadow")
+	restored.update()
+	assert_eq(restored.status("t_look"), "completed", "the intake visit was kept")

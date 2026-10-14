@@ -245,3 +245,133 @@ func test_the_second_mission_is_played_end_to_end() -> void:
 	assert_false(s.act(problem_id, true).has("error"))
 	assert_eq(s.missions.status(second), "completed")
 	assert_true(s.xp() > xp_before)
+
+
+# ── The training week (Inwerkweek) ──────────────────────────────────────────
+
+const TRAY := "training_tray"
+const PLANNING := "connections.planning"
+
+
+func _training() -> GameSession:
+	var s := GameSession.new_game(11, Catalog.DATA_DIR, true)
+	assert_eq(s.error, "")
+	return s
+
+
+func _active_ids(s: GameSession) -> Array:
+	return s.active_missions().map(func(m: MissionDef) -> String: return m.id)
+
+
+func test_without_training_the_week_counts_as_skipped() -> void:
+	var s := GameSession.new_game(11)
+	assert_false(s.in_training())
+	assert_eq(s.missions.status("training_mon"), "completed")
+	assert_eq(s.missions.status("training_fri"), "completed")
+
+
+func test_a_new_game_with_training_starts_on_monday_of_the_week() -> void:
+	var s := _training()
+	assert_true(s.in_training())
+	assert_eq(_active_ids(s), ["training_mon"], "the coach hands out the first day")
+	assert_eq(s.missions.status(GameSession.STORY_MISSION), "locked", "the campaign waits for the week")
+	assert_eq(s.missions.status(MISSION), "locked")
+	assert_eq(s.ask_coach()["kind"], "question", "the coach helps with the training week")
+	for id in ["netbeheerder", "aansluiting", "aansluittermijn"]:
+		assert_true(id in s.region.profile.concepts, "glossary card " + id)
+
+
+func test_skipping_training_opens_the_campaign_without_rewards() -> void:
+	var s := _training()
+	s.use_tool(INTAKE, "shadow")
+	assert_eq(s.skip_training(), "")
+	assert_false(s.in_training())
+	assert_eq(s.xp(), 0, "no rewards for skipped days")
+	assert_eq(s.budget(), 50000)
+	assert_eq(s.missions.status("training_thu"), "completed")
+	assert_eq(s.missions.status(GameSession.STORY_MISSION), "available", "a returning player starts the campaign")
+	assert_eq(s.active_missions().size(), 0)
+	assert_eq(s.skip_training(), "not_in_training")
+
+
+## The whole week as a player would play it: walk, look, count, a practice A3
+## with a short Check, and the Act with the time-lapse.
+func test_the_training_week_is_played_end_to_end() -> void:
+	var s := _training()
+	# Monday: visit the three teams.
+	s.use_tool(INTAKE, "shadow")
+	s.use_tool(DESIGN, "shadow")
+	assert_eq(s.missions.status("training_mon"), "active")
+	assert_false(s.ask(PLANNING, "walk").has("error"))
+	assert_eq(s.missions.status("training_mon"), "completed")
+	assert_eq(_active_ids(s), ["training_tue"])
+	# Tuesday: two tools at Werkvoorbereiding.
+	s.use_tool(DESIGN, "time_study")
+	s.use_tool(DESIGN, "time_study")
+	assert_eq(s.missions.status("training_tue"), "active", "two different tools")
+	s.use_tool(DESIGN, "documents")
+	assert_eq(_active_ids(s), ["training_wed"])
+	# Wednesday: count the queues at two steps.
+	s.use_tool(INTAKE, "queue_count")
+	s.use_tool(DESIGN, "queue_count")
+	assert_eq(_active_ids(s), ["training_thu"])
+	assert_eq(s.phase_of(TRAY), "active", "the practice problem arrives through Thursday's mission")
+	# Thursday: the practice A3 and a three-day Check.
+	s.use_tool(INTAKE, "shadow")
+	s.use_tool(INTAKE, "time_study")
+	s.ask(INTAKE, "walk")
+	var problem: ProblemDef = s.region.problems[TRAY]
+	var keys := problem.clues.filter(func(c: Clue) -> bool: return c.key)
+	assert_eq(s.clues_found(TRAY).size(), keys.size(), "every key clue found at the intake")
+	assert_eq(s.ask_coach()["stage"], "understand")
+	var a3 := {"waste": problem.waste, "cause": Investigation.cause_options(problem, s.region.problem_list())["correct"],
+		"evidence": s.clues_found(TRAY).map(func(c: Clue) -> String: return c.id), "cm": "one_tray_fifo",
+		"prediction": problem.kpi}
+	var submitted_at := s.region.net.time
+	assert_eq(s.submit_a3(TRAY, a3), "")
+	assert_eq(s.region.state[TRAY].check_at - submitted_at, SimCalendar.days(3), "a short Check for practice")
+	assert_eq(s.wait_for_check(TRAY), "")
+	assert_true(s.check(TRAY)["passed"])
+	assert_eq(s.missions.status("training_thu"), "completed")
+	assert_eq(_active_ids(s), ["training_fri"])
+	# Friday: Act without standardising, then watch it fade.
+	assert_false(s.act(TRAY, false).has("error"))
+	assert_eq(s.missions.status("training_fri"), "completed")
+	assert_false(s.in_training())
+	assert_eq(s.missions.status(GameSession.STORY_MISSION), "available", "the campaign opens")
+	assert_true(s.xp() >= 250, "the five days' rewards and the practice score")
+	var lapse := s.time_lapse(30)
+	assert_false(lapse.has("error"))
+	assert_eq([lapse["problem"], lapse["kpi"], lapse["phase_before"], lapse["phase_after"], lapse["faded"]],
+		[TRAY, "lead_time", "resolved", "dormant", true], "not standardised: the fix fades")
+	assert_true(lapse["before"].has("lead_time") and lapse["after"].has("lead_time"))
+	assert_true(lapse["after"]["step"]["queue_hours"] >= 0.0)
+
+
+func test_a_standardised_practice_fix_holds_through_the_time_lapse() -> void:
+	var s := _training()
+	s.skip_training()
+	# Straight to Friday's choice on a checked practice problem.
+	var st: ProblemState = s.region.state[TRAY]
+	s.region.activate(TRAY)
+	s.use_tool(INTAKE, "shadow")
+	var problem: ProblemDef = s.region.problems[TRAY]
+	var a3 := {"waste": problem.waste, "cause": Investigation.cause_options(problem, s.region.problem_list())["correct"],
+		"evidence": s.clues_found(TRAY).map(func(c: Clue) -> String: return c.id), "cm": "tray_labels",
+		"prediction": problem.kpi}
+	assert_eq(s.submit_a3(TRAY, a3), "")
+	s.wait_for_check(TRAY)
+	assert_true(s.check(TRAY)["passed"], "the second countermeasure passes the Check too")
+	s.act(TRAY, true)
+	var lapse := s.time_lapse(30)
+	assert_eq([lapse["phase_after"], lapse["faded"]], ["resolved", false], "standard work keeps the gain")
+	assert_eq(st, s.region.state[TRAY])
+
+
+func test_a_time_lapse_refuses_bad_input_without_spending_time() -> void:
+	var s := _training()
+	var before := s.region.net.time
+	assert_eq(s.time_lapse(0), {"error": "bad_days"})
+	assert_eq(s.time_lapse(GameSession.MAX_TIME_LAPSE_DAYS + 1), {"error": "bad_days"})
+	assert_eq(s.time_lapse(5, "no_such_problem"), {"error": "unknown_problem"})
+	assert_eq(s.region.net.time, before)

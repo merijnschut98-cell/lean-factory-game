@@ -540,3 +540,33 @@ problems:
       - {tool: conversation, key: true, depth: 1, text: "'Mijn doel is dertig ontwerpen per week. Ik werk ze zo snel mogelijk weg, dan haal ik het. Dat de monteur er later iets aan moet aanpassen, staat niet in mijn cijfers.'"}
       - {tool: listen_in, key: true, depth: 2, at: connections.intake, text: "In het teamoverleg: 'Nog vier aanvragen voor vrijdag, dan halen we het weekdoel. Ontbrekende gegevens vragen we later wel op.'"}
       - {tool: conversation, key: true, depth: 2, at: connections.execution, text: "'Intake en Werkvoorbereiding zijn tevreden, hun cijfers zijn goed. Maar niemand kijkt naar mijn terugrit, of naar de klant die wacht tot de aansluiting echt klaar is.'"}
+
+  # ── Inwerkweek: the practice problem (Thursday and Friday) ──────────────────
+  # Invented and harmless (Merijn's decision, 2026-10-14): it exists only to
+  # practise the A3, the Check and the Act. Opened only by the training week.
+  - id: training_tray
+    tier: 1
+    name: Twee bakken voor hetzelfde werk
+    step: connections.intake
+    waste: motion
+    severity: low
+    visibility: obvious
+    kpi: lead_time
+    symptoms:
+      - Bij de Intake zoeken medewerkers eerst in twee bakken voordat ze een aanvraag oppakken.
+    root_cause: Er zijn twee bakken voor hetzelfde werk zonder vaste volgorde; zoeken en omsorteren kost bij elke aanvraag extra tijd.
+    plausible_causes:
+      - De intakemedewerkers werken te traag.
+      - Er komen te veel aanvragen tegelijk binnen.
+    mismatch_note: Harder of sneller werken haalt het zoeken niet weg. Het zit in hoe het werk binnenkomt, niet in de mensen.
+    countermeasures: {one_tray_fifo: 1.0, tray_labels: 0.7}
+    teaches: [waste_motion, 5s]
+    effects:
+      # ESTIMATE (invented for the training week): a few minutes of searching
+      # and re-sorting on about an hour of intake work, roughly a seventh extra.
+      - {target: connections.intake, property: touch_time, value: 1.15}
+    clues:
+      - {tool: shadow, key: true, depth: 0, text: "Bij elke nieuwe aanvraag kijkt de medewerker eerst in twee bakken welke aanvraag het oudst is, en sorteert dan om."}
+      - {tool: queue_count, key: false, depth: 0, text: "In de twee bakken samen liggen maar een stuk of tien aanvragen. De stapel is het probleem niet."}
+      - {tool: time_study, key: true, depth: 1, text: "Zoeken, omsorteren en terugleggen kost een paar minuten per aanvraag: ongeveer een zevende bovenop een uur werk."}
+      - {tool: conversation, key: true, depth: 1, text: "'De ene bak is voor de post, de andere voor geprinte webformulieren. Zo is het ooit gegroeid; niemand weet meer waarom.'"}

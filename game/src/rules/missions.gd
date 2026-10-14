@@ -5,6 +5,10 @@ extends RefCounted
 ## at once; the coach (a senior manager) mostly asks questions, and only
 ## about the main mission (CLAUDE.md §2).
 ##
+## Before the campaign comes the training week (Inwerkweek, kind "training"):
+## one day at a time, each handing out the next when done. Training days take
+## no side slot and the coach helps with them; a returning player skips them.
+##
 ## Missions drive the Region (accepting one activates its problem) and read
 ## it to see when a goal is met; the Region does not know about missions.
 
@@ -21,8 +25,9 @@ var defs: Dictionary[String, MissionDef] = {}
 ## {name, role, stages: {stage: [questions]}}
 var coach: Dictionary
 ## Missions the player has accepted, or whose deadline passed: id → {status:
-## active | completed | failed, asks: {stage: count}}. A mission whose fix
-## faded is erased from it, so it is available again.
+## active | completed | failed, asks: {stage: count}, seen: {"place|tool":
+## true} (observe goals: what was used while it was active)}. A mission whose
+## fix faded is erased from it, so it is available again.
 var progress: Dictionary[String, Dictionary] = {}
 ## Missions completed at least once: rewarded, unlocking what follows, and
 ## past any deadline, even when a faded fix reopens them.
@@ -58,7 +63,7 @@ func available() -> Array[MissionDef]:
 	return out
 
 
-## Active missions, of one kind ("main" or "side") or all.
+## Active missions, of one kind ("main", "side" or "training") or all.
 func active(kind: String = "") -> Array[MissionDef]:
 	var out: Array[MissionDef] = []
 	for id: String in progress:
@@ -85,9 +90,44 @@ func accept(id: String) -> String:
 		var st: ProblemState = region.state.get(m.goal_problem)
 		if st == null or st.phase == P.RESOLVED or (st.phase == P.DORMANT and not region.activate(m.goal_problem)):
 			return "problem_unavailable"
-	progress[id] = {"status": "active", "asks": {}}
+	progress[id] = {"status": "active", "asks": {}, "seen": {}}
+	region.profile.learn(m.teaches)
 	events.append({"type": "accepted", "mission": id})
 	return ""
+
+
+## A gemba tool (or "conversation" for a question) was used at a place: active
+## observe goals note it.
+func note_use(place: String, tool: String) -> void:
+	for m in active():
+		if m.goal_type == "observe" and place in m.goal_places and (m.goal_tool.is_empty() or m.goal_tool == tool):
+			progress[m.id]["seen"][place + "|" + tool] = true
+
+
+## The Check days an active mission sets for its problem (the training
+## week's short Check); -1: the real Check (Region.CHECK_DAYS).
+func check_days_for(problem_id: String) -> int:
+	for m in active():
+		if m.goal_problem == problem_id and m.check_days > 0:
+			return m.check_days
+	return -1
+
+
+## Still in the training week: a training day not yet done.
+func in_training() -> bool:
+	return defs.values().any(func(m: MissionDef) -> bool: return m.kind == "training" and not done_once.has(m.id))
+
+
+## A returning player skips the training week: every day counts as done,
+## without rewards, and a practice problem it opened goes back to sleep.
+func skip_training() -> void:
+	for m: MissionDef in defs.values():
+		if m.kind != "training" or status(m.id) == "completed":
+			continue
+		if status(m.id) == "active" and not m.goal_problem.is_empty():
+			region.deactivate(m.goal_problem)
+		progress[m.id] = {"status": "completed", "asks": {}, "seen": {}}
+		done_once[m.id] = true
 
 
 ## Stop an active mission; it becomes available again. Its problem stays.
@@ -127,20 +167,22 @@ func _reopen_faded() -> void:
 
 
 func _fail(m: MissionDef) -> void:
-	progress[m.id] = {"status": "failed", "asks": {}}
+	progress[m.id] = {"status": "failed", "asks": {}, "seen": {}}
 	region.close_countermeasures(m.fail_closes)
 	events.append({"type": "failed", "mission": m.id})
 
 
-## Ask the coach. With no mission named, about the main mission. Returns
-## {kind: question | insight | no_main | not_main, text?, stage?}.
+## Ask the coach. With no mission named, about the main mission (or, before
+## the campaign, the training day). Returns {kind: question | insight |
+## no_main | not_main, text?, stage?}.
 func ask_coach(mission_id: String = "") -> Dictionary:
-	if not mission_id.is_empty() and defs.has(mission_id) and defs[mission_id].kind != "main":
+	if not mission_id.is_empty() and defs.has(mission_id) and defs[mission_id].kind == "side":
 		return {"kind": "not_main"}
-	var mains := active("main")
-	if mains.is_empty():
+	var coached := active("main")
+	coached.append_array(active("training"))
+	if coached.is_empty():
 		return {"kind": "no_main"}
-	var m := mains[0]
+	var m := coached[0]
 	var stage := stage_of(m)
 	var asks: Dictionary = progress[m.id]["asks"]
 	asks[stage] = int(asks.get(stage, 0)) + 1
@@ -198,7 +240,8 @@ func load_dict(d: Dictionary) -> Array[String]:
 	for id: Variant in saved:
 		var entry: Variant = saved[id]
 		if defs.has(str(id)) and entry is Dictionary and entry.get("status") in ["active", "completed", "failed"]:
-			progress[str(id)] = {"status": entry["status"], "asks": JsonFile.dict_or_empty(entry.get("asks"))}
+			progress[str(id)] = {"status": entry["status"], "asks": JsonFile.dict_or_empty(entry.get("asks")),
+				"seen": JsonFile.dict_or_empty(entry.get("seen"))}
 		else:
 			dropped.append(str(id))
 	# A missed deadline closed its doors for good.
@@ -228,6 +271,14 @@ func _goal_met(m: MissionDef) -> bool:
 			return region.key_clues_found(m.goal_problem) >= m.goal_clues
 		"solve":
 			return region.state[m.goal_problem].phase == P.RESOLVED
+		"check":
+			return region.state[m.goal_problem].phase in [P.CHECKED, P.RESOLVED]
+		"observe":
+			var seen: Dictionary = progress[m.id]["seen"]
+			for place in m.goal_places:
+				if not seen.keys().any(func(k: String) -> bool: return k.get_slice("|", 0) == place):
+					return false
+			return seen.size() >= m.goal_uses
 	return false
 
 
@@ -237,3 +288,13 @@ func _complete(m: MissionDef) -> void:
 		done_once[m.id] = true
 		region.grant(m.reward_xp, m.reward_budget)
 	events.append({"type": "completed", "mission": m.id})
+	if m.kind == "training":
+		_hand_out_next_day(m)
+
+
+## The coach hands out the next training day as soon as one is done, so the
+## practice problem is never without its mission.
+func _hand_out_next_day(done: MissionDef) -> void:
+	for next: MissionDef in defs.values():
+		if next.kind == "training" and done.id in next.requires_missions and status(next.id) == "available":
+			accept(next.id)

@@ -426,6 +426,19 @@
   },
   {
    "category": "sector",
+   "example": "Een nieuwe woning in Nova krijgt een standaardaansluiting van 3x25 ampère; een bedrijf op het industrieterrein vraagt een grootverbruikaansluiting aan.",
+   "id": "aansluiting",
+   "name": "Aansluiting",
+   "short": "De verbinding van een gebouw met het elektriciteitsnet, van de kabel in de straat tot de hoofdzekering in de meterkast.",
+   "source": {
+    "title": "Elektriciteitswet 1998, artikel 1 (begrip kleinverbruiker, aansluiting tot 3x80A)",
+    "url": "https://wetten.overheid.nl/BWBR0009755/"
+   },
+   "text": "Een aansluiting is van de netbeheerder: de kabel naar het gebouw, de aansluitkast en de hoofdzekering in de meterkast. Alles achter de meter is van de klant. Een aansluiting tot en met 3x80 ampère heet een kleinverbruikaansluiting (woningen, kleine bedrijven); grotere aansluitingen zijn grootverbruik. Wie een nieuwe of zwaardere aansluiting wil, vraagt die aan bij de netbeheerder.",
+   "verify": true
+  },
+  {
+   "category": "sector",
    "example": "Voltana stuurt op 18 weken voor een nieuwe huisaansluiting, maar waar het net eerst verzwaard moet worden, duurt het veel langer.",
    "id": "aansluittermijn",
    "name": "Aansluittermijn",

@@ -402,7 +402,7 @@ def test_problem_errors_are_caught(rules_dirs, mutate, message):
 @pytest.mark.parametrize("mutate, message", [
     (lambda d: _mission(d).update(kind="epic"), "'kind' must be one of"),
     (lambda d: _mission(d)["requires"].update(missions=["ghost"]), "requires unknown mission 'ghost'"),
-    (lambda d: _mission(d, 0).update(requires={"missions": ["fix_design"]}), "no main mission is open from the start"),
+    (lambda d: _mission(d, 0).update(requires={"missions": ["fix_design"]}), "no main or training mission is open from the start"),
     (lambda d: _mission(d).update(requires={"missions": ["peek"]}) or _mission(d, 2).update(requires={"missions": ["fix_design"]}),
      "can never unlock"),
     (lambda d: _mission(d).update(requires={"missions": ["walk_connections"], "belt": 2}), "can never unlock"),
@@ -412,7 +412,7 @@ def test_problem_errors_are_caught(rules_dirs, mutate, message):
     (lambda d: _mission(d, 2).update(goal={"type": "solve", "problem": "custom_design"}), "already solved in mission"),
     (lambda d: _mission(d, 1).update(goal={"type": "investigate", "problem": "custom_design", "clues": 1}),
      "no mission solves custom_design"),
-    (lambda d: _mission(d, 2).update(insights={"go_see": "Kijk."}), "only main missions get the coach"),
+    (lambda d: _mission(d, 2).update(insights={"go_see": "Kijk."}), "only main and training missions get the coach"),
     (lambda d: _mission(d).update(deadline_days=30), "'fail' must be a non-empty string"),
     (lambda d: _mission(d).update(fail_closes=["standard_designs"]), "'fail_closes' needs a deadline"),
     (lambda d: _mission(d).update(deadline_days=30, fail="Weg.", fail_closes=["weekly_meeting"]),
@@ -478,6 +478,69 @@ def test_real_kpi_menus_have_at_most_five_and_both_kinds_per_pool():
     for pool, kpis in menus.items():
         assert len(kpis) <= 5, pool
         assert {k["kind"] for k in kpis} == {"leading", "lagging"}, pool
+
+
+# ── The training week (Inwerkweek) ───────────────────────────────────────────
+
+def _training(goal: dict, **extra) -> dict:
+    return {"id": "practice", "name": "Oefenen", "kind": "training", "tier": 1, "briefing": "Oefen.",
+            "debrief": "Goed.", "goal": goal, **extra}
+
+
+def _add_training(goal: dict, **extra):
+    """Put a training mission first; the campaign's first mission then needs it."""
+    def mutate(d):
+        d["missions"]["missions"].insert(0, _training(goal, **extra))
+        d["missions"]["missions"][1]["requires"] = {"missions": ["practice"]}
+    return mutate
+
+
+def test_a_training_week_opens_the_campaign(rules_dirs):
+    content, _ = rules_dirs
+    _rules(content, _add_training({"type": "observe", "places": ["connections.intake", "connections.design"],
+                                   "tool": "queue_count", "uses": 2},
+                                  teaches=["flow"], insights={"go_see": "Wat zie je?"}))
+    missions = bc.load_content(content)["missions"]["missions"]
+    assert [m["kind"] for m in missions[:2]] == ["training", "main"]
+
+
+def test_a_training_check_goal_may_shorten_the_check(rules_dirs):
+    content, _ = rules_dirs
+    _rules(content, _add_training({"type": "check", "problem": "custom_design"}, check_days=3))
+    assert bc.load_content(content)["missions"]["missions"][0]["check_days"] == 3
+
+
+@pytest.mark.parametrize("goal, extra, message", [
+    ({"type": "observe", "places": []}, {}, "'places' must be a non-empty list"),
+    ({"type": "observe", "places": ["connections.nowhere"]}, {}, "unknown place 'connections.nowhere'"),
+    ({"type": "observe", "places": ["connections.permit"]}, {}, "'connections.permit' has no team to watch"),
+    ({"type": "observe", "places": ["connections.intake"], "tool": "crystal_ball"}, {}, "unknown tool 'crystal_ball'"),
+    ({"type": "observe", "places": ["connections.intake"], "uses": 0}, {}, "'uses' must be between 1 and"),
+    ({"type": "observe", "places": ["connections.intake"], "uses": 9}, {}, "'uses' must be between 1 and"),
+    ({"type": "observe", "places": ["connections.intake"], "stream": "x"}, {}, "unknown key.s. 'stream'"),
+    ({"type": "check", "problem": "ghost"}, {}, "unknown problem 'ghost'"),
+    ({"type": "observe", "places": ["connections.intake"]}, {"check_days": 3}, "'check_days' needs a goal with a problem"),
+    ({"type": "check", "problem": "custom_design"}, {"check_days": 0}, "'check_days' must be between 1 and 14"),
+    ({"type": "observe", "places": ["connections.intake"]}, {"teaches": ["ghost"]}, "teaches unknown concept 'ghost'"),
+    ({"type": "observe", "places": ["connections.intake"]}, {"teaches": "flow"}, "'teaches' must be a list"),
+    ({"type": "observe", "places": ["connections.intake"]}, {"deadline_days": 5, "fail": "Weg."},
+     "a training mission has no deadline"),
+])
+def test_training_errors_are_caught(rules_dirs, goal, extra, message):
+    content, _ = rules_dirs
+    with pytest.raises(bc.ContentError, match=message):
+        _rules(content, _add_training(goal, **extra))
+
+
+def test_real_training_week_runs_monday_to_friday_before_the_campaign():
+    missions = bc.load_content()["missions"]["missions"]
+    week = [m for m in missions if m["kind"] == "training"]
+    assert [m["id"] for m in week] == ["training_mon", "training_tue", "training_wed", "training_thu", "training_fri"]
+    for before, after in zip(week, week[1:]):
+        assert after["requires"]["missions"] == [before["id"]]
+    assert all(m.get("teaches") for m in week), "each day brings its glossary cards"
+    first = next(m for m in missions if m["id"] == "walk_connections")
+    assert first["requires"]["missions"] == ["training_fri"]
 
 
 def test_fixture_campaign_is_valid(rules_dirs):

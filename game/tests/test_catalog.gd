@@ -214,11 +214,14 @@ func test_the_game_knows_the_content_vocabulary() -> void:
 		assert_eq({"kind": kind, "step_kind": step_kind}, properties.get(property), property)
 
 
-## The real campaign: it opens with the first main mission only, the coach
-## speaks Dutch about it, and walking the connections stream completes it.
+## The real campaign: it opens with the training week, then (done or
+## skipped) the first main mission only; the coach speaks Dutch about it, and
+## walking the connections stream completes it.
 func test_the_campaign_opens_with_the_first_main_mission() -> void:
 	var c := Catalog.load_from()
 	var log := Missions.new(_region(c), c.missions, c.coach)
+	assert_eq(log.available().map(func(m: MissionDef) -> String: return m.id), ["training_mon"], "the Inwerkweek comes first")
+	log.skip_training()
 	assert_eq(log.available().map(func(m: MissionDef) -> String: return m.id), ["walk_connections"])
 	assert_eq(log.accept("walk_connections"), "")
 	assert_eq(log.ask_coach()["text"], c.coach["stages"]["go_see"][0])
@@ -237,6 +240,7 @@ func test_the_campaign_opens_with_the_first_main_mission() -> void:
 func test_the_main_quest_forks_after_the_first_bottleneck() -> void:
 	var c := Catalog.load_from()
 	var log := Missions.new(_region(c), c.missions, c.coach)
+	log.skip_training()
 	for id in ["walk_connections", "fix_custom_design"]:
 		log.progress[id] = {"status": "completed", "asks": {}}
 		log.done_once[id] = true
@@ -253,6 +257,7 @@ func test_an_expert_plays_the_opening_of_the_campaign() -> void:
 	var c := Catalog.load_from()
 	var log := Missions.new(_region(c), c.missions, c.coach)
 	var r := log.region
+	log.skip_training()
 	log.accept("walk_connections")
 	for step in r.net.stream("connections").steps:
 		if step.kind == SimStep.Kind.WORK:
@@ -276,6 +281,36 @@ func test_an_expert_plays_the_opening_of_the_campaign() -> void:
 	assert_true(Progression.belt_index(r.profile.xp) >= 1, "yellow belt after the opening")
 	assert_eq(log.status("fix_done_but_not_closed"), "available", "the story goes on")
 
+
+
+## The Inwerkweek's practice problem is a real (small) simulation problem:
+## the generic tests above hurt, solve and Check it like every other one; here
+## it is held to "a little" and to its two countermeasures.
+func test_the_practice_problem_hurts_a_little_and_both_fixes_pass() -> void:
+	var c := Catalog.load_from()
+	var tray: ProblemDef = null
+	for p in c.problems:
+		if p.id == "training_tray":
+			tray = p
+	assert_true(tray != null, "training_tray is in the catalogue")
+	var harm := _harm(tray)
+	assert_true(harm > 1.03 and harm < 1.15, "a small, visible harm (×%.3f)" % harm)
+	assert_eq(tray.countermeasures.size(), 2)
+	for cm in c.countermeasures:
+		if tray.countermeasures.has(cm.id):
+			assert_true(Pdca.effectiveness(tray, cm, 1)["eff"] >= Pdca.CHECK_PASS, cm.id)
+			assert_true(cm.decay_days > 0 and cm.decay_days <= 14, "%s fades within the time-lapse" % cm.id)
+
+
+## Every concept a training day brings has a glossary card.
+func test_the_training_week_teaches_glossary_concepts() -> void:
+	var c := Catalog.load_from()
+	var days := c.missions.filter(func(m: MissionDef) -> bool: return m.kind == "training")
+	assert_eq(days.size(), 5)
+	for m: MissionDef in days:
+		assert_false(m.teaches.is_empty(), m.id)
+		for id in m.teaches:
+			assert_true(c.concepts.has(id), "%s: concept %s" % [m.id, id])
 
 
 ## The glossary (content/concepts.yaml): everything the game teaches has an

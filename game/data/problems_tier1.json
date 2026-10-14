@@ -1298,6 +1298,66 @@
    "tier": 1,
    "visibility": "subtle",
    "waste": "overproduction"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Bij elke nieuwe aanvraag kijkt de medewerker eerst in twee bakken welke aanvraag het oudst is, en sorteert dan om.",
+     "tool": "shadow"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "In de twee bakken samen liggen maar een stuk of tien aanvragen. De stapel is het probleem niet.",
+     "tool": "queue_count"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "Zoeken, omsorteren en terugleggen kost een paar minuten per aanvraag: ongeveer een zevende bovenop een uur werk.",
+     "tool": "time_study"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "'De ene bak is voor de post, de andere voor geprinte webformulieren. Zo is het ooit gegroeid; niemand weet meer waarom.'",
+     "tool": "conversation"
+    }
+   ],
+   "countermeasures": {
+    "one_tray_fifo": 1.0,
+    "tray_labels": 0.7
+   },
+   "effects": [
+    {
+     "property": "touch_time",
+     "target": "connections.intake",
+     "value": 1.15
+    }
+   ],
+   "id": "training_tray",
+   "kpi": "lead_time",
+   "mismatch_note": "Harder of sneller werken haalt het zoeken niet weg. Het zit in hoe het werk binnenkomt, niet in de mensen.",
+   "name": "Twee bakken voor hetzelfde werk",
+   "plausible_causes": [
+    "De intakemedewerkers werken te traag.",
+    "Er komen te veel aanvragen tegelijk binnen."
+   ],
+   "root_cause": "Er zijn twee bakken voor hetzelfde werk zonder vaste volgorde; zoeken en omsorteren kost bij elke aanvraag extra tijd.",
+   "severity": "low",
+   "step": "connections.intake",
+   "symptoms": [
+    "Bij de Intake zoeken medewerkers eerst in twee bakken voordat ze een aanvraag oppakken."
+   ],
+   "teaches": [
+    "waste_motion",
+    "5s"
+   ],
+   "tier": 1,
+   "visibility": "obvious",
+   "waste": "motion"
   }
  ]
 }

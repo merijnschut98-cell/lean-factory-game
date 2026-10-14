@@ -12,6 +12,30 @@
 #              removing the problem): its own shape of a healthier process
 
 countermeasures:
+  # ── Inwerkweek: the practice problem (training_tray) ──────────────────────
+  # Invented for the training week (no source): small, cheap, and with a short
+  # decay so the Friday time-lapse shows a fix fading when it is not standardised.
+  - id: one_tray_fifo
+    name: Eén bak, op volgorde van binnenkomst
+    tier: 1
+    category: flow
+    description: Alle nieuwe aanvragen gaan in één bak; wie een aanvraag pakt, neemt de oudste. Niemand hoeft meer te zoeken of om te sorteren.
+    budget: 200
+    team_hours: {intake: 2}
+    decay_days: 10
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: tray_labels
+    name: Vaste plek en labels voor de bakken
+    tier: 1
+    category: visual_management
+    description: Elke bak krijgt een vaste plek en een duidelijk label (5S), zodat iedereen ziet waar welke aanvraag ligt.
+    budget: 100
+    team_hours: {intake: 1}
+    decay_days: 7
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+
   # ── Nieuwe aansluitingen ──────────────────────────────────────────────────
   - id: poka_yoke_application
     name: Poka-yoke aanvraagformulier

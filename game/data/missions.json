@@ -28,6 +28,155 @@
  },
  "missions": [
   {
+   "briefing": "Welkom bij Voltana Netbeheer. Deze week oefen je in het klein, zonder risico. Vandaag kijk je alleen rond: loop met de kaart (M) langs Intake, Werkvoorbereiding en Planning, en kijk of vraag bij elk team hoe het werk binnenkomt.",
+   "debrief": "Nu ken je de plekken waar een aanvraag langs komt. Morgen gaan we beter kijken.",
+   "goal": {
+    "places": [
+     "connections.intake",
+     "connections.design",
+     "connections.planning"
+    ],
+    "type": "observe"
+   },
+   "id": "training_mon",
+   "insights": {
+    "go_see": "Een aanvraag doet er maanden over. Waar denk je dat die tijd zit: in het werk, of ertussen?"
+   },
+   "kind": "training",
+   "name": "Maandag: rondleiding",
+   "rewards": {
+    "xp": 50
+   },
+   "teaches": [
+    "netbeheerder",
+    "aansluiting",
+    "aansluittermijn"
+   ],
+   "tier": 1
+  },
+  {
+   "briefing": "Ga vandaag naar Werkvoorbereiding en kijk met twee verschillende gemba-hulpmiddelen naar het werk. Elk hulpmiddel kost tijd en laat iets anders zien. Oordeel nog niet: kijk alleen.",
+   "debrief": "Wat je zelf ziet is meer waard dan wat in een rapport staat. Lees je aantekeningen nog eens na.",
+   "goal": {
+    "places": [
+     "connections.design"
+    ],
+    "type": "observe",
+    "uses": 2
+   },
+   "id": "training_tue",
+   "insights": {
+    "go_see": "Welk hulpmiddel liet je iets zien dat je met het andere niet zag?"
+   },
+   "kind": "training",
+   "name": "Dinsdag: kijken zonder oordeel",
+   "requires": {
+    "missions": [
+     "training_mon"
+    ]
+   },
+   "rewards": {
+    "xp": 50
+   },
+   "teaches": [
+    "gemba",
+    "five_whys",
+    "eight_wastes"
+   ],
+   "tier": 1
+  },
+  {
+   "briefing": "Tel de wachtrij bij Intake en bij Werkvoorbereiding. Waar wacht het werk het langst? Dat is de plek die de hele stroom ophoudt.",
+   "debrief": "Een stroom gaat zo snel als zijn knelpunt. Verbeteren op een andere plek maakt de stapel niet kleiner.",
+   "goal": {
+    "places": [
+     "connections.intake",
+     "connections.design"
+    ],
+    "tool": "queue_count",
+    "type": "observe"
+   },
+   "id": "training_wed",
+   "insights": {
+    "go_see": "Als Intake morgen twee keer zo snel werkt, waar ligt het werk dan overmorgen?"
+   },
+   "kind": "training",
+   "name": "Woensdag: waar zit de stapel?",
+   "requires": {
+    "missions": [
+     "training_tue"
+    ]
+   },
+   "rewards": {
+    "xp": 50
+   },
+   "teaches": [
+    "flow",
+    "wip",
+    "bottleneck_focus",
+    "netcongestie"
+   ],
+   "tier": 1
+  },
+  {
+   "briefing": "Bij de Intake gaat iets kleins mis met het binnenkomende werk. Zoek uit wat, schrijf een oefen-A3 met een voorspelling en probeer een tegenmaatregel. Over drie dagen kijken we in de Check of je voorspelling uitkwam.",
+   "check_days": 3,
+   "debrief": "Je voorspelling is getoetst aan wat er echt gebeurde. Zo leer je van elk experiment, ook als het tegenvalt.",
+   "goal": {
+    "problem": "training_tray",
+    "type": "check"
+   },
+   "id": "training_thu",
+   "insights": {
+    "experiment": "Welk getal laat over drie dagen zien of het werkt?",
+    "understand": "Wat zie je de medewerker doen voordat het echte werk aan een aanvraag begint?"
+   },
+   "kind": "training",
+   "name": "Donderdag: een klein experiment",
+   "requires": {
+    "missions": [
+     "training_wed"
+    ]
+   },
+   "rewards": {
+    "xp": 50
+   },
+   "teaches": [
+    "PDCA",
+    "A3",
+    "leading_lagging"
+   ],
+   "tier": 1
+  },
+  {
+   "briefing": "Je experiment werkt. Nu beslis je: borg je het als standaard werk (dat kost budget), of laat je het zo? Kijk daarna in het versnelde verloop wat er gebeurt.",
+   "check_days": 3,
+   "debrief": "Een verbetering blijft alleen als iemand haar borgt. Je inwerkweek zit erop: volgende week begint het echte werk.",
+   "goal": {
+    "problem": "training_tray",
+    "type": "solve"
+   },
+   "id": "training_fri",
+   "insights": {
+    "reflect": "Wat gebeurt er met de nieuwe werkwijze als het team het druk krijgt en niemand erop let?"
+   },
+   "kind": "training",
+   "name": "Vrijdag: borgen of laten wegzakken",
+   "requires": {
+    "missions": [
+     "training_thu"
+    ]
+   },
+   "rewards": {
+    "xp": 50
+   },
+   "teaches": [
+    "standard_work",
+    "improvement_kata"
+   ],
+   "tier": 1
+  },
+  {
    "briefing": "Welkom bij Voltana. Voordat je iets verandert, wil ik dat je de weg van een nieuwe aansluiting van begin tot eind hebt gezien. Loop mee bij elke stap, van intake tot administratieve afhandeling.",
    "debrief": "Nu weet je hoe een aansluiting door ons huis gaat. Onthoud waar het werk stil lag; daar beginnen we.",
    "goal": {
@@ -40,6 +189,11 @@
    },
    "kind": "main",
    "name": "Eerste week: loop de stroom",
+   "requires": {
+    "missions": [
+     "training_fri"
+    ]
+   },
    "rewards": {
     "xp": 300
    },

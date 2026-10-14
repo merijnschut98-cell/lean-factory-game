@@ -13,8 +13,22 @@
 #                the clock runs whether or not it is taken on); then `fail` is told
 # fail_closes    countermeasures a missed deadline closes for good (never all
 #                of the problem's: it can still be solved another way)
-# insights   main missions only: what the coach shares now and then at a
-#            stage (go_see, understand, experiment, reflect)
+#            observe {places, tool?, uses?}: use a gemba tool (`tool`, or any
+#            tool or question) at every place, `uses` different place-tool
+#            pairs in all (default 1)
+#            check {problem}: the problem's Check passed
+# insights   main and training missions only: what the coach shares now and
+#            then at a stage (go_see, understand, experiment, reflect)
+# teaches    concept ids (content/concepts.yaml) whose glossary card the
+#            mission brings when it is accepted
+# check_days a shorter Check for this mission's problem (training only; the
+#            real Check takes Region.CHECK_DAYS, 14)
+#
+# kind training: the Inwerkweek (docs/superpowers/specs/2026-10-14-training-arc-design.md),
+# five small Starter Kata days before the campaign. Each day opens the next;
+# they take no side slot, have no deadline, and the coach helps with them.
+# A returning player skips the week (GameSession.skip_training): done, without
+# rewards, and the campaign opens.
 
 coach:
   name: Marleen Verhoef
@@ -39,11 +53,80 @@ coach:
       - "Hoe zorg je dat de verbetering blijft?"
 
 missions:
+  # ── Inwerkweek: five safe days in the connections office ──────────────────
+  - id: training_mon
+    name: "Maandag: rondleiding"
+    kind: training
+    tier: 1
+    briefing: "Welkom bij Voltana Netbeheer. Deze week oefen je in het klein, zonder risico. Vandaag kijk je alleen rond: loop met de kaart (M) langs Intake, Werkvoorbereiding en Planning, en kijk of vraag bij elk team hoe het werk binnenkomt."
+    debrief: "Nu ken je de plekken waar een aanvraag langs komt. Morgen gaan we beter kijken."
+    goal: {type: observe, places: [connections.intake, connections.design, connections.planning]}
+    teaches: [netbeheerder, aansluiting, aansluittermijn]
+    rewards: {xp: 50}
+    insights:
+      go_see: "Een aanvraag doet er maanden over. Waar denk je dat die tijd zit: in het werk, of ertussen?"
+
+  - id: training_tue
+    name: "Dinsdag: kijken zonder oordeel"
+    kind: training
+    tier: 1
+    requires: {missions: [training_mon]}
+    briefing: "Ga vandaag naar Werkvoorbereiding en kijk met twee verschillende gemba-hulpmiddelen naar het werk. Elk hulpmiddel kost tijd en laat iets anders zien. Oordeel nog niet: kijk alleen."
+    debrief: "Wat je zelf ziet is meer waard dan wat in een rapport staat. Lees je aantekeningen nog eens na."
+    goal: {type: observe, places: [connections.design], uses: 2}
+    teaches: [gemba, five_whys, eight_wastes]
+    rewards: {xp: 50}
+    insights:
+      go_see: "Welk hulpmiddel liet je iets zien dat je met het andere niet zag?"
+
+  - id: training_wed
+    name: "Woensdag: waar zit de stapel?"
+    kind: training
+    tier: 1
+    requires: {missions: [training_tue]}
+    briefing: "Tel de wachtrij bij Intake en bij Werkvoorbereiding. Waar wacht het werk het langst? Dat is de plek die de hele stroom ophoudt."
+    debrief: "Een stroom gaat zo snel als zijn knelpunt. Verbeteren op een andere plek maakt de stapel niet kleiner."
+    goal: {type: observe, places: [connections.intake, connections.design], tool: queue_count}
+    teaches: [flow, wip, bottleneck_focus, netcongestie]
+    rewards: {xp: 50}
+    insights:
+      go_see: "Als Intake morgen twee keer zo snel werkt, waar ligt het werk dan overmorgen?"
+
+  - id: training_thu
+    name: "Donderdag: een klein experiment"
+    kind: training
+    tier: 1
+    requires: {missions: [training_wed]}
+    briefing: "Bij de Intake gaat iets kleins mis met het binnenkomende werk. Zoek uit wat, schrijf een oefen-A3 met een voorspelling en probeer een tegenmaatregel. Over drie dagen kijken we in de Check of je voorspelling uitkwam."
+    debrief: "Je voorspelling is getoetst aan wat er echt gebeurde. Zo leer je van elk experiment, ook als het tegenvalt."
+    goal: {type: check, problem: training_tray}
+    check_days: 3
+    teaches: [PDCA, A3, leading_lagging]
+    rewards: {xp: 50}
+    insights:
+      understand: "Wat zie je de medewerker doen voordat het echte werk aan een aanvraag begint?"
+      experiment: "Welk getal laat over drie dagen zien of het werkt?"
+
+  - id: training_fri
+    name: "Vrijdag: borgen of laten wegzakken"
+    kind: training
+    tier: 1
+    requires: {missions: [training_thu]}
+    briefing: "Je experiment werkt. Nu beslis je: borg je het als standaard werk (dat kost budget), of laat je het zo? Kijk daarna in het versnelde verloop wat er gebeurt."
+    debrief: "Een verbetering blijft alleen als iemand haar borgt. Je inwerkweek zit erop: volgende week begint het echte werk."
+    goal: {type: solve, problem: training_tray}
+    check_days: 3
+    teaches: [standard_work, improvement_kata]
+    rewards: {xp: 50}
+    insights:
+      reflect: "Wat gebeurt er met de nieuwe werkwijze als het team het druk krijgt en niemand erop let?"
+
   # ── Main missions: the story of the first months, with the coach ──────────
   - id: walk_connections
     name: "Eerste week: loop de stroom"
     kind: main
     tier: 1
+    requires: {missions: [training_fri]}
     briefing: "Welkom bij Voltana. Voordat je iets verandert, wil ik dat je de weg van een nieuwe aansluiting van begin tot eind hebt gezien. Loop mee bij elke stap, van intake tot administratieve afhandeling."
     debrief: "Nu weet je hoe een aansluiting door ons huis gaat. Onthoud waar het werk stil lag; daar beginnen we."
     goal: {type: walk, stream: connections}

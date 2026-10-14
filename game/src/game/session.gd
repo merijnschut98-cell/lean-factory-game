@@ -29,6 +29,11 @@ const STORY_MISSION := "walk_connections"
 const PLAY_START_DATE := {"year": 2026, "month": 10, "day": 12, "hour": 0, "minute": 0, "second": 0}
 const WEEKDAYS: Array[String] = ["ma", "di", "wo", "do", "vr", "za", "zo"]
 const MONTHS: Array[String] = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"]
+## The training week's first day, and its practice problem (time_lapse's default).
+const TRAINING_FIRST := "training_mon"
+const TRAINING_PROBLEM := "training_tray"
+## A time-lapse shows at most a quarter.
+const MAX_TIME_LAPSE_DAYS := 91
 
 var catalog: Catalog
 var region: Region
@@ -38,7 +43,9 @@ var error := ""
 
 
 ## A new game on the real content. `seed_value` fixes the simulation's luck.
-static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR) -> GameSession:
+## `training`: start with the training week (Inwerkweek), its first day handed
+## out; without it the week counts as skipped and the story's walk as done.
+static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, training: bool = false) -> GameSession:
 	var s := GameSession.new()
 	s.catalog = Catalog.load_from(data_dir)
 	var net := Network.load_file(data_dir + "/value_streams.json", seed_value)
@@ -48,13 +55,18 @@ static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR) -
 	s.region = Region.new(net, s.catalog.problems, s.catalog.countermeasures, Profile.new())
 	s.region.use_kpis(s.catalog.kpis)
 	s.missions = Missions.new(s.region, s.catalog.missions, s.catalog.coach)
-	if not s.missions.defs.has(STORY_MISSION):
-		s.error = "missing mission: " + STORY_MISSION
-		return s
+	for id in [STORY_MISSION, TRAINING_FIRST]:
+		if not s.missions.defs.has(id):
+			s.error = "missing mission: " + id
+			return s
 	# No problems are active yet, so the warm-up costs nothing and teaches nothing.
 	net.advance(SimCalendar.days(WARMUP_DAYS) + START_MINUTE)
+	if training:
+		s.missions.accept(TRAINING_FIRST)
+		return s
+	s.missions.skip_training()
 	# Done without a reward: it happened before the game starts.
-	s.missions.progress[STORY_MISSION] = {"status": "completed", "asks": {}}
+	s.missions.progress[STORY_MISSION] = {"status": "completed", "asks": {}, "seen": {}}
 	s.missions.done_once[STORY_MISSION] = true
 	return s
 
@@ -79,6 +91,7 @@ func use_tool(place: String, tool: String) -> Dictionary:
 	if not _is_place(place):
 		return {"error": "unknown_place"}
 	var result := region.use_tool(place, tool)
+	missions.note_use(place, tool)
 	_after(Investigation.TOOLS[tool]["minutes"])
 	return result
 
@@ -91,6 +104,7 @@ func ask(place: String, question_id: String) -> Dictionary:
 	if not _is_place(place):
 		return {"error": "unknown_place"}
 	var result := region.ask(place, question_id)
+	missions.note_use(place, "conversation")
 	_after(Investigation.TOOLS["conversation"]["minutes"])
 	return result
 
@@ -102,7 +116,8 @@ func ask(place: String, question_id: String) -> Dictionary:
 func submit_a3(problem_id: String, a3: Dictionary) -> String:
 	if not region.state.has(problem_id):
 		return "unknown_problem"
-	var refused := region.submit_a3(problem_id, _cleaned(a3))
+	var days := missions.check_days_for(problem_id)
+	var refused := region.submit_a3(problem_id, _cleaned(a3), days if days > 0 else Region.CHECK_DAYS)
 	_after(0)
 	return refused
 
@@ -149,6 +164,36 @@ func ask_coach(mission_id: String = "") -> Dictionary:
 	return reply
 
 
+## A returning player skips the training week: the campaign opens, without
+## the week's rewards. "" or not_in_training.
+func skip_training() -> String:
+	if not missions.in_training():
+		return "not_in_training"
+	missions.skip_training()
+	_after(0)
+	return ""
+
+
+## Fast-forward `days` (the Friday lesson: does an unstandardised fix fade?)
+## and compare the problem's numbers before and after: {problem, kpi (the
+## one the problem names), before, after (Region.snapshot), phase_before,
+## phase_after, faded}, or an error: bad_days | unknown_problem.
+func time_lapse(days: int, problem_id: String = TRAINING_PROBLEM) -> Dictionary:
+	if days < 1 or days > MAX_TIME_LAPSE_DAYS:
+		return {"error": "bad_days"}
+	if not region.problems.has(problem_id):
+		return {"error": "unknown_problem"}
+	var phase_before := phase_of(problem_id)
+	var before := region.snapshot(problem_id)
+	_after(SimCalendar.days(days))
+	var phase_after := phase_of(problem_id)
+	return {
+		"problem": problem_id, "kpi": region.problems[problem_id].kpi, "before": before,
+		"after": region.snapshot(problem_id), "phase_before": phase_before, "phase_after": phase_after,
+		"faded": phase_before == "resolved" and phase_after == "dormant",
+	}
+
+
 ## What happened since the last call, for the world and UI: the Region's
 ## events, then the missions' (see Region.events and Missions.events).
 func drain_events() -> Array[Dictionary]:
@@ -187,9 +232,16 @@ func available_missions() -> Array[MissionDef]:
 	return missions.available()
 
 
-## The active missions: the main one first.
+## Still in the training week (a day not yet done or skipped).
+func in_training() -> bool:
+	return missions.in_training()
+
+
+## The active missions: the main one first, then the training day, then the
+## side missions.
 func active_missions() -> Array[MissionDef]:
 	var out := missions.active("main")
+	out.append_array(missions.active("training"))
 	out.append_array(missions.active("side"))
 	return out
 

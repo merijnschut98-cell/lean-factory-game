@@ -284,7 +284,9 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 
 ## Phase D — UI (Dutch) ⬜
 - ⬜ HUD (week/day clock, KPIs per stream), gemba toolkit, conversations, A3, Check/Act, value stream map per stream (built by walking it), notebook, codex, NPC dialogue, onboarding by the Lean coach
-- ⬜ **Training arc** (Merijn, 2026-10-13; planned, not yet scheduled): a short tutorial chain before the first real mission.
+- 🔧 **Training arc** (Merijn, 2026-10-13; rules and content ✅ 2026-10-14, UI next): a short tutorial chain before the first real mission.
+  - ✅ Rules and content (2026-10-14): five `kind: training` days `training_mon`…`training_fri` in `content/missions.yaml` (each hands out the next; no side slot; the coach helps; no deadline), new goals `observe {places, tool?, uses?}` and `check {problem}`, mission `teaches` (glossary cards on accept; `aansluiting` added to concepts) and `check_days` (a 3-day practice Check). The invented practice problem `training_tray` (intake touch time ×1.15, an estimate) with `one_tray_fifo` and `tray_labels` (short decay). `GameSession.new_game(seed, dir, training := false)`, `skip_training()`, `in_training()`, `time_lapse(days, problem)`. Validator and tests updated.
+  - ⬜ UI: start a new game with the week (`training = true`), a skip button on the mission board, the Friday time-lapse view, glossary cards on `teaches`.
   - **How the game works:** walking, gemba tools and their time cost, the clue journal, the A3, Check/Act, the coach, the KPI board.
   - **What choices do:** time, budget and trust; a fix that fades when it is not standardised; bottleneck versus non-bottleneck.
   - **A little about the energy sector:** the role of a grid operator (DSO), grid congestion, the connection term, the technician shortage, the ACM, the energy transition.

@@ -103,13 +103,16 @@
   "wip_age"
  ],
  "mission_goals": [
+  "check",
   "investigate",
+  "observe",
   "solve",
   "walk"
  ],
  "mission_kinds": [
   "main",
-  "side"
+  "side",
+  "training"
  ],
  "order_rules": [
   "first_come",

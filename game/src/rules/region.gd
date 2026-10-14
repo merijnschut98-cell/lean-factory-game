@@ -175,6 +175,17 @@ func activate(problem_id: String) -> bool:
 	return true
 
 
+## Put an open problem back to sleep without a fix: its effects, a running
+## experiment and its state go (a skipped training week takes its practice
+## problem with it).
+func deactivate(problem_id: String) -> void:
+	if not state.has(problem_id):
+		return
+	for source in ["problem:", "cm:", "do:"]:
+		net.clear_effects(source + problem_id)
+	state[problem_id] = ProblemState.new(problem_id)
+
+
 func _open_count() -> int:
 	return state.values().filter(func(s: ProblemState) -> bool: return s.is_open()).size()
 
@@ -321,9 +332,10 @@ func close_countermeasures(ids: PackedStringArray) -> void:
 
 ## Submit the A3 {waste, cause (index into the cause bank), evidence (clue
 ## ids), cm, prediction (a KPI)} and start the experiment; it may be paid
-## into debt. Returns "" or why not: not_spotted | waste | cause | evidence |
-## countermeasure | prediction.
-func submit_a3(problem_id: String, a3: Dictionary) -> String:
+## into debt. The Check is due after `check_days` (a mission may shorten it
+## for practice). Returns "" or why not: not_spotted | waste | cause |
+## evidence | countermeasure | prediction.
+func submit_a3(problem_id: String, a3: Dictionary, check_days: int = CHECK_DAYS) -> String:
 	var st := state[problem_id]
 	if st.phase != P.SPOTTED:
 		return "not_spotted"
@@ -352,21 +364,21 @@ func submit_a3(problem_id: String, a3: Dictionary) -> String:
 	st.eff = e["eff"]
 	st.level = e["level"]
 	st.phase = P.DOING
-	st.check_at = net.time + SimCalendar.days(CHECK_DAYS)
+	st.check_at = net.time + SimCalendar.days(check_days)
 	_apply_problem(st, cm)
-	net.set_effects("do:" + problem_id, _team_hours(cm))
+	net.set_effects("do:" + problem_id, _team_hours(cm, check_days))
 	profile.learn(["A3", "kata_prediction"])
 	return ""
 
 
 ## The improvement work takes the team's hours from daily work while the
 ## experiment runs: an availability effect spread over the check period.
-func _team_hours(cm: CountermeasureDef) -> Array:
+func _team_hours(cm: CountermeasureDef, check_days: int) -> Array:
 	var effects := []
 	for pool_id in cm.team_hours:
 		var pool: SimPool = net.pools.get(pool_id)
 		if pool != null:
-			var hours_in_period := pool.headcount * pool.schedule.hours() * CHECK_DAYS / 7.0
+			var hours_in_period := pool.headcount * pool.schedule.hours() * check_days / 7.0
 			effects.append({"target": pool_id, "property": "availability", "value": -cm.team_hours[pool_id] / hours_in_period})
 	return effects
 
