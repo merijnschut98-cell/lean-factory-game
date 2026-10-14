@@ -318,6 +318,7 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 
 ## Decisions Made
 
+- **Third person, not first person (Merijn, 2026-10-14).** The player sees their own character from slightly above. Camera style still open: over-the-shoulder (like a shooter) or a Sims-like raised camera. Claude recommends Sims-like (a raised, rotatable, zoomable camera; click or WASD to move), because a gemba game is about seeing the whole flow: stacks of work, queues, who is busy. This makes a player character, and so the people question, part of the next 3D step.
 - **The Check labels lagging measures (Merijn, 2026-10-14).** A measure that only moves after about one lead time (lead time, first-time-right of finished orders, on time) is marked "volgindicator: effect zichtbaar na ±1 doorlooptijd" in the Check panel, so a dip right after a fix reads as a lesson about leading and lagging indicators, not as failure.
 - **Training arc details (Claude, 2026-10-14, for Merijn to confirm).** The week is the default for a new game; the story walk (`walk_connections`) counts as done once the week ends, as it does for a returning player. Wednesday's lesson uses a marked training setup so the measured queues give a clear answer, and the debrief names whatever the counts say.
 - **Training arc built with Claude's recommended answers (2026-10-14; Merijn asked to continue without reviewing).** 5 days, skippable for returning players, short glossary cards, an invented practice problem. Each one is easy to change once Merijn answers.
