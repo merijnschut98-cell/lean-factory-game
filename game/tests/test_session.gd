@@ -201,3 +201,47 @@ func test_the_mission_is_played_end_to_end() -> void:
 	for expected in ["accepted", "check_ready", "completed"]:
 		assert_true(expected in types, "%s in %s" % [expected, types])
 	assert_eq(s.drain_events(), [], "events are delivered once")
+
+
+## The second office mission, as an expert: the intake's form lets incomplete
+## applications through; poka-yoke at the source, measured on lead time.
+func test_the_second_mission_is_played_end_to_end() -> void:
+	var second := "fix_incomplete_application"
+	var problem_id := "incomplete_application"
+	var s := _accepted()
+	_investigate(s)
+	assert_eq(s.submit_a3(PROBLEM, _a3(s, "standard_designs")), "")
+	assert_eq(s.wait_for_check(PROBLEM), "")
+	assert_true(s.check(PROBLEM)["passed"])
+	s.act(PROBLEM, true)
+	assert_eq(s.missions.status(MISSION), "completed")
+
+	var open := s.available_missions().map(func(m: MissionDef) -> String: return m.id)
+	assert_true(second in open, "the first fix opens the second mission: %s" % [open])
+	var xp_before := s.xp()
+	assert_eq(s.accept(second), "")
+	assert_eq(s.phase_of(problem_id), "active")
+
+	# The expert's route, with the deeper "whys" after the shallower ones.
+	s.use_tool(INTAKE, "documents")
+	s.use_tool(INTAKE, "data")
+	s.ask(INTAKE, "walk")
+	s.use_tool(INTAKE, "listen_in")
+	var problem: ProblemDef = s.region.problems[problem_id]
+	var keys := problem.clues.filter(func(c: Clue) -> bool: return c.key)
+	assert_eq(s.clues_found(problem_id).size(), keys.size(), "all key clues found at the intake")
+	var cause: int = Investigation.cause_options(problem, s.region.problem_list())["correct"]
+	var a3 := {"waste": "defects", "cause": cause, "cm": "poka_yoke_application", "prediction": problem.kpi,
+		"evidence": s.clues_found(problem_id).map(func(c: Clue) -> String: return c.id)}
+	assert_eq(s.submit_a3(problem_id, a3), "")
+	assert_eq(s.wait_for_check(problem_id), "")
+	var checked := s.check(problem_id)
+	print("CHECK ", problem.kpi, " before=", checked["before"], " after=", checked["after"])
+	assert_true(checked["passed"], "the fitting countermeasure passes the Check")
+	var kpi: String = problem.kpi
+	assert_true(checked["after"][kpi] < checked["before"][kpi], "lead time falls: %s -> %s" % [checked["before"][kpi], checked["after"][kpi]])
+	assert_true(checked["after"]["throughput"] > checked["before"]["throughput"], "more applications get through")
+	assert_true(checked["after"]["capacity"] > checked["before"]["capacity"], "less rework frees intake capacity")
+	assert_false(s.act(problem_id, true).has("error"))
+	assert_eq(s.missions.status(second), "completed")
+	assert_true(s.xp() > xp_before)

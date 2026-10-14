@@ -323,3 +323,27 @@ func test_after_esc_a_click_on_the_view_catches_the_mouse_again() -> void:
 	office._unhandled_input(click)
 	assert_false(office.mouse_captured, "a click with a panel open is for the panel")
 	_close(office)
+
+
+func test_the_board_offers_the_second_mission_once_the_first_is_done() -> void:
+	var office := _office()
+	var board := office.ui.mission_board
+	assert_false("fix_incomplete_application" in board.listed(), "locked at the start")
+	board.accept(MISSION)
+	var s := office.session
+	s.use_tool("connections.design", "time_study")
+	s.use_tool("connections.design", "documents")
+	s.ask("connections.intake", "walk")
+	s.use_tool("connections.design", "data")
+	var problem: ProblemDef = s.region.problems[PROBLEM]
+	var cause: int = Investigation.cause_options(problem, s.region.problem_list())["correct"]
+	var evidence := s.clues_found(PROBLEM).map(func(c: Clue) -> String: return c.id)
+	s.submit_a3(PROBLEM, {"waste": "overprocessing", "cause": cause, "evidence": evidence,
+		"cm": "standard_designs", "prediction": "throughput"})
+	s.wait_for_check(PROBLEM)
+	s.check(PROBLEM)
+	s.act(PROBLEM, true)
+	assert_true("fix_incomplete_application" in board.listed(), "the first fix opens the second mission")
+	assert_eq(board.accept("fix_incomplete_application"), "")
+	assert_eq(s.active_missions().map(func(m: MissionDef) -> String: return m.id), ["fix_incomplete_application"])
+	_close(office)
