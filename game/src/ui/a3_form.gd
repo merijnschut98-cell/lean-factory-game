@@ -49,7 +49,7 @@ func mission() -> MissionDef:
 func submit(a3: Dictionary) -> String:
 	var refused := session.submit_a3(problem_id, a3)
 	message_ok = refused.is_empty()
-	message = "Het experiment loopt. Over twee weken doe je de Check." if message_ok else UiText.a3_error(refused)
+	message = ("Het experiment loopt. Over %s doe je de Check." % _period()) if message_ok else UiText.a3_error(refused)
 	if message_ok:
 		drafts.erase(problem_id)
 		_form_problem = ""
@@ -123,7 +123,7 @@ func refresh() -> void:
 	if m == null:
 		body.add_child(paragraph("Er hangt nog geen A3 op de wand. Neem eerst een missie aan op het missiebord.", Palette.MUTED))
 		return
-	title_label.text = "Obeya-wand: A3  ·  " + m.name
+	title_label.text = "Obeya-wand: A3  ·  " + UiText.mission_title(m, session)
 	if not message.is_empty():
 		body.add_child(paragraph(message, Palette.GREEN_DARK if message_ok else Palette.SAFETY_ORANGE))
 	match session.phase_of(problem_id):
@@ -134,16 +134,21 @@ func refresh() -> void:
 		"active":
 			body.add_child(paragraph(UiText.a3_error("not_spotted"), Palette.INK))
 		"doing":
-			body.add_child(paragraph("Het experiment loopt twee weken. Het team werkt met de nieuwe aanpak; de stroom laat zien of het helpt."))
-			body.add_child(button("Wacht tot de Check", wait))
+			body.add_child(paragraph("Het experiment loopt %s. Het team werkt met de nieuwe aanpak; de stroom laat zien of het helpt." % _period()))
+			body.add_child(button("Wacht tot de Check (%s)" % _period(), wait))
 		"check_ready":
-			body.add_child(paragraph("De twee weken zijn om. Vergelijk voor en na: wat zeggen de cijfers?"))
+			body.add_child(paragraph("Het experiment heeft zijn %s gehad. Vergelijk voor en na: wat zeggen de cijfers?" % _period()))
 			body.add_child(button("Doe de Check", check))
 		"checked":
 			body.add_child(paragraph("De Check is gedaan. Wat doe je nu: standaardiseren of niet?"))
 			body.add_child(button("Naar de Check-uitslag", func() -> void: checked.emit(problem_id, results.get(problem_id, {}))))
 		_:
 			body.add_child(paragraph("Dit probleem is afgesloten.", Palette.MUTED))
+
+
+## How long this problem's experiment runs before the Check, in words.
+func _period() -> String:
+	return UiText.period(session.check_days(problem_id))
 
 
 func _build_form(m: MissionDef) -> void:

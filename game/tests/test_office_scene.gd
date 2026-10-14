@@ -348,3 +348,157 @@ func test_the_board_offers_the_second_mission_once_the_first_is_done() -> void:
 	assert_eq(board.accept("fix_incomplete_application"), "")
 	assert_eq(s.active_missions().map(func(m: MissionDef) -> String: return m.id), ["fix_incomplete_application"])
 	_close(office)
+
+
+# ── The training week (Inwerkweek) in the office ────────────────────────────
+
+const TRAY := "training_tray"
+
+
+func _training_office() -> Office:
+	var office: Office = load(SCENE).instantiate()
+	office.seed_value = 11
+	office.training = true
+	office.build()
+	return office
+
+
+## Every text on a panel, nested labels and buttons included.
+func _texts(root: Node) -> Array[String]:
+	var out: Array[String] = []
+	var stack: Array[Node] = [root]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		if n is Label or n is Button:
+			out.append(n.text)
+		stack.append_array(n.get_children())
+	return out
+
+
+func _shows(root: Node, part: String) -> bool:
+	return _texts(root).any(func(t: String) -> bool: return t.contains(part))
+
+
+func test_a_new_game_opens_on_monday_of_the_training_week() -> void:
+	var office: Office = load(SCENE).instantiate()
+	office.seed_value = 11
+	office.build()
+	assert_true(office.session.in_training(), "the week is the default")
+	var ui := office.ui
+	assert_eq(ui.hud.mission_text(), "Missie: Inwerkweek — ma: Rondleiding")
+	office.interact(office.interactable("mission_board"))
+	assert_true(_shows(ui.mission_board, "Inwerkweek — ma: Rondleiding"), "the board shows the day")
+	assert_true(_shows(ui.mission_board, "Inwerkweek overslaan"), "a returning player can skip it")
+	var marked := OfficeMap.mission_places(office.session)
+	assert_true(INTAKE in marked and DESIGN in marked, "the map marks the day's places")
+	_close(office)
+
+
+func test_skipping_the_week_asks_first() -> void:
+	var office := _training_office()
+	var board := office.ui.mission_board
+	office.interact(office.interactable("mission_board"))
+	board.ask_skip()
+	assert_true(_shows(board, "Je mist de oefenweek, het echte werk begint direct."), "the confirm line")
+	assert_true(office.session.in_training(), "nothing skipped yet")
+	board.cancel_skip()
+	assert_false(_shows(board, "Je mist de oefenweek"))
+	board.ask_skip()
+	assert_eq(board.confirm_skip(), "")
+	assert_false(office.session.in_training())
+	assert_true(MISSION in board.listed(), "the campaign is open")
+	assert_false(_shows(board, "Inwerkweek overslaan"), "nothing left to skip")
+	_close(office)
+
+
+func test_a_training_day_shows_its_glossary_card_once() -> void:
+	var office := _training_office()
+	var hud := office.ui.hud
+	var def: ConceptDef = office.session.catalog.concepts["netbeheerder"]
+	var cards := hud.card_texts()
+	assert_eq(cards.size(), 1, "Monday's card")
+	assert_true(cards[0].contains(def.name) and cards[0].contains(def.short), "name and short text")
+	assert_true(cards[0].contains("K voor alle begrippen"))
+	office.ui.after_action()
+	assert_eq(hud.card_texts().size(), 1, "shown once")
+	assert_false(hud.toast_texts().any(func(t: String) -> bool: return t.begins_with("Nieuw begrip")),
+		"the card stands in for the toasts")
+	_close(office)
+
+
+## The whole week through the UI's own handlers, as a player would play it.
+func test_the_training_week_is_played_through_the_ui() -> void:
+	var office := _training_office()
+	var ui := office.ui
+	var s := office.session
+	# Monday: look around at both teams.
+	office.interact(office.interactable(INTAKE))
+	ui.place_menu.use_tool("shadow")
+	office.interact(office.interactable(DESIGN))
+	ui.place_menu.ask("walk")
+	assert_eq(ui.hud.mission_text(), "Missie: Inwerkweek — di: Kijken zonder oordeel")
+	assert_true(ui.hud.card_texts().any(func(t: String) -> bool: return t.contains("Gemba")), "Tuesday's card")
+	# Tuesday: two tools at Werkvoorbereiding.
+	ui.place_menu.use_tool("time_study")
+	ui.place_menu.use_tool("documents")
+	assert_true(ui.hud.mission_text().contains("wo: Waar zit de stapel?"))
+	# Wednesday: count both queues; the lesson names what was measured.
+	office.interact(office.interactable(INTAKE))
+	assert_true(ui.place_menu.use_tool("queue_count").contains("dossiers"), "counting shows the count")
+	office.interact(office.interactable(DESIGN))
+	ui.place_menu.use_tool("queue_count")
+	var lesson := ui.hud.card_texts().filter(func(t: String) -> bool: return t.contains("wacht het werk het langst"))
+	assert_eq(lesson.size(), 1, "the debrief reports the measured queues")
+	assert_true(lesson[0].contains("langst bij Werkvoorbereiding & ontwerp"), lesson[0])
+	# Thursday: the practice A3 with a three-day Check.
+	office.interact(office.interactable(INTAKE))
+	ui.place_menu.use_tool("shadow")
+	ui.place_menu.use_tool("time_study")
+	ui.place_menu.ask("walk")
+	office.interact(office.interactable("obeya"))
+	assert_eq(ui.a3_form.problem_id, TRAY)
+	var problem: ProblemDef = s.region.problems[TRAY]
+	assert_eq(ui.a3_form.submit({"waste": problem.waste, "cause": s.cause_options(TRAY).find(problem.root_cause),
+		"evidence": s.clues_found(TRAY).map(func(c: Clue) -> String: return c.id), "cm": "one_tray_fifo",
+		"prediction": problem.kpi}), "")
+	assert_true(ui.a3_form.message.contains("Over drie dagen"), ui.a3_form.message)
+	assert_true(_shows(ui.a3_form, "Wacht tot de Check (drie dagen)"))
+	ui.a3_form.wait()
+	assert_true(ui.a3_form.check().get("passed", false))
+	assert_true(ui.hud.mission_text().contains("vr: Borgen of laten wegzakken"))
+	# Friday: Act without the standard, then fast-forward.
+	assert_false(_shows(ui.check_panel, "Spoel 30 dagen vooruit"), "only after the Act")
+	ui.check_panel.act(false)
+	assert_false(s.in_training())
+	assert_true(_shows(ui.check_panel, "Spoel 30 dagen vooruit"))
+	var lapse := ui.check_panel.time_lapse()
+	assert_true(lapse["faded"])
+	assert_true(_shows(ui.check_panel, "weggezakt"), "the fade is told")
+	assert_true(_shows(ui.check_panel, UiText.kpi(problem.kpi)), "the practice KPI before and after")
+	assert_true(_shows(ui.check_panel, "Volgindicator"), "tagged like the Check")
+	assert_false(_shows(ui.check_panel, "Spoel 30 dagen vooruit"), "once")
+	office.interact(office.interactable("mission_board"))
+	assert_true(MISSION in ui.mission_board.listed(), "the campaign opens")
+	_close(office)
+
+
+func test_a_real_problem_has_no_time_lapse() -> void:
+	var office := _office()
+	var ui := office.ui
+	ui.mission_board.accept(MISSION)
+	office.interact(office.interactable(DESIGN))
+	for tool in ["time_study", "documents", "data"]:
+		ui.place_menu.use_tool(tool)
+	office.interact(office.interactable(INTAKE))
+	ui.place_menu.ask("walk")
+	office.interact(office.interactable("obeya"))
+	var problem: ProblemDef = office.session.region.problems[PROBLEM]
+	ui.a3_form.submit({"waste": "overprocessing", "cause": office.session.cause_options(PROBLEM).find(problem.root_cause),
+		"evidence": office.session.clues_found(PROBLEM).map(func(c: Clue) -> String: return c.id),
+		"cm": "standard_designs", "prediction": "throughput"})
+	assert_true(_shows(ui.a3_form, "Wacht tot de Check (twee weken)"))
+	ui.a3_form.wait()
+	ui.a3_form.check()
+	ui.check_panel.act(true)
+	assert_false(_shows(ui.check_panel, "Spoel 30 dagen vooruit"))
+	_close(office)

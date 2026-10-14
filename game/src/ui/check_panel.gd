@@ -2,7 +2,9 @@ class_name CheckPanel
 extends UiPanel
 ## Check and Act: the stream's numbers before and after the experiment,
 ## what the Check says, then the choice to standardise; after Act, the score
-## and the coach's debrief.
+## and the coach's debrief. On the training week's practice problem the
+## player can then fast-forward a month (the Friday lesson: does the fix
+## hold without a standard?).
 
 signal back_to_a3
 
@@ -19,20 +21,30 @@ const KIND := {
 }
 const KIND_TAGS := {LEADING: "Stuurindicator", LAGGING: "Volgindicator"}
 const KIND_GROUPS := {
-	LEADING: "Stuurindicatoren: reageren binnen de twee weken",
+	LEADING: "Stuurindicatoren: reageren al tijdens het experiment",
 	LAGGING: "Volgindicatoren — effect zichtbaar na ±1 doorlooptijd",
 }
 const LAGGING_NOTE := "Volgindicatoren lopen achter: ze meten werk dat grotendeels vóór je verbetering is gestart."
 ## Numbers where lower is better.
 const LOWER_IS_BETTER := ["lead_time", "wip_age"]
+const FADED := "De verbetering is weggezakt: zonder standaard viel het team na een paar dagen terug in de oude gewoonte. De cijfers zien dat pas later; in het echte werk komt het probleem dan terug via zijn missie."
+const HELD := "De verbetering is gebleven: de standaard houdt haar vast, ook als het druk wordt."
 const SCORE_PARTS := {
 	"plan": "Plan: onderzoek op de gemba", "root_cause": "Oorzaak en bewijs", "countermeasure": "Tegenmaatregel",
 	"check_act": "Check en Act", "impact": "Impact op de hele stroom",
 }
 
+## How far the practice time-lapse fast-forwards.
+const TIME_LAPSE_DAYS := 30
+## The practice time-lapse's rows: the stream's capacity (leading) next to
+## the KPI the problem names.
+const LAPSE_ROWS := ["capacity"]
+
 var problem_id := ""
 var result: Dictionary = {}
 var score: Dictionary = {}
+## GameSession.time_lapse's result once fast-forwarded (empty before).
+var lapse: Dictionary = {}
 
 
 func _init() -> void:
@@ -43,6 +55,7 @@ func show_result(of_problem: String, check_result: Dictionary) -> void:
 	problem_id = of_problem
 	result = check_result
 	score = {}
+	lapse = {}
 	refresh()
 
 
@@ -53,6 +66,15 @@ func act(standardise: bool) -> Dictionary:
 	acted.emit()
 	refresh()
 	return score
+
+
+## Fast-forward a month on the practice problem and show what happened.
+## Returns GameSession.time_lapse's result.
+func time_lapse() -> Dictionary:
+	lapse = session.time_lapse(TIME_LAPSE_DAYS, problem_id)
+	acted.emit()
+	refresh()
+	return lapse
 
 
 ## "leading" or "lagging" for a number in the table.
@@ -74,6 +96,10 @@ func refresh() -> void:
 	title_label.text = "Check geslaagd" if passed else "Check niet geslaagd"
 	title_label.add_theme_color_override("font_color", Palette.GREEN_DARK if passed else Palette.SAFETY_ORANGE)
 
+	if not lapse.is_empty():
+		_lapse_view()  # the month later replaces the Check's table: it was read before
+		_score_view()
+		return
 	var columns := HBoxContainer.new()
 	columns.add_theme_constant_override("separation", 16)
 	body.add_child(columns)
@@ -114,12 +140,16 @@ func _table(parent: Node) -> void:
 		var after: float = result["after"][row]
 		var name := UiText.kpi(row) + ("   (jouw voorspelling)" if row == prediction else "")
 		grid.add_child(label(name, UiTheme.SMALL, Palette.VOLTANA_BLUE if row == prediction else Palette.INK))
-		grid.add_child(label(UiText.kpi_value(row, before)))
-		var same := is_equal_approx(before, after)
-		grid.add_child(label(UiText.kpi_value(row, after), UiTheme.FONT_SIZE,
-			Palette.INK if same else (Palette.GREEN_DARK if improved(row, before, after) else Palette.SAFETY_ORANGE)))
-		grid.add_child(label(KIND_TAGS[kind(row)], UiTheme.SMALL, Palette.MUTED))
+		_add_before_after(grid, row, before, after)
 	box.add_child(paragraph(LAGGING_NOTE, Palette.MUTED, UiTheme.SMALL))
+
+
+## A row's before, after (green better, orange worse) and its tag.
+func _add_before_after(grid: GridContainer, row: String, before: float, after: float) -> void:
+	grid.add_child(label(UiText.kpi_value(row, before)))
+	grid.add_child(label(UiText.kpi_value(row, after), UiTheme.FONT_SIZE, Palette.INK if is_equal_approx(before, after)
+		else (Palette.GREEN_DARK if improved(row, before, after) else Palette.SAFETY_ORANGE)))
+	grid.add_child(label(KIND_TAGS[kind(row)], UiTheme.SMALL, Palette.MUTED))
 
 
 func _act_choice() -> void:
@@ -145,9 +175,39 @@ func _score_view() -> void:
 	for note: String in score["notes"]:
 		notes.add_child(paragraph("• " + UiText.score_note(note), Palette.INK, UiTheme.SMALL))
 	for m: MissionDef in session.missions.defs.values():
-		if m.goal_problem == problem_id and session.missions.status(m.id) == "completed":
+		if m.goal_problem == problem_id and m.goal_type == "solve" and session.missions.status(m.id) == "completed":
 			var debrief := add_card(body, session.catalog.coach.get("name", "Coach"), Palette.BLUE_PALE)
 			debrief.add_child(paragraph("'%s'" % m.debrief))
+	if session.is_practice(problem_id) and lapse.is_empty():
+		_lapse_view()
+
+
+## The Friday lesson: a button to fast-forward, then before and after.
+func _lapse_view() -> void:
+	if lapse.is_empty():
+		var row := HBoxContainer.new()
+		row.add_child(button("Spoel %d dagen vooruit" % TIME_LAPSE_DAYS, time_lapse))
+		row.add_child(label("  Wat gebeurt er met je verbetering als niemand erop let?", UiTheme.SMALL, Palette.MUTED))
+		body.add_child(row)
+		return
+	if lapse.has("error"):
+		body.add_child(paragraph(UiText.a3_error(lapse["error"]), Palette.SAFETY_ORANGE))
+		return
+	var card := add_card(body, "%d dagen later" % TIME_LAPSE_DAYS)
+	var grid := GridContainer.new()
+	grid.columns = 4
+	grid.add_theme_constant_override("h_separation", 26)
+	card.add_child(grid)
+	for heading in ["", "Voor", "Na", ""]:
+		grid.add_child(label(heading, UiTheme.SMALL, Palette.MUTED))
+	for row: String in LAPSE_ROWS + [lapse["kpi"]]:
+		var before: float = lapse["before"][row]
+		var after: float = lapse["after"][row]
+		grid.add_child(label(UiText.kpi(row), UiTheme.SMALL))
+		_add_before_after(grid, row, before, after)
+	var faded: bool = lapse["faded"]
+	card.add_child(paragraph(FADED if faded else HELD, Palette.SAFETY_ORANGE if faded else Palette.GREEN_DARK))
+	card.add_child(paragraph(LAGGING_NOTE, Palette.MUTED, UiTheme.SMALL))
 
 
 ## Every text on the panel, for tests.

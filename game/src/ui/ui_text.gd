@@ -125,10 +125,16 @@ const EVENTS := {
 	"completed": "Missie voltooid: %s",
 	"failed": "Missie verlopen: %s",
 	"reopened": "Een probleem is terug: %s staat weer open",
-	"check_ready": "Het experiment heeft zijn twee weken gehad: tijd voor de Check op de obeya-wand.",
+	"check_ready": "Het experiment heeft zijn tijd gehad: tijd voor de Check op de obeya-wand.",
 	"recurred": "Een oud probleem is terug: de verbetering is weggezakt.",
 	"kpi_review": "De KPI-review van de afdelingen staat open.",
 }
+
+## The Check's waiting time in words (GameSession.check_days).
+const PERIODS := {1: "een dag", 2: "twee dagen", 3: "drie dagen", 7: "een week", 14: "twee weken"}
+const TRAINING_TITLE := "Inwerkweek — %s: %s"
+const SKIP_CONFIRM := "Je mist de oefenweek, het echte werk begint direct."
+const CARD_FOOTER := "K voor alle begrippen"
 
 const NOTHING_NEW := "Je vindt hier niets nieuws met dit instrument."
 const SPOTTED := "Je ziet het met eigen ogen: hier loopt iets niet zoals het zou moeten."
@@ -210,11 +216,46 @@ static func kpi_value(id: String, value: float) -> String:
 	return "%d dagen" % roundi(value)
 
 
-## What a gemba tool showed: the problem spotted, the clues, or a feeling.
+## A mission's name as the player sees it: a training day with its weekday
+## ("Inwerkweek — ma: Rondleiding", see GameSession.training_day).
+static func mission_title(m: MissionDef, s: GameSession) -> String:
+	var day := s.training_day(m.id)
+	return TRAINING_TITLE % [GameSession.WEEKDAYS[day], m.name] if day >= 0 else m.name
+
+
+## "twee weken", "drie dagen".
+static func period(days: int) -> String:
+	return PERIODS.get(days, "%d dagen" % days)
+
+
+## A counted queue (Region.queue_at): "8 dossiers (0,4 dagen werk)".
+static func queue(q: Dictionary) -> String:
+	return "%d %s (%s dagen werk)" % [q["count"], "dossier" if q["count"] == 1 else "dossiers", _decimal(q["days"], 1)]
+
+
+## The bottleneck lesson from the queues the player counted ({place:
+## queue}, place names by place): what was measured, and where the work
+## waits longest by the numbers.
+static func queue_lesson(queues: Dictionary, place_names: Dictionary) -> String:
+	var parts: PackedStringArray = []
+	var longest := ""
+	for place: String in queues:
+		parts.append("%s %s" % [place_names.get(place, place), queue(queues[place])])
+		if queues[place]["days"] > 0.0 and (longest.is_empty() or queues[place]["days"] > queues[longest]["days"]):
+			longest = place
+	var verdict := "Volgens je telling wacht het werk nergens: de wachtrijen zijn leeg." if longest.is_empty() \
+		else "Volgens je telling wacht het werk het langst bij %s." % place_names.get(longest, longest)
+	return "Je telde: %s. %s" % [", ".join(parts), verdict]
+
+
+## What a gemba tool showed: the problem spotted, the clues, a counted
+## queue, or a feeling.
 static func tool_result(result: Dictionary) -> String:
 	var lines: PackedStringArray = []
 	if not result.get("spotted", []).is_empty():
 		lines.append(SPOTTED)
+	if result.has("queue"):
+		lines.append("Je telt de wachtrij: %s." % queue(result["queue"]))
 	for c: Clue in result.get("clues", []):
 		lines.append("• " + c.text)
 	if lines.is_empty():

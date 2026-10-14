@@ -24,9 +24,13 @@ func refresh() -> void:
 	clear(body)
 	body.add_child(label(coach.get("role", ""), UiTheme.SMALL, Palette.MUTED))
 	var mains := session.missions.active("main")
-	body.add_child(paragraph("Hoofdmissie: " + (mains[0].name if not mains.is_empty() else "nog geen")))
+	var days := session.missions.active("training")
+	if mains.is_empty() and not days.is_empty():
+		body.add_child(paragraph(UiText.mission_title(days[0], session)))
+	else:
+		body.add_child(paragraph("Hoofdmissie: " + (mains[0].name if not mains.is_empty() else "nog geen")))
 	var said := add_card(body, "", Palette.BLUE_PALE)
 	said.add_child(paragraph(("'%s'" % reply) if not reply.is_empty()
 		else "Ze kijkt op van haar scherm. 'Kom binnen. Waar sta je?'", Palette.VOLTANA_BLUE, 24))
 	body.add_child(button("Vraag om coaching", ask))
-	body.add_child(paragraph("Ze helpt alleen met je hoofdmissie, en antwoordt meestal met een vraag.", Palette.MUTED, UiTheme.SMALL))
+	body.add_child(paragraph("Ze helpt met je hoofdmissie en je inwerkweek, en antwoordt meestal met een vraag.", Palette.MUTED, UiTheme.SMALL))

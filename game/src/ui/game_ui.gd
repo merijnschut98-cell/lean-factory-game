@@ -22,6 +22,8 @@ var codex: CodexPanel
 var _panels: Array[UiPanel] = []
 ## The concepts already known, to toast only new ones.
 var _known_concepts := PackedStringArray()
+## Training days whose glossary card was shown (once each).
+var _carded: Dictionary[String, bool] = {}
 
 
 func setup(of_session: GameSession) -> void:
@@ -136,18 +138,55 @@ func journal_lines() -> Array[String]:
 	return out
 
 
-## After every action: the HUD follows the session and new events show.
+## After every action: the HUD follows the session and new events show: a
+## training day's debrief and glossary card as cards, the rest as toasts.
 func after_action() -> void:
 	hud.refresh()
-	for text in new_concept_toasts():
-		hud.toast(text)
 	var names := {}
 	for m: MissionDef in session.missions.defs.values():
-		names[m.id] = m.name
+		names[m.id] = UiText.mission_title(m, session)
 	for e in session.drain_events():
+		if e["type"] == "recurred" and session.is_practice(e.get("problem", "")):
+			continue  # the practice problem is retired; the time-lapse tells the fade
 		var text := UiText.event(e, names)
 		if not text.is_empty():
 			hud.toast(text)
+		if e["type"] == "completed":
+			_debrief_card(session.missions.defs[e["mission"]], e)
+	for m in session.missions.active("training"):
+		_glossary_card(m)
+	for text in new_concept_toasts():
+		hud.toast(text)
+
+
+## A finished training day: the coach's debrief, with what the player
+## measured (the solve day's debrief shows with its score on the Check).
+func _debrief_card(m: MissionDef, e: Dictionary) -> void:
+	if m.kind != "training" or m.goal_type == "solve":
+		return
+	var lines: Array[String] = ["'%s'" % m.debrief]
+	if e.has("queues"):
+		var place_names := {}
+		for place: String in e["queues"]:
+			place_names[place] = session.region.net.step_at(place).name
+		lines.append(UiText.queue_lesson(e["queues"], place_names))
+	hud.show_card(str(session.catalog.coach.get("name", "Coach")), lines)
+
+
+## A training day's concepts on one short card (name and short text), once;
+## they stand in for the "new concept" toasts.
+func _glossary_card(m: MissionDef) -> void:
+	if _carded.has(m.id) or m.teaches.is_empty():
+		return
+	_carded[m.id] = true
+	var lines: Array[String] = []
+	for id in m.teaches:
+		var def: ConceptDef = session.catalog.concepts.get(id)
+		if def != null:
+			lines.append("%s — %s" % [def.name, def.short])
+			if not id in _known_concepts:
+				_known_concepts.append(id)
+	hud.show_card("Nieuwe begrippen", lines, UiText.CARD_FOOTER)
 
 
 ## Toasts for the concepts learned since the last call, once each.

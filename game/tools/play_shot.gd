@@ -7,8 +7,11 @@ extends SceneTree
 ## check (the Check result after the experiment) · act (the score after Act) ·
 ## board (the mission board) · coach (the coach's question) · map (the
 ## player map with the mission taken) · codex (the glossary after some
-## gemba work and an extra few concepts) · free (the mouse freed with Esc).
-## The mission is played through the UI's own handlers, as a player would.
+## gemba work and an extra few concepts) · free (the mouse freed with Esc) ·
+## training_board (Monday of the training week: the board with the skip) ·
+## timelapse (the week played to Friday: the Act and the 30-day fast-forward).
+## The mission is played through the UI's own handlers, as a player would;
+## only the training states start with the training week.
 
 const SCENE := "res://src/world/office/office.tscn"
 const MISSION := "fix_custom_design"
@@ -23,13 +26,14 @@ func _initialize() -> void:
 func _run() -> void:
 	var args := OS.get_cmdline_user_args()
 	if args.size() < 2:
-		printerr("usage: -- <office|tools|a3|check|act|board|coach|map|codex|free> <out.png> [frames]")
+		printerr("usage: -- <office|tools|a3|check|act|board|coach|map|codex|free|training_board|timelapse> <out.png> [frames]")
 		quit(2)
 		return
 	var office: Office = load(SCENE).instantiate()
 	office.seed_value = 11
-	root.add_child(office)
 	var state := args[0]
+	office.training = state in ["training_board", "timelapse"]
+	root.add_child(office)
 	match state:
 		"office":
 			_stand_at(office, DESIGN)
@@ -64,9 +68,13 @@ func _run() -> void:
 		"free":
 			_stand_at(office, DESIGN)
 			office.player.escape_pressed.emit()
-		"board":
+		"board", "training_board":
 			_stand_at(office, "mission_board")
 			office.interact(office.interactable("mission_board"))
+		"timelapse":
+			_play_week(office)
+			office.ui.check_panel.act(false)
+			office.ui.check_panel.time_lapse()
 		_:
 			printerr("unknown state ", state)
 			quit(2)
@@ -103,6 +111,26 @@ func _investigate(office: Office, all: bool) -> void:
 		office.interact(office.interactable(DESIGN))
 		ui.place_menu.use_tool("data")
 		ui.close_panels()
+
+
+## Monday to Friday's Check of the training week, through the UI.
+func _play_week(office: Office) -> void:
+	var ui := office.ui
+	var s := office.session
+	for step: Array in [[INTAKE, "shadow"], [DESIGN, "walk"], [DESIGN, "time_study"], [DESIGN, "documents"],
+			[INTAKE, "queue_count"], [DESIGN, "queue_count"], [INTAKE, "shadow"], [INTAKE, "time_study"], [INTAKE, "walk"]]:
+		office.interact(office.interactable(step[0]))
+		if step[1] == "walk":
+			ui.place_menu.ask("walk")
+		else:
+			ui.place_menu.use_tool(step[1])
+	office.interact(office.interactable("obeya"))
+	var problem: ProblemDef = s.region.problems["training_tray"]
+	ui.a3_form.submit({"waste": problem.waste, "cause": s.cause_options(problem.id).find(problem.root_cause),
+		"evidence": s.clues_found(problem.id).map(func(c: Clue) -> String: return c.id), "cm": "one_tray_fifo",
+		"prediction": problem.kpi})
+	ui.a3_form.wait()
+	ui.a3_form.check()
 
 
 ## The A3 a careful player would write (the cause read from the clues).

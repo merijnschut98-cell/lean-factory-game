@@ -57,18 +57,20 @@ static func project(at: Vector2, floor_in: Rect2, area_in: Rect2) -> Vector2:
 
 
 ## The marker ids of the active missions' places: a walk marks its stream's
-## places; a problem marks the place its briefing sends you to and, to
-## solve it, the obeya wall.
+## places; an observe goal its places; a problem marks the place its
+## briefing sends you to and, to check or solve it, the obeya wall.
 static func mission_places(s: GameSession) -> Array[String]:
 	var out: Array[String] = []
 	for m in s.active_missions():
 		var stream := s.region.net.stream(m.goal_stream) if m.goal_type == "walk" else null
 		for step in stream.steps if stream != null else []:
 			out.append("place:%s.%s" % [stream.id, step.id])
+		for place in m.goal_places:
+			out.append("place:" + place)
 		var p: ProblemDef = s.region.problems.get(m.goal_problem)
 		if p != null:
 			out.append("place:" + p.step)
-			if m.goal_type == "solve":
+			if m.goal_type in ["solve", "check"]:
 				out.append("obeya")
 	return out
 

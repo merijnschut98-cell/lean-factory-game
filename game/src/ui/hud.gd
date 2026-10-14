@@ -1,12 +1,16 @@
 class_name Hud
 extends Control
 ## The heads-up display: a top bar (day and time, budget, XP and belt, the
-## active mission), the crosshair, the interaction prompt, the controls and
-## short messages (toasts, bottom right) when something happens. It is drawn
-## over the panels.
+## active mission), the crosshair, the interaction prompt, the controls,
+## short messages (toasts, bottom right) when something happens, and cards
+## (top right: a training day's glossary, the coach's debrief) that stay a
+## while longer. It is drawn over the panels; toasts and cards hide while one
+## is open, and a card's time only runs while it shows.
 
 const TOAST_SECONDS := 7.0
 const MAX_TOASTS := 4
+const CARD_SECONDS := 25.0
+const MAX_CARDS := 3
 
 var session: GameSession
 var clock_label: Label
@@ -17,6 +21,7 @@ var prompt_label: Label
 ## "Klik om verder te lopen", while Esc has freed the mouse.
 var mouse_hint: Label
 var _toasts: VBoxContainer
+var _cards: VBoxContainer
 var _crosshair: ColorRect
 
 
@@ -119,6 +124,16 @@ func _build_centre() -> void:
 	_toasts.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_toasts)
 
+	_cards = VBoxContainer.new()
+	_cards.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_cards.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	_cards.offset_top = 64
+	_cards.offset_right = -20
+	_cards.custom_minimum_size.x = 460
+	_cards.add_theme_constant_override("separation", 10)
+	_cards.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_cards)
+
 
 func refresh() -> void:
 	clock_label.text = session.clock_text()
@@ -136,13 +151,59 @@ func mission_text() -> String:
 	var active := session.active_missions()
 	if active.is_empty():
 		return "Geen missie: ga naar het missiebord"
-	return "Missie: " + ", ".join(active.map(func(m: MissionDef) -> String: return m.name))
+	return "Missie: " + ", ".join(active.map(func(m: MissionDef) -> String:
+		return UiText.mission_title(m, session)))
 
 
-## The crosshair and the toasts; hidden while a panel is open.
+## The crosshair, toasts and cards; hidden while a panel is open.
 func show_overlay(on: bool) -> void:
 	_crosshair.visible = on
 	_toasts.visible = on
+	_cards.visible = on
+
+
+## A card: a heading, its lines and a muted footer. The oldest goes when
+## there are too many.
+func show_card(heading: String, lines: Array[String], footer: String = "") -> void:
+	var card := PanelContainer.new()
+	card.add_theme_stylebox_override("panel", UiTheme.card(Color.WHITE))
+	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.set_meta("left", CARD_SECONDS)
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 4)
+	card.add_child(box)
+	box.add_child(UiPanel.label(heading, UiTheme.SMALL, Palette.VOLTANA_BLUE))
+	for line in lines:
+		box.add_child(UiPanel.paragraph(line, Palette.INK, 17))
+	if not footer.is_empty():
+		box.add_child(UiPanel.label(footer, 15, Palette.MUTED))
+	_cards.add_child(card)
+	while _cards.get_child_count() > MAX_CARDS:
+		var oldest := _cards.get_child(0)
+		_cards.remove_child(oldest)
+		oldest.queue_free()
+
+
+## Each card on screen as one text (heading, lines, footer), oldest first.
+func card_texts() -> Array[String]:
+	var out: Array[String] = []
+	for card in _cards.get_children():
+		var texts: PackedStringArray = []
+		for l: Label in card.get_child(0).get_children():
+			texts.append(l.text)
+		out.append("\n".join(texts))
+	return out
+
+
+func _process(delta: float) -> void:
+	if not _cards.visible:
+		return
+	for card in _cards.get_children():
+		var left: float = card.get_meta("left") - delta
+		card.set_meta("left", left)
+		if left <= 0.0:
+			_cards.remove_child(card)
+			card.queue_free()
 
 
 ## "" hides the prompt.
