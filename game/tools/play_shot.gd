@@ -6,7 +6,8 @@ extends SceneTree
 ## tools (the team's menu after some gemba work) · a3 (the A3, filled in) ·
 ## check (the Check result after the experiment) · act (the score after Act) ·
 ## board (the mission board) · coach (the coach's question) · map (the
-## player map with the mission taken) · free (the mouse freed with Esc).
+## player map with the mission taken) · codex (the glossary after some
+## gemba work and an extra few concepts) · free (the mouse freed with Esc).
 ## The mission is played through the UI's own handlers, as a player would.
 
 const SCENE := "res://src/world/office/office.tscn"
@@ -22,7 +23,7 @@ func _initialize() -> void:
 func _run() -> void:
 	var args := OS.get_cmdline_user_args()
 	if args.size() < 2:
-		printerr("usage: -- <office|tools|a3|check|act|board|coach|map|free> <out.png> [frames]")
+		printerr("usage: -- <office|tools|a3|check|act|board|coach|map|codex|free> <out.png> [frames]")
 		quit(2)
 		return
 	var office: Office = load(SCENE).instantiate()
@@ -56,6 +57,10 @@ func _run() -> void:
 			_stand_at(office, INTAKE)
 			office.player.rotation.y += deg_to_rad(-60)
 			office.ui.toggle_map()
+		"codex":
+			_investigate(office, true)
+			office.session.region.profile.learn(["flow", "bottleneck_focus", "netbeheerder", "netcongestie", "kata_prediction"])
+			office.ui.toggle_codex()
 		"free":
 			_stand_at(office, DESIGN)
 			office.player.escape_pressed.emit()

@@ -245,7 +245,8 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
 - ✅ `content/missions.yaml`: the tier-1 campaign, with Henk's retirement as a 56-day deadline mission (De laatste kennisdrager)
 - ✅ Henk is a real event (Merijn, 2026-10-12): a side mission that opens after De verkeerde mof in de bus; Henk retires 56 days later, taken on or not. Missing it closes the buddy system (`fail_closes`) for good; work instructions with video still solve the problem. Deadlines count from when a mission opens; the validator requires another way to solve the problem.
 - ✅ `content/concepts.yaml` (2026-10-13): 61-entry Dutch glossary (lean, the 8 wastes as `waste_<waste>`, Toyota Kata, measure, sector with a public `source:` or marked `estimate:`); the validator requires every `teaches` id (problems and clues) and every id the rules learn; `Catalog.concepts`. Problem `teaches` now use `waste_<waste>` instead of bare waste names
-  - ⬜ Verify the two sector sources marked `verify: true` (`ean_code`, `middenspanningsruimte`) and the codex UI that shows `Catalog.concepts`
+  - ⬜ Verify the two sector sources marked `verify: true` (`ean_code`, `middenspanningsruimte`)
+  - ✅ The codex UI (K, "Begrippen", 2026-10-14): learned concepts readable with source or estimate, the rest `???` by category; a toast "Nieuw begrip: … (K)" on first learning
 - ✅ KPI `wip_age` (`Network.open_age_days`, in `Region.snapshot`): the age of open work. Lead time counts finished orders only, so long waits hide the oldest work (survivorship).
 - ⬜ Next session (found by report7, 5 seeds × 180 days):
   - ✅ `wip_age` named in Wachten op de trafo and in the report (2026-10-13). Why: its harm is invisible in finished-order lead time (43.5 vs 46.9 days) and shows only as throughput 26.9 → 25.5;

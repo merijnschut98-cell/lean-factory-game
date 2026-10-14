@@ -2,7 +2,7 @@ class_name GameUI
 extends CanvasLayer
 ## Everything on screen over the 3D office: the HUD and one panel at a time
 ## (mission board, a team's place, the A3, the Check, the coach, the clue
-## journal, the map). The world asks it to open a panel; the panels act on the
+## journal, the map, the codex). The world asks it to open a panel; the panels act on the
 ## session, and after each action the HUD refreshes and events show as
 ## toasts.
 
@@ -18,7 +18,10 @@ var check_panel: CheckPanel
 var coach_panel: CoachPanel
 var journal: ClueJournal
 var office_map: OfficeMap
+var codex: CodexPanel
 var _panels: Array[UiPanel] = []
+## The concepts already known, to toast only new ones.
+var _known_concepts := PackedStringArray()
 
 
 func setup(of_session: GameSession) -> void:
@@ -41,7 +44,8 @@ func setup(of_session: GameSession) -> void:
 	coach_panel = CoachPanel.new()
 	journal = ClueJournal.new()
 	office_map = OfficeMap.new()
-	_panels = [mission_board, place_menu, a3_form, check_panel, coach_panel, journal, office_map]
+	codex = CodexPanel.new()
+	_panels = [mission_board, place_menu, a3_form, check_panel, coach_panel, journal, office_map, codex]
 	for p in _panels:
 		p.session = session
 		p.acted.connect(after_action)
@@ -52,6 +56,7 @@ func setup(of_session: GameSession) -> void:
 		_open(check_panel))
 	check_panel.back_to_a3.connect(open_a3)
 	root.move_child(hud, -1)
+	_known_concepts = session.region.profile.concepts.duplicate()
 	after_action()
 
 
@@ -97,6 +102,10 @@ func toggle_map() -> void:
 	_toggle(office_map)
 
 
+func toggle_codex() -> void:
+	_toggle(codex)
+
+
 func _toggle(panel: UiPanel) -> void:
 	if not playable():
 		return
@@ -130,6 +139,8 @@ func journal_lines() -> Array[String]:
 ## After every action: the HUD follows the session and new events show.
 func after_action() -> void:
 	hud.refresh()
+	for text in new_concept_toasts():
+		hud.toast(text)
 	var names := {}
 	for m: MissionDef in session.missions.defs.values():
 		names[m.id] = m.name
@@ -137,6 +148,19 @@ func after_action() -> void:
 		var text := UiText.event(e, names)
 		if not text.is_empty():
 			hud.toast(text)
+
+
+## Toasts for the concepts learned since the last call, once each.
+func new_concept_toasts() -> Array[String]:
+	var out: Array[String] = []
+	for id in session.region.profile.concepts:
+		if id in _known_concepts:
+			continue
+		_known_concepts.append(id)
+		var def: ConceptDef = session.catalog.concepts.get(id)
+		if def != null:
+			out.append("Nieuw begrip: %s (K)" % def.name)
+	return out
 
 
 func show_error(text: String) -> void:

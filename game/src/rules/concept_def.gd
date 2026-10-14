@@ -13,6 +13,9 @@ var short: String
 ## Two to four sentences for the codex page.
 var text: String
 var example: String
+## Sector entries: the public source's title, or the reasoning behind an estimate.
+var source_title := ""
+var estimate := ""
 var error := ""
 
 
@@ -24,6 +27,10 @@ static func from_dict(d: Dictionary) -> ConceptDef:
 	c.short = str(d.get("short", ""))
 	c.text = str(d.get("text", ""))
 	c.example = str(d.get("example", ""))
+	var source = d.get("source")
+	if source is Dictionary:
+		c.source_title = str(source.get("title", ""))
+	c.estimate = str(d.get("estimate", ""))
 	if c.id.is_empty() or c.name.is_empty() or c.short.is_empty():
 		c.error = "concept %s: needs an id, a name and a short text" % c.id
 	elif not c.category in CATEGORIES:

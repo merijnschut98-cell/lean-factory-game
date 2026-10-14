@@ -128,7 +128,7 @@ func refresh() -> void:
 
 
 func controls_text() -> String:
-	return "WASD lopen   ·   muis kijken   ·   E gebruiken   ·   J aanwijzingen   ·   M kaart   ·   Esc muis los"
+	return "WASD lopen   ·   muis kijken   ·   E gebruiken   ·   J aanwijzingen   ·   M kaart   ·   K begrippen   ·   Esc muis los"
 
 
 ## The active missions in the top bar: the main one first.

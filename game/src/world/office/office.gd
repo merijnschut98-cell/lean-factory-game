@@ -244,6 +244,7 @@ func _add_player() -> void:
 			interact(interactable_near(player.position)))
 	player.journal_pressed.connect(func() -> void: ui.toggle_journal())
 	player.map_pressed.connect(func() -> void: ui.toggle_map())
+	player.codex_pressed.connect(func() -> void: ui.toggle_codex())
 	player.escape_pressed.connect(func() -> void:
 		if ui.is_busy():
 			ui.close_panels()
