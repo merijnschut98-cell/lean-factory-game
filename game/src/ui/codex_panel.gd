@@ -2,12 +2,11 @@ class_name CodexPanel
 extends UiPanel
 ## The codex (K), "Begrippen": the glossary by category. A concept the player
 ## has learned is readable (name, short, text, example, source); the others
-## show "???", so the codex is a map of what is still to discover.
+## are only counted ("Nog te ontdekken: N begrippen"). Categories fold;
+## those with learned entries start open.
 
 const CATEGORY_ORDER := ["lean", "kata", "measure", "sector"]
 const CATEGORY_TITLES := {"lean": "Lean", "kata": "Kata", "measure": "Meten", "sector": "Energiesector"}
-const UNKNOWN := "???"
-const COLUMNS := 8
 
 var _scroll: ScrollContainer
 var _list: VBoxContainer
@@ -65,18 +64,37 @@ func refresh() -> void:
 
 
 func _add_group(g: Dictionary) -> void:
-	var box := add_card(_list, "%s  (%d/%d)" % [g["title"], g["known"], g["entries"].size()])
-	var grid := GridContainer.new()
-	grid.columns = COLUMNS
-	grid.add_theme_constant_override("h_separation", 24)
-	box.add_child(grid)
-	for e in g["entries"]:
-		if not e["known"]:
-			grid.add_child(label(UNKNOWN, UiTheme.FONT_SIZE, Palette.MUTED))
-	grid.visible = grid.get_child_count() > 0
+	var box := add_card(_list)
+	var open: bool = g["known"] > 0
+	var toggle := Button.new()
+	toggle.flat = true
+	toggle.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	toggle.add_theme_font_size_override("font_size", UiTheme.SMALL)
+	toggle.add_theme_color_override("font_color", Palette.VOLTANA_BLUE)
+	box.add_child(toggle)
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 6)
+	content.visible = open
+	box.add_child(content)
+	toggle.text = _toggle_text(g, open)
+	toggle.pressed.connect(func() -> void:
+		content.visible = not content.visible
+		toggle.text = _toggle_text(g, content.visible))
 	for e in g["entries"]:
 		if e["known"]:
-			_add_entry(box, e["def"])
+			_add_entry(content, e["def"])
+	var unknown: int = g["entries"].size() - g["known"]
+	if unknown > 0:
+		content.add_child(label(undiscovered_line(unknown), UiTheme.SMALL, Palette.MUTED))
+
+
+## "Nog te ontdekken: N begrippen" (singular for one).
+static func undiscovered_line(count: int) -> String:
+	return "Nog te ontdekken: %d %s" % [count, "begrip" if count == 1 else "begrippen"]
+
+
+func _toggle_text(g: Dictionary, open: bool) -> String:
+	return "%s %s  (%d/%d)" % ["▼" if open else "▶", g["title"], g["known"], g["entries"].size()]
 
 
 func _add_entry(box: VBoxContainer, def: ConceptDef) -> void:

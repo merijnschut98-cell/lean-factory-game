@@ -7,7 +7,22 @@ extends UiPanel
 signal back_to_a3
 
 ## The stream's numbers in the table, in this order.
-const ROWS := ["capacity", "throughput", "lead_time", "first_time_right", "on_time", "wip_age"]
+const ROWS := ["capacity", "throughput", "wip_age", "lead_time", "first_time_right", "on_time"]
+## Leading ("Stuurindicator") reacts within the two weeks of the experiment;
+## lagging ("Volgindicator") measures finished orders and only moves after
+## about one lead time. The one place that classifies the numbers.
+const LEADING := "leading"
+const LAGGING := "lagging"
+const KIND := {
+	"capacity": LEADING, "throughput": LEADING, "wip_age": LEADING,
+	"lead_time": LAGGING, "first_time_right": LAGGING, "on_time": LAGGING,
+}
+const KIND_TAGS := {LEADING: "Stuurindicator", LAGGING: "Volgindicator"}
+const KIND_GROUPS := {
+	LEADING: "Stuurindicatoren: reageren binnen de twee weken",
+	LAGGING: "Volgindicatoren — effect zichtbaar na ±1 doorlooptijd",
+}
+const LAGGING_NOTE := "Volgindicatoren lopen achter: ze meten werk dat grotendeels vóór je verbetering is gestart."
 ## Numbers where lower is better.
 const LOWER_IS_BETTER := ["lead_time", "wip_age"]
 const SCORE_PARTS := {
@@ -38,6 +53,11 @@ func act(standardise: bool) -> Dictionary:
 	acted.emit()
 	refresh()
 	return score
+
+
+## "leading" or "lagging" for a number in the table.
+static func kind(row: String) -> String:
+	return KIND[row]
 
 
 ## Whether `after` is an improvement on `before` for this number.
@@ -78,14 +98,18 @@ func _table(parent: Node) -> void:
 	var box := add_card(parent, "De stroom: voor en na het experiment")
 	box.get_parent().custom_minimum_size.x = 620
 	var grid := GridContainer.new()
-	grid.columns = 3
+	grid.columns = 4
 	grid.add_theme_constant_override("h_separation", 26)
 	grid.add_theme_constant_override("v_separation", 6)
 	box.add_child(grid)
-	for heading in ["", "Voor", "Na"]:
-		grid.add_child(label(heading, UiTheme.SMALL, Palette.MUTED))
 	var prediction: String = session.region.state[problem_id].a3.get("prediction", "")
+	var shown_kind := ""
 	for row: String in ROWS:
+		if kind(row) != shown_kind:
+			shown_kind = kind(row)
+			grid.add_child(label(KIND_GROUPS[shown_kind], UiTheme.SMALL, Palette.MUTED))
+			for heading in ["Voor", "Na", ""] if shown_kind == LEADING else ["", "", ""]:
+				grid.add_child(label(heading, UiTheme.SMALL, Palette.MUTED))
 		var before: float = result["before"][row]
 		var after: float = result["after"][row]
 		var name := UiText.kpi(row) + ("   (jouw voorspelling)" if row == prediction else "")
@@ -94,6 +118,8 @@ func _table(parent: Node) -> void:
 		var same := is_equal_approx(before, after)
 		grid.add_child(label(UiText.kpi_value(row, after), UiTheme.FONT_SIZE,
 			Palette.INK if same else (Palette.GREEN_DARK if improved(row, before, after) else Palette.SAFETY_ORANGE)))
+		grid.add_child(label(KIND_TAGS[kind(row)], UiTheme.SMALL, Palette.MUTED))
+	box.add_child(paragraph(LAGGING_NOTE, Palette.MUTED, UiTheme.SMALL))
 
 
 func _act_choice() -> void:
@@ -122,3 +148,15 @@ func _score_view() -> void:
 		if m.goal_problem == problem_id and session.missions.status(m.id) == "completed":
 			var debrief := add_card(body, session.catalog.coach.get("name", "Coach"), Palette.BLUE_PALE)
 			debrief.add_child(paragraph("'%s'" % m.debrief))
+
+
+## Every text on the panel, for tests.
+func shown_texts() -> Array[String]:
+	var out: Array[String] = []
+	var stack: Array[Node] = [body]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		if n is Label:
+			out.append(n.text)
+		stack.append_array(n.get_children())
+	return out

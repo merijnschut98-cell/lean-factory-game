@@ -1,6 +1,6 @@
 extends TestCase
 ## The codex (K): the glossary in the game. Learned concepts are readable,
-## the others show "???" under their category; learning one toasts once.
+## the others are only counted under their category; learning one toasts once.
 
 const SCENE := "res://src/world/office/office.tscn"
 
@@ -38,7 +38,19 @@ func test_a_learned_concept_is_readable_and_an_unlearned_one_is_not() -> void:
 		assert_true(text.contains(part), part)
 	assert_false(text.contains(other.name), "unlearned: no name")
 	assert_false(text.contains(other.text), "unlearned: no text")
-	assert_true(text.contains("???"), "unlearned shows ???")
+	assert_false(text.contains("???"), "no ??? grid")
+	assert_true(text.contains("Nog te ontdekken: "), "unlearned ones are only counted")
+	office.free()
+
+
+func test_a_category_counts_what_is_left() -> void:
+	var office := _office()
+	office.session.region.profile.learn(["PDCA"])
+	office.ui.toggle_codex()
+	var groups := CodexPanel.groups(office.session.catalog.concepts, office.session.region.profile.concepts)
+	var left: int = groups[0]["entries"].size() - 1
+	assert_true(office.ui.codex.shown_texts().has(CodexPanel.undiscovered_line(left)), "lean: count of the rest")
+	assert_eq(CodexPanel.undiscovered_line(1), "Nog te ontdekken: 1 begrip")
 	office.free()
 
 
