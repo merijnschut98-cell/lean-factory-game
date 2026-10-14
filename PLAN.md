@@ -314,6 +314,8 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 
 ## Decisions Made
 
+- **The Check labels lagging measures (Merijn, 2026-10-14).** A measure that only moves after about one lead time (lead time, first-time-right of finished orders, on time) is marked "volgindicator: effect zichtbaar na ±1 doorlooptijd" in the Check panel, so a dip right after a fix reads as a lesson about leading and lagging indicators, not as failure.
+- **Training arc built with Claude's recommended answers (2026-10-14; Merijn asked to continue without reviewing).** 5 days, skippable for returning players, short glossary cards, an invented practice problem. Each one is easy to change once Merijn answers.
 - **Player map and training arc (Merijn, 2026-10-13).** Both go into the plan (Phase C and Phase D), not to be built right away.
 - **Prototype and KPI reward (Merijn, 2026-10-13, multiple choice).**
   - **The 3D world comes first** for the prototype (est. 1.5–2 months to first play). The first piece is **one building with one mission**: the connections office (Intake, Werkvoorbereiding), walkable, with its gemba tools and one mission playable end to end.
