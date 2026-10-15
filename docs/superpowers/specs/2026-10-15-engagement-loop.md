@@ -39,7 +39,7 @@
   - the Check wait;
   - Act IV's eight-week hold (`t3_stop_starting`);
   - a player who never talks to anyone.
-- **Playtest measures (§8)** for Merijn's own play, kept local, and **9 questions for Merijn (§9)**.
+- **Playtest measures (§8)** for Merijn's own play, kept local, and **9 questions for Merijn (§9), now decided**: all as recommended, and the red lines are a CLAUDE.md rule.
 
 ---
 
@@ -107,8 +107,8 @@ Every main mission uses at least two; every act uses all seven.
 |---|---|---|---|
 | **Gevolg** (consequence) | What you did last time changed something you can now see | "Lindeveld rijdt minder; het uur ging half naar de nieuwe jongens." | Debriefs and the terugblik read the player's numbers and facts. |
 | **Klok** (clock) | A date with a face | Henk's farewell invitation; the September intake; KZW's electrolyser | Hard deadlines: at most one active (audit §5.6). Soft clocks are beats. |
-| **Persoon** (person waiting) | Someone has something to say | The "…" bubble; Frank's route met; Marco "kom maandag bij de koffie" | Check-ins by signal (dialog spec §5.7); promises and conditions name a person. |
-| **Getal** (number) | A KPI moved, and the reason is not yet known | Calls up 30 % after the portal change | Every main briefing names a number the player can verify (catalogue §2.11). |
+| **Persoon** (person waiting) | Someone has something to say, or needs a lift | The "…" bubble; the low-energy bar over a colleague you pass (decided 2026-10-15); Frank's route met; Marco "kom maandag bij de koffie" | Check-ins by signal (dialog spec §5.7) and walk-around check-ins (dialog scripts §8.1); promises and conditions name a person. |
+| **Getal** (number) | A KPI moved, and the reason is not yet known | Retyped close-outs up 40 % although "nine in ten use the field app" | Every main briefing names a number the player can verify (catalogue §2.11). |
 | **Raadsel** (mystery) | A clue chain half-walked | "Waarom staat De Linde op plek 61?" | Main problems have a depth-2 key clue; the first clue raises a question, not an answer. |
 | **Belofte** (promise) | Something the player said they would do | "Ik bel u vrijdag terug" (El Amrani); "Ik zorg dat Ruud tekent" (Femke) | Proposals that promise carry `promise` (dialog scripts Q11); kept promises pay trust, broken ones cost it. |
 | **Terugval** (relapse) | A fix you made is slipping | The "Terugval" lane; Ruud: "Bij Intake staat weer een tweede bak." | The sustain rules (graded decay, drift) surface through missions, never as a free menu. |
@@ -159,9 +159,9 @@ Design rules:
 | **I → II** | At the day-100 drinks, Ruud's phone: "Een graafmachine heeft een middenspanningskabel geraakt bij De Linde. Driehonderd huizen. Volgens de kaart lag daar niks." | Gert · 300 homes · how can a map be wrong? | "Wat onder de grond zit. Wat je niet ziet, kan je wel raken." |
 | **II → III** | At the first KPI review, a red number: outage minutes rising. Kees from the control room: "Volgende maand wordt een storm voorspeld." Ruud: "Jij vindt de problemen. Ik wil dat de teams ze zelf zien." | Kees · outage minutes · who sees the problem first? | "Zichtbaar maken. Vanaf nu wil ik dat de borden het eerst weten, niet jij." |
 | **III → IV** | The ACM's verdict letter (passed or not), then Ruud: "Je wordt CI-lead voor heel Zuidmark." Joke's call that evening: "Bij ons rijden ze een uur per klus. En er gaan er drie met pensioen." | Joke · one hour per job · is Lindeveld the same stream as Nova? | "Flow door de regio. Wat in Nova werkte, is geen recept. Het is een vraag die je in Lindeveld opnieuw stelt." (also mentions one discovery the player earned: audit §4.2) |
-| **Mid-IV (the IT chapter opens)** | Esra, at the end of `t3_map_region`: "Weet je wat ik nog steeds niet snap? Ik vroeg in het voorjaar om een datum op het portaal. Die staat er nog steeds niet." | Esra · one date, eleven weeks · where does a change wait? | (No title card; a board card "Het digitale loket" with Noor's face.) |
-| **Mid-IT (the twist)** | `fix_status_page_wrong`'s debrief: "En de echte voorspelling? Die staat klaar. Voor de release van maart." | Noor · March · why can't a finished fix go live? | — |
-| **IV and IT → V** | Three letters on the same morning: the Raad van State on a permit; the MT's list "Twintig prioriteiten"; the NTA 8120 audit date. And Ricardo, at the van, shows his phone: a WhatsApp group with photos of meter cupboards. "Dit is onze echte app." | Ricardo · twenty priorities · who decides what matters? | "Het systeem. Twintig prioriteiten is er geen. Wat is de ene?" |
+| **Mid-IV (the IT chapter opens)** | Ricardo, at the van, at the end of `t3_map_region`, shows his phone: a WhatsApp group with photos of meter cupboards. "Dit is onze echte app." | Ricardo · one in five close-outs through the app, eleven weeks · where does a change wait? | (No title card; a board card "Het digitale loket" with Noor's face.) |
+| **Mid-IT (the twist)** | `fix_field_app_bypassed`'s debrief: "En de afmeldschermen die Ricardo en zijn collega's ontwierpen? Die staan klaar. Voor de release van maart." | Ricardo · March · why can't a finished fix go live? | — |
+| **IV and IT → V** | Three letters on the same morning: the Raad van State on a permit; the MT's list "Twintig prioriteiten"; the NTA 8120 audit date. And Esra, for the IT chapter: "Ik vroeg vorig jaar om een datum op het klantportaal. Die staat er nog steeds niet." | Esra · twenty priorities · who decides what matters? | "Het systeem. Twintig prioriteiten is er geen. Wat is de ene?" |
 | **V → finale** | (Placeholder, catalogue.) Lotte, the new CI lead of Lindeveld, knocks: "Ik heb gehoord dat jij vragen stelt in plaats van antwoorden geeft. Wil je dat bij mij ook doen?" | Lotte · — · can you coach without telling? | (finale placeholder) |
 
 **Path-dependent variants** (one line each, chosen by facts):
@@ -208,12 +208,14 @@ Same rules as audit §4.1:
 | D36 | **Eén straat** | `joint_street_planning` chosen with `committed:marloes_one_agenda`, and the Havenstraat has had no second opening for 365 days (the countermeasure holds ≥ 0.9) | V: a cobblestone from the Havenstraat; S on joint underground planning | LT | Needs a year of hold. |
 | D37 | **Geen aggregaat** | `fix_nitrogen_permit` solved before its deadline with the diesel bridge declined, and the KZW electrolyser connected on time | V: a hydrogen-blue hard hat; Rep +2 | LT | Declining alone earns nothing; the deadline must be met. |
 | D38 | **De lege map** | `t3_stop_starting` passed with the concept folder declined, and the Act V audit's application-date check finds nothing hidden | T "Eerlijk getal"; R on Goodhart ("Wat je niet meet, verbergt zich niet. Het wacht.") | LT, AI | Only checked at the Act V audit, so it cannot be gamed in Act IV. |
-| D39 | **Gewone taal** | Noor's commitment with `listen_with_esra`, status calls down ≥ 30 % (Check), and `forecast_from_planning` live (directly or through the repair quest) | V: Esra's headset; S on failure demand in IT | RP, AI | Needs the forecast shipped, so it includes the release lesson. |
+| D39 | **De echte app** | `committed:ricardo_whatsapp` with `design_it_yourselves`, close-outs through the app ≥ 80 % (Check), and `close_out_redesign_with_monteurs` live (directly or through the repair quest); the WhatsApp group kept for everything else | V: Ricardo's phone with a birthday cake in the group; S on users' workarounds as requirements | RP, AI | Needs the redesign shipped, so it includes the release lesson; the group is not taken away. |
 | D40 | **Klein en vaak** | 10 consecutive releases (`it_features.release`) with no incident linked to them, after `ci_cd_pipeline`, with `flag:skipped_tests` never set | T "Klein en vaak"; R on Reinertsen ("Kleine stappen zijn veiliger dan grote; ze voelen alleen niet zo.") | LT | The no-skipped-tests guard; a streak of quality, not of speed. |
 | D41 | **De boer met de windmolen** | Hanneke's edge-case suite (`hanneke_writes_first` or `edge_cases_first`) catches a defect before release: a sim event when a change touches a tagged edge case | V: a toy wind turbine on Hanneke's desk, then in the vitrine; Tr +1 testers | RP | An event the player cannot cause directly; it rewards the people-first choice made earlier. |
 | D42 | **Wie het vroeg** | The crew strategy chosen with Marco's commitment through `volunteers_first` or `rotation_quarter`, no overtime option, and no monteur in a moved crew leaves within 180 days | T "Wie het vroeg"; Marco's postcard from the Lindeveld depot | RP | Needs the 180-day retention, not just the talk. |
 | D43 | **De cirkel** | A person the player coached (D23) completes a `coach` session of their own with someone else (Joost coaching Anouk after `coach_work_prep_lead`; a beat with a check) | V: a second Kata card, in Joost's handwriting; R ("Je bent pas klaar als zij het zonder jou kunnen.") | RP, AI | Needs the player's own coaching done by the book first. |
 | D44 | **Eerst wie het nodig heeft** | `classify_at_intake` with Jeroen's commitment and the sports-hall temptation declined, and De Linde's extension connected within the act | V: a thank-you drawing from De Linde's residents; Rep +2 | RP, LT | Needs the declined favour and a delivered priority customer. |
+
+**Moved to tier 4** with the customer portal (decided IT order): **"Gewone taal"**. Trigger: Noor listens in with Esra, status calls fall ≥ 30 %, and the forecast date ships. Reward: Esra's headset. It is numbered in the tier-4 draft.
 
 **After the principle check, dropped:**
 - **"Snelle trein"** (a PI with ≥ 90 % predictability): it could be earned by committing to very little, so it rewards sandbagging.
@@ -241,7 +243,7 @@ Audit §4.2 decided: unfound discoveries of an act show a cryptic hint when the 
 - D36: "Sommige straten gaan te vaak open."
 - D37: "Een snelle brug kan langzaam maken."
 - D38: "Een lege map is ook een getal."
-- D39: "Wie de pagina schreef, had de klant nooit gehoord."
+- D39: "De beste app had iemand al gebouwd. In een chatgroep."
 - D40: "Klein en vaak, zonder iets over te slaan."
 - D41: "Iemand onthield de rare gevallen."
 - D42: "De kaart ziet stippen."
@@ -282,7 +284,7 @@ Sessions are 15–40 minutes (GDD). In-game time per session varies widely: a Ch
 The audit's mix rule (no two consecutive mains of the same shape) extended to tier 3:
 
 - **Act IV:** follow-the-stream (map) → investigation + people (long drives) → crisis with a clock (training) → strategic choice (crew) → fork dilemma (Havenzij) → people (kaizen, the team leads) → data puzzle + people (priority) → crisis with a clock (nitrogen) → sustain (stop starting).
-- **IT:** follow-the-change (map) → investigation with a twist (status page) → people (release, Erwin) → fork dilemma → people + data (regression, Hanneke) → strategic and people (PI, Carla).
+- **IT:** follow-the-change (map) → investigation with a twist (the field app) → people (release, Erwin) → fork dilemma → people + data (regression, Hanneke) → strategic and people (PI, Carla).
 
 No two adjacent mains share a shape. Both chains include every shape the audit's §5.2 requires per act.
 
@@ -341,7 +343,7 @@ The session layer is the gap at every act. §2 is the fix, and it is mostly UI a
 | R7 | **A player who never talks** to anyone | all | Talks are optional clue sources (dialog spec §5.1), so the game stays playable. But the missed people are *felt*: debrief variants that name who was not asked ("Marco vertelt je niets meer dan nodig"), and the strategy screen's locked options. The pull is curiosity, not a gate. |
 | R8 | Toasts feel cheap in Act I | Act I | ≤ 1 discovery toast per in-game day (§4.3). |
 | R9 | A ruined talk or failed Check ends a session on a bad note | all | §2.2: the end-of-day card always gives the moment, the retry time and, for a main, Ruud's question. |
-| R10 | The IT track feels like a different game | tier 3 | It starts at the customer the player already knows (the portal, El Amrani, Esra) and keeps the same verbs, tools, people and Check. The release twist ties it back to the grid's own lesson (batches). |
+| R10 | The IT track feels like a different game | tier 3 | It starts with the monteurs the player already knows (Marco's meter-cupboard photos, Rachid's retyping, Ricardo's WhatsApp group) and keeps the same verbs, tools, people and Check. The release twist ties it back to the grid's own lesson (batches). |
 
 ### 7.3 Verdict
 
@@ -368,19 +370,21 @@ A small local log, never sent anywhere: a file in the save folder, readable as t
 
 ---
 
-## 9. Questions for Merijn
+## 9. Questions for Merijn: decided
 
-Each has a recommended option (**bold**).
+Merijn answered on 2026-10-15 (PLAN.md "Decisions Made"). All took the recommended option; each is logged under "Claude's calls, pending Merijn" so he can overrule it.
 
-1. **The terugblik card when the game opens.** **(a) Yes: one line from Ruud, up to three lines (Veranderd · Wacht op je · Komt eraan), one button.** (b) No card; the dagstart is enough. *(a) answers a returning player's first question, "where was I?", in ten seconds without telling them what to do.*
-2. **A "good moment to stop" note at the dagstart after ~30 real minutes.** **(a) Yes, small and quiet.** (b) No. *(a) treats the player's time with respect; it also makes the dagstart the natural cliffhanger point.*
-3. **The *Intussen* panel and a named time skip during a Check.** **(a) Yes, both; the skip stops at beats with people.** (b) Only the skip. (c) Neither. *The Check wait is the biggest quit risk in the design.*
-4. **At most one discovery toast per in-game day** (others queued to the next terugblik). **(a) Yes.** (b) No limit. *(a) keeps discoveries special and gives the return session a gift.*
-5. **At most two new side offers per in-game week.** **(a) Yes.** (b) Show all that unlock at once. *(a) turns a list into a world.*
-6. **The idle-chain beat in tier 3** (after 45 days without progress in one chain). **(a) Yes, once per idle stretch.** (b) No; the player chooses freely. *(a) is information, not pressure, and keeps the IT track from being forgotten.*
-7. **The ten tier-3 discoveries (D35–D44).** **(a) Add all ten.** (b) Fewer: D37, D38, D40, D42 and D44 only. *Each passed the principle check; (a) gives tier 3 the same density as Act II.*
-8. **A local playtest log.** **(a) Yes: a readable text file in the save folder, opt-out in settings, never sent.** (b) No log. *Only real play can tell whether a mission takes 20 or 60 minutes.*
-9. **Lines the game will not cross** (§6: no real-time timers, no loss for stopping, no streaks, no guilt). **(a) Record them as a design rule in CLAUDE.md §2 next to "Setbacks, never game over".** (b) Keep them in this doc only. *They follow from "respect for people" and protect the game from engagement tricks later.*
+1. **The terugblik card.** **Decided (a).**
+2. **A "good moment to stop" note at the dagstart.** **Decided (a).**
+3. **The *Intussen* panel and a named time skip.** **Decided (a).**
+4. **At most one discovery toast per in-game day.** **Decided (a).**
+5. **At most two new side offers per in-game week.** **Decided (a).**
+6. **The idle-chain beat in tier 3.** **Decided (a).**
+7. **The ten tier-3 discoveries (D35–D44).** **Decided (a)**; D39 is now "De echte app" (the field app comes first, see §4.2).
+8. **A local playtest log.** **Decided (a).**
+9. **Lines the game will not cross.** **Decided (a):** now a CLAUDE.md §2 rule, "Respect the player's time": no real-time timers, no loss for stopping, no streaks, no guilt.
+
+Related decisions: hidden rewards show as silhouettes plus end-of-act hints (§4.4); people met while walking around show a low-energy bar inviting a short talk (§2.3, Persoon); the IT track starts with the field app (§3, §5.3).
 
 ---
 
