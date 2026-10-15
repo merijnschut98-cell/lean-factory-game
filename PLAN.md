@@ -270,7 +270,7 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
   - ✅ Tier-3 missions, content-ready: `docs/superpowers/specs/2026-10-15-tier3-missions-draft.md` (Act IV and the parallel IT chapter: 29 missions, 17 problems, 58 countermeasures, 20 dialogs; 11 questions). For K6, K7, K9.
   - ✅ Engagement loop: `docs/superpowers/specs/2026-10-15-engagement-loop.md` (session hooks, the Check wait, act cliffhangers, hidden rewards D35–D44, pacing, the "players keep playing" check; 9 questions).
   - ✅ Tier-2 draft reviewed with dialogs (`docs/superpowers/specs/2026-10-15-tier2-dialogs.md`): findings T1–T10 for the builder, 17 Act III talks, 3 walk-around check-ins, Sanne's coaching script.
-  - ⬜ Tier-4 missions, content-ready (Act V and the tier-4 IT chapter; the finale stays a placeholder).
+  - ✅ Tier-4 missions, content-ready (`docs/superpowers/specs/2026-10-15-tier4-missions-draft.md`): Act V and the tier-4 IT chapter "Het digitale loket"; the finale stays a placeholder; 9 questions for Merijn (recommended options apply by the standing rule).
 - ⬜ **Dialog system: build per spec** (`docs/superpowers/specs/2026-10-15-dialog-system-design.md`, tasks D1–D11 in its §13; design ✅ 2026-10-15, Merijn's open questions in its §14). A state-driven conversation: openness, trust, mood and hidden layers (position → interest → concern); MORE PIES listening moves plus advocacy, pressure and blame; a visible meter that shows feeling, never the right reply; commitment vs compliance fed into sustain.
   - ⬜ D1: content schema + validator: `people.yaml` (with C5/K3), `dialogs.yaml`, `dialog_lines.yaml`, vocabularies (needs C1, C19)
   - ⬜ D2: `Dialog` (rules): moves, Δ rules, repetition, the ceiling, layers and the cue, patience, outcomes
