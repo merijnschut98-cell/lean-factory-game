@@ -1243,6 +1243,14 @@
      "key": true,
      "text": "'Intake en Werkvoorbereiding zijn tevreden, hun cijfers zijn goed. Maar niemand kijkt naar mijn terugrit, of naar de klant die wacht tot de aansluiting echt klaar is.'",
      "tool": "conversation"
+    },
+    {
+     "at": "connections.design",
+     "depth": 2,
+     "dialog": "joost_output_kpi",
+     "key": true,
+     "text": "'Werkvoorbereiding stuurt op ontwerpen per week omdat de manager er elke maandag naar vraagt. Een doorlooptijd die pas na maanden beter wordt, voelt als een risico.'",
+     "tool": "conversation"
     }
    ],
    "countermeasures": {

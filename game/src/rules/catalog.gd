@@ -18,6 +18,11 @@ var kpis := KpiMenu.new()
 var concepts: Dictionary[String, ConceptDef] = {}
 ## The senior manager who coaches the main mission: {name, role, stages}.
 var coach: Dictionary = {}
+## The cast, their conversations and the shared lines (content/dialogs.yaml).
+## A data folder without dialogs.json has none (a content set without people).
+var persons: Array[PersonDef] = []
+var dialogs: Array[DialogDef] = []
+var dialog_bank: Dictionary = {}
 ## The first thing wrong with the files; "" when the catalogue is usable.
 var error := ""
 
@@ -37,6 +42,18 @@ static func load_from(dir: String = DATA_DIR) -> Catalog:
 		return c
 	for concept in glossary:
 		c.concepts[concept.id] = concept
+	if FileAccess.file_exists(dir + "/dialogs.json"):
+		var talk := c._load(dir + "/dialogs.json", "people", PersonDef.from_dict, c.persons)
+		if talk.is_empty():
+			return c
+		var cast := c.persons.map(func(p: PersonDef) -> String: return p.id)
+		for d: Variant in talk.get("dialogs", []):
+			var def := DialogDef.from_dict(JsonFile.dict_or_empty(d))
+			c._keep_first(def.error if not def.error.is_empty() or def.person in cast else
+				"dialog %s: unknown person %s" % [def.id, def.person])
+			c.dialogs.append(def)
+		c.dialog_bank = JsonFile.dict_or_empty(talk.get("bank"))
+		c._keep_first(Dialog.bank_error(c.dialog_bank))
 	var files := Array(DirAccess.get_files_at(dir)).filter(func(f: String) -> bool:
 		return f.begins_with(PROBLEM_FILES) and f.ends_with(".json"))
 	files.sort()

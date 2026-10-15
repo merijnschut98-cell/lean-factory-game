@@ -239,3 +239,34 @@ func test_an_old_save_reads_its_act_as_sustainment() -> void:
 	var old := RegionState.capture(r)
 	old.erase("drift_from")
 	assert_eq(RegionState.restore(RulesFixture.region(), old)["error"], "")
+
+
+# ── Buy-in: commitment versus compliance (dialog spec §4.2) ─────────────────
+
+func test_a_fix_its_owner_stands_behind_lasts_longer() -> void:
+	var r := _resolved(true)
+	var life := Sustain.life_days(30.0, Sustain.WEIGHTS["standard_work"])
+	assert_eq(r.state["custom_design"].buy_in, "none", "today's behaviour: nobody owns it")
+	assert_near(r.life_days("custom_design"), life, 1e-9)
+	r.state["custom_design"].buy_in = "commitment"
+	assert_near(r.life_days("custom_design"), life * 1.25, 1e-9)
+	r.state["custom_design"].buy_in = "compliance"
+	assert_near(r.life_days("custom_design"), life * 0.6, 1e-9, "compliance lasts while the pressure lasts")
+	# The spec's example: the Obeya (45 days), standardised.
+	assert_near(Sustain.life_days(45.0, 0.6) * Sustain.BUY_IN["commitment"], 122.3, 0.1)
+	assert_near(Sustain.life_days(45.0, 0.6) * Sustain.BUY_IN["compliance"], 58.7, 0.1)
+
+
+func test_buy_in_is_saved_and_an_old_save_has_none() -> void:
+	var st := ProblemState.new("custom_design")
+	st.buy_in = "compliance"
+	var restored := ProblemState.new("custom_design")
+	assert_true(restored.load_dict(st.to_dict()))
+	assert_eq(restored.buy_in, "compliance")
+	var old := st.to_dict()
+	old.erase("buy_in")
+	assert_true(restored.load_dict(old))
+	assert_eq(restored.buy_in, "none")
+	old["buy_in"] = "bribed"
+	assert_true(restored.load_dict(old))
+	assert_eq(restored.buy_in, "none", "an unknown buy-in reads as none")

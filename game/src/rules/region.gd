@@ -712,13 +712,14 @@ func health(problem_id: String) -> float:
 	return Sustain.health(st.wear) if st != null and st.phase == P.RESOLVED else 1.0
 
 
-## The days of neglect the fix lasts at today's habits (Sustain.life_days);
-## 0 when there is no fix.
+## The days of neglect the fix lasts at today's habits (Sustain.life_days),
+## times its owner's buy-in (Sustain.BUY_IN); 0 when there is no fix.
 func life_days(problem_id: String) -> float:
 	var st: ProblemState = state.get(problem_id)
 	if st == null or st.phase != P.RESOLVED or not countermeasures.has(st.a3.get("cm", "")):
 		return 0.0
-	return Sustain.life_days(Sustain.base_days(countermeasures[st.a3["cm"]]), sustain(problem_id)["strength"])
+	return Sustain.life_days(Sustain.base_days(countermeasures[st.a3["cm"]]), sustain(problem_id)["strength"]) \
+		* Sustain.BUY_IN[st.buy_in]
 
 
 ## Days until a resolved fix recurs if nothing changes: INF while a routine

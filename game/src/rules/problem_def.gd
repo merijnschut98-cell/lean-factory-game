@@ -65,6 +65,7 @@ static func from_dict(d: Dictionary) -> ProblemDef:
 		clue.depth = int(c.get("depth", 0))
 		clue.at = c.get("at", p.step)
 		clue.note = c.get("note", "")
+		clue.dialog = str(c.get("dialog", ""))
 		clue.teaches = PackedStringArray(c.get("teaches", []))
 		if not Investigation.TOOLS.has(clue.tool):
 			p.error = "problem %s clue %d: unknown tool %s" % [p.id, i, clue.tool]

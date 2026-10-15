@@ -12,6 +12,9 @@ var text: String
 var key: bool
 var depth: int
 var at: String
+## The dialog whose learned concern reveals it ("" for a gemba clue): no
+## gemba tool or quick question finds it (Investigation.revealable).
+var dialog: String
 ## Coach reflection for the debrief.
 var note: String
 var teaches: PackedStringArray
