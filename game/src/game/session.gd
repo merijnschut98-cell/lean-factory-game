@@ -328,6 +328,13 @@ func unprepared_countermeasures() -> Array[Dictionary]:
 	return out
 
 
+## What a countermeasure costs over a year, redoing it each time it fades
+## (Stewardship.year_cost; an estimate, for the A3); -1 for an unknown one.
+func year_cost(cm_id: String) -> int:
+	var cm: CountermeasureDef = region.countermeasures.get(cm_id)
+	return Stewardship.year_cost(cm) if cm != null else -1
+
+
 ## Whether a fact of the player's path holds ("chose:custom_design:
 ## standard_designs", "maturity>=2"; Missions.knows).
 func knows(fact: String) -> bool:

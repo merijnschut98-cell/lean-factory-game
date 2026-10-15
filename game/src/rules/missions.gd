@@ -85,7 +85,8 @@ var opened_at: Dictionary[String, int] = {}
 ## good, but the mission itself can still be done, without a clock, so its
 ## problem can still be solved another way (CLAUDE.md §2).
 var failed_once: Dictionary[String, bool] = {}
-## {type: accepted | completed | failed | reopened | checkin | repair, mission} for the UI (a
+## {type: accepted | completed | failed | reopened | checkin | repair, mission}
+## and {type: dividend | overload, ...} (Stewardship) for the UI (a
 ## new belt is a Region event; tell the player about a faded fix by
 ## `reopened`, not Region's `recurred`).
 var events: Array[Dictionary] = []
@@ -97,6 +98,10 @@ var facts := Facts.new()
 var _resolved: Dictionary[String, String] = {}
 ## Repair quests for poor fixes (Repairs; built here, like check-ins).
 var repairs := Repairs.new()
+## Dividends for fixes that hold, trust lost to overload (Stewardship).
+var stewardship := Stewardship.new()
+## Deadlines met because the fix was in place when the date came (R5).
+var deadline_kept: Dictionary[String, bool] = {}
 
 
 func _init(of_region: Region, mission_defs: Array[MissionDef], coach_def: Dictionary) -> void:
@@ -226,16 +231,21 @@ func update() -> void:
 	_reopen_faded()
 	_sync_checkins()
 	_sync_repairs()
+	events.append_array(stewardship.update(region))
 	for m in active():
 		if _goal_met(m):
 			_complete(m)
 	for m: MissionDef in defs.values():
-		if m.deadline_days < 0 or done_once.has(m.id) or failed_once.has(m.id) or not status(m.id) in ["available", "active"]:
+		if m.deadline_days < 0 or done_once.has(m.id) or failed_once.has(m.id) or deadline_kept.has(m.id) \
+				or not status(m.id) in ["available", "active"]:
 			continue
 		if not opened_at.has(m.id):
 			opened_at[m.id] = region.net.time
 		elif region.net.time > opened_at[m.id] + SimCalendar.days(m.deadline_days):
-			_fail(m)
+			if _fix_in_place(m):
+				deadline_kept[m.id] = true  # the A3 is in: the Check still judges it (R5)
+			else:
+				_fail(m)
 	_retire_orphans()
 	_lock_unprepared()
 
@@ -314,6 +324,7 @@ func _note_fix(p: ProblemDef, st: ProblemState) -> void:
 	var cm: String = st.a3["cm"]
 	facts.remove_prefix("chose:%s:" % p.id)
 	facts.add("chose:%s:%s" % [p.id, cm])
+	stewardship.noted(p.id, region.net.time)
 	for kind in ["standardised", "poor_fix"]:
 		facts.remove("%s:%s" % [kind, p.id])
 	if st.standardised:
@@ -331,6 +342,13 @@ func _lock_unprepared() -> void:
 	for c: CountermeasureDef in region.countermeasures.values():
 		if not c.needs.is_empty() and not needs_met(c.needs):
 			region.unprepared[c.id] = true
+
+
+## Whether an active mission's countermeasure is in place: its A3 submitted
+## (or further), so a deadline counts as met (audit R5, QA #19).
+func _fix_in_place(m: MissionDef) -> bool:
+	return status(m.id) == "active" and _holds_problem(m) \
+		and region.state[m.goal_problem].phase in [P.DOING, P.CHECK_READY, P.CHECKED, P.RESOLVED]
 
 
 ## Whether the mission's goal brings and holds a problem (a check-in looks
@@ -523,7 +541,7 @@ func drain_events() -> Array[Dictionary]:
 func to_dict() -> Dictionary:
 	return {"progress": progress.duplicate(true), "opened_at": opened_at.duplicate(), "done_once": done_once.keys(),
 		"failed_once": failed_once.keys(), "facts": facts.to_list(), "repair_due": repairs.to_dict(),
-		"heard": heard.duplicate()}
+		"heard": heard.duplicate(), "stewardship": stewardship.to_dict(), "deadline_kept": deadline_kept.keys()}
 
 
 ## Restore to_dict() output. Returns the mission ids the content no longer
@@ -536,6 +554,12 @@ func load_dict(d: Dictionary) -> Array[String]:
 	# Facts of Acts before the save are kept; old saves note them at the next update.
 	facts.load_list(d.get("facts", []))
 	repairs.load_dict(JsonFile.dict_or_empty(d.get("repair_due")))
+	stewardship.load_dict(JsonFile.dict_or_empty(d.get("stewardship")))
+	deadline_kept.clear()
+	var kept: Variant = d.get("deadline_kept", [])
+	for id: Variant in kept if kept is Array else []:
+		if defs.has(str(id)):
+			deadline_kept[str(id)] = true
 	heard.clear()
 	var lines: Variant = d.get("heard", [])
 	for line: Variant in lines if lines is Array else []:

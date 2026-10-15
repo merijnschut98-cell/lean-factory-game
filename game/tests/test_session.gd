@@ -221,6 +221,8 @@ func test_the_mission_is_played_end_to_end() -> void:
 	assert_eq(s.mission_debrief(MISSION), s.missions.defs[MISSION].debrief)
 	assert_eq(s.mission_briefing(MISSION), s.missions.defs[MISSION].briefing)
 	assert_eq(s.unprepared_countermeasures(), [], "nothing in today's content needs a preparation")
+	assert_eq(s.year_cost("standard_designs"), Stewardship.year_cost(s.region.countermeasures["standard_designs"]))
+	assert_eq(s.year_cost("ghost"), -1)
 
 	var types := s.drain_events().map(func(e: Dictionary) -> String: return e["type"])
 	for expected in ["accepted", "check_ready", "completed"]:
