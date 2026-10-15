@@ -51,7 +51,7 @@ If the missions are weak, the game is weak. Every mission must:
   2. **Respect for people comes first.** Trust and reputation also measure respect: keeping, developing and rewarding talent pays; burning people out or blaming them costs.
   3. **Always improve.** Standing still is sliding back (see sustain-or-decay and stagnation).
 - Always one main mission at a time and at most three side missions.
-- A dedicated agent keeps designing, auditing and improving missions; Claude tells Merijn when that stops.
+- Dedicated agents keep designing, auditing and improving missions **and dialogs** (the same agents: bad dialogs make players quit) continuously; Claude tells Merijn when that stops.
 
 ### Rules
 - **Progressive RPG through missions.** The player advances by completing missions. New and harder missions unlock as the player progresses; nothing is open from the start.
