@@ -12,8 +12,21 @@ const DAYS := 150
 const KPI_WINDOW_DAYS := 60
 
 
+## A region on the real network as a player meets it, after the game's
+## warm-up (the Check measures against the stream's own flow, which an empty
+## network does not have yet).
 func _region(c: Catalog) -> Region:
-	return Region.new(Network.load_file(Network.DEFAULT_PATH, SEED), c.problems, c.countermeasures, Profile.new())
+	return Region.new(NetworkState.copy(_warm_network()), c.problems, c.countermeasures, Profile.new())
+
+
+static var _warm: Network
+
+
+static func _warm_network() -> Network:
+	if _warm == null:
+		_warm = Network.load_file(Network.DEFAULT_PATH, SEED)
+		_warm.advance_days(GameSession.WARMUP_DAYS)
+	return _warm
 
 
 func test_the_catalogue_loads() -> void:
@@ -43,7 +56,7 @@ func _solve(c: Catalog, p: ProblemDef) -> Dictionary:
 	_experiment(r, p, _investigate(r, p))
 	r.advance_days(Region.CHECK_DAYS)
 	var check := r.check(p.id)
-	assert_true(check.get("passed", false), "%s: check passes" % p.id)
+	assert_true(check.get("passed", false), "%s: check passes (%s)" % [p.id, check.get("forecast", {}).get("gains")])
 	return r.act(p.id, true)
 
 
@@ -120,7 +133,8 @@ static func _hurt_after_days(p: ProblemDef) -> Network:
 ## How much worse the problem makes its stream, as a ratio above 1, through
 ## the mechanism it works by. Lead-time KPIs of two runs over a few months
 ## are too noisy to compare (the random sequences diverge after the first
-## different draw), so: throughput problems by capacity; rework and slow work
+## different draw), so: throughput and capacity problems by capacity (where it
+## drops); rework and slow work
 ## by the extra load on the team it hits hardest (deterministic: Capacity);
 ## the rest by the measured waiting at their step. A first-time-right problem
 ## is also measured by the drop in first-time-right (base over hurt, over the
@@ -140,8 +154,10 @@ static func _harm(p: ProblemDef) -> float:
 static func _flow_harm(p: ProblemDef) -> float:
 	var before := Capacity.analyse(RulesFixture.real_network([], SEED))
 	var after := Capacity.analyse(RulesFixture.real_network([p.id], SEED))
-	if p.kpi == "throughput":
-		return before["streams"][p.stream_id()]["capacity_per_week"] / after["streams"][p.stream_id()]["capacity_per_week"]
+	if p.kpi in ["throughput", "capacity"]:
+		var ratio: float = before["streams"][p.stream_id()]["capacity_per_week"] / after["streams"][p.stream_id()]["capacity_per_week"]
+		if ratio > 1.0:
+			return ratio
 	var worst := 1.0
 	for pool: String in before["pools"]:
 		if before["pools"][pool]["load"] > 0.0:

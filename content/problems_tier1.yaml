@@ -24,7 +24,12 @@ problems:
     waste: defects
     severity: medium
     visibility: obvious
-    kpi: lead_time
+    # Less rework gives the intake team back time (+18 % capacity, the same on
+    # every seed). First time right over finished orders lags: a returned
+    # application finishes weeks later, so a fresh problem's Check shows it
+    # on some seeds only (probe 2026-10-15: −1 to +43 %); lead time hardly
+    # moves, since most of it is waiting further down the stream.
+    kpi: capacity
     symptoms:
       - Veel aanvragen gaan terug naar de klant met een verzoek om aanvulling.
       - Klanten bellen na weken om te vragen waar hun aansluiting blijft.
@@ -188,11 +193,12 @@ problems:
     waste: inventory
     severity: medium
     visibility: hidden
-    # Audit L5 asked for wip_age, but in the simulation revision comes before
-    # the close-out, so the backlog holds finished connections back, and the
-    # stream's open-work age is set by the months-long reinforcement waits
-    # (measured: 97 → 97 days). Throughput is what the Check can see.
-    kpi: throughput
+    # Audit L5 asked for wip_age, but revision comes before the close-out and
+    # the stream's open-work age is set by the reinforcement waits (97 → 97
+    # days). The daily template gives the GIS team back a fifth of its time
+    # (+21 % capacity); throughput only follows once a backlog has built up
+    # (probe 2026-10-15: −0 to +16 %).
+    kpi: capacity
     symptoms:
       - Bij Revisie & GIS ligt een stapel schetsen van opgeleverde aansluitingen.
       - Aansluitingen zijn technisch klaar maar administratief nog niet af.
@@ -225,7 +231,10 @@ problems:
     waste: defects
     severity: high
     visibility: obvious
-    kpi: lead_time
+    # Digging damage adds outages, not longer ones: outage lead time does not
+    # move. Fewer damages give the monteurs back time (+6 % capacity, probe
+    # 2026-10-15).
+    kpi: capacity
     symptoms:
       - Overdag komen veel storingen binnen door kabelschade bij graafwerk.
       - Monteurs worden voor graafschade van gepland werk gehaald.
@@ -337,7 +346,9 @@ problems:
     waste: waiting
     severity: high
     visibility: subtle
-    kpi: throughput
+    # The fast lane frees the grid analysts (+38 % capacity); throughput only
+    # follows where demand waits for them (probe 2026-10-15: +0 to +13 %).
+    kpi: capacity
     symptoms:
       - Op het bord van Netstrategie staan tientallen netstudies in de wachtrij.
       - Nieuwe aansluitingen wachten weken op een netstudie, omdat congestieonderzoeken voorgaan.
@@ -455,7 +466,9 @@ problems:
     waste: inventory
     severity: high
     visibility: hidden
-    kpi: lead_time
+    # Released capacity lets more requests through (+9 to +30 % granted a week
+    # over 6 seeds, probe 2026-10-15); their lead time is months long and noisy.
+    kpi: throughput
     symptoms:
       - De wachtrij voor transportcapaciteit groeit, terwijl de stations op het drukste moment niet vol zitten.
       - Ondernemers op de wachtlijst vragen waarom hun buurman wel capaciteit heeft en die niet gebruikt.
