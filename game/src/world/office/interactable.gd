@@ -14,6 +14,9 @@ var id := ""
 var kind := ""
 ## For a place: the step ("connections.design").
 var place := ""
+## Whether the cursor is over its ring (the ring lights up).
+var hovered := false
+var _ring_mesh: MeshInstance3D
 
 
 static func create(marker_id: String, at: Transform3D) -> Interactable:
@@ -26,8 +29,17 @@ static func create(marker_id: String, at: Transform3D) -> Interactable:
 	else:
 		i.kind = marker_id
 	i.transform = at
-	i.add_child(_ring())
+	i._ring_mesh = _ring()
+	i.add_child(i._ring_mesh)
 	return i
+
+
+func set_hovered(on: bool) -> void:
+	if on == hovered:
+		return
+	hovered = on
+	_ring_mesh.scale = Vector3(1.18, 0.35, 1.18) if on else Vector3(1, 0.2, 1)
+	(_ring_mesh.material_override as StandardMaterial3D).albedo_color = Color(Palette.VOLTANA_GREEN, 1.0 if on else 0.75)
 
 
 static func _ring() -> MeshInstance3D:

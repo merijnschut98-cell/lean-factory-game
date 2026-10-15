@@ -304,25 +304,20 @@ func test_toasts_keep_only_the_latest_few() -> void:
 	_close(office)
 
 
-func test_after_esc_a_click_on_the_view_catches_the_mouse_again() -> void:
+func test_the_mouse_stays_free_and_esc_closes_a_panel() -> void:
 	var office := _office()
-	assert_true(office.mouse_captured)
-	assert_false(office.ui.hud.mouse_hint.visible)
+	assert_false("mouse_captured" in office, "no mouse capture in third person")
+	assert_false("mouse_hint" in office.ui.hud, "no hint to catch the mouse again")
+	assert_eq(office.ui.hud.controls_text(),
+		"WASD/klik lopen   ·   Z/C draaien   ·   wiel zoomen   ·   E gebruiken   ·   J aanwijzingen   ·   M kaart   ·   K begrippen")
 	office.player.escape_pressed.emit()
-	assert_false(office.mouse_captured, "Esc frees the mouse")
-	assert_true(office.ui.hud.mouse_hint.visible, "a hint says how to get it back")
-	assert_eq(office.ui.hud.mouse_hint.text, "Klik om verder te lopen")
-	var click := InputEventMouseButton.new()
-	click.button_index = MOUSE_BUTTON_LEFT
-	click.pressed = true
-	office._unhandled_input(click)
-	assert_true(office.mouse_captured, "a click catches it")
-	assert_false(office.ui.hud.mouse_hint.visible)
+	assert_false(office.ui.is_busy(), "Esc with nothing open does nothing")
 	office.interact(office.interactable("coach"))
-	assert_false(office.mouse_captured, "a panel frees the mouse")
-	assert_false(office.ui.hud.mouse_hint.visible, "but needs no hint")
-	office._unhandled_input(click)
-	assert_false(office.mouse_captured, "a click with a panel open is for the panel")
+	assert_false(office.player.active, "a panel stops the player")
+	assert_false(office.rig.active, "and the camera")
+	office.player.escape_pressed.emit()
+	assert_false(office.ui.is_busy(), "Esc closes it")
+	assert_true(office.player.active and office.rig.active)
 	_close(office)
 
 

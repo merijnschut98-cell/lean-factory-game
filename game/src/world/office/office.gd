@@ -1,9 +1,10 @@
 class_name Office
 extends Node3D
-## Voltana's connections office, played in first person. Loads the office
-## model (or a plain stand-in while it is missing), adds the sun and the
-## environment, finds the interaction markers in the geometry by their glTF
-## extras or their name, and routes E at a marker to the UI. The game
+## Voltana's connections office, played in third person (Sims-like). Loads
+## the office model (or a plain stand-in while it is missing), adds the sun
+## and the environment, finds the interaction markers in the geometry by their
+## glTF extras or their name, and routes E at a marker, or a click on its
+## ring, to the UI. A left click on the floor walks the player there. The game
 ## itself lives in the GameSession; this scene only wires it to the world.
 
 const MODEL := "res://assets/office/office.glb"
@@ -19,6 +20,18 @@ const REACH := 1.6
 const ENVIRONMENT := "res://assets/office/office_environment.tres"
 ## The sun through the south windows, as in the model's preview.
 const SUN_DIRECTION := Vector3(0.36, -0.53, -0.77)
+## What the raised camera cuts away (by name in the geometry): the ceiling and
+## what hangs from it, and the slabs (the roof).
+const CUTAWAY: Array[String] = ["shell_ceiling", "light_panels", "air_diffusers", "building_slabs"]
+## The camera's first view from the entrance: south-south-east over both
+## teams to the windows, with room behind it to stay at its usual angle.
+const START_YAW := -2.64
+## Framing a station: the point looked at lies this far (m) ahead of where
+## the player stands, at desk-top height (the in-tray, the screens, the board).
+const FRAME_AHEAD := 0.9
+const FRAME_HEIGHT := 0.8
+## A click this close (m) to a ring's centre is a click on the ring.
+const RING_CLICK := Interactable.RING_RADIUS + 0.3
 
 ## The simulation's luck for a new game.
 @export var seed_value := 1
@@ -28,14 +41,16 @@ const SUN_DIRECTION := Vector3(0.36, -0.53, -0.77)
 ## the mission board.
 @export var training := true
 
-## Whether the mouse steers the view (else it is free: Esc, or a panel).
-var mouse_captured := false
-
 var session: GameSession
 var geometry: Node3D
 var player: Player
+var rig: CameraRig
 var ui: GameUI
 var interactables: Array[Interactable] = []
+## The walk grid, baked on first use.
+var _nav: OfficeNav
+## The ring clicked last: opened when the walk there ends.
+var _walk_goal: Interactable
 
 
 func _ready() -> void:
@@ -50,6 +65,7 @@ func build() -> void:
 	session = GameSession.new_game(seed_value, data_dir, training)
 	geometry = _load_geometry()
 	add_child(geometry)
+	_cut_away_ceiling()
 	_add_light()
 	for id in INTERACTIONS:
 		var marker := find_marker(id)
@@ -60,6 +76,7 @@ func build() -> void:
 		else:
 			push_warning("office: no marker for " + id)
 	_add_player()
+	_add_camera()
 	ui = GameUI.new()
 	add_child(ui)
 	ui.setup(session)
@@ -68,10 +85,10 @@ func build() -> void:
 	if ui.playable():
 		ui.office_map.show_office(floor_rect(), map_places(), player)
 		ui.office_map.footprints = map_footprints()
-	_capture_mouse(true)
 
 
 func _process(_delta: float) -> void:
+	player.view_yaw = rig.yaw
 	if session.error.is_empty() and not ui.is_busy():
 		ui.hud.show_prompt(prompt_for(interactable_near(player.position)))
 
@@ -135,11 +152,11 @@ func in_office(node: Node3D) -> Transform3D:
 	return t
 
 
-## The nearest interaction point within REACH on the floor, or null. `at`
-## is in the office's space (the player's position).
-func interactable_near(at: Vector3) -> Interactable:
+## The nearest interaction point within `reach` on the floor, or null. `at`
+## is in the office's space (the player's position, or a click).
+func interactable_near(at: Vector3, reach := REACH) -> Interactable:
 	var best: Interactable = null
-	var best_distance := REACH
+	var best_distance := reach
 	for i in interactables:
 		var d := Vector2(at.x - i.position.x, at.z - i.position.z).length()
 		if d <= best_distance:
@@ -219,7 +236,7 @@ func floor_rect() -> Rect2:
 	return r.grow(2.0)
 
 
-## Use an interaction point: open its panel.
+## Use an interaction point: open its panel, the camera framing the station.
 func interact(target: Interactable) -> void:
 	if target == null or not session.error.is_empty():
 		return
@@ -232,6 +249,8 @@ func interact(target: Interactable) -> void:
 			ui.open_coach()
 		"mission_board":
 			ui.open_mission_board()
+	if ui.is_busy():
+		frame(target)
 
 
 func _add_player() -> void:
@@ -252,14 +271,119 @@ func _add_player() -> void:
 		if ui.is_busy():
 			ui.close_panels()
 		else:
-			_capture_mouse(not mouse_captured))
+			player.stop())
+	player.arrived.connect(_on_arrived)
 
 
-## A left click on the view (no panel took it) catches a mouse Esc freed.
+func _add_camera() -> void:
+	rig = CameraRig.new()
+	rig.target = player
+	rig.bounds = floor_rect()
+	rig.yaw = START_YAW
+	add_child(rig)
+	rig.snap()
+	rig.hold_inspect.connect(func(on: bool) -> void:
+		var near := interactable_near(player.position)
+		if on and near != null and not ui.is_busy():
+			frame(near)
+		elif not on and not ui.is_busy():
+			rig.release())
+
+
+## Frame a station with the camera: its desk, in-tray and board, close by.
+func frame(target: Interactable) -> void:
+	var ahead := -target.basis.z
+	rig.inspect(frame_point(target), atan2(-ahead.x, -ahead.z))
+
+
+## The point the camera looks at when it frames `target`.
+func frame_point(target: Interactable) -> Vector3:
+	var ahead := -target.basis.z
+	ahead.y = 0
+	return target.position + ahead.normalized() * FRAME_AHEAD + Vector3.UP * FRAME_HEIGHT
+
+
+## The ceiling's meshes go on the layer the camera does not draw (they still
+## cast their shadow, so the room keeps its light).
+func _cut_away_ceiling() -> void:
+	for id in CUTAWAY:
+		var node := find_marker(id)
+		if node == null:
+			continue
+		for n in [node] + node.find_children("*", "VisualInstance3D"):
+			if n is VisualInstance3D:
+				(n as VisualInstance3D).layers = CameraRig.CUTAWAY_LAYER
+
+
+## A left click on the view (no panel took it): walk to that spot. A mouse
+## move lights up the ring under the cursor.
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT \
-			and not mouse_captured and not ui.is_busy():
-		_capture_mouse(true)
+	var clicked: bool = event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT
+	if not clicked and not event is InputEventMouseMotion:
+		return
+	var origin := to_local(rig.camera.project_ray_origin(event.position))
+	var ray := (to_local(rig.camera.project_ray_origin(event.position) + rig.camera.project_ray_normal(event.position)) - origin).normalized()
+	if ray.y >= -0.01:
+		return
+	var point := origin + ray * (-origin.y / ray.y)
+	if clicked:
+		click_floor(point)
+	else:
+		hover_floor(point)
+
+
+## Light up the ring at a floor point under the cursor (office space), and
+## only that one; the cursor becomes a hand over it.
+func hover_floor(point: Vector3) -> void:
+	var under := interactable_near(point, RING_CLICK) if not ui.is_busy() else null
+	for i in interactables:
+		i.set_hovered(i == under)
+	if DisplayServer.get_name() != "headless":
+		Input.set_default_cursor_shape(Input.CURSOR_POINTING_HAND if under != null else Input.CURSOR_ARROW)
+
+
+## Walk to a clicked floor point (office space); a click on a place's ring
+## walks there and opens it on arrival. False when the click is not for the
+## world (a panel is open, the content failed) or nothing can be reached.
+func click_floor(point: Vector3) -> bool:
+	if ui.is_busy() or not session.error.is_empty():
+		return false
+	_walk_goal = interactable_near(point, RING_CLICK)
+	var route := nav().path(player.position, _walk_goal.position if _walk_goal != null else point)
+	player.walk(route)
+	return not route.is_empty()
+
+
+func _on_arrived() -> void:
+	var goal := _walk_goal
+	_walk_goal = null
+	if goal != null and not ui.is_busy() and interactable_near(player.position) == goal:
+		interact(goal)
+
+
+## The walk grid, baked from the office's collision on first use.
+func nav() -> OfficeNav:
+	if _nav == null:
+		_nav = OfficeNav.bake(_collision_faces(), floor_rect())
+	return _nav
+
+
+## Every collision triangle of the geometry, in the office's space.
+func _collision_faces() -> PackedVector3Array:
+	var faces := PackedVector3Array()
+	for n in geometry.find_children("*", "CollisionShape3D", true, false):
+		var shape := (n as CollisionShape3D).shape
+		var local := PackedVector3Array()
+		if shape is ConcavePolygonShape3D:
+			local = shape.get_faces()
+		elif shape is BoxShape3D:
+			var box := BoxMesh.new()
+			box.size = shape.size
+			local = box.get_faces()
+		var to_office := in_office(n)
+		for v in local:
+			faces.append(to_office * v)
+	return faces
 
 
 ## The sun through the windows and the sky's ambient light.
@@ -281,16 +405,11 @@ func _add_light() -> void:
 
 func _on_panel_opened() -> void:
 	player.active = false
-	_capture_mouse(false)
+	player.stop()
+	rig.active = false
 
 
 func _on_panels_closed() -> void:
 	player.active = true
-	_capture_mouse(true)
-
-
-func _capture_mouse(capture: bool) -> void:
-	mouse_captured = capture
-	ui.hud.show_mouse_hint(not capture and not ui.is_busy())
-	if DisplayServer.get_name() != "headless":
-		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if capture else Input.MOUSE_MODE_VISIBLE
+	rig.active = true
+	rig.release()

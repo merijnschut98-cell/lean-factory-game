@@ -2,12 +2,14 @@ extends SceneTree
 ## Screenshots of the office in a given play state (needs a display, e.g. Xvfb):
 ##   xvfb-run -a godot --path game --rendering-driver opengl3 --resolution 1600x900 \
 ##     --script res://tools/play_shot.gd -- <state> <out.png> [frames]
-## States: office (first person at Werkvoorbereiding, HUD and prompt) ·
+## States: office (third person at Werkvoorbereiding, HUD and prompt) ·
+## overview (the same, zoomed out over the floor) · inspect (the camera
+## framing Werkvoorbereiding's station, as when right-click is held there) ·
 ## tools (the team's menu after some gemba work) · a3 (the A3, filled in) ·
 ## check (the Check result after the experiment) · act (the score after Act) ·
 ## board (the mission board) · coach (the coach's question) · map (the
 ## player map with the mission taken) · codex (the glossary after some
-## gemba work and an extra few concepts) · free (the mouse freed with Esc) ·
+## gemba work and an extra few concepts) ·
 ## training_board (Monday of the training week: the board with the skip) ·
 ## timelapse (the week played to Friday: the Act and the month ahead, with and
 ## without the standard).
@@ -27,7 +29,7 @@ func _initialize() -> void:
 func _run() -> void:
 	var args := OS.get_cmdline_user_args()
 	if args.size() < 2:
-		printerr("usage: -- <office|tools|a3|check|act|board|coach|map|codex|free|training_board|timelapse> <out.png> [frames]")
+		printerr("usage: -- <office|overview|inspect|tools|a3|check|act|board|coach|map|codex|training_board|timelapse> <out.png> [frames]")
 		quit(2)
 		return
 	var office: Office = load(SCENE).instantiate()
@@ -66,9 +68,14 @@ func _run() -> void:
 			_investigate(office, true)
 			office.session.region.profile.learn(["flow", "bottleneck_focus", "netbeheerder", "netcongestie", "kata_prediction"])
 			office.ui.toggle_codex()
-		"free":
+		"inspect":
 			_stand_at(office, DESIGN)
-			office.player.escape_pressed.emit()
+			office.frame(office.interactable(DESIGN))
+			office.rig.snap()
+		"overview":
+			_stand_at(office, DESIGN)
+			office.rig.zoom(100)
+			office.rig.snap()
 		"board", "training_board":
 			_stand_at(office, "mission_board")
 			office.interact(office.interactable("mission_board"))
@@ -89,12 +96,14 @@ func _run() -> void:
 	quit(0 if err == OK else 1)
 
 
-## Stand a step behind the marker, looking the way it faces.
+## Stand a step behind the marker, looking the way it faces; the camera
+## behind the player.
 func _stand_at(office: Office, id: String) -> void:
 	var at := office.interactable(id)
 	office.player.position = at.position + at.basis.z * 0.6
 	office.player.face(at.basis)
-	office.player.camera.rotation.x = deg_to_rad(-12)
+	office.rig.yaw = office.player.rotation.y
+	office.rig.snap()
 
 
 ## Take the mission and do the gemba work; `all` finds every key clue.

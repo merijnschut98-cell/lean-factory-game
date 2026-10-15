@@ -24,7 +24,7 @@ static func build() -> Node3D:
 	var root := Node3D.new()
 	root.name = "OfficePlaceholder"
 	_box(root, Vector3(W, 0.1, D), Vector3(W / 2, -0.05, -D / 2), Color("#8a9099")).name = "shell_floor"
-	_box(root, Vector3(W, 0.1, D), Vector3(W / 2, H + 0.05, -D / 2), Color("#f4f4f2"))
+	_box(root, Vector3(W, 0.1, D), Vector3(W / 2, H + 0.05, -D / 2), Color("#f4f4f2")).name = "shell_ceiling"
 	_box(root, Vector3(W, H, 0.2), Vector3(W / 2, H / 2, 0.1), WALL)
 	_box(root, Vector3(W, H, 0.2), Vector3(W / 2, H / 2, -D - 0.1), WALL)
 	_box(root, Vector3(0.2, H, D), Vector3(-0.1, H / 2, -D / 2), WALL)

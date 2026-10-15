@@ -1,7 +1,7 @@
 class_name Hud
 extends Control
 ## The heads-up display: a top bar (day and time, budget, XP and belt, the
-## active mission), the crosshair, the interaction prompt, the controls,
+## active mission), the interaction prompt, the controls,
 ## short messages (toasts, bottom right) when something happens, and cards
 ## (top right: a training day's glossary, the coach's debrief) that stay a
 ## while longer. It is drawn over the panels; toasts and cards hide while one
@@ -18,11 +18,8 @@ var budget_label: Label
 var xp_label: Label
 var mission_label: Label
 var prompt_label: Label
-## "Klik om verder te lopen", while Esc has freed the mouse.
-var mouse_hint: Label
 var _toasts: VBoxContainer
 var _cards: VBoxContainer
-var _crosshair: ColorRect
 
 
 func _init() -> void:
@@ -62,14 +59,6 @@ func _build_bar() -> void:
 
 
 func _build_centre() -> void:
-	_crosshair = ColorRect.new()
-	_crosshair.color = Color(1, 1, 1, 0.85)
-	_crosshair.size = Vector2(6, 6)
-	_crosshair.set_anchors_preset(Control.PRESET_CENTER)
-	_crosshair.position = -_crosshair.size / 2.0
-	_crosshair.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_crosshair)
-
 	prompt_label = Label.new()
 	prompt_label.add_theme_font_size_override("font_size", 26)
 	prompt_label.add_theme_color_override("font_color", Color.WHITE)
@@ -91,23 +80,19 @@ func _build_centre() -> void:
 	prompt_label.visible = false
 	add_child(prompt_label)
 
-	mouse_hint = prompt_label.duplicate()
-	mouse_hint.text = "Klik om verder te lopen"
-	mouse_hint.add_theme_font_size_override("font_size", 22)
-	mouse_hint.set_anchors_preset(Control.PRESET_CENTER)
-	mouse_hint.grow_vertical = Control.GROW_DIRECTION_END
-	mouse_hint.offset_left = 0
-	mouse_hint.offset_right = 0
-	mouse_hint.offset_top = 40
-	mouse_hint.offset_bottom = 40
-	mouse_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(mouse_hint)
-
 	var help := Label.new()
 	help.text = controls_text()
 	help.add_theme_font_size_override("font_size", 16)
 	help.add_theme_color_override("font_color", Color(1, 1, 1, 0.8))
 	help.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.6))
+	var backdrop := StyleBoxFlat.new()
+	backdrop.bg_color = Color(Palette.HUD_BAR, 0.7)
+	backdrop.set_corner_radius_all(14)
+	backdrop.content_margin_left = 14
+	backdrop.content_margin_right = 14
+	backdrop.content_margin_top = 4
+	backdrop.content_margin_bottom = 4
+	help.add_theme_stylebox_override("normal", backdrop)
 	help.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
 	help.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	help.offset_left = 20
@@ -143,7 +128,7 @@ func refresh() -> void:
 
 
 func controls_text() -> String:
-	return "WASD lopen   ·   muis kijken   ·   E gebruiken   ·   J aanwijzingen   ·   M kaart   ·   K begrippen   ·   Esc muis los"
+	return "WASD/klik lopen   ·   Z/C draaien   ·   wiel zoomen   ·   E gebruiken   ·   J aanwijzingen   ·   M kaart   ·   K begrippen"
 
 
 ## The active missions in the top bar: the main one first.
@@ -155,9 +140,8 @@ func mission_text() -> String:
 		return UiText.mission_title(m, session)))
 
 
-## The crosshair, toasts and cards; hidden while a panel is open.
+## The toasts and cards; hidden while a panel is open.
 func show_overlay(on: bool) -> void:
-	_crosshair.visible = on
 	_toasts.visible = on
 	_cards.visible = on
 
@@ -239,10 +223,6 @@ func toast_texts() -> Array[String]:
 	for l: Label in _toasts.get_children():
 		out.append(l.text)
 	return out
-
-
-func show_mouse_hint(on: bool) -> void:
-	mouse_hint.visible = on
 
 
 func _bar_label(text: String, color: Color = Color.WHITE) -> Label:
