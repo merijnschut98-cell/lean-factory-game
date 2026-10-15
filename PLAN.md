@@ -375,6 +375,16 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 
 ## Decisions Made
 
+- **Answers on missions and dialogs (Merijn, 2026-10-15, multiple choice).**
+  - Dialog meter: a bar that fills (openness), with arrows (▲/▼▼) for each reply's effect, no numbers. People met while walking around show a low-energy bar, inviting a spirit-lifting talk.
+  - Reply chips: all moves always visible. The first two talks (Act 0) are tutorials that cannot be ruined. Colleagues leave rarely (morale < 20 for 60 days and two ignored check-ins), closing a door, never the game.
+  - No dialect: standard Dutch for every character.
+  - Sustaining pays as a dividend at 90 and 180 days for a fix that holds. Overloading a team (> 95 % for 14 days under the player's experiment) costs trust −1.
+  - Hidden rewards show as silhouettes plus end-of-act hints in the codex.
+  - IT track: the field app comes first in tier 3, as in the catalogue (not the agent's proposed customer-first order).
+  - Customers are met by phone at the contact centre now; home visits come with the town map.
+  - Engagement red lines are a CLAUDE.md §2 rule ("Respect the player's time").
+  - The ~40 smaller open questions in the specs take their recommended option; each is logged under "Claude's calls, pending Merijn" so Merijn can overrule.
 - **Mission agents own dialogs too, continuously (Merijn, 2026-10-15).** The mission agents create, improve, redesign and audit dialogs as well as missions, always with at least one active; bad dialogs make players quit. Dialogs show a visible openness/trust meter (feeling, never the right reply); compliance without commitment decays faster (approved).
 - **Dialogs as give and take (Merijn, 2026-10-15; now a CLAUDE.md §2 rule).** Missions can hold dialogs with managers, customers, employees and others: they voice struggles, resist or block changes, and the player must bring them along (change a view, get the right KPIs used, win support). Never one right answer; progress comes from listening and perspective (MORE PIES). A ruined dialog costs a few points and can be retried later (e.g. after a day). Some dialogs build trust or lift spirits with no mission attached (respect for people). Design spec: `docs/superpowers/specs/2026-10-15-dialog-system-design.md` (written 2026-10-15); build tracked in Phase B ("Dialog system: build per spec"). ⬜
 - **Dialogs show a visible openness/trust meter that shows feeling, never the right reply (Merijn, 2026-10-15); compliance without commitment decays faster (approved).**
