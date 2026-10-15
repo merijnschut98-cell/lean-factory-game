@@ -6,13 +6,17 @@
 
 ## 0. What this covers and how to read it
 
-**Scope.** 29 missions:
+**Scope.** 28 tier-3 missions, plus two drafts kept ready for tier 4:
 - **Act IV, "Flow door de regio" (18):** the catalogue's 16 tier-3 missions, two of them re-scoped (§0.2), plus two additions:
   - `fix_household_rush`: households on the waiting list since 1 July 2026;
   - `repair_long_drives`: a worked repair quest.
-- **The IT track's tier-3 chapter, "Het digitale loket" (11):** Merijn's examples (the customer portal, the meter-data platform, the release train) as a chain that runs in parallel with Act IV from `t3_map_region` on. It re-scopes the start of the catalogue's Act VI (§0.2, item 7).
+- **The IT track's tier-3 chapter, "De app die niemand gebruikt" (10):** the catalogue's Act VI opening, as decided (field app first), running in parallel with Act IV from `t3_map_region` on:
+  - the field app the monteurs bypass;
+  - the release train;
+  - test environments, regression and PI planning.
+- **Two drafts for the tier-4 IT chapter (§2.8):** the customer portal and the meter-data platform, Merijn's other examples. They follow later.
 
-They bring **17 new problems**, **58 countermeasures**, **20 persuasion dialogs**, two expert topic sets and one coaching script.
+Tier 3 brings **16 new problems**, **57 countermeasures**, **20 persuasion dialogs**, two expert topic sets and one coaching script; the tier-4 drafts add 2 problems, 6 countermeasures and 2 dialogs.
 
 **Every mission names:**
 - the **principle** it tests (`principles`: `long_term`, `respect`, `improve`, as in the tier-2 draft);
@@ -56,15 +60,9 @@ Everything the tier-2 draft assumes (§0.1 there: `principles`, `temptations`, `
 4. **Cable pooling** is allowed only for wind and solar parks near each other, behind a connection above 2 MVA, applying together (art. 1(7) Elektriciteitswet 1998, carried into the Energiewet: *verify the article*). Storage and consumers are not yet allowed. The solar-field mission keeps to this.
 5. **Energy hubs** run on a *groepstransportovereenkomst* (GTO). In 2025 it was an ACM draft code decision with pilots (Liander, Deventer A1); *verify its final status*. The energy-hub side quest calls it a pilot.
 6. **The technician shortage's bottleneck is training.** Grid operators and contractors plan 5,000 extra technicians in five years (Climate Fund subsidy €25M); the biggest constraint named is training and supervision capacity, organised in 6–7 regions with ROCs. This grounds `training_capacity` as a constraint on *teaching*, not on applicants.
-7. **The IT track starts at the customer, not at the field app.** The catalogue's Act VI opens with the field app the monteurs bypass. Merijn's examples (customer portal, meter-data platform, release trains) connect to what the player already fixed in Acts I–III:
-   - the status callers;
-   - the EAN close-out;
-   - the silent meters.
-
-   So the tier-3 chapter follows the customer portal and the meter-data platform. The field app moves to the tier-4 chapter, where it meets Act V's asset data (Q3).
-   - Kept from the catalogue: `it_map_feature_stream`, `fix_release_twice_a_year`, the fork `fix_test_env_queue` (B) / `fix_code_review_wait` (N), `fix_manual_regression`, `fix_pi_overcommit`, `fix_ops_dev_wall`, `talk_rte`, `lsw_system_demo`.
-   - New: `fix_status_page_wrong`, `fix_meter_data_mandates`.
-   - Moved to tier 4: `fix_field_app_bypassed`, `fix_team_dependencies`, `fix_tech_debt`, `it_dora_metrics`.
+7. **The IT track's order (decided 2026-10-15): the field app first, as in the catalogue.** I had proposed starting at the customer (the portal and the meter-data platform); Merijn chose the catalogue's order.
+   - Tier 3 holds: `it_map_feature_stream` (re-anchored on the field app), `fix_field_app_bypassed`, `fix_release_twice_a_year`, the fork `fix_test_env_queue` (B) / `fix_code_review_wait` (N), `fix_manual_regression`, `fix_pi_overcommit`, `fix_ops_dev_wall`, `talk_rte`, `lsw_system_demo`.
+   - The customer portal (`fix_status_page_wrong`) and the meter-data platform (`fix_meter_data_mandates`) are kept as ready drafts for the tier-4 IT chapter (§2.8). The catalogue's `fix_team_dependencies`, `fix_tech_debt` and `it_dora_metrics` stay in tier 4 too.
 8. **The Havenzij fork must be a throughput fork.** In the catalogue, `underground_crowding` (B) is mostly a permit *wait*, and a wait adds lead time, not a capacity limit (audit L1). Here its harm sits at Havenzij's design step, the area's constraint: route puzzles and redesigns. `uneven_release` (N) is a batch at a wait step. So the fork honesty test (C15) compares throughput, and the non-bottleneck debrief names its lead-time gain.
 
 ### 0.3 Area and IT content the drafts need (for K6 and K9)
@@ -79,12 +77,13 @@ All numbers are **estimates**, sized so that no team is above 85 % in the base (
 | `hz_monteurs` | Monteurs Havenzij | 6 | 0.85 | |
 | `hz_work_prep` | Werkvoorbereiding Havenzij | 3 | 0.85 | Yusuf Demir's team; the area's constraint |
 | `trainers` | Opleidingscentrum | 4 | 0.9 | Patrick Smeets's instructors; feeds the C17c headcount ramp |
-| `portal_team` | Team Klantportaal | 6 | 0.85 | One of the ART's teams, with PO Noor Hendriks |
-| `data_team` | Team Meetdata | 6 | 0.85 | |
+| `app_team` | Team Veldapp | 6 | 0.85 | One of the ART's teams, with PO Noor Hendriks |
+| `platform_team` | Team Werkorderplatform | 6 | 0.85 | The work-order system behind the field app |
+| `portal_team`, `data_team` | Team Klantportaal, Team Meetdata | 6 each | 0.85 | Tier 4 (§2.8); in the ART from the start, but not the player's focus in tier 3 |
 | `testers` | Testers | 3 | 0.85 | |
 | `test_envs` | Testomgevingen | 2 | 1.0 | Environments modelled as a pool: two shared by the ART's teams |
 | `ops` | Beheer (IT operations) | 4 | 0.9 | |
-| `data_desk` | Mandaten & datalevering | 1 | 0.85 | One person checks mandates by hand |
+| `data_desk` | Mandaten & datalevering | 1 | 0.85 | Tier 4 (§2.8): one person checks mandates by hand |
 
 **Streams (new):**
 
@@ -94,9 +93,9 @@ All numbers are **estimates**, sized so that no team is above 85 % in the base (
 | `lv_feedin` | feed-in requests (solar fields) | request (`key_accounts`) → study (`grid_analysts`) → capacity_queue (wait) → offer (`key_accounts`) → connect (`lv_monteurs`) | 1 a month |
 | `hz_connections` | connection requests in Havenzij | release (wait: developers' batches) → intake (`intake`) → design (`hz_work_prep`) → permit (wait, 14 d) → planning (`planners`) → execution (`hz_monteurs`) → close_out (`meter_office`) | 8 a week |
 | `hz_reinforcement` | grid reinforcements (Havenzij substation and MS ring) | study (`grid_analysts`) → design (`work_prep`) → nature_permit (wait, 60 d) → build (wait: contractor, 40 d) | 1 every 2 months |
-| `it_features` | changes to the customer portal and the meter-data platform | idea (wait) → refine (`portal_team`) → build (`portal_team`) → review (`portal_team`) → test (`test_envs` + `testers`) → release (wait, `batch_days`) → in_use (wait) | 5 a week |
-| `it_incidents` | IT incidents | report (`ops`) → triage (`ops`) → fix (`data_team`) → deploy (`ops`) | 4 a week |
-| `meter_data` | requests for meter data under a customer mandate (P4) | request (wait) → mandate_check (`data_desk`) → deliver (wait: nightly) | 60 a week |
+| `it_features` | changes to the field app and the work-order platform (from tier 4 also the portal and the meter-data platform) | idea (wait) → refine (`app_team`) → build (`app_team`) → review (`app_team`) → test (`test_envs` + `testers`) → release (wait, `batch_days`) → in_use (wait) | 5 a week |
+| `it_incidents` | IT incidents | report (`ops`) → triage (`ops`) → fix (`platform_team`) → deploy (`ops`) | 4 a week |
+| `meter_data` (tier 4) | requests for meter data under a customer mandate (P4) | request (wait) → mandate_check (`data_desk`) → deliver (wait: nightly) | 60 a week |
 
 **Places** for the gemba tools follow the steps (`lv_connections.execution` is the depot yard in Oosthoek; `it_features.test` is the test room). The IT campus is one floor of the existing office building (the catalogue's `it_campus` unlock).
 
@@ -118,9 +117,9 @@ All numbers are **estimates**, sized so that no team is above 85 % in the base (
   - Erwin de Groot (release manager, CAB chair);
   - Hanneke Willems (senior tester);
   - Carla Wijnands (directeur Klant & Markt, the ART's business owner);
-  - Lisette Koster (functionaris gegevensbescherming);
-  - Bart Jacobs (ops engineer).
-- From the catalogue: Noor Hendriks (now PO of the customer portal) and Bas Kuipers (RTE).
+  - Bart Jacobs (ops engineer);
+  - Lisette Koster (functionaris gegevensbescherming; tier 4, §2.8).
+- From the catalogue and earlier tiers: Noor Hendriks (PO veldapp, as in the catalogue), Bas Kuipers (RTE), and Ricardo (monteur, Marco's team; admin of the WhatsApp group).
 
 ---
 
@@ -695,17 +694,17 @@ dialogs:
         tags: [admission]
         unlocks: {facts: [heard:marco_people], proposals: [volunteers_first]}
     reframe: "Vanuit Joke? Die heeft vijf man voor een gebied zo groot als Nova en Havenzij samen. Ja. Die zou ik ook een man willen geven. Als hij wil."
-    warning: "Ge gaat me nie vertellen hoe ik mijn ploeg indeel."
+    warning: "Jij gaat me niet vertellen hoe ik mijn ploeg indeel."
     proposals:
       - {id: move_two, addresses: [interest], label: "Twee monteurs naar Lindeveld", say: "Twee monteurs uit Nova gaan naar Lindeveld.", reply: "Twee. Welke twee? Dat is de vraag."}
       - {id: volunteers_first, hidden: true, addresses: [concern], label: "Eerst vrijwilligers, met de ploeg erbij", say: "Wat als we het de ploeg zelf vragen? Wie wil, gaat. Wie niet kan, blijft. En wat er overblijft, verdelen we samen.", reply: "Vragen. Aan de mannen zelf. Ja. Dan weet ik wie het vraagt en wie het moet."}
     experiments:
       - {id: rotation_quarter, addresses: [concern], label: "Een kwartaal rouleren", say: "Een kwartaal rouleren: iedereen een week Lindeveld, en daarna kijken wie wil blijven.", reply: "Een week. Dan zien ze het zelf. Sommigen gaan het nog leuk vinden ook."}
-    co_proposal: {id: volunteers_first, text: "Laat mij het ze vragen. Bij de koffie, maandag. Nie in een mail."}
+    co_proposal: {id: volunteers_first, text: "Laat mij het ze vragen. Bij de koffie, maandag. Niet in een mail."}
     outcomes:
-      commitment: "Afgesproken. En wie er gaat, krijgt van mij een goeie bus. Nie de oude."
-      partial: "Ik doe mee. Als er niemand gestuurd wordt die nie wil."
-      heard: "Hm. Ge hebt het gevraagd. Dat is al wat."
+      commitment: "Afgesproken. En wie er gaat, krijgt van mij een goede bus. Niet de oude."
+      partial: "Ik doe mee. Als er niemand gestuurd wordt die niet wil."
+      heard: "Hm. Je hebt het gevraagd. Dat is al wat."
       compliance: "Zet ze maar op de kaart. Stippen zijn makkelijk."
       ruined: "Zie je. Een nieuw plan, dezelfde stippen. Wie bouwt dat na?"
     # route (no history, start 30): mood +8 38 > open question +6 44 > paraphrase +7 51 (heard) > inquiry +8 59 (interest)
@@ -2195,22 +2194,31 @@ A player who chose the van stock in Act IV, did the repair, and then reaches Act
 
 ---
 
-## 2. The IT track, tier 3: "Het digitale loket"
+## 2. The IT track, tier 3: "De app die niemand gebruikt"
 
 Opens with `t3_map_region`'s `it_campus` unlock. It runs in parallel with Act IV: the player holds one main at a time, grid or IT, and the coach coaches whichever is active. Problems carry `track: it` and their own maturity (catalogue C17d).
 
-**The thread.** The customer from Acts I–III comes back through the screen:
-- the status callers of `fix_status_callers`;
-- the EAN of `fix_done_but_not_closed`;
-- the meter data of `fix_silent_meter`.
+**Order (decided 2026-10-15): the field app first, as in the catalogue.** The customer portal and the meter-data platform come later, in the tier-4 IT chapter. Their drafts are kept ready in §2.8.
 
-What the player fixed in the process now meets the software that carries it. The chapter's twist (§2.2): the best fix for the customer cannot reach the customer, because the portal ships twice a year. The release train is not an abstraction; it is Mrs El Amrani's status page.
+**The thread.** The monteurs from Acts I–II come back through the tablet:
+- Act I's meter-cupboard photos (`fix_installer_not_ready`);
+- Act II's as-built sketch "op de motorkap" (`fix_revision_backlog`);
+- the close-out at Petra's desk (`fix_done_but_not_closed`).
 
-**Chapters:** "Volg één wijziging" (the map, the status page), "Kleiner uitbrengen" (releases, the fork, regression), "De trein" (PI planning). Sides: meter data, the ops–dev wall, the RTE, the system demo.
+What the player fixed in the process now meets the software that is supposed to carry it, and the monteurs work around it with paper and a WhatsApp group.
+
+The chapter's twist (§2.2): the fix the monteurs designed themselves cannot reach their tablets, because the app ships twice a year. The release train is not an abstraction; it is Ricardo's afmeldscherm.
+
+**Chapters:**
+- "Volg één wijziging": the map, the bypassed app.
+- "Kleiner uitbrengen": releases, the fork, regression.
+- "De trein": PI planning.
+
+**Sides:** the ops–dev wall, the RTE, the system demo.
 
 ### 2.1 `it_map_feature_stream` — Eén wijziging, elf weken (M)
 
-Principles tested: **improve** (go to the gemba, also in IT) and **respect** (sit with the team, not with the dashboard). Temptation: the cycle time the ticket tool already shows.
+Principles tested: **improve** (go to the gemba, also in IT) and **respect** (sit with the team and the users, not with the dashboard). Temptation: the cycle time the ticket tool already shows.
 
 ```yaml
 missions:
@@ -2224,11 +2232,11 @@ missions:
     requires: {missions: [t3_map_region]}
     goal: {type: map_stream, stream: it_features, measure: time_study}
     principles: [improve, respect]
-    briefing: "Esra vroeg in het voorjaar of de verwachte aansluitdatum op 'Volg je aanvraag' kon staan, op het klantportaal. Elf weken later staat hij er nog niet. Noor Hendriks, product owner van het portaal: 'Het is een kleine wijziging. Twee dagen werk.' Volg die ene wijziging van idee tot klant, stap voor stap, en kijk waar de elf weken zitten."
+    briefing: "Marco's monteurs vroegen in het voorjaar of ze bij het afmelden in de veldapp een foto van de meterkast konden meesturen. Elf weken later kan het nog steeds niet. Noor Hendriks, product owner van de veldapp: 'Het is een kleine wijziging. Twee dagen werk.' Volg die ene wijziging van idee tot de tablet van de monteur, stap voor stap, en kijk waar de elf weken zitten."
     debrief: "Twee dagen werk, {calendar_days} dagen onderweg. {wait_share}% van de tijd lag de wijziging ergens te wachten: op een plek in de backlog, op een testomgeving, op de release van maart. In Nova zag je hetzelfde met een aansluiting. Het is geen IT-probleem. Het is een stroom."
     beats:
       - {on: accepted, who: noor, text: "Je kunt de cycle time gewoon uit Jira halen. Die staat op zes dagen. Waarom wil je meelopen?"}
-      - {on: completed, who: esra, text: "Elf weken voor een datum op een scherm. En ik maar denken dat het aan mij lag dat ik het niet goed had uitgelegd."}
+      - {on: completed, who: ricardo, text: "Elf weken voor een foto. Weet je hoe wij het nu doen? Kom maar eens kijken in de bus."}
     temptations:
       - id: tool_cycle_time
         who: noor
@@ -2241,9 +2249,9 @@ missions:
     teaches: [value_stream_identification, lead_time, gemba]
     rewards: {xp: 2600, budget: 20000, reputation: 5}
     insights:
-      go_see: "Waar begint een wijziging echt: bij het ticket, of bij de vraag van de klant? Wanneer eindigt hij?"
+      go_see: "Waar begint een wijziging echt: bij het ticket, of bij de vraag van de monteur? Wanneer eindigt hij?"
       understand: "Hoeveel van de elf weken wordt er aan gewerkt? Waar wacht hij het langst?"
-      experiment: "Welk getal wil je volgen: de tijd in het ticket, of de tijd die de klant ziet?"
+      experiment: "Welk getal wil je volgen: de tijd in het ticket, of de tijd die de monteur ziet?"
       reflect: "Wat zag je in IT dat je in Nova ook al zag?"
 ```
 
@@ -2251,9 +2259,1210 @@ missions:
 - `flag:tool_cycle_time`: the IT stream's VSM view shows only "in progress → done" (six days), so the waits before (the backlog) and after (the release) disappear. `fix_release_twice_a_year`'s depth-0 key clue moves to depth 1.
 - The way back: walking it later (a `lsw_system_demo` visit at refine and release clears it).
 
-**Grounding.** Value stream identification in IT and the gap between ticket cycle time and customer lead time: Poppendieck & Poppendieck, *Implementing Lean Software Development* (2006); Forsgren, Humble & Kim, *Accelerate* (2018), "lead time for changes". Two days and eleven weeks: estimates.
+**Grounding.** Value stream identification in IT and the gap between ticket cycle time and user lead time: Poppendieck & Poppendieck, *Implementing Lean Software Development* (2006); Forsgren, Humble & Kim, *Accelerate* (2018), "lead time for changes". Two days and eleven weeks are estimates.
 
-### 2.2 `fix_status_page_wrong` — De statuspagina liegt (M)
+### 2.2 `fix_field_app_bypassed` — De app die niemand gebruikt (M)
+
+Principles tested: **respect** (the users designed their own workaround; honour it) and **long_term**. The catalogue's mission, made content-ready. The chapter's twist: the best countermeasure is `release_gated`.
+
+```yaml
+missions:
+  - id: fix_field_app_bypassed
+    name: De app die niemand gebruikt
+    kind: main
+    tier: 3
+    act: 6
+    chapter: Volg één wijziging
+    track: it
+    requires: {missions: [it_map_feature_stream]}
+    goal: {type: solve, problem: field_app_bypassed}
+    principles: [respect, long_term]
+    briefing: "Bij Meetdata & registratie typt Rachid elke middag werkbonnen over: papieren formulieren, en foto's die monteurs in een WhatsApp-groep zetten. Volgens IT gebruikt negentig procent van de monteurs de veldapp. Ricardo, monteur en beheerder van de WhatsApp-groep, laat je zijn telefoon zien: 'Dit is onze echte app.'"
+    debrief: "Monteurs melden een klus nu af op de tablet, in vier schermen in plaats van veertien, ook in een kelder zonder bereik. Rachid typt niets meer over, en een aansluiting staat {days_saved} dagen eerder op 'klaar'. Ricardo heeft de WhatsApp-groep niet opgeheven. Er staan nu alleen nog foto's van verjaardagstaarten in. {release_line}"
+    debrief_variants:
+      poor_fix: "Monteurs melden af op papier met een vast formulier, en Rachid typt sneller over. De nieuwe afmeldschermen die de monteurs zelf ontwierpen, staan klaar in de code. Ze gaan live in maart."
+    reopen: "De veldapp heeft een nieuwe versie gekregen, en er zitten weer negen verplichte velden in het afmeldscherm. De WhatsApp-groep is weer druk."
+    beats:
+      - {on: accepted, who: rachid, text: "Elke middag twee uur overtypen. Ik heb het Petra geleerd, en nu doe ik het zelf. Dat was niet de bedoeling."}
+      - {on: completed, who: ricardo, text: "Ik heb ze in de groep gezegd: we proberen het. Een week. Als het werkt, mag de groep weer over taart gaan."}
+    temptations:
+      - id: whatsapp_official
+        who: it_manager
+        when: accepted
+        text: "Als ze toch WhatsApp gebruiken, maken we het officieel. Een zakelijke groep per ploeg, en Meetdata leest mee. Morgen geregeld."
+        accept: "Je maakt de WhatsApp-groepen het officiële kanaal voor afmeldingen."
+        decline: "Je gaat uitzoeken waarom de monteurs de app niet gebruiken."
+        accept_sets_flags: [flag:whatsapp_official]
+        accept_effects: {complete_goal: false, reputation: 1}
+    teaches: [gemba, customer_value, waste_overprocessing]
+    rewards: {xp: 2800, budget: 20000, reputation: 5, trust: {monteurs: 1}}
+    insights:
+      go_see: "Heb je zelf een klus afgemeld, op de tablet, in een meterkast in een kelder?"
+      understand: "Waarom gebruiken de monteurs WhatsApp? Wat doet die groep goed wat de app niet doet?"
+      experiment: "Welk getal laat over twee weken zien of je experiment werkt? Wanneer kan een monteur je verbetering eigenlijk op zijn tablet zien?"
+      reflect: "De verbetering die de monteurs zelf ontwierpen, stond klaar en kon nog niet live. Wat zegt dat over waar je nu moet kijken?"
+
+problems:
+  - id: field_app_bypassed
+    tier: 3
+    track: it
+    name: De app die niemand gebruikt
+    step: connections.close_out
+    waste: overprocessing
+    severity: high
+    visibility: subtle
+    kpi: lead_time
+    symptoms:
+      - Meetdata & registratie typt elke dag papieren werkbonnen en WhatsApp-foto's over in het systeem.
+      - Volgens de cijfers van IT gebruikt negen op de tien monteurs de veldapp.
+    root_cause: De veldapp is gebouwd zonder dat iemand met een monteur meeliep. Afmelden kost veertien schermen, de app werkt niet zonder bereik, in kelders en op het platteland, en een foto meesturen kan niet. Monteurs openen de app om de klus te starten, en melden af op papier of in hun eigen WhatsApp-groep. Het werk wordt op kantoor overgetypt.
+    plausible_causes:
+      - Monteurs zijn nu eenmaal geen computermensen.
+      - De tablets zijn te oud.
+      - De monteurs hebben een training nodig.
+    mismatch_note: Een training of nieuwe tablets helpen niet zolang de app niet doet wat de monteur op dat moment nodig heeft. De monteurs hebben hun eigen app al gebouwd, in WhatsApp.
+    countermeasures: {close_out_redesign_with_monteurs: 1.0, offline_mode: 0.8, monteur_in_every_review: 0.7, paper_form_scanning: 0.6, whatsapp_official: 0.4}
+    teaches: [gemba, customer_value]
+    effects:
+      # estimate: every close-out retyped from paper or a photo: ~40% more touch time at close_out, and ~1 in 10 retyped wrong
+      - {target: connections.close_out, property: touch_time, value: 1.4}
+      - {target: connections.close_out, property: ftr, value: -0.1}
+    clues:
+      - {tool: data, key: true, depth: 0, text: "Volgens IT opent negen op de tien monteurs de veldapp elke dag. Van de afmeldingen komt een op de vijf via de app binnen."}
+      - {tool: shadow, key: true, depth: 1, at: connections.execution, text: "In een kelder in De Kade start de monteur de klus in de app. Bij het afmelden heeft hij geen bereik. Hij maakt een foto van zijn papieren formulier en zet die in de WhatsApp-groep."}
+      - {tool: time_study, key: true, depth: 1, text: "Een klus afmelden in de veldapp kost veertien schermen en negen verplichte velden, gemiddeld elf minuten. Op papier: twee minuten."}
+      - {tool: conversation, key: false, depth: 0, text: "'Monteurs zijn nu eenmaal geen computermensen. Ze moeten gewoon een training.'"}
+      - {tool: documents, key: true, depth: 2, at: it_features.refine, text: "In de backlog van de veldapp staan 212 wensen. Geen enkele is door een monteur ingediend. De laatste keer dat iemand van het team met een monteur meereed, was bij de start van het project in 2021."}
+      - {tool: conversation, key: true, depth: 2, text: "'Die WhatsApp-groep heb ik gemaakt omdat de app het niet deed. Hij werkt altijd. Ook in een kelder: dan verstuurt hij hem later.'"}
+
+countermeasures:
+  - id: close_out_redesign_with_monteurs
+    name: Een afmeldscherm, ontworpen met monteurs
+    tier: 3
+    category: quality
+    description: Drie monteurs en het team van de veldapp ontwerpen samen het afmelden opnieuw, in de bus en in een kelder. Vier schermen, een foto erbij, en het werkt zonder bereik. Het vraagt een wijziging in de code van de app.
+    budget: 20000
+    team_hours: {app_team: 60, monteurs: 20}
+    decay_days: null
+    release_gated: true       # its effect starts at the next release of it_features (the chapter's twist)
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: connections.close_out, property: touch_time, value: 0.85}
+  - id: offline_mode
+    name: Afmelden zonder bereik
+    tier: 2
+    category: quality
+    description: De app bewaart een afmelding als er geen bereik is, en verstuurt hem later vanzelf, zoals WhatsApp.
+    budget: 10000
+    team_hours: {app_team: 40}
+    decay_days: null
+    release_gated: true
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: monteur_in_every_review
+    name: Een monteur bij elke sprint review
+    tier: 1
+    category: people
+    description: Bij elke sprint review zit een monteur, die de nieuwe schermen op zijn eigen tablet probeert. Er is geen code voor nodig; het verandert wat er gebouwd wordt.
+    budget: 1000
+    team_hours: {monteurs: 10, app_team: 5}
+    decay_days: 90
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: paper_form_scanning
+    name: Een vast papieren formulier dat wordt gescand
+    tier: 1
+    category: standard_work
+    description: Eén vast papieren afmeldformulier, dat op kantoor wordt gescand en automatisch uitgelezen. Het overtypen wordt minder; de app blijft ongebruikt.
+    budget: 4000
+    team_hours: {meter_office: 10}
+    decay_days: 120
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: whatsapp_official
+    name: WhatsApp als officieel kanaal
+    tier: 1
+    category: flow
+    description: Zakelijke WhatsApp-groepen per ploeg worden het officiële afmeldkanaal, en Meetdata leest mee. Snel, en met klantgegevens in een chatapp.
+    budget: 500
+    team_hours: {meter_office: 5}
+    decay_days: 365
+    aftermath:                 # estimate: customer addresses and meter photos in a chat app; a privacy complaint within months
+      after_days: 90
+      days: 1
+      reputation: -5
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+```
+
+**How `release_gated` plays.** The Check of a `release_gated` countermeasure does not fail. It reads "Staat klaar. Gaat live bij de volgende release, over {days} dagen" and scores as `too_early`. The player may:
+- **wait**: the mission stays open and blocks the main slot for months. Allowed, and it hurts on purpose.
+- **re-A3 with a countermeasure that works now**: `monteur_in_every_review` or `paper_form_scanning`.
+
+The second is a poor fix (fit 0.3 or more below the best), so `poor_fix:field_app_bypassed` is set. After `fix_release_twice_a_year`, the repair quest `repair_field_app_bypassed` opens. Its countermeasure `close_out_redesign_with_monteurs` *ships* this time, because releases are frequent. The repair reopens what the release cadence had locked: the catalogue's path-dependence rule, inside IT. The main debrief's `{release_line}` is "En de afmeldschermen die Ricardo en zijn collega's ontwierpen? Die staan klaar. Voor de release van maart."
+
+**Dialogs.**
+
+```yaml
+dialogs:
+  - id: noor_field_app
+    person: noor
+    kind: persuade
+    mission: fix_field_app_bypassed
+    patience: 10
+    # start: defender 40 + 0 + 0 + 0 + 0 = 40, Luistert
+    opening: "De veldapp? Negentig procent gebruik. Ik heb het dashboard hier. Ik weet niet wat je nog meer wilt."
+    position: {text: "De app doet wat in de requirements stond. Als monteurs hem niet gebruiken, hebben ze een training nodig.", tags: [claim]}
+    layers:
+      - {id: interest, at: 55, via: [open_question, inquiry, paraphrase], text: "Iedereen wil iets van de app. Planning, Meetdata, Veiligheid, de auditor. Elke afdeling een verplicht veld. Ik moet kiezen. Wat het hardst geroepen wordt, komt bovenaan.", tags: [claim, feeling]}
+      - id: concern
+        at: 70
+        via: [silence, empathy, inquiry]
+        lead_in: {text: "Eerlijk gezegd…", tags: [hesitation]}
+        text: "Ik heb nog nooit een dag met een monteur meegereden. Niet één. Ik ben product owner van een app voor tweehonderd monteurs, en ik ken ze uit Jira. Als ik nu meerijd en het blijkt dat ik het al die tijd verkeerd zag… dan heb ik vier jaar de verkeerde dingen gebouwd."
+        tags: [admission]
+        unlocks: {facts: [heard:noor_ride_along], proposals: [ride_with_ricardo]}
+    reframe: "Vanuit Ricardo in een kelder zonder bereik? Die heeft elf minuten en veertien schermen, en zijn volgende klus wacht. … Nee. Dan zou ik ook WhatsApp pakken."
+    warning: "Ik heb zo een refinement."
+    data: ["field_app_bypassed:0", "field_app_bypassed:2"]
+    lines:
+      show_data:
+        lands: "Een op de vijf afmeldingen via de app. Terwijl negen op de tien hem opent. Dus ze openen hem… en melden ergens anders af."
+        misses: "Dat dashboard zegt iets anders."
+    proposals:
+      - {id: training, addresses: [], label: "Een training voor de monteurs", say: "Een training voor alle monteurs in het gebruik van de app.", reply: "Dat had ik al op de roadmap. Goed."}
+      - {id: fewer_mandatory_fields, addresses: [interest], label: "Minder verplichte velden", say: "Haal de verplichte velden terug naar wat de monteur echt weet als hij afmeldt.", reply: "Dan krijg ik vier afdelingen op mijn dak. Maar ja. Negen is te veel."}
+      - {id: ride_with_ricardo, hidden: true, addresses: [concern], label: "Een dag meerijden met Ricardo", say: "Wat als je één dag met Ricardo meerijdt? Niet om te zien wat je fout deed. Om te zien wat hij nodig heeft, in de kelder.", reply: "Eén dag. Met Ricardo. … Ja. Liever nu dan over nog vier jaar."}
+    experiments:
+      - {id: five_monteurs_one_week, addresses: [concern], label: "Vijf monteurs, één week, op de tablet", say: "Vijf monteurs proberen een week een nieuw afmeldscherm, op papier getekend, en vertellen jou elke dag wat er misging.", reply: "Op papier getekend. Dan bouw ik niks voor niks. Dat kan ik."}
+    co_proposal: {id: ride_with_ricardo, text: "Laat mij een dag meerijden. En neem de developers ook mee, die hebben ook nog nooit een meterkast gezien."}
+    outcomes:
+      commitment: "Afgesproken. Donderdag rij ik mee. En ik zet de app weer op 'in progress'. Hij is niet af."
+      partial: "Ik wil het wel. Als het niet ten koste gaat van de Energiewet-wijzigingen."
+      heard: "Fijn dat je het vroeg. Echt."
+      compliance: "Prima. Ik maak er een ticket van."
+      ruined: "Dus de app is slecht. Zet het maar in de backlog."
+    # route: open question +6 46 > paraphrase +7 53 (heard) > inquiry +8 61 (interest) > show_data +10 71 (lead-in, cue)
+    #        > silence +12 > 79 capped (concern) > propose ride_with_ricardo +8 87 > ask: commitment (7 moves)
+
+  - id: ricardo_whatsapp
+    person: ricardo
+    kind: persuade
+    mission: fix_field_app_bypassed
+    owns: field_app_bypassed
+    patience: 10
+    # start: cynic 30 + 10 x team trust monteurs (often +1 by now) + 0 + 0 = 30-40
+    opening: "Kom je mijn WhatsApp afpakken? Die heb ik zelf gemaakt. Hij werkt."
+    position: {text: "De groep werkt. De app niet. Laat ons nou gewoon.", tags: [claim]}
+    layers:
+      - {id: interest, at: 50, via: [open_question, inquiry, paraphrase], text: "In de groep zet je een foto, klaar. In de app tik je elf minuten, en in een kelder lukt het niet eens. Ik heb vijf klussen per dag.", tags: [claim, feeling]}
+      - id: concern
+        at: 70
+        via: [silence, empathy, inquiry]
+        lead_in: {text: "En die groep…", tags: [hesitation]}
+        text: "…is meer dan afmelden. Daar zie je wie er ziek is, wie een baby heeft gekregen, wie hulp nodig heeft bij een rare kast. Als jullie die groep weghalen en ons weer in een app duwen die niet werkt, pakken jullie de ploeg af. Niet alleen een kanaal."
+        tags: [admission]
+        unlocks: {facts: [heard:ricardo_group], proposals: [design_it_yourselves]}
+    reframe: "Vanuit Rachid? Die typt elke middag twee uur mijn foto's over. Hm. Daar had ik nooit bij stilgestaan."
+    warning: "Ik moet naar mijn volgende klus."
+    data: ["field_app_bypassed:2"]
+    lines:
+      show_data:
+        lands: "Elf minuten, ja. Dat heb ik ze al drie keer gezegd. Nu staat het tenminste ergens."
+        misses: "Cijfers. Kom maar eens in een kelder staan."
+    proposals:
+      - {id: make_app_work, addresses: [interest], label: "De app laten werken zonder bereik", say: "We zorgen dat de app werkt zonder bereik, en dat je een foto kunt meesturen.", reply: "Dat vragen we al vier jaar."}
+      - {id: design_it_yourselves, hidden: true, addresses: [concern], label: "Monteurs ontwerpen het afmelden zelf; de groep blijft", say: "Wat als jij en twee collega's het afmelden zelf ontwerpen, met het team van de app? En de groep blijft gewoon bestaan, voor alles wat geen afmelding is.", reply: "De groep blijft. En wij ontwerpen het. Dan is het onze app. Dan wil ik wel."}
+    experiments:
+      - {id: one_week_in_the_van, addresses: [concern], label: "Het team rijdt een week mee", say: "Laat het team van de app een week met jullie meerijden, voordat ze iets bouwen.", reply: "Een week in de bus. Dan zien ze het zelf. Neem wel een jas mee."}
+    co_proposal: {id: design_it_yourselves, text: "Laat ons het scherm op papier tekenen. Vier vakjes en een foto. Meer heb je niet nodig."}
+    outcomes:
+      commitment: "Afgesproken. En als het werkt, zeg ik het zelf in de groep. Dan gaat de groep weer over taart."
+      partial: "Ik doe mee. Als de groep blijft."
+      heard: "Hm. Je vroeg wat de groep is. Dat deed niemand van IT."
+      compliance: "Prima. Ik gebruik de app. Als hij het doet."
+      ruined: "Zie je. Weer een app van kantoor."
+    # route (start 30): mood +8 38 > open question +6 44 > paraphrase +7 51 (heard, interest) > empathy +6 57 > show_data +15 (cynic) 72 (lead-in, cue)
+    #        > silence +12 > 79 capped (concern) > propose design_it_yourselves +8 87 > ask: commitment (8 moves)
+```
+
+**Path dependence.**
+- **Act I and II echoes:**
+  - `chose:installer_not_ready:installer_photo_upload` (Act I): the photo exists as a process but not in the app, so the briefing's first wish is that photo.
+  - `chose:revision_backlog:revision_at_source` (Act II): the as-built sketch is captured in the field app too. With the app bypassed, the revision backlog quietly regrows (a beat from Mieke: "Er komen weer schetsen binnen op papier.").
+- **`committed:ricardo_whatsapp` with `design_it_yourselves`** is read by `fix_manual_regression` (Ricardo's edge cases join Hanneke's: "de kelder zonder bereik") and by the engagement loop's D39.
+- **`flag:whatsapp_official`:** quick and visible. Customer addresses and meter photos then live in a chat app, and a privacy complaint follows (the aftermath). It also locks `offline_mode` until cleared: the WhatsApp channel must be retired first (`needs: {none: [flag:whatsapp_official]}`, cleared by `chose:field_app_bypassed:close_out_redesign_with_monteurs`).
+
+**Grounding.**
+- Going to the gemba in software (Lean UX; Poppendieck 2006). Users' workarounds as the best requirements: the Lean principle of respect for the people doing the work.
+- Customer data in consumer chat apps falls under the AVG/GDPR; the Autoriteit Persoonsgegevens has warned employers about WhatsApp for work data *(verify the page before quoting)*.
+- 14 screens, 11 minutes, one in five, 212 wishes and 2021: estimates and fiction sized for the puzzle.
+
+**Engrossing.**
+- The workaround is the hero: a monteur built what IT did not.
+- The respect question is real: the WhatsApp group is also the team's social glue, and taking it away would be taking more than a channel.
+- The twist (the fix ships in March) makes the player *want* the release mission.
+
+### 2.3 `fix_release_twice_a_year` — Twee releases per jaar (M)
+
+Principles tested: **long_term** (small batches are safer) and **respect** (fear has a history; honour it). Temptation: release more often by skipping the regression tests.
+
+```yaml
+missions:
+  - id: fix_release_twice_a_year
+    name: Twee releases per jaar
+    kind: main
+    tier: 3
+    act: 6
+    chapter: Kleiner uitbrengen
+    track: it
+    requires: {missions: [fix_status_page_wrong]}
+    goal: {type: solve, problem: release_twice_a_year}
+    principles: [long_term, respect]
+    briefing: "De veldapp en het werkorderplatform erachter gaan twee keer per jaar live: in maart en in september. Elke release is een weekend van twintig mensen, drie weken testen vooraf en een change advisory board die alles afzonderlijk goedkeurt. Erwin de Groot, release manager, zit de CAB voor. 'Na 2023 doen we het zo. En sindsdien gaat het goed.'"
+    debrief: "De veldapp gaat nu {cadence} live, in kleine stukjes. De afmeldschermen die Ricardo en zijn collega's ontwierpen, staan sinds {release_date} op elke tablet. En de storingen na een release? {incidents_line} Erwin: 'Minder grote weekenden. Ik had niet gedacht dat ik dat zou missen. Ik mis het niet.'"
+    reopen: "De releases worden weer groter. Er is een 'freeze' ingesteld voor de Energiewet-wijzigingen, en die is nooit opgeheven."
+    beats:
+      - {on: accepted, who: erwin, text: "Je wilt vaker releasen. Iedereen wil vaker releasen, tot het een keer misgaat. Ik was erbij, in 2023."}
+      - {on: completed, who: ricardo, text: "De nieuwe afmelding staat erop. Vier schermen. Ik heb het in de groep gezet, met een duim."}
+    temptations:
+      - id: skip_regression
+        who: it_manager
+        when: accepted
+        text: "Simpel: elke maand releasen, en de regressietest overslaan voor kleine wijzigingen. Dat scheelt drie weken per keer."
+        accept: "Je laat de regressietest vervallen voor kleine wijzigingen."
+        decline: "Je maakt de releases kleiner zonder op het testen te bezuinigen."
+        accept_sets_flags: [flag:skipped_tests]
+        accept_effects: {complete_goal: false}
+    teaches: [batching, ci_cd, small_batches]
+    rewards: {xp: 3000, budget: 25000, reputation: 5}
+    insights:
+      go_see: "Wat gebeurt er in het weekend van een release? Ben je erbij geweest?"
+      understand: "Waarom zijn de releases zo groot? Wat was er eerst: de grote release, of de angst?"
+      experiment: "Als je kleiner uitbrengt, wat verwacht je dan van het aantal storingen na een release? Welk getal laat dat zien?"
+      reflect: "Waar wacht de wijziging nu het langst? Was dat er al, of zag je het pas toen de release kleiner werd?"
+
+problems:
+  - id: release_twice_a_year
+    tier: 3
+    track: it
+    name: Twee releases per jaar
+    step: it_features.release
+    waste: waiting
+    severity: high
+    visibility: obvious
+    kpi: lead_time
+    symptoms:
+      - De veldapp en het werkorderplatform gaan twee keer per jaar live.
+      - Een wijziging die af is, wacht gemiddeld drie maanden op de volgende release.
+    root_cause: Na een mislukte release in 2023 werd elke wijziging gebundeld in twee grote releases per jaar, met drie weken handmatig testen en een CAB die alles afzonderlijk goedkeurt. Grote releases zijn riskanter, dus de angst bleef en het testen werd langer. Een kleine, veilige stap is nooit geprobeerd.
+    plausible_causes:
+      - De ontwikkelaars werken te langzaam.
+      - Een netbeheerder kan zich geen risico permitteren; twee keer per jaar is gewoon verstandig.
+      - De ACM eist zorgvuldige releases.
+    mismatch_note: Sneller bouwen helpt niet als wat af is drie maanden op de plank ligt. En grote releases zijn niet veiliger; ze voelen alleen zo.
+    countermeasures: {ci_cd_pipeline: 1.0, monthly_release_train: 0.8, feature_toggles: 0.7, skip_regression_small: 0.4}
+    teaches: [batching, ci_cd]
+    effects:
+      - {target: it_features.release, property: batch_days, value: 182}
+    clues:
+      - {tool: data, key: true, depth: 0, text: "Van de wijzigingen die vorig jaar live gingen, lag de gemiddelde wijziging 94 dagen af en klaar voordat hij live ging."}
+      - {tool: documents, key: true, depth: 1, text: "Het releaseprotocol van september 2023: 'Na het incident van 14 juli worden wijzigingen gebundeld in twee releases per jaar.'"}
+      - {tool: conversation, key: false, depth: 0, text: "'De ACM kijkt mee. Wij kunnen geen risico nemen.'"}
+      - {tool: time_study, key: true, depth: 1, at: it_features.test, text: "De regressietest voor een release duurt drie weken, met de hand. Hoe groter de release, hoe langer."}
+      - {tool: data, key: true, depth: 2, at: it_incidents.report, text: "Na de laatste vier grote releases kwamen er in de eerste week gemiddeld elf storingen binnen. Bijna allemaal in wijzigingen die niets met elkaar te maken hadden, maar wel samen live gingen."}
+      - {tool: conversation, key: true, depth: 2, text: "'In juli 2023 ging er een release mis. Twee dagen lang konden de monteurs geen werkbonnen openen. Driehonderd klussen vielen uit. Sindsdien willen we het allemaal heel goed doen. Dus doen we het weinig.'"}
+
+countermeasures:
+  - id: ci_cd_pipeline
+    name: Een pijplijn met automatische controles
+    tier: 3
+    category: flow
+    description: Elke wijziging gaat door een vaste pijplijn met automatische tests en controles, en kan los live. De CAB keurt de pijplijn goed, niet elke wijziging; grote risico's krijgen een eigen beoordeling.
+    budget: 40000
+    team_hours: {app_team: 60, ops: 40}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: it_features.release, property: batch_days, value: 7}
+  - id: monthly_release_train
+    name: Elke maand een release
+    tier: 2
+    category: flow
+    description: Elke vier weken een vaste release, met een kleinere regressietest en een vaste CAB-dag.
+    budget: 8000
+    team_hours: {ops: 20, testers: 20}
+    decay_days: 120
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: it_features.release, property: batch_days, value: 28}
+  - id: feature_toggles
+    name: Uitbrengen en pas later aanzetten
+    tier: 3
+    category: flow
+    description: Wijzigingen gaan uit, maar staan uit, tot het bedrijf ze aanzet. Uitbrengen en aanzetten worden twee verschillende stappen.
+    budget: 12000
+    team_hours: {app_team: 30}
+    decay_days: 180
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: it_features.release, property: batch_days, value: 60}
+  - id: skip_regression_small
+    name: Kleine wijzigingen zonder regressietest
+    tier: 1
+    category: flow
+    description: Kleine wijzigingen gaan maandelijks live zonder de regressietest.
+    budget: 500
+    team_hours: {ops: 5}
+    decay_days: 365
+    aftermath:
+      after_days: 30
+      days: 999
+      effects:
+        - {target: it_incidents, property: demand, value: 1.5}   # estimate: untested changes break things in production
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: it_features.release, property: batch_days, value: 28}
+```
+
+**Dialog: `erwin_cab`.**
+
+```yaml
+dialogs:
+  - id: erwin_cab
+    person: erwin
+    kind: persuade
+    mission: fix_release_twice_a_year
+    owns: release_twice_a_year
+    patience: 10
+    # start: rule_bound 35 + 0 + 0 + 0 + 0 = 35, Op z'n hoede
+    opening: "Kom erin. Op dat bord staat de release van maart. Honderdzestig wijzigingen. Wil je weten hoeveel daarvan iemand nog snapt?"
+    position: {text: "Twee releases per jaar, goed getest, goed bewaakt. Dat is zorgvuldig.", tags: [claim]}
+    layers:
+      - {id: interest, at: 52, via: [inquiry, open_question, paraphrase], text: "Elke release is een weekend. Twintig mensen, pizza, en ik die om vier uur 's nachts beslist of we teruggaan. Twee keer per jaar is al genoeg.", tags: [claim, feeling]}
+      - id: concern
+        at: 72
+        via: [inquiry, silence, empathy]
+        lead_in: {text: "In juli 2023…", tags: [hesitation]}
+        text: "…zat ik bij de directie. Twee dagen lang konden de monteurs geen werkbonnen openen. Driehonderd klussen vielen uit, klanten hadden voor niets vrij genomen, en het stond in de krant. Ik had die release goedgekeurd. Sindsdien keur ik niets meer goed wat ik niet zelf heb gezien."
+        tags: [admission]
+        unlocks: {facts: [heard:erwin_2023], proposals: [erwin_designs_the_checks]}
+    reframe: "Vanuit de monteur die al vier jaar om een fotoknop vraagt, en hoort dat die in maart komt? … Ja. Die heeft ook een slecht weekend. Elk weekend."
+    warning: "Ik heb een CAB om twee uur."
+    data: ["release_twice_a_year:0", "release_twice_a_year:4"]
+    lines:
+      show_data:
+        lands: "Elf storingen in de week na een grote release. In wijzigingen die niets met elkaar te maken hadden. Hm. Dat… dat is de bundel zelf."
+        misses: "Cijfers. In 2023 hadden we ook cijfers."
+    proposals:
+      - {id: monthly, addresses: [interest], label: "Elke maand een release", say: "Elke maand een release, kleiner.", reply: "Twaalf weekenden in plaats van twee?"}
+      - {id: erwin_designs_the_checks, hidden: true, addresses: [concern], label: "Erwin ontwerpt de automatische controles", say: "Wat als jij de controles ontwerpt die elke wijziging automatisch moet doorstaan? Alles wat jij in 2023 had willen zien, zit erin. Dan keur je de controles goed, één keer, en zie je elke wijziging toch.", reply: "Mijn controles. Elke keer, automatisch. Dan zie ik meer dan nu. Nu zie ik honderdzestig wijzigingen in één keer en begrijp ik er tien."}
+    experiments:
+      - {id: one_team_weekly, addresses: [concern], label: "Eén team, één kwartaal, wekelijks", say: "Eén team, de veldapp, mag een kwartaal elke week kleine wijzigingen uitbrengen. Jij volgt elke release en mag het stoppen.", reply: "Eén team. En ik mag stoppen. Dat is netjes."}
+    co_proposal: {id: erwin_designs_the_checks, text: "Laat mij die controles opschrijven. Ik weet precies wat er in 2023 mis had kunnen worden gevangen."}
+    outcomes:
+      commitment: "Afgesproken. En de pizza blijft. Op vrijdag. Zonder release."
+      partial: "Ik wil het proberen. Als de CAB blijft meekijken."
+      heard: "Je bent de eerste die vraagt wat er in 2023 gebeurde, in plaats van te zeggen dat ik te voorzichtig ben."
+      compliance: "Als de directie het wil. Het staat in het verslag dat ik het afraadde."
+      ruined: "Dus ik ben de rem. Prima. Dan rem ik."
+    # route: open question +6 41 > paraphrase +7 48 (heard) > inquiry +8 56 (interest) > show_data +15 (rule_bound) 71
+    #        > empathy +6 77 (lead-in, cue) > silence +12 > 81 capped (concern) > propose erwin_designs_the_checks +8 89 > ask: commitment (8 moves)
+```
+
+**Path dependence.**
+- `flag:skipped_tests` (or `skip_regression_small`): incidents rise a month later. `fix_ops_dev_wall` (side) opens with a heavier problem.
+- After `ci_cd_pipeline` or `monthly_release_train`, `close_out_redesign_with_monteurs` ships, and the field app's repair quest opens if it was patched (§2.2).
+- The test step becomes the constraint: the fork (§2.4).
+
+**Grounding.**
+- *Accelerate* (Forsgren, Humble & Kim, 2018): external change approval is negatively correlated with throughput and not correlated with stability; lightweight change approval and smaller batches go with both higher throughput and higher stability. Deployment frequency and lead time for changes are two of the four key metrics.
+- Small batches reduce risk: Reinertsen, *The Principles of Product Development Flow* (2009).
+- The 2023 incident, 160 changes, 94 days and eleven incidents: fiction and estimates.
+
+**Engrossing.** A release manager whose caution is a scar, and a proposal that turns his scar into the safety net. The data puzzle: the incidents come *from* the bundling.
+
+### 2.4 The fork `it_after_release`: `fix_test_env_queue` (B) and `fix_code_review_wait` (N)
+
+After smaller releases, work waits in two places. The test environments, two shared by the train's teams, are the constraint. The code reviews wait two days, which is annoying but not the constraint. The non-bottleneck debrief names the lead-time gain (L1).
+
+```yaml
+missions:
+  - id: fix_test_env_queue
+    name: Wachten op de testomgeving
+    kind: main
+    tier: 3
+    act: 6
+    chapter: Kleiner uitbrengen
+    track: it
+    requires: {missions: [fix_release_twice_a_year]}
+    fork: {group: it_after_release, role: bottleneck}
+    goal: {type: solve, problem: test_env_queue}
+    principles: [improve, long_term]
+    briefing: "Er zijn twee testomgevingen voor de veldapp en het werkorderplatform. Op het planbord staan ze voor zes weken vol. Teams wachten, of testen 'even snel' tussen de boekingen door. Ops wil een derde omgeving. Een ontwikkelaar zegt dat de reviews het probleem zijn: 'Mijn code wacht twee dagen op een review.'"
+    debrief: "Er gaan nu {throughput_after} wijzigingen per week door, was {throughput_before}. Een testomgeving staat er in tien minuten, met nepdata, en is weg als hij niet meer nodig is. Ops bouwt geen omgevingen meer met de hand. Waar wacht het werk nu?"
+    debrief_first: "Nu zie je het verschil met de reviews: dit keer gaan er wél meer wijzigingen per week door. Waarom hier wel en daar niet?"
+    beats:
+      - {on: accepted, who: priya, text: "Een omgeving bouwen kost me drie dagen. Productiedata kopiëren, maskeren, controleren. En dan boekt iemand hem voor zes weken 'voor de zekerheid'."}
+    temptations:
+      - id: buy_third_env
+        who: it_manager
+        when: accepted
+        text: "Koop gewoon een derde omgeving. Vierduizend euro per maand, en de wachtrij is weg."
+        accept: "Je laat een derde testomgeving inrichten."
+        decline: "Je kijkt eerst wat de twee omgevingen nu doen."
+        accept_sets_flags: [flag:third_env]
+        accept_effects: {cost_per_week: 900}
+    teaches: [theory_of_constraints, bottleneck_focus, infrastructure_as_code]
+    rewards: {xp: 3000, budget: 25000, reputation: 5}
+    insights:
+      go_see: "Twee plekken waar wijzigingen wachten. Waar wacht het meeste werk, in dagen? Heb je het zelf geteld?"
+      understand: "Wat doet een testomgeving op een dag dat hij geboekt is? Hoeveel uur wordt er echt getest?"
+      experiment: "Als je deze omgevingen beter benut, hoeveel wijzigingen per week verwacht je? Voordat je er een bij koopt?"
+      reflect: "Femke zei het in de netstudie: eerst beter benutten, dan pas groter maken. Gold dat hier ook?"
+
+  - id: fix_code_review_wait
+    name: Wachten op een review
+    kind: main
+    tier: 3
+    act: 6
+    chapter: Kleiner uitbrengen
+    track: it
+    requires: {missions: [fix_release_twice_a_year]}
+    fork: {group: it_after_release, role: non_bottleneck}
+    goal: {type: solve, problem: code_review_wait}
+    principles: [respect, improve]
+    briefing: "Ontwikkelaar Mark van Leeuwen wacht gemiddeld twee dagen op een review van zijn code. 'Het is altijd hetzelfde: iedereen is druk met zijn eigen werk, en een review is werk van een ander.' Op de testomgevingen wordt ook gewacht, zegt hij, maar daar kan hij niets aan doen."
+    debrief: "Code wacht nu {review_hours} uur op een review in plaats van twee dagen. Een wijziging is gemiddeld {lead_delta} dagen eerder klaar. Maar kijk naar de stroom: er gaan niet méér wijzigingen per week live. Het werk wacht nog steeds bij {constraint_place}."
+    debrief_first: "Goed dat dit ook vlotter gaat: minder wachten, en het team leert van elkaars code. Het knelpunt zat al ergens anders."
+    teaches: [bottleneck_focus, lead_time, pair_programming]
+    rewards: {xp: 2600, budget: 15000, reputation: 5}
+    insights:
+      go_see: "Twee plekken waar wijzigingen wachten. Waar staat het werk het langst stil?"
+      understand: "Waarom blijft een review liggen? Wat is er voor de reviewer belangrijker?"
+      experiment: "Welk getal verwacht je dat verandert: de wachttijd voor een review, het aantal wijzigingen per week, of allebei?"
+      reflect: "Gaan er nu meer wijzigingen per week live? Wat is er wél beter geworden, en voor wie?"
+
+problems:
+  - id: test_env_queue
+    tier: 3
+    track: it
+    name: Wachten op de testomgeving
+    step: it_features.test
+    waste: waiting
+    severity: high
+    visibility: subtle
+    kpi: throughput
+    symptoms:
+      - Het planbord van de twee testomgevingen staat zes weken vol.
+      - Teams testen 'even snel' tussen boekingen door, of wachten.
+    root_cause: Een testomgeving wordt met de hand gebouwd, met een kopie van productiedata die drie dagen maskeren kost. Omdat opnieuw bouwen zo lang duurt, boeken teams een omgeving voor weken 'voor de zekerheid', en staat hij het grootste deel van de tijd stil.
+    plausible_causes:
+      - Er zijn gewoon te weinig testomgevingen.
+      - De reviews houden alles op.
+      - De testers zijn te langzaam.
+    mismatch_note: Een derde omgeving die net zo gebouwd en net zo geboekt wordt, staat over een maand ook vol. De omgevingen zijn schaars omdat ze traag gemaakt en lang vastgehouden worden.
+    countermeasures: {environments_on_demand: 1.0, synthetic_test_data: 0.8, third_environment: 0.7, booking_board: 0.6}
+    teaches: [theory_of_constraints, infrastructure_as_code]
+    effects:
+      # estimate: hand-built environments are down or being refreshed ~30% of the time
+      - {target: test_envs, property: availability, value: -0.3}
+    clues:
+      - {tool: queue_count, key: true, depth: 0, text: "Bij de test wachten 23 wijzigingen, ruim drie weken werk. Bij de review wachten er zes."}
+      - {tool: shadow, key: true, depth: 1, text: "Testomgeving 2 is voor vier weken geboekt door het team van de veldapp. Vandaag wordt er een uur op getest."}
+      - {tool: time_study, key: true, depth: 1, text: "Een testomgeving opnieuw bouwen kost drie werkdagen, waarvan twee voor het kopiëren en maskeren van productiedata."}
+      - {tool: conversation, key: false, depth: 0, text: "'De reviews houden alles op. Mijn code wacht twee dagen.'"}
+      - {tool: conversation, key: true, depth: 2, text: "'We boeken voor weken, want als we hem teruggeven, duurt het drie dagen voor we er weer een hebben.'"}
+
+  - id: code_review_wait
+    tier: 3
+    track: it
+    name: Wachten op een review
+    step: it_features.review
+    waste: waiting
+    severity: low
+    visibility: obvious
+    kpi: lead_time
+    symptoms:
+      - Code wacht gemiddeld twee dagen op een review.
+    root_cause: Reviews zijn niemands werk. Iedereen doet ze tussen zijn eigen taken door, als die af zijn.
+    plausible_causes:
+      - Er zijn te weinig senior ontwikkelaars.
+    mismatch_note: Meer seniors reviewen sneller, maar zolang een review 'werk van een ander' is, blijft hij liggen.
+    countermeasures: {pairing_on_hard_parts: 1.0, review_rota: 0.7}
+    teaches: [bottleneck_focus]
+    effects:
+      - {target: it_features.review, property: wait_time, value: 2.0}
+    clues:
+      - {tool: data, key: true, depth: 0, text: "Code wacht gemiddeld twee dagen op een review. Een review zelf duurt twintig minuten."}
+      - {tool: shadow, key: true, depth: 1, text: "Een ontwikkelaar heeft drie reviewverzoeken open staan en werkt eerst zijn eigen ticket af."}
+      - {tool: conversation, key: true, depth: 1, text: "'Een review is werk van een ander. Mijn eigen werk staat op het bord met mijn naam erop.'"}
+
+countermeasures:
+  - id: environments_on_demand
+    name: Omgevingen op afroep
+    tier: 3
+    category: flow
+    description: Een testomgeving wordt automatisch gebouwd uit code, in tien minuten, en verdwijnt als hij niet meer nodig is. Niemand hoeft meer te boeken.
+    budget: 30000
+    team_hours: {ops: 60}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: test_envs, property: headcount, value: 3}
+  - id: synthetic_test_data
+    name: Nepdata in plaats van productiedata
+    tier: 2
+    category: quality
+    description: Testomgevingen krijgen een vaste set nepdata met alle lastige gevallen, in plaats van een gemaskeerde kopie van productie. Sneller, en er kan geen klantdata lekken.
+    budget: 10000
+    team_hours: {ops: 20, testers: 20}
+    decay_days: 180
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: test_envs, property: availability, value: 0.2}
+  - id: third_environment
+    name: Een derde testomgeving
+    tier: 2
+    category: flow
+    description: Een derde omgeving, op dezelfde manier gebouwd en geboekt.
+    budget: 5000
+    team_hours: {ops: 15}
+    decay_days: null
+    cost_per_week: 900   # estimate: ~EUR 4,000 a month for licences and hosting
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: test_envs, property: headcount, value: 1}
+  - id: booking_board
+    name: Een boekingsbord met maximaal een week
+    tier: 1
+    category: visual_management
+    description: De omgevingen staan op een bord; niemand boekt langer dan een week, en wat niet gebruikt wordt, wordt teruggegeven.
+    budget: 500
+    team_hours: {ops: 5}
+    decay_days: 45
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: pairing_on_hard_parts
+    name: Samen programmeren op de lastige stukken
+    tier: 2
+    category: quality
+    description: Lastige wijzigingen worden met z'n tweeën gemaakt; de review zit er dan al in. Eenvoudige wijzigingen krijgen een review dezelfde dag, door wie als eerste klaar is.
+    budget: 2000
+    team_hours: {app_team: 20}
+    decay_days: 120
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: review_rota
+    name: Een reviewrooster
+    tier: 1
+    category: standard_work
+    description: Elke dag heeft één ontwikkelaar reviewdienst.
+    budget: 500
+    team_hours: {app_team: 5}
+    decay_days: 60
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+```
+
+**Dialogs.**
+
+```yaml
+dialogs:
+  - id: priya_envs
+    person: priya
+    kind: persuade
+    mission: fix_test_env_queue
+    owns: test_env_queue
+    patience: 10
+    # start: craftsman 40 + 0 + 0 + 0 + 0 = 40, Luistert
+    opening: "Als je een omgeving komt vragen: de volgende is vrij op 3 december."
+    position: {text: "We hebben gewoon een derde omgeving nodig.", tags: [claim]}
+    layers:
+      - {id: interest, at: 55, via: [inquiry, open_question, paraphrase], text: "Ik bouw ze met de hand. Drie dagen per keer: productiedata kopiëren, maskeren, controleren of er geen echte namen in zitten. Dan geeft iemand hem na een uur terug en begin ik opnieuw.", tags: [claim, feeling]}
+      - id: concern
+        at: 72
+        via: [inquiry, silence, empathy]
+        lead_in: {text: "En weet je waar ik wakker van lig…", tags: [hesitation]}
+        text: "Als ik het automatiseer en er glipt één keer echte klantdata door het maskeren, met adres en verbruik, in een omgeving waar dertig mensen bij kunnen… Dan is dat een datalek. Dat is niet een storing. Dat is de Autoriteit Persoonsgegevens."
+        tags: [admission]
+        unlocks: {facts: [heard:priya_privacy], proposals: [fake_data_first]}
+    reframe: "Vanuit het team dat wacht? Die zien een omgeving die vier weken geboekt is en er een uur per dag op testen. Ja. Ik zou ook boos zijn."
+    warning: "Ik moet zo een omgeving terugzetten."
+    data: ["test_env_queue:1", "test_env_queue:2"]
+    proposals:
+      - {id: build_from_code, addresses: [interest], label: "Omgevingen uit code", say: "Wat als een omgeving automatisch uit code wordt gebouwd, in tien minuten?", reply: "Met welke data?"}
+      - {id: fake_data_first, hidden: true, addresses: [concern], label: "Eerst nepdata, dan pas automatisch", say: "Wat als we eerst een vaste set nepdata maken, met alle lastige gevallen, en die automatisch meebouwen? Dan zit er nooit meer echte klantdata in een testomgeving.", reply: "Nooit meer echte data. Dan hoef ik niet meer te maskeren. Dan lig ik niet meer wakker."}
+    experiments:
+      - {id: fake_data_one_team, addresses: [concern], label: "Eén team een maand met nepdata", say: "Eén team test een maand alleen met nepdata, en Lisette kijkt mee.", reply: "Een maand, met de privacy-officer erbij. Dan weten we het zeker."}
+    co_proposal: {id: fake_data_first, text: "Laat Hanneke de lastige gevallen opschrijven. Die kent ze allemaal. Dan maak ik er nepdata van."}
+    outcomes:
+      commitment: "Afgesproken. En die derde omgeving hebben we dan niet meer nodig. Ik zeg het zelf tegen de IT-manager."
+      partial: "Ik wil het. Als de privacy-officer meekijkt."
+      heard: "Fijn dat je vroeg waarom het drie dagen duurt."
+      compliance: "Goed. Ik automatiseer het. Op jouw verantwoording."
+      ruined: "Dus ik ben te langzaam. Bouw ze dan zelf."
+    # route: open question +6 46 > paraphrase +7 53 (heard) > inquiry +12 (craftsman) 65 > capped 64 (interest) > reflect +10 74 (lead-in, cue)
+    #        > silence +12 > 81 capped (concern) > propose fake_data_first +8 89 > ask: commitment (7 moves)
+
+  - id: mark_pairing
+    person: mark
+    kind: persuade
+    mission: fix_code_review_wait
+    owns: code_review_wait
+    patience: 9
+    # start: defender 40 + 0 + 0 + 0 + 0 = 40
+    opening: "Pairen? Als je dat komt verkopen: twee mensen voor één klus."
+    position: {text: "Review zo snel mogelijk, prima. Maar ik ga niet de hele dag naast iemand zitten.", tags: [claim]}
+    layers:
+      - {id: interest, at: 55, via: [open_question, inquiry, paraphrase], text: "Ik werk het best als het stil is. Koptelefoon op. Dan zie ik de hele code in mijn hoofd.", tags: [claim, feeling]}
+      - id: concern
+        at: 70
+        via: [silence, empathy, reflect]
+        lead_in: {text: "Het is gewoon…", tags: [hesitation]}
+        text: "Een hele dag praten is voor mij als een hele dag in de wachtrij. Ik ben 's avonds op. Bij mijn vorige werkgever moest alles in pairs, en na een halfjaar zat ik thuis."
+        tags: [admission]
+        unlocks: {facts: [heard:mark_quiet], proposals: [pair_only_hard_parts]}
+    reframe: "Vanuit de collega die twee dagen op mijn review wacht? Die zit ook met een koptelefoon op, te wachten. Hm."
+    proposals:
+      - {id: pair_all_day, addresses: [interest], label: "Altijd in tweetallen", say: "Iedereen werkt voortaan in tweetallen.", reply: "Nee. Echt niet."}
+      - {id: pair_only_hard_parts, hidden: true, addresses: [concern], label: "Alleen de lastige stukken samen", say: "Wat als je alleen de lastige stukken samen doet, een uur of twee, en de rest gewoon met je koptelefoon? De review zit er dan al in.", reply: "Een uur of twee. Op de lastige stukken. Daar wil ik eigenlijk toch al iemand bij."}
+    experiments:
+      - {id: same_day_review, addresses: [concern], label: "Review dezelfde dag, wie eerst klaar is", say: "Wie als eerste klaar is met zijn taak, doet de openstaande review. Dezelfde dag. Geen rooster, geen gepraat.", reply: "Dat kan ik. Twintig minuten, stil. Prima."}
+    co_proposal: {id: pair_only_hard_parts, text: "Op de lastige stukken wil ik wel. Daar maak ik anders toch fouten die iemand anders twee dagen later vindt."}
+    outcomes:
+      commitment: "Afgesproken. Twee uur per dag, max. En daarna gaat de koptelefoon op."
+      partial: "Ik probeer het. Als niemand me de hele dag naast zich zet."
+      heard: "Fijn dat je vroeg hoe ik werk."
+      compliance: "Prima. Ik pair. Tot ik weer thuis zit."
+      ruined: "Dus ik moet socialer worden. Dank je."
+    # route: open question +6 46 > paraphrase +7 53 (heard) > inquiry +8 61 (interest) > reflect +10 71 (lead-in, cue)
+    #        > silence +12 > 79 capped (concern) > propose pair_only_hard_parts +8 87 > ask: commitment (7 moves)
+    # Respect: a practice is not good if it breaks the person doing it. Pairing where it adds value, not as a rule.
+```
+
+**Path dependence.**
+- `flag:third_env` (elevate before exploit) works for a few weeks. The third environment fills up the same way: the booking problem moves with it. A `poor_fix` follows when it is chosen as the countermeasure (fit 0.3 below the best).
+- `committed:priya_envs` with `synthetic_test_data` is read by `fix_meter_data_mandates` (tier 4, §2.8): the privacy officer starts one band higher ("Er zit geen echte data meer in test. Dat had ik nooit gedacht.").
+- `fork_first:it_after_release:*` gives D4 / D5.
+
+**Grounding.**
+- Infrastructure as code and on-demand environments: Humble & Farley, *Continuous Delivery* (2010).
+- Test data and privacy (production data in test environments is personal data under the AVG/GDPR): Autoriteit Persoonsgegevens guidance *(verify the page before quoting)*.
+- The fork's lesson: Goldratt (TOC), and audit L1.
+- 23, six, three days and four weeks: estimates.
+
+### 2.5 `fix_manual_regression` — Drie weken handmatig testen (M)
+
+Principles tested: **respect** (the tester's knowledge becomes the suite) and **long_term**. Temptation: an offshore test factory. The shifted bottleneck after the fork.
+
+```yaml
+missions:
+  - id: fix_manual_regression
+    name: Drie weken handmatig testen
+    kind: main
+    tier: 3
+    act: 6
+    chapter: Kleiner uitbrengen
+    track: it
+    requires: {any_of: [fix_test_env_queue, fix_code_review_wait]}
+    goal: {type: solve, problem: manual_regression}
+    principles: [respect, long_term]
+    briefing: "De omgevingen zijn er nu. Maar elke release vraagt nog steeds een regressietest van drie weken, met de hand, door drie testers. Hanneke Willems test al twintig jaar bij Voltana. 'Automatiseren? Prima. Als de computer weet wat ik weet.'"
+    debrief: "De regressietest duurt nu {test_hours} uur in plaats van drie weken, en hij draait bij elke wijziging. De lastige gevallen die Hanneke in haar hoofd had, staan nu als eerste in de testset. Hanneke test nu wat nog niemand heeft bedacht. 'Ik doe eindelijk weer waar ik goed in ben.'"
+    reopen: "De geautomatiseerde tests worden bij nieuwe wijzigingen niet meer bijgewerkt. Er staan er veertig 'tijdelijk uit'."
+    temptations:
+      - id: test_factory
+        who: it_manager
+        when: accepted
+        text: "Een testfabriek in het buitenland doet de regressietest in een week, voor de helft van de prijs. Dan kunnen onze testers ander werk doen."
+        accept: "Je besteedt de regressietest uit aan een testfabriek."
+        decline: "Je laat de testers hun kennis in de automatische tests zetten."
+        accept_sets_flags: [flag:test_factory]
+        accept_effects: {trust: {testers: -2}}
+    teaches: [test_automation, jidoka, respect_for_people]
+    rewards: {xp: 3200, budget: 25000, reputation: 5}
+    insights:
+      go_see: "Wat doet een tester in die drie weken? Wat ziet zij dat een script niet ziet?"
+      understand: "Welke tests vinden echt fouten, en welke bevestigen alleen wat al werkte?"
+      experiment: "Wat automatiseer je eerst, en waarom dat? Wat verwacht je te zien bij de volgende release?"
+      reflect: "Wiens kennis zit er nu in de testset? Weet ze dat?"
+
+problems:
+  - id: manual_regression
+    tier: 3
+    track: it
+    name: Drie weken handmatig testen
+    step: it_features.test
+    waste: overprocessing
+    severity: high
+    visibility: obvious
+    kpi: throughput
+    symptoms:
+      - Elke release vraagt een regressietest van drie weken, met de hand.
+      - Na de omgevingen is de test opnieuw de plek waar wijzigingen het langst wachten.
+    root_cause: Elke release wordt met de hand helemaal opnieuw getest, met een draaiboek van zeshonderd stappen. Het grootste deel controleert wat al jaren werkt; de lastige gevallen die echt fouten vinden, zitten in het hoofd van één ervaren tester en staan nergens.
+    plausible_causes:
+      - De testers werken te langzaam.
+      - Software van een netbeheerder is te complex om te automatiseren.
+    mismatch_note: Sneller met de hand testen of alles blind automatiseren lost het niet op. Het draaiboek test vooral wat al werkt, en de kennis van wat vaak misgaat, staat er niet in.
+    countermeasures: {test_automation_pyramid: 1.0, edge_cases_first: 0.8, testers_in_teams: 0.7, offshore_test_factory: 0.6}
+    teaches: [test_automation, jidoka]
+    effects:
+      - {target: it_features.test, property: touch_time, value: 3.0}
+    clues:
+      - {tool: time_study, key: true, depth: 0, text: "De regressietest heeft een draaiboek van zeshonderd stappen. Drie testers doen er drie weken over."}
+      - {tool: data, key: true, depth: 1, text: "Van de fouten die de regressietest vorig jaar vond, kwam negen op de tien uit veertig van de zeshonderd stappen. De rest vond niets."}
+      - {tool: conversation, key: true, depth: 2, text: "'De klant met twee aansluitingen op één adres. De boerderij met een windmolentje. De flat waar de meters in de kelder hangen. Die staan niet in het draaiboek. Die staan in mijn hoofd.'"}
+      - {tool: conversation, key: false, depth: 0, text: "'Onze software is te ingewikkeld om te automatiseren. Dat hebben we in 2018 al geprobeerd.'"}
+
+countermeasures:
+  - id: test_automation_pyramid
+    name: Automatische tests, van klein naar groot
+    tier: 3
+    category: quality
+    description: Veel kleine automatische tests op de code, minder op de koppelingen, een paar op de hele app. Ze draaien bij elke wijziging. De testers schrijven de lastige gevallen als eerste.
+    budget: 35000
+    team_hours: {testers: 60, app_team: 40}
+    decay_days: 180
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: it_features.test, property: touch_time, value: 0.4}
+  - id: edge_cases_first
+    name: Eerst de veertig stappen die fouten vinden
+    tier: 2
+    category: quality
+    description: De veertig stappen die de meeste fouten vonden, plus Hannekes lastige gevallen, worden als eerste geautomatiseerd. De rest van het draaiboek wordt opgeschoond.
+    budget: 12000
+    team_hours: {testers: 40}
+    decay_days: 120
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: testers_in_teams
+    name: Testers in de teams, vanaf het begin
+    tier: 2
+    category: people
+    description: Elke tester zit in een ontwikkelteam en denkt mee vanaf het moment dat een wijziging wordt besproken.
+    budget: 2000
+    team_hours: {testers: 10}
+    decay_days: 90
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: it_features.build, property: ftr, value: 0.03}
+  - id: offshore_test_factory
+    name: Een testfabriek in het buitenland
+    tier: 1
+    category: people
+    description: Een externe testfabriek voert het draaiboek uit, in een week. De lastige gevallen kent zij niet.
+    budget: 3000
+    team_hours: {testers: 10}
+    decay_days: 365
+    trust: {testers: -2}
+    aftermath: {after_days: 60, days: 999, effects: [{target: it_incidents, property: demand, value: 1.2}]}   # estimate: the edge cases are missed
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+
+dialogs:
+  - id: hanneke_edge_cases
+    person: hanneke
+    kind: persuade
+    mission: fix_manual_regression
+    owns: manual_regression
+    patience: 10
+    # start: craftsman 40 + 0 + 0 + 0 + 0 = 40
+    opening: "Twintig jaar. Ik heb vier apps zien komen en drie zien gaan. Ga zitten."
+    position: {text: "Automatiseren is prima. Als de computer weet wat ik weet.", tags: [claim]}
+    layers:
+      - {id: interest, at: 55, via: [inquiry, open_question, paraphrase], text: "Het draaiboek test wat al jaren werkt. De fouten zitten in de rare gevallen: twee aansluitingen op één adres, een boerderij met een windmolentje, een flat met de meters in de kelder.", tags: [claim, feeling]}
+      - id: concern
+        at: 72
+        via: [inquiry, silence, empathy]
+        lead_in: {text: "En als jullie alleen…", tags: [hesitation]}
+        text: "Als jullie alleen de makkelijke gevallen automatiseren, want dat gaat snel, dan zegt de computer 'groen' en gaat het mis bij de boer met de windmolen. Dan heb ik twintig jaar opgelet voor niets. En dan zegt iemand: 'De tests waren groen. Hoe kan dat nou?'"
+        tags: [admission]
+        unlocks: {facts: [heard:hanneke_cases], proposals: [hanneke_writes_first]}
+    reframe: "Vanuit de klant met de windmolen? Die merkt niet of ik drie weken heb getest. Die merkt of zijn teruglevering klopt. Ja."
+    warning: "Ik zit midden in stap 412."
+    data: ["manual_regression:0", "manual_regression:1"]
+    proposals:
+      - {id: automate_the_script, addresses: [interest], label: "Het draaiboek automatiseren", say: "We automatiseren het draaiboek, stap voor stap.", reply: "Zeshonderd stappen, waarvan er vijfhonderdzestig niks vinden. Die automatiseer je dan heel efficiënt."}
+      - {id: hanneke_writes_first, hidden: true, addresses: [concern], label: "Hannekes lastige gevallen eerst", say: "Wat als jij als eerste de lastige gevallen opschrijft, en die worden als eerste geautomatiseerd? Dan staat jouw kennis in de testset, niet alleen in jouw hoofd.", reply: "Mijn gevallen eerst. Dan zegt de computer pas 'groen' als de boer met de windmolen ook klopt. Ja. Dan wil ik."}
+    experiments:
+      - {id: pair_ten_cases, addresses: [concern], label: "Tien lastige gevallen, samen met een ontwikkelaar", say: "Jij en een ontwikkelaar automatiseren deze maand samen tien van jouw lastigste gevallen.", reply: "Tien. De boer met de windmolen als eerste. Dan zie ik of het werkt."}
+    co_proposal: {id: hanneke_writes_first, text: "Geef me twee weken. Dan schrijf ik ze allemaal op. Ook de rare. Vooral de rare."}
+    outcomes:
+      commitment: "Afgesproken. En als het draait, ga ik eindelijk testen wat nog niemand heeft bedacht."
+      partial: "Ik wil het wel. Als mijn gevallen erin komen."
+      heard: "Je bent de eerste die vraagt wát ik test, in plaats van hoe lang."
+      compliance: "Prima. Automatiseer het maar. Ik zal er niet bij zijn als het misgaat. O nee, wacht. Toch wel."
+      ruined: "Dus ik ben duur en langzaam. Zet dat maar in het verslag."
+    # route: open question +6 46 > paraphrase +7 53 (heard) > inquiry +12 (craftsman) 65 > capped 64 (interest) > reflect +10 74 (lead-in, cue)
+    #        > silence +12 > 81 capped (concern) > propose hanneke_writes_first +8 89 > ask: commitment (7 moves)
+```
+
+**Grounding.**
+- The test automation pyramid: Cohn, *Succeeding with Agile* (2009).
+- Built-in quality and stopping at the defect (jidoka in software): Poppendieck (2006); SAFe "Built-in Quality".
+- 600 steps, three weeks and "nine in ten from forty": estimates sized for the puzzle; the content test must make the briefing's numbers true on the IT stream.
+- The edge cases are the content's own: Lindeveld's farms with turbines, the silent meters in basement flats (Act II's `silent_meter`). Hanneke's knowledge *is* the game's history.
+
+### 2.6 `fix_pi_overcommit` — PI-planning als toneelstuk (M)
+
+Principles tested: **long_term** (predictability over promises) and **respect** (a plan people can keep). Temptation: plan at 100 % plus "stretch", and push overtime.
+
+```yaml
+missions:
+  - id: fix_pi_overcommit
+    name: PI-planning als toneelstuk
+    kind: main
+    tier: 3
+    act: 6
+    chapter: De trein
+    track: it
+    requires: {missions: [fix_manual_regression]}
+    goal: {type: solve, problem: pi_overcommit}
+    principles: [long_term, respect]
+    briefing: "De veldapp, het werkorderplatform en vier andere teams, waaronder het klantportaal en het meetdataplatform, vormen sinds vorig jaar één release train: 'Veld & Klant', zestig mensen. Elke tien weken plannen ze twee dagen samen. Bas Kuipers, de release train engineer: 'Elke keer belooft iedereen alles. Na tien weken is de helft af, en niemand is verbaasd.' Carla Wijnands, directeur Klant & Markt, wil dat alle Energiewet-wijzigingen er dit kwartaal in zitten."
+    debrief: "Het team belooft nu wat het kan waarmaken, en zegt eerlijk wat het misschien niet haalt. Van wat beloofd werd, is {predictability}% af, was {predictability_before}%. Carla: 'Ik krijg minder beloofd, en meer geleverd. Dat had ik eerder willen weten.'"
+    reopen: "Bij de laatste PI-planning werd weer 'alles' beloofd. Er kwam een nieuwe directeur die het niet anders kende."
+    beats:
+      - {on: accepted, who: bas, text: "Kom naar de volgende PI-planning. Twee dagen. Neem een stoel achterin en kijk wie er 'ja' zegt."}
+    temptations:
+      - id: stretch_and_overtime
+        who: carla
+        when: accepted
+        text: "Plan alles in, en zet er een 'stretch' bij. Als het team een paar avonden doorwerkt, halen we het."
+        accept: "Je laat alles inplannen, met stretch en overwerk."
+        decline: "Je laat het team plannen op wat het kan, en eerlijk zeggen wat onzeker is."
+        accept_sets_flags: [flag:pi_stretch]
+        accept_effects: {reputation: 2}
+    teaches: [pi_planning, wip, art]
+    rewards: {xp: 3400, budget: 25000, reputation: 5}
+    insights:
+      go_see: "Wie zegt er 'ja' bij de PI-planning, en wie zegt niets?"
+      understand: "Hoeveel werk past er in tien weken? Hoeveel werd er beloofd? Wat gebeurt er met het verschil?"
+      experiment: "Als het team minder belooft, wat verwacht je dan dat er geleverd wordt? Meer of minder?"
+      reflect: "Wat is meer waard voor Carla: een belofte van honderd procent, of een voorspelling die klopt?"
+
+problems:
+  - id: pi_overcommit
+    tier: 3
+    track: it
+    name: PI-planning als toneelstuk
+    step: it_features.refine
+    waste: overproduction
+    severity: high
+    visibility: subtle
+    kpi: on_time
+    symptoms:
+      - Bij elke PI-planning wordt anderhalf keer zoveel werk beloofd als er past.
+      - Na tien weken is ongeveer de helft van wat beloofd werd af.
+    root_cause: De PI-planning begint bij wat het bedrijf wil, niet bij wat de teams kunnen. Alles wordt toegezegd, dus alles wordt tegelijk begonnen; teams springen tussen taken en maken weinig af. Niemand maakt onderscheid tussen wat zeker moet en wat mooi zou zijn.
+    plausible_causes:
+      - De teams schatten slecht.
+      - De Energiewet-wijzigingen zijn gewoon te veel.
+    mismatch_note: Beter schatten helpt niet als het plan begint bij de wensen in plaats van bij de capaciteit, en alles tegelijk begint.
+    countermeasures: {capacity_based_pi: 1.0, committed_and_uncommitted: 0.8, stretch_overtime: 0.5}
+    teaches: [pi_planning, wip]
+    effects:
+      # estimate: planned work at 150% of capacity; context switching adds ~15% to build time
+      - {target: it_features, property: demand, value: 1.3}
+      - {target: it_features.build, property: touch_time, value: 1.15}
+    clues:
+      - {tool: data, key: true, depth: 0, text: "Van de doelen die bij de laatste drie PI-planningen werden toegezegd, was na tien weken 48, 52 en 45 procent af."}
+      - {tool: shadow, key: true, depth: 1, at: it_features.refine, text: "Op de tweede dag van de PI-planning schuift de directeur drie extra doelen naar het team van de veldapp. Niemand zegt nee. Het team schrijft ze erbij."}
+      - {tool: queue_count, key: true, depth: 1, at: it_features.build, text: "Het team van de veldapp heeft veertien wijzigingen tegelijk onder handen, met zes mensen."}
+      - {tool: conversation, key: false, depth: 0, text: "'De teams schatten gewoon slecht. Alles duurt twee keer zo lang.'"}
+      - {tool: conversation, key: true, depth: 2, text: "'Als ik nee zeg tegen de directeur, ben ik niet loyaal. Als ik ja zeg en het niet haal, ben ik niet goed genoeg. Dus zeg ik ja.'"}
+
+countermeasures:
+  - id: capacity_based_pi
+    name: Plannen op wat het team kan
+    tier: 2
+    category: flow
+    description: De PI-planning begint bij de capaciteit van elk team, min een vaste ruimte voor storingen en onderhoud. Er gaat pas iets nieuws in als er iets af is (een limiet op wat tegelijk onder handen is).
+    budget: 5000
+    team_hours: {app_team: 10, platform_team: 10}
+    decay_days: 120
+    sustains: true     # the PI rhythm is itself a leader routine
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: it_features, property: wip_limit, value: 12}
+  - id: committed_and_uncommitted
+    name: Toegezegd en niet toegezegd
+    tier: 3
+    category: visual_management
+    description: Elk team zegt per doel of het toegezegd is (dat halen we) of niet toegezegd (dat proberen we). De directeur ziet vooraf wat zeker is en wat niet.
+    budget: 2000
+    team_hours: {app_team: 5, platform_team: 5}
+    decay_days: 90
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: it_features.build, property: touch_time, value: 0.95}
+  - id: stretch_overtime
+    name: Stretch en overwerk
+    tier: 1
+    category: people
+    description: Alles wordt ingepland, met een 'stretch'. Het team werkt over waar nodig.
+    budget: 0
+    team_hours: {}
+    decay_days: 60
+    trust: {app_team: -1, platform_team: -1}
+    aftermath: {after_days: 42, days: 70, effects: [{target: app_team, property: availability, value: -0.1}]}   # estimate: fatigue and sick leave
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+
+dialogs:
+  - id: carla_must_haves
+    person: carla
+    kind: persuade
+    mission: fix_pi_overcommit
+    patience: 8
+    # start: rule_bound 35 + 0 + 0 + 0 + 0 = 35, Op z'n hoede
+    opening: "Ik heb twintig minuten. Als het over de PI gaat: alles wat op de lijst staat, moet erin. De Energiewet wacht niet."
+    position: {text: "Alle Energiewet-wijzigingen moeten dit kwartaal live. Dat heb ik toegezegd.", tags: [claim]}
+    layers:
+      - {id: interest, at: 52, via: [inquiry, open_question, paraphrase], text: "De ACM kijkt mee, de leveranciers wachten op onze nieuwe datasets, en de raad van bestuur vraagt elk kwartaal of we compliant zijn.", tags: [claim]}
+      - id: concern
+        at: 72
+        via: [inquiry, silence, empathy]
+        lead_in: {text: "En ik zal eerlijk zijn…", tags: [hesitation]}
+        text: "Ik heb de raad van bestuur beloofd dat alles erin zit. Als ik nu terug moet en zeggen dat de helft misschien niet lukt, sta ik er als directeur slecht op. Zes maanden in deze baan, en dan al terugkrabbelen."
+        tags: [admission]
+        unlocks: {facts: [heard:carla_promise], proposals: [certain_and_maybe]}
+    reframe: "Vanuit het team? Die beloven elke keer alles en leveren de helft. En dan zegt iedereen dat ze slecht schatten. Hm. Dat is mijn belofte, doorgeschoven."
+    warning: "Ik heb een bestuursvergadering. Kort, graag."
+    data: ["pi_overcommit:0", "pi_overcommit:1"]
+    lines:
+      show_data:
+        lands: "Achtenveertig, tweeënvijftig, vijfenveertig procent. Dus ik beloof de raad van bestuur elke keer iets wat voor de helft niet gebeurt."
+        misses: "Dat zijn de cijfers van mijn voorganger."
+    proposals:
+      - {id: plan_on_capacity, addresses: [interest], label: "Plannen op capaciteit", say: "Laat de teams plannen op wat ze kunnen. Dan is de helft van de lijst er niet.", reply: "De helft. En de Energiewet?"}
+      - {id: certain_and_maybe, hidden: true, addresses: [concern], label: "Zeker en misschien, vooraf", say: "Wat als de teams de Energiewet-wijzigingen als eerste toezeggen, en de rest eerlijk als 'proberen we'? Dan ga jij naar de raad van bestuur met wat zeker is, en kom je terug met meer dan je beloofde.", reply: "Zeker en misschien. Vooraf. Dan beloof ik minder en lever ik meer. Dat… is beter dan andersom."}
+    experiments:
+      - {id: one_pi_honest, addresses: [concern], label: "Eén PI eerlijk plannen", say: "Eén PI: de teams plannen op capaciteit, en jij krijgt na tien weken te zien wat er van de toezeggingen af is.", reply: "Eén PI. En als het tegenvalt, plannen we weer zoals altijd."}
+    co_proposal: {id: certain_and_maybe, text: "Laat me de Energiewet-wijzigingen zelf rangschikken. Ik weet welke de ACM het eerst ziet."}
+    outcomes:
+      commitment: "Afgesproken. En ik vertel het de raad van bestuur zelf: zeker en misschien. Dat hebben ze nooit gehoord."
+      partial: "Ik wil het proberen. Als de Energiewet-wijzigingen zeker zijn."
+      heard: "Interessant. U bent de eerste die vraagt wat ik beloofd heb, in plaats van wat ik vraag."
+      compliance: "Als het moet. Maar de Energiewet zit erin. Hoe dan ook."
+      ruined: "De Energiewet is geen wens. Plan het in."
+    # route: open question +6 41 > paraphrase +7 48 (heard) > inquiry +8 56 (interest) > show_data +15 (rule_bound) 71
+    #        > empathy +6 77 (lead-in, cue) > silence +12 > 81 capped (concern) > propose certain_and_maybe +8 89 > ask: commitment (8 moves)
+```
+
+**Path dependence.**
+- `flag:pi_stretch` pays now (reputation +2). Fatigue follows in weeks 6–16, and `t4`'s IT chapter (`fix_team_dependencies`) opens with lower `app_team` trust.
+- `chose:pi_overcommit:capacity_based_pi` with `committed:carla_must_haves` is read by Act V's `t4_hoshin`: the IT train already plans by capacity, so the X-matrix has one honest row.
+
+**Grounding.**
+- An ART of 5–12 teams, about 50–125 people; a PI of 8–12 weeks; PI planning as a two-day event; committed and uncommitted objectives; predictability measured on business value (Scaled Agile Framework; Lucid and Appfire summaries; *verify against the current SAFe 6.0 pages*).
+- The Energiewet in force since 1 January 2026 (tier-2 draft §4.2 grounding). The regulatory work packages named here are fiction.
+- 48, 52 and 45 % and fourteen changes in progress: estimates.
+
+**Engrossing.** A director who learns that a smaller promise kept is worth more than a big one broken, and who makes it her own message to the board. The team member's line (clue 4) is the human core: nobody can say no.
+
+### 2.7 Side missions of the IT chapter
+
+```yaml
+missions:
+  - id: fix_ops_dev_wall
+    name: Over de muur gegooid
+    kind: side
+    tier: 3
+    act: 6
+    track: it
+    requires: {missions: [it_map_feature_stream]}
+    goal: {type: solve, problem: ops_dev_wall}
+    principles: [respect, improve]
+    briefing: "Als het werkorderplatform 's nachts hapert, belt Beheer. Beheer zegt dat het aan de code ligt, de ontwikkelaars zeggen dat het aan de servers ligt, en een storing gaat drie keer heen en weer voordat iemand hem oplost. Bart Jacobs van Beheer: 'Het is altijd hun schuld. Behalve als het de onze is.'"
+    debrief: "Een storing gaat nu één keer de muur over, niet drie keer. Na elke grote storing praten Beheer en de ontwikkelaars samen, zonder schuldige te zoeken. Bart: 'Ik weet nu wie ik moet bellen. En hij neemt op.'"
+    temptations:
+      - id: find_the_culprit
+        who: mt_member
+        when: accepted
+        text: "Zoek uit wie die storing van vorige week heeft veroorzaakt. Dan weten we het voor de volgende keer."
+        accept: "Je laat uitzoeken wie de storing veroorzaakte."
+        decline: "Je laat uitzoeken hoe de storing kon ontstaan, niet door wie."
+        accept_sets_flags: [flag:blame_postmortem]
+        accept_effects: {trust: {ops: -1, platform_team: -1}}
+    teaches: [blameless_postmortem, devops, respect_for_people]
+    rewards: {xp: 1200, budget: 10000, reputation: 2}
+
+  - id: talk_rte
+    name: Wat is een release train?
+    kind: side
+    tier: 3
+    act: 6
+    arc: sector
+    track: it
+    requires: {missions: [it_map_feature_stream]}
+    goal: {type: talk_to, person: bas, topics: 3}
+    principles: [improve]
+    briefing: "Bas Kuipers is release train engineer: hij zorgt dat zestig mensen in zes teams in hetzelfde ritme werken. Vraag hem hoe dat werkt, en waarom het soms niet werkt."
+    debrief: "Een trein rijdt op een dienstregeling, ook als niet iedereen instapt. Bas: 'Het lastigste is niet het plannen. Het is dat iedereen durft te zeggen wat er niet past.'"
+    teaches: [art, pi_planning, dora_metrics]
+    rewards: {xp: 600}
+
+  - id: lsw_system_demo
+    name: Systeemdemo
+    kind: side
+    tier: 3
+    act: 6
+    track: it
+    requires: {missions: [fix_release_twice_a_year]}
+    recurring: {every_days: 14}
+    goal: {type: routine, kind: gemba_walk, places: [it_features.in_use], every_days: 14, times: 1}
+    principles: [improve]
+    briefing: "Elke twee weken laat de train zien wat er werkt. Niet in een presentatie, maar op de echte tablet. Ga kijken, en neem een monteur mee."
+    debrief: "Je zag wat er deze twee weken live ging. {demo_line}"
+    teaches: [pdca, customer_value]
+    rewards: {xp: 300}
+
+problems:
+  - id: ops_dev_wall
+    tier: 3
+    track: it
+    name: Over de muur gegooid
+    step: it_incidents.fix
+    waste: defects
+    severity: medium
+    visibility: subtle
+    kpi: lead_time
+    symptoms:
+      - Een storing aan het werkorderplatform gaat gemiddeld drie keer heen en weer tussen Beheer en de ontwikkelaars.
+    root_cause: Beheer en de ontwikkelaars werken in aparte teams met aparte doelen. Een storing wordt doorgezet met 'ligt aan jullie' in plaats van samen onderzocht, en na afloop wordt gezocht wie het deed, niet hoe het kon. Dus vertelt niemand meer dan nodig.
+    plausible_causes:
+      - De ontwikkelaars leveren slechte code.
+      - Beheer begrijpt de applicatie niet.
+    mismatch_note: Betere code of meer kennis bij Beheer verandert niets zolang een storing een pingpongbal is en elke nabespreking een schuldvraag.
+    countermeasures: {blameless_postmortems: 1.0, shared_on_call: 0.8, you_build_it_you_run_it: 0.9}
+    teaches: [blameless_postmortem, devops]
+    effects:
+      - {target: it_incidents.fix, property: ftr, value: -0.2}
+    clues:
+      - {tool: data, key: true, depth: 0, text: "Een storing aan het werkorderplatform wordt gemiddeld drie keer doorgezet voordat hij is opgelost."}
+      - {tool: documents, key: true, depth: 1, text: "Elke nabespreking van een storing eindigt met de vraag: 'Wie heeft deze wijziging gedaan?'"}
+      - {tool: conversation, key: true, depth: 2, text: "'Na de laatste nabespreking zei niemand meer iets. Je gaat toch niet vertellen dat je iets niet wist, als ze zoeken wie het was.'"}
+      - {tool: conversation, key: false, depth: 0, text: "'Het ligt altijd aan de code.'"}
+
+countermeasures:
+  - id: blameless_postmortems
+    name: Nabesprekingen zonder schuldvraag
+    tier: 2
+    category: people
+    description: Na elke grote storing een nabespreking met Beheer en de ontwikkelaars samen. De vraag is hoe het kon gebeuren en wat het systeem kan veranderen, nooit wie het deed.
+    budget: 2000
+    team_hours: {ops: 10, platform_team: 10}
+    decay_days: 120
+    sustains: true
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: shared_on_call
+    name: Samen piket
+    tier: 2
+    category: people
+    description: "'s Nachts hebben een beheerder en een ontwikkelaar samen piket."
+    budget: 6000
+    team_hours: {ops: 10, platform_team: 10}
+    decay_days: 90
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: you_build_it_you_run_it
+    name: Wie het bouwt, beheert het
+    tier: 3
+    category: flow
+    description: Het team van het werkorderplatform beheert zijn eigen platform in productie, met Beheer als ondersteuning voor de servers.
+    budget: 15000
+    team_hours: {platform_team: 30, ops: 20}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: it_incidents.fix, property: ftr, value: 0.05}
+
+people:
+  - id: bas
+    name: Bas Kuipers
+    role: release train engineer
+    place: it_features.refine
+    topics:
+      - id: art
+        ask: "Wat is een release train eigenlijk?"
+        open: "Een groep teams die samen één stroom van waarde leveren, hier de veldapp, het werkorderplatform, het klantportaal en de meetdata. Zestig mensen, zes teams, één ritme. Elke tien weken plannen we samen, elke twee weken laten we zien wat er werkt. Een trein vertrekt op tijd, ook als niet iedereen is ingestapt. Wat niet af is, gaat met de volgende."
+        closed: "Een paar teams die samenwerken."
+        teaches: [art]
+      - id: pi_planning
+        ask: "Wat gebeurt er bij zo'n PI-planning?"
+        open: "Twee dagen, iedereen in één ruimte. De directeur vertelt wat er belangrijk is, de teams plannen wat ze kunnen, en dan zie je de afhankelijkheden: wie op wie wacht. Het lastigste is niet het plannen. Het is dat iedereen durft te zeggen wat er niet past."
+        closed: "We plannen het kwartaal."
+        teaches: [pi_planning]
+      - id: dora
+        ask: "Hoe weet je of de trein goed rijdt?"
+        open: "Vier getallen. Hoe vaak we iets uitbrengen, hoe lang een wijziging erover doet van code tot klant, hoe vaak een release iets kapotmaakt, en hoe snel we het dan herstellen. De eerste twee gaan over snelheid, de laatste twee over stabiliteit. Het mooie: teams die vaak en klein uitbrengen, scoren meestal op allebei beter."
+        closed: "Aan de cijfers."
+        teaches: [dora_metrics]
+```
+
+**Dialogs for the sides** (short; the same shape):
+
+```yaml
+dialogs:
+  - id: bart_postmortem
+    person: bart
+    kind: persuade
+    mission: fix_ops_dev_wall
+    owns: ops_dev_wall
+    patience: 10
+    # start: cynic 30 (+10 team trust ops if no blame postmortem was ordered)
+    opening: "Weer iemand die DevOps komt brengen. We hebben al een poster."
+    position: {text: "Het ligt aan de code. Wij draaien wat zij bouwen.", tags: [claim]}
+    layers:
+      - {id: interest, at: 50, via: [open_question, inquiry, paraphrase], text: "Om drie uur 's nachts sta ik met een storing die ik niet begrijp, in software die ik niet heb gebouwd. Ik bel de ontwikkelaar. Die neemt niet op.", tags: [claim, feeling]}
+      - id: concern
+        at: 70
+        via: [silence, empathy, inquiry]
+        lead_in: {text: "En na afloop…", tags: [hesitation]}
+        text: "Na de storing van mei zat ik in een nabespreking waar de eerste vraag was: wie had dienst? Ik had dienst. Ik had het goed gedaan, maar ik had dienst. Sindsdien zeg ik in nabesprekingen niks meer. Niemand zegt nog iets."
+        tags: [admission]
+        unlocks: {facts: [heard:bart_may], proposals: [how_not_who]}
+    reframe: "Vanuit de ontwikkelaar die om drie uur gebeld wordt? Die wordt wakker voor iets wat hij niet kan zien. Hm. Die staat ook alleen."
+    data: ["ops_dev_wall:0", "ops_dev_wall:1"]
+    proposals:
+      - {id: shared_night, addresses: [interest], label: "Samen piket", say: "'s Nachts een beheerder en een ontwikkelaar samen op piket.", reply: "Samen. Dan neemt hij tenminste op."}
+      - {id: how_not_who, hidden: true, addresses: [concern], label: "Nabesprekingen: hoe, niet wie", say: "Wat als in elke nabespreking één regel geldt: we vragen hoe het kon, nooit wie het was? En jij zit de eerste voor.", reply: "Ik zit voor. En de eerste die 'wie' zegt, haalt koffie. Ja. Dan ga ik weer praten."}
+    experiments:
+      - {id: may_again, addresses: [concern], label: "Mei opnieuw bespreken, zonder namen", say: "Zet de storing van mei nog één keer op het bord, en bespreek hem opnieuw. Zonder namen.", reply: "Mei opnieuw. Zonder namen. … Dan zeg ik wat ik toen niet durfde."}
+    outcomes:
+      commitment: "Afgesproken. En ik vertel in de eerste nabespreking zelf wat ik in mei niet wist."
+      partial: "Ik doe mee. Als de MT ook stopt met 'wie'."
+      heard: "Hm. Je vroeg naar mei. Dat deed niemand."
+      compliance: "Prima. Weer een poster."
+      ruined: "Zie je. Het ligt aan de code."
+    # route: mood +8 38 > open question +6 44 > paraphrase +7 51 (heard, interest) > empathy +6 57 > show_data +15 (cynic x1.5) 72 (lead-in, cue)
+    #        > silence +12 > 79 capped (concern) > propose how_not_who +8 87 > ask: commitment (8 moves)
+```
+
+**Path dependence (sides).**
+- `flag:blame_postmortem` closes `you_build_it_you_run_it` until a blameless postmortem has been held once (`needs: {none: [flag:blame_postmortem]}` with `chose:ops_dev_wall:blameless_postmortems` clearing it).
+
+**Grounding.**
+- **Blameless postmortems:** Allspaw (2012), "Blameless PostMortems and a Just Culture"; Google SRE book (2016), ch. 15.
+- **DORA's four keys** (deployment frequency, lead time for changes, change failure rate, time to restore; velocity and stability): DORA / *Accelerate*.
+- **"You build it, you run it":** Vogels (2006), ACM Queue interview.
+
+---
+
+### 2.8 Moved to the tier-4 IT chapter: the customer portal and the meter-data platform (decided 2026-10-15)
+
+Merijn's decision: the field app comes first in tier 3, as in the catalogue. The two customer-side missions drafted here move to the tier-4 IT chapter, unchanged in content except their gates (`tier: 4`, `requires: {missions: [fix_pi_overcommit]}`). The tier-4 draft places them in its chain.
+
+**What changes with the move:**
+- **The release twist moves to the field app** (§2.2). In tier 4, `forecast_from_planning` keeps its `release_gated` flag. It ships at once if the release cadence was fixed well, and waits if `fix_release_twice_a_year` ended in a poor fix. That is path dependence across tiers, through the same rule.
+- **The meter-data platform meets a train** that already plans by capacity (if `fix_pi_overcommit` went well).
+
+#### `fix_status_page_wrong` — De statuspagina liegt (M, tier-4 IT)
 
 Principles tested: **respect** (for the customer reading the page) and **long_term**. The chapter's twist: the best countermeasure is `release_gated`.
 
@@ -2262,11 +3471,11 @@ missions:
   - id: fix_status_page_wrong
     name: De statuspagina liegt
     kind: main
-    tier: 3
+    tier: 4
     act: 6
-    chapter: Volg één wijziging
+    chapter: Het digitale loket
     track: it
-    requires: {missions: [it_map_feature_stream]}
+    requires: {missions: [fix_pi_overcommit]}
     goal: {type: solve, problem: status_page_wrong}
     principles: [respect, long_term]
     briefing: "Bij het klantcontactcentrum komen weer meer statusvragen binnen. Esra: 'Ze bellen niet omdat ze niets horen. Ze bellen omdat het portaal iets zegt wat niet klopt.' Een klant las vorige week 'Fase 4: TV gereed' en dacht dat zijn televisie klaar was. Noor zegt dat de statuspagina sinds 2024 af is. Hij staat in de kolom 'done'."
@@ -2296,7 +3505,7 @@ missions:
 
 problems:
   - id: status_page_wrong
-    tier: 3
+    tier: 4
     track: it
     name: De statuspagina liegt
     step: it_features.in_use
@@ -2430,778 +3639,17 @@ dialogs:
 
 **Engrossing.** A PO who admits she never met a customer: a common, human truth in IT. And the twist: the right fix is done and cannot reach the customer. The player *wants* the next mission.
 
-### 2.3 `fix_release_twice_a_year` — Twee releases per jaar (M)
-
-Principles tested: **long_term** (small batches are safer) and **respect** (fear has a history; honour it). Temptation: release more often by skipping the regression tests.
-
-```yaml
-missions:
-  - id: fix_release_twice_a_year
-    name: Twee releases per jaar
-    kind: main
-    tier: 3
-    act: 6
-    chapter: Kleiner uitbrengen
-    track: it
-    requires: {missions: [fix_status_page_wrong]}
-    goal: {type: solve, problem: release_twice_a_year}
-    principles: [long_term, respect]
-    briefing: "Het klantportaal en het meetdataplatform gaan twee keer per jaar live: in maart en in september. Elke release is een weekend van twintig mensen, drie weken testen vooraf en een change advisory board die alles afzonderlijk goedkeurt. Erwin de Groot, release manager, zit de CAB voor. 'Na 2023 doen we het zo. En sindsdien gaat het goed.'"
-    debrief: "Het portaal gaat nu {cadence} live, in kleine stukjes. De verwachte datum voor mevrouw El Amrani en alle anderen staat sinds {release_date} op het portaal. En de storingen na een release? {incidents_line} Erwin: 'Minder grote weekenden. Ik had niet gedacht dat ik dat zou missen. Ik mis het niet.'"
-    reopen: "De releases worden weer groter. Er is een 'freeze' ingesteld voor de Energiewet-wijzigingen, en die is nooit opgeheven."
-    beats:
-      - {on: accepted, who: erwin, text: "Je wilt vaker releasen. Iedereen wil vaker releasen, tot het een keer misgaat. Ik was erbij, in 2023."}
-      - {on: completed, who: noor, text: "De verwachte datum staat erop. Esra belde me. Ze zei alleen: dank je."}
-    temptations:
-      - id: skip_regression
-        who: it_manager
-        when: accepted
-        text: "Simpel: elke maand releasen, en de regressietest overslaan voor kleine wijzigingen. Dat scheelt drie weken per keer."
-        accept: "Je laat de regressietest vervallen voor kleine wijzigingen."
-        decline: "Je maakt de releases kleiner zonder op het testen te bezuinigen."
-        accept_sets_flags: [flag:skipped_tests]
-        accept_effects: {complete_goal: false}
-    teaches: [batching, ci_cd, small_batches]
-    rewards: {xp: 3000, budget: 25000, reputation: 5}
-    insights:
-      go_see: "Wat gebeurt er in het weekend van een release? Ben je erbij geweest?"
-      understand: "Waarom zijn de releases zo groot? Wat was er eerst: de grote release, of de angst?"
-      experiment: "Als je kleiner uitbrengt, wat verwacht je dan van het aantal storingen na een release? Welk getal laat dat zien?"
-      reflect: "Waar wacht de wijziging nu het langst? Was dat er al, of zag je het pas toen de release kleiner werd?"
-
-problems:
-  - id: release_twice_a_year
-    tier: 3
-    track: it
-    name: Twee releases per jaar
-    step: it_features.release
-    waste: waiting
-    severity: high
-    visibility: obvious
-    kpi: lead_time
-    symptoms:
-      - Het klantportaal en het meetdataplatform gaan twee keer per jaar live.
-      - Een wijziging die af is, wacht gemiddeld drie maanden op de volgende release.
-    root_cause: Na een mislukte release in 2023 werd elke wijziging gebundeld in twee grote releases per jaar, met drie weken handmatig testen en een CAB die alles afzonderlijk goedkeurt. Grote releases zijn riskanter, dus de angst bleef en het testen werd langer. Een kleine, veilige stap is nooit geprobeerd.
-    plausible_causes:
-      - De ontwikkelaars werken te langzaam.
-      - Een netbeheerder kan zich geen risico permitteren; twee keer per jaar is gewoon verstandig.
-      - De ACM eist zorgvuldige releases.
-    mismatch_note: Sneller bouwen helpt niet als wat af is drie maanden op de plank ligt. En grote releases zijn niet veiliger; ze voelen alleen zo.
-    countermeasures: {ci_cd_pipeline: 1.0, monthly_release_train: 0.8, feature_toggles: 0.7, skip_regression_small: 0.4}
-    teaches: [batching, ci_cd]
-    effects:
-      - {target: it_features.release, property: batch_days, value: 182}
-    clues:
-      - {tool: data, key: true, depth: 0, text: "Van de wijzigingen die vorig jaar live gingen, lag de gemiddelde wijziging 94 dagen af en klaar voordat hij live ging."}
-      - {tool: documents, key: true, depth: 1, text: "Het releaseprotocol van september 2023: 'Na het incident van 14 juli worden wijzigingen gebundeld in twee releases per jaar.'"}
-      - {tool: conversation, key: false, depth: 0, text: "'De ACM kijkt mee. Wij kunnen geen risico nemen.'"}
-      - {tool: time_study, key: true, depth: 1, at: it_features.test, text: "De regressietest voor een release duurt drie weken, met de hand. Hoe groter de release, hoe langer."}
-      - {tool: data, key: true, depth: 2, at: it_incidents.report, text: "Na de laatste vier grote releases kwamen er in de eerste week gemiddeld elf storingen binnen. Bijna allemaal in wijzigingen die niets met elkaar te maken hadden, maar wel samen live gingen."}
-      - {tool: conversation, key: true, depth: 2, text: "'In juli 2023 ging er een release mis. De meetdata van veertigduizend klanten kwam twee dagen niet bij de leveranciers. Sindsdien willen we het allemaal heel goed doen. Dus doen we het weinig.'"}
-
-countermeasures:
-  - id: ci_cd_pipeline
-    name: Een pijplijn met automatische controles
-    tier: 3
-    category: flow
-    description: Elke wijziging gaat door een vaste pijplijn met automatische tests en controles, en kan los live. De CAB keurt de pijplijn goed, niet elke wijziging; grote risico's krijgen een eigen beoordeling.
-    budget: 40000
-    team_hours: {portal_team: 60, ops: 40}
-    decay_days: null
-    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
-    effects:
-      - {target: it_features.release, property: batch_days, value: 7}
-  - id: monthly_release_train
-    name: Elke maand een release
-    tier: 2
-    category: flow
-    description: Elke vier weken een vaste release, met een kleinere regressietest en een vaste CAB-dag.
-    budget: 8000
-    team_hours: {ops: 20, testers: 20}
-    decay_days: 120
-    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
-    effects:
-      - {target: it_features.release, property: batch_days, value: 28}
-  - id: feature_toggles
-    name: Uitbrengen en pas later aanzetten
-    tier: 3
-    category: flow
-    description: Wijzigingen gaan uit, maar staan uit, tot het bedrijf ze aanzet. Uitbrengen en aanzetten worden twee verschillende stappen.
-    budget: 12000
-    team_hours: {portal_team: 30}
-    decay_days: 180
-    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
-    effects:
-      - {target: it_features.release, property: batch_days, value: 60}
-  - id: skip_regression_small
-    name: Kleine wijzigingen zonder regressietest
-    tier: 1
-    category: flow
-    description: Kleine wijzigingen gaan maandelijks live zonder de regressietest.
-    budget: 500
-    team_hours: {ops: 5}
-    decay_days: 365
-    aftermath:
-      after_days: 30
-      days: 999
-      effects:
-        - {target: it_incidents, property: demand, value: 1.5}   # estimate: untested changes break things in production
-    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
-    effects:
-      - {target: it_features.release, property: batch_days, value: 28}
-```
-
-**Dialog: `erwin_cab`.**
-
-```yaml
-dialogs:
-  - id: erwin_cab
-    person: erwin
-    kind: persuade
-    mission: fix_release_twice_a_year
-    owns: release_twice_a_year
-    patience: 10
-    # start: rule_bound 35 + 0 + 0 + 0 + 0 = 35, Op z'n hoede
-    opening: "Kom erin. Op dat bord staat de release van maart. Honderdzestig wijzigingen. Wil je weten hoeveel daarvan iemand nog snapt?"
-    position: {text: "Twee releases per jaar, goed getest, goed bewaakt. Dat is zorgvuldig.", tags: [claim]}
-    layers:
-      - {id: interest, at: 52, via: [inquiry, open_question, paraphrase], text: "Elke release is een weekend. Twintig mensen, pizza, en ik die om vier uur 's nachts beslist of we teruggaan. Twee keer per jaar is al genoeg.", tags: [claim, feeling]}
-      - id: concern
-        at: 72
-        via: [inquiry, silence, empathy]
-        lead_in: {text: "In juli 2023…", tags: [hesitation]}
-        text: "…zat ik bij de directie. De meetdata van veertigduizend klanten was twee dagen niet bij de leveranciers aangekomen. Verkeerde voorschotten, de krant. Ik had die release goedgekeurd. Sindsdien keur ik niets meer goed wat ik niet zelf heb gezien."
-        tags: [admission]
-        unlocks: {facts: [heard:erwin_2023], proposals: [erwin_designs_the_checks]}
-    reframe: "Vanuit de klant die de datum op het portaal mist omdat hij in maart pas live gaat? … Ja. Die heeft ook een slecht weekend. Elk weekend."
-    warning: "Ik heb een CAB om twee uur."
-    data: ["release_twice_a_year:0", "release_twice_a_year:4"]
-    lines:
-      show_data:
-        lands: "Elf storingen in de week na een grote release. In wijzigingen die niets met elkaar te maken hadden. Hm. Dat… dat is de bundel zelf."
-        misses: "Cijfers. In 2023 hadden we ook cijfers."
-    proposals:
-      - {id: monthly, addresses: [interest], label: "Elke maand een release", say: "Elke maand een release, kleiner.", reply: "Twaalf weekenden in plaats van twee?"}
-      - {id: erwin_designs_the_checks, hidden: true, addresses: [concern], label: "Erwin ontwerpt de automatische controles", say: "Wat als jij de controles ontwerpt die elke wijziging automatisch moet doorstaan? Alles wat jij in 2023 had willen zien, zit erin. Dan keur je de controles goed, één keer, en zie je elke wijziging toch.", reply: "Mijn controles. Elke keer, automatisch. Dan zie ik meer dan nu. Nu zie ik honderdzestig wijzigingen in één keer en begrijp ik er tien."}
-    experiments:
-      - {id: one_team_weekly, addresses: [concern], label: "Eén team, één kwartaal, wekelijks", say: "Eén team, het portaal, mag een kwartaal elke week kleine wijzigingen uitbrengen. Jij volgt elke release en mag het stoppen.", reply: "Eén team. En ik mag stoppen. Dat is netjes."}
-    co_proposal: {id: erwin_designs_the_checks, text: "Laat mij die controles opschrijven. Ik weet precies wat er in 2023 mis had kunnen worden gevangen."}
-    outcomes:
-      commitment: "Afgesproken. En de pizza blijft. Op vrijdag. Zonder release."
-      partial: "Ik wil het proberen. Als de CAB blijft meekijken."
-      heard: "Je bent de eerste die vraagt wat er in 2023 gebeurde, in plaats van te zeggen dat ik te voorzichtig ben."
-      compliance: "Als de directie het wil. Het staat in het verslag dat ik het afraadde."
-      ruined: "Dus ik ben de rem. Prima. Dan rem ik."
-    # route: open question +6 41 > paraphrase +7 48 (heard) > inquiry +8 56 (interest) > show_data +15 (rule_bound) 71
-    #        > empathy +6 77 (lead-in, cue) > silence +12 > 81 capped (concern) > propose erwin_designs_the_checks +8 89 > ask: commitment (8 moves)
-```
-
-**Path dependence.**
-- `flag:skipped_tests` (or `skip_regression_small`): incidents rise a month later. `fix_ops_dev_wall` (side) opens with a heavier problem.
-- After `ci_cd_pipeline` or `monthly_release_train`, `forecast_from_planning` ships, and the status page's repair quest opens if it was patched (§2.2).
-- The test step becomes the constraint: the fork (§2.4).
-
-**Grounding.**
-- *Accelerate* (Forsgren, Humble & Kim, 2018): external change approval is negatively correlated with throughput and not correlated with stability; lightweight change approval and smaller batches go with both higher throughput and higher stability. Deployment frequency and lead time for changes are two of the four key metrics.
-- Small batches reduce risk: Reinertsen, *The Principles of Product Development Flow* (2009).
-- The 2023 incident, 160 changes, 94 days and eleven incidents: fiction and estimates.
-
-**Engrossing.** A release manager whose caution is a scar, and a proposal that turns his scar into the safety net. The data puzzle: the incidents come *from* the bundling.
-
-### 2.4 The fork `it_after_release`: `fix_test_env_queue` (B) and `fix_code_review_wait` (N)
-
-After smaller releases, work waits in two places. The test environments, two shared by the train's teams, are the constraint. The code reviews wait two days, which is annoying but not the constraint. The non-bottleneck debrief names the lead-time gain (L1).
-
-```yaml
-missions:
-  - id: fix_test_env_queue
-    name: Wachten op de testomgeving
-    kind: main
-    tier: 3
-    act: 6
-    chapter: Kleiner uitbrengen
-    track: it
-    requires: {missions: [fix_release_twice_a_year]}
-    fork: {group: it_after_release, role: bottleneck}
-    goal: {type: solve, problem: test_env_queue}
-    principles: [improve, long_term]
-    briefing: "Er zijn twee testomgevingen voor het hele portaal en het meetdataplatform. Op het planbord staan ze voor zes weken vol. Teams wachten, of testen 'even snel' tussen de boekingen door. Ops wil een derde omgeving. Een ontwikkelaar zegt dat de reviews het probleem zijn: 'Mijn code wacht twee dagen op een review.'"
-    debrief: "Er gaan nu {throughput_after} wijzigingen per week door, was {throughput_before}. Een testomgeving staat er in tien minuten, met nepdata, en is weg als hij niet meer nodig is. Ops bouwt geen omgevingen meer met de hand. Waar wacht het werk nu?"
-    debrief_first: "Nu zie je het verschil met de reviews: dit keer gaan er wél meer wijzigingen per week door. Waarom hier wel en daar niet?"
-    beats:
-      - {on: accepted, who: priya, text: "Een omgeving bouwen kost me drie dagen. Productiedata kopiëren, maskeren, controleren. En dan boekt iemand hem voor zes weken 'voor de zekerheid'."}
-    temptations:
-      - id: buy_third_env
-        who: it_manager
-        when: accepted
-        text: "Koop gewoon een derde omgeving. Vierduizend euro per maand, en de wachtrij is weg."
-        accept: "Je laat een derde testomgeving inrichten."
-        decline: "Je kijkt eerst wat de twee omgevingen nu doen."
-        accept_sets_flags: [flag:third_env]
-        accept_effects: {cost_per_week: 900}
-    teaches: [theory_of_constraints, bottleneck_focus, infrastructure_as_code]
-    rewards: {xp: 3000, budget: 25000, reputation: 5}
-    insights:
-      go_see: "Twee plekken waar wijzigingen wachten. Waar wacht het meeste werk, in dagen? Heb je het zelf geteld?"
-      understand: "Wat doet een testomgeving op een dag dat hij geboekt is? Hoeveel uur wordt er echt getest?"
-      experiment: "Als je deze omgevingen beter benut, hoeveel wijzigingen per week verwacht je? Voordat je er een bij koopt?"
-      reflect: "Femke zei het in de netstudie: eerst beter benutten, dan pas groter maken. Gold dat hier ook?"
-
-  - id: fix_code_review_wait
-    name: Wachten op een review
-    kind: main
-    tier: 3
-    act: 6
-    chapter: Kleiner uitbrengen
-    track: it
-    requires: {missions: [fix_release_twice_a_year]}
-    fork: {group: it_after_release, role: non_bottleneck}
-    goal: {type: solve, problem: code_review_wait}
-    principles: [respect, improve]
-    briefing: "Ontwikkelaar Mark van Leeuwen wacht gemiddeld twee dagen op een review van zijn code. 'Het is altijd hetzelfde: iedereen is druk met zijn eigen werk, en een review is werk van een ander.' Op de testomgevingen wordt ook gewacht, zegt hij, maar daar kan hij niets aan doen."
-    debrief: "Code wacht nu {review_hours} uur op een review in plaats van twee dagen. Een wijziging is gemiddeld {lead_delta} dagen eerder klaar. Maar kijk naar de stroom: er gaan niet méér wijzigingen per week live. Het werk wacht nog steeds bij {constraint_place}."
-    debrief_first: "Goed dat dit ook vlotter gaat: minder wachten, en het team leert van elkaars code. Het knelpunt zat al ergens anders."
-    teaches: [bottleneck_focus, lead_time, pair_programming]
-    rewards: {xp: 2600, budget: 15000, reputation: 5}
-    insights:
-      go_see: "Twee plekken waar wijzigingen wachten. Waar staat het werk het langst stil?"
-      understand: "Waarom blijft een review liggen? Wat is er voor de reviewer belangrijker?"
-      experiment: "Welk getal verwacht je dat verandert: de wachttijd voor een review, het aantal wijzigingen per week, of allebei?"
-      reflect: "Gaan er nu meer wijzigingen per week live? Wat is er wél beter geworden, en voor wie?"
-
-problems:
-  - id: test_env_queue
-    tier: 3
-    track: it
-    name: Wachten op de testomgeving
-    step: it_features.test
-    waste: waiting
-    severity: high
-    visibility: subtle
-    kpi: throughput
-    symptoms:
-      - Het planbord van de twee testomgevingen staat zes weken vol.
-      - Teams testen 'even snel' tussen boekingen door, of wachten.
-    root_cause: Een testomgeving wordt met de hand gebouwd, met een kopie van productiedata die drie dagen maskeren kost. Omdat opnieuw bouwen zo lang duurt, boeken teams een omgeving voor weken 'voor de zekerheid', en staat hij het grootste deel van de tijd stil.
-    plausible_causes:
-      - Er zijn gewoon te weinig testomgevingen.
-      - De reviews houden alles op.
-      - De testers zijn te langzaam.
-    mismatch_note: Een derde omgeving die net zo gebouwd en net zo geboekt wordt, staat over een maand ook vol. De omgevingen zijn schaars omdat ze traag gemaakt en lang vastgehouden worden.
-    countermeasures: {environments_on_demand: 1.0, synthetic_test_data: 0.8, third_environment: 0.7, booking_board: 0.6}
-    teaches: [theory_of_constraints, infrastructure_as_code]
-    effects:
-      # estimate: hand-built environments are down or being refreshed ~30% of the time
-      - {target: test_envs, property: availability, value: -0.3}
-    clues:
-      - {tool: queue_count, key: true, depth: 0, text: "Bij de test wachten 23 wijzigingen, ruim drie weken werk. Bij de review wachten er zes."}
-      - {tool: shadow, key: true, depth: 1, text: "Testomgeving 2 is voor vier weken geboekt door het portaalteam. Vandaag wordt er een uur op getest."}
-      - {tool: time_study, key: true, depth: 1, text: "Een testomgeving opnieuw bouwen kost drie werkdagen, waarvan twee voor het kopiëren en maskeren van productiedata."}
-      - {tool: conversation, key: false, depth: 0, text: "'De reviews houden alles op. Mijn code wacht twee dagen.'"}
-      - {tool: conversation, key: true, depth: 2, text: "'We boeken voor weken, want als we hem teruggeven, duurt het drie dagen voor we er weer een hebben.'"}
-
-  - id: code_review_wait
-    tier: 3
-    track: it
-    name: Wachten op een review
-    step: it_features.review
-    waste: waiting
-    severity: low
-    visibility: obvious
-    kpi: lead_time
-    symptoms:
-      - Code wacht gemiddeld twee dagen op een review.
-    root_cause: Reviews zijn niemands werk. Iedereen doet ze tussen zijn eigen taken door, als die af zijn.
-    plausible_causes:
-      - Er zijn te weinig senior ontwikkelaars.
-    mismatch_note: Meer seniors reviewen sneller, maar zolang een review 'werk van een ander' is, blijft hij liggen.
-    countermeasures: {pairing_on_hard_parts: 1.0, review_rota: 0.7}
-    teaches: [bottleneck_focus]
-    effects:
-      - {target: it_features.review, property: wait_time, value: 2.0}
-    clues:
-      - {tool: data, key: true, depth: 0, text: "Code wacht gemiddeld twee dagen op een review. Een review zelf duurt twintig minuten."}
-      - {tool: shadow, key: true, depth: 1, text: "Een ontwikkelaar heeft drie reviewverzoeken open staan en werkt eerst zijn eigen ticket af."}
-      - {tool: conversation, key: true, depth: 1, text: "'Een review is werk van een ander. Mijn eigen werk staat op het bord met mijn naam erop.'"}
-
-countermeasures:
-  - id: environments_on_demand
-    name: Omgevingen op afroep
-    tier: 3
-    category: flow
-    description: Een testomgeving wordt automatisch gebouwd uit code, in tien minuten, en verdwijnt als hij niet meer nodig is. Niemand hoeft meer te boeken.
-    budget: 30000
-    team_hours: {ops: 60}
-    decay_days: null
-    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
-    effects:
-      - {target: test_envs, property: headcount, value: 3}
-  - id: synthetic_test_data
-    name: Nepdata in plaats van productiedata
-    tier: 2
-    category: quality
-    description: Testomgevingen krijgen een vaste set nepdata met alle lastige gevallen, in plaats van een gemaskeerde kopie van productie. Sneller, en er kan geen klantdata lekken.
-    budget: 10000
-    team_hours: {ops: 20, testers: 20}
-    decay_days: 180
-    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
-    effects:
-      - {target: test_envs, property: availability, value: 0.2}
-  - id: third_environment
-    name: Een derde testomgeving
-    tier: 2
-    category: flow
-    description: Een derde omgeving, op dezelfde manier gebouwd en geboekt.
-    budget: 5000
-    team_hours: {ops: 15}
-    decay_days: null
-    cost_per_week: 900   # estimate: ~EUR 4,000 a month for licences and hosting
-    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
-    effects:
-      - {target: test_envs, property: headcount, value: 1}
-  - id: booking_board
-    name: Een boekingsbord met maximaal een week
-    tier: 1
-    category: visual_management
-    description: De omgevingen staan op een bord; niemand boekt langer dan een week, en wat niet gebruikt wordt, wordt teruggegeven.
-    budget: 500
-    team_hours: {ops: 5}
-    decay_days: 45
-    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
-    effects: []
-  - id: pairing_on_hard_parts
-    name: Samen programmeren op de lastige stukken
-    tier: 2
-    category: quality
-    description: Lastige wijzigingen worden met z'n tweeën gemaakt; de review zit er dan al in. Eenvoudige wijzigingen krijgen een review dezelfde dag, door wie als eerste klaar is.
-    budget: 2000
-    team_hours: {portal_team: 20}
-    decay_days: 120
-    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
-    effects: []
-  - id: review_rota
-    name: Een reviewrooster
-    tier: 1
-    category: standard_work
-    description: Elke dag heeft één ontwikkelaar reviewdienst.
-    budget: 500
-    team_hours: {portal_team: 5}
-    decay_days: 60
-    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
-    effects: []
-```
-
-**Dialogs.**
-
-```yaml
-dialogs:
-  - id: priya_envs
-    person: priya
-    kind: persuade
-    mission: fix_test_env_queue
-    owns: test_env_queue
-    patience: 10
-    # start: craftsman 40 + 0 + 0 + 0 + 0 = 40, Luistert
-    opening: "Als je een omgeving komt vragen: de volgende is vrij op 3 december."
-    position: {text: "We hebben gewoon een derde omgeving nodig.", tags: [claim]}
-    layers:
-      - {id: interest, at: 55, via: [inquiry, open_question, paraphrase], text: "Ik bouw ze met de hand. Drie dagen per keer: productiedata kopiëren, maskeren, controleren of er geen echte namen in zitten. Dan geeft iemand hem na een uur terug en begin ik opnieuw.", tags: [claim, feeling]}
-      - id: concern
-        at: 72
-        via: [inquiry, silence, empathy]
-        lead_in: {text: "En weet je waar ik wakker van lig…", tags: [hesitation]}
-        text: "Als ik het automatiseer en er glipt één keer echte klantdata door het maskeren, met adres en verbruik, in een omgeving waar dertig mensen bij kunnen… Dan is dat een datalek. Dat is niet een storing. Dat is de Autoriteit Persoonsgegevens."
-        tags: [admission]
-        unlocks: {facts: [heard:priya_privacy], proposals: [fake_data_first]}
-    reframe: "Vanuit het team dat wacht? Die zien een omgeving die vier weken geboekt is en er een uur per dag op testen. Ja. Ik zou ook boos zijn."
-    warning: "Ik moet zo een omgeving terugzetten."
-    data: ["test_env_queue:1", "test_env_queue:2"]
-    proposals:
-      - {id: build_from_code, addresses: [interest], label: "Omgevingen uit code", say: "Wat als een omgeving automatisch uit code wordt gebouwd, in tien minuten?", reply: "Met welke data?"}
-      - {id: fake_data_first, hidden: true, addresses: [concern], label: "Eerst nepdata, dan pas automatisch", say: "Wat als we eerst een vaste set nepdata maken, met alle lastige gevallen, en die automatisch meebouwen? Dan zit er nooit meer echte klantdata in een testomgeving.", reply: "Nooit meer echte data. Dan hoef ik niet meer te maskeren. Dan lig ik niet meer wakker."}
-    experiments:
-      - {id: fake_data_one_team, addresses: [concern], label: "Eén team een maand met nepdata", say: "Eén team test een maand alleen met nepdata, en Lisette kijkt mee.", reply: "Een maand, met de privacy-officer erbij. Dan weten we het zeker."}
-    co_proposal: {id: fake_data_first, text: "Laat Hanneke de lastige gevallen opschrijven. Die kent ze allemaal. Dan maak ik er nepdata van."}
-    outcomes:
-      commitment: "Afgesproken. En die derde omgeving hebben we dan niet meer nodig. Ik zeg het zelf tegen de IT-manager."
-      partial: "Ik wil het. Als de privacy-officer meekijkt."
-      heard: "Fijn dat je vroeg waarom het drie dagen duurt."
-      compliance: "Goed. Ik automatiseer het. Op jouw verantwoording."
-      ruined: "Dus ik ben te langzaam. Bouw ze dan zelf."
-    # route: open question +6 46 > paraphrase +7 53 (heard) > inquiry +12 (craftsman) 65 > capped 64 (interest) > reflect +10 74 (lead-in, cue)
-    #        > silence +12 > 81 capped (concern) > propose fake_data_first +8 89 > ask: commitment (7 moves)
-
-  - id: mark_pairing
-    person: mark
-    kind: persuade
-    mission: fix_code_review_wait
-    owns: code_review_wait
-    patience: 9
-    # start: defender 40 + 0 + 0 + 0 + 0 = 40
-    opening: "Pairen? Als je dat komt verkopen: twee mensen voor één klus."
-    position: {text: "Review zo snel mogelijk, prima. Maar ik ga niet de hele dag naast iemand zitten.", tags: [claim]}
-    layers:
-      - {id: interest, at: 55, via: [open_question, inquiry, paraphrase], text: "Ik werk het best als het stil is. Koptelefoon op. Dan zie ik de hele code in mijn hoofd.", tags: [claim, feeling]}
-      - id: concern
-        at: 70
-        via: [silence, empathy, reflect]
-        lead_in: {text: "Het is gewoon…", tags: [hesitation]}
-        text: "Een hele dag praten is voor mij als een hele dag in de wachtrij. Ik ben 's avonds op. Bij mijn vorige werkgever moest alles in pairs, en na een halfjaar zat ik thuis."
-        tags: [admission]
-        unlocks: {facts: [heard:mark_quiet], proposals: [pair_only_hard_parts]}
-    reframe: "Vanuit de collega die twee dagen op mijn review wacht? Die zit ook met een koptelefoon op, te wachten. Hm."
-    proposals:
-      - {id: pair_all_day, addresses: [interest], label: "Altijd in tweetallen", say: "Iedereen werkt voortaan in tweetallen.", reply: "Nee. Echt niet."}
-      - {id: pair_only_hard_parts, hidden: true, addresses: [concern], label: "Alleen de lastige stukken samen", say: "Wat als je alleen de lastige stukken samen doet, een uur of twee, en de rest gewoon met je koptelefoon? De review zit er dan al in.", reply: "Een uur of twee. Op de lastige stukken. Daar wil ik eigenlijk toch al iemand bij."}
-    experiments:
-      - {id: same_day_review, addresses: [concern], label: "Review dezelfde dag, wie eerst klaar is", say: "Wie als eerste klaar is met zijn taak, doet de openstaande review. Dezelfde dag. Geen rooster, geen gepraat.", reply: "Dat kan ik. Twintig minuten, stil. Prima."}
-    co_proposal: {id: pair_only_hard_parts, text: "Op de lastige stukken wil ik wel. Daar maak ik anders toch fouten die iemand anders twee dagen later vindt."}
-    outcomes:
-      commitment: "Afgesproken. Twee uur per dag, max. En daarna gaat de koptelefoon op."
-      partial: "Ik probeer het. Als niemand me de hele dag naast zich zet."
-      heard: "Fijn dat je vroeg hoe ik werk."
-      compliance: "Prima. Ik pair. Tot ik weer thuis zit."
-      ruined: "Dus ik moet socialer worden. Dank je."
-    # route: open question +6 46 > paraphrase +7 53 (heard) > inquiry +8 61 (interest) > reflect +10 71 (lead-in, cue)
-    #        > silence +12 > 79 capped (concern) > propose pair_only_hard_parts +8 87 > ask: commitment (7 moves)
-    # Respect: a practice is not good if it breaks the person doing it. Pairing where it adds value, not as a rule.
-```
-
-**Path dependence.**
-- `flag:third_env` (elevate before exploit) works for a few weeks. The third environment fills up the same way: the booking problem moves with it. A `poor_fix` follows when it is chosen as the countermeasure (fit 0.3 below the best).
-- `committed:priya_envs` with `synthetic_test_data` is read by `fix_meter_data_mandates` (§2.7): the privacy officer starts one band higher ("Er zit geen echte data meer in test. Dat had ik nooit gedacht.").
-- `fork_first:it_after_release:*` gives D4 / D5.
-
-**Grounding.**
-- Infrastructure as code and on-demand environments: Humble & Farley, *Continuous Delivery* (2010).
-- Test data and privacy (production data in test environments is personal data under the AVG/GDPR): Autoriteit Persoonsgegevens guidance *(verify the page before quoting)*.
-- The fork's lesson: Goldratt (TOC), and audit L1.
-- 23, six, three days and four weeks: estimates.
-
-### 2.5 `fix_manual_regression` — Drie weken handmatig testen (M)
-
-Principles tested: **respect** (the tester's knowledge becomes the suite) and **long_term**. Temptation: an offshore test factory. The shifted bottleneck after the fork.
-
-```yaml
-missions:
-  - id: fix_manual_regression
-    name: Drie weken handmatig testen
-    kind: main
-    tier: 3
-    act: 6
-    chapter: Kleiner uitbrengen
-    track: it
-    requires: {any_of: [fix_test_env_queue, fix_code_review_wait]}
-    goal: {type: solve, problem: manual_regression}
-    principles: [respect, long_term]
-    briefing: "De omgevingen zijn er nu. Maar elke release vraagt nog steeds een regressietest van drie weken, met de hand, door drie testers. Hanneke Willems test al twintig jaar bij Voltana. 'Automatiseren? Prima. Als de computer weet wat ik weet.'"
-    debrief: "De regressietest duurt nu {test_hours} uur in plaats van drie weken, en hij draait bij elke wijziging. De lastige gevallen die Hanneke in haar hoofd had, staan nu als eerste in de testset. Hanneke test nu wat nog niemand heeft bedacht. 'Ik doe eindelijk weer waar ik goed in ben.'"
-    reopen: "De geautomatiseerde tests worden bij nieuwe wijzigingen niet meer bijgewerkt. Er staan er veertig 'tijdelijk uit'."
-    temptations:
-      - id: test_factory
-        who: it_manager
-        when: accepted
-        text: "Een testfabriek in het buitenland doet de regressietest in een week, voor de helft van de prijs. Dan kunnen onze testers ander werk doen."
-        accept: "Je besteedt de regressietest uit aan een testfabriek."
-        decline: "Je laat de testers hun kennis in de automatische tests zetten."
-        accept_sets_flags: [flag:test_factory]
-        accept_effects: {trust: {testers: -2}}
-    teaches: [test_automation, jidoka, respect_for_people]
-    rewards: {xp: 3200, budget: 25000, reputation: 5}
-    insights:
-      go_see: "Wat doet een tester in die drie weken? Wat ziet zij dat een script niet ziet?"
-      understand: "Welke tests vinden echt fouten, en welke bevestigen alleen wat al werkte?"
-      experiment: "Wat automatiseer je eerst, en waarom dat? Wat verwacht je te zien bij de volgende release?"
-      reflect: "Wiens kennis zit er nu in de testset? Weet ze dat?"
-
-problems:
-  - id: manual_regression
-    tier: 3
-    track: it
-    name: Drie weken handmatig testen
-    step: it_features.test
-    waste: overprocessing
-    severity: high
-    visibility: obvious
-    kpi: throughput
-    symptoms:
-      - Elke release vraagt een regressietest van drie weken, met de hand.
-      - Na de omgevingen is de test opnieuw de plek waar wijzigingen het langst wachten.
-    root_cause: Elke release wordt met de hand helemaal opnieuw getest, met een draaiboek van zeshonderd stappen. Het grootste deel controleert wat al jaren werkt; de lastige gevallen die echt fouten vinden, zitten in het hoofd van één ervaren tester en staan nergens.
-    plausible_causes:
-      - De testers werken te langzaam.
-      - Software van een netbeheerder is te complex om te automatiseren.
-    mismatch_note: Sneller met de hand testen of alles blind automatiseren lost het niet op. Het draaiboek test vooral wat al werkt, en de kennis van wat vaak misgaat, staat er niet in.
-    countermeasures: {test_automation_pyramid: 1.0, edge_cases_first: 0.8, testers_in_teams: 0.7, offshore_test_factory: 0.6}
-    teaches: [test_automation, jidoka]
-    effects:
-      - {target: it_features.test, property: touch_time, value: 3.0}
-    clues:
-      - {tool: time_study, key: true, depth: 0, text: "De regressietest heeft een draaiboek van zeshonderd stappen. Drie testers doen er drie weken over."}
-      - {tool: data, key: true, depth: 1, text: "Van de fouten die de regressietest vorig jaar vond, kwam negen op de tien uit veertig van de zeshonderd stappen. De rest vond niets."}
-      - {tool: conversation, key: true, depth: 2, text: "'De klant met twee aansluitingen op één adres. De boerderij met een windmolentje. De flat waar de meters in de kelder hangen. Die staan niet in het draaiboek. Die staan in mijn hoofd.'"}
-      - {tool: conversation, key: false, depth: 0, text: "'Onze software is te ingewikkeld om te automatiseren. Dat hebben we in 2018 al geprobeerd.'"}
-
-countermeasures:
-  - id: test_automation_pyramid
-    name: Automatische tests, van klein naar groot
-    tier: 3
-    category: quality
-    description: Veel kleine automatische tests op de code, minder op de koppelingen, een paar op het hele portaal. Ze draaien bij elke wijziging. De testers schrijven de lastige gevallen als eerste.
-    budget: 35000
-    team_hours: {testers: 60, portal_team: 40}
-    decay_days: 180
-    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
-    effects:
-      - {target: it_features.test, property: touch_time, value: 0.4}
-  - id: edge_cases_first
-    name: Eerst de veertig stappen die fouten vinden
-    tier: 2
-    category: quality
-    description: De veertig stappen die de meeste fouten vonden, plus Hannekes lastige gevallen, worden als eerste geautomatiseerd. De rest van het draaiboek wordt opgeschoond.
-    budget: 12000
-    team_hours: {testers: 40}
-    decay_days: 120
-    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
-    effects: []
-  - id: testers_in_teams
-    name: Testers in de teams, vanaf het begin
-    tier: 2
-    category: people
-    description: Elke tester zit in een ontwikkelteam en denkt mee vanaf het moment dat een wijziging wordt besproken.
-    budget: 2000
-    team_hours: {testers: 10}
-    decay_days: 90
-    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
-    effects:
-      - {target: it_features.build, property: ftr, value: 0.03}
-  - id: offshore_test_factory
-    name: Een testfabriek in het buitenland
-    tier: 1
-    category: people
-    description: Een externe testfabriek voert het draaiboek uit, in een week. De lastige gevallen kent zij niet.
-    budget: 3000
-    team_hours: {testers: 10}
-    decay_days: 365
-    trust: {testers: -2}
-    aftermath: {after_days: 60, days: 999, effects: [{target: it_incidents, property: demand, value: 1.2}]}   # estimate: the edge cases are missed
-    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
-    effects: []
-
-dialogs:
-  - id: hanneke_edge_cases
-    person: hanneke
-    kind: persuade
-    mission: fix_manual_regression
-    owns: manual_regression
-    patience: 10
-    # start: craftsman 40 + 0 + 0 + 0 + 0 = 40
-    opening: "Twintig jaar. Ik heb vier portalen zien komen en drie zien gaan. Ga zitten."
-    position: {text: "Automatiseren is prima. Als de computer weet wat ik weet.", tags: [claim]}
-    layers:
-      - {id: interest, at: 55, via: [inquiry, open_question, paraphrase], text: "Het draaiboek test wat al jaren werkt. De fouten zitten in de rare gevallen: twee aansluitingen op één adres, een boerderij met een windmolentje, een flat met de meters in de kelder.", tags: [claim, feeling]}
-      - id: concern
-        at: 72
-        via: [inquiry, silence, empathy]
-        lead_in: {text: "En als jullie alleen…", tags: [hesitation]}
-        text: "Als jullie alleen de makkelijke gevallen automatiseren, want dat gaat snel, dan zegt de computer 'groen' en gaat het mis bij de boer met de windmolen. Dan heb ik twintig jaar opgelet voor niets. En dan zegt iemand: 'De tests waren groen. Hoe kan dat nou?'"
-        tags: [admission]
-        unlocks: {facts: [heard:hanneke_cases], proposals: [hanneke_writes_first]}
-    reframe: "Vanuit de klant met de windmolen? Die merkt niet of ik drie weken heb getest. Die merkt of zijn teruglevering klopt. Ja."
-    warning: "Ik zit midden in stap 412."
-    data: ["manual_regression:0", "manual_regression:1"]
-    proposals:
-      - {id: automate_the_script, addresses: [interest], label: "Het draaiboek automatiseren", say: "We automatiseren het draaiboek, stap voor stap.", reply: "Zeshonderd stappen, waarvan er vijfhonderdzestig niks vinden. Die automatiseer je dan heel efficiënt."}
-      - {id: hanneke_writes_first, hidden: true, addresses: [concern], label: "Hannekes lastige gevallen eerst", say: "Wat als jij als eerste de lastige gevallen opschrijft, en die worden als eerste geautomatiseerd? Dan staat jouw kennis in de testset, niet alleen in jouw hoofd.", reply: "Mijn gevallen eerst. Dan zegt de computer pas 'groen' als de boer met de windmolen ook klopt. Ja. Dan wil ik."}
-    experiments:
-      - {id: pair_ten_cases, addresses: [concern], label: "Tien lastige gevallen, samen met een ontwikkelaar", say: "Jij en een ontwikkelaar automatiseren deze maand samen tien van jouw lastigste gevallen.", reply: "Tien. De boer met de windmolen als eerste. Dan zie ik of het werkt."}
-    co_proposal: {id: hanneke_writes_first, text: "Geef me twee weken. Dan schrijf ik ze allemaal op. Ook de rare. Vooral de rare."}
-    outcomes:
-      commitment: "Afgesproken. En als het draait, ga ik eindelijk testen wat nog niemand heeft bedacht."
-      partial: "Ik wil het wel. Als mijn gevallen erin komen."
-      heard: "Je bent de eerste die vraagt wát ik test, in plaats van hoe lang."
-      compliance: "Prima. Automatiseer het maar. Ik zal er niet bij zijn als het misgaat. O nee, wacht. Toch wel."
-      ruined: "Dus ik ben duur en langzaam. Zet dat maar in het verslag."
-    # route: open question +6 46 > paraphrase +7 53 (heard) > inquiry +12 (craftsman) 65 > capped 64 (interest) > reflect +10 74 (lead-in, cue)
-    #        > silence +12 > 81 capped (concern) > propose hanneke_writes_first +8 89 > ask: commitment (7 moves)
-```
-
-**Grounding.**
-- The test automation pyramid: Cohn, *Succeeding with Agile* (2009).
-- Built-in quality and stopping at the defect (jidoka in software): Poppendieck (2006); SAFe "Built-in Quality".
-- 600 steps, three weeks and "nine in ten from forty": estimates sized for the puzzle; the content test must make the briefing's numbers true on the IT stream.
-- The edge cases are the content's own: Lindeveld's farms with turbines, the silent meters in basement flats (Act II's `silent_meter`). Hanneke's knowledge *is* the game's history.
-
-### 2.6 `fix_pi_overcommit` — PI-planning als toneelstuk (M)
-
-Principles tested: **long_term** (predictability over promises) and **respect** (a plan people can keep). Temptation: plan at 100 % plus "stretch", and push overtime.
-
-```yaml
-missions:
-  - id: fix_pi_overcommit
-    name: PI-planning als toneelstuk
-    kind: main
-    tier: 3
-    act: 6
-    chapter: De trein
-    track: it
-    requires: {missions: [fix_manual_regression]}
-    goal: {type: solve, problem: pi_overcommit}
-    principles: [long_term, respect]
-    briefing: "Het portaal, het meetdataplatform en vier andere teams vormen sinds vorig jaar één release train: 'Klant & Meetdata', zestig mensen. Elke tien weken plannen ze twee dagen samen. Bas Kuipers, de release train engineer: 'Elke keer belooft iedereen alles. Na tien weken is de helft af, en niemand is verbaasd.' Carla Wijnands, directeur Klant & Markt, wil dat alle Energiewet-wijzigingen er dit kwartaal in zitten."
-    debrief: "Het team belooft nu wat het kan waarmaken, en zegt eerlijk wat het misschien niet haalt. Van wat beloofd werd, is {predictability}% af, was {predictability_before}%. Carla: 'Ik krijg minder beloofd, en meer geleverd. Dat had ik eerder willen weten.'"
-    reopen: "Bij de laatste PI-planning werd weer 'alles' beloofd. Er kwam een nieuwe directeur die het niet anders kende."
-    beats:
-      - {on: accepted, who: bas, text: "Kom naar de volgende PI-planning. Twee dagen. Neem een stoel achterin en kijk wie er 'ja' zegt."}
-    temptations:
-      - id: stretch_and_overtime
-        who: carla
-        when: accepted
-        text: "Plan alles in, en zet er een 'stretch' bij. Als het team een paar avonden doorwerkt, halen we het."
-        accept: "Je laat alles inplannen, met stretch en overwerk."
-        decline: "Je laat het team plannen op wat het kan, en eerlijk zeggen wat onzeker is."
-        accept_sets_flags: [flag:pi_stretch]
-        accept_effects: {reputation: 2}
-    teaches: [pi_planning, wip, art]
-    rewards: {xp: 3400, budget: 25000, reputation: 5}
-    insights:
-      go_see: "Wie zegt er 'ja' bij de PI-planning, en wie zegt niets?"
-      understand: "Hoeveel werk past er in tien weken? Hoeveel werd er beloofd? Wat gebeurt er met het verschil?"
-      experiment: "Als het team minder belooft, wat verwacht je dan dat er geleverd wordt? Meer of minder?"
-      reflect: "Wat is meer waard voor Carla: een belofte van honderd procent, of een voorspelling die klopt?"
-
-problems:
-  - id: pi_overcommit
-    tier: 3
-    track: it
-    name: PI-planning als toneelstuk
-    step: it_features.refine
-    waste: overproduction
-    severity: high
-    visibility: subtle
-    kpi: on_time
-    symptoms:
-      - Bij elke PI-planning wordt anderhalf keer zoveel werk beloofd als er past.
-      - Na tien weken is ongeveer de helft van wat beloofd werd af.
-    root_cause: De PI-planning begint bij wat het bedrijf wil, niet bij wat de teams kunnen. Alles wordt toegezegd, dus alles wordt tegelijk begonnen; teams springen tussen taken en maken weinig af. Niemand maakt onderscheid tussen wat zeker moet en wat mooi zou zijn.
-    plausible_causes:
-      - De teams schatten slecht.
-      - De Energiewet-wijzigingen zijn gewoon te veel.
-    mismatch_note: Beter schatten helpt niet als het plan begint bij de wensen in plaats van bij de capaciteit, en alles tegelijk begint.
-    countermeasures: {capacity_based_pi: 1.0, committed_and_uncommitted: 0.8, stretch_overtime: 0.5}
-    teaches: [pi_planning, wip]
-    effects:
-      # estimate: planned work at 150% of capacity; context switching adds ~15% to build time
-      - {target: it_features, property: demand, value: 1.3}
-      - {target: it_features.build, property: touch_time, value: 1.15}
-    clues:
-      - {tool: data, key: true, depth: 0, text: "Van de doelen die bij de laatste drie PI-planningen werden toegezegd, was na tien weken 48, 52 en 45 procent af."}
-      - {tool: shadow, key: true, depth: 1, at: it_features.refine, text: "Op de tweede dag van de PI-planning schuift de directeur drie extra doelen naar het portaalteam. Niemand zegt nee. Het team schrijft ze erbij."}
-      - {tool: queue_count, key: true, depth: 1, at: it_features.build, text: "Het portaalteam heeft veertien wijzigingen tegelijk onder handen, met zes mensen."}
-      - {tool: conversation, key: false, depth: 0, text: "'De teams schatten gewoon slecht. Alles duurt twee keer zo lang.'"}
-      - {tool: conversation, key: true, depth: 2, text: "'Als ik nee zeg tegen de directeur, ben ik niet loyaal. Als ik ja zeg en het niet haal, ben ik niet goed genoeg. Dus zeg ik ja.'"}
-
-countermeasures:
-  - id: capacity_based_pi
-    name: Plannen op wat het team kan
-    tier: 2
-    category: flow
-    description: De PI-planning begint bij de capaciteit van elk team, min een vaste ruimte voor storingen en onderhoud. Er gaat pas iets nieuws in als er iets af is (een limiet op wat tegelijk onder handen is).
-    budget: 5000
-    team_hours: {portal_team: 10, data_team: 10}
-    decay_days: 120
-    sustains: true     # the PI rhythm is itself a leader routine
-    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
-    effects:
-      - {target: it_features, property: wip_limit, value: 12}
-  - id: committed_and_uncommitted
-    name: Toegezegd en niet toegezegd
-    tier: 3
-    category: visual_management
-    description: Elk team zegt per doel of het toegezegd is (dat halen we) of niet toegezegd (dat proberen we). De directeur ziet vooraf wat zeker is en wat niet.
-    budget: 2000
-    team_hours: {portal_team: 5, data_team: 5}
-    decay_days: 90
-    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
-    effects:
-      - {target: it_features.build, property: touch_time, value: 0.95}
-  - id: stretch_overtime
-    name: Stretch en overwerk
-    tier: 1
-    category: people
-    description: Alles wordt ingepland, met een 'stretch'. Het team werkt over waar nodig.
-    budget: 0
-    team_hours: {}
-    decay_days: 60
-    trust: {portal_team: -1, data_team: -1}
-    aftermath: {after_days: 42, days: 70, effects: [{target: portal_team, property: availability, value: -0.1}]}   # estimate: fatigue and sick leave
-    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
-    effects: []
-
-dialogs:
-  - id: carla_must_haves
-    person: carla
-    kind: persuade
-    mission: fix_pi_overcommit
-    patience: 8
-    # start: rule_bound 35 + 0 + 0 + 0 + 0 = 35, Op z'n hoede
-    opening: "Ik heb twintig minuten. Als het over de PI gaat: alles wat op de lijst staat, moet erin. De Energiewet wacht niet."
-    position: {text: "Alle Energiewet-wijzigingen moeten dit kwartaal live. Dat heb ik toegezegd.", tags: [claim]}
-    layers:
-      - {id: interest, at: 52, via: [inquiry, open_question, paraphrase], text: "De ACM kijkt mee, de leveranciers wachten op onze nieuwe datasets, en de raad van bestuur vraagt elk kwartaal of we compliant zijn.", tags: [claim]}
-      - id: concern
-        at: 72
-        via: [inquiry, silence, empathy]
-        lead_in: {text: "En ik zal eerlijk zijn…", tags: [hesitation]}
-        text: "Ik heb de raad van bestuur beloofd dat alles erin zit. Als ik nu terug moet en zeggen dat de helft misschien niet lukt, sta ik er als directeur slecht op. Zes maanden in deze baan, en dan al terugkrabbelen."
-        tags: [admission]
-        unlocks: {facts: [heard:carla_promise], proposals: [certain_and_maybe]}
-    reframe: "Vanuit het team? Die beloven elke keer alles en leveren de helft. En dan zegt iedereen dat ze slecht schatten. Hm. Dat is mijn belofte, doorgeschoven."
-    warning: "Ik heb een bestuursvergadering. Kort, graag."
-    data: ["pi_overcommit:0", "pi_overcommit:1"]
-    lines:
-      show_data:
-        lands: "Achtenveertig, tweeënvijftig, vijfenveertig procent. Dus ik beloof de raad van bestuur elke keer iets wat voor de helft niet gebeurt."
-        misses: "Dat zijn de cijfers van mijn voorganger."
-    proposals:
-      - {id: plan_on_capacity, addresses: [interest], label: "Plannen op capaciteit", say: "Laat de teams plannen op wat ze kunnen. Dan is de helft van de lijst er niet.", reply: "De helft. En de Energiewet?"}
-      - {id: certain_and_maybe, hidden: true, addresses: [concern], label: "Zeker en misschien, vooraf", say: "Wat als de teams de Energiewet-wijzigingen als eerste toezeggen, en de rest eerlijk als 'proberen we'? Dan ga jij naar de raad van bestuur met wat zeker is, en kom je terug met meer dan je beloofde.", reply: "Zeker en misschien. Vooraf. Dan beloof ik minder en lever ik meer. Dat… is beter dan andersom."}
-    experiments:
-      - {id: one_pi_honest, addresses: [concern], label: "Eén PI eerlijk plannen", say: "Eén PI: de teams plannen op capaciteit, en jij krijgt na tien weken te zien wat er van de toezeggingen af is.", reply: "Eén PI. En als het tegenvalt, plannen we weer zoals altijd."}
-    co_proposal: {id: certain_and_maybe, text: "Laat me de Energiewet-wijzigingen zelf rangschikken. Ik weet welke de ACM het eerst ziet."}
-    outcomes:
-      commitment: "Afgesproken. En ik vertel het de raad van bestuur zelf: zeker en misschien. Dat hebben ze nooit gehoord."
-      partial: "Ik wil het proberen. Als de Energiewet-wijzigingen zeker zijn."
-      heard: "Interessant. U bent de eerste die vraagt wat ik beloofd heb, in plaats van wat ik vraag."
-      compliance: "Als het moet. Maar de Energiewet zit erin. Hoe dan ook."
-      ruined: "De Energiewet is geen wens. Plan het in."
-    # route: open question +6 41 > paraphrase +7 48 (heard) > inquiry +8 56 (interest) > show_data +15 (rule_bound) 71
-    #        > empathy +6 77 (lead-in, cue) > silence +12 > 81 capped (concern) > propose certain_and_maybe +8 89 > ask: commitment (8 moves)
-```
-
-**Path dependence.**
-- `flag:pi_stretch` pays now (reputation +2). Fatigue follows in weeks 6–16, and `t4`'s IT chapter (`fix_team_dependencies`) opens with lower `portal_team` trust.
-- `chose:pi_overcommit:capacity_based_pi` with `committed:carla_must_haves` is read by Act V's `t4_hoshin`: the IT train already plans by capacity, so the X-matrix has one honest row.
-
-**Grounding.**
-- An ART of 5–12 teams, about 50–125 people; a PI of 8–12 weeks; PI planning as a two-day event; committed and uncommitted objectives; predictability measured on business value (Scaled Agile Framework; Lucid and Appfire summaries; *verify against the current SAFe 6.0 pages*).
-- The Energiewet in force since 1 January 2026 (tier-2 draft §4.2 grounding). The regulatory work packages named here are fiction.
-- 48, 52 and 45 % and fourteen changes in progress: estimates.
-
-**Engrossing.** A director who learns that a smaller promise kept is worth more than a big one broken, and who makes it her own message to the board. The team member's line (clue 4) is the human core: nobody can say no.
-
-### 2.7 Side missions of the IT chapter
+#### `fix_meter_data_mandates` — Een mandaat dat niemand ziet (S, tier-4 IT)
 
 ```yaml
 missions:
   - id: fix_meter_data_mandates
     name: Een mandaat dat niemand ziet
     kind: side
-    tier: 3
+    tier: 4
     act: 6
     track: it
-    requires: {missions: [it_map_feature_stream]}
+    requires: {missions: [fix_pi_overcommit]}
     goal: {type: solve, problem: meter_data_mandates}
     principles: [long_term, respect]
     briefing: "Klanten met een dynamisch energiecontract hebben hun verbruik per kwartier nodig. Hun leverancier vraagt die data bij Voltana op, met een mandaat van de klant. Eén medewerker controleert al die mandaten met de hand. De achterstand is drie weken, en de apps van de leveranciers tonen 'geen data'."
@@ -3218,62 +3666,10 @@ missions:
     teaches: [klantmandaat, quality_at_the_source, poka_yoke]
     rewards: {xp: 1200, budget: 10000, reputation: 2}
 
-  - id: fix_ops_dev_wall
-    name: Over de muur gegooid
-    kind: side
-    tier: 3
-    act: 6
-    track: it
-    requires: {missions: [it_map_feature_stream]}
-    goal: {type: solve, problem: ops_dev_wall}
-    principles: [respect, improve]
-    briefing: "Als het meetdataplatform 's nachts hapert, belt Beheer. Beheer zegt dat het aan de code ligt, de ontwikkelaars zeggen dat het aan de servers ligt, en een storing gaat drie keer heen en weer voordat iemand hem oplost. Bart Jacobs van Beheer: 'Het is altijd hun schuld. Behalve als het de onze is.'"
-    debrief: "Een storing gaat nu één keer de muur over, niet drie keer. Na elke grote storing praten Beheer en de ontwikkelaars samen, zonder schuldige te zoeken. Bart: 'Ik weet nu wie ik moet bellen. En hij neemt op.'"
-    temptations:
-      - id: find_the_culprit
-        who: mt_member
-        when: accepted
-        text: "Zoek uit wie die storing van vorige week heeft veroorzaakt. Dan weten we het voor de volgende keer."
-        accept: "Je laat uitzoeken wie de storing veroorzaakte."
-        decline: "Je laat uitzoeken hoe de storing kon ontstaan, niet door wie."
-        accept_sets_flags: [flag:blame_postmortem]
-        accept_effects: {trust: {ops: -1, data_team: -1}}
-    teaches: [blameless_postmortem, devops, respect_for_people]
-    rewards: {xp: 1200, budget: 10000, reputation: 2}
-
-  - id: talk_rte
-    name: Wat is een release train?
-    kind: side
-    tier: 3
-    act: 6
-    arc: sector
-    track: it
-    requires: {missions: [it_map_feature_stream]}
-    goal: {type: talk_to, person: bas, topics: 3}
-    principles: [improve]
-    briefing: "Bas Kuipers is release train engineer: hij zorgt dat zestig mensen in zes teams in hetzelfde ritme werken. Vraag hem hoe dat werkt, en waarom het soms niet werkt."
-    debrief: "Een trein rijdt op een dienstregeling, ook als niet iedereen instapt. Bas: 'Het lastigste is niet het plannen. Het is dat iedereen durft te zeggen wat er niet past.'"
-    teaches: [art, pi_planning, dora_metrics]
-    rewards: {xp: 600}
-
-  - id: lsw_system_demo
-    name: Systeemdemo
-    kind: side
-    tier: 3
-    act: 6
-    track: it
-    requires: {missions: [fix_release_twice_a_year]}
-    recurring: {every_days: 14}
-    goal: {type: routine, kind: gemba_walk, places: [it_features.in_use], every_days: 14, times: 1}
-    principles: [improve]
-    briefing: "Elke twee weken laat de train zien wat er werkt. Niet in een presentatie, maar op het echte portaal. Ga kijken, en neem iemand van het KCC mee."
-    debrief: "Je zag wat er deze twee weken live ging. {demo_line}"
-    teaches: [pdca, customer_value]
-    rewards: {xp: 300}
 
 problems:
   - id: meter_data_mandates
-    tier: 3
+    tier: 4
     track: it
     name: Een mandaat dat niemand ziet
     step: meter_data.mandate_check
@@ -3298,31 +3694,6 @@ problems:
       - {tool: shadow, key: true, depth: 1, text: "De medewerker opent een pdf, zoekt de klant op in het register, vergelijkt naam, adres en EAN, en vinkt aan. Twaalf minuten per mandaat."}
       - {tool: documents, key: true, depth: 1, text: "Mandaten komen binnen in negen verschillende vormen. Er is geen afspraak met de leveranciers over één formaat."}
       - {tool: conversation, key: false, depth: 0, text: "'Die privacyregels maken alles traag. Vroeger kon het gewoon.'"}
-  - id: ops_dev_wall
-    tier: 3
-    track: it
-    name: Over de muur gegooid
-    step: it_incidents.fix
-    waste: defects
-    severity: medium
-    visibility: subtle
-    kpi: lead_time
-    symptoms:
-      - Een storing aan het meetdataplatform gaat gemiddeld drie keer heen en weer tussen Beheer en de ontwikkelaars.
-    root_cause: Beheer en de ontwikkelaars werken in aparte teams met aparte doelen. Een storing wordt doorgezet met 'ligt aan jullie' in plaats van samen onderzocht, en na afloop wordt gezocht wie het deed, niet hoe het kon. Dus vertelt niemand meer dan nodig.
-    plausible_causes:
-      - De ontwikkelaars leveren slechte code.
-      - Beheer begrijpt de applicatie niet.
-    mismatch_note: Betere code of meer kennis bij Beheer verandert niets zolang een storing een pingpongbal is en elke nabespreking een schuldvraag.
-    countermeasures: {blameless_postmortems: 1.0, shared_on_call: 0.8, you_build_it_you_run_it: 0.9}
-    teaches: [blameless_postmortem, devops]
-    effects:
-      - {target: it_incidents.fix, property: ftr, value: -0.2}
-    clues:
-      - {tool: data, key: true, depth: 0, text: "Een storing aan het meetdataplatform wordt gemiddeld drie keer doorgezet voordat hij is opgelost."}
-      - {tool: documents, key: true, depth: 1, text: "Elke nabespreking van een storing eindigt met de vraag: 'Wie heeft deze wijziging gedaan?'"}
-      - {tool: conversation, key: true, depth: 2, text: "'Na de laatste nabespreking zei niemand meer iets. Je gaat toch niet vertellen dat je iets niet wist, als ze zoeken wie het was.'"}
-      - {tool: conversation, key: false, depth: 0, text: "'Het ligt altijd aan de code.'"}
 
 countermeasures:
   - id: automated_mandate_check
@@ -3347,65 +3718,7 @@ countermeasures:
     multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
     effects:
       - {target: meter_data.mandate_check, property: touch_time, value: 0.7}
-  - id: blameless_postmortems
-    name: Nabesprekingen zonder schuldvraag
-    tier: 2
-    category: people
-    description: Na elke grote storing een nabespreking met Beheer en de ontwikkelaars samen. De vraag is hoe het kon gebeuren en wat het systeem kan veranderen, nooit wie het deed.
-    budget: 2000
-    team_hours: {ops: 10, data_team: 10}
-    decay_days: 120
-    sustains: true
-    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
-    effects: []
-  - id: shared_on_call
-    name: Samen piket
-    tier: 2
-    category: people
-    description: "'s Nachts hebben een beheerder en een ontwikkelaar samen piket."
-    budget: 6000
-    team_hours: {ops: 10, data_team: 10}
-    decay_days: 90
-    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
-    effects: []
-  - id: you_build_it_you_run_it
-    name: Wie het bouwt, beheert het
-    tier: 3
-    category: flow
-    description: Het team Meetdata beheert zijn eigen platform in productie, met Beheer als ondersteuning voor de servers.
-    budget: 15000
-    team_hours: {data_team: 30, ops: 20}
-    decay_days: null
-    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
-    effects:
-      - {target: it_incidents.fix, property: ftr, value: 0.05}
 
-people:
-  - id: bas
-    name: Bas Kuipers
-    role: release train engineer
-    place: it_features.refine
-    topics:
-      - id: art
-        ask: "Wat is een release train eigenlijk?"
-        open: "Een groep teams die samen één stroom van waarde leveren, hier het klantportaal en de meetdata. Zestig mensen, zes teams, één ritme. Elke tien weken plannen we samen, elke twee weken laten we zien wat er werkt. Een trein vertrekt op tijd, ook als niet iedereen is ingestapt. Wat niet af is, gaat met de volgende."
-        closed: "Een paar teams die samenwerken."
-        teaches: [art]
-      - id: pi_planning
-        ask: "Wat gebeurt er bij zo'n PI-planning?"
-        open: "Twee dagen, iedereen in één ruimte. De directeur vertelt wat er belangrijk is, de teams plannen wat ze kunnen, en dan zie je de afhankelijkheden: wie op wie wacht. Het lastigste is niet het plannen. Het is dat iedereen durft te zeggen wat er niet past."
-        closed: "We plannen het kwartaal."
-        teaches: [pi_planning]
-      - id: dora
-        ask: "Hoe weet je of de trein goed rijdt?"
-        open: "Vier getallen. Hoe vaak we iets uitbrengen, hoe lang een wijziging erover doet van code tot klant, hoe vaak een release iets kapotmaakt, en hoe snel we het dan herstellen. De eerste twee gaan over snelheid, de laatste twee over stabiliteit. Het mooie: teams die vaak en klein uitbrengen, scoren meestal op allebei beter."
-        closed: "Aan de cijfers."
-        teaches: [dora_metrics]
-```
-
-**Dialogs for the sides** (short; the same shape):
-
-```yaml
 dialogs:
   - id: lisette_privacy
     person: lisette
@@ -3441,51 +3754,12 @@ dialogs:
     # route: open question +6 41 > paraphrase +7 48 (heard) > inquiry +8 56 (interest) > show_data +15 (rule_bound) 71
     #        > empathy +6 77 (lead-in, cue) > silence +12 > 81 capped (concern) > propose lisette_designs_the_log +8 89 > ask (8 moves)
 
-  - id: bart_postmortem
-    person: bart
-    kind: persuade
-    mission: fix_ops_dev_wall
-    owns: ops_dev_wall
-    patience: 10
-    # start: cynic 30 (+10 team trust ops if no blame postmortem was ordered)
-    opening: "Weer iemand die DevOps komt brengen. We hebben al een poster."
-    position: {text: "Het ligt aan de code. Wij draaien wat zij bouwen.", tags: [claim]}
-    layers:
-      - {id: interest, at: 50, via: [open_question, inquiry, paraphrase], text: "Om drie uur 's nachts sta ik met een storing die ik niet begrijp, in software die ik niet heb gebouwd. Ik bel de ontwikkelaar. Die neemt niet op.", tags: [claim, feeling]}
-      - id: concern
-        at: 70
-        via: [silence, empathy, inquiry]
-        lead_in: {text: "En na afloop…", tags: [hesitation]}
-        text: "Na de storing van mei zat ik in een nabespreking waar de eerste vraag was: wie had dienst? Ik had dienst. Ik had het goed gedaan, maar ik had dienst. Sindsdien zeg ik in nabesprekingen niks meer. Niemand zegt nog iets."
-        tags: [admission]
-        unlocks: {facts: [heard:bart_may], proposals: [how_not_who]}
-    reframe: "Vanuit de ontwikkelaar die om drie uur gebeld wordt? Die wordt wakker voor iets wat hij niet kan zien. Hm. Die staat ook alleen."
-    data: ["ops_dev_wall:0", "ops_dev_wall:1"]
-    proposals:
-      - {id: shared_night, addresses: [interest], label: "Samen piket", say: "'s Nachts een beheerder en een ontwikkelaar samen op piket.", reply: "Samen. Dan neemt hij tenminste op."}
-      - {id: how_not_who, hidden: true, addresses: [concern], label: "Nabesprekingen: hoe, niet wie", say: "Wat als in elke nabespreking één regel geldt: we vragen hoe het kon, nooit wie het was? En jij zit de eerste voor.", reply: "Ik zit voor. En de eerste die 'wie' zegt, haalt koffie. Ja. Dan ga ik weer praten."}
-    experiments:
-      - {id: may_again, addresses: [concern], label: "Mei opnieuw bespreken, zonder namen", say: "Zet de storing van mei nog één keer op het bord, en bespreek hem opnieuw. Zonder namen.", reply: "Mei opnieuw. Zonder namen. … Dan zeg ik wat ik toen niet durfde."}
-    outcomes:
-      commitment: "Afgesproken. En ik vertel in de eerste nabespreking zelf wat ik in mei niet wist."
-      partial: "Ik doe mee. Als de MT ook stopt met 'wie'."
-      heard: "Hm. Je vroeg naar mei. Dat deed niemand."
-      compliance: "Prima. Weer een poster."
-      ruined: "Zie je. Het ligt aan de code."
-    # route: mood +8 38 > open question +6 44 > paraphrase +7 51 (heard, interest) > empathy +6 57 > show_data +15 (cynic x1.5) 72 (lead-in, cue)
-    #        > silence +12 > 79 capped (concern) > propose how_not_who +8 87 > ask: commitment (8 moves)
 ```
 
-**Path dependence (sides).**
+**Path dependence and grounding for the meter-data mission** (moved with it):
 - `flag:mandates_skipped` completes the mission at once. It never pays: 30 days later a supplier's app shows data for a customer without a mandate (a complaint to the Autoriteit Persoonsgegevens; reputation −10, as the tier-2 `fix_klic_expired` "dig anyway" pattern). It is cleared only by `automated_mandate_check`.
-- `flag:blame_postmortem` closes `you_build_it_you_run_it` until a blameless postmortem has been held once (`needs: {none: [flag:blame_postmortem]}` with `chose:ops_dev_wall:blameless_postmortems` clearing it).
 - `committed:priya_envs` with synthetic data starts Lisette higher.
-
-**Grounding.**
 - **Meter data only with an unambiguous customer mandate (*klantmandaat*):** grid operators may read consumption data only for their legal tasks and pass it to market parties only with the customer's explicit consent, through the P4 interface; quarter-hour values are stored a limited time (Kamerstuk 29023-202; supplier consent forms; the regulators' note on a central mandate register still to come: *verify its status*).
-- **Blameless postmortems:** Allspaw (2012), "Blameless PostMortems and a Just Culture"; Google SRE book (2016), ch. 15.
-- **DORA's four keys** (deployment frequency, lead time for changes, change failure rate, time to restore; velocity and stability): DORA / *Accelerate*.
-- **"You build it, you run it":** Vogels (2006), ACM Queue interview.
 - 180 mandates, twelve minutes and nine formats: estimates.
 
 ---
@@ -3501,8 +3775,10 @@ dialogs:
 | `chose:knowledge_drain:twi_job_instruction` / `skills_matrix_buddy`, `heard:ahmed_trainer` (Acts I, III) | `fix_training_capacity`, `t3_crew_strategy` | `train_the_trainer` 40 % cheaper; Ahmed named in the debrief; opens "Leermeester en leerling". |
 | `standardised:custom_design` (Act I) | `t3_kaizen_week` | Nova covers Havenzij's standard cases during the week (`cover_the_week`). |
 | `agreed:el_amrani_fourth_call:check_existing_connection` (Act I) | `fix_household_rush` | `heat_pump_check` at half the team hours. |
-| `heard:el_amrani` (Act I) | `fix_priority_first_come`, `fix_status_page_wrong` | Her beats ("Ik kijk elke dag op uw portaal"). |
-| `chose:status_callers:proactive_status_updates` (Act I) | `fix_status_page_wrong` | Wrong status now sends wrong messages: a sharper clue and briefing. |
+| `heard:el_amrani` (Act I) | `fix_priority_first_come` (tier 4: `fix_status_page_wrong`) | Her beats. |
+| `chose:installer_not_ready:installer_photo_upload` (Act I) | `it_map_feature_stream`, `fix_field_app_bypassed` | The photo exists as a process but not in the app: the change the player follows. |
+| `chose:revision_backlog:revision_at_source` (Act II) | `fix_field_app_bypassed` | The as-built sketch is meant to be captured in the app; with the app bypassed, Mieke's backlog quietly regrows (a beat). |
+| `agreed:petra_batch:rachid_backup` (Act I) | `fix_field_app_bypassed` | Rachid is the one who retypes; the briefing and the beat name him. |
 | `heard:marco_2012`, Marco's commitments, `marco_day_100` lifted (Act I) | `marco_crew`, `t3_kaizen_week` | Marco starts at 59 instead of 30; the consultant kaizen triggers "Dit is 2012". |
 | `committed:frank_kpi_targets`; Joost's Act II outcome | `joost_wip` | `frank_at_the_board` exists; Joost starts at 68 (commitment) or 27 (compliance). |
 | `done:fix_contractor_rework`, `repaired:contractor_rework`, `flag:contractor_burned` (Act III) | `one_dig_agreements` | The tier-2 link: available only with the contractors' trust. |
@@ -3522,17 +3798,18 @@ dialogs:
 | `flag:auto_upgrades` | "De koude straat" (audit §6.4), winter outages. |
 | `flag:flex_forced`; `chose:priority_first_come:classify_at_intake` with `committed:jeroen_classes` | `fix_flex_market_unused`: customer response and trusted queue data. |
 | `chose:pi_overcommit:capacity_based_pi` with `committed:carla_must_haves`; `flag:pi_stretch` | `t4_hoshin` (an honest IT row in the X-matrix); the tier-4 IT chapter's starting trust. |
-| `flag:mandates_skipped`, `flag:blame_postmortem` | IT maturity; `fix_team_dependencies` starts with lower trust. |
+| `flag:blame_postmortem`, `flag:whatsapp_official` | IT maturity; `fix_team_dependencies` starts with lower trust; the privacy aftermath. |
+| `committed:ricardo_whatsapp`, `chose:field_app_bypassed:close_out_redesign_with_monteurs` | Tier 4's field data (the asset data meets an app the monteurs use). |
 
 ### 3.3 Repair quests in tier 3
 
 Every countermeasure marked as a poor fix (fit ≥ 0.2 below the best, or with `trust < 0` or an `aftermath` while a better one was offered: tier-2 draft §6) sets `poor_fix:<problem>`. The catalogue's template then opens a repair quest 42 days later, once the gap shows in the KPI. Authored overrides:
 - `repair_long_drives` (§1.12, worked in full): reopens the Lindeveld crew and the investment option.
-- `repair_status_page_wrong` (§2.2): reopens `forecast_from_planning`, which now ships because releases are frequent.
+- `repair_field_app_bypassed` (§2.2): reopens `close_out_redesign_with_monteurs`, which now ships because releases are frequent.
 
 The template's text covers the rest:
 - Act IV: `mobile_van_stock`, `outsource_area`, `freelance_monteurs`, `deep_bypass`, `peak_temps`, `mt_case_by_case`, `auto_approve_upgrades`, `diesel_bridge`, `flex_mandatory`.
-- IT: `plain_language_status`, `sms_on_planning_change`, `new_portal`, `third_environment`, `booking_board`, `skip_regression_small`, `offshore_test_factory`, `stretch_overtime`.
+- IT: `monteur_in_every_review`, `paper_form_scanning`, `whatsapp_official`, `third_environment`, `booking_board`, `skip_regression_small`, `offshore_test_factory`, `stretch_overtime`.
 
 **Validator check (catalogue §2.15), by hand.** Every option and every `needs` in this draft keeps one branch that no failure or skip can close:
 - the crew options: the repair quests, train-the-trainer, the always-open baseline;
@@ -3543,7 +3820,7 @@ The template's text covers the rest:
 
 ## 4. Summary tables
 
-### 4.1 Missions (29)
+### 4.1 Missions (28, plus 2 tier-4 drafts)
 
 | id | Track · act | Kind | Goal | Problem | Deadline → door | Principles | Temptation (later cost) | Dialogs |
 |---|---|---|---|---|---|---|---|---|
@@ -3566,24 +3843,24 @@ The template's text covers the rest:
 | sustain_connections | grid · IV | S | hold_kpi | — | — | long_term, improve | — | — |
 | repair_long_drives | grid · IV | S (repair) | rework_fix | long_drives | — | long_term, improve | — | joke_depot_repair |
 | it_map_feature_stream | IT · VI | M | map_stream | — | — | improve, respect | the tool's cycle time (waits hidden) | — |
-| fix_status_page_wrong | IT · VI | M | solve | status_page_wrong | — | respect, long_term | a FAQ (explains the wrong thing) | noor_status |
+| fix_field_app_bypassed | IT · VI | M | solve | field_app_bypassed | — | respect, long_term | WhatsApp made official (privacy aftermath) | noor_field_app, ricardo_whatsapp |
 | fix_release_twice_a_year | IT · VI | M | solve | release_twice_a_year | — | long_term, respect | skip regression (incidents ×1.5) | erwin_cab |
 | fix_test_env_queue | IT · VI | M (B) | solve | test_env_queue | — | improve, long_term | a third environment (elevate before exploit) | priya_envs |
 | fix_code_review_wait | IT · VI | M (N) | solve | code_review_wait | — | respect, improve | — | mark_pairing |
 | fix_manual_regression | IT · VI | M | solve | manual_regression | — | respect, long_term | a test factory (edge cases missed) | hanneke_edge_cases |
 | fix_pi_overcommit | IT · VI | M | solve | pi_overcommit | — | long_term, respect | stretch and overtime (fatigue) | carla_must_haves |
-| fix_meter_data_mandates | IT · VI | S | solve | meter_data_mandates | — | long_term, respect | skip big suppliers (never pays) | lisette_privacy |
+| *(tier 4)* fix_status_page_wrong · fix_meter_data_mandates | IT · VI | M · S | solve | status_page_wrong · meter_data_mandates | — | respect, long_term | a FAQ · skip big suppliers | noor_status · lisette_privacy |
 | fix_ops_dev_wall | IT · VI | S | solve | ops_dev_wall | — | respect, improve | find the culprit (silence; option locked) | bart_postmortem |
 | talk_rte | IT · VI | S | talk_to | — | — | improve | — | bas (topics) |
 | lsw_system_demo | IT · VI | R | routine | — | — | improve | — | — |
 
 **The 1 + 3 rule:**
 - One main at a time across both chains; a fork offers two and the player takes one.
-- Sides open spread over the act. The heaviest moment is after `t3_map_region`: up to five sides become available (`fix_non_firm_unused`, `fix_solar_feedin_wait`, `fix_household_rush` in July, `fix_meter_data_mandates`, `fix_ops_dev_wall`, plus `lsw_layered_audit`). The player can hold only three; this is the act's real trade-off between routines and side problems (catalogue §2.9).
+- Sides open spread over the act. The heaviest moment is after `t3_map_region`: up to five sides become available (`fix_non_firm_unused`, `fix_solar_feedin_wait`, `fix_household_rush` in July, `fix_ops_dev_wall`, plus `lsw_layered_audit`). The player can hold only three; this is the act's real trade-off between routines and side problems (catalogue §2.9).
 
 **Forks:** two, `t3_havenzij` and `it_after_release`, in parallel chains, both throughput forks (correction 8). **Hard deadlines:** two, never active at the same time by the chain order.
 
-### 4.2 Problems (17) and countermeasures (58)
+### 4.2 Problems (16, plus 2 tier-4 drafts) and countermeasures (57, plus 6)
 
 | Problem | Step | Waste | KPI | Countermeasures (fit) |
 |---|---|---|---|---|
@@ -3596,13 +3873,13 @@ The template's text covers the rest:
 | nitrogen_permit | hz_reinforcement.nature_permit | waiting | wip_age | parallel_ecology 1.0 · route_via_industrial_zone 0.8 · emission_free_build 0.8 · aerius_template 0.7 · diesel_bridge 0.5 |
 | non_firm_unused | congestion.offer | overprocessing | lead_time | standard_flex_at_first_contact 1.0 · acm_pilot_time_bound 0.9 · group_contract_business_park 0.7 · flex_mandatory 0.5 |
 | solar_feedin_wait | lv_feedin.capacity_queue | waiting | lead_time | cable_pooling 1.0 · peak_shaving_contract 0.8 |
-| status_page_wrong | it_features.in_use | defects | on_time | forecast_from_planning 1.0 (release-gated) · sms_on_planning_change 0.8 · plain_language_status 0.7 · new_portal 0.5 |
+| field_app_bypassed | connections.close_out | overprocessing | lead_time | close_out_redesign_with_monteurs 1.0 (release-gated) · offline_mode 0.8 (release-gated) · monteur_in_every_review 0.7 · paper_form_scanning 0.6 · whatsapp_official 0.4 |
 | release_twice_a_year | it_features.release | waiting | lead_time | ci_cd_pipeline 1.0 · monthly_release_train 0.8 · feature_toggles 0.7 · skip_regression_small 0.4 |
 | test_env_queue | it_features.test | waiting | throughput | environments_on_demand 1.0 · synthetic_test_data 0.8 · third_environment 0.7 · booking_board 0.6 |
 | code_review_wait | it_features.review | waiting | lead_time | pairing_on_hard_parts 1.0 · review_rota 0.7 |
 | manual_regression | it_features.test | overprocessing | throughput | test_automation_pyramid 1.0 · edge_cases_first 0.8 · testers_in_teams 0.7 · offshore_test_factory 0.6 |
 | pi_overcommit | it_features.refine | overproduction | on_time | capacity_based_pi 1.0 · committed_and_uncommitted 0.8 · stretch_overtime 0.5 |
-| meter_data_mandates | meter_data.mandate_check | overprocessing | lead_time | automated_mandate_check 1.0 · standard_mandate_format 0.8 |
+| *(tier 4)* status_page_wrong · meter_data_mandates | it_features.in_use · meter_data.mandate_check | defects · overprocessing | on_time · lead_time | §2.8 |
 | ops_dev_wall | it_incidents.fix | defects | lead_time | blameless_postmortems 1.0 · you_build_it_you_run_it 0.9 · shared_on_call 0.8 |
 
 **Wastes.** Six of the eight: transport, skills, overprocessing, waiting, defects and overproduction. Motion and inventory are carried by tiers 1–2 (the tray, the revision backlog, unused capacity).
@@ -3618,26 +3895,27 @@ D26 *Ontwikkelen, niet vervangen* can be earned in this tier.
 
 ## 5. Voice sheet: the tier-3 cast
 
-As in the Acts 0–II scripts §2. Light Brabants for Lindeveld and the field; Havenzij is a port town with a Rotterdam edge; IT people speak office Dutch with English loanwords, which is real and should stay.
+As in the Acts 0–II scripts §2. Everyone speaks standard Dutch (decided 2026-10-15: no dialect). Voices differ in word choice, rhythm, humour and worry: Lindeveld people talk in distances and hours, Havenzij people are direct, and IT people use English loanwords ("backlog", "release"), which is real and stays.
 
 | id | Who (age) | Voice | Humour | Worry (hidden) |
 |---|---|---|---|---|
-| `joke` | Joke van Beek (51), TL monteurs Lindeveld | Farmer's daughter; practical, warm, Brabants: "kijk", "da's", "ons mannen". | "Neem koffie mee, het is ver." | That "efficiënter" means her people work eight hours underground with no breath. |
+| `joke` | Joke van Beek (51), TL monteurs Lindeveld | Farmer's daughter; practical, warm, talks in distances: "kijk", "veertig kilometer", "mijn mannen". | "Neem koffie mee, het is ver." | That "efficiënter" means her people work eight hours underground with no breath. |
 | `patrick` | Patrick Smeets (58), head of the Opleidingscentrum | Ex-instructor; precise, safety first: "veilig", "aftekenen". | Dry about cable drums in the doorway. | Signing for a young monteur he never saw. |
 | `yusuf` | Yusuf Demir (38), TL Werkvoorbereiding Havenzij | Rotterdam-direct, proud of his team: "mijn mensen", "puzzelen". | "Neem een vergrootglas mee." | That outsiders take the credit for what his people already knew. |
 | `marloes` | Marloes Kramer (46), gemeente Havenzij | Civil-servant formal, "u", tired of meetings. | "Daar heb ik er al vier van." | Being the face of yet another meeting that delivers nothing. |
 | `dennis` | Dennis Wouters (44), vergunningenadviseur | Careful, legal words: "Raad van State", "berekening", "afgeschoten". | Rare: the irony of a hydrogen plant waiting on nitrogen. | That he is the only one, and his calculation gets shot down in court. |
 | `hermans` | Peter Hermans (55), Hermans Bouw | Businesslike, "u", talks in certainty and contracts. | — | A lawyer calling because one buyer got power later than his neighbour. |
-| `sjaak` | Sjaak van Rooij (49), installer | Brabants, busy, on a ladder: "kort graag". | "Mijn naam staat op het busje." | The complaint when a heat pump throttles: his name, his village. |
+| `sjaak` | Sjaak van Rooij (49), installer | Busy, on a ladder, short sentences: "kort graag". | "Mijn naam staat op het busje." | The complaint when a heat pump throttles: his name, his village. |
 | `aziz` | Mohammed Aziz (43), ColdChain Havenzij | Firm, numbers and insurance: "tonnen aan vlees en vis". | "Dat kan ik zelfs aan mijn vader uitleggen." | One cut, one lost cargo, one lost company. |
 | `verhoeven` | Gerard Verhoeven (61), Zonnepark De Hoge Akker | Farmer, slow, "u", proud. | The sloot dispute with neighbour Van Dam. | That his son Jesse leaves, and he is the last Verhoeven on the farm. |
-| `noor` | Noor Hendriks (33), PO klantportaal | Office Dutch with Jira words: "backlog", "done", "refinement". | — | That she never met a customer and built two years of the wrong things. |
+| `noor` | Noor Hendriks (33), PO veldapp | Office Dutch with Jira words: "backlog", "done", "refinement". | — | That she never rode along with a monteur and built four years of the wrong things. |
+| `ricardo` | Ricardo (34), monteur, admin of the WhatsApp group | Practical, quick, a little defiant: "hij werkt", "kom maar eens in een kelder staan". | Birthday cakes in the group. | That taking the group away takes the team's glue, not just a channel. |
 | `erwin` | Erwin de Groot (52), release manager, CAB chair | Procedural, a scar: "in 2023…". | "De pizza blijft." | Approving another release that breaks 40,000 customers' data. |
 | `priya` | Priya Ramdin (36), infra engineer (Beheer) | Technical, careful: "maskeren", "omgeving". | "De volgende is vrij op 3 december." | A data leak through a test environment: the Autoriteit Persoonsgegevens. |
 | `mark` | Mark van Leeuwen (29), developer | Quiet, honest, headphones. | — | Pairing all day; he burned out once at a previous employer. |
 | `hanneke` | Hanneke Willems (57), senior tester | Twenty years of edge cases; dry: "vooral de rare". | "Ik zal er niet bij zijn als het misgaat. O nee, wacht. Toch wel." | Green tests that miss the farmer with the wind turbine. |
 | `carla` | Carla Wijnands (49), directeur Klant & Markt | Board language: "raad van bestuur", "compliant", "toegezegd". | — | Six months in the job and already taking back a promise. |
-| `lisette` | Lisette Koster (45), functionaris gegevensbescherming | Firm: "geen data zonder mandaat". | "Een knop: 'laat zien'." | Defending a manual Excel check to the Autoriteit. |
+| `lisette` | Lisette Koster (45), functionaris gegevensbescherming (tier 4) | Firm: "geen data zonder mandaat". | "Een knop: 'laat zien'." | Defending a manual Excel check to the Autoriteit. |
 | `bart` | Bart Jacobs (40), ops engineer | Cynic: "we hebben al een poster". | "De eerste die 'wie' zegt, haalt koffie." | The May postmortem that asked who had duty. |
 | `bas` | Bas Kuipers (45), RTE (expert) | Calm facilitator: "trein", "ritme", "dienstregeling". | "Een trein vertrekt op tijd." | — (expert) |
 
@@ -3692,26 +3970,28 @@ Beyond the catalogue (C1–C20), the tier-2 draft (§6 there) and the dialog spe
    - the fork honesty test (C15) for `t3_havenzij` and `it_after_release` on throughput;
    - `t3_crew_strategy` offers ≥ 2 options on the expert path and the baseline plus overtime on the worst path;
    - the repair of `long_drives` reopens the Lindeveld option (K11);
-   - `fix_status_page_wrong` can be completed without waiting for a release (through another countermeasure);
+   - `fix_field_app_bypassed` can be completed without waiting for a release (through another countermeasure);
    - every dialog's listening route stays within patience (the Acts 0–II scripts §9 method).
 
 ---
 
-## 8. Questions for Merijn
+## 8. Questions for Merijn: decided
 
-Each has a recommended option (**bold**).
+Merijn answered on 2026-10-15 (PLAN.md "Decisions Made"). Every choice is also logged under "Claude's calls, pending Merijn" so he can overrule it.
 
-1. **Where the IT track starts.** **(a) At the customer: the portal and the meter-data platform in tier 3; the field app moves to tier 4.** (b) Keep the catalogue's order (the field app first). (c) Both in tier 3. *(a) ties IT to what the player fixed in Acts I–III (status calls, EAN, meter data) and to your examples; the field app fits Act V's asset data.*
-2. **The `release_gated` twist.** **(a) The Check says "staat klaar, gaat live bij de volgende release", and the player can wait or re-A3 with another countermeasure (a poor fix that the repair quest later upgrades).** (b) Release-gated countermeasures are locked with a hint until releases are frequent. (c) No gating. *(a) makes the batch felt from the customer's side, without a dead end.*
-3. **"Wie gaat er voor?"** **(a) Reframe the catalogue's "first come, first served" to the 2026 reality: a framework applied by hand, on request.** (b) Keep the catalogue's version. *(b) would teach a situation that no longer exists.*
-4. **Yusuf's "fourth draughtsman" talk.** **(a) A beat only; the Havenzij lesson is the outside partner (Marloes).** (b) A full dialog like Joost's in Act I. *(b) repeats Act I's lesson.*
-5. **The way back after a consultant-led kaizen.** **(a) A second, team-led kaizen week through the layered audit's next cycle.** (b) No way back; the buy-in stays compliance. (c) Ruud raises it in the main mission's reflect stage. *(a) keeps "you can pivot back" true.*
-6. **The nitrogen fix and the investment plan.** **(a) `parallel_ecology` or `aerius_template` adds an `any` branch to "Standaardstations in serie".** (b) No link. *A standard station needs a standard permit route; it rewards fixing the process, not one project.*
-7. **The household rush.** **(a) An Act IV side, opening in mid-July of the game's calendar.** (b) Tied to the real date. (c) In Act III. *It is this year's headline, and a short side fits its size.*
-8. **The overtime option in the crew strategy.** **(a) Always open; the aftermath shows inside the 91-day forecast.** (b) Not offered. *(a) is the honest temptation: it looks best in week 6 and worst in week 14.*
-9. **Area sizes.** **(a) Lindeveld 5 monteurs; Havenzij 6 monteurs and 3 draughtsmen; calibrated in K6.** (b) Larger areas. *Small teams make one person's absence visible, which several dialogs rely on.*
-10. **Temptations per mission.** **(a) One per main mission; on sides only where it teaches something new.** (b) Fewer: only where a real-world shortcut is common. *Tier 3 is where shortcuts get respectable (consultants, freelancers, tools); (a) keeps them a choice, not a quiz.*
-11. **The new cast (15 new people).** **(a) Keep: each carries a real concern and appears in one or two missions.** (b) Merge roles (e.g. Erwin and Bart as one ops lead). *Distinct people make the region feel big; the voice sheet keeps them apart.*
+1. **Where the IT track starts.** **Decided (b): the field app first, as in the catalogue.** The tier-3 IT chapter now opens with `fix_field_app_bypassed` (§2.2). The customer portal and the meter-data platform follow in the tier-4 IT chapter (§2.8).
+2. **The `release_gated` twist.** **Decided (a):** the Check says "staat klaar, gaat live bij de volgende release"; the player can wait or re-A3, and the repair quest later ships the best fix. It now sits in the field-app mission.
+3. **"Wie gaat er voor?"** **Decided (a):** reframed to the 2026 reality.
+4. **Yusuf's "fourth draughtsman" talk.** **Decided (a):** a beat only.
+5. **The way back after a consultant-led kaizen.** **Decided (a):** a second, team-led kaizen week through the layered audit's next cycle.
+6. **The nitrogen fix and the investment plan.** **Decided (a):** an `any` branch for "Standaardstations in serie".
+7. **The household rush.** **Decided (a):** an Act IV side, opening in mid-July of the game's calendar.
+8. **The overtime option in the crew strategy.** **Decided (a):** always open, with its aftermath inside the forecast.
+9. **Area sizes.** **Decided (a):** Lindeveld 5 monteurs; Havenzij 6 monteurs and 3 draughtsmen; calibrated in K6.
+10. **Temptations per mission.** **Decided (a):** one per main mission; on sides only where it teaches something new.
+11. **The new cast.** **Decided (a):** kept.
+
+Related decisions: standard Dutch for every character (no dialect; §5 and all lines revised); customers by phone now, home visits later; colleagues leave rarely; "Respect the player's time" is a CLAUDE.md rule.
 
 ---
 
