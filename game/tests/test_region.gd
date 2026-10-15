@@ -342,3 +342,34 @@ func test_counting_a_queue_measures_it() -> void:
 	assert_eq(counted, {"count": r.net.queue_of(step).size(), "days": r.net.queue_days(step)})
 	assert_eq(counted, r.queue_at("connections.design"))
 	assert_false(r.use_tool("connections.design", "shadow").has("queue"), "other tools do not count")
+
+
+## Every gemba tool works at every kind of step (QA autoplay: queue_count at
+## connections.permit crashed). At a wait (a permit) or a material step the
+## count is the orders waiting there, holding no days of a team's work; the
+## Check's measures show the same queue.
+func test_every_tool_works_at_every_kind_of_step() -> void:
+	var net := NetFixture.net([NetFixture.pool("prep", 2), NetFixture.pool("crew", 2)], [
+		NetFixture.stream("connections", [
+			NetFixture.work("design", "prep", 1.0),
+			NetFixture.wait("permit", 5.0),
+			NetFixture.material("cable", "cable"),
+			NetFixture.work("build", "crew", 1.0),
+		]),
+	], [NetFixture.stock("cable", 0, 0, 1, 30.0)])
+	var r := Region.new(net, [] as Array[ProblemDef], [] as Array[CountermeasureDef], Profile.new())
+	r.advance_days(10)
+	var s := net.stream("connections")
+	for step in s.steps:
+		var place := "connections." + step.id
+		for tool: String in Investigation.TOOLS:
+			assert_true(r.use_tool(place, tool).has("spotted"), "%s at %s" % [tool, place])
+		for question: String in Investigation.QUESTIONS:
+			assert_true(r.ask(place, question).has("reply"), "%s at %s" % [question, place])
+		var counted: Dictionary = r.use_tool(place, "queue_count")["queue"]
+		assert_eq(counted, Region.measures(net, place)["queue"], place)
+		if step.kind == SimStep.Kind.WORK:
+			continue
+		var here := net.open_orders(s).filter(func(o: WorkOrder) -> bool: return o.current_step() == step)
+		assert_true(here.size() > 0, "orders wait at " + place)
+		assert_eq(counted, {"count": here.size(), "days": 0.0}, place)

@@ -198,9 +198,18 @@ static func _days(d: Dictionary, key: String) -> int:
 	return SimCalendar.days(float(d.get(key, 0.0)))
 
 
-## Orders waiting at a work step (empty for other kinds).
+## The queue of a work step (only work steps have one; waiting_at counts any step).
 func queue_of(step: SimStep) -> Array[WorkOrder]:
 	return _queues[step]
+
+
+## How many orders wait at `step` now: in its queue at a work step, out on
+## the wait at a wait step (a permit), for stock at a material step.
+func waiting_at(step: SimStep) -> int:
+	if step.kind == SimStep.Kind.WORK:
+		return queue_of(step).size()
+	var orders := _waiting if step.kind == SimStep.Kind.WAIT else stock[step.item_id].waiting
+	return orders.filter(func(o: WorkOrder) -> bool: return o.current_step() == step).size()
 
 
 ## Turn on, or replace, the effects of one source (a problem, a countermeasure,
@@ -711,8 +720,11 @@ func _downstream_is_full(order: WorkOrder, limit_days: float) -> bool:
 
 
 ## Days of work queued at `step`: its waiting touch minutes over what its
-## first pool does in a working day. Infinite when that pool has no capacity.
+## first pool does in a working day. Infinite when that pool has no capacity;
+## 0 at a wait or material step, where no team's work is queued.
 func queue_days(step: SimStep) -> float:
+	if step.kind != SimStep.Kind.WORK:
+		return 0.0
 	var minutes := 0
 	for order in queue_of(step):
 		minutes += order.remaining

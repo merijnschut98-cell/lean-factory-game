@@ -246,11 +246,14 @@ func use_tool(place: String, tool: String) -> Dictionary:
 	return result
 
 
-## The queue at a place now: {count (orders waiting), days (of the team's
-## work they hold, Network.queue_days)}.
+## The queue at a place now: {count (orders waiting, Network.waiting_at),
+## days (of the team's work they hold, Network.queue_days)}.
 func queue_at(place: String) -> Dictionary:
-	var step := net.step_at(place)
-	return {"count": net.queue_of(step).size(), "days": net.queue_days(step)}
+	return _queue(net, net.step_at(place))
+
+
+static func _queue(network: Network, step: SimStep) -> Dictionary:
+	return {"count": network.waiting_at(step), "days": network.queue_days(step)}
 
 
 ## Talk to the team at a place. How you ask decides what you learn.
@@ -328,7 +331,7 @@ func _hidden_at(place: String) -> bool:
 ## What the team at a place truthfully sees in their work right now.
 func _observation(place: String) -> Dictionary:
 	var step := net.step_at(place)
-	var queue := net.queue_of(step).size()
+	var queue := net.waiting_at(step)
 	if queue > 10:
 		return {"kind": "queue", "value": queue}
 	var recent := _recent_stats(step)
@@ -452,9 +455,7 @@ static func measures(network: Network, place: String) -> Dictionary:
 		# The age of the open work: long waits show before their orders finish.
 		"wip_age": network.open_age_days(stream),
 		"step": step.stats_since(SimCalendar.day_of(network.time) - CHECK_DAYS),
-		# A wait step (a permit, a delivery) has no queue of its own.
-		"queue": {"count": network.queue_of(step).size(), "days": network.queue_days(step)}
-			if step.kind == SimStep.Kind.WORK else {"count": 0, "days": 0.0},
+		"queue": _queue(network, step),
 	}
 
 
