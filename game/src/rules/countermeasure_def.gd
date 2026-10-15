@@ -27,6 +27,11 @@ var sustains := false
 ## What it opens in the game once it works: "" or "kpi_board" (the quarterly
 ## KPI review of the departments).
 var unlocks := ""
+## Path dependence: the facts it needs (Facts.met: {all, any, none}), and the
+## hint shown while they are not met ("niet voorbereid"): a place or a team,
+## never the route.
+var needs: Dictionary = {}
+var preparation := ""
 var error := ""
 
 
@@ -51,6 +56,8 @@ static func from_dict(d: Dictionary) -> CountermeasureDef:
 	c.effects = d.get("effects", []).duplicate(true)
 	c.decay_days = int(d["decay_days"]) if d.get("decay_days") != null else -1
 	c.unlocks = str(d.get("unlocks", ""))
+	c.needs = JsonFile.dict_or_empty(d.get("needs")).duplicate(true)
+	c.preparation = str(d.get("preparation", ""))
 	if not d.get("sustains", false) is bool:
 		c.error = "countermeasure %s: 'sustains' must be true or false" % c.id
 		return c

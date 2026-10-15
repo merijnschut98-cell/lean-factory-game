@@ -306,6 +306,32 @@ func available_missions() -> Array[MissionDef]:
 	return missions.available()
 
 
+## A mission's briefing as the board shows it (the reopen text when its fix
+## faded) and its debrief (a fork branch done first has its own).
+func mission_briefing(mission_id: String) -> String:
+	return missions.briefing_of(mission_id) if missions.defs.has(mission_id) else ""
+
+
+func mission_debrief(mission_id: String) -> String:
+	return missions.debrief_of(mission_id) if missions.defs.has(mission_id) else ""
+
+
+## Countermeasures not offered because an earlier preparation is missing:
+## [{id, name, preparation}] for the A3's "niet voorbereid" list. The hint
+## points at a place or team, never at the route.
+func unprepared_countermeasures() -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for c in missions.unprepared():
+		out.append({"id": c.id, "name": c.name, "preparation": c.preparation})
+	return out
+
+
+## Whether a fact of the player's path holds ("chose:custom_design:
+## standard_designs", "maturity>=2"; Missions.knows).
+func knows(fact: String) -> bool:
+	return missions.knows(fact)
+
+
 ## Still in the training week (a day not yet done or skipped).
 func in_training() -> bool:
 	return missions.in_training()

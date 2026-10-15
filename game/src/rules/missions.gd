@@ -20,6 +20,11 @@ extends RefCounted
 ## that ended without its problem solved puts the problem back to sleep; the
 ## clues found are kept.
 ##
+## Path dependence (catalogue §2.15): the facts of what the player did and
+## chose (Facts) gate missions (requires.facts) and countermeasures (needs);
+## a countermeasure whose preparation is missing is not offered (Region's
+## `unprepared`), and shows with its hint.
+##
 ## Missions drive the Region (accepting one activates its problem) and read
 ## it to see when a goal is met; the Region does not know about missions.
 
@@ -42,6 +47,10 @@ const CHECKIN_XP := 100
 ## At the lowest score (5 of 25) a player still earns MIN_REWARD_SHARE.
 const REWARD_FOR_FINISHING := 0.5
 const MIN_REWARD_SHARE := 0.6
+## A fix is poor when its countermeasure fits this much less than the
+## problem's best one (ESTIMATE, catalogue §2.15), or the A3 named a wrong
+## root cause.
+const POOR_FIT_GAP := 0.2
 
 var region: Region
 var defs: Dictionary[String, MissionDef] = {}
@@ -67,6 +76,11 @@ var failed_once: Dictionary[String, bool] = {}
 ## new belt is a Region event; tell the player about a faded fix by
 ## `reopened`, not Region's `recurred`).
 var events: Array[Dictionary] = []
+## The recorded facts (Facts); done: and failed: and the measures are read
+## live (knows).
+var facts := Facts.new()
+## Problems resolved at the last update, so a new Act's facts are noted once.
+var _resolved: Dictionary[String, bool] = {}
 
 
 func _init(of_region: Region, mission_defs: Array[MissionDef], coach_def: Dictionary) -> void:
@@ -76,6 +90,7 @@ func _init(of_region: Region, mission_defs: Array[MissionDef], coach_def: Dictio
 		defs[m.id] = m
 		if m.kind == "training" and not m.goal_problem.is_empty():
 			region.practice[m.goal_problem] = true
+	_lock_unprepared()
 
 
 ## available | active | completed | locked (a missed deadline: see failed)
@@ -186,6 +201,7 @@ func abandon(id: String) -> String:
 ## a deadline that just opened, and fail those past it (taken on or not).
 ## The game loop calls it after every Region action and time step.
 func update() -> void:
+	_note_fixes()
 	_reopen_faded()
 	_sync_checkins()
 	for m in active():
@@ -199,6 +215,87 @@ func update() -> void:
 		elif region.net.time > opened_at[m.id] + SimCalendar.days(m.deadline_days):
 			_fail(m)
 	_retire_orphans()
+	_lock_unprepared()
+
+
+## Whether a fact or a measure holds (Facts): done: and failed: from the
+## missions, maturity>= and reputation>= from the region, the rest recorded.
+func knows(atom: String) -> bool:
+	var measure := Facts.measure(atom)
+	if not measure.is_empty():
+		return (region.maturity() if measure[0] == "maturity" else region.reputation.value) >= measure[1]
+	match atom.get_slice(":", 0):
+		"done":
+			return done_once.has(atom.get_slice(":", 1))
+		"failed":
+			return failed_once.has(atom.get_slice(":", 1))
+	return facts.has(atom)
+
+
+func needs_met(needs: Dictionary) -> bool:
+	return Facts.met(needs, knows)
+
+
+## Countermeasures not offered because an earlier preparation is missing
+## ("niet voorbereid": show each one's `preparation` hint), not those closed
+## for good.
+func unprepared() -> Array[CountermeasureDef]:
+	var out: Array[CountermeasureDef] = []
+	for c: CountermeasureDef in region.countermeasures.values():
+		if region.unprepared.has(c.id) and not region.closed.has(c.id):
+			out.append(c)
+	return out
+
+
+## The briefing to show: the reopen text when the mission is back because its
+## fix faded.
+func briefing_of(id: String) -> String:
+	var m := defs[id]
+	var back := done_once.has(id) and status(id) != "completed"
+	return m.reopen_text if back and not m.reopen_text.is_empty() else m.briefing
+
+
+## The debrief to show: a fork branch done first has its own.
+func debrief_of(id: String) -> String:
+	var m := defs[id]
+	var first := not m.fork_group.is_empty() and facts.has("fork_first:%s:%s" % [m.fork_group, id])
+	return m.debrief_first if first and not m.debrief_first.is_empty() else m.debrief
+
+
+## Note the facts of every new Act: the countermeasure chosen (replacing an
+## earlier choice), whether it was standardised, and whether it was a poor
+## fix. Practice problems are not part of the story.
+func _note_fixes() -> void:
+	for p in region.problem_list():
+		var st: ProblemState = region.state[p.id]
+		var resolved := st.phase == P.RESOLVED and st.a3.has("cm") and not region.practice.has(p.id)
+		if resolved and (not _resolved.has(p.id) or facts.with_prefix("chose:%s:" % p.id).is_empty()):
+			_note_fix(p, st)
+		if resolved:
+			_resolved[p.id] = true
+		else:
+			_resolved.erase(p.id)
+
+
+func _note_fix(p: ProblemDef, st: ProblemState) -> void:
+	var cm: String = st.a3["cm"]
+	facts.remove_prefix("chose:%s:" % p.id)
+	facts.add("chose:%s:%s" % [p.id, cm])
+	for kind in ["standardised", "poor_fix"]:
+		facts.remove("%s:%s" % [kind, p.id])
+	if st.standardised:
+		facts.add("standardised:" + p.id)
+	var best: float = p.countermeasures.values().max()
+	if not st.cause_correct or p.countermeasures.get(cm, 0.0) <= best - POOR_FIT_GAP + 1e-9:
+		facts.add("poor_fix:" + p.id)
+
+
+## Keep the Region's unprepared countermeasures current with the facts.
+func _lock_unprepared() -> void:
+	region.unprepared.clear()
+	for c: CountermeasureDef in region.countermeasures.values():
+		if not c.needs.is_empty() and not needs_met(c.needs):
+			region.unprepared[c.id] = true
 
 
 ## Whether the mission's goal brings and holds a problem (a check-in looks
@@ -318,7 +415,7 @@ func drain_events() -> Array[Dictionary]:
 
 func to_dict() -> Dictionary:
 	return {"progress": progress.duplicate(true), "opened_at": opened_at.duplicate(), "done_once": done_once.keys(),
-		"failed_once": failed_once.keys()}
+		"failed_once": failed_once.keys(), "facts": facts.to_list()}
 
 
 ## Restore to_dict() output. Returns the mission ids the content no longer
@@ -328,6 +425,12 @@ func load_dict(d: Dictionary) -> Array[String]:
 	opened_at.clear()
 	done_once.clear()
 	failed_once.clear()
+	# Facts of Acts before the save are kept; old saves note them at the next update.
+	facts.load_list(d.get("facts", []))
+	_resolved.clear()
+	for id: String in region.state:
+		if region.state[id].phase == P.RESOLVED:
+			_resolved[id] = true
 	_rebuild_checkins(d)
 	for key: String in ["done_once", "failed_once"]:
 		var ids: Variant = d.get(key, [])
@@ -354,6 +457,7 @@ func load_dict(d: Dictionary) -> Array[String]:
 	# A missed deadline closed its doors for good.
 	for id: String in failed_once:
 		region.close_countermeasures(defs[id].fail_closes)
+	_lock_unprepared()
 	return dropped
 
 
@@ -370,12 +474,19 @@ func _rebuild_checkins(d: Dictionary) -> void:
 
 
 func _unlocked(m: MissionDef) -> bool:
-	if Progression.belt_index(region.profile.xp) < m.requires_belt:
+	if Progression.belt_index(region.profile.xp) < m.requires_belt or region.reputation.value < m.requires_reputation:
 		return false
 	for id in m.requires_missions:
 		if not done_once.has(id):
 			return false
-	return true
+	if not m.requires_any_of.is_empty() and not Array(m.requires_any_of).any(func(id: String) -> bool: return done_once.has(id)):
+		return false
+	for team in m.requires_trust:
+		if region.trust.get(team, 0) < m.requires_trust[team]:
+			return false
+	if m.requires_maturity > 1 and region.maturity() < m.requires_maturity:
+		return false
+	return needs_met(m.requires_facts)
 
 
 func _goal_met(m: MissionDef) -> bool:
@@ -419,6 +530,10 @@ func _complete(m: MissionDef) -> void:
 		region.earn_reputation(Reputation.REOPENED, "reopened")  # owning a regression
 	if int(score.get("impact", 0)) >= Reputation.FLOW_IMPACT:
 		region.earn_reputation(Reputation.FLOW_GAIN, "flow")
+	for flag in m.sets_flags:
+		facts.add(flag)
+	if not m.fork_group.is_empty() and facts.with_prefix("fork_first:%s:" % m.fork_group).is_empty():
+		facts.add("fork_first:%s:%s" % [m.fork_group, m.id])
 	var event := {"type": "completed", "mission": m.id}
 	if m.goal_type == "observe" and m.goal_tool == "queue_count":
 		var queues := {}

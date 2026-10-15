@@ -7,6 +7,7 @@ extends RefCounted
 
 const KINDS := ["main", "side", "training"]
 const GOALS := ["walk", "investigate", "solve", "observe", "check", "sustain"]
+const FORK_ROLES := ["bottleneck", "non_bottleneck"]
 
 var id: String
 var name: String
@@ -15,6 +16,30 @@ var tier: int
 var requires_missions := PackedStringArray()
 ## Belt index (Progression.BELTS) the player needs.
 var requires_belt := 0
+## The region's maturity (1–4) and reputation (0–100) it needs.
+var requires_maturity := 1
+var requires_reputation := 0
+## Trust per team (pool id → at least) it needs.
+var requires_trust: Dictionary[String, int] = {}
+## At least one of these missions done (after a fork).
+var requires_any_of := PackedStringArray()
+## Facts it needs (Facts.met: {all, any, none}).
+var requires_facts: Dictionary = {}
+## Story as data: the act (0 the training week; -1 none), the chapter title on
+## the board, and a side chain it belongs to (sector, henk, ...).
+var act := -1
+var chapter: String
+var arc: String
+## A fork in the main quest: its group and role (bottleneck |
+## non_bottleneck); debrief_first is the debrief when this branch was done
+## first.
+var fork_group: String
+var fork_role: String
+var debrief_first: String
+## The briefing when the mission is back because its fix faded.
+var reopen_text: String
+## Facts ("flag:<name>") its completion sets.
+var sets_flags := PackedStringArray()
 var briefing: String
 var debrief: String
 ## Said when the deadline passes (e.g. Henk has retired).
@@ -66,6 +91,22 @@ static func from_dict(d: Dictionary) -> MissionDef:
 	var requires := JsonFile.dict_or_empty(d.get("requires"))
 	m.requires_missions = PackedStringArray(requires.get("missions", []))
 	m.requires_belt = int(requires.get("belt", 0))
+	m.requires_maturity = int(requires.get("maturity", 1))
+	m.requires_reputation = int(requires.get("reputation", 0))
+	var trust_needed := JsonFile.dict_or_empty(requires.get("trust"))
+	for team: Variant in trust_needed:
+		m.requires_trust[str(team)] = int(trust_needed[team])
+	m.requires_any_of = PackedStringArray(requires.get("any_of", []))
+	m.requires_facts = JsonFile.dict_or_empty(requires.get("facts")).duplicate(true)
+	m.act = int(d.get("act", -1))
+	m.chapter = str(d.get("chapter", ""))
+	m.arc = str(d.get("arc", ""))
+	var fork := JsonFile.dict_or_empty(d.get("fork"))
+	m.fork_group = str(fork.get("group", ""))
+	m.fork_role = str(fork.get("role", ""))
+	m.debrief_first = str(d.get("debrief_first", ""))
+	m.reopen_text = str(d.get("reopen", ""))
+	m.sets_flags = PackedStringArray(d.get("sets_flags", []))
 	m.briefing = str(d.get("briefing", ""))
 	m.debrief = str(d.get("debrief", ""))
 	m.fail_text = str(d.get("fail", ""))

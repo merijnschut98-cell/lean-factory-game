@@ -91,6 +91,25 @@
    "step_kind": ""
   }
  },
+ "fact_kinds": [
+  "blocked",
+  "chose",
+  "committed",
+  "complied",
+  "done",
+  "failed",
+  "flag",
+  "fork_first",
+  "heard",
+  "partial",
+  "poor_fix",
+  "repaired",
+  "standardised"
+ ],
+ "fork_roles": [
+  "bottleneck",
+  "non_bottleneck"
+ ],
  "kpi_kinds": [
   "leading",
   "lagging"
@@ -102,6 +121,10 @@
   "on_time",
   "wip_age",
   "capacity"
+ ],
+ "measures": [
+  "maturity",
+  "reputation"
  ],
  "min_reward_share": 0.6,
  "mission_goals": [

@@ -48,6 +48,9 @@ var found: Dictionary[String, bool] = {}
 ## Countermeasures closed for good (a missed deadline: Henk has retired).
 ## Derived from the failed missions (Missions.load_dict restores it).
 var closed: Dictionary[String, bool] = {}
+## Countermeasures whose needs (earlier preparations) are not met yet;
+## Missions keeps it current from the facts (path dependence).
+var unprepared: Dictionary[String, bool] = {}
 ## Problems only the training week opens (Missions marks them): practice,
 ## so they say nothing about the region's maturity.
 var practice: Dictionary[String, bool] = {}
@@ -380,12 +383,12 @@ func _team(place: String) -> String:
 # ── Plan → Do: the A3 ───────────────────────────────────────────────────────
 
 ## Countermeasures this region can try: up to one tier above its maturity,
-## and not closed.
+## not closed, and prepared for.
 func available_countermeasures() -> Array[CountermeasureDef]:
 	var m := maturity()
 	var out: Array[CountermeasureDef] = []
 	for c: CountermeasureDef in countermeasures.values():
-		if c.tier <= m + 1 and not closed.has(c.id):
+		if c.tier <= m + 1 and not closed.has(c.id) and not unprepared.has(c.id):
 			out.append(c)
 	return out
 

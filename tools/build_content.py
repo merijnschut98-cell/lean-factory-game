@@ -288,7 +288,8 @@ SEVERITIES = ["low", "medium", "high", "critical"]
 VISIBILITIES = ["obvious", "subtle", "hidden"]
 PROBLEM_KEYS = {"id", "tier", "name", "step", "waste", "severity", "visibility", "kpi", "symptoms", "root_cause",
                 "plausible_causes", "mismatch_note", "countermeasures", "teaches", "effects", "clues", "cost_per_week"}
-COUNTERMEASURE_KEYS = {"id", "tier", "name", "category", "description", "budget", "team_hours", "decay_days",
+COUNTERMEASURE_KEYS = {"id", "tier", "name", "category", "description", "budget", "team_hours", "decay_days", "needs",
+                       "preparation",
                        "multipliers", "effects", "unlocks", "sustains"}
 UNLOCKS = ["kpi_board"]  # CountermeasureDef.UNLOCKS: what a countermeasure opens in the game
 CLUE_KEYS = {"tool", "text", "key", "depth", "at", "note", "teaches"}
@@ -368,6 +369,13 @@ def validate_countermeasures(doc: Any, source: str) -> None:
             _one_of(cm, "unlocks", UNLOCKS, where)
         if not isinstance(cm.get("sustains", False), bool):
             raise ContentError(f"{where}: 'sustains' must be true or false")
+        if "needs" in cm:
+            # Path dependence: an option that needs earlier preparations shows
+            # as "niet voorbereid" with this hint (a place or team, never the answer).
+            _validate_needs(cm["needs"], where)
+            _require_strings(cm, ["preparation"], where)
+        elif "preparation" in cm:
+            raise ContentError(f"{where}: 'preparation' is the hint for unmet 'needs'")
         _effects_shape(cm, where)
 
 
@@ -534,6 +542,54 @@ def _all_problems(docs: dict[str, Any]) -> list[tuple[str, dict]]:
     return [(stem, p) for stem, doc in docs.items() if stem.startswith(PROBLEM_FILES) for p in doc["problems"]]
 
 
+# ── facts and needs (path dependence, game/src/rules/facts.gd) ───────────────
+# A fact kind → how many ids follow it ("chose:<problem>:<cm>"). The dialog
+# facts (heard: ... blocked:) name a dialog; they are checked once dialogs exist.
+FACT_KINDS = {"done": 1, "failed": 1, "chose": 2, "standardised": 1, "poor_fix": 1, "repaired": 1, "fork_first": 2,
+              "flag": 1, "heard": 1, "committed": 1, "complied": 1, "partial": 1, "blocked": 1}  # Facts.KINDS
+DIALOG_FACTS = {"heard", "committed", "complied", "partial", "blocked"}
+MEASURES = {"maturity": (1, 4), "reputation": (0, 100)}  # Facts.MEASURES: "maturity>=3"
+_MEASURE = re.compile(r"^([a-z]+)>=(\d+)$")
+NEEDS_KEYS = ["all", "any", "none"]
+
+
+def _atom_parts(atom: Any, where: str) -> tuple[str, list[str]]:
+    """("measure", [name, at least]) or (fact kind, ids); raises on a malformed atom."""
+    if not isinstance(atom, str):
+        raise ContentError(f"{where}: a needs entry must be a text (got {atom!r})")
+    measure = _MEASURE.match(atom)
+    if measure:
+        name, value = measure.group(1), int(measure.group(2))
+        if name not in MEASURES or not MEASURES[name][0] <= value <= MEASURES[name][1]:
+            raise ContentError(f"{where}: {atom!r}: measures are {', '.join(f'{m}>=n ({lo}-{hi})' for m, (lo, hi) in MEASURES.items())}")
+        return "measure", [name, str(value)]
+    kind, _, rest = atom.partition(":")
+    ids = rest.split(":") if rest else []
+    if kind not in FACT_KINDS or len(ids) != FACT_KINDS[kind] or not all(_ID.match(i) for i in ids):
+        raise ContentError(f"{where}: {atom!r} is not a fact (kinds: {', '.join(FACT_KINDS)}) or a measure")
+    return kind, ids
+
+
+def _validate_needs(needs: Any, where: str) -> None:
+    """{all, any, none}: lists of facts or measures (the grammar only)."""
+    if not isinstance(needs, dict) or not needs:
+        raise ContentError(f"{where}: 'needs' must map {', '.join(NEEDS_KEYS)} to lists")
+    _known_keys(needs, set(NEEDS_KEYS), f"{where} needs")
+    for key, atoms in needs.items():
+        if not isinstance(atoms, list) or not atoms:
+            raise ContentError(f"{where} needs: '{key}' must be a non-empty list")
+        for atom in atoms:
+            _atom_parts(atom, f"{where} needs")
+
+
+def _sets_flags(item: dict, where: str) -> list:
+    flags = _string_list(item, "sets_flags", where)
+    for flag in flags:
+        if _atom_parts(flag, where)[0] != "flag":
+            raise ContentError(f"{where}: 'sets_flags' entries are flag:<name> (got {flag!r})")
+    return flags
+
+
 # training: the Inwerkweek before the campaign; it takes no side slot and the
 # coach helps with it (Missions).
 MISSION_KINDS = ["main", "side", "training"]
@@ -548,13 +604,21 @@ MISSION_GOALS = {
     "sustain": ({"problem"}, set()),
 }
 MAX_CHECK_DAYS = 14  # Region.CHECK_DAYS: a mission may only shorten the Check
+MATURITY_STEP = 0.6  # Region.MATURITY_STEP
 COACH_STAGES = ["go_see", "understand", "experiment", "reflect"]  # Missions.STAGES
 BELT_XP = [0, 2000, 6000, 30000, 110000]  # Progression.BELTS
 # The least share of a solve mission's reward a player earns (Missions.reward_share
 # at the lowest score, 5 of 25): the hard case for reaching every mission.
 MIN_REWARD_SHARE = 0.6
 MISSION_KEYS = {"id", "name", "kind", "tier", "requires", "briefing", "debrief", "fail", "goal", "deadline_days",
-                "fail_closes", "rewards", "insights", "teaches", "check_days", "setup"}
+                "fail_closes", "rewards", "insights", "teaches", "check_days", "setup", "act", "chapter", "arc",
+                "fork", "debrief_first", "reopen", "sets_flags"}
+REQUIRES_KEYS = {"missions", "belt", "maturity", "reputation", "trust", "any_of", "facts"}
+FORK_ROLES = ["bottleneck", "non_bottleneck"]
+MAX_ACT = 6  # Act 0 is the training week; Act VI the IT value streams
+TRUST_RANGE = (-2, 1)  # Region.TRUST_MIN, TRUST_MAX
+DEFAULT_REPUTATION = {"main": 5, "side": 2}  # Reputation.MAIN_MISSION, SIDE_MISSION
+START_REPUTATION = 30  # Reputation.START
 
 
 def validate_missions(doc: Any, source: str) -> None:
@@ -573,9 +637,8 @@ def validate_missions(doc: Any, source: str) -> None:
         _one_of(m, "kind", MISSION_KINDS, where)
         _number(m, "tier", where, 1, 4, integer=True)
         _require_strings(m, ["briefing", "debrief"], where)
-        requires = _mapping(m, "requires", {"missions", "belt"}, where)
-        _string_list(requires, "missions", f"{where} requires")
-        _number(requires, "belt", f"{where} requires", 0, len(BELT_XP) - 1, integer=True, default=0)
+        _validate_requires(_mapping(m, "requires", REQUIRES_KEYS, where), f"{where} requires")
+        _validate_story(m, where)
         _validate_goal(m.get("goal"), where)
         if "deadline_days" in m:
             if m["kind"] == "training":
@@ -597,14 +660,56 @@ def validate_missions(doc: Any, source: str) -> None:
             setup = _effects_shape({"effects": m["setup"]}, f"{where} setup")
             if any(e["property"] == KPI_EFFECT for e in setup):
                 raise ContentError(f"{where} setup: a setup changes the simulation, not the KPI board")
-        rewards = _mapping(m, "rewards", {"xp", "budget"}, where)
+        rewards = _mapping(m, "rewards", {"xp", "budget", "reputation", "trust"}, where)
         for key in ("xp", "budget"):
             _number(rewards, key, f"{where} rewards", 0, integer=True, default=0)
+        _number(rewards, "reputation", f"{where} rewards", 0, 20, integer=True, default=0)
+        _trust_map(rewards, f"{where} rewards", -3, 3)
+        _sets_flags(m, where)
         insights = m.get("insights", {})
         if insights and m["kind"] not in COACHED_KINDS:
             raise ContentError(f"{where}: only main and training missions get the coach's insights")
         if not isinstance(insights, dict) or any(s not in COACH_STAGES or not isinstance(t, str) for s, t in insights.items()):
             raise ContentError(f"{where}: 'insights' maps a coach stage to a text")
+
+
+def _trust_map(item: dict, where: str, low: int, high: int) -> dict:
+    """An optional {team: n} mapping (teams are checked against the pools later)."""
+    trust = item.get("trust", {})
+    if not isinstance(trust, dict):
+        raise ContentError(f"{where}: 'trust' must map teams to a number")
+    for team in trust:
+        _number(trust, team, f"{where} trust", low, high, integer=True)
+    return trust
+
+
+def _validate_requires(requires: dict, where: str) -> None:
+    """Gates: missions done, a belt, the region's maturity and reputation,
+    a team's trust, one of a set of missions (after a fork) and facts."""
+    _string_list(requires, "missions", where)
+    _string_list(requires, "any_of", where)
+    _number(requires, "belt", where, 0, len(BELT_XP) - 1, integer=True, default=0)
+    _number(requires, "maturity", where, *MEASURES["maturity"], integer=True, default=1)
+    _number(requires, "reputation", where, *MEASURES["reputation"], integer=True, default=0)
+    _trust_map(requires, where, *TRUST_RANGE)
+    if "facts" in requires:
+        _validate_needs(requires["facts"], where)
+
+
+def _validate_story(m: dict, where: str) -> None:
+    """Story as data: act, chapter, arc; fork metadata; the reopen text."""
+    if "act" in m:
+        _number(m, "act", where, 0, MAX_ACT, integer=True)
+    _require_strings(m, [k for k in ("chapter", "reopen", "debrief_first") if k in m], where)
+    if "arc" in m and not (isinstance(m["arc"], str) and _ID.match(m["arc"])):
+        raise ContentError(f"{where}: 'arc' must be an id such as sector or henk")
+    if "fork" in m:
+        fork = _mapping(m, "fork", {"group", "role"}, where)
+        if m["kind"] != "main" or not isinstance(fork.get("group"), str) or not _ID.match(fork["group"]):
+            raise ContentError(f"{where}: a fork is between main missions and needs a 'group' id")
+        _one_of(fork, "role", FORK_ROLES, f"{where} fork")
+    elif "debrief_first" in m:
+        raise ContentError(f"{where}: 'debrief_first' is for a fork branch done first")
 
 
 def _validate_goal(goal: Any, where: str) -> None:
@@ -635,12 +740,17 @@ def check_missions(docs: dict[str, Any]) -> None:
     net = _network_index(docs["value_streams"], docs["kpis"])
     steps = net["step"]
     problems = {p["id"]: p for _, p in _all_problems(docs)}
+    pools = {p["id"] for p in docs["value_streams"]["pools"]}
     solved: dict[str, str] = {}
     for m in missions.values():
         where = f"missions.yaml: mission '{m['id']}'"
-        for req in m.get("requires", {}).get("missions", []):
+        requires = m.get("requires", {})
+        for req in requires.get("missions", []) + requires.get("any_of", []):
             if req not in missions:
                 raise ContentError(f"{where}: requires unknown mission {req!r}")
+        for team in list(requires.get("trust", {})) + list(m.get("rewards", {}).get("trust", {})):
+            if team not in pools:
+                raise ContentError(f"{where}: trust of unknown team {team!r}")
         for e in m.get("setup", []):
             _check_effect(e, f"{where} setup", net)
         goal = m["goal"]
@@ -673,27 +783,141 @@ def check_missions(docs: dict[str, Any]) -> None:
     unsolved = sorted(set(problems) - set(solved))
     if unsolved:
         raise ContentError(f"missions.yaml: no mission solves {', '.join(unsolved)} (the campaign reaches every problem)")
-    # Play the campaign forward: complete whatever is unlocked, earning only
-    # the missions' own XP, solve missions at their lowest share (problems
-    # give more, so this is the hard case).
+    _check_forks(missions)
+    index = _fact_index(docs)
+    for m in missions.values():
+        if "facts" in m.get("requires", {}):
+            _check_needs(m["requires"]["facts"], f"missions.yaml: mission '{m['id']}' requires", index)
+    gated = set()
+    for cm in docs["countermeasures"]["countermeasures"]:
+        if "needs" in cm:
+            _check_needs(cm["needs"], f"countermeasures.yaml: '{cm['id']}'", index)
+            gated.add(cm["id"])
+    for p in problems.values():
+        if set(p["countermeasures"]) <= gated:
+            raise ContentError(f"{p['id']}: no countermeasure without 'needs' (one way must need no preparation)")
+    if not any(m["kind"] in COACHED_KINDS and not m.get("requires") for m in missions.values()):
+        raise ContentError("missions.yaml: no main or training mission is open from the start")
+    stuck = sorted(set(missions) - _reachable(missions, problems, index))
+    if stuck:
+        raise ContentError(f"missions.yaml: missions that can never unlock (a cycle, too little XP, reputation, "
+                           f"maturity or facts): {', '.join(stuck)}")
+
+
+def _check_forks(missions: dict) -> None:
+    """A fork: one bottleneck and at least one non-bottleneck main mission,
+    opening together (the same requires)."""
+    groups: dict[str, list[dict]] = {}
+    for m in missions.values():
+        if "fork" in m:
+            groups.setdefault(m["fork"]["group"], []).append(m)
+    for group, branches in groups.items():
+        roles = Counter(b["fork"]["role"] for b in branches)
+        if roles["bottleneck"] != 1 or roles["non_bottleneck"] < 1:
+            raise ContentError(f"missions.yaml: fork {group!r} needs one bottleneck and at least one non-bottleneck branch")
+        if any(b.get("requires", {}) != branches[0].get("requires", {}) for b in branches):
+            raise ContentError(f"missions.yaml: fork {group!r}: its branches must open together (the same requires)")
+
+
+def _fact_index(docs: dict[str, Any]) -> dict:
+    """What facts content can name, and which choices a missed deadline can
+    take away for good (its fail_closes)."""
+    missions = docs["missions"]["missions"]
+    return {
+        "missions": {m["id"] for m in missions},
+        "deadlines": {m["id"] for m in missions if "deadline_days" in m},
+        "problems": {p["id"]: set(p["countermeasures"]) for _, p in _all_problems(docs)},
+        "fork_members": {(m["fork"]["group"], m["id"]) for m in missions if "fork" in m},
+        "flags": {f for m in missions for f in m.get("sets_flags", [])},
+        "closable": {c for m in missions for c in m.get("fail_closes", [])},
+        "solved_by": {m["goal"]["problem"]: m["id"] for m in missions if m["goal"]["type"] == "solve"},
+    }
+
+
+def _check_needs(needs: dict, where: str, index: dict) -> None:
+    """Every fact names something real, and every route stays open: an 'all'
+    fact, or every 'any' fact, that a missed deadline can take away for good
+    would close the option for good (CLAUDE.md §2: setbacks, never game over)."""
+    def robust(atom: str) -> bool:
+        kind, ids = _atom_parts(atom, where)
+        if kind == "done" and ids[0] not in index["missions"] or kind == "failed" and ids[0] not in index["deadlines"]:
+            raise ContentError(f"{where}: {atom!r} names no such mission{' with a deadline' if kind == 'failed' else ''}")
+        if kind in ("chose", "standardised", "poor_fix", "repaired") and ids[0] not in index["problems"]:
+            raise ContentError(f"{where}: {atom!r} names an unknown problem")
+        if kind == "chose" and ids[1] not in index["problems"][ids[0]]:
+            raise ContentError(f"{where}: {atom!r}: problem {ids[0]!r} does not list that countermeasure")
+        if kind == "fork_first" and tuple(ids) not in index["fork_members"]:
+            raise ContentError(f"{where}: {atom!r} names no branch of that fork")
+        if kind == "flag" and atom not in index["flags"]:
+            raise ContentError(f"{where}: {atom!r}: no mission sets that flag")
+        return not (kind == "chose" and ids[1] in index["closable"])
+    if not all(robust(a) for a in needs.get("all", [])) or ("any" in needs and not any([robust(a) for a in needs["any"]])):
+        raise ContentError(f"{where}: a missed deadline can close this route for good (keep another way open)")
+    for atom in needs.get("none", []):
+        robust(atom)
+
+
+def _fact_reachable(atom: str, done: set, maturity: int, reputation: int, index: dict) -> bool:
+    """Whether a fact can hold once the missions in `done` are done (the
+    player's choices and luck taken at their best)."""
+    kind, ids = _atom_parts(atom, "needs")
+    if kind == "measure":
+        return (maturity if ids[0] == "maturity" else reputation) >= int(ids[1])
+    if kind in ("done", "fork_first"):
+        return ids[-1] in done
+    if kind == "failed":
+        return True  # a deadline can always be missed
+    if kind in ("chose", "standardised", "poor_fix", "repaired"):
+        return index["solved_by"].get(ids[0]) in done
+    if kind == "flag":
+        return any(atom in m_flags for m_id, m_flags in index["flags_by"].items() if m_id in done)
+    return True  # dialog facts: checked once dialogs exist
+
+
+def _reachable(missions: dict, problems: dict, index: dict) -> set[str]:
+    """Play the campaign forward: complete whatever is unlocked, earning only
+    the missions' own XP and reputation, solve missions at their lowest share
+    (problems give more XP, so this is the hard case). Maturity follows the
+    problems the done missions solve; trust can always be repaired."""
+    index = dict(index, flags_by={m["id"]: set(m.get("sets_flags", [])) for m in missions.values()})
+    practice = {m["goal"].get("problem") for m in missions.values() if m["kind"] == "training"}
     done: set[str] = set()
-    xp = 0
+    xp, reputation = 0, START_REPUTATION
     progressed = True
     while progressed:
         progressed = False
+        maturity = _maturity(problems, practice, done, index)
         for m in missions.values():
             req = m.get("requires", {})
-            belt_xp = BELT_XP[req.get("belt", 0)]
-            if m["id"] not in done and xp >= belt_xp and all(r in done for r in req.get("missions", [])):
+            facts = req.get("facts", {})
+            open_now = (m["id"] not in done and xp >= BELT_XP[req.get("belt", 0)]
+                        and all(r in done for r in req.get("missions", []))
+                        and (not req.get("any_of") or any(r in done for r in req["any_of"]))
+                        and maturity >= req.get("maturity", 1) and reputation >= req.get("reputation", 0)
+                        and all(_fact_reachable(a, done, maturity, reputation, index) for a in facts.get("all", []))
+                        and (not facts.get("any") or any(_fact_reachable(a, done, maturity, reputation, index)
+                                                         for a in facts["any"])))
+            if open_now:
                 done.add(m["id"])
+                rewards = m.get("rewards", {})
                 share = MIN_REWARD_SHARE if m["goal"]["type"] == "solve" else 1.0
-                xp += int(m.get("rewards", {}).get("xp", 0) * share)
+                xp += int(rewards.get("xp", 0) * share)
+                reputation = min(100, reputation + rewards.get("reputation", DEFAULT_REPUTATION.get(m["kind"], 0)))
                 progressed = True
-    if not any(m["kind"] in COACHED_KINDS and not m.get("requires") for m in missions.values()):
-        raise ContentError("missions.yaml: no main or training mission is open from the start")
-    stuck = sorted(set(missions) - done)
-    if stuck:
-        raise ContentError(f"missions.yaml: missions that can never unlock (a cycle or too little XP): {', '.join(stuck)}")
+    return done
+
+
+def _maturity(problems: dict, practice: set, done: set, index: dict) -> int:
+    """Region.maturity: a tier counts once MATURITY_STEP of its (non-practice)
+    problems are solved."""
+    level = 1
+    while level < 4:
+        tier = [p for p in problems.values() if p["tier"] == level and p["id"] not in practice]
+        solved = [p for p in tier if index["solved_by"].get(p["id"]) in done]
+        if not tier or len(solved) < len(tier) * MATURITY_STEP:
+            break
+        level += 1
+    return level
 
 
 # ── kpis.yaml ────────────────────────────────────────────────────────────────
@@ -800,7 +1024,8 @@ def vocabulary() -> dict[str, Any]:
         "tools": sorted(TOOLS), "wastes": WASTES, "kpis": KPIS, "severities": SEVERITIES,
         "visibilities": VISIBILITIES, "check_pass": CHECK_PASS, "countermeasure_unlocks": UNLOCKS,
         "mission_kinds": MISSION_KINDS, "mission_goals": sorted(MISSION_GOALS), "coach_stages": COACH_STAGES,
-        "belt_xp": BELT_XP, "min_reward_share": MIN_REWARD_SHARE, "start_rules": START_RULES, "order_rules": ORDER_RULES,
+        "belt_xp": BELT_XP, "min_reward_share": MIN_REWARD_SHARE, "fact_kinds": sorted(FACT_KINDS),
+        "measures": sorted(MEASURES), "fork_roles": FORK_ROLES, "start_rules": START_RULES, "order_rules": ORDER_RULES,
         "care_rules": CARE_RULES, "kpi_kinds": KPI_KINDS,
         "effect_properties": {p: {"kind": k, "step_kind": sk or ""} for p, (k, sk, _) in sorted(EFFECT_PROPERTIES.items())},
     }

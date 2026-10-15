@@ -645,3 +645,89 @@ def test_real_concepts_cover_the_glossary():
     for c in concepts.values():
         if c["category"] == "sector":
             assert "source" in c or "estimate" in c, c["id"]
+
+
+# ── Mission schema: story, forks, gates, rewards, facts (catalogue C1, C19) ──
+
+def _fork_branch(d: dict) -> None:
+    """A second main mission opening with fix_design: the fork's other branch."""
+    d["missions"]["missions"].append({
+        "id": "walk_meters", "name": "De meters", "kind": "main", "tier": 1, "briefing": "Kijk.", "debrief": "Gezien.",
+        "requires": {"missions": ["walk_connections"]}, "goal": {"type": "walk", "stream": "meters"},
+        "fork": {"group": "after_walk", "role": "non_bottleneck"}, "debrief_first": "Eerst de meters."})
+    _mission(d)["fork"] = {"group": "after_walk", "role": "bottleneck"}
+
+
+def _gated(**requires):
+    return lambda d: _mission(d, 2)["requires"].update(requires)
+
+
+def test_story_fields_forks_gates_and_rewards_are_valid(rules_dirs):
+    content, _ = rules_dirs
+    def mutate(d):
+        _fork_branch(d)
+        _mission(d).update(act=1, chapter="De stapel", reopen="Het is terug.", sets_flags=["flag:design_seen"],
+                           rewards={"xp": 600, "reputation": 5, "trust": {"work_prep": 1}})
+        _mission(d, 2).update(arc="sector", requires={
+            "missions": ["walk_connections"], "maturity": 1, "reputation": 30, "trust": {"intake": 0},
+            "any_of": ["fix_design", "walk_meters"],
+            "facts": {"all": ["done:fix_design", "flag:design_seen"], "any": ["chose:custom_design:standard_designs",
+                                                                                 "reputation>=35"],
+                      "none": ["poor_fix:custom_design", "fork_first:after_walk:walk_meters"]}})
+        _cm(d).update(needs={"all": ["done:walk_connections"]}, preparation="Eerst moet de stroom bekend zijn.")
+        _problem(d)["countermeasures"]["weekly_meeting"] = 1.0
+    _rules(content, mutate)
+    missions = bc.load_content(content)["missions"]["missions"]
+    assert missions[1]["fork"] == {"group": "after_walk", "role": "bottleneck"}
+
+
+@pytest.mark.parametrize("mutate, message", [
+    (lambda d: _mission(d).update(act=9), "'act' must be between 0 and 6"),
+    (lambda d: _mission(d).update(arc="Sector arc"), "'arc' must be an id"),
+    (lambda d: _mission(d).update(chapter=""), "'chapter' must be a non-empty string"),
+    (lambda d: _mission(d).update(debrief_first="Eerst."), "'debrief_first' is for a fork branch"),
+    (lambda d: _mission(d, 2).update(fork={"group": "g", "role": "bottleneck"}), "a fork is between main missions"),
+    (lambda d: _mission(d).update(fork={"group": "g", "role": "maybe"}), "'role' must be one of"),
+    (lambda d: _mission(d).update(fork={"group": "g", "role": "bottleneck"}), "fork 'g' needs one bottleneck and"),
+    (lambda d: _fork_branch(d) or d["missions"]["missions"][-1]["requires"].update(belt=1), "must open together"),
+    (lambda d: _mission(d).update(sets_flags=["design_seen"]), "is not a fact"),
+    (lambda d: _mission(d).update(sets_flags=["done:fix_design"]), "'sets_flags' entries are flag:<name>"),
+    (lambda d: _mission(d).update(rewards={"trust": {"ghosts": 1}}), "trust of unknown team 'ghosts'"),
+    (lambda d: _mission(d).update(rewards={"reputation": 50}), "'reputation' must be between 0 and 20"),
+    (_gated(trust={"intake": 2}), "'intake' must be between -2 and 1"),
+    (_gated(maturity=5), "'maturity' must be between 1 and 4"),
+    (_gated(any_of=["ghost"]), "requires unknown mission 'ghost'"),
+    (_gated(facts={"all": ["done:ghost"]}), "'done:ghost' names no such mission"),
+    (_gated(facts={"all": ["failed:fix_design"]}), "with a deadline"),
+    (_gated(facts={"all": ["chose:custom_design:weekly_meeting"]}), "does not list that countermeasure"),
+    (_gated(facts={"all": ["flag:never_set"]}), "no mission sets that flag"),
+    (_gated(facts={"all": ["fork_first:g:fix_design"]}), "names no branch of that fork"),
+    (_gated(facts={"all": ["skill>=3"]}), "measures are"),
+    (_gated(facts={"all": ["maturity>=7"]}), "measures are"),
+    (_gated(facts={"some": ["done:fix_design"]}), "unknown key.s. 'some'"),
+    (_gated(facts={"all": []}), "'all' must be a non-empty list"),
+    (_gated(reputation=90), "can never unlock"),
+    (_gated(maturity=3), "can never unlock"),
+    (_gated(facts={"all": ["reputation>=90"]}), "can never unlock"),
+    (lambda d: _cm(d).update(needs={"all": ["done:fix_design"]}), "'preparation' must be a non-empty string"),
+    (lambda d: _cm(d).update(preparation="Eerst iets."), "'preparation' is the hint for unmet 'needs'"),
+    (lambda d: _cm(d).update(needs={"all": ["done:walk_connections"]}, preparation="Eerst de stroom."),
+     "no countermeasure without 'needs'"),
+])
+def test_mission_schema_errors_are_caught(rules_dirs, mutate, message):
+    content, _ = rules_dirs
+    with pytest.raises(bc.ContentError, match=message):
+        _rules(content, mutate)
+
+
+def test_a_missed_deadline_may_not_close_the_only_route_of_a_needs(rules_dirs):
+    """A choice a missed deadline can take away for good (its fail_closes)
+    cannot be the only way into an option: setbacks, never game over."""
+    content, _ = rules_dirs
+    def mutate(d):
+        _problem(d)["countermeasures"]["weekly_meeting"] = 1.0
+        _mission(d, 2).update(deadline_days=20, fail="Te laat.", fail_closes=["weekly_meeting"],
+                              goal={"type": "investigate", "problem": "custom_design", "clues": 1})
+        _mission(d, 2)["requires"]["facts"] = {"any": ["chose:custom_design:weekly_meeting"]}
+    with pytest.raises(bc.ContentError, match="a missed deadline can close this route for good"):
+        _rules(content, mutate)

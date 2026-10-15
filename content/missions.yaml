@@ -27,6 +27,23 @@
 #            on the simulation from the day it is accepted until the training
 #            week ends or is skipped (not real numbers)
 #
+# Story and path dependence (mission-system spec §2, C1 and C19):
+# act, chapter, arc   the act (0 training … 6 IT), the chapter title on the
+#            board, a side chain (sector, henk, …)
+# fork       {group, role: bottleneck | non_bottleneck}: main missions that open
+#            together; debrief_first is the debrief when this branch is done first
+# reopen     the briefing when the mission is back because its fix faded
+# requires   also maturity (1-4), reputation (0-100), trust {team: n},
+#            any_of [missions], facts {all, any, none} (facts such as
+#            done:<mission>, chose:<problem>:<cm>, poor_fix:<problem>,
+#            flag:<name>, or measures such as maturity>=3)
+# rewards    also reputation (default: main 5, side 2) and trust {team: n}
+# sets_flags [flag:<name>] facts its completion sets
+#
+# Goal names: `sustain {problem}` is the check-in's (a slipping fix back in
+# use; the game builds these). Holding a KPI for some weeks (catalogue §2.1)
+# will be `hold_kpi`.
+#
 # kind training: the Inwerkweek (docs/superpowers/specs/2026-10-14-training-arc-design.md),
 # five small Starter Kata days before the campaign, in order Monday to Friday
 # (the game shows them as "Inwerkweek — ma: <name>"). Each day opens the next;
