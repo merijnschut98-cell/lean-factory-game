@@ -72,9 +72,9 @@ func test_sources_and_estimates_are_shown_for_sector_entries() -> void:
 	var sourced: ConceptDef = c.concepts["netbeheerder"]
 	assert_true(CodexPanel.source_line(sourced).begins_with("Bron: "), "a source")
 	assert_true(CodexPanel.source_line(sourced).contains(sourced.source_title))
-	var estimated := c.concepts.values().filter(func(x: ConceptDef) -> bool: return not x.estimate.is_empty())
-	assert_false(estimated.is_empty(), "the glossary has an estimate")
-	assert_true(CodexPanel.source_line(estimated[0]).begins_with("Schatting: "))
+	var estimated := ConceptDef.new()  # the glossary may have no estimates left once all are sourced
+	estimated.estimate = "aanname"
+	assert_true(CodexPanel.source_line(estimated).begins_with("Schatting: "))
 	assert_eq(CodexPanel.source_line(c.concepts["PDCA"]), "", "lean entries need no source")
 
 
