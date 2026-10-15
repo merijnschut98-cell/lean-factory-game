@@ -259,6 +259,12 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
     - Not here: the "not the bottleneck" warning at wait steps (QA #21) is the Check agent's.
   - **Wave 3 (tier 2 into content):** ⬜ bring `docs/superpowers/specs/2026-10-15-tier2-missions-draft.md` into `content/`: 22 missions, 11 problems, 36 countermeasures, 13 concepts, and the new fields and goal types it needs. Start only after the sources verifier (edits the draft) and the simulation checker (`docs/qa/tier2-sim-check.md`) have reported. Goal-name clash: the sustain agent's `sustain {problem}` (check-in) vs the catalogue's KPI-holding goal, resolved in C1.
   - **Later waves:** C2–C8, C10–C13, C15–C18, K1–K11 per the spec's §4. C8 (graded decay) was built by the sustain agent, see above.
+- 🔧 **Mission and dialog design (docs only; continuous, the design agent)**. The builder brings these into `content/` once the schema and engine exist.
+  - ✅ Dialog audit and scripts, Acts 0–II: `docs/superpowers/specs/2026-10-15-dialog-scripts-act0-2.md` (the two sample dialogs audited and fixed; 28 scripts with a voice sheet; engine clarifications R-D1–R-D5; 11 questions for Merijn). For D1–D2, D9–D10 of the dialog build.
+  - ✅ Tier-3 missions, content-ready: `docs/superpowers/specs/2026-10-15-tier3-missions-draft.md` (Act IV and the parallel IT chapter: 29 missions, 17 problems, 58 countermeasures, 20 dialogs; 11 questions). For K6, K7, K9.
+  - ✅ Engagement loop: `docs/superpowers/specs/2026-10-15-engagement-loop.md` (session hooks, the Check wait, act cliffhangers, hidden rewards D35–D44, pacing, the "players keep playing" check; 9 questions).
+  - ⬜ Tier-2 draft reviewed with dialogs (`docs/superpowers/specs/2026-10-15-tier2-dialogs.md`).
+  - ⬜ Tier-4 missions, content-ready (Act V and the tier-4 IT chapter; the finale stays a placeholder).
 - ⬜ **Dialog system: build per spec** (`docs/superpowers/specs/2026-10-15-dialog-system-design.md`, tasks D1–D11 in its §13; design ✅ 2026-10-15, Merijn's open questions in its §14). A state-driven conversation: openness, trust, mood and hidden layers (position → interest → concern); MORE PIES listening moves plus advocacy, pressure and blame; a visible meter that shows feeling, never the right reply; commitment vs compliance fed into sustain.
   - ⬜ D1: content schema + validator: `people.yaml` (with C5/K3), `dialogs.yaml`, `dialog_lines.yaml`, vocabularies (needs C1, C19)
   - ⬜ D2: `Dialog` (rules): moves, Δ rules, repetition, the ceiling, layers and the cue, patience, outcomes
