@@ -31,7 +31,11 @@ For the planning session (Fable) and the next build session. PLAN.md stays the s
    - Still open after the merge: `talk_to` mission goals (`talk_outcome()` is ready), coach follow-ups after a talk, check-in cadence limits, the rest of the cast, and all dialog UI.
 2. **El Amrani followed order + containment**: `docs/handoff/wip-mission-followed-order-containment.patch`, the mission builder's stash. Not gate-clean.
    - Missing: the `Discoveries.note_contain` and followed-order triggers, the containment validator, and the content on `fix_digging_damage`.
-3. **Check honesty and debt recovery (QA #4, #5, #6, #21)**: see the section below.
+3. **Check honesty and debt recovery (QA #4, #5, #6, #21)**: merged (c8a93c6).
+   - The Check simulates with and without the fix and passes only if the predicted KPI improves by more than 2%.
+   - Wait steps are scored on lead time.
+   - Debt floors at −€50k, and held fixes pay weekly savings.
+   - Still open: regenerate `docs/qa/autoplay-report.md` (the rerun command is in PLAN.md), and Dutch UI text for `not_moved` and `impact_lead_time_small`.
 
 ## Next work, in order of value
 1. Merge the dialog engine, then build the dialog UI (the meter bar with arrows, the walk-around energy bar, reply chips by move type).
