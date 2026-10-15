@@ -79,6 +79,14 @@ func accept(mission_id: String) -> String:
 	return refused
 
 
+## Drop an active mission; its problem goes back to sleep (clues are kept).
+## "" or Missions.abandon's code: not_active | experiment_running.
+func abandon(mission_id: String) -> String:
+	var refused := missions.abandon(mission_id)
+	_after(0)
+	return refused
+
+
 ## Use a gemba tool at a place ("stream.step"); the tool's minutes pass.
 ## Returns Region.use_tool's {spotted, clues, hidden_signal}, or an error:
 ## unknown_tool | use_ask (a conversation is a question) | unknown_place.

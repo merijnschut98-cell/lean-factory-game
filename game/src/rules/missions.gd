@@ -15,6 +15,11 @@ extends RefCounted
 ## completes it; ignored until the fix wears out, it ends and the problem
 ## comes back through its own mission.
 ##
+## Every open problem belongs to an active mission (problems only arrive
+## through missions): a finished investigation, an abandoned mission or one
+## that ended without its problem solved puts the problem back to sleep; the
+## clues found are kept.
+##
 ## Missions drive the Region (accepting one activates its problem) and read
 ## it to see when a goal is met; the Region does not know about missions.
 
@@ -36,10 +41,10 @@ var region: Region
 var defs: Dictionary[String, MissionDef] = {}
 ## {name, role, stages: {stage: [questions]}}
 var coach: Dictionary
-## Missions the player has accepted, or whose deadline passed: id → {status:
-## active | completed | failed, asks: {stage: count}, seen: {"place|tool":
-## true} (observe goals: what was used while it was active)}. A mission whose
-## fix faded is erased from it, so it is available again.
+## Missions the player has accepted: id → {status: active | completed, asks:
+## {stage: count}, seen: {"place|tool": true} (observe goals: what was used
+## while it was active)}. A mission whose fix faded is erased from it, so it
+## is available again.
 var progress: Dictionary[String, Dictionary] = {}
 ## Missions completed at least once: rewarded, unlocking what follows, and
 ## past any deadline, even when a faded fix reopens them.
@@ -48,6 +53,10 @@ var done_once: Dictionary[String, bool] = {}
 ## Also when each training day started (GameSession keeps it: its weekday
 ## names the day). Kept after the mission ends (small, and harmless).
 var opened_at: Dictionary[String, int] = {}
+## Missions whose deadline passed: their door (fail_closes) is closed for
+## good, but the mission itself can still be done, without a clock, so its
+## problem can still be solved another way (CLAUDE.md §2).
+var failed_once: Dictionary[String, bool] = {}
 ## {type: accepted | completed | failed | reopened | checkin, mission} for the UI (a
 ## new belt is a Region event; tell the player about a faded fix by
 ## `reopened`, not Region's `recurred`).
@@ -63,7 +72,7 @@ func _init(of_region: Region, mission_defs: Array[MissionDef], coach_def: Dictio
 			region.practice[m.goal_problem] = true
 
 
-## available | active | completed | failed | locked
+## available | active | completed | locked (a missed deadline: see failed)
 func status(id: String) -> String:
 	if progress.has(id):
 		return progress[id]["status"]
@@ -101,7 +110,7 @@ func accept(id: String) -> String:
 		return "main_active"
 	if m.kind == "side" and active("side").size() >= MAX_SIDE:
 		return "side_full"
-	if not m.goal_problem.is_empty() and m.goal_type != "sustain":  # a check-in looks at a resolved fix
+	if _holds_problem(m):
 		var st: ProblemState = region.state.get(m.goal_problem)
 		if st == null or st.phase == P.RESOLVED or (st.phase == P.DORMANT and not region.activate(m.goal_problem)):
 			return "problem_unavailable"
@@ -147,13 +156,24 @@ func skip_training() -> void:
 	_clear_week_setup()
 
 
-## Stop an active mission; it becomes available again. Its problem stays.
-func abandon(id: String) -> bool:
-	if status(id) != "active":
-		return false
+## Whether the mission's deadline passed before it was done (its door closed).
+func failed(id: String) -> bool:
+	return failed_once.has(id)
+
+
+## Stop an active mission; it becomes available again and its problem goes
+## back to sleep (the clues found are kept). "" or not_active |
+## experiment_running (an A3's experiment is running or waiting for its Act).
+func abandon(id: String) -> String:
+	if not defs.has(id) or status(id) != "active":
+		return "not_active"
+	var m := defs[id]
+	if _holds_problem(m) and region.state[m.goal_problem].phase in [P.DOING, P.CHECK_READY, P.CHECKED]:
+		return "experiment_running"
 	progress.erase(id)
-	_clear_setup(defs[id])
-	return true
+	_clear_setup(m)
+	_retire_orphans()
+	return ""
 
 
 ## Complete the missions whose goal is met, start the clock of missions with
@@ -166,12 +186,32 @@ func update() -> void:
 		if _goal_met(m):
 			_complete(m)
 	for m: MissionDef in defs.values():
-		if m.deadline_days < 0 or done_once.has(m.id) or not status(m.id) in ["available", "active"]:
+		if m.deadline_days < 0 or done_once.has(m.id) or failed_once.has(m.id) or not status(m.id) in ["available", "active"]:
 			continue
 		if not opened_at.has(m.id):
 			opened_at[m.id] = region.net.time
 		elif region.net.time > opened_at[m.id] + SimCalendar.days(m.deadline_days):
 			_fail(m)
+	_retire_orphans()
+
+
+## Whether the mission's goal brings and holds a problem (a check-in looks
+## at a resolved fix and holds nothing).
+static func _holds_problem(m: MissionDef) -> bool:
+	return not m.goal_problem.is_empty() and m.goal_type != "sustain"
+
+
+## Every open problem belongs to an active mission: one nobody works on any
+## more (an investigation done, a mission dropped) goes back to sleep, so it
+## neither hurts the simulation nor takes one of Region.MAX_OPEN's places.
+func _retire_orphans() -> void:
+	var held := {}
+	for m in active():
+		if _holds_problem(m):
+			held[m.goal_problem] = true
+	for id: String in region.state:
+		if region.state[id].is_open() and not held.has(id):
+			region.deactivate(id)
 
 
 ## A completed solve mission whose problem is dormant again (the fix faded)
@@ -218,8 +258,10 @@ static func checkin_def(p: ProblemDef) -> MissionDef:
 	})
 
 
+## The deadline passed: the door closes for good, the mission stays (active
+## with its work, or on the board without a clock).
 func _fail(m: MissionDef) -> void:
-	progress[m.id] = {"status": "failed", "asks": {}, "seen": {}}
+	failed_once[m.id] = true
 	region.close_countermeasures(m.fail_closes)
 	events.append({"type": "failed", "mission": m.id})
 
@@ -268,7 +310,8 @@ func drain_events() -> Array[Dictionary]:
 
 
 func to_dict() -> Dictionary:
-	return {"progress": progress.duplicate(true), "opened_at": opened_at.duplicate(), "done_once": done_once.keys()}
+	return {"progress": progress.duplicate(true), "opened_at": opened_at.duplicate(), "done_once": done_once.keys(),
+		"failed_once": failed_once.keys()}
 
 
 ## Restore to_dict() output. Returns the mission ids the content no longer
@@ -277,11 +320,13 @@ func load_dict(d: Dictionary) -> Array[String]:
 	progress.clear()
 	opened_at.clear()
 	done_once.clear()
+	failed_once.clear()
 	_rebuild_checkins(d)
-	var once: Variant = d.get("done_once", [])
-	for id: Variant in once if once is Array else []:
-		if defs.has(str(id)):
-			done_once[str(id)] = true
+	for key: String in ["done_once", "failed_once"]:
+		var ids: Variant = d.get(key, [])
+		for id: Variant in ids if ids is Array else []:
+			if defs.has(str(id)):
+				(done_once if key == "done_once" else failed_once)[str(id)] = true
 	var opened := JsonFile.dict_or_empty(d.get("opened_at"))
 	for id: Variant in opened:
 		if defs.has(str(id)):
@@ -292,15 +337,16 @@ func load_dict(d: Dictionary) -> Array[String]:
 		return dropped
 	for id: Variant in saved:
 		var entry: Variant = saved[id]
-		if defs.has(str(id)) and entry is Dictionary and entry.get("status") in ["active", "completed", "failed"]:
+		if defs.has(str(id)) and entry is Dictionary and entry.get("status") == "failed":
+			failed_once[str(id)] = true  # a save from before failed missions came back
+		elif defs.has(str(id)) and entry is Dictionary and entry.get("status") in ["active", "completed"]:
 			progress[str(id)] = {"status": entry["status"], "asks": JsonFile.dict_or_empty(entry.get("asks")),
 				"seen": JsonFile.dict_or_empty(entry.get("seen"))}
 		else:
 			dropped.append(str(id))
 	# A missed deadline closed its doors for good.
-	for id: String in progress:
-		if progress[id]["status"] == "failed":
-			region.close_countermeasures(defs[id].fail_closes)
+	for id: String in failed_once:
+		region.close_countermeasures(defs[id].fail_closes)
 	return dropped
 
 

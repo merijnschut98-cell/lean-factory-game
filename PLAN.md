@@ -229,10 +229,32 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
   - Saved: `standardised`, `wear`, `neglect` per problem; `drift_from`, `routines`; check-ins rebuilt from mission ids; old saves load. GameSession: `audit`, `plan_routine`, `stop_routine`, `routines()`, `sustain_of`, `drift()`, `fade_forecast` adds `recur_days`. New glossary card `leader_standard_work`. Tests: `test_sustain.gd`, check-ins in `test_missions.gd`, session tests.
   - ⬜ UI (another agent owns `game/src/ui/`): the check-in event text (`checkin`, `slipping`), audit and routine actions in the place menu, a fix's health and the drift on the HUD/Check, the Friday card's "De standaard houdt haar vast" now overstates (a standard slows the wear; a routine holds it).
   - ⬜ Later: re-standardise a fix after the Act (today only at the Act); a routine shown as a real recurring visit in the world.
-- ⬜ Reputation as its own measure, apart from budget and XP (Merijn, 2026-10-15): design and build.
-- ⬜ Belts rescaled (Merijn, 2026-10-15): apply to `Progression.BELTS`, `BELT_XP` in `tools/build_content.py` and the missions' `requires.belt`.
+- 🔧 **Mission system, phase 2** (spec `docs/superpowers/specs/2026-10-15-mission-system-and-catalogue-design.md`, task ids from its §4; audit `docs/superpowers/specs/2026-10-15-mission-audit-and-engagement.md`). The mission agent owns these entries and `content/missions.yaml`.
+  - **Wave 1 (rules):**
+    - ✅ C0 (2026-10-15): every open problem belongs to an active mission (QA autoplay #2, #3). A finished investigation and an abandoned mission put their problem back to sleep (clues kept). A running experiment cannot be abandoned. A missed deadline closes its door, but the mission comes back without a clock, so the problem can still be solved (a mission active at the deadline keeps its work). `GameSession.abandon`. `Missions.failed(id)` / `failed_once` replace the `failed` status (old saves convert). Tests: test_missions (orphans, a full board after finished investigations, a running experiment, failed missions survive a save), test_session (abandon).
+      - ⬜ UI (another agent's): `mission_board.gd` still lists status `failed` as "Verlopen". Use `Missions.failed(id)`, and show the `fail` text on a retaken mission (Henk has retired).
+    - ⬜ C14: belts rescaled to 2,000 / 6,000 / 30,000 / 110,000 XP (Merijn, 2026-10-15; QA #18: master black on day 107) in `Progression.BELTS` and `BELT_XP`, with a pacing test.
+    - ⬜ C1: mission schema, wave-1 fields: act, chapter, arc, fork, reopen text, `requires` (maturity, reputation, trust, facts), `rewards` (reputation, trust), `sets_flags`, plus the validator and vocabulary.
+    - ⬜ C19: facts and needs (path dependence, Merijn 2026-10-15): derived facts, one `needs` evaluator, validator pivot check.
+    - ⬜ C9: reputation as its own measure (Merijn, 2026-10-15), under the three deep-thinking principles: long term over short term, respect for people first, always improve.
+    - ⬜ C20: repair side quests for poor fixes (`repair_<problem>`, `rework_fix`).
+    - ⬜ K0: new concepts from spec §3.9, with sources or marked estimates.
+  - **Wave 2 (content, from the audit):**
+    - ⬜ Mission rewrites: briefings with a face and a hook, debriefs that read the play, fork texts that do not spoil the fork.
+    - ⬜ Coach: the extended generic bank, the 22 missing insights, and questions that no longer restart at the same line for every mission (QA #20).
+    - ⬜ Hidden rewards ("Ontdekkingen", 25) and the signals the rules must provide.
+    - ⬜ Correctness fixes:
+      - oliedrukkabel → GPLK;
+      - Henk's transfer as TWI Job Instruction;
+      - a lower silent-meter rate (30% is too high);
+      - `fix_revision_backlog` predicts `wip_age`;
+      - `walk_connections` no longer auto-completes;
+      - throughput vs lead time in the fork and permit debriefs.
+    - Not here: the "not the bottleneck" warning at wait steps (QA #21) is the Check agent's.
+  - **Wave 3 (tier 2 into content):** ⬜ bring `docs/superpowers/specs/2026-10-15-tier2-missions-draft.md` into `content/`: 22 missions, 11 problems, 36 countermeasures, 13 concepts, and the new fields and goal types it needs. Start only after the sources verifier (edits the draft) and the simulation checker (`docs/qa/tier2-sim-check.md`) have reported. Goal-name clash: the sustain agent's `sustain {problem}` (check-in) vs the catalogue's KPI-holding goal, resolved in C1.
+  - **Later waves:** C2–C8, C10–C13, C15–C18, K1–K11 per the spec's §4. C8 (graded decay) was built by the sustain agent, see above.
 - ⬜ Mission UI: briefing and debrief dialogues, the coach conversation, a quest log with 1 + 3 slots (Phase D)
-- ⬜ Missions beyond tier 1; story events (storm week, ACM visit, NTA 8120 audit) as missions
+- ⬜ Missions beyond tier 1; story events (storm week, ACM visit, NTA 8120 audit) as missions (catalogue: the mission-system spec §3; tasks K5–K9)
 - ✅ Never game over (Merijn, 2026-10-12): an experiment can be paid into debt; in debt the region is in a bad period (every team −3 points availability, an estimate; no money to standardise) until the debt is paid off. Tests: paying into debt, costs causing a bad period, the period ending.
 - ✅ Problems can cost money (Merijn: "claims should count"): `cost_per_week` is charged to the budget every day while the problem is open, weakened by a working countermeasure; the Check shows cost before and after; saved. Graafschade €4,250 a week (~5 extra damages × ~€850 direct repair; Wibon evaluation: €38.8M over 46,799 damages in 2022). De revisieberg: daytime outages ×1.05 (estimate from Bouwend Nederland's ~60% "not known what lies where"; marked as an estimate in the content), €425 a week.
 - ✅ Evidence-based connection times (Merijn: "the industry norm"): norm back to 18 weeks (the former legal term, removed Feb 2025; the ACM still uses 18–22 weeks as reference). Real waits were ~40–44 weeks (Netbeheer Nederland 2024–2025), mostly from grid capacity, so the healthy base gets realistic external waits: customer approval 14 d, municipal consent 30 d, grid reinforcement 120 d for 15% of streets. Base: p50 ~7 weeks, ~92% within the norm. Customers call after nine weeks without news, every two weeks (32 calls a week in the base). Content tests and the report measure over 150–180 days so connections can settle.

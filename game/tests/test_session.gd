@@ -105,6 +105,20 @@ func test_missions_cannot_be_accepted_out_of_turn() -> void:
 	assert_eq(s.accept(MISSION), "not_available", "it is already taken")
 
 
+## A player can drop a mission; its problem goes back to sleep (every open
+## problem belongs to a mission), unless an experiment is running.
+func test_a_mission_can_be_abandoned_through_the_facade() -> void:
+	var s := _accepted()
+	assert_eq(s.abandon("no_such_mission"), "not_active")
+	assert_eq(s.abandon(MISSION), "")
+	assert_eq(s.phase_of(PROBLEM), "dormant")
+	assert_eq(s.abandon(MISSION), "not_active")
+	assert_eq(s.accept(MISSION), "", "it can be taken on again")
+	_investigate(s)
+	assert_eq(s.submit_a3(PROBLEM, _a3(s, "standard_designs")), "")
+	assert_eq(s.abandon(MISSION), "experiment_running")
+
+
 func test_the_a3_errors_pass_through() -> void:
 	var s := _campaign()
 	assert_eq(s.submit_a3("no_such_problem", {}), "unknown_problem")
@@ -387,7 +401,11 @@ func test_the_training_week_is_played_end_to_end() -> void:
 ## The practice problem resolved on the given seed, standardised or not.
 func _practice_acted(seed_value: int, cm: String, standardise: bool) -> GameSession:
 	var s := GameSession.new_game(seed_value, Catalog.DATA_DIR, false)
-	s.region.activate(TRAY)
+	# Every open problem belongs to a mission: a plain side mission holds the
+	# practice problem here (the training days would shorten its Check).
+	s.missions.defs["hold_tray"] = MissionDef.from_dict({"id": "hold_tray", "name": "hold", "kind": "side", "tier": 1,
+		"goal": {"type": "solve", "problem": TRAY}, "briefing": "b", "debrief": "d"})
+	assert_eq(s.accept("hold_tray"), "")
 	s.use_tool(DESIGN, "shadow")
 	var problem: ProblemDef = s.region.problems[TRAY]
 	var a3 := {"waste": problem.waste, "cause": Investigation.cause_options(problem, s.region.problem_list())["correct"],

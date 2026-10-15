@@ -101,29 +101,60 @@ func test_the_coach_mostly_asks_and_sometimes_gives_an_insight() -> void:
 	assert_eq(log.ask_coach()["stage"], "understand")
 
 
-func test_a_missed_deadline_fails_the_mission_for_good() -> void:
+## A missed deadline closes a door, not the problem: Henk has left, but the
+## mission comes back without its clock, so the problem can still be solved
+## another way (CLAUDE.md §2; QA autoplay #2).
+func test_a_missed_deadline_closes_a_door_but_the_mission_can_be_taken_again() -> void:
+	var log := _log()
+	log.accept("walk_connections")
+	_walk_connections(log)
+	log.region.advance_days(11)
+	log.update()
+	assert_true(log.failed("henk"))
+	assert_eq(log.drain_events().back(), {"type": "failed", "mission": "henk"})
+	assert_eq(log.status("henk"), "available", "the problem can still be solved")
+	assert_eq(log.accept("henk"), "")
+	log.region.advance_days(30)
+	log.update()
+	assert_eq(log.status("henk"), "active", "no second deadline")
+	log.region.state["incomplete_application"].phase = ProblemState.Phase.RESOLVED
+	log.update()
+	assert_eq(log.status("henk"), "completed")
+
+
+## A deadline is a real event: the clock runs from the moment the mission
+## opens, whether or not the player takes it on. Henk retires anyway. Taken
+## on, the work goes on: the mission stays active and keeps its problem.
+func test_a_deadline_passing_on_an_active_mission_keeps_its_work() -> void:
 	var log := _log()
 	log.accept("walk_connections")
 	_walk_connections(log)
 	assert_eq(log.accept("henk"), "")
+	log.region.use_tool("connections.intake", "documents")
 	log.region.advance_days(11)
 	log.update()
-	assert_eq(log.status("henk"), "failed")
-	assert_false(log.available().any(func(m: MissionDef) -> bool: return m.id == "henk"), "Henk has left")
-	assert_eq(log.drain_events().back(), {"type": "failed", "mission": "henk"})
+	assert_true(log.failed("henk"))
+	assert_eq(log.status("henk"), "active", "the experiment is not thrown away")
+	assert_true(log.region.state["incomplete_application"].is_open(), "still held by its mission")
 
 
-## A deadline is a real event: the clock runs from the moment the mission
-## opens, whether or not the player takes it on. Henk retires anyway.
-func test_a_deadline_runs_from_when_the_mission_opens() -> void:
+func test_failed_missions_survive_save_and_load() -> void:
 	var log := _log()
 	log.accept("walk_connections")
 	_walk_connections(log)
-	assert_eq(log.status("henk"), "available")
 	log.region.advance_days(11)
 	log.update()
-	assert_eq(log.status("henk"), "failed")
-	assert_eq(log.accept("henk"), "not_available")
+	var restored := _log()
+	restored.load_dict(bytes_to_var(var_to_bytes(log.to_dict())))
+	assert_true(restored.failed("henk"))
+	assert_eq(restored.status("henk"), "available")
+	var old := log.to_dict()  # a save from before: status "failed", no failed_once
+	old.erase("failed_once")
+	old["progress"]["henk"] = {"status": "failed"}
+	var legacy := _log()
+	legacy.load_dict(old)
+	assert_true(legacy.failed("henk"))
+	assert_eq(legacy.status("henk"), "available")
 
 
 ## Missing the deadline closes a door: the countermeasures that needed Henk
@@ -145,9 +176,83 @@ func test_a_missed_deadline_closes_the_countermeasures_it_names() -> void:
 func test_abandoning_a_mission_makes_room() -> void:
 	var log := _log()
 	log.accept("walk_connections")
-	assert_true(log.abandon("walk_connections"))
+	assert_eq(log.abandon("walk_connections"), "")
 	assert_eq(log.status("walk_connections"), "available")
-	assert_false(log.abandon("walk_connections"), "not active")
+	assert_eq(log.abandon("walk_connections"), "not_active")
+
+
+# ── Every open problem belongs to a mission (CLAUDE.md §2; QA autoplay #2, #3) ──
+
+## Problems that are open (hurting the simulation) while no active mission
+## names them.
+func _orphans(log: Missions) -> Array:
+	var held := log.active().map(func(m: MissionDef) -> String: return m.goal_problem)
+	return log.region.state.keys().filter(func(id: String) -> bool:
+		return log.region.state[id].is_open() and not id in held)
+
+
+func test_a_finished_investigation_puts_its_problem_back_to_sleep() -> void:
+	var log := _log()
+	log.accept("walk_connections")
+	_walk_connections(log)
+	log.accept("look_at_intake")
+	log.region.use_tool("connections.intake", "documents")
+	log.update()
+	assert_eq(log.status("look_at_intake"), "completed")
+	assert_eq(_orphans(log), [], "no problem stays open without a mission")
+	assert_eq(log.region.state["incomplete_application"].phase, ProblemState.Phase.DORMANT)
+	assert_eq(log.region.key_clues_found("incomplete_application"), 1, "what was found is kept")
+
+
+func test_abandoning_a_mission_puts_its_problem_back_to_sleep() -> void:
+	var log := _log()
+	log.accept("walk_connections")
+	_walk_connections(log)
+	log.accept("fix_revision")
+	assert_eq(log.abandon("fix_revision"), "")
+	assert_eq(_orphans(log), [])
+	assert_eq(log.accept("fix_revision"), "", "it can be taken on again")
+
+
+func test_a_running_experiment_cannot_be_abandoned() -> void:
+	var log := _log()
+	log.accept("walk_connections")
+	_walk_connections(log)
+	log.accept("fix_revision")
+	log.region.state["revision_backlog"].phase = ProblemState.Phase.DOING
+	assert_eq(log.abandon("fix_revision"), "experiment_running")
+	assert_eq(log.status("fix_revision"), "active")
+
+
+## The open-problem limit (Region.MAX_OPEN) is never filled by problems
+## nobody works on: after two finished investigations, a full board of one
+## main and three side missions can still be taken on (QA autoplay #3).
+func test_a_full_board_can_be_taken_on_after_finished_investigations() -> void:
+	var problems := []
+	for i in range(1, 6):
+		var p: Dictionary = RulesFixture.problems()[2].duplicate(true)  # revision_backlog's shape
+		p["id"] = "p%d" % i
+		problems.append(p)
+	var r := RulesFixture.region(50000, 5, problems)
+	var m := func(id: String, kind: String, goal: Dictionary) -> MissionDef:
+		return MissionDef.from_dict({"id": id, "name": id, "kind": kind, "tier": 1, "goal": goal,
+			"briefing": "b", "debrief": "d"})
+	var defs: Array[MissionDef] = [
+		m.call("look_1", "side", {"type": "investigate", "problem": "p1", "clues": 1}),
+		m.call("look_2", "side", {"type": "investigate", "problem": "p2", "clues": 1}),
+		m.call("fix_3", "main", {"type": "solve", "problem": "p3"}),
+		m.call("fix_4", "side", {"type": "solve", "problem": "p4"}),
+		m.call("fix_5", "side", {"type": "solve", "problem": "p5"}),
+	]
+	var log := Missions.new(r, defs, RulesFixture.coach())
+	log.accept("look_1")
+	log.accept("look_2")
+	r.use_tool("connections.revision", "data")
+	log.update()
+	assert_eq([log.status("look_1"), log.status("look_2")], ["completed", "completed"])
+	for id in ["fix_3", "fix_4", "fix_5"]:
+		assert_eq(log.accept(id), "", id)
+	assert_eq(_orphans(log), [])
 
 
 func test_missions_survive_save_and_load() -> void:
@@ -405,7 +510,10 @@ func test_a_check_goal_completes_once_the_check_passed() -> void:
 	log.update()
 	assert_eq(log.status("t_check"), "completed")
 	assert_eq(log.status("t_fix"), "active", "the next day was handed out")
-	log.abandon("t_fix")
+	assert_eq(log.abandon("t_fix"), "experiment_running", "the checked experiment still waits for its Act")
+	st.phase = ProblemState.Phase.RESOLVED
+	log.update()
+	assert_eq(log.status("t_fix"), "completed")
 	assert_eq(log.check_days_for("custom_design"), -1, "no active mission shortens its Check any more")
 
 
