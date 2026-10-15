@@ -318,6 +318,7 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 
 ## Decisions Made
 
+- **Reward deep thinking, under three principles (Merijn, 2026-10-15; now CLAUDE.md §2 mission system).** Long-term thinking outweighs short-term in 95% of cases; respect for people comes first (trust and reputation also measure it: keeping, developing and rewarding talent pays); always improve. Mission rewards and consequences must follow these. Passed to the mission agents.
 - **Sustain or decay, and stagnation is regression (Merijn, 2026-10-15; now CLAUDE.md §2 rules).** Today a fix is either standardised (kept forever) or fades after its countermeasure's `decay_days`. To build: decay graded by the strength of the sustaining habits (standard work, visual management, leader routines, steering KPIs), so even a standardised fix erodes, slowly. Plus a slow drift that sets processes back when the player stops improving.
 - **Answers to Claude's open calls (Merijn, 2026-10-15, multiple choice).**
   - **Kept as built:** "Capaciteit" as a predictable A3 KPI; a 5-day training week, always skippable; orange mission places on the map; the KPI board compares with the habit, so a good choice pays every quarter.

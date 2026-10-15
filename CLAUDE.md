@@ -46,6 +46,10 @@ If the missions are weak, the game is weak. Every mission must:
 
 - **Primary directives:** players learn Lean and the energy sector, and players keep playing (intriguing missions, rewarding play, hidden rewards for notable play).
 - **Secondary:** process management, SAFe, Agile, DevOps, Six Sigma, IT and project management.
+- **Reward deep thinking (Merijn, 2026-10-15).** Problem solving is the way forward, always under three principles, and the rewards must follow them:
+  1. **Long term outweighs short term in 95% of cases.** A quick win that costs the future scores lower than the patient fix; the rare exception must be a real one (e.g. a safety risk that needs containment now).
+  2. **Respect for people comes first.** Trust and reputation also measure respect: keeping, developing and rewarding talent pays; burning people out or blaming them costs.
+  3. **Always improve.** Standing still is sliding back (see sustain-or-decay and stagnation).
 - Always one main mission at a time and at most three side missions.
 - A dedicated agent keeps designing, auditing and improving missions; Claude tells Merijn when that stops.
 
