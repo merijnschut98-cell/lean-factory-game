@@ -291,6 +291,11 @@ func xp() -> int:
 	return region.profile.xp
 
 
+## How the MT sees the CI lead, 0..100 (Reputation).
+func reputation() -> int:
+	return region.reputation.value
+
+
 ## The belt's id (white, yellow, ...).
 func belt() -> String:
 	return Progression.BELTS[Progression.belt_index(xp())]["id"]

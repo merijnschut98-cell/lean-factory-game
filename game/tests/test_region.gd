@@ -255,7 +255,8 @@ func test_debt_brings_a_bad_period_until_it_is_paid_off() -> void:
 	r.grant(0, -2000)
 	assert_true(r.in_bad_period())
 	assert_near(r.net.pools["prep"].availability, before - Region.BAD_PERIOD_AVAILABILITY, 1e-9)
-	assert_eq(r.drain_events(), [{"type": "bad_period", "started": true}])
+	assert_eq(r.drain_events(), [{"type": "bad_period", "started": true},
+		{"type": "reputation", "change": Reputation.BAD_PERIOD, "reason": "bad_period", "value": Reputation.START + Reputation.BAD_PERIOD}])
 	r.grant(0, 500)
 	assert_eq(r.drain_events(), [], "still in debt")
 	r.grant(0, 1000)

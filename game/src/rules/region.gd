@@ -34,6 +34,8 @@ const BAD_PERIOD_AVAILABILITY := 0.03
 const BAD_PERIOD_SOURCE := "region:bad_period"
 const DRIFT_SOURCE := "region:drift"
 const ROUTINE_SOURCE := "routine:"
+const TRUST_MIN := -2
+const TRUST_MAX := 1
 
 var net: Network
 var profile: Profile
@@ -49,9 +51,11 @@ var closed: Dictionary[String, bool] = {}
 ## Problems only the training week opens (Missions marks them): practice,
 ## so they say nothing about the region's maturity.
 var practice: Dictionary[String, bool] = {}
-## Trust per team (pool id), -2..1: below 0 they stop sharing.
+## Trust per team (pool id), TRUST_MIN..TRUST_MAX: below 0 they stop sharing.
 var trust: Dictionary[String, int] = {}
-## {type: activated | check_ready | slipping | recurred | belt | bad_period | kpi_review, ...} for the world and UI.
+## How the MT sees the CI lead (Reputation), next to trust and the budget.
+var reputation := Reputation.new()
+## {type: activated | check_ready | slipping | recurred | belt | bad_period | kpi_review | reputation, ...} for the world and UI.
 var events: Array[Dictionary] = []
 ## The KPI board; its menu comes from use_kpis.
 var board := KpiBoard.new(KpiMenu.new())
@@ -109,6 +113,19 @@ func maturity() -> int:
 
 func trust_of(place: String) -> int:
 	return trust.get(_team(place), 0)
+
+
+## Change a team's trust (bounded); the new trust.
+func change_trust(team: String, delta: int) -> int:
+	trust[team] = clampi(trust.get(team, 0) + delta, TRUST_MIN, TRUST_MAX)
+	return trust[team]
+
+
+## Change the reputation (Reputation's deltas); an event when it moved.
+func earn_reputation(delta: int, reason: String) -> void:
+	var event := reputation.change(delta, reason)
+	if not event.is_empty():
+		events.append(event)
 
 
 # ── Time ────────────────────────────────────────────────────────────────────
@@ -178,6 +195,8 @@ func _add_budget(amount: int) -> void:
 	if in_bad_period() != was_bad:
 		_apply_bad_period()
 		events.append({"type": "bad_period", "started": in_bad_period()})
+		if in_bad_period():
+			earn_reputation(Reputation.BAD_PERIOD, "bad_period")
 
 
 ## The bad period's effect on the teams follows the budget. Idempotent:
@@ -267,14 +286,15 @@ func ask(place: String, question_id: String) -> Dictionary:
 	var before: int = trust.get(team, 0)
 	match kind:
 		"blame":
-			trust[team] = maxi(-2, before - 1)
+			change_trust(team, -1)
+			earn_reputation(Reputation.BLAME, "blame")
 			for p in problem_list():
 				if state[p.id].is_open() and team in _pools_at(p.step):
 					state[p.id].blamed = true
 			profile.learn(["respect_for_people"])
 			return {"kind": kind, "reply": "blame", "trust": trust[team]}
 		"repair":
-			trust[team] = mini(1, before + 1)
+			change_trust(team, 1)
 			profile.learn(["respect_for_people"])
 			return {"kind": kind, "reply": "repair" if before < 0 else "welcome", "trust": trust[team]}
 		"closed":

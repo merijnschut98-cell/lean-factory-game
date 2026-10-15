@@ -1,7 +1,8 @@
 class_name RegionState
 ## Captures and restores a whole Region: its network (NetworkState) and the
 ## rules state (the player's progress, clues found, trust, every problem's
-## place in the PDCA loop and how worn its fix is, the KPI board, the drift and the planned routines). Problems the content no longer has are dropped
+## place in the PDCA loop and how worn its fix is, the KPI board, the drift,
+## the planned routines and the reputation). Problems the content no longer has are dropped
 ## and reported.
 
 const SHAPE := {
@@ -19,7 +20,7 @@ static func capture(r: Region) -> Dictionary:
 		"profile": {"budget": r.profile.budget, "xp": r.profile.xp, "concepts": r.profile.concepts},
 		"observed": r.observed.keys(), "found": r.found.keys(), "trust": r.trust, "problems": problems,
 		"cost_owed": r._cost_owed, "kpi_board": r.board.to_dict(), "drift_from": r.drift_from,
-		"routines": r.routines.keys(),
+		"routines": r.routines.keys(), "reputation": r.reputation.value,
 	}
 
 
@@ -41,6 +42,8 @@ static func restore(r: Region, d: Dictionary) -> Dictionary:
 	for clue_id: Variant in d["found"]:
 		r.found[str(clue_id)] = true
 	r._cost_owed = float(d.get("cost_owed", 0.0))
+	# Saves from before reputation start where a new game does.
+	r.reputation.value = clampi(int(d.get("reputation", Reputation.START)), 0, Reputation.MAX)
 	r._apply_bad_period()
 	# Saves from before drift have none: GameSession starts it when the campaign is open.
 	r.drift_from = maxi(-1, int(d.get("drift_from", -1)))

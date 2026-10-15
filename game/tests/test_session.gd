@@ -42,6 +42,7 @@ func test_a_new_game_starts_on_a_monday_morning_with_the_story_begun() -> void:
 	assert_eq(s.budget(), 50000)
 	assert_eq(s.xp(), 0)
 	assert_eq(s.belt(), "white")
+	assert_eq(s.reputation(), Reputation.START)
 	assert_eq(s.active_missions().size(), 0, "nothing is active until the player accepts it")
 	var mains := s.available_missions().filter(func(m: MissionDef) -> bool: return m.kind == "main")
 	assert_eq(mains.map(func(m: MissionDef) -> String: return m.id), [MISSION],

@@ -47,6 +47,11 @@ var deadline_days := -1
 var fail_closes := PackedStringArray()
 var reward_xp := 0
 var reward_budget := 0
+## Reputation the first completion earns (Reputation: a main mission's or a
+## side mission's by default, none for a training day).
+var reward_reputation := 0
+## Trust per team (pool id → change) the first completion earns.
+var reward_trust: Dictionary[String, int] = {}
 ## Main missions: what the coach may tell at a stage, now and then.
 var insights: Dictionary[String, String] = {}
 var error := ""
@@ -81,6 +86,11 @@ static func from_dict(d: Dictionary) -> MissionDef:
 	var rewards := JsonFile.dict_or_empty(d.get("rewards"))
 	m.reward_xp = int(rewards.get("xp", 0))
 	m.reward_budget = int(rewards.get("budget", 0))
+	var default_reputation: int = {"main": Reputation.MAIN_MISSION, "side": Reputation.SIDE_MISSION}.get(m.kind, 0)
+	m.reward_reputation = int(rewards.get("reputation", default_reputation))
+	var trust := JsonFile.dict_or_empty(rewards.get("trust"))
+	for team: Variant in trust:
+		m.reward_trust[str(team)] = int(trust[team])
 	var insights := JsonFile.dict_or_empty(d.get("insights"))
 	for stage: Variant in insights:
 		m.insights[str(stage)] = str(insights[stage])

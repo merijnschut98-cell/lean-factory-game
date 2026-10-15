@@ -269,6 +269,7 @@ static func checkin_def(p: ProblemDef) -> MissionDef:
 func _fail(m: MissionDef) -> void:
 	failed_once[m.id] = true
 	region.close_countermeasures(m.fail_closes)
+	region.earn_reputation(Reputation.DEADLINE_MISSED, "deadline")
 	events.append({"type": "failed", "mission": m.id})
 
 
@@ -406,10 +407,18 @@ func _goal_met(m: MissionDef) -> bool:
 ## lesson names what the numbers say.
 func _complete(m: MissionDef) -> void:
 	progress[m.id]["status"] = "completed"
+	var score: Dictionary = region.state[m.goal_problem].score if m.goal_type == "solve" else {}
 	if not done_once.has(m.id):
 		done_once[m.id] = true
-		var share := reward_share(region.state[m.goal_problem].score) if m.goal_type == "solve" else 1.0
+		var share := reward_share(score)
 		region.grant(roundi(m.reward_xp * share), roundi(m.reward_budget * share))
+		region.earn_reputation(m.reward_reputation, "mission")
+		for team in m.reward_trust:
+			region.change_trust(team, m.reward_trust[team])
+	else:
+		region.earn_reputation(Reputation.REOPENED, "reopened")  # owning a regression
+	if int(score.get("impact", 0)) >= Reputation.FLOW_IMPACT:
+		region.earn_reputation(Reputation.FLOW_GAIN, "flow")
 	var event := {"type": "completed", "mission": m.id}
 	if m.goal_type == "observe" and m.goal_tool == "queue_count":
 		var queues := {}

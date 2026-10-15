@@ -237,7 +237,7 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
       - Seeds change outcomes (QA #12): a solve mission's reward now follows the problem's PDCA score, `0.5 + 0.5 × total / 25` (at least 0.6; `Missions.reward_share`; audit R1). The validator's reachability pass counts solve missions at that floor. Outcomes differ per seed as soon as the Check agent's measured Check (forecast against a no-fix twin) feeds the score.
     - ⬜ C1: mission schema, wave-1 fields: act, chapter, arc, fork, reopen text, `requires` (maturity, reputation, trust, facts), `rewards` (reputation, trust), `sets_flags`, plus the validator and vocabulary.
     - ⬜ C19: facts and needs (path dependence, Merijn 2026-10-15): derived facts, one `needs` evaluator, validator pivot check.
-    - ⬜ C9: reputation as its own measure (Merijn, 2026-10-15), under the three deep-thinking principles: long term over short term, respect for people first, always improve.
+    - ✅ C9 (2026-10-15): reputation as its own measure (Merijn), 0–100 from 30, `rules/reputation.gd`, held by the Region and saved (old saves at 30), `GameSession.reputation()`, a `reputation` event per change. Under the three principles: a main mission +5, a side +2 (or the mission's `rewards.reputation`), a fix that moved the flow (impact ≥ 4) +3, a faded mission done again +2 (owning a regression; no XP); a blaming question −1, a missed deadline −10, a bad period −5. `rewards.trust {team: n}` too (`Region.change_trust`). Still to come with the deep-thinking rewards: +2 for a fix that holds 180 days (R6).
     - ⬜ C20: repair side quests for poor fixes (`repair_<problem>`, `rework_fix`).
     - ⬜ K0: new concepts from spec §3.9, with sources or marked estimates.
   - **Wave 2 (content, from the audit):**
@@ -418,6 +418,7 @@ Merijn asked me to fix the content review's findings with my own judgement while
 
 ### Claude's calls, pending Merijn (2026-10-15, mission system phase 2)
 Made by the mission agent while building waves 1–3; each is easy to reverse.
+- **Reputation deltas** (all estimates, `rules/reputation.gd`): the catalogue's §2.7 numbers, plus +2 for redoing a faded mission (the audit's "owning a regression"). Reputation is never scaled by the score: the MT sees the mission done; the score pays in XP and budget.
 - **Mission rewards follow the score:** half of a solve mission's XP and budget is for finishing, half for the PDCA score (`0.5 + 0.5 × total / 25`, at least 0.6). The audit proposed `× total / 25`; the floor keeps a poor fix from locking a player below the green belt (the validator checks reachability at 0.6).
 
 ### Claude's calls, pending Merijn (2026-10-15, sustain and drift)
