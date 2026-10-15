@@ -2,7 +2,9 @@ class_name ClueJournal
 extends UiPanel
 ## The clue journal (J): every clue the player has found, grouped by the
 ## place where it was found. It does not say which problem a clue belongs
-## to, nor which clues matter: that is for the player to work out.
+## to, nor which clues matter: that is for the player to work out. Above
+## them, the fixes in use with their health and the stagnation drift, as
+## measured (SustainView): what holds a fix is for the player to find.
 
 
 func _init() -> void:
@@ -45,6 +47,7 @@ static func by_place(s: GameSession) -> Array[Dictionary]:
 
 func refresh() -> void:
 	clear(body)
+	_sustain()
 	var groups := by_place(session)
 	if groups.is_empty():
 		body.add_child(paragraph("Nog niets gevonden. Ga naar de werkvloer en kijk, tel, meet en vraag.", Palette.MUTED))
@@ -52,3 +55,17 @@ func refresh() -> void:
 		var box := add_card(body, g["place"])
 		for c: Clue in g["clues"]:
 			box.add_child(paragraph("• " + c.text))
+
+
+## The fixes in use and the drift; nothing before the first fix or the
+## campaign.
+func _sustain() -> void:
+	var fixes := SustainView.fixes(session)
+	var drift := UiText.drift_line(session.drift())
+	if fixes.is_empty() and drift.is_empty():
+		return
+	var box := add_card(body, "Je verbeteringen", Palette.BLUE_PALE)
+	for id in fixes:
+		SustainView.add_fix(box, session, id, true)
+	if not drift.is_empty():
+		box.add_child(paragraph(drift, Palette.MUTED, UiTheme.SMALL))

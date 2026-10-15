@@ -1,7 +1,8 @@
 class_name Hud
 extends Control
 ## The heads-up display: a top bar (day and time, budget, XP and belt, the
-## active mission), the interaction prompt, the controls,
+## region's setback while it stands still, the active mission), the
+## interaction prompt, the controls,
 ## short messages (toasts, bottom right) when something happens, and cards
 ## (top right: a training day's glossary, the coach's debrief) that stay a
 ## while longer. It is drawn over the panels; toasts and cards hide while one
@@ -16,6 +17,8 @@ var session: GameSession
 var clock_label: Label
 var budget_label: Label
 var xp_label: Label
+## The stagnation drift, once the region slides back (hidden before).
+var drift_label: Label
 var mission_label: Label
 var prompt_label: Label
 var _toasts: VBoxContainer
@@ -50,11 +53,13 @@ func _build_bar() -> void:
 	clock_label = _bar_label("")
 	budget_label = _bar_label("")
 	xp_label = _bar_label("")
+	drift_label = _bar_label("", Palette.SAFETY_ORANGE)
+	drift_label.visible = false
 	mission_label = _bar_label("")
 	mission_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	mission_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	mission_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	for l in [clock_label, budget_label, xp_label, mission_label]:
+	for l in [clock_label, budget_label, xp_label, drift_label, mission_label]:
 		row.add_child(l)
 
 
@@ -124,6 +129,9 @@ func refresh() -> void:
 	clock_label.text = session.clock_text()
 	budget_label.text = "Budget " + UiText.money(session.budget())
 	xp_label.text = "%d XP  ·  %s" % [session.xp(), UiText.belt(session.belt())]
+	var drift := roundi(session.drift()["level"] * 100.0)
+	drift_label.visible = drift > 0
+	drift_label.text = "Achteruitgang %d%%" % drift
 	mission_label.text = mission_text()
 
 

@@ -3,6 +3,13 @@ extends UiPanel
 ## The mission board by the entrance: the active missions with their
 ## briefing, the ones that can be taken on now, and what is done. During the
 ## training week a returning player can skip it (after a confirm line).
+## A missed deadline closes a door, not the mission: it stays open or active
+## without its clock, with a line saying what was lost (Missions.failed).
+
+## Under a mission whose deadline passed: its fail line (Henk has retired),
+## or NO_CLOCK when it has none.
+const EXPIRED := "Verlopen: %s De missie blijft open, nu zonder klok."
+const NO_CLOCK := "de deadline is voorbij."
 
 var message := ""
 ## The skip's confirm line is showing.
@@ -62,6 +69,7 @@ func refresh() -> void:
 	for m in active:
 		current.add_child(label("%s  ·  %s" % [_title(m), _kind(m)], UiTheme.FONT_SIZE, Palette.VOLTANA_BLUE))
 		current.add_child(paragraph(m.briefing))
+		_add_expiry(current, m)
 	if session.in_training():
 		_skip_row()
 	var open := add_card(body, "Beschikbaar")
@@ -73,18 +81,18 @@ func refresh() -> void:
 		text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		text.add_child(label("%s  ·  %s" % [_title(m), _kind(m)], UiTheme.FONT_SIZE, Palette.VOLTANA_BLUE))
 		text.add_child(paragraph(m.briefing, Palette.INK, UiTheme.SMALL))
+		_add_expiry(text, m)
 		row.add_child(text)
 		var take := button("Aannemen", accept.bind(m.id))
 		take.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		row.add_child(take)
 		open.add_child(row)
 	var done := session.missions.defs.values().filter(
-		func(m: MissionDef) -> bool: return session.missions.status(m.id) in ["completed", "failed"])
+		func(m: MissionDef) -> bool: return session.missions.status(m.id) == "completed")
 	if not done.is_empty():
 		var past := add_card(body, "Afgerond")
 		for m: MissionDef in done:
-			var failed := session.missions.status(m.id) == "failed"
-			past.add_child(label(("Verlopen: " if failed else "Voltooid: ") + _title(m), UiTheme.SMALL, Palette.MUTED))
+			past.add_child(label("Voltooid: " + _title(m), UiTheme.SMALL, Palette.MUTED))
 
 
 ## "Inwerkweek overslaan", or its confirm line with yes and no.
@@ -100,6 +108,16 @@ func _skip_row() -> void:
 	row.add_child(confirm)
 	row.add_child(button("Ja, overslaan", confirm_skip))
 	row.add_child(button("Nee, oefenen", cancel_skip))
+
+
+## What a missed deadline closed, under a mission still open or active.
+func _add_expiry(parent: Node, m: MissionDef) -> void:
+	if session.missions.failed(m.id):
+		parent.add_child(paragraph(expiry_note(m), Palette.SAFETY_ORANGE, UiTheme.SMALL))
+
+
+static func expiry_note(m: MissionDef) -> String:
+	return EXPIRED % (m.fail_text if not m.fail_text.is_empty() else NO_CLOCK)
 
 
 func _title(m: MissionDef) -> String:

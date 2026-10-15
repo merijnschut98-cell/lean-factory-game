@@ -309,6 +309,40 @@ func test_using_a_place_frames_its_workstation_and_closing_returns() -> void:
 	office.free()
 
 
+## Where `point` lands on the screen, as a share of its width (0 left, 1
+## right), for a 16:9 screen (the rig's aspect outside a window).
+func _screen_x(rig: CameraRig, point: Vector3) -> float:
+	var cam := rig.transform * rig.camera.transform
+	cam.origin += cam.basis.x * rig.camera.h_offset
+	var local := cam.affine_inverse() * point
+	var half_width := -local.z * tan(deg_to_rad(rig.camera.fov) / 2.0) * 16.0 / 9.0
+	return 0.5 + local.x / half_width / 2.0
+
+
+## The team's menu docks at the right: the framed station sits in the middle
+## of the room left of it, so the desk stays in view. Framed by a held right
+## click (no panel), it stays in the middle of the screen.
+func test_with_the_menu_docked_the_station_is_framed_beside_it() -> void:
+	var office := _office()
+	var rig := office.rig
+	var design := office.interactable(DESIGN)
+	office.player.position = design.position
+	rig.snap()
+	office.interact(design)
+	var share := office.ui.docked_share()
+	assert_between(share, 0.3, 0.4, "the menu covers about a third")
+	for n in 180:
+		rig.update(FRAME)
+	assert_near(_screen_x(rig, office.frame_point(design)), (1.0 - share) / 2.0, 0.01, "in the middle of the free room")
+	office.ui.close_panels()
+	assert_eq(office.ui.docked_share(), 0.0)
+	office.frame(design)
+	for n in 180:
+		rig.update(FRAME)
+	assert_near(_screen_x(rig, office.frame_point(design)), 0.5, 0.01, "no panel: centred")
+	office.free()
+
+
 func _right(pressed: bool) -> InputEventMouseButton:
 	var b := InputEventMouseButton.new()
 	b.button_index = MOUSE_BUTTON_RIGHT

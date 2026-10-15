@@ -290,10 +290,11 @@ func _add_camera() -> void:
 			rig.release())
 
 
-## Frame a station with the camera: its desk, in-tray and board, close by.
+## Frame a station with the camera: its desk, in-tray and board, close by,
+## in the middle of the room a docked panel leaves.
 func frame(target: Interactable) -> void:
 	var ahead := -target.basis.z
-	rig.inspect(frame_point(target), atan2(-ahead.x, -ahead.z))
+	rig.inspect(frame_point(target), atan2(-ahead.x, -ahead.z), ui.docked_share() / 2.0)
 
 
 ## The point the camera looks at when it frames `target`.

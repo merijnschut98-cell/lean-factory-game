@@ -36,6 +36,23 @@ func assert_between(actual: float, low: float, high: float, message: String = ""
 		failures.append("%sexpected %s in [%s, %s]" % [_prefix(message), actual, low, high])
 
 
+## Every text under `root` (a panel), nested labels and buttons included.
+func texts_in(root: Node) -> Array[String]:
+	var out: Array[String] = []
+	var stack: Array[Node] = [root]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		if n is Label or n is Button:
+			out.append(n.text)
+		stack.append_array(n.get_children())
+	return out
+
+
+## Whether any text under `root` contains `part`.
+func shows(root: Node, part: String) -> bool:
+	return texts_in(root).any(func(t: String) -> bool: return t.contains(part))
+
+
 func _prefix(message: String) -> String:
 	return "" if message.is_empty() else message + ": "
 

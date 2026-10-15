@@ -358,22 +358,6 @@ func _training_office() -> Office:
 	return office
 
 
-## Every text on a panel, nested labels and buttons included.
-func _texts(root: Node) -> Array[String]:
-	var out: Array[String] = []
-	var stack: Array[Node] = [root]
-	while not stack.is_empty():
-		var n: Node = stack.pop_back()
-		if n is Label or n is Button:
-			out.append(n.text)
-		stack.append_array(n.get_children())
-	return out
-
-
-func _shows(root: Node, part: String) -> bool:
-	return _texts(root).any(func(t: String) -> bool: return t.contains(part))
-
-
 func test_a_new_game_opens_on_monday_of_the_training_week() -> void:
 	var office: Office = load(SCENE).instantiate()
 	office.seed_value = 11
@@ -382,8 +366,8 @@ func test_a_new_game_opens_on_monday_of_the_training_week() -> void:
 	var ui := office.ui
 	assert_eq(ui.hud.mission_text(), "Missie: Inwerkweek — ma: Rondleiding")
 	office.interact(office.interactable("mission_board"))
-	assert_true(_shows(ui.mission_board, "Inwerkweek — ma: Rondleiding"), "the board shows the day")
-	assert_true(_shows(ui.mission_board, "Inwerkweek overslaan"), "a returning player can skip it")
+	assert_true(shows(ui.mission_board, "Inwerkweek — ma: Rondleiding"), "the board shows the day")
+	assert_true(shows(ui.mission_board, "Inwerkweek overslaan"), "a returning player can skip it")
 	var marked := OfficeMap.mission_places(office.session)
 	assert_true(INTAKE in marked and DESIGN in marked, "the map marks the day's places")
 	_close(office)
@@ -394,15 +378,15 @@ func test_skipping_the_week_asks_first() -> void:
 	var board := office.ui.mission_board
 	office.interact(office.interactable("mission_board"))
 	board.ask_skip()
-	assert_true(_shows(board, "Je mist de oefenweek, het echte werk begint direct."), "the confirm line")
+	assert_true(shows(board, "Je mist de oefenweek, het echte werk begint direct."), "the confirm line")
 	assert_true(office.session.in_training(), "nothing skipped yet")
 	board.cancel_skip()
-	assert_false(_shows(board, "Je mist de oefenweek"))
+	assert_false(shows(board, "Je mist de oefenweek"))
 	board.ask_skip()
 	assert_eq(board.confirm_skip(), "")
 	assert_false(office.session.in_training())
 	assert_true(MISSION in board.listed(), "the campaign is open")
-	assert_false(_shows(board, "Inwerkweek overslaan"), "nothing left to skip")
+	assert_false(shows(board, "Inwerkweek overslaan"), "nothing left to skip")
 	_close(office)
 
 
@@ -457,25 +441,25 @@ func test_the_training_week_is_played_through_the_ui() -> void:
 		"evidence": s.clues_found(TRAY).map(func(c: Clue) -> String: return c.id), "cm": "one_tray_fifo",
 		"prediction": problem.kpi}), "")
 	assert_true(ui.a3_form.message.contains("Over drie dagen"), ui.a3_form.message)
-	assert_true(_shows(ui.a3_form, "Wacht tot de Check (drie dagen)"))
+	assert_true(shows(ui.a3_form, "Wacht tot de Check (drie dagen)"))
 	ui.a3_form.wait()
 	assert_true(ui.a3_form.check().get("passed", false))
-	assert_false(_shows(ui.check_panel, "niet het knelpunt"), "the Check agrees with Wednesday's count")
+	assert_false(shows(ui.check_panel, "niet het knelpunt"), "the Check agrees with Wednesday's count")
 	assert_true(ui.hud.mission_text().contains("ma: Borgen of laten wegzakken"), "Friday's work starts Monday morning")
 	assert_true(ui.hud.clock_label.text.begins_with("ma 19 okt"), ui.hud.clock_label.text)
 	# Friday: Act without the standard, then look a month ahead.
-	assert_false(_shows(ui.check_panel, "Kijk 30 dagen vooruit"), "only after the Act")
+	assert_false(shows(ui.check_panel, "Kijk 30 dagen vooruit"), "only after the Act")
 	ui.check_panel.act(false)
 	assert_false(s.in_training())
-	assert_true(_shows(ui.check_panel, "Kijk 30 dagen vooruit"))
+	assert_true(shows(ui.check_panel, "Kijk 30 dagen vooruit"))
 	var time_before := s.region.net.time
 	var forecast := ui.check_panel.fade_forecast()
 	assert_false(forecast["standardised"])
 	assert_eq(s.region.net.time, time_before, "looking ahead does not move the game on")
 	for text in ["Met borgen", "Zonder borgen", "Jij borgde niet", UiText.kpi(problem.kpi), "Wachtrij bij Werkvoorbereiding"]:
-		assert_true(_shows(ui.check_panel, text), text)
-	assert_true(_shows(ui.check_panel, "Stuurindicator"), "tagged like the Check")
-	assert_false(_shows(ui.check_panel, "Kijk 30 dagen vooruit"), "once")
+		assert_true(shows(ui.check_panel, text), text)
+	assert_true(shows(ui.check_panel, "Stuurindicator"), "tagged like the Check")
+	assert_false(shows(ui.check_panel, "Kijk 30 dagen vooruit"), "once")
 	office.interact(office.interactable("mission_board"))
 	assert_true(MISSION in ui.mission_board.listed(), "the campaign opens")
 	_close(office)
@@ -495,9 +479,9 @@ func test_a_real_problem_has_no_fade_forecast() -> void:
 	ui.a3_form.submit({"waste": "overprocessing", "cause": office.session.cause_options(PROBLEM).find(problem.root_cause),
 		"evidence": office.session.clues_found(PROBLEM).map(func(c: Clue) -> String: return c.id),
 		"cm": "standard_designs", "prediction": "throughput"})
-	assert_true(_shows(ui.a3_form, "Wacht tot de Check (twee weken)"))
+	assert_true(shows(ui.a3_form, "Wacht tot de Check (twee weken)"))
 	ui.a3_form.wait()
 	ui.a3_form.check()
 	ui.check_panel.act(true)
-	assert_false(_shows(ui.check_panel, "Kijk 30 dagen vooruit"))
+	assert_false(shows(ui.check_panel, "Kijk 30 dagen vooruit"))
 	_close(office)
