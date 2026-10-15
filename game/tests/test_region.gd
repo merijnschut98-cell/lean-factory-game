@@ -196,7 +196,9 @@ func test_an_unstandardised_fix_comes_back() -> void:
 	assert_true(r.drain_events().any(func(e: Dictionary) -> bool: return e["type"] == "recurred"))
 
 
-func test_a_standardised_fix_stays() -> void:
+## Standard work keeps the gain well past the countermeasure's own decay (it
+## still wears, slowly: test_sustain.gd).
+func test_a_standardised_fix_outlasts_its_decay() -> void:
 	var r := _region()
 	r.activate("custom_design")
 	_investigate(r)
@@ -228,7 +230,8 @@ func test_an_active_problem_costs_money_every_week() -> void:
 	assert_eq(r.weekly_cost(), 0.0, "resolved: no more cost")
 	var budget := r.profile.budget
 	r.advance_days(7)
-	assert_eq(r.profile.budget, budget)
+	# A standardised fix wears slowly (Sustain): a little of the cost creeps back.
+	assert_between(budget - r.profile.budget, 1, 70, "a week of a slowly wearing fix")
 
 
 

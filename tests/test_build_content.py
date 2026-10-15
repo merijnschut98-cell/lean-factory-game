@@ -343,6 +343,13 @@ def test_sample_problems_are_valid(rules_dirs):
     assert docs["problems_tier1"]["problems"][0]["id"] == "custom_design"
 
 
+def test_a_countermeasure_can_sustain_its_stream(rules_dirs):
+    content, _ = rules_dirs
+    _rules(content, lambda d: _cm(d).update(sustains=True))
+    docs = bc.load_content(content)
+    assert docs["countermeasures"]["countermeasures"][0]["sustains"] is True
+
+
 def test_a_countermeasure_can_unlock_the_kpi_board(rules_dirs):
     content, _ = rules_dirs
     _rules(content, lambda d: _cm(d).update(unlocks="kpi_board"))
@@ -389,6 +396,7 @@ def test_a_countermeasure_can_unlock_the_kpi_board(rules_dirs):
     (lambda d: _problem(d).update(teach=["flow"]), "unknown key.s. 'teach'"),
     (lambda d: _cm(d).update(decay=30), "unknown key.s. 'decay'"),
     (lambda d: _cm(d).update(unlocks="board"), "'unlocks' must be one of"),
+    (lambda d: _cm(d).update(sustains="yes"), "'sustains' must be true or false"),
     (lambda d: _problem(d).update(cost_per_week=-5), "'cost_per_week' must be >= 0"),
     (lambda d: _problem(d).update(cost_per_week=99.5), "'cost_per_week' must be an integer"),
     (lambda d: d["countermeasures"]["countermeasures"].append(dict(_cm(d))), "duplicate countermeasures ids"),

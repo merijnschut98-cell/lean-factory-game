@@ -6,7 +6,7 @@ extends RefCounted
 ## the player's belt, with a goal the rules can check.
 
 const KINDS := ["main", "side", "training"]
-const GOALS := ["walk", "investigate", "solve", "observe", "check"]
+const GOALS := ["walk", "investigate", "solve", "observe", "check", "sustain"]
 
 var id: String
 var name: String
@@ -20,7 +20,8 @@ var debrief: String
 ## Said when the deadline passes (e.g. Henk has retired).
 var fail_text: String
 ## walk {stream} · investigate {problem, clues} · solve {problem} ·
-## observe {places, tool?, uses?} · check {problem}
+## observe {places, tool?, uses?} · check {problem} · sustain {problem}
+## (its fix back in use: audited, or held by a routine; Missions' check-ins)
 var goal_type: String
 var goal_stream: String
 var goal_problem: String

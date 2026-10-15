@@ -9,6 +9,12 @@ extends RefCounted
 ## one day at a time, each handing out the next when done. Training days take
 ## no side slot and the coach helps with them; a returning player skips them.
 ##
+## A standardised fix that slips (Sustain.SLIPPING_HEALTH) brings a check-in:
+## a small side mission (Terugval) to go and look, built here, never a free
+## problem (Merijn, 2026-10-15). An audit at the place or a routine there
+## completes it; ignored until the fix wears out, it ends and the problem
+## comes back through its own mission.
+##
 ## Missions drive the Region (accepting one activates its problem) and read
 ## it to see when a goal is met; the Region does not know about missions.
 
@@ -21,6 +27,10 @@ const P := ProblemState.Phase
 const STAGES := ["go_see", "understand", "experiment", "reflect"]
 ## The effects source of a training day's setup.
 const SETUP_SOURCE := "setup:"
+## Check-in missions are named after their problem.
+const CHECKIN_PREFIX := "terugval_"
+## ESTIMATE: a small reward, like a side mission's smallest (an hour's work).
+const CHECKIN_XP := 100
 
 var region: Region
 var defs: Dictionary[String, MissionDef] = {}
@@ -38,7 +48,7 @@ var done_once: Dictionary[String, bool] = {}
 ## Also when each training day started (GameSession keeps it: its weekday
 ## names the day). Kept after the mission ends (small, and harmless).
 var opened_at: Dictionary[String, int] = {}
-## {type: accepted | completed | failed | reopened, mission} for the UI (a
+## {type: accepted | completed | failed | reopened | checkin, mission} for the UI (a
 ## new belt is a Region event; tell the player about a faded fix by
 ## `reopened`, not Region's `recurred`).
 var events: Array[Dictionary] = []
@@ -91,7 +101,7 @@ func accept(id: String) -> String:
 		return "main_active"
 	if m.kind == "side" and active("side").size() >= MAX_SIDE:
 		return "side_full"
-	if not m.goal_problem.is_empty():
+	if not m.goal_problem.is_empty() and m.goal_type != "sustain":  # a check-in looks at a resolved fix
 		var st: ProblemState = region.state.get(m.goal_problem)
 		if st == null or st.phase == P.RESOLVED or (st.phase == P.DORMANT and not region.activate(m.goal_problem)):
 			return "problem_unavailable"
@@ -151,6 +161,7 @@ func abandon(id: String) -> bool:
 ## The game loop calls it after every Region action and time step.
 func update() -> void:
 	_reopen_faded()
+	_sync_checkins()
 	for m in active():
 		if _goal_met(m):
 			_complete(m)
@@ -174,6 +185,37 @@ func _reopen_faded() -> void:
 				and region.state[m.goal_problem].phase == P.DORMANT:
 			progress.erase(id)
 			events.append({"type": "reopened", "mission": id})
+
+
+## Open a check-in for every standardised fix that slipped (no routine
+## holding it; again once an earlier one is done), and end those whose fix
+## wore out: its own mission reopens instead.
+func _sync_checkins() -> void:
+	for id: String in defs.keys():
+		if id.begins_with(CHECKIN_PREFIX) and region.state[defs[id].goal_problem].phase != P.RESOLVED:
+			defs.erase(id)
+			progress.erase(id)
+	for p: ProblemDef in region.problem_list():
+		var st: ProblemState = region.state[p.id]
+		var id := CHECKIN_PREFIX + p.id
+		if st.phase != P.RESOLVED or not st.standardised or region.practice.has(p.id) \
+				or region.held_by_routine(p.id) or region.health(p.id) >= Sustain.SLIPPING_HEALTH \
+				or (defs.has(id) and status(id) != "completed"):
+			continue
+		defs[id] = checkin_def(p)
+		progress.erase(id)
+		events.append({"type": "checkin", "mission": id})
+
+
+## The check-in mission for a slipping fix (Dutch game text).
+static func checkin_def(p: ProblemDef) -> MissionDef:
+	return MissionDef.from_dict({
+		"id": CHECKIN_PREFIX + p.id, "name": "Terugval: " + p.name, "kind": "side", "tier": p.tier,
+		"briefing": "De verbetering bij \"%s\" zakt weg. Ga kijken of de standaard nog gevolgd wordt: doe een audit op de plek, of plan er een vaste routine." % p.name,
+		"debrief": "De standaard wordt weer gevolgd. Een verbetering die niemand onderhoudt, slijt.",
+		"goal": {"type": "sustain", "problem": p.id}, "rewards": {"xp": CHECKIN_XP, "budget": 0},
+		"teaches": ["leader_standard_work"],
+	})
 
 
 func _fail(m: MissionDef) -> void:
@@ -235,6 +277,7 @@ func load_dict(d: Dictionary) -> Array[String]:
 	progress.clear()
 	opened_at.clear()
 	done_once.clear()
+	_rebuild_checkins(d)
 	var once: Variant = d.get("done_once", [])
 	for id: Variant in once if once is Array else []:
 		if defs.has(str(id)):
@@ -261,6 +304,18 @@ func load_dict(d: Dictionary) -> Array[String]:
 	return dropped
 
 
+## Check-ins are built, not content: a save's check-in ids (in progress or
+## done_once) are built again for problems the content still has.
+func _rebuild_checkins(d: Dictionary) -> void:
+	var ids: Array = JsonFile.dict_or_empty(d.get("progress")).keys()
+	var once: Variant = d.get("done_once", [])
+	ids.append_array(once if once is Array else [])
+	for id: Variant in ids:
+		var problem_id := str(id).trim_prefix(CHECKIN_PREFIX)
+		if str(id).begins_with(CHECKIN_PREFIX) and region.problems.has(problem_id):
+			defs[str(id)] = checkin_def(region.problems[problem_id])
+
+
 func _unlocked(m: MissionDef) -> bool:
 	if Progression.belt_index(region.profile.xp) < m.requires_belt:
 		return false
@@ -283,6 +338,8 @@ func _goal_met(m: MissionDef) -> bool:
 			return region.state[m.goal_problem].phase == P.RESOLVED
 		"check":
 			return region.state[m.goal_problem].phase in [P.CHECKED, P.RESOLVED]
+		"sustain":
+			return region.held_by_routine(m.goal_problem) or region.health(m.goal_problem) >= Sustain.SLIPPING_HEALTH
 		"observe":
 			var seen: Dictionary = progress[m.id]["seen"]
 			for place in m.goal_places:

@@ -167,7 +167,7 @@ func test_missions_survive_save_and_load() -> void:
 	assert_eq(_log().load_dict(saved), ["ghost"], "missions the content no longer has are dropped")
 
 
-## A fix that fades brings its problem back through its mission, never on
+## A fix that wears out brings its problem back through its mission, never on
 ## its own (CLAUDE.md §2). Doing it again earns no second reward.
 func test_a_faded_fix_reopens_its_mission() -> void:
 	var log := _log()
@@ -175,8 +175,11 @@ func test_a_faded_fix_reopens_its_mission() -> void:
 	_walk_connections(log)
 	log.accept("fix_design")
 	var r := log.region
+	# A fix with no sustaining habit, neglected for 25 of its 30 days (standard_designs).
 	r.state["custom_design"].phase = ProblemState.Phase.RESOLVED
-	r.state["custom_design"].recur_at = r.net.time + SimCalendar.days(5)
+	r.state["custom_design"].a3 = {"cm": "standard_designs"}
+	r.state["custom_design"].neglect = 25.0
+	r.state["custom_design"].wear = pow(25.0 / 30.0, 2)
 	log.update()
 	assert_eq(log.status("fix_design"), "completed")
 	r.advance_days(6)
@@ -193,6 +196,84 @@ func test_a_faded_fix_reopens_its_mission() -> void:
 	assert_eq(r.profile.budget, budget, "no second reward")
 
 
+## A standardised fix that slips gets a "have a look" side mission (Terugval),
+## never a free problem (Merijn, 2026-10-15). An audit at the place, or a
+## planned routine there, completes it.
+func _slipping_fix(log: Missions, standardised: bool = true) -> Region:
+	var r := log.region
+	var st: ProblemState = r.state["custom_design"]
+	st.phase = ProblemState.Phase.RESOLVED
+	st.a3 = {"cm": "standard_designs"}
+	st.standardised = standardised
+	st.wear = 0.5  # health 0.71: below Sustain.SLIPPING_HEALTH
+	st.neglect = 40.0
+	return r
+
+
+func test_a_slipping_standardised_fix_opens_a_check_in() -> void:
+	var log := _log()
+	var r := _slipping_fix(log)
+	var id := Missions.CHECKIN_PREFIX + "custom_design"
+	log.update()
+	assert_eq(log.status(id), "available", "a mission to have a look")
+	assert_eq(log.defs[id].kind, "side", "small, and the coach stays out of it")
+	assert_eq(log.defs[id].goal_problem, "custom_design")
+	assert_eq(log.drain_events(), [{"type": "checkin", "mission": id}])
+	assert_eq(r.state["custom_design"].phase, ProblemState.Phase.RESOLVED, "no problem switches on")
+	assert_eq(log.accept(id), "")
+	log.update()
+	assert_eq(log.status(id), "active")
+	r.audit("connections.design")
+	log.update()
+	assert_eq(log.status(id), "completed", "the standard is back in use")
+	var budget := r.profile.budget
+	r.state["custom_design"].wear = 0.5  # it slips again later
+	log.update()
+	assert_eq(log.status(id), "available", "the check-in comes back when it is needed again")
+	assert_eq(log.accept(id), "")
+	assert_eq(r.plan_routine("connections.design"), "")
+	log.update()
+	assert_eq(log.status(id), "completed", "a planned routine holds it too")
+	assert_eq(r.profile.budget, budget, "rewarded once")
+
+
+func test_an_ignored_check_in_ends_with_its_problem_back_through_the_main_mission() -> void:
+	var log := _log()
+	log.accept("walk_connections")
+	_walk_connections(log)
+	log.accept("fix_design")
+	var r := _slipping_fix(log)
+	log.update()
+	var id := Missions.CHECKIN_PREFIX + "custom_design"
+	assert_eq(log.status("fix_design"), "completed")
+	assert_eq(log.accept(id), "")
+	r.advance_days(30)  # nobody looks: 40 days of neglect on a 65-day life become 70
+	log.update()
+	assert_eq(r.state["custom_design"].phase, ProblemState.Phase.DORMANT)
+	assert_false(log.defs.has(id), "the check-in is over")
+	assert_false(log.active("side").any(func(m: MissionDef) -> bool: return m.id == id))
+	assert_eq(log.status("fix_design"), "available", "the problem comes back through its own mission")
+
+
+func test_an_unstandardised_fix_gets_no_check_in() -> void:
+	var log := _log()
+	_slipping_fix(log, false)
+	log.update()
+	assert_false(log.defs.has(Missions.CHECKIN_PREFIX + "custom_design"), "nothing to audit: it fades back to its mission")
+
+
+func test_a_check_in_survives_a_save() -> void:
+	var log := _log()
+	_slipping_fix(log)
+	log.update()
+	var id := Missions.CHECKIN_PREFIX + "custom_design"
+	log.accept(id)
+	var restored := RulesFixture.mission_log(log.region)
+	assert_eq(restored.load_dict(log.to_dict()), [])
+	assert_eq(restored.status(id), "active")
+	assert_eq(restored.defs[id].name, log.defs[id].name)
+
+
 ## A reopened mission has no deadline: Henk passed on his knowledge before the
 ## fix faded, so nothing closes now.
 func test_a_reopened_mission_runs_no_deadline() -> void:
@@ -201,8 +282,11 @@ func test_a_reopened_mission_runs_no_deadline() -> void:
 	_walk_connections(log)
 	assert_eq(log.accept("henk"), "")
 	var r := log.region
+	# poka_yoke_form is built in: it lasts about a year of neglect; this one has 20 days left.
 	r.state["incomplete_application"].phase = ProblemState.Phase.RESOLVED
-	r.state["incomplete_application"].recur_at = r.net.time + SimCalendar.days(20)
+	r.state["incomplete_application"].a3 = {"cm": "poka_yoke_form"}
+	r.state["incomplete_application"].neglect = Sustain.STRUCTURAL_DAYS - 20.0
+	r.state["incomplete_application"].wear = pow((Sustain.STRUCTURAL_DAYS - 20.0) / Sustain.STRUCTURAL_DAYS, 2)
 	log.update()
 	assert_eq(log.status("henk"), "completed")
 	r.advance_days(21)

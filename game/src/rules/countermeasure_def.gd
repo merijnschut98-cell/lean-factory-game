@@ -18,8 +18,12 @@ var team_hours: Dictionary[String, float] = {}
 var effects: Array = []
 ## Effectiveness at a maturity gap of 0, 1 and 2: {full, reduced, minimal}.
 var multipliers: Dictionary = {}
-## Days until an unstandardised fix fades (-1: it does not fade).
+## Days an unsustained fix lasts (see Sustain.base_days; -1: built in, it
+## lasts about a year).
 var decay_days := -1
+## A board or dashboard the teams look at daily: while it holds, it helps
+## sustain the other fixes in its value stream (Sustain, visual_management).
+var sustains := false
 ## What it opens in the game once it works: "" or "kpi_board" (the quarterly
 ## KPI review of the departments).
 var unlocks := ""
@@ -47,6 +51,10 @@ static func from_dict(d: Dictionary) -> CountermeasureDef:
 	c.effects = d.get("effects", []).duplicate(true)
 	c.decay_days = int(d["decay_days"]) if d.get("decay_days") != null else -1
 	c.unlocks = str(d.get("unlocks", ""))
+	if not d.get("sustains", false) is bool:
+		c.error = "countermeasure %s: 'sustains' must be true or false" % c.id
+		return c
+	c.sustains = d.get("sustains", false)
 	if not c.unlocks.is_empty() and not UNLOCKS.has(c.unlocks):
 		c.error = "countermeasure %s: 'unlocks' must be one of %s" % [c.id, UNLOCKS]
 	return c

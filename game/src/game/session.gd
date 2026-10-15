@@ -162,6 +162,35 @@ func act(problem_id: String, standardise: bool) -> Dictionary:
 	return score.duplicate(true) if not score.is_empty() else {"error": "not_checked"}
 
 
+## A gemba audit of the standard at a place (a leader routine, no mission
+## needed); Sustain.AUDIT_MINUTES pass. Standardised fixes there are back in
+## full use. Returns Region.audit's {refreshed, no_standard} (problem ids), or
+## an error: unknown_place.
+func audit(place: String) -> Dictionary:
+	if not _is_place(place):
+		return {"error": "unknown_place"}
+	var result := region.audit(place)
+	_after(Sustain.AUDIT_MINUTES)
+	return result
+
+
+## Plan a recurring routine at a place (leader standard work, no mission
+## needed): the team gives Sustain.ROUTINE_HOURS_PER_WEEK a week, and
+## standardised fixes there stop wearing while it runs. "" or Region's code:
+## unknown_place | no_team | planned.
+func plan_routine(place: String) -> String:
+	var refused := region.plan_routine(place)
+	_after(0)
+	return refused
+
+
+## Stop a routine at a place. "" or not_planned.
+func stop_routine(place: String) -> String:
+	var refused := region.stop_routine(place)
+	_after(0)
+	return refused
+
+
 ## The coach's reply (Missions.ask_coach): about the main mission only.
 func ask_coach(mission_id: String = "") -> Dictionary:
 	var reply := missions.ask_coach(mission_id)
@@ -188,7 +217,9 @@ func skip_training() -> String:
 ## not move on. Returns {problem, kpi (the one the problem names), place,
 ## standardised (the player's Act), fade_days, held, faded (each
 ## Region.measures at the end)}, or an error: bad_days | unknown_problem |
-## not_resolved (no Act yet) | a copy's error.
+## not_resolved (no Act yet) | a copy's error. fade_days: the days the fix
+## lasts with no sustaining habit (Sustain.base_days, capped at `days`);
+## recur_days: when the fix itself recurs at today's habits (days_to_recur).
 func fade_forecast(days: int, problem_id: String = TRAINING_PROBLEM) -> Dictionary:
 	if days < 1 or days > MAX_FORECAST_DAYS:
 		return {"error": "bad_days"}
@@ -210,7 +241,7 @@ func fade_forecast(days: int, problem_id: String = TRAINING_PROBLEM) -> Dictiona
 		twin.clear_effects(problem_source)
 		twin.set_effects(cm_source, fixed.get(cm_source, []))
 		runs[run] = twin
-	var fade_days := clampi(cm.decay_days, 0, days) if cm.decay_days >= 0 else 0
+	var fade_days := mini(roundi(Sustain.base_days(cm)), days)
 	var faded: Network = runs["faded"]
 	faded.advance_days(fade_days)
 	faded.clear_effects(cm_source)
@@ -218,8 +249,8 @@ func fade_forecast(days: int, problem_id: String = TRAINING_PROBLEM) -> Dictiona
 	faded.advance_days(days - fade_days)
 	runs["held"].advance_days(days)
 	return {
-		"problem": problem_id, "kpi": p.kpi, "place": p.step, "standardised": st.recur_at < 0,
-		"fade_days": fade_days,
+		"problem": problem_id, "kpi": p.kpi, "place": p.step, "standardised": st.standardised,
+		"fade_days": fade_days, "recur_days": region.days_to_recur(problem_id),
 		"held": Region.measures(runs["held"], p.step), "faded": Region.measures(faded, p.step),
 	}
 
@@ -331,6 +362,38 @@ func countermeasures() -> Array[CountermeasureDef]:
 	return region.available_countermeasures()
 
 
+## How a resolved fix is held (for the Check, the HUD, a place's panel):
+## {strength 0..1, mechanisms (standard_work | visual_management | kpis),
+## standardised, health (1 fresh, 0.5 at recurrence), neglect_days (since
+## the Act, the last audit or routine), life_days (of neglect it lasts at
+## today's habits), routine (a planned routine holds it), days_to_recur (INF
+## while a routine holds it)}; {} when the problem is not resolved.
+func sustain_of(problem_id: String) -> Dictionary:
+	var st: ProblemState = region.state.get(problem_id)
+	if st == null or st.phase != ProblemState.Phase.RESOLVED:
+		return {}
+	var out := region.sustain(problem_id)
+	out.merge({"standardised": st.standardised, "health": region.health(problem_id), "neglect_days": st.neglect,
+		"life_days": region.life_days(problem_id), "routine": region.held_by_routine(problem_id),
+		"days_to_recur": region.days_to_recur(problem_id)})
+	return out
+
+
+## The places with a planned routine.
+func routines() -> Array[String]:
+	var out: Array[String] = []
+	out.assign(region.routines.keys())
+	return out
+
+
+## Stagnation drift (for the HUD): {level 0..1, stagnant_days (since the last
+## resolved improvement), grace_days (no drift before), started (the campaign
+## is open)}.
+func drift() -> Dictionary:
+	return {"level": region.drift_level(), "stagnant_days": region.stagnant_days(),
+		"grace_days": Sustain.DRIFT_GRACE_DAYS, "started": region.drift_from >= 0}
+
+
 # ── Internals ───────────────────────────────────────────────────────────────
 
 func _is_place(place: String) -> bool:
@@ -339,7 +402,7 @@ func _is_place(place: String) -> bool:
 
 ## Time passes, then the missions notice what happened. A training day just
 ## handed out starts on its own morning; once the week is over the story's
-## walk counts as done.
+## walk counts as done and stagnation starts to count (also for an old save).
 func _after(minutes: int) -> void:
 	if minutes > 0:
 		region.advance(minutes)
@@ -350,6 +413,8 @@ func _after(minutes: int) -> void:
 		# office cannot walk the whole stream; Monday's walk stands in for it).
 		missions.progress[STORY_MISSION] = {"status": "completed", "asks": {}, "seen": {}}
 		missions.done_once[STORY_MISSION] = true
+	if not missions.in_training():
+		region.start_drift()
 
 
 ## A training day handed out starts on its own morning (Monday to Friday of

@@ -426,7 +426,9 @@ func test_a_standardised_practice_fix_still_gets_its_counterfactual() -> void:
 	var forecast := s.fade_forecast(30)
 	assert_true(forecast["standardised"], "the player's Act is reported")
 	assert_true(forecast["faded"]["capacity"] < forecast["held"]["capacity"], "what the standard saves is shown too")
-	assert_eq(s.region.state[TRAY].recur_at, -1, "standard work keeps the gain in the game itself")
+	# Standard work slows the wear in the game itself (but even a standard erodes, Sustain).
+	assert_true(forecast["recur_days"] > s.region.countermeasures["tray_labels"].decay_days * 2.0)
+	assert_eq(s.sustain_of(TRAY)["mechanisms"], ["standard_work"])
 
 
 func test_a_fade_forecast_refuses_bad_input_without_spending_time() -> void:
@@ -466,3 +468,47 @@ func test_training_days_are_numbered_monday_to_friday() -> void:
 	assert_eq(s.training_day(MISSION), -1, "not a training day")
 	assert_true(s.is_practice(TRAY))
 	assert_false(s.is_practice(PROBLEM))
+
+
+# ── Sustain and drift (CLAUDE.md §2) ────────────────────────────────────────
+
+## Stagnation counts from the campaign's start, not during the training week.
+func test_drift_starts_with_the_campaign() -> void:
+	assert_false(_training().drift()["started"], "the training week is practice")
+	var s := _campaign()
+	assert_eq(s.drift(), {"level": 0.0, "stagnant_days": 0.0, "grace_days": Sustain.DRIFT_GRACE_DAYS, "started": true})
+	s.region.advance_days(Sustain.DRIFT_GRACE_DAYS + 73)
+	assert_near(s.drift()["level"], 0.2, 0.01, "standing still sets the region back")
+
+
+## A gemba audit is a leader routine: no mission needed, an hour at the place.
+func test_an_audit_takes_an_hour_at_a_place() -> void:
+	var s := _campaign()
+	var before := s.region.net.time
+	assert_eq(s.audit(DESIGN), {"refreshed": [], "no_standard": []}, "nothing resolved there yet")
+	assert_eq(s.region.net.time - before, Sustain.AUDIT_MINUTES)
+	assert_eq(s.audit("nowhere.step"), {"error": "unknown_place"})
+	assert_eq(s.sustain_of(PROBLEM), {}, "only a resolved fix is held")
+
+
+func test_a_held_fix_reports_how_it_is_sustained() -> void:
+	var s := _practice_acted(11, "one_tray_fifo", false)
+	var held := s.sustain_of(TRAY)
+	assert_eq([held["strength"], held["mechanisms"], held["standardised"], held["health"]], [0.0, [], false, 1.0])
+	assert_near(held["days_to_recur"], s.region.countermeasures["one_tray_fifo"].decay_days, 0.01,
+		"no habits: it lasts its decay_days, the Friday lesson's number")
+	assert_eq(s.fade_forecast(30)["recur_days"], held["days_to_recur"])
+
+
+## A routine is planned at a place once and holds the standardised fixes there.
+func test_a_routine_is_planned_and_stopped_at_a_place() -> void:
+	var s := _practice_acted(11, "tray_labels", true)
+	assert_eq(s.plan_routine(DESIGN), "")
+	assert_eq(s.plan_routine(DESIGN), "planned")
+	assert_eq(s.routines(), [DESIGN])
+	var held := s.sustain_of(TRAY)
+	assert_true(held["routine"])
+	assert_eq(held["days_to_recur"], INF, "it does not wear while the routine runs")
+	assert_eq(s.stop_routine(DESIGN), "")
+	assert_eq(s.stop_routine(DESIGN), "not_planned")
+	assert_eq(s.plan_routine("nowhere.step"), "unknown_place")

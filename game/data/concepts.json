@@ -50,6 +50,14 @@
   },
   {
    "category": "lean",
+   "example": "De teamleider van Werkvoorbereiding loopt elke week langs de bak met dossiers en vraagt of iedereen nog het oudste dossier eerst pakt.",
+   "id": "leader_standard_work",
+   "name": "Standaardwerk voor leidinggevenden",
+   "short": "Een vaste routine waarin leidinggevenden op de gemba nagaan of de standaard nog werkt.",
+   "text": "Een verbetering die niemand onderhoudt, slijt: onder druk sluipt de oude gewoonte terug. Leidinggevenden lopen daarom vaste rondes (een gemba-audit) en vragen of de standaard nog gevolgd wordt en nog klopt. Wijkt het werk af, dan zoek je samen naar de oorzaak in het proces, niet bij de persoon. Zonder standaard valt er niets te auditen."
+  },
+  {
+   "category": "lean",
    "example": "Een aansluitaanvraag kost bij elkaar twee dagen werk, maar doet er twintig weken over: de rest is wachten op ontwerp, vergunning en planning.",
    "id": "flow",
    "name": "Flow",

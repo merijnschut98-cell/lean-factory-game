@@ -909,6 +909,7 @@
     "reduced": 0.5
    },
    "name": "Obeya aansluitingen van begin tot eind",
+   "sustains": true,
    "team_hours": {
     "intake": 10,
     "planners": 5,

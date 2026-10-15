@@ -1,7 +1,7 @@
 class_name RegionState
 ## Captures and restores a whole Region: its network (NetworkState) and the
 ## rules state (the player's progress, clues found, trust, every problem's
-## place in the PDCA loop, the KPI board). Problems the content no longer has are dropped
+## place in the PDCA loop and how worn its fix is, the KPI board, the drift and the planned routines). Problems the content no longer has are dropped
 ## and reported.
 
 const SHAPE := {
@@ -18,7 +18,8 @@ static func capture(r: Region) -> Dictionary:
 		"network": NetworkState.capture(r.net),
 		"profile": {"budget": r.profile.budget, "xp": r.profile.xp, "concepts": r.profile.concepts},
 		"observed": r.observed.keys(), "found": r.found.keys(), "trust": r.trust, "problems": problems,
-		"cost_owed": r._cost_owed, "kpi_board": r.board.to_dict(),
+		"cost_owed": r._cost_owed, "kpi_board": r.board.to_dict(), "drift_from": r.drift_from,
+		"routines": r.routines.keys(),
 	}
 
 
@@ -41,6 +42,14 @@ static func restore(r: Region, d: Dictionary) -> Dictionary:
 		r.found[str(clue_id)] = true
 	r._cost_owed = float(d.get("cost_owed", 0.0))
 	r._apply_bad_period()
+	# Saves from before drift have none: GameSession starts it when the campaign is open.
+	r.drift_from = maxi(-1, int(d.get("drift_from", -1)))
+	r._drift_applied = r.drift_level()  # its effects come back with the network's
+	# A routine's team time comes back with the network's effects too.
+	var routines: Variant = d.get("routines", [])
+	for place: Variant in routines if routines is Array else []:
+		if r.net.step_at(str(place)) != null:
+			r.routines[str(place)] = true
 	# Saves from before the board have none; its work rules come back with the network's effects.
 	r.board.load_dict(JsonFile.dict_or_empty(d.get("kpi_board")))
 	for team: Variant in d["trust"]:

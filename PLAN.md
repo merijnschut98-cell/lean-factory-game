@@ -12,7 +12,7 @@ Pivot agreed 2026-10-12: from a hoverboard factory to a grid operator. The 3D fa
 
 This is a multi-month project, built the right way: research → design (reviewed by Merijn) → engine → content → world → UI, in small tested increments. No publishing deadline. Built in **Godot 4 + GDScript** from the start (decided 2026-10-12).
 
-**Next task:** Merijn playtests the office slice and answers the open questions (training arc, pending calls). Then: the training arc, people in the office, or a second mission. Done 2026-10-13 night: slice review and fixes, the player map (M), `content/concepts.yaml` (61 entries), re-baked lighting, and the training arc draft.
+**Next task:** Merijn playtests the office slice and answers the open questions (training arc, pending calls). Then: the training arc, people in the office, or a second mission. Done 2026-10-13 night: slice review and fixes, the player map (M), `content/concepts.yaml` (61 entries), re-baked lighting, and the training arc draft. Done 2026-10-15: sustain or decay (wear that accelerates with neglect, check-in missions, audits and planned routines) and stagnation drift, in the rules and GameSession; their UI is next.
 
 ---
 
@@ -221,6 +221,16 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
   - A coach (Marleen Verhoef, Directeur Netbeheer regio Zuidmark) who asks Kata questions per stage and shares an insight every third ask, about the main mission only.
   - Saves. The validator checks references, one mission per solved problem, a way in, and that every mission can unlock.
   - Tier-1 campaign: 11 main missions (walk the stream → the bottleneck chain with a fork after the first bottleneck → the grid-study queue at green belt → waiting for transformers → unused capacity) and 10 side missions, among them Henk's knowledge (a 56-day real event) and De planning die nooit klopt.
+- ✅ **Sustain or decay, and stagnation drift** (Merijn's rules and his answer on decay, 2026-10-15; spec `docs/superpowers/specs/2026-10-15-sustain-and-drift-design.md`). `rules/sustain.gd` (the numbers), Region, Missions, GameSession:
+  - A resolved fix wears faster the longer it is neglected (days since the Act, an audit or a routine): `wear = (neglect / L)²`, health 0.5^wear, recurrence at wear 1. Its life `L = base / (1 − 0.9·S)`; base = `decay_days` (365 for a built-in fix that used to stay); sustain strength S = standard work 0.6 + a board on the stream (`sustains: true`, the Obeya) 0.2 + KPIs the team steers by 0.2. At S = 0 a fix still lasts exactly its `decay_days`, so the Friday lesson is unchanged. As it wears, the countermeasure's effects fade and the problem's (non-lever) effects and cost creep back; `slipping` event at health 0.75.
+  - A slipping standardised fix opens a check-in side mission `terugval_<problem>` (goal `sustain`), never a free problem; an audit or a routine completes it; ignored, the fix wears out and its own mission reopens. An unstandardised fix gets no check-in.
+  - Gemba audit (`audit(place)`, an hour): standardised fixes there back to new. Planned routine (`plan_routine` / `stop_routine`, 2 team hours a week): standardised fixes at that step do not wear while it runs.
+  - Drift `region:drift` after 28 days without a resolved improvement, full after a further year: demand ×1.06 on connections and congestion, availability −3 %, first-time-right −2 points; a resolved Act resets it; it starts with the campaign.
+  - Saved: `standardised`, `wear`, `neglect` per problem; `drift_from`, `routines`; check-ins rebuilt from mission ids; old saves load. GameSession: `audit`, `plan_routine`, `stop_routine`, `routines()`, `sustain_of`, `drift()`, `fade_forecast` adds `recur_days`. New glossary card `leader_standard_work`. Tests: `test_sustain.gd`, check-ins in `test_missions.gd`, session tests.
+  - ⬜ UI (another agent owns `game/src/ui/`): the check-in event text (`checkin`, `slipping`), audit and routine actions in the place menu, a fix's health and the drift on the HUD/Check, the Friday card's "De standaard houdt haar vast" now overstates (a standard slows the wear; a routine holds it).
+  - ⬜ Later: re-standardise a fix after the Act (today only at the Act); a routine shown as a real recurring visit in the world.
+- ⬜ Reputation as its own measure, apart from budget and XP (Merijn, 2026-10-15): design and build.
+- ⬜ Belts rescaled (Merijn, 2026-10-15): apply to `Progression.BELTS`, `BELT_XP` in `tools/build_content.py` and the missions' `requires.belt`.
 - ⬜ Mission UI: briefing and debrief dialogues, the coach conversation, a quest log with 1 + 3 slots (Phase D)
 - ⬜ Missions beyond tier 1; story events (storm week, ACM visit, NTA 8120 audit) as missions
 - ✅ Never game over (Merijn, 2026-10-12): an experiment can be paid into debt; in debt the region is in a bad period (every team −3 points availability, an estimate; no money to standardise) until the debt is paid off. Tests: paying into debt, costs causing a bad period, the period ending.
@@ -319,7 +329,11 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 ## Decisions Made
 
 - **Reward deep thinking, under three principles (Merijn, 2026-10-15; now CLAUDE.md §2 mission system).** Long-term thinking outweighs short-term in 95% of cases; respect for people comes first (trust and reputation also measure it: keeping, developing and rewarding talent pays); always improve. Mission rewards and consequences must follow these. Passed to the mission agents.
-- **Sustain or decay, and stagnation is regression (Merijn, 2026-10-15; now CLAUDE.md §2 rules).** Today a fix is either standardised (kept forever) or fades after its countermeasure's `decay_days`. To build: decay graded by the strength of the sustaining habits (standard work, visual management, leader routines, steering KPIs), so even a standardised fix erodes, slowly. Plus a slow drift that sets processes back when the player stops improving.
+- **Sustain or decay, and stagnation is regression (Merijn, 2026-10-15; now CLAUDE.md §2 rules).** Decay is graded by the strength of the sustaining habits (standard work, visual management, leader routines, steering KPIs), so even a standardised fix erodes, slowly. Plus a slow drift that sets processes back when the player stops improving. Built 2026-10-15 (Phase B).
+- **How decay works (Merijn, 2026-10-15):** "Standardised fixes also decay: slowly, but faster the longer you don't do something about it, until at some point you get a mission to have a look at it. Also, the stronger the sustaining mechanism, the less it decays. Especially if audits and routines are planned: then it doesn't decay, it stays the same." Built as: wear accelerating with neglect, a check-in side mission at a threshold, a longer life for stronger habits, and planned routines that stop the wear.
+- **Reputation is a separate measure (Merijn, 2026-10-15)**, not folded into budget or XP. To design and build.
+- **Belts rescaled (Merijn, 2026-10-15).** To apply to the belt thresholds.
+- **Tier-3 areas sit inside Zuidmark (Merijn, 2026-10-15)**: the harder content stays in the same region, not a new one.
 - **Answers to Claude's open calls (Merijn, 2026-10-15, multiple choice).**
   - **Kept as built:** "Capaciteit" as a predictable A3 KPI; a 5-day training week, always skippable; orange mission places on the map; the KPI board compares with the habit, so a good choice pays every quarter.
   - **Sector depth: all three.** Glossary cards, a conversation with an expert (e.g. a grid planner on congestion), and a sector side quest.
@@ -362,6 +376,16 @@ Merijn asked me to fix the content review's findings with my own judgement while
 - **Kept as they are, plausible and grounded:** the contact-centre spiral of Klaar maar niet af, the monthly EAN batch, three times as many calls from late customers, 40 minutes to the warehouse, two of five meterkasten not ready, three of eight not at home, 240 open revisions.
 - **Henk becomes a story hook** for the missions (built: a deadline mission); the buddy system's team hours stay as they are.
 - ~~Still open: the contact-centre spiral~~ → answered 2026-10-13: keep it mild.
+
+### Claude's calls, pending Merijn (2026-10-15, sustain and drift)
+Made while building Merijn's two new rules and his answer on decay; spec `docs/superpowers/specs/2026-10-15-sustain-and-drift-design.md`. All numbers are estimates, marked in `game/src/rules/sustain.gd`.
+- **Sustain weights:** standard work 0.6, a board on the stream 0.2, KPIs the team steers by 0.2. Only the Obeya is tagged `sustains: true` (the capacity dashboard is about usage data, not a daily board of the work). "Steers by KPIs" means a team at the fix's step has KPIs chosen on the board; KPIs carry no link to a problem's KPI yet.
+- **Wear curve:** `wear = (neglect / L)²` and `L = base / (1 − 0.9·S)`: standard work alone gives 2.2× the countermeasure's `decay_days`, all habits 10×. At S = 0 a fix lasts exactly its `decay_days` (today's timing). A fix with `decay_days: null` (built in) now lasts about a year of neglect.
+- **Partial return:** the problem's factor and addition effects come back at (1 − health), its levers (rules) only when it recurs; its cost per week too.
+- **Recurrence threshold:** health 0.5. Between recurrence and accepting the reopened mission the problem does nothing (problems only through missions).
+- **Check-in:** opens at health 0.75 for standardised fixes only (an unstandardised fix has nothing to audit and fades back to its mission as before); a side mission (takes a side slot, no coach), 100 XP, no budget; rewarded once; comes back when the fix slips again.
+- **Audit:** an hour; refreshes standardised fixes at that place only. **Routine:** 2 team hours a week (availability effect on the place's team); it holds standardised fixes only (a routine holds people to a standard).
+- **Drift:** starts when the campaign opens; 28 days of grace, full after a further 365; at full demand ×1.06 on connections and congestion (no clean public growth figure; Netbeheer Nederland reports ~107,000 small connections a year at a flat pace while waits grew), availability −3 % (~10 % turnover × ~4 months to productivity), first-time-right −2 points. A resolved Act resets it fully (an improving organisation absorbs the growth).
 
 ### Claude's calls, pending Merijn (2026-10-14, training week)
 - **"Capaciteit" is now a KPI the A3 can predict** (needed so the practice problem's fade shows within 30 days). This also affects scoring for the real problems; confirm or revert.

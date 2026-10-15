@@ -289,7 +289,7 @@ VISIBILITIES = ["obvious", "subtle", "hidden"]
 PROBLEM_KEYS = {"id", "tier", "name", "step", "waste", "severity", "visibility", "kpi", "symptoms", "root_cause",
                 "plausible_causes", "mismatch_note", "countermeasures", "teaches", "effects", "clues", "cost_per_week"}
 COUNTERMEASURE_KEYS = {"id", "tier", "name", "category", "description", "budget", "team_hours", "decay_days",
-                       "multipliers", "effects", "unlocks"}
+                       "multipliers", "effects", "unlocks", "sustains"}
 UNLOCKS = ["kpi_board"]  # CountermeasureDef.UNLOCKS: what a countermeasure opens in the game
 CLUE_KEYS = {"tool", "text", "key", "depth", "at", "note", "teaches"}
 EFFECT_KEYS = {"target", "property", "value"}
@@ -366,6 +366,8 @@ def validate_countermeasures(doc: Any, source: str) -> None:
             raise ContentError(f"{where}: multipliers must be full >= reduced >= minimal")
         if "unlocks" in cm:
             _one_of(cm, "unlocks", UNLOCKS, where)
+        if not isinstance(cm.get("sustains", False), bool):
+            raise ContentError(f"{where}: 'sustains' must be true or false")
         _effects_shape(cm, where)
 
 
@@ -538,10 +540,12 @@ MISSION_KINDS = ["main", "side", "training"]
 COACHED_KINDS = ["main", "training"]
 # goal type → (required keys, optional keys). observe: use a gemba tool (or any,
 # without `tool`) at each place, `uses` distinct place-tool pairs in all;
-# check: the problem's Check passed.
+# check: the problem's Check passed; sustain: the problem's fix back in use
+# (audited, or held by a routine; the game opens these as check-ins).
 MISSION_GOALS = {
     "walk": ({"stream"}, set()), "investigate": ({"problem", "clues"}, set()), "solve": ({"problem"}, set()),
     "observe": ({"places"}, {"tool", "uses"}), "check": ({"problem"}, set()),
+    "sustain": ({"problem"}, set()),
 }
 MAX_CHECK_DAYS = 14  # Region.CHECK_DAYS: a mission may only shorten the Check
 COACH_STAGES = ["go_see", "understand", "experiment", "reflect"]  # Missions.STAGES

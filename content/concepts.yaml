@@ -93,6 +93,20 @@ concepts:
       Een standaardaansluiting tot 3x25 A krijgt een standaardontwerp uit de
       bibliotheek in plaats van een volledig maatwerkontwerp.
 
+  - id: leader_standard_work
+    name: Standaardwerk voor leidinggevenden
+    category: lean
+    short: "Een vaste routine waarin leidinggevenden op de gemba nagaan of de standaard nog werkt."
+    text: >-
+      Een verbetering die niemand onderhoudt, slijt: onder druk sluipt de oude
+      gewoonte terug. Leidinggevenden lopen daarom vaste rondes (een gemba-audit)
+      en vragen of de standaard nog gevolgd wordt en nog klopt. Wijkt het werk af,
+      dan zoek je samen naar de oorzaak in het proces, niet bij de persoon. Zonder
+      standaard valt er niets te auditen.
+    example: >-
+      De teamleider van Werkvoorbereiding loopt elke week langs de bak met
+      dossiers en vraagt of iedereen nog het oudste dossier eerst pakt.
+
   - id: flow
     name: Flow
     category: lean

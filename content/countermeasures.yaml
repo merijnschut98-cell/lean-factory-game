@@ -6,7 +6,12 @@
 # budget       improvement budget in euros
 # team_hours   hours the team spends on the improvement: taken from daily
 #              work while the experiment runs
-# decay_days   days until the gain fades if it is not standardised (null: it stays)
+# decay_days   days an improvement lasts with no sustaining habit (null: built
+#              into a system or contract; it still erodes, over about a year).
+#              Habits slow the wear: standard work at the Act, a board on the
+#              stream (sustains), KPIs the team steers by (game/src/rules/sustain.gd)
+# sustains     true: a board the teams look at daily; while it holds, it helps
+#              sustain the other fixes in its value stream
 # multipliers  effectiveness at a maturity gap of 0, 1 and 2
 # effects      what it changes in the simulation once it works (on top of
 #              removing the problem): its own shape of a healthier process
@@ -483,6 +488,7 @@ countermeasures:
     decay_days: 45
     multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
     unlocks: kpi_board
+    sustains: true
     effects:
       - {target: intake, property: kpis, value: [intake_lead_time, intake_oldest]}
       - {target: work_prep, property: kpis, value: [work_prep_lead_time, work_prep_oldest]}

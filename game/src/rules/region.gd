@@ -11,7 +11,14 @@ extends RefCounted
 ## Effect sources on the Network: problem:<id> (the problem, weakened by a
 ## working countermeasure), cm:<id> (the improvement), do:<id> (team hours
 ## spent on the experiment), board:kpis (the KPIs chosen at the last
-## quarterly review, see KpiBoard).
+## quarterly review, see KpiBoard), region:drift (stagnation, see Sustain),
+## routine:<place> (the team's time for a planned routine).
+##
+## A resolved fix wears (Sustain): its effects fade and the problem's creep
+## back, slower the stronger the sustaining habits and faster the longer it is
+## neglected, until it recurs and its mission brings it back. A planned
+## routine holds a standardised fix. While the region stops improving, it
+## drifts back.
 
 const P := ProblemState.Phase
 ## At most this many problems are open at once.
@@ -25,6 +32,8 @@ const MATURITY_STEP := 0.6
 ## every team has a little less time (an estimate: 3 points of availability).
 const BAD_PERIOD_AVAILABILITY := 0.03
 const BAD_PERIOD_SOURCE := "region:bad_period"
+const DRIFT_SOURCE := "region:drift"
+const ROUTINE_SOURCE := "routine:"
 
 var net: Network
 var profile: Profile
@@ -42,12 +51,19 @@ var closed: Dictionary[String, bool] = {}
 var practice: Dictionary[String, bool] = {}
 ## Trust per team (pool id), -2..1: below 0 they stop sharing.
 var trust: Dictionary[String, int] = {}
-## {type: activated | check_ready | recurred | belt | bad_period | kpi_review, ...} for the world and UI.
+## {type: activated | check_ready | slipping | recurred | belt | bad_period | kpi_review, ...} for the world and UI.
 var events: Array[Dictionary] = []
 ## The KPI board; its menu comes from use_kpis.
 var board := KpiBoard.new(KpiMenu.new())
 ## Problem costs not yet taken from the budget (charged in whole euros).
 var _cost_owed := 0.0
+## Since when the region has not improved (minutes; the last resolved Act or
+## the campaign's start); -1: drift has not started (start_drift).
+var drift_from := -1
+## The drift level now on the network (set only when it changes).
+var _drift_applied := 0.0
+## Places with a planned routine (leader standard work), see plan_routine.
+var routines: Dictionary[String, bool] = {}
 
 
 func _init(network: Network, problem_defs: Array[ProblemDef], cm_defs: Array[CountermeasureDef], player: Profile) -> void:
@@ -101,7 +117,16 @@ func advance_days(n: float) -> void:
 	advance(SimCalendar.days(n))
 
 
+## Time passes a day at a time at most, so fixes wear and the region drifts
+## as it goes (the simulation runs the same in pieces).
 func advance(minutes: int) -> void:
+	var end := net.time + minutes
+	while net.time < end:
+		var next_day := SimCalendar.days(SimCalendar.day_of(net.time) + 1)
+		_advance_within_day(mini(end, next_day) - net.time)
+
+
+func _advance_within_day(minutes: int) -> void:
 	var day := SimCalendar.day_of(net.time)
 	var was_due := board.review_due(net.time)
 	net.advance(minutes)
@@ -112,22 +137,24 @@ func advance(minutes: int) -> void:
 		if st.phase == P.DOING and net.time >= st.check_at:
 			st.phase = P.CHECK_READY
 			events.append({"type": "check_ready", "problem": st.id})
-		elif st.phase == P.RESOLVED and st.recur_at >= 0 and net.time >= st.recur_at:
-			_recur(st)
+		elif st.phase == P.RESOLVED and st.a3.has("cm"):
+			_wear(st, minutes)
+	_apply_drift()
 
 
-## What the open problems cost per week now: each one's cost, weakened by
-## a working countermeasure.
+## What the problems cost per week now: each open one's cost, weakened by a
+## working countermeasure, and what creeps back as resolved fixes wear.
 func weekly_cost() -> float:
 	var total := 0.0
 	for st: ProblemState in state.values():
-		if st.is_open():
-			total += _cost_of(st)
+		total += _cost_of(st)
 	return total
 
 
 func _cost_of(st: ProblemState) -> float:
-	return problems[st.id].cost_per_week * (1.0 - st.eff)
+	if st.phase == P.RESOLVED:
+		return problems[st.id].cost_per_week * (1.0 - Sustain.health(st.wear))
+	return problems[st.id].cost_per_week * (1.0 - st.eff) if st.is_open() else 0.0
 
 
 ## Take the weekly cost's share for `days` passed days from the budget.
@@ -470,8 +497,10 @@ func check(problem_id: String) -> Dictionary:
 
 # ── Act ─────────────────────────────────────────────────────────────────────
 
-## Close a checked problem: standardise (costs budget, keeps the gain) or
-## not (the fix fades after the countermeasure's decay). Returns the score.
+## Close a checked problem: standardise (costs budget; the main sustaining
+## habit, so the gain wears far slower) or not (it lasts about the
+## countermeasure's decay_days, see Sustain). A resolved improvement ends the
+## region's stagnation. Returns the score.
 func act(problem_id: String, standardise: bool) -> Dictionary:
 	var st := state[problem_id]
 	if st.phase != P.CHECKED:
@@ -482,10 +511,13 @@ func act(problem_id: String, standardise: bool) -> Dictionary:
 		_add_budget(-STANDARDISE_BUDGET)
 	st.score = Pdca.score(_score_inputs(st, p, standardise))
 	st.phase = P.RESOLVED
-	var decay := countermeasures[st.a3["cm"]].decay_days
-	st.recur_at = net.time + SimCalendar.days(decay) if not standardise and decay >= 0 else -1
+	st.standardised = standardise
+	st.wear = 0.0
 	net.clear_effects("problem:" + problem_id)
 	_reassert_board()
+	if drift_from >= 0:
+		drift_from = net.time
+		_apply_drift()
 	profile.learn(p.teaches + (PackedStringArray(["standard_work"]) if standardise else PackedStringArray()))
 	grant(Pdca.xp_for(st.score, p.tier), Pdca.budget_for(st.score, p.severity))
 	return st.score
@@ -559,10 +591,186 @@ func _score_inputs(st: ProblemState, p: ProblemDef, standardise: bool) -> Dictio
 	}
 
 
-## An unstandardised fix fades: the improvement goes, and the problem waits,
-## dormant, until its mission brings it back (problems only arrive through
-## missions, CLAUDE.md §2).
+## A worn-out fix: the improvement goes, and the problem waits, dormant,
+## until its mission brings it back (problems only arrive through missions,
+## CLAUDE.md §2).
 func _recur(st: ProblemState) -> void:
 	net.clear_effects("cm:" + st.id)
+	net.clear_effects("problem:" + st.id)
 	state[st.id] = ProblemState.new(st.id)
 	events.append({"type": "recurred", "problem": st.id})
+
+
+# ── Sustain: fixes wear, audits refresh them ────────────────────────────────
+
+## The sustaining habits holding a resolved fix: {strength 0..1, mechanisms
+## (Sustain.WEIGHTS keys, in that order)}. Standard work from the Act; a held
+## fix in the same stream whose countermeasure `sustains` (a board); a team at
+## the step that steers by KPIs on the board.
+func sustain(problem_id: String) -> Dictionary:
+	var st: ProblemState = state.get(problem_id)
+	var mechanisms: Array[String] = []
+	if st == null or st.phase != P.RESOLVED:
+		return {"strength": 0.0, "mechanisms": mechanisms}
+	var p := problems[problem_id]
+	if st.standardised:
+		mechanisms.append("standard_work")
+	if _board_holds(p):
+		mechanisms.append("visual_management")
+	if Array(_pools_at(p.step)).any(func(pool: String) -> bool: return not board.chosen.get(pool, []).is_empty()):
+		mechanisms.append("kpis")
+	var strength := 0.0
+	for m in mechanisms:
+		strength += Sustain.WEIGHTS[m]
+	return {"strength": strength, "mechanisms": mechanisms}
+
+
+## Another resolved fix in the problem's stream holds with a board (`sustains`).
+func _board_holds(p: ProblemDef) -> bool:
+	return problem_list().any(func(other: ProblemDef) -> bool:
+		var st := state[other.id]
+		return other.id != p.id and other.stream_id() == p.stream_id() and st.phase == P.RESOLVED \
+			and countermeasures.has(st.a3.get("cm", "")) and countermeasures[st.a3["cm"]].sustains)
+
+
+## A resolved fix's health (1 fresh, 0.5 at recurrence); 1 for anything else.
+func health(problem_id: String) -> float:
+	var st: ProblemState = state.get(problem_id)
+	return Sustain.health(st.wear) if st != null and st.phase == P.RESOLVED else 1.0
+
+
+## The days of neglect the fix lasts at today's habits (Sustain.life_days);
+## 0 when there is no fix.
+func life_days(problem_id: String) -> float:
+	var st: ProblemState = state.get(problem_id)
+	if st == null or st.phase != P.RESOLVED or not countermeasures.has(st.a3.get("cm", "")):
+		return 0.0
+	return Sustain.life_days(Sustain.base_days(countermeasures[st.a3["cm"]]), sustain(problem_id)["strength"])
+
+
+## Days until a resolved fix recurs if nothing changes: INF while a routine
+## holds it, -1 when there is no fix.
+func days_to_recur(problem_id: String) -> float:
+	var life := life_days(problem_id)
+	if life <= 0.0:
+		return -1.0
+	return INF if held_by_routine(problem_id) else Sustain.days_left(state[problem_id].wear, life)
+
+
+## A planned routine at the step holds a standardised fix (there is a
+## standard to hold it to).
+func held_by_routine(problem_id: String) -> bool:
+	var st: ProblemState = state.get(problem_id)
+	return st != null and st.phase == P.RESOLVED and st.standardised and routines.has(problems[problem_id].step)
+
+
+## A gemba audit of the standard at a place (the caller advances the clock
+## by Sustain.AUDIT_MINUTES): standardised fixes there are back in full use;
+## unstandardised ones have no standard to audit against.
+## Returns {refreshed, no_standard}: problem ids.
+func audit(place: String) -> Dictionary:
+	var refreshed: Array[String] = []
+	var no_standard: Array[String] = []
+	for p in problem_list():
+		var st := state[p.id]
+		if p.step != place or st.phase != P.RESOLVED:
+			continue
+		if st.standardised:
+			st.wear = 0.0
+			st.neglect = 0.0
+			if countermeasures.has(st.a3.get("cm", "")):
+				_apply_wear(st)
+			refreshed.append(p.id)
+		else:
+			no_standard.append(p.id)
+	observed[place] = true
+	profile.learn(["standard_work", "leader_standard_work"])
+	return {"refreshed": refreshed, "no_standard": no_standard}
+
+
+## `minutes` of wear on a resolved fix, at its life now and faster the
+## longer it is neglected; worn to 1 it recurs. A routine holds it as it is.
+func _wear(st: ProblemState, minutes: int) -> void:
+	if held_by_routine(st.id):
+		st.neglect = 0.0
+		return
+	var was := Sustain.health(st.wear)
+	var days := minutes / float(SimCalendar.MINUTES_PER_DAY)
+	st.wear += Sustain.wear_over(st.neglect, days, life_days(st.id))
+	st.neglect += days
+	if st.wear >= 1.0 - 1e-9:
+		_recur(st)
+		return
+	if was >= Sustain.SLIPPING_HEALTH and Sustain.health(st.wear) < Sustain.SLIPPING_HEALTH:
+		events.append({"type": "slipping", "problem": st.id})
+	_apply_wear(st)
+
+
+## The fix's and the problem's effects at the fix's health.
+func _apply_wear(st: ProblemState) -> void:
+	var sources := Sustain.eroded_effects(problems[st.id], countermeasures[st.a3["cm"]], st.eff, Sustain.health(st.wear))
+	for source: String in sources:
+		net.set_effects(source, sources[source])
+
+
+## Plan a routine at a place (leader standard work, no mission needed): the
+## team gives Sustain.ROUTINE_HOURS_PER_WEEK every week, and standardised
+## fixes there stop wearing while it runs. "" or why not: unknown_place |
+## no_team (a wait step) | planned.
+func plan_routine(place: String) -> String:
+	if net.step_at(place) == null:
+		return "unknown_place"
+	var pool: SimPool = net.pools.get(_team(place))
+	if pool == null:
+		return "no_team"
+	if routines.has(place):
+		return "planned"
+	var weekly_hours := pool.headcount * pool.schedule.hours()
+	var refused := net.set_effects(ROUTINE_SOURCE + place,
+		[{"target": pool.id, "property": "availability", "value": -Sustain.ROUTINE_HOURS_PER_WEEK / weekly_hours}])
+	if not refused.is_empty():
+		return "no_team"
+	routines[place] = true
+	profile.learn(["standard_work", "leader_standard_work"])
+	return ""
+
+
+## Stop a routine: the team's time is back, and neglect counts from now.
+## "" or not_planned.
+func stop_routine(place: String) -> String:
+	if not routines.erase(place):
+		return "not_planned"
+	net.clear_effects(ROUTINE_SOURCE + place)
+	return ""
+
+
+# ── Stagnation drift ────────────────────────────────────────────────────────
+
+## Start counting stagnation (the campaign opens). Idempotent.
+func start_drift() -> void:
+	if drift_from < 0:
+		drift_from = net.time
+
+
+## Days since the last resolved improvement (0 before drift starts).
+func stagnant_days() -> float:
+	return (net.time - drift_from) / float(SimCalendar.MINUTES_PER_DAY) if drift_from >= 0 else 0.0
+
+
+func drift_level() -> float:
+	return Sustain.drift_level(stagnant_days())
+
+
+## The drift's effects follow its level. Content validates the
+## targets, so a refusal is a bug worth a warning, not a crash.
+func _apply_drift() -> void:
+	var level := drift_level()
+	if is_equal_approx(level, _drift_applied):
+		return
+	_drift_applied = level
+	if level <= 0.0:
+		net.clear_effects(DRIFT_SOURCE)
+		return
+	var refused := net.set_effects(DRIFT_SOURCE, Sustain.drift_effects(net, level))
+	if not refused.is_empty():
+		push_warning("drift refused: " + refused)
