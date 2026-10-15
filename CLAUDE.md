@@ -45,6 +45,8 @@ Merijn's design decisions that every feature, content file and test must respect
 - **Many healthier processes, not one.** Every problem lists several countermeasures with a fit; each one is a real improvement that can pass the Check, some more than others.
 - **Evidence first.** Numbers in content (norms, rates, durations, costs) come from public sources or industry norms where they exist; estimates are marked as estimates, with their reasoning, in the content file.
 - **Setbacks, never game over.** Costs and claims can push the budget into debt and the region into a bad period, but the company never goes down and the game never ends in failure. Recovery is always possible.
+- **Improvements must be sustained, or they decay.** Every improvement erodes over time unless something sustains it (standard work, visual management, audits, leader routines, the KPIs that steer). The weaker the sustaining habits and processes, the faster the decay; even "standardised" is not forever.
+- **Stagnation is regression.** When the player stops improving, processes slowly fall behind (demand grows, people change, the sector moves on), so continuous improvement is needed just to stand still.
 - **Missed deadlines have lasting consequences.** A failed mission closes a door (e.g. Henk retires and his knowledge transfer is no longer possible); the problem can still be solved another way.
 - **Dutch game text; English code and docs.**
 

@@ -9,7 +9,7 @@ Before the first real mission, the player learns three things by doing:
 3. **The energy sector, a little:** what a grid operator does, grid congestion, the connection term, the technician shortage, the ACM and the energy transition. The text comes from `content/concepts.yaml`, with sources.
 
 ## Frame: "Inwerkweek" (onboarding week) in the Starter Kata style
-The player starts on Monday as the new CI lead at Voltana Zuidmark. Marleen Verhoef, the coach, gives them a week of small, safe routines. These are Starter Kata: practice before the real problem. Each day is a short side-mission-sized step in the connections office, with no risk and no deadline. The real campaign starts once the week is done.
+The player starts on Monday as the new CI lead at Voltana Zuidmark. Ruud Hoekstra, the coach, gives them a week of small, safe routines. These are Starter Kata: practice before the real problem. Each day is a short side-mission-sized step in the connections office, with no risk and no deadline. The real campaign starts once the week is done.
 
 | Day | Routine (mission) | What the player does | What they learn |
 |---|---|---|---|
