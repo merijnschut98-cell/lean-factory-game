@@ -824,3 +824,600 @@ concepts:
     source:
       title: Rijksoverheid — Graafschade
       url: https://www.rijksoverheid.nl/onderwerpen/bodem-en-ondergrond/graafschade
+
+  # ── New for the mission system (catalogue §3.9, K0; tier-2 drafts §5) ─────
+  # Lean and management
+  - id: daily_management
+    name: Dagelijkse sturing
+    category: lean
+    short: "Elke dag kort bij het bord: hoe ging het gisteren, wat hindert ons vandaag, wie pakt het op."
+    text: >-
+      Dagelijkse sturing maakt afwijkingen zichtbaar terwijl ze nog klein zijn. Het
+      team schrijft zijn eigen getallen op het bord, bespreekt in een paar minuten
+      wat er hindert en spreekt af wie wat oppakt. Leidinggevenden komen kijken en
+      helpen met wat het team niet zelf kan oplossen. Zonder die laatste stap wordt
+      het bord een klaagmuur.
+    example: >-
+      Werkvoorbereiding begint elke ochtend om kwart over acht bij het bord: de
+      stapel, het oudste dossier en de rode kaartjes van gisteren.
+    estimate: "Lean practice (D. Mann, Creating a Lean Culture); no sector numbers."
+
+  - id: pareto
+    name: Pareto-analyse
+    category: measure
+    short: "Sorteer oorzaken van groot naar klein: vaak veroorzaken een paar oorzaken het meeste."
+    text: >-
+      Een Pareto-diagram zet oorzaken of categorieën op volgorde van hoe vaak ze
+      voorkomen. Vaak blijkt een klein deel van de oorzaken het grootste deel van
+      de problemen te geven, de 80/20-regel. Het werkt alleen als de oorzaken goed
+      zijn vastgelegd: als 'onbekend' de hoogste staaf is, leer je eerst iets over
+      je registratie.
+    example: >-
+      De storingsdienst bekijkt elke maandag de Pareto van de storingen per oorzaak
+      en per kabeltraject. De hoogste staaf krijgt een A3.
+    source:
+      title: ASQ — What is a Pareto chart?
+      url: https://asq.org/quality-resources/pareto
+
+  - id: tiered_escalation
+    name: Gelaagde escalatie
+    category: lean
+    short: "Wat een team niet zelf kan oplossen, gaat dezelfde dag een laag hoger, tot iemand het oplost."
+    text: >-
+      Bij gelaagde escalatie volgen de dagstarts elkaar op: eerst het team, dan de
+      afdeling, dan de regio. Een probleem dat een laag niet zelf kan oplossen, gaat
+      mee naar de volgende, met een afgesproken tijd waarbinnen het een eigenaar
+      heeft. Zo wacht niemand een week op het wekelijkse overleg.
+    example: >-
+      Een vraag aan de gemeente over een tracé hangt om kwart over acht op het bord
+      van Werkvoorbereiding en heeft om half tien een eigenaar bij de regio.
+    estimate: "Lean practice (tiered daily accountability, D. Mann); the 24-hour rule is a common choice, not a norm."
+
+  - id: andon
+    name: Andon
+    category: lean
+    short: "Een signaal waarmee iedereen een probleem meldt, waarna er direct iemand komt helpen."
+    text: >-
+      Bij Toyota trekt een medewerker aan een koord als er iets misgaat; de lijn
+      stopt en de teamleider komt. Het signaal is maar de helft: zonder iemand die
+      komt, leert een team dat melden geen zin heeft. Op kantoor kan een andon een
+      rood kaartje op het bord zijn.
+    example: >-
+      Een monteur die bij een onveilige meterkast stopt, belt de teamleider. De
+      stop telt als 'veilig gestopt', niet als 'niet gehaald'.
+    source:
+      title: Lean Enterprise Institute — Andon (lexicon)
+      url: https://www.lean.org/lexicon-terms/andon/
+
+  - id: safety_stock
+    name: Bestelpunt en veiligheidsvoorraad
+    category: measure
+    short: "Bestel opnieuw als de voorraad net genoeg is voor de levertijd, plus een buffer voor schommelingen."
+    text: >-
+      Het bestelpunt is het verbruik tijdens de levertijd plus een veiligheidsvoorraad
+      voor de schommelingen in verbruik en levertijd. Reken je het verbruik per
+      kalenderdag terwijl er alleen op werkdagen iets de deur uit gaat, dan ligt het
+      bestelpunt te laag en raakt de voorraad 'onverwacht' op.
+    example: >-
+      Er gaan 40 slimme meters per week de deur uit, acht per werkdag. Wie door zeven
+      deelt, rekent met vijf à zes per dag en bestelt te laat.
+    estimate: "Standard inventory practice (reorder point = demand over the lead time + safety stock); Zuidmark's numbers come from content/value_streams.yaml."
+
+  - id: value_stream_mapping
+    name: Waardestroomkaart (VSM)
+    category: lean
+    short: "Teken de hele stroom, van aanvraag tot klant: waar wordt gewerkt, waar wordt gewacht?"
+    text: >-
+      Een waardestroomkaart laat elke stap van de stroom zien, met per stap de
+      bewerkingstijd, de wachtrij en de wachttijd ertussen. Je tekent hem door de
+      stroom zelf te lopen, niet vanuit een procesboek. Bijna altijd is de som van
+      het werk een paar uur en de doorlooptijd weken: daar zit de winst.
+    example: >-
+      Op de Obeya hangt de kaart van een nieuwe aansluiting: twaalf uur werk,
+      zeven weken doorlooptijd.
+    source:
+      title: Lean Enterprise Institute — Value-stream mapping (lexicon)
+      url: https://www.lean.org/lexicon-terms/value-stream-mapping/
+
+  - id: kaizen_event
+    name: Kaizen-event
+    category: lean
+    short: "Een team werkt een paar dagen samen aan één proces en probeert de verbetering meteen uit."
+    text: >-
+      Bij een kaizen-event legt een team voor drie tot vijf dagen het gewone werk
+      neer om één stap van de stroom te verbeteren: meten, oorzaken zoeken, iets
+      nieuws proberen en het resultaat meten. Het werkt het best bij het knelpunt;
+      elders levert het snel een mooi verhaal en weinig doorstroming op.
+    example: >-
+      Werkvoorbereiding zet in drie dagen de standaardontwerpen op en meet op
+      vrijdag hoe lang een ontwerp nog duurt.
+    source:
+      title: Lean Enterprise Institute — Kaizen (lexicon)
+      url: https://www.lean.org/lexicon-terms/kaizen/
+
+  - id: conwip
+    name: CONWIP
+    category: measure
+    short: "Een vaste bovengrens aan het werk in de hele stroom: er gaat pas iets in als er iets uit gaat."
+    text: >-
+      CONWIP (constant work in process) begrenst het onderhanden werk van de hele
+      stroom in één keer. Nieuw werk wacht tot er een plek vrijkomt. Zo blijft de
+      doorlooptijd voorspelbaar en veroudert er niets halverwege. De grens moet
+      passen bij wat de stroom aankan; te krap en het knelpunt staat stil.
+    example: >-
+      Voltana laat niet meer dan driehonderd aansluitingen tegelijk lopen; een
+      nieuwe aanvraag wacht netjes bij de intake in plaats van half af in een map.
+    estimate: "Textbook (Spearman, Woodruff and Hopp, 1990; Hopp and Spearman, Factory Physics); Zuidmark's limit is an estimate in content/countermeasures.yaml."
+
+  - id: littles_law
+    name: De wet van Little
+    category: measure
+    short: "Onderhanden werk = doorstroming × doorlooptijd: wie het onderhanden werk halveert, halveert de doorlooptijd."
+    text: >-
+      De wet van Little verbindt drie getallen: het werk dat onderweg is, hoeveel
+      er per week klaarkomt en hoe lang één stuk werk onderweg is. Komt er per week
+      niet meer klaar, dan maakt meer onderhanden werk de doorlooptijd alleen
+      langer. Het knelpunt bepaalt hoeveel er doorgaat; elke wachttijd onderweg
+      bepaalt hoe lang het duurt.
+    example: >-
+      Met 270 aansluitingen onderweg en 27 klaar per week duurt een aansluiting
+      gemiddeld tien weken.
+    estimate: "Little's law (J. D. C. Little, 1961), a mathematical identity; the example numbers are Zuidmark's simulation."
+
+  - id: hoshin_kanri
+    name: Hoshin kanri
+    category: lean
+    short: "Een paar doelen voor de hele organisatie, die elke laag vertaalt naar wat zij zelf gaat doen."
+    text: >-
+      Hoshin kanri is strategie als gesprek. De leiding kiest een paar doorbraakdoelen;
+      elke laag vraagt zich af wat zij daaraan bijdraagt en spreekt dat terug af
+      (catchball). Wat niet bijdraagt, valt af. Zo trekt iedereen aan hetzelfde touw
+      in plaats van aan twintig prioriteiten.
+    example: >-
+      Het MT kiest voor één doel: de wachttijd voor een aansluiting halveren. De
+      teams van Intake tot Monteurs maken elk een eigen plan dat daar aantoonbaar aan bijdraagt.
+    source:
+      title: Lean Enterprise Institute — Hoshin kanri (lexicon)
+      url: https://www.lean.org/lexicon-terms/hoshin-kanri/
+
+  - id: x_matrix
+    name: X-matrix
+    category: lean
+    short: "Eén vel dat doelen, verbeterprojecten, KPI's en eigenaren met elkaar verbindt."
+    text: >-
+      De X-matrix is het A3 van hoshin kanri. Op vier kanten staan de lange-termijndoelen,
+      de doelen van dit jaar, de verbeterprojecten en de KPI's; in de hoeken zie je
+      welke met welke samenhangen en wie eigenaar is. Een project zonder lijn naar
+      een doel valt op.
+    example: >-
+      Op Voltana's X-matrix hangt 'standaardstations' aan het doel 'doorlooptijd
+      halveren' en aan de KPI 'oudste open aanvraag'.
+    estimate: "Lean practice (T. Jackson, Hoshin Kanri for the Lean Enterprise); a format, no numbers."
+
+  - id: sustain
+    name: Blijven verbeteren
+    category: lean
+    short: "Stilstand is achteruitgang: wie stopt met verbeteren, raakt langzaam achter."
+    text: >-
+      Een proces staat nooit stil. De vraag groeit, mensen wisselen, regels en
+      techniek veranderen. Wat vorig jaar goed genoeg was, schiet dit jaar tekort.
+      Continu verbeteren is daarom niet iets extra's: het is nodig om bij te blijven.
+      Kleine stappen, elke week, houden een team beter bij dan één groot programma.
+    example: >-
+      Na een half jaar zonder nieuwe verbetering lopen de doorlooptijden in Zuidmark
+      langzaam op, terwijl niemand iets 'fout' doet.
+    estimate: "Lean principle (kaizen); the game's drift numbers are estimates in game/src/rules/sustain.gd."
+
+  - id: path_dependence
+    name: Padafhankelijkheid
+    category: lean
+    short: "Wat je nu kunt kiezen, hangt af van wat je eerder hebt gedaan of laten liggen."
+    text: >-
+      Keuzes stapelen zich op. Een snelle oplossing van vorig jaar kan een betere
+      keuze van nu blokkeren, en een geduldige voorbereiding opent later deuren. Je
+      kunt altijd bijsturen, maar soms moet je eerst iets herstellen voordat een
+      nieuwe stap kan.
+    example: >-
+      Wie de trafo's met een raamcontract bestelt, kan later kiezen voor een
+      strategische voorraad; wie dat nooit regelde, moet eerst de inkoop op orde brengen.
+    estimate: "A general notion from economics and organisation studies (e.g. W. B. Arthur, 1989); no numbers."
+
+  - id: twi_job_instruction
+    name: TWI Job Instruction
+    category: lean
+    short: "Vakmanschap overdragen in vier stappen: voorbereiden, voordoen, laten doen, opvolgen."
+    text: >-
+      Training Within Industry (TWI) is een Amerikaanse methode uit de jaren veertig
+      waaruit Toyota veel leerde. Job Instruction leert een ervaren vakman zijn werk
+      over te dragen: hij deelt het op in stappen met de kernpunten en waarom, doet
+      het voor, laat het de leerling doen en blijft daarna kijken. Een video of
+      werkinstructie is documentatie; vakmanschap leer je door het te doen onder
+      iemand die het kan.
+    example: >-
+      Henk leert Ahmed in vier stappen een fout zoeken in een oude papierloodkabel:
+      eerst kijkt Ahmed, dan doet hij het zelf met Henk ernaast.
+    estimate: "TWI Job Instruction manuals (War Manpower Commission, 1940s; public domain); no numbers."
+
+  # Sector
+  - id: lmra
+    name: LMRA (laatste-minuut-risicoanalyse)
+    category: sector
+    short: "Eén minuut nadenken over de risico's van deze klus, met het recht om te stoppen."
+    text: >-
+      Vlak voor het werk kijkt de uitvoerder zelf of het veilig kan: wat is er hier
+      anders dan verwacht, wat kan er misgaan, en kan ik dat beheersen? Een LMRA
+      duurt ongeveer een minuut en hoort geen formulier te zijn. Is een antwoord
+      'nee', dan stop je en overleg je. Een lange vragenlijst die je afvinkt, doet
+      het tegenovergestelde.
+    example: >-
+      Bij een meterkast van voor 1970 met blanke delen stopt de monteur en belt zijn
+      teamleider, in plaats van 42 vragen af te vinken.
+    source:
+      title: VOLTA — Informatie LMRA (2020)
+      url: https://volta-org.be/media/ieqbrpzq/volta-informatie_lmra_2020.pdf
+    verify: true
+
+  - id: storingsregistratie
+    name: Storingsregistratie
+    category: sector
+    short: "Netbeheerders leggen elke storing vast met oorzaak en duur; daar leer je van, als het klopt."
+    text: >-
+      De Nederlandse netbeheerders registreren hun storingen sinds 1976 landelijk,
+      met onder meer de oorzaak. In het laagspanningsnet waren graafwerk,
+      veroudering en sluimerende storingen in 2018 de grootste oorzaken. Een oorzaak
+      die als 'onbekend' wordt vastgelegd, is een gemiste les.
+    example: >-
+      Bij Voltana stond bij 41 procent van de storingen 'oorzaak onbekend', tot de
+      monteurs zelf de codes mochten kiezen en er elke week naar gekeken werd.
+    source:
+      title: Netbeheer Nederland — Betrouwbaarheid van elektriciteitsnetten in Nederland, resultaten 2018
+      url: https://www.netbeheernederland.nl/sites/default/files/Betrouwbaarheid_elektriciteitsnetten_in_Nederland_2018_150.pdf
+
+  - id: capaciteitskaart
+    name: Capaciteitskaart
+    category: sector
+    short: "De kaart waarop netbeheerders laten zien waar het net nog ruimte heeft."
+    text: >-
+      Op de capaciteitskaart van Netbeheer Nederland zie je per gebied of er nog
+      transportcapaciteit is voor afname en voor teruglevering, of dat er een
+      wachtrij is. Ondernemers en gemeenten kiezen er locaties mee. Een kaart die
+      achterloopt, stuurt mensen naar plekken die vol zijn en weg van plekken met
+      ruimte.
+    example: >-
+      Een ondernemer kocht een kavel op Nova's bedrijventerrein omdat de kaart groen
+      was. Het station was al maanden vol.
+    source:
+      title: Netbeheer Nederland — Capaciteitskaart elektriciteitsnet
+      url: https://capaciteitskaart.netbeheernederland.nl
+
+  - id: alternatieve_transportrechten
+    name: Alternatieve transportrechten en flexcontracten
+    category: sector
+    short: "Contracten waarmee een klant toch stroom kan krijgen als het net niet altijd ruimte heeft."
+    text: >-
+      Naast vaste capaciteit bestaan er contractvormen voor een vol net. Bij een
+      non-firm contract kan de netbeheerder het transport beperken als het net vol
+      zit, tegen een lager tarief. Met een capaciteitsbeperkingscontract levert een
+      bedrijf tegen betaling tijdelijk capaciteit in. Op het hoogspanningsnet van
+      TenneT bestaat sinds 2024 een tijdsduurgebonden transportrecht: transport in
+      minstens 85 procent van de uren van het jaar, tegen een lager tarief.
+    example: >-
+      Een koelhuis op het bedrijventerrein krijgt een non-firm contract en kan
+      's nachts uitbreiden, terwijl het wacht op de verzwaring.
+    source:
+      title: ACM — Codebesluit alternatieve transportrechten
+      url: https://www.acm.nl/nl/publicaties/codebesluit-alternatieve-transportrechten
+
+  - id: gotork
+    name: GOTORK (use it or lose it)
+    category: sector
+    short: "Regels waarmee een netbeheerder ongebruikte gecontracteerde capaciteit kan terugvragen."
+    text: >-
+      Veel bedrijven hebben meer transportcapaciteit gecontracteerd dan ze gebruiken.
+      Met de ACM-regels over ongebruikte transportcapaciteit kan een netbeheerder
+      die capaciteit terugvragen en aan de wachtrij geven. Daarvoor moet hij wel
+      weten wie wat gebruikt.
+    example: >-
+      Op het drukste kwartier gebruikten de grootzakelijke klanten in Nova samen 62
+      procent van wat ze gecontracteerd hadden.
+    source:
+      title: Solar Magazine — ACM publiceert ontwerp-codebesluit om ongebruikte transportcapaciteit af te pakken
+      url: https://solarmagazine.nl/nieuws-zonne-energie/i35667/acm-publiceert-ontwerp-codebesluit-om-ongebruikte-transportcapaciteit-af-te-pakken
+
+  - id: energiewet
+    name: Energiewet
+    category: sector
+    short: "De wet die sinds 1 januari 2026 de Elektriciteitswet 1998 en de Gaswet vervangt."
+    text: >-
+      De Energiewet bundelt de regels voor elektriciteit en gas in één wet. In de
+      wet heten regionale netbeheerders distributiesysteembeheerders en heet TenneT
+      transmissiesysteembeheerder; in de praktijk blijft iedereen netbeheerder
+      zeggen. Voor klanten verandert er weinig.
+    example: >-
+      In Voltana's contracten staat sinds januari 2026 'distributiesysteembeheerder';
+      aan de balie zegt niemand het.
+    source:
+      title: Netbeheer Nederland — FAQ Energiewet
+      url: https://www.netbeheernederland.nl/sites/default/files/2025-12/faq_energiewet.pdf
+
+  - id: compensatieregeling
+    name: Compensatieregeling bij storingen
+    category: sector
+    short: "Bij een stroomstoring van meer dan vier uur krijgt een klant een vaste vergoeding."
+    text: >-
+      Duurt een storing langer dan vier uur, dan betaalt de netbeheerder een vaste
+      tegemoetkoming. Voor een huishouden is dat 35 euro voor vier tot acht uur en
+      20 euro per vier uur extra; grotere aansluitingen krijgen meer. Het is geen
+      schadevergoeding. Bij aangekondigd onderhoud of natuurrampen geldt het niet.
+    example: >-
+      Een storing van vijf uur in een straat met dertig huizen kost Voltana ruim
+      duizend euro aan compensatie.
+    source:
+      title: ACM ConsuWijzer — Vergoeding bij stroomstoring
+      url: https://consument.acm.nl/elektriciteit-en-gas/ik-heb-een-probleem/stroomstoring-vergoeding
+
+  - id: terugleverpiek
+    name: Terugleverpiek
+    category: sector
+    short: "Op zonnige middagen leveren zonnepanelen zoveel terug dat trafohuisjes overbelast raken."
+    text: >-
+      Zonnepanelen leveren het meest rond het middaguur, in voorjaar en zomer, als
+      er weinig stroom wordt gebruikt. In straten met veel panelen gaat de stroom
+      dan het net op en kan de wijktransformator overbelast raken; bij hitte kan een
+      trafo bovendien minder aan. Netbeheerders vragen klanten soms stroom te
+      gebruiken tussen 11 en 15 uur.
+    example: >-
+      In Nova slaan op een zonnige zomermiddag drie zekeringen door in trafohuisjes
+      van straten waar de helft van de daken vol panelen ligt.
+    source:
+      title: Solar Magazine — Oproep Enexis, gebruik stroom zonnepanelen tijdens zonnige uren
+      url: https://solarmagazine.nl/nieuws-zonne-energie/i43218/oproep-enexis-gebruik-stroom-zonnepanelen-tijdens-zonnige-uren-overbelasting-dreigt-op-37-locaties
+
+  - id: maatschappelijk_prioriteren
+    name: Maatschappelijk prioriteren
+    category: sector
+    short: "Bij een vol net mogen netbeheerders projecten met een maatschappelijk doel voor laten gaan."
+    text: >-
+      Normaal geldt in de wachtrij 'wie eerst komt, eerst maalt'. Met het
+      prioriteringskader van de ACM mogen netbeheerders bepaalde aanvragen voor
+      laten gaan, zoals projecten die het net ontlasten, en voorzieningen als
+      scholen, zorg en veiligheid. Wie voorgaat, schuift anderen naar achteren:
+      de keuze moet uitlegbaar zijn.
+    example: >-
+      De uitbreiding van zorgcentrum De Linde gaat in de wachtrij voor een
+      distributiehal die al twee jaar wacht.
+    source:
+      title: ACM — Codebesluit prioriteren transportverzoeken
+      url: https://www.acm.nl/nl/publicaties/codebesluit-prioriteren-transportverzoeken
+    verify: true
+
+  - id: stikstof
+    name: Stikstof en netuitbreiding
+    category: sector
+    short: "Ook voor de bouw van een station of kabeltracé kan een natuurvergunning voor stikstof nodig zijn."
+    text: >-
+      Sinds de Raad van State in november 2022 de bouwvrijstelling voor stikstof
+      schrapte, moet ook de stikstofuitstoot van de bouwfase worden beoordeeld. Voor
+      projecten bij kwetsbare natuur kan dat een vergunning en maanden vertraging
+      betekenen. Wie dat vroeg weet, kan het tracé, het materieel of de planning
+      aanpassen.
+    example: >-
+      Het nieuwe station bij Lindeveld ligt twee kilometer van een Natura 2000-gebied;
+      de stikstofberekening bepaalt mee wanneer de graafmachines mogen komen.
+    source:
+      title: Raad van State — uitspraak Porthos (bouwvrijstelling stikstof), ECLI:NL:RVS:2022:3159
+      url: https://uitspraken.rechtspraak.nl/details?id=ECLI:NL:RVS:2022:3159
+    verify: true
+
+  - id: cable_pooling
+    name: Cable pooling
+    category: sector
+    short: "Meerdere opwekkers, zoals een zonnepark en een windmolen, delen één aansluiting op het net."
+    text: >-
+      Zon en wind leveren zelden tegelijk hun maximum. Door ze op één aansluiting
+      te zetten, gebruiken ze de netcapaciteit beter: de kabel staat minder vaak
+      leeg. De opwekkers spreken samen af wie wanneer mag terugleveren.
+    example: >-
+      Een boer in Lindeveld zet zijn zonnepark achter de aansluiting van de
+      windmolen van zijn buurman, in plaats van te wachten op een eigen aansluiting.
+    estimate: "Described in general terms, without dates or numbers; verify the legal basis (Energiewet) before adding any."
+
+  - id: energiehub
+    name: Energiehub
+    category: sector
+    short: "Bedrijven op één terrein delen hun netcapaciteit en stemmen hun verbruik en opwek af."
+    text: >-
+      In een energiehub stemmen bedrijven op een bedrijventerrein hun verbruik,
+      opwek en opslag op elkaar af, vaak met een gezamenlijk contract met de
+      netbeheerder. Waar de een stroom over heeft, gebruikt de ander het. Zo past
+      er meer op hetzelfde net.
+    example: >-
+      Op de Kanaalzone in Havenzij delen een bakkerij, een koelhuis en een
+      zonnedak hun capaciteit, en de bakkerij bakt als de zon schijnt.
+    estimate: "Described in general terms; verify a public programme page (e.g. RVO or Netbeheer Nederland) before adding numbers."
+
+  - id: gopacs
+    name: GOPACS
+    category: sector
+    short: "Het platform waarop netbeheerders flexibiliteit inkopen om congestie op te lossen."
+    text: >-
+      Via GOPACS vragen netbeheerders marktpartijen om op een bepaalde plek en tijd
+      minder af te nemen of minder terug te leveren, terwijl een partij elders het
+      omgekeerde doet. Zo blijft de balans gelijk en ontlast je het volle stuk net.
+    example: >-
+      Op een koude avond vraagt Voltana via GOPACS een koelhuis in Nova om een uur
+      later te koelen, terwijl een batterij elders bijspringt.
+    source:
+      title: GOPACS — Grid Operators Platform for Congestion Solutions
+      url: https://www.gopacs.eu
+    verify: true
+
+  - id: ii3050
+    name: II3050
+    category: sector
+    short: "De verkenning van netbeheerders naar hoe het energienet er in 2050 uit moet zien."
+    text: >-
+      In de Integrale Infrastructuurverkenning 2030-2050 rekenen de netbeheerders
+      samen scenario's door voor een klimaatneutraal energiesysteem: hoeveel
+      elektriciteit, waterstof en warmte, en waar. Investeringsplannen bouwen erop
+      voort, omdat stations en kabels jaren nodig hebben.
+    example: >-
+      Ingrid Bos legt het investeringsplan van Zuidmark naast de scenario's: waar
+      moet het net in 2035 drie keer zo zwaar zijn?
+    source:
+      title: Netbeheer Nederland — Integrale Infrastructuurverkenning 2030-2050
+      url: https://www.netbeheernederland.nl/ii3050
+    verify: true
+
+  - id: transitievisie_warmte
+    name: Transitievisie Warmte
+    category: sector
+    short: "Het plan van een gemeente voor wanneer welke wijk van het aardgas af gaat."
+    text: >-
+      Gemeenten leggen in een transitievisie warmte vast welke wijken wanneer van
+      het aardgas af gaan en welke alternatieven in beeld zijn. Voor de netbeheerder
+      is dat een vooruitblik: een wijk met warmtepompen vraagt een zwaarder
+      elektriciteitsnet, een warmtenet niet.
+    example: >-
+      Nova-Oost staat in de transitievisie voor 2030 op warmtepompen; Voltana weet
+      dus nu al welke stations dan te klein zijn.
+    estimate: "The national climate agreement (Klimaatakkoord, 2019) asked every municipality for a transitievisie warmte by the end of 2021; verify the current national framing before adding dates."
+
+  # IT value streams (Act VI)
+  - id: value_stream_identification
+    name: Waardestromen in IT
+    category: lean
+    short: "Organiseer IT rond de stroom van waarde naar de gebruiker, niet rond systemen of afdelingen."
+    text: >-
+      Ook in IT is er een stroom: van een idee of melding tot software die een
+      gebruiker helpt. Wie die stroom tekent, ziet de overdrachten tussen teams,
+      de wachtrijen voor een testomgeving en de releases die alles ophouden. Teams
+      rond een waardestroom hoeven minder op elkaar te wachten.
+    example: >-
+      De veldapp van de monteurs is één waardestroom: van een vraag van Marco's
+      team tot een nieuwe knop op hun tablet.
+    source:
+      title: Scaled Agile Framework — Value Streams
+      url: https://scaledagileframework.com/value-streams/
+    verify: true
+
+  - id: ci_cd
+    name: Continuous integration en delivery
+    category: lean
+    short: "Kleine wijzigingen die elke dag automatisch gebouwd, getest en klaargezet worden."
+    text: >-
+      Bij continuous integration voegen ontwikkelaars hun werk vaak samen en test
+      een pijplijn het automatisch. Bij continuous delivery staat elke goedgekeurde
+      wijziging klaar om live te gaan. Kleine stappen maken fouten klein en snel
+      te vinden: one-piece flow voor software.
+    example: >-
+      Een fout in de veldapp wordt op dinsdag gemeld en staat donderdag hersteld op
+      de tablets, in plaats van bij de volgende halfjaarlijkse release.
+    estimate: "Practice (J. Humble and D. Farley, Continuous Delivery, 2010); no numbers."
+
+  - id: test_automation
+    name: Testautomatisering
+    category: lean
+    short: "Tests die een machine bij elke wijziging uitvoert, zodat mensen zich op het lastige kunnen richten."
+    text: >-
+      Handmatig testen kost bij elke release weer dezelfde dagen en wordt daarom
+      uitgesteld tot er genoeg verzameld is: een batch. Geautomatiseerde tests
+      draaien bij elke wijziging. Dat is jidoka voor software: de fout stopt de
+      stroom op de plek waar hij ontstaat.
+    example: >-
+      Voor de veldapp kostte een release twee weken testen; met automatische tests
+      is dat een uur, en de testers kijken naar wat monteurs echt doen.
+    estimate: "Practice; no numbers."
+
+  - id: art
+    name: Agile Release Train (ART)
+    category: lean
+    short: "Een team van teams dat samen, op een vast ritme, één waardestroom levert."
+    text: >-
+      In SAFe werken vijf tot twaalf teams die aan dezelfde waardestroom bouwen als
+      één trein, met een gezamenlijke planning en een vast ritme. Zo stemmen ze hun
+      afhankelijkheden af voordat die een week wachten worden.
+    example: >-
+      De teams van de veldapp, de planningstool en de meetdata rijden samen in de
+      trein 'Werk in het veld'.
+    source:
+      title: Scaled Agile Framework — Agile Release Train
+      url: https://scaledagileframework.com/agile-release-train/
+    verify: true
+
+  - id: team_topologies
+    name: Team Topologies
+    category: lean
+    short: "Teams zo indelen dat ze zo min mogelijk op elkaar hoeven te wachten."
+    text: >-
+      Team Topologies onderscheidt vier soorten teams, waaronder stream-aligned teams
+      die een waardestroom van begin tot eind dragen en platformteams die hen
+      helpen. Hoe minder overdrachten tussen teams, hoe korter de doorlooptijd.
+    example: >-
+      Het team van de veldapp krijgt een eigen tester en een eigen testomgeving en
+      hoeft niet meer te wachten op de afdeling Test.
+    estimate: "M. Skelton and M. Pais, Team Topologies (2019); no numbers."
+
+  - id: pi_planning
+    name: PI-planning
+    category: lean
+    short: "Alle teams van een trein plannen samen, in twee dagen, de komende acht tot twaalf weken."
+    text: >-
+      Bij een PI-planning zitten alle teams van een Agile Release Train samen. Ze
+      maken hun plannen zichtbaar, zien de afhankelijkheden en lossen die meteen op.
+      Het doel is een gedeeld plan, geen theater: wie alleen plannen presenteert
+      zonder ze aan te passen, mist het punt.
+    example: >-
+      Op het bord in de grote zaal blijkt dat de veldapp wacht op een wijziging in
+      de planningstool; de twee teams lossen het in tien minuten op.
+    source:
+      title: Scaled Agile Framework — PI Planning
+      url: https://scaledagileframework.com/pi-planning/
+    verify: true
+
+  - id: dora_metrics
+    name: DORA-metrics
+    category: measure
+    short: "Vier getallen voor hoe goed software stroomt: tempo, doorlooptijd, mislukte wijzigingen en hersteltijd."
+    text: >-
+      Het DORA-onderzoek meet softwarelevering met vier getallen: hoe vaak je
+      uitlevert, hoe lang een wijziging erover doet, hoeveel wijzigingen een
+      storing veroorzaken en hoe snel je herstelt. Snel en stabiel blijken samen te
+      gaan, niet tegen elkaar in.
+    example: >-
+      De veldapp ging van twee releases per jaar naar elke week, en het aantal
+      mislukte releases daalde.
+    source:
+      title: DORA — Accelerate State of DevOps (research program)
+      url: https://dora.dev
+    verify: true
+
+  - id: blameless_postmortem
+    name: Blameless postmortem
+    category: lean
+    short: "Na een storing zoek je naar oorzaken in het systeem, niet naar een schuldige."
+    text: >-
+      Na een incident schrijft het team op wat er gebeurde, waarom het mogelijk was
+      en wat het systeem moet veranderen. Wie bang is voor schuld, vertelt minder,
+      en dan leer je minder. Het is respect voor mensen, toegepast op storingen.
+    example: >-
+      Na de uitval van de planningstool schrijft het team geen naam op, maar dat
+      een wijziging zonder test live kon.
+    source:
+      title: Google — Site Reliability Engineering, Postmortem Culture
+      url: https://sre.google/sre-book/postmortem-culture/
+    verify: true
+
+  - id: technical_debt
+    name: Technische schuld
+    category: lean
+    short: "Snelle oplossingen in software die later rente kosten: elke wijziging wordt trager."
+    text: >-
+      Wie onder tijdsdruk een snelle oplossing bouwt, leent tijd van later. Die
+      schuld moet je aflossen, anders gaat elke volgende wijziging langzamer en
+      breekt er vaker iets. Het is de software-versie van een verbetering die niet
+      geborgd is.
+    example: >-
+      Een snelle koppeling tussen de veldapp en het magazijnsysteem werkt, maar elke
+      update van het magazijn breekt hem.
+    estimate: "Ward Cunningham's metaphor (1992); no numbers."

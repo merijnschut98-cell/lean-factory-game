@@ -647,6 +647,22 @@ def test_real_concepts_cover_the_glossary():
             assert "source" in c or "estimate" in c, c["id"]
 
 
+# The new concepts of the mission system (catalogue §3.9, K0; tier-2 drafts §5).
+K0_CONCEPTS = {
+    "daily_management", "pareto", "tiered_escalation", "andon", "safety_stock", "value_stream_mapping", "kaizen_event",
+    "conwip", "littles_law", "hoshin_kanri", "x_matrix", "sustain", "path_dependence", "twi_job_instruction",
+    "lmra", "storingsregistratie", "capaciteitskaart", "alternatieve_transportrechten", "gotork", "energiewet",
+    "compensatieregeling", "terugleverpiek", "maatschappelijk_prioriteren", "stikstof", "cable_pooling", "energiehub",
+    "gopacs", "ii3050", "transitievisie_warmte", "value_stream_identification", "ci_cd", "test_automation", "art",
+    "team_topologies", "pi_planning", "dora_metrics", "blameless_postmortem", "technical_debt",
+}
+
+
+def test_the_mission_systems_concepts_are_in_the_glossary():
+    concepts = {c["id"] for c in bc.load_content()["concepts"]["concepts"]}
+    assert K0_CONCEPTS <= concepts, sorted(K0_CONCEPTS - concepts)
+
+
 # ── Mission schema: story, forks, gates, rewards, facts (catalogue C1, C19) ──
 
 def _fork_branch(d: dict) -> None:
