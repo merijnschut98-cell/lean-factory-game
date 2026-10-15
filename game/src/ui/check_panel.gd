@@ -27,9 +27,11 @@ const KIND_GROUPS := {
 const LAGGING_NOTE := "Volgindicatoren lopen achter: ze meten werk dat grotendeels vóór je verbetering is gestart."
 ## Numbers where lower is better.
 const LOWER_IS_BETTER := ["lead_time", "wip_age"]
-## The Friday lesson's verdict, by the player's Act (GameSession.fade_forecast).
+## The Friday lesson's verdict, by the player's Act (GameSession.fade_forecast):
+## a standard slows the slide; only audits and planned routines hold a fix.
 const NOT_KEPT := "Jij borgde niet. Zonder standaard valt het team na %s terug in de oude gewoonte: de maand loopt dan zoals \"Zonder borgen\"."
-const KEPT := "Jij borgde de verbetering: de standaard houdt haar vast, ook als het druk wordt. De maand loopt zoals \"Met borgen\"."
+const KEPT := "Jij borgde de verbetering: de standaard remt het wegzakken, ook als het druk wordt. Maar ook een standaard slijt als niemand hem naloopt: zonder audit of vaste routine zakt de verbetering over zo'n %s toch weg. \"Met borgen\" is de maand waarin de standaard gevolgd blijft."
+const KEPT_BY_ROUTINE := "Jij borgde de verbetering en een vaste routine loopt de standaard elke week na: zo blijft ze staan. De maand loopt zoals \"Met borgen\"."
 const FORECAST_LAGGING := "De doorlooptijd (een volgindicator) laat dit pas na maanden zien: het werk dat deze maand klaar is, ging lang geleden door deze stap."
 const SCORE_PARTS := {
 	"plan": "Plan: onderzoek op de gemba", "root_cause": "Oorzaak en bewijs", "countermeasure": "Tegenmaatregel",
@@ -212,10 +214,19 @@ func _forecast_view() -> void:
 	grid.add_child(label(UiText.queue(faded_queue), UiTheme.FONT_SIZE,
 		Palette.SAFETY_ORANGE if faded_queue["days"] > held_queue["days"] else Palette.INK))
 	grid.add_child(label(KIND_TAGS[LEADING], UiTheme.SMALL, Palette.MUTED))
-	var kept: bool = forecast["standardised"]
-	card.add_child(paragraph(KEPT if kept else NOT_KEPT % UiText.period(forecast["fade_days"]),
-		Palette.GREEN_DARK if kept else Palette.SAFETY_ORANGE))
+	card.add_child(paragraph(forecast_verdict(forecast),
+		Palette.GREEN_DARK if forecast["standardised"] else Palette.SAFETY_ORANGE))
 	card.add_child(paragraph(FORECAST_LAGGING, Palette.MUTED, UiTheme.SMALL))
+
+
+## The Friday verdict for a fade_forecast: without a standard the fix fades
+## after fade_days; with one it slows down and fades after recur_days, unless
+## a routine holds it (recur_days INF).
+static func forecast_verdict(f: Dictionary) -> String:
+	if not f["standardised"]:
+		return NOT_KEPT % UiText.period(f["fade_days"])
+	var recur: float = f["recur_days"]
+	return KEPT_BY_ROUTINE if is_inf(recur) else KEPT % UiText.period(roundi(recur))
 
 
 ## Every text on the panel, for tests.

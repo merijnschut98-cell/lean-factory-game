@@ -117,6 +117,17 @@ func _toggle(panel: UiPanel) -> void:
 		_open(panel)
 
 
+## The share of the screen's width an open docked panel covers (the team's
+## menu), its margin included; 0 when none is open.
+func docked_share() -> float:
+	var width: float = get_viewport().get_visible_rect().size.x if is_inside_tree() \
+		else ProjectSettings.get_setting("display/window/size/viewport_width")
+	for p in _panels:
+		if p.visible and p.docked:
+			return (p.get_combined_minimum_size().x + UiPanel.DOCK_MARGIN) / width
+	return 0.0
+
+
 func is_busy() -> bool:
 	return _panels.any(func(p: UiPanel) -> bool: return p.visible)
 
@@ -145,10 +156,11 @@ func after_action() -> void:
 	var names := {}
 	for m: MissionDef in session.missions.defs.values():
 		names[m.id] = UiText.mission_title(m, session)
+	var problem_names := UiText.problem_names(session)
 	for e in session.drain_events():
-		if e["type"] == "recurred" and session.is_practice(e.get("problem", "")):
+		if e["type"] in ["recurred", "slipping"] and session.is_practice(e.get("problem", "")):
 			continue  # the practice problem is retired; the Friday forecast tells the fade
-		var text := UiText.event(e, names)
+		var text := UiText.event(e, names, problem_names)
 		if not text.is_empty():
 			hud.toast(text)
 		if e["type"] == "completed":

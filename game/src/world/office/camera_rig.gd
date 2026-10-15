@@ -64,12 +64,13 @@ var focus := Vector3.ZERO
 var active := true
 var camera: Camera3D
 var _turn := 0.0
-## The framing: {at, yaw} while inspecting, else empty.
+## The framing: {at, yaw, shift} while inspecting, else empty.
 var _inspect: Dictionary = {}
 ## What the camera shows now, gliding towards the wanted view.
 var _shown_yaw := 0.0
 var _shown_distance := DEFAULT_DISTANCE
 var _shown_pitch := 0.0
+var _shown_shift := 0.0
 ## The right button: held, how far dragged (px), how long (s), framing yet.
 var _right_held := false
 var _right_drag := 0.0
@@ -96,9 +97,11 @@ func pitch() -> float:
 	return lerpf(CLOSE_PITCH, FAR_PITCH, sqrt(inverse_lerp(MIN_DISTANCE, MAX_DISTANCE, distance)))
 
 
-## Frame a workstation: look at `at` (office space) facing `look_yaw`.
-func inspect(at: Vector3, look_yaw: float) -> void:
-	_inspect = {"at": at, "yaw": look_yaw}
+## Frame a workstation: look at `at` (office space) facing `look_yaw`, the
+## station `shift` of the screen's width left of the middle (a panel docked
+## at the right covers the rest).
+func inspect(at: Vector3, look_yaw: float, shift := 0.0) -> void:
+	_inspect = {"at": at, "yaw": look_yaw, "shift": shift}
 
 
 ## Back to the player.
@@ -116,6 +119,7 @@ func snap() -> void:
 	_shown_yaw = _wanted_yaw()
 	_shown_distance = _wanted_distance()
 	_shown_pitch = _wanted_pitch()
+	_shown_shift = _wanted_shift()
 	_place()
 
 
@@ -131,6 +135,7 @@ func update(delta: float) -> void:
 	_shown_yaw = lerp_angle(_shown_yaw, _wanted_yaw(), glide)
 	_shown_distance = lerpf(_shown_distance, _wanted_distance(), glide)
 	_shown_pitch = lerpf(_shown_pitch, _wanted_pitch(), glide)
+	_shown_shift = lerpf(_shown_shift, _wanted_shift(), glide)
 	_place()
 
 
@@ -144,6 +149,10 @@ func _wanted_yaw() -> float:
 
 func _wanted_distance() -> float:
 	return INSPECT_DISTANCE if inspecting() else distance
+
+
+func _wanted_shift() -> float:
+	return _inspect["shift"] if inspecting() else 0.0
 
 
 func _wanted_pitch() -> float:
@@ -173,6 +182,16 @@ func _place() -> void:
 	var ground := Vector2(focus.x, focus.z) + back * d * cos(p)
 	var at := Vector3(ground.x, focus.y + d * sin(p), ground.y)
 	camera.transform = Transform3D(Basis.looking_at(focus - at), at)
+	# Sideways, not turned: the focus moves off the middle by the shift.
+	camera.h_offset = _shown_shift * 2.0 * d * tan(deg_to_rad(camera.fov) / 2.0) * _aspect()
+
+
+## The screen's width over its height (16:9, the project's, outside a window).
+func _aspect() -> float:
+	if not is_inside_tree():
+		return 16.0 / 9.0
+	var screen := get_viewport().get_visible_rect().size
+	return screen.x / screen.y
 
 
 ## How far (m) the camera may go from `from` along `back` and stay over the floor.

@@ -3,8 +3,9 @@ extends SceneTree
 ##   xvfb-run -a godot --path game --rendering-driver opengl3 --resolution 1600x900 \
 ##     --script res://tools/play_shot.gd -- <state> <out.png> [frames]
 ## States: office (third person at Werkvoorbereiding, HUD and prompt) ·
-## overview (the same, zoomed out over the floor) · inspect (the camera
-## framing Werkvoorbereiding's station, as when right-click is held there) ·
+## overview (the same, zoomed out over the floor) · inspect (E at
+## Werkvoorbereiding: the team's menu docked at the right, the camera framing
+## the station beside it) ·
 ## tools (the team's menu after some gemba work) · a3 (the A3, filled in) ·
 ## check (the Check result after the experiment) · act (the score after Act) ·
 ## board (the mission board) · coach (the coach's question) · map (the
@@ -12,7 +13,9 @@ extends SceneTree
 ## gemba work and an extra few concepts) ·
 ## training_board (Monday of the training week: the board with the skip) ·
 ## timelapse (the week played to Friday: the Act and the month ahead, with and
-## without the standard).
+## without the standard) · sustain (the fix standardised, then left alone for
+## weeks: its health, the audit and the routine in the team's menu, and the
+## toasts of a slipping fix).
 ## The mission is played through the UI's own handlers, as a player would;
 ## only the training states start with the training week.
 
@@ -20,6 +23,9 @@ const SCENE := "res://src/world/office/office.tscn"
 const MISSION := "fix_custom_design"
 const DESIGN := "place:connections.design"
 const INTAKE := "place:connections.intake"
+## Days the standardised fix is left alone in the sustain state: long enough
+## to slip below the check-in line (life ≈ 130 days, slipping from ≈ 84).
+const SUSTAIN_DAYS := 100
 
 
 func _initialize() -> void:
@@ -29,7 +35,7 @@ func _initialize() -> void:
 func _run() -> void:
 	var args := OS.get_cmdline_user_args()
 	if args.size() < 2:
-		printerr("usage: -- <office|overview|inspect|tools|a3|check|act|board|coach|map|codex|training_board|timelapse> <out.png> [frames]")
+		printerr("usage: -- <office|overview|inspect|tools|a3|check|act|board|coach|map|codex|training_board|timelapse|sustain> <out.png> [frames]")
 		quit(2)
 		return
 	var office: Office = load(SCENE).instantiate()
@@ -46,14 +52,21 @@ func _run() -> void:
 			_investigate(office, true)
 			office.interact(office.interactable("obeya"))
 			office.ui.a3_form.fill(_a3(office))
-		"check", "act":
+		"check", "act", "sustain":
 			_investigate(office, true)
 			office.interact(office.interactable("obeya"))
 			office.ui.a3_form.submit(_a3(office))
 			office.ui.a3_form.wait()
 			office.ui.a3_form.check()
-			if state == "act":
+			if state != "check":
 				office.ui.check_panel.act(true)
+			if state == "sustain":
+				office.ui.close_panels()
+				office.session.region.advance_days(SUSTAIN_DAYS)
+				office.ui.after_action()
+				_stand_at(office, DESIGN)
+				office.interact(office.interactable(DESIGN))
+				office.rig.snap()
 		"coach":
 			_investigate(office, false)
 			office.interact(office.interactable("coach"))
@@ -70,7 +83,7 @@ func _run() -> void:
 			office.ui.toggle_codex()
 		"inspect":
 			_stand_at(office, DESIGN)
-			office.frame(office.interactable(DESIGN))
+			office.interact(office.interactable(DESIGN))
 			office.rig.snap()
 		"overview":
 			_stand_at(office, DESIGN)

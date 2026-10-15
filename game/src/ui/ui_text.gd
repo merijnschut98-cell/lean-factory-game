@@ -81,6 +81,9 @@ const PLACE_ERRORS := {
 	"use_ask": "Een gesprek voer je door een vraag te stellen.",
 	"unknown_place": "Hier werkt geen team.",
 	"unknown_question": "Die vraag kun je hier niet stellen.",
+	"no_team": "Hier werkt geen team om een routine mee te houden.",
+	"planned": "Hier loopt al een vaste routine.",
+	"not_planned": "Hier loopt geen vaste routine.",
 }
 
 const ACCEPT_ERRORS := {
@@ -128,6 +131,8 @@ const EVENTS := {
 	"check_ready": "Het experiment heeft zijn tijd gehad: tijd voor de Check op de obeya-wand.",
 	"recurred": "Een oud probleem is terug: de verbetering is weggezakt.",
 	"kpi_review": "De KPI-review van de afdelingen staat open.",
+	"slipping": "Een verbetering zakt weg: %s (J)",
+	"checkin": "Op het missiebord: %s",
 }
 
 ## The Check's waiting time in words (GameSession.check_days).
@@ -135,6 +140,19 @@ const PERIODS := {1: "een dag", 2: "twee dagen", 3: "drie dagen", 7: "een week",
 const TRAINING_TITLE := "Inwerkweek — %s: %s"
 const SKIP_CONFIRM := "Je mist de oefenweek, het echte werk begint direct."
 const CARD_FOOTER := "K voor alle begrippen"
+
+## Leader routines at a team's place (GameSession.audit, plan_routine,
+## stop_routine): the buttons with their cost, and what happened.
+const AUDIT_BUTTON := "Audit van de standaard (%s)"
+const PLAN_BUTTON := "Vaste routine plannen (%s per week van het team)"
+const STOP_BUTTON := "Routine stoppen (het team krijgt %s per week terug)"
+const AUDIT_HEADING := "Audit van de standaard"
+const ROUTINE_HEADING := "Vaste routine"
+const AUDITED := "Je loopt met het team de standaard na. Wat wegzakte, wordt weer gedaan zoals afgesproken: %s."
+const NO_STANDARD := "Voor %s is nooit een standaard vastgelegd: er is niets om tegen te auditen."
+const NOTHING_TO_AUDIT := "Hier is geen verbetering om na te lopen."
+const ROUTINE_PLANNED := "Vanaf nu loopt de teamleider elke week de standaard na met het team. Dat kost het team %s per week."
+const ROUTINE_STOPPED := "De routine is gestopt: het team heeft de %s per week weer voor ander werk."
 
 const NOTHING_NEW := "Je vindt hier niets nieuws met dit instrument."
 const SPOTTED := "Je ziet het met eigen ogen: hier loopt iets niet zoals het zou moeten."
@@ -218,6 +236,14 @@ static func kpi_value(id: String, value: float) -> String:
 
 ## A mission's name as the player sees it: a training day with its weekday
 ## ("Inwerkweek — ma: Rondleiding", see GameSession.training_weekday).
+## Every problem's name by id (for events and audits that name problems).
+static func problem_names(s: GameSession) -> Dictionary:
+	var names := {}
+	for p in s.region.problem_list():
+		names[p.id] = p.name
+	return names
+
+
 static func mission_title(m: MissionDef, s: GameSession) -> String:
 	var weekday := s.training_weekday(m.id)
 	return TRAINING_TITLE % [weekday, m.name] if not weekday.is_empty() else m.name
@@ -290,8 +316,9 @@ static func coach_reply(reply_def: Dictionary) -> String:
 	return reply_def.get("text", "") if kind in ["question", "insight"] else COACH.get(kind, "")
 
 
-## A session event in a line, or "" when it is not for the player.
-static func event(e: Dictionary, mission_names: Dictionary) -> String:
+## A session event in a line, or "" when it is not for the player. Its
+## name comes from `mission_names` (a mission's event) or `problem_names`.
+static func event(e: Dictionary, mission_names: Dictionary, problem_names: Dictionary = {}) -> String:
 	var type: String = e.get("type", "")
 	if type == "belt":
 		return "Nieuwe band: %s!" % belt(Progression.BELTS[e["belt"]]["id"])
@@ -301,7 +328,43 @@ static func event(e: Dictionary, mission_names: Dictionary) -> String:
 	if not EVENTS.has(type):
 		return ""
 	var text: String = EVENTS[type]
-	return text % mission_names.get(e.get("mission", ""), "") if text.contains("%s") else text
+	if not text.contains("%s"):
+		return text
+	return text % (mission_names.get(e["mission"], "") if e.has("mission") else problem_names.get(e.get("problem", ""), ""))
+
+
+## The weekly team time a routine costs, e.g. "2 uur".
+static func routine_hours() -> String:
+	return duration(roundi(Sustain.ROUTINE_HOURS_PER_WEEK * 60.0))
+
+
+## What an audit found (GameSession.audit's {refreshed, no_standard}, problem
+## names by id).
+static func audit_result(result: Dictionary, problem_names: Dictionary) -> String:
+	var lines: PackedStringArray = []
+	for key: String in ["refreshed", "no_standard"]:
+		if not result[key].is_empty():
+			var names := ", ".join(result[key].map(func(id: String) -> String: return problem_names.get(id, id)))
+			lines.append((AUDITED if key == "refreshed" else NO_STANDARD) % names)
+	return "\n".join(lines) if not lines.is_empty() else NOTHING_TO_AUDIT
+
+
+## A resolved fix as measured (GameSession.sustain_of): how much of it still
+## works, whether it was standardised, and how long nobody checked it. The
+## measure only: nothing says what would hold it.
+static func fix_health(sustain: Dictionary) -> String:
+	var days := roundi(sustain["neglect_days"])
+	return "Werkt voor %d%%  ·  %s  ·  %s" % [roundi(sustain["health"] * 100.0),
+		"gestandaardiseerd" if sustain["standardised"] else "geen standaard",
+		"wekelijkse routine" if sustain["routine"] else "%d %s niet nagelopen" % [days, "dag" if days == 1 else "dagen"]]
+
+
+## Stagnation drift (GameSession.drift) in a line; "" before the campaign.
+static func drift_line(drift: Dictionary) -> String:
+	if not drift["started"]:
+		return ""
+	return "Laatste afgeronde verbetering: %d dagen geleden  ·  achteruitgang door stilstand: %d%%" % [
+		roundi(drift["stagnant_days"]), roundi(drift["level"] * 100.0)]
 
 
 static func _decimal(value: float, places: int) -> String:
