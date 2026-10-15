@@ -1032,6 +1032,81 @@ def check_concepts(docs: dict[str, Any]) -> None:
                 raise ContentError(f"{at}: teaches unknown concept {concept_id!r}")
 
 
+# ── discoveries.yaml ─────────────────────────────────────────────────────────
+# Hidden rewards (audit §4): trigger types and their parameters
+# (Discoveries.TRIGGERS), and what a reward may hold.
+DISCOVERY_TRIGGERS = {
+    "check_recovery": [], "fork_measured": ["window_days"], "fork_learned": [], "held": ["days"],
+    "tool_at": ["place", "tool", "hours", "months", "problem_active", "no_problem_at"],
+    "predictions": ["count"], "deepest_why": ["count"], "durable_held": ["count", "days"],
+    "blame_repair_clue": [], "no_blame_act": [], "no_overload_act": ["experiments"],
+    "missions_scored": ["missions", "score"], "recovered_after_fail": ["score"], "coach_cycle": [],
+    "tool_in_missions": ["place", "tool", "missions", "problem", "countermeasure"],
+    "farewell": ["mission", "place", "days", "countermeasures"],
+}
+DISCOVERY_KEYS = {"id", "name", "line", "hint", "act", "trigger", "reward"}
+MAX_DISCOVERY_REPUTATION = 3  # small in power (audit §4.1)
+
+
+def validate_discoveries(doc: Any, source: str) -> None:
+    _require_strings(doc, [], source)
+    for d in _entries(doc, "discoveries", source):
+        where = f"{source}: discovery '{d['id']}'"
+        _known_keys(d, DISCOVERY_KEYS, where)
+        _require_strings(d, ["line", "hint"], where)
+        _number(d, "act", where, 0, MAX_ACT, integer=True)
+        trigger = d.get("trigger")
+        if not isinstance(trigger, dict) or trigger.get("type") not in DISCOVERY_TRIGGERS:
+            raise ContentError(f"{where}: 'trigger' needs a type: {', '.join(DISCOVERY_TRIGGERS)}")
+        _known_keys(trigger, {"type", *DISCOVERY_TRIGGERS[trigger["type"]]}, f"{where} trigger")
+        for key in ("window_days", "days", "count", "experiments", "score"):
+            if key in trigger:
+                _number(trigger, key, f"{where} trigger", 1, integer=True)
+        if "hours" in trigger and not (isinstance(trigger["hours"], list) and len(trigger["hours"]) == 2
+                                       and all(isinstance(h, int) and 0 <= h <= 24 for h in trigger["hours"])):
+            raise ContentError(f"{where} trigger: 'hours' is [from, to], whole hours")
+        if "months" in trigger and not (isinstance(trigger["months"], list)
+                                        and all(isinstance(m, int) and 1 <= m <= 12 for m in trigger["months"])):
+            raise ContentError(f"{where} trigger: 'months' is a list of 1-12")
+        reward = _mapping(d, "reward", {"reputation", "trust", "title", "object", "note"}, where)
+        _number(reward, "reputation", f"{where} reward", 0, MAX_DISCOVERY_REPUTATION, integer=True, default=0)
+        _trust_map(reward, f"{where} reward", 0, 1)
+        _require_strings(reward, [k for k in ("title", "object", "note") if k in reward], f"{where} reward")
+
+
+def check_discoveries(docs: dict[str, Any]) -> None:
+    """Discoveries name real places, tools, problems, missions and teams."""
+    net = _network_index(docs["value_streams"], docs["kpis"])
+    problems = {p["id"]: p for _, p in _all_problems(docs)}
+    missions = {m["id"]: m for m in docs["missions"]["missions"]}
+    pools = {p["id"] for p in docs["value_streams"]["pools"]}
+    for d in docs["discoveries"]["discoveries"]:
+        where, t = f"discoveries.yaml: '{d['id']}'", d["trigger"]
+        place = t.get("place")
+        if place is not None and not (place in net["step"] or place.endswith(".")
+                                      and any(s.startswith(place) for s in net["step"])):
+            raise ContentError(f"{where}: unknown place {place!r}")
+        if "tool" in t and t["tool"] not in TOOLS:
+            raise ContentError(f"{where}: unknown tool {t['tool']!r}")
+        for key in ("problem_active", "problem"):
+            if key in t and t[key] not in problems:
+                raise ContentError(f"{where}: unknown problem {t[key]!r}")
+        for m in t.get("missions", []) if isinstance(t.get("missions"), list) else []:
+            if m not in missions:
+                raise ContentError(f"{where}: unknown mission {m!r}")
+        if "mission" in t and t["mission"] not in missions:
+            raise ContentError(f"{where}: unknown mission {t['mission']!r}")
+        cms = t.get("countermeasures", []) + ([t["countermeasure"]] if "countermeasure" in t else [])
+        listed = set(problems[t["problem"]]["countermeasures"]) if "problem" in t else \
+            set(problems[missions[t["mission"]]["goal"]["problem"]]["countermeasures"]) if "mission" in t else set()
+        for cm in cms:
+            if cm not in listed:
+                raise ContentError(f"{where}: countermeasure {cm!r} is not one of its problem's")
+        for team in d.get("reward", {}).get("trust", {}):
+            if team not in pools:
+                raise ContentError(f"{where}: trust of unknown team {team!r}")
+
+
 def vocabulary() -> dict[str, Any]:
     """The words content may use, written to game/data so a Godot test can
     check the game knows exactly the same ones."""
@@ -1041,7 +1116,7 @@ def vocabulary() -> dict[str, Any]:
         "mission_kinds": MISSION_KINDS, "mission_goals": sorted(MISSION_GOALS), "coach_stages": COACH_STAGES,
         "belt_xp": BELT_XP, "min_reward_share": MIN_REWARD_SHARE, "fact_kinds": sorted(FACT_KINDS),
         "measures": sorted(MEASURES), "fork_roles": FORK_ROLES, "coach_conditions": COACH_CONDITIONS,
-        "debrief_variants": DEBRIEF_VARIANTS, "start_rules": START_RULES, "order_rules": ORDER_RULES,
+        "debrief_variants": DEBRIEF_VARIANTS, "discovery_triggers": {k: v for k, v in sorted(DISCOVERY_TRIGGERS.items())}, "start_rules": START_RULES, "order_rules": ORDER_RULES,
         "care_rules": CARE_RULES, "kpi_kinds": KPI_KINDS,
         "effect_properties": {p: {"kind": k, "step_kind": sk or ""} for p, (k, sk, _) in sorted(EFFECT_PROPERTIES.items())},
     }
@@ -1056,10 +1131,12 @@ VALIDATORS: dict[str, Callable[[Any, str], None]] = {
     "missions": validate_missions,
     "kpis": validate_kpis,
     "concepts": validate_concepts,
+    "discoveries": validate_discoveries,
 }
 
 # Checks that need several files at once. Each gets {stem: document}.
-CROSS_CHECKS: list[Callable[[dict[str, Any]], None]] = [check_kpis, check_problems, check_missions, check_concepts]
+CROSS_CHECKS: list[Callable[[dict[str, Any]], None]] = [check_kpis, check_problems, check_missions, check_concepts,
+                                                        check_discoveries]
 
 
 def _validator_for(stem: str) -> Callable[[Any, str], None] | None:

@@ -214,6 +214,9 @@ func test_the_game_knows_the_content_vocabulary() -> void:
 	assert_eq(MissionDef.FORK_ROLES, vocab["fork_roles"])
 	assert_eq(Missions.CONDITIONS, vocab["coach_conditions"])
 	assert_eq(Missions.DEBRIEF_VARIANTS, vocab["debrief_variants"])
+	assert_eq(Discoveries.TRIGGERS.size(), vocab["discovery_triggers"].size())
+	for type: String in Discoveries.TRIGGERS:
+		assert_eq(Discoveries.TRIGGERS[type], vocab["discovery_triggers"].get(type), type)
 	var properties: Dictionary = vocab["effect_properties"]
 	assert_eq(SimModifiers.PROPERTIES.keys().size(), properties.size())
 	for property: String in SimModifiers.PROPERTIES:

@@ -118,6 +118,11 @@ func trust_of(place: String) -> int:
 	return trust.get(_team(place), 0)
 
 
+## The team you talk to at a place ("" at a wait step).
+func team_at(place: String) -> String:
+	return _team(place)
+
+
 ## Change a team's trust (bounded); the new trust.
 func change_trust(team: String, delta: int) -> int:
 	trust[team] = clampi(trust.get(team, 0) + delta, TRUST_MIN, TRUST_MAX)

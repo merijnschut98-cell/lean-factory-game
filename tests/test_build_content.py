@@ -29,6 +29,7 @@ def dirs(tmp_path: Path) -> tuple[Path, Path]:
     (content / "value_streams.yaml").write_text(REAL_STREAMS, encoding="utf-8")
     for stem in ("countermeasures", "problems_tier1", "missions", "kpis", "concepts"):
         (content / f"{stem}.yaml").write_text((bc.CONTENT_DIR / f"{stem}.yaml").read_text(encoding="utf-8"), encoding="utf-8")
+    (content / "discoveries.yaml").write_text("discoveries: []\n", encoding="utf-8")
     return content, data
 
 
@@ -318,7 +319,8 @@ def rules_dirs(dirs):
 
 def _rules(content, mutate) -> None:
     docs = {stem: yaml.safe_load((content / f"{stem}.yaml").read_text(encoding="utf-8"))
-            for stem in ("game", "value_streams", "countermeasures", "problems_tier1", "missions", "kpis", "concepts")}
+            for stem in ("game", "value_streams", "countermeasures", "problems_tier1", "missions", "kpis", "concepts",
+                         "discoveries")}
     mutate(docs)
     for stem, doc in docs.items():
         (content / f"{stem}.yaml").write_text(yaml.safe_dump(doc, allow_unicode=True), encoding="utf-8")
@@ -753,4 +755,45 @@ def test_a_missed_deadline_may_not_close_the_only_route_of_a_needs(rules_dirs):
                               goal={"type": "investigate", "problem": "custom_design", "clues": 1})
         _mission(d, 2)["requires"]["facts"] = {"any": ["chose:custom_design:weekly_meeting"]}
     with pytest.raises(bc.ContentError, match="a missed deadline can close this route for good"):
+        _rules(content, mutate)
+
+
+# ── Hidden rewards (audit §4) ────────────────────────────────────────────────
+
+def _discovery(**trigger) -> dict:
+    return {"id": "test_find", "name": "Gevonden", "line": "Mooi.", "hint": "Kijk eens.", "act": 1, "trigger": trigger,
+            "reward": {"reputation": 2, "title": "Kijker", "trust": {"work_prep": 1}}}
+
+
+def _add_discovery(**trigger):
+    return lambda d: d["discoveries"].update(discoveries=[_discovery(**trigger)])
+
+
+def test_a_discovery_is_valid(rules_dirs):
+    content, _ = rules_dirs
+    _rules(content, _add_discovery(type="tool_at", place="outages.", hours=[22, 5]))
+    _rules(content, _add_discovery(type="missions_scored", missions=["fix_design"], score=20))
+    _rules(content, _add_discovery(type="farewell", mission="fix_design", place="connections.design", days=7,
+                                   countermeasures=["standard_designs"]))
+
+
+@pytest.mark.parametrize("mutate, message", [
+    (_add_discovery(type="luck"), "'trigger' needs a type"),
+    (_add_discovery(type="tool_at", place="connections.nowhere"), "unknown place 'connections.nowhere'"),
+    (_add_discovery(type="tool_at", place="outages.", tool="crystal_ball"), "unknown tool 'crystal_ball'"),
+    (_add_discovery(type="tool_at", place="outages.", hours=[22]), "'hours' is \\[from, to\\]"),
+    (_add_discovery(type="tool_at", place="outages.", months=[13]), "'months' is a list of 1-12"),
+    (_add_discovery(type="predictions", count=0), "'count' must be >= 1"),
+    (_add_discovery(type="predictions", streak=5), "unknown key.s. 'streak'"),
+    (_add_discovery(type="missions_scored", missions=["ghost"]), "unknown mission 'ghost'"),
+    (_add_discovery(type="farewell", mission="fix_design", place="connections.design", countermeasures=["weekly_meeting"]),
+     "is not one of its problem's"),
+    (lambda d: _add_discovery(type="coach_cycle")(d) or d["discoveries"]["discoveries"][0]["reward"].update(reputation=5),
+     "'reputation' must be between 0 and 3"),
+    (lambda d: _add_discovery(type="coach_cycle")(d) or d["discoveries"]["discoveries"][0]["reward"].update(trust={"ghosts": 1}),
+     "trust of unknown team 'ghosts'"),
+])
+def test_discovery_errors_are_caught(rules_dirs, mutate, message):
+    content, _ = rules_dirs
+    with pytest.raises(bc.ContentError, match=message):
         _rules(content, mutate)

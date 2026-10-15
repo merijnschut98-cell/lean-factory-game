@@ -38,6 +38,8 @@ const MAX_FORECAST_DAYS := 91
 var catalog: Catalog
 var region: Region
 var missions: Missions
+## Hidden rewards for deep thinking; it hears what the player does.
+var discoveries: Discoveries
 ## The first thing wrong with the content; "" when the game is usable.
 var error := ""
 
@@ -56,6 +58,7 @@ static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, t
 	s.region = Region.new(net, s.catalog.problems, s.catalog.countermeasures, Profile.new())
 	s.region.use_kpis(s.catalog.kpis)
 	s.missions = Missions.new(s.region, s.catalog.missions, s.catalog.coach)
+	s.discoveries = Discoveries.new(s.catalog.discoveries)
 	for id in [STORY_MISSION, TRAINING_FIRST]:
 		if not s.missions.defs.has(id):
 			s.error = "missing mission: " + id
@@ -76,6 +79,8 @@ static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, t
 ## Take on a mission (activating its problem). "" or Missions.accept's code.
 func accept(mission_id: String) -> String:
 	var refused := missions.accept(mission_id)
+	if refused.is_empty():
+		discoveries.note_accept(self, mission_id)
 	_after(0)
 	return refused
 
@@ -100,6 +105,7 @@ func use_tool(place: String, tool: String) -> Dictionary:
 		return {"error": "unknown_place"}
 	var result := region.use_tool(place, tool)
 	missions.note_use(place, tool)
+	discoveries.note_use(self, place, tool, "", result["clues"].any(func(c: Clue) -> bool: return c.key))
 	_after(Investigation.TOOLS[tool]["minutes"])
 	return result
 
@@ -113,6 +119,7 @@ func ask(place: String, question_id: String) -> Dictionary:
 		return {"error": "unknown_place"}
 	var result := region.ask(place, question_id)
 	missions.note_use(place, "conversation")
+	discoveries.note_use(self, place, "conversation", result["reply"], result.has("clue") and result["clue"].key)
 	_after(Investigation.TOOLS["conversation"]["minutes"])
 	return result
 
@@ -132,6 +139,8 @@ func submit_a3(problem_id: String, a3: Dictionary) -> String:
 	if not region.state.has(problem_id):
 		return "unknown_problem"
 	var refused := region.submit_a3(problem_id, _cleaned(a3), check_days(problem_id))
+	if refused.is_empty():
+		discoveries.note_a3(self, problem_id)
 	_after(0)
 	return refused
 
@@ -157,6 +166,8 @@ func check(problem_id: String) -> Dictionary:
 	if not region.state.has(problem_id):
 		return {"error": "unknown_problem"}
 	var result := region.check(problem_id)
+	if not result.is_empty():
+		discoveries.note_check(self, problem_id, result)
 	_after(0)
 	return result if not result.is_empty() else {"error": "not_check_ready"}
 
@@ -167,6 +178,8 @@ func act(problem_id: String, standardise: bool) -> Dictionary:
 	if not region.state.has(problem_id):
 		return {"error": "unknown_problem"}
 	var score := region.act(problem_id, standardise)
+	if not score.is_empty():
+		discoveries.note_act(self, problem_id)
 	_after(0)
 	return score.duplicate(true) if not score.is_empty() else {"error": "not_checked"}
 
@@ -203,6 +216,10 @@ func stop_routine(place: String) -> String:
 ## The coach's reply (Missions.ask_coach): about the main mission only.
 func ask_coach(mission_id: String = "") -> Dictionary:
 	var reply := missions.ask_coach(mission_id)
+	if reply.has("stage"):
+		var coached := missions.active("main")
+		coached.append_array(missions.active("training"))
+		discoveries.note_coach(coached[0].id, reply["stage"])
 	_after(0)
 	return reply
 
@@ -270,6 +287,7 @@ func fade_forecast(days: int, problem_id: String = TRAINING_PROBLEM) -> Dictiona
 func drain_events() -> Array[Dictionary]:
 	var out := region.drain_events()
 	out.append_array(missions.drain_events())
+	out.append_array(discoveries.drain_events())
 	return out
 
 
@@ -283,6 +301,19 @@ func clock_text() -> String:
 	var minute_of_day := played % SimCalendar.MINUTES_PER_DAY
 	return "%s %d %s, %02d:%02d" % [WEEKDAYS[SimCalendar.weekday(played)], date["day"], MONTHS[date["month"] - 1],
 		int(minute_of_day / 60.0), minute_of_day % 60]
+
+
+## The month of the game's date (1-12).
+func month() -> int:
+	var played := region.net.time - SimCalendar.days(WARMUP_DAYS)
+	return Time.get_date_dict_from_unix_time(
+		Time.get_unix_time_from_datetime_dict(PLAY_START_DATE) + SimCalendar.day_of(played) * 86400)["month"]
+
+
+## The codex's Ontdekkingen: found ones {id, found, name, line, reward}, the
+## rest {id, found: false, hint} (the hint once their act is over).
+func discoveries_view() -> Array[Dictionary]:
+	return discoveries.view(self)
 
 
 func budget() -> int:
@@ -467,6 +498,7 @@ func _after(minutes: int) -> void:
 	_start_training_day()
 	if not missions.in_training():
 		region.start_drift()
+	discoveries.update(self)
 
 
 ## A training day handed out starts on its own morning (Monday to Friday of
