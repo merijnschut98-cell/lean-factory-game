@@ -192,3 +192,22 @@ func test_facts_survive_save_and_load() -> void:
 	odd.load_dict(saved)
 	assert_true(odd.knows("flag:ok"))
 	assert_false(odd.facts.has("nonsense"))
+
+
+## A debrief reads the play (audit §5.7): blamed before a poor fix before an
+## unstandardised fix before the fork branch done first.
+func test_the_debrief_reads_the_play() -> void:
+	var variants := {"blamed": "b", "poor_fix": "p", "not_standardised": "n"}
+	var log := _log(RulesFixture.countermeasures(), [_mission("fix_it", "side", {"type": "solve", "problem": "revision_backlog"},
+		{"debrief_variants": variants})])
+	log.accept("fix_it")
+	var st: ProblemState = log.region.state["revision_backlog"]
+	_resolve(log, "revision_backlog", "revision_at_source", false)
+	assert_eq(log.debrief_of("fix_it"), "n")
+	st.cause_correct = false
+	log.facts.add("poor_fix:revision_backlog")
+	assert_eq(log.debrief_of("fix_it"), "p")
+	st.blamed = true
+	assert_eq(log.debrief_of("fix_it"), "b")
+	var plain := MissionDef.from_dict(_mission("x", "side", {"type": "walk", "stream": "meters"}, {"debrief_variants": {"blamed": "b"}}))
+	assert_eq(plain.debrief_variants, {"blamed": "b"})

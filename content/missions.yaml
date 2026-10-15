@@ -39,6 +39,10 @@
 #            flag:<name>, or measures such as maturity>=3)
 # rewards    also reputation (default: main 5, side 2) and trust {team: n}
 # sets_flags [flag:<name>] facts its completion sets
+# debrief_variants {blamed, poor_fix, not_standardised}: debriefs that read
+#            the play, in that order before debrief_first and debrief
+# questions  main and training: the mission's own coach questions per stage,
+#            asked before the general bank; insights may list several per stage
 #
 # Goal names: `sustain {problem}` is the check-in's (a slipping fix back in
 # use; the game builds these). Holding a KPI for some weeks (catalogue §2.1)
@@ -97,8 +101,10 @@ missions:
     name: Rondleiding
     kind: training
     tier: 1
-    briefing: "Welkom bij Voltana Netbeheer. Deze week oefen je in het klein, zonder risico. Vandaag kijk je alleen rond: zoek met de kaart (M) de Intake en Werkvoorbereiding op, en kijk of vraag bij elk team hoe het werk binnenkomt."
-    debrief: "Nu ken je de plekken waar een aanvraag langs komt. Morgen gaan we beter kijken."
+    act: 0
+    chapter: Inwerkweek
+    briefing: "Welkom bij Voltana Netbeheer. Ik ben Ruud Hoekstra. Deze week oefen je in het klein; als er iets misgaat, raakt niemand iets kwijt. Vanochtend lag er een brief op mijn bureau van de familie El Amrani uit Nova-Oost: ze wachten al elf weken op een aansluiting voor hun warmtepomp. Zoek met de kaart (M) de Intake en Werkvoorbereiding op en kijk of vraag bij elk team hoe het werk binnenkomt."
+    debrief: "Je kent nu twee plekken waar een aanvraag langskomt. Elf weken onderweg: hoeveel uur is er al echt aan gewerkt, denk je? Morgen ga je beter kijken."
     goal: {type: observe, places: [connections.intake, connections.design]}
     teaches: [netbeheerder, aansluiting, aansluittermijn]
     # TRAINING SETUP (staged, not a real number): this week three of the four
@@ -111,242 +117,360 @@ missions:
       - {target: work_prep, property: availability, value: -0.75}
     rewards: {xp: 50}
     insights:
-      go_see: "Een aanvraag doet er maanden over. Waar denk je dat die tijd zit: in het werk, of ertussen?"
+      go_see: "Een aanvraag doet er maanden over. Hoeveel van die tijd wordt er echt aan gewerkt, denk je? En hoe zou je dat kunnen zien?"
 
   - id: training_tue
     name: Kijken zonder oordeel
     kind: training
     tier: 1
+    act: 0
+    chapter: Inwerkweek
     requires: {missions: [training_mon]}
-    briefing: "Ga vandaag naar Werkvoorbereiding en kijk met twee verschillende gemba-hulpmiddelen naar het werk. Elk hulpmiddel kost tijd en laat iets anders zien. Oordeel nog niet: kijk alleen."
-    debrief: "Wat je zelf ziet is meer waard dan wat in een rapport staat. Lees je aantekeningen nog eens na."
+    briefing: "Bij Werkvoorbereiding zit deze week alleen Anouk de Vries; haar drie collega's zitten op cursus. Ga bij haar kijken met twee verschillende gemba-hulpmiddelen. Elk hulpmiddel kost tijd en laat iets anders zien. Oordeel nog niet, ook niet in je hoofd: schrijf op wát je ziet, niet wat je ervan vindt."
+    debrief: "Wat liet het ene hulpmiddel zien dat het andere miste? Anouk werkt snel. Toch ligt er veel. Waar zit dan de tijd?"
     goal: {type: observe, places: [connections.design], uses: 2}
     teaches: [gemba, five_whys, eight_wastes]
     rewards: {xp: 50}
     insights:
-      go_see: "Welk hulpmiddel liet je iets zien dat je met het andere niet zag?"
+      go_see: "Wat deed Anouk, en wat deed het werk terwijl zij bezig was?"
 
   - id: training_wed
     name: Waar zit de stapel?
     kind: training
     tier: 1
+    act: 0
+    chapter: Inwerkweek
     requires: {missions: [training_tue]}
-    briefing: "Tel de wachtrij bij Intake en bij Werkvoorbereiding. Waar wacht het werk het langst? Dat is de plek die de hele stroom ophoudt."
-    debrief: "Een stroom gaat zo snel als zijn knelpunt. Verbeteren op een andere plek maakt de stapel niet kleiner."
+    # Correctness (audit L3): the constraint is where the most days of work
+    # wait, not the most orders; queue_count reports both (Region.queue_at).
+    briefing: "Tel vandaag de wachtrij bij Intake en bij Werkvoorbereiding. Let op: twintig dossiers van een kwartier zijn minder werk dan tien dossiers van vier uur. Waar ligt het meeste werk te wachten, in dagen werk? Schrijf het op voordat je het met je gevoel vergelijkt."
+    debrief: "Je telde de dossiers én de dagen werk die ze vragen. Een stroom gaat zo snel als de plek waar het meeste werk wacht. Als Intake morgen twee keer zo hard werkt, waar ligt het werk dan overmorgen?"
     goal: {type: observe, places: [connections.intake, connections.design], tool: queue_count}
     # The week's training setup (on Monday) makes the counts give a clear
     # answer; the debrief adds what the player measured and names the longer queue.
     teaches: [flow, wip, bottleneck_focus, netcongestie]
     rewards: {xp: 50}
     insights:
-      go_see: "Als Intake morgen twee keer zo snel werkt, waar ligt het werk dan overmorgen?"
+      go_see: "Welke van de twee getallen vertelt je meer: het aantal dossiers of de dagen werk? Waarom?"
 
   - id: training_thu
     name: Een klein experiment
     kind: training
     tier: 1
+    act: 0
+    chapter: Inwerkweek
     requires: {missions: [training_wed]}
-    briefing: "Gisteren telde je waar het werk het langst wacht. Deze week zit bij Werkvoorbereiding maar één van de vier werkvoorbereiders; de anderen volgen een cursus. Juist daar gaat ook iets kleins mis met het binnenkomende werk. Zoek uit wat, schrijf een oefen-A3 met een voorspelling en probeer een tegenmaatregel. Over drie dagen kijken we in de Check of je voorspelling uitkwam."
-    debrief: "Je voorspelling is getoetst aan wat er echt gebeurde. Zo leer je van elk experiment, ook als het tegenvalt."
+    briefing: "Anouk pakt altijd het oudste dossier. Toch ligt het dossier van de familie El Amrani al negen dagen bij haar. Hoe kan dat? Zoek het uit, schrijf een oefen-A3 met een voorspelling en probeer een tegenmaatregel. Over drie dagen kijken we samen of je voorspelling uitkwam."
+    debrief: "Je voorspelling is getoetst aan wat er echt gebeurde. Of het tegenviel of meeviel: je weet nu iets wat je gisteren niet wist. Dat is een experiment."
     goal: {type: check, problem: training_tray}
     check_days: 3
     teaches: [PDCA, A3, leading_lagging]
     rewards: {xp: 50}
     insights:
-      understand: "Wat zie je de werkvoorbereider doen voordat het echte werk aan een dossier begint?"
-      experiment: "Welk getal laat over drie dagen zien of het werkt?"
+      go_see: "Gisteren telde je waar het werk wacht. Wat wil je over drie dagen anders zien bij Anouk, in een getal?"
+      understand: "Wat doet Anouk voordat het echte werk aan een dossier begint? Hoe lang duurt dat?"
+      experiment: "Welk getal laat over drie dagen zien of het werkt, en wat verwacht je dat het dan is?"
+      reflect: "Wat had je verwacht, en wat gebeurde er? Wat neem je mee naar maandag?"
 
   - id: training_fri
     name: Borgen of laten wegzakken
     kind: training
     tier: 1
+    act: 0
+    chapter: Inwerkweek
     requires: {missions: [training_thu]}
-    briefing: "Je experiment werkt. Nu beslis je: borg je het als standaard werk (dat kost budget), of laat je het zo? Kijk daarna een maand vooruit: hoe loopt het werk met en zonder borgen?"
-    debrief: "Een verbetering blijft alleen als iemand haar borgt. Je inwerkweek zit erop: volgende week begint het echte werk."
+    briefing: "Je experiment werkt: Anouk zoekt niet meer. Maandag komen haar drie collega's terug van hun cursus. Weten zij van de ene bak? Beslis: borg je het als standaard werk (dat kost budget), of laat je het zo? Kijk daarna een maand vooruit: hoe loopt het werk met en zonder borgen?"
+    debrief_variants:
+      not_standardised: "Een maand later staan er weer twee bakken. Niemand deed iets fout; niemand wist het nog. Een verbetering blijft alleen als iemand haar borgt. Je inwerkweek zit erop. Maandag vraagt Joost van Dijk het MT om twee extra werkvoorbereiders; ik heb gezegd dat jij eerst gaat kijken."
+    debrief: "Een maand later pakt iedereen het oudste dossier uit één bak. Het staat op een A4 boven de bak, en Anouk legt het aan nieuwe collega's uit. Je inwerkweek zit erop. Maandag vraagt Joost van Dijk het MT om twee extra werkvoorbereiders; ik heb gezegd dat jij eerst gaat kijken."
     goal: {type: solve, problem: training_tray}
     check_days: 3
     teaches: [standard_work, improvement_kata]
     rewards: {xp: 50}
     insights:
-      reflect: "Wat gebeurt er met de nieuwe werkwijze als het team het druk krijgt en niemand erop let?"
+      reflect:
+        - "Wat gebeurt er met de nieuwe werkwijze als het team het druk krijgt en niemand erop let? Wie zou erop moeten letten?"
+        - "Wat kost borgen nu, en wat kost niet borgen over een jaar?"
 
-  # ── Main missions: the story of the first months, with the coach ──────────
+  # ── Act I: De eerste honderd dagen ─────────────────────────────────────────
+  # Correctness (audit M1): the walk is a real action, no longer done for the
+  # player. The office has two of the stream's places, so the player counts
+  # what lies there; a returning player who skips the training week has done
+  # it before (GameSession). It becomes a walk of the whole stream once the
+  # campus exists.
   - id: walk_connections
-    name: "Eerste week: loop de stroom"
+    name: Volg het dossier
     kind: main
     tier: 1
+    act: 1
+    chapter: De stapel
     requires: {missions: [training_fri]}
-    briefing: "Welkom bij Voltana. Voordat je iets verandert, wil ik dat je de weg van een nieuwe aansluiting van begin tot eind hebt gezien. Loop mee bij elke stap, van intake tot administratieve afhandeling."
-    debrief: "Nu weet je hoe een aansluiting door ons huis gaat. Onthoud waar het werk stil lag; daar beginnen we."
-    goal: {type: walk, stream: connections}
+    briefing: "Voordat je iets verandert, wil ik dat je de weg van één aansluiting hebt gezien. Het dossier van de familie El Amrani is nu twaalf weken onderweg. Volg het: tel bij Intake en bij Werkvoorbereiding hoeveel er ligt en hoeveel dagen werk dat is. Waar zou jij als dossier het liefst niet liggen?"
+    debrief: "Een aansluiting vraagt een paar uur werk, en toch is het dossier weken onderweg. De rest van de tijd ligt het ergens te wachten. Onthoud waar het werk stil lag; daar beginnen we maandag."
+    goal: {type: observe, places: [connections.intake, connections.design], tool: queue_count}
+    teaches: [lead_time, flow]
     rewards: {xp: 300}
     insights:
-      go_see: "Kijk niet alleen naar de mensen. Kijk naar het werk dat ligt te wachten."
+      go_see: "Waar zou jij als dossier het liefst niet liggen, en waarom ligt het er toch?"
 
   - id: fix_custom_design
     name: De stapel bij Werkvoorbereiding
     kind: main
     tier: 1
+    act: 1
+    chapter: De stapel
     requires: {missions: [walk_connections]}
-    briefing: "Werkvoorbereiding maakt overuren en toch groeit de stapel ontwerpen. De teamleider vraagt om twee extra mensen. Zoek uit wat er echt aan de hand is voordat we iemand aannemen."
-    debrief: "Geen extra mensen nodig: het werk zelf was te zwaar gemaakt. Kijk nu waar de aansluitingen op wachten."
+    briefing: "Werkvoorbereiding maakt al zes weken overuren, en toch groeit de stapel: ruim honderd dossiers. Joost van Dijk, de teamleider, vraagt het MT om twee extra werkvoorbereiders. Anouk zat gisteravond om zeven uur nog te tekenen. Wat is hier echt aan de hand?"
+    debrief: "Een standaardaansluiting krijgt nu een vast ontwerp (wat) en Anouk tekent het op een vaste manier, met één controle in plaats van drie handtekeningen (hoe). Joost trekt zijn vacatures in, en Anouk is om vier uur thuis. Eén vraag voor je volgende stap: als Werkvoorbereiding nu sneller is, waar gaat het werk dan wachten?"
+    debrief_variants:
+      poor_fix: "Er zijn minder handtekeningen, maar elk ontwerp wordt nog steeds van nul getekend. De stapel zakt, langzaam. Joost houdt zijn vacatures nog even aan. Wat zou het werk zelf lichter maken?"
+    reopen: "De stapel bij Werkvoorbereiding groeit weer en Anouk blijft weer tot zeven uur. Wat er ooit werkte, wordt niet meer gedaan. Waarom niet?"
     goal: {type: solve, problem: custom_design}
     rewards: {xp: 600, budget: 10000}
     insights:
-      understand: "Vergelijk eens hoeveel ontwerptijd een gewone woningaansluiting kost met een bedrijfsaansluiting."
-      experiment: "Een goede voorspelling noemt een getal en een moment waarop je het kunt zien."
-      reflect: "Als dit knelpunt weg is, waar staat het werk dan nu te wachten?"
+      go_see: "Wat is je doel voor Werkvoorbereiding, in een getal? En hoe ziet het er nu uit?"
+      understand: "Welk deel van wat Anouk doet, merkt de klant? En welk deel niet?"
+      experiment: "Wat verwacht je dat er met de stapel gebeurt: hoeveel, en wanneer kun je het zien?"
+      reflect:
+        - "Wie in het team wist het antwoord al voordat jij kwam? Wat betekent dat voor hoe je de volgende keer begint?"
+        - "Joost vroeg om twee mensen. Wat heeft zijn team nu nodig om dit vast te houden?"
 
+  # The fork (Merijn, 2026-10-13): after the first bottleneck two main missions
+  # open. The intake is the next bottleneck; the monteurs are not. Correctness
+  # (audit L2): the briefings are symmetric, two team leads with a true
+  # number each, and neither names a queue: the player has to count.
   - id: fix_incomplete_application
-    name: Het knelpunt verschuift
+    name: De onvolledige aanvraag
     kind: main
     tier: 1
+    act: 1
+    chapter: De stapel
     requires: {missions: [fix_custom_design]}
-    briefing: "Werkvoorbereiding loopt weer. Nu staat het werk bij de intake, en daar gaat bijna de helft van de aanvragen terug naar de klant."
-    debrief: "De fout wordt nu voorkomen waar hij ontstaat. Zo kost kwaliteit minder dan controle."
+    fork: {group: t1_after_design, role: bottleneck}
+    briefing: "Sanne Bakker, teamleider Intake, heeft een turflijst: van de laatste veertig aanvragen stuurde haar team er negentien terug naar de klant. 'We zijn een postkantoor geworden,' zegt ze. 'Ik heb iemand extra nodig om alles na te lopen.' Marco Peters van de monteurs vraagt ook om je aandacht. Jij kiest wat eerst gaat."
+    debrief: "Wat binnenkomt is nu compleet: het formulier voorkomt de fout, niemand hoeft harder te controleren. Sanne heeft niemand extra nodig. Kijk naar de stroom: er gaan nu méér aansluitingen per week door. Waarom hier wel, en waar wacht het werk nu?"
+    debrief_first: "Wat binnenkomt is nu compleet: het formulier voorkomt de fout, niemand hoeft harder te controleren. Sanne heeft niemand extra nodig, en er gaan méér aansluitingen per week door: je pakte het knelpunt. Marco wacht nog. Wat verwacht je dat zijn verbetering met de stroom doet?"
+    reopen: "Bij de Intake gaan weer aanvragen terug naar de klant. Sanne's turflijst is terug. Wat is er sinds de vorige keer veranderd?"
     goal: {type: solve, problem: incomplete_application}
     rewards: {xp: 700, budget: 8000}
     insights:
-      understand: "Waar ontstaat de fout: bij de intake, of al eerder?"
-      reflect: "Wat is het verschil tussen een fout vinden en een fout voorkomen?"
+      go_see: "Twee teams vragen om je aandacht. Waar ligt het meeste werk te wachten, in dagen werk? Heb je dat zelf geteld?"
+      understand: "Waar ontstaat de fout: bij Sanne, of al eerder? Hoe weet je dat?"
+      experiment: "Als je voorspelling klopt, welk getal bij de intake verandert, en welk getal aan het eind van de stroom?"
+      reflect:
+        - "Wat is het verschil tussen een fout vinden en een fout voorkomen?"
+        - "Een extra controleur had ook geholpen. Wat was daar over een jaar van over geweest?"
 
-  # The fork (Merijn, 2026-10-13): after the first bottleneck two main missions
-  # open. The intake is the next bottleneck; the monteurs are not, so fixing
-  # them first helps quality but not the flow, and the Check shows it.
   - id: fix_installer_not_ready
     name: Meterkast niet gereed
     kind: main
     tier: 1
+    act: 1
+    chapter: De stapel
     requires: {missions: [fix_custom_design]}
-    briefing: "Monteurs rijden terug zonder dat de aansluiting is gemaakt. De teamleider monteurs wil dat dit eerst wordt opgelost; de teamleider intake zegt dat bij haar de stapel groeit. Jij kiest."
-    debrief: "Er rijdt pas een monteur als de meterkast klaar is. Kijk nog eens naar de doorstroom: waar staat het werk nu te wachten?"
+    fork: {group: t1_after_design, role: non_bottleneck}
+    briefing: "Marco Peters, teamleider Monteurs, is er klaar mee: 'Twee op de vijf adressen zijn niet klaar als mijn mensen voor de deur staan. Dat zijn monteursuren die we niet hebben.' Hij wil dat dit eerst wordt opgelost. Sanne Bakker van de Intake vraagt ook om je aandacht. Jij kiest wat eerst gaat."
+    # Correctness (audit L1): throughput and lead time are different levers.
+    debrief: "Er rijdt pas een monteur als de meterkast klaar is: minder ritten voor niets en minder monteursuren verspild. Klanten van wie het adres niet klaar was, zijn eerder aangesloten. Het knelpunt zat al ergens anders, dus er gaan niet méér aansluitingen per week door. Wat doe je met de uren die Marco's team terugkrijgt?"
+    debrief_first: "Er rijdt pas een monteur als de meterkast klaar is: minder ritten voor niets, en de klanten van wie het adres niet klaar was, zijn eerder aangesloten. Maar kijk naar de stroom: er gaan niet méér aansluitingen per week door. Het werk wacht nog ergens anders. Bewaar die monteursuren goed; je zult ze nog nodig hebben."
+    reopen: "Monteurs staan weer voor meterkasten die niet klaar zijn. Marco belt. Wat is er weggezakt?"
     goal: {type: solve, problem: installer_not_ready}
     rewards: {xp: 500, budget: 5000}
     insights:
       go_see: "Twee teams vragen om je aandacht. Waar staat het werk het langst te wachten?"
-      reflect: "Gaan er nu meer aansluitingen per week door? Waarom wel of niet?"
+      understand: "Wie weet als eerste dat een meterkast niet klaar is, en wanneer hoort de planner het?"
+      experiment: "Welk getal verwacht je dat verandert: de monteursuren, de doorlooptijd, het aantal aansluitingen per week? Allemaal?"
+      reflect:
+        - "Gaan er nu meer aansluitingen per week door? Wat is er wél beter geworden, en voor wie?"
+        - "Marco's monteurs hebben uren terug. Wat wil je dat ze ermee doen?"
 
   - id: fix_status_callers
     name: De telefoon staat roodgloeiend
     kind: main
     tier: 1
+    act: 1
+    chapter: De telefoon
     requires: {missions: [fix_incomplete_application]}
-    briefing: "Het klantcontactcentrum is onbereikbaar. De manager vraagt om meer agents. Voordat we dat doen: waarom bellen al die mensen?"
-    debrief: "De vragen kwamen voort uit stilte, niet uit het contactcentrum. Faalvraag los je op bij de bron."
+    briefing: "Wie het klantcontactcentrum belt, hangt lang in de wacht. Esra Yilmaz, de teamleider, vraagt om vier extra agents. Voordat het MT ja zegt: wie bellen er eigenlijk, en waarom? Eén van hen ken je al: mevrouw El Amrani belt deze maand voor de vierde keer."
+    debrief: "Er komen minder statusvragen binnen. Esra houdt haar team zoals het is, en haar agents hebben weer tijd voor de vragen die ertoe doen. Een groot deel van wat ze binnenkregen, was vraag die wíj veroorzaakten: niemand vertelde de klant hoe het ervoor stond. Mevrouw El Amrani kreeg een bericht en hoefde niet meer te bellen. Wat zegt dit over meer agents?"
+    reopen: "De telefoon staat weer roodgloeiend. Esra's agents beantwoorden weer dezelfde vraag. Wat hoort de klant nu niet meer?"
     goal: {type: solve, problem: status_callers}
     rewards: {xp: 800, budget: 8000}
     insights:
-      go_see: "Luister eens mee met een paar gesprekken."
-      understand: "Waarover bellen klanten eigenlijk, en hoe lang wachten ze al?"
+      go_see: "Wat wil je dat er over vier weken anders is aan de telefoon? In een getal?"
+      understand: "Welk deel van de gesprekken had de klant liever niet gevoerd? Hoe heb je dat geteld?"
+      experiment: "Welk getal laat over twee weken zien of je experiment werkt: de wachttijd, of het aantal statusvragen? Waarom kies je dat?"
+      reflect:
+        - "Waar ontstond de vraag die je hebt weggenomen? Wat zegt dat over meer agents?"
+        - "Esra's agents hebben nu tijd over. Wat zou jij met die tijd doen, samen met hen?"
 
   - id: fix_done_but_not_closed
     name: Klaar maar niet af
     kind: main
     tier: 1
+    act: 1
+    chapter: De telefoon
     requires: {missions: [fix_status_callers], belt: 1}
-    briefing: "Klanten bellen dat ze geen energiecontract kunnen afsluiten, terwijl hun aansluiting er al ligt. Ergens blijft werk liggen dat niemand ziet."
-    debrief: "Een batch op een afdeling werd een crisis bij een andere. Kijk altijd naar de hele stroom."
+    briefing: "De aansluiting van de familie El Amrani ligt er sinds vorige week. Toch zegt hun energieleverancier dat hun EAN-code niet bestaat, en hun nieuwe warmtepomp staat uit. Bij Meetdata & registratie heeft Petra Vos tijd over. Ergens ligt werk dat niemand ziet."
+    debrief: "Een dossier wordt nu afgehandeld op de dag dat het klaar is. De warmtepomp van de familie El Amrani draait. Bij Petra is de stapel niet kleiner geworden, want er was geen stapel werk: er was een stapel wachten. Welke andere batches zie je in de stroom die niemand een batch noemt?"
+    reopen: "Klanten bellen weer dat hun EAN-code niet bestaat. Bij Petra staat het werk weer te wachten tot het einde van de maand. Wie heeft dat zo besloten?"
     goal: {type: solve, problem: done_but_not_closed}
+    teaches: [ean_code]
     rewards: {xp: 900, budget: 8000}
     insights:
-      understand: "Waar ligt een aansluiting die technisch klaar is, en waarop wacht hij?"
+      go_see: "Hoe lang staat een aansluiting die technisch klaar is op 'administratief open'? Hoe weet je dat?"
+      understand: "Waarop wacht een aansluiting die technisch klaar is? Wie wacht er nog meer op?"
+      experiment: "Als de batch kleiner wordt, wat verwacht je dan van de doorlooptijd? En van Petra's werkdag?"
+      reflect: "Welke andere batches zie je in de stroom die niemand een batch noemt?"
+
+  # ── Act II: Wat onder de grond zit ─────────────────────────────────────────
+  - id: fix_digging_damage
+    name: Graafschade
+    kind: main
+    tier: 1
+    act: 2
+    chapter: De kaart klopt niet
+    requires: {missions: [fix_done_but_not_closed]}
+    briefing: "Dinsdag 10.12 uur: de graafmachine van Grondwerk Peeters raakt een middenspanningskabel. Driehonderd huizen en zorgcentrum De Linde zitten zonder stroom; De Linde draait op het noodaggregaat. Uitvoerder Gert Peeters laat zijn KLIC-melding zien: 'Volgens deze kaart lag hier niks.' Het is de vijfde graafschade deze maand. Elke schade kost ons geld, en na vier uur krijgt elke getroffen klant een vergoeding."
+    debrief: "Er zijn minder graafschades. Gert graaft weer met proefsleuven, en zijn opdrachtgever plant er tijd voor in. Gert deed alles volgens het boekje; de oorzaak zat in ons proces. Maar de kaart klopt nog steeds niet overal. Wie houdt de kaart eigenlijk bij?"
+    debrief_variants:
+      blamed: "De schades zijn minder. Gert werkt mee, maar hij vertelt je niets meer dan nodig. Wie houdt de kaart eigenlijk bij?"
+    reopen: "Er komen weer graafschades binnen. Gert belt: 'We graven zoals afgesproken. Klopt jullie kaart nog?'"
+    goal: {type: solve, problem: digging_damage}
+    teaches: [klic_melding, compensatieregeling]
+    rewards: {xp: 1000, budget: 12000}
+    insights:
+      go_see: "Wat moet er vandaag gebeuren zodat er deze week niemand gewond raakt? En wat pas daarna?"
+      understand: "Gert deed een KLIC-melding. Wat kreeg hij terug, en klopte dat?"
+      experiment: "Hoeveel schades per week verwacht je over een maand? Waar meet je dat?"
+      reflect:
+        - "Zocht je de oorzaak bij Gert, of in het proces? Wat leverde dat je op?"
+        - "Waar in ons eigen huis begint deze schade?"
 
   - id: fix_revision_backlog
     name: De revisieberg
     kind: main
     tier: 1
-    requires: {missions: [fix_done_but_not_closed]}
-    briefing: "Bij Revisie & GIS ligt een stapel schetsen van maanden. Het lijkt een administratief probleem, maar onze kaarten worden er onbetrouwbaar van."
-    debrief: "De kaart klopt weer bij oplevering. Dat merken straks ook de aannemers die graven."
+    act: 2
+    chapter: De kaart klopt niet
+    requires: {missions: [fix_digging_damage]}
+    # Correctness (audit L5): revision sits after commissioning, so the
+    # stream's throughput does not move; the harm is the age of the open
+    # work (the problem's KPI is wip_age).
+    briefing: "De kabel die Gert Peeters raakte, lag twee meter naast de plek op de kaart; hij was vier maanden eerder verlegd. Bij Revisie & GIS staat een doos met 240 schetsen van opgeleverde aansluitingen. De oudste is van juni; één is getekend op een broodzakje. 'We tekenen ze over zo snel als we kunnen,' zegt Mieke van der Veen. Het GIS-team vraagt om versterking. Hoe oud wordt een schets voordat hij op de kaart staat, en waarom?"
+    debrief: "Een nieuwe kabel staat nu op de kaart op de dag dat hij in de grond ligt. Mieke tekent niet meer over; ze controleert. Het broodzakje heeft ze ingelijst. Wie merkt het als dit over een jaar wegzakt, en hoe snel?"
+    reopen: "De doos bij Revisie & GIS vult zich weer. Mieke tekent weer over. Wat werd er niet meer gedaan?"
     goal: {type: solve, problem: revision_backlog}
     rewards: {xp: 900, budget: 10000}
     insights:
-      understand: "Waarom wordt hetzelfde werk twee keer gedaan?"
-
-  - id: fix_digging_damage
-    name: Graafschade
-    kind: main
-    tier: 1
-    requires: {missions: [fix_revision_backlog]}
-    briefing: "Overdag komen er steeds meer storingen binnen door kabelschade bij graafwerk. Elke schade kost ons geld en klanten zitten zonder stroom."
-    debrief: "Minder schade, minder kosten, minder uitval. En de aannemers werken veiliger."
-    goal: {type: solve, problem: digging_damage}
-    rewards: {xp: 1000, budget: 12000}
-    insights:
-      understand: "Hoe weet een aannemer waar onze kabels liggen, en klopt dat?"
-      reflect: "Welk probleem dat je eerder oploste hielp hier mee?"
+      go_see: "Hoe oud is de oudste schets in de doos? Wat betekent dat voor wie morgen gaat graven?"
+      understand: "Hoe vaak wordt dezelfde kabel getekend voordat hij op de kaart staat? Door wie?"
+      experiment: "Welk getal laat zien dat de kaart bijblijft: de stapel, of de leeftijd van de oudste schets?"
+      reflect: "Wie merkt het als dit over een jaar wegzakt, en hoe snel? Wat houdt het vast?"
 
   - id: fix_grid_study_queue
     name: De netstudie-wachtrij
     kind: main
     tier: 1
-    requires: {missions: [fix_digging_damage], belt: 2}
-    briefing: "Aansluitingen liggen weken stil bij Netstrategie: de congestieonderzoeken voor grootzakelijke klanten gaan voor. Netstrategie zegt dat ze te weinig analisten hebben."
-    debrief: "Niet elke aanvraag heeft een volledige studie nodig. Nu is er weer ruimte voor de studies die er echt toe doen."
+    act: 2
+    chapter: Het net is vol
+    requires: {missions: [fix_revision_backlog], belt: 2}
+    briefing: "Femke de Wit en haar collega maken lange dagen: er staan 38 netstudies op het bord. De uitbreiding van de basisschool in Nova-Oost wacht al negen weken op een studie die volgens Femke 'waarschijnlijk vijf minuten werk is, als ik eraan toekom'. Netstrategie vraagt om twee extra analisten, en die zijn in heel Nederland schaars. Wat kan er nog meer?"
+    debrief: "Niet elke aanvraag heeft een volledige studie nodig. Femke rekent weer aan de studies die ertoe doen, en de school had binnen een week antwoord. Je hebt het knelpunt eerst beter benut voordat je het groter maakte. Wanneer is extra analisten aannemen wél de goede stap?"
+    reopen: "Op Femke's bord staan weer bijna veertig studies. Elke aanvraag krijgt weer de volle studie. Wie besliste dat, en wanneer?"
     goal: {type: solve, problem: grid_study_queue}
+    teaches: [netcongestie]
     rewards: {xp: 1200, budget: 12000}
     insights:
+      go_see: "Wat doet Femke in een uur? Welk deel daarvan kan alleen zij?"
       understand: "Hoeveel van de studies leveren een ander antwoord op dan 'het past'?"
+      experiment: "Als je dit knelpunt beter benut, hoeveel studies per week verwacht je? Wanneer zie je dat?"
+      reflect:
+        - "Wanneer is extra analisten aannemen wél de goede stap? Wat moet er dan eerst kloppen?"
+        - "Femke maakte lange dagen. Hoe zie je of dat nu anders is?"
 
   - id: fix_transformer_wait
     name: Wachten op de trafo
     kind: main
     tier: 1
+    act: 2
+    chapter: Het net is vol
     requires: {missions: [fix_grid_study_queue]}
-    briefing: "De netstudies lopen weer, maar klanten in volle straten wachten nog steeds een half jaar op hun aansluiting. Iedereen wijst naar de fabrikant van de transformatoren."
-    debrief: "De fabrikant is niet sneller geworden. We bestellen alleen niet meer te laat."
+    briefing: "Projectontwikkelaar Hermans Bouw levert over vijf maanden 48 woningen op in De Boomgaard. Volgens onze planning hebben die dan nog geen stroom: de trafo voor het nieuwe station heeft zes maanden levertijd. 'Heel Europa wil trafo's,' zegt het projectteam. Dat klopt. Wat kunnen wíj dan nog doen?"
+    debrief: "De fabrikant is niet sneller geworden. We bestellen alleen niet meer te laat: zodra de netstudie zegt dat er een trafo bij moet. De oudste wachtende verzwaring is jonger geworden, en De Boomgaard krijgt eerder stroom. Welke andere wachttijden lopen na elkaar terwijl ze naast elkaar zouden kunnen?"
+    reopen: "De trafo's worden weer pas besteld als het ontwerp klaar is. Hermans Bouw belt opnieuw. Wat is er in de bestelroute teruggeslopen?"
     goal: {type: solve, problem: transformer_wait}
+    teaches: [transformator]
     rewards: {xp: 1300, budget: 12000}
     insights:
-      understand: "Wanneer weten we dat er een trafo nodig is, en wanneer bestellen we hem?"
-      reflect: "Welke andere wachttijden lopen na elkaar terwijl ze naast elkaar zouden kunnen?"
+      go_see: "Op welk moment weten we dat er een trafo nodig is? En op welk moment bestellen we hem?"
+      understand: "Welke wachttijden lopen nu na elkaar die naast elkaar zouden kunnen?"
+      experiment: "Wat is het risico als je bestelt vóór het ontwerp is goedgekeurd? Hoe maak je dat risico klein?"
+      reflect: "Wat kon je niet veranderen, en wat wel? Waar geldt dat nog meer?"
 
   - id: fix_unused_capacity
     name: Gereserveerd maar ongebruikt
     kind: main
     tier: 1
+    act: 2
+    chapter: Het net is vol
     requires: {missions: [fix_transformer_wait]}
-    briefing: "De wachtlijst voor transportcapaciteit is de langste ooit. Grootzakelijke klanten dreigen naar de ACM te stappen. Volgens Netstrategie is het net vol."
-    debrief: "Het net was op papier vol. Nu komt ongebruikte capaciteit terug bij wie erop wacht."
+    briefing: "Ilse de Graaf wil de gasovens van haar bakkerij vervangen door elektrische. Ze staat al twee jaar op de wachtlijst voor transportcapaciteit. Naast haar staat een distributiehal met twee megawatt gecontracteerd vermogen; de hal is leeg. 'Leg me eens uit waarom het net vol is,' zei ze tegen Thomas Visser. Ze dreigt naar de ACM te stappen. Volgens Netstrategie is het net vol. Is het dat ook?"
+    debrief: "Op het drukste kwartier van het jaar gebruikten de grote klanten maar een deel van wat ze gecontracteerd hadden. Een deel daarvan komt, volgens de regels van de ACM en in gesprek met de klant, terug in de wachtrij. Bakkerij De Graaf bakt in het voorjaar elektrisch. Welke andere voorraad houden wij aan die op papier vol lijkt?"
+    reopen: "De wachtlijst groeit weer, terwijl het gebruik niemand meer bijhoudt. Thomas krijgt weer boze telefoontjes. Wie keek er naar de cijfers, en waarom nu niet meer?"
     goal: {type: solve, problem: unused_capacity}
+    teaches: [netcongestie, acm]
     rewards: {xp: 1400, budget: 12000}
     insights:
-      go_see: "Kijk eens naar wat er werkelijk door de stations gaat, niet naar wat er gecontracteerd is."
+      go_see: "Wat wil je weten over het drukste moment van het jaar? Waar zou je dat kunnen zien?"
       understand: "Is het net vol, of zijn de contracten vol?"
+      experiment: "Hoeveel megawatt verwacht je terug te krijgen, en hoeveel bedrijven op de wachtlijst helpt dat?"
+      reflect:
+        - "Welke andere voorraad houden wij aan die op papier vol lijkt?"
+        - "Hoe heb je de klanten behandeld die capaciteit teruggaven? Komen ze bij ons terug als ze groeien?"
 
   - id: fix_silo_kpis
     name: KPI's die elkaar bevechten
     kind: main
     tier: 1
+    act: 2
+    chapter: Wat je meet
     requires: {missions: [fix_unused_capacity]}
-    briefing: "Intake en Werkvoorbereiding halen allebei hun weekdoel, en toch komen de aansluitingen niet sneller klaar. De teamleiders wijzen naar elkaar. Kijk wat hun cijfers van hen vragen."
-    debrief: "De teams sturen nu op de aansluiting als geheel, niet op hun eigen aantallen. Wat je meet, bepaalt wat mensen doen."
+    briefing: "In het MT presenteerden Sanne en Joost allebei een recordmaand: meer aanvragen door, meer ontwerpen af. Marco Peters zei niets, tot het einde: 'Mooi. En wie bouwt jullie fouten na?' Er gaan niet meer aansluitingen per week de deur uit dan een kwartaal geleden. Kijk wat hun cijfers van hen vragen."
+    debrief: "Sanne en Joost kijken nu naar dezelfde aansluiting en hetzelfde getal. In het volgende MT presenteren ze samen. Wat je meet, bepaalt wat mensen doen; en wat je níet meet, bepaalt wat ze laten liggen. Wie heeft last gehad van de oude cijfers, en weten ze dat het niet aan hen lag?"
+    reopen: "In het MT liggen weer twee recordmaanden op tafel en de aansluitingen gaan niet sneller. Waar kijken de teams nu weer naar?"
     goal: {type: solve, problem: silo_kpis}
     rewards: {xp: 1500, budget: 12000}
     insights:
       go_see: "Vraag eens aan twee teams waar ze op worden beoordeeld. Passen die doelen bij elkaar?"
       understand: "Wat doe jij als je op aantallen wordt afgerekend en het werk is bijna niet te halen?"
       experiment: "Welk getal zou beide teams naar hetzelfde doel laten kijken?"
-      reflect: "Wat gebeurt er als je een team op één getal afrekent: wat verbetert, en wat gaat er stilletjes mis?"
+      reflect:
+        - "Wat gebeurt er als je een team op één getal afrekent: wat verbetert, en wat gaat er stilletjes mis?"
+        - "Wie heeft last gehad van de oude cijfers, en weten ze dat het niet aan hen lag?"
 
   # ── Side missions: small, without the coach ────────────────────────────────
   - id: walk_outages
-    name: Mee met de storingsdienst
+    name: Een nacht met de storingsdienst
     kind: side
     tier: 1
+    act: 1
     requires: {missions: [walk_connections]}
-    briefing: "Loop een dag mee met de storingsdienst, van melding tot herstel."
-    debrief: "Nu weet je wat er gebeurt als het licht uitgaat."
+    briefing: "De storingsdienst werkt als de rest slaapt. Loop een dienst mee met monteur Ahmed Bouzid, van melding tot herstel. Let op de klok: na vier uur zonder stroom krijgt elke klant een vergoeding. Waar gaat de tijd naartoe?"
+    debrief: "Je zag een storing van melding tot herstel. Halverwege reed Ahmed naar het magazijn voor een mof. Dat onthoud je."
     goal: {type: walk, stream: outages}
+    teaches: [compensatieregeling]
     rewards: {xp: 200}
 
+  # Rewrite (audit S2): a walk with a question to answer by looking.
   - id: walk_meters
-    name: Mee met de meterwisselaars
+    name: Acht adressen
     kind: side
     tier: 1
+    act: 1
     requires: {missions: [walk_connections]}
-    briefing: "Loop mee met een meterwissel, van afspraak tot registratie."
-    debrief: "Je hebt gezien hoe een meter van de bus in de meterkast komt."
+    briefing: "Loop een dag mee met meterwisselaar Yvonne Kok. Er staan acht adressen op haar lijst; de laatste analoge meters in Nova moeten eruit. Tel hoe vaak de deur opengaat."
+    debrief: "Niet elke deur ging open. Yvonne liet weer een kaartje achter: 'helaas niet thuis'. Ze heeft er een dikke stapel van in de bus."
     goal: {type: walk, stream: meters}
     rewards: {xp: 200}
 
@@ -354,9 +478,10 @@ missions:
     name: De verkeerde mof in de bus
     kind: side
     tier: 1
+    act: 1
     requires: {missions: [walk_outages]}
-    briefing: "Storingen duren soms ruim langer dan vier uur. De monteurs zeggen dat het magazijn te laat levert."
-    debrief: "Wat in de bus hoort, ligt er nu ook."
+    briefing: "Bij de storing in de Lindelaan was de stroom vijf uur weg; 140 huishoudens krijgen elk 35 euro vergoeding. Ahmed reed halverwege veertig minuten heen en terug naar het magazijn voor een mof. 'Het magazijn levert te laat,' zeggen de monteurs. Dirk Smits van het magazijn: 'Ik heb ze gewoon liggen.' Ze hebben allebei gelijk. Hoe kan dat?"
+    debrief: "Wat in de bus hoort, ligt er nu ook, en een lege bak zegt Dirk wat hij moet aanvullen. De volgende lange storing kostte geen rit naar het magazijn."
     goal: {type: solve, problem: wrong_joint_in_van}
     rewards: {xp: 400, budget: 4000}
 
@@ -364,9 +489,10 @@ missions:
     name: Niet thuis
     kind: side
     tier: 1
+    act: 1
     requires: {missions: [walk_meters]}
-    briefing: "De monteurs laten veel kaartjes 'helaas niet thuis' achter en de planning van meterwissels loopt uit."
-    debrief: "Klanten zijn thuis als ze weten wanneer we komen."
+    briefing: "Yvonne Kok laat elke dag drie kaartjes achter: 'helaas niet thuis'. Het programma om de laatste analoge meters te vervangen loopt achter. Meneer De Jong belde boos: hij had een halve dag vrij genomen, en er kwam niemand. Wie is hier eigenlijk niet thuis?"
+    debrief: "Klanten zijn thuis als ze weten wanneer we komen. Yvonne's stapel kaartjes is bijna op; ze bestelt geen nieuwe."
     goal: {type: solve, problem: not_at_home}
     rewards: {xp: 400, budget: 4000}
 
@@ -374,29 +500,34 @@ missions:
     name: De zwijgende meter
     kind: side
     tier: 1
+    act: 2
     requires: {missions: [fix_not_at_home]}
-    briefing: "Nieuwe meters sturen geen standen en monteurs moeten terug naar adressen waar ze net waren."
-    debrief: "Een meter is pas klaar als hij praat."
+    briefing: "Petra Vos heeft een lijst met nieuwe slimme meters die geen standen sturen. Bijna allemaal in dezelfde straten. Monteurs moeten terug naar adressen waar ze vorige week al waren. 'De meters van de nieuwe leverancier deugen niet,' zegt iedereen. Petra twijfelt."
+    debrief: "Een meter is pas klaar als hij praat. De monteur ziet het nu voordat hij wegrijdt, niet een week later."
     goal: {type: solve, problem: silent_meter}
     rewards: {xp: 400, budget: 4000}
 
+  # Rewrite (audit S6, correctness L1): a batch at a wait step adds no
+  # capacity, but every order waits for it: the lesson is lead time.
   - id: fix_permits_in_batches
     name: Vergunningen in batches
     kind: side
     tier: 1
+    act: 1
     requires: {missions: [fix_custom_design]}
-    briefing: "Dossiers liggen dagen stil tussen ontwerp en vergunning, terwijl de gemeente haar termijn haalt."
-    debrief: "Wachten en werken lopen nu naast elkaar."
+    briefing: "Het dossier van de familie Bos is al drie weken klaar bij Werkvoorbereiding. Het ligt in een map met de andere elf woningen van De Appelgaard, want de vergunning gaat per project de deur uit. De gemeente haalt haar termijn bijna altijd. Waar wacht het dossier dan op?"
+    debrief: "Een dossier gaat nu naar de gemeente zodra het tracé bekend is. Er gaan niet méér aansluitingen per week door, want de capaciteit is gelijk gebleven. Maar elke klant is eerder klaar, en de familie Bos had haar vergunning binnen drie weken. Een knelpunt bepaalt hoeveel er doorgaat; elke wachttijd onderweg bepaalt hoe lang het duurt."
     goal: {type: solve, problem: permits_in_batches}
     rewards: {xp: 400, budget: 4000}
 
   - id: look_at_grid_study
-    name: Een kijkje bij Netstrategie
+    name: Het bord van Femke
     kind: side
     tier: 1
+    act: 1
     requires: {missions: [fix_status_callers]}
-    briefing: "Bij Netstrategie hangt een vol bord met netstudies. Ga kijken en zoek twee feiten over waarom het zo vol is."
-    debrief: "Goed gezien. Dit wordt later een grote klus."
+    briefing: "Bij Netstrategie hangt een bord vol netstudies, met gele briefjes die er al maanden hangen. Femke de Wit heeft vijf minuten voor je. Zoek twee feiten over waarom het zo vol is. Oplossen hoeft nog niet."
+    debrief: "Je weet nu twee dingen over dat bord. Femke ook: ze vroeg of je terugkomt."
     goal: {type: investigate, problem: grid_study_queue, clues: 2}
     rewards: {xp: 250}
 
@@ -404,34 +535,41 @@ missions:
     name: Omvormers die afschakelen
     kind: side
     tier: 1
+    act: 2
     requires: {missions: [fix_silent_meter]}
-    briefing: "Er komen steeds meer klachten van klanten wiens zonnepanelen op zonnige middagen niets opleveren. De monteurs meten adres na adres."
-    debrief: "Eén aftakking per wijk lost honderd klachten op. De slimme meters hadden het al die tijd gezien."
+    briefing: "Wim Kortekaas, gepensioneerd elektrotechnicus in de Zonnestraat, stuurt ons elke maand een spreadsheet: zijn omvormer schakelt op zonnige middagen uit, al drie jaar. Inmiddels klagen er twintig buren. Onze monteurs meten adres na adres en vinden in de woning niets mis. Wat zien ze niet?"
+    debrief: "Eén aftakking per wijk lost tientallen klachten op. De slimme meters hadden het al die tijd gezien. Wim stuurt geen spreadsheet meer, alleen een kerstkaart. Eén ding nog: wie de spanning in juli omlaag zet, moet in januari kijken wat de warmtepompen ervan vinden."
     goal: {type: solve, problem: inverters_tripping}
     rewards: {xp: 400, budget: 4000}
 
   # A real event (Merijn, 2026-10-12): Henk retires 56 days after this mission
-  # opens, taken on or not. Miss it and the knowledge transfer is gone; the
-  # problem can still be solved another way.
+  # opens, taken on or not. Miss it and the knowledge transfer is gone (the
+  # buddy system and TWI need Henk); the problem can still be solved another way.
   - id: save_henks_knowledge
     name: Henks kennis
     kind: side
     tier: 1
+    act: 1
+    arc: henk
     requires: {missions: [fix_wrong_joint]}
-    briefing: "Henk werkt veertig jaar bij Voltana en kent elk oud kabelnet in Zuidmark. Over acht weken gaat hij met pensioen. Zorg dat zijn kennis niet met hem de deur uit gaat."
-    debrief: "Henk kan met een gerust hart met pensioen. Zijn kennis zit nu in het team."
-    fail: "Henk is met pensioen. Zijn kennis van de oude netten is met hem vertrokken; een buddy die het kan voordoen is er niet meer."
+    briefing: "Henk Verbeek werkt veertig jaar bij Voltana. Als in een oude wijk de stroom uitvalt, belt iedereen Henk. Over acht weken geeft hij zijn afscheidsfeest; de uitnodiging hangt al op het prikbord. Vorige week zocht Ahmed Bouzid anderhalf uur naar een fout in een oude papierloodkabel en belde toen... Henk. Zorg dat Henks vakmanschap niet met hem de deur uit gaat."
+    debrief: "Gisteren vond Ahmed zelf de fout in een papierloodkabel in Nova-Oud. Henk stond ernaast en zei niets. Dat was het compliment. Henk kan met een gerust hart met pensioen."
+    debrief_variants:
+      poor_fix: "Henks video's staan op de tablet. Of ze genoeg zijn, merk je bij de eerste lastige storing zonder hem."
+    fail: "Henk is met pensioen. Zijn afscheid was mooi, maar zijn kennis van de oude netten is met hem vertrokken. Een buddy die het kan voordoen is er niet meer. Wat er op papier staat, en wat Ahmed zelf leert, moet het nu doen."
     goal: {type: solve, problem: knowledge_drain}
     deadline_days: 56
-    fail_closes: [skills_matrix_buddy]
+    fail_closes: [skills_matrix_buddy, twi_job_instruction]
+    teaches: [monteurstekort]
     rewards: {xp: 600, budget: 6000}
 
   - id: fix_planning_reshuffle
     name: De planning die nooit klopt
     kind: side
     tier: 1
+    act: 1
     requires: {missions: [walk_outages]}
-    briefing: "Klanten klagen dat monteurs op het laatste moment afzeggen. De planners zeggen dat ze harder werken dan ooit."
-    debrief: "Storingen komen elke dag. Nu staan ze ook in de planning."
+    briefing: "Planner Linda Jansen is de halve week bezig met omplannen. Vorige week werd een op de drie klussen verschoven, de meeste op de dag zelf. 'Ik werk harder dan ooit,' zegt ze, 'en het wordt alleen maar erger.' Storingen gaan altijd voor. Maar zijn storingen eigenlijk een verrassing?"
+    debrief: "Er staan nu elke dag mensen klaar voor storingen, en de rest van de planning blijft staan. Een planning die voor honderd procent vol zit, breekt bij het eerste onverwachte; hoe voller, hoe harder."
     goal: {type: solve, problem: planning_reshuffle}
     rewards: {xp: 500, budget: 5000}

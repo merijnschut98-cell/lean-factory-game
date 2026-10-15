@@ -428,6 +428,8 @@ def test_problem_errors_are_caught(rules_dirs, mutate, message):
     (lambda d: _mission(d).update(insights={"go_see": []}), "maps a coach stage to a text or a list"),
     (lambda d: _mission(d).update(questions={"later": ["Wat nu?"]}), "maps a coach stage to a text or a list"),
     (lambda d: d["missions"]["coach"].update(conditional={"tired": "Moe?"}), "unknown key.s. 'tired'"),
+    (lambda d: _mission(d).update(debrief_variants={"lucky": "Mazzel."}), "unknown key.s. 'lucky'"),
+    (lambda d: _mission(d, 0).update(debrief_variants={"blamed": "Hm."}), "read the play on the goal's problem"),
     (lambda d: d["missions"]["coach"].update(conditional={"blamed": ""}), "'blamed' must be a non-empty string"),
     (lambda d: _mission(d).update(deadline_days=30), "'fail' must be a non-empty string"),
     (lambda d: _mission(d).update(fail_closes=["standard_designs"]), "'fail_closes' needs a deadline"),

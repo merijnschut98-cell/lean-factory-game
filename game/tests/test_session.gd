@@ -305,6 +305,19 @@ func test_a_new_game_with_training_starts_on_monday_of_the_week() -> void:
 		assert_true(id in s.region.profile.concepts, "glossary card " + id)
 
 
+## Follow the dossier: the first main mission is a real action (audit M1):
+## count what lies at Intake and Werkvoorbereiding.
+func test_after_the_week_the_dossier_is_followed_by_counting_its_queues() -> void:
+	var s := _training()
+	s.missions.skip_training()  # the week's days done, as the rules see it
+	s.accept(GameSession.STORY_MISSION)
+	assert_eq(s.missions.status(GameSession.STORY_MISSION), "active", "no longer done for the player")
+	s.use_tool(INTAKE, "queue_count")
+	s.use_tool(DESIGN, "queue_count")
+	assert_eq(s.missions.status(GameSession.STORY_MISSION), "completed")
+	assert_eq(s.missions.status(MISSION), "available")
+
+
 func test_skipping_training_opens_the_campaign_without_rewards() -> void:
 	var s := _training()
 	s.use_tool(INTAKE, "shadow")
@@ -386,8 +399,8 @@ func test_the_training_week_is_played_end_to_end() -> void:
 	assert_false(s.in_training())
 	assert_eq(s.region.net.pools["work_prep"].availability, _campaign().region.net.pools["work_prep"].availability,
 		"the week is over: the course with it")
-	assert_eq(s.missions.status(GameSession.STORY_MISSION), "completed", "the week's walk stands in for the story's")
-	assert_eq(s.missions.status(MISSION), "available", "the campaign opens")
+	assert_eq(s.missions.status(GameSession.STORY_MISSION), "available", "the campaign opens with a real walk")
+	assert_eq(s.missions.status(MISSION), "locked", "the first problem waits for it")
 	assert_true(s.xp() >= 250, "the five days' rewards and the practice score")
 	var time_before := s.region.net.time
 	var forecast := s.fade_forecast(30)

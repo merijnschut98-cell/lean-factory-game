@@ -213,6 +213,7 @@ func test_the_game_knows_the_content_vocabulary() -> void:
 	assert_eq(measures, vocab["measures"])
 	assert_eq(MissionDef.FORK_ROLES, vocab["fork_roles"])
 	assert_eq(Missions.CONDITIONS, vocab["coach_conditions"])
+	assert_eq(Missions.DEBRIEF_VARIANTS, vocab["debrief_variants"])
 	var properties: Dictionary = vocab["effect_properties"]
 	assert_eq(SimModifiers.PROPERTIES.keys().size(), properties.size())
 	for property: String in SimModifiers.PROPERTIES:
@@ -225,7 +226,7 @@ func test_the_game_knows_the_content_vocabulary() -> void:
 
 ## The real campaign: it opens with the training week, then (done or
 ## skipped) the first main mission only; the coach speaks Dutch about it, and
-## walking the connections stream completes it.
+## following the dossier (counting at Intake and Werkvoorbereiding) completes it.
 func test_the_campaign_opens_with_the_first_main_mission() -> void:
 	var c := Catalog.load_from()
 	var log := Missions.new(_region(c), c.missions, c.coach)
@@ -234,13 +235,18 @@ func test_the_campaign_opens_with_the_first_main_mission() -> void:
 	assert_eq(log.available().map(func(m: MissionDef) -> String: return m.id), ["walk_connections"])
 	assert_eq(log.accept("walk_connections"), "")
 	assert_true(log.ask_coach()["text"] in c.coach["stages"]["go_see"])
-	for step in log.region.net.stream("connections").steps:
-		if step.kind == SimStep.Kind.WORK:
-			log.region.use_tool("connections." + step.id, "shadow")
-	log.update()
+	_follow_the_dossier(log)
 	assert_eq(log.status("walk_connections"), "completed")
 	assert_true(log.available().size() >= 3, "new missions unlock: the main story and side missions")
 	assert_eq(log.active("main").size(), 0)
+
+
+## Follow the dossier: count the queue where the office's places are.
+func _follow_the_dossier(log: Missions) -> void:
+	for place in ["connections.intake", "connections.design"]:
+		log.region.use_tool(place, "queue_count")
+		log.note_use(place, "queue_count")
+	log.update()
 
 
 ## The main quest forks after the first bottleneck: the next bottleneck
@@ -268,10 +274,7 @@ func test_an_expert_plays_the_opening_of_the_campaign() -> void:
 	var r := log.region
 	log.skip_training()
 	log.accept("walk_connections")
-	for step in r.net.stream("connections").steps:
-		if step.kind == SimStep.Kind.WORK:
-			r.use_tool("connections." + step.id, "shadow")
-	log.update()
+	_follow_the_dossier(log)
 	for id in ["fix_custom_design", "fix_incomplete_application", "fix_status_callers"]:
 		assert_eq(log.accept(id), "", id)
 		var p: ProblemDef = r.problems[log.defs[id].goal_problem]

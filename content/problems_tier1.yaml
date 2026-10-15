@@ -188,6 +188,10 @@ problems:
     waste: inventory
     severity: medium
     visibility: hidden
+    # Audit L5 asked for wip_age, but in the simulation revision comes before
+    # the close-out, so the backlog holds finished connections back, and the
+    # stream's open-work age is set by the months-long reinforcement waits
+    # (measured: 97 → 97 days). Throughput is what the Check can see.
     kpi: throughput
     symptoms:
       - Bij Revisie & GIS ligt een stapel schetsen van opgeleverde aansluitingen.
@@ -260,15 +264,16 @@ problems:
       - De jonge monteurs zijn onvoldoende opgeleid.
       - De meetapparatuur is verouderd.
     mismatch_note: Een opleiding alleen leert niet wat alleen in de hoofden van de ervaren monteurs zit.
-    countermeasures: {work_instruction_videos: 0.8, skills_matrix_buddy: 1.0}
+    # Audit L10: documentation alone transfers less than practice under a master.
+    countermeasures: {work_instruction_videos: 0.7, twi_job_instruction: 0.9, skills_matrix_buddy: 1.0}
     teaches: [waste_skills, respect_for_people]
     effects:
       - {target: outages.locate, property: ftr, value: -0.3}
     clues:
-      - {tool: shadow, key: true, depth: 0, text: "Een jonge monteur zoekt anderhalf uur naar de fout in een oliedrukkabel en belt dan een collega."}
+      - {tool: shadow, key: true, depth: 0, text: "Een jonge monteur zoekt anderhalf uur naar de fout in een oude papierloodkabel (GPLK) en belt dan een collega."}
       - {tool: time_study, key: false, depth: 0, text: "Het herstel zelf duurt bij iedereen ongeveer even lang."}
       - {tool: data, key: true, depth: 1, text: "Storingen in netten van voor 1970 worden twee keer zo vaak opnieuw gelokaliseerd."}
-      - {tool: conversation, key: true, depth: 1, text: "'Als Henk het niet weet, weet niemand het. En Henk gaat in maart met pensioen.'"}
+      - {tool: conversation, key: true, depth: 1, text: "'Als Henk het niet weet, weet niemand het. En Henk gaat over twee maanden met pensioen.'"}
       - {tool: documents, key: true, depth: 2, text: "Er is geen overzicht van wie welke kabeltypes en schakelingen beheerst."}
 
   - id: status_callers
@@ -371,9 +376,12 @@ problems:
     countermeasures: {on_site_comm_test: 1.0, coverage_check_in_planning: 0.8}
     teaches: [jidoka, quality_at_the_source]
     effects:
-      - {target: meters.registration, property: ftr, value: -0.2}  # three in ten new meters stay silent
+      # ESTIMATE (audit L7): three in ten meters in concrete basement meter rooms
+      # stay silent, one in twenty elsewhere; with about a quarter of new meters
+      # in basements that is roughly one in nine overall.
+      - {target: meters.registration, property: ftr, value: -0.1}
     clues:
-      - {tool: data, key: true, depth: 0, text: "Drie op de tien nieuwe meters sturen de eerste week geen standen."}
+      - {tool: data, key: true, depth: 0, text: "In de nieuwe flats met een betonnen kelderberging stuurt drie op de tien nieuwe meters de eerste week geen standen; elders één op de twintig."}
       - {tool: queue_count, key: false, depth: 0, text: "Bij Meetdata & registratie ligt weinig werk; de lijst is kort en netjes op volgorde."}
       - {tool: shadow, key: true, depth: 1, at: meters.visit, text: "De monteur plaatst de meter, sluit de kast en rijdt door. Of de meter verbinding maakt, kijkt niemand na."}
       - {tool: documents, key: true, depth: 1, at: meters.appointment, text: "Bij het plannen gaat standaard een GPRS-module mee; de dekkingskaart van het adres wordt niet bekeken."}
@@ -499,7 +507,6 @@ problems:
       - {tool: conversation, key: false, depth: 0, text: "'Klanten zijn gewoon niet flexibel. Als we een nieuwe afspraak voorstellen, kan het nooit.'"}
       - {tool: shadow, key: true, depth: 1, at: connections.execution, text: "Om tien uur komt een storing binnen. De monteur rijdt weg en zijn klussen van die middag vervallen; de planner belt de klanten af."}
       - {tool: documents, key: true, depth: 1, text: "De weekplanning vult elke monteur voor 100%. Ruimte voor storingen staat er niet in, terwijl die altijd voorgaan."}
-      - {tool: conversation, key: true, depth: 2, at: outages.locate, text: "'Er zijn elke dag storingen, dat weet iedereen. Maar in de planning bestaan ze niet.'"}
 
   - id: silo_kpis
     tier: 1

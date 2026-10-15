@@ -246,17 +246,19 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
       - ⬜ Authored repair texts for key problems (`repair: {briefing, debrief}`), with K11.
     - ✅ K0 (2026-10-15): 38 new glossary concepts (now 101): the catalogue's §3.9 list (lean and management, sector, IT) with the tier-2 drafts' 13 verified ones (`non_firm` and `compensatie` folded into `alternatieve_transportrechten` and `compensatieregeling`), plus `twi_job_instruction` (audit L10). Sector items carry a source (`verify: true` where the page could not be opened) or an `estimate:`. IT concepts sit under lean/measure until Phase G brings an IT category (a UI change).
   - **Wave 2 (content, from the audit):**
-    - ⬜ Mission rewrites: briefings with a face and a hook, debriefs that read the play, fork texts that do not spoil the fork.
+    - ✅ Mission rewrites (2026-10-15; audit §3): every tier-1 mission has a face, a stake and a hook (the El Amrani dossier through Act 0–I, Anouk, Joost, Sanne, Marco, Esra, Petra, Gert, Mieke, Femke, Hermans Bouw, Ilse, Ahmed, Yvonne, Dirk, Linda, Wim); `act`/`chapter`/`arc`; `reopen` texts on the main missions. The five weakest rewritten: `walk_connections` → "Volg het dossier" (a real action), `walk_meters` → "Acht adressen", `fix_revision_backlog`, `fix_permits_in_batches` (a lead-time lesson), `fix_incomplete_application` → "De onvolledige aanvraag". The fork (`t1_after_design`) has symmetric briefings and `debrief_first`. Debriefs end on a question; `debrief_variants` (blamed > poor_fix > not_standardised > debrief_first) read the play (`Missions.debrief_of`). Act II swapped: Graafschade opens it, De revisieberg follows. Mission glossary cards give context only, never the answer. `fix_planning_reshuffle` trimmed to four clues.
+      - ⬜ Debriefs with the player's numbers (`{placeholders}`) wait for templated debriefs (C16).
     - ✅ Coach rules (2026-10-15; QA #20; audit §3A): the bank has six Kata questions per stage (with long-term, respect and always-improve lines); each mission starts the bank at its own place and the coach skips any line heard in the last six asks (saved); a mission's own `questions` come first; `insights` may list several per stage, told in turn, then he goes back to asking; conditional questions once per mission (`coach.conditional`: after a blaming question, and a fix chosen to fade within 45 days while a lasting one fits).
-      - ⬜ The insights of audit §3A.3 for every stage players reach (QA #24), with the rewrites. Later: templated KPI questions (C16); the overload line (with R3).
+      - ✅ The insights of audit §3A.3 for every stage players reach (QA #24), two per cell where the audit has two. Later: templated KPI questions (C16).
     - ⬜ Hidden rewards ("Ontdekkingen", 25) and the signals the rules must provide.
-    - ⬜ Correctness fixes:
-      - oliedrukkabel → GPLK;
-      - Henk's transfer as TWI Job Instruction;
-      - a lower silent-meter rate (30% is too high);
-      - `fix_revision_backlog` predicts `wip_age`;
-      - `walk_connections` no longer auto-completes;
-      - throughput vs lead time in the fork and permit debriefs.
+    - ✅ Correctness fixes (2026-10-15; audit §2.2):
+      - oliedrukkabel → GPLK (papierloodkabel); Henk retires "over twee maanden";
+      - Henk's transfer: new countermeasure `twi_job_instruction` (tier 1, fit 0.9; Henk's deadline closes it with the buddy system); the videos 0.8 → 0.7;
+      - silent meters: three in ten in concrete basements, one in twenty elsewhere, about one in nine overall (ftr −0.2 → −0.1, an estimate);
+      - `walk_connections` is a real action: count the queues at Intake and Werkvoorbereiding (`observe`, queue_count); only a returning player who skips the week has it done (`GameSession._walked_before`);
+      - throughput vs lead time in the fork and permit debriefs (L1);
+      - L8 (summer and winter measurements), L9 (standard transformer sizes), the ACM wording of use-it-or-lose-it.
+      - Not applied: `fix_revision_backlog` predicting `wip_age` (L5). In the simulation revision comes before the close-out, so the backlog holds finished connections back, and the stream's open-work age is set by the reinforcement waits (measured 97 → 97 days): a wip_age prediction would fail the measured Check. It keeps throughput; see the calls below.
     - Not here: the "not the bottleneck" warning at wait steps (QA #21) is the Check agent's.
   - **Wave 3 (tier 2 into content):** ⬜ bring `docs/superpowers/specs/2026-10-15-tier2-missions-draft.md` into `content/`: 22 missions, 11 problems, 36 countermeasures, 13 concepts, and the new fields and goal types it needs. Start only after the sources verifier (edits the draft) and the simulation checker (`docs/qa/tier2-sim-check.md`) have reported. Goal-name clash: the sustain agent's `sustain {problem}` (check-in) vs the catalogue's KPI-holding goal, resolved in C1.
   - **Later waves:** C2–C8, C10–C13, C15–C18, K1–K11 per the spec's §4. C8 (graded decay) was built by the sustain agent, see above.
@@ -442,6 +444,9 @@ Merijn asked me to fix the content review's findings with my own judgement while
 Made by the mission agent while building waves 1–3; each is easy to reverse.
 - **Repair quests** look at a poor fix after 42 days, then weekly, and open only with a ≥ 5 % KPI gap to the best countermeasure over a 28-day forecast (estimates, `rules/repairs.gd`); 150 XP. A rework's Act pays the problem's score again, like any Act.
 - **A poor fix** (fact `poor_fix:`): the countermeasure fits 0.2 or more below the problem's best, or the A3 named a wrong root cause (catalogue §2.15 thresholds, estimates). Recomputed at every new Act, so a better later fix clears it.
+- **Merijn's answers to the audit's §8 (2026-10-15), recommended options, as built or planned:** (1) Act II opens with Graafschade, De revisieberg follows ✅; (2) the El Amrani dossier as a followed order (a sim tag) ⬜; (3) the non-bottleneck fork's freed monteur hours feed `t3_crew_strategy` (tier 3) ⬜; (4) `fix_planning_reshuffle` trimmed to four clues ✅ (the "Er zijn elke dag storingen" quote dropped); (5) Ahmed as trainer in Act IV after the buddy or TWI route ⬜ (tier 3); (6) hidden rewards with silhouettes and end-of-act hints; (8) the borgingsdividend; (9) overload costs trust; (10) containment for safety missions.
+- **Revision backlog keeps throughput** as its KPI (audit L5 not applied): measured, a wip_age prediction cannot move in the Check (see Phase B correctness fixes).
+- **Mission glossary cards give context, not the answer:** the catalogue listed teaches such as poka_yoke on the incomplete-application mission; a card handed over on accept would name the fix, so those cards come with the Act (problem `teaches`) instead.
 - **Reputation deltas** (all estimates, `rules/reputation.gd`): the catalogue's §2.7 numbers, plus +2 for redoing a faded mission (the audit's "owning a regression"). Reputation is never scaled by the score: the MT sees the mission done; the score pays in XP and budget.
 - **Mission rewards follow the score:** half of a solve mission's XP and budget is for finishing, half for the PDCA score (`0.5 + 0.5 × total / 25`, at least 0.6). The audit proposed `× total / 25`; the floor keeps a poor fix from locking a player below the green belt (the validator checks reachability at 0.6).
 

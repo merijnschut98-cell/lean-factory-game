@@ -461,7 +461,7 @@ func test_the_training_week_is_played_through_the_ui() -> void:
 	assert_true(shows(ui.check_panel, "Stuurindicator"), "tagged like the Check")
 	assert_false(shows(ui.check_panel, "Kijk 30 dagen vooruit"), "once")
 	office.interact(office.interactable("mission_board"))
-	assert_true(MISSION in ui.mission_board.listed(), "the campaign opens")
+	assert_true(GameSession.STORY_MISSION in ui.mission_board.listed(), "the campaign opens: follow the dossier")
 	_close(office)
 
 

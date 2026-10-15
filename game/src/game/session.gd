@@ -66,6 +66,7 @@ static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, t
 		s.missions.accept(TRAINING_FIRST)
 	else:
 		s.missions.skip_training()
+		s._walked_before()
 	s._after(0)
 	return s
 
@@ -212,6 +213,7 @@ func skip_training() -> String:
 	if not missions.in_training():
 		return "not_in_training"
 	missions.skip_training()
+	_walked_before()
 	_after(0)
 	return ""
 
@@ -439,19 +441,23 @@ func _is_place(place: String) -> bool:
 	return region.net.step_at(place) != null
 
 
+## A returning player, who skips the training week, has followed a dossier
+## before: the story's first mission counts as done, without a reward. After
+## the week a new player does it for real (audit M1).
+func _walked_before() -> void:
+	if not missions.done_once.has(STORY_MISSION):
+		missions.progress[STORY_MISSION] = {"status": "completed", "asks": {}, "seen": {}}
+		missions.done_once[STORY_MISSION] = true
+
+
 ## Time passes, then the missions notice what happened. A training day just
-## handed out starts on its own morning; once the week is over the story's
-## walk counts as done and stagnation starts to count (also for an old save).
+## handed out starts on its own morning; once the week is over stagnation
+## starts to count (also for an old save).
 func _after(minutes: int) -> void:
 	if minutes > 0:
 		region.advance(minutes)
 	missions.update()
 	_start_training_day()
-	if not missions.in_training() and not missions.done_once.has(STORY_MISSION):
-		# Done without a reward: it happened before the campaign starts (the
-		# office cannot walk the whole stream; Monday's walk stands in for it).
-		missions.progress[STORY_MISSION] = {"status": "completed", "asks": {}, "seen": {}}
-		missions.done_once[STORY_MISSION] = true
 	if not missions.in_training():
 		region.start_drift()
 

@@ -36,6 +36,9 @@ var arc: String
 var fork_group: String
 var fork_role: String
 var debrief_first: String
+## Debriefs that read the play (audit §5.7): blamed | poor_fix |
+## not_standardised → text.
+var debrief_variants: Dictionary[String, String] = {}
 ## The briefing when the mission is back because its fix faded.
 var reopen_text: String
 ## Facts ("flag:<name>") its completion sets.
@@ -109,6 +112,9 @@ static func from_dict(d: Dictionary) -> MissionDef:
 	m.fork_group = str(fork.get("group", ""))
 	m.fork_role = str(fork.get("role", ""))
 	m.debrief_first = str(d.get("debrief_first", ""))
+	var variants := JsonFile.dict_or_empty(d.get("debrief_variants"))
+	for key: Variant in variants:
+		m.debrief_variants[str(key)] = str(variants[key])
 	m.reopen_text = str(d.get("reopen", ""))
 	m.sets_flags = PackedStringArray(d.get("sets_flags", []))
 	m.briefing = str(d.get("briefing", ""))

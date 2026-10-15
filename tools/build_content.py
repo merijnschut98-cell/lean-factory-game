@@ -616,7 +616,8 @@ BELT_XP = [0, 2000, 6000, 30000, 110000]  # Progression.BELTS
 MIN_REWARD_SHARE = 0.6
 MISSION_KEYS = {"id", "name", "kind", "tier", "requires", "briefing", "debrief", "fail", "goal", "deadline_days",
                 "fail_closes", "rewards", "insights", "teaches", "check_days", "setup", "act", "chapter", "arc",
-                "fork", "debrief_first", "reopen", "sets_flags", "questions"}
+                "fork", "debrief_first", "reopen", "sets_flags", "questions", "debrief_variants"}
+DEBRIEF_VARIANTS = ["blamed", "poor_fix", "not_standardised"]  # Missions.DEBRIEF_VARIANTS, in the order they win
 REQUIRES_KEYS = {"missions", "belt", "maturity", "reputation", "trust", "any_of", "facts"}
 FORK_ROLES = ["bottleneck", "non_bottleneck"]
 MAX_ACT = 6  # Act 0 is the training week; Act VI the IT value streams
@@ -672,6 +673,10 @@ def validate_missions(doc: Any, source: str) -> None:
         _number(rewards, "reputation", f"{where} rewards", 0, 20, integer=True, default=0)
         _trust_map(rewards, f"{where} rewards", -3, 3)
         _sets_flags(m, where)
+        variants = _mapping(m, "debrief_variants", set(DEBRIEF_VARIANTS), where)
+        _require_strings(variants, list(variants), f"{where} debrief_variants")
+        if variants and "problem" not in m["goal"]:
+            raise ContentError(f"{where}: 'debrief_variants' read the play on the goal's problem")
         for key in ("insights", "questions"):
             lines = m.get(key, {})
             if lines and m["kind"] not in COACHED_KINDS:
@@ -1035,7 +1040,8 @@ def vocabulary() -> dict[str, Any]:
         "visibilities": VISIBILITIES, "check_pass": CHECK_PASS, "countermeasure_unlocks": UNLOCKS,
         "mission_kinds": MISSION_KINDS, "mission_goals": sorted(MISSION_GOALS), "coach_stages": COACH_STAGES,
         "belt_xp": BELT_XP, "min_reward_share": MIN_REWARD_SHARE, "fact_kinds": sorted(FACT_KINDS),
-        "measures": sorted(MEASURES), "fork_roles": FORK_ROLES, "coach_conditions": COACH_CONDITIONS, "start_rules": START_RULES, "order_rules": ORDER_RULES,
+        "measures": sorted(MEASURES), "fork_roles": FORK_ROLES, "coach_conditions": COACH_CONDITIONS,
+        "debrief_variants": DEBRIEF_VARIANTS, "start_rules": START_RULES, "order_rules": ORDER_RULES,
         "care_rules": CARE_RULES, "kpi_kinds": KPI_KINDS,
         "effect_properties": {p: {"kind": k, "step_kind": sk or ""} for p, (k, sk, _) in sorted(EFFECT_PROPERTIES.items())},
     }

@@ -562,7 +562,7 @@
     {
      "depth": 0,
      "key": true,
-     "text": "Een jonge monteur zoekt anderhalf uur naar de fout in een oliedrukkabel en belt dan een collega.",
+     "text": "Een jonge monteur zoekt anderhalf uur naar de fout in een oude papierloodkabel (GPLK) en belt dan een collega.",
      "tool": "shadow"
     },
     {
@@ -580,7 +580,7 @@
     {
      "depth": 1,
      "key": true,
-     "text": "'Als Henk het niet weet, weet niemand het. En Henk gaat in maart met pensioen.'",
+     "text": "'Als Henk het niet weet, weet niemand het. En Henk gaat over twee maanden met pensioen.'",
      "tool": "conversation"
     },
     {
@@ -592,7 +592,8 @@
    ],
    "countermeasures": {
     "skills_matrix_buddy": 1.0,
-    "work_instruction_videos": 0.8
+    "twi_job_instruction": 0.9,
+    "work_instruction_videos": 0.7
    },
    "effects": [
     {
@@ -837,7 +838,7 @@
     {
      "depth": 0,
      "key": true,
-     "text": "Drie op de tien nieuwe meters sturen de eerste week geen standen.",
+     "text": "In de nieuwe flats met een betonnen kelderberging stuurt drie op de tien nieuwe meters de eerste week geen standen; elders één op de twintig.",
      "tool": "data"
     },
     {
@@ -876,7 +877,7 @@
     {
      "property": "ftr",
      "target": "meters.registration",
-     "value": -0.2
+     "value": -0.1
     }
    ],
    "id": "silent_meter",
@@ -1149,13 +1150,6 @@
      "key": true,
      "text": "De weekplanning vult elke monteur voor 100%. Ruimte voor storingen staat er niet in, terwijl die altijd voorgaan.",
      "tool": "documents"
-    },
-    {
-     "at": "outages.locate",
-     "depth": 2,
-     "key": true,
-     "text": "'Er zijn elke dag storingen, dat weet iedereen. Maar in de planning bestaan ze niet.'",
-     "tool": "conversation"
     }
    ],
    "countermeasures": {

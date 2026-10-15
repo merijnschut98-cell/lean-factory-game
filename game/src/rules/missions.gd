@@ -40,6 +40,8 @@ const NO_REPEAT := 6
 const FADING_DAYS := 45
 ## The coach's conditional questions (content: coach.conditional).
 const CONDITIONS: Array[String] = ["blamed", "fading_fix"]
+## A debrief's variants, in the order they win (content: debrief_variants).
+const DEBRIEF_VARIANTS: Array[String] = ["blamed", "poor_fix", "not_standardised"]
 const P := ProblemState.Phase
 ## Where the player stands, as the coach sees it (see stage_of).
 const STAGES := ["go_see", "understand", "experiment", "reflect"]
@@ -275,9 +277,20 @@ func briefing_of(id: String) -> String:
 	return m.reopen_text if back and not m.reopen_text.is_empty() else m.briefing
 
 
-## The debrief to show: a fork branch done first has its own.
+## The debrief to show, reading the play (audit §5.7): a blaming question
+## while it was open, a poor fix, a fix not standardised, the fork branch done
+## first, in that order; the plain debrief otherwise.
 func debrief_of(id: String) -> String:
 	var m := defs[id]
+	var st: ProblemState = region.state.get(m.goal_problem)
+	var holds := {
+		"blamed": st != null and st.blamed,
+		"poor_fix": knows("poor_fix:" + m.goal_problem),
+		"not_standardised": st != null and st.phase == P.RESOLVED and not st.standardised,
+	}
+	for variant: String in DEBRIEF_VARIANTS:
+		if holds[variant] and m.debrief_variants.has(variant):
+			return m.debrief_variants[variant]
 	var first := not m.fork_group.is_empty() and facts.has("fork_first:%s:%s" % [m.fork_group, id])
 	return m.debrief_first if first and not m.debrief_first.is_empty() else m.debrief
 

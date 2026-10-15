@@ -25,6 +25,11 @@
  "countermeasure_unlocks": [
   "kpi_board"
  ],
+ "debrief_variants": [
+  "blamed",
+  "poor_fix",
+  "not_standardised"
+ ],
  "effect_properties": {
   "applies": {
    "kind": "step",

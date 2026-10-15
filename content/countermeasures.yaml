@@ -228,6 +228,20 @@ countermeasures:
     decay_days: null
     multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
     effects: []
+  # Audit L10: TWI Job Instruction, Henk teaching the way he knows; it needs Henk
+  # (Henk's deadline closes it). Effects and hours: estimates, between the
+  # videos and the buddy system.
+  - id: twi_job_instruction
+    name: TWI Job Instruction met Henk
+    tier: 1
+    category: people
+    description: "Henk leert Ahmed en de andere jonge monteurs het lokaliseren in oude kabelnetten in vier stappen: voorbereiden, voordoen, laten doen, opvolgen. Op echte storingen, met Henk ernaast."
+    budget: 4000
+    team_hours: {monteurs: 60}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: outages.locate, property: ftr, value: 0.02}
   - id: skills_matrix_buddy
     name: Skills-matrix en buddysysteem
     tier: 2
@@ -339,7 +353,7 @@ countermeasures:
     name: Trafo-aftakkingen per wijk herzien
     tier: 1
     category: standard_work
-    description: In wijken met veel zonnepanelen gaat de aftakking van de wijktransformator een stand lager, op basis van een meetweek. De spanning klopt dan voor de hele straat in plaats van voor één klant.
+    description: In wijken met veel zonnepanelen gaat de aftakking van de wijktransformator een stand lager, op basis van een meetweek in de zomer én een in de winter (op een koude avond met warmtepompen mag de spanning niet onder 207 V zakken). De spanning klopt dan voor de hele straat in plaats van voor één klant.
     budget: 4000
     team_hours: {monteurs: 30, grid_analysts: 10}
     decay_days: null
@@ -376,7 +390,7 @@ countermeasures:
     name: Trafo bestellen bij de netstudie
     tier: 1
     category: flow
-    description: Zodra de netstudie laat zien dat een straat verzwaard moet worden, gaat de bestelling van de transformator de deur uit. Ontwerp en levertijd lopen naast elkaar in plaats van na elkaar.
+    description: Zodra de netstudie laat zien dat een straat verzwaard moet worden, gaat de bestelling van de transformator de deur uit. Ontwerp en levertijd lopen naast elkaar in plaats van na elkaar. Een paar standaardmaten trafo houden het risico van een verkeerde maat klein.
     budget: 2000
     team_hours: {grid_analysts: 10, work_prep: 10}
     decay_days: 45
@@ -424,7 +438,7 @@ countermeasures:
     name: Use-it-or-lose-it-gesprekken
     tier: 2
     category: flow
-    description: Klanten die structureel veel minder gebruiken dan ze gecontracteerd hebben, krijgen een gesprek en een voorstel om capaciteit terug te geven, zoals de ACM toestaat. Wat vrijkomt, gaat naar de wachtrij.
+    description: Klanten die structureel veel minder gebruiken dan ze gecontracteerd hebben, krijgen een gesprek en een voorstel om capaciteit terug te geven, binnen de regels van de ACM en het contract. Wat vrijkomt, gaat naar de wachtrij.
     budget: 5000
     team_hours: {key_accounts: 30, grid_analysts: 10}
     decay_days: null

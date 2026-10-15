@@ -394,6 +394,30 @@
    "tier": 1
   },
   {
+   "budget": 4000,
+   "category": "people",
+   "decay_days": null,
+   "description": "Henk leert Ahmed en de andere jonge monteurs het lokaliseren in oude kabelnetten in vier stappen: voorbereiden, voordoen, laten doen, opvolgen. Op echte storingen, met Henk ernaast.",
+   "effects": [
+    {
+     "property": "ftr",
+     "target": "outages.locate",
+     "value": 0.02
+    }
+   ],
+   "id": "twi_job_instruction",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "TWI Job Instruction met Henk",
+   "team_hours": {
+    "monteurs": 60
+   },
+   "tier": 1
+  },
+  {
    "budget": 7000,
    "category": "people",
    "decay_days": null,
@@ -602,7 +626,7 @@
    "budget": 4000,
    "category": "standard_work",
    "decay_days": null,
-   "description": "In wijken met veel zonnepanelen gaat de aftakking van de wijktransformator een stand lager, op basis van een meetweek. De spanning klopt dan voor de hele straat in plaats van voor één klant.",
+   "description": "In wijken met veel zonnepanelen gaat de aftakking van de wijktransformator een stand lager, op basis van een meetweek in de zomer én een in de winter (op een koude avond met warmtepompen mag de spanning niet onder 207 V zakken). De spanning klopt dan voor de hele straat in plaats van voor één klant.",
    "effects": [],
    "id": "tap_review_per_neighbourhood",
    "multipliers": {
@@ -675,7 +699,7 @@
    "budget": 2000,
    "category": "flow",
    "decay_days": 45,
-   "description": "Zodra de netstudie laat zien dat een straat verzwaard moet worden, gaat de bestelling van de transformator de deur uit. Ontwerp en levertijd lopen naast elkaar in plaats van na elkaar.",
+   "description": "Zodra de netstudie laat zien dat een straat verzwaard moet worden, gaat de bestelling van de transformator de deur uit. Ontwerp en levertijd lopen naast elkaar in plaats van na elkaar. Een paar standaardmaten trafo houden het risico van een verkeerde maat klein.",
    "effects": [
     {
      "property": "starts_with",
@@ -772,7 +796,7 @@
    "budget": 5000,
    "category": "flow",
    "decay_days": null,
-   "description": "Klanten die structureel veel minder gebruiken dan ze gecontracteerd hebben, krijgen een gesprek en een voorstel om capaciteit terug te geven, zoals de ACM toestaat. Wat vrijkomt, gaat naar de wachtrij.",
+   "description": "Klanten die structureel veel minder gebruiken dan ze gecontracteerd hebben, krijgen een gesprek en een voorstel om capaciteit terug te geven, binnen de regels van de ACM en het contract. Wat vrijkomt, gaat naar de wachtrij.",
    "effects": [],
    "id": "use_it_or_lose_it",
    "multipliers": {
