@@ -15,11 +15,12 @@
   - 2 in Act 0 (Anouk's tutorial, Anouk owns the tray);
   - 10 in Act I (Joost's vacancies, Sanne's checker, Marco the cynic, Esra's agents, Mrs El Amrani's fourth call, Petra's batch, Henk and the camera, Linda, Dirk, Femke as an expert);
   - 10 in Act II (Gert after the cable strike, Mieke's sketches, Femke's triage, Rob from Inkoop, Thomas and the unused capacity, Ilse the baker, Joost's KPI talk rewritten, Sanne's KPI, Frank's block, Thomas as an expert);
-  - 7 check-ins: Ahmed (rewritten) plus 6 new (Anouk, Henk's last week, Esra, Petra, Marco at day 100, Linda).
-- **Every person has a voice sheet (§2):** word choice, regional flavour (light Brabants in Nova, Randstad for Esra and Joost), humour, worry, a recurring line, and what they never say.
+  - 7 check-ins: Ahmed (rewritten) plus 6 new (Anouk, Henk's last week, Esra, Petra, Marco at day 100, Linda);
+  - 5 short walk-around check-ins (§8.1, added after Merijn's decision on the meter): Yvonne, Kees, Mieke, Rachid, Femke.
+- **Every person has a voice sheet (§2):** word choice, rhythm, humour, worry, a recurring line, and what they never say. Everyone speaks standard Dutch (Merijn, 2026-10-15: no dialect); voices differ in what people say and how, not in spelling.
 - **Every concern is a real workplace fear** that also carries the Lean or sector point: Joost protects Anouk's face (respect), Petra's batch hides that she is a single point of failure, Femke fears signing a fast check without authority (psychological safety, exploit before elevate), Rob was named in an audit for a wrong transformer size (standard sizes, L9), Gert saw a man fall after an MS flash (safety, test trenches), Ilse will buy a new *gas* oven if hers breaks (lock-in in the energy transition), Mrs El Amrani's heat pump hangs on the wall without power while her mother lives with them.
 - **No golden path:** each persuasion dialog lists at least three working routes and the trap, and at least two proposals or experiments that address the concern. The dialog never judges *which* proposal is better; the Check does (Sanne may commit gladly to the weaker checker).
-- **11 questions for Merijn (§9)**, each multiple choice with a recommendation.
+- **11 questions for Merijn (§10), now decided** (2026-10-15): standard Dutch for everyone, an openness bar with arrows, tutorial first talks, and the rest as recommended.
 
 ---
 
@@ -78,28 +79,28 @@ Found while auditing the samples (§3). They are proposals for the dialog spec, 
 
 ## 2. Voice sheet
 
-One rule for all: **people are never the cause.** A person may hold a wrong belief (a plausible cause the clues correct), never a vice. Light dialect is written in standard spelling with a few marked words, so it stays readable (Q5).
+One rule for all: **people are never the cause.** A person may hold a wrong belief (a plausible cause the clues correct), never a vice. Everyone speaks standard Dutch, in standard spelling (decided: Q5). A voice is made of word choice, sentence rhythm, humour and worry, never of dialect.
 
-| id | Who (age) | Voice: words and flavour | Humour | Worry (never said early) | Recurring line | Never says |
+| id | Who (age) | Voice: words and rhythm | Humour | Worry (never said early) | Recurring line | Never says |
 |---|---|---|---|---|---|---|
 | `anouk` | Anouk de Vries (29), werkvoorbereider | Apologises first: "sorry", "nee joh, gaat prima", "ik zit erbovenop". Precise about drawings. | Draws the stack as a mountain on a post-it, with a flag on top. | That she is slower than the rest; she stays late so nobody sees it. | "Ik zit erbovenop." | That she is overloaded; complaints about Joost. |
-| `joost` | Joost van Dijk (34), TL Werkvoorbereiding | From an engineering firm in Utrecht; tidy Randstad Dutch, numbers when nervous: "even voor de duidelijkheid", "eerlijk is eerlijk", "dat is gewoon een feit". | Dry about his spreadsheets: "Mijn Excel heeft meer tabbladen dan ik mensen heb." | Losing face; his predecessor "moved to Inkoop" after one bad quarter; protecting his people's face. | "Mijn team haalt het doel." | Swearing; blaming Anouk. |
-| `sanne` | Sanne Bakker (45), TL Intake | Born in Nova. Fast, lists in threes, light Brabants: "joh", "da's", "hè". | Sarcasm about Intake's status: "het postkantoor". | That Intake gets the blame for errors made elsewhere; that her team is seen as low-skilled. | "We zijn een postkantoor geworden." | Anything bad about her team. When tired she stops joking: a cue. |
-| `marco` | Marco Peters (53), TL Monteurs | Thirty years a monteur. Brabants: "nie", "efkes", "da's", "ons mannen", sometimes "ge". Short sentences. | Gallows humour about consultants: "Mooie plaatjes. Wie bouwt dat na?" | The 2012 programme that took field hours and vanished; he promised his monteurs "nooit meer". | "En wie bouwt dat na?" | Office words (stakeholder, KPI) without a sneer. |
-| `henk` | Henk Verbeek (64), senior monteur | Warm, gruff, strongest Brabants: "jonguh", "da's nie zo moeilijk", "ik laat 't oe wel zien", "houdoe". Stories with a year in them. | Anecdotes: "In '87 lag hier een kabel van de gemeente die niemand getekend had." | That forty years becomes a video nobody watches; that Ahmed goes out alone at night too soon. | "Laat het me voordoen." | Self-pity. |
+| `joost` | Joost van Dijk (34), TL Werkvoorbereiding | From an engineering firm in Utrecht; tidy, complete sentences, numbers when nervous: "even voor de duidelijkheid", "eerlijk is eerlijk", "dat is gewoon een feit". | Dry about his spreadsheets: "Mijn Excel heeft meer tabbladen dan ik mensen heb." | Losing face; his predecessor "moved to Inkoop" after one bad quarter; protecting his people's face. | "Mijn team haalt het doel." | Swearing; blaming Anouk. |
+| `sanne` | Sanne Bakker (45), TL Intake | Born in Nova. Fast, lists in threes, interjections: "joh", "hè", "nou". | Sarcasm about Intake's status: "het postkantoor". | That Intake gets the blame for errors made elsewhere; that her team is seen as low-skilled. | "We zijn een postkantoor geworden." | Anything bad about her team. When tired she stops joking: a cue. |
+| `marco` | Marco Peters (53), TL Monteurs | Thirty years a monteur. Short, flat sentences; "mijn mannen", "kijk", "klaar"; never an office word without a sneer. | Gallows humour about consultants: "Mooie plaatjes. Wie bouwt dat na?" | The 2012 programme that took field hours and vanished; he promised his monteurs "nooit meer". | "En wie bouwt dat na?" | Office words (stakeholder, KPI) without a sneer. |
+| `henk` | Henk Verbeek (64), senior monteur | Warm, gruff, slow; calls Ahmed "jongen"; "ik laat het je wel zien", "dat is niet zo moeilijk". Stories with a year in them. | Anecdotes: "In '87 lag hier een kabel van de gemeente die niemand getekend had." | That forty years becomes a video nobody watches; that Ahmed goes out alone at night too soon. | "Laat het me voordoen." | Self-pity. |
 | `ahmed` | Ahmed Bouzid (24), monteur | Grew up in Nova; mbo Elektrotechniek. Short sentences, "gewoon", "toch", "man", "echt wel". Says "Henk", never "meneer". | Self-mocking: "Mijn navigatie kent Nova-Oud beter dan ik." | Not good enough; ashamed he still calls a retiree at night. | "Gaat wel." | Long speeches, unless he is very open. |
 | `esra` | Esra Yilmaz (41), TL Klantcontactcentrum | From a Rotterdam call centre: direct, "kijk", "serieus?", "gewoon eerlijk", "mijn mensen". | Imitates the hold music and the callers. | One of her four agents is home with stress, another cried in her car; she feels she should have seen it. | "Mijn mensen zijn geen stootkussen." | That her agents are slow. |
-| `petra` | Petra Vos (58), Meetdata & registratie | Precise, dry, a little prickly; proud of her system: "Dat staat in mijn map." Light Brabants "da's". | Calls the registration system "de Molen" ("die maalt, maar langzaam"). | She is alone: a sick week stops everything, and the monthly batch hides that. | "Alles klopt. Tot op de laatste EAN." | That she is behind. |
+| `petra` | Petra Vos (58), Meetdata & registratie | Precise, dry, a little prickly; proud of her system: "Dat staat in mijn map." Says "klopt" a lot. | Calls the registration system "de Molen" ("die maalt, maar langzaam"). | She is alone: a sick week stops everything, and the monthly batch hides that. | "Alles klopt. Tot op de laatste EAN." | That she is behind. |
 | `frank` | Frank Hulshof (56), manager Aansluitingen & Netverzwaring | Formal management Dutch: "jaarplan", "verantwoorden", "de directie", "naar de ACM", "daar moet ik op kunnen sturen". | Rare and dry: "Ik word betaald om nee te zeggen. Ja zeggen kan iedereen." | Losing the region's reinforcement budget in the autumn round; the ACM figures. | "Dat moet ik kunnen uitleggen." | Anything personal, until "Denkt mee". |
 | `el_amrani` | mevrouw Fatima El Amrani (52), klant, Nova-Oost | Polite, organised, standard Dutch, dates from her notebook. Firm, never rude. | Dry: "Ik ken uw wachtmuziek inmiddels uit mijn hoofd." | Her mother lives with them; the gas boiler is gone; winter is coming. | "Ik heb het opgeschreven." | Swear words; threats she will not carry out. |
-| `linda` | Linda Jansen (36), planner | Fast, tired; "omplannen" in every other sentence. Light Brabants. | Calls her planning board "het kaartenhuis". | That a planning with room for outages looks like she can't plan; she re-plans in the evening, with her children asleep. | "Ik plan iedereen. Behalve mezelf." | That the monteurs are unreliable. |
-| `dirk` | Dirk Smits (60), magazijn | Laconic, Brabants: "Ik heb ze gewoon liggen." | Dry about vans: "Een bus is een magazijn op wielen, alleen zonder magazijnman." | That his warehouse is blamed; he takes pride in a full shelf. | "Ik heb ze gewoon liggen." | Hurry. |
+| `linda` | Linda Jansen (36), planner | Fast, tired; "omplannen" in every other sentence; apologises while she talks. | Calls her planning board "het kaartenhuis". | That a planning with room for outages looks like she can't plan; she re-plans in the evening, with her children asleep. | "Ik plan iedereen. Behalve mezelf." | That the monteurs are unreliable. |
+| `dirk` | Dirk Smits (60), magazijn | Laconic, the fewest words in the building: "Ik heb ze gewoon liggen." | Dry about vans: "Een bus is een magazijn op wielen, alleen zonder magazijnman." | That his warehouse is blamed; he takes pride in a full shelf. | "Ik heb ze gewoon liggen." | Hurry. |
 | `femke` | Femke de Wit (38), netplanner | Enthusiastic engineer, draws while talking: "kijk", "kort gezegd", "dat past". | Grid jokes: "Een trafo is net een mens: een piek kan hij aan, een hele dag niet." | Signing a fast check without authority: if a station burns out, her name is under it. | "Vijf minuten werk, als ik eraan toekom." | That the procedure is stupid (she wrote half of it). |
-| `gert` | Gert Peeters (50), uitvoerder, Grondwerk Peeters (family firm) | Brabants, defensive at first: "Ik heb gewoon een KLIC-melding gedaan." Talks about "mijn jongens". | "Ik graaf al dertig jaar. Ik heb meer kabels gezien dan jullie kaart." | The safety of his crew; in 2019 he saw a man fall after an MS flash. And his family name on a damage claim. | "Volgens de kaart lag hier niks." | Blame toward his own crew. |
+| `gert` | Gert Peeters (50), uitvoerder, Grondwerk Peeters (family firm) | Defensive at first, plain-spoken: "Ik heb gewoon een KLIC-melding gedaan." Talks about "mijn jongens". | "Ik graaf al dertig jaar. Ik heb meer kabels gezien dan jullie kaart." | The safety of his crew; in 2019 he saw a man fall after an MS flash. And his family name on a damage claim. | "Volgens de kaart lag hier niks." | Blame toward his own crew. |
 | `mieke` | Mieke van der Veen (49), Revisie & GIS | Careful, a craftswoman of drawings: "dat moet kloppen", "uitzoeken". | The sketch on a sandwich bag ("met pindakaasvlek"). | That "intekenen bij de bron" makes her team obsolete; that since the cable strike everyone looks at GIS. | "We tekenen zo snel als we kunnen." | That the monteurs are sloppy. |
 | `rob` † | Rob Verhagen (44), inkoper | Rule-bound, calm, procedural: "aanbesteding", "conform", "de procedure". Says "u" until he is Open. | Accountant jokes: "Een trafo in het magazijn is een dure kapstok." | An audit in 2022 named him for two 630 kVA transformers bought for a project that needed 400. | "Zonder goedgekeurd ontwerp geen bestelling." | That he likes rules for their own sake. |
 | `thomas` | Thomas Visser (47), accountmanager grootzakelijk | Smooth, relational, stories about "mijn klanten". | Name-drops the lunch at the business park. | Being the man who takes capacity away from people he has known for twenty years. | "Ik ken die mensen." | A customer's name in a joke. |
-| `ilse` † | Ilse de Graaf (44), Bakkerij De Graaf | Brabants, warm and fed up: "ik sta hier om vier uur". | "Mijn ovens zijn ouder dan jouw stagiair." | If an oven dies, she buys a new **gas** oven, because that works now, and stays on gas for twenty years. | "Twee jaar." | That she wants special treatment. |
+| `ilse` † | Ilse de Graaf (44), Bakkerij De Graaf | Warm and fed up, talks in hours of the day: "ik sta hier om vier uur". | "Mijn ovens zijn ouder dan jouw stagiair." | If an oven dies, she buys a new **gas** oven, because that works now, and stays on gas for twenty years. | "Twee jaar." | That she wants special treatment. |
 
 † New to the cast (Rob Verhagen; Ilse de Graaf is in the audit's §5.3 already). Kim and Saskia (two of Esra's four agents), Rachid Ouali (Intake) and Ricardo (a monteur) are named in lines but are not dialog targets.
 
@@ -548,7 +549,7 @@ dialogs:
           clue: {key: true, depth: 2, text: "'Wat er mist, is altijd hetzelfde: het vermogen, de meterkastfoto, de installateur. Wij zien het elke dag. Niemand heeft ons ooit gevraagd wat er op het formulier moet.'"}
           facts: [heard:sanne_checker]
           proposals: [team_designs_form]
-    reframe: "Vanuit de klant gezien… die vult in wat wij vragen. En wij vragen het niet. Hè. Da's eigenlijk best gek."
+    reframe: "Vanuit de klant gezien… die vult in wat wij vragen. En wij vragen het niet. Hè. Dat is eigenlijk best gek."
     warning: "Joh, ik heb echt geen tijd voor een praatje."
     data: ["incomplete_application:2", "incomplete_application:4"]
     lines:
@@ -590,12 +591,12 @@ dialogs:
     patience: 10
     # start: cynic 30 + 0 + 0 (team monteurs) + 0 + 0 = 30, Op z'n hoede
     opening: "Ah. De nieuwe verbetermanager. Ik heb er al drie gehad. Koffie staat daar."
-    position: {text: "Twee op de vijf adressen zijn niet klaar als mijn mannen voor de deur staan. Twintig monteursuren per week. Die heb ik nie.", tags: [claim]}
+    position: {text: "Twee op de vijf adressen zijn niet klaar als mijn mannen voor de deur staan. Twintig monteursuren per week. Die heb ik niet.", tags: [claim]}
     layers:
       - id: interest
         at: 50
         via: [open_question, inquiry, paraphrase]
-        text: "Elke rit voor niks is een klant die wél klaar was en een week langer wacht. En mijn mannen zitten in de bus te bellen met een installateur die z'n telefoon nie opneemt."
+        text: "Elke rit voor niks is een klant die wél klaar was en een week langer wacht. En mijn mannen zitten in de bus te bellen met een installateur die z'n telefoon niet opneemt."
         tags: [claim, feeling]
       - id: concern
         at: 70
@@ -607,7 +608,7 @@ dialogs:
           clue: {key: true, depth: 2, text: "'Mijn mannen zien op een foto in één oogopslag of een meterkast klaar is. Maar niemand vraagt ze iets voordat ze rijden.'"}
           facts: [heard:marco_2012]
           proposals: [monteurs_judge_photos]
-    reframe: "Vanuit de planner? Die plant op de datum van het akkoord. Die weet ook nie dat de kast nie klaar is. Nee. Die heeft het ook nie makkelijk."
+    reframe: "Vanuit de planner? Die plant op de datum van het akkoord. Die weet ook niet dat de kast niet klaar is. Nee. Die heeft het ook niet makkelijk."
     warning: "Zeg het maar gewoon. Wat moet ik doen?"
     data: ["installer_not_ready:2"]
     lines:
@@ -633,7 +634,7 @@ dialogs:
     outcomes:
       commitment: "Goed. Eén maand. En als het na een maand weg is, ben jij de vierde."
       partial: "Ik doe mee. Als het na een maand nog loopt."
-      heard: "Hm. Jij luistert tenminste. Dat deed de vorige nie."
+      heard: "Hm. Jij luistert tenminste. Dat deed de vorige niet."
       compliance: "Komt op de stapel."
       ruined: "Zie je. Mooie woorden. En wie bouwt dat na?"
     # route: open question +6 36 > paraphrase +7 43 (heard) > inquiry +8 51 (interest) > empathy +6 57
@@ -839,22 +840,22 @@ dialogs:
     owns: knowledge_drain
     patience: 10
     # start: craftsman 40 + 0 + 0 + 0 + 0 = 40, Luistert
-    opening: "Ge komt zeker voor die camera. Jonguh, ik zeg het maar meteen."
-    position: {text: "Ik laat me nie filmen.", tags: [claim]}
+    opening: "Je komt zeker voor die camera. Jongen, ik zeg het maar meteen."
+    position: {text: "Ik laat me niet filmen.", tags: [claim]}
     layers:
       - id: interest
         at: 55
         via: [inquiry, open_question, paraphrase]
-        text: "Wat ik weet, zit in m'n handen. Nie in m'n mond. Ge ruikt of een mof vocht heeft. Ge voelt aan de kabel of hij van voor '70 is. Dat ziet ge nie op een filmpje."
+        text: "Wat ik weet, zit in m'n handen. Niet in m'n mond. Je ruikt of een mof vocht heeft. Je voelt aan de kabel of hij van voor '70 is. Dat zie je niet op een filmpje."
         tags: [claim, feeling]
       - id: concern
         at: 72
         via: [inquiry, silence, empathy]
-        lead_in: {text: "Kijk, 't is nie dat ik nie wil…", tags: [hesitation]}
-        text: "Ik ben bang dat ze straks een filmpje van mij hebben en denken: klaar, Henk is geregeld. En dat ze die jongen, Ahmed, 's nachts alleen naar Nova-Oud sturen met een tablet. Die jongen is goed. Maar hij is nog nie klaar."
+        lead_in: {text: "Kijk, het is niet dat ik niet wil…", tags: [hesitation]}
+        text: "Ik ben bang dat ze straks een filmpje van mij hebben en denken: klaar, Henk is geregeld. En dat ze die jongen, Ahmed, 's nachts alleen naar Nova-Oud sturen met een tablet. Die jongen is goed. Maar hij is nog niet klaar."
         tags: [admission]
         unlocks:
-          clue: {key: true, depth: 2, text: "'Dit vak leert ge nie uit een boek. Ge leert het naast iemand die het kan, tot ge het zelf doet en hij alleen nog kijkt.'"}
+          clue: {key: true, depth: 2, text: "'Dit vak leer je niet uit een boek. Je leert het naast iemand die het kan, tot je het zelf doet en hij alleen nog kijkt.'"}
           facts: [heard:henk_teach]          # needed by twi_job_instruction (spec §4.3)
           proposals: [teach_ahmed_four_steps]
     reframe: "Vanuit Ahmed? … Die staat om twee uur 's nachts in de regen bij een kabel die ouder is dan z'n vader. Met een filmpje. Nee."
@@ -871,17 +872,17 @@ dialogs:
          reply: "M'n handen. En wie vertelt dat filmpje wat 't moet doen als het anders loopt dan op het filmpje?"}
       - {id: buddy_nights, addresses: [concern], label: "Ahmed rijdt mee",
          say: "Wat als Ahmed de komende weken bij elke storing in de oude wijken met je meegaat?",
-         reply: "Meegaan is goed. Maar meegaan is kijken. Kijken is nog nie kunnen."}
+         reply: "Meegaan is goed. Maar meegaan is kijken. Kijken is nog niet kunnen."}
       - {id: teach_ahmed_four_steps, hidden: true, addresses: [concern], label: "Henk leert het Ahmed zoals hij het zelf leerde",
          say: "Hoe leerde jij het vroeger? Wat als je het Ahmed precies zo leert: jij doet het voor, hij doet het na terwijl jij kijkt, en op het eind doet hij het alleen en bel jij hem de dag erna.",
          reply: "Zo heeft ouwe Toon het mij geleerd. In 1984. Ja. Zo."}
     co_proposal: {id: teach_ahmed_four_steps, text: "Laat 'm de komende nachten met mij meerijden. Eerst doe ik het. Dan doet hij het en ik kijk. En de laatste week zit ik in de bus en doet hij het alleen."}
     outcomes:
-      commitment: "Afgesproken. Maar ik bepaal wanneer hij klaar is. Nie de planning."
-      partial: "Ik doe mee. Als die jongen nie alleen de nacht in gaat voordat ik zeg dat het kan."
-      heard: "Ge zijt de eerste die vraagt hoe ik het geleerd heb."
+      commitment: "Afgesproken. Maar ik bepaal wanneer hij klaar is. Niet de planning."
+      partial: "Ik doe mee. Als die jongen niet alleen de nacht in gaat voordat ik zeg dat het kan."
+      heard: "Jij bent de eerste die vraagt hoe ik het geleerd heb."
       compliance: "Zet die camera dan maar neer. Ik zeg niks."
-      ruined: "Film dan maar wat ge wilt. Zonder mij."
+      ruined: "Film dan maar wat je wilt. Zonder mij."
     # route: open question +6 46 > paraphrase +7 53 (heard) > inquiry +12 (craftsman x1.5) > 64 capped (interest)
     #        > reflect +10 74 (lead-in, cue) > silence +12 > 81 capped (concern) > propose teach_ahmed_four_steps +8 89 > ask: commitment (7 moves)
     # other routes: inquiry again at the lead-in ("En wat als hij het verkeerd ruikt?"); buddy_nights also addresses the concern.
@@ -1042,7 +1043,7 @@ dialogs:
       - id: interest
         at: 55
         via: [open_question, inquiry, paraphrase]
-        text: "Proefsleuven graven kost tijd, en die tijd staat niet in de planning van mijn opdrachtgever. Die betaalt per meter. Als ik bij elke kabel ga zoeken, ben ik de duurste van Brabant."
+        text: "Proefsleuven graven kost tijd, en die tijd staat niet in de planning van mijn opdrachtgever. Die betaalt per meter. Als ik bij elke kabel ga zoeken, ben ik de duurste van de regio."
         tags: [claim, feeling]
       - id: concern
         at: 70
@@ -1564,7 +1565,7 @@ dialogs:
     trigger: {beat: henk_farewell, before_days: 5}
     patience: 8
     # start: craftsman 40 - 5 (stil) + 0 + 2 (trust 60) + 0 = 37, Op z'n hoede; when his knowledge was saved by teaching: mood goed, 52
-    opening: "Kijk wie we daar hebben. Kom ge afscheid nemen? Ik ben er nog vijf dagen, hoor."
+    opening: "Kijk wie we daar hebben. Kom je afscheid nemen? Ik ben er nog vijf dagen, hoor."
     position: {text: "Nog vijf dagen. Dan ga ik vissen.", tags: [claim]}
     layers:
       - {id: interest, at: 50, via: [open_question, inquiry], text: "Veertig jaar. Ik heb in elke straat van Nova-Oud een gat gegraven. Ik weet bij elk huis of ze koffie zetten.", tags: [feeling]}
@@ -1578,23 +1579,23 @@ dialogs:
     lines:
       inquiry: {say: "Welke straat in Nova-Oud vergeet je nooit?"}
     outcomes:
-      lifted: "Weet ge wat? Kom zaterdag op m'n afscheid. En neem die jonge Ahmed mee. Die moet weten dat het een feest is, geen begrafenis."
-      heard: "Houdoe, jonguh."
-      none: "Houdoe."
+      lifted: "Weet je wat? Kom zaterdag op m'n afscheid. En neem die jonge Ahmed mee. Die moet weten dat het een feest is, geen begrafenis."
+      heard: "Dag, jongen. Tot zaterdag."
+      none: "Dag."
     variants:
       - needs: {any: ["chose:knowledge_drain:skills_matrix_buddy", "chose:knowledge_drain:twi_job_instruction"]}
         mood: goed
         layers:
           - {id: interest, at: 55, via: [open_question, inquiry], text: "Veertig jaar. En de laatste zes weken waren de beste. Raar, hè.", tags: [feeling]}
           - {id: concern, at: 70, via: [silence, reflect, empathy], lead_in: {text: "Die jongen…", tags: [hesitation]},
-             text: "Die jongen kan het. Ik had het nie gedacht, eerlijk gezegd. Vorige week stond ik ernaast en hij had me nie nodig. Da's een raar gevoel, jonguh. Goed raar. Maar raar.", tags: [admission]}
+             text: "Die jongen kan het. Ik had het niet gedacht, eerlijk gezegd. Vorige week stond ik ernaast en hij had me niet nodig. Dat is een raar gevoel, jongen. Goed raar. Maar raar.", tags: [admission]}
         outcomes: {lifted: "Hier. Dit is van mij geweest. Veertig jaar. Hij is bot. Laat 'm zo."}   # the cable knife (D13's vitrine object)
         sets_flags_on_lifted: [flag:henk_postcards]                                                 # (new) a postcard each act
       - needs: {all: ["chose:knowledge_drain:work_instruction_videos"]}
         layers:
           - {id: interest, at: 50, via: [open_question, inquiry], text: "Ze hebben me gefilmd, uiteindelijk. Twaalf filmpjes.", tags: [feeling]}
           - {id: concern, at: 68, via: [silence, reflect, empathy], lead_in: {text: "Ik heb ze teruggekeken…", tags: [hesitation]},
-             text: "Op geen enkel filmpje ziet ge wat ik ruik. Ik hoop maar dat die jongen het nooit nodig heeft. 's Nachts. Alleen.", tags: [admission, doubt]}
+             text: "Op geen enkel filmpje zie je wat ik ruik. Ik hoop maar dat die jongen het nooit nodig heeft. 's Nachts. Alleen.", tags: [admission, doubt]}
         outcomes: {lifted: "Zeg tegen Ahmed dat hij me mag bellen. Ook om twee uur 's nachts. Ik ben toch wakker."}
     # route: open question +6 43 > inquiry +12 (craftsman) 55 (interest) > reflect +10 65 > empathy +6 71 (lead-in, cue)
     #        > silence +12 > 77 capped (concern) > empathy +10 87 > close: opgebeurd (7 moves)
@@ -1671,10 +1672,10 @@ dialogs:
     patience: 8
     # start: cynic 30 + 10 (goed: the review passed; 0 if it failed) + 0 + 0 + 0 = 40, Luistert
     #   after marco_wasted_trips ended in commitment: + 10 (team monteurs +1) + 2 (trust 60) + 15 (memory) = 67
-    opening: "Honderd dagen. Ge zijt er nog. Dat is al meer dan de vorige twee."
+    opening: "Honderd dagen. Je bent er nog. Dat is al meer dan de vorige twee."
     position: {text: "Het gaat goed bij ons. Minder ritten voor niks.", tags: [claim]}
     layers:
-      - {id: interest, at: 50, via: [open_question, inquiry], text: "Mijn mannen vragen wat er nu komt. Ze zijn het nie gewend dat iets blijft.", tags: [feeling]}
+      - {id: interest, at: 50, via: [open_question, inquiry], text: "Mijn mannen vragen wat er nu komt. Ze zijn het niet gewend dat iets blijft.", tags: [feeling]}
       - id: concern
         at: 70
         via: [silence, empathy, inquiry]
@@ -1685,9 +1686,9 @@ dialogs:
     lines:
       experience: {say: "Bij mijn vorige werk hing er ook zo'n bord. Toen de man die het had opgehangen wegging, hing het er nog een jaar. Leeg."}
     outcomes:
-      lifted: "Weet ge wat. Ik laat Ricardo het bord bijhouden. Nie ik, nie jij. Hij. Dan blijft het."
+      lifted: "Weet je wat. Ik laat Ricardo het bord bijhouden. Niet ik, niet jij. Hij. Dan blijft het."
       heard: "Hm. Ja. We zien wel."
-      none: "Goed. Houdoe."
+      none: "Goed. Tot ziens."
     observation: {text: "En die bussen van ons: geen twee hetzelfde. Daar zou ik ook eens naar kijken.", plants: fix_wrong_joint, needs: {none: ["done:fix_wrong_joint"]}}
     # route: open question +6 46 > inquiry +8 54 (interest) > reflect +10 64 (heard) > inquiry +8 72 (lead-in, cue)
     #        > silence +12 > 79 capped (concern) > empathy +10 89 > close: opgebeurd (7 moves)
@@ -1725,6 +1726,140 @@ dialogs:
 
 ---
 
+### 8.1 Walk-around check-ins (decided 2026-10-15)
+
+Merijn's decision: people the player passes while walking around show their energy as a low bar above their head when their morale is low, which invites a short spirit-lifting talk. These are check-ins in the spec's sense (no mission, no XP, no slot), shorter than §8's.
+
+**Shape:**
+- **Trigger:** the player walks within a few metres of the person while their morale is below 45. Their bar shows low (an energy bar, not openness: openness only appears once a talk starts).
+- **Length:** patience 7. The talk opens with a line the person says while doing something else.
+- **Outcome:** *opgebeurd* as in spec §5.7. The reward is small: morale +10, trust +3, sometimes an observation.
+- **Respect the player's time** (CLAUDE.md, 2026-10-15): walking past costs nothing. The bar fades after the day, and nobody remembers being ignored.
+
+```yaml
+dialogs:
+  - id: yvonne_cards
+    person: yvonne                         # Yvonne Kok, meterwisselaar (audit §5.3)
+    kind: checkin
+    trigger: {walkaround: true, morale_below: 45, after_mission_open: walk_meters}
+    patience: 7
+    # start: quiet 47 - 5 (stil) + 0 + 0 - 1 = 41, Luistert
+    opening: "O. Sorry. Ik zat even in de bus. Pauze."
+    position: {text: "Gaat prima. Nog vier adressen.", tags: [claim]}
+    layers:
+      - {id: interest, at: 47, via: [open_question, inquiry], text: "Drie keer vandaag niemand thuis. Drie kaartjes. Ik heb er een hele stapel van in het handschoenenkastje.", tags: [claim, feeling]}
+      - id: concern
+        at: 65
+        via: [reflect, silence, empathy]
+        lead_in: {text: "En dan…", tags: [hesitation]}
+        text: "Meneer De Jong had een halve dag vrij genomen. Hij was er wel, maar om één uur. Ik kwam om drie uur. Hij schreeuwde tegen mij. Niet tegen de planning. Tegen mij, op de stoep."
+        tags: [admission]
+    outcomes:
+      lifted: "Weet je wat ik eigenlijk zou willen? Dat ze een sms krijgen. 'Yvonne komt tussen twee en vier.' Dan kennen ze mijn naam ook."
+      heard: "Dank je. Ik ga weer."
+      none: "Ja. Nog vier adressen."
+    observation: {text: "Dat ze een sms krijgen met een tijdvak. Dan zijn ze thuis.", plants: fix_not_at_home, needs: {none: ["done:fix_not_at_home"]}}
+    # route: open question +6 47 (interest) > reflect +10 57 > empathy +6 63 > inquiry +8 71 (lead-in, cue)
+    #        > silence +18 (quiet x1.5) > 74 capped (concern) > close: opgebeurd (6 moves). Trap: silence before the hesitation (-4, awkward).
+
+  - id: kees_night
+    person: kees
+    kind: checkin
+    trigger: {walkaround: true, morale_below: 45, time_of_day: night}   # the control room at night (D9 Nachtdienst may fire on the same visit)
+    patience: 7
+    # start: craftsman 40 + 0 + 0 + 0 - 1 = 39, Op z'n hoede
+    opening: "Je bent laat. Of vroeg. Koffie staat daar; hij is van tien uur."
+    position: {text: "Rustige nacht. Twee storingen, allebei hersteld.", tags: [claim]}
+    layers:
+      - {id: interest, at: 45, via: [open_question, inquiry], text: "'s Nachts is de wand het enige wat licht geeft. Je ziet een wijk rood worden, en dan weer groen. Dan ben je klaar.", tags: [claim, feeling]}
+      - id: concern
+        at: 65
+        via: [silence, inquiry, empathy]
+        lead_in: {text: "Alleen…", tags: [hesitation]}
+        text: "Ik zie alleen dat het licht terugkomt. Nooit waarom het uitging. Twintig jaar zie ik dezelfde straten rood worden. Niemand vraagt mij wat ik zie. Ik ben de man van de knoppen."
+        tags: [admission]
+    outcomes:
+      lifted: "Weet je wat. Ik schrijf het voortaan op, welke straten. Op een briefje naast de wand. Misschien vraagt iemand er ooit naar."
+      heard: "Fijn dat er eens iemand 's nachts langskomt."
+      none: "Goed. Rustige nacht."
+    observation: {text: "Twintig jaar dezelfde straten rood. Kees houdt het voortaan bij.", plants: fix_cause_unknown}
+    # route: open question +6 45 (interest) > reflect +10 55 > inquiry x1.5 +12 (craftsman) 67 (lead-in, cue) > silence +12 > 74 capped (concern)
+    #        > empathy +10 84 > close: opgebeurd (6 moves)
+
+  - id: mieke_archive
+    person: mieke
+    kind: checkin
+    trigger: {walkaround: true, morale_below: 45}
+    patience: 7
+    # start: craftsman 40 + 0 + 0 + 0 - 1 = 39
+    opening: "Ik ben een schets aan het uitzoeken. Wil je raden wat dit pijltje betekent? Ik ook niet."
+    position: {text: "Het gaat wel. Er komen er meer bij dan ik er wegwerk.", tags: [claim]}
+    layers:
+      - {id: interest, at: 45, via: [open_question, inquiry], text: "Ik teken nu zesentwintig jaar. Elke kabel in Nova is een keer langs mijn bureau gekomen.", tags: [claim, feeling]}
+      - id: concern
+        at: 65
+        via: [reflect, silence, empathy]
+        lead_in: {text: "Mijn dochter vroeg…", tags: [hesitation]}
+        text: "…wat ik eigenlijk doe. Ik wist het niet uit te leggen. 'Ik teken over wat een ander al getekend heeft.' Zo klinkt het. Zesentwintig jaar."
+        tags: [admission]
+    outcomes:
+      lifted: "Weet je wat ik haar ga laten zien? In het archief ligt de eerste kaart van Nova. Met de hand getekend, 1930-nogwat. Dat is pas tekenen."
+      heard: "Dank je. Terug naar het pijltje."
+      none: "Ja. Er komen er meer bij."
+    observation: {text: "In het archief van Revisie & GIS ligt de eerste kaart van Nova, met de hand getekend."}   # a lead toward D16 Het eerste net, never the trigger itself
+    # route: open question +6 45 (interest) > reflect +10 55 > inquiry x1.5 +12 (craftsman; concern within 10) 67 (lead-in, cue) > silence +12 > 74 capped (concern)
+    #        > empathy +10 84 > close: opgebeurd (6 moves)
+
+  - id: rachid_new
+    person: rachid                         # Rachid Ouali, Intake; Petra's backup after petra_batch
+    kind: checkin
+    trigger: {walkaround: true, morale_below: 45, needs: {any: ["agreed:petra_batch:rachid_backup"]}}
+    patience: 7
+    # start: quiet 47 - 5 (stil) + 0 + 0 - 1 = 41
+    opening: "Hé. Ik zit bij Petra. Zij is er vandaag niet, dus… ik doe het."
+    position: {text: "Gaat goed. Denk ik.", tags: [claim]}
+    layers:
+      - {id: interest, at: 47, via: [open_question, inquiry], text: "Elke EAN die ik aanmeld, controleer ik drie keer. Petra doet het één keer en het klopt altijd.", tags: [claim, feeling]}
+      - id: concern
+        at: 65
+        via: [silence, empathy, reflect]
+        lead_in: {text: "Als ik er één fout doe…", tags: [hesitation]}
+        text: "…dan heeft een gezin geen energiecontract. Door mij. En dan zegt iedereen: zie je, het had bij Petra moeten blijven."
+        tags: [admission, doubt]
+    lines:
+      experience: {say: "Mijn eerste weken hier controleerde ik alles ook drie keer. Ruud zei: na de tiende keer goed mag je het twee keer doen."}
+    outcomes:
+      lifted: "Na de tiende keer goed, twee keer. Oké. Ik tel mee."
+      heard: "Dank je. Ik ga verder. Langzaam."
+      none: "Ja. Gaat goed."
+    # route: open question +6 47 (interest) > reflect +10 57 > empathy +6 63 > inquiry +8 71 (lead-in, cue)
+    #        > silence +18 (quiet x1.5) > 74 capped (concern) > experience +8 82 > close: opgebeurd (7 moves)
+
+  - id: femke_2035
+    person: femke
+    kind: checkin
+    trigger: {walkaround: true, morale_below: 45, after_mission_open: fix_grid_study_queue}
+    patience: 7
+    # start: craftsman 40 - 10 (moe) + 0 + 1 - 1 = 30
+    opening: "Studie achtendertig. Of negenendertig. Ik ben de tel kwijt."
+    position: {text: "Het is gewoon druk. Dat gaat wel weer over.", tags: [claim]}
+    layers:
+      - {id: interest, at: 42, via: [open_question, inquiry], text: "Ik reken de hele dag of iets past. Bijna altijd past het.", tags: [claim, feeling]}
+      - id: concern
+        at: 65
+        via: [reflect, silence, empathy]
+        lead_in: {text: "Ik ben netplanner geworden om…", tags: [hesitation]}
+        text: "…het net van 2035 te ontwerpen. Waar de warmtepompen komen, de laadpleinen, de batterijen. Niet om vier uur per dag te bewijzen dat een gewone woning past."
+        tags: [admission]
+    outcomes:
+      lifted: "Wil je hem zien? Ik heb een schets. Thuis gemaakt, op zondag. Niemand heeft hem ooit gevraagd."
+      heard: "Dank je. Terug naar studie negenendertig."
+      none: "Ja. Het gaat wel weer over."
+    observation: {text: "Femke heeft een schets van het net van 2035, thuis gemaakt.", plants: sector_grid_2035}
+    # route: mood +8 (moe) 38 > open question +6 44 (interest) > reflect +10 54 > empathy +6 60 > inquiry x1.5 +12 72 (lead-in, cue)
+    #        > silence +12 > 74 capped (concern) > close: opgebeurd (7 moves)
+```
+
 ## 9. Self-check against the validator (spec §9.2) and the content tests (§9.3)
 
 Every persuasion dialog, by hand. "Concern options" counts the proposals and experiments that address the concern, including hidden ones, for the "no single right answer" rule (§9.2 #10). "Route" is the listening route in its comment: moves used / patience.
@@ -1758,21 +1893,23 @@ Every block route keeps one route that no failure can close (Frank: `checked:sil
 
 ---
 
-## 10. Questions for Merijn
+## 10. Questions for Merijn: decided
 
-Each has a recommended option (**bold**).
+Merijn answered on 2026-10-15 (PLAN.md "Decisions Made"). Where he took the recommended option, it is marked **decided (a)**; where he chose otherwise, the decision is written out. Every choice below is logged under "Claude's calls, pending Merijn" in PLAN.md, so he can still overrule it.
 
-1. **The size of a change on the meter.** **(a) Arrows only: ▲ or ▲▲, ▼ or ▼▼ (under 8, or 8 and over).** (b) The number, as in the spec ("▲ +12"). (c) Nothing; only the marker moves. *A shown number teaches the Δ table, and the table becomes the golden path. Arrows still show listening versus pushing.*
-2. **The lead-in turn (R-D1).** **(a) Yes: the concern takes two turns (the hesitation, then the reveal), and a move is applied as Δ, cap, reveal.** (b) Keep the spec's one-turn reveal. *Without (a) the cue "Er zit meer achter…" never appears in the spec's own samples.*
-3. **A layer tracker (Standpunt · Belang · Zorg) under the person's name.** **(a) Yes, three steps that fill when a layer is revealed.** (b) No; the bands are enough. *It is the progress a player can feel without a golden path: it shows how far you got with the person, never which move works.*
-4. **The first two talks (Act 0).** **(a) Tutorial talks: they cannot be ruined, and patience is 12.** (b) Normal rules from the first talk. (c) Tutorial rules for all of Act 0 and Act I's first talk. *A ruin in the first hour of the game is the quit risk the audit found.*
-5. **Dialect.** **(a) Light: standard spelling with a few marked words ("nie", "jonguh", "da's", "ge").** (b) Strong phonetic Brabants for Henk and Marco. (c) None. *(a) gives the region a voice without making Henk hard to read for a player from Groningen.*
-6. **The ruined line.** **(a) In character, naming how it felt ("Je kwam binnen met je antwoord al klaar.").** (b) Neutral ("Joost wil nu niet praten."). *(a) teaches without naming a move, and a real person would say it.*
-7. **Customers by phone.** **(a) Mrs El Amrani and Ilse are phone calls the player takes over at the contact centre or the congestion desk.** (b) They come to a counter on campus. (c) The player visits them in town (Phase C world). *(a) is how a grid operator meets them, and it fits the existing places. (c) can come later.*
-8. **The El Amrani heat-pump check.** **(a) Keep the proposal "Kan de warmtepomp nu al draaien?", a real alternative grid operators advise.** (b) Drop it; the dialog stays about the date. *It addresses her real concern (her mother's winter) better than any date, and it is true to the sector in 2026.*
-9. **New cast.** **(a) Add Rob Verhagen (Inkoop), and name Kim and Saskia (Esra's agents), Rachid Ouali (Intake) and Ricardo (a monteur) in lines only.** (b) Keep Inkoop a generic voice. *A face for the transformer mission's resistance makes the L9 lesson a person's fear, not a rule.*
-10. **The Frank route.** **(a) Replace the spec's route "Ruud joins the talk" (a fact no dialog can set) with "both team leads at partial, and reputation ≥ 40".** (b) Make Ruud a dialog target for this one scene. *(a) keeps Ruud a coach only and makes "bring your boss along" a team effort.*
-11. **Promises the game checks.** **(a) A `promise` field on a proposal (the El Amrani date), checked against the simulation, with memory −15 and reputation −1 when it breaks.** (b) No tracked promises; the date line is flavour. *(a) makes "an honest date versus a comforting lie" a real, felt consequence, and it needs the followed order the audit already asks for.*
+1. **The size of a change on the meter.** **Decided:** openness is a bar that fills up, with arrows per reply (▲ or ▲▲, ▼ or ▼▼), never a number. People met while walking around show a low-energy bar that invites a spirit-lifting talk (§8.1, new).
+2. **The lead-in turn (R-D1).** **Decided (a):** the concern takes two turns (the hesitation, then the reveal), and a move is applied as Δ, cap, reveal.
+3. **A layer tracker (Standpunt · Belang · Zorg).** **Decided (a):** three steps that fill when a layer is revealed.
+4. **The first two talks (Act 0).** **Decided (a):** tutorials that cannot be ruined, with patience 12.
+5. **Dialect.** **Decided: none.** Every character speaks standard Dutch, in standard spelling. Voices stay distinct through word choice, rhythm, humour and worry (§2). This replaces the recommended light dialect; all lines in this doc are revised.
+6. **The ruined line.** **Decided (a):** in character, naming how it felt.
+7. **Customers.** **Decided:** by phone at the contact centre now; home visits come with the town map (Phase C). Mrs El Amrani and Ilse are phone calls.
+8. **The El Amrani heat-pump check.** **Decided (a):** kept.
+9. **New cast.** **Decided (a):** Rob Verhagen joins; Kim, Saskia, Rachid Ouali and Ricardo are named in lines only.
+10. **The Frank route.** **Decided (a):** "both team leads at partial, and reputation ≥ 40" replaces the Ruud route.
+11. **Promises the game checks.** **Decided (a):** a `promise` field on a proposal, checked against the simulation.
+
+Related decisions that touch these scripts: colleagues leave rarely (morale below 20 for 60 days and two ignored check-ins), and the new CLAUDE.md rule "Respect the player's time" (no real-time timers, no loss for stopping, no streaks, no guilt). Check-in prompts in §8 expire without cost, in line with it.
 
 ---
 
