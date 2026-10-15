@@ -1,15 +1,23 @@
 class_name UiPanel
 extends PanelContainer
-## A centred in-game panel: a title, a close button and a body the
-## subclass fills. Subclasses keep their logic in small methods that tests
-## call directly (use_tool, accept, submit, ...); the buttons only forward.
+## An in-game panel, centred or docked at the right: a title, a close button
+## and a body the subclass fills. Subclasses keep their logic in small
+## methods that tests call directly (use_tool, accept, submit, ...); the
+## buttons only forward.
 
 ## The player did something that changed the session (the HUD refreshes,
 ## events are shown).
 signal acted
 signal close_requested
 
+## Room left for the HUD's top bar, and the margin around a docked panel.
+const DOCK_TOP := 64
+const DOCK_MARGIN := 16
+
 var session: GameSession
+## Docked at the right edge over the full height (the world stays in view
+## beside it) instead of centred.
+var docked := false
 var title_label: Label
 var body: VBoxContainer
 
@@ -32,18 +40,29 @@ func _init(title: String, size: Vector2 = Vector2(1100, 0)) -> void:
 	outer.add_child(body)
 
 
-## Centre the panel on the screen at its current minimum size.
+## Centre the panel at its current minimum size, or dock it at the right.
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_RESIZED or what == NOTIFICATION_VISIBILITY_CHANGED:
-		_centre.call_deferred()
+		_place.call_deferred()
 
 
-func _centre() -> void:
+## Set the size once: each resize queues another placement, so a size set
+## twice (shrunk, then grown) never settles.
+func _place() -> void:
 	if not is_inside_tree():
 		return
-	var parent_size := get_parent_area_size()
-	size = get_combined_minimum_size()
-	position = ((parent_size - size) / 2.0).floor()
+	var rect := placement(get_parent_area_size(), get_combined_minimum_size(), docked)
+	size = rect.size
+	position = rect.position
+
+
+## Where a panel of `min_size` goes on `parent_size`: centred, or docked at
+## the right edge below the HUD's bar over the full height.
+static func placement(parent_size: Vector2, min_size: Vector2, at_side: bool) -> Rect2:
+	if not at_side:
+		return Rect2(((parent_size - min_size) / 2.0).floor(), min_size)
+	var tall := Vector2(min_size.x, maxf(min_size.y, parent_size.y - DOCK_TOP - DOCK_MARGIN))
+	return Rect2(Vector2(parent_size.x - tall.x - DOCK_MARGIN, DOCK_TOP), tall)
 
 
 ## Rebuild the body from the session (subclasses).
