@@ -34,6 +34,21 @@ Merijn's design decisions that every feature, content file and test must respect
 - **The 8 wastes come up often** (TIMWOODS, in a service and field organisation).
 - **Sector-specific issues come up often**: congestion, permits, the technician shortage, regulation (ACM, NTA 8120), the energy transition.
 
+### The mission system decides the game (Merijn, 2026-10-15)
+If the missions are weak, the game is weak. Every mission must:
+1. simulate real problems with real fixes;
+2. be entertaining;
+3. be intriguing;
+4. be challenging;
+5. draw the player into it;
+6. be intuitive;
+7. be correct: the right Lean methods, the right numbers.
+
+- **Primary directives:** players learn Lean and the energy sector, and players keep playing (intriguing missions, rewarding play, hidden rewards for notable play).
+- **Secondary:** process management, SAFe, Agile, DevOps, Six Sigma, IT and project management.
+- Always one main mission at a time and at most three side missions.
+- A dedicated agent keeps designing, auditing and improving missions; Claude tells Merijn when that stops.
+
 ### Rules
 - **Progressive RPG through missions.** The player advances by completing missions. New and harder missions unlock as the player progresses; nothing is open from the start.
 - **One main quest, at most three side quests.** Never more than one main mission active at once, and at most three side missions. Side missions are small.
