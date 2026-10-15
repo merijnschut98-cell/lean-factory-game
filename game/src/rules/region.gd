@@ -402,7 +402,8 @@ func close_countermeasures(ids: PackedStringArray) -> void:
 ## ids), cm, prediction (a KPI)} and start the experiment; it may be paid
 ## into debt. The Check is due after `check_days` (a mission may shorten it
 ## for practice). Returns "" or why not: not_spotted | waste | cause |
-## evidence | countermeasure | prediction.
+## evidence | countermeasure | prediction | same_countermeasure (a rework
+## must try another one).
 func submit_a3(problem_id: String, a3: Dictionary, check_days: int = CHECK_DAYS) -> String:
 	var st := state[problem_id]
 	if st.phase != P.SPOTTED:
@@ -420,6 +421,8 @@ func submit_a3(problem_id: String, a3: Dictionary, check_days: int = CHECK_DAYS)
 		return "countermeasure"
 	if not a3.get("prediction") in Investigation.KPIS:
 		return "prediction"
+	if st.rework_from.get("cm") == cm.id:
+		return "same_countermeasure"
 
 	var p := problems[problem_id]
 	_add_budget(-cm.budget)
@@ -434,6 +437,8 @@ func submit_a3(problem_id: String, a3: Dictionary, check_days: int = CHECK_DAYS)
 	st.phase = P.DOING
 	st.check_at = net.time + SimCalendar.days(check_days)
 	_apply_problem(st, cm)
+	if not st.rework_from.is_empty():
+		net.clear_effects("problem:" + problem_id)  # the old fix holds it meanwhile
 	net.set_effects("do:" + problem_id, _team_hours(cm, check_days))
 	profile.learn(["A3", "kata_prediction"])
 	return ""
@@ -515,7 +520,10 @@ func check(problem_id: String) -> Dictionary:
 	st.level = ""
 	st.phase = P.SPOTTED
 	net.clear_effects("cm:" + problem_id)
-	_apply_problem(st)
+	if st.rework_from.is_empty():
+		_apply_problem(st)
+	else:
+		_apply_old_fix(st)  # a rework that failed: the old fix is still there
 	return result
 
 
@@ -536,6 +544,7 @@ func act(problem_id: String, standardise: bool) -> Dictionary:
 	st.score = Pdca.score(_score_inputs(st, p, standardise))
 	st.phase = P.RESOLVED
 	st.standardised = standardise
+	st.rework_from = {}
 	st.wear = 0.0
 	net.clear_effects("problem:" + problem_id)
 	_reassert_board()
@@ -623,6 +632,46 @@ func _recur(st: ProblemState) -> void:
 	net.clear_effects("problem:" + st.id)
 	state[st.id] = ProblemState.new(st.id)
 	events.append({"type": "recurred", "problem": st.id})
+
+
+# ── Rework: a repair quest swaps a poor fix for a better one ───────────────
+
+## Take a resolved fix back to the A3 (a repair quest): the player writes a
+## new A3 from what was found, while the old fix keeps running and the
+## problem does not come back. "" or why not: not_resolved | full (MAX_OPEN).
+func start_rework(problem_id: String) -> String:
+	var st: ProblemState = state.get(problem_id)
+	if st == null or st.phase != P.RESOLVED or not countermeasures.has(st.a3.get("cm", "")):
+		return "not_resolved"
+	if _open_count() >= MAX_OPEN:
+		return "full"
+	st.rework_from = {"cm": st.a3["cm"], "eff": st.eff, "level": st.level, "standardised": st.standardised,
+		"wear": st.wear, "neglect": st.neglect, "score": st.score}
+	st.phase = P.SPOTTED
+	return ""
+
+
+## Drop a rework that has no experiment running: the old fix stays as it was.
+func cancel_rework(problem_id: String) -> void:
+	var st: ProblemState = state.get(problem_id)
+	if st == null or st.rework_from.is_empty() or not st.phase in [P.SPOTTED, P.ACTIVE]:
+		return
+	var old := st.rework_from
+	st.a3 = st.a3.duplicate()
+	st.a3["cm"] = old["cm"]
+	for key in ["eff", "level", "standardised", "wear", "neglect", "score"]:
+		st.set(key, old[key])
+	st.rework_from = {}
+	st.phase = P.RESOLVED
+	_apply_old_fix(st)
+
+
+## The fix a rework would replace, on the network as it was (its health).
+func _apply_old_fix(st: ProblemState) -> void:
+	var old := st.rework_from if not st.rework_from.is_empty() else {"cm": st.a3["cm"], "eff": st.eff, "wear": st.wear}
+	var sources := Sustain.eroded_effects(problems[st.id], countermeasures[old["cm"]], old["eff"], Sustain.health(old["wear"]))
+	for source: String in sources:
+		net.set_effects(source, sources[source])
 
 
 # ── Sustain: fixes wear, audits refresh them ────────────────────────────────

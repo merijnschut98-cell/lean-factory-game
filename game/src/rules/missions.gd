@@ -72,15 +72,18 @@ var opened_at: Dictionary[String, int] = {}
 ## good, but the mission itself can still be done, without a clock, so its
 ## problem can still be solved another way (CLAUDE.md §2).
 var failed_once: Dictionary[String, bool] = {}
-## {type: accepted | completed | failed | reopened | checkin, mission} for the UI (a
+## {type: accepted | completed | failed | reopened | checkin | repair, mission} for the UI (a
 ## new belt is a Region event; tell the player about a faded fix by
 ## `reopened`, not Region's `recurred`).
 var events: Array[Dictionary] = []
 ## The recorded facts (Facts); done: and failed: and the measures are read
 ## live (knows).
 var facts := Facts.new()
-## Problems resolved at the last update, so a new Act's facts are noted once.
-var _resolved: Dictionary[String, bool] = {}
+## Problems resolved at the last update, with their countermeasure, so a new
+## Act's facts are noted once.
+var _resolved: Dictionary[String, String] = {}
+## Repair quests for poor fixes (Repairs; built here, like check-ins).
+var repairs := Repairs.new()
 
 
 func _init(of_region: Region, mission_defs: Array[MissionDef], coach_def: Dictionary) -> void:
@@ -131,7 +134,10 @@ func accept(id: String) -> String:
 		return "main_active"
 	if m.kind == "side" and active("side").size() >= MAX_SIDE:
 		return "side_full"
-	if _holds_problem(m):
+	if m.goal_type == "rework_fix":
+		if not region.start_rework(m.goal_problem).is_empty():
+			return "problem_unavailable"
+	elif _holds_problem(m):
 		var st: ProblemState = region.state.get(m.goal_problem)
 		if st == null or st.phase == P.RESOLVED or (st.phase == P.DORMANT and not region.activate(m.goal_problem)):
 			return "problem_unavailable"
@@ -193,6 +199,8 @@ func abandon(id: String) -> String:
 		return "experiment_running"
 	progress.erase(id)
 	_clear_setup(m)
+	if m.goal_type == "rework_fix":
+		region.cancel_rework(m.goal_problem)  # the old fix stays
 	_retire_orphans()
 	return ""
 
@@ -204,6 +212,7 @@ func update() -> void:
 	_note_fixes()
 	_reopen_faded()
 	_sync_checkins()
+	_sync_repairs()
 	for m in active():
 		if _goal_met(m):
 			_complete(m)
@@ -269,10 +278,10 @@ func _note_fixes() -> void:
 	for p in region.problem_list():
 		var st: ProblemState = region.state[p.id]
 		var resolved := st.phase == P.RESOLVED and st.a3.has("cm") and not region.practice.has(p.id)
-		if resolved and (not _resolved.has(p.id) or facts.with_prefix("chose:%s:" % p.id).is_empty()):
+		if resolved and (_resolved.get(p.id) != st.a3["cm"] or facts.with_prefix("chose:%s:" % p.id).is_empty()):
 			_note_fix(p, st)
 		if resolved:
-			_resolved[p.id] = true
+			_resolved[p.id] = st.a3["cm"]
 		else:
 			_resolved.erase(p.id)
 
@@ -286,8 +295,10 @@ func _note_fix(p: ProblemDef, st: ProblemState) -> void:
 	if st.standardised:
 		facts.add("standardised:" + p.id)
 	var best: float = p.countermeasures.values().max()
+	repairs.due.erase(p.id)
 	if not st.cause_correct or p.countermeasures.get(cm, 0.0) <= best - POOR_FIT_GAP + 1e-9:
 		facts.add("poor_fix:" + p.id)
+		repairs.due[p.id] = region.net.time + SimCalendar.days(Repairs.AFTER_DAYS)
 
 
 ## Keep the Region's unprepared countermeasures current with the facts.
@@ -348,6 +359,25 @@ func _sync_checkins() -> void:
 		defs[id] = checkin_def(p)
 		progress.erase(id)
 		events.append({"type": "checkin", "mission": id})
+
+
+## Open a repair quest for a poor fix whose weakness shows (Repairs), and
+## take back the ones whose fix is gone or no longer poor (not one being
+## worked on).
+func _sync_repairs() -> void:
+	for id: String in defs.keys():
+		var problem_id := defs[id].goal_problem if id.begins_with(Repairs.PREFIX) else ""
+		if not problem_id.is_empty() and status(id) != "active" and (region.state[problem_id].phase != P.RESOLVED
+				or status(id) == "available" and not knows("poor_fix:" + problem_id)):
+			defs.erase(id)
+			progress.erase(id)
+	for problem_id: String in repairs.due.keys():
+		var id := Repairs.PREFIX + problem_id
+		if region.state[problem_id].phase != P.RESOLVED or not knows("poor_fix:" + problem_id):
+			repairs.due.erase(problem_id)
+		elif region.net.time >= repairs.due[problem_id] and not defs.has(id) and repairs.shows(region, problem_id):
+			defs[id] = Repairs.def_for(region.problems[problem_id])
+			events.append({"type": "repair", "mission": id})
 
 
 ## The check-in mission for a slipping fix (Dutch game text).
@@ -415,7 +445,7 @@ func drain_events() -> Array[Dictionary]:
 
 func to_dict() -> Dictionary:
 	return {"progress": progress.duplicate(true), "opened_at": opened_at.duplicate(), "done_once": done_once.keys(),
-		"failed_once": failed_once.keys(), "facts": facts.to_list()}
+		"failed_once": failed_once.keys(), "facts": facts.to_list(), "repair_due": repairs.to_dict()}
 
 
 ## Restore to_dict() output. Returns the mission ids the content no longer
@@ -427,10 +457,11 @@ func load_dict(d: Dictionary) -> Array[String]:
 	failed_once.clear()
 	# Facts of Acts before the save are kept; old saves note them at the next update.
 	facts.load_list(d.get("facts", []))
+	repairs.load_dict(JsonFile.dict_or_empty(d.get("repair_due")))
 	_resolved.clear()
 	for id: String in region.state:
-		if region.state[id].phase == P.RESOLVED:
-			_resolved[id] = true
+		if region.state[id].phase == P.RESOLVED and region.state[id].a3.has("cm"):
+			_resolved[id] = region.state[id].a3["cm"]
 	_rebuild_checkins(d)
 	for key: String in ["done_once", "failed_once"]:
 		var ids: Variant = d.get(key, [])
@@ -461,16 +492,18 @@ func load_dict(d: Dictionary) -> Array[String]:
 	return dropped
 
 
-## Check-ins are built, not content: a save's check-in ids (in progress or
-## done_once) are built again for problems the content still has.
+## Check-ins and repair quests are built, not content: a save's ids (in
+## progress or done_once) are built again for problems the content still has.
 func _rebuild_checkins(d: Dictionary) -> void:
 	var ids: Array = JsonFile.dict_or_empty(d.get("progress")).keys()
 	var once: Variant = d.get("done_once", [])
 	ids.append_array(once if once is Array else [])
 	for id: Variant in ids:
-		var problem_id := str(id).trim_prefix(CHECKIN_PREFIX)
-		if str(id).begins_with(CHECKIN_PREFIX) and region.problems.has(problem_id):
-			defs[str(id)] = checkin_def(region.problems[problem_id])
+		for prefix: String in [CHECKIN_PREFIX, Repairs.PREFIX]:
+			var problem_id := str(id).trim_prefix(prefix)
+			if str(id).begins_with(prefix) and region.problems.has(problem_id):
+				var p := region.problems[problem_id]
+				defs[str(id)] = checkin_def(p) if prefix == CHECKIN_PREFIX else Repairs.def_for(p)
 
 
 func _unlocked(m: MissionDef) -> bool:
@@ -504,6 +537,9 @@ func _goal_met(m: MissionDef) -> bool:
 			return region.state[m.goal_problem].phase in [P.CHECKED, P.RESOLVED]
 		"sustain":
 			return region.held_by_routine(m.goal_problem) or region.health(m.goal_problem) >= Sustain.SLIPPING_HEALTH
+		"rework_fix":
+			# Accepting took the fix back to the A3; resolved again means the new one passed.
+			return region.state[m.goal_problem].phase == P.RESOLVED
 		"observe":
 			var seen: Dictionary = progress[m.id]["seen"]
 			for place in m.goal_places:
@@ -532,6 +568,10 @@ func _complete(m: MissionDef) -> void:
 		region.earn_reputation(Reputation.FLOW_GAIN, "flow")
 	for flag in m.sets_flags:
 		facts.add(flag)
+	if m.goal_type == "rework_fix":
+		facts.add("repaired:" + m.goal_problem)
+		facts.remove("poor_fix:" + m.goal_problem)
+		repairs.due.erase(m.goal_problem)
 	if not m.fork_group.is_empty() and facts.with_prefix("fork_first:%s:" % m.fork_group).is_empty():
 		facts.add("fork_first:%s:%s" % [m.fork_group, m.id])
 	var event := {"type": "completed", "mission": m.id}

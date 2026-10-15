@@ -6,7 +6,7 @@ extends RefCounted
 ## the player's belt, with a goal the rules can check.
 
 const KINDS := ["main", "side", "training"]
-const GOALS := ["walk", "investigate", "solve", "observe", "check", "sustain"]
+const GOALS := ["walk", "investigate", "solve", "observe", "check", "sustain", "rework_fix"]
 const FORK_ROLES := ["bottleneck", "non_bottleneck"]
 
 var id: String
@@ -46,7 +46,8 @@ var debrief: String
 var fail_text: String
 ## walk {stream} · investigate {problem, clues} · solve {problem} ·
 ## observe {places, tool?, uses?} · check {problem} · sustain {problem}
-## (its fix back in use: audited, or held by a routine; Missions' check-ins)
+## (its fix back in use: audited, or held by a routine; Missions' check-ins) ·
+## rework_fix {problem} (a poor fix swapped for a better one; Repairs)
 var goal_type: String
 var goal_stream: String
 var goal_problem: String

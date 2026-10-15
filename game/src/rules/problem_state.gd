@@ -30,6 +30,10 @@ var wear := 0.0
 ## routine): the longer, the faster it wears.
 var neglect := 0.0
 var score: Dictionary = {}
+## While a resolved fix is being reworked (a repair quest): the fix it
+## replaces, {cm, eff, level, standardised, wear, neglect, score}, which keeps
+## running until the new one passes its Check; {} otherwise.
+var rework_from: Dictionary = {}
 
 
 func _init(problem_id: String) -> void:
@@ -43,7 +47,7 @@ func to_dict() -> Dictionary:
 		"waste_right": waste_right, "eff": eff, "level": level, "failed_checks": failed_checks,
 		"check_at": check_at, "baseline": baseline, "standardised": standardised, "wear": wear,
 		"neglect": neglect,
-		"score": score,
+		"score": score, "rework_from": rework_from,
 	}
 
 
@@ -67,6 +71,7 @@ func load_dict(d: Dictionary) -> bool:
 	wear = maxf(0.0, float(d.get("wear", 0.0)))
 	neglect = maxf(0.0, float(d.get("neglect", 0.0)))
 	score = d.get("score", {}) if d.get("score") is Dictionary else {}
+	rework_from = d.get("rework_from", {}) if d.get("rework_from") is Dictionary else {}
 	return true
 
 

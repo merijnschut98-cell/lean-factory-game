@@ -597,11 +597,12 @@ COACHED_KINDS = ["main", "training"]
 # goal type → (required keys, optional keys). observe: use a gemba tool (or any,
 # without `tool`) at each place, `uses` distinct place-tool pairs in all;
 # check: the problem's Check passed; sustain: the problem's fix back in use
-# (audited, or held by a routine; the game opens these as check-ins).
+# (audited, or held by a routine; the game opens these as check-ins);
+# rework_fix: a poor fix swapped for a better one (the game's repair quests).
 MISSION_GOALS = {
     "walk": ({"stream"}, set()), "investigate": ({"problem", "clues"}, set()), "solve": ({"problem"}, set()),
     "observe": ({"places"}, {"tool", "uses"}), "check": ({"problem"}, set()),
-    "sustain": ({"problem"}, set()),
+    "sustain": ({"problem"}, set()), "rework_fix": ({"problem"}, set()),
 }
 MAX_CHECK_DAYS = 14  # Region.CHECK_DAYS: a mission may only shorten the Check
 MATURITY_STEP = 0.6  # Region.MATURITY_STEP
