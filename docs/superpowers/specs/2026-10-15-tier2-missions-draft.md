@@ -28,6 +28,7 @@ Where it fits, a mission carries a **temptation**: a short-term or people-unfrie
 - Game text is Dutch; keys, ids and comments are English.
 - Every number is sourced (title + URL in the grounding list under the block) or carries `estimate:` with its reasoning.
 - Sources that could not be opened from this environment carry **(verify)**.
+- Source check of 2026-10-15: pages could not be fetched directly from this environment, so the flagged sources were checked against search extracts of the primary site (ACM, KNMI, Kadaster, IEC, TenneT, Netbeheer Nederland, Stedin, LEI, ASQ, re:Work, NEN). Where that confirmed the claim, the flag is gone; corrections are noted inline.
 - Effects use **only today's effect properties** (`tools/build_content.py` `EFFECT_PROPERTIES`). Each problem and countermeasure block was run through `validate_problems`, `validate_countermeasures` and `_check_problem` against today's network (see §5).
 - Rewards follow the catalogue (§2.13 rescaled belts: green = belt 2).
 - `insights` (Ruud's Kata questions) appear on main missions only; the coach never coaches a side mission or a milestone.
@@ -58,7 +59,7 @@ From the catalogue design (C1, C2, C4–C7, C10, C11, C19, C20):
 
 ### 0.2 Corrections to the catalogue design found while grounding
 
-1. **Time-bound transport right.** GDD/§3.6 say "≥85% availability at about half the tariff". The ACM's *tijdsduurgebonden transportrecht* gives transport in at least 85% of the hours a year and was introduced first for large consumers on TenneT's high-voltage grid (from 1 Jan 2025). The ~50% discount in the sources belongs to the non-firm ATO / fully variable right, not to the time-bound right. The concept texts below use the corrected wording.
+1. **Time-bound transport right.** GDD/§3.6 say "≥85% availability at about half the tariff". The *tijdsduurgebonden transportrecht* (TDTR) gives transport in at least 85% of the hours a year; in the other 15% TenneT may limit transport, announced at least a day ahead. It exists only for large customers on TenneT's high-voltage grid: ACM code decision of July 2024 (https://www.acm.nl/nl/publicaties/codebesluit-alternatieve-transportrechten), first contract with GIGA Storage in September 2024, offering it compulsory for TenneT from 1 Oct 2025 (TenneT, https://www.tennet.eu/nl/de-elektriciteitsmarkt/aansluiten-op-het-nederlandse-hoogspanningsnet/tijdsduurgebonden-transportrecht-tdtr). Its discount is "up to 65%" on the transport tariff (TenneT), so "about half the tariff" is not far off, but it is not a regional (DSO) product. The ~50% discount on a regional grid belongs to the non-firm ATO (Dirkzwager, §2.16 grounding). The concept texts below use the corrected wording.
 2. **OKR scoring.** §2.1 says "at least 0.7 of the key results met". With three binary KRs, that means all three. The OKR convention scores each KR 0.0–1.0 on progress and averages them, with 0.6–0.7 the sweet spot. The `okr` goal below uses a progress score per KR (linear from the quarter's start value to the target) and passes on an average ≥ 0.7.
 3. **Shift handover step.** §3.5 puts `shift_handover` at `outages.locate`, the same step as `on_call_far`, the fork's bottleneck. The fork test needs the non-bottleneck's Check to say `not_constraint`, so `shift_handover` moves to `outages.report` (the control room, which has plenty of slack).
 4. **The storm.** The Dutch LS and MS grids are almost entirely underground. A storm hits through fallen trees, water in substations and the remaining overhead lines in rural parts, and above all through a **flood of calls**. The storm mission's aha is built on that.
@@ -345,7 +346,7 @@ countermeasures:
 - The field "works" in the Check: "onbekend" falls to 2% in weeks. The monteurs pick the first code in the list. Its fit is 0.4 below the best, so `poor_fix:cause_unknown` is set and the repair quest follows.
 
 **Grounding.**
-- LS fault causes 2018: digging 27%, ageing and latent faults 18% each. Netbeheer Nederland — *Betrouwbaarheid van elektriciteitsnetten in Nederland, resultaten 2018*, https://www.netbeheernederland.nl/sites/default/files/Betrouwbaarheid_elektriciteitsnetten_in_Nederland_2018_150.pdf (search extract; verify the table).
+- LS fault causes 2018: digging almost 27% (the largest cause), followed by ageing/wear and latent faults at 18% (the report gives one figure for the two categories; read it as "about 18% each" only after checking the table itself). Netbeheer Nederland — *Betrouwbaarheid van elektriciteitsnetten in Nederland, resultaten 2018*, https://www.netbeheernederland.nl/sites/default/files/Betrouwbaarheid_elektriciteitsnetten_in_Nederland_2018_150.pdf; also Netbeheer Nederland — *Graafschade blijft grootste veroorzaker stroomstoring*, https://www.netbeheernederland.nl/artikelen/nieuws/graafschade-blijft-grootste-veroorzaker-stroomstoring. Nestor has registered faults nationally since 1976 (same report).
 - National fault registration (Nestor), latent fault ("sluimerende storing") as a category: same series. The 2024 results: https://www.netbeheernederland.nl/sites/default/files/2025-04/03.02._betrouwbaarheid_van_elektriciteitsnetten_in_nederland_-_resultaten_2024.pdf
 - "41% onbekend", "three in ten repeat" and "twelve sections": `estimate:` chosen so the Pareto is a puzzle. The content test (catalogue §2.11) must make the briefing's number true on the network.
 - Lean check:
@@ -566,7 +567,7 @@ countermeasures:
 - `prep_storm_week` failing closes `mutual_aid_agreement` (fail text there). Another way stays open: `standby_by_fault_map`.
 
 **Grounding.**
-- Compensation: €35 for 4–8 h on a connection up to 3×25 A, +€20 per extra 4 h. Liander — *Compensatieregeling* (2013), https://www.liander.nl/-/media/files/storingen-en-onderhoud/compensatieregeling.pdf **(verify the current amounts)**.
+- Compensation (current, unchanged since the 2013 scheme): €35 for 4–8 h on a connection up to 3×25 A, +€20 per extra 4 h; €195 for 4–8 h on 3×35–3×80 A; paid automatically within 6 months; planned work announced in time does not count. ACM ConsuWijzer — *Vergoeding bij stroomstoring*, https://consument.acm.nl/elektriciteit-en-gas/ik-heb-een-probleem/stroomstoring-vergoeding; ACM — *Vergoeding stroomstoring en gasstoring*, https://www.acm.nl/nl/energie/elektriciteit-en-gas/energietarieven/vergoeding-stroomstoring-en-gasstoring. There is no fixed compensation for a late connection: that goes through a dispute at the ACM (see §2.6 grounding).
 - Arrival norm and the 4 h restoration context: Netbeheer Nederland — communicatie use cases, https://www.netbeheernederland.nl/sites/default/files/2024-03/20240229_-_communicatie_use_cases.pdf **(verify)**.
 - Travel times, the "one in four" figure and the 9-minute handover cost: `estimate:` (reasoning in the comments).
 - **C15 must confirm the fork on the network:**
@@ -643,7 +644,7 @@ problems:
       - {target: connections.execution, property: ftr, value: -0.15}
     cost_per_week: 750   # estimate: ~3 trenches re-dug a week x ~EUR 250, disputed on the invoice
     clues:
-      - {tool: shadow, key: true, depth: 0, text: "De sleuf bij een nieuwbouwwoning ligt op veertig centimeter in plaats van zestig. De monteur maakt een foto en rijdt terug; de klus gaat terug naar Planning."}
+      - {tool: shadow, key: true, depth: 0, text: "De sleuf bij een nieuwbouwwoning ligt op veertig centimeter, terwijl de aansluitkabel in de stoep minstens vijftig moet liggen. De monteur maakt een foto en rijdt terug; de klus gaat terug naar Planning."}
       - {tool: documents, key: false, depth: 0, at: connections.design, text: "De tekeningen van Werkvoorbereiding kloppen: maten, tracé en diepte staan erop."}
       - {tool: data, key: true, depth: 1, at: connections.planning, text: "Drie op de twintig klussen met een graafploeg van de aannemer gaan terug naar Planning omdat de sleuf niet klopt. Bij de eigen graafploeg is dat een op de vijftig."}
       - {tool: documents, key: true, depth: 1, text: "Voltana werkt met sleufstandaard versie 4 uit 2024. In het contract met de aannemer staat versie 2; de mantelbuis onder de stoep staat daar niet in."}
@@ -707,7 +708,7 @@ countermeasures:
 - `done:fix_contractor_rework` opens `fix_monteur_hours` (Marco trusts you now).
 
 **Grounding.**
-- Depth 60 cm and a sleeve under the pavement: typical LS house-connection practice. `estimate:` (exact depths differ per DSO and municipality, usually 60–80 cm for LS under footpaths). **Verify against one DSO's public "aanleg huisaansluiting" guideline before release.**
+- Depth: a house-connection cable lies at least 50 cm deep in public ground and 40 cm on private ground, in a PVC sleeve (red, 50 mm for electricity) from just before the façade to the meter cupboard. Stedin — *Richtlijnen huisaansluitingen*, https://www.stedin.net/-/media/project/online/files/zakelijk/branches/stedin-richtlijnen-huisaanluitingen.pdf. Corrected from 60 cm: a trench at 40 cm under the footpath is still too shallow. Other DSOs and municipalities may ask for more (60 cm is a common municipal norm for cables), which is why the clue says "minstens".
 - The care for contractor crews (rotating staff): grounded in the technician shortage (Netbeheer Nederland / Solar Magazine, see the `monteurstekort` concept).
 - Feedback delay via the monthly invoice: `estimate:`.
 - Lean check:
@@ -812,7 +813,7 @@ countermeasures:
 ```
 
 **Grounding.**
-- Tiered escalation (team → department → site, with a time limit) and the andon principle that a signal needs a response: Lean Enterprise Institute lexicon, *andon*, https://www.lean.org/lexicon-terms/andon/ **(verify; the site could not be opened from here)**. Also D. Mann, *Creating a Lean Culture* (tiered daily accountability).
+- Tiered escalation (team → department → site, with a time limit) and the andon principle that a signal needs a response: Lean Enterprise Institute lexicon, *andon*, https://www.lean.org/lexicon-terms/andon/ (the entry: a light goes on when an operator pulls a cord or presses a button, and a team leader responds). Also D. Mann, *Creating a Lean Culture* (tiered daily accountability).
 - "Eleven cards", "nine days" and "six working days": `estimate:`.
 
 **Engrossing.**
@@ -880,8 +881,8 @@ missions:
 
 **Grounding.**
 - The connection term: the CBb annulled the ACM's term decision in Sept 2024. Rechtspraak, https://www.rechtspraak.nl/organisatie-en-contact/organisatie/college-van-beroep-voor-het-bedrijfsleven/nieuws/2024/09/-acm-besluit-over-aansluittermijnen-kleinverbruikers-op-het-elektriciteitsnet-houdt-geen-stand
-- The CBb ruling of 28 April 2026 (WoonFriesland/Liander): ACM, https://www.acm.nl/nl/node/29102 (from `docs/energy-notes.md`; verify).
-- The ACM uses about 18–22 weeks as a reasonable term where digging is needed: same note (verify).
+- The CBb ruling of 28 April 2026 (WoonFriesland/Liander): ACM — *Uitspraak CBb geschilbesluit WoonFriesland/Liander*, https://www.acm.nl/nl/node/29102. The CBb annulled the ACM's decision of 6 May 2024 for lack of reasoning and ordered a new one within 12 weeks; the ACM took it on 16 July 2026.
+- In that case the ACM used about 18–22 weeks (the average connection term in practice) as a reasonable term; the CBb did not follow that reasoning, so the term has no firm legal footing right now. Same ACM page; Solar Magazine, https://solarmagazine.nl/nieuws-zonne-energie/i44905/wachten-op-stroom-mag-jaren-duren-acm-geeft-liander-gelijk-bij-klacht-over-uitgestelde-aansluiting-op-stroomnet.
 - `norm_days: 126` in `value_streams.yaml`.
 - An "information request" and a supervisory conversation are how the ACM supervises. A literal site visit is rare, hence the wording. `estimate:` of the format.
 - 85% over 56 days: `estimate:` set below the healthy base's ~90%. K5's content test must show it is reachable on the expert path and missed with the Act III problems left open.
@@ -943,7 +944,7 @@ missions:
 - `t2_first_okr` sets `flag:okr_region` (read by `lsw_catchball` in Act V).
 
 **Grounding.**
-- OKR grading 0.0–1.0 per KR, sweet spot 0.6–0.7: Google re:Work — *Set goals with OKRs*, https://rework.withgoogle.com/guides/set-goals-with-okrs **(verify; quoted via secondary sources)**; What Matters — *Grading OKRs*, https://www.whatmatters.com/okrs-explained/grading-okrs **(verify)**.
+- OKR grading 0.0–1.0 per KR, sweet spot 0.6–0.7: Google re:Work — *Set goals with OKRs*, https://rework.withgoogle.com/intl/en/guides/set-goals-with-okrs (KRs graded 0.0–1.0, the objective a rough average, the sweet spot 0.6–0.7, a steady 1.0 means too little ambition); What Matters — *How to end the OKR cycle: grading*, https://www.whatmatters.com/okrs-explained/grading-okrs (aspirational OKRs average about 0.7; committed OKRs are expected to score 1.0).
 - KR targets: `estimate:`, to be calibrated by K5 on the expert path (the target sits at the expert path's p50 plus a stretch).
 
 **Engrossing.**
@@ -1163,7 +1164,7 @@ countermeasures:
 
 **Grounding.**
 - LMRA: a short mental risk check by the person who does the task, about a minute, no paperwork; a "no" means stop and consult. VOLTA — *Informatie LMRA* (2020), https://volta-org.be/media/ieqbrpzq/volta-informatie_lmra_2020.pdf **(verify)**; Westenberg — *Toolbox Laatste Minuut Risico Analyse*, https://westenberg.net/wp-content/uploads/2025/02/Toolbox_Laatste-Minuut-Risico-Analyse.pdf **(verify)**.
-- Safety Culture Ladder (formerly Veiligheidsladder, managed by NEN): https://safetycultureladder.acceptatie.nen.nl/app/uploads/2023/12/Safety-Culture-Ladder-Manual_5.0_EN_def-1.pdf **(verify: an acceptance-server URL; find the public one)**.
+- Safety Culture Ladder (formerly Veiligheidsladder, owned and managed by NEN): manual 5.0 (July 2023) on the public site, https://safetycultureladder.com/app/uploads/2023/12/Safety-Culture-Ladder-Manual_5.0_EN_def-.pdf (Dutch: https://safetycultureladder.com/app/uploads/2023/11/Handboek-Safety-Culture-Ladder_5.0_def_NL.pdf); documents page https://safetycultureladder.com/en/documents/.
 - 42 questions, ten minutes, two near-misses and "before 1970": `estimate:`.
 
 **Engrossing.**
@@ -1249,7 +1250,7 @@ missions:
 - `failed:prep_storm_week` closes `mutual_aid_agreement`; `standby_by_fault_map` remains.
 
 **Grounding.**
-- KNMI code oranje for wind: gusts above 100 km/h (120 km/h at the coast or in winter), issued up to 24 h ahead. Secondary source: AVROTROS Radar, https://radar.avrotros.nl/artikel/wat-betekent-code-geel-code-oranje-of-code-rood-voor-het-weer-23885 **(verify at knmi.nl)**.
+- KNMI code oranje for wind: gusts from 100 km/h (from 120 km/h at the coast in the winter half-year; code geel from 75 and 90 km/h). KNMI — *Windstoten en storm*, https://www.knmi.nl/kennis-en-datacentrum/waarschuwingen/windstoten. Corrected: since 20 May 2026 code oranje and rood may be issued up to 48 h ahead, not 24 h. KNMI — *Regeling taken meteorologie en seismologie gewijzigd*, https://www.knmi.nl/over-het-knmi/nieuws/rtms-gewijzigd; Staatscourant 2026, 12631, https://zoek.officielebekendmakingen.nl/stcrt-2026-12631.html. The KNMI may now also weigh impact and warn locally instead of per province.
 - Storm damage to underground infrastructure through fallen trees and saturated soil: Klimaatadaptatie Nederland — *Ondergrondse infrastructuur*, https://klimaatadaptatienederland.nl/thema-sector/infrastructuur/ondergrondse-infra
 - The remaining overhead lines in rural parts: the DSO explanation quoted via Zonneplan, https://www.zonneplan.nl/noodstroomvoorziening/hoe-ontstaat-stroomuitval/ **(verify)**.
 - Outage ×2.5 for 3 days, calls ×1.2/×1.5 and joints' lead time ×2: `estimate:`. NL storms cause far fewer outages than abroad because the LS/MS grid is underground, so ×2.5 over 3 days is modest. The call surge is the dominant effect, consistent with the existing failure-demand model.
@@ -1378,7 +1379,7 @@ countermeasures:
 **Grounding.**
 - Solar feed-in peaks 11–15 h overload transformers in parts of Enexis' grid (2026 call to customers): Solar Magazine, https://solarmagazine.nl/nieuws-zonne-energie/i43218/oproep-enexis-gebruik-stroom-zonnepanelen-tijdens-zonnige-uren-overbelasting-dreigt-op-37-locaties
 - Heatwave definition (KNMI: ≥ 5 days ≥ 25 °C in De Bilt, of which ≥ 3 ≥ 30 °C), used for the 7-day event: RIVM — *Achtergrond warm weer in Nederland*, https://rivm.nl/sites/default/files/2023-06/Achtergrond_Warm_weer_in_NL_Richtlijn_Hitte_Gezondheid.pdf
-- Transformer loading capacity falls with ambient temperature (the ageing rate rises with hot-spot temperature): IEC 60076-7, *Loading guide for mineral-oil-immersed power transformers*, https://webstore.iec.ch/en/publication/34351 **(verify the URL)**.
+- Transformer loading capacity falls with ambient temperature (the ageing rate rises with hot-spot temperature): IEC 60076-7, *Loading guide for mineral-oil-immersed power transformers*, IEC 60076-7:2018 (ed. 2.0), https://webstore.iec.ch/en/publication/34351 (it replaced the 2005 edition, "oil-immersed").
 - Inverters tripping above 253 V, complaints tripled: existing `inverters_tripping` grounding (Solar Magazine).
 - Event factors, the fuse counts and the "five percent" list: `estimate:`.
 
@@ -1633,7 +1634,7 @@ countermeasures:
 **Grounding.**
 - The capacity map: Netbeheer Nederland — *Capaciteitskaart*, https://capaciteitskaart.netbeheernederland.nl (existing concept source).
 - The national queue (over 15,000 requests): `docs/energy-notes.md` (LAN update autumn 2026; Solar Magazine).
-- Contract forms (non-firm ATO, CBC, group contracts): Dirkzwager — *Blogreeks juridische oplossingen netcongestie #1*, https://www.dirkzwager.nl/kennis/artikelen/blogreeks-juridische-oplossingen-netcongestie-1-alternatieve-transportrechten **(verify)**.
+- Contract forms (non-firm ATO, CBC, group contracts): Dirkzwager — *Blogreeks juridische oplossingen netcongestie #1*, https://www.dirkzwager.nl/kennis/artikelen/blogreeks-juridische-oplossingen-netcongestie-1-alternatieve-transportrechten (31 May 2024; non-firm ATO since 31 Jan 2024 for large consumers in congestion areas, about 50% discount). The time-bound right (TDTR) is TenneT-only: ACM — *Codebesluit alternatieve transportrechten*, https://www.acm.nl/nl/publicaties/codebesluit-alternatieve-transportrechten; TenneT TDTR page (see §0.2).
 - "Three in four end with no", the 4-month map age and the 1.3 demand factor: `estimate:`.
 - Lean check: failure demand in B2B; triage before overprocessing; the map as outward-facing visual management.
 
@@ -1868,7 +1869,7 @@ countermeasures:
 - `fix_digging_damage`'s fix loses one support step (catalogue §2.8: the leader routine is undermined).
 
 **Grounding.**
-- KLIC timing: a graafmelding is made at the earliest 20 working days and at the latest 3 working days before the digging starts; the information arrives within 2 working days and must be on site. RVO — *Graafwerkzaamheden (Wibon)*, https://www.rvo.nl/onderwerpen/percelen-registreren/alles-over/graafwerkzaamheden-wibon; Defensie — *Graafmelding verplicht*, https://www.defensie.nl/onderwerpen/t/taken-in-nederland/defensie-pijpleidingen/graafmelding-verplicht (search extracts; **verify against the Kadaster**).
+- KLIC timing: a graafmelding is made at the earliest 20 working days and at the latest 3 working days before the digging starts; the information arrives within 2 working days and must be on site. Kadaster — *Op welk moment moet u een KLIC-melding doen?*, https://www.kadaster.nl/-/op-welk-moment-moet-u-een-klic-melding-doen-; Kadaster — *KLIC-melding zakelijk*, https://www.kadaster.nl/zakelijk/producten/graafwerk/klic-melding; Defensie — *Graafmelding verplicht*, https://www.defensie.nl/onderwerpen/t/taken-in-nederland/defensie-pijpleidingen/graafmelding-verplicht. Nuance from the Kadaster: grid operators deliver within 1 working day and the Kadaster sends the link after at most 2 working days; a late supplement can still follow.
 - CROW 500 careful digging process: via CUMELA, https://www.cumela.nl/media/1629/download?delta=0 **(verify)**.
 - Municipal permit validity (around 6 months under a local AVOI ordinance): https://lokaleregelgeving.overheid.nl/CVDR3886/1 (one municipality; it varies).
 - "One in twelve", "one in four replans" and the €25k incident: `estimate:`.
@@ -2033,7 +2034,6 @@ concepts:
     source:
       title: ASQ — What is a Pareto chart?
       url: https://asq.org/quality-resources/pareto
-    verify: true
 
   - id: tiered_escalation
     name: Gelaagde escalatie
@@ -2064,7 +2064,6 @@ concepts:
     source:
       title: Lean Enterprise Institute — Andon (lexicon)
       url: https://www.lean.org/lexicon-terms/andon/
-    verify: true
 
   - id: safety_stock
     name: Bestelpunt en veiligheidsvoorraad
@@ -2113,7 +2112,6 @@ concepts:
     source:
       title: Netbeheer Nederland — Betrouwbaarheid van elektriciteitsnetten in Nederland, resultaten 2018
       url: https://www.netbeheernederland.nl/sites/default/files/Betrouwbaarheid_elektriciteitsnetten_in_Nederland_2018_150.pdf
-    verify: true
 
   - id: capaciteitskaart
     name: Capaciteitskaart
@@ -2141,15 +2139,14 @@ concepts:
       non-firm contract kan de netbeheerder het transport beperken als het net vol
       zit, tegen een lager tarief. Met een capaciteitsbeperkingscontract levert een
       bedrijf tegen betaling tijdelijk capaciteit in. Op het hoogspanningsnet van
-      TenneT bestaat sinds 2025 een tijdsduurgebonden transportrecht: transport in
-      minstens 85 procent van de uren van het jaar.
+      TenneT bestaat sinds 2024 een tijdsduurgebonden transportrecht: transport in
+      minstens 85 procent van de uren van het jaar, tegen een lager tarief.
     example: >-
       Een koelhuis op het bedrijventerrein krijgt een non-firm contract en kan
       's nachts uitbreiden, terwijl het wacht op de verzwaring.
     source:
       title: ACM — Codebesluit alternatieve transportrechten
       url: https://www.acm.nl/nl/publicaties/codebesluit-alternatieve-transportrechten
-    verify: true
 
   - id: gotork
     name: GOTORK (use it or lose it)
@@ -2182,7 +2179,6 @@ concepts:
     source:
       title: Netbeheer Nederland — FAQ Energiewet
       url: https://www.netbeheernederland.nl/sites/default/files/2025-12/faq_energiewet.pdf
-    verify: true
 
   - id: compensatieregeling
     name: Compensatieregeling bij storingen
@@ -2190,16 +2186,15 @@ concepts:
     short: "Bij een stroomstoring van meer dan vier uur krijgt een klant een vaste vergoeding."
     text: >-
       Duurt een storing langer dan vier uur, dan betaalt de netbeheerder een vaste
-      tegemoetkoming. Voor een huishouden was dat 35 euro voor vier tot acht uur en
+      tegemoetkoming. Voor een huishouden is dat 35 euro voor vier tot acht uur en
       20 euro per vier uur extra; grotere aansluitingen krijgen meer. Het is geen
-      schadevergoeding. Bij onderhoud of natuurrampen geldt het niet.
+      schadevergoeding. Bij aangekondigd onderhoud of natuurrampen geldt het niet.
     example: >-
       Een storing van vijf uur in een straat met dertig huizen kost Voltana ruim
       duizend euro aan compensatie.
     source:
-      title: Liander — Compensatieregeling (2013)
-      url: https://www.liander.nl/-/media/files/storingen-en-onderhoud/compensatieregeling.pdf
-    verify: true
+      title: ACM ConsuWijzer — Vergoeding bij stroomstoring
+      url: https://consument.acm.nl/elektriciteit-en-gas/ik-heb-een-probleem/stroomstoring-vergoeding
 
   - id: terugleverpiek
     name: Terugleverpiek
@@ -2250,4 +2245,4 @@ concepts:
 1. The four additions (§2.16–2.18 and the repair example) raise Act III from 16 to 20 missions. Keep all, or move `fix_klic_expired` to Act IV?
 2. Should the storm use the `strategy` goal (draft) or stay an `observe` goal?
 3. The `temptations` mechanic: one beat per mission, offered by a person. Is that the right weight, or should temptations live only in the countermeasure list (as `switch_contractor`, `double_stock` and friends already do)?
-4. Sources to verify before content: compensation amounts (current Netcode); KNMI code criteria; KLIC timing at the Kadaster; IEC 60076-7 URL; lean.org / asq.org pages; the Safety Culture Ladder public URL; the Dirkzwager and ACM pages on transport rights; re:Work OKR guide; the 2018 Nestor table; trench depth guideline.
+4. Sources: the list checked on 2026-10-15 (compensation, KNMI, KLIC, IEC 60076-7, lean.org / asq.org, Safety Culture Ladder, transport rights, re:Work, the 2018 Nestor table, trench depth). Corrections: KNMI warns up to 48 h ahead; the time-bound right dates from 2024 and has its own discount; trench depth 50 cm (Stedin), not 60. Still open: the 2018 table's split of the 18% (read the PDF), and the sources not on that list that still carry (verify).

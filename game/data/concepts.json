@@ -439,11 +439,10 @@
    "name": "Aansluiting",
    "short": "De verbinding van een gebouw met het elektriciteitsnet, van de kabel in de straat tot de hoofdzekering in de meterkast.",
    "source": {
-    "title": "Elektriciteitswet 1998, artikel 1 (begrip kleinverbruiker, aansluiting tot 3x80A)",
-    "url": "https://wetten.overheid.nl/BWBR0009755/"
+    "title": "ACM — Besluit vaststelling modelcontracten (december 2025; Energiewet, kleine aansluiting tot en met 3x80 A)",
+    "url": "https://www.acm.nl/system/files/documents/besluit-vaststelling-modelcontracten.pdf"
    },
-   "text": "Een aansluiting is van de netbeheerder: de kabel naar het gebouw, de aansluitkast en de hoofdzekering in de meterkast. Alles achter de meter is van de klant. Een aansluiting tot en met 3x80 ampère heet een kleinverbruikaansluiting (woningen, kleine bedrijven); grotere aansluitingen zijn grootverbruik. Wie een nieuwe of zwaardere aansluiting wil, vraagt die aan bij de netbeheerder.",
-   "verify": true
+   "text": "Een aansluiting is van de netbeheerder: de kabel naar het gebouw, de aansluitkast en de hoofdzekering in de meterkast. Alles achter de meter is van de klant. Een aansluiting tot en met 3x80 ampère heet een kleine aansluiting of kleinverbruikaansluiting (woningen, kleine bedrijven); grotere aansluitingen zijn grootverbruik. Wie een nieuwe of zwaardere aansluiting wil, vraagt die aan bij de netbeheerder."
   },
   {
    "category": "sector",
@@ -519,13 +518,15 @@
   },
   {
    "category": "sector",
-   "estimate": "Gangbare indeling van Nederlandse distributienetten (middenspanning, vaak 10 kV, naar laagspanning 230/400 V in de wijk); geen specifieke bron gebruikt, de getallen zijn typische waarden en niet per netbeheerder gecontroleerd.",
    "example": "Klachten over omvormers in één straat van Nova komen allemaal uit hetzelfde MSR-gebied.",
    "id": "middenspanningsruimte",
    "name": "Middenspanningsruimte (MSR)",
    "short": "Het kleine stationnetje in de wijk met de trafo die de straten van stroom voorziet.",
-   "text": "Een middenspanningsruimte, vaak een huisje of kast in de wijk, bevat een trafo en schakelapparatuur. Van daaruit lopen de laagspanningskabels naar de huizen. Als een wijk veel zonnepanelen, warmtepompen of laadpalen krijgt, raakt de MSR vol.",
-   "verify": true
+   "source": {
+    "title": "Liander — Wat doet een elektriciteitshuisje (MSR; middenspanning 10 of 20 kV naar laagspanning 230/400 V)",
+    "url": "https://www.liander.nl/elektriciteitshuisjes/wat-doet-een-elektriciteitshuisje"
+   },
+   "text": "Een middenspanningsruimte, vaak een huisje of kast in de wijk, bevat een trafo en schakelapparatuur. Van daaruit lopen de laagspanningskabels naar de huizen. Als een wijk veel zonnepanelen, warmtepompen of laadpalen krijgt, raakt de MSR vol."
   },
   {
    "category": "sector",
@@ -534,11 +535,10 @@
    "name": "EAN-code",
    "short": "Het unieke nummer van 18 cijfers van een elektriciteits- of gasaansluiting.",
    "source": {
-    "title": "EAN-codeboek (EDSN) — EAN-code van een aansluiting opzoeken",
-    "url": "https://www.eancodeboek.nl"
+    "title": "Liander — EAN-code (uniek nummer van 18 cijfers per aansluiting; opzoeken via eancodeboek.nl)",
+    "url": "https://www.liander.nl/aansluitingen/ean-code"
    },
-   "text": "Elke elektriciteits- en gasaansluiting heeft een eigen EAN-code. Met die code weten netbeheerder, leverancier en meetbedrijf over welke aansluiting het gaat. Een verkeerde of ontbrekende code geeft fouten in aanvraag en meetdata.",
-   "verify": true
+   "text": "Elke elektriciteits- en gasaansluiting heeft een eigen EAN-code. Met die code weten netbeheerder, leverancier en meetbedrijf over welke aansluiting het gaat. Een verkeerde of ontbrekende code geeft fouten in aanvraag en meetdata."
   },
   {
    "category": "sector",

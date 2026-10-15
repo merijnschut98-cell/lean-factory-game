@@ -676,16 +676,16 @@ concepts:
     text: >-
       Een aansluiting is van de netbeheerder: de kabel naar het gebouw, de
       aansluitkast en de hoofdzekering in de meterkast. Alles achter de meter is van de
-      klant. Een aansluiting tot en met 3x80 ampère heet een kleinverbruikaansluiting
-      (woningen, kleine bedrijven); grotere aansluitingen zijn grootverbruik. Wie een
-      nieuwe of zwaardere aansluiting wil, vraagt die aan bij de netbeheerder.
+      klant. Een aansluiting tot en met 3x80 ampère heet een kleine aansluiting of
+      kleinverbruikaansluiting (woningen, kleine bedrijven); grotere aansluitingen zijn
+      grootverbruik. Wie een nieuwe of zwaardere aansluiting wil, vraagt die aan bij de
+      netbeheerder.
     example: >-
       Een nieuwe woning in Nova krijgt een standaardaansluiting van 3x25 ampère; een
       bedrijf op het industrieterrein vraagt een grootverbruikaansluiting aan.
     source:
-      title: Elektriciteitswet 1998, artikel 1 (begrip kleinverbruiker, aansluiting tot 3x80A)
-      url: https://wetten.overheid.nl/BWBR0009755/
-    verify: true
+      title: ACM — Besluit vaststelling modelcontracten (december 2025; Energiewet, kleine aansluiting tot en met 3x80 A)
+      url: https://www.acm.nl/system/files/documents/besluit-vaststelling-modelcontracten.pdf
 
   - id: aansluittermijn
     name: Aansluittermijn
@@ -791,11 +791,9 @@ concepts:
     example: >-
       Klachten over omvormers in één straat van Nova komen allemaal uit hetzelfde
       MSR-gebied.
-    estimate: >-
-      Gangbare indeling van Nederlandse distributienetten (middenspanning, vaak 10 kV,
-      naar laagspanning 230/400 V in de wijk); geen specifieke bron gebruikt, de
-      getallen zijn typische waarden en niet per netbeheerder gecontroleerd.
-    verify: true
+    source:
+      title: Liander — Wat doet een elektriciteitshuisje (MSR; middenspanning 10 of 20 kV naar laagspanning 230/400 V)
+      url: https://www.liander.nl/elektriciteitshuisjes/wat-doet-een-elektriciteitshuisje
 
   - id: ean_code
     name: EAN-code
@@ -809,9 +807,8 @@ concepts:
       Een aanvraag voor een zwaardere aansluiting zonder EAN-code blijft bij Intake
       liggen tot de klant hem opzoekt.
     source:
-      title: EAN-codeboek (EDSN) — EAN-code van een aansluiting opzoeken
-      url: https://www.eancodeboek.nl
-    verify: true
+      title: Liander — EAN-code (uniek nummer van 18 cijfers per aansluiting; opzoeken via eancodeboek.nl)
+      url: https://www.liander.nl/aansluitingen/ean-code
 
   - id: klic_melding
     name: KLIC-melding
