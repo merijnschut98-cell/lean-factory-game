@@ -23,7 +23,8 @@ func _solve(log: Missions, cm: String = "standard_designs") -> void:
 	var r := log.region
 	log.accept("fix_design")
 	r.use_tool("connections.design", "time_study")
-	assert_eq(r.submit_a3("custom_design", RulesFixture.a3(r, "custom_design", "overprocessing", cm, ["custom_design:0"], "throughput")), "")
+	# Capacity: a planned number, so the Check passes however busy the test makes the team.
+	assert_eq(r.submit_a3("custom_design", RulesFixture.a3(r, "custom_design", "overprocessing", cm, ["custom_design:0"], "capacity")), "")
 	r.advance_days(Region.CHECK_DAYS)
 	log.update()
 	assert_true(r.check("custom_design")["passed"])
@@ -47,7 +48,9 @@ func test_a_fix_that_holds_pays_back_at_90_and_180_days() -> void:
 	var paid := _events(log, "dividend")
 	assert_eq(paid.size(), 1)
 	assert_eq(paid[0]["problem"], "custom_design")
-	assert_eq(r.profile.budget, budget + Stewardship.DIVIDEND, "the routine's team time costs no euros")
+	# The routine's team time costs no euros; the held fix's weekly savings come on top.
+	var savings := r.weekly_savings() * Stewardship.DIVIDEND_DAYS[0] / 7.0
+	assert_near(r.profile.budget, budget + Stewardship.DIVIDEND + savings, 2.0)
 	var reputation := r.reputation.value
 	r.advance_days(Stewardship.DIVIDEND_DAYS[1] - Stewardship.DIVIDEND_DAYS[0])
 	log.update()
@@ -97,7 +100,7 @@ func test_overload_is_reported() -> void:
 	r.advance_days(30)  # the work reaches Werkvoorbereiding
 	log.accept("fix_design")
 	r.use_tool("connections.design", "time_study")
-	r.submit_a3("custom_design", RulesFixture.a3(r, "custom_design", "overprocessing", "standard_designs", ["custom_design:0"], "throughput"))
+	r.submit_a3("custom_design", RulesFixture.a3(r, "custom_design", "overprocessing", "standard_designs", ["custom_design:0"], "lead_time"))
 	r.advance_days(Region.CHECK_DAYS)
 	log.update()
 	var overload := _events(log, "overload")

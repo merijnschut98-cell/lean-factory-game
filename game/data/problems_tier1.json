@@ -45,7 +45,7 @@
     }
    ],
    "id": "incomplete_application",
-   "kpi": "lead_time",
+   "kpi": "capacity",
    "mismatch_note": "Sneller of strenger controleren verandert niets aan wat er binnenkomt. De fout ontstaat in het formulier.",
    "name": "De onvolledige aanvraag",
    "plausible_causes": [
@@ -465,7 +465,7 @@
     }
    ],
    "id": "revision_backlog",
-   "kpi": "throughput",
+   "kpi": "capacity",
    "mismatch_note": "Meer mensen bij GIS verwerken de stapel sneller, maar het overtekenen blijft dubbel werk.",
    "name": "De revisieberg",
    "plausible_causes": [
@@ -535,7 +535,7 @@
     }
    ],
    "id": "digging_damage",
-   "kpi": "lead_time",
+   "kpi": "capacity",
    "mismatch_note": "Aannemers doen wel een KLIC-melding; de kaart die ze krijgen klopt niet en de planning laat geen tijd voor proefsleuven.",
    "name": "Graafschade",
    "plausible_causes": [
@@ -810,7 +810,7 @@
     }
    ],
    "id": "grid_study_queue",
-   "kpi": "throughput",
+   "kpi": "capacity",
    "mismatch_note": "Meer analisten werken de stapel sneller weg, maar een groot deel van de studies is niet nodig.",
    "name": "De netstudie-wachtrij",
    "plausible_causes": [
@@ -1102,7 +1102,7 @@
     }
    ],
    "id": "unused_capacity",
-   "kpi": "lead_time",
+   "kpi": "throughput",
    "mismatch_note": "Op papier is het net vol, in werkelijkheid niet. Wie alleen verzwaart, laat de ongebruikte reserveringen liggen.",
    "name": "Gereserveerd maar ongebruikt",
    "plausible_causes": [

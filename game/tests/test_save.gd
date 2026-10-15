@@ -92,7 +92,7 @@ func _mid_experiment() -> Region:
 	r.use_tool("connections.design", "documents")
 	r.ask("connections.revision", "behind")
 	r.submit_a3("custom_design", RulesFixture.a3(r, "custom_design", "overprocessing", "standard_designs",
-		["custom_design:0", "custom_design:2"], "throughput"))
+		["custom_design:0", "custom_design:2"], "lead_time"))
 	r.advance_days(5)
 	return r
 
@@ -134,3 +134,20 @@ func test_save_files_round_trip_and_refuse_bad_input() -> void:
 	file.close()
 	assert_true("version" in SaveFile.read("test_slot", loaded)["error"])
 	DirAccess.remove_absolute(SaveFile.path_of("test_slot"))
+
+
+## The Check's measured gains travel with the problem (the Act scores on
+## them); a save's gains are untrusted: only known KPIs with finite numbers.
+func test_the_checks_gains_are_saved() -> void:
+	var st := ProblemState.new("custom_design")
+	st.gains = {"lead_time": 0.12, "capacity": 0.0}
+	var loaded := ProblemState.new("custom_design")
+	assert_true(loaded.load_dict(_via_file(st.to_dict())))
+	assert_eq(loaded.gains, st.gains)
+	var junk := st.to_dict()
+	junk["gains"] = {"lead_time": "a lot", "capacity": INF, "made_up": 0.5, "on_time": 0.1}
+	assert_true(loaded.load_dict(junk))
+	assert_eq(loaded.gains, {"on_time": 0.1})
+	junk["gains"] = "none"
+	assert_true(loaded.load_dict(junk))
+	assert_eq(loaded.gains, {})

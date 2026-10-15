@@ -160,8 +160,9 @@ func wait_for_check(problem_id: String) -> String:
 	return ""
 
 
-## Compare before and after: Region.check's result, or an error:
-## unknown_problem | not_check_ready.
+## The Check: the fix against no fix over the coming lead time
+## (Region.check's result, a few seconds of simulation on copies), or an
+## error: unknown_problem | not_check_ready | a forecast copy's error.
 func check(problem_id: String) -> Dictionary:
 	if not region.state.has(problem_id):
 		return {"error": "unknown_problem"}
