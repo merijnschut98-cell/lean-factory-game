@@ -74,3 +74,30 @@ jobs:
         with:
           name: Spanning-${{ matrix.dir }}
           path: build/${{ matrix.dir }}
+
+  # A Windows build on every PR update, for playtesting without Godot: open the
+  # latest CI run of the PR and download the "Spanning-windows-playtest" artifact.
+  # (The full export above needs "Run workflow", which GitHub only offers once
+  # this file is on the default branch.)
+  playtest-build:
+    name: Windows playtest build
+    if: github.event_name == 'pull_request'
+    needs: [godot-tests, python]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-godot
+        with:
+          version: ${{ env.GODOT_VERSION }}
+          templates: "true"
+      - name: Export Windows
+        run: |
+          godot --headless --path game --import
+          mkdir -p build/windows
+          godot --headless --path game --export-release "Windows Desktop"
+          ls -la build/windows
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Spanning-windows-playtest
+          path: build/windows
+          retention-days: 14
