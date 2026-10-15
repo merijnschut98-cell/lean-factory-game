@@ -75,7 +75,7 @@ func test_rewards() -> void:
 
 func test_belts() -> void:
 	assert_eq(Progression.belt_index(0), 0)
-	assert_eq(Progression.belt_index(1200), 1)
-	assert_eq(Progression.belt_index(99999), 4)
-	assert_near(Progression.belt_progress(600), 0.5, 1e-9)
-	assert_eq(Progression.belt_progress(99999), 1.0)
+	assert_eq(Progression.belt_index(2000), 1)
+	assert_eq(Progression.belt_index(999999), 4)
+	assert_near(Progression.belt_progress(1000), 0.5, 1e-9)
+	assert_eq(Progression.belt_progress(999999), 1.0)

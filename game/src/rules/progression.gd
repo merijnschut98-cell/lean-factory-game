@@ -1,12 +1,16 @@
 class_name Progression
 ## Belts from XP. What each belt unlocks is content (Phase B).
+## Thresholds (Merijn, 2026-10-15) pace the whole campaign: yellow after the
+## first fork, green in Act II, black in the middle of tier 2's Act III,
+## master black in tier 4 (mission-system spec §2.13). Tier 1 pays at most
+## ~20,000 XP, so its expert ends green.
 
 const BELTS := [
 	{"id": "white", "xp": 0},
-	{"id": "yellow", "xp": 1200},
-	{"id": "green", "xp": 3500},
-	{"id": "black", "xp": 7000},
-	{"id": "master_black", "xp": 12000},
+	{"id": "yellow", "xp": 2000},
+	{"id": "green", "xp": 6000},
+	{"id": "black", "xp": 30000},
+	{"id": "master_black", "xp": 110000},
 ]
 
 

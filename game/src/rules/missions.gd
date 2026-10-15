@@ -36,6 +36,12 @@ const SETUP_SOURCE := "setup:"
 const CHECKIN_PREFIX := "terugval_"
 ## ESTIMATE: a small reward, like a side mission's smallest (an hour's work).
 const CHECKIN_XP := 100
+## Half a solve mission's reward is for finishing it, half for how well the
+## problem was solved (its PDCA score), so the thorough, lasting fix pays more
+## than the quick one (CLAUDE.md §2, long term over short term; audit R1).
+## At the lowest score (5 of 25) a player still earns MIN_REWARD_SHARE.
+const REWARD_FOR_FINISHING := 0.5
+const MIN_REWARD_SHARE := 0.6
 
 var region: Region
 var defs: Dictionary[String, MissionDef] = {}
@@ -402,7 +408,8 @@ func _complete(m: MissionDef) -> void:
 	progress[m.id]["status"] = "completed"
 	if not done_once.has(m.id):
 		done_once[m.id] = true
-		region.grant(m.reward_xp, m.reward_budget)
+		var share := reward_share(region.state[m.goal_problem].score) if m.goal_type == "solve" else 1.0
+		region.grant(roundi(m.reward_xp * share), roundi(m.reward_budget * share))
 	var event := {"type": "completed", "mission": m.id}
 	if m.goal_type == "observe" and m.goal_tool == "queue_count":
 		var queues := {}
@@ -414,6 +421,15 @@ func _complete(m: MissionDef) -> void:
 		_hand_out_next_day(m)
 	if not in_training():
 		_clear_week_setup()
+
+
+## The share of a solve mission's reward a PDCA score earns (a whole reward
+## without a score: a problem resolved outside the PDCA loop).
+static func reward_share(score: Dictionary) -> float:
+	if not score.has("total"):
+		return 1.0
+	var quality := clampf(float(score["total"]) / Pdca.MAX_SCORE, 0.0, 1.0)
+	return maxf(MIN_REWARD_SHARE, REWARD_FOR_FINISHING + (1.0 - REWARD_FOR_FINISHING) * quality)
 
 
 ## A training day's staged situation goes onto the simulation when it is

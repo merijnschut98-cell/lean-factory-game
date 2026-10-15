@@ -414,6 +414,9 @@ def test_problem_errors_are_caught(rules_dirs, mutate, message):
     (lambda d: _mission(d).update(requires={"missions": ["peek"]}) or _mission(d, 2).update(requires={"missions": ["fix_design"]}),
      "can never unlock"),
     (lambda d: _mission(d).update(requires={"missions": ["walk_connections"], "belt": 2}), "can never unlock"),
+    # 300 + 2500 XP would reach yellow, but a solve mission may pay only 60% of it.
+    (lambda d: _mission(d).update(rewards={"xp": 2500}) or _mission(d, 2).update(requires={"missions": ["fix_design"], "belt": 1}),
+     "can never unlock"),
     (lambda d: _mission(d)["goal"].update(problem="ghost"), "unknown problem 'ghost'"),
     (lambda d: _mission(d, 0)["goal"].update(stream="ghosts"), "unknown stream 'ghosts'"),
     (lambda d: _mission(d, 2)["goal"].update(clues=9), "asks for 9 key clues"),

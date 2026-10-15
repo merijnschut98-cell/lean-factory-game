@@ -549,7 +549,10 @@ MISSION_GOALS = {
 }
 MAX_CHECK_DAYS = 14  # Region.CHECK_DAYS: a mission may only shorten the Check
 COACH_STAGES = ["go_see", "understand", "experiment", "reflect"]  # Missions.STAGES
-BELT_XP = [0, 1200, 3500, 7000, 12000]  # Progression.BELTS
+BELT_XP = [0, 2000, 6000, 30000, 110000]  # Progression.BELTS
+# The least share of a solve mission's reward a player earns (Missions.reward_share
+# at the lowest score, 5 of 25): the hard case for reaching every mission.
+MIN_REWARD_SHARE = 0.6
 MISSION_KEYS = {"id", "name", "kind", "tier", "requires", "briefing", "debrief", "fail", "goal", "deadline_days",
                 "fail_closes", "rewards", "insights", "teaches", "check_days", "setup"}
 
@@ -671,7 +674,8 @@ def check_missions(docs: dict[str, Any]) -> None:
     if unsolved:
         raise ContentError(f"missions.yaml: no mission solves {', '.join(unsolved)} (the campaign reaches every problem)")
     # Play the campaign forward: complete whatever is unlocked, earning only
-    # the missions' own XP (problems give more, so this is the hard case).
+    # the missions' own XP, solve missions at their lowest share (problems
+    # give more, so this is the hard case).
     done: set[str] = set()
     xp = 0
     progressed = True
@@ -682,7 +686,8 @@ def check_missions(docs: dict[str, Any]) -> None:
             belt_xp = BELT_XP[req.get("belt", 0)]
             if m["id"] not in done and xp >= belt_xp and all(r in done for r in req.get("missions", [])):
                 done.add(m["id"])
-                xp += m.get("rewards", {}).get("xp", 0)
+                share = MIN_REWARD_SHARE if m["goal"]["type"] == "solve" else 1.0
+                xp += int(m.get("rewards", {}).get("xp", 0) * share)
                 progressed = True
     if not any(m["kind"] in COACHED_KINDS and not m.get("requires") for m in missions.values()):
         raise ContentError("missions.yaml: no main or training mission is open from the start")
@@ -795,7 +800,7 @@ def vocabulary() -> dict[str, Any]:
         "tools": sorted(TOOLS), "wastes": WASTES, "kpis": KPIS, "severities": SEVERITIES,
         "visibilities": VISIBILITIES, "check_pass": CHECK_PASS, "countermeasure_unlocks": UNLOCKS,
         "mission_kinds": MISSION_KINDS, "mission_goals": sorted(MISSION_GOALS), "coach_stages": COACH_STAGES,
-        "belt_xp": BELT_XP, "start_rules": START_RULES, "order_rules": ORDER_RULES,
+        "belt_xp": BELT_XP, "min_reward_share": MIN_REWARD_SHARE, "start_rules": START_RULES, "order_rules": ORDER_RULES,
         "care_rules": CARE_RULES, "kpi_kinds": KPI_KINDS,
         "effect_properties": {p: {"kind": k, "step_kind": sk or ""} for p, (k, sk, _) in sorted(EFFECT_PROPERTIES.items())},
     }

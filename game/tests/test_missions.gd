@@ -64,6 +64,27 @@ func test_accepting_activates_the_problem_and_solving_completes_it() -> void:
 	assert_eq(completed.map(func(e: Dictionary) -> String: return e["mission"]), ["walk_connections", "fix_revision"])
 
 
+## Half a solve mission's reward is for finishing, half for how well the
+## problem was solved (its PDCA score): the patient, thorough fix pays more
+## (audit R1), and what the simulation measured reaches the reward.
+func test_a_solve_missions_reward_follows_the_score() -> void:
+	var rewards := []
+	for total in [Pdca.MAX_SCORE, 10]:
+		var log := _log()
+		log.accept("walk_connections")
+		_walk_connections(log)
+		log.accept("fix_revision")
+		var budget := log.region.profile.budget
+		var xp := log.region.profile.xp
+		var st: ProblemState = log.region.state["revision_backlog"]
+		st.phase = ProblemState.Phase.RESOLVED
+		st.score = {"total": total}
+		log.update()
+		rewards.append([log.region.profile.xp - xp, log.region.profile.budget - budget])
+	assert_eq(rewards, [[300, 2000], [210, 1400]], "a full score pays it all; 10 of 25 pays 0.5 + 0.5 × 0.4")
+	assert_eq(Missions.reward_share({"total": 1}), Missions.MIN_REWARD_SHARE, "never below the floor")
+
+
 func test_investigating_completes_with_enough_key_clues() -> void:
 	var log := _log()
 	log.accept("walk_connections")

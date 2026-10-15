@@ -204,6 +204,7 @@ func test_the_game_knows_the_content_vocabulary() -> void:
 	assert_eq(KpiDef.CARE_RULES, vocab["care_rules"])
 	assert_eq(Progression.BELTS.map(func(b: Dictionary) -> int: return b["xp"]),
 		vocab["belt_xp"].map(func(xp: float) -> int: return int(xp)), "JSON has no integers")
+	assert_eq(Missions.reward_share({"total": 5}), vocab["min_reward_share"], "the validator's hard case")
 	var properties: Dictionary = vocab["effect_properties"]
 	assert_eq(SimModifiers.PROPERTIES.keys().size(), properties.size())
 	for property: String in SimModifiers.PROPERTIES:

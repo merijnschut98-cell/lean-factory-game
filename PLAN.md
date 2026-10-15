@@ -233,7 +233,8 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
   - **Wave 1 (rules):**
     - ✅ C0 (2026-10-15): every open problem belongs to an active mission (QA autoplay #2, #3). A finished investigation and an abandoned mission put their problem back to sleep (clues kept). A running experiment cannot be abandoned. A missed deadline closes its door, but the mission comes back without a clock, so the problem can still be solved (a mission active at the deadline keeps its work). `GameSession.abandon`. `Missions.failed(id)` / `failed_once` replace the `failed` status (old saves convert). Tests: test_missions (orphans, a full board after finished investigations, a running experiment, failed missions survive a save), test_session (abandon).
       - ⬜ UI (another agent's): `mission_board.gd` still lists status `failed` as "Verlopen". Use `Missions.failed(id)`, and show the `fail` text on a retaken mission (Henk has retired).
-    - ⬜ C14: belts rescaled to 2,000 / 6,000 / 30,000 / 110,000 XP (Merijn, 2026-10-15; QA #18: master black on day 107) in `Progression.BELTS` and `BELT_XP`, with a pacing test.
+    - ✅ C14 (2026-10-15): belts rescaled to 2,000 / 6,000 / 30,000 / 110,000 XP (Merijn; QA #18: master black on day 107) in `Progression.BELTS` and `BELT_XP`. Pacing test (`test_progression.gd`): everything tier 1 can pay ends green, below black; still white before the first fork.
+      - Seeds change outcomes (QA #12): a solve mission's reward now follows the problem's PDCA score, `0.5 + 0.5 × total / 25` (at least 0.6; `Missions.reward_share`; audit R1). The validator's reachability pass counts solve missions at that floor. Outcomes differ per seed as soon as the Check agent's measured Check (forecast against a no-fix twin) feeds the score.
     - ⬜ C1: mission schema, wave-1 fields: act, chapter, arc, fork, reopen text, `requires` (maturity, reputation, trust, facts), `rewards` (reputation, trust), `sets_flags`, plus the validator and vocabulary.
     - ⬜ C19: facts and needs (path dependence, Merijn 2026-10-15): derived facts, one `needs` evaluator, validator pivot check.
     - ⬜ C9: reputation as its own measure (Merijn, 2026-10-15), under the three deep-thinking principles: long term over short term, respect for people first, always improve.
@@ -414,6 +415,10 @@ Merijn asked me to fix the content review's findings with my own judgement while
 - **Kept as they are, plausible and grounded:** the contact-centre spiral of Klaar maar niet af, the monthly EAN batch, three times as many calls from late customers, 40 minutes to the warehouse, two of five meterkasten not ready, three of eight not at home, 240 open revisions.
 - **Henk becomes a story hook** for the missions (built: a deadline mission); the buddy system's team hours stay as they are.
 - ~~Still open: the contact-centre spiral~~ → answered 2026-10-13: keep it mild.
+
+### Claude's calls, pending Merijn (2026-10-15, mission system phase 2)
+Made by the mission agent while building waves 1–3; each is easy to reverse.
+- **Mission rewards follow the score:** half of a solve mission's XP and budget is for finishing, half for the PDCA score (`0.5 + 0.5 × total / 25`, at least 0.6). The audit proposed `× total / 25`; the floor keeps a poor fix from locking a player below the green belt (the validator checks reachability at 0.6).
 
 ### Claude's calls, pending Merijn (2026-10-15, sustain and drift)
 Made while building Merijn's two new rules and his answer on decay; spec `docs/superpowers/specs/2026-10-15-sustain-and-drift-design.md`. All numbers are estimates, marked in `game/src/rules/sustain.gd`.

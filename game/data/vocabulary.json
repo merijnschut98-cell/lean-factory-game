@@ -1,10 +1,10 @@
 {
  "belt_xp": [
   0,
-  1200,
-  3500,
-  7000,
-  12000
+  2000,
+  6000,
+  30000,
+  110000
  ],
  "care_rules": [
   "normal",
@@ -103,6 +103,7 @@
   "wip_age",
   "capacity"
  ],
+ "min_reward_share": 0.6,
  "mission_goals": [
   "check",
   "investigate",
