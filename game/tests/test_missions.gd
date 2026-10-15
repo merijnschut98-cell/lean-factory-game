@@ -104,11 +104,14 @@ func test_the_coach_only_helps_with_the_main_mission() -> void:
 	assert_eq(log.ask_coach("walk_meters")["kind"], "not_main", "no coaching on side missions")
 	log.accept("walk_connections")
 	var first := log.ask_coach()
-	assert_eq([first["kind"], first["stage"], first["text"]], ["question", "go_see", "go_see 1"])
-	assert_eq(log.ask_coach()["text"], "go_see 2", "questions rotate")
+	assert_eq([first["kind"], first["stage"]], ["question", "go_see"])
+	assert_true(first["text"] in log.coach["stages"]["go_see"])
+	assert_ne(log.ask_coach()["text"], first["text"], "questions rotate")
 	assert_eq(log.ask_coach("walk_meters")["kind"], "not_main")
 
 
+## An insight every third ask at a stage; a stage's insights are told in turn,
+## then the coach goes back to asking (audit §3A, C2).
 func test_the_coach_mostly_asks_and_sometimes_gives_an_insight() -> void:
 	var log := _log()
 	log.accept("walk_connections")
@@ -118,8 +121,87 @@ func test_the_coach_mostly_asks_and_sometimes_gives_an_insight() -> void:
 	var kinds := []
 	for i in 6:
 		kinds.append(log.ask_coach()["kind"])
-	assert_eq(kinds, ["question", "question", "insight", "question", "question", "insight"])
+	assert_eq(kinds, ["question", "question", "insight", "question", "question", "question"], "one insight, told once")
 	assert_eq(log.ask_coach()["stage"], "understand")
+
+
+func _coach_log(extra: Array) -> Missions:
+	var coach := RulesFixture.coach()
+	coach["stages"]["go_see"] = ["g1", "g2", "g3", "g4", "g5", "g6", "g7"]
+	coach["conditional"] = {"blamed": "Wat wilde je eigenlijk weten?", "fading_fix": "Hoe lang blijft dit werken?"}
+	var defs: Array[MissionDef] = []
+	for d: Dictionary in RulesFixture.missions() + extra:
+		defs.append(MissionDef.from_dict(d))
+	return Missions.new(RulesFixture.region(), defs, coach)
+
+
+func _main(id: String, extra: Dictionary = {}) -> Dictionary:
+	var d := {"id": id, "name": id, "kind": "main", "tier": 1, "goal": {"type": "walk", "stream": "meters"},
+		"briefing": "b", "debrief": "d"}
+	d.merge(extra, true)
+	return d
+
+
+## The coach does not open every mission with the same line (QA #20): the
+## mission's own questions come first, then the bank from a place of its own,
+## and no line the player heard in the last six asks comes back.
+func test_the_coach_does_not_repeat_himself_across_missions() -> void:
+	var log := _coach_log([_main("m1", {"questions": {"go_see": ["eigen vraag"]}}), _main("m2"), _main("m3")])
+	log.accept("m1")
+	assert_eq(log.ask_coach()["text"], "eigen vraag", "the mission's own question first")
+	var heard := [log.ask_coach()["text"]]
+	log.region.use_tool("meters.visit", "shadow")
+	log.update()
+	for id in ["m2", "m3"]:
+		log.accept(id)
+		for i in 2:
+			heard.append(log.ask_coach()["text"])
+		log.update()
+	assert_eq(heard.size(), 5)
+	var unique := {}
+	for line in heard + ["eigen vraag"]:
+		unique[line] = true
+	assert_eq(unique.size(), 6, "six asks, six different lines: %s" % [heard])
+
+
+func test_insights_are_told_in_turn() -> void:
+	var log := _coach_log([_main("m1", {"insights": {"go_see": ["inzicht 1", "inzicht 2"]}})])
+	log.accept("m1")
+	var insights := []
+	for i in 9:
+		var reply := log.ask_coach()
+		if reply["kind"] == "insight":
+			insights.append(reply["text"])
+	assert_eq(insights, ["inzicht 1", "inzicht 2"])
+
+
+## After a blaming question the coach asks what the player wanted to know
+## (respect for people); a fix chosen to fade soon, while a lasting one fits,
+## gets the long-term question (audit §3A.2).
+func test_the_coach_asks_about_a_blame_and_a_fading_fix() -> void:
+	var log := _coach_log([])
+	log.accept("walk_connections")
+	_walk_connections(log)
+	log.accept("fix_design")
+	log.region.ask("connections.design", "who")
+	log.region.use_tool("connections.design", "time_study")
+	assert_eq(log.ask_coach()["text"], "Wat wilde je eigenlijk weten?")
+	assert_ne(log.ask_coach()["text"], "Wat wilde je eigenlijk weten?", "said once")
+	var r := log.region
+	r.change_trust("prep", 2)
+	r.state["custom_design"].phase = ProblemState.Phase.DOING
+	r.countermeasures["standard_designs"].decay_days = -1  # built in: it lasts
+	r.state["custom_design"].a3 = {"cm": "delegated_approval"}  # fades in 20 days
+	assert_eq(log.ask_coach()["text"], "Hoe lang blijft dit werken?")
+
+
+func test_what_the_coach_said_survives_a_save() -> void:
+	var log := _coach_log([_main("m1")])
+	log.accept("m1")
+	var first: String = log.ask_coach()["text"]
+	var restored := _coach_log([_main("m1")])
+	restored.load_dict(bytes_to_var(var_to_bytes(log.to_dict())))
+	assert_ne(restored.ask_coach()["text"], first, "the memory came along")
 
 
 ## A missed deadline closes a door, not the problem: Henk has left, but the

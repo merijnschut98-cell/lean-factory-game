@@ -78,8 +78,11 @@ var reward_budget := 0
 var reward_reputation := 0
 ## Trust per team (pool id → change) the first completion earns.
 var reward_trust: Dictionary[String, int] = {}
-## Main missions: what the coach may tell at a stage, now and then.
-var insights: Dictionary[String, String] = {}
+## Main missions: what the coach may tell at a stage, now and then (in turn,
+## when a stage has several), and the mission's own questions per stage,
+## asked before the general bank.
+var insights: Dictionary[String, Array] = {}
+var questions: Dictionary[String, Array] = {}
 var error := ""
 
 
@@ -133,9 +136,12 @@ static func from_dict(d: Dictionary) -> MissionDef:
 	var trust := JsonFile.dict_or_empty(rewards.get("trust"))
 	for team: Variant in trust:
 		m.reward_trust[str(team)] = int(trust[team])
-	var insights := JsonFile.dict_or_empty(d.get("insights"))
-	for stage: Variant in insights:
-		m.insights[str(stage)] = str(insights[stage])
+	for key in ["insights", "questions"]:
+		var by_stage := JsonFile.dict_or_empty(d.get(key))
+		for stage: Variant in by_stage:
+			var lines: Variant = by_stage[stage]
+			(m.insights if key == "insights" else m.questions)[str(stage)] = \
+				(lines as Array).map(func(l: Variant) -> String: return str(l)) if lines is Array else [str(lines)]
 	if m.id.is_empty() or m.name.is_empty():
 		m.error = "mission %s: needs an id and a name" % m.id
 	elif not m.kind in KINDS or not m.goal_type in GOALS:

@@ -607,13 +607,16 @@ MISSION_GOALS = {
 MAX_CHECK_DAYS = 14  # Region.CHECK_DAYS: a mission may only shorten the Check
 MATURITY_STEP = 0.6  # Region.MATURITY_STEP
 COACH_STAGES = ["go_see", "understand", "experiment", "reflect"]  # Missions.STAGES
+# The coach's questions for a situation (Missions._conditions): after a
+# blaming question, and a fix chosen to fade soon while a lasting one fits.
+COACH_CONDITIONS = ["blamed", "fading_fix"]
 BELT_XP = [0, 2000, 6000, 30000, 110000]  # Progression.BELTS
 # The least share of a solve mission's reward a player earns (Missions.reward_share
 # at the lowest score, 5 of 25): the hard case for reaching every mission.
 MIN_REWARD_SHARE = 0.6
 MISSION_KEYS = {"id", "name", "kind", "tier", "requires", "briefing", "debrief", "fail", "goal", "deadline_days",
                 "fail_closes", "rewards", "insights", "teaches", "check_days", "setup", "act", "chapter", "arc",
-                "fork", "debrief_first", "reopen", "sets_flags"}
+                "fork", "debrief_first", "reopen", "sets_flags", "questions"}
 REQUIRES_KEYS = {"missions", "belt", "maturity", "reputation", "trust", "any_of", "facts"}
 FORK_ROLES = ["bottleneck", "non_bottleneck"]
 MAX_ACT = 6  # Act 0 is the training week; Act VI the IT value streams
@@ -625,7 +628,9 @@ START_REPUTATION = 30  # Reputation.START
 def validate_missions(doc: Any, source: str) -> None:
     """The campaign: the coach's questions per stage and the missions (CLAUDE.md §2)."""
     _require_strings(doc, [], source)
-    coach = _mapping(doc, "coach", {"name", "role", "stages"}, source)
+    coach = _mapping(doc, "coach", {"name", "role", "stages", "conditional"}, source)
+    conditional = _mapping(coach, "conditional", set(COACH_CONDITIONS), f"{source} coach")
+    _require_strings(conditional, list(conditional), f"{source} coach conditional")
     _require_strings(coach, ["name", "role"], f"{source} coach")
     stages = coach.get("stages")
     if not isinstance(stages, dict) or sorted(stages) != sorted(COACH_STAGES):
@@ -667,11 +672,15 @@ def validate_missions(doc: Any, source: str) -> None:
         _number(rewards, "reputation", f"{where} rewards", 0, 20, integer=True, default=0)
         _trust_map(rewards, f"{where} rewards", -3, 3)
         _sets_flags(m, where)
-        insights = m.get("insights", {})
-        if insights and m["kind"] not in COACHED_KINDS:
-            raise ContentError(f"{where}: only main and training missions get the coach's insights")
-        if not isinstance(insights, dict) or any(s not in COACH_STAGES or not isinstance(t, str) for s, t in insights.items()):
-            raise ContentError(f"{where}: 'insights' maps a coach stage to a text")
+        for key in ("insights", "questions"):
+            lines = m.get(key, {})
+            if lines and m["kind"] not in COACHED_KINDS:
+                raise ContentError(f"{where}: only main and training missions get the coach's {key}")
+            if not isinstance(lines, dict) or any(
+                    stage not in COACH_STAGES or not (isinstance(t, str) and t.strip() or isinstance(t, list) and t
+                                                      and all(isinstance(x, str) and x.strip() for x in t))
+                    for stage, t in lines.items()):
+                raise ContentError(f"{where}: '{key}' maps a coach stage to a text or a list of texts")
 
 
 def _trust_map(item: dict, where: str, low: int, high: int) -> dict:
@@ -1026,7 +1035,7 @@ def vocabulary() -> dict[str, Any]:
         "visibilities": VISIBILITIES, "check_pass": CHECK_PASS, "countermeasure_unlocks": UNLOCKS,
         "mission_kinds": MISSION_KINDS, "mission_goals": sorted(MISSION_GOALS), "coach_stages": COACH_STAGES,
         "belt_xp": BELT_XP, "min_reward_share": MIN_REWARD_SHARE, "fact_kinds": sorted(FACT_KINDS),
-        "measures": sorted(MEASURES), "fork_roles": FORK_ROLES, "start_rules": START_RULES, "order_rules": ORDER_RULES,
+        "measures": sorted(MEASURES), "fork_roles": FORK_ROLES, "coach_conditions": COACH_CONDITIONS, "start_rules": START_RULES, "order_rules": ORDER_RULES,
         "care_rules": CARE_RULES, "kpi_kinds": KPI_KINDS,
         "effect_properties": {p: {"kind": k, "step_kind": sk or ""} for p, (k, sk, _) in sorted(EFFECT_PROPERTIES.items())},
     }

@@ -183,7 +183,7 @@ func test_the_coach_answers_with_a_question_about_the_main_mission() -> void:
 	assert_true(office.ui.coach_panel.visible)
 	assert_eq(office.ui.coach_panel.ask(), UiText.coach_reply({"kind": "no_main"}))
 	office.ui.mission_board.accept(MISSION)
-	assert_eq(office.ui.coach_panel.ask(), office.session.catalog.coach["stages"]["go_see"][0])
+	assert_true(office.ui.coach_panel.ask() in office.session.catalog.coach["stages"]["go_see"], "a go-see question")
 	_close(office)
 
 

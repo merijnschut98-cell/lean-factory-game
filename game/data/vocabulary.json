@@ -12,6 +12,10 @@
   "hasty"
  ],
  "check_pass": 0.5,
+ "coach_conditions": [
+  "blamed",
+  "fading_fix"
+ ],
  "coach_stages": [
   "go_see",
   "understand",

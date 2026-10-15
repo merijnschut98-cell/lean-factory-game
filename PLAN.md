@@ -247,7 +247,8 @@ Less-known: incomplete applications and installers not ready (meterkast niet ger
     - ✅ K0 (2026-10-15): 38 new glossary concepts (now 101): the catalogue's §3.9 list (lean and management, sector, IT) with the tier-2 drafts' 13 verified ones (`non_firm` and `compensatie` folded into `alternatieve_transportrechten` and `compensatieregeling`), plus `twi_job_instruction` (audit L10). Sector items carry a source (`verify: true` where the page could not be opened) or an `estimate:`. IT concepts sit under lean/measure until Phase G brings an IT category (a UI change).
   - **Wave 2 (content, from the audit):**
     - ⬜ Mission rewrites: briefings with a face and a hook, debriefs that read the play, fork texts that do not spoil the fork.
-    - ⬜ Coach: the extended generic bank, the 22 missing insights, and questions that no longer restart at the same line for every mission (QA #20).
+    - ✅ Coach rules (2026-10-15; QA #20; audit §3A): the bank has six Kata questions per stage (with long-term, respect and always-improve lines); each mission starts the bank at its own place and the coach skips any line heard in the last six asks (saved); a mission's own `questions` come first; `insights` may list several per stage, told in turn, then he goes back to asking; conditional questions once per mission (`coach.conditional`: after a blaming question, and a fix chosen to fade within 45 days while a lasting one fits).
+      - ⬜ The insights of audit §3A.3 for every stage players reach (QA #24), with the rewrites. Later: templated KPI questions (C16); the overload line (with R3).
     - ⬜ Hidden rewards ("Ontdekkingen", 25) and the signals the rules must provide.
     - ⬜ Correctness fixes:
       - oliedrukkabel → GPLK;

@@ -32,6 +32,14 @@ const MAX_MAIN := 1
 const MAX_SIDE := 3
 ## Every third question at the same stage, the coach shares an insight.
 const INSIGHT_EVERY := 3
+## The coach does not repeat a line the player heard in the last this many
+## asks (audit §3A.1: the same opener came back in 14 missions).
+const NO_REPEAT := 6
+## A fix chosen to fade within this many days, while a lasting one fits as
+## well, gets the coach's long-term question (audit §3A.2, an estimate).
+const FADING_DAYS := 45
+## The coach's conditional questions (content: coach.conditional).
+const CONDITIONS: Array[String] = ["blamed", "fading_fix"]
 const P := ProblemState.Phase
 ## Where the player stands, as the coach sees it (see stage_of).
 const STAGES := ["go_see", "understand", "experiment", "reflect"]
@@ -54,8 +62,11 @@ const POOR_FIT_GAP := 0.2
 
 var region: Region
 var defs: Dictionary[String, MissionDef] = {}
-## {name, role, stages: {stage: [questions]}}
+## {name, role, stages: {stage: [questions]}, conditional: {blamed?,
+## fading_fix?}}
 var coach: Dictionary
+## The coach's last NO_REPEAT lines, across missions.
+var heard: Array[String] = []
 ## Missions the player has accepted: id → {status: active | completed, asks:
 ## {stage: count}, seen: {"place|tool": true} (observe goals: what was used
 ## while it was active)}. A mission whose fix faded is erased from it, so it
@@ -414,11 +425,64 @@ func ask_coach(mission_id: String = "") -> Dictionary:
 	var stage := stage_of(m)
 	var asks: Dictionary = progress[m.id]["asks"]
 	asks[stage] = int(asks.get(stage, 0)) + 1
-	if asks[stage] % INSIGHT_EVERY == 0 and m.insights.has(stage):
-		return {"kind": "insight", "text": m.insights[stage], "stage": stage}
-	var questions: Array = coach["stages"].get(stage, [])
-	var text: String = questions[(asks[stage] - 1) % questions.size()] if not questions.is_empty() else ""
-	return {"kind": "question", "text": text, "stage": stage}
+	var insights: Array = m.insights.get(stage, [])
+	var nth_insight: int = asks[stage] / INSIGHT_EVERY - 1
+	if asks[stage] % INSIGHT_EVERY == 0 and nth_insight < insights.size():
+		return {"kind": "insight", "text": insights[nth_insight], "stage": stage}
+	return {"kind": "question", "text": _question(m, stage, asks[stage]), "stage": stage}
+
+
+## The next question: a conditional one that applies (once per mission),
+## the mission's own, then the general bank starting at a place of the
+## mission's own; the first the player did not hear in the last NO_REPEAT
+## asks (all heard: in turn).
+func _question(m: MissionDef, stage: String, nth: int) -> String:
+	var said: Dictionary = progress[m.id].get_or_add("said", {})
+	for condition: String in _conditions(m, stage):
+		if not said.has(condition) and coach.get("conditional", {}).has(condition):
+			said[condition] = true
+			return _say(coach["conditional"][condition])
+	var candidates: Array = m.questions.get(stage, []).duplicate()
+	var bank: Array = coach["stages"].get(stage, [])
+	if not bank.is_empty():
+		var start := absi(m.id.hash()) % bank.size()
+		candidates.append_array(bank.slice(start) + bank.slice(0, start))
+	if candidates.is_empty():
+		return ""
+	for line: String in candidates:
+		if not line in heard:
+			return _say(line)
+	return _say(candidates[(nth - 1) % candidates.size()])
+
+
+func _say(line: String) -> String:
+	heard.erase(line)
+	heard.append(line)
+	if heard.size() > NO_REPEAT:
+		heard.remove_at(0)
+	return line
+
+
+## Conditions the coach asks about now: a blaming question while the problem
+## was open (respect for people), and a fix chosen to fade soon while a
+## lasting one fits as well (long term over short term).
+func _conditions(m: MissionDef, stage: String) -> Array[String]:
+	var out: Array[String] = []
+	var st: ProblemState = region.state.get(m.goal_problem)
+	if st == null:
+		return out
+	if st.blamed:
+		out.append("blamed")
+	var cm: CountermeasureDef = region.countermeasures.get(st.a3.get("cm", ""))
+	if stage == "experiment" and cm != null and cm.decay_days > 0 and cm.decay_days <= FADING_DAYS:
+		var p: ProblemDef = region.problems[m.goal_problem]
+		var chosen_fit: float = p.countermeasures.get(cm.id, 0.0)
+		if p.countermeasures.keys().any(func(id: String) -> bool:
+				var other: CountermeasureDef = region.countermeasures.get(id)
+				return other != null and (other.decay_days < 0 or other.decay_days > FADING_DAYS) \
+					and p.countermeasures[id] >= chosen_fit):
+			out.append("fading_fix")
+	return out
 
 
 ## Where the player stands, as the coach sees it: go_see (find the problem
@@ -445,7 +509,8 @@ func drain_events() -> Array[Dictionary]:
 
 func to_dict() -> Dictionary:
 	return {"progress": progress.duplicate(true), "opened_at": opened_at.duplicate(), "done_once": done_once.keys(),
-		"failed_once": failed_once.keys(), "facts": facts.to_list(), "repair_due": repairs.to_dict()}
+		"failed_once": failed_once.keys(), "facts": facts.to_list(), "repair_due": repairs.to_dict(),
+		"heard": heard.duplicate()}
 
 
 ## Restore to_dict() output. Returns the mission ids the content no longer
@@ -458,6 +523,10 @@ func load_dict(d: Dictionary) -> Array[String]:
 	# Facts of Acts before the save are kept; old saves note them at the next update.
 	facts.load_list(d.get("facts", []))
 	repairs.load_dict(JsonFile.dict_or_empty(d.get("repair_due")))
+	heard.clear()
+	var lines: Variant = d.get("heard", [])
+	for line: Variant in lines if lines is Array else []:
+		heard.append(str(line))
 	_resolved.clear()
 	for id: String in region.state:
 		if region.state[id].phase == P.RESOLVED and region.state[id].a3.has("cm"):
@@ -483,6 +552,8 @@ func load_dict(d: Dictionary) -> Array[String]:
 		elif defs.has(str(id)) and entry is Dictionary and entry.get("status") in ["active", "completed"]:
 			progress[str(id)] = {"status": entry["status"], "asks": JsonFile.dict_or_empty(entry.get("asks")),
 				"seen": JsonFile.dict_or_empty(entry.get("seen"))}
+			if entry.has("said"):  # the coach's conditional questions already asked
+				progress[str(id)]["said"] = JsonFile.dict_or_empty(entry["said"])
 		else:
 			dropped.append(str(id))
 	# A missed deadline closed its doors for good.

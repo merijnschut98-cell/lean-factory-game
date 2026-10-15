@@ -212,6 +212,7 @@ func test_the_game_knows_the_content_vocabulary() -> void:
 	measures.sort()
 	assert_eq(measures, vocab["measures"])
 	assert_eq(MissionDef.FORK_ROLES, vocab["fork_roles"])
+	assert_eq(Missions.CONDITIONS, vocab["coach_conditions"])
 	var properties: Dictionary = vocab["effect_properties"]
 	assert_eq(SimModifiers.PROPERTIES.keys().size(), properties.size())
 	for property: String in SimModifiers.PROPERTIES:
@@ -232,7 +233,7 @@ func test_the_campaign_opens_with_the_first_main_mission() -> void:
 	log.skip_training()
 	assert_eq(log.available().map(func(m: MissionDef) -> String: return m.id), ["walk_connections"])
 	assert_eq(log.accept("walk_connections"), "")
-	assert_eq(log.ask_coach()["text"], c.coach["stages"]["go_see"][0])
+	assert_true(log.ask_coach()["text"] in c.coach["stages"]["go_see"])
 	for step in log.region.net.stream("connections").steps:
 		if step.kind == SimStep.Kind.WORK:
 			log.region.use_tool("connections." + step.id, "shadow")

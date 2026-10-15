@@ -54,24 +54,42 @@
 coach:
   name: Ruud Hoekstra
   role: Directeur Netbeheer regio Zuidmark
+  # Toyota Kata (Rother): target, actual condition, obstacles, next step,
+  # what did you learn; plus a long-term, a respect and an always-improve
+  # question per stage (CLAUDE.md §2, the three principles; audit §3A.2).
   stages:
     go_see:
       - "Wat wil je bereiken? Hoe ziet het eruit als het hier goed loopt?"
       - "Wat heb je zelf gezien op de werkvloer, niet in het rapport?"
       - "Waar in de stroom ligt het werk stil?"
+      - "Wie doet dit werk elke dag? Wat heb je hem of haar gevraagd?"
+      - "Als je over een jaar terugkijkt, welk getal wil je dan veranderd hebben?"
+      - "Wat zie je hier dat de mensen zelf al lang niet meer zien?"
     understand:
       - "Hoe is de situatie nu, in cijfers?"
       - "Welke obstakels staan tussen jou en de doelsituatie? Welke pak je nu aan?"
       - "Hoe weet je dat dit de oorzaak is, en niet een symptoom?"
       - "Met wie heb je gesproken die het werk zelf doet?"
+      - "Welke 'waarom' heb je nog niet gesteld?"
+      - "Wat zou de snelste oplossing zijn, en hoe ziet die er over een half jaar uit?"
     experiment:
       - "Wat is je volgende stap, en wat verwacht je dat er gebeurt?"
       - "Wanneer kunnen we zien wat je van die stap hebt geleerd?"
       - "Welk getal vertelt je of het werkt?"
+      - "Hoeveel uren kost dit experiment het team, en wie draagt die?"
+      - "Wat moet er gebeuren zodat dit ook werkt als jij er niet bent?"
+      - "Wat doe je als het tegenvalt?"
     reflect:
       - "Wat had je verwacht, en wat gebeurde er echt?"
       - "Wat heb je geleerd?"
       - "Hoe zorg je dat de verbetering blijft?"
+      - "Wie heeft dit mogelijk gemaakt, en weten ze dat?"
+      - "Wat is de volgende kleine stap?"
+      - "Wat zou je anders doen als je opnieuw begon?"
+  # Asked once per mission when the situation holds (Missions._conditions).
+  conditional:
+    blamed: "Wat wilde je eigenlijk weten toen je dat vroeg?"
+    fading_fix: "Hoe lang verwacht je dat dit blijft werken? En dan?"
 
 missions:
   # ── Inwerkweek: five safe days in the connections office ──────────────────
