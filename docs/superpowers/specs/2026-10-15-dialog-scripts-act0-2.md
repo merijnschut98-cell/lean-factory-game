@@ -88,7 +88,7 @@ One rule for all: **people are never the cause.** A person may hold a wrong beli
 | `marco` | Marco Peters (53), TL Monteurs | Thirty years a monteur. Brabants: "nie", "efkes", "da's", "ons mannen", sometimes "ge". Short sentences. | Gallows humour about consultants: "Mooie plaatjes. Wie bouwt dat na?" | The 2012 programme that took field hours and vanished; he promised his monteurs "nooit meer". | "En wie bouwt dat na?" | Office words (stakeholder, KPI) without a sneer. |
 | `henk` | Henk Verbeek (64), senior monteur | Warm, gruff, strongest Brabants: "jonguh", "da's nie zo moeilijk", "ik laat 't oe wel zien", "houdoe". Stories with a year in them. | Anecdotes: "In '87 lag hier een kabel van de gemeente die niemand getekend had." | That forty years becomes a video nobody watches; that Ahmed goes out alone at night too soon. | "Laat het me voordoen." | Self-pity. |
 | `ahmed` | Ahmed Bouzid (24), monteur | Grew up in Nova; mbo Elektrotechniek. Short sentences, "gewoon", "toch", "man", "echt wel". Says "Henk", never "meneer". | Self-mocking: "Mijn navigatie kent Nova-Oud beter dan ik." | Not good enough; ashamed he still calls a retiree at night. | "Gaat wel." | Long speeches, unless he is very open. |
-| `esra` | Esra Yilmaz (41), TL Klantcontactcentrum | From a Rotterdam call centre: direct, "kijk", "serieus?", "gewoon eerlijk", "mijn mensen". | Imitates the hold music and the callers. | Two agents at home with stress; she feels she should have seen it. | "Mijn mensen zijn geen stootkussen." | That her agents are slow. |
+| `esra` | Esra Yilmaz (41), TL Klantcontactcentrum | From a Rotterdam call centre: direct, "kijk", "serieus?", "gewoon eerlijk", "mijn mensen". | Imitates the hold music and the callers. | One of her four agents is home with stress, another cried in her car; she feels she should have seen it. | "Mijn mensen zijn geen stootkussen." | That her agents are slow. |
 | `petra` | Petra Vos (58), Meetdata & registratie | Precise, dry, a little prickly; proud of her system: "Dat staat in mijn map." Light Brabants "da's". | Calls the registration system "de Molen" ("die maalt, maar langzaam"). | She is alone: a sick week stops everything, and the monthly batch hides that. | "Alles klopt. Tot op de laatste EAN." | That she is behind. |
 | `frank` | Frank Hulshof (56), manager Aansluitingen & Netverzwaring | Formal management Dutch: "jaarplan", "verantwoorden", "de directie", "naar de ACM", "daar moet ik op kunnen sturen". | Rare and dry: "Ik word betaald om nee te zeggen. Ja zeggen kan iedereen." | Losing the region's reinforcement budget in the autumn round; the ACM figures. | "Dat moet ik kunnen uitleggen." | Anything personal, until "Denkt mee". |
 | `el_amrani` | mevrouw Fatima El Amrani (52), klant, Nova-Oost | Polite, organised, standard Dutch, dates from her notebook. Firm, never rude. | Dry: "Ik ken uw wachtmuziek inmiddels uit mijn hoofd." | Her mother lives with them; the gas boiler is gone; winter is coming. | "Ik heb het opgeschreven." | Swear words; threats she will not carry out. |
@@ -101,7 +101,7 @@ One rule for all: **people are never the cause.** A person may hold a wrong beli
 | `thomas` | Thomas Visser (47), accountmanager grootzakelijk | Smooth, relational, stories about "mijn klanten". | Name-drops the lunch at the business park. | Being the man who takes capacity away from people he has known for twenty years. | "Ik ken die mensen." | A customer's name in a joke. |
 | `ilse` † | Ilse de Graaf (44), Bakkerij De Graaf | Brabants, warm and fed up: "ik sta hier om vier uur". | "Mijn ovens zijn ouder dan jouw stagiair." | If an oven dies, she buys a new **gas** oven, because that works now, and stays on gas for twenty years. | "Twee jaar." | That she wants special treatment. |
 
-† New to the cast (Rob Verhagen; Ilse de Graaf is in the audit's §5.3 already). Kim, Bilal and Saskia (Esra's agents), Rachid Ouali (Intake) and Ricardo (a monteur) are named in lines but are not dialog targets.
+† New to the cast (Rob Verhagen; Ilse de Graaf is in the audit's §5.3 already). Kim and Saskia (two of Esra's four agents), Rachid Ouali (Intake) and Ricardo (a monteur) are named in lines but are not dialog targets.
 
 ---
 ## 3. Audit of the two sample dialogs
@@ -146,6 +146,7 @@ The 7 criteria of CLAUDE.md §2 (1–5, the audit's rubric), judged on the spec'
 | F10 | **Ahmed's concern is a speech.** | Ahmed | Broken into short sentences with a pause; the doubt as a question he does not finish. |
 | F11 | **Trust pips move on every outcome mid-talk.** | meter | Pips change during a talk only on `pressure`, `confront` and `repair` (so their cost is *felt*); the rest at the end, on the summary card (Q1). |
 | F12 | **The player's closing line in Ahmed B7 is a promise the game cannot keep** ("Ik loop vaker even langs"). | Ahmed B7 | "Fijn dat je het vertelde." A promise the system does not track is a small lie. |
+| F13 | **The cast must match the simulated teams.** The spec's Esra has "two agents at home with stress", but the contact centre has four agents in `content/value_streams.yaml`; half a team on sick leave is not the story the board shows. Likewise Revisie & GIS has two people. | cast | Lines name the real sizes: Esra has one agent at home and one who cried in her car; Mieke works "met z'n tweeën". |
 
 ### 3.3 `joost_output_kpi`, rewritten (Act II, `fix_silo_kpis`)
 
@@ -646,7 +647,7 @@ dialogs:
     kind: persuade
     mission: fix_status_callers
     owns: status_callers
-    mood: moe                              # two of her agents are home with stress
+    mood: moe                              # one of her four agents is home with stress
     patience: 9                            # defender 10 - 2 (moe) = 8; +1 authored: she wants this talk
     # start: defender 40 - 10 + 0 + 0 + 0 = 30, Op z'n hoede
     opening: "Kijk, ik geef je tien minuten. Dan moet ik de wachtrij weer in."
@@ -661,9 +662,9 @@ dialogs:
         at: 70
         via: [reflect, empathy, silence]
         lead_in: {text: "En eerlijk gezegd…", tags: [hesitation]}
-        text: "Twee van mijn mensen zitten thuis. Stress. Eentje zat vorige week te huilen in haar auto op de parkeerplaats. Ik had het moeten zien. Ik ga er niet nog een kwijtraken."
+        text: "Saskia zit thuis. Stress. En Kim zat vorige week te huilen in haar auto op de parkeerplaats. Op een team van vier. Ik had het moeten zien. Ik ga er niet nog een kwijtraken."
         tags: [admission]
-        unlocks: {facts: [heard:esra_people], proposals: [kim_bilal_call_back]}
+        unlocks: {facts: [heard:esra_people], proposals: [one_agent_calls_back]}
     reframe: "Vanuit de beller? Die heeft een warmtepomp aan de muur en geen stroom. Ik zou ook bellen. Vier keer."
     warning: "Serieus? Ik heb hier geen tijd voor."
     data: ["status_callers:0", "status_callers:2"]
@@ -678,9 +679,9 @@ dialogs:
       - {id: status_messages, addresses: [interest], label: "Klanten krijgen vanzelf bericht",
          say: "Klanten krijgen bij elke stap vanzelf een bericht waar hun aansluiting is.",
          reply: "Dan bellen ze niet. … Als het bericht klopt. Werkvoorbereiding weet zelf niet eens wanneer iets klaar is."}
-      - {id: kim_bilal_call_back, hidden: true, addresses: [concern], label: "Twee agents bellen de wachtenden zelf",
-         say: "Twee van je mensen gaan een week uit de wachtrij en bellen de klanten die al drie weken wachten. Vóórdat die ons bellen.",
-         reply: "Kim en Bilal. Die kennen de dossiers. En die zitten een week niet in de vuurlinie."}
+      - {id: one_agent_calls_back, hidden: true, addresses: [concern], label: "Eén agent belt de wachtenden zelf",
+         say: "Eén van je mensen gaat een week uit de wachtrij en belt de klanten die al drie weken wachten. Vóórdat die ons bellen.",
+         reply: "Kim. Die kent de dossiers. En die zit dan een week niet in de vuurlinie."}
     experiments:
       - {id: listen_and_tally, addresses: [interest], label: "Een middag meeluisteren en turven",
          say: "Eén middag samen meeluisteren en turven waarom mensen bellen.",
@@ -688,7 +689,7 @@ dialogs:
       - {id: rotate_off_the_queue, addresses: [concern], label: "Om de beurt een uur uit de wachtrij",
          say: "Elke agent een uur per dag uit de wachtrij om wachtende klanten zelf te bellen. Om de beurt.",
          reply: "Om de beurt een uur niet in de vuurlinie. Dat merken ze. Dat merk ik."}
-    co_proposal: {id: kim_bilal_call_back, text: "Laat Kim en Bilal de wachtenden terugbellen. Een week. Die kennen de dossiers."}
+    co_proposal: {id: one_agent_calls_back, text: "Laat Kim de wachtenden terugbellen. Een week. Die kent de dossiers, en zij heeft het het hardst nodig."}
     outcomes:
       commitment: "Deal. En als het werkt, wil ik niet horen dat ik dus geen agents nodig had. Ik had ze nodig. Alleen niet hiervoor."
       partial: "Ik doe het. Maar mijn aanvraag voor vier agents blijft liggen tot ik de wachtrij groen zie."
@@ -696,8 +697,9 @@ dialogs:
       compliance: "Prima. Komt erbij."
       ruined: "Mijn mensen zijn geen stootkussen. En ik ook niet."
     # route: mood +8 38 > open question +6 44 > paraphrase +7 51 (heard, interest) > reflect +10 61 > inquiry +8 69
-    #        > empathy +6 75 (lead-in, cue) > silence +12 > 79 capped (concern) > propose kim_bilal_call_back +8 87 > ask: commitment (9 moves)
-    # other routes: show_data at 61 (+10 lands) instead of inquiry; reflect at the lead-in; the tally experiment, then a retry tomorrow.
+    #        > empathy +6 75 (lead-in, cue) > silence +12 > 79 capped (concern) > propose one_agent_calls_back +8 87 > ask: commitment (9 moves)
+    # other routes: show_data at 61 (+10 lands) instead of inquiry; reflect at the lead-in; rotate_off_the_queue.
+    # Team size: the contact-centre pool has 4 agents (content/value_streams.yaml); the lines say so, so the story never contradicts the board.
     # trap: four_agents is her position and still wins no commitment: it does not touch what she fears.
 
   - id: el_amrani_fourth_call
@@ -1097,7 +1099,7 @@ dialogs:
     patience: 10
     # start: craftsman 40 - 5 + 0 + 0 + 0 = 35, Op z'n hoede
     opening: "Als je komt voor de kabel van Gert: die zat in de doos. Ergens tussen juni en nu."
-    position: {text: "We tekenen ze over zo snel als we kunnen. Tweehonderdveertig schetsen. Met z'n drieën.", tags: [claim]}
+    position: {text: "We tekenen ze over zo snel als we kunnen. Tweehonderdveertig schetsen. Met z'n tweeën.", tags: [claim]}
     layers:
       - id: interest
         at: 55
@@ -1768,7 +1770,7 @@ Each has a recommended option (**bold**).
 6. **The ruined line.** **(a) In character, naming how it felt ("Je kwam binnen met je antwoord al klaar.").** (b) Neutral ("Joost wil nu niet praten."). *(a) teaches without naming a move, and a real person would say it.*
 7. **Customers by phone.** **(a) Mrs El Amrani and Ilse are phone calls the player takes over at the contact centre or the congestion desk.** (b) They come to a counter on campus. (c) The player visits them in town (Phase C world). *(a) is how a grid operator meets them, and it fits the existing places. (c) can come later.*
 8. **The El Amrani heat-pump check.** **(a) Keep the proposal "Kan de warmtepomp nu al draaien?", a real alternative grid operators advise.** (b) Drop it; the dialog stays about the date. *It addresses her real concern (her mother's winter) better than any date, and it is true to the sector in 2026.*
-9. **New cast.** **(a) Add Rob Verhagen (Inkoop), and name Kim, Bilal, Saskia (Esra's agents), Rachid Ouali (Intake) and Ricardo (a monteur) in lines only.** (b) Keep Inkoop a generic voice. *A face for the transformer mission's resistance makes the L9 lesson a person's fear, not a rule.*
+9. **New cast.** **(a) Add Rob Verhagen (Inkoop), and name Kim and Saskia (Esra's agents), Rachid Ouali (Intake) and Ricardo (a monteur) in lines only.** (b) Keep Inkoop a generic voice. *A face for the transformer mission's resistance makes the L9 lesson a person's fear, not a rule.*
 10. **The Frank route.** **(a) Replace the spec's route "Ruud joins the talk" (a fact no dialog can set) with "both team leads at partial, and reputation ≥ 40".** (b) Make Ruud a dialog target for this one scene. *(a) keeps Ruud a coach only and makes "bring your boss along" a team effort.*
 11. **Promises the game checks.** **(a) A `promise` field on a proposal (the El Amrani date), checked against the simulation, with memory −15 and reputation −1 when it breaks.** (b) No tracked promises; the date line is flavour. *(a) makes "an honest date versus a comforting lie" a real, felt consequence, and it needs the followed order the audit already asks for.*
 
