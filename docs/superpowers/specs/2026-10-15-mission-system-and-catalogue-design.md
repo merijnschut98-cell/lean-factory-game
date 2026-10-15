@@ -6,8 +6,8 @@
 
 ## 0. Summary
 
-- **Story:** six acts after the training week. You start as the new CI lead in Nova's connections office. You become the CI lead of the whole region (Nova, rural Lindeveld, port town Havenzij), then work on strategy (NTA 8120 audit, investment plan, hoshin). The story ends when you coach a new CI lead yourself. The IT value streams are their own act, open from tier 3 on.
-- **Catalogue:** 93 missions: tier 1 has 34 (5 training, the 22 existing missions with their ids kept, 7 new); tier 2 has 16; tier 3 has 15; tier 4 has 15; IT has 13. They bring 31 new problems (8 / 8 / 6 / 9).
+- **Story:** six acts after the training week. You start as the new CI lead in Nova's connections office. You become the CI lead of the whole region (Nova, rural Lindeveld, port town Havenzij), then work on strategy (NTA 8120 audit, investment plan, hoshin). A far-future finale, where you coach a new CI lead yourself, is kept as a placeholder only. The IT value streams are their own act, open from tier 3 on, running in parallel.
+- **Catalogue:** 94 authored missions: tier 1 has 34 (5 training, the 22 existing missions with their ids kept, 7 new); tier 2 has 16; tier 3 has 16; tier 4 has 15; IT has 13. Repair side quests come on top: they are generated from a template when the player made a poor fix. The missions bring 31 new problems (8 / 8 / 6 / 9).
 - **Five forks** (bottleneck vs non-bottleneck), one per act from Act I on, except Act II (it teaches linked causes instead). **Ten deadline missions.** Each non-recovery one closes a named door and leaves another way to solve the problem. Three are **milestones** (day 100, the ACM visit, the NTA 8120 audit): judged on their date, they take no slot.
 - **Top system changes:**
   1. Eleven new goal types: `talk_to`, `measure`, `sustain`, `routine`, `map_stream`, `kaizen_event`, `coach`, `kpi_review`, `okr`, `audit`, `strategy`.
@@ -15,6 +15,10 @@
   3. Recurring leader-standard-work side quests that slow decay.
   4. People and expert conversations (`content/people.yaml`), plus a sector side quest arc in every tier.
   5. Story and pacing as data: acts, chapters, beats, calendar openings, gates on maturity, reputation and trust, fork metadata, richer missed-deadline consequences. Belts rescaled so the campaign does not hit master black in tier 1.
+  6. **Path dependence** (Merijn, 2026-10-15), a first-class mechanism (§2.15):
+     - *facts* record what the player did, skipped or chose;
+     - strategic options and missions require facts;
+     - a poor past fix spawns a *repair* side quest, which reopens options.
 - **One bug-like gap to fix first:** a problem can stay open with no mission holding it (§1.2, gap 1).
 
 ---
@@ -72,7 +76,7 @@ The existing five stay. New ones:
 | `kpi_review` | `reviews` (n) | n quarterly KPI-board reviews held (`Region.kpi_review`) | KPIs, Goodhart | exists (KpiBoard); count reviews |
 | `okr` | `objective` (Dutch), `key_results: [{stream, kpi, op, target}]`, `quarter_days` (91) | at the quarter's end, at least 0.7 of the key results met (the usual OKR convention) | OKRs | quarter clock; uses `measure` |
 | `audit` | `standardised` (n), `problems` | on the audit day: at least n fixes still holding above 0.8 and the named problems resolved | NTA 8120, sustaining | reads hold (§2.8) |
-| `strategy` | `options: [{id, effects, cost}]`, `horizon_days` | the player chooses. Both futures are forecast on network copies (the `KpiBoard.forecast` pattern), and the chosen one is applied and paid. No option is marked correct; the forecast judges. | systems thinking, capacity planning | reuse `NetworkState.copy` |
+| `strategy` | `options: [{id, name, effects, cost, needs, preparation}]`, `horizon_days` | the player chooses among the options **unlocked now** (§2.15). Each unlocked option's future is forecast on a network copy (the `KpiBoard.forecast` pattern), and the chosen one is applied and paid. No option is marked correct; the forecast judges. | systems thinking, capacity planning, path dependence | reuse `NetworkState.copy`; facts (§2.15) |
 
 `solve` gets an optional `standardise: true`: the Act must standardise. `walk`, `investigate`, `observe` and `check` stay as they are.
 
@@ -106,7 +110,7 @@ Fictional names. Each person has a role, a place and topics. Team leads are the 
 | `ingrid` | Ingrid Bos | assetmanager (expert: NTA 8120, asset health) | Directie & Obeya | Act V (sector) |
 | `noor` | Noor Hendriks | product owner veldapp | IT | Act VI |
 | `bas` | Bas Kuipers | release train engineer (expert) | IT | Act VI (sector) |
-| `lotte` | Lotte Smit | the new CI lead of Lindeveld | Lindeveld | Act V (finale, coached) |
+| `lotte` | Lotte Smit | the new CI lead of Lindeveld | Lindeveld | far-future finale (placeholder) |
 
 ### 2.4 Unlock gates
 
@@ -262,7 +266,7 @@ A mission may carry `event: {effects, at: deadline | accepted, days}`. The effec
 | yellow | 2,000 | Act I, after the fork |
 | green | 6,000 | Act II, before `fix_grid_study_queue` (which needs green) |
 | black | 30,000 | middle of Act III |
-| master black | 110,000 | Act V; the finale needs it |
+| master black | 110,000 | Act V |
 
 Mission XP per tier: tier 1 as today; tier 2 mains 1,600–2,400; tier 3 2,600–3,400; tier 4 3,600–5,000; IT 2,600–3,400. Side missions get about 40% of a main.
 
@@ -270,7 +274,58 @@ Mission XP per tier: tier 1 as today; tier 2 mains 1,600–2,400; tier 3 2,600�
 
 Tiers 1–4 play in one region, Zuidmark, with one network. Tier 3 adds two *areas* as content in that network: new pools and streams for Lindeveld (rural: long drives, solar fields, farms) and Havenzij (a port town: crowded streets, an industrial canal zone with congestion). This needs no multi-region code. Separate regions in other provinces stay a later Phase F item. IT problems carry `track: it` and have their own maturity, so the grid's maturity does not depend on IT play.
 
-### 2.15 Schema sketch
+### 2.15 Path dependence: facts, prerequisites and repair quests (Merijn, 2026-10-15)
+
+Merijn's rule: what you can decide depends on what you did before.
+- A decision that needs preparations you didn't make can't be made.
+- You can pivot, but to get back on the "right" path you must first do certain other things.
+- Example: a poor countermeasure in a main mission later brings a side quest to fix it. Doing that side quest opens different strategic options than skipping it.
+
+**Facts.** The region keeps a set of facts, saved with the missions. Most are derived automatically from play, so content can't forget to set them:
+
+| Fact | Set when |
+|---|---|
+| `done:<mission>` / `failed:<mission>` | the mission completes / its deadline passes |
+| `skipped:<mission>` | the mission was still open when a `skip_when` event happened: its act ended, or a later mission named it in `closes_on_accept` |
+| `chose:<problem>:<cm>` | the Act closed the problem with that countermeasure (kept until it is replaced) |
+| `standardised:<problem>` | the Act standardised it |
+| `poor_fix:<problem>` | the problem was resolved with a countermeasure whose fit is at least 0.2 below the problem's best, or with a wrong root cause in the A3 (estimate thresholds) |
+| `repaired:<problem>` | its repair quest completed (removes `poor_fix`) |
+| `fork_first:<group>:<mission>` | that fork branch was completed first |
+| `flag:<name>` | content sets it explicitly: `sets_flags` on a mission's completion or failure, or on a strategy option once chosen |
+
+Maturity and reputation are read live (`maturity>=3`, `reputation>=60`).
+
+**Needs.** One expression, used in three places:
+- strategic options: `needs`;
+- missions: `requires.facts`;
+- countermeasures: `needs` (e.g. `acm_pilot_time_bound` needs `none: [failed:acm_visit]`, which replaces an ad-hoc `fail_closes`).
+
+```yaml
+needs: {all: [done:fix_training_capacity, maturity>=3], any: [chose:transformer_wait:framework_contracts, repaired:transformer_wait], none: [failed:nta8120_audit]}
+```
+
+**Locked options are visible, not explained.** A strategic option whose needs are not met shows as "niet voorbereid", with its authored `preparation` hint. The hint is a Dutch line that points at a place or team, never at a mission or the answer (e.g. "Hiervoor moet de bestelling van trafo's anders geregeld zijn."). The player works out the route; the coach asks about it only in the main mission's reflect stage.
+
+**Pivoting is always possible.** The validator checks every option and every fact-gated mission:
+- each `all`/`any` branch has at least one fact that is still obtainable after any failure or skip. Something like `done:` of a recurring mission, `repaired:` of a problem whose repair quest exists, or a flag set by a mission that can't be closed;
+- every `strategy` goal has at least one option with no needs (the baseline), so a decision can always be made.
+
+A door can close one route (a missed deadline), but another route back always remains. That is "setbacks, never game over" applied to strategy.
+
+**Repair side quests.** One template in `missions.yaml` (`repair_template`), instantiated per problem as `repair_<problem>`. It opens `repair_after_days` (42, an estimate) after `poor_fix:<problem>` is set, and only once the weak fix shows in the problem's KPI (worse than the best countermeasure's forecast by 5% or more). So the player meets it as a measurable symptom, not as a verdict.
+- **Text:** a generic briefing/debrief with the problem's name. Key problems may carry an authored override (`repair: {briefing, debrief}` on the problem).
+- **Goal (`rework_fix {problem}`):** a short A3 (cause, countermeasure, prediction) that swaps the running countermeasure for a better one. The Check (14 days) must show the gain. The problem's own effects do not come back while you rework.
+- **Result:** `repaired:<problem>` and `chose:<problem>:<new cm>`, small XP, reputation +2.
+- **Not taken on:** the quest stays available; no deadline unless authored. Skipping it is legitimate, but the options that need the better fix stay locked.
+- It is a side quest, so it takes a side slot and the coach does not help: the 1 + 3 rule holds. Its problem is resolved, not open, so "problems only through missions" holds too.
+
+**Where it shows in the catalogue:**
+- Repair quests from tier 1 on.
+- Fact-gated countermeasures (the ACM pilot, Henk's buddy system).
+- Two strategy decisions: `t3_crew_strategy` (Act IV, a first taste) and `t4_investment_plan` (Act V).
+
+### 2.16 Schema sketch
 
 ```yaml
   - id: fix_on_call_far
@@ -313,8 +368,8 @@ Tiers 1–4 play in one region, Zuidmark, with one network. Tier 3 adds two *are
 | I | De eerste honderd dagen | 1 | Nova: connections, contact centre, field | The team leads ask for more people; you show that the work was made too heavy. The MT reviews you on day 100. | waste, flow, bottleneck shifts, quality at the source, failure demand | 16 |
 | II | Wat onder de grond zit | 1 | Revisie & GIS, grid studies, congestion | The quiet backlogs (revision, studies, transformers, contracts) turn out to hold up the grid. Ending: the departments fight over KPIs, and the KPI board is born. | linked causes, external waits in parallel, inventory, KPI alignment | 13 |
 | III | Zichtbaar maken | 2 | campus-wide: control room, field, regulation | Ruud: "Problems should not be found by you; the teams should see them." Daily boards, escalation, a storm, a heatwave, the ACM's visit, the first OKR. | visual management, daily management, andon, tiered escalation, OKRs, coaching kata | 16 |
-| IV | Flow door de regio | 3 | Zuidmark: Nova, Lindeveld, Havenzij | You become CI lead for the whole region: long drives, crowded streets, nitrogen, the technician shortage, the prioritisation framework. | VSM, kaizen events, WIP limits/CONWIP, heijunka, flow across areas | 15 |
-| V | Het systeem | 4 | the MT and the asset side | Strategy: one direction (hoshin), the NTA 8120 audit, risk-based maintenance, losses, the flex market, the investment plan. Finale: you coach the new CI lead of Lindeveld. | hoshin kanri, risk-based maintenance, systems thinking, coaching kata as coach | 15 |
+| IV | Flow door de regio | 3 | Zuidmark: Nova, Lindeveld, Havenzij | You become CI lead for the whole region: long drives, crowded streets, nitrogen, the technician shortage, the prioritisation framework, and a first strategic choice that depends on what you prepared. | VSM, kaizen events, WIP limits/CONWIP, heijunka, flow across areas | 16 |
+| V | Het systeem | 4 | the MT and the asset side | Strategy: one direction (hoshin), the NTA 8120 audit, risk-based maintenance, losses, the flex market, the investment plan, shaped by every earlier choice. A far-future finale (you coach a new CI lead) is a placeholder. | hoshin kanri, risk-based maintenance, systems thinking, path dependence | 15 |
 | VI | Het digitale net | IT (tier 3+) | IT on campus: the field app | The field app the monteurs bypass; releases twice a year; test environments; ARTs and PI planning; DORA. | value streams in IT, flow of work, SAFe, DevOps, DORA | 13 |
 
 Act VI opens after `t3_map_region` and runs in parallel with Acts IV–V. It is its own main chain, so the player chooses which main mission to take on next. That is prioritising, though not a bottleneck fork.
@@ -459,8 +514,9 @@ Gates: `t2_first_okr`, maturity 3, belt black, rep ≥ 50. Lindeveld and Havenzi
 | `t3_map_region` | Eén regio, drie gebieden | M | t2_first_okr, M3, B, rep ≥ 50 | map_stream connections (queue_count) across the areas | — | — | 2,600 · €20k · unlocks vsm_view, Lindeveld, Havenzij, it_campus | value_stream_mapping (new) |
 | `fix_long_drives` | Een uur rijden per klus | M | t3_map_region | solve | long_drives | — | 2,800 · €25k | waste_transport |
 | `fix_training_capacity` | Het opleidingscentrum zit vol | M | fix_long_drives | solve | training_capacity | 63 d (the September intake) → closes `apprentice_cohort_september`; train-the-trainer remains | 3,000 · €25k | monteurstekort, respect_for_people |
-| `fix_underground_crowding` | Geen plek onder de stoep | M | fix_training_capacity (done **or** failed) | solve | underground_crowding | **B** (t3_havenzij) | 3,000 · €25k | theory_of_constraints |
-| `fix_uneven_release` | De maandpiek | M | same | solve | uneven_release | **N** (t3_havenzij) | 2,600 · €20k | heijunka |
+| `t3_crew_strategy` *(new)* | Waar zetten we de monteurs in? | M | fix_training_capacity (done **or** failed) | strategy, forecast 91 d. Options: Lindeveld satellite crew (needs `chose:long_drives:satellite_depot` **or** `repaired:long_drives`); daytime outage reserve (needs `chose:planning_reshuffle:daytime_outage_crew` **or** `standardised:planning_reshuffle`); a Havenzij street-works crew (needs `done:fix_training_capacity`); baseline: spread evenly | — | sets `flag:crew_<option>`; read by `t4_investment_plan` | 2,800 · €20k | path dependence, capacity_planning |
+| `fix_underground_crowding` | Geen plek onder de stoep | M | t3_crew_strategy | solve | underground_crowding | **B** (t3_havenzij) | 3,000 · €25k | theory_of_constraints |
+| `fix_uneven_release` | De maandpiek | M | t3_crew_strategy | solve | uneven_release | **N** (t3_havenzij) | 2,600 · €20k | heijunka |
 | `t3_kaizen_week` | Kaizenweek | M | any_of the fork | kaizen_event at the current constraint place, 5 d | — | — | 3,000 · €25k · unlocks kaizen_event | kaizen_event (new), bottleneck_focus |
 | `fix_priority_first_come` | Wie het eerst komt | M | t3_kaizen_week | solve | priority_first_come | — | 3,200 · €25k | customer_value, maatschappelijk_prioriteren (new) |
 | `fix_nitrogen_permit` | Stikstof op het tracé | M | fix_priority_first_come | solve | nitrogen_permit | 120 d (the canal-zone factory's opening) → closes `route_via_industrial_zone`; rep −10 | 3,400 · €30k | stikstof (new), waste_waiting |
@@ -498,8 +554,8 @@ Gates: `t3_stop_starting`, maturity 4, belt black, rep ≥ 65.
 | `fix_ls_grid_blind` | Blind in het laagspanningsnet | M | fix_maintenance_calendar | solve | ls_grid_blind | **B** (t4_detect) | 4,400 · €40k | jidoka, lead_time |
 | `fix_grid_losses_theft` | Stroom die verdwijnt | M | same | solve | grid_losses_theft | **N** (t4_detect): saves money, no flow | 3,800 · €45k | systems_thinking, customer_value |
 | `fix_flex_market_unused` | Een markt zonder bieders | M | any_of the fork | solve | flex_market_unused | — | 4,600 · €40k | gopacs (new), netcongestie |
-| `t4_investment_plan` | Het investeringsplan | M | fix_flex_market_unused | strategy: people (trainees) vs materials (strategic stock) vs grid (reinforcement), forecast 182 d | — | — | 4,800 · €50k | capacity_planning, systems_thinking |
-| `t4_new_ci_lead` | De nieuwe CI-lead | M (finale) | t4_investment_plan, MB | coach lotte, 5 sessions, through one full improvement-kata cycle in Lindeveld | — | — | 5,000 · ending | coaching_kata, toyota_kata |
+| `t4_investment_plan` | Het investeringsplan | M | fix_flex_market_unused | strategy, forecast 182 d, among the unlocked options (see below) | — | — | 4,800 · €50k | capacity_planning, systems_thinking, path dependence |
+| `t4_new_ci_lead` | De nieuwe CI-lead | M (far-future placeholder) | t4_investment_plan, MB | *not designed yet*: the idea is to coach Lotte through one improvement-kata cycle | — | — | — | coaching_kata |
 | `fix_gas_phaseout` | Onderhoud aan een verdwijnend net | S | t4_hoshin | solve | gas_phaseout | — | 1,500 · €12k | energietransitie, transitievisie_warmte (new) |
 | `talk_asset_manager` | Hoe gezond is een kabel? | S | t4_hoshin | talk_to ingrid, 3 topics | — | — | 800 | nta_8120, asset_health_index |
 | `sector_grid_2035` | Het net van 2035 | S | talk_asset_manager | talk_to femke + ingrid, 2 topics each | — | — | 800 | energietransitie, ii3050 (new) |
@@ -507,7 +563,19 @@ Gates: `t3_stop_starting`, maturity 4, belt black, rep ≥ 65.
 | `lsw_catchball` | Catchball | R | t4_hoshin | routine dagstart at every board department, every 91 d | — | — | 600 first time | hoshin_kanri |
 | `sustain_region` | Twaalf weken stabiel | S | nta8120_audit | sustain on_time ≥ 0.9 in connections, outages and meters, 12 weeks | — | — | 1,800 · rep 5 | sustain, leading_lagging |
 
-The finale's ending: Ruud moves on to the national level, and you are the one who asks the questions now.
+**`t4_investment_plan`'s options** (each `needs`; the `preparation` hint is in brackets):
+
+| Option | Needs | Locked hint |
+|---|---|---|
+| Opleiden: 12 aankomend monteurs | `any: [chose:training_capacity:train_the_trainer, chose:training_capacity:apprentice_cohort_september, repaired:training_capacity]` | "Het opleidingscentrum moet dit aankunnen." |
+| Strategische trafovoorraad | `any: [chose:transformer_wait:framework_contracts, chose:transformer_wait:strategic_transformer_stock, repaired:transformer_wait]` | "Hiervoor moet de bestelling van trafo's anders geregeld zijn." |
+| Standaardstations in serie | `all: [standardised:custom_design, maturity>=4]` | "Werkvoorbereiding moet standaard kunnen werken, en dat volhouden." |
+| Flex eerst, koper later | `all: [done:fix_flex_market_unused, done:fix_non_firm_unused]` | "Klanten moeten flex al kennen." |
+| Sensoren in het LS-net | `any: [done:t4_sensor_pilot, chose:ls_grid_blind:meter_power_failure_log]` | "We weten nog te weinig van wat het LS-net doet." |
+| Meer monteurs in Lindeveld | `any: [flag:crew_lindeveld, repaired:long_drives]` | "In Lindeveld moet de basis eerst kloppen." |
+| Klassiek verzwaren (baseline) | — | always open; the most expensive per unit of capacity (estimate) |
+
+**Finale:** a far-future placeholder (Merijn, 2026-10-15). It stays in the catalogue as an id and an idea, without goals, texts or rewards, until the rest is built.
 
 ### 3.8 Act VI — Het digitale net (IT value streams, Phase G)
 
@@ -555,13 +623,15 @@ Problems carry `track: it` and `content/problems_it.yaml`, with their own maturi
 |---|---|---|---|---|---|---|---|---|
 | Tier 1 (Acts 0–II) | 13 | 1 | 13 | 2 | 5 | — | 34 | 0 (uses all 18) |
 | Tier 2 (Act III) | 7 | 1 | 6 | 1 | — | 1 | 16 | 8 |
-| Tier 3 (Act IV) | 9 | — | 5 | 1 | — | — | 15 | 8 |
+| Tier 3 (Act IV) | 10 | — | 5 | 1 | — | — | 16 | 8 |
 | Tier 4 (Act V) | 7 | 1 | 5 | 1 | — | 1 | 15 | 6 |
 | IT (Act VI) | 9 | — | 3 | 1 | — | — | 13 | 9 |
-| **All** | **45** | **3** | **32** | **6** | **5** | **2** | **93** | **31** |
+| **All** | **46** | **3** | **32** | **6** | **5** | **2** | **94** | **31** |
+
+On top of these: generated repair quests (`repair_<problem>`, 0 to n per playthrough, one per poor fix).
 
 **New concepts** for `concepts.yaml`, each with a source or marked as an estimate:
-- **Lean and management:** leader_standard_work, daily_management, pareto, tiered_escalation, andon, value_stream_mapping, kaizen_event, conwip, littles_law, hoshin_kanri, x_matrix, risk_based_maintenance, asset_health_index, sustain.
+- **Lean and management:** leader_standard_work, daily_management, pareto, tiered_escalation, andon, value_stream_mapping, kaizen_event, conwip, littles_law, hoshin_kanri, x_matrix, risk_based_maintenance, asset_health_index, sustain, path_dependence.
 - **Sector:** gotork, non_firm, maatschappelijk_prioriteren, stikstof, cable_pooling, energiehub, gopacs, energiewet *(verify)*, compensatie *(verify)*, ii3050, transitievisie_warmte.
 - **IT:** value_stream_identification, ci_cd, test_automation, art, team_topologies, pi_planning, dora_metrics, blameless_postmortem, technical_debt.
 
@@ -583,10 +653,12 @@ Tasks are independent unless a dependency is named. **Code** tasks touch `game/s
 | C5 | **People and conversations:** `people.yaml` loader + validator, `Conversation` (topics, open/closed/blame, sector clues), `talk_to` goal, `GameSession.talk(person, question)` | C1 | finishing topics completes the goal; a blame costs trust; a sector clue is A3 evidence only for an active problem; a clue never activates a problem |
 | C6 | **Routines and recurring** (`routine` goal with cadence windows; `recurring` re-availability) | C1 | visits outside the window do not count; a recurring mission comes back after `every_days`; XP only the first time |
 | C7 | **Coach goal** (the Kata script with an NPC, the NPC's experiment as a small effect) | C5 | five questions in order complete a session; out of order teaches but does not count; trust gate respected |
-| C8 | **Graded hold, support and stagnation drift** in `Region` (`SimModifiers.scaled`), reopen at h < 0.5, `maturity_dropped` event, `stagnation_alarm` opening | C6 (support from routines) | not standardised: h = 0.5 at `decay_days`; standardised: half-life ≈ 365 d; each support source slows decay; drift doubles decay at 84 d; save/load keeps h; the training fade now shows in the numbers |
+| C8 | *(owned by the sustain agent, see §5.4)* **Graded hold, support and stagnation drift** in `Region` (`SimModifiers.scaled`), reopen at h < 0.5, `maturity_dropped` event, `stagnation_alarm` opening | C6 (support from routines) | not standardised: h = 0.5 at `decay_days`; standardised: half-life ≈ 365 d; each support source slows decay; drift doubles decay at 84 d; save/load keeps h; the training fade now shows in the numbers |
 | C9 | **Reputation** on `Profile`/`Region` with the deltas of §2.7; saved | — | each delta; bounds 0–100; old saves load at 30 |
 | C10 | **Events, milestones and fail consequences:** milestones judged on their date without a slot, `event` effects window (`event:` source), fail_effects (cost per week for N weeks, reputation), fail_opens, fail_closes_missions | C1, C9 | a milestone passes or fails on its day without being accepted and never counts toward 1 + 3; the storm comes whether or not the mission was accepted; the effects clear after `days`; fail_opens makes the recovery available; a closed mission never opens |
-| C11 | **OKR and strategy goals** (quarter clock; counterfactual forecast reused from `KpiBoard.forecast`) | C4 | OKR met at 0.7; strategy applies the chosen option and pays the forecast gain; no option is marked correct |
+| C19 | **Facts and needs** (§2.15): derived facts (done, failed, skipped, chose, standardised, poor_fix, repaired, fork_first) + `sets_flags`; one `needs` evaluator for missions (`requires.facts`), countermeasures and strategic options; saved | C1 | each fact is set by its event and survives save/load; needs all/any/none; a countermeasure with unmet needs is not offered; **validator: every needs branch stays obtainable after any failure or skip, and every strategy goal has a baseline option** |
+| C20 | **Repair quests**: `repair_template` instantiation per problem, opening on `poor_fix` + days + the KPI gap; `rework_fix` goal (swap the countermeasure through a short A3 and Check without the problem's effects returning) | C19, C4 | a poor fix spawns its quest after the delay and only with the KPI gap; a good fix never does; rework sets `repaired:` and `chose:`; 1 + 3 respected; no reward the second time |
+| C11 | **OKR and strategy goals** (quarter clock; counterfactual forecast among the *unlocked* options, reused from `KpiBoard.forecast`; locked options returned with their hint, never with what unlocks them) | C4, C19 | OKR met at 0.7; strategy forecasts only unlocked options, applies the chosen one, sets its flag and pays the forecast gain; no option is marked correct; the same save with and without a repair quest offers different options |
 | C12 | **Kaizen event goal** (team hours blocked, short Check at the step) | C4 | a gain at the constraint completes the goal; at a non-constraint the Check says so |
 | C13 | **Audit goal** (reads hold) | C8 | passes with n fixes ≥ 0.8; fails on the day otherwise |
 | C14 | **Belts rescaled** (`Progression.BELTS`, `BELT_XP` in the validator) | — | the validator's reachability passes; a pacing test: the expert path through tier 1 ends green ≤ belt < black |
@@ -610,26 +682,38 @@ Tasks are independent unless a dependency is named. **Code** tasks touch `game/s
 | K5 | **Tier-2 missions** (Act III) | K4, C2, C4, C7, C10, C11 | validator; fork test; ACM target reachable on the expert path |
 | K6 | **Tier-3 areas** (Lindeveld/Havenzij pools and streams in `value_streams.yaml`) + problems | C17a–c | base stays stable (no team > 85%); content tests per problem |
 | K7 | **Tier-3 missions** (Act IV) | K6, C12 | validator; fork test |
-| K8 | **Tier-4 problems + missions** (Act V) | C8, C11, C13 | content tests; audit reachable on the expert path |
+| K8 | **Tier-4 problems + missions** (Act V; finale only as a placeholder id) | C8, C11, C13, C19 | content tests; audit reachable on the expert path; the investment plan offers ≥ 2 options on the expert path and the baseline on the worst path |
+| K11 | **Repair template + overrides** for key problems; `needs` on fact-gated countermeasures (replacing ad-hoc `fail_closes` where the facts express it) | C19, C20 | validator; a content test that plays a weak fix of `transformer_wait`, does the repair quest, and sees the stock option unlock |
 | K9 | **IT streams + problems + missions** (Act VI) | C17d | content tests; fork test |
 | K10 | **Review doc for Merijn** per tier (problem report numbers, texts, open estimates) | each tier | — |
 
 **Order for Phase 2:**
-1. Wave 1, in parallel: C0, C1, C9, C14, K0.
+1. Wave 1, in parallel: C0, C1, C9, C14, K0, C19 (after C1's schema).
 2. Wave 2, in parallel: C2, C4, C5, C6, C10, C16, K4.
-3. Wave 3: C3, C7, C8, C11, C12, C13, C15, then K1–K3, K5.
+3. Wave 3: C3, C7, C11, C12, C13, C15, C20, then K1–K3, K5, K11. (C8 is the sustain agent's.)
 4. Waves 4 and on: tiers 3–4 and IT behind their simulation tasks.
 
 **PLAN.md** should get a Phase B line pointing to this spec, the C/K tasks, and the gap-1 fix as the first item. This doc does not edit PLAN.md, because other agents are working in it.
 
 ---
 
-## 5. Questions for Merijn
+## 5. Answers (2026-10-15)
 
-1. **Reputation** as a third measure next to trust and budget (§2.7), or fold it into trust?
-2. **Belts** rescaled to 2k / 6k / 30k / 110k XP, so master black arrives in tier 4 (§2.13)?
-3. **Areas, not regions**, for tier 3 (Lindeveld and Havenzij inside Zuidmark's network)?
-4. **Standardised fixes decay too** (half-life about a year without support), as your 2026-10-15 rule suggests?
-5. **The `strategy` goal** (a choice judged by a forecast, no option marked correct): does it respect "no multiple choice"?
-6. **The finale:** you coach a new CI lead while Ruud moves on. Is that the right ending?
-7. **IT in parallel** from tier 3 on, or strictly after tier 4?
+**Merijn's decisions:**
+1. **Reputation** is a separate measure, next to trust and budget (§2.7 as designed).
+2. **Belts are rescaled** to 2k / 6k / 30k / 110k XP (§2.13; C14).
+3. **Areas, not regions:** Lindeveld and Havenzij sit inside Zuidmark's network (§2.14).
+4. **Decay:**
+   - A standardised fix decays slowly, and faster the longer nothing is done, until a "have a look" mission appears (`stagnation_alarm`, §2.8).
+   - A stronger sustaining mechanism means less decay.
+   - **With planned audits or routines there is no decay at all.** This replaces §2.8's support cap of 0.8: an active routine or audit at the fix's place sets support to 1.
+   - The sustain agent builds this (C8 is theirs, not part of the mission work). The mission tasks consume its API: hold, the reopen at the threshold, and the stagnation trigger. C6 (routines) feeds it.
+
+5. **Strategy goal: yes, with path dependence.** The strategic options available depend on what the player has done so far. A decision whose preparations were not made can't be made. You can pivot, but to get back on the "right" path you must first do certain other things (e.g. a poor countermeasure later brings a repair side quest; doing it opens different options than skipping it). Designed as a first-class mechanism in §2.15:
+   - facts and `needs` on options, missions and countermeasures;
+   - repair side quests;
+   - the strategy goal judged by forecast among the unlocked options only.
+
+   Built as C19, C20 and C11, with K11.
+6. **Finale:** a good plan, but far in the future. `t4_new_ci_lead` is a placeholder id with no detailed design.
+7. **IT runs in parallel from tier 3**, after `t3_map_region` (§3.8).
