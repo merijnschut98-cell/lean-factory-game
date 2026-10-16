@@ -359,12 +359,8 @@ func clock_text() -> String:
 ## The date and time of a simulation time, as clock_text (a save list shows
 ## it without loading the game).
 static func clock_at(t: int) -> String:
-	var played := t - SimCalendar.days(WARMUP_DAYS)
-	var date := Time.get_date_dict_from_unix_time(
-		Time.get_unix_time_from_datetime_dict(PLAY_START_DATE) + SimCalendar.day_of(played) * 86400)
-	var minute_of_day := played % SimCalendar.MINUTES_PER_DAY
-	return "%s %d %s, %02d:%02d" % [WEEKDAYS[SimCalendar.weekday(played)], date["day"], MONTHS[date["month"] - 1],
-		int(minute_of_day / 60.0), minute_of_day % 60]
+	var minute_of_day := (t - SimCalendar.days(WARMUP_DAYS)) % SimCalendar.MINUTES_PER_DAY
+	return "%s, %02d:%02d" % [day_text(t), int(minute_of_day / 60.0), minute_of_day % 60]
 
 
 ## The El Amrani dossier: {age_days, touch_hours, step, delivered_days}
@@ -374,14 +370,14 @@ func followed_order() -> Dictionary:
 
 
 ## The calendar date {year, month, day, ...} of a simulation time.
-func date_of(t: int) -> Dictionary:
+static func date_of(t: int) -> Dictionary:
 	var played := t - SimCalendar.days(WARMUP_DAYS)
 	return Time.get_date_dict_from_unix_time(
 		Time.get_unix_time_from_datetime_dict(PLAY_START_DATE) + SimCalendar.day_of(played) * 86400)
 
 
 ## "di 13 okt" for a moment `t` (minutes); "" for an unknown one (t < 0).
-func day_text(t: int) -> String:
+static func day_text(t: int) -> String:
 	if t < 0:
 		return ""
 	var date := date_of(t)

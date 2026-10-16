@@ -1,11 +1,11 @@
 class_name GameSave
 ## A whole game in one save slot (SaveFile): the region with its network,
-## the missions, the discoveries, the El Amrani dossier, the people, the
-## session layer (the snapshot the next terugblik compares with) and the meta
-## a save list shows (SaveSlots). The game saves itself at every dagstart and
-## when it closes, so stopping never loses anything. A save from before the
-## missions were saved has the region only: it loads as a returning player's
-## game on that region, with no terugblik.
+## the missions, the discoveries, the El Amrani dossier, the people, the session layer
+## (the snapshot the next terugblik compares with) and the meta a save list
+## shows (SaveSlots). The game saves itself at every dagstart and when it
+## closes, so stopping never loses anything. A save from before the missions
+## were saved has the region only: it loads as a returning player's game on
+## that region, with no terugblik.
 
 ## The slot the game saves itself to (SaveSlots keeps it apart from the five).
 const AUTOSAVE := "autosave"

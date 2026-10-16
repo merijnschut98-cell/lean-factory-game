@@ -13,12 +13,13 @@ extends SceneTree
 func _initialize() -> void:
 	var args := OS.get_cmdline_user_args()
 	var bank: Dictionary = JsonFile.read_dict("res://data/dialogs.json")["data"]["bank"]
-	var c := Catalog.load_from()
-	var talks := DialogRoutes.content_talks(c) if args.is_empty() or args[0] == "tier1" \
-		else DialogRoutes.draft_talks(JSON.parse_string(FileAccess.get_file_as_string(args[0])), c.dialog_bank)
-	if not args.is_empty() and args[0] == "tier1":
+	var tier1 := not args.is_empty() and args[0] == "tier1"
+	var talks := DialogRoutes.content_talks(Catalog.load_from()) if args.is_empty() or tier1 \
+		else DialogRoutes.draft_talks(JSON.parse_string(FileAccess.get_file_as_string(args[0])), bank)
+	if tier1:
+		var ids := talks.map(func(t: Dialog) -> String: return t.def.id)
 		talks.append_array(DialogRoutes.draft_talks(JsonFile.read_dict("res://tests/data/tier1_scripts.json")["data"],
-			c.dialog_bank, talks.map(func(t: Dialog) -> String: return t.def.id)))
+			bank, ids))
 	var width := int(args[1]) if args.size() > 1 else DialogRoutes.WIDTH
 	var t0 := Time.get_ticks_msec()
 	var best := DialogRoutes.best_route(talks, width)
