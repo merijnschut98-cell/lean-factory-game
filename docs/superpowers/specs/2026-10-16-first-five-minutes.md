@@ -140,6 +140,8 @@ That is all. Ruud does not say why. (Gemba readability, PLAN §5.1: the two tray
 
 ### B4 — Het bord van Ruud: *Hoe werkt het?* (spanning, stroom, weerstand)
 
+> **Superseded in part (2026-10-16):** the figure and Ruud's lines between "Leg maar uit" and the last two lines are replaced by `2026-10-16-explainer-spanning-stroom-weerstand.md` (switches and a haspel instead of a resistance slider); the opening choice and the last two lines stay.
+
 Ruud's room. A whiteboard with three words in his handwriting, half wiped from an earlier meeting. He picks up a marker. Two answers appear as the first choice of the game, both fine:
 
 > **Ruud:** "Weet je waarom dit spel… sorry. Weet je waarom dit vak *spanning* heet? Ik leg het iedere nieuwe collega uit. Het duurt een minuut."
