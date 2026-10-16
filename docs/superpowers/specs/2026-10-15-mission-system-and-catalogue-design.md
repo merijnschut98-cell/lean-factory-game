@@ -492,11 +492,11 @@ Gates: `first_kpi_review`, maturity 2, belt green.
 | `acm_visit` | De ACM komt langs | Ms | fix_contractor_rework | measure connections on_time ≥ 0.85 over 56 d, judged on the visit day | — | 70 d → `fail_opens: acm_improvement_plan`; closes `acm_pilot_time_bound` (an Act IV countermeasure for `non_firm_unused`; others remain); rep −10 | 2,200 · €20k · rep 10 | acm, aansluittermijn |
 | `t2_first_okr` | Een doel voor Zuidmark | M | fix_escalation_hallway | okr: 1 objective, 3 KRs, 91 d, ≥ 0.7 met | — | — | 2,400 · €20k · unlocks okr | okr, kpi |
 | `fix_safety_stock_calendar` | Altijd net op | S | t2_daily_boards | solve | safety_stock_calendar | — | 700 · €6k | kanban, capacity_planning |
-| `fix_lmra_tickbox` | LMRA als vinkje | S | t2_daily_boards | solve | lmra_tickbox | — | 700 · €6k | respect_for_people, standard_work |
+| `fix_lmra_tickbox` | LMRA als vinkje | S | fix_cause_unknown (staggered) | solve | lmra_tickbox | — | 700 · €6k | respect_for_people, standard_work |
 | `prep_storm_week` | Code oranje | S | M2; first occurrence also `flag:ruud_seconded`; `opens_on: {season: storm}` (Drie winters: winter 2's climax, with the scene `storm_night_board`) | observe joint stock + on-call plan (material_check at outages.joint, conversation at outages.locate) before the storm | event: outage demand ×2 for 4 d (estimate) | 21 d; the storm comes anyway → closes `mutual_aid_agreement`; rep −10 | 600 · €5k | jidoka, capacity_planning |
 | `fix_heatwave_overload` | Hitte in het trafohuisje | S | M2; `opens_on: {season: summer}` | solve | heatwave_overload | 42 d → closes `preventive_transformer_swap`; heat event arrives; rep −5 | 800 · €8k | transformator, energietransitie |
-| `talk_regulation` | Wie houdt toezicht? | S | t2_daily_boards | talk_to jeroen, 3 topics | — | — | 400 | acm, energiewet (new, verify), compensatie (new, verify) |
-| `coach_intake_lead` | Sanne leert verbeteren | S | t2_daily_boards, trust intake ≥ 1 | coach sanne, 3 sessions | — | — | 700 · rep 3 · support (intake) | coaching_kata, respect_for_people |
+| `talk_regulation` | Wie houdt toezicht? | S | fix_contractor_rework (staggered) | talk_to jeroen, 3 topics | — | — | 400 | acm, energiewet (new, verify), compensatie (new, verify) |
+| `coach_intake_lead` | Sanne leert verbeteren | S | any_of the outage fork (staggered), trust intake ≥ 1 | coach sanne, 3 sessions | — | — | 700 · rep 3 · support (intake) | coaching_kata, respect_for_people |
 | `lsw_kpi_review` | Kwartaalreview | R | first_kpi_review | kpi_review 1, every 91 d | — | — | 300 first time | kpi, leading_lagging |
 | `acm_improvement_plan` | Een plan voor de ACM | S (recovery) | only through `fail_opens` | measure connections on_time ≥ 0.85 over 56 d | — | 112 d → rep −5 (no further door) | 600 | acm |
 
@@ -535,9 +535,9 @@ Gates: `t2_first_okr`, maturity 3, belt black, rep ≥ 50. Lindeveld and Havenzi
 | `fix_nitrogen_permit` | Stikstof op het tracé | M | fix_priority_first_come | solve | nitrogen_permit | 120 d (the canal-zone factory's opening) → closes `route_via_industrial_zone`; rep −10 | 3,400 · €30k | stikstof (new), waste_waiting |
 | `t3_stop_starting` | Stoppen met starten | M | fix_nitrogen_permit (done **or** failed) | sustain connections wip_age ≤ target and throughput ≥ target, 8 weeks | — | — | 3,400 · €30k | conwip (new), littles_law (new), wip |
 | `fix_non_firm_unused` | Niemand wil flex | S | t3_map_region | solve | non_firm_unused | — | 1,200 · €10k | netcongestie |
-| `fix_solar_feedin_wait` | De zonneweide wacht | S | t3_map_region | solve | solar_feedin_wait | — | 1,200 · €10k | energietransitie, cable_pooling (new) |
+| `fix_solar_feedin_wait` | De zonneweide wacht | S | fix_long_drives (staggered) | solve | solar_feedin_wait | — | 1,200 · €10k | energietransitie, cable_pooling (new) |
 | `sector_energy_hub` | Een energiehub op de Kanaalzone | S | fix_non_firm_unused | talk_to thomas, 3 topics | — | — | 600 | energiehub (new) |
-| `coach_work_prep_lead` | Joost coacht zijn team | S | t3_map_region, trust work_prep ≥ 1 | coach joost, 3 sessions | — | — | 1,000 · support (work_prep) | coaching_kata |
+| `coach_work_prep_lead` | Joost coacht zijn team | S | t3_kaizen_week (staggered), trust work_prep ≥ 1 | coach joost, 3 sessions | — | — | 1,000 · support (work_prep) | coaching_kata |
 | `lsw_layered_audit` | Gelaagde audit | R | t3_map_region | routine audit at 3 standardised places, every 28 d | — | — | 400 first time | standard_work, leader standard work |
 | `sustain_connections` | Houd het vast | S | t3_kaizen_week | sustain connections on_time ≥ 0.9, 8 weeks | — | — | 1,000 · rep 3 | sustain |
 
@@ -571,7 +571,7 @@ Gates: `t3_stop_starting`, maturity 4, belt black, rep ≥ 65.
 | `fix_flex_market_unused` | Een markt zonder bieders | M | any_of the fork | solve | flex_market_unused | — | 4,600 · €40k | gopacs (new), netcongestie |
 | `t4_investment_plan` | Het investeringsplan | M | fix_flex_market_unused | strategy, forecast 182 d, among the unlocked options (see below) | — | — | 4,800 · €50k | capacity_planning, systems_thinking, path dependence |
 | `de_opvolger` *(replaces `t4_new_ci_lead`, 2026-10-16)* | De opvolger | Finale (no slot, cannot fail) | t4_investment_plan, or six weeks before Ruud's last day | sequence: `successor_choice` with Ruud → the chosen successor's talk (≥ partial) → the last scene `first_question` | — | Ruud's last day (`ruud_retirement`) is a dated beat: missing it means Ruud is not at the table | title Coach · Ruud's Kata card · rep 5 | coaching_kata, respect_for_people |
-| `fix_gas_phaseout` | Onderhoud aan een verdwijnend net | S | t4_hoshin | solve | gas_phaseout | — | 1,500 · €12k | energietransitie, transitievisie_warmte (new) |
+| `fix_gas_phaseout` | Onderhoud aan een verdwijnend net | S | fix_maintenance_calendar (staggered) | solve | gas_phaseout | — | 1,500 · €12k | energietransitie, transitievisie_warmte (new) |
 | `talk_asset_manager` | Hoe gezond is een kabel? | S | t4_hoshin | talk_to ingrid, 3 topics | — | — | 800 | nta_8120, asset_health_index |
 | `sector_grid_2035` | Het net van 2035 | S | talk_asset_manager | talk_to femke + ingrid, 2 topics each | — | — | 800 | energietransitie, ii3050 (new) |
 | `nta8120_reaudit` | De heraudit | S (recovery) | only through `fail_opens` | audit: 6 fixes holding ≥ 0.8 | — | 120 d → rep −5 | 1,500 | nta_8120 |

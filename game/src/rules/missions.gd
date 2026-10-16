@@ -42,6 +42,8 @@ const FADING_DAYS := 45
 const CONDITIONS: Array[String] = ["blamed", "fading_fix"]
 ## A debrief's variants, in the order they win (content: debrief_variants).
 const DEBRIEF_VARIANTS: Array[String] = ["blamed", "poor_fix", "not_standardised"]
+## The effects source of a safety mission's containment.
+const CONTAIN_SOURCE := "contain:"
 const P := ProblemState.Phase
 ## Where the player stands, as the coach sees it (see stage_of).
 const STAGES := ["go_see", "understand", "experiment", "reflect"]
@@ -107,6 +109,9 @@ var repairs := Repairs.new()
 var stewardship := Stewardship.new()
 ## Deadlines met because the fix was in place when the date came (R5).
 var deadline_kept: Dictionary[String, bool] = {}
+## Safety missions contained: mission → when the containment ends (minutes);
+## kept after it ends, so it is taken once per mission.
+var contained: Dictionary[String, int] = {}
 ## A dialog's best outcome so far (GameSession.talk_outcome): what a talk_to
 ## goal reads. Missions knows no people; GameSession hands this in.
 var talk_outcome: Callable = func(_dialog_id: String) -> String: return ""
@@ -256,6 +261,30 @@ func update() -> void:
 				_fail(m)
 	_retire_orphans()
 	_lock_unprepared()
+	for id: String in contained:
+		if region.net.time >= contained[id]:
+			region.net.clear_effects(CONTAIN_SOURCE + id)
+
+
+## Contain an acute risk in an active safety mission (audit §2.4.1): pay the
+## containment, its effects hold for its days. "" or not_active |
+## no_containment | contained (once per mission).
+func contain(id: String) -> String:
+	if not defs.has(id) or status(id) != "active":
+		return "not_active"
+	var m := defs[id]
+	if m.containment.is_empty():
+		return "no_containment"
+	if contained.has(id):
+		return "contained"
+	var refused := region.net.set_effects(CONTAIN_SOURCE + id, m.containment.get("effects", []))
+	if not refused.is_empty():
+		push_warning("mission %s: containment refused: %s" % [id, refused])
+		return "no_containment"
+	region.grant(0, -int(m.containment.get("budget", 0)))
+	contained[id] = region.net.time + SimCalendar.days(int(m.containment.get("days", 14)))
+	events.append({"type": "contained", "mission": id})
+	return ""
 
 
 ## Whether a fact or a measure holds (Facts): done: and failed: from the
@@ -327,6 +356,8 @@ func _note_fixes() -> void:
 		var resolved := st.phase == P.RESOLVED and st.a3.has("cm") and not region.practice.has(p.id)
 		if resolved and (_resolved.get(p.id) != st.a3["cm"] or facts.with_prefix("chose:%s:" % p.id).is_empty()):
 			_note_fix(p, st)
+		elif resolved and st.standardised:
+			facts.add("standardised:" + p.id)  # standardised after its Act
 		if resolved:
 			_resolved[p.id] = st.a3["cm"]
 		else:
@@ -554,7 +585,8 @@ func drain_events() -> Array[Dictionary]:
 func to_dict() -> Dictionary:
 	return {"progress": progress.duplicate(true), "opened_at": opened_at.duplicate(), "done_once": done_once.keys(),
 		"failed_once": failed_once.keys(), "facts": facts.to_list(), "repair_due": repairs.to_dict(),
-		"heard": heard.duplicate(), "stewardship": stewardship.to_dict(), "deadline_kept": deadline_kept.keys()}
+		"heard": heard.duplicate(), "stewardship": stewardship.to_dict(), "deadline_kept": deadline_kept.keys(),
+		"contained": contained.duplicate()}
 
 
 ## Restore to_dict() output. Returns the mission ids the content no longer
@@ -568,6 +600,11 @@ func load_dict(d: Dictionary) -> Array[String]:
 	facts.load_list(d.get("facts", []))
 	repairs.load_dict(JsonFile.dict_or_empty(d.get("repair_due")))
 	stewardship.load_dict(JsonFile.dict_or_empty(d.get("stewardship")))
+	contained.clear()
+	var saved_contained := JsonFile.dict_or_empty(d.get("contained"))
+	for id: Variant in saved_contained:
+		if defs.has(str(id)):
+			contained[str(id)] = int(saved_contained[id])  # its effects come back with the network's
 	deadline_kept.clear()
 	var kept: Variant = d.get("deadline_kept", [])
 	for id: Variant in kept if kept is Array else []:

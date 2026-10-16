@@ -304,7 +304,7 @@ countermeasures:
       - {target: outages, property: demand, value: 0.97}   # estimate: weak sections from the base also found
   - id: repeat_fault_analysis
     name: Herhaalstoringen opsporen en trajecten vervangen
-    tier: 3
+    tier: 2   # sim check fix 7: at tier 3 it fails the Check at maturity 2 (eff 0.45); at tier 2 eff 0.81
     category: quality
     description: Elke maand een lijst van kabeltrajecten met twee of meer storingen in een jaar. Netstrategie en Werkvoorbereiding plannen de zwakste trajecten voor vervanging voordat ze opnieuw falen.
     budget: 30000   # estimate: a few short LS sections and joints replaced per year
@@ -639,14 +639,16 @@ problems:
     countermeasures: {shared_trench_standard: 1.0, first_job_inspection: 0.8, contractor_scorecard: 0.7, switch_contractor: 0.6}
     teaches: [quality_at_the_source, respect_for_people]
     effects:
-      # estimate: three in twenty trenches rejected; the job goes back to
-      # planning (execution's rework_to) with its 5-day wait.
-      - {target: connections.execution, property: ftr, value: -0.15}
-    cost_per_week: 750   # estimate: ~3 trenches re-dug a week x ~EUR 250, disputed on the invoice
+      # estimate: four in twenty trenches rejected; the job goes back to
+      # planning (execution's rework_to) with its 5-day wait. Sim check
+      # (docs/qa/tier2-sim-check.md fix 1, verified): -0.15 hurt FTR by only
+      # 1.8 pt on the test seed; -0.20 gives 41.8 -> 32.2 % over 5 seeds.
+      - {target: connections.execution, property: ftr, value: -0.20}
+    cost_per_week: 1000   # estimate: ~4 trenches re-dug a week x ~EUR 250, disputed on the invoice
     clues:
       - {tool: shadow, key: true, depth: 0, text: "De sleuf bij een nieuwbouwwoning ligt op veertig centimeter, terwijl de aansluitkabel in de stoep minstens vijftig moet liggen. De monteur maakt een foto en rijdt terug; de klus gaat terug naar Planning."}
       - {tool: documents, key: false, depth: 0, at: connections.design, text: "De tekeningen van Werkvoorbereiding kloppen: maten, tracé en diepte staan erop."}
-      - {tool: data, key: true, depth: 1, at: connections.planning, text: "Drie op de twintig klussen met een graafploeg van de aannemer gaan terug naar Planning omdat de sleuf niet klopt. Bij de eigen graafploeg is dat een op de vijftig."}
+      - {tool: data, key: true, depth: 1, at: connections.planning, text: "Vier op de twintig klussen met een graafploeg van de aannemer gaan terug naar Planning omdat de sleuf niet klopt. Bij de eigen graafploeg is dat een op de vijftig."}
       - {tool: documents, key: true, depth: 1, text: "Voltana werkt met sleufstandaard versie 4 uit 2024. In het contract met de aannemer staat versie 2; de mantelbuis onder de stoep staat daar niet in."}
       - {tool: conversation, key: true, depth: 2, text: "'Wij horen het pas als de factuur wordt afgekeurd, zes weken later. Dan weet ik niet eens meer welke ploeg dat was.'"}
       - {tool: conversation, key: false, depth: 1, text: "'Die jongens van de aannemer hebben er geen zin in. Dat zie je zo.'"}
@@ -929,6 +931,7 @@ missions:
         accept: "Je kiest het aantal aansluitingen per week als key result."
         decline: "Je kiest resultaten die de klant merkt."
         accept_sets_flags: [flag:okr_output_kr]
+    sets_flags: [flag:okr_region]          # four-tier audit 1.1: read by lsw_catchball (Act V)
     teaches: [okr, kpi, leading_lagging, kpi_alignment]
     rewards: {xp: 2400, budget: 20000, reputation: 5, unlocks: [okr]}
     insights:
@@ -989,11 +992,14 @@ problems:
     waste: waiting
     severity: medium
     visibility: subtle
-    kpi: on_time
+    # Sim check fix 5 (re-measured 2026-10-16): on time hardly moves (the
+    # meters norm has slack); the age of the open work shows the orders that
+    # wait for a meter (+9.5 %, every seed above +5 %).
+    kpi: wip_age
     symptoms:
       - De slimme meters zijn om de paar weken op, en meterwissels schuiven een week op.
       - Het magazijn wijst naar de leverancier, maar de leverancier levert op tijd.
-    root_cause: Het bestelpunt rekent het verbruik per kalenderdag, terwijl meters alleen op werkdagen de deur uit gaan. Over een levertijd van tien dagen wordt het verbruik onderschat, en de veiligheidsvoorraad is met dezelfde fout berekend.
+    root_cause: Het bestelpunt rekent het verbruik per kalenderdag, terwijl meters alleen op werkdagen de deur uit gaan. Over een levertijd van twintig werkdagen wordt het verbruik onderschat, en de veiligheidsvoorraad is met dezelfde fout berekend.
     plausible_causes:
       - De leverancier levert te laat.
       - De monteurs nemen meer meters mee dan ze nodig hebben.
@@ -1002,20 +1008,21 @@ problems:
     countermeasures: {reorder_point_working_days: 1.0, warehouse_kanban: 0.9, double_stock: 0.6}
     teaches: [safety_stock, waste_inventory]
     effects:
-      # 40 meters a week = 8 a working day, not 5.7 a calendar day. The base's
-      # reorder point (95) holds up to 9 working days x 8 = 72 plus ~2.5 sigma;
-      # the calendar sum gives 10 x 5.7 = 57 plus a smaller sigma: ~20 lower.
-      - {target: smart_meter, property: reorder_point, value: -20}
-      # the same spreadsheet for connection kits: 15 x 30/7 = 64 instead of 72,
-      # plus the smaller sigma: ~12 lower.
-      - {target: connection_kit, property: reorder_point, value: -12}
+      # 40 meters a week = 8 a working day, not 5.7 a calendar day. The
+      # supplier delivers in 20 working days (four weeks; content/value_streams.yaml):
+      # the base's reorder point (190) holds 20 x 8 = 160 plus ~2.5 sigma; the
+      # sheet's 20 x 5.7 = 114 plus a smaller sigma gives ~130: 60 lower.
+      # Measured (5 seeds, 84 days): stock-outs wait ~13 h per order on
+      # average, the open work ages 16.7 -> 18.3 d. With "ten days" the error
+      # was too small to run out (sim check: harm x0).
+      - {target: smart_meter, property: reorder_point, value: -60}
     clues:
-      - {tool: data, key: true, depth: 0, text: "De meters waren dit kwartaal drie keer op, telkens zo'n anderhalve week nadat er besteld was. De orders schoven gemiddeld zes dagen op."}
-      - {tool: documents, key: false, depth: 0, text: "De leverancier levert al een jaar binnen de afgesproken tien dagen."}
+      - {tool: data, key: true, depth: 0, text: "De meters waren dit kwartaal drie keer op, telkens zo'n drie weken nadat er besteld was. De orders die moesten wachten, schoven tot een week op."}
+      - {tool: documents, key: false, depth: 0, text: "De leverancier levert al een jaar binnen de afgesproken twintig werkdagen."}
       - {tool: documents, key: true, depth: 1, text: "In de bestelpuntsheet staat: verbruik per dag = verbruik per week gedeeld door zeven. Bestelpunt = levertijd in dagen maal verbruik per dag plus veiligheid."}
       - {tool: conversation, key: true, depth: 1, at: meters.appointment, text: "'In het weekend gaat er geen meter de deur uit. Maandag gaan er tien tegelijk mee.'"}
-      - {tool: data, key: true, depth: 2, text: "Op werkdagen gaan er gemiddeld acht meters de deur uit, niet vijf of zes. Met werkdagen gerekend had het bestelpunt twintig hoger moeten liggen."}
-      - {tool: material_check, key: true, depth: 2, at: connections.materials, text: "Bij de aansluitsets staat dezelfde sheet. Ook daar zit het bestelpunt onder wat er in de levertijd gebruikt wordt."}
+      - {tool: data, key: true, depth: 2, text: "Op werkdagen gaan er gemiddeld acht meters de deur uit, niet vijf of zes. Met werkdagen gerekend had het bestelpunt zestig hoger moeten liggen."}
+      - {tool: material_check, key: true, depth: 2, at: connections.materials, text: "Bij de aansluitsets staat dezelfde sheet, met dezelfde fout. Het gaat daar nog goed omdat die leverancier in kalenderdagen levert, maar de volgende leverancier rekent misschien in werkdagen."}
 
 countermeasures:
   - id: reorder_point_working_days
@@ -1080,7 +1087,7 @@ missions:
     tier: 2
     act: 3
     chapter: Het bord aan de muur
-    requires: {missions: [t2_daily_boards]}
+    requires: {missions: [fix_cause_unknown]}   # staggered (four-tier audit §2, 2026-10-16)
     goal: {type: solve, problem: lmra_tickbox}
     principles: [respect, long_term]
     briefing: "Twee bijna-ongevallen in een maand, allebei bij het openen van een oude meterkast, en allebei met een LMRA op 'akkoord'. Marco is geschrokken: 'Volgende keer is het geen bijna.' Zorg eerst dat niemand vandaag gewond raakt, en zoek dan uit waarom de LMRA niets tegenhoudt."
@@ -1112,11 +1119,12 @@ problems:
     countermeasures: {task_specific_lmra: 1.0, stop_the_work_andon: 0.8, two_person_rule_old_cabinets: 0.6}
     teaches: [lmra, respect_for_people]
     effects:
-      # estimate: ten minutes of ticking per job on the 5 h execution step.
-      - {target: connections.execution, property: touch_time, value: 1.03}
-      # estimate: one job in twenty is stopped late, after a near-miss or an
-      # unsafe discovery, and has to be replanned.
-      - {target: connections.execution, property: ftr, value: -0.05}
+      # estimate: a quarter of an hour of ticking per job on the 5 h execution step.
+      - {target: connections.execution, property: touch_time, value: 1.05}
+      # estimate: one job in eight is stopped late, after a near-miss or an
+      # unsafe discovery, and has to be replanned. Sim check fix 2: at -0.05
+      # first time right did not drop on the test seed.
+      - {target: connections.execution, property: ftr, value: -0.13}
     clues:
       - {tool: shadow, key: true, depth: 0, text: "Bij de auto vinkt de monteur 42 vragen af. Dan opent hij de meterkast zonder te kijken; de kast is van voor 1970, met blanke delen achter het deurtje."}
       - {tool: data, key: false, depth: 0, text: "Het aantal ongevallen met verzuim is al drie jaar laag."}
@@ -1334,6 +1342,11 @@ problems:
       # blow (outages during working hours) and overvoltage complaints rise.
       - {target: outages.daytime, property: demand, value: 1.1}
       - {target: voltage_complaints, property: demand, value: 1.3}
+      # estimate: a station that tripped under solar load is relieved in
+      # sections before the fuse goes back in, so each repair takes longer.
+      # Sim check fix 3 (verified): on time 92.6 -> 81.7 % over 5 seeds;
+      # without it extra outages do not make outages late.
+      - {target: outages.repair, property: touch_time, value: 1.25}
     clues:
       - {tool: data, key: true, depth: 0, text: "Van de doorgeslagen zekeringen in trafohuisjes deze zomer viel bijna alles tussen elf en drie uur, op zonnige dagen. 's Avonds bijna niets."}
       - {tool: conversation, key: false, depth: 0, text: "'Het is de hitte. Bij dertig graden zet iedereen de airco aan.'"}
@@ -1402,7 +1415,7 @@ missions:
     tier: 2
     act: 3
     arc: sector
-    requires: {missions: [t2_daily_boards]}
+    requires: {missions: [fix_contractor_rework]}   # staggered (four-tier audit §2, 2026-10-16)
     goal: {type: talk_to, person: jeroen, topics: 3}
     principles: [improve]
     briefing: "Jeroen Dekker, adviseur regulering, heeft een kwartier. 'Iedereen noemt de ACM als het misgaat, niemand weet wat ze eigenlijk doet.' Vraag hem naar het toezicht, de nieuwe Energiewet en wat een klant krijgt als de stroom lang uitvalt."
@@ -1425,7 +1438,7 @@ missions:
     tier: 2
     act: 3
     arc: people
-    requires: {missions: [t2_daily_boards], trust: {intake: 1}}
+    requires: {any_of: [fix_on_call_far, fix_shift_handover], trust: {intake: 1}}   # staggered (four-tier audit §2, 2026-10-16)
     goal: {type: coach, person: sanne, sessions: 3}
     npc_experiment:
       name: Sanne belt de klant binnen een dag als er iets ontbreekt
@@ -1551,6 +1564,9 @@ problems:
     waste: defects
     severity: medium
     visibility: hidden
+    # Sim check fix 6 (capacity) rejected on re-measure (2026-10-16): only the
+    # quick scan adds congestion capacity; the other three would fail the Check
+    # as not the constraint. Lead time stays, noisy at 4 requests a week.
     kpi: lead_time
     symptoms:
       - De netanalisten draaien overuren op congestieonderzoeken, terwijl de netstudies voor nieuwe aansluitingen weer wachten.
@@ -1687,24 +1703,25 @@ problems:
     symptoms:
       - Twee vacatures voor monteurs staan al een halfjaar open, zonder sollicitanten.
       - Monteurs beginnen hun dag op de campus en zijn pas om half negen bij de eerste klus.
-    root_cause: Monteurs halen elke ochtend zelf hun werkbonnen en materiaal op de campus en vullen 's middags papieren werkbonnen in. Zo gaat een uur per dag op aan werk waarvoor geen monteur nodig is.
+    root_cause: Monteurs halen elke ochtend zelf hun werkbonnen en materiaal op de campus en vullen 's middags papieren werkbonnen in. Zo gaat ruim anderhalf uur per dag op aan werk waarvoor geen monteur nodig is.
     plausible_causes:
       - Er zijn gewoon te weinig monteurs op de markt.
       - De monteurs werken te langzaam.
       - De klussen zijn zwaarder geworden.
-    mismatch_note: Er zijn inderdaad te weinig monteurs op de markt, maar dat verklaart niet waar de uren van de monteurs die er wel zijn naartoe gaan. Een uur per dag aan halen en papier is meer dan anderhalve monteur.
+    mismatch_note: Er zijn inderdaad te weinig monteurs op de markt, maar dat verklaart niet waar de uren van de monteurs die er wel zijn naartoe gaan. Anderhalf uur per dag aan halen en papier is meer dan de twee monteurs die je zoekt.
     countermeasures: {kitting_night_before: 1.0, digital_work_orders: 0.8, start_from_home: 0.7, monteur_overtime: 0.6}
     teaches: [monteurstekort, waste_skills]
     effects:
-      # estimate: about one hour of an eight-hour day goes to fetching work
-      # orders and materials and to paper forms: availability 0.85 → 0.73.
-      # Monteur load rises from ~67% to ~78%; outages pre-empt, so connections
-      # and meters feel it first. 13 monteurs x 1/8 = 1.6 FTE.
-      - {target: monteurs, property: availability, value: -0.12}
+      # estimate: about an hour and a half of an eight-hour day goes to
+      # fetching work orders and materials and to paper forms: availability
+      # 0.85 -> 0.65, 13 monteurs x 1.6/8 = 2.6 FTE. Sim check fix 4
+      # (verified): monteur load 71 % -> 94 % and the monteurs become the
+      # connections constraint, so the fixes show; at -0.12 nothing moved.
+      - {target: monteurs, property: availability, value: -0.20}
     clues:
       - {tool: shadow, key: true, depth: 0, text: "Om zeven uur staat de monteur bij de balie op de campus voor zijn werkbonnen, daarna een halfuur in het magazijn. Om half negen is hij bij de eerste klus."}
       - {tool: data, key: false, depth: 0, text: "Op de vacatures voor monteurs is in een halfjaar niemand afgekomen. In de hele regio staan er tientallen open."}
-      - {tool: time_study, key: true, depth: 1, text: "Van een werkdag van acht uur gaat bijna een uur op aan werkbonnen halen, materiaal zoeken en 's middags formulieren invullen."}
+      - {tool: time_study, key: true, depth: 1, text: "Van een werkdag van acht uur gaat ruim anderhalf uur op aan werkbonnen halen, materiaal zoeken en 's middags formulieren invullen."}
       - {tool: conversation, key: true, depth: 1, text: "'Ik ben monteur geworden om te monteren. Niet om in de rij bij het magazijn te staan.'"}
       - {tool: documents, key: true, depth: 2, at: connections.planning, text: "De planning is de avond ervoor klaar. Het materiaal per klus staat erin, maar niemand zet het klaar."}
       - {tool: material_check, key: true, depth: 2, at: connections.materials, text: "Het magazijn is om half zeven open. Wat een monteur nodig heeft, weet het pas als hij aan de balie staat."}

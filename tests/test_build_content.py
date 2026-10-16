@@ -745,6 +745,65 @@ def test_mission_schema_errors_are_caught(rules_dirs, mutate, message):
         _rules(content, mutate)
 
 
+_CONTAINMENT = {"name": "Stop-and-call", "budget": 500, "days": 14,
+                "effects": [{"target": "outages.daytime", "property": "demand", "value": 0.9}]}
+
+
+def _contain(**changes):
+    return lambda d: _mission(d).update(containment=dict(copy.deepcopy(_CONTAINMENT), **changes))
+
+
+def test_a_safety_mission_can_hold_a_containment(rules_dirs):
+    """Audit §2.4.1: a short measure against an acute risk, not the fix."""
+    content, _ = rules_dirs
+    _rules(content, _contain())
+    assert bc.load_content(content)["missions"]["missions"][1]["containment"]["days"] == 14
+
+
+@pytest.mark.parametrize("mutate, message", [
+    (_contain(name=""), "'name' must be a non-empty string"),
+    (_contain(budget=-1), "'budget' must be >= 0"),
+    (_contain(days=0), "'days' must be between 1 and 30"),
+    (_contain(days=60), "'days' must be between 1 and 30"),
+    (_contain(effects=[]), "a containment needs effects"),
+    (_contain(effects=[{"target": "connections", "property": "kpis", "value": ["intake_output"]}]),
+     "a containment changes the simulation"),
+    (_contain(effects=[{"target": "nowhere", "property": "demand", "value": 0.9}]), "containment: unknown arrivals 'nowhere'"),
+    (_contain(fix="all"), "unknown key.s. 'fix'"),
+    (lambda d: _mission(d, 0).update(containment=copy.deepcopy(_CONTAINMENT)), "a containment needs a goal with a problem"),
+])
+def test_containment_errors_are_caught(rules_dirs, mutate, message):
+    content, _ = rules_dirs
+    with pytest.raises(bc.ContentError, match=message):
+        _rules(content, mutate)
+
+
+def test_a_short_term_fix_can_cost_trust_and_have_an_aftermath(rules_dirs):
+    """Tier-2 draft §0.1: people-unfriendly fixes cost trust at the Act, and a
+    short-term fix's cost shows up later."""
+    content, _ = rules_dirs
+    _rules(content, lambda d: _cm(d).update(trust={"work_prep": -1}, aftermath={
+        "after_days": 42, "days": 56, "cost": 1000,
+        "effects": [{"target": "connections.design", "property": "touch_time", "value": 1.1}]}))
+
+
+@pytest.mark.parametrize("mutate, message", [
+    (lambda d: _cm(d).update(trust={"work_prep": -3}), "'work_prep' must be between -2 and 1"),
+    (lambda d: _cm(d).update(trust={"ghosts": -1}), "trust of unknown team 'ghosts'"),
+    (lambda d: _cm(d).update(aftermath={"after_days": 0, "days": 5}), "'after_days' must be >= 1"),
+    (lambda d: _cm(d).update(aftermath={"after_days": 5, "cost": -1}), "'cost' must be >= 0"),
+    (lambda d: _cm(d).update(aftermath={"after_days": 5, "effects": [{"target": "x", "property": "demand", "value": 1}]}),
+     "needs 'days' for its effects"),
+    (lambda d: _cm(d).update(aftermath={"after_days": 5, "days": 5, "effects": [
+        {"target": "nowhere", "property": "demand", "value": 1.1}]}), "aftermath: unknown arrivals 'nowhere'"),
+    (lambda d: _cm(d).update(aftermath={"after_days": 5, "trust": 1}), "unknown key.s. 'trust'"),
+])
+def test_short_term_cost_errors_are_caught(rules_dirs, mutate, message):
+    content, _ = rules_dirs
+    with pytest.raises(bc.ContentError, match=message):
+        _rules(content, mutate)
+
+
 def test_a_missed_deadline_may_not_close_the_only_route_of_a_needs(rules_dirs):
     """A choice a missed deadline can take away for good (its fail_closes)
     cannot be the only way into an option: setbacks, never game over."""
@@ -775,6 +834,8 @@ def test_a_discovery_is_valid(rules_dirs):
     _rules(content, _add_discovery(type="missions_scored", missions=["fix_design"], score=20))
     _rules(content, _add_discovery(type="farewell", mission="fix_design", place="connections.design", days=7,
                                    countermeasures=["standard_designs"]))
+    _rules(content, _add_discovery(type="followed_order", days=126))
+    _rules(content, _add_discovery(type="contain_then_fix", days=2))
 
 
 @pytest.mark.parametrize("mutate, message", [

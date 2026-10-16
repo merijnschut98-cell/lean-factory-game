@@ -301,6 +301,37 @@
     "experiments": 3,
     "type": "no_overload_act"
    }
+  },
+  {
+   "act": 1,
+   "hint": "Eén dossier liep de hele tijd met je mee. Weet je nog waar het lag?",
+   "id": "dossier_el_amrani",
+   "line": "De warmtepomp draait. Doorlooptijd is wat een klant voelt.",
+   "name": "Het dossier van de familie El Amrani",
+   "reward": {
+    "note": "Achttien weken is de norm. Voor hen was het geen norm, het was een winter.",
+    "object": "Een bedankkaart van de familie El Amrani",
+    "reputation": 2
+   },
+   "trigger": {
+    "days": 126,
+    "type": "followed_order"
+   }
+  },
+  {
+   "act": 2,
+   "hint": "Bij een acuut gevaar telt wat je in de eerste dagen doet, en wat je daarna doet.",
+   "id": "eerst_veilig",
+   "line": "Indammen is geen oplossen, maar soms moet het eerst.",
+   "name": "Eerst veilig, dan beter",
+   "reward": {
+    "note": "Indammen is geen oplossen, maar soms moet het eerst.",
+    "object": "Een veiligheidshelm met een Voltana-sticker"
+   },
+   "trigger": {
+    "days": 2,
+    "type": "contain_then_fix"
+   }
   }
  ]
 }

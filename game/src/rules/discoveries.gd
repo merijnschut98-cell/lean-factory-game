@@ -24,6 +24,7 @@ const TRIGGERS := {
 	"missions_scored": ["missions", "score"], "recovered_after_fail": ["score"], "coach_cycle": [],
 	"tool_in_missions": ["place", "tool", "missions", "problem", "countermeasure"],
 	"farewell": ["mission", "place", "days", "countermeasures"],
+	"followed_order": ["days"], "contain_then_fix": ["days"],
 }
 ## A fix holds when its health is at least this (Reputation.HELD_HEALTH).
 const HELD_HEALTH := Reputation.HELD_HEALTH
@@ -52,6 +53,7 @@ var _act_overload := {}
 var _missions_heard := {}  # discovery id → {mission: true}
 var _not_constraint := {}  # problems whose Check said not the constraint
 var _first_pass := {}  # problems whose first Check passed with the right cause and KPI
+var _contained := {}  # missions contained within contain_then_fix's days of being taken on
 
 
 func _init(content: Array) -> void:
@@ -151,6 +153,14 @@ func note_accept(s: GameSession, mission_id: String) -> void:
 	_accepted[mission_id] = s.region.net.time
 
 
+## A safety mission was contained (Missions.contain): in time when within
+## contain_then_fix's days of taking it on.
+func note_contain(s: GameSession, mission_id: String) -> void:
+	var accepted: Variant = _accepted.get(mission_id)
+	if accepted != null and s.region.net.time - int(accepted) <= SimCalendar.days(_param("contain_then_fix", "days", 2)):
+		_contained[mission_id] = true
+
+
 ## The coach answered about a main mission at a stage.
 func note_coach(mission_id: String, stage: String) -> void:
 	_coach.get_or_add(mission_id, {})[stage] = true
@@ -213,6 +223,14 @@ func _met(s: GameSession, d: Dictionary) -> bool:
 			return _missions_heard.get(d["id"], {}).size() >= int(t.get("missions", 3)) and m.knows(cm)
 		"farewell":
 			return _farewell(s, t)
+		"followed_order":
+			var delivered: float = s.followed_order()["delivered_days"]
+			return delivered >= 0.0 and delivered <= float(t.get("days", 126))
+		"contain_then_fix":
+			return _contained.keys().any(func(id: String) -> bool:
+				var def: MissionDef = m.defs.get(id)
+				var st: ProblemState = s.region.state.get(def.goal_problem) if def != null else null
+				return st != null and st.phase == ProblemState.Phase.RESOLVED and st.cause_correct)
 		"predictions", "deepest_why", "durable_held":
 			return int(_counts.get(str(t["type"]), 0)) >= int(t.get("count", 1))
 	return false
@@ -383,7 +401,7 @@ func to_dict() -> Dictionary:
 		"after_fail": _after_fail.duplicate(), "durable": _durable.duplicate(), "blame": _blame.duplicate(),
 		"coach": _coach.duplicate(true), "act_blamed": _act_blamed.duplicate(), "act_experiments": _act_experiments.duplicate(),
 		"act_overload": _act_overload.duplicate(), "missions_heard": _missions_heard.duplicate(true), "accepted": _accepted.duplicate(),
-		"not_constraint": _not_constraint.duplicate(), "first_pass": _first_pass.duplicate()}
+		"not_constraint": _not_constraint.duplicate(), "first_pass": _first_pass.duplicate(), "contained": _contained.duplicate()}
 
 
 ## Restore to_dict() output; discoveries the content no longer has are dropped.

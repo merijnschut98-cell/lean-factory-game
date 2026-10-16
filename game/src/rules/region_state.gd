@@ -20,7 +20,7 @@ static func capture(r: Region) -> Dictionary:
 		"profile": {"budget": r.profile.budget, "xp": r.profile.xp, "concepts": r.profile.concepts},
 		"observed": r.observed.keys(), "found": r.found.keys(), "trust": r.trust, "problems": problems,
 		"cost_owed": r._cost_owed, "kpi_board": r.board.to_dict(), "drift_from": r.drift_from,
-		"routines": r.routines.keys(), "reputation": r.reputation.value,
+		"routines": r.routines.keys(), "reputation": r.reputation.value, "aftermaths": r.aftermaths.duplicate(true),
 	}
 
 
@@ -53,6 +53,13 @@ static func restore(r: Region, d: Dictionary) -> Dictionary:
 	for place: Variant in routines if routines is Array else []:
 		if r.net.step_at(str(place)) != null:
 			r.routines[str(place)] = true
+	# A running aftermath's effects come back with the network's.
+	var aftermaths := JsonFile.dict_or_empty(d.get("aftermaths"))
+	for id: Variant in aftermaths:
+		var a: Variant = aftermaths[id]
+		if a is Dictionary and r.countermeasures.has(str(a.get("cm", ""))):
+			r.aftermaths[str(id)] = {"cm": str(a["cm"]), "start": int(a.get("start", 0)), "end": int(a.get("end", 0)),
+				"started": bool(a.get("started", false))}
 	# Saves from before the board have none; its work rules come back with the network's effects.
 	r.board.load_dict(JsonFile.dict_or_empty(d.get("kpi_board")))
 	for team: Variant in d["trust"]:

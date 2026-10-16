@@ -43,6 +43,10 @@ var debrief_first: String
 var debrief_variants: Dictionary[String, String] = {}
 ## The briefing when the mission is back because its fix faded.
 var reopen_text: String
+## A safety mission's containment (audit §2.4.1): {name, budget, days,
+## effects}, a short measure against an acute risk, taken once while the
+## mission is active; it fades after `days` and is not the fix.
+var containment: Dictionary = {}
 ## Facts ("flag:<name>") its completion sets.
 var sets_flags := PackedStringArray()
 var briefing: String
@@ -122,6 +126,7 @@ static func from_dict(d: Dictionary) -> MissionDef:
 		m.debrief_variants[str(key)] = str(variants[key])
 	m.reopen_text = str(d.get("reopen", ""))
 	m.sets_flags = PackedStringArray(d.get("sets_flags", []))
+	m.containment = JsonFile.dict_or_empty(d.get("containment")).duplicate(true)
 	m.briefing = str(d.get("briefing", ""))
 	m.debrief = str(d.get("debrief", ""))
 	m.fail_text = str(d.get("fail", ""))

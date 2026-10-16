@@ -173,11 +173,11 @@
   },
   {
    "id": "smart_meter",
-   "lead_days": 10,
+   "lead_days": 28,
    "level": 200,
    "name": "Slimme meter",
    "order_quantity": 200,
-   "reorder_point": 95
+   "reorder_point": 190
   }
  ],
  "streams": [

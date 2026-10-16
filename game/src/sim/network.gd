@@ -503,6 +503,7 @@ func _take_material(order: WorkOrder, step: SimStep) -> void:
 		_reorder_if_needed(item)
 		_enter(order, order.step_index + 1)
 		return
+	order.queued_at = time  # the stock-out wait is recorded at delivery
 	item.waiting.append(order)
 	_emit("stockout", order, {"item": item.id})
 	_reorder_if_needed(item)
@@ -528,6 +529,7 @@ func _deliver_stock() -> void:
 				break
 			item.waiting.pop_front()
 			item.level -= need
+			_record(order.current_step(), SimStep.Stat.WAIT_MINUTES, time - order.queued_at)
 			_enter(order, order.step_index + 1)
 		_reorder_if_needed(item)
 

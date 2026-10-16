@@ -121,9 +121,12 @@ stock:
   - id: smart_meter
     name: Slimme meter
     level: 200
-    reorder_point: 95       # up to 9 working days in the 10-day lead time × 8 a day ≈ 72, plus ~2.5 sigma
+    # The supplier delivers in 20 working days (four weeks, an estimate): 20 × 8
+    # a day = 160, plus ~2.5 sigma. A reorder point on calendar days would be
+    # ~60 lower (tier-2 problem safety_stock_calendar).
+    reorder_point: 190
     order_quantity: 200
-    lead_days: 10
+    lead_days: 28
 
 streams:
   - id: connections

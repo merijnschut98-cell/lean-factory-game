@@ -290,7 +290,10 @@ PROBLEM_KEYS = {"id", "tier", "name", "step", "waste", "severity", "visibility",
                 "plausible_causes", "mismatch_note", "countermeasures", "teaches", "effects", "clues", "cost_per_week"}
 COUNTERMEASURE_KEYS = {"id", "tier", "name", "category", "description", "budget", "team_hours", "decay_days", "needs",
                        "preparation",
-                       "multipliers", "effects", "unlocks", "sustains"}
+                       "multipliers", "effects", "unlocks", "sustains", "trust", "aftermath"}
+# A short-term fix's later cost (tier-2 draft §0.1): effects for `days` from
+# `after_days` after the Act, and a one-off cost.
+AFTERMATH_KEYS = {"after_days", "days", "effects", "cost"}
 UNLOCKS = ["kpi_board"]  # CountermeasureDef.UNLOCKS: what a countermeasure opens in the game
 CLUE_KEYS = {"tool", "text", "key", "depth", "at", "note", "teaches"}
 EFFECT_KEYS = {"target", "property", "value"}
@@ -377,6 +380,15 @@ def validate_countermeasures(doc: Any, source: str) -> None:
         elif "preparation" in cm:
             raise ContentError(f"{where}: 'preparation' is the hint for unmet 'needs'")
         _effects_shape(cm, where)
+        _trust_map(cm, where, *TRUST_RANGE)
+        if "aftermath" in cm:
+            after = _mapping(cm, "aftermath", AFTERMATH_KEYS, where)
+            _number(after, "after_days", f"{where} aftermath", 1, integer=True)
+            _number(after, "cost", f"{where} aftermath", 0, integer=True, default=0)
+            if _effects_shape(after, f"{where} aftermath"):
+                if "days" not in after:
+                    raise ContentError(f"{where} aftermath: needs 'days' for its effects")
+                _number(after, "days", f"{where} aftermath", 1, integer=True)
 
 
 def validate_problems(doc: Any, source: str) -> None:
@@ -497,6 +509,11 @@ def _check_countermeasure(cm: dict, net: dict) -> None:
     for pool in cm.get("team_hours", {}):
         if pool not in net["pool"]:
             raise ContentError(f"{where}: team_hours for unknown pool {pool!r}")
+    for team in cm.get("trust", {}):
+        if team not in net["pool"]:
+            raise ContentError(f"{where}: trust of unknown team {team!r}")
+    for e in cm.get("aftermath", {}).get("effects", []):
+        _check_effect(e, f"{where} aftermath", net)
     for e in cm["effects"]:
         _check_effect(e, where, net)
 
@@ -621,7 +638,11 @@ BELT_XP = [0, 2000, 6000, 30000, 110000]  # Progression.BELTS
 MIN_REWARD_SHARE = 0.6
 MISSION_KEYS = {"id", "name", "kind", "tier", "requires", "briefing", "debrief", "fail", "goal", "deadline_days",
                 "fail_closes", "rewards", "insights", "teaches", "check_days", "setup", "act", "chapter", "arc",
-                "fork", "debrief_first", "reopen", "sets_flags", "questions", "debrief_variants"}
+                "fork", "debrief_first", "reopen", "sets_flags", "questions", "debrief_variants", "containment"}
+# A safety mission's containment (audit §2.4.1): a short measure against an
+# acute risk, taken once while the mission is active; it fades after `days`.
+CONTAINMENT_KEYS = {"name", "budget", "days", "effects"}
+MAX_CONTAINMENT_DAYS = 30  # containment buys time for the fix; it is not the fix
 DEBRIEF_VARIANTS = ["blamed", "poor_fix", "not_standardised"]  # Missions.DEBRIEF_VARIANTS, in the order they win
 REQUIRES_KEYS = {"missions", "belt", "maturity", "reputation", "trust", "any_of", "facts"}
 FORK_ROLES = ["bottleneck", "non_bottleneck"]
@@ -672,6 +693,8 @@ def validate_missions(doc: Any, source: str) -> None:
             setup = _effects_shape({"effects": m["setup"]}, f"{where} setup")
             if any(e["property"] == KPI_EFFECT for e in setup):
                 raise ContentError(f"{where} setup: a setup changes the simulation, not the KPI board")
+        if "containment" in m:
+            _validate_containment(m, where)
         rewards = _mapping(m, "rewards", {"xp", "budget", "reputation", "trust"}, where)
         for key in ("xp", "budget"):
             _number(rewards, key, f"{where} rewards", 0, integer=True, default=0)
@@ -691,6 +714,21 @@ def validate_missions(doc: Any, source: str) -> None:
                                                       and all(isinstance(x, str) and x.strip() for x in t))
                     for stage, t in lines.items()):
                 raise ContentError(f"{where}: '{key}' maps a coach stage to a text or a list of texts")
+
+
+def _validate_containment(m: dict, where: str) -> None:
+    if "problem" not in m["goal"]:
+        raise ContentError(f"{where}: a containment needs a goal with a problem (it holds the risk while that is fixed)")
+    containment = _mapping(m, "containment", CONTAINMENT_KEYS, where)
+    where = f"{where} containment"
+    _require_strings(containment, ["name"], where)
+    _number(containment, "budget", where, 0, integer=True, default=0)
+    _number(containment, "days", where, 1, MAX_CONTAINMENT_DAYS, integer=True)
+    effects = _effects_shape(containment, where)
+    if not effects:
+        raise ContentError(f"{where}: a containment needs effects")
+    if any(e["property"] == KPI_EFFECT for e in effects):
+        raise ContentError(f"{where}: a containment changes the simulation, not the KPI board")
 
 
 def _trust_map(item: dict, where: str, low: int, high: int) -> dict:
@@ -777,6 +815,8 @@ def check_missions(docs: dict[str, Any]) -> None:
                 raise ContentError(f"{where}: trust of unknown team {team!r}")
         for e in m.get("setup", []):
             _check_effect(e, f"{where} setup", net)
+        for e in m.get("containment", {}).get("effects", []):
+            _check_effect(e, f"{where} containment", net)
         goal = m["goal"]
         if goal["type"] == "walk" and goal["stream"] not in streams:
             raise ContentError(f"{where}: unknown stream {goal['stream']!r}")
@@ -1446,6 +1486,7 @@ DISCOVERY_TRIGGERS = {
     "missions_scored": ["missions", "score"], "recovered_after_fail": ["score"], "coach_cycle": [],
     "tool_in_missions": ["place", "tool", "missions", "problem", "countermeasure"],
     "farewell": ["mission", "place", "days", "countermeasures"],
+    "followed_order": ["days"], "contain_then_fix": ["days"],
 }
 DISCOVERY_KEYS = {"id", "name", "line", "hint", "act", "trigger", "reward"}
 MAX_DISCOVERY_REPUTATION = 3  # small in power (audit §4.1)
