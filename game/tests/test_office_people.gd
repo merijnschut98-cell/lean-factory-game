@@ -228,8 +228,8 @@ func test_every_head_office_speaker_of_act_0_to_ii_has_a_body() -> void:
 	assert_true(speakers.size() >= 4, "the talks of Act 0–II are read")
 	for id: String in speakers:
 		var person: PersonDef = office.session.people.persons.get(id)
-		if person == null or person.team == "monteurs":
-			continue   # the field crews come in for their missions (Henk, Ahmed: their own entries)
+		if person == null or person.team == "monteurs" or person.archetype.begins_with("customer"):
+			continue   # the field crews come in for their missions; customers are reached by phone
 		assert_false(_cast(id).get("office", {}).is_empty(), "%s has a place in the office's cast" % id)
 		assert_true(ResourceLoader.exists(CharacterModel.path(id)), "%s has a body" % id)
 	office.free()
@@ -237,7 +237,7 @@ func test_every_head_office_speaker_of_act_0_to_ii_has_a_body() -> void:
 
 func test_the_new_rooms_have_their_people_on_their_floors() -> void:
 	var expected := {"esra": "ground", "kim": "ground", "saskia": "ground", "femke": "second", "frank": "second",
-		"rachid": "first", "linda": "first", "mieke": "first", "petra": "first"}
+		"rachid": "first", "linda": "first", "mieke": "first", "petra": "first", "rob": "first", "thomas": "second"}
 	for id: String in expected:
 		var spot: Dictionary = _cast(id).get("office", {})
 		assert_eq(str(spot.get("floor", "first")), expected[id], "%s's floor" % id)
@@ -298,6 +298,10 @@ func test_the_kcc_and_the_2e_are_peopled_once_their_rooms_open() -> void:
 	assert_false(femke.visible, "Netstrategie still shut")
 	_take(office, "look_at_grid_study")
 	assert_true(femke.visible, "Netstrategie open: Femke")
+	var thomas := office.people.person("thomas")
+	assert_true(thomas != null and not thomas.visible, "Thomas's Congestiedesk still shut")
+	_take(office, "fix_unused_capacity")
+	assert_true(thomas.visible, "the Congestiedesk open: Thomas at congestion.intake")
 	office.free()
 
 
