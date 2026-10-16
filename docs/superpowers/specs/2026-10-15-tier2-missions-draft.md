@@ -942,6 +942,7 @@ missions:
 - `flag:okr_output_kr`: a KR on output is a steering KPI that does *not* match the connections problems' KPIs. For the quarter, `silo_kpis`' fix loses its "steering KPI" support and gets drift 1.5 (catalogue §2.8). The player can watch the old silo behaviour creep back, and `fix_silo_kpis` may reopen through the "Terugval" lane.
 - The menu's sixth KR ("doorlooptijd netverzwaring") is only offered to a player who did not hide it in `first_kpi_review`, or who repaired that with an honest `lsw_kpi_review`.
 - `t2_first_okr` sets `flag:okr_region` (read by `lsw_catchball` in Act V).
+- **Drie winters (2026-10-16):** completing `t2_first_okr` with `acm_visit` judged ends Act III: the farewell talk `ruud_farewell` and Ruud's secondment follow (`2026-10-16-drie-winters-arc.md` §4). The OKR's KR menu gains nothing new; the waiting list's `date_kept` is named in Jeroen's ACM briefing.
 
 **Grounding.**
 - OKR grading 0.0–1.0 per KR, sweet spot 0.6–0.7: Google re:Work — *Set goals with OKRs*, https://rework.withgoogle.com/intl/en/guides/set-goals-with-okrs (KRs graded 0.0–1.0, the objective a rough average, the sweet spot 0.6–0.7, a steady 1.0 means too little ambition); What Matters — *How to end the OKR cycle: grading*, https://www.whatmatters.com/okrs-explained/grading-okrs (aspirational OKRs average about 0.7; committed OKRs are expected to score 1.0).
@@ -1241,6 +1242,8 @@ missions:
     teaches: [capacity_planning, failure_demand, compensatieregeling]
     rewards: {xp: 600, budget: 5000}
 ```
+
+**Drie winters (2026-10-16).** The first `prep_storm_week` waits for Ruud's secondment: `first_requires: {facts: {all: [flag:ruud_seconded]}}` and `opens_on: {season: storm}` (1 October – 31 March, KNMI). It becomes winter 2's climax, *De storm zonder Ruud*, with the group scene `storm_night_board` at the escalation board on the first night, and under the regime the all-hands option is voiced by Frank (`who: frank`). Later winters repeat it as drafted. See `2026-10-16-drie-winters-arc.md` §7.4.
 
 **Path dependence.**
 - `flag:storm_all_hands`: the forecast looks best (most monteurs on outages), so a player who reads only the forecast picks it.

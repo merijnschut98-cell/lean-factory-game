@@ -6,8 +6,8 @@
 
 ## 0. Summary
 
-- **Story:** six acts after the training week. You start as the new CI lead in Nova's connections office. You become the CI lead of the whole region (Nova, rural Lindeveld, port town Havenzij), then work on strategy (NTA 8120 audit, investment plan, hoshin). A far-future finale, where you coach a new CI lead yourself, is kept as a placeholder only. The IT value streams are their own act, open from tier 3 on, running in parallel.
-- **Catalogue:** 94 authored missions: tier 1 has 34 (5 training, the 22 existing missions with their ids kept, 7 new); tier 2 has 16; tier 3 has 16; tier 4 has 15; IT has 13. Repair side quests come on top: they are generated from a template when the player made a poor fix. The missions bring 31 new problems (8 / 8 / 6 / 9).
+- **Story:** six acts after the training week, grouped since 2026-10-16 into **three years with a winter each** (*Drie winters*, PLAN §4.0; §3.1 below and `2026-10-16-drie-winters-arc.md`). You start as the new CI lead in Nova's connections office. You become the CI lead of the whole region (Nova, rural Lindeveld, port town Havenzij) in the year Ruud is seconded to Den Haag, then work on strategy (NTA 8120 audit, investment plan, hoshin). The finale is the succession (`de_opvolger`): you coach your own successor. The IT value streams are their own act, open from tier 3 on, running in parallel.
+- **Catalogue:** 96 authored missions: tier 1 has 35 (5 training, the 22 existing missions with their ids kept, 8 new, incl. the winter-1 milestone); tier 2 has 16; tier 3 has 17 (with the Act IV opener `t3_interim_mt`); tier 4 has 15 (the finale `de_opvolger` replaces the placeholder); IT has 13. Repair side quests come on top: they are generated from a template when the player made a poor fix. The missions bring 31 new problems (8 / 8 / 6 / 9).
 - **Five forks** (bottleneck vs non-bottleneck), one per act from Act I on, except Act II (it teaches linked causes instead). **Ten deadline missions.** Each non-recovery one closes a named door and leaves another way to solve the problem. Three are **milestones** (day 100, the ACM visit, the NTA 8120 audit): judged on their date, they take no slot.
 - **Top system changes:**
   1. Eleven new goal types: `talk_to`, `measure`, `sustain`, `routine`, `map_stream`, `kaizen_event`, `coach`, `kpi_review`, `okr`, `audit`, `strategy`.
@@ -110,7 +110,8 @@ Fictional names. Each person has a role, a place and topics. Team leads are the 
 | `ingrid` | Ingrid Bos | assetmanager (expert: NTA 8120, asset health) | Directie & Obeya | Act V (sector) |
 | `noor` | Noor Hendriks | product owner veldapp | IT | Act VI |
 | `bas` | Bas Kuipers | release train engineer (expert) | IT | Act VI (sector) |
-| `lotte` | Lotte Smit | the new CI lead of Lindeveld | Lindeveld | far-future finale (placeholder) |
+| `monique` | Monique de Ruiter | directeur Financiën | Directie & Obeya | Act IV (the interim MT), Act V |
+| `lotte` | Lotte Smit | CI-lead regio Zuidmark, external hire | connections.intake | finale, only if the player picks her (drie-winters §8) |
 
 ### 2.4 Unlock gates
 
@@ -121,7 +122,7 @@ Fictional names. Each person has a role, a place and topics. Team leads are the 
 - `trust: {team: n}` (−2..1; coaching a team lead needs that team's trust ≥ 1);
 - `any_of` (one of these missions done; used after a fork).
 
-`opens_on`: `{day: n}` (days of play), `{season: winter | summer}` (the first such season after the other requires are met), or both. A mission with `opens_on` opens on that date whatever the player is doing. That makes real events independent of the player's route (Henk, storm, heatwave, audit).
+`opens_on`: `{day: n}` (days of play), `{season: winter | storm | summer}` (the first such season after the other requires are met; winter = 1 Dec–end Feb, storm = 1 Oct–31 Mar, summer = Jun–Aug; drie-winters §1), `{day_before: <dated beat>, days: n}`, or a combination. A mission with `opens_on` opens on that date whatever the player is doing. That makes real events independent of the player's route (Henk, storm, heatwave, audit).
 
 A gate only decides when a mission opens. A mission that is done stays done, even if maturity later falls.
 
@@ -360,17 +361,23 @@ A door can close one route (a missed deadline), but another route back always re
 
 ## 3. The catalogue
 
-### 3.1 The story arc
+### 3.1 The story arc: *Drie winters* (reworked 2026-10-16)
 
-| Act | Title | Tier | Setting | Story | Lean / Kata focus | Missions |
-|---|---|---|---|---|---|---|
-| 0 | Inwerkweek | 1 | connections office | Ruud gives the new CI lead a safe week of Starter Kata. | gemba, bottleneck, PDCA, A3, sustain | 5 |
-| I | De eerste honderd dagen | 1 | Nova: connections, contact centre, field | The team leads ask for more people; you show that the work was made too heavy. The MT reviews you on day 100. | waste, flow, bottleneck shifts, quality at the source, failure demand | 16 |
-| II | Wat onder de grond zit | 1 | Revisie & GIS, grid studies, congestion | The quiet backlogs (revision, studies, transformers, contracts) turn out to hold up the grid. Ending: the departments fight over KPIs, and the KPI board is born. | linked causes, external waits in parallel, inventory, KPI alignment | 13 |
-| III | Zichtbaar maken | 2 | campus-wide: control room, field, regulation | Ruud: "Problems should not be found by you; the teams should see them." Daily boards, escalation, a storm, a heatwave, the ACM's visit, the first OKR. | visual management, daily management, andon, tiered escalation, OKRs, coaching kata | 16 |
-| IV | Flow door de regio | 3 | Zuidmark: Nova, Lindeveld, Havenzij | You become CI lead for the whole region: long drives, crowded streets, nitrogen, the technician shortage, the prioritisation framework, and a first strategic choice that depends on what you prepared. | VSM, kaizen events, WIP limits/CONWIP, heijunka, flow across areas | 16 |
-| V | Het systeem | 4 | the MT and the asset side | Strategy: one direction (hoshin), the NTA 8120 audit, risk-based maintenance, losses, the flex market, the investment plan, shaped by every earlier choice. A far-future finale (you coach a new CI lead) is a placeholder. | hoshin kanri, risk-based maintenance, systems thinking, path dependence | 15 |
-| VI | Het digitale net | IT (tier 3+) | IT on campus: the field app | The field app the monteurs bypass; releases twice a year; test environments; ARTs and PI planning; DORA. | value streams in IT, flow of work, SAFe, DevOps, DORA | 13 |
+The acts and their missions stand. Since PLAN §4.0 (Fable, 2026-10-16) they are grouped into **three years, each with a winter that tests what the player built**. One number runs through all three: the north star `waiting_list`, *de wachtlijst van Zuidmark* (open requests, average wait, and the share of given dates kept), on the HUD from Act II. Full design, dialogs and schema needs: `2026-10-16-drie-winters-arc.md`.
+
+| Year | Act | Title | Tier | Setting | Story | Lean / Kata focus | Missions |
+|---|---|---|---|---|---|---|---|
+| **1 · Het eerste jaar** (Oct 2026 –) | 0 | Inwerkweek | 1 | connections office | Ruud gives the new CI lead a safe week of Starter Kata. A letter from the El Amrani family is the first thing on his desk. | gemba, bottleneck, PDCA, A3, sustain | 5 |
+| | I | De eerste honderd dagen | 1 | Nova: connections, contact centre, field | The team leads ask for more people; you show that the work was made too heavy. **Winter 1, *Voor de vorst*:** on the first frost period (day 70) the game checks whether mevrouw El Amrani's mother is warm. The MT reviews you on day 100. | waste, flow, bottleneck shifts, quality at the source, failure demand | 17 |
+| | II | Wat onder de grond zit | 1 | Revisie & GIS, grid studies, congestion | The quiet backlogs (revision, studies, transformers, contracts) turn out to hold up the grid. The waiting list appears on the HUD. Ending: the departments fight over KPIs, and the KPI board is born. | linked causes, external waits in parallel, inventory, KPI alignment | 13 |
+| **2 · Het jaar zonder Ruud** | III | Zichtbaar maken | 2 | campus-wide: control room, field, regulation | Ruud: "Problems should not be found by you; the teams should see them." Daily boards, escalation, a heatwave, the ACM's visit, the first OKR. **The act ends with Ruud's secondment** to Den Haag for a year (the farewell talk `ruud_farewell`; the monthly call unlocked). | visual management, daily management, andon, tiered escalation, OKRs, coaching kata | 16 |
+| | IV | Flow door de regio | 3 | Zuidmark: Nova, Lindeveld, Havenzij | **Frank Hulshof is interim director.** His first MT (`t3_interim_mt`, a group talk) reads the Frank facts of Acts II–III: a *sponsor* (the Obeya stands, the strategy screen opens early) or a *regime* (a dashboard, the consultancy temptation `t3_consultants`, and the team-led kaizen week as the way back). **Winter 2, *De storm zonder Ruud*:** Code oranje at the control room's escalation board. Then long drives, crowded streets, nitrogen, the technician shortage, the prioritisation framework, and a first strategic choice. Ruud coaches by phone, one Kata cycle a month. | VSM, kaizen events, WIP limits/CONWIP, heijunka, flow across areas; running your own Kata and coaching others | 17 |
+| **3 · Het jaar van de opvolger** | V | Het systeem | 4 | the MT and the asset side | Ruud returns and names his last day (1 April, the AOW date). Strategy: one direction (hoshin), the NTA 8120 audit, risk-based maintenance, losses, the flex market, the investment plan, shaped by every earlier choice. **Winter 3, *De opvolger*:** the finale `de_opvolger`; who sits across the table depends on whom you developed (Anouk, Ahmed, Sanne, or Lotte from outside). The last scene is your first Kata question. | hoshin kanri, risk-based maintenance, systems thinking, path dependence, coaching kata | 15 |
+| 2–3 (parallel) | VI | Het digitale net | IT (tier 3+) | IT on campus: the field app | The field app the monteurs bypass; releases twice a year; test environments; ARTs and PI planning; DORA. It serves the number: the portal where households register, the app that records the work, the release cadence that decides how fast a fix reaches the street. | value streams in IT, flow of work, SAFe, DevOps, DORA | 13 |
+
+**The winters as fixed points** (drie-winters §1): winter 1's frost period on day 70 (an estimate); the first storm in the first storm season (October–March, KNMI) after Ruud's secondment; Ruud's last day on the first 1 April at least 240 days after Act V opens. Acts are paced by the player; the winters are not.
+
+**The antagonists are forces, never people:** the queue (it grows by itself: drift), the number (the output KPI the directie looks at: Frank's pressure), and time (Henk retires, Ruud retires, seasons come).
 
 Act VI opens after `t3_map_region` and runs in parallel with Acts IV–V. It is its own main chain, so the player chooses which main mission to take on next. That is prioritising, though not a bottleneck fork.
 
@@ -402,7 +409,7 @@ Unchanged ids and goals. Improvements: Friday hands out `talk_netplanner` (side 
 
 ### 3.3 Act I — De eerste honderd dagen (tier 1)
 
-**Chapter "De stapel":** custom design, then the fork. **Chapter "De telefoon":** failure demand and close-out. **Milestone:** day 100. Side missions open around the field streams and Henk.
+**Chapter "De stapel":** custom design, then the fork. **Chapter "De telefoon":** failure demand and close-out. **Milestones:** winter 1, *Voor de vorst* (day 70), and day 100. Side missions open around the field streams and Henk.
 
 | id | Titel | Kind | Requires | Goal | Problem | Fork / deadline → door | Rewards | Teaches |
 |---|---|---|---|---|---|---|---|---|
@@ -413,6 +420,7 @@ Unchanged ids and goals. Improvements: Friday hands out `talk_netplanner` (side 
 | `fix_status_callers` | De telefoon staat roodgloeiend | M | fix_incomplete_application | solve | status_callers | — | 800 · €8k | failure_demand, value_demand |
 | `fix_done_but_not_closed` | Klaar maar niet af | M | fix_status_callers, Y | solve | done_but_not_closed | — | 900 · €8k | batching, one_piece_flow, ean_code |
 | `review_100_days` *(new)* | Honderd dagen | Ms | walk_connections; `opens_on: {day: 70}` | measure connections on_time ≥ 0.90 over 28 d, judged on day 100 | — | `deadline_on_day: 100` → the MT hires two temps at Werkvoorbereiding: `fail_effects` €2.5k/week × 13 (estimate: 2 × 36 h × €35/h), rep −10; door: the €15k "verbeterfonds" reward is gone | 1,000 · €15k · rep 10 | kpi, lead_time, leading_lagging |
+| `winter_el_amrani` *(new, 2026-10-16)* | Voor de vorst | Ms | walk_connections; `opens_on: {day: 49}` | `story_order el_amrani`: delivered, **or** the heat pump on the existing connection (`agreed:el_amrani_fourth_call:check_existing_connection`), by day 70 | — | `deadline_on_day: 70` (the first frost period, estimate) → the mother stays with her other daughter; rep −2; `flag:el_amrani_cold_winter` (Act IV thread) | 300 · rep 3 | lead_time, customer_value, warmtepomp_aansluiting (new) |
 | `walk_outages` | Mee met de storingsdienst | S | walk_connections | walk outages | — | — | 200 | gemba |
 | `walk_meters` | Mee met de meterwisselaars | S | walk_connections | walk meters | — | — | 200 | gemba |
 | `talk_netplanner` *(new)* | Waarom is het net vol? | S | training_fri | talk_to femke, 2 topics | — | — | 150 · trust grid_analysts +1 | netcongestie, middenspanningsruimte, transformator |
@@ -456,6 +464,8 @@ Act II deliberately has no fork. Its lesson is that causes link across departmen
 
 Gates: `first_kpi_review`, maturity 2, belt green.
 
+**The act's end (Drie winters):** when `t2_first_okr` is done and `acm_visit` judged, Ruud is seconded to Den Haag. The farewell talk `ruud_farewell` (cannot be ruined) sets `flag:ruud_seconded`, unlocks his monthly call (coach cooldown 28 days, one Kata cycle per call, main quest only) and opens Act IV.
+
 **New tier-2 problems** (`content/problems_tier2.yaml`). Mechanisms marked "exists" use today's levers.
 
 | id | Name | Stream · step | Waste | Mechanism | Grounding | Countermeasures (tier, fit) |
@@ -483,7 +493,7 @@ Gates: `first_kpi_review`, maturity 2, belt green.
 | `t2_first_okr` | Een doel voor Zuidmark | M | fix_escalation_hallway | okr: 1 objective, 3 KRs, 91 d, ≥ 0.7 met | — | — | 2,400 · €20k · unlocks okr | okr, kpi |
 | `fix_safety_stock_calendar` | Altijd net op | S | t2_daily_boards | solve | safety_stock_calendar | — | 700 · €6k | kanban, capacity_planning |
 | `fix_lmra_tickbox` | LMRA als vinkje | S | t2_daily_boards | solve | lmra_tickbox | — | 700 · €6k | respect_for_people, standard_work |
-| `prep_storm_week` | Code oranje | S | M2; `opens_on: {season: winter}` | observe joint stock + on-call plan (material_check at outages.joint, conversation at outages.locate) before the storm | event: outage demand ×2 for 4 d (estimate) | 21 d; the storm comes anyway → closes `mutual_aid_agreement`; rep −10 | 600 · €5k | jidoka, capacity_planning |
+| `prep_storm_week` | Code oranje | S | M2; first occurrence also `flag:ruud_seconded`; `opens_on: {season: storm}` (Drie winters: winter 2's climax, with the scene `storm_night_board`) | observe joint stock + on-call plan (material_check at outages.joint, conversation at outages.locate) before the storm | event: outage demand ×2 for 4 d (estimate) | 21 d; the storm comes anyway → closes `mutual_aid_agreement`; rep −10 | 600 · €5k | jidoka, capacity_planning |
 | `fix_heatwave_overload` | Hitte in het trafohuisje | S | M2; `opens_on: {season: summer}` | solve | heatwave_overload | 42 d → closes `preventive_transformer_swap`; heat event arrives; rep −5 | 800 · €8k | transformator, energietransitie |
 | `talk_regulation` | Wie houdt toezicht? | S | t2_daily_boards | talk_to jeroen, 3 topics | — | — | 400 | acm, energiewet (new, verify), compensatie (new, verify) |
 | `coach_intake_lead` | Sanne leert verbeteren | S | t2_daily_boards, trust intake ≥ 1 | coach sanne, 3 sessions | — | — | 700 · rep 3 · support (intake) | coaching_kata, respect_for_people |
@@ -493,6 +503,8 @@ Gates: `first_kpi_review`, maturity 2, belt green.
 ### 3.6 Act IV — Flow door de regio (tier 3)
 
 Gates: `t2_first_okr`, maturity 3, belt black, rep ≥ 50. Lindeveld and Havenzij come in as areas of the same network (§2.14).
+
+**The opener (Drie winters):** `t3_interim_mt`, Frank's first MT as interim director, a group talk whose opening reads the Frank facts (sponsor or regime). The storm (`prep_storm_week`) falls in this year, after Ruud has left. Under the regime the act's big shortcut is `t3_consultants` (Lean-programma 2.0); the way back is a team-led `t3_kaizen_week` with Frank's agreement (`frank_interim`).
 
 **New tier-3 problems:**
 
@@ -511,7 +523,8 @@ Gates: `t2_first_okr`, maturity 3, belt black, rep ≥ 50. Lindeveld and Havenzi
 
 | id | Titel | Kind | Requires | Goal | Problem | Fork / deadline → door | Rewards | Teaches |
 |---|---|---|---|---|---|---|---|---|
-| `t3_map_region` | Eén regio, drie gebieden | M | t2_first_okr, M3, B, rep ≥ 50 | map_stream connections (queue_count) across the areas | — | — | 2,600 · €20k · unlocks vsm_view, Lindeveld, Havenzij, it_campus | value_stream_mapping (new) |
+| `t3_interim_mt` *(new, 2026-10-16)* | De interim-directeur | M | t2_first_okr, `flag:ruud_seconded` | talk_to `interim_mt` (a group talk), outcome ≥ heard | — | sets `flag:interim_sponsor` or `flag:interim_regime` (from the Frank facts), plus `strategy_early` / `regime_one_stream` / `dashboard_agreed` by outcome | 1,200 · rep 3 | respect_for_people, kpi_alignment, catchball |
+| `t3_map_region` | Eén regio, drie gebieden | M | t3_interim_mt, M3, B, rep ≥ 50 (regime: temptation `t3_consultants`, Lean-programma 2.0) | map_stream connections (queue_count) across the areas | — | — | 2,600 · €20k · unlocks vsm_view, Lindeveld, Havenzij, it_campus | value_stream_mapping (new) |
 | `fix_long_drives` | Een uur rijden per klus | M | t3_map_region | solve | long_drives | — | 2,800 · €25k | waste_transport |
 | `fix_training_capacity` | Het opleidingscentrum zit vol | M | fix_long_drives | solve | training_capacity | 63 d (the September intake) → closes `apprentice_cohort_september`; train-the-trainer remains | 3,000 · €25k | monteurstekort, respect_for_people |
 | `t3_crew_strategy` *(new)* | Waar zetten we de monteurs in? | M | fix_training_capacity (done **or** failed) | strategy, forecast 91 d. Options: Lindeveld satellite crew (needs `chose:long_drives:satellite_depot` **or** `repaired:long_drives`); daytime outage reserve (needs `chose:planning_reshuffle:daytime_outage_crew` **or** `standardised:planning_reshuffle`); a Havenzij street-works crew (needs `done:fix_training_capacity`); baseline: spread evenly | — | sets `flag:crew_<option>`; read by `t4_investment_plan` | 2,800 · €20k | path dependence, capacity_planning |
@@ -531,6 +544,8 @@ Gates: `t2_first_okr`, maturity 3, belt black, rep ≥ 50. Lindeveld and Havenzi
 ### 3.7 Act V — Het systeem (tier 4)
 
 Gates: `t3_stop_starting`, maturity 4, belt black, rep ≥ 65.
+
+**Drie winters:** Ruud returns when the act opens (`ruud_returns`, `flag:ruud_back`; the call rule ends) and names his last day, the campaign's last deadline (`ruud_retirement`, the first 1 April at least 240 days after the act opens). Frank goes back to his manager's role. The waiting list's `date_kept` is hoshin's true north.
 
 **New tier-4 problems:**
 
@@ -555,7 +570,7 @@ Gates: `t3_stop_starting`, maturity 4, belt black, rep ≥ 65.
 | `fix_grid_losses_theft` | Stroom die verdwijnt | M | same | solve | grid_losses_theft | **N** (t4_detect): saves money, no flow | 3,800 · €45k | systems_thinking, customer_value |
 | `fix_flex_market_unused` | Een markt zonder bieders | M | any_of the fork | solve | flex_market_unused | — | 4,600 · €40k | gopacs (new), netcongestie |
 | `t4_investment_plan` | Het investeringsplan | M | fix_flex_market_unused | strategy, forecast 182 d, among the unlocked options (see below) | — | — | 4,800 · €50k | capacity_planning, systems_thinking, path dependence |
-| `t4_new_ci_lead` | De nieuwe CI-lead | M (far-future placeholder) | t4_investment_plan, MB | *not designed yet*: the idea is to coach Lotte through one improvement-kata cycle | — | — | — | coaching_kata |
+| `de_opvolger` *(replaces `t4_new_ci_lead`, 2026-10-16)* | De opvolger | Finale (no slot, cannot fail) | t4_investment_plan, or six weeks before Ruud's last day | sequence: `successor_choice` with Ruud → the chosen successor's talk (≥ partial) → the last scene `first_question` | — | Ruud's last day (`ruud_retirement`) is a dated beat: missing it means Ruud is not at the table | title Coach · Ruud's Kata card · rep 5 | coaching_kata, respect_for_people |
 | `fix_gas_phaseout` | Onderhoud aan een verdwijnend net | S | t4_hoshin | solve | gas_phaseout | — | 1,500 · €12k | energietransitie, transitievisie_warmte (new) |
 | `talk_asset_manager` | Hoe gezond is een kabel? | S | t4_hoshin | talk_to ingrid, 3 topics | — | — | 800 | nta_8120, asset_health_index |
 | `sector_grid_2035` | Het net van 2035 | S | talk_asset_manager | talk_to femke + ingrid, 2 topics each | — | — | 800 | energietransitie, ii3050 (new) |
@@ -575,7 +590,7 @@ Gates: `t3_stop_starting`, maturity 4, belt black, rep ≥ 65.
 | Meer monteurs in Lindeveld | `any: [flag:crew_lindeveld, repaired:long_drives]` | "In Lindeveld moet de basis eerst kloppen." |
 | Klassiek verzwaren (baseline) | — | always open; the most expensive per unit of capacity (estimate) |
 
-**Finale:** a far-future placeholder (Merijn, 2026-10-15). It stays in the catalogue as an id and an idea, without goals, texts or rewards, until the rest is built.
+**Finale (2026-10-16, Drie winters):** `de_opvolger` replaces the placeholder. Ruud returns when Act V opens and names his last day; the player coaches their own successor. Candidates by facts: Anouk (standard designs held, developed), Ahmed (the trainer), Sanne (coached), or Lotte Smit from outside (always offered). The last scene ends on the player's first Kata question, judged by nothing. Design: `2026-10-16-drie-winters-arc.md` §8. The earlier idea (coach Lotte as the new CI lead of Lindeveld) is dropped.
 
 ### 3.8 Act VI — Het digitale net (IT value streams, Phase G)
 
@@ -621,12 +636,12 @@ Problems carry `track: it` and `content/problems_it.yaml`, with their own maturi
 
 | Tier / act | Main | Milestone | Side | Recurring | Training | Recovery | Total | New problems |
 |---|---|---|---|---|---|---|---|---|
-| Tier 1 (Acts 0–II) | 13 | 1 | 13 | 2 | 5 | — | 34 | 0 (uses all 18) |
+| Tier 1 (Acts 0–II) | 13 | 2 | 13 | 2 | 5 | — | 35 | 0 (uses all 18) |
 | Tier 2 (Act III) | 7 | 1 | 6 | 1 | — | 1 | 16 | 8 |
-| Tier 3 (Act IV) | 10 | — | 5 | 1 | — | — | 16 | 8 |
-| Tier 4 (Act V) | 7 | 1 | 5 | 1 | — | 1 | 15 | 6 |
+| Tier 3 (Act IV) | 11 | — | 5 | 1 | — | — | 17 | 8 |
+| Tier 4 (Act V) | 6 + finale | 1 | 5 | 1 | — | 1 | 15 | 6 |
 | IT (Act VI) | 9 | — | 3 | 1 | — | — | 13 | 9 |
-| **All** | **46** | **3** | **32** | **6** | **5** | **2** | **94** | **31** |
+| **All** | **46 + finale** | **4** | **32** | **6** | **5** | **2** | **96** | **31** |
 
 On top of these: generated repair quests (`repair_<problem>`, 0 to n per playthrough, one per poor fix).
 
@@ -715,5 +730,5 @@ Tasks are independent unless a dependency is named. **Code** tasks touch `game/s
    - the strategy goal judged by forecast among the unlocked options only.
 
    Built as C19, C20 and C11, with K11.
-6. **Finale:** a good plan, but far in the future. `t4_new_ci_lead` is a placeholder id with no detailed design.
+6. **Finale:** a good plan, but far in the future. `t4_new_ci_lead` is a placeholder id with no detailed design. *Superseded 2026-10-16 by the arc* Drie winters *(PLAN §4.0 item 6): the finale is `de_opvolger` (§3.7).*
 7. **IT runs in parallel from tier 3**, after `t3_map_region` (§3.8).
