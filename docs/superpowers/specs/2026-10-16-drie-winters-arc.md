@@ -168,6 +168,8 @@ When `t2_first_okr` is done and `acm_visit` judged (passed, or failed with its r
 
 ### 4.2 `ruud_farewell`: the farewell talk
 
+**The programme is real; the secondment is fiction** (Fable's note, 2026-10-16). The *Landelijk Actieprogramma Netcongestie* (LAN) was set on 21 December 2022 and sent to the Tweede Kamer by the minister for Klimaat en Energie the day before (Kamerstuk 29 023, nr. 385). It is not an office with staff of its own: it was drawn up, and is carried, **jointly by the grid operators, the ACM, the Rijk, the provinces and municipalities (*medeoverheden*) and market parties**, who each committed to its actions; a special coordinator led it at the start. Its work runs in lines; the 2026 progress letters name them *Beter benutten*, *Sneller bouwen* and *Slimmer inzicht*. The game says only that: Ruud is lent to the programme by Voltana, a fictional operator, for a year, to work on the waiting list from the regions' side. **No real person is named or voiced**: not the minister, the coordinator or any official; Ruud's colleagues there stay offstage, and the lines never claim what the programme decided. The ministry is named as the Rijk did at the time ("het ministerie"), never by a minister's name. Source lines go into `content/dialogs.yaml` as comments above the dialog (below), so the source verifier can find them.
+
 Ruud was never a dialog target (Acts 0–II scripts, audit change to spec §7.4). He becomes one here, and only here and in §8, because in a farewell the coach is the one who has something to say. The talk is a check-in: no proposal to win. Steering is fixing mode, as in every check-in. Its concern, Ruud's 2012 programme, is the audit's planned reveal (audit §5.3: "reveals his own failed 2012 verbeterprogramma … a lesson on sustaining"). Here it is told at the moment it matters most.
 
 New archetype `mentor` (§10): base 55; `experience` ×1.5 (a mentor wants to hear what *you* learned); `show_data` ×0.5 (he has seen your numbers).
@@ -181,15 +183,20 @@ dialogs:
     tutorial: true                          # a farewell cannot be ruined (R-D5)
     patience: 12
     place: directie.ruud_office
+    # source: Landelijk Actieprogramma Netcongestie (LAN), set 21 December 2022; Kamerbrief of the minister for
+    #   Klimaat en Energie, 20 December 2022, Kamerstuk 29 023 nr. 385: "gezamenlijk opgesteld door netbeheerders,
+    #   ACM, medeoverheden, het Rijk en marktpartijen". Lines Beter benutten / Sneller bouwen / Slimmer inzicht
+    #   (progress letters 2026). Waiting list "ruim 15.000 aanvragen voor afnamecapaciteit", mid-2026: LAN
+    #   voortgang najaar 2026 (see Sources). Ruud's secondment and everyone he meets there are fiction. (verify)
     # start: mentor 55 + 0 (neutraal) + 0 + 0 (trust 50) + 0 = 55, Luistert
     #   + 5 for each of: committed:anouk_owns_tray, done:coach_intake_lead, D23 earned (he saw you develop people): up to 70
     opening: "Kom binnen. Doe de deur maar dicht. Dat doe ik nooit, dus je weet dat het iets is."
-    position: {text: "Den Haag heeft gebeld. Het Landelijk Actieprogramma Netcongestie wil iemand uit de regio, een jaar lang, voor de wachtlijst. Ik heb ja gezegd. Maandag over twee weken begin ik.", tags: [claim]}
+    position: {text: "Den Haag heeft gebeld. Het Landelijk Actieprogramma Netcongestie, je weet wel: het ministerie, de netbeheerders, de ACM, provincies en gemeenten, sinds 2022 samen aan één tafel. Ze willen een jaar lang iemand uit een regio erbij, voor de wachtlijst. Voltana leent mij uit. Ik heb ja gezegd. Maandag over twee weken begin ik.", tags: [claim]}
     layers:
       - id: interest
         at: 60
         via: [open_question, inquiry, paraphrase]
-        text: "Vijftienduizend aanvragen op de lijst, landelijk. Daar zit mevrouw El Amrani tussen, en de bakker, en De Linde. Ik wil weten of wat wij hier leren ook daar werkt. En eerlijk: als niemand uit de regio gaat, schrijven ze het programma in Den Haag. Zonder monteur erbij."
+        text: "Vorig jaar stonden er al ruim vijftienduizend aanvragen op de lijst, landelijk, en sinds die zomer staan er ook huishoudens op. Daar zit mevrouw El Amrani tussen, en de bakker, en De Linde. Ik wil weten of wat wij hier leren ook daar werkt. En eerlijk: aan die tafel zitten directies en beleidsmensen. Netbeheerders ook, maar niemand die weet hoe een dossier bij Anouk op de stapel ligt."
         tags: [claim, feeling]
       - id: concern
         at: 72
@@ -796,11 +803,13 @@ dialogs:
         ahmed: "Ahmed. Die belde 's nachts een gepensioneerde monteur uit zijn bed. Nu bellen ze hem. Ja."
         sanne: "Sanne. Die vond dat jij irritant was, omdat je alleen maar vroeg. Ja. Juist daarom."
         lotte: "Lotte Smit, van buiten. Goed. Dan begint zij waar jij begon. Bij de brief op mijn bureau."
+        lotte_passed_over: "Lotte Smit, van buiten. … Goed. Het is jouw keuze, en ik vraag er niet naar. Eén ding wel: weet {insider_short} het al? Vertel het {hem_haar} zelf. Niet via de mail."   # §8.6: an insider qualified
         lotte_only: "Er is niemand van binnen die dit kan overnemen. Dat zegt iets over drie jaar, niet over jou als mens. Lotte Smit begint maandag. Zij begint waar jij begon."
     outcomes:
       lifted: "Dan ga ik naar huis met iets wat ik in 2012 niet had. Een naam."
       heard: "Goed. Ga het haar vragen. Of hem. Niet vertellen. Vragen."
     sets_flags_on_choice: [successor:{chosen}]
+    # §8.6: choosing lotte while an insider was offered also sets passed_over:{insider}
 ```
 
 ### 8.4 The successor's talk: four variants
@@ -1012,7 +1021,84 @@ dialogs:
     final_card: true                       # then the final card (§8.2) and the credits; free play continues after
 ```
 
+**When Lotte was chosen over an insider, the scene changes** (§8.6): the insider sits at the table too, and the player's first question lands on them.
+
 No ending is a failure. Whichever question comes first is "the first Kata question, asked by the player" (PLAN §4.0). The epilogue only *shows* what a coach's first move does: the successor writes, or thinks. Ruud's line is the last thing the coach says, and the most he ever tells.
+
+### 8.6 Lotte chosen while an insider qualified: the table reads it
+
+Fable's note (PLAN §10, 2026-10-16): the successor choice has a **visible consequence, never a score**. Respect for people says developing talent pays; a player who developed Anouk, Ahmed or Sanne and then hired from outside should *see* what they passed over, without being told off. Choosing Lotte when nobody qualified stays as designed: told kindly, no change at the table.
+
+**The rule.**
+- When the player picks `lotte` and at least one insider was offered, `successor_choice` sets `passed_over:<insider>` for the **one** insider who sits at the table: the offered insider with the highest trust (ties: Anouk, Ahmed, Sanne, in that order). The others are not named; one face is enough.
+- `successor_lotte` (§8.4) is unchanged. Lotte does not know, and the talk is hers.
+- `first_question` takes the variant `passed_over` (below): the insider is at the table, with Lotte and (if he is still there) Ruud. Lotte's first dossier runs through the insider's work, so she has asked them to come. **The scene's person is the insider, not Lotte:** whatever the player's one move is, the insider answers it first. That is the consequence: the player's first Kata question as a director goes to the person they did not choose, and that person answers it well.
+- Nothing is scored: no reputation, no trust change, no discovery lost. The final card's `people_line` names the insider among the people the player developed, as it would anyway, and adds one sentence (`final_card_extra`). Free play continues; the insider stays, with one later beat.
+- Variant needs: `{all: [successor:lotte], any: [passed_over:anouk, passed_over:ahmed, passed_over:sanne]}`.
+
+```yaml
+dialogs:
+  - id: first_question
+    variants:
+      - id: passed_over
+        needs: {all: [successor:lotte], any: [passed_over:anouk, passed_over:ahmed, passed_over:sanne]}
+        person: "{insider}"                  # the move goes to the insider; Lotte is present and has lines
+        opening_by_insider:
+          anouk: "Lotte legt een A3 op tafel. Het dossier van de bakkerij in Havenzij. 'Ik heb Anouk gevraagd erbij te komen. Het ontwerp ligt bij haar.' Anouk knikt naar jou. 'Hoi. Ze vroeg het aardig.' Ze schuift het A3 een stukje naar zich toe en begint al te lezen."
+          ahmed: "Lotte legt een A3 op tafel. Het dossier van de bakkerij in Havenzij. 'Ik heb Ahmed gevraagd erbij te komen. Ik snap niet waarom de monteur twee keer moest komen.' Ahmed steekt een hand op naar jou. 'Ik kom net van het terrein. Laat eens zien.'"
+          sanne: "Lotte legt een A3 op tafel. Het dossier van de bakkerij in Havenzij. 'Ik heb Sanne gevraagd erbij te komen. Het begint bij Intake, zei iedereen.' Sanne kijkt even naar jou, dan naar het A3. 'Nou. Ik hoorde het al. Iedereen hoort alles hier.'"
+        endings:                            # keyed on the move, as in the main scene; the insider answers, Lotte watches
+          kata_target:
+            player: "Wat wil je bereiken?"
+            npc_by_insider:
+              anouk: "Anouk wacht even. Dan, tegen Lotte: 'Dat ze binnen zes weken een datum hebben die klopt. Toch?'"
+              ahmed: "Ahmed tikt op het A3. 'Eén keer komen. Niet twee.' Dan, tegen Lotte: 'Zo begin je. Met wat je wilt zien.'"
+              sanne: "Sanne leunt naar voren. 'Dat de aanvraag de eerste keer compleet is. Dan scheelt het jou drie weken.'"
+            lotte: "'Dat had ik dus aan jou moeten vragen,' zegt Lotte tegen {insider_short}. Het klinkt niet bitter. Het klinkt als iemand die het opschrijft."
+          kata_actual:
+            player: "Waar sta je nu?"
+            npc_by_insider:
+              anouk: "'Het ontwerp is af, op één tekening na.' Anouk draait het A3 naar Lotte. 'Kijk, hier. Daar wacht het. Niet bij mij, bij de netstudie.'"
+              ahmed: "'De eerste keer stond de meterkast vol dozen. De tweede keer was de klant er niet.' Ahmed haalt zijn schouders op. 'Dat staat niet op dat A3. Dat zie je alleen als je erheen gaat.'"
+              sanne: "'Het lag drie weken in de middelste bak. Er miste een foto.' Sanne kijkt naar Lotte. 'Rachid weet precies welke foto. Vraag het hem.'"
+            lotte: "Lotte kijkt van het A3 naar {insider_short}. 'Hoe weet je dat allemaal?' — '{insider_answer}'"
+          open_question:
+            player: "Vertel eens. Hoe zie jij het?"
+            npc_by_insider:
+              anouk: "Anouk lacht kort. 'Drie jaar geleden had ik hier een bergje met een vlag op een post-it.' Ze wijst. 'Nu weet ik waar het ligt. Dat is het hele verschil.'"
+              ahmed: "'Weet je wat Henk zou zeggen?' Ahmed grijnst. 'Het vak is overal hetzelfde, alleen de kabel verschilt.' Hij schuift het A3 terug naar Lotte. 'Ga kijken. Ik ga mee, als je wilt.'"
+              sanne: "'Eerlijk? Het postkantoor ziet alles als eerste.' Sanne zegt het rustig, alsof ze het al vaker heeft gezegd. 'Daar moet ze beginnen.'"
+            lotte: "Lotte, tegen {insider_short}: 'Mag ik je volgende week vaker bellen?' {insider_short} knikt."
+          silence:
+            player: "(je zegt niets en wacht)"
+            npc: "Het blijft even stil. Dan begint {insider_short} te praten. Niet tegen jou: tegen Lotte. Rustig, punt voor punt, zoals jij het drie jaar lang vroeg."
+            lotte: "Lotte schrijft. Na een minuut kijkt ze op, naar jou. '{Zij_Hij} doet dit vaker, hè.'"
+          steering:
+            player: "{steer_line}"
+            npc: "{insider_short} wacht tot je klaar bent. Dan, tegen Lotte: 'Dat is één manier. Mag ik je laten zien hoe het op de vloer gaat?'"
+            lotte: "Lotte kijkt van jou naar {insider_short}, en knikt naar {insider_short}."
+          pressure_or_confront:
+            player: "{pressure_line}"
+            npc: "… {insider_short} legt een hand op het A3. 'Laten we gewoon gaan kijken. Met z'n tweeën.'"
+            lotte: "Lotte staat al op."
+        ruud: "Ruud zegt niets. Hij kijkt naar {insider_short}, en dan naar jou."   # every ending; dropped when past:ruud_retirement
+        insider_answer:
+          anouk: "Ik heb het drie jaar lang gevraagd gekregen. Op een gegeven moment ga je het jezelf vragen."
+          ahmed: "Iemand vroeg me altijd: waarom deed je dat zo? Op een dag vroeg ik het mezelf."
+          sanne: "Iemand stelde me steeds dezelfde vijf vragen. Irritant. Nu stel ik ze zelf."
+        final_card_extra: "{insider_name} zat ook aan tafel. Je eerste vraag als directeur ging naar {hem_haar}, en {hij_zij} wist het antwoord."
+```
+
+**Ruud is silent in every ending.** In the main scene Ruud says one line per ending, the most he ever tells. Here he says nothing, whatever the move: the only time in the game the coach is silent when he could speak. He looks at the insider, then at the player. The player draws the conclusion, or does not; the game never says it (nothing handed over, no score). Without Ruud (`past:ruud_retirement`) the scene ends on Lotte's line.
+
+**Later, in free play** (a one-line beat, no talk, 14 days after the finale, from the insider; never a reproach):
+- Anouk: "Lotte belt me elke dinsdag. Over de tekeningen, zegt ze. Het gaat nooit over de tekeningen."
+- Ahmed: "Lotte ging mee in de bus. Ze vroeg waarom ik de mof zo legde. Ik zei: goeie vraag."
+- Sanne: "Lotte zit op dinsdag een uur bij ons aan de bak. Rachid legt het haar uit. Hij vindt het geweldig."
+
+The insider coaches the newcomer anyway: the talent the player developed does the job without the title. That is the consequence, and it is kind.
+
+**Schema needs** (adds to §10): the fact `passed_over:<id>` (S13); a scene variant whose `person` is a token, with `opening_by_insider`, `npc_by_insider`, a second speaker's line (`lotte`) per ending and one shared third speaker's line (`ruud`) (extends S10); `final_card_extra`; the one-line beat after the finale (S18). Tokens `{insider}`, `{insider_short}`, `{insider_name}`, `{hij_zij}`, `{hem_haar}`, `{Zij_Hij}` follow the insider's pronoun (Anouk, Sanne: zij/haar; Ahmed: hij/hem).
 
 **The bookend in Act 0.** Lotte's position line, "Waar moet ik beginnen?", is the player's own first line to Ruud. A one-line beat is added to `training_mon` (the player speaks once, as a choice-free line): `{on: accepted, who: player, text: "Waar moet ik beginnen?"}` and Ruud: "Bij de klant. En dan loop je terug." A player who meets Lotte hears their own first question come back.
 
@@ -1233,7 +1319,7 @@ Merijn's standing rule (PLAN §6.2): each takes its recommended option, **bold**
 5. **The storm without Ruud.** **(a) The first storm waits for the secondment (`first_requires`), in the storm season October–March.** (b) The storm opens in winter as drafted, with or without Ruud. *(a) is the arc; (b) loses the test for fast or slow players.*
 6. **After the finale.** **(a) Free play continues: sustain, drift, repairs and seasons go on; Ruud sends postcards.** (b) The game ends with credits. *(a) respects a player who wants to keep their region; nothing is lost by stopping.*
 7. **Ruud as a dialog target.** **(a) Only in the farewell and the successor choice, both unruinable; never a persuasion.** (b) Never; the farewell as a cutscene. *(a) lets the player give back what the coach gave: listening.*
-8. **The secondment's place.** **(a) Den Haag, the Landelijk Actieprogramma Netcongestie (a real public programme), with Ruud fictional.** (b) A fictional national programme. *(a) grounds the waiting list in the real sector; no real person or organisation is impersonated.*
+8. **The secondment's place.** **(a) Den Haag, the Landelijk Actieprogramma Netcongestie (a real public programme of the Rijk, the grid operators, the ACM, the provinces and municipalities and market parties, since December 2022; described as such in `ruud_farewell`, §4.2), with Ruud and everyone he meets there fictional.** (b) A fictional national programme. *(a) grounds the waiting list in the real sector; no real person or organisation is impersonated.*
 9. **`t3_interim_mt` as a short main.** **(a) Yes: one talk, the Act IV opener, no insights.** (b) A beat without a mission. *(a) makes the variant the player's work, not a cutscene.*
 
 ---
@@ -1243,6 +1329,7 @@ Merijn's standing rule (PLAN §6.2): each takes its recommended option, **bold**
 - KNMI on storm seasons: "Storm kan in ons land het hele jaar door voorkomen, maar de kans op een flinke storm … is het grootst in de periode oktober tot en met maart" — KNMI, *Herfststormen*, https://www.knmi.nl/over-het-knmi/nieuws/herfststormen (search extract; **verify**).
 - First frost: national average 21 October (1991–2020) versus 15 October (1961–1990); De Bilt about 2–3 November (older figures) — Hart van Nederland, *Eerste vorst van het jaar*, https://www.hartvannederland.nl/weer/weerbericht/artikelen/eerste-vorst-van-het-jaar-en-warme-dagen-op-komst; Weerplaza, https://www.weerplaza.nl/weerinhetnieuws/eerste-vorst-van-het-seizoen-in-de-bilt/6703/ (search extracts; **verify** against the KNMI climate tables).
 - Waiting list: "ruim 15.000 aanvragen voor afnamecapaciteit" at regional operators, mid-2026 — *Actualisatie van de voortgang LAN najaar 2026* (Kamerbrief annex), https://omgevingsweb.nl/wp-content/uploads/2026/10/108251533-Bijlage-Actualisatie-van-de-voortgang-LAN-najaar-2026.pdf; Solar Magazine on the feed-in queue (8,558 requests, end of June 2026), https://solarmagazine.nl/nieuws-zonne-energie/i44990/wachtlijst-teruglevering-bij-regionale-netbeheerders-krimpt-licht-maar-gevraagd-vermogen-stijgt-13-procent (search extracts; **verify**).
+- Landelijk Actieprogramma Netcongestie: set on 21 December 2022; Kamerbrief *Landelijk Actieprogramma Netcongestie*, minister voor Klimaat en Energie, 20 December 2022, Kamerstuk 29 023 nr. 385, https://zoek.officielebekendmakingen.nl/kst-29023-385.pdf ("gezamenlijk opgesteld door netbeheerders, ACM, medeoverheden, het Rijk en marktpartijen"; the ministry's decision note of 5 December 2022 in the same words); the programme text, https://www.energie-nederland.nl/wp-content/uploads/2023/06/Landelijk-Actieprogramma-Netcongestie.pdf; the lines *Beter benutten*, *Sneller bouwen*, *Slimmer inzicht* as named in the 2026 progress letters (search extracts; **verify** the line names against the latest letter).
 - Households on the waiting list from 1 July 2026: KHN, https://khn.nl/nieuws/netcongestie-vanaf-1-juli-2026-ook-kleinverbruikers-op-de-wachtlijst (as cited in the Acts 0–II scripts).
 - AOW age 67 years and 3 months for 2029 and 2030 — Kamerbrief *Vaststelling AOW-leeftijd 2030* (8 November 2024), https://awvn.nl/app/uploads/2024/11/Kamerbrief-vaststelling-AOW-leeftijd-2030-en-pensioenrichtleeftijd-2026.pdf; Rijksoverheid, https://www.rijksoverheid.nl/onderwerpen/algemene-ouderdomswet-aow/aow-leeftijd.
 - Kata coaching: Rother, M. (2009), *Toyota Kata* (the five questions and the reflection block).
