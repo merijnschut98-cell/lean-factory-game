@@ -186,8 +186,8 @@ func test_the_mission_is_played_end_to_end() -> void:
 	assert_eq(s.phase_of(PROBLEM), "active")
 
 	_investigate(s)
-	var keys := s.region.problems[PROBLEM].clues.filter(func(c: Clue) -> bool: return c.key)
-	assert_eq(s.clues_found(PROBLEM).size(), keys.size(), "the four key clues, no red herring")
+	var keys := s.region.problems[PROBLEM].clues.filter(func(c: Clue) -> bool: return c.key and c.dialog.is_empty())
+	assert_eq(s.clues_found(PROBLEM).size(), keys.size(), "the four key clues a gemba finds (the fifth is Joost's, in a talk), no red herring")
 	assert_eq(s.phase_of(PROBLEM), "spotted")
 	assert_eq(s.ask_coach()["stage"], "understand")
 
@@ -256,8 +256,8 @@ func test_the_second_mission_is_played_end_to_end() -> void:
 	s.ask(INTAKE, "walk")
 	s.use_tool(INTAKE, "listen_in")
 	var problem: ProblemDef = s.region.problems[problem_id]
-	var keys := problem.clues.filter(func(c: Clue) -> bool: return c.key)
-	assert_eq(s.clues_found(problem_id).size(), keys.size(), "all key clues found at the intake")
+	var keys := problem.clues.filter(func(c: Clue) -> bool: return c.key and c.dialog.is_empty())
+	assert_eq(s.clues_found(problem_id).size(), keys.size(), "all key clues a gemba finds at the intake (Sanne's is in her talk)")
 	var cause: int = Investigation.cause_options(problem, s.region.problem_list())["correct"]
 	var a3 := {"waste": "defects", "cause": cause, "cm": "poka_yoke_application", "prediction": problem.kpi,
 		"evidence": s.clues_found(problem_id).map(func(c: Clue) -> String: return c.id)}
