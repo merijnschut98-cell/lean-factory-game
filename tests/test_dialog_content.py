@@ -352,3 +352,20 @@ def test_a_persuasion_may_speak_after_a_later_fact(real, tmp_path):
     _dialog(bad, "ahmed_after_henk")["beats_after"] = [{"when": "committed:frank_kpi_targets", "text": "Ja."}]
     with pytest.raises(bc.ContentError, match="beats_after"):
         _load(tmp_path, bad)
+
+
+def test_the_audit_s_beats_and_frank_s_third_route_are_in(real):
+    """Tier-1 content audit C11 (Ahmed grieves first), C15 (the partial that
+    upgrades when Frank signs is felt) and C5 (Frank's third route)."""
+    henk = next(m for m in real["missions"]["missions"] if m["id"] == "save_henks_knowledge")
+    assert henk["deadline_beat"] == "henk_farewell"
+    assert _dialog(real, "ahmed_after_henk")["trigger"] == {
+        "beat": "henk_farewell", "after_days": 16, "morale_below": 50,
+        "needs": {"any": ["done:save_henks_knowledge", "failed:save_henks_knowledge"]}}
+    for dialog_id, words in [("joost_output_kpi", "Nu sta ik er ook echt achter."),
+                             ("sanne_kpi", "Joost en ik presenteren donderdag. Samen.")]:
+        (line,) = _dialog(real, dialog_id)["beats_after"]
+        assert line["when"] == "committed:frank_kpi_targets"
+        assert line["text"].startswith("Frank heeft getekend.") and words in line["text"]
+    routes = [r["needs"] for r in _dialog(real, "frank_kpi_targets")["block"]["routes"]]
+    assert {"all": ["forecast_positive:kpi_board"]} in routes

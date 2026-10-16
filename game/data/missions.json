@@ -830,6 +830,7 @@
    "act": 1,
    "arc": "henk",
    "briefing": "Henk Verbeek werkt veertig jaar bij Voltana. Als in een oude wijk de stroom uitvalt, belt iedereen Henk. Over acht weken geeft hij zijn afscheidsfeest; de uitnodiging hangt al op het prikbord. Vorige week zocht Ahmed Bouzid anderhalf uur naar een fout in een oude papierloodkabel en belde toen... Henk. Zorg dat Henks vakmanschap niet met hem de deur uit gaat.",
+   "deadline_beat": "henk_farewell",
    "deadline_days": 56,
    "debrief": "Gisteren vond Ahmed zelf de fout in een papierloodkabel in Nova-Oud. Henk stond ernaast en zei niets. Dat was het compliment. Henk kan met een gerust hart met pensioen.",
    "debrief_variants": {

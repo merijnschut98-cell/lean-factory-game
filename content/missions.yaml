@@ -578,6 +578,7 @@ missions:
     fail: "Henk is met pensioen. Zijn afscheid was mooi, maar zijn kennis van de oude netten is met hem vertrokken. Een buddy die het kan voordoen is er niet meer. Wat er op papier staat, en wat Ahmed zelf leert, moet het nu doen."
     goal: {type: solve, problem: knowledge_drain}
     deadline_days: 56
+    deadline_beat: henk_farewell   # his farewell party is that day, his knowledge saved or not (dated beat)
     fail_closes: [skills_matrix_buddy, twi_job_instruction]
     teaches: [monteurstekort]
     rewards: {xp: 600, budget: 6000}
