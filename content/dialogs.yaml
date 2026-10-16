@@ -331,6 +331,7 @@ dialogs:
       needs: {any: [done:save_henks_knowledge, failed:save_henks_knowledge]}
     mood: stil
     patience: 8
+    prompt: "Ahmed is stil sinds Henk weg is."
     opening: "Hé."
     position: {text: "Gaat wel.", tags: [claim]}
     layers:

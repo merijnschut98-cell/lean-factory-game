@@ -187,3 +187,15 @@ func test_ruud_asks_about_a_hard_talk_once() -> void:
 	assert_true("Joost" in about["text"], about["text"])
 	assert_eq(s.ask_coach()["stage"], before["stage"], "one ask, then the mission again")
 	assert_eq(s.ask_coach("fix_wrong_joint"), {"kind": "not_main"}, "never about a side mission")
+
+
+## The dagstart names who could use a talk (spec §5.7), never more than one.
+func test_the_dagstart_names_an_open_checkin() -> void:
+	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
+	assert_eq(s.checkin_prompts(), [])
+	s.missions.done_once["save_henks_knowledge"] = true
+	s.ask_coach()
+	var lines := s.checkin_prompts()
+	assert_eq(lines.size(), 1)
+	assert_eq([lines[0]["person"], lines[0]["name"]], ["ahmed", "Ahmed Bouzid"])
+	assert_false(str(lines[0]["line"]).is_empty())

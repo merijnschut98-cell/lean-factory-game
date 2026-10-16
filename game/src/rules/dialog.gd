@@ -147,6 +147,7 @@ var _uses: Dictionary = {}
 var _mood_asked := false
 var _lead_in_said := false
 var _co_offered := false
+var _warned := false
 
 
 ## `start`: {openness, trust, mood, found (clue id → true), facts (fact → true),
@@ -244,6 +245,9 @@ func say(move: String, pick: String = "") -> Dictionary:
 			openness = mini(openness, maxi(int(next["at"]) + CEILING, before))
 		if openness < RUINED_BELOW:
 			outcome = "ruined"
+		elif band_of(openness) == 0 and band_of(before) > 0 and not _warned and not def.warning.is_empty():
+			_warned = true
+			reply = _line(def.warning)
 	if outcome.is_empty():
 		patience -= 1
 		if patience <= 0:

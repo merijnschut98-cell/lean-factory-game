@@ -269,6 +269,8 @@ func knows(atom: String) -> bool:
 			return done_once.has(atom.get_slice(":", 1))
 		"failed":
 			return failed_once.has(atom.get_slice(":", 1))
+		"accepted":
+			return progress.has(atom.get_slice(":", 1)) or done_once.has(atom.get_slice(":", 1))
 		"checked":
 			var st: ProblemState = region.state.get(atom.get_slice(":", 1))
 			return st != null and st.phase in [P.CHECKED, P.RESOLVED]

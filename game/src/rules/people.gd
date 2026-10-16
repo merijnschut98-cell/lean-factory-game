@@ -42,8 +42,14 @@ const BUY_IN_OF := {"commitment": "commitment", "partial": "none", "compliance":
 const RETRY_MINUTE := 8 * 60 + 30
 ## A check-in that lifted someone rests this long (§5.7).
 const CHECKIN_REST_DAYS := 14
-## A check-in prompt nobody answers expires after this many days (§5.7).
+## A check-in prompt nobody answers expires after this many days, at no cost
+## (§5.7). The cadence keeps check-ins a kindness, not a chore: at most
+## PROMPTS_AT_ONCE open, at most PROMPTS_PER_WEEK opened in any seven days,
+## and a person's next prompt PROMPT_REST_DAYS after their last one opened.
 const PROMPT_DAYS := 3
+const PROMPTS_AT_ONCE := 1
+const PROMPTS_PER_WEEK := 2
+const PROMPT_REST_DAYS := 14
 ## People leave rarely (Merijn, 2026-10-15): morale below LEAVE_MORALE for
 ## LEAVE_DAYS, and LEAVE_IGNORED check-in prompts left unanswered. It closes
 ## a door (their talks, their ownership of a fix), never the game.
@@ -75,6 +81,9 @@ var heard_facts: Dictionary[String, bool] = {}
 ## check-in id → when its prompt opened (minutes); person id → since when
 ## morale is below LEAVE_MORALE, and how many prompts expired unanswered.
 var prompts: Dictionary[String, int] = {}
+## When prompts opened (the last seven days), and each person's last one.
+var prompt_log: Array[int] = []
+var last_prompt: Dictionary[String, int] = {}
 var low_since: Dictionary[String, int] = {}
 var ignored: Dictionary[String, int] = {}
 ## Person ids of colleagues who left (to another grid operator).
@@ -96,8 +105,9 @@ func _init(person_defs: Array[PersonDef], dialog_defs: Array[DialogDef], lines: 
 
 func _reset() -> void:
 	for state: Dictionary in [trust, morale, memory, revealed, outcomes, agreed, talks, rest_until, heard_facts, prompts,
-			low_since, ignored, left, coach_after]:
+			low_since, ignored, left, coach_after, last_prompt]:
 		state.clear()
+	prompt_log.clear()
 	coach_asks = 0
 	for p: PersonDef in persons.values():
 		trust[p.id] = p.trust
@@ -264,21 +274,18 @@ func coach_question(main_id: String) -> Dictionary:
 
 # ── Each day: check-in prompts, and the rare goodbye ─────────────────────────
 
-## Once a day (world as for dialog_for): a check-in that can be had opens a
-## prompt; one left unanswered PROMPT_DAYS expires (ignored); the low-morale
-## clock runs. Returns [{type: left, person}] for whoever leaves today.
+## After every action (world as for dialog_for): a prompt left unanswered
+## PROMPT_DAYS expires (ignored); a check-in that can be had opens a prompt
+## when the cadence allows, for the lowest morale first; the low-morale clock
+## runs. Returns [{type: left, person}] for whoever leaves today.
 func daily(world: Dictionary) -> Array[Dictionary]:
 	var now := int(world.get("now", 0))
-	var known := facts(world.get("facts", {}))
 	var events: Array[Dictionary] = []
-	for d: DialogDef in dialogs.values():
-		if d.kind != "checkin" or left.has(d.person):
-			continue
-		if prompts.has(d.id) and now - prompts[d.id] >= SimCalendar.days(PROMPT_DAYS):
-			prompts.erase(d.id)
-			ignored[d.person] = ignored.get(d.person, 0) + 1
-		elif not prompts.has(d.id) and _rank(d, world, known) == 0:
-			prompts[d.id] = now
+	for id: String in prompts.keys():
+		if now - prompts[id] >= SimCalendar.days(PROMPT_DAYS):
+			prompts.erase(id)
+			ignored[dialogs[id].person] = ignored.get(dialogs[id].person, 0) + 1
+	_open_prompt(world)
 	for id: String in persons:
 		if left.has(id):
 			continue
@@ -290,6 +297,33 @@ func daily(world: Dictionary) -> Array[Dictionary]:
 			left[id] = true
 			events.append({"type": "left", "person": id})
 	return events
+
+
+func _open_prompt(world: Dictionary) -> void:
+	var now := int(world.get("now", 0))
+	prompt_log.assign(prompt_log.filter(func(t: int) -> bool: return now - t < SimCalendar.days(7)))
+	if prompts.size() >= PROMPTS_AT_ONCE or prompt_log.size() >= PROMPTS_PER_WEEK:
+		return
+	var known := facts(world.get("facts", {}))
+	var due := dialogs.values().filter(func(d: DialogDef) -> bool:
+		return d.kind == "checkin" and not left.has(d.person) and _rank(d, world, known) == 0 \
+			and (not last_prompt.has(d.person) or now - last_prompt[d.person] >= SimCalendar.days(PROMPT_REST_DAYS)))
+	if due.is_empty():
+		return
+	due.sort_custom(func(a: DialogDef, b: DialogDef) -> bool:
+		return [morale[a.person], a.id] < [morale[b.person], b.id])
+	var d: DialogDef = due[0]
+	prompts[d.id] = now
+	prompt_log.append(now)
+	last_prompt[d.person] = now
+
+
+## The open prompts' dagstart lines: [{person, dialog, line}] (spec §5.7).
+func prompt_lines() -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for id: String in prompts:
+		out.append({"person": dialogs[id].person, "dialog": id, "line": dialogs[id].prompt})
+	return out
 
 
 func has_left(person_id: String) -> bool:
@@ -402,6 +436,7 @@ func to_dict() -> Dictionary:
 		"talks": talks.duplicate(), "rest_until": rest_until.duplicate(), "facts": heard_facts.keys(),
 		"prompts": prompts.duplicate(), "low_since": low_since.duplicate(), "ignored": ignored.duplicate(),
 		"left": left.keys(), "coach_after": coach_after.duplicate(), "coach_asks": coach_asks,
+		"prompt_log": prompt_log.duplicate(), "last_prompt": last_prompt.duplicate(),
 	}
 
 
@@ -428,6 +463,11 @@ func load_dict(d: Dictionary) -> Array[String]:
 	dropped.append_array(_load_map(d.get("prompts"), dialogs, prompts, whole))
 	dropped.append_array(_load_map(d.get("low_since"), persons, low_since, whole))
 	dropped.append_array(_load_map(d.get("ignored"), persons, ignored, whole))
+	dropped.append_array(_load_map(d.get("last_prompt"), persons, last_prompt, whole))
+	var saved_log: Variant = d.get("prompt_log", [])
+	for t: Variant in saved_log if saved_log is Array else []:
+		if t is int or t is float:
+			prompt_log.append(int(t))
 	var saved_left: Variant = d.get("left", [])
 	for id: Variant in saved_left if saved_left is Array else []:
 		if persons.has(str(id)):
