@@ -2220,6 +2220,59 @@ A player who chose the van stock in Act IV, did the repair, and then reaches Act
 
 ---
 
+### 1.13 Addition (2026-10-16): the act's human thread — `thread_samira` — Een bakkerij zonder gas (S)
+
+PLAN §4.2.2 (arc doc §9.2). **A face:** Samira El Amrani (27), the daughter of the winter-1 family, who opens an all-electric bakery in the old harbour of Havenzij. **A number:** she is number {queue_place} of {queue_length} on Havenzij's list for a heavier connection; the honest window is {window_weeks} weeks (read from the simulation, like the waiting list). **A choice:** name a date that calms her, put her first because she is "family of the dossier", or give her a window and the option to open with one oven. **A payoff:** at the act's end, her bread at the contact centre, or her notebook line on the terugblik.
+
+Principles tested: **long_term** (a gas oven now is twenty years of gas) and **respect** (an honest window over a comforting date).
+
+```yaml
+missions:
+  - id: thread_samira
+    name: Een bakkerij zonder gas
+    kind: side
+    tier: 3
+    act: 4
+    arc: threads
+    requires: {any_of: [fix_household_rush, fix_priority_first_come]}
+    goal: {type: talk_to, dialog: samira_waiting_list, outcome: partial}
+    principles: [long_term, respect]
+    followed_order: {story: samira, stream: hz_connections}    # a second followed order (S12), born when the mission opens
+    briefing: "Sanne: 'Er staat een El Amrani op de wachtlijst van Havenzij. Samira. Een bakkerij in de Oude Haven, helemaal elektrisch. Ze staat op plek {queue_place} van {queue_length}.' Esra: 'Ze belt vanmiddag. Ze heeft een spreadsheet, zegt ze. Haar moeder had een schrift.'"
+    debrief: "{samira_line}"
+    debrief_variants:
+      window_and_one_oven: "Samira bakt sinds maandag met één oven, op de aansluiting die er al was. Croissants en brood, geen taarten. In het raam hangt een briefje: 'Elektrisch gebakken. De rest volgt.' Haar moeder staat achter de toonbank."
+      date_kept: "De datum die je Samira gaf, klopte. Ze zette er een vinkje achter in haar spreadsheet. Dat vinkje staat ook in de wachtlijst van Zuidmark: één datum meer die we haalden."
+      date_broken: "U zei {promise_date}. Het werd {delivery_date}. Samira betaalde drie maanden huur voor een bakkerij zonder oven. Ze bakt nu. Elektrisch. Maar ze belt niet meer terug."
+      jumped: "Samira kreeg haar aansluiting vóór haar beurt. Ze weet het niet. Twee bedrijven op de Kanaalzone weten het wel: zij wachten een maand langer."
+    beats:
+      - {on: accepted, who: esra, text: "Haar moeder belde ook. Ze zei: 'Zeg maar tegen die CI-lead dat ik het nog weet.'", needs: {any: [delivered:el_amrani, agreed:el_amrani_fourth_call:check_existing_connection]}}
+      - {on: accepted, who: esra, text: "Haar moeder belde ook. Ze zei: 'Dit jaar wil ik niet weer bij mijn dochter logeren. Ik wil in de bakkerij staan.'", needs: {all: [flag:el_amrani_cold_winter]}}
+      - {on: accepted, who: ilse, text: "Ik heb haar mijn oude deegmachine verkocht. Elektrisch. Die van mij was gas, weet je nog."}
+      - {on: act_end, who: samira, text: "{bread_or_notebook}"}
+    temptations:
+      - id: family_first
+        who: thomas
+        when: accepted
+        text: "Zet haar gewoon voor. Ze is familie van die mevrouw van de warmtepomp; als het hier misgaat, staat het weer in de krant. Eén plek, dat merkt niemand."
+        accept: "Je laat Samira voorgaan op de wachtlijst."
+        decline: "Samira houdt haar plek; je geeft haar een eerlijk venster."
+        accept_sets_flags: [flag:queue_jumped]
+        accept_effects: {person_trust: {jeroen: -5}}
+    teaches: [netcongestie, maatschappelijk_prioriteren, waiting_list]
+    rewards: {xp: 900, reputation: 2}
+```
+
+**Path dependence.**
+- The winter-1 facts set Samira's start (+10 with a warm mother, −10 after a broken promise) and her mother's beat.
+- `flag:queue_jumped` is the tier-4 audit's finding, again; and Jeroen, who holds the prioritisation framework (`committed:jeroen_classes`), loses trust.
+- `agreed:samira_waiting_list:phased_opening` sets `flag:samira_electric`, read by the tier-4 investment plan's "Flex eerst, koper later" path note ("Een bakkerij die met één oven begon, bakt nu met drie. Op de uren dat het net leeg is.").
+- Her followed order feeds `date_kept` (arc doc §2).
+
+**Dialog:** `samira_waiting_list` (arc doc §9.2).
+
+**Grounding.** Small businesses and households on the same waiting list since 1 July 2026 (tier-3 draft §0.2); an all-electric bakery above 3x80A (`estimate:` three deck ovens of 15–20 kW). The gas lock-in is Ilse's lesson from Act II.
+
 ## 2. The IT track, tier 3: "De app die niemand gebruikt"
 
 Opens with `t3_map_region`'s `it_campus` unlock. It runs in parallel with Act IV: the player holds one main at a time, grid or IT, and the coach coaches whichever is active. Problems carry `track: it` and their own maturity (catalogue C17d).

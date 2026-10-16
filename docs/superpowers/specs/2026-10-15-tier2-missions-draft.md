@@ -1900,6 +1900,58 @@ countermeasures:
 
 ---
 
+### 2.19 Addition (2026-10-16): the act's human thread — `thread_zandbergen` — De boerderij aan de Noorderweg (S)
+
+PLAN §4.2.2 (one human thread per act; arc doc §9.1). **A face:** Daan Zandbergen (16), whose father runs a dairy farm with two milking robots at the end of a rural MS line north of Nova. **A number:** Daan called the contact centre fourteen times during three outages this year; the last outage lasted 3 hours 40 minutes (estimates, in line with `fix_on_call_far`'s "one in four night outages longer than four hours"). **A choice:** put the farm at the top of the restoration list, or tell him honestly what we know and call back. **A payoff:** Daan's card at the end of the act, and his 04:10 call in the storm.
+
+Principles tested: **respect** (a teenager on the phone is a customer too) and **long_term** (a favour now is a queue someone else waits in). It takes a side slot only from the storm's warning to the storm's end, so it never competes with the act's mains for long.
+
+```yaml
+missions:
+  - id: thread_zandbergen
+    name: De boerderij aan de Noorderweg
+    kind: side
+    tier: 2
+    act: 3
+    arc: threads
+    requires: {any_of: [fix_on_call_far, fix_shift_handover], facts: {all: [flag:ruud_seconded]}}
+    opens_on: {beat: storm_warning}          # the KNMI warning beat of prep_storm_week (day 20 of its window)
+    deadline_days: 4                        # the storm's three days and the morning after
+    goal: {type: talk_to, dialog: daan_storm_call, outcome: partial}
+    principles: [respect, long_term]
+    briefing: "Code oranje voor morgen. Esra: 'Als het in het noorden uitvalt, belt Daan Zandbergen. Zestien jaar. Dit jaar veertien keer, bij drie storingen. De laatste duurde drie uur en veertig minuten. Zijn vader staat dan met een geleend aggregaat in de stal, met honderdveertig koeien.' Als hij belt, neem jij op."
+    debrief: "{daan_line}"
+    debrief_variants:
+      honest: "Daan belde één keer. Om vijf uur belde jij terug, zoals je zei. De stroom kwam om kwart over vijf. Zijn vader stuurde een foto van de robot die weer melkte. Er stond geen tekst bij. Die was niet nodig."
+      favour: "De boerderij kwam als eerste terug. Zorgcentrum De Linde, twee kilometer verderop, kwam veertig minuten later dan gepland. Niemand weet dat, behalve Kees. Kees weet het."
+      not_reached: "Daan belde zes keer. De laatste keer zei hij alleen: 'Oké.'"
+    beats:
+      - {on: accepted, who: esra, text: "Hij vraagt nooit om een manager. Alleen of we het weten."}
+      - {on: completed, who: kees, text: "Om vier uur stond die boerderij op mijn wand. Eén stip tussen honderden. Raar, als je weet wie daar woont."}
+      - {on: act_end, who: daan, text: "{card}"}    # the card on the kantine wall (arc doc §9.1), with or without the information plan
+    temptations:
+      - id: farm_first
+        who: kees
+        when: accepted
+        text: "Ik kan die boerderij bovenaan de herstellijst zetten. Dan zit die jongen niet de hele nacht te bellen. Niemand die het merkt."
+        accept: "Je laat de boerderij voorgaan op de herstellijst."
+        decline: "De herstellijst blijft zoals hij is; jij belt Daan zelf terug."
+        accept_sets_flags: [flag:queue_jumped]     # the same flag the tier-4 audit reads as a finding
+        accept_effects: {person_trust: {kees: -5}, effects_during_event: [{target: outages, property: wait_time, value: 1.05}]}   # estimate: everyone else waits a little longer
+    teaches: [failure_demand, customer_value]
+    rewards: {xp: 500, reputation: 2}
+```
+
+**Path dependence.**
+- `flag:queue_jumped` is the tier-4 audit's finding ("Een aanvraag is buiten het prioriteringskader om voorgetrokken"), here for an outage. It costs reputation −10 at the audit. The favour is invisible on the night and visible two years later.
+- `storm_plan_information` (the storm's information plan) makes Daan's call start 10 higher: he heard on the phone menu that Voltana knew.
+- `done:fix_on_call_far` gives Daan +15 (he knows the voice) and the payoff line about the standby location ("vijftig minuten").
+- `heard:daan_storm` is read in Act IV by `fix_priority_first_come`: the farm appears in its clues as a customer who needs a *time*, not priority (the framework's lesson).
+
+**Dialog:** `daan_storm_call` (arc doc §9.1).
+
+**Grounding.** Milking robots and cooling depend on power; dairy farms keep or borrow generators for outages (sector practice; `estimate:` farm size 140 cows, two robots). Failure demand during outages: the existing contact-centre model.
+
 ## 3. Summary tables
 
 ### 3.1 Missions (22)
