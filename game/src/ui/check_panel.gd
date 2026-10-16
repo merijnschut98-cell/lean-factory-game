@@ -25,8 +25,14 @@ const KIND_GROUPS := {
 	LAGGING: "Volgindicatoren — effect zichtbaar na ±1 doorlooptijd",
 }
 const LAGGING_NOTE := "Volgindicatoren lopen achter: ze meten werk dat grotendeels vóór je verbetering is gestart."
-## Numbers where lower is better.
-const LOWER_IS_BETTER := ["lead_time", "wip_age"]
+## The Check's forecast (Region.check's `forecast`): the coming days run
+## twice, without and with the player's countermeasure.
+const FORECAST_HEADING := "Vooruitblik: de komende %d dagen, twee keer doorgerekend"
+const WITHOUT := "Zonder jouw maatregel"
+const WITH := "Met jouw maatregel"
+const FORECAST_NOTE := "Gemeten over de laatste %d dagen, zodat het werk pas na je verbetering begon. Dezelfde vraag en hetzelfde toeval in beide runs: het verschil is je maatregel."
+## A practice problem's fix says nothing about the stream's bottleneck.
+const PRACTICE_NOTE := "Dit was een oefenprobleem: wat het voor de hele stroom betekent, telt hier niet."
 ## The Friday lesson's verdict, by the player's Act (GameSession.fade_forecast):
 ## a standard slows the slide; only audits and planned routines hold a fix.
 const NOT_KEPT := "Jij borgde niet. Zonder standaard valt het team na %s terug in de oude gewoonte: de maand loopt dan zoals \"Zonder borgen\"."
@@ -85,7 +91,14 @@ static func kind(row: String) -> String:
 
 ## Whether `after` is an improvement on `before` for this number.
 static func improved(row: String, before: float, after: float) -> bool:
-	return after < before if row in LOWER_IS_BETTER else after > before
+	return after < before if row in Pdca.LOWER_IS_BETTER else after > before
+
+
+## Green for better, orange for worse, ink for no change.
+static func change_color(row: String, before: float, after: float) -> Color:
+	if is_equal_approx(before, after):
+		return Palette.INK
+	return Palette.GREEN_DARK if improved(row, before, after) else Palette.SAFETY_ORANGE
 
 
 func refresh() -> void:
@@ -112,6 +125,8 @@ func refresh() -> void:
 		verdict.add_child(paragraph(session.region.problems[problem_id].mismatch_note, Palette.MUTED, UiTheme.SMALL))
 	if result["not_constraint"]:
 		verdict.add_child(paragraph("Let op: de stap is beter, maar de stroom levert niet meer. Het werk wacht nog op een ander team: dit was niet het knelpunt.", Palette.SAFETY_ORANGE))
+	if result.get("forecast") is Dictionary and result["forecast"].has("with"):
+		_check_forecast(result["forecast"])
 
 	if not passed:
 		body.add_child(button("Terug naar de A3", back_to_a3.emit))
@@ -145,11 +160,38 @@ func _table(parent: Node) -> void:
 	box.add_child(paragraph(LAGGING_NOTE, Palette.MUTED, UiTheme.SMALL))
 
 
+## The Check's two runs, one row each, over the stream's numbers: the
+## predicted KPI first.
+func _check_forecast(f: Dictionary) -> void:
+	var card := add_card(body, FORECAST_HEADING % f["days"])
+	var grid := GridContainer.new()
+	grid.add_theme_constant_override("h_separation", 18)
+	grid.add_theme_constant_override("v_separation", 4)
+	card.add_child(grid)
+	var predicted: String = f.get("kpi", "")
+	var rows: Array = ROWS.filter(func(r: String) -> bool: return r != predicted)
+	if f["with"].has(predicted):
+		rows.push_front(predicted)
+	grid.columns = rows.size() + 1
+	grid.add_child(label(""))
+	for row: String in rows:
+		var name := label(UiText.kpi(row), 15, Palette.VOLTANA_BLUE if row == predicted else Palette.MUTED, true)
+		name.custom_minimum_size.x = 150
+		name.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+		grid.add_child(name)
+	for run: String in ["without", "with"]:
+		grid.add_child(label(WITHOUT if run == "without" else WITH, UiTheme.SMALL))
+		for row: String in rows:
+			var without: float = f["without"][row]
+			var value: float = f[run][row]
+			grid.add_child(label(UiText.kpi_value(row, value), UiTheme.SMALL, change_color(row, without, value)))
+	card.add_child(paragraph(FORECAST_NOTE % f.get("window", f["days"]), Palette.MUTED, 15))
+
+
 ## A row's before, after (green better, orange worse) and its tag.
 func _add_before_after(grid: GridContainer, row: String, before: float, after: float) -> void:
 	grid.add_child(label(UiText.kpi_value(row, before)))
-	grid.add_child(label(UiText.kpi_value(row, after), UiTheme.FONT_SIZE, Palette.INK if is_equal_approx(before, after)
-		else (Palette.GREEN_DARK if improved(row, before, after) else Palette.SAFETY_ORANGE)))
+	grid.add_child(label(UiText.kpi_value(row, after), UiTheme.FONT_SIZE, change_color(row, before, after)))
 	grid.add_child(label(KIND_TAGS[kind(row)], UiTheme.SMALL, Palette.MUTED))
 
 
@@ -173,14 +215,24 @@ func _score_view() -> void:
 	for key: String in SCORE_PARTS:
 		parts.add_child(label("%s:  %d / 5" % [SCORE_PARTS[key], score[key]], UiTheme.SMALL))
 	var notes := add_card(columns, "Om van te leren")
-	for note: String in score["notes"]:
+	var practice := session.is_practice(problem_id)
+	for note: String in shown_notes(score["notes"], practice):
 		notes.add_child(paragraph("• " + UiText.score_note(note), Palette.INK, UiTheme.SMALL))
+	if practice:
+		notes.add_child(paragraph("• " + PRACTICE_NOTE, Palette.MUTED, UiTheme.SMALL))
 	for m: MissionDef in session.missions.defs.values():
 		if m.goal_problem == problem_id and m.goal_type == "solve" and session.missions.status(m.id) == "completed":
 			var debrief := add_card(body, session.catalog.coach.get("name", "Coach"), Palette.BLUE_PALE)
-			debrief.add_child(paragraph("'%s'" % m.debrief))
-	if session.is_practice(problem_id) and forecast.is_empty():
+			debrief.add_child(paragraph("'%s'" % session.mission_debrief(m.id)))
+	if practice and forecast.is_empty():
 		_forecast_view()
+
+
+## The score's notes to show: a practice problem's impact notes go (after
+## the training's staged course its step can read as the bottleneck, which
+## says nothing about the real stream).
+static func shown_notes(notes: Array, practice: bool) -> Array:
+	return notes.filter(func(n: String) -> bool: return not (practice and n.begins_with("impact_")))
 
 
 ## The Friday lesson: a button to look ahead, then the month with and

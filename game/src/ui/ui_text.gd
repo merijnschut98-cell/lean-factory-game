@@ -73,6 +73,7 @@ const A3_ERRORS := {
 	"not_doing": "Er loopt geen experiment.",
 	"not_check_ready": "De Check is nog niet klaar.",
 	"not_checked": "Doe eerst de Check.",
+	"same_countermeasure": "Deze maatregel heb je hier al geprobeerd. Kies voor het herstel een andere.",
 }
 
 ## Refusals at a team's place (GameSession.use_tool and ask).
@@ -105,6 +106,7 @@ const LESSONS := {
 	"cause_wrong": "De maatregel werkt, maar je A3 noemt een andere oorzaak. Wat zegt dat over je analyse?",
 	"mismatch": "De maatregel raakt de oorzaak niet. Kijk opnieuw naar je aanwijzingen.",
 	"too_early": "Het idee past, maar de regio is er nog niet klaar voor; het werkt maar half.",
+	"not_moved": "De maatregel doet iets, maar het getal dat je voorspelde beweegt nauwelijks. Klopt je voorspelling, of zit het effect op een ander getal?",
 }
 
 const SCORE_NOTES := {
@@ -121,6 +123,7 @@ const SCORE_NOTES := {
 	"impact_constraint_small": "Het knelpunt is aangepakt, maar de stroom levert nauwelijks meer.",
 	"impact_not_constraint": "Dit was niet het knelpunt: de stroom levert niet meer.",
 	"impact_good": "De hele stroom levert meer: het knelpunt is aangepakt.",
+	"impact_lead_time_small": "Hier wacht het werk zonder team: de verbetering haalt maar weinig doorlooptijd uit de stroom.",
 }
 
 const EVENTS := {
@@ -133,6 +136,28 @@ const EVENTS := {
 	"kpi_review": "De KPI-review van de afdelingen staat open.",
 	"slipping": "Een verbetering zakt weg: %s (J)",
 	"checkin": "Op het missiebord: %s",
+	"repair": "Herstel op het missiebord: %s",
+}
+
+## Why the MT's view of the CI lead changed (Reputation's reasons).
+const REPUTATION_REASONS := {
+	"mission": "missie voltooid",
+	"flow": "de hele stroom levert meer",
+	"held": "een verbetering houdt een half jaar stand",
+	"reopened": "je pakte een teruggekeerd probleem op",
+	"discovery": "een ontdekking",
+	"blame": "een vraag gaf het team de schuld",
+	"deadline": "een deadline gemist",
+	"bad_period": "het budget staat rood",
+}
+const DIVIDEND := "Een verbetering houdt stand na %d dagen: %s. De besparing levert %s op voor het verbeterbudget."
+const OVERLOAD := "%s draait op %d%% bezetting door je experiment bij %s, al twee weken te vol. Het team vertrouwt je wat minder."
+const REPUTATION := "Reputatie bij het MT %s (%s)"
+## The six acts of the campaign (PLAN §2.3), by the act number in the content.
+const ACT_TITLES := {
+	0: "Inwerkweek", 1: "Akte I · De eerste honderd dagen", 2: "Akte II · Wat onder de grond zit",
+	3: "Akte III · Zichtbaar maken", 4: "Akte IV · Flow door de regio", 5: "Akte V · Het systeem",
+	6: "Akte VI · Het digitale net",
 }
 
 ## The Check's waiting time in words (GameSession.check_days).
@@ -234,8 +259,6 @@ static func kpi_value(id: String, value: float) -> String:
 	return "%d dagen" % roundi(value)
 
 
-## A mission's name as the player sees it: a training day with its weekday
-## ("Inwerkweek — ma: Rondleiding", see GameSession.training_weekday).
 ## Every problem's name by id (for events and audits that name problems).
 static func problem_names(s: GameSession) -> Dictionary:
 	var names := {}
@@ -244,6 +267,16 @@ static func problem_names(s: GameSession) -> Dictionary:
 	return names
 
 
+## Every team's name by pool id (for events that name a team).
+static func team_names(s: GameSession) -> Dictionary:
+	var names := {}
+	for id: String in s.region.net.pools:
+		names[id] = s.region.net.pools[id].name
+	return names
+
+
+## A mission's name as the player sees it: a training day with its weekday
+## ("Inwerkweek — ma: Rondleiding", see GameSession.training_weekday).
 static func mission_title(m: MissionDef, s: GameSession) -> String:
 	var weekday := s.training_weekday(m.id)
 	return TRAINING_TITLE % [weekday, m.name] if not weekday.is_empty() else m.name
@@ -318,8 +351,17 @@ static func coach_reply(reply_def: Dictionary) -> String:
 
 ## A session event in a line, or "" when it is not for the player. Its
 ## name comes from `mission_names` (a mission's event) or `problem_names`.
-static func event(e: Dictionary, mission_names: Dictionary, problem_names: Dictionary = {}) -> String:
+static func event(e: Dictionary, mission_names: Dictionary, problem_names: Dictionary = {},
+		team_names: Dictionary = {}) -> String:
 	var type: String = e.get("type", "")
+	var problem: String = problem_names.get(e.get("problem", ""), "")
+	match type:
+		"dividend":
+			return DIVIDEND % [e["days"], problem, money(e["budget"])]
+		"overload":
+			return OVERLOAD % [team_names.get(e["team"], e["team"]), roundi(e["load"] * 100.0), problem]
+		"reputation":
+			return REPUTATION % [signed(e["change"]), REPUTATION_REASONS.get(e["reason"], e["reason"])]
 	if type == "belt":
 		return "Nieuwe band: %s!" % belt(Progression.BELTS[e["belt"]]["id"])
 	if type == "bad_period":
@@ -330,7 +372,28 @@ static func event(e: Dictionary, mission_names: Dictionary, problem_names: Dicti
 	var text: String = EVENTS[type]
 	if not text.contains("%s"):
 		return text
-	return text % (mission_names.get(e["mission"], "") if e.has("mission") else problem_names.get(e.get("problem", ""), ""))
+	return text % (mission_names.get(e["mission"], "") if e.has("mission") else problem)
+
+
+## "+3" or "−1" (a true minus sign).
+static func signed(n: int) -> String:
+	return ("+%d" if n >= 0 else "−%d") % absi(n)
+
+
+## The HUD's budget: the weekly savings of held fixes, and in debt the floor
+## the directie carries (Region.DEBT_FLOOR), so a setback reads as one.
+static func budget_line(budget: int, savings_per_week: float) -> String:
+	var out := "Budget " + money(budget)
+	if roundi(savings_per_week) > 0:
+		out += "  ·  besparing %s /week" % money(roundi(savings_per_week))
+	if budget < 0:
+		out += "  ·  ondergrens %s" % money(Region.DEBT_FLOOR)
+	return out
+
+
+## "Akte I · De eerste honderd dagen"; "" for a mission outside the acts.
+static func act_title(act: int) -> String:
+	return ACT_TITLES.get(act, "")
 
 
 ## The weekly team time a routine costs, e.g. "2 uur".

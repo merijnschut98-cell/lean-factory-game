@@ -286,7 +286,8 @@
       "reflect",
       "empathy",
       "inquiry"
-     ]
+     ],
+     "wait_for": "Frank moet het goedvinden."
     }
    ],
    "lines": {

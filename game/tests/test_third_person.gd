@@ -58,6 +58,46 @@ func test_the_character_model_walks_and_idles_when_it_is_there() -> void:
 	office.free()
 
 
+func test_shift_jogs_and_walking_stays_a_walk() -> void:
+	var office := _office()
+	office.player.step(FRAME, Vector2(0, -1))
+	assert_near(_flat(office.player.velocity).length(), Player.SPEED, 0.001, "a walk")
+	office.player.step(FRAME, Vector2(0, -1), true)
+	assert_near(_flat(office.player.velocity).length(), Player.RUN_SPEED, 0.001, "Shift: a jog")
+	assert_between(Player.RUN_SPEED, 4.0, 5.0, "a jog, not a sprint")
+	office.player.walk(PackedVector3Array([office.player.position + Vector3(5, 0, 0)]))
+	office.player.step(FRAME, Vector2.ZERO, true)
+	assert_near(_flat(office.player.velocity).length(), Player.RUN_SPEED, 0.001, "a clicked route can be jogged too")
+	office.free()
+
+
+func test_no_jogging_while_a_panel_is_open() -> void:
+	var office := _office()
+	office.player.active = false
+	office.player.step(FRAME, Vector2(0, -1), true)
+	assert_eq(_flat(office.player.velocity), Vector2.ZERO)
+	office.free()
+
+
+func test_the_jog_plays_at_its_own_pace_so_the_feet_stay_on_the_floor() -> void:
+	if not ResourceLoader.exists(CharacterModel.path(Player.CHARACTER)):
+		return
+	var office := _office()
+	var animations: AnimationPlayer = office.player.avatar.find_children("*", "AnimationPlayer", true, false).pop_front()
+	var model: Node3D = animations.get_parent()
+	office.player.step(FRAME, Vector2(0, -1))
+	office.player.step(FRAME, Vector2(0, -1), true)
+	assert_eq(animations.current_animation, "jog")
+	assert_near(animations.speed_scale * CharacterModel.jog_pace(model), Player.RUN_SPEED, 0.01,
+		"played at the speed that matches its stride")
+	office.player.step(FRAME, Vector2(0, -1))
+	assert_eq(animations.current_animation, "walk")
+	assert_near(animations.speed_scale * CharacterModel.walk_pace(model), Player.SPEED, 0.01, "back to the walk's pace")
+	assert_between(animations.speed_scale, 1.0, 1.4, "the walk sped up a little at most: brisk, not hurried")
+	assert_between(Player.RUN_SPEED / CharacterModel.jog_pace(model), 0.85, 1.15, "the jog near its own cadence")
+	office.free()
+
+
 # ── The camera ────────────────────────────────────────────────────────────────
 
 func test_the_camera_starts_at_a_medium_distance_looking_down_at_the_player() -> void:

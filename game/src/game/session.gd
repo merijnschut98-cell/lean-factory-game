@@ -665,7 +665,7 @@ func person(person_id: String) -> Dictionary:
 		"cooldown_until": int(people.memory.get(person_id, {}).get("cooldown_until", 0)), "outcomes": outcomes}
 
 
-## Open the talk a person has for the player: {dialog, kind, person, name,
+## Open the talk a person has for the player: {dialog, kind, person, name, short,
 ## role, opening, position ({text, tags}), meter, moves}, or an error:
 ## in_dialog | unknown_person | cooling_down (after a ruined talk; the UI says
 ## the bank's special.cooling_down line) | nothing_to_say.
@@ -682,7 +682,7 @@ func start_dialog(person_id: String) -> Dictionary:
 	if d == null:
 		return {"error": "nothing_to_say"}
 	_talk = people.start(d, world)
-	return {"dialog": d.id, "kind": d.kind, "person": p.id, "name": p.name, "role": p.role,
+	return {"dialog": d.id, "kind": d.kind, "person": p.id, "name": p.name, "short": p.short, "role": p.role,
 		"opening": people.opening(d), "position": _talk.position(), "meter": _talk.meter(), "moves": _talk.moves()}
 
 
@@ -695,6 +695,21 @@ func dialog_moves() -> Array[Dictionary]:
 ## The meter of the talk in progress (Dialog.meter); {} when there is none.
 func dialog_meter() -> Dictionary:
 	return _talk.meter() if _talk != null else {}
+
+
+## The layers of the talk in progress, for the layer tracker: [{id
+## (position | interest | concern), text ("" until heard), heard}]; the
+## position is heard from the start, a layer from an earlier talk stays heard.
+## [] when there is no talk.
+func dialog_layers() -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	if _talk == null:
+		return out
+	out.append({"id": "position", "text": str(_talk.position().get("text", "")), "heard": true})
+	for layer: Dictionary in _talk.layers():
+		var heard := _talk.revealed.has(layer["id"])
+		out.append({"id": str(layer["id"]), "text": str(layer.get("text", "")) if heard else "", "heard": heard})
+	return out
 
 
 ## Make a move in the talk (a pick for show_data, propose_experiment and

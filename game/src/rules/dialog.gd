@@ -329,6 +329,14 @@ func unlocked_clue() -> String:
 	return str(JsonFile.dict_or_empty(concern.get("unlocks")).get("clue", "")) if revealed.has("concern") else ""
 
 
+## After an agreement under condition: what still has to happen, as the
+## content says it (the concern's `wait_for`); "" when it names nothing.
+func wait_for() -> String:
+	if outcome != "partial" or not revealed.has("concern"):
+		return ""
+	return str(layers()[1].get("wait_for", ""))
+
+
 ## The minutes the talk took.
 func minutes() -> int:
 	return moves_made * MINUTES_PER_MOVE
