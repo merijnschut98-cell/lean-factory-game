@@ -1249,7 +1249,15 @@
      "depth": 2,
      "dialog": "joost_output_kpi",
      "key": true,
-     "text": "'Werkvoorbereiding stuurt op ontwerpen per week omdat de manager er elke maandag naar vraagt. Een doorlooptijd die pas na maanden beter wordt, voelt als een risico.'",
+     "text": "'Werkvoorbereiding stuurt op ontwerpen per week omdat de manager er elke maandag naar vraagt. Een doorlooptijd die pas na maanden beter wordt, voelt als een risico voor wie erop wordt afgerekend.'",
+     "tool": "conversation"
+    },
+    {
+     "at": "connections.design",
+     "depth": 2,
+     "dialog": "frank_kpi_targets",
+     "key": true,
+     "text": "'De directie vraagt elk kwartaal naar aantallen. Hoe lang een klant wacht, vraagt alleen de ACM. Eén keer per jaar.'",
      "tool": "conversation"
     }
    ],

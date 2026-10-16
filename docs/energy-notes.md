@@ -4,9 +4,33 @@ Running notes on the Dutch energy sector, collected while researching *Spanning*
 
 Sources were read through search-engine extracts (this environment blocks direct access to most news sites); verify before quoting them in a conversation.
 
-## This week (from 2026-10-13)
+## This week (from 2026-10-16)
 
 *(Notes collected while building Spanning land here; the Friday digest moves them into a dated section.)*
+
+## Digest 2026-10-16
+
+A quieter week. No new ACM decision, no new technician or scale-up figures, and no Lean or CI vacancies at the grid operators were found. All items below come from search snippets; verify them before quoting.
+
+### News this week (9–16 Oct)
+- **The grid operators now buy flexibility through an auction.** Liander, Enexis and Stedin launched **GOPACS Auctions**, one public place to request flexible capacity, with TenneT joining later.
+  - They published **496 MW** of need at launch. Bidders need a metered EAN connection and usually at least 100 kW.
+  - Cross-operator calls change from **1 Nov 2026**.
+  - Sources: [Netbeheer Nederland](https://www.netbeheernederland.nl/artikelen/nieuws/netbeheerders-lanceren-gopacs-auctions-voor-openbare-uitvraag-naar-flexibel), [GOPACS FAQ](https://www.gopacs.eu/en/frequently-asked-questions/) (from search snippet)
+- **61% of postcodes on the regional grid are full for offtake**, based on the capacity map of 12 Oct. ([Stroomindex](https://www.stroomindex.nl/stand/2026-10/), from search snippet)
+- **TenneT will reconductor about 800 km of overhead lines**, for roughly 30% more transport capacity. ([Change Inc, 14 Oct](https://www.change.inc/transities/nieuwsupdate-financiele-problemen-voor-groene-staalfabriek-in-zweden-en-tennet-verzwaart-stroomnet), from search snippet)
+- **Enexis' build programme in Overijssel:** 7 new high-voltage stations, 31 extended and 150 new transport-distribution stations. Enexis is also running blackout drills. ([RTV Oost, 14 Oct](https://www.oost.nl/nieuws/3704153/stroomnet-is-betrouwbaar-toch-oefent-enexis-op-blackout-simuleren-hele-jaar-door), from search snippet)
+
+### Why it matters for you
+- **Flexibility is becoming a repeatable process.** The path is need, then request, then bid, then contract, then call-off. That is a value stream with a lead time, and Lean applies to it directly.
+- **150 stations in one province only works with standard designs and standard work.** That is Enexis' standardisation lever from last week, now at scale.
+
+### Actions
+1. **Learn the GOPACS flow end to end:** the IDCONS, auction and CBC routes. Interview line: *"How long does it take from a published flex need to a signed contract, and where does it wait?"*
+2. **Check the career pages directly** (werkenbij.enexis.nl, werkenbijstedin.nl, werkenbijalliander.com). Search engines surfaced no current CI roles.
+
+### Notes digested
+- None. The notes section was empty this week.
 
 ## Digest 2026-10-13 (an early edition, sent with the morning briefing)
 

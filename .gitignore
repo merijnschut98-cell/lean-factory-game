@@ -58,3 +58,6 @@ build/
 # Character pack downloads (tools/blender/fetch_pack.py), and the Blender venv
 .pack/
 .bvenv
+
+# Generated design proof of an explainer (node tools/explainers/*/build.mjs)
+tools/explainers/*/*.html

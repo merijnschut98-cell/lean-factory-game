@@ -1,7 +1,8 @@
 extends TestCase
 ## The real dialogs (content/dialogs.yaml) on the real rules: the worked
-## paths of the spec (docs/superpowers/specs/2026-10-15-dialog-system-design.md
-## §7–§8) play as written, and a different route reaches the same place.
+## paths of the audited scripts (docs/superpowers/specs/2026-10-15-dialog-
+## scripts-act0-2.md §3.3, §3.4, §7), replayed on the engine with E1–E5 and
+## person needs (PLAN 1.6c), and different routes reach the same place.
 
 const JOOST_FOUND := {"silo_kpis:0": true, "silo_kpis:2": true, "silo_kpis:4": true}
 ## Friday 10:00 and the next Monday 08:30 (minutes).
@@ -34,6 +35,7 @@ func test_the_game_knows_the_dialog_vocabulary() -> void:
 	assert_eq(Dialog.LISTEN, vocab["dialog_moves"].slice(0, 8))
 	assert_eq(Dialog.TAGS, vocab["dialog_tags"])
 	assert_eq(Dialog.ARCHETYPES, vocab["dialog_archetypes"])
+	assert_eq(Dialog.NEEDS, vocab["dialog_needs"])
 	assert_eq(Dialog.KINDS, vocab["dialog_kinds"])
 	assert_eq(Dialog.MOODS, vocab["dialog_moods"])
 	assert_eq(Dialog.OUTCOMES, vocab["dialog_outcomes"])
@@ -48,7 +50,7 @@ func test_the_catalog_loads_the_cast_and_their_talks() -> void:
 
 
 func test_a_dialog_with_an_unknown_person_or_a_broken_bank_is_refused() -> void:
-	var dir := "user://dialog_catalog_test"
+	var dir := scratch("dialog_catalog_test")
 	DirAccess.make_dir_recursive_absolute(dir)
 	for file in ["countermeasures", "missions", "value_streams", "kpis", "concepts", "discoveries", "problems_tier1"]:
 		assert_eq(DirAccess.copy_absolute("res://data/%s.json" % file, "%s/%s.json" % [dir, file]), OK)
@@ -88,7 +90,7 @@ func test_joost_listened_to_the_next_day_agrees_under_condition() -> void:
 	people.finish(_talk(people, "joost_output_kpi", ["show_data:silo_kpis:2", "propose:lead_and_oldest", "pressure"]), FRIDAY)
 	var d := _talk(people, "joost_output_kpi", ["repair", "mood", "paraphrase", "inquiry", "reflect", "silence",
 		"propose:lead_and_oldest"], _world({"now": MONDAY}))
-	assert_eq(d.meter()["trace"], [27, 39, 47, 54, 62, 72, 84, 92], "path B, as in the spec")
+	assert_eq(d.meter()["trace"], [27, 39, 47, 54, 62, 75, 87, 95], "path B: heard first, then the question lands")
 	var r := d.say("ask_commitment")
 	assert_eq([r["outcome"], r["reply"]], ["partial", "Ik doe mee. Maar Frank moet het goedvinden. Het blijft zijn lijst."])
 	var summary := people.finish(d, MONDAY)
@@ -98,11 +100,13 @@ func test_joost_listened_to_the_next_day_agrees_under_condition() -> void:
 func test_another_route_reaches_joosts_concern() -> void:
 	var people := _people()
 	people.finish(_talk(people, "joost_output_kpi", ["show_data:silo_kpis:2", "propose:lead_and_oldest", "pressure"]), FRIDAY)
-	var d := _talk(people, "joost_output_kpi", ["repair", "mood", "paraphrase", "inquiry", "experience", "inquiry"],
-		_world({"now": MONDAY}))
-	assert_eq(d.meter()["trace"].slice(4), [62, 57, 65], "B5′: a misstep at trust 40, then the cue")
-	var r := d.say("empathy")
-	assert_eq([r["revealed"], r["openness"]], ["concern", 71], "empathy is another way in")
+	var d := _talk(people, "joost_output_kpi", ["repair", "mood", "paraphrase", "inquiry", "empathy"], _world({"now": MONDAY}))
+	assert_eq(d.meter()["trace"].slice(4), [62, 74], "empathy for his feeling brings the cue")
+	var r := d.say("inquiry")
+	assert_eq(r["revealed"], "concern", "a question after his hesitation is another way in")
+	var first := _talk(_people(), "joost_output_kpi", ["empathy", "open_question", "reflect", "silence",
+		"propose:lead_and_oldest", "ask_commitment"])
+	assert_eq(first.outcome, "partial", "a third way: being seen first")
 
 
 func test_joost_under_pressure_complies() -> void:
@@ -115,17 +119,20 @@ func test_joost_under_pressure_complies() -> void:
 
 func test_frank_blocks_until_shown_and_his_okay_completes_joosts_agreement() -> void:
 	var people := _people()
-	var frank_moves := ["open_question", "paraphrase", "inquiry", "show_data:silo_kpis:2", "inquiry", "silence",
-		"propose:one_stream_board", "ask_commitment"]
+	var frank_moves := ["paraphrase", "inquiry", "show_data:silo_kpis:2", "inquiry", "silence",
+		"propose:obeya_one_stream", "ask_commitment"]
 	var blocked := _talk(people, "frank_kpi_targets", frank_moves)
 	assert_eq(blocked.outcome, "blocked")
-	assert_eq(people.finish(blocked, FRIDAY)["hints"], ["Laat het me zien op één stroom."])
+	var summary := people.finish(blocked, FRIDAY)
+	assert_eq(summary["hints"], ["Laat het me zien op één stroom.",
+		"Als Sanne en Joost het zelf komen uitleggen, sta ik er niet alleen voor."])
+	assert_eq(summary["facts"], ["heard:frank_budget"], "the fact the interim MT reads (drie-winters §5.2)")
 	var shown := _world({"facts": {"checked:silo_kpis": true}})
 	var agreed := _talk(people, "frank_kpi_targets",
-		["open_question", "paraphrase", "show_data:silo_kpis:2", "propose:one_stream_board", "ask_commitment"], shown)
+		["paraphrase", "inquiry", "show_data:silo_kpis:2", "propose:obeya_one_stream", "ask_commitment"], shown)
 	assert_eq(agreed.outcome, "commitment", "a route is met: the person can commit")
 	people.finish(agreed, FRIDAY)
-	var joost := _talk(people, "joost_output_kpi", ["mood", "paraphrase", "inquiry", "reflect", "silence",
+	var joost := _talk(people, "joost_output_kpi", ["empathy", "open_question", "reflect", "silence",
 		"propose:lead_and_oldest", "ask_commitment"])
 	assert_eq(joost.outcome, "commitment", "Frank's okay was Joost's condition")
 

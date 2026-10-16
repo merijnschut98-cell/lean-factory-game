@@ -7,7 +7,7 @@ extends TestCase
 const FRIDAY := 4 * SimCalendar.MINUTES_PER_DAY + 600
 const MONDAY_0830 := 7 * SimCalendar.MINUTES_PER_DAY + 510
 ## From a start of 40: listen, earn the concern, propose what meets it, ask.
-const LISTENING := ["mood", "reflect", "inquiry", "reflect", "silence", "propose:good", "ask_commitment"]
+const LISTENING := ["mood", "reflect", "open_question", "reflect", "silence", "propose:good", "ask_commitment"]
 const RUIN := ["show_data:custom_design:0", "propose:good", "pressure"]
 const COMPLY := ["open_question", "pressure", "propose:good", "ask_commitment"]
 
@@ -55,7 +55,7 @@ func test_the_person_remembers_and_a_repair_is_offered() -> void:
 
 func test_revealed_layers_stay_revealed() -> void:
 	var people := DialogFixture.people()
-	_talk(people, ["mood", "reflect", "inquiry", "close"])
+	_talk(people, ["mood", "reflect", "open_question", "close"])
 	assert_eq(people.start(people.dialogs["talk"], DialogFixture.world()).revealed, {"interest": true})
 
 
@@ -79,7 +79,7 @@ func test_compliance_is_remembered_and_can_be_repaired() -> void:
 	assert_eq([summary["outcome"], summary["trust"], summary["morale"], summary["reputation"]], ["compliance", 37, 40, 0])
 	assert_true(people.facts().has("complied:talk"))
 	assert_eq(people.buy_in("custom_design", people.facts()), "compliance")
-	var later := _talk(people, ["repair", "mood", "reflect", "inquiry", "reflect", "silence", "propose:good", "ask_commitment"])
+	var later := _talk(people, ["repair", "mood", "reflect", "open_question", "reflect", "silence", "propose:good", "ask_commitment"])
 	assert_eq(later["outcome"], "commitment")
 	assert_eq(people.buy_in("custom_design", people.facts()), "commitment", "a later commitment repairs the buy-in")
 
@@ -136,7 +136,7 @@ func test_a_checkin_opens_on_its_trigger_and_rests_after_it_lifted() -> void:
 	var low := DialogFixture.people([DialogFixture.checkin()], [DialogFixture.person("defender", 50, 20)])
 	assert_eq(low.dialog_for("pim", DialogFixture.world()).id, "checkin")
 	var d := low.start(low.dialogs["checkin"], DialogFixture.world())
-	DialogFixture.play(d, ["mood", "reflect", "inquiry", "reflect", "silence", "close"])
+	DialogFixture.play(d, ["mood", "reflect", "open_question", "reflect", "silence", "close"])
 	var summary := low.finish(d, 0)
 	assert_eq([summary["outcome"], summary["morale"], summary["trust"]], ["lifted", 35, 55])
 	assert_eq(low.dialog_for("pim", DialogFixture.world({"now": SimCalendar.days(13)})), null, "14 days of rest")

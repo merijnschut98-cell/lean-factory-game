@@ -26,6 +26,7 @@ people:
     place: connections.design
     team: work_prep
     archetype: defender
+    need: safety   # person-needs spec §2.2: his predecessor moved to Inkoop after one bad quarter
     trust: 50
     morale: 50   # worn down by the conflict between the departments (spec §7)
     voice: "Mijn team haalt het doel."
@@ -36,9 +37,22 @@ people:
     place: connections.design   # he walks the floor at Werkvoorbereiding; his office is the Obeya
     team: work_prep
     archetype: rule_bound
+    need: facts   # person-needs spec §2.2: he must 'verantwoorden' every number to the directie and the ACM
     trust: 50
     morale: 60
-    voice: "Het staat in het jaarplan."
+    voice: "Dat moet ik kunnen uitleggen."   # the voice sheet's line (tier-1 content audit C12); "jaarplan" stays in his position
+
+  - id: sanne
+    name: Sanne Bakker
+    short: Sanne
+    role: teamleider Intake
+    place: connections.intake
+    team: intake
+    archetype: overloaded
+    need: recognition   # person-needs spec §2.2: Intake is 'het postkantoor'; nobody asks what she knows
+    trust: 50
+    morale: 50
+    voice: "We zijn een postkantoor geworden."
 
   - id: ahmed
     name: Ahmed Bouzid
@@ -46,6 +60,7 @@ people:
     place: outages.locate
     team: monteurs
     archetype: quiet
+    need: safety   # person-needs spec §2.2: ashamed that he still calls a retiree at night
     trust: 60   # he met the player in Henk's mission
     morale: 42  # since Henk left (spec §8)
     voice: "Gaat wel."
@@ -88,7 +103,7 @@ bank:
     empathy: "Dat is ook niet niks, als je zo je best doet."
     paraphrase: "Even kijken of ik je goed begrijp. Wat je zegt, is…"
     inquiry: "Wat maakt dat het zo is?"
-    experience: "Toen ik net begon, had ik precies dat."
+    experience: "In mijn eerste weken hier wist ik ook niet waar ik moest beginnen."
     silence: "(je zegt niets en wacht)"
     perspective: "Hoe zou de monteur dit zien, denk je?"
     show_data: "Kijk eens naar deze cijfers."
@@ -99,16 +114,19 @@ bank:
     confront: "Dit ligt toch gewoon aan jouw team?"
     repair: "Vorige keer begon ik met mijn verhaal in plaats van met het jouwe. Dat was niet handig."
     close: "Dank je voor je tijd."
+  # No bank reply carries a claim or feeling tag (tier-1 content audit C8):
+  # whether a summary or a named feeling lands depends on what THIS person
+  # said, in their authored lines, never on a shared fallback.
   replies:
     mood:
-      lands: {text: "Eerlijk gezegd? Het is een drukke week.", tags: [feeling]}
+      lands: {text: "Eerlijk gezegd? Het is een drukke week."}
       misses: {text: "Gaat wel."}
     open_question:
-      lands: {text: "Ach, je kent het. Te veel werk, te weinig tijd.", tags: [claim]}
+      lands: {text: "Ach, je kent het. Te veel werk, te weinig tijd."}
       misses: {text: "Dat heb ik je net verteld."}
     reflect:
-      lands: {text: "Ja. Zo voelt het wel.", tags: [feeling]}
-      misses: {text: "Nee, zo is het niet. Ik ben gewoon moe.", tags: [feeling]}
+      lands: {text: "Ja. Zo voelt het wel."}
+      misses: {text: "Nee, zo is het niet. Ik ben gewoon moe."}
     empathy:
       lands: {text: "Dank je. Dat hoor ik niet vaak."}
       misses: {text: "Ja, dat zei je al."}
@@ -139,6 +157,36 @@ bank:
       lands: {text: "Dat meen je niet."}
     repair:
       lands: {text: "Nee. Dat was het niet. Maar goed dat je het zegt."}
+  # Moves that wear out (person-needs spec §3.2, PLAN 1.6c (b)): said once per
+  # move in a talk, when a move's force first falls below half (a third use,
+  # or a third in a row). ask: questions (mood, open question, inquiry);
+  # say: statements. Silence keeps its own reply. A dialog may give the
+  # person their own line (replies.<move>.worn).
+  wear_out:
+    defender:
+      ask: "Je vraagt het nu op drie manieren. Het antwoord blijft hetzelfde."
+      say: "Ja. Dat zei je al. Ik hoef mezelf niet terug te horen."
+    cynic:
+      ask: "Staat dat ook zo in de cursus? Drie keer dezelfde vraag?"
+      say: "Hm. Dit is de techniek, toch? Herhalen tot ik ja zeg."
+    craftsman:
+      ask: "Dezelfde vraag, andere woorden. Kom liever kijken, dan zie je het."
+      say: "Je zegt het nu voor de derde keer. Ik geloof je wel, hoor."
+    overloaded:
+      ask: "Sorry, maar dit vroeg je net. Ik heb echt niet veel tijd."
+      say: "Ja. Ja. Dat weet ik nou wel. Wat wil je eigenlijk?"
+    rule_bound:
+      ask: "Die vraag is gesteld, en beantwoord. Wat is het volgende punt?"
+      say: "Dit punt hebben we gehad. Laten we verdergaan."
+    quiet:
+      ask: "… Dat vroeg je al."
+      say: "Mm. Ja. Dat zei je."
+    customer_upset:
+      ask: "Dit heb ik nu twee keer verteld. Mag ik ook eens iets vragen?"
+      say: "Dat zei u al. Ik hoef geen begrip, ik wil weten wat er gebeurt."
+    expert:
+      ask: "Die vraag hadden we. Wil je een andere kant op?"
+      say: "Klopt, zo zei ik het. Zullen we verder?"
   special:
     repeat: "Dat vroeg je net ook."
     refusal: "Nee. Nog niet."
@@ -175,7 +223,8 @@ bank:
     lifted: "Fijn dat je even langskwam."
 
 dialogs:
-  # ── Sample dialog 1 (spec §7): Joost and the output KPI ────────────────────
+  # ── Joost and the output KPI (Acts 0–II scripts §3.3, the audited rewrite;
+  # tier-1 content audit C1, C7, C14) ─────────────────────────────────────────
   - id: joost_output_kpi
     name: Joost en de ontwerpen per week
     person: joost
@@ -188,66 +237,70 @@ dialogs:
     patience: 10
     opening: "Ik heb tien minuten. Morgen is het MT."
     retry_opening: "Jij weer."
+    warning: "Hm. Ik heb hier eigenlijk geen tijd voor."
     position: {text: "Mijn team haalt dertig ontwerpen per week. Een record. Als de aansluitingen niet sneller gaan, ligt dat niet aan ons.", tags: [claim]}
     layers:
       - id: interest
         at: 55
         via: [inquiry, open_question, paraphrase]
-        text: "Frank. Elke maandag om negen uur. Ontwerpen per week staat bovenaan zijn lijst, dus bovenaan de mijne."
+        text: "Frank. Elke maandag om negen uur. Ontwerpen per week staat bovenaan zijn lijst, dus staat het bovenaan de mijne."
         tags: [claim, feeling]
       - id: concern
         at: 70
         via: [silence, reflect, empathy, inquiry]
         lead_in: {text: "Ja. En…", tags: [hesitation]}
-        text: "Mijn voorganger had één slecht kwartaal. Hij werkt nu bij Inkoop. Als ik op doorlooptijd ga sturen en dat getal wordt eerst slechter, en dat wordt het, dan sta ik in het MT met lege handen."
+        text: "Mijn voorganger had één slecht kwartaal. Hij werkt nu bij Inkoop. … Als ik op doorlooptijd ga sturen, wordt dat getal eerst slechter. Dat weet ik gewoon. En dan sta ik in het MT met lege handen."
         tags: [admission]
         condition: "Ik doe mee. Maar Frank moet het goedvinden. Het blijft zijn lijst."
+        wait_for: "Frank moet het goedvinden."   # the summary card's "Wat nog moet"
         unlocks:
-          clue: {key: true, depth: 2, text: "'Werkvoorbereiding stuurt op ontwerpen per week omdat de manager er elke maandag naar vraagt. Een doorlooptijd die pas na maanden beter wordt, voelt als een risico.'"}
+          clue: {key: true, depth: 2, text: "'Werkvoorbereiding stuurt op ontwerpen per week omdat de manager er elke maandag naar vraagt. Een doorlooptijd die pas na maanden beter wordt, voelt als een risico voor wie erop wordt afgerekend.'"}
           facts: [heard:joost_kpi]
           proposals: [present_with_sanne]
     data: ["silo_kpis:0", "silo_kpis:2"]
     proposals:
       - id: lead_and_oldest
-        name: Doorlooptijd en oudste dossier
-        text: "Wat als je naast de doorlooptijd het oudste dossier meet? Dat beweegt binnen een paar weken, en dat heb jij in de hand."
+        label: Doorlooptijd + oudste dossier
+        say: "Wat als je naast de doorlooptijd het oudste dossier meet? Dat beweegt binnen een paar weken, en dat heb jij in de hand."
         kpis: [work_prep_lead_time, work_prep_oldest]
         addresses: [concern]
         reply: "Het oudste dossier… dat zie ik volgende week al zakken."
       - id: ftr_and_oldest
-        name: Eerste keer goed en oudste dossier
-        text: "Stuur op eerste keer goed, en op het oudste dossier dat nog openstaat."
+        label: Eerste keer goed + oudste dossier
+        say: "Meet wat er bij de monteur goed aankomt, en het oudste dossier in je bak."
         kpis: [work_prep_ftr, work_prep_oldest]
         addresses: [concern]
         reply: "Eerste keer goed, en iets wat ik deze week kan laten zien. Dat is eerlijk."
       - id: output_and_ftr
-        name: Ontwerpen per week en eerste keer goed
-        text: "Houd je ontwerpen per week, maar zet eerste keer goed ernaast."
+        label: Ontwerpen per week + eerste keer goed
+        say: "Houd je ontwerpen per week, en zet eerste keer goed ernaast."
         kpis: [work_prep_output, work_prep_ftr]
         addresses: [concern]
         reply: "Dat kan ik wel aan Frank verkopen."
       - id: lead_and_ftr
-        name: Doorlooptijd en eerste keer goed
-        text: "Stuur voortaan op de doorlooptijd en op eerste keer goed."
+        label: Doorlooptijd + eerste keer goed
+        say: "Stuur op de doorlooptijd en op eerste keer goed."
         kpis: [work_prep_lead_time, work_prep_ftr]
         addresses: []
         reply: "Twee getallen die pas na maanden bewegen? Dat is precies wat ik bedoel."
       - id: present_with_sanne   # exists only once the concern unlocked it
-        name: Samen presenteren met Sanne
-        text: "En als je het samen met Sanne in het MT presenteert?"
+        label: Samen met Sanne presenteren
+        say: "En als je het niet alleen presenteert, maar samen met Sanne?"
         hidden: true
         addresses: [concern]
         reply: "Samen. Dan sta ik er niet alleen."
     experiments:
       - id: one_quarter_trial
-        name: Een kwartaal proberen
-        text: "Een kwartaal proberen, met de oude cijfers ernaast zichtbaar."
+        label: Een kwartaal proberen
+        say: "Probeer het een kwartaal, met de oude cijfers er gewoon naast zichtbaar."
         addresses: [concern]
-        reply: "Een kwartaal, en de oude cijfers blijven zichtbaar? Dan kan ik het uitleggen."
+        reply: "Met de oude ernaast. Dan kan ik altijd laten zien wat we deden."
     co_proposal: {id: present_with_sanne, text: "En als Sanne hetzelfde doet, presenteren we het samen. Dan sta ik er niet alleen."}
     condition_needs: {all: [committed:frank_kpi_targets]}   # Frank's okay: it is his list
+    # Later (scripts F6, audit C15, not yet in the engine): when Frank commits,
+    # "Frank heeft getekend. Nu sta ik er ook echt achter." (PLAN 1.6b, beats_after).
     lines:
-      mood: "Hoe gaat het met je, met het MT zo dichtbij?"
+      mood: "Hoe ging het MT?"
       inquiry: "Wie vraagt er eigenlijk om die dertig?"
       reflect: "Je zit klem tussen wat Frank vraagt en wat de monteurs nodig hebben."
       confront: "Jouw team zet toch gewoon te snel door?"
@@ -257,75 +310,192 @@ dialogs:
       mood:
         lands: {text: "Zoals altijd. Dertig ontwerpen, record, applaus. En dan vraagt Marco wie onze fouten nabouwt.", tags: [claim, feeling]}
       paraphrase:
-        lands: {text: "Precies. Ik doe wat er gevraagd wordt. En het is nooit goed.", tags: [feeling]}
+        lands: {text: "Precies. Ik doe wat er gevraagd wordt. En het is nooit goed.", tags: [claim, feeling]}
       experience:
         misses: {text: "Hm. Ander bedrijf."}
+      perspective:
+        lands: {text: "Vanuit de monteur gezien… die krijgt mijn record als een stapel tekeningen waar hij mee terug moet. Ja. Dat is geen record, dat is een rekening."}
       show_data:
+        lands: {text: "Laat eens zien… van 85 naar 80 procent? Dat had ik niet zo gezien."}
         too_early: {text: "Dus mijn mensen werken slordig? Ze halen elke week hun doel. Elke week.", tags: [claim]}
       propose:
-        too_early: {text: "Weer een ander getal? Over de doorlooptijd gaan de vergunning, de monteur en de klant. Niet ik.", tags: [claim]}
+        too_early: {text: "Doorlooptijd? Daar gaat de vergunning over, en de monteur, en de klant. Niet ik.", tags: [claim]}
       repair:
-        lands: {text: "Nee. Dat was het niet. (stilte) Koffie?"}
+        lands: {text: "Nee. Dat was het niet. (stilte) Koffie? Die van de automaat is slecht. Die van mij is erger."}
     outcomes:
-      ruined: "Dan moet Ruud dat maar tegen mij zeggen. Ik heb een MT voor te bereiden."
+      commitment: "Afgesproken. En als het eerst slechter wordt, zeg ik dat zelf in het MT. Voordat Frank het vraagt."
+      partial: "Ik doe mee. Maar Frank moet het goedvinden. Het blijft zijn lijst."
+      heard: "Fijn dat je het vroeg. Echt."
       compliance: "Prima. Dan meet ik wat jullie willen."
-      commitment: "Afgesproken. En ik vertel het mijn team zelf."
+      ruined: "Je kwam binnen met je antwoord al klaar. Dan moet Ruud het maar tegen mij zeggen."
 
-  # ── The block behind Joost's condition (spec §7.4): Frank ───────────────────
+  # ── Sanne and the applications per week (Acts 0–II scripts §7, sanne_kpi):
+  # Frank's second block route needs her agreement too (audit C5) ──────────────
+  - id: sanne_kpi
+    name: Sanne en de aanvragen per week
+    person: sanne
+    kind: persuade
+    mission: fix_silo_kpis
+    kpi_team: intake
+    patience: 9
+    opening: "Als het over het MT gaat: ja, ik had een recordmaand. Nee, ik weet ook niet waarom er niks meer doorkomt."
+    retry_opening: "Joh. Weer over het MT?"
+    warning: "Joh. Niet nu."
+    position: {text: "Ik stuur op aanvragen per week. Dat werkt: we halen het.", tags: [claim]}
+    layers:
+      - id: interest
+        at: 55
+        via: [empathy, mood, open_question]
+        text: "Elke vrijdag om drie uur tellen we. Nog vier voor het weekdoel? Dan zet je ze door. Ook als de meterkastfoto mist. Dat vraagt Werkvoorbereiding dan maar."
+        tags: [claim, feeling]
+      - id: concern
+        at: 70
+        via: [reflect, empathy]
+        lead_in: {text: "Ik baal er nu al van, als ik eraan denk. Alleen…", tags: [feeling]}
+        text: "Als ik op 'compleet doorgezet' ga sturen, zakt mijn aantal per week. Eerst. En dan is Intake weer het postkantoor dat traag is. Ik heb twee jaar gedaan over dat beeld."
+        tags: [admission]
+        condition: "Ik doe mee. Als Frank het goedvindt. Het jaarplan is van hem."
+        wait_for: "Frank moet het goedvinden."   # the summary card's "Wat nog moet"
+        unlocks:
+          facts: [heard:sanne_kpi]
+          proposals: [present_with_joost]
+    data: ["silo_kpis:3", "silo_kpis:5"]
+    proposals:
+      - id: complete_and_oldest
+        label: Compleet doorgezet + oudste aanvraag
+        say: "Compleet doorgezet, en de oudste aanvraag in de bak. Allebei getallen die je deze week ziet bewegen."
+        kpis: [intake_complete, intake_oldest]
+        addresses: [concern]
+        reply: "Die oudste aanvraag… die ligt er nu drie weken. Die kan ik morgen pakken."
+      - id: lead_and_complete
+        label: Doorlooptijd + compleet doorgezet
+        say: "De doorlooptijd van de hele stroom, en compleet doorgezet ernaast."
+        kpis: [intake_lead_time, intake_complete]
+        addresses: [concern]
+        reply: "Eentje kijkt ver vooruit, eentje kijkt naar ons. Oké. Dat is eerlijk."
+      - id: output_and_complete
+        label: Aanvragen per week + compleet doorgezet
+        say: "Houd je aantal per week, en zet compleet doorgezet ernaast."
+        kpis: [intake_output, intake_complete]
+        addresses: [concern]
+        reply: "Dan zie ik ze elkaar bevechten. Maar goed. Dan zie ik het tenminste."
+      - id: output_and_utilisation
+        label: Aanvragen per week + bezettingsgraad
+        say: "Je houdt wat je hebt: aanvragen per week en bezettingsgraad."
+        kpis: [intake_output, intake_utilisation]
+        addresses: []
+        reply: "Dat is wat ik nu heb. En dat werkt dus niet, hè."
+      - id: present_with_joost   # unlocked by her concern (the script also wanted heard:joost_kpi; not in the engine)
+        label: Samen met Joost presenteren
+        say: "Joost wil het samen met jou presenteren. Eén stroom, niet twee teams."
+        hidden: true
+        addresses: [concern]
+        reply: "Joost? Samen? … Dan is het geen postkantoor tegen de ingenieurs. Dan is het één stroom."
+    co_proposal: {id: present_with_joost, text: "Als Joost en ik dezelfde aansluiting volgen, van aanvraag tot monteur. Eén dossier, op het bord. Dan ziet iedereen waar het blijft."}
+    condition_needs: {all: [committed:frank_kpi_targets]}
+    # Later (scripts §7, beats_after, not yet in the engine): "Frank heeft getekend.
+    # Joost en ik presenteren donderdag. Samen. Ik ben zenuwachtig, en dat is lang geleden."
+    lines:
+      mood: "Hoe is het nou echt, na zo'n recordmaand?"
+      open_question: "Hoe gaat zo'n vrijdagmiddag bij jullie?"
+      reflect: "Je klinkt alsof je het nu al ziet aankomen."
+    replies:
+      open_question:
+        lands: {text: "Vrijdag om drie uur tellen we. Iedereen weet dat. Daar plan je je hele week omheen.", tags: [claim]}
+      paraphrase:
+        lands: {text: "Ja. En dan nog dat gevoel dat het nooit genoeg is.", tags: [feeling]}
+      perspective:
+        lands: {text: "Vanuit Joost? Die krijgt mijn vrijdagmiddag op maandag op zijn bord. Halve dossiers. Ja. Dat zou ik ook niet leuk vinden."}
+      show_data:
+        lands: {text: "'Nog vier voor vrijdag.' Ja. Dat zijn wij. Dat klinkt anders als je het zo terughoort."}
+        misses: {text: "Mijn cijfers zijn goed. Die van Joost ook. Dat is toch het hele punt?", tags: [claim]}
+    outcomes:
+      commitment: "Afgesproken. En ik zeg het zelf in het MT: ons getal gaat eerst omlaag. Met reden."
+      partial: "Ik doe mee. Als Frank het goedvindt. Het jaarplan is van hem."
+      heard: "Zo. Dat had ik nog nooit hardop gezegd."
+      compliance: "Prima. Weer een getal."
+      ruined: "Dus het ligt weer aan de Intake. Natuurlijk."
+
+  # ── The block behind the team leads' condition (scripts §7; audit C4–C6,
+  # C13): Frank ───────────────────────────────────────────────────────────────
   - id: frank_kpi_targets
     name: Frank en het jaarplan
     person: frank
     kind: persuade
     mission: fix_silo_kpis
     requires_clue: "silo_kpis:4"
-    patience: 8                     # a manager with a full agenda
-    opening: "Je hebt vijf minuten. Wat is er?"
+    owns: silo_kpis               # his clue joins the problem's clues; it is his list the teams steer by
+    patience: 8                   # a manager's diary (authored)
+    opening: "Ik heb een kwartier. Daarna de regiegroep. Gaat het over het jaarplan, dan weet je dat het vastligt."
     retry_opening: "Weer over die KPI's?"
+    warning: "Ik heb een regiegroep. Kom ter zake."
     position: {text: "Ontwerpen en aanvragen per week staan in het jaarplan. Daar stuur ik op.", tags: [claim]}
     layers:
       - id: interest
-        at: 50
-        via: [inquiry, open_question, paraphrase]
-        text: "Het jaarplan gaat naar de directie, en het aantal aansluitingen per jaar naar de ACM."
+        at: 52
+        via: [inquiry, paraphrase]
+        text: "Het jaarplan gaat naar de directie, en het aantal aansluitingen per jaar gaat naar de ACM. Dat moet ik kunnen uitleggen. Elk kwartaal."
         tags: [claim]
       - id: concern
-        at: 70
-        via: [inquiry, reflect, empathy, silence]
-        lead_in: {text: "Kijk… (zucht)", tags: [hesitation]}
-        text: "Als de doorlooptijd eerst slechter wordt, verlies ik in het najaar het budget voor netverzwaring. Ik ga niet op gevoel een kwartaal gokken."
+        at: 72
+        via: [inquiry, silence, empathy]
+        lead_in: {text: "En daar komt bij…", tags: [hesitation]}
+        text: "In de najaarsronde wordt het budget voor netverzwaring over de regio's verdeeld. Als onze cijfers een kwartaal slechter worden, gaat dat geld naar het westen. Ik ga niet op gevoel een kwartaal gokken met de verzwaring van Zuidmark."
         tags: [admission]
+        unlocks:
+          clue: {key: true, depth: 2, text: "'De directie vraagt elk kwartaal naar aantallen. Hoe lang een klant wacht, vraagt alleen de ACM. Eén keer per jaar.'"}
+          facts: [heard:frank_budget]   # the interim MT reads it (drie-winters §5.2)
     data: ["silo_kpis:0", "silo_kpis:2"]
     block:
       text: "Ik kan dit niet toezeggen. Laat het me eerst zien."
       routes:
         - needs: {all: [checked:silo_kpis]}
           hint: "Laat het me zien op één stroom."
+        - needs: {all: [partial:joost_output_kpi, partial:sanne_kpi, reputation>=40]}
+          hint: "Als Sanne en Joost het zelf komen uitleggen, sta ik er niet alleen voor."
+        # Scripts route 3 (forecast_positive:kpi_board) waits for that fact kind (PLAN 1.6b).
     proposals:
-      - id: one_stream_board
-        name: Eén stroom, één bord
-        text: "Wat als we het op één stroom laten zien, met de oude cijfers ernaast?"
+      - id: keep_targets
+        label: De doelen houden zoals ze zijn
+        say: "We houden de doelen zoals ze zijn."
+        addresses: []
+        reply: "Dat is wat ik heb."
+      - id: obeya_one_stream
+        label: Eén kwartaal, één stroom, oude cijfers ernaast
+        say: "Eén kwartaal, alleen de aansluitingenstroom, met de oude getallen ernaast zichtbaar. Als het eerst zakt, zie je ook waarom."
         addresses: [concern]
-        reply: "Op één stroom. Dat is te overzien."
-      - id: report_both
-        name: Beide cijfers rapporteren
-        text: "Je rapporteert een kwartaal lang allebei: de aantallen voor het jaarplan en de doorlooptijd ernaast."
-        addresses: [concern]
-        reply: "Allebei rapporteren. Dan heb ik niets weggegeven."
+        reply: "Met de oude ernaast. Dan kan ik het in de regiegroep altijd uitleggen."
     experiments:
-      - id: one_quarter_two_numbers
-        name: Een kwartaal met twee getallen
-        text: "Een kwartaal proberen op de aansluitingen, met de oude cijfers zichtbaar."
+      - id: obeya_trial
+        label: Een Obeya op één stroom, zes weken
+        say: "Zes weken een Obeya op de aansluitingenstroom. Sanne, Joost en Marco aan één bord. Jij komt elke vrijdag kijken."
         addresses: [concern]
+        reply: "Elke vrijdag. Tien minuten. En als ik iets zie wat ik niet kan uitleggen, stoppen we."
     replies:
+      open_question:
+        lands: {text: "Het jaarplan is vastgesteld. Daar is over nagedacht, door meer mensen dan ik.", tags: [claim]}
+      paraphrase:
+        lands: {text: "Zo is het. En dat moet ik kunnen uitleggen.", tags: [claim]}
+      perspective:
+        lands: {text: "Vanuit de ACM gezien… die meet de termijn vanaf de aanvraag. Niet het aantal ontwerpen. Hm. Dat is eigenlijk een ander getal dan het mijne."}
       show_data:
-        lands: {text: "Laat zien. Van 85 naar 80 procent? Dat had niemand me verteld.", tags: [claim]}
+        lands: {text: "Twee recordmaanden, en niet één aansluiting meer de deur uit. Dat is geen record. Dat is een rapport.", tags: [claim]}
+        misses: {text: "Een kwartaalcijfer is een kwartaalcijfer.", tags: [claim]}
+    outcomes:
+      commitment: "Goed. Ik zet mijn handtekening eronder. En als het eerst slechter wordt, leg ík het uit. Daar word ik voor betaald."
+      partial: "Als het op één stroom blijft, doe ik mee. Verder niet."
+      blocked: "Ik kan dit niet toezeggen. Laat het me eerst zien."
+      heard: "Interessant. Kom terug als je iets te laten zien hebt."
+      compliance: "Als Ruud het zo wil, staat het in het verslag. Op zijn naam."
+      ruined: "Ik heb een regiegroep. Plan maar iets in via mijn secretariaat."
 
-  # ── Sample dialog 2 (spec §8): a check-in with Ahmed ───────────────────────
+  # ── A check-in with Ahmed (scripts §3.4; audit C2, C3, C10) ─────────────────
   - id: ahmed_after_henk
     name: Ahmed na Henks afscheid
     person: ahmed
     kind: checkin
-    # Henk has gone (his knowledge saved or not) and Ahmed is low.
+    # Henk has gone (his knowledge saved or not) and Ahmed is low. The scripts'
+    # beat delay (henk_farewell + 16 days, audit C11) waits for dated beats (PLAN 1.6b).
     trigger:
       morale_below: 50
       needs: {any: [done:save_henks_knowledge, failed:save_henks_knowledge]}
@@ -333,31 +503,32 @@ dialogs:
     patience: 8
     prompt: "Ahmed is stil sinds Henk weg is."
     opening: "Hé."
+    warning: "Ik moet zo weer rijden, hoor."
     position: {text: "Gaat wel.", tags: [claim]}
     layers:
       - id: interest
         at: 50
-        via: [open_question, inquiry]
-        text: "Nachtdienst in Nova-Oud is anders zonder Henk. Die kabels zijn ouder dan ik."
+        via: [open_question, mood, silence]
+        text: "Anders. Nachtdienst in Nova-Oud is anders zonder Henk. Die kabels zijn ouder dan ik."
         tags: [feeling]
       - id: concern
         at: 65
         via: [silence, empathy, reflect]
         lead_in: {text: "Ja. Nou…", tags: [hesitation]}
-        text: "Vorige week stond ik om twee uur 's nachts bij een papierloodkabel en ik wist het niet. Ik heb Henk gebeld. Hij is met pensioen, en ik bel hem uit zijn bed. Wat voor monteur ben ik dan?"
+        text: "Vorige week. Twee uur 's nachts. Papierloodkabel, en ik wist het niet. … Ik heb Henk gebeld. Hij is met pensioen, man. Ik bel hem uit z'n bed. Wat voor monteur ben ik dan, als ik…"
         tags: [admission, doubt]
         unlocks:
           facts: [heard:ahmed_night]
     proposals:
       - id: extra_course
-        name: Een extra cursus
-        text: "Zal ik een extra cursus voor je regelen?"
+        label: Een extra cursus
+        say: "Zal ik een extra cursus voor je regelen?"
         addresses: []
         reply: "Een cursus. Ja. Misschien."
     experiments:
       - id: ride_along
-        name: Een maand meelopen
-        text: "Je kunt de eerste maand met een collega mee op nachtdienst."
+        label: Een maand meelopen
+        say: "Je kunt de eerste maand met een collega mee op nachtdienst."
         addresses: []
         reply: "Ik red me wel."
     lines:
@@ -366,11 +537,13 @@ dialogs:
       reflect: "Het klinkt alsof je er 's nachts alleen voor staat."
       silence: "(je leunt tegen de bus en wacht)"
       empathy: "Dat je belt als je het niet weet, is precies wat een goede monteur doet. Om twee uur 's nachts al helemaal."
-      experience: "Mijn eerste jaar belde ik ook steeds iemand. Zo leer je het."
-      close: "Fijn dat je het vertelde. Ik loop vaker even langs."
+      experience: "In mijn eerste maand hier belde ik Ruud drie keer per dag. Niemand vond dat raar."
+      close: "Fijn dat je het vertelde."
     replies:
       mood:
         lands: {text: "Gaat wel."}
+      open_question:
+        lands: {text: "Lang. 's Nachts is het stil in de bus. Dan denk je na.", tags: [feeling]}
       reflect:
         misses: {text: "Ik ben niet ziek, hoor."}
       empathy:
@@ -379,23 +552,24 @@ dialogs:
         lands: {text: "Henk zei: bel me maar, jongen. Ik denk dat hij het eigenlijk fijn vond. (lacht)"}
     outcomes:
       lifted: "Doe dat. En… in Nova-Oud weet niemand van de nachtdienst welke kabel waar ligt. Dat zat in Henks hoofd."
+      heard: "Oké. Ja. Bedankt."
       none: "Ja. Doei."
     variants:
-      # Henk taught Ahmed as a buddy (spec §8.3): the hidden thing is pride, and a doubt.
-      - needs: {all: [chose:knowledge_drain:skills_matrix_buddy]}
+      # Henk taught Ahmed (buddy or TWI, spec §8.3, audit C10): the hidden thing is pride, and a doubt.
+      - needs: {any: [chose:knowledge_drain:skills_matrix_buddy, chose:knowledge_drain:twi_job_instruction]}
         mood: goed
         position: {text: "Goed, eigenlijk.", tags: [claim]}
         layers:
           - id: interest
             at: 50
             via: [open_question, inquiry]
-            text: "Gisteren vond ik zelf een fout in een papierloodkabel in Nova-Oud. Henk stuurde een kaartje."
+            text: "Gisteren vond ik zelf een fout in een papierloodkabel. In Nova-Oud. Henk stuurde een kaartje. Met een vis erop."
             tags: [feeling]
           - id: concern
             at: 65
-            via: [reflect, silence, empathy]
+            via: [reflect, empathy, silence]
             lead_in: {text: "Alleen…", tags: [hesitation]}
-            text: "Ruud vroeg of ik straks de nieuwe jongens wil opleiden. Ik weet niet of ik dat kan. Henk kon het."
+            text: "Ruud vroeg of ik straks de nieuwe jongens wil opleiden. Ik weet niet of ik dat kan. Henk kon het. Ik ben… ik ben gewoon Ahmed."
             tags: [admission, doubt]
             unlocks:
               facts: [heard:ahmed_trainer]

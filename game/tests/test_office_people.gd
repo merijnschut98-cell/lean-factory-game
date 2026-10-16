@@ -116,19 +116,32 @@ func test_the_energy_bar_shows_only_when_the_session_says_someone_needs_a_talk()
 	office.free()
 
 
-func test_e_beside_a_person_asks_for_a_talk_and_says_so_while_nobody_listens() -> void:
+func test_e_beside_a_person_opens_the_talk() -> void:
 	var office := _office()
+	office.session.missions.done_once["fix_unused_capacity"] = true
+	office.session.accept("fix_silo_kpis")   # Joost's talk is about its KPI
+	office.session.region.found["silo_kpis:4"] = true
+	office.people.refresh(office.session)
 	var joost := office.people.person("joost")
 	_beside(office, joost)
 	assert_eq(office.target_near(office.player.position), joost)
 	assert_eq(office.prompt_near(office.player.position), "E — Praat met Joost van Dijk")
-	office.use(office.target_near(office.player.position))
-	assert_true("Gesprek met Joost van Dijk (volgt)" in office.ui.hud.toast_texts(), "the placeholder toast")
 	var heard: Array[String] = []
 	office.person_selected.connect(func(id: String) -> void: heard.append(id))
 	office.use(office.target_near(office.player.position))
-	assert_eq(heard, ["joost"], "the dialog UI hears who")
-	assert_eq(office.ui.hud.toast_texts().count("Gesprek met Joost van Dijk (volgt)"), 1, "no toast once someone listens")
+	assert_eq(heard, ["joost"], "who was asked")
+	assert_true(office.ui.dialog_panel.talking(), "the talk with Joost opens")
+	assert_true(office.ui.is_busy())
+	office.free()
+
+
+func test_someone_with_nothing_to_say_nods_and_works_on() -> void:
+	var office := _office()
+	var sanne := office.people.person("sanne")
+	_beside(office, sanne)
+	office.use(sanne)
+	assert_false(office.ui.is_busy(), "no talk opens")
+	assert_true(GameUI.NOTHING_TO_SAY % sanne.display_name in office.ui.hud.toast_texts(), "a toast says so, by name")
 	office.free()
 
 

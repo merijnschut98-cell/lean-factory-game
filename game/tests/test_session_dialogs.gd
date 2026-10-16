@@ -101,8 +101,8 @@ func test_a_commitment_builds_team_trust() -> void:
 	s.region.state["silo_kpis"].phase = ProblemState.Phase.CHECKED  # shown on one stream: Frank's route
 	s.region.found["silo_kpis:2"] = true  # first time right, 85 → 80 %
 	s.start_dialog("frank")
-	var r := _play(s, ["open_question", "paraphrase", "inquiry", "show_data:silo_kpis:2", "inquiry", "silence",
-		"propose:one_stream_board", "ask_commitment"])
+	var r := _play(s, ["paraphrase", "inquiry", "show_data:silo_kpis:2", "inquiry", "silence",
+		"propose:obeya_one_stream", "ask_commitment"])
 	assert_eq(r["summary"]["outcome"], "commitment")
 	assert_eq(s.region.trust["work_prep"], 1)
 	assert_eq(s.talk_outcome("frank_kpi_targets"), "commitment")

@@ -11,6 +11,12 @@ signal checked(problem_id: String, result: Dictionary)
 const PICK := "— kies —"
 ## The stream's numbers on the A3, in this order.
 const NUMBERS := ["throughput", "lead_time", "first_time_right", "on_time", "wip_age"]
+## Shown while the Check's forecast runs (a few seconds of simulation).
+const SIMULATING := "De Check rekent de komende maanden twee keer door, met en zonder jouw maatregel. Even geduld, dat duurt een paar seconden…"
+## A repair's earlier fix (Region.start_rework), and the countermeasures
+## not offered because a preparation is missing (each with its hint).
+const TRIED := "Eerder geprobeerd: %s. Die draait door tot een nieuwe maatregel zich in de Check bewijst."
+const UNPREPARED := "Niet voorbereid"
 
 var problem_id := ""
 var message := ""
@@ -66,6 +72,21 @@ func wait() -> String:
 	acted.emit()
 	refresh()
 	return refused
+
+
+## The Check button: the note that it is simulating shows first (two frames
+## to draw it), then the Check runs.
+func _start_check() -> void:
+	show_simulating()
+	await get_tree().process_frame
+	await get_tree().process_frame
+	check()
+
+
+## Replace the wall's buttons with the note that the Check is simulating.
+func show_simulating() -> void:
+	clear(body)
+	body.add_child(paragraph(SIMULATING, Palette.VOLTANA_BLUE))
 
 
 ## Do the Check: the result goes to the Check panel.
@@ -138,7 +159,7 @@ func refresh() -> void:
 			body.add_child(button("Wacht tot de Check (%s)" % _period(), wait))
 		"check_ready":
 			body.add_child(paragraph("Het experiment heeft zijn %s gehad. Vergelijk voor en na: wat zeggen de cijfers?" % _period()))
-			body.add_child(button("Doe de Check", check))
+			body.add_child(button("Doe de Check", _start_check))
 		"checked":
 			body.add_child(paragraph("De Check is gedaan. Wat doe je nu: standaardiseren of niet?"))
 			body.add_child(button("Naar de Check-uitslag", func() -> void: checked.emit(problem_id, results.get(problem_id, {}))))
@@ -191,15 +212,35 @@ func _build_form(m: MissionDef) -> void:
 		proof.add_child(box)
 
 	var plan := add_card(right, "4. Tegenmaatregel en 5. voorspelling")
-	_cm = _options(session.countermeasures().map(
-		func(c: CountermeasureDef) -> String: return "%s  (%s)" % [c.name, UiText.money(c.budget)]))
+	var tried: String = session.region.state[problem_id].rework_from.get("cm", "")
+	if session.region.countermeasures.has(tried):
+		plan.add_child(paragraph(TRIED % session.region.countermeasures[tried].name, Palette.SAFETY_ORANGE, UiTheme.SMALL))
+	_cm = _options(session.countermeasures().map(func(c: CountermeasureDef) -> String: return option_text(c, session)))
 	plan.add_child(_cm)
+	_add_unprepared(plan)
 	plan.add_child(label("Op welke KPI verwacht je het effect?", UiTheme.SMALL, Palette.MUTED))
 	_prediction = _options(Investigation.KPIS.map(func(k: String) -> String: return UiText.kpi(k)))
 	plan.add_child(_prediction)
 	var start := button("Start experiment", func() -> void: submit(selected_a3()))
 	start.size_flags_horizontal = Control.SIZE_SHRINK_END
 	right.add_child(start)
+
+
+## A countermeasure in the list: its cost now and over a year, redoing it
+## each time it fades (an estimate, so rounded to a thousand).
+static func option_text(c: CountermeasureDef, s: GameSession) -> String:
+	var year := roundi(s.year_cost(c.id) / 1000.0) * 1000
+	return "%s  (%s; ±%s /jaar)" % [c.name, UiText.money(c.budget), UiText.money(year)]
+
+
+## "Niet voorbereid": what is not on offer yet, and where to prepare it.
+func _add_unprepared(parent: Node) -> void:
+	var missing := session.unprepared_countermeasures()
+	if missing.is_empty():
+		return
+	parent.add_child(label(UNPREPARED, UiTheme.SMALL, Palette.MUTED))
+	for c in missing:
+		parent.add_child(paragraph("• %s: %s" % [c["name"], c["preparation"]], Palette.MUTED, 15))
 
 
 func _numbers_row(snapshot: Dictionary) -> GridContainer:

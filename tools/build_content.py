@@ -113,13 +113,13 @@ def _check_ids(ids: list, label: str, where: str, pattern: re.Pattern = _ID,
         raise ContentError(f"{where}: duplicate {label} ids: {', '.join(dupes)}")
 
 
-def _entries(doc: dict, key: str, source: str) -> list[dict]:
+def _entries(doc: dict, key: str, source: str, name: str = "name") -> list[dict]:
     items = doc.get(key)
     if not isinstance(items, list) or not all(isinstance(i, dict) for i in items):
         raise ContentError(f"{source}: '{key}' must be a list of mappings")
     _check_ids([i.get("id") for i in items], key, source)
     for item in items:
-        _require_strings(item, ["name"], f"{source}: {key} '{item['id']}'")
+        _require_strings(item, [name], f"{source}: {key} '{item['id']}'")
     return items
 
 
@@ -1186,12 +1186,13 @@ LISTEN_MOVES = ["mood", "open_question", "reflect", "empathy", "paraphrase", "in
 STEER_MOVES = ["perspective", "show_data", "propose_experiment", "propose", "ask_commitment"]
 DIALOG_MOVES = LISTEN_MOVES + STEER_MOVES + ["pressure", "confront", "repair", "close"]
 DIALOG_TAGS = ["claim", "feeling", "hesitation", "admission", "doubt"]
+DIALOG_NEEDS = ["facts", "safety", "recognition", "time", "fairness"]  # Dialog.NEEDS (person-needs spec)
 DIALOG_ARCHETYPES = ["defender", "cynic", "craftsman", "overloaded", "rule_bound", "quiet", "customer_upset", "expert"]
 DIALOG_KINDS = ["persuade", "checkin", "expert"]
 DIALOG_MOODS = ["goed", "neutraal", "gespannen", "moe", "stil"]
 DIALOG_OUTCOMES = ["commitment", "partial", "heard", "none", "blocked", "compliance", "ruined", "lifted"]
 LAYERS = {"interest": (40, 65), "concern": (60, 85)}  # layer id → the range its `at` threshold must lie in
-REPLY_SITUATIONS = ["lands", "misses", "too_early"]
+REPLY_SITUATIONS = ["lands", "misses", "too_early", "worn"]
 # The bank's fallback replies: every move that has no reply of its own elsewhere
 # (a layer, a proposal, an outcome) needs these situations.
 BANK_REPLIES = {**{m: ["lands", "misses"] for m in LISTEN_MOVES + ["perspective", "show_data", "propose_experiment"]},
@@ -1201,13 +1202,19 @@ BANK_SPECIAL = ["repeat", "refusal", "no_proposal", "other_data", "lucky_guess",
 # Ruud's line after a main-mission talk that ended this way (People.coach_question;
 # pressure: a yes under pressure).
 COACH_AFTER = ["pressure", "ruined", "blocked", "commitment"]
-PERSON_KEYS = {"id", "name", "short", "role", "place", "team", "archetype", "trust", "morale", "voice"}
+PERSON_KEYS = {"id", "name", "short", "role", "place", "team", "archetype", "need", "trust", "morale", "voice"}
 DIALOG_KEYS = {"id", "name", "person", "kind", "mission", "requires_clue", "needs", "owns", "kpi_team", "mood",
                "patience", "opening", "retry_opening", "position", "layers", "data", "proposals", "experiments",
                "co_proposal", "condition_needs", "block", "lines", "replies", "outcomes", "variants", "trigger",
-               "tutorial", "prompt", "warning"}
-LAYER_KEYS = {"id", "at", "via", "text", "tags", "lead_in", "condition", "unlocks"}
-PROPOSAL_KEYS = {"id", "name", "text", "kpis", "addresses", "reply", "hidden"}
+               "tutorial", "prompt", "warning", "need"}
+LAYER_KEYS = {"id", "at", "via", "text", "tags", "tell", "lead_in", "condition", "wait_for", "unlocks"}
+PROPOSAL_KEYS = {"id", "label", "say", "kpis", "addresses", "reply", "hidden"}
+# A persuasion speaks its own outcomes in the person's voice; the bank's are a
+# narrator, kept for check-ins and experts (tier-1 content audit C9).
+PERSUADE_OUTCOMES = ["commitment", "partial", "heard", "compliance", "ruined"]
+# A bank reply never carries these: whether a summary or a named feeling lands
+# must depend on what this person said (tier-1 content audit C8).
+BANK_UNTAGGED = {"claim", "feeling"}
 VARIANT_KEYS = {"needs", "mood", "position", "layers"}
 
 
@@ -1215,7 +1222,9 @@ def _line(item: Any, where: str) -> dict:
     """A spoken line: {text, tags?}."""
     if not isinstance(item, dict):
         raise ContentError(f"{where}: a line is a mapping with a text and optional tags")
-    _known_keys(item, {"text", "tags"}, where)
+    _known_keys(item, {"text", "tags", "tell"}, where)
+    if "tell" in item:
+        _one_of(item, "tell", DIALOG_NEEDS, where)
     _require_strings(item, ["text"], where)
     for tag in _string_list(item, "tags", where):
         if tag not in DIALOG_TAGS:
@@ -1237,6 +1246,7 @@ def validate_dialogs(doc: Any, source: str) -> None:
         _known_keys(p, PERSON_KEYS, where)
         _require_strings(p, ["role", "place", "team"] + (["short"] if "short" in p else []), where)
         _one_of(p, "archetype", DIALOG_ARCHETYPES, where)
+        _one_of(p, "need", DIALOG_NEEDS, where)
         _number(p, "trust", where, 0, 100, integer=True)
         _number(p, "morale", where, 0, 100, integer=True, default=60)
     _validate_bank(doc.get("bank"), f"{source}: bank")
@@ -1247,7 +1257,14 @@ def validate_dialogs(doc: Any, source: str) -> None:
 def _validate_bank(bank: Any, where: str) -> None:
     if not isinstance(bank, dict):
         raise ContentError(f"{where}: needs labels, player, replies, special and outcomes")
-    _known_keys(bank, {"labels", "player", "replies", "special", "outcomes", "coach"}, where)
+    _known_keys(bank, {"labels", "player", "replies", "special", "outcomes", "coach", "wear_out"}, where)
+    # Moves that wear out (person-needs spec §3.2): a question and a statement line per archetype.
+    wear_out = _mapping(bank, "wear_out", set(DIALOG_ARCHETYPES), where)
+    for archetype in DIALOG_ARCHETYPES:
+        lines = wear_out.get(archetype)
+        if not isinstance(lines, dict) or set(lines) != {"ask", "say"}:
+            raise ContentError(f"{where} wear_out: {archetype!r} needs an 'ask' and a 'say' line")
+        _require_strings(lines, ["ask", "say"], f"{where} wear_out {archetype}")
     labels = _mapping(bank, "labels", {"bands", "cue", "chips", "outcomes"}, where)
     if len(_string_list(labels, "bands", f"{where} labels")) != 5:
         raise ContentError(f"{where} labels: 'bands' names the five openness bands")
@@ -1260,6 +1277,9 @@ def _validate_bank(bank: Any, where: str) -> None:
         if not isinstance(replies.get(move), dict) or set(situations) - set(replies[move]):
             raise ContentError(f"{where} replies: {move!r} needs {', '.join(situations)}")
         _replies({move: replies[move]}, f"{where} replies")
+        for situation, line in replies[move].items():
+            if BANK_UNTAGGED & set(line.get("tags", [])):
+                raise ContentError(f"{where} replies {move} {situation}: a bank reply carries no claim or feeling tag")
     _require_strings(_mapping(bank, "special", set(BANK_SPECIAL), where), BANK_SPECIAL, f"{where} special")
     _require_strings(_mapping(bank, "outcomes", set(DIALOG_OUTCOMES), where), DIALOG_OUTCOMES, f"{where} outcomes")
     coach = _mapping(bank, "coach", {"questions", "after"}, where)
@@ -1288,6 +1308,8 @@ def _validate_dialog(d: dict, where: str) -> None:
         if key in d:
             _require_strings(d, [key], where)
     _one_of(d, "kind", DIALOG_KINDS, where)
+    if "need" in d:
+        _one_of(d, "need", DIALOG_NEEDS, where)
     if "mood" in d:
         _one_of(d, "mood", DIALOG_MOODS, where)
     _number(d, "patience", where, 3, 15, integer=True, default=10)
@@ -1295,13 +1317,13 @@ def _validate_dialog(d: dict, where: str) -> None:
         raise ContentError(f"{where}: 'tutorial' must be true or false (an Act 0 talk that cannot be ruined)")
     _line(d.get("position"), f"{where} position")
     _layers(d.get("layers"), where)
-    proposals = _entries(d, "proposals", where) if "proposals" in d else []
-    experiments = _entries(d, "experiments", where) if "experiments" in d else []
+    proposals = _entries(d, "proposals", where, "label") if "proposals" in d else []
+    experiments = _entries(d, "experiments", where, "label") if "experiments" in d else []
     for item in proposals + experiments:
         at = f"{where} proposal '{item['id']}'"
         is_proposal = any(item is p for p in proposals)
         _known_keys(item, PROPOSAL_KEYS, at)
-        _require_strings(item, ["text"], at)
+        _require_strings(item, ["label", "say"], at)
         if "reply" in item:
             _require_strings(item, ["reply"], at)
         if is_proposal and "reply" not in item:
@@ -1367,6 +1389,10 @@ def _validate_dialog(d: dict, where: str) -> None:
         # No single right answer (spec §9.2 rule 10): two ways at least to meet the concern.
         if d["kind"] == "persuade" and sum(1 for i in proposals + experiments if "concern" in i.get("addresses", [])) < 2:
             raise ContentError(f"{where}: no single right answer: needs two proposals or experiments that address the concern")
+        if d["kind"] == "persuade":
+            missing = [o for o in PERSUADE_OUTCOMES + (["blocked"] if "block" in d else []) if o not in outcomes]
+            if missing:
+                raise ContentError(f"{where}: a persuasion authors its own outcome lines; missing {', '.join(missing)}")
 
 
 def _layers(layers: Any, where: str) -> None:
@@ -1383,9 +1409,13 @@ def _layers(layers: Any, where: str) -> None:
         for move in via:
             if move not in DIALOG_MOVES:
                 raise ContentError(f"{at}: unknown move {move!r} in via")
-        _line({k: layer[k] for k in ("text", "tags") if k in layer}, at)
+        _line({k: layer[k] for k in ("text", "tags", "tell") if k in layer}, at)
         if "condition" in layer:
             _require_strings(layer, ["condition"], at)
+        if "wait_for" in layer:  # what still has to happen, for the summary card
+            if "condition" not in layer:
+                raise ContentError(f"{at}: 'wait_for' without a condition")
+            _require_strings(layer, ["wait_for"], at)
         unlocks = _mapping(layer, "unlocks", {"clue", "facts", "proposals"}, at)
         for fact in _string_list(unlocks, "facts", f"{at} unlocks"):
             if _atom_parts(fact, f"{at} unlocks")[0] != "heard":
@@ -1403,8 +1433,13 @@ def _layers(layers: Any, where: str) -> None:
     concern = layers[1]
     if not isinstance(concern.get("lead_in"), dict):
         raise ContentError(f"{where}: the concern needs a lead_in (the line that carries the cue)")
-    if "hesitation" not in _line(concern["lead_in"], f"{where} concern lead_in").get("tags", []):
-        raise ContentError(f"{where}: the concern's lead_in carries the tag hesitation")
+    # The cue (four-tier audit §4.2): a hesitation opens to silence, a feeling
+    # to reflect and empathy, never to silence (rules T4).
+    cue = set(_line(concern["lead_in"], f"{where} concern lead_in").get("tags", [])) & {"hesitation", "feeling"}
+    if not cue:
+        raise ContentError(f"{where}: the concern's lead_in carries the tag hesitation or feeling")
+    if cue == {"feeling"} and ("silence" in concern["via"] or "reflect" not in concern["via"]):
+        raise ContentError(f"{where}: a concern cued by a feeling opens to reflect, never to silence")
 
 
 def _block(block: Any, where: str) -> None:
@@ -1465,6 +1500,10 @@ def check_dialogs(docs: dict[str, Any]) -> None:
         where = f"dialogs.yaml: dialog '{d['id']}'"
         if d["person"] not in people:
             raise ContentError(f"{where}: unknown person {d['person']!r}")
+        need = d.get("need", people[d["person"]]["need"])
+        for tell in _tells(d):
+            if tell != need:
+                raise ContentError(f"{where}: a tell shows {tell!r}, but the person's need here is {need!r}")
         for expr in _needs_of(d):
             for atom in _needs(expr, where):
                 _dialog_atom_robust(atom, where, index, dialogs, heard)
@@ -1488,6 +1527,15 @@ def _check_talk_goals(docs: dict[str, Any]) -> None:
             raise ContentError(f"{where}: talk_to names unknown dialog {m['goal']['dialog']!r}")
         if d.get("mission") != m["id"]:
             raise ContentError(f"{where}: dialog {d['id']!r} belongs to mission {d.get('mission')!r}")
+
+
+def _tells(d: dict) -> list[str]:
+    """Every `tell` on the dialog's lines (person-needs spec §1.5, N5)."""
+    lines = [d["position"]] + [v["position"] for v in d.get("variants", []) if "position" in v]
+    for layers in _all_layers(d):
+        lines += layers + [layer["lead_in"] for layer in layers if "lead_in" in layer]
+    lines += [line for by_situation in d.get("replies", {}).values() for line in by_situation.values()]
+    return [line["tell"] for line in lines if "tell" in line]
 
 
 def _all_layers(d: dict) -> list[list[dict]]:
@@ -1541,6 +1589,15 @@ def _check_mission_dialog(d: dict, where: str, missions: dict, problems: dict, n
         clue = layers[1].get("unlocks", {}).get("clue")
         if clue is not None and not d.get("owns"):
             raise ContentError(f"{where}: a concern unlocks a clue of the problem the dialog owns: needs 'owns'")
+
+
+def name_dialog_items(docs: dict[str, Any]) -> None:
+    """A proposal's or experiment's `label` (the chip) and `say` (the player's
+    line) become the engine's `name` and `text` (tier-1 content audit C1)."""
+    for d in docs.get("dialogs", {}).get("dialogs", []):
+        for item in d.get("proposals", []) + d.get("experiments", []):
+            item["name"] = item.pop("label")
+            item["text"] = item.pop("say")
 
 
 def merge_dialog_clues(docs: dict[str, Any]) -> None:
@@ -1654,12 +1711,191 @@ def vocabulary() -> dict[str, Any]:
         "care_rules": CARE_RULES, "kpi_kinds": KPI_KINDS,
         "effect_properties": {p: {"kind": k, "step_kind": sk or ""} for p, (k, sk, _) in sorted(EFFECT_PROPERTIES.items())},
         "dialog_moves": DIALOG_MOVES, "dialog_tags": DIALOG_TAGS, "dialog_archetypes": DIALOG_ARCHETYPES,
+        "dialog_needs": DIALOG_NEEDS,
         "dialog_kinds": DIALOG_KINDS, "dialog_moods": DIALOG_MOODS, "dialog_outcomes": DIALOG_OUTCOMES,
     }
 
 
 # Required files and their validators; problems_tier<n>.yaml files (one per
 # tier) all use validate_problems.
+# ── explainers.yaml ─────────────────────────────────────────────────────────
+# "Hoe werkt het?" (PLAN 2.7c; spec 2026-10-16-explainer-spanning-stroom-weerstand §6.2).
+
+# The beats the beat machine (game/src/rules/explainers/explainer_beats.gd) plays.
+EXPLAINER_BEATS = ["a1", "a2", "a2_dripper", "a3", "a4", "x", "r1", "r2", "r3", "r4", "r4_already_on",
+                   "r5", "r5_lamp", "r6", "r7", "r7_never_alone", "r8a", "r8b"]
+EXPLAINER_PHASES = {"tuin", "cross", "meterkast"}
+EXPLAINER_WAITS = {"any_on", "two_on", "kettle_on", "heater_on", "heater_again", "haspel"}
+EXPLAINER_CONDITIONS = {"only_lamp", "kettle_on", "heater_on", "never_kettle_alone"}
+EXPLAINER_SHOWS = {"readout", "reveal"}
+# A formula on screen (test T9): operators, units as symbols, I/U/P/R in an equation.
+FORMULA = re.compile(r"[=÷×²·Ω]|ΔU|\b[IUPR]\s*[=/]")
+# "The how, never the answer" (spec §5, test T7): mission clues and countermeasures.
+NEVER_THE_ANSWER = ["3x25", "3×25", "zonnepaneel", "zonnepanelen", "omvormer", "253", "trafo", "transformator",
+                    "aftakking", "warmtepomp", "el amrani", "netstudie", "wachtlijst", "verzwar"]
+_EXPLAINER_KEYS = {"id", "name", "number", "place", "assets", "model", "one_idea", "analogy", "controls", "hint",
+                   "labels", "tags", "caption", "reveal", "beats", "parameters", "sources"}
+_BEAT_KEYS = {"id", "phase", "idea", "lines", "wait_for", "timeout_s", "alt_of", "when", "then", "skip_when",
+              "silence_after", "pulse", "shows", "unlocks"}
+
+
+def _explainer_texts(e: dict) -> list[tuple[str, str]]:
+    """(where, text) for every Dutch string the player can read, the reveal included."""
+    out = [("name", e["name"]), ("one_idea", e["one_idea"]), ("limit_line", e["analogy"]["limit_line"])]
+    out += [(f"mapping {i}", row[side]) for i, row in enumerate(e["analogy"]["mapping"]) for side in ("analogy", "real")]
+    out += [(f"hint {k}", v) for k, v in e["hint"].items()]
+    out += [(f"label {k}", v) for k, v in e["labels"].items()]
+    out += [("tag", t) for t in e["tags"]]
+    out += [("caption", c) for c in e["caption"]]
+    out += [(f"beat {b['id']}", line) for b in e["beats"] for line in b["lines"]]
+    out += [("reveal", e["reveal"]["label"])]
+    out += [("reveal", line[k]) for line in e["reveal"]["lines"] for k in ("words", "formula", "live") if k in line]
+    return out
+
+
+def _plain_texts(e: dict) -> list[tuple[str, str]]:
+    """The texts that must stay plain: no digit, no formula (spec §1.5)."""
+    return [(w, t) for w, t in _explainer_texts(e) if not w.startswith("reveal")]
+
+
+def validate_explainers(doc: Any, source: str) -> None:
+    for e in _entries(doc, "explainers", source):
+        where = f"{source}: explainer {e['id']}"
+        _known_keys(e, _EXPLAINER_KEYS, where)
+        _require_strings(e, ["name", "place", "assets", "model", "one_idea"], where)
+        _validate_explainer_parts(e, where)
+        _validate_explainer_beats(e, where)
+        _validate_explainer_evidence(e, where)
+        for w, text in _explainer_texts(e):
+            low = text.lower()
+            hit = next((t for t in NEVER_THE_ANSWER if t in low), None)
+            if hit:
+                raise ContentError(f"{where}: {w} names {hit!r}, a mission's answer (the how, never the answer)")
+        for w, text in _plain_texts(e):
+            if re.search(r"\d", text):
+                raise ContentError(f"{where}: {w} has a digit (numbers are readouts on the instruments): {text!r}")
+            if FORMULA.search(text):
+                raise ContentError(f"{where}: {w} has a formula (formulas only under reveal): {text!r}")
+
+
+def _validate_explainer_parts(e: dict, where: str) -> None:
+    analogy = _mapping(e, "analogy", {"skin", "mapping", "limit_line"}, where)
+    if not isinstance(analogy.get("mapping"), list) or not analogy["mapping"]:
+        raise ContentError(f"{where}: analogy.mapping must be a non-empty list")
+    for i, row in enumerate(analogy["mapping"]):
+        _require_strings(row, ["analogy", "real"], f"{where} mapping {i}")
+        pair = row.get("pair")
+        if not (isinstance(pair, list) and len(pair) == 2 and all(isinstance(p, str) for p in pair)):
+            raise ContentError(f"{where} mapping {i}: 'pair' must be two layer ids")
+    _require_strings(analogy, ["limit_line"], f"{where} analogy")
+    controls = e.get("controls")
+    if not isinstance(controls, list) or not all(isinstance(c, dict) for c in controls):
+        raise ContentError(f"{where}: 'controls' must be a list of mappings")
+    _check_ids([c.get("id") for c in controls], "controls", where)
+    for name in ("hint", "labels"):
+        if not isinstance(e.get(name), dict) or not all(isinstance(v, str) and v for v in e[name].values()):
+            raise ContentError(f"{where}: '{name}' must map to non-empty strings")
+    for name in ("tags", "caption"):
+        if not isinstance(e.get(name), list) or not all(isinstance(v, str) and v for v in e[name]):
+            raise ContentError(f"{where}: '{name}' must be a list of non-empty strings")
+    reveal = _mapping(e, "reveal", {"label", "lines"}, where)
+    _require_strings(reveal, ["label"], f"{where} reveal")
+    for i, line in enumerate(reveal.get("lines") or []):
+        _known_keys(line, {"words", "formula", "live"}, f"{where} reveal {i}")
+        _require_strings(line, ["words"], f"{where} reveal {i}")
+
+
+def _id_list(doc: dict, key: str, where: str) -> list[dict]:
+    """A list of mappings with unique snake_case ids (no 'name' needed, unlike _entries)."""
+    items = doc.get(key)
+    if not isinstance(items, list) or not all(isinstance(i, dict) for i in items):
+        raise ContentError(f"{where}: '{key}' must be a list of mappings")
+    _check_ids([i.get("id") for i in items], key, where)
+    return items
+
+
+def _validate_explainer_beats(e: dict, where: str) -> None:
+    beats = _id_list(e, "beats", where)
+    ids = [b["id"] for b in beats]
+    missing = [b for b in EXPLAINER_BEATS if b not in ids]
+    if missing:
+        raise ContentError(f"{where}: beats missing: {', '.join(missing)}")
+    mains = {b["id"] for b in beats if "alt_of" not in b}
+    for b in beats:
+        at = f"{where} beat {b['id']}"
+        _known_keys(b, _BEAT_KEYS, at)
+        if b.get("phase") not in EXPLAINER_PHASES:
+            raise ContentError(f"{at}: 'phase' must be one of {sorted(EXPLAINER_PHASES)}")
+        if not isinstance(b.get("lines"), list) or not b["lines"] or not all(isinstance(t, str) and t for t in b["lines"]):
+            raise ContentError(f"{at}: 'lines' must be a list of non-empty strings")
+        if "wait_for" in b:
+            if b["wait_for"] not in EXPLAINER_WAITS:
+                raise ContentError(f"{at}: wait_for must be one of {sorted(EXPLAINER_WAITS)}")
+            _number(b, "timeout_s", at, 1, 60)
+        for key in ("when", "skip_when"):
+            if key in b and b[key] not in EXPLAINER_CONDITIONS:
+                raise ContentError(f"{at}: {key} must be one of {sorted(EXPLAINER_CONDITIONS)}")
+        if "alt_of" in b and (b["alt_of"] not in mains or "when" not in b):
+            raise ContentError(f"{at}: alt_of must name a main beat, with a 'when'")
+        if "then" in b and b["then"] not in mains:
+            raise ContentError(f"{at}: then must name a main beat")
+        if not set(b.get("shows", [])) <= EXPLAINER_SHOWS:
+            raise ContentError(f"{at}: shows must be among {sorted(EXPLAINER_SHOWS)}")
+        lines = len(b["lines"])
+        if not all(isinstance(i, int) and 0 <= i < lines - 1 for i in b.get("silence_after", [])):
+            raise ContentError(f"{at}: silence_after must index a line before the last")
+
+
+def _validate_explainer_evidence(e: dict, where: str) -> None:
+    sources = _id_list(e, "sources", where)
+    for s in sources:
+        _require_strings(s, ["fact", "title", "url"], f"{where} source {s['id']}")
+    known = {s["id"] for s in sources}
+    params = e.get("parameters")
+    if not isinstance(params, list) or not params:
+        raise ContentError(f"{where}: 'parameters' must be a non-empty list")
+    for p in params:
+        at = f"{where} parameter {p.get('name')}"
+        if "source" in p:
+            if p["source"] not in known:
+                raise ContentError(f"{at}: unknown source {p['source']!r}")
+        elif not isinstance(p.get("estimate"), str) or not p["estimate"].strip():
+            raise ContentError(f"{at}: needs a source or an estimate with its reasoning")
+
+
+EXPLAINER_ASSETS = ROOT / "game" / "assets"
+
+
+def check_explainers(docs: dict[str, Any]) -> None:
+    """Explainers against their layer manifest, and against the mission content
+    (no step or KPI name: an explainer never points at the answer)."""
+    if "explainers" not in docs:
+        return
+    names = [s["name"] for stream in docs["value_streams"]["streams"] for s in stream["steps"]]
+    names += [k["name"] for k in docs["kpis"]["kpis"]]
+    for e in docs["explainers"]["explainers"]:
+        where = f"explainers.yaml: explainer {e['id']}"
+        for w, text in _explainer_texts(e):
+            hit = next((n for n in names if n.lower() in text.lower()), None)
+            if hit:
+                raise ContentError(f"{where}: {w} names the step or KPI {hit!r}")
+        manifest_path = EXPLAINER_ASSETS / e["assets"] / "manifest.json"
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            raise ContentError(f"{where}: cannot read {manifest_path.name} ({exc}); run tools/explainers/*/export.mjs") from exc
+        skins = {layer["id"]: layer["skin"] for layer in manifest.get("layers", [])}
+        for i, row in enumerate(e["analogy"]["mapping"]):
+            if [skins.get(p) for p in row["pair"]] != ["tuin", "meterkast"]:
+                raise ContentError(f"{where} mapping {i}: pair {row['pair']} must name a tuin layer and a meterkast layer")
+        for c in e["controls"]:
+            for skin, states in (("tuin", ("closed", "open")), ("meterkast", ("off", "on"))):
+                if skin in c:
+                    for state in states:
+                        if f"{c[skin]}_{state}" not in skins:
+                            raise ContentError(f"{where}: control {c['id']} has no layer {c[skin]}_{state}")
+
+
 VALIDATORS: dict[str, Callable[[Any, str], None]] = {
     "game": validate_game,
     "value_streams": validate_value_streams,
@@ -1669,14 +1905,15 @@ VALIDATORS: dict[str, Callable[[Any, str], None]] = {
     "concepts": validate_concepts,
     "dialogs": validate_dialogs,
     "discoveries": validate_discoveries,
+    "explainers": validate_explainers,
     "world": validate_world,
 }
 # Registered files a content set may leave out.
-OPTIONAL = {"dialogs", "world"}
+OPTIONAL = {"dialogs", "explainers", "world"}
 
 # Checks that need several files at once. Each gets {stem: document}.
 CROSS_CHECKS: list[Callable[[dict[str, Any]], None]] = [check_kpis, check_problems, check_missions, check_concepts,
-                                                      check_dialogs, check_discoveries, check_world]
+                                                      check_dialogs, check_discoveries, check_explainers, check_world]
 
 
 def _validator_for(stem: str) -> Callable[[Any, str], None] | None:
@@ -1705,6 +1942,7 @@ def load_content(content_dir: Path | None = None) -> dict[str, Any]:
     for check in CROSS_CHECKS:
         check(docs)
     merge_dialog_clues(docs)
+    name_dialog_items(docs)
     docs["vocabulary"] = vocabulary()
     return docs
 
