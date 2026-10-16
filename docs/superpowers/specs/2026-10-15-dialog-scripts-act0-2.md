@@ -719,11 +719,11 @@ dialogs:
     # start: customer_upset 25 - 5 + 0 + 0 + 0 = 20, Op z'n hoede
     # customer_upset: empathy and paraphrase x1.5; steering lands only after 'heard' AND the concern
     opening: "Goedemiddag. U spreekt met Fatima El Amrani. Ik bel voor de vierde keer deze maand, en ik heb ze allemaal opgeschreven."
-    position: {text: "Ik wil een datum. Een echte. Anders ga ik naar de Geschillencommissie.", tags: [claim]}
+    position: {text: "Ik wil een datum. Een echte. Anders ga ik naar de Geschillencommissie.", tags: [claim], tell: facts}
     layers:
       - id: interest
         at: 45
-        via: [paraphrase, empathy]
+        via: [paraphrase, inquiry]   # 2026-10-16 (1.6c): her need is facts; she opens to someone who digs into her dates, not to comfort
         text: "Op 7 september zei iemand 'binnenkort'. Op 21 september 'we zijn ermee bezig'. Op 5 oktober wist niemand het. Ik wil gewoon weten waar ik aan toe ben."   # dates fixed 2026-10-16: her request is born ~27 July
         tags: [claim, feeling]
       - id: concern
@@ -743,9 +743,15 @@ dialogs:
         say: "Mevrouw, als u de aanvraag compleet had ingevuld, was het sneller gegaan."
         any: "Het formulier vroeg er niet om! Ik heb het hier, uitgeprint."
       mood: {lands: "Hoe het gaat? Ik ken uw wachtmuziek inmiddels uit mijn hoofd. Vivaldi, toch?"}
+      open_question:
+        lands: {text: "Aangevraagd op 27 juli. Ontvangstbevestiging op 3 augustus, nummer erbij. Sindsdien hoor ik alleen Vivaldi.", tags: [claim], tell: facts}
+      paraphrase:
+        lands: {text: "Vier keer, ja. Ik heb ze genummerd. Datum, tijd, en de naam van wie ik sprak.", tags: [claim], tell: facts}
+      empathy:
+        lands: {text: "Begrip heb ik genoeg gehad. Drie keer. Ik heb het opgeschreven, kijk: 'begrip'.", tell: facts}
       inquiry:
         say: "Wat wilt u het liefst weten, als u één ding mocht vragen?"
-        lands: {text: "Of ik deze winter warm zit. Dat is alles.", tags: [feeling]}
+        lands: {text: "Waar mijn aanvraag nu ligt. Bij wie. Sinds wanneer. Dat staat toch ergens in een systeem? En… of ik deze winter warm zit.", tags: [claim, hesitation]}
     proposals:
       - {id: name_a_date, addresses: [interest], label: "Een datum noemen",
          say: "Ik zie hier {promise_date}. Dan wordt u aangesloten.",   # 2026-10-16: the planning estimate the game shows and checks
@@ -763,9 +769,13 @@ dialogs:
       heard: "Dank u dat u luisterde. Dat is de eerste keer."
       compliance: "Ik heb geen keus, hè. Ik schrijf het op."
       ruined: "Dan bel ik de Geschillencommissie. Het nummer staat al in mijn schrift."
-    # route: empathy +9 29 > paraphrase +10 39 (heard) > open question +6 45 (interest) > paraphrase +10 55 > inquiry +8 63
-    #        > reflect +10 73 (lead-in, cue) > empathy +9 > 74 capped (concern) > propose honest_window_and_contact +8 82 > ask: commitment (9 moves)
-    # other routes: silence at the lead-in; check_existing_connection (+8, her own question "waarom heeft niemand dat gezegd" is the commitment).
+    # route (2026-10-16, real engine with her facts need, gespannen: paraphrase x2.0, inquiry x1.75, empathy x0.375, mood x0.25):
+    #        paraphrase +14 34 (heard) > open question +4 38 (her dates, a claim) > inquiry +14 52 (interest)
+    #        > reflect +6 58 > paraphrase +10 68 (lead-in, cue) > reflect +4 72 (concern) > propose honest_window_and_contact +8 80 > ask: commitment (8 moves)
+    # other routes: inquiry before the open question; silence after her "En… of ik deze winter warm zit"; check_existing_connection
+    #   (+8, her own question "waarom heeft niemand dat gezegd" is the commitment). Comfort first falls flat: she has had "begrip" three times.
+    # 2026-10-16 (1.6c): unwinnable before (customer_upset weights empathy x1.5, her facts need turns it to x0.375, and her lines gave
+    #   inquiry nothing to dig into). Now her dates are claims, Doorvragen draws out the interest, and the early lines carry facts tells (N5).
     # temptation: name_a_date after the concern lands (+8, it addresses her interest) and wins a partial that calms her NOW.
     #   If the followed order misses that date: her next call starts at memory -15 and reputation -1 (spec §6). This is realistic_promise
     #   versus a lie, felt from the customer's side. Before the concern, any proposal is too early ("Data. Iedereen noemt data.").
@@ -789,8 +799,8 @@ dialogs:
         tags: [claim, feeling]
       - id: concern
         at: 72
-        via: [silence, empathy, inquiry]
-        lead_in: {text: "En dan nog iets…", tags: [hesitation]}
+        via: [show_data, paraphrase]   # 2026-10-16 (1.6c): her need is facts; she opens to her own numbers or her words said back exactly, not to a pause
+        lead_in: {text: "Het klopt allemaal, hoor. Het staat in mijn map. Alleen…", tags: [hesitation, claim], tell: facts}
         text: "Ik ben alleen. Als ik het elke dag doe en ik ben een week ziek, dan ligt het stil en ziet iedereen het meteen. Nu merkt niemand het als ik er een week niet ben. De maandrun schuift gewoon een weekje op."
         tags: [admission]
         condition: "Ik wil het wel. Maar niet zolang ik de enige ben."
@@ -827,8 +837,11 @@ dialogs:
       compliance: "Als het moet. Dan doe ik het elke dag. Tot ik ziek ben."
       ruined: "Dus ik doe het al elf jaar fout. Fijn om te horen."
     # route: open question +6 46 > paraphrase +7 53 (heard) > inquiry +8 61 (interest) > show_data +10 71 > empathy +6 77 (lead-in, cue)
-    #        > silence +12 > 81 capped (concern) > propose rachid_backup +8 89 > ask: commitment (8 moves)
-    # other routes: inquiry at the lead-in; the shorter_login experiment plus daily_run (a partial; a retry with rachid_backup upgrades it).
+    #        > show_data (her own two weeks per connection) > 81 capped (concern) > propose rachid_backup +8 89 > ask: commitment (8 moves)
+    # other routes: paraphrase at the lead-in ("het klopt, het staat in je map, alleen…"); the shorter_login experiment plus daily_run
+    #   (a partial; a retry with rachid_backup upgrades it).
+    # 2026-10-16 (1.6c, route variety): the concern opens to data or an exact summary, not to silence: Petra (facts) answers a pause
+    #   with nothing ("Het klopt allemaal" is armour of numbers). Silence or inquiry at the lead-in lets the moment pass.
     # Lean: her batch is rational. With a 15-minute set-up, a monthly run IS cheaper for her. Set-up reduction (shorter_login) makes
     #   small batches pay; a backup removes the single point of failure the batch was hiding. heard:petra_alone is read in Act III
     #   (Petra's sick week) and by the skills-matrix option.
@@ -1118,8 +1131,8 @@ dialogs:
         tags: [claim, feeling]
       - id: concern
         at: 72
-        via: [inquiry, silence, empathy]
-        lead_in: {text: "En nu wil iedereen…", tags: [hesitation]}
+        via: [paraphrase, empathy]   # 2026-10-16 (1.6c): her need is recognition; she opens when her trade is said back in her own terms
+        lead_in: {text: "Zesentwintig jaar teken ik dit. Zesentwintig. En nu wil iedereen…", tags: [hesitation, claim], tell: recognition}
         text: "…dat de monteur het zelf intekent op een tablet. Prima. Maar wat zijn wij dan nog? Ik doe dit zesentwintig jaar. Ik zie aan een schets of een monteur haast had. En sinds die graafschade kijkt het hele gebouw naar GIS, alsof wíj die kabel hebben verlegd."
         tags: [admission]
         unlocks: {facts: [heard:mieke_craft], proposals: [mieke_sets_the_standard, mieke_rides_along]}
@@ -1151,7 +1164,10 @@ dialogs:
       compliance: "Als het moet. Dan teken ik wat er komt."
       ruined: "Dus GIS is het probleem. Dank je. Dat hoorde ik al in de kantine."
     # route: mood +8 43 > open question +6 49 > inquiry +12 (craftsman x1.5) 61 (interest) > reflect +10 71 (heard)
-    #        > empathy +6 77 (lead-in, cue) > silence +12 > 81 capped (concern) > propose mieke_sets_the_standard +8 89 > ask: commitment (8 moves)
+    #        > empathy +6 77 (lead-in, cue) > paraphrase ("zesentwintig jaar, en je ziet aan een schets of hij haast had") > 81 capped (concern)
+    #        > propose mieke_sets_the_standard +8 89 > ask: commitment (8 moves)
+    # 2026-10-16 (1.6c, route variety): her need is recognition; at the lead-in she names her years, and only hearing her trade said back
+    #   draws the concern out. Silence or inquiry lets the moment pass (it sounds like one more person looking at GIS).
     # Lean: the work is done twice; capture at the source removes the backlog AND the errors, and the expert becomes the owner of quality.
     #   standardised:revision_backlog with Mieke's commitment is what the Act V audit remembers (audit §3 M6).
     # 2026-10-16 (four-tier audit §4): interest via [inquiry, open_question, paraphrase] -> [inquiry, open_question] (craftsman). Route re-checked by the simulator (audit §4.4).
@@ -1236,8 +1252,8 @@ dialogs:
         tags: [claim]
       - id: concern
         at: 70
-        via: [inquiry, silence, empathy]
-        lead_in: {text: "Er is een reden dat die regel er staat.", tags: [hesitation]}
+        via: [experience, empathy]   # 2026-10-16 (1.6c): his need is safety; he opens to someone who also had their name on a mistake
+        lead_in: {text: "Er is een reden dat die regel er staat. Ik weet niet of u dat… nou ja.", tags: [hesitation, doubt], tell: safety}
         text: "In 2022 hebben we twee 630's besteld voor een project dat uiteindelijk 400 werd. De accountant schreef het in zijn rapport. Met mijn naam. Ik ben niet tegen sneller. Ik ben tegen nog een keer."
         tags: [admission]
         unlocks: {facts: [heard:rob_audit], proposals: [standard_sizes]}
@@ -1248,6 +1264,9 @@ dialogs:
       show_data:
         lands: "Zeven maanden doorlooptijd, waarvan twee weken werk in de straat. Dus de rest is… wachten op ons eigen papier."
         misses: "Cijfers zonder procedure zijn een mening."
+      experience:
+        say: "Ik heb ooit een verkeerde bestelling op mijn naam gehad. Niemand weet het meer, behalve ik."
+        lands: {text: "Dan weet u het. Zo'n rapport gaat niet weg. Het staat er gewoon, elk jaar weer.", tags: [admission]}
     proposals:
       - {id: order_at_study, addresses: [interest], label: "Bestellen zodra de netstudie het zegt",
          say: "Bestel de trafo zodra de netstudie zegt dat hij nodig is, niet pas na het goedgekeurde ontwerp.",
@@ -1269,9 +1288,11 @@ dialogs:
       heard: "U bent de eerste die vraagt wáárom die regel er staat."
       compliance: "Als de directie het wil, bestel ik. Op uw naam."
       ruined: "Ik volg de procedure. Als u die wilt veranderen, loopt dat via de directie."
-    # route: open question +6 41 > paraphrase +7 48 (heard) > inquiry +8 56 (interest) > show_data +15 (rule_bound x1.5) 71 (lead-in, cue)
-    #        > silence +12 > 79 capped (concern) > experiment +9 (rule_bound x1.5) 88 > ask: commitment (7 moves)
-    # other routes: standard_sizes; inquiry at the lead-in ("Wat ging er toen mis?").
+    # route: open question +6 41 > paraphrase +7 48 (heard) > inquiry +8 56 (interest) > show_data +8 (safety x0.5) 64 > open question (lead-in, cue)
+    #        > experience +12 (safety x1.5) (concern) > experiment > ask: commitment
+    # other routes: standard_sizes; the lead-in after the data.
+    # 2026-10-16 (1.6c, route variety): his need is safety. At the lead-in he doubts whether he may say it; only the player's own story
+    #   of a mistake on their name (Ervaring delen) draws it out. Silence and inquiry let the moment pass; "Wat ging er toen mis?" is an audit.
     # Lean (audit L9): ordering before the approved design carries a wrong-size risk; standard sizes make that risk small.
     #   Waits in series that could run in parallel. The data lands hard on a rule-bound person: numbers are his language.
     # 2026-10-16 (four-tier audit §4): interest via [inquiry, open_question, paraphrase] -> [inquiry, paraphrase] (rule_bound). Route re-checked by the simulator (audit §4.4).

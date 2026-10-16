@@ -1127,7 +1127,8 @@
     "text": "Ik wil een datum. Een echte. Anders ga ik naar de Geschillencommissie.",
     "tags": [
      "claim"
-    ]
+    ],
+    "tell": "facts"
    },
    "layers": [
     {
@@ -1135,7 +1136,7 @@
      "at": 45,
      "via": [
       "paraphrase",
-      "empathy"
+      "inquiry"
      ],
      "text": "Op 7 september zei iemand 'binnenkort'. Op 21 september 'we zijn ermee bezig'. Op 5 oktober wist niemand het. Ik wil gewoon weten waar ik aan toe ben.",
      "tags": [
@@ -1229,11 +1230,36 @@
       "text": "Hoe het gaat? Ik ken uw wachtmuziek inmiddels uit mijn hoofd. Vivaldi, toch?"
      }
     },
+    "open_question": {
+     "lands": {
+      "text": "Aangevraagd op 27 juli. Ontvangstbevestiging op 3 augustus, nummer erbij. Sindsdien hoor ik alleen Vivaldi.",
+      "tags": [
+       "claim"
+      ],
+      "tell": "facts"
+     }
+    },
+    "paraphrase": {
+     "lands": {
+      "text": "Vier keer, ja. Ik heb ze genummerd. Datum, tijd, en de naam van wie ik sprak.",
+      "tags": [
+       "claim"
+      ],
+      "tell": "facts"
+     }
+    },
+    "empathy": {
+     "lands": {
+      "text": "Begrip heb ik genoeg gehad. Drie keer. Ik heb het opgeschreven, kijk: 'begrip'.",
+      "tell": "facts"
+     }
+    },
     "inquiry": {
      "lands": {
-      "text": "Of ik deze winter warm zit. Dat is alles.",
+      "text": "Waar mijn aanvraag nu ligt. Bij wie. Sinds wanneer. Dat staat toch ergens in een systeem? En… of ik deze winter warm zit.",
       "tags": [
-       "feeling"
+       "claim",
+       "hesitation"
       ]
      }
     },
@@ -1278,15 +1304,16 @@
      "id": "concern",
      "at": 72,
      "via": [
-      "silence",
-      "empathy",
-      "inquiry"
+      "show_data",
+      "paraphrase"
      ],
      "lead_in": {
-      "text": "En dan nog iets…",
+      "text": "Het klopt allemaal, hoor. Het staat in mijn map. Alleen…",
       "tags": [
-       "hesitation"
-      ]
+       "hesitation",
+       "claim"
+      ],
+      "tell": "facts"
      },
      "text": "Ik ben alleen. Als ik het elke dag doe en ik ben een week ziek, dan ligt het stil en ziet iedereen het meteen. Nu merkt niemand het als ik er een week niet ben. De maandrun schuift gewoon een weekje op.",
      "tags": [
@@ -1892,15 +1919,16 @@
      "id": "concern",
      "at": 72,
      "via": [
-      "inquiry",
-      "silence",
+      "paraphrase",
       "empathy"
      ],
      "lead_in": {
-      "text": "En nu wil iedereen…",
+      "text": "Zesentwintig jaar teken ik dit. Zesentwintig. En nu wil iedereen…",
       "tags": [
-       "hesitation"
-      ]
+       "hesitation",
+       "claim"
+      ],
+      "tell": "recognition"
      },
      "text": "…dat de monteur het zelf intekent op een tablet. Prima. Maar wat zijn wij dan nog? Ik doe dit zesentwintig jaar. Ik zie aan een schets of een monteur haast had. En sinds die graafschade kijkt het hele gebouw naar GIS, alsof wíj die kabel hebben verlegd.",
      "tags": [
@@ -2159,15 +2187,16 @@
      "id": "concern",
      "at": 70,
      "via": [
-      "inquiry",
-      "silence",
+      "experience",
       "empathy"
      ],
      "lead_in": {
-      "text": "Er is een reden dat die regel er staat.",
+      "text": "Er is een reden dat die regel er staat. Ik weet niet of u dat… nou ja.",
       "tags": [
-       "hesitation"
-      ]
+       "hesitation",
+       "doubt"
+      ],
+      "tell": "safety"
      },
      "text": "In 2022 hebben we twee 630's besteld voor een project dat uiteindelijk 400 werd. De accountant schreef het in zijn rapport. Met mijn naam. Ik ben niet tegen sneller. Ik ben tegen nog een keer.",
      "tags": [
@@ -2240,7 +2269,9 @@
      "text": "Eén project, De Boomgaard: bestellen na de netstudie, in een standaardmaat. U schrijft zelf de evaluatie."
     }
    ],
-   "lines": {},
+   "lines": {
+    "experience": "Ik heb ooit een verkeerde bestelling op mijn naam gehad. Niemand weet het meer, behalve ik."
+   },
    "replies": {
     "show_data": {
      "lands": {
@@ -2248,6 +2279,14 @@
      },
      "misses": {
       "text": "Cijfers zonder procedure zijn een mening."
+     }
+    },
+    "experience": {
+     "lands": {
+      "text": "Dan weet u het. Zo'n rapport gaat niet weg. Het staat er gewoon, elk jaar weer.",
+      "tags": [
+       "admission"
+      ]
      }
     },
     "perspective": {
