@@ -62,6 +62,9 @@ var rig: CameraRig
 var ui: GameUI
 var interactables: Array[Interactable] = []
 var people: OfficePeople
+## The head office's floors (PLAN 2.1): which floor is loaded, the stairs and the lift,
+## the rooms' doors.
+var floors: OfficeFloors
 ## The walk grid, baked on first use.
 var _nav: OfficeNav
 ## The ring or person clicked last: used when the walk there ends.
@@ -93,22 +96,14 @@ func build() -> void:
 		return
 	var loaded := _resume()
 	session = loaded["session"] if loaded.has("session") else GameSession.new_game(seed_value, data_dir, training)
-	geometry = _load_geometry()
-	add_child(geometry)
-	_cut_away_ceiling()
+	floors = OfficeFloors.new()
+	floors.setup(self)
+	add_child(floors)
 	_add_light()
+	load_floor()
 	for id in INTERACTIONS:
-		var marker := find_marker(id)
-		if marker != null:
-			var i := Interactable.create(id, in_office(marker))
-			interactables.append(i)
-			add_child(i)
-		else:
+		if interactable(id) == null:
 			push_warning("office: no marker for " + id)
-	people = OfficePeople.build(self, CharacterModel.cast())
-	add_child(people)
-	if session.error.is_empty():   # content that failed to load has no missions to read
-		people.refresh(session)
 	_add_player()
 	_add_camera()
 	ui = GameUI.new()
@@ -117,8 +112,7 @@ func build() -> void:
 	ui.panel_opened.connect(_on_panel_opened)
 	ui.panels_closed.connect(_on_panels_closed)
 	if ui.playable():
-		ui.office_map.show_office(floor_rect(), map_places(), player)
-		ui.office_map.footprints = map_footprints()
+		show_map()
 		if not save_slot.is_empty():
 			ui.begin_play(save_slot, loaded.has("session"))
 	if loaded.has("error"):
@@ -152,12 +146,73 @@ func _process(_delta: float) -> void:
 
 
 ## The model when it has been imported, else the stand-in.
-static func _load_geometry() -> Node3D:
-	if ResourceLoader.exists(MODEL):
-		var packed: PackedScene = load(MODEL)
+static func _load_geometry(path := MODEL) -> Node3D:
+	if ResourceLoader.exists(path):
+		var packed: PackedScene = load(path)
 		if packed != null:
 			return packed.instantiate()
 	return OfficePlaceholder.build()
+
+
+## Load the floor OfficeFloors is on in place of the one shown (at the start, and on
+## the stairs or in the lift): its model, its doors as the rooms are now, its interaction
+## points and its people. The player, the camera, the UI and the game stay as they are.
+func load_floor() -> void:
+	_clear_interactables()
+	for n: Node in [people, geometry]:
+		if n != null:
+			remove_child(n)
+			n.free()
+	_nav = null
+	_walk_goal = null
+	_hovered_person = null
+	geometry = _load_geometry(floors.model_path())
+	add_child(geometry)
+	_cut_away_ceiling()
+	floors.apply_rooms()
+	_add_interactables()
+	people = OfficePeople.build(self, floors.cast(CharacterModel.cast()))
+	add_child(people)
+	if session.error.is_empty():   # content that failed to load has no missions to read
+		people.refresh(session)
+	if ui != null and ui.playable():
+		show_map()
+
+
+## A room opened (a mission that needs it was taken on): its door opens, its places
+## come within reach and the walk grid is baked again.
+func reload_rooms() -> void:
+	_clear_interactables()
+	floors.apply_rooms()
+	_add_interactables()
+	_nav = null
+	if ui.playable():
+		show_map()
+
+
+func _clear_interactables() -> void:
+	for i in interactables:
+		remove_child(i)
+		i.free()
+	interactables.clear()
+
+
+## An interaction point at each usable marker of the floor (OfficeFloors.usable_markers);
+## a shut door shows no ring, only its prompt.
+func _add_interactables() -> void:
+	var markers := floors.usable_markers(geometry)
+	for id: String in markers:
+		var i := Interactable.create(id, in_office(markers[id]))
+		i.show_ring(i.kind != "door")
+		interactables.append(i)
+		add_child(i)
+
+
+## The player map shows the floor the player is on, with the floor switch.
+func show_map() -> void:
+	ui.office_map.show_office(floor_rect(), map_places(), player)
+	ui.office_map.footprints = map_footprints()
+	floors.refresh_map()
 
 
 ## A marker in the geometry: by its glTF extras {interaction, id}, or by its
@@ -248,6 +303,9 @@ func prompt_near(at: Vector3) -> String:
 func prompt_for(target: Interactable) -> String:
 	if target == null:
 		return ""
+	var seam := floors.prompt(target)
+	if not seam.is_empty():
+		return seam
 	match target.kind:
 		"obeya":
 			return "E — Obeya-wand: A3 en Check"
@@ -258,6 +316,9 @@ func prompt_for(target: Interactable) -> String:
 
 ## An interaction point's Dutch name: "Werkvoorbereiding & ontwerp".
 func label_for(target: Interactable) -> String:
+	var seam := floors.label(target)
+	if not seam.is_empty():
+		return seam
 	match target.kind:
 		"place":
 			var step := session.region.net.step_at(target.place)
@@ -283,12 +344,17 @@ func map_places() -> Array[Dictionary]:
 ## room}]. A room is a tall, wide frame smaller than half the floor (the
 ## coach's glass room); the rest is furniture. The shell, walls and things off the floor are left out.
 func map_footprints() -> Array[Dictionary]:
+	return footprints_of(geometry, floor_rect(), self)
+
+
+## map_footprints for any floor's geometry (`office` places it; it need not be loaded).
+static func footprints_of(of_geometry: Node3D, floor_area: Rect2, office: Office) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
-	var floor_area := floor_rect()
-	for n in geometry.find_children("*", "MeshInstance3D", true, false):
-		var b: AABB = in_office(n) * (n as MeshInstance3D).get_aabb()
+	for n in of_geometry.find_children("*", "MeshInstance3D", true, false):
+		var b: AABB = office.in_office(n) * (n as MeshInstance3D).get_aabb()
 		var rect := Rect2(b.position.x, b.position.z, b.size.x, b.size.z)
-		if absf(b.position.y) > 0.05 or b.size.y < 0.3 or not floor_area.encloses(rect.grow(-0.01)):
+		if absf(b.position.y) > 0.05 or b.size.y < 0.3 or minf(rect.size.x, rect.size.y) < 0.05 \
+				or not floor_area.encloses(rect.grow(-0.01)):
 			continue
 		var room := b.size.y >= 2.0 and rect.size.x > 2.0 and rect.size.y > 2.0 \
 			and rect.size.x < floor_area.size.x / 2.0 and rect.size.y < floor_area.size.y / 2.0
@@ -317,7 +383,7 @@ func floor_rect() -> Rect2:
 
 ## Use an interaction point: open its panel, the camera framing the station.
 func interact(target: Interactable) -> void:
-	if target == null or not session.error.is_empty():
+	if target == null or not session.error.is_empty() or floors.use(target):
 		return
 	match target.kind:
 		"place":
