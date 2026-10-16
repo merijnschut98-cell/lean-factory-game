@@ -26,6 +26,8 @@ const NO_TITLES := "Nog geen titels. Die verdien je met wat je doet, niet met wa
 var tab := CONCEPTS
 var _tabs: Dictionary[String, Button] = {}
 var _list: VBoxContainer
+## The explainers' content, read on the first visit to Hoe werkt het?.
+var _explainers_read: Array = []
 
 
 func _init() -> void:
@@ -139,14 +141,9 @@ func _discoveries() -> void:
 		Palette.GREEN_DARK if not earned.is_empty() else Palette.MUTED))
 	var found := view.filter(func(d: Dictionary) -> bool: return d["found"]).size()
 	_list.add_child(paragraph("Je vond %d van de %d ontdekkingen. Niemand vertelt je waar ze zitten." % [found, view.size()], Palette.MUTED))
-	var grid := GridContainer.new()
-	grid.columns = 3
-	grid.add_theme_constant_override("h_separation", 10)
-	grid.add_theme_constant_override("v_separation", 10)
-	_list.add_child(grid)
+	var grid := _card_grid()
 	for d in view:
-		var box := add_card(grid, "", Color.WHITE if d["found"] else Palette.LINE)
-		box.get_parent().custom_minimum_size = Vector2(340, 96)
+		var box := _grid_card(grid, d["found"])
 		if d["found"]:
 			_add_found(box, d)
 		else:
@@ -158,20 +155,10 @@ func _discoveries() -> void:
 ## "Bekijk opnieuw", the others as silhouettes (like Ontdekkingen).
 func _explainers() -> void:
 	_list.add_child(paragraph(tr(EXPLAINERS_INTRO), Palette.MUTED))
-	var loaded := ExplainerDef.load_all()
-	if not loaded["error"].is_empty():
-		push_warning("codex: " + loaded["error"])
-	var defs: Array = loaded["explainers"].values()
-	defs.sort_custom(func(a: ExplainerDef, b: ExplainerDef) -> bool: return a.number < b.number)
-	var grid := GridContainer.new()
-	grid.columns = 3
-	grid.add_theme_constant_override("h_separation", 10)
-	grid.add_theme_constant_override("v_separation", 10)
-	_list.add_child(grid)
-	for def: ExplainerDef in defs:
+	var grid := _card_grid()
+	for def: ExplainerDef in _explainer_defs():
 		var seen := session.explainers.has_seen(def.id)
-		var box := add_card(grid, "", Color.WHITE if seen else Palette.LINE)
-		box.get_parent().custom_minimum_size = Vector2(340, 96)
+		var box := _grid_card(grid, seen)
 		if not seen:
 			box.add_child(label(SILHOUETTE, UiTheme.HEADING, Palette.MUTED))
 			box.add_child(paragraph(tr(NOT_MET), Palette.MUTED, 15))
@@ -181,6 +168,34 @@ func _explainers() -> void:
 		var again := button(tr(SEE_AGAIN), open_explainer.bind(def.id))
 		again.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 		box.add_child(again)
+
+
+## The explainers in content order, read once (the file does not change in play).
+func _explainer_defs() -> Array:
+	if _explainers_read.is_empty():
+		var loaded := ExplainerDef.load_all()
+		if not loaded["error"].is_empty():
+			push_warning("codex: " + loaded["error"])
+		_explainers_read = loaded["explainers"].values()
+		_explainers_read.sort_custom(func(a: ExplainerDef, b: ExplainerDef) -> bool: return a.number < b.number)
+	return _explainers_read
+
+
+## Three cards to a row, for Ontdekkingen and Hoe werkt het?.
+func _card_grid() -> GridContainer:
+	var grid := GridContainer.new()
+	grid.columns = 3
+	grid.add_theme_constant_override("h_separation", 10)
+	grid.add_theme_constant_override("v_separation", 10)
+	_list.add_child(grid)
+	return grid
+
+
+## A card in the grid: white when known, a grey silhouette's otherwise.
+static func _grid_card(grid: GridContainer, known: bool) -> VBoxContainer:
+	var box := add_card(grid, "", Color.WHITE if known else Palette.LINE)
+	box.get_parent().custom_minimum_size = Vector2(340, 96)
+	return box
 
 
 ## Open an explainer again from the codex (no Ruud, the skin tab, the reel

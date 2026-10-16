@@ -224,6 +224,8 @@ func test_the_skip_stops_at_a_deadline() -> void:
 		"stopped the day before, in time")
 	assert_false(s.missions.failed(HENK))
 	var on := layer.skip_to_check(s, PROBLEM)
+	if on["stopped"] == "talk":   # Henk gone, Ahmed's check-in may come due on the way (1.4b)
+		on = layer.skip_to_check(s, PROBLEM)
 	assert_eq(on["stopped"], "", "skipping again goes on to the Check")
 	assert_eq(s.phase_of(PROBLEM), "check_ready")
 
@@ -257,3 +259,44 @@ func test_the_layer_round_trips_and_ignores_junk() -> void:
 	assert_eq(bad_snapshot.start["measures"], {})
 	assert_eq(bad_snapshot.start["completed"], ["a"])
 	assert_eq(bad_snapshot.terugblik(s)["ruud"]["kind"] in ["completed", "quiet", "changed", "check_ready", "checkin"], true)
+
+
+# ── People instead of teams (PLAN 1.4b) ─────────────────────────────────────
+
+## Ahmed low after Henk's leaving: his check-in can open (dialogs.yaml).
+func _ahmed_low(s: GameSession) -> void:
+	s.missions.done_once[HENK] = true
+	s.people.morale["ahmed"] = 30
+
+
+## A due check-in names its person in "Wacht op je" and Intussen.
+func test_a_due_check_in_names_its_person() -> void:
+	var s := _experiment_running()
+	var layer := SessionLayer.new()
+	layer.begin(s)
+	_ahmed_low(s)
+	s.pass_time(1)
+	assert_false(s.checkin_prompts().is_empty(), "Ahmed's check-in is due")
+	var waiting: Array = layer.terugblik(s)["lines"].filter(func(l: Dictionary) -> bool: return l["kind"] == "waiting")
+	assert_eq(waiting.size(), 1)
+	assert_eq(waiting[0]["what"], "talk")
+	assert_eq(waiting[0]["person"], "ahmed")
+	var text := TerugblikCard.line_text(s, waiting[0])
+	assert_true(text.contains("Ahmed"), text)
+	assert_true(text.contains(s.checkin_prompts()[0]["line"]), "his dagstart line")
+	var people: Array = layer.intussen(s, PROBLEM)["people"]
+	assert_true(people.any(func(l: Dictionary) -> bool: return l.get("person", "") == "ahmed"), "Intussen too")
+
+
+## The named skip stops when a check-in comes due on the way.
+func test_the_skip_stops_at_a_due_check_in() -> void:
+	var s := _experiment_running()
+	_ahmed_low(s)
+	var result := SessionLayer.new().skip_to_check(s, PROBLEM)
+	assert_eq(result["stopped"], "talk")
+	assert_eq(result["id"], "ahmed")
+	assert_eq(s.phase_of(PROBLEM), "doing", "the Check still waits")
+	var text := IntussenPanel.stopped_text(s, result)
+	assert_true(text.contains("Ahmed"), text)
+	var on := SessionLayer.new().skip_to_check(s, PROBLEM)
+	assert_eq(on["stopped"], "", "an open check-in does not stop the next skip")
