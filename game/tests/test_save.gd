@@ -121,19 +121,21 @@ func test_unknown_problems_in_a_save_are_ignored_and_reported() -> void:
 
 
 func test_save_files_round_trip_and_refuse_bad_input() -> void:
+	var dir := TestCase.scratch("saves")  # per process: runs share user://
 	var original := _mid_experiment()
-	assert_eq(SaveFile.write("test_slot", original), "")
+	assert_eq(SaveFile.write("test_slot", original, {}, dir), "")
 	var loaded := RulesFixture.region(0, 1)
-	assert_eq(SaveFile.read("test_slot", loaded)["error"], "")
+	assert_eq(SaveFile.read("test_slot", loaded, dir)["error"], "")
 	assert_eq(loaded.net.time, original.net.time)
 	assert_eq(loaded.state["custom_design"].phase, ProblemState.Phase.DOING)
-	assert_ne(SaveFile.write("../escape", original), "", "slot names cannot leave the saves folder")
-	assert_ne(SaveFile.read("missing_slot", loaded)["error"], "")
-	var file := FileAccess.open(SaveFile.path_of("test_slot"), FileAccess.WRITE)
-	file.store_buffer(var_to_bytes({"version": SaveFile.VERSION + 1}))
+	assert_ne(SaveFile.write("../escape", original, {}, dir), "", "slot names cannot leave the saves folder")
+	assert_ne(SaveFile.read("missing_slot", loaded, dir)["error"], "")
+	var file := FileAccess.open(SaveFile.path_of("test_slot", dir), FileAccess.WRITE)
+	file.store_buffer(SaveFile.encode({"version": SaveFile.VERSION + 1}))
 	file.close()
-	assert_true("version" in SaveFile.read("test_slot", loaded)["error"])
-	DirAccess.remove_absolute(SaveFile.path_of("test_slot"))
+	assert_true("version" in SaveFile.read("test_slot", loaded, dir)["error"])
+	DirAccess.remove_absolute(SaveFile.path_of("test_slot", dir))
+	DirAccess.remove_absolute(dir)
 
 
 ## The Check's measured gains travel with the problem (the Act scores on

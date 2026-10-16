@@ -8,8 +8,8 @@ block's `dialogs` are read; persuasion talks are turned into the engine's
 shape (the drafts' `label`/`say` and `lines.<move>.{say, lands, misses}`,
 `reframe`), and each talk's start comes from its `# start: <archetype> ... = N`
 comment (the base by archetype when the comment has no total). A person's
-`need` comes from docs/superpowers/specs/2026-10-16-person-needs.md §2.2
-(NEEDS below); people a tier names only once have none yet.
+`need` comes from docs/superpowers/specs/2026-10-16-person-needs.md §2.2 and §2.4
+(NEEDS below); a person with none there is measured without one.
 """
 from __future__ import annotations
 
@@ -32,6 +32,13 @@ NEEDS = {
     "gert": "safety", "el_amrani": "facts", "kees": "facts", "ruben": "time", "wendy": "recognition",
     "ingrid": "recognition", "monique": "fairness", "noor": "time", "mark": "time", "lotte": "fairness",
     "rachid": "fairness", "rob": "safety", "ilse": "time",
+    # The one-tier people (person-needs spec §2.4, assigned 2026-10-16 by the same rule).
+    "koen": "safety", "nicole": "safety", "brouwer": "safety", "van_dalen": "facts", "inge": "time",
+    "joke": "time", "patrick": "safety", "marloes": "fairness", "hermans": "facts", "yusuf": "fairness",
+    "jeroen": "facts", "sjaak": "recognition", "dennis": "time", "aziz": "safety", "verhoeven": "fairness",
+    "ricardo": "recognition", "erwin": "safety", "priya": "time", "hanneke": "recognition", "carla": "facts",
+    "bart": "safety", "lisette": "safety",
+    "theo": "safety", "rianne": "facts", "yvonne": "safety", "harrie": "recognition", "tim": "fairness",
 }
 
 

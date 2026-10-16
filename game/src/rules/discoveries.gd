@@ -393,16 +393,9 @@ func _main(s: GameSession) -> String:
 	return mains[0].id if not mains.is_empty() else ""
 
 
-## The act the player is in: the active main mission's, else the latest act
-## with a main mission done.
+## The act the player is in (Missions.current_act).
 func _act(s: GameSession) -> int:
-	var mains := s.missions.active("main")
-	if not mains.is_empty():
-		return mains[0].act
-	var act := 0
-	for id: String in s.missions.done_once:
-		act = maxi(act, s.missions.defs[id].act if s.missions.defs.has(id) else 0)
-	return act
+	return s.missions.current_act()
 
 
 ## Acts whose main missions are all done.

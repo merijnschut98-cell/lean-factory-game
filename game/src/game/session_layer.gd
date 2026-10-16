@@ -42,6 +42,9 @@ var offered: Dictionary[String, int] = {}
 var toast_day := -1
 ## Discoveries found after the day's toast: shown at the next terugblik.
 var queued: Array[String] = []
+## The head office's floor the player was on (PLAN 2.1; "" for the start floor):
+## a resumed game opens there.
+var floor_id := ""
 ## The card shown when this session opened ({} when none): the journal
 ## reopens it.
 var last_card := {}
@@ -380,7 +383,7 @@ static func _days(minutes: int) -> int:
 
 func to_dict() -> Dictionary:
 	return {"start": start.duplicate(true), "offered": offered.duplicate(), "toast_day": toast_day,
-		"queued": queued.duplicate()}
+		"queued": queued.duplicate(), "floor_id": floor_id}
 
 
 ## Restore to_dict() output, untrusted: anything of the wrong shape is
@@ -393,6 +396,7 @@ func load_dict(d: Dictionary) -> void:
 		if saved[id] is int:
 			offered[str(id)] = saved[id]
 	toast_day = d["toast_day"] if d.get("toast_day") is int else -1
+	floor_id = d["floor_id"] if d.get("floor_id") is String else ""
 	queued.clear()
 	var ids: Variant = d.get("queued", [])
 	for id: Variant in ids if ids is Array else []:

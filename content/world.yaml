@@ -1,0 +1,87 @@
+# The head office in Nova (PLAN 2.1, §5.2): three floors joined by a stairwell and a lift.
+# tools/blender/build_office.py builds one glb per floor (game/assets/office/<model>) and reads
+# the floor and room names from game/data/world.json for its signs; the game loads one floor
+# at a time (game/src/world/office/office_floors.gd).
+#
+# start_floor  the floor a game starts on (where the player's desk is)
+# floors       id, name (Dutch: the signs, the lift and the map), level (0 = begane grond),
+#              model (the floor's glb under game/assets/office/)
+# rooms        id, floor, name (Dutch), places (the "stream.step" places inside it: the
+#              markers the model puts in the room), opens_with: what opens its door. The
+#              progressive rule: nothing is open before a mission needs it.
+#                start          open from the first day
+#                <mission id>   open once that mission has been taken on
+#                <prefix>*      a mission made during play: terugval_* (a check-in on a
+#                               slipping fix), repair_* (a poor fix shows its weakness)
+#              An empty list keeps the door shut until a mission names the room. A mission
+#              whose goal or clues lead to one of a room's places must open it (checked).
+#              A floor is open when one of its rooms is.
+
+start_floor: first
+
+floors:
+  - {id: ground, level: 0, name: Begane grond, model: office_ground.glb}
+  - {id: first, level: 1, name: 1e verdieping, model: office.glb}
+  - {id: second, level: 2, name: 2e verdieping, model: office_second.glb}
+
+rooms:
+  # Begane grond: customer-facing.
+  - id: reception
+    floor: ground
+    name: Ontvangst
+    places: []
+    opens_with: [start]          # the way in: you came through it on your first day
+  - id: contact_centre
+    floor: ground
+    name: Klantcontactcentrum
+    places: [customer_contact.answer]
+    opens_with: [fix_status_callers, fix_done_but_not_closed]
+  - id: canteen
+    floor: ground
+    name: Kantine
+    places: []
+    opens_with: ["terugval_*"]   # check-ins on slipping fixes happen over coffee (§5.2)
+
+  # 1e verdieping: operations.
+  - id: connections
+    floor: first
+    name: Aansluitingen
+    places: [connections.intake, connections.design]
+    opens_with: [start]
+  - id: revision_gis
+    floor: first
+    name: Revisie & GIS
+    places: [connections.revision]
+    opens_with: [fix_revision_backlog, fix_digging_damage]
+  - id: meter_data
+    floor: first
+    name: Meetdata & registratie
+    places: [connections.close_out, connections.close_out_wait, meters.registration]
+    opens_with: [walk_meters, fix_done_but_not_closed, fix_silent_meter]
+
+  # 2e verdieping: direction.
+  - id: directors_obeya
+    floor: second
+    name: Directie & Obeya
+    places: []
+    opens_with: [fix_silo_kpis]  # the KPI board's home
+  - id: grid_strategy
+    floor: second
+    name: Netstrategie
+    places: [connections.grid_study, connections.grid_reinforcement, congestion.congestion_study]
+    opens_with: [look_at_grid_study, fix_grid_study_queue, fix_transformer_wait, fix_unused_capacity]
+  - id: congestion_desk
+    floor: second
+    name: Congestiedesk
+    places: [congestion.intake, congestion.capacity_queue, congestion.offer]
+    opens_with: [fix_unused_capacity]
+  - id: mt_room
+    floor: second
+    name: MT-kamer
+    places: []
+    opens_with: []               # day 100, the ACM visit, hoshin: their missions open it
+  - id: ruud_office
+    floor: second
+    name: Kantoor Ruud
+    places: []
+    opens_with: []

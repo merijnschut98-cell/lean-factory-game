@@ -1,0 +1,146 @@
+{
+ "floors": [
+  {
+   "id": "ground",
+   "level": 0,
+   "model": "office_ground.glb",
+   "name": "Begane grond"
+  },
+  {
+   "id": "first",
+   "level": 1,
+   "model": "office.glb",
+   "name": "1e verdieping"
+  },
+  {
+   "id": "second",
+   "level": 2,
+   "model": "office_second.glb",
+   "name": "2e verdieping"
+  }
+ ],
+ "rooms": [
+  {
+   "floor": "ground",
+   "id": "reception",
+   "name": "Ontvangst",
+   "opens_with": [
+    "start"
+   ],
+   "places": []
+  },
+  {
+   "floor": "ground",
+   "id": "contact_centre",
+   "name": "Klantcontactcentrum",
+   "opens_with": [
+    "fix_status_callers",
+    "fix_done_but_not_closed"
+   ],
+   "places": [
+    "customer_contact.answer"
+   ]
+  },
+  {
+   "floor": "ground",
+   "id": "canteen",
+   "name": "Kantine",
+   "opens_with": [
+    "terugval_*"
+   ],
+   "places": []
+  },
+  {
+   "floor": "first",
+   "id": "connections",
+   "name": "Aansluitingen",
+   "opens_with": [
+    "start"
+   ],
+   "places": [
+    "connections.intake",
+    "connections.design"
+   ]
+  },
+  {
+   "floor": "first",
+   "id": "revision_gis",
+   "name": "Revisie & GIS",
+   "opens_with": [
+    "fix_revision_backlog",
+    "fix_digging_damage"
+   ],
+   "places": [
+    "connections.revision"
+   ]
+  },
+  {
+   "floor": "first",
+   "id": "meter_data",
+   "name": "Meetdata & registratie",
+   "opens_with": [
+    "walk_meters",
+    "fix_done_but_not_closed",
+    "fix_silent_meter"
+   ],
+   "places": [
+    "connections.close_out",
+    "connections.close_out_wait",
+    "meters.registration"
+   ]
+  },
+  {
+   "floor": "second",
+   "id": "directors_obeya",
+   "name": "Directie & Obeya",
+   "opens_with": [
+    "fix_silo_kpis"
+   ],
+   "places": []
+  },
+  {
+   "floor": "second",
+   "id": "grid_strategy",
+   "name": "Netstrategie",
+   "opens_with": [
+    "look_at_grid_study",
+    "fix_grid_study_queue",
+    "fix_transformer_wait",
+    "fix_unused_capacity"
+   ],
+   "places": [
+    "connections.grid_study",
+    "connections.grid_reinforcement",
+    "congestion.congestion_study"
+   ]
+  },
+  {
+   "floor": "second",
+   "id": "congestion_desk",
+   "name": "Congestiedesk",
+   "opens_with": [
+    "fix_unused_capacity"
+   ],
+   "places": [
+    "congestion.intake",
+    "congestion.capacity_queue",
+    "congestion.offer"
+   ]
+  },
+  {
+   "floor": "second",
+   "id": "mt_room",
+   "name": "MT-kamer",
+   "opens_with": [],
+   "places": []
+  },
+  {
+   "floor": "second",
+   "id": "ruud_office",
+   "name": "Kantoor Ruud",
+   "opens_with": [],
+   "places": []
+  }
+ ],
+ "start_floor": "first"
+}

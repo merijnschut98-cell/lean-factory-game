@@ -50,9 +50,14 @@ const FACE_DROP := 0.2
 
 const RESUME_FAILED := "De bewaarde game kon niet worden geladen (%s). Dit spel wordt niet bewaard, zodat de oude bewaard blijft."
 
-## The slot the game resumes from and saves to ("" for neither): the
-## autosave when this office is the main scene.
-var save_slot := ""
+## The saves (PLAN 2.7; tests point it at their own folder).
+var saves := SaveSlots.new()
+## The slot the game continues from ("" for a new game): the title menu's
+## pick (play), or the autosave when this office is the main scene.
+var resume_slot := ""
+## Whether the game saves itself (into the autosave only, never a manual
+## slot): the real game does, tests and tools do not.
+var autosaves := false
 ## The simulation's luck for a new game.
 @export var seed_value := 1
 ## Where the content is read from (tests point it at bad content).
@@ -68,6 +73,9 @@ var rig: CameraRig
 var ui: GameUI
 var interactables: Array[Interactable] = []
 var people: OfficePeople
+## The head office's floors (PLAN 2.1): which floor is loaded, the stairs and the lift,
+## the rooms' doors.
+var floors: OfficeFloors
 ## The walk grid, baked on first use.
 var _nav: OfficeNav
 ## The ring or person clicked last: used when the walk there ends.
@@ -77,11 +85,18 @@ var _hovered_person: OfficePerson
 
 
 func _ready() -> void:
-	# Only the game itself resumes and saves; tests and tools that load this
-	# scene play a fresh game of their own.
-	if get_tree().current_scene == self:
-		save_slot = GameSave.AUTOSAVE
+	# Run as the main scene (from the editor) it resumes the autosave; tests
+	# and tools that load this scene play a fresh game of their own.
+	if get_tree().current_scene == self and not autosaves:
+		play(SaveSlots.AUTOSAVE)
 	build()
+
+
+## Play the real game (before build): continue from `slot` (one of
+## SaveSlots.names()), or a new game for "" or an empty slot; it saves itself.
+func play(slot: String) -> void:
+	resume_slot = slot
+	autosaves = true
 
 
 ## The game closes: it saves, and the session ends (GameUI.end_session).
@@ -90,7 +105,7 @@ func _notification(what: int) -> void:
 		ui.end_session()
 
 
-## Build the office and start the game (once): the saved game in `save_slot`
+## Build the office and start the game (once): the saved game in `resume_slot`
 ## when there is one (it opens with the terugblik), else a new one. Works
 ## outside the scene tree too, so the tests can build it headless: positions
 ## are the office's own.
@@ -99,22 +114,14 @@ func build() -> void:
 		return
 	var loaded := _resume()
 	session = loaded["session"] if loaded.has("session") else GameSession.new_game(seed_value, data_dir, training)
-	geometry = _load_geometry()
-	add_child(geometry)
-	_cut_away_ceiling()
+	floors = OfficeFloors.new()
+	floors.setup(self)
+	add_child(floors)
 	_add_light()
+	load_floor()
 	for id in INTERACTIONS:
-		var marker := find_marker(id)
-		if marker != null:
-			var i := Interactable.create(id, in_office(marker))
-			interactables.append(i)
-			add_child(i)
-		else:
+		if interactable(id) == null:
 			push_warning("office: no marker for " + id)
-	people = OfficePeople.build(self, CharacterModel.cast())
-	add_child(people)
-	if session.error.is_empty():   # content that failed to load has no missions to read
-		people.refresh(session)
 	_add_player()
 	_add_camera()
 	ui = GameUI.new()
@@ -124,26 +131,50 @@ func build() -> void:
 	ui.talk_opened.connect(frame_talk)
 	ui.panels_closed.connect(_on_panels_closed)
 	if ui.playable():
-		ui.office_map.show_office(floor_rect(), map_places(), player)
-		ui.office_map.footprints = map_footprints()
-		if not save_slot.is_empty():
-			ui.begin_play(save_slot, loaded.has("session"))
+		show_map()
+		floors.floor_changed.connect(func(id: String) -> void: ui.session_layer.floor_id = id)
+		enter_saved_floor(ui.session_layer.floor_id)
+		ui.title_requested.connect(to_title)
+		if autosaves:
+			ui.begin_play(saves, loaded.has("session"))
 	if loaded.has("error"):
 		ui.hud.toast(RESUME_FAILED % loaded["error"])
 
 
-## The saved game in `save_slot`: GameSave.read's result; {} when there is
-## none. A save that cannot be read is left alone, and this game is not
-## saved over it ({error} only, save_slot cleared).
+## The saved game in `resume_slot`: SaveSlots.resume's result; {} when there
+## is none. A save that cannot be read is left alone, and this game does not
+## save itself ({error} only, autosaves off): an autosave that failed to
+## load is never written over.
 func _resume() -> Dictionary:
-	if save_slot.is_empty() or not GameSave.exists(save_slot):
+	if resume_slot.is_empty() or saves.entry(resume_slot).is_empty():
 		return {}
-	var loaded := GameSave.read(save_slot, data_dir)
+	var loaded := saves.resume(resume_slot, data_dir)
 	if loaded["error"].is_empty():
 		return loaded
 	push_warning("office: " + loaded["error"])
-	save_slot = ""
+	autosaves = false
 	return {"error": loaded["error"]}
+
+
+## Build, continuing on floor `floor_id` (as a save that was left there does).
+func resume_on(floor_id: String) -> void:
+	build()
+	enter_saved_floor(floor_id)
+
+
+## Go to the floor a saved game was left on, by the lift; an unknown or shut floor
+## (the content changed) keeps the start floor.
+func enter_saved_floor(floor_id: String) -> void:
+	if floor_id.is_empty() or floor_id == floors.floor_id or floors.building.floor_of(floor_id).is_empty() \
+			or not floors.building.floor_open(floor_id, floors.open_now()):
+		return
+	floors.go_to(floor_id, "lift")
+
+
+## Back to the title menu (the pause menu's choice; the game has saved).
+func to_title() -> void:
+	if is_inside_tree():
+		get_tree().change_scene_to_file(TitleMenu.SCENE)
 
 
 func _process(_delta: float) -> void:
@@ -159,12 +190,73 @@ func _process(_delta: float) -> void:
 
 
 ## The model when it has been imported, else the stand-in.
-static func _load_geometry() -> Node3D:
-	if ResourceLoader.exists(MODEL):
-		var packed: PackedScene = load(MODEL)
+static func _load_geometry(path := MODEL) -> Node3D:
+	if ResourceLoader.exists(path):
+		var packed: PackedScene = load(path)
 		if packed != null:
 			return packed.instantiate()
 	return OfficePlaceholder.build()
+
+
+## Load the floor OfficeFloors is on in place of the one shown (at the start, and on
+## the stairs or in the lift): its model, its doors as the rooms are now, its interaction
+## points and its people. The player, the camera, the UI and the game stay as they are.
+func load_floor() -> void:
+	_clear_interactables()
+	for n: Node in [people, geometry]:
+		if n != null:
+			remove_child(n)
+			n.free()
+	_nav = null
+	_walk_goal = null
+	_hovered_person = null
+	geometry = _load_geometry(floors.model_path())
+	add_child(geometry)
+	_cut_away_ceiling()
+	floors.apply_rooms()
+	_add_interactables()
+	people = OfficePeople.build(self, floors.cast(CharacterModel.cast()))
+	add_child(people)
+	if session.error.is_empty():   # content that failed to load has no missions to read
+		people.refresh(session)
+	if ui != null and ui.playable():
+		show_map()
+
+
+## A room opened (a mission that needs it was taken on): its door opens, its places
+## come within reach and the walk grid is baked again.
+func reload_rooms() -> void:
+	_clear_interactables()
+	floors.apply_rooms()
+	_add_interactables()
+	_nav = null
+	if ui.playable():
+		show_map()
+
+
+func _clear_interactables() -> void:
+	for i in interactables:
+		remove_child(i)
+		i.free()
+	interactables.clear()
+
+
+## An interaction point at each usable marker of the floor (OfficeFloors.usable_markers);
+## a shut door shows no ring, only its prompt.
+func _add_interactables() -> void:
+	var markers := floors.usable_markers(geometry)
+	for id: String in markers:
+		var i := Interactable.create(id, in_office(markers[id]))
+		i.show_ring(i.kind != "door")
+		interactables.append(i)
+		add_child(i)
+
+
+## The player map shows the floor the player is on, with the floor switch.
+func show_map() -> void:
+	ui.office_map.show_office(floor_rect(), map_places(), player)
+	ui.office_map.footprints = map_footprints()
+	floors.refresh_map()
 
 
 ## A marker in the geometry: by its glTF extras {interaction, id}, or by its
@@ -255,6 +347,9 @@ func prompt_near(at: Vector3) -> String:
 func prompt_for(target: Interactable) -> String:
 	if target == null:
 		return ""
+	var seam := floors.prompt(target)
+	if not seam.is_empty():
+		return seam
 	match target.kind:
 		"obeya":
 			return "E — Obeya-wand: A3 en Check"
@@ -265,6 +360,9 @@ func prompt_for(target: Interactable) -> String:
 
 ## An interaction point's Dutch name: "Werkvoorbereiding & ontwerp".
 func label_for(target: Interactable) -> String:
+	var seam := floors.label(target)
+	if not seam.is_empty():
+		return seam
 	match target.kind:
 		"place":
 			var step := session.region.net.step_at(target.place)
@@ -290,12 +388,17 @@ func map_places() -> Array[Dictionary]:
 ## room}]. A room is a tall, wide frame smaller than half the floor (the
 ## coach's glass room); the rest is furniture. The shell, walls and things off the floor are left out.
 func map_footprints() -> Array[Dictionary]:
+	return footprints_of(geometry, floor_rect(), self)
+
+
+## map_footprints for any floor's geometry (`office` places it; it need not be loaded).
+static func footprints_of(of_geometry: Node3D, floor_area: Rect2, office: Office) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
-	var floor_area := floor_rect()
-	for n in geometry.find_children("*", "MeshInstance3D", true, false):
-		var b: AABB = in_office(n) * (n as MeshInstance3D).get_aabb()
+	for n in of_geometry.find_children("*", "MeshInstance3D", true, false):
+		var b: AABB = office.in_office(n) * (n as MeshInstance3D).get_aabb()
 		var rect := Rect2(b.position.x, b.position.z, b.size.x, b.size.z)
-		if absf(b.position.y) > 0.05 or b.size.y < 0.3 or not floor_area.encloses(rect.grow(-0.01)):
+		if absf(b.position.y) > 0.05 or b.size.y < 0.3 or minf(rect.size.x, rect.size.y) < 0.05 \
+				or not floor_area.encloses(rect.grow(-0.01)):
 			continue
 		var room := b.size.y >= 2.0 and rect.size.x > 2.0 and rect.size.y > 2.0 \
 			and rect.size.x < floor_area.size.x / 2.0 and rect.size.y < floor_area.size.y / 2.0
@@ -324,7 +427,7 @@ func floor_rect() -> Rect2:
 
 ## Use an interaction point: open its panel, the camera framing the station.
 func interact(target: Interactable) -> void:
-	if target == null or not session.error.is_empty():
+	if target == null or not session.error.is_empty() or floors.use(target):
 		return
 	match target.kind:
 		"place":
@@ -407,7 +510,8 @@ func _add_player() -> void:
 		if ui.is_busy():
 			ui.close_panels()
 		else:
-			player.stop())
+			player.stop()
+			ui.open_pause())
 	player.arrived.connect(_on_arrived)
 
 

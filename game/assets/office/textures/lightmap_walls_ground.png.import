@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c3hyhlepvg87m"
-path="res://.godot/imported/lightmap_ceiling.png-bc1f34ef3176c4592cc5be8d3dac7ee8.ctex"
+uid="uid://du7w4es3etus3"
+path="res://.godot/imported/lightmap_walls_ground.png-3612fa627646e0949619359368c0af17.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/office/textures/lightmap_ceiling.png"
-dest_files=["res://.godot/imported/lightmap_ceiling.png-bc1f34ef3176c4592cc5be8d3dac7ee8.ctex"]
+source_file="res://assets/office/textures/lightmap_walls_ground.png"
+dest_files=["res://.godot/imported/lightmap_walls_ground.png-3612fa627646e0949619359368c0af17.ctex"]
 
 [params]
 

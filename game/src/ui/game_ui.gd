@@ -10,6 +10,8 @@ signal panel_opened
 signal panels_closed
 ## A talk opened (the world frames the person).
 signal talk_opened(person_id: String)
+## The pause menu's "Naar het titelmenu" (the game has saved itself).
+signal title_requested
 
 ## A person asked in the office who has nothing to talk about now.
 const NOTHING_TO_SAY := "%s knikt je toe en werkt door."
@@ -30,12 +32,14 @@ var dialog_panel: DialogPanel
 var session_layer: SessionLayer
 var terugblik: TerugblikCard
 var intussen: IntussenPanel
+var pause_menu: PauseMenu
 ## Off until the real game starts (begin_play), so tests write no log.
 var playtest_log := SessionLog.new(SessionLog.PATH, false)
 var settings_path := SessionLog.SETTINGS
-## The slot the game saves itself to at every dagstart and on closing; ""
+## The saves (PLAN 2.7): the game saves itself into the autosave at every
+## dagstart and on closing, and the pause menu into the five slots; null
 ## saves nothing (tests, tools).
-var save_slot := ""
+var saves: SaveSlots
 ## When this session started (real time), for the stop note and the log.
 var started_ms := Time.get_ticks_msec()
 ## The in-game day whose dagstart shows the stop note; -1 for none.
@@ -77,8 +81,9 @@ func setup(of_session: GameSession, of_layer: SessionLayer = null) -> void:
 	dialog_panel = DialogPanel.new()
 	terugblik = TerugblikCard.new()
 	intussen = IntussenPanel.new()
+	pause_menu = PauseMenu.new()
 	_panels = [mission_board, place_menu, a3_form, check_panel, coach_panel, journal, office_map, codex, terugblik, intussen,
-		dialog_panel]
+		dialog_panel, pause_menu]
 	_setup_session_layer(of_layer)
 	for p in _panels:
 		p.session = session
@@ -91,6 +96,10 @@ func setup(of_session: GameSession, of_layer: SessionLayer = null) -> void:
 	check_panel.back_to_a3.connect(open_a3)
 	place_menu.talk_requested.connect(open_talk)
 	dialog_panel.coach_requested.connect(open_coach)
+	pause_menu.save_requested.connect(save_to)
+	pause_menu.title_requested.connect(func() -> void:
+		end_session()
+		title_requested.emit())
 	root.move_child(hud, -1)
 	_known_concepts = session.region.profile.concepts.duplicate()
 	after_action()
@@ -153,6 +162,26 @@ func ask_talk(person_id: String, display_name: String) -> void:
 			hud.toast("%s: \"%s\"" % [display_name, special.get("cooling_down", "")])
 		_:
 			hud.toast(tr(NOTHING_TO_SAY) % display_name)
+
+
+## The pause menu (Esc with nothing open); only when the game saves.
+func open_pause() -> void:
+	if not playable() or saves == null:
+		return
+	pause_menu.saves = saves
+	pause_menu.open()
+	_open(pause_menu)
+
+
+## Save into manual slot `number` (the pause menu, overwrite confirmed).
+func save_to(number: int) -> void:
+	var error := saves.save(number, session, session_layer) if saves != null else "the game is not saved"
+	if error.is_empty():
+		hud.toast(tr(SAVED_IN) % number)
+		close_panels()
+	else:
+		push_warning(error)
+		hud.toast(tr(SAVE_FAILED) % error)
 
 
 func toggle_journal() -> void:
@@ -286,6 +315,7 @@ func new_concept_toasts() -> Array[String]:
 
 const DISCOVERY_TOAST := "Ontdekking: %s (K)"
 const SAVE_FAILED := "Opslaan lukte niet: %s"
+const SAVED_IN := "Opgeslagen in slot %d."
 
 
 func _setup_session_layer(of_layer: SessionLayer) -> void:
@@ -306,12 +336,12 @@ func _setup_session_layer(of_layer: SessionLayer) -> void:
 		_running[id] = true
 
 
-## The real game (the office as the main scene): it saves itself to `slot`,
-## keeps the playtest log as the settings say, and a resumed game opens with
-## the terugblik.
-func begin_play(slot: String, resumed: bool) -> void:
-	save_slot = slot
-	playtest_log = SessionLog.from_settings(settings_path)
+## The real game: it saves itself into `of_saves`' autosave, keeps the
+## playtest log (in the saves folder) as the settings say, and a resumed game
+## opens with the terugblik.
+func begin_play(of_saves: SaveSlots, resumed: bool) -> void:
+	saves = of_saves
+	playtest_log = SessionLog.from_settings(settings_path, saves.dir)
 	playtest_log.write("Sessie begint (%s) · speltijd %s" % ["hervat" if resumed else "nieuw spel", session.clock_text()])
 	if resumed:
 		open_terugblik(session_layer.open_session(session))
@@ -393,12 +423,12 @@ func _session_beat() -> void:
 
 
 func _autosave() -> void:
-	if save_slot.is_empty():
+	if saves == null:
 		return
-	var error := GameSave.write(save_slot, session, session_layer)
+	var error := saves.autosave(session, session_layer)
 	if not error.is_empty():
 		push_warning(error)
-		hud.toast(SAVE_FAILED % error)
+		hud.toast(tr(SAVE_FAILED) % error)
 
 
 func show_error(text: String) -> void:

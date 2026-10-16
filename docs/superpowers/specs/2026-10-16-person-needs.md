@@ -164,6 +164,42 @@ Tiers as in the audit: 1 = Acts 0–II, 2 = Act III, 3 = Acts IV and VI, 4 = Act
 
 People who speak in one tier only (tier 2's Inge, Koen, Nicole, Brouwer, Van Dalen; tier 3's Joke, Yusuf, Hermans, Aziz and others; tier 4's Theo, Harrie, Tim, Rianne) get their need when their tier enters content, by the same rule, so the counts above stay inside the limit (content test N7). Tier 2 is light on safety today: Koen ("answering fast and wrong") and Nicole (the monteur in hospital) are the natural safety people there.
 
+### 2.4 The one-tier people (2026-10-16, PLAN 1.6c)
+
+Assigned by the rule of §2.1 so the route check (`tools/dialog_drafts.py` NEEDS) measures every persuasion talk with a need. The worry, not the surface, decides.
+
+| Tier | Person | Archetype | Need | Why (one line) |
+|---|---|---|---|---|
+| 2 | Koen Dijkstra | overloaded | safety | Afraid of answering fast and wrong, two years into the job. |
+| 2 | Nicole Verbruggen | rule_bound | safety | The monteur she visited in hospital in 2019. |
+| 2 | mevrouw Brouwer | customer_upset | safety | Mevrouw Jansen in room 12, on oxygen, the next windy night. |
+| 2 | mevrouw Van Dalen (ACM) | rule_bound | facts | "Ik wil uw eigen cijfers zien." |
+| 2 | Inge van Gils | defender | time | Her nights at home with two children are the scarce thing. |
+| 3 | Joke | defender | time | The hour in the bus is her men's rest. |
+| 3 | Patrick Smeets | rule_bound | safety | He signs for every apprentice who leaves the gate. |
+| 3 | Marloes | rule_bound | fairness | The boeman for others' digging; "uw zaak, niet de mijne". |
+| 3 | Hermans | defender | facts | His buyers have a date in a contract. |
+| 3 | Yusuf | defender | fairness | Angry that his team pays for a week of kaizen. |
+| 3 | Jeroen | rule_bound | facts | The 2025 ruling: only what holds up legally. |
+| 3 | Sjaak | defender | recognition | His advice is twenty years of knowing customers. |
+| 3 | Dennis | rule_bound | time | Calculating twice is ten months, not five. |
+| 3 | Aziz | defender | safety | His cold chain; "ik word er onrustig van". |
+| 3 | Verhoeven | defender | fairness | "Daar heb ik voor betaald." |
+| 3 | Ricardo | cynic | recognition | The group chat is what the crew knows, and nobody asked. |
+| 3 | Erwin | rule_bound | safety | July 2023 was his signature. |
+| 3 | Priya | craftsman | time | Three days per environment, given back after an hour. |
+| 3 | Hanneke | craftsman | recognition | Twenty years of odd cases nobody sees. |
+| 3 | Carla | rule_bound | facts | She promised the board, in writing. |
+| 3 | Bart | cynic | safety | "Wie had dienst?" after the May outage. |
+| 3 | Lisette | rule_bound | safety | The report to the AP would carry her name. |
+| 4 | Theo | craftsman | safety | One station on his conscience. |
+| 4 | Rianne | rule_bound | facts | An auditor: what is in the work, not the folder. |
+| 4 | Yvonne | quiet | safety | The man with the baseball bat she never reported. |
+| 4 | Harrie | craftsman | recognition | The last years of a gas trade. |
+| 4 | Tim | defender | fairness | Asked why he "allowed" another team's break. |
+
+Spread after this (persuasion casts): no need above ⌈n/3⌉ in any tier; tier 3 has safety 7 of 21 (Joost included), at the limit.
+
 ---
 
 ## 3. Moves that wear out

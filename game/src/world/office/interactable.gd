@@ -1,14 +1,14 @@
 class_name Interactable
 extends Node3D
 ## A spot in the office where the player stands to do something: a team's
-## place (a value-stream step), the obeya wall, the coach or the mission
-## board. Made from a marker in the office geometry; a faint ring on the
-## floor shows where to stand.
+## place (a value-stream step), the obeya wall, the coach, the mission
+## board, the stairs and the lift, or a shut door. Made from a marker in the
+## office geometry; a faint ring on the floor shows where to stand.
 
 const RING_RADIUS := 0.55
 
 ## The marker's name in the geometry: "place:connections.design", "obeya",
-## "coach" or "mission_board".
+## "coach", "mission_board", "stairs_up", "stairs_down", "lift" or "door:<room>".
 var id := ""
 ## "place" or the role (the id itself).
 var kind := ""
@@ -27,11 +27,16 @@ static func create(marker_id: String, at: Transform3D) -> Interactable:
 		i.kind = "place"
 		i.place = marker_id.trim_prefix("place:")
 	else:
-		i.kind = marker_id
+		i.kind = marker_id.get_slice(":", 0)   # "door:<room>" is a door
 	i.transform = at
 	i._ring_mesh = _ring()
 	i.add_child(i._ring_mesh)
 	return i
+
+
+## The ring on the floor (a shut door has none: only its prompt).
+func show_ring(on: bool) -> void:
+	_ring_mesh.visible = on
 
 
 func set_hovered(on: bool) -> void:
