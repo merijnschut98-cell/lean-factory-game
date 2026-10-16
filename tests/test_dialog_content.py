@@ -131,6 +131,20 @@ def _drop_route(d: dict) -> None:
     (lambda d: d["dialogs"]["bank"]["replies"]["reflect"].pop("misses"), "reflect"),
     (lambda d: d["dialogs"]["bank"]["special"].pop("repeat"), "repeat"),
     (lambda d: d["dialogs"]["bank"]["outcomes"].pop("ruined"), "ruined"),
+    # Tier-1 content audit C8, C9 and the four-tier audit's cue rule (T4).
+    (lambda d: d["dialogs"]["bank"]["replies"]["open_question"]["lands"].update(tags=["claim"]), "no claim or feeling"),
+    (lambda d: _dialog(d, "joost_output_kpi")["outcomes"].pop("heard"), "authors its own outcome"),
+    (lambda d: _dialog(d, "frank_kpi_targets")["outcomes"].pop("blocked"), "authors its own outcome"),
+    (lambda d: _layer(d, "sanne_kpi", "concern").update(via=["reflect", "silence"]), "feeling"),
+    (lambda d: _layer(d, "sanne_kpi", "concern").update(via=["empathy", "inquiry"]), "feeling"),
+    (lambda d: _dialog(d, "joost_output_kpi")["proposals"][0].pop("say"), "say"),
+    # Person needs and moves that wear out (person-needs spec §6, N5, N7, N8).
+    (lambda d: _person(d, "joost").update(need="love"), "need"),
+    (lambda d: _person(d, "joost").pop("need"), "need"),
+    (lambda d: _dialog(d, "joost_output_kpi").update(need="speed"), "need"),
+    (lambda d: d["dialogs"]["bank"]["wear_out"].pop("cynic"), "wear_out"),
+    (lambda d: d["dialogs"]["bank"]["wear_out"]["quiet"].pop("say"), "wear_out"),
+    (lambda d: _dialog(d, "frank_kpi_targets")["position"].update(tell="safety"), "tell"),
 ])
 def test_dialog_errors_are_caught(tmp_path, real, mutate, message):
     docs = copy.deepcopy(real)
@@ -150,6 +164,8 @@ def _talk_mission(real: dict, goal: dict) -> dict:
     frank = _dialog(docs, "frank_kpi_targets")
     frank["mission"] = "talk_frank"
     frank.pop("data")  # a talk_to mission holds no problem to show data of
+    frank.pop("owns")  # nor a problem to own, so no clue to unlock
+    frank["layers"][1]["unlocks"].pop("clue")
     return docs
 
 
@@ -195,3 +211,38 @@ def test_a_warning_line_is_text(real, tmp_path):
     _dialog(docs, "joost_output_kpi")["warning"] = ["Ik ga dit niet nog een keer uitleggen."]
     with pytest.raises(bc.ContentError, match="warning"):
         _load(tmp_path, docs)
+
+
+def test_a_proposal_has_a_chip_label_and_a_spoken_line(real, tmp_path):
+    """Tier-1 content audit C1, Q1: `label` (the chip) and `say` (the player's
+    line), built as the engine's name and text."""
+    proposal = _dialog(_load(tmp_path, copy.deepcopy(real)), "joost_output_kpi")["proposals"][0]
+    assert proposal["name"] == "Doorlooptijd + oudste dossier" and proposal["text"].startswith("Wat als je")
+    assert "label" not in proposal and "say" not in proposal
+
+
+def test_frank_sets_the_fact_the_arc_reads(real):
+    """Tier-1 content audit C4: the interim MT reads heard:frank_budget."""
+    concern = _layer(real, "frank_kpi_targets", "concern")
+    assert "heard:frank_budget" in concern["unlocks"]["facts"] and concern["unlocks"]["clue"]["key"]
+    assert len(_dialog(real, "frank_kpi_targets")["block"]["routes"]) >= 2, "C5: the team leads' route too"
+
+
+def test_no_false_experience_and_no_untracked_promise(real):
+    """Tier-1 content audit C2, C3: the player's experience is the CI lead's own."""
+    ahmed = _dialog(real, "ahmed_after_henk")["lines"]
+    assert "eerste jaar" not in ahmed["experience"] and "Ruud" in ahmed["experience"]
+    assert "langs" not in ahmed["close"]
+    assert "Toen ik net begon" not in real["dialogs"]["bank"]["player"]["experience"]
+
+
+def test_a_dialog_may_give_the_person_their_own_worn_line(real, tmp_path):
+    docs = copy.deepcopy(real)
+    _dialog(docs, "joost_output_kpi")["replies"]["paraphrase"]["worn"] = {"text": "Ja. Dat zei je al."}
+    _load(tmp_path, docs)
+
+
+def test_a_tell_shows_the_person_s_own_need(real, tmp_path):
+    docs = copy.deepcopy(real)
+    _dialog(docs, "frank_kpi_targets")["position"]["tell"] = "facts"
+    _load(tmp_path, docs)

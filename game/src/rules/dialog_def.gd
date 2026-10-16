@@ -60,6 +60,8 @@ var tutorial := false
 var prompt: String
 ## What the person says the first time a talk falls into "Dicht" (R-D3); "" for none.
 var warning: String
+## The person's need for this one scene (Dialog.NEEDS); "" for their own.
+var need: String
 var error := ""
 
 
@@ -79,6 +81,7 @@ static func from_dict(d: Dictionary) -> DialogDef:
 	g.retry_opening = str(d.get("retry_opening", ""))
 	g.prompt = str(d.get("prompt", ""))
 	g.warning = str(d.get("warning", ""))
+	g.need = str(d.get("need", ""))
 	g.data = PackedStringArray(d.get("data", []))
 	g.tutorial = d.get("tutorial", false) == true
 	for key: String in ["needs", "position", "co_proposal", "condition_needs", "block", "lines", "replies", "outcomes", "trigger"]:

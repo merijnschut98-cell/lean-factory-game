@@ -25,6 +25,9 @@ const MOVES := ["mood", "open_question", "reflect", "empathy", "paraphrase", "in
 ## Moves that need a pick: a found clue, an experiment, a proposal.
 const PICK_MOVES := ["show_data", "propose_experiment", "propose"]
 const TAGS := ["claim", "feeling", "hesitation", "admission", "doubt"]
+## What a person needs from a talk before they open up (person-needs spec §1;
+## hidden, never shown): it weighs how each move lands.
+const NEEDS := ["facts", "safety", "recognition", "time", "fairness"]
 const ARCHETYPES := ["defender", "cynic", "craftsman", "overloaded", "rule_bound", "quiet", "customer_upset", "expert"]
 const KINDS := ["persuade", "checkin", "expert"]
 const MOODS := ["goed", "neutraal", "gespannen", "moe", "stil"]
@@ -39,12 +42,23 @@ const BANDS := [10, 20, 40, 60, 80]
 ## "Er zit meer achter…": the concern's lead-in can come from here on.
 const CUE_AT := 65
 ## Δ openness of a listening move that lands, and one that does not.
-const LANDS := {"mood": 8, "open_question": 6, "paraphrase": 7, "reflect": 10, "empathy": 6, "inquiry": 8,
+const LANDS := {"mood": 8, "open_question": 6, "paraphrase": 7, "reflect": 10, "empathy": 8, "inquiry": 8,
 	"experience": 8, "silence": 12}
-const MISSES := {"mood": 2, "open_question": 3, "paraphrase": 1, "reflect": -3, "empathy": 3, "inquiry": 3,
+const MISSES := {"mood": 2, "open_question": 3, "paraphrase": 1, "reflect": -3, "empathy": 2, "inquiry": 2,
 	"experience": -5, "silence": -4}
 ## Empathy right after an admission lands harder.
 const EMPATHY_AFTER_ADMISSION := 10
+# Route variety (four-tier audit §4.4, E1–E5, estimates): with the moves
+# above alone, one fixed listening route won every talk.
+## E1: empathy answers something shown (or comes in the first moves).
+const EMPATHY_AFTER := ["feeling", "admission"]
+## E2: inquiry digs into something said.
+const INQUIRY_AFTER := ["claim", "hesitation"]
+## E3: a misread of what was just shown costs more: {move: [tag, Δ]}.
+const MISREAD := {"silence": ["feeling", -6], "reflect": ["hesitation", -5]}
+## E4: a listening move's landing Δ by how often it was used before in this
+## talk (not in a row; in a row REPEAT_FACTOR and REPEAT_THIRD apply).
+const USE_DECAY := [1.0, 0.7, 0.4]
 ## Open questions land this often; after that the person has said what is easy to say.
 const OPEN_QUESTIONS_THAT_LAND := 3
 ## Asking the mood lands in the first moves, or once on a hard day.
@@ -95,8 +109,12 @@ const ARROW_BIG := 8
 const TUTORIAL_PATIENCE := 12
 ## Moves before the person has to go; busy people and tired days give less.
 const PATIENCE := 10
-const PATIENCE_BY_ARCHETYPE := {"overloaded": -3}
+## E5: busy and sceptical people give less time.
+const PATIENCE_BY_ARCHETYPE := {"overloaded": -3, "rule_bound": -2, "cynic": -1, "quiet": -1}
 const PATIENCE_BY_MOOD := {"moe": -2}
+## Never less than this, however busy and tired (an overloaded person on a
+## tired day had five moves: no talk could be won; estimate).
+const PATIENCE_MIN := 7
 ## The person looks at the clock with this many moves left.
 const PATIENCE_WARNING := 2
 const TRUST_PER_PIP := 20
@@ -110,6 +128,50 @@ const WEIGHTS := {
 	"quiet": {"silence": 1.5},
 	"customer_upset": {"empathy": 1.5, "paraphrase": 1.5},
 }
+## Person needs (person-needs spec §1.2, estimates): a landing Δ × this, per
+## move and need (moves not listed: ×1). Each need has its own strong opening
+## move, so no single first move suits everyone.
+const NEED_WEIGHTS := {
+	"mood": {"facts": 0.5, "recognition": 0.75, "time": 1.5, "fairness": 0.75},
+	"open_question": {"facts": 0.75, "recognition": 1.25, "time": 0.5, "fairness": 1.5},
+	"reflect": {"facts": 0.75, "safety": 1.25, "fairness": 1.25},
+	"empathy": {"facts": 0.5, "safety": 1.5, "recognition": 0.75, "fairness": 0.5},
+	"paraphrase": {"facts": 1.25, "recognition": 1.5, "time": 1.25},
+	"inquiry": {"facts": 1.5, "safety": 0.5, "time": 0.75},
+	"experience": {"facts": 0.75, "safety": 1.5, "recognition": 0.5, "time": 0.5},
+	"silence": {"time": 0.5},
+	"perspective": {"safety": 0.75, "recognition": 0.75, "fairness": 1.5},
+	"show_data": {"facts": 1.5, "safety": 0.5, "recognition": 0.75},
+	"propose_experiment": {"safety": 1.25, "time": 1.5, "fairness": 0.75},
+}
+## For a safety need, a question before feeling heard sounds like an audit;
+## once heard it is curiosity (×1).
+const SAFETY_INQUIRY_HEARD := 1.0
+## The mood sharpens the need (tense) or softens it (tired, quiet):
+## weight today = 1 + (weight − 1) × k.
+const NEED_MOOD_K := {"gespannen": 1.5, "goed": 1.0, "neutraal": 1.0, "moe": 0.5, "stil": 0.5}
+## The combined archetype × need factor stays within these (no move becomes
+## a trap, none a sure thing).
+const WEIGHT_MIN := 0.25
+const WEIGHT_MAX := 2.0
+## Moves that wear out (PLAN 1.6c (b), person-needs spec §3): when a move's
+## force falls below REPEAT_FACTOR (a third use in a talk, or a third in a
+## row) the person says so once per move, in their archetype's words
+## (bank.wear_out.<archetype>.ask for questions, .say for statements); silence
+## keeps its own reply.
+const WEAR_ASK := ["mood", "open_question", "inquiry"]
+## A statement is answered once: a landing move uses up the tags it answers,
+## and a shared bank line leaves the rest of the person's last words standing.
+const ANSWERS := {"paraphrase": ["claim"], "inquiry": ["claim", "hesitation"], "reflect": ["feeling"],
+	"empathy": ["feeling", "admission"], "silence": ["hesitation"], "experience": ["doubt", "admission"]}
+
+## The variables that make up a talk in progress (copy()); the first ones up to
+## `trace` are what the next move depends on (state_key()).
+const COPIED := ["openness", "trust", "mood", "version", "revealed", "heard", "pressured", "confronted", "table",
+	"patience", "outcome", "_repaired", "_last_move", "_streak", "_last_tags", "_uses", "_mood_asked",
+	"_lead_in_said", "_co_offered", "_warned", "_worn", "moves_made",
+	"trace", "start_openness", "_found", "_facts", "_retry"]
+const STATE_KEYS := 22
 
 var def: DialogDef
 var who: PersonDef
@@ -148,6 +210,7 @@ var _mood_asked := false
 var _lead_in_said := false
 var _co_offered := false
 var _warned := false
+var _worn: Dictionary = {}
 
 
 ## `start`: {openness, trust, mood, found (clue id → true), facts (fact → true),
@@ -166,12 +229,14 @@ func _init(dialog: DialogDef, person: PersonDef, lines: Dictionary, start: Dicti
 	_facts = JsonFile.dict_or_empty(start.get("facts"))
 	_retry = bool(start.get("retry", false))
 	_last_tags = position().get("tags", [])
-	if def.patience > 0:
-		patience = def.patience
-	elif def.tutorial:
-		patience = TUTORIAL_PATIENCE
+	if def.tutorial:
+		patience = def.patience if def.patience > 0 else TUTORIAL_PATIENCE
 	else:
-		patience = PATIENCE + int(PATIENCE_BY_ARCHETYPE.get(who.archetype, 0)) + int(PATIENCE_BY_MOOD.get(mood, 0))
+		# E5: the archetype and the day cap the time; a dialog may author less (a full diary).
+		patience = maxi(PATIENCE_MIN, PATIENCE + int(PATIENCE_BY_ARCHETYPE.get(who.archetype, 0))
+			+ int(PATIENCE_BY_MOOD.get(mood, 0)))
+		if def.patience > 0:
+			patience = mini(patience, def.patience)
 	trace.append(openness)
 
 
@@ -213,22 +278,33 @@ func say(move: String, pick: String = "") -> Dictionary:
 			or (not move in PICK_MOVES and not pick.is_empty()):
 		return {"error": "bad_pick"}
 	var before := openness
+	var at_lead_in := _lead_in_said and not revealed.has("concern")
 	var effect := _effect(move, pick)
 	var delta: int = effect["delta"]
 	var reply: Dictionary = effect["reply"]
 	var lands: bool = effect["lands"]
 	_streak = _streak + 1 if move == _last_move and move != "ask_commitment" else 1
+	var worn := false
 	if _streak == 2 and delta > 0:
 		delta = roundi(delta * REPEAT_FACTOR)
 	elif _streak >= 3:
 		delta = REPEAT_THIRD
-		reply = _line(bank["special"]["repeat"])
+		reply = _shared(bank["special"]["repeat"])
 		lands = false
+		worn = true
+	elif lands and move in LISTEN:
+		var factor: float = USE_DECAY[mini(int(_uses.get(move, 0)), USE_DECAY.size() - 1)]
+		delta = maxi(1, roundi(delta * factor))
+		worn = factor < REPEAT_FACTOR
+	if worn and move in LISTEN and move != "silence" and not _worn.has(move):
+		_worn[move] = true
+		reply = _wear_line(move)
 	_uses[move] = int(_uses.get(move, 0)) + 1
 	openness = clampi(openness + delta, RUINED_BELOW if def.tutorial else 0, 100)
 	outcome = effect["outcome"]
 	var shown := ""
 	var unlocked := {}
+	var lead_in_now := false
 	if outcome.is_empty():
 		var layer := _next_layer()
 		if lands and not layer.is_empty() and openness >= int(layer["at"]) and move in layer["via"] \
@@ -237,8 +313,11 @@ func say(move: String, pick: String = "") -> Dictionary:
 			shown = layer["id"]
 			unlocked = JsonFile.dict_or_empty(layer.get("unlocks")).duplicate(true)
 			reply = _line(layer.get("text", ""), layer.get("tags", []))
+		elif at_lead_in:
+			_lead_in_said = false  # only a fitting move draws the concern out; the moment passes
 		elif lands and move in LISTEN and layer.has("lead_in") and openness >= CUE_AT:
 			_lead_in_said = true
+			lead_in_now = true
 			reply = _line(layer["lead_in"].get("text", ""), layer["lead_in"].get("tags", []))
 		var next := _next_layer()
 		if not next.is_empty():
@@ -260,18 +339,45 @@ func say(move: String, pick: String = "") -> Dictionary:
 		_co_offered = true
 		co = {"id": def.co_proposal["id"], "text": def.co_proposal.get("text", "")}
 	_last_move = move
-	_last_tags = reply["tags"]
+	if not reply.get("shared", false):
+		_last_tags = reply["tags"]
+	elif lands:
+		_last_tags = _last_tags.filter(func(tag: String) -> bool: return not tag in ANSWERS.get(move, []))
 	moves_made += 1
 	trace.append(openness)
 	return {
 		"move": move, "line": _player_line(move, pick), "reply": reply["text"], "tags": reply["tags"],
 		"delta": openness - before, "arrow": arrow_of(openness - before), "openness": openness, "trust": trust, "band": band_of(openness), "heard": heard,
-		"cue": outcome.is_empty() and openness >= CUE_AT and not revealed.has("concern") and "hesitation" in reply["tags"],
+		"cue": outcome.is_empty() and openness >= CUE_AT and not revealed.has("concern")
+			and (lead_in_now or "hesitation" in reply["tags"]),
 		"revealed": shown, "unlocked": unlocked, "co_proposal": co,
 		"patience_low": outcome.is_empty() and patience == PATIENCE_WARNING,
 		"ended": not outcome.is_empty(), "outcome": outcome,
 		"outcome_line": _outcome_text(outcome) if not outcome.is_empty() else "",
 	}
+
+
+## The talk as it stands, as a separate talk (the route check plays ahead on
+## copies; test_dialog_routes.gd checks that every variable is copied).
+func copy() -> Dialog:
+	var c := Dialog.new(def, who, bank, {})
+	for key: String in COPIED:
+		var v: Variant = get(key)
+		c.set(key, v.duplicate() if v is Dictionary or v is Array else v)
+	return c
+
+
+## Two talks of the same dialog with the same key play on alike from here.
+func state_key() -> String:
+	var parts := []
+	for i in STATE_KEYS:
+		var v: Variant = get(COPIED[i])
+		if v is Dictionary:
+			var keys: Array = v.keys()
+			keys.sort()
+			v = keys.map(func(k: Variant) -> String: return "%s=%s" % [k, v[k]])
+		parts.append(v)
+	return str(parts)
 
 
 ## {openness, band (0–4, -1 below the first), band_label, trust, trust_pips, mood, trace}
@@ -357,7 +463,7 @@ func _effect(move: String, pick: String) -> Dictionary:
 			return _pressure(move, CONFRONT)
 		"repair":
 			if not _retry or _repaired:
-				return _result(0, _line(bank["special"]["no_repair"]), false)
+				return _result(0, _shared(bank["special"]["no_repair"]), false)
 			_repaired = true
 			return _pressure(move, REPAIR)
 		"ask_commitment":
@@ -385,16 +491,18 @@ func _listen(move: String) -> Dictionary:
 		"reflect":
 			lands = "feeling" in _last_tags
 		"empathy":
-			lands = not _uses.has(move)
+			lands = moves_made < EARLY_MOVES or EMPATHY_AFTER.any(func(tag: String) -> bool: return tag in _last_tags)
 		"inquiry":
 			var layer := _next_layer()
-			lands = not layer.is_empty() and openness >= int(layer["at"]) - INQUIRY_REACH
+			lands = not layer.is_empty() and openness >= int(layer["at"]) - INQUIRY_REACH \
+				and INQUIRY_AFTER.any(func(tag: String) -> bool: return tag in _last_tags)
 		"experience":
 			lands = heard and trust >= EXPERIENCE_TRUST and ("doubt" in _last_tags or "admission" in _last_tags)
 		"silence":
 			lands = "hesitation" in _last_tags
 	if not lands:
-		return _result(MISSES[move], _reply(move, "misses"), false)
+		var misread: Array = MISREAD.get(move, ["", 0])
+		return _result(misread[1] if misread[0] in _last_tags else MISSES[move], _reply(move, "misses"), false)
 	if move in ["paraphrase", "reflect"]:
 		heard = true
 	var delta: int = EMPATHY_AFTER_ADMISSION if move == "empathy" and "admission" in _last_tags else LANDS[move]
@@ -411,7 +519,7 @@ func _steer(move: String, pick: String) -> Dictionary:
 			return _graded(move, PERSPECTIVE, _reply(move, "lands"))
 		"show_data":
 			if not pick in def.data:
-				return _result(0, _line(bank["special"]["other_data"]), false)
+				return _result(0, _shared(bank["special"]["other_data"]), false)
 			return _graded(move, SHOW_DATA, _reply(move, "lands"))
 		"propose_experiment":
 			var reply: String = def.item(pick).get("reply", "")
@@ -421,7 +529,7 @@ func _steer(move: String, pick: String) -> Dictionary:
 	if addresses.any(func(layer: String) -> bool: return revealed.has(layer)):
 		return _result(PROPOSAL_ADDRESSES, _line(proposal.get("reply", "")), true)
 	if "concern" in addresses:
-		return _result(LUCKY_GUESS, _line(bank["special"]["lucky_guess"]), true)
+		return _result(LUCKY_GUESS, _shared(bank["special"]["lucky_guess"]), true)
 	return _result(0, _line(proposal.get("reply", "")), false)
 
 
@@ -438,11 +546,11 @@ func _ask() -> Dictionary:
 	if def.kind == "checkin":
 		if not concern:
 			return _result(TOO_EARLY, _reply("ask_commitment", "too_early"), false)
-		return _result(0, _line(bank["special"]["no_proposal"]), false)
+		return _result(0, _shared(bank["special"]["no_proposal"]), false)
 	if not def.block.is_empty() and concern and not _route_met():
 		return _result(0, _line(def.block.get("text", "")), false, "blocked")
 	if table.is_empty():
-		return _result(0, _line(bank["special"]["no_proposal"]), false)
+		return _result(0, _shared(bank["special"]["no_proposal"]), false)
 	if pressured and openness >= RUINED_BELOW:
 		return _result(0, {}, false, "compliance")
 	var condition: String = layers()[1].get("condition", "") if concern else ""
@@ -453,7 +561,7 @@ func _ask() -> Dictionary:
 		return _result(0, partial, false, "partial")
 	if openness >= PARTIAL_AT:
 		return _result(0, partial, false, "partial")
-	return _result(REFUSAL, _line(bank["special"]["refusal"]), false)
+	return _result(REFUSAL, _shared(bank["special"]["refusal"]), false)
 
 
 func _route_met() -> bool:
@@ -473,13 +581,45 @@ func _close_outcome() -> String:
 
 
 func _weighted(move: String, delta: int) -> int:
-	return roundi(delta * float(WEIGHTS.get(who.archetype, {}).get(move, 1.0)))
+	return roundi(delta * weight(who.archetype, need(), mood, move, heard))
+
+
+## How hard a landing move lands for this archetype, need and mood (archetype ×
+## need, clamped to WEIGHT_MIN–WEIGHT_MAX).
+static func weight(archetype: String, person_need: String, today: String, move: String, was_heard: bool) -> float:
+	var by_need: float = NEED_WEIGHTS.get(move, {}).get(person_need, 1.0)
+	if person_need == "safety" and move == "inquiry" and was_heard:
+		by_need = SAFETY_INQUIRY_HEARD
+	by_need = 1.0 + (by_need - 1.0) * float(NEED_MOOD_K.get(today, 1.0))
+	return clampf(float(WEIGHTS.get(archetype, {}).get(move, 1.0)) * by_need, WEIGHT_MIN, WEIGHT_MAX)
+
+
+## The person's need in this talk: the dialog's own for one scene, else theirs.
+func need() -> String:
+	return def.need if not def.need.is_empty() else who.need
+
+
+## The person's line when a move wears out: the dialog's own, else the archetype's.
+func _wear_line(move: String) -> Dictionary:
+	var own := JsonFile.dict_or_empty(JsonFile.dict_or_empty(def.replies.get(move)).get("worn"))
+	if not own.is_empty():
+		return _line(str(own.get("text", "")), own.get("tags", []))
+	var lines := JsonFile.dict_or_empty(JsonFile.dict_or_empty(bank.get("wear_out")).get(who.archetype))
+	var text := str(lines.get("ask" if move in WEAR_ASK else "say", ""))
+	return _shared(text if not text.is_empty() else bank["special"]["repeat"])
 
 
 # ── Lines ───────────────────────────────────────────────────────────────────
 
 func _result(delta: int, reply: Dictionary, lands: bool, ended: String = "") -> Dictionary:
-	return {"delta": delta, "reply": reply if not reply.is_empty() else _line(""), "lands": lands, "outcome": ended}
+	return {"delta": delta, "reply": reply if not reply.is_empty() else _shared(""), "lands": lands, "outcome": ended}
+
+
+## An untagged line from the shared bank: the person's own last words still
+## stand (E2: moves answer the last authored line; the bank carries no claim
+## or feeling, tier-1 content audit C8).
+func _shared(text: String) -> Dictionary:
+	return {"text": text, "tags": [], "shared": true}
 
 
 func _line(text: String, tags: Array = []) -> Dictionary:
@@ -492,8 +632,10 @@ func _reply(move: String, situation: String) -> Dictionary:
 	for source: Dictionary in [def.replies, bank.get("replies", {})]:
 		var line: Dictionary = JsonFile.dict_or_empty(JsonFile.dict_or_empty(source.get(move)).get(situation))
 		if not line.is_empty():
-			return _line(str(line.get("text", "")), line.get("tags", []))
-	return _line(str(position().get("text", "")), position().get("tags", [])) if situation == "too_early" else _line("")
+			var tags: Array = line.get("tags", [])
+			return _line(str(line.get("text", "")), tags) if source == def.replies or not tags.is_empty() \
+				else _shared(str(line.get("text", "")))
+	return _line(str(position().get("text", "")), position().get("tags", [])) if situation == "too_early" else _shared("")
 
 
 func _player_line(move: String, pick: String = "") -> String:

@@ -71,6 +71,13 @@
   "repair",
   "close"
  ],
+ "dialog_needs": [
+  "facts",
+  "safety",
+  "recognition",
+  "time",
+  "fairness"
+ ],
  "dialog_outcomes": [
   "commitment",
   "partial",
