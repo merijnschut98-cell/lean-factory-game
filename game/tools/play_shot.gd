@@ -15,7 +15,9 @@ extends SceneTree
 ## timelapse (the week played to Friday: the Act and the month ahead, with and
 ## without the standard) · sustain (the fix standardised, then left alone for
 ## weeks: its health, the audit and the routine in the team's menu, and the
-## toasts of a slipping fix).
+## toasts of a slipping fix) · intussen (the A3 in: what happens while the
+## Check runs, and the named skip) · terugblik (the card a resumed game opens
+## with, after a session that finished the mission and left it alone).
 ## The mission is played through the UI's own handlers, as a player would;
 ## only the training states start with the training week.
 
@@ -35,7 +37,7 @@ func _initialize() -> void:
 func _run() -> void:
 	var args := OS.get_cmdline_user_args()
 	if args.size() < 2:
-		printerr("usage: -- <office|overview|inspect|tools|a3|check|act|board|coach|map|codex|training_board|timelapse|sustain> <out.png> [frames]")
+		printerr("usage: -- <office|overview|inspect|tools|a3|check|act|board|coach|map|codex|training_board|timelapse|sustain|intussen|terugblik> <out.png> [frames]")
 		quit(2)
 		return
 	var office: Office = load(SCENE).instantiate()
@@ -96,6 +98,15 @@ func _run() -> void:
 			_play_week(office)
 			office.ui.check_panel.act(false)
 			office.ui.check_panel.fade_forecast()
+		"intussen":
+			_investigate(office, true)
+			office.interact(office.interactable("obeya"))
+			office.ui.a3_form.submit(_a3(office))  # Intussen opens with the experiment
+		"terugblik":
+			_last_session(office)
+			_stand_at(office, DESIGN)
+			office.ui.close_panels()
+			office.ui.open_terugblik(office.ui.session_layer.open_session(office.session))
 		_:
 			printerr("unknown state ", state)
 			quit(2)
@@ -134,6 +145,24 @@ func _investigate(office: Office, all: bool) -> void:
 		office.interact(office.interactable(DESIGN))
 		ui.place_menu.use_tool("data")
 		ui.close_panels()
+
+
+## A last session to look back on: the mission played to its Act and then
+## left alone, so its fix slips (a check-in waits) and the numbers move; a
+## side with a clock is open.
+func _last_session(office: Office) -> void:
+	var ui := office.ui
+	var s := office.session
+	_investigate(office, true)
+	office.interact(office.interactable("obeya"))
+	ui.a3_form.submit(_a3(office))
+	ui.intussen.skip()
+	ui.a3_form.check()
+	ui.check_panel.act(true)
+	for id in s.missions.defs["save_henks_knowledge"].requires_missions:
+		s.missions.done_once[id] = true
+	s.pass_time(SimCalendar.days(SUSTAIN_DAYS))
+	ui.after_action()
 
 
 ## Monday to Friday's Check of the training week, through the UI.
