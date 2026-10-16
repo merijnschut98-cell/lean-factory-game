@@ -50,6 +50,45 @@ static func start(d: DialogDef, who: PersonDef, bank: Dictionary, openness: int)
 		"mood": d.mood if not d.mood.is_empty() else "neutraal", "found": found, "facts": facts})
 
 
+## Every persuasion talk in content, at the start People gives it on a first
+## meeting (no team trust, no memory).
+static func content_talks(c: Catalog) -> Array[Dialog]:
+	var people := People.new(c.persons, c.dialogs, c.dialog_bank)
+	var out: Array[Dialog] = []
+	for d: DialogDef in c.dialogs:
+		if d.kind == "persuade":
+			var first := people.start(d, {"main": [d.mission], "active": [d.mission], "found": {}, "facts": {},
+				"team_trust": 0, "blamed": false, "now": 0})
+			out.append(start(d, people.persons[d.person], c.dialog_bank, first.openness))
+	return out
+
+
+## The talks of a draft collected by tools/dialog_drafts.py ({people, dialogs},
+## each dialog with its `start`), leaving out the ids in `skip`.
+static func draft_talks(data: Dictionary, bank: Dictionary, skip: Array = []) -> Array[Dialog]:
+	var persons := {}
+	for p: Dictionary in data["people"]:
+		persons[p["id"]] = PersonDef.from_dict(p.merged({"place": "draft"}))
+	var out: Array[Dialog] = []
+	for d: Dictionary in data["dialogs"]:
+		var def := DialogDef.from_dict(d)
+		if not def.error.is_empty():
+			push_error(def.error)
+		elif not def.id in skip:
+			out.append(start(def, persons[def.person], bank, int(d["start"])))
+	return out
+
+
+## The routes of `routes` that differ from every one kept before in two
+## positions or more (T7: different ways to win, not one with a detour).
+static func distinct(routes: Array) -> Array:
+	var kept := []
+	for r: Array in routes:
+		if kept.all(func(o: Array) -> bool: return _differ(o, r) >= 2):
+			kept.append(r)
+	return kept
+
+
 ## The best fixed route found over `talks`: {wins, route, won (the ids of the
 ## talks it wins), winners (every route found that won a talk with its last
 ## move, at most one per state)}.
@@ -154,3 +193,10 @@ static func _score(node: Dictionary) -> float:
 				+ (2.0 if t.revealed.has("concern") else 0.0) + t.openness / 50.0 \
 				+ (1.0 if "concern" in t.def.item(t.table).get("addresses", []) else 0.0)
 	return s
+
+
+static func _differ(a: Array, b: Array) -> int:
+	var n := absi(a.size() - b.size())
+	for i in mini(a.size(), b.size()):
+		n += 1 if a[i] != b[i] else 0
+	return n

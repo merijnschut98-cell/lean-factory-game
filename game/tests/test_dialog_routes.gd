@@ -16,20 +16,6 @@ func _catalog() -> Catalog:
 	return c
 
 
-## Every persuasion talk in content, at the start People gives it on a first
-## meeting (no team trust, no memory).
-func _talks(c: Catalog) -> Array[Dialog]:
-	var people := People.new(c.persons, c.dialogs, c.dialog_bank)
-	var out: Array[Dialog] = []
-	for d: DialogDef in c.dialogs:
-		if d.kind != "persuade":
-			continue
-		var first := people.start(d, {"main": [d.mission], "active": [d.mission], "found": {}, "facts": {},
-			"team_trust": 0, "blamed": false, "now": 0})
-		out.append(DialogRoutes.start(d, people.persons[d.person], c.dialog_bank, first.openness))
-	return out
-
-
 func test_the_checker_finds_a_route_that_wins() -> void:
 	var talk := DialogRoutes.start(DialogFixture.def(), DialogFixture.person(), DialogFixture.bank(), 50)
 	var best := DialogRoutes.best_route([talk, talk])
@@ -45,15 +31,10 @@ func test_the_checker_finds_a_route_that_wins() -> void:
 ## with game/tools/route_check.gd (PLAN 1.6c has the numbers).
 func test_no_fixed_route_wins_more_than_half_of_the_persuasion_talks() -> void:
 	var c := _catalog()
-	var talks := _talks(c)
+	var talks := DialogRoutes.content_talks(c)
 	var ids := talks.map(func(t: Dialog) -> String: return t.def.id)
 	var scripts: Dictionary = JsonFile.read_dict("res://tests/data/tier1_scripts.json")["data"]
-	var persons := {}
-	for p: Dictionary in scripts["people"]:
-		persons[p["id"]] = PersonDef.from_dict(p.merged({"place": "script"}))
-	for d: Dictionary in scripts["dialogs"]:
-		if not d["id"] in ids:
-			talks.append(DialogRoutes.start(DialogDef.from_dict(d), persons[d["person"]], c.dialog_bank, int(d["start"])))
+	talks.append_array(DialogRoutes.draft_talks(scripts, c.dialog_bank, ids))
 	assert_eq(talks.size(), 20, "the twenty persuasion talks of Acts 0–II")
 	var best := DialogRoutes.best_route(talks)
 	# The target is half (10 of 20). Measured 2026-10-16 with E1–E5, needs and
@@ -67,17 +48,14 @@ func test_no_fixed_route_wins_more_than_half_of_the_persuasion_talks() -> void:
 ## D10 / T7: no golden path. Three winning routes at least, each pair
 ## differing in two positions or more.
 func test_every_persuasion_has_three_different_routes() -> void:
-	for talk in _talks(_catalog()):
-		var distinct := []
-		for r: Array in DialogRoutes.best_route([talk])["winners"]:
-			if distinct.all(func(o: Array) -> bool: return _differ(o, r) >= 2):
-				distinct.append(r)
+	for talk in DialogRoutes.content_talks(_catalog()):
+		var distinct := DialogRoutes.distinct(DialogRoutes.best_route([talk])["winners"])
 		assert_true(distinct.size() >= 3, "%s: %d distinct routes" % [talk.def.id, distinct.size()])
 
 
 ## T11: steering before listening costs, and pressure gets a yes without the person.
 func test_pushing_early_costs_and_pressure_gives_compliance() -> void:
-	for talk in _talks(_catalog()):
+	for talk in DialogRoutes.content_talks(_catalog()):
 		var pushed := talk.copy()
 		var r := pushed.say("propose", DialogRoutes.pick(pushed, "propose"))
 		assert_true(r["delta"] < 0, "%s: a proposal before listening costs" % talk.def.id)
@@ -94,12 +72,7 @@ func test_a_copy_of_a_talk_is_the_whole_talk() -> void:
 	for p: Dictionary in talk.get_property_list():
 		if p["usage"] & PROPERTY_USAGE_SCRIPT_VARIABLE and not p["name"] in ["def", "who", "bank"]:
 			assert_true(p["name"] in Dialog.COPIED, "copy() knows %s" % p["name"])
+	assert_eq(Dialog.STATE_KEYS, Dialog.COPIED.find("trace"), "state_key() reads up to the trace")
 	assert_eq(c.state_key(), talk.state_key())
 	assert_eq(c.say("reflect"), talk.say("reflect"))
 
-
-func _differ(a: Array, b: Array) -> int:
-	var n := absi(a.size() - b.size())
-	for i in mini(a.size(), b.size()):
-		n += 1 if a[i] != b[i] else 0
-	return n

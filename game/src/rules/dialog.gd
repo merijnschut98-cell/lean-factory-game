@@ -171,7 +171,7 @@ const COPIED := ["openness", "trust", "mood", "version", "revealed", "heard", "p
 	"patience", "outcome", "_repaired", "_last_move", "_streak", "_last_tags", "_uses", "_mood_asked",
 	"_lead_in_said", "_co_offered", "_warned", "_worn", "moves_made",
 	"trace", "start_openness", "_found", "_facts", "_retry"]
-const STATE_KEYS := 22
+const STATE_KEYS := 22  # COPIED up to "trace"; test_dialog_routes.gd checks it
 
 var def: DialogDef
 var who: PersonDef
@@ -491,13 +491,13 @@ func _listen(move: String) -> Dictionary:
 		"reflect":
 			lands = "feeling" in _last_tags
 		"empathy":
-			lands = moves_made < EARLY_MOVES or EMPATHY_AFTER.any(func(tag: String) -> bool: return tag in _last_tags)
+			lands = moves_made < EARLY_MOVES or _follows(EMPATHY_AFTER)
 		"inquiry":
 			var layer := _next_layer()
 			lands = not layer.is_empty() and openness >= int(layer["at"]) - INQUIRY_REACH \
-				and INQUIRY_AFTER.any(func(tag: String) -> bool: return tag in _last_tags)
+				and _follows(INQUIRY_AFTER)
 		"experience":
-			lands = heard and trust >= EXPERIENCE_TRUST and ("doubt" in _last_tags or "admission" in _last_tags)
+			lands = heard and trust >= EXPERIENCE_TRUST and _follows(["doubt", "admission"])
 		"silence":
 			lands = "hesitation" in _last_tags
 	if not lands:
@@ -578,6 +578,11 @@ func _close_outcome() -> String:
 	if def.kind == "checkin" and revealed.has("concern") and openness >= LIFTED_AT:
 		return "lifted"
 	return "heard" if openness >= HEARD_AT or openness - start_openness >= HEARD_GAIN else "none"
+
+
+## Whether the person's last words carry any of `tags`.
+func _follows(tags: Array) -> bool:
+	return tags.any(func(tag: String) -> bool: return tag in _last_tags)
 
 
 func _weighted(move: String, delta: int) -> int:
