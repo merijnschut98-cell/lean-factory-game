@@ -26,9 +26,9 @@ func _init(log_path: String = PATH, on: bool = true) -> void:
 	enabled = on
 
 
-## The log as the settings say (on unless switched off).
-static func from_settings(settings: String = SETTINGS) -> SessionLog:
-	return SessionLog.new(PATH, enabled_in(settings))
+## The log in a saves folder, as the settings say (on unless switched off).
+static func from_settings(settings: String = SETTINGS, saves_dir: String = SaveFile.DIR) -> SessionLog:
+	return SessionLog.new(saves_dir.path_join(PATH.get_file()), enabled_in(settings))
 
 
 static func enabled_in(settings: String = SETTINGS) -> bool:

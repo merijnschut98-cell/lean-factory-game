@@ -253,6 +253,30 @@ func test_room_openers_read_missions_taken_and_kinds_made_in_play() -> void:
 	assert_true(OfficeBuilding.opens(["terugval_*"], {"terugval_custom_design": true}), "a check-in opens the kantine")
 
 
+func test_the_floor_is_kept_in_the_save_and_a_resumed_game_starts_there() -> void:
+	var office := _office()
+	office.floors.go_to("ground", "lift")
+	assert_eq(office.ui.session_layer.floor_id, "ground", "the session layer (saved with the game) keeps the floor")
+	var layer := SessionLayer.new()
+	layer.load_dict(office.ui.session_layer.to_dict())
+	assert_eq(layer.floor_id, "ground", "through the save")
+	layer.load_dict({"floor_id": 7})
+	assert_eq(layer.floor_id, "", "junk reads as no floor")
+	office.free()
+	var resumed: Office = load(SCENE).instantiate()
+	resumed.training = false
+	resumed.resume_on("ground")
+	assert_eq(resumed.floors.floor_id, "ground", "a resumed game opens on the floor it was left on")
+	var arrive := resumed.in_office(resumed.floors.markers()["arrive:lift"]).origin
+	assert_true(resumed.player.position.distance_to(arrive) < 0.01, "by the lift")
+	resumed.free()
+	var unknown: Office = load(SCENE).instantiate()
+	unknown.training = false
+	unknown.resume_on("attic")
+	assert_eq(unknown.floors.floor_id, "first", "an unknown floor: the start floor")
+	unknown.free()
+
+
 func test_without_world_data_the_building_is_the_1e_alone() -> void:
 	var b := OfficeBuilding.load_from("res://does_not_exist")
 	assert_ne(b.error, "")

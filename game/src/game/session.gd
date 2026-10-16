@@ -353,7 +353,13 @@ func drain_events() -> Array[Dictionary]:
 
 ## Dutch date and time, e.g. "di 13 okt, 09:30".
 func clock_text() -> String:
-	var played := region.net.time - SimCalendar.days(WARMUP_DAYS)
+	return clock_at(region.net.time)
+
+
+## The date and time of a simulation time, as clock_text (a save list shows
+## it without loading the game).
+static func clock_at(t: int) -> String:
+	var played := t - SimCalendar.days(WARMUP_DAYS)
 	var date := Time.get_date_dict_from_unix_time(
 		Time.get_unix_time_from_datetime_dict(PLAY_START_DATE) + SimCalendar.day_of(played) * 86400)
 	var minute_of_day := played % SimCalendar.MINUTES_PER_DAY

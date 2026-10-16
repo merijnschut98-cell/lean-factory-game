@@ -6,7 +6,7 @@ config_version=5
 
 config/name="Spanning"
 config/description="Lean in de netbeheer-praktijk — Voltana Netbeheer, Nova"
-run/main_scene="res://src/world/office/office.tscn"
+run/main_scene="res://src/ui/title_menu.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
 [debug]

@@ -50,9 +50,14 @@ const FACE_DROP := 0.2
 
 const RESUME_FAILED := "De bewaarde game kon niet worden geladen (%s). Dit spel wordt niet bewaard, zodat de oude bewaard blijft."
 
-## The slot the game resumes from and saves to ("" for neither): the
-## autosave when this office is the main scene.
-var save_slot := ""
+## The saves (PLAN 2.7; tests point it at their own folder).
+var saves := SaveSlots.new()
+## The slot the game continues from ("" for a new game): the title menu's
+## pick (play), or the autosave when this office is the main scene.
+var resume_slot := ""
+## Whether the game saves itself (into the autosave only, never a manual
+## slot): the real game does, tests and tools do not.
+var autosaves := false
 ## The simulation's luck for a new game.
 @export var seed_value := 1
 ## Where the content is read from (tests point it at bad content).
@@ -80,11 +85,18 @@ var _hovered_person: OfficePerson
 
 
 func _ready() -> void:
-	# Only the game itself resumes and saves; tests and tools that load this
-	# scene play a fresh game of their own.
-	if get_tree().current_scene == self:
-		save_slot = GameSave.AUTOSAVE
+	# Run as the main scene (from the editor) it resumes the autosave; tests
+	# and tools that load this scene play a fresh game of their own.
+	if get_tree().current_scene == self and not autosaves:
+		play(SaveSlots.AUTOSAVE)
 	build()
+
+
+## Play the real game (before build): continue from `slot` (one of
+## SaveSlots.names()), or a new game for "" or an empty slot; it saves itself.
+func play(slot: String) -> void:
+	resume_slot = slot
+	autosaves = true
 
 
 ## The game closes: it saves, and the session ends (GameUI.end_session).
@@ -93,7 +105,7 @@ func _notification(what: int) -> void:
 		ui.end_session()
 
 
-## Build the office and start the game (once): the saved game in `save_slot`
+## Build the office and start the game (once): the saved game in `resume_slot`
 ## when there is one (it opens with the terugblik), else a new one. Works
 ## outside the scene tree too, so the tests can build it headless: positions
 ## are the office's own.
@@ -120,24 +132,49 @@ func build() -> void:
 	ui.panels_closed.connect(_on_panels_closed)
 	if ui.playable():
 		show_map()
-		if not save_slot.is_empty():
-			ui.begin_play(save_slot, loaded.has("session"))
+		floors.floor_changed.connect(func(id: String) -> void: ui.session_layer.floor_id = id)
+		enter_saved_floor(ui.session_layer.floor_id)
+		ui.title_requested.connect(to_title)
+		if autosaves:
+			ui.begin_play(saves, loaded.has("session"))
 	if loaded.has("error"):
 		ui.hud.toast(RESUME_FAILED % loaded["error"])
 
 
-## The saved game in `save_slot`: GameSave.read's result; {} when there is
-## none. A save that cannot be read is left alone, and this game is not
-## saved over it ({error} only, save_slot cleared).
+## The saved game in `resume_slot`: SaveSlots.resume's result; {} when there
+## is none. A save that cannot be read is left alone, and this game does not
+## save itself ({error} only, autosaves off): an autosave that failed to
+## load is never written over.
 func _resume() -> Dictionary:
-	if save_slot.is_empty() or not GameSave.exists(save_slot):
+	if resume_slot.is_empty() or saves.entry(resume_slot).is_empty():
 		return {}
-	var loaded := GameSave.read(save_slot, data_dir)
+	var loaded := saves.resume(resume_slot, data_dir)
 	if loaded["error"].is_empty():
 		return loaded
 	push_warning("office: " + loaded["error"])
-	save_slot = ""
+	autosaves = false
 	return {"error": loaded["error"]}
+
+
+## Build, continuing on floor `floor_id` (as a save that was left there does).
+func resume_on(floor_id: String) -> void:
+	build()
+	enter_saved_floor(floor_id)
+
+
+## Go to the floor a saved game was left on, by the lift; an unknown or shut floor
+## (the content changed) keeps the start floor.
+func enter_saved_floor(floor_id: String) -> void:
+	if floor_id.is_empty() or floor_id == floors.floor_id or floors.building.floor_of(floor_id).is_empty() \
+			or not floors.building.floor_open(floor_id, floors.open_now()):
+		return
+	floors.go_to(floor_id, "lift")
+
+
+## Back to the title menu (the pause menu's choice; the game has saved).
+func to_title() -> void:
+	if is_inside_tree():
+		get_tree().change_scene_to_file(TitleMenu.SCENE)
 
 
 func _process(_delta: float) -> void:
@@ -473,7 +510,8 @@ func _add_player() -> void:
 		if ui.is_busy():
 			ui.close_panels()
 		else:
-			player.stop())
+			player.stop()
+			ui.open_pause())
 	player.arrived.connect(_on_arrived)
 
 
