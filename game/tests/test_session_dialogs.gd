@@ -236,3 +236,22 @@ func test_a_beat_line_reaches_the_events() -> void:
 	var lines := s.drain_events().filter(func(e: Dictionary) -> bool: return e["type"] == "beat_line")
 	assert_eq(lines.map(func(e: Dictionary) -> String: return e["person"]), ["joost", "sanne"], "audit C15")
 	assert_eq(UiText.event(lines[0], {}), "Joost van Dijk: “Frank heeft getekend. Nu sta ik er ook echt achter.”")
+
+
+
+## Henk's last week, then his farewell (scripts §5, audit C11): his talk is
+## open in the five days before it, he is gone after it, and only then does
+## Ahmed's grief come up, sixteen days on.
+func test_henk_s_last_week_then_ahmed_s_grief() -> void:
+	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
+	s.missions.done_once["save_henks_knowledge"] = true
+	s.missions.progress["save_henks_knowledge"] = {"status": "completed", "asks": {}, "seen": {}}
+	var farewell := func(days_ago: int) -> void:
+		s.missions.opened_at["save_henks_knowledge"] = s.region.net.time - SimCalendar.days(56 + days_ago)
+		s.pass_time(1)
+	farewell.call(-3)
+	assert_eq(s.people.dialog_for("henk", s._world(s.people.persons["henk"])).id, "henk_last_week", "three days left")
+	farewell.call(0)
+	assert_true(s.people.has_left("henk"), "retired on his day")
+	assert_true(s.checkin_prompts().all(func(p: Dictionary) -> bool: return p["person"] != "henk"))
+	assert_false(s.people_at("outages.locate").any(func(p: Dictionary) -> bool: return p["id"] == "henk"))
