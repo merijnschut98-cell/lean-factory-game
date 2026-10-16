@@ -193,5 +193,85 @@ func test_a_missing_slot_is_empty() -> void:
 	_cleanup()
 
 
+# ── A crash mid-save (review S2): the newest whole file wins ───────────────
+
+## A save of a game `days` in, written through manual slot `n` and then moved
+## to `path` (the state a crash leaves). Returns its game time.
+func _staged(n: int, days: int, path: String) -> int:
+	var s := _session(days)
+	assert_eq(_slots().save(n, s, SessionLayer.new()), "")
+	assert_eq(DirAccess.rename_absolute(SaveFile.path_of(SaveSlots.manual(n), dir), path), OK)
+	return s.region.net.time
+
+
+func _autosave_path() -> String:
+	return SaveFile.path_of(SaveSlots.AUTOSAVE, dir)
+
+
+## The save files in the folder (the use index left out).
+func _files() -> Array:
+	var out := Array(DirAccess.get_files_at(dir)).filter(func(f: String) -> bool: return f != SaveSlots.INDEX)
+	out.sort()
+	return out
+
+
+func test_a_save_leaves_no_temporary_or_backup_file() -> void:
+	var slots := _slots()
+	assert_eq(slots.autosave(_session(1), SessionLayer.new()), "")
+	assert_eq(slots.autosave(_session(2), SessionLayer.new()), "")
+	assert_eq(_files(), ["autosave.save"])
+	_cleanup()
+
+
+func test_a_new_save_left_only_as_tmp_is_recovered() -> void:
+	var time := _staged(1, 3, _autosave_path() + ".tmp")
+	var slots := _slots()
+	assert_eq(slots.entries().size(), 1, "the title menu still lists it")
+	assert_eq(slots.entry(SaveSlots.AUTOSAVE)["time"], time)
+	assert_eq(slots.resume(SaveSlots.AUTOSAVE)["session"].region.net.time, time)
+	assert_eq(_files(), ["autosave.save"], "moved into place")
+	_cleanup()
+
+
+func test_a_crash_between_the_two_renames_keeps_the_newer_save() -> void:
+	var newer := _staged(1, 5, _autosave_path() + ".tmp")
+	_staged(2, 2, _autosave_path() + ".bak")
+	assert_eq(_slots().entry(SaveSlots.AUTOSAVE)["time"], newer, "the new save, not the backup")
+	assert_eq(_files(), ["autosave.save"])
+	_cleanup()
+
+
+func test_a_half_written_tmp_falls_back_to_the_backup() -> void:
+	var older := _staged(1, 2, _autosave_path() + ".bak")
+	_staged(2, 5, _autosave_path() + ".tmp")
+	var whole := FileAccess.get_file_as_bytes(_autosave_path() + ".tmp")
+	var file := FileAccess.open(_autosave_path() + ".tmp", FileAccess.WRITE)
+	file.store_buffer(whole.slice(0, whole.size() / 2))
+	file.close()
+	assert_eq(_slots().entry(SaveSlots.AUTOSAVE)["time"], older)
+	assert_eq(_slots().entry(SaveSlots.AUTOSAVE)["status"], SaveSlots.PLAYABLE)
+	assert_eq(_files(), ["autosave.save"])
+	_cleanup()
+
+
+func test_a_damaged_save_is_replaced_by_a_whole_backup() -> void:
+	var older := _staged(1, 2, _autosave_path() + ".bak")
+	_write_raw(SaveSlots.AUTOSAVE, "kapot".to_utf8_buffer())
+	assert_eq(_slots().entry(SaveSlots.AUTOSAVE)["time"], older)
+	assert_eq(_slots().resume(SaveSlots.AUTOSAVE)["error"], "")
+	_cleanup()
+
+
+func test_a_whole_save_wins_over_stray_files() -> void:
+	var slots := _slots()
+	var s := _session(4)
+	assert_eq(slots.autosave(s, SessionLayer.new()), "")
+	_staged(1, 9, _autosave_path() + ".bak")
+	assert_eq(slots.entry(SaveSlots.AUTOSAVE)["time"], s.region.net.time, "the save in place is never replaced")
+	slots.wipe()
+	assert_eq(_files(), [], "the wipe takes the stray files too")
+	_cleanup()
+
+
 func _order(slots: SaveSlots) -> Array:
 	return slots.entries().map(func(e: Dictionary) -> String: return e["slot"])
