@@ -9,7 +9,6 @@ extends VBoxContainer
 ## The player picked a slot (SaveSlots.names()).
 signal picked(slot: String)
 
-const NAMELESS := "Nieuwe CI-lead"
 const AUTOSAVE := "Automatisch opgeslagen"
 const SLOT := "Slot %d"
 const EMPTY := "Leeg"
@@ -21,7 +20,8 @@ const STATUS := {
 	SaveSlots.TOO_NEW: "Van een nieuwere versie van het spel",
 	SaveSlots.DAMAGED: "Beschadigd: kan niet worden geladen",
 }
-const PORTRAIT := 72
+## The card's photo: the badge photo's ratio (35:45).
+const PORTRAIT := Vector2(56, 72)
 
 ## The button on each card that can be played ("Spelen", "Opslaan").
 var action := ""
@@ -71,7 +71,7 @@ func _card(e: Dictionary, slot: String, always := false) -> PanelContainer:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 16)
 	panel.add_child(row)
-	row.add_child(Portrait.new(e.is_empty() or e["status"] != SaveSlots.PLAYABLE))
+	row.add_child(Portrait.new(e.is_empty() or e["status"] != SaveSlots.PLAYABLE, e.get("portrait", PackedByteArray())))
 	var texts := VBoxContainer.new()
 	texts.add_theme_constant_override("separation", 2)
 	texts.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -83,7 +83,7 @@ func _card(e: Dictionary, slot: String, always := false) -> PanelContainer:
 		head.add_child(UiPanel.label(where, UiTheme.FONT_SIZE, Palette.MUTED))
 		texts.add_child(UiPanel.label(tr(EMPTY), UiTheme.SMALL, Palette.MUTED))
 	else:
-		var name: String = e["name"] if not e["name"].is_empty() else tr(NAMELESS)
+		var name: String = e["name"] if not e["name"].is_empty() else tr(PlayerProfile.NAMELESS)
 		head.add_child(UiPanel.label(name, UiTheme.FONT_SIZE, Palette.VOLTANA_BLUE))
 		head.add_child(UiPanel.label("·  " + where, UiTheme.SMALL, Palette.MUTED))
 		for line in _lines(e):
@@ -127,20 +127,28 @@ func when(unix: float) -> String:
 	return "%d %s %d, %s" % [at["day"], GameSession.MONTHS[at["month"] - 1], at["year"], clock]
 
 
-## Where the player's portrait goes once the character creator (PLAN 2.7b)
-## exists: a head and shoulders in Voltana's colours.
+## The player's badge photo from the character creator (PLAN 2.7b), or a
+## drawn head and shoulders in Voltana's colours when there is none (an old
+## save, a build without a renderer, an empty slot).
 class Portrait extends Control:
 	var faded := false
+	## The photo; null draws the placeholder.
+	var photo: Texture2D
 
-	func _init(is_faded: bool) -> void:
+	func _init(is_faded: bool, png := PackedByteArray()) -> void:
 		faded = is_faded
-		custom_minimum_size = Vector2(SaveList.PORTRAIT, SaveList.PORTRAIT)
+		photo = PlayerProfile.texture_of(png)
+		custom_minimum_size = SaveList.PORTRAIT
 		mouse_filter = Control.MOUSE_FILTER_IGNORE
 		clip_contents = true  # the shoulders end at the frame
 
 	func _draw() -> void:
-		var s := size.x
+		var rect := Rect2(Vector2.ZERO, size)
+		if photo != null:
+			draw_texture_rect(photo, rect, false, Color(1, 1, 1, 0.45) if faded else Color.WHITE)
+			return
+		var w := size.x
 		var ink := Palette.LINE if faded else Palette.BLUE_LIGHT
-		draw_rect(Rect2(Vector2.ZERO, size), Palette.BLUE_PALE)
-		draw_circle(Vector2(s / 2.0, s * 0.92), s * 0.36, ink)
-		draw_circle(Vector2(s / 2.0, s * 0.4), s * 0.19, ink)
+		draw_rect(rect, Palette.BLUE_PALE)
+		draw_circle(Vector2(w / 2.0, size.y * 0.95), w * 0.46, ink)
+		draw_circle(Vector2(w / 2.0, size.y * 0.42), w * 0.24, ink)

@@ -3,13 +3,14 @@ extends Control
 ## The title menu the game opens with (PLAN 2.7): the saves most recently
 ## used first (the autosave among them), each a card to continue from (a
 ## save that will not load keeps the menu, with a line that says so);
-## "Nieuw spel" (a fresh game; the character creator 2.7b comes in front of
-## it later), "Instellingen" (a stub for now) and "Alles wissen" behind one
+## "Nieuw spel" (the character creator, PLAN 2.7b, then a fresh game),
+## "Instellingen" (a stub for now) and "Alles wissen" behind one
 ## confirmation. A new game's first autosave replaces the autosave, so when
 ## that holds a game "Nieuw spel" asks once: keep it in a slot first,
 ## replace it, or go back (PLAN §10, review S3).
 
-## The player chose a save to continue from, or "" for a new game.
+## The player chose a save to continue from, or "" for a new game (the
+## creator comes first).
 signal start_requested(slot: String)
 
 const SCENE := "res://src/ui/title_menu.tscn"
@@ -54,6 +55,8 @@ var _empty: Label
 var _saves_column: VBoxContainer
 ## The slot waiting for the overwrite answer (Page.OVERWRITE).
 var _pending := 0
+## The character creator over the menu while a new player is made, or null.
+var creator: CreatorScreen
 
 
 func _ready() -> void:
@@ -247,15 +250,46 @@ func _go(to: Page) -> void:
 	refresh()
 
 
-## Swap this menu for the office, playing from `slot`. The office takes a
-## moment to build: the loading line shows first.
-func _launch(slot: String) -> void:
+## The character creator for a new game (PLAN 2.7b): HR's mail, the phone
+## camera; its photo starts the game, Esc on the mail comes back here.
+func open_creator() -> CreatorScreen:
+	if creator != null:
+		return creator
+	creator = CreatorScreen.new()
+	creator.setup(CreatorScreen.Mode.NEW)
+	creator.build()
+	add_child(creator)
+	creator.done.connect(func(player: PlayerProfile) -> void:
+		SessionLog.from_settings(SessionLog.SETTINGS, saves.dir).write("Pasfoto gemaakt na %d s" %
+			roundi((Time.get_ticks_msec() - creator.opened_ms) / 1000.0))
+		_launch("", player))
+	creator.cancelled.connect(close_creator)
+	return creator
+
+
+func close_creator() -> void:
+	if creator == null:
+		return
+	remove_child(creator)
+	creator.queue_free()
+	creator = null
+	_go(Page.MAIN)
+
+
+## Swap this menu for the office, playing from `slot`; a new game ("") is
+## made in the creator first, `player` is who it made. The office takes a
+## moment to build: the loading line shows first (behind the creator's dark).
+func _launch(slot: String, player: PlayerProfile = null) -> void:
+	if slot.is_empty() and player == null:
+		open_creator()
+		return
 	UiPanel.clear(_menu)
 	_menu.add_child(UiPanel.label(tr(LOADING), UiTheme.FONT_SIZE, Palette.VOLTANA_BLUE))
 	await get_tree().process_frame
 	await get_tree().process_frame
-	var office := open_game(slot)
+	var office := open_game(slot, player)
 	if office == null:
+		close_creator()
 		return
 	var tree := get_tree()
 	tree.root.add_child(office)
@@ -263,10 +297,11 @@ func _launch(slot: String) -> void:
 	queue_free()
 
 
-## The office, ready to play from `slot` ("" a new game) and handed the
-## loaded game; null when the save does not load: the menu stays, saying so,
-## and the save is left alone (never a half-started game, review S1).
-func open_game(slot: String) -> Office:
+## The office, ready to play from `slot` ("" a new game, played by `player`
+## from the creator) and handed the loaded game; null when the save does not
+## load: the menu stays, saying so, and the save is left alone (never a
+## half-started game, review S1).
+func open_game(slot: String, player: PlayerProfile = null) -> Office:
 	var loaded := {}
 	if not slot.is_empty():
 		loaded = saves.resume(slot)
@@ -276,6 +311,7 @@ func open_game(slot: String) -> Office:
 			return null
 	var office: Office = load(OFFICE).instantiate()
 	office.saves = saves
+	office.new_player = player
 	office.play(slot)
 	office.resumed = loaded
 	return office

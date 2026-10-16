@@ -40,7 +40,7 @@ func test_the_player_is_a_visible_character_without_a_first_person_camera() -> v
 
 
 func test_the_character_model_walks_and_idles_when_it_is_there() -> void:
-	if not ResourceLoader.exists(CharacterModel.path(Player.CHARACTER)):
+	if not ResourceLoader.exists(CharacterModel.path("player_m")):
 		return
 	var office := _office()
 	var animations: AnimationPlayer = office.player.avatar.find_children("*", "AnimationPlayer", true, false).pop_front()
@@ -80,7 +80,7 @@ func test_no_jogging_while_a_panel_is_open() -> void:
 
 
 func test_the_jog_plays_at_its_own_pace_so_the_feet_stay_on_the_floor() -> void:
-	if not ResourceLoader.exists(CharacterModel.path(Player.CHARACTER)):
+	if not ResourceLoader.exists(CharacterModel.path("player_m")):
 		return
 	var office := _office()
 	var animations: AnimationPlayer = office.player.avatar.find_children("*", "AnimationPlayer", true, false).pop_front()
