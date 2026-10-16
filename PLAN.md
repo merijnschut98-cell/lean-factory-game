@@ -368,6 +368,7 @@ The player and the eight Phase 1 office people are built from the CC0 Quaternius
 - Translation-ready from now on (2.9): no new UI text outside `tr()`; content stays Dutch-source with a locale convention.
 - A new HUD element gets its appearance moment written in its task (when the player first needs it), or it waits (first five minutes §3).
 - Unfinished work never lives only in a worktree or a stash at session end: save it as a patch under `docs/handoff/` and point to it here.
+- **Small, frequent integration (Merijn, 2026-10-16 evening: "we work agile / DevOps; small, frequent commits are better").** One-piece flow for code: the coordinator gates and pushes **each agent commit on its own as it arrives**, never a wave of several; agents merge origin before **every** commit, not only the last; a red gate stops the line for that commit only (it goes back to its owner), and the rest keeps flowing. Why: on 2026-10-16 evening a two-hour unpushed batch in the gate tree turned into three cross-agent conflicts and two red gates.
 - "Send now" in the app interrupts every running agent and a stopped agent cannot resume: relaunch it fresh, pointed at its worktree.
 
 ### 6.3 Questions for Merijn
