@@ -115,6 +115,9 @@ var contained: Dictionary[String, int] = {}
 ## A dialog's best outcome so far (GameSession.talk_outcome): what a talk_to
 ## goal reads. Missions knows no people; GameSession hands this in.
 var talk_outcome: Callable = func(_dialog_id: String) -> String: return ""
+## Whether a dialog was had at all, for a mission that ends with a talk
+## (MissionDef.ends_with_talk). Without people nothing waits.
+var talked: Callable = func(_dialog_id: String) -> bool: return true
 
 
 func _init(of_region: Region, mission_defs: Array[MissionDef], coach_def: Dictionary) -> void:
@@ -693,6 +696,8 @@ func _unlocked(m: MissionDef) -> bool:
 
 
 func _goal_met(m: MissionDef) -> bool:
+	if not m.ends_with_talk.is_empty() and not talked.call(m.ends_with_talk):
+		return false
 	match m.goal_type:
 		"walk":
 			for step in region.net.stream(m.goal_stream).steps:

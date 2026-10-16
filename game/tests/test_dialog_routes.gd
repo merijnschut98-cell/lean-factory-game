@@ -7,7 +7,7 @@ extends TestCase
 
 
 ## The most tier-1 talks one route may win today (target: half, PLAN 1.6c).
-const TIER1_RATCHET := 10
+const TIER1_RATCHET := 9
 
 
 func _catalog() -> Catalog:
@@ -38,7 +38,8 @@ func test_no_fixed_route_wins_more_than_half_of_the_persuasion_talks() -> void:
 	# The target is half (10 of 20). Measured 2026-10-16 with E1–E5, needs and
 	# wear-out: 11; after the scripts' route variety (El Amrani winnable;
 	# Petra, Mieke and Rob's concerns opened by data, a summary, a story): 8
-	# (PLAN 1.6c). The limit is the target; it may only go down.
+	# (PLAN 1.6c); all twenty from content (D9): 10, then 9 after the D9 audit's
+	# lines. The limit only goes down.
 	assert_true(best["wins"] <= TIER1_RATCHET,
 		"%d of %d talks won by one route: %s (%s)" % [best["wins"], talks.size(), " ".join(best["route"]),
 		", ".join(best["won"])])

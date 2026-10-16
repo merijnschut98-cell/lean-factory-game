@@ -252,6 +252,26 @@ func finish(d: Dialog, now: int, main: bool = false) -> Dictionary:
 	}
 
 
+## The promises the player made and the person agreed to (a proposal with a
+## `promise`), for the check that keeps them (2.4b): dialog id → {proposal,
+## kind, days, at (the day of the talk that agreed it, minutes)}. Read from
+## what is saved anyway: the agreement and the talk log.
+func promises() -> Dictionary:
+	var out := {}
+	for id: String in agreed:
+		var d: DialogDef = dialogs.get(id)
+		var promise := JsonFile.dict_or_empty(d.item(str(agreed[id])).get("promise")) if d != null else {}
+		if promise.is_empty():
+			continue
+		var at := -1
+		for entry: Dictionary in talk_log.get(d.person, []):
+			if entry.get("dialog") == id and entry.get("outcome") == outcomes.get(id):
+				at = int(entry.get("at", -1))
+		out[id] = {"proposal": agreed[id], "kind": str(promise.get("kind", "")), "days": int(promise.get("days", 0)),
+			"at": at}
+	return out
+
+
 ## Ruud's line after an Act 0 talk (tutorial talks spec §3): he names one
 ## listening move that landed, the day's move first, else the one that landed
 ## most; when none did he asks (`none`). "" after any other talk: from Act I he

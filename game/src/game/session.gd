@@ -29,6 +29,8 @@ const STORY_MISSION := "walk_connections"
 const PLAY_START_DATE := {"year": 2026, "month": 10, "day": 12, "hour": 0, "minute": 0, "second": 0}
 const WEEKDAYS: Array[String] = ["ma", "di", "wo", "do", "vr", "za", "zo"]
 const MONTHS: Array[String] = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"]
+const MONTH_NAMES: Array[String] = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus",
+	"september", "oktober", "november", "december"]
 ## The training week's first day, and its practice problem (fade_forecast's default).
 const TRAINING_FIRST := "training_mon"
 const TRAINING_PROBLEM := "training_tray"
@@ -49,6 +51,9 @@ var discoveries: Discoveries
 var followed := FollowedOrder.new()
 ## The "Hoe werkt het?" explainers seen (PLAN 2.7c), for the codex.
 var explainers := ExplainerLog.new()
+## The player's body for the tokens talks fill (creator spec §1.6: man |
+## vrouw). The placeholder CI lead's until the character creator (2.7b) sets it.
+var player_body := "vrouw"
 ## The first thing wrong with the content; "" when the game is usable.
 var error := ""
 
@@ -69,6 +74,8 @@ static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, t
 	s.missions = Missions.new(s.region, s.catalog.missions, s.catalog.coach)
 	s.people = People.new(s.catalog.persons, s.catalog.dialogs, s.catalog.dialog_bank)
 	s.missions.talk_outcome = s.talk_outcome
+	s.missions.talked = func(dialog_id: String) -> bool:  # a talk the content does not hold waits for nothing
+		return s.people.talks.has(dialog_id) or not s.people.dialogs.has(dialog_id)
 	s.discoveries = Discoveries.new(s.catalog.discoveries)
 	for id in [STORY_MISSION, TRAINING_FIRST]:
 		if not s.missions.defs.has(id):
@@ -676,7 +683,7 @@ func person(person_id: String) -> Dictionary:
 		"trust_pips": floori(people.trust[person_id] / float(Dialog.TRUST_PER_PIP)),
 		"morale_band": 0 if morale < 30 else (1 if morale < 70 else 2),
 		"cooldown_until": int(people.memory.get(person_id, {}).get("cooldown_until", 0)), "outcomes": outcomes,
-		"observed": _newest_first(people.observed.get(person_id, [])),
+		"observed": _filled(_newest_first(people.observed.get(person_id, []))),
 		"talks": _newest_first(people.talk_log.get(person_id, [])), "note": people.note.get(person_id, "")}
 
 
@@ -708,14 +715,16 @@ func start_dialog(person_id: String) -> Dictionary:
 	if d == null:
 		return {"error": "nothing_to_say"}
 	_talk = people.start(d, world)
-	return {"dialog": d.id, "kind": d.kind, "person": p.id, "name": p.name, "short": p.short, "role": p.role,
-		"opening": people.opening(d), "position": _talk.position(), "meter": _talk.meter(), "moves": _talk.moves()}
+	return _filled({"dialog": d.id, "kind": d.kind, "person": p.id, "name": p.name, "short": p.short, "role": p.role,
+		"opening": people.opening(d), "position": _talk.position(), "meter": _talk.meter(), "moves": _talk.moves()})
 
 
 ## The moves of the talk in progress (Dialog.moves); [] when there is none.
 func dialog_moves() -> Array[Dictionary]:
-	var none: Array[Dictionary] = []
-	return _talk.moves() if _talk != null else none
+	var out: Array[Dictionary] = []
+	if _talk != null:
+		out.assign(_filled(_talk.moves()))
+	return out
 
 
 ## The meter of the talk in progress (Dialog.meter); {} when there is none.
@@ -735,6 +744,7 @@ func dialog_layers() -> Array[Dictionary]:
 	for layer: Dictionary in _talk.layers():
 		var heard := _talk.revealed.has(layer["id"])
 		out.append({"id": str(layer["id"]), "text": str(layer.get("text", "")) if heard else "", "heard": heard})
+	out.assign(_filled(out))
 	return out
 
 
@@ -748,7 +758,43 @@ func choose_move(move: String, pick: String = "") -> Dictionary:
 	var result := _talk.say(move, pick)
 	if result.get("ended", false):
 		result["summary"] = _finish_talk()
-	return result
+	return _filled(result)
+
+
+## The tokens talk lines speak through (creator spec §1.6; D9 talks audit):
+## {jongen_meid} by the player's body, {aanvraag_datum} the day the El Amrani
+## family applied. One pass: a filled value is never read for tokens again.
+func fill_tokens(text: String) -> String:
+	if not "{" in text:
+		return text
+	var born := date_of(followed.born)
+	var tokens := {"{jongen_meid}": "jongen" if player_body == "man" else "meid",
+		"{aanvraag_datum}": "%d %s" % [born["day"], MONTH_NAMES[born["month"] - 1]]}
+	var out := ""
+	var rest := text
+	while true:
+		var at := rest.find("{")
+		var close := rest.find("}", at)
+		if at < 0 or close < 0:
+			return out + rest
+		var token := rest.substr(at, close - at + 1)
+		out += rest.left(at) + str(tokens.get(token, token))
+		rest = rest.substr(close + 1)
+	return out
+
+
+## Every text in a talk's result, filled (fill_tokens).
+func _filled(v: Variant) -> Variant:
+	if v is String:
+		return fill_tokens(v)
+	if v is Dictionary:
+		var d := {}
+		for k: Variant in v:
+			d[k] = _filled(v[k])
+		return d
+	if v is Array:
+		return (v as Array).map(_filled)
+	return v
 
 
 ## End the talk gracefully (the close move); see choose_move.

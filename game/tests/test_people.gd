@@ -36,6 +36,20 @@ func test_ruud_asks_instead_when_nothing_landed_and_never_names_after_act_0() ->
 	assert_eq(_talk(DialogFixture.people(), ["mood"])["ruud_names"], "", "not a tutorial talk")
 
 
+# ── Promises the game checks later (D9 talks audit A4; the check is 2.4b) ────
+
+func test_an_agreed_promise_is_kept_with_the_day_it_was_made() -> void:
+	var data := DialogFixture.dialog_data()
+	data["proposals"][0]["promise"] = {"kind": "callback", "days": 3}
+	var people := DialogFixture.people([DialogFixture.def(data)])
+	assert_eq(people.promises(), {})
+	_talk(people, LISTENING, DialogFixture.world({"now": FRIDAY}))
+	assert_eq(people.promises(), {"talk": {"proposal": "good", "kind": "callback", "days": 3, "at": FRIDAY}})
+	var bare := DialogFixture.people()
+	_talk(bare, LISTENING, DialogFixture.world({"now": FRIDAY}))
+	assert_eq(bare.promises(), {}, "an agreement that promises nothing")
+
+
 # ── The start of a talk ─────────────────────────────────────────────────────
 
 func test_the_start_reads_the_person_the_day_and_the_team() -> void:

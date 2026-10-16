@@ -419,6 +419,11 @@ func test_the_training_week_is_played_through_the_ui() -> void:
 	ui.place_menu.use_tool("shadow")
 	office.interact(office.interactable(DESIGN))
 	ui.place_menu.ask("walk")
+	assert_eq(ui.hud.mission_text(), "Missie: Inwerkweek — ma: Rondleiding", "Monday ends with Anouk's talk")
+	ui.open_talk("anouk")
+	ui.dialog_panel.choose("close")
+	ui.dialog_panel.close_talk()
+	ui.close_panels()
 	assert_eq(ui.hud.mission_text(), "Missie: Inwerkweek — di: Kijken zonder oordeel")
 	assert_true(ui.hud.card_texts().any(func(t: String) -> bool: return t.contains("Gemba")), "Tuesday's card")
 	# Tuesday: two tools at Werkvoorbereiding.

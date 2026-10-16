@@ -420,6 +420,8 @@ class Persona extends RefCounted:
 	## One action on the mission; false when it can only wait.
 	func _act_on(m: MissionDef) -> bool:
 		_coach(m)
+		if not m.ends_with_talk.is_empty() and not s.people.talks.has(m.ends_with_talk):
+			return _have_talk(m)
 		match m.goal_type:
 			"observe":
 				return _observe(m)
@@ -433,6 +435,18 @@ class Persona extends RefCounted:
 				return _sustain(m)
 		_dead_end("unknown_goal", m.id, m.goal_type)
 		_give_up(m)
+		return true
+
+	## The day ends with a talk: have it (the persona says hello and goes).
+	func _have_talk(m: MissionDef) -> bool:
+		var opened := s.start_dialog(s.people.dialogs[m.ends_with_talk].person)
+		if opened.get("dialog") != m.ends_with_talk:
+			if not opened.has("error"):
+				s.end_dialog()
+			_dead_end("talk_unavailable", m.id, "%s: %s" % [m.ends_with_talk, opened.get("error", opened.get("dialog"))])
+			_give_up(m)
+			return true
+		s.end_dialog()
 		return true
 
 	func _observe(m: MissionDef) -> bool:

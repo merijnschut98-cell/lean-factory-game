@@ -2346,7 +2346,7 @@
    "outcomes": {
     "commitment": "Goed. Ik zeg in het MT dat we de vacatures drie weken aanhouden. Omdat het team iets wil proberen.",
     "compliance": "Als Ruud dat wil. Dan schrijf ik het zo op.",
-    "heard": "Je bent de eerste die vraagt hoe het met ze gaat in plaats van hoeveel ze maken.",
+    "heard": "Eerlijk is eerlijk: dat had ik nog tegen niemand gezegd. Ook niet tegen mijn team.",
     "partial": "Ik wil het proberen. Maar de vacatures blijven staan tot ik iets zie.",
     "ruined": "Dus het ligt aan ons. Duidelijk. Ik zie je in het MT."
    },
@@ -2765,7 +2765,7 @@
    "outcomes": {
     "commitment": "Deal. En als het werkt, wil ik niet horen dat ik dus geen agents nodig had. Ik had ze nodig. Alleen niet hiervoor.",
     "compliance": "Prima. Komt erbij.",
-    "heard": "Fijn dat iemand een keer vraagt hoe het met ze gaat.",
+    "heard": "Oké. Het is eruit. Mijn mensen weten niet dat ik zo over ze praat, hè. Laat dat zo.",
     "partial": "Ik doe het. Maar mijn aanvraag voor vier agents blijft liggen tot ik de wachtrij groen zie.",
     "ruined": "Mijn mensen zijn geen stootkussen. En ik ook niet."
    },
@@ -2793,7 +2793,7 @@
      ],
      "id": "status_messages",
      "name": "Klanten krijgen vanzelf bericht",
-     "reply": "Dan bellen ze niet. … Als het bericht klopt. Werkvoorbereiding weet zelf niet eens wanneer iets klaar is.",
+     "reply": "Dan bellen ze niet. … Als het bericht klopt. Een bericht dat niet klopt, is een telefoontje extra.",
      "text": "Klanten krijgen bij elke stap vanzelf een bericht waar hun aansluiting is."
     },
     {
@@ -2908,6 +2908,10 @@
      ],
      "id": "name_a_date",
      "name": "Een datum noemen",
+     "promise": {
+      "days": 42,
+      "kind": "delivery_date"
+     },
      "reply": "Zes weken. Ik schrijf het op, met de datum van vandaag erbij.",
      "text": "Volgens de planning bent u over een week of zes aangesloten."
     },
@@ -2918,6 +2922,10 @@
      ],
      "id": "honest_window_and_contact",
      "name": "Eerlijk zijn, en één aanspreekpunt",
+     "promise": {
+      "days": 3,
+      "kind": "callback"
+     },
      "reply": "Vrijdag. U. Goed. Ik schrijf uw naam op.",
      "text": "Ik ga u geen datum beloven die ik niet zeker weet. Ik zoek uit waar uw dossier ligt, ik bel u vrijdag terug, en vanaf nu heeft u één aanspreekpunt: mij."
     },
@@ -2964,7 +2972,7 @@
        "claim"
       ],
       "tell": "facts",
-      "text": "Aangevraagd op 27 juli. Ontvangstbevestiging op 3 augustus, nummer erbij. Sindsdien hoor ik alleen Vivaldi."
+      "text": "Aangevraagd op {aanvraag_datum}. Een week later de ontvangstbevestiging, nummer erbij. Sindsdien hoor ik alleen Vivaldi."
      }
     },
     "paraphrase": {
@@ -3185,7 +3193,7 @@
    },
    "mission": "save_henks_knowledge",
    "name": "Henk en de camera",
-   "opening": "Je komt zeker voor die camera. Jongen, ik zeg het maar meteen.",
+   "opening": "Je komt zeker voor die camera. Ik zeg het je maar meteen, {jongen_meid}.",
    "outcomes": {
     "commitment": "Ik laat het je wel zien. Maar ik bepaal wanneer hij klaar is. Niet de planning.",
     "compliance": "Zet die camera dan maar neer. Ik zeg niks.",
@@ -3643,7 +3651,7 @@
    "name": "Henks laatste week",
    "opening": "Kijk wie we daar hebben. Kom je afscheid nemen? Ik ben er nog vijf dagen, hoor.",
    "outcomes": {
-    "heard": "Dag, jongen. Tot zaterdag.",
+    "heard": "Dag, {jongen_meid}. Tot zaterdag.",
     "lifted": "Weet je wat? Kom zaterdag op m'n afscheid. En neem die jonge Ahmed mee. Die moet weten dat het een feest is, geen begrafenis.",
     "none": "Dag."
    },
@@ -3692,7 +3700,7 @@
        "tags": [
         "admission"
        ],
-       "text": "Die jongen kan het. Ik had het niet gedacht, eerlijk gezegd. Vorige week stond ik ernaast en hij had me niet nodig. Dat is een raar gevoel, jongen. Goed raar. Maar raar.",
+       "text": "Die jongen kan het. Ik had het niet gedacht, eerlijk gezegd. Vorige week stond ik ernaast en hij had me niet nodig. Dat is een raar gevoel, {jongen_meid}. Goed raar. Maar raar.",
        "via": [
         "silence",
         "reflect",
@@ -4115,7 +4123,7 @@
    "outcomes": {
     "commitment": "Afgesproken. En als jullie kaart weer niet klopt, wil ik dat ook horen. Niet alleen ik van jullie.",
     "compliance": "Als het moet voor het contract.",
-    "heard": "Je bent de eerste van Voltana die vraagt hoe het met mijn jongens gaat.",
+    "heard": "Je laat me tenminste uitpraten. Dat doet jullie schadeafdeling niet.",
     "partial": "Ik doe mee. Als het in de opdracht komt te staan.",
     "ruined": "Dan zie ik je bij de rechter. Ik heb gewoon een melding gedaan."
    },
@@ -4163,6 +4171,12 @@
     "confront": {
      "lands": {
       "text": "Ik graaf al dertig jaar. Ik heb meer kabels gezien dan jullie kaart."
+     }
+    },
+    "open_question": {
+     "lands": {
+      "tell": "safety",
+      "text": "Mijn jongens graven waar de kaart zegt dat het kan. Klopt die kaart niet, dan sta ík er straks naast. Niet jullie."
      }
     },
     "perspective": {
@@ -4436,6 +4450,12 @@
     }
    ],
    "replies": {
+    "mood": {
+     "lands": {
+      "tell": "time",
+      "text": "Hoe het gaat? Ik heb vanochtend drie keer koffie gehaald. Drie keer koud laten worden. Zo gaat het."
+     }
+    },
     "perspective": {
      "lands": {
       "text": "Vanuit de school? Negen weken wachten op een antwoord dat ik in vijf minuten had kunnen geven. … Ja. Dat is eigenlijk niet te verdedigen."
@@ -4712,6 +4732,12 @@
     }
    ],
    "replies": {
+    "open_question": {
+     "lands": {
+      "tell": "fairness",
+      "text": "Ik verkoop die mensen al twintig jaar zekerheid. Nu moet ik ze bellen dat die zekerheid tijdelijk was. Dat vind ik niet netjes."
+     }
+    },
     "perspective": {
      "lands": {
       "text": "Vanuit Ilse? Die staat om vier uur 's nachts bij gasovens van 1998, naast een lege hal met twee megawatt. … Ja. Dat zou ik ook niet kunnen uitleggen."
