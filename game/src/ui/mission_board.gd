@@ -13,8 +13,15 @@ const NO_CLOCK := "de deadline is voorbij."
 ## Over a fork: two main missions open at once, and the player picks the order.
 const FORK_HEADING := "Twee hoofdmissies tegelijk: welke pak je eerst aan?"
 const REPAIR_KIND := "herstel"
+## The drawer of side offers older than a week (SessionLayer.older_offers).
+const OLDER := "Nog open"
 
 var message := ""
+## Set by GameUI: holds back side offers (at most two new a week); null
+## shows every available mission.
+var layer: SessionLayer
+## The "Nog open" drawer is unfolded.
+var show_older := false
 ## The skip's confirm line is showing.
 var confirming_skip := false
 var _list: VBoxContainer
@@ -81,22 +88,24 @@ func refresh() -> void:
 	if session.in_training():
 		_skip_row()
 	var open := add_card(_list, "Beschikbaar")
-	if session.available_missions().is_empty():
+	var offered := offers()
+	if offered.is_empty():
 		open.add_child(paragraph("Er staan nu geen nieuwe missies open.", Palette.MUTED))
 	var shown_story := ""
-	for row: Array in rows(session.available_missions()):
+	for row: Array in rows(offered):
 		if story(row[0]) != shown_story:
 			shown_story = story(row[0])
 			open.add_child(label(shown_story, UiTheme.SMALL, Palette.MUTED))
 		if row.size() == 1:
-			_add_offer(open, row[0])
+			_offer_row(open, row[0])
 			continue
 		var fork := add_card(open, FORK_HEADING, Palette.BLUE_PALE)
 		var pair := HBoxContainer.new()
 		pair.add_theme_constant_override("separation", 16)
 		fork.add_child(pair)
 		for m: MissionDef in row:
-			_add_offer(pair, m)
+			_offer_row(pair, m)
+	_older_drawer()
 	var done := session.missions.defs.values().filter(
 		func(m: MissionDef) -> bool: return session.missions.status(m.id) == "completed")
 	if not done.is_empty():
@@ -121,9 +130,33 @@ static func rows(missions: Array[MissionDef]) -> Array:
 	return out
 
 
-## One mission on offer: title, briefing, and "Aannemen" (the act and
-## chapter head its group).
-func _add_offer(parent: Node, m: MissionDef) -> void:
+## The missions offered as new: all available ones, or with the session
+## layer at most two new sides a week (SessionLayer.new_offers).
+func offers() -> Array[MissionDef]:
+	return layer.new_offers(session) if layer != null else session.available_missions()
+
+
+func toggle_older() -> void:
+	show_older = not show_older
+	refresh()
+
+
+## Sides offered more than a week ago, folded under "Nog open": never lost.
+func _older_drawer() -> void:
+	if layer == null:
+		return
+	var older := layer.older_offers(session)
+	if older.is_empty():
+		return
+	var drawer := add_card(_list)
+	drawer.add_child(button("%s (%d)  %s" % [OLDER, older.size(), "▴" if show_older else "▾"], toggle_older))
+	for m in older if show_older else []:
+		_offer_row(drawer, m)
+
+
+## A mission that can be taken on: its title, briefing and "Aannemen" (the
+## act and chapter head its group).
+func _offer_row(parent: Node, m: MissionDef) -> void:
 	var row := HBoxContainer.new()
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var text := VBoxContainer.new()

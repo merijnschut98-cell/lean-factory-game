@@ -13,6 +13,7 @@ const TOAST_SECONDS := 7.0
 const MAX_TOASTS := 4
 const CARD_SECONDS := 25.0
 const MAX_CARDS := 3
+const STOP_NOTE := "Nieuwe dag · goed moment om te stoppen (opgeslagen)"
 
 var session: GameSession
 var clock_label: Label
@@ -20,6 +21,9 @@ var budget_label: Label
 var xp_label: Label
 ## The stagnation drift, once the region slides back (hidden before).
 var drift_label: Label
+## The dagstart's quiet "good moment to stop" note (SessionLayer), beside the
+## clock; hidden otherwise.
+var stop_note: Label
 var mission_label: Label
 var prompt_label: Label
 ## The controls line, bottom left (hidden while a panel is open).
@@ -58,11 +62,14 @@ func _build_bar() -> void:
 	xp_label = _bar_label("")
 	drift_label = _bar_label("", Palette.SAFETY_ORANGE)
 	drift_label.visible = false
+	stop_note = _bar_label(STOP_NOTE, Palette.VOLTANA_GREEN)
+	stop_note.add_theme_font_size_override("font_size", 16)
+	stop_note.visible = false
 	mission_label = _bar_label("")
 	mission_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	mission_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	mission_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	for l in [clock_label, budget_label, xp_label, drift_label, mission_label]:
+	for l in [clock_label, stop_note, budget_label, xp_label, drift_label, mission_label]:
 		row.add_child(l)
 
 

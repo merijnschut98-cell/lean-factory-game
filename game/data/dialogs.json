@@ -1,5 +1,20 @@
 {
  "bank": {
+  "coach": {
+   "after": {
+    "blocked": "Is dit iets wat {person} kan beslissen? Wie wel?",
+    "commitment": "Wiens idee was het uiteindelijk?",
+    "pressure": "{person} zei ja. Wat zei het gezicht erbij?",
+    "ruined": "Wie was er aan het woord in de eerste minuut?"
+   },
+   "questions": [
+    "Wat wilde je dat {person} na het gesprek dacht of deed?",
+    "Wat gebeurde er? Waar veranderde het gesprek?",
+    "Wat houdt {person} tegen, denk je? Hoe weet je dat?",
+    "Hoe begin je het volgende gesprek, en wat verwacht je dat er dan gebeurt?",
+    "Wat heb je geleerd over luisteren?"
+   ]
+  },
   "labels": {
    "bands": [
     "Dicht",

@@ -163,3 +163,27 @@ func test_walking_around_shows_who_is_low_on_energy() -> void:
 	assert_eq(s.energy_of("ahmed"), {"energy": 0.42, "needs_talk": true})
 	assert_eq(s.people_at("outages.locate")[0]["energy"], 0.42)
 	assert_eq(s.energy_of("nobody"), {})
+
+
+## A mission's talk_to goal reads the session's talks (dialog spec §5.1).
+func test_missions_read_how_talks_went() -> void:
+	var s := _silo()
+	assert_eq(s.missions.talk_outcome.call("joost_output_kpi"), "")
+	s.start_dialog("joost")
+	_play(s, LISTEN_TO_JOOST + ["ask_commitment"])
+	assert_eq(s.missions.talk_outcome.call("joost_output_kpi"), "partial")
+
+
+## After a hard main-mission talk, Ruud's next question is about the talk;
+## then he is back at the mission (dialog spec §5.6).
+func test_ruud_asks_about_a_hard_talk_once() -> void:
+	var s := _silo()
+	var before := s.ask_coach()
+	assert_ne(before["stage"], "talk")
+	s.start_dialog("joost")
+	_play(s, LISTEN_TO_JOOST + ["ask_commitment"])
+	var about := s.ask_coach()
+	assert_eq(about["stage"], "talk")
+	assert_true("Joost" in about["text"], about["text"])
+	assert_eq(s.ask_coach()["stage"], before["stage"], "one ask, then the mission again")
+	assert_eq(s.ask_coach("fix_wrong_joint"), {"kind": "not_main"}, "never about a side mission")

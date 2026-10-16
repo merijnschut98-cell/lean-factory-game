@@ -6,7 +6,9 @@ extends RefCounted
 ## the player's belt, with a goal the rules can check.
 
 const KINDS := ["main", "side", "training"]
-const GOALS := ["walk", "investigate", "solve", "observe", "check", "sustain", "rework_fix"]
+const GOALS := ["walk", "investigate", "solve", "observe", "check", "sustain", "rework_fix", "talk_to"]
+## A talk_to goal's outcomes: partial | commitment (dialog spec §5.1).
+const TALK_OUTCOMES := ["partial", "commitment"]
 const FORK_ROLES := ["bottleneck", "non_bottleneck"]
 
 var id: String
@@ -54,6 +56,9 @@ var fail_text: String
 var goal_type: String
 var goal_stream: String
 var goal_problem: String
+## talk_to: the dialog, and the least outcome that meets the goal.
+var goal_dialog: String
+var goal_outcome := "commitment"
 var goal_clues := 0
 ## observe: a gemba tool (goal_tool, or any tool or question when empty) used
 ## at every place, goal_uses different place-tool pairs in all.
@@ -128,6 +133,8 @@ static func from_dict(d: Dictionary) -> MissionDef:
 	m.goal_places = PackedStringArray(goal.get("places", []))
 	m.goal_tool = str(goal.get("tool", ""))
 	m.goal_uses = int(goal.get("uses", 1))
+	m.goal_dialog = str(goal.get("dialog", ""))
+	m.goal_outcome = str(goal.get("outcome", "commitment"))
 	m.check_days = int(d.get("check_days", -1))
 	m.teaches = PackedStringArray(d.get("teaches", []))
 	var setup: Variant = d.get("setup", [])
@@ -154,6 +161,8 @@ static func from_dict(d: Dictionary) -> MissionDef:
 		m.error = "mission %s: unknown kind %s or goal %s" % [m.id, m.kind, m.goal_type]
 	elif m.goal_type == "observe" and m.goal_places.is_empty():
 		m.error = "mission %s: an observe goal needs places" % m.id
+	elif m.goal_type == "talk_to" and (m.goal_dialog.is_empty() or not m.goal_outcome in TALK_OUTCOMES):
+		m.error = "mission %s: a talk_to goal needs a dialog and an outcome (partial | commitment)" % m.id
 	elif not m.setup.is_empty() and m.kind != "training":
 		m.error = "mission %s: only a training day has a setup" % m.id
 	return m

@@ -135,3 +135,38 @@ def test_dialog_errors_are_caught(tmp_path, real, mutate, message):
     mutate(docs)
     with pytest.raises(bc.ContentError, match=message):
         _load(tmp_path, docs)
+
+
+def _talk_mission(real: dict, goal: dict) -> dict:
+    """The real content with Frank's talk as a side mission's goal."""
+    docs = copy.deepcopy(real)
+    side = copy.deepcopy(next(m for m in docs["missions"]["missions"] if m["id"] == "fix_wrong_joint"))
+    side.update({"id": "talk_frank", "goal": goal})
+    for key in ("fail_closes", "deadline_days", "check_days", "fork", "debrief_variants", "setup"):
+        side.pop(key, None)
+    docs["missions"]["missions"].append(side)
+    frank = _dialog(docs, "frank_kpi_targets")
+    frank["mission"] = "talk_frank"
+    frank.pop("data")  # a talk_to mission holds no problem to show data of
+    return docs
+
+
+def test_a_talk_goal_names_a_dialog_of_its_own_mission(real, tmp_path):
+    _load(tmp_path, _talk_mission(real, {"type": "talk_to", "dialog": "frank_kpi_targets", "outcome": "partial"}))
+    with pytest.raises(bc.ContentError, match="unknown dialog"):
+        _load(tmp_path, _talk_mission(real, {"type": "talk_to", "dialog": "nobody_talk"}))
+    with pytest.raises(bc.ContentError, match="belongs to mission"):
+        _load(tmp_path, _talk_mission(real, {"type": "talk_to", "dialog": "joost_output_kpi"}))
+    with pytest.raises(bc.ContentError, match="outcome"):
+        _load(tmp_path, _talk_mission(real, {"type": "talk_to", "dialog": "frank_kpi_targets", "outcome": "heard"}))
+
+
+def test_the_coach_s_talk_questions_are_checked(real, tmp_path):
+    docs = copy.deepcopy(real)
+    docs["dialogs"]["bank"]["coach"]["after"]["heard"] = "Hoe was het?"
+    with pytest.raises(bc.ContentError, match="after"):
+        _load(tmp_path, docs)
+    docs = copy.deepcopy(real)
+    docs["dialogs"]["bank"]["coach"]["questions"] = []
+    with pytest.raises(bc.ContentError, match="questions"):
+        _load(tmp_path, docs)

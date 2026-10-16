@@ -26,6 +26,9 @@ static func bank() -> Dictionary:
 		"labels": {"bands": ["Dicht", "Op z'n hoede", "Luistert", "Open", "Denkt mee"], "cue": "Er zit meer achter…",
 			"chips": chips, "outcomes": outcome_labels},
 		"player": player, "replies": replies, "outcomes": outcomes,
+		"coach": {"questions": ["Wat wilde je dat {person} dacht?", "Waar veranderde het?"],
+			"after": {"pressure": "{person} zei ja. En het gezicht?", "ruined": "Wie praatte er?",
+				"blocked": "Wie kan het wel beslissen?", "commitment": "Wiens idee was het?"}},
 		"special": {"no_repair": "niets te herstellen", "repeat": "herhaling", "refusal": "weigering", "no_proposal": "geen voorstel", "other_data": "En?",
 			"lucky_guess": "Hm. Misschien.", "patience_low": "Ik heb nog vijf minuten.", "cooling_down": "Niet nu."},
 	}

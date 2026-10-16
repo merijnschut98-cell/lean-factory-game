@@ -61,6 +61,11 @@ const MIN_REWARD_SHARE := 0.6
 ## problem's best one (ESTIMATE, catalogue §2.15), or the A3 named a wrong
 ## root cause.
 const POOR_FIT_GAP := 0.2
+## The outcomes that meet a talk_to goal (dialog spec §5.1). A yes under
+## pressure meets it too, but pays COMPLIANCE_SHARE and no reputation: a
+## quick win scores lower than the patient one (CLAUDE.md §2).
+const TALK_MEETS := {"partial": ["partial", "commitment", "compliance"], "commitment": ["commitment", "compliance"]}
+const COMPLIANCE_SHARE := 0.5
 
 var region: Region
 var defs: Dictionary[String, MissionDef] = {}
@@ -102,6 +107,9 @@ var repairs := Repairs.new()
 var stewardship := Stewardship.new()
 ## Deadlines met because the fix was in place when the date came (R5).
 var deadline_kept: Dictionary[String, bool] = {}
+## A dialog's best outcome so far (GameSession.talk_outcome): what a talk_to
+## goal reads. Missions knows no people; GameSession hands this in.
+var talk_outcome: Callable = func(_dialog_id: String) -> String: return ""
 
 
 func _init(of_region: Region, mission_defs: Array[MissionDef], coach_def: Dictionary) -> void:
@@ -657,6 +665,8 @@ func _goal_met(m: MissionDef) -> bool:
 				if not seen.keys().any(func(k: String) -> bool: return k.get_slice("|", 0) == place):
 					return false
 			return seen.size() >= m.goal_uses
+		"talk_to":
+			return talk_outcome.call(m.goal_dialog) in TALK_MEETS[m.goal_outcome]
 	return false
 
 
@@ -668,9 +678,10 @@ func _complete(m: MissionDef) -> void:
 	var score: Dictionary = region.state[m.goal_problem].score if m.goal_type == "solve" else {}
 	if not done_once.has(m.id):
 		done_once[m.id] = true
-		var share := reward_share(score)
+		var forced: bool = m.goal_type == "talk_to" and talk_outcome.call(m.goal_dialog) == "compliance"
+		var share := reward_share(score) * (COMPLIANCE_SHARE if forced else 1.0)
 		region.grant(roundi(m.reward_xp * share), roundi(m.reward_budget * share))
-		region.earn_reputation(m.reward_reputation, "mission")
+		region.earn_reputation(0 if forced else m.reward_reputation, "mission")
 		for team in m.reward_trust:
 			region.change_trust(team, m.reward_trust[team])
 	else:

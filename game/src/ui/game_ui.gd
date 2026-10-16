@@ -20,6 +20,25 @@ var journal: ClueJournal
 var office_map: OfficeMap
 var codex: CodexPanel
 var dialog_panel: DialogPanel
+## The session layer (PLAN 1.4): the terugblik, Intussen, the stop note, the
+## discovery toasts and the side offers; the playtest log; autosave.
+var session_layer: SessionLayer
+var terugblik: TerugblikCard
+var intussen: IntussenPanel
+## Off until the real game starts (begin_play), so tests write no log.
+var playtest_log := SessionLog.new(SessionLog.PATH, false)
+var settings_path := SessionLog.SETTINGS
+## The slot the game saves itself to at every dagstart and on closing; ""
+## saves nothing (tests, tools).
+var save_slot := ""
+## When this session started (real time), for the stop note and the log.
+var started_ms := Time.get_ticks_msec()
+## The in-game day whose dagstart shows the stop note; -1 for none.
+var _stop_day := -1
+## Experiments running, to open Intussen once when one starts.
+var _running: Dictionary[String, bool] = {}
+## Missions taken on this session → when (real ms), until their first key clue.
+var _accepted_ms: Dictionary[String, int] = {}
 var _panels: Array[UiPanel] = []
 ## The concepts already known, to toast only new ones.
 var _known_concepts := PackedStringArray()
@@ -27,7 +46,9 @@ var _known_concepts := PackedStringArray()
 var _carded: Dictionary[String, bool] = {}
 
 
-func setup(of_session: GameSession) -> void:
+## `of_layer`: a saved game's session layer (its snapshot opens the
+## terugblik, see begin_play); a new one otherwise.
+func setup(of_session: GameSession, of_layer: SessionLayer = null) -> void:
 	session = of_session
 	var root := Control.new()
 	root.theme = UiTheme.build()
@@ -49,7 +70,11 @@ func setup(of_session: GameSession) -> void:
 	office_map = OfficeMap.new()
 	codex = CodexPanel.new()
 	dialog_panel = DialogPanel.new()
-	_panels = [mission_board, place_menu, a3_form, check_panel, coach_panel, journal, office_map, codex, dialog_panel]
+	terugblik = TerugblikCard.new()
+	intussen = IntussenPanel.new()
+	_panels = [mission_board, place_menu, a3_form, check_panel, coach_panel, journal, office_map, codex, terugblik, intussen,
+		dialog_panel]
+	_setup_session_layer(of_layer)
 	for p in _panels:
 		p.session = session
 		p.acted.connect(after_action)
@@ -183,10 +208,12 @@ func after_action() -> void:
 			hud.toast(text)
 		if e["type"] == "completed":
 			_debrief_card(session.missions.defs[e["mission"]], e)
+		_session_event(e)
 	for m in session.missions.active("training"):
 		_glossary_card(m)
 	for text in new_concept_toasts():
 		hud.toast(text)
+	_session_beat()
 
 
 ## A finished training day: the coach's debrief, with what the player
@@ -230,6 +257,125 @@ func new_concept_toasts() -> Array[String]:
 		if def != null:
 			out.append("Nieuw begrip: %s (K)" % def.name)
 	return out
+
+
+# ── The session layer ───────────────────────────────────────────────────────
+
+const DISCOVERY_TOAST := "Ontdekking: %s (K)"
+const SAVE_FAILED := "Opslaan lukte niet: %s"
+
+
+func _setup_session_layer(of_layer: SessionLayer) -> void:
+	session_layer = of_layer if of_layer != null else SessionLayer.new()
+	if of_layer == null:
+		session_layer.begin(session)
+	mission_board.layer = session_layer
+	journal.layer = session_layer
+	journal.log_on = SessionLog.enabled_in(settings_path)
+	journal.reopen.connect(func(what: String) -> void:
+		if what == "terugblik":
+			open_terugblik(session_layer.last_card)
+		else:
+			open_intussen(_running.keys().front() if not _running.is_empty() else ""))
+	journal.log_toggled.connect(set_log_enabled)
+	intussen.layer = session_layer
+	for id in SessionLayer.running(session):
+		_running[id] = true
+
+
+## The real game (the office as the main scene): it saves itself to `slot`,
+## keeps the playtest log as the settings say, and a resumed game opens with
+## the terugblik.
+func begin_play(slot: String, resumed: bool) -> void:
+	save_slot = slot
+	playtest_log = SessionLog.from_settings(settings_path)
+	playtest_log.write("Sessie begint (%s) · speltijd %s" % ["hervat" if resumed else "nieuw spel", session.clock_text()])
+	if resumed:
+		open_terugblik(session_layer.open_session(session))
+
+
+## The game closes: save, and the session's end in the log (engagement loop
+## §8: its length, where it ended, the loops left open).
+func end_session() -> void:
+	_autosave()
+	playtest_log.write("Sessie eindigt na %d min · gestopt: %s · open lussen: %d · speltijd %s" % [roundi(real_minutes()),
+		SessionLog.ended_at(session, _stop_day == SimCalendar.day_of(session.region.net.time)),
+		SessionLog.open_loops(session), session.clock_text()])
+
+
+func real_minutes() -> float:
+	return (Time.get_ticks_msec() - started_ms) / 60000.0
+
+
+func open_terugblik(card: Dictionary) -> void:
+	if not playable() or card.is_empty():
+		return
+	terugblik.show_card(card)
+	_open(terugblik)
+
+
+func open_intussen(problem_id: String) -> void:
+	if not playable() or problem_id.is_empty():
+		return
+	intussen.open_for(problem_id)
+	_open(intussen)
+
+
+## The playtest log on or off (the journal's switch), kept in the settings.
+func set_log_enabled(on: bool) -> void:
+	var error := SessionLog.set_enabled_in(settings_path, on)
+	if not error.is_empty():
+		push_warning(error)
+	playtest_log.enabled = on
+	journal.log_on = on
+
+
+## One event as the session layer sees it: a discovery's toast (one a day,
+## the rest for the next terugblik) and the log's moments.
+func _session_event(e: Dictionary) -> void:
+	match e["type"]:
+		"discovery":
+			var name := TerugblikCard.discovery_name(session, e["id"])
+			if session_layer.discovery_toast(session, e["id"]):
+				hud.toast(DISCOVERY_TOAST % name)
+			playtest_log.write("Ontdekking: %s na %d min" % [name, roundi(real_minutes())])
+		"accepted":
+			_accepted_ms[e["mission"]] = Time.get_ticks_msec()
+			playtest_log.write("Missie aangenomen: " + UiText.mission_title(session.missions.defs[e["mission"]], session))
+
+
+## After every action: side offers, the dagstart (autosave, the stop note
+## after half an hour), the first key clue in the log, and Intussen when an
+## experiment has just started.
+func _session_beat() -> void:
+	var today := SimCalendar.day_of(session.region.net.time)
+	if session_layer.update(session):
+		_autosave()
+		if SessionLayer.stop_note_due(real_minutes()):
+			_stop_day = today
+	hud.stop_note.visible = _stop_day == today
+	for id: String in _accepted_ms.keys():
+		var m: MissionDef = session.missions.defs.get(id)
+		if m != null and session.clues_found(m.goal_problem).any(func(c: Clue) -> bool: return c.key):
+			playtest_log.write("Eerste sleutelaanwijzing voor %s na %d min" % [UiText.mission_title(m, session),
+				roundi((Time.get_ticks_msec() - _accepted_ms[id]) / 60000.0)])
+			_accepted_ms.erase(id)
+	var now_running := SessionLayer.running(session)
+	for id in now_running:
+		if not _running.has(id):
+			open_intussen(id)
+	_running.clear()
+	for id in now_running:
+		_running[id] = true
+
+
+func _autosave() -> void:
+	if save_slot.is_empty():
+		return
+	var error := GameSave.write(save_slot, session, session_layer)
+	if not error.is_empty():
+		push_warning(error)
+		hud.toast(SAVE_FAILED % error)
 
 
 func show_error(text: String) -> void:
