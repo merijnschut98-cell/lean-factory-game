@@ -1,17 +1,23 @@
 class_name CharacterModel
 ## The people's models: game/assets/characters/<id>.glb, built from the one cast list
-## (cast.json) by tools/blender/build_character.py, or later by whatever method replaces
-## it (PLAN §7 Q1): the game needs only these file names, a front on +Z, feet at 0 and the
-## looping animations idle, walk, sit and talk.
+## (cast.json) by tools/blender/build_character.py (the CC0 Quaternius pack re-dressed,
+## PLAN 1.3a): the game needs only these file names, a front on +Z, feet at 0, Godot's
+## humanoid bone names and the looping animations idle, walk, sit, talk and jog (the run).
+## The character creator's parts (hair, beards, glasses) are glbs in parts/, skinned to the
+## Head bone: attach() puts one on any person, tint() colours it.
 
 const DIR := "res://assets/characters/"
 const CAST := DIR + "cast.json"
-## The share of a stride a foot is on the floor (human walking ≈ 0.6; the builder's DUTY).
-const DUTY := 0.6
+const PARTS := DIR + "parts/"
 ## The walk's pace (m/s) when it cannot be measured (no skeleton, no LeftFoot).
 const FALLBACK_PACE := 1.4
-## Samples over one walk cycle for the measurement.
-const PACE_SAMPLES := 24
+## The jog's pace (m/s) when it cannot be measured; the builder times the jog to this.
+const JOG_PACE := 4.5
+## Samples over one cycle for the pace measurement.
+const PACE_SAMPLES := 240
+## A foot is on the floor within this of its standing height (m), the ankle or the ball.
+const CONTACT := 0.02
+const FEET: Array[String] = ["LeftFoot", "LeftToes"]
 
 static var _paces := {}
 
@@ -51,40 +57,110 @@ static func cast() -> Array[Dictionary]:
 	return out
 
 
-## The walk's ground speed (m/s): how far the left ankle travels front to back in one
-## cycle, over the time a foot is down. Moving at this speed with the walk at speed 1
-## keeps the feet on the floor. Measured once per model file.
+## The walk's ground speed (m/s): moving at it with the walk at speed 1 keeps the feet on
+## the floor. Measured once per model file.
 static func walk_pace(model: Node3D) -> float:
-	var key := model.scene_file_path
+	return stride_pace(model, "walk", FALLBACK_PACE)
+
+
+## The jog's ground speed (m/s), for the run: play the jog at speed / jog_pace.
+static func jog_pace(model: Node3D) -> float:
+	return stride_pace(model, "jog", JOG_PACE)
+
+
+## The ground speed (m/s) of an in-place stride `animation`: how fast the planted foot (the
+## ankle or the ball of the foot, whichever is on the floor) travels backwards, the median
+## over the cycle. `fallback` when it cannot be measured (no skeleton, no feet, no animation).
+static func stride_pace(model: Node3D, animation: String, fallback: float) -> float:
+	var key := "%s:%s" % [model.scene_file_path, animation]
 	if _paces.has(key):
 		return _paces[key]
-	var pace := _measure_pace(model)
-	if not key.is_empty():
+	var pace := _measure_pace(model, animation, fallback)
+	if not model.scene_file_path.is_empty():
 		_paces[key] = pace
 	return pace
 
 
-static func _measure_pace(model: Node3D) -> float:
+static func _measure_pace(model: Node3D, animation: String, fallback: float) -> float:
 	var player := animations(model)
 	var skeleton: Skeleton3D = model.find_children("*", "Skeleton3D", true, false).pop_front()
-	if player == null or skeleton == null or not player.has_animation("walk"):
-		return FALLBACK_PACE
-	var foot := skeleton.find_bone("LeftFoot")
-	if foot < 0:
-		return FALLBACK_PACE
+	if player == null or skeleton == null or not player.has_animation(animation):
+		return fallback
+	var bones: Array[int] = []
+	var rest: Array[float] = []
+	for name in FEET:
+		var b := skeleton.find_bone(name)
+		if b < 0:
+			return fallback
+		bones.append(b)
+		rest.append(skeleton.get_bone_global_rest(b).origin.y)
 	var was := player.current_animation
-	var length := player.get_animation("walk").length
-	var lo := INF
-	var hi := -INF
-	player.play("walk")
-	for k in PACE_SAMPLES:
+	var length := player.get_animation(animation).length
+	player.play(animation)
+	var feet: Array[Array] = []
+	for k in PACE_SAMPLES + 1:
 		player.seek(length * k / PACE_SAMPLES, true)
-		var z := skeleton.get_bone_global_pose(foot).origin.z
-		lo = minf(lo, z)
-		hi = maxf(hi, z)
+		feet.append(bones.map(func(b: int) -> Vector3: return bone_pose(skeleton, b).origin))
 	if not was.is_empty():
 		player.play(was)
 	else:
 		player.stop()
-	var pace := (hi - lo) / (DUTY * length) if length > 0 else 0.0
-	return pace if pace > 0.2 else FALLBACK_PACE
+	var dt := length / PACE_SAMPLES
+	var speeds: Array[float] = []
+	for k in PACE_SAMPLES:
+		for j in bones.size():
+			if feet[k][j].y < rest[j] + CONTACT and feet[k + 1][j].y < rest[j] + CONTACT:
+				speeds.append((feet[k][j].z - feet[k + 1][j].z) / dt)   # backwards is -Z (the front is +Z)
+				break
+	if speeds.is_empty() or dt <= 0.0:
+		return fallback
+	speeds.sort()
+	var pace := speeds[speeds.size() >> 1]
+	return pace if pace > 0.2 else fallback
+
+
+## A bone's pose in the skeleton's space, composed from the bones' own poses: right after an
+## AnimationPlayer.seek (Skeleton3D's global poses refresh later, on its own update).
+static func bone_pose(skeleton: Skeleton3D, bone: int) -> Transform3D:
+	var pose := Transform3D.IDENTITY
+	while bone >= 0:
+		pose = skeleton.get_bone_pose(bone) * pose
+		bone = skeleton.get_bone_parent(bone)
+	return pose
+
+
+## Put a creator part (parts/<part>.glb: hair, a beard, glasses) on `model`: its meshes move
+## onto the model's skeleton and bind to its Head bone by name, so the part sits on any
+## person's head and follows every animation. Returns the meshes ([] when the part or the
+## skeleton is missing).
+static func attach(model: Node3D, part: String) -> Array[MeshInstance3D]:
+	var out: Array[MeshInstance3D] = []
+	var skeleton: Skeleton3D = model.find_children("*", "Skeleton3D", true, false).pop_front() if model != null else null
+	var path := PARTS + part + ".glb"
+	if skeleton == null or not part.is_valid_identifier() or not ResourceLoader.exists(path):
+		push_warning("character: cannot attach %s" % part)
+		return out
+	var scene: Node = (load(path) as PackedScene).instantiate()
+	for mi: MeshInstance3D in scene.find_children("*", "MeshInstance3D", true, false):
+		mi.get_parent().remove_child(mi)
+		mi.owner = null
+		mi.name = part
+		skeleton.add_child(mi)
+		mi.transform = Transform3D.IDENTITY
+		mi.skeleton = mi.get_path_to(skeleton)
+		out.append(mi)
+	scene.free()
+	return out
+
+
+## Colour a part (or a person's one-material mesh, like the hair or the skin): the material's
+## albedo colour, which tints the shared greyscale texture under it. Each mesh gets its own
+## copy of the material, as its material_override (a skinned mesh's surface overrides trip
+## Godot's dummy renderer when freed headless).
+static func tint(meshes: Array[MeshInstance3D], color: Color) -> void:
+	for mi in meshes:
+		var mat := mi.get_active_material(0) as BaseMaterial3D
+		if mat != null:
+			mat = mat.duplicate()
+			mat.albedo_color = color
+			mi.material_override = mat
