@@ -45,6 +45,10 @@ var queued: Array[String] = []
 ## The head office's floor the player was on (PLAN 2.1; "" for the start floor):
 ## a resumed game opens there.
 var floor_id := ""
+## Whether Ruud has handed the player the paper floor plan (the minimap, PLAN 2.1b): the
+## opening's first walk (2.7d B3) will clear it at the start and set it on the walk;
+## until then a new game has it, as do old saves and a skipped training week.
+var has_floor_plan := true
 ## Training days whose glossary card was shown (once a game, also after a
 ## resume: review N2).
 var carded: Array[String] = []
@@ -386,7 +390,8 @@ static func _days(minutes: int) -> int:
 
 func to_dict() -> Dictionary:
 	return {"start": start.duplicate(true), "offered": offered.duplicate(), "toast_day": toast_day,
-		"queued": queued.duplicate(), "floor_id": floor_id, "carded": carded.duplicate()}
+		"queued": queued.duplicate(), "floor_id": floor_id, "carded": carded.duplicate(),
+		"has_floor_plan": has_floor_plan}
 
 
 ## Restore to_dict() output, untrusted: anything of the wrong shape is
@@ -400,6 +405,7 @@ func load_dict(d: Dictionary) -> void:
 			offered[str(id)] = saved[id]
 	toast_day = d["toast_day"] if d.get("toast_day") is int else -1
 	floor_id = d["floor_id"] if d.get("floor_id") is String else ""
+	has_floor_plan = d["has_floor_plan"] if d.get("has_floor_plan") is bool else true
 	queued.clear()
 	var ids: Variant = d.get("queued", [])
 	for id: Variant in ids if ids is Array else []:
