@@ -547,3 +547,28 @@ func test_the_archetype_caps_an_authored_patience() -> void:
 	assert_eq(DialogFixture.talk(35, {}, DialogFixture.def({"patience": 6})).patience, 6, "a full diary")
 	var tired := DialogFixture.talk(35, {"mood": "moe"}, DialogFixture.def(), DialogFixture.person("overloaded"))
 	assert_eq(tired.patience, Dialog.PATIENCE_MIN, "busy and tired: still time for a talk")
+
+
+# ── What the discoveries read of a talk (D29–D34) ───────────────────────────
+
+func test_a_talk_knows_whether_it_listened_first_and_what_drew_the_concern_out() -> void:
+	var heard := DialogFixture.talk(40)
+	DialogFixture.play(heard, ["mood", "reflect", "open_question", "reflect", "silence", "propose:good", "ask_commitment"])
+	assert_eq([heard.outcome, heard.steered_early, heard.concern_by], ["commitment", false, "silence"])
+	assert_false(heard.own_idea(), "the player's proposal")
+	var pushed := DialogFixture.talk(40)
+	DialogFixture.play(pushed, ["show_data:custom_design:0", "close"])
+	assert_true(pushed.steered_early, "data before the concern was out")
+
+
+func test_their_own_idea_is_the_co_proposal_they_offered() -> void:
+	var d := DialogFixture.talk(40)
+	DialogFixture.play(d, ["mood", "reflect", "open_question", "reflect", "silence"])
+	var offered := {}
+	for move: String in ["paraphrase", "empathy", "mood", "inquiry", "open_question"]:
+		offered = d.say(move)["co_proposal"]
+		if not offered.is_empty():
+			break
+	assert_eq(offered.get("id", ""), "secret", "they offer their own idea once open")
+	d.say("propose", "secret")
+	assert_true(d.own_idea())

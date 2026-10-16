@@ -332,6 +332,94 @@
     "days": 2,
     "type": "contain_then_fix"
    }
+  },
+  {
+   "act": 2,
+   "hint": "Sommige mensen zeggen pas ja als ze eerst gehoord zijn.",
+   "id": "twee_oren_een_mond",
+   "line": "Wie eerst begrijpt, hoeft daarna minder te overtuigen.",
+   "name": "Twee oren, één mond",
+   "reward": {
+    "note": "Wie eerst begrijpt, hoeft daarna minder te overtuigen.",
+    "title": "Luisteraar"
+   },
+   "trigger": {
+    "count": 3,
+    "type": "listened_first"
+   }
+  },
+  {
+   "act": 2,
+   "hint": "Niet elk antwoord komt op een vraag.",
+   "id": "de_stilte_die_sprak",
+   "line": "Soms zegt iemand het pas als jij even niets zegt.",
+   "name": "De stilte die sprak",
+   "reward": {
+    "note": "In een onderhandeling is wie de stilte kan verdragen vaak degene die het meest hoort.",
+    "object": "Een lege koffiebeker"
+   },
+   "trigger": {
+    "count": 3,
+    "type": "silence_reveal"
+   }
+  },
+  {
+   "act": 1,
+   "hint": "Een deur die dichtging, kan weer open.",
+   "id": "tweede_kans",
+   "line": "Een gesprek dat misgaat, is het begin van het volgende.",
+   "name": "Tweede kans",
+   "reward": {
+    "note": "Een gesprek dat misgaat, is het begin van het volgende."
+   },
+   "trigger": {
+    "type": "second_chance"
+   }
+  },
+  {
+   "act": 2,
+   "hint": "Wie meedenkt, heeft soms zelf het antwoord.",
+   "id": "haar_eigen_idee",
+   "line": "Het beste voorstel was niet het jouwe.",
+   "name": "Haar eigen idee",
+   "reward": {
+    "note": "Een verbetering van henzelf houden ze zelf vol. Het team vertrouwt je wat meer.",
+    "object": "De whiteboardstift"
+   },
+   "trigger": {
+    "type": "own_idea"
+   }
+  },
+  {
+   "act": 2,
+   "hint": "Wie stil is, heeft soms iemand nodig die vraagt hoe het gaat.",
+   "id": "iemand_die_er_is",
+   "line": "Respect voor mensen begint met even langslopen.",
+   "name": "Iemand die er is",
+   "reward": {
+    "note": "Vijf collega's zaten in een dip, en jij liep langs. Zonder agenda.",
+    "title": "Er zijn"
+   },
+   "trigger": {
+    "count": 5,
+    "morale": 50,
+    "type": "lifted_low"
+   }
+  },
+  {
+   "act": 1,
+   "hint": "Een ja onder druk telt, maar houdt niet lang.",
+   "id": "geen_druk_nodig",
+   "line": "Een hoofdstuk lang overtuigd, nooit gedwongen.",
+   "name": "Geen druk nodig",
+   "reward": {
+    "note": "Dwang werkt snel en houdt kort (Kotter en Schlesinger, 1979). Jij had het niet nodig.",
+    "reputation": 2
+   },
+   "trigger": {
+    "commitments": 3,
+    "type": "no_pressure_act"
+   }
   }
  ]
 }

@@ -106,6 +106,7 @@ func test_a_commitment_builds_team_trust() -> void:
 	assert_eq(r["summary"]["outcome"], "commitment")
 	assert_eq(s.region.trust["work_prep"], 1)
 	assert_eq(s.talk_outcome("frank_kpi_targets"), "commitment")
+	assert_eq(s.discoveries.to_dict()["last_talk"], {"frank": "commitment"}, "the discoveries hear of the talk")
 
 
 func test_the_owner_s_buy_in_follows_the_fix() -> void:

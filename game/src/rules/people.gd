@@ -59,6 +59,14 @@ const LEAVE_IGNORED := 2
 ## Main-mission talks that end this way bring the coach's question about the
 ## talk on the next ask (spec §5.6); a talk that only listened does not.
 const COACHED := ["ruined", "blocked", "compliance", "partial", "commitment"]
+## The Mensen tab keeps this many talks per person, the newest (an estimate:
+## enough to see how a person opened up over an act).
+const TALK_LOG_MAX := 12
+## The player's note on a person is kept to this many characters.
+const NOTE_MAX := 600
+## The keys and value types of a saved observed line and a saved talk.
+const OBSERVED_KEYS := {"dialog": TYPE_STRING, "key": TYPE_STRING, "text": TYPE_STRING, "place": TYPE_STRING}
+const TALK_KEYS := {"dialog": TYPE_STRING, "outcome": TYPE_STRING, "trace": TYPE_ARRAY, "moves": TYPE_ARRAY}
 
 var persons: Dictionary[String, PersonDef] = {}
 var dialogs: Dictionary[String, DialogDef] = {}
@@ -92,6 +100,14 @@ var left: Dictionary[String, bool] = {}
 ## name), outcome}; {} for none. How many such questions he asked.
 var coach_after: Dictionary = {}
 var coach_asks := 0
+## What the player heard each person say, for the Mensen tab (person-needs
+## spec §4, §6): person id → [{dialog, key, text, at (minutes; -1 unknown),
+## place}], in the order heard, each line once. Never read by the rules.
+var observed: Dictionary[String, Array] = {}
+## person id → their talks, oldest first: [{dialog, at, outcome, trace, moves}].
+var talk_log: Dictionary[String, Array] = {}
+## person id → the player's own note: never read by the rules, never judged.
+var note: Dictionary[String, String] = {}
 
 
 func _init(person_defs: Array[PersonDef], dialog_defs: Array[DialogDef], lines: Dictionary) -> void:
@@ -105,7 +121,7 @@ func _init(person_defs: Array[PersonDef], dialog_defs: Array[DialogDef], lines: 
 
 func _reset() -> void:
 	for state: Dictionary in [trust, morale, memory, revealed, outcomes, agreed, talks, rest_until, heard_facts, prompts,
-			low_since, ignored, left, coach_after, last_prompt]:
+			low_since, ignored, left, coach_after, last_prompt, observed, talk_log, note]:
 		state.clear()
 	prompt_log.clear()
 	coach_asks = 0
@@ -225,6 +241,7 @@ func finish(d: Dialog, now: int, main: bool = false) -> Dictionary:
 	prompts.erase(d.def.id)
 	if main and d.def.kind == "persuade" and o in COACHED:
 		coach_after = {"mission": d.def.mission, "person": who.short, "outcome": o}
+	_keep(d, now)
 	return {
 		"dialog": d.def.id, "person": who.id, "outcome": o, "trust": trust[who.id], "morale": morale[who.id],
 		"reputation": REPUTATION.get(o, 0), "team_trust": 1 if o == "commitment" else 0, "confronted": d.confronted,
@@ -245,6 +262,37 @@ func _remembers(flag: String, d: Dialog) -> bool:
 		"heard":
 			return d.heard or d.outcome in ["heard", "partial", "lifted"]
 	return d.outcome == "commitment"
+
+
+## What the talk adds to the Mensen tab: each new line the person said, and
+## the talk itself.
+func _keep(d: Dialog, now: int) -> void:
+	var who := d.who.id
+	for line: Dictionary in d.told:
+		_observe(who, {"dialog": d.def.id, "key": line["key"], "text": line["text"], "at": now, "place": d.who.place})
+	var log: Array = talk_log.get(who, [])
+	log.append({"dialog": d.def.id, "at": now, "outcome": d.outcome, "trace": Array(d.trace), "moves": Array(d.made)})
+	talk_log[who] = log.slice(-TALK_LOG_MAX)
+
+
+func _observe(person_id: String, entry: Dictionary) -> void:
+	var heard: Array = observed.get(person_id, [])
+	if not heard.any(func(o: Dictionary) -> bool: return o["text"] == entry["text"]):
+		heard.append(entry)
+	observed[person_id] = heard
+
+
+## The player's note on a person (trimmed, at most NOTE_MAX characters; empty
+## removes it). False for an unknown person.
+func set_note(person_id: String, text: String) -> bool:
+	if not persons.has(person_id):
+		return false
+	var clean := text.strip_edges().left(NOTE_MAX)
+	if clean.is_empty():
+		note.erase(person_id)
+	else:
+		note[person_id] = clean
+	return true
 
 
 # ── The coach after a hard talk ─────────────────────────────────────────────
@@ -438,6 +486,7 @@ func to_dict() -> Dictionary:
 		"prompts": prompts.duplicate(), "low_since": low_since.duplicate(), "ignored": ignored.duplicate(),
 		"left": left.keys(), "coach_after": coach_after.duplicate(), "coach_asks": coach_asks,
 		"prompt_log": prompt_log.duplicate(), "last_prompt": last_prompt.duplicate(),
+		"observed": observed.duplicate(true), "talk_log": talk_log.duplicate(true), "note": note.duplicate(),
 	}
 
 
@@ -486,7 +535,38 @@ func load_dict(d: Dictionary) -> Array[String]:
 	var saved_facts: Variant = d.get("facts", [])
 	for f: Variant in saved_facts if saved_facts is Array else []:
 		heard_facts[str(f)] = true
+	dropped.append_array(_load_map(d.get("observed"), persons, observed, _entries.bind(OBSERVED_KEYS)))
+	dropped.append_array(_load_map(d.get("talk_log"), persons, talk_log, _entries.bind(TALK_KEYS)))
+	dropped.append_array(_load_map(d.get("note"), persons, note,
+		func(v: Variant) -> Variant: return str(v).left(NOTE_MAX) if v is String and not v.is_empty() else null))
+	if not d.has("observed"):
+		_observe_revealed()
 	return dropped
+
+
+## The sound entries of a saved list (each a Dictionary with `keys` of their
+## types and a whole `at`); null when it is not a list.
+static func _entries(v: Variant, keys: Dictionary) -> Variant:
+	if not v is Array:
+		return null
+	return v.filter(func(e: Variant) -> bool:
+		return e is Dictionary and (e.get("at") is int or e.get("at") is float) \
+			and keys.keys().all(func(k: String) -> bool: return typeof(e.get(k)) == keys[k])
+	).map(func(e: Dictionary) -> Dictionary: return e.merged({"at": int(e["at"])}, true))
+
+
+## A save from before the notebook: what was revealed, heard at an unknown time.
+func _observe_revealed() -> void:
+	for key: String in revealed:
+		var d: DialogDef = dialogs[key.get_slice("/", 0)]
+		var v := int(key.get_slice("/", 1))
+		var lines := [{"key": "position", "text": d.position_of(v).get("text", "")}]
+		for layer: Dictionary in d.layers_of(v):
+			if revealed[key].has(layer["id"]):
+				lines.append({"key": layer["id"], "text": layer.get("text", "")})
+		for line: Dictionary in lines:
+			_observe(d.person, {"dialog": d.id, "key": line["key"], "text": str(line["text"]), "at": -1,
+				"place": persons[d.person].place})
 
 
 ## Copy a saved id → value map into `into` for ids `known` has: `parse` gives

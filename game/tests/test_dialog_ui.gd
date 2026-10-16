@@ -242,7 +242,8 @@ func test_a_teams_place_lists_its_people_and_opens_a_talk() -> void:
 	office.free()
 
 
-func test_the_mensen_tab_shows_trust_morale_and_what_you_heard() -> void:
+## The office with one talk with Joost had, and the journal on the Mensen tab.
+func _mensen_after_joost() -> Office:
 	var office := _office()
 	var s := office.session
 	s.missions.done_once["fix_unused_capacity"] = true
@@ -255,13 +256,124 @@ func test_the_mensen_tab_shows_trust_morale_and_what_you_heard() -> void:
 	office.ui.close_panels()
 	office.ui.toggle_journal()
 	office.ui.journal.show_tab(ClueJournal.PEOPLE)
+	return office
+
+
+func test_the_mensen_tab_shows_trust_morale_and_what_you_heard() -> void:
+	var office := _mensen_after_joost()
+	var s := office.session
 	assert_true(shows(office.ui.journal, "Joost van Dijk"))
-	assert_true(shows(office.ui.journal, "Belang:"), "what he told you")
 	assert_true(shows(office.ui.journal, DialogPanel.pips(s.person("joost")["trust_pips"])))
 	for text in texts_in(office.ui.journal):
 		if text.begins_with(ClueJournal.MORALE):
 			assert_false(_has_digit(text), "morale is a band, not a number")
 	office.free()
+
+
+## Person-needs spec §4: what he told you as quotes with the day and the place,
+## your talks with their curve and moves, and your own note.
+func test_the_mensen_tab_is_the_player_s_notebook() -> void:
+	var office := _mensen_after_joost()
+	var s := office.session
+	var joost := s.person("joost")
+	assert_true(joost["observed"].size() >= 2, "his position and what he let out")
+	for o: Dictionary in joost["observed"]:
+		assert_true(shows(office.ui.journal, "\"%s\"" % o["text"]), o["text"])
+	var heard_at: Dictionary = joost["observed"][0]
+	assert_true(shows(office.ui.journal, "%s · %s" % [s.day_text(heard_at["at"]), "Werkvoorbereiding & ontwerp"]),
+		"the day and the place")
+	var talk: Dictionary = joost["talks"][0]
+	var curves := _nodes(office.ui.journal, func(n: Node) -> bool: return n is TraceLine)
+	assert_eq(curves.size(), 1, "one talk, one curve")
+	assert_eq(curves[0].trace, talk["trace"])
+	assert_eq(curves[0].labels.size(), talk["moves"].size(), "the moves under the points")
+	assert_true(shows(office.ui.journal, DialogPanel.outcome_name(s, talk["outcome"])))
+	var notes := _nodes(office.ui.journal, func(n: Node) -> bool: return n is TextEdit)
+	assert_eq(notes.size(), 1)
+	assert_eq(notes[0].placeholder_text, "Wat weet je over Joost?")
+	notes[0].text = "Hij wil eerst gehoord worden."
+	notes[0].text_changed.emit()
+	assert_eq(s.person("joost")["note"], "Hij wil eerst gehoord worden.", "the note is kept")
+	office.ui.journal.refresh()
+	notes = _nodes(office.ui.journal, func(n: Node) -> bool: return n is TextEdit)
+	assert_eq(notes[0].text, "Hij wil eerst gehoord worden.", "and shown again")
+	office.free()
+
+
+## More than QUOTES_SHOWN quotes: the newest show, the older fold under "Eerder".
+func test_older_quotes_fold_away() -> void:
+	var office := _mensen_after_joost()
+	var s := office.session
+	for i in ClueJournal.QUOTES_SHOWN + 2:
+		s.people.observed["joost"].append({"dialog": "joost_output_kpi", "key": "k%d" % i, "text": "Regel %d." % i,
+			"at": s.region.net.time, "place": "connections.design"})
+	office.ui.journal.refresh()
+	assert_false(shows(office.ui.journal, "\"Regel 0.\""), "the oldest folded")
+	assert_true(shows(office.ui.journal, "\"Regel %d.\"" % (ClueJournal.QUOTES_SHOWN + 1)), "the newest shown")
+	var fold: Button = _nodes(office.ui.journal, func(n: Node) -> bool:
+		return n is Button and n.text.begins_with(ClueJournal.EARLIER))[0]
+	fold.pressed.emit()
+	assert_true(shows(office.ui.journal, "\"Regel 0.\""), "unfolded")
+	office.free()
+
+
+## N6 (person-needs spec §5): the need is never on screen, for any need, in the
+## talk, its summary or the Mensen tab.
+func test_the_need_is_never_shown() -> void:
+	var words := Dialog.NEEDS + ["feiten", "veiligheid", "erkenning", "tijd", "eerlijkheid"]
+	for need: String in Dialog.NEEDS:
+		var office := _office()
+		var s := office.session
+		s.people.persons["joost"].need = need
+		s.missions.done_once["fix_unused_capacity"] = true
+		s.accept("fix_silo_kpis")
+		s.region.found["silo_kpis:4"] = true
+		office.ui.open_talk("joost")
+		var seen := _all_text(office.ui.dialog_panel)
+		for move in LISTEN_TO_JOOST:
+			office.ui.dialog_panel.choose(move)
+			seen.append_array(_all_text(office.ui.dialog_panel))
+		office.ui.dialog_panel.close_talk()
+		seen.append_array(_all_text(office.ui.dialog_panel))
+		office.ui.close_panels()
+		office.ui.toggle_journal()
+		office.ui.journal.show_tab(ClueJournal.PEOPLE)
+		seen.append_array(_all_text(office.ui.journal))
+		var spoken: Array = s.people.observed.get("joost", []).map(func(o: Dictionary) -> String: return o["text"])
+		for text in seen:
+			if text.begins_with("\"") or spoken.any(func(line: String) -> bool: return text.contains(line)):
+				continue  # a quote, his or the player's, may say anything
+			for word: String in words:
+				var hit := RegEx.create_from_string("(?i)\\b%s\\b" % word).search(text)
+				assert_true(hit == null, "%s: the need shows in \"%s\"" % [need, text])
+		office.free()
+
+
+## Every text a player can read under `root`: labels, buttons, tooltips,
+## placeholders and the moves under a curve.
+func _all_text(root: Node) -> Array[String]:
+	var out: Array[String] = []
+	for n: Node in _nodes(root, func(_n: Node) -> bool: return true):
+		if n is Label or n is Button or n is TextEdit or n is LineEdit:
+			out.append(n.text)
+		if n is TextEdit or n is LineEdit:
+			out.append(n.placeholder_text)
+		if n is Control:
+			out.append(n.tooltip_text)
+		if n is TraceLine:
+			out.append_array(n.labels)
+	return out
+
+
+func _nodes(root: Node, keep: Callable) -> Array[Node]:
+	var out: Array[Node] = []
+	var stack: Array[Node] = [root]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		if keep.call(n):
+			out.append(n)
+		stack.append_array(n.get_children())
+	return out
 
 
 func test_someone_who_needs_a_talk_shows_an_energy_bar() -> void:

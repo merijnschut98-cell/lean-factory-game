@@ -5,9 +5,12 @@ extends UiPanel
 ## to, nor which clues matter: that is for the player to work out. Above
 ## them, the fixes in use with their health and the stagnation drift, as
 ## measured (SustainView): what holds a fix is for the player to find.
-## The "Mensen" tab: per person their trust as pips, their morale as a word
-## (never a number), what they told you (standpunt, belang, zorg once heard),
-## how the last talk went, and whether they want to talk now (dialog spec §11).
+## The "Mensen" tab, the player's notebook on people (dialog spec §11,
+## person-needs spec §4): per person their trust as pips, their morale as a
+## word (never a number), what they told you as quotes with the day and the
+## place (newest first, older ones folded), your talks with their curve and
+## moves, your own note, and whether they want to talk now. Never what the
+## person needs: reading them is the player's work.
 
 const CLUES := "clues"
 const PEOPLE := "people"
@@ -17,7 +20,13 @@ const MORALE_BANDS: Array[String] = ["laag", "gewoon", "hoog"]
 ## The face a morale band shows in the journal, as a meter band (a frown, flat,
 ## a soft smile); low morale also tires the eyes.
 const MORALE_FACES: Array[int] = [1, 2, 3]
-const LAST_TALK := "Laatste gesprek: %s"
+const TOLD := "Wat %s je vertelde"
+const TALKS := "Jullie gesprekken"
+const NOTE := "Jouw notitie"
+const NOTE_HINT := "Wat weet je over %s?"
+const EARLIER := "Eerder"
+## Quotes shown before the older ones fold under EARLIER.
+const QUOTES_SHOWN := 8
 const NOT_NOW := "Wil nu even niet praten: morgen weer."
 const NEEDS_TALK := "Kan wel een goed gesprek gebruiken."
 const NOBODY := "Je hebt nog met niemand gesproken. Mensen vind je op hun plek op de werkvloer."
@@ -25,6 +34,8 @@ const NOBODY := "Je hebt nog met niemand gesproken. Mensen vind je op hun plek o
 var tab := CLUES
 var _tabs: Dictionary[String, Button] = {}
 var _list: VBoxContainer
+## Person ids whose older quotes are unfolded.
+var _unfolded: Dictionary[String, bool] = {}
 
 
 ## The session layer's buttons (GameUI opens what they name).
@@ -148,25 +159,6 @@ func _sustain() -> void:
 		box.add_child(paragraph(drift, Palette.MUTED, UiTheme.SMALL))
 
 
-## What the player heard from a person, over all their talks: [{layer
-## (position | interest | concern), text}], in that order, the layers once
-## heard and the position once talked.
-static func heard_from(s: GameSession, person_id: String) -> Array[Dictionary]:
-	var out: Array[Dictionary] = []
-	for d: DialogDef in s.people.dialogs.values():
-		if d.person != person_id:
-			continue
-		for key: String in s.people.revealed:
-			if key.get_slice("/", 0) != d.id:
-				continue
-			var v := int(key.get_slice("/", 1))
-			out.append({"layer": "position", "text": str(d.position_of(v).get("text", ""))})
-			for layer: Dictionary in d.layers_of(v):
-				if s.people.revealed[key].has(layer["id"]):
-					out.append({"layer": str(layer["id"]), "text": str(layer.get("text", ""))})
-	return out
-
-
 ## The people the player knows of: whoever they talked with, or who wants a talk.
 func _people() -> void:
 	var shown := 0
@@ -200,11 +192,54 @@ func _person_card(id: String, wants: bool) -> void:
 	text.add_child(standing)
 	standing.add_child(label("%s  %s" % [DialogPanel.TRUST, DialogPanel.pips(p["trust_pips"])], UiTheme.SMALL))
 	standing.add_child(label(MORALE + MORALE_BANDS[p["morale_band"]], UiTheme.SMALL))
-	for h in heard_from(session, id):
-		text.add_child(paragraph("%s: \"%s\"" % [DialogPanel.LAYERS[h["layer"]], h["text"]], Palette.INK, UiTheme.SMALL))
-	for dialog_id: String in p["outcomes"]:
-		text.add_child(label(LAST_TALK % DialogPanel.outcome_name(session, p["outcomes"][dialog_id]), UiTheme.SMALL, Palette.MUTED))
 	if session.people.cooling_down(id, session.region.net.time):
 		text.add_child(label(NOT_NOW, UiTheme.SMALL, Palette.SAFETY_ORANGE))
 	elif wants:
 		text.add_child(label(NEEDS_TALK, UiTheme.SMALL, Palette.GREEN_DARK))
+	var short: String = session.people.persons[id].short
+	_quotes(card, id, short, p["observed"])
+	_talks(card, p["talks"])
+	card.add_child(label(tr(NOTE), UiTheme.SMALL, Palette.VOLTANA_BLUE))
+	var note := TextEdit.new()
+	note.text = p["note"]
+	note.placeholder_text = tr(NOTE_HINT) % short
+	note.custom_minimum_size = Vector2(0, 64)
+	note.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
+	note.text_changed.connect(func() -> void: session.set_note(id, note.text))
+	card.add_child(note)
+
+
+## What the person said, newest first, each with the day and the place; the
+## older ones fold under EARLIER. Not grouped or marked: a notebook.
+func _quotes(card: VBoxContainer, id: String, short: String, observed: Array) -> void:
+	if observed.is_empty():
+		return
+	card.add_child(label(tr(TOLD) % short, UiTheme.SMALL, Palette.VOLTANA_BLUE))
+	var shown: int = observed.size() if _unfolded.has(id) else mini(observed.size(), QUOTES_SHOWN)
+	for o: Dictionary in observed.slice(0, shown):
+		card.add_child(paragraph("\"%s\"" % o["text"], Palette.INK, UiTheme.SMALL))
+		var step := session.region.net.step_at(o["place"])
+		var where := " · ".join([session.day_text(o["at"]), step.name if step != null else ""].filter(
+			func(part: String) -> bool: return not part.is_empty()))
+		if not where.is_empty():
+			card.add_child(label(where, UiTheme.SMALL, Palette.MUTED))
+	if shown < observed.size():
+		card.add_child(button("%s (%d)" % [tr(EARLIER), observed.size() - shown], func() -> void:
+			_unfolded[id] = true
+			refresh()))
+
+
+## Each talk, newest first: its day and outcome, the curve with the moves under it.
+func _talks(card: VBoxContainer, talks: Array) -> void:
+	if talks.is_empty():
+		return
+	card.add_child(label(tr(TALKS), UiTheme.SMALL, Palette.VOLTANA_BLUE))
+	var chips: Dictionary = DialogPanel.labels_of(session).get("chips", {})
+	for t: Dictionary in talks:
+		card.add_child(label("%s · %s" % [session.day_text(t["at"]), DialogPanel.outcome_name(session, t["outcome"])],
+			UiTheme.SMALL, Palette.MUTED))
+		var moves: Array[String] = []
+		moves.assign(t["moves"].map(func(m: String) -> String: return str(chips.get(m, m))))
+		var curve := TraceLine.new(Vector2(420, 40 + 2 * TraceLine.LABEL_ROW))
+		curve.set_trace(t["trace"], moves)
+		card.add_child(curve)

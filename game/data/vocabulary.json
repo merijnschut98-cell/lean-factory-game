@@ -125,6 +125,13 @@
   "held": [
    "days"
   ],
+  "lifted_low": [
+   "count",
+   "morale"
+  ],
+  "listened_first": [
+   "count"
+  ],
   "missions_scored": [
    "missions",
    "score"
@@ -133,11 +140,19 @@
   "no_overload_act": [
    "experiments"
   ],
+  "no_pressure_act": [
+   "commitments"
+  ],
+  "own_idea": [],
   "predictions": [
    "count"
   ],
   "recovered_after_fail": [
    "score"
+  ],
+  "second_chance": [],
+  "silence_reveal": [
+   "count"
   ],
   "tool_at": [
    "place",

@@ -1,11 +1,11 @@
 class_name GameSave
 ## A whole game in one save slot (SaveFile): the region with its network,
-## the missions, the discoveries, the El Amrani dossier, the session layer
-## (the snapshot the next terugblik compares with) and the meta a save list
-## shows (SaveSlots). The game saves itself at every dagstart and when it
-## closes, so stopping never loses anything. A save from before the missions
-## were saved has the region only: it loads as a returning player's game on
-## that region, with no terugblik.
+## the missions, the discoveries, the El Amrani dossier, the people, the
+## session layer (the snapshot the next terugblik compares with) and the meta
+## a save list shows (SaveSlots). The game saves itself at every dagstart and
+## when it closes, so stopping never loses anything. A save from before the
+## missions were saved has the region only: it loads as a returning player's
+## game on that region, with no terugblik.
 
 ## The slot the game saves itself to (SaveSlots keeps it apart from the five).
 const AUTOSAVE := "autosave"
@@ -19,8 +19,8 @@ static func exists(slot: String = AUTOSAVE, dir: String = SaveFile.DIR) -> bool:
 static func write(slot: String, s: GameSession, layer: SessionLayer, dir: String = SaveFile.DIR,
 		saved: float = Time.get_unix_time_from_system()) -> String:
 	return SaveFile.write(slot, s.region, {"missions": s.missions.to_dict(), "discoveries": s.discoveries.to_dict(),
-		"followed": s.followed.to_dict(), "explainers": s.explainers.to_dict(), "session": layer.to_dict(),
-		"meta": meta(s, saved)}, dir)
+		"followed": s.followed.to_dict(), "explainers": s.explainers.to_dict(), "people": s.people.to_dict(),
+		"session": layer.to_dict(), "meta": meta(s, saved)}, dir)
 
 
 ## What a save list shows: the player's name ("" until the character creator,
@@ -52,6 +52,8 @@ static func read(slot: String = AUTOSAVE, data_dir: String = Catalog.DATA_DIR, d
 		s.discoveries.load_dict(extra["discoveries"])
 	if extra.get("followed") is Dictionary:
 		s.followed.load_dict(extra["followed"])  # else the new game's pick stands
+	if extra.get("people") is Dictionary:
+		dropped.append_array(s.people.load_dict(extra["people"]))
 	if extra.get("explainers") is Dictionary:
 		s.explainers.load_dict(extra["explainers"], ExplainerDef.load_all(data_dir)["explainers"].keys())
 	var layer := SessionLayer.new()

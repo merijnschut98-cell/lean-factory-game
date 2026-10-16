@@ -184,3 +184,51 @@ discoveries:
     act: 2
     trigger: {type: contain_then_fix, days: 2}
     reward: {object: "Een veiligheidshelm met een Voltana-sticker", note: "Indammen is geen oplossen, maar soms moet het eerst."}
+  # ── Talks (dialog spec §5.5, D29–D34) ──────────────────────────────────────
+  - id: twee_oren_een_mond
+    name: Twee oren, één mond
+    line: "Wie eerst begrijpt, hoeft daarna minder te overtuigen."
+    hint: "Sommige mensen zeggen pas ja als ze eerst gehoord zijn."
+    act: 2
+    trigger: {type: listened_first, count: 3}
+    reward: {title: Luisteraar, note: "Wie eerst begrijpt, hoeft daarna minder te overtuigen."}
+
+  - id: de_stilte_die_sprak
+    name: De stilte die sprak
+    line: "Soms zegt iemand het pas als jij even niets zegt."
+    hint: "Niet elk antwoord komt op een vraag."
+    act: 2
+    trigger: {type: silence_reveal, count: 3}
+    reward: {object: "Een lege koffiebeker", note: "In een onderhandeling is wie de stilte kan verdragen vaak degene die het meest hoort."}
+
+  - id: tweede_kans
+    name: Tweede kans
+    line: "Een gesprek dat misgaat, is het begin van het volgende."
+    hint: "Een deur die dichtging, kan weer open."
+    act: 1
+    trigger: {type: second_chance}
+    reward: {note: "Een gesprek dat misgaat, is het begin van het volgende."}
+
+  - id: haar_eigen_idee
+    name: Haar eigen idee
+    line: "Het beste voorstel was niet het jouwe."
+    hint: "Wie meedenkt, heeft soms zelf het antwoord."
+    act: 2
+    trigger: {type: own_idea}
+    reward: {object: "De whiteboardstift", note: "Een verbetering van henzelf houden ze zelf vol. Het team vertrouwt je wat meer."}
+
+  - id: iemand_die_er_is
+    name: Iemand die er is
+    line: "Respect voor mensen begint met even langslopen."
+    hint: "Wie stil is, heeft soms iemand nodig die vraagt hoe het gaat."
+    act: 2
+    trigger: {type: lifted_low, count: 5, morale: 50}
+    reward: {title: Er zijn, note: "Vijf collega's zaten in een dip, en jij liep langs. Zonder agenda."}
+
+  - id: geen_druk_nodig
+    name: Geen druk nodig
+    line: "Een hoofdstuk lang overtuigd, nooit gedwongen."
+    hint: "Een ja onder druk telt, maar houdt niet lang."
+    act: 1
+    trigger: {type: no_pressure_act, commitments: 3}
+    reward: {reputation: 2, note: "Dwang werkt snel en houdt kort (Kotter en Schlesinger, 1979). Jij had het niet nodig."}

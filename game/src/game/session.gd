@@ -380,11 +380,18 @@ func date_of(t: int) -> Dictionary:
 		Time.get_unix_time_from_datetime_dict(PLAY_START_DATE) + SimCalendar.day_of(played) * 86400)
 
 
+## "di 13 okt" for a moment `t` (minutes); "" for an unknown one (t < 0).
+func day_text(t: int) -> String:
+	if t < 0:
+		return ""
+	var date := date_of(t)
+	return "%s %d %s" % [WEEKDAYS[SimCalendar.weekday(t - SimCalendar.days(WARMUP_DAYS))], date["day"],
+		MONTHS[date["month"] - 1]]
+
+
 ## The month of the game's date (1-12).
 func month() -> int:
-	var played := region.net.time - SimCalendar.days(WARMUP_DAYS)
-	return Time.get_date_dict_from_unix_time(
-		Time.get_unix_time_from_datetime_dict(PLAY_START_DATE) + SimCalendar.day_of(played) * 86400)["month"]
+	return date_of(region.net.time)["month"]
 
 
 ## The codex's Ontdekkingen: found ones {id, found, name, line, reward}, the
@@ -656,7 +663,9 @@ func checkin_prompts() -> Array[Dictionary]:
 
 ## What the player knows of a person (the journal's Mensen tab): {id, name,
 ## role, place, trust_pips, morale_band (0 low · 1 middling · 2 high),
-## cooldown_until, outcomes (dialog id → its best outcome)}; {} for an unknown id.
+## cooldown_until, outcomes (dialog id → its best outcome), observed (what they
+## said, newest first: People.observed), talks (newest first: People.talk_log),
+## note (the player's own, "" for none)}; {} for an unknown id.
 func person(person_id: String) -> Dictionary:
 	var p: PersonDef = people.persons.get(person_id)
 	if p == null:
@@ -670,7 +679,20 @@ func person(person_id: String) -> Dictionary:
 	return {"id": p.id, "name": p.name, "role": p.role, "place": p.place,
 		"trust_pips": floori(people.trust[person_id] / float(Dialog.TRUST_PER_PIP)),
 		"morale_band": 0 if morale < 30 else (1 if morale < 70 else 2),
-		"cooldown_until": int(people.memory.get(person_id, {}).get("cooldown_until", 0)), "outcomes": outcomes}
+		"cooldown_until": int(people.memory.get(person_id, {}).get("cooldown_until", 0)), "outcomes": outcomes,
+		"observed": _newest_first(people.observed.get(person_id, [])),
+		"talks": _newest_first(people.talk_log.get(person_id, [])), "note": people.note.get(person_id, "")}
+
+
+static func _newest_first(entries: Array) -> Array:
+	var out := entries.duplicate(true)
+	out.reverse()
+	return out
+
+
+## The player's note on a person (the Mensen tab; People.set_note).
+func set_note(person_id: String, text: String) -> bool:
+	return people.set_note(person_id, text)
 
 
 ## Open the talk a person has for the player: {dialog, kind, person, name, short,
@@ -777,7 +799,11 @@ func _finish_talk() -> Dictionary:
 	var d := _talk
 	_talk = null
 	var main := missions.active("main").any(func(m: MissionDef) -> bool: return m.id == d.def.mission)
+	var morale_before: int = people.morale[d.who.id]
 	var summary := people.finish(d, region.net.time, main)
+	discoveries.note_talk(self, {"person": d.who.id, "team": d.who.team, "kind": d.def.kind, "outcome": d.outcome,
+		"listened_first": not d.steered_early and d.revealed.has("concern"), "silence_reveal": d.concern_by == "silence",
+		"own_idea": d.own_idea(), "morale_before": morale_before, "pressured": d.pressured, "confronted": d.confronted})
 	if summary["confronted"]:
 		region.ask(d.who.place, "behind")
 	if summary["team_trust"] > 0:
