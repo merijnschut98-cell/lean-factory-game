@@ -315,3 +315,86 @@ func test_an_expired_prompt_costs_nothing() -> void:
 	var people := _three_low()
 	_days(people, 0, 5)
 	assert_eq([people.morale["pim"], people.trust["pim"]], [20, 50])
+
+
+# ── What the player saw and heard (person-needs spec §4, §6): the Mensen tab ─
+
+## Pim's talk with a tell in his position and in his reply to the mood question.
+func _telling() -> People:
+	return DialogFixture.people([DialogFixture.def({
+		"position": {"text": "Positie.", "tags": ["claim"], "tell": "facts"},
+		"replies": {"mood": {"lands": {"text": "Hoeveel precies?", "tags": ["feeling"], "tell": "facts"}},
+			"experience": {"misses": {"text": "Hm."}}}})])
+
+
+func _texts(people: People) -> Array:
+	return people.observed.get("pim", []).map(func(o: Dictionary) -> String: return o["text"])
+
+
+func test_what_the_player_heard_is_noted_once_with_the_day_and_the_place() -> void:
+	var people := _telling()
+	_talk(people, LISTENING, DialogFixture.world({"now": FRIDAY}))
+	assert_eq(_texts(people), ["Positie.", "Hoeveel precies?", "Belang.", "Zorg."], "the position, a tell, the layers")
+	assert_eq(people.observed["pim"][1], {"dialog": "talk", "key": "replies.mood.lands", "text": "Hoeveel precies?",
+		"at": FRIDAY, "place": "connections.design"})
+	_talk(people, ["mood", "close"], DialogFixture.world({"now": MONDAY_0830}))
+	assert_eq(people.observed["pim"].size(), 4, "a line enters once")
+
+
+func test_a_line_without_a_tell_is_not_noted() -> void:
+	var people := _telling()
+	_talk(people, ["experience", "close"])
+	assert_eq(_texts(people), ["Positie."])
+
+
+func test_each_talk_is_kept_with_its_curve_and_its_moves() -> void:
+	var people := DialogFixture.people()
+	_talk(people, LISTENING, DialogFixture.world({"now": FRIDAY}))
+	var past: Dictionary = people.talk_log["pim"][0]
+	assert_eq([past["dialog"], past["at"], past["outcome"]], ["talk", FRIDAY, "commitment"])
+	assert_eq(past["moves"], ["mood", "reflect", "open_question", "reflect", "silence", "propose", "ask_commitment"])
+	assert_eq(past["trace"].size(), LISTENING.size() + 1, "the start, then each move")
+	for i in People.TALK_LOG_MAX + 2:
+		_talk(people, ["close"])
+	assert_eq(people.talk_log["pim"].size(), People.TALK_LOG_MAX, "the oldest go")
+	assert_eq(people.talk_log["pim"][-1]["moves"], ["close"], "the newest last")
+
+
+func test_the_player_s_note_is_their_own_words() -> void:
+	var people := DialogFixture.people()
+	assert_true(people.set_note("pim", "  Wil eerst cijfers zien.  "))
+	assert_eq(people.note["pim"], "Wil eerst cijfers zien.")
+	people.set_note("pim", "x".repeat(People.NOTE_MAX + 50))
+	assert_eq(people.note["pim"].length(), People.NOTE_MAX, "kept to a note's length")
+	people.set_note("pim", " ")
+	assert_false(people.note.has("pim"), "an empty note is no note")
+	assert_false(people.set_note("ghost", "Wie?"), "only someone the game knows")
+
+
+func test_what_was_heard_and_the_note_survive_a_save() -> void:
+	var people := _telling()
+	_talk(people, LISTENING, DialogFixture.world({"now": FRIDAY}))
+	people.set_note("pim", "Wil het zwart op wit.")
+	var restored := _telling()
+	assert_eq(restored.load_dict(bytes_to_var(var_to_bytes(people.to_dict()))), [])
+	assert_eq(restored.to_dict(), people.to_dict())
+	assert_eq(restored.note["pim"], "Wil het zwart op wit.")
+
+
+func test_a_save_from_before_the_notebook_fills_it_from_what_was_revealed() -> void:
+	var people := DialogFixture.people()
+	assert_eq(people.load_dict({"revealed": {"talk/-1": {"interest": true}}}), [])
+	assert_eq(_texts(people), ["Positie.", "Belang."])
+	assert_eq(people.observed["pim"][0]["at"], -1, "heard, but not when")
+
+
+func test_a_malformed_notebook_keeps_what_is_sound() -> void:
+	var people := DialogFixture.people()
+	var dropped := people.load_dict({"observed": {"pim": [{"text": 3}, {"dialog": "talk", "key": "position",
+		"text": "Positie.", "at": 5, "place": "connections.design"}, "x"], "ghost": []},
+		"talk_log": {"pim": [{"dialog": "talk", "at": 1, "outcome": "heard", "trace": [40, 45], "moves": ["mood"]}, 7]},
+		"note": {"pim": 12, "ghost": "Wie?"}})
+	assert_eq(dropped, ["ghost", "ghost"])
+	assert_eq(_texts(people), ["Positie."])
+	assert_eq(people.talk_log["pim"].size(), 1)
+	assert_false(people.note.has("pim"), "a note is text")

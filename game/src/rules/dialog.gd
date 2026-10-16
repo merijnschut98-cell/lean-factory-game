@@ -170,7 +170,7 @@ const ANSWERS := {"paraphrase": ["claim"], "inquiry": ["claim", "hesitation"], "
 const COPIED := ["openness", "trust", "mood", "version", "revealed", "heard", "pressured", "confronted", "table",
 	"patience", "outcome", "_repaired", "_last_move", "_streak", "_last_tags", "_uses", "_mood_asked",
 	"_lead_in_said", "_co_offered", "_warned", "_worn", "moves_made",
-	"trace", "start_openness", "_found", "_facts", "_retry"]
+	"trace", "made", "told", "start_openness", "_found", "_facts", "_retry"]
 const STATE_KEYS := 22  # COPIED up to "trace"; test_dialog_routes.gd checks it
 
 var def: DialogDef
@@ -198,6 +198,12 @@ var outcome := ""
 var moves_made := 0
 ## Openness after each move, starting with the start.
 var trace: Array[int] = []
+## The moves made, in order (the Mensen tab's record of the talk).
+var made: Array[String] = []
+## What the person told that the player can note (person-needs spec §4): the
+## position, each layer drawn out, and every line that shows their need (a
+## `tell`), as [{key, text}] in the order said.
+var told: Array[Dictionary] = []
 var _found: Dictionary
 var _facts: Dictionary
 var _retry: bool
@@ -238,6 +244,7 @@ func _init(dialog: DialogDef, person: PersonDef, lines: Dictionary, start: Dicti
 		if def.patience > 0:
 			patience = mini(patience, def.patience)
 	trace.append(openness)
+	_note(_told(position(), "position"), true)
 
 
 func position() -> Dictionary:
@@ -312,13 +319,13 @@ func say(move: String, pick: String = "") -> Dictionary:
 			revealed[layer["id"]] = true
 			shown = layer["id"]
 			unlocked = JsonFile.dict_or_empty(layer.get("unlocks")).duplicate(true)
-			reply = _line(layer.get("text", ""), layer.get("tags", []))
+			reply = _told(layer, shown)
 		elif at_lead_in:
 			_lead_in_said = false  # only a fitting move draws the concern out; the moment passes
 		elif lands and move in LISTEN and layer.has("lead_in") and openness >= CUE_AT:
 			_lead_in_said = true
 			lead_in_now = true
-			reply = _line(layer["lead_in"].get("text", ""), layer["lead_in"].get("tags", []))
+			reply = _told(layer["lead_in"], layer["id"] + ".lead_in")
 		var next := _next_layer()
 		if not next.is_empty():
 			openness = mini(openness, maxi(int(next["at"]) + CEILING, before))
@@ -344,6 +351,8 @@ func say(move: String, pick: String = "") -> Dictionary:
 	elif lands:
 		_last_tags = _last_tags.filter(func(tag: String) -> bool: return not tag in ANSWERS.get(move, []))
 	moves_made += 1
+	made.append(move)
+	_note(reply, not shown.is_empty())
 	trace.append(openness)
 	return {
 		"move": move, "line": _player_line(move, pick), "reply": reply["text"], "tags": reply["tags"],
@@ -608,7 +617,7 @@ func need() -> String:
 func _wear_line(move: String) -> Dictionary:
 	var own := JsonFile.dict_or_empty(JsonFile.dict_or_empty(def.replies.get(move)).get("worn"))
 	if not own.is_empty():
-		return _line(str(own.get("text", "")), own.get("tags", []))
+		return _told(own, "replies.%s.worn" % move)
 	var lines := JsonFile.dict_or_empty(JsonFile.dict_or_empty(bank.get("wear_out")).get(who.archetype))
 	var text := str(lines.get("ask" if move in WEAR_ASK else "say", ""))
 	return _shared(text if not text.is_empty() else bank["special"]["repeat"])
@@ -631,6 +640,23 @@ func _line(text: String, tags: Array = []) -> Dictionary:
 	return {"text": text, "tags": tags.duplicate()}
 
 
+## A line of this dialog's own content ({text, tags?, tell?}), with where it
+## stands (`key`: position, a layer id, <layer>.lead_in, replies.<move>.<case>).
+func _told(line: Dictionary, key: String) -> Dictionary:
+	var out := _line(str(line.get("text", "")), line.get("tags", []))
+	out["key"] = key
+	out["tell"] = str(line.get("tell", ""))
+	return out
+
+
+## Keep what the person said for the Mensen tab: always (`always`: the
+## position, a layer), else when it shows their need.
+func _note(reply: Dictionary, always: bool = false) -> void:
+	if reply.has("key") and (always or not str(reply.get("tell", "")).is_empty()) \
+			and not str(reply["text"]).is_empty():
+		told.append({"key": reply["key"], "text": reply["text"]})
+
+
 ## The person's reply to a move: the dialog's own, the bank's, or (too early)
 ## the position, repeated defensively.
 func _reply(move: String, situation: String) -> Dictionary:
@@ -638,9 +664,11 @@ func _reply(move: String, situation: String) -> Dictionary:
 		var line: Dictionary = JsonFile.dict_or_empty(JsonFile.dict_or_empty(source.get(move)).get(situation))
 		if not line.is_empty():
 			var tags: Array = line.get("tags", [])
-			return _line(str(line.get("text", "")), tags) if source == def.replies or not tags.is_empty() \
+			if source == def.replies:
+				return _told(line, "replies.%s.%s" % [move, situation])
+			return _line(str(line.get("text", "")), tags) if not tags.is_empty() \
 				else _shared(str(line.get("text", "")))
-	return _line(str(position().get("text", "")), position().get("tags", [])) if situation == "too_early" else _shared("")
+	return _told(position(), "position") if situation == "too_early" else _shared("")
 
 
 func _player_line(move: String, pick: String = "") -> String:

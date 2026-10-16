@@ -35,6 +35,22 @@ func test_a_saved_game_comes_back_with_its_missions_and_its_snapshot() -> void:
 	_cleanup()
 
 
+## The people come back: trust, what was heard, the talks and the player's note.
+func test_a_saved_game_keeps_the_people() -> void:
+	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
+	s.missions.done_once["fix_unused_capacity"] = true
+	assert_eq(s.accept("fix_silo_kpis"), "")
+	s.region.found["silo_kpis:4"] = true
+	assert_false(s.start_dialog("joost").has("error"))
+	s.end_dialog()
+	assert_true(s.set_note("joost", "Zijn cijfers zijn zijn schild."))
+	assert_eq(GameSave.write(slot, s, SessionLayer.new()), "")
+	var back: GameSession = GameSave.read(slot)["session"]
+	assert_eq(back.people.to_dict(), s.people.to_dict())
+	assert_eq(back.person("joost")["note"], "Zijn cijfers zijn zijn schild.")
+	_cleanup()
+
+
 ## A save from before the session layer (the region only) loads: the
 ## missions start as a new game's, and there is no terugblik.
 func test_an_old_save_still_loads() -> void:
@@ -53,7 +69,7 @@ func test_junk_in_the_new_keys_is_ignored() -> void:
 	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
 	var file := FileAccess.open(SaveFile.path_of(slot), FileAccess.WRITE)
 	file.store_buffer(var_to_bytes({"version": SaveFile.VERSION, "region": RegionState.capture(s.region),
-		"missions": "x", "discoveries": 5, "session": {"start": [1], "queued": "no"}}))
+		"missions": "x", "discoveries": 5, "people": [], "session": {"start": [1], "queued": "no"}}))
 	file.close()
 	var loaded := GameSave.read(slot)
 	assert_eq(loaded["error"], "")

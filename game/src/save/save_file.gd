@@ -13,7 +13,7 @@ const DIR := "user://saves"
 const _SLOT := "^[a-z0-9_]{1,40}$"
 ## The rest of a game beside the region (GameSave): each key optional, a
 ## Dictionary.
-const EXTRA: Array[String] = ["missions", "discoveries", "followed", "explainers", "session"]
+const EXTRA: Array[String] = ["missions", "discoveries", "followed", "explainers", "people", "session"]
 
 
 static func path_of(slot: String) -> String:
