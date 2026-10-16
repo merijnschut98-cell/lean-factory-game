@@ -19,7 +19,8 @@ static func exists(slot: String = AUTOSAVE, dir: String = SaveFile.DIR) -> bool:
 static func write(slot: String, s: GameSession, layer: SessionLayer, dir: String = SaveFile.DIR,
 		saved: float = Time.get_unix_time_from_system()) -> String:
 	return SaveFile.write(slot, s.region, {"missions": s.missions.to_dict(), "discoveries": s.discoveries.to_dict(),
-		"followed": s.followed.to_dict(), "session": layer.to_dict(), "meta": meta(s, saved)}, dir)
+		"followed": s.followed.to_dict(), "explainers": s.explainers.to_dict(), "session": layer.to_dict(),
+		"meta": meta(s, saved)}, dir)
 
 
 ## What a save list shows: the player's name ("" until the character creator,
@@ -51,6 +52,8 @@ static func read(slot: String = AUTOSAVE, data_dir: String = Catalog.DATA_DIR, d
 		s.discoveries.load_dict(extra["discoveries"])
 	if extra.get("followed") is Dictionary:
 		s.followed.load_dict(extra["followed"])  # else the new game's pick stands
+	if extra.get("explainers") is Dictionary:
+		s.explainers.load_dict(extra["explainers"], ExplainerDef.load_all(data_dir)["explainers"].keys())
 	var layer := SessionLayer.new()
 	layer.load_dict(extra.get("session", {}))
 	s.drain_events()  # the throwaway new game's, not the player's
