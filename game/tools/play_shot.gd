@@ -24,7 +24,14 @@ extends SceneTree
 ## team's menu with its people) · dialog_energy (the low-energy bar) ·
 ## intussen (the A3 in: what happens while the
 ## Check runs, and the named skip) · terugblik (the card a resumed game opens
-## with, after a session that finished the mission and left it alone).
+## with, after a session that finished the mission and left it alone) ·
+## people_desks (Werkvoorbereiding and Intake at work, Anouk's name on hover) ·
+## people_talk (E beside Joost: the prompt and the talk's placeholder toast) ·
+## people_energy (the walk-around energy bars, from a stand-in energy_of) ·
+## people_monteurs (Henk and Ahmed at the huddle table for Henk's mission, Marco
+## walking in) · people_meetdata (Petra at the stand-in Meetdata desk) ·
+## people_gemba (E at Werkvoorbereiding with the people there: do the stacks
+## and the in-trays still read?).
 ## The mission is played through the UI's own handlers, as a player would;
 ## only the training states start with the training week.
 
@@ -44,7 +51,7 @@ func _initialize() -> void:
 func _run() -> void:
 	var args := OS.get_cmdline_user_args()
 	if args.size() < 2:
-		printerr("usage: -- <office|overview|inspect|tools|a3|check|act|board|coach|map|codex|training_board|timelapse|sustain|intussen|terugblik> <out.png> [frames]")
+		printerr("usage: -- <office|overview|inspect|tools|a3|check|act|board|coach|map|codex|training_board|timelapse|sustain|intussen|terugblik|people_desks|people_talk|people_energy|people_monteurs|people_meetdata|people_gemba> <out.png> [frames]")
 		quit(2)
 		return
 	var office: Office = load(SCENE).instantiate()
@@ -128,7 +135,7 @@ func _run() -> void:
 		"dialog_energy":
 			office.session.people.prompts["joost_output_kpi"] = office.session.region.net.time
 			office.session.people.morale["joost"] = 25
-			office.refresh_people()
+			office.people.refresh(office.session)
 			_stand_at(office, DESIGN)
 			office.player.position += office.interactable(DESIGN).basis.z * 2.5
 			office.rig.zoom(3)
@@ -157,6 +164,8 @@ func _run() -> void:
 			_stand_at(office, DESIGN)
 			office.ui.close_panels()
 			office.ui.open_terugblik(office.ui.session_layer.open_session(office.session))
+		"people_desks", "people_talk", "people_energy", "people_monteurs", "people_meetdata", "people_gemba":
+			_people(office, state)
 		_:
 			printerr("unknown state ", state)
 			quit(2)
@@ -178,6 +187,74 @@ func _stand_at(office: Office, id: String) -> void:
 	office.player.face(at.basis)
 	office.rig.yaw = office.player.rotation.y
 	office.rig.snap()
+
+
+## A session stand-in for the people states: the real one's missions, plus the
+## mission and the energy_of the dialog engine will add.
+class PeopleSession:
+	extends RefCounted
+	var session: GameSession
+	var extra: Array[MissionDef] = []
+	var energy := {}
+
+	func active_missions() -> Array[MissionDef]:
+		var out := session.active_missions()
+		out.append_array(extra)
+		return out
+
+	func energy_of(person_id: String) -> Dictionary:
+		return energy.get(person_id, {})
+
+
+func _people(office: Office, state: String) -> void:
+	var people := office.people
+	var stand_in := PeopleSession.new()
+	stand_in.session = office.session
+	match state:
+		"people_desks":
+			_stand_at(office, DESIGN)
+			office.player.position += office.player.basis.x * 1.2
+			office.rig.yaw = office.player.rotation.y + deg_to_rad(-25)
+			office.rig.zoom(3)
+			office.rig.snap()
+			office.hover_person(people.person("anouk"))
+		"people_talk":
+			var joost := people.person("joost")
+			office.player.position = joost.position + joost.basis.x * 0.8 + joost.basis.z * 0.3
+			office.player.face(Basis.looking_at(joost.position - office.player.position))
+			office.rig.yaw = office.player.rotation.y + deg_to_rad(30)
+			office.rig.snap()
+			office.use(office.target_near(office.player.position))
+		"people_energy":
+			stand_in.energy = {"anouk": {"energy": 0.28, "needs_talk": true}, "sanne": {"energy": 0.55, "needs_talk": true}}
+			people.refresh(stand_in)
+			_stand_at(office, DESIGN)
+			office.rig.yaw = office.player.rotation.y + deg_to_rad(-40)
+			office.rig.zoom(2)
+			office.rig.snap()
+		"people_monteurs":
+			var mission := MissionDef.new()
+			mission.id = "save_henks_knowledge"
+			stand_in.extra = [mission]
+			people.refresh(stand_in)
+			var marco := people.person("marco")
+			marco.walk(1.6)
+			office.player.position = Vector3(8.6, 0, -5.4)
+			office.player.face(Basis.looking_at(people.person("henk").position - office.player.position))
+			office.rig.yaw = office.player.rotation.y + deg_to_rad(20)
+			office.rig.snap()
+			office.hover_person(people.person("henk"))
+		"people_meetdata":
+			var petra := people.person("petra")
+			office.player.position = petra.position + Vector3(-1.4, 0, 0.6)
+			office.player.face(Basis.looking_at(petra.position - office.player.position))
+			office.rig.yaw = office.player.rotation.y + deg_to_rad(-20)
+			office.rig.snap()
+			office.hover_person(petra)
+		"people_gemba":
+			_stand_at(office, DESIGN)
+			office.interact(office.interactable(DESIGN))
+			office.rig.snap()
 
 
 ## Take the mission and do the gemba work; `all` finds every key clue.

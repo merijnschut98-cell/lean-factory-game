@@ -9,6 +9,9 @@ extends CanvasLayer
 signal panel_opened
 signal panels_closed
 
+## A person asked in the office who has nothing to talk about now.
+const NOTHING_TO_SAY := "%s knikt je toe en werkt door."
+
 var session: GameSession
 var hud: Hud
 var mission_board: MissionBoard
@@ -134,6 +137,19 @@ func open_talk(person_id: String) -> String:
 	if refused.is_empty():
 		_open(dialog_panel)
 	return refused
+
+
+## A talk asked for in the office (walking up to someone): it opens, or a toast
+## says why not in the person's own way ("Niet nu.", a nod).
+func ask_talk(person_id: String, display_name: String) -> void:
+	match open_talk(person_id):
+		"", "unplayable", "in_dialog":
+			pass
+		"cooling_down":
+			var special := JsonFile.dict_or_empty(session.catalog.dialog_bank.get("special"))
+			hud.toast("%s: \"%s\"" % [display_name, special.get("cooling_down", "")])
+		_:
+			hud.toast(tr(NOTHING_TO_SAY) % display_name)
 
 
 func toggle_journal() -> void:

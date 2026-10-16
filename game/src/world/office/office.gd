@@ -4,8 +4,14 @@ extends Node3D
 ## the office model (or a plain stand-in while it is missing), adds the sun
 ## and the environment, finds the interaction markers in the geometry by their
 ## glTF extras or their name, and routes E at a marker, or a click on its
-## ring, to the UI. A left click on the floor walks the player there. The game
-## itself lives in the GameSession; this scene only wires it to the world.
+## ring, to the UI. A left click on the floor walks the player there. The people
+## at their desks (OfficePeople, from the cast list) show their name on hover;
+## E next to one, or a click on them, asks for a talk: `person_selected(id)`,
+## and the dialog opens (GameUI.ask_talk). The game itself lives in the GameSession; this
+## scene only wires it to the world.
+
+## The player asks to talk with a person (E next to them, or a click on them).
+signal person_selected(person_id: String)
 
 const MODEL := "res://assets/office/office.glb"
 ## The interaction markers to find (the spawn marker is found separately).
@@ -32,9 +38,6 @@ const FRAME_AHEAD := 0.9
 const FRAME_HEIGHT := 0.8
 ## A click this close (m) to a ring's centre is a click on the ring.
 const RING_CLICK := Interactable.RING_RADIUS + 0.3
-## A person's tag hangs this high (m) over their place, the next one along.
-const TAG_HEIGHT := 2.3
-const TAG_SPACING := 1.0
 
 const RESUME_FAILED := "De bewaarde game kon niet worden geladen (%s). Dit spel wordt niet bewaard, zodat de oude bewaard blijft."
 
@@ -55,12 +58,13 @@ var player: Player
 var rig: CameraRig
 var ui: GameUI
 var interactables: Array[Interactable] = []
+var people: OfficePeople
 ## The walk grid, baked on first use.
 var _nav: OfficeNav
-## The ring clicked last: opened when the walk there ends.
-var _walk_goal: Interactable
-## Person id → the tag over their place (people at a place with a marker).
-var _tags: Dictionary[String, PersonTag] = {}
+## The ring or person clicked last: used when the walk there ends.
+var _walk_goal: Node3D
+## The person under the cursor (their name tag shows).
+var _hovered_person: OfficePerson
 
 
 func _ready() -> void:
@@ -98,6 +102,10 @@ func build() -> void:
 			add_child(i)
 		else:
 			push_warning("office: no marker for " + id)
+	people = OfficePeople.build(self, CharacterModel.cast())
+	add_child(people)
+	if session.error.is_empty():   # content that failed to load has no missions to read
+		people.refresh(session)
 	_add_player()
 	_add_camera()
 	ui = GameUI.new()
@@ -108,7 +116,6 @@ func build() -> void:
 	if ui.playable():
 		ui.office_map.show_office(floor_rect(), map_places(), player)
 		ui.office_map.footprints = map_footprints()
-		_add_people()
 		if not save_slot.is_empty():
 			ui.begin_play(save_slot, loaded.has("session"))
 	if loaded.has("error"):
@@ -132,7 +139,13 @@ func _resume() -> Dictionary:
 func _process(_delta: float) -> void:
 	player.view_yaw = rig.yaw
 	if session.error.is_empty() and not ui.is_busy():
-		ui.hud.show_prompt(prompt_for(interactable_near(player.position)))
+		ui.hud.show_prompt(prompt_near(player.position))
+	var tagged: Array[OfficePerson] = []
+	if not ui.is_busy():
+		for p: OfficePerson in [_hovered_person, people.person_near(player.position, REACH)]:
+			if p != null:
+				tagged.append(p)
+	people.show_tags(tagged)
 
 
 ## The model when it has been imported, else the stand-in.
@@ -207,6 +220,27 @@ func interactable_near(at: Vector3, reach := REACH) -> Interactable:
 	return best
 
 
+## What E uses from `at`: the nearer of the interaction point and the person
+## within REACH, or null.
+func target_near(at: Vector3) -> Node3D:
+	var place := interactable_near(at)
+	var person := people.person_near(at, REACH)
+	if person == null or place == null:
+		return person if person != null else place
+	var to_person := Vector2(at.x - person.position.x, at.z - person.position.z).length()
+	var to_place := Vector2(at.x - place.position.x, at.z - place.position.z).length()
+	return person if to_person < to_place else place
+
+
+## The prompt for what E uses from `at` ("" for nothing).
+func prompt_near(at: Vector3) -> String:
+	var target := target_near(at)
+	if target is OfficePerson:
+		var p := target as OfficePerson
+		return "E — Coach: " + p.display_name if p.talk == "coach" else "E — Praat met " + p.display_name
+	return prompt_for(target as Interactable)
+
+
 ## "E — Werkvoorbereiding & ontwerp", or "" for null.
 func prompt_for(target: Interactable) -> String:
 	if target == null:
@@ -278,34 +312,6 @@ func floor_rect() -> Rect2:
 	return r.grow(2.0)
 
 
-## A tag over each person whose place has a marker, side by side.
-func _add_people() -> void:
-	var at_place := {}
-	for p: PersonDef in session.people.persons.values():
-		var marker := interactable("place:" + p.place)
-		if marker == null:
-			continue
-		var n: int = at_place.get(p.place, 0)
-		at_place[p.place] = n + 1
-		var tag := PersonTag.create(p.id, p.name)
-		tag.position = marker.position + Vector3(0, TAG_HEIGHT, 0) + marker.basis.x * TAG_SPACING * (n - 0.5)
-		_tags[p.id] = tag
-		add_child(tag)
-	refresh_people()
-
-
-## The tags follow the people: a low-energy bar over whoever needs a talk.
-func refresh_people() -> void:
-	for id: String in _tags:
-		var e := session.energy_of(id)
-		_tags[id].show_state(e.get("energy", 1.0), e.get("needs_talk", false) and not session.people.has_left(id))
-
-
-## The tag over a person (null when their place has no marker here).
-func person_tag(person_id: String) -> PersonTag:
-	return _tags.get(person_id)
-
-
 ## Use an interaction point: open its panel, the camera framing the station.
 func interact(target: Interactable) -> void:
 	if target == null or not session.error.is_empty():
@@ -323,6 +329,26 @@ func interact(target: Interactable) -> void:
 		frame(target)
 
 
+## Use what is in reach: a person (a talk) or an interaction point.
+func use(target: Node3D) -> void:
+	if target is OfficePerson:
+		talk_to(target)
+	elif target is Interactable:
+		interact(target)
+
+
+## Talk with `person` (person_selected says who): the dialog opens, or a toast
+## says why not. The coach opens the coach's panel.
+func talk_to(person: OfficePerson) -> void:
+	if person == null or not session.error.is_empty():
+		return
+	if person.talk == "coach":
+		interact(interactable("coach"))
+		return
+	person_selected.emit(person.id)
+	ui.ask_talk(person.id, person.display_name)
+
+
 func _add_player() -> void:
 	player = Player.new()
 	add_child(player)
@@ -333,7 +359,7 @@ func _add_player() -> void:
 		player.face(at.basis)
 	player.interact_pressed.connect(func() -> void:
 		if not ui.is_busy():
-			interact(interactable_near(player.position)))
+			use(target_near(player.position)))
 	player.journal_pressed.connect(func() -> void: ui.toggle_journal())
 	player.map_pressed.connect(func() -> void: ui.toggle_map())
 	player.codex_pressed.connect(func() -> void: ui.toggle_codex())
@@ -386,21 +412,51 @@ func _cut_away_ceiling() -> void:
 				(n as VisualInstance3D).layers = CameraRig.CUTAWAY_LAYER
 
 
-## A left click on the view (no panel took it): walk to that spot. A mouse
-## move lights up the ring under the cursor.
+## A left click on the view (no panel took it): on a person, walk up and ask
+## for a talk; else walk to that spot. A mouse move shows the name of the
+## person under the cursor, or lights up the ring under it.
 func _unhandled_input(event: InputEvent) -> void:
 	var clicked: bool = event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT
 	if not clicked and not event is InputEventMouseMotion:
 		return
 	var origin := to_local(rig.camera.project_ray_origin(event.position))
 	var ray := (to_local(rig.camera.project_ray_origin(event.position) + rig.camera.project_ray_normal(event.position)) - origin).normalized()
+	var person := people.person_under(origin, ray) if not ui.is_busy() else null
+	if clicked and person != null:
+		click_person(person)
+		return
+	if not clicked:
+		hover_person(person)
 	if ray.y >= -0.01:
 		return
 	var point := origin + ray * (-origin.y / ray.y)
 	if clicked:
 		click_floor(point)
-	else:
+	elif person == null:
 		hover_floor(point)
+
+
+## The person under the cursor (null for none): their name tag shows, the rings
+## go dark, the cursor becomes a hand.
+func hover_person(person: OfficePerson) -> void:
+	_hovered_person = person
+	if person == null:
+		return
+	for i in interactables:
+		i.set_hovered(false)
+	if DisplayServer.get_name() != "headless":
+		Input.set_default_cursor_shape(Input.CURSOR_POINTING_HAND)
+
+
+## Walk up to a clicked person and ask for a talk on arrival. False when the
+## click is not for the world or there is no way there.
+func click_person(person: OfficePerson) -> bool:
+	if ui.is_busy() or not session.error.is_empty():
+		return false
+	_walk_goal = person
+	var route := nav().path(player.position, person.position)
+	player.walk(route)
+	return not route.is_empty()
 
 
 ## Light up the ring at a floor point under the cursor (office space), and
@@ -428,8 +484,10 @@ func click_floor(point: Vector3) -> bool:
 func _on_arrived() -> void:
 	var goal := _walk_goal
 	_walk_goal = null
-	if goal != null and not ui.is_busy() and interactable_near(player.position) == goal:
-		interact(goal)
+	if goal == null or ui.is_busy():
+		return
+	if goal == interactable_near(player.position) or goal == people.person_near(player.position, REACH):
+		use(goal)
 
 
 ## The walk grid, baked from the office's collision on first use.
@@ -481,7 +539,7 @@ func _on_panel_opened() -> void:
 
 
 func _on_panels_closed() -> void:
-	refresh_people()
+	people.refresh(session)
 	player.active = true
 	rig.active = true
 	rig.release()

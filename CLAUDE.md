@@ -31,6 +31,7 @@ Merijn's design decisions that every feature, content file and test must respect
 - **An RPG where the main character has to search and think** to find out what is wrong and how to fix it. Nothing is handed over.
 - **Fix processes end to end.** Improving a step that is not the bottleneck brings no gain, and the simulation must show that.
 - **Measure.** KPIs and OKRs come up often: predictions name a KPI, the Check measures it, missions and the coach ask for numbers.
+- **Immersion is one of the most important directives (Merijn, 2026-10-16).** The player must feel they are in the company, as their own character: they make that character themselves (the character creator), the world reacts to them, and nothing needlessly breaks the spell (menus over the world, numbers where a person or place could show it, generic text where their name and choices could stand). Weigh every feature on whether it pulls the player in or pushes them out.
 - **The 8 wastes come up often** (TIMWOODS, in a service and field organisation).
 - **Sector-specific issues come up often**: congestion, permits, the technician shortage, regulation (ACM, NTA 8120), the energy transition.
 
@@ -78,6 +79,9 @@ If the missions are weak, the game is weak. Every mission must:
 ### Always — every task, no exceptions
 - **Superpowers** — a core skill (Merijn, 2026-10-12). Check the superpowers skills before every task and use the ones that apply: `brainstorming` before designing a feature, `writing-plans` / `executing-plans` for multi-step work, `test-driven-development` for every behaviour change (watch the test fail first), `systematic-debugging` for every bug, `verification-before-completion` before calling anything done, `requesting-code-review` before a phase ends.
 - **`simplify`** — run after every code change. No exceptions. Code must pass the simplification checklist before the task is considered done.
+
+### Network access (Merijn, 2026-10-16) — a rule
+The environment has full network access, but **never access a domain Merijn has not approved**. Approved: assets `quaternius.com`, `opengameart.org`, `itch.io` incl. `quaternius.itch.io` and its file-storage host for downloads; sources `rijksoverheid.nl`, `officielebekendmakingen.nl`, `wetten.overheid.nl`, `acm.nl`, `netbeheernederland.nl` (incl. subdomains), `cbs.nl`, `knmi.nl`, `nen.nl`, `tennet.eu`; tooling `docs.godotengine.org`, `github.com`, and the package managers the project already uses. Web search is allowed; opening a result is only allowed on this list. Any other domain (a mirror, a CDN a download redirects to, a source page): ask Merijn first, naming the domain and why. Agents stop and report instead of fetching. Every brief to an agent repeats this rule.
 
 ### `error-handling` — run whenever any of these are true
 - A function does file I/O, database access, or network/API calls

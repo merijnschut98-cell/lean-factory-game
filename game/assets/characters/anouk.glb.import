@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://dsbq7p8yj5j7g"
-path="res://.godot/imported/sample_monteur.glb-0394ac370f0f8fdce2b723a1e0a2f84b.scn"
+uid="uid://cpmcrkce05ye2"
+path="res://.godot/imported/anouk.glb-1afef1f36a170d6316caa48da2acaf7a.scn"
 
 [deps]
 
-source_file="res://assets/characters/sample_monteur.glb"
-dest_files=["res://.godot/imported/sample_monteur.glb-0394ac370f0f8fdce2b723a1e0a2f84b.scn"]
+source_file="res://assets/characters/anouk.glb"
+dest_files=["res://.godot/imported/anouk.glb-1afef1f36a170d6316caa48da2acaf7a.scn"]
 
 [params]
 
@@ -42,4 +42,4 @@ materials/extract_path=""
 _subresources={}
 gltf/naming_version=2
 gltf/embedded_image_handling=2
-gltf/texture_map_mode=1
+gltf/texture_map_mode=0

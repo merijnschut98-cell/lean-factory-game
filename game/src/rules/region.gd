@@ -56,6 +56,7 @@ const MEASURE_DAYS := 56
 const BAD_PERIOD_SOURCE := "region:bad_period"
 const DRIFT_SOURCE := "region:drift"
 const ROUTINE_SOURCE := "routine:"
+const AFTERMATH_SOURCE := "aftermath:"
 const TRUST_MIN := -2
 const TRUST_MAX := 1
 
@@ -93,6 +94,9 @@ var drift_from := -1
 var _drift_applied := 0.0
 ## Places with a planned routine (leader standard work), see plan_routine.
 var routines: Dictionary[String, bool] = {}
+## Aftermaths of short-term fixes (CountermeasureDef.aftermath): problem →
+## {cm, start, end (minutes), started}.
+var aftermaths: Dictionary[String, Dictionary] = {}
 
 
 func _init(network: Network, problem_defs: Array[ProblemDef], cm_defs: Array[CountermeasureDef], player: Profile) -> void:
@@ -186,7 +190,28 @@ func _advance_within_day(minutes: int) -> void:
 			events.append({"type": "check_ready", "problem": st.id})
 		elif st.phase == P.RESOLVED and st.a3.has("cm"):
 			_wear(st, minutes)
+	_run_aftermaths()
 	_apply_drift()
+
+
+## Start and end the aftermaths whose time has come.
+func _run_aftermaths() -> void:
+	for problem_id: String in aftermaths.keys():
+		var a := aftermaths[problem_id]
+		var cm: CountermeasureDef = countermeasures.get(str(a["cm"]))
+		if cm == null:
+			aftermaths.erase(problem_id)
+			continue
+		if not a["started"] and net.time >= int(a["start"]):
+			a["started"] = true
+			var refused := net.set_effects(AFTERMATH_SOURCE + problem_id, cm.aftermath.get("effects", []))
+			if not refused.is_empty():
+				push_warning("aftermath of %s refused: %s" % [cm.id, refused])
+			_add_budget(-int(cm.aftermath.get("cost", 0)))
+			events.append({"type": "aftermath", "problem": problem_id, "cm": cm.id})
+		if a["started"] and net.time >= int(a["end"]):
+			net.clear_effects(AFTERMATH_SOURCE + problem_id)
+			aftermaths.erase(problem_id)
 
 
 ## What the problems cost per week now: each open one's cost, weakened by a
@@ -621,8 +646,36 @@ func act(problem_id: String, standardise: bool) -> Dictionary:
 		drift_from = net.time
 		_apply_drift()
 	profile.learn(p.teaches + (PackedStringArray(["standard_work"]) if standardise else PackedStringArray()))
+	_after_act(problem_id, countermeasures[st.a3["cm"]])
 	grant(Pdca.xp_for(st.score, p.tier), Pdca.budget_for(st.score, p.severity))
 	return st.score
+
+
+## A short-term fix's later costs: trust at once, its aftermath in time.
+func _after_act(problem_id: String, cm: CountermeasureDef) -> void:
+	for team: String in cm.trust:
+		change_trust(team, int(cm.trust[team]))
+	if not cm.aftermath.is_empty():
+		var start := net.time + SimCalendar.days(int(cm.aftermath.get("after_days", 0)))
+		aftermaths[problem_id] = {"cm": cm.id, "start": start, "started": false,
+			"end": start + SimCalendar.days(int(cm.aftermath.get("days", 0)))}
+
+
+## Standardise a fix after its Act (same cost as at the Act): standard work
+## holds it from now on; what already wore away stays worn, and the score
+## stays the Act's. "" or not_resolved | standardised | no_budget.
+func standardise(problem_id: String) -> String:
+	var st: ProblemState = state.get(problem_id)
+	if st == null or st.phase != P.RESOLVED:
+		return "not_resolved"
+	if st.standardised:
+		return "standardised"
+	if profile.budget < STANDARDISE_BUDGET:
+		return "no_budget"
+	_add_budget(-STANDARDISE_BUDGET)
+	st.standardised = true
+	profile.learn(["standard_work"])
+	return ""
 
 
 ## A later lever wins (SimModifiers: sources apply in the order they were
@@ -690,6 +743,7 @@ func _score_inputs(st: ProblemState, p: ProblemDef, standardise: bool) -> Dictio
 		"at_constraint": st.baseline["at_constraint"],
 		"team_step": _has_team(p.step),
 		"lead_time_gain": st.gains.get("lead_time", 0.0),
+		"durable": standardise or countermeasures[st.a3["cm"]].decay_days < 0,
 	}
 
 

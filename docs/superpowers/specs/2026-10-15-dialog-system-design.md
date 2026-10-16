@@ -190,11 +190,11 @@ An expert conversation (`kind: expert`, Femke, Thomas, Jeroen) uses the same eng
 
 **What it displays** (top of the speech panel, §11):
 
-- **Openheid:** a horizontal bar with five labelled bands. After each move the marker slides to the new value; the change flashes as a small ▲/▼ with the number for a second. Nothing is shown before the move.
+- **Openheid:** a horizontal bar with five labelled bands. After each move the marker slides to the new value; the change flashes as ▲ or ▲▲ (▼ or ▼▼) by its size for a second, **never a number** (Merijn, 2026-10-15). Nothing is shown before the move.
 - **Vertrouwen:** five pips (one per 20 points of trust), next to the person's name; a pip fills or empties with a short animation.
 - **Stemming:** a word (`goed`, `neutraal`, `gespannen`, `moe`, `stil`) and the portrait's face.
 - **Verloop:** a small sparkline of openness over this talk's moves. It makes the summary card readable ("waar ging het mis?") and gives Ruud something to ask about.
-- **The cue:** "*Er zit meer achter…*" in italics under the person's line, when openness ≥ 65, the concern is not yet revealed and the line carries `hesitation`. It says the person has more to say; it does not say which move will draw it out.
+- **The cue:** "*Er zit meer achter…*" in italics under the person's line, when openness ≥ 65, the concern is not yet revealed and the line is the concern's lead-in (tagged `hesitation` or, since 2026-10-16, `feeling`: the cue says there is more, never which move draws it out; a hesitation answers to silence, a feeling to reflecting). It says the person has more to say; it does not say which move will draw it out.
 
 **Thresholds** (estimates; one table in `rules/dialog.gd`):
 
@@ -445,7 +445,7 @@ Ten recurring people for dialogs, from the catalogue's §2.3 and the audit's §5
 
 **Block** (`geblokkeerd`): "Ik kan dit niet toezeggen. Laat het me eerst zien." Routes (any one; the hint goes into the journal):
 1. `checked:silo_kpis` passed: an Obeya experiment on the connections stream whose Check shows throughput not lower ("Laat het me zien op één stroom.");
-2. `committed:ruud_backs_obeya` and reputation ≥ 40: Ruud joins the talk ("Als de directeur het met mij verdedigt…");
+2. `partial:joost_output_kpi`, `partial:sanne_kpi` and reputation ≥ 40: the two team leads explain it themselves ("Als Sanne en Joost het zelf komen uitleggen, sta ik er niet alleen voor."). *(Audit change, applied 2026-10-16: the earlier `committed:ruud_backs_obeya` could never be set, because Ruud is the coach and not a persuasion target. The people bring their boss along.)*
 3. the KPI board's forecast for the quarter is positive (once the board exists).
 
 When a route is met, Frank can commit. His commitment meets Joost's condition, so Joost's partial becomes **commitment** by itself, and the buy-in for `silo_kpis` becomes ×1.25. Joost's B8 condition was the dialog's way of saying: *this is not his decision.* The player learns to look one level up, as Ruud's after-block question asks.
@@ -608,7 +608,7 @@ Schema and references:
 8. `needs`, `condition_needs` and `block.routes[].needs` use the C19 grammar.
 
 Rules of the design:
-9. **Layers:** `interest.at` 40–65, `concern.at` 60–85, strictly ascending; each layer has ≥ 2 `via` moves; the concern has a `lead_in` with `hesitation`.
+9. **Layers:** `interest.at` 40–65, `concern.at` 65–85 (R-D1), strictly ascending; each layer has ≥ 2 `via` moves; the concern has a `lead_in` tagged `hesitation` **or** `feeling` (four-tier audit §4, 2026-10-16: at least a third of a tier's concerns are cued by a feeling, whose `via` holds `reflect` and not `silence`).
 10. **No single right answer:** a `persuade` dialog has ≥ 2 proposals or experiments that address the concern, and no field marks a proposal correct (there is no such key).
 11. **Never game over:** every `block` has ≥ 1 route that no failure or skip can close (the C19 obtainability check).
 12. **Check-ins:** no `mission`, no `owns`, no `kpi_team`, no proposals with KPIs; a trigger from the vocabulary (`morale_below`, `beat`).
@@ -719,7 +719,7 @@ func person(person_id: String) -> Dictionary          # {trust_pips, morale_band
 ```
 
 - **Chips:** the move type as the label; hover or focus shows the line you will say. Never an effect, a colour or a hint about fit. "▸" chips open a small picker (your found clues, the dialog's proposals, your A3's countermeasures). Keys 1–8 for listening, Q–T for steering.
-- **The meter** animates *after* the reply: the marker slides, ▲/▼ flashes with the number, pips fill or empty. Band names are always written, so colour is never the only signal.
+- **The meter** animates *after* the reply: the marker slides, ▲/▲▲ or ▼/▼▼ flashes (never a number), pips fill or empty. Band names are always written, so colour is never the only signal.
 - **The reply** types out; tags show only through the portrait's face and the 3D body language.
 - **The summary card** after the talk: the outcome in Dutch ("Staat erachter", "Afspraak onder voorwaarde", "Gehoord", "Geblokkeerd", "Gaat akkoord onder druk", "Mislukt — morgen weer"), the openness trace with the move chips under it, what you learned (a revealed layer, a new clue, a route hint) and, for a main-mission talk, "Bespreek met Ruud".
 - **Mensen** (a new tab in the journal, J): per person the portrait, trust pips, morale band, what you know (position, interest, concern once earned), the last outcome, when you can talk again, and any route hint.

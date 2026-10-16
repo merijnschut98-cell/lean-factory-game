@@ -192,10 +192,9 @@ func test_someone_who_needs_a_talk_shows_an_energy_bar() -> void:
 	var s := office.session
 	s.people.prompts["joost_output_kpi"] = s.region.net.time  # as if a check-in had opened
 	s.people.morale["joost"] = 25
-	office.refresh_people()
-	var tag := office.person_tag("joost")
-	assert_true(tag != null, "a tag at Joost's place")
-	assert_true(tag.showing_bar(), "the low-energy bar shows")
-	assert_near(tag.energy, 0.25, 0.001)
-	assert_false(office.person_tag("frank").showing_bar(), "nobody else's")
+	office.people.refresh(s)
+	assert_true(office.people.person("joost").bar.visible, "the low-energy bar over Joost")
+	var fill: float = (office.people.person("joost").bar.material_override as ShaderMaterial).get_shader_parameter("fill")
+	assert_near(fill, 0.25, 0.001)
+	assert_false(office.people.person("anouk").bar.visible, "nobody else's")
 	office.free()

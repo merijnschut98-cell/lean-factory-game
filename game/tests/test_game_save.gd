@@ -27,6 +27,7 @@ func test_a_saved_game_comes_back_with_its_missions_and_its_snapshot() -> void:
 	assert_eq(back.missions.status(MISSION), "active", "the missions come back")
 	assert_eq(back.region.found, s.region.found)
 	assert_eq(back.discoveries.to_dict(), s.discoveries.to_dict())
+	assert_eq(back.followed_order(), s.followed_order(), "the El Amrani dossier is the same order")
 	var back_layer: SessionLayer = loaded["layer"]
 	assert_eq(back_layer.to_dict(), layer.to_dict(), "the snapshot comes back")
 	assert_false(back_layer.terugblik(back).is_empty(), "so the next session opens with a terugblik")

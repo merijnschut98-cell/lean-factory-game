@@ -86,6 +86,8 @@ func test_stockout_makes_orders_wait_for_delivery() -> void:
 	net.advance_days(6.6)  # the delivery lands on day 10
 	assert_true(net.stream("s").finished.size() > 0)
 	assert_eq(net.stock["kit"].waiting.size(), 0, "the delivery released every waiting order")
+	var take: Dictionary = net.stream("s").steps[0].stats_since(0)
+	assert_true(take["wait_hours"] > 24.0, "the stock-out wait is the material step's wait: %s" % take)
 
 
 func test_urgent_stream_preempts_planned_work() -> void:

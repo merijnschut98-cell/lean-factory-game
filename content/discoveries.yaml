@@ -14,10 +14,9 @@
 # trigger    {type, ...}: see Discoveries.TRIGGERS
 # reward     reputation (0-3), trust {team: n}, and for the codex and the
 #            vitrine: title, object, note (Ruud's handwritten card)
-# Audit numbers kept: D1, D8, D11, D14, D17, D18, D20, D23, D26, D28 wait for
-# systems that do not exist yet (par per problem, the followed order, the KPI
-# review action, coach goals, containment); D8 "Ritme" is dropped for good: it
-# was a streak (respect the player's time).
+# Audit numbers kept: D1, D8, D11, D17, D18, D20, D23, D26 wait for systems
+# that do not exist yet (par per problem, the KPI review action, coach goals);
+# D8 "Ritme" is dropped for good: it was a streak (respect the player's time).
 
 discoveries:
   - id: veilige_haven
@@ -163,3 +162,25 @@ discoveries:
     act: 1
     trigger: {type: no_overload_act, experiments: 3}
     reward: {title: Goede werkgever}
+
+  # D14 (audit §3.0): the El Amrani dossier is a real order in the
+  # simulation; delivered within the 18-week industry norm (the ACM's
+  # reference term, PLAN §9), counted from its birth.
+  - id: dossier_el_amrani
+    name: Het dossier van de familie El Amrani
+    line: "De warmtepomp draait. Doorlooptijd is wat een klant voelt."
+    hint: "Eén dossier liep de hele tijd met je mee. Weet je nog waar het lag?"
+    act: 1
+    trigger: {type: followed_order, days: 126}
+    reward: {reputation: 2, object: "Een bedankkaart van de familie El Amrani", note: "Achttien weken is de norm. Voor hen was het geen norm, het was een winter."}
+
+  # D28 (audit §2.4.1): the real exception to long term first. Containment
+  # within two days of taking on a safety mission, then the cause fixed with
+  # the right root cause. Containment alone pays nothing.
+  - id: eerst_veilig
+    name: Eerst veilig, dan beter
+    line: "Indammen is geen oplossen, maar soms moet het eerst."
+    hint: "Bij een acuut gevaar telt wat je in de eerste dagen doet, en wat je daarna doet."
+    act: 2
+    trigger: {type: contain_then_fix, days: 2}
+    reward: {object: "Een veiligheidshelm met een Voltana-sticker", note: "Indammen is geen oplossen, maar soms moet het eerst."}

@@ -7,6 +7,7 @@ func _best() -> Dictionary:
 		"key_found": 2, "key_total": 2, "scouted": true, "blamed": false, "cause_correct": true, "key_linked": 2,
 		"herrings_linked": 0, "eff": 0.8, "failed_checks": 0, "prediction_right": true, "standardised": true,
 		"waste_right": true, "capacity_gain": 0.05, "at_constraint": true, "team_step": true, "lead_time_gain": 0.0,
+		"durable": true,
 	}
 
 
@@ -69,11 +70,24 @@ func test_scores_range_from_6_to_25() -> void:
 		"key_found": 0, "key_total": 3, "scouted": false, "blamed": true, "cause_correct": false, "key_linked": 0,
 		"herrings_linked": 4, "eff": 0.1, "failed_checks": 3, "prediction_right": false, "standardised": false,
 		"waste_right": false, "capacity_gain": 0.0, "at_constraint": false, "team_step": true, "lead_time_gain": 0.0,
+		"durable": false,
 	})
 	assert_true(worst["total"] <= 6, str(worst["total"]))
 	for code in ["coverage", "not_scouted", "blamed", "waste_wrong", "cause_wrong", "failed_checks",
 			"prediction_wrong", "not_standardised", "impact_not_constraint"]:
 		assert_true(code in worst["notes"], code)
+
+
+## Audit R1(c): a fix that lasts (built in, or standardised) scores a point
+## more for its countermeasure, so the patient fix reaches 5 more easily.
+func test_a_durable_fix_scores_higher() -> void:
+	var i := _best()
+	i["eff"] = 0.56
+	assert_eq(Pdca.score(i)["countermeasure"], 5, "durable")
+	i["durable"] = false
+	assert_eq(Pdca.score(i)["countermeasure"], 4, "it fades")
+	i["failed_checks"] = 2
+	assert_eq(Pdca.score(i)["countermeasure"], 2)
 
 
 func test_flow_impact_explains_itself() -> void:

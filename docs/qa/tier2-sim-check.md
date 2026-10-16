@@ -362,10 +362,28 @@ Each fix names the number to change. "Verified" = re-run in the harness (5 seeds
 
 **Not yet run** (the session ended first): `contractor_rework ftr −0.18` (A2), `lmra_tickbox ftr −0.13` with `touch_time 1.05` (C2), `monteur_hours availability −0.16` (E2). Until they are measured, use the verified values in fixes 1 and 4 (−0.20 for both) and treat fix 2's −0.13 as an estimate. Fixes 8–11 and the targets in 12–13 also still need a re-measure.
 
+## Re-measure 2026-10-16 (the mission builder)
+
+Applied to the draft, then re-run with `draft_check.gd` in its new quick mode (harm and the Check, no year runs), seeds 11–15, maturity 2. Gains are paired per seed, positive = better.
+
+| Fix | Change in the draft | Result | Verdict |
+|---|---|---|---|
+| 1 `contractor_rework` | ftr −0.15 → −0.20, "Vier op de twintig", cost €1,000 a week | harm ×1.305; FTR 0.415 → 0.318 (−9.7 pt); best fit +9.8 pt (+6.4 to +14.0), the others +7.5 to +7.6 | PASS: named KPI, and the best fit gains most |
+| 2 `lmra_tickbox` | ftr −0.05 → −0.13, touch time 1.03 → 1.05 | harm ×1.101; FTR 0.415 → 0.378 (−3.7 pt, the test needs > 5); best fit +6.6 pt, andon +6.0, the two-person rule +2.5 | named KPI still FAIL; the order by fit now shows. Next: −0.17 (one job in six), not yet run |
+| 3 `heatwave_overload` | + `outages.repair touch_time 1.25` | harm ×1.175; on time 0.916 → 0.826; best fit +8.2 pt, the others +7.4 to +7.8 | PASS |
+| 4 `monteur_hours` | availability −0.12 → −0.20 (texts: "ruim anderhalf uur", 2.6 FTE) | harm ×3.94; monteurs the connections constraint (planned load 0.94); every fix +2.0 capacity a week on seed 11 | PASS (the fixes all pass; the steady state does not separate them by fit) |
+| 5 `safety_stock_calendar` | base `smart_meter` lead 10 → 28 days (20 working days), reorder point 95 → 190 (`content/value_streams.yaml`, an estimate; the base never runs out); the problem's reorder point −20 → −60 (the sheet's 20 × 40/7 + a small sigma); the kit effect dropped (its supplier counts calendar days; the clue says so); KPI on_time → wip_age; the sim now records a stock-out's wait at a material step | harm ×12,000 (stock-out wait from ~0); every fix gains +1.6 d on the age of open work (+1.0 to +2.8 per seed, ~9 %); on time moves < 1 pt (the meters norm has slack). Named-KPI test on the harm seed: wip_age 15.5 → 14.6 at day 150 | harm and Check PASS; the named-KPI snapshot FAILS (a point-in-time age; it rose on all five seeds at day 266). When tier 2 enters content, the test should average the age over the window |
+| 6 `stale_capacity_map` | KPI lead_time → capacity, tried | only the quick scan adds congestion capacity (+2.3 a week); the other three fixes read `not_constraint` and would fail the Check | REJECTED: KPI stays lead_time (noisy); open |
+| 7 `repeat_fault_analysis` | tier 3 → 2 | eff 0.81, passes; +3.9 pt on time, below the Pareto's +5.2 | PASS |
+
+Probe for fix 5 (5 seeds, 84 days after the warm-up, meters stream): base lead 28 / reorder point 190: on time 0.877, p50 9.9 d, open-work age 16.7 d, no stock-out. Reorder point −60: on time 0.869, p50 10.4 d, age 18.3 d, stock-out wait 12.8 h per order. −70: on time 0.861, age 17.9 d. At a lead of 10 calendar days even −30 gave only 3 h of waiting.
+
+Still to run: `lmra_tickbox` at −0.17; the ACM and OKR scenarios after these changes (their targets in fixes 12–13 still need it); fixes 8–11 (estimates).
+
 ## Reproduce
 
 ```
-python3 extract.py docs/superpowers/specs/2026-10-15-tier2-missions-draft.md draft.json   # the YAML blocks → {problems, countermeasures}
+python tools/draft_to_json.py docs/superpowers/specs/2026-10-15-tier2-missions-draft.md draft.json [--only a,b] [--quick]
 godot --headless --path game --import
 godot --headless --path game --script res://tools/draft_check.gd -- draft.json out.json
 ```

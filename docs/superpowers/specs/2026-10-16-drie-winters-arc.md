@@ -168,6 +168,8 @@ When `t2_first_okr` is done and `acm_visit` judged (passed, or failed with its r
 
 ### 4.2 `ruud_farewell`: the farewell talk
 
+**The programme is real; the secondment is fiction** (Fable's note, 2026-10-16). The *Landelijk Actieprogramma Netcongestie* (LAN) was set on 21 December 2022 and sent to the Tweede Kamer by the minister for Klimaat en Energie the day before (Kamerstuk 29 023, nr. 385). It is not an office with staff of its own: it was drawn up, and is carried, **jointly by the grid operators, the ACM, the Rijk, the provinces and municipalities (*medeoverheden*) and market parties**, who each committed to its actions; a special coordinator led it at the start. Its work runs in lines; the 2026 progress letters name them *Beter benutten*, *Sneller bouwen* and *Slimmer inzicht*. The game says only that: Ruud is lent to the programme by Voltana, a fictional operator, for a year, to work on the waiting list from the regions' side. **No real person is named or voiced**: not the minister, the coordinator or any official; Ruud's colleagues there stay offstage, and the lines never claim what the programme decided. The ministry is named as the Rijk did at the time ("het ministerie"), never by a minister's name. Source lines go into `content/dialogs.yaml` as comments above the dialog (below), so the source verifier can find them.
+
 Ruud was never a dialog target (Acts 0–II scripts, audit change to spec §7.4). He becomes one here, and only here and in §8, because in a farewell the coach is the one who has something to say. The talk is a check-in: no proposal to win. Steering is fixing mode, as in every check-in. Its concern, Ruud's 2012 programme, is the audit's planned reveal (audit §5.3: "reveals his own failed 2012 verbeterprogramma … a lesson on sustaining"). Here it is told at the moment it matters most.
 
 New archetype `mentor` (§10): base 55; `experience` ×1.5 (a mentor wants to hear what *you* learned); `show_data` ×0.5 (he has seen your numbers).
@@ -181,20 +183,25 @@ dialogs:
     tutorial: true                          # a farewell cannot be ruined (R-D5)
     patience: 12
     place: directie.ruud_office
+    # source: Landelijk Actieprogramma Netcongestie (LAN), set 21 December 2022; Kamerbrief of the minister for
+    #   Klimaat en Energie, 20 December 2022, Kamerstuk 29 023 nr. 385: "gezamenlijk opgesteld door netbeheerders,
+    #   ACM, medeoverheden, het Rijk en marktpartijen". Lines Beter benutten / Sneller bouwen / Slimmer inzicht
+    #   (progress letters 2026). Waiting list "ruim 15.000 aanvragen voor afnamecapaciteit", mid-2026: LAN
+    #   voortgang najaar 2026 (see Sources). Ruud's secondment and everyone he meets there are fiction. (verify)
     # start: mentor 55 + 0 (neutraal) + 0 + 0 (trust 50) + 0 = 55, Luistert
     #   + 5 for each of: committed:anouk_owns_tray, done:coach_intake_lead, D23 earned (he saw you develop people): up to 70
     opening: "Kom binnen. Doe de deur maar dicht. Dat doe ik nooit, dus je weet dat het iets is."
-    position: {text: "Den Haag heeft gebeld. Het Landelijk Actieprogramma Netcongestie wil iemand uit de regio, een jaar lang, voor de wachtlijst. Ik heb ja gezegd. Maandag over twee weken begin ik.", tags: [claim]}
+    position: {text: "Den Haag heeft gebeld. Het Landelijk Actieprogramma Netcongestie, je weet wel: het ministerie, de netbeheerders, de ACM, provincies en gemeenten, sinds 2022 samen aan één tafel. Ze willen een jaar lang iemand uit een regio erbij, voor de wachtlijst. Voltana leent mij uit. Ik heb ja gezegd. Maandag over twee weken begin ik.", tags: [claim]}
     layers:
       - id: interest
         at: 60
         via: [open_question, inquiry, paraphrase]
-        text: "Vijftienduizend aanvragen op de lijst, landelijk. Daar zit mevrouw El Amrani tussen, en de bakker, en De Linde. Ik wil weten of wat wij hier leren ook daar werkt. En eerlijk: als niemand uit de regio gaat, schrijven ze het programma in Den Haag. Zonder monteur erbij."
+        text: "Vorig jaar stonden er al ruim vijftienduizend aanvragen op de lijst, landelijk, en sinds die zomer staan er ook huishoudens op. Daar zit mevrouw El Amrani tussen, en de bakker, en De Linde. Ik wil weten of wat wij hier leren ook daar werkt. En eerlijk: aan die tafel zitten directies en beleidsmensen. Netbeheerders ook, maar niemand die weet hoe een dossier bij Anouk op de stapel ligt."
         tags: [claim, feeling]
       - id: concern
         at: 72
-        via: [reflect, silence, empathy]   # feeling first: the lead-in is a feeling, so reflect is the natural key
-        lead_in: {text: "Ik zeg je eerlijk: ik vind het geen prettig moment om te gaan.", tags: [feeling, hesitation]}
+        via: [reflect, empathy, experience]   # a feeling cue: reflect is the natural key; silence misses
+        lead_in: {text: "Ik zeg je eerlijk: ik vind het geen prettig moment om te gaan.", tags: [feeling]}
         text: "In 2012 heb ik ook een verbeterprogramma getrokken. Met een bureau, met dashboards, met alles. Het liep. En toen ging ik naar een andere functie, en binnen een jaar was het weg. Niet omdat het slecht was. Omdat het van mij was, en niet van hen. … Ik ga nu weer weg. Dit keer wil ik weten of het van hen is."
         tags: [admission, doubt]
         unlocks: {facts: [heard:ruud_2012]}
@@ -215,8 +222,8 @@ dialogs:
       none: "Nou. Over een maand bel ik. Doe de deur maar open als je gaat."
     sets_flags_on_end: [flag:ruud_seconded]   # whatever the outcome
     # route (start 55): open question +6 61 (interest, tagged feeling) > paraphrase +7 68 (heard) > reflect +10 78 (lands on the feeling;
-    #        first move at >= 72: the lead-in, itself a feeling + hesitation) > silence +12 > 81 capped (concern) > experience x1.5 +12 93
-    #        > close: opgebeurd (6 moves)
+    #        first move at >= 72: the lead-in, a feeling) > empathy +6 > 81 capped (concern) > experience x1.5 +12 93
+    #        > close: opgebeurd (6 moves). Silence at the lead-in misses (-4): he said a feeling, not a hesitation.
     # other routes: inquiry for the interest; empathy at the lead-in ("Dat je er eerlijk over bent, zegt genoeg."); silence before reflect.
     # trap (fixing mode): propose / perspective before the concern: -12 ("Ik vraag je geen advies. Nog niet.").
 ```
@@ -616,7 +623,7 @@ dialogs:
       - id: concern
         at: 72
         via: [empathy, reflect, inquiry]
-        lead_in: {text: "Kijk, ik zeg je wat ik niet in het MT zeg.", tags: [feeling, hesitation]}
+        lead_in: {text: "Kijk, ik zeg je wat ik niet in het MT zeg.", tags: [feeling]}
         text: "Als het team het doet en het mislukt, dan heb ík het bureau afgezegd. Dan sta ik er alleen voor, in mijn interimjaar. Met het bureau mislukt het in elk geval netjes."
         tags: [admission]
         unlocks: {facts: [heard:frank_alone], proposals: [team_presents_frank_opens]}
@@ -784,8 +791,8 @@ dialogs:
     layers:
       - {id: interest, at: 60, via: [open_question, inquiry, paraphrase],
          text: "Toen ik jou aannam, wist ik niet of je het kon. Ik wist wel dat je vragen stelde. Dat was genoeg.", tags: [feeling]}
-      - {id: concern, at: 72, via: [reflect, silence, experience],
-         lead_in: {text: "Weet je wat ik het moeilijkst vind?", tags: [feeling, hesitation]},
+      - {id: concern, at: 72, via: [reflect, experience, empathy],
+         lead_in: {text: "Weet je wat ik het moeilijkst vind?", tags: [feeling]},
          text: "Niet het stoppen. Dat ik niet zal zien of het blijft. In 2012 zag ik het verdwijnen. Nu ga ik naar huis en moet ik het geloven.",
          tags: [admission], unlocks: {facts: [heard:ruud_last]}}
     choice:                                # after the interest is revealed, Ruud asks: "Wie?" The player picks one offered candidate.
@@ -796,11 +803,13 @@ dialogs:
         ahmed: "Ahmed. Die belde 's nachts een gepensioneerde monteur uit zijn bed. Nu bellen ze hem. Ja."
         sanne: "Sanne. Die vond dat jij irritant was, omdat je alleen maar vroeg. Ja. Juist daarom."
         lotte: "Lotte Smit, van buiten. Goed. Dan begint zij waar jij begon. Bij de brief op mijn bureau."
+        lotte_passed_over: "Lotte Smit, van buiten. … Goed. Het is jouw keuze, en ik vraag er niet naar. Eén ding wel: weet {insider_short} het al? Vertel het {hem_haar} zelf. Niet via de mail."   # §8.6: an insider qualified
         lotte_only: "Er is niemand van binnen die dit kan overnemen. Dat zegt iets over drie jaar, niet over jou als mens. Lotte Smit begint maandag. Zij begint waar jij begon."
     outcomes:
       lifted: "Dan ga ik naar huis met iets wat ik in 2012 niet had. Een naam."
       heard: "Goed. Ga het haar vragen. Of hem. Niet vertellen. Vragen."
     sets_flags_on_choice: [successor:{chosen}]
+    # §8.6: choosing lotte while an insider was offered also sets passed_over:{insider}
 ```
 
 ### 8.4 The successor's talk: four variants
@@ -902,8 +911,8 @@ dialogs:
          text: "Mijn team stelt elkaar nu dezelfde vragen die jij mij stelde. Wat is je doel, waar sta je. Rachid deed het gisteren bij een nieuwe collega. Ik stond erbij en zei niks. Dat kon ik drie jaar geleden niet.", tags: [feeling]}
       - id: concern
         at: 74
-        via: [empathy, reflect, silence]
-        lead_in: {text: "Alleen, eerlijk…", tags: [feeling, hesitation]}
+        via: [reflect, empathy]
+        lead_in: {text: "Alleen, eerlijk… ik word er zenuwachtig van.", tags: [feeling]}
         text: "Ik ben vijfenveertig, nee, achtenveertig nu. Ik heb nooit gestudeerd. Als ik daar zit, tussen Femke en Monique, ben ik weer het postkantoor. En als het misgaat, zeggen ze: zie je wel."
         tags: [admission]
         unlocks: {facts: [heard:sanne_successor], proposals: [intake_as_the_proof]}
@@ -1012,24 +1021,258 @@ dialogs:
     final_card: true                       # then the final card (§8.2) and the credits; free play continues after
 ```
 
+**When Lotte was chosen over an insider, the scene changes** (§8.6): the insider sits at the table too, and the player's first question lands on them.
+
 No ending is a failure. Whichever question comes first is "the first Kata question, asked by the player" (PLAN §4.0). The epilogue only *shows* what a coach's first move does: the successor writes, or thinks. Ruud's line is the last thing the coach says, and the most he ever tells.
+
+### 8.6 Lotte chosen while an insider qualified: the table reads it
+
+Fable's note (PLAN §10, 2026-10-16): the successor choice has a **visible consequence, never a score**. Respect for people says developing talent pays; a player who developed Anouk, Ahmed or Sanne and then hired from outside should *see* what they passed over, without being told off. Choosing Lotte when nobody qualified stays as designed: told kindly, no change at the table.
+
+**The rule.**
+- When the player picks `lotte` and at least one insider was offered, `successor_choice` sets `passed_over:<insider>` for the **one** insider who sits at the table: the offered insider with the highest trust (ties: Anouk, Ahmed, Sanne, in that order). The others are not named; one face is enough.
+- `successor_lotte` (§8.4) is unchanged. Lotte does not know, and the talk is hers.
+- `first_question` takes the variant `passed_over` (below): the insider is at the table, with Lotte and (if he is still there) Ruud. Lotte's first dossier runs through the insider's work, so she has asked them to come. **The scene's person is the insider, not Lotte:** whatever the player's one move is, the insider answers it first. That is the consequence: the player's first Kata question as a director goes to the person they did not choose, and that person answers it well.
+- Nothing is scored: no reputation, no trust change, no discovery lost. The final card's `people_line` names the insider among the people the player developed, as it would anyway, and adds one sentence (`final_card_extra`). Free play continues; the insider stays, with one later beat.
+- Variant needs: `{all: [successor:lotte], any: [passed_over:anouk, passed_over:ahmed, passed_over:sanne]}`.
+
+```yaml
+dialogs:
+  - id: first_question
+    variants:
+      - id: passed_over
+        needs: {all: [successor:lotte], any: [passed_over:anouk, passed_over:ahmed, passed_over:sanne]}
+        person: "{insider}"                  # the move goes to the insider; Lotte is present and has lines
+        opening_by_insider:
+          anouk: "Lotte legt een A3 op tafel. Het dossier van de bakkerij in Havenzij. 'Ik heb Anouk gevraagd erbij te komen. Het ontwerp ligt bij haar.' Anouk knikt naar jou. 'Hoi. Ze vroeg het aardig.' Ze schuift het A3 een stukje naar zich toe en begint al te lezen."
+          ahmed: "Lotte legt een A3 op tafel. Het dossier van de bakkerij in Havenzij. 'Ik heb Ahmed gevraagd erbij te komen. Ik snap niet waarom de monteur twee keer moest komen.' Ahmed steekt een hand op naar jou. 'Ik kom net van het terrein. Laat eens zien.'"
+          sanne: "Lotte legt een A3 op tafel. Het dossier van de bakkerij in Havenzij. 'Ik heb Sanne gevraagd erbij te komen. Het begint bij Intake, zei iedereen.' Sanne kijkt even naar jou, dan naar het A3. 'Nou. Ik hoorde het al. Iedereen hoort alles hier.'"
+        endings:                            # keyed on the move, as in the main scene; the insider answers, Lotte watches
+          kata_target:
+            player: "Wat wil je bereiken?"
+            npc_by_insider:
+              anouk: "Anouk wacht even. Dan, tegen Lotte: 'Dat ze binnen zes weken een datum hebben die klopt. Toch?'"
+              ahmed: "Ahmed tikt op het A3. 'Eén keer komen. Niet twee.' Dan, tegen Lotte: 'Zo begin je. Met wat je wilt zien.'"
+              sanne: "Sanne leunt naar voren. 'Dat de aanvraag de eerste keer compleet is. Dan scheelt het jou drie weken.'"
+            lotte: "'Dat had ik dus aan jou moeten vragen,' zegt Lotte tegen {insider_short}. Het klinkt niet bitter. Het klinkt als iemand die het opschrijft."
+          kata_actual:
+            player: "Waar sta je nu?"
+            npc_by_insider:
+              anouk: "'Het ontwerp is af, op één tekening na.' Anouk draait het A3 naar Lotte. 'Kijk, hier. Daar wacht het. Niet bij mij, bij de netstudie.'"
+              ahmed: "'De eerste keer stond de meterkast vol dozen. De tweede keer was de klant er niet.' Ahmed haalt zijn schouders op. 'Dat staat niet op dat A3. Dat zie je alleen als je erheen gaat.'"
+              sanne: "'Het lag drie weken in de middelste bak. Er miste een foto.' Sanne kijkt naar Lotte. 'Rachid weet precies welke foto. Vraag het hem.'"
+            lotte: "Lotte kijkt van het A3 naar {insider_short}. 'Hoe weet je dat allemaal?' — '{insider_answer}'"
+          open_question:
+            player: "Vertel eens. Hoe zie jij het?"
+            npc_by_insider:
+              anouk: "Anouk lacht kort. 'Drie jaar geleden had ik hier een bergje met een vlag op een post-it.' Ze wijst. 'Nu weet ik waar het ligt. Dat is het hele verschil.'"
+              ahmed: "'Weet je wat Henk zou zeggen?' Ahmed grijnst. 'Het vak is overal hetzelfde, alleen de kabel verschilt.' Hij schuift het A3 terug naar Lotte. 'Ga kijken. Ik ga mee, als je wilt.'"
+              sanne: "'Eerlijk? Het postkantoor ziet alles als eerste.' Sanne zegt het rustig, alsof ze het al vaker heeft gezegd. 'Daar moet ze beginnen.'"
+            lotte: "Lotte, tegen {insider_short}: 'Mag ik je volgende week vaker bellen?' {insider_short} knikt."
+          silence:
+            player: "(je zegt niets en wacht)"
+            npc: "Het blijft even stil. Dan begint {insider_short} te praten. Niet tegen jou: tegen Lotte. Rustig, punt voor punt, zoals jij het drie jaar lang vroeg."
+            lotte: "Lotte schrijft. Na een minuut kijkt ze op, naar jou. '{Zij_Hij} doet dit vaker, hè.'"
+          steering:
+            player: "{steer_line}"
+            npc: "{insider_short} wacht tot je klaar bent. Dan, tegen Lotte: 'Dat is één manier. Mag ik je laten zien hoe het op de vloer gaat?'"
+            lotte: "Lotte kijkt van jou naar {insider_short}, en knikt naar {insider_short}."
+          pressure_or_confront:
+            player: "{pressure_line}"
+            npc: "… {insider_short} legt een hand op het A3. 'Laten we gewoon gaan kijken. Met z'n tweeën.'"
+            lotte: "Lotte staat al op."
+        ruud: "Ruud zegt niets. Hij kijkt naar {insider_short}, en dan naar jou."   # every ending; dropped when past:ruud_retirement
+        insider_answer:
+          anouk: "Ik heb het drie jaar lang gevraagd gekregen. Op een gegeven moment ga je het jezelf vragen."
+          ahmed: "Iemand vroeg me altijd: waarom deed je dat zo? Op een dag vroeg ik het mezelf."
+          sanne: "Iemand stelde me steeds dezelfde vijf vragen. Irritant. Nu stel ik ze zelf."
+        final_card_extra: "{insider_name} zat ook aan tafel. Je eerste vraag als directeur ging naar {hem_haar}, en {hij_zij} wist het antwoord."
+```
+
+**Ruud is silent in every ending.** In the main scene Ruud says one line per ending, the most he ever tells. Here he says nothing, whatever the move: the only time in the game the coach is silent when he could speak. He looks at the insider, then at the player. The player draws the conclusion, or does not; the game never says it (nothing handed over, no score). Without Ruud (`past:ruud_retirement`) the scene ends on Lotte's line.
+
+**Later, in free play** (a one-line beat, no talk, 14 days after the finale, from the insider; never a reproach):
+- Anouk: "Lotte belt me elke dinsdag. Over de tekeningen, zegt ze. Het gaat nooit over de tekeningen."
+- Ahmed: "Lotte ging mee in de bus. Ze vroeg waarom ik de mof zo legde. Ik zei: goeie vraag."
+- Sanne: "Lotte zit op dinsdag een uur bij ons aan de bak. Rachid legt het haar uit. Hij vindt het geweldig."
+
+The insider coaches the newcomer anyway: the talent the player developed does the job without the title. That is the consequence, and it is kind.
+
+**Schema needs** (adds to §10): the fact `passed_over:<id>` (S13); a scene variant whose `person` is a token, with `opening_by_insider`, `npc_by_insider`, a second speaker's line (`lotte`) per ending and one shared third speaker's line (`ruud`) (extends S10); `final_card_extra`; the one-line beat after the finale (S18). Tokens `{insider}`, `{insider_short}`, `{insider_name}`, `{hij_zij}`, `{hem_haar}`, `{Zij_Hij}` follow the insider's pronoun (Anouk, Sanne: zij/haar; Ahmed: hij/hem).
 
 **The bookend in Act 0.** Lotte's position line, "Waar moet ik beginnen?", is the player's own first line to Ruud. A one-line beat is added to `training_mon` (the player speaks once, as a choice-free line): `{on: accepted, who: player, text: "Waar moet ik beginnen?"}` and Ruud: "Bij de klant. En dan loop je terug." A player who meets Lotte hears their own first question come back.
 
 ---
 
-## 9. One human thread per act (Acts III–VI): proposal
+## 9. One human thread per act (Acts III–VI)
 
-PLAN §4.2.2. Each act has a person or a customer whose life the act's KPI touches: met at the start, paid off at the end, and the act's cliffhanger device. Tier 1 has the El Amrani dossier. Proposals, in the arc's terms:
+PLAN §4.2.2. Each act has a person or a customer whose life the act's KPI touches: met at the start, paid off at the end, and the act's cliffhanger device. Tier 1 has the El Amrani dossier. Below, each thread has its beats (who, when, and the line) and one short talk, in the dialog schema's short form (as in the tier-3 draft). Beats take no slot and open no problem; the talks are a customer call or a check-in, never a mission of their own.
 
 | Act | Thread | Met | Paid off | KPI it touches | Reads |
 |---|---|---|---|---|---|
-| III | **The storm-night family.** The De Wit family at the end of a rural MS line north of Nova: a father on home oxygen and a teenage son who phones the contact centre every hour. | `fix_on_call_far`'s briefing (Esra's Monday calls) | the storm night (§7.4): the son's call at 04:10, answered by the status message or by a person; and whether the standby location, chosen earlier, gets a monteur there within the 2-hour norm | outage duration; failure demand | `chose:on_call_far:*`, `storm_plan_information` |
-| IV | **The Havenzij bakery of the El Amrani daughter.** Samira El Amrani opens a bakery in the old harbour, with electric ovens, and lands on the waiting list (since 1 July 2026, small businesses and households queue together). | `fix_household_rush` (Sanne's 3x35 rush) or `fix_priority_first_come` | her honest date and whether it holds (`date_kept`); a callback to winter 1: if `flag:el_amrani_cold_winter`, her mother says "Vorig jaar zat ik bij mijn dochter. Dit jaar wil ik in de bakkerij staan." | `waiting_list` | `winter_el_amrani`, `classify_at_intake`, `publicly_visible_queue` |
-| V | **Ahmed as trainer.** His first cohort (tier 3) becomes the people Act V's maintenance relies on; Theo's calendar inspections are done by Ahmed's apprentices. | `fix_maintenance_calendar` (Theo: "wie gaat dit doen als ik weg ben?") | the finale (§8): Ahmed at the table, or a postcard from his apprentice | first time right; fix health | `heard:ahmed_trainer`, `chose:training_capacity:*` |
-| VI | **The monteur's paper notebook.** Ricardo keeps a paper notebook because the app fails in the meter cupboards of Nova-Oud (no signal). | `fix_field_app_bypassed` (Ricardo's WhatsApp group) | `it_field_asset_data`: the joint recorded in the app at the source, or the notebook photographed into GIS; D39 | first time right at close-out; joint data | `committed:ricardo_whatsapp`, `release_gated` fixes |
+| III | **The Zandbergen dairy farm.** At the end of a rural MS line north of Nova (some of it still overhead): a milking robot, 140 cows, and Daan (16), who phones the contact centre every hour when the power is out because his father is in the barn with a borrowed generator. | `fix_on_call_far`'s briefing (Esra's Monday calls) | the storm night (§7.4): Daan's call at 04:10 | outage duration; failure demand | `chose:on_call_far:*`, `storm_plan_information` |
+| IV | **Samira El Amrani's bakery in Havenzij.** The El Amrani daughter opens an all-electric bakery in the old harbour and lands on the waiting list. Ilse de Graaf (Act II) sold her a dough mixer. | `fix_household_rush` or `fix_priority_first_come` | her honest date, and whether it holds | `waiting_list` (`date_kept`) | `winter_el_amrani`, `classify_at_intake`, `publicly_visible_queue` |
+| V | **Ahmed's apprentice.** Sem (18), from Ahmed's first cohort (tier 3), does Theo's inspections. | `fix_maintenance_calendar` (Theo: "wie gaat dit doen als ik weg ben?") | the finale: Ahmed at the table, or Sem's postcard | first time right; fix health | `heard:ahmed_trainer`, `chose:training_capacity:*` |
+| VI | **Ricardo's notebook.** Ricardo keeps a paper notebook because the app has no signal in the cellars of Nova-Oud. | `fix_field_app_bypassed` (the WhatsApp group) | `it_field_asset_data`: the joint captured at the source, or the notebook photographed into GIS | first time right at close-out; joint data | `committed:ricardo_whatsapp`, `release_gated` fixes |
 
-These are proposals: the drafts carry the missions; the threads need beats and one short dialog each, written next. Logged in PLAN as a design task.
+### 9.1 Act III: the Zandbergen farm
+
+**Grounding.** Dairy farms with milking robots depend on power; an outage of hours means cows that cannot be milked and milk that cannot be cooled, which is why many farms keep or borrow a generator (`estimate:` of the farm's size: 140 cows, a common size for a Dutch farm with two robots). The rural remnants of overhead lines are the tier-2 draft's storm grounding (**verify**).
+
+**Beats:**
+- `fix_on_call_far` accepted, Esra: "Elke storing in het noorden belt dezelfde jongen. Daan Zandbergen. Zestien. Hij belt elk uur, heel beleefd, en hij vraagt nooit om iemand anders dan ons."
+- `fix_on_call_far` completed: Esra: "Daan belde vorige week niet. De storing duurde vijftig minuten. Hij stuurde een mail: 'Bedankt. De koeien ook.'" (only when the standby fix brought the northern outages under two hours; else: "Daan belde zes keer. De laatste keer zei hij alleen: 'Oké.'")
+- The storm night (§7.4), 04:10, at the escalation board: the call is in the scene as an interjection by Esra (`needs: {all: [done:fix_on_call_far]}`): "Daan Zandbergen aan de lijn. Hij vraagt niet wanneer. Hij vraagt of we het weten."
+- The act's end, a card from the farm in the kantine: with `storm_plan_information` chosen: "Jullie bericht zei 'vóór zes uur'. Het was kwart over vijf. Mijn vader heeft gehuild. Niet om de stroom. Daan." Otherwise: "We hebben het gered. Daan."
+
+```yaml
+dialogs:
+  - id: daan_storm_call
+    person: daan_zandbergen          # new, a customer (customer_upset), age 16
+    kind: persuade
+    mission: thread_zandbergen       # the thread's side mission (tier-2 draft §2.19), during the storm
+    place: customer_contact.answer
+    patience: 8
+    # start: customer_upset 25 + 0 + 0 + 0 + 0 = 25; +15 with done:fix_on_call_far (he knows the voice)
+    opening: "Goedenacht. Met Daan Zandbergen, van de boerderij aan de Noorderweg. Sorry dat ik weer bel."
+    position: {text: "Ik wil alleen weten wanneer de stroom terugkomt. Mijn vader zegt dat ik niet moet bellen.", tags: [claim]}
+    layers:
+      - {id: interest, at: 45, via: [paraphrase, empathy], text: "Het aggregaat is van de buurman. Die heeft hem morgenochtend zelf nodig. De robot kan niet melken zonder stroom. Honderdveertig koeien.", tags: [claim, feeling]}
+      - id: concern
+        at: 65
+        via: [reflect, empathy]
+        lead_in: {text: "Ik vind het eng, eigenlijk.", tags: [feeling]}
+        text: "Mijn vader staat sinds twee uur in de stal. Hij zegt niks. Als hij niks zegt, is het erg. Ik bel omdat ik niet weet wat ik anders moet doen."
+        tags: [admission]
+        unlocks: {facts: [heard:daan_storm]}
+    proposals:
+      - {id: a_time, addresses: [interest], label: "Een tijd noemen", say: "Voor zes uur is de stroom terug.", reply: "Zes uur. Ik zeg het tegen mijn vader.",
+         promise: {kind: restore_time, source: storm_board_estimate}}
+      - {id: what_we_know, addresses: [interest, concern], label: "Zeggen wat we weten, en wanneer we terugbellen", say: "Ik zeg je wat we weten: de ploeg is onderweg naar jullie kabel. Om vijf uur bel ik je terug, ook als ik nog niks nieuws heb. Jij hoeft niet meer te bellen.",
+         reply: "Ook als er niks nieuws is? … Oké. Dan ga ik mijn vader koffie brengen."}
+    outcomes:
+      commitment: "Om vijf uur. Ik zet mijn wekker. Niet dat ik slaap."
+      partial: "Oké. Ik bel over een uur weer. Sorry."
+      heard: "Fijn dat u het vroeg. Van mijn vader."
+      compliance: "Oké. Ik zal niet meer bellen."
+      ruined: "Laat maar. Ik bel wel als het licht weer aan is."
+    # route: empathy +9 (x1.5) 34 > paraphrase +10 44 (heard) > empathy (x0.5) 49 (interest) > reflect +10 59 > ... (+15 start with history)
+    # the temptation is a_time: it calms him now and is checked against the event's real restore time (the promise).
+```
+
+### 9.2 Act IV: Samira's bakery
+
+**Grounding.** Since 1 July 2026 small businesses and households in congestion areas queue together for a heavier connection, with a transition period until 1 January 2027 (tier-3 draft §0.2). An all-electric bakery needs more than a household connection (`estimate:` three electric deck ovens at roughly 15–20 kW each, so above 3x80A).
+
+**Beats:**
+- `fix_household_rush` (or `fix_priority_first_come`) accepted, Sanne: "Er staat een El Amrani op de lijst. Samira. Een bakkerij in de Oude Haven. Familie van?" With `flag:el_amrani_cold_winter`: Esra adds "Haar moeder belde. Ze zei: dit jaar wil ik niet weer bij mijn dochter logeren. Ik wil in de bakkerij staan."
+- Ilse de Graaf (Act II), at the `sector_energy_hub` talk or a beat: "Ik heb haar mijn oude deegmachine verkocht. Elektrisch. Die van mij was gas."
+- The act's end: if Samira was given a date and it held, a box of bread at the contact centre, with a card for Esra's agents; if it broke, Samira's line on the terugblik: "U zei maart. Het werd juni. Ik heb drie maanden huur betaald voor een bakkerij zonder oven." Both read `date_kept` for her order (a second followed order, `story: samira`).
+
+```yaml
+dialogs:
+  - id: samira_waiting_list
+    person: samira_el_amrani          # new, a customer (customer_upset), the El Amrani daughter, 27
+    kind: persuade
+    mission: thread_samira           # the thread's side mission (tier-3 draft §1.13)
+    place: customer_contact.answer
+    patience: 10
+    # start: customer_upset 25 + memory of the family: +10 with delivered:el_amrani or agreed:el_amrani_fourth_call:check_existing_connection; -10 with a broken promise
+    opening: "Goedemiddag, Samira El Amrani. U kent mijn moeder, denk ik. Zij heeft alles opgeschreven. Ik heb een spreadsheet."
+    position: {text: "Ik sta op de wachtlijst voor een zwaardere aansluiting. De huur loopt al. Ik wil weten waar ik sta. Plek en datum.", tags: [claim]}
+    layers:
+      - {id: interest, at: 45, via: [paraphrase, empathy], text: "Ik heb de bakkerij gekocht omdat hij elektrisch kon. Geen gas, nooit meer. Dat heb ik van mijn moeder geleerd, die winter.", tags: [claim, feeling]}
+      - id: concern
+        at: 65
+        via: [empathy, reflect, silence]
+        lead_in: {text: "En weet u…", tags: [hesitation]}
+        text: "Iedereen in de straat zegt: zet er toch een gasoven in, dan kun je morgen open. Ik heb een lening voor elektrische ovens. Als ik nu toch gas neem, heb ik twintig jaar gas. En dan heb ik mijn moeder niks geleerd."
+        tags: [admission]
+        unlocks: {facts: [heard:samira_gas], proposals: [phased_opening]}
+    proposals:
+      - {id: a_date, addresses: [interest], label: "Een datum noemen", say: "Ik zie hier {promise_date}.", reply: "Ik zet het in mijn spreadsheet.",
+         promise: {kind: delivery_date, source: planning_estimate}}
+      - {id: place_and_honest_window, addresses: [interest], label: "Haar plek en een eerlijk venster", say: "Uw plek is {queue_place}. Ik geef u een venster, geen datum, en ik bel u zodra het venster kleiner wordt.", reply: "Een venster. Dat is eerlijker dan mijn moeder kreeg."}
+      - {id: phased_opening, hidden: true, addresses: [concern], label: "Eerst open met wat er nu kan", say: "Wat als u eerst opent met één oven op de aansluiting die er is, en de rest aansluit zodra de verzwaring er is? Dan bent u open zonder gas.", reply: "Eén oven. Croissants en brood, geen taarten. … Dat kan. Dan ben ik open, en elektrisch."}
+    outcomes:
+      commitment: "Eén oven, geen gas, en een venster. Ik zet het in mijn spreadsheet. Mijn moeder zet het in haar schrift."
+      partial: "Ik wacht af. Maar als het venster niet kleiner wordt, hoort u van mij."
+      heard: "Dank u. U luisterde net als die keer bij mijn moeder."
+      compliance: "Goed. Ik wacht. Wat moet ik anders."
+      ruined: "Dan neem ik toch een gasoven. Dan bent u mij twintig jaar kwijt."
+    # path: the ruined line is the lock-in lesson of Ilse (Act II) repeated by the next generation; a_date is checked (date_kept).
+```
+
+### 9.3 Act V: Ahmed's apprentice
+
+**Beats** (only with `heard:ahmed_trainer`, or a saved Henk, and `chose:training_capacity:train_the_trainer` or `apprentice_cohort_september`):
+- `fix_maintenance_calendar` accepted, Theo: "Wie gaat dit doen als ik weg ben? Die jongens van Bouzid? Die weten niet eens hoe een station ruikt."
+- A week into the risk-based inspections, Theo: "Die Sem van Ahmed. Stond vanochtend in de Merelstraat en zei: 'Ruikt naar was.' Ik heb niks gezegd. Hij had gelijk."
+- D47 *De mof van 1978* names Sem in its card when the replaced joint was on his inspection list.
+- The finale: if Ahmed is the successor, Sem is the one who knocks during the last scene ("Ahmed, de bus staat klaar."); otherwise Sem's postcard arrives on Ruud's last day: a photo of a joint, "Van Henk geleerd, via Ahmed."
+
+```yaml
+dialogs:
+  - id: sem_first_station
+    person: sem                       # new, aankomend monteur (quiet), 18
+    kind: checkin
+    trigger: {beat: theo_sem_wax, after_days: 7}
+    patience: 8
+    # start: quiet 47 + 10 (goed) + 0 + 0 + 0 = 57
+    opening: "O. Hoi. Ik ben Sem. Van Ahmed."
+    position: {text: "Het gaat goed. Theo is streng. Maar goed.", tags: [claim]}
+    layers:
+      - {id: interest, at: 60, via: [open_question, mood, silence], text: "Ahmed zegt: eerst ruiken, dan meten, dan pas denken. Ik dacht dat hij een grapje maakte.", tags: [claim, feeling]}
+      - id: concern
+        at: 70
+        via: [silence, empathy, reflect]
+        lead_in: {text: "Alleen…", tags: [hesitation]}
+        text: "Theo zegt dat hij over twee jaar stopt. Dan ben ik twintig. En dan sta ik daar. Met de Merelstraat."
+        tags: [admission, doubt]
+        unlocks: {facts: [heard:sem_future]}
+    outcomes:
+      lifted: "Ahmed was ook twintig, toen Henk stopte. Dat zei hij. Ik had het nooit uitgerekend."
+      heard: "Oké. Dank je."
+      none: "Ik moet naar Theo."
+```
+
+### 9.4 Act VI: Ricardo's notebook
+
+**Beats:**
+- `fix_field_app_bypassed` accepted: Ricardo shows a paper notebook with a rubber band: "Dit is de echte database. Kelders in Nova-Oud: geen bereik. Ik schrijf het op en tik het 's avonds over. Soms."
+- `fix_field_app_bypassed` completed with `committed:ricardo_whatsapp`: "Het boekje blijft in de bus. Voor de kelders. Maar de app werkt nu ook zonder bereik. Dat had niemand gevraagd, behalve wij."
+- `it_field_asset_data` accepted, Mieke: "In Ricardo's boekje staan zeventig moffen die nergens anders staan. Ik heb het gezien. Hij laat het niet uit zijn handen."
+- The payoff, at `it_field_asset_data`'s debrief: with `joint_capture_in_app` live (the release came): "Ricardo heeft het boekje aan Mieke gegeven. 'Voor het archief,' zei hij. Het staat nu in GIS. Alles." With `photo_to_gis_check` only: "Mieke fotografeert elke maandag de nieuwe pagina's van Ricardo's boekje. Het werkt. Het is niet hoe het hoort."
+
+```yaml
+dialogs:
+  - id: ricardo_notebook
+    person: ricardo
+    kind: checkin
+    trigger: {beat: it_field_asset_data_accepted, after_days: 3}
+    patience: 8
+    # start: cynic 30 + 0 + 10 (team trust monteurs +1 after the field-app fix) + ... ; +15 with committed:ricardo_whatsapp
+    opening: "Als je voor het boekje komt: dat gaat niet weg."
+    position: {text: "Het boekje is van mij. Daar staan dingen in die nergens staan.", tags: [claim]}
+    layers:
+      - {id: interest, at: 50, via: [paraphrase, inquiry], text: "Elke mof die ik in een kelder vond die niet op de tekening stond. Zeven jaar. Met de datum en wat ik deed.", tags: [claim]}
+      - id: concern
+        at: 68
+        via: [reflect, empathy]
+        lead_in: {text: "Ik word er een beetje raar van, eerlijk gezegd.", tags: [feeling]}
+        text: "Als het in GIS staat, is het van iedereen. Dan is het boekje niks meer. Dan ben ik gewoon weer een monteur die het formulier invult."
+        tags: [admission]
+        unlocks: {facts: [heard:ricardo_notebook]}
+    outcomes:
+      lifted: "Weet je wat. Ik geef het aan Mieke. Niet aan IT. Aan Mieke. Zij weet wat het is."
+      heard: "Je vroeg wat erin stond. Niet hoe je het eruit krijgt. Dat is wat."
+      none: "Ik moet de kelder in."
+    sets_flags_on_lifted: [flag:notebook_to_mieke]   # it_field_asset_data's debrief and D39's card read it
+```
+
+New people for `people.yaml`: `daan_zandbergen` (customer_upset, 16), `samira_el_amrani` (customer_upset, 27), `sem` (quiet, 18). Names checked against every earlier doc: no collisions.
+
+**As missions (2026-10-16):** each thread is a small side mission in its tier draft, with a face, a number, a choice (a temptation with a later cost) and a payoff at the act's end: `thread_zandbergen` (tier-2 draft §2.19), `thread_samira` (tier-3 draft §1.13), `thread_sem` with the talk `theo_sem_pairing` (tier-4 draft §1.11), `thread_notebook` (tier-4 draft §2.6). Schema needs beyond §10: `opens_on: {beat}`, `requires_accepted` (a side that opens when a main is accepted), `followed_order` on a mission (a second followed order), `talk_to` with `outcome: lifted` for a check-in, beats `on: act_end`, `effects_during_event` and `person_trust` in a temptation's effects.
 
 ---
 
@@ -1076,7 +1319,7 @@ Merijn's standing rule (PLAN §6.2): each takes its recommended option, **bold**
 5. **The storm without Ruud.** **(a) The first storm waits for the secondment (`first_requires`), in the storm season October–March.** (b) The storm opens in winter as drafted, with or without Ruud. *(a) is the arc; (b) loses the test for fast or slow players.*
 6. **After the finale.** **(a) Free play continues: sustain, drift, repairs and seasons go on; Ruud sends postcards.** (b) The game ends with credits. *(a) respects a player who wants to keep their region; nothing is lost by stopping.*
 7. **Ruud as a dialog target.** **(a) Only in the farewell and the successor choice, both unruinable; never a persuasion.** (b) Never; the farewell as a cutscene. *(a) lets the player give back what the coach gave: listening.*
-8. **The secondment's place.** **(a) Den Haag, the Landelijk Actieprogramma Netcongestie (a real public programme), with Ruud fictional.** (b) A fictional national programme. *(a) grounds the waiting list in the real sector; no real person or organisation is impersonated.*
+8. **The secondment's place.** **(a) Den Haag, the Landelijk Actieprogramma Netcongestie (a real public programme of the Rijk, the grid operators, the ACM, the provinces and municipalities and market parties, since December 2022; described as such in `ruud_farewell`, §4.2), with Ruud and everyone he meets there fictional.** (b) A fictional national programme. *(a) grounds the waiting list in the real sector; no real person or organisation is impersonated.*
 9. **`t3_interim_mt` as a short main.** **(a) Yes: one talk, the Act IV opener, no insights.** (b) A beat without a mission. *(a) makes the variant the player's work, not a cutscene.*
 
 ---
@@ -1086,6 +1329,7 @@ Merijn's standing rule (PLAN §6.2): each takes its recommended option, **bold**
 - KNMI on storm seasons: "Storm kan in ons land het hele jaar door voorkomen, maar de kans op een flinke storm … is het grootst in de periode oktober tot en met maart" — KNMI, *Herfststormen*, https://www.knmi.nl/over-het-knmi/nieuws/herfststormen (search extract; **verify**).
 - First frost: national average 21 October (1991–2020) versus 15 October (1961–1990); De Bilt about 2–3 November (older figures) — Hart van Nederland, *Eerste vorst van het jaar*, https://www.hartvannederland.nl/weer/weerbericht/artikelen/eerste-vorst-van-het-jaar-en-warme-dagen-op-komst; Weerplaza, https://www.weerplaza.nl/weerinhetnieuws/eerste-vorst-van-het-seizoen-in-de-bilt/6703/ (search extracts; **verify** against the KNMI climate tables).
 - Waiting list: "ruim 15.000 aanvragen voor afnamecapaciteit" at regional operators, mid-2026 — *Actualisatie van de voortgang LAN najaar 2026* (Kamerbrief annex), https://omgevingsweb.nl/wp-content/uploads/2026/10/108251533-Bijlage-Actualisatie-van-de-voortgang-LAN-najaar-2026.pdf; Solar Magazine on the feed-in queue (8,558 requests, end of June 2026), https://solarmagazine.nl/nieuws-zonne-energie/i44990/wachtlijst-teruglevering-bij-regionale-netbeheerders-krimpt-licht-maar-gevraagd-vermogen-stijgt-13-procent (search extracts; **verify**).
+- Landelijk Actieprogramma Netcongestie: set on 21 December 2022; Kamerbrief *Landelijk Actieprogramma Netcongestie*, minister voor Klimaat en Energie, 20 December 2022, Kamerstuk 29 023 nr. 385, https://zoek.officielebekendmakingen.nl/kst-29023-385.pdf ("gezamenlijk opgesteld door netbeheerders, ACM, medeoverheden, het Rijk en marktpartijen"; the ministry's decision note of 5 December 2022 in the same words); the programme text, https://www.energie-nederland.nl/wp-content/uploads/2023/06/Landelijk-Actieprogramma-Netcongestie.pdf; the lines *Beter benutten*, *Sneller bouwen*, *Slimmer inzicht* as named in the 2026 progress letters (search extracts; **verify** the line names against the latest letter).
 - Households on the waiting list from 1 July 2026: KHN, https://khn.nl/nieuws/netcongestie-vanaf-1-juli-2026-ook-kleinverbruikers-op-de-wachtlijst (as cited in the Acts 0–II scripts).
 - AOW age 67 years and 3 months for 2029 and 2030 — Kamerbrief *Vaststelling AOW-leeftijd 2030* (8 November 2024), https://awvn.nl/app/uploads/2024/11/Kamerbrief-vaststelling-AOW-leeftijd-2030-en-pensioenrichtleeftijd-2026.pdf; Rijksoverheid, https://www.rijksoverheid.nl/onderwerpen/algemene-ouderdomswet-aow/aow-leeftijd.
 - Kata coaching: Rother, M. (2009), *Toyota Kata* (the five questions and the reflection block).

@@ -68,7 +68,7 @@ func minutes_per_visit() -> float:
 
 ## Totals from `day` on: {entered, done, reworked, stale, interrupted, queue_hours (mean
 ## wait before the first start, for work steps), wait_hours (mean external
-## wait per order, for wait steps)}.
+## wait per order, for wait steps; the stock-out wait, for material steps)}.
 func stats_since(day: int) -> Dictionary:
 	var totals := daily.since(day)
 	var started := totals[Stat.STARTED]
