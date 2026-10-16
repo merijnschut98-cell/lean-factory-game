@@ -1206,7 +1206,7 @@ PERSON_KEYS = {"id", "name", "short", "role", "place", "team", "archetype", "nee
 DIALOG_KEYS = {"id", "name", "person", "kind", "mission", "requires_clue", "needs", "owns", "kpi_team", "mood",
                "patience", "opening", "retry_opening", "position", "layers", "data", "proposals", "experiments",
                "co_proposal", "condition_needs", "block", "lines", "replies", "outcomes", "variants", "trigger",
-               "tutorial", "prompt", "warning", "need"}
+               "tutorial", "teaches", "prompt", "warning", "need"}
 LAYER_KEYS = {"id", "at", "via", "text", "tags", "tell", "lead_in", "condition", "wait_for", "unlocks"}
 PROPOSAL_KEYS = {"id", "label", "say", "kpis", "addresses", "reply", "hidden"}
 # A persuasion speaks its own outcomes in the person's voice; the bank's are a
@@ -1315,6 +1315,11 @@ def _validate_dialog(d: dict, where: str) -> None:
     _number(d, "patience", where, 3, 15, integer=True, default=10)
     if not isinstance(d.get("tutorial", False), bool):
         raise ContentError(f"{where}: 'tutorial' must be true or false (an Act 0 talk that cannot be ruined)")
+    if "teaches" in d:  # the day's move on Ruud's morning card (tutorial talks spec §5)
+        if not d.get("tutorial"):
+            raise ContentError(f"{where}: 'teaches' only on a tutorial talk")
+        if set(_string_list(d, "teaches", where)) - set(LISTEN_MOVES):
+            raise ContentError(f"{where}: 'teaches' names listening moves ({', '.join(LISTEN_MOVES)})")
     _line(d.get("position"), f"{where} position")
     _layers(d.get("layers"), where)
     proposals = _entries(d, "proposals", where, "label") if "proposals" in d else []
