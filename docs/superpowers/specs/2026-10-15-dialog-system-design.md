@@ -190,7 +190,7 @@ An expert conversation (`kind: expert`, Femke, Thomas, Jeroen) uses the same eng
 
 **What it displays** (top of the speech panel, §11):
 
-- **Openheid:** a horizontal bar with five labelled bands. After each move the marker slides to the new value; the change flashes as a small ▲/▼ with the number for a second. Nothing is shown before the move.
+- **Openheid:** a horizontal bar with five labelled bands. After each move the marker slides to the new value; the change flashes as ▲ or ▲▲ (▼ or ▼▼) by its size for a second, **never a number** (Merijn, 2026-10-15). Nothing is shown before the move.
 - **Vertrouwen:** five pips (one per 20 points of trust), next to the person's name; a pip fills or empties with a short animation.
 - **Stemming:** a word (`goed`, `neutraal`, `gespannen`, `moe`, `stil`) and the portrait's face.
 - **Verloop:** a small sparkline of openness over this talk's moves. It makes the summary card readable ("waar ging het mis?") and gives Ruud something to ask about.
@@ -719,7 +719,7 @@ func person(person_id: String) -> Dictionary          # {trust_pips, morale_band
 ```
 
 - **Chips:** the move type as the label; hover or focus shows the line you will say. Never an effect, a colour or a hint about fit. "▸" chips open a small picker (your found clues, the dialog's proposals, your A3's countermeasures). Keys 1–8 for listening, Q–T for steering.
-- **The meter** animates *after* the reply: the marker slides, ▲/▼ flashes with the number, pips fill or empty. Band names are always written, so colour is never the only signal.
+- **The meter** animates *after* the reply: the marker slides, ▲/▲▲ or ▼/▼▼ flashes (never a number), pips fill or empty. Band names are always written, so colour is never the only signal.
 - **The reply** types out; tags show only through the portrait's face and the 3D body language.
 - **The summary card** after the talk: the outcome in Dutch ("Staat erachter", "Afspraak onder voorwaarde", "Gehoord", "Geblokkeerd", "Gaat akkoord onder druk", "Mislukt — morgen weer"), the openness trace with the move chips under it, what you learned (a revealed layer, a new clue, a route hint) and, for a main-mission talk, "Bespreek met Ruud".
 - **Mensen** (a new tab in the journal, J): per person the portrait, trust pips, morale band, what you know (position, interest, concern once earned), the last outcome, when you can talk again, and any route hint.

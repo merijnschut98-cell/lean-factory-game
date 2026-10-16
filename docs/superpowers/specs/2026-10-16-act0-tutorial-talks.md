@@ -6,6 +6,10 @@
 
 ## 0. Summary
 
+> **Schedule change (2026-10-16, `2026-10-16-first-five-minutes.md` §4.2):** the arrival Monday now holds one talk, `anouk_seven` at 19:00 (Stemming peilen), the first talk of the game. `sanne_monday` becomes `sanne_tuesday` (Tuesday 08:30, Open vraag, re-dated opening); `rachid_monday` becomes an optional walk-around talk (Tuesday–Thursday); `mieke_tuesday` becomes `mieke_wednesday` (Samenvatten moves to Wednesday's card). The table below is the original schedule; the talks' texts and routes are unchanged apart from the re-dated lines.
+
+> **Person needs (2026-10-16, `2026-10-16-person-needs.md`):** every person here has a hidden `need`, and the week now teaches *reading a person* as well as the eight moves: a tell in each talk's position, Rachid as the week's fairness person, a contrast on Wednesday, a Friday card and a closing question from Ruud. All changes are listed in §7.
+
 - **Ten talks across the training week, two a day.** Each day introduces one or two moves by name, on a card in Ruud's morning briefing, and each talk is written so that the day's move is *one* good way through, never the only one:
 
   | Day | Mission | Moves of the day | Talk 1 | Talk 2 |
@@ -64,6 +68,9 @@ move_cards:
   - {move: experience, day: training_thu, title: "Ervaring delen",
      text: "Je vertelt kort iets van jezelf dat lijkt op wat de ander meemaakt. Echt gebeurd, en over jou.",
      why: "Twijfel wordt kleiner als iemand anders hem ook kent. Te vroeg, en het gaat over jou."}
+  - {move: null, day: training_fri, title: "Wie zit er tegenover je?",       # person needs §7: the skill, never the needs
+     text: "Dezelfde zet landt bij de één hard en bij de ander nauwelijks. Wat iemand zelf zegt, en hoe, vertelt je wat hij nodig heeft. In je journaal, onder Mensen, staat wat jij hebt gehoord.",
+     why: "Wie eerst kijkt wie er zit, hoeft daarna minder te raden."}
 ```
 
 ---
@@ -92,7 +99,7 @@ bank:
     silence: "Toen {person} aarzelde, zei je niets. Stilte laten. Dat is het moeilijkste wat er is."
     experience: "Je vertelde iets van deze week, toen {person} twijfelde. Ervaring delen. Kort, en over jou."
     none: "Wat zag je aan {person} toen je begon?"
-    week_end: "Acht manieren van luisteren, in vijf dagen. Vanaf maandag noem ik ze niet meer. Dan zie ik ze alleen."
+    week_end: "Acht manieren van luisteren, in vijf dagen. Vanaf maandag noem ik ze niet meer. Eén vraag voor het weekend: wat werkte bij de één en niet bij de ander? Waar zag je dat aan?"
 ```
 
 `week_end` is Ruud's last naming line, on Friday after the second talk. It marks the change: from Act I he asks (`bank.coach`, dialog spec §5.6).
@@ -106,20 +113,20 @@ People not yet in `content/dialogs.yaml`:
 ```yaml
 people:
   - {id: sanne, name: Sanne Bakker, short: Sanne, role: teamleider Intake, place: connections.intake, team: intake,
-     archetype: overloaded, trust: 50, morale: 55, voice: "We zijn een postkantoor geworden."}
+     archetype: overloaded, need: recognition, trust: 50, morale: 55, voice: "We zijn een postkantoor geworden."}
   - {id: rachid, name: Rachid Ouali, short: Rachid, role: medewerker Intake, place: connections.intake, team: intake,
-     archetype: quiet, trust: 50, morale: 60, voice: "Ik vraag het wel even na."}
+     archetype: quiet, need: fairness, trust: 50, morale: 60, voice: "Ik vraag het wel even na."}
   - {id: anouk, name: Anouk de Vries, short: Anouk, role: werkvoorbereider, place: connections.design, team: work_prep,
-     archetype: overloaded, trust: 50, morale: 50, voice: "Ik zit erbovenop."}
+     archetype: overloaded, need: safety, trust: 50, morale: 50, voice: "Ik zit erbovenop."}
   - {id: mieke, name: Mieke van der Veen, short: Mieke, role: tekenaar Revisie & GIS, place: connections.revision, team: gis,
-     archetype: craftsman, trust: 50, morale: 55, voice: "We tekenen zo snel als we kunnen."}
+     archetype: craftsman, need: recognition, trust: 50, morale: 55, voice: "We tekenen zo snel als we kunnen."}
   - {id: linda, name: Linda Jansen, short: Linda, role: planner, place: connections.planning, team: planners,
-     archetype: overloaded, trust: 50, morale: 45, voice: "Ik plan iedereen. Behalve mezelf."}
+     archetype: overloaded, need: time, trust: 50, morale: 45, voice: "Ik plan iedereen. Behalve mezelf."}
   - {id: petra, name: Petra Vos, short: Petra, role: Meetdata & registratie, place: connections.close_out, team: meter_office,
-     archetype: defender, trust: 50, morale: 55, voice: "Alles klopt. Tot op de laatste EAN."}
+     archetype: defender, need: facts, trust: 50, morale: 55, voice: "Alles klopt. Tot op de laatste EAN."}
 ```
 
-(Joost is in content already. Rachid is new as a dialog target; the Acts 0–II scripts named him in lines and gave him a walk-around check-in, `rachid_new`.)
+Needs per the person-needs spec §2 (Joost: `safety`, added to his entry in `content/dialogs.yaml`). (Joost is in content already. Rachid is new as a dialog target; the Acts 0–II scripts named him in lines and gave him a walk-around check-in, `rachid_new`.)
 
 Starts follow the spec §3.6 (archetype base + mood + team trust + trust + morale + memory). Route comments use the built engine's rules (dialog spec §3.3 with the merge's calls: `inquiry` reaches 15 below a threshold; a layer opens only on a move that landed; the lead-in follows a landing listening move at openness ≥ 65).
 
@@ -138,7 +145,7 @@ dialogs:
     patience: 12
     # start: overloaded 35 - 10 (moe) + 0 + 0 + 0 (morale 55) = 25, Op z'n hoede
     opening: "Goedemorgen. Jij bent de nieuwe? Sorry, ik heb drie telefoons en een bak die overloopt. Wat kan ik voor je doen?"
-    position: {text: "Het is maandag. Maandag is altijd zo. Alles wat in het weekend binnenkwam, plus wat vrijdag bleef liggen.", tags: [claim]}
+    position: {text: "Het is maandag. Maandag is altijd zo. Alles wat in het weekend binnenkwam, plus wat vrijdag bleef liggen. Maar dat ziet boven niemand, hè.", tags: [claim], tell: recognition}
     layers:
       - id: interest
         at: 45
@@ -196,7 +203,7 @@ dialogs:
     patience: 12
     # start: quiet 47 + 0 + 0 + 0 + 0 = 47, Luistert
     opening: "O. Hoi. Ik ben Rachid. Sanne zegt dat ik je de bakken moet laten zien."
-    position: {text: "Links wat binnenkomt, rechts wat compleet is. Wat in het midden ligt, daar mist iets.", tags: [claim]}
+    position: {text: "Links wat binnenkomt, rechts wat compleet is. Wat in het midden ligt, daar mist iets. Meestal niet door ons, hoor.", tags: [claim], tell: fairness}
     layers:
       - id: interest
         at: 52
@@ -256,7 +263,7 @@ dialogs:
     patience: 12
     # start: overloaded 35 + 0 + 0 + 0 + 0 = 35, Op z'n hoede
     opening: "O, hoi. Sorry, het is een beetje een bende. Drie collega's zitten op cursus."
-    position: {text: "Het is gewoon druk deze week. Ik zit erbovenop.", tags: [claim]}
+    position: {text: "Het is gewoon druk deze week. Ik zit erbovenop, echt. Je hoeft het niet op te schrijven.", tags: [claim], tell: safety}
     layers:
       - id: interest
         at: 45
@@ -304,7 +311,7 @@ dialogs:
     patience: 12
     # start: craftsman 40 + 0 + 0 + 0 + 0 = 40, Luistert
     opening: "Kom je voor de revisie? Dan moet je hier zijn. Pas op de doos."
-    position: {text: "Dit zijn de schetsen van de monteurs. Wat ze in de grond hebben gelegd. Wij tekenen het over in GIS. Zo snel als we kunnen.", tags: [claim]}
+    position: {text: "Dit zijn de schetsen van de monteurs. Wat ze in de grond hebben gelegd. Wij tekenen het over in GIS. 'Overtekenen', noemen ze het boven. Zo snel als we kunnen.", tags: [claim], tell: recognition}
     layers:
       - id: interest
         at: 50
@@ -333,7 +340,7 @@ dialogs:
       inquiry: "Wat moet je dan uitzoeken, bij zo'n schets?"
     replies:
       paraphrase:
-        lands: {text: "Precies. Dat zegt bijna niemand. Ze denken dat het overtekenen is.", tags: [claim]}
+        lands: {text: "Precies. Dat zegt bijna niemand. Ze denken dat het overtekenen is.", tags: [claim], tell: recognition}
     outcomes:
       commitment: "Dat moet kloppen, dus kom donderdag terug. Dan heb ik de slechtste apart gelegd."
       partial: "Misschien later in de week. Als de doos kleiner is. Dat wordt hij niet."
@@ -360,7 +367,7 @@ dialogs:
     patience: 12
     # start: defender 40 + 0 + 0 + 0 + 0 (morale 50) = 40, Luistert
     opening: "Je komt de stapel tellen, hoorde ik. Even voor de duidelijkheid: we halen ons doel."
-    position: {text: "Drie van de vier zitten op cursus. Dan ligt er meer. Dat is gewoon een feit, geen probleem.", tags: [claim]}
+    position: {text: "Drie van de vier zitten op cursus. Dan ligt er meer. Dat is gewoon een feit, geen probleem. En als dit naar Frank gaat, wil ik het eerst zien.", tags: [claim], tell: safety}
     layers:
       - id: interest
         at: 52
@@ -412,7 +419,7 @@ dialogs:
     patience: 12
     # start: overloaded 35 - 10 (moe) + 0 + 0 - 0 (morale 45 -> -1) = 24, Op z'n hoede
     opening: "Sorry, ik ben aan het omplannen. Twee monteurs zijn naar een storing. Zeg het maar."
-    position: {text: "Dit gebeurt elke dag. Er is een storing, de monteurs gaan erheen, en ik plan alles om. Dat is mijn werk.", tags: [claim, feeling]}
+    position: {text: "Dit gebeurt elke dag. Er is een storing, de monteurs gaan erheen, en ik plan alles om. Dat is mijn werk. Ik heb tot de volgende storing.", tags: [claim, feeling], tell: time}
     layers:
       - id: interest
         at: 45
@@ -472,7 +479,7 @@ dialogs:
     patience: 12
     # start: overloaded 35 + 0 + 0 + 0 + 0 + memory (10 heard, 15 committed on Tuesday) = 35-50
     opening: "Dus we gaan het proberen? Eén bak, oudste bovenop? Drie dagen?"
-    position: {text: "Prima. Ik doe mee. Het is maar drie dagen.", tags: [claim]}
+    position: {text: "Prima. Ik doe mee. Het is maar drie dagen. En verder hoeft niemand het te weten, toch?", tags: [claim], tell: safety}
     layers:
       - id: interest
         at: 48
@@ -521,7 +528,7 @@ dialogs:
     patience: 12
     # start: defender 40 + 0 + 0 + 0 + 0 = 40, Luistert
     opening: "Meetdata en registratie. Jij bent de nieuwe van Ruud. Ga zitten, maar raak de map niet aan."
-    position: {text: "Ik registreer alles één keer per maand. Dan doe ik de hele stapel in één keer. Dat is efficiënter. Klopt.", tags: [claim]}
+    position: {text: "Ik registreer alles één keer per maand. Dan doe ik de hele stapel in één keer. Dat is efficiënter, ik heb het uitgerekend. Klopt.", tags: [claim], tell: facts}
     layers:
       - id: interest
         at: 52
@@ -594,6 +601,7 @@ dialogs:
         lead_in: {text: "Alleen…", tags: [hesitation]}
         text: "Ze werken alle drie langer hier dan ik. Wie ben ik om te zeggen hoe het moet?"
         tags: [admission, doubt]
+        tell: safety
         unlocks:
           facts: [heard:anouk_owner]
           proposals: [anouk_writes_a4]
@@ -643,6 +651,7 @@ dialogs:
         lead_in: {text: "Alleen, nou…", tags: [hesitation]}
         text: "Volgende week begin je echt, toch? Met de stapel van Joost. Als het daar beter gaat, komt alles nog harder bij ons binnen. En dan zijn wij weer het postkantoor dat het niet bijhoudt."
         tags: [admission]
+        tell: recognition
         unlocks:
           facts: [heard:sanne_friday]
           proposals: [walk_the_flow_monday]
@@ -674,6 +683,8 @@ dialogs:
 | `teaches` | dialog (tutorial only) | The move(s) the day's card introduced; Ruud's naming rule prefers these (§3). Validator: only on `tutorial: true`; moves from `dialog_moves`. |
 | `bank.ruud_names` | bank | Ruud's naming line per listening move, plus `none` and `week_end` (§3). |
 | `move_cards` | `content/dialogs.yaml` (or concepts) | The eight cards (§2), each tied to a training mission; shown in the morning briefing and in the codex under *Gesprekken*. |
+| `move_cards[].move: null` | the Friday card | A card that names a skill, not a move ("Wie zit er tegenover je?", §7); no chip, no naming line. |
+| `need`, `tell` | people, line objects | Person needs spec §6. |
 | `People.last_landed` | rules | Per talk, which listening moves landed and which revealed the concern, so the naming rule can pick (tutorial talks only). |
 | validator | `_layers` | Accept a concern lead-in tagged `feeling` without `hesitation` (four-tier audit §4.2; PLAN 1.6a). Until then the two feeling cues here (Anouk Tuesday, Linda Wednesday) carry both tags. |
 
@@ -683,9 +694,59 @@ dialogs:
 - every tutorial talk reaches `commitment` within patience by at least three distinct sequences, one of them without the day's move;
 - no tutorial talk can end in `ruined`;
 - Ruud's naming line never names a move that missed, and never fires outside Act 0.
+- with needs on (§7): every talk keeps three routes and one without the day's move; the day's move still lands (Δ > 0) on its own talk; each talk shows a tell in its position.
 
 ## 6. Questions, decided by the standing rule
 
 1. **How many talks.** **(a) Two a day (ten), all optional.** (b) One a day. *(a) is what the coordinator asked for, and optional talks respect a returning player who skips the week.*
 2. **Where the move is taught.** **(a) A card in the morning briefing, no highlighted chip.** (b) The day's chip glows. *(a) teaches the name without handing over the moment; (b) would be a golden path for a week.*
 3. **Ruud's naming.** **(a) One move per talk, only one that landed, Act 0 only.** (b) Every landed move. *(a) is a coach's single observation; a list is a report card.*
+
+---
+
+## 7. Reading a person: audit against the person needs (2026-10-16)
+
+Audited against `2026-10-16-person-needs.md`. The question: does the week teach the player to *read the person* before choosing a move, without naming any need? Numbers are first-move Δ with the spec's values, E1, the archetype weights and the need weights at the talk's mood (needs spec §1.2–§1.4); estimates, to be confirmed on the engine.
+
+### 7.1 Findings
+
+| Talk | Person · need · mood | Day's move: need weight | Best first move with needs | Verdict |
+|---|---|---|---|---|
+| `anouk_seven` (Mon) | Anouk · safety · moe | mood ×1.0 (archetype ×1.5): 12 | mood 12, empathy 10 | Holds: on a tired evening, asking how she is still opens best. |
+| `sanne_tuesday` | Sanne · recognition · moe | open_question ×1.125: 6.75 | mood 10.5, paraphrase 8.75 | Holds as "a good way, not the way"; her tell now says what she misses. |
+| Rachid (walk-around) | Rachid · **fairness** · neutraal | open_question ×1.5: 9 | open_question 9 | Holds, and it is the week's only fairness person (F1). |
+| `anouk_first_look` (Tue) | Anouk · safety · neutraal | empathy ×1.5: 12 | empathy 12 = mood 12 | The day's move is her need's move: the clearest lesson of the week. |
+| `mieke_wednesday` | Mieke · recognition · neutraal | paraphrase ×1.5: 10.5 | inquiry 12 (craftsman), paraphrase 10.5 | Holds. |
+| `joost_wednesday` | Joost · safety · neutraal | inquiry ×0.5 before `heard`: 4; ×1.0 after: 8 | empathy 12 | **Contrast (F2):** the same Doorvragen lands ▲▲ on Mieke and only ▲ on Joost, until he feels heard. Route A (paraphrase, then inquiry) already does it right. |
+| `linda_wednesday` | Linda · time · moe | reflect ×1.0: 10 | mood 15 | Holds; route A opens with mood. |
+| `anouk_thursday` | Anouk · safety | silence ×1.0 | (memory-dependent) | Holds; Ervaring delen would land ×1.5 for her, a find for the curious. |
+| `petra_thursday` | Petra · facts · neutraal | experience ×0.75: 6 | inquiry 12 | Lands, but weaker (F3). |
+| `anouk_owns_tray`, `sanne_friday` | safety, recognition | all eight | as their people | Hold. |
+
+- **F1. The week met only four needs** (Anouk, Rachid and Joost were all safety-shaped). Rachid's worry ("komt terug met mijn naam erop", for errors made by installers) reads as well as fairness, and the walk-around talk teaches the open question, fairness's strong move. **Applied:** Rachid's need is `fairness`; his position carries the tell. A player who skips him meets fairness in Act I (Marco, Esra).
+- **F2. Wednesday is the contrast day.** Three people, three needs (recognition, safety, time), and the same move landing differently is visible in the arrows. No change to the talks; the closing question (F5) asks about exactly this.
+- **F3. Petra's Ervaring delen lands at ×0.75.** Kept: it still lands (Ruud names it), and her story is factual (whom to ask, the cleaner), the kind of experience a facts person accepts. Route numbers in her comment shift by −2; no route is lost.
+- **F4. No talk showed a tell early.** The needs were in the concerns, which come late. **Applied:** a tell in each talk's position, in the person's voice (below), and `tell` tags on the later lines that already were tells (Mieke's "overtekenen", Anouk's Friday doubt, Sanne's "postkantoor").
+- **F5. Nothing in the week asked the player to compare people.** **Applied:** a Friday card, *Wie zit er tegenover je?*, that names the skill and points to the Mensen tab (never a need), and Ruud's `week_end` line now ends with a question: "Wat werkte bij de één en niet bij de ander? Waar zag je dat aan?"
+
+### 7.2 Edits applied in this doc
+
+| Where | Change |
+|---|---|
+| people block | `need` for Sanne (recognition), Rachid (fairness), Anouk (safety), Mieke (recognition), Linda (time), Petra (facts); Joost (safety) goes on his existing entry |
+| `sanne_monday` / `sanne_tuesday` position | + "Maar dat ziet boven niemand, hè." `tell: recognition` (the Tuesday re-dated position in the first-five-minutes doc §4.2 gets the same ending) |
+| Rachid's position | + "Meestal niet door ons, hoor." `tell: fairness` |
+| `anouk_first_look` position | + "…, echt. Je hoeft het niet op te schrijven." `tell: safety` |
+| `mieke_wednesday` position | + "'Overtekenen', noemen ze het boven." `tell: recognition`; her paraphrase reply `tell: recognition` |
+| `joost_wednesday` position | + "En als dit naar Frank gaat, wil ik het eerst zien." `tell: safety` |
+| `linda_wednesday` position | + "Ik heb tot de volgende storing." `tell: time` |
+| `anouk_thursday` position | + "En verder hoeft niemand het te weten, toch?" `tell: safety` |
+| `petra_thursday` position | "Dat is efficiënter, ik heb het uitgerekend." `tell: facts` |
+| `anouk_owns_tray` concern, `sanne_friday` concern | `tell: safety`, `tell: recognition` |
+| move cards (§2) | the Friday card *Wie zit er tegenover je?* (`move: null`) |
+| `ruud_names.week_end` (§3) | ends with the comparing question (F5) |
+| tests (§5) | with needs on: three routes, one without the day's move, the day's move lands, a tell in each position |
+| first-five-minutes `anouk_seven` | position + "Zeg maar niet tegen Joost dat ik er nog zat, hè." `tell: safety` |
+
+The route comments above are computed without needs; the builder's tests on the engine are the judge (N4 in the needs spec).
+
