@@ -134,6 +134,20 @@
                "hair_color": [150, 62, 36], "outfit": "shirt", "eye_color": [70, 90, 70],
                "colors": {"shirt": [236, 226, 200], "trousers": [36, 38, 46]}},
       "office": {"floor": "ground", "seat": "kcc13", "pose": "sit", "headset": true}
+    },
+    {
+      "id": "rob", "name": "Rob Verhagen", "role": "inkoper",
+      "look": {"sex": "m", "height": 1.79, "build": 0.55, "skin": [228, 184, 156], "hair_style": "buzz",
+               "hair_color": [150, 120, 84], "outfit": "shirt", "glasses": true, "eye_color": [80, 96, 110],
+               "stubble": 0.2, "colors": {"shirt": [210, 222, 236], "trousers": [96, 88, 76]}},
+      "office": {"seat": "klant0", "pose": "sit"}
+    },
+    {
+      "id": "thomas", "name": "Thomas Visser", "role": "accountmanager grootzakelijk",
+      "look": {"sex": "m", "height": 1.84, "build": 0.4, "skin": [236, 196, 170], "hair_style": "short",
+               "hair_color": [190, 150, 96], "outfit": "manager", "eye_color": [66, 108, 140],
+               "colors": {"blazer": [40, 56, 92], "shirt": [244, 244, 246], "trousers": [40, 44, 56]}},
+      "office": {"floor": "second", "seat": "congestion0", "pose": "sit"}
     }
   ]
 }
