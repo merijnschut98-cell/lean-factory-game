@@ -661,7 +661,8 @@ func checkin_prompts() -> Array[Dictionary]:
 ## role, place, trust_pips, morale_band (0 low · 1 middling · 2 high),
 ## cooldown_until, outcomes (dialog id → its best outcome), observed (what they
 ## said, newest first: People.observed), talks (newest first: People.talk_log),
-## note (the player's own, "" for none)}; {} for an unknown id.
+## note (the player's own, "" for none), open (_still_open), talk_ready (they
+## have a talk for you now)}; {} for an unknown id.
 func person(person_id: String) -> Dictionary:
 	var p: PersonDef = people.persons.get(person_id)
 	if p == null:
@@ -677,7 +678,35 @@ func person(person_id: String) -> Dictionary:
 		"morale_band": 0 if morale < 30 else (1 if morale < 70 else 2),
 		"cooldown_until": int(people.memory.get(person_id, {}).get("cooldown_until", 0)), "outcomes": outcomes,
 		"observed": _newest_first(people.observed.get(person_id, [])),
-		"talks": _newest_first(people.talk_log.get(person_id, [])), "note": people.note.get(person_id, "")}
+		"talks": _newest_first(people.talk_log.get(person_id, [])), "note": people.note.get(person_id, ""),
+		"open": _still_open(person_id, facts),
+		"talk_ready": not people.cooling_down(person_id, region.net.time) and people.dialog_for(person_id, _world(p)) != null}
+
+
+## What a person's agreements still wait for (the Mensen tab, U16): [{dialog,
+## outcome (partial | blocked), wait_for (a heard concern's condition, else
+## ""), hints (a block's route hints)}].
+func _still_open(person_id: String, facts: Dictionary) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for d: DialogDef in people.dialogs.values():
+		var o := people.effective_outcome(d.id, facts) if d.person == person_id else ""
+		if o == "partial":
+			out.append({"dialog": d.id, "outcome": o, "wait_for": _heard_wait_for(d), "hints": []})
+		elif o == "blocked":
+			out.append({"dialog": d.id, "outcome": o, "wait_for": "",
+				"hints": d.block.get("routes", []).map(func(r: Dictionary) -> String: return str(r.get("hint", "")))})
+	return out
+
+
+## The concern's `wait_for` of a dialog whose concern the player heard ("" if
+## not heard or it names nothing): a condition never shows before its concern.
+func _heard_wait_for(d: DialogDef) -> String:
+	for key: String in people.revealed:
+		if key.get_slice("/", 0) == d.id and people.revealed[key].has("concern"):
+			var layers := d.layers_of(int(key.get_slice("/", 1)))
+			if layers.size() > 1:
+				return str(layers[1].get("wait_for", ""))
+	return ""
 
 
 static func _newest_first(entries: Array) -> Array:

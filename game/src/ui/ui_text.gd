@@ -85,7 +85,13 @@ const PLACE_ERRORS := {
 	"no_team": "Hier werkt geen team om een routine mee te houden.",
 	"planned": "Hier loopt al een vaste routine.",
 	"not_planned": "Hier loopt geen vaste routine.",
+	"not_resolved": "Deze verbetering is nog niet afgerond.",
+	"standardised": "Deze verbetering heeft al een standaard.",
+	"no_budget": "Het verbeterbudget is te krap voor een standaard.",
 }
+## Standardising a held fix later, at its place (Region.standardise).
+const STANDARDISE_BUTTON := "Standaardiseren (%s)"
+const STANDARDISED := "Gestandaardiseerd: werkinstructie, training en borging op het dagstart-bord."
 
 const ACCEPT_ERRORS := {
 	"unknown": "Deze missie bestaat niet.",
@@ -94,6 +100,9 @@ const ACCEPT_ERRORS := {
 	"main_active": "Je hebt al een hoofdmissie. Maak die eerst af.",
 	"side_full": "Je hebt al drie zijmissies.",
 	"problem_unavailable": "Dit probleem kan nu niet worden opgepakt.",
+	"not_active": "Deze missie loopt nu niet.",
+	"no_containment": "Hier valt niets in te dammen.",
+	"contained": "Dit is al ingedamd.",
 }
 
 const COACH := {
@@ -137,6 +146,7 @@ const EVENTS := {
 	"slipping": "Een verbetering zakt weg: %s (J)",
 	"checkin": "Op het missiebord: %s",
 	"repair": "Herstel op het missiebord: %s",
+	"contained": "Ingedamd: %s. Nu de oorzaak nog.",
 }
 
 ## Why the MT's view of the CI lead changed (Reputation's reasons).

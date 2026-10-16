@@ -15,6 +15,10 @@ const FORK_HEADING := "Twee hoofdmissies tegelijk: welke pak je eerst aan?"
 const REPAIR_KIND := "herstel"
 ## The drawer of side offers older than a week (SessionLayer.older_offers).
 const OLDER := "Nog open"
+## A safety mission's containment (audit §2.4.1): the button names the
+## measure, its cost and how long it holds; once taken, until when.
+const CONTAIN := "Indammen: %s  (%s, %d dagen)"
+const CONTAINED := "Ingedamd tot %s: %s. De oorzaak is nog niet weg."
 
 var message := ""
 ## Set by GameUI: holds back side offers (at most two new a week); null
@@ -60,6 +64,35 @@ func cancel_skip() -> void:
 	refresh()
 
 
+## Contain an active mission's acute risk: "" or the refusal code.
+func contain(mission_id: String) -> String:
+	var refused := session.contain(mission_id)
+	message = "" if refused.is_empty() else UiText.accept_error(refused)
+	acted.emit()
+	refresh()
+	return refused
+
+
+static func contain_label(m: MissionDef) -> String:
+	return TranslationServer.translate(CONTAIN) % [m.containment.get("name", ""),
+		UiText.money(int(m.containment.get("budget", 0))), int(m.containment.get("days", 0))]
+
+
+## Under an active mission with a containment: the button, or until when it holds.
+func _add_containment(parent: Node, m: MissionDef) -> void:
+	if m.containment.is_empty():
+		return
+	if session.missions.contained.has(m.id):
+		var until: int = session.missions.contained[m.id]
+		parent.add_child(paragraph(tr(CONTAINED) % [session.day_text(until), m.containment.get("name", "")],
+			Palette.MUTED, UiTheme.SMALL))
+		return
+	var b := button(contain_label(m), contain.bind(m.id))
+	b.add_theme_font_size_override("font_size", UiTheme.SMALL)
+	b.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	parent.add_child(b)
+
+
 ## Skip the week: "" or the refusal code.
 func confirm_skip() -> String:
 	confirming_skip = false
@@ -84,6 +117,7 @@ func refresh() -> void:
 		if not where.is_empty():
 			current.add_child(label(where, 15, Palette.MUTED))
 		current.add_child(paragraph(session.mission_briefing(m.id)))
+		_add_containment(current, m)
 		_add_expiry(current, m)
 	if session.in_training():
 		_skip_row()

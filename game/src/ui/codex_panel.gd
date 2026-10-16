@@ -12,7 +12,12 @@ const CATEGORY_ORDER := ["lean", "kata", "measure", "sector"]
 const CATEGORY_TITLES := {"lean": "Lean", "kata": "Kata", "measure": "Meten", "sector": "Energiesector"}
 const CONCEPTS := "concepts"
 const DISCOVERIES := "discoveries"
-const TABS := {CONCEPTS: "Begrippen", DISCOVERIES: "Ontdekkingen"}
+const EXPLAINERS := "explainers"
+const TABS := {CONCEPTS: "Begrippen", DISCOVERIES: "Ontdekkingen", EXPLAINERS: "Hoe werkt het?"}
+## Hoe werkt het? (PLAN 2.7c): the explainers met in the world, to see again.
+const EXPLAINERS_INTRO := "Wat je onderweg uitgelegd kreeg, kun je hier terugzien. De rest kom je tegen op de werkvloer."
+const SEE_AGAIN := "Bekijk opnieuw"
+const NOT_MET := "Nog niet tegengekomen."
 const SILHOUETTE := "? ? ?"
 const NO_HINT := "Nog verborgen."
 const PLAYER := "Jij, CI-lead bij Voltana Netbeheer"
@@ -75,6 +80,9 @@ func refresh() -> void:
 		_tabs[id].set_pressed_no_signal(id == tab)
 	if tab == DISCOVERIES:
 		_discoveries()
+		return
+	if tab == EXPLAINERS:
+		_explainers()
 		return
 	var all := groups(session.catalog.concepts, session.region.profile.concepts)
 	var known := 0
@@ -144,6 +152,47 @@ func _discoveries() -> void:
 		else:
 			box.add_child(label(SILHOUETTE, UiTheme.HEADING, Palette.MUTED))
 			box.add_child(paragraph(d["hint"] if not d["hint"].is_empty() else NO_HINT, Palette.MUTED, 15))
+
+
+## The explainers in their content order: a seen one with its one idea and
+## "Bekijk opnieuw", the others as silhouettes (like Ontdekkingen).
+func _explainers() -> void:
+	_list.add_child(paragraph(tr(EXPLAINERS_INTRO), Palette.MUTED))
+	var loaded := ExplainerDef.load_all()
+	if not loaded["error"].is_empty():
+		push_warning("codex: " + loaded["error"])
+	var defs: Array = loaded["explainers"].values()
+	defs.sort_custom(func(a: ExplainerDef, b: ExplainerDef) -> bool: return a.number < b.number)
+	var grid := GridContainer.new()
+	grid.columns = 3
+	grid.add_theme_constant_override("h_separation", 10)
+	grid.add_theme_constant_override("v_separation", 10)
+	_list.add_child(grid)
+	for def: ExplainerDef in defs:
+		var seen := session.explainers.has_seen(def.id)
+		var box := add_card(grid, "", Color.WHITE if seen else Palette.LINE)
+		box.get_parent().custom_minimum_size = Vector2(340, 96)
+		if not seen:
+			box.add_child(label(SILHOUETTE, UiTheme.HEADING, Palette.MUTED))
+			box.add_child(paragraph(tr(NOT_MET), Palette.MUTED, 15))
+			continue
+		box.add_child(label(def.name, UiTheme.FONT_SIZE, Palette.BLUE_LIGHT))
+		box.add_child(paragraph(def.one_idea, Palette.INK, 15))
+		var again := button(tr(SEE_AGAIN), open_explainer.bind(def.id))
+		again.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+		box.add_child(again)
+
+
+## Open an explainer again from the codex (no Ruud, the skin tab, the reel
+## free); null when it cannot open.
+func open_explainer(explainer_id: String) -> ExplainerView:
+	var view := ExplainerView.open(self, explainer_id, {"codex": true, "log": session.explainers})
+	if not view.error.is_empty():
+		push_warning("codex: " + view.error)
+		view.queue_free()
+		return null
+	view.closed.connect(func(_id: String) -> void: refresh())
+	return view
 
 
 func _add_found(box: VBoxContainer, d: Dictionary) -> void:

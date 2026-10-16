@@ -77,14 +77,27 @@ func test_the_player_dot_follows_the_player() -> void:
 	office.free()
 
 
-func test_the_active_missions_places_are_marked() -> void:
+## A problem's mission marks the room its briefing sends you to, never the
+## work step (more than the briefing says; creator-and-minimap spec §2), and
+## the obeya once the A3 is ready for its Check.
+func test_a_problem_mission_marks_its_room_never_the_step() -> void:
 	var office := _office()
-	assert_eq(OfficeMap.mission_places(office.session), [], "no mission, nothing marked")
+	var s := office.session
+	assert_eq(OfficeMap.mission_places(s), [], "no mission, nothing marked")
 	office.ui.mission_board.accept(MISSION)
-	var marked := OfficeMap.mission_places(office.session)
-	assert_true(DESIGN in marked, "the place in the briefing")
-	assert_true("obeya" in marked, "the A3 wall")
-	assert_false("place:connections.intake" in marked)
+	var marked := OfficeMap.mission_places(s)
+	assert_false(DESIGN in marked, "never the step")
+	assert_false("obeya" in marked, "not before the A3 is ready for a Check")
+	office.ui.close_panels()
+	office.ui.toggle_map()
+	var map := office.ui.office_map
+	var rooms := map.marked_rooms()
+	assert_eq(rooms.size(), 1, "the room the briefing sends you to")
+	var design: Dictionary = map.places.filter(func(p: Dictionary) -> bool: return p["id"] == DESIGN)[0]
+	var room: Dictionary = map.rooms.filter(func(r: Dictionary) -> bool: return r["id"] == rooms[0])[0]
+	assert_true(room["rect"].has_point(design["at"]), "the room around the step")
+	s.region.state["custom_design"].phase = ProblemState.Phase.CHECK_READY
+	assert_true("obeya" in OfficeMap.mission_places(s), "then the obeya")
 	office.free()
 
 

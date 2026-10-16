@@ -62,9 +62,10 @@ const CHIP_GAP := 22
 const PICK_CHARS := 64
 ## The keys of the Luisteren row, in order (and of the picks while open).
 const LISTEN_KEYS: Array[Key] = [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9]
-## The keys of the Sturen row, in order: Q–T steer, then pressure, repair, close.
+## The keys of the Sturen row, in order: Q–T steer, then pressure, confront, repair, close.
 const STEER_KEYS: Array[Key] = [KEY_Q, KEY_W, KEY_E, KEY_R, KEY_T, KEY_Y, KEY_U, KEY_I, KEY_O]
-const KEY_HINT_FONT := 12
+const KEY_HINT_FONT := 10
+const KEY_HINT_AT := Vector2(3, -1)
 ## How long the trust arrow stays before it fades, and the fade.
 const TRUST_FLASH_S := 1.0
 const TRUST_FADE_S := 0.6
@@ -490,17 +491,17 @@ func _picks(moves: Array[Dictionary]) -> void:
 		row.add_child(_with_key(b, LISTEN_KEYS[i] if i < LISTEN_KEYS.size() else KEY_NONE))
 
 
-## A chip with its key beside it, small and dimmed (KEY_NONE: the chip alone).
-func _with_key(chip: Button, key: Key) -> HBoxContainer:
-	var box := HBoxContainer.new()
-	box.add_theme_constant_override("separation", 3)
+## A chip with its key in its top-left corner, small and dimmed, taking no
+## width of the row (KEY_NONE: the chip alone).
+static func _with_key(chip: Button, key: Key) -> Button:
 	if key != KEY_NONE:
-		var hint := label(OS.get_keycode_string(key), KEY_HINT_FONT, Palette.MUTED)
-		hint.modulate.a = 0.75
-		hint.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		box.add_child(hint)
-	box.add_child(chip)
-	return box
+		var ink := chip.get_theme_color("font_color") if chip.has_theme_color_override("font_color") else Color.WHITE
+		var hint := label(OS.get_keycode_string(key), KEY_HINT_FONT, ink)
+		hint.modulate.a = 0.6
+		hint.position = KEY_HINT_AT
+		hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		chip.add_child(hint)
+	return chip
 
 
 ## The picks of a ▸ move ([] for none).
