@@ -3,12 +3,14 @@ extends TestCase
 ## discoveries and the session layer's snapshot, so the next session opens
 ## with a terugblik. Old saves (the region only) still load.
 
-const SLOT := "test_game_save"
+## Per process: every worktree's test run shares user://, so a fixed name
+## lets one run delete the save another has just written.
+var slot := "test_game_save_%d" % OS.get_process_id()
 const MISSION := "fix_custom_design"
 
 
 func _cleanup() -> void:
-	DirAccess.remove_absolute(SaveFile.path_of(SLOT))
+	DirAccess.remove_absolute(SaveFile.path_of(slot))
 
 
 func test_a_saved_game_comes_back_with_its_missions_and_its_snapshot() -> void:
@@ -18,9 +20,9 @@ func test_a_saved_game_comes_back_with_its_missions_and_its_snapshot() -> void:
 	var layer := SessionLayer.new()
 	layer.begin(s)
 	layer.queued.append("d_two")
-	assert_eq(GameSave.write(SLOT, s, layer), "")
-	assert_true(GameSave.exists(SLOT))
-	var loaded := GameSave.read(SLOT)
+	assert_eq(GameSave.write(slot, s, layer), "")
+	assert_true(GameSave.exists(slot))
+	var loaded := GameSave.read(slot)
 	assert_eq(loaded["error"], "")
 	var back: GameSession = loaded["session"]
 	assert_eq(back.region.net.time, s.region.net.time)
@@ -39,8 +41,8 @@ func test_a_saved_game_comes_back_with_its_missions_and_its_snapshot() -> void:
 func test_an_old_save_still_loads() -> void:
 	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
 	s.region.advance_days(3)
-	assert_eq(SaveFile.write(SLOT, s.region), "")
-	var loaded := GameSave.read(SLOT)
+	assert_eq(SaveFile.write(slot, s.region), "")
+	var loaded := GameSave.read(slot)
 	assert_eq(loaded["error"], "")
 	assert_eq(loaded["session"].region.net.time, s.region.net.time)
 	assert_eq(loaded["layer"].terugblik(loaded["session"]), {})
@@ -50,11 +52,11 @@ func test_an_old_save_still_loads() -> void:
 ## Junk in the new keys is ignored, not trusted.
 func test_junk_in_the_new_keys_is_ignored() -> void:
 	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
-	var file := FileAccess.open(SaveFile.path_of(SLOT), FileAccess.WRITE)
+	var file := FileAccess.open(SaveFile.path_of(slot), FileAccess.WRITE)
 	file.store_buffer(var_to_bytes({"version": SaveFile.VERSION, "region": RegionState.capture(s.region),
 		"missions": "x", "discoveries": 5, "session": {"start": [1], "queued": "no"}}))
 	file.close()
-	var loaded := GameSave.read(SLOT)
+	var loaded := GameSave.read(slot)
 	assert_eq(loaded["error"], "")
 	assert_eq(loaded["layer"].start, {})
 	assert_eq(loaded["layer"].queued, [])

@@ -14,8 +14,9 @@ const PEOPLE := "people"
 const TABS := {CLUES: "Aanwijzingen", PEOPLE: "Mensen"}
 const MORALE := "Werkplezier: "
 const MORALE_BANDS: Array[String] = ["laag", "gewoon", "hoog"]
-## The face a morale band shows in the journal (the talk's own mood is the day's).
-const MORALE_FACES: Array[String] = ["moe", "neutraal", "goed"]
+## The face a morale band shows in the journal, as a meter band (a frown, flat,
+## a soft smile); low morale also tires the eyes.
+const MORALE_FACES: Array[int] = [1, 2, 3]
 const LAST_TALK := "Laatste gesprek: %s"
 const NOT_NOW := "Wil nu even niet praten: morgen weer."
 const NEEDS_TALK := "Kan wel een goed gesprek gebruiken."
@@ -188,7 +189,7 @@ func _person_card(id: String, wants: bool) -> void:
 	row.add_theme_constant_override("separation", 16)
 	card.add_child(row)
 	var face := MoodFace.new(64.0)
-	face.set_mood(MORALE_FACES[p["morale_band"]])
+	face.show_state(MORALE_FACES[p["morale_band"]], "moe" if p["morale_band"] == 0 else "")
 	row.add_child(face)
 	var text := VBoxContainer.new()
 	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL

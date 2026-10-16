@@ -188,7 +188,8 @@ func _memory_term(flags: Array) -> int:
 ## the world and the UI shows: {dialog, person, outcome, trust, morale,
 ## reputation (this talk's change), team_trust (+1 for a commitment),
 ## confronted, clue ("" or the clue the concern unlocked), facts (heard:),
-## cooldown_until (0 for none), hints (a block's route hints)}. `main`: the
+## cooldown_until (0 for none), hints (a block's route hints), wait_for (what an
+## agreement under condition still waits for, or "")}. `main`: the
 ## talk belongs to the main mission, so the coach asks about it next.
 func finish(d: Dialog, now: int, main: bool = false) -> Dictionary:
 	var who := d.who
@@ -217,7 +218,7 @@ func finish(d: Dialog, now: int, main: bool = false) -> Dictionary:
 	return {
 		"dialog": d.def.id, "person": who.id, "outcome": o, "trust": trust[who.id], "morale": morale[who.id],
 		"reputation": REPUTATION.get(o, 0), "team_trust": 1 if o == "commitment" else 0, "confronted": d.confronted,
-		"clue": d.unlocked_clue(), "facts": facts, "cooldown_until": cooldown,
+		"clue": d.unlocked_clue(), "facts": facts, "cooldown_until": cooldown, "wait_for": d.wait_for(),
 		"hints": d.def.block.get("routes", []).map(func(r: Dictionary) -> String: return str(r.get("hint", ""))) \
 			if o == "blocked" else [],
 	}

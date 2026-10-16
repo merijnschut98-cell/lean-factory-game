@@ -1117,7 +1117,7 @@ DIALOG_KEYS = {"id", "name", "person", "kind", "mission", "requires_clue", "need
                "patience", "opening", "retry_opening", "position", "layers", "data", "proposals", "experiments",
                "co_proposal", "condition_needs", "block", "lines", "replies", "outcomes", "variants", "trigger",
                "tutorial"}
-LAYER_KEYS = {"id", "at", "via", "text", "tags", "lead_in", "condition", "unlocks"}
+LAYER_KEYS = {"id", "at", "via", "text", "tags", "lead_in", "condition", "wait_for", "unlocks"}
 PROPOSAL_KEYS = {"id", "name", "text", "kpis", "addresses", "reply", "hidden"}
 VARIANT_KEYS = {"needs", "mood", "position", "layers"}
 
@@ -1292,6 +1292,10 @@ def _layers(layers: Any, where: str) -> None:
         _line({k: layer[k] for k in ("text", "tags") if k in layer}, at)
         if "condition" in layer:
             _require_strings(layer, ["condition"], at)
+        if "wait_for" in layer:  # what still has to happen, for the summary card
+            if "condition" not in layer:
+                raise ContentError(f"{at}: 'wait_for' without a condition")
+            _require_strings(layer, ["wait_for"], at)
         unlocks = _mapping(layer, "unlocks", {"clue", "facts", "proposals"}, at)
         for fact in _string_list(unlocks, "facts", f"{at} unlocks"):
             if _atom_parts(fact, f"{at} unlocks")[0] != "heard":

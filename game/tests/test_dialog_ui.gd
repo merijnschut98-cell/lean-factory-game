@@ -125,7 +125,7 @@ func test_the_summary_card_shows_the_outcome_and_the_trace() -> void:
 	assert_true(shows(panel, DialogPanel.SUMMARY))
 	assert_true(shows(panel, panel.outcome_label(r["outcome"])))
 	assert_eq(panel.trace.size(), 4, "the start and three moves")
-	assert_true(shows(panel, "Stemming peilen · Samenvatten · Afronden"), "the moves under the trace")
+	assert_eq(panel.summary_trace.labels, ["Stemming peilen", "Samenvatten", "Afronden"], "each move under its point")
 	assert_true(shows(panel, DialogPanel.TALK_IT_OVER % "Ruud Hoekstra"), "a main mission's talk")
 	panel.free()
 
@@ -138,6 +138,80 @@ func test_the_session_reports_the_layers_of_the_talk() -> void:
 	assert_eq(layers.map(func(l: Dictionary) -> String: return l["id"]), ["position", "interest", "concern"])
 	assert_eq(layers.map(func(l: Dictionary) -> bool: return l["heard"]), [true, false, false])
 	assert_eq(layers[1]["text"], "", "a layer not yet heard says nothing")
+
+
+## The chips found in the panel, by their text.
+func _chips_of(panel: DialogPanel) -> Dictionary:
+	var out := {}
+	var stack: Array[Node] = [panel.body]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		if n is Button:
+			out[n.text] = n
+		stack.append_array(n.get_children())
+	return out
+
+
+func test_pressure_and_blame_look_like_every_other_chip() -> void:
+	var panel := _panel(_silo())
+	var chips := _chips_of(panel)
+	for text in ["Druk zetten", "Aanspreken", "Afronden", "Open vraag"]:
+		assert_true(chips.has(text), text)
+		assert_false((chips[text] as Button).has_theme_stylebox_override("normal"), "no styling that judges: " + text)
+	panel.free()
+
+
+func test_an_open_pick_chip_is_outlined_never_the_meters_green() -> void:
+	var panel := _panel(_silo())
+	panel.open_picks("propose")
+	var chip: Button = _chips_of(panel)["Voorstel doen" + DialogPanel.PICK_MARK]
+	var box := chip.get_theme_stylebox("normal") as StyleBoxFlat
+	assert_true(box.border_width_bottom > 0, "outlined")
+	assert_false(box.bg_color in OpennessBar.COLORS or box.bg_color == Palette.GREEN_DARK, "not a colour that says good")
+	panel.free()
+
+
+func test_the_face_follows_the_meter_band() -> void:
+	assert_eq([MoodFace.mouth_for(-1), MoodFace.mouth_for(0), MoodFace.mouth_for(1), MoodFace.mouth_for(2),
+		MoodFace.mouth_for(3), MoodFace.mouth_for(4)], ["closed", "closed", "frown", "flat", "soft_smile", "smile"])
+	var s := _silo()
+	var panel := _panel(s)
+	for move in LISTEN_TO_JOOST:
+		panel.choose(move)
+		assert_eq(panel.face.band, panel.meter()["band"], "the face is the band's, whatever the mood word")
+	panel.free()
+
+
+func test_a_partial_agreement_says_what_still_has_to_happen() -> void:
+	var panel := _panel(_silo())
+	for move in ["mood", "paraphrase", "inquiry", "reflect", "silence", "empathy"]:
+		panel.choose(move)
+	panel.choose("propose", "lead_and_oldest")
+	var r := panel.choose("ask_commitment")
+	assert_eq(r["outcome"], "partial")
+	assert_true(shows(panel, DialogPanel.STILL_NEEDED % "Frank moet het goedvinden."), "the condition, in a line")
+	panel.free()
+
+
+func test_a_ruined_talk_says_when_to_try_again_and_nothing_more() -> void:
+	var panel := _panel(_silo())
+	panel.choose("show_data", "silo_kpis:4")
+	panel.choose("propose", "lead_and_oldest")
+	var r := panel.choose("pressure")
+	assert_eq(r["outcome"], "ruined")
+	assert_true(shows(panel, DialogPanel.TRY_AGAIN % "Joost"))
+	assert_false(shows(panel, DialogPanel.STILL_NEEDED.left(10)))
+	panel.free()
+
+
+func test_the_panel_keeps_one_height_of_at_most_two_fifths_of_the_screen() -> void:
+	for screen: Vector2 in [Vector2(1600, 900), Vector2(1280, 720), Vector2(1920, 1080)]:
+		var rect := DialogPanel.rect_on(screen)
+		assert_true(rect.size.y <= screen.y * 0.4 + 0.5, "at most 40 %% of %s" % screen)
+		assert_eq(rect.end.y, screen.y - DialogPanel.MARGIN, "at the bottom")
+	var panel := _panel(_silo())
+	assert_true(panel.find_children("*", "ScrollContainer", true, false).size() > 0, "what changes scrolls, the panel does not grow")
+	panel.free()
 
 
 # ── In the office ───────────────────────────────────────────────────────────
@@ -162,6 +236,9 @@ func test_a_teams_place_lists_its_people_and_opens_a_talk() -> void:
 	assert_true(office.ui.dialog_panel.visible)
 	office.ui.close_panels()
 	assert_false(s.dialog_meter().size() > 0, "Esc mid-talk ends it gracefully")
+	assert_true(office.ui.dialog_panel.visible and shows(office.ui.dialog_panel, DialogPanel.SUMMARY), "its summary shows")
+	office.ui.close_panels()
+	assert_false(office.ui.is_busy(), "the next Esc closes")
 	office.free()
 
 
@@ -198,3 +275,47 @@ func test_someone_who_needs_a_talk_shows_an_energy_bar() -> void:
 	assert_near(fill, 0.25, 0.001)
 	assert_false(office.people.person("anouk").bar.visible, "nobody else's")
 	office.free()
+
+
+func test_during_a_talk_the_hud_shows_only_the_date_and_time() -> void:
+	var office := _office()
+	var hud := office.ui.hud
+	_open_joost(office)
+	assert_true(office.ui.dialog_panel.visible)
+	assert_true(hud.clock_label.visible, "the date and time")
+	for l: Control in [hud.budget_label, hud.xp_label, hud.mission_label, hud.help_label]:
+		assert_false(l.visible, "hidden in a talk: " + l.name)
+	office.ui.close_panels()
+	assert_false(hud.budget_label.visible, "the summary is still the talk")
+	office.ui.close_panels()
+	assert_true(hud.budget_label.visible and hud.xp_label.visible and hud.mission_label.visible, "back after")
+	office.free()
+
+
+func test_a_talk_frames_the_person_over_the_players_shoulder() -> void:
+	var office := _office()
+	_open_silo_in(office)
+	var joost := office.people.person("joost")
+	office.player.position = joost.position + joost.basis.z * 1.3 + joost.basis.x * 0.3
+	office.use(joost)
+	assert_true(office.ui.dialog_panel.talking())
+	assert_true(office.rig.inspecting(), "the camera frames the talk")
+	var at := office.talk_point(joost)
+	assert_near(Vector2(at.x, at.z).distance_to(Vector2(joost.position.x, joost.position.z)), 0.0, 0.01, "looking at Joost")
+	var facing := -office.player.basis.z
+	var to_joost := (joost.position - office.player.position) * Vector3(1, 0, 1)
+	assert_true(facing.dot(to_joost.normalized()) > 0.95, "the player turns to him")
+	office.free()
+
+
+func _open_silo_in(office: Office) -> void:
+	var s := office.session
+	s.missions.done_once["fix_unused_capacity"] = true
+	s.accept("fix_silo_kpis")
+	s.region.found["silo_kpis:4"] = true
+	office.people.refresh(s)
+
+
+func _open_joost(office: Office) -> void:
+	_open_silo_in(office)
+	assert_eq(office.ui.open_talk("joost"), "")

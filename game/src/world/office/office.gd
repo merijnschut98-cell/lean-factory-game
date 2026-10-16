@@ -38,6 +38,15 @@ const FRAME_AHEAD := 0.9
 const FRAME_HEIGHT := 0.8
 ## A click this close (m) to a ring's centre is a click on the ring.
 const RING_CLICK := Interactable.RING_RADIUS + 0.3
+## A talk is framed this far round (rad) from straight behind the player,
+## towards the side the person faces, so their face shows beside the
+## player's shoulder.
+const TALK_ANGLE := 0.6
+## The person's face this share of the screen's width right of the middle
+## (the player's shoulder on the left).
+const TALK_SHIFT := -0.08
+## The person's face sits this far (m) under the top of their head.
+const FACE_DROP := 0.2
 
 const RESUME_FAILED := "De bewaarde game kon niet worden geladen (%s). Dit spel wordt niet bewaard, zodat de oude bewaard blijft."
 
@@ -112,6 +121,7 @@ func build() -> void:
 	add_child(ui)
 	ui.setup(session, loaded.get("layer"))
 	ui.panel_opened.connect(_on_panel_opened)
+	ui.talk_opened.connect(frame_talk)
 	ui.panels_closed.connect(_on_panels_closed)
 	if ui.playable():
 		ui.office_map.show_office(floor_rect(), map_places(), player)
@@ -347,6 +357,36 @@ func talk_to(person: OfficePerson) -> void:
 		return
 	person_selected.emit(person.id)
 	ui.ask_talk(person.id, person.display_name)
+
+
+## Frame a talk with a person in the office: the player turns to them and the
+## camera looks at their face over the player's shoulder, above the panel.
+## Someone not here (a phone call) leaves the view as it is.
+func frame_talk(person_id: String) -> void:
+	var person := people.person(person_id)
+	if person == null or not person.visible:
+		return
+	var to_person := (person.position - player.position) * Vector3(1, 0, 1)
+	if to_person.length() > 0.01:
+		player.face(Basis.looking_at(to_person.normalized()))
+	rig.converse(talk_point(person), talk_yaw(person, player.position), TALK_SHIFT, DialogPanel.HEIGHT_SHARE / 2.0)
+
+
+## The camera's yaw for a talk: from behind the player standing `at`, turned
+## TALK_ANGLE to whichever side sees more of the person's face.
+func talk_yaw(person: OfficePerson, at: Vector3) -> float:
+	var back := (at - person.position) * Vector3(1, 0, 1)
+	var straight := atan2(back.x, back.z)
+	var faces := -person.basis.z
+	var left := straight + TALK_ANGLE
+	var right := straight - TALK_ANGLE
+	# the side whose camera stands more in front of the person
+	return left if Vector3(sin(left), 0, cos(left)).dot(faces) >= Vector3(sin(right), 0, cos(right)).dot(faces) else right
+
+
+## The point a talk looks at: the person's face.
+func talk_point(person: OfficePerson) -> Vector3:
+	return person.position + Vector3.UP * (person.height() - FACE_DROP)
 
 
 func _add_player() -> void:

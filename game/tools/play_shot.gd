@@ -136,9 +136,11 @@ func _run() -> void:
 			office.session.people.prompts["joost_output_kpi"] = office.session.region.net.time
 			office.session.people.morale["joost"] = 25
 			office.people.refresh(office.session)
-			_stand_at(office, DESIGN)
-			office.player.position += office.interactable(DESIGN).basis.z * 2.5
-			office.rig.zoom(3)
+			var joost := office.people.person("joost")
+			office.player.position = joost.position + joost.basis.x * 3.0 - joost.basis.z * 0.5
+			office.player.face(Basis.looking_at((joost.position - office.player.position) * Vector3(1, 0, 1)))
+			office.rig.yaw = office.player.rotation.y + deg_to_rad(15)
+			office.rig.zoom(-4)
 			office.rig.snap()
 		"inspect":
 			_stand_at(office, DESIGN)
@@ -325,9 +327,11 @@ func _open_silo(office: Office) -> void:
 ## summary of an agreement, or a ruined talk (pushing early).
 func _talk_to_joost(office: Office, state: String) -> void:
 	_open_silo(office)
-	_stand_at(office, DESIGN)
+	office.people.refresh(office.session)
+	var joost := office.people.person("joost")
+	office.player.position = joost.position + joost.basis.x * 1.1 - joost.basis.z * 0.2  # beside his desk
+	office.use(joost)
 	office.rig.snap()
-	office.ui.open_talk("joost")
 	var panel := office.ui.dialog_panel
 	var moves: Array = []
 	match state:

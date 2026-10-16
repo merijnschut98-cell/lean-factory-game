@@ -30,6 +30,8 @@ var prompt_label: Label
 var help_label: Label
 var _toasts: VBoxContainer
 var _cards: VBoxContainer
+## In a talk the bar shows only the date and time: no budget, XP or mission.
+var _talking := false
 
 
 func _init() -> void:
@@ -142,7 +144,7 @@ func refresh() -> void:
 	budget_label.add_theme_color_override("font_color", Palette.SAFETY_ORANGE if session.budget() < 0 else Color.WHITE)
 	xp_label.text = "%d XP  ·  %s" % [session.xp(), UiText.belt(session.belt())]
 	var drift := roundi(session.drift()["level"] * 100.0)
-	drift_label.visible = drift > 0
+	drift_label.visible = drift > 0 and not _talking
 	drift_label.text = "Achteruitgang %d%%" % drift
 	mission_label.text = mission_text()
 
@@ -158,6 +160,19 @@ func mission_text() -> String:
 		return "Geen missie: ga naar het missiebord"
 	return "Missie: " + ", ".join(active.map(func(m: MissionDef) -> String:
 		return UiText.mission_title(m, session)))
+
+
+## A talk is open (or over): only the date and time stay in the bar; the
+## person, not the score, has the player's attention (dialog spec §11).
+func set_talking(on: bool) -> void:
+	_talking = on
+	for l: Label in [budget_label, xp_label, mission_label]:
+		l.visible = not on
+	if on:
+		drift_label.visible = false
+		stop_note.visible = false
+	elif session != null:
+		refresh()
 
 
 ## The toasts, cards and controls line; hidden while a panel is open.

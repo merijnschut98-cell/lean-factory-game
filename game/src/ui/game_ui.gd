@@ -8,6 +8,8 @@ extends CanvasLayer
 
 signal panel_opened
 signal panels_closed
+## A talk opened (the world frames the person).
+signal talk_opened(person_id: String)
 
 ## A person asked in the office who has nothing to talk about now.
 const NOTHING_TO_SAY := "%s knikt je toe en werkt door."
@@ -136,6 +138,7 @@ func open_talk(person_id: String) -> String:
 	var refused := dialog_panel.start(person_id)
 	if refused.is_empty():
 		_open(dialog_panel)
+		talk_opened.emit(person_id)
 	return refused
 
 
@@ -188,13 +191,17 @@ func is_busy() -> bool:
 	return _panels.any(func(p: UiPanel) -> bool: return p.visible)
 
 
+## Close what is open. Mid-talk, Esc ends the talk as "Afronden" does (a
+## graceful close, never a ruin) and its summary shows; the next Esc closes.
 func close_panels() -> void:
 	var was_busy := is_busy()
 	if dialog_panel != null and dialog_panel.talking():
-		dialog_panel.close_talk()  # Esc mid-talk: a graceful close, never a ruin
+		dialog_panel.close_talk()
+		return
 	for p in _panels:
 		p.hide()
 	hud.show_overlay(true)
+	hud.set_talking(false)
 	if was_busy:
 		panels_closed.emit()
 
@@ -406,4 +413,5 @@ func _open(panel: UiPanel) -> void:
 	panel.show()
 	hud.show_prompt("")
 	hud.show_overlay(false)
+	hud.set_talking(panel == dialog_panel)
 	panel_opened.emit()
