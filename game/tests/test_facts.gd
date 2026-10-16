@@ -182,9 +182,11 @@ func test_facts_survive_save_and_load() -> void:
 	log.accept("fix_design")
 	_resolve(log, "custom_design", "delegated_approval", false)
 	log.facts.add("heard:henk_teach")
+	log.facts.add("forecast_positive:kpi_board")
 	var restored := _log()
 	restored.load_dict(bytes_to_var(var_to_bytes(log.to_dict())))
-	for atom in ["chose:custom_design:delegated_approval", "poor_fix:custom_design", "heard:henk_teach"]:
+	for atom in ["chose:custom_design:delegated_approval", "poor_fix:custom_design", "heard:henk_teach",
+			"forecast_positive:kpi_board"]:
 		assert_true(restored.knows(atom), atom)
 	var saved := log.to_dict()
 	saved["facts"] = ["nonsense", "flag:ok"]

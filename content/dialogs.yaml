@@ -187,6 +187,9 @@ bank:
     expert:
       ask: "Die vraag hadden we. Wil je een andere kant op?"
       say: "Klopt, zo zei ik het. Zullen we verder?"
+    mentor:   # person-needs spec §3.2 (Ruud's two later talks, drie winters §4.2 and §8)
+      ask: "Je stelt me mijn eigen vraag terug. Goed geleerd. Wat wil je nu echt weten?"
+      say: "Je herhaalt me nu. Wat zie je zelf?"
   special:
     repeat: "Dat vroeg je net ook."
     refusal: "Nee. Nog niet."

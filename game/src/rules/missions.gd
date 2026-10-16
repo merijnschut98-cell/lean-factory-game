@@ -278,6 +278,17 @@ func update() -> void:
 			region.net.clear_effects(CONTAIN_SOURCE + id)
 
 
+## The dated beats known so far: beat id → its time (minutes), the day a
+## mission's deadline falls (MissionDef.deadline_beat), known from the day the
+## mission opened (its clock started), whatever became of it since.
+func beats() -> Dictionary:
+	var out := {}
+	for m: MissionDef in defs.values():
+		if not m.deadline_beat.is_empty() and opened_at.has(m.id):
+			out[m.deadline_beat] = opened_at[m.id] + SimCalendar.days(m.deadline_days)
+	return out
+
+
 ## Contain an acute risk in an active safety mission (audit §2.4.1): pay the
 ## containment, its effects hold for its days. "" or not_active |
 ## no_containment | contained (once per mission).

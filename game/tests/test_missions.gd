@@ -806,3 +806,23 @@ func test_a_mission_taken_on_is_a_fact() -> void:
 	_walk_connections(log)
 	assert_eq(log.status("walk_connections"), "completed")
 	assert_true(log.knows("accepted:walk_connections"), "still, once done")
+
+
+## A dated beat (drie winters S2; tier-1 content audit C11): Henk's farewell
+## is the day his mission's clock runs out, done or not, known from the day
+## the mission opens, so a talk can count days from it.
+func test_a_deadline_marks_a_dated_beat() -> void:
+	var log := _log()
+	assert_eq(log.beats(), {}, "not open yet: no date")
+	log.accept("walk_connections")
+	_walk_connections(log)
+	var farewell: int = log.opened_at["henk"] + SimCalendar.days(10)
+	assert_eq(log.beats(), {"henk_farewell": farewell})
+	log.accept("henk")
+	log.region.state["incomplete_application"].phase = ProblemState.Phase.RESOLVED
+	log.update()
+	assert_eq(log.status("henk"), "completed")
+	assert_eq(log.beats(), {"henk_farewell": farewell}, "done early, he still retires on his day")
+	var restored := _log()
+	restored.load_dict(bytes_to_var(var_to_bytes(log.to_dict())))
+	assert_eq(restored.beats(), {"henk_farewell": farewell}, "saved with the mission's clock")

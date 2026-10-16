@@ -12,7 +12,7 @@ extends RefCounted
 
 ## Openness at the start by archetype (ESTIMATES, spec §3.6).
 const START_BASE := {"defender": 40, "cynic": 30, "craftsman": 40, "overloaded": 35, "rule_bound": 35, "quiet": 47,
-	"customer_upset": 25, "expert": 60}
+	"customer_upset": 25, "expert": 60, "mentor": 55}
 const MOOD_START := {"goed": 10, "neutraal": 0, "gespannen": -5, "stil": -5, "moe": -10}
 const TEAM_TRUST_WEIGHT := 10
 const START_MIN := 5
@@ -108,6 +108,8 @@ var observed: Dictionary[String, Array] = {}
 var talk_log: Dictionary[String, Array] = {}
 ## person id → the player's own note: never read by the rules, never judged.
 var note: Dictionary[String, String] = {}
+## The beats_after lines already said: "dialog id/index" → true.
+var beat_lines: Dictionary[String, bool] = {}
 
 
 func _init(person_defs: Array[PersonDef], dialog_defs: Array[DialogDef], lines: Dictionary) -> void:
@@ -121,7 +123,7 @@ func _init(person_defs: Array[PersonDef], dialog_defs: Array[DialogDef], lines: 
 
 func _reset() -> void:
 	for state: Dictionary in [trust, morale, memory, revealed, outcomes, agreed, talks, rest_until, heard_facts, prompts,
-			low_since, ignored, left, coach_after, last_prompt, observed, talk_log, note]:
+			low_since, ignored, left, coach_after, last_prompt, observed, talk_log, note, beat_lines]:
 		state.clear()
 	prompt_log.clear()
 	coach_asks = 0
@@ -151,7 +153,9 @@ func dialog_for(person_id: String, world: Dictionary) -> DialogDef:
 func _rank(d: DialogDef, world: Dictionary, known: Dictionary) -> int:
 	if d.kind == "checkin":
 		var below := int(d.trigger.get("morale_below", 101))
-		var ready: bool = morale.get(d.person, 0) < below and int(rest_until.get(d.id, 0)) <= int(world.get("now", 0))
+		var now := int(world.get("now", 0))
+		var ready: bool = morale.get(d.person, 0) < below and int(rest_until.get(d.id, 0)) <= now \
+			and _beat_passed(d.trigger, JsonFile.dict_or_empty(world.get("beats")), now)
 		return 0 if ready and DialogDef.needs_met(JsonFile.dict_or_empty(d.trigger.get("needs")), known) else -1
 	if not (d.requires_clue.is_empty() or world.get("found", {}).has(d.requires_clue)) \
 			or not DialogDef.needs_met(d.needs, known) or effective_outcome(d.id, known) == "commitment":
@@ -159,6 +163,16 @@ func _rank(d: DialogDef, world: Dictionary, known: Dictionary) -> int:
 	if d.mission in world.get("main", []):
 		return 2
 	return 1 if d.mission in world.get("active", []) else -1
+
+
+## A trigger without a beat always passes; with one, `after_days` must have
+## passed since the beat's date (`beats`: id → minutes; Missions.beats). A
+## beat whose date is not known yet has not happened.
+static func _beat_passed(trigger: Dictionary, beats: Dictionary, now: int) -> bool:
+	if not trigger.has("beat"):
+		return true
+	var at: Variant = beats.get(str(trigger["beat"]))
+	return (at is int or at is float) and now >= int(at) + SimCalendar.days(int(trigger.get("after_days", 0)))
 
 
 ## After a ruined talk, until the next working day at 08:30.
@@ -326,10 +340,12 @@ func coach_question(main_id: String) -> Dictionary:
 ## After every action (world as for dialog_for): a prompt left unanswered
 ## PROMPT_DAYS expires (ignored); a check-in that can be had opens a prompt
 ## when the cadence allows, for the lowest morale first; the low-morale clock
-## runs. Returns [{type: left, person}] for whoever leaves today.
+## runs; a partial agreement whose beats_after line came true speaks up.
+## Returns [{type: left, person}] for whoever leaves today and
+## [{type: beat_line, person, name, dialog, text}] for each line said.
 func daily(world: Dictionary) -> Array[Dictionary]:
 	var now := int(world.get("now", 0))
-	var events: Array[Dictionary] = []
+	var events := _beat_lines(world)
 	for id: String in prompts.keys():
 		if now - prompts[id] >= SimCalendar.days(PROMPT_DAYS):
 			prompts.erase(id)
@@ -346,6 +362,29 @@ func daily(world: Dictionary) -> Array[Dictionary]:
 			left[id] = true
 			events.append({"type": "left", "person": id})
 	return events
+
+
+## The beats_after lines due now: a dialog that ended in a partial agreement
+## (its best outcome so far), whose `when` holds, each line once. A person
+## who left says nothing. The notebook keeps what was said.
+func _beat_lines(world: Dictionary) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	var known := facts(world.get("facts", {}))
+	for d: DialogDef in dialogs.values():
+		if outcomes.get(d.id) != "partial" or left.has(d.person):
+			continue
+		for i in d.beats_after.size():
+			var line: Dictionary = d.beats_after[i]
+			var key := _key(d.id, i)
+			if beat_lines.has(key) or not known.has(str(line.get("when", ""))):
+				continue
+			beat_lines[key] = true
+			var text := str(line.get("text", ""))
+			_observe(d.person, {"dialog": d.id, "key": "beat", "text": text, "at": int(world.get("now", 0)),
+				"place": persons[d.person].place})
+			out.append({"type": "beat_line", "person": d.person, "name": persons[d.person].name, "dialog": d.id,
+				"text": text})
+	return out
 
 
 func _open_prompt(world: Dictionary) -> void:
@@ -487,6 +526,7 @@ func to_dict() -> Dictionary:
 		"left": left.keys(), "coach_after": coach_after.duplicate(), "coach_asks": coach_asks,
 		"prompt_log": prompt_log.duplicate(), "last_prompt": last_prompt.duplicate(),
 		"observed": observed.duplicate(true), "talk_log": talk_log.duplicate(true), "note": note.duplicate(),
+		"beat_lines": beat_lines.keys(),
 	}
 
 
@@ -532,6 +572,10 @@ func load_dict(d: Dictionary) -> Array[String]:
 			"outcome": str(saved_coach["outcome"])}
 	var asks: Variant = whole.call(d.get("coach_asks"))
 	coach_asks = maxi(0, asks) if asks != null else 0
+	var saved_lines: Variant = d.get("beat_lines", [])
+	for key: Variant in saved_lines if saved_lines is Array else []:
+		if key is String and dialogs.has(key.get_slice("/", 0)):
+			beat_lines[key] = true
 	var saved_facts: Variant = d.get("facts", [])
 	for f: Variant in saved_facts if saved_facts is Array else []:
 		heard_facts[str(f)] = true

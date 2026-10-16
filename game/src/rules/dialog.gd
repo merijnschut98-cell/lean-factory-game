@@ -28,7 +28,7 @@ const TAGS := ["claim", "feeling", "hesitation", "admission", "doubt"]
 ## What a person needs from a talk before they open up (person-needs spec §1;
 ## hidden, never shown): it weighs how each move lands.
 const NEEDS := ["facts", "safety", "recognition", "time", "fairness"]
-const ARCHETYPES := ["defender", "cynic", "craftsman", "overloaded", "rule_bound", "quiet", "customer_upset", "expert"]
+const ARCHETYPES := ["defender", "cynic", "craftsman", "overloaded", "rule_bound", "quiet", "customer_upset", "expert", "mentor"]
 const KINDS := ["persuade", "checkin", "expert"]
 const MOODS := ["goed", "neutraal", "gespannen", "moe", "stil"]
 const OUTCOMES := ["commitment", "partial", "heard", "none", "blocked", "compliance", "ruined", "lifted"]
@@ -127,6 +127,9 @@ const WEIGHTS := {
 	"rule_bound": {"show_data": 1.5, "propose_experiment": 1.5, "reflect": 0.5},
 	"quiet": {"silence": 1.5},
 	"customer_upset": {"empathy": 1.5, "paraphrase": 1.5},
+	# Drie winters §4.2 (S7, estimates): a mentor wants to hear what you learned,
+	# and has seen your numbers. Ruud only, in two talks.
+	"mentor": {"experience": 1.5, "show_data": 0.5},
 }
 ## Person needs (person-needs spec §1.2, estimates): a landing Δ × this, per
 ## move and need (moves not listed: ×1). Each need has its own strong opening

@@ -51,8 +51,12 @@ var replies: Dictionary = {}
 var outcomes: Dictionary = {}
 ## [{needs, mood?, position?, layers?}]: fact-keyed versions (the first met wins).
 var variants: Array = []
-## checkin: {morale_below?, needs?}
+## checkin: {morale_below?, needs?, beat?, after_days?} (beat: a dated beat,
+## Missions.beats; the talk opens after_days after it)
 var trigger: Dictionary = {}
+## persuade: [{when (a fact atom), text}]: what the person says once, after a
+## partial agreement, when `when` comes true (the upgrade is felt; audit C15).
+var beats_after: Array = []
 ## A first talk (Act 0): it cannot be ruined (Dialog.TUTORIAL_PATIENCE).
 var tutorial := false
 ## A check-in's line on the dagstart while its prompt is open ("Ahmed is stil
@@ -86,7 +90,7 @@ static func from_dict(d: Dictionary) -> DialogDef:
 	g.tutorial = d.get("tutorial", false) == true
 	for key: String in ["needs", "position", "co_proposal", "condition_needs", "block", "lines", "replies", "outcomes", "trigger"]:
 		g.set(key, JsonFile.dict_or_empty(d.get(key)).duplicate(true))
-	for key: String in ["layers", "proposals", "experiments", "variants"]:
+	for key: String in ["layers", "proposals", "experiments", "variants", "beats_after"]:
 		var items: Variant = d.get(key, [])
 		g.set(key, items.filter(func(i: Variant) -> bool: return i is Dictionary).duplicate(true) if items is Array else [])
 	if g.id.is_empty() or g.person.is_empty():

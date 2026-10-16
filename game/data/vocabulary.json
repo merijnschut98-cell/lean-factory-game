@@ -38,7 +38,8 @@
   "rule_bound",
   "quiet",
   "customer_upset",
-  "expert"
+  "expert",
+  "mentor"
  ],
  "dialog_kinds": [
   "persuade",
@@ -250,6 +251,7 @@
   "done",
   "failed",
   "flag",
+  "forecast_positive",
   "fork_first",
   "heard",
   "partial",

@@ -200,3 +200,36 @@ func test_the_dagstart_names_an_open_checkin() -> void:
 	assert_eq(lines.size(), 1)
 	assert_eq([lines[0]["person"], lines[0]["name"]], ["ahmed", "Ahmed Bouzid"])
 	assert_false(str(lines[0]["line"]).is_empty())
+
+
+
+## A check-in counts days from a dated beat (drie winters S2, audit C11): the
+## session hands People the beats Missions knows.
+func test_a_checkin_counts_days_from_a_dated_beat() -> void:
+	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
+	var henk: MissionDef = s.missions.defs["save_henks_knowledge"]
+	henk.deadline_beat = "henk_farewell"
+	s.people.dialogs["ahmed_after_henk"].trigger = {"beat": "henk_farewell", "after_days": 16, "morale_below": 101}
+	var ahmed := func() -> bool:
+		return s.people_at(s.people.persons["ahmed"].place).filter(
+			func(p: Dictionary) -> bool: return p["id"] == "ahmed")[0]["has_dialog"]
+	assert_false(ahmed.call(), "Henk's mission never opened: no farewell yet")
+	s.missions.opened_at[henk.id] = s.region.net.time - SimCalendar.days(henk.deadline_days + 15)
+	assert_false(ahmed.call(), "fifteen days after the farewell")
+	s.missions.opened_at[henk.id] -= SimCalendar.days(1)
+	assert_true(ahmed.call(), "sixteen days after")
+
+
+## A partial agreement speaks up when its condition comes true (audit C15),
+## as an event the HUD toasts.
+func test_a_beat_line_reaches_the_events() -> void:
+	var s := _silo()
+	s.people.dialogs["joost_output_kpi"].beats_after = [{"when": "committed:frank_kpi_targets", "text": "Getekend."}]
+	s.people.outcomes["joost_output_kpi"] = "partial"
+	s.pass_time(1)
+	s.drain_events()
+	s.people.outcomes["frank_kpi_targets"] = "commitment"
+	s.pass_time(1)
+	var lines := s.drain_events().filter(func(e: Dictionary) -> bool: return e["type"] == "beat_line")
+	assert_eq(lines.map(func(e: Dictionary) -> String: return e["text"]), ["Getekend."])
+	assert_eq(UiText.event(lines[0], {}), "Joost van Dijk: “Getekend.”")

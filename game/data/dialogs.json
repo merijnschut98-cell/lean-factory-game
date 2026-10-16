@@ -222,6 +222,10 @@
     "ask": "Die vraag hadden we. Wil je een andere kant op?",
     "say": "Klopt, zo zei ik het. Zullen we verder?"
    },
+   "mentor": {
+    "ask": "Je stelt me mijn eigen vraag terug. Goed geleerd. Wat wil je nu echt weten?",
+    "say": "Je herhaalt me nu. Wat zie je zelf?"
+   },
    "overloaded": {
     "ask": "Sorry, maar dit vroeg je net. Ik heb echt niet veel tijd.",
     "say": "Ja. Ja. Dat weet ik nou wel. Wat wil je eigenlijk?"
