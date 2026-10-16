@@ -308,7 +308,8 @@
       "reflect",
       "empathy",
       "inquiry"
-     ]
+     ],
+     "wait_for": "Frank moet het goedvinden."
     }
    ],
    "lines": {
@@ -516,7 +517,8 @@
      "via": [
       "reflect",
       "empathy"
-     ]
+     ],
+     "wait_for": "Frank moet het goedvinden."
     }
    ],
    "lines": {

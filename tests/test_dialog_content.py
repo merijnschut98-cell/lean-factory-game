@@ -103,6 +103,8 @@ def _drop_route(d: dict) -> None:
     (lambda d: _layer(d, "joost_output_kpi", "interest").update(tags=["angry"]), "unknown tag"),
     (lambda d: _layer(d, "joost_output_kpi", "concern")["lead_in"].update(tags=["claim"]), "hesitation"),
     (lambda d: _layer(d, "joost_output_kpi", "concern").pop("lead_in"), "lead_in"),
+    (lambda d: _layer(d, "joost_output_kpi", "concern").update(wait_for=3), "wait_for"),
+    (lambda d: _layer(d, "joost_output_kpi", "interest").update(wait_for="Frank."), "without a condition"),
     (lambda d: _dialog(d, "joost_output_kpi")["layers"].reverse(), "interest, then concern"),
     (lambda d: _layer(d, "joost_output_kpi", "concern")["unlocks"].update(facts=["loved:joost"]), "fact"),
     (lambda d: _layer(d, "joost_output_kpi", "concern")["unlocks"].update(proposals=["lead_and_oldest"]), "hidden"),

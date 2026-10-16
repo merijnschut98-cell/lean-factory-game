@@ -1,6 +1,7 @@
 class_name Hud
 extends Control
-## The heads-up display: a top bar (day and time, budget, XP and belt, the
+## The heads-up display: a top bar (day and time, budget with the savings of
+## held fixes and, in debt, the floor; XP and belt, the
 ## region's setback while it stands still, the active mission), the
 ## interaction prompt, the controls,
 ## short messages (toasts, bottom right) when something happens, and cards
@@ -25,8 +26,12 @@ var drift_label: Label
 var stop_note: Label
 var mission_label: Label
 var prompt_label: Label
+## The controls line, bottom left (hidden while a panel is open).
+var help_label: Label
 var _toasts: VBoxContainer
 var _cards: VBoxContainer
+## In a talk the bar shows only the date and time: no budget, XP or mission.
+var _talking := false
 
 
 func _init() -> void:
@@ -93,6 +98,7 @@ func _build_centre() -> void:
 	add_child(prompt_label)
 
 	var help := Label.new()
+	help_label = help
 	help.text = controls_text()
 	help.add_theme_font_size_override("font_size", 16)
 	help.add_theme_color_override("font_color", Color(1, 1, 1, 0.8))
@@ -134,16 +140,17 @@ func _build_centre() -> void:
 
 func refresh() -> void:
 	clock_label.text = session.clock_text()
-	budget_label.text = "Budget " + UiText.money(session.budget())
+	budget_label.text = UiText.budget_line(session.budget(), session.region.weekly_savings())
+	budget_label.add_theme_color_override("font_color", Palette.SAFETY_ORANGE if session.budget() < 0 else Color.WHITE)
 	xp_label.text = "%d XP  ·  %s" % [session.xp(), UiText.belt(session.belt())]
 	var drift := roundi(session.drift()["level"] * 100.0)
-	drift_label.visible = drift > 0
+	drift_label.visible = drift > 0 and not _talking
 	drift_label.text = "Achteruitgang %d%%" % drift
 	mission_label.text = mission_text()
 
 
 func controls_text() -> String:
-	return "WASD/klik lopen   ·   Z/C draaien   ·   wiel zoomen   ·   E gebruiken   ·   J aanwijzingen   ·   M kaart   ·   K begrippen"
+	return tr("WASD/klik lopen   ·   Shift rennen   ·   Z/C draaien   ·   wiel zoomen   ·   E gebruiken   ·   J aanwijzingen   ·   M kaart   ·   K begrippen")
 
 
 ## The active missions in the top bar: the main one first.
@@ -155,8 +162,22 @@ func mission_text() -> String:
 		return UiText.mission_title(m, session)))
 
 
-## The toasts and cards; hidden while a panel is open.
+## A talk is open (or over): only the date and time stay in the bar; the
+## person, not the score, has the player's attention (dialog spec §11).
+func set_talking(on: bool) -> void:
+	_talking = on
+	for l: Label in [budget_label, xp_label, mission_label]:
+		l.visible = not on
+	if on:
+		drift_label.visible = false
+		stop_note.visible = false
+	elif session != null:
+		refresh()
+
+
+## The toasts, cards and controls line; hidden while a panel is open.
 func show_overlay(on: bool) -> void:
+	help_label.visible = on
 	_toasts.visible = on
 	_cards.visible = on
 

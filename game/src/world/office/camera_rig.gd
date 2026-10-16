@@ -30,6 +30,10 @@ const MAX_PITCH := deg_to_rad(89.0)
 ## Framing a workstation: how far from the point looked at, and how steep.
 const INSPECT_DISTANCE := 3.2
 const INSPECT_PITCH := deg_to_rad(40.0)
+## Framing a talk: over the player's shoulder, close and nearly level, on
+## the other person's face.
+const TALK_DISTANCE := 2.6
+const TALK_PITCH := deg_to_rad(14.0)
 ## Holding the right button this long (s) without dragging more than
 ## HOLD_SLOP pixels frames the place the player stands at.
 const HOLD_SECONDS := 0.3
@@ -71,6 +75,7 @@ var _shown_yaw := 0.0
 var _shown_distance := DEFAULT_DISTANCE
 var _shown_pitch := 0.0
 var _shown_shift := 0.0
+var _shown_lift := 0.0
 ## The right button: held, how far dragged (px), how long (s), framing yet.
 var _right_held := false
 var _right_drag := 0.0
@@ -104,6 +109,15 @@ func inspect(at: Vector3, look_yaw: float, shift := 0.0) -> void:
 	_inspect = {"at": at, "yaw": look_yaw, "shift": shift}
 
 
+## Frame a talk: look at `at` (the person's face) facing `look_yaw` from over
+## the player's shoulder, the face `shift` of the screen's width off the
+## middle and `lift` of its height above it (a panel across the bottom
+## covers the rest).
+func converse(at: Vector3, look_yaw: float, shift: float, lift: float) -> void:
+	_inspect = {"at": at, "yaw": look_yaw, "shift": shift, "lift": lift,
+		"distance": TALK_DISTANCE, "pitch": TALK_PITCH}
+
+
 ## Back to the player.
 func release() -> void:
 	_inspect = {}
@@ -120,6 +134,7 @@ func snap() -> void:
 	_shown_distance = _wanted_distance()
 	_shown_pitch = _wanted_pitch()
 	_shown_shift = _wanted_shift()
+	_shown_lift = _wanted_lift()
 	_place()
 
 
@@ -136,6 +151,7 @@ func update(delta: float) -> void:
 	_shown_distance = lerpf(_shown_distance, _wanted_distance(), glide)
 	_shown_pitch = lerpf(_shown_pitch, _wanted_pitch(), glide)
 	_shown_shift = lerpf(_shown_shift, _wanted_shift(), glide)
+	_shown_lift = lerpf(_shown_lift, _wanted_lift(), glide)
 	_place()
 
 
@@ -148,7 +164,7 @@ func _wanted_yaw() -> float:
 
 
 func _wanted_distance() -> float:
-	return INSPECT_DISTANCE if inspecting() else distance
+	return _inspect.get("distance", INSPECT_DISTANCE) if inspecting() else distance
 
 
 func _wanted_shift() -> float:
@@ -156,7 +172,11 @@ func _wanted_shift() -> float:
 
 
 func _wanted_pitch() -> float:
-	return INSPECT_PITCH if inspecting() else pitch()
+	return _inspect.get("pitch", INSPECT_PITCH) if inspecting() else pitch()
+
+
+func _wanted_lift() -> float:
+	return _inspect.get("lift", 0.0)
 
 
 ## The point to look at: the framed station, else the player's chest,
@@ -182,8 +202,11 @@ func _place() -> void:
 	var ground := Vector2(focus.x, focus.z) + back * d * cos(p)
 	var at := Vector3(ground.x, focus.y + d * sin(p), ground.y)
 	camera.transform = Transform3D(Basis.looking_at(focus - at), at)
-	# Sideways, not turned: the focus moves off the middle by the shift.
-	camera.h_offset = _shown_shift * 2.0 * d * tan(deg_to_rad(camera.fov) / 2.0) * _aspect()
+	# Sideways and down, not turned: the focus moves off the middle.
+	var half_height := d * tan(deg_to_rad(camera.fov) / 2.0)
+	camera.h_offset = _shown_shift * 2.0 * half_height * _aspect()
+	# Down, so the focus rises on screen by the lift.
+	camera.v_offset = -_shown_lift * 2.0 * half_height
 
 
 ## The screen's width over its height (16:9, the project's, outside a window).

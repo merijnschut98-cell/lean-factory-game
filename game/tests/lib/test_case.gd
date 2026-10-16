@@ -7,6 +7,13 @@ extends RefCounted
 var failures: PackedStringArray = []
 
 
+## A path under user:// that is this test run's own: every worktree's run
+## shares user://, so a fixed name lets one run overwrite or delete another's
+## file mid-test.
+static func scratch(file_name: String) -> String:
+	return "user://test_%d_%s" % [OS.get_process_id(), file_name.replace("/", "_")]
+
+
 func assert_true(condition: bool, message: String = "expected true") -> void:
 	if not condition:
 		failures.append(message)

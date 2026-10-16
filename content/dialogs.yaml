@@ -252,6 +252,7 @@ dialogs:
         text: "Mijn voorganger had één slecht kwartaal. Hij werkt nu bij Inkoop. … Als ik op doorlooptijd ga sturen, wordt dat getal eerst slechter. Dat weet ik gewoon. En dan sta ik in het MT met lege handen."
         tags: [admission]
         condition: "Ik doe mee. Maar Frank moet het goedvinden. Het blijft zijn lijst."
+        wait_for: "Frank moet het goedvinden."   # the summary card's "Wat nog moet"
         unlocks:
           clue: {key: true, depth: 2, text: "'Werkvoorbereiding stuurt op ontwerpen per week omdat de manager er elke maandag naar vraagt. Een doorlooptijd die pas na maanden beter wordt, voelt als een risico voor wie erop wordt afgerekend.'"}
           facts: [heard:joost_kpi]
@@ -354,6 +355,7 @@ dialogs:
         text: "Als ik op 'compleet doorgezet' ga sturen, zakt mijn aantal per week. Eerst. En dan is Intake weer het postkantoor dat traag is. Ik heb twee jaar gedaan over dat beeld."
         tags: [admission]
         condition: "Ik doe mee. Als Frank het goedvindt. Het jaarplan is van hem."
+        wait_for: "Frank moet het goedvinden."   # the summary card's "Wat nog moet"
         unlocks:
           facts: [heard:sanne_kpi]
           proposals: [present_with_joost]

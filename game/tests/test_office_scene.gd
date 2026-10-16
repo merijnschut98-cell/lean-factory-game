@@ -309,7 +309,7 @@ func test_the_mouse_stays_free_and_esc_closes_a_panel() -> void:
 	assert_false("mouse_captured" in office, "no mouse capture in third person")
 	assert_false("mouse_hint" in office.ui.hud, "no hint to catch the mouse again")
 	assert_eq(office.ui.hud.controls_text(),
-		"WASD/klik lopen   ·   Z/C draaien   ·   wiel zoomen   ·   E gebruiken   ·   J aanwijzingen   ·   M kaart   ·   K begrippen")
+		"WASD/klik lopen   ·   Shift rennen   ·   Z/C draaien   ·   wiel zoomen   ·   E gebruiken   ·   J aanwijzingen   ·   M kaart   ·   K begrippen")
 	office.player.escape_pressed.emit()
 	assert_false(office.ui.is_busy(), "Esc with nothing open does nothing")
 	office.interact(office.interactable("coach"))

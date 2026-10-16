@@ -15,7 +15,14 @@ extends SceneTree
 ## timelapse (the week played to Friday: the Act and the month ahead, with and
 ## without the standard) · sustain (the fix standardised, then left alone for
 ## weeks: its health, the audit and the routine in the team's menu, and the
-## toasts of a slipping fix) · intussen (the A3 in: what happens while the
+## toasts of a slipping fix) · discoveries (the codex's Ontdekkingen tab with
+## two found) · simulating (the A3's note while the Check runs) · fork_board
+## (the board after the first mission: the fork as a pair) · debt (the HUD in
+## debt, with the floor, and its toasts) · dialog_start, dialog_mid,
+## dialog_picks, dialog_summary, dialog_ruined (a talk with Joost) ·
+## dialog_people (the journal's Mensen tab after it) · dialog_place (the
+## team's menu with its people) · dialog_energy (the low-energy bar) ·
+## intussen (the A3 in: what happens while the
 ## Check runs, and the named skip) · terugblik (the card a resumed game opens
 ## with, after a session that finished the mission and left it alone) ·
 ## people_desks (Werkvoorbereiding and Intake at work, Anouk's name on hover) ·
@@ -90,6 +97,51 @@ func _run() -> void:
 			_investigate(office, true)
 			office.session.region.profile.learn(["flow", "bottleneck_focus", "netbeheerder", "netcongestie", "kata_prediction"])
 			office.ui.toggle_codex()
+		"discoveries":
+			_investigate(office, false)
+			office.session.discoveries.found["het_knelpunt_eerst"] = office.session.region.net.time
+			office.session.discoveries.found["voorspeller"] = office.session.region.net.time
+			office.ui.toggle_codex()
+			office.ui.codex.show_tab(CodexPanel.DISCOVERIES)
+		"simulating":
+			_investigate(office, true)
+			office.interact(office.interactable("obeya"))
+			office.ui.a3_form.submit(_a3(office))
+			office.ui.a3_form.wait()
+			office.ui.a3_form.show_simulating()
+		"fork_board":
+			office.session.missions.done_once[MISSION] = true
+			office.session.missions.progress[MISSION] = {"status": "completed", "asks": {}, "seen": {}}
+			office.session.region.state["custom_design"].phase = ProblemState.Phase.RESOLVED  # or it reopens
+			office.session.missions.update()
+			_stand_at(office, "mission_board")
+			office.interact(office.interactable("mission_board"))
+		"debt":
+			office.session.region.grant(0, -70000)
+			office.ui.after_action()
+			_stand_at(office, DESIGN)
+		"dialog_start", "dialog_mid", "dialog_picks", "dialog_summary", "dialog_ruined":
+			_talk_to_joost(office, state)
+		"dialog_people":
+			_talk_to_joost(office, "dialog_summary")
+			office.ui.close_panels()
+			office.ui.toggle_journal()
+			office.ui.journal.show_tab(ClueJournal.PEOPLE)
+		"dialog_place":
+			_open_silo(office)
+			_stand_at(office, DESIGN)
+			office.interact(office.interactable(DESIGN))
+			office.rig.snap()
+		"dialog_energy":
+			office.session.people.prompts["joost_output_kpi"] = office.session.region.net.time
+			office.session.people.morale["joost"] = 25
+			office.people.refresh(office.session)
+			var joost := office.people.person("joost")
+			office.player.position = joost.position + joost.basis.x * 3.0 - joost.basis.z * 0.5
+			office.player.face(Basis.looking_at((joost.position - office.player.position) * Vector3(1, 0, 1)))
+			office.rig.yaw = office.player.rotation.y + deg_to_rad(15)
+			office.rig.zoom(-4)
+			office.rig.snap()
 		"inspect":
 			_stand_at(office, DESIGN)
 			office.interact(office.interactable(DESIGN))
@@ -260,6 +312,40 @@ func _play_week(office: Office) -> void:
 		"prediction": problem.kpi})
 	ui.a3_form.wait()
 	ui.a3_form.check()
+
+
+## Act II's main mission open, Joost's own words found: his talk opens.
+func _open_silo(office: Office) -> void:
+	office.session.missions.done_once["fix_unused_capacity"] = true
+	office.session.accept("fix_silo_kpis")
+	office.session.region.found["silo_kpis:4"] = true
+	office.ui.after_action()
+
+
+## A talk with Joost at Werkvoorbereiding, played to the state's moment:
+## the opening, a few listening moves (the cue), the proposal's picks, the
+## summary of an agreement, or a ruined talk (pushing early).
+func _talk_to_joost(office: Office, state: String) -> void:
+	_open_silo(office)
+	office.people.refresh(office.session)
+	var joost := office.people.person("joost")
+	office.player.position = joost.position + joost.basis.x * 1.1 - joost.basis.z * 0.2  # beside his desk
+	office.use(joost)
+	office.rig.snap()
+	var panel := office.ui.dialog_panel
+	var moves: Array = []
+	match state:
+		"dialog_mid", "dialog_picks":
+			moves = ["mood", "paraphrase", "inquiry", "reflect"]
+		"dialog_summary":
+			moves = ["mood", "paraphrase", "inquiry", "reflect", "silence", "empathy", "propose:lead_and_oldest", "ask_commitment"]
+		"dialog_ruined":
+			moves = ["show_data:silo_kpis:4", "propose:lead_and_oldest", "pressure"]
+	for m: String in moves:
+		var colon := m.find(":")
+		panel.choose(m.left(colon) if colon >= 0 else m, m.substr(colon + 1) if colon >= 0 else "")
+	if state == "dialog_picks":
+		panel.open_picks("propose")
 
 
 ## The A3 a careful player would write (the cause read from the clues).
