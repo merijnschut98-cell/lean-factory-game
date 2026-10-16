@@ -107,6 +107,118 @@ func test_a_save_that_cannot_be_played_says_why_and_has_no_button() -> void:
 	_cleanup()
 
 
+# ── A save that will not load (review S1) ─────────────────────────────────
+
+func test_a_listed_save_that_fails_to_load_stays_on_the_title_menu() -> void:
+	DirAccess.make_dir_recursive_absolute(dir)
+	var file := FileAccess.open(SaveFile.path_of("slot_1", dir), FileAccess.WRITE)
+	file.store_buffer(SaveFile.encode({"version": 2, "region": {"network": 1}}))  # whole, but no game
+	file.close()
+	var menu := _menu()
+	assert_ne(menu.list.button_for("slot_1"), null, "listed as playable")
+	assert_eq(menu.open_game("slot_1"), null, "never a half-started game")
+	assert_true(shows(menu, "Deze opslag kon niet geladen worden."))
+	assert_true(shows(menu, "Nieuw spel"), "the menu is still there")
+	menu.free()
+	_cleanup()
+
+
+func test_a_save_that_loads_is_handed_to_the_office_once() -> void:
+	var saved := _session(3)
+	assert_eq(_slots().save(2, saved, SessionLayer.new()), "")
+	var menu := _menu()
+	var office := menu.open_game("slot_2")
+	office.seed_value = 11
+	office.training = false
+	office.build()
+	assert_eq(office.session.region.net.time, saved.region.net.time)
+	assert_true(office.ui.saves != null, "it saves itself and has a pause menu")
+	office.free()
+	menu.free()
+	_cleanup()
+
+
+# ── "Nieuw spel" never erases the game in the autosave (review S3) ──────────
+
+## A menu over an autosave `days` into the game; its bytes in `autosaved`.
+var autosaved: PackedByteArray
+
+
+func _menu_over_autosave(days := 30) -> TitleMenu:
+	assert_eq(_slots().autosave(_session(days), SessionLayer.new()), "")
+	autosaved = FileAccess.get_file_as_bytes(SaveFile.path_of(SaveSlots.AUTOSAVE, dir))
+	return _menu()
+
+
+func _asked(menu: TitleMenu) -> Array[String]:
+	var asked: Array[String] = []
+	menu.start_requested.connect(func(slot: String) -> void: asked.append(slot))
+	return asked
+
+
+func test_nieuw_spel_asks_before_it_replaces_the_autosave_and_terug_changes_nothing() -> void:
+	var menu := _menu_over_autosave()
+	var asked := _asked(menu)
+	menu.new_game()
+	assert_eq(asked, [], "not started yet")
+	assert_true(shows(menu, "Je huidige spel staat in de automatische opslag en wordt vervangen."))
+	for choice in ["Eerst bewaren in een slot", "Vervangen", "Terug"]:
+		assert_true(shows(menu, choice), choice)
+	menu.cancel()
+	assert_eq(asked, [])
+	assert_eq(menu.page, TitleMenu.Page.MAIN)
+	assert_eq(FileAccess.get_file_as_bytes(SaveFile.path_of(SaveSlots.AUTOSAVE, dir)), autosaved, "untouched")
+	assert_eq(menu.saves.entries().size(), 1, "no slot filled")
+	menu.free()
+	_cleanup()
+
+
+func test_vervangen_starts_the_new_game() -> void:
+	var menu := _menu_over_autosave()
+	var asked := _asked(menu)
+	menu.new_game()
+	menu.replace_autosave()
+	assert_eq(asked, [""])
+	menu.free()
+	_cleanup()
+
+
+func test_eerst_bewaren_copies_the_autosave_into_a_slot_intact_then_starts() -> void:
+	assert_eq(_slots().save(1, _session(2), SessionLayer.new()), "")
+	var menu := _menu_over_autosave()
+	var asked := _asked(menu)
+	menu.new_game()
+	menu.keep_first()
+	assert_eq(menu.page, TitleMenu.Page.KEEP)
+	assert_eq(menu.keep_list.get_child_count(), SaveSlots.COUNT, "the five slots")
+	assert_eq(menu.keep_list.get_child(0).get_meta("slot"), "slot_2", "an empty one first")
+	menu.keep_list.button_for("slot_2").pressed.emit()
+	assert_eq(FileAccess.get_file_as_bytes(SaveFile.path_of("slot_2", dir)), autosaved, "copied intact")
+	assert_eq(asked, [""], "then the new game starts")
+	menu.free()
+	_cleanup()
+
+
+func test_eerst_bewaren_in_a_filled_slot_asks_once() -> void:
+	assert_eq(_slots().save(1, _session(2), SessionLayer.new()), "")
+	var before := FileAccess.get_file_as_bytes(SaveFile.path_of("slot_1", dir))
+	var menu := _menu_over_autosave()
+	var asked := _asked(menu)
+	menu.new_game()
+	menu.keep_first()
+	menu.keep_in(1)
+	assert_true(shows(menu, "Overschrijven?"))
+	assert_eq(FileAccess.get_file_as_bytes(SaveFile.path_of("slot_1", dir)), before, "not yet")
+	menu.cancel()
+	assert_eq(menu.page, TitleMenu.Page.KEEP, "back to the slots")
+	menu.keep_in(1)
+	menu.confirm_keep()
+	assert_eq(FileAccess.get_file_as_bytes(SaveFile.path_of("slot_1", dir)), autosaved)
+	assert_eq(asked, [""])
+	menu.free()
+	_cleanup()
+
+
 func test_alles_wissen_asks_once_then_deletes_every_save() -> void:
 	var slots := _slots()
 	assert_eq(slots.save(1, _session(), SessionLayer.new()), "")

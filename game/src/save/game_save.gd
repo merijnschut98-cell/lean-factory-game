@@ -12,7 +12,7 @@ const AUTOSAVE := "autosave"
 
 
 static func exists(slot: String = AUTOSAVE, dir: String = SaveFile.DIR) -> bool:
-	return SaveFile.valid_slot(slot) and FileAccess.file_exists(SaveFile.path_of(slot, dir))
+	return SaveFile.exists(slot, dir)
 
 
 ## "" or what went wrong. `saved`: the real time (unix seconds) it is saved at.

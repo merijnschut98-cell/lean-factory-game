@@ -45,6 +45,9 @@ var queued: Array[String] = []
 ## The head office's floor the player was on (PLAN 2.1; "" for the start floor):
 ## a resumed game opens there.
 var floor_id := ""
+## Training days whose glossary card was shown (once a game, also after a
+## resume: review N2).
+var carded: Array[String] = []
 ## The card shown when this session opened ({} when none): the journal
 ## reopens it.
 var last_card := {}
@@ -383,7 +386,7 @@ static func _days(minutes: int) -> int:
 
 func to_dict() -> Dictionary:
 	return {"start": start.duplicate(true), "offered": offered.duplicate(), "toast_day": toast_day,
-		"queued": queued.duplicate(), "floor_id": floor_id}
+		"queued": queued.duplicate(), "floor_id": floor_id, "carded": carded.duplicate()}
 
 
 ## Restore to_dict() output, untrusted: anything of the wrong shape is
@@ -402,6 +405,11 @@ func load_dict(d: Dictionary) -> void:
 	for id: Variant in ids if ids is Array else []:
 		if id is String:
 			queued.append(id)
+	carded.clear()
+	var days: Variant = d.get("carded", [])
+	for id: Variant in days if days is Array else []:
+		if id is String:
+			carded.append(id)
 
 
 static func _clean_snapshot(v: Variant) -> Dictionary:

@@ -36,6 +36,8 @@ extends SceneTree
 ## lunch in the kantine, Frank and Femke on the 2e, Linda and Mieke on the 1e) ·
 ## people_whiteboard, people_explainer (Ruud's whiteboard, and E there) ·
 ## title (the title menu over a few saves) ·
+## title_replace, title_keep ("Nieuw spel" over a filled autosave: the
+## question, then the slots to keep it in) ·
 ## pause, pause_slots, pause_confirm (Esc in the office: the pause menu, its
 ## five slots, the overwrite question).
 ## The mission is played through the UI's own handlers, as a player would;
@@ -59,11 +61,11 @@ func _initialize() -> void:
 func _run() -> void:
 	var args := OS.get_cmdline_user_args()
 	if args.size() < 2:
-		printerr("usage: -- <office|overview|inspect|tools|a3|check|act|board|coach|map|codex|training_board|timelapse|sustain|intussen|terugblik|people_desks|people_talk|people_energy|people_monteurs|people_meetdata|people_gemba|title|pause|pause_slots|pause_confirm> <out.png> [frames]")
+		printerr("usage: -- <office|overview|inspect|tools|a3|check|act|board|coach|map|codex|training_board|timelapse|sustain|intussen|terugblik|people_desks|people_talk|people_energy|people_monteurs|people_meetdata|people_gemba|title|title_replace|title_keep|pause|pause_slots|pause_confirm> <out.png> [frames]")
 		quit(2)
 		return
 	var state := args[0]
-	if state in ["title", "pause", "pause_slots", "pause_confirm"]:
+	if state in ["title", "title_replace", "title_keep", "pause", "pause_slots", "pause_confirm"]:
 		await _save_menus(state)
 		_capture(args)
 		return
@@ -219,10 +221,14 @@ func _save_menus(state: String) -> void:
 	old.store_buffer(var_to_bytes({"version": 0, "region": {}}))
 	old.close()
 	slots.now = func() -> float: return now
-	if state == "title":
+	if state.begins_with("title"):
 		var menu: TitleMenu = load(TitleMenu.SCENE).instantiate()
 		menu.saves = slots
 		root.add_child(menu)
+		if state != "title":
+			menu.new_game()  # the autosave holds a game: it asks first
+		if state == "title_keep":
+			menu.keep_first()
 		return
 	var office: Office = load(SCENE).instantiate()
 	office.seed_value = 11

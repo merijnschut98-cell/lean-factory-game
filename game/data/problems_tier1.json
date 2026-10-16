@@ -31,6 +31,14 @@
      "key": true,
      "text": "Een klant aan de telefoon: 'Ik wist niet dat ik dat moest invullen, het formulier vroeg er niet om.'",
      "tool": "listen_in"
+    },
+    {
+     "at": "connections.intake",
+     "depth": 2,
+     "dialog": "sanne_checker",
+     "key": true,
+     "text": "'Wat er mist, is altijd hetzelfde: het vermogen, de meterkastfoto, de installateur. Wij zien het elke dag. Niemand heeft ons ooit gevraagd wat er op het formulier moet.'",
+     "tool": "conversation"
     }
    ],
    "countermeasures": {
@@ -99,6 +107,14 @@
      "depth": 2,
      "key": true,
      "text": "'We bellen de klant nooit vooraf. We weten pas dat het niet klaar is als de monteur er staat.'",
+     "tool": "conversation"
+    },
+    {
+     "at": "connections.execution",
+     "depth": 2,
+     "dialog": "marco_wasted_trips",
+     "key": true,
+     "text": "'Mijn mannen zien op een foto in één oogopslag of een meterkast klaar is. Maar niemand vraagt ze iets voordat ze rijden.'",
      "tool": "conversation"
     }
    ],
@@ -237,6 +253,14 @@
      "key": true,
      "text": "Driekwart van de ontwerpen is een standaard 3x25A-aansluiting zonder netuitbreiding.",
      "tool": "data"
+    },
+    {
+     "at": "connections.design",
+     "depth": 2,
+     "dialog": "joost_vacancies",
+     "key": true,
+     "text": "'Niemand heeft ooit gevraagd of het anders mocht. Drie handtekeningen, zo is het altijd gegaan. Ook voor een gewone woning.'",
+     "tool": "conversation"
     }
    ],
    "countermeasures": {
@@ -588,6 +612,14 @@
      "key": true,
      "text": "Er is geen overzicht van wie welke kabeltypes en schakelingen beheerst.",
      "tool": "documents"
+    },
+    {
+     "at": "outages.locate",
+     "depth": 2,
+     "dialog": "henk_camera",
+     "key": true,
+     "text": "'Dit vak leer je niet uit een boek. Je leert het naast iemand die het kan, tot je het zelf doet en hij alleen nog kijkt.'",
+     "tool": "conversation"
     }
    ],
    "countermeasures": {
@@ -796,6 +828,14 @@
      "key": true,
      "text": "Een volledige netstudie kost vier uur; een snelle check op de vrije capaciteit van het station kost een kwartier.",
      "tool": "time_study"
+    },
+    {
+     "at": "connections.grid_study",
+     "depth": 2,
+     "dialog": "femke_triage",
+     "key": true,
+     "text": "'De grens van 3x25A in de werkinstructie komt uit 2019, toen bijna niemand zwaarder vroeg. Nu vraagt bijna elke warmtepompklant meer.'",
+     "tool": "conversation"
     }
    ],
    "countermeasures": {

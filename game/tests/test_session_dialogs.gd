@@ -26,7 +26,7 @@ func _play(s: GameSession, moves: Array) -> Dictionary:
 func test_people_at_a_place_say_whether_they_have_something_to_say() -> void:
 	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
 	var here := s.people_at(DESIGN)
-	assert_eq(here.map(func(p: Dictionary) -> String: return p["id"]), ["joost", "frank", "anouk"])
+	assert_eq(here.map(func(p: Dictionary) -> String: return p["id"]), ["joost", "frank", "anouk", "rob"])
 	assert_false(here[0]["has_dialog"], "no mission of theirs is active")
 	assert_eq(s.start_dialog("joost"), {"error": "nothing_to_say"})
 	assert_true(_silo().people_at(DESIGN)[0]["has_dialog"])
@@ -118,9 +118,9 @@ func test_the_owner_s_buy_in_follows_the_fix() -> void:
 	st.a3 = {"cm": "obeya_end_to_end"}
 	s.ask_coach()
 	assert_eq(st.buy_in, "none", "an agreement under condition, still pending")
-	var unowned: ProblemState = s.region.state["custom_design"]
+	var unowned: ProblemState = s.region.state["permits_in_batches"]
 	unowned.phase = ProblemState.Phase.RESOLVED
-	unowned.a3 = {"cm": "standard_designs"}
+	unowned.a3 = {"cm": "request_permits_daily"}
 	s.ask_coach()
 	assert_eq(unowned.buy_in, "none", "nobody owns that fix in the dialogs")
 

@@ -60,6 +60,27 @@ func save(n: int, s: GameSession, layer: SessionLayer) -> String:
 	return _write(slot, s, layer)
 
 
+## Copy the autosave byte for byte into manual slot `n` (1–5), so a new game
+## can replace it (the title menu's "Eerst bewaren in een slot"). "" or what
+## went wrong; nothing is copied unless the autosave is whole and playable.
+func copy_autosave(n: int) -> String:
+	var slot := manual(n)
+	if slot.is_empty():
+		return "no save slot %d (1 to %d)" % [n, COUNT]
+	if not valid():
+		return "not a saves folder: %s" % dir
+	var loaded := SaveFile.load_slot(AUTOSAVE, dir)  # recovers what a crash left first
+	if loaded["fault"] != SaveFile.Fault.NONE:
+		return loaded["error"]
+	var bytes := FileAccess.get_file_as_bytes(SaveFile.path_of(AUTOSAVE, dir))
+	if bytes.is_empty():
+		return "cannot read the autosave (%s)" % error_string(FileAccess.get_open_error())
+	var error := SaveFile.store(slot, bytes, dir)
+	if error.is_empty():
+		_mark_used(slot)
+	return error
+
+
 ## Save the game into the autosave slot. "" or what went wrong.
 func autosave(s: GameSession, layer: SessionLayer) -> String:
 	return _write(AUTOSAVE, s, layer)
@@ -117,7 +138,7 @@ func wipe() -> String:
 		return ""
 	var failed: PackedStringArray = []
 	for file in DirAccess.get_files_at(dir):
-		if file == INDEX or file.ends_with(".save") or file.ends_with(".save.tmp"):
+		if file == INDEX or file.trim_suffix(SaveFile.TEMP).trim_suffix(SaveFile.BACKUP).ends_with(".save"):
 			var error := DirAccess.remove_absolute(dir.path_join(file))
 			if error != OK:
 				failed.append("%s (%s)" % [file, error_string(error)])

@@ -131,6 +131,9 @@ def _drop_route(d: dict) -> None:
     (lambda d: _dialog(d, "ahmed_after_henk")["proposals"][0].update(kpis=["work_prep_ftr"]), "check-in"),
     (lambda d: _dialog(d, "ahmed_after_henk")["variants"][0].update(needs={"all": ["chose:knowledge_drain:magic"]}),
      "does not list that countermeasure"),
+    # Phase 1 review S4: a variant's layers unlock real hidden proposals too.
+    (lambda d: _dialog(d, "ahmed_after_henk")["variants"][0]["layers"][1].update(
+        unlocks={"proposals": ["no_such_proposal"]}), "not a hidden proposal"),
     (lambda d: d["dialogs"]["bank"]["player"].pop("silence"), "silence"),
     (lambda d: d["dialogs"]["bank"]["replies"]["reflect"].pop("misses"), "reflect"),
     (lambda d: d["dialogs"]["bank"]["special"].pop("repeat"), "repeat"),

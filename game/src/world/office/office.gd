@@ -57,6 +57,9 @@ var saves := SaveSlots.new()
 ## The slot the game continues from ("" for a new game): the title menu's
 ## pick (play), or the autosave when this office is the main scene.
 var resume_slot := ""
+## The game in `resume_slot` when the title menu has already loaded it
+## (SaveSlots.resume's result); {} to load it here.
+var resumed := {}
 ## Whether the game saves itself (into the autosave only, never a manual
 ## slot): the real game does, tests and tools do not.
 var autosaves := false
@@ -150,6 +153,8 @@ func build() -> void:
 ## save itself ({error} only, autosaves off): an autosave that failed to
 ## load is never written over.
 func _resume() -> Dictionary:
+	if not resumed.is_empty():
+		return resumed
 	if resume_slot.is_empty() or saves.entry(resume_slot).is_empty():
 		return {}
 	var loaded := saves.resume(resume_slot, data_dir)

@@ -449,8 +449,9 @@ func load_dict(d: Dictionary) -> void:
 	var saved_found := JsonFile.dict_or_empty(d.get("found"))
 	found.clear()
 	for id: Variant in saved_found:
-		if defs.has(str(id)):
-			found[str(id)] = int(saved_found[id])
+		var day: Variant = saved_found[id]
+		if defs.has(str(id)) and (day is int or day is float):
+			found[str(id)] = int(day)
 	_uses.assign((d.get("uses", []) as Array).filter(func(u: Variant) -> bool: return u is Dictionary) if d.get("uses") is Array else [])
 	for pair in [[_counts, "counts"], [_after_fail, "after_fail"], [_durable, "durable"], [_blame, "blame"],
 			[_act_blamed, "act_blamed"], [_act_experiments, "act_experiments"], [_act_overload, "act_overload"],
