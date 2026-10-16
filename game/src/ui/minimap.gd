@@ -26,6 +26,8 @@ const HATCH := Color(0.29, 0.30, 0.32, 0.35)
 const SIDE := Color(0.42, 0.52, 0.62)
 const SEGMENTS := 48
 const NAME_SIZE := 9
+## Labels keep this far (px) from the middle, where the player's arrowhead is.
+const PLAYER_CLEAR := 12.0
 ## The settings (user://settings.cfg, section "minimap"): shown, and turning with the
 ## camera; both on by default.
 const SECTION := "minimap"
@@ -286,10 +288,27 @@ func _rim(font: Font, item: Dictionary) -> void:
 	_label(font, c - d * 14.0, text, d.y > 0.0, item["alpha"])
 
 
+## Where a label `w` wide by `at` starts (its baseline): inside the circle, and off the
+## player's arrowhead in the middle (moved over or under it).
+func label_at(at: Vector2, w: float, above: bool) -> Vector2:
+	var x := clampf(at.x - w / 2.0, 14.0, DIAMETER - 14.0 - w)
+	var arrow := Rect2(centre() - Vector2.ONE * PLAYER_CLEAR, Vector2.ONE * PLAYER_CLEAR * 2)
+	var mark := Rect2(at - Vector2.ONE * 7.0, Vector2.ONE * 14.0)
+	var tries: Array[float] = [at.y - 8.0, at.y + 18.0]   # over or under the point, the asked side first
+	if not above:
+		tries.reverse()
+	tries.append_array([centre().y + PLAYER_CLEAR + 13.0, centre().y - PLAYER_CLEAR - 3.0])
+	for y in tries:
+		var box := Rect2(x, y - 12.0, w, 15.0)
+		if not box.intersects(arrow) and not box.intersects(mark):
+			return Vector2(x, y)
+	return Vector2(x, tries[0])
+
+
 ## A short text by a marker or an arrow (the distance, the floor to go to), kept inside
 ## the circle: under the point, or over it when `above`.
 func _label(font: Font, at: Vector2, text: String, above: bool, a: float) -> void:
 	var w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 12).x
-	var p := Vector2(clampf(at.x - w / 2.0, 14.0, DIAMETER - 14.0 - w), at.y + (-8.0 if above else 18.0))
+	var p := label_at(at, w, above)
 	draw_string_outline(font, p, text, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, 4, PAPER)
 	draw_string(font, p, text, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(INK, a))

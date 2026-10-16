@@ -254,6 +254,16 @@ func test_it_hides_while_the_world_waits_and_when_the_setting_says_so() -> void:
 	office.free()
 
 
+func test_a_label_never_covers_the_players_arrowhead() -> void:
+	var map := Minimap.new()
+	var arrow := Rect2(map.centre() - Vector2.ONE * Minimap.PLAYER_CLEAR, Vector2.ONE * Minimap.PLAYER_CLEAR * 2)
+	for at: Vector2 in [Vector2(150, 100), Vector2(150, 125), Vector2(70, 95), map.centre()]:
+		var p := map.label_at(at, 90.0, false)
+		assert_false(Rect2(p - Vector2(0, 12), Vector2(90, 15)).intersects(arrow), "a label by %s keeps off the arrow" % at)
+		assert_true(p.x >= 14.0 and p.x + 90.0 <= Minimap.DIAMETER - 14.0, "and inside the circle")
+	map.free()
+
+
 func test_it_sits_bottom_right_clear_of_the_toasts_the_help_line_and_the_prompt() -> void:
 	var map := Minimap.new()
 	var screen := Rect2(0, 0, 1600, 900)
