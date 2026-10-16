@@ -80,6 +80,9 @@ If the missions are weak, the game is weak. Every mission must:
 - **Superpowers** — a core skill (Merijn, 2026-10-12). Check the superpowers skills before every task and use the ones that apply: `brainstorming` before designing a feature, `writing-plans` / `executing-plans` for multi-step work, `test-driven-development` for every behaviour change (watch the test fail first), `systematic-debugging` for every bug, `verification-before-completion` before calling anything done, `requesting-code-review` before a phase ends.
 - **`simplify`** — run after every code change. No exceptions. Code must pass the simplification checklist before the task is considered done.
 
+### Network access (Merijn, 2026-10-16) — a rule
+The environment has full network access, but **never access a domain Merijn has not approved**. Approved: `quaternius.com`, `opengameart.org`, `github.com`, and the package managers the project already uses. Any other domain (a mirror, a CDN a download redirects to, a source page): ask Merijn first, naming the domain and why. Agents stop and report instead of fetching. Every brief to an agent repeats this rule.
+
 ### `error-handling` — run whenever any of these are true
 - A function does file I/O, database access, or network/API calls
 - A `try/except` block is added, changed, or removed
