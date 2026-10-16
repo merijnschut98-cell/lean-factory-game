@@ -170,7 +170,7 @@ const ANSWERS := {"paraphrase": ["claim"], "inquiry": ["claim", "hesitation"], "
 const COPIED := ["openness", "trust", "mood", "version", "revealed", "heard", "pressured", "confronted", "table",
 	"patience", "outcome", "_repaired", "_last_move", "_streak", "_last_tags", "_uses", "_mood_asked",
 	"_lead_in_said", "_co_offered", "_warned", "_worn", "moves_made",
-	"trace", "made", "told", "start_openness", "_found", "_facts", "_retry"]
+	"trace", "made", "told", "steered_early", "concern_by", "start_openness", "_found", "_facts", "_retry"]
 const STATE_KEYS := 22  # COPIED up to "trace"; test_dialog_routes.gd checks it
 
 var def: DialogDef
@@ -217,6 +217,10 @@ var _lead_in_said := false
 var _co_offered := false
 var _warned := false
 var _worn: Dictionary = {}
+## How the talk went, for the discoveries: a steering move came before the
+## concern was out; the move that revealed the concern.
+var steered_early := false
+var concern_by := ""
 
 
 ## `start`: {openness, trust, mood, found (clue id → true), facts (fact → true),
@@ -307,6 +311,7 @@ func say(move: String, pick: String = "") -> Dictionary:
 		_worn[move] = true
 		reply = _wear_line(move)
 	_uses[move] = int(_uses.get(move, 0)) + 1
+	steered_early = steered_early or (move in STEER and not revealed.has("concern"))
 	openness = clampi(openness + delta, RUINED_BELOW if def.tutorial else 0, 100)
 	outcome = effect["outcome"]
 	var shown := ""
@@ -318,6 +323,7 @@ func say(move: String, pick: String = "") -> Dictionary:
 				and (not layer.has("lead_in") or _lead_in_said):
 			revealed[layer["id"]] = true
 			shown = layer["id"]
+			concern_by = move if shown == "concern" else concern_by
 			unlocked = JsonFile.dict_or_empty(layer.get("unlocks")).duplicate(true)
 			reply = _told(layer, shown)
 		elif at_lead_in:
@@ -422,6 +428,11 @@ static func band_of(value: int) -> int:
 		if value >= BANDS[i]:
 			return i
 	return -1
+
+
+## Their own idea won: the co-proposal they offered was on the table.
+func own_idea() -> bool:
+	return _co_offered and table == str(def.co_proposal.get("id", ""))
 
 
 ## The facts the revealed layers unlocked (heard:<id>).

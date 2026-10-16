@@ -1576,6 +1576,8 @@ DISCOVERY_TRIGGERS = {
     "tool_in_missions": ["place", "tool", "missions", "problem", "countermeasure"],
     "farewell": ["mission", "place", "days", "countermeasures"],
     "followed_order": ["days"], "contain_then_fix": ["days"],
+    "listened_first": ["count"], "silence_reveal": ["count"], "second_chance": [], "own_idea": [],
+    "lifted_low": ["count", "morale"], "no_pressure_act": ["commitments"],
 }
 DISCOVERY_KEYS = {"id", "name", "line", "hint", "act", "trigger", "reward"}
 MAX_DISCOVERY_REPUTATION = 3  # small in power (audit §4.1)
@@ -1592,12 +1594,14 @@ def validate_discoveries(doc: Any, source: str) -> None:
         if not isinstance(trigger, dict) or trigger.get("type") not in DISCOVERY_TRIGGERS:
             raise ContentError(f"{where}: 'trigger' needs a type: {', '.join(DISCOVERY_TRIGGERS)}")
         _known_keys(trigger, {"type", *DISCOVERY_TRIGGERS[trigger["type"]]}, f"{where} trigger")
-        for key in ("window_days", "days", "count", "experiments", "score"):
+        for key in ("window_days", "days", "count", "experiments", "score", "commitments"):
             if key in trigger:
                 _number(trigger, key, f"{where} trigger", 1, integer=True)
         if "hours" in trigger and not (isinstance(trigger["hours"], list) and len(trigger["hours"]) == 2
                                        and all(isinstance(h, int) and 0 <= h <= 24 for h in trigger["hours"])):
             raise ContentError(f"{where} trigger: 'hours' is [from, to], whole hours")
+        if "morale" in trigger:
+            _number(trigger, "morale", f"{where} trigger", 1, 100, integer=True)
         if "months" in trigger and not (isinstance(trigger["months"], list)
                                         and all(isinstance(m, int) and 1 <= m <= 12 for m in trigger["months"])):
             raise ContentError(f"{where} trigger: 'months' is a list of 1-12")

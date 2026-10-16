@@ -789,7 +789,11 @@ func _finish_talk() -> Dictionary:
 	var d := _talk
 	_talk = null
 	var main := missions.active("main").any(func(m: MissionDef) -> bool: return m.id == d.def.mission)
+	var morale_before: int = people.morale[d.who.id]
 	var summary := people.finish(d, region.net.time, main)
+	discoveries.note_talk(self, {"person": d.who.id, "team": d.who.team, "kind": d.def.kind, "outcome": d.outcome,
+		"listened_first": not d.steered_early and d.revealed.has("concern"), "silence_reveal": d.concern_by == "silence",
+		"own_idea": d.own_idea(), "morale_before": morale_before, "pressured": d.pressured, "confronted": d.confronted})
 	if summary["confronted"]:
 		region.ask(d.who.place, "behind")
 	if summary["team_trust"] > 0:

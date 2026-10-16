@@ -25,6 +25,8 @@ const TRIGGERS := {
 	"tool_in_missions": ["place", "tool", "missions", "problem", "countermeasure"],
 	"farewell": ["mission", "place", "days", "countermeasures"],
 	"followed_order": ["days"], "contain_then_fix": ["days"],
+	"listened_first": ["count"], "silence_reveal": ["count"], "second_chance": [], "own_idea": [],
+	"lifted_low": ["count", "morale"], "no_pressure_act": ["commitments"],
 }
 ## A fix holds when its health is at least this (Reputation.HELD_HEALTH).
 const HELD_HEALTH := Reputation.HELD_HEALTH
@@ -54,6 +56,14 @@ var _missions_heard := {}  # discovery id → {mission: true}
 var _not_constraint := {}  # problems whose Check said not the constraint
 var _first_pass := {}  # problems whose first Check passed with the right cause and KPI
 var _contained := {}  # missions contained within contain_then_fix's days of being taken on
+# Talks (dialog spec §5.5): the last outcome per person, the people whose
+# concern came out after a silence, the low people a check-in lifted, and
+# per act whether pressure was used and how many commitments were won.
+var _last_talk := {}
+var _silent_people := {}
+var _lifted_low := {}
+var _act_pressure := {}
+var _act_commitments := {}
 
 
 func _init(content: Array) -> void:
@@ -148,6 +158,34 @@ func note_act(s: GameSession, problem_id: String) -> void:
 		_durable[problem_id] = r.net.time
 
 
+## A talk ended. `t`: {person, team, kind, outcome, listened_first (no
+## steering before the concern came out), silence_reveal (a silence brought
+## the concern out), own_idea (their co-proposal won), morale_before,
+## pressured, confronted}.
+func note_talk(s: GameSession, t: Dictionary) -> void:
+	var act := str(_act(s))
+	var person := str(t["person"])
+	var outcome := str(t["outcome"])
+	if t.get("confronted", false):
+		_act_blamed[act] = true  # D2 counts a blame in a talk
+	if t.get("pressured", false) or t.get("confronted", false):
+		_act_pressure[act] = true
+	if outcome == "commitment":
+		_act_commitments[act] = int(_act_commitments.get(act, 0)) + 1
+		if t.get("listened_first", false):
+			_count("listened_first")
+		if _last_talk.get(person) == "ruined":
+			_reward(s, "second_chance")
+		if t.get("own_idea", false) and not _of_type("own_idea").is_empty():
+			s.region.change_trust(str(t.get("team", "")), 1)
+			_reward(s, "own_idea")
+	if t.get("silence_reveal", false):
+		_silent_people[person] = true
+	if outcome == "lifted" and int(t.get("morale_before", 100)) < _param("lifted_low", "morale", 50):
+		_lifted_low[person] = true
+	_last_talk[person] = outcome
+
+
 ## A mission was taken on.
 func note_accept(s: GameSession, mission_id: String) -> void:
 	_accepted[mission_id] = s.region.net.time
@@ -231,8 +269,15 @@ func _met(s: GameSession, d: Dictionary) -> bool:
 				var def: MissionDef = m.defs.get(id)
 				var st: ProblemState = s.region.state.get(def.goal_problem) if def != null else null
 				return st != null and st.phase == ProblemState.Phase.RESOLVED and st.cause_correct)
-		"predictions", "deepest_why", "durable_held":
+		"predictions", "deepest_why", "durable_held", "listened_first":
 			return int(_counts.get(str(t["type"]), 0)) >= int(t.get("count", 1))
+		"silence_reveal":
+			return _silent_people.size() >= int(t.get("count", 3))
+		"lifted_low":
+			return _lifted_low.size() >= int(t.get("count", 5))
+		"no_pressure_act":
+			return _ended_acts(s).any(func(act: int) -> bool:
+				return not _act_pressure.has(str(act)) and int(_act_commitments.get(str(act), 0)) >= int(t.get("commitments", 3)))
 	return false
 
 
@@ -401,7 +446,9 @@ func to_dict() -> Dictionary:
 		"after_fail": _after_fail.duplicate(), "durable": _durable.duplicate(), "blame": _blame.duplicate(),
 		"coach": _coach.duplicate(true), "act_blamed": _act_blamed.duplicate(), "act_experiments": _act_experiments.duplicate(),
 		"act_overload": _act_overload.duplicate(), "missions_heard": _missions_heard.duplicate(true), "accepted": _accepted.duplicate(),
-		"not_constraint": _not_constraint.duplicate(), "first_pass": _first_pass.duplicate(), "contained": _contained.duplicate()}
+		"not_constraint": _not_constraint.duplicate(), "first_pass": _first_pass.duplicate(), "contained": _contained.duplicate(),
+		"last_talk": _last_talk.duplicate(), "silent_people": _silent_people.duplicate(), "lifted_low": _lifted_low.duplicate(),
+		"act_pressure": _act_pressure.duplicate(), "act_commitments": _act_commitments.duplicate()}
 
 
 ## Restore to_dict() output; discoveries the content no longer has are dropped.
@@ -415,7 +462,9 @@ func load_dict(d: Dictionary) -> void:
 	for pair in [[_counts, "counts"], [_after_fail, "after_fail"], [_durable, "durable"], [_blame, "blame"],
 			[_act_blamed, "act_blamed"], [_act_experiments, "act_experiments"], [_act_overload, "act_overload"],
 			[_not_constraint, "not_constraint"], [_first_pass, "first_pass"], [_coach, "coach"], [_missions_heard, "missions_heard"],
-			[_accepted, "accepted"]]:
+			[_accepted, "accepted"], [_last_talk, "last_talk"], [_silent_people, "silent_people"],
+			[_lifted_low, "lifted_low"], [_act_pressure, "act_pressure"], [_act_commitments, "act_commitments"],
+			[_contained, "contained"]]:
 		var into: Dictionary = pair[0]
 		into.clear()
 		var saved := JsonFile.dict_or_empty(d.get(pair[1]))
