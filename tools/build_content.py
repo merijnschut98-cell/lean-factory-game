@@ -1425,6 +1425,38 @@ def check_dialogs(docs: dict[str, Any]) -> None:
             raise ContentError(f"{where}: never game over: the block needs a route no failure or skip can close")
         if d["kind"] != "checkin":
             _check_mission_dialog(d, where, missions, problems, net)
+    check_need_spread(speaking_cast(docs))
+
+
+# The tiers of the four-tier audit by act: 1 = Acts 0–II, 2 = III, 3 = IV and VI, 4 = V.
+TIER_OF_ACT = {0: 1, 1: 1, 2: 1, 3: 2, 4: 3, 5: 4, 6: 3}
+
+
+def speaking_cast(docs: dict[str, Any]) -> dict[int, dict[str, str]]:
+    """Per tier, the people with a mission's dialog in it and their need (a
+    check-in belongs to no mission, so to no tier)."""
+    acts = {m["id"]: m["act"] for m in docs["missions"]["missions"] if "act" in m}
+    people = {p["id"]: p["need"] for p in docs["dialogs"]["people"]}
+    cast: dict[int, dict[str, str]] = {}
+    for d in docs["dialogs"]["dialogs"]:
+        if d.get("mission") in acts:
+            cast.setdefault(TIER_OF_ACT[acts[d["mission"]]], {})[d["person"]] = people[d["person"]]
+    return cast
+
+
+def check_need_spread(cast: dict[int, dict[str, str]]) -> None:
+    """N7 (person-needs spec §2.1): within a tier's speaking cast no need holds
+    more than a third (rounded up), and a cast of five or more meets them all."""
+    for tier, needs in sorted(cast.items()):
+        n = len(needs)
+        for need in DIALOG_NEEDS:
+            count = list(needs.values()).count(need)
+            if count > -(-n // 3):
+                raise ContentError(f"dialogs.yaml: tier {tier}: the need {need!r} holds {count} of {n} speaking people "
+                                   f"(at most a third)")
+        missing = [need for need in DIALOG_NEEDS if need not in needs.values()]
+        if n >= 5 and missing:
+            raise ContentError(f"dialogs.yaml: tier {tier}: a cast of {n} meets every need; missing {', '.join(missing)}")
 
 
 def _check_talk_goals(docs: dict[str, Any]) -> None:

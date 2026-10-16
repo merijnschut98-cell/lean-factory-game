@@ -246,3 +246,27 @@ def test_a_tell_shows_the_person_s_own_need(real, tmp_path):
     docs = copy.deepcopy(real)
     _dialog(docs, "frank_kpi_targets")["position"]["tell"] = "facts"
     _load(tmp_path, docs)
+
+
+# N7 (person-needs spec §2.1, §5): the needs spread over each tier's speaking cast.
+def test_a_tier_s_cast_spreads_its_needs():
+    five = {"a": "facts", "b": "safety", "c": "recognition", "d": "time", "e": "fairness"}
+    bc.check_need_spread({1: five})
+    bc.check_need_spread({2: {"a": "safety", "b": "safety", "c": "facts", "d": "time"}})  # n < 5: not all five
+    with pytest.raises(bc.ContentError, match="tier 1.*safety.*3 of 6"):
+        bc.check_need_spread({1: {**five, "f": "safety", "e": "safety"}})
+    with pytest.raises(bc.ContentError, match="tier 3.*every need.*fairness"):
+        bc.check_need_spread({3: {**five, "e": "facts"}})
+
+
+def test_the_speaking_cast_is_read_per_tier_from_the_missions_acts(real):
+    cast = bc.speaking_cast(real)
+    assert cast[1] == {"joost": "safety", "sanne": "recognition", "frank": "facts"}, "Act II is tier 1"
+    assert bc.TIER_OF_ACT == {0: 1, 1: 1, 2: 1, 3: 2, 4: 3, 5: 4, 6: 3}
+
+
+def test_a_crowded_need_in_a_tier_fails_the_build(real, tmp_path):
+    docs = copy.deepcopy(real)
+    _person(docs, "frank")["need"] = "safety"
+    with pytest.raises(bc.ContentError, match="tier 1.*safety"):
+        _load(tmp_path, docs)
