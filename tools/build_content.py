@@ -564,7 +564,7 @@ def _all_problems(docs: dict[str, Any]) -> list[tuple[str, dict]]:
 # facts (heard: ... blocked:) name a dialog; they are checked once dialogs exist.
 FACT_KINDS = {"done": 1, "failed": 1, "chose": 2, "standardised": 1, "poor_fix": 1, "repaired": 1, "fork_first": 2,
               "flag": 1, "heard": 1, "committed": 1, "complied": 1, "partial": 1, "blocked": 1,
-              "checked": 1}  # Facts.KINDS
+              "checked": 1, "accepted": 1}  # Facts.KINDS
 DIALOG_FACTS = {"heard", "committed", "complied", "partial", "blocked"}
 MEASURES = {"maturity": (1, 4), "reputation": (0, 100)}  # Facts.MEASURES: "maturity>=3"
 _MEASURE = re.compile(r"^([a-z]+)>=(\d+)$")
@@ -914,7 +914,7 @@ def _atom_robust(atom: str, where: str, index: dict) -> bool:
     """Whether no missed deadline can take `atom` away for good; raises when it
     names something that does not exist."""
     kind, ids = _atom_parts(atom, where)
-    if kind == "done" and ids[0] not in index["missions"] or kind == "failed" and ids[0] not in index["deadlines"]:
+    if kind in ("done", "accepted") and ids[0] not in index["missions"] or kind == "failed" and ids[0] not in index["deadlines"]:
         raise ContentError(f"{where}: {atom!r} names no such mission{' with a deadline' if kind == 'failed' else ''}")
     if kind in ("chose", "standardised", "poor_fix", "repaired", "checked") and ids[0] not in index["problems"]:
         raise ContentError(f"{where}: {atom!r} names an unknown problem")
@@ -933,7 +933,7 @@ def _fact_reachable(atom: str, done: set, maturity: int, reputation: int, index:
     kind, ids = _atom_parts(atom, "needs")
     if kind == "measure":
         return (maturity if ids[0] == "maturity" else reputation) >= int(ids[1])
-    if kind in ("done", "fork_first"):
+    if kind in ("done", "fork_first", "accepted"):
         return ids[-1] in done
     if kind == "failed":
         return True  # a deadline can always be missed
@@ -1116,7 +1116,7 @@ PERSON_KEYS = {"id", "name", "short", "role", "place", "team", "archetype", "tru
 DIALOG_KEYS = {"id", "name", "person", "kind", "mission", "requires_clue", "needs", "owns", "kpi_team", "mood",
                "patience", "opening", "retry_opening", "position", "layers", "data", "proposals", "experiments",
                "co_proposal", "condition_needs", "block", "lines", "replies", "outcomes", "variants", "trigger",
-               "tutorial"}
+               "tutorial", "prompt", "warning"}
 LAYER_KEYS = {"id", "at", "via", "text", "tags", "lead_in", "condition", "wait_for", "unlocks"}
 PROPOSAL_KEYS = {"id", "name", "text", "kpis", "addresses", "reply", "hidden"}
 VARIANT_KEYS = {"needs", "mood", "position", "layers"}
@@ -1195,8 +1195,9 @@ def _replies(replies: dict, where: str) -> None:
 def _validate_dialog(d: dict, where: str) -> None:
     _known_keys(d, DIALOG_KEYS, where)
     _require_strings(d, ["person", "opening"], where)
-    if "retry_opening" in d:
-        _require_strings(d, ["retry_opening"], where)
+    for key in ("retry_opening", "warning"):
+        if key in d:
+            _require_strings(d, [key], where)
     _one_of(d, "kind", DIALOG_KINDS, where)
     if "mood" in d:
         _one_of(d, "mood", DIALOG_MOODS, where)
@@ -1266,6 +1267,10 @@ def _validate_dialog(d: dict, where: str) -> None:
             _line(variant["position"], f"{at} position")
         if "layers" in variant:
             _layers(variant["layers"], at)
+    if "prompt" in d:
+        if d["kind"] != "checkin":
+            raise ContentError(f"{where}: only a check-in has a dagstart 'prompt'")
+        _require_strings(d, ["prompt"], where)
     if d["kind"] == "checkin":
         _checkin(d, proposals + experiments, where)
     else:

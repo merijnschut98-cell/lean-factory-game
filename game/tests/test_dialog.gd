@@ -329,3 +329,16 @@ func _pick_ids(d: Dialog, move: String) -> Array:
 		if m["id"] == move:
 			return m["picks"].map(func(p: Dictionary) -> String: return p["id"])
 	return []
+
+
+## R-D3 (dialog scripts §1.2): the first time a talk falls into "Dicht" the
+## person says how they feel: a last chance, never a hint about the move.
+func test_the_first_fall_into_dicht_brings_the_warning_line() -> void:
+	var d := DialogFixture.talk(22, {}, DialogFixture.def({"warning": "Ik ga dit niet nog een keer uitleggen."}))
+	var r := d.say("show_data", "custom_design:0")
+	assert_eq([r["band"], r["reply"], r["ended"]], [0, "Ik ga dit niet nog een keer uitleggen.", false])
+	r = d.say("mood")
+	assert_eq(r["band"], 0)
+	assert_ne(r["reply"], "Ik ga dit niet nog een keer uitleggen.", "once a talk")
+	var plain := DialogFixture.talk(25)
+	assert_ne(plain.say("show_data", "custom_design:0")["reply"], "", "no warning written: the usual reply")

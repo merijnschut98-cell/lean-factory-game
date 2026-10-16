@@ -3,8 +3,7 @@ extends TestCase
 ## discoveries and the session layer's snapshot, so the next session opens
 ## with a terugblik. Old saves (the region only) still load.
 
-## Per process: every worktree's test run shares user://, so a fixed name
-## lets one run delete the save another has just written.
+## Per process (see TestCase.scratch): a fixed name raced between runs.
 var slot := "test_game_save_%d" % OS.get_process_id()
 const MISSION := "fix_custom_design"
 

@@ -100,7 +100,7 @@ func test_a_bad_kpi_definition_reports_its_error() -> void:
 ## A problem (or countermeasure) lists the KPIs a department follows; the
 ## catalogue turns them into rule effects at load, and the real network takes them.
 func test_the_catalog_expands_kpi_effects() -> void:
-	var dir := "user://kpi_catalog_test"
+	var dir := scratch("kpi_catalog_test")
 	DirAccess.make_dir_recursive_absolute(dir)
 	for file in ["countermeasures", "missions", "value_streams", "kpis", "concepts", "discoveries"]:
 		assert_eq(DirAccess.copy_absolute("res://data/%s.json" % file, "%s/%s.json" % [dir, file]), OK)

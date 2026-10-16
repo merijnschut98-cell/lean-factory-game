@@ -55,6 +55,11 @@ var variants: Array = []
 var trigger: Dictionary = {}
 ## A first talk (Act 0): it cannot be ruined (Dialog.TUTORIAL_PATIENCE).
 var tutorial := false
+## A check-in's line on the dagstart while its prompt is open ("Ahmed is stil
+## sinds Henk weg is."); "" for none.
+var prompt: String
+## What the person says the first time a talk falls into "Dicht" (R-D3); "" for none.
+var warning: String
 var error := ""
 
 
@@ -72,6 +77,8 @@ static func from_dict(d: Dictionary) -> DialogDef:
 	g.patience = int(d.get("patience", -1))
 	g.opening = str(d.get("opening", ""))
 	g.retry_opening = str(d.get("retry_opening", ""))
+	g.prompt = str(d.get("prompt", ""))
+	g.warning = str(d.get("warning", ""))
 	g.data = PackedStringArray(d.get("data", []))
 	g.tutorial = d.get("tutorial", false) == true
 	for key: String in ["needs", "position", "co_proposal", "condition_needs", "block", "lines", "replies", "outcomes", "trigger"]:

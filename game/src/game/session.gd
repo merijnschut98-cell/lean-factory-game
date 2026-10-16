@@ -636,6 +636,16 @@ func energy_of(person_id: String) -> Dictionary:
 	return {"energy": people.morale[person_id] / 100.0, "needs_talk": people.needs_talk(person_id)}
 
 
+## Who could use a talk now, for the dagstart (spec §5.7; at most one by the
+## cadence in People): [{person, name, dialog, line}].
+func checkin_prompts() -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for p: Dictionary in people.prompt_lines():
+		p["name"] = people.persons[p["person"]].name
+		out.append(p)
+	return out
+
+
 ## What the player knows of a person (the journal's Mensen tab): {id, name,
 ## role, place, trust_pips, morale_band (0 low · 1 middling · 2 high),
 ## cooldown_until, outcomes (dialog id → its best outcome)}; {} for an unknown id.

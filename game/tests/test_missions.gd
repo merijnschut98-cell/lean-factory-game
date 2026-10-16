@@ -795,3 +795,14 @@ func test_a_talk_goal_names_a_dialog() -> void:
 	assert_ne(bad.error, "")
 	var good := MissionDef.from_dict({"id": "x", "name": "x", "kind": "side", "goal": {"type": "talk_to", "dialog": "d1"}})
 	assert_eq([good.error, good.goal_dialog, good.goal_outcome], ["", "d1", "commitment"])
+
+
+## accepted:<mission>: the player took it on (it may be done since).
+func test_a_mission_taken_on_is_a_fact() -> void:
+	var log := _log()
+	assert_false(log.knows("accepted:walk_connections"))
+	log.accept("walk_connections")
+	assert_true(log.knows("accepted:walk_connections"))
+	_walk_connections(log)
+	assert_eq(log.status("walk_connections"), "completed")
+	assert_true(log.knows("accepted:walk_connections"), "still, once done")

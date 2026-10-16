@@ -219,6 +219,7 @@
   }
  },
  "fact_kinds": [
+  "accepted",
   "blocked",
   "checked",
   "chose",

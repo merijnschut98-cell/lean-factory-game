@@ -262,3 +262,56 @@ func test_the_coach_s_question_survives_a_save() -> void:
 	var copy := DialogFixture.people([DialogFixture.def(), DialogFixture.checkin()])
 	copy.load_dict(people.to_dict())
 	assert_eq(copy.coach_question("fix_design")["stage"], "talk")
+
+
+# ── Check-in cadence (spec §5.7): ≤ 1 prompt visible, ≤ 2 a week, 14 days per person
+
+## Three low colleagues, each with a check-in.
+func _three_low() -> People:
+	var who := []
+	var talks := []
+	for id in ["pim", "ria", "bas"]:
+		who.append(PersonDef.from_dict({"id": id, "name": id.capitalize(), "role": "r", "place": "connections.design",
+			"team": "prep", "archetype": "defender", "trust": 50, "morale": {"pim": 20, "ria": 30, "bas": 40}[id]}))
+		talks.append(DialogFixture.checkin({"id": "c_" + id, "person": id, "prompt": id.capitalize() + " is stil."}))
+	return DialogFixture.people(talks, who)
+
+
+func _open(people: People) -> Array:
+	var ids := people.prompts.keys()
+	ids.sort()
+	return ids
+
+
+func test_one_checkin_prompt_at_a_time_the_lowest_first() -> void:
+	var people := _three_low()
+	_days(people, 0, 1)
+	assert_eq(_open(people), ["c_pim"], "one at a time, whoever is lowest")
+	assert_eq(people.prompt_lines(), [{"person": "pim", "dialog": "c_pim", "line": "Pim is stil."}], "the dagstart line")
+
+
+func test_at_most_two_prompts_a_week() -> void:
+	var people := _three_low()
+	_days(people, 0, 4)  # pim's prompt expires on day 3, ria's opens
+	assert_eq(_open(people), ["c_ria"])
+	var d := people.start(people.dialogs["c_ria"], DialogFixture.world({"now": SimCalendar.days(4)}))
+	d.say("close")
+	people.finish(d, SimCalendar.days(4))
+	_days(people, 4, 7)
+	assert_eq(_open(people), [], "two prompts this week already")
+	_days(people, 7, 8)
+	assert_eq(_open(people), ["c_bas"])
+
+
+func test_a_person_gets_a_prompt_at_most_every_fourteen_days() -> void:
+	var people := DialogFixture.people([DialogFixture.checkin()], [DialogFixture.person("defender", 50, 20)])
+	_days(people, 0, 14)
+	assert_eq(people.ignored["pim"], 1, "the prompt of day 0 expired, and no new one before day 14")
+	_days(people, 14, 15)
+	assert_eq(_open(people), ["checkin"])
+
+
+func test_an_expired_prompt_costs_nothing() -> void:
+	var people := _three_low()
+	_days(people, 0, 5)
+	assert_eq([people.morale["pim"], people.trust["pim"]], [20, 50])

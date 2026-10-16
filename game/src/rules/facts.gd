@@ -18,9 +18,10 @@ extends RefCounted
 ## standardised:<problem>, poor_fix:<problem>, repaired:<problem>,
 ## fork_first:<group>:<mission>, flag:<name>; the dialog system's
 ## heard:/committed:/complied:/partial:/blocked:<dialog>; checked:<problem>
-## (its Check passed; derived live by Missions.knows).
+## (its Check passed) and accepted:<mission> (taken on, maybe done since),
+## both derived live by Missions.knows.
 const KINDS: Array[String] = ["done", "failed", "chose", "standardised", "poor_fix", "repaired", "fork_first", "flag",
-	"heard", "committed", "complied", "partial", "blocked", "checked"]
+	"heard", "committed", "complied", "partial", "blocked", "checked", "accepted"]
 ## Live measures an atom can compare with ">=".
 const MEASURES: Array[String] = ["maturity", "reputation"]
 

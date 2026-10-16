@@ -172,3 +172,26 @@ def test_the_coach_s_talk_questions_are_checked(real, tmp_path):
     docs["dialogs"]["bank"]["coach"]["questions"] = []
     with pytest.raises(bc.ContentError, match="questions"):
         _load(tmp_path, docs)
+
+
+def test_only_a_checkin_has_a_dagstart_prompt(real, tmp_path):
+    docs = copy.deepcopy(real)
+    _dialog(docs, "joost_output_kpi")["prompt"] = "Joost is stil."
+    with pytest.raises(bc.ContentError, match="prompt"):
+        _load(tmp_path, docs)
+
+
+def test_a_checkin_may_wait_for_a_mission_taken_on(real, tmp_path):
+    docs = copy.deepcopy(real)
+    _dialog(docs, "ahmed_after_henk")["trigger"]["needs"] = {"all": ["accepted:fix_status_callers"]}
+    _load(tmp_path, docs)
+    _dialog(docs, "ahmed_after_henk")["trigger"]["needs"] = {"all": ["accepted:no_such_mission"]}
+    with pytest.raises(bc.ContentError, match="no such mission"):
+        _load(tmp_path, docs)
+
+
+def test_a_warning_line_is_text(real, tmp_path):
+    docs = copy.deepcopy(real)
+    _dialog(docs, "joost_output_kpi")["warning"] = ["Ik ga dit niet nog een keer uitleggen."]
+    with pytest.raises(bc.ContentError, match="warning"):
+        _load(tmp_path, docs)
