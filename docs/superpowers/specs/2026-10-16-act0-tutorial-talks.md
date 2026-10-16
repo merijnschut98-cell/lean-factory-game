@@ -6,6 +6,8 @@
 
 ## 0. Summary
 
+> **Schedule change (2026-10-16, `2026-10-16-first-five-minutes.md` §4.2):** the arrival Monday now holds one talk, `anouk_seven` at 19:00 (Stemming peilen), the first talk of the game. `sanne_monday` becomes `sanne_tuesday` (Tuesday 08:30, Open vraag, re-dated opening); `rachid_monday` becomes an optional walk-around talk (Tuesday–Thursday); `mieke_tuesday` becomes `mieke_wednesday` (Samenvatten moves to Wednesday's card). The table below is the original schedule; the talks' texts and routes are unchanged apart from the re-dated lines.
+
 - **Ten talks across the training week, two a day.** Each day introduces one or two moves by name, on a card in Ruud's morning briefing, and each talk is written so that the day's move is *one* good way through, never the only one:
 
   | Day | Mission | Moves of the day | Talk 1 | Talk 2 |
