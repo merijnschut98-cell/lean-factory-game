@@ -136,6 +136,7 @@ Each phase ends in a **playable** that Merijn plays before the next phase starts
   - ✅ Replications: not affordable. A Check costs 4–7.5 s on this machine (one forecast pair); a second pair would double it.
   - ⬜ Re-run the autoplay personas and regenerate `docs/qa/autoplay-report.md` (careless seeds 12 and 13 never ran; ~16 min each).
 - ⬜ **1.10 Phase gate:** autoplay (expert, average, careless, plus a new *talker* persona and a *never-talks* persona) on the new build; `requesting-code-review` on the phase; Merijn plays Act 0–I with people and answers the playtest questions (engagement loop §8), and confirms the office-slice UI calls still open from 2026-10-13: interaction by standing at a marker (a green ring, 1.6 m) rather than by looking; the clue journal grouped by place, never saying which clues matter; the A3 evidence list offering every found clue, red herrings included.
+  - ⬜ Code review of the Phase 1 diff (`80836af..da81c77`): `docs/qa/2026-10-16-phase1-review.md`, **1 blocker · 5 should-fix · 6 nits** (B1: J/M/K mid-talk hides the talk and ends it unseen). Waits for one fix wave.
 
 ### Phase 2 — Het hoofdgebouw: the building and the whole of tier 1 ⬜
 **Playable:** Acts 0–II end to end (the whole tier-1 campaign) in a three-floor head office with a contact centre, a yard with vans, and the first customer phone calls; the first full playtest.
