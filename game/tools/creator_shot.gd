@@ -10,6 +10,9 @@ extends SceneTree
 ##     and three-quarter (the closest view the game has: the badge photo).
 ##   outfits: every outfit on both bodies, full length.
 ##   poses:<m|f>: every outfit on one body in each animation (idle, walk, jog, sit, talk).
+##   poses [ids]: the cast (or `ids`) in each animation.
+##   parts:<id> <part,part+part,...>: head close-ups of model `id` wearing each part (or parts
+##     joined by +), front, three-quarter, side and back.
 
 const POSES: Array[String] = ["idle", "walk", "jog", "sit", "talk"]
 const BACKDROP := Color(0.56, 0.58, 0.61)
@@ -37,6 +40,8 @@ func _run() -> void:
 		ok = _trait_sheet(sheet.trim_prefix("trait:"))
 	elif sheet == "outfits":
 		ok = _outfit_sheet()
+	elif sheet.begins_with("poses:"):
+		ok = _creator_poses(sheet.trim_prefix("poses:"))
 	elif sheet == "poses":
 		var ids := args[2].split(",") if args.size() > 2 else PackedStringArray(["player", "joost"])
 		var models: Array[Node3D] = []
@@ -67,12 +72,12 @@ func _build_studio() -> void:
 	env.background_color = BACKDROP
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = Color(0.78, 0.8, 0.84)
-	env.ambient_light_energy = 0.55
+	env.ambient_light_energy = 0.35
 	env.tonemap_mode = Environment.TONE_MAPPER_AGX
 	var world := WorldEnvironment.new()
 	world.environment = env
 	_studio.add_child(world)
-	_light(Vector3(-35, -30, 0), 1.6, Color(1.0, 0.96, 0.9), true)    # key, from the front left, high
+	_light(Vector3(-35, -30, 0), 1.15, Color(1.0, 0.96, 0.9), true)    # key, from the front left, high
 	_light(Vector3(-10, 40, 0), 0.55, Color(0.9, 0.95, 1.0), false)   # fill, front right
 	_light(Vector3(-25, 165, 0), 0.8, Color(1, 1, 1), false)          # rim, from behind
 	_camera = Camera3D.new()
@@ -171,14 +176,74 @@ func _head_height(model: Node3D) -> float:
 	return skeleton.get_bone_global_rest(skeleton.find_bone("Head")).origin.y if skeleton != null else 1.6
 
 
-func _trait_sheet(_trait: String) -> bool:
-	printerr("trait sheets need the creator catalogue")
-	return false
+## The look the sheets start from on `body`: the first options, a mid skin tone, brown hair.
+func _base_look(body: String) -> Dictionary:
+	var look := CreatorLook.normalized({"lichaam": "man" if body == "m" else "vrouw"})
+	look["huidskleur"] = "lichtgetint"
+	look["haarkleur"] = "bruin"
+	return look
 
 
+## Every option of `trait_id` on both bodies, head and shoulders: per body a row from the
+## front and a row in three-quarter view.
+func _trait_sheet(trait_id: String) -> bool:
+	if CreatorLook.trait_def(trait_id).is_empty():
+		printerr("no trait ", trait_id)
+		return false
+	var gap := 0.46
+	var row := 0
+	var cols := 0
+	var head := 0.0
+	for body in ["m", "f"]:
+		var list := CreatorLook.options(trait_id, body)
+		cols = maxi(cols, list.size())
+		for view in 2:
+			for col in list.size():
+				var look := _base_look(body)
+				look[trait_id] = list[col]["id"]
+				var model := CreatorLook.build(look)
+				if model == null:
+					printerr("cannot build ", look)
+					return false
+				head = maxf(head, _head_height(model))
+				_place(model, Vector3(col * gap, -row * gap, row * 2.0), [0.0, 35.0][view], "idle", 0.5,
+					list[col]["label"] if view == 0 else "", head - row * gap - 0.19)
+			row += 1
+	_frame(Vector2(-gap / 2, head - 0.23 - (row - 1) * gap), Vector2((cols - 0.5) * gap, head + 0.2))
+	return true
+
+
+## Every outfit on both bodies, full length, front and back.
 func _outfit_sheet() -> bool:
-	printerr("outfit sheets need the creator catalogue")
-	return false
+	var gap := 0.7
+	var list := CreatorLook.options("kleding", "m")
+	var row := 0
+	for body in ["m", "f"]:
+		for col in list.size():
+			for view in 2:
+				var look := _base_look(body)
+				look["kleding"] = list[col]["id"]
+				var model := CreatorLook.build(look)
+				if model == null:
+					return false
+				var x := (col * 2 + view) * gap
+				_place(model, Vector3(x, -row * ROW, row * 2.0), [0.0, 180.0][view], "idle", 0.5,
+					list[col]["label"] if view == 0 else "", -row * ROW - 0.1)
+		row += 1
+	_frame(Vector2(-gap / 2, -ROW - 0.2), Vector2((list.size() * 2 - 0.5) * gap, 1.95))
+	return true
+
+
+## Every outfit on one body in each animation.
+func _creator_poses(body: String) -> bool:
+	var models: Array[Node3D] = []
+	var labels: PackedStringArray = []
+	for entry in CreatorLook.options("kleding", body):
+		var look := _base_look(body)
+		look["kleding"] = entry["id"]
+		models.append(CreatorLook.build(look))
+		labels.append(entry["label"])
+	return _pose_sheet(models, labels)
 
 
 ## Each model in a row, in every animation (three-quarter view, a moment mid-stride).

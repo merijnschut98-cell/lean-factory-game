@@ -3,8 +3,10 @@ class_name CharacterModel
 ## (cast.json) by tools/blender/build_character.py (the CC0 Quaternius pack re-dressed,
 ## PLAN 1.3a): the game needs only these file names, a front on +Z, feet at 0, Godot's
 ## humanoid bone names and the looping animations idle, walk, sit, talk and jog (the run).
-## The character creator's parts (hair, beards, glasses) are glbs in parts/, skinned to the
-## Head bone: attach() puts one on any person, tint() colours it.
+## The character creator's parts are glbs in parts/, one per body (<part>_m, <part>_f): hair,
+## beards and glasses skinned to the Head bone (they sit on any head of that body), outfits
+## skinned to the whole creator body; attach() puts one on, tint() colours it. CreatorLook
+## puts a whole look together.
 
 const DIR := "res://assets/characters/"
 const CAST := DIR + "cast.json"

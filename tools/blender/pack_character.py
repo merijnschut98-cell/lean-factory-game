@@ -25,10 +25,8 @@ How a person is made from cast.json (`look`):
   library's seated torso, the legs set on the office chair and the arms typing at the keyboard
   by two-bone IK). The library's heroic stance is relaxed (fingers, arms, feet). Age adds a
   stoop to every action.
-- Creator parts (`--parts`): hair, beards and glasses as their own glbs in
-  game/assets/characters/parts/, each skinned to the Head bone of a full skeleton, so the game
-  can move them onto any person's skeleton (CharacterModel.attach); colours stay material
-  parameters.
+- The character creator's bodies, outfits, hair, beards, glasses and face layers (`--creator`):
+  creator_build.py, from the same pieces.
 
 Coordinates are Blender's: metres, Z up, the person faces -Y (Godot +Z). Rest is a T-pose.
 """
@@ -683,17 +681,28 @@ def delete_covered(body, covered: np.ndarray) -> None:
     bm.free()
 
 
-def extrude_collar(ob, mk: Marks, up: float, out: float) -> None:
-    """A stand collar: the neckline's open edge raised `up` and leaned `out` from the neck."""
+def extrude_collar(ob, mk: Marks, up: float, out: float, back_only: bool = False) -> None:
+    """A stand collar: the neckline's open edge raised `up` and leaned `out` from the neck
+    (`back_only`: round the back and sides of the neck only, for a garment open in front)."""
     bm = bmesh.new()
     bm.from_mesh(ob.data)
-    edges = [e for e in bm.edges if e.is_boundary and all(abs(v.co.x) < 0.11 and v.co.z > mk.neck - 0.12 for v in e.verts)]
+    edges = [e for e in bm.edges if e.is_boundary and all(
+        abs(v.co.x) < 0.11 and v.co.z > mk.neck - 0.12 and (not back_only or v.co.y > mk.head.y - 0.035) for v in e.verts)]
     ret = bmesh.ops.extrude_edge_only(bm, edges=edges)
     for v in [g for g in ret["geom"] if isinstance(g, bmesh.types.BMVert)]:
         r = Vector((v.co.x, v.co.y - mk.head.y - 0.005, 0))
         v.co += Vector((0, 0, up)) + (r.normalized() * out if r.length > 1e-6 else Vector())
     bm.to_mesh(ob.data)
     bm.free()
+
+
+# Per outfit (cast.json `outfit`, or the creator's kleding): the trousers, the shoes, and
+# whether the top is tucked in (a belt line) or worn over the trousers.
+TROUSERS = {"business": "chinos", "monteur": "worktrousers", "overshirt": "chinos", "sweater": "chinos",
+            "blazer": "jeans", "quarterzip": "chinos"}
+SHOES = {"monteur": "boot", "overshirt": "sneaker", "blazer": "sneaker", "quarterzip": "sneaker"}
+TUCKED = ("shirt", "manager", "monteur")
+SOLE = 0.022   # a sneaker's sole: the faces below this height (m)
 
 
 class Wardrobe:
@@ -737,51 +746,144 @@ class Wardrobe:
         self.objs.append(ob)
         return ob
 
-    def shoes(self, boot: bool) -> None:
+    def shoes(self, kind: str) -> None:
+        """`kind`: shoe (leather), boot (the monteur's, over the ankle) or sneaker (white, on a
+        thicker sole of its own colour)."""
         mk = self.mk
-        top = mk.ankle + (0.06 if boot else 0.025)
-        ob = self.add("shoes", self.V[:, 2] < top, "boot" if boot else "shoe", 0.011, iters=24, kind="feet")
+        top = mk.ankle + {"boot": 0.06, "sneaker": 0.03}.get(kind, 0.025)
+        sneaker = kind == "sneaker"
+        ob = self.add("shoes", self.V[:, 2] < top, kind, 0.015 if sneaker else 0.011, iters=24, kind="feet")
         V = verts(ob)
         V[:, 2] = np.maximum(V[:, 2], 0.0)             # a flat sole on the floor
         toe = V[:, 1] < -0.06
-        V[toe, 1] -= 0.012 * np.clip((top - V[toe, 2]) / top, 0, 1)   # a little toe box
+        V[toe, 1] -= (0.016 if sneaker else 0.012) * np.clip((top - V[toe, 2]) / top, 0, 1)   # a toe box
         set_verts(ob, V)
+        if sneaker:
+            ob.data.materials.append(bpy.data.materials[self.mats["sneaker_sole"][0]])
+            for poly in ob.data.polygons:
+                if max(ob.data.vertices[i].co.z for i in poly.vertices) < SOLE:
+                    poly.material_index = 1
 
     def build(self) -> list[bpy.types.Object]:
-        sp, mk = self.sp, self.mk
-        boot = sp.outfit == "monteur"
-        trousers = {"business": "chinos", "monteur": "worktrousers"}.get(sp.outfit, "trousers")
-        # outer layers sit further off the skin than what they cover (no fighting surfaces)
-        tucked = sp.outfit in ("shirt", "manager", "monteur")
-        top = mk.waist + 0.012 if tucked else mk.waist - 0.02
-        self.add("trousers", self.lower(top, mk.ankle + 0.012), trousers, 0.014 if boot else 0.012, iters=12, kind="legs")
-        if sp.outfit == "business":
-            polo = self.add("polo", self.upper(mk.hip - 0.035, mk.shoulder_x + 0.42 * (mk.elbow_x - mk.shoulder_x), 0.005, vee=0.05),
-                            "polo", 0.02, iters=10, kind="upper")
-            extrude_collar(polo, mk, 0.022, 0.006)
-            self.logo(polo, (0.085, mk.chest + 0.03), 0.07)
-        elif sp.outfit == "shirt":
-            shirt = self.add("shirt", self.upper(mk.waist - 0.03, mk.wrist_x - 0.012, 0.0, vee=0.03), "shirt", 0.007, iters=10, kind="upper")
-            extrude_collar(shirt, mk, 0.028, 0.005)
-            self.add("belt", self.lower(mk.waist + 0.016, mk.waist - 0.02), "belt", 0.018, iters=10, hide=False, kind="legs")
-        elif sp.outfit == "manager":
-            shirt = self.add("shirt", self.upper(mk.waist - 0.03, mk.wrist_x - 0.012, 0.0, vee=0.03), "shirt", 0.007, iters=10, kind="upper")
-            extrude_collar(shirt, mk, 0.028, 0.005)
-            V = self.V
-            front_open = (V[:, 1] < mk.head.y - 0.02) & (V[:, 2] > mk.chest - 0.12) & \
-                (np.abs(V[:, 0]) < 0.055 * np.clip((V[:, 2] - mk.chest + 0.12) / 0.2, 0, 1))
-            blazer = self.upper(mk.hip + 0.01, mk.wrist_x - 0.03, -0.01) & ~front_open
-            self.add("blazer", blazer, "blazer", 0.016, iters=12, kind="upper")
-            self.logo(self.objs[-1], (0.105, mk.chest + 0.04), 0.026)
-        elif sp.outfit == "monteur":
-            self.add("workshirt", self.upper(mk.waist - 0.03, mk.wrist_x - 0.02, 0.0, vee=0.02), "workshirt", 0.008, iters=10, kind="upper")
-            vest = self.upper(mk.hip - 0.04, mk.shoulder_x - 0.025, -0.012, vee=0.08)
-            ob = self.add("vest", vest, "hivis", 0.02, iters=12, tile=False, kind="upper")
-            cylinder_uvs(ob, mk.head.y - 0.03, mk.hip - 0.04, mk.neck)
-            self.logo(ob, (0.09, mk.chest + 0.02), 0.07)
-        self.shoes(boot)
+        """The person's outfit, and the skin under it deleted."""
+        objs = self.dress(self.sp.outfit)
         delete_covered(self.body, self.covered)
+        return objs
+
+    def dress(self, outfit: str) -> list[bpy.types.Object]:
+        """Cut `outfit` from the body; the skin it covers is only marked (`covered`), so several
+        outfits can be cut from one body (the creator's)."""
+        mk = self.mk
+        top = mk.waist + 0.012 if outfit in TUCKED else mk.waist - 0.02
+        thick = 0.014 if outfit == "monteur" else 0.012
+        self.add("trousers", self.lower(top, mk.ankle + 0.012), TROUSERS.get(outfit, "trousers"), thick, iters=12, kind="legs")
+        getattr(self, "top_" + outfit)()
+        self.shoes(SHOES.get(outfit, "shoe"))
         return self.objs
+
+    # --- the tops, one per outfit (outer layers sit further off the skin than what they cover)
+    def top_business(self) -> None:
+        """The Voltana polo: short sleeves, a stand collar, the logo on the chest."""
+        mk = self.mk
+        polo = self.add("polo", self.upper(mk.hip - 0.035, self.short_sleeve(), 0.005, vee=0.05), "polo", 0.02, iters=10, kind="upper")
+        extrude_collar(polo, mk, 0.022, 0.006)
+        self.logo(polo, (0.085, mk.chest + 0.03), 0.07)
+
+    def top_shirt(self) -> None:
+        mk = self.mk
+        self.shirt()
+        self.add("belt", self.lower(mk.waist + 0.016, mk.waist - 0.02), "belt", 0.018, iters=10, hide=False, kind="legs")
+
+    def top_manager(self) -> None:
+        mk = self.mk
+        self.shirt()
+        self.add("blazer", self.upper(mk.hip + 0.01, mk.wrist_x - 0.03, -0.01) & ~self.front_open(0.055, mk.chest - 0.12),
+                 "blazer", 0.016, iters=12, kind="upper")
+        self.logo(self.objs[-1], (0.105, mk.chest + 0.04), 0.026)
+
+    def top_monteur(self) -> None:
+        mk = self.mk
+        self.add("workshirt", self.upper(mk.waist - 0.03, mk.wrist_x - 0.02, 0.0, vee=0.02), "workshirt", 0.008, iters=10, kind="upper")
+        vest = self.upper(mk.hip - 0.04, mk.shoulder_x - 0.025, -0.012, vee=0.08)
+        ob = self.add("vest", vest, "hivis", 0.02, iters=12, tile=False, kind="upper")
+        cylinder_uvs(ob, mk.head.y - 0.03, mk.hip - 0.04, mk.neck)
+        self.logo(ob, (0.09, mk.chest + 0.02), 0.07)
+
+    def top_overshirt(self) -> None:
+        """An overshirt worn open over a T-shirt, its collar standing round the back of the neck."""
+        mk = self.mk
+        self.tee()
+        ob = self.add("overshirt", self.upper(mk.hip - 0.06, mk.wrist_x - 0.035, -0.004) & ~self.front_open(0.042, mk.hip - 0.1),
+                      "overshirt", 0.017, iters=12, kind="upper")
+        extrude_collar(ob, mk, 0.026, 0.016, back_only=True)
+
+    def top_sweater(self) -> None:
+        """A crew-neck knit over a shirt: the shirt's collar and cuffs show."""
+        mk = self.mk
+        self.shirt()
+        self.add("sweater", self.upper(mk.hip - 0.03, mk.wrist_x - 0.022, 0.016), "sweater", 0.017, iters=12, kind="upper")
+
+    def top_blazer(self) -> None:
+        """An unstructured blazer, open over a T-shirt (with jeans and sneakers)."""
+        mk = self.mk
+        self.tee()
+        self.add("blazer", self.upper(mk.hip, mk.wrist_x - 0.03, -0.01) & ~self.front_open(0.06, mk.chest - 0.16),
+                 "blazer", 0.016, iters=12, kind="upper")
+
+    def top_quarterzip(self) -> None:
+        """A knit with a tall zipped collar, the zip open a hand's width."""
+        mk = self.mk
+        ob = self.add("quarterzip", self.upper(mk.hip - 0.035, mk.wrist_x - 0.022, -0.008, vee=0.045), "quarterzip", 0.016,
+                      iters=12, kind="upper")
+        extrude_collar(ob, mk, 0.04, 0.004)
+        self.zip(ob, mk.neck + 0.03, mk.chest + 0.03)
+
+    # --- pieces
+    def short_sleeve(self) -> float:
+        return self.mk.shoulder_x + 0.42 * (self.mk.elbow_x - self.mk.shoulder_x)
+
+    def shirt(self) -> None:
+        mk = self.mk
+        shirt = self.add("shirt", self.upper(mk.waist - 0.03, mk.wrist_x - 0.012, 0.0, vee=0.03), "shirt", 0.007, iters=10, kind="upper")
+        extrude_collar(shirt, mk, 0.028, 0.005)
+
+    def tee(self) -> None:
+        mk = self.mk
+        self.add("tee", self.upper(mk.hip - 0.025, self.short_sleeve() - 0.02, 0.008), "tee", 0.007, iters=10, kind="upper")
+
+    def front_open(self, half: float, bottom: float) -> np.ndarray:
+        """The front left open (a jacket's V, an open shirt): `half` m each side of the middle at
+        the top, closing to nothing at `bottom`."""
+        V, mk = self.V, self.mk
+        return (V[:, 1] < mk.head.y - 0.02) & (V[:, 2] > bottom) & \
+            (np.abs(V[:, 0]) < half * np.clip((V[:, 2] - bottom) / 0.2, 0, 1))
+
+    def zip(self, host, z_top: float, z_bottom: float, w: float = 0.007) -> None:
+        """A zip down the middle of `host`'s front: a strip of quads following the cloth."""
+        bvh = BVHTree.FromObject(host, bpy.context.evaluated_depsgraph_get(), deform=False)
+        pts = []
+        for z in np.linspace(z_bottom, z_top, 9):
+            hit, nrm, _, _ = bvh.ray_cast(Vector((0.0, -1.0, float(z))), Vector((0, 1, 0)))
+            if hit is not None:
+                pts.append((hit + nrm * 0.002, nrm))
+        if len(pts) < 2:
+            print(f"  no zip on {host.name}")
+            return
+        V, F = [], []
+        for i, (c, nrm) in enumerate(pts):
+            side = nrm.cross(Vector((0, 0, 1))).normalized() * (w / 2)
+            V += [tuple(c - side), tuple(c + side)]
+            if i:
+                F.append((2 * i - 2, 2 * i - 1, 2 * i + 1, 2 * i))
+        me = bpy.data.meshes.new(f"{self.sp.name}_zip")
+        me.from_pydata(V, [], F)
+        me.uv_layers.new()
+        ob = bpy.data.objects.new(f"{self.sp.name}_zip", me)
+        self.coll.objects.link(ob)
+        me.materials.append(bpy.data.materials[self.mats["zip"][0]])
+        copy_weights_nearest(host, ob)
+        bind(ob, self.rig)
+        self.objs.append(ob)
 
     def logo(self, host, at: tuple[float, float], w: float) -> None:
         """The Voltana patch on the chest's left: a quad on the garment, its weights copied."""
@@ -899,37 +1001,41 @@ def ponytail(name: str, head: Vector, coll) -> bpy.types.Object:
     return ob
 
 
+GLASSES = {   # style -> (half width, half height of a rim, superellipse exponent (2: an ellipse), rim radius) (m)
+    "round": (0.021, 0.02, 2.0, 0.0016),     # thin metal
+    "rect": (0.026, 0.0165, 4.0, 0.0024),    # black acetate, rectangular
+    "clear": (0.025, 0.019, 3.0, 0.0028),    # a thick see-through frame
+    "large": (0.027, 0.026, 2.2, 0.0024),    # big and round
+}
+
+
 def glasses(name: str, style: str, body, eyes, coll) -> bpy.types.Object:
     """Frames only (no lenses: clear glass only shows as a sheen at this distance): two rims in
-    front of the eyes, a bridge, temples back to the ears. `style`: "round" or "rect"."""
+    front of the eyes, a bridge, temples back to the ears. `style`: a key of GLASSES."""
+    half_rx, half_rz, k, thick = GLASSES[style]
     E = verts(eyes)
     left, right = E[E[:, 0] > 0].mean(0), E[E[:, 0] < 0].mean(0)
-    front = float(E[:, 1].min()) - 0.012
+    front = float(E[:, 1].min()) - 0.012 - (thick - 0.0016)
     V = verts(body)
     band = V[np.abs(V[:, 2] - left[2]) < 0.012]
-    half_w = float(np.abs(band[:, 0]).max()) + 0.004
+    half_w = float(np.abs(band[:, 0]).max()) + 0.002
     ear_y = float(band[np.argmax(np.abs(band[:, 0])), 1]) + 0.01
     parts = []
     for c in (left, right):
         cx, cz = float(c[0]), float(c[2]) - 0.002
-        if style == "round":
-            ring = [(cx + 0.021 * math.cos(a), front, cz + 0.02 * math.sin(a)) for a in np.linspace(0, 2 * math.pi, 24, endpoint=False)]
-        else:
-            ring = []
-            for a in np.linspace(0, 2 * math.pi, 28, endpoint=False):
-                ca, sa = math.cos(a), math.sin(a)
-                k = 4.0   # a superellipse: rounded rectangle
-                rx = 0.026 * math.copysign(abs(ca) ** (2 / k), ca)
-                rz = 0.0165 * math.copysign(abs(sa) ** (2 / k), sa)
-                ring.append((cx + rx, front + 0.002 * (1 - abs(ca)), cz + rz))
-        parts.append(tube("rim", ring, [0.0017] * len(ring), sides=6, close=True))
+        ring = []
+        for a in np.linspace(0, 2 * math.pi, 28, endpoint=False):
+            ca, sa = math.cos(a), math.sin(a)
+            rx = half_rx * math.copysign(abs(ca) ** (2 / k), ca)
+            rz = half_rz * math.copysign(abs(sa) ** (2 / k), sa)
+            ring.append((cx + rx, front + 0.002 * (1 - abs(ca)), cz + rz))
+        parts.append(tube("rim", ring, [thick] * len(ring), sides=6, close=True))
         sign = 1 if cx > 0 else -1
-        outer = (cx + sign * (0.021 if style == "round" else 0.026), front, cz + 0.004)
+        outer = (cx + sign * half_rx, front, cz + 0.004)
         parts.append(tube("temple", [outer, (sign * half_w, front + 0.02, cz + 0.006), (sign * half_w, ear_y, cz + 0.004),
-                                     (sign * (half_w - 0.004), ear_y + 0.02, cz - 0.02)], [0.0016] * 4, sides=6))
-    inner = 0.021 if style == "round" else 0.026
-    parts.append(tube("bridge", [(left[0] - inner, front, left[2] + 0.004), (0, front - 0.003, left[2] + 0.009),
-                                 (right[0] + inner, front, right[2] + 0.004)], [0.0016] * 3, sides=6))
+                                     (sign * (half_w - 0.004), ear_y + 0.02, cz - 0.02)], [max(0.0016, thick * 0.8)] * 4, sides=6))
+    parts.append(tube("bridge", [(left[0] - half_rx, front, left[2] + 0.004), (0, front - 0.003, left[2] + 0.009),
+                                 (right[0] + half_rx, front, right[2] + 0.004)], [max(0.0016, thick * 0.8)] * 3, sides=6))
     bm = bmesh.new()
     for me in parts:
         bm.from_mesh(me)
@@ -945,14 +1051,14 @@ def glasses(name: str, style: str, body, eyes, coll) -> bpy.types.Object:
     return ob
 
 
-def short_beard(beard, body) -> None:
-    """A trimmed beard: the pack's full beard pulled to a third of its depth off the skin."""
+def short_beard(beard, body, keep: float = 0.35) -> None:
+    """A trimmed beard: the pack's full beard pulled to `keep` of its depth off the skin."""
     bvh = BVHTree.FromObject(body, bpy.context.evaluated_depsgraph_get(), deform=False)
     V = verts(beard)
     for i, p in enumerate(V):
         loc, nrm, _, _ = bvh.find_nearest(Vector(p))
         if loc is not None:
-            V[i] = np.array(loc) + (p - np.array(loc)) * 0.35 + np.array(nrm) * 0.0015
+            V[i] = np.array(loc) + (p - np.array(loc)) * keep + np.array(nrm) * 0.0015
     set_verts(beard, V)
 
 
@@ -1001,9 +1107,26 @@ def make_materials(sp) -> dict[str, tuple[str, str | None]]:
         if name in bpy.data.materials:
             bpy.data.materials.remove(bpy.data.materials[name])
         out[key] = (bc.material(name, **kw).name, kw.get("tex"))
-    for key in ("polo", "chinos", "shirt", "trousers", "blazer", "workshirt", "worktrousers", "belt", "shoe", "boot", "hivis"):
+    for key, (color, tex, rough, metal) in MORE_GARMENTS.items():
+        out[key] = (bc.material(f"{p}__{key}", sp.colors.get(key, color), tex=tex, rough=rough, metal=metal).name, tex)
+    for key in ("polo", "chinos", "shirt", "trousers", "blazer", "workshirt", "worktrousers", "belt", "shoe", "boot", "hivis",
+                *MORE_GARMENTS):
         bpy.data.materials[out[key][0]].use_backface_culling = False
     return out
+
+
+# The creator's garments (PLAN 2.7b): key -> (colour sRGB, shared texture, roughness, metal);
+# cast.json `colors` (or the creator's outfit colours) override the colour.
+MORE_GARMENTS = {
+    "tee": ((238, 238, 234), "oxford", 0.85, 0.0),
+    "overshirt": ((92, 100, 70), "twill", 0.85, 0.0),
+    "sweater": ((38, 58, 72), "knit", 0.9, 0.0),
+    "quarterzip": ((128, 130, 136), "knit", 0.9, 0.0),
+    "jeans": ((46, 60, 94), "twill", 0.85, 0.0),       # dark denim: a twill weave (the denim map reads as a print)
+    "sneaker": ((238, 238, 234), "leather", 0.5, 0.0),
+    "sneaker_sole": ((216, 212, 202), None, 0.75, 0.0),
+    "zip": ((58, 60, 64), None, 0.35, 0.6),
+}
 
 
 def set_material(ob, mat_name: str) -> None:
@@ -1501,64 +1624,7 @@ def animate(sp, rig, sources: dict[str, Source]) -> dict[str, float]:
     return paces
 
 
-# ============================================================================= creator parts
-
-PART_STYLES = {   # part glb -> (pack style, trim or derived)
-    "hair_bob": ("Hair_Long", None), "hair_parted": ("Hair_SimpleParted", None), "hair_buzzed": ("Hair_Buzzed", None),
-    "hair_pixie": ("Hair_BuzzedFemale", None), "hair_buns": ("Hair_Buns", None), "hair_ponytail": ("Hair_BuzzedFemale", "ponytail"),
-    "beard_full": ("Hair_Beard", None), "beard_short": ("Hair_Beard", "short"),
-}
-
-
-def build_parts(paths: dict) -> list[Path]:
-    """Hair, beards and glasses for the character creator, each its own glb: the base man's
-    skeleton (no animation) and the part skinned to Head. The game moves the part's mesh onto
-    a person's skeleton (CharacterModel.attach); it binds by bone name, so it sits on any head."""
-    PARTS.mkdir(parents=True, exist_ok=True)
-    written = []
-    for name in [*PART_STYLES, "glasses_round", "glasses_rect"]:
-        bpy.ops.wm.read_factory_settings(use_empty=True)
-        bpy.context.scene.render.fps = FPS
-        coll = bpy.data.collections.new(name)
-        bpy.context.scene.collection.children.link(coll)
-        rig, parts = base_body(paths, "m", coll)
-        rename_rig(rig, list(parts.values()))
-        mat_hair = bc.material(f"{name}__hair", (110, 80, 52), tex="hairpack_2", rough=0.55)
-        if name.startswith("glasses"):
-            ob = glasses(name, name.split("_")[1], parts["body"], parts["eyes"], coll)
-            set_material(ob, bc.material(f"{name}__frame", (40, 40, 46), rough=0.3, metal=0.5).name)
-        else:
-            style, extra = PART_STYLES[name]
-            ob = import_part(paths, style, rig, coll)
-            uses_1 = any(m and m.name.startswith("MI_Hair_1") for m in ob.data.materials)
-            set_material(ob, (bc.material(f"{name}__hair1", (110, 80, 52), tex="hairpack_1", rough=0.55) if uses_1 else mat_hair).name)
-            if extra == "short":
-                short_beard(ob, parts["body"])
-            if extra == "ponytail":
-                tail = ponytail(f"{name}_tail", head_of(rig, "Head"), coll)
-                set_material(tail, mat_hair.name)
-                ob = join(ob, tail)
-        ob.name = name
-        for o in parts.values():
-            bpy.data.objects.remove(o)
-        bind(ob, rig)
-        only_head(ob)
-        path = PARTS / f"{name}.glb"
-        export(coll, path, animations=False)
-        bc.write_import(path, "parts/")
-        written.append(path)
-    return written
-
-
-def join(a, b) -> bpy.types.Object:
-    for o in bpy.context.view_layer.objects:
-        o.select_set(False)
-    a.select_set(True)
-    b.select_set(True)
-    bpy.context.view_layer.objects.active = a
-    bpy.ops.object.join()
-    return a
-
+# ============================================================================= export
 
 def only_head(ob) -> None:
     """A creator part follows the head alone (the pack's are already; this makes sure)."""
@@ -1584,13 +1650,11 @@ def export(coll, path: Path, animations: bool = True) -> None:
 
 # ============================================================================= entry
 
-def run(keys: list[str], pack: Path, parts: bool, blend: Path | None, sheet: Path | None) -> None:
+def run(keys: list[str], pack: Path, blend: Path | None, sheet: Path | None) -> None:
     paths = pack_paths(pack)
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bc.make_textures()
     make_pack_textures(paths)
-    if parts:
-        build_parts(paths)
     for key in keys:
         bpy.ops.wm.read_factory_settings(use_empty=True)
         bpy.context.scene.render.fps = FPS
