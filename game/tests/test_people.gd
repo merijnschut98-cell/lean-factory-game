@@ -219,3 +219,46 @@ func test_leaving_survives_a_save() -> void:
 	assert_eq(restored.load_dict(bytes_to_var(var_to_bytes(people.to_dict()))), [])
 	assert_eq(restored.to_dict(), people.to_dict())
 	assert_true(restored.has_left("pim"))
+
+
+# ── The coach after a hard main-mission talk (spec §5.6) ─────────────────────
+
+func _coached(moves: Array, main: bool = true, def: DialogDef = null) -> People:
+	var people := DialogFixture.people([DialogFixture.def(), DialogFixture.checkin()])
+	var d := people.start(def if def != null else people.dialogs["talk"], DialogFixture.world())
+	DialogFixture.play(d, moves)
+	people.finish(d, 0, main)
+	return people
+
+
+func test_the_coach_asks_once_about_a_main_mission_talk() -> void:
+	var people := _coached(LISTENING.slice(0, 5) + ["propose:bare", "ask_commitment"])
+	assert_eq(people.outcomes["talk"], "partial")
+	assert_eq(people.coach_question("fix_design"), {"kind": "question", "stage": "talk", "text": "Wat wilde je dat Pim dacht?"})
+	assert_eq(people.coach_question("fix_design"), {}, "one ask, then back to the mission")
+	var again := _coached(LISTENING)
+	assert_eq(again.coach_question("fix_design")["text"], "Wiens idee was het?", "after a commitment")
+	assert_eq(_coached(LISTENING).coach_question("next_main"), {}, "a talk of an earlier main mission is past")
+
+
+func test_the_coach_reads_how_the_talk_went() -> void:
+	assert_eq(_coached(COMPLY).coach_question("fix_design")["text"], "Pim zei ja. En het gezicht?")
+	assert_eq(_coached(RUIN).coach_question("fix_design")["text"], "Wie praatte er?")
+	assert_eq(_coached(["mood", "close"]).coach_question("fix_design"), {}, "a talk that only listened is not a hard one")
+
+
+func test_the_coach_never_asks_about_a_side_talk_or_a_checkin() -> void:
+	assert_eq(_coached(COMPLY, false).coach_question("fix_design"), {}, "a side mission's talk")
+	var people := DialogFixture.people([DialogFixture.checkin()], [DialogFixture.person("defender", 50, 30)])
+	var d := people.start(people.dialogs["checkin"], DialogFixture.world())
+	DialogFixture.play(d, ["confront", "confront"])
+	assert_eq(d.outcome, "ruined")
+	people.finish(d, 0, true)
+	assert_eq(people.coach_question("fix_design"), {})
+
+
+func test_the_coach_s_question_survives_a_save() -> void:
+	var people := _coached(COMPLY)
+	var copy := DialogFixture.people([DialogFixture.def(), DialogFixture.checkin()])
+	copy.load_dict(people.to_dict())
+	assert_eq(copy.coach_question("fix_design")["stage"], "talk")

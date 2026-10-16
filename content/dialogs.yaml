@@ -148,6 +148,22 @@ bank:
     no_repair: "Herstellen? Er is niks misgegaan tussen ons."
     patience_low: "Ik heb nog vijf minuten."
     cooling_down: "Niet nu."
+  # Ruud after a hard main-mission talk (spec §5.6, Kata): one question, then
+  # back to the mission. `after` wins when the talk ended that way (pressure:
+  # a yes under pressure); otherwise the questions in turn. {person}: the
+  # person's short name. He never names the right move.
+  coach:
+    questions:
+      - "Wat wilde je dat {person} na het gesprek dacht of deed?"
+      - "Wat gebeurde er? Waar veranderde het gesprek?"
+      - "Wat houdt {person} tegen, denk je? Hoe weet je dat?"
+      - "Hoe begin je het volgende gesprek, en wat verwacht je dat er dan gebeurt?"
+      - "Wat heb je geleerd over luisteren?"
+    after:
+      pressure: "{person} zei ja. Wat zei het gezicht erbij?"
+      ruined: "Wie was er aan het woord in de eerste minuut?"
+      blocked: "Is dit iets wat {person} kan beslissen? Wie wel?"
+      commitment: "Wiens idee was het uiteindelijk?"
   outcomes:
     commitment: "Goed. Ik doe mee, en ik sta erachter."
     partial: "Eerst zien, dan geloven."

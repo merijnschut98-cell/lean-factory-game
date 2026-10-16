@@ -599,12 +599,16 @@ COACHED_KINDS = ["main", "training"]
 # without `tool`) at each place, `uses` distinct place-tool pairs in all;
 # check: the problem's Check passed; sustain: the problem's fix back in use
 # (audited, or held by a routine; the game opens these as check-ins);
-# rework_fix: a poor fix swapped for a better one (the game's repair quests).
+# rework_fix: a poor fix swapped for a better one (the game's repair quests);
+# talk_to: a dialog of this mission reached `outcome` (partial | commitment,
+# default commitment; dialog spec §5.1; checked against dialogs.yaml).
 MISSION_GOALS = {
     "walk": ({"stream"}, set()), "investigate": ({"problem", "clues"}, set()), "solve": ({"problem"}, set()),
     "observe": ({"places"}, {"tool", "uses"}), "check": ({"problem"}, set()),
     "sustain": ({"problem"}, set()), "rework_fix": ({"problem"}, set()),
+    "talk_to": ({"dialog"}, {"outcome"}),
 }
+TALK_OUTCOMES = ["partial", "commitment"]  # MissionDef.TALK_OUTCOMES
 MAX_CHECK_DAYS = 14  # Region.CHECK_DAYS: a mission may only shorten the Check
 MATURITY_STEP = 0.6  # Region.MATURITY_STEP
 COACH_STAGES = ["go_see", "understand", "experiment", "reflect"]  # Missions.STAGES
@@ -739,6 +743,10 @@ def _validate_goal(goal: Any, where: str) -> None:
     _require_strings(goal, sorted(required & {"stream", "problem"}), f"{where} goal")
     if goal["type"] == "investigate":
         _number(goal, "clues", f"{where} goal", 1, integer=True)
+    if goal["type"] == "talk_to":
+        _require_strings(goal, ["dialog"], f"{where} goal")
+        if "outcome" in goal:
+            _one_of(goal, "outcome", TALK_OUTCOMES, f"{where} goal")
     if goal["type"] == "observe":
         places = _string_list(goal, "places", f"{where} goal", allow_empty=False)
         if "tool" in goal and goal["tool"] not in TOOLS:
@@ -1061,7 +1069,10 @@ BANK_REPLIES = {**{m: ["lands", "misses"] for m in LISTEN_MOVES + ["perspective"
                 "pressure": ["lands"], "confront": ["lands"], "repair": ["lands"]}
 BANK_SPECIAL = ["repeat", "refusal", "no_proposal", "other_data", "lucky_guess", "no_repair", "patience_low",
                 "cooling_down"]
-PERSON_KEYS = {"id", "name", "role", "place", "team", "archetype", "trust", "morale", "voice"}
+# Ruud's line after a main-mission talk that ended this way (People.coach_question;
+# pressure: a yes under pressure).
+COACH_AFTER = ["pressure", "ruined", "blocked", "commitment"]
+PERSON_KEYS = {"id", "name", "short", "role", "place", "team", "archetype", "trust", "morale", "voice"}
 DIALOG_KEYS = {"id", "name", "person", "kind", "mission", "requires_clue", "needs", "owns", "kpi_team", "mood",
                "patience", "opening", "retry_opening", "position", "layers", "data", "proposals", "experiments",
                "co_proposal", "condition_needs", "block", "lines", "replies", "outcomes", "variants", "trigger",
@@ -1095,7 +1106,7 @@ def validate_dialogs(doc: Any, source: str) -> None:
     for p in _entries(doc, "people", source):
         where = f"{source}: person '{p['id']}'"
         _known_keys(p, PERSON_KEYS, where)
-        _require_strings(p, ["role", "place", "team"], where)
+        _require_strings(p, ["role", "place", "team"] + (["short"] if "short" in p else []), where)
         _one_of(p, "archetype", DIALOG_ARCHETYPES, where)
         _number(p, "trust", where, 0, 100, integer=True)
         _number(p, "morale", where, 0, 100, integer=True, default=60)
@@ -1107,7 +1118,7 @@ def validate_dialogs(doc: Any, source: str) -> None:
 def _validate_bank(bank: Any, where: str) -> None:
     if not isinstance(bank, dict):
         raise ContentError(f"{where}: needs labels, player, replies, special and outcomes")
-    _known_keys(bank, {"labels", "player", "replies", "special", "outcomes"}, where)
+    _known_keys(bank, {"labels", "player", "replies", "special", "outcomes", "coach"}, where)
     labels = _mapping(bank, "labels", {"bands", "cue", "chips", "outcomes"}, where)
     if len(_string_list(labels, "bands", f"{where} labels")) != 5:
         raise ContentError(f"{where} labels: 'bands' names the five openness bands")
@@ -1122,6 +1133,11 @@ def _validate_bank(bank: Any, where: str) -> None:
         _replies({move: replies[move]}, f"{where} replies")
     _require_strings(_mapping(bank, "special", set(BANK_SPECIAL), where), BANK_SPECIAL, f"{where} special")
     _require_strings(_mapping(bank, "outcomes", set(DIALOG_OUTCOMES), where), DIALOG_OUTCOMES, f"{where} outcomes")
+    coach = _mapping(bank, "coach", {"questions", "after"}, where)
+    if coach:
+        _string_list(coach, "questions", f"{where} coach", allow_empty=False)
+        after = _mapping(coach, "after", set(COACH_AFTER), f"{where} coach")
+        _require_strings(after, list(after), f"{where} coach after")
 
 
 def _replies(replies: dict, where: str) -> None:
@@ -1292,6 +1308,7 @@ def _checkin(d: dict, items: list[dict], where: str) -> None:
 
 def check_dialogs(docs: dict[str, Any]) -> None:
     """Dialogs against people, missions, problems, KPI menus and each other."""
+    _check_talk_goals(docs)
     if "dialogs" not in docs:
         return
     net = _network_index(docs["value_streams"], docs["kpis"])
@@ -1324,6 +1341,19 @@ def check_dialogs(docs: dict[str, Any]) -> None:
             raise ContentError(f"{where}: never game over: the block needs a route no failure or skip can close")
         if d["kind"] != "checkin":
             _check_mission_dialog(d, where, missions, problems, net)
+
+
+def _check_talk_goals(docs: dict[str, Any]) -> None:
+    """A talk_to goal names a dialog of its own mission (spec §9.2 rule 4)."""
+    dialogs = {d["id"]: d for d in docs.get("dialogs", {}).get("dialogs", [])}
+    for m in docs["missions"]["missions"]:
+        if m["goal"]["type"] != "talk_to":
+            continue
+        where, d = f"missions.yaml: mission '{m['id']}'", dialogs.get(m["goal"]["dialog"])
+        if d is None:
+            raise ContentError(f"{where}: talk_to names unknown dialog {m['goal']['dialog']!r}")
+        if d.get("mission") != m["id"]:
+            raise ContentError(f"{where}: dialog {d['id']!r} belongs to mission {d.get('mission')!r}")
 
 
 def _all_layers(d: dict) -> list[list[dict]]:
@@ -1363,7 +1393,7 @@ def _check_mission_dialog(d: dict, where: str, missions: dict, problems: dict, n
     if "owns" in d and d["owns"] != problem:
         raise ContentError(f"{where}: owns {d['owns']!r}, which is not the problem of mission {mission['id']!r}")
     for clue in d.get("data", []):
-        if clue not in {f"{problem}:{i}" for i in range(len(problems[problem]["clues"]))}:
+        if problem is None or clue not in {f"{problem}:{i}" for i in range(len(problems[problem]["clues"]))}:
             raise ContentError(f"{where}: data {clue!r} is not a clue of the mission's problem")
     if "kpi_team" in d and d["kpi_team"] not in net["menu"]:
         raise ContentError(f"{where}: kpi_team {d['kpi_team']!r} has no KPI menu")

@@ -50,6 +50,9 @@ const PROMPT_DAYS := 3
 const LEAVE_MORALE := 20
 const LEAVE_DAYS := 60
 const LEAVE_IGNORED := 2
+## Main-mission talks that end this way bring the coach's question about the
+## talk on the next ask (spec §5.6); a talk that only listened does not.
+const COACHED := ["ruined", "blocked", "compliance", "partial", "commitment"]
 
 var persons: Dictionary[String, PersonDef] = {}
 var dialogs: Dictionary[String, DialogDef] = {}
@@ -76,6 +79,10 @@ var low_since: Dictionary[String, int] = {}
 var ignored: Dictionary[String, int] = {}
 ## Person ids of colleagues who left (to another grid operator).
 var left: Dictionary[String, bool] = {}
+## The main-mission talk the coach asks about next: {mission, person (short
+## name), outcome}; {} for none. How many such questions he asked.
+var coach_after: Dictionary = {}
+var coach_asks := 0
 
 
 func _init(person_defs: Array[PersonDef], dialog_defs: Array[DialogDef], lines: Dictionary) -> void:
@@ -89,8 +96,9 @@ func _init(person_defs: Array[PersonDef], dialog_defs: Array[DialogDef], lines: 
 
 func _reset() -> void:
 	for state: Dictionary in [trust, morale, memory, revealed, outcomes, agreed, talks, rest_until, heard_facts, prompts,
-			low_since, ignored, left]:
+			low_since, ignored, left, coach_after]:
 		state.clear()
+	coach_asks = 0
 	for p: PersonDef in persons.values():
 		trust[p.id] = p.trust
 		morale[p.id] = p.morale
@@ -180,8 +188,9 @@ func _memory_term(flags: Array) -> int:
 ## the world and the UI shows: {dialog, person, outcome, trust, morale,
 ## reputation (this talk's change), team_trust (+1 for a commitment),
 ## confronted, clue ("" or the clue the concern unlocked), facts (heard:),
-## cooldown_until (0 for none), hints (a block's route hints)}.
-func finish(d: Dialog, now: int) -> Dictionary:
+## cooldown_until (0 for none), hints (a block's route hints)}. `main`: the
+## talk belongs to the main mission, so the coach asks about it next.
+func finish(d: Dialog, now: int, main: bool = false) -> Dictionary:
 	var who := d.who
 	var o := d.outcome
 	trust[who.id] = clampi(d.trust + TRUST.get(o, 0), 0, 100)
@@ -203,6 +212,8 @@ func finish(d: Dialog, now: int) -> Dictionary:
 	if o == "lifted":
 		rest_until[d.def.id] = now + SimCalendar.days(CHECKIN_REST_DAYS)
 	prompts.erase(d.def.id)
+	if main and d.def.kind == "persuade" and o in COACHED:
+		coach_after = {"mission": d.def.mission, "person": who.short, "outcome": o}
 	return {
 		"dialog": d.def.id, "person": who.id, "outcome": o, "trust": trust[who.id], "morale": morale[who.id],
 		"reputation": REPUTATION.get(o, 0), "team_trust": 1 if o == "commitment" else 0, "confronted": d.confronted,
@@ -223,6 +234,32 @@ func _remembers(flag: String, d: Dialog) -> bool:
 		"heard":
 			return d.heard or d.outcome in ["heard", "partial", "lifted"]
 	return d.outcome == "commitment"
+
+
+# ── The coach after a hard talk ─────────────────────────────────────────────
+
+## The coach's one question about the last hard main-mission talk (Kata; he
+## never names the right move): {kind: question, stage: talk, text}, then
+## back to the mission's stage ({} when there is no such talk, or it was for
+## another mission than `main_id`, the main mission now). A line for
+## what happened (pressure, a ruin, a block, a commitment) comes first, else
+## the bank's questions in turn. A yes under pressure is the bank's
+## `after.pressure`.
+func coach_question(main_id: String) -> Dictionary:
+	if coach_after.get("mission") != main_id:
+		coach_after = {}
+		return {}
+	var lines := JsonFile.dict_or_empty(bank.get("coach"))
+	var after := JsonFile.dict_or_empty(lines.get("after"))
+	var questions: Array = lines.get("questions", []) if lines.get("questions") is Array else []
+	var o := str(coach_after.get("outcome", ""))
+	var text := str(after.get("pressure" if o == "compliance" else o, ""))
+	if text.is_empty() and not questions.is_empty():
+		text = str(questions[coach_asks % questions.size()])
+		coach_asks += 1
+	var who := str(coach_after.get("person", ""))
+	coach_after = {}
+	return {"kind": "question", "stage": "talk", "text": text.replace("{person}", who)} if not text.is_empty() else {}
 
 
 # ── Each day: check-in prompts, and the rare goodbye ─────────────────────────
@@ -364,7 +401,7 @@ func to_dict() -> Dictionary:
 		"revealed": revealed.duplicate(true), "outcomes": outcomes.duplicate(), "agreed": agreed.duplicate(),
 		"talks": talks.duplicate(), "rest_until": rest_until.duplicate(), "facts": heard_facts.keys(),
 		"prompts": prompts.duplicate(), "low_since": low_since.duplicate(), "ignored": ignored.duplicate(),
-		"left": left.keys(),
+		"left": left.keys(), "coach_after": coach_after.duplicate(), "coach_asks": coach_asks,
 	}
 
 
@@ -399,6 +436,12 @@ func load_dict(d: Dictionary) -> Array[String]:
 	for key: Variant in saved_revealed:
 		if dialogs.has(str(key).get_slice("/", 0)) and saved_revealed[key] is Dictionary:
 			revealed[str(key)] = saved_revealed[key].duplicate()
+	var saved_coach := JsonFile.dict_or_empty(d.get("coach_after"))
+	if str(saved_coach.get("outcome", "")) in COACHED:
+		coach_after = {"mission": str(saved_coach.get("mission", "")), "person": str(saved_coach.get("person", "")),
+			"outcome": str(saved_coach["outcome"])}
+	var asks: Variant = whole.call(d.get("coach_asks"))
+	coach_asks = maxi(0, asks) if asks != null else 0
 	var saved_facts: Variant = d.get("facts", [])
 	for f: Variant in saved_facts if saved_facts is Array else []:
 		heard_facts[str(f)] = true

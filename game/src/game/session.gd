@@ -64,6 +64,7 @@ static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, t
 	s.region.use_kpis(s.catalog.kpis)
 	s.missions = Missions.new(s.region, s.catalog.missions, s.catalog.coach)
 	s.people = People.new(s.catalog.persons, s.catalog.dialogs, s.catalog.dialog_bank)
+	s.missions.talk_outcome = s.talk_outcome
 	s.discoveries = Discoveries.new(s.catalog.discoveries)
 	for id in [STORY_MISSION, TRAINING_FIRST]:
 		if not s.missions.defs.has(id):
@@ -220,9 +221,16 @@ func stop_routine(place: String) -> String:
 	return refused
 
 
-## The coach's reply (Missions.ask_coach): about the main mission only.
+## The coach's reply (Missions.ask_coach): about the main mission only; right
+## after a hard talk of the main mission, one question about that talk
+## (People.coach_question, stage "talk").
 func ask_coach(mission_id: String = "") -> Dictionary:
-	var reply := missions.ask_coach(mission_id)
+	var main := missions.active("main")
+	var reply := people.coach_question(main[0].id) if not main.is_empty() and mission_id in ["", main[0].id] else {}
+	if not reply.is_empty():
+		_after(0)
+		return reply
+	reply = missions.ask_coach(mission_id)
 	if reply.has("stage"):
 		var coached := missions.active("main")
 		coached.append_array(missions.active("training"))
@@ -641,8 +649,8 @@ func end_dialog() -> Dictionary:
 
 
 ## A dialog's best agreement so far, a met condition counted as commitment
-## ("" when never had). The hook for a mission's talk_to {dialog, outcome}
-## goal (catalogue C5, not built yet).
+## ("" when never had). What a mission's talk_to {dialog, outcome} goal reads
+## (Missions.talk_outcome).
 func talk_outcome(dialog_id: String) -> String:
 	return people.effective_outcome(dialog_id, people.facts(_facts()))
 
@@ -678,7 +686,8 @@ func _facts() -> Dictionary:
 func _finish_talk() -> Dictionary:
 	var d := _talk
 	_talk = null
-	var summary := people.finish(d, region.net.time)
+	var main := missions.active("main").any(func(m: MissionDef) -> bool: return m.id == d.def.mission)
+	var summary := people.finish(d, region.net.time, main)
 	if summary["confronted"]:
 		region.ask(d.who.place, "behind")
 	if summary["team_trust"] > 0:
