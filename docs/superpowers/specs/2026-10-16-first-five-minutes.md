@@ -45,7 +45,7 @@ Speakers: **Ruud** Hoekstra (Directeur Netbeheer regio Zuidmark, the coach); **Y
 
 ### B1 — De pasfoto (the creator)
 
-"Nieuw spel" fades to a phone screen, a mail from Voltana's HR, then into the camera: the creator is the photo for your badge. The traits and options are 2.7b's; only the frame and the labels are new here.
+"Nieuw spel" fades to a phone screen, a mail from Voltana's HR, then into the camera: the creator is the photo for your badge. The traits and options are 2.7b's; only the frame and the labels are new here. (Layout, controls, the name's validation, the portrait and the tests: `2026-10-16-creator-and-minimap.md` §1.)
 
 **The mail** (one screen, one button):
 
@@ -104,7 +104,7 @@ The Klantcontactcentrum is visible through glass on the right: headsets, a wall 
 
 **Leg 2 — the stairs (the camera).** The stairwell turns; the first time the walls block the view, a second hint fades in for five seconds: **"Draaien: Z en C · Zoomen: muiswiel"**. It is shown once, only if the player has not turned the camera yet.
 
-**Leg 3 — the top of the stairs (the minimap).** On the landing of the 1e verdieping, Ruud hands over a folded floor plan. The minimap appears in its corner (2.1b) **at that moment**, with a soft fold-open animation, drawn as the same site plan:
+**Leg 3 — the top of the stairs (the minimap; its build spec is `2026-10-16-creator-and-minimap.md` §2).** On the landing of the 1e verdieping, Ruud hands over a folded floor plan. The minimap appears in its corner (2.1b) **at that moment**, with a soft fold-open animation, drawn as the same site plan:
 
 > **Ruud:** "Hier. De plattegrond. Ik werk hier twintig jaar en ik loop nog steeds de verkeerde gang in."
 > *(the minimap opens; the rim arrow points to Aansluitingen)*
@@ -136,7 +136,14 @@ Rachid sits behind Sanne with the three trays. He has a name tag on hover but Ru
 
 That is all. Ruud does not say why. (Gemba readability, PLAN §5.1: the two trays, the three empty chairs and the stack are the tell; a player who looks sees it, nobody says it.)
 
-**Overtaking Ruud.** If the player walks ahead to Ruud's room on their own, he catches up there: "Je vond het zelf. Goed teken." Every person not passed is met later in the week; their tags work from the start.
+**At his door** (added 2026-10-16 evening, Merijn Q10: Ruud sits with Aansluitingen by choice in the first hundred days; `2026-10-16-creator-and-minimap.md` §3). Ruud opens a glass door at the edge of the open office: a small room, a desk with a ring from a coffee cup, a whiteboard.
+
+> **Ruud:** "Mijn kamer. Voorlopig."
+> **Ruud:** "Boven heb ik er een met uitzicht op het spoor. Maar boven zit ik te ver van het werk."
+
+He does not explain it (nothing handed over); B4 starts here.
+
+**Overtaking Ruud.** If the player walks ahead to Ruud's room on their own, he catches up there: "Je vond het zelf. Goed teken.", then the two lines at his door. Every person not passed is met later in the week; their tags work from the start.
 
 ### B4 — Het bord van Ruud: *Hoe werkt het?* (spanning, stroom, weerstand)
 
@@ -188,8 +195,8 @@ Ruud sits down, slides a letter across the desk (the `training_mon` letter; its 
 > *(the letter, in a handwriting font, close up; 6–8 lines)*
 >
 > > *Geachte heer Hoekstra,*
-> > *Wij hebben op 20 augustus een zwaardere aansluiting aangevraagd voor onze warmtepomp. Nu wachten we al {dossier_weken}. Mijn moeder woont bij ons in. Zij heeft het snel koud. Niemand kan ons zeggen wanneer u komt. Ik vraag niet om voorrang. Ik vraag om een datum.*
-> > *Met vriendelijke groet, N. El Amrani, Nova-Oost*
+> > *Wij hebben op {aanvraag_datum} een zwaardere aansluiting aangevraagd voor onze warmtepomp. Nu wachten we al {dossier_weken}. Mijn moeder woont bij ons in. Zij heeft het snel koud. Niemand kan ons zeggen wanneer u komt. Ik vraag niet om voorrang. Ik vraag om een datum.*
+> > *Met vriendelijke groet, F. El Amrani, Nova-Oost*
 >
 > **Ruud:** "Ik wil niet dat je dit oplost. Nog niet. Ik wil dat je gaat kijken. Deze week leer je hoe. Volgende week volg je dit dossier, van de brief tot de meter."
 > **Ruud:** "En als je iemand spreekt: vraag eerst hoe het gaat. En meen het."
@@ -199,6 +206,8 @@ The last line is the **first move card** (Stemming peilen, tutorial talks §2), 
 (`training_mon`'s goal, observing Intake and Werkvoorbereiding, is met by the walk; its debrief moves to Tuesday morning's briefing, §4.)
 
 > **Ruud:** "De rest van de dag ben je van IT en HR. Laptop, pas, wachtwoorden. Sterkte."
+
+**Fixed 2026-10-16 evening (D9 audit A9):** the letter is signed *F. El Amrani* (she is Fatima in the cast and on the phone; it was "N."), and the date is the token `{aanvraag_datum}`: per the arc (§3 there) her request was born on **27 July**, eleven weeks before 12 October, so the followed order must be that old (PLAN 1.8a) and her notebook, this letter and `{dossier_weken}` all read the same date. The paragraph below is the earlier note.
 
 The letter's date: `training_mon` says "vanochtend lag er een brief"; the El Amrani call (arc doc §3) dates her request to September–October; the letter's "20 augustus" is the date of the *request*, not the letter. **Check with the followed order (1.8):** the date shown must be the order's real creation day; if the order is younger, the line reads `{aanvraag_datum}` (a token the builder fills from the dossier). The line above uses a fixed date only as an example.
 
