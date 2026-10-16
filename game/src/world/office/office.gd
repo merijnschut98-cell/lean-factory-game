@@ -67,6 +67,9 @@ var autosaves := false
 @export var seed_value := 1
 ## Where the content is read from (tests point it at bad content).
 @export var data_dir := Catalog.DATA_DIR
+## The player made in the character creator for a new game (PLAN 2.7b);
+## null keeps the default look (tests, tools) or the saved one.
+var new_player: PlayerProfile
 ## Start with the training week (Inwerkweek); a returning player skips it on
 ## the mission board.
 @export var training := true
@@ -91,6 +94,8 @@ var _hovered_person: OfficePerson
 var explainer: ExplainerView
 ## Ruud's paper floor plan in the corner (PLAN 2.1b); null when the game cannot be played.
 var minimap: OfficeMinimap
+## The character creator open over the world ("Uiterlijk" in the pause menu), or null.
+var look_editor: CreatorScreen
 
 
 func _ready() -> void:
@@ -123,6 +128,8 @@ func build() -> void:
 		return
 	var loaded := _resume()
 	session = loaded["session"] if loaded.has("session") else GameSession.new_game(seed_value, data_dir, training)
+	if new_player != null and not loaded.has("session"):
+		session.player = new_player
 	floors = OfficeFloors.new()
 	floors.setup(self)
 	add_child(floors)
@@ -148,6 +155,7 @@ func build() -> void:
 		floors.floor_changed.connect(func(id: String) -> void: ui.session_layer.floor_id = id)
 		enter_saved_floor(ui.session_layer.floor_id)
 		ui.title_requested.connect(to_title)
+		ui.pause_menu.look_requested.connect(open_look)
 		if autosaves:
 			ui.begin_play(saves, loaded.has("session"))
 	if loaded.has("error"):
@@ -476,9 +484,36 @@ func interact(target: Interactable) -> void:
 		frame(target)
 
 
-## Whether the world waits: a panel or the explainer is open.
+## Whether the world waits: a panel, the explainer or the creator is open.
 func busy() -> bool:
-	return ui.is_busy() or explainer != null
+	return ui.is_busy() or explainer != null or look_editor != null
+
+
+## "Uiterlijk" (PLAN 2.7b): the creator over the world on the current look and
+## name; its photo changes them, free and silent (no time, money or trust).
+func open_look() -> CreatorScreen:
+	ui.close_panels()
+	_on_panel_opened()
+	_world_input(false)
+	look_editor = CreatorScreen.open(self, CreatorScreen.Mode.EDIT, session.player)
+	look_editor.done.connect(apply_look)
+	look_editor.cancelled.connect(_close_look)
+	return look_editor
+
+
+func apply_look(made: PlayerProfile) -> void:
+	session.player = made
+	player.wear(made.look)
+	_close_look()
+
+
+func _close_look() -> void:
+	var layer := look_editor.get_parent()
+	remove_child(layer)
+	layer.queue_free()
+	look_editor = null
+	_world_input(true)
+	_on_panels_closed()
 
 
 ## Ruud's whiteboard (PLAN 2.7c): the camera moves in to the board and the explainer
@@ -558,7 +593,7 @@ func talk_point(person: OfficePerson) -> Vector3:
 
 
 func _add_player() -> void:
-	player = Player.new()
+	player = Player.new(session.player.look)
 	add_child(player)
 	var spawn := find_marker(SPAWN)
 	if spawn != null:

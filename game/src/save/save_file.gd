@@ -28,7 +28,7 @@ const TEMP := ".tmp"
 const BACKUP := ".bak"
 ## The rest of a game beside the region (GameSave): each key optional, a
 ## Dictionary. "meta" is what a save list shows without loading the game.
-const EXTRA: Array[String] = ["missions", "discoveries", "followed", "explainers", "people", "session", "meta"]
+const EXTRA: Array[String] = ["missions", "discoveries", "followed", "explainers", "people", "session", "player", "meta"]
 
 ## Why a file cannot be read, for the save list (SaveSlots).
 enum Fault { NONE, MISSING, DAMAGED, TOO_OLD, TOO_NEW }

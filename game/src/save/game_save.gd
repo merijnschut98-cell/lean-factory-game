@@ -1,8 +1,9 @@
 class_name GameSave
 ## A whole game in one save slot (SaveFile): the region with its network,
 ## the missions, the discoveries, the El Amrani dossier, the people, the session layer
-## (the snapshot the next terugblik compares with) and the meta a save list
-## shows (SaveSlots). The game saves itself at every dagstart and when it
+## (the snapshot the next terugblik compares with), the player made in the
+## character creator (PlayerProfile: name and look; the badge photo in the
+## meta) and the meta a save list shows (SaveSlots). The game saves itself at every dagstart and when it
 ## closes, so stopping never loses anything. A save from before the missions
 ## were saved has the region only: it loads as a returning player's game on
 ## that region, with no terugblik.
@@ -20,13 +21,15 @@ static func write(slot: String, s: GameSession, layer: SessionLayer, dir: String
 		saved: float = Time.get_unix_time_from_system()) -> String:
 	return SaveFile.write(slot, s.region, {"missions": s.missions.to_dict(), "discoveries": s.discoveries.to_dict(),
 		"followed": s.followed.to_dict(), "explainers": s.explainers.to_dict(), "people": s.people.to_dict(),
-		"session": layer.to_dict(), "meta": meta(s, saved)}, dir)
+		"session": layer.to_dict(), "player": s.player.to_dict(), "meta": meta(s, saved)}, dir)
 
 
-## What a save list shows: the player's name ("" until the character creator,
-## PLAN 2.7b), the act, the game's time and the real time it was saved.
+## What a save list shows: the player's first name ("" for none) and badge
+## photo (PNG bytes, empty for none), the act, the game's time and the real
+## time it was saved.
 static func meta(s: GameSession, saved: float) -> Dictionary:
-	return {"name": "", "act": s.missions.current_act(), "time": s.region.net.time, "saved": saved}
+	return {"name": s.player.name, "portrait": s.player.portrait, "act": s.missions.current_act(),
+		"time": s.region.net.time, "saved": saved}
 
 
 ## {error, session, layer, dropped}: a session built from the current content
@@ -56,6 +59,8 @@ static func read(slot: String = AUTOSAVE, data_dir: String = Catalog.DATA_DIR, d
 		dropped.append_array(s.people.load_dict(extra["people"]))
 	if extra.get("explainers") is Dictionary:
 		s.explainers.load_dict(extra["explainers"], ExplainerDef.load_all(data_dir)["explainers"].keys())
+	# Validated: an old save without one, or a bad entry, is the default look.
+	s.player = PlayerProfile.from_dict(extra.get("player"), JsonFile.dict_or_empty(extra.get("meta")).get("portrait"))
 	var layer := SessionLayer.new()
 	layer.load_dict(extra.get("session", {}))
 	s.drain_events()  # the throwaway new game's, not the player's
