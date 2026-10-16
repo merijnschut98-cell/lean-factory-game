@@ -10,7 +10,7 @@
 
 ## 1. Current status and next task
 
-**Current status: Phase 1 — Mensen (people, dialogs, the session layer) 🔧 starting.** The engine, rules, content pipeline, tier-1 content, the office slice, sustain-or-decay, the honest Check, mission waves 1–2 and the QA bot are built and green (see §2.4). The dialog *engine* is built but not merged. Tier 2–4 and all dialogs are designed, not built. Characters are sample quality.
+**Current status: Phase 1 — Mensen (people, dialogs, the session layer) 🔧 starting.** The engine, rules, content pipeline, tier-1 content, the office slice, sustain-or-decay, the honest Check, mission waves 1–2 and the QA bot are built and green (see §2.4). The dialog *engine* is built and merged (1.1). Tier 2–4 and all dialogs are designed, not built. Characters are sample quality.
 
 **Next task (first session of Phase 1), in this order:**
 1. **Relaunch the mission-and-dialog agents first** (CLAUDE.md §2: continuous; §6.2 names the three roles). Nothing else starts before they run.
@@ -63,7 +63,18 @@ Each phase ends in a **playable** that Merijn plays before the next phase starts
 ### Phase 1 — Mensen: people, dialogs, the session layer 🔧
 **Playable:** Act 0 and Act I in the office, with people at their desks you can walk up to and talk with; a session that starts with a terugblik and ends at a dagstart. Merijn plays it and the autoplay bot plays it.
 
-- ⬜ **1.1 Merge the dialog engine** (`docs/handoff/dialog-engine-f5319f4.patch`). Then the leftovers in the spec's task list: D6 Ruud's talk stage after a main-mission dialog; D7 check-in cadence (≤ 1 visible, ≤ 2 a week, 14-day cooldown); D8 discoveries D29–D34; D9 the rest of the cast; `talk_to` mission goals (`talk_outcome()` is ready). Dialog spec: `docs/superpowers/specs/2026-10-15-dialog-system-design.md`.
+- 🔧 **1.1 Merge the dialog engine** — ✅ merged 2026-10-16 (engine commit `f5319f4` merged with this branch; `tools/build_content.py`, `session.gd`, `catalog.gd`, `problem_state.gd` keep both the dialogs and the discoveries). Leftovers in the spec's task list: D6 Ruud's talk stage after a main-mission dialog; D7 check-in cadence (≤ 1 visible, ≤ 2 a week, 14-day cooldown); D8 discoveries D29–D34; D9 the rest of the cast; `talk_to` mission goals (`talk_outcome()` is ready). Dialog spec: `docs/superpowers/specs/2026-10-15-dialog-system-design.md`.
+  - ✅ D1 schema and validator (`content/dialogs.yaml`: `people`, `bank`, `dialogs` → `game/data/dialogs.json`; `tests/test_dialog_content.py`). A concern's clue is appended by the build to the owned problem's clues, marked `dialog`.
+  - ✅ D2 `rules/dialog.gd` (moves, Δ rules, archetype weights, repetition, the ceiling, layers, the cue, patience, outcomes, blocks with routes, the meter as a bar with ▲/▼ arrows and no numbers, all moves always visible, tutorial talks that cannot be ruined). Tests: `test_dialog.gd`.
+  - ✅ D3 `rules/people.gd` (trust, morale, memory, repair, cooldowns, facts, buy-in, agreed KPIs, save/load, check-in prompts that expire after 3 days, rare leaving). Tests: `test_people.gd`. ⬜ Mood signals beyond blame (overload, life beats, a fix that held), morale drift toward 50, morale effects on wear (§5.4).
+  - ✅ D4 links: buy-in × fix life (`Sustain.BUY_IN`), unlocked clues and proposals, facts (`heard:`, `committed:`, `checked:`), hard blocks with routes, reputation. ⬜ KPI sustain weight halved without the lead's committed pair (`People.agreed_kpis` ready; `Region.sustain` needs it).
+  - ✅ D5 `GameSession` facade: `people_at`, `person`, `start_dialog`, `dialog_moves`, `choose_move`, `dialog_meter`, `end_dialog`, `talk_outcome`, `energy_of`. Tests: `test_session_dialogs.gd`. ⬜ Save `people.to_dict()` once the session gets a save.
+  - ⬜ `talk_to {dialog, outcome}` mission goals.
+  - ⬜ D6 Ruud's talk stage after a main-mission dialog.
+  - 🔧 D7 check-ins: prompts that expire after 3 days and the 14-day rest are built; ⬜ the cadence limits (≤ 1 visible, ≤ 2 a week).
+  - ⬜ D8 discoveries D29–D34.
+  - 🔧 D9 content: ✅ Joost (`joost_output_kpi`), Frank's block (`frank_kpi_targets`), Ahmed's check-in (`ahmed_after_henk`); ⬜ the rest of the cast and the tier-1 dialogs from `docs/superpowers/specs/2026-10-15-dialog-scripts-act0-2.md`.
+  - 🔧 D10 content tests: ✅ the spec's worked paths replay exactly; ⬜ ≥ 3 distinct successful sequences per persuasion dialog, pushing early costs, pressure gives compliance.
 - ⬜ **1.2 Dialog UI** (D11): the speech panel; the openness **bar that fills**, with ▲/▲▲ ▼/▼▼ per reply and never a number (Merijn); trust pips; mood word and face; the layer tracker (Standpunt · Belang · Zorg); reply chips by move type, all moves always visible; the cue "Er zit meer achter…"; the summary card with the openness trace; the Mensen tab in the journal; the **walk-around energy bar** over people who need a talk. Screenshot every state.
 - ⬜ **1.3 People in the office.** NPC avatars at their desks (Joost, Anouk at Werkvoorbereiding; Sanne at Intake; Petra at Meetdata; Esra and two agents at the contact centre once that room exists, see Phase 2; Marco passes through from the yard), idle and work animations, a name tag on hover, walk up and press E to talk. Ruud in his room. Henk and Ahmed appear for their missions. Characters: the method Merijn chooses (§7 Q1); until then the samples.
 - ⬜ **1.4 Session layer** (engagement loop §2, all decided): the *terugblik* card when the game opens (Ruud's line; Veranderd · Wacht op je · Komt eraan; one button); the "goed moment om te stoppen" note at the dagstart after ~30 real minutes; the *Intussen* panel during a Check with a named time skip that stops at beats with people; ≤ 1 discovery toast per in-game day; ≤ 2 new side offers a week, older ones in a "Nog open" drawer; a local playtest log (opt-out, never sent).
@@ -356,6 +367,22 @@ By the design agent, recommended options per the standing rule; details in `docs
 - **The secondment is to the real Landelijk Actieprogramma Netcongestie**, with Ruud fictional.
 - **`t3_interim_mt` is a short main** (the Act IV opener; one group talk).
 - **Fixed in the El Amrani call:** its dates predated her request (now September–October), "bijna november" became "elke nacht kouder", the promised date is `{promise_date}`.
+
+### Claude's calls, pending Merijn (2026-10-15, dialog engine)
+Built from `docs/superpowers/specs/2026-10-15-dialog-system-design.md`. The spec's §14 questions took the recommended option: (1) a fixed palette, (2) chips show the move type with the line on hover, (3) acting without asking the owner counts as compliance (×0.6), (4) ×1.25 / ×0.6, (5) a ruin costs reputation −1, trust −5 and a day, (6) morale hidden, shown as a band (and, by Merijn's decision, as the walk-around energy bar), (7) leaving built as Merijn decided, (8) prompts expire after 3 days (cadence limits not built), (9)–(10) the cue and the trace are data the UI shows, (11) no free text, (12) no XP for talks. Merijn's own decisions (2026-10-15) are built: arrows not numbers, all moves visible, tutorial talks, the energy bar, rare leaving, standard Dutch. Further calls:
+- **A repair with nothing to repair** stays visible (all moves always visible) and changes nothing ("Herstellen? Er is niks misgegaan tussen ons.").
+- **The energy bar is the person's morale (0–1); "needs a talk" is an open check-in prompt.**
+- **A colleague who leaves** takes their talks with them; a fix they owned keeps running with buy-in `none` (no owner to stand behind it or against it).
+- **One content file:** people, the line bank and the dialogs all live in `content/dialogs.yaml` (the spec had three files).
+- **Inquiry lands within 15 below the next layer's threshold** (the spec's text says 10; its own worked example B5′ needs 15).
+- **A concern with a lead-in is revealed only after the lead-in was said;** the lead-in comes when a listening move lands at openness ≥ 65. This is what the spec's worked paths do.
+- **A layer opens only on a move that landed** (a misread at the threshold opens nothing); the lead-in only follows listening moves.
+- **The repetition rule halves gains only** (a repeated misstep costs in full); asking for agreement is not counted as a repetition.
+- **Ask for agreement with nothing on the table:** no change ("Waar moet ik precies ja op zeggen?"); in a check-in it is fixing mode before the concern, and never ends the talk.
+- **The spec's Ahmed numbers ignore his archetype weight** (silence ×1.5 for a quiet person): the engine applies it, so his check-in reaches "Denkt mee" a move earlier; the outcome is the same.
+- **Frank stands at Werkvoorbereiding** (a person's place must be a work step; the Obeya is not one) and belongs to its team; his one route is a passed Check of `silo_kpis` (Ruud and the board forecast need C9 and a Ruud dialog).
+- **Check-ins:** a trigger is `morale_below` and/or a `needs` expression (Ahmed's: Henk has gone and his morale is below 50); a lifted check-in rests 14 days; the full cadence (one prompt, two a week, expiry) is D7.
+- **The gemba's quick question never finds a dialog's clue,** and the expert test in `test_catalog.gd` now listens to get it.
 
 ### Claude's calls, pending Merijn (2026-10-12)
 Merijn asked me to fix the content review's findings with my own judgement while he is away. Each call is easy to reverse, and the same questions sit in the review doc.

@@ -19,6 +19,12 @@ const WEIGHTS := {"standard_work": 0.6, "visual_management": 0.2, "kpis": 0.2}
 ## How much S stretches a fix's life at most: L = base / (1 − 0.9·S), so even
 ## a fix held by every habit wears when neglected, ten times slower.
 const SLOWDOWN := 0.9
+## How the person whose work the fix changes stands behind it (People.buy_in;
+## the dialog spec §4.2, approved by Merijn): their commitment keeps it alive
+## longer, compliance (pressure, or acting without asking them) shorter.
+## ESTIMATES of the direction found by Herscovitch & Meyer (2002) and Kotter &
+## Schlesinger (1979), not measured values.
+const BUY_IN := {"commitment": 1.25, "none": 1.0, "compliance": 0.6}
 ## The base of a fix that used to stay for good (decay_days null: built into a
 ## system or a contract). ESTIMATE: workarounds creep in over about a year (a
 ## form field gets an "n.v.t." option, a contract clause stops being checked).
