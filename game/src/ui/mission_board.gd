@@ -10,14 +10,19 @@ extends UiPanel
 ## or NO_CLOCK when it has none.
 const EXPIRED := "Verlopen: %s De missie blijft open, nu zonder klok."
 const NO_CLOCK := "de deadline is voorbij."
+## Over a fork: two main missions open at once, and the player picks the order.
+const FORK_HEADING := "Twee hoofdmissies tegelijk: welke pak je eerst aan?"
+const REPAIR_KIND := "herstel"
 
 var message := ""
 ## The skip's confirm line is showing.
 var confirming_skip := false
+var _list: VBoxContainer
 
 
 func _init() -> void:
 	super("Missiebord", Vector2(1000, 0))
+	_list = add_scroll_list(body, 700)
 
 
 ## The ids of the missions on the board that can be taken on now.
@@ -59,47 +64,94 @@ func confirm_skip() -> String:
 
 
 func refresh() -> void:
-	clear(body)
+	clear(_list)
 	if not message.is_empty():
-		body.add_child(paragraph(message, Palette.SAFETY_ORANGE))
+		_list.add_child(paragraph(message, Palette.SAFETY_ORANGE))
 	var active := session.active_missions()
-	var current := add_card(body, "Actief", Palette.BLUE_PALE)
+	var current := add_card(_list, "Actief", Palette.BLUE_PALE)
 	if active.is_empty():
 		current.add_child(paragraph("Nog geen missie. Kies er hieronder een.", Palette.MUTED))
 	for m in active:
-		current.add_child(label("%s  ·  %s" % [_title(m), _kind(m)], UiTheme.FONT_SIZE, Palette.VOLTANA_BLUE))
-		current.add_child(paragraph(m.briefing))
+		current.add_child(label("%s  ·  %s" % [_title(m), kind_label(m)], UiTheme.FONT_SIZE, Palette.VOLTANA_BLUE))
+		var where := story(m)
+		if not where.is_empty():
+			current.add_child(label(where, 15, Palette.MUTED))
+		current.add_child(paragraph(session.mission_briefing(m.id)))
 		_add_expiry(current, m)
 	if session.in_training():
 		_skip_row()
-	var open := add_card(body, "Beschikbaar")
+	var open := add_card(_list, "Beschikbaar")
 	if session.available_missions().is_empty():
 		open.add_child(paragraph("Er staan nu geen nieuwe missies open.", Palette.MUTED))
-	for m in session.available_missions():
-		var row := HBoxContainer.new()
-		var text := VBoxContainer.new()
-		text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		text.add_child(label("%s  ·  %s" % [_title(m), _kind(m)], UiTheme.FONT_SIZE, Palette.VOLTANA_BLUE))
-		text.add_child(paragraph(m.briefing, Palette.INK, UiTheme.SMALL))
-		_add_expiry(text, m)
-		row.add_child(text)
-		var take := button("Aannemen", accept.bind(m.id))
-		take.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		row.add_child(take)
-		open.add_child(row)
+	var shown_story := ""
+	for row: Array in rows(session.available_missions()):
+		if story(row[0]) != shown_story:
+			shown_story = story(row[0])
+			open.add_child(label(shown_story, UiTheme.SMALL, Palette.MUTED))
+		if row.size() == 1:
+			_add_offer(open, row[0])
+			continue
+		var fork := add_card(open, FORK_HEADING, Palette.BLUE_PALE)
+		var pair := HBoxContainer.new()
+		pair.add_theme_constant_override("separation", 16)
+		fork.add_child(pair)
+		for m: MissionDef in row:
+			_add_offer(pair, m)
 	var done := session.missions.defs.values().filter(
 		func(m: MissionDef) -> bool: return session.missions.status(m.id) == "completed")
 	if not done.is_empty():
-		var past := add_card(body, "Afgerond")
+		var past := add_card(_list, "Afgerond")
 		for m: MissionDef in done:
 			past.add_child(label("Voltooid: " + _title(m), UiTheme.SMALL, Palette.MUTED))
+
+
+## The board's rows: one mission each, except a fork's missions, which
+## share the row of the first one (shown as a pair).
+static func rows(missions: Array[MissionDef]) -> Array:
+	var out: Array = []
+	var forks := {}
+	for m in missions:
+		if m.fork_group.is_empty():
+			out.append([m])
+		elif forks.has(m.fork_group):
+			forks[m.fork_group].append(m)
+		else:
+			forks[m.fork_group] = [m]
+			out.append(forks[m.fork_group])
+	return out
+
+
+## One mission on offer: title, briefing, and "Aannemen" (the act and
+## chapter head its group).
+func _add_offer(parent: Node, m: MissionDef) -> void:
+	var row := HBoxContainer.new()
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var text := VBoxContainer.new()
+	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	text.add_child(label("%s  ·  %s" % [_title(m), kind_label(m)], UiTheme.FONT_SIZE, Palette.VOLTANA_BLUE))
+	text.add_child(paragraph(session.mission_briefing(m.id), Palette.INK, UiTheme.SMALL))
+	_add_expiry(text, m)
+	row.add_child(text)
+	var take := button("Aannemen", accept.bind(m.id))
+	take.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(take)
+	parent.add_child(row)
+
+
+## Where a mission sits in the story: "Akte I · … — De stapel"; "" for a
+## training day (its title says it) or a mission outside the acts.
+static func story(m: MissionDef) -> String:
+	if m.kind == "training":
+		return ""
+	var parts := [UiText.act_title(m.act), m.chapter].filter(func(p: String) -> bool: return not p.is_empty())
+	return " — ".join(PackedStringArray(parts))
 
 
 ## "Inwerkweek overslaan", or its confirm line with yes and no.
 func _skip_row() -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 12)
-	body.add_child(row)
+	_list.add_child(row)
 	if not confirming_skip:
 		row.add_child(button("Inwerkweek overslaan", ask_skip))
 		row.add_child(label("Voor wie het spel al kent.", UiTheme.SMALL, Palette.MUTED))
@@ -124,7 +176,9 @@ func _title(m: MissionDef) -> String:
 	return UiText.mission_title(m, session)
 
 
-static func _kind(m: MissionDef) -> String:
+static func kind_label(m: MissionDef) -> String:
+	if m.goal_type == "rework_fix":
+		return REPAIR_KIND
 	match m.kind:
 		"main":
 			return "hoofdmissie"

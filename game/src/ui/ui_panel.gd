@@ -110,6 +110,20 @@ static func add_card(parent: Node, heading: String = "", fill: Color = Color.WHI
 	return box
 
 
+## Add a column that scrolls (vertically only) to `parent`, at least
+## `height` tall; returns the column to fill.
+static func add_scroll_list(parent: Node, height: float = 0.0) -> VBoxContainer:
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size.y = height
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	parent.add_child(scroll)
+	var column := VBoxContainer.new()
+	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(column)
+	return column
+
+
 static func clear(container: Node) -> void:
 	for child in container.get_children():
 		container.remove_child(child)

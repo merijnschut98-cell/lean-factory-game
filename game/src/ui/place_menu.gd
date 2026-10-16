@@ -95,13 +95,7 @@ func refresh() -> void:
 	title_label.text = step.name if step != null else place
 	clear(body)
 	# One column that scrolls: the panel keeps the full height at the side.
-	var scroll := ScrollContainer.new()
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	body.add_child(scroll)
-	var column := VBoxContainer.new()
-	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.add_child(column)
+	var column := add_scroll_list(body)
 	_results(column)
 	_tools(column)
 	_sustain(column)

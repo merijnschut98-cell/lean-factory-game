@@ -805,7 +805,7 @@ class Persona extends RefCounted:
 		var b: float = before.get(row, 0.0)
 		var a: float = after.get(row, 0.0)
 		var change := (a - b) / absf(b) if absf(b) > 0.0001 else (a - b)
-		return -change if row in CheckPanel.LOWER_IS_BETTER else change
+		return -change if row in Pdca.LOWER_IS_BETTER else change
 
 	## What would read as contradictory: the verdict against the Check's own
 	## counterfactual (the fix's effect, `gains`), and the panel's before/after

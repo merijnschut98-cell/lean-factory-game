@@ -15,7 +15,10 @@ extends SceneTree
 ## timelapse (the week played to Friday: the Act and the month ahead, with and
 ## without the standard) · sustain (the fix standardised, then left alone for
 ## weeks: its health, the audit and the routine in the team's menu, and the
-## toasts of a slipping fix).
+## toasts of a slipping fix) · discoveries (the codex's Ontdekkingen tab with
+## two found) · simulating (the A3's note while the Check runs) · fork_board
+## (the board after the first mission: the fork as a pair) · debt (the HUD in
+## debt, with the floor, and its toasts).
 ## The mission is played through the UI's own handlers, as a player would;
 ## only the training states start with the training week.
 
@@ -81,6 +84,29 @@ func _run() -> void:
 			_investigate(office, true)
 			office.session.region.profile.learn(["flow", "bottleneck_focus", "netbeheerder", "netcongestie", "kata_prediction"])
 			office.ui.toggle_codex()
+		"discoveries":
+			_investigate(office, false)
+			office.session.discoveries.found["het_knelpunt_eerst"] = office.session.region.net.time
+			office.session.discoveries.found["voorspeller"] = office.session.region.net.time
+			office.ui.toggle_codex()
+			office.ui.codex.show_tab(CodexPanel.DISCOVERIES)
+		"simulating":
+			_investigate(office, true)
+			office.interact(office.interactable("obeya"))
+			office.ui.a3_form.submit(_a3(office))
+			office.ui.a3_form.wait()
+			office.ui.a3_form.show_simulating()
+		"fork_board":
+			office.session.missions.done_once[MISSION] = true
+			office.session.missions.progress[MISSION] = {"status": "completed", "asks": {}, "seen": {}}
+			office.session.region.state["custom_design"].phase = ProblemState.Phase.RESOLVED  # or it reopens
+			office.session.missions.update()
+			_stand_at(office, "mission_board")
+			office.interact(office.interactable("mission_board"))
+		"debt":
+			office.session.region.grant(0, -70000)
+			office.ui.after_action()
+			_stand_at(office, DESIGN)
 		"inspect":
 			_stand_at(office, DESIGN)
 			office.interact(office.interactable(DESIGN))

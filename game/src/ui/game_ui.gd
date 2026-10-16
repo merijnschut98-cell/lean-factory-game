@@ -157,10 +157,11 @@ func after_action() -> void:
 	for m: MissionDef in session.missions.defs.values():
 		names[m.id] = UiText.mission_title(m, session)
 	var problem_names := UiText.problem_names(session)
+	var team_names := UiText.team_names(session)
 	for e in session.drain_events():
 		if e["type"] in ["recurred", "slipping"] and session.is_practice(e.get("problem", "")):
 			continue  # the practice problem is retired; the Friday forecast tells the fade
-		var text := UiText.event(e, names, problem_names)
+		var text := UiText.event(e, names, problem_names, team_names)
 		if not text.is_empty():
 			hud.toast(text)
 		if e["type"] == "completed":
@@ -176,7 +177,7 @@ func after_action() -> void:
 func _debrief_card(m: MissionDef, e: Dictionary) -> void:
 	if m.kind != "training" or m.goal_type == "solve":
 		return
-	var lines: Array[String] = ["'%s'" % m.debrief]
+	var lines: Array[String] = ["'%s'" % session.mission_debrief(m.id)]
 	if e.has("queues"):
 		var place_names := {}
 		for place: String in e["queues"]:

@@ -1,6 +1,7 @@
 class_name Hud
 extends Control
-## The heads-up display: a top bar (day and time, budget, XP and belt, the
+## The heads-up display: a top bar (day and time, budget with the savings of
+## held fixes and, in debt, the floor; XP and belt, the
 ## region's setback while it stands still, the active mission), the
 ## interaction prompt, the controls,
 ## short messages (toasts, bottom right) when something happens, and cards
@@ -127,7 +128,8 @@ func _build_centre() -> void:
 
 func refresh() -> void:
 	clock_label.text = session.clock_text()
-	budget_label.text = "Budget " + UiText.money(session.budget())
+	budget_label.text = UiText.budget_line(session.budget(), session.region.weekly_savings())
+	budget_label.add_theme_color_override("font_color", Palette.SAFETY_ORANGE if session.budget() < 0 else Color.WHITE)
 	xp_label.text = "%d XP  ·  %s" % [session.xp(), UiText.belt(session.belt())]
 	var drift := roundi(session.drift()["level"] * 100.0)
 	drift_label.visible = drift > 0
