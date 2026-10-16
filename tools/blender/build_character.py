@@ -1,15 +1,18 @@
 """Build the people of Spanning with bpy: game/assets/characters/<id>.glb.
 
-Script-built characters, a trial (Merijn decides between this, an AI generator and asset
-packs, PLAN 7 Q1). Who they are and how they look is data: game/assets/characters/cast.json,
-one list the world reads too, so another method can replace this builder without touching
-the game. Run with Blender's Python module (see tools/blender/README.md):
+Who they are and how they look is data: game/assets/characters/cast.json, one list the world
+reads too. Two methods (Merijn, 2026-10-16, PLAN 1.3a):
+- `--method pack` (the default): the CC0 Quaternius pack re-dressed for Voltana, see
+  pack_character.py; the pack comes from tools/blender/fetch_pack.py into .pack/.
+- `--method script`: the scripted mannequins below, Merijn's fallback.
+Run with Blender's Python module (see tools/blender/README.md):
 
-    .bvenv/bin/python tools/blender/build_character.py --no-render  # every glb (~4 min each)
-    .bvenv/bin/python tools/blender/build_character.py --only joost --only anouk --no-render
-    .bvenv/bin/python tools/blender/build_character.py --only ruud --only player --samples 32
+    .bvenv/bin/python tools/blender/build_character.py                 # every glb from the pack
+    .bvenv/bin/python tools/blender/build_character.py --only joost --parts   # + the creator parts
+    .bvenv/bin/python tools/blender/build_character.py --only henk --pose-sheet /tmp/sheet.png
+    .bvenv/bin/python tools/blender/build_character.py --method script --no-render
 
-How a person is made:
+How the scripted method makes a person:
 - Body, head, hair, clothes and shoes are signed distance fields (SDFs): ellipsoids and round
   cones blended with smooth unions (eye sockets and the ear bowls are smooth subtractions),
   polygonised with marching cubes and decimated to a triangle budget. Garments are the body
@@ -85,6 +88,7 @@ class Spec:
     glasses: bool = False
     helmet: bool = True       # a monteur's safety helmet
     stoop: float = 0.0        # 0..1: age in the posture (back rounded, head forward)
+    beard: str = ""           # pack method: "full" or "short" ("" none)
     colors: dict = field(default_factory=dict)  # garment colour overrides
 
 
@@ -1713,12 +1717,13 @@ def pose_sheet(rig, path: Path) -> None:
     render(path, camera("cam_sheet", (0.4, -6.8, 2.2), (0, 0, 0.8), 40))
 
 
-def write_import(glb: Path) -> None:
-    """A new glb's Godot import settings (once): the character import script, 30 fps, loops."""
+def write_import(glb: Path, folder: str = "") -> None:
+    """A new glb's Godot import settings (once): the character import script, 30 fps, loops.
+    `folder`: the glb's folder under assets/characters/ ("parts/")."""
     target = glb.with_name(glb.name + ".import")
     if target.exists():
         return
-    target.write_text(IMPORT_TEMPLATE.format(name=glb.name))
+    target.write_text(IMPORT_TEMPLATE.format(name=folder + glb.name))
 
 
 IMPORT_TEMPLATE = """[remap]
@@ -1769,7 +1774,14 @@ def main(argv: list[str]) -> None:
     ap.add_argument("--blend", type=Path, help="also save the .blend here (for inspection)")
     ap.add_argument("--draft", action="store_true", help="coarse voxels, no export: for --pose-sheet")
     ap.add_argument("--pose-sheet", type=Path, help="render the first person in every action (Workbench) here")
+    ap.add_argument("--method", choices=("pack", "script"), default="pack", help="the CC0 pack (default) or the scripted mannequins")
+    ap.add_argument("--pack", type=Path, default=ROOT / ".pack", help="where fetch_pack.py put the pack")
+    ap.add_argument("--parts", action="store_true", help="pack: also build the creator's hair, beards and glasses")
     args = ap.parse_args(argv)
+    if args.method == "pack":
+        import pack_character
+        pack_character.run(args.only or list(CAST_SPECS), args.pack, args.parts, args.blend, args.pose_sheet)
+        return
 
     VOXEL = 2.0 if args.draft else 1.0
     bpy.ops.wm.read_factory_settings(use_empty=True)

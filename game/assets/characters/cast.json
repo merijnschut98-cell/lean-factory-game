@@ -1,11 +1,12 @@
 {
   "_about": [
     "The people of Spanning: one list for the whole character pipeline (PLAN 1.3, 5.4).",
-    "look: how tools/blender/build_character.py builds <id>.glb (sex f|m, height m, build 0 slim..1 heavy,",
-    "  skin/hair/eye colours sRGB 0..255, hair_style bob|short|receding|buzz|ponytail, outfit",
-    "  business|shirt|manager|monteur, glasses, helmet (monteur), stubble 0..1, stoop 0..1 (age), colors:",
-    "  garment colour overrides). Another character method (Merijn, PLAN 7 Q1) replaces look and the",
-    "  builder; the ids, the glb names and office stay.",
+    "look: how tools/blender/build_character.py builds <id>.glb from the CC0 Quaternius pack (PLAN 1.3a;",
+    "  sex f|m, height m crown to sole, build 0 slim..1 heavy, skin/hair/eye/brow colours sRGB 0..255,",
+    "  hair_style bob|short|receding|buzz|ponytail|buns, beard full|short, glasses, outfit",
+    "  business|shirt|manager|monteur, helmet (monteur), stubble 0..1 (scripted method only),",
+    "  stoop 0..1 (age), colors: garment colour overrides). The ids, the glb names and office stay",
+    "  whatever builds them.",
     "office: where the world puts them (game/src/world/office/office_people.gd), in the office's",
     "  Godot space (x, z): seat (a workstation in the office model: <seat>_desk and <seat>_chair),",
     "  or at + face, or route (walked back and forth); pose sit|idle|talk|walk; missions: present",
@@ -42,7 +43,7 @@
     },
     {
       "id": "petra", "name": "Petra Vos", "role": "Meetdata & registratie",
-      "look": {"sex": "f", "height": 1.64, "build": 0.62, "skin": [230, 186, 160], "hair_style": "short",
+      "look": {"sex": "f", "height": 1.64, "build": 0.62, "skin": [230, 186, 160], "hair_style": "bob",
                "hair_color": [158, 140, 120], "outfit": "shirt", "glasses": true, "stoop": 0.2,
                "colors": {"shirt": [146, 62, 92], "trousers": [50, 50, 58]}},
       "office": {"seat": "meetdata", "pose": "sit",
@@ -60,14 +61,14 @@
       "id": "marco", "name": "Marco Peters", "role": "teamleider Monteurs",
       "look": {"sex": "m", "height": 1.81, "build": 0.6, "skin": [214, 160, 126], "hair_style": "buzz",
                "hair_color": [62, 50, 42], "outfit": "monteur", "helmet": false, "eye_color": [60, 46, 34],
-               "stubble": 0.45},
+               "stubble": 0.45, "beard": "short"},
       "office": {"route": [[1.1, -7.6], [16.2, -7.6]], "pose": "walk"}
     },
     {
       "id": "henk", "name": "Henk Verbeek", "role": "senior monteur",
       "look": {"sex": "m", "height": 1.76, "build": 0.62, "skin": [220, 168, 140], "hair_style": "receding",
                "hair_color": [222, 220, 214], "brow_color": [170, 166, 160], "outfit": "monteur",
-               "helmet": false, "stubble": 0.3, "stoop": 0.7},
+               "helmet": false, "stubble": 0.3, "stoop": 0.7, "beard": "full"},
       "office": {"at": [7.6, -6.4], "face": [6.9, -6.6], "pose": "talk", "missions": ["save_henks_knowledge"]}
     },
     {
