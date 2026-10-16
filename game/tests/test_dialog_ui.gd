@@ -204,6 +204,57 @@ func test_a_ruined_talk_says_when_to_try_again_and_nothing_more() -> void:
 	panel.free()
 
 
+## U13: when trust moves, a ▲ or ▼ flashes beside the pips, never a number,
+## also when no pip turns over; the end of a talk counts (a partial's +5).
+func test_a_trust_change_flashes_beside_the_pips() -> void:
+	var panel := _panel(_silo())
+	assert_eq(panel.trust_moved, 0, "nothing moved at the start")
+	assert_false(panel.trust_flash.visible)
+	panel.choose("mood")
+	assert_eq(panel.trust_moved, 0, "listening leaves trust where it was")
+	panel.choose("pressure")
+	assert_eq(panel.trust_moved, -1, "pressure costs trust")
+	assert_true(panel.trust_flash.visible)
+	assert_eq(panel.trust_flash.text, "▼")
+	panel.open_picks("propose")
+	assert_false(panel.trust_flash.visible, "opening the picks is no move: no second flash")
+	panel.free()
+	panel = _panel(_silo())
+	for move in ["mood", "paraphrase", "inquiry", "reflect", "silence", "empathy"]:
+		panel.choose(move)
+	panel.choose("propose", "lead_and_oldest")
+	assert_eq(panel.choose("ask_commitment")["outcome"], "partial")
+	assert_eq(panel.trust_flash.text, "▲", "the partial's trust shows on the summary")
+	panel.free()
+
+
+## U14: every chip carries its key, small and dimmed beside it: 1–8 for
+## listening, Q–T for steering, then the rest of the top row; the key makes
+## the move. A ▸ chip's key opens its picks, and then 1–9 pick.
+func test_each_chip_carries_a_key_that_makes_its_move() -> void:
+	var s := _silo()
+	var panel := _panel(s)
+	var keys := DialogPanel.keys_for(s.dialog_moves())
+	assert_eq(keys.size(), Dialog.MOVES.size(), "a key for every move")
+	assert_eq(keys.values().size(), keys.values().reduce(func(seen: Array, k: Key) -> Array:
+		return seen if k in seen else seen + [k], []).size(), "no key twice")
+	assert_eq([keys["mood"], keys["silence"]], [KEY_1, KEY_8], "listening on 1–8")
+	assert_eq([keys["perspective"], keys["ask_commitment"]], [KEY_Q, KEY_T], "steering on Q–T")
+	for m in s.dialog_moves():
+		var chip: Button = _chips_of(panel)[m["label"] + (DialogPanel.PICK_MARK if m.has("picks") else "")]
+		var hint := chip.get_parent().get_child(chip.get_index() - 1) as Label
+		assert_true(hint != null, "a hint beside " + m["id"])
+		assert_eq(hint.text, OS.get_keycode_string(keys[m["id"]]), m["id"])
+	assert_true(panel.press_key(KEY_1), "1 is a move")
+	assert_eq(panel.made, ["Stemming peilen"], "1 is the first listening move")
+	assert_true(panel.press_key(keys["propose"]))
+	assert_eq(panel.picking, "propose", "a ▸ chip's key opens its picks")
+	assert_true(panel.press_key(KEY_1))
+	assert_eq(panel.made.back(), panel.chip_label("propose"), "1 takes the first pick")
+	assert_false(panel.press_key(KEY_P), "a key without a move is left for others")
+	panel.free()
+
+
 func test_the_panel_keeps_one_height_of_at_most_two_fifths_of_the_screen() -> void:
 	for screen: Vector2 in [Vector2(1600, 900), Vector2(1280, 720), Vector2(1920, 1080)]:
 		var rect := DialogPanel.rect_on(screen)
@@ -239,6 +290,22 @@ func test_a_teams_place_lists_its_people_and_opens_a_talk() -> void:
 	assert_true(office.ui.dialog_panel.visible and shows(office.ui.dialog_panel, DialogPanel.SUMMARY), "its summary shows")
 	office.ui.close_panels()
 	assert_false(office.ui.is_busy(), "the next Esc closes")
+	office.free()
+
+
+## Review B1: J, M or K mid-talk never hide or end the talk, pressed once or
+## twice; the talk stays on screen and runs on.
+func test_the_journal_map_and_codex_keys_leave_a_talk_alone() -> void:
+	var office := _office()
+	_open_joost(office)
+	var ui := office.ui
+	for toggle: Callable in [ui.toggle_journal, ui.toggle_map, ui.toggle_codex]:
+		toggle.call()
+		assert_true(ui.dialog_panel.visible, "the talk stays on screen")
+		toggle.call()
+		assert_true(ui.dialog_panel.talking(), "the talk runs on")
+		assert_false(ui.journal.visible or ui.office_map.visible or ui.codex.visible, "nothing opened over it")
+	assert_false(office.session.dialog_meter().is_empty(), "never ended unseen")
 	office.free()
 
 
