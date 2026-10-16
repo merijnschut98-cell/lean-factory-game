@@ -816,9 +816,145 @@ def posters(w=1024, h=512):
     save_img("posters_albedo", img)
 
 
+# --------------------------------------------------------------------------- wayfinding (PLAN 2.1)
+
+WORLD = Path(__file__).resolve().parents[2] / "game" / "data" / "world.json"
+WAYFINDING_SIZE = 1024
+# Signs beside the doors: 4 x 4 cells of 256 x 64 px in rows 0..256; then four panels of
+# 512 x 256 px: the floor directories (one per floor), the contact centre's wallboard, the
+# congestion desk's capacity queue and Netstrategie's reinforcement board.
+SIGN_CELL = (256, 64)
+EXTRA_SIGNS = ["Toiletten", "Lift", "Trap", "Meterkast"]
+PANELS = ["directory:ground", "directory:first", "directory:second", "kcc_wallboard", "capacity_queue",
+          "reinforcement_board"]
+
+
+def world() -> dict:
+    """The building (floors and rooms) as the content pipeline wrote it."""
+    import json
+    if not WORLD.exists():
+        sys.exit(f"missing {WORLD}; run python tools/build_content.py first")
+    return json.loads(WORLD.read_text(encoding="utf-8"))
+
+
+def wayfinding_rects(building: dict) -> dict[str, tuple[float, float, float, float]]:
+    """Where each sign sits in wayfinding_albedo.png, as (u0, v0, u1, v1) with v up:
+    'room:<id>' and 'sign:<text>' door signs, then the PANELS."""
+    names = [f"room:{r['id']}" for r in building["rooms"]] + [f"sign:{t}" for t in EXTRA_SIGNS]
+    if len(names) > 16:
+        sys.exit("wayfinding: more than 16 door signs; grow the atlas")
+    n, (cw, ch) = WAYFINDING_SIZE, SIGN_CELL
+    rects = {}
+    for i, name in enumerate(names):
+        x, y = (i % 4) * cw, (i // 4) * ch
+        rects[name] = (x / n, 1 - (y + ch) / n, (x + cw) / n, 1 - y / n)
+    for i, name in enumerate(PANELS):
+        x, y = (i % 2) * 512, 256 + (i // 2) * 256
+        rects[name] = (x / n, 1 - (y + 256) / n, (x + 512) / n, 1 - y / n)
+    return rects
+
+
+def _px(rect) -> tuple[int, int, int, int]:
+    n = WAYFINDING_SIZE
+    u0, v0, u1, v1 = rect
+    return round(u0 * n), round((1 - v1) * n), round(u1 * n) - 1, round((1 - v0) * n) - 1
+
+
+def _door_sign(d, box, text: str) -> None:
+    x0, y0, x1, y1 = box
+    d.rectangle(box, fill=(150, 156, 166))       # the sign's edge, so neighbours never bleed
+    d.rectangle([x0 + 3, y0 + 3, x1 - 3, y1 - 3], fill=(244, 246, 248))
+    d.rectangle([x0 + 3, y0 + 3, x0 + 13, y1 - 3], fill=VOLTANA_BLUE)
+    f = fit_font(d, text, x1 - x0 - 40, 30)
+    d.text((x0 + 24, (y0 + y1) / 2 - f.size * 0.6), text, font=f, fill=(30, 34, 44))
+
+
+def _directory(d, box, floor: dict, building: dict) -> None:
+    """The floor sign by the lift: the floor's name big, every floor's departments below."""
+    x0, y0, x1, y1 = box
+    d.rectangle(box, fill=VOLTANA_BLUE)
+    d.rectangle([x0, y0, x0 + 14, y1], fill=VOLTANA_LIGHT)
+    d.text((x0 + 30, y0 + 8), floor["name"], font=_font(42, bold=True), fill=(255, 255, 255))
+    y = y0 + 66
+    for f in sorted(building["floors"], key=lambda f: -f["level"]):
+        names = [r["name"] for r in building["rooms"] if r["floor"] == f["id"]]
+        here = f["id"] == floor["id"]
+        font = _font(18, bold=here)
+        label = "BG" if f["level"] == 0 else f"{f['level']}e"
+        d.text((x0 + 30, y), label, font=_font(24, bold=True), fill=(255, 210, 40) if here else (255, 255, 255))
+        lines = [""]
+        for name in names:   # greedy wrap at the sign's width
+            joined = f"{lines[-1]}, {name}" if lines[-1] else name
+            if lines[-1] and d.textlength(joined, font=font) > x1 - x0 - 106:
+                lines[-1] += ","
+                lines.append(name)
+            else:
+                lines[-1] = joined
+        for k, line in enumerate(lines):
+            d.text((x0 + 86, y + 4 + k * 22), line, font=font, fill=(255, 255, 255) if here else (190, 222, 255))
+        y += 16 + 22 * len(lines)
+
+
+def _wallboard(d, box, title: str, rows: list[tuple[str, str, tuple]]) -> None:
+    """A dark status screen: a title bar and big figures (estimates for the look only)."""
+    x0, y0, x1, y1 = box
+    d.rectangle(box, fill=(16, 22, 32))
+    d.rectangle([x0, y0, x1, y0 + 44], fill=VOLTANA_BLUE)
+    d.text((x0 + 16, y0 + 8), title, font=_font(26, bold=True), fill=(255, 255, 255))
+    for k, (label, value, colour) in enumerate(rows):
+        cx = x0 + 16 + (k % 2) * 250
+        cy = y0 + 60 + (k // 2) * 96
+        d.text((cx, cy), label, font=_font(20), fill=(170, 186, 204))
+        d.text((cx, cy + 26), value, font=_font(50, bold=True), fill=colour)
+
+
+def _queue_board(d, box, title: str, columns: list[str], seed: int) -> None:
+    """A whiteboard with a hand-drawn table and sticky notes."""
+    rng = np.random.default_rng(seed)
+    x0, y0, x1, y1 = box
+    d.rectangle(box, fill=(250, 250, 248))
+    d.text((x0 + 16, y0 + 10), title, font=_font(28, bold=True, hand=True), fill=VOLTANA_BLUE)
+    cw = (x1 - x0 - 32) / len(columns)
+    for k, c in enumerate(columns):
+        cx = x0 + 16 + k * cw
+        d.text((cx + 8, y0 + 56), c, font=fit_font(d, c, cw - 14, 20), fill=(30, 30, 30))
+        if k:
+            d.line([(cx, y0 + 52), (cx, y1 - 12)], fill=(40, 40, 40), width=2)
+        for n in range(int(rng.integers(1, 7 if k == 0 else 4))):
+            nx, ny = cx + 10 + (n % 2) * 52, y0 + 92 + (n // 2) * 50
+            colour = [(250, 226, 90), (246, 140, 170), (150, 220, 120), (120, 196, 236)][int(rng.integers(0, 4))]
+            d.rectangle([nx, ny, nx + 44, ny + 40], fill=colour)
+            _scribble(d, nx + 4, ny + 8, 34, (60, 60, 60), rng, width=1, h=6)
+    d.line([(x0 + 12, y0 + 84), (x1 - 12, y0 + 84)], fill=(40, 40, 40), width=2)
+
+
+def wayfinding(w=WAYFINDING_SIZE, h=WAYFINDING_SIZE):
+    """The head office's signs (PLAN 2.1): door signs, the floor directories by the lift and
+    stairs, and three status boards. Names come from game/data/world.json; build_office.py
+    maps its quads with the same wayfinding_rects()."""
+    building = world()
+    rects = wayfinding_rects(building)
+    img = Image.new("RGB", (w, h), (255, 255, 255))
+    d = ImageDraw.Draw(img)
+    for r in building["rooms"]:
+        _door_sign(d, _px(rects[f"room:{r['id']}"]), r["name"])
+    for t in EXTRA_SIGNS:
+        _door_sign(d, _px(rects[f"sign:{t}"]), t)
+    for f in building["floors"]:
+        _directory(d, _px(rects[f"directory:{f['id']}"]), f, building)
+    _wallboard(d, _px(rects["kcc_wallboard"]), "Klantcontact  ·  vandaag", [
+        ("In de wachtrij", "14", (255, 120, 90)), ("Gem. wachttijd", "6:40", (255, 200, 80)),
+        ("Bereikbaarheid", "71%", (255, 200, 80)), ("Vraag: status aanvraag", "38%", (140, 210, 255))])
+    _queue_board(d, _px(rects["capacity_queue"]), "Wachtrij netcapaciteit",
+                 ["Aangevraagd", "Onderzoek", "Aanbod", "Getekend"], 41)
+    _queue_board(d, _px(rects["reinforcement_board"]), "Netverzwaring  ·  planning",
+                 ["Studie", "Ontwerp", "Vergunning", "Bouw"], 43)
+    save_img("wayfinding_albedo", img)
+
+
 GENERATORS = {f.__name__: f for f in (carpet, ceiling, wood, plaster, concrete, paving, grass, metal,
                                        fabric, glass, obeya, missions, signage, screens, dossier,
-                                       devices, leaves, trees, posters)}
+                                       devices, leaves, trees, posters, wayfinding)}
 
 
 def main(names: list[str]) -> None:

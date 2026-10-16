@@ -990,6 +990,95 @@ def _maturity(problems: dict, practice: set, done: set, index: dict) -> int:
     return level
 
 
+# ── world.yaml (the head office: floors and rooms, PLAN 2.1) ─────────────────
+WORLD_FLOOR_KEYS = {"id", "name", "level", "model"}
+WORLD_ROOM_KEYS = {"id", "floor", "name", "places", "opens_with"}
+_MODEL = re.compile(r"^[a-z][a-z0-9_]*\.glb$")
+# Missions made during play (game/src/rules/missions.gd CHECKIN_PREFIX, repairs.gd
+# PREFIX): a room may open with any of them ("terugval_*").
+DYNAMIC_MISSION_PREFIXES = ["terugval_", "repair_"]
+OPEN_FROM_START = "start"
+
+
+def validate_world(doc: Any, source: str) -> None:
+    if not isinstance(doc, dict):
+        raise ContentError(f"{source}: expected a mapping at the top level")
+    _known_keys(doc, {"start_floor", "floors", "rooms"}, source)
+    floors = _entries(doc, "floors", source)
+    levels: dict[int, str] = {}
+    for f in floors:
+        where = f"{source}: floor '{f['id']}'"
+        _known_keys(f, WORLD_FLOOR_KEYS, where)
+        level = int(_number(f, "level", where, 0, 9, integer=True))
+        if level in levels:
+            raise ContentError(f"{where}: two floors on level {level} ({levels[level]!r} too)")
+        levels[level] = f["id"]
+        if not isinstance(f.get("model"), str) or not _MODEL.match(f["model"]):
+            raise ContentError(f"{where}: 'model' must be a .glb file name (lowercase, no folders)")
+    floor_ids = {f["id"] for f in floors}
+    if doc.get("start_floor") not in floor_ids:
+        raise ContentError(f"{source}: start_floor {doc.get('start_floor')!r} is not a floor")
+    rooms = _entries(doc, "rooms", source)
+    for r in rooms:
+        where = f"{source}: room '{r['id']}'"
+        _known_keys(r, WORLD_ROOM_KEYS, where)
+        if r.get("floor") not in floor_ids:
+            raise ContentError(f"{where}: unknown floor {r.get('floor')!r}")
+        for key in ("places", "opens_with"):
+            if not isinstance(r.get(key), list) or not all(isinstance(x, str) and x for x in r[key]):
+                raise ContentError(f"{where}: '{key}' must be a list of texts")
+    for f in floors:
+        if not any(r["floor"] == f["id"] for r in rooms):
+            raise ContentError(f"{source}: floor '{f['id']}' has no rooms")
+
+
+def _mission_places(m: dict, problems: dict, streams: dict) -> set[str]:
+    """The places a mission leads the player to: its goal's places, its walk's
+    steps, its problem's step and the places of the problem's clues."""
+    goal = m["goal"]
+    places = set(goal.get("places", []))
+    if goal["type"] == "walk":
+        places |= {f"{goal['stream']}.{s['id']}" for s in streams[goal["stream"]]["steps"]}
+    p = problems.get(goal.get("problem"))
+    if p is not None:
+        places.add(p["step"])
+        places |= {c.get("at", p["step"]) for c in p.get("clues", [])}
+    return places
+
+
+def check_world(docs: dict[str, Any]) -> None:
+    """Rooms against the network and the missions: every place is a step and
+    lies in one room; every opener is a mission (or a kind made in play); and
+    a mission that leads to a room's place opens that room."""
+    world = docs.get("world")
+    if world is None:
+        return
+    steps = _network_index(docs["value_streams"], docs["kpis"])["step"]
+    missions = {m["id"]: m for m in docs["missions"]["missions"]}
+    problems = {p["id"]: p for _, p in _all_problems(docs)}
+    streams = {s["id"]: s for s in docs["value_streams"]["streams"]}
+    room_of: dict[str, str] = {}
+    for r in world["rooms"]:
+        where = f"world.yaml: room '{r['id']}'"
+        for place in r["places"]:
+            if place not in steps:
+                raise ContentError(f"{where}: unknown place {place!r}")
+            if place in room_of:
+                raise ContentError(f"{where}: {place!r} is in two rooms ({room_of[place]!r} too)")
+            room_of[place] = r["id"]
+        for opener in r["opens_with"]:
+            dynamic = opener.endswith("*") and opener[:-1] in DYNAMIC_MISSION_PREFIXES
+            if opener != OPEN_FROM_START and opener not in missions and not dynamic:
+                raise ContentError(f"{where}: opens with unknown mission {opener!r}")
+    rooms = {r["id"]: r for r in world["rooms"]}
+    for m in missions.values():
+        for place in sorted(_mission_places(m, problems, streams)):
+            room = rooms.get(room_of.get(place, ""))
+            if room is not None and OPEN_FROM_START not in room["opens_with"] and m["id"] not in room["opens_with"]:
+                raise ContentError(f"world.yaml: mission '{m['id']}' leads to {place!r} in room '{room['id']}', "
+                                   f"which does not open with it")
+
+
 # ── kpis.yaml ────────────────────────────────────────────────────────────────
 
 def validate_kpis(doc: Any, source: str) -> None:
@@ -1817,13 +1906,14 @@ VALIDATORS: dict[str, Callable[[Any, str], None]] = {
     "dialogs": validate_dialogs,
     "discoveries": validate_discoveries,
     "explainers": validate_explainers,
+    "world": validate_world,
 }
 # Registered files a content set may leave out.
-OPTIONAL = {"dialogs", "explainers"}
+OPTIONAL = {"dialogs", "explainers", "world"}
 
 # Checks that need several files at once. Each gets {stem: document}.
 CROSS_CHECKS: list[Callable[[dict[str, Any]], None]] = [check_kpis, check_problems, check_missions, check_concepts,
-                                                      check_dialogs, check_discoveries, check_explainers]
+                                                      check_dialogs, check_discoveries, check_explainers, check_world]
 
 
 def _validator_for(stem: str) -> Callable[[Any, str], None] | None:

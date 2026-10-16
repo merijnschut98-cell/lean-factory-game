@@ -1,7 +1,9 @@
 # Office art pipeline (Blender, scripted)
 
-The connections office (`game/assets/office/office.glb`) is built entirely by script:
-no hand-made .blend, no downloaded assets.
+The head office (PLAN 2.1) is built entirely by script: no hand-made .blend, no downloaded
+assets. Three floors, one glb each, from `game/data/world.json` (the floors and rooms in
+`content/world.yaml`): `office_ground.glb` (begane grond), `office.glb` (1e verdieping, the
+connections office) and `office_second.glb` (2e verdieping). The game loads one floor at a time.
 
 ## Setup (once)
 Blender's Python module from PyPI needs the Python version it was built for
@@ -11,20 +13,36 @@ Blender's Python module from PyPI needs the Python version it was built for
     .bvenv/bin/pip install bpy numpy pillow      # ~400 MB download
 
 ## Build
-    python3 tools/blender/textures.py                       # textures -> game/assets/office/textures/
-    .bvenv/bin/python tools/blender/build_office.py          # model + lightmap bake (~6 min on 4 cores, 48 samples)
-    .bvenv/bin/python tools/blender/build_office.py --no-bake  # seconds: reuses lightmap_*.png on disk
+    python tools/build_content.py                            # game/data/world.json (names, floors)
+    python3 tools/blender/textures.py                        # textures -> game/assets/office/textures/
+    .bvenv/bin/python tools/blender/build_office.py --samples 64   # every floor + lightmap bake (~12 min a floor on 4 cores)
+    .bvenv/bin/python tools/blender/build_office.py --floors ground  # one floor
+    .bvenv/bin/python tools/blender/build_office.py --no-bake  # seconds: reuses lightmap_*_<floor>.png on disk
     godot --headless --path game --import
 
-`--samples N` sets the Cycles bake quality, `--blend out.blend` also saves the scene.
+`--samples N` sets the Cycles bake quality, `--blend out.blend` also saves each floor's scene.
+A new floor's glb needs its `.glb.import` beside it naming `office_import.gd` as import script
+(copy `office.glb.import` without its uid).
 Rebake after moving furniture or walls; the lightmaps hold the shell's AO and soft light.
 
 ## Preview
     xvfb-run -a godot --path game --rendering-driver opengl3 --resolution 1600x900 \
+      --script res://tools/floor_shot.gd -- <model:<floor>|play:<floor>|map:<floor>|lift|door> out.png
+    xvfb-run -a godot --path game --rendering-driver opengl3 --resolution 1600x900 \
       --script res://tools/screenshot.gd -- res://assets/office/preview.tscn out.png 30 <view 0-5>
 
 ## What is in the glb
-- Coordinates: Blender metres, Z up; Godot sees (x, z, -y). Floor 24 x 16 m, ceiling 2.8 m.
+- Coordinates: Blender metres, Z up; Godot sees (x, z, -y). The building is x -18..24, y 0..16:
+  the east wing x 0..24 (the 1e's connections office, as it always was), the core x -6..0
+  (stairs in the north-west, toilets north-east, lift south-east, the hall; the floors' seams)
+  and the west wing x -18..-6. Ceiling 2.8 m, storey 3.4 m.
+- The seams: `stairs_up`, `stairs_down`, `lift`, and the arrival points `arrive:lift`,
+  `arrive:stairs_up`, `arrive:stairs_down`, `arrive:entrance`. Rooms: `room:<id>` (extras `rect`,
+  its floor area in Godot x, z) and, for a room that can be shut, `door:<id>` before its door with
+  `openleaf_<id>`, `lockleaf_<id>` and `lockcol_<id>-colonly` (the game opens it,
+  `office_floors.gd`).
+- Signs (`wayfinding_albedo.png`): door signs, floor directories by the lift and three status
+  boards, names from world.json; `textures.py wayfinding_rects()` is the shared layout.
 - Shell (`shell_floor`, `shell_walls`, `shell_ceiling`): baked lightmap on UV2, exported as the
   glTF occlusion texture. `game/assets/office/office_import.gd` (the import script) turns it into
   a multiply detail layer on UV2 and switches glass shadows off.

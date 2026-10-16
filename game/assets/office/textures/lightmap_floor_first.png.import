@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c82feg52713q1"
-path="res://.godot/imported/lightmap_walls.png-ac976ff6ca089ee6ead6d38edc39e477.ctex"
+uid="uid://8xnu0hemlwc"
+path="res://.godot/imported/lightmap_floor_first.png-397f1df8a5c796de89834a7964d582d5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/office/textures/lightmap_walls.png"
-dest_files=["res://.godot/imported/lightmap_walls.png-ac976ff6ca089ee6ead6d38edc39e477.ctex"]
+source_file="res://assets/office/textures/lightmap_floor_first.png"
+dest_files=["res://.godot/imported/lightmap_floor_first.png-397f1df8a5c796de89834a7964d582d5.ctex"]
 
 [params]
 
