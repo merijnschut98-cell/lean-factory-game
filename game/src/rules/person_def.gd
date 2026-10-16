@@ -22,6 +22,9 @@ var voice: String
 ## How others name them in a line ("Joost", "mevrouw El Amrani"); the first
 ## word of the name when the content gives none.
 var short: String
+## A dated beat (Missions.beats) on which the person leaves for good (Henk
+## retires on henk_farewell); "" for none. People marks them gone once it passed.
+var leaves_on: String
 var error := ""
 
 
@@ -37,6 +40,7 @@ static func from_dict(d: Dictionary) -> PersonDef:
 	p.trust = clampi(int(d.get("trust", 50)), 0, 100)
 	p.morale = clampi(int(d.get("morale", 60)), 0, 100)
 	p.voice = str(d.get("voice", ""))
+	p.leaves_on = str(d.get("leaves_on", ""))
 	p.short = str(d.get("short", p.name.get_slice(" ", 0)))
 	if p.id.is_empty() or p.name.is_empty() or p.place.is_empty():
 		p.error = "person %s: needs an id, a name and a place" % p.id
