@@ -2618,9 +2618,9 @@ Beyond the catalogue (C1–C20), the tier-2 and tier-3 drafts (§6 and §7 there
 
 ---
 
-## 8. Questions for Merijn
+## 8. Questions for Merijn: decided
 
-Each has a recommended option (**bold**). Merijn's standing rule (PLAN.md Decisions, 19860ac) is that open questions take the recommended option. The builder may assume it, and Merijn can overrule any of them.
+**Decided 2026-10-15 by Merijn's standing rule** (PLAN.md Decisions, 19860ac): each question below takes its recommended option, (a) in **bold**. They are logged here so Merijn can overrule any of them.
 
 1. **Where the chains meet.**
    - **(a) A new IT main, `it_field_asset_data`, where the field app feeds Act V's risk model (§2.3).**

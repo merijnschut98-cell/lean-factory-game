@@ -162,8 +162,9 @@ func test_skipping_idle_time_changes_nothing() -> void:
 	assert_eq(fast.events, slow.events)
 
 
-## Solve one made-up problem at `step` on the real network; returns the score.
-func _solve_at(step: String) -> Dictionary:
+## Try one made-up problem's fix at `step` on the real network, predicting
+## throughput; returns the region after the Check and the Check.
+func _check_at(step: String) -> Array:
 	var problem := ProblemDef.from_dict({
 		"id": "slow", "tier": 1, "name": "Traag", "step": step, "waste": "overprocessing", "severity": "medium",
 		"visibility": "obvious", "kpi": "throughput", "root_cause": "Too many approvals",
@@ -184,13 +185,18 @@ func _solve_at(step: String) -> Dictionary:
 	r.submit_a3("slow", {"waste": "overprocessing", "cause": Investigation.cause_options(problem, defs)["correct"],
 		"evidence": ["slow:0"], "cm": "fix", "prediction": "throughput"})
 	r.advance_days(Region.CHECK_DAYS)
-	assert_true(r.check("slow")["passed"])
-	return r.act("slow", true)
+	return [r, r.check("slow")]
 
 
+## Improving a step that is not the bottleneck brings no flow: the Check sees
+## the predicted throughput stay put and says so; the constraint's fix passes
+## and scores on flow.
 func test_only_improving_the_constraint_scores_on_flow() -> void:
-	var planning := _solve_at("connections.planning")
-	assert_true(planning["impact"] <= 2, "planning is at ~40%%: impact %d" % planning["impact"])
-	assert_true("impact_not_constraint" in planning["notes"])
-	var design := _solve_at("connections.design")
-	assert_true(design["impact"] >= 4, "design is the constraint: impact %d" % design["impact"])
+	var planning: Dictionary = _check_at("connections.planning")[1]
+	assert_false(planning["passed"], "planning is at ~40%%: %s" % [planning["forecast"]["gains"]])
+	assert_eq(planning["lesson"], "not_moved")
+	assert_true(planning["not_constraint"])
+	var design := _check_at("connections.design")
+	assert_true(design[1]["passed"], str(design[1]["forecast"]["gains"]))
+	var score: Dictionary = (design[0] as Region).act("slow", true)
+	assert_true(score["impact"] >= 4, "design is the constraint: impact %d" % score["impact"])

@@ -50,7 +50,7 @@ func test_the_catalog_loads_the_cast_and_their_talks() -> void:
 func test_a_dialog_with_an_unknown_person_or_a_broken_bank_is_refused() -> void:
 	var dir := "user://dialog_catalog_test"
 	DirAccess.make_dir_recursive_absolute(dir)
-	for file in ["countermeasures", "missions", "value_streams", "kpis", "concepts", "problems_tier1"]:
+	for file in ["countermeasures", "missions", "value_streams", "kpis", "concepts", "discoveries", "problems_tier1"]:
 		assert_eq(DirAccess.copy_absolute("res://data/%s.json" % file, "%s/%s.json" % [dir, file]), OK)
 	var talk: Dictionary = JsonFile.read_dict("res://data/dialogs.json")["data"]
 	for broken: Dictionary in [{"dialogs": [talk["dialogs"][0].merged({"person": "nobody"}, true)]}, {"bank": {}}]:

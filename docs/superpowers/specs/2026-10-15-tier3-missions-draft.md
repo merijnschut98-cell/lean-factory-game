@@ -2516,7 +2516,7 @@ missions:
     act: 6
     chapter: Kleiner uitbrengen
     track: it
-    requires: {missions: [fix_status_page_wrong]}
+    requires: {missions: [fix_field_app_bypassed]}   # four-tier audit A1: was fix_status_page_wrong, a requirement cycle after the portal moved to tier 4
     goal: {type: solve, problem: release_twice_a_year}
     principles: [long_term, respect]
     briefing: "De veldapp en het werkorderplatform erachter gaan twee keer per jaar live: in maart en in september. Elke release is een weekend van twintig mensen, drie weken testen vooraf en een change advisory board die alles afzonderlijk goedkeurt. Erwin de Groot, release manager, zit de CAB voor. 'Na 2023 doen we het zo. En sindsdien gaat het goed.'"

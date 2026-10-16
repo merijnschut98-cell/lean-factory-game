@@ -298,7 +298,7 @@ func _unlocking_experiment(menu: KpiMenu) -> Region:
 	r.ask("connections.intake", "walk")
 	r.use_tool("connections.design", "data")
 	assert_eq(r.submit_a3("custom_design", RulesFixture.a3(r, "custom_design", "overprocessing", "standard_designs",
-		["custom_design:0", "custom_design:2", "custom_design:4"], "throughput")), "")
+		["custom_design:0", "custom_design:2", "custom_design:4"], "lead_time")), "")
 	r.advance_days(Region.CHECK_DAYS)
 	r.drain_events()
 	return r

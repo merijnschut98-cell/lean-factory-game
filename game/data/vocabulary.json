@@ -88,6 +88,60 @@
   "admission",
   "doubt"
  ],
+ "discovery_triggers": {
+  "blame_repair_clue": [],
+  "check_recovery": [],
+  "coach_cycle": [],
+  "deepest_why": [
+   "count"
+  ],
+  "durable_held": [
+   "count",
+   "days"
+  ],
+  "farewell": [
+   "mission",
+   "place",
+   "days",
+   "countermeasures"
+  ],
+  "fork_learned": [],
+  "fork_measured": [
+   "window_days"
+  ],
+  "held": [
+   "days"
+  ],
+  "missions_scored": [
+   "missions",
+   "score"
+  ],
+  "no_blame_act": [],
+  "no_overload_act": [
+   "experiments"
+  ],
+  "predictions": [
+   "count"
+  ],
+  "recovered_after_fail": [
+   "score"
+  ],
+  "tool_at": [
+   "place",
+   "tool",
+   "hours",
+   "months",
+   "problem_active",
+   "no_problem_at"
+  ],
+  "tool_in_missions": [
+   "place",
+   "tool",
+   "missions",
+   "problem",
+   "countermeasure"
+  ]
+ },
  "effect_properties": {
   "applies": {
    "kind": "step",

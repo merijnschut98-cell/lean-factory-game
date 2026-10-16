@@ -1,336 +1,275 @@
 # Spanning — Build Plan
 
-*Spanning* (Dutch: voltage, and tension) is a 3D game (Godot 4, desktop + web export) where you practise Lean and continuous improvement at **Voltana Netbeheer**, a fictional Dutch regional grid operator (DSO) in the spirit of Enexis. It is built first for Merijn's own learning: practise Lean on realistic problems from the energy sector, including the less-known ones.
+*Spanning* (Dutch: voltage, and tension) is a 3D learning game (Godot 4, desktop + web export) in which you practise Lean and continuous improvement as the new CI lead at **Voltana Netbeheer**, a fictional Dutch regional grid operator in the region *Zuidmark*. Game text is **Dutch**; code, comments and this plan are English.
 
-Game text is **Dutch** (with sector terms). Code, comments and this plan stay in English.
-
----
-
-## Current Status: Phase A — Engine (Godot) ✅ done · Phase B — Content 🔧 next
-
-Pivot agreed 2026-10-12: from a hoverboard factory to a grid operator. The 3D factory prototype is archived in `archive/factory-3d/` (also git commit `b3a4c8c`). Its investigation / A3 / PDCA / bottleneck logic will be carried over and generalised.
-
-This is a multi-month project, built the right way: research → design (reviewed by Merijn) → engine → content → world → UI, in small tested increments. No publishing deadline. Built in **Godot 4 + GDScript** from the start (decided 2026-10-12).
-
-**Next task:** Merijn playtests the office slice and answers the open questions (training arc, pending calls). Then: the training arc, people in the office, or a second mission. Done 2026-10-13 night: slice review and fixes, the player map (M), `content/concepts.yaml` (61 entries), re-baked lighting, and the training arc draft. Done 2026-10-15: sustain or decay (wear that accelerates with neglect, check-in missions, audits and planned routines) and stagnation drift, in the rules, GameSession and the UI; the team's menu is now a side panel beside the framed station. Also done 2026-10-15: the dialog engine (rules, content schema, Joost/Frank/Ahmed, the GameSession facade); its UI is D11.
+> **How to read this plan.** §1 says where we are and what to do next. §2 is what the game is. §3 is the roadmap: seven phases, each ending in something Merijn can play. §4 is the creative direction for missions and dialogs (the part of the game that decides whether it is any good). §5 is the world: the building, the campus, the town. §6 says how sessions run. §7 holds the questions only Merijn can answer. §8–§10 carry the problem backlog, every decision made and every pending call. The previous plan is archived in full at `docs/plans/PLAN-archive-2026-10-15.md`; nothing was dropped, only compressed.
+>
+> Rewritten 2026-10-16 by Fable (the planning session) on Merijn's instruction, from the old plan, `CLAUDE.md`, the specs of 2026-10-15 and `docs/handoff/2026-10-15-session-end.md`. Opus 5.5 executes; Fable plans. `CLAUDE.md` §1 still applies: keep this file in sync inline.
 
 ---
 
-## Vision and Learning Pillars
+## 1. Current status and next task
 
-1. **Learn by doing, safely.** Mistakes cost time, credits and trust, never the game. Recovery is always possible, and often it *is* the lesson.
-2. **Problem solving is thinking, not quizzing.** Clues are earned through gemba actions (meelopen, data analyseren, tijdstudie, gesprekken) and good questions. You write the A3 yourself: waste, evidence, root cause, countermeasure, prediction. The simulation judges the result.
-3. **Respect for people.** Problems live in the process, not the person. Blaming questions cost trust and information.
-4. **Quality first.** Rework loops (incomplete applications, wrong GIS data, failed commissioning, repeat visits) are simulated and visible.
-5. **See the 8 wastes (TIMWOODS)** in a service and field organisation: waiting for permits, the backlog itself, travel, searching for materials, approvals nobody needs, rework, unused expertise.
-6. **Bottleneck first, end to end.** Each value stream is mapped end to end; improving a non-constraint is shown to be no real gain. The value stream map is built by walking it.
-7. **Real sector problems.** Grid congestion is one of many. The catalogue covers the well-known and the less-known struggles of Dutch DSOs.
+**Current status: Phase 1 — Mensen (people, dialogs, the session layer) 🔧 starting.** The engine, rules, content pipeline, tier-1 content, the office slice, sustain-or-decay, the honest Check, mission waves 1–2 and the QA bot are built and green (see §2.4). The dialog *engine* is built and merged (1.1). Tier 2–4 and all dialogs are designed, not built. Characters are sample quality.
 
----
+**Next task (first session of Phase 1), in this order:**
+1. **Relaunch the mission-and-dialog agents first** (CLAUDE.md §2: continuous; §6.2 names the three roles). Nothing else starts before they run.
+2. **Merge the dialog engine** from `docs/handoff/dialog-engine-f5319f4.patch` (gate-clean on `fae460a`; conflicts in five files against today's head: `tools/build_content.py`, `game/src/game/session.gd`, `game/src/rules/catalog.gd`, `PLAN.md`, `game/data/vocabulary.json`). Apply on a branch from `fae460a`, merge HEAD into it, run the full gate.
+3. **Build the dialog UI** (Phase 1, item 1.2) and **put the first six people at their desks** (1.3), so Act 0–I can be played *with people*. That is the Phase 1 playable.
+4. In parallel, by other agents: the session layer (1.4), the four-tier audit fixes (1.6), the tier-2 simulation fixes (1.7).
 
-## Setting
-
-- **Company:** Voltana Netbeheer (fictional), region *Zuidmark*.
-- **Player:** newly hired continuous improvement lead (CI-lead).
-- **World at start:** the operations campus in *Nova* (customer service, intake & planning, engineering/werkvoorbereiding, bedrijfsvoeringscentrum/control room, warehouse, workshop, training yard) plus the town of Nova (homes with solar panels, heat pumps and EV chargers, an industrial estate, MS/LS cables, distribution substations, a primary substation). Vans drive from the campus to jobs in town.
-- **Later:** more regions unlock as your CI maturity grows.
-
-## Value streams
-
-| # | Value stream | Units flowing | Typical constraint |
-|---|---|---|---|
-| 1 | **Nieuwe aansluitingen & netverzwaring** | connection requests | grid studies, monteurs, materials, permits |
-| 2 | **Storingen** (outage response) | faults | detection/localisation, on-call travel time, joints in the van |
-| 3 | **Veldservice & slimme meters** | meter and service jobs | appointments / niet-thuis, travel |
-| 4 | **Congestiemanagement** | capacity requests (grootverbruik) | congestion studies, contracts, unused reserved capacity |
-| 5 | **IT-waardestromen** (later phase) | features, incidents | release trains, dependencies, test environments |
-
-Streams share people (monteurs serve outages, connections and meters), so outages preempting planned work is simulated, not scripted.
-
-## Issue catalogue themes (to be authored as problems)
-
-Well-known: netcongestie and the wachtrij; long aansluittermijnen (legal 18 weeks, compensation payments); technician shortage and aging workforce; transformer/cable lead times.
-
-Less-known: incomplete applications and installers not ready (meterkast niet gereed); failure demand at the call centre (customers chasing status); as-built/GIS revision backlog causing design errors and graafschade; permits requested in batches; administrative close-out backlog (EAN not registered, customer can't get a contract); planned work wrecked by storingen; van stock unknown, trips back to the depot; standard jobs over-prepared; 2G/3G network sunset forcing smart-meter module swaps; LS overvoltage tripping solar inverters; reserved-but-unused capacity; power theft (hennepteelt) and grid losses; ondergrondse drukte (no space in the street); stikstof permits delaying substations; LMRA as a tick-box; contractor quality and rework; departmental KPIs that fight each other; knowledge leaving with retiring monteurs; heatwave transformer overload; gas-grid maintenance during the heat transition.
+The gate for every commit: `godot --headless --path game --import`, `godot --headless --path game --script res://tests/run_tests.gd`, `python tools/build_content.py --check`, `python -m pytest tests/ -q` (check the exit code). Last green: 414 Godot tests, pytest green, CI green on `d2109ff`.
 
 ---
 
-## Phase 0 — Research and Game Design Document ✅
-- ✅ Domain research round 1: value streams, well-known and less-known problems, norms and numbers, sources (findings also in `docs/energy-notes.md`)
-- ⬜ Verify key figures against the source pages themselves (this environment's network policy blocks the news sites; only search extracts were available)
-- ✅ GDD drafted as a shared Claude Doc: vision, core loop, world, value streams, simulation model, problem solving, catalogue v1 (18 problems), countermeasures, progression, UI, art, roadmap, open questions
-- ✅ Merijn reviewed the GDD and answered all open questions → decisions recorded below
-- ✅ Reviewed GDD synced to `docs/GDD.md` (shared Claude Doc remains the place for comments)
-- ✅ `docs/ARCHITECTURE.md`: Godot 4.7.2 + typed GDScript, Compatibility renderer, pure `sim/` + `rules/` separated from `world/` + `ui/`, YAML → validated JSON content pipeline, custom headless test runner, JSON saves, CI with export builds
-- ✅ Weekly energy-sector digest for Merijn: notes in `docs/energy-notes.md`, routine every Friday 15:47 (Amsterdam)
+## 2. What this game is
 
-## Phase A — Engine for work-order flow (Godot, GDScript) 🔧
-- ✅ Step 1: Godot 4.7.2 project skeleton (`game/`, Compatibility renderer), boot scene that loads content and renders
-- ✅ Headless test runner with `TestCase` asserts; catches failed asserts, syntax errors and runtime errors (via `Logger`); 10 tests (`Rng`, `GameInfo`)
-- ✅ `tools/build_content.py`: YAML → validated JSON with a drift check; 9 pytest tests; first content file `content/game.yaml`
-- ✅ `game/tools/screenshot.gd` for visual checks under Xvfb; rendering tuned (linear tone mapping, neutral ambient)
-- ✅ CI (`.github/workflows/ci.yml`): content check, Godot tests, legacy Python tests on every push; Windows/Linux/web export on demand. All three exports verified locally
-- ✅ CLAUDE.md testing rule lists the Godot, content and Python commands (approved by Merijn)
-- ✅ Simplify pass: shared cached Godot setup + export matrix in CI, project-wide default environment and `Palette`, `TestCase` moved to `tests/lib/`, two-pass content validation (`CROSS_CHECKS`), schema fields derived in `GameInfo`
-- ⬜ Tech debt (tracked; vocabularies now guarded by a test, `game/data/vocabulary.json`): content rules live twice, in Python (validation, the authority) and in GDScript (loading): the `game.yaml` field list vs `GameInfo`, and since step 3 the day-range, "HH:MM"/"24:00" and `pool`-as-string-or-list rules. Option: let `build_content.py` emit canonical JSON (schedules as minute intervals, `pool` always a list, one `norm_minutes`) so the game parses nothing; decide when the problem/countermeasure schemas arrive (step 4–5)
-- ✅ Step 2: work-order simulation core in `game/src/sim/` (calendar, work orders, pools with attendance and pre-emption, external waits, stock with reorder point, rework loops with customer waits, arrivals, KPIs) and `Capacity` (expected visits incl. rework, pool load, constraint per stream); connections stream in `content/value_streams.yaml` with validator; 35 Godot tests; a simulated year runs in ~3 s
-- ✅ Simplify pass on step 2: one event path, sorted waits and deliveries, idle-time skipping (proven identical by a test; a simulated year 3.2 s → 0.7 s), random helpers in `Rng`, shared `JsonFile` loader, dead state removed, cached test run (suite 2.9 s → 0.7 s)
-- ✅ Step 3 (plan: `docs/superpowers/plans/2026-10-12-phase-a-step-3-shared-streams.md`): outage, meter and congestion streams next to connections.
-  - `WeekSchedule` (weekly 10-minute slots) replaces the daily shift: pools have schedules incl. 24/7 and on-call through midnight; streams have arrival sources `{per_week, days, from, to}`.
-  - A work step can be served by several pools (monteurs by day, storingsdienst at night); unfinished work is handed over at the end of a shift.
-  - `preempts` (outages only) separates interrupting work from queue priority.
-  - `Capacity` per week; multi-pool load split by schedule overlap.
-  - Validator: schedules, arrivals, norm in days or hours, rework loops that would take material twice.
-  - Results: Werkvoorbereiding still the constraint (104%), monteurs 69%, outages p85 ≈ 3.8 h, no stock-outs in 30 seeds × 120 days. 50 Godot tests; a simulated year 1.3 s (four streams).
-- ✅ Simplify pass on step 3: day 0 starts in `create()` (no first-tick special case), O(1) `WeekSchedule.next_start`, busy check before schedule lookups, pool list instead of per-tick `values()`, handover folded into the work loop, `SimCalendar.hours()`, shared test helpers in `NetFixture`, dead calendar helpers removed (year 1.7 s → 1.3 s). Kept by choice: the Capacity split of multi-pool steps by arrival hours (an estimate, documented), and the validator rule against rework loops through a material step (an explicit authoring rule instead of per-order material state)
-  - Weekly demand patterns (e.g. Monday peaks) and demand multipliers are deferred to step 4 (demand is a problem effect).
-- ✅ Step 4 (plan: `docs/superpowers/plans/2026-10-12-phase-a-step-4-problem-effects.md`): problem effects as removable modifiers.
-  - `SimModifiers`: effects `{target, property, value}` grouped by source (`problem:…`, `cm:…`, `event:…`); content values stay the base; every change recomputes `clamp(base × factors + additions)` into the plain sim fields, so the simulation and `Capacity` need no lookups.
-  - Properties: `touch_time`, `ftr`, `applies`, `wait_time` (steps, as `stream.step`); `availability`, `headcount` (pools); `lead_time`, `reorder_point` (stock); `demand` (streams).
-  - `Network.set_effects` / `clear_effects` (atomic: an invalid list changes nothing); `SimModifiers.scaled` for partial effectiveness (step 5); `sources()` for saves (step 6).
-  - Lesson test on real content: 30% faster design moves the connections constraint from Werkvoorbereiding to Revisie & GIS, for only ~2 more connections a week. 60 Godot tests.
-- ✅ Simplify pass on step 4: `demand` fans out to each arrival source's `per_week` (no separate demand factor for readers to remember), `ValueStream.step()` lookup, one accumulator per property in `_apply`, `Network.effects()` as the single read path, a snapshot-based restore test over every property and a test that every property names a real field
-- ✅ Step 4b (plan: `docs/superpowers/plans/2026-10-12-phase-a-step-4b-structural-levers.md`): structural levers, switchable by countermeasures through effects (new SET operation: the most recent source wins).
-  - Reserved capacity: pool `reserve: {stream, people}`; idle reserved people take no other work; `Capacity` subtracts the idle reserve from other streams' spare hours.
-  - Frozen planning window: `preempts` as a lever.
-  - Cost of interruption: `interrupt_to` + `interrupt_wait_days` (connections execution → back to planning, 2 days for a new appointment).
-  - Batching (`batch_days`) and waits in parallel (`starts_with`) for problem 8.
-  - Validator covers all of it, incl. interruption loops through material. 70 Godot tests; with the levers off, results are unchanged.
-- ✅ Simplify pass on step 4b: the reserve is one lever `{stream, people}` (same shape as the content, so a half-set reserve cannot exist), one `_send_back` for rework and re-planning, the parallel-wait sentinel removed, Capacity computes the idle reserve once per pool, shared `_earlier` check in the validator
-- ✅ Step 4c: what waiting costs, and WIP limits (Merijn, 2026-10-12: implement).
-  - Stale dossiers: a work step's `stale_after_days` + `stale_to`. A dossier that waited longer is out of date when work would start and goes back (connections design: after 60 days back to the quote; the customer signs again). Nothing goes stale in today's process; a problem that slows design starts the spiral (32 stale dossiers a year with design 25% slower).
-  - WIP limit (CONWIP): stream `wip_limit` (content or a lever); new orders beyond it wait, not yet started.
-  - Measured on real content with design 25% slower: a limit of ~100 removes the stale rework (+4% connections a year); a limit of 60 starves the constraint (throughput 24 → 15 a week), which is Little's Law. That is the lesson: a WIP limit must be sized as throughput × flow time and does not replace fixing the constraint. 102 Godot tests.
-- ✅ Simplify pass on step 4c: held orders are released on arrival, finish or a lever change (no per-tick loops, ~7% faster), one `_days()` parser for every day field, shared test helper
-- ⬜ Heijunka (levelling the release of planned work), after the content shows where it is needed
-- ✅ Decided (Merijn, 2026-10-12): `value_streams.yaml` holds a healthy process *to an extent*; the starting problems are active effects on top. There is no single healthy process: several countermeasures can help one problem (each with a fit 0–1), each shapes the process differently through its own effects and levers, and some improve more than others. Players must not be pushed down one dedicated path
-- ✅ Step 5 (plan: `docs/superpowers/plans/2026-10-12-phase-a-step-5-rules.md`): the problem-solving rules in `game/src/rules/`.
-  - `Region` runs the loop over the live simulation: activate (max 3 open), gemba tools at value-stream steps, questions with trust per team, A3 (waste, cause bank, evidence, countermeasure, Kata prediction), experiment, Check, Act, recurrence.
-  - Several countermeasures per problem, each with a fit (Merijn's "many healthier processes").
-  - Improvement budget plus team hours (an availability effect while the experiment runs).
-  - Check on end-to-end KPIs and capacity plus per-step daily statistics; five-dimension score, budget and XP, belts.
-  - Lesson test on real content: fixing Planning (≈40% load) scores flow impact ≤ 2 with "not the constraint"; fixing Werkvoorbereiding scores ≥ 4. 98 Godot tests.
-  - Missions and the story arc follow with the Phase B content
-- ✅ Simplify pass on step 5:
-  - a `started` flag (not a guess from remaining time) for queue statistics;
-  - phases as an enum;
-  - A3 verdicts fixed at submit;
-  - one `Network.step_at(place)`;
-  - dead state removed (incl. the duplicate step counters; daily statistics are the one source);
-  - bounded `stats_since`;
-  - `_score_inputs` split out of `act`.
-- ✅ Step 6: save/load.
-  - `NetworkState` and `RegionState` capture everything needed to continue exactly; `SaveFile` writes a versioned file per slot (restricted slot names, atomic write).
-  - Loading restores by id into fresh content and reports what the content no longer has.
-  - Tests: a restored network continues 30 days identically (orders, events, effects, statistics); a restored region finishes its experiment with the same Check and score; corrupt data, unknown ids, a wrong version and path escape are refused. 109 Godot tests.
-- ✅ Simplify pass on step 6:
-  - binary saves (`var_to_bytes`), because Godot's JSON rounds floats; checked in the engine;
-  - `WorkOrder` and `ProblemState` own their `to_dict`/`from_dict`;
-  - `RegionState` includes its network, so callers save one thing;
-  - the simulation keeps 120 days of history (a two-year save would otherwise be about 1 MB and growing);
-  - one shape check (`JsonFile.shape_error`), `ValueStream.step_index`, shared rules fixtures.
-- ✅ Gate (2026-10-12): four value streams run headless with realistic KPIs; tests cover flow, pre-emption, rework, stock-outs, capacity, the PDCA loop and save/load. 107 Godot tests (about 1.5 s), 270 Python tests, content check clean.
-  - Automated-testing review: every sim and rules class has tests for the happy path, invalid input and boundaries:
-    - bounds and clamps;
-    - corrupt saves, unknown ids, path escape;
-    - weekends and midnight;
-    - the WIP-limit sizing trap.
-    Missions, story and UI are untested because they do not exist yet.
-  - Technical-debt review:
-    - Dead code: `Rng.exp_mean`, `pick`, `next` (factory leftovers) removed. Everything else unused in `src/` is the Region's public player API, waiting for the UI.
-    - Annotations: no TODO/FIXME/HACK.
-    - Docs: every script has a header comment; ARCHITECTURE.md is current.
-    - Duplication: content rules live in both Python and GDScript (tracked above; decide with the Phase B schemas).
-    - Dependencies: dev dependencies (`pytest>=`) are unpinned while the legacy runtime dependencies are pinned. Low risk; pin when CI shows drift.
+### 2.1 The thesis
+You cannot fix a process without its people, and you cannot keep people without fixing the process. Every system in the game serves that sentence: the simulation judges the process, the dialogs judge how you treat the people, and sustain-or-decay ties the two together, because a fix that was pushed through without commitment decays faster than one the team owns.
 
-## Phase B — Content (Dutch) ⬜
-- ✅ Problem pipeline (plan: `docs/superpowers/plans/2026-10-12-phase-b-1-problem-pipeline.md`):
-  - `content/problems_tier1.yaml` + `content/countermeasures.yaml`;
-  - validator with cross-checks (steps, places, teams, tools, effects, the clue depth chain, a solvable countermeasure per problem);
-  - the `Catalog` loader.
-  - Godot content tests: everything loads and fits the real network; an expert can solve every problem (all key clues reachable, the Check passes); every problem hurts its stream through its mechanism (capacity, team load or wait) and, where strong enough, its named KPI.
-- ✅ First six tier-1 problems (Dutch), 12 countermeasures, several per problem with different fits and shapes:
-  - De onvolledige aanvraag
-  - Meterkast niet gereed
-  - De verkeerde mof in de bus
-  - Maatwerk voor standaardwerk
-  - Niet thuis
-  - Vergunningen in batches: request daily, or in parallel with the design (`starts_with`), two healthier processes of a different shape
-- ✅ Healthy base (Merijn's decision applied, 2026-10-12):
-  - `value_streams.yaml` now has no team above ~85% (design 3.2 h, revision 1.6 h), so the flow is stable.
-  - The starting constraint comes from the custom_design problem (Werkvoorbereiding ~110%).
-  - Fixing it shows the next constraint: Intake at 86%.
-  - Regression tests check the base and the starting state separately.
-- ✅ Simplify pass on the pipeline:
-  - `vocabulary.json` generated from the validator, with a Godot test that fails if the two languages' vocabularies differ;
-  - one `problems_tier*` file rule (validator, cross-check, Catalog);
-  - validator helpers per job, reusing `_number` and `_earlier`;
-  - a shared real-network fixture and a shared base run (suite ~5.8 s).
-- ✅ Three more tier-1 problems: de revisieberg (hidden; makes Revisie & GIS the constraint), graafschade (its root cause links to the revisieberg: outdated KLIC maps, so revision at the source also helps here) and de laatste kennisdrager. 9 problems, 18 countermeasures
-- ✅ Failure demand (GDD simulation model):
-  - a stream's `status_calls: {to, after_days, per_week}` makes customers of late orders call the contact stream; `call_rate` is a lever;
-  - content: a klantcontactcentrum (4 agents since the tick fix below; 5 before) and a stream Klantvragen (380 questions a week, answered within 2 hours);
-  - connections customers call weekly after three weeks; about 9% of calls in the healthy base.
-- ✅ De statusbellers (problem 10): late orders call three times as often. Failure demand rises to 25–30% of calls; on time falls from ~0.9 to ~0.5, and with some seeds the centre tips into a spiral. Countermeasures: realistic promise date (tier 1) or proactive status updates (tier 2, halves even the base failure demand: a healthier shape than before the problem)
-- ✅ Simplify pass on failure demand: one arrival-scheduling helper for value and failure demand; lateness counted without temporary arrays; the failure flag lives on the order (saved, and in finished records, so KPIs can separate failure from value demand)
-- ⬜ Performance note: the contact stream adds ~20k call orders a year, so a simulated year now takes ~2.8 s (was ~1.7 s). Fine for play (a game year takes hours); revisit if the tests or fast-forward feel slow (e.g. calls as small batches)
-- ✅ Klaar maar niet af (problem 11):
-  - connections got an administrative close-out (a short wait, then EAN registration by Meetdata & registratie);
-  - the problem makes it a monthly batch.
-  - Systemic effect, emergent rather than scripted: connections lead p50 29 → 49 days, status calls 37 → 118 a week, contact centre on time 0.84 → 0.19. The contact centre's crisis comes from an admin batch two departments upstream.
-  - Countermeasures: close-out at completion (tier 1) or automatic EAN registration (tier 3).
-- ✅ Content review prepared: `game/tools/problem_report.gd` measures every problem on the real network (base, problem, each countermeasure at full strength; 5 seeds × 90 days); the shared doc shows texts, clues, effects, countermeasures and the measured impact per problem, with review questions
-  - Found by the report: *Checklist bij de intake* could never pass the Check (0.8 × fit 0.6 = 0.48). Every listed countermeasure must now be able to pass at full strength (validator + Godot test on the real formula); fit raised to 0.7.
-  - Region and the report share one rule for what a treated problem does to the sim (`Pdca.treated_effects`)
-  - Found while writing the review: 12 clue texts were cut off in the game. An unquoted comma inside `{…}` split the text and YAML turned the rest into an extra key. The content loader now refuses that pattern and duplicate keys (`_StrictLoader`). Problems, countermeasures, clues and effects also reject unknown keys (typos). The clue texts are quoted.
-- ✅ Review findings fixed with Claude's judgement while Merijn is away (his instruction, 2026-10-12): see "Claude's calls, pending Merijn" under Decisions Made
-- ✅ Merijn answered the review's main questions (see Decisions Made); the review doc shows the recalibrated numbers (report over 5 seeds × 180 days, measured over the last 84) and the answers built in
-- ✅ Review doc questions answered (2026-10-13, see Decisions Made)
-- ✅ A fading fix brings its problem back through its mission (2026-10-13): the problem goes dormant, the solve mission reopens (no second reward), accepting it switches the problem on within the 1 + 3 limit
-- ✅ First fork in the main quest (2026-10-13): after De stapel bij Werkvoorbereiding, Het knelpunt verschuift (intake: the bottleneck) and Meterkast niet gereed (monteurs: not the bottleneck, now a main mission with coach insights) open together
-- ✅ Catalogue problems that need a new mechanism first:
-  - ✅ KPI's die elkaar bevechten: overproduction, departments pushing work in. Design approved by Merijn (2026-10-13): departments get KPIs that set work rules (start push/pull, order, care); the player picks 2 of up to 5 per department at a quarterly review; the reward follows the measured improvement. Spec: `docs/superpowers/specs/2026-10-13-department-kpis-design.md`, plan: `docs/superpowers/plans/2026-10-13-department-kpis.md` (tasks 1–6 below)
-  - ✅ Department KPIs, task 1: work rules in the simulation (2026-10-13). A pool gets `start_rule` (push / pull: hold a job while the next work step downstream has `pull_limit_days` = 3 or more queued, see `Network.queue_days`) and `order_rule` (first_come / oldest / shortest / due) as SET levers; push and first_come leave the base bit-identical. Mirrored in `build_content.py` (`start_rule`, `order_rule`, vocabulary). Next: the KPI definitions and effects on top (plan: `docs/superpowers/plans/2026-10-13-department-kpis.md`).
-  - ✅ Department KPIs, task 2: probe of the work rules on the real network (2026-10-13). Intake + work_prep, 3 seeds (11-13) x 180 days, last 84 days, connections stream, means over seeds. (a) push + shortest + hasty care (touch 0.9, ftr -0.05 on intake/quote/design); (b) pull + oldest; (c) pull + first_come; (d) the habit. Run 1 is the content as it was, run 2 adds `stale_after_days: 30` at connections.intake (see below).
+### 2.2 Directives (binding, from CLAUDE.md §2)
+- A learning game about continuous improvement: Lean first, later IT / Agile / DevOps / SAFe, in the energy sector.
+- People are the most valuable resource. An RPG where the player searches and thinks; nothing is handed over. Fix processes end to end. Measure. The 8 wastes and sector issues come up often.
+- **The mission system decides the game.** Every mission: real problems with real fixes; entertaining; intriguing; challenging; engrossing; intuitive; correct. Primary directives: players learn Lean and the sector, and players keep playing. Secondary: process management, SAFe, Agile, DevOps, Six Sigma, IT, project management.
+- **Reward deep thinking** under three principles: long term over short term (95 %); respect for people first (trust and reputation measure it; keeping and developing talent pays); always improve.
+- One main mission, at most three side missions. Problems only through missions. Forks now and then. A senior manager coaches, Kata-style, main quest only. Action-based problem solving. Many healthier processes. Evidence first. Setbacks, never game over. Missed deadlines have lasting consequences. Sustain or decay. Stagnation is regression. Respect the player's time. Dialogs are give and take (MORE PIES; a visible meter that shows feeling, never the right reply). Dutch text, English code.
+- Mission *and dialog* agents run continuously; Claude tells Merijn when that stops.
 
-    | Run 1 (no stale rule) | lead p50 | lead p85 | on time | FTR | per week | wip_age | stale at design |
-    |---|---|---|---|---|---|---|---|
-    | (a) push + shortest + hasty | 46.5 | 68.6 | 97.4% | 34.6% | 26.47 | 90.9 | 0.0 |
-    | (b) pull + oldest | 45.6 | 66.9 | 97.6% | 41.9% | 26.39 | 95.5 | 0.0 |
-    | (c) pull + first_come | 45.6 | 66.2 | 97.8% | 42.3% | 26.39 | 96.2 | 0.0 |
-    | (d) habit | 45.9 | 66.2 | 97.8% | 41.9% | 26.39 | 96.2 | 0.0 |
+### 2.3 Setting, cast and value streams
+- **Company:** Voltana Netbeheer, region Zuidmark. **Towns:** Nova (campus and the first town), later rural Lindeveld and port town Havenzij (tier 3, inside Zuidmark).
+- **Player:** the new CI lead. **Coach:** Ruud Hoekstra, Directeur Netbeheer regio Zuidmark. **Recurring cast** (dialog spec §6): Joost (Werkvoorbereiding), Sanne (Intake), Marco (monteurs), Henk and Ahmed (storingsdienst), Anouk (werkvoorbereider), Petra (Meetdata & registratie), Esra (Klantcontactcentrum), Frank Hulshof (the blocking manager), the El Amrani family (customer). Experts: Femke (Netstrategie), Thomas, Jeroen. More per tier in the drafts.
+- **Value streams** (`content/value_streams.yaml`): 1 Nieuwe aansluitingen & netverzwaring; 2 Storingen; 3 Veldservice & slimme meters; 4 Congestiemanagement; 5 Klantvragen (failure demand); IT value streams from tier 3. Streams share people, so outages pre-empting planned work emerges, not scripted.
+- **The story** (§4.0, *Drie winters*): the six acts of the catalogue (0 Inwerkweek · I De eerste honderd dagen · II Wat onder de grond zit · III Zichtbaar maken · IV Flow door de regio · V Het systeem · VI Het digitale net, IT in parallel from tier 3) grouped into three years, each with a winter as its test: the El Amrani heat pump, the storm without Ruud, the succession. 94 authored missions plus generated repair quests.
 
-    Gate: (b) beats (a) on lead time but NOT on wip_age (95.5 vs 90.9: the hasty care of (a) also shortens the open age), so the stale rule was added: an application older than 30 days at intake goes back to intake and waits 5 days for the customer (estimate, marked in the YAML; never a bonus). `build_content.py` now allows `stale_to` to name the step itself (the first step has no earlier one); the validator test follows.
+### 2.4 What exists today (pointers, not a changelog)
+| Area | State | Where |
+|---|---|---|
+| Simulation | discrete-event network, shared pools, external waits, stock, rework, failure demand, common random numbers, `NetworkState.copy` | `game/src/sim/` |
+| Rules | Region, PDCA/A3, investigation tools, the honest Check (`CheckForecast`), KPI board (counterfactual reward), Missions (1+3, forks, deadlines, reopen, schema with acts/facts/requires), Facts (path dependence), Repairs, Reputation, Stewardship (dividends, overload), Sustain (wear, routines, drift), Discoveries, Progression (belts 2k/6k/30k/110k), Profile, saves | `game/src/rules/`, `game/src/save/` |
+| Content | 18 tier-1 problems, 41+ countermeasures, the tier-1 campaign (34 missions incl. the training week), 101 glossary concepts, 18 discoveries, KPIs, value streams; YAML → validated JSON | `content/`, `tools/build_content.py`, `game/data/` |
+| World | one floor: the connections office (Intake, Werkvoorbereiding, Obeya, coach, mission board), Blender-scripted, third person with a Sims-like camera, click-to-move, player map (M) | `game/src/world/`, `game/assets/office/`, `tools/blender/` |
+| UI | HUD, place menu (side panel), clue journal, A3, Check panel (leading/lagging tags), coach, mission board, codex (K), sustain view, training cards | `game/src/ui/` |
+| Characters | three samples (player, Ruud, monteur), mannequin quality | `game/assets/characters/`, `docs/screenshots/characters_*.png` |
+| QA | autoplay personas and report; tier-2 simulation check | `game/tools/autoplay.gd`, `docs/qa/` |
+| Design docs | mission system and catalogue; audit and engagement; tier-2/3/4 drafts; tier-2 dialogs; dialog system; dialog scripts Acts 0–II; engagement loop; four-tier audit (partial); sustain and drift; training arc; counterfactual KPI reward; department KPIs; office slice | `docs/superpowers/specs/` |
+| Unmerged | the dialog engine (patch); the El Amrani followed order + containment (WIP patch) | `docs/handoff/` |
 
-    | Run 2 (stale rule) | lead p50 | lead p85 | on time | FTR | per week | wip_age | stale at intake |
-    |---|---|---|---|---|---|---|---|
-    | (a) | 46.5 | 68.6 | 97.4% | 34.6% | 26.47 | 90.9 | 0.0 |
-    | (b) | 45.6 | 66.9 | 97.6% | 41.9% | 26.39 | 95.5 | 0.0 |
-    | (c) | 45.6 | 66.2 | 97.8% | 42.3% | 26.39 | 96.2 | 0.0 |
-    | (d) | 45.9 | 66.2 | 97.8% | 41.9% | 26.39 | 96.2 | 0.0 |
+---
 
-    Findings: run 2 is identical to run 1 - intake queues only ~1 day (12-27 h), so no application waits 30 days and the stale rule never fires at base load. Pull and the order rules barely move the base: p50 45.6-46.5 days, throughput 26.4-26.5 a week. The open age (84-115 days) is mostly external waits (customer 14 d, permit 30 d, reinforcement 120 d), which no department rule touches. The real department effect is therefore care: hasty care (a) cuts first-time right from 42% to 35%. The department KPI mechanism has to rest on care and on the measured KPI, not on pull or order alone; the Check should name the KPI it expects to move.
-  - ✅ Department KPIs, task 3: KPI menus in `content/kpis.yaml` (2026-10-13). Intake 5, work prep 5, planners 4, contact centre 3 KPIs (each pool has a leading and a lagging one), each with a Dutch name, kind, rules (start / order / care) and a note; `pull_limit_days` 3, care (careful touch x1.1 / ftr +0.05, hasty x0.9 / -0.05) and the review question are estimates, marked as such. `validate_kpis` (at most 5 per pool, known pool, kinds and rules from the vocabulary, mirrored as `kpi_kinds` / `care_rules` in vocabulary.json) and a `kpis` effect check (`{target: pool, property: kpis, value: [one or two ids from that menu]}`, accepted outside EFFECT_PROPERTIES). `KpiDef`, `KpiMenu.effects_for` (start / order on the pool, care as touch_time and ftr on each of the team's work steps; KPIs that disagree on a rule leave the habit) and `Catalog.kpis`, which expands `kpis` effects at load. Next: the problem `silo_kpis` (task 4, done below).
-  - ✅ Department KPIs, task 4: KPI's die elkaar bevechten (2026-10-13). Problem `silo_kpis` (step connections.design, overproduction, kpi first_time_right): intake and work prep follow output + utilisation KPIs (push, shortest first, hasty care). `intake_output` and `work_prep_output` now also set `care: hasty` (rushing to hit a weekly number causes errors downstream, Goodhart's law; estimate), because the Task 2 probe showed care is where KPIs act. Countermeasures: `obeya_end_to_end` (tier 1, fit 1.0, pull + oldest first, `unlocks: kpi_board`), `connections_wip_limit` (tier 2, 0.8, limit 300 against a base of 230-270 started orders), `shared_team_goals` (tier 2, 0.7, pull + careful). Main mission `fix_silo_kpis` after the unused-capacity mission. New: `CountermeasureDef.unlocks` (validator + vocabulary), test that the countermeasure's work rules override the problem's. The harm test is now quality-aware for first-time-right problems (silo_kpis: ftr 0.42 to 0.36, about x1.17).
-  - ✅ Department KPIs, task 5: the KPI board and the quarterly review (2026-10-13). `KpiBoard` (`rules/kpi_board.gd`), owned by the Region (`Region.use_kpis(menu)` builds it and sets every team's `pull_limit_days`). A passed Check of a countermeasure with `unlocks: kpi_board` (Obeya) unlocks it; the first review is due at the unlock (`kpi_review` event) and only sets the KPIs and the baseline, without reward (the Check already rewarded the Obeya); after that one every 91 days (`kpi_review` event once, stays due until done, no penalty). An empty menu gives `choose_two`. `Region.kpi_review(choices)`: every department on the menu, exactly 2 distinct KPIs from its own menu (errors `locked`, `not_due`, `unknown_department`, `choose_two`, `not_on_menu`; nothing changes on an error). The choice becomes effect source `board:kpis` (saved with the network). The first review sets the baseline and pays nothing. From the second on, reward = the mean relative change of lead p50, on time, FTR, throughput and wip_age against the best level reached so far, over the streams the departments touch, paid only above a 5 % dead band, × 1000 XP / €10,000 (estimates). Each KPI's change is capped at ±50 % and a stream needs 10+ completions in both quarters (estimates: small denominators make relative changes explode); see "Claude's calls, pending Merijn (2026-10-13, department KPIs)"; the coach's leading/lagging question comes back with it. Saved by `RegionState` under `kpi_board` (old saves load with a locked board; unknown departments and KPI ids are dropped). Next: task 6 (report, docs, review doc).
-  - ✅ The reward is now counterfactual (2026-10-13, Merijn's choice): `KpiBoard.forecast` runs the coming quarter twice on copies of the network (`NetworkState.copy`), with the habit and with the chosen KPIs, and pays the gain. This replaces the baseline review, best levels and dead band above.
-  - ✅ Department KPIs, task 6: report and review doc (2026-10-13). The problem report measures silo_kpis: connections first-time-right 42% → 35% with the problem, lead time and throughput flat (design is not the bottleneck); Obeya 43%, shared goals 44% (lead p50 +3 days), WIP limit 39%. Review doc section 18 and an Update 3 line added.
-- ✅ Mission system (Merijn's design, CLAUDE.md §2): `MissionDef` + `Missions`.
-  - At most one main and three side missions; unlocks by mission and belt.
-  - Goals: walk / investigate / solve. Deadlines (Henk).
-  - A coach (Marleen Verhoef, Directeur Netbeheer regio Zuidmark) who asks Kata questions per stage and shares an insight every third ask, about the main mission only.
-  - Saves. The validator checks references, one mission per solved problem, a way in, and that every mission can unlock.
-  - Tier-1 campaign: 11 main missions (walk the stream → the bottleneck chain with a fork after the first bottleneck → the grid-study queue at green belt → waiting for transformers → unused capacity) and 10 side missions, among them Henk's knowledge (a 56-day real event) and De planning die nooit klopt.
-- ✅ **Sustain or decay, and stagnation drift** (Merijn's rules and his answer on decay, 2026-10-15; spec `docs/superpowers/specs/2026-10-15-sustain-and-drift-design.md`). `rules/sustain.gd` (the numbers), Region, Missions, GameSession:
-  - A resolved fix wears faster the longer it is neglected (days since the Act, an audit or a routine): `wear = (neglect / L)²`, health 0.5^wear, recurrence at wear 1. Its life `L = base / (1 − 0.9·S)`; base = `decay_days` (365 for a built-in fix that used to stay); sustain strength S = standard work 0.6 + a board on the stream (`sustains: true`, the Obeya) 0.2 + KPIs the team steers by 0.2. At S = 0 a fix still lasts exactly its `decay_days`, so the Friday lesson is unchanged. As it wears, the countermeasure's effects fade and the problem's (non-lever) effects and cost creep back; `slipping` event at health 0.75.
-  - A slipping standardised fix opens a check-in side mission `terugval_<problem>` (goal `sustain`), never a free problem; an audit or a routine completes it; ignored, the fix wears out and its own mission reopens. An unstandardised fix gets no check-in.
-  - Gemba audit (`audit(place)`, an hour): standardised fixes there back to new. Planned routine (`plan_routine` / `stop_routine`, 2 team hours a week): standardised fixes at that step do not wear while it runs.
-  - Drift `region:drift` after 28 days without a resolved improvement, full after a further year: demand ×1.06 on connections and congestion, availability −3 %, first-time-right −2 points; a resolved Act resets it; it starts with the campaign.
-  - Saved: `standardised`, `wear`, `neglect` per problem; `drift_from`, `routines`; check-ins rebuilt from mission ids; old saves load. GameSession: `audit`, `plan_routine`, `stop_routine`, `routines()`, `sustain_of`, `drift()`, `fade_forecast` adds `recur_days`. New glossary card `leader_standard_work`. Tests: `test_sustain.gd`, check-ins in `test_missions.gd`, session tests.
-  - ✅ UI (2026-10-15): toasts for `slipping` ("Een verbetering zakt weg: … (J)") and `checkin` ("Op het missiebord: Terugval: …"), the practice problem's left out. The team's menu shows "Borging op deze plek" only where a standardised fix is held: each fix's health, "Audit van de standaard (1 uur)", "Vaste routine plannen (2 uur per week van het team)" or "Routine stoppen". The journal (J) opens with "Je verbeteringen": per fix "Werkt voor 67% · gestandaardiseerd · 100 dagen niet nagelopen" (the measure, never the remedy) and the drift line; the HUD shows "Achteruitgang 20%" once drift starts. The Friday card no longer says a standard holds a fix: it slows the slide, and without an audit or routine the fix still fades after its `recur_days`; a routine holds it. `SustainView`, tests `test_sustain_ui.gd`, screenshot `play_sustain.png`.
-  - ✅ The team's menu is a narrow side panel (540 px, docked right, scrolling): results on top, then the gemba tools, the sustain card and the questions. The camera frames the station in the middle of the room left of it (`GameUI.docked_share` → `CameraRig.inspect` shift → `Camera3D.h_offset`); a held right click still frames it centred. Fixed on the way: a docked panel set its size twice per placement, each resize queued two more placements, and the game crashed when a place opened (`UiPanel.placement` now gives one rect). Screenshots `play_inspect.png`, `play_tools.png` refreshed.
-  - ⬜ Later: re-standardise a fix after the Act (today only at the Act); a routine shown as a real recurring visit in the world.
-- 🔧 **Mission system, phase 2** (spec `docs/superpowers/specs/2026-10-15-mission-system-and-catalogue-design.md`, task ids from its §4; audit `docs/superpowers/specs/2026-10-15-mission-audit-and-engagement.md`). The mission agent owns these entries and `content/missions.yaml`.
-  - **Wave 1 (rules):**
-    - ✅ C0 (2026-10-15): every open problem belongs to an active mission (QA autoplay #2, #3). A finished investigation and an abandoned mission put their problem back to sleep (clues kept). A running experiment cannot be abandoned. A missed deadline closes its door, but the mission comes back without a clock, so the problem can still be solved (a mission active at the deadline keeps its work). `GameSession.abandon`. `Missions.failed(id)` / `failed_once` replace the `failed` status (old saves convert). Tests: test_missions (orphans, a full board after finished investigations, a running experiment, failed missions survive a save), test_session (abandon).
-      - ✅ UI (2026-10-15): the mission board uses `Missions.failed(id)`: a missed mission stays under Beschikbaar (or Actief) with "Verlopen: <fail text> De missie blijft open, nu zonder klok."; solved later it is "Voltooid". Tests `test_mission_board.gd`.
-    - ✅ C14 (2026-10-15): belts rescaled to 2,000 / 6,000 / 30,000 / 110,000 XP (Merijn; QA #18: master black on day 107) in `Progression.BELTS` and `BELT_XP`. Pacing test (`test_progression.gd`): everything tier 1 can pay ends green, below black; still white before the first fork.
-      - Seeds change outcomes (QA #12): a solve mission's reward now follows the problem's PDCA score, `0.5 + 0.5 × total / 25` (at least 0.6; `Missions.reward_share`; audit R1). The validator's reachability pass counts solve missions at that floor. Outcomes differ per seed as soon as the Check agent's measured Check (forecast against a no-fix twin) feeds the score.
-    - ✅ C1 (2026-10-15): mission schema, wave-1 fields: `act`, `chapter`, `arc`, `fork {group, role}` + `debrief_first`, `reopen`, `requires` (maturity, reputation, trust, any_of, facts), `rewards` (reputation, trust), `sets_flags`, in `MissionDef`, `Missions._unlocked`, the validator (fork groups: one bottleneck, ≥ 1 non-bottleneck, same requires; teams; ranges) and the vocabulary. Goal-name clash resolved: the check-in keeps `sustain {problem}`; the catalogue's KPI-holding goal will be `hold_kpi` (documented in `missions.yaml`). `GameSession.mission_briefing` (reopen text) / `mission_debrief` (debrief_first).
-      - ⬜ UI (another agent's): the board and debrief should call `mission_briefing` / `mission_debrief`; act and chapter titles; the fork pair.
-    - ✅ C19 (2026-10-15): facts and needs (path dependence). `rules/facts.gd` (`Facts.met {all, any, none}`, measures `maturity>=n`, `reputation>=n`); `Missions.knows`: done:/failed: live, chose:/standardised:/poor_fix: noted at each new Act (poor: fit ≥ 0.2 below the best, or a wrong root cause), fork_first:, flag: (`sets_flags`), dialog facts (heard: … blocked:) recorded by `facts.add`; saved. Countermeasures take `needs` + `preparation`: unmet → not offered (`Region.unprepared`), listed by `GameSession.unprepared_countermeasures()` with the hint. Validator: every fact names something real; a choice a missed deadline can close is never the only route; every problem keeps a countermeasure without needs; the reachability pass plays maturity, reputation, any_of and facts. Not yet: `skipped:` (needs act endings).
-      - ⬜ UI (another agent's): the A3's "niet voorbereid" list with each `preparation` hint.
-    - ✅ C9 (2026-10-15): reputation as its own measure (Merijn), 0–100 from 30, `rules/reputation.gd`, held by the Region and saved (old saves at 30), `GameSession.reputation()`, a `reputation` event per change. Under the three principles: a main mission +5, a side +2 (or the mission's `rewards.reputation`), a fix that moved the flow (impact ≥ 4) +3, a faded mission done again +2 (owning a regression; no XP); a blaming question −1, a missed deadline −10, a bad period −5. `rewards.trust {team: n}` too (`Region.change_trust`). Still to come with the deep-thinking rewards: +2 for a fix that holds 180 days (R6).
-    - ✅ C20 (2026-10-15): repair side quests for poor fixes. `rules/repairs.gd`: a poor fix is looked at 42 days after its Act, then weekly; its `repair_<problem>` side quest opens only when the problem's KPI, forecast 28 days on two network copies, is ≥ 5 % behind the best-fitting countermeasure's (a symptom, not a verdict). Goal `rework_fix`: accepting takes the fix back to a new A3 (`Region.start_rework`; the old fix keeps running, the problem does not come back; the same countermeasure is refused); a failed Check keeps the old fix; dropping the quest restores it (`cancel_rework`). Done: `repaired:<problem>`, the new `chose:`, `poor_fix` cleared, 150 XP once, reputation +2. Saved (`rework_from`, `repair_due`).
-      - ⬜ UI (another agent's): the `repair` event, the "Herstel" quest on the board, the A3 showing the old countermeasure ("eerder geprobeerd") and the `same_countermeasure` refusal.
-      - ⬜ Authored repair texts for key problems (`repair: {briefing, debrief}`), with K11.
-    - ✅ K0 (2026-10-15): 38 new glossary concepts (now 101): the catalogue's §3.9 list (lean and management, sector, IT) with the tier-2 drafts' 13 verified ones (`non_firm` and `compensatie` folded into `alternatieve_transportrechten` and `compensatieregeling`), plus `twi_job_instruction` (audit L10). Sector items carry a source (`verify: true` where the page could not be opened) or an `estimate:`. IT concepts sit under lean/measure until Phase G brings an IT category (a UI change).
-  - **Wave 2 (content, from the audit):**
-    - ✅ Mission rewrites (2026-10-15; audit §3): every tier-1 mission has a face, a stake and a hook (the El Amrani dossier through Act 0–I, Anouk, Joost, Sanne, Marco, Esra, Petra, Gert, Mieke, Femke, Hermans Bouw, Ilse, Ahmed, Yvonne, Dirk, Linda, Wim); `act`/`chapter`/`arc`; `reopen` texts on the main missions. The five weakest rewritten: `walk_connections` → "Volg het dossier" (a real action), `walk_meters` → "Acht adressen", `fix_revision_backlog`, `fix_permits_in_batches` (a lead-time lesson), `fix_incomplete_application` → "De onvolledige aanvraag". The fork (`t1_after_design`) has symmetric briefings and `debrief_first`. Debriefs end on a question; `debrief_variants` (blamed > poor_fix > not_standardised > debrief_first) read the play (`Missions.debrief_of`). Act II swapped: Graafschade opens it, De revisieberg follows. Mission glossary cards give context only, never the answer. `fix_planning_reshuffle` trimmed to four clues.
-      - ⬜ Debriefs with the player's numbers (`{placeholders}`) wait for templated debriefs (C16).
-    - ✅ Coach rules (2026-10-15; QA #20; audit §3A): the bank has six Kata questions per stage (with long-term, respect and always-improve lines); each mission starts the bank at its own place and the coach skips any line heard in the last six asks (saved); a mission's own `questions` come first; `insights` may list several per stage, told in turn, then he goes back to asking; conditional questions once per mission (`coach.conditional`: after a blaming question, and a fix chosen to fade within 45 days while a lasting one fits).
-      - ✅ The insights of audit §3A.3 for every stage players reach (QA #24), two per cell where the audit has two. Later: templated KPI questions (C16).
-    - ✅ Deep-thinking rewards (2026-10-15; audit §2.4.1, Merijn's answers): `rules/stewardship.gd`, owned by Missions and saved. R2 borgingsdividend: a fix still at health ≥ 0.9 pays €1,500 at 90 and at 180 days after its Act (`dividend` event); R6 reputation +2 at 180. R3: an experiment that plans a team above 95 % of its time (Capacity, with the experiment's hours taken out) costs that team one point of trust (`overload` event), weighed once when the Check is due. R5 (QA #19): a deadline counts as met once the mission's A3 is in (`deadline_kept`, saved); the Check still judges. R1: `GameSession.year_cost(cm)` (budget plus a redo each time it fades, an estimate) for the A3. R1(b) is the score-scaled mission reward (C14).
-      - ⬜ For the Check agent: R1(c), a durability term in the countermeasure score (+1 for a built-in or standardised fix).
-      - ⬜ UI (another agent's): `dividend` and `overload` events; the year cost next to each countermeasure in the A3.
-    - ⬜ Hidden rewards ("Ontdekkingen", 25) and the signals the rules must provide.
-    - ✅ Correctness fixes (2026-10-15; audit §2.2):
-      - oliedrukkabel → GPLK (papierloodkabel); Henk retires "over twee maanden";
-      - Henk's transfer: new countermeasure `twi_job_instruction` (tier 1, fit 0.9; Henk's deadline closes it with the buddy system); the videos 0.8 → 0.7;
-      - silent meters: three in ten in concrete basements, one in twenty elsewhere, about one in nine overall (ftr −0.2 → −0.1, an estimate);
-      - `walk_connections` is a real action: count the queues at Intake and Werkvoorbereiding (`observe`, queue_count); only a returning player who skips the week has it done (`GameSession._walked_before`);
-      - throughput vs lead time in the fork and permit debriefs (L1);
-      - L8 (summer and winter measurements), L9 (standard transformer sizes), the ACM wording of use-it-or-lose-it.
-      - Not applied: `fix_revision_backlog` predicting `wip_age` (L5). In the simulation revision comes before the close-out, so the backlog holds finished connections back, and the stream's open-work age is set by the reinforcement waits (measured 97 → 97 days): a wip_age prediction would fail the measured Check. It keeps throughput; see the calls below.
-    - Not here: the "not the bottleneck" warning at wait steps (QA #21) is the Check agent's.
-  - **Wave 3 (tier 2 into content):** ⬜ bring `docs/superpowers/specs/2026-10-15-tier2-missions-draft.md` into `content/`: 22 missions, 11 problems, 36 countermeasures, 13 concepts, and the new fields and goal types it needs. Start only after the sources verifier (edits the draft) and the simulation checker (`docs/qa/tier2-sim-check.md`) have reported. Goal-name clash: the sustain agent's `sustain {problem}` (check-in) vs the catalogue's KPI-holding goal, resolved in C1.
-  - **Later waves:** C2–C8, C10–C13, C15–C18, K1–K11 per the spec's §4. C8 (graded decay) was built by the sustain agent, see above.
-- 🔧 **Mission and dialog design (docs only; continuous, the design agent)**. The builder brings these into `content/` once the schema and engine exist.
-  - ✅ Dialog audit and scripts, Acts 0–II: `docs/superpowers/specs/2026-10-15-dialog-scripts-act0-2.md` (the two sample dialogs audited and fixed; 28 scripts with a voice sheet; engine clarifications R-D1–R-D5; 11 questions for Merijn). For D1–D2, D9–D10 of the dialog build.
-  - ✅ Tier-3 missions, content-ready: `docs/superpowers/specs/2026-10-15-tier3-missions-draft.md` (Act IV and the parallel IT chapter: 29 missions, 17 problems, 58 countermeasures, 20 dialogs; 11 questions). For K6, K7, K9.
-  - ✅ Engagement loop: `docs/superpowers/specs/2026-10-15-engagement-loop.md` (session hooks, the Check wait, act cliffhangers, hidden rewards D35–D44, pacing, the "players keep playing" check; 9 questions).
-  - ✅ Tier-2 draft reviewed with dialogs (`docs/superpowers/specs/2026-10-15-tier2-dialogs.md`): findings T1–T10 for the builder, 17 Act III talks, 3 walk-around check-ins, Sanne's coaching script.
-  - ✅ Tier-4 missions, content-ready (`docs/superpowers/specs/2026-10-15-tier4-missions-draft.md`): Act V and the tier-4 IT chapter "Het digitale loket"; the finale stays a placeholder; 9 questions for Merijn (recommended options apply by the standing rule).
-- 🔧 **Dialog system: build per spec** (`docs/superpowers/specs/2026-10-15-dialog-system-design.md`, tasks D1–D11 in its §13; design ✅ 2026-10-15, Merijn's open questions in its §14; engine, content pipeline, two sample dialogs and the facade built 2026-10-15, see below). A state-driven conversation: openness, trust, mood and hidden layers (position → interest → concern); MORE PIES listening moves plus advocacy, pressure and blame; a visible meter that shows feeling, never the right reply; commitment vs compliance fed into sustain.
-  - ✅ D1 (2026-10-15): one file, `content/dialogs.yaml` (`people`, `bank` = the shared line bank, `dialogs`) → `game/data/dialogs.json`, validated in `tools/build_content.py` (§9.2 rules 1–14; vocabularies in `vocabulary.json`, mirrored by `Dialog` and guarded by `test_dialog_content.gd`); `tests/test_dialog_content.py`. A concern's `unlocks.clue` is appended by the build to the owned problem's clues, marked `dialog`, so no gemba tool or quick question finds it (`Investigation.revealable`). Optional file: a content set without people builds without it.
-  - ✅ D2 (2026-10-15): `rules/dialog.gd`: the fixed palette, every Δ rule of §3.3 with archetype weights, repetition, the ceiling, layers with ≥ 2 ways in, the lead-in and the cue, patience, all outcomes of §4.1 (with blocks and routes, the generic and the authored condition, check-in `lifted` and fixing mode), the meter (a bar plus an arrow per reply, ±1 or ±2 from a change of 8: Merijn's decision, no numbers shown), every move always in the palette (a repair with nothing to repair changes nothing), tutorial talks (`tutorial: true`: cannot be ruined, patience 12); `rules/dialog_def.gd`, `rules/person_def.gd`. Tests: `test_dialog.gd`.
-  - ✅ D3 (2026-10-15), part: `rules/people.gd`: trust and morale per person, memory and the repair move, cooldown to the next working day 08:30, the start formula of §3.6, revealed layers per dialog version, best agreement per dialog, facts (heard:, committed:, partial:, complied:, blocked:, with conditions upgrading partial), buy-in, agreed KPIs, save/load (old saves load with defaults); check-in prompts that expire after 3 days, and colleagues who leave rarely (morale < 20 for 60 days and two expired prompts: their talks close and a fix they owned loses its owner, buy-in `none`; an event, never the end). Tests: `test_people.gd`.
-    - ⬜ Mood signals beyond "team blamed" (overload ≥ 95 % for 14 days, life beats, a fix that held), morale drift toward 50, morale effects on wear (< 30 ×1/0.85) (§5.4). Nothing lowers morale below 20 yet except compliance and blame, so leaving is rare indeed until these exist.
-  - D4: links:
-    - ✅ buy-in × fix life: `Sustain.BUY_IN` (commitment ×1.25, none ×1.0, compliance ×0.6, estimates) in `Region.life_days`; `ProblemState.buy_in` (saved; old saves `none`); `GameSession._sync_people` keeps every resolved owned fix at its owner's buy-in (acting without asking = compliance; a later commitment or a met condition repairs it).
-    - ✅ unlocked clues (into `Region.found`), facts, unlocked proposals, hard blocks with routes (validator: one route no failure can close), team trust (`confront` through `Region.ask`'s blame rule, commitment +1).
-    - ⬜ `talk_to {dialog, outcome}` goals in `Missions._goal_met` (with C5; the mission builder owns missions.gd): call `GameSession.talk_outcome(dialog)` (compliance meets the goal at half pay, no reputation).
-    - ✅ Reputation (C9): a commitment +1, a ruined talk −1 through `Region.earn_reputation`; a blame in a talk costs as a blaming question does (`Region.ask`).
-    - ⬜ KPI sustain weight halved for a team without its lead's committed pair (`People.agreed_kpis` is ready; `Region.sustain` needs it).
-    - ✅ Facts (C19): one grammar and one evaluator (`Facts.met`); `GameSession._facts` asks `Missions.knows` for every atom the dialogs name (`People.atoms`), and the facts talks set join `Missions.facts`, so missions and countermeasures can need `heard:`/`committed:`; new fact kind `checked:<problem>` (its Check passed), derived live by `Missions.knows`; dialog block routes use the C19 robustness rule (`_atom_robust`).
-  - ✅ D5 (2026-10-15): `GameSession`: `people_at`, `person`, `start_dialog`, `dialog_moves`, `choose_move`, `dialog_meter`, `end_dialog`, `talk_outcome`, `energy_of` (the walk-around energy bar and its "needs a talk" flag, Merijn's decision); one clock advance per talk (3 minutes a move); a colleague leaving is a session event (`{type: left, person}`). Tests: `test_session_dialogs.gd`.
-    - ⬜ The session has no save of its own yet: when it gets one, save `missions.to_dict()` and `people.to_dict()` beside `RegionState` (a talk in progress is not saved).
-  - ⬜ **Where the dialog build stopped (2026-10-15):** the engine commit is merged up to `fae460a` and passes the full gate; merging `80c1827` conflicts in `tools/build_content.py`, `game/src/game/session.gd`, `game/src/rules/catalog.gd`, `PLAN.md` and `game/data/vocabulary.json` (resolve, rebuild the data, rerun the gate). Next: `talk_to` goals, the KPI weight halving, D6 (coach), the D7 cadence, D9–D10 content and the generic content tests.
-  - ⬜ D6: coach: Ruud's `talk` stage after a main-mission dialog (Kata; main only)
-  - D7: check-ins: ✅ (2026-10-15) a prompt per available check-in that expires after 3 days (the "needs a talk" flag), a 14-day rest after a lifted one, no slot, fact variants. ⬜ The cadence limits (≤ 1 prompt visible, ≤ 2 a week) and the dagstart line.
-  - ⬜ Act 0's two tutorial talks (Anouk; `docs/superpowers/specs/2026-10-15-dialog-scripts-act0-2.md`) as content with `tutorial: true`, and the audit's other proposals R-D2–R-D4 (warning line on entering "Dicht", in-character ruined lines; arrows are built). Its R-D1 order (Δ, cap, then reveal) differs from the binding spec's worked numbers, which the engine follows (Δ, reveal, cap): pending Merijn.
-  - ⬜ D8: discoveries D29–D34
-  - D9: content:
-    - ✅ (2026-10-15) Joost (`joost_output_kpi`), Frank's block (`frank_kpi_targets`, route: a passed Check of `silo_kpis`) and the check-in with Ahmed (`ahmed_after_henk`, with the variant for when Henk taught him), as in spec §7–§8.
-    - ⬜ The rest of the cast and a dialog per tier-1 people/conflict mission (Sanne, Marco, Esra, Petra, Henk, mevrouw El Amrani); the concepts (`more_pies`, `commitment_vs_compliance`, …).
-  - D10: content tests:
-    - ✅ (2026-10-15) the spec's worked paths replay exactly (Joost A, B, B5′, C; Frank blocked then committed; Ahmed A, B, C), in `test_dialog_content.gd`.
-    - ⬜ The generic content tests over every dialog: reachable, no golden path (breadth-first search, ≥ 3 distinct successful sequences), pushing costs, pressure gives compliance in ≤ 5 moves.
-  - ⬜ D11 (Phase D): speech panel, meter, chips and pickers, summary card, Mensen tab, NPC bubbles
-- ⬜ Mission UI: briefing and debrief dialogues, the coach conversation, a quest log with 1 + 3 slots (Phase D)
-- ⬜ Missions beyond tier 1; story events (storm week, ACM visit, NTA 8120 audit) as missions (catalogue: the mission-system spec §3; tasks K5–K9)
-- ✅ Never game over (Merijn, 2026-10-12): an experiment can be paid into debt; in debt the region is in a bad period (every team −3 points availability, an estimate; no money to standardise) until the debt is paid off. Tests: paying into debt, costs causing a bad period, the period ending.
-- ✅ Problems can cost money (Merijn: "claims should count"): `cost_per_week` is charged to the budget every day while the problem is open, weakened by a working countermeasure; the Check shows cost before and after; saved. Graafschade €4,250 a week (~5 extra damages × ~€850 direct repair; Wibon evaluation: €38.8M over 46,799 damages in 2022). De revisieberg: daytime outages ×1.05 (estimate from Bouwend Nederland's ~60% "not known what lies where"; marked as an estimate in the content), €425 a week.
-- ✅ Evidence-based connection times (Merijn: "the industry norm"): norm back to 18 weeks (the former legal term, removed Feb 2025; the ACM still uses 18–22 weeks as reference). Real waits were ~40–44 weeks (Netbeheer Nederland 2024–2025), mostly from grid capacity, so the healthy base gets realistic external waits: customer approval 14 d, municipal consent 30 d, grid reinforcement 120 d for 15% of streets. Base: p50 ~7 weeks, ~92% within the norm. Customers call after nine weeks without news, every two weeks (32 calls a week in the base). Content tests and the report measure over 150–180 days so connections can settle.
-- ✅ Graafschade and the norm (review findings): outage arrival sources have ids, and a `demand` effect can target one (`outages.daytime`). Graafschade adds half again to daytime outages (a third of them), so the harm is monteurs pulled off planned work. De revisieberg also adds daytime outages (outdated KLIC maps; now ×1.05, see costs below), so fixing GIS reduces digging damage. Delegated approval fit 0.6 → 0.65. (The interim six-week norm was replaced by the 18-week industry norm below.)
-- ✅ Graafschade's harm made visible: steps count interruptions (`interrupted`), and stream KPIs include `lead_hours_per_week` (for outages: the hours customers are without power, count × duration, what the regulator measures). Monteurs 14 → 13 (~67% busy, back where the base was before cheaper failed trips; the technician shortage leaves little slack). Planned connection work absorbs interruptions (a two-day re-plan against a 40-day lead time), so Graafschade shows as outage hours and interrupted jobs, not as connection lead time.
-- ✅ Short jobs use the whole tick (found by measuring actual load): a person who finishes mid-tick starts the next job in the minutes left. Before, a 15-minute call held an agent for 20 minutes, so short-task teams lost a quarter of their capacity (contact centre: actual 81% vs planned 55%). The contact centre is recalibrated to 4 agents (77% actually busy, 0.86 answered within 2 h); De statusbellers now takes it to 0.57 and Klaar maar niet af to 0.67 (was 0.40, which Merijn's review asked about).
-- ✅ A failed attempt costs its own time (`fail_hours`; review question on Meterkast niet gereed): a wasted trip to a meterkast that is not ready costs 1.5 h, not the 5 h job; niet thuis costs 0.5 h. The outcome is drawn when work starts; `Capacity` counts it too.
-- ✅ Actual load per team (`SimPool.load_since`): busy over present people-minutes per day, next to the planned load from `Capacity`. The status-callers review showed why: planned 55% while the queue explodes. Step statistics and pool load share `DailyCounts`.
-- ✅ Common random numbers: one random sequence per purpose (`Rng.for_purpose`, registered by the network for saves), so a change in one place leaves every other stream's draws alone (test: a slower contact centre leaves connections, outages, meters and congestion identical). Three tests that leaned on the old shared sequence got honest margins (measured over seeds 1–10).
-- ✅ De netstudie-wachtrij (catalogue #9): four in ten connections get a full grid study instead of a quarter. The grid analysts (shared with congestion) run 97% busy; connections keep their priority, so congestion throughput drops 43%: large consumers pay for the queue. Countermeasures: triage with a fast lane (tier 1), standard calculation templates (tier 2, also speeds up congestion studies).
-- ✅ De zwijgende meter (catalogue #12): nobody tests the meter's connection before leaving; three in ten new meters stay silent and need a return visit (base: a failed registration now goes back to the appointment). Meters on time 0.88 → 0.75. Countermeasures: communication test before leaving (jidoka, tier 1, better than the base), coverage check in planning (tier 2).
-- ✅ Three more catalogue problems, each with a mission:
-  - Omvormers die afschakelen (#13): a new small stream Spanningsklachten (2 a week: analysis by Meetdata, a measuring week at the address, sometimes a tap change by the monteurs); the problem triples the complaints (Solar Magazine). Countermeasures: review the transformer taps per neighbourhood (tier 1), voltage data from smart meters (tier 2), targeted reinforcement (tier 3). Side mission after De zwijgende meter.
-  - Wachten op de trafo (#15): transformers ordered only after the reinforcement design is approved, so the reinforcement wait goes from four to seven months (an estimate) and the congestion queue slows. Countermeasures: order at the grid study (tier 1), a framework contract (tier 2), strategic stock (tier 3). Main mission after De netstudie-wachtrij.
-  - Gereserveerd maar ongebruikt (#14): contracted capacity is never compared with use, so the congestion queue moves slower and more requests must wait. Countermeasures: a usage dashboard (tier 1), use-it-or-lose-it conversations (tier 2, the ACM allows it), flexible contracts (tier 3). Main mission after Wachten op de trafo.
-  - The validator now requires a mission for every problem, so the campaign reaches the whole catalogue.
-- ✅ Storing gooit de planning om (2026-10-13, Merijn chose to approximate it): every monteur planned at 100%, so outages move appointments that do not hold (connections execution ftr −0.25, meter visits −0.1, re-planning doubles the planners' work; estimates). Countermeasures: a daytime outage crew (the existing `reserve` lever, tier 1), planning with fault windows (tier 2), heijunka (tier 3). Side mission after the outage walk. A real day-planning mechanic (an outage cancels the rest of a monteur's day) is left for later.
-- ✅ `content/problems_tier1.yaml`: 18 of 18 catalogue problems done
-- 🔧 `content/countermeasures.yaml`: 41 countermeasures; grows with each problem
-- ✅ `content/missions.yaml`: the tier-1 campaign, with Henk's retirement as a 56-day deadline mission (De laatste kennisdrager)
-- ✅ Henk is a real event (Merijn, 2026-10-12): a side mission that opens after De verkeerde mof in de bus; Henk retires 56 days later, taken on or not. Missing it closes the buddy system (`fail_closes`) for good; work instructions with video still solve the problem. Deadlines count from when a mission opens; the validator requires another way to solve the problem.
-- ✅ `content/concepts.yaml` (2026-10-13): 61-entry Dutch glossary (lean, the 8 wastes as `waste_<waste>`, Toyota Kata, measure, sector with a public `source:` or marked `estimate:`); the validator requires every `teaches` id (problems and clues) and every id the rules learn; `Catalog.concepts`. Problem `teaches` now use `waste_<waste>` instead of bare waste names
-  - ⬜ Verify the two sector sources marked `verify: true` (`ean_code`, `middenspanningsruimte`)
-  - ✅ The codex UI (K, "Begrippen", 2026-10-14): learned concepts readable with source or estimate, the rest `???` by category; a toast "Nieuw begrip: … (K)" on first learning
-- ✅ KPI `wip_age` (`Network.open_age_days`, in `Region.snapshot`): the age of open work. Lead time counts finished orders only, so long waits hide the oldest work (survivorship).
-- ⬜ Next session (found by report7, 5 seeds × 180 days):
-  - ✅ `wip_age` named in Wachten op de trafo and in the report (2026-10-13). Why: its harm is invisible in finished-order lead time (43.5 vs 46.9 days) and shows only as throughput 26.9 → 25.5;
-  - ✅ Omvormers (2026-10-13): a tap set for one address does not hold for the street (tap_change ftr −0.3, an estimate; a failed change goes back to measuring); KPI first_time_right, checked by the content test;
-  - ✅ simplify findings (2026-10-13): `early_transformer_order` runs the reinforcement wait from the design (`starts_with`); the congestion ×1.2 is a marked estimate (station reinforcements wait for the same transformers); one stream list in the tests;
-  - ✅ review doc (2026-10-13): sections 6 and 12 re-measured, sections 14–17 added, answered questions closed, Update 3 at the top
+## 3. Roadmap
 
-## Problem ideas backlog (keep growing)
+Each phase ends in a **playable** that Merijn plays before the next phase starts. The world grows with the acts, not all at once (progressive RPG: a new building or floor opens when a mission needs it). Three tracks run through every phase: the mission-and-dialog agents (continuous), QA autoplay (every phase gate), and the art pipeline.
+
+### Phase 1 — Mensen: people, dialogs, the session layer 🔧
+**Playable:** Act 0 and Act I in the office, with people at their desks you can walk up to and talk with; a session that starts with a terugblik and ends at a dagstart. Merijn plays it and the autoplay bot plays it.
+
+- 🔧 **1.1 Merge the dialog engine** — ✅ merged 2026-10-16 (engine commit `f5319f4` merged with this branch; `tools/build_content.py`, `session.gd`, `catalog.gd`, `problem_state.gd` keep both the dialogs and the discoveries). Leftovers in the spec's task list: D6 Ruud's talk stage after a main-mission dialog; D7 check-in cadence (≤ 1 visible, ≤ 2 a week, 14-day cooldown); D8 discoveries D29–D34; D9 the rest of the cast; `talk_to` mission goals (`talk_outcome()` is ready). Dialog spec: `docs/superpowers/specs/2026-10-15-dialog-system-design.md`.
+  - ✅ D1 schema and validator (`content/dialogs.yaml`: `people`, `bank`, `dialogs` → `game/data/dialogs.json`; `tests/test_dialog_content.py`). A concern's clue is appended by the build to the owned problem's clues, marked `dialog`.
+  - ✅ D2 `rules/dialog.gd` (moves, Δ rules, archetype weights, repetition, the ceiling, layers, the cue, patience, outcomes, blocks with routes, the meter as a bar with ▲/▼ arrows and no numbers, all moves always visible, tutorial talks that cannot be ruined). Tests: `test_dialog.gd`.
+  - ✅ D3 `rules/people.gd` (trust, morale, memory, repair, cooldowns, facts, buy-in, agreed KPIs, save/load, check-in prompts that expire after 3 days, rare leaving). Tests: `test_people.gd`. ⬜ Mood signals beyond blame (overload, life beats, a fix that held), morale drift toward 50, morale effects on wear (§5.4).
+  - ✅ D4 links: buy-in × fix life (`Sustain.BUY_IN`), unlocked clues and proposals, facts (`heard:`, `committed:`, `checked:`), hard blocks with routes, reputation. ⬜ KPI sustain weight halved without the lead's committed pair (`People.agreed_kpis` ready; `Region.sustain` needs it).
+  - ✅ D5 `GameSession` facade: `people_at`, `person`, `start_dialog`, `dialog_moves`, `choose_move`, `dialog_meter`, `end_dialog`, `talk_outcome`, `energy_of`. Tests: `test_session_dialogs.gd`. ⬜ Save `people.to_dict()` once the session gets a save.
+  - ⬜ `talk_to {dialog, outcome}` mission goals.
+  - ⬜ D6 Ruud's talk stage after a main-mission dialog.
+  - 🔧 D7 check-ins: prompts that expire after 3 days and the 14-day rest are built; ⬜ the cadence limits (≤ 1 visible, ≤ 2 a week).
+  - ⬜ D8 discoveries D29–D34.
+  - 🔧 D9 content: ✅ Joost (`joost_output_kpi`), Frank's block (`frank_kpi_targets`), Ahmed's check-in (`ahmed_after_henk`); ⬜ the rest of the cast and the tier-1 dialogs from `docs/superpowers/specs/2026-10-15-dialog-scripts-act0-2.md`.
+  - 🔧 D10 content tests: ✅ the spec's worked paths replay exactly; ⬜ ≥ 3 distinct successful sequences per persuasion dialog, pushing early costs, pressure gives compliance.
+- ⬜ **1.2 Dialog UI** (D11): the speech panel; the openness **bar that fills**, with ▲/▲▲ ▼/▼▼ per reply and never a number (Merijn); trust pips; mood word and face; the layer tracker (Standpunt · Belang · Zorg); reply chips by move type, all moves always visible; the cue "Er zit meer achter…"; the summary card with the openness trace; the Mensen tab in the journal; the **walk-around energy bar** over people who need a talk. Screenshot every state.
+- ⬜ **1.3 People in the office.** NPC avatars at their desks (Joost, Anouk at Werkvoorbereiding; Sanne at Intake; Petra at Meetdata; Esra and two agents at the contact centre once that room exists, see Phase 2; Marco passes through from the yard), idle and work animations, a name tag on hover, walk up and press E to talk. Ruud in his room. Henk and Ahmed appear for their missions. Characters: the method Merijn chooses (§7 Q1); until then the samples.
+- ⬜ **1.4 Session layer** (engagement loop §2, all decided): the *terugblik* card when the game opens (Ruud's line; Veranderd · Wacht op je · Komt eraan; one button); the "goed moment om te stoppen" note at the dagstart after ~30 real minutes; the *Intussen* panel during a Check with a named time skip that stops at beats with people; ≤ 1 discovery toast per in-game day; ≤ 2 new side offers a week, older ones in a "Nog open" drawer; a local playtest log (opt-out, never sent).
+- ⬜ **1.5 UI debts the rules already need** (collected from the builders): the Check panel shows the forecast ("zonder jouw maatregel" / "met", over `forecast.days`) and that it is simulating (~3–8 s); Dutch text for `not_moved` and `impact_lead_time_small`; savings and the debt floor on the HUD; `dividend`, `overload`, `repair`, `reputation` events in Dutch; the "Herstel" quest on the board and "eerder geprobeerd" in the A3; the A3's "niet voorbereid" list with each `preparation` hint and the year cost next to each countermeasure; the board and debrief use `mission_briefing` / `mission_debrief`, act and chapter titles, the fork shown as a pair; the "Ontdekkingen" codex tab with silhouettes and end-of-act hints, titles under the player's name; the training-week leftovers (the fade not visible in the numbers; Friday after a Sunday Check; the practice fix reading "knelpunt aangepakt"). `CheckPanel.LOWER_IS_BETTER` → `Pdca.LOWER_IS_BETTER`.
+- ⬜ **1.0 The story arc into the catalogue** (design agent, docs): rework catalogue §3.1 and the act tables to *Drie winters* (§4.0, items 1–7): the winter milestones, the Act III ending (Ruud's secondment, the interim director's group talk), Act IV's two openings on the Frank facts, the monthly coach call, the `waiting_list` KPI, the succession finale with its variants. Then the builder's schema needs: `opens_on {season}` (exists in the design), the coach cooldown, the north-star KPI, the group-talk dialog shape (Phase 3).
+- ⬜ **1.6 Four-tier audit fixes** (`docs/superpowers/specs/2026-10-15-four-tier-audit.md`): fact names read but never set (§1.1); tier-2 promises in tier 4 (§1.2); temptations with no later cost (§1.3); staggered side openings (§2); **dialog formula drift** (§4: no opener in more than a third of a tier; vary the concern cue between hesitation and feeling; vary interest `via` by person; re-check routes so no single route wins every talk); the three principles' payoffs (§5). Owner: the design agent, docs; the builder applies to content.
+- ⬜ **1.7 Tier-2 simulation fixes** (`docs/qa/tier2-sim-check.md`: 107/137 pass): `safety_stock_calendar` is inert; the ACM 85 % target cannot be failed; all six OKR key results wrong; four problems fail the named-KPI test; `repeat_fault_analysis` fails at maturity 2. Apply the confirmed numeric fixes, re-measure the estimates with `game/tools/draft_check.gd`.
+- ⬜ **1.8 Finish the WIP patch** (`docs/handoff/wip-mission-followed-order-containment.patch`): the El Amrani followed order (D14) and containment (D28) with the validator and the content on `fix_digging_damage`.
+- ⬜ **1.9 Rules leftovers:** R1(c) a durability term in the countermeasure score; the Check over the cohort of orders that entered after the fix (so a rework fix can predict first time right again); replications if the Check's seconds allow; re-standardise after the Act; re-run the autoplay personas and regenerate `docs/qa/autoplay-report.md` (careless seeds 12 and 13 never ran; ~16 min each).
+- ⬜ **1.10 Phase gate:** autoplay (expert, average, careless, plus a new *talker* persona and a *never-talks* persona) on the new build; `requesting-code-review` on the phase; Merijn plays Act 0–I with people and answers the playtest questions (engagement loop §8), and confirms the office-slice UI calls still open from 2026-10-13: interaction by standing at a marker (a green ring, 1.6 m) rather than by looking; the clue journal grouped by place, never saying which clues matter; the A3 evidence list offering every found clue, red herrings included.
+
+### Phase 2 — Het hoofdgebouw: the building and the whole of tier 1 ⬜
+**Playable:** Acts 0–II end to end (the whole tier-1 campaign) in a three-floor head office with a contact centre, a yard with vans, and the first customer phone calls; the first full playtest.
+
+- ⬜ 2.1 The head office as three floors (§5.2), the stairwell and lift as seams, the player map with a floor switch. Begane grond: ontvangst, Klantcontactcentrum, kantine. 1e: Aansluitingen (what exists) plus Revisie & GIS and Meetdata & registratie. 2e: Directie & Obeya, Netstrategie, the congestion desk, the MT room, Ruud's office.
+- ⬜ 2.2 The yard: the magazijn and werkplaats, the van park, the van kanban wall; monteurs leaving in the morning and returning (`fix_wrong_joint`, `fix_not_at_home` sides live here).
+- ⬜ 2.3 The opleidingsterrein (training yard): Henk teaches Ahmed by doing (TWI); later the training-capacity missions of tier 3.
+- ⬜ 2.4 Customer calls at the contact centre (Merijn: phone now, home visits later): the El Amrani calls, Ilse; the headset as a place.
+- ⬜ 2.4b Winter 1 as the climax of tier 1: the El Amrani followed order delivered before the first frost (or not), the date you promised checked by the simulation; the first-frost beat on the calendar.
+- ⬜ 2.5 Act II content complete and tested (Graafschade first, De revisieberg, the grid studies, transformers, contracts, the KPI board's birth, the day-100 milestone); the fork tests on the real network (C15); templated debriefs with the player's numbers (C16); authored repair texts (K11).
+- ⬜ 2.6 Gemba readability pass (§5.4): every active tier-1 problem has at least one visible tell in the world.
+- ⬜ 2.7 Save slots, pause menu, settings (key rebinding, camera, volume), a title screen that is not the boot scene; gamepad later.
+- ⬜ 2.8 Phase gate: autoplay on the full tier 1; code review; Merijn's first full playtest → a tuning backlog.
+
+### Phase 3 — Zichtbaar maken: tier 2 and the campus ⬜
+**Playable:** Act III: daily boards, tiered escalation, the control room, a storm week, a heatwave, the ACM visit, the first OKR, coaching Sanne.
+
+- ⬜ 3.1 Tier 2 into content (wave 3: 22 missions, 11 problems, 36 countermeasures, the 17 Act III talks and check-ins), after 1.6–1.7.
+- ⬜ 3.1b The reversal (§4.0): Ruud's secondment at the end of Act III; the interim director's MT group talk reading the Frank facts; Act IV's sponsor and regime openings; Ruud's monthly phone call (coach cooldown 28 days, one Kata cycle); the consultancy temptation and the team-led way back.
+- ⬜ 3.2 The bedrijfsvoeringscentrum (control room) building: shift handover, the storm night (day/night and weather for the first time), the escalation board.
+- ⬜ 3.3 Daily boards at every team (the dagstart as a *group* scene at the board: several people, one room meter, see §4.3), andon, the layered audit as a real recurring visit.
+- ⬜ 3.4 The coaching kata as play: the player asks Sanne the five questions; her experiment runs in the simulation.
+- ⬜ 3.5 Seasons and the calendar: storm (autumn), heatwave (July), 1 July rule changes, year-end budget; missions `opens_on` dates; the HUD shows the season.
+- ⬜ 3.6 Phase gate as above.
+
+### Phase 4 — De regio: the town, two more areas and the IT chapter ⬜
+**Playable:** Act IV and Act VI side by side: the player is CI lead for all of Zuidmark, drives (map travel) to Lindeveld and Havenzij, visits the El Amrani home, and starts on the field app with IT.
+
+- ⬜ 4.1 The town of Nova as hand-built *sites* first (§5.3): a street with a dig (graafschade), a meterkast at a home, a trafohuisje, a hall on the industrial estate, the El Amrani home; reached by van from the yard (a map travel with a short drive, not a driving game). Then streets between them.
+- ⬜ 4.2 Lindeveld depot (rural, long drives) and Havenzij (port, crowded underground, nitrogen): small depots with their own people; the region map.
+- ⬜ 4.3 The IT building (or floor): the field-app team, the release train, the test environments; the IT category in the codex.
+- ⬜ 4.4 Tier 3 into content (29 missions, 17 problems, 58 countermeasures, 20 dialogs), with the strategy screen that shows the player's own history as open and locked options (path dependence on screen), the crew strategy, kaizen events, VSM built by walking.
+- ⬜ 4.5 Heijunka in the simulation, when the content shows where it is needed.
+- ⬜ 4.6 Phase gate.
+
+### Phase 5 — Het systeem: tier 4 ⬜
+**Playable:** Act V: hoshin, the NTA 8120 audit, risk-based maintenance, losses and theft, the flex market, the investment plan shaped by every earlier choice; the IT chapter "Het digitale loket".
+- ⬜ 5.1 Tier 4 into content (9 new problems, 35 countermeasures, 11 dialogs, D45–D50). Two new wait steps the fork needs. The fork judged on outage minutes.
+- ⬜ 5.2 The MT room as a stage: the hoshin X-matrix as an in-world object; catchball as a dialog with several parties.
+- ⬜ 5.3 Winter 3: Ruud's return and retirement date as the last deadline; the succession mission `de_opvolger` with its four variants on facts (Anouk, Ahmed, Sanne, an external hire); the last scene is the player's first Kata question to their successor.
+- ⬜ 5.4 Phase gate; a full-campaign autoplay (three years of play).
+
+### Phase 6 — Afwerking: polish and release ⬜
+- ⬜ Web export that plays (gl_compatibility is already the renderer); Windows/Linux/mac builds; itch.io or a private page first (§7 Q3).
+- ⬜ Audio: ambient office, the yard, rain in the storm week, a soft cue per event (no music loop that nags).
+- ⬜ Accessibility: colour-blind palette, text size, remappable keys, no timed inputs anywhere (follows from "respect the player's time").
+- ⬜ Performance: the contact stream's ~20k calls a year make a simulated year ~2.8 s; batch calls if fast-forward ever feels slow.
+- ⬜ Tech debt tracked from Phase A: content rules live twice (Python validates, GDScript loads); let `build_content.py` emit canonical JSON so the game parses nothing.
+- ⬜ Verify key sector figures against the source pages themselves (the environment's network policy blocked the pages; only search extracts were available), including the glossary entries still marked `verify: true`.
+- ⬜ English localisation, only if Merijn wants a wider audience (§7 Q4).
+
+### Phase 7 — Stem: the AI voice ⬜
+- ⬜ Claude voices the dialog lines over the *same* state model (the rules still judge; decided: dialog spec Q11). Free text for the player's questions to people, grounded in each problem's hidden facts. Ruud's coaching with memory of the player's own A3s. Cost tracking, offline fallback, prompt caching (CLAUDE.md §3 `claude-api`).
+
+---
+
+## 4. Creative direction: missions and dialogs
+
+This is the part Merijn asked Fable to think hardest about. It tells Opus and the mission-and-dialog agents *where to take* missions and dialogs, beyond the specs that already exist. Everything here respects the directives in §2.2 and the decisions in §9.
+
+### 4.0 The story arc: *Drie winters* (rewritten 2026-10-16; Merijn asked for creative freedom within the directives)
+
+**Why change it.** The catalogue's six acts are sound and all 94 drafted missions stay usable. But as a *story* it was a syllabus with faces: each act a Lean topic, the player only ever ascending, and nothing ever testing what they built. Real improvement careers have one defining moment: the sponsor leaves, and the programme is judged by what holds. Marco's backstory ("the 2012 programme vanished when the consultants left") already says it. This arc makes that the present, and it turns the game's three big mechanics (sustain-or-decay, commitment versus compliance, path dependence) into the plot.
+
+**The spine: three winters, one number, one coach who wants to become unnecessary.**
+- **One number.** From Act II the HUD carries the region's north star: *de wachtlijst van Zuidmark* (open connection requests and congestion requests, with the average wait in weeks), driven by the simulation and never scripted. It is the sector's real headline (households on the waiting list since 1 July 2026). Every act moves it; the finale is not zero but "iedereen krijgt een eerlijke datum, en die klopt".
+- **Three winters.** Play starts on 12 October 2026, so the calendar (§4.2.1) gives the campaign three winters, each a test of what the player built:
+  - **Winter 1 — De warmtepomp van de familie El Amrani** (Acts I–II, tier 1). Does your first fix hold long enough for the heavier connection before the cold? The stakes are one family and one honest date. Day 100 is the midpoint review; the KPI board is born at the end of Act II.
+  - **Winter 2 — De storm zonder Ruud** (Acts III–IV and VI, tiers 2–3). *The reversal.* At the end of Act III, Ruud is seconded to Den Haag for a year, to the national programme on the waiting list. **Frank Hulshof becomes interim director.** Which Frank you get is path-dependent: the one you brought along in Act II opens the year as a sponsor; the one you blocked or bypassed opens it with a dashboard regime, output targets and the temptation of a consultancy's "Lean-programma 2.0". The storm week falls in this winter, with the control room's new boards or without them. The coach is still Ruud, by phone, **one Kata conversation a month**: the player must run their own Kata and start coaching others (Sanne, Joost). What was built with commitment holds; what was pushed slips, and repair quests show the way back. Nothing is lost for good; everything is tested.
+  - **Winter 3 — De opvolger** (Act V, tier 4). Ruud comes back in the spring as regional director and announces his retirement date: the campaign's last deadline, the bookend of Henk's in the first act. The NTA 8120 audit and hoshin are the system's test; the finale is **the succession**: the player coaches their own successor, and *who sits across the table depends on the play*: Anouk or Ahmed if you developed them (TWI, buddy, coaching kata), Sanne if you coached her, an external hire if you developed nobody (the game says so kindly, and the hire's first question is one you once asked Ruud). The last scene is the first Kata question, asked by the player.
+- **Act VI (IT, "Het digitale net")** runs in parallel through winters 2–3 as drafted, and it serves the number: the portal where households register, the field app the monteurs bypass, the release cadence that decides how fast a fix reaches the street.
+
+**The antagonists are forces, never people** (people are never the cause): *the queue* (it grows by itself: drift), *the number* (the output KPI the directie and the ACM look at: Frank's pressure), and *time* (Henk retires, people leave, seasons come). Frank is an obstacle with a concern, and the game's best arc if you listen to him.
+
+**Bookends and echoes.** Henk's retirement opens the game, Ruud's closes it. Anouk drowning at Werkvoorbereiding in Act 0, Anouk (or Ahmed) at the table in Act V. The El Amrani heat pump in winter 1; their daughter's bakery on the Havenzij waiting list in winter 2 (the Act IV thread). The first fork taught "the Check shows no gain at a non-bottleneck"; the last strategy screen shows the whole history of such choices.
+
+**What changes in the catalogue** (the design agent reworks §3.1 of `2026-10-15-mission-system-and-catalogue-design.md`; the builder follows):
+1. Group the acts into three *years* with the winter as each year's climax; add `opens_on {season: winter}` beats and the three winter missions as milestones (no slot).
+2. New beats at the end of Act III: *Ruud gaat naar Den Haag* (a farewell talk; the monthly phone call unlocked) and *De interim-directeur*, a **group talk** in the MT room whose opening state reads the facts about Frank (Act II dialogs: `committed:frank_*`, `blocked:frank`, `heard:frank`).
+3. Act IV's opener reads the Frank variant: sponsor (the Obeya stands; the strategy screen opens early) or regime (the Obeya replaced by a dashboard; `fix_silo_kpis` can recur; the consultancy temptation `t3_consultants` as the act's big shortcut, with its later cost and the way back through a team-led kaizen week).
+4. Coach rule for winter 2: Ruud's `ask_coach` has a 28-day cooldown and one Kata cycle per call; the coaching-kata missions (`coach` goals) carry the player instead. The coach still helps only with the main quest.
+5. The north-star KPI `waiting_list` in `kpis.yaml`, on the HUD from Act II, named in hoshin (Act V) and in the ACM visit (Act III).
+6. Act V: Ruud's return and retirement date; the succession mission `de_opvolger` with four candidate variants on facts; the "finale placeholder" is replaced by this one authored scene. The far-future "coach a new region" idea is dropped.
+7. Winter 2's storm (`prep_storm_week`, Code oranje) becomes the Act III–IV climax, with a control-room scene; winter 1 gets the El Amrani date as its climax (`fix_status_callers` → the followed order's delivery before the first frost).
+
+**Why it fits the directives.** Problems still arrive only through missions; one main and three sides hold; the coach is still a senior manager who asks; nothing is handed over; recovery is always possible (the regime is a setback, not a loss); the three principles decide the outcome (what you built with respect and patience holds under pressure); the sector is the plot (the waiting list, the ACM, the storm, the technician shortage); and the player learns the deepest Lean lesson there is: a leader's job is to make themselves unnecessary.
+
+### 4.1 What a Spanning mission is
+A mission is **a mystery with a face, a number and a choice**:
+- **A face:** someone whose day the problem ruins (Anouk working till seven; Mrs El Amrani's fourth call). The player meets them before they see a KPI.
+- **A number:** a measurable claim the player can check at the gemba, and a KPI the A3 must predict. The Check judges the number; the debrief reads the player's own numbers back.
+- **A choice:** at least one tempting shortcut whose cost shows up later through path dependence (the quick hire, the consultant, the comforting promise), and a patient fix that holds. Never a marked right answer; the simulation and the sustain rules do the judging, in time.
+
+And the **verbs**: kijken → praten → denken → proberen → meten → borgen, each with its own small reward (engagement loop §1). A session touches two verbs; a mission touches all six.
+
+### 4.2 Where to take the missions next (Opus, with the design agent)
+1. **A living calendar.** The region has a year: storm season, the July heatwave, the 1 July rule change, year-end budget, the ACM's visit, Henk's retirement date. Missions open on dates, not only after other missions, and the HUD shows the season. This makes the world push back on its own, and it makes the stagnation drift feel like weather, not a penalty.
+2. **One thread per act.** Tier 1 has the El Amrani dossier. Every act needs one such thread: a person or a customer whose life the act's KPI touches, met at the start, paid off at the end (Act III: the storm-night family without power; Act IV: the Havenzij bakery on the waiting list; Act V: Ahmed as trainer; Act VI: the monteur who keeps a paper notebook because the app fails). The thread is the act's cliffhanger device.
+3. **Failure as a designed path, not a punishment.** Every act gets one mission where the *expected* first Check fails (a lagging KPI, a wrong but plausible cause) and the real lesson is in the retry: the rework A3, the second gemba visit, the person who was not asked. The debrief for a failed Check must be the best-written text in the act. "Terug naar de gemba" (a discovery) rewards exactly this.
+4. **False bottlenecks from tier 3.** The data says one step; the gemba says another (a shared pool, a batch wait, a pre-emption). The fork becomes three-way: bottleneck, non-bottleneck, and the step that *looks* like the bottleneck in the dashboard. Only the tools find it.
+5. **Make others see.** The arc of the tiers is a widening lens: tier 1 *you* see waste; tier 2 the *teams* see it (boards, andon); tier 3 the *region* sees flow (VSM, strategy); tier 4 the *system* sees itself (hoshin, audits). Mission goals should move from `solve` toward `coach`, `routine`, `map_stream`, `okr` and `strategy` as the tiers rise, so the player stops being the hero who fixes and becomes the leader who develops others. That is "respect for people" as game design.
+6. **Visible history.** From Act II on, the player can see their own story: the strategy screen's open and locked options, the vitrine of discoveries, the Mensen tab with each person's arc, and Ruud's *act-end terugblik*: a short Kata retrospective in which the player writes, in free text, what they learned (kept in the journal, never judged). Reflection is a Lean habit; the game should have it as a ritual.
+7. **Hidden rewards with teeth.** Keep the Ontdekkingen honest: each one must reward one of the three principles or a sector insight, never grinding. Silhouettes and end-of-act hints (decided). Add one *regional* reward per tier that only a player who talks to people can find.
+8. **Milestones that take no slot** (day 100, the ACM visit, the NTA 8120 audit) are the act climaxes. Build them as *scenes* (the MT room, the inspector at the table), not as a popup.
+9. **Shapes.** Nine mission shapes (audit §5.2); no two consecutive mains alike (checked: true today, keep the test). Sides stay small: "one person, one place, one twist, one object".
+10. **Correctness is a feature.** Every number from a public source or a marked estimate; every Lean method used the way a Master Black Belt would recognise. The sim-check harness (`draft_check.gd`) runs on every new tier before it enters content. A mission that cannot pass its own Check on the real network does not ship.
+
+### 4.3 Where to take the dialogs next
+1. **Voices, not formulas.** The four-tier audit found one narrator creeping in ("Afgesproken." opening 22 of 22 tier-3 commitments; silence as the key to every concern). The fix is a **voice sheet per person** (word choice, rhythm, humour, worry; standard Dutch, no dialect, decided) and three hard limits enforced by a content test: no outcome opener in more than a third of a tier's dialogs; at least a third of concerns revealed by a *feeling* (reflect) rather than a hesitation (silence); interest `via` varies by archetype (craftsmen open to inquiry, defenders to paraphrase, the overloaded to empathy). A player who learns one route must *not* win every talk.
+2. **Seven dialog shapes**, so talks feel different: persuasion (bring someone along); check-in (lift a spirit, no mission); expert talk (sector knowledge, topic by topic); customer call (by phone, a promise the game checks); coaching kata (the player asks the five questions, the NPC experiments); confrontation (a hard block with routes); and, from tier 2, the **group talk**: a dagstart or an MT meeting with several people and one *room* meter, where listening to the quiet one changes the room. Catchball in tier 4 is a group talk.
+3. **People remember and move.** Trust and morale persist; a retry starts where the last talk ended; arcs cross acts (Marco cynic → ally → fighting for his hours; Anouk drowning → owner → team lead, or leaving if her fix fades and nobody checks in). Every recurring person has a beat in at least three acts.
+4. **The walk-around layer.** People who need a talk show a low-energy bar when you pass (decided). Keep it rare (≤ 2 prompts a week, expiring without cost) so a check-in stays a kindness, not a chore. The best clues sometimes come from these talks: the quiet werkvoorbereider knows why the drawings come back.
+5. **Dialogs as evidence.** What a person tells you is a clue with a depth; the deep clues come only when the person feels heard. The A3's evidence list shows "gehoord van Joost" next to "geteld bij Intake", and the Check does not care which, but the strategy screen later does ("Marco vertelt je niets meer dan nodig").
+6. **Compliance decays.** Already built into the rules (×0.6 / ×1.25). Make it *visible* in the sustain view: a fix won by pressure shows a thinner bar and the person's face. The player should be able to see, months later, why that fix slipped.
+7. **Tutorial talks** (Act 0, cannot be ruined, decided) teach the eight MORE PIES moves by name, one or two per day, with Ruud naming the move the player used well. After Act 0 he never names a move again.
+8. **Phase 7 keeps the judge.** When Claude voices the lines later, the state model stays the judge, so fairness and tests survive.
+9. **Quality bar.** Each dialog is scored on the seven mission criteria plus four of its own: does it feel like a real person; is the meter readable; can the player feel progress without a golden path; would a player quit here. Anything under 25/35 is rewritten before it ships. The content test proves ≥ 3 distinct successful move sequences per persuasion dialog, that pushing early costs, and that pressure yields compliance, not commitment.
+
+### 4.4 The coach
+Ruud asks; he rarely tells. The question bank per stage exists and no longer repeats. Next: templated questions that read the main mission's numbers ("De doorlooptijd is nu 54 dagen; wat is je doel?"), the Kata five in order during an experiment, a reflect question that names the fork, the after-talk question after a hard main-mission dialog, and the act-end terugblik (§4.2.6). He never coaches a side mission and never names a dialog move after Act 0.
+
+---
+
+## 5. The world: company, floors, town
+
+### 5.1 Principles
+- **The world grows with the acts.** A new room, floor, building or town site opens when a mission first needs it, and the player map grows with it. Nothing is open from the start (progressive RPG); nothing is built before its missions exist.
+- **Gemba readability.** Waste must be *seen* from the Sims camera: stacks of dossiers, a full in-tray, a whiteboard with stale dates, a rack that is empty, a van with the wrong joint, a queue at the counter. Each active problem has at least one visible tell, ambiguous enough that only tools and questions settle it ("nothing is handed over": a stack can be normal).
+- **Semi-realistic, scripted first.** Blender via `bpy` builds rooms and props (consistent, licence-free, re-bakeable); characters by the method Merijn chooses (§7 Q1). CC0 textures where the network allows. Lightmaps baked.
+- **Seams, not loading screens.** Floors and buildings connect through stairwells, doors and the yard; the van to town and to the other areas is a short map travel with a drive-by view, never a driving game.
+
+### 5.2 The campus in Nova (built across Phases 1–4)
+| Place | Opens | What happens there |
+|---|---|---|
+| **Hoofdgebouw, 1e verdieping — Aansluitingen** (exists) | Act 0 | Intake, Werkvoorbereiding, the Obeya wall, Ruud's room, the mission board; later Revisie & GIS and Meetdata & registratie on the same floor |
+| **Hoofdgebouw, begane grond** | Act I | Ontvangst, the Klantcontactcentrum (Esra and her agents, the headsets, the El Amrani calls), the kantine (check-ins happen here) |
+| **Hoofdgebouw, 2e verdieping** | Act II | Directie & Obeya (the KPI board's home), Netstrategie (Femke's board), the congestion desk, the MT room (day 100, the ACM visit, hoshin), Frank's office |
+| **The yard: magazijn, werkplaats, bussen** | Act I sides | the van park, the kanban wall, the storeroom racks, monteurs leaving and returning |
+| **Opleidingsterrein** | Act I (Henk) | TWI by doing; the training-capacity missions of tier 3 |
+| **Bedrijfsvoeringscentrum** (control room) | Act III | shift handover, the storm night, escalation; the first night scene |
+| **IT-gebouw** (or a floor) | Act VI (tier 3) | the field-app team, the release train, test environments |
+
+Three floors is the right size for the head office: it mirrors how a DSO's office works (customer-facing below, operations in the middle, direction above), gives the player map a vertical story, and keeps each floor small enough to walk in a minute. Lifts and stairs are the seams; the player map gets a floor switch.
+
+### 5.3 The town of Nova and the region (Phase 4)
+- **Nova** is the gemba of the field. Build it as *sites* first, each a small hand-built scene a van drives to: a street with an open trench (graafschade, the KLIC map in hand), a home's meterkast (niet gereed, niet thuis), a trafohuisje (the heatwave), a hall on the industrial estate (the congestion customer), the El Amrani home (home visits once the town exists, decided). Then the streets between them, solar roofs, chargers, a primary substation on the edge. Outages darken streets at night.
+- **Lindeveld** (rural: long drives, one depot, five monteurs) and **Havenzij** (port: crowded underground, nitrogen, six monteurs and three draughtsmen) are small depots with their own people, reached from the region map. They are inside Zuidmark (decided).
+- **Vans** carry the shared-pool story: you see them leave for storingen and not come back for the planned job.
+
+### 5.4 Characters and animation
+Samples exist (scripted Blender: clear at camera distance, mannequins up close). Decision pending (§7 Q1). Whatever the method, the needs are: ~30 named people by tier 4 with distinct silhouettes (role, age, PPE), idle/work/walk/talk animations, a face readable enough for the mood word to make sense, and a hover name tag. Fix the known issues: the walk animation paced for 1.2 m/s against a 3 m/s player speed; 3.5–4.2 MB per glb.
+
+---
+
+## 6. Working agreements
+
+### 6.1 Roles
+- **Fable** plans and reviews direction (this document). **Opus 5.5** executes with agents. **Merijn** decides, playtests and answers the multiple-choice questions.
+- **Agents, every session:** (a) a *mission-and-dialog builder* in the main tree (content, rules hooks, schema); (b) a *mission-and-dialog designer/auditor* in docs (new tiers, dialog scripts, audits, voice sheets); (c) when a tier enters content, a *simulation checker* and a *source verifier*. At least one of (a) or (b) is running at all times; if not, Claude tells Merijn. Other agents (UI, world, rules, QA, art) work in **git worktrees** and merge through the coordinator.
+- **The coordinator (Opus main)** pushes every agent commit after a clean-worktree gate, at least every 30 minutes (a `send_later` check-in), so CI never goes quiet. Agents commit by explicit paths, never `-A`, and never push.
+
+### 6.2 Rules of work
+- Superpowers skills per CLAUDE.md §3: brainstorming before a feature, writing-plans for multi-step work, TDD (watch it fail), systematic-debugging, verification-before-completion, requesting-code-review before a phase gate, `simplify` after every change.
+- The full gate before every commit (§1). Screenshots for anything visual, and *look at them*.
+- PLAN.md is updated inline: a ✅ the moment a task is done; a ⬜ the moment one is found. Design calls Claude makes without Merijn go under "Claude's calls, pending Merijn" (§10); the ~40 small open questions in the specs take their recommended option (decided).
+- Evidence first: a number from a public source or a marked estimate with reasoning, in the content file.
+- Unfinished work never lives only in a worktree or a stash at session end: save it as a patch under `docs/handoff/` and point to it here.
+- "Send now" in the app interrupts every running agent and a stopped agent cannot resume: relaunch it fresh, pointed at its worktree.
+
+### 6.3 Questions for Merijn
+Asked as multiple choice with a recommended option, batched at the end of a session (or when a decision blocks a phase), never one by one during his day.
+
+---
+
+## 7. Questions for Merijn (open)
+
+1. **Characters:** (a) **an asset pack plus motion-capture animation, re-dressed in Blender for Voltana's uniforms and PPE** (recommended: real faces and hands, good walk cycles, our own clothing; licence to check) · (b) an AI character generator per person (unique faces, licence and consistency to check) · (c) keep scripting in Blender (full control, mannequin look).
+2. **The town:** (a) **sites first, streets later, van as map travel** (recommended) · (b) a full walkable town from the start of Phase 4 · (c) the town only ever as sites.
+3. **Release target for the first public build** (Phase 6): (a) **a private web/Windows build for friends and colleagues** (recommended first) · (b) itch.io · (c) Steam.
+4. **Language:** (a) **Dutch only** (recommended until the game is proven) · (b) plan English from Phase 3 on.
+5. **Act-end terugblik with free text** (§4.2.6): (a) **yes, kept in the journal, never judged** (recommended) · (b) no free text; Ruud's questions only.
+
+---
+
+## 8. Problem ideas backlog (keep growing)
 
 Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine, but the game needs more as it grows. Whenever a new problem idea fits the game or a difficulty tier, add it here, then promote it into the catalogue for the tier being built.
 
@@ -351,49 +290,13 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 | IT | Field app releases twice a year; every fix waits for the release train | IT · waiting | Phase G |
 | IT | Test environments scarce; teams queue for them | IT · waiting | Phase G |
 
-## Phase C — World: campus + town ⬜
-- ⬜ Campus buildings and rooms with visible WIP (in-trays, planning boards, warehouse racks)
-- ⬜ Town: streets, homes with solar/heat pumps/EV chargers, substations, industrial estate
-- ⬜ Vans driving to jobs; crews working at sites; outages darken streets
-- ⬜ NPCs per department; pathfinding across campus and town
-- 🔧 **Player map** (Merijn, 2026-10-13; office ✅ 2026-10-13: M opens `OfficeMap` with the floor, furniture, coach's room, places, the player and the active mission's places; campus and town later): a map of the office layout showing the places (Intake, Werkvoorbereiding, Obeya wall, coach's room, mission board) and where the player stands; it grows to the campus and the town of Nova later. Built from the glb's place markers (`office.gd` already reads them), so it follows the model. Opens with M; the active mission's places are marked.
-
-## Phase D — UI (Dutch) ⬜
-- ⬜ HUD (week/day clock, KPIs per stream), gemba toolkit, conversations, A3, Check/Act, value stream map per stream (built by walking it), notebook, codex, NPC dialogue, onboarding by the Lean coach
-- ✅ **Training arc** (Merijn, 2026-10-13; rules, content and UI ✅ 2026-10-14; waits on Merijn's playtest and his four answers): a short tutorial chain before the first real mission.
-  - ✅ Rules and content (2026-10-14): five `kind: training` days `training_mon`…`training_fri` in `content/missions.yaml` (each hands out the next; no side slot; the coach helps; no deadline), new goals `observe {places, tool?, uses?}` and `check {problem}`, mission `teaches` (glossary cards on accept; `aansluiting` added to concepts) and `check_days` (a 3-day practice Check). The invented practice problem `training_tray` (intake touch time ×1.15, an estimate) with `one_tray_fifo` and `tray_labels` (short decay). `GameSession.new_game(seed, dir, training := false)`, `skip_training()`, `in_training()`, `time_lapse(days, problem)`. Validator and tests updated.
-  - ✅ Rule fixes (2026-10-14): practice problems (training days' goal problems, `Region.practice`) do not count toward maturity; a faded practice fix reopens neither `training_fri` nor `training_tray` (the fade shows in the time-lapse); `queue_count` reports the counted queue (`Region.queue_at`) and Wednesday's completion carries the measured queues; a training-only `setup` (mission field, validated: three of four work preparers on a course on Wednesday) makes design clearly the longer wait. Each training day starts on its own morning (ma 12 – vr 16 okt); the story's walk counts as done once the week is over or skipped (the office cannot walk the whole stream). Monday visits intake and design (the office has no planning marker).
-  - ✅ UI (2026-10-14): new games start with the week (`training := true`, `Office.training`); "Inwerkweek overslaan" on the mission board with a confirm line; training days titled "Inwerkweek — ma: …" on the board, HUD, A3 and coach; the map marks `goal_places` (and the obeya wall for a check goal); a glossary card per day (name + short, "K voor alle begrippen") and the coach's debrief card with the measured queues (HUD cards, top right); the A3 and its "Wacht tot de Check (…)" use the mission's `check_days`; "Spoel 30 dagen vooruit" after the practice Act shows the KPI before/after with leading/lagging tags and whether the fix faded. Screenshots `play_training_board.png`, `play_timelapse.png`.
-  - ⬜ Open after playtest: the fade does not show in the numbers (a faded fix makes the practice problem dormant, so the 30-day KPI can even improve; the text explains it); Thursday's 3-day Check ends on Sunday, so Friday's day starts "zo"; after Wednesday's staged course the base-load constraint is intake again, so the practice fix reads "knelpunt aangepakt".
-  - **How the game works:** walking, gemba tools and their time cost, the clue journal, the A3, Check/Act, the coach, the KPI board.
-  - **What choices do:** time, budget and trust; a fix that fades when it is not standardised; bottleneck versus non-bottleneck.
-  - **A little about the energy sector:** the role of a grid operator (DSO), grid congestion, the connection term, the technician shortage, the ACM, the energy transition.
-  - It follows CLAUDE.md §2: action-based, Kata-style coaching, no multiple choice with a marked answer, Dutch text. It ties in with `content/concepts.yaml` (the glossary).
-
-## Phase E — First playable and playtest ⬜
-- ⬜ First playable vertical slice (one value stream end to end), shared privately with Merijn once it is worth playing
-  - ✅ Office slice, task 2 (2026-10-13): `GameSession` (`game/src/game/session.gd`), the one facade for the 3D world and UI, tested end to end on `fix_custom_design`. Day 0 of play is Monday 2026-10-12 (a doc-comment choice, not yet confirmed by Merijn).
-  - ✅ Office slice, task 3 (2026-10-13): the office scene, player and UI on top of `GameSession` (plan: `docs/superpowers/plans/2026-10-13-office-vertical-slice.md`). `game/src/world/office/` (first person: WASD, mouse, E, J for the clue journal, Esc), markers found in `office.glb` by glTF extras or name (a code-built stand-in when the model is missing), `game/src/ui/` (HUD, prompt, team menu, clue journal, A3, Check/Act, coach, mission board; Dutch words only in `UiText`). Main scene is now the office; boot stays as the title. Tests: `test_office_scene.gd`, `test_ui_text.gd`. Screenshots: `docs/screenshots/play_*.png` via `game/tools/play_shot.gd`.
-  - ⬜ Merijn to confirm Claude's UI calls for the slice: interaction by standing at a marker (within 1.6 m, a green ring on the floor) rather than by looking at it; the clue journal groups clues by place and never says which problem or which clues matter; the A3 evidence list offers every found clue (red herrings and other problems' clues too); the coach is the content's Marleen Verhoef (the spec said Ingrid).
-  - ✅ The Check looked contradictory on `fix_custom_design` (capacity up, lead time, first-time-right and WIP age worse). Root cause: a new game warmed the network up for only 63 days, so play started while the connections stream was still filling up and every measure drifted worse whatever the player did. The warm-up is now half a year (`GameSession.WARMUP_DAYS` 182, as in the problem report). The Check then shows lead time 54 → 52 days, FTR 38% → 46% and WIP age 117 → 112 days, still improving two months later.
-  - ⬜ Office slice UI: no save/load, no settings, no key rebinding, no pause menu yet; gamepad not supported.
-  - ✅ QA autoplay finding 1 (2026-10-15): `queue_count` at a wait or material step (e.g. `connections.permit`) crashed in `Network.queue_of`, since only work steps have a queue. `Network.waiting_at` now counts the orders waiting at any step (the wait, or stock); `queue_days` is 0 there. `Region.queue_at` and the Check's `measures` share it. Regression test: every tool and question at every step kind (`test_region.gd`).
-- ⬜ Playtest round with Merijn → tuning backlog
-
-## Phase F — Depth and regions ⬜
-- ⬜ Tier 2–4 problem catalogues; more regions unlock with maturity; strategic layer (prioritisation framework, capacity investments, contract types)
-
-## Phase G — IT value streams: SAFe / Agile / DevOps ⬜
-- ⬜ IT department on campus; value streams for field-app features and incident handling
-- ⬜ Problems: long release cycles, dependencies between teams, PI planning theatre, manual testing, environment scarcity, ops/dev handoffs, technical debt
-- ⬜ Countermeasures: ART alignment, WIP limits, CI/CD, DORA metrics, value stream identification
-
-## Phase H — AI coach and free-text conversations ⬜
-- ⬜ Optional Claude-powered conversations with NPCs, grounded in each problem's hidden facts, so "asking the right question" can be fully free text
-
 ---
 
-## Decisions Made
+## 9. Decisions Made
+
+- **The story arc is *Drie winters* (Fable's call, 2026-10-16, on Merijn's invitation to change the arc; pending his read).** Three years with a winter each as the test of what the player built; the waiting list as the north-star number; Ruud seconded for a year with Frank as interim director (path-dependent sponsor or regime); the coach by phone once a month in that year; Ruud's retirement as the last deadline; the succession as the finale, with the successor depending on whom the player developed. Full text in §4.0; the catalogue's 94 missions stay, regrouped. Easy to reverse: the act content is unchanged, only the beats, the openings and the finale move.
+
+> Phase letters in older entries (Phase A–H) refer to the archived plan: A engine, B content, C world, D UI, E first playable, F depth, G IT, H AI voice. They map onto §3 as: A/B/E → done or Phase 1–2, C → Phases 2–4, D → Phase 1–2, F → Phases 3–5, G → Phase 4, H → Phase 7.
 
 - **Answers on missions and dialogs (Merijn, 2026-10-15, multiple choice).**
   - Dialog meter: a bar that fills (openness), with arrows (▲/▼▼) for each reply's effect, no numbers. People met while walking around show a low-energy bar, inviting a spirit-lifting talk.
@@ -418,7 +321,7 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
   - **Kept as built:** "Capaciteit" as a predictable A3 KPI; a 5-day training week, always skippable; orange mission places on the map; the KPI board compares with the habit, so a good choice pays every quarter.
   - **Sector depth: all three.** Glossary cards, a conversation with an expert (e.g. a grid planner on congestion), and a sector side quest.
   - **The coach is a man:** Ruud Hoekstra, Directeur Netbeheer regio Zuidmark (name chosen by Claude; replaces Marleen Verhoef).
-  - **Characters:** pending a sample render of a Blender-scripted character, for Merijn to judge.
+  - **Characters:** pending Merijn's choice of method (Blender script, AI generator or asset packs). Samples built 2026-10-15: `tools/blender/build_character.py` makes the player, Ruud Hoekstra and a monteur in PPE (rigged, idle and walk, textures embedded); renders in `docs/screenshots/characters_*.png`. The player scene uses `sample_player.glb` already.
 - **Third person, not first person (Merijn, 2026-10-14).** The player sees their own character from slightly above. Camera: **Sims-like** (Merijn agreed, 2026-10-14) (a raised, rotatable, zoomable camera; click or WASD to move), because a gemba game is about seeing the whole flow: stacks of work, queues, who is busy. This makes a player character, and so the people question, part of the next 3D step. ✅ Built (2026-10-15): a visible player (`player_avatar.tscn`: a capsule stand-in, replaced by `assets/characters/sample_player.glb` with idle/walk when that file is there), a camera rig (`camera_rig.gd`: follows smoothly, Z/C or right-drag turns, the wheel zooms 2.5–18 m, close by it looks lower across the desks so stacks and boards read, the ceiling is cut away and the camera stays over the floor), WASD relative to the camera and click-to-move over a walk grid baked from the office's collision navmesh (`office_nav.gd`). Clicking a ring walks there and opens it; using a place (E, a ring click, or holding right-click still) frames its workstation close by until the panel closes or the button is let go; the ring under the cursor lights up. Rotation is Z/C, not Q/E, because E stays the use key. The mouse is no longer captured. Rules, UI, map and office model unchanged.
 - **The Check labels lagging measures (Merijn, 2026-10-14).** A measure that only moves after about one lead time (lead time, first-time-right of finished orders, on time) is marked "volgindicator: effect zichtbaar na ±1 doorlooptijd" in the Check panel, so a dip right after a fix reads as a lesson about leading and lagging indicators, not as failure.
 - **Training arc details (Claude, 2026-10-14, for Merijn to confirm).** The week is the default for a new game; the story walk (`walk_connections`) counts as done once the week ends, as it does for a returning player. Wednesday's lesson uses a marked training setup so the measured queues give a clear answer, and the debrief names whatever the counts say.
@@ -447,15 +350,9 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
   - the intake checklist is a real but weak improvement;
   - Henk: explained (the retiring expert in De laatste kennisdrager's clues), proposed as a deadline mission.
 
-### Claude's calls, pending Merijn (2026-10-12)
-Merijn asked me to fix the content review's findings with my own judgement while he is away. Each call is easy to reverse, and the same questions sit in the review doc.
-- ~~Connections norm: six weeks~~ → answered: the 18-week industry norm.
-- **Graafschade hurts through pulled monteurs**: daytime outages ×1.5, and planned connection work is interrupted and re-planned. Answered: claims count too (€4,250 a week).
-- **A failed trip costs the trip** (1.5 h at a meterkast that is not ready, 0.5 h when nobody is home), not the full job.
-- **De revisieberg feeds Graafschade in the simulation**, not only in the clues. Answered: base it on evidence; now +5% daytime outages and €425 a week, marked as an estimate.
-- **Kept as they are, plausible and grounded:** the contact-centre spiral of Klaar maar niet af, the monthly EAN batch, three times as many calls from late customers, 40 minutes to the warehouse, two of five meterkasten not ready, three of eight not at home, 240 open revisions.
-- **Henk becomes a story hook** for the missions (built: a deadline mission); the buddy system's team hours stay as they are.
-- ~~Still open: the contact-centre spiral~~ → answered 2026-10-13: keep it mild.
+## 10. Claude's calls, pending Merijn
+
+Each call is easy to reverse; Merijn can overrule any of them. Newest first.
 
 ### Claude's calls, pending Merijn (2026-10-15, dialog engine)
 Built from `docs/superpowers/specs/2026-10-15-dialog-system-design.md`. The spec's §14 questions took the recommended option: (1) a fixed palette, (2) chips show the move type with the line on hover, (3) acting without asking the owner counts as compliance (×0.6), (4) ×1.25 / ×0.6, (5) a ruin costs reputation −1, trust −5 and a day, (6) morale hidden, shown as a band (and, by Merijn's decision, as the walk-around energy bar), (7) leaving built as Merijn decided, (8) prompts expire after 3 days (cadence limits not built), (9)–(10) the cue and the trace are data the UI shows, (11) no free text, (12) no XP for talks. Merijn's own decisions (2026-10-15) are built: arrows not numbers, all moves visible, tutorial talks, the energy bar, rare leaving, standard Dutch. Further calls:
@@ -473,15 +370,36 @@ Built from `docs/superpowers/specs/2026-10-15-dialog-system-design.md`. The spec
 - **Check-ins:** a trigger is `morale_below` and/or a `needs` expression (Ahmed's: Henk has gone and his morale is below 50); a lifted check-in rests 14 days; the full cadence (one prompt, two a week, expiry) is D7.
 - **The gemba's quick question never finds a dialog's clue,** and the expert test in `test_catalog.gd` now listens to get it.
 
+### Claude's calls, pending Merijn (2026-10-12)
+Merijn asked me to fix the content review's findings with my own judgement while he is away. Each call is easy to reverse, and the same questions sit in the review doc.
+- ~~Connections norm: six weeks~~ → answered: the 18-week industry norm.
+- **Graafschade hurts through pulled monteurs**: daytime outages ×1.5, and planned connection work is interrupted and re-planned. Answered: claims count too (€4,250 a week).
+- **A failed trip costs the trip** (1.5 h at a meterkast that is not ready, 0.5 h when nobody is home), not the full job.
+- **De revisieberg feeds Graafschade in the simulation**, not only in the clues. Answered: base it on evidence; now +5% daytime outages and €425 a week, marked as an estimate.
+- **Kept as they are, plausible and grounded:** the contact-centre spiral of Klaar maar niet af, the monthly EAN batch, three times as many calls from late customers, 40 minutes to the warehouse, two of five meterkasten not ready, three of eight not at home, 240 open revisions.
+- **Henk becomes a story hook** for the missions (built: a deadline mission); the buddy system's team hours stay as they are.
+- ~~Still open: the contact-centre spiral~~ → answered 2026-10-13: keep it mild.
+
 ### Claude's calls, pending Merijn (2026-10-15, mission system phase 2)
 Made by the mission agent while building waves 1–3; each is easy to reverse.
 - **Repair quests** look at a poor fix after 42 days, then weekly, and open only with a ≥ 5 % KPI gap to the best countermeasure over a 28-day forecast (estimates, `rules/repairs.gd`); 150 XP. A rework's Act pays the problem's score again, like any Act.
 - **A poor fix** (fact `poor_fix:`): the countermeasure fits 0.2 or more below the problem's best, or the A3 named a wrong root cause (catalogue §2.15 thresholds, estimates). Recomputed at every new Act, so a better later fix clears it.
 - **Merijn's answers to the audit's §8 (2026-10-15), recommended options, as built or planned:** (1) Act II opens with Graafschade, De revisieberg follows ✅; (2) the El Amrani dossier as a followed order (a sim tag) ⬜; (3) the non-bottleneck fork's freed monteur hours feed `t3_crew_strategy` (tier 3) ⬜; (4) `fix_planning_reshuffle` trimmed to four clues ✅ (the "Er zijn elke dag storingen" quote dropped); (5) Ahmed as trainer in Act IV after the buddy or TWI route ⬜ (tier 3); (6) hidden rewards with silhouettes and end-of-act hints; (8) the borgingsdividend; (9) overload costs trust; (10) containment for safety missions.
-- **Revision backlog keeps throughput** as its KPI (audit L5 not applied): measured, a wip_age prediction cannot move in the Check (see Phase B correctness fixes).
+- **Revision backlog keeps throughput** as its KPI (audit L5 not applied): measured, a wip_age prediction cannot move in the Check (see Phase B correctness fixes). Later moved to capacity by the Check agent (see below).
 - **Mission glossary cards give context, not the answer:** the catalogue listed teaches such as poka_yoke on the incomplete-application mission; a card handed over on accept would name the fix, so those cards come with the Act (problem `teaches`) instead.
 - **Reputation deltas** (all estimates, `rules/reputation.gd`): the catalogue's §2.7 numbers, plus +2 for redoing a faded mission (the audit's "owning a regression"). Reputation is never scaled by the score: the MT sees the mission done; the score pays in XP and budget.
 - **Mission rewards follow the score:** half of a solve mission's XP and budget is for finishing, half for the PDCA score (`0.5 + 0.5 × total / 25`, at least 0.6). The audit proposed `× total / 25`; the floor keeps a poor fix from locking a player below the green belt (the validator checks reachability at 0.6).
+
+### Claude's calls, pending Merijn (2026-10-15, the Check and recovery from debt)
+Made while fixing QA autoplay findings 4, 5, 6 and 21. Numbers are estimates, marked in `region.gd` and `pdca.gd`.
+- **The Check is a forecast, like the KPI review and the Friday lesson:** after the two-week experiment, the coming lead time is run twice (with and without the fix), so the verdict is the fix's own effect, not the stream's trend. The game clock does not move. The horizon is one lead time of the orders the problem holds up plus eight weeks of measuring, at least a quarter and at most three (grid reinforcement waits seven months: its Check looks half a year ahead).
+- **A pass needs both:** the countermeasure works (fit × maturity ≥ 0.5, as before) and the predicted KPI moved by more than 2 %. A too-early countermeasure still fails as too_early even if its numbers move a little ("it only half works").
+- **Noise:** paired runs drift apart once the fix changes who works on what. The 2 % band is below the drift of first time right and WIP age on KPIs a fix does not touch (up to ±10 % between the runs), so a lucky guess of an untouched KPI can pass; the score's prediction_wrong note still catches it. The expert's KPI moved beyond 2 % on every seed in the probe after the content changes below.
+- **Content KPIs changed to what each best fix moves within the Check:** De onvolledige aanvraag, Graafschade, De netstudiewachtrij and De revisieberg capacity; Gereserveerd maar ongebruikt throughput. First time right over finished orders lags behind a fix that removes rework (a returned order finishes weeks later), so for a problem opened at the mission's start it shows on some seeds only. A KPI over the orders that entered after the fix (a cohort) would let these name first time right again; not built.
+- **A step that is not the bottleneck now fails its Check** when the A3 predicts throughput or capacity (not_moved, with the bottleneck warning), instead of passing with a low impact score.
+- **A countermeasure that misses the cause does nothing** (was: weakens the problem by 10 %).
+- **A wait step has no bottleneck question:** its impact is the lead time it takes out (5 points at ≥ 10 %, 4 at ≥ 5 %, 2 above the noise).
+- **Recovery from debt:** a floor at −€50,000 (the size of the starting budget; the directie carries the rest) and savings from held fixes (each year a fix holds, the grant for a perfect result on it; €96–346 a week a fix, at the fix's health), only while the team at the fix trusts you. In debt the bad period stays until the budget is positive again.
 
 ### Claude's calls, pending Merijn (2026-10-15, sustain and drift)
 Made while building Merijn's two new rules and his answer on decay; spec `docs/superpowers/specs/2026-10-15-sustain-and-drift-design.md`. All numbers are estimates, marked in `game/src/rules/sustain.gd`.
@@ -537,410 +455,3 @@ Rulings I made while building the KPI board without you; each is easy to reverse
 - **Factory work archived (2026-10-12)**: `archive/factory-3d/` + commit `b3a4c8c`; the Python factory game stays runnable as the legacy build
 
 ---
-
-# Legacy build plan — Python factory game (frozen)
-
-Spec reference: `Lean_Factory_v2.0_Specification.docx`. Kept for history; no further work planned.
-
-### Learning Pillars (design principles — applies to every phase)
-
-This game is a **learning tool** for lean, six sigma, and factory digitalization. Every feature must serve these three pillars. When a task in any phase conflicts with a pillar, the pillar wins.
-
-1. **Learn by doing — safely.** The player must be able to make mistakes without instant hard punishment. Wrong choices reduce effectiveness, surface a lesson, and allow recovery (rollback, retry, NPC redirect). No dead-ends. No game-over from a single bad call. Recovery is always possible — often it *is* the lesson.
-2. **NPC-guided decision forks.** Key moments — investigation, 5 Whys, kaizen, countermeasure selection, digitalization choices — are presented as **multiple-choice branches** offered by NPCs: "what should we check next?", "what should we verify?", "what should we implement?". Every fork must include at least one correct option, one plausible-but-wrong option, and optionally a clearly-wrong option. Wrong options still teach: the NPC explains *why* in lean terms, then lets the player try again.
-3. **Teach the concept, not just the button.** When a lean, six sigma, or digitalization concept first appears in play (kanban, SMED, SPC, jidoka, MES, digital twin, etc.), introduce it in-fiction through an NPC — one short, skippable explanation. The button comes after the concept, never before it.
-
----
-
-### Phase 0 — Design Foundations ✅ COMPLETE
-All design artifacts: spec doc, 25-problem Tier 1 catalog YAML, 79-countermeasure YAML (merged), topology files.
-
----
-
-### Phase 1 — Simulation Core (Headless) ✅ COMPLETE
-- ✅ Station model (OEE, cycle time, WIP, quality)
-- ✅ Operator model (skill, fatigue, state)
-- ✅ Material flow, time engine with speed multipliers, factory aggregator
-- ✅ Metrics calculation (live KPIs), SQLite persistence (save/load), headless mode
-- ✅ Bug fixes: `field()` crash, stop probability formula, tick calibration, injection rate
-- ✅ Verified: Day 1 output = 14 hoverboards (exact spec target), OEE ≈ 39%, FTR ≈ 83%
-
-**Deliverable:** Headless mode runs cleanly for N days and prints metrics. ✅
-
----
-
-### Phase 2 — Navigation and Rendering ✅ COMPLETE
-- ✅ Tilemap, player sprite, camera, collision detection, interaction zones
-- ✅ Factory rendering (zone colors, station sprites, operator sprites)
-- ✅ HUD (clock, speed, KPI strip, minimap), inspector panel (station metrics, NPC dialogue)
-- ✅ Shift-to-run: holding Shift moves at 2.5× speed (RUN_MULT = 2.5 in player.py)
-- ✅ Code-reviewed; runtime visual test pending first play session
-
-**Deliverable:** Walkable factory. Player navigates floor, sees stations, inspector opens on E. ✅
-
----
-
-### Phase 3 — Problems and Inspection ✅ COMPLETE
-- ✅ Problem data model, YAML catalog loader, 25 Tier 1 problems in YAML
-- ✅ Visibility logic: obvious → active Day 1; subtle → activates on first zone inspection; hidden → deferred to Phase 4
-- ✅ Problem state machine, effect modifiers applied to stations on activation
-- ✅ `Factory.active_problems`, `log_inspection()`, `recent_inspections()` on Factory
-- ✅ `MaturityEngine` wired into factory (register_cm/remove_cm API ready for Phase 4)
-- ✅ Red ! badge on stations with active problems (renderer)
-- ✅ Inspector panel: KPI grid, problem name/severity/symptom, Time Observation bar chart, Gemba Log
-- ✅ Inspection logged once on open (not per frame); subtle problems re-evaluated on each inspection
-- ✅ `ct_history` rolling window (last 20) on Station for Time Observation
-
-**Deliverable:** Player walks to a problem station, sees ! indicator, opens inspector, reads symptoms, sees cycle time history and inspection log. ✅
-
----
-
-### Phase 4 — Countermeasures and Scoring ✅ COMPLETE
-- ✅ `CountermeasureCatalog` + `Countermeasure` dataclass — loads all 79 CMs
-- ✅ All six scoring metrics: DQQ, EI, RCA, CMP, LM, CIM (`scoring/metrics.py`)
-- ✅ `calculate_all()` orchestrator; `credits_earned()` formula
-- ✅ Full mismatch effectiveness table; mismatch warning dialog
-- ✅ Countermeasure browser UI: scroll, tier color, prereq indicator
-- ✅ Score display panel: 6 metrics with dot bars + total + credits
-- ✅ `Factory.apply_countermeasure()`: mismatch mult, station modifier, maturity register, side effects
-- ✅ `Factory.resolve_problem()`: scores, awards credits, removes modifiers, RESOLVED state
-- ✅ Decay logic (`_tick_decay`): per-CM day timer, removes modifier + maturity on expiry
-- ✅ Game loop fully orchestrated: inspector → catalog → warning → apply → resolve → score
-- ✅ Save/load for full game state: problems runtime state, active_countermeasures, inspection_log, maturity engine
-- ✅ Per-CM modifier tuning: 14-category modifier table in `_CM_CATEGORY_MODIFIERS`
-- ✅ 138 automated tests (scoring, catalog, mismatch, apply/resolve, save/load, missions, rollback)
-
-**Deliverable:** First fully playable loop. Walk → find → investigate → apply CM → score → earn credits. ✅
-
----
-
-### Phase 5 — Guided Learning, Decision Forks, and Mistake Recovery 🔧 ~75% COMPLETE
-
-NPC forks are **deterministic, YAML-driven dialogue trees** — separate from the AI coach (Phase 8). Forks scaffold the *decision*; the coach reflects on it.
-
-#### Done
-
-- ✅ `problems/dialogue.py`: `DialogueChoice`, `InvestigationFork`, `FiveWhysStep`, `ProblemDialogue`, `InvestigationSession` with Learning Rally detection and round-trip serialisation
-- ✅ `teaches:` tags on all 25 Tier 1 problems
-- ✅ `dialogue:` investigation forks on all 25 Tier 1 problems (CORRECT / PLAUSIBLE / WRONG with evidence, hint, teaches, score_feed)
-- ✅ `Problem` carries `teaches` and `dialogue`; loader parses both
-- ✅ `factory.investigation_sessions` dict + `get_or_create_session()`; persisted in save
-- ✅ Pulsing `[?]` interaction indicator on stations and role-desks with an unread fork
-- ✅ Dialogue fork UI in inspector: NPC prompt → `[1][2][3]` choices → reveal evidence/hint → `[Enter]` continue
-- ✅ `score_feed` wired: correct fork choice applies +1 bonus (capped at 5) to named scoring metric
-- ✅ Learning Rally bonus wired: +10% credits when player solves after an initial wrong attempt
-- ✅ `InvestigationSession.choices_made` tracks decision log per problem
-- ✅ `factory.discovered_concepts` registry: populated from fork choices and station inspections; persisted
-- ✅ Concept codex panel: `[K]` opens `ui/codex_panel.py` — 62 concepts; unlocked with definitions, locked as `???`
-- ✅ Rollback action: `[U]` in inspector — costs 25% of base credit, re-activates problem, clears session
-- ✅ NPC sprites interactable: all NPCs have `w=1, h=1` + `label`; `detect_facing(OBJECTS + NPCS)` — walking up to any NPC opens inspector
-- ✅ Role-name mismatch fixed: all sources now use `"Quality Lead"` consistently
-- ✅ Inspector scroll: mouse wheel + arrow keys scroll; 2400px off-screen surface; scroll indicator
-- ✅ `ui/fonts.py`: single source for all UI font sizes (mono 13px, body 14px, title 16px)
-- ✅ Mission system: `problems/mission.py` — `Mission`, `MissionTrigger` with direction field; YAML loader
-- ✅ Tier 1 mission pack: 5 missions in `data/missions_tier1.yaml` (auto/npc/kpi/day/inspect triggers)
-- ✅ Progressive problem visibility: problems gated behind active missions; sorted by severity; cap enforced
-- ✅ Active problem cap: max 3 active, max 1 critical (enforced in `visibility.py`)
-- ✅ Mission flood cap: max 2 active missions at once
-- ✅ WIP ceiling circuit breaker: WIP > 100 auto-slows simulation to 1×; events capped at 50
-- ✅ OEE floor circuit breaker: OEE < 20% logs a critical event (no station mutation — avoids accumulation)
-- ✅ Mission state persisted in `factory.to_dict()`/`from_dict()`
-- ✅ `active_mission_count` property on Factory eliminates duplicated sum
-- ✅ 30 new tests: mission triggers, completion, NPC activation, rollback, visibility caps (138 total)
-
-### Remaining — guided decision flow
-
-- ✅ **`teaches:` tags on all 79 countermeasures**: `_CM_TEACHES_MAP` in `countermeasure.py`; `factory.discover(cm.teaches)` called in `apply_countermeasure`
-- ✅ **5 Whys guided flow**: `five_whys:` YAML authored for T1-003/006/008/012 (3 steps each, 3 choices per step); session tracking + inspector rendering; follows investigation fork completion
-- ⬜ **Gemba walk decision tree**: player chooses who to talk to, what to time, what to measure — each NPC gives a different partial perspective; full picture requires multiple stops
-- ✅ **CM selection fork** (session 2026-04-24): when the catalog opens, the source NPC (from the problem's investigation fork) proposes a 3-CM shortlist at the top of the panel — correct + same-category distractor + different-category distractor. Selectable via `[1][2][3]` or the usual arrow-scroll. `_build_shortlist` in `main.py`; rendered via `CatalogPanel._draw_shortlist`.
-- ⬜ **DMAIC workflow scaffold**: Define → Measure → Analyze → Improve → Control as multi-stage A3 form; unlocks gradually
-
-### Remaining — mission system
-
-- ✅ **Mission HUD indicator**: small active mission title + current hint shown in a corner of the HUD when a mission is active; nothing shown when no mission is active
-- ✅ **Mission briefing dialogue**: when a mission activates via NPC interaction, the NPC delivers the narrative briefing as a short dialogue exchange (framed as invitation, never a command)
-- ✅ **Mission ordering / availability cap**: `visible_after:` prerequisite field on `Mission` gates each mission behind a predecessor. Chain: M-T1-001 (auto) → M-T1-002 + M-T1-003 (need M-T1-001 done) → M-T1-004 (needs M-T1-002) → M-T1-005 (needs M-T1-003). Only M-T1-001 surfaces on day 1; subsequent missions unlock progressively.
-- ✅ **Mission completion notification**: source NPC panel shows "MISSION COMPLETE" + per-mission debrief text when mission is completed (`_MISSION_DEBRIEFS` dict in inspector)
-- 🔧 **Lean Coach NPC** (session 2026-04-24, character added): Alex the Lean Coach now stands at tile (95, 8) in the Operations room with their own desk (OPS-COACH). Signature flavor line: "Show me the problem. Not the report — the problem." Sprite + role-look mapping done. **Still to author**: dedicated kaizen/DMAIC missions with Lean Coach as source NPC (Phase 6 content authoring).
-- ✅ **NPC awareness hints**: `_NPC_AWARENESS` dict in inspector; 12 (role, mission_id) entries; ambient line replaces static NPC quote when a nearby mission is active
-- ✅ **[BUG] Progression stalls after the first 3 problems solved** (fixed 2026-04-24): root cause was a "good play soft-lock" — M-T1-002 triggers on `ftr <= 0.88`, M-T1-003 on `wip >= 65`; a player who applied good CMs pushed FTR above 0.88 and WIP below 65, so the KPI triggers never fired after M-T1-001 completed. Fix (option a from the previous plan): added `trigger_ever_met: bool` sticky flag to `Mission` (`problems/mission.py`) plus save/restore, reworked `_check_mission_triggers` in `simulation/mission_engine.py` to always call `_mission_trigger_met` (even before the `visible_after` prereq completes) so the sticky flag tracks KPI crossings across the full session. Also wired `_check_mission_triggers()` + `evaluate_visibility()` into `resolve_problem` so downstream missions activate immediately on resolve instead of only at day-end. Verified with a scripted scenario: good-KPI factory state + resolve first problem → M-T1-002 and M-T1-003 both activate, new problem T1-003 surfaces.
-
-### Remaining — safety nets
-
-- ✅ **FTR floor circuit breaker**: FTR < 60% logs `ftr_floor` event and slows simulation to 1× (consistent with WIP ceiling pattern)
-- ✅ **Side-effect suppression**: `_active_problem_cap_reached` guard in `apply_countermeasure` — harmful side-effects suppressed when at cap
-- ✅ **Daily auto-snapshot**: currently auto-saves every 5 real minutes — change to trigger on in-game day boundary so player can always restart from yesterday's state
-- ✅ **No hard fail state for bankruptcy** (session 2026-04-24): `Factory.recovery_mode` flag flips True when credits hit zero; exits when credits climb back past 150 OR 7 in-game days elapse. During recovery, rollbacks are free (no 25% penalty) so the player can re-experiment freely. HUD shows a warning-styled "RECOVERY WEEK" banner under the top bar. Entry/exit logged as circuit-breaker events for narrative framing. Save/load persists the state. 5 regression tests in `tests/test_factory_cm_flow.py`.
-
-### Remaining — mistake tolerance
-
-- ✅ Soft-punishment ladder: wrong CM tip shown in inspector; count=2 → 10% penalty; count=3 → 20% penalty (capped at 40%). Never game-over
-- ✅ Recovery coach dialogue: source NPC shows "CM REVIEW" section with escalating advice when `wrong_cm_count >= 1` on a mission problem
-
-### Remaining — learning content
-
-- ✅ Micro-lesson intros: first time a concept appears via `discovered_concepts`, NPC offers optional 3–5 sentence in-fiction explanation (skippable, one-time per concept)
-- ✅ Knowledge score in HUD: `CONCEPTS X / 62` shown in the KPI strip alongside OUTPUT/OEE/WIP/FTR/CREDITS
-- ⬜ Digitalization decision forks: explicit analog-vs-digital choice forks (paper Andon vs digital, clipboard vs MES)
-- ⬜ Data-literacy moments: when SPC chart / Pareto / histogram first appears, NPC walks through reading it as a fork
-
-### Remaining — PDCA verification loop
-
-The game currently implements Plan (investigation fork) and Do (apply CM). Check and Act are missing.
-
-- ✅ **Follow-up indicator**: 3 days after CM applied, pulsing green `↻` badge appears above station; clears on resolve. `factory.follow_up_due_stations` property; rendered in `_draw_followup_badges`
-- ✅ **Effect verification fork**: 3 days post-CM, `_should_show_verification` gates a generated PDCA-Check fork; `build_verification_fork` generates per-category NPC prompt + 3 choices; CORRECT boosts CIM via score_feed; 37 new tests
-- ✅ **Standardize action**: `[S]` after correct verification locks CM decay permanently; `session.standardized` flag; `factory.standardize_cm()`
-- ✅ **Adjust action**: `[A]` after wrong/plausible verification resets `verification_complete` + clears `verification_choices` for retry; `factory.adjust_verification()`
-- ✅ **PDCA completion bonus**: +15% credits when all four phases done (fork + verification correct + standardized); stacks with rally bonus
-
-### Remaining — kaizen events
-
-- ⬜ Kaizen workshop trigger: NPC proposes multi-day kaizen when 2+ related problems active in a zone
-- ⬜ Team composition choice: player chooses who to invite — affects which hints surface
-- ⬜ Workshop stages as forks: Gemba → Analyze → Experiment → Standardize
-- ⬜ Anti-pattern dialogue: wrong choices surface realistic failure modes without losing the workshop
-
-**Deliverable:** Every problem-solving loop is a guided, mistake-tolerant learning journey. Player leaves each session having *understood* a lean concept.
-
----
-
-### Phase 6 — Tiers 2–4 Content + Final Packaging ⬜ NOT STARTED
-
-Content design happens *after* Phase 5 so every new problem uses the settled dialogue-fork YAML schema (`teaches:`, `dialogue:`, `five_whys:`) from day one.
-
-### Content
-- ✅ Tier 2 problem catalog: 15 problems in `data/problems_tier2.yaml` (session 2026-04-24) — all have `teaches:` + `dialogue:` investigation forks; T2-001/003/005/008/015 have `five_whys:` (2 steps each); pending Merijn review
-- ✅ Codex fully covers Tiers 1+3: 164 concepts, all 161 teaches tags mapped (session 2026-04-24)
-- ✅ Tier 3 problem catalog: 15 problems in `data/problems_tier3.yaml` (session 2026-04-24) — all have `teaches:` + `dialogue:`; T3-002/007/009 have `five_whys:` (2 steps each); pending Merijn review
-- ✅ Tier 4 problem catalog: 12 problems in `data/problems_tier4.yaml` (session 2026-04-24) — SPC/MSA/DMAIC/FMEA/DOE/8D/regression/reliability; T4-002/004/012 have `five_whys:` (2 steps each); pending Merijn review
-- ✅ Codex fully covers Tiers 1–4: 197 concepts, all 196 teaches tags mapped (session 2026-04-24)
-- ✅ Tier progression visibility verified (session 2026-04-24): 18 missions across 4 tiers; multi-tier loader; hidden problems activate after peer resolved; 23 new tests; 198 total passing
-- ✅ Tier 5 stub in UI: locked "Coming in v2" row at bottom of catalog panel (session 2026-04-24)
-- ✅ Specialist hiring system (session 2026-04-24): `simulation/specialist.py`; 6 zone types; `factory.hire_specialist()`; [H] key in inspector; save/load; 500 credits each
-- ✅ Full save/load verified (session 2026-04-24): T2–T4 problem runtime state, specialists, missions all persist correctly via existing by-ID mechanism
-
-### Packaging
-
-> **When to switch to .exe:** Build the first exe at the end of Phase 6 — once all game content is stable and 198 tests pass — so Phase 7 UI work can be tested as a real build rather than via Python scripts. The exe gate is: all four tiers playable, no open bugs, assets folder populated. Don't build earlier; assets are empty until Phase 7 graphics work begins.
-
-- ✅ `requirements.txt`: already uses `pygame-ce==2.5.7` (pinned, correct)
-- ⬜ Add icon (`assets/icon.ico`)
-- ⬜ Populate `assets/sprites/`, `assets/tilesets/`, `assets/sounds/`
-- ⬜ Update `lean_factory.spec` for populated assets
-- ⬜ Build `lean_factory.exe` with PyInstaller — **trigger: Phase 6 complete, assets populated**
-- ⬜ Test standalone exe on a clean machine (no Python installed)
-- ⬜ Create installer or zip distribution
-
-### Architecture debt (tracked from skills audit 2026-04-23)
-- ✅ **`ui/inspector.py` split** (994 → 218 lines): all `_draw_*` methods + content dicts in `ui/inspector_drawing.py` as `InspectorDrawMixin`; `Inspector(InspectorDrawMixin)`. No behaviour change. (session 2026-04-24)
-- ✅ **`simulation/factory.py` split** (712 → 351 lines): `apply_countermeasure`/`rollback`/`resolve`/`decay` → `simulation/countermeasure_engine.py` (245 lines); mission triggers → `simulation/mission_engine.py` (70 lines). Factory is a clean orchestrator. (session 2026-04-24)
-
-**Deliverable:** Complete v1 game. All four tiers playable. 70–80 hand-designed problems, all with dialogue forks. Standalone exe.
-
----
-
-### Phase 7 — UI Polish, Progression, and Story ⬜ NOT STARTED
-
-> **Design note (from session 2026-04-23):** Current UI is functional but not inviting — raw rectangles, low contrast, no visual hierarchy between panels and world. Phase 7 should feel like a different product. The deliverable is a game someone unfamiliar with the project can sit down with and find visually clear, progression they can feel, and a story that makes them care. Defer all visual work until Phase 6 content is done.
-
-> **Graphics priority (added 2026-04-24):** The current visuals — solid-colour rectangles for player and stations, flat HUD panels, no sprite art — need a full overhaul before the game can be shown to anyone outside the project. Phase 7 must replace all raw rectangles with illustrated sprites, give each zone a distinct visual identity, and bring inspector panels and HUD up to a modern game standard. This is non-negotiable for the Phase 7 deliverable.
-
-> **Aesthetic target (added 2026-04-24):** The reference is Pokémon DS — top-down, small characters with visible arms and legs, tilemap that reads as a real place. For Lean Factory specifically that means: player and NPC sprites look human (head, body, arms, legs, hi-vis vest for operators), production lines animate hoverboard parts actually moving along them (deck → coils → board → battery → test → box), and the HUD/inspector panels feel like a game not a spreadsheet. Implementation approach: programmatic sprites drawn from pygame primitives (layered shapes, hand-chosen palette) since no pixel-art pipeline exists. Upgrade path later: swap primitives for sprite sheets if Merijn commissions or sources art.
-
-### Narrative and Story
-
-The player is a newly hired **Continuous Improvement Specialist** at NovaGlide. Day 1 they walk into a plant that produces hoverboards but struggles with quality, flow, and hidden waste. Over the course of Tiers 1–4 they transform it into a benchmark operation. The story provides motivation: people to care about, a plant worth saving, and a sense of pride when it works.
-
-- ⬜ **Opening narrative**: Day 1 cutscene / text scroll — player character arrives, Plant Manager (you) greets them, gives first mission. Sets tone: this is a learning journey, not a battle
-- ⬜ **NPC character arcs**: each source NPC (Team Leader, Quality Lead, Scheduler, HR Manager, IT Engineer) has a 3-stage story arc — skeptic → engaged → champion — revealed as their mission cluster completes
-- ⬜ **Day summary narrative line**: end-of-day card includes a one-sentence flavour from an NPC reflecting on the day ("The rework pile shrank today. First time in weeks." — Quality Lead)
-- ⬜ **Milestone events**: at key progression points (first problem resolved, first mission complete, first Tier 2 CM, all Tier 1 done), a short congratulatory line from Plant Manager
-
-### Progression and Leveling
-
-- ⬜ **CI Level system**: player earns XP from: resolving problems (base), correct fork choices (+bonus), completing 5 Whys (+bonus), mission completions (big bonus), codex concepts unlocked. Level displayed in HUD (e.g. "Lvl 4 — Lean Practitioner"). Level names: Observer → Practitioner → Analyst → Expert → Black Belt → Sensei
-- ⬜ **Mission progress tracker**: a persistent panel or screen (hotkey `[M]`) listing all missions — status (locked / available / active / complete), problems solved count, source NPC icon
-- ⬜ **KPI dashboard screen**: `[Tab]` or `[F2]` opens a full-screen dashboard — OEE/FTR/WIP/OUTPUT trend charts (last 30 days), mission completion bars, concept coverage pie, CI Level XP bar
-- ⬜ **Tier progression bar**: visual indicator in HUD or dashboard showing progress toward Tier 2 unlock (X/10 Tier 1 problems resolved), Tier 3, Tier 4
-- ⬜ **Achievement system**: hidden milestones that pop up as toast notifications: "First Gemba", "5S Complete", "Learning Rally", "Root Cause Found". No rewards — just recognition
-- ⬜ **Problem history log**: `[H]` opens a log of all resolved problems with day, CM applied, score — the player's personal improvement record
-
-### Navigation and Floor
-
-- ✅ **[BUG] Bottom-left of layout is unreachable** (fixed 2026-04-24): both south-wall doors from the factory floor to the south wing were placed at cols 14 and 48, which sit directly underneath the Burn-in rig (cols 13–17 rows 28–29) and the Packaging line (cols 45–54 rows 28–29). Player could never approach either door — no path existed. Fix in `navigation/tilemap.py`: moved maintenance door to col 11 and locker door to col 40, both in clear channels between testing stations. BFS reachability check from spawn now reaches all five maintenance objects (Tool Crib, Maintenance Lead Desk, Repair Bay, Spare Parts Shelves, TPM Board) and all locker tiles.
-- ✅ **Kenney CC0 sprite packs integrated** (session 2026-04-24): four packs unzipped to `assets/kenney/` — RPG Urban (characters + urban tiles), Tiny Town (village tiles), 1-Bit (monochrome misc), Industrial Expansion (conveyors, chains, pipes, hazard signs). `rendering/sprites.py` loader extracts tiles from each pack's packed tilemap PNG and caches scaled surfaces at TILE_SIZE (24).
-- ✅ **Animated player sprite** (session 2026-04-24): 2-frame walk cycle driven by `Player.step_phase`; sprite sourced from RPG Urban character row 4. Side-view sprite is mirrored for left-facing. Falls back to a single frame when the player is idle. The earlier programmatic `rendering/chibi.py` kept as a fallback.
-- ✅ **Animated NPC sprites** (session 2026-04-24): each role is mapped to a distinct RPG Urban character row via `_ROLE_CHAR_ROW` — Team Leaders, Scheduler, Quality Lead, IT Engineer, HR Manager, Maintenance Lead, Controller, Plant Manager. Rendered facing the direction specified on the NPC object.
-- 🔧 **Station sprites with more visual detail** (partial 2026-04-24): each station now shows a centered industrial-expansion tile (conveyor belts for packaging + integration lines, gears for machining, control boxes for assembly cells, chains for dock/shelves, alarm for burn-in, warning sign for flight test). The underlying station body is still a solid rounded rectangle — a full zone-specific station sprite overhaul is future work.
-- ⬜ **Animated hoverboard-parts on production lines**: render material flow along Final Assembly and Packaging lines — small deck/coil/battery/board icons that move stage-to-stage at the live simulation rate. Needs a flow-engine hook to know which station is producing.
-- ⬜ WIP pile visual: small stacked-unit icons near a station when `wip_in` is high
-- ⬜ Andon light on station sprite when the Andon countermeasure is active (blinking amber/red)
-- ⬜ Problem indicator animation: pulsing ! badge instead of static (draws the eye)
-- ⬜ Problem discovery notification: non-blocking toast in top-left when a new problem surfaces
-
-### Screens
-
-- ✅ **Start screen** *(2026-04-23)*: `ui/menu.py` — `start_screen()` with [N] New Game / [C] Continue (greyed if no save) / [Q] Quit. Blocks game loop entry.
-- ✅ **Save/load/reset via pause menu** *(2026-04-23)*: `[Esc]` → `pause_menu()` overlay with Resume / Save / Load / New Game (with confirmation prompt) / Quit. New Game deletes save file after confirmation.
-- ⬜ Day summary popup: non-blocking end-of-day card showing output, OEE, WIP, FTR delta vs yesterday
-- ⬜ Pause screen overlay: `[Esc]` opens overlay with Resume / Save / Load / Quit options; visual darkening + "PAUSED" indicator
-
-### Inspector and Panels
-
-- ✅ Scrollable inspector panel: mouse wheel + arrow keys scroll; 2400px off-screen surface with scroll indicator
-- ✅ **Arrow key conflict fix** (session 2026-04-24): movement guard in `main.py` now includes `inspector.is_open`; arrow keys scroll the panel cleanly, no simultaneous player movement.
-- ✅ **Enforce investigation-before-countermeasure sequence** (session 2026-04-24): `_investigation_required()` helper in `ui/inspector_drawing.py` gates `[C]` — the hint reads "Investigate first — pick [1][2][3] below" until the fork is complete. Same gate in `handle_action_key` prevents pressing [C] early. Problems without a dialogue fork bypass the gate.
-- ✅ **Score explanation on resolve** (session 2026-04-24): `scoring.metrics.explain_scores()` returns one short reason per metric (DQQ/EI/RCA/CMP/LM/CIM) matching the achieved tier. `resolve_problem()` returns `explanations` in the result dict; `ScorePanel.show()` renders the reason under each score bar.
-- ✅ **One question at a time per station** (session 2026-04-24): when a station has multiple active problems, the inspector used to render every problem's dialogue fork stacked vertically — ambiguous which `[1][2][3]` a keypress answered. `InspectorDrawMixin._problem_has_pending_question()` now identifies the single problem owning the active question (investigation fork, 5 Whys, verification, or revealed-choice reveal), and only that one renders its fork. Other problems with pending questions show "Queued — finish the current question first" instead. Input routing already picked first-match via `break`, so the draw now matches the input behaviour.
-- ✅ **[BUG] `score_rca` / `score_cmp` ID-vs-name mismatch** (session 2026-04-24): both functions compared the CM id against `problem.effective_countermeasures` (a list of CM *names*), so RCA and CMP almost always scored 1 even when the correct CM was applied. Fixed in `scoring/metrics.py` (parameter renamed `applied_cm_name`) and `simulation/countermeasure_engine.py` (`resolve_problem` now resolves `cm.name` via the catalog and passes it through). Regression test added in `tests/test_factory_cm_flow.py` — applying 5S System (CM-T1-001) to a problem whose `effective_countermeasures` contains "5S System" now scores RCA=5 and CMP=5. 212 tests passing.
-- ✅ **[BUG] Every fork / quiz answer always in position 1** (session 2026-04-24): when the user reported "the answer is always 1" persisting, root cause turned out to be entirely separate from the scoring bug — every one of 67 investigation forks, 34 5-Whys steps, and 40 implementation-quiz questions authored CORRECT as choice 1. Players learned "press 1" within minutes. Fix: `random.shuffle` added at parse time in `problems/dialogue.py` (`_parse_investigation`, `_parse_five_whys_step`, `build_verification_fork`) and `problems/countermeasure.py` (`_parse_quiz`). Choice recording is by content (`outcome`/`text`/`teaches`), not index, so shuffling is safe across save/load. Existing positional tests in `tests/test_dialogue.py` and `tests/test_phase5_pdca.py` updated to assert by outcome instead of position.
-- ⬜ **[Known] DQQ=5 unreachable in Phase 6 gameplay**: `score_dqq` requires at least one `diagnostic_*` metric in the inspection log, but no runtime code logs one. Deliberate: reserved for Phase 7b "Unlockable diagnostic tools" (Spaghetti Diagram, SPC chart). Until then, DQQ tops out at 3. Tracked here so it is not mistaken for a bug.
-- ⬜ **[Known] EI=5 only reachable for flow/people CMs**: `score_ei` metric_match requires "quality" observed for quality/maintenance CMs, but the inspection log only ever records `metric="oee"`. Flow CMs pass because "oee" satisfies the flow branch. Consider later: log multiple metrics per inspection (oee + quality + wip) or relax metric_match to treat "oee" as universal evidence.
-- ✅ **Station inspection gives contextual hint** (done 2026-04-24, option a): inspector now shows a "FLOOR NOTE" section on stations without an active problem, pointing to the zone where the nearest active-mission problem lives. `_floor_hint_for_mission` helper in `ui/inspector_drawing.py` walks active missions' `problem_ids`, skips resolved/dormant problems and the current station, and produces a one-line hint using friendly zone names (`_ZONE_FRIENDLY_NAMES`). Exploration now provides learning feedback instead of silence.
-- ⬜ Non-blocking toast notifications: CM decay warning, new problem visible, credits earned — timed banner, never freeze gameplay
-- ✅ **Keyboard shortcut reference** (session 2026-04-24): `[F1]` toggles a non-blocking overlay listing every control grouped by context — Movement, Time, Panels, Inspector, Catalog, Dialogs. `ui/help_panel.py`; wired at the top of the event loop in `main.py` so F1 is available globally and the overlay absorbs all non-F1/Esc keys while open. Movement and other panels are gated on `not help_panel.is_open`.
-- ⬜ Problem count HUD badge: active problem count visible at all times (e.g. "⚠ 3 active")
-- ⬜ Maturity/phase progress bar in HUD: zone scores visualised at a glance
-
-### Countermeasure Learning Flow
-
-> **Design note (added 2026-04-24):** Applying a CM should be a learning moment, not just a button press. The player should understand *how* to implement the chosen countermeasure, not just *that* they applied it. This closes the gap between "I clicked 5S" and "I understand what 5S implementation involves."
-
-- ✅ **CM implementation quiz infrastructure** (session 2026-04-24): `QuizStep` + `QuizChoice` dataclasses in `problems/countermeasure.py`; loader parses `implementation_quiz:` YAML; `ui/quiz_panel.py` renders 2-question fork with CORRECT/PLAUSIBLE/WRONG choices and feedback. Wired catalog → quiz → warning → apply in `main.py`. Correct answers boost CIM at resolve time (capped at 5) and unlock teaches tags via `factory.discover()`; `session.quiz_correct_count` persists across save/load. 13 new tests.
-- ✅ **CM implementation quiz content — Tier 1 complete** (session 2026-04-24): all 10 Tier 1 CMs now have 2-question quizzes. New this session: CM-T1-003 Safety Routines (HR Manager), CM-T1-005 Workplace Organization (Team Leader), CM-T1-008 Cleanliness Standards (Team Leader), CM-T1-009 Basic Documentation Control (IT Engineer), CM-T1-010 Skill Matrix (HR Manager). Tier 2/3/4 CM quizzes still to author as prioritised by playtesting.
-- ⬜ **Quiz skip penalty**: currently [Esc] skips the remaining questions with no CIM bonus (correct behaviour). Consider adding a small credit cost on skip to discourage power-skipping once playtesting shows it's actually abused.
-
-### NPC Interactions
-
-- ⬜ Multi-line NPC dialogue: NPCs have 3–5 rotating lines that change as factory matures or problems are solved
-- ⬜ NPC awareness: operators comment on nearby active problems when inspected ("that shelf's been a mess for weeks")
-- ⬜ Character portraits: small illustrated avatar per NPC role shown in the inspector panel
-- ⬜ "Walk-up" animation: brief highlight / icon appears above NPC head when player is in range
-
-### General UX
-
-- ✅ **[BUG] Arrow key conflict when inspector is open** (session 2026-04-24): fixed — see Inspector and Panels section above.
-- ⬜ No action should block gameplay for more than 1 second: all dialogs dismissible with Esc or Enter immediately
-- ✅ UI text sizes: all panels bumped to minimum 14px body / 13px mono via `ui/fonts.py`
-- ✅ Shift-to-run: player holds Shift for 2.5× movement speed
-- ⬜ Tooltip system: hovering over HUD metrics shows a one-line explanation (OEE = Availability × Performance × Quality)
-- ⬜ Minimap problem dots: active problem zones shown as coloured dots on the minimap
-- ⬜ Settings screen: simulation speed default, display options
-- ⬜ Sound cues: basic event sounds (problem discovered, CM applied, score panel open, day end)
-- ⬜ Colour-blind friendly palette option: toggle accessible colours for problem badges and OEE indicators
-- ⬜ Circuit breaker notifications: when WIP ceiling or OEE floor circuit breaker fires, show a non-blocking toast explaining what happened and why the simulation slowed
-
-**Deliverable:** A game that feels polished enough to show to someone unfamiliar with the project — no raw rectangles, no frozen screen on dialog, no dead-end interactions.
-
----
-
-### Phase 7b — Player Experience Enhancements ⬜ NOT STARTED
-
-> **Scope:** follows Phase 7 polish. Phase 7 takes the game from "raw rectangles" to "looks like a game"; Phase 7b takes it from "looks like a game" to "actually teaches someone who picks it up cold." Where Phase 7 is about surface (sprites, HUD, story), Phase 7b is about depth (onboarding, reflection, progression feedback, emotional investment). Items listed in approximate order of expected impact on first-time-player experience.
-
-### Onboarding and guidance
-
-- ⬜ **Day 1 tutorial / onboarding flow**: a new player is currently dropped in with no explanation of the control scheme, the mission system, or what the goal is. A short guided Day 1 (Plant Manager greets → walk to first NPC → try your first investigation → resolve your first problem) dramatically reduces friction for anyone new. Implement as a skippable intro gated on save-file-is-empty.
-- ⬜ **Context-sensitive help `[F1]`**: overlay listing the keys relevant to the current state. Inspector open → E/C/R/U/1/2/3/S/A/H; catalog open → ↑/↓/E/Esc; free roaming → W/A/S/D/Shift/Esc/K/Tab. Removes the memorisation tax. Replaces the generic "keyboard shortcut reference" item in Phase 7 Inspector section.
-- ⬜ **Active mission marker on map/floor**: subtle indicator above the NPC or station relevant to the current mission's active hint — reduces "where do I go next?" dead time.
-
-### Rewards and progression depth
-
-- ⬜ **Mission log screen `[M]`**: a full-screen overview of every mission (locked / available / active / complete) with source NPC, hints so far, problems-solved count, and completion date. Lets the player see their whole journey at once without interrogating each NPC for state. (This is the detailed spec; the one-line Phase 7 "mission progress tracker" is superseded by this.)
-- ⬜ **Unlockable diagnostic tools**: currently the player has one investigation approach (walk + inspect). Unlocking new tools as tiers progress — "Spaghetti Diagram tool" at Tier 3, "SPC chart tool" at Tier 4 — gives a sense of growing capability separate from credits. Tools appear in the inspector as extra actions.
-- ⬜ **NPC reputation / relationship tracking**: per-source-NPC relationship score that rises with well-handled missions and affects subsequent dialogue warmth/openness. Gives weight to player decisions over time and makes NPC interactions feel more than transactional. Pairs with the Phase 7 "NPC character arcs" item.
-- ⬜ **Credit uses beyond specialists**: expand the credit sink — training programs (permanent operator skill bump), equipment upgrades (permanent station perf/availability bump), or rapid Lean Coach consultation (hint on current problem). Gives credits more meaning than just passing a gate.
-
-### Reflection and takeaways
-
-- ⬜ **A3 report export on resolve**: after a problem is resolved, offer to export a one-page A3 in the game's UI or as a PDF — problem statement, investigation choices made, root cause (from 5 Whys), countermeasure applied, verification result, final score. Mirrors real lean practice and gives the player a concrete takeaway per problem. High leverage for the game's learning-tool framing.
-- ⬜ **Replay-solved-problems sandbox**: optional mode accessed from the pause menu — pick any resolved problem and re-run the investigation with different choices to see how the score changes. Learning reinforcement without affecting the main save file.
-- ⬜ **End-of-week Plant Manager review**: every 5 in-game days, a short dialogue from the Plant Manager summarises what changed (KPI deltas, missions completed, concepts learned) and sets a light narrative tone for the next week. Periodic structured reflection.
-
-### Humanising the plant
-
-- ⬜ **Named operators with small bios**: give each of the 24 floor operators a name and one-line bio. When an NPC mentions a problem, they can reference specific operators ("Maria at Integration 3 has been flagging this for weeks"). Tiny change, large boost to emotional investment.
-- ⬜ **Plant backstory via in-world artifacts**: occasional emails, memos, or old reports that appear in the inspector to give the plant a history ("Project NovaGlide Q3 2024 retrospective — 9 chronic issues identified, 3 resolved"). Small narrative hooks that reward exploration.
-
-### Quality of life
-
-- ⬜ **Circuit-breaker explanation toast**: when WIP ceiling / OEE floor / FTR floor fires, a non-blocking toast explains *why* the sim slowed and what the player can do. A slowed sim with no explanation is a major UX friction point for new players. Supersedes the terser Phase 7 item.
-- ⬜ **Auto-pause when idle**: if no key pressed for 5+ minutes, pause automatically and show a gentle "paused — welcome back" banner. Respects the player's time and prevents unwanted progression in the background.
-
-### Content depth
-
-- ⬜ **Seasonal / themed in-game events**: "Quality Week", "Safety Month" — themed arcs that surface a specific category of problems with bonus credits for solving them in the theme. Reuses the existing problem catalog with different framing, no new content authoring required.
-- ⬜ **Customer feedback loop**: occasional customer returns / complaints that trigger 8D-style problems with their own framing. Connects the factory to a downstream customer reality — reinforces that quality problems have consequences outside the plant.
-
-**Deliverable:** A game that a lean-curious stranger can sit down with cold, understand within 5 minutes, and want to spend an evening on. The feature bar is no longer "does it work?" but "does the player keep playing, and do they leave having learned something they can articulate?"
-
----
-
-### Phase 8 — AI Integration ⬜ ~5% COMPLETE
-
-AI is introduced last so the generator has maximum reference material: all four tiers of hand-designed problems and dialogue fork YAML exist before it runs.
-
-#### Done
-- ✅ AI module stubs (`ai/agent.py`, `ai/coach.py`, `ai/problem_generator.py`, `ai/prompt.py`)
-
-### Remaining
-- ⬜ LGM-40 system prompt in `ai/prompt.py` (spec §10.3 persona)
-- ⬜ `ai/coach.py`: Socratic coach consultation during investigation (75 credits/exchange)
-- ⬜ `ai/coach.py`: post-score reflection dialogue (50 credits, does not modify score)
-- ⬜ "Ask Coach" button in inspector → coach dialogue UI (scrollable conversation panel + send field)
-- ⬜ `ai/problem_generator.py`: generate problem from factory state (500 credits, gated on catalog exhausted); uses Tiers 1–4 YAML as style/quality reference
-- ⬜ Session cost tracking: `factory.session_cost_eur` incremented per API call, shown in HUD
-- ⬜ Anthropic SDK with prompt caching (target: <€0.50/hour at average play intensity)
-- ⬜ Graceful offline fallback: "Coach unavailable" if API call fails
-
-**Deliverable:** Game with full AI coaching. Coach on demand. New problems generated from factory state when hand-designed catalog is exhausted. Session cost visible in HUD.
-
----
-
-### Phase 9 — World Expansion (future, parked 2026-04-24)
-
-> **User goal:** a bigger map and a more realistic factory layout. The current 100×60 tile map reads as a diagram — zones are colour blocks with a handful of stations each. A more believable plant would have: intermediate buffer areas between zones, a proper office wing with more rooms, a real loading bay with multiple trucks, a cafeteria, a training room, maybe a quality lab wing, and corridors that feel walked rather than rectangular. Scope this after Phases 7/7b ship because it touches the tilemap, camera, NPC routing, and every renderer — a big change that should land on a stable content/UI base.
-
-- ⬜ **Enlarge map** (target ~200×120 tiles): keep current zones but add intermediate buffer/flow areas, a larger outdoor yard with 2–3 truck bays, an extended office wing, a quality lab, a training room, a cafeteria. Revisit `MAP_W`/`MAP_H` in `navigation/tilemap.py` and `config/world_data.py`.
-- ⬜ **Realistic factory detail**: populate each zone with operator walk paths, material carts between stations, wall-mounted visual boards, break-room furniture, safety signage, fire-extinguisher points. Use Kenney Industrial + Urban tiles already in `assets/kenney/`.
-- ⬜ **Routing/pathfinding upgrade**: operators (24 total) could roam between stations on realistic paths rather than staying pinned — requires A* and station-to-station routes.
-- ⬜ **Zone-specific floor textures**: instead of the current flat colour blocks, tile each zone with appropriate Kenney floor tiles (concrete for prep, epoxy for assembly, metal grid for testing).
-
-**Deliverable:** a plant that looks lived-in from the first screen.
-
----
-
-### Phase 10 — 3D Web Edition (factory prototype) ⏸ BACKED UP
-
-Built 2026-10-12 as `web/` (git commit `b3a4c8c`), now archived in `archive/factory-3d/`. Kept as a reference; the game is rebuilt in Godot 4.
-
-- ✅ Content loader for the shared YAML with validation (`archive/factory-3d/src/content/`)
-- ✅ Unit-level flow simulation: push vs CONWIP release, breakdowns, scrap, WIP piles, line capacity and constraint (`archive/factory-3d/src/sim/flow.ts`)
-- ✅ Investigation-by-doing: gemba tools reveal clues (`tool:` tags in problem YAML), deeper 5-Whys clues unlock progressively, operator questions (open, closed, blaming) with a trust mechanic
-- ✅ A3: name the waste (TIMWOODS, `waste:` tag on every problem), link evidence, choose the root cause, countermeasure and prediction; Check compares before/after, including whole-line capacity
-- ✅ PDCA score with five dimensions, including flow impact (fixing a non-bottleneck scores low)
-- ✅ 3D world: procedural characters, 10 station models, conveyors, WIP stacks, andon lights, office wing, yard, A* click-to-move
-- ⬜ UI panels (A3, value stream map, NPC dialogue, HUD) — unfinished at backup time
-- Data fixes that also help the Python build: "Visual Labels & Signs" → "Visual Labels and Signs"; removed nonexistent "Operator Rebalancing"; codex moved to `data/concepts.yaml`
-
----
-
-### Decisions Made
-- **3D web edition (2026-10-12)**: Three.js + TypeScript prototype, superseded the same day by the decision to build in Godot 4 (see the Spanning plan above); archived in `archive/factory-3d/`
-- **Problem solving is action-based, not multiple choice (2026-10-12)**: clues are earned through gemba tools and good questions; the player writes the A3; the simulation judges the countermeasure
-- **Bottleneck first (2026-10-12)**: Check always shows end-to-end capacity; improving a non-constraint is called out as no real gain
-- **Learning-first design**: game is a teaching tool for lean / six sigma / digitalization. Mistakes must be survivable and recoverable; NPC decision forks are the primary learning scaffold; concepts are introduced in-fiction before mechanics (see Learning Pillars)
-- **Phase ordering rationale**: learning mechanics (Phase 5) before content expansion (Phase 6) so the dialogue-fork YAML schema is settled before Tier 2–4 problems are written. AI (Phase 8) last so it generates against a complete reference corpus
-- **NPC interaction model**: players can interact with both NPC sprites directly (implemented Phase 5) AND their associated role-desks. Both open the inspector with the same NPC role panel
-- **PDCA as the core game loop**: every problem-solving sequence follows Plan (investigation fork) → Do (apply CM) → Check (follow-up verification fork) → Act (standardize or adjust). The game is only teaching lean if all four phases are playable — not just Plan + Do
-- **Mission system as the discovery layer**: problems are not listed on a quest tracker — they are discovered through missions triggered by NPC conversations, floor observation, and KPI signals. The mission system hints, never instructs. The player must still figure out what is wrong and why
-- **No timers, no game-over**: the game has no countdown timers, no deadline pressure, and no lose state. Urgency comes from the simulation naturally degrading when problems go unresolved. Active problem cap (max 3, max 1 critical) and simulation circuit breakers (WIP ceiling, OEE floor) ensure the game stays playable regardless of player pace
-- **Doable pace by design**: the player is never overwhelmed. New problems queue behind active ones. Problems are sorted by severity before cap check so critical/high surface first
-- **Circuit breaker design**: circuit breakers record events and slow simulation only — no permanent station modifier mutations, which would accumulate silently across days
-- **Mission trigger direction**: KPI triggers encode comparison direction as `direction: lte/gte` on the `MissionTrigger` dataclass, not hard-coded by metric name
-- **pygame-ce over pygame**: pygame-ce used as pygame drop-in (installed via pygame_gui dependency); `requirements.txt` lists `pygame>=2.5.0` which is stale — will be fixed in Phase 6 packaging
-- Tier 2–4 problem design: Claude designs, Merijn reviews and may revise
-- Anthropic API key: stored in `.env` as `ANTHROPIC_API_KEY`; all AI code reads from env var
-- Exe build deferred to Phase 6 (asset folders empty now; bat/vbs launchers used during development)

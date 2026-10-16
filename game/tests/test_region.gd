@@ -19,7 +19,7 @@ func _investigate(r: Region) -> void:
 
 
 func _a3(r: Region, cm: String, evidence: Array = ["custom_design:0", "custom_design:2", "custom_design:4"]) -> Dictionary:
-	return RulesFixture.a3(r, "custom_design", "overprocessing", cm, evidence, "throughput")
+	return RulesFixture.a3(r, "custom_design", "overprocessing", cm, evidence, "lead_time")
 
 
 func test_activating_a_problem_hits_the_simulation() -> void:
@@ -144,14 +144,119 @@ func test_a_mismatched_countermeasure_fails_check() -> void:
 	r.activate("custom_design")
 	_investigate(r)
 	assert_eq(r.submit_a3("custom_design", _a3(r, "poka_yoke_form")), "")
+	assert_eq(r.net.stream("connections").step("design").touch_minutes, 360, "it does not touch the cause at all")
 	r.advance_days(Region.CHECK_DAYS)
 	var check := r.check("custom_design")
 	assert_false(check["passed"])
 	assert_eq(check["lesson"], "mismatch")
+	assert_eq(check["forecast"]["with"], check["forecast"]["without"], "with or without it, the same future")
 	assert_eq(r.state["custom_design"].phase, ProblemState.Phase.SPOTTED, "back to the gemba")
 	assert_eq(r.state["custom_design"].failed_checks, 1)
 	assert_false(r.net.effects().has("cm:custom_design"))
 	assert_eq(r.net.stream("connections").step("design").touch_minutes, 360, "the problem is back at full strength")
+
+
+# ── The Check measures what the A3 predicts (QA findings 4, 5, 21) ─────────
+
+## custom_design's harm and fix (touch time) moved to another step.
+func _region_at(place: String, harm: Dictionary, fix: Dictionary, kpi: String) -> Region:
+	var problems := RulesFixture.problems()
+	problems[0].merge({"step": place, "kpi": kpi, "effects": [harm], "clues": [RulesFixture.clue("data", true, 0)]}, true)
+	var cms := RulesFixture.countermeasures()
+	cms[0]["effects"] = [fix]
+	var r := RulesFixture.region(50000, 5, problems, cms)
+	r.activate("custom_design")
+	r.use_tool(place, "data")
+	return r
+
+
+func _check_with(r: Region, prediction: String) -> Dictionary:
+	var a3 := RulesFixture.a3(r, "custom_design", "overprocessing", "standard_designs", ["custom_design:0"], prediction)
+	assert_eq(r.submit_a3("custom_design", a3), "")
+	r.advance_days(Region.CHECK_DAYS)
+	return r.check("custom_design")
+
+
+## The Check runs the coming quarter twice on copies of the network, with
+## the fix and without it (same random sequences), so a pass means the
+## predicted KPI moved because of the fix. The game itself does not move on.
+func test_the_check_passes_when_the_predicted_kpi_moved_against_the_no_fix_forecast() -> void:
+	var r := _region()
+	r.activate("custom_design")
+	_investigate(r)
+	var a3 := _a3(r, "standard_designs")
+	a3["prediction"] = "capacity"
+	r.submit_a3("custom_design", a3)
+	r.advance_days(Region.CHECK_DAYS)
+	var now := r.net.time
+	var check := r.check("custom_design")
+	assert_eq(r.net.time, now, "the forecast runs on copies")
+	var forecast: Dictionary = check["forecast"]
+	assert_eq(forecast["kpi"], "capacity")
+	assert_true(forecast["with"]["capacity"] > forecast["without"]["capacity"], str(forecast))
+	assert_near(forecast["gain"], forecast["gains"]["capacity"], 1e-9)
+	assert_true(forecast["gain"] > Pdca.CHECK_NOISE)
+	assert_true(check["passed"])
+
+
+## A lagging KPI (lead time, on time, first time right) measures orders that
+## started long before the fix: the Check looks one lead time ahead (at least
+## a quarter) and measures the orders that finish after it.
+func test_the_check_measures_the_orders_finishing_after_one_lead_time() -> void:
+	var r := _region()
+	r.activate("custom_design")
+	_investigate(r)
+	r.submit_a3("custom_design", _a3(r, "standard_designs"))
+	r.advance_days(Region.CHECK_DAYS)
+	var check := r.check("custom_design")
+	var lead := ceili(check["after"]["lead_time"])
+	assert_between(lead, 1, Region.CHECK_HORIZON - Region.MEASURE_DAYS, "a short stream")
+	assert_eq(check["forecast"]["days"], Region.CHECK_HORIZON, "at least a quarter")
+	assert_eq(check["forecast"]["window"], Region.CHECK_HORIZON - lead)
+
+
+## A long wait only some orders take (grid reinforcement: months) is longer
+## than the stream's median: the Check looks past it.
+func test_the_check_looks_past_a_long_wait() -> void:
+	var place := "connections.permit"
+	var harm := NetFixture.effect(place, "wait_time", 30.0)  # 150 days
+	var r := _region_at(place, harm, harm, "lead_time")
+	# A countermeasure that misses the cause leaves the wait as it is.
+	var a3 := RulesFixture.a3(r, "custom_design", "overprocessing", "poka_yoke_form", ["custom_design:0"], "lead_time")
+	assert_eq(r.submit_a3("custom_design", a3), "")
+	r.advance_days(Region.CHECK_DAYS)
+	var check := r.check("custom_design")
+	assert_true(check["after"]["lead_time"] < 150.0, "the median order does not wait for it")
+	assert_eq(check["forecast"]["days"], 150 + Region.MEASURE_DAYS)
+	assert_eq(check["forecast"]["window"], Region.MEASURE_DAYS)
+
+
+## A well-fitting fix whose predicted KPI does not move fails the Check: the
+## fit decides how much moves, the numbers decide the Check.
+func test_a_fitting_fix_fails_when_its_predicted_kpi_does_not_move() -> void:
+	var place := "connections.revision"  # not the constraint
+	var r := _region_at(place, NetFixture.effect(place, "touch_time", 1.5), NetFixture.effect(place, "touch_time", 0.8), "capacity")
+	var check := _check_with(r, "capacity")
+	assert_eq(check["level"], "full", "the fix fits")
+	assert_true(check["forecast"]["gain"] <= Pdca.CHECK_NOISE, str(check["forecast"]))
+	assert_false(check["passed"])
+	assert_eq(check["lesson"], "not_moved")
+	assert_true(check["not_constraint"])
+
+
+## A batch or wait taken out anywhere on the path shortens lead time (Little's
+## law), although a wait has no team and adds no capacity: no "not the
+## bottleneck" verdict, and the score counts the shorter lead time.
+func test_a_shorter_wait_is_a_lead_time_gain_not_a_missed_bottleneck() -> void:
+	var place := "connections.permit"
+	var r := _region_at(place, NetFixture.effect(place, "wait_time", 2.0), NetFixture.effect(place, "wait_time", 0.5), "lead_time")
+	var check := _check_with(r, "lead_time")
+	assert_true(check["passed"], str(check["forecast"]))
+	assert_false(check["not_constraint"], "a wait is not a capacity question")
+	assert_true(check["forecast"]["gains"]["lead_time"] > Pdca.CHECK_NOISE, str(check["forecast"]["gains"]))
+	var score := r.act("custom_design", true)
+	assert_false("impact_not_constraint" in score["notes"], str(score["notes"]))
+	assert_true(score["impact"] >= 4, "impact %d" % score["impact"])
 
 
 func test_another_countermeasure_also_works_less_well() -> void:
@@ -228,10 +333,9 @@ func test_an_active_problem_costs_money_every_week() -> void:
 	assert_near(result["after"]["cost_per_week"], 70.0, 1e-6)
 	r.act("custom_design", true)
 	assert_eq(r.weekly_cost(), 0.0, "resolved: no more cost")
-	var budget := r.profile.budget
 	r.advance_days(7)
 	# A standardised fix wears slowly (Sustain): a little of the cost creeps back.
-	assert_between(budget - r.profile.budget, 1, 70, "a week of a slowly wearing fix")
+	assert_between(r.weekly_cost(), 0.01, 70.0, "a slowly wearing fix")
 
 
 
@@ -263,6 +367,59 @@ func test_debt_brings_a_bad_period_until_it_is_paid_off() -> void:
 	assert_false(r.in_bad_period())
 	assert_near(r.net.pools["prep"].availability, before, 1e-9)
 	assert_eq(r.drain_events(), [{"type": "bad_period", "started": false}])
+
+
+## Recovery is always possible (CLAUDE.md §2): debt stops at a floor, so a
+## few solved problems always bring the region back (QA finding: debt spiral).
+func test_debt_stops_at_a_floor_so_recovery_stays_within_reach() -> void:
+	var r := _region(Region.DEBT_FLOOR + 1000)
+	r.activate("custom_design")
+	_investigate(r)
+	assert_eq(r.submit_a3("custom_design", _a3(r, "standard_designs")), "", "an experiment can still be started")
+	assert_eq(r.profile.budget, Region.DEBT_FLOOR)
+	assert_true(r.in_bad_period())
+	r.advance_days(7)
+	assert_eq(r.profile.budget, Region.DEBT_FLOOR, "the problem's costs stop at the floor")
+	r.grant(0, 5000)
+	assert_eq(r.profile.budget, Region.DEBT_FLOOR + 5000, "every reward counts towards recovery")
+
+
+## Long-term, respectful play pays its way: finance books part of what a
+## held fix saves into the improvement budget every week, at the fix's health,
+## while the team that runs it trusts you (a blamed team stops reporting it).
+func test_a_held_fix_pays_savings_while_its_team_trusts_you() -> void:
+	var r := _region()
+	r.activate("custom_design")
+	_investigate(r)
+	r.submit_a3("custom_design", _a3(r, "standard_designs"))
+	assert_eq(r.weekly_savings(), 0.0, "nothing is saved before the Act")
+	r.advance_days(Region.CHECK_DAYS)
+	r.check("custom_design")
+	r.act("custom_design", true)
+	assert_near(r.weekly_savings(), Pdca.BUDGET_BASE["high"] * Region.SAVINGS_RATE, 1e-9, "a fresh fix saves in full")
+	var budget := r.profile.budget
+	r.advance_days(7)
+	assert_between(r.profile.budget - budget, roundi(Pdca.BUDGET_BASE["high"] * Region.SAVINGS_RATE) - 70, roundi(Pdca.BUDGET_BASE["high"] * Region.SAVINGS_RATE),
+		"a week of savings, less what creeps back")
+	assert_true(r.weekly_savings() < Pdca.BUDGET_BASE["high"] * Region.SAVINGS_RATE, "a wearing fix saves less")
+	r.ask("connections.design", "behind")
+	assert_eq(r.weekly_savings(), 0.0, "a blamed team stops reporting its savings")
+	r.ask("connections.design", "thanks")
+	assert_true(r.weekly_savings() > 0.0, "repaired trust brings them back")
+
+
+## Recovery is within reach from the floor: a few held fixes pay it back.
+func test_savings_pay_off_debt() -> void:
+	var r := _region(Region.DEBT_FLOOR)
+	r.activate("custom_design")
+	_investigate(r)
+	r.submit_a3("custom_design", _a3(r, "standard_designs"))
+	r.advance_days(Region.CHECK_DAYS)
+	r.check("custom_design")
+	r.act("custom_design", false)
+	var budget := r.profile.budget
+	r.advance_days(14)
+	assert_true(r.profile.budget > budget, "from %d to %d" % [budget, r.profile.budget])
 
 
 func test_problem_costs_can_push_the_region_into_a_bad_period() -> void:

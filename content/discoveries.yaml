@@ -1,0 +1,165 @@
+# Hidden rewards ("Ontdekkingen"; audit §4, Merijn 2026-10-15): unannounced
+# recognition for deep thinking. Each fires once, as a quiet toast; the codex
+# shows found ones with their story and the rest as silhouettes, with the
+# hint once their act is over. Built by tools/build_content.py; the rules are
+# game/src/rules/discoveries.gd.
+#
+# Principles (audit §4.1, CLAUDE.md §2): never pay the short-term or the
+# disrespectful choice more; anything about thrift also needs quality; small
+# in power (reputation at most +3, no XP); no streaks and no loss for stopping
+# (counts add up and never reset).
+#
+# id, name, line   the toast: "Ontdekking — <name>. <line>"
+# hint       shown under the silhouette once act `act` is over
+# trigger    {type, ...}: see Discoveries.TRIGGERS
+# reward     reputation (0-3), trust {team: n}, and for the codex and the
+#            vitrine: title, object, note (Ruud's handwritten card)
+# Audit numbers kept: D1, D8, D11, D14, D17, D18, D20, D23, D26, D28 wait for
+# systems that do not exist yet (par per problem, the followed order, the KPI
+# review action, coach goals, containment); D8 "Ritme" is dropped for good: it
+# was a streak (respect the player's time).
+
+discoveries:
+  - id: veilige_haven
+    name: Veilige haven
+    line: "Waar niemand de schuld krijgt, vertellen mensen wat ze zien."
+    hint: "Sommige hoofdstukken worden beter door wat je níet vraagt."
+    act: 1
+    trigger: {type: no_blame_act}
+    reward: {title: Veilige haven, note: "Respect voor mensen is geen beleefdheid. Het is hoe je aan de waarheid komt."}
+
+  - id: excuses_aanvaard
+    name: Excuses aanvaard
+    line: "Vertrouwen herstellen is ook verbeteren."
+    hint: "Een verkeerde vraag hoeft niet het laatste woord te zijn."
+    act: 1
+    trigger: {type: blame_repair_clue}
+    reward: {object: "Een koffiemok van het team", note: "Je vroeg wie het fout deed, en je kwam erop terug. Daarna vertelden ze het je."}
+
+  - id: het_knelpunt_eerst
+    name: Het knelpunt eerst
+    line: "Meten voordat je kiest."
+    hint: "Twee teams vroegen om je aandacht. Wat had je kunnen tellen?"
+    act: 1
+    trigger: {type: fork_measured, window_days: 7}
+    reward: {reputation: 3, title: Knelpuntjager, object: "Een zandloper"}
+
+  - id: leren_van_de_check
+    name: Leren van de Check
+    line: "Een experiment dat niet uitkomt, is geen mislukking."
+    hint: "Ook de andere kant van een keuze kan iets leren."
+    act: 1
+    trigger: {type: fork_learned}
+    reward: {object: "De ingelijste Check", note: "Je koos eerst het team dat niet het knelpunt was, en je zag het in de cijfers. Zo leer je het pas echt."}
+
+  - id: terug_naar_de_gemba
+    name: Terug naar de gemba
+    line: "De belangrijkste pijl is de pijl terug."
+    hint: "Een Check die tegenvalt, is het begin van iets."
+    act: 1
+    trigger: {type: check_recovery}
+    reward: {object: "Modderige werkschoenen", note: "Na een tegenvallende Check ging je terug naar de werkvloer, niet naar je bureau."}
+
+  - id: een_jaar_later
+    name: Een jaar later
+    line: "Het werkt nog steeds."
+    hint: "Sommige dingen zie je pas na een jaar."
+    act: 2
+    trigger: {type: held, days: 365}
+    reward: {object: "Een teamfoto bij de verbetering", note: "Een jaar later doet het team het nog zo. Dat is borgen."}
+
+  - id: nachtdienst
+    name: Nachtdienst
+    line: "De gemba slaapt nooit."
+    hint: "Sommige teams werken als jij slaapt."
+    act: 1
+    trigger: {type: tool_at, place: "outages.", hours: [22, 5]}
+    reward: {object: "De thermosbeker van de meldkamer", note: "Kees vertelde je over Diemen, 27 maart 2015: een miljoen huishoudens zonder stroom. Vraag hem ernaar."}
+
+  - id: voorspeller
+    name: Voorspeller
+    line: "Een voorspelling is een hypothese, geen gok."
+    hint: "Wie vooraf het goede getal noemt, leert het meest van de Check."
+    act: 2
+    trigger: {type: predictions, count: 5}
+    reward: {title: Voorspeller, note: "Vijf keer noemde je vooraf het getal dat zou bewegen, en het bewoog. Rother noemt dat de kern van de Kata."}
+
+  - id: faalvraag_jager
+    name: Faalvraag-jager
+    line: "De klant vertelt je waar het proces faalt."
+    hint: "Luister eens mee waar de klanten bellen, vaker dan één keer."
+    act: 1
+    trigger: {type: tool_in_missions, place: customer_contact.answer, tool: listen_in, missions: 3, problem: status_callers, countermeasure: proactive_status_updates}
+    reward: {object: "Een kaartje van Esra", note: "Seddon noemt het faalvraag: vraag die ontstaat omdat iets eerder niet goed ging."}
+
+  - id: henks_mes
+    name: Henks mes
+    line: "Vakmanschap geef je door door het voor te doen."
+    hint: "Een afscheid is ook een gesprek."
+    act: 1
+    trigger: {type: farewell, mission: save_henks_knowledge, place: outages.locate, days: 7, countermeasures: [skills_matrix_buddy, twi_job_instruction]}
+    reward: {object: "Henks kabelmes", trust: {monteurs: 1}}
+
+  - id: wims_spreadsheet
+    name: Wims spreadsheet
+    line: "Ga kijken wanneer het probleem zich voordoet."
+    hint: "Sommige problemen zie je alleen als de zon schijnt."
+    act: 2
+    trigger: {type: tool_at, place: voltage_complaints.measurement, tool: data, hours: [11, 15], months: [4, 5, 6, 7, 8, 9], problem_active: inverters_tripping}
+    reward: {object: "Een zonnepaneel-speldje", note: "Wim had het al drie jaar bijgehouden. Wie op het goede moment kijkt, ziet wat de klant ziet."}
+
+  - id: het_eerste_net
+    name: Het eerste net
+    line: "Wie nieuwsgierig is, vindt ook wat niemand zocht."
+    hint: "Ook waar niets mis is, valt iets te zien."
+    act: 2
+    trigger: {type: tool_at, place: connections.revision, tool: documents, no_problem_at: true}
+    reward: {object: "Een ingelijste kaart van Nova's eerste net (1930, verzonnen)"}
+
+  - id: capaciteit_gevonden
+    name: Capaciteit gevonden
+    line: "Capaciteit zit vaak verstopt in het werk zelf."
+    hint: "Drie keer vroeg iemand om meer mensen."
+    act: 2
+    trigger: {type: missions_scored, missions: [fix_custom_design, fix_status_callers, fix_grid_study_queue], score: 20}
+    reward: {title: Capaciteit gevonden, note: "Enexis ging met standaardstations van ongeveer tien naar honderd stations per jaar, met dezelfde mensen."}
+
+  - id: een_andere_weg
+    name: Een andere weg
+    line: "Een gesloten deur is geen einde."
+    hint: "Ook na een gemiste kans kan het nog goed komen."
+    act: 1
+    trigger: {type: recovered_after_fail, score: 20}
+    reward: {reputation: 3, note: "De deadline was weg, het probleem niet. Je loste het toch op, op een andere manier."}
+
+  - id: de_hele_cyclus
+    name: De hele cyclus
+    line: "Doel, situatie, obstakel, experiment, leren."
+    hint: "Ruud stelt in elke fase andere vragen."
+    act: 1
+    trigger: {type: coach_cycle}
+    reward: {object: "Ruuds Kata-kaartje", note: "De vijf vragen van Toyota Kata (Rother, 2009). Ze passen in een borstzak."}
+
+  - id: nog_een_waarom
+    name: Nog één waarom
+    line: "Het eerste antwoord is zelden het laatste."
+    hint: "Een A3 mag dieper gaan dan nodig."
+    act: 2
+    trigger: {type: deepest_why, count: 5}
+    reward: {title: Nog één waarom}
+
+  - id: de_lange_adem
+    name: De lange adem
+    line: "Gebouwd om te blijven."
+    hint: "Soms kost de goede keuze vandaag meer en levert ze pas later op."
+    act: 2
+    trigger: {type: durable_held, count: 3, days: 180}
+    reward: {reputation: 2, object: "Een oude eikenhouten kabelhaspel", note: "Drie keer koos je wat bleef boven wat snel was, en een half jaar later hield het nog. Lange termijn boven korte termijn."}
+
+  - id: niemand_opgebrand
+    name: Niemand opgebrand
+    line: "Een team dat altijd op honderd procent draait, heeft geen ruimte om te verbeteren."
+    hint: "Hoe vol zat de agenda van de teams die je experimenten droegen?"
+    act: 1
+    trigger: {type: no_overload_act, experiments: 3}
+    reward: {title: Goede werkgever}

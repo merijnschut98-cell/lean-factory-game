@@ -14,7 +14,7 @@ func _resolved(standardise: bool, r: Region = RulesFixture.region()) -> Region:
 	r.ask("connections.intake", "walk")
 	r.use_tool(DESIGN, "data")
 	var a3 := RulesFixture.a3(r, "custom_design", "overprocessing", "standard_designs",
-		["custom_design:0", "custom_design:2", "custom_design:4"], "throughput")
+		["custom_design:0", "custom_design:2", "custom_design:4"], "lead_time")
 	assert_eq(r.submit_a3("custom_design", a3), "")
 	r.advance_days(Region.CHECK_DAYS)
 	assert_true(r.check("custom_design")["passed"])

@@ -29,7 +29,10 @@ static func problems() -> Array:
 	return [
 		{
 			"id": "custom_design", "tier": 1, "name": "Maatwerk voor standaardwerk", "step": "connections.design",
-			"waste": "overprocessing", "severity": "high", "visibility": "obvious", "kpi": "throughput",
+			"waste": "overprocessing", "severity": "high", "visibility": "obvious",
+			# Demand stays below the design team's capacity: the custom designs
+			# make the queue, not the output, so the lead time shows it.
+			"kpi": "lead_time",
 			"root_cause": "Standard jobs get a full custom design",
 			"plausible_causes": ["The preparers are too slow", "The design software is old"],
 			# Several healthier processes: both help, one more than the other.

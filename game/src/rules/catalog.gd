@@ -23,6 +23,9 @@ var coach: Dictionary = {}
 var persons: Array[PersonDef] = []
 var dialogs: Array[DialogDef] = []
 var dialog_bank: Dictionary = {}
+## The hidden rewards (content/discoveries.yaml), as validated dictionaries
+## (Discoveries reads them).
+var discoveries: Array = []
 ## The first thing wrong with the files; "" when the catalogue is usable.
 var error := ""
 
@@ -54,6 +57,11 @@ static func load_from(dir: String = DATA_DIR) -> Catalog:
 			c.dialogs.append(def)
 		c.dialog_bank = JsonFile.dict_or_empty(talk.get("bank"))
 		c._keep_first(Dialog.bank_error(c.dialog_bank))
+	var found := JsonFile.read_dict(dir + "/discoveries.json")
+	if not found["error"].is_empty():
+		c.error = found["error"]
+		return c
+	c.discoveries = found["data"].get("discoveries", []) if found["data"].get("discoveries") is Array else []
 	var files := Array(DirAccess.get_files_at(dir)).filter(func(f: String) -> bool:
 		return f.begins_with(PROBLEM_FILES) and f.ends_with(".json"))
 	files.sort()

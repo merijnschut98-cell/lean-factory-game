@@ -141,7 +141,6 @@ class Persona extends RefCounted:
 	var _doing := "new_game"  # the action running, to blame engine errors on
 	var _audits: Array[String] = []
 	var _sustain_tries: Dictionary = {}  # check-in mission id → audits done for it
-	var _twins: Dictionary = {}  # problem id → the counterfactual's rows (expert)  # places to audit (a fix there is slipping)
 	var _actions := 0
 	var _last_sample := -INF
 
@@ -673,11 +672,9 @@ class Persona extends RefCounted:
 	func _submit(m: MissionDef, p: ProblemDef) -> bool:
 		var a3 := _compose_a3(p)
 		var cost: int = s.region.countermeasures[a3["cm"]].budget if s.region.countermeasures.has(a3["cm"]) else 0
-		var twin := _counterfactual(p) if persona == "expert" else {}
 		var code := s.submit_a3(p.id, a3)
 		var run: Dictionary = _runs.get(m.id, {})
 		if code.is_empty():
-			_twins[p.id] = twin
 			(_tried.get_or_add(p.id, []) as Array).append(a3["cm"])
 			if not run.is_empty():
 				run["cm_spent"] += cost
@@ -689,17 +686,6 @@ class Persona extends RefCounted:
 		_dead_end("a3_refused", m.id, "%s (A3 %s)" % [code, a3])
 		_give_up(m)
 		return true
-
-	## The Check's window without the fix: a copy of the network runs the
-	## Check's days with the problem untreated (copies continue the same random
-	## sequences, as GameSession.fade_forecast's), so after-fix vs this is the
-	## fix's own effect, without the trend and the noise.
-	func _counterfactual(p: ProblemDef) -> Dictionary:
-		var twin := NetworkState.copy(s.region.net)
-		if not twin.error.is_empty():
-			return {}
-		twin.advance_days(s.check_days(p.id))
-		return _rows(Region.measures(twin, p.step))
 
 	func _compose_a3(p: ProblemDef) -> Dictionary:
 		var st: ProblemState = s.region.state[p.id]
@@ -772,7 +758,10 @@ class Persona extends RefCounted:
 			"constraint_after": r["after"]["constraint_pool"], "prediction": a3["prediction"], "kpi": p.kpi,
 			"cause_correct": r["cause_correct"], "waste_right": r["waste_right"],
 			"wait_step": _at_wait(p.id),
-			"before": _rows(r["before"]), "after": _rows(r["after"]), "without_fix": _twins.get(p.id, {})}
+			"before": _rows(r["before"]), "after": _rows(r["after"]),
+			# The Check's own counterfactual (Region.check): the fix's effect.
+			"with": _rows(r["forecast"]["with"]), "without": _rows(r["forecast"]["without"]),
+			"gains": _rows(r["forecast"]["gains"])}
 		entry["flags"] = _flags(entry)
 		record["checks"].append(entry)
 		var run: Dictionary = _runs.get(m.id, {})
@@ -818,28 +807,29 @@ class Persona extends RefCounted:
 		var change := (a - b) / absf(b) if absf(b) > 0.0001 else (a - b)
 		return -change if row in CheckPanel.LOWER_IS_BETTER else change
 
-	## What would read as contradictory on the Check panel.
+	## What would read as contradictory: the verdict against the Check's own
+	## counterfactual (the fix's effect, `gains`), and the panel's before/after
+	## table against it.
 	static func _flags(e: Dictionary) -> Array[String]:
 		var flags: Array[String] = []
-		var pred := better_by(e["prediction"], e["before"], e["after"])
-		var own := better_by(e["kpi"], e["before"], e["after"])
+		var pred: float = e["gains"][e["prediction"]]
+		var own: float = e["gains"][e["kpi"]]
 		if e["passed"]:
-			if pred < -NOISE:
+			if pred < -Pdca.CHECK_NOISE:
 				flags.append("passed_leading_kpi_worse" if CheckPanel.kind(e["prediction"]) == CheckPanel.LEADING
 					else "passed_lagging_kpi_worse")
-			if e["kpi"] != e["prediction"] and own < -NOISE:
+			if e["kpi"] != e["prediction"] and own < -Pdca.CHECK_NOISE:
 				flags.append("passed_problem_kpi_worse")
-			if absf(pred) <= 0.01 and absf(own) <= 0.01:
+			if absf(pred) <= Pdca.CHECK_NOISE and absf(own) <= Pdca.CHECK_NOISE:
 				flags.append("passed_no_visible_change")
 			if not e["cause_correct"]:
 				flags.append("passed_with_wrong_cause")
-			if e["at_constraint"] and better_by("capacity", e["before"], e["after"]) < 0.005:
+			if e["at_constraint"] and e["gains"]["capacity"] < 0.005:
 				flags.append("constraint_fixed_no_capacity_gain")
-			var twin: Dictionary = e.get("without_fix", {})
-			if not twin.is_empty() and own < -NOISE and better_by(e["kpi"], twin, e["after"]) > 0.0:
+			if better_by(e["kpi"], e["before"], e["after"]) < -NOISE and own > Pdca.CHECK_NOISE:
 				flags.append("trend_hides_gain")
 		else:
-			if pred > NOISE or own > NOISE:
+			if pred > Pdca.CHECK_NOISE:
 				flags.append("failed_but_kpi_improved")
 			if e["lesson"] == "too_early" and e["level"] == "full":
 				flags.append("too_early_but_region_ready")
@@ -895,8 +885,8 @@ class Persona extends RefCounted:
 class PlayReport extends RefCounted:
 	## A Check flag's severity, title and proposed fix.
 	const FLAGS := {
-		"trend_hides_gain": ["high", "The Check table shows the problem's KPI worse although the fix helped",
-			"Before/after compares two different 14-day windows, so the stream's own trend (and noise) lands on the player's fix. The expert's counterfactual (same network, same random sequence, no fix) shows the fix improved the KPI. Compare the after-window with a no-fix twin, as GameSession.fade_forecast already does, and show 'zonder jouw maatregel' as the reference column."],
+		"trend_hides_gain": ["high", "The Check panel's before/after table shows the problem's KPI worse although the fix helped",
+			"The verdict now uses the Check's counterfactual (Region.check's forecast: the coming lead time with and without the fix), but CheckPanel still shows before/after, two different 14-day windows, so the stream's own trend lands on the player's fix. Show forecast.without ('zonder jouw maatregel') and forecast.with as the columns, and say how far ahead the Check looks (forecast.days)."],
 		"passed_leading_kpi_worse": ["high", "Check passes while the predicted leading KPI got worse",
 			"The pass rule is the countermeasure's fit (eff >= 0.5), not the numbers; a leading indicator (capacity, throughput, WIP age) is supposed to move inside the Check. Judge the pass on the measured change against a no-fix twin, or have the panel say 'geslaagd, maar je voorspelde KPI is nog niet bewogen'."],
 		"passed_lagging_kpi_worse": ["medium", "Check passes while the predicted lagging KPI got worse",
@@ -909,8 +899,8 @@ class PlayReport extends RefCounted:
 			"By design the fit decides the pass and the lesson says cause_wrong, so a lucky countermeasure passes. Lower eff when the cause is wrong (e.g. x0.6), or make the root-cause dimension of the score cost more."],
 		"constraint_fixed_no_capacity_gain": ["medium", "A fix at the constraint passes but stream capacity does not rise",
 			"Check that the countermeasure's effects touch the constraint's touch time or availability; otherwise the 'bottleneck first' lesson reads false."],
-		"failed_but_kpi_improved": ["high", "Check fails while a KPI improved more than 5 %",
-			"The mismatch/too-early verdict contradicts the table (trend or noise). Show the no-fix reference, or word it 'de cijfers bewegen, maar niet door jouw maatregel'."],
+		"failed_but_kpi_improved": ["high", "Check fails while the fix moved the predicted KPI",
+			"A too-early countermeasure weakens the problem, but below Pdca.CHECK_PASS it does not work: the verdict and the numbers disagree. Word the too_early lesson with the numbers ('het helpt een beetje, maar werkt maar half')."],
 		"too_early_but_region_ready": ["high", "'Too early' verdict while the region's maturity was ready (level full)",
 			"Region.check words every non-mismatch failure as too_early; a low-fit countermeasure at full level needs its own lesson code (e.g. 'weak_fit')."],
 		"not_constraint_on_wait_step": ["low", "'Not the bottleneck' warning on a problem at a wait step",
@@ -949,12 +939,9 @@ class PlayReport extends RefCounted:
 			for c: Dictionary in run["checks"]:
 				for flag: String in c["flags"]:
 					var f: Array = FLAGS[flag]
-					var detail := "cm %s, predicted %s %+.1f %%, problem KPI %s %+.1f %%, capacity %+.1f %%, eff %.2f, lesson %s" % [
-						c["cm"], c["prediction"], 100.0 * Persona.better_by(c["prediction"], c["before"], c["after"]),
-						c["kpi"], 100.0 * Persona.better_by(c["kpi"], c["before"], c["after"]),
-						100.0 * Persona.better_by("capacity", c["before"], c["after"]), c["eff"], c["lesson"]]
-					if not (c.get("without_fix", {}) as Dictionary).is_empty():
-						detail += "; against the no-fix twin %s %+.1f %%" % [c["kpi"], 100.0 * Persona.better_by(c["kpi"], c["without_fix"], c["after"])]
+					var detail := "cm %s, predicted %s %+.1f %% (fix), problem KPI %s %+.1f %% (fix), %+.1f %% (before/after), capacity %+.1f %% (fix), eff %.2f, lesson %s" % [
+						c["cm"], c["prediction"], 100.0 * c["gains"][c["prediction"]], c["kpi"], 100.0 * c["gains"][c["kpi"]],
+						100.0 * Persona.better_by(c["kpi"], c["before"], c["after"]), 100.0 * c["gains"]["capacity"], c["eff"], c["lesson"]]
 					_add(out, "flag:" + flag, f[0], "contradiction", f[1], detail, who, c["mission"], c["day"], f[2], c["problem"])
 				if expert and not c["passed"]:
 					_add(out, "expert_fail", "high", "balance", "The expert's best countermeasure fails the Check",
@@ -1127,11 +1114,10 @@ class PlayReport extends RefCounted:
 							"Each failed Check costs another 14 days; offer a shorter re-run after a failed Check (7 days), or a hint after the first mismatch.",
 							"%s (%.0f d)" % [m["id"], m["days"]])
 
-	## The expert's Checks against the no-fix twin: does the Check's window
-	## show the fix at all in the problem's own KPI?
+	## The expert's Checks: does the Check show the best fix in the problem's
+	## own KPI (its counterfactual gain, mean over seeds)?
 	static func _check_window(out: Dictionary, runs: Array[Dictionary]) -> void:
-		var effects := {}  # problem/kpi → [effect against the twin per passed Check]
-		var trend := []
+		var effects := {}  # problem/kpi → [the fix's gain per Check]
 		var who := {}
 		for run in runs:
 			if run["persona"] != "expert":
@@ -1139,26 +1125,20 @@ class PlayReport extends RefCounted:
 			if who.is_empty():
 				who = {"persona": "expert", "seed": run["seed"]}
 			for c: Dictionary in run["checks"]:
-				var twin: Dictionary = c.get("without_fix", {})
-				if twin.is_empty() or not c["passed"]:
-					continue
-				(effects.get_or_add("%s/%s" % [c["problem"], c["kpi"]], []) as Array).append(Persona.better_by(c["kpi"], twin, c["after"]))
-				trend.append(absf(Persona.better_by(c["kpi"], c["before"], twin)))
+				if c["prediction"] == c["kpi"]:
+					(effects.get_or_add("%s/%s" % [c["problem"], c["kpi"]], []) as Array).append(c["gains"][c["kpi"]])
 		var flat := []
-		var worse := []
 		for key: String in effects:
 			var mean := _mean(effects[key])
-			if absf(mean) < 0.01:
-				flat.append(key)
-			elif mean < 0.0:
-				worse.append("%s %+.0f %%" % [key, 100.0 * mean])
-		if effects.is_empty() or flat.size() + worse.size() < 0.25 * effects.size():
+			if mean <= Pdca.CHECK_NOISE:
+				flat.append("%s %+.1f %%" % [key, 100.0 * mean])
+		if flat.is_empty():
 			return
-		_add(out, "check_window", "high", "contradiction", "The Check's 14 days cannot show the fix in the problem's own KPI",
-			"Against a no-fix twin (same network, same random sequence), the expert's best fix moves the problem's own KPI by under 1 %% for %d of %d problems and makes it worse for %d (the team hours the experiment takes), mean over seeds. The before/after columns meanwhile move %.0f %% on average from the stream's own trend. Flat: %s. Worse: %s." % [
-				flat.size(), effects.size(), worse.size(), 100.0 * _mean(trend), ", ".join(flat), ", ".join(worse)],
+		_add(out, "check_window", "high", "contradiction", "The Check cannot show the best fix in the problem's own KPI",
+			"Against the Check's no-fix forecast, the expert's best fix moves the problem's own KPI by no more than the noise (%.0f %%) for %d of %d problems, mean over seeds: %s." % [
+				100.0 * Pdca.CHECK_NOISE, flat.size(), effects.size(), ", ".join(flat)],
 			who, "", 0.0,
-			"Lagging KPIs (lead time, first time right, on time) measure orders that started long before the fix, and the Check passes on fit alone, so the table carries no lesson. Show the after-window against a no-fix twin (as fade_forecast does), ask for a leading-indicator prediction in the A3, or measure lagging KPIs only on orders that entered after the fix.")
+			"The content names a KPI the fix cannot move within the Check's horizon (CheckForecast): name the KPI the fix moves, or make the fix's effect match its description.")
 
 	## Progress: belt pacing, debt that never recovers, the fork, wait steps
 	## and deadlines that run out while the experiment runs.
@@ -1173,6 +1153,14 @@ class PlayReport extends RefCounted:
 						", ".join(belts.map(func(b: Dictionary) -> String: return "%s %.0f" % [b["belt"], b["day"]]))], who, "", belts.back()["day"],
 					"Total campaign XP (~%d for the expert) is far above Progression's master black (%d). Raise the belt thresholds, scale XP down, or tie the later belts to maturity and the KPI review instead of XP." % [run["xp"], Progression.BELTS.back()["xp"]])
 			var curve: Array = run["curve"]
+			var at_floor := curve.filter(func(c: Dictionary) -> bool: return c["budget"] <= Region.DEBT_FLOOR + 5000)
+			if not at_floor.is_empty():
+				_add(out, "debt_floor", "low", "balance", "Play reaches the debt floor",
+					"%s spends %.0f %% of the run within €5.000 of the floor (%s) and ends at %s" % [run["persona"],
+						100.0 * at_floor.size() / curve.size(), UiText.money(Region.DEBT_FLOOR), UiText.money(run["budget"])],
+					who, "", at_floor[0]["day"],
+					"Working as designed (recovery is always possible): the directie carries losses beyond the floor; held fixes' savings and solved problems pay the way back. Check the persona ever climbs out.",
+					"%s/%d" % [run["persona"], run["seed"]])
 			if run["budget"] < 0 and curve.size() > 4:
 				var late: Dictionary = curve[maxi(0, curve.size() - 27)]
 				var slope: float = (run["budget"] - late["budget"]) / maxf(1.0, run["days"] - late["day"]) * 30.0
@@ -1441,19 +1429,16 @@ class PlayReport extends RefCounted:
 		return rows
 
 	static func _check_table(runs: Array) -> PackedStringArray:
-		var rows := PackedStringArray(["| persona | problem | try | cm | eff | passed | lesson | predicted | Δ predicted | KPI | Δ KPI | Δ KPI vs no-fix twin | Δ capacity | flags |",
+		var rows := PackedStringArray(["| persona | problem | try | cm | eff | passed | lesson | predicted | Δ predicted (fix) | KPI | Δ KPI (fix) | Δ KPI before→after | Δ capacity (fix) | flags |",
 			"|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"])
 		for r: Dictionary in runs:
 			if r["seed"] != runs[0]["seed"] or r["persona"] == "careless":
 				continue
 			for c: Dictionary in r["checks"]:
-				var twin: Dictionary = c.get("without_fix", {})
-				rows.append("| %s | %s | %d | %s | %.2f | %s | %s | %s | %+.1f %% | %s | %+.1f %% | %s | %+.1f %% | %s |" % [r["persona"],
+				rows.append("| %s | %s | %d | %s | %.2f | %s | %s | %s | %+.1f %% | %s | %+.1f %% | %+.1f %% | %+.1f %% | %s |" % [r["persona"],
 					c["problem"], c["attempt"], c["cm"], c["eff"], "yes" if c["passed"] else "no", c["lesson"], c["prediction"],
-					100.0 * Persona.better_by(c["prediction"], c["before"], c["after"]), c["kpi"],
-					100.0 * Persona.better_by(c["kpi"], c["before"], c["after"]),
-					"%+.1f %%" % (100.0 * Persona.better_by(c["kpi"], twin, c["after"])) if not twin.is_empty() else "–",
-					100.0 * Persona.better_by("capacity", c["before"], c["after"]), ", ".join(c["flags"])])
+					100.0 * c["gains"][c["prediction"]], c["kpi"], 100.0 * c["gains"][c["kpi"]],
+					100.0 * Persona.better_by(c["kpi"], c["before"], c["after"]), 100.0 * c["gains"]["capacity"], ", ".join(c["flags"])])
 		rows.append("")
 		var counts := PackedStringArray()
 		for persona in PERSONAS:
@@ -1463,7 +1448,7 @@ class PlayReport extends RefCounted:
 					all.append_array(r["checks"])
 			if not all.is_empty():
 				counts.append("%s %d of %d passed" % [persona, all.filter(func(c: Dictionary) -> bool: return c["passed"]).size(), all.size()])
-		rows.append("Expert and average, first seed; Δ is the relative change, positive = better; the no-fix twin is the expert's counterfactual. All Checks (%s) are in the JSON." % "; ".join(counts))
+		rows.append("Expert and average, first seed; Δ is the relative change, positive = better. (fix): the Check's own counterfactual, the coming lead time with against without the fix (Region.check's forecast); before→after: the two 14-day windows the Check panel still shows. All Checks (%s) are in the JSON." % "; ".join(counts))
 		return rows
 
 	## Main missions that open together (the same requirements): which one

@@ -22,6 +22,9 @@ var failed_checks := 0
 var check_at := 0
 ## Snapshot before the experiment (see Region.snapshot).
 var baseline: Dictionary = {}
+## The last Check's gain of every KPI with the fix over without it
+## (Investigation.KPIS → relative gain, see CheckForecast); the Act scores on it.
+var gains: Dictionary = {}
 ## The Act standardised the fix (the main sustaining habit, see Sustain).
 var standardised := false
 ## How worn the resolved fix is (Sustain): health 0.5^wear, it recurs at 1.
@@ -48,7 +51,7 @@ func to_dict() -> Dictionary:
 	return {
 		"phase": Phase.keys()[phase], "blamed": blamed, "a3": a3, "cause_correct": cause_correct,
 		"waste_right": waste_right, "eff": eff, "level": level, "failed_checks": failed_checks,
-		"check_at": check_at, "baseline": baseline, "standardised": standardised, "wear": wear,
+		"check_at": check_at, "baseline": baseline, "gains": gains, "standardised": standardised, "wear": wear,
 		"neglect": neglect, "buy_in": buy_in,
 		"score": score, "rework_from": rework_from,
 	}
@@ -69,6 +72,7 @@ func load_dict(d: Dictionary) -> bool:
 	failed_checks = int(d.get("failed_checks", 0))
 	check_at = int(d.get("check_at", 0))
 	baseline = d.get("baseline", {}) if d.get("baseline") is Dictionary else {}
+	gains = _gains(d.get("gains"))
 	# Saves from before graded sustainment: a fix that never faded was standardised.
 	standardised = bool(d.get("standardised", phase == Phase.RESOLVED and int(d.get("recur_at", 0)) < 0))
 	wear = maxf(0.0, float(d.get("wear", 0.0)))
@@ -78,6 +82,20 @@ func load_dict(d: Dictionary) -> bool:
 	score = d.get("score", {}) if d.get("score") is Dictionary else {}
 	rework_from = d.get("rework_from", {}) if d.get("rework_from") is Dictionary else {}
 	return true
+
+
+## Saved gains, untrusted: known KPIs with finite numbers only. A save from
+## before the counterfactual Check has none (a checked problem then scores no
+## impact).
+static func _gains(saved: Variant) -> Dictionary:
+	var out := {}
+	if not saved is Dictionary:
+		return out
+	for kpi: Variant in saved:
+		var gain: Variant = saved[kpi]
+		if kpi in Investigation.KPIS and (gain is float or gain is int) and is_finite(gain):
+			out[kpi] = float(gain)
+	return out
 
 
 func is_open() -> bool:

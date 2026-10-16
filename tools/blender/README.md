@@ -34,3 +34,20 @@ Rebake after moving furniture or walls; the lightmaps hold the shell's AO and so
   names); the original id is in the node's `extras` metadata: `{"interaction": "place", "id": "connections.intake"}`.
 - Textures are external PNGs (`textures/`), referenced by URI, named like CC0 library materials
   (carpet, plaster, concrete, ...) so photo textures can replace them file for file.
+
+## Sample characters (a trial: Blender script vs AI generator vs asset packs)
+    .bvenv/bin/python tools/blender/build_character.py              # 3 glbs + 2 Cycles previews (~25 min)
+    .bvenv/bin/python tools/blender/build_character.py --no-render  # glbs only (~12 min)
+    .bvenv/bin/python tools/blender/build_character.py --only coach --samples 32
+    godot --headless --path game --import
+    xvfb-run -a godot --path game --rendering-driver opengl3 --resolution 1600x900 \
+      --script res://tools/characters_shot.gd -- ../docs/screenshots/characters_in_office.png
+
+- `game/assets/characters/sample_{player,coach,monteur}.glb`: the CI-lead, Ruud Hoekstra (the
+  coach) and a monteur in PPE. Humanoid rig with Godot `SkeletonProfileHumanoid` bone names;
+  actions `idle_loop` and `walk_loop`, which Godot imports as looping `idle` and `walk`.
+- Textures are embedded in each glb (one self-contained file per person); the generated PNGs
+  go to the ignored `build/character_textures/`. The `.glb.import` files set
+  `gltf/embedded_image_handling=2` (Basis Universal: kept inside the import, with mipmaps)
+  instead of extracting PNGs next to the glb.
+- Previews: `docs/screenshots/characters_lineup.png`, `characters_sims_view.png`.

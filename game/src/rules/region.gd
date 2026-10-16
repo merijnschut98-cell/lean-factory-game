@@ -31,6 +31,28 @@ const MATURITY_STEP := 0.6
 ## §2): no money for overtime or temporary staff, more sickness absence, so
 ## every team has a little less time (an estimate: 3 points of availability).
 const BAD_PERIOD_AVAILABILITY := 0.03
+## Debt stops here: the directie carries what the region loses beyond it,
+## so the way back stays within reach (recovery is always possible, CLAUDE.md
+## §2). ESTIMATE: the size of the starting budget, about four solved problems
+## with their missions' rewards, or a few months of held fixes' savings.
+const DEBT_FLOOR := -50000
+## Finance books part of what a held fix saves (less overtime, rework, repeat
+## visits, status calls) into the improvement budget: every week this share
+## of the grant for a perfect result on the problem (Pdca.BUDGET_BASE), at
+## the fix's health, while the team that runs it trusts you. Long-term,
+## respectful play pays its way. ESTIMATE: the grant once a year (€96–346 a
+## week a fix); a self-funding CI programme reinvests a share of its savings.
+const SAVINGS_RATE := 1.0 / 52.0
+## The Check looks ahead with and without the fix (CheckForecast): one lead
+## time of the orders the problem holds up, then MEASURE_DAYS over which the
+## KPIs are measured, so that the orders measured started after the fix; at
+## least a quarter (as the KPI review), at most three. ESTIMATES (probe
+## 2026-10-15, real network, 6 seeds): a 14-day window one lead time ahead
+## swings ±13 % on the same fix, eight weeks ±3–5 %; grid reinforcement (7
+## months of waiting) shows only after half a year.
+const CHECK_HORIZON := 91
+const MAX_CHECK_HORIZON := 273
+const MEASURE_DAYS := 56
 const BAD_PERIOD_SOURCE := "region:bad_period"
 const DRIFT_SOURCE := "region:drift"
 const ROUTINE_SOURCE := "routine:"
@@ -118,6 +140,11 @@ func trust_of(place: String) -> int:
 	return trust.get(_team(place), 0)
 
 
+## The team you talk to at a place ("" at a wait step).
+func team_at(place: String) -> String:
+	return _team(place)
+
+
 ## Change a team's trust (bounded); the new trust.
 func change_trust(team: String, delta: int) -> int:
 	trust[team] = clampi(trust.get(team, 0) + delta, TRUST_MIN, TRUST_MAX)
@@ -171,30 +198,43 @@ func weekly_cost() -> float:
 	return total
 
 
+## What held fixes put into the budget per week now (SAVINGS_RATE): practice
+## fixes and those of a team that does not trust you bring nothing.
+func weekly_savings() -> float:
+	var total := 0.0
+	for st: ProblemState in state.values():
+		var p := problems[st.id]
+		if st.phase == P.RESOLVED and not practice.has(st.id) and trust_of(p.step) >= 0:
+			total += Pdca.BUDGET_BASE[p.severity] * SAVINGS_RATE * Sustain.health(st.wear)
+	return total
+
+
 func _cost_of(st: ProblemState) -> float:
 	if st.phase == P.RESOLVED:
 		return problems[st.id].cost_per_week * (1.0 - Sustain.health(st.wear))
 	return problems[st.id].cost_per_week * (1.0 - st.eff) if st.is_open() else 0.0
 
 
-## Take the weekly cost's share for `days` passed days from the budget.
+## Take the weekly costs, less the savings, for `days` passed days from the
+## budget.
 func _charge_costs(days: int) -> void:
 	if days <= 0:
 		return
-	_cost_owed += weekly_cost() * days / 7.0
+	_cost_owed += (weekly_cost() - weekly_savings()) * days / 7.0
 	var whole := floori(_cost_owed)
 	_cost_owed -= whole
 	_add_budget(-whole)
 
 
-## Debt is allowed; it starts a bad period, and paying it off ends it.
+## Debt is allowed, down to DEBT_FLOOR; it starts a bad period, and paying it
+## off ends it.
 func in_bad_period() -> bool:
 	return profile.budget < 0
 
 
 func _add_budget(amount: int) -> void:
 	var was_bad := in_bad_period()
-	profile.budget += amount
+	profile.budget = maxi(DEBT_FLOOR, profile.budget + amount)
 	if in_bad_period() != was_bad:
 		_apply_bad_period()
 		events.append({"type": "bad_period", "started": in_bad_period()})
@@ -369,6 +409,10 @@ func _recent_stats(step: SimStep) -> Dictionary:
 	return step.stats_since(SimCalendar.day_of(net.time) - CHECK_DAYS)
 
 
+func _has_team(place: String) -> bool:
+	return not _pools_at(place).is_empty()
+
+
 func _pools_at(place: String) -> PackedStringArray:
 	var step := net.step_at(place)
 	return step.pool_ids if step != null else PackedStringArray()
@@ -468,30 +512,35 @@ func snapshot(problem_id: String) -> Dictionary:
 
 
 ## The end-to-end numbers of the stream through `place` on any network (the
-## region's own, or a forecast's copy): KPIs over the last CHECK_DAYS,
+## region's own, or a forecast's copy): KPIs over the last `window_days`,
 ## capacity and constraint, and the place's step: its statistics and queue
 ## now (as queue_at).
-static func measures(network: Network, place: String) -> Dictionary:
+static func measures(network: Network, place: String, window_days: int = CHECK_DAYS) -> Dictionary:
 	var stream := network.stream(place.get_slice(".", 0))
 	var step := network.step_at(place)
 	var c: Dictionary = Capacity.analyse(network)["streams"][stream.id]
-	var k := stream.kpis(network.time, CHECK_DAYS)
+	var k := stream.kpis(network.time, window_days)
 	return {
 		"capacity": c["capacity_per_week"], "constraint_pool": c["constraint_pool"],
 		"throughput": k["throughput_per_week"], "lead_time": k["lead_days_p50"],
 		"first_time_right": k["first_time_right"], "on_time": k["on_time"],
 		# The age of the open work: long waits show before their orders finish.
 		"wip_age": network.open_age_days(stream),
-		"step": step.stats_since(SimCalendar.day_of(network.time) - CHECK_DAYS),
+		"step": step.stats_since(SimCalendar.day_of(network.time) - window_days),
 		"queue": _queue(network, step),
 	}
 
 
 # ── Check ───────────────────────────────────────────────────────────────────
 
-## Compare before and after. Returns {passed, before, after, level,
-## cause_correct, waste_right, lesson, not_constraint}; lesson is a code:
-## cause_right | cause_wrong | mismatch | too_early.
+## Did the fix move the KPI the A3 predicted? The coming lead time with the
+## fix against without it (CheckForecast): it passes when the countermeasure
+## works (Pdca.CHECK_PASS) and the predicted KPI is better by more than
+## Pdca.CHECK_NOISE. Returns {passed, before, after (snapshots), forecast
+## (CheckForecast.run, with kpi: the prediction and gain: its gain), level,
+## cause_correct, waste_right, lesson, not_constraint}, or {error} when the
+## forecast cannot run. lesson is a code: cause_right | cause_wrong (passed) |
+## mismatch | too_early | not_moved (failed).
 func check(problem_id: String) -> Dictionary:
 	var st := state[problem_id]
 	if st.phase != P.CHECK_READY:
@@ -499,12 +548,23 @@ func check(problem_id: String) -> Dictionary:
 	var p := problems[problem_id]
 	net.clear_effects("do:" + problem_id)
 	var after := snapshot(problem_id)
+	var lead := _lead_days(p, after)
+	var days := clampi(lead + MEASURE_DAYS, CHECK_HORIZON, MAX_CHECK_HORIZON)
+	var forecast := CheckForecast.run(net, p, days, clampi(days - lead, MEASURE_DAYS, days))
+	if not forecast["error"].is_empty():
+		return {"error": forecast["error"]}
+	forecast["kpi"] = st.a3["prediction"]
+	forecast["gain"] = forecast["gains"][forecast["kpi"]]
+	st.gains = forecast["gains"]
+	var works := st.eff >= Pdca.CHECK_PASS
 	var result := {
-		"passed": st.eff >= Pdca.CHECK_PASS, "before": st.baseline, "after": after, "level": st.level,
-		"cause_correct": st.cause_correct, "waste_right": st.waste_right,
+		"passed": works and forecast["gain"] > Pdca.CHECK_NOISE, "before": st.baseline, "after": after,
+		"forecast": forecast, "level": st.level, "cause_correct": st.cause_correct, "waste_right": st.waste_right,
 		"lesson": "cause_right" if st.cause_correct else "cause_wrong",
-		# The step got better, but the stream still waits on another team.
-		"not_constraint": not st.baseline["at_constraint"] and after["capacity"] < st.baseline["capacity"] * 1.01,
+		# The step got better, but the stream still waits on another team. A
+		# wait or material step has no team and adds no capacity: what it
+		# takes out is lead time, wherever it is on the path.
+		"not_constraint": _has_team(p.step) and not st.baseline["at_constraint"] and st.gains["capacity"] < 0.01,
 	}
 	profile.learn(["PDCA", "eight_wastes", "waste_" + p.waste])
 	if result["not_constraint"]:
@@ -514,7 +574,7 @@ func check(problem_id: String) -> Dictionary:
 		if countermeasures[st.a3["cm"]].unlocks == KpiBoard.UNLOCK and board.unlock(net.time):
 			events.append({"type": "kpi_review"})  # the first review is due at once
 		return result
-	result["lesson"] = "mismatch" if st.level == "mismatch" else "too_early"
+	result["lesson"] = "mismatch" if st.level == "mismatch" else ("too_early" if not works else "not_moved")
 	st.failed_checks += 1
 	st.eff = 0.0
 	st.level = ""
@@ -525,6 +585,15 @@ func check(problem_id: String) -> Dictionary:
 	else:
 		_apply_old_fix(st)  # a rework that failed: the old fix is still there
 	return result
+
+
+## One lead time of the orders the problem holds up, in whole days: the
+## stream's median now, or the problem's step's own wait when that is longer
+## (a long wait only some orders take, such as grid reinforcement).
+func _lead_days(p: ProblemDef, now: Dictionary) -> int:
+	var step := net.step_at(p.step)
+	var wait := (step.wait_minutes + step.batch_minutes) / float(SimCalendar.MINUTES_PER_DAY)
+	return ceili(maxf(now["lead_time"], wait))
 
 
 # ── Act ─────────────────────────────────────────────────────────────────────
@@ -602,8 +671,6 @@ func key_clues_found(problem_id: String) -> int:
 func _score_inputs(st: ProblemState, p: ProblemDef, standardise: bool) -> Dictionary:
 	var keys := p.clues.filter(func(c: Clue) -> bool: return c.key).map(func(c: Clue) -> String: return c.id)
 	var evidence: Array = st.a3["evidence"]
-	var before: float = st.baseline["capacity"]
-	var capacity: float = snapshot(p.id)["capacity"]
 	return {
 		"key_found": key_clues_found(p.id),
 		"key_total": keys.size(),
@@ -619,8 +686,10 @@ func _score_inputs(st: ProblemState, p: ProblemDef, standardise: bool) -> Dictio
 		"prediction_right": st.a3["prediction"] == p.kpi,
 		"standardised": standardise,
 		"waste_right": st.waste_right,
-		"capacity_gain": (capacity - before) / before if before > 0.0 else 0.0,
+		"capacity_gain": st.gains.get("capacity", 0.0),
 		"at_constraint": st.baseline["at_constraint"],
+		"team_step": _has_team(p.step),
+		"lead_time_gain": st.gains.get("lead_time", 0.0),
 	}
 
 

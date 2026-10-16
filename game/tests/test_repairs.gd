@@ -23,7 +23,7 @@ func _solve(log: Missions, cm: String) -> void:
 	var r := log.region
 	log.accept("fix_design")
 	r.use_tool("connections.design", "time_study")
-	assert_eq(r.submit_a3(PROBLEM, RulesFixture.a3(r, PROBLEM, "overprocessing", cm, ["custom_design:0"], "throughput")), "")
+	assert_eq(r.submit_a3(PROBLEM, RulesFixture.a3(r, PROBLEM, "overprocessing", cm, ["custom_design:0"], "lead_time")), "")
 	r.advance_days(Region.CHECK_DAYS)
 	assert_true(r.check(PROBLEM)["passed"])
 	r.act(PROBLEM, true)
@@ -80,9 +80,9 @@ func test_reworking_swaps_the_fix_without_the_problem_coming_back() -> void:
 	assert_eq(r.state[PROBLEM].phase, ProblemState.Phase.SPOTTED, "a new A3, from what was found")
 	assert_true(r.net.effects().has("cm:" + PROBLEM), "the old fix keeps running meanwhile")
 	assert_false(r.net.effects().has("problem:" + PROBLEM), "the problem does not come back")
-	var same := RulesFixture.a3(r, PROBLEM, "overprocessing", "delegated_approval", ["custom_design:0"], "throughput")
+	var same := RulesFixture.a3(r, PROBLEM, "overprocessing", "delegated_approval", ["custom_design:0"], "lead_time")
 	assert_eq(r.submit_a3(PROBLEM, same), "same_countermeasure")
-	var better := RulesFixture.a3(r, PROBLEM, "overprocessing", "standard_designs", ["custom_design:0"], "throughput")
+	var better := RulesFixture.a3(r, PROBLEM, "overprocessing", "standard_designs", ["custom_design:0"], "lead_time")
 	assert_eq(r.submit_a3(PROBLEM, better), "")
 	assert_false(r.net.effects().has("problem:" + PROBLEM))
 	r.advance_days(Region.CHECK_DAYS)
@@ -107,7 +107,7 @@ func test_a_failed_or_dropped_rework_keeps_the_old_fix() -> void:
 	var design := r.net.stream("connections").step("design")
 	var fixed_minutes := design.touch_minutes
 	log.accept(REPAIR)
-	var wrong := RulesFixture.a3(r, PROBLEM, "overprocessing", "poka_yoke_form", ["custom_design:0"], "throughput")
+	var wrong := RulesFixture.a3(r, PROBLEM, "overprocessing", "poka_yoke_form", ["custom_design:0"], "lead_time")
 	r.closed.erase("poka_yoke_form")  # Henk's deadline closed it meanwhile
 	assert_eq(r.submit_a3(PROBLEM, wrong), "")
 	r.advance_days(Region.CHECK_DAYS)
