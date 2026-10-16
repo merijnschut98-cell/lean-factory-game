@@ -150,7 +150,7 @@ func refresh() -> void:
 
 
 func controls_text() -> String:
-	return "WASD/klik lopen   ·   Z/C draaien   ·   wiel zoomen   ·   E gebruiken   ·   J aanwijzingen   ·   M kaart   ·   K begrippen"
+	return tr("WASD/klik lopen   ·   Shift rennen   ·   Z/C draaien   ·   wiel zoomen   ·   E gebruiken   ·   J aanwijzingen   ·   M kaart   ·   K begrippen")
 
 
 ## The active missions in the top bar: the main one first.
