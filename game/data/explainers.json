@@ -1,0 +1,478 @@
+{
+ "explainers": [
+  {
+   "analogy": {
+    "limit_line": "Eén verschil. Water loopt de slang uit. Stroom niet: die gaat door de kabel heen, en komt weer terug.",
+    "mapping": [
+     {
+      "analogy": "de buitenkraan aan de muur",
+      "pair": [
+       "wall_tap",
+       "panel"
+      ],
+      "real": "de groep in de meterkast"
+     },
+     {
+      "analogy": "de drukmeter bij de kraan",
+      "pair": [
+       "tap_gauge",
+       "kwh_meter"
+      ],
+      "real": "de kWh-meter"
+     },
+     {
+      "analogy": "de tuinslang op de haspel",
+      "pair": [
+       "hose_thin",
+       "cable_thin"
+      ],
+      "real": "de kabel op de haspel"
+     },
+     {
+      "analogy": "een dikke slang",
+      "pair": [
+       "hose_thick",
+       "cable_thick"
+      ],
+      "real": "een dikke kabel"
+     },
+     {
+      "analogy": "de drie kraantjes op het verdeelstuk",
+      "pair": [
+       "verdeelstuk",
+       "stekkerdoos"
+      ],
+      "real": "de drie knoppen op de stekkerdoos"
+     },
+     {
+      "analogy": "de druppelaar, de grote sproeier en de tuinsproeier",
+      "pair": [
+       "outlets",
+       "appliances"
+      ],
+      "real": "de lamp, de waterkoker en de kachel"
+     },
+     {
+      "analogy": "de doorstroommeter",
+      "pair": [
+       "flowmeter",
+       "stroomtang"
+      ],
+      "real": "de stroomtang"
+     },
+     {
+      "analogy": "de drukmeter aan het eind",
+      "pair": [
+       "end_gauge",
+       "multimeter"
+      ],
+      "real": "de multimeter"
+     },
+     {
+      "analogy": "de slang wordt warm",
+      "pair": [
+       "heat_tint_hose_thin",
+       "heat_tint_cable_thin"
+      ],
+      "real": "de kabel wordt warm"
+     }
+    ],
+    "skin": "tuin"
+   },
+   "assets": "explainers/spanning",
+   "beats": [
+    {
+     "id": "a1",
+     "idea": "druk",
+     "lines": [
+      "Vergeet even de elektriciteit. Denk aan een tuinslang.",
+      "De kraan duwt het water de slang in. Dat duwen heet druk.",
+      "Wat verwacht je als je een kraantje opendraait?"
+     ],
+     "phase": "tuin",
+     "pulse": "kettle",
+     "timeout_s": 10,
+     "wait_for": "any_on"
+    },
+    {
+     "id": "a2",
+     "idea": "stroom",
+     "lines": [
+      "Nu loopt er water. Hoeveel water er per tel doorheen gaat, heet stroom.",
+      "Kijk naar het wieltje op de slang. Draai er nog een open."
+     ],
+     "phase": "tuin",
+     "timeout_s": 10,
+     "wait_for": "two_on"
+    },
+    {
+     "alt_of": "a2",
+     "id": "a2_dripper",
+     "idea": "stroom",
+     "lines": [
+      "Nu loopt er water. Hoeveel water er per tel doorheen gaat, heet stroom.",
+      "Een druppelaar. Zie je het wieltje? Bijna niks. Probeer de grote sproeier eens."
+     ],
+     "phase": "tuin",
+     "timeout_s": 10,
+     "wait_for": "kettle_on",
+     "when": "only_lamp"
+    },
+    {
+     "id": "a3",
+     "idea": "weerstand",
+     "lines": [
+      "Meer kraantjes open. Meer water door dezelfde slang.",
+      "Kijk naar de drukmeter aan het eind. Waarom zakt die?",
+      "De slang houdt het water een beetje tegen. Dat tegenhouden heet weerstand."
+     ],
+     "phase": "tuin",
+     "silence_after": [
+      1
+     ]
+    },
+    {
+     "id": "a4",
+     "idea": "warm",
+     "lines": [
+      "En duw je heel veel door een smalle slang?",
+      "Dan wordt hij warm. Voel maar."
+     ],
+     "phase": "tuin",
+     "silence_after": [
+      0
+     ]
+    },
+    {
+     "id": "x",
+     "idea": "",
+     "lines": [
+      "Nu hetzelfde. Maar dan echt."
+     ],
+     "phase": "cross"
+    },
+    {
+     "id": "r1",
+     "idea": "hetzelfde",
+     "lines": [
+      "De kraan is nu de meterkast. De slang is de kabel. De kraantjes zijn de knoppen."
+     ],
+     "phase": "meterkast"
+    },
+    {
+     "id": "r2",
+     "idea": "namen",
+     "lines": [
+      "Druk heet hier spanning. Die tellen we in volt.",
+      "Stroom tellen we in ampère. Kijk maar op de tang."
+     ],
+     "phase": "meterkast",
+     "shows": [
+      "readout",
+      "reveal"
+     ]
+    },
+    {
+     "id": "r3",
+     "idea": "grens",
+     "lines": [
+      "Eén verschil. Water loopt de slang uit.",
+      "Stroom niet: die gaat door de kabel heen, en komt weer terug."
+     ],
+     "phase": "meterkast"
+    },
+    {
+     "id": "r4",
+     "idea": "aan",
+     "lines": [
+      "Zet de waterkoker eens aan. Wat doet de tang?"
+     ],
+     "phase": "meterkast",
+     "pulse": "kettle",
+     "timeout_s": 10,
+     "wait_for": "kettle_on"
+    },
+    {
+     "alt_of": "r4",
+     "id": "r4_already_on",
+     "idea": "aan",
+     "lines": [
+      "De waterkoker staat al aan. Kijk naar de tang."
+     ],
+     "phase": "meterkast",
+     "when": "kettle_on"
+    },
+    {
+     "id": "r5",
+     "idea": "kabel_warm",
+     "lines": [
+      "Dat getal is de stroom.",
+      "Kijk nu naar de meter aan het eind. Waar is dat stukje spanning gebleven?",
+      "In de kabel. Daar wordt het warmte. Net als bij de slang."
+     ],
+     "phase": "meterkast",
+     "silence_after": [
+      1
+     ]
+    },
+    {
+     "alt_of": "r5",
+     "id": "r5_lamp",
+     "idea": "kabel_warm",
+     "lines": [
+      "Een lampje. Bijna niks. Probeer de waterkoker eens."
+     ],
+     "phase": "meterkast",
+     "then": "r5",
+     "timeout_s": 10,
+     "wait_for": "kettle_on",
+     "when": "only_lamp"
+    },
+    {
+     "id": "r6",
+     "idea": "",
+     "lines": [
+      "Zet de kachel er eens bij. Hoe warm wordt de kabel, denk je?"
+     ],
+     "phase": "meterkast",
+     "pulse": "heater",
+     "skip_when": "heater_on",
+     "timeout_s": 10,
+     "wait_for": "heater_on"
+    },
+    {
+     "id": "r7",
+     "idea": "veel_warmer",
+     "lines": [
+      "Meer stroom. En de kabel wordt veel warmer dan je zou denken.",
+      "Dat leerde ik op de MTS. Toen had ik nog haar."
+     ],
+     "phase": "meterkast"
+    },
+    {
+     "alt_of": "r7",
+     "id": "r7_never_alone",
+     "idea": "veel_warmer",
+     "lines": [
+      "Zet de kachel eens uit en weer aan. Kijk naar de kabel."
+     ],
+     "phase": "meterkast",
+     "then": "r7",
+     "timeout_s": 10,
+     "wait_for": "heater_again",
+     "when": "never_kettle_alone"
+    },
+    {
+     "id": "r8a",
+     "idea": "dik",
+     "lines": [
+      "Pak de dikke haspel eens. Wat zie je?"
+     ],
+     "phase": "meterkast",
+     "timeout_s": 10,
+     "unlocks": [
+      "haspel"
+     ],
+     "wait_for": "haspel"
+    },
+    {
+     "id": "r8b",
+     "idea": "lang",
+     "lines": [
+      "Dikke kabel, net als een dikke slang.",
+      "Een kabel in de straat werkt net zo. Maar soms is hij heel lang. Wat blijft er dan over aan het eind?"
+     ],
+     "phase": "meterkast"
+    }
+   ],
+   "caption": [
+    "Spanning is de druk. Stroom is wat er echt loopt. Weerstand houdt het tegen.",
+    "Een kabel houdt ook een beetje tegen. Gaat er veel stroom door, dan wordt hij warm, en veel sneller dan je denkt.",
+    "Hoe langer of dunner de kabel, hoe minder spanning er aan het eind overblijft.",
+    "De tuinslang is een vergelijking. Water loopt eruit; stroom gaat heen en weer terug. En een echte tuinslang merk je nauwelijks warm worden; een kabel wel. In het echt duurt opwarmen minuten; hier gaat het sneller."
+   ],
+   "controls": [
+    {
+     "id": "lamp",
+     "key": "1",
+     "meterkast": "switch_lamp",
+     "tuin": "tap_dripper"
+    },
+    {
+     "id": "kettle",
+     "key": "2",
+     "meterkast": "switch_kettle",
+     "tuin": "tap_big"
+    },
+    {
+     "id": "heater",
+     "key": "3",
+     "meterkast": "switch_heater",
+     "tuin": "tap_small"
+    },
+    {
+     "id": "haspel",
+     "key": "H"
+    }
+   ],
+   "hint": {
+    "haspel": "Zet een apparaat aan. Pak de andere haspel.",
+    "meterkast": "Zet een apparaat aan.",
+    "tuin": "Draai een kraantje open."
+   },
+   "id": "spanning_stroom_weerstand",
+   "labels": {
+    "current": "Stroom",
+    "t_cable": "Kabel",
+    "u_end": "Spanning aan het eind"
+   },
+   "model": "ohm_cable",
+   "name": "Spanning, stroom, weerstand",
+   "number": 1,
+   "one_idea": "Hoe meer stroom er door dezelfde kabel moet, hoe warmer die kabel wordt.",
+   "parameters": [
+    {
+     "name": "u_nominal",
+     "source": "netbeheer_spanningskwaliteit",
+     "unit": "V",
+     "value": 230
+    },
+    {
+     "name": "band",
+     "source": "netbeheer_achtergrond_2024",
+     "unit": "",
+     "value": "±10 %"
+    },
+    {
+     "estimate": "The installers' rounded value for copper at 20 °C; annealed copper is 1/58 ≈ 0,0172. The ~1,5 % difference moves no rounded readout by more than 0,1 V.",
+     "name": "rho",
+     "unit": "Ω·mm²/m",
+     "value": 0.0175
+    },
+    {
+     "estimate": "A common verlengkabel length in Dutch DIY stores; long enough to show the effect, still realistic.",
+     "name": "length",
+     "unit": "m",
+     "value": 25
+    },
+    {
+     "estimate": "The two usual cross-sections of household extension cables; to verify against NEN 1010 (paywalled).",
+     "name": "cross_sections",
+     "unit": "mm²",
+     "value": "1,5 / 2,5"
+    },
+    {
+     "estimate": "The usual rating of a Dutch household group (B16); to verify against NEN 1010.",
+     "name": "group",
+     "unit": "A",
+     "value": 16
+    },
+    {
+     "estimate": "Current rating I_z of an H05VV-F cord in free air from common manufacturer tables; to verify against NEN 1010 / IEC 60364-5-52.",
+     "name": "rating",
+     "unit": "A",
+     "value": "16 / 25"
+    },
+    {
+     "estimate": "PVC's 70 °C conductor limit at a 30 °C reference ambient (IEC 60364-5-52, recalled); applied from a 20 °C room, so the hot case reads slightly cool, the safe side.",
+     "name": "rise_max",
+     "unit": "K",
+     "value": 40
+    },
+    {
+     "estimate": "Steady state from P = I²R with constant cooling; ignores copper's +0,4 %/K, so the hot case is about 13 % understated.",
+     "name": "heat_square",
+     "unit": "",
+     "value": "∝ I²"
+    },
+    {
+     "estimate": "A common kettle rating; resistive, so R = U²/P holds.",
+     "name": "kettle",
+     "unit": "W",
+     "value": 2000
+    },
+    {
+     "estimate": "A common small heater rating; resistive.",
+     "name": "heater",
+     "unit": "W",
+     "value": 1500
+    },
+    {
+     "estimate": "A typical LED bulb; not resistive, but at 0,03 A the error is invisible.",
+     "name": "lamp",
+     "unit": "W",
+     "value": 8
+    },
+    {
+     "estimate": "Ignored: an ideal socket. The real socket voltage moves within the Netcode band during the day.",
+     "name": "source_impedance",
+     "unit": "Ω",
+     "value": 0
+    },
+    {
+     "estimate": "A design choice so the player sees the cable warm after the switch; a real cord takes minutes, and the codex caption says so.",
+     "name": "tau",
+     "unit": "s",
+     "value": 4
+    },
+    {
+     "estimate": "The end gauge's needle spans 210–230 V so a 2–4 % drop is visible on a dial without units.",
+     "name": "end_gauge_band",
+     "unit": "V",
+     "value": "210–230"
+    }
+   ],
+   "place": "ruud.office.whiteboard",
+   "reveal": {
+    "label": "Laat de rekensom zien",
+    "lines": [
+     {
+      "formula": "I = U / R",
+      "live": "{u_n} V ÷ {r_total} Ω = {current} A",
+      "words": "Stroom = spanning ÷ weerstand."
+     },
+     {
+      "formula": "P = I² · R",
+      "live": "{current} × {current} × {r_cable} Ω = {p_cable} W",
+      "words": "Warmte in de kabel = stroom × stroom × weerstand van de kabel."
+     },
+     {
+      "words": "Twee keer zoveel stroom geeft vier keer zoveel warmte."
+     },
+     {
+      "formula": "ΔU = I · R",
+      "live": "{current} A × {r_cable} Ω = {du} V",
+      "words": "Spanning die de kabel kost = stroom × weerstand van de kabel."
+     },
+     {
+      "formula": "P = U · I",
+      "live": "{u_end} V × {current} A = {p_app} W",
+      "words": "Wat de apparaten krijgen (vermogen, in watt) = spanning × stroom."
+     },
+     {
+      "words": "De slang was een vergelijking: in een kabel zakt de spanning door de weerstand van de kabel, niet doordat er iets schuurt."
+     }
+    ]
+   },
+   "sources": [
+    {
+     "fact": "230 V, 50 Hz in het laagspanningsnet",
+     "id": "netbeheer_spanningskwaliteit",
+     "title": "Netbeheer Nederland, Spanningskwaliteit",
+     "url": "https://www.netbeheernederland.nl/veiligheid-en-infrastructuur/spanningskwaliteit"
+    },
+    {
+     "fact": "Un ± 10 % voor 95 % van de 10-minutengemiddelden (Netcode)",
+     "id": "netbeheer_achtergrond_2024",
+     "title": "Netbeheer Nederland, Achtergronddocument Spanningskwaliteit in Nederland, resultaten 2024",
+     "url": "https://www.netbeheernederland.nl/sites/default/files/2025-04/04.03._achtergronddocument_spanningskwaliteit_2024_0.pdf"
+    }
+   ],
+   "tags": [
+    "druk",
+    "stroom",
+    "tegenhouden"
+   ]
+  }
+ ]
+}
