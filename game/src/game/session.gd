@@ -170,6 +170,12 @@ func wait_for_check(problem_id: String) -> String:
 	return ""
 
 
+## Let `minutes` pass with nothing done (the session layer's named time
+## skip, a morning at a time); the missions notice what happened.
+func pass_time(minutes: int) -> void:
+	_after(maxi(0, minutes))
+
+
 ## The Check: the fix against no fix over the coming lead time
 ## (Region.check's result, a few seconds of simulation on copies), or an
 ## error: unknown_problem | not_check_ready | a forecast copy's error.
@@ -357,6 +363,13 @@ func clock_text() -> String:
 ## (FollowedOrder.view).
 func followed_order() -> Dictionary:
 	return followed.view(region.net)
+
+
+## The calendar date {year, month, day, ...} of a simulation time.
+func date_of(t: int) -> Dictionary:
+	var played := t - SimCalendar.days(WARMUP_DAYS)
+	return Time.get_date_dict_from_unix_time(
+		Time.get_unix_time_from_datetime_dict(PLAY_START_DATE) + SimCalendar.day_of(played) * 86400)
 
 
 ## The month of the game's date (1-12).
