@@ -10,8 +10,15 @@ extends UiPanel
 ## or NO_CLOCK when it has none.
 const EXPIRED := "Verlopen: %s De missie blijft open, nu zonder klok."
 const NO_CLOCK := "de deadline is voorbij."
+## The drawer of side offers older than a week (SessionLayer.older_offers).
+const OLDER := "Nog open"
 
 var message := ""
+## Set by GameUI: holds back side offers (at most two new a week); null
+## shows every available mission.
+var layer: SessionLayer
+## The "Nog open" drawer is unfolded.
+var show_older := false
 ## The skip's confirm line is showing.
 var confirming_skip := false
 
@@ -73,26 +80,57 @@ func refresh() -> void:
 	if session.in_training():
 		_skip_row()
 	var open := add_card(body, "Beschikbaar")
-	if session.available_missions().is_empty():
+	var offered := offers()
+	if offered.is_empty():
 		open.add_child(paragraph("Er staan nu geen nieuwe missies open.", Palette.MUTED))
-	for m in session.available_missions():
-		var row := HBoxContainer.new()
-		var text := VBoxContainer.new()
-		text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		text.add_child(label("%s  ·  %s" % [_title(m), _kind(m)], UiTheme.FONT_SIZE, Palette.VOLTANA_BLUE))
-		text.add_child(paragraph(m.briefing, Palette.INK, UiTheme.SMALL))
-		_add_expiry(text, m)
-		row.add_child(text)
-		var take := button("Aannemen", accept.bind(m.id))
-		take.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		row.add_child(take)
-		open.add_child(row)
+	for m in offered:
+		_offer_row(open, m)
+	_older_drawer()
 	var done := session.missions.defs.values().filter(
 		func(m: MissionDef) -> bool: return session.missions.status(m.id) == "completed")
 	if not done.is_empty():
 		var past := add_card(body, "Afgerond")
 		for m: MissionDef in done:
 			past.add_child(label("Voltooid: " + _title(m), UiTheme.SMALL, Palette.MUTED))
+
+
+## The missions offered as new: all available ones, or with the session
+## layer at most two new sides a week (SessionLayer.new_offers).
+func offers() -> Array[MissionDef]:
+	return layer.new_offers(session) if layer != null else session.available_missions()
+
+
+func toggle_older() -> void:
+	show_older = not show_older
+	refresh()
+
+
+## Sides offered more than a week ago, folded under "Nog open": never lost.
+func _older_drawer() -> void:
+	if layer == null:
+		return
+	var older := layer.older_offers(session)
+	if older.is_empty():
+		return
+	var drawer := add_card(body)
+	drawer.add_child(button("%s (%d)  %s" % [OLDER, older.size(), "▴" if show_older else "▾"], toggle_older))
+	for m in older if show_older else []:
+		_offer_row(drawer, m)
+
+
+## A mission that can be taken on: its title, briefing and "Aannemen".
+func _offer_row(card: VBoxContainer, m: MissionDef) -> void:
+	var row := HBoxContainer.new()
+	var text := VBoxContainer.new()
+	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	text.add_child(label("%s  ·  %s" % [_title(m), _kind(m)], UiTheme.FONT_SIZE, Palette.VOLTANA_BLUE))
+	text.add_child(paragraph(m.briefing, Palette.INK, UiTheme.SMALL))
+	_add_expiry(text, m)
+	row.add_child(text)
+	var take := button("Aannemen", accept.bind(m.id))
+	take.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(take)
+	card.add_child(row)
 
 
 ## "Inwerkweek overslaan", or its confirm line with yes and no.
