@@ -120,6 +120,10 @@ def _drop_route(d: dict) -> None:
     (lambda d: _dialog(d, "joost_output_kpi")["replies"].update(mood={"loudly": {"text": "Ja."}}), "situation"),
     (lambda d: _dialog(d, "joost_output_kpi").update(opening=" "), "opening"),
     (lambda d: _dialog(d, "joost_output_kpi").update(tutorial="yes"), "tutorial"),
+    # The Act 0 talks name the day's move (tutorial talks spec §5).
+    (lambda d: _dialog(d, "joost_output_kpi").update(teaches=["mood"]), "'teaches' only on a tutorial"),
+    (lambda d: _dialog(d, "joost_output_kpi").update(tutorial=True, teaches=["shout"]), "'teaches' names listening"),
+    (lambda d: _dialog(d, "joost_output_kpi").update(tutorial=True, teaches=["propose"]), "'teaches' names listening"),
     (lambda d: d["dialogs"]["bank"]["special"].pop("no_repair"), "no_repair"),
     (_drop_route, "never game over"),
     (lambda d: _dialog(d, "ahmed_after_henk").update(mission="fix_silo_kpis"), "check-in"),
@@ -261,12 +265,22 @@ def test_a_tier_s_cast_spreads_its_needs():
 
 def test_the_speaking_cast_is_read_per_tier_from_the_missions_acts(real):
     cast = bc.speaking_cast(real)
-    assert cast[1] == {"joost": "safety", "sanne": "recognition", "frank": "facts"}, "Act II is tier 1"
+    assert {"joost": "safety", "sanne": "recognition", "frank": "facts"}.items() <= cast[1].items(), "Act II is tier 1"
+    assert cast[1]["anouk"] == "safety", "and so is the Act 0 week"
     assert bc.TIER_OF_ACT == {0: 1, 1: 1, 2: 1, 3: 2, 4: 3, 5: 4, 6: 3}
+
+
+def _strip_tells(node) -> None:
+    if isinstance(node, dict):
+        node.pop("tell", None)
+    for child in node.values() if isinstance(node, dict) else node if isinstance(node, list) else []:
+        _strip_tells(child)
 
 
 def test_a_crowded_need_in_a_tier_fails_the_build(real, tmp_path):
     docs = copy.deepcopy(real)
-    _person(docs, "frank")["need"] = "safety"
+    for person in docs["dialogs"]["people"]:
+        person["need"] = "safety"
+    _strip_tells(docs["dialogs"]["dialogs"])  # they name the old needs
     with pytest.raises(bc.ContentError, match="tier 1.*safety"):
         _load(tmp_path, docs)

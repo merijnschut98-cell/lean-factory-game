@@ -988,6 +988,1261 @@
     }
    ],
    "warning": "Ik moet zo weer rijden, hoor."
+  },
+  {
+   "co_proposal": {
+    "id": "come_tomorrow",
+    "text": "Weet je wat. Kom morgen langs. Dan zie je hoe het er overdag uitziet. Het ziet er overdag niet beter uit, hoor."
+   },
+   "id": "anouk_seven",
+   "kind": "persuade",
+   "layers": [
+    {
+     "at": 45,
+     "id": "interest",
+     "tags": [
+      "claim",
+      "feeling"
+     ],
+     "text": "Morgen zit ik hier alleen. Joost moet naar het MT, de anderen zitten op cursus. Als dit vanavond niet af is, ligt het er morgen nog. En achter elke tekening wacht iemand.",
+     "via": [
+      "mood",
+      "empathy",
+      "open_question"
+     ]
+    },
+    {
+     "at": 65,
+     "id": "concern",
+     "lead_in": {
+      "tags": [
+       "hesitation"
+      ],
+      "text": "Mijn vriend appte net…"
+     },
+     "tags": [
+      "admission"
+     ],
+     "text": "Of ik weer laat ben. Ik had gezegd dat ik Noor van de opvang zou halen. Nu doet hij het. Weer. … Ik zeg steeds dat het tijdelijk is.",
+     "unlocks": {
+      "facts": [
+       "heard:anouk_seven"
+      ],
+      "proposals": [
+       "come_tomorrow"
+      ]
+     },
+     "via": [
+      "silence",
+      "empathy",
+      "reflect"
+     ]
+    }
+   ],
+   "lines": {
+    "empathy": "Alleen aan vier bureaus, op een maandagavond. Dat is ook wat.",
+    "mood": "Hoe is het met je? Je zit hier nog best laat.",
+    "open_question": "Waar werk je nu aan?",
+    "paraphrase": "Dus als het vanavond niet af is, ligt het morgen bij jou alleen.",
+    "reflect": "Het klinkt alsof je het liever anders had.",
+    "silence": "(je blijft staan en wacht)"
+   },
+   "mission": "training_mon",
+   "mood": "moe",
+   "name": "Anouk om zeven uur",
+   "opening": "O! Jij bent er ook nog? Ik dacht dat ik de laatste was.",
+   "outcomes": {
+    "commitment": "Ik pak mijn jas. Dank je. Dat had ik nodig, iemand die zegt dat het mag.",
+    "compliance": "Oké. Als jij het zegt.",
+    "heard": "Fijn dat je even bleef staan. Dat doet niet iedereen om deze tijd.",
+    "none": "Ik moet echt nog even. Tot morgen!",
+    "partial": "Nog één tekening. Dan ga ik. Beloofd.",
+    "ruined": "Ik moet echt nog even."
+   },
+   "patience": 12,
+   "person": "anouk",
+   "position": {
+    "tags": [
+     "claim"
+    ],
+    "tell": "safety",
+    "text": "Nog twee tekeningen. Dan ga ik. Echt. Zeg maar niet tegen Joost dat ik er nog zat, hè."
+   },
+   "proposals": [
+    {
+     "addresses": [
+      "concern"
+     ],
+     "id": "walk_out_together",
+     "name": "Samen naar buiten",
+     "reply": "… Ja. Ja, goed. Ik pak mijn jas.",
+     "text": "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog."
+    },
+    {
+     "addresses": [
+      "interest"
+     ],
+     "id": "leave_one_drawing",
+     "name": "Eén tekening laten liggen",
+     "reply": "Eén. Hm. De school kan een dag wachten. Die vragen het pas in januari.",
+     "text": "Wat als je er één laat liggen, en die morgen als eerste doet?"
+    },
+    {
+     "addresses": [
+      "concern"
+     ],
+     "hidden": true,
+     "id": "come_tomorrow",
+     "name": "Morgen even langskomen",
+     "reply": "Kijken. Overdag. … Ja. Dan zie je het tenminste niet alleen om zeven uur.",
+     "text": "Mag ik morgen langskomen, overdag? Gewoon kijken hoe het hier gaat als je alleen zit."
+    }
+   ],
+   "replies": {
+    "mood": {
+     "lands": {
+      "tags": [
+       "feeling"
+      ],
+      "text": "Hoe het is? … Moe. Eerlijk gezegd. Fijn dat je het vraagt."
+     }
+    }
+   },
+   "teaches": [
+    "mood"
+   ],
+   "tutorial": true,
+   "warning": "Sorry. Ik moet echt nog even."
+  },
+  {
+   "co_proposal": {
+    "id": "sanne_shows_the_returns",
+    "text": "Weet je wat. Ik leg de terugkomers van vorige week apart. Dan zie je het zelf."
+   },
+   "id": "sanne_tuesday",
+   "kind": "persuade",
+   "layers": [
+    {
+     "at": 45,
+     "id": "interest",
+     "tags": [
+      "claim",
+      "feeling"
+     ],
+     "text": "Kijk, deze. Een warmtepomp, geen foto van de meterkast. Die stuur ik terug. Over drie weken komt hij weer binnen, met een boze klant aan de telefoon. Iedereen denkt dat Intake een postkantoor is. Stempel erop, door.",
+     "via": [
+      "mood",
+      "empathy",
+      "open_question"
+     ]
+    },
+    {
+     "at": 65,
+     "id": "concern",
+     "lead_in": {
+      "tags": [
+       "hesitation"
+      ],
+      "text": "En als ik eerlijk ben…"
+     },
+     "tags": [
+      "admission"
+     ],
+     "text": "Ik ben hier vijftien jaar. Ik weet precies welke aanvragen terugkomen. Maar niemand vraagt het me. Ze tellen alleen hoeveel ik er doorzet.",
+     "unlocks": {
+      "facts": [
+       "heard:sanne_tuesday"
+      ],
+      "proposals": [
+       "sanne_shows_the_returns"
+      ]
+     },
+     "via": [
+      "silence",
+      "empathy",
+      "reflect"
+     ]
+    }
+   ],
+   "lines": {
+    "empathy": "Drie telefoons en een volle bak, en het is pas dinsdagochtend. Dat is ook wat.",
+    "mood": "Hoe begint jouw week, eigenlijk? Ook al is het dinsdag.",
+    "open_question": "Wat komt er na een weekend allemaal binnen?"
+   },
+   "mission": "training_tue",
+   "mood": "moe",
+   "name": "Sanne op dinsdagochtend",
+   "opening": "Goedemorgen. Sorry, het is dinsdag, maar hier is het nog maandag: alles van het weekend ligt er nog.",
+   "outcomes": {
+    "commitment": "Kom maar. Na drieën. Neem koffie mee, die van ons is op.",
+    "compliance": "Prima. Als Ruud het zegt.",
+    "heard": "Joh. Fijn dat je eerst vroeg hoe het ging. Dat doet niemand op zo'n ochtend.",
+    "none": "Ik moet echt verder. Sorry.",
+    "partial": "Goed. Maar niet vandaag, hè. Vandaag is het nog maandag.",
+    "ruined": "Ik moet echt verder."
+   },
+   "patience": 12,
+   "person": "sanne",
+   "position": {
+    "tags": [
+     "claim"
+    ],
+    "tell": "recognition",
+    "text": "Dinsdag is hier de nieuwe maandag. Alles wat in het weekend binnenkwam, plus wat gisteren bleef liggen. Maar dat ziet boven niemand, hè."
+   },
+   "proposals": [
+    {
+     "addresses": [
+      "concern"
+     ],
+     "id": "come_back_later",
+     "name": "Later terugkomen",
+     "reply": "Na drieën. Dan is het hier stil. Kom maar.",
+     "text": "Ik zie dat het nu niet uitkomt. Mag ik vanmiddag terugkomen, als de telefoons rustiger zijn?"
+    },
+    {
+     "addresses": [
+      "concern"
+     ],
+     "id": "sit_and_watch",
+     "name": "Een uur meekijken",
+     "reply": "Zien hoe het binnenkomt. Ja. Dat mag.",
+     "text": "Mag ik een uur naast je zitten? Ik wil zien hoe een aanvraag binnenkomt, niet controleren hoe snel."
+    },
+    {
+     "addresses": [
+      "concern"
+     ],
+     "hidden": true,
+     "id": "sanne_shows_the_returns",
+     "name": "Laat zien welke terugkomen",
+     "reply": "De terugkomers. Ik heb ze op een stapel. Niemand heeft er ooit naar gevraagd. Kom maar kijken.",
+     "text": "Wil je me laten zien welke aanvragen terugkomen? Jij weet het. Ik niet."
+    }
+   ],
+   "replies": {
+    "mood": {
+     "lands": {
+      "tags": [
+       "feeling"
+      ],
+      "text": "Hoe mijn week begint? Met koffie die koud wordt. … Fijn dat je het vraagt, eigenlijk."
+     }
+    }
+   },
+   "teaches": [
+    "open_question"
+   ],
+   "tutorial": true
+  },
+  {
+   "co_proposal": {
+    "id": "rachid_shows_his_list",
+    "text": "Ik heb een lijstje in mijn la. Wat er mist. Wil je dat zien?"
+   },
+   "id": "rachid_counter",
+   "kind": "persuade",
+   "layers": [
+    {
+     "at": 52,
+     "id": "interest",
+     "tags": [
+      "claim"
+     ],
+     "text": "In het midden ligt het meest. Meestal mist er een foto van de meterkast. Of het vermogen klopt niet met wat de installateur schreef. Ik bel ze dan na. Soms drie keer.",
+     "via": [
+      "open_question",
+      "mood",
+      "silence"
+     ]
+    },
+    {
+     "at": 66,
+     "id": "concern",
+     "lead_in": {
+      "tags": [
+       "hesitation"
+      ],
+      "text": "Het is alleen…"
+     },
+     "tags": [
+      "admission",
+      "doubt"
+     ],
+     "tell": "fairness",
+     "text": "Ik werk hier vier maanden. Als ik iets doorzet wat niet klopt, komt het terug met mijn naam erop. Dus ik bel liever drie keer. Maar dan duurt het lang. En dat is ook mijn naam.",
+     "unlocks": {
+      "facts": [
+       "heard:rachid_counter"
+      ],
+      "proposals": [
+       "rachid_shows_his_list"
+      ]
+     },
+     "via": [
+      "silence",
+      "open_question",
+      "empathy"
+     ]
+    }
+   ],
+   "lines": {
+    "mood": "Hoe bevalt het, vier maanden hier?",
+    "open_question": "Wat gebeurt er met wat in de middelste bak ligt?",
+    "silence": "(je kijkt mee naar de bakken en wacht)"
+   },
+   "mission": "training_tue",
+   "name": "Rachid aan de balie",
+   "opening": "O. Hoi. Ik ben Rachid. Sanne zegt dat ik je de bakken moet laten zien.",
+   "outcomes": {
+    "commitment": "Morgen leg ik het lijstje op tafel. Als Sanne het goedvindt. Ze vindt het vast goed.",
+    "compliance": "Oké.",
+    "heard": "Oké. Dank je. Niemand vraagt wat er in het midden ligt.",
+    "none": "Ik moet weer bellen.",
+    "partial": "Misschien. Ik vraag het Sanne.",
+    "ruined": "Ik moet weer bellen."
+   },
+   "patience": 12,
+   "person": "rachid",
+   "position": {
+    "tags": [
+     "claim"
+    ],
+    "tell": "fairness",
+    "text": "Links wat binnenkomt, rechts wat compleet is. Wat in het midden ligt, daar mist iets. Meestal niet door ons, hoor."
+   },
+   "proposals": [
+    {
+     "addresses": [
+      "concern"
+     ],
+     "id": "watch_one_call",
+     "name": "Eén belletje meeluisteren",
+     "reply": "Meeluisteren. Ja. Als je niet zegt dat ik het fout doe.",
+     "text": "Mag ik meeluisteren als je de volgende installateur belt?"
+    },
+    {
+     "addresses": [
+      "interest"
+     ],
+     "id": "count_the_middle",
+     "name": "De middelste bak tellen",
+     "reply": "Tellen mag. Ik weet ook niet precies hoeveel het er zijn.",
+     "text": "Mag ik vanmiddag tellen wat er in de middelste bak ligt, en waarom?"
+    },
+    {
+     "addresses": [
+      "concern"
+     ],
+     "hidden": true,
+     "id": "rachid_shows_his_list",
+     "name": "Zijn eigen lijstje",
+     "reply": "Ik heb een lijstje. In mijn la. Foto meterkast, vermogen, handtekening. Ik dacht dat dat stom was.",
+     "text": "Heb je zelf bijgehouden wat er het vaakst mist?"
+    }
+   ],
+   "teaches": [
+    "open_question"
+   ],
+   "tutorial": true
+  },
+  {
+   "co_proposal": {
+    "id": "come_at_eight",
+    "text": "Kom morgen om acht uur. Dan zie je hoe het begint: koffie, de twee bakken, en dan zoeken."
+   },
+   "id": "anouk_first_look",
+   "kind": "persuade",
+   "layers": [
+    {
+     "at": 45,
+     "id": "interest",
+     "tags": [
+      "claim",
+      "feeling"
+     ],
+     "text": "Achter elk dossier zit iemand die wacht. Een gezin, een bakker, een school. Dus ik wil het niet laten liggen.",
+     "via": [
+      "empathy",
+      "mood",
+      "open_question"
+     ]
+    },
+    {
+     "at": 65,
+     "id": "concern",
+     "lead_in": {
+      "tags": [
+       "feeling"
+      ],
+      "text": "Het is alleen… ik word er zenuwachtig van. Sorry."
+     },
+     "tags": [
+      "admission"
+     ],
+     "text": "Iedereen komt kijken als het druk is. Met een stopwatch. En dan denk ik: nu zien ze hoe langzaam ik ben.",
+     "unlocks": {
+      "facts": [
+       "heard:anouk_first_look"
+      ],
+      "proposals": [
+       "come_at_eight"
+      ]
+     },
+     "via": [
+      "reflect",
+      "empathy"
+     ]
+    }
+   ],
+   "lines": {
+    "empathy": "Alleen met vier mensen werk, terwijl de rest op cursus zit. Dat is ook niet niks.",
+    "reflect": "Het klinkt alsof je je bekeken voelt."
+   },
+   "mission": "training_tue",
+   "name": "Anouk en de stopwatch",
+   "opening": "O, hoi. Sorry, het is een beetje een bende. Drie collega's zitten op cursus.",
+   "outcomes": {
+    "commitment": "Kom maar. Ik zet koffie. Slechte koffie, maar koffie.",
+    "compliance": "Oké. Als het moet.",
+    "heard": "Fijn dat je eerst vroeg. Dat doet niet iedereen.",
+    "none": "Ik moet echt door. Sorry.",
+    "partial": "Goed. Maar zonder stopwatch, hè.",
+    "ruined": "Ik moet echt door."
+   },
+   "patience": 12,
+   "person": "anouk",
+   "position": {
+    "tags": [
+     "claim"
+    ],
+    "tell": "safety",
+    "text": "Het is gewoon druk deze week. Ik zit erbovenop, echt. Je hoeft het niet op te schrijven."
+   },
+   "proposals": [
+    {
+     "addresses": [
+      "concern"
+     ],
+     "id": "sit_beside",
+     "name": "Een uur meekijken, zonder oordeel",
+     "reply": "Naar het werk. Oké. Dat… is eigenlijk wel fijn.",
+     "text": "Mag ik een uur naast je zitten? Ik kijk naar het werk, niet naar jou."
+    },
+    {
+     "addresses": [],
+     "id": "stopwatch",
+     "name": "Je werk timen",
+     "reply": "Timen. Dus toch.",
+     "text": "Ik wil even timen hoe lang een ontwerp duurt."
+    },
+    {
+     "addresses": [
+      "concern"
+     ],
+     "hidden": true,
+     "id": "come_at_eight",
+     "name": "Morgen om acht uur",
+     "reply": "Kom maar. Dan zie je hoe het begint: koffie, de twee bakken, en dan zoeken.",
+     "text": "Mag ik morgen om acht uur komen, als de dag begint?"
+    }
+   ],
+   "teaches": [
+    "empathy"
+   ],
+   "tutorial": true
+  },
+  {
+   "co_proposal": {
+    "id": "show_the_worst_sketch",
+    "text": "Wil je de slechtste zien? Dan snap je het meteen."
+   },
+   "id": "mieke_wednesday",
+   "kind": "persuade",
+   "layers": [
+    {
+     "at": 50,
+     "id": "interest",
+     "tags": [
+      "claim"
+     ],
+     "text": "Een schets is een begin. Er staat een mof op, maar niet hoe diep. Een kabel, maar niet welke kant hij op buigt. Dat moet ik uitzoeken. Bellen, foto's zoeken, soms zelf gaan kijken.",
+     "via": [
+      "paraphrase",
+      "inquiry",
+      "open_question"
+     ]
+    },
+    {
+     "at": 68,
+     "id": "concern",
+     "lead_in": {
+      "tags": [
+       "hesitation"
+      ],
+      "text": "Alleen, kijk…"
+     },
+     "tags": [
+      "admission"
+     ],
+     "text": "Als wij een kabel verkeerd intekenen, graaft er straks iemand doorheen. Dan wijst iedereen naar GIS. Niet naar de schets met de pindakaasvlek.",
+     "unlocks": {
+      "facts": [
+       "heard:mieke_wednesday"
+      ],
+      "proposals": [
+       "show_the_worst_sketch"
+      ]
+     },
+     "via": [
+      "paraphrase",
+      "silence",
+      "inquiry"
+     ]
+    }
+   ],
+   "lines": {
+    "inquiry": "Wat moet je dan uitzoeken, bij zo'n schets?",
+    "paraphrase": "Dus een schets vertelt je waar iets ligt, maar niet precies hoe. Dat stuk moet jij erbij zoeken."
+   },
+   "mission": "training_wed",
+   "name": "Mieke en de schetsen",
+   "opening": "Kom je voor de revisie? Dan moet je hier zijn. Pas op de doos.",
+   "outcomes": {
+    "commitment": "Dat moet kloppen, dus kom vrijdag terug. Dan heb ik de slechtste apart gelegd.",
+    "compliance": "Goed.",
+    "heard": "Fijn. Je bent de eerste die het niet 'overtekenen' noemt.",
+    "none": "Ik moet verder met deze.",
+    "partial": "Misschien later in de week. Als de doos kleiner is. Dat wordt hij niet.",
+    "ruined": "Ik moet verder met deze."
+   },
+   "patience": 12,
+   "person": "mieke",
+   "position": {
+    "tags": [
+     "claim"
+    ],
+    "tell": "recognition",
+    "text": "Dit zijn de schetsen van de monteurs. Wat ze in de grond hebben gelegd. Wij tekenen het over in GIS. 'Overtekenen', noemen ze het boven. Zo snel als we kunnen."
+   },
+   "proposals": [
+    {
+     "addresses": [
+      "concern"
+     ],
+     "id": "look_at_one",
+     "name": "Eén schets samen bekijken",
+     "reply": "Eén. Dan zie je waarom het geen vijf minuten is.",
+     "text": "Mag ik er één met je doorlopen, van schets tot tekening?"
+    },
+    {
+     "addresses": [
+      "interest"
+     ],
+     "id": "count_the_box",
+     "name": "De doos tellen",
+     "reply": "Tel maar. Het zijn er meer dan je denkt.",
+     "text": "Mag ik tellen hoeveel er in de doos zitten, en hoe oud ze zijn?"
+    },
+    {
+     "addresses": [
+      "concern"
+     ],
+     "hidden": true,
+     "id": "show_the_worst_sketch",
+     "name": "De slechtste schets",
+     "reply": "De slechtste. … Hier. Op een boterhamzakje. Met een pindakaasvlek precies op de mof.",
+     "text": "Laat me de slechtste schets zien die je deze maand kreeg."
+    }
+   ],
+   "replies": {
+    "paraphrase": {
+     "lands": {
+      "tags": [
+       "claim"
+      ],
+      "tell": "recognition",
+      "text": "Precies. Dat zegt bijna niemand. Ze denken dat het overtekenen is."
+     }
+    }
+   },
+   "teaches": [
+    "paraphrase"
+   ],
+   "tutorial": true
+  },
+  {
+   "co_proposal": {
+    "id": "count_together",
+    "text": "Tel het oudste dossier met me mee. Dan weet ik ook eens wat mijn Excel niet zegt."
+   },
+   "id": "joost_wednesday",
+   "kind": "persuade",
+   "layers": [
+    {
+     "at": 52,
+     "id": "interest",
+     "tags": [
+      "claim"
+     ],
+     "text": "Normaal haalt mijn team dertig ontwerpen per week. Deze week twaalf. Maar maandag zijn ze terug. Dan halen we het in. Dat doen we altijd.",
+     "via": [
+      "inquiry",
+      "paraphrase",
+      "open_question"
+     ]
+    },
+    {
+     "at": 68,
+     "id": "concern",
+     "lead_in": {
+      "tags": [
+       "hesitation"
+      ],
+      "text": "Al moet ik zeggen…"
+     },
+     "tags": [
+      "admission"
+     ],
+     "text": "Inhalen betekent overwerken. Anouk werkt nu al tot zeven uur. Ik zie het. Ik weet alleen niet wat ik anders moet doen dan zeggen dat het tijdelijk is.",
+     "unlocks": {
+      "facts": [
+       "heard:joost_wednesday"
+      ],
+      "proposals": [
+       "count_together"
+      ]
+     },
+     "via": [
+      "inquiry",
+      "silence",
+      "empathy"
+     ]
+    }
+   ],
+   "lines": {
+    "inquiry": "Wat bedoel je met 'inhalen'?",
+    "paraphrase": "Dus deze week ligt er meer, en maandag lossen jullie het op zoals altijd."
+   },
+   "mission": "training_wed",
+   "name": "Joost en de stapel",
+   "opening": "Je komt de stapel tellen, hoorde ik. Even voor de duidelijkheid: we halen ons doel.",
+   "outcomes": {
+    "commitment": "Om twee uur. Ik print de lijst. Mijn Excel heeft meer tabbladen dan ik mensen heb.",
+    "compliance": "Prima. Tel maar.",
+    "heard": "Eerlijk is eerlijk: niemand vraagt wat 'inhalen' kost.",
+    "none": "Ik heb om elf uur overleg.",
+    "partial": "Tel eerst maar. Dan praten we.",
+    "ruined": "Ik heb om elf uur overleg."
+   },
+   "patience": 12,
+   "person": "joost",
+   "position": {
+    "tags": [
+     "claim"
+    ],
+    "tell": "safety",
+    "text": "Drie van de vier zitten op cursus. Dan ligt er meer. Dat is gewoon een feit, geen probleem. En als dit naar Frank gaat, wil ik het eerst zien."
+   },
+   "proposals": [
+    {
+     "addresses": [
+      "interest"
+     ],
+     "id": "count_alone",
+     "name": "Zelf de stapel tellen",
+     "reply": "Tel maar. Het getal klopt, dat beloof ik je.",
+     "text": "Ik tel straks wat er ligt, en hoeveel dagen werk het is."
+    },
+    {
+     "addresses": [
+      "concern"
+     ],
+     "hidden": true,
+     "id": "count_together",
+     "name": "Samen tellen",
+     "reply": "Het oudste. Hm. Dat heb ik nooit geteld. Goed. Om twee uur.",
+     "text": "Zullen we samen tellen? Niet hoeveel er ligt, maar hoe lang het oudste al ligt."
+    },
+    {
+     "addresses": [
+      "concern"
+     ],
+     "id": "ask_anouk_first",
+     "name": "Eerst Anouk vragen",
+     "reply": "Anouk. Ja. Vraag het haar. Zij weet het beter dan mijn Excel.",
+     "text": "Mag ik Anouk vragen wat zij ziet, voordat ik iets tel?"
+    }
+   ],
+   "replies": {
+    "inquiry": {
+     "lands": {
+      "tags": [
+       "hesitation"
+      ],
+      "text": "Wat ik bedoel met inhalen? … Dat is een goede vraag, eigenlijk."
+     }
+    }
+   },
+   "teaches": [
+    "inquiry"
+   ],
+   "tutorial": true
+  },
+  {
+   "co_proposal": {
+    "id": "watch_one_morning",
+    "text": "Kom morgen om zeven uur. Dan zie je hoe het staat, en om tien uur hoe het valt."
+   },
+   "id": "linda_wednesday",
+   "kind": "persuade",
+   "layers": [
+    {
+     "at": 45,
+     "id": "interest",
+     "tags": [
+      "claim",
+      "feeling"
+     ],
+     "text": "Ik noem het het kaartenhuis. Elke ochtend bouw ik het op, en om tien uur waait er een storing doorheen. Dan bel ik twaalf klanten af. Die zijn boos op mij, niet op de kabel.",
+     "via": [
+      "reflect",
+      "empathy",
+      "mood"
+     ]
+    },
+    {
+     "at": 65,
+     "id": "concern",
+     "lead_in": {
+      "tags": [
+       "feeling"
+      ],
+      "text": "Ik word er gewoon zo moe van. Sorry."
+     },
+     "tags": [
+      "admission"
+     ],
+     "text": "Als ik ruimte inplan voor storingen, zit er een monteur koffie te drinken als het rustig is. Dan zegt iedereen dat ik niet kan plannen. Dus plan ik vol. En dan valt het om. Elke dag.",
+     "unlocks": {
+      "facts": [
+       "heard:linda_wednesday"
+      ],
+      "proposals": [
+       "watch_one_morning"
+      ]
+     },
+     "via": [
+      "reflect",
+      "empathy"
+     ]
+    }
+   ],
+   "lines": {
+    "mood": "Hoe gaat het met je, zo halverwege de week?",
+    "reflect": "Het klinkt alsof je elke ochtend iets opbouwt waarvan je al weet dat het omvalt."
+   },
+   "mission": "training_wed",
+   "mood": "moe",
+   "name": "Linda en het kaartenhuis",
+   "opening": "Sorry, ik ben aan het omplannen. Twee monteurs zijn naar een storing. Zeg het maar.",
+   "outcomes": {
+    "commitment": "Zeven uur. Ik zet een stoel klaar. Die staat er toch, er zit nooit iemand op.",
+    "compliance": "Oké. Als het moet.",
+    "heard": "Dank je. Je zei het beter dan ik het zelf had kunnen zeggen.",
+    "none": "Ik moet verder omplannen. Sorry.",
+    "partial": "Misschien. Als het morgen rustig is. Dat is het nooit.",
+    "ruined": "Ik moet verder omplannen. Sorry."
+   },
+   "patience": 12,
+   "person": "linda",
+   "position": {
+    "tags": [
+     "claim",
+     "feeling"
+    ],
+    "tell": "time",
+    "text": "Dit gebeurt elke dag. Er is een storing, de monteurs gaan erheen, en ik plan alles om. Dat is mijn werk. Ik heb tot de volgende storing."
+   },
+   "proposals": [
+    {
+     "addresses": [],
+     "id": "come_back_later",
+     "name": "Later terugkomen",
+     "reply": "Straks is het weer om. Maar goed.",
+     "text": "Ik zie dat je bezig bent. Mag ik straks terugkomen?"
+    },
+    {
+     "addresses": [
+      "concern"
+     ],
+     "id": "count_the_reshuffles",
+     "name": "Tellen hoe vaak het omvalt",
+     "reply": "Tellen. Dan zie je dat het niet aan mij ligt. … Toch?",
+     "text": "Mag ik deze week tellen hoe vaak je moet omplannen, en waarom?"
+    },
+    {
+     "addresses": [
+      "concern"
+     ],
+     "hidden": true,
+     "id": "watch_one_morning",
+     "name": "Eén ochtend meekijken",
+     "reply": "Om zeven uur. Dan zie je het voordat het omvalt. Ja.",
+     "text": "Mag ik morgen om zeven uur naast je zitten, als je het kaartenhuis bouwt?"
+    }
+   ],
+   "replies": {
+    "reflect": {
+     "lands": {
+      "tags": [
+       "feeling"
+      ],
+      "text": "Ja. Precies dat. Elke ochtend."
+     },
+     "misses": {
+      "tags": [
+       "feeling"
+      ],
+      "text": "Nee, boos ben ik niet. Ik ben moe. Dat is anders."
+     }
+    }
+   },
+   "teaches": [
+    "reflect"
+   ],
+   "tutorial": true
+  },
+  {
+   "id": "anouk_thursday",
+   "kind": "persuade",
+   "layers": [
+    {
+     "at": 48,
+     "id": "interest",
+     "tags": [
+      "claim"
+     ],
+     "text": "Ik snap het wel. Als het oudste bovenop ligt, hoef ik niet te zoeken. Dat is logisch. Ik had het zelf kunnen bedenken.",
+     "via": [
+      "empathy",
+      "open_question",
+      "mood"
+     ]
+    },
+    {
+     "at": 65,
+     "id": "concern",
+     "lead_in": {
+      "tags": [
+       "hesitation"
+      ],
+      "text": "Maar…"
+     },
+     "tags": [
+      "admission",
+      "doubt"
+     ],
+     "text": "Als het werkt, zien ze dat ik al die tijd heb zitten zoeken. Twee jaar. Dan was ik dus de langzame. En als het niet werkt, was het mijn bak.",
+     "unlocks": {
+      "facts": [
+       "heard:anouk_thursday"
+      ],
+      "proposals": [
+       "it_is_the_tray"
+      ]
+     },
+     "via": [
+      "silence",
+      "empathy",
+      "inquiry"
+     ]
+    }
+   ],
+   "lines": {
+    "empathy": "Twee jaar zoeken in twee bakken. Dat is ook wat.",
+    "silence": "(je knikt, en wacht)"
+   },
+   "mission": "training_thu",
+   "name": "Anouk en het experiment",
+   "opening": "Dus we gaan het proberen? Eén bak, oudste bovenop? Drie dagen?",
+   "outcomes": {
+    "commitment": "Goed. Eén bak. Oudste bovenop. En vrijdag kijken we samen.",
+    "compliance": "Oké.",
+    "heard": "Sorry. Ik wist niet dat ik dat ging zeggen.",
+    "none": "Ik ga maar beginnen.",
+    "partial": "Ik doe het. Maar vrijdag zeg jij het, niet ik.",
+    "ruined": "Ik ga maar beginnen."
+   },
+   "patience": 12,
+   "person": "anouk",
+   "position": {
+    "tags": [
+     "claim"
+    ],
+    "tell": "safety",
+    "text": "Prima. Ik doe mee. Het is maar drie dagen. En verder hoeft niemand het te weten, toch?"
+   },
+   "proposals": [
+    {
+     "addresses": [
+      "interest"
+     ],
+     "id": "just_try",
+     "name": "Gewoon proberen",
+     "reply": "Ja. Een proef.",
+     "text": "Het is een proef. Als het niet werkt, stoppen we."
+    },
+    {
+     "addresses": [
+      "concern"
+     ],
+     "hidden": true,
+     "id": "it_is_the_tray",
+     "name": "Het ligt aan de bakken",
+     "reply": "Over de bakken. Niet over mij. … Dat had ik zo nog niet bedacht.",
+     "text": "Als het werkt, zegt dat iets over twee bakken, niet over jou. Jij zocht omdat het werk zo lag."
+    },
+    {
+     "addresses": [
+      "concern"
+     ],
+     "id": "we_present_together",
+     "name": "Samen vertellen",
+     "reply": "Samen. Oké. Dan sta ik er niet alleen.",
+     "text": "Vrijdag vertellen we samen wat we zagen. Wat er ook uitkomt."
+    }
+   ],
+   "teaches": [
+    "silence"
+   ],
+   "tutorial": true
+  },
+  {
+   "id": "petra_thursday",
+   "kind": "persuade",
+   "layers": [
+    {
+     "at": 52,
+     "id": "interest",
+     "tags": [
+      "claim"
+     ],
+     "text": "Elke keer dat ik in het register ga, ben ik een kwartier kwijt voordat ik iets heb gedaan. Twee tokens, de controles, de export. Ik noem hem de Molen. Die maalt, maar langzaam.",
+     "via": [
+      "paraphrase",
+      "inquiry",
+      "open_question"
+     ]
+    },
+    {
+     "at": 66,
+     "id": "concern",
+     "lead_in": {
+      "tags": [
+       "hesitation"
+      ],
+      "text": "En dan nog iets…"
+     },
+     "tags": [
+      "admission",
+      "doubt"
+     ],
+     "text": "Ik ben de enige die het kan. Als ik een week ziek ben, ligt alles stil. Niemand heeft ooit gevraagd wie het van me overneemt. Ik weet niet eens of ik het goed uit zou kunnen leggen.",
+     "unlocks": {
+      "facts": [
+       "heard:petra_thursday"
+      ],
+      "proposals": [
+       "write_it_down_together"
+      ]
+     },
+     "via": [
+      "silence",
+      "experience",
+      "empathy"
+     ]
+    }
+   ],
+   "lines": {
+    "experience": "Maandag wist ik niet eens waar Intake zat. Ik heb het aan de schoonmaker gevraagd. Ik dacht: als ik vandaag ziek word, weet niemand wat ik al gezien heb.",
+    "paraphrase": "Dus elke keer dat je begint, kost het je eerst een kwartier. Daarom doe je het liever in één keer."
+   },
+   "mission": "training_thu",
+   "name": "Petra en de Molen",
+   "opening": "Meetdata en registratie. Jij bent de nieuwe van Ruud. Ga zitten, maar raak de map niet aan.",
+   "outcomes": {
+    "commitment": "Klopt. Volgende week dinsdag, om tien uur. Ik leg de map klaar. Jij mag hem aanraken.",
+    "compliance": "Prima.",
+    "heard": "Hm. Je vroeg wie het overneemt. Dat had nog niemand gevraagd.",
+    "none": "Ik heb nog een stapel.",
+    "partial": "Misschien. Als Ruud het goedvindt.",
+    "ruined": "Ik heb nog een stapel."
+   },
+   "patience": 12,
+   "person": "petra",
+   "position": {
+    "tags": [
+     "claim"
+    ],
+    "tell": "facts",
+    "text": "Ik registreer alles één keer per maand. Dan doe ik de hele stapel in één keer. Dat is efficiënter, ik heb het uitgerekend. Klopt."
+   },
+   "proposals": [
+    {
+     "addresses": [
+      "interest"
+     ],
+     "id": "see_the_molen",
+     "name": "De Molen laten zien",
+     "reply": "Een keer. Volgende maand. Dan zie je hoe hij maalt.",
+     "text": "Mag ik een keer meekijken als je een registratie doet?"
+    },
+    {
+     "addresses": [
+      "concern"
+     ],
+     "hidden": true,
+     "id": "write_it_down_together",
+     "name": "Samen opschrijven",
+     "reply": "Opschrijven. Met de tokens erbij. Dat staat nog nergens. Klopt.",
+     "text": "Zullen we samen opschrijven hoe het werkt? Dan heb jij een vervanger, en ik snap het ook."
+    },
+    {
+     "addresses": [
+      "concern"
+     ],
+     "id": "ask_ruud_backup",
+     "name": "Ruud om een vervanger vragen",
+     "reply": "Vragen mag. Als ik zelf mag kiezen wie.",
+     "text": "Wil je dat ik Ruud vraag om iemand die jou kan vervangen?"
+    }
+   ],
+   "replies": {
+    "experience": {
+     "lands": {
+      "tags": [
+       "feeling"
+      ],
+      "text": "De schoonmaker. Ha. Die weet meer dan het organogram. … Ja. Zo voelt het hier ook."
+     }
+    }
+   },
+   "teaches": [
+    "experience"
+   ],
+   "tutorial": true
+  },
+  {
+   "co_proposal": {
+    "id": "anouk_writes_a4",
+    "text": "Als ik het A4 zelf mag schrijven. En jij er maandag bij staat. Niet om te praten, gewoon erbij."
+   },
+   "experiments": [
+    {
+     "addresses": [
+      "concern"
+     ],
+     "id": "decide_together_friday",
+     "name": "Een week proberen, samen beslissen",
+     "reply": "Samen beslissen. Dan is het niet mijn regel. Dan is het de onze.",
+     "text": "Probeer het een week met z'n vieren, en beslis vrijdag samen of het blijft."
+    }
+   ],
+   "id": "anouk_owns_tray",
+   "kind": "persuade",
+   "layers": [
+    {
+     "at": 62,
+     "id": "interest",
+     "tags": [
+      "claim",
+      "feeling"
+     ],
+     "text": "Eén bak, oudste bovenop. Het is zo simpel dat je het vergeet. Dat is het gevaarlijke.",
+     "via": [
+      "open_question",
+      "inquiry",
+      "paraphrase"
+     ]
+    },
+    {
+     "at": 72,
+     "id": "concern",
+     "lead_in": {
+      "tags": [
+       "hesitation"
+      ],
+      "text": "Alleen…"
+     },
+     "tags": [
+      "admission",
+      "doubt"
+     ],
+     "tell": "safety",
+     "text": "Ze werken alle drie langer hier dan ik. Wie ben ik om te zeggen hoe het moet?",
+     "unlocks": {
+      "facts": [
+       "heard:anouk_owner"
+      ],
+      "proposals": [
+       "anouk_writes_a4"
+      ]
+     },
+     "via": [
+      "reflect",
+      "empathy",
+      "silence",
+      "inquiry"
+     ]
+    }
+   ],
+   "mission": "training_fri",
+   "mood": "goed",
+   "name": "Anouk en het A4",
+   "opening": "Het werkt. Ik heb vandaag niet één keer gezocht. Niet één keer!",
+   "outcomes": {
+    "commitment": "Afgesproken. Ik teken er een bergje bij. Met een vlag.",
+    "compliance": "Oké. Als Joost het zegt.",
+    "heard": "Dank je. Ik ga het A4 in elk geval maken.",
+    "none": "Ik ga het A4 maar vast schrijven.",
+    "partial": "Goed. Als Joost het ook zegt.",
+    "ruined": "Ik ga het A4 maar vast schrijven."
+   },
+   "owns": "training_tray",
+   "patience": 12,
+   "person": "anouk",
+   "position": {
+    "tags": [
+     "claim"
+    ],
+    "text": "Maandag komen de anderen terug. Dan leg ik het wel even uit."
+   },
+   "proposals": [
+    {
+     "addresses": [],
+     "id": "joost_announces",
+     "name": "Joost kondigt het aan",
+     "reply": "Ja. Dat kan. Dan is het van Joost.",
+     "text": "Joost kan het maandag in het werkoverleg aankondigen. Dan is het geregeld."
+    },
+    {
+     "addresses": [
+      "interest"
+     ],
+     "id": "a4_above_tray",
+     "name": "Een A4 boven de bak",
+     "reply": "Een A4. Ja. Al hangen er hier al zes A4'tjes die niemand leest.",
+     "text": "Een A4 boven de bak, met de regel erop. Dan hoeft niemand het te onthouden."
+    },
+    {
+     "addresses": [
+      "concern"
+     ],
+     "hidden": true,
+     "id": "anouk_writes_a4",
+     "name": "Jij schrijft het A4, in jouw woorden",
+     "reply": "Als wat ik ontdekte. Dan is het geen regel van de nieuwe. Dan is het… mijn trucje.",
+     "text": "Wat als jij het A4 schrijft, in jouw woorden, en het maandag zelf laat zien? Niet als regel. Als wat je ontdekte."
+    }
+   ],
+   "tutorial": true
+  },
+  {
+   "co_proposal": {
+    "id": "walk_the_flow_monday",
+    "text": "Neem me maandag mee. Van mijn bak tot de monteur. Dan zie ik het ook eens."
+   },
+   "id": "sanne_friday",
+   "kind": "persuade",
+   "layers": [
+    {
+     "at": 55,
+     "id": "interest",
+     "tags": [
+      "claim",
+      "feeling"
+     ],
+     "text": "Ik dacht maandag: weer iemand van het hoofdkantoor met een stopwatch. Maar je hebt nog niks verbeterd. Je hebt alleen gekeken. Dat is raar. Raar goed, bedoel ik.",
+     "via": [
+      "mood",
+      "open_question",
+      "reflect"
+     ]
+    },
+    {
+     "at": 70,
+     "id": "concern",
+     "lead_in": {
+      "tags": [
+       "hesitation"
+      ],
+      "text": "Alleen, nou…"
+     },
+     "tags": [
+      "admission"
+     ],
+     "tell": "recognition",
+     "text": "Volgende week begin je echt, toch? Met de stapel van Joost. Als het daar beter gaat, komt alles nog harder bij ons binnen. En dan zijn wij weer het postkantoor dat het niet bijhoudt.",
+     "unlocks": {
+      "facts": [
+       "heard:sanne_friday"
+      ],
+      "proposals": [
+       "walk_the_flow_monday"
+      ]
+     },
+     "via": [
+      "silence",
+      "empathy",
+      "reflect",
+      "inquiry"
+     ]
+    }
+   ],
+   "mission": "training_fri",
+   "mood": "goed",
+   "name": "Sanne op vrijdagmiddag",
+   "opening": "Zo. De nieuwe. Het hele gebouw heeft het over je, weet je dat?",
+   "outcomes": {
+    "commitment": "Maandag. Om negen uur. Ik neem Rachids lijstje mee. Zeg niks tegen hem.",
+    "compliance": "Prima. Fijn weekend.",
+    "heard": "Hè. Je luistert echt, hè. Dat is ook raar. Raar goed.",
+    "none": "Ik moet de bakken nog leegmaken. Fijn weekend.",
+    "partial": "We zien maandag wel. Joh. Fijn weekend.",
+    "ruined": "Fijn weekend."
+   },
+   "patience": 12,
+   "person": "sanne",
+   "position": {
+    "tags": [
+     "claim",
+     "feeling"
+    ],
+    "text": "Je loopt overal rond en je vraagt dingen. Rachid zei dat je zijn lijstje wilde zien. Niemand wil Rachids lijstje zien."
+   },
+   "proposals": [
+    {
+     "addresses": [
+      "concern"
+     ],
+     "id": "promise_to_come_back",
+     "name": "Beloven terug te komen",
+     "reply": "Eerst bij ons. Oké. Ik houd je eraan.",
+     "text": "Als ik bij Joost begin, kom ik daarna eerst bij jou kijken."
+    },
+    {
+     "addresses": [
+      "concern"
+     ],
+     "hidden": true,
+     "id": "walk_the_flow_monday",
+     "name": "Maandag samen de stroom lopen",
+     "reply": "Van mijn bak tot de monteur. Dat heb ik in vijftien jaar nooit gedaan. Ja. Maandag.",
+     "text": "Loop je maandag met me mee? Eén aanvraag, van jouw bak tot de monteur. Dan zie je zelf waar hij straks blijft liggen."
+    }
+   ],
+   "tutorial": true
   }
  ],
  "people": [
@@ -1039,6 +2294,71 @@
    "team": "monteurs",
    "trust": 60,
    "voice": "Gaat wel."
+  },
+  {
+   "archetype": "overloaded",
+   "id": "anouk",
+   "morale": 48,
+   "name": "Anouk de Vries",
+   "need": "safety",
+   "place": "connections.design",
+   "role": "werkvoorbereider",
+   "short": "Anouk",
+   "team": "work_prep",
+   "trust": 50,
+   "voice": "Ik zit erbovenop."
+  },
+  {
+   "archetype": "quiet",
+   "id": "rachid",
+   "morale": 60,
+   "name": "Rachid Ouali",
+   "need": "fairness",
+   "place": "connections.intake",
+   "role": "medewerker Intake",
+   "short": "Rachid",
+   "team": "intake",
+   "trust": 50,
+   "voice": "Ik vraag het wel even na."
+  },
+  {
+   "archetype": "craftsman",
+   "id": "mieke",
+   "morale": 55,
+   "name": "Mieke van der Veen",
+   "need": "recognition",
+   "place": "connections.revision",
+   "role": "tekenaar Revisie & GIS",
+   "short": "Mieke",
+   "team": "gis",
+   "trust": 50,
+   "voice": "We tekenen zo snel als we kunnen."
+  },
+  {
+   "archetype": "overloaded",
+   "id": "linda",
+   "morale": 45,
+   "name": "Linda Jansen",
+   "need": "time",
+   "place": "connections.planning",
+   "role": "planner",
+   "short": "Linda",
+   "team": "planners",
+   "trust": 50,
+   "voice": "Ik plan iedereen. Behalve mezelf."
+  },
+  {
+   "archetype": "defender",
+   "id": "petra",
+   "morale": 55,
+   "name": "Petra Vos",
+   "need": "facts",
+   "place": "connections.close_out",
+   "role": "Meetdata & registratie",
+   "short": "Petra",
+   "team": "meter_office",
+   "trust": 50,
+   "voice": "Alles klopt. Tot op de laatste EAN."
   }
  ]
 }
