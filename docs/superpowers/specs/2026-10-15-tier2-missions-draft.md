@@ -835,11 +835,14 @@ missions:
     act: 3
     chapter: Wie kijkt er mee?
     requires: {missions: [fix_contractor_rework]}
-    goal: {type: measure, stream: connections, kpi: on_time, op: '>=', target: 0.85, window_days: 56}
+    # Sim check 2026-10-16: on_time >= 0.85 cannot fail (0.884 with every Act III
+    # problem left open, 0.889 on the expert path; the 120-day reinforcement wait
+    # sets it). The median lead time separates the paths on every seed.
+    goal: {type: measure, stream: connections, kpi: lead_time, op: '<=', target: 54, window_days: 56}
     deadline_days: 70
     principles: [long_term]
-    briefing: "De ACM heeft een informatieverzoek gestuurd: Woonstichting Nova klaagt dat haar nieuwbouwwoningen veel te lang op een aansluiting wachten. Over tien weken komt een toezichthouder voor een gesprek, met de cijfers van de laatste acht weken. Jeroen Dekker: 'Sinds de rechter het oude besluit vernietigde, is er geen harde termijn meer. Maar de ACM kijkt nog steeds naar achttien weken. Laat zien dat we het halen, of dat we weten waarom niet.'"
-    debrief: "De toezichthouder zag dat 85 procent of meer van de aansluitingen binnen achttien weken klaar was, en vooral dat Voltana weet waar de rest op wacht. Jeroen: 'Dit vertrouwen hebben we nodig als we straks iets nieuws willen proberen met contracten.'"
+    briefing: "De ACM heeft een informatieverzoek gestuurd: Woonstichting Nova klaagt dat haar nieuwbouwwoningen veel te lang op een aansluiting wachten. Over tien weken komt een toezichthouder voor een gesprek, met de cijfers van de laatste acht weken. Jeroen Dekker: 'Sinds de rechter het oude besluit vernietigde, is er geen harde termijn meer. De achttien weken halen we meestal; wat de ACM wil zien is hoe lang een gewone aansluiting bij ons duurt. Zorg dat de helft binnen 54 dagen klaar is, en dat we weten waar de rest op wacht.'"
+    debrief: "De toezichthouder zag dat de helft van de aansluitingen binnen 54 dagen klaar was, en vooral dat Voltana weet waar de rest op wacht. Jeroen: 'Dit vertrouwen hebben we nodig als we straks iets nieuws willen proberen met contracten.'"
     fail: "De cijfers haalden het niet. De ACM vraagt een verbeterplan met een termijn, en voor nieuwe proeven met flexibele contracten is voorlopig geen ruimte."
     fail_opens: [acm_improvement_plan]
     fail_effects: {reputation: -10}
@@ -850,11 +853,11 @@ missions:
       - id: late_clock
         who: thomas
         when: accepted
-        text: "Iedereen doet het: laat de klok pas lopen als een aanvraag compleet is in plaats van bij binnenkomst. Dan haal je die 85 procent zo."
+        text: "Iedereen doet het: laat de klok pas lopen als een aanvraag compleet is in plaats van bij binnenkomst. Dan haal je die 54 dagen zo."
         accept: "Je laat de klok later starten."
         decline: "Je laat de klok lopen vanaf de dag dat de klant aanvraagt."
         accept_sets_flags: [flag:acm_clock_gamed]
-        accept_effects: {measure_bonus: 0.08}   # the reported on_time looks 8 points better (estimate)
+        accept_effects: {measure_bonus: -5}     # the reported median looks 5 days shorter: intake and its 5-day rework wait drop out (estimate)
     teaches: [acm, aansluittermijn, leading_lagging]
     rewards: {xp: 2200, budget: 20000, reputation: 10}
 
@@ -865,10 +868,10 @@ missions:
     act: 3
     chapter: Wie kijkt er mee?
     requires: {facts: {all: [failed:acm_visit]}}
-    goal: {type: measure, stream: connections, kpi: on_time, op: '>=', target: 0.85, window_days: 56}
+    goal: {type: measure, stream: connections, kpi: lead_time, op: '<=', target: 54, window_days: 56}
     deadline_days: 112
     principles: [long_term, improve]
-    briefing: "De ACM wil binnen zestien weken zien dat het verbeterplan werkt: acht weken achter elkaar 85 procent op tijd. Geen nieuwe deur dicht als het mislukt, wel een slechtere naam."
+    briefing: "De ACM wil binnen zestien weken zien dat het verbeterplan werkt: acht weken achter elkaar de helft van de aansluitingen binnen 54 dagen. Geen nieuwe deur dicht als het mislukt, wel een slechtere naam."
     debrief: "De ACM sluit het dossier. Het verbeterplan was geen papier; de cijfers laten het zien."
     fail: "De ACM noteert dat het verbeterplan niet is waargemaakt."
     fail_effects: {reputation: -5}
@@ -887,7 +890,7 @@ missions:
 - In that case the ACM used about 18–22 weeks (the average connection term in practice) as a reasonable term; the CBb did not follow that reasoning, so the term has no firm legal footing right now. Same ACM page; Solar Magazine, https://solarmagazine.nl/nieuws-zonne-energie/i44905/wachten-op-stroom-mag-jaren-duren-acm-geeft-liander-gelijk-bij-klacht-over-uitgestelde-aansluiting-op-stroomnet.
 - `norm_days: 126` in `value_streams.yaml`.
 - An "information request" and a supervisory conversation are how the ACM supervises. A literal site visit is rare, hence the wording. `estimate:` of the format.
-- 85% over 56 days: `estimate:` set below the healthy base's ~90%. K5's content test must show it is reachable on the expert path and missed with the Act III problems left open.
+- Median ≤ 54 days over 56 days: `estimate:` (sim check 2026-10-16, `docs/qa/tier2-sim-check.md`): the healthy base 50.3 (max 53.9), the expert path 48.7 (max 51.8), only the main fixed 57.8 (min 54.8), every Act III problem left open 64.0 (min 57.9). The earlier 85% on time could not fail (left open 0.884). K5's content test must show it is reachable on the expert path and missed with the Act III problems left open.
 
 **Engrossing.** A date everyone in the building knows. A measure you can't game without paying later. And a recovery that can always be earned back.
 
@@ -911,12 +914,21 @@ missions:
       pick: 3
       pass_average: 0.7       # each KR scores 0-1 on progress from its start value; the average must reach 0.7
       key_results_menu:
-        - {id: kr_conn_on_time, stream: connections, kpi: on_time, op: '>=', target: 0.92, kind: lagging}
-        - {id: kr_conn_wip_age, stream: connections, kpi: wip_age, op: '<=', target: 45, kind: leading}     # calibrate on the expert path
-        - {id: kr_outage_on_time, stream: outages, kpi: on_time, op: '>=', target: 0.92, kind: lagging}
-        - {id: kr_meters_ftr, stream: meters, kpi: first_time_right, op: '>=', target: 0.85, kind: leading}
-        - {id: kr_conn_throughput, stream: connections, kpi: throughput, op: '>=', target: 33, kind: output}  # the temptation
-        - {id: kr_reinforcement_wip, stream: connections, kpi: wip_age, op: '<=', target: 120, kind: lagging, needs: {any: [done:lsw_kpi_review], none: [flag:watermelon_review]}}
+        # Sim check 2026-10-16 (docs/qa/tier2-sim-check.md, 5 seeds, 91 days):
+        # expert = every Act III problem fixed with its best fit; left open =
+        # the connections sides (or, for outages and meters, a side on that
+        # stream) open. Each target is met on 4-5 of 5 seeds on the expert
+        # path and on none left open; the old on_time 0.92, wip_age 45 and
+        # meters FTR 0.85 were out of reach on every path.
+        - {id: kr_conn_lead_time, stream: connections, kpi: lead_time, op: '<=', target: 50, kind: lagging}       # expert 48.5, left open 58.9
+        - {id: kr_conn_ftr, stream: connections, kpi: first_time_right, op: '>=', target: 0.45, kind: leading}   # expert 0.462, healthy 0.421, left open 0.359
+        - {id: kr_outage_on_time, stream: outages, kpi: on_time, op: '>=', target: 0.91, kind: lagging}          # expert 0.916, heatwave left open 0.821
+        - {id: kr_meters_on_time, stream: meters, kpi: on_time, op: '>=', target: 0.86, kind: lagging}           # expert 0.877, monteur hours left open 0.806-0.823; meters FTR moves with nothing in tier 2 (0.72)
+        - {id: kr_conn_throughput, stream: connections, kpi: throughput, op: '>=', target: 28, kind: output}     # the temptation: demand is 30 a week, so it reads demand; met by the healthy base too
+        # Not offered until a reinforcement-only measure exists (C-task): the
+        # stream's wip_age is ~102 d on every path (101.8-103.5), so no target
+        # can be failed or earned in a quarter.
+        # - {id: kr_reinforcement_wip, stream: connections, kpi: wip_age, op: '<=', target: ?, kind: lagging, needs: {any: [done:lsw_kpi_review], none: [flag:watermelon_review]}}
     principles: [long_term, improve]
     briefing: "Ruud wil voor het eerst één doel voor de hele regio, met drie meetbare resultaten voor het komende kwartaal. Het MT kiest mee, maar jij stelt voor. 'Kies resultaten die laten zien of de klant er iets van merkt, en minstens één die vooruitkijkt. Als je over drie maanden alles hebt gehaald, was je doel te makkelijk.'"
     debrief: "Zuidmark heeft een doel dat elke afdeling begrijpt en drie getallen die laten zien of het lukt. Ruud: 'Zeventig procent halen van een doel dat ertoe doet, is beter dan honderd procent van een doel dat niemand verandert.'"
@@ -943,7 +955,7 @@ missions:
 
 **Path dependence.**
 - `flag:okr_output_kr`: a KR on output is a steering KPI that does *not* match the connections problems' KPIs. For the quarter, `silo_kpis`' fix loses its "steering KPI" support and gets drift 1.5 (catalogue §2.8). The player can watch the old silo behaviour creep back, and `fix_silo_kpis` may reopen through the "Terugval" lane.
-- The menu's sixth KR ("doorlooptijd netverzwaring") is only offered to a player who did not hide it in `first_kpi_review`, or who repaired that with an honest `lsw_kpi_review`.
+- The menu's sixth KR ("doorlooptijd netverzwaring") is only offered to a player who did not hide it in `first_kpi_review`, or who repaired that with an honest `lsw_kpi_review`. It is parked until the simulation has a reinforcement-only measure (sim check 2026-10-16); until then the menu has five KRs.
 - `t2_first_okr` sets `flag:okr_region` (read by `lsw_catchball` in Act V).
 - **Drie winters (2026-10-16):** completing `t2_first_okr` with `acm_visit` judged ends Act III: the farewell talk `ruud_farewell` and Ruud's secondment follow (`2026-10-16-drie-winters-arc.md` §4). The OKR's KR menu gains nothing new; the waiting list's `date_kept` is named in Jeroen's ACM briefing.
 
@@ -1121,10 +1133,12 @@ problems:
     effects:
       # estimate: a quarter of an hour of ticking per job on the 5 h execution step.
       - {target: connections.execution, property: touch_time, value: 1.05}
-      # estimate: one job in eight is stopped late, after a near-miss or an
-      # unsafe discovery, and has to be replanned. Sim check fix 2: at -0.05
-      # first time right did not drop on the test seed.
-      - {target: connections.execution, property: ftr, value: -0.13}
+      # estimate: one job in five is stopped late, after a near-miss or an
+      # unsafe discovery, and has to be replanned. Sim check fix 2: -0.05,
+      # -0.13 and -0.17 did not drop first time right by 5 points on the test
+      # seed (+0.7, -3.7, -4.2); -0.20 does (-5.7, a thin margin; -0.23 gives
+      # -7.7 if the base moves).
+      - {target: connections.execution, property: ftr, value: -0.20}
     clues:
       - {tool: shadow, key: true, depth: 0, text: "Bij de auto vinkt de monteur 42 vragen af. Dan opent hij de meterkast zonder te kijken; de kast is van voor 1970, met blanke delen achter het deurtje."}
       - {tool: data, key: false, depth: 0, text: "Het aantal ongevallen met verzuim is al drie jaar laag."}
@@ -1560,14 +1574,19 @@ problems:
   - id: stale_capacity_map
     tier: 2
     name: De kaart van gisteren
-    step: congestion.intake
+    # Sim check 2026-10-16: the harm lands where the shared grid analysts meet
+    # the connections grid studies, so the problem sits there and the Check
+    # reads connections. With the problem open the analysts become the
+    # connections constraint (capacity 35.0 -> 32.9 a week, demand 30); every
+    # fix restores 35.0 (+6.4 %, deterministic, not_constraint false for all
+    # four). On congestion.intake no KPI was readable: congestion lead time
+    # jumps +-15 d at 4 requests a week, and congestion capacity moves only
+    # with the quick scan.
+    step: connections.grid_study
     waste: defects
     severity: medium
     visibility: hidden
-    # Sim check fix 6 (capacity) rejected on re-measure (2026-10-16): only the
-    # quick scan adds congestion capacity; the other three would fail the Check
-    # as not the constraint. Lead time stays, noisy at 4 requests a week.
-    kpi: lead_time
+    kpi: capacity
     symptoms:
       - De netanalisten draaien overuren op congestieonderzoeken, terwijl de netstudies voor nieuwe aansluitingen weer wachten.
       - Ondernemers krijgen na maanden een nee voor een plek die op de capaciteitskaart nog ruimte had.
@@ -1995,7 +2014,7 @@ The 1 + 3 rule holds: one main at a time (the fork offers two, the player takes 
 | safety_stock_calendar | meters.reserve_meter | waiting | on_time | reorder_point_working_days 1.0 · warehouse_kanban 0.9 · double_stock 0.6 |
 | lmra_tickbox | connections.execution | overprocessing | first_time_right | task_specific_lmra 1.0 · stop_the_work_andon 0.8 · two_person_rule_old_cabinets 0.6 (containment) |
 | heatwave_overload | outages.report | defects | on_time | peak_load_list_smart_meters 1.0 · preventive_transformer_swap 0.7 · mobile_transformers 0.6 |
-| stale_capacity_map | congestion.intake | defects | lead_time | quick_scan_at_intake 1.0 · map_update_from_studies 0.8 · flex_options_on_map 0.7 · map_all_red 0.6 |
+| stale_capacity_map | connections.grid_study | defects | capacity | quick_scan_at_intake 1.0 · map_update_from_studies 0.8 · flex_options_on_map 0.7 · map_all_red 0.6 |
 | monteur_hours | connections.execution | skills | capacity | kitting_night_before 1.0 · digital_work_orders 0.8 · start_from_home 0.7 · monteur_overtime 0.6 |
 | klic_expired | connections.execution | waiting | lead_time | klic_at_planning 1.0 · klic_expiry_alert 0.9 · klic_in_readiness_check 0.8 |
 

@@ -378,7 +378,101 @@ Applied to the draft, then re-run with `draft_check.gd` in its new quick mode (h
 
 Probe for fix 5 (5 seeds, 84 days after the warm-up, meters stream): base lead 28 / reorder point 190: on time 0.877, p50 9.9 d, open-work age 16.7 d, no stock-out. Reorder point −60: on time 0.869, p50 10.4 d, age 18.3 d, stock-out wait 12.8 h per order. −70: on time 0.861, age 17.9 d. At a lead of 10 calendar days even −30 gave only 3 h of waiting.
 
-Still to run: `lmra_tickbox` at −0.17; the ACM and OKR scenarios after these changes (their targets in fixes 12–13 still need it); fixes 8–11 (estimates).
+Still to run after this section: fixes 8–11 (estimates). `lmra_tickbox`, `stale_capacity_map` and the targets of fixes 12–13 are measured in the next section.
+
+## Re-measure 2026-10-16 (the simulation checker)
+
+Same harness and seeds (11–15), maturity 2, `--quick` for the problems. Scenario inputs were built from `draft_to_json.py` output by adding `"scenarios"` (the format in the harness header); every scenario runs the warm-up and the measured period in the same state ("resolved" = the best fit after the Act, its own effects only). All numbers are on the draft as committed with this section (lmra −0.20; the earlier fixes 1–7 in).
+
+### `lmra_tickbox`: ftr −0.20
+
+Named-KPI test (seed 11, 150 days, the last 60 days), and the Check (paired per seed, FTR points):
+
+| `ftr` | Harm | FTR on the test seed | Test (> 5 pt) | Open, 5 seeds | `task_specific_lmra` (1.0) | `stop_the_work_andon` (0.8) | `two_person_rule` (0.6) |
+|---|---|---|---|---|---|---|---|
+| −0.13 (earlier) | ×1.101 | 0.415 → 0.378 (−3.7) | FAIL | — | +6.6 | +6.0 | +2.5 |
+| −0.17 | ×1.140 | 0.415 → 0.373 (−4.2) | FAIL | 34.2 % | +7.7 (+4.6 to +11.3) | +5.5 | +5.0 |
+| **−0.20 (applied)** | ×1.172 | 0.415 → 0.358 (**−5.7**) | **PASS** | 31.9 % | **+9.7** (+7.1 to +11.2) | +8.6 (+6.5 to +10.8) | +7.8 (+5.5 to +11.1) |
+| −0.23 | ×1.228 | 0.415 → 0.338 (−7.7) | PASS | 30.6 % | +10.5 | +9.7 | +5.7 |
+
+−0.17 is not enough: the test seed is noisier than the straight line from −0.10 and −0.13 suggested. −0.20 passes with a thin margin (0.7 pt on one deterministic seed); if the base network moves, −0.23 is the fallback. At −0.20 the order by fit shows on the mean (9.7 > 8.6 > 7.8) and every fix gains on every seed. The draft's comment now says "one job in five". Worst legal mix on `connections.execution` (with `contractor_rework` −0.20): step FTR 0.85 − 0.20 − 0.20 = 0.45, still ≥ 0.4.
+
+### `stale_capacity_map`: the problem moves to `connections.grid_study`, KPI `capacity`
+
+No KPI of the congestion stream is readable (paired deltas at the Check, 5 seeds, demand ×1.3):
+
+| KPI (congestion) | Open | Gain per fix, mean (per-seed range) | Readable? |
+|---|---|---|---|
+| lead time p50 | 97.4 ± 13.7 d | −6.5 to +5.1 d (−30 to +28 d per seed) | no: sign flips |
+| wip age | 118.1 d | −6.7 to +2.8 d, sign flips | no |
+| first time right | 0.513 | −0.3 to +2.6 pt (−12 to +23 per seed) | no |
+| on time | 0.645 | −1.2 to +1.9 pt | no |
+| capacity | 5.64 / wk | quick scan 7.96; the other three 5.64 | no (fix 6, rejected) |
+
+The harm lands on the grid analysts (0.80 → 0.89), shared with the connections grid studies (the briefing's "de netstudies voor gewone aansluitingen liggen weer stil"). With the problem open they become **the connections constraint**: connections capacity 35.02 → 32.92 a week (demand 30), and every fix restores 35.02. So the problem sits at `connections.grid_study` and names `capacity`:
+
+| Countermeasure | Fit | Eff | Connections capacity at the Check | Gain | `not_constraint` |
+|---|---|---|---|---|---|
+| quick_scan_at_intake | 1.0 | 0.90 | 32.92 → 35.02 | +6.4 % | false |
+| map_update_from_studies | 0.8 | 0.72 | 32.92 → 35.02 | +6.4 % | false |
+| flex_options_on_map | 0.7 | 0.63 | 32.92 → 35.02 | +6.4 % | false |
+| map_all_red (temptation) | 0.6 | 0.54 | 32.92 → 35.02 | +6.4 % | false |
+
+- Capacity is static (`Capacity.analyse`), so the gain has no noise and is above `CHECK_NOISE` (2 %) for all four: they all pass. The fits do not separate at the Check (once the analysts are below the intake's limit, capacity stops at 35.02); they separate by decay, `aftermath` and trust, as before (map all red: −5.4 % KpiBoard over the year).
+- Harm: `test_catalog._flow_harm` for a capacity KPI is 35.02 / 32.92 = ×1.064 (> 1.03, PASS); the worst team ratio is ×1.375 (key accounts); the highest planned load 0.957 (< 1, PASS). Constraint `grid_analysts`, `at_constraint` true.
+- The lesson is end to end: failure demand in the congestion stream eats the shared constraint of the connections stream.
+- Tried and not taken: demand ×1.5 (congestion step, or `grid_study`): connections p50 moves −5 to −8 % for every fix, but the planned load reaches 1.035 (FAIL); ×1.4 at `grid_study`: planned 0.996, p50 gains −3.9 to −5.3 % but 0 on seed 11; ×1.45: planned 1.015. Demand stays ×1.3.
+
+### The ACM visit: target `lead_time <= 54` (median, 56 days, deadline 70)
+
+70 days from the visit's start, the last 56 measured; "left open" as in §2 (main `escalation_hallway` + sides `monteur_hours`, `lmra_tickbox`, `stale_capacity_map`; `contractor_rework` resolved).
+
+| Scenario | On time (seeds 11–15) | Mean | p50 lead (d) per seed | Mean | ≤ 54 |
+|---|---|---|---|---|---|
+| Healthy base | 0.837 / 0.883 / 0.897 / 0.925 / 0.868 | 0.882 | 47.8 / 47.9 / 53.9 / 51.2 / 50.8 | 50.3 | 5/5 |
+| Act III left open | 0.858 / 0.877 / 0.907 / 0.905 / 0.868 | 0.883 | 57.9 / 69.0 / 65.7 / 63.8 / 63.7 | 64.0 | **0/5** |
+| Only the main fixed | 0.845 / 0.890 / 0.907 / 0.903 / 0.857 | 0.880 | 54.8 / 55.9 / 58.8 / 62.7 / 56.7 | 57.8 | **0/5** |
+| Expert (all four fixed, day 0) | 0.842 / 0.886 / 0.907 / 0.925 / 0.886 | 0.889 | 48.0 / 47.0 / 51.8 / 48.0 / 48.7 | 48.7 | **5/5** |
+
+- On time still cannot fail: left open 0.883 vs expert 0.889 (the 120-day reinforcement wait sets it). Now that `contractor_rework`, `monteur_hours` and `lmra_tickbox` bite, the median separates on every seed: expert ≤ 51.8, left open ≥ 57.9.
+- **54 days** (applied): the expert has 2.2 d of margin (seed 13), "only the main fixed" misses by ≥ 0.8 d, and the healthy base passes on every seed (53 would fail it on seed 13 at 53.9). An absolute target works, so fix 12's relative target (C4 support) is not needed.
+- At 84 days (the alternative of fix 12): expert 48.5 (max 49.8), main fixed 59.3 (min 54.2), left open 65.1 (min 57.9). The 70-day deadline stays.
+- Changed with it in the draft: both goals, the briefing ("Zorg dat de helft binnen 54 dagen klaar is"), the debrief, `acm_improvement_plan`'s briefing, Thomas's `late_clock` line, and `measure_bonus 0.08 → −5` (days: a clock started at a complete file drops intake and its 5-day rework wait; an estimate). The ACM's real reference stays 18–22 weeks (grounding); the median is the game's measure of "how long does an ordinary connection take", an `estimate:`.
+
+### The OKR `t2_first_okr` (91 days)
+
+Four states held through the quarter: healthy; expert (all 11 problems fixed with the best fit); *conn left open* (`monteur_hours`, `lmra_tickbox`, `stale_capacity_map` open, the rest fixed); *mix left open* (`monteur_hours`, `heatwave_overload`, `safety_stock_calendar` open, the rest fixed).
+
+| Measure | Healthy | Expert | Conn left open | Mix left open |
+|---|---|---|---|---|
+| connections on time | 0.888 | 0.888 (0.869–0.912) | 0.882 | 0.895 |
+| connections p50 lead (d) | 49.4 | 48.5 (47.7–50.2) | 58.9 (55.0–64.0) | 51.2 |
+| connections FTR | 0.421 | 0.462 (0.413–0.487) | 0.359 (0.332–0.383) | 0.458 |
+| connections wip age (d) | 101.8 | 102.3 | 102.9 | 103.5 |
+| connections throughput / wk | 29.6 (27.9–32.3) | 29.7 (28.2–32.0) | 27.3 (26.4–28.5) | 28.8 |
+| outages on time | 0.927 | 0.916 (0.850–0.960) | 0.916 | 0.821 (0.770–0.879) |
+| meters on time | 0.876 | 0.877 (0.869–0.886) | 0.806 (0.764–0.852) | 0.823 (0.779–0.851) |
+| meters FTR | 0.717 | 0.723 | 0.732 | 0.732 |
+
+Key results applied in the draft (the score: progress from the left-open start to the target, 0–1, per seed):
+
+| KR | Target | Expert meets | Left open meets | Expert score (mean) | Left-open score |
+|---|---|---|---|---|---|
+| `kr_conn_lead_time` (replaces on time 0.92) | p50 ≤ 50 d | 4/5 (50.2 on seed 13) | 0/5 | 0.99 | 0.00 |
+| `kr_conn_ftr` (replaces wip age 45; leading) | ≥ 0.45 | 4/5 (0.413 on seed 12) | 0/5 | 0.94 | 0.00 |
+| `kr_outage_on_time` | 0.92 → ≥ 0.91 | 4/5 (0.850 on seed 12) | 0/5 (heatwave open) | 0.91 | 0.00 |
+| `kr_meters_on_time` (replaces meters FTR 0.85) | ≥ 0.86 | 5/5 | 0/5 (monteur hours open) | 1.00 | 0.00 |
+| `kr_conn_throughput` (the temptation) | 33 → ≥ 28 | 5/5; healthy 5/5 | 1/5 | 1.00 | 0.20 |
+| `kr_reinforcement_wip` | parked | — | — | — | — |
+
+- Any three of the four honest KRs average 0.91–0.98 on the expert path and 0 left open: `pass_average 0.7` is reachable and failable. The quarter here holds its state from day 0; a fix that lands mid-quarter scores part of the way.
+- Meters FTR is moved by nothing in tier 2 (0.72 on every path); meters on time is, through `monteur_hours` (monteurs are shared) and `safety_stock_calendar`.
+- Throughput reads demand (30 a week): ≥ 28 is met by the healthy base without any work, which is the temptation's point ("makkelijk te halen"); 33 was above demand.
+- `kr_reinforcement_wip` is parked in the draft (commented out): the stream's open-work age is ~102 d on every path, so no target can be earned or failed in a quarter. It needs a reinforcement-only measure (code, C-task).
+
+### The named-KPI test for `wip_age`
+
+Not changed: tier 2 is not in `content/` yet (no tier-2 problem in `content/problems_tier1.yaml`; PLAN 3.1 open). The only content problem naming `wip_age` is tier 1's `transformer_wait`, which passes on the one-moment age. When `safety_stock_calendar` enters content, `test_problems_hurt_their_named_kpi_in_the_simulation` in `game/tests/test_catalog.gd` should compare the mean open-work age over the KPI window instead of the age at day 150 (it rose on all five seeds at day 266 but fell on the test seed at day 150: 15.5 → 14.6).
 
 ## Reproduce
 
