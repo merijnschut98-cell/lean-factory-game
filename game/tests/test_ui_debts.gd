@@ -198,3 +198,91 @@ func test_the_codex_shows_discoveries_as_silhouettes_and_titles() -> void:
 		{"id": "b", "found": false, "hint": ""}]
 	assert_eq(CodexPanel.titles(view), ["Knelpuntjager"])
 	codex.free()
+
+
+# ── Containment, standardising later, the dossier (PLAN 1.5 still open) ────
+
+const DIGGING := "fix_digging_damage"
+
+
+func _digging(s: GameSession) -> void:
+	for id in ["fix_done_but_not_closed", "fix_status_callers", "fix_incomplete_application", "fix_custom_design"]:
+		s.missions.done_once[id] = true
+	assert_eq(s.accept(DIGGING), "")
+
+
+## A safety mission's containment on the board: its name and cost on the
+## button, then until when it holds; never on a mission without one.
+func test_the_board_offers_containment_on_a_safety_mission() -> void:
+	var s := _session()
+	_digging(s)
+	var m: MissionDef = s.missions.defs[DIGGING]
+	var board := MissionBoard.new()
+	board.session = s
+	board.refresh()
+	var name: String = m.containment["name"]
+	assert_true(shows(board, MissionBoard.contain_label(m)), "the button")
+	assert_true(MissionBoard.contain_label(m).contains(UiText.money(int(m.containment["budget"]))), "its cost")
+	assert_true(MissionBoard.contain_label(m).contains(name), "its name")
+	var budget := s.budget()
+	assert_eq(board.contain(DIGGING), "")
+	assert_eq(s.budget(), budget - int(m.containment["budget"]))
+	assert_false(shows(board, MissionBoard.contain_label(m)), "once")
+	assert_true(shows(board, MissionBoard.CONTAINED.left(10)), "until when it holds")
+	assert_false(UiText.event({"type": "contained", "mission": DIGGING}, {DIGGING: "Graafschade"}).is_empty(), "the event")
+	board.free()
+
+
+## Standardising a held fix later, at its place: the button with the cost,
+## the refusals in Dutch.
+func test_a_fix_without_a_standard_can_be_standardised_at_its_place() -> void:
+	for code in ["not_resolved", "standardised", "no_budget"]:
+		assert_ne(UiText.place_error(code), code, code)
+	var s := _session()
+	s.region.state[PROBLEM].phase = ProblemState.Phase.RESOLVED
+	var menu := PlaceMenu.new()
+	menu.session = s
+	menu.open_at(s.region.problems[PROBLEM].step)
+	var button := tr(UiText.STANDARDISE_BUTTON) % UiText.money(Region.STANDARDISE_BUDGET)
+	assert_true(shows(menu, button), "the button with its cost")
+	assert_eq(menu.standardise(PROBLEM), "")
+	assert_true(s.sustain_of(PROBLEM)["standardised"])
+	assert_false(shows(menu, button), "once standardised, gone")
+	assert_true(shows(menu, UiText.place_error("standardised")) or shows(menu, tr(UiText.STANDARDISED)), "said")
+	menu.free()
+
+
+## The El Amrani dossier in the journal once a mission that follows it was
+## taken on: its age, the hours worked on it and where it lies.
+func test_the_journal_holds_the_followed_dossier() -> void:
+	var s := _session()
+	var journal := ClueJournal.new()
+	journal.session = s
+	journal.refresh()
+	assert_true(shows(journal, tr(ClueJournal.DOSSIER)), "a returning player has walked it")
+	var view := s.followed_order()
+	var step := s.region.net.step_at(FollowedOrder.STREAM + "." + str(view["step"]))
+	assert_true(shows(journal, step.name), "where it lies")
+	assert_true(shows(journal, ClueJournal.dossier_line(s, view)), "age and hours")
+	journal.free()
+
+
+# ── Hoe werkt het? (PLAN 2.7c) ─────────────────────────────────────────────
+
+func test_the_codex_keeps_the_explainers_seen_and_silhouettes_the_rest() -> void:
+	var s := _session()
+	var codex := CodexPanel.new()
+	codex.session = s
+	codex.show_tab(CodexPanel.EXPLAINERS)
+	var def: ExplainerDef = ExplainerDef.load_all()["explainers"]["spanning_stroom_weerstand"]
+	assert_true(shows(codex, CodexPanel.SILHOUETTE), "not met yet")
+	assert_false(shows(codex, def.name), "no name before it was seen")
+	s.explainers.see(def.id)
+	codex.refresh()
+	assert_true(shows(codex, def.name))
+	assert_true(shows(codex, def.one_idea), "its one idea")
+	var view := codex.open_explainer(def.id)
+	assert_true(view != null and view.codex, "opened as the codex's")
+	assert_eq(view.error, "")
+	view.free()
+	codex.free()

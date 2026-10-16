@@ -17,4 +17,6 @@ const MUTED := Color("#5b6b7d")
 const BLUE_LIGHT := Color("#2a5ea8")
 const BLUE_PALE := Color("#e6eef9")
 const GREEN_DARK := Color("#1f9a57")
+## A manila folder (the followed dossier in the journal).
+const MANILA := Color("#f3e7c9")
 const HUD_BAR := Color(0.07, 0.17, 0.33, 0.88)

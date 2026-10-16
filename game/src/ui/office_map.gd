@@ -39,6 +39,8 @@ var lift := false
 var view: Control
 var floor_bar: HBoxContainer
 var _marked: Array[String] = []
+## The places whose room is marked (room_targets).
+var _room_targets: Array[String] = []
 ## floor id -> {rect, places, footprints, rooms} (OfficeFloors.map_plan).
 var _plan_of := Callable()
 
@@ -83,6 +85,7 @@ func show_floors(building_floors: Array[Dictionary], here: String, plan_of: Call
 
 func refresh() -> void:
 	_marked = mission_places(session)
+	_room_targets = room_targets(session)
 	if lift or floor_shown.is_empty():
 		floor_shown = floor_here
 	_show_plan(floor_shown)
@@ -142,10 +145,10 @@ func _fill_floor_bar() -> void:
 
 ## Whether floor `id` holds one of the active missions' places.
 func _floor_marked(id: String) -> bool:
-	if _marked.is_empty() or not _plan_of.is_valid():
+	if (_marked.is_empty() and _room_targets.is_empty()) or not _plan_of.is_valid():
 		return false
 	var plan: Dictionary = _plan_of.call(id)
-	return plan.get("places", []).any(func(p: Dictionary) -> bool: return p["id"] in _marked)
+	return plan.get("places", []).any(func(p: Dictionary) -> bool: return p["id"] in _marked or p["id"] in _room_targets)
 
 
 ## The labels of floor `id`'s places.
@@ -165,8 +168,9 @@ static func project(at: Vector2, floor_in: Rect2, area_in: Rect2) -> Vector2:
 
 
 ## The marker ids of the active missions' places: a walk marks its stream's
-## places; an observe goal its places; a problem marks the place its
-## briefing sends you to and, to check or solve it, the obeya wall.
+## places; an observe goal its places (the briefing names them); a problem's
+## mission the obeya wall once its A3 is ready for the Check. A problem's own
+## step is never marked (room_targets: its room only).
 static func mission_places(s: GameSession) -> Array[String]:
 	var out: Array[String] = []
 	for m in s.active_missions():
@@ -175,12 +179,38 @@ static func mission_places(s: GameSession) -> Array[String]:
 			out.append("place:%s.%s" % [stream.id, step.id])
 		for place in m.goal_places:
 			out.append("place:" + place)
+		var st: ProblemState = s.region.state.get(m.goal_problem)
+		if st != null and m.goal_type in ["solve", "check"] and st.phase == ProblemState.Phase.CHECK_READY:
+			out.append("obeya")
+	return out
+
+
+## The places whose ROOM a mission marks: its problem's step, never more
+## specific than the briefing (creator-and-minimap spec §2: room, never the place).
+static func room_targets(s: GameSession) -> Array[String]:
+	var out: Array[String] = []
+	for m in s.active_missions():
 		var p: ProblemDef = s.region.problems.get(m.goal_problem)
 		if p != null:
 			out.append("place:" + p.step)
-			if m.goal_type in ["solve", "check"]:
-				out.append("obeya")
 	return out
+
+
+## The ids of the rooms of `plan_rooms` around any of `targets` among `plan_places`.
+static func rooms_around(targets: Array[String], plan_places: Array, plan_rooms: Array) -> Array[String]:
+	var out: Array[String] = []
+	for p: Dictionary in plan_places:
+		if not p["id"] in targets:
+			continue
+		for room: Dictionary in plan_rooms:
+			if room["rect"].has_point(p["at"]) and not room["id"] in out:
+				out.append(room["id"])
+	return out
+
+
+## The rooms marked on the floor shown.
+func marked_rooms() -> Array[String]:
+	return rooms_around(_room_targets, places, rooms)
 
 
 ## The drawing area inside the view.
@@ -238,11 +268,16 @@ func _draw_map() -> void:
 			view.draw_rect(box, Palette.BLUE_LIGHT, false, 3.0)
 		else:
 			view.draw_rect(box, Palette.LINE)
+	var target_rooms := marked_rooms()
 	for room in rooms:   # over the furniture
+		var target: bool = room["id"] in target_rooms
+		var a := to_view(room["rect"].position)
+		if target:   # the mission's room: its walls in the mission's colour, nothing inside it
+			view.draw_rect(Rect2(a, to_view(room["rect"].end) - a).grow(-6), Palette.SAFETY_ORANGE, false, 3.0)
 		if room["open"]:
 			var corner := to_view(Vector2(room["rect"].position.x, room["rect"].end.y))
 			view.draw_string(font, corner + Vector2(8, -10), room["name"], HORIZONTAL_ALIGNMENT_LEFT, -1, 17,
-				Palette.VOLTANA_BLUE)
+				Palette.SAFETY_ORANGE if target else Palette.VOLTANA_BLUE)
 	view.draw_rect(r, Palette.VOLTANA_BLUE, false, 5.0)
 	_draw_north(font, Vector2(SIZE.x - 40, 52))
 	var scale_label := "%d m" % int(GRID_METRES)

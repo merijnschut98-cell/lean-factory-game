@@ -242,8 +242,8 @@ func test_each_chip_carries_a_key_that_makes_its_move() -> void:
 	assert_eq([keys["perspective"], keys["ask_commitment"]], [KEY_Q, KEY_T], "steering on Q–T")
 	for m in s.dialog_moves():
 		var chip: Button = _chips_of(panel)[m["label"] + (DialogPanel.PICK_MARK if m.has("picks") else "")]
-		var hint := chip.get_parent().get_child(chip.get_index() - 1) as Label
-		assert_true(hint != null, "a hint beside " + m["id"])
+		var hint := chip.get_child(0) as Label if chip.get_child_count() > 0 else null
+		assert_true(hint != null, "a hint in the corner of " + m["id"])
 		assert_eq(hint.text, OS.get_keycode_string(keys[m["id"]]), m["id"])
 	assert_true(panel.press_key(KEY_1), "1 is a move")
 	assert_eq(panel.made, ["Stemming peilen"], "1 is the first listening move")
@@ -499,3 +499,54 @@ func _open_silo_in(office: Office) -> void:
 func _open_joost(office: Office) -> void:
 	_open_silo_in(office)
 	assert_eq(office.ui.open_talk("joost"), "")
+
+
+## U16: the Mensen tab says what an agreement still waits for ("Wat nog
+## openstaat") and when you can talk again; "Werkplezier" explains itself.
+func test_the_mensen_tab_says_what_is_open_and_when_to_talk_again() -> void:
+	var office := _office()
+	var s := office.session
+	_open_silo_in(office)
+	office.ui.open_talk("joost")
+	for move in ["mood", "paraphrase", "inquiry", "reflect", "silence", "empathy"]:
+		office.ui.dialog_panel.choose(move)
+	office.ui.dialog_panel.choose("propose", "lead_and_oldest")
+	assert_eq(office.ui.dialog_panel.choose("ask_commitment")["outcome"], "partial")
+	office.ui.close_panels()
+	office.ui.toggle_journal()
+	office.ui.journal.show_tab(ClueJournal.PEOPLE)
+	var journal := office.ui.journal
+	assert_true(shows(journal, ClueJournal.OPEN_HEADING), "Wat nog openstaat")
+	assert_true(shows(journal, "Frank moet het goedvinden."), "the condition")
+	var again := texts_in(journal).filter(func(t: String) -> bool: return t.begins_with(ClueJournal.AGAIN.left(12)))
+	assert_eq(again.size(), 1, "one line on when to talk again")
+	var morale: Array[Node] = _nodes(journal, func(n: Node) -> bool:
+		return n is Label and n.text.begins_with(ClueJournal.MORALE))
+	assert_false(morale.is_empty())
+	assert_eq(morale[0].tooltip_text, tr(ClueJournal.MORALE_TIP))
+	office.free()
+
+
+func test_after_a_ruin_the_mensen_tab_says_when_to_talk_again() -> void:
+	var office := _office()
+	_open_silo_in(office)
+	office.ui.open_talk("joost")
+	office.ui.dialog_panel.choose("show_data", "silo_kpis:4")
+	office.ui.dialog_panel.choose("propose", "lead_and_oldest")
+	assert_eq(office.ui.dialog_panel.choose("pressure")["outcome"], "ruined")
+	office.ui.close_panels()
+	office.ui.toggle_journal()
+	office.ui.journal.show_tab(ClueJournal.PEOPLE)
+	var until: int = office.session.person("joost")["cooldown_until"]
+	assert_true(shows(office.ui.journal, ClueJournal.again_text(office.session, until, false)))
+	assert_false(shows(office.ui.journal, tr(ClueJournal.AGAIN_NOW)), "not now")
+	office.free()
+
+
+## U18: the old questions are named as what they are, apart from a talk.
+func test_the_teams_questions_are_short_questions_not_a_talk() -> void:
+	var office := _office()
+	office.interact(office.interactable("place:" + DESIGN))
+	assert_true(shows(office.ui.place_menu, "Korte vragen aan het team"))
+	assert_false(shows(office.ui.place_menu, "Vraag het team"))
+	office.free()

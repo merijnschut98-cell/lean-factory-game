@@ -27,8 +27,23 @@ const NOTE_HINT := "Wat weet je over %s?"
 const EARLIER := "Eerder"
 ## Quotes shown before the older ones fold under EARLIER.
 const QUOTES_SHOWN := 8
-const NOT_NOW := "Wil nu even niet praten: morgen weer."
+## The followed dossier's card (PLAN 1.5): a manila folder among the clues.
+const DOSSIER := "Dossier familie El Amrani · warmtepomp, Nova-Oost"
+const DOSSIER_UNDERWAY := "Onderweg: %d dagen · %s uur werk eraan · ligt nu bij %s"
+const DOSSIER_DONE := "Aangesloten na %d dagen · %s uur werk eraan"
+## A briefing that reads the dossier names this token (content/missions.yaml).
+const DOSSIER_TOKEN := "{dossier_weken}"
+## Over the morale word: it is how someone has been lately, not the talk's mood.
+const MORALE_TIP := "Hoe iemand er de laatste weken bij zit."
 const NEEDS_TALK := "Kan wel een goed gesprek gebruiken."
+## What an agreement under condition, or a block, still waits for (U16).
+const OPEN_HEADING := "Wat nog openstaat"
+## When the next talk can be (U16): now, tomorrow, from a day, or nothing to say.
+const AGAIN := "Weer praten: %s"
+const AGAIN_NOW := "kan nu."
+const AGAIN_TOMORROW := "morgen."
+const AGAIN_FROM := "vanaf %s."
+const AGAIN_NOTHING := "nu niets te bespreken."
 const NOBODY := "Je hebt nog met niemand gesproken. Mensen vind je op hun plek op de werkvloer."
 
 var tab := CLUES
@@ -135,6 +150,7 @@ func refresh() -> void:
 		_people()
 		return
 	_session_row()
+	_dossier()
 	_sustain()
 	var groups := by_place(session)
 	if groups.is_empty():
@@ -143,6 +159,30 @@ func refresh() -> void:
 		var box := add_card(_list, g["place"])
 		for c: Clue in g["clues"]:
 			box.add_child(paragraph("• " + c.text))
+
+
+## The El Amrani dossier you follow (PLAN 1.8), clipped in once a mission
+## that reads it was taken on: how old it is, the hours of work it has had
+## and where it lies now (or when it was delivered).
+func _dossier() -> void:
+	var follows := session.missions.defs.values().any(func(m: MissionDef) -> bool:
+		return m.briefing.contains(DOSSIER_TOKEN) and session.missions.knows("accepted:" + m.id))
+	if session.followed.order_id < 0 or not follows:
+		return
+	var view := session.followed_order()
+	var box := add_card(_list, tr(DOSSIER), Palette.MANILA)
+	box.add_child(paragraph(dossier_line(session, view), Palette.INK, UiTheme.SMALL))
+
+
+## "Onderweg: 43 dagen · 3,5 uur werk eraan · ligt nu bij Werkvoorbereiding",
+## or once delivered, after how long.
+static func dossier_line(s: GameSession, view: Dictionary) -> String:
+	var hours := String.num(view["touch_hours"], 1).replace(".", ",")
+	if view["delivered_days"] >= 0.0:
+		return TranslationServer.translate(DOSSIER_DONE) % [roundi(view["delivered_days"]), hours]
+	var step := s.region.net.step_at(FollowedOrder.STREAM + "." + str(view["step"]))
+	return TranslationServer.translate(DOSSIER_UNDERWAY) % [roundi(view["age_days"]), hours,
+		step.name if step != null else str(view["step"])]
 
 
 ## The fixes in use and the drift; nothing before the first fix or the
@@ -191,12 +231,17 @@ func _person_card(id: String, wants: bool) -> void:
 	standing.add_theme_constant_override("separation", 30)
 	text.add_child(standing)
 	standing.add_child(label("%s  %s" % [DialogPanel.TRUST, DialogPanel.pips(p["trust_pips"])], UiTheme.SMALL))
-	standing.add_child(label(MORALE + MORALE_BANDS[p["morale_band"]], UiTheme.SMALL))
-	if session.people.cooling_down(id, session.region.net.time):
-		text.add_child(label(NOT_NOW, UiTheme.SMALL, Palette.SAFETY_ORANGE))
-	elif wants:
+	var morale := label(MORALE + MORALE_BANDS[p["morale_band"]], UiTheme.SMALL)
+	morale.tooltip_text = tr(MORALE_TIP)
+	morale.mouse_filter = Control.MOUSE_FILTER_PASS
+	standing.add_child(morale)
+	var cooling := session.people.cooling_down(id, session.region.net.time)
+	text.add_child(label(again_text(session, p["cooldown_until"] if cooling else -1, p["talk_ready"]), UiTheme.SMALL,
+		Palette.SAFETY_ORANGE if cooling else Palette.MUTED))
+	if wants and not cooling:
 		text.add_child(label(NEEDS_TALK, UiTheme.SMALL, Palette.GREEN_DARK))
 	var short: String = session.people.persons[id].short
+	_still_open(card, p["open"])
 	_quotes(card, id, short, p["observed"])
 	_talks(card, p["talks"])
 	card.add_child(label(tr(NOTE), UiTheme.SMALL, Palette.VOLTANA_BLUE))
@@ -207,6 +252,29 @@ func _person_card(id: String, wants: bool) -> void:
 	note.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
 	note.text_changed.connect(func() -> void: session.set_note(id, note.text))
 	card.add_child(note)
+
+
+## "Weer praten: …": from the day a ruin's cooldown ends (`until`, -1 for
+## none), else now or nothing to say.
+static func again_text(s: GameSession, until: int, ready: bool) -> String:
+	var when := AGAIN_NOW if ready else AGAIN_NOTHING
+	if until >= 0:
+		var tomorrow := SimCalendar.day_of(until) == SimCalendar.day_of(s.region.net.time) + 1
+		when = AGAIN_TOMORROW if tomorrow else TranslationServer.translate(AGAIN_FROM) % s.day_text(until)
+	return TranslationServer.translate(AGAIN) % TranslationServer.translate(when)
+
+
+## Under "Wat nog openstaat": what each agreement under condition waits for
+## (or "first see, then believe"), and a block's route hints.
+func _still_open(card: VBoxContainer, open: Array) -> void:
+	if open.is_empty():
+		return
+	card.add_child(label(tr(OPEN_HEADING), UiTheme.SMALL, Palette.VOLTANA_BLUE))
+	for o: Dictionary in open:
+		var lines: Array = o["hints"] if o["outcome"] == "blocked" else \
+			[o["wait_for"] if not o["wait_for"].is_empty() else tr(DialogPanel.STILL_NEEDED_CHECK)]
+		for line: String in lines:
+			card.add_child(paragraph("• " + line, Palette.INK, UiTheme.SMALL))
 
 
 ## What the person said, newest first, each with the day and the place; the

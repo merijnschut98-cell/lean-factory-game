@@ -141,6 +141,30 @@ func _run() -> void:
 			office.ui.close_panels()
 			office.ui.toggle_journal()
 			office.ui.journal.show_tab(ClueJournal.PEOPLE)
+		"explainers":
+			office.session.explainers.see("spanning_stroom_weerstand")
+			office.ui.toggle_codex()
+			office.ui.codex.show_tab(CodexPanel.EXPLAINERS)
+		"contain_board":
+			for id in ["fix_done_but_not_closed", "fix_status_callers", "fix_incomplete_application", MISSION]:
+				office.session.missions.done_once[id] = true
+			office.session.accept("fix_digging_damage")
+			_stand_at(office, "mission_board")
+			office.interact(office.interactable("mission_board"))
+		"standardise":
+			_investigate(office, true)
+			office.interact(office.interactable("obeya"))
+			office.ui.a3_form.submit(_a3(office))
+			office.ui.a3_form.wait()
+			office.ui.a3_form.check()
+			office.ui.check_panel.act(false)
+			office.ui.close_panels()
+			_stand_at(office, DESIGN)
+			office.interact(office.interactable(DESIGN))
+			office.rig.snap()
+		"dossier":
+			_investigate(office, false)
+			office.ui.toggle_journal()
 		"dialog_place":
 			_open_silo(office)
 			_stand_at(office, DESIGN)
