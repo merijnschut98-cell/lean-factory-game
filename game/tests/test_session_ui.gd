@@ -7,7 +7,7 @@ extends TestCase
 const SCENE := "res://src/world/office/office.tscn"
 const MISSION := "fix_custom_design"
 const PROBLEM := "custom_design"
-const SETTINGS := "user://test_session_ui_settings.cfg"
+var settings_path := scratch("test_session_ui_settings.cfg")
 
 
 func _office() -> Office:
@@ -16,7 +16,7 @@ func _office() -> Office:
 	office.training = false
 	office.build()
 	office.ui.playtest_log = SessionLog.new(SessionLog.PATH, false)  # tests write no log
-	office.ui.settings_path = SETTINGS
+	office.ui.settings_path = settings_path
 	return office
 
 
@@ -80,11 +80,11 @@ func test_the_journal_reopens_the_terugblik_and_switches_the_log() -> void:
 	assert_true(ui.terugblik.visible)
 	assert_false(ui.journal.visible)
 	ui.set_log_enabled(false)
-	assert_false(SessionLog.enabled_in(SETTINGS))
+	assert_false(SessionLog.enabled_in(settings_path))
 	assert_false(ui.playtest_log.enabled)
 	ui.set_log_enabled(true)
-	assert_true(SessionLog.enabled_in(SETTINGS))
-	DirAccess.remove_absolute(SETTINGS)
+	assert_true(SessionLog.enabled_in(settings_path))
+	DirAccess.remove_absolute(settings_path)
 	office.free()
 
 

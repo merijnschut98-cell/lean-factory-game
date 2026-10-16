@@ -13,6 +13,7 @@ signal close_requested
 ## Room left for the HUD's top bar, and the margin around a docked panel.
 const DOCK_TOP := 64
 const DOCK_MARGIN := 16
+const CLOSE := "Sluiten  (Esc)"
 
 var session: GameSession
 ## Docked at the right edge over the full height (the world stays in view
@@ -21,6 +22,8 @@ var docked := false
 var title_label: Label
 ## The header's close button (Esc closes too).
 var close_button: Button
+## The line under the header.
+var rule: HSeparator
 var body: VBoxContainer
 
 
@@ -35,9 +38,10 @@ func _init(title: String, size: Vector2 = Vector2(1100, 0)) -> void:
 	title_label = label(title, UiTheme.HEADING, Palette.VOLTANA_BLUE)
 	title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title_label)
-	close_button = button("Sluiten  (Esc)", close_requested.emit)
+	close_button = button(CLOSE, close_requested.emit)
 	header.add_child(close_button)
-	outer.add_child(HSeparator.new())
+	rule = HSeparator.new()
+	outer.add_child(rule)
 	body = VBoxContainer.new()
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	outer.add_child(body)
@@ -111,6 +115,20 @@ static func add_card(parent: Node, heading: String = "", fill: Color = Color.WHI
 		box.add_child(label(heading, UiTheme.SMALL, Palette.VOLTANA_BLUE))
 	parent.add_child(panel)
 	return box
+
+
+## Add a column that scrolls (vertically only) to `parent`, at least
+## `height` tall; returns the column to fill.
+static func add_scroll_list(parent: Node, height: float = 0.0) -> VBoxContainer:
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size.y = height
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	parent.add_child(scroll)
+	var column := VBoxContainer.new()
+	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(column)
+	return column
 
 
 static func clear(container: Node) -> void:

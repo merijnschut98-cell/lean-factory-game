@@ -8,6 +8,11 @@ extends CanvasLayer
 
 signal panel_opened
 signal panels_closed
+## A talk opened (the world frames the person).
+signal talk_opened(person_id: String)
+
+## A person asked in the office who has nothing to talk about now.
+const NOTHING_TO_SAY := "%s knikt je toe en werkt door."
 
 var session: GameSession
 var hud: Hud
@@ -19,6 +24,7 @@ var coach_panel: CoachPanel
 var journal: ClueJournal
 var office_map: OfficeMap
 var codex: CodexPanel
+var dialog_panel: DialogPanel
 ## The session layer (PLAN 1.4): the terugblik, Intussen, the stop note, the
 ## discovery toasts and the side offers; the playtest log; autosave.
 var session_layer: SessionLayer
@@ -68,9 +74,11 @@ func setup(of_session: GameSession, of_layer: SessionLayer = null) -> void:
 	journal = ClueJournal.new()
 	office_map = OfficeMap.new()
 	codex = CodexPanel.new()
+	dialog_panel = DialogPanel.new()
 	terugblik = TerugblikCard.new()
 	intussen = IntussenPanel.new()
-	_panels = [mission_board, place_menu, a3_form, check_panel, coach_panel, journal, office_map, codex, terugblik, intussen]
+	_panels = [mission_board, place_menu, a3_form, check_panel, coach_panel, journal, office_map, codex, terugblik, intussen,
+		dialog_panel]
 	_setup_session_layer(of_layer)
 	for p in _panels:
 		p.session = session
@@ -81,6 +89,8 @@ func setup(of_session: GameSession, of_layer: SessionLayer = null) -> void:
 		check_panel.show_result(problem_id, result)
 		_open(check_panel))
 	check_panel.back_to_a3.connect(open_a3)
+	place_menu.talk_requested.connect(open_talk)
+	dialog_panel.coach_requested.connect(open_coach)
 	root.move_child(hud, -1)
 	_known_concepts = session.region.profile.concepts.duplicate()
 	after_action()
@@ -120,6 +130,31 @@ func open_coach() -> void:
 	_open(coach_panel)
 
 
+## Talk with a person: "" or why not (start_dialog's code; cooling_down
+## shows the person's "Niet nu." as the prompt).
+func open_talk(person_id: String) -> String:
+	if not playable():
+		return "unplayable"
+	var refused := dialog_panel.start(person_id)
+	if refused.is_empty():
+		_open(dialog_panel)
+		talk_opened.emit(person_id)
+	return refused
+
+
+## A talk asked for in the office (walking up to someone): it opens, or a toast
+## says why not in the person's own way ("Niet nu.", a nod).
+func ask_talk(person_id: String, display_name: String) -> void:
+	match open_talk(person_id):
+		"", "unplayable", "in_dialog":
+			pass
+		"cooling_down":
+			var special := JsonFile.dict_or_empty(session.catalog.dialog_bank.get("special"))
+			hud.toast("%s: \"%s\"" % [display_name, special.get("cooling_down", "")])
+		_:
+			hud.toast(tr(NOTHING_TO_SAY) % display_name)
+
+
 func toggle_journal() -> void:
 	_toggle(journal)
 
@@ -156,11 +191,17 @@ func is_busy() -> bool:
 	return _panels.any(func(p: UiPanel) -> bool: return p.visible)
 
 
+## Close what is open. Mid-talk, Esc ends the talk as "Afronden" does (a
+## graceful close, never a ruin) and its summary shows; the next Esc closes.
 func close_panels() -> void:
 	var was_busy := is_busy()
+	if dialog_panel != null and dialog_panel.talking():
+		dialog_panel.close_talk()
+		return
 	for p in _panels:
 		p.hide()
 	hud.show_overlay(true)
+	hud.set_talking(false)
 	if was_busy:
 		panels_closed.emit()
 
@@ -181,10 +222,11 @@ func after_action() -> void:
 	for m: MissionDef in session.missions.defs.values():
 		names[m.id] = UiText.mission_title(m, session)
 	var problem_names := UiText.problem_names(session)
+	var team_names := UiText.team_names(session)
 	for e in session.drain_events():
 		if e["type"] in ["recurred", "slipping"] and session.is_practice(e.get("problem", "")):
 			continue  # the practice problem is retired; the Friday forecast tells the fade
-		var text := UiText.event(e, names, problem_names)
+		var text := UiText.event(e, names, problem_names, team_names)
 		if not text.is_empty():
 			hud.toast(text)
 		if e["type"] == "completed":
@@ -202,7 +244,7 @@ func after_action() -> void:
 func _debrief_card(m: MissionDef, e: Dictionary) -> void:
 	if m.kind != "training" or m.goal_type == "solve":
 		return
-	var lines: Array[String] = ["'%s'" % m.debrief]
+	var lines: Array[String] = ["'%s'" % session.mission_debrief(m.id)]
 	if e.has("queues"):
 		var place_names := {}
 		for place: String in e["queues"]:
@@ -371,4 +413,5 @@ func _open(panel: UiPanel) -> void:
 	panel.show()
 	hud.show_prompt("")
 	hud.show_overlay(false)
+	hud.set_talking(panel == dialog_panel)
 	panel_opened.emit()

@@ -9,6 +9,13 @@ extends UiPanel
 
 ## Narrow enough to leave the framed station visible at 1600 × 900.
 const WIDTH := 540
+const PEOPLE_HEADING := "Mensen hier"
+const TALK := "Praat met %s"
+const NOTHING_TO_SAY := "heeft nu niets met je te bespreken"
+const WANTS_A_WORD := "  (kan wel een goed gesprek gebruiken)"
+
+## A person here was asked for a talk (GameUI opens the dialog).
+signal talk_requested(person_id: String)
 
 var place := ""
 ## This visit's results, newest first: [{heading, text}].
@@ -95,14 +102,9 @@ func refresh() -> void:
 	title_label.text = step.name if step != null else place
 	clear(body)
 	# One column that scrolls: the panel keeps the full height at the side.
-	var scroll := ScrollContainer.new()
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	body.add_child(scroll)
-	var column := VBoxContainer.new()
-	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.add_child(column)
+	var column := add_scroll_list(body)
 	_results(column)
+	_people(column)
 	_tools(column)
 	_sustain(column)
 	_questions(column)
@@ -116,6 +118,24 @@ func _results(parent: Node) -> void:
 	for entry in log.slice(0, 3):
 		results.add_child(label(entry["heading"], UiTheme.SMALL, Palette.MUTED))
 		results.add_child(paragraph(entry["text"], Palette.INK, UiTheme.SMALL))
+
+
+## The people who work here: a talk with whoever has something to say (a
+## mission's, or a check-in), the bank's "Niet nu." after a ruined one.
+func _people(parent: Node) -> void:
+	var here := session.people_at(place)
+	if here.is_empty():
+		return
+	var card := add_card(parent, PEOPLE_HEADING)
+	var special := JsonFile.dict_or_empty(session.catalog.dialog_bank.get("special"))
+	for p in here:
+		if p["cooling_down"]:
+			card.add_child(label("%s: \"%s\"" % [p["name"], special.get("cooling_down", "")], UiTheme.SMALL, Palette.MUTED))
+		elif p["has_dialog"]:
+			card.add_child(_small_button((TALK % p["name"]) + (WANTS_A_WORD if p["needs_talk"] else ""),
+				talk_requested.emit.bind(p["id"])))
+		else:
+			card.add_child(label("%s %s" % [p["name"], NOTHING_TO_SAY], UiTheme.SMALL, Palette.MUTED))
 
 
 func _tools(parent: Node) -> void:

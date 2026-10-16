@@ -11,8 +11,8 @@ const HEADING := 26
 static func build() -> Theme:
 	var t := Theme.new()
 	t.default_font_size = FONT_SIZE
-	t.set_stylebox("panel", "PanelContainer", _box(Palette.PAPER, 12, Palette.VOLTANA_BLUE, 6, 26))
-	t.set_stylebox("panel", "Panel", _box(Palette.PAPER, 12, Palette.VOLTANA_BLUE, 6, 26))
+	t.set_stylebox("panel", "PanelContainer", panel())
+	t.set_stylebox("panel", "Panel", panel())
 	for type in ["Label", "CheckBox", "RichTextLabel"]:
 		t.set_color("font_color", type, Palette.INK)
 	t.set_color("default_color", "RichTextLabel", Palette.INK)
@@ -51,6 +51,17 @@ static func build() -> Theme:
 	t.set_constant("separation", "VBoxContainer", 10)
 	t.set_constant("separation", "HBoxContainer", 12)
 	return t
+
+
+## A panel's paper with its thick blue top edge, `margin` px inside.
+static func panel(margin: int = 26) -> StyleBoxFlat:
+	return _box(Palette.PAPER, 12, Palette.VOLTANA_BLUE, 6, margin)
+
+
+## A chip that is open (its picks show): outlined, never filled with a
+## colour that could read as "right".
+static func open_chip() -> StyleBoxFlat:
+	return _box(Color.WHITE, 8, Palette.VOLTANA_BLUE, 2, 10)
 
 
 ## A paper card inside a panel (a section of the A3, a mission).
