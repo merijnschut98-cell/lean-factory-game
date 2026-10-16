@@ -1044,7 +1044,7 @@ dialogs:
   - id: daan_storm_call
     person: daan_zandbergen          # new, a customer (customer_upset), age 16
     kind: persuade
-    mission: prep_storm_week         # available during the storm event only, from the contact centre
+    mission: thread_zandbergen       # the thread's side mission (tier-2 draft §2.19), during the storm
     place: customer_contact.answer
     patience: 8
     # start: customer_upset 25 + 0 + 0 + 0 + 0 = 25; +15 with done:fix_on_call_far (he knows the voice)
@@ -1088,7 +1088,7 @@ dialogs:
   - id: samira_waiting_list
     person: samira_el_amrani          # new, a customer (customer_upset), the El Amrani daughter, 27
     kind: persuade
-    missions: [fix_household_rush, fix_priority_first_come]
+    mission: thread_samira           # the thread's side mission (tier-3 draft §1.13)
     place: customer_contact.answer
     patience: 10
     # start: customer_upset 25 + memory of the family: +10 with delivered:el_amrani or agreed:el_amrani_fourth_call:check_existing_connection; -10 with a broken promise
@@ -1185,6 +1185,8 @@ dialogs:
 ```
 
 New people for `people.yaml`: `daan_zandbergen` (customer_upset, 16), `samira_el_amrani` (customer_upset, 27), `sem` (quiet, 18). Names checked against every earlier doc: no collisions.
+
+**As missions (2026-10-16):** each thread is a small side mission in its tier draft, with a face, a number, a choice (a temptation with a later cost) and a payoff at the act's end: `thread_zandbergen` (tier-2 draft §2.19), `thread_samira` (tier-3 draft §1.13), `thread_sem` with the talk `theo_sem_pairing` (tier-4 draft §1.11), `thread_notebook` (tier-4 draft §2.6). Schema needs beyond §10: `opens_on: {beat}`, `requires_accepted` (a side that opens when a main is accepted), `followed_order` on a mission (a second followed order), `talk_to` with `outcome: lifted` for a check-in, beats `on: act_end`, `effects_during_event` and `person_trust` in a temptation's effects.
 
 ---
 

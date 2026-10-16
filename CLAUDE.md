@@ -31,6 +31,7 @@ Merijn's design decisions that every feature, content file and test must respect
 - **An RPG where the main character has to search and think** to find out what is wrong and how to fix it. Nothing is handed over.
 - **Fix processes end to end.** Improving a step that is not the bottleneck brings no gain, and the simulation must show that.
 - **Measure.** KPIs and OKRs come up often: predictions name a KPI, the Check measures it, missions and the coach ask for numbers.
+- **Immersion is one of the most important directives (Merijn, 2026-10-16).** The player must feel they are in the company, as their own character: they make that character themselves (the character creator), the world reacts to them, and nothing needlessly breaks the spell (menus over the world, numbers where a person or place could show it, generic text where their name and choices could stand). Weigh every feature on whether it pulls the player in or pushes them out.
 - **The 8 wastes come up often** (TIMWOODS, in a service and field organisation).
 - **Sector-specific issues come up often**: congestion, permits, the technician shortage, regulation (ACM, NTA 8120), the energy transition.
 

@@ -359,17 +359,17 @@ func clock_text() -> String:
 		int(minute_of_day / 60.0), minute_of_day % 60]
 
 
+## The El Amrani dossier: {age_days, touch_hours, step, delivered_days}
+## (FollowedOrder.view).
+func followed_order() -> Dictionary:
+	return followed.view(region.net)
+
+
 ## The calendar date {year, month, day, ...} of a simulation time.
 func date_of(t: int) -> Dictionary:
 	var played := t - SimCalendar.days(WARMUP_DAYS)
 	return Time.get_date_dict_from_unix_time(
 		Time.get_unix_time_from_datetime_dict(PLAY_START_DATE) + SimCalendar.day_of(played) * 86400)
-
-
-## The El Amrani dossier: {age_days, touch_hours, step, delivered_days}
-## (FollowedOrder.view).
-func followed_order() -> Dictionary:
-	return followed.view(region.net)
 
 
 ## The month of the game's date (1-12).

@@ -1518,6 +1518,83 @@ missions:
 
 The cliffhanger into it stays as the engagement loop has it: Lotte knocks, "Ik heb gehoord dat jij vragen stelt in plaats van antwoorden geeft. Wil je dat bij mij ook doen?" Nothing else is designed here.
 
+### 1.11 Addition (2026-10-16): the act's human thread — `thread_sem` — De leerling van Ahmed (S)
+
+PLAN §4.2.2 (arc doc §9.3). **A face:** Sem (18), from Ahmed's first cohort of apprentices (Act IV). **A number:** Theo's inspection list has {top_risk} stations at high risk; one inspector can do {per_week} a week (`estimate:` four a week, from the `maintenance` stream's base). **A choice:** shield Sem with the easy stations, or pair him with Theo on the top of the risk list. **A payoff:** D47's joint is on Sem's list; at the finale, Sem knocks during the last scene, or sends a postcard.
+
+Opens only for a player who trained people: `heard:ahmed_trainer`, or a saved Henk, and a training choice that brought apprentices.
+
+```yaml
+missions:
+  - id: thread_sem
+    name: De leerling van Ahmed
+    kind: side
+    tier: 4
+    act: 5
+    arc: threads
+    requires:
+      missions: [fix_maintenance_calendar]     # opens when it is accepted (requires_accepted, S-new) or done
+      facts: {any: [heard:ahmed_trainer, chose:knowledge_drain:twi_job_instruction, chose:knowledge_drain:skills_matrix_buddy],
+              all: [], none: [flag:freelance_crews]}
+    goal: {type: talk_to, dialog: theo_sem_pairing, outcome: partial}
+    principles: [respect, long_term]
+    briefing: "Theo heeft een lijst van {top_risk} stations met hoog risico, en één paar handen. Ahmed stuurt hem Sem, achttien, uit de eerste groep. Theo: 'Wie gaat dit doen als ik weg ben? Die jongens van Bouzid? Die weten niet eens hoe een station ruikt.'"
+    debrief: "{sem_line}"
+    debrief_variants:
+      paired: "Sem loopt sinds drie weken met Theo de risicolijst af. Vanochtend stond hij in de Merelstraat en zei: 'Ruikt naar was.' Theo zei niks. Hij had gelijk."
+      shielded: "Sem doet de makkelijke stations. Hij doet het goed. Theo doet de rest alleen, en over twee jaar stopt Theo."
+    beats:
+      - {on: accepted, who: ahmed, text: "Sem is de beste van de groep. Hij vraagt waarom. Henk zou hem gemogen hebben."}
+      - {on: completed, who: theo, text: "Hij schrijft het op in een boekje. Net als ik vroeger. Zeg het niet tegen IT."}
+    temptations:
+      - id: easy_stations
+        who: theo
+        when: accepted
+        text: "Geef hem de nieuwe stations. Daar kan niks mis. Dan doe ik de oude wel, zoals altijd."
+        accept: "Sem krijgt de makkelijke stations; Theo doet de risicolijst alleen."
+        decline: "Sem loopt met Theo de risicolijst af."
+        accept_sets_flags: [flag:sem_shielded]
+        accept_effects: {}
+    teaches: [risk_based_maintenance, respect_for_people, twi]
+    rewards: {xp: 1500, reputation: 2}
+
+dialogs:
+  - id: theo_sem_pairing
+    person: theo
+    kind: persuade
+    mission: thread_sem
+    patience: 10
+    # start: craftsman 40 + 0 + 0 + 0 + 0 = 40; +15 with committed:theo_calendar
+    opening: "Pas op je hoofd. Die deur is van 1968 en hij weet het."
+    position: {text: "Ik neem geen jongen mee naar de oude stations. Daar moet je weten wat je ruikt.", tags: [claim]}
+    layers:
+      - {id: interest, at: 55, via: [inquiry, open_question], text: "Het staat nergens. Dat dit station kraakt als het warm is. Dat die in de Merelstraat naar was ruikt. Ik heb het geleerd van Bertus, in 1986. Die nam mij ook mee. Op mijn eerste dag.", tags: [claim, feeling]}
+      - id: concern
+        at: 70
+        via: [silence, inquiry]
+        lead_in: {text: "Alleen, als er iets gebeurt…", tags: [hesitation]}
+        text: "Als die jongen een station verkeerd inschat en hij brandt af, is het mijn naam die erbij staat. Ik heb er al één op mijn geweten. Niet mijn schuld, zeiden ze. Maar toch."
+        tags: [admission]
+        unlocks: {facts: [heard:theo_bertus], proposals: [theo_signs_off]}
+    proposals:
+      - {id: pair_on_top_ten, name: Samen de top tien, text: "De eerste tien van de risicolijst samen. Hij kijkt, jij beslist.", addresses: [concern], reply: "Hij kijkt, ik beslis. Zoals bij Bertus. Goed."}
+      - {id: theo_signs_off, name: Theo tekent af, hidden: true, text: "Sem doet de inspectie, jij tekent af. Pas als jij zegt dat hij het kan, gaat hij alleen.", addresses: [concern], reply: "Ik teken af. Dan weet ik wat er onder mijn naam staat."}
+      - {id: easy_first, name: Eerst de nieuwe stations, text: "Laat hem eerst een maand de nieuwe stations doen.", addresses: [interest], reply: "Dat kan. Dan leert hij alleen niks."}
+    outcomes:
+      commitment: "Maandag om zeven uur. Neem een zaklamp mee, zeg dat tegen hem. En hij moet zijn neus gebruiken."
+      partial: "Eén keer. Dan zie ik wel."
+      heard: "Bertus. Daar heb ik in jaren niet aan gedacht."
+      compliance: "Goed. Hij loopt mee. Hij komt niet aan de knoppen."
+      ruined: "Neem jij hem dan maar mee."
+    # route (start 40): inquiry x1.5 +12 52 > open_question +6 58 (interest) > paraphrase +7 65 (heard; lead-in) > silence +12 > 79 capped (concern)
+    #   > propose theo_signs_off > ask: commitment (6 moves). Other: inquiry at the lead-in; pair_on_top_ten after the concern.
+```
+
+**Path dependence.**
+- `flag:sem_shielded`: Theo's knowledge stays in one head (`maintenance` availability −0.1 from the year Theo stops, a beat in the finale's epilogue: "Theo stopt in maart. De oude stations staan op een lijst. Niemand ruikt ze."). The door it closes is D47's card naming Sem; D47 can still be earned.
+- `committed:theo_sem_pairing` names Sem in D47 and in the finale (arc doc §8.4: Ahmed's successor talk, or Sem's postcard).
+- Sem's check-in (`sem_first_station`, arc doc §9.3) fires a week after the pairing.
+
 ### 1.10 Other side missions of Act V
 
 ```yaml
@@ -2393,6 +2470,48 @@ dialogs:
   - Four and six days, three modules: estimates.
 
 ---
+
+### 2.6 Addition (2026-10-16): the chapter's human thread — `thread_notebook` — Het boekje van Ricardo (S)
+
+PLAN §4.2.2 (arc doc §9.4). **A face:** Ricardo (34), monteur and admin of the WhatsApp group (tier 3). **A number:** seventy joints that are in Ricardo's paper notebook and nowhere else (Mieke's count). **A choice:** have the notebook scanned and keyed in by an outside bureau, or ask Ricardo to give it to Mieke, in his own time. **A payoff:** `it_field_asset_data`'s debrief and D39's card.
+
+```yaml
+missions:
+  - id: thread_notebook
+    name: Het boekje van Ricardo
+    kind: side
+    tier: 4
+    act: 6
+    track: it
+    arc: threads
+    requires: {missions: [it_field_asset_data]}        # opens when it is accepted (requires_accepted)
+    goal: {type: talk_to, dialog: ricardo_notebook, outcome: lifted}    # a check-in as a goal (S-new: talk_to accepts lifted for a check-in)
+    principles: [respect, long_term]
+    briefing: "Mieke: 'In Ricardo's boekje staan zeventig moffen die nergens anders staan. Zeven jaar kelders in Nova-Oud. Ik heb het gezien. Hij laat het niet uit zijn handen.'"
+    debrief: "{notebook_line}"
+    debrief_variants:
+      given: "Ricardo heeft het boekje aan Mieke gegeven. 'Voor het archief,' zei hij. Zeventig moffen staan nu in GIS, met zijn naam bij de bron."
+      scanned: "Het bureau heeft het boekje ingescand. Zeventig moffen staan in GIS. Bij drie twijfelde de typist aan een cijfer. Ricardo heeft zijn boekje terug, en een nieuw boekje gekocht."
+    beats:
+      - {on: accepted, who: ricardo, text: "Dit is de echte database. Kelders zonder bereik. Ik schrijf het op en tik het 's avonds over. Soms."}
+    temptations:
+      - id: scan_bureau
+        who: it_manager
+        when: accepted
+        text: "Laat dat boekje inscannen door een bureau. Twee dagen werk, en het staat erin. Dan hoeft niemand met Ricardo te praten."
+        accept: "Een bureau scant het boekje in."
+        decline: "Je vraagt Ricardo zelf."
+        accept_sets_flags: [flag:notebook_scanned]
+        accept_effects: {cost: 2500, complete_goal: true, person_trust: {ricardo: -10}}   # pays half by rule A9 (four-tier audit §5.2)
+    teaches: [data_at_the_source, respect_for_people]
+    rewards: {xp: 1200, reputation: 2}
+```
+
+**Path dependence.**
+- `flag:notebook_to_mieke` (Ricardo lifted) makes `joint_capture_in_app` start with Ricardo's seventy joints as test cases: the release's first Check reads first-time-right on joints whose truth is known. D39's card adds "en het boekje".
+- `flag:notebook_scanned`: three of the seventy are keyed in wrong (`estimate:`), so the risk score is wrong at three streets; one of them is the Act V fork's first low-voltage fault. Ricardo keeps a new notebook: the workaround survives because the people were bypassed.
+
+**Dialog:** `ricardo_notebook` (arc doc §9.4).
 
 ## 3. Path dependence: what tier 4 reads
 
