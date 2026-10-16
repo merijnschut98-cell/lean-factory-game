@@ -1,10 +1,13 @@
 class_name TitleMenu
 extends Control
 ## The title menu the game opens with (PLAN 2.7): the saves most recently
-## used first (the autosave among them), each a card to continue from;
-## "Nieuw spel" (a fresh game, the saves untouched; the character creator
-## 2.7b comes in front of it later), "Instellingen" (a stub for now) and
-## "Alles wissen" behind one confirmation.
+## used first (the autosave among them), each a card to continue from (a
+## save that will not load keeps the menu, with a line that says so);
+## "Nieuw spel" (a fresh game; the character creator 2.7b comes in front of
+## it later), "Instellingen" (a stub for now) and "Alles wissen" behind one
+## confirmation. A new game's first autosave replaces the autosave, so when
+## that holds a game "Nieuw spel" asks once: keep it in a slot first,
+## replace it, or go back (PLAN §10, review S3).
 
 ## The player chose a save to continue from, or "" for a new game.
 signal start_requested(slot: String)
@@ -25,17 +28,32 @@ const WIPE_YES := "Ja, alles wissen"
 const WIPED := "Alle opgeslagen spellen zijn gewist."
 const BACK := "Terug"
 const LOADING := "Voltana wordt geladen…"
+const LOAD_FAILED := "Deze opslag kon niet geladen worden."
+const REPLACE_ASK := "Je huidige spel staat in de automatische opslag en wordt vervangen."
+const KEEP_FIRST := "Eerst bewaren in een slot"
+const REPLACE := "Vervangen"
+const KEEP_PICK := "Kies een slot voor je huidige spel. Daarna begint het nieuwe spel."
+const KEEP_FAILED := "Bewaren is niet gelukt. Je huidige spel staat nog in de automatische opslag."
 
-enum Page { MAIN, SETTINGS, WIPE }
+## The five slots' scrolling height (px), so "Terug" stays on a 900 px screen.
+const KEEP_HEIGHT := 420.0
+
+enum Page { MAIN, SETTINGS, WIPE, REPLACE, KEEP, OVERWRITE }
 
 var saves := SaveSlots.new()
 var page := Page.MAIN
 ## The saves' cards.
 var list: SaveList
+## The five slots to keep the autosave's game in (Page.KEEP).
+var keep_list: SaveList
 ## A line under the menu (the wipe's result, an error).
 var message := ""
 var _menu: VBoxContainer
 var _empty: Label
+## The saves' column, out of the way while the five slots show (Page.KEEP).
+var _saves_column: VBoxContainer
+## The slot waiting for the overwrite answer (Page.OVERWRITE).
+var _pending := 0
 
 
 func _ready() -> void:
@@ -63,7 +81,8 @@ func build() -> void:
 	columns.add_theme_constant_override("separation", 56)
 	margin.add_child(columns)
 	columns.add_child(_left())
-	columns.add_child(_right())
+	_saves_column = _right()
+	columns.add_child(_saves_column)
 	refresh()
 
 
@@ -113,6 +132,7 @@ func refresh() -> void:
 	list.show_entries(saves.entries())
 	_empty.visible = list.get_child_count() == 0
 	UiPanel.clear(_menu)
+	_saves_column.visible = page != Page.KEEP and page != Page.OVERWRITE
 	match page:
 		Page.MAIN:
 			for item: Array in [[NEW_GAME, new_game], [SETTINGS, open_settings], [WIPE, ask_wipe]]:
@@ -125,13 +145,73 @@ func refresh() -> void:
 			_menu.add_child(UiPanel.paragraph(tr(WIPE_ASK)))
 			_menu.add_child(UiPanel.button(tr(WIPE_YES), confirm_wipe))
 			_menu.add_child(UiPanel.button(tr(BACK), cancel))
+		Page.REPLACE:
+			_menu.add_child(UiPanel.paragraph(tr(REPLACE_ASK)))
+			for item: Array in [[KEEP_FIRST, keep_first], [REPLACE, replace_autosave], [BACK, cancel]]:
+				_menu.add_child(UiPanel.button(tr(item[0]), item[1]))
+		Page.KEEP:
+			_menu.add_child(UiPanel.paragraph(tr(KEEP_PICK), Palette.MUTED, UiTheme.SMALL))
+			keep_list = SaveList.new()
+			keep_list.now = list.now
+			keep_list.action = tr(PauseMenu.SAVE_HERE)
+			keep_list.picked.connect(func(slot: String) -> void: keep_in(slot.to_int()))
+			keep_list.show_manual(saves, true)
+			UiPanel.add_scroll_list(_menu, KEEP_HEIGHT).add_child(keep_list)
+			_menu.add_child(UiPanel.button(tr(BACK), cancel))
+		Page.OVERWRITE:
+			_menu.add_child(UiPanel.paragraph(tr(PauseMenu.OVERWRITE) % _pending))
+			_menu.add_child(UiPanel.button(tr(PauseMenu.YES), confirm_keep))
+			_menu.add_child(UiPanel.button(tr(BACK), cancel))
 	if not message.is_empty():
 		_menu.add_child(UiPanel.paragraph(message, Palette.MUTED, UiTheme.SMALL))
 
 
-## A fresh game: no save is touched (the first autosave starts its own).
+## A fresh game. Its first autosave replaces the autosave, so when that
+## holds a game the menu asks first (Page.REPLACE).
 func new_game() -> void:
-	start_requested.emit("")
+	if saves.entry(SaveSlots.AUTOSAVE).get("status") == SaveSlots.PLAYABLE:
+		_go(Page.REPLACE)
+	else:
+		start_requested.emit("")
+
+
+## "Eerst bewaren in een slot": the five slots, the empty ones first.
+func keep_first() -> void:
+	_go(Page.KEEP)
+
+
+## "Vervangen": the new game starts; its first autosave replaces the old.
+func replace_autosave() -> void:
+	if page == Page.REPLACE:
+		start_requested.emit("")
+
+
+## A slot picked to keep the autosave's game in: an empty one at once, a
+## filled one asks first.
+func keep_in(number: int) -> void:
+	if page != Page.KEEP or SaveSlots.manual(number).is_empty():
+		return
+	if saves.entry(SaveSlots.manual(number)).is_empty():
+		_keep(number)
+		return
+	_pending = number
+	_go(Page.OVERWRITE)
+
+
+func confirm_keep() -> void:
+	if page == Page.OVERWRITE:
+		_keep(_pending)
+
+
+## Copy the autosave into slot `number`, then start the new game; a failed
+## copy starts nothing.
+func _keep(number: int) -> void:
+	var error := saves.copy_autosave(number)
+	if error.is_empty():
+		start_requested.emit("")
+		return
+	printerr("title menu: " + error)
+	_say(tr(KEEP_FAILED))
 
 
 func open_settings() -> void:
@@ -146,14 +226,19 @@ func confirm_wipe() -> void:
 	if page != Page.WIPE:
 		return
 	var error := saves.wipe()
-	page = Page.MAIN
-	message = tr(WIPED) if error.is_empty() else error
-	refresh()
+	_say(tr(WIPED) if error.is_empty() else error)
 
 
-## Back to the main page.
+## Back: to the slots from an overwrite question, else to the main page.
 func cancel() -> void:
-	_go(Page.MAIN)
+	_go(Page.KEEP if page == Page.OVERWRITE else Page.MAIN)
+
+
+## The main page with a line under the menu.
+func _say(line: String) -> void:
+	page = Page.MAIN
+	message = line
+	refresh()
 
 
 func _go(to: Page) -> void:
@@ -169,13 +254,31 @@ func _launch(slot: String) -> void:
 	_menu.add_child(UiPanel.label(tr(LOADING), UiTheme.FONT_SIZE, Palette.VOLTANA_BLUE))
 	await get_tree().process_frame
 	await get_tree().process_frame
-	var office: Office = load(OFFICE).instantiate()
-	office.saves = saves
-	office.play(slot)
+	var office := open_game(slot)
+	if office == null:
+		return
 	var tree := get_tree()
 	tree.root.add_child(office)
 	tree.current_scene = office
 	queue_free()
+
+
+## The office, ready to play from `slot` ("" a new game) and handed the
+## loaded game; null when the save does not load: the menu stays, saying so,
+## and the save is left alone (never a half-started game, review S1).
+func open_game(slot: String) -> Office:
+	var loaded := {}
+	if not slot.is_empty():
+		loaded = saves.resume(slot)
+		if not loaded["error"].is_empty():
+			printerr("title menu: " + loaded["error"])  # a log line, not an engine warning
+			_say(tr(LOAD_FAILED))
+			return null
+	var office: Office = load(OFFICE).instantiate()
+	office.saves = saves
+	office.play(slot)
+	office.resumed = loaded
+	return office
 
 
 static func _gradient() -> GradientTexture2D:

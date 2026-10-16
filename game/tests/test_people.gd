@@ -388,6 +388,16 @@ func test_a_save_from_before_the_notebook_fills_it_from_what_was_revealed() -> v
 	assert_eq(people.observed["pim"][0]["at"], -1, "heard, but not when")
 
 
+func test_a_hand_edited_save_falls_back_and_never_crashes() -> void:  # review N1
+	var people := DialogFixture.people()
+	var dropped := people.load_dict({"memory": {"pim": {"flags": 5, "cooldown_until": {}}},
+		"revealed": {"talk/7": {"interest": true}, "talk/x": {"interest": true}, "talk/-1": 3}})
+	assert_eq(people.memory["pim"], {"flags": [], "cooldown_until": 0}, "malformed fields keep the defaults")
+	assert_eq(dropped, ["talk/7", "talk/x"], "a variant the content does not have is dropped")
+	assert_true(people.revealed.is_empty())
+	assert_true(people.observed.is_empty())
+
+
 func test_a_malformed_notebook_keeps_what_is_sound() -> void:
 	var people := DialogFixture.people()
 	var dropped := people.load_dict({"observed": {"pim": [{"text": 3}, {"dialog": "talk", "key": "position",

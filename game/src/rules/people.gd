@@ -501,8 +501,10 @@ func load_dict(d: Dictionary) -> Array[String]:
 	var remembered := func(v: Variant) -> Variant:
 		if not v is Dictionary:
 			return null
-		return {"flags": Array(v.get("flags", [])).filter(func(f: Variant) -> bool: return f is String),
-			"cooldown_until": int(v.get("cooldown_until", 0))}
+		var flags: Variant = v.get("flags")
+		var until: Variant = whole.call(v.get("cooldown_until"))
+		return {"flags": flags.filter(func(f: Variant) -> bool: return f is String) if flags is Array else [],
+			"cooldown_until": until if until != null else 0}
 	dropped.append_array(_load_map(d.get("trust"), persons, trust, percent))
 	dropped.append_array(_load_map(d.get("morale"), persons, morale, percent))
 	dropped.append_array(_load_map(d.get("memory"), persons, memory, remembered))
@@ -524,8 +526,12 @@ func load_dict(d: Dictionary) -> Array[String]:
 			left[str(id)] = true
 	var saved_revealed := JsonFile.dict_or_empty(d.get("revealed"))
 	for key: Variant in saved_revealed:
-		if dialogs.has(str(key).get_slice("/", 0)) and saved_revealed[key] is Dictionary:
+		if not saved_revealed[key] is Dictionary:
+			continue
+		if _known_version(str(key)):
 			revealed[str(key)] = saved_revealed[key].duplicate()
+		else:
+			dropped.append(str(key))
 	var saved_coach := JsonFile.dict_or_empty(d.get("coach_after"))
 	if str(saved_coach.get("outcome", "")) in COACHED:
 		coach_after = {"mission": str(saved_coach.get("mission", "")), "person": str(saved_coach.get("person", "")),
@@ -553,6 +559,14 @@ static func _entries(v: Variant, keys: Dictionary) -> Variant:
 		return e is Dictionary and (e.get("at") is int or e.get("at") is float) \
 			and keys.keys().all(func(k: String) -> bool: return typeof(e.get(k)) == keys[k])
 	).map(func(e: Dictionary) -> Dictionary: return e.merged({"at": int(e["at"])}, true))
+
+
+## Whether a saved "<dialog>/<v>" key (_key) names a dialog and a version
+## (-1 the base, else a variant) the content still has.
+func _known_version(key: String) -> bool:
+	var v := key.get_slice("/", 1)
+	var d: DialogDef = dialogs.get(key.get_slice("/", 0))
+	return d != null and v.is_valid_int() and int(v) >= -1 and int(v) < d.variants.size()
 
 
 ## A save from before the notebook: what was revealed, heard at an unknown time.
