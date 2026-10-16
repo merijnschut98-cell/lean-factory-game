@@ -931,6 +931,7 @@ missions:
         accept: "Je kiest het aantal aansluitingen per week als key result."
         decline: "Je kiest resultaten die de klant merkt."
         accept_sets_flags: [flag:okr_output_kr]
+    sets_flags: [flag:okr_region]          # four-tier audit 1.1: read by lsw_catchball (Act V)
     teaches: [okr, kpi, leading_lagging, kpi_alignment]
     rewards: {xp: 2400, budget: 20000, reputation: 5, unlocks: [okr]}
     insights:
@@ -1086,7 +1087,7 @@ missions:
     tier: 2
     act: 3
     chapter: Het bord aan de muur
-    requires: {missions: [t2_daily_boards]}
+    requires: {missions: [fix_cause_unknown]}   # staggered (four-tier audit §2, 2026-10-16)
     goal: {type: solve, problem: lmra_tickbox}
     principles: [respect, long_term]
     briefing: "Twee bijna-ongevallen in een maand, allebei bij het openen van een oude meterkast, en allebei met een LMRA op 'akkoord'. Marco is geschrokken: 'Volgende keer is het geen bijna.' Zorg eerst dat niemand vandaag gewond raakt, en zoek dan uit waarom de LMRA niets tegenhoudt."
@@ -1414,7 +1415,7 @@ missions:
     tier: 2
     act: 3
     arc: sector
-    requires: {missions: [t2_daily_boards]}
+    requires: {missions: [fix_contractor_rework]}   # staggered (four-tier audit §2, 2026-10-16)
     goal: {type: talk_to, person: jeroen, topics: 3}
     principles: [improve]
     briefing: "Jeroen Dekker, adviseur regulering, heeft een kwartier. 'Iedereen noemt de ACM als het misgaat, niemand weet wat ze eigenlijk doet.' Vraag hem naar het toezicht, de nieuwe Energiewet en wat een klant krijgt als de stroom lang uitvalt."
@@ -1437,7 +1438,7 @@ missions:
     tier: 2
     act: 3
     arc: people
-    requires: {missions: [t2_daily_boards], trust: {intake: 1}}
+    requires: {any_of: [fix_on_call_far, fix_shift_handover], trust: {intake: 1}}   # staggered (four-tier audit §2, 2026-10-16)
     goal: {type: coach, person: sanne, sessions: 3}
     npc_experiment:
       name: Sanne belt de klant binnen een dag als er iets ontbreekt

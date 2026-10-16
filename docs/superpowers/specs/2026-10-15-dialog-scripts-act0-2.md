@@ -271,7 +271,7 @@ dialogs:
     layers:
       - id: interest
         at: 50
-        via: [open_question, inquiry]
+        via: [open_question, mood, silence]
         text: "Anders. Nachtdienst in Nova-Oud is anders zonder Henk. Die kabels zijn ouder dan ik."
         tags: [feeling]
       - id: concern
@@ -305,6 +305,7 @@ dialogs:
              text: "Ruud vroeg of ik straks de nieuwe jongens wil opleiden. Ik weet niet of ik dat kan. Henk kon het. Ik ben… ik ben gewoon Ahmed.", tags: [admission, doubt],
              unlocks: {facts: [heard:ahmed_trainer]}}
         outcomes: {lifted: "Misschien moet ik het gewoon doen zoals Henk. Eerst voordoen. Dan zij."}
+    # 2026-10-16 (four-tier audit §4): interest via [open_question, inquiry] -> [open_question, mood, silence] (quiet). Route re-checked by the simulator (audit §4.4).
 ```
 
 **Route B (listening), corrected:** 43 → *Stemming peilen* +8 → 51 → *Open vraag* +6 → 57 (interest) → *Gevoel benoemen* "Het klinkt alsof je er 's nachts alleen voor staat." +10 → 67 (lead-in, cue) → *Stilte laten* (+18, `quiet` ×1.5) → capped 74 (concern) → *Begrip tonen* "Dat je belt als je het niet weet, is precies wat een goede monteur doet. Om twee uur 's nachts al helemaal." +10 → 84 → *Ervaring delen* (the CI lead's own line) +8 → 92 → *Afronden*: **opgebeurd**. Other routes: *Doorvragen* instead of *Open vraag*; *Begrip tonen* instead of *Stilte* at the lead-in. The trap (path A, fixing mode) is unchanged and right.
@@ -370,13 +371,13 @@ dialogs:
     layers:
       - id: interest
         at: 45
-        via: [open_question, inquiry, paraphrase]
+        via: [empathy, mood, open_question]
         text: "Achter elk dossier zit iemand die wacht. Een gezin, een bakker, een school. Dus ik wil het niet laten liggen."
         tags: [claim, feeling]
       - id: concern
         at: 65
-        via: [reflect, empathy, silence]
-        lead_in: {text: "Het is alleen…", tags: [hesitation]}
+        via: [reflect, empathy]
+        lead_in: {text: "Het is alleen… ik word er zenuwachtig van. Sorry.", tags: [feeling]}
         text: "Iedereen komt kijken als het druk is. Met een stopwatch. En dan denk ik: nu zien ze hoe langzaam ik ben."
         tags: [admission]
         unlocks: {facts: [heard:anouk_first_look], proposals: [come_at_eight]}
@@ -400,6 +401,7 @@ dialogs:
     #        > empathy +6 66 (lead-in, cue) > silence +12 > 74 capped (concern) > propose sit_beside +8 82 > ask: commitment (8 moves)
     # other routes: inquiry instead of open question; reflect instead of empathy at the lead-in; the co-proposal at Denkt mee.
     # the lesson: the stopwatch is the gemba tool the player was just given. Asked for bluntly, it scares the person it measures.
+    # 2026-10-16 (four-tier audit §4): concern cue is a feeling (reflect or empathy draws it out; silence misses); interest via [open_question, inquiry, paraphrase] -> [empathy, mood, open_question] (overloaded). Route re-checked by the simulator (audit §4.4).
 
   - id: anouk_owns_tray
     person: anouk
@@ -416,7 +418,7 @@ dialogs:
     layers:
       - id: interest
         at: 62
-        via: [open_question, inquiry, paraphrase]
+        via: [empathy, mood, open_question]
         text: "Eén bak, oudste bovenop. Het is zo simpel dat je het vergeet. Dat is het gevaarlijke."
         tags: [claim, feeling]
       - id: concern
@@ -450,6 +452,7 @@ dialogs:
     #        > propose anouk_writes_a4 +8 89 > ask: commitment (5 moves)
     # joost_announces wins at most a partial: the change is imposed on the person whose work it is (buy-in none).
     # This is where the Friday time-lapse can show the buy-in factor for the first time (spec §4.2), at no risk.
+    # 2026-10-16 (four-tier audit §4): interest via [open_question, inquiry, paraphrase] -> [empathy, mood, open_question] (overloaded). Route re-checked by the simulator (audit §4.4).
 ```
 
 ---
@@ -536,13 +539,13 @@ dialogs:
     layers:
       - id: interest
         at: 50
-        via: [open_question, inquiry, paraphrase]
+        via: [empathy, mood, open_question]
         text: "Elke aanvraag die terug moet, kost ons twee telefoontjes en een mail. En de klant is boos op óns. Wij hebben dat formulier niet gemaakt."
         tags: [claim, feeling]
       - id: concern
         at: 68
-        via: [reflect, empathy, silence]
-        lead_in: {text: "Weet je wat het is…", tags: [hesitation]}
+        via: [reflect, empathy]
+        lead_in: {text: "Weet je wat het is… ik ben er gewoon boos over. Al jaren.", tags: [feeling]}
         text: "Hier denken ze dat Intake het postkantoor is. Stempel erop, doorsturen. Als er iets misgaat, is het de Intake. Met een controleur kan ik tenminste laten zíen dat het niet aan ons ligt."
         tags: [admission]
         unlocks:
@@ -582,6 +585,7 @@ dialogs:
     # other routes: inquiry for paraphrase; show_data at 55 (+10 lands) then empathy; the tally experiment for the proposal.
     # NOTE the dialog does not judge: extra_checker also addresses her concern (proof) and wins commitment. The Check then shows
     # an inspection at fit 0.7 that fades in 30 days. The weaker fix with a committed owner is a real, honest outcome.
+    # 2026-10-16 (four-tier audit §4): concern cue is a feeling (reflect or empathy draws it out; silence misses); interest via [open_question, inquiry, paraphrase] -> [empathy, mood, open_question] (overloaded). Route re-checked by the simulator (audit §4.4).
 
   - id: marco_wasted_trips
     person: marco
@@ -595,7 +599,7 @@ dialogs:
     layers:
       - id: interest
         at: 50
-        via: [open_question, inquiry, paraphrase]
+        via: [paraphrase, inquiry]
         text: "Elke rit voor niks is een klant die wél klaar was en een week langer wacht. En mijn mannen zitten in de bus te bellen met een installateur die z'n telefoon niet opneemt."
         tags: [claim, feeling]
       - id: concern
@@ -642,6 +646,7 @@ dialogs:
     # other routes: inquiry instead of silence at the lead-in; monteurs_judge_photos instead of the experiment; two listening moves instead of the data.
     # trap: experience lands at half for a cynic ("Bij jouw vorige baan. Ja."). The data is his ally, but only after he feels heard.
     # Path dependence: heard:marco_2012 is read by Ruud's own 2012 reveal (audit §5.3) and by marco_day_100.
+    # 2026-10-16 (four-tier audit §4): interest via [open_question, inquiry, paraphrase] -> [paraphrase, inquiry] (cynic). Route re-checked by the simulator (audit §4.4).
 
   - id: esra_agents
     person: esra
@@ -661,8 +666,8 @@ dialogs:
         tags: [claim, feeling]
       - id: concern
         at: 70
-        via: [reflect, empathy, silence]
-        lead_in: {text: "En eerlijk gezegd…", tags: [hesitation]}
+        via: [reflect, empathy]
+        lead_in: {text: "En eerlijk gezegd… ik voel me er schuldig over.", tags: [feeling]}
         text: "Saskia zit thuis. Stress. En Kim zat vorige week te huilen in haar auto op de parkeerplaats. Op een team van vier. Ik had het moeten zien. Ik ga er niet nog een kwijtraken."
         tags: [admission]
         unlocks: {facts: [heard:esra_people], proposals: [one_agent_calls_back]}
@@ -702,6 +707,7 @@ dialogs:
     # other routes: show_data at 61 (+10 lands) instead of inquiry; reflect at the lead-in; rotate_off_the_queue.
     # Team size: the contact-centre pool has 4 agents (content/value_streams.yaml); the lines say so, so the story never contradicts the board.
     # trap: four_agents is her position and still wins no commitment: it does not touch what she fears.
+    # 2026-10-16 (four-tier audit §4): concern cue is a feeling (reflect or empathy draws it out; silence misses). Route re-checked by the simulator (audit §4.4).
 
   - id: el_amrani_fourth_call
     person: el_amrani
@@ -717,13 +723,13 @@ dialogs:
     layers:
       - id: interest
         at: 45
-        via: [paraphrase, open_question, inquiry]
+        via: [paraphrase, empathy]
         text: "Op 7 september zei iemand 'binnenkort'. Op 21 september 'we zijn ermee bezig'. Op 5 oktober wist niemand het. Ik wil gewoon weten waar ik aan toe ben."   # dates fixed 2026-10-16: her request is born ~27 July
         tags: [claim, feeling]
       - id: concern
         at: 65
-        via: [empathy, reflect, silence]
-        lead_in: {text: "Het gaat niet eens om mij…", tags: [hesitation]}
+        via: [reflect, empathy]
+        lead_in: {text: "Het gaat niet eens om mij… Ik ben bang, als ik eerlijk ben.", tags: [feeling]}
         text: "Mijn moeder woont bij ons. Ze is eenentachtig en heeft het altijd koud. De installateur zei: haal die cv-ketel eruit, de warmtepomp is beter. Die hangt nu aan de muur. Zonder stroom. Het wordt elke nacht kouder."   # 2026-10-16: fits any call date before the frost (drie-winters §3)
         tags: [admission]
         unlocks:
@@ -764,6 +770,7 @@ dialogs:
     #   If the followed order misses that date: her next call starts at memory -15 and reputation -1 (spec §6). This is realistic_promise
     #   versus a lie, felt from the customer's side. Before the concern, any proposal is too early ("Data. Iedereen noemt data.").
     # trap: confront. The incomplete form IS part of the story (fork B), and blaming her for it is still blaming the customer for our form.
+    # 2026-10-16 (four-tier audit §4): concern cue is a feeling (reflect or empathy draws it out; silence misses); interest via [paraphrase, open_question, inquiry] -> [paraphrase, empathy] (customer_upset). Route re-checked by the simulator (audit §4.4).
 
   - id: petra_batch
     person: petra
@@ -845,7 +852,7 @@ dialogs:
     layers:
       - id: interest
         at: 55
-        via: [inquiry, open_question, paraphrase]
+        via: [inquiry, open_question]
         text: "Wat ik weet, zit in m'n handen. Niet in m'n mond. Je ruikt of een mof vocht heeft. Je voelt aan de kabel of hij van voor '70 is. Dat zie je niet op een filmpje."
         tags: [claim, feeling]
       - id: concern
@@ -878,7 +885,7 @@ dialogs:
          reply: "Zo heeft ouwe Toon het mij geleerd. In 1984. Ja. Zo."}
     co_proposal: {id: teach_ahmed_four_steps, text: "Laat 'm de komende nachten met mij meerijden. Eerst doe ik het. Dan doet hij het en ik kijk. En de laatste week zit ik in de bus en doet hij het alleen."}
     outcomes:
-      commitment: "Afgesproken. Maar ik bepaal wanneer hij klaar is. Niet de planning."
+      commitment: "Ik laat het je wel zien. Maar ik bepaal wanneer hij klaar is. Niet de planning."
       partial: "Ik doe mee. Als die jongen niet alleen de nacht in gaat voordat ik zeg dat het kan."
       heard: "Jij bent de eerste die vraagt hoe ik het geleerd heb."
       compliance: "Zet die camera dan maar neer. Ik zeg niks."
@@ -888,6 +895,7 @@ dialogs:
     # other routes: inquiry again at the lead-in ("En wat als hij het verkeerd ruikt?"); buddy_nights also addresses the concern.
     # Lean: teach_ahmed_four_steps is TWI Job Instruction in Henk's words (prepare, present, try out, follow up).
     #   Videos (hands_only_video) can still be chosen as the countermeasure; Henk then complies, buy-in x0.6, and his concern stays.
+    # 2026-10-16 (four-tier audit §4): interest via [inquiry, open_question, paraphrase] -> [inquiry, open_question] (craftsman). Route re-checked by the simulator (audit §4.4).
 
   - id: linda_replanning
     person: linda
@@ -902,13 +910,13 @@ dialogs:
     layers:
       - id: interest
         at: 45
-        via: [open_question, paraphrase, inquiry]
+        via: [empathy, mood, open_question]
         text: "Om tien uur komt er een storing, dan gaan er twee monteurs weg en vallen er zes klanten om. Elke dag. Mijn kaartenhuis."
         tags: [claim, feeling]
       - id: concern
         at: 66
-        via: [reflect, empathy, silence]
-        lead_in: {text: "En als ik ruimte inplan…", tags: [hesitation]}
+        via: [reflect, empathy]
+        lead_in: {text: "Sorry, ik word hier onrustig van. En als ik ruimte inplan…", tags: [feeling]}
         text: "…dan zit er om twee uur een monteur koffie te drinken omdat er toevallig geen storing was. En dan zegt Marco dat ik niet kan plannen. Dan plan ik liever 's avonds om, als de kinderen slapen."
         tags: [admission]
         unlocks: {facts: [heard:linda_buffer], proposals: [daytime_crew_with_marco]}
@@ -935,6 +943,7 @@ dialogs:
     # route: mood +12 (overloaded x1.5) 37 > open question +6 43 > paraphrase +7 50 (heard, interest) > reflect +10 60 > empathy +6 66 (lead-in, cue)
     #        > silence +12 > 75 capped (concern) > propose daytime_crew_with_marco +8 83 > ask: commitment (8 moves)
     # Lean: Kingman, in her words: the fuller the plan, the harder it breaks. Her fear is the honest objection to slack ("idle monteurs").
+    # 2026-10-16 (four-tier audit §4): concern cue is a feeling (reflect or empathy draws it out; silence misses); interest via [open_question, paraphrase, inquiry] -> [empathy, mood, open_question] (overloaded). Route re-checked by the simulator (audit §4.4).
 
   - id: dirk_shelf
     person: dirk
@@ -1104,7 +1113,7 @@ dialogs:
     layers:
       - id: interest
         at: 55
-        via: [inquiry, open_question, paraphrase]
+        via: [inquiry, open_question]
         text: "Het tekenen is het probleem niet. Het uitzoeken. Welke kabel, welke mof, wat bedoelt hij met dat pijltje? Deze is op een broodzakje getekend. Met pindakaasvlek."
         tags: [claim, feeling]
       - id: concern
@@ -1136,7 +1145,7 @@ dialogs:
          reply: "Een dag op straat. Ik ben in twintig jaar niet bij een oplevering geweest."}
     co_proposal: {id: mieke_rides_along, text: "Laat mij één dag met de monteurs meelopen. Dan zie ik waarom het pijltje een pijltje is. En dan leer ik ze wat ik nodig heb."}
     outcomes:
-      commitment: "Afgesproken. En het broodzakje lijst ik in. Als laatste van zijn soort."
+      commitment: "Dat moet kloppen, dus ja. En het broodzakje lijst ik in. Als laatste van zijn soort."
       partial: "Ik wil het proberen. Als de monteurs het ook willen."
       heard: "Je bent de eerste die vraagt wát we eigenlijk doen."
       compliance: "Als het moet. Dan teken ik wat er komt."
@@ -1145,6 +1154,7 @@ dialogs:
     #        > empathy +6 77 (lead-in, cue) > silence +12 > 81 capped (concern) > propose mieke_sets_the_standard +8 89 > ask: commitment (8 moves)
     # Lean: the work is done twice; capture at the source removes the backlog AND the errors, and the expert becomes the owner of quality.
     #   standardised:revision_backlog with Mieke's commitment is what the Act V audit remembers (audit §3 M6).
+    # 2026-10-16 (four-tier audit §4): interest via [inquiry, open_question, paraphrase] -> [inquiry, open_question] (craftsman). Route re-checked by the simulator (audit §4.4).
 
   - id: femke_triage
     person: femke
@@ -1159,7 +1169,7 @@ dialogs:
     layers:
       - id: interest
         at: 52
-        via: [inquiry, open_question, paraphrase]
+        via: [inquiry, open_question]
         text: "Bij de meeste studies weet ik na vijf minuten al dat het past. Daarna reken ik nog vier uur, omdat de werkinstructie het zegt. En die school in Nova-Oost wacht."
         tags: [claim, feeling]
       - id: concern
@@ -1206,6 +1216,7 @@ dialogs:
     # other routes: show_data at 62 (+10 lands) instead of inquiry; inquiry right after the interest misses (+3): the concern is still 18 away.
     #              the one_in_ten_check experiment (it addresses the concern by making the risk visible).
     # Lean: exploit before elevate (TOC); she says it herself in the commitment line. Psychological safety: a rule nobody may change.
+    # 2026-10-16 (four-tier audit §4): interest via [inquiry, open_question, paraphrase] -> [inquiry, open_question] (craftsman). Route re-checked by the simulator (audit §4.4).
 
   - id: rob_order_rule
     person: rob
@@ -1220,7 +1231,7 @@ dialogs:
     layers:
       - id: interest
         at: 52
-        via: [inquiry, open_question, paraphrase]
+        via: [inquiry, paraphrase]
         text: "Een trafo is veel geld en een half jaar levertijd. Bestelt u de verkeerde maat, dan staat hij een jaar in het magazijn. Een dure kapstok."
         tags: [claim]
       - id: concern
@@ -1253,7 +1264,7 @@ dialogs:
          reply: "Eén project, en ik schrijf de evaluatie. Daar kan ik mee leven."}
     co_proposal: {id: standard_sizes, text: "Als ik die drie maten in de procedure mag zetten. Met mijn naam eronder. Dan staat er een keer iets goeds van mij in een rapport."}
     outcomes:
-      commitment: "Afgesproken. Ik pas de procedure aan. En die uitdraai mag je houden; die klopt vanaf maandag niet meer."
+      commitment: "Conform. Ik pas de procedure aan. En die uitdraai mag je houden; die klopt vanaf maandag niet meer."
       partial: "Ik wil het wel. Maar niet zonder standaardmaten."
       heard: "U bent de eerste die vraagt wáárom die regel er staat."
       compliance: "Als de directie het wil, bestel ik. Op uw naam."
@@ -1263,6 +1274,7 @@ dialogs:
     # other routes: standard_sizes; inquiry at the lead-in ("Wat ging er toen mis?").
     # Lean (audit L9): ordering before the approved design carries a wrong-size risk; standard sizes make that risk small.
     #   Waits in series that could run in parallel. The data lands hard on a rule-bound person: numbers are his language.
+    # 2026-10-16 (four-tier audit §4): interest via [inquiry, open_question, paraphrase] -> [inquiry, paraphrase] (rule_bound). Route re-checked by the simulator (audit §4.4).
 
   - id: thomas_reclaim
     person: thomas
@@ -1276,7 +1288,7 @@ dialogs:
     layers:
       - id: interest
         at: 55
-        via: [open_question, inquiry, paraphrase]
+        via: [reflect, open_question, paraphrase]
         text: "Logistiek Zuid heeft twee megawatt omdat ze willen uitbreiden. Over twee jaar, misschien. Als ik dat nu afpak en ze groeien, staan zíj in de rij."
         tags: [claim]
       - id: concern
@@ -1319,6 +1331,7 @@ dialogs:
     # other routes: usage_dashboard as a first step (partial); empathy at the lead-in; the perspective move through Ilse (+8 at >= 50).
     # Sector: reclaiming follows ACM rules and the contract (audit M10); a capaciteitsbeperkingscontract is an existing congestion
     #   management product (tier-2 draft §4.1). Thomas's fear is the account manager's real one.
+    # 2026-10-16 (four-tier audit §4): interest via [open_question, inquiry, paraphrase] -> [reflect, open_question, paraphrase] (relational). Route re-checked by the simulator (audit §4.4).
 
   - id: ilse_queue
     person: ilse
@@ -1333,13 +1346,13 @@ dialogs:
     layers:
       - id: interest
         at: 45
-        via: [paraphrase, open_question, inquiry]
+        via: [paraphrase, empathy]
         text: "En naast me staat een hal met twee megawatt. Leeg. Leg me eens uit waarom het net vol is."
         tags: [claim, feeling]
       - id: concern
         at: 66
-        via: [empathy, silence, reflect]
-        lead_in: {text: "Wat ik echt bang voor ben…", tags: [hesitation]}
+        via: [reflect, empathy]
+        lead_in: {text: "Ik slaap er slecht van, weet je dat? Wat ik echt bang voor ben…", tags: [feeling]}
         text: "Mijn ovens zijn van 1998. Gaat er één kapot, dan koop ik een nieuwe gasoven. Want dat kan wél, morgen. En dan zit ik nog twintig jaar aan het gas. Dat wil ik niet. Mijn dochter wil de zaak overnemen."
         tags: [admission]
         unlocks: {facts: [heard:ilse_lockin], proposals: [night_contract, call_before_gas]}
@@ -1360,7 +1373,7 @@ dialogs:
          reply: "Bellen voordat ik een gasoven koop. Ja. Dat beloof ik."}
     co_proposal: {id: night_contract, text: "Ik bak om vier uur 's nachts. Is jullie net dan ook vol?"}
     outcomes:
-      commitment: "Afgesproken. En als het lukt, krijgt die accountmanager van jullie een krentenbol. Twee."
+      commitment: "Om vier uur sta ik hier toch. Als het lukt, krijgt die accountmanager van jullie een krentenbol. Twee."
       partial: "Ik wacht. Maar niet nog twee jaar."
       heard: "Fijn dat er eens iemand luistert in plaats van voorleest."
       compliance: "Ik heb geen keus, hè."
@@ -1369,6 +1382,7 @@ dialogs:
     #        > empathy +9 74 (lead-in, cue) > silence +12 > 75 capped (concern) > propose night_contract +8 83 > ask: commitment (9 moves)
     # Sector: lock-in in the energy transition (a broken oven is replaced by gas because gas is available now); a non-firm (time-bound)
     #   contract for off-peak use on the regional grid (tier-2 draft §2.16 grounding: the non-firm ATO). Her co-proposal is the insight.
+    # 2026-10-16 (four-tier audit §4): concern cue is a feeling (reflect or empathy draws it out; silence misses); interest via [paraphrase, open_question, inquiry] -> [paraphrase, empathy] (customer_upset). Route re-checked by the simulator (audit §4.4).
 
   - id: sanne_kpi
     person: sanne
@@ -1383,13 +1397,13 @@ dialogs:
     layers:
       - id: interest
         at: 55
-        via: [open_question, inquiry, paraphrase]
+        via: [empathy, mood, open_question]
         text: "Elke vrijdag om drie uur tellen we. Nog vier voor het weekdoel? Dan zet je ze door. Ook als de meterkastfoto mist. Dat vraagt Werkvoorbereiding dan maar."
         tags: [claim, feeling]
       - id: concern
         at: 70
-        via: [reflect, empathy, silence]
-        lead_in: {text: "Alleen…", tags: [hesitation]}
+        via: [reflect, empathy]
+        lead_in: {text: "Ik baal er nu al van, als ik eraan denk. Alleen…", tags: [feeling]}
         text: "Als ik op 'compleet doorgezet' ga sturen, zakt mijn aantal per week. Eerst. En dan is Intake weer het postkantoor dat traag is. Ik heb twee jaar gedaan over dat beeld."
         tags: [admission]
         condition: "Ik doe mee. Als Frank het goedvindt. Het jaarplan is van hem."
@@ -1430,6 +1444,7 @@ dialogs:
     # route (default start): mood +12 47 > open question +6 53 > paraphrase +7 60 (heard, interest) > reflect +10 70 (lead-in, cue)
     #        > silence +12 > 79 capped (concern) > propose complete_and_oldest +8 87 > ask: partial until Frank commits (7 moves)
     # Path dependence: a player who won Sanne's commitment in Act I starts at 62 and needs about four moves. Respect earlier pays now.
+    # 2026-10-16 (four-tier audit §4): concern cue is a feeling (reflect or empathy draws it out; silence misses); interest via [open_question, inquiry, paraphrase] -> [empathy, mood, open_question] (overloaded). Route re-checked by the simulator (audit §4.4).
 
   - id: frank_kpi_targets
     person: frank
@@ -1443,7 +1458,7 @@ dialogs:
     layers:
       - id: interest
         at: 52
-        via: [inquiry, open_question, paraphrase]
+        via: [inquiry, paraphrase]
         text: "Het jaarplan gaat naar de directie, en het aantal aansluitingen per jaar gaat naar de ACM. Dat moet ik kunnen uitleggen. Elk kwartaal."
         tags: [claim]
       - id: concern
@@ -1491,6 +1506,7 @@ dialogs:
     # AUDIT CHANGE to spec §7.4: route 2 there needs 'committed:ruud_backs_obeya', but Ruud is the coach and not a dialog target,
     #   so that fact can never be set. Replaced by the two team leads' partials: the people bring their boss along.
     # Route 1 (checked:silo_kpis) can never be closed by a failure or a skip: the validator rule of spec §9.2 #11 holds.
+    # 2026-10-16 (four-tier audit §4): interest via [inquiry, open_question, paraphrase] -> [inquiry, paraphrase] (rule_bound). Route re-checked by the simulator (audit §4.4).
 ```
 
 ### 7.1 Grounding, Act II
@@ -1527,11 +1543,11 @@ dialogs:
     opening: "O. Hoi. Ik ben zo klaar, hoor. Nog eentje."    # it is 18:40
     position: {text: "Nee joh, gaat prima. Ik zit erbovenop.", tags: [claim]}
     layers:
-      - {id: interest, at: 45, via: [open_question, inquiry], text: "Het is gewoon druk. Als ik het laat liggen, ligt het er morgen nog. En overmorgen.", tags: [feeling]}
+      - {id: interest, at: 45, via: [empathy, mood, open_question], text: "Het is gewoon druk. Als ik het laat liggen, ligt het er morgen nog. En overmorgen.", tags: [feeling]}
       - id: concern
         at: 65
-        via: [reflect, empathy, silence]
-        lead_in: {text: "Het is alleen…", tags: [hesitation]}
+        via: [reflect, empathy]
+        lead_in: {text: "Het is alleen… ik schaam me een beetje. Sorry.", tags: [feeling]}
         text: "Ik denk dat ik langzamer ben dan de rest. Ik kijk alles drie keer na. Als ik tot zeven blijf, ziet niemand dat."
         tags: [admission, doubt]
         unlocks: {facts: [heard:anouk_slow]}
@@ -1558,6 +1574,7 @@ dialogs:
     #        > silence +12 > 74 capped (concern) > empathy +10 (after an admission) 84 > close: opgebeurd (8 moves)
     # trap: "Zal ik met Joost praten over je uren?" (propose, fixing mode, -12): she shuts down and stays until seven.
     # The observation is a lead toward the 'documents' clue (three signatures); it is not that clue.
+    # 2026-10-16 (four-tier audit §4): concern cue is a feeling (reflect or empathy draws it out; silence misses); interest via [open_question, inquiry] -> [empathy, mood, open_question] (overloaded). Route re-checked by the simulator (audit §4.4).
 
   - id: henk_last_week
     person: henk
@@ -1614,8 +1631,8 @@ dialogs:
       - {id: interest, at: 50, via: [open_question, inquiry], text: "Saskia komt volgende week terug. Halve dagen. Ik weet niet goed wat ik tegen haar moet zeggen.", tags: [feeling]}
       - id: concern
         at: 68
-        via: [reflect, empathy, silence]
-        lead_in: {text: "Kijk…", tags: [hesitation]}
+        via: [reflect, empathy]
+        lead_in: {text: "Kijk… ik voel me er rot over. Gewoon eerlijk.", tags: [feeling]}
         text: "Ik had het moeten zien. Ik zat de hele dag naar dat scherm te kijken. Wachttijd, wachttijd. Niet naar haar. Wat voor teamleider ben ik dan?"
         tags: [admission, doubt]
     warning: "Serieus, ik moet dit rooster nog rond krijgen."
@@ -1629,6 +1646,7 @@ dialogs:
     # route: mood +8 38 > open question +6 44 > paraphrase +7 51 (heard) > inquiry +8 59 (interest) > reflect +10 69 (lead-in, cue)
     #        > silence +12 > 77 capped (concern) > experience +8 85 > close: opgebeurd (8 moves)
     # trap: "Zal ik een cursus stressmanagement voor je team regelen?" Fixing mode, and it puts the problem in her people again.
+    # 2026-10-16 (four-tier audit §4): concern cue is a feeling (reflect or empathy draws it out; silence misses). Route re-checked by the simulator (audit §4.4).
 
   - id: petra_after
     person: petra
@@ -1675,7 +1693,7 @@ dialogs:
     opening: "Honderd dagen. Je bent er nog. Dat is al meer dan de vorige twee."
     position: {text: "Het gaat goed bij ons. Minder ritten voor niks.", tags: [claim]}
     layers:
-      - {id: interest, at: 50, via: [open_question, inquiry], text: "Mijn mannen vragen wat er nu komt. Ze zijn het niet gewend dat iets blijft.", tags: [feeling]}
+      - {id: interest, at: 50, via: [paraphrase, inquiry], text: "Mijn mannen vragen wat er nu komt. Ze zijn het niet gewend dat iets blijft.", tags: [feeling]}
       - id: concern
         at: 70
         via: [silence, empathy, inquiry]
@@ -1694,6 +1712,7 @@ dialogs:
     #        > silence +12 > 79 capped (concern) > empathy +10 89 > close: opgebeurd (7 moves)
     # experience lands at half for a cynic (+4): the player's line is honest, but Marco trusts what he sees.
     # Sustain: his lifted line is ownership as the sustaining habit, in his words. The game does not reward it; it is his choice.
+    # 2026-10-16 (four-tier audit §4): interest via [open_question, inquiry] -> [paraphrase, inquiry] (cynic). Route re-checked by the simulator (audit §4.4).
 
   - id: linda_evenings
     person: linda
@@ -1704,11 +1723,11 @@ dialogs:
     opening: "Ik zit nog even. Het kaartenhuis is weer omgevallen."
     position: {text: "Gaat wel. Morgen is er weer een dag.", tags: [claim]}
     layers:
-      - {id: interest, at: 45, via: [open_question, inquiry], text: "Ik plan 's avonds om. Thuis. Als de kinderen slapen. Anders begint de dag met een gat.", tags: [feeling]}
+      - {id: interest, at: 45, via: [empathy, mood, open_question], text: "Ik plan 's avonds om. Thuis. Als de kinderen slapen. Anders begint de dag met een gat.", tags: [feeling]}
       - id: concern
         at: 65
-        via: [reflect, empathy, silence]
-        lead_in: {text: "Mijn dochter vroeg gisteren…", tags: [hesitation]}
+        via: [reflect, empathy]
+        lead_in: {text: "Ik word er een beetje verdrietig van, eigenlijk. Mijn dochter vroeg gisteren…", tags: [feeling]}
         text: "…waarom ik altijd op mijn laptop zit. Ik zei: mama plant de monteurs. Zij zei: en wie plant jou dan? … Ik plan iedereen. Behalve mezelf."
         tags: [admission]
     warning: "Sorry. Nog tien minuten, dan staat het."
@@ -1722,6 +1741,7 @@ dialogs:
         outcomes: {lifted: "Sinds die storingsploeg overdag ga ik om vijf uur naar huis. Bijna altijd. Mijn dochter heeft het gemerkt."}
     # route: mood +12 (overloaded x1.5) 36 > open question +6 42 > inquiry +8 50 (interest) > reflect +10 60 > empathy +6 66 (lead-in, cue)
     #        > silence +12 > 74 capped (concern) > empathy +10 84 > close: opgebeurd (8 moves)
+    # 2026-10-16 (four-tier audit §4): concern cue is a feeling (reflect or empathy draws it out; silence misses); interest via [open_question, inquiry] -> [empathy, mood, open_question] (overloaded). Route re-checked by the simulator (audit §4.4).
 ```
 
 ---
@@ -1747,7 +1767,7 @@ dialogs:
     opening: "O. Sorry. Ik zat even in de bus. Pauze."
     position: {text: "Gaat prima. Nog vier adressen.", tags: [claim]}
     layers:
-      - {id: interest, at: 47, via: [open_question, inquiry], text: "Drie keer vandaag niemand thuis. Drie kaartjes. Ik heb er een hele stapel van in het handschoenenkastje.", tags: [claim, feeling]}
+      - {id: interest, at: 47, via: [open_question, mood, silence], text: "Drie keer vandaag niemand thuis. Drie kaartjes. Ik heb er een hele stapel van in het handschoenenkastje.", tags: [claim, feeling]}
       - id: concern
         at: 65
         via: [reflect, silence, empathy]
@@ -1761,6 +1781,7 @@ dialogs:
     observation: {text: "Dat ze een sms krijgen met een tijdvak. Dan zijn ze thuis.", plants: fix_not_at_home, needs: {none: ["done:fix_not_at_home"]}}
     # route: open question +6 47 (interest) > reflect +10 57 > empathy +6 63 > inquiry +8 71 (lead-in, cue)
     #        > silence +18 (quiet x1.5) > 74 capped (concern) > close: opgebeurd (6 moves). Trap: silence before the hesitation (-4, awkward).
+    # 2026-10-16 (four-tier audit §4): interest via [open_question, inquiry] -> [open_question, mood, silence] (quiet). Route re-checked by the simulator (audit §4.4).
 
   - id: kees_night
     person: kees
@@ -1798,8 +1819,8 @@ dialogs:
       - {id: interest, at: 45, via: [open_question, inquiry], text: "Ik teken nu zesentwintig jaar. Elke kabel in Nova is een keer langs mijn bureau gekomen.", tags: [claim, feeling]}
       - id: concern
         at: 65
-        via: [reflect, silence, empathy]
-        lead_in: {text: "Mijn dochter vroeg…", tags: [hesitation]}
+        via: [reflect, empathy]
+        lead_in: {text: "Het maakt me een beetje weemoedig. Mijn dochter vroeg…", tags: [feeling]}
         text: "…wat ik eigenlijk doe. Ik wist het niet uit te leggen. 'Ik teken over wat een ander al getekend heeft.' Zo klinkt het. Zesentwintig jaar."
         tags: [admission]
     outcomes:
@@ -1809,6 +1830,7 @@ dialogs:
     observation: {text: "In het archief van Revisie & GIS ligt de eerste kaart van Nova, met de hand getekend."}   # a lead toward D16 Het eerste net, never the trigger itself
     # route: open question +6 45 (interest) > reflect +10 55 > inquiry x1.5 +12 (craftsman; concern within 10) 67 (lead-in, cue) > silence +12 > 74 capped (concern)
     #        > empathy +10 84 > close: opgebeurd (6 moves)
+    # 2026-10-16 (four-tier audit §4): concern cue is a feeling (reflect or empathy draws it out; silence misses). Route re-checked by the simulator (audit §4.4).
 
   - id: rachid_new
     person: rachid                         # Rachid Ouali, Intake; Petra's backup after petra_batch
@@ -1819,7 +1841,7 @@ dialogs:
     opening: "Hé. Ik zit bij Petra. Zij is er vandaag niet, dus… ik doe het."
     position: {text: "Gaat goed. Denk ik.", tags: [claim]}
     layers:
-      - {id: interest, at: 47, via: [open_question, inquiry], text: "Elke EAN die ik aanmeld, controleer ik drie keer. Petra doet het één keer en het klopt altijd.", tags: [claim, feeling]}
+      - {id: interest, at: 47, via: [open_question, mood, silence], text: "Elke EAN die ik aanmeld, controleer ik drie keer. Petra doet het één keer en het klopt altijd.", tags: [claim, feeling]}
       - id: concern
         at: 65
         via: [silence, empathy, reflect]
@@ -1834,6 +1856,7 @@ dialogs:
       none: "Ja. Gaat goed."
     # route: open question +6 47 (interest) > reflect +10 57 > empathy +6 63 > inquiry +8 71 (lead-in, cue)
     #        > silence +18 (quiet x1.5) > 74 capped (concern) > experience +8 82 > close: opgebeurd (7 moves)
+    # 2026-10-16 (four-tier audit §4): interest via [open_question, inquiry] -> [open_question, mood, silence] (quiet). Route re-checked by the simulator (audit §4.4).
 
   - id: femke_2035
     person: femke
@@ -1847,8 +1870,8 @@ dialogs:
       - {id: interest, at: 42, via: [open_question, inquiry], text: "Ik reken de hele dag of iets past. Bijna altijd past het.", tags: [claim, feeling]}
       - id: concern
         at: 65
-        via: [reflect, silence, empathy]
-        lead_in: {text: "Ik ben netplanner geworden om…", tags: [hesitation]}
+        via: [reflect, empathy]
+        lead_in: {text: "Ik word er somber van, de laatste tijd. Ik ben netplanner geworden om…", tags: [feeling]}
         text: "…het net van 2035 te ontwerpen. Waar de warmtepompen komen, de laadpleinen, de batterijen. Niet om vier uur per dag te bewijzen dat een gewone woning past."
         tags: [admission]
     outcomes:
@@ -1858,6 +1881,7 @@ dialogs:
     observation: {text: "Femke heeft een schets van het net van 2035, thuis gemaakt.", plants: sector_grid_2035}
     # route: mood +8 (moe) 38 > open question +6 44 (interest) > reflect +10 54 > empathy +6 60 > inquiry x1.5 +12 72 (lead-in, cue)
     #        > silence +12 > 74 capped (concern) > close: opgebeurd (7 moves)
+    # 2026-10-16 (four-tier audit §4): concern cue is a feeling (reflect or empathy draws it out; silence misses). Route re-checked by the simulator (audit §4.4).
 ```
 
 ## 9. Self-check against the validator (spec §9.2) and the content tests (§9.3)
