@@ -1,16 +1,16 @@
 extends SceneTree
-## A screenshot of the sample characters in the office, seen from the game's
+## A screenshot of the characters in the office, seen from the game's
 ## own camera (needs a display, e.g. Xvfb):
 ##   xvfb-run -a godot --path game --rendering-driver opengl3 --resolution 1600x900 \
 ##     --script res://tools/characters_shot.gd -- <out.png> [frames]
-## The player (sample_player.glb, loaded by Player itself) stands in the aisle
-## by Werkvoorbereiding; the coach talks to her, a monteur walks past behind
+## The player (player.glb, loaded by Player itself) stands in the aisle
+## by Werkvoorbereiding; Ruud (the coach) talks to her, Ahmed (a monteur) walks past behind
 ## him. Prints each model's animations, so a missing idle or walk shows.
 
 const SCENE := "res://src/world/office/office.tscn"
 const DESIGN := "place:connections.design"
-const COACH := "res://assets/characters/sample_coach.glb"
-const MONTEUR := "res://assets/characters/sample_monteur.glb"
+const COACH := "res://assets/characters/ruud.glb"
+const MONTEUR := "res://assets/characters/ahmed.glb"
 
 
 func _initialize() -> void:
