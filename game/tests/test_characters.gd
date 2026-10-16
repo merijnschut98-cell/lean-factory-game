@@ -1,21 +1,21 @@
 extends TestCase
-## The sample characters (tools/blender/build_character.py): each glb stands
-## alone (textures embedded), carries only its own looping idle and walk, and
-## its skin takes its colour from the vertex colours. Skipped for a model that
-## is not there (the samples are a trial, not a dependency).
+## The characters (tools/blender/build_character.py, from assets/characters/cast.json):
+## each glb carries only its own looping idle, walk, sit and talk; its skin takes its
+## colour from the vertex colours; its clothes use the shared textures (no images inside,
+## so a glb stays small). Skipped for a model that is not built (the method is a trial).
 
-const MODELS: Array[String] = [
-	"res://assets/characters/sample_player.glb",
-	"res://assets/characters/sample_coach.glb",
-	"res://assets/characters/sample_monteur.glb",
-]
+const MAX_BYTES := 1_500_000
+## Where character_import.gd finds the shared textures.
+const TEXTURES := "res://assets/characters/textures/"
 
 
 func _models() -> Array[Node]:
 	var out: Array[Node] = []
-	for path in MODELS:
-		if ResourceLoader.exists(path):
-			out.append((load(path) as PackedScene).instantiate())
+	for entry in CharacterModel.cast():
+		var model := CharacterModel.instantiate(entry["id"])
+		if model != null:
+			model.name = entry["id"]
+			out.append(model)
 	return out
 
 
@@ -27,17 +27,30 @@ func _surfaces(model: Node) -> Array[Dictionary]:
 	return out
 
 
-func test_each_character_idles_and_walks_in_a_loop_and_nothing_else() -> void:
+func test_the_cast_lists_everyone_once_with_a_look() -> void:
+	var ids := CharacterModel.cast().map(func(e: Dictionary) -> String: return e["id"])
+	for id in ["player", "joost", "anouk", "sanne", "petra", "ruud", "marco", "henk", "ahmed"]:
+		assert_eq(ids.count(id), 1, "%s in the cast once" % id)
+	for entry in CharacterModel.cast():
+		assert_true(entry.get("look") is Dictionary, "%s has a look for the builder" % entry["id"])
+
+
+func test_each_character_has_its_own_four_loops_and_nothing_else() -> void:
 	for model in _models():
-		var animations: AnimationPlayer = model.find_children("*", "AnimationPlayer", true, false).pop_front()
+		var animations := CharacterModel.animations(model)
 		assert_true(animations != null, "%s has animations" % model.name)
 		if animations != null:
-			assert_eq(Array(animations.get_animation_list()), ["idle", "walk"], "%s: its own idle and walk only" % model.name)
-			for name in ["idle", "walk"]:
-				if animations.has_animation(name):
-					assert_eq(animations.get_animation(name).loop_mode, Animation.LOOP_LINEAR, "%s %s loops" % [model.name, name])
-			if animations.has_animation("walk"):
-				assert_between(animations.get_animation("walk").length, 0.95, 1.05, "%s: a one-second stride cycle" % model.name)
+			var names := Array(animations.get_animation_list())
+			names.sort()
+			assert_eq(names, ["idle", "sit", "talk", "walk"], "%s: its own loops only" % model.name)
+			for name in names:
+				assert_eq(animations.get_animation(name).loop_mode, Animation.LOOP_LINEAR, "%s %s loops" % [model.name, name])
+		model.free()
+
+
+func test_the_walk_has_a_pace_a_person_can_walk_at() -> void:
+	for model in _models():
+		assert_between(CharacterModel.walk_pace(model), 1.3, 2.2, "%s: a brisk stride, measured from the walk" % model.name)
 		model.free()
 
 
@@ -53,15 +66,16 @@ func test_skin_is_coloured_by_its_vertex_colours() -> void:
 		model.free()
 
 
-func test_every_texture_is_inside_the_model() -> void:
+func test_clothes_use_the_shared_textures_and_the_files_stay_small() -> void:
 	for model in _models():
 		var textures := 0
 		for s in _surfaces(model):
-			if s.material == null:
-				continue
-			for texture: Texture2D in [s.material.albedo_texture, s.material.normal_texture]:
-				if texture != null:
-					textures += 1
-					assert_true(texture.get_image() != null, "%s: a texture of %s loads" % [model.name, s.node])
-		assert_true(textures > 0, "%s has textures" % model.name)
+			if s.material != null and s.material.albedo_texture != null:
+				textures += 1
+				assert_true(s.material.albedo_texture.resource_path.begins_with(TEXTURES),
+					"%s: %s uses a shared texture" % [model.name, s.node])
+		assert_true(textures > 0, "%s has textured clothes" % model.name)
+		var bytes := FileAccess.get_file_as_bytes(CharacterModel.path(model.name)).size()
+		assert_true(bytes < MAX_BYTES, "%s.glb is %d bytes" % [model.name, bytes])
 		model.free()
+

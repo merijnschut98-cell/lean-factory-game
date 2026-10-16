@@ -1,0 +1,81 @@
+{
+  "_about": [
+    "The people of Spanning: one list for the whole character pipeline (PLAN 1.3, 5.4).",
+    "look: how tools/blender/build_character.py builds <id>.glb (sex f|m, height m, build 0 slim..1 heavy,",
+    "  skin/hair/eye colours sRGB 0..255, hair_style bob|short|receding|buzz|ponytail, outfit",
+    "  business|shirt|manager|monteur, glasses, helmet (monteur), stubble 0..1, stoop 0..1 (age), colors:",
+    "  garment colour overrides). Another character method (Merijn, PLAN 7 Q1) replaces look and the",
+    "  builder; the ids, the glb names and office stay.",
+    "office: where the world puts them (game/src/world/office/office_people.gd), in the office's",
+    "  Godot space (x, z): seat (a workstation in the office model: <seat>_desk and <seat>_chair),",
+    "  or at + face, or route (walked back and forth); pose sit|idle|talk|walk; missions: present",
+    "  only while one of these missions is active; talk: coach opens the coach instead of a talk;",
+    "  stand_in_desk: a desk copied from another workstation where the model has none yet.",
+    "Names and roles follow the dialog spec (docs/superpowers/specs/2026-10-15-dialog-system-design.md 6)."
+  ],
+  "characters": [
+    {
+      "id": "player", "name": "", "role": "CI-lead",
+      "look": {"sex": "f", "height": 1.69, "build": 0.38, "skin": [226, 178, 148], "hair_style": "bob",
+               "hair_color": [86, 56, 36], "outfit": "business", "eye_color": [70, 98, 120]}
+    },
+    {
+      "id": "joost", "name": "Joost van Dijk", "role": "teamleider Werkvoorbereiding",
+      "look": {"sex": "m", "height": 1.86, "build": 0.45, "skin": [232, 190, 160], "hair_style": "short",
+               "hair_color": [122, 86, 52], "outfit": "shirt", "eye_color": [74, 96, 112], "stubble": 0.15,
+               "colors": {"shirt": [232, 236, 242], "trousers": [52, 60, 78]}},
+      "office": {"seat": "design3", "pose": "sit"}
+    },
+    {
+      "id": "anouk", "name": "Anouk de Vries", "role": "werkvoorbereider",
+      "look": {"sex": "f", "height": 1.66, "build": 0.3, "skin": [238, 198, 172], "hair_style": "ponytail",
+               "hair_color": [168, 128, 78], "outfit": "business", "eye_color": [88, 110, 82],
+               "colors": {"polo": [128, 38, 58], "chinos": [58, 58, 66]}},
+      "office": {"seat": "design2", "pose": "sit"}
+    },
+    {
+      "id": "sanne", "name": "Sanne Bakker", "role": "teamleider Intake",
+      "look": {"sex": "f", "height": 1.72, "build": 0.5, "skin": [190, 136, 104], "hair_style": "bob",
+               "hair_color": [34, 26, 22], "outfit": "business", "eye_color": [56, 38, 26],
+               "colors": {"polo": [30, 118, 108], "chinos": [196, 186, 164]}},
+      "office": {"seat": "intake0", "pose": "sit"}
+    },
+    {
+      "id": "petra", "name": "Petra Vos", "role": "Meetdata & registratie",
+      "look": {"sex": "f", "height": 1.64, "build": 0.62, "skin": [230, 186, 160], "hair_style": "short",
+               "hair_color": [158, 140, 120], "outfit": "shirt", "glasses": true, "stoop": 0.2,
+               "colors": {"shirt": [146, 62, 92], "trousers": [50, 50, 58]}},
+      "office": {"seat": "meetdata", "pose": "sit",
+                 "stand_in_desk": {"copy": "design0", "at": [23.35, -7.6], "face": [24.0, -7.6],
+                                   "sign": "Meetdata & registratie"}}
+    },
+    {
+      "id": "ruud", "name": "Ruud Hoekstra", "role": "Directeur Netbeheer regio Zuidmark",
+      "look": {"sex": "m", "height": 1.83, "build": 0.66, "skin": [222, 170, 140], "hair_style": "receding",
+               "hair_color": [168, 166, 162], "outfit": "manager", "brow_color": [110, 104, 98],
+               "stubble": 0.25, "glasses": true},
+      "office": {"seat": "coach", "pose": "sit", "talk": "coach"}
+    },
+    {
+      "id": "marco", "name": "Marco Peters", "role": "teamleider Monteurs",
+      "look": {"sex": "m", "height": 1.81, "build": 0.6, "skin": [214, 160, 126], "hair_style": "buzz",
+               "hair_color": [62, 50, 42], "outfit": "monteur", "helmet": false, "eye_color": [60, 46, 34],
+               "stubble": 0.45},
+      "office": {"route": [[1.1, -7.6], [16.2, -7.6]], "pose": "walk"}
+    },
+    {
+      "id": "henk", "name": "Henk Verbeek", "role": "senior monteur",
+      "look": {"sex": "m", "height": 1.76, "build": 0.62, "skin": [220, 168, 140], "hair_style": "receding",
+               "hair_color": [222, 220, 214], "brow_color": [170, 166, 160], "outfit": "monteur",
+               "helmet": false, "stubble": 0.3, "stoop": 0.7},
+      "office": {"at": [7.6, -6.4], "face": [6.9, -6.6], "pose": "talk", "missions": ["save_henks_knowledge"]}
+    },
+    {
+      "id": "ahmed", "name": "Ahmed Bouzid", "role": "jonge monteur",
+      "look": {"sex": "m", "height": 1.78, "build": 0.42, "skin": [168, 116, 84], "hair_style": "short",
+               "hair_color": [28, 22, 20], "outfit": "monteur", "eye_color": [44, 30, 22], "stubble": 0.5},
+      "office": {"at": [7.2, -7.2], "face": [7.6, -6.4], "pose": "idle",
+                 "missions": ["walk_outages", "fix_wrong_joint", "save_henks_knowledge"]}
+    }
+  ]
+}
