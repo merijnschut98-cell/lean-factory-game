@@ -30,6 +30,64 @@
   "poor_fix",
   "not_standardised"
  ],
+ "dialog_archetypes": [
+  "defender",
+  "cynic",
+  "craftsman",
+  "overloaded",
+  "rule_bound",
+  "quiet",
+  "customer_upset",
+  "expert"
+ ],
+ "dialog_kinds": [
+  "persuade",
+  "checkin",
+  "expert"
+ ],
+ "dialog_moods": [
+  "goed",
+  "neutraal",
+  "gespannen",
+  "moe",
+  "stil"
+ ],
+ "dialog_moves": [
+  "mood",
+  "open_question",
+  "reflect",
+  "empathy",
+  "paraphrase",
+  "inquiry",
+  "experience",
+  "silence",
+  "perspective",
+  "show_data",
+  "propose_experiment",
+  "propose",
+  "ask_commitment",
+  "pressure",
+  "confront",
+  "repair",
+  "close"
+ ],
+ "dialog_outcomes": [
+  "commitment",
+  "partial",
+  "heard",
+  "none",
+  "blocked",
+  "compliance",
+  "ruined",
+  "lifted"
+ ],
+ "dialog_tags": [
+  "claim",
+  "feeling",
+  "hesitation",
+  "admission",
+  "doubt"
+ ],
  "discovery_triggers": {
   "blame_repair_clue": [],
   "check_recovery": [],
@@ -156,6 +214,7 @@
  },
  "fact_kinds": [
   "blocked",
+  "checked",
   "chose",
   "committed",
   "complied",

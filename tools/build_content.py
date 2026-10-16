@@ -403,13 +403,13 @@ def validate_problems(doc: Any, source: str) -> None:
         _validate_clues(p, where)
 
 
-def _validate_clues(p: dict, where: str) -> None:
+def _validate_clues(p: dict, where: str, keys: set[str] = CLUE_KEYS) -> None:
     clues = p.get("clues")
     if not isinstance(clues, list) or not clues or not all(isinstance(c, dict) for c in clues):
         raise ContentError(f"{where}: 'clues' must be a non-empty list of mappings")
     keys_at = set()
     for i, c in enumerate(clues):
-        _known_keys(c, CLUE_KEYS, f"{where} clue {i}")
+        _known_keys(c, keys, f"{where} clue {i}")
         if c.get("tool") not in TOOLS:
             raise ContentError(f"{where} clue {i}: unknown tool {c.get('tool')!r}")
         _require_strings(c, ["text"], f"{where} clue {i}")
@@ -546,7 +546,8 @@ def _all_problems(docs: dict[str, Any]) -> list[tuple[str, dict]]:
 # A fact kind → how many ids follow it ("chose:<problem>:<cm>"). The dialog
 # facts (heard: ... blocked:) name a dialog; they are checked once dialogs exist.
 FACT_KINDS = {"done": 1, "failed": 1, "chose": 2, "standardised": 1, "poor_fix": 1, "repaired": 1, "fork_first": 2,
-              "flag": 1, "heard": 1, "committed": 1, "complied": 1, "partial": 1, "blocked": 1}  # Facts.KINDS
+              "flag": 1, "heard": 1, "committed": 1, "complied": 1, "partial": 1, "blocked": 1,
+              "checked": 1}  # Facts.KINDS
 DIALOG_FACTS = {"heard", "committed", "complied", "partial", "blocked"}
 MEASURES = {"maturity": (1, 4), "reputation": (0, 100)}  # Facts.MEASURES: "maturity>=3"
 _MEASURE = re.compile(r"^([a-z]+)>=(\d+)$")
@@ -854,22 +855,28 @@ def _check_needs(needs: dict, where: str, index: dict) -> None:
     fact, or every 'any' fact, that a missed deadline can take away for good
     would close the option for good (CLAUDE.md §2: setbacks, never game over)."""
     def robust(atom: str) -> bool:
-        kind, ids = _atom_parts(atom, where)
-        if kind == "done" and ids[0] not in index["missions"] or kind == "failed" and ids[0] not in index["deadlines"]:
-            raise ContentError(f"{where}: {atom!r} names no such mission{' with a deadline' if kind == 'failed' else ''}")
-        if kind in ("chose", "standardised", "poor_fix", "repaired") and ids[0] not in index["problems"]:
-            raise ContentError(f"{where}: {atom!r} names an unknown problem")
-        if kind == "chose" and ids[1] not in index["problems"][ids[0]]:
-            raise ContentError(f"{where}: {atom!r}: problem {ids[0]!r} does not list that countermeasure")
-        if kind == "fork_first" and tuple(ids) not in index["fork_members"]:
-            raise ContentError(f"{where}: {atom!r} names no branch of that fork")
-        if kind == "flag" and atom not in index["flags"]:
-            raise ContentError(f"{where}: {atom!r}: no mission sets that flag")
-        return not (kind == "chose" and ids[1] in index["closable"])
+        return _atom_robust(atom, where, index)
     if not all(robust(a) for a in needs.get("all", [])) or ("any" in needs and not any([robust(a) for a in needs["any"]])):
         raise ContentError(f"{where}: a missed deadline can close this route for good (keep another way open)")
     for atom in needs.get("none", []):
         robust(atom)
+
+
+def _atom_robust(atom: str, where: str, index: dict) -> bool:
+    """Whether no missed deadline can take `atom` away for good; raises when it
+    names something that does not exist."""
+    kind, ids = _atom_parts(atom, where)
+    if kind == "done" and ids[0] not in index["missions"] or kind == "failed" and ids[0] not in index["deadlines"]:
+        raise ContentError(f"{where}: {atom!r} names no such mission{' with a deadline' if kind == 'failed' else ''}")
+    if kind in ("chose", "standardised", "poor_fix", "repaired", "checked") and ids[0] not in index["problems"]:
+        raise ContentError(f"{where}: {atom!r} names an unknown problem")
+    if kind == "chose" and ids[1] not in index["problems"][ids[0]]:
+        raise ContentError(f"{where}: {atom!r}: problem {ids[0]!r} does not list that countermeasure")
+    if kind == "fork_first" and tuple(ids) not in index["fork_members"]:
+        raise ContentError(f"{where}: {atom!r} names no branch of that fork")
+    if kind == "flag" and atom not in index["flags"]:
+        raise ContentError(f"{where}: {atom!r}: no mission sets that flag")
+    return not (kind == "chose" and ids[1] in index["closable"])
 
 
 def _fact_reachable(atom: str, done: set, maturity: int, reputation: int, index: dict) -> bool:
@@ -882,7 +889,7 @@ def _fact_reachable(atom: str, done: set, maturity: int, reputation: int, index:
         return ids[-1] in done
     if kind == "failed":
         return True  # a deadline can always be missed
-    if kind in ("chose", "standardised", "poor_fix", "repaired"):
+    if kind in ("chose", "standardised", "poor_fix", "repaired", "checked"):
         return index["solved_by"].get(ids[0]) in done
     if kind == "flag":
         return any(atom in m_flags for m_id, m_flags in index["flags_by"].items() if m_id in done)
@@ -1032,6 +1039,367 @@ def check_concepts(docs: dict[str, Any]) -> None:
                 raise ContentError(f"{at}: teaches unknown concept {concept_id!r}")
 
 
+# ── dialogs.yaml ─────────────────────────────────────────────────────────────
+# Conversations with named people (docs/superpowers/specs/2026-10-15-dialog-
+# system-design.md §9). Vocabularies mirrored in game/src/rules/dialog.gd; the
+# Godot content test fails if they diverge. Optional: a content set without
+# people (the test fixtures) builds without it.
+
+LISTEN_MOVES = ["mood", "open_question", "reflect", "empathy", "paraphrase", "inquiry", "experience", "silence"]
+STEER_MOVES = ["perspective", "show_data", "propose_experiment", "propose", "ask_commitment"]
+DIALOG_MOVES = LISTEN_MOVES + STEER_MOVES + ["pressure", "confront", "repair", "close"]
+DIALOG_TAGS = ["claim", "feeling", "hesitation", "admission", "doubt"]
+DIALOG_ARCHETYPES = ["defender", "cynic", "craftsman", "overloaded", "rule_bound", "quiet", "customer_upset", "expert"]
+DIALOG_KINDS = ["persuade", "checkin", "expert"]
+DIALOG_MOODS = ["goed", "neutraal", "gespannen", "moe", "stil"]
+DIALOG_OUTCOMES = ["commitment", "partial", "heard", "none", "blocked", "compliance", "ruined", "lifted"]
+LAYERS = {"interest": (40, 65), "concern": (60, 85)}  # layer id → the range its `at` threshold must lie in
+REPLY_SITUATIONS = ["lands", "misses", "too_early"]
+# The bank's fallback replies: every move that has no reply of its own elsewhere
+# (a layer, a proposal, an outcome) needs these situations.
+BANK_REPLIES = {**{m: ["lands", "misses"] for m in LISTEN_MOVES + ["perspective", "show_data", "propose_experiment"]},
+                "pressure": ["lands"], "confront": ["lands"], "repair": ["lands"]}
+BANK_SPECIAL = ["repeat", "refusal", "no_proposal", "other_data", "lucky_guess", "no_repair", "patience_low",
+                "cooling_down"]
+PERSON_KEYS = {"id", "name", "role", "place", "team", "archetype", "trust", "morale", "voice"}
+DIALOG_KEYS = {"id", "name", "person", "kind", "mission", "requires_clue", "needs", "owns", "kpi_team", "mood",
+               "patience", "opening", "retry_opening", "position", "layers", "data", "proposals", "experiments",
+               "co_proposal", "condition_needs", "block", "lines", "replies", "outcomes", "variants", "trigger",
+               "tutorial"}
+LAYER_KEYS = {"id", "at", "via", "text", "tags", "lead_in", "condition", "unlocks"}
+PROPOSAL_KEYS = {"id", "name", "text", "kpis", "addresses", "reply", "hidden"}
+VARIANT_KEYS = {"needs", "mood", "position", "layers"}
+
+
+def _line(item: Any, where: str) -> dict:
+    """A spoken line: {text, tags?}."""
+    if not isinstance(item, dict):
+        raise ContentError(f"{where}: a line is a mapping with a text and optional tags")
+    _known_keys(item, {"text", "tags"}, where)
+    _require_strings(item, ["text"], where)
+    for tag in _string_list(item, "tags", where):
+        if tag not in DIALOG_TAGS:
+            raise ContentError(f"{where}: unknown tag {tag!r}")
+    return item
+
+
+def _needs(expr: Any, where: str) -> list[str]:
+    """A needs expression in the C19 grammar (_validate_needs). Returns its atoms."""
+    _validate_needs(expr, where)
+    return [atom for atoms in expr.values() for atom in atoms]
+
+
+def validate_dialogs(doc: Any, source: str) -> None:
+    _require_strings(doc, [], source)
+    _known_keys(doc, {"people", "bank", "dialogs"}, source)
+    for p in _entries(doc, "people", source):
+        where = f"{source}: person '{p['id']}'"
+        _known_keys(p, PERSON_KEYS, where)
+        _require_strings(p, ["role", "place", "team"], where)
+        _one_of(p, "archetype", DIALOG_ARCHETYPES, where)
+        _number(p, "trust", where, 0, 100, integer=True)
+        _number(p, "morale", where, 0, 100, integer=True, default=60)
+    _validate_bank(doc.get("bank"), f"{source}: bank")
+    for d in _entries(doc, "dialogs", source):
+        _validate_dialog(d, f"{source}: dialog '{d['id']}'")
+
+
+def _validate_bank(bank: Any, where: str) -> None:
+    if not isinstance(bank, dict):
+        raise ContentError(f"{where}: needs labels, player, replies, special and outcomes")
+    _known_keys(bank, {"labels", "player", "replies", "special", "outcomes"}, where)
+    labels = _mapping(bank, "labels", {"bands", "cue", "chips", "outcomes"}, where)
+    if len(_string_list(labels, "bands", f"{where} labels")) != 5:
+        raise ContentError(f"{where} labels: 'bands' names the five openness bands")
+    _require_strings(labels, ["cue"], f"{where} labels")
+    for key, ids in (("chips", DIALOG_MOVES), ("outcomes", DIALOG_OUTCOMES)):
+        _require_strings(_mapping(labels, key, set(ids), f"{where} labels"), ids, f"{where} labels {key}")
+    _require_strings(_mapping(bank, "player", set(DIALOG_MOVES), where), DIALOG_MOVES, f"{where} player")
+    replies = _mapping(bank, "replies", set(BANK_REPLIES), where)
+    for move, situations in BANK_REPLIES.items():
+        if not isinstance(replies.get(move), dict) or set(situations) - set(replies[move]):
+            raise ContentError(f"{where} replies: {move!r} needs {', '.join(situations)}")
+        _replies({move: replies[move]}, f"{where} replies")
+    _require_strings(_mapping(bank, "special", set(BANK_SPECIAL), where), BANK_SPECIAL, f"{where} special")
+    _require_strings(_mapping(bank, "outcomes", set(DIALOG_OUTCOMES), where), DIALOG_OUTCOMES, f"{where} outcomes")
+
+
+def _replies(replies: dict, where: str) -> None:
+    for move, by_situation in replies.items():
+        if move not in DIALOG_MOVES:
+            raise ContentError(f"{where}: unknown move {move!r}")
+        if not isinstance(by_situation, dict):
+            raise ContentError(f"{where} {move}: maps a situation to a line")
+        for situation, line in by_situation.items():
+            if situation not in REPLY_SITUATIONS:
+                raise ContentError(f"{where} {move}: unknown situation {situation!r} ({', '.join(REPLY_SITUATIONS)})")
+            _line(line, f"{where} {move} {situation}")
+
+
+def _validate_dialog(d: dict, where: str) -> None:
+    _known_keys(d, DIALOG_KEYS, where)
+    _require_strings(d, ["person", "opening"], where)
+    if "retry_opening" in d:
+        _require_strings(d, ["retry_opening"], where)
+    _one_of(d, "kind", DIALOG_KINDS, where)
+    if "mood" in d:
+        _one_of(d, "mood", DIALOG_MOODS, where)
+    _number(d, "patience", where, 3, 15, integer=True, default=10)
+    if not isinstance(d.get("tutorial", False), bool):
+        raise ContentError(f"{where}: 'tutorial' must be true or false (an Act 0 talk that cannot be ruined)")
+    _line(d.get("position"), f"{where} position")
+    _layers(d.get("layers"), where)
+    proposals = _entries(d, "proposals", where) if "proposals" in d else []
+    experiments = _entries(d, "experiments", where) if "experiments" in d else []
+    for item in proposals + experiments:
+        at = f"{where} proposal '{item['id']}'"
+        is_proposal = any(item is p for p in proposals)
+        _known_keys(item, PROPOSAL_KEYS, at)
+        _require_strings(item, ["text"], at)
+        if "reply" in item:
+            _require_strings(item, ["reply"], at)
+        if is_proposal and "reply" not in item:
+            raise ContentError(f"{at}: a proposal needs the person's reply")
+        if not isinstance(item.get("hidden", False), bool):
+            raise ContentError(f"{at}: 'hidden' must be true or false")
+        for layer in _string_list(item, "addresses", at):
+            if layer not in LAYERS:
+                raise ContentError(f"{at}: addresses unknown layer {layer!r}")
+        if "kpis" in item and not (1 <= len(_string_list(item, "kpis", at)) <= 2):
+            raise ContentError(f"{at}: 'kpis' names one or two KPIs")
+    ids = [i["id"] for i in proposals + experiments]
+    _check_ids(ids, "proposal and experiment", where)
+    hidden = {p["id"] for p in proposals if p.get("hidden")}
+    for layer in d["layers"]:
+        for pid in layer.get("unlocks", {}).get("proposals", []):
+            if pid not in hidden:
+                raise ContentError(f"{where}: unlocks {pid!r}, which is not a hidden proposal")
+    if "co_proposal" in d:
+        co = d["co_proposal"]
+        if not isinstance(co, dict) or co.get("id") not in hidden:
+            raise ContentError(f"{where}: co_proposal names a hidden proposal (their own idea)")
+        _known_keys(co, {"id", "text"}, f"{where} co_proposal")
+        _require_strings(co, ["text"], f"{where} co_proposal")
+    _string_list(d, "data", where)
+    for key in ("needs", "condition_needs"):
+        if key in d:
+            _needs(d[key], f"{where} {key}")
+    if "block" in d:
+        _block(d["block"], where)
+    lines = d.get("lines", {})
+    if not isinstance(lines, dict) or set(lines) - set(DIALOG_MOVES):
+        raise ContentError(f"{where}: 'lines' maps a move to the player's line (unknown move in {sorted(lines)})")
+    _require_strings(lines, list(lines), f"{where} lines")
+    replies = d.get("replies", {})
+    if not isinstance(replies, dict):
+        raise ContentError(f"{where}: 'replies' maps a move to its replies")
+    _replies(replies, f"{where} replies")
+    outcomes = d.get("outcomes", {})
+    if not isinstance(outcomes, dict) or set(outcomes) - set(DIALOG_OUTCOMES):
+        raise ContentError(f"{where}: 'outcomes' overrides texts of known outcome(s) only: {', '.join(DIALOG_OUTCOMES)}")
+    _require_strings(outcomes, list(outcomes), f"{where} outcomes")
+    for i, variant in enumerate(d.get("variants", [])):
+        at = f"{where} variant {i}"
+        if not isinstance(variant, dict):
+            raise ContentError(f"{at}: a variant is a mapping")
+        _known_keys(variant, VARIANT_KEYS, at)
+        _needs(variant.get("needs"), f"{at} needs")
+        if "mood" in variant:
+            _one_of(variant, "mood", DIALOG_MOODS, at)
+        if "position" in variant:
+            _line(variant["position"], f"{at} position")
+        if "layers" in variant:
+            _layers(variant["layers"], at)
+    if d["kind"] == "checkin":
+        _checkin(d, proposals + experiments, where)
+    else:
+        _require_strings(d, ["mission"], where)
+        # No single right answer (spec §9.2 rule 10): two ways at least to meet the concern.
+        if d["kind"] == "persuade" and sum(1 for i in proposals + experiments if "concern" in i.get("addresses", [])) < 2:
+            raise ContentError(f"{where}: no single right answer: needs two proposals or experiments that address the concern")
+
+
+def _layers(layers: Any, where: str) -> None:
+    if not isinstance(layers, list) or [layer.get("id") if isinstance(layer, dict) else None for layer in layers] != list(LAYERS):
+        raise ContentError(f"{where}: 'layers' must be interest, then concern")
+    for layer in layers:
+        at = f"{where} layer '{layer['id']}'"
+        _known_keys(layer, LAYER_KEYS, at)
+        low, high = LAYERS[layer["id"]]
+        _number(layer, "at", at, low, high, integer=True)
+        via = _string_list(layer, "via", at)
+        if len(set(via)) < 2:
+            raise ContentError(f"{at}: needs two 'via' moves at least (more than one way in)")
+        for move in via:
+            if move not in DIALOG_MOVES:
+                raise ContentError(f"{at}: unknown move {move!r} in via")
+        _line({k: layer[k] for k in ("text", "tags") if k in layer}, at)
+        if "condition" in layer:
+            _require_strings(layer, ["condition"], at)
+        unlocks = _mapping(layer, "unlocks", {"clue", "facts", "proposals"}, at)
+        for fact in _string_list(unlocks, "facts", f"{at} unlocks"):
+            if _atom_parts(fact, f"{at} unlocks")[0] != "heard":
+                raise ContentError(f"{at} unlocks: {fact!r} is not a fact heard:<id>")
+        _string_list(unlocks, "proposals", f"{at} unlocks")
+        if "clue" in unlocks:
+            clue = unlocks["clue"]
+            if not isinstance(clue, dict):
+                raise ContentError(f"{at} unlocks: 'clue' is a mapping with key, depth and text")
+            _known_keys(clue, {"key", "depth", "text", "note"}, f"{at} unlocks clue")
+            _require_strings(clue, ["text"], f"{at} unlocks clue")
+            if not isinstance(clue.get("key"), bool):
+                raise ContentError(f"{at} unlocks clue: 'key' must be true or false")
+            _number(clue, "depth", f"{at} unlocks clue", 0, integer=True)
+    concern = layers[1]
+    if not isinstance(concern.get("lead_in"), dict):
+        raise ContentError(f"{where}: the concern needs a lead_in (the line that carries the cue)")
+    if "hesitation" not in _line(concern["lead_in"], f"{where} concern lead_in").get("tags", []):
+        raise ContentError(f"{where}: the concern's lead_in carries the tag hesitation")
+
+
+def _block(block: Any, where: str) -> None:
+    if not isinstance(block, dict):
+        raise ContentError(f"{where}: 'block' is a mapping with a text and routes")
+    _known_keys(block, {"text", "routes"}, f"{where} block")
+    _require_strings(block, ["text"], f"{where} block")
+    routes = block.get("routes")
+    if not isinstance(routes, list) or not routes:
+        raise ContentError(f"{where} block: needs one route at least")
+    for i, route in enumerate(routes):
+        if not isinstance(route, dict):
+            raise ContentError(f"{where} block route {i}: a mapping with needs and a hint")
+        _known_keys(route, {"needs", "hint"}, f"{where} block route {i}")
+        _require_strings(route, ["hint"], f"{where} block route {i}")
+        _needs(route.get("needs"), f"{where} block route {i}")
+
+
+def _checkin(d: dict, items: list[dict], where: str) -> None:
+    """A check-in has no mission, owns nothing and asks no KPIs (spec §9.2 rule 12)."""
+    for key in ("mission", "owns", "kpi_team", "requires_clue", "data", "condition_needs", "block", "co_proposal"):
+        if key in d:
+            raise ContentError(f"{where}: a check-in has no {key!r}")
+    if any("kpis" in i for i in items):
+        raise ContentError(f"{where}: a check-in proposes no KPIs")
+    trigger = d.get("trigger")
+    if not isinstance(trigger, dict) or not trigger:
+        raise ContentError(f"{where}: a check-in needs a trigger (morale_below and/or needs)")
+    _known_keys(trigger, {"morale_below", "needs"}, f"{where} trigger")
+    if "morale_below" in trigger:
+        _number(trigger, "morale_below", f"{where} trigger", 1, 100, integer=True)
+    if "needs" in trigger:
+        _needs(trigger["needs"], f"{where} trigger needs")
+
+
+def check_dialogs(docs: dict[str, Any]) -> None:
+    """Dialogs against people, missions, problems, KPI menus and each other."""
+    if "dialogs" not in docs:
+        return
+    net = _network_index(docs["value_streams"], docs["kpis"])
+    missions = {m["id"]: m for m in docs["missions"]["missions"]}
+    problems = {p["id"]: p for _, p in _all_problems(docs)}
+    doc = docs["dialogs"]
+    people = {p["id"]: p for p in doc["people"]}
+    for p in people.values():
+        where = f"dialogs.yaml: person '{p['id']}'"
+        if net["step"].get(p["place"], {}).get("kind") != "work":
+            raise ContentError(f"{where}: place {p['place']!r} is not a work step")
+        if p["team"] not in net["pool"]:
+            raise ContentError(f"{where}: unknown team {p['team']!r}")
+    dialogs = {d["id"]: d for d in doc["dialogs"]}
+    heard = {f for d in dialogs.values() for layers in _all_layers(d) for layer in layers
+             for f in layer.get("unlocks", {}).get("facts", [])}
+    index = _fact_index(docs)
+    clue_ids = {f"{p['id']}:{i}" for p in problems.values() for i in range(len(p["clues"]))}
+    for d in dialogs.values():
+        where = f"dialogs.yaml: dialog '{d['id']}'"
+        if d["person"] not in people:
+            raise ContentError(f"{where}: unknown person {d['person']!r}")
+        for expr in _needs_of(d):
+            for atom in _needs(expr, where):
+                _dialog_atom_robust(atom, where, index, dialogs, heard)
+        if d.get("requires_clue") is not None and d["requires_clue"] not in clue_ids:
+            raise ContentError(f"{where}: requires unknown clue {d['requires_clue']!r}")
+        if "block" in d and not any("none" not in r["needs"] and _robust_route(r["needs"], where, index, dialogs, heard)
+                                    for r in d["block"]["routes"]):
+            raise ContentError(f"{where}: never game over: the block needs a route no failure or skip can close")
+        if d["kind"] != "checkin":
+            _check_mission_dialog(d, where, missions, problems, net)
+
+
+def _all_layers(d: dict) -> list[list[dict]]:
+    return [d["layers"]] + [v["layers"] for v in d.get("variants", []) if "layers" in v]
+
+
+def _needs_of(d: dict) -> list[dict]:
+    exprs = [d[k] for k in ("needs", "condition_needs") if k in d]
+    exprs += [r["needs"] for r in d.get("block", {}).get("routes", [])]
+    exprs += [v["needs"] for v in d.get("variants", [])]
+    return exprs + ([d["trigger"]["needs"]] if "needs" in d.get("trigger", {}) else [])
+
+
+def _dialog_atom_robust(atom: str, where: str, index: dict, dialogs: dict, heard: set) -> bool:
+    """_atom_robust, with the dialog facts checked against the dialogs: a
+    commitment, an agreement or a heard concern can always still be won."""
+    kind, ids = _atom_parts(atom, where)
+    if kind == "heard" and atom not in heard:
+        raise ContentError(f"{where}: {atom!r}: no dialog unlocks it")
+    if kind in DIALOG_FACTS - {"heard"} and ids[0] not in dialogs:
+        raise ContentError(f"{where}: {atom!r} names an unknown dialog")
+    return _atom_robust(atom, where, index)
+
+
+def _robust_route(expr: dict, where: str, index: dict, dialogs: dict, heard: set) -> bool:
+    """Every 'all' atom, and one 'any' atom, stays reachable whatever is missed."""
+    robust = [_dialog_atom_robust(a, where, index, dialogs, heard) for a in expr.get("all", [])]
+    either = [_dialog_atom_robust(a, where, index, dialogs, heard) for a in expr.get("any", [])]
+    return all(robust) and (not either or any(either))
+
+
+def _check_mission_dialog(d: dict, where: str, missions: dict, problems: dict, net: dict) -> None:
+    mission = missions.get(d["mission"])
+    if mission is None:
+        raise ContentError(f"{where}: unknown mission {d['mission']!r}")
+    problem = mission["goal"].get("problem")
+    if "owns" in d and d["owns"] != problem:
+        raise ContentError(f"{where}: owns {d['owns']!r}, which is not the problem of mission {mission['id']!r}")
+    for clue in d.get("data", []):
+        if clue not in {f"{problem}:{i}" for i in range(len(problems[problem]["clues"]))}:
+            raise ContentError(f"{where}: data {clue!r} is not a clue of the mission's problem")
+    if "kpi_team" in d and d["kpi_team"] not in net["menu"]:
+        raise ContentError(f"{where}: kpi_team {d['kpi_team']!r} has no KPI menu")
+    for item in d.get("proposals", []):
+        if "kpis" in item and "kpi_team" not in d:
+            raise ContentError(f"{where}: proposal {item['id']!r} names KPIs, so the dialog needs a kpi_team")
+        for kpi in item.get("kpis", []):
+            if kpi not in net["menu"][d["kpi_team"]]:
+                raise ContentError(f"{where}: {kpi!r} is not on the menu of {d['kpi_team']!r}")
+    for layers in _all_layers(d):
+        clue = layers[1].get("unlocks", {}).get("clue")
+        if clue is not None and not d.get("owns"):
+            raise ContentError(f"{where}: a concern unlocks a clue of the problem the dialog owns: needs 'owns'")
+
+
+def merge_dialog_clues(docs: dict[str, Any]) -> None:
+    """Append every clue a concern unlocks to its owned problem's clues (tool
+    conversation at the person's place, marked with the dialog: only the
+    conversation reveals it) and put the clue's id in the dialog instead."""
+    if "dialogs" not in docs:
+        return
+    people = {p["id"]: p for p in docs["dialogs"]["people"]}
+    problems = {p["id"]: (stem, p) for stem, p in _all_problems(docs)}
+    for d in docs["dialogs"]["dialogs"]:
+        for layers in _all_layers(d):
+            unlocks = layers[1].get("unlocks", {})
+            if not isinstance(unlocks.get("clue"), dict):
+                continue
+            stem, problem = problems[d["owns"]]
+            clue = {"tool": "conversation", "at": people[d["person"]]["place"], "dialog": d["id"], **unlocks["clue"]}
+            problem["clues"].append(clue)
+            _validate_clues(problem, f"{stem}.yaml: problem '{problem['id']}' (with dialog '{d['id']}')",
+                            CLUE_KEYS | {"dialog"})
+            unlocks["clue"] = f"{problem['id']}:{len(problem['clues']) - 1}"
+
+
 # ── discoveries.yaml ─────────────────────────────────────────────────────────
 # Hidden rewards (audit §4): trigger types and their parameters
 # (Discoveries.TRIGGERS), and what a reward may hold.
@@ -1116,9 +1484,12 @@ def vocabulary() -> dict[str, Any]:
         "mission_kinds": MISSION_KINDS, "mission_goals": sorted(MISSION_GOALS), "coach_stages": COACH_STAGES,
         "belt_xp": BELT_XP, "min_reward_share": MIN_REWARD_SHARE, "fact_kinds": sorted(FACT_KINDS),
         "measures": sorted(MEASURES), "fork_roles": FORK_ROLES, "coach_conditions": COACH_CONDITIONS,
-        "debrief_variants": DEBRIEF_VARIANTS, "discovery_triggers": {k: v for k, v in sorted(DISCOVERY_TRIGGERS.items())}, "start_rules": START_RULES, "order_rules": ORDER_RULES,
+        "debrief_variants": DEBRIEF_VARIANTS, "start_rules": START_RULES, "order_rules": ORDER_RULES,
+        "discovery_triggers": {k: v for k, v in sorted(DISCOVERY_TRIGGERS.items())},
         "care_rules": CARE_RULES, "kpi_kinds": KPI_KINDS,
         "effect_properties": {p: {"kind": k, "step_kind": sk or ""} for p, (k, sk, _) in sorted(EFFECT_PROPERTIES.items())},
+        "dialog_moves": DIALOG_MOVES, "dialog_tags": DIALOG_TAGS, "dialog_archetypes": DIALOG_ARCHETYPES,
+        "dialog_kinds": DIALOG_KINDS, "dialog_moods": DIALOG_MOODS, "dialog_outcomes": DIALOG_OUTCOMES,
     }
 
 
@@ -1131,12 +1502,15 @@ VALIDATORS: dict[str, Callable[[Any, str], None]] = {
     "missions": validate_missions,
     "kpis": validate_kpis,
     "concepts": validate_concepts,
+    "dialogs": validate_dialogs,
     "discoveries": validate_discoveries,
 }
+# Registered files a content set may leave out.
+OPTIONAL = {"dialogs"}
 
 # Checks that need several files at once. Each gets {stem: document}.
 CROSS_CHECKS: list[Callable[[dict[str, Any]], None]] = [check_kpis, check_problems, check_missions, check_concepts,
-                                                        check_discoveries]
+                                                      check_dialogs, check_discoveries]
 
 
 def _validator_for(stem: str) -> Callable[[Any, str], None] | None:
@@ -1159,11 +1533,12 @@ def load_content(content_dir: Path | None = None) -> dict[str, Any]:
             raise ContentError(f"{path.name}: {exc}") from exc
         validator(doc, path.name)
         docs[path.stem] = doc
-    missing = sorted(set(VALIDATORS) - set(docs))
+    missing = sorted(set(VALIDATORS) - OPTIONAL - set(docs))
     if missing:
         raise ContentError(f"missing content files: {', '.join(m + '.yaml' for m in missing)}")
     for check in CROSS_CHECKS:
         check(docs)
+    merge_dialog_clues(docs)
     docs["vocabulary"] = vocabulary()
     return docs
 

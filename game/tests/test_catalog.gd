@@ -66,7 +66,9 @@ func _investigate(r: Region, p: ProblemDef) -> Array:
 	var keys := p.clues.filter(func(k: Clue) -> bool: return k.key)
 	keys.sort_custom(func(a: Clue, b: Clue) -> bool: return a.depth < b.depth)
 	for k: Clue in keys:
-		if k.tool == "conversation":
+		if not k.dialog.is_empty():
+			r.found[k.id] = true  # an expert listens too: the talk reveals it (test_dialog_content)
+		elif k.tool == "conversation":
 			r.ask(k.at, "walk")
 		else:
 			r.use_tool(k.at, k.tool)
