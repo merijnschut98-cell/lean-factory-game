@@ -33,6 +33,11 @@ const FRAME_HEIGHT := 0.8
 ## A click this close (m) to a ring's centre is a click on the ring.
 const RING_CLICK := Interactable.RING_RADIUS + 0.3
 
+const RESUME_FAILED := "De bewaarde game kon niet worden geladen (%s). Dit spel wordt niet bewaard, zodat de oude bewaard blijft."
+
+## The slot the game resumes from and saves to ("" for neither): the
+## autosave when this office is the main scene.
+var save_slot := ""
 ## The simulation's luck for a new game.
 @export var seed_value := 1
 ## Where the content is read from (tests point it at bad content).
@@ -54,15 +59,28 @@ var _walk_goal: Interactable
 
 
 func _ready() -> void:
+	# Only the game itself resumes and saves; tests and tools that load this
+	# scene play a fresh game of their own.
+	if get_tree().current_scene == self:
+		save_slot = GameSave.AUTOSAVE
 	build()
 
 
-## Build the office and start the game (once). Works outside the scene tree
-## too, so the tests can build it headless: positions are the office's own.
+## The game closes: it saves, and the session ends (GameUI.end_session).
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST and ui != null and ui.playable():
+		ui.end_session()
+
+
+## Build the office and start the game (once): the saved game in `save_slot`
+## when there is one (it opens with the terugblik), else a new one. Works
+## outside the scene tree too, so the tests can build it headless: positions
+## are the office's own.
 func build() -> void:
 	if session != null:
 		return
-	session = GameSession.new_game(seed_value, data_dir, training)
+	var loaded := _resume()
+	session = loaded["session"] if loaded.has("session") else GameSession.new_game(seed_value, data_dir, training)
 	geometry = _load_geometry()
 	add_child(geometry)
 	_cut_away_ceiling()
@@ -79,12 +97,30 @@ func build() -> void:
 	_add_camera()
 	ui = GameUI.new()
 	add_child(ui)
-	ui.setup(session)
+	ui.setup(session, loaded.get("layer"))
 	ui.panel_opened.connect(_on_panel_opened)
 	ui.panels_closed.connect(_on_panels_closed)
 	if ui.playable():
 		ui.office_map.show_office(floor_rect(), map_places(), player)
 		ui.office_map.footprints = map_footprints()
+		if not save_slot.is_empty():
+			ui.begin_play(save_slot, loaded.has("session"))
+	if loaded.has("error"):
+		ui.hud.toast(RESUME_FAILED % loaded["error"])
+
+
+## The saved game in `save_slot`: GameSave.read's result; {} when there is
+## none. A save that cannot be read is left alone, and this game is not
+## saved over it ({error} only, save_slot cleared).
+func _resume() -> Dictionary:
+	if save_slot.is_empty() or not GameSave.exists(save_slot):
+		return {}
+	var loaded := GameSave.read(save_slot, data_dir)
+	if loaded["error"].is_empty():
+		return loaded
+	push_warning("office: " + loaded["error"])
+	save_slot = ""
+	return {"error": loaded["error"]}
 
 
 func _process(_delta: float) -> void:

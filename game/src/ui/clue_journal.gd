@@ -7,8 +7,43 @@ extends UiPanel
 ## measured (SustainView): what holds a fix is for the player to find.
 
 
+## The session layer's buttons (GameUI opens what they name).
+const TERUGBLIK := "Terugblik"
+const INTUSSEN := "Intussen"
+const LOG := "Speellogboek bijhouden (alleen op deze computer, nooit verstuurd)"
+
+## "terugblik" or "intussen": reopen that card or panel.
+signal reopen(what: String)
+signal log_toggled(on: bool)
+
+## Set by GameUI: the session layer (the last terugblik, the running
+## Checks) and whether the playtest log is on.
+var layer: SessionLayer
+var log_on := true
+
+
 func _init() -> void:
 	super("Aanwijzingen", Vector2(1000, 0))
+
+
+## Terugblik (when this session opened with one), Intussen (while an
+## experiment runs) and the playtest log switch.
+func _session_row() -> void:
+	if layer == null:
+		return
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	body.add_child(row)
+	if not layer.last_card.is_empty():
+		row.add_child(button(TERUGBLIK, reopen.emit.bind("terugblik")))
+	if not SessionLayer.running(session).is_empty():
+		row.add_child(button(INTUSSEN, reopen.emit.bind("intussen")))
+	var log_switch := CheckBox.new()
+	log_switch.text = LOG
+	log_switch.button_pressed = log_on
+	log_switch.add_theme_font_size_override("font_size", UiTheme.SMALL)
+	log_switch.toggled.connect(log_toggled.emit)
+	row.add_child(log_switch)
 
 
 ## Every clue found so far: by place (the first place a clue was found there
@@ -47,6 +82,7 @@ static func by_place(s: GameSession) -> Array[Dictionary]:
 
 func refresh() -> void:
 	clear(body)
+	_session_row()
 	_sustain()
 	var groups := by_place(session)
 	if groups.is_empty():
