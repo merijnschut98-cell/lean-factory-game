@@ -1250,6 +1250,11 @@ concepts:
     source:
       title: GOPACS — Grid Operators Platform for Congestion Solutions
       url: https://www.gopacs.eu
+    # 2026-10-16 source check: Netbeheer Nederland (13 Oct 2026,
+    # netbeheernederland.nl/artikelen/nieuws/netbeheerders-lanceren-gopacs-auctions-voor-openbare-uitvraag-naar-flexibel)
+    # confirms GOPACS as the platform where netbeheerders publish their need for
+    # flexible capacity. The expansion of the name and the balancing mechanism
+    # described above are NOT stated there (gopacs.eu is not an approved domain), so verify stays.
     verify: true
 
   - id: ii3050

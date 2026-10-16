@@ -465,7 +465,9 @@ func test_a_standardised_practice_fix_still_gets_its_counterfactual() -> void:
 	assert_true(forecast["standardised"], "the player's Act is reported")
 	assert_true(forecast["faded"]["capacity"] < forecast["held"]["capacity"], "what the standard saves is shown too")
 	# Standard work slows the wear in the game itself (but even a standard erodes, Sustain).
-	assert_true(forecast["recur_days"] > s.region.countermeasures["tray_labels"].decay_days * 2.0)
+	# (Nobody asked Anouk, whose tray it is: anouk_owns_tray, buy-in compliance.)
+	assert_true(forecast["recur_days"] > s.region.countermeasures["tray_labels"].decay_days * 2.0
+		* Sustain.BUY_IN["compliance"])
 	assert_eq(s.sustain_of(TRAY)["mechanisms"], ["standard_work"])
 
 
@@ -533,8 +535,8 @@ func test_a_held_fix_reports_how_it_is_sustained() -> void:
 	var s := _practice_acted(11, "one_tray_fifo", false)
 	var held := s.sustain_of(TRAY)
 	assert_eq([held["strength"], held["mechanisms"], held["standardised"], held["health"]], [0.0, [], false, 1.0])
-	assert_near(held["days_to_recur"], s.region.countermeasures["one_tray_fifo"].decay_days, 0.01,
-		"no habits: it lasts its decay_days, the Friday lesson's number")
+	assert_near(held["days_to_recur"], s.region.countermeasures["one_tray_fifo"].decay_days * Sustain.BUY_IN["compliance"],
+		0.01, "no habits, and Anouk never asked (anouk_owns_tray): its decay_days at the buy-in of a fix imposed")
 	assert_eq(s.fade_forecast(30)["recur_days"], held["days_to_recur"])
 
 

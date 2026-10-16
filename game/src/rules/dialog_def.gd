@@ -59,6 +59,9 @@ var trigger: Dictionary = {}
 var beats_after: Array = []
 ## A first talk (Act 0): it cannot be ruined (Dialog.TUTORIAL_PATIENCE).
 var tutorial := false
+## A tutorial talk's moves of the day (Ruud's morning card): a good way
+## through, never the only one.
+var teaches := PackedStringArray()
 ## A check-in's line on the dagstart while its prompt is open ("Ahmed is stil
 ## sinds Henk weg is."); "" for none.
 var prompt: String
@@ -88,6 +91,7 @@ static func from_dict(d: Dictionary) -> DialogDef:
 	g.need = str(d.get("need", ""))
 	g.data = PackedStringArray(d.get("data", []))
 	g.tutorial = d.get("tutorial", false) == true
+	g.teaches = PackedStringArray(d.get("teaches", []))
 	for key: String in ["needs", "position", "co_proposal", "condition_needs", "block", "lines", "replies", "outcomes", "trigger"]:
 		g.set(key, JsonFile.dict_or_empty(d.get(key)).duplicate(true))
 	for key: String in ["layers", "proposals", "experiments", "variants", "beats_after"]:

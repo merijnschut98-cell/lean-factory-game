@@ -26,7 +26,7 @@ func _play(s: GameSession, moves: Array) -> Dictionary:
 func test_people_at_a_place_say_whether_they_have_something_to_say() -> void:
 	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
 	var here := s.people_at(DESIGN)
-	assert_eq(here.map(func(p: Dictionary) -> String: return p["id"]), ["joost", "frank"])
+	assert_eq(here.map(func(p: Dictionary) -> String: return p["id"]), ["joost", "frank", "anouk"])
 	assert_false(here[0]["has_dialog"], "no mission of theirs is active")
 	assert_eq(s.start_dialog("joost"), {"error": "nothing_to_say"})
 	assert_true(_silo().people_at(DESIGN)[0]["has_dialog"])
