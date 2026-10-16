@@ -28,7 +28,9 @@ func test_the_floor_fills_the_map_keeping_its_shape() -> void:
 func test_the_office_floor_is_the_shell() -> void:
 	var office := _office()
 	var r := office.floor_rect()
-	assert_near(r.size.x, 24.0, 0.5)
+	if office.geometry.name != "OfficePlaceholder":   # the building's 1e: both wings and the core (PLAN 2.1)
+		assert_near(r.size.x, 42.0, 0.5)
+		assert_true(r.encloses(Rect2(0, -16, 24, 16)), "the connections office lies on it")
 	assert_near(r.size.y, 16.0, 0.5)
 	for i in office.interactables:
 		assert_true(r.has_point(Vector2(i.position.x, i.position.z)), "%s stands on the floor" % i.id)

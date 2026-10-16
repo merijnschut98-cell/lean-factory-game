@@ -1,14 +1,24 @@
 class_name OfficeMap
 extends UiPanel
-## The player map (M): the office floor from above, north up, with every
-## interaction place by its Dutch name, the player (where and which way) and
-## the active missions' places marked. The world hands it the floor, the
-## places and the player (show_office); it is drawn in code.
+## The player map (M): a floor of the head office from above, north up, with
+## its rooms, every interaction place by its Dutch name, the player (where and
+## which way) and the active missions' places marked. A floor switch on top
+## shows the other floors (a dot marks a floor with a mission place); at the
+## lift the same switch takes you there (`lift`). The world hands it the floor
+## the player is on (show_office) and the building (show_floors); it is drawn
+## in code.
 
-## The map's drawing area at 1600x900 (the floor is 3:2).
-const SIZE := Vector2(1050, 660)
+## A floor was chosen at the lift.
+signal floor_chosen(floor_id: String)
+
+## The map's drawing area at 1600x900.
+const SIZE := Vector2(1050, 600)
 const GRID_METRES := 2.0
 const DOT := 11.0
+const TITLE := "Kaart: %s"
+const LIFT_TITLE := "Lift: kies een verdieping"
+## The places' names (px).
+const LABEL_SIZE := 17
 
 ## The floor in the office's (x, z) plane.
 var floor_rect := Rect2(0, -16, 24, 16)
@@ -17,12 +27,27 @@ var places: Array[Dictionary] = []
 var player: Node3D
 ## What stands on the floor: [{rect (x, z), room}] (Office.map_footprints).
 var footprints: Array[Dictionary] = []
+## The floor's rooms: [{id, name, rect (x, z), open}].
+var rooms: Array[Dictionary] = []
+## The building's floors: [{id, name, open, here}], lowest first.
+var floors: Array[Dictionary] = []
+## The floor the player is on, and the one shown.
+var floor_here := ""
+var floor_shown := ""
+## Opened at the lift: the floor switch takes the player there.
+var lift := false
 var view: Control
+var floor_bar: HBoxContainer
 var _marked: Array[String] = []
+## floor id -> {rect, places, footprints, rooms} (OfficeFloors.map_plan).
+var _plan_of := Callable()
 
 
 func _init() -> void:
-	super("Kaart: kantoor Verbindingen", Vector2(0, 0))
+	super(TITLE % "kantoor", Vector2(0, 0))
+	floor_bar = HBoxContainer.new()
+	floor_bar.add_theme_constant_override("separation", 10)
+	body.add_child(floor_bar)
 	view = Control.new()
 	view.custom_minimum_size = SIZE
 	view.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -31,10 +56,13 @@ func _init() -> void:
 	var legend := HBoxContainer.new()
 	legend.add_theme_constant_override("separation", 28)
 	for item: Array in [["●  Plek", Palette.VOLTANA_BLUE], ["●  Je missie", Palette.SAFETY_ORANGE],
-			["▲  Jij", Palette.GREEN_DARK]]:
+			["▲  Jij", Palette.GREEN_DARK], ["▦  Dicht", Palette.MUTED]]:
 		legend.add_child(label(item[0], UiTheme.SMALL, item[1]))
 	legend.add_child(label("M of Esc sluit de kaart", UiTheme.SMALL, Palette.MUTED))
 	body.add_child(legend)
+	visibility_changed.connect(func() -> void:
+		if not visible:
+			lift = false)
 
 
 func show_office(floor_in_office: Rect2, office_places: Array[Dictionary], office_player: Node3D) -> void:
@@ -43,9 +71,89 @@ func show_office(floor_in_office: Rect2, office_places: Array[Dictionary], offic
 	player = office_player
 
 
+## The building: its floors, the one the player is on, and how to read any floor's plan.
+func show_floors(building_floors: Array[Dictionary], here: String, plan_of: Callable) -> void:
+	floors = building_floors
+	floor_here = here
+	floor_shown = here
+	_plan_of = plan_of
+	var plan: Dictionary = plan_of.call(here)
+	rooms.assign(plan.get("rooms", []))
+
+
 func refresh() -> void:
 	_marked = mission_places(session)
+	if lift or floor_shown.is_empty():
+		floor_shown = floor_here
+	_show_plan(floor_shown)
+	_fill_floor_bar()
+	title_label.text = LIFT_TITLE if lift else TITLE % _floor_name(floor_shown)
 	view.queue_redraw()
+
+
+## Show floor `id` (the floor switch); at the lift, go there instead.
+func choose_floor(id: String) -> void:
+	if lift:
+		if id != floor_here:
+			floor_chosen.emit(id)
+		return
+	floor_shown = id
+	refresh()
+
+
+func _show_plan(id: String) -> void:
+	if not _plan_of.is_valid():
+		return
+	var plan: Dictionary = _plan_of.call(id)
+	if plan.is_empty():
+		return
+	if plan["rect"].size != Vector2.ZERO:
+		floor_rect = plan["rect"]
+	places.assign(plan["places"])
+	footprints.assign(plan["footprints"])
+	rooms.assign(plan["rooms"])
+
+
+func _floor_name(id: String) -> String:
+	for f in floors:
+		if f["id"] == id:
+			return f["name"]
+	return "kantoor"
+
+
+func _fill_floor_bar() -> void:
+	clear(floor_bar)
+	floor_bar.visible = floors.size() > 1
+	if lift:
+		floor_bar.add_child(label("Naar:", UiTheme.SMALL, Palette.MUTED))
+	for i in range(floors.size() - 1, -1, -1):   # the top floor first, as on a lift's panel
+		var f: Dictionary = floors[i]
+		var text: String = f["name"]
+		if f["id"] == floor_here:
+			text += "  (hier)"
+		elif not f["open"]:
+			text += "  (dicht)"
+		if _floor_marked(f["id"]):
+			text = "● " + text
+		var b := button(text, choose_floor.bind(f["id"]))
+		b.disabled = not f["open"] or (lift and f["id"] == floor_here) or (not lift and f["id"] == floor_shown)
+		floor_bar.add_child(b)
+
+
+## Whether floor `id` holds one of the active missions' places.
+func _floor_marked(id: String) -> bool:
+	if _marked.is_empty() or not _plan_of.is_valid():
+		return false
+	var plan: Dictionary = _plan_of.call(id)
+	return plan.get("places", []).any(func(p: Dictionary) -> bool: return p["id"] in _marked)
+
+
+## The labels of floor `id`'s places.
+func floor_labels(id: String) -> Array[String]:
+	var out: Array[String] = []
+	for p: Dictionary in (_plan_of.call(id).get("places", []) if _plan_of.is_valid() else []):
+		out.append(p["label"])
+	return out
 
 
 ## A point on the floor (x, z) in a map area: the floor fitted to the area
@@ -91,6 +199,11 @@ func labels() -> Array[String]:
 	return out
 
 
+## Whether the player is on the floor shown (their arrow is drawn).
+func player_shown() -> bool:
+	return player != null and (floor_shown.is_empty() or floor_shown == floor_here)
+
+
 func player_point() -> Vector2:
 	return to_view(Vector2(player.position.x, player.position.z))
 
@@ -115,6 +228,8 @@ func _draw_map() -> void:
 	while y < r.end.y - 1:
 		view.draw_line(Vector2(r.position.x, y), Vector2(r.end.x, y), Palette.LINE, 1.0)
 		y += step
+	for room in rooms:
+		_draw_room(room)
 	for f in footprints:
 		var a := to_view(f["rect"].position)
 		var box := Rect2(a, to_view(f["rect"].end) - a)
@@ -123,40 +238,87 @@ func _draw_map() -> void:
 			view.draw_rect(box, Palette.BLUE_LIGHT, false, 3.0)
 		else:
 			view.draw_rect(box, Palette.LINE)
+	for room in rooms:   # over the furniture
+		if room["open"]:
+			var corner := to_view(Vector2(room["rect"].position.x, room["rect"].end.y))
+			view.draw_string(font, corner + Vector2(8, -10), room["name"], HORIZONTAL_ALIGNMENT_LEFT, -1, 17,
+				Palette.VOLTANA_BLUE)
 	view.draw_rect(r, Palette.VOLTANA_BLUE, false, 5.0)
 	_draw_north(font, Vector2(SIZE.x - 40, 52))
 	var scale_label := "%d m" % int(GRID_METRES)
 	view.draw_line(Vector2(r.position.x, r.end.y + 12), Vector2(r.position.x + step, r.end.y + 12), Palette.MUTED, 2.0)
 	view.draw_string(font, Vector2(r.position.x + step + 8, r.end.y + 18), scale_label, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Palette.MUTED)
-	for p in places:
-		_draw_place(font, p, p["id"] in _marked)
-	if player != null:
+	var pills := label_rects(font)
+	for k in places.size():
+		_draw_place(font, places[k], places[k]["id"] in _marked, pills[k])
+	if player_shown():
 		_draw_player()
 
 
-func _draw_place(font: Font, p: Dictionary, marked: bool) -> void:
+## A room: its walls; a shut room greyed and hatched; an open one named in its south-west
+## corner (a shut one is named at its door).
+func _draw_room(room: Dictionary) -> void:
+	var rect: Rect2 = room["rect"]
+	var a := to_view(rect.position)
+	var box := Rect2(a, to_view(rect.end) - a)
+	if room["open"]:
+		view.draw_rect(box, Palette.BLUE_LIGHT, false, 2.0)
+		return
+	view.draw_rect(box, Color(Palette.MUTED, 0.16))
+	var x := box.position.x - box.size.y
+	while x < box.end.x:   # hatching, clipped to the box
+		var from := Vector2(maxf(x, box.position.x), box.end.y - maxf(0.0, box.position.x - x))
+		var to := Vector2(minf(x + box.size.y, box.end.x), box.position.y + maxf(0.0, x + box.size.y - box.end.x))
+		view.draw_line(from, to, Color(Palette.MUTED, 0.35), 1.0)
+		x += 14.0
+	view.draw_rect(box, Palette.MUTED, false, 2.0)
+
+
+## Where each place's name goes: below its dot, else above, else to the right or the
+## left, the first spot that keeps clear of the dots and of the names placed before it.
+func label_rects(font: Font) -> Array[Rect2]:
+	var out: Array[Rect2] = []
+	var bounds := area()
+	var dots: Array[Rect2] = []
+	for p in places:
+		dots.append(Rect2(to_view(p["at"]) - Vector2.ONE * DOT, Vector2.ONE * DOT * 2.0))
+	for p in places:
+		var at := to_view(p["at"])
+		var size := font.get_string_size(p["label"], HORIZONTAL_ALIGNMENT_LEFT, -1, LABEL_SIZE) + Vector2(20, 8)
+		var spots: Array[Rect2] = [
+			Rect2(at + Vector2(-size.x / 2.0, DOT + 6), size), Rect2(at + Vector2(-size.x / 2.0, -DOT - 6 - size.y), size),
+			Rect2(at + Vector2(DOT + 6, -size.y / 2.0), size), Rect2(at + Vector2(-DOT - 6 - size.x, -size.y / 2.0), size)]
+		var chosen := Rect2()
+		var least := INF
+		for spot in spots:   # the first clear spot, else the least covered
+			spot.position = spot.position.clamp(bounds.position, bounds.end - spot.size)
+			var covered := 0.0
+			for r in out + dots:
+				covered += r.intersection(spot).get_area()
+			if covered < least:
+				chosen = spot
+				least = covered
+			if covered == 0.0:
+				break
+		out.append(chosen)
+	return out
+
+
+func _draw_place(font: Font, p: Dictionary, marked: bool, pill: Rect2) -> void:
 	var at := to_view(p["at"])
 	var colour := Palette.SAFETY_ORANGE if marked else Palette.VOLTANA_BLUE
 	if marked:
 		view.draw_circle(at, DOT * 2.0, Color(Palette.SAFETY_ORANGE, 0.22))
 	view.draw_circle(at, DOT + 3.0, Color.WHITE)
 	view.draw_circle(at, DOT, colour)
-	var text: String = p["label"]
-	var font_size := 19
-	var text_size := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
-	var pill := Rect2(at + Vector2(-text_size.x / 2.0 - 10, DOT + 8), text_size + Vector2(20, 8))
-	var bounds := area()
-	pill.position.x = clampf(pill.position.x, bounds.position.x, bounds.end.x - pill.size.x)
-	if pill.end.y > bounds.end.y:
-		pill.position.y = at.y - DOT - 8 - pill.size.y
 	var box := StyleBoxFlat.new()
 	box.bg_color = Color.WHITE
 	box.border_color = colour
 	box.set_border_width_all(2)
 	box.set_corner_radius_all(int(pill.size.y / 2.0))
 	view.draw_style_box(box, pill)
-	view.draw_string(font, pill.position + Vector2(10, 4 + font.get_ascent(font_size)), text,
-		HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Palette.INK)
+	view.draw_string(font, pill.position + Vector2(10, 4 + font.get_ascent(LABEL_SIZE)), p["label"],
+		HORIZONTAL_ALIGNMENT_LEFT, -1, LABEL_SIZE, Palette.INK)
 
 
 func _draw_player() -> void:
