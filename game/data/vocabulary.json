@@ -34,6 +34,9 @@
   "blame_repair_clue": [],
   "check_recovery": [],
   "coach_cycle": [],
+  "contain_then_fix": [
+   "days"
+  ],
   "deepest_why": [
    "count"
   ],
@@ -46,6 +49,9 @@
    "place",
    "days",
    "countermeasures"
+  ],
+  "followed_order": [
+   "days"
   ],
   "fork_learned": [],
   "fork_measured": [

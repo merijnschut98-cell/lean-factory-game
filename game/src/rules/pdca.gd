@@ -67,7 +67,7 @@ static func kpi_gain(kpi: String, without: Dictionary, with_fix: Dictionary) -> 
 ## in the stream's capacity), at_constraint (the problem's team was the
 ## stream's constraint), team_step (a team works at the problem's step; a
 ## wait or a material step has none), lead_time_gain (relative, shorter is
-## positive).
+## positive), durable (the fix is built in or standardised).
 ## Returns {plan, root_cause, countermeasure, check_act, impact, total, notes}.
 static func score(i: Dictionary) -> Dictionary:
 	var notes: Array[String] = []
@@ -92,8 +92,10 @@ static func score(i: Dictionary) -> Dictionary:
 	if not i["waste_right"]:
 		notes.append("waste_wrong")
 
+	# Audit R1(c): a fix that lasts (built in, or standardised) scores a point
+	# more, so the patient fix outscores the quick one that fades.
 	var base := 5 if i["eff"] >= 0.7 else (4 if i["eff"] >= CHECK_PASS else 2)
-	var countermeasure := _clamp15(base - i["failed_checks"])
+	var countermeasure := _clamp15(base - i["failed_checks"] + (1 if i["durable"] else 0))
 	if i["failed_checks"] > 0:
 		notes.append("failed_checks")
 

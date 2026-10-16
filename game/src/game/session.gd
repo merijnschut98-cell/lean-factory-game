@@ -40,6 +40,8 @@ var region: Region
 var missions: Missions
 ## Hidden rewards for deep thinking; it hears what the player does.
 var discoveries: Discoveries
+## The El Amrani family's dossier, followed through the stream.
+var followed := FollowedOrder.new()
 ## The first thing wrong with the content; "" when the game is usable.
 var error := ""
 
@@ -65,6 +67,7 @@ static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, t
 			return s
 	# No problems are active yet, so the warm-up costs nothing and teaches nothing.
 	net.advance(SimCalendar.days(WARMUP_DAYS) + START_MINUTE)
+	s.followed.pick(net)
 	if training:
 		s.missions.accept(TRAINING_FIRST)
 	else:
@@ -183,6 +186,36 @@ func act(problem_id: String, standardise: bool) -> Dictionary:
 		discoveries.note_act(self, problem_id)
 	_after(0)
 	return score.duplicate(true) if not score.is_empty() else {"error": "not_checked"}
+
+
+## Write the standard for a fix acted on without one (Region.standardise);
+## it takes Sustain.AUDIT_MINUTES at the place. "" or unknown_problem |
+## Region's code: not_resolved | standardised | no_budget.
+func standardise(problem_id: String) -> String:
+	if not region.problems.has(problem_id):
+		return "unknown_problem"
+	var refused := region.standardise(problem_id)
+	_after(Sustain.AUDIT_MINUTES if refused.is_empty() else 0)
+	return refused
+
+
+## Contain an acute risk in an active safety mission (Missions.contain): ""
+## or not_active | no_containment | contained.
+func contain(mission_id: String) -> String:
+	var refused := missions.contain(mission_id)
+	if refused.is_empty():
+		discoveries.note_contain(self, mission_id)
+	_after(0)
+	return refused
+
+
+## Let time pass (whole or part days, at most a quarter): the player waits
+## for something to happen. "" or bad_days.
+func wait_days(days: float) -> String:
+	if days <= 0.0 or days > MAX_FORECAST_DAYS * 3:
+		return "bad_days"
+	_after(roundi(days * SimCalendar.MINUTES_PER_DAY))
+	return ""
 
 
 ## A gemba audit of the standard at a place (a leader routine, no mission
@@ -304,6 +337,12 @@ func clock_text() -> String:
 		int(minute_of_day / 60.0), minute_of_day % 60]
 
 
+## The El Amrani dossier: {age_days, touch_hours, step, delivered_days}
+## (FollowedOrder.view).
+func followed_order() -> Dictionary:
+	return followed.view(region.net)
+
+
 ## The month of the game's date (1-12).
 func month() -> int:
 	var played := region.net.time - SimCalendar.days(WARMUP_DAYS)
@@ -342,8 +381,12 @@ func available_missions() -> Array[MissionDef]:
 
 ## A mission's briefing as the board shows it (the reopen text when its fix
 ## faded) and its debrief (a fork branch done first has its own).
+## {dossier_weken} reads the El Amrani dossier's age.
 func mission_briefing(mission_id: String) -> String:
-	return missions.briefing_of(mission_id) if missions.defs.has(mission_id) else ""
+	if not missions.defs.has(mission_id):
+		return ""
+	var age: float = followed_order()["age_days"]
+	return missions.briefing_of(mission_id).replace("{dossier_weken}", FollowedOrder.weeks_text(age))
 
 
 func mission_debrief(mission_id: String) -> String:
@@ -499,6 +542,7 @@ func _after(minutes: int) -> void:
 	_start_training_day()
 	if not missions.in_training():
 		region.start_drift()
+	followed.update(region.net)
 	discoveries.update(self)
 
 

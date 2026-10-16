@@ -239,3 +239,61 @@ func test_an_old_save_reads_its_act_as_sustainment() -> void:
 	var old := RegionState.capture(r)
 	old.erase("drift_from")
 	assert_eq(RegionState.restore(RulesFixture.region(), old)["error"], "")
+
+
+## A fix acted on without a standard can get one later: it costs the same,
+## the habits hold it from then on, and what already wore away stays worn.
+func test_a_fix_can_be_standardised_after_the_act() -> void:
+	var r := _resolved(false)
+	r.advance_days(10)
+	var health := r.health("custom_design")
+	var budget := r.profile.budget
+	var days_left := r.days_to_recur("custom_design")
+	assert_eq(r.standardise("custom_design"), "")
+	assert_eq(r.profile.budget, budget - Region.STANDARDISE_BUDGET)
+	assert_true(r.state["custom_design"].standardised)
+	assert_eq(r.sustain("custom_design")["mechanisms"], ["standard_work"])
+	assert_near(r.health("custom_design"), health, 1e-9, "the standard holds what is left")
+	assert_true(r.days_to_recur("custom_design") > days_left, "and it lasts longer from here")
+	assert_eq(r.standardise("custom_design"), "standardised", "once")
+	assert_eq(r.standardise("incomplete_application"), "not_resolved")
+
+
+func test_standardising_later_needs_the_budget() -> void:
+	var r := _resolved(false)
+	r.profile.budget = Region.STANDARDISE_BUDGET - 1
+	assert_eq(r.standardise("custom_design"), "no_budget")
+	assert_false(r.state["custom_design"].standardised)
+
+
+# ── Short-term fixes cost later (tier-2 draft §0.1: trust, aftermath) ───────
+
+## A fix that burns people costs their trust at the Act; its aftermath comes
+## later, for a while, and costs what it costs.
+func test_a_fix_with_an_aftermath_costs_later() -> void:
+	var r := RulesFixture.region()
+	var cm: CountermeasureDef = r.countermeasures["standard_designs"]
+	cm.trust = {"prep": -1}
+	cm.aftermath = {"after_days": 10, "days": 20, "cost": 5000,
+		"effects": [{"target": "connections.design", "property": "touch_time", "value": 1.2}]}
+	_resolved(false, r)
+	assert_eq(r.trust.get("prep", 0), -1, "the team's trust at the Act")
+	r.drain_events()
+	r.advance_days(9)
+	assert_false(r.net.effects().has("aftermath:custom_design"), "not yet")
+	var budget := r.profile.budget
+	r.advance_days(2)
+	assert_true(r.net.effects().has("aftermath:custom_design"))
+	assert_true(r.profile.budget <= budget - 5000, "its cost lands when it starts")
+	assert_true(r.drain_events().any(func(e: Dictionary) -> bool: return e["type"] == "aftermath"))
+	r.advance_days(20)
+	assert_false(r.net.effects().has("aftermath:custom_design"), "and it ends")
+
+
+func test_an_aftermath_survives_a_save() -> void:
+	var r := RulesFixture.region()
+	r.countermeasures["standard_designs"].aftermath = {"after_days": 10, "days": 20, "effects": []}
+	_resolved(false, r)
+	var copy := RulesFixture.region()
+	RegionState.restore(copy, bytes_to_var(var_to_bytes(RegionState.capture(r))))
+	assert_eq(copy.aftermaths, r.aftermaths)

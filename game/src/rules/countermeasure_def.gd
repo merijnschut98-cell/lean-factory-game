@@ -32,6 +32,13 @@ var unlocks := ""
 ## never the route.
 var needs: Dictionary = {}
 var preparation := ""
+## A fix that does not respect people: team → trust change at the Act
+## (tier-2 draft §0.1).
+var trust: Dictionary = {}
+## The later cost of a short-term fix (tier-2 draft §0.1): {after_days, days,
+## effects, cost}: `after_days` after the Act its effects run for `days` and
+## `cost` is paid.
+var aftermath: Dictionary = {}
 var error := ""
 
 
@@ -58,6 +65,8 @@ static func from_dict(d: Dictionary) -> CountermeasureDef:
 	c.unlocks = str(d.get("unlocks", ""))
 	c.needs = JsonFile.dict_or_empty(d.get("needs")).duplicate(true)
 	c.preparation = str(d.get("preparation", ""))
+	c.trust = JsonFile.dict_or_empty(d.get("trust")).duplicate()
+	c.aftermath = JsonFile.dict_or_empty(d.get("aftermath")).duplicate(true)
 	if not d.get("sustains", false) is bool:
 		c.error = "countermeasure %s: 'sustains' must be true or false" % c.id
 		return c

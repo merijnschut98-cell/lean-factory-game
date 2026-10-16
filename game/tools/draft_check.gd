@@ -4,7 +4,8 @@ extends SceneTree
 ## draft.json holds {problems, countermeasures} in the content shape (a draft's
 ## YAML blocks converted to JSON), and optionally `maturity` (the region's, for
 ## effectiveness; default 2), `only` (problem ids to measure; default all) and
-## `scenarios` (below). Writes JSON (stdout by
+## `scenarios` (below), and `quick` (true: skip the year runs, for a fast
+## re-measure of harm and the Check). Writes JSON (stdout by
 ## default). Every number is a mean ± sd over SEEDS; runs share random numbers
 ## per purpose, so differences come from the effects.
 ##
@@ -54,6 +55,7 @@ var _cms: Dictionary[String, CountermeasureDef] = {}
 ## countermeasure id → its raw `aftermath` (a proposed field the defs drop).
 var _aftermath: Dictionary[String, Dictionary] = {}
 var _maturity := 2
+var _quick := false
 
 
 func _initialize() -> void:
@@ -97,6 +99,7 @@ func _run() -> int:
 
 func _load_draft(d: Dictionary, menu: KpiMenu) -> String:
 	_maturity = int(d.get("maturity", 2))
+	_quick = bool(d.get("quick", false))
 	for raw: Variant in d.get("countermeasures", []):
 		var cm := CountermeasureDef.from_dict(JsonFile.dict_or_empty(raw))
 		if not cm.error.is_empty():
@@ -122,8 +125,9 @@ func _problem_report(p: ProblemDef) -> Dictionary:
 	var open_sources := Pdca.treated_effects(p, null, 0.0)
 	var open_runs := _runs(open_sources)
 	var row := {"id": p.id, "step": p.step, "kpi": p.kpi, "harm": _harm(p),
-		"with_problem": _summary(open_runs, WINDOW), "countermeasures": [],
-		"year_open": _summary(_open_year_runs(p), YEAR)}
+		"with_problem": _summary(open_runs, WINDOW), "countermeasures": []}
+	if not _quick:
+		row["year_open"] = _summary(_open_year_runs(p), YEAR)
 	var before := Capacity.analyse(_net(open_sources, SEEDS[0]))
 	var stream_before: Dictionary = before["streams"][p.stream_id()]
 	var at_constraint: bool = stream_before["constraint_pool"] in _net({}, SEEDS[0]).step_at(p.step).pool_ids
@@ -136,7 +140,7 @@ func _problem_report(p: ProblemDef) -> Dictionary:
 		var runs := _runs(sources)
 		var after: Dictionary = Capacity.analyse(_net(sources, SEEDS[0]))["streams"][p.stream_id()]
 		var year := {}
-		for standardised: bool in [false, true]:
+		for standardised: bool in [] if _quick else [false, true]:
 			var year_runs := _year_runs(p, cm, standardised)
 			year["standardised" if standardised else "loose"] = {
 				"summary": _summary(year_runs, YEAR),

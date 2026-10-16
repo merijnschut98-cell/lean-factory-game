@@ -44,7 +44,7 @@
  "missions": [
   {
    "act": 0,
-   "briefing": "Welkom bij Voltana Netbeheer. Ik ben Ruud Hoekstra. Deze week oefen je in het klein; als er iets misgaat, raakt niemand iets kwijt. Vanochtend lag er een brief op mijn bureau van de familie El Amrani uit Nova-Oost: ze wachten al elf weken op een aansluiting voor hun warmtepomp. Zoek met de kaart (M) de Intake en Werkvoorbereiding op en kijk of vraag bij elk team hoe het werk binnenkomt.",
+   "briefing": "Welkom bij Voltana Netbeheer. Ik ben Ruud Hoekstra. Deze week oefen je in het klein; als er iets misgaat, raakt niemand iets kwijt. Vanochtend lag er een brief op mijn bureau van de familie El Amrani uit Nova-Oost: ze wachten al {dossier_weken} op een aansluiting voor hun warmtepomp. Zoek met de kaart (M) de Intake en Werkvoorbereiding op en kijk of vraag bij elk team hoe het werk binnenkomt.",
    "chapter": "Inwerkweek",
    "debrief": "Je kent nu twee plekken waar een aanvraag langskomt. Elf weken onderweg: hoeveel uur is er al echt aan gewerkt, denk je? Morgen ga je beter kijken.",
    "goal": {
@@ -217,7 +217,7 @@
   },
   {
    "act": 1,
-   "briefing": "Voordat je iets verandert, wil ik dat je de weg van één aansluiting hebt gezien. Het dossier van de familie El Amrani is nu twaalf weken onderweg. Volg het: tel bij Intake en bij Werkvoorbereiding hoeveel er ligt en hoeveel dagen werk dat is. Waar zou jij als dossier het liefst niet liggen?",
+   "briefing": "Voordat je iets verandert, wil ik dat je de weg van één aansluiting hebt gezien. Het dossier van de familie El Amrani is nu {dossier_weken} onderweg. Volg het: tel bij Intake en bij Werkvoorbereiding hoeveel er ligt en hoeveel dagen werk dat is. Waar zou jij als dossier het liefst niet liggen?",
    "chapter": "De stapel",
    "debrief": "Een aansluiting vraagt een paar uur werk, en toch is het dossier weken onderweg. De rest van de tijd ligt het ergens te wachten. Onthoud waar het werk stil lag; daar beginnen we maandag.",
    "goal": {
@@ -431,6 +431,18 @@
    "act": 2,
    "briefing": "Dinsdag 10.12 uur: de graafmachine van Grondwerk Peeters raakt een middenspanningskabel. Driehonderd huizen en zorgcentrum De Linde zitten zonder stroom; De Linde draait op het noodaggregaat. Uitvoerder Gert Peeters laat zijn KLIC-melding zien: 'Volgens deze kaart lag hier niks.' Het is de vijfde graafschade deze maand. Elke schade kost ons geld, en na vier uur krijgt elke getroffen klant een vergoeding.",
    "chapter": "De kaart klopt niet",
+   "containment": {
+    "budget": 500,
+    "days": 14,
+    "effects": [
+     {
+      "property": "demand",
+      "target": "outages.daytime",
+      "value": 0.9
+     }
+    ],
+    "name": "Stop en bel: niet graven bij MS-kabels zonder monteur"
+   },
    "debrief": "Er zijn minder graafschades. Gert graaft weer met proefsleuven, en zijn opdrachtgever plant er tijd voor in. Gert deed alles volgens het boekje; de oorzaak zat in ons proces. Maar de kaart klopt nog steeds niet overal. Wie houdt de kaart eigenlijk bij?",
    "debrief_variants": {
     "blamed": "De schades zijn minder. Gert werkt mee, maar hij vertelt je niets meer dan nodig. Wie houdt de kaart eigenlijk bij?"

@@ -43,6 +43,12 @@
 #            the play, in that order before debrief_first and debrief
 # questions  main and training: the mission's own coach questions per stage,
 #            asked before the general bank; insights may list several per stage
+# containment {name, budget, days, effects}: a safety mission's short measure
+#            against an acute risk (audit §2.4.1), taken once while the mission
+#            is active; its effects fade after `days` (at most 30) and it is
+#            not the fix (hidden reward eerst_veilig when the fix follows)
+# {dossier_weken} in a briefing: the El Amrani dossier's age in weeks, read
+#            from the followed order in the simulation (GameSession.mission_briefing)
 #
 # Goal names: `sustain {problem}` is the check-in's (a slipping fix back in
 # use; the game builds these). Holding a KPI for some weeks (catalogue §2.1)
@@ -103,7 +109,7 @@ missions:
     tier: 1
     act: 0
     chapter: Inwerkweek
-    briefing: "Welkom bij Voltana Netbeheer. Ik ben Ruud Hoekstra. Deze week oefen je in het klein; als er iets misgaat, raakt niemand iets kwijt. Vanochtend lag er een brief op mijn bureau van de familie El Amrani uit Nova-Oost: ze wachten al elf weken op een aansluiting voor hun warmtepomp. Zoek met de kaart (M) de Intake en Werkvoorbereiding op en kijk of vraag bij elk team hoe het werk binnenkomt."
+    briefing: "Welkom bij Voltana Netbeheer. Ik ben Ruud Hoekstra. Deze week oefen je in het klein; als er iets misgaat, raakt niemand iets kwijt. Vanochtend lag er een brief op mijn bureau van de familie El Amrani uit Nova-Oost: ze wachten al {dossier_weken} op een aansluiting voor hun warmtepomp. Zoek met de kaart (M) de Intake en Werkvoorbereiding op en kijk of vraag bij elk team hoe het werk binnenkomt."
     debrief: "Je kent nu twee plekken waar een aanvraag langskomt. Elf weken onderweg: hoeveel uur is er al echt aan gewerkt, denk je? Morgen ga je beter kijken."
     goal: {type: observe, places: [connections.intake, connections.design]}
     teaches: [netbeheerder, aansluiting, aansluittermijn]
@@ -205,7 +211,7 @@ missions:
     act: 1
     chapter: De stapel
     requires: {missions: [training_fri]}
-    briefing: "Voordat je iets verandert, wil ik dat je de weg van één aansluiting hebt gezien. Het dossier van de familie El Amrani is nu twaalf weken onderweg. Volg het: tel bij Intake en bij Werkvoorbereiding hoeveel er ligt en hoeveel dagen werk dat is. Waar zou jij als dossier het liefst niet liggen?"
+    briefing: "Voordat je iets verandert, wil ik dat je de weg van één aansluiting hebt gezien. Het dossier van de familie El Amrani is nu {dossier_weken} onderweg. Volg het: tel bij Intake en bij Werkvoorbereiding hoeveel er ligt en hoeveel dagen werk dat is. Waar zou jij als dossier het liefst niet liggen?"
     debrief: "Een aansluiting vraagt een paar uur werk, en toch is het dossier weken onderweg. De rest van de tijd ligt het ergens te wachten. Onthoud waar het werk stil lag; daar beginnen we maandag."
     goal: {type: observe, places: [connections.intake, connections.design], tool: queue_count}
     teaches: [lead_time, flow]
@@ -337,6 +343,19 @@ missions:
       blamed: "De schades zijn minder. Gert werkt mee, maar hij vertelt je niets meer dan nodig. Wie houdt de kaart eigenlijk bij?"
     reopen: "Er komen weer graafschades binnen. Gert belt: 'We graven zoals afgesproken. Klopt jullie kaart nog?'"
     goal: {type: solve, problem: digging_damage}
+    # Containment (audit §2.4.1): until the cause is fixed, contractors stop
+    # and call the storingsdienst before digging within a metre of a
+    # middenspanningskabel, and a monteur points out the cable on site. All
+    # estimates: about one in ten daytime outages avoided (the MS strikes
+    # caught by the call; graafschade is about a third of daytime outages
+    # here), EUR 500 for the call line and site visits for two weeks, and two
+    # weeks because it leans on goodwill and overtime, not on a fixed process.
+    containment:
+      name: "Stop en bel: niet graven bij MS-kabels zonder monteur"
+      budget: 500
+      days: 14
+      effects:
+        - {target: outages.daytime, property: demand, value: 0.9}
     teaches: [klic_melding, compensatieregeling]
     rewards: {xp: 1000, budget: 12000}
     insights:

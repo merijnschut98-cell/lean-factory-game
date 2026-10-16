@@ -548,3 +548,21 @@ func test_a_routine_is_planned_and_stopped_at_a_place() -> void:
 	assert_eq(s.stop_routine(DESIGN), "")
 	assert_eq(s.stop_routine(DESIGN), "not_planned")
 	assert_eq(s.plan_routine("nowhere.step"), "unknown_place")
+
+
+## Standardising after the Act: the story remembers it (a check-in can now
+## come, the debrief no longer reads "not standardised").
+func test_a_fix_is_standardised_after_the_act() -> void:
+	var s := _accepted()
+	_investigate(s)
+	assert_eq(s.submit_a3(PROBLEM, _a3(s, "standard_designs")), "")
+	assert_eq(s.wait_for_check(PROBLEM), "")
+	assert_true(s.check(PROBLEM)["passed"])
+	assert_false(s.act(PROBLEM, false).has("error"))
+	assert_false(s.knows("standardised:custom_design"))
+	var minutes := s.region.net.time
+	assert_eq(s.standardise(PROBLEM), "")
+	assert_true(s.knows("standardised:custom_design"))
+	assert_eq(s.region.net.time - minutes, Sustain.AUDIT_MINUTES, "writing the standard takes an hour at the place")
+	assert_eq(s.standardise(PROBLEM), "standardised")
+	assert_eq(s.standardise("ghost"), "unknown_problem")
