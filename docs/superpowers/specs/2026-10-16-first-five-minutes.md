@@ -45,7 +45,7 @@ Speakers: **Ruud** Hoekstra (Directeur Netbeheer regio Zuidmark, the coach); **Y
 
 ### B1 — De pasfoto (the creator)
 
-"Nieuw spel" fades to a phone screen, a mail from Voltana's HR, then into the camera: the creator is the photo for your badge. The traits and options are 2.7b's; only the frame and the labels are new here.
+"Nieuw spel" fades to a phone screen, a mail from Voltana's HR, then into the camera: the creator is the photo for your badge. The traits and options are 2.7b's; only the frame and the labels are new here. (Layout, controls, the name's validation, the portrait and the tests: `2026-10-16-creator-and-minimap.md` §1.)
 
 **The mail** (one screen, one button):
 
@@ -104,7 +104,7 @@ The Klantcontactcentrum is visible through glass on the right: headsets, a wall 
 
 **Leg 2 — the stairs (the camera).** The stairwell turns; the first time the walls block the view, a second hint fades in for five seconds: **"Draaien: Z en C · Zoomen: muiswiel"**. It is shown once, only if the player has not turned the camera yet.
 
-**Leg 3 — the top of the stairs (the minimap).** On the landing of the 1e verdieping, Ruud hands over a folded floor plan. The minimap appears in its corner (2.1b) **at that moment**, with a soft fold-open animation, drawn as the same site plan:
+**Leg 3 — the top of the stairs (the minimap; its build spec is `2026-10-16-creator-and-minimap.md` §2).** On the landing of the 1e verdieping, Ruud hands over a folded floor plan. The minimap appears in its corner (2.1b) **at that moment**, with a soft fold-open animation, drawn as the same site plan:
 
 > **Ruud:** "Hier. De plattegrond. Ik werk hier twintig jaar en ik loop nog steeds de verkeerde gang in."
 > *(the minimap opens; the rim arrow points to Aansluitingen)*
@@ -136,7 +136,14 @@ Rachid sits behind Sanne with the three trays. He has a name tag on hover but Ru
 
 That is all. Ruud does not say why. (Gemba readability, PLAN §5.1: the two trays, the three empty chairs and the stack are the tell; a player who looks sees it, nobody says it.)
 
-**Overtaking Ruud.** If the player walks ahead to Ruud's room on their own, he catches up there: "Je vond het zelf. Goed teken." Every person not passed is met later in the week; their tags work from the start.
+**At his door** (added 2026-10-16 evening, Merijn Q10: Ruud sits with Aansluitingen by choice in the first hundred days; `2026-10-16-creator-and-minimap.md` §3). Ruud opens a glass door at the edge of the open office: a small room, a desk with a ring from a coffee cup, a whiteboard.
+
+> **Ruud:** "Mijn kamer. Voorlopig."
+> **Ruud:** "Boven heb ik er een met uitzicht op het spoor. Maar boven zit ik te ver van het werk."
+
+He does not explain it (nothing handed over); B4 starts here.
+
+**Overtaking Ruud.** If the player walks ahead to Ruud's room on their own, he catches up there: "Je vond het zelf. Goed teken.", then the two lines at his door. Every person not passed is met later in the week; their tags work from the start.
 
 ### B4 — Het bord van Ruud: *Hoe werkt het?* (spanning, stroom, weerstand)
 
