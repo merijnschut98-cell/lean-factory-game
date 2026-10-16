@@ -32,6 +32,9 @@ const FRAME_AHEAD := 0.9
 const FRAME_HEIGHT := 0.8
 ## A click this close (m) to a ring's centre is a click on the ring.
 const RING_CLICK := Interactable.RING_RADIUS + 0.3
+## A person's tag hangs this high (m) over their place, the next one along.
+const TAG_HEIGHT := 2.3
+const TAG_SPACING := 1.0
 
 ## The simulation's luck for a new game.
 @export var seed_value := 1
@@ -51,6 +54,8 @@ var interactables: Array[Interactable] = []
 var _nav: OfficeNav
 ## The ring clicked last: opened when the walk there ends.
 var _walk_goal: Interactable
+## Person id → the tag over their place (people at a place with a marker).
+var _tags: Dictionary[String, PersonTag] = {}
 
 
 func _ready() -> void:
@@ -85,6 +90,7 @@ func build() -> void:
 	if ui.playable():
 		ui.office_map.show_office(floor_rect(), map_places(), player)
 		ui.office_map.footprints = map_footprints()
+		_add_people()
 
 
 func _process(_delta: float) -> void:
@@ -234,6 +240,34 @@ func floor_rect() -> Rect2:
 	for i in interactables:
 		r = r.expand(Vector2(i.position.x, i.position.z))
 	return r.grow(2.0)
+
+
+## A tag over each person whose place has a marker, side by side.
+func _add_people() -> void:
+	var at_place := {}
+	for p: PersonDef in session.people.persons.values():
+		var marker := interactable("place:" + p.place)
+		if marker == null:
+			continue
+		var n: int = at_place.get(p.place, 0)
+		at_place[p.place] = n + 1
+		var tag := PersonTag.create(p.id, p.name)
+		tag.position = marker.position + Vector3(0, TAG_HEIGHT, 0) + marker.basis.x * TAG_SPACING * (n - 0.5)
+		_tags[p.id] = tag
+		add_child(tag)
+	refresh_people()
+
+
+## The tags follow the people: a low-energy bar over whoever needs a talk.
+func refresh_people() -> void:
+	for id: String in _tags:
+		var e := session.energy_of(id)
+		_tags[id].show_state(e.get("energy", 1.0), e.get("needs_talk", false) and not session.people.has_left(id))
+
+
+## The tag over a person (null when their place has no marker here).
+func person_tag(person_id: String) -> PersonTag:
+	return _tags.get(person_id)
 
 
 ## Use an interaction point: open its panel, the camera framing the station.
@@ -411,6 +445,7 @@ func _on_panel_opened() -> void:
 
 
 func _on_panels_closed() -> void:
+	refresh_people()
 	player.active = true
 	rig.active = true
 	rig.release()

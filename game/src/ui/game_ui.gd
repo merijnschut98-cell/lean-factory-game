@@ -19,6 +19,7 @@ var coach_panel: CoachPanel
 var journal: ClueJournal
 var office_map: OfficeMap
 var codex: CodexPanel
+var dialog_panel: DialogPanel
 var _panels: Array[UiPanel] = []
 ## The concepts already known, to toast only new ones.
 var _known_concepts := PackedStringArray()
@@ -47,7 +48,8 @@ func setup(of_session: GameSession) -> void:
 	journal = ClueJournal.new()
 	office_map = OfficeMap.new()
 	codex = CodexPanel.new()
-	_panels = [mission_board, place_menu, a3_form, check_panel, coach_panel, journal, office_map, codex]
+	dialog_panel = DialogPanel.new()
+	_panels = [mission_board, place_menu, a3_form, check_panel, coach_panel, journal, office_map, codex, dialog_panel]
 	for p in _panels:
 		p.session = session
 		p.acted.connect(after_action)
@@ -57,6 +59,8 @@ func setup(of_session: GameSession) -> void:
 		check_panel.show_result(problem_id, result)
 		_open(check_panel))
 	check_panel.back_to_a3.connect(open_a3)
+	place_menu.talk_requested.connect(open_talk)
+	dialog_panel.coach_requested.connect(open_coach)
 	root.move_child(hud, -1)
 	_known_concepts = session.region.profile.concepts.duplicate()
 	after_action()
@@ -94,6 +98,17 @@ func open_coach() -> void:
 		return
 	coach_panel.reply = ""
 	_open(coach_panel)
+
+
+## Talk with a person: "" or why not (start_dialog's code; cooling_down
+## shows the person's "Niet nu." as the prompt).
+func open_talk(person_id: String) -> String:
+	if not playable():
+		return "unplayable"
+	var refused := dialog_panel.start(person_id)
+	if refused.is_empty():
+		_open(dialog_panel)
+	return refused
 
 
 func toggle_journal() -> void:
@@ -134,6 +149,8 @@ func is_busy() -> bool:
 
 func close_panels() -> void:
 	var was_busy := is_busy()
+	if dialog_panel != null and dialog_panel.talking():
+		dialog_panel.close_talk()  # Esc mid-talk: a graceful close, never a ruin
 	for p in _panels:
 		p.hide()
 	hud.show_overlay(true)

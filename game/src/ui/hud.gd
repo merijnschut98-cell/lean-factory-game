@@ -22,6 +22,8 @@ var xp_label: Label
 var drift_label: Label
 var mission_label: Label
 var prompt_label: Label
+## The controls line, bottom left (hidden while a panel is open).
+var help_label: Label
 var _toasts: VBoxContainer
 var _cards: VBoxContainer
 
@@ -87,6 +89,7 @@ func _build_centre() -> void:
 	add_child(prompt_label)
 
 	var help := Label.new()
+	help_label = help
 	help.text = controls_text()
 	help.add_theme_font_size_override("font_size", 16)
 	help.add_theme_color_override("font_color", Color(1, 1, 1, 0.8))
@@ -150,8 +153,9 @@ func mission_text() -> String:
 		return UiText.mission_title(m, session)))
 
 
-## The toasts and cards; hidden while a panel is open.
+## The toasts, cards and controls line; hidden while a panel is open.
 func show_overlay(on: bool) -> void:
+	help_label.visible = on
 	_toasts.visible = on
 	_cards.visible = on
 

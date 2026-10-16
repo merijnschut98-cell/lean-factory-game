@@ -622,6 +622,21 @@ func dialog_meter() -> Dictionary:
 	return _talk.meter() if _talk != null else {}
 
 
+## The layers of the talk in progress, for the layer tracker: [{id
+## (position | interest | concern), text ("" until heard), heard}]; the
+## position is heard from the start, a layer from an earlier talk stays heard.
+## [] when there is no talk.
+func dialog_layers() -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	if _talk == null:
+		return out
+	out.append({"id": "position", "text": str(_talk.position().get("text", "")), "heard": true})
+	for layer: Dictionary in _talk.layers():
+		var heard := _talk.revealed.has(layer["id"])
+		out.append({"id": str(layer["id"]), "text": str(layer.get("text", "")) if heard else "", "heard": heard})
+	return out
+
+
 ## Make a move in the talk (a pick for show_data, propose_experiment and
 ## propose: one the moves offered). Dialog.say's result; when the talk ended,
 ## with `summary` (People.finish), and its minutes have passed. Errors:
