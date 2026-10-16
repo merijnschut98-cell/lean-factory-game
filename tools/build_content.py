@@ -1240,7 +1240,7 @@ def _needs(expr: Any, where: str) -> list[str]:
 
 def validate_dialogs(doc: Any, source: str) -> None:
     _require_strings(doc, [], source)
-    _known_keys(doc, {"people", "bank", "dialogs"}, source)
+    _known_keys(doc, {"people", "bank", "move_cards", "dialogs"}, source)
     for p in _entries(doc, "people", source):
         where = f"{source}: person '{p['id']}'"
         _known_keys(p, PERSON_KEYS, where)
@@ -1250,14 +1250,35 @@ def validate_dialogs(doc: Any, source: str) -> None:
         _number(p, "trust", where, 0, 100, integer=True)
         _number(p, "morale", where, 0, 100, integer=True, default=60)
     _validate_bank(doc.get("bank"), f"{source}: bank")
+    for i, card in enumerate(doc.get("move_cards") or []):
+        _move_card(card, f"{source}: move card {i}")
     for d in _entries(doc, "dialogs", source):
         _validate_dialog(d, f"{source}: dialog '{d['id']}'")
+
+
+MOVE_CARD_KEYS = {"move", "day", "title", "text", "why"}
+
+
+def _move_card(card: Any, where: str) -> None:
+    """A card of the Act 0 week (tutorial talks spec §2): a listening move, or
+    none for a card that names a skill; the training day it is shown on."""
+    if not isinstance(card, dict) or set(card) != MOVE_CARD_KEYS:
+        raise ContentError(f"{where}: a move card has {', '.join(sorted(MOVE_CARD_KEYS))}")
+    if card["move"] is not None and card["move"] not in LISTEN_MOVES:
+        raise ContentError(f"{where}: a move card names a listening move or none")
+    _require_strings(card, ["day", "title", "text", "why"], where)
 
 
 def _validate_bank(bank: Any, where: str) -> None:
     if not isinstance(bank, dict):
         raise ContentError(f"{where}: needs labels, player, replies, special and outcomes")
-    _known_keys(bank, {"labels", "player", "replies", "special", "outcomes", "coach", "wear_out"}, where)
+    _known_keys(bank, {"labels", "player", "replies", "special", "outcomes", "coach", "wear_out", "ruud_names"}, where)
+    # Ruud names one move after an Act 0 talk (tutorial talks spec §3).
+    names = LISTEN_MOVES + ["none", "week_end"]
+    ruud = _mapping(bank, "ruud_names", set(names), where)
+    if set(ruud) != set(names):
+        raise ContentError(f"{where} ruud_names: a line for every listening move, 'none' and 'week_end'")
+    _require_strings(ruud, names, f"{where} ruud_names")
     # Moves that wear out (person-needs spec §3.2): a question and a statement line per archetype.
     wear_out = _mapping(bank, "wear_out", set(DIALOG_ARCHETYPES), where)
     for archetype in DIALOG_ARCHETYPES:
@@ -1520,6 +1541,10 @@ def check_dialogs(docs: dict[str, Any]) -> None:
         if d["kind"] != "checkin":
             _check_mission_dialog(d, where, missions, problems, net)
     check_need_spread(speaking_cast(docs))
+    training = {m["id"] for m in missions.values() if m.get("kind") == "training"}
+    for i, card in enumerate(doc.get("move_cards") or []):
+        if card["day"] not in training:
+            raise ContentError(f"dialogs.yaml: move card {i}: {card['day']!r} is not a training day")
 
 
 # The tiers of the four-tier audit by act: 1 = Acts 0–II, 2 = III, 3 = IV and VI, 4 = V.

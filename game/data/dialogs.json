@@ -191,6 +191,18 @@
     }
    }
   },
+  "ruud_names": {
+   "empathy": "Je zei dat het niet niks is. Begrip tonen. Je hoefde het niet op te lossen om het te erkennen.",
+   "experience": "Je vertelde iets van deze week, toen {person} twijfelde. Ervaring delen. Kort, en over jou.",
+   "inquiry": "Je vroeg door op precies dat ene woord. Doorvragen. Daar zat het.",
+   "mood": "Je vroeg eerst hoe het met {person} ging. Dat heet Stemming peilen. Daarna praatte {person} anders. Zag je dat?",
+   "none": "Wat zag je aan {person} toen je begon?",
+   "open_question": "Je stelde een vraag waar geen ja of nee op past. Een Open vraag. Toen kwam het verhaal, niet het antwoord.",
+   "paraphrase": "Je zei in je eigen woorden terug wat {person} zei. Samenvatten. Vanaf dat moment wist {person} dat je luisterde.",
+   "reflect": "Je zei wat {person} voelde, niet wat {person} zei. Gevoel benoemen. Wat gebeurde er daarna?",
+   "silence": "Toen {person} aarzelde, zei je niets. Stilte laten. Dat is het moeilijkste wat er is.",
+   "week_end": "Acht manieren van luisteren, in vijf dagen. Vanaf maandag noem ik ze niet meer. Eén vraag voor het weekend: wat werkte bij de één en niet bij de ander? Waar zag je dat aan?"
+  },
   "special": {
    "cooling_down": "Niet nu.",
    "lucky_guess": "Hm. Misschien.",
@@ -1182,8 +1194,8 @@
    "opening": "Goedemorgen. Sorry, het is dinsdag, maar hier is het nog maandag: alles van het weekend ligt er nog.",
    "outcomes": {
     "commitment": "Kom maar. Na drieën. Neem koffie mee, die van ons is op.",
-    "compliance": "Prima. Als Ruud het zegt.",
-    "heard": "Joh. Fijn dat je eerst vroeg hoe het ging. Dat doet niemand op zo'n ochtend.",
+    "compliance": "Nou. Als Ruud het zegt.",
+    "heard": "Joh. Jij luistert gewoon. Dat doet niemand op zo'n ochtend.",
     "none": "Ik moet echt verder. Sorry.",
     "partial": "Goed. Maar niet vandaag, hè. Vandaag is het nog maandag.",
     "ruined": "Ik moet echt verder."
@@ -1359,9 +1371,6 @@
      }
     }
    },
-   "teaches": [
-    "open_question"
-   ],
    "tutorial": true
   },
   {
@@ -1419,11 +1428,11 @@
    },
    "mission": "training_tue",
    "name": "Anouk en de stopwatch",
-   "opening": "O, hoi. Sorry, het is een beetje een bende. Drie collega's zitten op cursus.",
+   "opening": "O, hoi. Daar ben je weer. Sorry, het is nog steeds een bende.",
    "outcomes": {
     "commitment": "Kom maar. Ik zet koffie. Slechte koffie, maar koffie.",
     "compliance": "Oké. Als het moet.",
-    "heard": "Fijn dat je eerst vroeg. Dat doet niet iedereen.",
+    "heard": "Fijn. Je schreef niks op. Dat merkte ik wel.",
     "none": "Ik moet echt door. Sorry.",
     "partial": "Goed. Maar zonder stopwatch, hè.",
     "ruined": "Ik moet echt door."
@@ -1527,7 +1536,7 @@
    "name": "Mieke en de schetsen",
    "opening": "Kom je voor de revisie? Dan moet je hier zijn. Pas op de doos.",
    "outcomes": {
-    "commitment": "Dat moet kloppen, dus kom vrijdag terug. Dan heb ik de slechtste apart gelegd.",
+    "commitment": "Dat moet kloppen, dus kom terug wanneer je wilt. De slechtste leg ik apart. Die gaat nergens heen, geloof me.",
     "compliance": "Goed.",
     "heard": "Fijn. Je bent de eerste die het niet 'overtekenen' noemt.",
     "none": "Ik moet verder met deze.",
@@ -1647,7 +1656,7 @@
    "opening": "Je komt de stapel tellen, hoorde ik. Even voor de duidelijkheid: we halen ons doel.",
    "outcomes": {
     "commitment": "Om twee uur. Ik print de lijst. Mijn Excel heeft meer tabbladen dan ik mensen heb.",
-    "compliance": "Prima. Tel maar.",
+    "compliance": "Tel maar. Het getal klopt.",
     "heard": "Eerlijk is eerlijk: niemand vraagt wat 'inhalen' kost.",
     "none": "Ik heb om elf uur overleg.",
     "partial": "Tel eerst maar. Dan praten we.",
@@ -1741,7 +1750,7 @@
      "tags": [
       "admission"
      ],
-     "text": "Als ik ruimte inplan voor storingen, zit er een monteur koffie te drinken als het rustig is. Dan zegt iedereen dat ik niet kan plannen. Dus plan ik vol. En dan valt het om. Elke dag.",
+     "text": "Ik bel elke dag twaalf mensen af. Mensen die een dag vrij hebben genomen. In het begin vond ik dat vreselijk. Nu merk ik dat ik het gewoon doe, tussen twee slokken koffie door. Dat vind ik eigenlijk erger.",
      "unlocks": {
       "facts": [
        "heard:linda_wednesday"
@@ -1806,8 +1815,8 @@
      "hidden": true,
      "id": "watch_one_morning",
      "name": "Eén ochtend meekijken",
-     "reply": "Om zeven uur. Dan zie je het voordat het omvalt. Ja.",
-     "text": "Mag ik morgen om zeven uur naast je zitten, als je het kaartenhuis bouwt?"
+     "reply": "Een ochtend. Dan zie je het voordat het omvalt. Ja.",
+     "text": "Mag ik een keer een ochtend naast je zitten, als je het kaartenhuis bouwt?"
     }
    ],
    "replies": {
@@ -1983,15 +1992,15 @@
     }
    ],
    "lines": {
-    "experience": "Maandag wist ik niet eens waar Intake zat. Ik heb het aan de schoonmaker gevraagd. Ik dacht: als ik vandaag ziek word, weet niemand wat ik al gezien heb.",
+    "experience": "Maandagavond kon ik de uitgang niet vinden. Ik heb het aan de schoonmaker gevraagd. En ik dacht: als Ruud morgen ziek is, weet hier niemand wat ik kom doen.",
     "paraphrase": "Dus elke keer dat je begint, kost het je eerst een kwartier. Daarom doe je het liever in één keer."
    },
    "mission": "training_thu",
    "name": "Petra en de Molen",
    "opening": "Meetdata en registratie. Jij bent de nieuwe van Ruud. Ga zitten, maar raak de map niet aan.",
    "outcomes": {
-    "commitment": "Klopt. Volgende week dinsdag, om tien uur. Ik leg de map klaar. Jij mag hem aanraken.",
-    "compliance": "Prima.",
+    "commitment": "Klopt. Zeg maar wanneer. Ik leg de map klaar. Jij mag hem aanraken.",
+    "compliance": "Dat zet ik in mijn map.",
     "heard": "Hm. Je vroeg wie het overneemt. Dat had nog niemand gevraagd.",
     "none": "Ik heb nog een stapel.",
     "partial": "Misschien. Als Ruud het goedvindt.",
@@ -2120,7 +2129,7 @@
    "name": "Anouk en het A4",
    "opening": "Het werkt. Ik heb vandaag niet één keer gezocht. Niet één keer!",
    "outcomes": {
-    "commitment": "Afgesproken. Ik teken er een bergje bij. Met een vlag.",
+    "commitment": "Goed. Ik teken er een bergje bij. Met een vlag.",
     "compliance": "Oké. Als Joost het zegt.",
     "heard": "Dank je. Ik ga het A4 in elk geval maken.",
     "none": "Ik ga het A4 maar vast schrijven.",
@@ -2201,7 +2210,7 @@
       "admission"
      ],
      "tell": "recognition",
-     "text": "Volgende week begin je echt, toch? Met de stapel van Joost. Als het daar beter gaat, komt alles nog harder bij ons binnen. En dan zijn wij weer het postkantoor dat het niet bijhoudt.",
+     "text": "Volgende week begin je echt, toch? Waar je ook begint: als het daar beter gaat, kijkt iedereen naar wat wij doorsturen. Elke aanvraag die terugkomt, heet dan weer 'een fout van Intake'. En dan zijn wij weer het postkantoor.",
      "unlocks": {
       "facts": [
        "heard:sanne_friday"
@@ -2223,8 +2232,8 @@
    "name": "Sanne op vrijdagmiddag",
    "opening": "Zo. De nieuwe. Het hele gebouw heeft het over je, weet je dat?",
    "outcomes": {
-    "commitment": "Maandag. Om negen uur. Ik neem Rachids lijstje mee. Zeg niks tegen hem.",
-    "compliance": "Prima. Fijn weekend.",
+    "commitment": "Maandag. Om negen uur. Ik neem de stapel terugkomers mee. De echte, niet die uit het weekrapport.",
+    "compliance": "Goed hoor. Fijn weekend.",
     "heard": "Hè. Je luistert echt, hè. Dat is ook raar. Raar goed.",
     "none": "Ik moet de bakken nog leegmaken. Fijn weekend.",
     "partial": "We zien maandag wel. Joh. Fijn weekend.",
@@ -2237,7 +2246,7 @@
      "claim",
      "feeling"
     ],
-    "text": "Je loopt overal rond en je vraagt dingen. Rachid zei dat je zijn lijstje wilde zien. Niemand wil Rachids lijstje zien."
+    "text": "Je loopt overal rond en je vraagt dingen. Ook aan mensen die nooit iets gevraagd wordt. Dat valt op, hier."
    },
    "proposals": [
     {
@@ -2292,7 +2301,7 @@
       "claim",
       "feeling"
      ],
-     "text": "Elke week komen er meer dossiers binnen dan we eruit krijgen. Anouk zat gisteren om zeven uur nog te tekenen. Dat wil ik niet meer.",
+     "text": "Elke week komen er meer dossiers binnen dan we eruit krijgen. Ik zie mijn mensen moe worden. En ik heb ze niks te bieden behalve 'het is tijdelijk'. Dat wil ik niet meer.",
      "via": [
       "open_question",
       "inquiry",
@@ -2454,7 +2463,7 @@
       "admission"
      ],
      "tell": "recognition",
-     "text": "Hier denken ze dat Intake het postkantoor is. Stempel erop, doorsturen. Als er iets misgaat, is het de Intake. Met een controleur kan ik tenminste laten zíen dat het niet aan ons ligt.",
+     "text": "Mijn mensen horen elke dag aan de telefoon dat ze het fout doen. Rachid belt een installateur drie keer na en krijgt de schuld als het toch terugkomt. Ik kan ze alleen maar zeggen dat het niet aan hen ligt. Met een controleur kan ik het tenminste laten zíen.",
      "unlocks": {
       "clue": "incomplete_application:5",
       "facts": [
@@ -2506,7 +2515,7 @@
      ],
      "id": "required_fields",
      "name": "Verplichte velden in het webformulier",
-     "reply": "Dan zien we het niet eens meer… als het werkt. Wie bouwt dat dan?",
+     "reply": "Dan zien we het niet eens meer… als het werkt. Nou. En wie maakt dat? IT zegt al een jaar 'volgend kwartaal'.",
      "text": "Wat als het formulier pas verder gaat als vermogen, foto en installateur erin staan?"
     },
     {
@@ -2656,7 +2665,7 @@
    "replies": {
     "experience": {
      "misses": {
-      "text": "Bij jouw vorige baan. Ja. Hier is het Nova."
+      "text": "Jouw eerste weken. Ja. Ik zit hier drieëntwintig jaar. Hier is het Nova."
      }
     },
     "perspective": {
@@ -2835,7 +2844,7 @@
       "claim",
       "feeling"
      ],
-     "text": "Op 7 september zei iemand 'binnenkort'. Op 21 september 'we zijn ermee bezig'. Op 5 oktober wist niemand het. Ik wil gewoon weten waar ik aan toe ben.",
+     "text": "Drie weken geleden, dinsdag, kwart over tien: 'binnenkort'. Twee weken geleden: 'we zijn ermee bezig'. Vorige week wist niemand het. Ik wil gewoon weten waar ik aan toe ben.",
      "via": [
       "paraphrase",
       "inquiry"
@@ -2875,7 +2884,7 @@
    "mission": "fix_status_callers",
    "mood": "gespannen",
    "name": "Het vierde telefoontje van mevrouw El Amrani",
-   "opening": "Goedemiddag. U spreekt met Fatima El Amrani. Ik bel voor de vierde keer deze maand, en ik heb ze allemaal opgeschreven.",
+   "opening": "Goedemiddag. U spreekt met Fatima El Amrani. Ik bel voor de vierde keer, en ik heb ze allemaal opgeschreven.",
    "outcomes": {
     "commitment": "Goed. Ik wacht op uw telefoontje. En als u niet belt, bel ik. Dat weet u.",
     "compliance": "Ik heb geen keus, hè. Ik schrijf het op.",
@@ -2899,8 +2908,8 @@
      ],
      "id": "name_a_date",
      "name": "Een datum noemen",
-     "reply": "Half november. Ik schrijf het op.",
-     "text": "Volgens de planning wordt u half november aangesloten."
+     "reply": "Zes weken. Ik schrijf het op, met de datum van vandaag erbij.",
+     "text": "Volgens de planning bent u over een week of zes aangesloten."
     },
     {
      "addresses": [
@@ -3014,7 +3023,7 @@
       "claim",
       "feeling"
      ],
-     "text": "Elke keer dat ik in het register ga, ben ik een kwartier kwijt voordat ik iets heb gedaan. Twee tokens, de controles, de export. De Molen maalt, maar langzaam.",
+     "text": "Je kent de Molen. Een kwartier opstarten, elke keer. Dus doe ik het één keer per maand. Dat is de rekensom, en die klopt. Alleen staat er in die rekensom geen familie die op een EAN wacht.",
      "via": [
       "inquiry",
       "open_question",
@@ -3036,7 +3045,7 @@
      "tags": [
       "admission"
      ],
-     "text": "Ik ben alleen. Als ik het elke dag doe en ik ben een week ziek, dan ligt het stil en ziet iedereen het meteen. Nu merkt niemand het als ik er een week niet ben. De maandrun schuift gewoon een weekje op.",
+     "text": "Weet je waarom die maandrun me eigenlijk goed uitkomt? Als ik een week ziek ben, schuift hij gewoon een weekje op. Niemand die het merkt. Doe ik het elke dag en ik ben er niet, dan ziet iedereen het meteen. Dan is Petra het probleem.",
      "unlocks": {
       "facts": [
        "heard:petra_alone"
@@ -3496,7 +3505,7 @@
       "admission",
       "doubt"
      ],
-     "text": "Ik denk dat ik langzamer ben dan de rest. Ik kijk alles drie keer na. Als ik tot zeven blijf, ziet niemand dat.",
+     "text": "Ik kijk alles drie keer na. Niemand vraagt me dat. Maar één fout van mij ligt straks bij een monteur in een sleuf. Als ik tot zeven blijf, ziet niemand hoe lang dat duurt.",
      "unlocks": {
       "facts": [
        "heard:anouk_slow"
@@ -3780,13 +3789,13 @@
     }
    ],
    "lines": {
-    "experience": "In mijn eerste weken hier keek ik ook vooral naar getallen. Ruud vroeg me toen: wie heb je vandaag gesproken? Ik wist het niet."
+    "experience": "Mijn eerste week vroeg Ruud elke avond: wie heb je vandaag gesproken? Niet wat ik gezien had. Wie."
    },
    "name": "Esra en het rooster",
    "opening": "Kom erin. Ik zit hier al een uur naar een rooster te staren.",
    "outcomes": {
     "heard": "Dank je. Dit zeg ik niet tegen mijn team, hè.",
-    "lifted": "Weet je wat ik ga doen? Haar eerste dag ga ik gewoon naast haar zitten. Zonder scherm.",
+    "lifted": "Deal. Haar eerste dag ga ik gewoon naast haar zitten. Zonder scherm.",
     "none": "Ja. Komt goed."
    },
    "patience": 8,
@@ -3951,13 +3960,13 @@
     }
    ],
    "lines": {
-    "experience": "Bij mijn vorige werk hing er ook zo'n bord. Toen de man die het had opgehangen wegging, hing het er nog een jaar. Leeg."
+    "experience": "Mijn eerste week liep ik langs dat bord in de gang, met de cijfers van 2023. Ik vroeg van wie het was. Niemand wist het meer."
    },
    "name": "Marco na honderd dagen",
-   "opening": "Honderd dagen. Je bent er nog. Dat is al meer dan de vorige twee.",
+   "opening": "Honderd dagen. Je bent er nog. Dat is al meer dan de vorige drie.",
    "outcomes": {
     "heard": "Hm. Ja. We zien wel.",
-    "lifted": "Weet je wat. Ik laat Ricardo het bord bijhouden. Niet ik, niet jij. Hij. Dan blijft het.",
+    "lifted": "Kijk. Ik laat Ricardo het bord bijhouden. Niet ik, niet jij. Hij. Dan blijft het.",
     "none": "Goed. Tot ziens."
    },
    "patience": 8,
@@ -4196,7 +4205,7 @@
       "claim",
       "feeling"
      ],
-     "text": "Het tekenen is het probleem niet. Het uitzoeken. Welke kabel, welke mof, wat bedoelt hij met dat pijltje? Deze is op een broodzakje getekend. Met pindakaasvlek.",
+     "text": "Het tekenen is het probleem niet. Het uitzoeken. Welke kabel, welke mof, wat bedoelt hij met dat pijltje? Deze is op een boterhamzakje getekend. Met pindakaasvlek. Het is niet de eerste.",
      "via": [
       "inquiry",
       "open_question"
@@ -4238,7 +4247,7 @@
    "name": "Mieke en de revisieberg",
    "opening": "Als je komt voor de kabel van Gert: die zat in de doos. Ergens tussen juni en nu.",
    "outcomes": {
-    "commitment": "Dat moet kloppen, dus ja. En het broodzakje lijst ik in. Als laatste van zijn soort.",
+    "commitment": "Dat moet kloppen, dus ja. En het boterhamzakje lijst ik in. Als laatste van zijn soort.",
     "compliance": "Als het moet. Dan teken ik wat er komt.",
     "heard": "Je bent de eerste die vraagt wát we eigenlijk doen.",
     "partial": "Ik wil het proberen. Als de monteurs het ook willen.",
@@ -4516,7 +4525,7 @@
    "name": "Rob en de bestelregel",
    "opening": "Als het over de trafo's gaat: ik heb de procedure voor u uitgeprint.",
    "outcomes": {
-    "commitment": "Conform. Ik pas de procedure aan. En die uitdraai mag je houden; die klopt vanaf maandag niet meer.",
+    "commitment": "Conform. Ik pas de procedure aan. En die uitdraai mag u houden; die klopt vanaf maandag niet meer.",
     "compliance": "Als de directie het wil, bestel ik. Op uw naam.",
     "heard": "U bent de eerste die vraagt wáárom die regel er staat.",
     "partial": "Ik wil het wel. Maar niet zonder standaardmaten.",
@@ -4838,6 +4847,71 @@
     }
    },
    "warning": "Als je me een folder gaat voorlezen, hang ik op."
+  }
+ ],
+ "move_cards": [
+  {
+   "day": "training_mon",
+   "move": "mood",
+   "text": "Je vraagt hoe het met iemand gaat, en je bedoelt het. Vroeg in een gesprek, of als iemand er moe of gespannen uitziet.",
+   "title": "Stemming peilen",
+   "why": "Wie zich gezien voelt, praat anders."
+  },
+  {
+   "day": "training_tue",
+   "move": "open_question",
+   "text": "Een vraag waar geen ja of nee op past. 'Hoe ziet jouw week eruit?' in plaats van 'Is het druk?'",
+   "title": "Open vraag",
+   "why": "Het verhaal zit in wat iemand zelf kiest te vertellen."
+  },
+  {
+   "day": "training_tue",
+   "move": "empathy",
+   "text": "Je laat merken dat je snapt dat iets zwaar is, zonder het op te lossen.",
+   "title": "Begrip tonen",
+   "why": "Iets erkennen is iets anders dan het eens zijn."
+  },
+  {
+   "day": "training_wed",
+   "move": "paraphrase",
+   "text": "Je zegt in je eigen woorden terug wat de ander zei. Kort.",
+   "title": "Samenvatten",
+   "why": "Pas als iemand weet dat je het gehoord hebt, luistert hij naar jou."
+  },
+  {
+   "day": "training_wed",
+   "move": "inquiry",
+   "text": "Je vraagt door op één woord of één getal dat de ander noemde. 'Wat bedoel je met druk?'",
+   "title": "Doorvragen",
+   "why": "Het eerste antwoord is zelden het hele antwoord."
+  },
+  {
+   "day": "training_wed",
+   "move": "reflect",
+   "text": "Je zegt het gevoel dat je hoort: 'Het klinkt alsof je klem zit.' Zit je ernaast, dan zegt de ander dat. Ook dat helpt.",
+   "title": "Gevoel benoemen",
+   "why": "Een gevoel dat iemand benoemd hoort, hoeft niet meer bewezen te worden."
+  },
+  {
+   "day": "training_thu",
+   "move": "silence",
+   "text": "Je zegt niets en wacht. Vooral als iemand aarzelt.",
+   "title": "Stilte laten",
+   "why": "Wie de stilte opvult, neemt het woord terug."
+  },
+  {
+   "day": "training_thu",
+   "move": "experience",
+   "text": "Je vertelt kort iets van jezelf dat lijkt op wat de ander meemaakt. Echt gebeurd, en over jou.",
+   "title": "Ervaring delen",
+   "why": "Twijfel wordt kleiner als iemand anders hem ook kent. Te vroeg, en het gaat over jou."
+  },
+  {
+   "day": "training_fri",
+   "move": null,
+   "text": "Dezelfde zet landt bij de één hard en bij de ander nauwelijks. Wat iemand zelf zegt, en hoe, vertelt je wat hij nodig heeft. In je journaal, onder Mensen, staat wat jij hebt gehoord.",
+   "title": "Wie zit er tegenover je?",
+   "why": "Wie eerst kijkt wie er zit, hoeft daarna minder te raden."
   }
  ],
  "people": [

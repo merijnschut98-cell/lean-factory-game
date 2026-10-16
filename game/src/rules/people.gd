@@ -248,7 +248,33 @@ func finish(d: Dialog, now: int, main: bool = false) -> Dictionary:
 		"clue": d.unlocked_clue(), "facts": facts, "cooldown_until": cooldown, "wait_for": d.wait_for(),
 		"hints": d.def.block.get("routes", []).map(func(r: Dictionary) -> String: return str(r.get("hint", ""))) \
 			if o == "blocked" else [],
+		"ruud_names": ruud_names(d),
 	}
+
+
+## Ruud's line after an Act 0 talk (tutorial talks spec §3): he names one
+## listening move that landed, the day's move first, else the one that landed
+## most; when none did he asks (`none`). "" after any other talk: from Act I he
+## asks, he never names. (The spec's second rule, the move that drew out the
+## concern, waits: the talk keeps no record of which move that was.)
+func ruud_names(d: Dialog) -> String:
+	if not d.def.tutorial:
+		return ""
+	var best := "none"
+	var most := 0
+	for i in d.made.size():
+		var gain := d.trace[i + 1] - d.trace[i] if i + 1 < d.trace.size() else 0
+		var move := d.made[i]
+		if not move in Dialog.LISTEN or gain <= 0:
+			continue
+		if move in d.def.teaches:
+			best = move
+			break
+		if gain > most:
+			best = move
+			most = gain
+	var lines := JsonFile.dict_or_empty(bank.get("ruud_names"))
+	return str(lines.get(best, "")).replace("{person}", d.who.short)
 
 
 func _remembers(flag: String, d: Dialog) -> bool:

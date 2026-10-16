@@ -18,6 +18,24 @@ func _talk(people: People, moves: Array, world: Dictionary = DialogFixture.world
 	return people.finish(d, int(world["now"]))
 
 
+# ── Ruud names a move after an Act 0 talk (tutorial talks spec §3) ─────────
+
+func test_ruud_names_the_day_s_move_when_it_landed() -> void:
+	var people := DialogFixture.people([DialogFixture.def({"tutorial": true, "teaches": ["reflect"]})])
+	assert_eq(_talk(people, ["mood", "reflect", "open_question"])["ruud_names"], "naam reflect Pim")
+
+
+func test_else_ruud_names_the_move_that_landed_most() -> void:
+	var people := DialogFixture.people([DialogFixture.def({"tutorial": true, "teaches": ["silence"]})])
+	assert_eq(_talk(people, ["open_question", "mood"])["ruud_names"], "naam mood Pim", "mood +8 over open question +6")
+
+
+func test_ruud_asks_instead_when_nothing_landed_and_never_names_after_act_0() -> void:
+	var tutorial := DialogFixture.people([DialogFixture.def({"tutorial": true, "teaches": ["mood"]})])
+	assert_eq(_talk(tutorial, ["pressure"])["ruud_names"], "niets Pim", "a question, no name")
+	assert_eq(_talk(DialogFixture.people(), ["mood"])["ruud_names"], "", "not a tutorial talk")
+
+
 # ── The start of a talk ─────────────────────────────────────────────────────
 
 func test_the_start_reads_the_person_the_day_and_the_team() -> void:

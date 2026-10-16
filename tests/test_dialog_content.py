@@ -120,6 +120,12 @@ def _drop_route(d: dict) -> None:
     (lambda d: _dialog(d, "joost_output_kpi")["replies"].update(mood={"loudly": {"text": "Ja."}}), "situation"),
     (lambda d: _dialog(d, "joost_output_kpi").update(opening=" "), "opening"),
     (lambda d: _dialog(d, "joost_output_kpi").update(tutorial="yes"), "tutorial"),
+    # Ruud names a move after an Act 0 talk, and the cards name them (tutorial talks spec §2, §3).
+    (lambda d: d["dialogs"]["bank"]["ruud_names"].pop("silence"), "ruud_names"),
+    (lambda d: d["dialogs"]["bank"]["ruud_names"].pop("week_end"), "ruud_names"),
+    (lambda d: d["dialogs"]["move_cards"][0].update(move="shout"), "move card"),
+    (lambda d: d["dialogs"]["move_cards"][0].update(day="fix_nothing"), "move card"),
+    (lambda d: d["dialogs"]["move_cards"][0].pop("why"), "move card"),
     # The Act 0 talks name the day's move (tutorial talks spec §5).
     (lambda d: _dialog(d, "joost_output_kpi").update(teaches=["mood"]), "'teaches' only on a tutorial"),
     (lambda d: _dialog(d, "joost_output_kpi").update(tutorial=True, teaches=["shout"]), "'teaches' names listening"),
