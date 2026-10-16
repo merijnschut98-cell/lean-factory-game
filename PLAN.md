@@ -378,6 +378,8 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 
 ## 9. Decisions Made
 
+- **Merijn's answers before the drive (2026-10-16):** (1) the simulation checker's tier-2 changes are accepted: `stale_capacity_map` measured on connections capacity at the grid analysts, the ACM target as median connection lead time ≤ 54 days, `kr_reinforcement_wip` parked until it has a measure; (2) the designer's per-person-needs calls are accepted: Rachid is *fairness*, Doorvragen lands at half strength on *safety* people until they feel heard, Petra's day move lands at ×0.75; (3) the Act 0 week keeps the new order: Monday only Anouk at seven, Sanne Tuesday morning, Rachid an optional walk-around talk, Mieke Wednesday; (4) walking speed: the UI agent measures the new pack walk and sets `Player.SPEED` where the feet do not slide (likely ~2.0 m/s); Shift jogs at ~4.5 m/s.
+
 - **The opening may run to about 5:35 (Merijn, 2026-10-16).** Five minutes is a target, not a must: a good explanation trumps it. Keep the explainer whole; trim the creator or the walk only if a playtest shows boredom, never the teaching layer.
 
 - **Merijn's answers (2026-10-16, multiple choice at the session start):**
