@@ -61,8 +61,10 @@ def test_the_world_file_is_optional_for_a_content_set(tmp_path: Path):
     (lambda w: _room(w, "revision_gis").update(opens_with=["fix_revision_backlog"]),
      "mission 'fix_digging_damage' leads to 'connections.revision' in room 'revision_gis', which does not open with it"),
     (lambda w: w["rooms"].append({"id": "attic", "floor": "second", "name": "Zolder", "places": [], "opens_with": []}) or
-     w["floors"].append({"id": "roof", "level": 3, "name": "Dak", "model": "office_roof.glb"}),
+     w["floors"].append({"id": "roof", "level": 3, "name": "Dak", "model": "office.glb"}),
      "floor 'roof' has no rooms"),
+    # Phase 1 review S5: a typo in a model would load the stand-in office.
+    (lambda w: w["floors"][2].update(model="office_secnd.glb"), "office_secnd.glb.*does not exist"),
 ])
 def test_world_errors_are_caught(mutate, message):
     with pytest.raises(bc.ContentError, match=message):
