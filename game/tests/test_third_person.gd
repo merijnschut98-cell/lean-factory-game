@@ -40,7 +40,7 @@ func test_the_player_is_a_visible_character_without_a_first_person_camera() -> v
 
 
 func test_the_character_model_walks_and_idles_when_it_is_there() -> void:
-	if not ResourceLoader.exists(Player.CHARACTER):
+	if not ResourceLoader.exists(CharacterModel.path(Player.CHARACTER)):
 		return
 	var office := _office()
 	var animations: AnimationPlayer = office.player.avatar.find_children("*", "AnimationPlayer", true, false).pop_front()
@@ -49,8 +49,12 @@ func test_the_character_model_walks_and_idles_when_it_is_there() -> void:
 	assert_eq(animations.current_animation, "idle")
 	office.player.step(FRAME, Vector2(0, -1))
 	assert_eq(animations.current_animation, "walk")
+	var model: Node3D = animations.get_parent()
+	assert_near(animations.speed_scale * CharacterModel.walk_pace(model), Player.SPEED, 0.01,
+		"the walk plays at the speed that keeps the feet on the floor")
 	office.player.step(FRAME)
 	assert_eq(animations.current_animation, "idle")
+	assert_eq(animations.speed_scale, 1.0, "idle at its own speed")
 	office.free()
 
 

@@ -17,11 +17,13 @@ signal arrived
 
 ## The avatar: a soft shadow and a stand-in body (capsule and head).
 const AVATAR := "res://src/world/office/player_avatar.tscn"
-## The character model that replaces the stand-in when it is there: a glTF
-## facing +Z, feet at 0, with "idle" and "walk" animations.
-const CHARACTER := "res://assets/characters/sample_player.glb"
-## Walking pace in the office, m/s (a brisk walk; real is ~1.4).
-const SPEED := 3.0
+## The character (cast.json id) whose model replaces the stand-in when it is
+## built: facing +Z, feet at 0, with "idle" and "walk" animations.
+const CHARACTER := "player"
+## Walking pace in the office, m/s: a brisk walk (real is ~1.4), quick enough to
+## cross the floor in ten seconds. The walk animation is sped up to match it, so
+## the feet do not slide.
+const SPEED := 2.4
 ## How close (m) to a route's corner counts as there.
 const ARRIVE := 0.12
 ## How fast the body turns to its walking direction (1/s).
@@ -34,6 +36,8 @@ var avatar: Node3D
 ## The corners still to walk to (office space).
 var route := PackedVector3Array()
 var _animations: AnimationPlayer
+## The walk animation's speed that matches SPEED (its own pace is measured).
+var _walk_speed_scale := 1.0
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity", 9.8)
 
 
@@ -47,12 +51,12 @@ func _init() -> void:
 	add_child(shape)
 	avatar = (load(AVATAR) as PackedScene).instantiate()
 	add_child(avatar)
-	var model: Node3D = (load(CHARACTER) as PackedScene).instantiate() if ResourceLoader.exists(CHARACTER) else null
+	var model := CharacterModel.instantiate(CHARACTER)
 	if model != null:
 		avatar.get_node("StandIn").free()
-		model.rotation.y = PI
 		avatar.add_child(model)
-		_animations = model.find_children("*", "AnimationPlayer", true, false).pop_front()
+		_animations = CharacterModel.animations(model)
+		_walk_speed_scale = SPEED / CharacterModel.walk_pace(model)
 	_animate(false)
 
 
@@ -143,6 +147,7 @@ func _animate(moving: bool) -> void:
 	var wanted := "walk" if moving else "idle"
 	if _animations.has_animation(wanted) and _animations.current_animation != wanted:
 		_animations.play(wanted, 0.2)
+		_animations.speed_scale = _walk_speed_scale if moving else 1.0
 
 
 static func _walk_input() -> Vector2:

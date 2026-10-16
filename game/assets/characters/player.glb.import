@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://bps8fxotmtxxn"
-path="res://.godot/imported/sample_coach.glb-ad2d5ea93be10c35bfd8e844140e2624.scn"
+uid="uid://2mj4e2b30ecn"
+path="res://.godot/imported/player.glb-07cf50cfc83647f10aa6ab23febb7006.scn"
 
 [deps]
 
-source_file="res://assets/characters/sample_coach.glb"
-dest_files=["res://.godot/imported/sample_coach.glb-ad2d5ea93be10c35bfd8e844140e2624.scn"]
+source_file="res://assets/characters/player.glb"
+dest_files=["res://.godot/imported/player.glb-07cf50cfc83647f10aa6ab23febb7006.scn"]
 
 [params]
 
@@ -42,4 +42,4 @@ materials/extract_path=""
 _subresources={}
 gltf/naming_version=2
 gltf/embedded_image_handling=2
-gltf/texture_map_mode=1
+gltf/texture_map_mode=0

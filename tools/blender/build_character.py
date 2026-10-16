@@ -1,11 +1,13 @@
-"""Build sample people for Spanning with bpy: game/assets/characters/sample_*.glb.
+"""Build the people of Spanning with bpy: game/assets/characters/<id>.glb.
 
-A trial of script-built characters (Merijn decides between this, an AI generator and asset
-packs). Run with Blender's Python module (see tools/blender/README.md):
+Script-built characters, a trial (Merijn decides between this, an AI generator and asset
+packs, PLAN 7 Q1). Who they are and how they look is data: game/assets/characters/cast.json,
+one list the world reads too, so another method can replace this builder without touching
+the game. Run with Blender's Python module (see tools/blender/README.md):
 
-    .bvenv/bin/python tools/blender/build_character.py              # 3 glbs + 2 preview renders
-    .bvenv/bin/python tools/blender/build_character.py --no-render  # glbs only (~1 min)
-    .bvenv/bin/python tools/blender/build_character.py --only coach --samples 32
+    .bvenv/bin/python tools/blender/build_character.py --no-render  # every glb (~4 min each)
+    .bvenv/bin/python tools/blender/build_character.py --only joost --only anouk --no-render
+    .bvenv/bin/python tools/blender/build_character.py --only ruud --only player --samples 32
 
 How a person is made:
 - Body, head, hair, clothes and shoes are signed distance fields (SDFs): ellipsoids and round
@@ -16,22 +18,27 @@ How a person is made:
   deleted, so nothing pokes through and the budget goes to what is seen.
 - Skin has no texture: its colour (tone, lips, blush, stubble, baked ambient occlusion) is a
   vertex colour; Godot's glTF importer uses COLOR_0 as albedo.
-- Clothes and hair use small tileable textures generated here. They are embedded in each glb
-  (a glb is one self-contained file: copying it alone works), so they are written to an
-  ignored scratch folder (build/character_textures), not into the game.
+- Clothes and hair use small tileable greyscale textures generated here, shared by everyone:
+  game/assets/characters/textures/. A glb carries no images, only plain materials named
+  <person>__<key> with the garment colour and an extras tag {"texture": <name>};
+  game/assets/characters/character_import.gd puts the shared texture under that colour
+  (so nine people cost one set of textures, and a glb is ~1 MB instead of ~4).
 - A humanoid rig with Godot SkeletonProfileHumanoid bone names (Hips, Spine, Chest, Neck,
   Head, LeftUpperArm, ...), rest pose an A-pose (arms 40 degrees from vertical). Weights come
   from the same primitives: each vertex belongs to the bones whose primitives' surfaces are
-  nearest (a soft-min over SDF distances). Two looping actions: `idle_loop` (4 s) and
-  `walk_loop` (1 s in place, ~1.2 m/s), each on its own rig's NLA track; the export writes the
-  tracks (not every action in the file, which would hand one person the others' moves).
-  Godot imports them as looping `idle` and `walk`.
+  nearest (a soft-min over SDF distances). Four looping actions, each on its own rig's NLA
+  track: `idle_loop` (4 s, standing), `walk_loop` (in place, a brisk stride; its pace in m/s is
+  printed, and the game measures it from the animation to match its feet to the floor),
+  `sit_loop` (4 s, seated at a desk, typing) and `talk_loop` (3 s, standing, a hand gesture).
+  The export writes the tracks (not every action in the file, which would hand one person the
+  others' moves). Godot imports them as looping `idle`, `walk`, `sit` and `talk`.
 
 Coordinates are Blender's: metres, Z up, the person faces -Y (Godot +Z, the model front).
 """
 from __future__ import annotations
 
 import argparse
+import json
 import math
 import sys
 import time
@@ -51,8 +58,12 @@ from textures import _font, _logo, noise  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "game" / "assets" / "characters"
-TEX = ROOT / "build" / "character_textures"   # scratch: the glbs embed what they use
+TEX = OUT / "textures"   # shared by every person (the glbs carry no images)
+CAST = OUT / "cast.json"
 SHOTS = ROOT / "docs" / "screenshots"
+TEX_PX = 256             # texture size: a person is a few hundred pixels tall on screen
+WALK_FRAMES = 24         # one stride cycle at 30 fps (0.8 s)
+VOXEL = 1.0              # voxel size factor (--draft: 2, coarse but 8x faster, for pose checks)
 
 
 # =========================================================================== the people
@@ -65,27 +76,29 @@ class Spec:
     height: float             # metres, crown to sole (shoes add ~2 cm)
     build: float              # 0 slim .. 1 heavy
     skin: tuple
-    hair_style: str           # "bob", "short", "receding", "buzz"
+    hair_style: str           # "bob", "short", "receding", "buzz", "ponytail"
     hair_color: tuple
-    outfit: str               # "business", "manager", "monteur"
+    outfit: str               # "business" (polo), "shirt", "manager" (blazer), "monteur" (PPE)
     eye_color: tuple = (92, 64, 40)
     brow_color: tuple | None = None
     stubble: float = 0.0      # 0..1 beard shadow
     glasses: bool = False
+    helmet: bool = True       # a monteur's safety helmet
+    stoop: float = 0.0        # 0..1: age in the posture (back rounded, head forward)
     colors: dict = field(default_factory=dict)  # garment colour overrides
 
 
-SAMPLES = {
-    # the player: newly hired CI-lead, business casual (Voltana polo, chinos, leather shoes)
-    "player": Spec("player", "f", 1.69, 0.38, (226, 178, 148), "bob", (86, 56, 36), "business",
-                   eye_color=(70, 98, 120)),
-    # the coach: Ruud Hoekstra, Directeur Netbeheer, 50s: grey, glasses, shirt and blazer
-    "coach": Spec("coach", "m", 1.83, 0.66, (222, 170, 140), "receding", (168, 166, 162), "manager",
-                  brow_color=(110, 104, 98), stubble=0.25, glasses=True),
-    # a monteur: high-vis vest, helmet, work trousers and safety boots
-    "monteur": Spec("monteur", "m", 1.79, 0.52, (150, 100, 70), "buzz", (30, 24, 20), "monteur",
-                    eye_color=(50, 32, 22), stubble=0.6),
-}
+def load_cast(path: Path = CAST) -> dict[str, Spec]:
+    """id -> Spec from the cast list (lists become the tuples the builder expects)."""
+    out = {}
+    for person in json.loads(path.read_text())["characters"]:
+        look = {k: tuple(v) if isinstance(v, list) else v for k, v in person["look"].items()}
+        look["colors"] = {k: tuple(v) for k, v in look.get("colors", {}).items()}
+        out[person["id"]] = Spec(person["id"], **look)
+    return out
+
+
+CAST_SPECS = load_cast()
 
 GARMENT_COLORS = {
     "polo": (24, 62, 128), "chinos": (196, 176, 140), "shoe": (92, 58, 36),
@@ -219,6 +232,7 @@ class Field:
 def polygonize(fn, lo, hi, h: float) -> tuple[np.ndarray, np.ndarray]:
     """Marching cubes of fn's zero set inside [lo, hi] with voxel size h. The field is first
     sampled on a 4h grid; only cells near the surface are evaluated at full resolution."""
+    h *= VOXEL
     lo = np.asarray(lo, float)
     nc = np.ceil((np.asarray(hi, float) - lo) / (4 * h)).astype(int) + 1
     gc = [lo[i] + np.arange(nc[i]) * 4 * h for i in range(3)]
@@ -673,8 +687,9 @@ HAIRLINES = {   # (degrees from the front, head-local height of the hairline) pe
     "receding": [(0, 0.062), (22, 0.075), (40, 0.07), (70, 0.012), (95, -0.012), (125, -0.05), (180, -0.088)],
     "buzz": [(0, 0.052), (30, 0.046), (55, 0.03), (80, 0.0), (100, -0.014), (125, -0.05), (180, -0.095)],
     "bob": [(0, 0.052), (40, 0.05), (58, 0.03), (72, -0.115), (180, -0.118)],
+    "ponytail": [(0, 0.056), (30, 0.05), (55, 0.034), (80, 0.0), (100, -0.02), (125, -0.06), (180, -0.1)],
 }
-HAIR_T = {"short": 0.012, "receding": 0.008, "buzz": 0.004, "bob": 0.018}
+HAIR_T = {"short": 0.012, "receding": 0.008, "buzz": 0.004, "bob": 0.018, "ponytail": 0.01}
 
 
 def hair_part(body: Body) -> Part:
@@ -692,6 +707,10 @@ def hair_part(body: Body) -> Part:
     line = np.array(HAIRLINES[style])
     t = HAIR_T[style]
     brows = brow_field(body)
+    tail = Field()   # hair pulled back into a tie at the back of the head
+    if style == "ponytail":
+        tail.add(ball(body.H(0, 0.1, -0.015), np.array([0.03, 0.026, 0.03]) * hs))
+        tail.add(cone(body.H(0, 0.11, -0.03), body.H(0, 0.15, -0.21), 0.026 * hs, 0.011 * hs, flat=(1.0, 0.8)), 0.02 * hs)
 
     def fn(P):
         q = (P - c) / hs
@@ -705,9 +724,11 @@ def hair_part(body: Body) -> Part:
         d = smax(d, -above_line * hs, 0.004 * hs)
         if style == "bob":
             d = smax(d, (-0.118 - q[:, 2]) * hs, 0.012 * hs)
+        if tail.ops:
+            d = smin(d, tail(P), 0.008 * hs)
         return np.minimum(d, brows(P))
 
-    lo, hi = c + np.array([-0.13, -0.15, -0.16]) * hs, c + np.array([0.13, 0.14, 0.13]) * hs
+    lo, hi = c + np.array([-0.13, -0.15, -0.25]) * hs, c + np.array([0.13, 0.2, 0.13]) * hs
     return Part("hair", fn, lo, hi, 0.0018 * hs, 2200 if style == "bob" else 1500, "hair", uv="sphere", rigid="Head",
                 covers=lambda P: smax(base(P) - 0.002 * hs, -((P[:, 2] - c[2]) / hs - np.interp(
                     np.degrees(np.abs(np.arctan2(P[:, 0] - c[0], -(P[:, 1] - c[1])))), line[:, 0], line[:, 1])) * hs, 0) + 0.006 * hs)
@@ -798,13 +819,16 @@ def outfit_parts(body: Body) -> list[Part]:
     if o == "business":
         return (shirt_parts(body, "polo", 0.16, 0.86, 0.011)
                 + trouser_parts(body, "chinos", 0.95, 0.058) + shoe_parts(body, boot=False))
+    if o == "shirt":
+        return (shirt_parts(body, "shirt", 0.565, 0.95, 0.005)
+                + trouser_parts(body, "trousers", 1.02, 0.062) + [belt_part(body, 1.0)] + shoe_parts(body, boot=False))
     if o == "manager":
         return (shirt_parts(body, "shirt", 0.565, 0.95, 0.005) + blazer_parts(body)
                 + trouser_parts(body, "trousers", 1.02, 0.062) + [belt_part(body, 1.0)] + shoe_parts(body, boot=False))
     if o == "monteur":
         return (shirt_parts(body, "workshirt", 0.565, 0.95, 0.006) + vest_parts(body)
                 + trouser_parts(body, "worktrousers", 1.02, 0.07, t=0.009) + [belt_part(body, 1.0)]
-                + shoe_parts(body, boot=True) + [helmet_part(body)])
+                + shoe_parts(body, boot=True) + ([helmet_part(body)] if body.sp.helmet else []))
     raise ValueError(f"unknown outfit {o!r}")
 
 
@@ -828,17 +852,18 @@ def make_textures() -> None:
     """Tileable fabric, hair and leather maps (greyscale: the material colour tints them),
     the hi-vis band layout and the Voltana logo patch."""
     TEX.mkdir(parents=True, exist_ok=True)
-    n = 512
+    n = TEX_PX
+    k = n / 512   # weave frequencies were tuned at 512 px: keep 4+ pixels per thread
     y, x = np.mgrid[0:n, 0:n] / n
     mottle = noise(n, 3, beta=2.5, low=1.0, high=8)
 
-    cells = 52
+    cells = round(52 * k)
     pq = (0.5 + 0.5 * np.cos(2 * np.pi * x * cells) * np.cos(2 * np.pi * y * cells * 1.3)) ** 2
     pq = 0.7 * pq + 0.3 * noise(n, 11, beta=0.5)
     _png("pique_albedo", np.repeat((0.86 + 0.08 * (pq - 0.5) + 0.1 * (mottle - 0.5))[..., None], 3, -1))
     _normal("pique", pq, 6.0)
 
-    tw = 0.5 + 0.5 * np.sin(2 * np.pi * (x + y) * 90)
+    tw = 0.5 + 0.5 * np.sin(2 * np.pi * (x + y) * round(90 * k))
     thread = noise(n, 21, beta=1.0, stretch=(1, 14))
     h = 0.75 * tw + 0.25 * thread
     _png("twill_albedo", np.repeat((0.84 + 0.08 * (h - 0.5) + 0.12 * (mottle - 0.5))[..., None], 3, -1))
@@ -851,13 +876,13 @@ def make_textures() -> None:
     _png("denim_albedo", indigo * (1 - t[..., None]) + white * t[..., None])
     _normal("denim", h, 5.0)
 
-    ox = 0.5 + 0.25 * np.sin(2 * np.pi * x * 120) + 0.25 * np.sin(2 * np.pi * y * 120)
+    ox = 0.5 + 0.25 * np.sin(2 * np.pi * x * round(120 * k)) + 0.25 * np.sin(2 * np.pi * y * round(120 * k))
     _png("oxford_albedo", np.repeat((0.9 + 0.05 * (ox - 0.5) + 0.06 * (mottle - 0.5))[..., None], 3, -1))
     _normal("oxford", ox, 2.0)
 
     wool = noise(n, 41, beta=1.2)
-    herring = np.abs(((x * 40) % 1.0) - 0.5) * 2
-    hb = 0.5 + 0.5 * np.sin(2 * np.pi * (y * 140 + np.where((x * 40) % 2 < 1, 1, -1) * x * 140))
+    herring = np.abs(((x * 40 * k) % 1.0) - 0.5) * 2
+    hb = 0.5 + 0.5 * np.sin(2 * np.pi * (y * 140 * k + np.where((x * 40 * k) % 2 < 1, 1, -1) * x * 140 * k))
     _png("wool_albedo", np.repeat((0.86 + 0.07 * (wool - 0.5) + 0.05 * (hb - 0.5) + 0.06 * (mottle - 0.5))[..., None], 3, -1))
     _normal("wool", 0.6 * wool + 0.4 * hb * herring, 3.0)
 
@@ -896,49 +921,27 @@ def make_textures() -> None:
 MATS: dict[str, bpy.types.Material] = {}
 
 
-def _image(name: str, data: bool = False) -> bpy.types.Image:
-    img = bpy.data.images.load(str(TEX / f"{name}.png"), check_existing=True)
-    if data:
-        img.colorspace_settings.name = "Non-Color"
-    return img
-
-
 def material(name: str, color=(255, 255, 255), tex: str | None = None, rough: float = 0.75,
              metal: float = 0.0, vcol: bool = False) -> bpy.types.Material:
-    """A Principled material the glTF exporter maps one to one: albedo texture times colour
-    (baseColorFactor), an optional normal map, or the vertex colour as albedo (skin)."""
+    """A Principled material the glTF exporter maps one to one: a plain colour
+    (baseColorFactor), or the vertex colour as albedo (skin). A texture is not linked here (the
+    exporter would embed it, or with images off drop the colour): its name goes in the
+    material's extras, {"texture": tex}, and the game's import script lays the shared texture
+    under the colour. So the Cycles previews show the colours without the weave."""
     mat = bpy.data.materials.new(name)
     mat.use_backface_culling = True
     nt = mat.node_tree
     bsdf = nt.nodes["Principled BSDF"]
     bsdf.inputs["Roughness"].default_value = rough
     bsdf.inputs["Metallic"].default_value = metal
-    col = srgb(*color)
     if vcol:
         vc = nt.nodes.new("ShaderNodeVertexColor")
         vc.layer_name = "Col"
         nt.links.new(vc.outputs["Color"], bsdf.inputs["Base Color"])
-    elif tex:
-        img = nt.nodes.new("ShaderNodeTexImage")
-        img.image = _image(f"{tex}_albedo")
-        if tuple(color) != (255, 255, 255):
-            mix = nt.nodes.new("ShaderNodeMix")
-            mix.data_type, mix.blend_type = "RGBA", "MULTIPLY"
-            next(s for s in mix.inputs if s.identifier == "Factor_Float").default_value = 1.0
-            nt.links.new(img.outputs["Color"], next(s for s in mix.inputs if s.identifier == "A_Color"))
-            next(s for s in mix.inputs if s.identifier == "B_Color").default_value = col
-            nt.links.new(next(o for o in mix.outputs if o.identifier == "Result_Color"), bsdf.inputs["Base Color"])
-        else:
-            nt.links.new(img.outputs["Color"], bsdf.inputs["Base Color"])
-        if (TEX / f"{tex}_normal.png").exists():
-            nimg = nt.nodes.new("ShaderNodeTexImage")
-            nimg.image = _image(f"{tex}_normal", data=True)
-            nm = nt.nodes.new("ShaderNodeNormalMap")
-            nm.inputs["Strength"].default_value = 0.8
-            nt.links.new(nimg.outputs["Color"], nm.inputs["Color"])
-            nt.links.new(nm.outputs["Normal"], bsdf.inputs["Normal"])
     else:
-        bsdf.inputs["Base Color"].default_value = col
+        bsdf.inputs["Base Color"].default_value = srgb(*color)
+    if tex:
+        mat["texture"] = tex
     MATS[name] = mat
     return mat
 
@@ -971,7 +974,7 @@ def make_materials(sp: Spec) -> dict[str, tuple[str, str | None]]:
     }
     out = {}
     for key, kw in spec.items():
-        out[key] = (material(f"{p}_{key}", **kw).name, kw.get("tex"))
+        out[key] = (material(f"{p}__{key}", **kw).name, kw.get("tex"))
     return out
 
 
@@ -1284,6 +1287,11 @@ def fwd(deg):
     return rot_x(-deg)
 
 
+def lean(deg):
+    """Tip an upright bone (spine, neck, head) forward by deg: the opposite sense of fwd."""
+    return rot_x(deg)
+
+
 def periodic_bump(t, center, width):
     d = (t - center + 0.5) % 1.0 - 0.5
     return math.exp(-(d / width) ** 2)
@@ -1299,21 +1307,35 @@ def base_arms(body: Body) -> dict:
     return out
 
 
+STRIDE = 30.0   # thigh swing (degrees each way)
+DUTY = 0.6      # share of a stride a foot is on the floor (human walking: ~0.6)
+
+
+def stride_angle(t: float) -> float:
+    """The thigh's swing (degrees, + forward) through one stride: linear from front to back
+    while the foot is down (0..DUTY), then a smooth swing forward."""
+    if t < DUTY:
+        return STRIDE * (1 - 2 * t / DUTY)
+    return STRIDE * (2 * float(smoothstep(0.0, 1.0, (t - DUTY) / (1 - DUTY))) - 1)
+
+
 def pose_walk(body: Body, t: float) -> tuple[dict, Vector]:
+    """A brisk walk (a long stride, 1.25 strides a second). The stance sweeps the thigh back
+    at an even rate, so a planted foot moves at one speed the game can match (no slide)."""
     s = body.s
     q, arms = {}, base_arms(body)
     for side, phase in ((1, 0.0), (-1, 0.5)):
         tt = (t + phase) % 1.0
         name = lambda b: body.side_name(side, b)  # noqa: E731
-        thigh = 21 * math.cos(2 * math.pi * tt) + 3
-        knee = 12 * periodic_bump(tt, 0.1, 0.08) + 55 * periodic_bump(tt, 0.72, 0.11) + 4
-        toe_off = 18 * periodic_bump(tt, 0.52, 0.06)
+        thigh = stride_angle(tt) + 3
+        knee = 12 * periodic_bump(tt, 0.1, 0.08) + 58 * periodic_bump(tt, 0.78, 0.1) + 4
+        toe_off = 18 * periodic_bump(tt, 0.58, 0.05)
         heel = -8 * periodic_bump(tt, 0.0, 0.05)
         q[name("UpperLeg")] = fwd(thigh)
         q[name("LowerLeg")] = rot_x(knee)
         q[name("Foot")] = rot_x(thigh - knee + toe_off + heel)
         down, elbow_axis = arms[side]
-        swing = -13 * math.cos(2 * math.pi * tt) - 2
+        swing = -16 * math.cos(2 * math.pi * tt) - 2
         q[name("UpperArm")] = fwd(swing) @ down
         q[name("LowerArm")] = Quaternion(elbow_axis, math.radians(11 + 8 * max(0.0, -math.cos(2 * math.pi * tt))))
         q[name("Hand")] = Quaternion()
@@ -1350,6 +1372,80 @@ def pose_idle(body: Body, t: float) -> tuple[dict, Vector]:
     return q, Vector((0.006 * sway * s, 0, -0.004 * s * (1 - abs(sway))))
 
 
+SEAT_HIP = 0.6    # hip joint height (m) on an office chair (seat top 0.52 m)
+SEAT_BACK = 0.05  # hip joint behind the chair's centre (m): the knees go under the desk
+
+
+def pose_sit(body: Body, t: float) -> tuple[dict, Vector]:
+    """Seated at a desk, typing, glancing between two screens (4 s). The person's origin is
+    the chair's: shins vertical, feet flat on the floor whatever the height."""
+    q, arms = {}, base_arms(body)
+    thigh = math.degrees(math.acos(float(np.clip((SEAT_HIP - body.K[2]) / (body.HJ[2] - body.K[2]), 0.0, 1.0))))
+    typing = smoothstep(0.0, 0.05, t) * smoothstep(0.75, 0.68, t)   # a burst, then a pause at the mouse
+    for side in (1, -1):
+        name = lambda b: body.side_name(side, b)  # noqa: E731
+        q[name("UpperLeg")] = fwd(thigh) @ rot_z(side * 4)
+        q[name("LowerLeg")] = rot_x(thigh)
+        q[name("Foot")] = Quaternion()
+        down, elbow_axis = arms[side]
+        d = Vector(body.m(body.d, side))
+        tap = math.sin(2 * math.pi * (t * 14 + (0.25 if side > 0 else 0.0)))
+        q[name("UpperArm")] = fwd(36) @ down   # the chest's forward lean swings the arms back by 12
+        # forearm forward over the keyboard, turned palm-down (half in the forearm, half the wrist)
+        q[name("LowerArm")] = Quaternion(elbow_axis, math.radians(60 + 1.5 * tap * typing)) @ Quaternion(d, math.radians(side * 45))
+        q[name("Hand")] = Quaternion(elbow_axis, math.radians(-8 + 5 * tap * typing)) @ Quaternion(d, math.radians(side * 40))
+    look = 7 * math.sin(2 * math.pi * t)
+    q["Hips"] = Quaternion()
+    q["Spine"] = lean(8)
+    q["Chest"] = lean(4 + 0.8 * math.sin(2 * math.pi * t))
+    q["Neck"] = lean(-4)
+    q["Head"] = rot_z(look) @ lean(-2)
+    return q, Vector((0, SEAT_BACK, SEAT_HIP - body.HJ[2]))
+
+
+def pose_talk(body: Body, t: float) -> tuple[dict, Vector]:
+    """Standing and explaining (3 s): the right hand opens palm-up twice, then the left once;
+    the head nods with the words, the weight shifts."""
+    q, hip = pose_idle(body, t)
+    arms = base_arms(body)
+    for side, (start, end, beats) in ((-1, (0.0, 0.62, 2)), (1, (0.58, 1.0, 1))):
+        name = lambda b: body.side_name(side, b)  # noqa: E731
+        down, elbow_axis = arms[side]
+        d = Vector(body.m(body.d, side))
+        on = smoothstep(start, start + 0.12, t) * smoothstep(end, end - 0.12, t)
+        beat = 0.5 - 0.5 * math.cos(2 * math.pi * beats * (t - start) / (end - start))
+        q[name("UpperArm")] = fwd(4 + on * (14 + 6 * beat)) @ down
+        q[name("LowerArm")] = Quaternion(elbow_axis, math.radians(12 + on * (52 + 14 * beat))) @ Quaternion(d, math.radians(-side * 50 * on))
+        q[name("Hand")] = Quaternion(elbow_axis, math.radians(-12 * on * beat))
+    q["Head"] = fwd(2 + 4 * max(0.0, math.sin(2 * math.pi * t * 3))) @ rot_z(5 * math.sin(2 * math.pi * t))
+    q["Chest"] = rot_z(3 * math.sin(2 * math.pi * t)) @ q["Chest"]
+    return q, hip
+
+
+def with_stoop(q: dict, stoop: float) -> dict:
+    """Age in the posture: the back rounds and the head comes forward, the eyes level."""
+    if stoop:
+        for bone, deg in (("Spine", 5), ("Chest", 9), ("Neck", 8), ("Head", -15)):
+            q[bone] = lean(deg * stoop) @ q.get(bone, Quaternion())
+    return q
+
+
+def walk_pace(rig, action: bpy.types.Action, frames: int) -> float:
+    """The walk's ground speed (m/s): the ankle's travel front to back over the time a foot
+    is down (DUTY of the cycle). Moving the person at this speed keeps the feet on the floor.
+    (The game measures it the same way from the imported animation; this is the build's report.)"""
+    left = rig.pose.bones["LeftFoot"]
+    ys = []
+    show_pose(rig, action.name, 1)
+    for f in range(1, frames + 1):
+        bpy.context.scene.frame_set(f)
+        ys.append(left.head.y)
+    rig.animation_data.action = None
+    for tr in rig.animation_data.nla_tracks:
+        tr.mute = False
+    return (max(ys) - min(ys)) / (DUTY * frames / bpy.context.scene.render.fps)
+
+
 def bake_action(rig, body: Body, name: str, pose_fn, frames: int) -> bpy.types.Action:
     rest = {b.name: b.matrix_local.to_quaternion() for b in rig.data.bones}
     act = bpy.data.actions.new(name)
@@ -1358,6 +1454,7 @@ def bake_action(rig, body: Body, name: str, pose_fn, frames: int) -> bpy.types.A
     rig.animation_data.action = act
     for f in range(frames + 1):
         q, hip = pose_fn(body, (f % frames) / frames)
+        q = with_stoop(q, body.sp.stoop)
         for pb in rig.pose.bones:
             r = rest[pb.name]
             pb.rotation_quaternion = r.inverted() @ q.get(pb.name, Quaternion()) @ r
@@ -1465,13 +1562,14 @@ def build_person(sp: Spec) -> tuple[bpy.types.Collection, bpy.types.Object, int]
         finish(ob, "frame", {"Head": np.ones(len(me.vertices))})
 
     # logo patch on the chest (polo, blazer lapel pin) or the vest, and on the helmet
-    host = {"business": "polo", "manager": "blazer", "monteur": "vest"}[sp.outfit]
-    x, z, w = (0.105, 1.36, 0.026) if sp.outfit == "manager" else (0.085, 1.33, 0.07)
-    me = patch_mesh(f"{sp.name}_logo", bpy.data.objects[f"{sp.name}_{host}"], (x * body.s, z * body.s), w * body.s, w * 0.5 * body.s, 0.0015)
-    ob = bpy.data.objects.new(f"{sp.name}_logo", me)
-    coll.objects.link(ob)
-    finish(ob, "logo", skin_weights(body, verts_of(ob)))
-    if sp.outfit == "monteur":
+    host = {"business": "polo", "manager": "blazer", "monteur": "vest"}.get(sp.outfit)   # a plain shirt has none
+    if host:
+        x, z, w = (0.105, 1.36, 0.026) if sp.outfit == "manager" else (0.085, 1.33, 0.07)
+        me = patch_mesh(f"{sp.name}_logo", bpy.data.objects[f"{sp.name}_{host}"], (x * body.s, z * body.s), w * body.s, w * 0.5 * body.s, 0.0015)
+        ob = bpy.data.objects.new(f"{sp.name}_logo", me)
+        coll.objects.link(ob)
+        finish(ob, "logo", skin_weights(body, verts_of(ob)))
+    if sp.outfit == "monteur" and sp.helmet:
         me = patch_mesh(f"{sp.name}_helmet_logo", bpy.data.objects[f"{sp.name}_helmet"], body.H(0, 0, 0.05)[[0, 2]],
                         0.05 * body.hs, 0.025 * body.hs, 0.0012)
         ob = bpy.data.objects.new(f"{sp.name}_helmet_logo", me)
@@ -1479,8 +1577,11 @@ def build_person(sp: Spec) -> tuple[bpy.types.Collection, bpy.types.Object, int]
         finish(ob, "logo", {"Head": np.ones(len(me.vertices))})
 
     bake_action(rig, body, "idle_loop", pose_idle, 120)
-    bake_action(rig, body, "walk_loop", pose_walk, 30)
-    per = {o.name.removeprefix(sp.name + "_"): sum(len(p.vertices) - 2 for p in o.data.polygons) for o in objs}
+    walk = bake_action(rig, body, "walk_loop", pose_walk, WALK_FRAMES)
+    bake_action(rig, body, "sit_loop", pose_sit, 120)
+    bake_action(rig, body, "talk_loop", pose_talk, 90)
+    print(f"{sp.name}: walk pace {walk_pace(rig, walk, WALK_FRAMES):.2f} m/s")
+    per ={o.name.removeprefix(sp.name + "_"): sum(len(p.vertices) - 2 for p in o.data.polygons) for o in objs}
     tris = sum(per.values())
     print("  ", " ".join(f"{k}={v}" for k, v in per.items()))
     print(f"{sp.name}: {tris} triangles, {len(objs)} meshes, {time.time() - t0:.0f} s")
@@ -1492,7 +1593,7 @@ def export(coll, path: Path) -> None:
     bpy.context.view_layer.active_layer_collection = layer
     bpy.ops.export_scene.gltf(
         filepath=str(path), export_format="GLB", use_active_collection=True, export_keep_originals=False,
-        export_image_format="AUTO",
+        export_image_format="NONE", export_extras=True,   # textures are shared: see material()
         export_yup=True, export_apply=False, export_texcoords=True, export_normals=True, export_tangents=False,
         export_materials="EXPORT", export_vertex_color="ACTIVE", export_cameras=False, export_lights=False,
         export_skins=True, export_animations=True, export_animation_mode="NLA_TRACKS", export_force_sampling=True,
@@ -1567,14 +1668,14 @@ def render(path: Path, cam) -> None:
 
 def render_previews(rigs: dict, samples: int) -> None:
     studio(samples)
-    order = [k for k in ("coach", "player", "monteur") if k in rigs]
+    order = [k for k in ("ruud", "player", "ahmed") if k in rigs]
     for i, k in enumerate(order):
         rigs[k].location = ((i - (len(order) - 1) / 2) * 0.95, 0, 0)
         rigs[k].rotation_euler = (0, 0, 0)
         show_pose(rigs[k], "idle_loop", 1)
     render(SHOTS / "characters_lineup.png", camera("cam_lineup", (0, -6.4, 1.55), (0, 0, 0.93), 52))
     # Sims view: a little group, the player walking in, seen 3/4 from above at ~45 degrees
-    spots = {"coach": ((-0.55, 0.35, 0), -60), "monteur": ((0.55, 0.45, 0), 55), "player": ((0.05, -0.75, 0), 175)}
+    spots = {"ruud": ((-0.55, 0.35, 0), -60), "ahmed": ((0.55, 0.45, 0), 55), "player": ((0.05, -0.75, 0), 175)}
     for k in order:
         loc, rot = spots[k]
         rigs[k].location = loc
@@ -1586,27 +1687,108 @@ def render_previews(rigs: dict, samples: int) -> None:
 
 # =========================================================================== main
 
+def pose_sheet(rig, path: Path) -> None:
+    """A quick, noisy render of one person in each action (a seat box under the sitter):
+    for checking poses without the full previews or the game. (Workbench needs a GPU.)"""
+    studio(12)
+    sc = bpy.context.scene
+    sc.render.resolution_x, sc.render.resolution_y = 1400, 600
+    for i, action in enumerate(("idle_loop", "walk_loop", "sit_loop", "talk_loop")):
+        dup = rig.copy()
+        sc.collection.objects.link(dup)
+        for child in rig.children:
+            c = child.copy()
+            c.parent = dup
+            c.modifiers["Armature"].object = dup
+            sc.collection.objects.link(c)
+        dup.location = ((i - 1.5) * 1.1, 0, 0)
+        dup.rotation_euler = (0, 0, math.radians(-75 if action == "sit_loop" else -35))   # the sitter in profile
+        show_pose(dup, action, 30)
+        if action == "sit_loop":
+            bpy.ops.mesh.primitive_cube_add(size=1, location=(dup.location.x, 0.0, 0.26))
+            bpy.context.object.scale = (0.48, 0.47, 0.52)
+    rig.hide_render = True
+    for child in rig.children:
+        child.hide_render = True
+    render(path, camera("cam_sheet", (0.4, -6.8, 2.2), (0, 0, 0.8), 40))
+
+
+def write_import(glb: Path) -> None:
+    """A new glb's Godot import settings (once): the character import script, 30 fps, loops."""
+    target = glb.with_name(glb.name + ".import")
+    if target.exists():
+        return
+    target.write_text(IMPORT_TEMPLATE.format(name=glb.name))
+
+
+IMPORT_TEMPLATE = """[remap]
+
+importer="scene"
+importer_version=1
+type="PackedScene"
+
+[deps]
+
+source_file="res://assets/characters/{name}"
+
+[params]
+
+nodes/root_type=""
+nodes/root_name=""
+nodes/apply_root_scale=true
+nodes/root_scale=1.0
+nodes/import_as_skeleton_bones=false
+nodes/use_name_suffixes=true
+nodes/use_node_type_suffixes=true
+meshes/ensure_tangents=true
+meshes/generate_lods=true
+meshes/create_shadow_meshes=true
+meshes/light_baking=1
+meshes/lightmap_texel_size=0.2
+meshes/force_disable_compression=false
+skins/use_named_skins=true
+animation/import=true
+animation/fps=30
+animation/trimming=false
+animation/remove_immutable_tracks=true
+animation/import_rest_as_RESET=false
+import_script/path="res://assets/characters/character_import.gd"
+materials/extract=0
+_subresources={{}}
+gltf/naming_version=2
+gltf/embedded_image_handling=2
+"""
+
+
 def main(argv: list[str]) -> None:
+    global VOXEL
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--only", choices=sorted(SAMPLES), action="append", help="build only this sample (repeatable)")
+    ap.add_argument("--only", choices=sorted(CAST_SPECS), action="append", help="build only this person (repeatable)")
     ap.add_argument("--no-render", action="store_true", help="skip the Cycles preview renders")
     ap.add_argument("--samples", type=int, default=96, help="Cycles samples for the previews")
     ap.add_argument("--blend", type=Path, help="also save the .blend here (for inspection)")
+    ap.add_argument("--draft", action="store_true", help="coarse voxels, no export: for --pose-sheet")
+    ap.add_argument("--pose-sheet", type=Path, help="render the first person in every action (Workbench) here")
     args = ap.parse_args(argv)
 
+    VOXEL = 2.0 if args.draft else 1.0
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.context.scene.render.fps = 30   # the actions are keyed per frame at 30 fps (Blender's default is 24)
     make_textures()
     rigs = {}
-    for key in args.only or SAMPLES:
-        coll, rig, tris = build_person(SAMPLES[key])
+    for key in args.only or CAST_SPECS:
+        coll, rig, tris = build_person(CAST_SPECS[key])
         if tris > 20000:
             print(f"WARNING: {key} has {tris} triangles (budget 20000)")
-        export(coll, OUT / f"sample_{key}.glb")
+        if not args.draft:
+            export(coll, OUT / f"{key}.glb")
+            write_import(OUT / f"{key}.glb")
         rigs[key] = rig
     if args.blend:
         bpy.ops.wm.save_as_mainfile(filepath=str(args.blend))
-    if not args.no_render:
+    if args.pose_sheet:
+        pose_sheet(next(iter(rigs.values())), args.pose_sheet)
+    elif not args.no_render:
         render_previews(rigs, args.samples)
 
 
