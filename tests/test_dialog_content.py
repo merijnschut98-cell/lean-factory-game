@@ -318,7 +318,10 @@ def test_a_checkin_may_wait_days_after_a_dated_beat(real, tmp_path):
     _load(tmp_path, docs)
     for trigger, message in [({"beat": "retirement"}, "unknown beat"),
                              ({"beat": "henk_farewell", "after_days": -1}, "after_days"),
-                             ({"after_days": 3}, "after_days needs a beat")]:
+                             ({"after_days": 3}, "after_days needs a beat"),
+                             ({"before_days": 3}, "before_days needs a beat"),
+                             ({"beat": "henk_farewell", "before_days": 0}, "before_days"),
+                             ({"beat": "henk_farewell", "before_days": 5, "after_days": 2}, "either")]:
         bad = _beat_docs(real)
         _dialog(bad, "ahmed_after_henk")["trigger"] = trigger
         with pytest.raises(bc.ContentError, match=message):
@@ -372,3 +375,15 @@ def test_the_audit_s_beats_and_frank_s_third_route_are_in(real):
         assert line["text"].startswith("Frank heeft getekend.") and words in line["text"]
     routes = [r["needs"] for r in _dialog(real, "frank_kpi_targets")["block"]["routes"]]
     assert {"all": ["forecast_positive:kpi_board"]} in routes
+
+
+def test_henk_s_last_week_and_his_leaving(real, tmp_path):
+    """Henk's last talk opens five days before his farewell (scripts §5) and he
+    is gone after it: a person may leave on a dated beat."""
+    assert _dialog(real, "henk_last_week")["trigger"]["beat"] == "henk_farewell"
+    assert _dialog(real, "henk_last_week")["trigger"]["before_days"] == 5
+    assert _person(real, "henk")["leaves_on"] == "henk_farewell"
+    docs = copy.deepcopy(real)
+    _person(docs, "henk")["leaves_on"] = "retirement"
+    with pytest.raises(bc.ContentError, match="leaves_on"):
+        _load(tmp_path, docs)

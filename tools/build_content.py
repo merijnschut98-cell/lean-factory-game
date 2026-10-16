@@ -1233,7 +1233,8 @@ BANK_SPECIAL = ["repeat", "refusal", "no_proposal", "other_data", "lucky_guess",
 # Ruud's line after a main-mission talk that ended this way (People.coach_question;
 # pressure: a yes under pressure).
 COACH_AFTER = ["pressure", "ruined", "blocked", "commitment"]
-PERSON_KEYS = {"id", "name", "short", "role", "place", "team", "archetype", "need", "trust", "morale", "voice"}
+PERSON_KEYS = {"id", "name", "short", "role", "place", "team", "archetype", "need", "trust", "morale", "voice",
+               "leaves_on"}
 DIALOG_KEYS = {"id", "name", "person", "kind", "mission", "requires_clue", "needs", "owns", "kpi_team", "mood",
                "patience", "opening", "retry_opening", "position", "layers", "data", "proposals", "experiments",
                "co_proposal", "condition_needs", "block", "lines", "replies", "outcomes", "variants", "trigger",
@@ -1524,13 +1525,16 @@ def _checkin(d: dict, items: list[dict], where: str) -> None:
     trigger = d.get("trigger")
     if not isinstance(trigger, dict) or not trigger:
         raise ContentError(f"{where}: a check-in needs a trigger (morale_below and/or needs)")
-    _known_keys(trigger, {"morale_below", "needs", "beat", "after_days"}, f"{where} trigger")
+    _known_keys(trigger, {"morale_below", "needs", "beat", "after_days", "before_days"}, f"{where} trigger")
     if "morale_below" in trigger:
         _number(trigger, "morale_below", f"{where} trigger", 1, 100, integer=True)
-    if "after_days" in trigger:
-        if "beat" not in trigger:
-            raise ContentError(f"{where} trigger: after_days needs a beat to count from")
-        _number(trigger, "after_days", f"{where} trigger", 0, integer=True)
+    if "after_days" in trigger and "before_days" in trigger:
+        raise ContentError(f"{where} trigger: either after_days or before_days, not both")
+    for key, low in (("after_days", 0), ("before_days", 1)):
+        if key in trigger:
+            if "beat" not in trigger:
+                raise ContentError(f"{where} trigger: {key} needs a beat to count from")
+            _number(trigger, key, f"{where} trigger", low, integer=True)
     if "beat" in trigger:
         _require_strings(trigger, ["beat"], f"{where} trigger")
     if "needs" in trigger:
@@ -1558,6 +1562,9 @@ def check_dialogs(docs: dict[str, Any]) -> None:
              for f in layer.get("unlocks", {}).get("facts", [])}
     index = _fact_index(docs)
     beats = {m["deadline_beat"] for m in missions.values() if "deadline_beat" in m}
+    for p in people.values():
+        if "leaves_on" in p and p["leaves_on"] not in beats:
+            raise ContentError(f"dialogs.yaml: person '{p['id']}': leaves_on names unknown beat {p['leaves_on']!r}")
     clue_ids = {f"{p['id']}:{i}" for p in problems.values() for i in range(len(p["clues"]))}
     for d in dialogs.values():
         where = f"dialogs.yaml: dialog '{d['id']}'"

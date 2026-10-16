@@ -155,7 +155,7 @@ func _rank(d: DialogDef, world: Dictionary, known: Dictionary) -> int:
 		var below := int(d.trigger.get("morale_below", 101))
 		var now := int(world.get("now", 0))
 		var ready: bool = morale.get(d.person, 0) < below and int(rest_until.get(d.id, 0)) <= now \
-			and _beat_passed(d.trigger, JsonFile.dict_or_empty(world.get("beats")), now)
+			and _in_beat_window(d.trigger, JsonFile.dict_or_empty(world.get("beats")), now)
 		return 0 if ready and DialogDef.needs_met(JsonFile.dict_or_empty(d.trigger.get("needs")), known) else -1
 	if not (d.requires_clue.is_empty() or world.get("found", {}).has(d.requires_clue)) \
 			or not DialogDef.needs_met(d.needs, known) or effective_outcome(d.id, known) == "commitment":
@@ -165,14 +165,25 @@ func _rank(d: DialogDef, world: Dictionary, known: Dictionary) -> int:
 	return 1 if d.mission in world.get("active", []) else -1
 
 
-## A trigger without a beat always passes; with one, `after_days` must have
-## passed since the beat's date (`beats`: id → minutes; Missions.beats). A
-## beat whose date is not known yet has not happened.
-static func _beat_passed(trigger: Dictionary, beats: Dictionary, now: int) -> bool:
+## A trigger without a beat always holds; with one (`beats`: id → minutes;
+## Missions.beats), from `after_days` after the beat on, or with `before_days`
+## from that many days before the beat until the beat. A beat whose date is
+## not known yet has not come near.
+static func _in_beat_window(trigger: Dictionary, beats: Dictionary, now: int) -> bool:
 	if not trigger.has("beat"):
 		return true
 	var at: Variant = beats.get(str(trigger["beat"]))
-	return (at is int or at is float) and now >= int(at) + SimCalendar.days(int(trigger.get("after_days", 0)))
+	if not (at is int or at is float):
+		return false
+	if trigger.has("before_days"):
+		return now >= int(at) - SimCalendar.days(int(trigger["before_days"])) and now < int(at)
+	return now >= int(at) + SimCalendar.days(int(trigger.get("after_days", 0)))
+
+
+## Whether a dated beat (`beats`, as above) has come.
+static func _beat_passed(beat: String, beats: Dictionary, now: int) -> bool:
+	var at: Variant = beats.get(beat)
+	return (at is int or at is float) and now >= int(at)
 
 
 ## After a ruined talk, until the next working day at 08:30.
@@ -345,6 +356,7 @@ func coach_question(main_id: String) -> Dictionary:
 ## [{type: beat_line, person, name, dialog, text}] for each line said.
 func daily(world: Dictionary) -> Array[Dictionary]:
 	var now := int(world.get("now", 0))
+	_retire(JsonFile.dict_or_empty(world.get("beats")), now)
 	var events := _beat_lines(world)
 	for id: String in prompts.keys():
 		if now - prompts[id] >= SimCalendar.days(PROMPT_DAYS):
@@ -362,6 +374,17 @@ func daily(world: Dictionary) -> Array[Dictionary]:
 			left[id] = true
 			events.append({"type": "left", "person": id})
 	return events
+
+
+## Whoever leaves on a dated beat that has come is gone (PersonDef.leaves_on),
+## and their open prompts go with them.
+func _retire(beats: Dictionary, now: int) -> void:
+	for p: PersonDef in persons.values():
+		if not p.leaves_on.is_empty() and not left.has(p.id) and _beat_passed(p.leaves_on, beats, now):
+			left[p.id] = true
+			for id: String in prompts.keys():
+				if dialogs[id].person == p.id:
+					prompts.erase(id)
 
 
 ## The beats_after lines due now: a dialog that ended in a partial agreement

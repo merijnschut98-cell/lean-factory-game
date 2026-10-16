@@ -3673,12 +3673,11 @@
     "text": "Nog vijf dagen. Dan ga ik vissen."
    },
    "trigger": {
+    "beat": "henk_farewell",
+    "before_days": 5,
     "needs": {
      "all": [
       "accepted:save_henks_knowledge"
-     ],
-     "none": [
-      "failed:save_henks_knowledge"
      ]
     }
    },
@@ -5023,6 +5022,7 @@
   {
    "archetype": "craftsman",
    "id": "henk",
+   "leaves_on": "henk_farewell",
    "morale": 50,
    "name": "Henk Verbeek",
    "need": "recognition",

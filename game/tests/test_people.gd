@@ -466,3 +466,37 @@ func test_no_beat_line_without_a_partial_agreement() -> void:
 	var ruined := _signs()
 	_talk(ruined, RUIN)
 	assert_eq(_beat_lines(ruined, {"committed:boss": true}), [])
+
+
+
+## Henk's last week (scripts §5): a check-in open from five days before a
+## beat until the beat itself, never after it.
+func test_a_checkin_can_open_in_the_days_before_a_beat() -> void:
+	var people := DialogFixture.people([DialogFixture.checkin({"trigger": {"beat": "farewell", "before_days": 5}})])
+	var farewell := SimCalendar.days(30)
+	var at := func(now: int) -> DialogDef:
+		return people.dialog_for("pim", DialogFixture.world({"now": now, "beats": {"farewell": farewell}}))
+	assert_eq(at.call(farewell - SimCalendar.days(5) - 1), null, "not yet: more than five days before")
+	assert_eq(at.call(farewell - SimCalendar.days(5)).id, "checkin")
+	assert_eq(at.call(farewell - 1).id, "checkin", "the last evening")
+	assert_eq(at.call(farewell), null, "the day itself: he has gone")
+
+
+## A person who leaves on a dated beat (Henk retires) is gone once it has
+## passed: no talks, no prompts, and the save remembers it.
+func test_a_person_who_leaves_on_a_beat_is_gone_after_it() -> void:
+	var henk := PersonDef.from_dict({"id": "pim", "name": "Pim", "role": "monteur", "place": "connections.design",
+		"team": "prep", "archetype": "craftsman", "leaves_on": "farewell"})
+	var people := DialogFixture.people([DialogFixture.checkin({"trigger": {"morale_below": 101}})], [henk])
+	var farewell := SimCalendar.days(30)
+	var before := {"now": farewell - 1, "facts": {}, "beats": {"farewell": farewell}}
+	people.daily(before)
+	assert_false(people.has_left("pim"))
+	assert_eq(people.prompts.keys(), ["checkin"], "still here: he can be asked")
+	people.daily({"now": farewell, "facts": {}, "beats": {"farewell": farewell}})
+	assert_true(people.has_left("pim"), "retired on his day")
+	assert_eq(people.prompts.keys(), [], "his open prompt goes with him")
+	assert_eq(people.dialog_for("pim", DialogFixture.world({"now": farewell, "beats": {"farewell": farewell}})), null)
+	var restored := DialogFixture.people([DialogFixture.checkin({"trigger": {"morale_below": 101}})], [henk])
+	restored.load_dict(bytes_to_var(var_to_bytes(people.to_dict())))
+	assert_true(restored.has_left("pim"))
