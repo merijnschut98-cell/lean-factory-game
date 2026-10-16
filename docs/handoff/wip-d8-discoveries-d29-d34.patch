@@ -1,0 +1,399 @@
+diff --git a/PLAN.md b/PLAN.md
+index beeb99d..3de0fbf 100644
+--- a/PLAN.md
++++ b/PLAN.md
+@@ -73,7 +73,7 @@ Each phase ends in a **playable** that Merijn plays before the next phase starts
+   - ✅ D6 Ruud's talk stage (2026-10-16): a main-mission talk that ends ruined, blocked, compliance, partial or commitment makes his next ask a `talk`-stage question (`People.coach_question`, saved), then he is back at the mission; the lines live in `content/dialogs.yaml` `bank.coach` (K1–K5 in turn; `after` lines for pressure, a ruin, a block, a commitment); side talks and check-ins never; a question for an earlier main mission is dropped. Persons may give a `short` name for lines ("Joost").
+   - ✅ D7 check-ins (2026-10-16): prompts expire after 3 days at no cost; ≤ 1 open, ≤ 2 opened in any seven days, a person's next prompt 14 days after their last, the lowest morale first (`People.PROMPTS_*`, saved); a check-in's `prompt` is its dagstart line (`GameSession.checkin_prompts()`); a lifted check-in still rests 14 days. New fact `accepted:<mission>` (taken on, maybe done since) so a check-in can wait for a mission.
+   - ✅ R-D3 (2026-10-16): a dialog's `warning` line the first time a talk falls into "Dicht" (once a talk). ⬜ R-D2/R-D4 need nothing in the engine (arrows built; in-character ruined lines are content).
+-  - ⬜ D8 discoveries D29–D34.
++  - ✅ D8 discoveries D29–D34 (2026-10-16): Twee oren één mond (three commitments with no steering before the concern), De stilte die sprak (a silence brought the concern out, three people), Tweede kans (a commitment right after a ruined talk with the same person), Haar eigen idee (their co-proposal won a commitment; trust +1 at their team), Iemand die er is (five different people lifted while their morale was below 50), Geen druk nodig (an act with three commitments and no pressure or blame; reputation +2); D2 Veilige haven counts a blame in a talk. `Discoveries.note_talk`, fed by `GameSession._finish_talk`. ⬜ D33's "someone checks in on you" beat waits for life beats.
+   - 🔧 D9 content: ✅ Joost (`joost_output_kpi`), Frank's block (`frank_kpi_targets`), Ahmed's check-in (`ahmed_after_henk`); ⬜ the rest of the cast and the tier-1 dialogs from `docs/superpowers/specs/2026-10-15-dialog-scripts-act0-2.md`.
+   - 🔧 D10 content tests: ✅ the spec's worked paths replay exactly; ⬜ ≥ 3 distinct successful sequences per persuasion dialog, pushing early costs, pressure gives compliance.
+ - ⬜ **1.2 Dialog UI** (D11): the speech panel; the openness **bar that fills**, with ▲/▲▲ ▼/▼▼ per reply and never a number (Merijn); trust pips; mood word and face; the layer tracker (Standpunt · Belang · Zorg); reply chips by move type, all moves always visible; the cue "Er zit meer achter…"; the summary card with the openness trace; the Mensen tab in the journal; the **walk-around energy bar** over people who need a talk. Screenshot every state.
+diff --git a/content/discoveries.yaml b/content/discoveries.yaml
+index 7bf6764..3f6f7cf 100644
+--- a/content/discoveries.yaml
++++ b/content/discoveries.yaml
+@@ -163,3 +163,52 @@ discoveries:
+     act: 1
+     trigger: {type: no_overload_act, experiments: 3}
+     reward: {title: Goede werkgever}
++
++  # ── Talks (dialog spec §5.5, D29–D34) ──────────────────────────────────────
++  - id: twee_oren_een_mond
++    name: Twee oren, één mond
++    line: "Wie eerst begrijpt, hoeft daarna minder te overtuigen."
++    hint: "Sommige mensen zeggen pas ja als ze eerst gehoord zijn."
++    act: 2
++    trigger: {type: listened_first, count: 3}
++    reward: {title: Luisteraar, note: "Wie eerst begrijpt, hoeft daarna minder te overtuigen."}
++
++  - id: de_stilte_die_sprak
++    name: De stilte die sprak
++    line: "Soms zegt iemand het pas als jij even niets zegt."
++    hint: "Niet elk antwoord komt op een vraag."
++    act: 2
++    trigger: {type: silence_reveal, count: 3}
++    reward: {object: "Een lege koffiebeker", note: "In een onderhandeling is wie de stilte kan verdragen vaak degene die het meest hoort."}
++
++  - id: tweede_kans
++    name: Tweede kans
++    line: "Een gesprek dat misgaat, is het begin van het volgende."
++    hint: "Een deur die dichtging, kan weer open."
++    act: 1
++    trigger: {type: second_chance}
++    reward: {note: "Een gesprek dat misgaat, is het begin van het volgende."}
++
++  - id: haar_eigen_idee
++    name: Haar eigen idee
++    line: "Het beste voorstel was niet het jouwe."
++    hint: "Wie meedenkt, heeft soms zelf het antwoord."
++    act: 2
++    trigger: {type: own_idea}
++    reward: {object: "De whiteboardstift", note: "Een verbetering van henzelf houden ze zelf vol. Het team vertrouwt je wat meer."}
++
++  - id: iemand_die_er_is
++    name: Iemand die er is
++    line: "Respect voor mensen begint met even langslopen."
++    hint: "Wie stil is, heeft soms iemand nodig die vraagt hoe het gaat."
++    act: 2
++    trigger: {type: lifted_low, count: 5, morale: 50}
++    reward: {title: Er zijn, note: "Vijf collega's zaten in een dip, en jij liep langs. Zonder agenda."}
++
++  - id: geen_druk_nodig
++    name: Geen druk nodig
++    line: "Een hoofdstuk lang overtuigd, nooit gedwongen."
++    hint: "Een ja onder druk telt, maar houdt niet lang."
++    act: 1
++    trigger: {type: no_pressure_act, commitments: 3}
++    reward: {reputation: 2, note: "Dwang werkt snel en houdt kort (Kotter en Schlesinger, 1979). Jij had het niet nodig."}
+diff --git a/game/data/discoveries.json b/game/data/discoveries.json
+index b8b0094..d0cc046 100644
+--- a/game/data/discoveries.json
++++ b/game/data/discoveries.json
+@@ -301,6 +301,94 @@
+     "experiments": 3,
+     "type": "no_overload_act"
+    }
++  },
++  {
++   "act": 2,
++   "hint": "Sommige mensen zeggen pas ja als ze eerst gehoord zijn.",
++   "id": "twee_oren_een_mond",
++   "line": "Wie eerst begrijpt, hoeft daarna minder te overtuigen.",
++   "name": "Twee oren, één mond",
++   "reward": {
++    "note": "Wie eerst begrijpt, hoeft daarna minder te overtuigen.",
++    "title": "Luisteraar"
++   },
++   "trigger": {
++    "count": 3,
++    "type": "listened_first"
++   }
++  },
++  {
++   "act": 2,
++   "hint": "Niet elk antwoord komt op een vraag.",
++   "id": "de_stilte_die_sprak",
++   "line": "Soms zegt iemand het pas als jij even niets zegt.",
++   "name": "De stilte die sprak",
++   "reward": {
++    "note": "In een onderhandeling is wie de stilte kan verdragen vaak degene die het meest hoort.",
++    "object": "Een lege koffiebeker"
++   },
++   "trigger": {
++    "count": 3,
++    "type": "silence_reveal"
++   }
++  },
++  {
++   "act": 1,
++   "hint": "Een deur die dichtging, kan weer open.",
++   "id": "tweede_kans",
++   "line": "Een gesprek dat misgaat, is het begin van het volgende.",
++   "name": "Tweede kans",
++   "reward": {
++    "note": "Een gesprek dat misgaat, is het begin van het volgende."
++   },
++   "trigger": {
++    "type": "second_chance"
++   }
++  },
++  {
++   "act": 2,
++   "hint": "Wie meedenkt, heeft soms zelf het antwoord.",
++   "id": "haar_eigen_idee",
++   "line": "Het beste voorstel was niet het jouwe.",
++   "name": "Haar eigen idee",
++   "reward": {
++    "note": "Een verbetering van henzelf houden ze zelf vol. Het team vertrouwt je wat meer.",
++    "object": "De whiteboardstift"
++   },
++   "trigger": {
++    "type": "own_idea"
++   }
++  },
++  {
++   "act": 2,
++   "hint": "Wie stil is, heeft soms iemand nodig die vraagt hoe het gaat.",
++   "id": "iemand_die_er_is",
++   "line": "Respect voor mensen begint met even langslopen.",
++   "name": "Iemand die er is",
++   "reward": {
++    "note": "Vijf collega's zaten in een dip, en jij liep langs. Zonder agenda.",
++    "title": "Er zijn"
++   },
++   "trigger": {
++    "count": 5,
++    "morale": 50,
++    "type": "lifted_low"
++   }
++  },
++  {
++   "act": 1,
++   "hint": "Een ja onder druk telt, maar houdt niet lang.",
++   "id": "geen_druk_nodig",
++   "line": "Een hoofdstuk lang overtuigd, nooit gedwongen.",
++   "name": "Geen druk nodig",
++   "reward": {
++    "note": "Dwang werkt snel en houdt kort (Kotter en Schlesinger, 1979). Jij had het niet nodig.",
++    "reputation": 2
++   },
++   "trigger": {
++    "commitments": 3,
++    "type": "no_pressure_act"
++   }
+   }
+  ]
+ }
+diff --git a/game/data/vocabulary.json b/game/data/vocabulary.json
+index bfdad16..4b132c7 100644
+--- a/game/data/vocabulary.json
++++ b/game/data/vocabulary.json
+@@ -112,6 +112,13 @@
+   "held": [
+    "days"
+   ],
++  "lifted_low": [
++   "count",
++   "morale"
++  ],
++  "listened_first": [
++   "count"
++  ],
+   "missions_scored": [
+    "missions",
+    "score"
+@@ -120,12 +127,20 @@
+   "no_overload_act": [
+    "experiments"
+   ],
++  "no_pressure_act": [
++   "commitments"
++  ],
++  "own_idea": [],
+   "predictions": [
+    "count"
+   ],
+   "recovered_after_fail": [
+    "score"
+   ],
++  "second_chance": [],
++  "silence_reveal": [
++   "count"
++  ],
+   "tool_at": [
+    "place",
+    "tool",
+diff --git a/game/src/game/session.gd b/game/src/game/session.gd
+index cc37e09..e9bb2e1 100644
+--- a/game/src/game/session.gd
++++ b/game/src/game/session.gd
+@@ -697,7 +697,11 @@ func _finish_talk() -> Dictionary:
+ 	var d := _talk
+ 	_talk = null
+ 	var main := missions.active("main").any(func(m: MissionDef) -> bool: return m.id == d.def.mission)
++	var morale_before: int = people.morale[d.who.id]
+ 	var summary := people.finish(d, region.net.time, main)
++	discoveries.note_talk(self, {"person": d.who.id, "team": d.who.team, "kind": d.def.kind, "outcome": d.outcome,
++		"listened_first": not d.steered_early and d.revealed.has("concern"), "silence_reveal": d.concern_by == "silence",
++		"own_idea": d.own_idea(), "morale_before": morale_before, "pressured": d.pressured, "confronted": d.confronted})
+ 	if summary["confronted"]:
+ 		region.ask(d.who.place, "behind")
+ 	if summary["team_trust"] > 0:
+diff --git a/game/src/rules/dialog.gd b/game/src/rules/dialog.gd
+index f50ac13..c392f00 100644
+--- a/game/src/rules/dialog.gd
++++ b/game/src/rules/dialog.gd
+@@ -148,6 +148,10 @@ var _mood_asked := false
+ var _lead_in_said := false
+ var _co_offered := false
+ var _warned := false
++## How the talk went, for the discoveries: a steering move came before the
++## concern was out; the move that revealed the concern.
++var steered_early := false
++var concern_by := ""
+ 
+ 
+ ## `start`: {openness, trust, mood, found (clue id → true), facts (fact → true),
+@@ -225,6 +229,7 @@ func say(move: String, pick: String = "") -> Dictionary:
+ 		reply = _line(bank["special"]["repeat"])
+ 		lands = false
+ 	_uses[move] = int(_uses.get(move, 0)) + 1
++	steered_early = steered_early or (move in STEER and not revealed.has("concern"))
+ 	openness = clampi(openness + delta, RUINED_BELOW if def.tutorial else 0, 100)
+ 	outcome = effect["outcome"]
+ 	var shown := ""
+@@ -235,7 +240,8 @@ func say(move: String, pick: String = "") -> Dictionary:
+ 				and (not layer.has("lead_in") or _lead_in_said):
+ 			revealed[layer["id"]] = true
+ 			shown = layer["id"]
+-			unlocked = JsonFile.dict_or_empty(layer.get("unlocks")).duplicate(true)
++			concern_by = move if shown == "concern" else concern_by
++			unlocked =JsonFile.dict_or_empty(layer.get("unlocks")).duplicate(true)
+ 			reply = _line(layer.get("text", ""), layer.get("tags", []))
+ 		elif lands and move in LISTEN and layer.has("lead_in") and openness >= CUE_AT:
+ 			_lead_in_said = true
+@@ -309,6 +315,11 @@ static func band_of(value: int) -> int:
+ 	return -1
+ 
+ 
++## Their own idea won: the co-proposal they offered was on the table.
++func own_idea() -> bool:
++	return _co_offered and table == str(def.co_proposal.get("id", ""))
++
++
+ ## The facts the revealed layers unlocked (heard:<id>).
+ func unlocked_facts() -> Array:
+ 	return _unlocked("facts")
+diff --git a/game/src/rules/discoveries.gd b/game/src/rules/discoveries.gd
+index d942786..58c0ce7 100644
+--- a/game/src/rules/discoveries.gd
++++ b/game/src/rules/discoveries.gd
+@@ -24,6 +24,8 @@ const TRIGGERS := {
+ 	"missions_scored": ["missions", "score"], "recovered_after_fail": ["score"], "coach_cycle": [],
+ 	"tool_in_missions": ["place", "tool", "missions", "problem", "countermeasure"],
+ 	"farewell": ["mission", "place", "days", "countermeasures"],
++	"listened_first": ["count"], "silence_reveal": ["count"], "second_chance": [], "own_idea": [],
++	"lifted_low": ["count", "morale"], "no_pressure_act": ["commitments"],
+ }
+ ## A fix holds when its health is at least this (Reputation.HELD_HEALTH).
+ const HELD_HEALTH := Reputation.HELD_HEALTH
+@@ -52,6 +54,14 @@ var _act_overload := {}
+ var _missions_heard := {}  # discovery id → {mission: true}
+ var _not_constraint := {}  # problems whose Check said not the constraint
+ var _first_pass := {}  # problems whose first Check passed with the right cause and KPI
++# Talks (dialog spec §5.5): the last outcome per person, the people whose
++# concern came out after a silence, the low people a check-in lifted, and
++# per act whether pressure was used and how many commitments were won.
++var _last_talk := {}
++var _silent_people := {}
++var _lifted_low := {}
++var _act_pressure := {}
++var _act_commitments := {}
+ 
+ 
+ func _init(content: Array) -> void:
+@@ -146,6 +156,34 @@ func note_act(s: GameSession, problem_id: String) -> void:
+ 		_durable[problem_id] = r.net.time
+ 
+ 
++## A talk ended. `t`: {person, team, kind, outcome, listened_first (no
++## steering before the concern came out), silence_reveal (a silence brought
++## the concern out), own_idea (their co-proposal won), morale_before,
++## pressured, confronted}.
++func note_talk(s: GameSession, t: Dictionary) -> void:
++	var act := str(_act(s))
++	var person := str(t["person"])
++	var outcome := str(t["outcome"])
++	if t.get("confronted", false):
++		_act_blamed[act] = true  # D2 counts a blame in a talk
++	if t.get("pressured", false) or t.get("confronted", false):
++		_act_pressure[act] = true
++	if outcome == "commitment":
++		_act_commitments[act] = int(_act_commitments.get(act, 0)) + 1
++		if t.get("listened_first", false):
++			_count("listened_first")
++		if _last_talk.get(person) == "ruined":
++			_reward(s, "second_chance")
++		if t.get("own_idea", false) and not _of_type("own_idea").is_empty():
++			s.region.change_trust(str(t.get("team", "")), 1)
++			_reward(s, "own_idea")
++	if t.get("silence_reveal", false):
++		_silent_people[person] = true
++	if outcome == "lifted" and int(t.get("morale_before", 100)) < _param("lifted_low", "morale", 50):
++		_lifted_low[person] = true
++	_last_talk[person] = outcome
++
++
+ ## A mission was taken on.
+ func note_accept(s: GameSession, mission_id: String) -> void:
+ 	_accepted[mission_id] = s.region.net.time
+@@ -213,8 +251,15 @@ func _met(s: GameSession, d: Dictionary) -> bool:
+ 			return _missions_heard.get(d["id"], {}).size() >= int(t.get("missions", 3)) and m.knows(cm)
+ 		"farewell":
+ 			return _farewell(s, t)
+-		"predictions", "deepest_why", "durable_held":
++		"predictions", "deepest_why", "durable_held", "listened_first":
+ 			return int(_counts.get(str(t["type"]), 0)) >= int(t.get("count", 1))
++		"silence_reveal":
++			return _silent_people.size() >= int(t.get("count", 3))
++		"lifted_low":
++			return _lifted_low.size() >= int(t.get("count", 5))
++		"no_pressure_act":
++			return _ended_acts(s).any(func(act: int) -> bool:
++				return not _act_pressure.has(str(act)) and int(_act_commitments.get(str(act), 0)) >= int(t.get("commitments", 3)))
+ 	return false
+ 
+ 
+@@ -383,7 +428,9 @@ func to_dict() -> Dictionary:
+ 		"after_fail": _after_fail.duplicate(), "durable": _durable.duplicate(), "blame": _blame.duplicate(),
+ 		"coach": _coach.duplicate(true), "act_blamed": _act_blamed.duplicate(), "act_experiments": _act_experiments.duplicate(),
+ 		"act_overload": _act_overload.duplicate(), "missions_heard": _missions_heard.duplicate(true), "accepted": _accepted.duplicate(),
+-		"not_constraint": _not_constraint.duplicate(), "first_pass": _first_pass.duplicate()}
++		"not_constraint": _not_constraint.duplicate(), "first_pass": _first_pass.duplicate(),
++		"last_talk": _last_talk.duplicate(), "silent_people": _silent_people.duplicate(), "lifted_low": _lifted_low.duplicate(),
++		"act_pressure": _act_pressure.duplicate(), "act_commitments": _act_commitments.duplicate()}
+ 
+ 
+ ## Restore to_dict() output; discoveries the content no longer has are dropped.
+@@ -397,7 +444,8 @@ func load_dict(d: Dictionary) -> void:
+ 	for pair in [[_counts, "counts"], [_after_fail, "after_fail"], [_durable, "durable"], [_blame, "blame"],
+ 			[_act_blamed, "act_blamed"], [_act_experiments, "act_experiments"], [_act_overload, "act_overload"],
+ 			[_not_constraint, "not_constraint"], [_first_pass, "first_pass"], [_coach, "coach"], [_missions_heard, "missions_heard"],
+-			[_accepted, "accepted"]]:
++			[_accepted, "accepted"], [_last_talk, "last_talk"], [_silent_people, "silent_people"],
++			[_lifted_low, "lifted_low"], [_act_pressure, "act_pressure"], [_act_commitments, "act_commitments"]]:
+ 		var into: Dictionary = pair[0]
+ 		into.clear()
+ 		var saved := JsonFile.dict_or_empty(d.get(pair[1]))
+diff --git a/tools/build_content.py b/tools/build_content.py
+index 7708aac..abcae1c 100644
+--- a/tools/build_content.py
++++ b/tools/build_content.py
+@@ -1446,6 +1446,8 @@ DISCOVERY_TRIGGERS = {
+     "missions_scored": ["missions", "score"], "recovered_after_fail": ["score"], "coach_cycle": [],
+     "tool_in_missions": ["place", "tool", "missions", "problem", "countermeasure"],
+     "farewell": ["mission", "place", "days", "countermeasures"],
++    "listened_first": ["count"], "silence_reveal": ["count"], "second_chance": [], "own_idea": [],
++    "lifted_low": ["count", "morale"], "no_pressure_act": ["commitments"],
+ }
+ DISCOVERY_KEYS = {"id", "name", "line", "hint", "act", "trigger", "reward"}
+ MAX_DISCOVERY_REPUTATION = 3  # small in power (audit §4.1)
+@@ -1462,12 +1464,14 @@ def validate_discoveries(doc: Any, source: str) -> None:
+         if not isinstance(trigger, dict) or trigger.get("type") not in DISCOVERY_TRIGGERS:
+             raise ContentError(f"{where}: 'trigger' needs a type: {', '.join(DISCOVERY_TRIGGERS)}")
+         _known_keys(trigger, {"type", *DISCOVERY_TRIGGERS[trigger["type"]]}, f"{where} trigger")
+-        for key in ("window_days", "days", "count", "experiments", "score"):
++        for key in ("window_days", "days", "count", "experiments", "score", "commitments"):
+             if key in trigger:
+                 _number(trigger, key, f"{where} trigger", 1, integer=True)
+         if "hours" in trigger and not (isinstance(trigger["hours"], list) and len(trigger["hours"]) == 2
+                                        and all(isinstance(h, int) and 0 <= h <= 24 for h in trigger["hours"])):
+             raise ContentError(f"{where} trigger: 'hours' is [from, to], whole hours")
++        if "morale" in trigger:
++            _number(trigger, "morale", f"{where} trigger", 1, 100, integer=True)
+         if "months" in trigger and not (isinstance(trigger["months"], list)
+                                         and all(isinstance(m, int) and 1 <= m <= 12 for m in trigger["months"])):
+             raise ContentError(f"{where} trigger: 'months' is a list of 1-12")

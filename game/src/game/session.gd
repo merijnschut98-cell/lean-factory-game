@@ -47,6 +47,8 @@ var _people_events: Array[Dictionary] = []
 var discoveries: Discoveries
 ## The El Amrani family's dossier, followed through the stream.
 var followed := FollowedOrder.new()
+## The "Hoe werkt het?" explainers seen (PLAN 2.7c), for the codex.
+var explainers := ExplainerLog.new()
 ## The first thing wrong with the content; "" when the game is usable.
 var error := ""
 
