@@ -65,15 +65,22 @@ func test_every_tutorial_talk_is_won_without_its_day_s_move_and_never_ruined() -
 		assert_true(pushed.openness >= Dialog.RUINED_BELOW and pushed.outcome != "ruined", talk.def.id)
 
 
-## T11: steering before listening costs, and pressure gets a yes without the person.
+## T11: steering before listening costs, and pressure gets a yes without the
+## person: after the first listening moves of the talk's own best route (a
+## customer at 20 is lost to pressure at once, which is no yes at all).
 func test_pushing_early_costs_and_pressure_gives_compliance() -> void:
 	for talk in DialogRoutes.content_talks(_catalog()):
 		var pushed := talk.copy()
 		var r := pushed.say("propose", DialogRoutes.pick(pushed, "propose"))
 		assert_true(r["delta"] < 0, "%s: a proposal before listening costs" % talk.def.id)
+		var listened := []
+		for move: String in DialogRoutes.best_route([talk])["route"]:
+			if not move in Dialog.LISTEN or listened.size() == 2:
+				break
+			listened.append(move)
 		var pressed := talk.copy()
-		DialogFixture.play(pressed, ["open_question", "pressure", "propose:" + DialogRoutes.pick(pressed, "propose"), "ask_commitment"])
-		assert_eq(pressed.outcome, "compliance", talk.def.id)
+		DialogFixture.play(pressed, listened + ["pressure", "propose:" + DialogRoutes.pick(pressed, "propose"), "ask_commitment"])
+		assert_eq(pressed.outcome, "compliance", "%s after %s" % [talk.def.id, listened])
 
 
 ## A copy plays on exactly as the talk it was taken from.
