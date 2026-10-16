@@ -222,6 +222,10 @@
     "ask": "Die vraag hadden we. Wil je een andere kant op?",
     "say": "Klopt, zo zei ik het. Zullen we verder?"
    },
+   "mentor": {
+    "ask": "Je stelt me mijn eigen vraag terug. Goed geleerd. Wat wil je nu echt weten?",
+    "say": "Je herhaalt me nu. Wat zie je zelf?"
+   },
    "overloaded": {
     "ask": "Sorry, maar dit vroeg je net. Ik heb echt niet veel tijd.",
     "say": "Ja. Ja. Dat weet ik nou wel. Wat wil je eigenlijk?"
@@ -238,6 +242,12 @@
  },
  "dialogs": [
   {
+   "beats_after": [
+    {
+     "text": "Frank heeft getekend. Nu sta ik er ook echt achter.",
+     "when": "committed:frank_kpi_targets"
+    }
+   ],
    "co_proposal": {
     "id": "present_with_sanne",
     "text": "En als Sanne hetzelfde doet, presenteren we het samen. Dan sta ik er niet alleen."
@@ -462,6 +472,12 @@
    "warning": "Hm. Ik heb hier eigenlijk geen tijd voor."
   },
   {
+   "beats_after": [
+    {
+     "text": "Frank heeft getekend. Joost en ik presenteren donderdag. Samen. Ik ben zenuwachtig, en dat is lang geleden.",
+     "when": "committed:frank_kpi_targets"
+    }
+   ],
    "co_proposal": {
     "id": "present_with_joost",
     "text": "Als Joost en ik dezelfde aansluiting volgen, van aanvraag tot monteur. Eén dossier, op het bord. Dan ziet iedereen waar het blijft."
@@ -662,6 +678,14 @@
         "partial:joost_output_kpi",
         "partial:sanne_kpi",
         "reputation>=40"
+       ]
+      }
+     },
+     {
+      "hint": "Als het bord laat zien dat volgend kwartaal niet slechter wordt.",
+      "needs": {
+       "all": [
+        "forecast_positive:kpi_board"
        ]
       }
      }
@@ -929,6 +953,8 @@
     }
    },
    "trigger": {
+    "after_days": 16,
+    "beat": "henk_farewell",
     "morale_below": 50,
     "needs": {
      "any": [

@@ -159,7 +159,8 @@ static func missions() -> Array:
 		m.call("deep_dive", "main", {"type": "investigate", "problem": "custom_design", "clues": 1},
 			{"missions": ["walk_connections"]}),
 		m.call("henk", "side", {"type": "solve", "problem": "incomplete_application"}, {"missions": ["walk_connections"]},
-			{"deadline_days": 10, "fail": "fail henk", "fail_closes": ["poka_yoke_form"]}),
+			{"deadline_days": 10, "fail": "fail henk", "fail_closes": ["poka_yoke_form"],
+			"deadline_beat": "henk_farewell"}),
 		m.call("green_only", "side", {"type": "walk", "stream": "meters"}, {"belt": 2}),
 	]
 

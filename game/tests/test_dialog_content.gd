@@ -125,7 +125,8 @@ func test_frank_blocks_until_shown_and_his_okay_completes_joosts_agreement() -> 
 	assert_eq(blocked.outcome, "blocked")
 	var summary := people.finish(blocked, FRIDAY)
 	assert_eq(summary["hints"], ["Laat het me zien op één stroom.",
-		"Als Sanne en Joost het zelf komen uitleggen, sta ik er niet alleen voor."])
+		"Als Sanne en Joost het zelf komen uitleggen, sta ik er niet alleen voor.",
+		"Als het bord laat zien dat volgend kwartaal niet slechter wordt."])
 	assert_eq(summary["facts"], ["heard:frank_budget"], "the fact the interim MT reads (drie-winters §5.2)")
 	var shown := _world({"facts": {"checked:silo_kpis": true}})
 	var agreed := _talk(people, "frank_kpi_targets",
@@ -139,13 +140,17 @@ func test_frank_blocks_until_shown_and_his_okay_completes_joosts_agreement() -> 
 
 # ── Sample 2: a check-in with Ahmed (spec §8) ───────────────────────────────
 
+## Henk's knowledge mission over, his farewell (a dated beat) sixteen days ago.
 func _ahmed_world(extra: Dictionary = {}) -> Dictionary:
-	return _world({"main": [], "active": [], "found": {}, "facts": {"done:save_henks_knowledge": true}}).merged(extra, true)
+	return _world({"main": [], "active": [], "found": {}, "facts": {"done:save_henks_knowledge": true},
+		"beats": {"henk_farewell": FRIDAY - SimCalendar.days(16)}}).merged(extra, true)
 
 
 func test_ahmed_has_a_checkin_once_henk_has_gone() -> void:
 	var people := _people()
 	assert_eq(people.dialog_for("ahmed", _world({"main": [], "active": []})), null, "Henk is still there")
+	assert_eq(people.dialog_for("ahmed", _ahmed_world({"beats": {"henk_farewell": FRIDAY - SimCalendar.days(15)}})), null,
+		"grief needs a little time (audit C11)")
 	assert_eq(people.dialog_for("ahmed", _ahmed_world()).id, "ahmed_after_henk")
 	assert_eq(people.start(people.dialogs["ahmed_after_henk"], _ahmed_world()).openness, 43)
 

@@ -160,6 +160,7 @@ func test_walking_around_shows_who_is_low_on_energy() -> void:
 	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
 	assert_eq(s.energy_of("ahmed"), {"energy": 0.42, "needs_talk": false}, "low, but Henk is still there")
 	s.missions.done_once["save_henks_knowledge"] = true
+	s.missions.opened_at["save_henks_knowledge"] = s.region.net.time - SimCalendar.days(56 + 16)  # the farewell was 16 days ago
 	s.ask_coach()
 	assert_eq(s.energy_of("ahmed"), {"energy": 0.42, "needs_talk": true})
 	assert_eq(s.people_at("outages.locate")[0]["energy"], 0.42)
@@ -196,7 +197,42 @@ func test_the_dagstart_names_an_open_checkin() -> void:
 	assert_eq(s.checkin_prompts(), [])
 	s.missions.done_once["save_henks_knowledge"] = true
 	s.ask_coach()
+	assert_eq(s.checkin_prompts(), [], "Henk's farewell has not come yet (audit C11)")
+	s.missions.opened_at["save_henks_knowledge"] = s.region.net.time - SimCalendar.days(56 + 16)
+	s.ask_coach()
 	var lines := s.checkin_prompts()
 	assert_eq(lines.size(), 1)
 	assert_eq([lines[0]["person"], lines[0]["name"]], ["ahmed", "Ahmed Bouzid"])
 	assert_false(str(lines[0]["line"]).is_empty())
+
+
+
+## A check-in counts days from a dated beat (drie winters S2, audit C11): the
+## session hands People the beats Missions knows.
+func test_a_checkin_counts_days_from_a_dated_beat() -> void:
+	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
+	var henk: MissionDef = s.missions.defs["save_henks_knowledge"]
+	s.missions.done_once[henk.id] = true
+	var ahmed := func() -> bool:
+		return s.people_at(s.people.persons["ahmed"].place).filter(
+			func(p: Dictionary) -> bool: return p["id"] == "ahmed")[0]["has_dialog"]
+	assert_false(ahmed.call(), "Henk's mission never opened: no farewell yet")
+	s.missions.opened_at[henk.id] = s.region.net.time - SimCalendar.days(henk.deadline_days + 15)
+	assert_false(ahmed.call(), "fifteen days after the farewell")
+	s.missions.opened_at[henk.id] -= SimCalendar.days(1)
+	assert_true(ahmed.call(), "sixteen days after")
+
+
+## A partial agreement speaks up when its condition comes true (audit C15),
+## as an event the HUD toasts.
+func test_a_beat_line_reaches_the_events() -> void:
+	var s := _silo()
+	s.people.outcomes["joost_output_kpi"] = "partial"
+	s.people.outcomes["sanne_kpi"] = "partial"
+	s.pass_time(1)
+	s.drain_events()
+	s.people.outcomes["frank_kpi_targets"] = "commitment"
+	s.pass_time(1)
+	var lines := s.drain_events().filter(func(e: Dictionary) -> bool: return e["type"] == "beat_line")
+	assert_eq(lines.map(func(e: Dictionary) -> String: return e["person"]), ["joost", "sanne"], "audit C15")
+	assert_eq(UiText.event(lines[0], {}), "Joost van Dijk: “Frank heeft getekend. Nu sta ik er ook echt achter.”")

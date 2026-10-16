@@ -362,6 +362,8 @@ static func event(e: Dictionary, mission_names: Dictionary, problem_names: Dicti
 			return OVERLOAD % [team_names.get(e["team"], e["team"]), roundi(e["load"] * 100.0), problem]
 		"reputation":
 			return REPUTATION % [signed(e["change"]), REPUTATION_REASONS.get(e["reason"], e["reason"])]
+		"beat_line":
+			return "%s: \u201c%s\u201d" % [e["name"], e["text"]]
 	if type == "belt":
 		return "Nieuwe band: %s!" % belt(Progression.BELTS[e["belt"]]["id"])
 	if type == "bad_period":

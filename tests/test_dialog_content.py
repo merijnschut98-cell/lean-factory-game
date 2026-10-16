@@ -287,3 +287,88 @@ def test_a_crowded_need_in_a_tier_fails_the_build(real, tmp_path):
     _strip_tells(docs["dialogs"]["dialogs"])  # they name the old needs
     with pytest.raises(bc.ContentError, match="tier 1.*safety"):
         _load(tmp_path, docs)
+
+
+def test_a_route_may_wait_for_a_positive_forecast(real, tmp_path):
+    """Frank's third route (tier-1 content audit C5): forecast_positive:<kpi_board | a Check KPI>."""
+    for subject in ("kpi_board", "lead_time"):
+        docs = copy.deepcopy(real)
+        _dialog(docs, "frank_kpi_targets")["block"]["routes"].append(
+            {"needs": {"all": [f"forecast_positive:{subject}"]}, "hint": "Laat het bord het zien."})
+        _load(tmp_path, docs)
+    docs = copy.deepcopy(real)
+    _dialog(docs, "frank_kpi_targets")["block"]["routes"].append(
+        {"needs": {"all": ["forecast_positive:happiness"]}, "hint": "Hm."})
+    with pytest.raises(bc.ContentError, match="forecast"):
+        _load(tmp_path, docs)
+
+
+def _beat_docs(real: dict) -> dict:
+    """The real content with Henk's farewell as a dated beat on his mission."""
+    docs = copy.deepcopy(real)
+    henk = next(m for m in docs["missions"]["missions"] if m["id"] == "save_henks_knowledge")
+    henk["deadline_beat"] = "henk_farewell"
+    return docs
+
+
+def test_a_checkin_may_wait_days_after_a_dated_beat(real, tmp_path):
+    """Tier-1 content audit C11: {beat: henk_farewell, after_days: 16, morale_below: 50}."""
+    docs = _beat_docs(real)
+    _dialog(docs, "ahmed_after_henk")["trigger"].update(beat="henk_farewell", after_days=16)
+    _load(tmp_path, docs)
+    for trigger, message in [({"beat": "retirement"}, "unknown beat"),
+                             ({"beat": "henk_farewell", "after_days": -1}, "after_days"),
+                             ({"after_days": 3}, "after_days needs a beat")]:
+        bad = _beat_docs(real)
+        _dialog(bad, "ahmed_after_henk")["trigger"] = trigger
+        with pytest.raises(bc.ContentError, match=message):
+            _load(tmp_path, bad)
+
+
+def test_a_dated_beat_is_a_deadline_named_once(real, tmp_path):
+    docs = _beat_docs(real)
+    other = next(m for m in docs["missions"]["missions"] if m["id"] == "fix_wrong_joint")
+    other["deadline_beat"] = "henk_farewell"
+    with pytest.raises(bc.ContentError, match="deadline_beat"):
+        _load(tmp_path, docs)
+    docs = _beat_docs(real)
+    henk = next(m for m in docs["missions"]["missions"] if m["id"] == "save_henks_knowledge")
+    henk.pop("deadline_days")
+    henk.pop("fail_closes")
+    with pytest.raises(bc.ContentError, match="deadline_beat"):
+        _load(tmp_path, docs)
+
+
+def test_a_persuasion_may_speak_after_a_later_fact(real, tmp_path):
+    """Tier-1 content audit C15: beats_after: [{when, text}] on a persuasion."""
+    docs = copy.deepcopy(real)
+    _dialog(docs, "joost_output_kpi")["beats_after"] = [{"when": "committed:frank_kpi_targets", "text": "Getekend."}]
+    _load(tmp_path, docs)
+    for line, message in [({"when": "committed:nobody", "text": "Ja."}, "unknown dialog"),
+                          ({"when": "committed:frank_kpi_targets"}, "text"),
+                          ({"when": "committed:frank_kpi_targets", "text": "Ja.", "who": "joost"}, "unknown key")]:
+        bad = copy.deepcopy(real)
+        _dialog(bad, "joost_output_kpi")["beats_after"] = [line]
+        with pytest.raises(bc.ContentError, match=message):
+            _load(tmp_path, bad)
+    bad = copy.deepcopy(real)
+    _dialog(bad, "ahmed_after_henk")["beats_after"] = [{"when": "committed:frank_kpi_targets", "text": "Ja."}]
+    with pytest.raises(bc.ContentError, match="beats_after"):
+        _load(tmp_path, bad)
+
+
+def test_the_audit_s_beats_and_frank_s_third_route_are_in(real):
+    """Tier-1 content audit C11 (Ahmed grieves first), C15 (the partial that
+    upgrades when Frank signs is felt) and C5 (Frank's third route)."""
+    henk = next(m for m in real["missions"]["missions"] if m["id"] == "save_henks_knowledge")
+    assert henk["deadline_beat"] == "henk_farewell"
+    assert _dialog(real, "ahmed_after_henk")["trigger"] == {
+        "beat": "henk_farewell", "after_days": 16, "morale_below": 50,
+        "needs": {"any": ["done:save_henks_knowledge", "failed:save_henks_knowledge"]}}
+    for dialog_id, words in [("joost_output_kpi", "Nu sta ik er ook echt achter."),
+                             ("sanne_kpi", "Joost en ik presenteren donderdag. Samen.")]:
+        (line,) = _dialog(real, dialog_id)["beats_after"]
+        assert line["when"] == "committed:frank_kpi_targets"
+        assert line["text"].startswith("Frank heeft getekend.") and words in line["text"]
+    routes = [r["needs"] for r in _dialog(real, "frank_kpi_targets")["block"]["routes"]]
+    assert {"all": ["forecast_positive:kpi_board"]} in routes

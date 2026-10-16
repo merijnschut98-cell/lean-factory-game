@@ -566,7 +566,10 @@ def _all_problems(docs: dict[str, Any]) -> list[tuple[str, dict]]:
 # facts (heard: ... blocked:) name a dialog; they are checked once dialogs exist.
 FACT_KINDS = {"done": 1, "failed": 1, "chose": 2, "standardised": 1, "poor_fix": 1, "repaired": 1, "fork_first": 2,
               "flag": 1, "heard": 1, "committed": 1, "complied": 1, "partial": 1, "blocked": 1,
-              "checked": 1, "accepted": 1}  # Facts.KINDS
+              "checked": 1, "accepted": 1, "forecast_positive": 1}  # Facts.KINDS
+# What a forecast_positive:<subject> fact names: the KPI board's quarterly
+# review, or the KPI a Check predicted (Investigation.KPIS).
+FORECAST_SUBJECTS = ["kpi_board"] + KPIS
 DIALOG_FACTS = {"heard", "committed", "complied", "partial", "blocked"}
 MEASURES = {"maturity": (1, 4), "reputation": (0, 100)}  # Facts.MEASURES: "maturity>=3"
 _MEASURE = re.compile(r"^([a-z]+)>=(\d+)$")
@@ -587,6 +590,8 @@ def _atom_parts(atom: Any, where: str) -> tuple[str, list[str]]:
     ids = rest.split(":") if rest else []
     if kind not in FACT_KINDS or len(ids) != FACT_KINDS[kind] or not all(_ID.match(i) for i in ids):
         raise ContentError(f"{where}: {atom!r} is not a fact (kinds: {', '.join(FACT_KINDS)}) or a measure")
+    if kind == "forecast_positive" and ids[0] not in FORECAST_SUBJECTS:
+        raise ContentError(f"{where}: {atom!r}: a forecast is of {', '.join(FORECAST_SUBJECTS)}")
     return kind, ids
 
 
@@ -640,7 +645,8 @@ BELT_XP = [0, 2000, 6000, 30000, 110000]  # Progression.BELTS
 MIN_REWARD_SHARE = 0.6
 MISSION_KEYS = {"id", "name", "kind", "tier", "requires", "briefing", "debrief", "fail", "goal", "deadline_days",
                 "fail_closes", "rewards", "insights", "teaches", "check_days", "setup", "act", "chapter", "arc",
-                "fork", "debrief_first", "reopen", "sets_flags", "questions", "debrief_variants", "containment"}
+                "fork", "debrief_first", "reopen", "sets_flags", "questions", "debrief_variants", "containment",
+                "deadline_beat"}
 # A safety mission's containment (audit §2.4.1): a short measure against an
 # acute risk, taken once while the mission is active; it fades after `days`.
 CONTAINMENT_KEYS = {"name", "budget", "days", "effects"}
@@ -666,6 +672,7 @@ def validate_missions(doc: Any, source: str) -> None:
         raise ContentError(f"{source} coach: 'stages' must give questions for {', '.join(COACH_STAGES)}")
     for stage in COACH_STAGES:
         _string_list(stages, stage, f"{source} coach stages", allow_empty=False)
+    beats: set[str] = set()
     for m in _entries(doc, "missions", source):
         where = f"{source}: mission '{m['id']}'"
         _known_keys(m, MISSION_KEYS, where)
@@ -683,6 +690,7 @@ def validate_missions(doc: Any, source: str) -> None:
         fail_closes = _string_list(m, "fail_closes", where)
         if fail_closes and "deadline_days" not in m:
             raise ContentError(f"{where}: 'fail_closes' needs a deadline")
+        _validate_deadline_beat(m, where, beats)
         if "check_days" in m:
             if "problem" not in m["goal"]:
                 raise ContentError(f"{where}: 'check_days' needs a goal with a problem")
@@ -716,6 +724,22 @@ def validate_missions(doc: Any, source: str) -> None:
                                                       and all(isinstance(x, str) and x.strip() for x in t))
                     for stage, t in lines.items()):
                 raise ContentError(f"{where}: '{key}' maps a coach stage to a text or a list of texts")
+
+
+def _validate_deadline_beat(m: dict, where: str, beats: set[str]) -> None:
+    """A dated beat (drie winters S2) falls on its mission's deadline day: it
+    needs that deadline, and names a beat no other mission does. `beats`
+    collects the names seen so far."""
+    if "deadline_beat" not in m:
+        return
+    beat = m["deadline_beat"]
+    if not isinstance(beat, str) or not _ID.match(beat):
+        raise ContentError(f"{where}: 'deadline_beat' must be an id")
+    if "deadline_days" not in m:
+        raise ContentError(f"{where}: 'deadline_beat' falls on the deadline's day: needs deadline_days")
+    if beat in beats:
+        raise ContentError(f"{where}: 'deadline_beat' {beat!r} is already another mission's")
+    beats.add(beat)
 
 
 def _validate_containment(m: dict, where: str) -> None:
@@ -1194,7 +1218,7 @@ STEER_MOVES = ["perspective", "show_data", "propose_experiment", "propose", "ask
 DIALOG_MOVES = LISTEN_MOVES + STEER_MOVES + ["pressure", "confront", "repair", "close"]
 DIALOG_TAGS = ["claim", "feeling", "hesitation", "admission", "doubt"]
 DIALOG_NEEDS = ["facts", "safety", "recognition", "time", "fairness"]  # Dialog.NEEDS (person-needs spec)
-DIALOG_ARCHETYPES = ["defender", "cynic", "craftsman", "overloaded", "rule_bound", "quiet", "customer_upset", "expert"]
+DIALOG_ARCHETYPES = ["defender", "cynic", "craftsman", "overloaded", "rule_bound", "quiet", "customer_upset", "expert", "mentor"]
 DIALOG_KINDS = ["persuade", "checkin", "expert"]
 DIALOG_MOODS = ["goed", "neutraal", "gespannen", "moe", "stil"]
 DIALOG_OUTCOMES = ["commitment", "partial", "heard", "none", "blocked", "compliance", "ruined", "lifted"]
@@ -1213,7 +1237,7 @@ PERSON_KEYS = {"id", "name", "short", "role", "place", "team", "archetype", "nee
 DIALOG_KEYS = {"id", "name", "person", "kind", "mission", "requires_clue", "needs", "owns", "kpi_team", "mood",
                "patience", "opening", "retry_opening", "position", "layers", "data", "proposals", "experiments",
                "co_proposal", "condition_needs", "block", "lines", "replies", "outcomes", "variants", "trigger",
-               "tutorial", "teaches", "prompt", "warning", "need"}
+               "tutorial", "teaches", "prompt", "warning", "need", "beats_after"}
 LAYER_KEYS = {"id", "at", "via", "text", "tags", "tell", "lead_in", "condition", "wait_for", "unlocks"}
 PROPOSAL_KEYS = {"id", "label", "say", "kpis", "addresses", "reply", "hidden"}
 # A persuasion speaks its own outcomes in the person's voice; the bank's are a
@@ -1366,6 +1390,8 @@ def _validate_dialog(d: dict, where: str) -> None:
             _needs(d[key], f"{where} {key}")
     if "block" in d:
         _block(d["block"], where)
+    if "beats_after" in d:
+        _beats_after(d, where)
     lines = d.get("lines", {})
     if not isinstance(lines, dict) or set(lines) - set(DIALOG_MOVES):
         raise ContentError(f"{where}: 'lines' maps a move to the player's line (unknown move in {sorted(lines)})")
@@ -1470,6 +1496,24 @@ def _block(block: Any, where: str) -> None:
         _needs(route.get("needs"), f"{where} block route {i}")
 
 
+def _beats_after(d: dict, where: str) -> None:
+    """[{when: a fact atom, text}]: what a person who agreed under condition
+    says once `when` comes true (tier-1 content audit C15). Only a persuasion
+    has an agreement to upgrade."""
+    if d.get("kind") != "persuade":
+        raise ContentError(f"{where}: only a persuasion has beats_after (a partial agreement to upgrade)")
+    lines = d["beats_after"]
+    if not isinstance(lines, list) or not lines:
+        raise ContentError(f"{where}: 'beats_after' is a list of {{when, text}}")
+    for i, line in enumerate(lines):
+        at = f"{where} beats_after {i}"
+        if not isinstance(line, dict):
+            raise ContentError(f"{at}: a mapping with when and text")
+        _known_keys(line, {"when", "text"}, at)
+        _require_strings(line, ["when", "text"], at)
+        _atom_parts(line["when"], at)
+
+
 def _checkin(d: dict, items: list[dict], where: str) -> None:
     """A check-in has no mission, owns nothing and asks no KPIs (spec §9.2 rule 12)."""
     for key in ("mission", "owns", "kpi_team", "requires_clue", "data", "condition_needs", "block", "co_proposal"):
@@ -1480,9 +1524,15 @@ def _checkin(d: dict, items: list[dict], where: str) -> None:
     trigger = d.get("trigger")
     if not isinstance(trigger, dict) or not trigger:
         raise ContentError(f"{where}: a check-in needs a trigger (morale_below and/or needs)")
-    _known_keys(trigger, {"morale_below", "needs"}, f"{where} trigger")
+    _known_keys(trigger, {"morale_below", "needs", "beat", "after_days"}, f"{where} trigger")
     if "morale_below" in trigger:
         _number(trigger, "morale_below", f"{where} trigger", 1, 100, integer=True)
+    if "after_days" in trigger:
+        if "beat" not in trigger:
+            raise ContentError(f"{where} trigger: after_days needs a beat to count from")
+        _number(trigger, "after_days", f"{where} trigger", 0, integer=True)
+    if "beat" in trigger:
+        _require_strings(trigger, ["beat"], f"{where} trigger")
     if "needs" in trigger:
         _needs(trigger["needs"], f"{where} trigger needs")
 
@@ -1507,6 +1557,7 @@ def check_dialogs(docs: dict[str, Any]) -> None:
     heard = {f for d in dialogs.values() for layers in _all_layers(d) for layer in layers
              for f in layer.get("unlocks", {}).get("facts", [])}
     index = _fact_index(docs)
+    beats = {m["deadline_beat"] for m in missions.values() if "deadline_beat" in m}
     clue_ids = {f"{p['id']}:{i}" for p in problems.values() for i in range(len(p["clues"]))}
     for d in dialogs.values():
         where = f"dialogs.yaml: dialog '{d['id']}'"
@@ -1519,6 +1570,9 @@ def check_dialogs(docs: dict[str, Any]) -> None:
         for expr in _needs_of(d):
             for atom in _needs(expr, where):
                 _dialog_atom_robust(atom, where, index, dialogs, heard)
+        beat = d.get("trigger", {}).get("beat")
+        if beat is not None and beat not in beats:
+            raise ContentError(f"{where}: trigger names unknown beat {beat!r} (a mission's deadline_beat)")
         if d.get("requires_clue") is not None and d["requires_clue"] not in clue_ids:
             raise ContentError(f"{where}: requires unknown clue {d['requires_clue']!r}")
         if "block" in d and not any("none" not in r["needs"] and _robust_route(r["needs"], where, index, dialogs, heard)
@@ -1590,6 +1644,7 @@ def _needs_of(d: dict) -> list[dict]:
     exprs = [d[k] for k in ("needs", "condition_needs") if k in d]
     exprs += [r["needs"] for r in d.get("block", {}).get("routes", [])]
     exprs += [v["needs"] for v in d.get("variants", [])]
+    exprs += [{"all": [line["when"]]} for line in d.get("beats_after", [])]
     return exprs + ([d["trigger"]["needs"]] if "needs" in d.get("trigger", {}) else [])
 
 

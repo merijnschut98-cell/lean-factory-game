@@ -187,8 +187,24 @@ func check(problem_id: String) -> Dictionary:
 	var result := region.check(problem_id)
 	if not result.is_empty():
 		discoveries.note_check(self, problem_id, result)
+		if result.has("forecast") and result["forecast"]["gain"] > Pdca.CHECK_NOISE:
+			missions.facts.add(Facts.FORECAST_POSITIVE + str(result["forecast"]["kpi"]))
 	_after(0)
 	return result if not result.is_empty() else {"error": "not_check_ready"}
+
+
+## The quarterly review on the KPI board (Region.kpi_review): its result, or
+## {error} (KpiBoard.review's codes). A forecast that beats the habit by more
+## than the board's noise band (it pays) is remembered as
+## forecast_positive:kpi_board, which talks can wait for (Frank's third route).
+func kpi_review(choices: Dictionary) -> Dictionary:
+	var result := region.kpi_review(choices)
+	if not result["error"].is_empty():
+		return {"error": result["error"]}
+	if result["paid"] > 0.0:
+		missions.facts.add(Facts.FORECAST_POSITIVE + KpiBoard.UNLOCK)
+	_after(0)
+	return result
 
 
 ## Close a checked problem, with or without standardising: the score (see
@@ -782,7 +798,7 @@ func _world(p: PersonDef) -> Dictionary:
 		"main": missions.active("main").map(func(m: MissionDef) -> String: return m.id),
 		"active": missions.active().map(func(m: MissionDef) -> String: return m.id),
 		"found": region.found, "facts": _facts(), "team_trust": region.trust.get(p.team, 0), "blamed": blamed,
-		"now": region.net.time,
+		"now": region.net.time, "beats": missions.beats(),
 	}
 
 
@@ -830,7 +846,7 @@ func _sync_people() -> void:
 	if people == null:
 		return
 	var world_facts := _facts()
-	_people_events.append_array(people.daily({"now": region.net.time, "facts": world_facts}))
+	_people_events.append_array(people.daily({"now": region.net.time, "facts": world_facts, "beats": missions.beats()}))
 	var facts := people.facts(world_facts)
 	for fact: String in facts:
 		if fact.get_slice(":", 0) in People.FACT_KINDS:
