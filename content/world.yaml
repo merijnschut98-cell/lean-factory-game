@@ -40,24 +40,25 @@ rooms:
     floor: ground
     name: Kantine
     places: []
-    opens_with: ["terugval_*"]   # check-ins on slipping fixes happen over coffee (§5.2)
+    opens_with: [training_mon, "terugval_*"]   # Ruud's tour shows it on day one; check-ins on
+                                                # slipping fixes happen over coffee (§5.2)
 
   # 1e verdieping: operations.
   - id: connections
     floor: first
     name: Aansluitingen
-    places: [connections.intake, connections.design]
+    places: [connections.intake, connections.design, connections.planning]   # Linda plans beside Werkvoorbereiding (D9 audit A1)
     opens_with: [start]
   - id: revision_gis
     floor: first
     name: Revisie & GIS
     places: [connections.revision]
-    opens_with: [fix_revision_backlog, fix_digging_damage]
+    opens_with: [training_wed, fix_revision_backlog, fix_digging_damage]   # Mieke's Wednesday talk
   - id: meter_data
     floor: first
     name: Meetdata & registratie
     places: [connections.close_out, connections.close_out_wait, meters.registration]
-    opens_with: [walk_meters, fix_done_but_not_closed, fix_silent_meter]
+    opens_with: [training_thu, walk_meters, fix_done_but_not_closed, fix_silent_meter]   # Petra's Thursday talk
 
   # 2e verdieping: direction.
   - id: directors_obeya
@@ -80,8 +81,12 @@ rooms:
     name: MT-kamer
     places: []
     opens_with: []               # day 100, the ACM visit, hoshin: their missions open it
+  # Ruud's office (Merijn, 2026-10-16, Q10). In Act 0-I he sits with Aansluitingen by choice
+  # (the coach's room on the 1e: "Boven zit ik te ver van het werk."), so it stays shut until a
+  # mission opens the 2e for him (Act II). Phase 3: Frank Hulshof takes this office in the
+  # interim year (Act IV); the room shows it by the sponsor/regime fact.
   - id: ruud_office
     floor: second
-    name: Kantoor Ruud
+    name: Directeur Netbeheer
     places: []
     opens_with: []

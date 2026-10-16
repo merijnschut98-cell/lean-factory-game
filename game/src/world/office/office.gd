@@ -49,6 +49,8 @@ const TALK_SHIFT := -0.08
 const FACE_DROP := 0.2
 
 const RESUME_FAILED := "De bewaarde game kon niet worden geladen (%s). Dit spel wordt niet bewaard, zodat de oude bewaard blijft."
+const WHITEBOARD_PROMPT := "E — Whiteboard: hoe werkt het?"
+const WHITEBOARD_LABEL := "Whiteboard van Ruud"
 
 ## The saves (PLAN 2.7; tests point it at their own folder).
 var saves := SaveSlots.new()
@@ -85,6 +87,8 @@ var _nav: OfficeNav
 var _walk_goal: Node3D
 ## The person under the cursor (their name tag shows).
 var _hovered_person: OfficePerson
+## The "Hoe werkt het?" explainer open over the world (Ruud's whiteboard), or null.
+var explainer: ExplainerView
 
 
 func _ready() -> void:
@@ -184,10 +188,10 @@ func to_title() -> void:
 
 func _process(_delta: float) -> void:
 	player.view_yaw = rig.yaw
-	if session.error.is_empty() and not ui.is_busy():
+	if session.error.is_empty() and not busy():
 		ui.hud.show_prompt(prompt_near(player.position))
 	var tagged: Array[OfficePerson] = []
-	if not ui.is_busy():
+	if not busy():
 		for p: OfficePerson in [_hovered_person, people.person_near(player.position, REACH)]:
 			if p != null:
 				tagged.append(p)
@@ -218,25 +222,34 @@ func load_floor() -> void:
 	geometry = _load_geometry(floors.model_path())
 	add_child(geometry)
 	_cut_away_ceiling()
+	if find_marker("coach") != null:   # the coach's room is on this floor: Ruud's whiteboard
+		geometry.add_child(OfficeWhiteboard.build(in_office(geometry).affine_inverse()))
 	floors.apply_rooms()
 	_add_interactables()
-	people = OfficePeople.build(self, floors.cast(CharacterModel.cast()))
+	people = OfficePeople.build(self, CharacterModel.cast(), floors.here)
 	add_child(people)
-	if session.error.is_empty():   # content that failed to load has no missions to read
-		people.refresh(session)
+	_refresh_people()
 	if ui != null and ui.playable():
 		show_map()
 
 
 ## A room opened (a mission that needs it was taken on): its door opens, its places
-## come within reach and the walk grid is baked again.
+## and its people come within reach and the walk grid is baked again.
 func reload_rooms() -> void:
 	_clear_interactables()
 	floors.apply_rooms()
 	_add_interactables()
+	_refresh_people()
 	_nav = null
 	if ui.playable():
 		show_map()
+
+
+## Who is where, with the doors as they are now.
+func _refresh_people() -> void:
+	people.shut = floors.shut_rects(floors.markers())
+	if session.error.is_empty():   # content that failed to load has no missions to read
+		people.refresh(session)
 
 
 func _clear_interactables() -> void:
@@ -255,6 +268,10 @@ func _add_interactables() -> void:
 		i.show_ring(i.kind != "door")
 		interactables.append(i)
 		add_child(i)
+	if find_marker(OfficeWhiteboard.NODE) != null:
+		var board := Interactable.create(OfficeWhiteboard.ID, OfficeWhiteboard.stand())
+		interactables.append(board)
+		add_child(board)
 
 
 ## The player map shows the floor the player is on, with the floor switch.
@@ -360,6 +377,8 @@ func prompt_for(target: Interactable) -> String:
 			return "E — Obeya-wand: A3 en Check"
 		"coach":
 			return "E — Coach: " + str(session.catalog.coach.get("name", ""))
+		OfficeWhiteboard.ID:
+			return tr(WHITEBOARD_PROMPT)
 	return "E — " + label_for(target)
 
 
@@ -378,6 +397,8 @@ func label_for(target: Interactable) -> String:
 			return "Coach: " + str(session.catalog.coach.get("name", ""))
 		"mission_board":
 			return "Missiebord"
+		OfficeWhiteboard.ID:
+			return tr(WHITEBOARD_LABEL)
 	return target.id
 
 
@@ -443,8 +464,41 @@ func interact(target: Interactable) -> void:
 			ui.open_coach()
 		"mission_board":
 			ui.open_mission_board()
+		OfficeWhiteboard.ID:
+			open_whiteboard()
 	if ui.is_busy():
 		frame(target)
+
+
+## Whether the world waits: a panel or the explainer is open.
+func busy() -> bool:
+	return ui.is_busy() or explainer != null
+
+
+## Ruud's whiteboard (PLAN 2.7c): the camera moves in to the board and the explainer
+## "Hoe werkt het?" opens over it; closing it gives the world back. Never forced.
+func open_whiteboard() -> void:
+	if busy():
+		return
+	_on_panel_opened()
+	_world_input(false)
+	var ahead := -OfficeWhiteboard.FACING
+	rig.converse(OfficeWhiteboard.look_point(), atan2(-ahead.x, -ahead.z), 0.0, 0.0)
+	explainer = ExplainerView.open(self, OfficeWhiteboard.EXPLAINER, {"log": session.explainers})
+	explainer.closed.connect(_on_explainer_closed)
+
+
+func _on_explainer_closed(_id: String) -> void:
+	explainer = null
+	_world_input(true)
+	_on_panels_closed()
+
+
+## The world's own keys and clicks (E, J, M, K, Esc, a click on the floor) on or off,
+## while something over it takes them.
+func _world_input(on: bool) -> void:
+	set_process_unhandled_input(on)
+	player.set_process_unhandled_input(on)
 
 
 ## Use what is in reach: a person (a talk) or an interaction point.

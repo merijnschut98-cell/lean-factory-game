@@ -19,8 +19,8 @@ const USABLE: Array[String] = ["place", "obeya", "coach", "mission_board", "stai
 const POLL_SECONDS := 0.5
 ## Walking onto the stairs counts when the player moves this fast (m/s) up their run.
 const WALK_IN_SPEED := 0.3
-## The cast's floor when an entry names none.
-const DEFAULT_FLOOR_KEY := "floor"
+## The key of a cast spot's floor (the start floor when a spot names none).
+const FLOOR_KEY := "floor"
 
 const CLOSED_DOOR := "%s is dicht: je toegangspas opent deze deur nog niet."
 const CLOSED_FLOOR := "De %s is nog dicht: je toegangspas opent die verdieping nog niet."
@@ -53,24 +53,19 @@ func floor_name(id: String = floor_id) -> String:
 	return str(building.floor_of(id).get("name", ""))
 
 
-## The cast entries on this floor (an entry's office spot names its `floor`; without
-## one it is on the start floor).
-func cast(entries: Array[Dictionary]) -> Array[Dictionary]:
-	var out: Array[Dictionary] = []
-	for e in entries:
-		var spot: Variant = e.get("office", {})
-		if spot is Dictionary and str(spot.get(DEFAULT_FLOOR_KEY, building.start_floor)) == floor_id:
-			out.append(e)
-	return out
+## Whether a cast spot (an entry's office spot, or its lunch spot) is on this floor: it
+## names its `floor`; without one it is on the start floor.
+func here(spot: Dictionary) -> bool:
+	return str(spot.get(FLOOR_KEY, building.start_floor)) == floor_id
 
 
-## The rooms open now (a game whose content failed has taken no mission: the rooms open
-## from the start).
 ## The loaded floor's markers by id (OfficeBuilding.markers).
 func markers() -> Dictionary:
 	return OfficeBuilding.markers(office.geometry)
 
 
+## The rooms open now (a game whose content failed has taken no mission: the rooms open
+## from the start).
 func open_now() -> Array[String]:
 	return building.open_rooms(office.session if office.session.error.is_empty() else null)
 
