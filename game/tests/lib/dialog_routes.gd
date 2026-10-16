@@ -63,6 +63,17 @@ static func content_talks(c: Catalog) -> Array[Dialog]:
 	return out
 
 
+## Tier 1 as the route test measures it: the Acts 0–II scripts' persuasion
+## talks (tests/data/tier1_scripts.json), each from content once it is there.
+## The Act 0 week's own tutorial talks are not among them.
+static func tier1_talks(c: Catalog) -> Array[Dialog]:
+	var scripts: Dictionary = JsonFile.read_dict("res://tests/data/tier1_scripts.json")["data"]
+	var ids: Array = scripts["dialogs"].map(func(d: Dictionary) -> String: return d["id"])
+	var out := content_talks(c).filter(func(t: Dialog) -> bool: return t.def.id in ids)
+	out.append_array(draft_talks(scripts, c.dialog_bank, out.map(func(t: Dialog) -> String: return t.def.id)))
+	return out
+
+
 ## The talks of a draft collected by tools/dialog_drafts.py ({people, dialogs},
 ## each dialog with its `start`), leaving out the ids in `skip`.
 static func draft_talks(data: Dictionary, bank: Dictionary, skip: Array = []) -> Array[Dialog]:
@@ -91,8 +102,9 @@ static func distinct(routes: Array) -> Array:
 
 ## The best fixed route found over `talks`: {wins, route, won (the ids of the
 ## talks it wins), winners (every route found that won a talk with its last
-## move, at most one per state)}.
-static func best_route(talks: Array, width: int = WIDTH) -> Dictionary:
+## move, at most one per state)}. `without`: tokens no route may use.
+static func best_route(talks: Array, width: int = WIDTH, without: Array = []) -> Dictionary:
+	var tokens := TOKENS.filter(func(t: String) -> bool: return not t in without)
 	var beam := [{"talks": talks.map(func(t: Dialog) -> Dialog: return t.copy()), "route": [], "won": 0}]
 	var best := {"wins": 0, "route": [], "winners": []}
 	var depth := 0
@@ -101,7 +113,7 @@ static func best_route(talks: Array, width: int = WIDTH) -> Dictionary:
 	for step in depth:
 		var next := {}
 		for node: Dictionary in beam:
-			for token: String in TOKENS:
+			for token: String in tokens:
 				var after := _step(node, token)
 				if after["won"] > node["won"]:
 					best["winners"].append(after["route"])

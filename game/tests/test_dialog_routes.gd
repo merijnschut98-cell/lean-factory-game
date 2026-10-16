@@ -28,13 +28,11 @@ func test_the_checker_finds_a_route_that_wins() -> void:
 ## and the Acts 0–II scripts' persuasion talks not in content yet
 ## (tests/data/tier1_scripts.json, from tools/dialog_drafts.py; regenerate it
 ## when the scripts change). The later tiers are measured from their drafts
-## with game/tools/route_check.gd (PLAN 1.6c has the numbers).
+## with game/tools/route_check.gd (PLAN 1.6c has the numbers). The Act 0 week's
+## own tutorial talks are measured apart (the next test): they cannot be lost.
 func test_no_fixed_route_wins_more_than_half_of_the_persuasion_talks() -> void:
 	var c := _catalog()
-	var talks := DialogRoutes.content_talks(c)
-	var ids := talks.map(func(t: Dialog) -> String: return t.def.id)
-	var scripts: Dictionary = JsonFile.read_dict("res://tests/data/tier1_scripts.json")["data"]
-	talks.append_array(DialogRoutes.draft_talks(scripts, c.dialog_bank, ids))
+	var talks := DialogRoutes.tier1_talks(c)
 	assert_eq(talks.size(), 20, "the twenty persuasion talks of Acts 0–II")
 	var best := DialogRoutes.best_route(talks)
 	# The target is half (10 of 20). Measured 2026-10-16 with E1–E5, needs and
@@ -52,6 +50,19 @@ func test_every_persuasion_has_three_different_routes() -> void:
 	for talk in DialogRoutes.content_talks(_catalog()):
 		var distinct := DialogRoutes.distinct(DialogRoutes.best_route([talk])["winners"])
 		assert_true(distinct.size() >= 3, "%s: %d distinct routes" % [talk.def.id, distinct.size()])
+
+
+## The Act 0 week (tutorial talks spec §1, §5): the day's move is a good way
+## through, never the only one, and no talk can be lost, however hard it is pushed.
+func test_every_tutorial_talk_is_won_without_its_day_s_move_and_never_ruined() -> void:
+	var tutorials := DialogRoutes.content_talks(_catalog()).filter(func(t: Dialog) -> bool: return t.def.tutorial)
+	assert_eq(tutorials.size(), 11, "anouk_seven and the ten talks of the training week")
+	for talk: Dialog in tutorials:
+		assert_eq(DialogRoutes.best_route([talk], DialogRoutes.WIDTH, Array(talk.def.teaches))["wins"], 1,
+			"%s: a route without %s" % [talk.def.id, talk.def.teaches])
+		var pushed := talk.copy()
+		DialogFixture.play(pushed, ["confront", "pressure", "confront", "pressure", "confront"])
+		assert_true(pushed.openness >= Dialog.RUINED_BELOW and pushed.outcome != "ruined", talk.def.id)
 
 
 ## T11: steering before listening costs, and pressure gets a yes without the person.
