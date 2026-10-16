@@ -90,4 +90,9 @@ committed:
   hair_pixie, hair_buns, hair_ponytail, beard_full, beard_short, glasses_round, glasses_rect;
   each a full skeleton with the part skinned to `Head`. `CharacterModel.attach(model, part)` moves
   the part's mesh onto a person's skeleton (it binds by bone name, so it sits on any head).
-- Screenshots: `docs/screenshots/characters_pack_*.png`.
+- Bodies (PLAN 1.3c): the pack's athletes are softened into office bodies (arms moved in,
+  muscle relief smoothed, slimmer limbs), and sleeves and trouser legs hang as loose, round
+  tubes instead of tracing the muscles.
+- Screenshots: `docs/screenshots/characters_pack_*.png`; studio contact sheets (no office) by
+      xvfb-run -a godot --path game --rendering-driver opengl3 --resolution 1600x900 \
+        --script res://tools/creator_shot.gd -- out.png cast        # or poses, parts:<id> (see the script)

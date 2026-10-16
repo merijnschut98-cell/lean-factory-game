@@ -339,24 +339,85 @@ TORSO_FRONT = -0.05   # the torso's middle is in front of the spine bones (m)
 
 def girth_for(sp) -> dict[str, tuple[float, float]]:
     """Per bone (lateral, depth) scale from build 0 slim .. 1 heavy. The pack's bodies are
-    athletes: everyone gets a softer waist, and the men slightly narrower chests."""
+    athletes (PLAN 1.3c): everyone gets a softer waist and belly, the men a much narrower chest
+    (no lats), slimmer upper arms and thighs, the women slightly slimmer limbs."""
     b = sp.build - 0.4
     man = sp.sex == "m"
-    waist = (1.0 + 0.30 * b + (0.12 if man else 0.04), 1.0 + 0.55 * b + 0.1)
-    shoulder = (1.0 - (0.14 if man else 0.04), 1.0 - (0.14 if man else 0.04))
+    waist = (1.0 + 0.30 * b + (0.12 if man else 0.04), 1.0 + 0.6 * b + (0.14 if man else 0.1))
+    shoulder = (1.0 - (0.2 if man else 0.06), 1.0 - (0.2 if man else 0.06))
+    upper_arm = 1.0 + 0.06 * b - (0.22 if man else 0.06)   # weight goes to the belly, not the arms
+    lower_arm = 1.0 + 0.04 * b - (0.14 if man else 0.03)
+    thigh = 1.0 + 0.15 * b - (0.1 if man else 0.05)
+    calf = 1.0 + 0.06 * b - (0.1 if man else 0.06)
     return {
         "Hips": (1.0 + 0.22 * b + (0.0 if man else 0.02), 1.0 + 0.3 * b + 0.03),
         "Spine": waist,
-        "Chest": (1.0 + 0.18 * b + (0.05 if man else 0.0), 1.0 + 0.4 * b + 0.06),
-        "UpperChest": (1.0 + 0.1 * b - (0.08 if man else 0.0), 1.0 + 0.15 * b - (0.04 if man else 0.0)),
+        "Chest": (1.0 + 0.12 * b - (0.02 if man else 0.0), 1.0 + 0.4 * b + (0.04 if man else 0.06)),
+        "UpperChest": (1.0 + 0.04 * b - (0.15 if man else 0.02), 1.0 + 0.1 * b - (0.08 if man else 0.0)),
         "LeftShoulder": shoulder, "RightShoulder": shoulder,
-        "LeftUpperArm": (1.0 + 0.15 * b - (0.15 if man else 0.02), 1.0),
-        "RightUpperArm": (1.0 + 0.15 * b - (0.15 if man else 0.02), 1.0),
-        "LeftLowerArm": (1.0 + 0.08 * b - (0.1 if man else 0.0), 1.0),
-        "RightLowerArm": (1.0 + 0.08 * b - (0.1 if man else 0.0), 1.0),
-        "LeftUpperLeg": (1.0 + 0.2 * b - (0.06 if man else 0.0), 1.0 + 0.2 * b - (0.06 if man else 0.0)),
-        "RightUpperLeg": (1.0 + 0.2 * b - (0.06 if man else 0.0), 1.0 + 0.2 * b - (0.06 if man else 0.0)),
+        "LeftUpperArm": (upper_arm, 1.0), "RightUpperArm": (upper_arm, 1.0),
+        "LeftLowerArm": (lower_arm, 1.0), "RightLowerArm": (lower_arm, 1.0),
+        "LeftUpperLeg": (thigh, thigh), "RightUpperLeg": (thigh, thigh),
+        "LeftLowerLeg": (calf, calf), "RightLowerLeg": (calf, calf),
     }
+
+
+SHOULDER_IN = {"m": 0.024, "f": 0.006}   # how far the arms move in (m): an office build, not a swimmer's
+ARM_CHAIN = ("UpperArm", "LowerArm", "Hand", "Thumb", "Index", "Middle", "Ring", "Little")
+
+
+def narrow_shoulders(rig, meshes, dx: float) -> None:
+    """Move both arms `dx` towards the body (bones and the flesh they carry; the clavicle's
+    flesh half as far), so the shoulders are an average office worker's, not an athlete's."""
+    if not dx:
+        return
+    set_mode(rig, "EDIT")
+    for eb in rig.data.edit_bones:
+        side = 1 if eb.name.startswith("Left") else -1 if eb.name.startswith("Right") else 0
+        if side and any(k in eb.name for k in ARM_CHAIN):
+            eb.head.x -= side * dx
+            eb.tail.x -= side * dx
+        elif side and eb.name.endswith("Shoulder"):
+            eb.tail.x -= side * dx
+    set_mode(rig, "OBJECT")
+    for ob in meshes:
+        V, W = verts(ob), weights(ob)
+        move = np.zeros(len(V))
+        for name, w in W.items():
+            if any(k in name for k in ARM_CHAIN):
+                move += w
+            elif name.endswith("Shoulder") and name != "Shoulder":
+                move += 0.5 * w
+        V[:, 0] -= np.sign(V[:, 0]) * dx * np.clip(move, 0, 1)
+        set_verts(ob, V)
+
+
+def soften(body, iters: int = 24) -> None:
+    """Fade the pack's muscle relief (pecs, abs, deltoids, quads) on the torso and limbs by
+    Taubin smoothing, which keeps the volume; the head, neck, hands and feet keep their detail."""
+    W = weights(body)
+    n = len(body.data.vertices)
+    keep = np.zeros(n)
+    for name, w in W.items():
+        if name in ("Head", "Neck") or name.endswith(("Hand", "Foot", "Toes")) or \
+                any(f in name for f in ("Thumb", "Index", "Middle", "Ring", "Little")):
+            keep += w
+    m = np.clip(1.0 - 1.5 * keep, 0, 1)[:, None]
+    E = np.empty(len(body.data.edges) * 2, int)
+    body.data.edges.foreach_get("vertices", E)
+    E = E.reshape(-1, 2)
+    deg = np.maximum(np.bincount(E.ravel(), minlength=n), 1).astype(float)[:, None]
+    V = verts(body)
+
+    def step(V, k):
+        acc = np.zeros_like(V)
+        np.add.at(acc, E[:, 0], V[E[:, 1]])
+        np.add.at(acc, E[:, 1], V[E[:, 0]])
+        return V + m * k * (acc / deg - V)
+
+    for _ in range(iters):
+        V = step(step(V, 0.5), -0.53)
+    set_verts(body, V)
 
 
 # ============================================================================= landmarks
@@ -476,11 +537,56 @@ def drape(ob, mk: "Marks", kind: str, amount: float = 0.9) -> None:
                     r = n + (best - n) * amount
                     out[k, other] = centre + d * r
     if kind == "legs":
-        out = straight_legs(out, comp, mk)
+        out = straight_legs(out, comp, mk, limb_share(ob, ("UpperLeg", "LowerLeg", "Foot")))
+    elif kind == "upper":
+        out = loose_sleeves(out, mk, limb_share(ob, ("UpperArm", "LowerArm", "Hand")))
     set_verts(ob, out)
 
 
-def straight_legs(V: np.ndarray, comp: np.ndarray, mk: "Marks", ease: float = 1.07, fall: float = 0.86) -> np.ndarray:
+def limb_share(ob, bones: tuple[str, ...]) -> np.ndarray:
+    """How much each vertex belongs to a limb (0 torso .. 1 limb), from its bone weights: the
+    sleeve and trouser shaping fades out where cloth meets the torso (armpit, crotch), so a
+    slice that also cuts the torso does not pull it into a spike."""
+    W = weights(ob)
+    w = sum((v for k, v in W.items() if k.endswith(bones)), np.zeros(len(ob.data.vertices)))
+    return np.clip((w - 0.3) / 0.5, 0, 1)
+
+
+def loose_sleeves(V: np.ndarray, mk: "Marks", limb: np.ndarray, ease: float = 1.14, step: float = 0.012) -> np.ndarray:
+    """Sleeves hang loose around the arm instead of showing its muscles (PLAN 1.3c): each slice
+    across an arm (in the T-pose, along x) widens about its middle, by `ease` from 10 cm past
+    the shoulder joint (blending in from the joint), narrowing again towards a long sleeve's cuff."""
+    out = V.copy()
+    ax = np.abs(V[:, 0])
+    for side in (-1, 1):
+        sel = np.nonzero((np.sign(V[:, 0]) == side) & (ax > mk.shoulder_x - 0.02) & (limb > 0))[0]
+        if not len(sel):
+            continue
+        end = float(ax[sel].max())
+        bins = np.floor(ax[sel] / step).astype(int)
+        for b in np.unique(bins):
+            idx = sel[bins == b]
+            x = (b + 0.5) * step
+            grow = np.clip((x - mk.shoulder_x + 0.02) / 0.1, 0, 1)
+            cuff = 0.45 + 0.55 * np.clip((end - x) / 0.08, 0, 1) if end > mk.wrist_x - 0.06 else 1.0
+            k = 1 + (ease - 1) * grow * cuff
+            c = V[idx][:, 1:].mean(0)
+            out[idx, 1:] = c + rounder(V[idx, 1:] - c, ROUND) * k
+    return V + limb[:, None] * (out - V)
+
+
+ROUND = 0.5   # how much of a slice's own outline (a muscle's bulge) a sleeve or trouser leg loses
+
+
+def rounder(D: np.ndarray, amount: float) -> np.ndarray:
+    """Offsets `D` from a slice's middle pulled `amount` of the way to their mean length: a
+    fabric tube is rounder than the limb inside it."""
+    r = np.linalg.norm(D, axis=1, keepdims=True)
+    mean = float(r.mean())
+    return D / np.maximum(r, 1e-6) * (r + (mean - r) * amount)
+
+
+def straight_legs(V: np.ndarray, comp: np.ndarray, mk: "Marks", limb: np.ndarray, ease: float = 1.1, fall: float = 0.95) -> np.ndarray:
     """Trousers fall from the thigh instead of hugging the knee and calf: below the crotch each
     leg's slice is widened to at least `fall` of the widest slice in the 25 cm above it, and
     every leg slice gets `ease` (room to move)."""
@@ -501,8 +607,8 @@ def straight_legs(V: np.ndarray, comp: np.ndarray, mk: "Marks", ease: float = 1.
             above = [radius[k] for k in range(b + 1, b + span + 1) if k in radius]
             want = max([radius[b]] + [fall * r for r in above]) * ease
             idx = sel[bins == b]
-            out[idx, :2] = centre[b] + (V[idx, :2] - centre[b]) * (want / max(radius[b], 1e-6))
-    return out
+            out[idx, :2] = centre[b] + rounder(V[idx, :2] - centre[b], ROUND) * (want / max(radius[b], 1e-6))
+    return V + limb[:, None] * (out - V)
 
 
 def region_copy(body, name: str, keep: np.ndarray, coll) -> bpy.types.Object:
@@ -665,12 +771,12 @@ class Wardrobe:
             front_open = (V[:, 1] < mk.head.y - 0.02) & (V[:, 2] > mk.chest - 0.12) & \
                 (np.abs(V[:, 0]) < 0.055 * np.clip((V[:, 2] - mk.chest + 0.12) / 0.2, 0, 1))
             blazer = self.upper(mk.hip + 0.01, mk.wrist_x - 0.03, -0.01) & ~front_open
-            self.add("blazer", blazer, "blazer", 0.026, iters=12, kind="upper")
+            self.add("blazer", blazer, "blazer", 0.016, iters=12, kind="upper")
             self.logo(self.objs[-1], (0.105, mk.chest + 0.04), 0.026)
         elif sp.outfit == "monteur":
             self.add("workshirt", self.upper(mk.waist - 0.03, mk.wrist_x - 0.02, 0.0, vee=0.02), "workshirt", 0.008, iters=10, kind="upper")
             vest = self.upper(mk.hip - 0.04, mk.shoulder_x - 0.025, -0.012, vee=0.08)
-            ob = self.add("vest", vest, "hivis", 0.028, iters=12, tile=False, kind="upper")
+            ob = self.add("vest", vest, "hivis", 0.02, iters=12, tile=False, kind="upper")
             cylinder_uvs(ob, mk.head.y - 0.03, mk.hip - 0.04, mk.neck)
             self.logo(ob, (0.09, mk.chest + 0.02), 0.07)
         self.shoes(boot)
@@ -1342,6 +1448,8 @@ def build_person(sp, paths: dict, sources: dict[str, Source]) -> tuple[bpy.types
     for o in meshes:
         bind(o, rig)
     extras = head_parts(sp, paths, rig, parts, coll, mats)
+    soften(parts["body"])
+    narrow_shoulders(rig, [parts["body"]], SHOULDER_IN[sp.sex])
     reshape(rig, meshes + extras, sp.height, girth_for(sp))
     set_material(parts["body"], mats["skin"][0])
     set_material(parts["brows"], mats["brow"][0])
