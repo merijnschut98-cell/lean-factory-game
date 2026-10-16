@@ -195,7 +195,7 @@ Plus the content rule already applied in §4.2: concern `via` by cue (a hesitati
 |---|---|---|
 | Acts 0–II | 10 of 20 (50 %) | none (`linda_replanning` has fewer than 3 routes) |
 | 2 | 9 of 17 (53 %) | `linda_klic` (overloaded, patience 7: too tight) |
-| 3 | 15 of 22 (68 %) | `marco_crew` (cynic, concern 76, measured at patience 8; E5 sets cynics to 9, re-check pending) |
+| 3 | 15 of 22 (68 %) | none at E5's cynic patience 9 (at 8, `marco_crew` failed); the best fixed route still wins 15 |
 | 4 | 9 of 11 (82 %) | none |
 
 **Reading it.**

@@ -56,6 +56,10 @@ Each finding has a fix below (§2). Scores for the three dialogs as built: **Joo
 2. **Bank tags.** **(a) No `claim` or `feeling` tags on bank replies (C8).** (b) Keep them and rely on the route test. *(a) removes the cause; (b) only measures it.*
 3. **Required outcome lines.** **(a) Required for every persuasion (C9).** (b) Recommended only. *(a) is the only way the opener limit can hold.*
 
-## 4. Next in this audit
+## 4. Log
+
+- **2026-10-16, after the merge.** The engine is merged (PLAN 1.1) and `content/dialogs.yaml` holds the same three dialogs as the patch, plus Ruud's coach bank (`bank.coach`: K1–K5 in turn, `after` lines for pressure, ruin, block and commitment). The coach lines are in his voice and name no move: no finding. C1–C15 above all still apply to the merged content. One addition: **C16**, Ruud's `after.pressure` line says "Wat zei het gezicht erbij?" where the spec has "Wat zei zijn gezicht?"; the neutral form is right (a person may be a woman), keep it.
+
+## 5. Next in this audit
 
 As the builder adds tier-1 dialogs to `content/dialogs.yaml`, each is checked against: its script (Acts 0–II), the voice sheet (four-tier audit §6), the content-test rules T1–T11, and the facts the later tiers and the arc read (§2 there). Findings are added here, newest first.
