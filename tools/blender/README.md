@@ -63,7 +63,7 @@ committed:
 
     python3 tools/blender/fetch_pack.py                                   # -> .pack/ (~150 MB, CC0 checked)
     .bvenv/bin/python tools/blender/build_character.py                     # every glb (~10 s each)
-    .bvenv/bin/python tools/blender/build_character.py --only joost --parts   # + the creator's parts
+    .bvenv/bin/python tools/blender/build_character.py --creator           # the creator's bodies, parts, masks (~1 min)
     .bvenv/bin/python tools/blender/build_character.py --only henk --pose-sheet /tmp/sheet.png  # Cycles check
     .bvenv/bin/python tools/blender/build_character.py --method script --no-render   # the scripted fallback
     godot --headless --path game --import
@@ -86,8 +86,18 @@ committed:
   colour and `{"texture": name}` in their extras; `character_import.gd` (the import script each
   `.glb.import` names, written by the builder for a new file) lays the texture under the colour.
   So colours are material parameters (`CharacterModel.tint`).
-- Creator parts (PLAN 2.7b): `game/assets/characters/parts/` hair_bob, hair_parted, hair_buzzed,
-  hair_pixie, hair_buns, hair_ponytail, beard_full, beard_short, glasses_round, glasses_rect;
-  each a full skeleton with the part skinned to `Head`. `CharacterModel.attach(model, part)` moves
-  the part's mesh onto a person's skeleton (it binds by bone name, so it sits on any head).
-- Screenshots: `docs/screenshots/characters_pack_*.png`.
+- The character creator (PLAN 2.7b): `game/assets/characters/creator_options.json` lists every
+  trait and option (its `_about` documents the fields); `--creator` (`creator_build.py`) reads it
+  and builds what it names, per body (m, f): `player_<body>.glb` (body, eyes, a separate iris,
+  brows, the animations; no hair, no clothes), `parts/outfit_<outfit>_<body>.glb` (cut from that
+  body, skinned to its whole skeleton), `parts/<hair|beard|glasses>_<body>.glb` (on `Head`; built
+  per body because the heads differ) and `textures/face_<layer>_<body>.png` (stubble and make-up
+  masks the game lays over the skin). `CharacterModel.attach(model, part)` moves a part's meshes
+  onto the body's skeleton (by bone name); `CreatorLook.build(look)` assembles and tints a look.
+  Contact sheets: `creator_shot.gd` with `trait:<trait>`, `outfits`, `poses:<m|f>`.
+- Bodies (PLAN 1.3c): the pack's athletes are softened into office bodies (arms moved in,
+  muscle relief smoothed, slimmer limbs), and sleeves and trouser legs hang as loose, round
+  tubes instead of tracing the muscles.
+- Screenshots: `docs/screenshots/characters_pack_*.png`; studio contact sheets (no office) by
+      xvfb-run -a godot --path game --rendering-driver opengl3 --resolution 1600x900 \
+        --script res://tools/creator_shot.gd -- out.png cast        # or poses, parts:<id> (see the script)

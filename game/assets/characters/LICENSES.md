@@ -28,5 +28,14 @@ What is used from them:
   with no bone map (`Source(path, None)` in `pack_character.py`). The current cast uses none yet.
 
 Made here, not from the packs (also free to use under the project's licence): the clothes (cut
-from the body's surface), the ponytail, both glasses, the Voltana logo and the fabric textures
-(`textures/pique_*`, `twill_*`, `oxford_*`, `wool_*`, `denim_*`, `leather_*`, `hivis_*`, `logo_*`).
+from the body's surface), the ponytail, the glasses, the Voltana logo and the fabric textures
+(`textures/pique_*`, `twill_*`, `oxford_*`, `wool_*`, `knit_*`, `denim_*`, `leather_*`, `hivis_*`,
+`logo_*`).
+
+The character creator (PLAN 2.7b; `tools/blender/creator_build.py`, from `creator_options.json`):
+the bodies `player_m.glb`, `player_f.glb` are the pack's two base bodies, shaped and animated as
+the cast; `parts/outfit_*` are clothes made here; the hairstyles in `parts/hair_*` are the pack's
+`Hair_SimpleParted`, `Hair_Buzzed`, `Hair_BuzzedFemale` and `Hair_Long` reshaped here (faded,
+cropped, cut, lengthened, waved, curled with noise); `parts/beard_*` and `moustache_*` are the
+pack's `Hair_Beard` trimmed; `parts/glasses_*` and the face-layer masks `textures/face_*` (stubble,
+make-up, painted from the head's landmarks) are made here. No new download.
