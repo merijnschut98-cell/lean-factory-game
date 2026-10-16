@@ -17,7 +17,7 @@ static func exists(slot: String = AUTOSAVE) -> bool:
 ## "" or what went wrong.
 static func write(slot: String, s: GameSession, layer: SessionLayer) -> String:
 	return SaveFile.write(slot, s.region, {"missions": s.missions.to_dict(), "discoveries": s.discoveries.to_dict(),
-		"followed": s.followed.to_dict(), "session": layer.to_dict()})
+		"followed": s.followed.to_dict(), "explainers": s.explainers.to_dict(), "session": layer.to_dict()})
 
 
 ## {error, session, layer, dropped}: a session built from the current content
@@ -43,6 +43,8 @@ static func read(slot: String = AUTOSAVE, data_dir: String = Catalog.DATA_DIR) -
 		s.discoveries.load_dict(extra["discoveries"])
 	if extra.get("followed") is Dictionary:
 		s.followed.load_dict(extra["followed"])  # else the new game's pick stands
+	if extra.get("explainers") is Dictionary:
+		s.explainers.load_dict(extra["explainers"], ExplainerDef.load_all(data_dir)["explainers"].keys())
 	var layer := SessionLayer.new()
 	layer.load_dict(extra.get("session", {}))
 	s.drain_events()  # the throwaway new game's, not the player's
