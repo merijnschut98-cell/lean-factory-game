@@ -165,3 +165,20 @@ func test_the_board_shows_two_new_sides_a_week_and_older_ones_under_nog_open() -
 	for m: MissionDef in shown:
 		assert_true(shows(ui.mission_board, m.name), m.name + " is still open")
 	office.free()
+
+
+## Review N2: a training day's glossary card shows once per game, not again
+## after a resume (the session layer keeps which days had theirs, saved).
+func test_the_glossary_card_does_not_show_again_after_a_resume() -> void:
+	var office: Office = load(SCENE).instantiate()
+	office.seed_value = 11
+	office.training = true
+	office.build()
+	assert_eq(office.ui.hud.card_texts().size(), 1, "Monday's card")
+	var layer := SessionLayer.new()
+	layer.load_dict(office.ui.session_layer.to_dict())
+	var resumed := GameUI.new()
+	resumed.setup(office.session, layer)
+	assert_eq(resumed.hud.card_texts().size(), 0, "not again after the resume")
+	resumed.free()
+	office.free()

@@ -51,8 +51,6 @@ var _accepted_ms: Dictionary[String, int] = {}
 var _panels: Array[UiPanel] = []
 ## The concepts already known, to toast only new ones.
 var _known_concepts := PackedStringArray()
-## Training days whose glossary card was shown (once each).
-var _carded: Dictionary[String, bool] = {}
 
 
 ## `of_layer`: a saved game's session layer (its snapshot opens the
@@ -196,8 +194,10 @@ func toggle_codex() -> void:
 	_toggle(codex)
 
 
+## J, M and K; never mid-talk (review B1: hiding the talk let the next
+## press end it unseen).
 func _toggle(panel: UiPanel) -> void:
-	if not playable():
+	if not playable() or dialog_panel.talking():
 		return
 	if panel.visible:
 		close_panels()
@@ -226,6 +226,7 @@ func close_panels() -> void:
 	var was_busy := is_busy()
 	if dialog_panel != null and dialog_panel.talking():
 		dialog_panel.close_talk()
+		_open(dialog_panel)  # its summary shows, whatever else was open
 		return
 	for p in _panels:
 		p.hide()
@@ -285,9 +286,9 @@ func _debrief_card(m: MissionDef, e: Dictionary) -> void:
 ## A training day's concepts on one short card (name and short text), once;
 ## they stand in for the "new concept" toasts.
 func _glossary_card(m: MissionDef) -> void:
-	if _carded.has(m.id) or m.teaches.is_empty():
+	if m.id in session_layer.carded or m.teaches.is_empty():
 		return
-	_carded[m.id] = true
+	session_layer.carded.append(m.id)
 	var lines: Array[String] = []
 	for id in m.teaches:
 		var def: ConceptDef = session.catalog.concepts.get(id)

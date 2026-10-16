@@ -293,6 +293,22 @@ func test_a_teams_place_lists_its_people_and_opens_a_talk() -> void:
 	office.free()
 
 
+## Review B1: J, M or K mid-talk never hide or end the talk, pressed once or
+## twice; the talk stays on screen and runs on.
+func test_the_journal_map_and_codex_keys_leave_a_talk_alone() -> void:
+	var office := _office()
+	_open_joost(office)
+	var ui := office.ui
+	for toggle: Callable in [ui.toggle_journal, ui.toggle_map, ui.toggle_codex]:
+		toggle.call()
+		assert_true(ui.dialog_panel.visible, "the talk stays on screen")
+		toggle.call()
+		assert_true(ui.dialog_panel.talking(), "the talk runs on")
+		assert_false(ui.journal.visible or ui.office_map.visible or ui.codex.visible, "nothing opened over it")
+	assert_false(office.session.dialog_meter().is_empty(), "never ended unseen")
+	office.free()
+
+
 ## The office with one talk with Joost had, and the journal on the Mensen tab.
 func _mensen_after_joost() -> Office:
 	var office := _office()
