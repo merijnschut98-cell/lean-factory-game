@@ -120,6 +120,13 @@ Each phase ends in a **playable** that Merijn plays before the next phase starts
 **Playable:** Acts 0–II end to end (the whole tier-1 campaign) in a three-floor head office with a contact centre, a yard with vans, and the first customer phone calls; the first full playtest.
 
 - ⬜ 2.1 The head office as three floors (§5.2), the stairwell and lift as seams, the player map with a floor switch. Begane grond: ontvangst, Klantcontactcentrum, kantine. 1e: Aansluitingen (what exists) plus Revisie & GIS and Meetdata & registratie. 2e: Directie & Obeya, Netstrategie, the congestion desk, the MT room, Ruud's office.
+- ⬜ 2.1b **Minimap** (Merijn, 2026-10-16). A small round map in a HUD corner, always on (a setting can hide it), north-up or turning with the camera (setting), drawn from the same place markers as the full map (M, `game/src/ui/office_map.gd`), which stays for the overview.
+  - Shows the player, the walls and rooms nearby, the people on the floor, and the place of the **active main mission** (and, smaller, the side missions): where you must go next (a room, a person, the board).
+  - **Out of view, it points the way:** a target beyond the minimap's edge becomes an arrow on the rim with the distance; a target on another floor shows the arrow to the nearest stairs or lift plus "2e verdieping ↑"; in another building or the town (Phase 4) the arrow points to the exit and names the place ("Werf", "Lindeveld").
+  - It shows *where* the mission is, never *what* is wrong: no marker on a clue, no hint which tool to use (the RPG rule: nothing handed over).
+  - Immersion: drawn like a site plan in Voltana's style (not a game radar), quiet colours, no blinking; the arrow fades when you are in the target room.
+  - Grows with the world: floors in 2.1, the yard in 2.2, the town and depots in 4.1–4.2 (a street-level minimap in town, the region map for travel).
+  - Tests: the target for each active mission resolves to a place marker; floor and building routing picks stairs/lift/exit; no marker for a mission with no place.
 - ⬜ 2.2 The yard: the magazijn and werkplaats, the van park, the van kanban wall; monteurs leaving in the morning and returning (`fix_wrong_joint`, `fix_not_at_home` sides live here).
 - ⬜ 2.3 The opleidingsterrein (training yard): Henk teaches Ahmed by doing (TWI); later the training-capacity missions of tier 3.
 - ⬜ 2.4 Customer calls at the contact centre (Merijn: phone now, home visits later): the El Amrani calls, Ilse; the headset as a place.
@@ -153,7 +160,7 @@ Each phase ends in a **playable** that Merijn plays before the next phase starts
 ### Phase 4 — De regio: the town, two more areas and the IT chapter ⬜
 **Playable:** Act IV and Act VI side by side: the player is CI lead for all of Zuidmark, drives (map travel) to Lindeveld and Havenzij, visits the El Amrani home, and starts on the field app with IT.
 
-- ⬜ 4.1 The town of Nova as hand-built *sites* first (§5.3): a street with a dig (graafschade), a meterkast at a home, a trafohuisje, a hall on the industrial estate, the El Amrani home; reached by van from the yard (a map travel with a short drive, not a driving game). Then streets between them.
+- ⬜ 4.1 The town of Nova as hand-built *sites* first (§5.3): a street with a dig (graafschade), a meterkast at a home, a trafohuisje, a hall on the industrial estate, the El Amrani home; reached by van from the yard (a map travel with a short drive, not a driving game). Then streets between them. The minimap (2.1b) works in town and points to the mission's site.
 - ⬜ 4.2 Lindeveld depot (rural, long drives) and Havenzij (port, crowded underground, nitrogen): small depots with their own people; the region map.
 - ⬜ 4.3 The IT building (or floor): the field-app team, the release train, the test environments; the IT category in the codex.
 - ⬜ 4.4 Tier 3 into content (29 missions, 17 problems, 58 countermeasures, 20 dialogs), with the strategy screen that shows the player's own history as open and locked options (path dependence on screen), the crew strategy, kaizen events, VSM built by walking.
@@ -335,6 +342,8 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 ---
 
 ## 9. Decisions Made
+
+- **A minimap (Merijn, 2026-10-16).** Needed once the office grows and the town arrives. It shows where the next mission is, or points the way when the target is too far or on another floor. Planned as 2.1b, growing with each new floor, building and the town.
 
 - **The player makes their own character (Merijn, 2026-10-16).** Gender, hairstyle, hair colour, eyes and a few more traits, about five options each, fitting what Dutch people aged 18–35 wear now; not too many options. The game saves, so the character is made once. Why: players feel more immersed playing their "own" character, and immersion is one of the most important directives (added to CLAUDE.md §2 the same day). Planned as 2.7b with the save slots and title screen (2.7); open choices in §7 Q6–Q7.
 
