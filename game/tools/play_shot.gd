@@ -193,6 +193,13 @@ func _run() -> void:
 			_investigate(office, true)
 			office.interact(office.interactable("obeya"))
 			office.ui.a3_form.submit(_a3(office))  # Intussen opens with the experiment
+		"intussen_talk":   # the skip stops when Ahmed's check-in comes due (PLAN 1.4b)
+			_investigate(office, true)
+			office.interact(office.interactable("obeya"))
+			office.ui.a3_form.submit(_a3(office))
+			office.session.missions.done_once["save_henks_knowledge"] = true
+			office.session.people.morale["ahmed"] = 30
+			office.ui.intussen.skip()
 		"terugblik":
 			_last_session(office)
 			_stand_at(office, DESIGN)
