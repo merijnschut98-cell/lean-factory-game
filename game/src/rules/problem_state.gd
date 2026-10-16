@@ -32,6 +32,9 @@ var wear := 0.0
 ## Days since anything was done to sustain the fix (the Act, an audit, a
 ## routine): the longer, the faster it wears.
 var neglect := 0.0
+## How the owner of the fix stands behind it (Sustain.BUY_IN): commitment |
+## none | compliance. GameSession keeps it in step with People.buy_in.
+var buy_in := "none"
 var score: Dictionary = {}
 ## While a resolved fix is being reworked (a repair quest): the fix it
 ## replaces, {cm, eff, level, standardised, wear, neglect, score}, which keeps
@@ -49,7 +52,7 @@ func to_dict() -> Dictionary:
 		"phase": Phase.keys()[phase], "blamed": blamed, "a3": a3, "cause_correct": cause_correct,
 		"waste_right": waste_right, "eff": eff, "level": level, "failed_checks": failed_checks,
 		"check_at": check_at, "baseline": baseline, "gains": gains, "standardised": standardised, "wear": wear,
-		"neglect": neglect,
+		"neglect": neglect, "buy_in": buy_in,
 		"score": score, "rework_from": rework_from,
 	}
 
@@ -74,6 +77,8 @@ func load_dict(d: Dictionary) -> bool:
 	standardised = bool(d.get("standardised", phase == Phase.RESOLVED and int(d.get("recur_at", 0)) < 0))
 	wear = maxf(0.0, float(d.get("wear", 0.0)))
 	neglect = maxf(0.0, float(d.get("neglect", 0.0)))
+	# Saves from before dialogs have none (today's behaviour).
+	buy_in = d["buy_in"] if Sustain.BUY_IN.has(d.get("buy_in")) else "none"
 	score = d.get("score", {}) if d.get("score") is Dictionary else {}
 	rework_from = d.get("rework_from", {}) if d.get("rework_from") is Dictionary else {}
 	return true

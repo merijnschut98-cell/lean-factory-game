@@ -1,0 +1,747 @@
+{
+ "bank": {
+  "coach": {
+   "after": {
+    "blocked": "Is dit iets wat {person} kan beslissen? Wie wel?",
+    "commitment": "Wiens idee was het uiteindelijk?",
+    "pressure": "{person} zei ja. Wat zei het gezicht erbij?",
+    "ruined": "Wie was er aan het woord in de eerste minuut?"
+   },
+   "questions": [
+    "Wat wilde je dat {person} na het gesprek dacht of deed?",
+    "Wat gebeurde er? Waar veranderde het gesprek?",
+    "Wat houdt {person} tegen, denk je? Hoe weet je dat?",
+    "Hoe begin je het volgende gesprek, en wat verwacht je dat er dan gebeurt?",
+    "Wat heb je geleerd over luisteren?"
+   ]
+  },
+  "labels": {
+   "bands": [
+    "Dicht",
+    "Op z'n hoede",
+    "Luistert",
+    "Open",
+    "Denkt mee"
+   ],
+   "chips": {
+    "ask_commitment": "Afspraak maken",
+    "close": "Afronden",
+    "confront": "Aanspreken",
+    "empathy": "Begrip tonen",
+    "experience": "Ervaring delen",
+    "inquiry": "Doorvragen",
+    "mood": "Stemming peilen",
+    "open_question": "Open vraag",
+    "paraphrase": "Samenvatten",
+    "perspective": "Ander perspectief",
+    "pressure": "Druk zetten",
+    "propose": "Voorstel doen",
+    "propose_experiment": "Experiment voorstellen",
+    "reflect": "Gevoel benoemen",
+    "repair": "Terugkomen op vorige keer",
+    "show_data": "Data laten zien",
+    "silence": "Stilte laten"
+   },
+   "cue": "Er zit meer achter…",
+   "outcomes": {
+    "blocked": "Geblokkeerd",
+    "commitment": "Staat erachter",
+    "compliance": "Gaat akkoord onder druk",
+    "heard": "Gehoord",
+    "lifted": "Opgebeurd",
+    "none": "Geen uitkomst",
+    "partial": "Afspraak onder voorwaarde",
+    "ruined": "Mislukt"
+   }
+  },
+  "outcomes": {
+   "blocked": "Dat kan ik niet toezeggen.",
+   "commitment": "Goed. Ik doe mee, en ik sta erachter.",
+   "compliance": "Als het moet, dan moet het.",
+   "heard": "Fijn dat je even luisterde.",
+   "lifted": "Fijn dat je even langskwam.",
+   "none": "Goed. Tot later.",
+   "partial": "Eerst zien, dan geloven.",
+   "ruined": "Ik denk dat we klaar zijn."
+  },
+  "player": {
+   "ask_commitment": "Spreken we dit af?",
+   "close": "Dank je voor je tijd.",
+   "confront": "Dit ligt toch gewoon aan jouw team?",
+   "empathy": "Dat is ook niet niks, als je zo je best doet.",
+   "experience": "Toen ik net begon, had ik precies dat.",
+   "inquiry": "Wat maakt dat het zo is?",
+   "mood": "Hoe gaat het vandaag, echt?",
+   "open_question": "Hoe ziet jouw week eruit?",
+   "paraphrase": "Even kijken of ik je goed begrijp. Wat je zegt, is…",
+   "perspective": "Hoe zou de monteur dit zien, denk je?",
+   "pressure": "Het MT wil dat dit verandert. Liever met jou dan zonder jou.",
+   "propose": "Ik heb een voorstel.",
+   "propose_experiment": "Zullen we het eerst klein proberen?",
+   "reflect": "Het klinkt alsof je klem zit.",
+   "repair": "Vorige keer begon ik met mijn verhaal in plaats van met het jouwe. Dat was niet handig.",
+   "show_data": "Kijk eens naar deze cijfers.",
+   "silence": "(je zegt niets en wacht)"
+  },
+  "replies": {
+   "confront": {
+    "lands": {
+     "text": "Dat meen je niet."
+    }
+   },
+   "empathy": {
+    "lands": {
+     "text": "Dank je. Dat hoor ik niet vaak."
+    },
+    "misses": {
+     "text": "Ja, dat zei je al."
+    }
+   },
+   "experience": {
+    "lands": {
+     "text": "Echt? Dan weet je hoe het is."
+    },
+    "misses": {
+     "text": "Het gaat nu even niet over jou."
+    }
+   },
+   "inquiry": {
+    "lands": {
+     "text": "Goeie vraag. Daar moet ik even over nadenken."
+    },
+    "misses": {
+     "text": "Hoe bedoel je?"
+    }
+   },
+   "mood": {
+    "lands": {
+     "tags": [
+      "feeling"
+     ],
+     "text": "Eerlijk gezegd? Het is een drukke week."
+    },
+    "misses": {
+     "text": "Gaat wel."
+    }
+   },
+   "open_question": {
+    "lands": {
+     "tags": [
+      "claim"
+     ],
+     "text": "Ach, je kent het. Te veel werk, te weinig tijd."
+    },
+    "misses": {
+     "text": "Dat heb ik je net verteld."
+    }
+   },
+   "paraphrase": {
+    "lands": {
+     "text": "Precies."
+    },
+    "misses": {
+     "text": "Dat zei ik, ja."
+    }
+   },
+   "perspective": {
+    "lands": {
+     "text": "Zo had ik het nog niet bekeken."
+    },
+    "misses": {
+     "text": "Ik ben de monteur niet."
+    }
+   },
+   "pressure": {
+    "lands": {
+     "text": "Aha."
+    }
+   },
+   "propose_experiment": {
+    "lands": {
+     "text": "Proberen kan altijd. Als het klein blijft."
+    },
+    "misses": {
+     "text": "Nu even niet."
+    }
+   },
+   "reflect": {
+    "lands": {
+     "tags": [
+      "feeling"
+     ],
+     "text": "Ja. Zo voelt het wel."
+    },
+    "misses": {
+     "tags": [
+      "feeling"
+     ],
+     "text": "Nee, zo is het niet. Ik ben gewoon moe."
+    }
+   },
+   "repair": {
+    "lands": {
+     "text": "Nee. Dat was het niet. Maar goed dat je het zegt."
+    }
+   },
+   "show_data": {
+    "lands": {
+     "text": "Laat eens zien… Dat had ik niet verwacht."
+    },
+    "misses": {
+     "text": "Dus het ligt aan mijn mensen?"
+    }
+   },
+   "silence": {
+    "lands": {
+     "tags": [
+      "doubt"
+     ],
+     "text": "(denkt na) Ik weet het eigenlijk niet."
+    },
+    "misses": {
+     "text": "… Was er nog iets?"
+    }
+   }
+  },
+  "special": {
+   "cooling_down": "Niet nu.",
+   "lucky_guess": "Hm. Misschien.",
+   "no_proposal": "Waar moet ik precies ja op zeggen?",
+   "no_repair": "Herstellen? Er is niks misgegaan tussen ons.",
+   "other_data": "En?",
+   "patience_low": "Ik heb nog vijf minuten.",
+   "refusal": "Nee. Nog niet.",
+   "repeat": "Dat vroeg je net ook."
+  }
+ },
+ "dialogs": [
+  {
+   "co_proposal": {
+    "id": "present_with_sanne",
+    "text": "En als Sanne hetzelfde doet, presenteren we het samen. Dan sta ik er niet alleen."
+   },
+   "condition_needs": {
+    "all": [
+     "committed:frank_kpi_targets"
+    ]
+   },
+   "data": [
+    "silo_kpis:0",
+    "silo_kpis:2"
+   ],
+   "experiments": [
+    {
+     "addresses": [
+      "concern"
+     ],
+     "id": "one_quarter_trial",
+     "name": "Een kwartaal proberen",
+     "reply": "Een kwartaal, en de oude cijfers blijven zichtbaar? Dan kan ik het uitleggen.",
+     "text": "Een kwartaal proberen, met de oude cijfers ernaast zichtbaar."
+    }
+   ],
+   "id": "joost_output_kpi",
+   "kind": "persuade",
+   "kpi_team": "work_prep",
+   "layers": [
+    {
+     "at": 55,
+     "id": "interest",
+     "tags": [
+      "claim",
+      "feeling"
+     ],
+     "text": "Frank. Elke maandag om negen uur. Ontwerpen per week staat bovenaan zijn lijst, dus bovenaan de mijne.",
+     "via": [
+      "inquiry",
+      "open_question",
+      "paraphrase"
+     ]
+    },
+    {
+     "at": 70,
+     "condition": "Ik doe mee. Maar Frank moet het goedvinden. Het blijft zijn lijst.",
+     "id": "concern",
+     "lead_in": {
+      "tags": [
+       "hesitation"
+      ],
+      "text": "Ja. En…"
+     },
+     "tags": [
+      "admission"
+     ],
+     "text": "Mijn voorganger had één slecht kwartaal. Hij werkt nu bij Inkoop. Als ik op doorlooptijd ga sturen en dat getal wordt eerst slechter, en dat wordt het, dan sta ik in het MT met lege handen.",
+     "unlocks": {
+      "clue": "silo_kpis:7",
+      "facts": [
+       "heard:joost_kpi"
+      ],
+      "proposals": [
+       "present_with_sanne"
+      ]
+     },
+     "via": [
+      "silence",
+      "reflect",
+      "empathy",
+      "inquiry"
+     ]
+    }
+   ],
+   "lines": {
+    "confront": "Jouw team zet toch gewoon te snel door?",
+    "inquiry": "Wie vraagt er eigenlijk om die dertig?",
+    "mood": "Hoe gaat het met je, met het MT zo dichtbij?",
+    "pressure": "Ruud wil dat dit verandert. Het MT ook.",
+    "reflect": "Je zit klem tussen wat Frank vraagt en wat de monteurs nodig hebben.",
+    "repair": "Gisteren begon ik met mijn verhaal in plaats van met het jouwe. Dat was niet handig."
+   },
+   "mission": "fix_silo_kpis",
+   "mood": "gespannen",
+   "name": "Joost en de ontwerpen per week",
+   "opening": "Ik heb tien minuten. Morgen is het MT.",
+   "outcomes": {
+    "commitment": "Afgesproken. En ik vertel het mijn team zelf.",
+    "compliance": "Prima. Dan meet ik wat jullie willen.",
+    "ruined": "Dan moet Ruud dat maar tegen mij zeggen. Ik heb een MT voor te bereiden."
+   },
+   "owns": "silo_kpis",
+   "patience": 10,
+   "person": "joost",
+   "position": {
+    "tags": [
+     "claim"
+    ],
+    "text": "Mijn team haalt dertig ontwerpen per week. Een record. Als de aansluitingen niet sneller gaan, ligt dat niet aan ons."
+   },
+   "proposals": [
+    {
+     "addresses": [
+      "concern"
+     ],
+     "id": "lead_and_oldest",
+     "kpis": [
+      "work_prep_lead_time",
+      "work_prep_oldest"
+     ],
+     "name": "Doorlooptijd en oudste dossier",
+     "reply": "Het oudste dossier… dat zie ik volgende week al zakken.",
+     "text": "Wat als je naast de doorlooptijd het oudste dossier meet? Dat beweegt binnen een paar weken, en dat heb jij in de hand."
+    },
+    {
+     "addresses": [
+      "concern"
+     ],
+     "id": "ftr_and_oldest",
+     "kpis": [
+      "work_prep_ftr",
+      "work_prep_oldest"
+     ],
+     "name": "Eerste keer goed en oudste dossier",
+     "reply": "Eerste keer goed, en iets wat ik deze week kan laten zien. Dat is eerlijk.",
+     "text": "Stuur op eerste keer goed, en op het oudste dossier dat nog openstaat."
+    },
+    {
+     "addresses": [
+      "concern"
+     ],
+     "id": "output_and_ftr",
+     "kpis": [
+      "work_prep_output",
+      "work_prep_ftr"
+     ],
+     "name": "Ontwerpen per week en eerste keer goed",
+     "reply": "Dat kan ik wel aan Frank verkopen.",
+     "text": "Houd je ontwerpen per week, maar zet eerste keer goed ernaast."
+    },
+    {
+     "addresses": [],
+     "id": "lead_and_ftr",
+     "kpis": [
+      "work_prep_lead_time",
+      "work_prep_ftr"
+     ],
+     "name": "Doorlooptijd en eerste keer goed",
+     "reply": "Twee getallen die pas na maanden bewegen? Dat is precies wat ik bedoel.",
+     "text": "Stuur voortaan op de doorlooptijd en op eerste keer goed."
+    },
+    {
+     "addresses": [
+      "concern"
+     ],
+     "hidden": true,
+     "id": "present_with_sanne",
+     "name": "Samen presenteren met Sanne",
+     "reply": "Samen. Dan sta ik er niet alleen.",
+     "text": "En als je het samen met Sanne in het MT presenteert?"
+    }
+   ],
+   "replies": {
+    "experience": {
+     "misses": {
+      "text": "Hm. Ander bedrijf."
+     }
+    },
+    "mood": {
+     "lands": {
+      "tags": [
+       "claim",
+       "feeling"
+      ],
+      "text": "Zoals altijd. Dertig ontwerpen, record, applaus. En dan vraagt Marco wie onze fouten nabouwt."
+     }
+    },
+    "paraphrase": {
+     "lands": {
+      "tags": [
+       "feeling"
+      ],
+      "text": "Precies. Ik doe wat er gevraagd wordt. En het is nooit goed."
+     }
+    },
+    "propose": {
+     "too_early": {
+      "tags": [
+       "claim"
+      ],
+      "text": "Weer een ander getal? Over de doorlooptijd gaan de vergunning, de monteur en de klant. Niet ik."
+     }
+    },
+    "repair": {
+     "lands": {
+      "text": "Nee. Dat was het niet. (stilte) Koffie?"
+     }
+    },
+    "show_data": {
+     "too_early": {
+      "tags": [
+       "claim"
+      ],
+      "text": "Dus mijn mensen werken slordig? Ze halen elke week hun doel. Elke week."
+     }
+    }
+   },
+   "requires_clue": "silo_kpis:4",
+   "retry_opening": "Jij weer."
+  },
+  {
+   "block": {
+    "routes": [
+     {
+      "hint": "Laat het me zien op één stroom.",
+      "needs": {
+       "all": [
+        "checked:silo_kpis"
+       ]
+      }
+     }
+    ],
+    "text": "Ik kan dit niet toezeggen. Laat het me eerst zien."
+   },
+   "data": [
+    "silo_kpis:0",
+    "silo_kpis:2"
+   ],
+   "experiments": [
+    {
+     "addresses": [
+      "concern"
+     ],
+     "id": "one_quarter_two_numbers",
+     "name": "Een kwartaal met twee getallen",
+     "text": "Een kwartaal proberen op de aansluitingen, met de oude cijfers zichtbaar."
+    }
+   ],
+   "id": "frank_kpi_targets",
+   "kind": "persuade",
+   "layers": [
+    {
+     "at": 50,
+     "id": "interest",
+     "tags": [
+      "claim"
+     ],
+     "text": "Het jaarplan gaat naar de directie, en het aantal aansluitingen per jaar naar de ACM.",
+     "via": [
+      "inquiry",
+      "open_question",
+      "paraphrase"
+     ]
+    },
+    {
+     "at": 70,
+     "id": "concern",
+     "lead_in": {
+      "tags": [
+       "hesitation"
+      ],
+      "text": "Kijk… (zucht)"
+     },
+     "tags": [
+      "admission"
+     ],
+     "text": "Als de doorlooptijd eerst slechter wordt, verlies ik in het najaar het budget voor netverzwaring. Ik ga niet op gevoel een kwartaal gokken.",
+     "via": [
+      "inquiry",
+      "reflect",
+      "empathy",
+      "silence"
+     ]
+    }
+   ],
+   "mission": "fix_silo_kpis",
+   "name": "Frank en het jaarplan",
+   "opening": "Je hebt vijf minuten. Wat is er?",
+   "patience": 8,
+   "person": "frank",
+   "position": {
+    "tags": [
+     "claim"
+    ],
+    "text": "Ontwerpen en aanvragen per week staan in het jaarplan. Daar stuur ik op."
+   },
+   "proposals": [
+    {
+     "addresses": [
+      "concern"
+     ],
+     "id": "one_stream_board",
+     "name": "Eén stroom, één bord",
+     "reply": "Op één stroom. Dat is te overzien.",
+     "text": "Wat als we het op één stroom laten zien, met de oude cijfers ernaast?"
+    },
+    {
+     "addresses": [
+      "concern"
+     ],
+     "id": "report_both",
+     "name": "Beide cijfers rapporteren",
+     "reply": "Allebei rapporteren. Dan heb ik niets weggegeven.",
+     "text": "Je rapporteert een kwartaal lang allebei: de aantallen voor het jaarplan en de doorlooptijd ernaast."
+    }
+   ],
+   "replies": {
+    "show_data": {
+     "lands": {
+      "tags": [
+       "claim"
+      ],
+      "text": "Laat zien. Van 85 naar 80 procent? Dat had niemand me verteld."
+     }
+    }
+   },
+   "requires_clue": "silo_kpis:4",
+   "retry_opening": "Weer over die KPI's?"
+  },
+  {
+   "experiments": [
+    {
+     "addresses": [],
+     "id": "ride_along",
+     "name": "Een maand meelopen",
+     "reply": "Ik red me wel.",
+     "text": "Je kunt de eerste maand met een collega mee op nachtdienst."
+    }
+   ],
+   "id": "ahmed_after_henk",
+   "kind": "checkin",
+   "layers": [
+    {
+     "at": 50,
+     "id": "interest",
+     "tags": [
+      "feeling"
+     ],
+     "text": "Nachtdienst in Nova-Oud is anders zonder Henk. Die kabels zijn ouder dan ik.",
+     "via": [
+      "open_question",
+      "inquiry"
+     ]
+    },
+    {
+     "at": 65,
+     "id": "concern",
+     "lead_in": {
+      "tags": [
+       "hesitation"
+      ],
+      "text": "Ja. Nou…"
+     },
+     "tags": [
+      "admission",
+      "doubt"
+     ],
+     "text": "Vorige week stond ik om twee uur 's nachts bij een papierloodkabel en ik wist het niet. Ik heb Henk gebeld. Hij is met pensioen, en ik bel hem uit zijn bed. Wat voor monteur ben ik dan?",
+     "unlocks": {
+      "facts": [
+       "heard:ahmed_night"
+      ]
+     },
+     "via": [
+      "silence",
+      "empathy",
+      "reflect"
+     ]
+    }
+   ],
+   "lines": {
+    "close": "Fijn dat je het vertelde. Ik loop vaker even langs.",
+    "empathy": "Dat je belt als je het niet weet, is precies wat een goede monteur doet. Om twee uur 's nachts al helemaal.",
+    "experience": "Mijn eerste jaar belde ik ook steeds iemand. Zo leer je het.",
+    "mood": "Hoe gaat het nu echt, sinds Henk weg is?",
+    "open_question": "Hoe waren de nachtdiensten deze week?",
+    "reflect": "Het klinkt alsof je er 's nachts alleen voor staat.",
+    "silence": "(je leunt tegen de bus en wacht)"
+   },
+   "mood": "stil",
+   "name": "Ahmed na Henks afscheid",
+   "opening": "Hé.",
+   "outcomes": {
+    "lifted": "Doe dat. En… in Nova-Oud weet niemand van de nachtdienst welke kabel waar ligt. Dat zat in Henks hoofd.",
+    "none": "Ja. Doei."
+   },
+   "patience": 8,
+   "person": "ahmed",
+   "position": {
+    "tags": [
+     "claim"
+    ],
+    "text": "Gaat wel."
+   },
+   "proposals": [
+    {
+     "addresses": [],
+     "id": "extra_course",
+     "name": "Een extra cursus",
+     "reply": "Een cursus. Ja. Misschien.",
+     "text": "Zal ik een extra cursus voor je regelen?"
+    }
+   ],
+   "replies": {
+    "empathy": {
+     "lands": {
+      "tags": [
+       "doubt"
+      ],
+      "text": "Denk je? Ik weet het niet, hoor."
+     }
+    },
+    "experience": {
+     "lands": {
+      "text": "Henk zei: bel me maar, jongen. Ik denk dat hij het eigenlijk fijn vond. (lacht)"
+     }
+    },
+    "mood": {
+     "lands": {
+      "text": "Gaat wel."
+     }
+    },
+    "reflect": {
+     "misses": {
+      "text": "Ik ben niet ziek, hoor."
+     }
+    }
+   },
+   "trigger": {
+    "morale_below": 50,
+    "needs": {
+     "any": [
+      "done:save_henks_knowledge",
+      "failed:save_henks_knowledge"
+     ]
+    }
+   },
+   "variants": [
+    {
+     "layers": [
+      {
+       "at": 50,
+       "id": "interest",
+       "tags": [
+        "feeling"
+       ],
+       "text": "Gisteren vond ik zelf een fout in een papierloodkabel in Nova-Oud. Henk stuurde een kaartje.",
+       "via": [
+        "open_question",
+        "inquiry"
+       ]
+      },
+      {
+       "at": 65,
+       "id": "concern",
+       "lead_in": {
+        "tags": [
+         "hesitation"
+        ],
+        "text": "Alleen…"
+       },
+       "tags": [
+        "admission",
+        "doubt"
+       ],
+       "text": "Ruud vroeg of ik straks de nieuwe jongens wil opleiden. Ik weet niet of ik dat kan. Henk kon het.",
+       "unlocks": {
+        "facts": [
+         "heard:ahmed_trainer"
+        ]
+       },
+       "via": [
+        "reflect",
+        "silence",
+        "empathy"
+       ]
+      }
+     ],
+     "mood": "goed",
+     "needs": {
+      "all": [
+       "chose:knowledge_drain:skills_matrix_buddy"
+      ]
+     },
+     "position": {
+      "tags": [
+       "claim"
+      ],
+      "text": "Goed, eigenlijk."
+     }
+    }
+   ]
+  }
+ ],
+ "people": [
+  {
+   "archetype": "defender",
+   "id": "joost",
+   "morale": 50,
+   "name": "Joost van Dijk",
+   "place": "connections.design",
+   "role": "teamleider Werkvoorbereiding",
+   "team": "work_prep",
+   "trust": 50,
+   "voice": "Mijn team haalt het doel."
+  },
+  {
+   "archetype": "rule_bound",
+   "id": "frank",
+   "morale": 60,
+   "name": "Frank Hulshof",
+   "place": "connections.design",
+   "role": "manager Aansluitingen & Netverzwaring",
+   "team": "work_prep",
+   "trust": 50,
+   "voice": "Het staat in het jaarplan."
+  },
+  {
+   "archetype": "quiet",
+   "id": "ahmed",
+   "morale": 42,
+   "name": "Ahmed Bouzid",
+   "place": "outages.locate",
+   "role": "jonge monteur",
+   "team": "monteurs",
+   "trust": 60,
+   "voice": "Gaat wel."
+  }
+ ]
+}

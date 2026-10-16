@@ -747,3 +747,51 @@ func test_a_queue_count_day_reports_the_measured_queues() -> void:
 	assert_eq(done[0]["queues"], expected)
 	assert_true(expected["connections.design"]["days"] > expected["connections.intake"]["days"],
 		"with most of the designers away the work waits at design")
+
+
+# ── talk_to {dialog, outcome}: a persuasion as a goal (dialog spec §5.1) ─────
+
+func _talk_log(outcome: String) -> Array:
+	var said := {"o": ""}
+	var defs: Array[MissionDef] = [MissionDef.from_dict({"id": "talk_m", "name": "talk_m", "kind": "side", "tier": 1,
+		"goal": {"type": "talk_to", "dialog": "d1", "outcome": outcome}, "briefing": "b", "debrief": "d",
+		"rewards": {"xp": 400, "budget": 2000, "reputation": 2}})]
+	var log := Missions.new(RulesFixture.region(), defs, RulesFixture.coach())
+	log.talk_outcome = func(id: String) -> String: return said["o"] if id == "d1" else ""
+	assert_eq(log.accept("talk_m"), "")
+	return [log, said]
+
+
+func test_a_talk_goal_is_met_by_the_outcome_it_names_or_better() -> void:
+	var made: Array = _talk_log("partial")
+	var log: Missions = made[0]
+	for o in ["", "heard", "ruined", "blocked"]:
+		made[1]["o"] = o
+		log.update()
+		assert_eq(log.status("talk_m"), "active", "not met by " + o)
+	made[1]["o"] = "commitment"
+	log.update()
+	assert_eq(log.status("talk_m"), "completed")
+	assert_eq([log.region.profile.xp, log.region.reputation.value - Reputation.START], [400, 2])
+	made = _talk_log("commitment")
+	made[1]["o"] = "partial"
+	made[0].update()
+	assert_eq(made[0].status("talk_m"), "active", "a partial is not a commitment")
+
+
+func test_compliance_meets_a_talk_goal_at_half_pay_and_no_reputation() -> void:
+	var made: Array = _talk_log("commitment")
+	var log: Missions = made[0]
+	var budget := log.region.profile.budget
+	made[1]["o"] = "compliance"
+	log.update()
+	assert_eq(log.status("talk_m"), "completed", "pressure works, short term")
+	assert_eq([log.region.profile.xp, log.region.profile.budget - budget], [200, 1000])
+	assert_eq(log.region.reputation.value, Reputation.START, "no reputation for a forced yes")
+
+
+func test_a_talk_goal_names_a_dialog() -> void:
+	var bad := MissionDef.from_dict({"id": "x", "name": "x", "kind": "side", "goal": {"type": "talk_to"}})
+	assert_ne(bad.error, "")
+	var good := MissionDef.from_dict({"id": "x", "name": "x", "kind": "side", "goal": {"type": "talk_to", "dialog": "d1"}})
+	assert_eq([good.error, good.goal_dialog, good.goal_outcome], ["", "d1", "commitment"])

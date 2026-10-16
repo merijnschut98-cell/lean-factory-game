@@ -38,6 +38,11 @@ const MAX_FORECAST_DAYS := 91
 var catalog: Catalog
 var region: Region
 var missions: Missions
+## The cast and what they remember (dialogs); the talk in progress, if any.
+var people: People
+var _talk: Dialog = null
+## People's events ({type: left, person}) not yet drained.
+var _people_events: Array[Dictionary] = []
 ## Hidden rewards for deep thinking; it hears what the player does.
 var discoveries: Discoveries
 ## The El Amrani family's dossier, followed through the stream.
@@ -60,6 +65,8 @@ static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, t
 	s.region = Region.new(net, s.catalog.problems, s.catalog.countermeasures, Profile.new())
 	s.region.use_kpis(s.catalog.kpis)
 	s.missions = Missions.new(s.region, s.catalog.missions, s.catalog.coach)
+	s.people = People.new(s.catalog.persons, s.catalog.dialogs, s.catalog.dialog_bank)
+	s.missions.talk_outcome = s.talk_outcome
 	s.discoveries = Discoveries.new(s.catalog.discoveries)
 	for id in [STORY_MISSION, TRAINING_FIRST]:
 		if not s.missions.defs.has(id):
@@ -247,9 +254,16 @@ func stop_routine(place: String) -> String:
 	return refused
 
 
-## The coach's reply (Missions.ask_coach): about the main mission only.
+## The coach's reply (Missions.ask_coach): about the main mission only; right
+## after a hard talk of the main mission, one question about that talk
+## (People.coach_question, stage "talk").
 func ask_coach(mission_id: String = "") -> Dictionary:
-	var reply := missions.ask_coach(mission_id)
+	var main := missions.active("main")
+	var reply := people.coach_question(main[0].id) if not main.is_empty() and mission_id in ["", main[0].id] else {}
+	if not reply.is_empty():
+		_after(0)
+		return reply
+	reply = missions.ask_coach(mission_id)
 	if reply.has("stage"):
 		var coached := missions.active("main")
 		coached.append_array(missions.active("training"))
@@ -321,6 +335,8 @@ func fade_forecast(days: int, problem_id: String = TRAINING_PROBLEM) -> Dictiona
 func drain_events() -> Array[Dictionary]:
 	var out := region.drain_events()
 	out.append_array(missions.drain_events())
+	out.append_array(_people_events)
+	_people_events = []
 	out.append_array(discoveries.drain_events())
 	return out
 
@@ -543,6 +559,7 @@ func _after(minutes: int) -> void:
 	if not missions.in_training():
 		region.start_drift()
 	followed.update(region.net)
+	_sync_people()
 	discoveries.update(self)
 
 
@@ -573,3 +590,176 @@ static func _cleaned(a3: Dictionary) -> Dictionary:
 	clean["evidence"] = evidence.filter(func(id: Variant) -> bool: return id is String) if evidence is Array else []
 	clean["cm"] = a3["cm"] if a3.get("cm") is String else ""
 	return clean
+
+
+# ── Dialogs: talks with named people (rules/dialog.gd, rules/people.gd) ─────
+# docs/superpowers/specs/2026-10-15-dialog-system-design.md §10. A talk runs
+# move by move with no time passing; when it ends, its minutes pass once and
+# what it changed reaches the world (team trust, a blame, a learned clue).
+
+## The people at a place (those who left are gone): [{id, name, role,
+## has_dialog (a talk they have for the player now), checkin (that talk is a
+## check-in), cooling_down, energy, needs_talk (see energy_of)}].
+func people_at(place: String) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for p: PersonDef in people.persons.values():
+		if p.place != place or people.has_left(p.id):
+			continue
+		var d := people.dialog_for(p.id, _world(p))
+		var entry := {"id": p.id, "name": p.name, "role": p.role, "has_dialog": d != null,
+			"checkin": d != null and d.kind == "checkin", "cooling_down": people.cooling_down(p.id, region.net.time)}
+		entry.merge(energy_of(p.id))
+		out.append(entry)
+	return out
+
+
+## The bar over a person met while walking around (Merijn, 2026-10-15):
+## {energy (their morale, 0–1; the UI draws a bar, never a number),
+## needs_talk (a check-in prompt is open: a talk could lift their spirit)};
+## {} for an unknown person.
+func energy_of(person_id: String) -> Dictionary:
+	if not people.persons.has(person_id):
+		return {}
+	return {"energy": people.morale[person_id] / 100.0, "needs_talk": people.needs_talk(person_id)}
+
+
+## What the player knows of a person (the journal's Mensen tab): {id, name,
+## role, place, trust_pips, morale_band (0 low · 1 middling · 2 high),
+## cooldown_until, outcomes (dialog id → its best outcome)}; {} for an unknown id.
+func person(person_id: String) -> Dictionary:
+	var p: PersonDef = people.persons.get(person_id)
+	if p == null:
+		return {}
+	var facts := people.facts(_facts())
+	var outcomes := {}
+	for d: DialogDef in people.dialogs.values():
+		if d.person == person_id and people.outcomes.has(d.id):
+			outcomes[d.id] = people.effective_outcome(d.id, facts)
+	var morale: int = people.morale[person_id]
+	return {"id": p.id, "name": p.name, "role": p.role, "place": p.place,
+		"trust_pips": floori(people.trust[person_id] / float(Dialog.TRUST_PER_PIP)),
+		"morale_band": 0 if morale < 30 else (1 if morale < 70 else 2),
+		"cooldown_until": int(people.memory.get(person_id, {}).get("cooldown_until", 0)), "outcomes": outcomes}
+
+
+## Open the talk a person has for the player: {dialog, kind, person, name,
+## role, opening, position ({text, tags}), meter, moves}, or an error:
+## in_dialog | unknown_person | cooling_down (after a ruined talk; the UI says
+## the bank's special.cooling_down line) | nothing_to_say.
+func start_dialog(person_id: String) -> Dictionary:
+	if _talk != null:
+		return {"error": "in_dialog"}
+	var p: PersonDef = people.persons.get(person_id)
+	if p == null:
+		return {"error": "unknown_person"}
+	if people.cooling_down(person_id, region.net.time):
+		return {"error": "cooling_down"}
+	var world := _world(p)
+	var d := people.dialog_for(person_id, world)
+	if d == null:
+		return {"error": "nothing_to_say"}
+	_talk = people.start(d, world)
+	return {"dialog": d.id, "kind": d.kind, "person": p.id, "name": p.name, "role": p.role,
+		"opening": people.opening(d), "position": _talk.position(), "meter": _talk.meter(), "moves": _talk.moves()}
+
+
+## The moves of the talk in progress (Dialog.moves); [] when there is none.
+func dialog_moves() -> Array[Dictionary]:
+	var none: Array[Dictionary] = []
+	return _talk.moves() if _talk != null else none
+
+
+## The meter of the talk in progress (Dialog.meter); {} when there is none.
+func dialog_meter() -> Dictionary:
+	return _talk.meter() if _talk != null else {}
+
+
+## Make a move in the talk (a pick for show_data, propose_experiment and
+## propose: one the moves offered). Dialog.say's result; when the talk ended,
+## with `summary` (People.finish), and its minutes have passed. Errors:
+## no_dialog | unknown_move | bad_pick (and nothing changes).
+func choose_move(move: String, pick: String = "") -> Dictionary:
+	if _talk == null:
+		return {"error": "no_dialog"}
+	var result := _talk.say(move, pick)
+	if result.get("ended", false):
+		result["summary"] = _finish_talk()
+	return result
+
+
+## End the talk gracefully (the close move); see choose_move.
+func end_dialog() -> Dictionary:
+	return choose_move("close")
+
+
+## A dialog's best agreement so far, a met condition counted as commitment
+## ("" when never had). What a mission's talk_to {dialog, outcome} goal reads
+## (Missions.talk_outcome).
+func talk_outcome(dialog_id: String) -> String:
+	return people.effective_outcome(dialog_id, people.facts(_facts()))
+
+
+## What a talk needs to know about the world, for person `p`.
+func _world(p: PersonDef) -> Dictionary:
+	var blamed := region.problem_list().any(func(problem: ProblemDef) -> bool:
+		var step := region.net.step_at(problem.step)
+		return region.state[problem.id].blamed and region.state[problem.id].is_open() \
+			and step != null and p.team in step.pool_ids)
+	return {
+		"main": missions.active("main").map(func(m: MissionDef) -> String: return m.id),
+		"active": missions.active().map(func(m: MissionDef) -> String: return m.id),
+		"found": region.found, "facts": _facts(), "team_trust": region.trust.get(p.team, 0), "blamed": blamed,
+		"now": region.net.time,
+	}
+
+
+## The world's facts a talk can need, as Missions.knows answers them (the
+## catalogue's C19: done:, failed:, chose:, checked:, flags and measures such
+## as reputation>=40), for every atom the dialogs name.
+func _facts() -> Dictionary:
+	var out := {}
+	for atom: String in people.atoms():
+		if missions.knows(atom):
+			out[atom] = true
+	return out
+
+
+## The talk ended: People applies it, the world takes what it changed (a blame
+## by the gemba's own rule, a commitment's team trust, a learned clue), then
+## its minutes pass.
+func _finish_talk() -> Dictionary:
+	var d := _talk
+	_talk = null
+	var main := missions.active("main").any(func(m: MissionDef) -> bool: return m.id == d.def.mission)
+	var summary := people.finish(d, region.net.time, main)
+	if summary["confronted"]:
+		region.ask(d.who.place, "behind")
+	if summary["team_trust"] > 0:
+		region.trust[d.who.team] = mini(1, region.trust.get(d.who.team, 0) + summary["team_trust"])
+	if not summary["clue"].is_empty():
+		region.found[summary["clue"]] = true
+	if summary["reputation"] != 0:
+		region.earn_reputation(summary["reputation"], "dialog_" + summary["outcome"])
+	_after(d.minutes())
+	return summary
+
+
+## After every action: check-in prompts and the low-morale clock move on
+## (People.daily; a goodbye is an event), the facts talks set join the ones missions and
+## countermeasures read (Missions.facts), and every resolved fix with an owner
+## carries that owner's buy-in now (a later commitment repairs it, a met
+## condition upgrades it; Sustain.BUY_IN).
+func _sync_people() -> void:
+	if people == null:
+		return
+	var world_facts := _facts()
+	_people_events.append_array(people.daily({"now": region.net.time, "facts": world_facts}))
+	var facts := people.facts(world_facts)
+	for fact: String in facts:
+		if fact.get_slice(":", 0) in People.FACT_KINDS:
+			missions.facts.add(fact)
+	for id: String in region.state:
+		var st: ProblemState = region.state[id]
+		var owner := people.buy_in(id, facts) if st.phase == ProblemState.Phase.RESOLVED else ""
+		if not owner.is_empty():
+			st.buy_in = owner

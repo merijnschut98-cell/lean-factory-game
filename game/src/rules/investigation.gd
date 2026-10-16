@@ -34,10 +34,10 @@ const KPIS := ["throughput", "lead_time", "first_time_right", "on_time", "wip_ag
 const LOWER_IS_BETTER := ["lead_time", "wip_age"]
 
 
-## Whether `clue` can be found now: not yet found, and at depth 0 or with a
-## key clue one "why" shallower already found.
+## Whether `clue` can be found now: not yet found, not one only its dialog
+## reveals, and at depth 0 or with a key clue one "why" shallower already found.
 static func revealable(clue: Clue, problem: ProblemDef, found: Dictionary) -> bool:
-	if found.has(clue.id):
+	if found.has(clue.id) or not clue.dialog.is_empty():
 		return false
 	if clue.depth == 0:
 		return true
