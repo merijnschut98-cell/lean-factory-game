@@ -113,13 +113,13 @@ def _check_ids(ids: list, label: str, where: str, pattern: re.Pattern = _ID,
         raise ContentError(f"{where}: duplicate {label} ids: {', '.join(dupes)}")
 
 
-def _entries(doc: dict, key: str, source: str) -> list[dict]:
+def _entries(doc: dict, key: str, source: str, name: str = "name") -> list[dict]:
     items = doc.get(key)
     if not isinstance(items, list) or not all(isinstance(i, dict) for i in items):
         raise ContentError(f"{source}: '{key}' must be a list of mappings")
     _check_ids([i.get("id") for i in items], key, source)
     for item in items:
-        _require_strings(item, ["name"], f"{source}: {key} '{item['id']}'")
+        _require_strings(item, [name], f"{source}: {key} '{item['id']}'")
     return items
 
 
@@ -1097,12 +1097,13 @@ LISTEN_MOVES = ["mood", "open_question", "reflect", "empathy", "paraphrase", "in
 STEER_MOVES = ["perspective", "show_data", "propose_experiment", "propose", "ask_commitment"]
 DIALOG_MOVES = LISTEN_MOVES + STEER_MOVES + ["pressure", "confront", "repair", "close"]
 DIALOG_TAGS = ["claim", "feeling", "hesitation", "admission", "doubt"]
+DIALOG_NEEDS = ["facts", "safety", "recognition", "time", "fairness"]  # Dialog.NEEDS (person-needs spec)
 DIALOG_ARCHETYPES = ["defender", "cynic", "craftsman", "overloaded", "rule_bound", "quiet", "customer_upset", "expert"]
 DIALOG_KINDS = ["persuade", "checkin", "expert"]
 DIALOG_MOODS = ["goed", "neutraal", "gespannen", "moe", "stil"]
 DIALOG_OUTCOMES = ["commitment", "partial", "heard", "none", "blocked", "compliance", "ruined", "lifted"]
 LAYERS = {"interest": (40, 65), "concern": (60, 85)}  # layer id → the range its `at` threshold must lie in
-REPLY_SITUATIONS = ["lands", "misses", "too_early"]
+REPLY_SITUATIONS = ["lands", "misses", "too_early", "worn"]
 # The bank's fallback replies: every move that has no reply of its own elsewhere
 # (a layer, a proposal, an outcome) needs these situations.
 BANK_REPLIES = {**{m: ["lands", "misses"] for m in LISTEN_MOVES + ["perspective", "show_data", "propose_experiment"]},
@@ -1112,13 +1113,19 @@ BANK_SPECIAL = ["repeat", "refusal", "no_proposal", "other_data", "lucky_guess",
 # Ruud's line after a main-mission talk that ended this way (People.coach_question;
 # pressure: a yes under pressure).
 COACH_AFTER = ["pressure", "ruined", "blocked", "commitment"]
-PERSON_KEYS = {"id", "name", "short", "role", "place", "team", "archetype", "trust", "morale", "voice"}
+PERSON_KEYS = {"id", "name", "short", "role", "place", "team", "archetype", "need", "trust", "morale", "voice"}
 DIALOG_KEYS = {"id", "name", "person", "kind", "mission", "requires_clue", "needs", "owns", "kpi_team", "mood",
                "patience", "opening", "retry_opening", "position", "layers", "data", "proposals", "experiments",
                "co_proposal", "condition_needs", "block", "lines", "replies", "outcomes", "variants", "trigger",
-               "tutorial", "prompt", "warning"}
-LAYER_KEYS = {"id", "at", "via", "text", "tags", "lead_in", "condition", "unlocks"}
-PROPOSAL_KEYS = {"id", "name", "text", "kpis", "addresses", "reply", "hidden"}
+               "tutorial", "prompt", "warning", "need"}
+LAYER_KEYS = {"id", "at", "via", "text", "tags", "tell", "lead_in", "condition", "unlocks"}
+PROPOSAL_KEYS = {"id", "label", "say", "kpis", "addresses", "reply", "hidden"}
+# A persuasion speaks its own outcomes in the person's voice; the bank's are a
+# narrator, kept for check-ins and experts (tier-1 content audit C9).
+PERSUADE_OUTCOMES = ["commitment", "partial", "heard", "compliance", "ruined"]
+# A bank reply never carries these: whether a summary or a named feeling lands
+# must depend on what this person said (tier-1 content audit C8).
+BANK_UNTAGGED = {"claim", "feeling"}
 VARIANT_KEYS = {"needs", "mood", "position", "layers"}
 
 
@@ -1126,7 +1133,9 @@ def _line(item: Any, where: str) -> dict:
     """A spoken line: {text, tags?}."""
     if not isinstance(item, dict):
         raise ContentError(f"{where}: a line is a mapping with a text and optional tags")
-    _known_keys(item, {"text", "tags"}, where)
+    _known_keys(item, {"text", "tags", "tell"}, where)
+    if "tell" in item:
+        _one_of(item, "tell", DIALOG_NEEDS, where)
     _require_strings(item, ["text"], where)
     for tag in _string_list(item, "tags", where):
         if tag not in DIALOG_TAGS:
@@ -1148,6 +1157,7 @@ def validate_dialogs(doc: Any, source: str) -> None:
         _known_keys(p, PERSON_KEYS, where)
         _require_strings(p, ["role", "place", "team"] + (["short"] if "short" in p else []), where)
         _one_of(p, "archetype", DIALOG_ARCHETYPES, where)
+        _one_of(p, "need", DIALOG_NEEDS, where)
         _number(p, "trust", where, 0, 100, integer=True)
         _number(p, "morale", where, 0, 100, integer=True, default=60)
     _validate_bank(doc.get("bank"), f"{source}: bank")
@@ -1158,7 +1168,14 @@ def validate_dialogs(doc: Any, source: str) -> None:
 def _validate_bank(bank: Any, where: str) -> None:
     if not isinstance(bank, dict):
         raise ContentError(f"{where}: needs labels, player, replies, special and outcomes")
-    _known_keys(bank, {"labels", "player", "replies", "special", "outcomes", "coach"}, where)
+    _known_keys(bank, {"labels", "player", "replies", "special", "outcomes", "coach", "wear_out"}, where)
+    # Moves that wear out (person-needs spec §3.2): a question and a statement line per archetype.
+    wear_out = _mapping(bank, "wear_out", set(DIALOG_ARCHETYPES), where)
+    for archetype in DIALOG_ARCHETYPES:
+        lines = wear_out.get(archetype)
+        if not isinstance(lines, dict) or set(lines) != {"ask", "say"}:
+            raise ContentError(f"{where} wear_out: {archetype!r} needs an 'ask' and a 'say' line")
+        _require_strings(lines, ["ask", "say"], f"{where} wear_out {archetype}")
     labels = _mapping(bank, "labels", {"bands", "cue", "chips", "outcomes"}, where)
     if len(_string_list(labels, "bands", f"{where} labels")) != 5:
         raise ContentError(f"{where} labels: 'bands' names the five openness bands")
@@ -1171,6 +1188,9 @@ def _validate_bank(bank: Any, where: str) -> None:
         if not isinstance(replies.get(move), dict) or set(situations) - set(replies[move]):
             raise ContentError(f"{where} replies: {move!r} needs {', '.join(situations)}")
         _replies({move: replies[move]}, f"{where} replies")
+        for situation, line in replies[move].items():
+            if BANK_UNTAGGED & set(line.get("tags", [])):
+                raise ContentError(f"{where} replies {move} {situation}: a bank reply carries no claim or feeling tag")
     _require_strings(_mapping(bank, "special", set(BANK_SPECIAL), where), BANK_SPECIAL, f"{where} special")
     _require_strings(_mapping(bank, "outcomes", set(DIALOG_OUTCOMES), where), DIALOG_OUTCOMES, f"{where} outcomes")
     coach = _mapping(bank, "coach", {"questions", "after"}, where)
@@ -1199,6 +1219,8 @@ def _validate_dialog(d: dict, where: str) -> None:
         if key in d:
             _require_strings(d, [key], where)
     _one_of(d, "kind", DIALOG_KINDS, where)
+    if "need" in d:
+        _one_of(d, "need", DIALOG_NEEDS, where)
     if "mood" in d:
         _one_of(d, "mood", DIALOG_MOODS, where)
     _number(d, "patience", where, 3, 15, integer=True, default=10)
@@ -1206,13 +1228,13 @@ def _validate_dialog(d: dict, where: str) -> None:
         raise ContentError(f"{where}: 'tutorial' must be true or false (an Act 0 talk that cannot be ruined)")
     _line(d.get("position"), f"{where} position")
     _layers(d.get("layers"), where)
-    proposals = _entries(d, "proposals", where) if "proposals" in d else []
-    experiments = _entries(d, "experiments", where) if "experiments" in d else []
+    proposals = _entries(d, "proposals", where, "label") if "proposals" in d else []
+    experiments = _entries(d, "experiments", where, "label") if "experiments" in d else []
     for item in proposals + experiments:
         at = f"{where} proposal '{item['id']}'"
         is_proposal = any(item is p for p in proposals)
         _known_keys(item, PROPOSAL_KEYS, at)
-        _require_strings(item, ["text"], at)
+        _require_strings(item, ["label", "say"], at)
         if "reply" in item:
             _require_strings(item, ["reply"], at)
         if is_proposal and "reply" not in item:
@@ -1278,6 +1300,10 @@ def _validate_dialog(d: dict, where: str) -> None:
         # No single right answer (spec §9.2 rule 10): two ways at least to meet the concern.
         if d["kind"] == "persuade" and sum(1 for i in proposals + experiments if "concern" in i.get("addresses", [])) < 2:
             raise ContentError(f"{where}: no single right answer: needs two proposals or experiments that address the concern")
+        if d["kind"] == "persuade":
+            missing = [o for o in PERSUADE_OUTCOMES + (["blocked"] if "block" in d else []) if o not in outcomes]
+            if missing:
+                raise ContentError(f"{where}: a persuasion authors its own outcome lines; missing {', '.join(missing)}")
 
 
 def _layers(layers: Any, where: str) -> None:
@@ -1294,7 +1320,7 @@ def _layers(layers: Any, where: str) -> None:
         for move in via:
             if move not in DIALOG_MOVES:
                 raise ContentError(f"{at}: unknown move {move!r} in via")
-        _line({k: layer[k] for k in ("text", "tags") if k in layer}, at)
+        _line({k: layer[k] for k in ("text", "tags", "tell") if k in layer}, at)
         if "condition" in layer:
             _require_strings(layer, ["condition"], at)
         unlocks = _mapping(layer, "unlocks", {"clue", "facts", "proposals"}, at)
@@ -1314,8 +1340,13 @@ def _layers(layers: Any, where: str) -> None:
     concern = layers[1]
     if not isinstance(concern.get("lead_in"), dict):
         raise ContentError(f"{where}: the concern needs a lead_in (the line that carries the cue)")
-    if "hesitation" not in _line(concern["lead_in"], f"{where} concern lead_in").get("tags", []):
-        raise ContentError(f"{where}: the concern's lead_in carries the tag hesitation")
+    # The cue (four-tier audit §4.2): a hesitation opens to silence, a feeling
+    # to reflect and empathy, never to silence (rules T4).
+    cue = set(_line(concern["lead_in"], f"{where} concern lead_in").get("tags", [])) & {"hesitation", "feeling"}
+    if not cue:
+        raise ContentError(f"{where}: the concern's lead_in carries the tag hesitation or feeling")
+    if cue == {"feeling"} and ("silence" in concern["via"] or "reflect" not in concern["via"]):
+        raise ContentError(f"{where}: a concern cued by a feeling opens to reflect, never to silence")
 
 
 def _block(block: Any, where: str) -> None:
@@ -1376,6 +1407,10 @@ def check_dialogs(docs: dict[str, Any]) -> None:
         where = f"dialogs.yaml: dialog '{d['id']}'"
         if d["person"] not in people:
             raise ContentError(f"{where}: unknown person {d['person']!r}")
+        need = d.get("need", people[d["person"]]["need"])
+        for tell in _tells(d):
+            if tell != need:
+                raise ContentError(f"{where}: a tell shows {tell!r}, but the person's need here is {need!r}")
         for expr in _needs_of(d):
             for atom in _needs(expr, where):
                 _dialog_atom_robust(atom, where, index, dialogs, heard)
@@ -1399,6 +1434,15 @@ def _check_talk_goals(docs: dict[str, Any]) -> None:
             raise ContentError(f"{where}: talk_to names unknown dialog {m['goal']['dialog']!r}")
         if d.get("mission") != m["id"]:
             raise ContentError(f"{where}: dialog {d['id']!r} belongs to mission {d.get('mission')!r}")
+
+
+def _tells(d: dict) -> list[str]:
+    """Every `tell` on the dialog's lines (person-needs spec §1.5, N5)."""
+    lines = [d["position"]] + [v["position"] for v in d.get("variants", []) if "position" in v]
+    for layers in _all_layers(d):
+        lines += layers + [layer["lead_in"] for layer in layers if "lead_in" in layer]
+    lines += [line for by_situation in d.get("replies", {}).values() for line in by_situation.values()]
+    return [line["tell"] for line in lines if "tell" in line]
 
 
 def _all_layers(d: dict) -> list[list[dict]]:
@@ -1452,6 +1496,15 @@ def _check_mission_dialog(d: dict, where: str, missions: dict, problems: dict, n
         clue = layers[1].get("unlocks", {}).get("clue")
         if clue is not None and not d.get("owns"):
             raise ContentError(f"{where}: a concern unlocks a clue of the problem the dialog owns: needs 'owns'")
+
+
+def name_dialog_items(docs: dict[str, Any]) -> None:
+    """A proposal's or experiment's `label` (the chip) and `say` (the player's
+    line) become the engine's `name` and `text` (tier-1 content audit C1)."""
+    for d in docs.get("dialogs", {}).get("dialogs", []):
+        for item in d.get("proposals", []) + d.get("experiments", []):
+            item["name"] = item.pop("label")
+            item["text"] = item.pop("say")
 
 
 def merge_dialog_clues(docs: dict[str, Any]) -> None:
@@ -1565,6 +1618,7 @@ def vocabulary() -> dict[str, Any]:
         "care_rules": CARE_RULES, "kpi_kinds": KPI_KINDS,
         "effect_properties": {p: {"kind": k, "step_kind": sk or ""} for p, (k, sk, _) in sorted(EFFECT_PROPERTIES.items())},
         "dialog_moves": DIALOG_MOVES, "dialog_tags": DIALOG_TAGS, "dialog_archetypes": DIALOG_ARCHETYPES,
+        "dialog_needs": DIALOG_NEEDS,
         "dialog_kinds": DIALOG_KINDS, "dialog_moods": DIALOG_MOODS, "dialog_outcomes": DIALOG_OUTCOMES,
     }
 
@@ -1615,6 +1669,7 @@ def load_content(content_dir: Path | None = None) -> dict[str, Any]:
     for check in CROSS_CHECKS:
         check(docs)
     merge_dialog_clues(docs)
+    name_dialog_items(docs)
     docs["vocabulary"] = vocabulary()
     return docs
 

@@ -22,7 +22,11 @@ static func bank() -> Dictionary:
 	for outcome: String in Dialog.OUTCOMES:
 		outcomes[outcome] = "uitkomst " + outcome
 		outcome_labels[outcome] = "label " + outcome
+	var wear_out := {}
+	for archetype: String in Dialog.ARCHETYPES:
+		wear_out[archetype] = {"ask": archetype + " vraagt", "say": archetype + " zegt"}
 	return {
+		"wear_out": wear_out,
 		"labels": {"bands": ["Dicht", "Op z'n hoede", "Luistert", "Open", "Denkt mee"], "cue": "Er zit meer achter…",
 			"chips": chips, "outcomes": outcome_labels},
 		"player": player, "replies": replies, "outcomes": outcomes,
@@ -92,9 +96,9 @@ static func world(extra: Dictionary = {}) -> Dictionary:
 	return w
 
 
-static func person(archetype: String = "defender", trust: int = 50, morale: int = 50) -> PersonDef:
+static func person(archetype: String = "defender", trust: int = 50, morale: int = 50, need: String = "") -> PersonDef:
 	return PersonDef.from_dict({"id": "pim", "name": "Pim", "role": "teamleider", "place": "connections.design",
-		"team": "prep", "archetype": archetype, "trust": trust, "morale": morale})
+		"team": "prep", "archetype": archetype, "trust": trust, "morale": morale, "need": need})
 
 
 ## A conversation at `openness` (the default start state otherwise).
