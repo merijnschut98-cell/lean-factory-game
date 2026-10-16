@@ -31,7 +31,9 @@ extends SceneTree
 ## people_monteurs (Henk and Ahmed at the huddle table for Henk's mission, Marco
 ## walking in) · people_meetdata (Petra at the stand-in Meetdata desk) ·
 ## people_gemba (E at Werkvoorbereiding with the people there: do the stacks
-## and the in-trays still read?).
+## and the in-trays still read?) · title (the title menu over a few saves) ·
+## pause, pause_slots, pause_confirm (Esc in the office: the pause menu, its
+## five slots, the overwrite question).
 ## The mission is played through the UI's own handlers, as a player would;
 ## only the training states start with the training week.
 
@@ -42,6 +44,8 @@ const INTAKE := "place:connections.intake"
 ## Days the standardised fix is left alone in the sustain state: long enough
 ## to slip below the check-in line (life ≈ 130 days, slipping from ≈ 84).
 const SUSTAIN_DAYS := 100
+## The save menus' saves: this tool's own folder.
+const SHOT_SAVES := "user://shot_saves"
 
 
 func _initialize() -> void:
@@ -51,12 +55,16 @@ func _initialize() -> void:
 func _run() -> void:
 	var args := OS.get_cmdline_user_args()
 	if args.size() < 2:
-		printerr("usage: -- <office|overview|inspect|tools|a3|check|act|board|coach|map|codex|training_board|timelapse|sustain|intussen|terugblik|people_desks|people_talk|people_energy|people_monteurs|people_meetdata|people_gemba> <out.png> [frames]")
+		printerr("usage: -- <office|overview|inspect|tools|a3|check|act|board|coach|map|codex|training_board|timelapse|sustain|intussen|terugblik|people_desks|people_talk|people_energy|people_monteurs|people_meetdata|people_gemba|title|pause|pause_slots|pause_confirm> <out.png> [frames]")
 		quit(2)
+		return
+	var state := args[0]
+	if state in ["title", "pause", "pause_slots", "pause_confirm"]:
+		await _save_menus(state)
+		_capture(args)
 		return
 	var office: Office = load(SCENE).instantiate()
 	office.seed_value = 11
-	var state := args[0]
 	office.training = state in ["training_board", "timelapse"]
 	root.add_child(office)
 	match state:
@@ -172,6 +180,11 @@ func _run() -> void:
 			printerr("unknown state ", state)
 			quit(2)
 			return
+	_capture(args)
+
+
+## Wait `frames` (args[2], default 20), then save the screen to args[1].
+func _capture(args: PackedStringArray) -> void:
 	var frames := int(args[2]) if args.size() > 2 else 20
 	for i in frames:
 		await process_frame
@@ -179,6 +192,43 @@ func _run() -> void:
 	if err != OK:
 		printerr("cannot write ", args[1], ": ", error_string(err))
 	quit(0 if err == OK else 1)
+
+
+## The title menu over a few saves, or the pause menu (its main page, the
+## slot picker, the overwrite question). The saves live in a folder of this
+## tool's own, never the player's.
+func _save_menus(state: String) -> void:
+	var slots := SaveSlots.new(SHOT_SAVES)
+	slots.wipe()
+	var now := Time.get_unix_time_from_system()
+	for save: Array in [[1, 3 * 86400.0, true, 2], [3, 86400.0 + 3600.0, false, 18], [0, 120.0, false, 9]]:
+		var s := GameSession.new_game(11, Catalog.DATA_DIR, save[2])
+		s.region.advance_days(save[3])
+		slots.now = func() -> float: return now - save[1]
+		var error := slots.autosave(s, SessionLayer.new()) if save[0] == 0 else slots.save(save[0], s, SessionLayer.new())
+		if not error.is_empty():
+			printerr(error)
+	var old := FileAccess.open(SaveFile.path_of("slot_4", SHOT_SAVES), FileAccess.WRITE)
+	old.store_buffer(var_to_bytes({"version": 0, "region": {}}))
+	old.close()
+	slots.now = func() -> float: return now
+	if state == "title":
+		var menu: TitleMenu = load(TitleMenu.SCENE).instantiate()
+		menu.saves = slots
+		root.add_child(menu)
+		return
+	var office: Office = load(SCENE).instantiate()
+	office.seed_value = 11
+	office.training = false
+	office.saves = slots
+	root.add_child(office)
+	office.ui.saves = slots  # the pause menu saves here; no autosave in a tool
+	_stand_at(office, DESIGN)
+	office.player.escape_pressed.emit()
+	if state != "pause":
+		office.ui.pause_menu.show_slots()
+	if state == "pause_confirm":
+		office.ui.pause_menu.pick(3)
 
 
 ## Stand a step behind the marker, looking the way it faces; the camera

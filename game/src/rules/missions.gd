@@ -151,6 +151,18 @@ func active(kind: String = "") -> Array[MissionDef]:
 	return out
 
 
+## The act the player is in: the active main mission's, else the latest act
+## with a main mission done (0, the training week, before any).
+func current_act() -> int:
+	var mains := active("main")
+	if not mains.is_empty():
+		return mains[0].act
+	var act := 0
+	for id: String in done_once:
+		act = maxi(act, defs[id].act if defs.has(id) else 0)
+	return act
+
+
 ## Start a mission. Returns "" or an error code: unknown, not_available,
 ## locked, main_active, side_full, problem_unavailable.
 func accept(id: String) -> String:
