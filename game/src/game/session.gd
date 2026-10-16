@@ -49,6 +49,9 @@ var discoveries: Discoveries
 var followed := FollowedOrder.new()
 ## The "Hoe werkt het?" explainers seen (PLAN 2.7c), for the codex.
 var explainers := ExplainerLog.new()
+## The player as made in the character creator (PLAN 2.7b): first name, look,
+## badge photo. Its tokens ({speler}, {hij_zij} …) fill dialog text and briefings.
+var player := PlayerProfile.new()
 ## The first thing wrong with the content; "" when the game is usable.
 var error := ""
 
@@ -451,11 +454,11 @@ func mission_briefing(mission_id: String) -> String:
 	if not missions.defs.has(mission_id):
 		return ""
 	var age: float = followed_order()["age_days"]
-	return missions.briefing_of(mission_id).replace("{dossier_weken}", FollowedOrder.weeks_text(age))
+	return player.fill(missions.briefing_of(mission_id).replace("{dossier_weken}", FollowedOrder.weeks_text(age)))
 
 
 func mission_debrief(mission_id: String) -> String:
-	return missions.debrief_of(mission_id) if missions.defs.has(mission_id) else ""
+	return player.fill(missions.debrief_of(mission_id)) if missions.defs.has(mission_id) else ""
 
 
 ## Countermeasures not offered because an earlier preparation is missing:
@@ -702,8 +705,8 @@ func person(person_id: String) -> Dictionary:
 		"trust_pips": floori(people.trust[person_id] / float(Dialog.TRUST_PER_PIP)),
 		"morale_band": 0 if morale < 30 else (1 if morale < 70 else 2),
 		"cooldown_until": int(people.memory.get(person_id, {}).get("cooldown_until", 0)), "outcomes": outcomes,
-		"observed": _newest_first(people.observed.get(person_id, [])),
-		"talks": _newest_first(people.talk_log.get(person_id, [])), "note": people.note.get(person_id, ""),
+		"observed": player.fill_all(_newest_first(people.observed.get(person_id, []))),
+		"talks": player.fill_all(_newest_first(people.talk_log.get(person_id, []))), "note": people.note.get(person_id, ""),
 		"open": _still_open(person_id, facts),
 		"talk_ready": not people.cooling_down(person_id, region.net.time) and people.dialog_for(person_id, _world(p)) != null}
 
@@ -762,14 +765,17 @@ func start_dialog(person_id: String) -> Dictionary:
 	if d == null:
 		return {"error": "nothing_to_say"}
 	_talk = people.start(d, world)
-	return {"dialog": d.id, "kind": d.kind, "person": p.id, "name": p.name, "short": p.short, "role": p.role,
-		"opening": people.opening(d), "position": _talk.position(), "meter": _talk.meter(), "moves": _talk.moves()}
+	return player.fill_all({"dialog": d.id, "kind": d.kind, "person": p.id, "name": p.name, "short": p.short,
+		"role": p.role, "opening": people.opening(d), "position": _talk.position(), "meter": _talk.meter(),
+		"moves": _talk.moves()})
 
 
 ## The moves of the talk in progress (Dialog.moves); [] when there is none.
 func dialog_moves() -> Array[Dictionary]:
-	var none: Array[Dictionary] = []
-	return _talk.moves() if _talk != null else none
+	var out: Array[Dictionary] = []
+	if _talk != null:
+		out.assign(player.fill_all(_talk.moves()))
+	return out
 
 
 ## The meter of the talk in progress (Dialog.meter); {} when there is none.
@@ -789,6 +795,7 @@ func dialog_layers() -> Array[Dictionary]:
 	for layer: Dictionary in _talk.layers():
 		var heard := _talk.revealed.has(layer["id"])
 		out.append({"id": str(layer["id"]), "text": str(layer.get("text", "")) if heard else "", "heard": heard})
+	out.assign(player.fill_all(out))
 	return out
 
 
@@ -802,7 +809,7 @@ func choose_move(move: String, pick: String = "") -> Dictionary:
 	var result := _talk.say(move, pick)
 	if result.get("ended", false):
 		result["summary"] = _finish_talk()
-	return result
+	return player.fill_all(result)
 
 
 ## End the talk gracefully (the close move); see choose_move.
