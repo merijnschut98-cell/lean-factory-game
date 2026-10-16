@@ -54,3 +54,7 @@ desktop.ini
 game/.godot/
 build/
 *.translation
+
+# Character pack downloads (tools/blender/fetch_pack.py), and the Blender venv
+.pack/
+.bvenv
