@@ -224,7 +224,7 @@ dialogs:
     clock: "19:02"                         # the scene's time; the talk ends at about 19:30 (spec §3.5)
     # start: overloaded 35 - 10 (moe) + 0 (team trust) + 0 (trust 50) + 0 (morale 50) + 0 = 25, Op z'n hoede
     opening: "O! Jij bent er ook nog? Ik dacht dat ik de laatste was."
-    position: {text: "Nog twee tekeningen. Dan ga ik. Echt.", tags: [claim]}
+    position: {text: "Nog twee tekeningen. Dan ga ik. Echt. Zeg maar niet tegen Joost dat ik er nog zat, hè.", tags: [claim], tell: safety}   # person needs: Anouk is safety
     layers:
       - id: interest
         at: 45
@@ -319,7 +319,7 @@ Today's HUD shows everything from the first frame: VOLTANA, date and time, budge
 
 1. **`training_mon` becomes the arrival day.** Its goal (observe Intake and Werkvoorbereiding) is met by Ruud's walk; its briefing is spoken in B3–B5 instead of shown on a card; its debrief ("Je kent nu twee plekken …") moves to the top of Tuesday's briefing, from Ruud: "Gisteren zag je twee plekken waar een aanvraag langskomt. {dossier_weken} onderweg: hoeveel uur is er al echt aan gewerkt, denk je?" (the debrief's hard-coded "Elf weken" becomes `{dossier_weken}`, as the briefings already do, 1.8).
 2. **The Act 0 tutorial schedule shifts by one talk.** Monday now holds one talk, `anouk_seven` (Stemming peilen). Monday's two daytime talks cannot happen *after* a talk at seven in the evening:
-   - `sanne_monday` → **`sanne_tuesday`**, Tuesday 08:30, the first talk of Tuesday, `teaches: [open_question]` (the second Monday move, now Tuesday's first card). Her opening is re-dated: "Goedemorgen. Sorry, het is dinsdag, maar hier is het nog maandag: alles van het weekend ligt er nog." Her position: "Dinsdag is hier de nieuwe maandag. Alles wat in het weekend binnenkwam, plus wat gisteren bleef liggen." Everything else unchanged; her route B (without mood) is the open-question route.
+   - `sanne_monday` → **`sanne_tuesday`**, Tuesday 08:30, the first talk of Tuesday, `teaches: [open_question]` (the second Monday move, now Tuesday's first card). Her opening is re-dated: "Goedemorgen. Sorry, het is dinsdag, maar hier is het nog maandag: alles van het weekend ligt er nog." Her position: "Dinsdag is hier de nieuwe maandag. Alles wat in het weekend binnenkwam, plus wat gisteren bleef liggen. Maar dat ziet boven niemand, hè." (`tell: recognition`, person needs §7 of the tutorial talks) Everything else unchanged; her route B (without mood) is the open-question route.
    - `rachid_monday` → **an optional walk-around talk** (`trigger: {walkaround: true, days: [training_tue, training_thu]}`, tutorial, unchanged text), so the quiet newcomer is met by those who look; no card depends on him.
    - Tuesday then holds Sanne (Open vraag) and `anouk_first_look` (Begrip tonen); **Samenvatten** moves to Wednesday's card with `mieke_tuesday` → `mieke_wednesday` as Wednesday's first talk. Wednesday has three talks (Mieke, Joost, Linda) and three cards (Samenvatten, Doorvragen, Gevoel benoemen); Thursday and Friday are unchanged. The eight moves are still all named by Friday.
    - The tutorial talks doc's summary table is updated with a pointer here (done with this doc).
