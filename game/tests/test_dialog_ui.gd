@@ -288,14 +288,15 @@ func test_the_mensen_tab_is_the_player_s_notebook() -> void:
 	assert_eq(curves[0].trace, talk["trace"])
 	assert_eq(curves[0].labels.size(), talk["moves"].size(), "the moves under the points")
 	assert_true(shows(office.ui.journal, DialogPanel.outcome_name(s, talk["outcome"])))
-	var notes := _nodes(office.ui.journal, func(n: Node) -> bool: return n is TextEdit)
-	assert_eq(notes.size(), 1)
-	assert_eq(notes[0].placeholder_text, "Wat weet je over Joost?")
+	# Joost's card (Linda may want a talk too: her evenings check-in).
+	var joosts := func(n: Node) -> bool: return n is TextEdit and n.placeholder_text == "Wat weet je over Joost?"
+	var notes := _nodes(office.ui.journal, joosts)
+	assert_eq(notes.size(), 1, "one note field on his card")
 	notes[0].text = "Hij wil eerst gehoord worden."
 	notes[0].text_changed.emit()
 	assert_eq(s.person("joost")["note"], "Hij wil eerst gehoord worden.", "the note is kept")
 	office.ui.journal.refresh()
-	notes = _nodes(office.ui.journal, func(n: Node) -> bool: return n is TextEdit)
+	notes = _nodes(office.ui.journal, joosts)
 	assert_eq(notes[0].text, "Hij wil eerst gehoord worden.", "and shown again")
 	office.free()
 
