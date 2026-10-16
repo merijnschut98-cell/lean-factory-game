@@ -258,3 +258,75 @@ Seven mission criteria, 1–5 each: **R**eal problem · **E**ntertaining · **I*
 4. **Relative dates in mevrouw El Amrani's notebook** ("drie weken geleden, dinsdag, kwart over tien"), and `{aanvraag_datum}` for the request; the letter is signed F. El Amrani.
 5. **No line in an always-reachable talk may name what only an optional talk revealed** (Rachid's list).
 6. **`{jongen_meid}`** joins the player tokens for Henk.
+
+---
+
+## § Re-audit (batch 1+2), 2026-10-16 19:30 UTC
+
+**What was read.** Batch 1 (the Act 0 week) on origin at `9acf607` and batch 2 (Acts I–II, local `55c7d4b`), both merged into this worktree; and, because the builder is applying the checklist on top, its uncommitted `content/dialogs.yaml` as of 18:54 UTC (read only, snapshot in the designer's scratchpad). **Batch 1+2 as committed is byte-identical to the 16:35 snapshot the first pass audited:** the same 19 people and 36 talks (batch 2's "ten new people, fifteen persuasion talks, six check-ins" are the ones already scored in §3). So no committed talk is new to this audit; this pass checks the fixes and goes one level deeper on batch 2 (tells per person, lines that assume a move, repeats inside a talk).
+
+**Route numbers: not run.** This worktree has no `.godot` import cache, so `route_check.gd` first needs a full `--import` (character glbs, 63 explainer SVGs), then a width-300 beam search over the tier's talks, on a machine at load ~8 on 4 cores: well past the 20-minute limit. Every fix below and in §2 keeps the line's `tags`, `tell` and the layer's `via` (new lines are untagged, like the bank's), so the builder's `test_dialog_routes.gd` (`TIER1_RATCHET`) remains the judge and should not move.
+
+### R1. Status of the first pass's items
+
+"Committed" = in batch 1+2; "builder WIP" = in the builder's uncommitted file at 18:54.
+
+| Item | Committed | Builder WIP | Still to do |
+|---|---|---|---|
+| **A1** rooms for Mieke/Petra, a place for Linda, bodies for Rachid/Mieke/Linda | ❌ | ❌ (`world.yaml`, `cast.json` unchanged) | **all of it: P0.** The week's Wednesday and Thursday talks still cannot be opened. |
+| **A2** `training_mon` must stay open until `anouk_seven` | ❌ | ❌ (`missions.yaml` unchanged) | **P0** (with the 2.7d build) |
+| **A3** `bank.ruud_names`, `move_cards` | ❌ | ✅ both, texts as specced, cards on the shifted days | commit; Monday's line as Ruud's 19:41 text is the UI's (2.7d) |
+| **A4** El Amrani promise | ❌ | ◐ the hard "half november" is gone: "Volgens de planning bent u over een week of zes aangesloten." / "Zes weken. Ik schrijf het op, met de datum van vandaag erbij." (a good line: she notes the day) | **P1:** still recorded nowhere. Minimum now: the agreed fact plus the talk's day, so 2.4b can check "six weeks from that day"; log the check under 2.4b. |
+| §2.1 repeated reveals #1–#8 | ❌ | ✅ all eight | commit |
+| §2.2 claims about the player #9–#12 | ❌ | ✅ | commit |
+| §2.3 experience lines #13–#16 | ❌ | ✅ | commit |
+| §2.4 Sanne's Friday worry #17 | ❌ | ✅ | commit |
+| §2.5 El Amrani #18, #19 | ❌ | ✅ | commit |
+| §2.5 #20 `{aanvraag_datum}` | ❌ | ❌ still "Aangevraagd op 27 juli. Ontvangstbevestiging op 3 augustus" | **P1**, or keep "27 juli" only if the followed order is made 27 July (1.8a) |
+| §2.6 opener limits #21–#27 | ❌ | ✅ compliance "Prima." 6/29, lifted "Weet je wat" 2/7, commitment "Afgesproken." 7/29: all within T1/T2 | commit |
+| §2.7 Henk's "jongen" #28–#30 | ❌ | ❌ | **P1**, with the `{jongen_meid}` token (UI agent, 2.7b) |
+| §2.7 #31–#36 | ❌ | ✅ (#35: Rachid's `teaches` removed) | commit |
+| §2.8 #37–#39 appointments | ❌ | ✅ | commit |
+| §2.8 #40 Sanne's Monday walk paid off | ❌ | ❌ | P2 |
+| §2.9 Rachid Tue–Thu | ❌ | ❌ | P2 |
+
+**In one line:** the builder's WIP fixes 33 of the 40 line-level items and A3. Open: **A1 and A2 (P0, both outside `dialogs.yaml`)**, A4's record, #20, #28–#30, #40, §2.9. Nothing in batch 1+2 as committed carries a fix yet.
+
+### R2. Batch 2, second look
+
+**Tells per person** (needs spec N5: at least three per person), counted on the builder's file: everyone has 3–4 except **Gert, Femke and Thomas (2 each)**. Every tell matches its person's need. A third tell each, as an authored reply, untagged (route-neutral, like the bank's replies):
+
+| Talk | Add | Line (Dutch) |
+|---|---|---|
+| `gert_klic` (safety) | `replies.open_question.lands` | `{text: "Mijn jongens graven waar de kaart zegt dat het kan. Klopt die kaart niet, dan sta ík er straks naast. Niet jullie.", tell: safety}` |
+| `femke_triage` (time) | `replies.mood.lands` | `{text: "Hoe het gaat? Ik heb vanochtend drie keer koffie gehaald. Drie keer koud laten worden. Zo gaat het.", tell: time}` |
+| `thomas_reclaim` (fairness) | `replies.open_question.lands` | `{text: "Ik verkoop die mensen al twintig jaar zekerheid. Nu moet ik ze bellen dat die zekerheid tijdelijk was. Dat vind ik niet netjes.", tell: fairness}` |
+
+**"Je bent de eerste die vraagt…": a heard formula, and three of them assume a move.** Seven of the 36 `heard` lines are "(Je/Jij/U) bent de eerste die …" (`joost_vacancies`, `petra_batch`, `henk_camera`, `linda_replanning`, `gert_klic`, `mieke_redraw`, `rob_order_rule`), plus Esra's "Fijn dat iemand een keer vraagt…". T1 cannot see it, because each opener runs to a different first comma. Most are fair (a talk that ends *heard* got close to that topic). Three claim a question the player may never have asked ("hoe het met ze gaat": a mood move): rewrite those three, which also breaks the formula.
+
+| # | Where | As committed | Replace with |
+|---|---|---|---|
+| 41 | `joost_vacancies` heard | "Je bent de eerste die vraagt hoe het met ze gaat in plaats van hoeveel ze maken." | "Eerlijk is eerlijk: dat had ik nog tegen niemand gezegd. Ook niet tegen mijn team." |
+| 42 | `esra_agents` heard | "Fijn dat iemand een keer vraagt hoe het met ze gaat." | "Oké. Het is eruit. Mijn mensen weten niet dat ik zo over ze praat, hè. Laat dat zo." |
+| 43 | `gert_klic` heard | "Je bent de eerste van Voltana die vraagt hoe het met mijn jongens gaat." | "Je laat me tenminste uitpraten. Dat doet jullie schadeafdeling niet." |
+
+**A line said twice in one talk.** `esra_agents`: the proposal `status_messages` replies "… Werkvoorbereiding weet zelf niet eens wanneer iets klaar is." and her `open_question` reply opens "Kijk, Werkvoorbereiding weet zelf niet wanneer iets klaar is…". A player who asks and then proposes hears it twice.
+
+| # | Where | As committed | Replace with |
+|---|---|---|---|
+| 44 | `esra_agents` proposal `status_messages` reply | "Dan bellen ze niet. … Als het bericht klopt. Werkvoorbereiding weet zelf niet eens wanneer iets klaar is." | "Dan bellen ze niet. … Als het bericht klopt. Een bericht dat niet klopt, is een telefoontje extra." |
+
+**Checked, no finding:** voices against the sheets (§6 of the four-tier audit) for the ten new people (Marco "mijn mannen"/"Kijk.", Esra "Serieus?"/"Deal.", mevrouw El Amrani's notebook, Henk's years, Dirk's fewest words, Gert "volgens de kaart", Femke "kort gezegd", Rob's *u* and "Conform.", Thomas's lunches, Ilse's ovens); no repeated reveal between batch 2 talks (Mieke's and Gert's graafschade lines are two sides of one event, which is intended); needs match the person-needs spec for all ten; the sector content stands as in §4.
+
+### R3. Scores after the builder's WIP
+
+With the WIP fixes, every talk scored under 25 in §3 now scores **26 or higher on the page**: `linda_wednesday` 27, `sanne_friday` 28, `petra_batch` 28, `marco_day_100` 27; `el_amrani_fourth_call` 28 (not 31: the promise is still unrecorded, Correct 3). With #41–#44, `joost_vacancies` 30, `esra_agents` 30, `gert_klic` 29. **Three Act 0 talks are still unplayable until A1 lands**, whatever their score.
+
+### R4. Checklist update for the builder
+
+1. ⬜ **Commit the WIP fixes** (33 items and A3).
+2. ⬜ **A1** (`world.yaml`: `training_wed` opens Revisie & GIS, `training_thu` opens Meetdata, `connections.planning` goes into the Aansluitingen room; `cast.json`: Rachid, Mieke, Linda; the reachability test). **A2** (`training_mon` open until Anouk's talk).
+3. ⬜ A4's record (agreed fact plus day); #20; #28–#30 once `{jongen_meid}` exists; #41–#44; the three tells.
+4. ⬜ P2: #40, §2.9.
+5. ⬜ Run `test_dialog_routes.gd` after 1–3 (expected unchanged) and T1/T2/T8 in `--check`.
+6. ⬜ Designer: the third pass once 1–3 land, with route numbers if a worktree with an import cache is free.
