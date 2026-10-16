@@ -28,6 +28,8 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 CONTENT_DIR = ROOT / "content"
 DATA_DIR = ROOT / "game" / "data"
+# The floors' models (world.yaml `model`), built by tools/blender/build_office.py.
+OFFICE_ASSETS = ROOT / "game" / "assets" / "office"
 
 
 class ContentError(ValueError):
@@ -1077,6 +1079,11 @@ def check_world(docs: dict[str, Any]) -> None:
             if room is not None and OPEN_FROM_START not in room["opens_with"] and m["id"] not in room["opens_with"]:
                 raise ContentError(f"world.yaml: mission '{m['id']}' leads to {place!r} in room '{room['id']}', "
                                    f"which does not open with it")
+    for f in world["floors"]:
+        if not (OFFICE_ASSETS / f["model"]).is_file():
+            # The game would load the stand-in office for this floor without a word.
+            raise ContentError(f"world.yaml: floor '{f['id']}': model {f['model']!r} does not exist in "
+                               f"{OFFICE_ASSETS.relative_to(ROOT).as_posix()}")
 
 
 # ── kpis.yaml ────────────────────────────────────────────────────────────────
@@ -1338,7 +1345,7 @@ def _validate_dialog(d: dict, where: str) -> None:
     ids = [i["id"] for i in proposals + experiments]
     _check_ids(ids, "proposal and experiment", where)
     hidden = {p["id"] for p in proposals if p.get("hidden")}
-    for layer in d["layers"]:
+    for layer in (layer for layers in _all_layers(d) for layer in layers):
         for pid in layer.get("unlocks", {}).get("proposals", []):
             if pid not in hidden:
                 raise ContentError(f"{where}: unlocks {pid!r}, which is not a hidden proposal")
