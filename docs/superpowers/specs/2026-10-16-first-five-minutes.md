@@ -15,12 +15,12 @@
 | B1 | **De pasfoto**: the creator as the photo for your Voltana badge | 60–120 s | who *you* are | nothing |
 | B2 | **De ontvangst**, Monday 12 October 2026, 08:25: Yvonne prints your badge | 20 s | your name and face are in the world | nothing |
 | B3 | **Ruud haalt je op**: the walk to Aansluitingen, 1e verdieping | 90–150 s | walking (WASD/klik), the camera, the stairs, **the minimap**, **name tags** (he introduces people as you pass) | movement hint (fades), minimap at the top of the stairs, name tags |
-| B4 | **Het bord van Ruud**: the first *Hoe werkt het?* (spanning, stroom, weerstand), skippable | 0–60 s | the game's own name; one picture of flow | nothing |
+| B4 | **Het bord van Ruud**: the first *Hoe werkt het?* (spanning, stroom, weerstand), skippable; a garden hose first, then the real circuit | 0–90 s | the game's own name; one idea: more stroom through the same cable makes it warm | nothing |
 | B5 | **De brief**: why you are here | 15 s | what you are here to do | nothing |
 | B6 | **De rest van je eerste dag**: a named skip to 19:00 | 10 s | time passes when you let it | the clock |
 | B7 | **Anouk, om zeven uur**: the first talk, unruinable | 90–180 s | the meter, listening, that people are people | the talk panel; afterwards the journal (J) |
 
-The first talk starts at about **4 to 4½ minutes** for a player who walks without hurrying and watches the whiteboard (`estimate:` 90 s creator + 20 s + 120 s walk + 45 s board + 25 s). A player who skips the board starts it before minute 4. The mission line, the board, the budget, XP and the belt all come **after** the first talk (§3).
+The first talk starts at about **5½ minutes** for a player who walks without hurrying and follows the whiteboard (`estimate:` 90 s creator + 20 s + 120 s walk + 80 s board + 25 s = 335 s; the board grew from 45 s when the explainer went simple-first with the hose analogy, 2026-10-16). A player who skips the board starts it before minute 4½. The mission line, the board, the budget, XP and the belt all come **after** the first talk (§3).
 
 **What the player can answer at the end** (the acceptance test, §5): *"Ik ben de nieuwe CI-lead bij Voltana. Ik moet uitzoeken waarom mensen zo lang op een aansluiting wachten, te beginnen bij de familie El Amrani. Ik heb Ruud, Sanne, Joost, Marco en Anouk ontmoet."*
 
@@ -140,7 +140,7 @@ That is all. Ruud does not say why. (Gemba readability, PLAN §5.1: the two tray
 
 ### B4 — Het bord van Ruud: *Hoe werkt het?* (spanning, stroom, weerstand)
 
-> **Superseded in part (2026-10-16):** the figure and Ruud's lines between "Leg maar uit" and the last two lines are replaced by `2026-10-16-explainer-spanning-stroom-weerstand.md` (switches and a haspel instead of a resistance slider); the opening choice and the last two lines stay.
+> **Updated (2026-10-16, the "Simple first" rule, PLAN 2.7c):** the figure and Ruud's lines between "Leg maar uit" and the last two lines are those of `2026-10-16-explainer-spanning-stroom-weerstand.md` §4, which is the source of truth; the summary below follows it. The opening choice and the last two lines stay.
 
 Ruud's room. A whiteboard with three words in his handwriting, half wiped from an earlier meeting. He picks up a marker. Two answers appear as the first choice of the game, both fine:
 
@@ -150,18 +150,33 @@ Ruud's room. A whiteboard with three words in his handwriting, half wiped from a
 **[Ik ken het, Ruud]:**
 > **Ruud:** "Mooi. Dan laat ik het op het bord staan. Voor als je het ooit wilt zien." *(→ B5; the explainer is in the codex, K, under "Hoe werkt het?")*
 
-**[Leg maar uit]:** the camera moves to the whiteboard and cross-fades into the explainer (2.7c, the first one; the rules of 2.7c apply: interactive, one or two controls, no quiz, closes back into the room). Ruud's lines run beside it:
+**[Leg maar uit]:** the camera moves to the whiteboard and cross-fades into the explainer (2.7c, the first one; the rules of 2.7c apply: simple first, interactive, one or two controls, no quiz, closes back into the room). **The one idea** the player should be able to say back: *"Hoe meer stroom er door dezelfde kabel moet, hoe warmer die kabel wordt."* One idea per beat; Ruud speaks plain Dutch, short sentences, **no numbers** (the instruments show them); formulas only behind the sheet's folded corner **Laat de rekensom zien**.
 
-> **Ruud:** "Spanning is de druk. Hoe hard de stroom wordt geduwd. Thuis is dat 230 volt."
-> **Ruud:** "Stroom is hoeveel er werkelijk loopt. In ampère."
-> **Ruud:** "En weerstand is wat het tegenhoudt. Hoe meer weerstand, hoe minder er loopt, bij dezelfde druk."
-> *(the control: a slider "Weerstand" on a kettle-sized load; the readout shows stroom = spanning ÷ weerstand)*
-> **Ruud:** "Een waterkoker van tweeduizend watt: zo'n zesentwintig ohm, bijna negen ampère. Draai maar eens aan die weerstand."
-> *(after the player turns it, or after 10 s)*
+*De tuin (the analogy first):* the board shows a buitenkraan, a garden hose on a slanghaspel and three kraantjes, on the same bench where the real circuit will stand.
+
+> **Ruud:** "Vergeet even de elektriciteit. Denk aan een tuinslang." · "De kraan duwt het water de slang in. Dat duwen heet druk." · "Wat verwacht je als je een kraantje opendraait?" *(A1; waits for a kraantje or 10 s)*
+> **Ruud:** "Nu loopt er water. Hoeveel water er per tel doorheen gaat, heet stroom." · "Kijk naar het wieltje op de slang. Draai er nog een open." *(A2)*
+> **Ruud:** "Meer kraantjes open. Meer water door dezelfde slang." · "Kijk naar de drukmeter aan het eind. Waarom zakt die?" *(silence)* "De slang houdt het water een beetje tegen. Dat tegenhouden heet weerstand." *(A3)*
+> **Ruud:** "En duw je heel veel door een smalle slang?" *(silence)* "Dan wordt hij warm. Voel maar." *(A4)*
+
+*De meterkast (the cross-fade, part by part: kraan → groep, slang → kabel, kraantjes → knoppen op de stekkerdoos, wieltje → stroomtang, drukmeter → multimeter):*
+
+> **Ruud:** "Nu hetzelfde. Maar dan echt." *(X)*
+> **Ruud:** "De kraan is nu de meterkast. De slang is de kabel. De kraantjes zijn de knoppen." *(R1)*
+> **Ruud:** "Druk heet hier spanning. Die tellen we in volt." · "Stroom tellen we in ampère. Kijk maar op de tang." *(R2; the readout and the reveal corner appear)*
+> **Ruud:** "Eén verschil. Water loopt de slang uit." · "Stroom niet: die gaat door de kabel heen, en komt weer terug." *(R3: where the analogy stops)*
+> **Ruud:** "Zet de waterkoker eens aan. Wat doet de tang?" *(R4)* → "Dat getal is de stroom." · "Kijk nu naar de meter aan het eind. Waar is dat stukje spanning gebleven?" *(silence)* "In de kabel. Daar wordt het warmte. Net als bij de slang." *(R5)*
+> **Ruud:** "Zet de kachel er eens bij. Hoe warm wordt de kabel, denk je?" *(R6)* → "Meer stroom. En de kabel wordt veel warmer dan je zou denken." · "Dat leerde ik op de MTS. Toen had ik nog haar." *(R7)*
+> **Ruud:** "Pak de dikke haspel eens. Wat zie je?" → "Dikke kabel, net als een dikke slang." · "Een kabel in de straat werkt net zo. Maar soms is hij heel lang. Wat blijft er dan over aan het eind?" *(R8)*
+
+*Back in the room (the close, unchanged):*
+
 > **Ruud:** "Bij ons op kantoor is het net zo. Er staat druk op: mensen willen een aansluiting. Er loopt maar zoveel door. En ergens zit weerstand."
 > **Ruud:** "Waar? Dat weet ik niet. Dat ga jij zien."
 
-**Correctness** (evidence first): Ohm's law, I = U / R. Nominal low voltage in the Netherlands 230 V (NEN-EN 50160, the European voltage quality standard: 230 V ± 10 %). A 2,000 W kettle at 230 V draws I = P / U ≈ 8.7 A and has R = U² / P ≈ 26.5 Ω (a resistive load, so Ohm's law holds). The metaphor is Ruud's, not physics: the board's own caption under the circuit says only the physics.
+Branches (a small load only, an appliance already on, the kachel before R6) and every state rule are in the explainer spec §4. Skippable at every beat (Esc / **[Klaar]** → the close).
+
+**Correctness** (evidence first): the model, every number and its source are in the explainer spec §3.4–3.5 (Ohm's law over the loop with the cable's resistance; 230 V nominal, Netbeheer Nederland / NEN-EN 50160, ±10 % at the connection under the Netcode; a 2,000 W kettle on 25 m of 1,5 mm² cable draws about 8,5 A and the cable keeps about 5 V). The water analogy is a comparison, not physics: Ruud names where it stops (R3), and the codex caption names the rest (a real hose barely warms).
 
 **Nothing handed over:** the last line says there is resistance somewhere and that the player will find it; it names no step.
 
@@ -328,7 +343,7 @@ Today's HUD shows everything from the first frame: VOLTANA, date and time, budge
 3. **Yvonne Kramer** joins `cast.json` (receptie, begane grond; not a dialog target in Phase 2; a walk-around check-in later is fine).
 4. **Two new tokens** for third-person lines about the player: `{haar_hem_speler}`, `{Zij_Hij_speler}` (Marco's leg 5), with `{speler}` and `{hij_zij}` from 2.7b.
 5. **The followed order's date** (`{aanvraag_datum}`) for the letter in B5, from 1.8's dossier.
-6. **The 2.7c explainer spike** should be *this* one (spanning, stroom, weerstand on a kettle), not the transformer: it comes first in the story, it is the simplest physics, and it carries the game's name. The transformer follows in Act II.
+6. **The 2.7c explainer spike** should be *this* one (spanning, stroom, weerstand: a garden hose first, then a meterkast group, a haspel and a stekkerdoos), not the transformer: it comes first in the story, it is the simplest physics, and it carries the game's name. The transformer follows in Act II.
 
 ---
 
@@ -340,7 +355,7 @@ From PLAN 2.7d, made checkable:
    - **what they are there to do:** find out why people wait so long for a connection, starting with the El Amrani family (any wording with *wachten*/*aansluiting*/*El Amrani*/*kijken* counts);
    - **whom they met:** at least **three of the five** (Ruud, Sanne, Joost, Marco, Anouk), with Anouk among them.
    Two of three passing is a pass; a fail sends the beat that lost them back to design (observe where they hesitated: the playtest log, 1.4, records the time per beat).
-2. **The first talk starts within five minutes** of "Nieuw spel" for a player who takes the default path (watches the board, follows Ruud): measured in the playtest log, target ≤ 5:00 (median of the three).
+2. **The first talk starts within five minutes** of "Nieuw spel" for a player who takes the default path (watches the board, follows Ruud): measured in the playtest log, target ≤ 5:00 (median of the three). *Open (2026-10-16):* the simple-first board (B4, 0–90 s) puts the estimate at about 5:35 for a player who follows every prompt. If the playtest misses the target, trim the creator's default path or the walk first; the teaching layer is cut last, and Merijn decides whether the target moves.
 3. **No panel before B7** except the creator and the letter; no budget, XP, belt or mission line before Tuesday (screenshot of every beat, as for every visual task).
 4. **Every beat after the first name can be cut short** (the creator's "Zo is het goed", overtaking Ruud, "Ik ken het, Ruud", the one-click skip, *Afronden* in the talk), and the opening can be skipped whole by a returning player.
 5. **Nothing can be missed for good:** a player who runs straight to Ruud's room meets Sanne, Joost and Marco on Tuesday; one who skips the board finds it in the codex; one who walks past Anouk is called by her.
