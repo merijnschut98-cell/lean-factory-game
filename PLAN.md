@@ -144,6 +144,19 @@ Each phase ends in a **playable** that Merijn plays before the next phase starts
   - **Bril:** geen · rond metaal · zwart rechthoekig · transparant montuur · groot rond.
   - **Kleding** (a CI lead at a grid operator, office look; PPE goes over it outside): overshirt en chino · trui met kraag · blazer op sneakers · quarter-zip · Voltana-polo.
   Built modular, never one glb per combination: hair, beard and glasses as small swappable meshes on the player rig, colours as material parameters, so the cast builder (`cast.json`) and the method Merijn picks (§7 Q1) must support attachment points. The look is stored in the save (`player.look`: a dict of trait → option id, validated on load; an unknown id falls back to the first option, never a crash). The look can be changed later from the pause menu, free, with no story cost. The first name and pronoun feed dialog text through tokens (`{speler}`, `{hij_zij}`); the dialog lines already address the player as "je", so only third-person lines need the token (an audit task for the dialog designer). Tests: every trait has 2–5 options, every option id resolves to a mesh or colour, save round-trip, a corrupted look falls back.
+- ⬜ 2.7c **"Hoe werkt het?" — zoom-in explainers** (Merijn, 2026-10-16). When the game introduces something technical, the camera zooms into the real object in the world (a transformer in the trafohuisje, a cable joint at a dig, a meter in a meterkast) and cross-fades into a detailed, interactive isometric cutaway that shows how it works. Built with the `anatomy` skill as the authoring tool. Design rules:
+  - **Topics**, in the order the story needs them:
+    - **basics in the introduction:** spanning, stroom and weerstand (the game's own name);
+    - **components:** weerstand, condensator, spoel, transformator, generator, kabel en mof, slimme meter, trafohuisje, and net capacity/congestion;
+    - **Lean:** the bottleneck and flow, a kanban loop, andon;
+    - **IT, in the IT chapter:** a CI/CD pipeline, a release train.
+    Only where a picture teaches better than words.
+  - **Explain the how, never the answer.** An explainer shows how a transformer heats under load; it never says which of the mission's transformers is overloaded or which countermeasure fits (the RPG rule: nothing handed over).
+  - **Interactive, not a slideshow:** one or two controls the player can turn (load, voltage, WIP limit) with a live readout, so they learn by doing.
+  - **Immersion:** opened from the object in the world or from a person (Henk explains at the opleidingsterrein), not from a menu; it closes back into the world. Every explainer is kept in the codex (K) to revisit.
+  - **Respect the player's time:** always optional and skippable, no quiz, no timer.
+  - **Evidence first:** the physics and numbers are correct and marked with their source; the source verifier checks each one.
+  - **Technique, to settle in a spike first:** anatomy outputs SVG plus JS, and Godot does not run HTML. Proposal: anatomy designs the figure; the layers are exported as SVG, imported as Godot textures, animated with Tween/AnimationPlayer, with the readout as a Godot label. Spike: one explainer (the transformer, needed in Act II) end to end, and a test that each explainer's parts load. Alternative to judge in the spike: pre-rendered frames.
 - ⬜ 2.8 Phase gate: autoplay on the full tier 1; code review; Merijn's first full playtest → a tuning backlog.
 
 ### Phase 3 — Zichtbaar maken: tier 2 and the campus ⬜
@@ -342,6 +355,8 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 ---
 
 ## 9. Decisions Made
+
+- **Zoom-in explainers built with the anatomy skill (Merijn, 2026-10-16).** When something technical is new, the player zooms into the object and gets an in-depth, interactive explanation of how it works: electricity basics, components (resistor, capacitor, inductor, transformer, generator), and Lean and IT concepts where it helps. Planned as 2.7c, starting with a one-explainer spike.
 
 - **A minimap (Merijn, 2026-10-16).** Needed once the office grows and the town arrives. It shows where the next mission is, or points the way when the target is too far or on another floor. Planned as 2.1b, growing with each new floor, building and the town.
 
