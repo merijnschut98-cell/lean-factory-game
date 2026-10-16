@@ -3,7 +3,10 @@ extends Node3D
 ## One of the people in the office, made from a cast.json entry: their model (or a plain
 ## stand-in while it is not built) in a pose (sit at a desk typing, stand idle, stand
 ## talking, or walk a route back and forth), a name tag shown on hover, and the
-## walk-around energy bar over their head while they need a talk. Faces -Z.
+## walk-around energy bar over their head while they need a talk (a quiet line in the
+## tag's colour with a "…" beside it, audit U17). Where they are is a spot that
+## OfficePeople resolves: their desk, or between 12:00 and 13:00 their lunch spot when
+## they have one. The contact centre wears headsets. Faces -Z.
 
 const POSES: Array[String] = ["sit", "idle", "talk", "walk"]
 ## Seconds a walker stands at each end of their route.
@@ -14,8 +17,14 @@ const STANDING_HEIGHT := 1.85
 const SEATED_HEIGHT := 1.4
 ## How close (m) to its axis the cursor's ray must pass to point at a person.
 const PICK_RADIUS := 0.35
-## The bar's size as a share of its distance to the camera: one size on screen at any zoom.
-const BAR_SIZE := Vector2(0.065, 0.01)
+## The bar's size as a share of its distance to the camera: one size on screen at any
+## zoom. A thin line: the walk-around bar must not look like a game's health bar (U17).
+const BAR_SIZE := Vector2(0.06, 0.0036)
+## The line in the name tag's colour, over a faint track in the tag's outline colour.
+const BAR_LINE := Color(0.93, 0.94, 0.96)
+const BAR_TRACK := Color(0.07, 0.17, 0.33)
+## The check-in mark's place (px) right of the bar's middle.
+const MARK_OFFSET := Vector2(66, 4)
 const BAR_SHADER := """
 shader_type spatial;
 render_mode unshaded, depth_test_disabled, cull_disabled, shadows_disabled;
@@ -28,17 +37,28 @@ void vertex() {
 	VERTEX *= length((VIEW_MATRIX * MODEL_MATRIX[3]).xyz);
 }
 void fragment() {
-	bool edge = UV.x < 0.02 || UV.x > 0.98 || UV.y < 0.14 || UV.y > 0.86;
-	vec3 level = mix(low_color.rgb, high_color.rgb, smoothstep(0.25, 0.75, fill));
-	ALBEDO = edge ? vec3(0.96) : (UV.x < fill ? level : back_color.rgb);
-	ALPHA = edge ? 1.0 : 0.92;
+	bool on = UV.x < fill;
+	ALBEDO = on ? mix(low_color.rgb, high_color.rgb, smoothstep(0.25, 0.75, fill)) : back_color.rgb;
+	ALPHA = on ? 0.9 : 0.45;
 }
 """
+## The contact centre's headset, in the skeleton's rest space from the Head bone's origin
+## (m, estimates by eye on the pack's heads): the band's centre and radius.
+const HEADSET_CENTRE := Vector3(0, 0.1, 0)
+const HEADSET_RADIUS := 0.098
+const HEADSET_COLOR := Color(0.12, 0.12, 0.14)
 
 var id := ""
 var display_name := ""
 var role := ""
 var pose := "idle"
+## Where they work on this floor: {at, face, pose[, route]}; {} when their desk is on
+## another floor.
+var desk := {}
+## Where they lunch: null when they lunch at their desk; {} on another floor; else a spot.
+var lunch: Variant = null
+## Whether it is lunchtime and they lunch away from their desk.
+var at_lunch := false
 ## Present only while one of these missions is active ([] = always).
 var missions: Array[String] = []
 ## "coach": using them opens the coach, not a talk.
@@ -52,18 +72,20 @@ var pace := CharacterModel.FALLBACK_PACE
 var model: Node3D
 var tag: Label3D
 var bar: MeshInstance3D
+## The check-in mark beside the bar.
+var mark: Label3D
 var _animations: AnimationPlayer
+## The spot they were last settled at.
+var _settled := {}
 
 
-## A person from a cast entry ({id, name, role, office: {pose, missions, talk}}); where
-## they stand is set by OfficePeople.
+## A person from a cast entry ({id, name, role, office: {pose, missions, talk, headset}});
+## where they are is set by OfficePeople (settle).
 static func create(entry: Dictionary) -> OfficePerson:
 	var p := OfficePerson.new()
 	var office: Dictionary = entry.get("office", {})
 	p.id = str(entry["id"])
 	p.name = p.id.validate_node_name()
-	p.display_name = str(entry.get("name", p.id))
-	p.role = str(entry.get("role", ""))
 	p.pose = str(office.get("pose", "idle")) if str(office.get("pose", "")) in POSES else "idle"
 	for m: Variant in office.get("missions", []):
 		p.missions.append(str(m))
@@ -76,12 +98,49 @@ static func create(entry: Dictionary) -> OfficePerson:
 	p._animations = CharacterModel.animations(p.model)
 	if p._animations != null:
 		p.pace = CharacterModel.walk_pace(p.model)
-	p.tag = _tag(p.display_name + ("\n" + p.role if not p.role.is_empty() else ""), p.height() + 0.3)
+	if office.get("headset", false):
+		_headset(p.model)
+	p.tag = _tag("", 32)
 	p.add_child(p.tag)
-	p.bar = _bar(p.height() + 0.12)
+	p.bar = _bar()
 	p.add_child(p.bar)
+	p.mark = _tag("…", 40)
+	p.mark.name = "CheckInMark"
+	p.mark.offset = MARK_OFFSET
+	p.add_child(p.mark)
+	p.name_as(str(entry.get("name", p.id)), str(entry.get("role", "")))
+	p._float_overhead()
 	p._play(p.pose)
 	return p
+
+
+## Their name and role on the tag (GameSession.person's when the session knows them).
+func name_as(person_name: String, person_role: String) -> void:
+	display_name = person_name
+	role = person_role
+	tag.text = display_name + ("\n" + role if not role.is_empty() else "")
+
+
+## Go to `spot` ({at, face, pose[, route]}; {} or the spot they are at leaves them as
+## they are): stand or sit there in its pose; a route is walked from its start.
+func settle(spot: Dictionary) -> void:
+	if spot.is_empty() or spot == _settled:
+		return
+	_settled = spot
+	route = spot.get("route", PackedVector3Array())
+	_leg = 1
+	_wait = 0.0
+	place(spot["at"], spot["face"])
+	if spot["pose"] != pose:
+		pose = spot["pose"]
+		_float_overhead()
+		_play(pose)
+
+
+## Where they are at this hour: their lunch spot at lunchtime when they lunch away from
+## their desk ({} when that is on another floor), else their desk.
+func spot_at(lunchtime: bool) -> Dictionary:
+	return lunch if lunchtime and lunch is Dictionary else desk
 
 
 ## Stand at `at` (office space, on the floor) facing `direction`.
@@ -110,10 +169,12 @@ func show_tag(on: bool) -> void:
 	tag.visible = on
 
 
-## The energy bar from GameSession.energy_of: {energy (0–1), needs_talk}. Shown only while
-## they need a talk; {} (no such accessor, an unknown person) hides it.
+## The energy bar from GameSession.energy_of: {energy (0–1), needs_talk}. Shown, with the
+## check-in mark, only while they need a talk; {} (no such accessor, an unknown person)
+## hides it.
 func show_energy(state: Dictionary) -> void:
 	bar.visible = bool(state.get("needs_talk", false))
+	mark.visible = bar.visible
 	if bar.visible:
 		(bar.material_override as ShaderMaterial).set_shader_parameter("fill", clampf(float(state.get("energy", 0.5)), 0.0, 1.0))
 
@@ -153,6 +214,13 @@ func walk(delta: float) -> void:
 	place(position + to.normalized() * step, to)
 
 
+## The tag, the bar and the mark over their head, at the height of their pose.
+func _float_overhead() -> void:
+	tag.position.y = height() + 0.3
+	bar.position.y = height() + 0.12
+	mark.position.y = bar.position.y
+
+
 func _play(animation: String) -> void:
 	if _animations != null and _animations.has_animation(animation):
 		_animations.play(animation, 0.25)
@@ -172,16 +240,15 @@ static func _stand_in(seated: bool) -> Node3D:
 	return root
 
 
-static func _tag(text: String, at: float) -> Label3D:
+static func _tag(text: String, font_size: int) -> Label3D:
 	var l := Label3D.new()
 	l.name = "NameTag"
 	l.text = text
-	l.position.y = at
 	l.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	l.no_depth_test = true
 	l.fixed_size = true
 	l.pixel_size = 0.0006
-	l.font_size = 32
+	l.font_size = font_size
 	l.outline_size = 10
 	l.modulate = Color.WHITE
 	l.outline_modulate = Palette.HUD_BAR
@@ -189,21 +256,74 @@ static func _tag(text: String, at: float) -> Label3D:
 	return l
 
 
-static func _bar(at: float) -> MeshInstance3D:
+static func _bar() -> MeshInstance3D:
 	var quad := QuadMesh.new()
 	quad.size = BAR_SIZE
 	var shader := Shader.new()
 	shader.code = BAR_SHADER
 	var mat := ShaderMaterial.new()
 	mat.shader = shader
-	mat.set_shader_parameter("low_color", Color(0.93, 0.55, 0.16))
-	mat.set_shader_parameter("high_color", Palette.VOLTANA_GREEN)
-	mat.set_shader_parameter("back_color", Color(0.12, 0.14, 0.18))
+	mat.set_shader_parameter("low_color", BAR_LINE)
+	mat.set_shader_parameter("high_color", BAR_LINE)
+	mat.set_shader_parameter("back_color", BAR_TRACK)
 	var bar := MeshInstance3D.new()
 	bar.name = "EnergyBar"
 	bar.mesh = quad
 	bar.material_override = mat
-	bar.position.y = at
 	bar.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	bar.visible = false
 	return bar
+
+
+## A headset on `model`'s head that follows its Head bone: a band over the crown, an ear
+## cup each side and a boom to the mouth (plain meshes; nothing without a Head bone).
+static func _headset(model: Node3D) -> void:
+	var skeleton: Skeleton3D = model.find_children("*", "Skeleton3D", true, false).pop_front()
+	var head := skeleton.find_bone("Head") if skeleton != null else -1
+	if head < 0:
+		return
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = HEADSET_COLOR
+	mat.roughness = 0.5
+	var c := HEADSET_CENTRE
+	var r := HEADSET_RADIUS
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var w := Vector3(0, 0, 0.011)
+	for k in 12:   # the band: a flat strip from ear to ear
+		var p0 := c + Vector3(cos(PI * k / 12.0), sin(PI * k / 12.0), 0) * r
+		var p1 := c + Vector3(cos(PI * (k + 1) / 12.0), sin(PI * (k + 1) / 12.0), 0) * r
+		for v: Vector3 in [p0 - w, p1 - w, p1 + w, p0 - w, p1 + w, p0 + w]:
+			st.add_vertex(v)
+	st.generate_normals()
+	var parts: Array[MeshInstance3D] = [_part(st.commit(), mat, Transform3D.IDENTITY)]
+	var cup := CylinderMesh.new()
+	cup.top_radius = 0.032
+	cup.bottom_radius = 0.032
+	cup.height = 0.022
+	for side: float in [-1.0, 1.0]:
+		parts.append(_part(cup, mat, Transform3D(Basis(Vector3.BACK, PI / 2), c + Vector3(side * r, 0, 0))))
+	var stick := CapsuleMesh.new()
+	stick.radius = 0.005
+	stick.height = 0.12
+	var from := c + Vector3(r, -0.01, 0.01)
+	var to := c + Vector3(0.035, -0.085, 0.085)
+	parts.append(_part(stick, mat, Transform3D(Basis.looking_at(to - from) * Basis(Vector3.RIGHT, PI / 2), (from + to) / 2)))
+	var attach := BoneAttachment3D.new()
+	attach.name = "Headset"
+	attach.bone_name = "Head"
+	skeleton.add_child(attach)
+	var upright := Node3D.new()   # undo the bone's own turn: the parts are placed head-up
+	upright.transform = Transform3D(skeleton.get_bone_global_rest(head).basis.inverse(), Vector3.ZERO)
+	attach.add_child(upright)
+	for part in parts:
+		upright.add_child(part)
+
+
+static func _part(mesh: Mesh, mat: Material, at: Transform3D) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	mi.mesh = mesh
+	mi.material_override = mat
+	mi.transform = at
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	return mi

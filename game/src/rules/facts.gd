@@ -19,9 +19,12 @@ extends RefCounted
 ## fork_first:<group>:<mission>, flag:<name>; the dialog system's
 ## heard:/committed:/complied:/partial:/blocked:<dialog>; checked:<problem>
 ## (its Check passed) and accepted:<mission> (taken on, maybe done since),
-## both derived live by Missions.knows.
+## both derived live by Missions.knows; forecast_positive:<kpi_board | a
+## Check KPI> (a quarterly review's forecast beat the habit, or a Check's
+## forecast moved its predicted KPI; GameSession records it).
 const KINDS: Array[String] = ["done", "failed", "chose", "standardised", "poor_fix", "repaired", "fork_first", "flag",
-	"heard", "committed", "complied", "partial", "blocked", "checked", "accepted"]
+	"heard", "committed", "complied", "partial", "blocked", "checked", "accepted", "forecast_positive"]
+const FORECAST_POSITIVE := "forecast_positive:"
 ## Live measures an atom can compare with ">=".
 const MEASURES: Array[String] = ["maturity", "reputation"]
 

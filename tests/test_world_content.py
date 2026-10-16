@@ -31,10 +31,41 @@ def test_the_real_building_is_valid_with_three_floors_and_the_planned_rooms():
     assert by_floor == {
         "ground": ["Ontvangst", "Klantcontactcentrum", "Kantine"],
         "first": ["Aansluitingen", "Revisie & GIS", "Meetdata & registratie"],
-        "second": ["Directie & Obeya", "Netstrategie", "Congestiedesk", "MT-kamer", "Kantoor Ruud"],
+        "second": ["Directie & Obeya", "Netstrategie", "Congestiedesk", "MT-kamer", "Directeur Netbeheer"],
     }
     assert world["start_floor"] == "first"
     assert _room(world, "connections")["opens_with"] == ["start"], "the existing floor is open from the start"
+
+
+def test_ruuds_office_upstairs_stays_shut_until_a_mission_opens_the_2e():
+    # Merijn, 2026-10-16 (Q10): Ruud sits with Aansluitingen in Act 0-I by choice.
+    assert _room(REAL["world"], "ruud_office")["opens_with"] == []
+
+
+def _room_of(world: dict, place: str) -> dict | None:
+    return next((r for r in world["rooms"] if place in r["places"]), None)
+
+
+def test_every_talk_is_reachable_when_its_mission_is_on():
+    # A talk's person sits in a room: the room must be open while the talk's mission is
+    # (opened by it, or by a mission before it in the same chain), or the talk is unreachable.
+    docs = bc.load_content()
+    world, dialogs = docs["world"], docs["dialogs"]
+    people = {p["id"]: p for p in dialogs["people"]}
+    for talk in dialogs["dialogs"]:
+        mission = talk.get("mission")
+        room = _room_of(world, people[talk["person"]]["place"])
+        if not mission or room is None:
+            continue
+        assert "start" in room["opens_with"] or mission in room["opens_with"], \
+            f"{talk['id']}: {talk['person']} sits in {room['id']}, which does not open with {mission}"
+
+
+def test_the_week_opens_the_rooms_its_talks_and_tour_need():
+    world = REAL["world"]
+    assert "training_mon" in _room(world, "canteen")["opens_with"], "Ruud's tour shows the kantine"
+    assert "training_wed" in _room(world, "revision_gis")["opens_with"], "Mieke's Wednesday talk (D9 audit P0)"
+    assert "training_thu" in _room(world, "meter_data")["opens_with"], "Petra's Thursday talk (D9 audit P0)"
 
 
 def test_only_the_way_in_and_the_first_teams_are_open_from_the_start():
@@ -61,8 +92,10 @@ def test_the_world_file_is_optional_for_a_content_set(tmp_path: Path):
     (lambda w: _room(w, "revision_gis").update(opens_with=["fix_revision_backlog"]),
      "mission 'fix_digging_damage' leads to 'connections.revision' in room 'revision_gis', which does not open with it"),
     (lambda w: w["rooms"].append({"id": "attic", "floor": "second", "name": "Zolder", "places": [], "opens_with": []}) or
-     w["floors"].append({"id": "roof", "level": 3, "name": "Dak", "model": "office_roof.glb"}),
+     w["floors"].append({"id": "roof", "level": 3, "name": "Dak", "model": "office.glb"}),
      "floor 'roof' has no rooms"),
+    # Phase 1 review S5: a typo in a model would load the stand-in office.
+    (lambda w: w["floors"][2].update(model="office_secnd.glb"), "office_secnd.glb.*does not exist"),
 ])
 def test_world_errors_are_caught(mutate, message):
     with pytest.raises(bc.ContentError, match=message):

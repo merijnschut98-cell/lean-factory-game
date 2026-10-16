@@ -13,6 +13,8 @@ const PEOPLE_HEADING := "Mensen hier"
 const TALK := "Praat met %s"
 const NOTHING_TO_SAY := "heeft nu niets met je te bespreken"
 const WANTS_A_WORD := "  (kan wel een goed gesprek gebruiken)"
+## The team's questions, named apart from a talk with a person (U18).
+const QUESTIONS := "Korte vragen aan het team  (%s per vraag)"
 
 ## A person here was asked for a talk (GameUI opens the dialog).
 signal talk_requested(person_id: String)
@@ -71,6 +73,15 @@ func audit() -> String:
 		else UiText.audit_result(result, UiText.problem_names(session))
 	_record(UiText.AUDIT_HEADING, text)
 	return text
+
+
+## Write the standard for a fix held here (an hour, Region.STANDARDISE_BUDGET):
+## "" or the refusal code; the result shows at the top.
+func standardise(problem_id: String) -> String:
+	var refused := session.standardise(problem_id)
+	_record(session.region.problems[problem_id].name if session.region.problems.has(problem_id) else problem_id,
+		UiText.place_error(refused) if not refused.is_empty() else tr(UiText.STANDARDISED))
+	return refused
 
 
 ## Plan a weekly routine here. Returns the Dutch result.
@@ -154,11 +165,15 @@ func _tools(parent: Node) -> void:
 ## The fixes held here and the routines that apply (none: no card).
 func _sustain(parent: Node) -> void:
 	var actions := sustain_actions()
-	if actions.is_empty():
+	var fixes := SustainView.fixes(session, place)
+	if actions.is_empty() and fixes.is_empty():
 		return
 	var card := add_card(parent, "Borging op deze plek")
-	for id in SustainView.fixes(session, place):
+	for id in fixes:
 		SustainView.add_fix(card, session, id, false)
+		if not session.sustain_of(id)["standardised"]:
+			card.add_child(_small_button(tr(UiText.STANDARDISE_BUTTON) % UiText.money(Region.STANDARDISE_BUDGET),
+				standardise.bind(id)))
 	var labels := {
 		"audit": UiText.AUDIT_BUTTON % UiText.duration(Sustain.AUDIT_MINUTES),
 		"plan_routine": UiText.PLAN_BUTTON % UiText.routine_hours(),
@@ -169,7 +184,7 @@ func _sustain(parent: Node) -> void:
 
 
 func _questions(parent: Node) -> void:
-	var questions := add_card(parent, "Vraag het team  (%s per gesprek)" % UiText.duration(Investigation.TOOLS["conversation"]["minutes"]))
+	var questions := add_card(parent, tr(QUESTIONS) % UiText.duration(Investigation.TOOLS["conversation"]["minutes"]))
 	for q: String in Investigation.QUESTIONS:
 		var b := _small_button(UiText.question(q), ask.bind(q))
 		b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

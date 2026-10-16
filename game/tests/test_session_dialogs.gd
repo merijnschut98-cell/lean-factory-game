@@ -160,6 +160,7 @@ func test_walking_around_shows_who_is_low_on_energy() -> void:
 	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
 	assert_eq(s.energy_of("ahmed"), {"energy": 0.42, "needs_talk": false}, "low, but Henk is still there")
 	s.missions.done_once["save_henks_knowledge"] = true
+	s.missions.opened_at["save_henks_knowledge"] = s.region.net.time - SimCalendar.days(56 + 16)  # the farewell was 16 days ago
 	s.ask_coach()
 	assert_eq(s.energy_of("ahmed"), {"energy": 0.42, "needs_talk": true})
 	assert_eq(s.people_at("outages.locate")[0]["energy"], 0.42)
@@ -197,9 +198,9 @@ func test_talk_lines_fill_the_player_s_and_the_dossier_s_tokens() -> void:
 	var born := GameSession.date_of(s.followed.born)
 	assert_eq(s.fill_tokens("Op {aanvraag_datum}."), "Op %d %s." % [born["day"], GameSession.MONTH_NAMES[born["month"] - 1]])
 	assert_eq(s.fill_tokens("Dag, {jongen_meid}."), "Dag, meid.", "the placeholder's body until the creator sets one")
-	s.player_body = "man"
+	s.player_body = "m"
 	assert_eq(s.fill_tokens("Dag, {jongen_meid}."), "Dag, jongen.")
-	s.player_body = "vrouw"
+	s.player_body = "f"
 	s.missions.done_once["fix_wrong_joint"] = true
 	assert_eq(s.accept("save_henks_knowledge"), "")
 	var opened := s.start_dialog("henk")
@@ -214,7 +215,61 @@ func test_the_dagstart_names_an_open_checkin() -> void:
 	assert_eq(s.checkin_prompts(), [])
 	s.missions.done_once["save_henks_knowledge"] = true
 	s.ask_coach()
+	assert_eq(s.checkin_prompts(), [], "Henk's farewell has not come yet (audit C11)")
+	s.missions.opened_at["save_henks_knowledge"] = s.region.net.time - SimCalendar.days(56 + 16)
+	s.ask_coach()
 	var lines := s.checkin_prompts()
 	assert_eq(lines.size(), 1)
 	assert_eq([lines[0]["person"], lines[0]["name"]], ["ahmed", "Ahmed Bouzid"])
 	assert_false(str(lines[0]["line"]).is_empty())
+
+
+
+## A check-in counts days from a dated beat (drie winters S2, audit C11): the
+## session hands People the beats Missions knows.
+func test_a_checkin_counts_days_from_a_dated_beat() -> void:
+	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
+	var henk: MissionDef = s.missions.defs["save_henks_knowledge"]
+	s.missions.done_once[henk.id] = true
+	var ahmed := func() -> bool:
+		return s.people_at(s.people.persons["ahmed"].place).filter(
+			func(p: Dictionary) -> bool: return p["id"] == "ahmed")[0]["has_dialog"]
+	assert_false(ahmed.call(), "Henk's mission never opened: no farewell yet")
+	s.missions.opened_at[henk.id] = s.region.net.time - SimCalendar.days(henk.deadline_days + 15)
+	assert_false(ahmed.call(), "fifteen days after the farewell")
+	s.missions.opened_at[henk.id] -= SimCalendar.days(1)
+	assert_true(ahmed.call(), "sixteen days after")
+
+
+## A partial agreement speaks up when its condition comes true (audit C15),
+## as an event the HUD toasts.
+func test_a_beat_line_reaches_the_events() -> void:
+	var s := _silo()
+	s.people.outcomes["joost_output_kpi"] = "partial"
+	s.people.outcomes["sanne_kpi"] = "partial"
+	s.pass_time(1)
+	s.drain_events()
+	s.people.outcomes["frank_kpi_targets"] = "commitment"
+	s.pass_time(1)
+	var lines := s.drain_events().filter(func(e: Dictionary) -> bool: return e["type"] == "beat_line")
+	assert_eq(lines.map(func(e: Dictionary) -> String: return e["person"]), ["joost", "sanne"], "audit C15")
+	assert_eq(UiText.event(lines[0], {}), "Joost van Dijk: “Frank heeft getekend. Nu sta ik er ook echt achter.”")
+
+
+
+## Henk's last week, then his farewell (scripts §5, audit C11): his talk is
+## open in the five days before it, he is gone after it, and only then does
+## Ahmed's grief come up, sixteen days on.
+func test_henk_s_last_week_then_ahmed_s_grief() -> void:
+	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
+	s.missions.done_once["save_henks_knowledge"] = true
+	s.missions.progress["save_henks_knowledge"] = {"status": "completed", "asks": {}, "seen": {}}
+	var farewell := func(days_ago: int) -> void:
+		s.missions.opened_at["save_henks_knowledge"] = s.region.net.time - SimCalendar.days(56 + days_ago)
+		s.pass_time(1)
+	farewell.call(-3)
+	assert_eq(s.people.dialog_for("henk", s._world(s.people.persons["henk"])).id, "henk_last_week", "three days left")
+	farewell.call(0)
+	assert_true(s.people.has_left("henk"), "retired on his day")
+	assert_true(s.checkin_prompts().all(func(p: Dictionary) -> bool: return p["person"] != "henk"))
+	assert_false(s.people_at("outages.locate").any(func(p: Dictionary) -> bool: return p["id"] == "henk"))

@@ -84,6 +84,10 @@ var teaches := PackedStringArray()
 ## Days to complete from when the mission opens (a real event: the clock runs
 ## whether or not the player takes it on); -1: no deadline.
 var deadline_days := -1
+## A dated story beat this mission's deadline marks (drie winters S2): it
+## falls on the deadline's day whether the mission was done, failed or never
+## taken on (Henk retires on his day), e.g. henk_farewell; "" for none.
+var deadline_beat: String
 ## Countermeasures a missed deadline closes for good (Henk's knowledge transfer).
 var fail_closes := PackedStringArray()
 var reward_xp := 0
@@ -150,6 +154,7 @@ static func from_dict(d: Dictionary) -> MissionDef:
 	m.setup = setup.duplicate(true) if setup is Array else []
 	m.deadline_days = int(d.get("deadline_days", -1))
 	m.fail_closes = PackedStringArray(d.get("fail_closes", []))
+	m.deadline_beat = str(d.get("deadline_beat", ""))
 	var rewards := JsonFile.dict_or_empty(d.get("rewards"))
 	m.reward_xp = int(rewards.get("xp", 0))
 	m.reward_budget = int(rewards.get("budget", 0))
@@ -172,6 +177,8 @@ static func from_dict(d: Dictionary) -> MissionDef:
 		m.error = "mission %s: an observe goal needs places" % m.id
 	elif m.goal_type == "talk_to" and (m.goal_dialog.is_empty() or not m.goal_outcome in TALK_OUTCOMES):
 		m.error = "mission %s: a talk_to goal needs a dialog and an outcome (partial | commitment)" % m.id
+	elif not m.deadline_beat.is_empty() and m.deadline_days < 0:
+		m.error = "mission %s: a deadline_beat needs deadline_days" % m.id
 	elif not m.setup.is_empty() and m.kind != "training":
 		m.error = "mission %s: only a training day has a setup" % m.id
 	return m

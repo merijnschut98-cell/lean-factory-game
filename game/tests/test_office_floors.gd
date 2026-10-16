@@ -6,10 +6,11 @@ extends TestCase
 const SCENE := "res://src/world/office/office.tscn"
 
 
-func _office() -> Office:
+## A returning player's game (the training week done), or the week's Monday (`training`).
+func _office(training := false) -> Office:
 	var office: Office = load(SCENE).instantiate()
 	office.seed_value = 11
-	office.training = false
+	office.training = training
 	office.build()
 	return office
 
@@ -101,19 +102,24 @@ func test_the_1e_keeps_its_markers_where_they_were() -> void:
 		assert_true(m.has(key) and _at(m[key]).distance_to(expected[key]) < 0.01, "%s stays put" % key)
 
 
-func test_the_peoples_desks_resolve_on_their_floor() -> void:
+func test_the_peoples_desks_and_lunch_chairs_resolve_on_their_floor() -> void:
 	var office := _office()
-	for entry in CharacterModel.cast():
-		var spot: Dictionary = entry.get("office", {})
-		if spot.has("seat"):
-			assert_true(office.find_marker(str(spot["seat"]) + "_desk") != null, "%s's desk" % entry["id"])
-			assert_true(office.find_marker(str(spot["seat"]) + "_chair") != null, "%s's chair" % entry["id"])
-			assert_true(office.people.person(entry["id"]) != null, "%s is placed" % entry["id"])
+	for f in office.floors.building.floors:
+		office.floors.go_to(f["id"], "lift", true)
+		for entry in CharacterModel.cast():
+			var spot: Dictionary = entry.get("office", {})
+			var lunch: Dictionary = spot.get("lunch", {})
+			if spot.has("seat") and office.floors.here(spot):
+				assert_true(office.find_marker(str(spot["seat"]) + "_desk") != null, "%s's desk" % entry["id"])
+				assert_true(office.find_marker(str(spot["seat"]) + "_chair") != null, "%s's chair" % entry["id"])
+				assert_true(office.people.person(entry["id"]) != null, "%s is placed" % entry["id"])
+			if lunch.has("chair") and office.floors.here(lunch):
+				assert_true(office.find_marker(str(lunch["chair"])) != null, "%s's lunch chair" % entry["id"])
 	office.free()
 
 
 func test_only_the_rooms_a_mission_needs_are_open() -> void:
-	var office := _office()
+	var office := _office(true)   # Monday of the training week
 	assert_eq(office.floors.floor_id, "first")
 	assert_true("connections" in office.floors.open and "reception" in office.floors.open, "open from the start")
 	assert_false("revision_gis" in office.floors.open, "no mission needs Revisie & GIS yet")
@@ -134,7 +140,7 @@ func test_only_the_rooms_a_mission_needs_are_open() -> void:
 
 
 func test_a_shut_door_says_so() -> void:
-	var office := _office()
+	var office := _office(true)
 	var door := office.interactable("door:meter_data")
 	assert_eq(office.prompt_for(door), "E — Meetdata & registratie: dicht")
 	office.interact(door)
@@ -164,7 +170,9 @@ func test_the_lift_takes_the_same_player_to_another_floor() -> void:
 	assert_true(player.active, "and walk on")
 	assert_true(office.interactable("door:contact_centre") != null, "the begane grond's points")
 	assert_eq(office.interactable("obeya"), null, "not the 1e's")
-	assert_true(office.people.people.is_empty(), "nobody of the 1e is down here")
+	assert_eq(office.people.person("joost"), null, "nobody of the 1e's desks is down here")
+	assert_false(office.people.people.any(func(p: OfficePerson) -> bool: return p.visible),
+		"the Klantcontactcentrum is shut and it is not lunchtime: nobody about")
 	assert_true(office.rig.bounds.has_point(Vector2(player.position.x, player.position.z)), "the camera follows")
 	office.free()
 
@@ -213,7 +221,7 @@ func test_walking_onto_the_stairs_takes_them_and_walking_past_does_not() -> void
 
 
 func test_the_map_switches_floors_and_shows_the_rooms() -> void:
-	var office := _office()
+	var office := _office(true)   # Monday: two rooms on the 1e still shut
 	office.ui.toggle_map()
 	var map := office.ui.office_map
 	assert_eq(map.floor_here, "first")

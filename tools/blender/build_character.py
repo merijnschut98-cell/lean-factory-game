@@ -8,7 +8,7 @@ reads too. Two methods (Merijn, 2026-10-16, PLAN 1.3a):
 Run with Blender's Python module (see tools/blender/README.md):
 
     .bvenv/bin/python tools/blender/build_character.py                 # every glb from the pack
-    .bvenv/bin/python tools/blender/build_character.py --only joost --parts   # + the creator parts
+    .bvenv/bin/python tools/blender/build_character.py --creator      # the creator's bodies and parts
     .bvenv/bin/python tools/blender/build_character.py --only henk --pose-sheet /tmp/sheet.png
     .bvenv/bin/python tools/blender/build_character.py --method script --no-render
 
@@ -838,7 +838,8 @@ def outfit_parts(body: Body) -> list[Part]:
 
 # =========================================================================== textures
 
-TEX_SIZE = {"pique": 0.1, "denim": 0.18, "twill": 0.15, "oxford": 0.12, "wool": 0.2, "leather": 0.15, "hair": 0.12}
+TEX_SIZE = {"pique": 0.1, "denim": 0.18, "twill": 0.15, "oxford": 0.12, "wool": 0.2, "leather": 0.15, "hair": 0.12,
+            "knit": 0.2}
 
 
 def _png(name: str, arr: np.ndarray) -> None:
@@ -889,6 +890,15 @@ def make_textures() -> None:
     hb = 0.5 + 0.5 * np.sin(2 * np.pi * (y * 140 * k + np.where((x * 40 * k) % 2 < 1, 1, -1) * x * 140 * k))
     _png("wool_albedo", np.repeat((0.86 + 0.07 * (wool - 0.5) + 0.05 * (hb - 0.5) + 0.06 * (mottle - 0.5))[..., None], 3, -1))
     _normal("wool", 0.6 * wool + 0.4 * hb * herring, 3.0)
+
+    # knit (stockinette): columns of V-shaped stitches, the sweaters of the creator (PLAN 2.7b)
+    cols, rows = round(48 * k), round(64 * k)
+    u = (x * cols) % 1.0
+    v = (y * rows + np.abs(u - 0.5)) % 1.0          # each stitch leans in, a V per column
+    stitch = np.sin(np.pi * u) ** 0.7 * (0.55 + 0.45 * np.sin(np.pi * v) ** 2)
+    kn = 0.8 * stitch + 0.2 * noise(n, 45, beta=0.8)
+    _png("knit_albedo", np.repeat((0.86 + 0.06 * (kn - 0.5) + 0.05 * (mottle - 0.5))[..., None], 3, -1))
+    _normal("knit", kn, 3.0)
 
     strands = noise(n, 51, beta=1.4, stretch=(1, 40))
     clump = noise(n, 52, beta=2.0, stretch=(1, 10), high=24)
@@ -1776,11 +1786,17 @@ def main(argv: list[str]) -> None:
     ap.add_argument("--pose-sheet", type=Path, help="render the first person in every action (Workbench) here")
     ap.add_argument("--method", choices=("pack", "script"), default="pack", help="the CC0 pack (default) or the scripted mannequins")
     ap.add_argument("--pack", type=Path, default=ROOT / ".pack", help="where fetch_pack.py put the pack")
-    ap.add_argument("--parts", action="store_true", help="pack: also build the creator's hair, beards and glasses")
+    ap.add_argument("--creator", action="store_true",
+                    help="pack: build the character creator's bodies, outfits, parts and face masks (creator_options.json), not the cast")
+    ap.add_argument("--body", choices=("m", "f"), action="append", help="--creator: only this body (repeatable)")
     args = ap.parse_args(argv)
+    if args.creator:
+        import creator_build
+        creator_build.run(args.pack, args.body or ["m", "f"])
+        return
     if args.method == "pack":
         import pack_character
-        pack_character.run(args.only or list(CAST_SPECS), args.pack, args.parts, args.blend, args.pose_sheet)
+        pack_character.run(args.only or list(CAST_SPECS), args.pack, args.blend, args.pose_sheet)
         return
 
     VOXEL = 2.0 if args.draft else 1.0

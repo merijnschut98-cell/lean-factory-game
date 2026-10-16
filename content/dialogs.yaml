@@ -174,6 +174,7 @@ people:
     trust: 50
     morale: 50
     voice: "Laat het me voordoen."
+    leaves_on: henk_farewell   # he retires that day, his knowledge saved or not
 
   - id: dirk
     name: Dirk Smits
@@ -371,6 +372,9 @@ bank:
     expert:
       ask: "Die vraag hadden we. Wil je een andere kant op?"
       say: "Klopt, zo zei ik het. Zullen we verder?"
+    mentor:   # person-needs spec §3.2 (Ruud's two later talks, drie winters §4.2 and §8)
+      ask: "Je stelt me mijn eigen vraag terug. Goed geleerd. Wat wil je nu echt weten?"
+      say: "Je herhaalt me nu. Wat zie je zelf?"
   special:
     repeat: "Dat vroeg je net ook."
     refusal: "Nee. Nog niet."
@@ -529,8 +533,9 @@ dialogs:
         reply: "Met de oude ernaast. Dan kan ik altijd laten zien wat we deden."
     co_proposal: {id: present_with_sanne, text: "En als Sanne hetzelfde doet, presenteren we het samen. Dan sta ik er niet alleen."}
     condition_needs: {all: [committed:frank_kpi_targets]}   # Frank's okay: it is his list
-    # Later (scripts F6, audit C15, not yet in the engine): when Frank commits,
-    # "Frank heeft getekend. Nu sta ik er ook echt achter." (PLAN 1.6b, beats_after).
+    beats_after:   # scripts F6, audit C15: the partial's upgrade is felt
+      - when: committed:frank_kpi_targets
+        text: "Frank heeft getekend. Nu sta ik er ook echt achter."
     lines:
       mood: "Hoe ging het MT?"
       inquiry: "Wie vraagt er eigenlijk om die dertig?"
@@ -625,8 +630,9 @@ dialogs:
         reply: "Joost? Samen? … Dan is het geen postkantoor tegen de ingenieurs. Dan is het één stroom."
     co_proposal: {id: present_with_joost, text: "Als Joost en ik dezelfde aansluiting volgen, van aanvraag tot monteur. Eén dossier, op het bord. Dan ziet iedereen waar het blijft."}
     condition_needs: {all: [committed:frank_kpi_targets]}
-    # Later (scripts §7, beats_after, not yet in the engine): "Frank heeft getekend.
-    # Joost en ik presenteren donderdag. Samen. Ik ben zenuwachtig, en dat is lang geleden."
+    beats_after:   # scripts §7, audit C15
+      - when: committed:frank_kpi_targets
+        text: "Frank heeft getekend. Joost en ik presenteren donderdag. Samen. Ik ben zenuwachtig, en dat is lang geleden."
     lines:
       mood: "Hoe is het nou echt, na zo'n recordmaand?"
       open_question: "Hoe gaat zo'n vrijdagmiddag bij jullie?"
@@ -687,7 +693,9 @@ dialogs:
           hint: "Laat het me zien op één stroom."
         - needs: {all: [partial:joost_output_kpi, partial:sanne_kpi, reputation>=40]}
           hint: "Als Sanne en Joost het zelf komen uitleggen, sta ik er niet alleen voor."
-        # Scripts route 3 (forecast_positive:kpi_board) waits for that fact kind (PLAN 1.6b).
+        # Scripts route 3 (audit C5): a quarterly review whose forecast beats the habit.
+        - needs: {all: [forecast_positive:kpi_board]}
+          hint: "Als het bord laat zien dat volgend kwartaal niet slechter wordt."
     proposals:
       - id: keep_targets
         label: De doelen houden zoals ze zijn
@@ -728,9 +736,12 @@ dialogs:
     name: Ahmed na Henks afscheid
     person: ahmed
     kind: checkin
-    # Henk has gone (his knowledge saved or not) and Ahmed is low. The scripts'
-    # beat delay (henk_farewell + 16 days, audit C11) waits for dated beats (PLAN 1.6b).
+    # Henk has gone (his knowledge saved or not) and Ahmed is low, sixteen days
+    # after the farewell: grief needs a little time before a talk can help
+    # (scripts §3.4, audit C11; the 16 days are the scripts' estimate).
     trigger:
+      beat: henk_farewell
+      after_days: 16
       morale_below: 50
       needs: {any: [done:save_henks_knowledge, failed:save_henks_knowledge]}
     mood: stil
@@ -2098,8 +2109,10 @@ dialogs:
     person: henk
     kind: checkin
     patience: 8
-    trigger:
-      needs: {all: [accepted:save_henks_knowledge], none: [failed:save_henks_knowledge]}
+    trigger:   # his last five days (scripts §5: henk_farewell, 5 days before; "Ik ben er nog vijf dagen")
+      beat: henk_farewell
+      before_days: 5
+      needs: {all: [accepted:save_henks_knowledge]}
     opening: "Kijk wie we daar hebben. Kom je afscheid nemen? Ik ben er nog vijf dagen, hoor."
     warning: "Ik moet nog een bus uitruimen. Veertig jaar troep."
     position: {text: "Nog vijf dagen. Dan ga ik vissen.", tags: [claim]}

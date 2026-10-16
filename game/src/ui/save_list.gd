@@ -37,12 +37,21 @@ func show_entries(entries: Array[Dictionary]) -> void:
 
 
 ## The five manual slots in order, an empty one as "Leeg" (the pause menu's
-## picker: every slot can be saved into, also a damaged one).
-func show_manual(slots: SaveSlots) -> void:
+## picker: every slot can be saved into, also a damaged one). `empty_first`:
+## the empty slots before the filled ones (the title menu keeping a game).
+func show_manual(slots: SaveSlots, empty_first := false) -> void:
 	UiPanel.clear(self)
+	var filled: Array[PanelContainer] = []
 	for n in range(1, SaveSlots.COUNT + 1):
 		var slot := SaveSlots.manual(n)
-		add_child(_card(slots.entry(slot), slot, true))
+		var e := slots.entry(slot)
+		var card := _card(e, slot, true)
+		if empty_first and not e.is_empty():
+			filled.append(card)  # after the empty ones, in their order
+		else:
+			add_child(card)
+	for card in filled:
+		add_child(card)
 
 
 ## The card's button (null when there is none), for tests and screenshots.

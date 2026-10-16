@@ -51,9 +51,9 @@ var discoveries: Discoveries
 var followed := FollowedOrder.new()
 ## The "Hoe werkt het?" explainers seen (PLAN 2.7c), for the codex.
 var explainers := ExplainerLog.new()
-## The player's body for the tokens talks fill (creator spec §1.6: man |
-## vrouw). The placeholder CI lead's until the character creator (2.7b) sets it.
-var player_body := "vrouw"
+## The player's body for the tokens talks fill: "m" | "f", as CreatorLook.body_of
+## gives it. The placeholder CI lead's until the creator's look reaches the session.
+var player_body := "f"
 ## The first thing wrong with the content; "" when the game is usable.
 var error := ""
 
@@ -194,8 +194,24 @@ func check(problem_id: String) -> Dictionary:
 	var result := region.check(problem_id)
 	if not result.is_empty():
 		discoveries.note_check(self, problem_id, result)
+		if result.has("forecast") and result["forecast"]["gain"] > Pdca.CHECK_NOISE:
+			missions.facts.add(Facts.FORECAST_POSITIVE + str(result["forecast"]["kpi"]))
 	_after(0)
 	return result if not result.is_empty() else {"error": "not_check_ready"}
+
+
+## The quarterly review on the KPI board (Region.kpi_review): its result, or
+## {error} (KpiBoard.review's codes). A forecast that beats the habit by more
+## than the board's noise band (it pays) is remembered as
+## forecast_positive:kpi_board, which talks can wait for (Frank's third route).
+func kpi_review(choices: Dictionary) -> Dictionary:
+	var result := region.kpi_review(choices)
+	if not result["error"].is_empty():
+		return {"error": result["error"]}
+	if result["paid"] > 0.0:
+		missions.facts.add(Facts.FORECAST_POSITIVE + KpiBoard.UNLOCK)
+	_after(0)
+	return result
 
 
 ## Close a checked problem, with or without standardising: the score (see
@@ -366,8 +382,17 @@ func clock_text() -> String:
 ## The date and time of a simulation time, as clock_text (a save list shows
 ## it without loading the game).
 static func clock_at(t: int) -> String:
-	var minute_of_day := (t - SimCalendar.days(WARMUP_DAYS)) % SimCalendar.MINUTES_PER_DAY
-	return "%s, %02d:%02d" % [day_text(t), int(minute_of_day / 60.0), minute_of_day % 60]
+	var minute := minute_at(t)
+	return "%s, %02d:%02d" % [day_text(t), int(minute / 60.0), minute % 60]
+
+
+## The minutes since midnight now (the world reads the hour: lunch in the kantine).
+func minute_of_day() -> int:
+	return minute_at(region.net.time)
+
+
+static func minute_at(t: int) -> int:
+	return (t - SimCalendar.days(WARMUP_DAYS)) % SimCalendar.MINUTES_PER_DAY
 
 
 ## The El Amrani dossier: {age_days, touch_hours, step, delivered_days}
@@ -668,7 +693,8 @@ func checkin_prompts() -> Array[Dictionary]:
 ## role, place, trust_pips, morale_band (0 low · 1 middling · 2 high),
 ## cooldown_until, outcomes (dialog id → its best outcome), observed (what they
 ## said, newest first: People.observed), talks (newest first: People.talk_log),
-## note (the player's own, "" for none)}; {} for an unknown id.
+## note (the player's own, "" for none), open (_still_open), talk_ready (they
+## have a talk for you now)}; {} for an unknown id.
 func person(person_id: String) -> Dictionary:
 	var p: PersonDef = people.persons.get(person_id)
 	if p == null:
@@ -684,7 +710,35 @@ func person(person_id: String) -> Dictionary:
 		"morale_band": 0 if morale < 30 else (1 if morale < 70 else 2),
 		"cooldown_until": int(people.memory.get(person_id, {}).get("cooldown_until", 0)), "outcomes": outcomes,
 		"observed": _filled(_newest_first(people.observed.get(person_id, []))),
-		"talks": _newest_first(people.talk_log.get(person_id, [])), "note": people.note.get(person_id, "")}
+		"talks": _newest_first(people.talk_log.get(person_id, [])), "note": people.note.get(person_id, ""),
+		"open": _still_open(person_id, facts),
+		"talk_ready": not people.cooling_down(person_id, region.net.time) and people.dialog_for(person_id, _world(p)) != null}
+
+
+## What a person's agreements still wait for (the Mensen tab, U16): [{dialog,
+## outcome (partial | blocked), wait_for (a heard concern's condition, else
+## ""), hints (a block's route hints)}].
+func _still_open(person_id: String, facts: Dictionary) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for d: DialogDef in people.dialogs.values():
+		var o := people.effective_outcome(d.id, facts) if d.person == person_id else ""
+		if o == "partial":
+			out.append({"dialog": d.id, "outcome": o, "wait_for": _heard_wait_for(d), "hints": []})
+		elif o == "blocked":
+			out.append({"dialog": d.id, "outcome": o, "wait_for": "",
+				"hints": d.block.get("routes", []).map(func(r: Dictionary) -> String: return str(r.get("hint", "")))})
+	return out
+
+
+## The concern's `wait_for` of a dialog whose concern the player heard ("" if
+## not heard or it names nothing): a condition never shows before its concern.
+func _heard_wait_for(d: DialogDef) -> String:
+	for key: String in people.revealed:
+		if key.get_slice("/", 0) == d.id and people.revealed[key].has("concern"):
+			var layers := d.layers_of(int(key.get_slice("/", 1)))
+			if layers.size() > 1:
+				return str(layers[1].get("wait_for", ""))
+	return ""
 
 
 static func _newest_first(entries: Array) -> Array:
@@ -768,7 +822,7 @@ func fill_tokens(text: String) -> String:
 	if not "{" in text:
 		return text
 	var born := date_of(followed.born)
-	var tokens := {"{jongen_meid}": "jongen" if player_body == "man" else "meid",
+	var tokens := {"{jongen_meid}": "jongen" if player_body == "m" else "meid",
 		"{aanvraag_datum}": "%d %s" % [born["day"], MONTH_NAMES[born["month"] - 1]]}
 	var out := ""
 	var rest := text
@@ -819,7 +873,7 @@ func _world(p: PersonDef) -> Dictionary:
 		"main": missions.active("main").map(func(m: MissionDef) -> String: return m.id),
 		"active": missions.active().map(func(m: MissionDef) -> String: return m.id),
 		"found": region.found, "facts": _facts(), "team_trust": region.trust.get(p.team, 0), "blamed": blamed,
-		"now": region.net.time,
+		"now": region.net.time, "beats": missions.beats(),
 	}
 
 
@@ -867,7 +921,7 @@ func _sync_people() -> void:
 	if people == null:
 		return
 	var world_facts := _facts()
-	_people_events.append_array(people.daily({"now": region.net.time, "facts": world_facts}))
+	_people_events.append_array(people.daily({"now": region.net.time, "facts": world_facts, "beats": missions.beats()}))
 	var facts := people.facts(world_facts)
 	for fact: String in facts:
 		if fact.get_slice(":", 0) in People.FACT_KINDS:

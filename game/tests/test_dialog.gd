@@ -74,6 +74,15 @@ func test_the_archetype_weighs_how_a_move_lands() -> void:
 	assert_eq(quiet.say("silence")["delta"], 18, "a quiet person: silence ×1.5")
 
 
+
+## Drie winters §4.2, S7: Ruud as a mentor wants to hear what you learned,
+## and has seen your numbers.
+func test_a_mentor_weighs_experience_up_and_data_down() -> void:
+	assert_eq(Dialog.weight("mentor", "", "neutraal", "experience", false), 1.5)
+	assert_eq(Dialog.weight("mentor", "", "neutraal", "show_data", false), 0.5)
+	var ruud := DialogFixture.talk(50, {}, DialogFixture.def(), DialogFixture.person("mentor"))
+	assert_eq(ruud.patience, Dialog.PATIENCE, "a mentor gives the usual time")
+
 # ── Steering, pressure and blame ────────────────────────────────────────────
 
 func test_pushing_too_early_costs_and_the_person_repeats_the_position() -> void:

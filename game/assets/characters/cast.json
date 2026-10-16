@@ -46,9 +46,7 @@
       "look": {"sex": "f", "height": 1.64, "build": 0.62, "skin": [230, 186, 160], "hair_style": "bob",
                "hair_color": [158, 140, 120], "outfit": "shirt", "glasses": true, "stoop": 0.2,
                "colors": {"shirt": [146, 62, 92], "trousers": [50, 50, 58]}},
-      "office": {"seat": "meetdata", "pose": "sit",
-                 "stand_in_desk": {"copy": "design0", "at": [23.35, -7.6], "face": [24.0, -7.6],
-                                   "sign": "Meetdata & registratie"}}
+      "office": {"seat": "meetdata", "pose": "sit"}
     },
     {
       "id": "ruud", "name": "Ruud Hoekstra", "role": "Directeur Netbeheer regio Zuidmark",
@@ -77,6 +75,79 @@
                "hair_color": [28, 22, 20], "outfit": "monteur", "eye_color": [44, 30, 22], "stubble": 0.5},
       "office": {"at": [7.2, -7.2], "face": [7.6, -6.4], "pose": "idle",
                  "missions": ["walk_outages", "fix_wrong_joint", "save_henks_knowledge"]}
+    },
+    {
+      "id": "rachid", "name": "Rachid Ouali", "role": "medewerker Intake",
+      "look": {"sex": "m", "height": 1.75, "build": 0.32, "skin": [176, 124, 92], "hair_style": "short",
+               "hair_color": [26, 20, 18], "outfit": "business", "eye_color": [52, 36, 26], "stubble": 0.5,
+               "beard": "short", "colors": {"polo": [196, 152, 58], "chinos": [70, 72, 80]}},
+      "office": {"seat": "intake1", "pose": "sit",
+                 "lunch": {"floor": "ground", "chair": "canteen_table3_chair_s1", "pose": "sit"}}
+    },
+    {
+      "id": "linda", "name": "Linda Jansen", "role": "planner",
+      "look": {"sex": "f", "height": 1.62, "build": 0.7, "skin": [234, 192, 166], "hair_style": "short",
+               "hair_color": [214, 180, 120], "outfit": "business", "eye_color": [84, 110, 132],
+               "colors": {"polo": [70, 96, 160], "chinos": [46, 48, 58]}},
+      "office": {"seat": "planning1", "pose": "sit"}
+    },
+    {
+      "id": "mieke", "name": "Mieke van der Veen", "role": "tekenaar Revisie & GIS",
+      "look": {"sex": "f", "height": 1.7, "build": 0.45, "skin": [232, 194, 170], "hair_style": "buns",
+               "hair_color": [200, 184, 150], "outfit": "shirt", "glasses": true, "stoop": 0.15,
+               "eye_color": [96, 112, 96], "colors": {"shirt": [96, 128, 96], "trousers": [60, 52, 46]}},
+      "office": {"seat": "revision0", "pose": "sit"}
+    },
+    {
+      "id": "frank", "name": "Frank Hulshof", "role": "manager Aansluitingen & Netverzwaring",
+      "look": {"sex": "m", "height": 1.91, "build": 0.78, "skin": [226, 176, 150], "hair_style": "short",
+               "hair_color": [96, 94, 92], "brow_color": [80, 76, 72], "outfit": "manager", "eye_color": [70, 84, 96],
+               "stubble": 0.1, "stoop": 0.1,
+               "colors": {"blazer": [58, 62, 70], "shirt": [176, 200, 228], "trousers": [44, 46, 52]}},
+      "office": {"floor": "second", "seat": "director0", "pose": "sit"}
+    },
+    {
+      "id": "femke", "name": "Femke de Wit", "role": "netplanner",
+      "look": {"sex": "f", "height": 1.78, "build": 0.4, "skin": [240, 204, 180], "hair_style": "ponytail",
+               "hair_color": [210, 176, 110], "outfit": "business", "glasses": true, "eye_color": [70, 104, 140],
+               "colors": {"polo": [60, 130, 190], "chinos": [196, 186, 164]}},
+      "office": {"floor": "second", "seat": "grid_a0", "pose": "sit"}
+    },
+    {
+      "id": "esra", "name": "Esra Yilmaz", "role": "teamleider Klantcontactcentrum",
+      "look": {"sex": "f", "height": 1.68, "build": 0.55, "skin": [200, 150, 116], "hair_style": "ponytail",
+               "hair_color": [30, 24, 22], "outfit": "manager", "eye_color": [50, 34, 24],
+               "colors": {"blazer": [36, 72, 80], "shirt": [236, 238, 240], "trousers": [40, 42, 48]}},
+      "office": {"floor": "ground", "seat": "kcc_lead", "pose": "sit", "headset": true}
+    },
+    {
+      "id": "kim", "name": "Kim de Jong", "role": "agent Klantcontactcentrum",
+      "look": {"sex": "f", "height": 1.65, "build": 0.35, "skin": [236, 200, 176], "hair_style": "buns",
+               "hair_color": [110, 72, 44], "outfit": "business", "eye_color": [88, 70, 50],
+               "colors": {"polo": [220, 120, 96], "chinos": [58, 58, 66]}},
+      "office": {"floor": "ground", "seat": "kcc10", "pose": "sit", "headset": true,
+                 "lunch": {"floor": "ground", "chair": "canteen_table3_chair_n1", "pose": "sit"}}
+    },
+    {
+      "id": "saskia", "name": "Saskia Mulder", "role": "agent Klantcontactcentrum",
+      "look": {"sex": "f", "height": 1.74, "build": 0.6, "skin": [222, 176, 146], "hair_style": "bob",
+               "hair_color": [150, 62, 36], "outfit": "shirt", "eye_color": [70, 90, 70],
+               "colors": {"shirt": [236, 226, 200], "trousers": [36, 38, 46]}},
+      "office": {"floor": "ground", "seat": "kcc13", "pose": "sit", "headset": true}
+    },
+    {
+      "id": "rob", "name": "Rob Verhagen", "role": "inkoper",
+      "look": {"sex": "m", "height": 1.79, "build": 0.55, "skin": [228, 184, 156], "hair_style": "buzz",
+               "hair_color": [150, 120, 84], "outfit": "shirt", "glasses": true, "eye_color": [80, 96, 110],
+               "stubble": 0.2, "colors": {"shirt": [210, 222, 236], "trousers": [96, 88, 76]}},
+      "office": {"seat": "klant0", "pose": "sit"}
+    },
+    {
+      "id": "thomas", "name": "Thomas Visser", "role": "accountmanager grootzakelijk",
+      "look": {"sex": "m", "height": 1.84, "build": 0.4, "skin": [236, 196, 170], "hair_style": "short",
+               "hair_color": [190, 150, 96], "outfit": "manager", "eye_color": [66, 108, 140],
+               "colors": {"blazer": [40, 56, 92], "shirt": [244, 244, 246], "trousers": [40, 44, 56]}},
+      "office": {"floor": "second", "seat": "congestion0", "pose": "sit"}
     }
   ]
 }

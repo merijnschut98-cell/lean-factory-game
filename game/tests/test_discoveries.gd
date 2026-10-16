@@ -86,6 +86,9 @@ func test_discoveries_survive_a_save() -> void:
 	saved["found"]["retired_discovery"] = 1
 	restored.load_dict(saved)
 	assert_false(restored.found.has("retired_discovery"), "the content no longer has it")
+	saved["found"] = {"nachtdienst": {"day": 3}}
+	restored.load_dict(saved)
+	assert_false(restored.found.has("nachtdienst"), "a malformed value is dropped, never a crash (review N1)")
 
 
 # ── Talks (dialog spec §5.5, D29–D34) ───────────────────────────────────────

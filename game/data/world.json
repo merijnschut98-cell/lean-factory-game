@@ -46,6 +46,7 @@
    "id": "canteen",
    "name": "Kantine",
    "opens_with": [
+    "training_mon",
     "terugval_*"
    ],
    "places": []
@@ -59,7 +60,8 @@
    ],
    "places": [
     "connections.intake",
-    "connections.design"
+    "connections.design",
+    "connections.planning"
    ]
   },
   {
@@ -67,6 +69,7 @@
    "id": "revision_gis",
    "name": "Revisie & GIS",
    "opens_with": [
+    "training_wed",
     "fix_revision_backlog",
     "fix_digging_damage"
    ],
@@ -79,6 +82,7 @@
    "id": "meter_data",
    "name": "Meetdata & registratie",
    "opens_with": [
+    "training_thu",
     "walk_meters",
     "fix_done_but_not_closed",
     "fix_silent_meter"
@@ -137,7 +141,7 @@
   {
    "floor": "second",
    "id": "ruud_office",
-   "name": "Kantoor Ruud",
+   "name": "Directeur Netbeheer",
    "opens_with": [],
    "places": []
   }

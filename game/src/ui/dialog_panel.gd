@@ -13,7 +13,10 @@ extends UiPanel
 ## talk ends the chips give way to the summary card. What changes between
 ## states (the speech, the chips, the picks, the summary) scrolls; the meter
 ## stays where the eye left it. No chip is styled by fit: pressure looks like
-## listening, an open ▸ chip is outlined.
+## listening, an open ▸ chip is outlined. Each chip carries its key, small
+## and dimmed (1–8 listening, Q–T steering, then the rest of the top row;
+## with a ▸ chip's picks open, 1–9 pick). When trust moves, a ▲ or ▼ flashes
+## beside the pips for a moment (never a number).
 
 ## The summary card asks to talk the main mission's talk over with the coach.
 signal coach_requested
@@ -57,6 +60,15 @@ const SUMMARY_HEIGHT := 96.0
 const CHIP_GAP := 22
 ## Picks longer than this are cut on their button (the whole text on hover).
 const PICK_CHARS := 64
+## The keys of the Luisteren row, in order (and of the picks while open).
+const LISTEN_KEYS: Array[Key] = [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9]
+## The keys of the Sturen row, in order: Q–T steer, then pressure, confront, repair, close.
+const STEER_KEYS: Array[Key] = [KEY_Q, KEY_W, KEY_E, KEY_R, KEY_T, KEY_Y, KEY_U, KEY_I, KEY_O]
+const KEY_HINT_FONT := 10
+const KEY_HINT_AT := Vector2(3, -1)
+## How long the trust arrow stays before it fades, and the fade.
+const TRUST_FLASH_S := 1.0
+const TRUST_FADE_S := 0.6
 
 ## start_dialog's result while a talk is open ({} when none is).
 var talk: Dictionary = {}
@@ -80,6 +92,12 @@ var _flow: VBoxContainer
 var _talk_over: Button
 ## The cue's slanted font (built once).
 var _italic_font: FontVariation
+## How the last move (or the talk's end) moved trust: 1, -1 or 0.
+var trust_moved := 0
+## The ▲ or ▼ beside the pips, shown while trust_moved is not 0.
+var trust_flash: Label
+## The trust the pips showed before the last move.
+var _trust_seen := 0
 
 
 func _init() -> void:
@@ -126,6 +144,8 @@ func start(person_id: String) -> String:
 	trace = opened["meter"]["trace"].duplicate()
 	made.clear()
 	picking = ""
+	trust_moved = 0
+	_trust_seen = opened["meter"]["trust"]
 	refresh()
 	return ""
 
@@ -142,6 +162,10 @@ func choose(move: String, pick: String = "") -> Dictionary:
 		return result
 	last = result
 	picking = ""
+	# At the end the talk's outcome moves trust too (a partial's +5).
+	var trust: int = result.get("summary", {}).get("trust", result["trust"])
+	trust_moved = signi(trust - _trust_seen)
+	_trust_seen = trust
 	trace.append(result["openness"])
 	made.append(chip_label(move))
 	if not result["revealed"].is_empty():
@@ -155,7 +179,51 @@ func choose(move: String, pick: String = "") -> Dictionary:
 ## A ▸ chip: show its picks, or hide them again.
 func open_picks(move: String) -> void:
 	picking = "" if picking == move else move
+	trust_moved = 0  # no move made: nothing to flash again
 	refresh()
+
+
+## Each move's key (U14): the Luisteren row on LISTEN_KEYS, the Sturen row
+## (steering, pressure, repair and close) on STEER_KEYS, in chip order.
+static func keys_for(moves: Array[Dictionary]) -> Dictionary:
+	var out := {}
+	var used := {"listen": 0, "steer": 0}
+	for m in moves:
+		var row := "listen" if m["row"] == "listen" else "steer"
+		var keys := LISTEN_KEYS if row == "listen" else STEER_KEYS
+		if used[row] < keys.size():
+			out[m["id"]] = keys[used[row]]
+		used[row] += 1
+	return out
+
+
+## A key pressed mid-talk: its move (a ▸ chip opens its picks); with picks
+## open, 1–9 pick. False when the key means nothing here (left for others).
+func press_key(key: Key) -> bool:
+	if not talking():
+		return false
+	var moves := session.dialog_moves()
+	if not picking.is_empty() and key in LISTEN_KEYS:
+		var picks := _picks_of(moves, picking)
+		var i := LISTEN_KEYS.find(key)
+		if i < picks.size():
+			choose(picking, picks[i]["id"])
+		return true
+	var keys := keys_for(moves)
+	for m in moves:
+		if keys.get(m["id"]) == key:
+			if m.has("picks"):
+				open_picks(m["id"])
+			else:
+				choose(m["id"])
+			return true
+	return false
+
+
+func _shortcut_input(event: InputEvent) -> void:
+	var key := event as InputEventKey
+	if visible and key != null and key.pressed and not key.echo and press_key(key.physical_keycode):
+		get_viewport().set_input_as_handled()
 
 
 ## End the talk gracefully (Esc mid-talk); {} when no talk runs.
@@ -266,6 +334,7 @@ func _header() -> HBoxContainer:
 	facts.add_theme_constant_override("separation", 30)
 	mid.add_child(facts)
 	facts.add_child(label("%s  %s" % [TRUST, pips(m["trust_pips"])], UiTheme.SMALL))
+	facts.add_child(_trust_flash())
 	facts.add_child(label(MOOD % m["mood"], UiTheme.SMALL))
 	facts.add_child(_layer_tracker())
 	var right := VBoxContainer.new()
@@ -275,6 +344,18 @@ func _header() -> HBoxContainer:
 	line.set_trace(trace)
 	right.add_child(line)
 	return row
+
+
+## ▲ or ▼ beside the pips when the last move moved trust; in the tree it
+## fades after a moment.
+func _trust_flash() -> Label:
+	trust_flash = label(arrow_text(trust_moved), UiTheme.SMALL, Palette.GREEN_DARK if trust_moved > 0 else Palette.SAFETY_ORANGE)
+	trust_flash.visible = trust_moved != 0
+	if trust_flash.visible and is_inside_tree():
+		var fade := create_tween()
+		fade.tween_interval(TRUST_FLASH_S)
+		fade.tween_property(trust_flash, "modulate:a", 0.0, TRUST_FADE_S)
+	return trust_flash
 
 
 ## The band names under the bar, each under its own stretch of it.
@@ -344,6 +425,7 @@ func _italic() -> FontVariation:
 ## Sturen row pressure, and then repair and close, sit apart after a gap.
 func _chips() -> void:
 	var moves := session.dialog_moves()
+	var keys := keys_for(moves)
 	var grid := GridContainer.new()
 	grid.columns = 2
 	grid.add_theme_constant_override("h_separation", 14)
@@ -369,7 +451,9 @@ func _chips() -> void:
 				gap.custom_minimum_size.x = CHIP_GAP
 				flow.add_child(gap)
 			group = m["row"]
-			flow.add_child(_chip(m))
+			# With picks open, 1–9 pick: the listening chips lose their digits.
+			var key: Key = keys.get(m["id"], KEY_NONE) if picking.is_empty() or row != "listen" else KEY_NONE
+			flow.add_child(_with_key(_chip(m), key))
 	if not picking.is_empty():
 		_picks(moves)
 
@@ -395,18 +479,37 @@ func _picks(moves: Array[Dictionary]) -> void:
 	row.add_theme_constant_override("v_separation", 6)
 	_flow.add_child(row)
 	row.add_child(label(PICK_HEADING, UiTheme.SMALL, Palette.MUTED))
-	var picks: Array = []
-	for m in moves:
-		if m["id"] == picking:
-			picks = m.get("picks", [])
+	var picks := _picks_of(moves, picking)
 	if picks.is_empty():
 		row.add_child(label(NO_PICKS, UiTheme.SMALL, Palette.MUTED))
-	for p: Dictionary in picks:
+	for i in picks.size():
+		var p: Dictionary = picks[i]
 		var text := str(p.get("name", p.get("text", p["id"])))
 		var b := button(text if text.length() <= PICK_CHARS else text.left(PICK_CHARS) + "…", choose.bind(picking, p["id"]))
 		b.tooltip_text = text
 		b.add_theme_font_size_override("font_size", CHIP_FONT)
-		row.add_child(b)
+		row.add_child(_with_key(b, LISTEN_KEYS[i] if i < LISTEN_KEYS.size() else KEY_NONE))
+
+
+## A chip with its key in its top-left corner, small and dimmed, taking no
+## width of the row (KEY_NONE: the chip alone).
+static func _with_key(chip: Button, key: Key) -> Button:
+	if key != KEY_NONE:
+		var ink := chip.get_theme_color("font_color") if chip.has_theme_color_override("font_color") else Color.WHITE
+		var hint := label(OS.get_keycode_string(key), KEY_HINT_FONT, ink)
+		hint.modulate.a = 0.6
+		hint.position = KEY_HINT_AT
+		hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		chip.add_child(hint)
+	return chip
+
+
+## The picks of a ▸ move ([] for none).
+static func _picks_of(moves: Array[Dictionary], move: String) -> Array:
+	for m in moves:
+		if m["id"] == move:
+			return m.get("picks", [])
+	return []
 
 
 ## The summary card: the outcome and what comes next, the trace with each

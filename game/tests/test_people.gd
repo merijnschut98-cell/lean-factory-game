@@ -67,6 +67,11 @@ func test_the_start_reads_the_person_the_day_and_the_team() -> void:
 	assert_eq(cold.start(cold.dialogs["talk"], DialogFixture.world({"team_trust": -2})).openness, 5, "never below 5")
 
 
+func test_a_mentor_starts_open() -> void:
+	var ruud := DialogFixture.people([DialogFixture.def()], [DialogFixture.person("mentor")])
+	assert_eq(ruud.start(ruud.dialogs["talk"], DialogFixture.world()).openness, 55, "drie winters §4.2: base 55")
+
+
 func test_a_ruined_talk_costs_a_few_points_and_a_day() -> void:
 	var people := DialogFixture.people()
 	var summary := _talk(people, RUIN, DialogFixture.world({"now": FRIDAY}))
@@ -420,6 +425,16 @@ func test_a_save_from_before_the_notebook_fills_it_from_what_was_revealed() -> v
 	assert_eq(people.observed["pim"][0]["at"], -1, "heard, but not when")
 
 
+func test_a_hand_edited_save_falls_back_and_never_crashes() -> void:  # review N1
+	var people := DialogFixture.people()
+	var dropped := people.load_dict({"memory": {"pim": {"flags": 5, "cooldown_until": {}}},
+		"revealed": {"talk/7": {"interest": true}, "talk/x": {"interest": true}, "talk/-1": 3}})
+	assert_eq(people.memory["pim"], {"flags": [], "cooldown_until": 0}, "malformed fields keep the defaults")
+	assert_eq(dropped, ["talk/7", "talk/x"], "a variant the content does not have is dropped")
+	assert_true(people.revealed.is_empty())
+	assert_true(people.observed.is_empty())
+
+
 func test_a_malformed_notebook_keeps_what_is_sound() -> void:
 	var people := DialogFixture.people()
 	var dropped := people.load_dict({"observed": {"pim": [{"text": 3}, {"dialog": "talk", "key": "position",
@@ -430,3 +445,90 @@ func test_a_malformed_notebook_keeps_what_is_sound() -> void:
 	assert_eq(_texts(people), ["Positie."])
 	assert_eq(people.talk_log["pim"].size(), 1)
 	assert_false(people.note.has("pim"), "a note is text")
+
+
+
+# ── Dated beats and lines after a later fact (drie winters S2; audit C11, C15) ─
+
+## A check-in that waits for a dated beat: Ahmed grieves first (C11).
+func test_a_checkin_can_wait_days_after_a_dated_beat() -> void:
+	var trigger := {"beat": "farewell", "after_days": 16, "morale_below": 50}
+	var low := DialogFixture.people([DialogFixture.checkin({"trigger": trigger})], [DialogFixture.person("defender", 50, 20)])
+	var farewell := SimCalendar.days(10)
+	assert_eq(low.dialog_for("pim", DialogFixture.world({"now": SimCalendar.days(40)})), null, "no date for the beat yet")
+	var beats := {"beats": {"farewell": farewell}}
+	assert_eq(low.dialog_for("pim", DialogFixture.world(beats.merged({"now": farewell + SimCalendar.days(16) - 1}))), null,
+		"sixteen days after the farewell, not before")
+	assert_eq(low.dialog_for("pim", DialogFixture.world(beats.merged({"now": farewell + SimCalendar.days(16)}))).id, "checkin")
+	var fine := DialogFixture.people([DialogFixture.checkin({"trigger": trigger})], [DialogFixture.person("defender", 50, 60)])
+	assert_eq(fine.dialog_for("pim", DialogFixture.world(beats.merged({"now": SimCalendar.days(40)}))), null,
+		"the beat opens the window; morale still decides")
+
+
+func _signs() -> People:
+	return DialogFixture.people([DialogFixture.def({"condition_needs": {"all": ["committed:boss"]},
+		"beats_after": [{"when": "committed:boss", "text": "De baas heeft getekend."}]})])
+
+
+func _beat_lines(people: People, facts: Dictionary, now: int = 0) -> Array:
+	return people.daily({"now": now, "facts": facts}).filter(func(e: Dictionary) -> bool: return e["type"] == "beat_line")
+
+
+## C15: a partial agreement that upgrades when the boss signs is felt: the
+## person says so, once, and the notebook keeps it.
+func test_a_partial_agreement_speaks_up_when_its_condition_comes_true() -> void:
+	var people := _signs()
+	assert_eq(_beat_lines(people, {"committed:boss": true}), [], "never talked: nothing to upgrade")
+	assert_eq(_talk(people, LISTENING)["outcome"], "partial")
+	assert_eq(_beat_lines(people, {}), [], "the boss has not signed")
+	var now := SimCalendar.days(3)
+	assert_eq(_beat_lines(people, {"committed:boss": true}, now),
+		[{"type": "beat_line", "person": "pim", "name": "Pim", "dialog": "talk", "text": "De baas heeft getekend."}])
+	assert_eq(_beat_lines(people, {"committed:boss": true}, now), [], "said once")
+	var heard: Array = people.observed["pim"].filter(func(o: Dictionary) -> bool: return o["key"] == "beat")
+	assert_eq(heard.map(func(o: Dictionary) -> Array: return [o["text"], o["at"]]), [["De baas heeft getekend.", now]])
+	var restored := _signs()
+	restored.load_dict(bytes_to_var(var_to_bytes(people.to_dict())))
+	assert_eq(_beat_lines(restored, {"committed:boss": true}, now), [], "a save remembers it was said")
+
+
+## Only the upgrade of a partial is a beat: a commitment or a ruined talk has
+## nothing to upgrade.
+func test_no_beat_line_without_a_partial_agreement() -> void:
+	var ruined := _signs()
+	_talk(ruined, RUIN)
+	assert_eq(_beat_lines(ruined, {"committed:boss": true}), [])
+
+
+
+## Henk's last week (scripts §5): a check-in open from five days before a
+## beat until the beat itself, never after it.
+func test_a_checkin_can_open_in_the_days_before_a_beat() -> void:
+	var people := DialogFixture.people([DialogFixture.checkin({"trigger": {"beat": "farewell", "before_days": 5}})])
+	var farewell := SimCalendar.days(30)
+	var at := func(now: int) -> DialogDef:
+		return people.dialog_for("pim", DialogFixture.world({"now": now, "beats": {"farewell": farewell}}))
+	assert_eq(at.call(farewell - SimCalendar.days(5) - 1), null, "not yet: more than five days before")
+	assert_eq(at.call(farewell - SimCalendar.days(5)).id, "checkin")
+	assert_eq(at.call(farewell - 1).id, "checkin", "the last evening")
+	assert_eq(at.call(farewell), null, "the day itself: he has gone")
+
+
+## A person who leaves on a dated beat (Henk retires) is gone once it has
+## passed: no talks, no prompts, and the save remembers it.
+func test_a_person_who_leaves_on_a_beat_is_gone_after_it() -> void:
+	var henk := PersonDef.from_dict({"id": "pim", "name": "Pim", "role": "monteur", "place": "connections.design",
+		"team": "prep", "archetype": "craftsman", "leaves_on": "farewell"})
+	var people := DialogFixture.people([DialogFixture.checkin({"trigger": {"morale_below": 101}})], [henk])
+	var farewell := SimCalendar.days(30)
+	var before := {"now": farewell - 1, "facts": {}, "beats": {"farewell": farewell}}
+	people.daily(before)
+	assert_false(people.has_left("pim"))
+	assert_eq(people.prompts.keys(), ["checkin"], "still here: he can be asked")
+	people.daily({"now": farewell, "facts": {}, "beats": {"farewell": farewell}})
+	assert_true(people.has_left("pim"), "retired on his day")
+	assert_eq(people.prompts.keys(), [], "his open prompt goes with him")
+	assert_eq(people.dialog_for("pim", DialogFixture.world({"now": farewell, "beats": {"farewell": farewell}})), null)
+	var restored := DialogFixture.people([DialogFixture.checkin({"trigger": {"morale_below": 101}})], [henk])
+	restored.load_dict(bytes_to_var(var_to_bytes(people.to_dict())))
+	assert_true(restored.has_left("pim"))

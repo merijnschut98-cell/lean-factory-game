@@ -205,6 +205,8 @@ func test_the_mission_is_played_end_to_end() -> void:
 	var checked := s.check(PROBLEM)
 	assert_false(checked.has("error"))
 	assert_true(checked["passed"], "the fitting countermeasure works")
+	assert_true(s.knows("forecast_positive:throughput"), "the Check's forecast for the predicted KPI came out positive")
+	assert_false(s.knows("forecast_positive:lead_time"), "only the KPI the A3 predicted")
 	assert_eq(s.phase_of(PROBLEM), "checked")
 	assert_eq(s.missions.status(MISSION), "active", "not done before Act")
 
@@ -571,3 +573,23 @@ func test_a_fix_is_standardised_after_the_act() -> void:
 	assert_eq(s.region.net.time - minutes, Sustain.AUDIT_MINUTES, "writing the standard takes an hour at the place")
 	assert_eq(s.standardise(PROBLEM), "standardised")
 	assert_eq(s.standardise("ghost"), "unknown_problem")
+
+
+## Frank's third route (drie winters S13, tier-1 content audit C5): a
+## quarterly review whose forecast beats the habit records
+## forecast_positive:kpi_board; the habit itself forecasts nothing.
+func test_a_positive_kpi_review_forecast_is_a_fact() -> void:
+	var s := _campaign()
+	assert_eq(s.kpi_review({}), {"error": "locked"})
+	s.region.board.unlock(s.region.net.time)
+	var habit := {"intake": ["intake_utilisation", "intake_output"], "work_prep": ["work_prep_utilisation", "work_prep_output"],
+		"planners": ["planners_hours", "planners_on_time"], "contact_centre": ["contact_centre_handle_time", "contact_centre_reachable"]}
+	assert_eq(s.kpi_review(habit)["paid"], 0.0)
+	assert_false(s.knows("forecast_positive:kpi_board"))
+	s.region.advance_days(KpiBoard.REVIEW_DAYS)
+	var flow := habit.merged({"intake": ["intake_lead_time", "intake_complete"],
+		"work_prep": ["work_prep_lead_time", "work_prep_ftr"]}, true)
+	var result := s.kpi_review(flow)
+	assert_eq(result["error"], "")
+	assert_true(result["paid"] > 0.0, "lead time and a complete handover beat the habit: %.4f" % result["improvement"])
+	assert_true(s.knows("forecast_positive:kpi_board"))

@@ -31,7 +31,13 @@ extends SceneTree
 ## people_monteurs (Henk and Ahmed at the huddle table for Henk's mission, Marco
 ## walking in) · people_meetdata (Petra at the stand-in Meetdata desk) ·
 ## people_gemba (E at Werkvoorbereiding with the people there: do the stacks
-## and the in-trays still read?) · title (the title menu over a few saves) ·
+## and the in-trays still read?) · people_kcc, people_lunch, people_directie,
+## people_netstrategie, people_planning, people_revisie (2.1c: Esra and her agents,
+## lunch in the kantine, Frank and Femke on the 2e, Linda and Mieke on the 1e) ·
+## people_whiteboard, people_explainer (Ruud's whiteboard, and E there) ·
+## title (the title menu over a few saves) ·
+## title_replace, title_keep ("Nieuw spel" over a filled autosave: the
+## question, then the slots to keep it in) ·
 ## pause, pause_slots, pause_confirm (Esc in the office: the pause menu, its
 ## five slots, the overwrite question).
 ## The mission is played through the UI's own handlers, as a player would;
@@ -55,11 +61,11 @@ func _initialize() -> void:
 func _run() -> void:
 	var args := OS.get_cmdline_user_args()
 	if args.size() < 2:
-		printerr("usage: -- <office|overview|inspect|tools|a3|check|act|board|coach|map|codex|training_board|timelapse|sustain|intussen|terugblik|people_desks|people_talk|people_energy|people_monteurs|people_meetdata|people_gemba|title|pause|pause_slots|pause_confirm> <out.png> [frames]")
+		printerr("usage: -- <office|overview|inspect|tools|a3|check|act|board|coach|map|codex|training_board|timelapse|sustain|intussen|terugblik|people_desks|people_talk|people_energy|people_monteurs|people_meetdata|people_gemba|title|title_replace|title_keep|pause|pause_slots|pause_confirm> <out.png> [frames]")
 		quit(2)
 		return
 	var state := args[0]
-	if state in ["title", "pause", "pause_slots", "pause_confirm"]:
+	if state in ["title", "title_replace", "title_keep", "pause", "pause_slots", "pause_confirm"]:
 		await _save_menus(state)
 		_capture(args)
 		return
@@ -135,6 +141,30 @@ func _run() -> void:
 			office.ui.close_panels()
 			office.ui.toggle_journal()
 			office.ui.journal.show_tab(ClueJournal.PEOPLE)
+		"explainers":
+			office.session.explainers.see("spanning_stroom_weerstand")
+			office.ui.toggle_codex()
+			office.ui.codex.show_tab(CodexPanel.EXPLAINERS)
+		"contain_board":
+			for id in ["fix_done_but_not_closed", "fix_status_callers", "fix_incomplete_application", MISSION]:
+				office.session.missions.done_once[id] = true
+			office.session.accept("fix_digging_damage")
+			_stand_at(office, "mission_board")
+			office.interact(office.interactable("mission_board"))
+		"standardise":
+			_investigate(office, true)
+			office.interact(office.interactable("obeya"))
+			office.ui.a3_form.submit(_a3(office))
+			office.ui.a3_form.wait()
+			office.ui.a3_form.check()
+			office.ui.check_panel.act(false)
+			office.ui.close_panels()
+			_stand_at(office, DESIGN)
+			office.interact(office.interactable(DESIGN))
+			office.rig.snap()
+		"dossier":
+			_investigate(office, false)
+			office.ui.toggle_journal()
 		"dialog_place":
 			_open_silo(office)
 			_stand_at(office, DESIGN)
@@ -176,6 +206,9 @@ func _run() -> void:
 			office.ui.open_terugblik(office.ui.session_layer.open_session(office.session))
 		"people_desks", "people_talk", "people_energy", "people_monteurs", "people_meetdata", "people_gemba":
 			_people(office, state)
+		"people_kcc", "people_lunch", "people_directie", "people_netstrategie", "people_planning", "people_revisie", \
+				"people_whiteboard", "people_explainer":
+			await _rooms(office, state)
 		_:
 			printerr("unknown state ", state)
 			quit(2)
@@ -212,10 +245,14 @@ func _save_menus(state: String) -> void:
 	old.store_buffer(var_to_bytes({"version": 0, "region": {}}))
 	old.close()
 	slots.now = func() -> float: return now
-	if state == "title":
+	if state.begins_with("title"):
 		var menu: TitleMenu = load(TitleMenu.SCENE).instantiate()
 		menu.saves = slots
 		root.add_child(menu)
+		if state != "title":
+			menu.new_game()  # the autosave holds a game: it asks first
+		if state == "title_keep":
+			menu.keep_first()
 		return
 	var office: Office = load(SCENE).instantiate()
 	office.seed_value = 11
@@ -248,6 +285,14 @@ class PeopleSession:
 	var session: GameSession
 	var extra: Array[MissionDef] = []
 	var energy := {}
+	## The hour the people see (minutes since midnight); -1: the session's.
+	var minute := -1
+
+	func minute_of_day() -> int:
+		return minute if minute >= 0 else session.minute_of_day()
+
+	func person(person_id: String) -> Dictionary:
+		return session.person(person_id)
 
 	func active_missions() -> Array[MissionDef]:
 		var out := session.active_missions()
@@ -307,6 +352,48 @@ func _people(office: Office, state: String) -> void:
 			_stand_at(office, DESIGN)
 			office.interact(office.interactable(DESIGN))
 			office.rig.snap()
+
+
+## The rooms peopled in 2.1c: the floor's room opened by its mission, the player a few
+## steps from the person, the camera over the shoulder; the explainer from Ruud's board.
+func _rooms(office: Office, state: String) -> void:
+	var at := {"people_kcc": ["ground", "fix_status_callers", "kim", Vector3(0.6, 0, 2.2), 25.0],
+		"people_lunch": ["ground", "", "kim", Vector3(1.2, 0, 2.4), 15.0],
+		"people_directie": ["second", "fix_silo_kpis", "frank", Vector3(-1.8, 0, -1.4), -25.0],
+		"people_netstrategie": ["second", "look_at_grid_study", "femke", Vector3(1.0, 0, 2.2), 25.0],
+		"people_planning": ["first", "", "linda", Vector3(0.6, 0, -2.2), 20.0],
+		"people_revisie": ["first", "", "mieke", Vector3(0.4, 0, 2.6), -20.0]}
+	if state in ["people_whiteboard", "people_explainer"]:
+		var board := office.interactable(OfficeWhiteboard.ID)
+		office.player.position = board.position + Vector3(1.2, 0, 0.9)
+		office.player.face(Basis.looking_at(board.position - office.player.position))
+		office.rig.yaw = office.player.rotation.y + deg_to_rad(15)
+		office.rig.snap()
+		if state == "people_explainer":
+			office.player.position = board.position
+			office.use(board)
+			for i in 30:
+				await process_frame
+		return
+	var spec: Array = at[state]
+	if not str(spec[1]).is_empty():
+		office.session.missions.progress[spec[1]] = {"status": "active", "asks": {}, "seen": {}}
+		office.floors._process(OfficeFloors.POLL_SECONDS)
+	office.floors.go_to(spec[0], "lift", true)
+	if state == "people_lunch":
+		var clock := PeopleSession.new()
+		clock.session = office.session
+		clock.minute = 12 * 60 + 20
+		office.people.refresh(clock)
+		office.people.set_process(false)   # keep the lunch hour for the shot
+	var p := office.people.person(spec[2])
+	office.player.position = p.position + spec[3]
+	office.player.face(Basis.looking_at((p.position - office.player.position) * Vector3(1, 0, 1)))
+	office.rig.yaw = office.player.rotation.y + deg_to_rad(spec[4])
+	if state == "people_kcc":
+		office.rig.zoom(-3)   # close enough to see the headsets
+	office.rig.snap()
+	office.hover_person(p)
 
 
 ## Take the mission and do the gemba work; `all` finds every key clue.
