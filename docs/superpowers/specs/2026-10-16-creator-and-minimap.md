@@ -116,7 +116,7 @@ If the art agent's ids differ (e.g. `hair_color`), the UI follows the file and t
 
 ### 1.6 The pronoun
 
-`body: man` → `{hij_zij}` = hij, `{Zij_Hij_speler}` = Hij, `{haar_hem_speler}` = hem; `body: vrouw` → zij / Zij / haar. Derived from `player.look.body` at substitution time, never stored separately (one source; a body change later changes every later line at once). The line under Lichaam says it in the fiction: "Collega's spreken over je als hij of zij."
+`body: man` → `{hij_zij}` = hij, `{Zij_Hij_speler}` = Hij, `{haar_hem_speler}` = hem, `{jongen_meid}` = jongen; `body: vrouw` → zij / Zij / haar / meid. (`{jongen_meid}` is for Henk, who calls the player "jongen" three times in tier 1: the D9 talks audit, A12.) Derived from `player.look.body` at substitution time, never stored separately (one source; a body change later changes every later line at once). The line under Lichaam says it in the fiction: "Collega's spreken over je als hij of zij."
 
 ### 1.7 The portrait
 
@@ -240,7 +240,7 @@ It does not explain gemba, it shows it (nothing handed over). A player who overt
 1. **Options:** every trait in `creator_options.json` has 2–5 options (`hair`: 5 per body list), every id resolves to a part or a tint (2.7b's test), and the creator's strip order equals the file's.
 2. **Name validator** (a table test on the pure function): accepted "Sanne", "Jan-Willem", "Anne Marie", "D'Angelo", "Şeyma", "Zoë", "Bo"; normalised "  jan  " → "Jan", "anne  marie" → "Anne marie", "deVries" unchanged, "D’Angelo" → "D'Angelo"; rejected "", "   ", 17 letters, "R2D2", "{speler}", "[b]Jan[/b]", "-Jan", "Jan-", "Jan--Piet", "Jan  ", an emoji, a U+202E override, a newline.
 3. **Single-pass tokens:** a player named "Hij" in a line with `{speler}` and `{hij_zij}` renders once; no value is re-substituted.
-4. **Pronoun follows body:** `body: man` → hij/Hij/hem, `vrouw` → zij/Zij/haar; changing the body changes the next line rendered.
+4. **Pronoun follows body:** `body: man` → hij/Hij/hem/jongen, `vrouw` → zij/Zij/haar/meid; changing the body changes the next line rendered.
 5. **Body change resets `face`** to the new body's first option and keeps `skin`, `hair`, `hair_colour`, `eyes`, `glasses`, `outfit`.
 6. **Willekeurig** never changes `name` or `body`, and always yields ids in the file (1,000 draws).
 7. **The opening look** is random (two creators with different seeds differ) and valid.

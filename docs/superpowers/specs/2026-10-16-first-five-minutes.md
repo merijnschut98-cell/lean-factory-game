@@ -195,8 +195,8 @@ Ruud sits down, slides a letter across the desk (the `training_mon` letter; its 
 > *(the letter, in a handwriting font, close up; 6–8 lines)*
 >
 > > *Geachte heer Hoekstra,*
-> > *Wij hebben op 20 augustus een zwaardere aansluiting aangevraagd voor onze warmtepomp. Nu wachten we al {dossier_weken}. Mijn moeder woont bij ons in. Zij heeft het snel koud. Niemand kan ons zeggen wanneer u komt. Ik vraag niet om voorrang. Ik vraag om een datum.*
-> > *Met vriendelijke groet, N. El Amrani, Nova-Oost*
+> > *Wij hebben op {aanvraag_datum} een zwaardere aansluiting aangevraagd voor onze warmtepomp. Nu wachten we al {dossier_weken}. Mijn moeder woont bij ons in. Zij heeft het snel koud. Niemand kan ons zeggen wanneer u komt. Ik vraag niet om voorrang. Ik vraag om een datum.*
+> > *Met vriendelijke groet, F. El Amrani, Nova-Oost*
 >
 > **Ruud:** "Ik wil niet dat je dit oplost. Nog niet. Ik wil dat je gaat kijken. Deze week leer je hoe. Volgende week volg je dit dossier, van de brief tot de meter."
 > **Ruud:** "En als je iemand spreekt: vraag eerst hoe het gaat. En meen het."
@@ -206,6 +206,8 @@ The last line is the **first move card** (Stemming peilen, tutorial talks §2), 
 (`training_mon`'s goal, observing Intake and Werkvoorbereiding, is met by the walk; its debrief moves to Tuesday morning's briefing, §4.)
 
 > **Ruud:** "De rest van de dag ben je van IT en HR. Laptop, pas, wachtwoorden. Sterkte."
+
+**Fixed 2026-10-16 evening (D9 audit A9):** the letter is signed *F. El Amrani* (she is Fatima in the cast and on the phone; it was "N."), and the date is the token `{aanvraag_datum}`: per the arc (§3 there) her request was born on **27 July**, eleven weeks before 12 October, so the followed order must be that old (PLAN 1.8a) and her notebook, this letter and `{dossier_weken}` all read the same date. The paragraph below is the earlier note.
 
 The letter's date: `training_mon` says "vanochtend lag er een brief"; the El Amrani call (arc doc §3) dates her request to September–October; the letter's "20 augustus" is the date of the *request*, not the letter. **Check with the followed order (1.8):** the date shown must be the order's real creation day; if the order is younger, the line reads `{aanvraag_datum}` (a token the builder fills from the dossier). The line above uses a fixed date only as an example.
 
