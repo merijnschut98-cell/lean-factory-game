@@ -155,7 +155,7 @@ The act's cliffhanger in (engagement loop §3, IV and IT → V): three letters o
 - The NTA 8120 audit date.
 - And Esra, for the IT chapter: "Ik vroeg vorig jaar om een datum op het klantportaal. Die staat er nog steeds niet."
 
-The title card: "Het systeem. Twintig prioriteiten is er geen. Wat is de ene?"
+The title card (Drie winters, 2026-10-16: Ruud is back and says it): "Het systeem. Ik ben terug, en ik ga weer weg. Op 1 april stop ik. Dat is geen dreigement, dat is de AOW. Twintig prioriteiten is er geen. Wat is de ene?" The return sets `flag:ruud_back`; Frank goes back to his manager's role. Under the regime (`flag:interim_regime` without `flag:regime_eased`) `frank_twenty` starts 5 lower. Hoshin's true north reads the waiting list: "Iedereen een eerlijke datum, en die klopt."
 
 ### 1.1 `t4_hoshin` — Eén richting (M)
 
@@ -1476,6 +1476,8 @@ dialogs:
 - Monique's admission turns a plan into an experiment with a measuring moment. That is the game's first lesson (PDCA) at the scale of the company.
 
 ### 1.9 `t4_new_ci_lead` — De nieuwe CI-lead (placeholder)
+
+> **Superseded 2026-10-16 (Drie winters, PLAN §4.0 item 6):** the finale is `de_opvolger` (`2026-10-16-drie-winters-arc.md` §8): Ruud returns when Act V opens, names his last day, and the player coaches their own successor (Anouk, Ahmed, Sanne or Lotte Smit from outside, by facts). The text below is kept for history only.
 
 ```yaml
 missions:

@@ -173,6 +173,8 @@ missions:
       reflect: "Wie in Lindeveld of Havenzij liet je iets zien wat in geen rapport staat?"
 ```
 
+**Drie winters (2026-10-16).** `t3_map_region` now requires `t3_interim_mt` (Frank's first MT as interim director). Under `flag:interim_regime` it gets a briefing variant and its temptation is `t3_consultants` (Lean-programma 2.0, offered by Frank) instead of `bought_vsm`; under `flag:strategy_early` (sponsor, committed) it also unlocks the strategy screen. Ruud coaches by phone (one Kata cycle per 28 days). See `2026-10-16-drie-winters-arc.md` §5 and §7.
+
 **Path dependence.**
 - `flag:vsm_bought` is the quick win. The goal completes at once, but:
   - the VSM view shows regional *averages*, so Lindeveld's travel and Havenzij's design puzzle disappear into one number;
@@ -1145,6 +1147,7 @@ dialogs:
 **Path dependence.**
 - **`standardised:custom_design`** (Act I, Anouk's standard designs) lets Nova cover Havenzij's standard cases during the week (`cover_the_week` exists only then). A sustained Act I fix pays in Act IV, through a person.
 - **`flag:kaizen_by_consultants`** gives the week's gains the compliance buy-in (×0.6, dialog spec §4.2): the team watched; it did not own. If `heard:marco_2012` is set, Marco says in a beat: "Dit is 2012." (`marco` trust −1). The way back is a second, team-led kaizen week through `lsw_layered_audit`'s next cycle (Q5).
+- **Drie winters (2026-10-16), the regime's way back:** with `flag:lean_programme_2` the consultant blitz is pre-accepted; a team-led week needs Frank's agreement through `frank_interim` (≥ partial). A team-led week presented by the team to the MT clears `flag:lean_programme_2` and sets `flag:regime_eased` (the Obeya returns next to the dashboard). See `2026-10-16-drie-winters-arc.md` §7.3.
 - **Holding a kaizen at a non-constraint place** completes the goal with the `not_constraint` debrief. It teaches; it is no failure.
 
 **Grounding.**

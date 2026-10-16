@@ -706,7 +706,7 @@ dialogs:
   - id: el_amrani_fourth_call
     person: el_amrani
     kind: persuade
-    mission: fix_status_callers
+    missions: [fix_status_callers, winter_el_amrani]   # 2026-10-16 (drie-winters §3): the frost milestone opens the call on day 49 for a player not yet in fix_status_callers
     place: customer_contact.answer         # the player takes her fourth call over from an agent
     mood: gespannen
     patience: 10
@@ -718,13 +718,13 @@ dialogs:
       - id: interest
         at: 45
         via: [paraphrase, open_question, inquiry]
-        text: "Op 3 juni zei iemand 'binnenkort'. Op 17 juni 'we zijn ermee bezig'. Op 1 juli wist niemand het. Ik wil gewoon weten waar ik aan toe ben."
+        text: "Op 7 september zei iemand 'binnenkort'. Op 21 september 'we zijn ermee bezig'. Op 5 oktober wist niemand het. Ik wil gewoon weten waar ik aan toe ben."   # dates fixed 2026-10-16: her request is born ~27 July
         tags: [claim, feeling]
       - id: concern
         at: 65
         via: [empathy, reflect, silence]
         lead_in: {text: "Het gaat niet eens om mij…", tags: [hesitation]}
-        text: "Mijn moeder woont bij ons. Ze is eenentachtig en heeft het altijd koud. De installateur zei: haal die cv-ketel eruit, de warmtepomp is beter. Die hangt nu aan de muur. Zonder stroom. Het is bijna november."
+        text: "Mijn moeder woont bij ons. Ze is eenentachtig en heeft het altijd koud. De installateur zei: haal die cv-ketel eruit, de warmtepomp is beter. Die hangt nu aan de muur. Zonder stroom. Het wordt elke nacht kouder."   # 2026-10-16: fits any call date before the frost (drie-winters §3)
         tags: [admission]
         unlocks:
           clue: {key: true, depth: 2, text: "'Niemand belt me terug. Dus bel ik zelf. Elke twee weken, met mijn schrift erbij.'"}
@@ -742,7 +742,7 @@ dialogs:
         lands: {text: "Of ik deze winter warm zit. Dat is alles.", tags: [feeling]}
     proposals:
       - {id: name_a_date, addresses: [interest], label: "Een datum noemen",
-         say: "Ik zie hier 14 november. Dan wordt u aangesloten.",
+         say: "Ik zie hier {promise_date}. Dan wordt u aangesloten.",   # 2026-10-16: the planning estimate the game shows and checks
          reply: "Veertien november. Ik schrijf het op.",
          promise: {kind: delivery_date, source: planning_estimate}}   # (new) checked against the followed order (audit §3.0)
       - {id: honest_window_and_contact, addresses: [interest, concern], label: "Eerlijk zijn, en één aanspreekpunt",
