@@ -24,12 +24,38 @@ class FakeSessionWithEnergy:
 		return energy.get(person_id, {})
 
 
-func _office() -> Office:
+## A session stand-in with a clock (minutes since midnight) and what it knows of people.
+class FakeSessionWithClock:
+	extends FakeSession
+	var minute := 9 * 60
+	var known := {}
+
+	func minute_of_day() -> int:
+		return minute
+
+	func person(person_id: String) -> Dictionary:
+		return known.get(person_id, {})
+
+
+func _office(training := false) -> Office:
 	var office: Office = load(SCENE).instantiate()
 	office.seed_value = 11
-	office.training = false
+	office.training = training
 	office.build()
 	return office
+
+
+func _take(office: Office, mission_id: String) -> void:
+	office.session.missions.progress[mission_id] = {"status": "active", "asks": {}, "seen": {}}
+	office.floors._process(OfficeFloors.POLL_SECONDS)
+
+
+## The cast entry of `id` ({} when there is none).
+func _cast(id: String) -> Dictionary:
+	for e in CharacterModel.cast():
+		if e["id"] == id:
+			return e
+	return {}
 
 
 func _mission(id: String) -> MissionDef:
@@ -60,20 +86,6 @@ func test_the_people_sit_at_their_desks_and_marco_walks_the_aisle() -> void:
 		assert_true((-joost.basis.z).dot(desk - joost.position) > 0, "facing his desk")
 	var marco := office.people.person("marco")
 	assert_true(marco != null and marco.pose == "walk" and marco.route.size() == 2, "Marco walks a route")
-	office.free()
-
-
-func test_petras_desk_is_a_stand_in_with_its_furniture_and_collision() -> void:
-	var office := _office()
-	if office.find_marker("design0_desk") == null:
-		office.free()
-		return   # the stand-in office has no workstations to copy
-	assert_true(office.find_marker("meetdata_desk") != null, "a desk for Meetdata")
-	assert_true(office.find_marker("meetdata_chair") != null, "and a chair")
-	var petra := office.people.person("petra")
-	assert_true(petra != null and petra.visible, "Petra sits there")
-	var desk := office.in_office(office.find_marker("meetdata_desk")).origin
-	assert_false(office.nav().walkable(desk), "the walk grid goes round the stand-in desk")
 	office.free()
 
 
@@ -199,4 +211,196 @@ func test_the_walker_walks_at_the_walk_pace_and_pauses_at_the_ends() -> void:
 	marco.walk(OfficePerson.PAUSE)
 	marco.walk(0.5)
 	assert_true(marco.position.distance_to(marco.route[0]) < length, "and back again")
+	office.free()
+
+
+# ── 2.1c: people in every room (PLAN 1.3, 2.1c) ─────────────────────────────
+
+func test_every_head_office_speaker_of_act_0_to_ii_has_a_body() -> void:
+	var office := _office()
+	var acts := {}
+	for m: MissionDef in office.session.catalog.missions:
+		acts[m.id] = m.act
+	var speakers := {}
+	for d: DialogDef in office.session.people.dialogs.values():
+		if d.mission.is_empty() or int(acts.get(d.mission, 99)) <= 2:
+			speakers[d.person] = true
+	assert_true(speakers.size() >= 4, "the talks of Act 0–II are read")
+	for id: String in speakers:
+		var person: PersonDef = office.session.people.persons.get(id)
+		if person == null or person.team == "monteurs":
+			continue   # the field crews come in for their missions (Henk, Ahmed: their own entries)
+		assert_false(_cast(id).get("office", {}).is_empty(), "%s has a place in the office's cast" % id)
+		assert_true(ResourceLoader.exists(CharacterModel.path(id)), "%s has a body" % id)
+	office.free()
+
+
+func test_the_new_rooms_have_their_people_on_their_floors() -> void:
+	var expected := {"esra": "ground", "kim": "ground", "saskia": "ground", "femke": "second", "frank": "second",
+		"rachid": "first", "linda": "first", "mieke": "first", "petra": "first"}
+	for id: String in expected:
+		var spot: Dictionary = _cast(id).get("office", {})
+		assert_eq(str(spot.get("floor", "first")), expected[id], "%s's floor" % id)
+		assert_true(ResourceLoader.exists(CharacterModel.path(id)), "%s is built" % id)
+	for id in ["esra", "kim", "saskia"]:
+		assert_true(_cast(id)["office"].get("headset", false), "%s wears a headset" % id)
+
+
+func test_petra_is_reachable_at_her_own_desk() -> void:
+	var office := _office()
+	assert_false(_cast("petra")["office"].has("stand_in_desk"), "the model has her desk now")
+	var petra := office.people.person("petra")
+	assert_true(petra != null and petra.visible, "Petra is at Meetdata")
+	var chair := office.find_marker("meetdata_chair")
+	assert_true(chair != null and Vector2(petra.position.x, petra.position.z).distance_to(
+		Vector2(office.in_office(chair).origin.x, office.in_office(chair).origin.z)) < 0.01, "on her chair")
+	assert_false(office.nav().path(office.player.position, petra.position + petra.basis.x * 0.8).is_empty(),
+		"the way to her is open")
+	office.free()
+
+
+func test_people_behind_a_shut_door_are_not_there() -> void:
+	var office := _office(true)   # Monday of the training week: only the tour is on
+	var petra := office.people.person("petra")
+	var mieke := office.people.person("mieke")
+	assert_true(petra != null and mieke != null, "Petra and Mieke have desks on the 1e")
+	assert_false(petra.visible, "Meetdata is shut on Monday")
+	assert_false(mieke.visible, "Revisie & GIS is shut on Monday")
+	assert_eq(office.people.person_near(mieke.position, Office.REACH), null, "and out of reach")
+	assert_true(office.people.person("anouk").visible, "Aansluitingen is open")
+	assert_true(office.people.person("linda").visible, "Linda at the planners' bench in Aansluitingen")
+	assert_true(office.interactable("place:connections.planning") != null, "her team's place for Wednesday's talk")
+	_take(office, "training_wed")
+	assert_true(mieke.visible, "Wednesday's talk opens Revisie & GIS: Mieke is there")
+	_take(office, "training_thu")
+	assert_true(petra.visible, "Thursday's talk opens Meetdata: Petra is there")
+	office.free()
+
+
+func test_the_kcc_and_the_2e_are_peopled_once_their_rooms_open() -> void:
+	var office := _office()
+	_take(office, "fix_status_callers")
+	office.floors.go_to("ground", "lift", true)
+	for id in ["esra", "kim", "saskia"]:
+		var p := office.people.person(id)
+		assert_true(p != null and p.visible, "%s at the Klantcontactcentrum" % id)
+	assert_true(office.people.person("esra").find_child("Headset", true, false) != null, "Esra's headset")
+	office.floors.go_to("second", "lift", true)
+	var frank := office.people.person("frank")
+	var femke := office.people.person("femke")
+	assert_true(frank != null and femke != null, "Frank and Femke on the 2e")
+	if frank == null or femke == null:
+		office.free()
+		return
+	assert_false(frank.visible or femke.visible, "their rooms are shut")
+	_take(office, "fix_silo_kpis")
+	assert_true(frank.visible, "Directie & Obeya open: Frank at his desk")
+	assert_false(femke.visible, "Netstrategie still shut")
+	_take(office, "look_at_grid_study")
+	assert_true(femke.visible, "Netstrategie open: Femke")
+	office.free()
+
+
+func test_two_of_the_cast_lunch_in_the_kantine_between_twelve_and_one() -> void:
+	var office := _office()
+	var clock := FakeSessionWithClock.new()
+	var rachid := office.people.person("rachid")
+	assert_true(rachid != null and rachid.visible, "Rachid at Intake in the morning")
+	if rachid == null:
+		office.free()
+		return
+	var desk := rachid.position
+	clock.minute = 12 * 60 + 30
+	office.people.refresh(clock)
+	assert_false(rachid.visible, "at half past twelve his desk is empty")
+	clock.minute = 13 * 60
+	office.people.refresh(clock)
+	assert_true(rachid.visible and rachid.position.distance_to(desk) < 0.01, "back at one")
+	office.floors.go_to("ground", "lift", true)
+	assert_true("canteen" in office.floors.open, "the kantine opened with the tour")
+	var lunchers: Array[OfficePerson] = []
+	clock.minute = 11 * 60 + 59
+	office.people.refresh(clock)
+	for p in office.people.people:
+		if p.lunch is Dictionary and not (p.lunch as Dictionary).is_empty():
+			lunchers.append(p)
+			assert_false(p.visible and p.at_lunch, "%s not at lunch yet" % p.id)
+	assert_eq(lunchers.size(), 2, "two people lunch here")
+	clock.minute = 12 * 60
+	office.people.refresh(clock)
+	var canteen := OfficeFloors.room_rect(office.floors.markers()["room:canteen"])
+	for p in lunchers:
+		assert_true(p.visible and p.at_lunch, "%s at lunch" % p.id)
+		assert_true(canteen.has_point(Vector2(p.position.x, p.position.z)), "%s in the kantine" % p.id)
+		assert_eq(p.pose, "sit")
+	office.free()
+
+
+func test_the_session_tells_the_time_of_day() -> void:
+	var office := _office()
+	assert_eq(office.session.minute_of_day(), GameSession.START_MINUTE, "the game starts at half past eight")
+	assert_true(office.session.clock_text().ends_with("08:30"))
+	office.free()
+
+
+func test_names_come_from_the_session_when_it_knows_the_person() -> void:
+	var office := _office()
+	var clock := FakeSessionWithClock.new()
+	clock.known = {"joost": {"name": "Joost van Dijk-Smit", "role": "teamleider"}}
+	office.people.refresh(clock)
+	var joost := office.people.person("joost")
+	assert_eq(joost.display_name, "Joost van Dijk-Smit", "the session's name")
+	assert_true(joost.tag.text.begins_with("Joost van Dijk-Smit"), "on the name tag")
+	assert_eq(office.people.person("anouk").display_name, "Anouk de Vries", "cast.json as the fallback")
+	office.people.refresh(office.session)
+	assert_eq(joost.display_name, office.session.person("joost")["name"], "the real session names him")
+	office.free()
+
+
+func test_the_energy_bar_is_a_quiet_line_with_a_check_in_mark() -> void:
+	var office := _office()
+	var session := FakeSessionWithEnergy.new()
+	session.energy = {"anouk": {"energy": 0.3, "needs_talk": true}}
+	office.people.refresh(session)
+	var anouk := office.people.person("anouk")
+	var mat := anouk.bar.material_override as ShaderMaterial
+	assert_eq(mat.get_shader_parameter("low_color"), mat.get_shader_parameter("high_color"), "one colour, no orange")
+	var line: Color = mat.get_shader_parameter("high_color")
+	assert_true(line.s < 0.15, "a muted colour, the name tag's")
+	var size := (anouk.bar.mesh as QuadMesh).size
+	assert_true(size.y / size.x <= 0.08, "a thin line")
+	assert_true(anouk.mark.visible and anouk.mark.text == "…", "the check-in mark beside it")
+	assert_false(office.people.person("joost").mark.visible, "no mark without a check-in")
+	office.free()
+
+
+func test_ruuds_whiteboard_opens_the_explainer_and_closes_back_into_the_world() -> void:
+	var office := _office()
+	var board := office.interactable(OfficeWhiteboard.ID)
+	assert_true(board != null, "the whiteboard in the coach's room")
+	if board == null:
+		office.free()
+		return
+	office.player.position = board.position
+	assert_eq(office.target_near(office.player.position), board)
+	assert_eq(office.prompt_near(office.player.position), Office.WHITEBOARD_PROMPT)
+	office.use(board)
+	var view := office.explainer
+	assert_true(view != null and view.def != null and view.def.id == OfficeWhiteboard.EXPLAINER, "the explainer opens")
+	assert_true(office.rig.inspecting(), "the camera goes to the board")
+	assert_false(office.player.active, "the player stands still")
+	assert_true(office.busy(), "the world waits")
+	view.close()
+	assert_eq(office.explainer, null, "closed")
+	assert_true(office.player.active and not office.rig.inspecting(), "back into the world")
+	assert_false(office.busy())
+	assert_true(office.session.explainers.has_seen(OfficeWhiteboard.EXPLAINER), "kept for the codex")
+	office.free()
+
+
+func test_the_whiteboard_stands_on_the_coachs_floor_only() -> void:
+	var office := _office()
+	assert_true(office.find_marker(OfficeWhiteboard.NODE) != null, "the board itself, with its collision")
+	office.floors.go_to("ground", "lift", true)
+	assert_eq(office.interactable(OfficeWhiteboard.ID), null)
 	office.free()

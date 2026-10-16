@@ -359,8 +359,17 @@ func clock_text() -> String:
 ## The date and time of a simulation time, as clock_text (a save list shows
 ## it without loading the game).
 static func clock_at(t: int) -> String:
-	var minute_of_day := (t - SimCalendar.days(WARMUP_DAYS)) % SimCalendar.MINUTES_PER_DAY
-	return "%s, %02d:%02d" % [day_text(t), int(minute_of_day / 60.0), minute_of_day % 60]
+	var minute := minute_at(t)
+	return "%s, %02d:%02d" % [day_text(t), int(minute / 60.0), minute % 60]
+
+
+## The minutes since midnight now (the world reads the hour: lunch in the kantine).
+func minute_of_day() -> int:
+	return minute_at(region.net.time)
+
+
+static func minute_at(t: int) -> int:
+	return (t - SimCalendar.days(WARMUP_DAYS)) % SimCalendar.MINUTES_PER_DAY
 
 
 ## The El Amrani dossier: {age_days, touch_hours, step, delivered_days}

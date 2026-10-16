@@ -1943,6 +1943,8 @@ def plan_first(plan: Plan) -> None:
                                  opening(-10.4, -7.0, kind="glass")]),
     ]
     plan.markers += list(INTERACTIONS) + [
+        # the planners' bench (Linda): stood at from the aisle, over the low cabinets
+        place("connections.planning", (15.0, 6.0), (15.0, 3.0)),
         place("connections.revision", (-14.5, 10.6), (-14.5, 13.0)),
         place("connections.close_out", (-10.0, 4.6), (-10.0, 3.0)),
         place("meters.registration", (-16.2, 4.6), (-16.2, 3.0)),
