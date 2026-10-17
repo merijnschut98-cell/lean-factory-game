@@ -165,6 +165,15 @@
                "stubble": 0.4, "beard": "full", "colors": {"workshirt": [70, 84, 64]}},
       "office": {"floor": "ground", "at": [-3.4, -4.4], "face": [-4.6, -4.7], "pose": "idle",
                  "missions": ["fix_digging_damage"]}
+    },
+    {
+      "id": "wim", "name": "Wim Kortekaas", "role": "gepensioneerd elektrotechnicus",
+      "look": {"sex": "m", "height": 1.77, "build": 0.5, "skin": [232, 190, 166], "hair_style": "receding",
+               "hair_color": [206, 204, 200], "brow_color": [176, 172, 166], "outfit": "shirt", "glasses": true,
+               "eye_color": [84, 100, 116], "stoop": 0.5,
+               "colors": {"shirt": [150, 118, 82], "trousers": [70, 66, 60]}},
+      "office": {"floor": "ground", "at": [-2.2, -3.4], "face": [-4.6, -4.7], "pose": "idle",
+                 "missions": ["fix_inverters_tripping"]}
     }
   ]
 }

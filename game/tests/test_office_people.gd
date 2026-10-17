@@ -244,7 +244,7 @@ func test_visitors_come_to_the_ontvangst_for_their_missions() -> void:
 	var office := _office()
 	office.floors.go_to("ground", "lift", true)
 	var reception := OfficeFloors.room_rect(office.floors.markers()["room:reception"])
-	for visit: Array in [["gert", "fix_digging_damage"]]:
+	for visit: Array in [["gert", "fix_digging_damage"], ["wim", "fix_inverters_tripping"]]:
 		var p := office.people.person(visit[0])
 		assert_true(p != null and not p.visible, "%s is not here without %s" % visit)
 		if p == null:
