@@ -224,6 +224,8 @@ func test_the_skip_stops_at_a_deadline() -> void:
 		"stopped the day before, in time")
 	assert_false(s.missions.failed(HENK))
 	var on := layer.skip_to_check(s, PROBLEM)
+	if on["stopped"] == "talk":   # Henk gone, Ahmed's check-in may come due on the way (1.4b)
+		on = layer.skip_to_check(s, PROBLEM)
 	assert_eq(on["stopped"], "", "skipping again goes on to the Check")
 	assert_eq(s.phase_of(PROBLEM), "check_ready")
 
@@ -257,3 +259,62 @@ func test_the_layer_round_trips_and_ignores_junk() -> void:
 	assert_eq(bad_snapshot.start["measures"], {})
 	assert_eq(bad_snapshot.start["completed"], ["a"])
 	assert_eq(bad_snapshot.terugblik(s)["ruud"]["kind"] in ["completed", "quiet", "changed", "check_ready", "checkin"], true)
+
+
+# ── People instead of teams (PLAN 1.4b) ─────────────────────────────────────
+
+## No check-in open and none resting, everyone low: the next sync may open one
+## (which one is the content's: tests read it from checkin_prompts()).
+func _nobody_asked_yet(s: GameSession) -> void:
+	s.people.prompts.clear()
+	s.people.prompt_log.clear()
+	s.people.last_prompt.clear()
+	for id: String in s.people.morale:
+		s.people.morale[id] = 20
+
+
+## A due check-in names its person in "Wacht op je" and Intussen: one check-in
+## opened by hand, whichever the content has.
+func test_a_due_check_in_names_its_person() -> void:
+	var s := _experiment_running()
+	var layer := SessionLayer.new()
+	layer.begin(s)
+	_nobody_asked_yet(s)
+	var checkin: DialogDef = s.people.dialogs.values().filter(func(d: DialogDef) -> bool: return d.kind == "checkin")[0]
+	s.people.prompts[checkin.id] = s.region.net.time
+	var who: PersonDef = s.people.persons[checkin.person]
+	var waiting: Array = layer.terugblik(s)["lines"].filter(func(l: Dictionary) -> bool: return l["kind"] == "waiting")
+	assert_eq(waiting.size(), 1)
+	assert_eq(waiting[0]["what"], "talk")
+	assert_eq(waiting[0]["person"], who.id)
+	var text := TerugblikCard.line_text(s, waiting[0])
+	assert_true(text.contains(who.name), text)
+	assert_true(text.contains(checkin.prompt), "their dagstart line")
+	var people: Array = layer.intussen(s, PROBLEM)["people"]
+	assert_true(people.any(func(l: Dictionary) -> bool: return l.get("person", "") == who.id), "Intussen too")
+
+
+## A check-in without a dagstart line still reads as a person who wants a word.
+func test_a_check_in_without_a_line_still_names_its_person() -> void:
+	var s := _campaign()
+	var text := TerugblikCard.line_text(s, {"kind": "waiting", "what": "talk", "person": "anouk", "name": "Anouk de Vries", "line": ""})
+	assert_true(text.contains("Anouk de Vries"), text)
+	assert_false(text.strip_edges().ends_with("·"), "no dangling separator: " + text)
+
+
+## The named skip stops when a check-in comes due on the way, and names whose.
+func test_the_skip_stops_at_a_due_check_in() -> void:
+	var s := _experiment_running()
+	_nobody_asked_yet(s)
+	var result := SessionLayer.new().skip_to_check(s, PROBLEM)
+	assert_eq(result.get("stopped", ""), "talk", "a check-in came due before the Check")
+	var due := s.checkin_prompts()
+	assert_eq(due.size(), 1)
+	assert_eq(result.get("id", ""), due[0]["person"], "the one who came due")
+	assert_eq(s.phase_of(PROBLEM), "doing", "the Check still waits")
+	var text := IntussenPanel.stopped_text(s, result)
+	assert_true(text.contains(due[0]["name"]), text)
+	var on := SessionLayer.new().skip_to_check(s, PROBLEM)
+	assert_false(on.has("error"), "the experiment still ran")
+	assert_false(on.get("stopped", "") == "talk" and on.get("id", "") == due[0]["person"],
+		"an open check-in does not stop the next skip")

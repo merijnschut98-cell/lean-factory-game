@@ -22,7 +22,10 @@ const WAITING := {
 	"checkin": "%s · de verbetering bij \"%s\" zakt weg",
 	"repair": "%s · \"%s\" kan nog beter",
 	"main": "Ruud · er ligt een nieuwe hoofdmissie op het bord: %s",
+	"talk": "%s · %s",
 }
+## A check-in whose content gives no dagstart line.
+const WANTS_A_WORD := "kan wel een goed gesprek gebruiken"
 const COMING := {
 	"check": "%s · de Check van \"%s\"",
 	"deadline": "%s · de deadline van \"%s\"",
@@ -106,6 +109,9 @@ static func line_text(s: GameSession, line: Dictionary) -> String:
 		"waiting":
 			if line["what"] == "main":
 				return WAITING["main"] % UiText.mission_title(s.missions.defs[line["mission"]], s)
+			if line["what"] == "talk":   # a person by name, in their dagstart line (PLAN 1.4b)
+				var said: String = line["line"] if not str(line["line"]).is_empty() else TranslationServer.translate(WANTS_A_WORD)
+				return TranslationServer.translate(WAITING["talk"]) % [line["name"], said]
 			return WAITING[line["what"]] % [_team(s, line["place"]), s.region.problems[line["problem"]].name]
 		"coming":
 			return COMING[line["what"]] % _coming_args(s, line)
