@@ -131,6 +131,8 @@ def _drop_route(d: dict) -> None:
         ends_with_talk="joost_output_kpi"), "ends_with_talk names no dialog of its own"),
     # A proposal that promises something the game checks later (D9 audit A4).
     (lambda d: _dialog(d, "el_amrani_fourth_call")["proposals"][0].update(promise={"kind": "lie", "days": 3}), "promise.*kind"),
+    # A talk open over later days too (D9 talks audit §2.9): missions that exist.
+    (lambda d: _dialog(d, "rachid_counter").update(also_during=["fix_nothing"]), "also_during names unknown mission"),
     # The Act 0 talks name the day's move (tutorial talks spec §5).
     (lambda d: _dialog(d, "joost_output_kpi").update(teaches=["mood"]), "'teaches' only on a tutorial"),
     (lambda d: _dialog(d, "joost_output_kpi").update(tutorial=True, teaches=["shout"]), "'teaches' names listening"),

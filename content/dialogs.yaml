@@ -944,12 +944,13 @@ dialogs:
       compliance: "Nou. Als Ruud het zegt."
       ruined: "Ik moet echt verder."
 
-  # ── Act 0, Tuesday: Rachid at the counter, optional (tutorial talks §4.1 rachid_monday; the walk-around trigger Tue–Thu waits for walk-around talks, so his talk hangs on Tuesday's mission) ─
+  # ── Act 0, Tuesday: Rachid at the counter, optional (tutorial talks §4.1 rachid_monday; open Tuesday to Thursday until walk-around talks exist) ─
   - id: rachid_counter
     name: "Rachid aan de balie"
     person: rachid
     kind: persuade
     mission: training_tue
+    also_during: [training_wed, training_thu]   # optional, Tuesday to Thursday (first five minutes §4.2; D9 talks audit §2.9)
     tutorial: true
     patience: 12
     opening: "O. Hoi. Ik ben Rachid. Sanne zegt dat ik je de bakken moet laten zien."

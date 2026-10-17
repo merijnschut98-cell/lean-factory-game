@@ -1281,6 +1281,10 @@
    "tutorial": true
   },
   {
+   "also_during": [
+    "training_wed",
+    "training_thu"
+   ],
    "co_proposal": {
     "id": "rachid_shows_his_list",
     "text": "Ik heb een lijstje in mijn la. Wat er mist. Wil je dat zien?"
