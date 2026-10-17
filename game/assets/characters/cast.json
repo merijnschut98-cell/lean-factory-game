@@ -10,8 +10,9 @@
     "office: where the world puts them (game/src/world/office/office_people.gd), in the office's",
     "  Godot space (x, z): seat (a workstation in the office model: <seat>_desk and <seat>_chair),",
     "  or at + face, or route (walked back and forth); pose sit|idle|talk|walk; missions: present",
-    "  only while one of these missions is active; talk: coach opens the coach instead of a talk;",
-    "  stand_in_desk: a desk copied from another workstation where the model has none yet.",
+    "  only while one of these missions is active; after: away until one of these missions is done; talk: coach opens the coach instead of a talk;",
+    "  floor: its floor (the start floor when none); chair: a chair marker, sat on facing its way; headset;",
+    "  lunch: a second spot (with its own floor) for 12:00-13:00.",
     "Names and roles follow the dialog spec (docs/superpowers/specs/2026-10-15-dialog-system-design.md 6)."
   ],
   "characters": [
@@ -133,7 +134,8 @@
       "look": {"sex": "f", "height": 1.74, "build": 0.6, "skin": [222, 176, 146], "hair_style": "bob",
                "hair_color": [150, 62, 36], "outfit": "shirt", "eye_color": [70, 90, 70],
                "colors": {"shirt": [236, 226, 200], "trousers": [36, 38, 46]}},
-      "office": {"floor": "ground", "seat": "kcc13", "pose": "sit", "headset": true}
+      "office": {"floor": "ground", "seat": "kcc13", "pose": "sit", "headset": true,
+                 "after": ["fix_status_callers"]}
     },
     {
       "id": "rob", "name": "Rob Verhagen", "role": "inkoper",
@@ -148,6 +150,21 @@
                "hair_color": [190, 150, 96], "outfit": "manager", "eye_color": [66, 108, 140],
                "colors": {"blazer": [40, 56, 92], "shirt": [244, 244, 246], "trousers": [40, 44, 56]}},
       "office": {"floor": "second", "seat": "congestion0", "pose": "sit"}
+    },
+    {
+      "id": "dirk", "name": "Dirk Smits", "role": "magazijn",
+      "look": {"sex": "m", "height": 1.74, "build": 0.72, "skin": [218, 164, 132], "hair_style": "buzz",
+               "hair_color": [120, 112, 104], "outfit": "monteur", "helmet": false, "eye_color": [70, 80, 90],
+               "stubble": 0.6, "stoop": 0.25},
+      "office": {"at": [2.4, -6.7], "face": [1.6, -7.95], "pose": "idle", "missions": ["fix_wrong_joint"]}
+    },
+    {
+      "id": "gert", "name": "Gert Peeters", "role": "uitvoerder, Grondwerk Peeters",
+      "look": {"sex": "m", "height": 1.88, "build": 0.8, "skin": [206, 150, 118], "hair_style": "receding",
+               "hair_color": [92, 74, 60], "outfit": "monteur", "helmet": false, "eye_color": [56, 70, 60],
+               "stubble": 0.4, "beard": "full", "colors": {"workshirt": [70, 84, 64]}},
+      "office": {"floor": "ground", "at": [-3.4, -4.4], "face": [-4.6, -4.7], "pose": "idle",
+                 "missions": ["fix_digging_damage"]}
     }
   ]
 }

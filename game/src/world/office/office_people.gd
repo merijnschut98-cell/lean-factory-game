@@ -100,6 +100,8 @@ func refresh(session: Object) -> void:
 	var active: Array = []
 	if session.has_method("active_missions"):
 		active = session.call("active_missions").map(func(m: MissionDef) -> String: return m.id)
+	var missions: Variant = session.get("missions")
+	var done: Dictionary = missions.done_once if missions is Missions else {}
 	var lunchtime := false
 	if session.has_method("minute_of_day"):
 		var minute: int = session.call("minute_of_day")
@@ -109,7 +111,7 @@ func refresh(session: Object) -> void:
 		var spot := p.spot_at(lunchtime)
 		p.at_lunch = lunchtime and p.lunch is Dictionary
 		p.settle(spot)
-		p.visible = p.present_for(active) and not spot.is_empty() and not _behind_shut_door(spot["at"])
+		p.visible = p.present_for(active, done) and not spot.is_empty() and not _behind_shut_door(spot["at"])
 		var state: Variant = session.call("energy_of", p.id) if energy and p.visible else {}
 		p.show_energy(state if state is Dictionary else {})
 
