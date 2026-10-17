@@ -3,7 +3,10 @@ extends SceneTree
 ## tests/lib/, outside that pattern), runs each test_*
 ## method on a fresh instance, prints a summary and exits non-zero on failure.
 ##   godot --headless --path game --script res://tests/run_tests.gd
-## Optional filter: append `-- <substring>` to run only matching test files.
+## Optional filter: append `-- <substring>` to run only matching test files
+## (matched on the path: `-- /test_x.gd` is exactly one). The whole suite runs
+## one file per process through tools/run_godot_tests.py. SPANNING_TEST_MEM=1
+## prints memory and object counts after each file.
 
 const TEST_DIR := "res://tests"
 
@@ -50,6 +53,9 @@ func _initialize() -> void:
 			var case: TestCase = script.new()
 			catcher.take()
 			case.call(name)
+			# One frame, so what the test queue_free'd is deleted now (errors
+			# while deleting count against it), not piled up until quit.
+			await process_frame
 			for err in catcher.take():
 				case.failures.append("runtime error: " + err)
 			if case.failures.is_empty():
@@ -57,6 +63,11 @@ func _initialize() -> void:
 			else:
 				for f in case.failures:
 					failed.append("%s::%s — %s" % [path.get_file(), name, f])
+		if OS.has_environment("SPANNING_TEST_MEM"):
+			print("[mem] %s static=%dMB objects=%d nodes=%d orphans=%d resources=%d" % [path.get_file(),
+				OS.get_static_memory_usage() / 1048576, Performance.get_monitor(Performance.OBJECT_COUNT),
+				Performance.get_monitor(Performance.OBJECT_NODE_COUNT), Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT),
+				Performance.get_monitor(Performance.OBJECT_RESOURCE_COUNT)])
 	for line in failed:
 		printerr("FAIL ", line)
 	OS.remove_logger(catcher)
@@ -67,7 +78,9 @@ func _initialize() -> void:
 func _test_files(filter: String) -> PackedStringArray:
 	var out: PackedStringArray = []
 	for file in DirAccess.get_files_at(TEST_DIR):
-		if file.begins_with("test_") and file.ends_with(".gd") and (filter.is_empty() or filter in file):
-			out.append(TEST_DIR.path_join(file))
+		var path := TEST_DIR.path_join(file)
+		# Matched on the path, so `-- /test_x.gd` names exactly one file.
+		if file.begins_with("test_") and file.ends_with(".gd") and (filter.is_empty() or filter in path):
+			out.append(path)
 	out.sort()
 	return out
