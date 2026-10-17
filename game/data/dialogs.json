@@ -3694,7 +3694,7 @@
     ],
     "text": "Nog vijf dagen. Dan ga ik vissen."
    },
-   "prompt": "Henk ruimt zijn bus leeg. Nog vijf dagen.",
+   "prompt": "Henk ruimt zijn bus leeg. Zijn laatste week.",
    "trigger": {
     "beat": "henk_farewell",
     "before_days": 5,
@@ -3845,7 +3845,7 @@
     ],
     "text": "Het gaat wel. De wachtrij is groener."
    },
-   "prompt": "Esra zit al een uur naar het rooster te staren.",
+   "prompt": "Esra eet haar lunch achter het rooster. Het scherm staat op groen; zij kijkt er niet naar.",
    "trigger": {
     "morale_below": 50,
     "needs": {
@@ -4080,7 +4080,7 @@
     ],
     "text": "Gaat wel. Morgen is er weer een dag."
    },
-   "prompt": "Linda plant weer 's avonds om, thuis. Haar collega's zien de mails om tien uur.",
+   "prompt": "Linda's mails komen de laatste tijd om tien uur 's avonds binnen.",
    "trigger": {
     "morale_below": 50,
     "needs": {
@@ -4294,7 +4294,7 @@
    "mission": "fix_revision_backlog",
    "mood": "gespannen",
    "name": "Mieke en de revisieberg",
-   "opening": "Als je komt voor de kabel van Gert: die zat in de doos. Ergens tussen juni en nu.",
+   "opening": "Als je komt voor de kabel van Gert: die zat in de doos. Ergens tussen augustus en nu.",
    "outcomes": {
     "commitment": "Dat moet kloppen, dus ja. En het boterhamzakje lijst ik in. Als laatste van zijn soort.",
     "compliance": "Als het moet. Dan teken ik wat er komt.",
@@ -4327,7 +4327,7 @@
      ],
      "id": "daily_template",
      "name": "Een vast sjabloon",
-     "reply": "Een sjabloon helpt. Een broodzakje is ook een sjabloon, als je het vriendelijk bekijkt.",
+     "reply": "Een sjabloon helpt. Een boterhamzakje is ook een sjabloon, als je het vriendelijk bekijkt.",
      "text": "Een vast sjabloon voor de schets, elke dag ingeleverd."
     },
     {

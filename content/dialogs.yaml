@@ -2110,7 +2110,7 @@ dialogs:
     name: "Henks laatste week"
     person: henk
     kind: checkin
-    prompt: "Henk ruimt zijn bus leeg. Nog vijf dagen."
+    prompt: "Henk ruimt zijn bus leeg. Zijn laatste week."
     patience: 8
     trigger:   # his last five days (scripts §5: henk_farewell, 5 days before; "Ik ben er nog vijf dagen")
       beat: henk_farewell
@@ -2172,7 +2172,7 @@ dialogs:
     name: "Esra en het rooster"
     person: esra
     kind: checkin
-    prompt: "Esra zit al een uur naar het rooster te staren."
+    prompt: "Esra eet haar lunch achter het rooster. Het scherm staat op groen; zij kijkt er niet naar."
     patience: 8
     trigger:
       morale_below: 50
@@ -2280,7 +2280,7 @@ dialogs:
     name: "Linda 's avonds"
     person: linda
     kind: checkin
-    prompt: "Linda plant weer 's avonds om, thuis. Haar collega's zien de mails om tien uur."
+    prompt: "Linda's mails komen de laatste tijd om tien uur 's avonds binnen."
     patience: 8
     trigger:
       morale_below: 50
@@ -2385,7 +2385,7 @@ dialogs:
     owns: revision_backlog
     mood: gespannen
     patience: 10
-    opening: "Als je komt voor de kabel van Gert: die zat in de doos. Ergens tussen juni en nu."
+    opening: "Als je komt voor de kabel van Gert: die zat in de doos. Ergens tussen augustus en nu."
     warning: "Ik heb hier een doos die niet kleiner wordt van praten."
     position: {text: "We tekenen ze over zo snel als we kunnen. Tweehonderdveertig schetsen. Met z'n tweeën.", tags: [claim]}
     layers:
@@ -2415,7 +2415,7 @@ dialogs:
         label: "Een vast sjabloon"
         say: "Een vast sjabloon voor de schets, elke dag ingeleverd."
         addresses: [interest]
-        reply: "Een sjabloon helpt. Een broodzakje is ook een sjabloon, als je het vriendelijk bekijkt."
+        reply: "Een sjabloon helpt. Een boterhamzakje is ook een sjabloon, als je het vriendelijk bekijkt."
       - id: mieke_sets_the_standard
         label: "Mieke bepaalt wat een goed as-built is"
         say: "Wat als jij bepaalt wat een goed as-built is? Jouw A4 met wat er altijd mist. En jouw team controleert, in plaats van over te tekenen."
