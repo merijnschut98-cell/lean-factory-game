@@ -174,7 +174,7 @@ func test_the_glossary_card_does_not_show_again_after_a_resume() -> void:
 	office.seed_value = 11
 	office.training = true
 	office.build()
-	assert_eq(office.ui.hud.card_texts().size(), 1, "Monday's card")
+	assert_false(office.ui.hud.card_texts().is_empty(), "Monday's cards")
 	var layer := SessionLayer.new()
 	layer.load_dict(office.ui.session_layer.to_dict())
 	var resumed := GameUI.new()

@@ -23,6 +23,9 @@ var coach: Dictionary = {}
 var persons: Array[PersonDef] = []
 var dialogs: Array[DialogDef] = []
 var dialog_bank: Dictionary = {}
+## The Act 0 move cards (tutorial talks spec §2): [{move (a listening move,
+## or null for a skill), day (a training mission id), title, text, why}].
+var move_cards: Array[Dictionary] = []
 ## The hidden rewards (content/discoveries.yaml), as validated dictionaries
 ## (Discoveries reads them).
 var discoveries: Array = []
@@ -57,6 +60,11 @@ static func load_from(dir: String = DATA_DIR) -> Catalog:
 			c.dialogs.append(def)
 		c.dialog_bank = JsonFile.dict_or_empty(talk.get("bank"))
 		c._keep_first(Dialog.bank_error(c.dialog_bank))
+		var cards: Variant = talk.get("move_cards", [])
+		for card: Variant in cards if cards is Array else []:
+			if card is Dictionary and card.get("day") is String and card.get("title") is String:
+				c.move_cards.append({"move": card.get("move"), "day": card["day"], "title": card["title"],
+					"text": str(card.get("text", "")), "why": str(card.get("why", ""))})
 	var found := JsonFile.read_dict(dir + "/discoveries.json")
 	if not found["error"].is_empty():
 		c.error = found["error"]
