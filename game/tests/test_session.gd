@@ -343,7 +343,10 @@ func test_the_training_week_is_played_end_to_end() -> void:
 	s.use_tool(INTAKE, "shadow")
 	assert_eq(s.missions.status("training_mon"), "active")
 	assert_false(s.ask(DESIGN, "walk").has("error"))
-	assert_eq(s.missions.status("training_mon"), "completed")
+	assert_eq(s.missions.status("training_mon"), "active", "Monday ends with Anouk's talk (D9 talks audit A2)")
+	assert_eq(s.start_dialog("anouk")["dialog"], "anouk_seven", "the first talk of the game is still there")
+	s.end_dialog()
+	assert_eq(s.missions.status("training_mon"), "completed", "however the talk went")
 	assert_eq(_active_ids(s), ["training_tue"])
 	assert_eq(s.clock_text(), "di 13 okt, 08:30", "each day of the week starts on its own morning")
 	# Tuesday: two tools at Werkvoorbereiding.

@@ -120,6 +120,17 @@ def _drop_route(d: dict) -> None:
     (lambda d: _dialog(d, "joost_output_kpi")["replies"].update(mood={"loudly": {"text": "Ja."}}), "situation"),
     (lambda d: _dialog(d, "joost_output_kpi").update(opening=" "), "opening"),
     (lambda d: _dialog(d, "joost_output_kpi").update(tutorial="yes"), "tutorial"),
+    # Ruud names a move after an Act 0 talk, and the cards name them (tutorial talks spec §2, §3).
+    (lambda d: d["dialogs"]["bank"]["ruud_names"].pop("silence"), "ruud_names"),
+    (lambda d: d["dialogs"]["bank"]["ruud_names"].pop("week_end"), "ruud_names"),
+    (lambda d: d["dialogs"]["move_cards"][0].update(move="shout"), "move card"),
+    (lambda d: d["dialogs"]["move_cards"][0].update(day="fix_nothing"), "move card"),
+    (lambda d: d["dialogs"]["move_cards"][0].pop("why"), "move card"),
+    # Monday ends with Anouk's talk (D9 talks audit A2): a talk of the day's own.
+    (lambda d: next(m for m in d["missions"]["missions"] if m["id"] == "training_mon").update(
+        ends_with_talk="joost_output_kpi"), "ends_with_talk names no dialog of its own"),
+    # A proposal that promises something the game checks later (D9 audit A4).
+    (lambda d: _dialog(d, "el_amrani_fourth_call")["proposals"][0].update(promise={"kind": "lie", "days": 3}), "promise.*kind"),
     # The Act 0 talks name the day's move (tutorial talks spec §5).
     (lambda d: _dialog(d, "joost_output_kpi").update(teaches=["mood"]), "'teaches' only on a tutorial"),
     (lambda d: _dialog(d, "joost_output_kpi").update(tutorial=True, teaches=["shout"]), "'teaches' names listening"),

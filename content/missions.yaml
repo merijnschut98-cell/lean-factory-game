@@ -109,9 +109,12 @@ missions:
     tier: 1
     act: 0
     chapter: Inwerkweek
-    briefing: "Welkom bij Voltana Netbeheer. Ik ben Ruud Hoekstra. Deze week oefen je in het klein; als er iets misgaat, raakt niemand iets kwijt. Vanochtend lag er een brief op mijn bureau van de familie El Amrani uit Nova-Oost: ze wachten al {dossier_weken} op een aansluiting voor hun warmtepomp. Zoek met de kaart (M) de Intake en Werkvoorbereiding op en kijk of vraag bij elk team hoe het werk binnenkomt."
+    briefing: "Welkom bij Voltana Netbeheer. Ik ben Ruud Hoekstra. Deze week oefen je in het klein; als er iets misgaat, raakt niemand iets kwijt. Vanochtend lag er een brief op mijn bureau van de familie El Amrani uit Nova-Oost: ze wachten al {dossier_weken} op een aansluiting voor hun warmtepomp. Zoek met de kaart (M) de Intake en Werkvoorbereiding op en kijk of vraag bij elk team hoe het werk binnenkomt. En loop vanavond niet meteen naar huis: wie er dan nog zit, maak je het beste kennis mee."
     debrief: "Je kent nu twee plekken waar een aanvraag langskomt. Elf weken onderweg: hoeveel uur is er al echt aan gewerkt, denk je? Morgen ga je beter kijken."
     goal: {type: observe, places: [connections.intake, connections.design]}
+    # The first talk of the game ends the day (first five minutes B7; D9 talks
+    # audit A2): the walk meets the goal in the morning, Anouk at seven closes it.
+    ends_with_talk: anouk_seven
     teaches: [netbeheerder, aansluiting, aansluittermijn]
     # TRAINING SETUP (staged, not a real number): this week three of the four
     # work preparers are on a course, so Werkvoorbereiding is clearly the

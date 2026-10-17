@@ -25,8 +25,11 @@ static func bank() -> Dictionary:
 	var wear_out := {}
 	for archetype: String in Dialog.ARCHETYPES:
 		wear_out[archetype] = {"ask": archetype + " vraagt", "say": archetype + " zegt"}
+	var ruud_names := {"none": "niets {person}", "week_end": "weekend"}
+	for move: String in Dialog.LISTEN:
+		ruud_names[move] = "naam %s {person}" % move
 	return {
-		"wear_out": wear_out,
+		"wear_out": wear_out, "ruud_names": ruud_names,
 		"labels": {"bands": ["Dicht", "Op z'n hoede", "Luistert", "Open", "Denkt mee"], "cue": "Er zit meer achter…",
 			"chips": chips, "outcomes": outcome_labels},
 		"player": player, "replies": replies, "outcomes": outcomes,
