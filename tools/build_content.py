@@ -1451,6 +1451,8 @@ def _validate_dialog(d: dict, where: str) -> None:
         if d["kind"] != "checkin":
             raise ContentError(f"{where}: only a check-in has a dagstart 'prompt'")
         _require_strings(d, ["prompt"], where)
+    elif d["kind"] == "checkin":  # the dagstart names who could use a talk, in one line
+        raise ContentError(f"{where}: a check-in needs a dagstart 'prompt'")
     if d["kind"] == "checkin":
         _checkin(d, proposals + experiments, where)
     else:

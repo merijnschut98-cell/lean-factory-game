@@ -139,6 +139,7 @@ def _drop_route(d: dict) -> None:
     (_drop_route, "never game over"),
     (lambda d: _dialog(d, "ahmed_after_henk").update(mission="fix_silo_kpis"), "check-in"),
     (lambda d: _dialog(d, "ahmed_after_henk").pop("trigger"), "trigger"),
+    (lambda d: _dialog(d, "ahmed_after_henk").pop("prompt"), "check-in needs a dagstart 'prompt'"),
     (lambda d: _dialog(d, "ahmed_after_henk")["proposals"][0].update(kpis=["work_prep_ftr"]), "check-in"),
     (lambda d: _dialog(d, "ahmed_after_henk")["variants"][0].update(needs={"all": ["chose:knowledge_drain:magic"]}),
      "does not list that countermeasure"),
