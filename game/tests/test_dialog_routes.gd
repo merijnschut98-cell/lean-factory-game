@@ -10,6 +10,19 @@ extends TestCase
 const TIER1_RATCHET := 9
 
 
+## Each content talk's full search (id → best_route), kept for the later tests
+## of this file: the same talk from the same start gives the same result.
+static var _searched: Dictionary = {}
+
+
+## The best route of content `talk`: the full search when one ran, else the
+## search that stops at the first win (the same wins and route).
+static func _best(talk: Dialog) -> Dictionary:
+	if _searched.has(talk.def.id):
+		return _searched[talk.def.id]
+	return DialogRoutes.best_route([talk], DialogRoutes.WIDTH, [], false)
+
+
 func _catalog() -> Catalog:
 	var c := Catalog.load_from()
 	assert_eq(c.error, "")
@@ -52,7 +65,8 @@ func test_no_fixed_route_wins_more_than_half_of_the_persuasion_talks() -> void:
 ## differing in two positions or more.
 func test_every_persuasion_has_three_different_routes() -> void:
 	for talk in DialogRoutes.content_talks(_catalog()):
-		var distinct := DialogRoutes.distinct(DialogRoutes.best_route([talk])["winners"])
+		_searched[talk.def.id] = DialogRoutes.best_route([talk])
+		var distinct := DialogRoutes.distinct(_searched[talk.def.id]["winners"])
 		assert_true(distinct.size() >= 3, "%s: %d distinct routes" % [talk.def.id, distinct.size()])
 
 
@@ -78,7 +92,7 @@ func test_pushing_early_costs_and_pressure_gives_compliance() -> void:
 		var r := pushed.say("propose", DialogRoutes.pick(pushed, "propose"))
 		assert_true(r["delta"] < 0, "%s: a proposal before listening costs" % talk.def.id)
 		var listened := []
-		for move: String in DialogRoutes.best_route([talk], DialogRoutes.WIDTH, [], false)["route"]:
+		for move: String in _best(talk)["route"]:
 			if not move in Dialog.LISTEN or listened.size() == 2:
 				break
 			listened.append(move)
