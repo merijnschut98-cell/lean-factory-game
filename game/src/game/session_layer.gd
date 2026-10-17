@@ -159,13 +159,16 @@ static func _most_moved(then: Dictionary, now: Dictionary, streams: Array) -> Di
 	return best
 
 
-## Who waits, most pressing first: a Check ready {problem, place}; a
+## Who waits, most pressing first: a Check ready {problem, place}; a person
+## whose check-in talk is due {person, name, line (their dagstart line)}; a
 ## check-in or a repair {mission, problem, place}; a main mission on the
 ## board {mission}.
 func _waiting(s: GameSession) -> Dictionary:
 	for st: ProblemState in s.region.state.values():
 		if st.phase == ProblemState.Phase.CHECK_READY:
 			return {"kind": "waiting", "what": "check_ready", "problem": st.id, "place": s.region.problems[st.id].step}
+	for p in s.checkin_prompts():   # a person, by name (PLAN 1.4b)
+		return {"kind": "waiting", "what": "talk", "person": p["person"], "name": p["name"], "line": p["line"]}
 	for m in s.available_missions():
 		if held_back(m):
 			continue
@@ -338,7 +341,8 @@ static func running(s: GameSession) -> Array[String]:
 ## Let the experiment run to its Check, a morning at a time, and stop early
 ## at a beat with a person: a check-in or repair that opens, or a deadline
 ## coming within a day (one already that close when the skip starts does not
-## stop it again). Returns {stopped: "" (the Check is due) | checkin |
+## stop it again), or a person's check-in talk that comes due (PLAN 1.4b).
+## Returns {stopped: "" (the Check is due) | checkin | talk (id: the person) |
 ## deadline | review, id, days (skipped)}, or {error: unknown_problem |
 ## not_doing}.
 func skip_to_check(s: GameSession, problem_id: String) -> Dictionary:
@@ -352,26 +356,38 @@ func skip_to_check(s: GameSession, problem_id: String) -> Dictionary:
 	for beat in _dates(s, from, from + DAY):
 		near[beat["what"] + ":" + beat["id"]] = true
 	var built := _built_ids(s)
+	var talks := _talk_ids(s)
 	while st.phase == ProblemState.Phase.DOING:
 		var now := s.region.net.time
 		var morning := SimCalendar.days(SimCalendar.day_of(now) + 1) + GameSession.START_MINUTE
 		s.pass_time(mini(st.check_at, morning) - now)
-		var stop := _stop(s, near, built)
+		var stop := _stop(s, near, built, talks)
 		if not stop.is_empty():
 			stop["days"] = _days(s.region.net.time - from)
 			return stop
 	return {"stopped": "", "id": "", "days": _days(s.region.net.time - from)}
 
 
-func _stop(s: GameSession, near: Dictionary, built: Array[String]) -> Dictionary:
+func _stop(s: GameSession, near: Dictionary, built: Array[String], talks: Array[String]) -> Dictionary:
 	for id in _built_ids(s):
 		if not built.has(id):
 			return {"stopped": "checkin", "id": id}
+	for id in _talk_ids(s):
+		if not talks.has(id):
+			return {"stopped": "talk", "id": id}
 	var now := s.region.net.time
 	for beat in _dates(s, now, now + DAY):
 		if beat["person"] and not near.has(beat["what"] + ":" + beat["id"]):
 			return {"stopped": beat["what"], "id": beat["id"]}
 	return {}
+
+
+## The people whose check-in talk is due now.
+static func _talk_ids(s: GameSession) -> Array[String]:
+	var out: Array[String] = []
+	for p in s.checkin_prompts():
+		out.append(p["person"])
+	return out
 
 
 func _built_ids(s: GameSession) -> Array[String]:

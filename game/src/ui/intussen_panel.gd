@@ -9,7 +9,7 @@ extends UiPanel
 const SKIP := "Spoel door tot de Check: %d dagen"
 const CHECK_ON := "De Check van \"%s\" is %s, over %d %s."
 const STOPS := "De skip stopt vanzelf bij mensen die op je wachten: %s."
-const NO_STOPS := "Niemand wacht op een vaste datum: de skip loopt door tot de Check."
+const NO_STOPS := "Niemand wacht op een vaste datum: de skip loopt door tot de Check, of tot iemand je wil spreken."
 const NOTHING := "Niets op de agenda voor de Check."
 const FITS := "Past in de %d %s tot de Check"
 const READY := "De Check staat klaar. Ga naar de Obeya en kijk wat de cijfers zeggen."
@@ -87,6 +87,13 @@ static func stopped_text(s: GameSession, result: Dictionary) -> String:
 			return STOPPED["deadline"] % [day, UiText.mission_title(s.missions.defs[result["id"]], s), TerugblikCard.day_name(s, t)]
 		"review":
 			return STOPPED["review"] % [day, TerugblikCard.day_name(s, s.region.board.next_review_at)]
+		"talk":   # the person whose check-in came due, in their dagstart line
+			for p in s.checkin_prompts():
+				if p["person"] == result["id"]:
+					return STOPPED["checkin"] % [day, TerugblikCard.line_text(s, {"kind": "waiting", "what": "talk",
+						"name": p["name"], "line": p["line"]})]
+			var who: PersonDef = s.people.persons.get(result["id"])
+			return STOPPED["checkin"] % [day, who.name if who != null else result["id"]]
 	var m: MissionDef = s.missions.defs[result["id"]]
 	return STOPPED["checkin"] % [day, TerugblikCard.line_text(s, {"kind": "waiting",
 		"what": "checkin" if m.id.begins_with(Missions.CHECKIN_PREFIX) else "repair",
