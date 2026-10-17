@@ -330,3 +330,104 @@ With the WIP fixes, every talk scored under 25 in §3 now scores **26 or higher 
 4. ⬜ P2: #40, §2.9.
 5. ⬜ Run `test_dialog_routes.gd` after 1–3 (expected unchanged) and T1/T2/T8 in `--check`.
 6. ⬜ Designer: the third pass once 1–3 land, with route numbers if a worktree with an import cache is free.
+
+---
+
+## § Third pass (2026-10-17)
+
+**What was read.** Origin at `bc42d1f` (D9 with the R4 fixes, and the character creator) plus the builder's follow-up `1e04a99` (`029d47f` a dagstart `prompt` on every check-in, `1236903` Rachid open Tuesday to Thursday), merged into this worktree; `content/dialogs.yaml` (19 people, 36 talks), `world.yaml`, `missions.yaml`, `cast.json`, `problems_tier1.yaml`.
+
+### T1. The first and second passes' items against the landed file
+
+**Everything on the first two passes' lists has landed.**
+
+| Item | Landed as |
+|---|---|
+| A1 rooms and bodies | `training_wed` opens Revisie & GIS, `training_thu` opens Meetdata; `connections.planning` is in the Aansluitingen room; `cast.json` has Rachid (`intake1`, lunch in the kantine), Linda (`planning1`), Mieke (`revision0`), plus Frank, Femke, Esra, Kim, Saskia, Rob and Thomas |
+| A2 Monday | `training_mon.ends_with_talk: anouk_seven` (`MissionDef.ends_with_talk`; `Missions` waits for the talk) |
+| A3 cards and naming | `bank.ruud_names` and `move_cards` as specced |
+| A4 the promise | `promise: {kind: delivery_date, days: 42}` on `name_a_date` and `{kind: callback, days: 3}` on the honest proposal, recorded with the talk's day (`People.promises`); the check stays 2.4b's |
+| #20, #28–#30 | `{aanvraag_datum}` filled by `GameSession` from the followed order; `{jongen_meid}` in `PlayerProfile` |
+| #41–#44, three tells | as written; Gert, Femke and Thomas now have three tells each |
+| §2.9 Rachid | `also_during` through `training_thu` |
+
+Only **#40** stays open (P2): Sanne's "Maandag. Om negen uur." still has no payoff on the first step of `walk_connections`.
+
+### T2. Route numbers
+
+Run on this worktree (import cache copied from the main checkout, then an incremental `--import`, because the copied class cache lacked `DialogRoutes`; content rebuilt from the merged YAML): `godot --headless --path game --script res://tools/route_check.gd -- tier1`, width 300, **111 s** at load ~5.
+
+- **Best fixed route: 9 of 20 persuasion talks (45 %)**: `open_question empathy inquiry open_question paraphrase silence propose ask_commitment`. That is **exactly the ratchet (`TIER1_RATCHET` 9)** and under half: it holds, with no margin.
+- It wins `joost_output_kpi`, `frank_kpi_targets`, `joost_vacancies`, `petra_batch`, `dirk_shelf`, `gert_klic`, `mieke_redraw`, `femke_triage`, `thomas_reclaim`.
+- **Every talk is winnable, and every talk has at least 23 distinct winning routes** (T7 needs 3): the fewest is `linda_replanning` (23), then `rob_order_rule` (77), `sanne_checker` (80), `sanne_kpi` (81); the most `anouk_first_look` (376).
+- The fixes of the three passes moved no route, as expected (tags and `via` kept).
+- **Where the next point of margin is:** the universal route wins 6 of the 7 defender talks (only Esra resists, through her feeling-cued concern). Defenders open to inquiry and paraphrase by archetype (four-tier audit §4.2), so they share a key. To get below 9 by content, give one or two defenders a different door, as the tier-3 drafts did: e.g. `gert_klic`'s interest opened by the record (`via: [show_data, paraphrase]`, he has his KLIC map in his hand) or `thomas_reclaim`'s by the other side (`via: [perspective, paraphrase]`, he thinks in his customers). Proposed, not required: the bar holds.
+- The suite's set is 20 talks (the content's persuasions that `DialogRoutes.content_talks` counts, plus scripts not yet in content); most Act 0 tutorial talks are outside it, as before.
+
+### T3. The seven check-in prompts, for voice
+
+A prompt is the dagstart line that says someone could use a talk. The rule this pass applies: **a prompt is what anyone on the floor could see, never what the talk is for.** It is the outside of the person, so the talk still has something to draw out. Each prompt can stand for up to three days (D7), so it may not count down.
+
+| Talk | Prompt | Verdict | Replace with |
+|---|---|---|---|
+| `ahmed_after_henk` | "Ahmed is stil sinds Henk weg is." | ✓ seen from outside; plain | — |
+| `anouk_late` | "Anouk zat gisteravond om half zeven nog te tekenen. Alleen." | ✓ "Alleen." is the tell (her colleagues are back) | — |
+| `henk_last_week` | "Henk ruimt zijn bus leeg. Nog vijf dagen." | ✗ counts down; on day 3 of the prompt it is wrong | "Henk ruimt zijn bus leeg. Zijn laatste week." |
+| `esra_after` | "Esra zit al een uur naar het rooster te staren." | ✗ it is her opening line almost word for word ("Ik zit hier al een uur naar een rooster te staren."), so the talk opens on a repeat | "Esra eet haar lunch achter het rooster. Het scherm staat op groen; zij kijkt er niet naar." |
+| `petra_after` | "Petra zegt tegen iedereen dat alles klopt. Iets te vaak." | ✓ the best of the seven: a tell of her facts need, and a hint that something is under it | — |
+| `marco_day_100` | "Marco staat bij het bord in de gang, met zijn koffie." | ✓ sets up his concern without saying it | — |
+| `linda_evenings` | "Linda plant weer 's avonds om, thuis. Haar collega's zien de mails om tien uur." | ✗ the first sentence *is* her interest layer ("Ik plan 's avonds om. Thuis."), handed over before the talk | "Linda's mails komen de laatste tijd om tien uur 's avonds binnen." |
+
+**`anouk_late`, voice.** Opening "O. Hoi. Ik ben zo klaar, hoor. Nog eentje.", position "Nee joh, gaat prima. Ik zit erbovenop." and the rewritten concern (#36, the error in a monteur's trench) are her sheet: she apologises first, says "nee joh" and "ik zit erbovenop", and never says she is overloaded. Her `lifted` "Ik ga naar huis. Echt. Morgen is er ook nog." answers `anouk_seven` without quoting it. No finding.
+
+### T4. Two new findings in the landed cast (P0 / P1)
+
+**Dirk and Gert cannot be reached.** A talk opens from a body (`Office.person_selected` → `GameUI.ask_talk(id)` → `People.dialog_for`, wherever the person stands) or from a place's "Mensen hier" menu. Dirk (`outages.repair`, Act I, `fix_wrong_joint`) and Gert (`outages.locate`, Act II, `fix_digging_damage`) have **neither a body in `cast.json` nor a place in any room**: the yard (2.2) and the dig site (Phase 4) do not exist yet. Their talks, `dirk_shelf` and `gert_klic` (the main mission's talk of the first Act II mission), cannot be opened. This is the A1 test from the first pass: it would have caught them.
+
+- **Gert (P0 for Act II):** he comes to us. Cast entry on the begane grond at reception, `missions: [fix_digging_damage]`, pose `talk`, standing at the counter with a folded KLIC map. His opening line already fits a visit ("Ik heb mijn verzekeraar al gebeld, als je daarvoor komt."). The briefing gets one sentence: "Gert Peeters staat beneden bij de ontvangst. Hij wil zijn kant vertellen."
+- **Dirk (P0 for Act I's side):** until the yard exists, Dirk comes up with a trolley of moffen: cast on the 1e by the stairs, `missions: [fix_wrong_joint]`, pose `idle`, next to a trolley. His line works anywhere ("Als je een mof zoekt: rij drie, vak twaalf.").
+- **The test for the builder:** every dialog's person has a cast entry or a place inside a room its mission opens.
+
+**Saskia sits at her KCC desk from the start** (`cast.json`, `kcc13`). Esra's concern in `esra_agents` is "Saskia zit thuis. Stress.", and `esra_after` has "Saskia komt volgende week terug. Halve dagen." A player who walks the KCC sees the person Esra says is at home: the world contradicts the talk (P1). Fix: Saskia absent until `esra_after` has been had or `fix_status_callers` is done plus 14 days (a cast `absent_until` / `needs` key), then half days (present in the morning only). Kim, who "zat te huilen in haar auto", sits at her desk: right, people come to work anyway.
+
+### T5. Act II talks against the Act II missions (PLAN 2.5)
+
+Six main missions in Act II (`fix_digging_damage` → `fix_revision_backlog` → `fix_grid_study_queue` → `fix_transformer_wait` → `fix_unused_capacity` → `fix_silo_kpis`) and two sides without talks (`fix_silent_meter`, `fix_inverters_tripping`). Read: each mission's briefing, debrief and problem clues against the talk that owns it, for numbers, names, timeline, the voice in the briefing's quotes, and the rule that nothing a debrief says may assume what the player chose.
+
+**The numbers agree** in every pair checked: 240 sketches, four-month-old cable, anderhalf uur per sketch (Mieke); de helft anders dan op de kaart, De Linde on the aggregate, compensation after four hours (Gert; the Netcode's storingsvergoeding after four hours is right); 38 studies, nine weeks, 3x25A, four hours against a quarter (Femke); seven months against two weeks, six months' delivery, De Boomgaard (Rob); 62 %, two megawatt, two years on the list (Thomas, Ilse). The Lean is right: Femke's debrief ("Je hebt het knelpunt eerst beter benut voordat je het groter maakte") is exploit before elevate; Rob's is parallel instead of serial waits; Thomas's is inventory that only looks full. The sector is right: KLIC and proefsleuven, the capaciteitsbeperkingscontract, a time-bound night contract for Ilse, the ACM's rules on unused capacity.
+
+**Findings:**
+
+| # | Where | As landed | Fix | P |
+|---|---|---|---|---|
+| 45 | `fix_revision_backlog` briefing | "… Bij Revisie & GIS staat een doos met 240 schetsen van opgeleverde aansluitingen. De oudste is van juni; …" | "… De oudste is van augustus; …" | P1 |
+| 46 | `mieke_redraw` opening | "Als je komt voor de kabel van Gert: die zat in de doos. Ergens tussen juni en nu." | "Als je komt voor de kabel van Gert: die zat in de doos. Ergens tussen augustus en nu." | P1 |
+| 47 | `fix_revision_backlog` briefing and debrief | "… één is getekend op een broodzakje." · "Het broodzakje heeft ze ingelijst." | "boterhamzakje" in both (the talks say boterhamzakje since #7–#8) | P2 |
+| 48 | `fix_digging_damage` debrief | "Er zijn minder graafschades. Gert graaft weer met proefsleuven, en zijn opdrachtgever plant er tijd voor in. Gert deed alles volgens het boekje; de oorzaak zat in ons proces. …" | "Er zijn minder graafschades. Gert deed alles volgens het boekje; de oorzaak zat in ons proces. Maar de kaart klopt nog steeds niet overal. Wie houdt de kaart eigenlijk bij?" | P1 |
+| 49 | `fix_revision_backlog` debrief | "Een nieuwe kabel staat nu op de kaart op de dag dat hij in de grond ligt. Mieke tekent niet meer over; ze controleert. Het broodzakje heeft ze ingelijst. …" | "Een nieuwe kabel staat nu eerder op de kaart, en de doos bij Revisie & GIS wordt kleiner. Wie merkt het als dit over een jaar wegzakt, en hoe snel?" | P1 |
+| 50 | `fix_unused_capacity` debrief | "… Een deel daarvan komt, volgens de regels van de ACM en in gesprek met de klant, terug in de wachtrij. Bakkerij De Graaf bakt in het voorjaar elektrisch. …" | "… Een deel daarvan komt, volgens de regels van de ACM, terug in de wachtrij. Welke andere voorraad houden wij aan die op papier vol lijkt?" | P1 |
+| 51 | `fix_silo_kpis` debrief | "Sanne en Joost kijken nu naar dezelfde aansluiting en hetzelfde getal. In het volgende MT presenteren ze samen. …" | "Intake en Werkvoorbereiding kijken nu naar dezelfde aansluiting en hetzelfde getal. …" (rest unchanged) | P1 |
+
+**45–46, the timeline (T9).** The cable was moved four months before the strike and clue 0 says the oldest open sketch is four months old; Act II cannot start before Act I's main missions are done, so no earlier than about December (day 100 is 20 January), and four months back from there is August at the earliest. "Juni" makes the oldest sketch six months old.
+
+**48–51, debriefs that claim the player's choice.** A debrief is shown whatever the player chose. These four state one countermeasure ("graaft met proefsleuven", "Mieke controleert", "in gesprek met de klant") or one talk outcome ("De Graaf bakt elektrisch", "presenteren ze samen") as fact. A player who fixed it another way, or whose talk was ruined, is told something that did not happen: the same rule as the talks (§2.2), now for missions. The rewrites keep the process result and the closing question (the debrief's best part). The person beats move to where they are true: each talk's `commitment` line already says them, and 2.5's templated debriefs (C16) can add a line on a fact (`committed:mieke_redraw` → "Mieke tekent niet meer over; ze controleert. Het boterhamzakje heeft ze ingelijst."). That is the right place for the framed sandwich bag: earned, not narrated.
+
+**Scores for the Act II talks against their missions** (seven criteria; the talks were scored in §3 alone, this is the pair with its mission):
+
+| Talk + mission | /35 | Note |
+|---|---|---|
+| `gert_klic` + `fix_digging_damage` | 29 (playable: 0 until T4) | numbers and names agree; unreachable |
+| `mieke_redraw` + `fix_revision_backlog` | 27 → 30 with #45–#47, #49 | the timeline and the debrief |
+| `femke_triage` + `fix_grid_study_queue` | 31 | the best-fitting pair in tier 1: her clue *is* the debrief's lesson |
+| `rob_order_rule` + `fix_transformer_wait` | 30 | — |
+| `thomas_reclaim` + `ilse_queue` + `fix_unused_capacity` | 29 → 30 with #50 | two sides of one queue, as designed |
+| `frank`/`joost`/`sanne` + `fix_silo_kpis` | 29 → 30 with #51 | audited before (tier-1 content audit) |
+
+Nothing under 25. **One gap for 2.5 itself:** the two Act II sides (`fix_silent_meter` with Petra's doubt in its briefing; `fix_inverters_tripping` with Wim Kortekaas and his monthly spreadsheet) have no talk. Wim is the customer-with-data the tier lacks (a facts person who is *right*, retired, polite, three years of spreadsheets), and Petra's "twijfelt" is a lead-in waiting to be written. Proposed for the next design pass, not required by the bar.
+
+### T6. Checklist
+
+1. ⬜ **Builder (P0):** Gert at reception during `fix_digging_damage`, Dirk by the stairs with a trolley during `fix_wrong_joint`; the "every talk's person has a body or a room" test.
+2. ⬜ Builder (P1): Saskia absent until her return (T4); prompts for `henk_last_week`, `esra_after`, `linda_evenings` (T3); #45–#46, #48–#51.
+3. ⬜ Builder (P2): #40, #47.
+4. ⬜ Designer: two side talks for Act II (Petra's silent meters, Wim Kortekaas), and the 2.5 templated debrief lines per fact (#49's sandwich bag and its siblings).
