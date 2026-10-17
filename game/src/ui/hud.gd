@@ -253,6 +253,11 @@ func toast(text: String) -> void:
 		get_tree().create_timer(TOAST_SECONDS).timeout.connect(l.queue_free)
 
 
+## Keep `px` free under the toasts (the minimap in the bottom-right corner): they stack above it.
+func keep_clear_below_toasts(px: float) -> void:
+	_toasts.offset_bottom = -14 - px
+
+
 ## The toasts on screen, oldest first.
 func toast_texts() -> Array[String]:
 	var out: Array[String] = []

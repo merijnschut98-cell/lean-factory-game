@@ -92,6 +92,8 @@ var _walk_goal: Node3D
 var _hovered_person: OfficePerson
 ## The "Hoe werkt het?" explainer open over the world (Ruud's whiteboard), or null.
 var explainer: ExplainerView
+## Ruud's paper floor plan in the corner (PLAN 2.1b); null when the game cannot be played.
+var minimap: OfficeMinimap
 ## The character creator open over the world ("Uiterlijk" in the pause menu), or null.
 var look_editor: CreatorScreen
 
@@ -146,6 +148,10 @@ func build() -> void:
 	ui.panels_closed.connect(_on_panels_closed)
 	if ui.playable():
 		show_map()
+		minimap = OfficeMinimap.new()
+		add_child(minimap)
+		minimap.setup(self)
+		ui.hud.keep_clear_below_toasts(Minimap.DIAMETER + Minimap.MARGIN)
 		floors.floor_changed.connect(func(id: String) -> void: ui.session_layer.floor_id = id)
 		enter_saved_floor(ui.session_layer.floor_id)
 		ui.title_requested.connect(to_title)
