@@ -871,8 +871,12 @@ def make_textures() -> None:
     tw = 0.5 + 0.5 * np.sin(2 * np.pi * (x + y) * round(90 * k))
     thread = noise(n, 21, beta=1.0, stretch=(1, 14))
     h = 0.75 * tw + 0.25 * thread
-    _png("twill_albedo", np.repeat((0.84 + 0.08 * (h - 0.5) + 0.12 * (mottle - 0.5))[..., None], 3, -1))
-    _normal("twill", h, 4.0)
+    # twill: a coarser, fainter diagonal than the denim's (PLAN 1.3d): the fine strong weave
+    # aliased into stripes and chevrons at the creator's close-up
+    tw_coarse = 0.5 + 0.5 * np.sin(2 * np.pi * (x + y) * round(48 * k))
+    th = 0.45 * tw_coarse + 0.55 * thread
+    _png("twill_albedo", np.repeat((0.84 + 0.04 * (th - 0.5) + 0.12 * (mottle - 0.5))[..., None], 3, -1))
+    _normal("twill", th, 1.4)
 
     fade = noise(n, 33, beta=2.2, stretch=(6, 1), low=1, high=20)
     weft = np.clip(tw * 0.6 + thread * 0.6 - 0.35, 0, 1)
