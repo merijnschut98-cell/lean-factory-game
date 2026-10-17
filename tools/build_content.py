@@ -1017,7 +1017,7 @@ def _maturity(problems: dict, practice: set, done: set, index: dict) -> int:
 
 
 # ── world.yaml (the head office: floors and rooms, PLAN 2.1) ─────────────────
-WORLD_FLOOR_KEYS = {"id", "name", "level", "model"}
+WORLD_FLOOR_KEYS = {"id", "name", "level", "outside_of", "model"}
 WORLD_ROOM_KEYS = {"id", "floor", "name", "places", "opens_with"}
 _MODEL = re.compile(r"^[a-z][a-z0-9_]*\.glb$")
 # Missions made during play (game/src/rules/missions.gd CHECKIN_PREFIX, repairs.gd
@@ -1035,13 +1035,20 @@ def validate_world(doc: Any, source: str) -> None:
     for f in floors:
         where = f"{source}: floor '{f['id']}'"
         _known_keys(f, WORLD_FLOOR_KEYS, where)
-        level = int(_number(f, "level", where, 0, 9, integer=True))
-        if level in levels:
-            raise ContentError(f"{where}: two floors on level {level} ({levels[level]!r} too)")
-        levels[level] = f["id"]
+        if ("level" in f) == ("outside_of" in f):
+            # an outside area (the yard) is reached by a door from its floor, never by the stairs
+            raise ContentError(f"{where}: needs either a level or 'outside_of' (an outside area)")
+        if "level" in f:
+            level = int(_number(f, "level", where, 0, 9, integer=True))
+            if level in levels:
+                raise ContentError(f"{where}: two floors on level {level} ({levels[level]!r} too)")
+            levels[level] = f["id"]
         if not isinstance(f.get("model"), str) or not _MODEL.match(f["model"]):
             raise ContentError(f"{where}: 'model' must be a .glb file name (lowercase, no folders)")
     floor_ids = {f["id"] for f in floors}
+    for f in floors:
+        if "outside_of" in f and f["outside_of"] not in levels.values():
+            raise ContentError(f"{source}: floor '{f['id']}': outside of unknown floor {f['outside_of']!r}")
     if doc.get("start_floor") not in floor_ids:
         raise ContentError(f"{source}: start_floor {doc.get('start_floor')!r} is not a floor")
     rooms = _entries(doc, "rooms", source)

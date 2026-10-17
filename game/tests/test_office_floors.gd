@@ -51,7 +51,8 @@ func _at(m: Dictionary) -> Vector2:
 func test_the_building_has_three_floors_each_with_its_own_model() -> void:
 	var b := _building()
 	assert_eq(b.error, "")
-	assert_eq(b.floors.map(func(f: Dictionary) -> String: return f["name"]), ["Begane grond", "1e verdieping", "2e verdieping"])
+	assert_eq(b.floors.filter(func(f: Dictionary) -> bool: return f["outside_of"].is_empty()).map(
+		func(f: Dictionary) -> String: return f["name"]), ["Begane grond", "1e verdieping", "2e verdieping"])
 	assert_eq(b.start_floor, "first")
 	assert_eq(b.model_path("first"), Office.MODEL, "the 1e is the connections office's model, as before")
 	for f in b.floors:
@@ -61,11 +62,76 @@ func test_the_building_has_three_floors_each_with_its_own_model() -> void:
 	assert_eq(b.next_floor("second", 1), "", "no floor above the top")
 
 
+func test_the_yard_is_outside_the_begane_grond_behind_the_kantines_back_door() -> void:
+	var b := _building()
+	var yard := b.floor_of("yard")
+	assert_eq([yard.get("name"), yard.get("outside_of"), yard.get("level")], ["Werf", "ground", 0])
+	assert_true(ResourceLoader.exists(b.model_path("yard")), "the yard has its glb")
+	assert_eq(b.next_floor("ground", 1), "first", "the stairs skip the yard")
+	assert_eq(b.next_floor("first", -1), "ground")
+	var ground := _markers(b, "ground")
+	var out := _markers(b, "yard")
+	for key in ["exit:yard", "arrive:exit"]:
+		assert_true(ground.has(key), "the kantine: %s" % key)
+	for key in ["exit:ground", "arrive:exit"]:
+		assert_true(out.has(key), "the yard: %s" % key)
+	if ground.has("exit:yard") and out.has("exit:ground"):
+		assert_true(_at(ground["exit:yard"]).distance_to(_at(out["exit:ground"])) < 2.5, "one door, seen from both sides")
+	var kantine: Rect2 = ground["room:canteen"]["rect"]
+	assert_true(kantine.has_point(_at(ground["exit:yard"])), "the back door is the kantine's")
+
+
+func test_the_back_door_takes_the_same_player_out_and_back_in() -> void:
+	var office := _office()
+	_take(office, "fix_wrong_joint")
+	office.floors.go_to("ground", "lift", true)
+	var player := office.player
+	var door := office.interactable("exit:yard")
+	assert_true(door != null, "the back door in the kantine")
+	assert_eq(office.prompt_for(door), "E — Naar de werf")
+	office.interact(door)
+	assert_eq(office.floors.floor_id, "yard", "out on the yard")
+	assert_true(office.player == player, "the same player")
+	var arrive := office.in_office(office.floors.markers()["arrive:exit"]).origin
+	assert_true(player.position.distance_to(arrive) < 0.01, "outside the door")
+	assert_eq(office.interactable("lift"), null, "no lift on the yard")
+	var under := PackedVector2Array()   # the collision's corners below the ground's surface
+	for v in office._collision_faces():
+		if v.y < -0.15:
+			under.append(Vector2(v.x, v.z))
+	var ground := Rect2(under[0], Vector2.ZERO) if not under.is_empty() else Rect2()
+	for p in under:
+		ground = ground.expand(p)
+	assert_true(ground.has_point(Vector2(arrive.x, arrive.z)), "ground to stand on under the door (the player does not fall)")
+	var back := office.interactable("exit:ground")
+	assert_eq(office.prompt_for(back), "E — Naar binnen (begane grond)")
+	office.interact(back)
+	assert_eq(office.floors.floor_id, "ground", "and back in the kantine")
+	assert_false(office.floors.go_to("yard", "lift"), "the lift does not go to the yard")
+	assert_true(OfficeFloors.NO_LIFT_OUTSIDE % "werf" in office.ui.hud.toast_texts())
+	office.free()
+
+
+func test_the_yard_is_shut_until_a_mission_needs_it() -> void:
+	var office := _office(true)   # Monday of the training week
+	office.floors.go_to("ground", "lift", true)
+	var door := office.interactable("exit:yard")
+	assert_true(door != null)
+	office.interact(door)
+	assert_eq(office.floors.floor_id, "ground", "nothing on the yard is open yet")
+	assert_true(OfficeFloors.CLOSED_OUTSIDE % "werf" in office.ui.hud.toast_texts())
+	office.free()
+
+
 func test_every_floor_carries_its_rooms_seams_and_places() -> void:
 	var b := _building()
 	for f in b.floors:
 		var id: String = f["id"]
 		var m := _markers(b, id)
+		if f.get("outside_of", "") != "":
+			for r in b.rooms_on(id):
+				_room_markers(id, r, m)
+			continue
 		for key in ["lift", "arrive:lift"]:
 			assert_true(m.has(key), "%s: %s" % [id, key])
 		var above := not b.next_floor(id, 1).is_empty()
@@ -75,21 +141,26 @@ func test_every_floor_carries_its_rooms_seams_and_places() -> void:
 		assert_eq(m.has("stairs_down"), below, "%s: stairs down only with a floor below" % id)
 		assert_eq(m.has("arrive:stairs_up"), below, "%s: arriving from below where the stairs come up" % id)
 		for r in b.rooms_on(id):
-			var room: String = "room:" + r["id"]
-			assert_true(m.has(room), "%s: a marker for room %s" % [id, r["id"]])
-			if not m.has(room):
-				continue
-			var rect: Rect2 = m[room]["rect"]
-			assert_true(rect.get_area() > 4.0, "%s has a floor area" % r["id"])
-			if not OfficeBuilding.START in r["opens_with"]:
-				assert_true(m.has("door:" + r["id"]), "%s: a door to shut %s" % [id, r["id"]])
-				if m.has("door:" + r["id"]):
-					assert_false(rect.has_point(_at(m["door:" + r["id"]])), "%s's door marker stands outside it" % r["id"])
-			for place: String in r["places"]:
-				var key: String = "place:" + place
-				assert_true(m.has(key), "%s: a marker for %s" % [id, place])
-				if m.has(key):
-					assert_true(rect.has_point(_at(m[key])), "%s stands in %s" % [place, r["id"]])
+			_room_markers(id, r, m)
+
+
+## A room's markers on floor `id`: its area, its door while it can be shut, its places inside it.
+func _room_markers(id: String, r: Dictionary, m: Dictionary) -> void:
+	var room: String = "room:" + r["id"]
+	assert_true(m.has(room), "%s: a marker for room %s" % [id, r["id"]])
+	if not m.has(room):
+		return
+	var rect: Rect2 = m[room]["rect"]
+	assert_true(rect.get_area() > 4.0, "%s has a floor area" % r["id"])
+	if not OfficeBuilding.START in r["opens_with"]:
+		assert_true(m.has("door:" + r["id"]), "%s: a door to shut %s" % [id, r["id"]])
+		if m.has("door:" + r["id"]):
+			assert_false(rect.has_point(_at(m["door:" + r["id"]])), "%s's door marker stands outside it" % r["id"])
+	for place: String in r["places"]:
+		var key: String = "place:" + place
+		assert_true(m.has(key), "%s: a marker for %s" % [id, place])
+		if m.has(key):
+			assert_true(rect.has_point(_at(m[key])), "%s stands in %s" % [place, r["id"]])
 
 
 func test_the_1e_keeps_its_markers_where_they_were() -> void:

@@ -218,6 +218,8 @@ func _run() -> void:
 			_people(office, state)
 		"minimap", "minimap_floor", "minimap_near":
 			_minimap(office, state)
+		"yard", "yard_magazijn", "yard_werkplaats", "yard_vans":
+			_yard(office, state)
 		"people_kcc", "people_lunch", "people_directie", "people_netstrategie", "people_planning", "people_revisie", \
 				"people_whiteboard", "people_explainer", "people_dirk", "people_gert":
 			await _rooms(office, state)
@@ -381,6 +383,24 @@ func _minimap(office: Office, state: String) -> void:
 	else:
 		_stand_at(office, DESIGN)
 	office.minimap.refresh()
+
+
+## The yard (2.2), its rooms open: out through the kantine's back door (yard), then at the
+## magazijn's counter, the werkplaats's on-call table and the van with its doors open.
+func _yard(office: Office, state: String) -> void:
+	for m in ["fix_wrong_joint", "walk_outages", "fix_not_at_home"]:
+		office.session.missions.progress[m] = {"status": "active", "asks": {}, "seen": {}}
+	office.floors._process(OfficeFloors.POLL_SECONDS)
+	office.floors.go_to("ground", "lift", true)
+	office.floors.use(office.interactable("exit:yard"))
+	var at := {"yard_magazijn": "place:outages.joint", "yard_werkplaats": "place:outages.locate",
+		"yard_vans": "place:outages.repair"}
+	if at.has(state):
+		_stand_at(office, at[state])
+		office.rig.zoom(1)
+	else:
+		office.rig.zoom(4)
+	office.rig.snap()
 
 
 ## The rooms peopled in 2.1c: the floor's room opened by its mission, the player a few
