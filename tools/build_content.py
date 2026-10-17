@@ -1238,7 +1238,7 @@ PERSON_KEYS = {"id", "name", "short", "role", "place", "team", "archetype", "nee
 DIALOG_KEYS = {"id", "name", "person", "kind", "mission", "requires_clue", "needs", "owns", "kpi_team", "mood",
                "patience", "opening", "retry_opening", "position", "layers", "data", "proposals", "experiments",
                "co_proposal", "condition_needs", "block", "lines", "replies", "outcomes", "variants", "trigger",
-               "tutorial", "teaches", "prompt", "warning", "need", "beats_after"}
+               "tutorial", "teaches", "prompt", "warning", "need", "beats_after", "also_during"}
 LAYER_KEYS = {"id", "at", "via", "text", "tags", "tell", "lead_in", "condition", "wait_for", "unlocks"}
 PROPOSAL_KEYS = {"id", "label", "say", "kpis", "addresses", "reply", "hidden", "promise"}
 # A proposal that promises the person something the game checks later (D9
@@ -1451,6 +1451,8 @@ def _validate_dialog(d: dict, where: str) -> None:
         if d["kind"] != "checkin":
             raise ContentError(f"{where}: only a check-in has a dagstart 'prompt'")
         _require_strings(d, ["prompt"], where)
+    elif d["kind"] == "checkin":  # the dagstart names who could use a talk, in one line
+        raise ContentError(f"{where}: a check-in needs a dagstart 'prompt'")
     if d["kind"] == "checkin":
         _checkin(d, proposals + experiments, where)
     else:
@@ -1714,6 +1716,9 @@ def _check_mission_dialog(d: dict, where: str, missions: dict, problems: dict, n
     mission = missions.get(d["mission"])
     if mission is None:
         raise ContentError(f"{where}: unknown mission {d['mission']!r}")
+    for later in _string_list(d, "also_during", where):  # open over these missions' days too
+        if later not in missions:
+            raise ContentError(f"{where}: also_during names unknown mission {later!r}")
     problem = mission["goal"].get("problem")
     if "owns" in d and d["owns"] != problem:
         raise ContentError(f"{where}: owns {d['owns']!r}, which is not the problem of mission {mission['id']!r}")
