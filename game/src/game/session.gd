@@ -73,9 +73,10 @@ static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, t
 	s.region.use_kpis(s.catalog.kpis)
 	s.missions = Missions.new(s.region, s.catalog.missions, s.catalog.coach)
 	s.people = People.new(s.catalog.persons, s.catalog.dialogs, s.catalog.dialog_bank)
+	# Bound methods, not lambdas: a lambda capturing `s` would be a reference
+	# cycle (s → missions → lambda → s) and no session would ever be freed.
 	s.missions.talk_outcome = s.talk_outcome
-	s.missions.talked = func(dialog_id: String) -> bool:  # a talk the content does not hold waits for nothing
-		return s.people.talks.has(dialog_id) or not s.people.dialogs.has(dialog_id)
+	s.missions.talked = s.talked
 	s.discoveries = Discoveries.new(s.catalog.discoveries)
 	for id in [STORY_MISSION, TRAINING_FIRST]:
 		if not s.missions.defs.has(id):
@@ -849,6 +850,12 @@ func end_dialog() -> Dictionary:
 ## (Missions.talk_outcome).
 func talk_outcome(dialog_id: String) -> String:
 	return people.effective_outcome(dialog_id, people.facts(_facts()))
+
+
+## Whether a dialog was had (Missions.talked); a talk the content does not
+## hold waits for nothing.
+func talked(dialog_id: String) -> bool:
+	return people.talks.has(dialog_id) or not people.dialogs.has(dialog_id)
 
 
 ## What a talk needs to know about the world, for person `p`.

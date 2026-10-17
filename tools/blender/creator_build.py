@@ -365,17 +365,18 @@ def beard_short(h, coll):
 
 
 def moustache(h, coll):
-    """Snor: the beard's upper lip only, trimmed."""
+    """Snor: the beard's upper lip, from the mouth corners up under the nose, full and a little
+    thicker than the beard there (the pack's beard is thin at the lip; PLAN 1.3d)."""
     ob = pack_style(h, coll, "Hair_Beard")
     m = h.mouth
     bm = bmesh.new()
     bm.from_mesh(ob.data)
-    dead = [f for f in bm.faces if not (m[2] + 0.001 < f.calc_center_median().z < m[2] + 0.033
-                                        and abs(f.calc_center_median().x) < h.lip_half + 0.008)]
+    dead = [f for f in bm.faces if not (m[2] - 0.004 < f.calc_center_median().z < m[2] + 0.036
+                                        and abs(f.calc_center_median().x) < h.lip_half + 0.012)]
     bmesh.ops.delete(bm, geom=dead, context="FACES")
     bm.to_mesh(ob.data)
     bm.free()
-    pc.short_beard(ob, h.body, keep=0.85)
+    pc.short_beard(ob, h.body, keep=1.8)
     return ob
 
 
