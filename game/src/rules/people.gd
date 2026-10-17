@@ -273,7 +273,53 @@ func finish(d: Dialog, now: int, main: bool = false) -> Dictionary:
 		"clue": d.unlocked_clue(), "facts": facts, "cooldown_until": cooldown, "wait_for": d.wait_for(),
 		"hints": d.def.block.get("routes", []).map(func(r: Dictionary) -> String: return str(r.get("hint", ""))) \
 			if o == "blocked" else [],
+		"ruud_names": ruud_names(d),
 	}
+
+
+## The promises the player made and the person agreed to (a proposal with a
+## `promise`), for the check that keeps them (2.4b): dialog id → {proposal,
+## kind, days, at (the day of the talk that agreed it, minutes)}. Read from
+## what is saved anyway: the agreement and the talk log.
+func promises() -> Dictionary:
+	var out := {}
+	for id: String in agreed:
+		var d: DialogDef = dialogs.get(id)
+		var promise := JsonFile.dict_or_empty(d.item(str(agreed[id])).get("promise")) if d != null else {}
+		if promise.is_empty():
+			continue
+		var at := -1
+		for entry: Dictionary in talk_log.get(d.person, []):
+			if entry.get("dialog") == id and entry.get("outcome") == outcomes.get(id):
+				at = int(entry.get("at", -1))
+		out[id] = {"proposal": agreed[id], "kind": str(promise.get("kind", "")), "days": int(promise.get("days", 0)),
+			"at": at}
+	return out
+
+
+## Ruud's line after an Act 0 talk (tutorial talks spec §3): he names one
+## listening move that landed, the day's move first, else the one that landed
+## most; when none did he asks (`none`). "" after any other talk: from Act I he
+## asks, he never names. (The spec's second rule, the move that drew out the
+## concern, waits: the talk keeps no record of which move that was.)
+func ruud_names(d: Dialog) -> String:
+	if not d.def.tutorial:
+		return ""
+	var best := "none"
+	var most := 0
+	for i in d.made.size():
+		var gain := d.trace[i + 1] - d.trace[i] if i + 1 < d.trace.size() else 0
+		var move := d.made[i]
+		if not move in Dialog.LISTEN or gain <= 0:
+			continue
+		if move in d.def.teaches:
+			best = move
+			break
+		if gain > most:
+			best = move
+			most = gain
+	var lines := JsonFile.dict_or_empty(bank.get("ruud_names"))
+	return str(lines.get(best, "")).replace("{person}", d.who.short)
 
 
 func _remembers(flag: String, d: Dialog) -> bool:

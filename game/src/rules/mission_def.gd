@@ -63,6 +63,9 @@ var goal_problem: String
 ## talk_to: the dialog, and the least outcome that meets the goal.
 var goal_dialog: String
 var goal_outcome := "commitment"
+## A talk of this mission that must have been had, however it went, before
+## the goal counts (Monday ends with Anouk at seven: D9 talks audit A2); "".
+var ends_with_talk: String
 var goal_clues := 0
 ## observe: a gemba tool (goal_tool, or any tool or question when empty) used
 ## at every place, goal_uses different place-tool pairs in all.
@@ -144,6 +147,7 @@ static func from_dict(d: Dictionary) -> MissionDef:
 	m.goal_uses = int(goal.get("uses", 1))
 	m.goal_dialog = str(goal.get("dialog", ""))
 	m.goal_outcome = str(goal.get("outcome", "commitment"))
+	m.ends_with_talk = str(d.get("ends_with_talk", "")) if d.get("ends_with_talk") is String else ""
 	m.check_days = int(d.get("check_days", -1))
 	m.teaches = PackedStringArray(d.get("teaches", []))
 	var setup: Variant = d.get("setup", [])

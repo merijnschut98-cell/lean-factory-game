@@ -191,6 +191,25 @@ func test_ruud_asks_about_a_hard_talk_once() -> void:
 	assert_eq(s.ask_coach("fix_wrong_joint"), {"kind": "not_main"}, "never about a side mission")
 
 
+## Talks speak of the player and the El Amrani dossier through tokens
+## (creator spec §1.6; D9 talks audit #20, #28–#30), filled in one pass.
+func test_talk_lines_fill_the_player_s_and_the_dossier_s_tokens() -> void:
+	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
+	s.player.look["lichaam"] = "vrouw"
+	var born := GameSession.date_of(s.followed.born)
+	assert_eq(s.fill_tokens("Op {aanvraag_datum}."), "Op %d %s." % [born["day"], GameSession.MONTH_NAMES[born["month"] - 1]])
+	assert_eq(s.fill_tokens("Dag, {jongen_meid}."), "Dag, meid.", "by the body made in the creator")
+	s.player.look["lichaam"] = "man"
+	assert_eq(s.fill_tokens("Dag, {jongen_meid}."), "Dag, jongen.")
+	s.player.look["lichaam"] = "vrouw"
+	s.missions.done_once["fix_wrong_joint"] = true
+	assert_eq(s.accept("save_henks_knowledge"), "")
+	var opened := s.start_dialog("henk")
+	assert_eq(opened["dialog"], "henk_camera")
+	assert_false("{" in str(opened["opening"]), opened["opening"])
+	assert_true("meid" in str(opened["opening"]), "Henk's word for a young colleague, by the player's body")
+
+
 ## The dagstart names who could use a talk (spec §5.7), never more than one.
 func test_the_dagstart_names_an_open_checkin() -> void:
 	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
