@@ -216,6 +216,8 @@ func _run() -> void:
 			office.ui.open_terugblik(office.ui.session_layer.open_session(office.session))
 		"people_desks", "people_talk", "people_energy", "people_monteurs", "people_meetdata", "people_gemba":
 			_people(office, state)
+		"minimap", "minimap_floor", "minimap_near":
+			_minimap(office, state)
 		"people_kcc", "people_lunch", "people_directie", "people_netstrategie", "people_planning", "people_revisie", \
 				"people_whiteboard", "people_explainer":
 			await _rooms(office, state)
@@ -362,6 +364,23 @@ func _people(office: Office, state: String) -> void:
 			_stand_at(office, DESIGN)
 			office.interact(office.interactable(DESIGN))
 			office.rig.snap()
+
+
+## The minimap (2.1b): a main mission in Meetdata seen from Aansluitingen (the rim arrow
+## and its distance), one on the 2e (the floor to go to), and Meetdata in view.
+func _minimap(office: Office, state: String) -> void:
+	var mission: String = {"minimap": "fix_done_but_not_closed", "minimap_floor": "fix_grid_study_queue",
+		"minimap_near": "fix_done_but_not_closed"}[state]
+	office.session.missions.progress[mission] = {"status": "active", "asks": {}, "seen": {}}
+	office.floors._process(OfficeFloors.POLL_SECONDS)
+	if state == "minimap_near":
+		office.player.position = Vector3(-6.5, 0, -8.0)
+		office.player.face(Basis.looking_at(Vector3(-1, 0, 0)))
+		office.rig.yaw = office.player.rotation.y
+		office.rig.snap()
+	else:
+		_stand_at(office, DESIGN)
+	office.minimap.refresh()
 
 
 ## The rooms peopled in 2.1c: the floor's room opened by its mission, the player a few
