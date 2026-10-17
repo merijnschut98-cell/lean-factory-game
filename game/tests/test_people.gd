@@ -36,6 +36,15 @@ func test_ruud_asks_instead_when_nothing_landed_and_never_names_after_act_0() ->
 	assert_eq(_talk(DialogFixture.people(), ["mood"])["ruud_names"], "", "not a tutorial talk")
 
 
+## A talk may stay open over several missions' days (Rachid, Tuesday to
+## Thursday: D9 talks audit §2.9).
+func test_a_talk_also_open_during_later_missions() -> void:
+	var people := DialogFixture.people([DialogFixture.def({"also_during": ["wed", "thu"]})])
+	for day in ["fix_design", "wed", "thu"]:
+		assert_eq(people.dialog_for("pim", DialogFixture.world({"main": [], "active": [day]})).id, "talk", day)
+	assert_eq(people.dialog_for("pim", DialogFixture.world({"main": [], "active": ["fri"]})), null)
+
+
 # ── Promises the game checks later (D9 talks audit A4; the check is 2.4b) ────
 
 func test_an_agreed_promise_is_kept_with_the_day_it_was_made() -> void:
