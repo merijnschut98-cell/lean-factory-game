@@ -593,3 +593,11 @@ func test_a_positive_kpi_review_forecast_is_a_fact() -> void:
 	assert_eq(result["error"], "")
 	assert_true(result["paid"] > 0.0, "lead time and a complete handover beat the habit: %.4f" % result["improvement"])
 	assert_true(s.knows("forecast_positive:kpi_board"))
+
+
+## A dropped game is freed: GameSession is RefCounted, so a reference cycle
+## (e.g. a lambda on Missions capturing the session) keeps the whole region
+## alive for good; the test suite grew past 6 GB that way.
+func test_a_dropped_session_is_freed() -> void:
+	var gone: WeakRef = weakref(GameSession.new_game(11, Catalog.DATA_DIR, false))
+	assert_true(gone.get_ref() == null, "something the session owns still holds it (a reference cycle)")

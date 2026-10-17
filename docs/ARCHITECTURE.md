@@ -176,7 +176,7 @@ UI strings that are not content (button labels, HUD) go through Godot's translat
 
 ## Testing
 
-- **Logic tests:** a small custom runner (`game/tests/run_tests.gd`, a `SceneTree` script) runs every `test_*.gd` headless: `godot --headless --path game --script res://tests/run_tests.gd` (append `-- rng` to run only matching files). It exits non-zero on failure. No third-party test addon, so nothing to keep compatible.
+- **Logic tests:** a small custom runner (`game/tests/run_tests.gd`, a `SceneTree` script) runs every `test_*.gd` headless: `godot --headless --path game --script res://tests/run_tests.gd` (append `-- rng` to run only matching files, `-- /test_rng.gd` for exactly one). It exits non-zero on failure and lets a frame pass after every test, so what a test `queue_free`s is deleted. The whole suite runs through `tools/run_godot_tests.py`: one Godot process per file, a few at a time, and a file that dies without a summary fails the run. No third-party test addon, so nothing to keep compatible.
   - Tests extend `TestCase` (`assert_eq`, `assert_near`, `assert_between`, …).
   - GDScript cannot catch runtime errors, so the runner registers a `Logger` (Godot 4.5+). A test that crashes halfway, for example on a null access, fails instead of silently passing.
   - A file with a syntax error fails the run.
