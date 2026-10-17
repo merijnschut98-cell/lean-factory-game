@@ -35,7 +35,7 @@ rooms:
     floor: ground
     name: Klantcontactcentrum
     places: [customer_contact.answer]
-    opens_with: [fix_status_callers, fix_done_but_not_closed]
+    opens_with: [fix_status_callers, fix_done_but_not_closed, fix_inverters_tripping]   # Wim Kortekaas's talk (Act II side)
   - id: canteen
     floor: ground
     name: Kantine

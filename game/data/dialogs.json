@@ -4908,6 +4908,319 @@
     }
    },
    "warning": "Als je me een folder gaat voorlezen, hang ik op."
+  },
+  {
+   "co_proposal": {
+    "id": "petra_rides_along",
+    "text": "Laat mij één ochtend met een monteur mee naar de Lindeflats. Hij plaatst, ik kijk naar het lampje. Dan zien we het allebei."
+   },
+   "data": [
+    "silent_meter:0",
+    "silent_meter:3"
+   ],
+   "experiments": [
+    {
+     "addresses": [
+      "interest",
+      "concern"
+     ],
+     "id": "one_street_two_weeks",
+     "name": "Twee weken, één flat: wachten op het lampje",
+     "reply": "Twee weken. Dan heb ik het zwart op wit. Of niet. Dat is ook een uitkomst.",
+     "text": "Twee weken, één flat: de monteur wacht tot de meter verbinding heeft voordat hij wegrijdt. Jij houdt bij wat er gebeurt."
+    }
+   ],
+   "id": "petra_silent_meters",
+   "kind": "persuade",
+   "layers": [
+    {
+     "at": 52,
+     "id": "interest",
+     "tags": [
+      "claim"
+     ],
+     "text": "De Lindeflats. De Kade. De Hofstede. Allemaal nieuwbouw, allemaal met de meterkast in een betonnen kelderberging. In de rijtjeshuizen heb ik er bijna geen.",
+     "via": [
+      "show_data",
+      "perspective"
+     ]
+    },
+    {
+     "at": 66,
+     "id": "concern",
+     "lead_in": {
+      "tags": [
+       "hesitation",
+       "doubt"
+      ],
+      "text": "Ik weet het alleen niet zeker. En wat ik niet zeker weet, zeg ik liever niet."
+     },
+     "tags": [
+      "admission"
+     ],
+     "tell": "facts",
+     "text": "De vorige keer dat er iets bij Meetdata bleef liggen, wist de hele kantine het binnen een week. Als ik nu zeg dat het niet aan de meters ligt maar aan hoe we ze plaatsen, dan zegt Meetdata weer iets over de monteurs. En het staat nog niet in mijn map.",
+     "unlocks": {
+      "clue": "silent_meter:5",
+      "facts": [
+       "heard:petra_meters"
+      ],
+      "proposals": [
+       "petra_rides_along"
+      ]
+     },
+     "via": [
+      "experience",
+      "show_data"
+     ]
+    }
+   ],
+   "lines": {
+    "experience": "Mijn eerste week dacht ik dat de stapel bij Werkvoorbereiding aan Anouk lag. Het lag aan hoe de bakken stonden. Ik had het niet gezien als ik het niet had geteld.",
+    "perspective": "Hoe zou de monteur die bij de Lindeflats stond dit zien, denk je?"
+   },
+   "mission": "fix_silent_meter",
+   "mood": "neutraal",
+   "name": "Petra en de zwijgende meters",
+   "opening": "Je komt voor de lijst. Hier. Tweeënveertig meters die niks zeggen. Ik heb ze per straat gesorteerd.",
+   "outcomes": {
+    "commitment": "Klopt. De eerste ochtend dat er een monteur naar de Lindeflats gaat, ga ik mee. Met de lijst. En mijn map.",
+    "compliance": "Als je het zo wilt. Het komt in de map.",
+    "heard": "Hm. Je liet me het zelf zeggen. Dat was nodig, geloof ik.",
+    "none": "Ik moet de lijst nog bijwerken.",
+    "partial": "Ik wil het wel. Als het eerst per adres in de lijst staat.",
+    "ruined": "Dan vraag je het maar aan de Molen."
+   },
+   "owns": "silent_meter",
+   "patience": 10,
+   "person": "petra",
+   "position": {
+    "tags": [
+     "claim"
+    ],
+    "tell": "facts",
+    "text": "Iedereen zegt: de meters van de nieuwe leverancier deugen niet. Dat kan. Maar dan zou het overal zijn. Het is niet overal."
+   },
+   "proposals": [
+    {
+     "addresses": [],
+     "id": "supplier_complaint",
+     "name": "Een klacht naar de leverancier",
+     "reply": "Kan. Dan sturen ze nieuwe meters. Die hangen dan in dezelfde kelders.",
+     "text": "We sturen een klacht naar de leverancier, met jouw lijst erbij."
+    },
+    {
+     "addresses": [
+      "interest"
+     ],
+     "id": "list_by_address",
+     "name": "De lijst per adres naast elkaar",
+     "reply": "Per adres. Dat kan ik vanmiddag. Dan staat het tenminste in mijn map.",
+     "text": "Zullen we je lijst naast de adressen leggen? Flat of rijtjeshuis, kelder of gang."
+    },
+    {
+     "addresses": [
+      "concern"
+     ],
+     "hidden": true,
+     "id": "petra_rides_along",
+     "name": "Petra kijkt één ochtend mee bij het plaatsen",
+     "reply": "Samen kijken. Dan is het geen Meetdata tegen de monteurs. Dan is het gewoon gemeten. … Klopt.",
+     "text": "Wat als jij één ochtend meegaat naar de Lindeflats? Jij en de monteur kijken samen naar dat lampje. Dan staat het in jouw map én in de zijne."
+    }
+   ],
+   "replies": {
+    "experience": {
+     "lands": {
+      "text": "Geteld. Ja. … Ik heb het eigenlijk al geteld. Ik heb het alleen nog niemand laten zien."
+     }
+    },
+    "perspective": {
+     "lands": {
+      "tags": [
+       "claim"
+      ],
+      "text": "De monteur? Die plaatst, sluit de kast en rijdt door. Zo is het hem geleerd. Hij ziet nooit wat ik zie, een week later."
+     }
+    },
+    "show_data": {
+     "lands": {
+      "tags": [
+       "claim"
+      ],
+      "tell": "facts",
+      "text": "Drie op de tien in de flats. Eén op de twintig elders. … Dat had ik ook. Ik had het alleen nog niet opgeschreven."
+     },
+     "misses": {
+      "text": "Een gemiddelde over de hele regio. Daar zit het niet in."
+     }
+    }
+   },
+   "warning": "Mijn lijst klopt. Daar hoef je niet over te beginnen."
+  },
+  {
+   "co_proposal": {
+    "id": "wim_reads_the_data",
+    "text": "Laat me één middag naast iemand zitten die bij de gegevens van de trafo kan. Ik neem mijn laptop mee. En ik beloof dat ik niet zeg dat ik het al wist."
+   },
+   "data": [
+    "inverters_tripping:2",
+    "inverters_tripping:4"
+   ],
+   "experiments": [
+    {
+     "addresses": [
+      "interest",
+      "concern"
+     ],
+     "id": "last_summer_street",
+     "name": "De metingen van afgelopen zomer, de hele straat",
+     "reply": "Elk kwartier. De hele straat. … Dan hoeft u mijn spreadsheet niet eens meer te geloven.",
+     "text": "We halen de metingen van afgelopen zomer op: de hele Zonnestraat, elk kwartier, uit de slimme meters. U krijgt de grafiek."
+    }
+   ],
+   "id": "wim_spreadsheet",
+   "kind": "persuade",
+   "layers": [
+    {
+     "at": 50,
+     "id": "interest",
+     "tags": [
+      "claim"
+     ],
+     "text": "Het is winter, dus u denkt: nu heeft hij nergens last van. Maar in maart begint het weer. Op een zonnige middag gaat mijn omvormer uit. Tien minuten later aan. Dan weer uit. Bij de buren ook. Twintig adressen inmiddels.",
+     "via": [
+      "reflect",
+      "mood"
+     ]
+    },
+    {
+     "at": 66,
+     "id": "concern",
+     "lead_in": {
+      "tags": [
+       "hesitation",
+       "claim"
+      ],
+      "tell": "recognition",
+      "text": "Ik heb het in 2023 al opgeschreven. Tabblad drie. Elke zonnige middag boven de tweehonderddrieënvijftig volt."
+     },
+     "tags": [
+      "admission"
+     ],
+     "tell": "recognition",
+     "text": "Mijn buren noemen me de zeur van de Zonnestraat. Twintig mensen klagen nu, en ze kijken allemaal naar mij. Ik heb veertig jaar in de elektrotechniek gewerkt. Heb ik het mis, dan ben ik een oude man met een spreadsheet. Heb ik het goed, dan heeft niemand drie jaar gekeken.",
+     "unlocks": {
+      "clue": "inverters_tripping:5",
+      "facts": [
+       "heard:wim_spreadsheet"
+      ],
+      "proposals": [
+       "wim_reads_the_data"
+      ]
+     },
+     "via": [
+      "show_data",
+      "perspective"
+     ]
+    }
+   ],
+   "lines": {
+    "mood": "Hoe gaat het met u, met al die spreadsheets?",
+    "paraphrase": "Dus u stuurt al drie jaar uw metingen, en u krijgt alleen een bevestiging terug.",
+    "perspective": "Hoe zou de monteur die bij u kwam meten dit zien, denkt u?",
+    "reflect": "Het klinkt alsof u het gevoel heeft dat niemand ze leest."
+   },
+   "mission": "fix_inverters_tripping",
+   "mood": "neutraal",
+   "name": "Wim en tabblad drie",
+   "opening": "Goedemiddag. Kortekaas, Zonnestraat veertien. U kent mij waarschijnlijk van de spreadsheets.",
+   "outcomes": {
+    "commitment": "Dan neem ik mijn laptop mee. En een verlengsnoer; die hebben jullie hier vast niet.",
+    "compliance": "Goed. Dan wacht ik weer op de ontvangstbevestiging.",
+    "heard": "Dank u. Ik hoef geen gelijk. Ik wil alleen dat iemand kijkt.",
+    "none": "Ik mail u tabblad drie nog even.",
+    "partial": "Ik stuur de spreadsheet nog één keer. Als iemand hem deze keer opent.",
+    "ruined": "Dan stuur ik volgende maand weer een spreadsheet. En de maand daarna."
+   },
+   "owns": "inverters_tripping",
+   "patience": 10,
+   "person": "wim",
+   "position": {
+    "tags": [
+     "claim",
+     "feeling"
+    ],
+    "tell": "recognition",
+    "text": "Elke maand stuur ik u mijn metingen. Elke maand krijg ik een ontvangstbevestiging. Zesendertig ontvangstbevestigingen. Ik heb ze bewaard."
+   },
+   "proposals": [
+    {
+     "addresses": [],
+     "id": "retune_inverter",
+     "name": "Zijn omvormer later laten afschakelen",
+     "reply": "Dan gaat de spanning nog hoger, en mag dat niet eens. Dat is de thermometer stukmaken omdat je koorts hebt.",
+     "text": "Wij betalen een monteur die uw omvormer zo instelt dat hij later afschakelt."
+    },
+    {
+     "addresses": [
+      "interest"
+     ],
+     "id": "logger_one_week",
+     "name": "Een week een meter in zijn meterkast",
+     "reply": "Een week. Bij mij. Dan heeft u één adres. Er zijn er twintig.",
+     "text": "We komen nog een keer meten. Een hele week, met een logger in uw meterkast."
+    },
+    {
+     "addresses": [
+      "concern"
+     ],
+     "hidden": true,
+     "id": "wim_reads_the_data",
+     "name": "Zijn spreadsheet naast onze metingen",
+     "reply": "Mijn tabblad naast uw metingen. … Daar zit ik al drie jaar op te wachten.",
+     "text": "Wilt u met een van onze netbeheerders naar de metingen van de hele straat kijken? Uw spreadsheet naast onze slimme meters."
+    }
+   ],
+   "replies": {
+    "open_question": {
+     "lands": {
+      "tags": [
+       "claim"
+      ],
+      "tell": "recognition",
+      "text": "Wat er gebeurt? Zevenentwintig keer afgeschakeld op 14 juni. Het staat erin, per minuut."
+     }
+    },
+    "perspective": {
+     "lands": {
+      "tags": [
+       "claim"
+      ],
+      "text": "De monteur? Die meet bij mij om tien uur 's ochtends. Dan is er niks. Hij doet zijn werk goed. Hij kijkt alleen op het verkeerde uur."
+     }
+    },
+    "reflect": {
+     "lands": {
+      "tags": [
+       "feeling"
+      ],
+      "text": "Leest. Nou. Ze worden ontvangen. Dat staat er elke keer bij."
+     }
+    },
+    "show_data": {
+     "lands": {
+      "tags": [
+       "claim"
+      ],
+      "text": "Tweehonderdvierenvijftig volt, om kwart over één. … Dat is mijn getal. Dat is precies mijn getal."
+     },
+     "misses": {
+      "text": "Een daggemiddelde. Daar zit het niet in. Het zit in de middag."
+     }
+    }
+   },
+   "warning": "Met alle respect: dit zei de vorige meneer ook."
   }
  ],
  "move_cards": [
@@ -5220,6 +5533,19 @@
    "team": "key_accounts",
    "trust": 50,
    "voice": "Twee jaar."
+  },
+  {
+   "archetype": "expert",
+   "id": "wim",
+   "morale": 50,
+   "name": "Wim Kortekaas",
+   "need": "recognition",
+   "place": "customer_contact.answer",
+   "role": "bewoner Zonnestraat, gepensioneerd elektrotechnicus",
+   "short": "meneer Kortekaas",
+   "team": "contact_centre",
+   "trust": 45,
+   "voice": "Het staat op tabblad drie."
   }
  ]
 }
