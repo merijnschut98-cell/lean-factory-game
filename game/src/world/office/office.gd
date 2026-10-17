@@ -73,6 +73,11 @@ var new_player: PlayerProfile
 ## Start with the training week (Inwerkweek); a returning player skips it on
 ## the mission board.
 @export var training := true
+## A new game opens as one scene, De eerste vijf minuten (PLAN 2.7d; the UI
+## agent's OfficeOpening): "Nieuw spel" sets it; tests and tools leave it off.
+var opening := false
+## The first day's scene while it runs (also a resumed one), else null.
+var first_day: OfficeOpening
 
 var session: GameSession
 var geometry: Node3D
@@ -142,7 +147,7 @@ func build() -> void:
 	_add_camera()
 	ui = GameUI.new()
 	add_child(ui)
-	ui.setup(session, loaded.get("layer"))
+	ui.setup(session, loaded.get("layer", _opening_layer()))
 	ui.panel_opened.connect(_on_panel_opened)
 	ui.talk_opened.connect(frame_talk)
 	ui.panels_closed.connect(_on_panels_closed)
@@ -158,6 +163,9 @@ func build() -> void:
 		ui.pause_menu.look_requested.connect(open_look)
 		if autosaves:
 			ui.begin_play(saves, loaded.has("session"))
+		if Opening.running(ui.session_layer):
+			first_day = OfficeOpening.create(self)
+			add_child(first_day)
 	if loaded.has("error"):
 		ui.hud.toast(RESUME_FAILED % loaded["error"])
 
@@ -177,6 +185,18 @@ func _resume() -> Dictionary:
 	push_warning("office: " + loaded["error"])
 	autosaves = false
 	return {"error": loaded["error"]}
+
+
+## A new game's session layer at the opening's first beat (PLAN 2.7d), or null
+## (no opening: a returning player skips the week, tests and tools).
+func _opening_layer() -> SessionLayer:
+	if not opening or not session.in_training():
+		return null
+	var layer := SessionLayer.new()
+	layer.begin(session)
+	layer.opening_beat = Opening.ARRIVAL
+	layer.has_floor_plan = false   # Ruud hands it over on the walk (B3)
+	return layer
 
 
 ## Build, continuing on floor `floor_id` (as a save that was left there does).

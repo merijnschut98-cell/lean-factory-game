@@ -183,7 +183,7 @@ func _move_cards() -> void:
 	_list.add_child(paragraph(tr(TALKS_INTRO), Palette.MUTED))
 	var grid := _card_grid()
 	for card: Dictionary in session.catalog.move_cards:
-		var reached := day_reached(session, card["day"])
+		var reached := Opening.day_reached(session, card["day"])
 		var box := _grid_card(grid, reached, Palette.NOTE_PAPER)
 		if not reached:
 			box.add_child(label(SILHOUETTE, UiTheme.HEADING, Palette.MUTED))
@@ -192,11 +192,6 @@ func _move_cards() -> void:
 		box.add_child(label(card["title"], UiTheme.FONT_SIZE, Palette.VOLTANA_BLUE))
 		box.add_child(paragraph(card["text"], Palette.INK, 15))
 		box.add_child(paragraph("'%s'" % card["why"], Palette.MUTED, 15))
-
-
-## Whether a training day has come (its mission handed out, or done).
-static func day_reached(s: GameSession, mission_id: String) -> bool:
-	return s.missions.done_once.has(mission_id) or s.missions.status(mission_id) in ["active", "completed"]
 
 
 ## The explainers in content order, read once (the file does not change in play).

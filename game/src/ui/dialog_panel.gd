@@ -47,6 +47,8 @@ const STILL_NEEDED_CHECK := "Eerst zien, dan geloven: een geslaagde Check."
 ## day, by phone after that. One move named, never a score.
 const RUUD_DROPPED_BY := "Ruud kwam even langs"
 const RUUD_MESSAGE := "Bericht van Ruud"
+## From this minute of the day Ruud has gone home: he texts.
+const RUUD_HOME_AT := 18 * 60
 ## Under a ruined talk: the retry, and nothing more.
 const TRY_AGAIN := "%s wil morgen weer praten."
 ## The header's button mid-talk: Esc ends the talk as "Afronden" does.
@@ -102,6 +104,9 @@ var trust_moved := 0
 var trust_flash: Label
 ## The trust the pips showed before the last move.
 var _trust_seen := 0
+## A line under the meter until the first move, once in the game (the first
+## talk, PLAN 2.7d B7); "" for none.
+var first_hint := ""
 
 
 func _init() -> void:
@@ -166,6 +171,7 @@ func choose(move: String, pick: String = "") -> Dictionary:
 		return result
 	last = result
 	picking = ""
+	first_hint = ""
 	# At the end the talk's outcome moves trust too (a partial's +5).
 	var trust: int = result.get("summary", {}).get("trust", result["trust"])
 	trust_moved = signi(trust - _trust_seen)
@@ -403,6 +409,8 @@ func _layer_tracker() -> HBoxContainer:
 ## not a link) or their own idea.
 func _speech() -> void:
 	if last.is_empty():
+		if not first_hint.is_empty():
+			_flow.add_child(paragraph(first_hint, Palette.MUTED, UiTheme.SMALL))
 		_flow.add_child(paragraph("\"%s\"  \"%s\"" % [talk["opening"], talk["position"].get("text", "")]))
 	else:
 		if talking():  # the summary keeps only the person's last words
@@ -564,7 +572,9 @@ func _summary() -> void:
 func _ruud_names(columns: HBoxContainer, line: String) -> void:
 	if line.is_empty():
 		return
-	var monday := SimCalendar.weekday(session.region.net.time - SimCalendar.days(GameSession.WARMUP_DAYS)) == 0
+	# In person on Monday's working day; by text in the evening (he has gone home, 2.7d B7) and after.
+	var monday := SimCalendar.weekday(session.region.net.time - SimCalendar.days(GameSession.WARMUP_DAYS)) == 0 \
+		and session.minute_of_day() < RUUD_HOME_AT
 	var card := add_card(columns, tr(RUUD_DROPPED_BY if monday else RUUD_MESSAGE), Palette.NOTE_PAPER)
 	card.get_parent().size_flags_stretch_ratio = 0.9
 	var note := add_scroll_list(card, SUMMARY_HEIGHT)

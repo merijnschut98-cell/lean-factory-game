@@ -52,6 +52,9 @@ var has_floor_plan := true
 ## Training days whose glossary card was shown (once a game, also after a
 ## resume: review N2).
 var carded: Array[String] = []
+## Where a new game's opening is (Opening.BEATS, PLAN 2.7d); "" for a game
+## without one (a returning player, an old save).
+var opening_beat := ""
 ## The card shown when this session opened ({} when none): the journal
 ## reopens it.
 var last_card := {}
@@ -407,7 +410,7 @@ static func _days(minutes: int) -> int:
 func to_dict() -> Dictionary:
 	return {"start": start.duplicate(true), "offered": offered.duplicate(), "toast_day": toast_day,
 		"queued": queued.duplicate(), "floor_id": floor_id, "carded": carded.duplicate(),
-		"has_floor_plan": has_floor_plan}
+		"has_floor_plan": has_floor_plan, "opening_beat": opening_beat}
 
 
 ## Restore to_dict() output, untrusted: anything of the wrong shape is
@@ -422,6 +425,8 @@ func load_dict(d: Dictionary) -> void:
 	toast_day = d["toast_day"] if d.get("toast_day") is int else -1
 	floor_id = d["floor_id"] if d.get("floor_id") is String else ""
 	has_floor_plan = d["has_floor_plan"] if d.get("has_floor_plan") is bool else true
+	var beat: Variant = d.get("opening_beat")
+	opening_beat = beat if beat is String and beat in Opening.BEATS else ""
 	queued.clear()
 	var ids: Variant = d.get("queued", [])
 	for id: Variant in ids if ids is Array else []:

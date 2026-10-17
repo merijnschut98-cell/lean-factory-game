@@ -312,6 +312,7 @@ func open_game(slot: String, player: PlayerProfile = null) -> Office:
 	var office: Office = load(OFFICE).instantiate()
 	office.saves = saves
 	office.new_player = player
+	office.opening = slot.is_empty()   # a new game opens as one scene (PLAN 2.7d)
 	office.play(slot)
 	office.resumed = loaded
 	return office

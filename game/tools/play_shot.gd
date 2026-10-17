@@ -71,7 +71,11 @@ func _run() -> void:
 		return
 	var office: Office = load(SCENE).instantiate()
 	office.seed_value = 11
-	office.training = state in ["training_board", "timelapse", "act0_note", "act0_ruud", "act0_cards"]
+	office.training = state in ["training_board", "timelapse", "act0_note", "act0_ruud", "act0_cards"] or state.begins_with("open_")
+	if state.begins_with("open_"):   # De eerste vijf minuten (PLAN 2.7d), as a new game
+		office.opening = true
+		office.new_player = PlayerProfile.new()
+		office.new_player.name = "Noor"
 	root.add_child(office)
 	match state:
 		"office":
@@ -141,6 +145,9 @@ func _run() -> void:
 			office.ui.close_panels()
 			office.ui.toggle_journal()
 			office.ui.journal.show_tab(ClueJournal.PEOPLE)
+		"open_reception", "open_badge", "open_walk", "open_plan", "open_sanne", "open_marco", "open_design", \
+				"open_door", "open_board", "open_letter", "open_phone", "open_evening", "open_anouk", "open_after":
+			_opening(office, state)
 		"act0_note":   # Monday morning: Ruud's note with the day's move card (PLAN 1.11a)
 			_stand_at(office, DESIGN)
 		"act0_ruud":   # Anouk at seven, one move, then Ruud names it on the summary
@@ -509,6 +516,71 @@ func _open_silo(office: Office) -> void:
 ## A talk with Joost at Werkvoorbereiding, played to the state's moment:
 ## the opening, a few listening moves (the cue), the proposal's picks, the
 ## summary of an agreement, or a ruined talk (pushing early).
+## De eerste vijf minuten (PLAN 2.7d), played to the state's moment with the
+## scene's own steps; the player follows Ruud as a player would.
+func _opening(office: Office, state: String) -> void:
+	var o := office.first_day
+	var run := func(done: Callable) -> void:
+		var t := 0.0
+		while not done.call() and t < 400.0:
+			if o.guide != null and o._guide_route.is_empty() and office.floors.floor_id == "first" \
+					and o.guide.visible and state != "open_plan":
+				office.player.position = o.guide.position + (office.player.position - o.guide.position).normalized() * 1.6
+			o.step(0.25)
+			t += 0.25
+	var said := func(part: String) -> Callable:
+		return func() -> bool: return str(o.lines.current().get("text", "")).contains(part)
+	run.call(said.call("Ik herkende je"))
+	if state == "open_reception":
+		return
+	run.call(func() -> bool: return o.lines.paper_up())
+	if state == "open_badge":
+		return
+	o.lines.close_paper()
+	run.call(said.call("Welkom"))
+	if state == "open_walk":
+		office.rig.yaw = office.player.rotation.y + PI * 0.15
+		office.rig.snap()
+		return
+	run.call(func() -> bool: return o._guide_route.is_empty() and not o.lines.speaking() and o.guide.position.z < -9.0)
+	office.player.position = o.guide.position
+	run.call(func() -> bool: return not o.guide.visible)
+	office.floors.go_to("first", "stairs_up")
+	run.call(said.call("plattegrond"))
+	if state == "open_plan":
+		return
+	for pair: Array in [["open_sanne", "Sanne Bakker"], ["open_marco", "Ploegleider"], ["open_design", "Joost van Dijk"],
+			["open_door", "Mijn kamer"]]:
+		run.call(said.call(pair[1]))
+		if state == pair[0]:
+			office.rig.snap()
+			return
+	run.call(func() -> bool: return o.lines.asking())
+	if state == "open_board":
+		office.rig.snap()
+		return
+	o.lines.pick(1)
+	run.call(func() -> bool: return o.lines.paper_up())
+	if state == "open_letter":
+		return
+	o.lines.close_paper()
+	run.call(func() -> bool: return o.lines.phone_texts().size() >= 2)
+	if state == "open_phone":
+		return
+	run.call(func() -> bool: return office.ui.session_layer.opening_beat == Opening.ANOUK)
+	if state == "open_evening":
+		return
+	var anouk := office.people.person("anouk")
+	office.player.position = anouk.position + Vector3(3.5, 0, -2.5)
+	run.call(func() -> bool: return office.ui.dialog_panel.visible)
+	office.rig.snap()
+	if state == "open_anouk":
+		return
+	for move in ["mood", "empathy", "open_question", "reflect"]:
+		office.ui.dialog_panel.choose(move)
+	office.ui.dialog_panel.close_talk()
+
+
 func _talk_to_joost(office: Office, state: String) -> void:
 	_open_silo(office)
 	office.people.refresh(office.session)

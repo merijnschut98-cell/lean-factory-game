@@ -113,7 +113,7 @@ func playable() -> bool:
 
 
 func open_mission_board() -> void:
-	if not playable():
+	if not playable() or not hud.may_show("board"):   # no board before the first talk (2.7d)
 		return
 	mission_board.message = ""
 	_open(mission_board)
@@ -186,15 +186,18 @@ func save_to(number: int) -> void:
 
 
 func toggle_journal() -> void:
-	_toggle(journal)
+	if hud.may_show("journal"):   # each key works from its moment on (2.7d §3)
+		_toggle(journal)
 
 
 func toggle_map() -> void:
-	_toggle(office_map)
+	if hud.may_show("map"):
+		_toggle(office_map)
 
 
 func toggle_codex() -> void:
-	_toggle(codex)
+	if hud.may_show("codex"):
+		_toggle(codex)
 
 
 ## J, M and K; never mid-talk (review B1: hiding the talk let the next
@@ -250,6 +253,7 @@ func journal_lines() -> Array[String]:
 ## After every action: the HUD follows the session and new events show: a
 ## training day's debrief and glossary card as cards, the rest as toasts.
 func after_action() -> void:
+	hud.reveal(Opening.hud(session, session_layer))
 	hud.refresh()
 	var names := {}
 	for m: MissionDef in session.missions.defs.values():
@@ -260,7 +264,7 @@ func after_action() -> void:
 		if e["type"] in ["recurred", "slipping"] and session.is_practice(e.get("problem", "")):
 			continue  # the practice problem is retired; the Friday forecast tells the fade
 		var text := UiText.event(e, names, problem_names, team_names)
-		if not text.is_empty():
+		if not text.is_empty() and not Opening.running(session_layer):   # the first day is one scene (2.7d)
 			hud.toast(text)
 		if e["type"] == "completed":
 			_debrief_card(session.missions.defs[e["mission"]], e)
@@ -268,18 +272,20 @@ func after_action() -> void:
 	for m in session.missions.active("training"):
 		if not m.id in session_layer.carded:   # a training day's morning, once a game
 			session_layer.carded.append(m.id)
-			_glossary_card(m)
-			_move_note(m)
+			if not Opening.running(session_layer):   # the first day speaks its card (2.7d B5)
+				_glossary_card(m)
+				_move_note(m)
 	for text in new_concept_toasts():
-		hud.toast(text)
+		if not Opening.running(session_layer):
+			hud.toast(text)
 	_session_beat()
 
 
 ## A finished training day: the coach's debrief, with what the player
 ## measured (the solve day's debrief shows with its score on the Check).
 func _debrief_card(m: MissionDef, e: Dictionary) -> void:
-	if m.kind != "training" or m.goal_type == "solve":
-		return
+	if m.kind != "training" or m.goal_type == "solve" or Opening.running(session_layer):
+		return   # the first day's debrief is Ruud's Tuesday line (2.7d §4)
 	var lines: Array[String] = ["'%s'" % session.mission_debrief(m.id)]
 	if e.has("queues"):
 		var place_names := {}

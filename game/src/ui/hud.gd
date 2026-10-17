@@ -32,6 +32,9 @@ var _toasts: VBoxContainer
 var _cards: VBoxContainer
 ## In a talk the bar shows only the date and time: no budget, XP or mission.
 var _talking := false
+## Which element may show (Opening.hud: the first day reveals them one at a
+## time); everything when not set.
+var revealed: Dictionary = {}
 
 
 func _init() -> void:
@@ -93,7 +96,7 @@ func _build_centre() -> void:
 	prompt_label.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	prompt_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	prompt_label.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	prompt_label.offset_bottom = -150
+	prompt_label.offset_bottom = -170
 	prompt_label.visible = false
 	add_child(prompt_label)
 
@@ -147,6 +150,26 @@ func refresh() -> void:
 	drift_label.visible = drift > 0 and not _talking
 	drift_label.text = "Achteruitgang %d%%" % drift
 	mission_label.text = mission_text()
+	_apply_reveal()
+
+
+## Show each element of the bar only once its moment has come (Opening.hud).
+func reveal(shown: Dictionary) -> void:
+	revealed = shown
+	_apply_reveal()
+
+
+func may_show(element: String) -> bool:
+	return revealed.get(element, true)
+
+
+func _apply_reveal() -> void:
+	clock_label.visible = may_show("clock")
+	budget_label.visible = may_show("budget") and not _talking
+	xp_label.visible = may_show("xp") and not _talking
+	mission_label.visible = may_show("mission") and not _talking
+	if not may_show("controls"):
+		help_label.visible = false
 
 
 func controls_text() -> String:
@@ -166,8 +189,7 @@ func mission_text() -> String:
 ## person, not the score, has the player's attention (dialog spec §11).
 func set_talking(on: bool) -> void:
 	_talking = on
-	for l: Label in [budget_label, xp_label, mission_label]:
-		l.visible = not on
+	_apply_reveal()
 	if on:
 		drift_label.visible = false
 		stop_note.visible = false
@@ -177,7 +199,7 @@ func set_talking(on: bool) -> void:
 
 ## The toasts, cards and controls line; hidden while a panel is open.
 func show_overlay(on: bool) -> void:
-	help_label.visible = on
+	help_label.visible = on and may_show("controls")
 	_toasts.visible = on
 	_cards.visible = on
 
