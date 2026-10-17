@@ -3,15 +3,20 @@ extends UiPanel
 ## The pause menu (PLAN 2.7): Esc when nothing else is open. "Opslaan" opens
 ## the five manual slots; picking a slot that holds a save asks once before
 ## it is overwritten. The autosave is not among them: the game keeps that
-## one itself. "Naar het titelmenu" saves automatically and leaves.
+## one itself. "Uiterlijk" opens the character creator to change the look and
+## the name (PLAN 2.7b: free, silent). "Naar het titelmenu" saves
+## automatically and leaves.
 
 ## The player chose to save into manual slot `number` (1–5), confirmed.
 signal save_requested(number: int)
 signal title_requested
+## "Uiterlijk": the player wants to change their look or name.
+signal look_requested
 
 const TITLE := "Pauze"
 const RESUME := "Verder spelen"
 const SAVE := "Opslaan"
+const LOOK := "Uiterlijk"
 const TO_TITLE := "Naar het titelmenu"
 const PICK := "Kies een plek om op te slaan. Automatisch opslaan gebeurt apart, elke dagstart."
 const SAVE_HERE := "Hier opslaan"
@@ -58,6 +63,10 @@ func pick(number: int) -> void:
 	refresh()
 
 
+func ask_look() -> void:
+	look_requested.emit()
+
+
 func confirm() -> void:
 	if page == Page.CONFIRM:
 		save_requested.emit(pending)
@@ -72,7 +81,8 @@ func refresh() -> void:
 	clear(body)
 	match page:
 		Page.MAIN:
-			for item: Array in [[RESUME, close_requested.emit], [SAVE, show_slots], [TO_TITLE, title_requested.emit]]:
+			for item: Array in [[RESUME, close_requested.emit], [SAVE, show_slots], [LOOK, ask_look],
+					[TO_TITLE, title_requested.emit]]:
 				var b := button(tr(item[0]), item[1])
 				b.custom_minimum_size.x = 360
 				b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER

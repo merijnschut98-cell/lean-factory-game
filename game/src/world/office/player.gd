@@ -17,9 +17,6 @@ signal arrived
 
 ## The avatar: a soft shadow and a stand-in body (capsule and head).
 const AVATAR := "res://src/world/office/player_avatar.tscn"
-## The character (cast.json id) whose model replaces the stand-in when it is
-## built: facing +Z, feet at 0, with "idle" and "walk" animations.
-const CHARACTER := "player"
 ## Walking pace in the office, m/s: a brisk walk (real is ~1.4). The pack's
 ## walk measures 1.55 m/s for the player (CharacterModel.walk_pace), so it
 ## plays at ×1.3 here, as the first models did: brisk, not hurried. The
@@ -45,7 +42,9 @@ var _model: Node3D
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity", 9.8)
 
 
-func _init() -> void:
+## `look`: the player's look from the character creator (PLAN 2.7b; trait id
+## -> option id, CreatorLook); {} is the default look.
+func _init(look: Dictionary = {}) -> void:
 	var capsule := CapsuleShape3D.new()
 	capsule.radius = 0.3
 	capsule.height = 1.8
@@ -55,12 +54,23 @@ func _init() -> void:
 	add_child(shape)
 	avatar = (load(AVATAR) as PackedScene).instantiate()
 	add_child(avatar)
-	var model := CharacterModel.instantiate(CHARACTER)
-	if model != null:
-		avatar.get_node("StandIn").free()
-		avatar.add_child(model)
-		_animations = CharacterModel.animations(model)
-		_model = model
+	wear(look)
+
+
+## Put on `look` (CreatorLook): the made model replaces the stand-in, or the
+## one worn before (the pause menu's "Uiterlijk"). Without built models the
+## stand-in stays.
+func wear(look: Dictionary) -> void:
+	var model := CreatorLook.build(look)
+	if model == null:
+		return
+	for old: Node in [avatar.get_node_or_null("StandIn"), _model]:
+		if old != null:
+			avatar.remove_child(old)
+			old.free()
+	avatar.add_child(model)
+	_animations = CharacterModel.animations(model)
+	_model = model
 	_animate("idle")
 
 

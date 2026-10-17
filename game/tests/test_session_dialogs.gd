@@ -195,12 +195,13 @@ func test_ruud_asks_about_a_hard_talk_once() -> void:
 ## (creator spec §1.6; D9 talks audit #20, #28–#30), filled in one pass.
 func test_talk_lines_fill_the_player_s_and_the_dossier_s_tokens() -> void:
 	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
+	s.player.look["lichaam"] = "vrouw"
 	var born := GameSession.date_of(s.followed.born)
 	assert_eq(s.fill_tokens("Op {aanvraag_datum}."), "Op %d %s." % [born["day"], GameSession.MONTH_NAMES[born["month"] - 1]])
-	assert_eq(s.fill_tokens("Dag, {jongen_meid}."), "Dag, meid.", "the placeholder's body until the creator sets one")
-	s.player_body = "m"
+	assert_eq(s.fill_tokens("Dag, {jongen_meid}."), "Dag, meid.", "by the body made in the creator")
+	s.player.look["lichaam"] = "man"
 	assert_eq(s.fill_tokens("Dag, {jongen_meid}."), "Dag, jongen.")
-	s.player_body = "f"
+	s.player.look["lichaam"] = "vrouw"
 	s.missions.done_once["fix_wrong_joint"] = true
 	assert_eq(s.accept("save_henks_knowledge"), "")
 	var opened := s.start_dialog("henk")

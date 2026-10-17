@@ -51,9 +51,9 @@ var discoveries: Discoveries
 var followed := FollowedOrder.new()
 ## The "Hoe werkt het?" explainers seen (PLAN 2.7c), for the codex.
 var explainers := ExplainerLog.new()
-## The player's body for the tokens talks fill: "m" | "f", as CreatorLook.body_of
-## gives it. The placeholder CI lead's until the creator's look reaches the session.
-var player_body := "f"
+## The player as made in the character creator (PLAN 2.7b): first name, look,
+## badge photo. Its tokens ({speler}, {hij_zij} …) fill dialog text and briefings.
+var player := PlayerProfile.new()
 ## The first thing wrong with the content; "" when the game is usable.
 var error := ""
 
@@ -458,11 +458,11 @@ func mission_briefing(mission_id: String) -> String:
 	if not missions.defs.has(mission_id):
 		return ""
 	var age: float = followed_order()["age_days"]
-	return missions.briefing_of(mission_id).replace("{dossier_weken}", FollowedOrder.weeks_text(age))
+	return player.fill(missions.briefing_of(mission_id).replace("{dossier_weken}", FollowedOrder.weeks_text(age)))
 
 
 func mission_debrief(mission_id: String) -> String:
-	return missions.debrief_of(mission_id) if missions.defs.has(mission_id) else ""
+	return player.fill(missions.debrief_of(mission_id)) if missions.defs.has(mission_id) else ""
 
 
 ## Countermeasures not offered because an earlier preparation is missing:
@@ -710,7 +710,7 @@ func person(person_id: String) -> Dictionary:
 		"morale_band": 0 if morale < 30 else (1 if morale < 70 else 2),
 		"cooldown_until": int(people.memory.get(person_id, {}).get("cooldown_until", 0)), "outcomes": outcomes,
 		"observed": _filled(_newest_first(people.observed.get(person_id, []))),
-		"talks": _newest_first(people.talk_log.get(person_id, [])), "note": people.note.get(person_id, ""),
+		"talks": _filled(_newest_first(people.talk_log.get(person_id, []))), "note": people.note.get(person_id, ""),
 		"open": _still_open(person_id, facts),
 		"talk_ready": not people.cooling_down(person_id, region.net.time) and people.dialog_for(person_id, _world(p)) != null}
 
@@ -815,26 +815,14 @@ func choose_move(move: String, pick: String = "") -> Dictionary:
 	return _filled(result)
 
 
-## The tokens talk lines speak through (creator spec §1.6; D9 talks audit):
-## {jongen_meid} by the player's body, {aanvraag_datum} the day the El Amrani
-## family applied. One pass: a filled value is never read for tokens again.
+## The tokens talk lines speak through: the player's (PlayerProfile.fill:
+## {speler}, {jongen_meid} …) and {aanvraag_datum}, the day the El Amrani
+## family applied (D9 talks audit #20). No filled value holds a brace.
 func fill_tokens(text: String) -> String:
 	if not "{" in text:
 		return text
 	var born := date_of(followed.born)
-	var tokens := {"{jongen_meid}": "jongen" if player_body == "m" else "meid",
-		"{aanvraag_datum}": "%d %s" % [born["day"], MONTH_NAMES[born["month"] - 1]]}
-	var out := ""
-	var rest := text
-	while true:
-		var at := rest.find("{")
-		var close := rest.find("}", at)
-		if at < 0 or close < 0:
-			return out + rest
-		var token := rest.substr(at, close - at + 1)
-		out += rest.left(at) + str(tokens.get(token, token))
-		rest = rest.substr(close + 1)
-	return out
+	return player.fill(text).replace("{aanvraag_datum}", "%d %s" % [born["day"], MONTH_NAMES[born["month"] - 1]])
 
 
 ## Every text in a talk's result, filled (fill_tokens).

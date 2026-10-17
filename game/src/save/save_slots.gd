@@ -97,8 +97,9 @@ func resume(slot: String, data_dir: String = Catalog.DATA_DIR) -> Dictionary:
 
 
 ## One slot as the menus show it: {slot, number (0 for the autosave),
-## status, name, act (-1 unknown), time (the game's, -1 unknown), saved,
-## used (unix seconds)}; {} when the slot is empty.
+## status, name ("" none or invalid), portrait (PNG bytes, empty none or
+## invalid), act (-1 unknown), time (the game's, -1 unknown), saved, used
+## (unix seconds)}; {} when the slot is empty.
 func entry(slot: String) -> Dictionary:
 	if not valid() or not slot in names():
 		return {}
@@ -108,7 +109,8 @@ func entry(slot: String) -> Dictionary:
 	var data: Dictionary = loaded["data"]
 	var meta := JsonFile.dict_or_empty(data.get("meta"))
 	var out := {"slot": slot, "number": 0 if slot == AUTOSAVE else slot.to_int(),
-		"status": _STATUS.get(loaded["fault"], PLAYABLE), "name": _typed(meta, "name", TYPE_STRING, ""),
+		"status": _STATUS.get(loaded["fault"], PLAYABLE), "name": PlayerProfile.stored_name(meta.get("name")),
+		"portrait": PlayerProfile.valid_portrait(meta.get("portrait")),
 		"act": _typed(meta, "act", TYPE_INT, -1), "time": _typed(meta, "time", TYPE_INT, _region_time(data)),
 		"saved": float(_typed(meta, "saved", TYPE_FLOAT, _modified(slot)))}
 	out["used"] = float(_read_index().get(slot, out["saved"]))
