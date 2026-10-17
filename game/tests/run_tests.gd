@@ -6,7 +6,8 @@ extends SceneTree
 ## Optional filter: append `-- <substring>` to run only matching test files
 ## (matched on the path: `-- /test_x.gd` is exactly one). The whole suite runs
 ## one file per process through tools/run_godot_tests.py. SPANNING_TEST_MEM=1
-## prints memory and object counts after each file.
+## prints memory and object counts after each file, SPANNING_TEST_TIMES=1 each
+## test's time.
 
 const TEST_DIR := "res://tests"
 
@@ -52,7 +53,10 @@ func _initialize() -> void:
 				continue
 			var case: TestCase = script.new()
 			catcher.take()
+			var started := Time.get_ticks_msec()
 			case.call(name)
+			if OS.has_environment("SPANNING_TEST_TIMES"):
+				print("[time] %6d ms %s::%s" % [Time.get_ticks_msec() - started, path.get_file(), name])
 			# One frame, so what the test queue_free'd is deleted now (errors
 			# while deleting count against it), not piled up until quit.
 			await process_frame
