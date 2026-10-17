@@ -342,8 +342,8 @@ def girth_for(sp) -> dict[str, tuple[float, float]]:
     b = sp.build - 0.4
     man = sp.sex == "m"
     waist = (1.0 + 0.30 * b + (0.12 if man else 0.04), 1.0 + 0.6 * b + (0.14 if man else 0.1))
-    shoulder = (1.0 - (0.2 if man else 0.06), 1.0 - (0.2 if man else 0.06))
-    upper_arm = 1.0 + 0.06 * b - (0.22 if man else 0.06)   # weight goes to the belly, not the arms
+    shoulder = (1.0 - (0.28 if man else 0.06), 1.0 - (0.28 if man else 0.06))
+    upper_arm = 1.0 + 0.06 * b - (0.27 if man else 0.06)   # weight goes to the belly, not the arms
     lower_arm = 1.0 + 0.04 * b - (0.14 if man else 0.03)
     thigh = 1.0 + 0.15 * b - (0.1 if man else 0.05)
     calf = 1.0 + 0.06 * b - (0.1 if man else 0.06)
@@ -437,6 +437,8 @@ class Marks:
         self.head = h("Head")
         self.chest = h("UpperChest").z
         self.top = float(V[:, 2].max())
+        mid = V[(np.abs(V[:, 0]) < 0.012) & (V[:, 2] < self.hip)]
+        self.crotch = float(mid[:, 2].min()) if len(mid) else self.hip - 0.1   # the lowest point of the midline
 
 
 # ============================================================================= garments
@@ -446,14 +448,8 @@ def smooth_inflate(ob, body_bvh: BVHTree, t: float, iters: int, lam: float = 0.5
     shrink onto the skin) alternating with a push to at least `t` off the skin along its normal."""
     me = ob.data
     V = verts(ob)
-    E = np.empty(len(me.edges) * 2, int)
-    me.edges.foreach_get("vertices", E)
-    E = E.reshape(-1, 2)
+    E, open_edge = edges_of(me)
     # a hem or a cuff (an open edge) smooths along itself only, so it stays where it was cut
-    faces_per_edge = np.zeros(len(me.edges), int)
-    for poly in me.polygons:
-        faces_per_edge[[me.loops[li].edge_index for li in poly.loop_indices]] += 1
-    open_edge = faces_per_edge == 1
     on_hem = np.zeros(len(V), bool)
     on_hem[E[open_edge].ravel()] = True
     use = open_edge | ~(on_hem[E[:, 0]] | on_hem[E[:, 1]])
@@ -481,6 +477,9 @@ def smooth_inflate(ob, body_bvh: BVHTree, t: float, iters: int, lam: float = 0.5
     set_verts(ob, V)
 
 
+CROTCH = 0.01   # trousers drape as one piece down to this far above the crotch (m): the whole seat, so no crease
+
+
 def drape(ob, mk: "Marks", kind: str, amount: float = 0.9) -> None:
     """Cloth hangs over the body's hollows: each thin slice of the garment (across the legs and
     torso, along the arms) is pushed `amount` of the way out to its convex outline, from the
@@ -495,7 +494,7 @@ def drape(ob, mk: "Marks", kind: str, amount: float = 0.9) -> None:
         comp = np.where(arm, np.sign(x), 0)
     else:
         axis = np.full(len(V), 2)
-        comp = np.where((kind == "feet") | (z < mk.hip - 0.09), np.sign(x), 0)
+        comp = np.where((kind == "feet") | (z < mk.crotch + CROTCH), np.sign(x), 0)
     out = V.copy()
     step = 0.012
     for c in np.unique(comp):
@@ -584,10 +583,11 @@ def rounder(D: np.ndarray, amount: float) -> np.ndarray:
     return D / np.maximum(r, 1e-6) * (r + (mean - r) * amount)
 
 
-def straight_legs(V: np.ndarray, comp: np.ndarray, mk: "Marks", limb: np.ndarray, ease: float = 1.1, fall: float = 0.95) -> np.ndarray:
-    """Trousers fall from the thigh instead of hugging the knee and calf: below the crotch each
-    leg's slice is widened to at least `fall` of the widest slice in the 25 cm above it, and
-    every leg slice gets `ease` (room to move)."""
+def straight_legs(V: np.ndarray, comp: np.ndarray, mk: "Marks", limb: np.ndarray) -> np.ndarray:
+    """Tailored trouser legs (PLAN 1.3d): below the crotch each leg tapers straight from the seat
+    to the hem (HEM_SHARE of the top's width), its slices' middles pulled STRAIGHTEN of the way
+    onto the line from top to hem, never tighter than the leg inside plus LEG_EASE, so neither
+    the thigh's nor the knee's shape shows through."""
     out = V.copy()
     step = 0.012
     for c in (-1, 1):
@@ -600,13 +600,24 @@ def straight_legs(V: np.ndarray, comp: np.ndarray, mk: "Marks", limb: np.ndarray
             P = V[sel[bins == b]][:, :2]
             centre[b] = P.mean(0)
             radius[b] = float(np.linalg.norm(P - centre[b], axis=1).mean())
-        span = int(0.25 / step)
+        top, bottom = max(centre), min(centre)
+        r_top = max(radius[b] for b in centre if b > top - 4) * LEG_EASE
+        r_hem = max(radius[bottom] * 1.5, r_top * HEM_SHARE)
         for b in centre:
-            above = [radius[k] for k in range(b + 1, b + span + 1) if k in radius]
-            want = max([radius[b]] + [fall * r for r in above]) * ease
+            t = (top - b) / max(top - bottom, 1)
+            line = centre[top] + (centre[bottom] - centre[top]) * t
+            mid = centre[b] + (line - centre[b]) * STRAIGHTEN
             idx = sel[bins == b]
-            out[idx, :2] = centre[b] + rounder(V[idx, :2] - centre[b], ROUND) * (want / max(radius[b], 1e-6))
+            D = V[idx, :2] - mid
+            own = float(np.linalg.norm(D, axis=1).mean())
+            want = max(r_top + (r_hem - r_top) * t, own * LEG_EASE)
+            out[idx, :2] = mid + rounder(D, ROUND) * (want / max(own, 1e-6))
     return V + limb[:, None] * (out - V)
+
+
+LEG_EASE = 1.08     # a trouser leg's room over the leg inside it
+HEM_SHARE = 0.68    # the hem's width as a share of the top of the leg's
+STRAIGHTEN = 0.7    # how far a leg slice's middle moves onto the straight line from seat to hem
 
 
 def region_copy(body, name: str, keep: np.ndarray, coll) -> bpy.types.Object:
@@ -624,7 +635,36 @@ def region_copy(body, name: str, keep: np.ndarray, coll) -> bpy.types.Object:
     bm.to_mesh(me)
     bm.free()
     me.materials.clear()
+    even_edges(ob)
     return ob
+
+
+def edges_of(me) -> tuple[np.ndarray, np.ndarray]:
+    """A mesh's edges as vertex pairs (E, 2), and which are open (one face: a hem, a cuff)."""
+    E = np.empty(len(me.edges) * 2, int)
+    me.edges.foreach_get("vertices", E)
+    faces_per_edge = np.zeros(len(me.edges), int)
+    for poly in me.polygons:
+        faces_per_edge[[me.loops[li].edge_index for li in poly.loop_indices]] += 1
+    return E.reshape(-1, 2), faces_per_edge == 1
+
+
+def even_edges(ob, iters: int = 12, lam: float = 0.5) -> None:
+    """A garment cut from the body's faces has zigzag open edges (hems, cuffs, necklines): each
+    is smoothed along itself so it reads as a sewn edge (PLAN 1.3d)."""
+    E, open_edge = edges_of(ob.data)
+    E = E[open_edge]
+    if not len(E):
+        return
+    V = verts(ob)
+    deg = np.bincount(E.ravel(), minlength=len(V))[:, None]
+    on = deg[:, 0] > 0
+    for _ in range(iters):
+        acc = np.zeros_like(V)
+        np.add.at(acc, E[:, 0], V[E[:, 1]])
+        np.add.at(acc, E[:, 1], V[E[:, 0]])
+        V[on] += lam * (acc[on] / deg[on] - V[on])
+    set_verts(ob, V)
 
 
 def scale_uvs(ob, tile: float) -> None:
@@ -703,6 +743,7 @@ TROUSERS = {"business": "chinos", "monteur": "worktrousers", "overshirt": "chino
 SHOES = {"monteur": "boot", "overshirt": "sneaker", "blazer": "sneaker", "quarterzip": "sneaker"}
 TUCKED = ("shirt", "manager", "monteur")
 SOLE = 0.022   # a sneaker's sole: the faces below this height (m)
+POLO_HEM = 0.0  # the polo ends at the hip joints (m above them): over the hands in the pockets, not round them
 
 
 class Wardrobe:
@@ -715,6 +756,8 @@ class Wardrobe:
         self.bvh = BVHTree.FromObject(body, bpy.context.evaluated_depsgraph_get(), deform=False)
         self.covered = np.zeros(len(self.V), bool)
         self.objs: list[bpy.types.Object] = []
+        self.layers: list[tuple[bpy.types.Object, str, float]] = []   # cloth already on: (object, kind, offset)
+        self.tucked = False
 
     def upper(self, hem: float, sleeve_x: float, neck_drop: float, vee: float = 0.0) -> np.ndarray:
         """Upper-body cloth: from `hem` up to the neckline, arms out to `sleeve_x`."""
@@ -740,11 +783,34 @@ class Wardrobe:
         if kind:
             drape(ob, self.mk, kind)
         smooth_inflate(ob, self.bvh, t, iters, taubin=kind != "feet")   # a shoe loses the toes
+        if kind in ("upper", "legs"):
+            self.clear_of_layers(ob, kind, t)
+            self.layers.append((ob, kind, t))
         if hide:
             self.covered |= boundary_ring(self.body, keep, 2)
         bind(ob, self.rig)
         self.objs.append(ob)
         return ob
+
+    def clear_of_layers(self, ob, kind: str, t: float) -> None:
+        """An outer garment stays outside the cloth already on (PLAN 1.3d): where the two layers
+        meet, each vertex is pushed out along the inner layer's normal to half their offsets'
+        difference over it (a tucked top stays inside the trousers). Their drapes differ, so
+        without this a shirt pokes through a knit or a T-shirt through an overshirt."""
+        V = verts(ob)
+        for inner, inner_kind, inner_t in self.layers:
+            if inner_t >= t or (self.tucked and kind == "upper" and inner_kind == "legs"):
+                continue
+            bvh = BVHTree.FromObject(inner, bpy.context.evaluated_depsgraph_get(), deform=False)
+            gap = max(0.003, (t - inner_t) * 0.5)
+            for i, p in enumerate(V):
+                loc, nrm, _, _ = bvh.find_nearest(Vector(p), 0.03)
+                if loc is None:
+                    continue
+                d = (Vector(p) - loc).dot(nrm)
+                if d < gap:
+                    V[i] = p + np.array(nrm) * (gap - d)
+        set_verts(ob, V)
 
     def shoes(self, kind: str) -> None:
         """`kind`: shoe (leather), boot (the monteur's, over the ankle) or sneaker (white, on a
@@ -774,7 +840,8 @@ class Wardrobe:
         """Cut `outfit` from the body; the skin it covers is only marked (`covered`), so several
         outfits can be cut from one body (the creator's)."""
         mk = self.mk
-        top = mk.waist + 0.012 if outfit in TUCKED else mk.waist - 0.02
+        self.tucked = outfit in TUCKED
+        top = mk.waist + 0.012 if self.tucked else mk.waist - 0.02
         thick = 0.014 if outfit == "monteur" else 0.012
         self.add("trousers", self.lower(top, mk.ankle + 0.012), TROUSERS.get(outfit, "trousers"), thick, iters=12, kind="legs")
         getattr(self, "top_" + outfit)()
@@ -785,7 +852,7 @@ class Wardrobe:
     def top_business(self) -> None:
         """The Voltana polo: short sleeves, a stand collar, the logo on the chest."""
         mk = self.mk
-        polo = self.add("polo", self.upper(mk.hip - 0.035, self.short_sleeve(), 0.005, vee=0.05), "polo", 0.02, iters=10, kind="upper")
+        polo = self.add("polo", self.upper(mk.hip + POLO_HEM, self.short_sleeve(), 0.005, vee=0.05), "polo", 0.02, iters=10, kind="upper")
         extrude_collar(polo, mk, 0.022, 0.006)
         self.logo(polo, (0.085, mk.chest + 0.03), 0.07)
 
@@ -848,8 +915,10 @@ class Wardrobe:
         extrude_collar(shirt, mk, 0.028, 0.005)
 
     def tee(self) -> None:
+        """The T-shirt under an open jacket: only its front shows, so it stops at the shoulders
+        (sleeves under a jacket's sleeves poke through where the arm turns down)."""
         mk = self.mk
-        self.add("tee", self.upper(mk.hip - 0.025, self.short_sleeve() - 0.02, 0.008), "tee", 0.007, iters=10, kind="upper")
+        self.add("tee", self.upper(mk.hip - 0.025, mk.shoulder_x - 0.03, 0.008), "tee", 0.007, iters=10, kind="upper")
 
     def front_open(self, half: float, bottom: float) -> np.ndarray:
         """The front left open (a jacket's V, an open shirt): `half` m each side of the middle at
