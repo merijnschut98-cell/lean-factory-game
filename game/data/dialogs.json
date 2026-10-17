@@ -1281,6 +1281,10 @@
    "tutorial": true
   },
   {
+   "also_during": [
+    "training_wed",
+    "training_thu"
+   ],
    "co_proposal": {
     "id": "rachid_shows_his_list",
     "text": "Ik heb een lijstje in mijn la. Wat er mist. Wil je dat zien?"
@@ -3569,6 +3573,7 @@
     ],
     "text": "Nee joh, gaat prima. Ik zit erbovenop."
    },
+   "prompt": "Anouk zat gisteravond om half zeven nog te tekenen. Alleen.",
    "trigger": {
     "morale_below": 50,
     "needs": {
@@ -3689,6 +3694,7 @@
     ],
     "text": "Nog vijf dagen. Dan ga ik vissen."
    },
+   "prompt": "Henk ruimt zijn bus leeg. Nog vijf dagen.",
    "trigger": {
     "beat": "henk_farewell",
     "before_days": 5,
@@ -3839,6 +3845,7 @@
     ],
     "text": "Het gaat wel. De wachtrij is groener."
    },
+   "prompt": "Esra zit al een uur naar het rooster te staren.",
    "trigger": {
     "morale_below": 50,
     "needs": {
@@ -3904,6 +3911,7 @@
     ],
     "text": "Het gaat goed. Elke ochtend één sessie. De Molen maalt."
    },
+   "prompt": "Petra zegt tegen iedereen dat alles klopt. Iets te vaak.",
    "trigger": {
     "needs": {
      "all": [
@@ -4010,6 +4018,7 @@
     ],
     "text": "Het gaat goed bij ons. Minder ritten voor niks."
    },
+   "prompt": "Marco staat bij het bord in de gang, met zijn koffie.",
    "trigger": {
     "needs": {
      "all": [
@@ -4071,6 +4080,7 @@
     ],
     "text": "Gaat wel. Morgen is er weer een dag."
    },
+   "prompt": "Linda plant weer 's avonds om, thuis. Haar collega's zien de mails om tien uur.",
    "trigger": {
     "morale_below": 50,
     "needs": {

@@ -944,12 +944,13 @@ dialogs:
       compliance: "Nou. Als Ruud het zegt."
       ruined: "Ik moet echt verder."
 
-  # ── Act 0, Tuesday: Rachid at the counter, optional (tutorial talks §4.1 rachid_monday; the walk-around trigger Tue–Thu waits for walk-around talks, so his talk hangs on Tuesday's mission) ─
+  # ── Act 0, Tuesday: Rachid at the counter, optional (tutorial talks §4.1 rachid_monday; open Tuesday to Thursday until walk-around talks exist) ─
   - id: rachid_counter
     name: "Rachid aan de balie"
     person: rachid
     kind: persuade
     mission: training_tue
+    also_during: [training_wed, training_thu]   # optional, Tuesday to Thursday (first five minutes §4.2; D9 talks audit §2.9)
     tutorial: true
     patience: 12
     opening: "O. Hoi. Ik ben Rachid. Sanne zegt dat ik je de bakken moet laten zien."
@@ -2057,6 +2058,7 @@ dialogs:
     name: "Anouk na zessen"
     person: anouk
     kind: checkin
+    prompt: "Anouk zat gisteravond om half zeven nog te tekenen. Alleen."
     patience: 8
     trigger:
       morale_below: 50
@@ -2108,6 +2110,7 @@ dialogs:
     name: "Henks laatste week"
     person: henk
     kind: checkin
+    prompt: "Henk ruimt zijn bus leeg. Nog vijf dagen."
     patience: 8
     trigger:   # his last five days (scripts §5: henk_farewell, 5 days before; "Ik ben er nog vijf dagen")
       beat: henk_farewell
@@ -2169,6 +2172,7 @@ dialogs:
     name: "Esra en het rooster"
     person: esra
     kind: checkin
+    prompt: "Esra zit al een uur naar het rooster te staren."
     patience: 8
     trigger:
       morale_below: 50
@@ -2200,6 +2204,7 @@ dialogs:
     name: "Petra na de maandrun"
     person: petra
     kind: checkin
+    prompt: "Petra zegt tegen iedereen dat alles klopt. Iets te vaak."
     patience: 8
     trigger:
       needs: {all: [checked:done_but_not_closed]}
@@ -2244,6 +2249,7 @@ dialogs:
     name: "Marco na honderd dagen"
     person: marco
     kind: checkin
+    prompt: "Marco staat bij het bord in de gang, met zijn koffie."
     patience: 8
     trigger:
       needs: {all: [done:fix_installer_not_ready]}
@@ -2274,6 +2280,7 @@ dialogs:
     name: "Linda 's avonds"
     person: linda
     kind: checkin
+    prompt: "Linda plant weer 's avonds om, thuis. Haar collega's zien de mails om tien uur."
     patience: 8
     trigger:
       morale_below: 50

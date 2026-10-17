@@ -162,7 +162,8 @@ func _rank(d: DialogDef, world: Dictionary, known: Dictionary) -> int:
 		return -1
 	if d.mission in world.get("main", []):
 		return 2
-	return 1 if d.mission in world.get("active", []) else -1
+	var active: Array = world.get("active", [])
+	return 1 if d.mission in active or Array(d.also_during).any(func(m: String) -> bool: return m in active) else -1
 
 
 ## A trigger without a beat always holds; with one (`beats`: id → minutes;
