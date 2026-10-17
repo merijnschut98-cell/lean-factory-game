@@ -22,6 +22,9 @@ func test_the_checker_finds_a_route_that_wins() -> void:
 	assert_eq(best["wins"], 2, "the same talk twice: one route wins both")
 	assert_true(DialogRoutes.wins(talk, best["route"]), "and replays as a win")
 	assert_eq(best["route"].back(), "ask_commitment")
+	var quick := DialogRoutes.best_route([talk, talk], DialogRoutes.WIDTH, [], false)
+	assert_eq([quick["wins"], quick["route"], quick["won"]], [best["wins"], best["route"], best["won"]],
+		"stopping at the first route that wins every talk finds the same best route")
 
 
 ## THE ROUTE TEST, on tier 1 as it will be: the talks in content/dialogs.yaml,
@@ -59,7 +62,7 @@ func test_every_tutorial_talk_is_won_without_its_day_s_move_and_never_ruined() -
 	var tutorials := DialogRoutes.content_talks(_catalog()).filter(func(t: Dialog) -> bool: return t.def.tutorial)
 	assert_eq(tutorials.size(), 11, "anouk_seven and the ten talks of the training week")
 	for talk: Dialog in tutorials:
-		assert_eq(DialogRoutes.best_route([talk], DialogRoutes.WIDTH, Array(talk.def.teaches))["wins"], 1,
+		assert_eq(DialogRoutes.best_route([talk], DialogRoutes.WIDTH, Array(talk.def.teaches), false)["wins"], 1,
 			"%s: a route without %s" % [talk.def.id, talk.def.teaches])
 		var pushed := talk.copy()
 		DialogFixture.play(pushed, ["confront", "pressure", "confront", "pressure", "confront"])
@@ -75,7 +78,7 @@ func test_pushing_early_costs_and_pressure_gives_compliance() -> void:
 		var r := pushed.say("propose", DialogRoutes.pick(pushed, "propose"))
 		assert_true(r["delta"] < 0, "%s: a proposal before listening costs" % talk.def.id)
 		var listened := []
-		for move: String in DialogRoutes.best_route([talk])["route"]:
+		for move: String in DialogRoutes.best_route([talk], DialogRoutes.WIDTH, [], false)["route"]:
 			if not move in Dialog.LISTEN or listened.size() == 2:
 				break
 			listened.append(move)
