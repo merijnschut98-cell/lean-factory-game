@@ -27,7 +27,9 @@ jobs:
         with:
           version: ${{ env.GODOT_VERSION }}
       - run: godot --headless --path game --import
-      - run: godot --headless --path game --script res://tests/run_tests.gd
+      # One Godot process per test file (a crash or kill fails the run by name);
+      # GitHub's runner has 4 cores and 16 GB, a file peaks under 1 GB.
+      - run: python3 tools/run_godot_tests.py -j 4 -v
 
   python:
     name: Content pipeline + legacy Python game

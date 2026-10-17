@@ -119,7 +119,7 @@ The environment has full network access, but **never access a domain Merijn has 
 - When a bug is fixed — write a test that would have caught it
 - When a stub is replaced with a real implementation
 - Verify the full suite still passes after every commit:
-  - Godot logic tests (Spanning): `godot --headless --path game --script res://tests/run_tests.gd`
+  - Godot logic tests (Spanning): `python tools/run_godot_tests.py` (one Godot process per test file, 2 at a time; `-j N` or `SPANNING_TEST_JOBS`; a crashed or killed file fails the run by name). One file: `godot --headless --path game --script res://tests/run_tests.gd -- /test_x.gd`
   - Content pipeline: `python tools/build_content.py --check`
   - Python tests (legacy factory game + content tools): `python -m pytest tests/ -v`
 
