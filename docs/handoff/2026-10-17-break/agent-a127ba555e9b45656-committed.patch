@@ -1,0 +1,238 @@
+diff --git a/PLAN.md b/PLAN.md
+index 70818c9..3f4fc84 100644
+--- a/PLAN.md
++++ b/PLAN.md
+@@ -388,7 +388,8 @@ The player and the eight Phase 1 office people are built from the CC0 Quaternius
+ - **Small, frequent integration (Merijn, 2026-10-16 evening: "we work agile / DevOps; small, frequent commits are better").** One-piece flow for code: the coordinator gates and pushes **each agent commit on its own as it arrives**, never a wave of several; agents merge origin before **every** commit, not only the last; a red gate stops the line for that commit only (it goes back to its owner), and the rest keeps flowing. Why: on 2026-10-16 evening a two-hour unpushed batch in the gate tree turned into three cross-agent conflicts and two red gates.
+ - "Send now" in the app interrupts every running agent and a stopped agent cannot resume: relaunch it fresh, pointed at its worktree.
+ - ✅ **The Godot suite no longer OOMs (2026-10-17).** Two leaks, measured with `SPANNING_TEST_MEM=1`: (1) the main one, a reference cycle since 760a214 (2026-10-16 evening): `GameSession.new_game` gave `Missions.talked` a lambda capturing the session, so no `GameSession` (with its whole region and network, ~10 MB) was ever freed: one process reached 6.7 GB. Now a bound method, as `talk_outcome` already was; `test_a_dropped_session_is_freed` guards it (rule: a lambda stored on an object the session owns must not capture the session). (2) `run_tests.gd` ran every test inside `_initialize`, so no frame passed and nothing the game `queue_free`s (`UiPanel.clear`, the creator booth's models) was deleted until quit: 26 000 orphan nodes after `test_creator_screen.gd`. The runner now lets a frame pass after each test (`test_runner.gd` guards it), and `tools/run_godot_tests.py` runs each file in its own process (2 at a time, slowest first from the last run's times in `game/.godot/test_times.json`), fails on any file that died without a summary, and is the gate and CI line. `SPANNING_TEST_MEM=1` prints memory per file.
+-- ⬜ **Speed: `test_dialog_routes.gd` takes ~10 minutes alone** (the width-300 beam search over 20 tier-1 talks), the critical path of the parallel run; next `test_save_slots.gd`, `test_session.gd`, `test_office_scene.gd` (2–3 min each). Lower the beam width in the test or cache the talks.
++- ✅ **Speed: `test_dialog_routes.gd` 590 s → ~196 s (2026-10-17), same results.** Profiled: the beam sort scored every node on every comparison, `pick()` built the whole move palette per propose, `copy()` ran the constructor's start work, and T11 repeated the full search of the test before it. A dump of every asserted result (tier-1 best route 9/20 and its talks, each content talk's winners, distinct routes and winnability, the tutorials' wins without their move) is identical before and after. Tried and dropped: worker threads across talks (no gain on a loaded 4-core machine) and a faster `state_key` (within noise). Left: the full search of the 29 content talks (~2 min).
++- ✅ **Speed: the next slowest files (2026-10-17).** Profiled per test (`SPANNING_TEST_TIMES=1`): the six-month warm-up was ~2 s of every `GameSession.new_game`; it now runs once per content, seed and pull limit and each game gets a `NetworkState.copy` (~50 ms), byte-identical (six games' full snapshots plus 30 more days of play compared). `test_save_slots` 193 → 35 s, `test_session_dialogs` 73 → 11 s, `test_session_layer` 54 → 15 s, `test_session` ~140 → ~60 s alone; the whole suite 2043 → 822 s under load. Left as they are, the cost being the thing tested: `test_catalog` (83 s of it is `test_an_expert_can_solve_every_problem`, one Check forecast per problem on its own region), `test_session`'s fade forecast (18 s), `test_office_scene` (~40 s: ~1 s per office instance, each test mutates its own).
+ 
+ ### 6.3 Questions for Merijn
+ Asked as multiple choice with a recommended option, batched at the end of a session (or when a decision blocks a phase), never one by one during his day.
+diff --git a/game/src/game/session.gd b/game/src/game/session.gd
+index 848e384..01a0fa7 100644
+--- a/game/src/game/session.gd
++++ b/game/src/game/session.gd
+@@ -65,8 +65,11 @@ var error := ""
+ static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, training: bool = true) -> GameSession:
+ 	var s := GameSession.new()
+ 	s.catalog = Catalog.load_from(data_dir)
+-	var net := Network.load_file(data_dir + "/value_streams.json", seed_value)
+-	s.error = s.catalog.error if not s.catalog.error.is_empty() else net.error
++	if not s.catalog.error.is_empty():
++		s.error = s.catalog.error
++		return s
++	var net := _warmed_up(data_dir, seed_value, s.catalog.kpis.pull_limit_days)
++	s.error = net.error
+ 	if not s.error.is_empty():
+ 		return s
+ 	s.region = Region.new(net, s.catalog.problems, s.catalog.countermeasures, Profile.new())
+@@ -82,8 +85,6 @@ static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, t
+ 		if not s.missions.defs.has(id):
+ 			s.error = "missing mission: " + id
+ 			return s
+-	# No problems are active yet, so the warm-up costs nothing and teaches nothing.
+-	net.advance(SimCalendar.days(WARMUP_DAYS) + START_MINUTE)
+ 	s.followed.pick(net)
+ 	if training:
+ 		s.missions.accept(TRAINING_FIRST)
+@@ -94,6 +95,28 @@ static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, t
+ 	return s
+ 
+ 
++## The warmed-up networks by content, seed and pull limit (_warmed_up).
++static var _warm_networks: Dictionary = {}
++
++
++## The network as play starts: the content's, every team pulling by
++## `pull_limit_days` (Region.use_kpis), after the warm-up. No problems are
++## active yet, so the warm-up costs nothing and teaches nothing. It is ~2 s of
++## simulation, the same for every game with this seed: run once, then each
++## game gets a copy that continues exactly alike (NetworkState.copy).
++static func _warmed_up(data_dir: String, seed_value: int, pull_limit_days: float) -> Network:
++	var key := "%s|%d|%s" % [data_dir, seed_value, pull_limit_days]
++	if not _warm_networks.has(key):
++		var net := Network.load_file(data_dir + "/value_streams.json", seed_value)
++		if not net.error.is_empty():
++			return net
++		for pool: SimPool in net.pools.values():
++			pool.pull_limit_days = pull_limit_days
++		net.advance(SimCalendar.days(WARMUP_DAYS) + START_MINUTE)
++		_warm_networks[key] = net
++	return NetworkState.copy(_warm_networks[key])
++
++
+ # ── Actions ─────────────────────────────────────────────────────────────────
+ 
+ ## Take on a mission (activating its problem). "" or Missions.accept's code.
+diff --git a/game/src/rules/dialog.gd b/game/src/rules/dialog.gd
+index b0e7b42..83acd1a 100644
+--- a/game/src/rules/dialog.gd
++++ b/game/src/rules/dialog.gd
+@@ -228,10 +228,14 @@ var concern_by := ""
+ 
+ ## `start`: {openness, trust, mood, found (clue id → true), facts (fact → true),
+ ## retry (the last talk went wrong: repair is offered), version, revealed}.
+-func _init(dialog: DialogDef, person: PersonDef, lines: Dictionary, start: Dictionary) -> void:
++## null: a blank talk for copy(), which sets every other variable itself.
++func _init(dialog: DialogDef, person: PersonDef, lines: Dictionary, start_or_null: Variant) -> void:
+ 	def = dialog
+ 	who = person
+ 	bank = lines
++	if start_or_null == null:
++		return
++	var start: Dictionary = start_or_null
+ 	openness = clampi(int(start.get("openness", 50)), 0, 100)
+ 	start_openness = openness
+ 	trust = clampi(int(start.get("trust", person.trust)), 0, 100)
+@@ -378,7 +382,7 @@ func say(move: String, pick: String = "") -> Dictionary:
+ ## The talk as it stands, as a separate talk (the route check plays ahead on
+ ## copies; test_dialog_routes.gd checks that every variable is copied).
+ func copy() -> Dialog:
+-	var c := Dialog.new(def, who, bank, {})
++	var c := Dialog.new(def, who, bank, null)
+ 	for key: String in COPIED:
+ 		var v: Variant = get(key)
+ 		c.set(key, v.duplicate() if v is Dictionary or v is Array else v)
+diff --git a/game/tests/lib/dialog_routes.gd b/game/tests/lib/dialog_routes.gd
+index f62b3fb..18aa963 100644
+--- a/game/tests/lib/dialog_routes.gd
++++ b/game/tests/lib/dialog_routes.gd
+@@ -103,7 +103,9 @@ static func distinct(routes: Array) -> Array:
+ ## The best fixed route found over `talks`: {wins, route, won (the ids of the
+ ## talks it wins), winners (every route found that won a talk with its last
+ ## move, at most one per state)}. `without`: tokens no route may use.
+-static func best_route(talks: Array, width: int = WIDTH, without: Array = []) -> Dictionary:
++## `every_winner` false: stop once a route wins every talk; wins, route and won
++## are the same (the best route only changes on more wins), winners is partial.
++static func best_route(talks: Array, width: int = WIDTH, without: Array = [], every_winner := true) -> Dictionary:
+ 	var tokens := TOKENS.filter(func(t: String) -> bool: return not t in without)
+ 	var beam := [{"talks": talks.map(func(t: Dialog) -> Dialog: return t.copy()), "route": [], "won": 0}]
+ 	var best := {"wins": 0, "route": [], "winners": []}
+@@ -120,14 +122,22 @@ static func best_route(talks: Array, width: int = WIDTH, without: Array = []) ->
+ 				if after["won"] > best["wins"]:
+ 					best["wins"] = after["won"]
+ 					best["route"] = after["route"]
++					if not every_winner and best["wins"] == talks.size():
++						return _with_won(best, talks)
+ 				var key := ",".join(after["talks"].map(_key))
+ 				if not next.has(key):
+ 					next[key] = after
+ 		beam = next.values().filter(func(n: Dictionary) -> bool: return n["talks"].any(winnable))
+-		beam.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return _score(a) > _score(b))
++		for n: Dictionary in beam:  # scored once, not on every comparison of the sort
++			n["score"] = _score(n)
++		beam.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["score"] > b["score"])
+ 		beam = beam.slice(0, width)
+ 		if beam.is_empty():
+ 			break
++	return _with_won(best, talks)
++
++
++static func _with_won(best: Dictionary, talks: Array) -> Dictionary:
+ 	best["won"] = talks.filter(func(t: Dialog) -> bool: return wins(t, best["route"])).map(
+ 		func(t: Dialog) -> String: return t.def.id)
+ 	return best
+@@ -149,10 +159,8 @@ static func pick(talk: Dialog, token: String) -> String:
+ 		"show_data":
+ 			return talk.def.data[0] if not talk.def.data.is_empty() else OTHER_CLUE
+ 		"propose", "propose_experiment":
+-			var picks: Array = []
+-			for m: Dictionary in talk.moves():
+-				if m["id"] == token:
+-					picks = m["picks"]
++			# The picks moves() offers, without building the whole palette (hot in the search).
++			var picks: Array = talk._picks(token)
+ 			for p: Dictionary in picks:
+ 				if "concern" in talk.def.item(p["id"]).get("addresses", []):
+ 					return p["id"]
+diff --git a/game/tests/run_tests.gd b/game/tests/run_tests.gd
+index 3574b80..c176fb4 100644
+--- a/game/tests/run_tests.gd
++++ b/game/tests/run_tests.gd
+@@ -6,7 +6,8 @@ extends SceneTree
+ ## Optional filter: append `-- <substring>` to run only matching test files
+ ## (matched on the path: `-- /test_x.gd` is exactly one). The whole suite runs
+ ## one file per process through tools/run_godot_tests.py. SPANNING_TEST_MEM=1
+-## prints memory and object counts after each file.
++## prints memory and object counts after each file, SPANNING_TEST_TIMES=1 each
++## test's time.
+ 
+ const TEST_DIR := "res://tests"
+ 
+@@ -52,7 +53,10 @@ func _initialize() -> void:
+ 				continue
+ 			var case: TestCase = script.new()
+ 			catcher.take()
++			var started := Time.get_ticks_msec()
+ 			case.call(name)
++			if OS.has_environment("SPANNING_TEST_TIMES"):
++				print("[time] %6d ms %s::%s" % [Time.get_ticks_msec() - started, path.get_file(), name])
+ 			# One frame, so what the test queue_free'd is deleted now (errors
+ 			# while deleting count against it), not piled up until quit.
+ 			await process_frame
+diff --git a/game/tests/test_dialog_routes.gd b/game/tests/test_dialog_routes.gd
+index 641ecc1..d987086 100644
+--- a/game/tests/test_dialog_routes.gd
++++ b/game/tests/test_dialog_routes.gd
+@@ -10,6 +10,19 @@ extends TestCase
+ const TIER1_RATCHET := 9
+ 
+ 
++## Each content talk's full search (id → best_route), kept for the later tests
++## of this file: the same talk from the same start gives the same result.
++static var _searched: Dictionary = {}
++
++
++## The best route of content `talk`: the full search when one ran, else the
++## search that stops at the first win (the same wins and route).
++static func _best(talk: Dialog) -> Dictionary:
++	if _searched.has(talk.def.id):
++		return _searched[talk.def.id]
++	return DialogRoutes.best_route([talk], DialogRoutes.WIDTH, [], false)
++
++
+ func _catalog() -> Catalog:
+ 	var c := Catalog.load_from()
+ 	assert_eq(c.error, "")
+@@ -22,6 +35,9 @@ func test_the_checker_finds_a_route_that_wins() -> void:
+ 	assert_eq(best["wins"], 2, "the same talk twice: one route wins both")
+ 	assert_true(DialogRoutes.wins(talk, best["route"]), "and replays as a win")
+ 	assert_eq(best["route"].back(), "ask_commitment")
++	var quick := DialogRoutes.best_route([talk, talk], DialogRoutes.WIDTH, [], false)
++	assert_eq([quick["wins"], quick["route"], quick["won"]], [best["wins"], best["route"], best["won"]],
++		"stopping at the first route that wins every talk finds the same best route")
+ 
+ 
+ ## THE ROUTE TEST, on tier 1 as it will be: the talks in content/dialogs.yaml,
+@@ -49,7 +65,8 @@ func test_no_fixed_route_wins_more_than_half_of_the_persuasion_talks() -> void:
+ ## differing in two positions or more.
+ func test_every_persuasion_has_three_different_routes() -> void:
+ 	for talk in DialogRoutes.content_talks(_catalog()):
+-		var distinct := DialogRoutes.distinct(DialogRoutes.best_route([talk])["winners"])
++		_searched[talk.def.id] = DialogRoutes.best_route([talk])
++		var distinct := DialogRoutes.distinct(_searched[talk.def.id]["winners"])
+ 		assert_true(distinct.size() >= 3, "%s: %d distinct routes" % [talk.def.id, distinct.size()])
+ 
+ 
+@@ -59,7 +76,7 @@ func test_every_tutorial_talk_is_won_without_its_day_s_move_and_never_ruined() -
+ 	var tutorials := DialogRoutes.content_talks(_catalog()).filter(func(t: Dialog) -> bool: return t.def.tutorial)
+ 	assert_eq(tutorials.size(), 11, "anouk_seven and the ten talks of the training week")
+ 	for talk: Dialog in tutorials:
+-		assert_eq(DialogRoutes.best_route([talk], DialogRoutes.WIDTH, Array(talk.def.teaches))["wins"], 1,
++		assert_eq(DialogRoutes.best_route([talk], DialogRoutes.WIDTH, Array(talk.def.teaches), false)["wins"], 1,
+ 			"%s: a route without %s" % [talk.def.id, talk.def.teaches])
+ 		var pushed := talk.copy()
+ 		DialogFixture.play(pushed, ["confront", "pressure", "confront", "pressure", "confront"])
+@@ -75,7 +92,7 @@ func test_pushing_early_costs_and_pressure_gives_compliance() -> void:
+ 		var r := pushed.say("propose", DialogRoutes.pick(pushed, "propose"))
+ 		assert_true(r["delta"] < 0, "%s: a proposal before listening costs" % talk.def.id)
+ 		var listened := []
+-		for move: String in DialogRoutes.best_route([talk])["route"]:
++		for move: String in _best(talk)["route"]:
+ 			if not move in Dialog.LISTEN or listened.size() == 2:
+ 				break
+ 			listened.append(move)
