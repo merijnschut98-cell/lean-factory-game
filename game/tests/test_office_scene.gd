@@ -415,9 +415,9 @@ func test_the_training_week_is_played_through_the_ui() -> void:
 	var office := _training_office()
 	var ui := office.ui
 	var s := office.session
-	# Monday: look around at both teams.
+	# Monday: ask at both teams (the toolbox grows through the week, PLAN 2.12).
 	office.interact(office.interactable(INTAKE))
-	ui.place_menu.use_tool("shadow")
+	ui.place_menu.ask("walk")
 	office.interact(office.interactable(DESIGN))
 	ui.place_menu.ask("walk")
 	assert_eq(ui.hud.mission_text(), "Missie: Inwerkweek — ma: Rondleiding", "Monday ends with Anouk's talk")
@@ -427,8 +427,8 @@ func test_the_training_week_is_played_through_the_ui() -> void:
 	ui.close_panels()
 	assert_eq(ui.hud.mission_text(), "Missie: Inwerkweek — di: Kijken zonder oordeel")
 	assert_true(ui.hud.card_texts().any(func(t: String) -> bool: return t.contains("Gemba")), "Tuesday's card")
-	# Tuesday: two tools at Werkvoorbereiding.
-	ui.place_menu.use_tool("time_study")
+	# Tuesday: two tools at Werkvoorbereiding, the two handed out today.
+	ui.place_menu.use_tool("shadow")
 	ui.place_menu.use_tool("documents")
 	assert_true(ui.hud.mission_text().contains("wo: Waar zit de stapel?"))
 	# Wednesday: count both queues; the lesson names what was measured.

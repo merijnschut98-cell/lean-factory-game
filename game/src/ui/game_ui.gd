@@ -306,9 +306,14 @@ func _glossary_card(m: MissionDef) -> void:
 
 ## Ruud's note on a training day's morning (tutorial talks spec §2): the
 ## day's move cards, each its name, what it is and why, on note paper; never
-## when to use it. Kept in the codex under Gesprekken.
+## when to use it. Kept in the codex under Gesprekken. Above them, the gemba
+## tools the day hands out (PLAN 2.12: places.yaml tool_cards), what each is for.
 func _move_note(m: MissionDef) -> void:
 	var lines: Array[String] = []
+	for tool in session.new_tools(m.id):
+		var tool_card := session.tool_card(tool)
+		if not tool_card.is_empty():
+			lines.append("%s. %s" % [tr(tool_card["title"]), tr(tool_card["text"])])
 	for card: Dictionary in session.catalog.move_cards:
 		if card["day"] == m.id:
 			lines.append("%s. %s" % [card["title"], card["text"]])

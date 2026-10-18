@@ -223,6 +223,16 @@ Each phase ends in a **playable** that Merijn plays before the next phase starts
   - Saves (2.7) live in `user://`, outside the packs, and survive every update; the save version check (2.7) handles a pack that is newer than a save.
   - Tests: manifest diff picks only changed packs; a bad checksum is rejected; offline start; launcher self-update fallback.
   - Start when a review download passes ~200 MB or at this phase's gate, whichever comes first.
+- 🔧 2.12 **Place actions** (Merijn's playtest 2026-10-18: ~15 identical options per place, none useful, nobody to talk to at Intake; spec `docs/superpowers/specs/2026-10-18-place-actions.md`). Builder, 2026-10-18:
+  - ✅ Content `content/places.yaml` (25 places, pasted from the spec: tools with place labels and 2–3 observations, questions to named people, `people_also`, `tool_cards`); Kees Mulder joins the cast at `outages.report`; `grant_tools` on the training days (Mon questions, Tue shadow + documents, Wed queue_count, Thu the rest); Monday's briefing "…en vraag bij elk team…".
+  - ✅ Validator (`tools/build_content.py`, `tests/test_places_content.py`): spec rules 1–7 (every used place has an entry, 2–5 tools and 2–3 observations, every clue reachable, questions to someone there, discoveries fit, the week grants each tool once and in time, one tool card each) and no "niets nieuws" in an observation; the build writes a place's tools as an ordered list.
+  - ✅ Rules: `PlaceActions` (`game/src/rules/place_actions.gd`, saved as `gemba`): `GameSession.use_tool` refuses `tool_not_here` / `tool_not_known`; no clue → the place's next observation (cycles, saved, logged as "Waarneming" in the journal); `ask` only the place's questions, to its person, with their own line; `thanks` after a blame or guarded reply. `NOTHING_NEW` deleted. Old saves and a skipped week know every tool.
+  - ✅ UI `place_menu.gd`: people first with their question chips and their talk, then only the known tools that fit, by the place's label.
+  - ✅ Autoplay uses only what the menu offers.
+  - ✅ Ruud's morning note shows the day's tool cards above the move cards (`GameSession.new_tools` + `tool_card`, in `GameUI._move_note`).
+  - ⬜ The yard's magazijn (landed after the spec) puts `outages.joint`, `connections.materials` and `meters.reserve_meter` in a room: they need tools, labels, observations and (Dirk's) questions from the designer; until then `build_content.PLACES_AWAITING_CONTENT` exempts them and they keep every tool (shrink the set, never grow it).
+  - ⬜ Kim and Saskia's questions at `customer_contact.answer` (spec §3) wait until they are in the cast; Esra's two (walk, behind) stand for now.
+  - ⬜ `connections.permit` has no station in the office (`tools/blender/build_office.py` has no `place("connections.permit", …)` marker and the place is in no room): `fix_permits_in_batches` cannot be spotted or its depth-0 key clue found in the 3D game (only through GameSession). Needs a marker beside Werkvoorbereiding and a Blender rebuild (world/art agent).
 - ⬜ 2.8 Phase gate: autoplay on the full tier 1; code review; Merijn's first full playtest → a tuning backlog.
 - 🔧 2.7d **De eerste vijf minuten** (Fable, 2026-10-16; ✅ designed by the design agent the same day: `docs/superpowers/specs/2026-10-16-first-five-minutes.md`, seven beats B1–B7 with every Dutch line, the first talk `anouk_seven` in the content schema, the HUD's appearance table, the acceptance made checkable; ⬜ built with the floors 2.1, the creator 2.7b, the minimap 2.1b and the 2.7c spike, which should be this spanning/stroom/weerstand explainer). Immersion is decided in the first five minutes, and bad dialogs make players quit, so the opening is designed as one scene, not a menu chain: "Nieuw spel" → the creator (2.7b) framed as your Voltana badge photo → you arrive at the ontvangst on the begane grond on 12 October 2026, your first day → Ruud fetches you, and the walk to Aansluitingen *is* the tutorial for moving, the minimap and the name tags (he introduces people as you pass) → the first talk is Anouk at seven in the evening (the first unruinable Act 0 talk), and the first "Hoe werkt het?" (spanning, stroom, weerstand; 2.7c) is Ruud's whiteboard at the end of that walk, skippable. No mission board before the first talk; the HUD appears one element at a time as it is first needed. Acceptance: Merijn and two friends play the first five minutes cold and can say what they are there to do and whom they have met.
   - ✅ Ruud's line at his door on the first walk (Merijn Q10) added to B3 leg 6: "Mijn kamer. Voorlopig." · "Boven heb ik er een met uitzicht op het spoor. Maar boven zit ik te ver van het werk." (design agent, 2026-10-16 evening); the creator and minimap build spec (`2026-10-16-creator-and-minimap.md`) is linked from B1 and B3 leg 3.
@@ -512,6 +522,13 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 ## 10. Claude's calls, pending Merijn
 
 Each call is easy to reverse; Merijn can overrule any of them. Newest first.
+
+### Claude's calls, pending Merijn (2026-10-18, builder: place actions)
+- **Kees Mulder's need is `recognition`** and his archetype `craftsman` (four-tier audit voice), an estimate until his Act III talks are written; he has no talks.
+- **Kim and Saskia's two questions are left out** until both are in the cast (the validator demands a real person who is there).
+- **A clue's tool must be known as well as fit**: `tool_not_known` refuses a tool the week has not handed out yet, also through `GameSession` (not only hidden in the menu).
+- **An observation shows also after a counted queue**, and the hidden signal now shows beside it (before, it showed only when nothing else did).
+- **The person's reply is shown under their first name** ("Sanne: …"); an open question adds what the team sees (`UiText.observation`).
 
 ### Claude's calls, pending Merijn (2026-10-18, design agent: place actions)
 Details in `docs/superpowers/specs/2026-10-18-place-actions.md` §0.

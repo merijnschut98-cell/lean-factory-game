@@ -39,7 +39,10 @@ extends SceneTree
 ## title_replace, title_keep ("Nieuw spel" over a filled autosave: the
 ## question, then the slots to keep it in) ·
 ## pause, pause_slots, pause_confirm (Esc in the office: the pause menu, its
-## five slots, the overwrite question).
+## five slots, the overwrite question) ·
+## place_mon_intake, place_mon_design, place_thu_intake, place_thu_design (PLAN
+## 2.12: the team's menu on Monday and on Thursday of the training week: the
+## people and their questions, then only the known tools that fit).
 ## The mission is played through the UI's own handlers, as a player would;
 ## only the training states start with the training week.
 
@@ -71,7 +74,8 @@ func _run() -> void:
 		return
 	var office: Office = load(SCENE).instantiate()
 	office.seed_value = 11
-	office.training = state in ["training_board", "timelapse", "act0_note", "act0_ruud", "act0_cards"]
+	office.training = state in ["training_board", "timelapse", "act0_note", "act0_ruud", "act0_cards"] \
+		or state.begins_with("place_")
 	root.add_child(office)
 	match state:
 		"office":
@@ -197,6 +201,17 @@ func _run() -> void:
 			office.player.face(Basis.looking_at((joost.position - office.player.position) * Vector3(1, 0, 1)))
 			office.rig.yaw = office.player.rotation.y + deg_to_rad(15)
 			office.rig.zoom(-4)
+			office.rig.snap()
+		"place_mon_intake", "place_mon_design", "place_thu_intake", "place_thu_design":
+			if state.begins_with("place_thu"):
+				_play_to_thursday(office)
+			var at := INTAKE if state.ends_with("intake") else DESIGN
+			_stand_at(office, at)
+			office.interact(office.interactable(at))
+			if state.begins_with("place_thu"):
+				office.ui.place_menu.use_tool("documents")
+			else:
+				office.ui.place_menu.ask("walk")
 			office.rig.snap()
 		"inspect":
 			_stand_at(office, DESIGN)
@@ -500,17 +515,35 @@ func _last_session(office: Office) -> void:
 	ui.after_action()
 
 
+## Monday to Wednesday of the training week through the UI, with only what
+## each day's menu offers (PLAN 2.12): questions, then shadow and documents,
+## then the counts.
+func _play_to_thursday(office: Office) -> void:
+	var ui := office.ui
+	_steps(office, [[INTAKE, "walk"], [DESIGN, "walk"]])
+	ui.open_talk("anouk")   # Monday ends with Anouk at seven
+	ui.dialog_panel.choose("close")
+	ui.dialog_panel.close_talk()
+	ui.close_panels()
+	_steps(office, [[DESIGN, "shadow"], [DESIGN, "documents"], [INTAKE, "queue_count"], [DESIGN, "queue_count"]])
+	ui.close_panels()
+
+
+func _steps(office: Office, steps: Array) -> void:
+	for step: Array in steps:
+		office.interact(office.interactable(step[0]))
+		if step[1] == "walk":
+			office.ui.place_menu.ask("walk")
+		else:
+			office.ui.place_menu.use_tool(step[1])
+
+
 ## Monday to Friday's Check of the training week, through the UI.
 func _play_week(office: Office) -> void:
 	var ui := office.ui
 	var s := office.session
-	for step: Array in [[INTAKE, "shadow"], [DESIGN, "walk"], [DESIGN, "time_study"], [DESIGN, "documents"],
-			[INTAKE, "queue_count"], [DESIGN, "queue_count"], [DESIGN, "shadow"], [DESIGN, "time_study"], [DESIGN, "walk"]]:
-		office.interact(office.interactable(step[0]))
-		if step[1] == "walk":
-			ui.place_menu.ask("walk")
-		else:
-			ui.place_menu.use_tool(step[1])
+	_play_to_thursday(office)
+	_steps(office, [[DESIGN, "shadow"], [DESIGN, "time_study"], [DESIGN, "walk"]])
 	office.interact(office.interactable("obeya"))
 	var problem: ProblemDef = s.region.problems["training_tray"]
 	ui.a3_form.submit({"waste": problem.waste, "cause": s.cause_options(problem.id).find(problem.root_cause),

@@ -339,8 +339,8 @@ func test_skipping_training_opens_the_campaign_without_rewards() -> void:
 ## month-ahead forecast of the fade.
 func test_the_training_week_is_played_end_to_end() -> void:
 	var s := _training()
-	# Monday: visit the two teams.
-	s.use_tool(INTAKE, "shadow")
+	# Monday: visit the two teams (questions only: the toolbox grows through the week).
+	assert_false(s.ask(INTAKE, "walk").has("error"))
 	assert_eq(s.missions.status("training_mon"), "active")
 	assert_false(s.ask(DESIGN, "walk").has("error"))
 	assert_eq(s.missions.status("training_mon"), "active", "Monday ends with Anouk's talk (D9 talks audit A2)")
@@ -349,9 +349,9 @@ func test_the_training_week_is_played_end_to_end() -> void:
 	assert_eq(s.missions.status("training_mon"), "completed", "however the talk went")
 	assert_eq(_active_ids(s), ["training_tue"])
 	assert_eq(s.clock_text(), "di 13 okt, 08:30", "each day of the week starts on its own morning")
-	# Tuesday: two tools at Werkvoorbereiding.
-	s.use_tool(DESIGN, "time_study")
-	s.use_tool(DESIGN, "time_study")
+	# Tuesday: two tools at Werkvoorbereiding (shadow and documents are handed out today).
+	s.use_tool(DESIGN, "shadow")
+	s.use_tool(DESIGN, "shadow")
 	assert_eq(s.missions.status("training_tue"), "active", "two different tools")
 	s.use_tool(DESIGN, "documents")
 	assert_eq(_active_ids(s), ["training_wed"])

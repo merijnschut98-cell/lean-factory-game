@@ -44,6 +44,8 @@ const AGAIN_NOW := "kan nu."
 const AGAIN_TOMORROW := "morgen."
 const AGAIN_FROM := "vanaf %s."
 const AGAIN_NOTHING := "nu niets te bespreken."
+## What a gemba tool showed that was no clue (PLAN 2.12), marked apart.
+const SEEN := "Waarneming"
 const NOBODY := "Je hebt nog met niemand gesproken. Mensen vind je op hun plek op de werkvloer."
 
 var tab := CLUES
@@ -128,16 +130,22 @@ static func found(s: GameSession) -> Array[Clue]:
 	return out
 
 
-## The found clues by place: [{place (the step's Dutch name), clues}].
+## The found clues by place, with what the player saw there that was no clue
+## (PlaceActions' observations, PLAN 2.12): [{place (the step's Dutch name),
+## clues, seen}].
 static func by_place(s: GameSession) -> Array[Dictionary]:
 	var groups: Array[Dictionary] = []
 	var index := {}
+	var add := func(at: String) -> Dictionary:
+		if not index.has(at):
+			index[at] = groups.size()
+			var step := s.region.net.step_at(at)
+			groups.append({"place": step.name if step != null else at, "clues": [], "seen": []})
+		return groups[index[at]]
 	for c in found(s):
-		if not index.has(c.at):
-			index[c.at] = groups.size()
-			var step := s.region.net.step_at(c.at)
-			groups.append({"place": step.name if step != null else c.at, "clues": []})
-		groups[index[c.at]]["clues"].append(c)
+		add.call(c.at)["clues"].append(c)
+	for entry in s.gemba.journal:
+		add.call(entry["place"])["seen"].append(entry["text"])
 	return groups
 
 
@@ -159,6 +167,8 @@ func refresh() -> void:
 		var box := add_card(_list, g["place"])
 		for c: Clue in g["clues"]:
 			box.add_child(paragraph("• " + c.text))
+		for line: String in g["seen"]:
+			box.add_child(paragraph("%s: %s" % [tr(SEEN), tr(line)], Palette.MUTED, UiTheme.SMALL))
 
 
 ## The El Amrani dossier you follow (PLAN 1.8), clipped in once a mission

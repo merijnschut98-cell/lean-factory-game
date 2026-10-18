@@ -82,6 +82,8 @@ const PLACE_ERRORS := {
 	"use_ask": "Een gesprek voer je door een vraag te stellen.",
 	"unknown_place": "Hier werkt geen team.",
 	"unknown_question": "Die vraag kun je hier niet stellen.",
+	"tool_not_here": "Dat past niet bij het werk op deze plek.",
+	"tool_not_known": "Dat hulpmiddel heeft Ruud je nog niet laten zien.",
 	"no_team": "Hier werkt geen team om een routine mee te houden.",
 	"planned": "Hier loopt al een vaste routine.",
 	"not_planned": "Hier loopt geen vaste routine.",
@@ -189,7 +191,6 @@ const NOTHING_TO_AUDIT := "Hier is geen verbetering om na te lopen."
 const ROUTINE_PLANNED := "Vanaf nu loopt de teamleider elke week de standaard na met het team. Dat kost het team %s per week."
 const ROUTINE_STOPPED := "De routine is gestopt: het team heeft de %s per week weer voor ander werk."
 
-const NOTHING_NEW := "Je vindt hier niets nieuws met dit instrument."
 const SPOTTED := "Je ziet het met eigen ogen: hier loopt iets niet zoals het zou moeten."
 const HIDDEN_SIGNAL := "Er schuurt iets, maar wat? Een diepere blik (tijdstudie, data) laat misschien meer zien."
 
@@ -203,6 +204,14 @@ static func tool_label(tool: String) -> String:
 	if not Investigation.TOOLS.has(tool):
 		return tool_name(tool)
 	return "%s (%s)" % [tool_name(tool), duration(Investigation.TOOLS[tool]["minutes"])]
+
+
+## A tool by the place's own label ("Tel de inbox (30 min)"), or by its
+## own name where the place gives none.
+static func place_tool(place_label: String, tool: String) -> String:
+	if place_label.is_empty():
+		return tool_label(tool)
+	return "%s (%s)" % [TranslationServer.translate(place_label), duration(Investigation.TOOLS[tool]["minutes"])]
 
 
 static func question(id: String) -> String:
@@ -317,29 +326,40 @@ static func queue_lesson(queues: Dictionary, place_names: Dictionary) -> String:
 	return "Je telde: %s. %s" % [", ".join(parts), verdict]
 
 
-## What a gemba tool showed: the problem spotted, the clues, a counted
-## queue, or a feeling.
+## What a gemba tool showed: a counted queue, the clues or else what the
+## place shows (its observation, PLAN 2.12), the problem spotted, a feeling.
 static func tool_result(result: Dictionary) -> String:
 	var lines: PackedStringArray = []
-	if not result.get("spotted", []).is_empty():
-		lines.append(SPOTTED)
 	if result.has("queue"):
 		lines.append("Je telt de wachtrij: %s." % queue(result["queue"]))
 	for c: Clue in result.get("clues", []):
 		lines.append("• " + c.text)
-	if lines.is_empty():
-		lines.append(HIDDEN_SIGNAL if result.get("hidden_signal", false) else NOTHING_NEW)
+	if result.has("observation"):
+		lines.append(TranslationServer.translate(result["observation"]))
+	if not result.get("spotted", []).is_empty():
+		lines.append(SPOTTED)
+	if result.get("hidden_signal", false):
+		lines.append(HIDDEN_SIGNAL)
 	return "\n".join(lines)
 
 
-## What the team says (Region.ask's result).
-static func reply(result: Dictionary) -> String:
+## What the team says (Region.ask's result). Asked to a person
+## (GameSession.ask at a place with questions): their own line when no clue
+## came out, then what the team sees for an open question; a guarded or
+## repair reply in the team's words, with their name.
+static func reply(result: Dictionary, person_name: String = "") -> String:
+	var said := ""
 	match result.get("reply", ""):
 		"clue":
 			return "• " + (result["clue"] as Clue).text
 		"observation":
-			return observation(result["observation"])
-	return REPLIES.get(result.get("reply", ""), "")
+			said = observation(result["observation"])
+		_:
+			said = REPLIES.get(result.get("reply", ""), "")
+	if result.has("line"):
+		var line := "%s: %s" % [person_name, TranslationServer.translate(result["line"])]
+		return line if result["reply"] != "observation" else line + "\n" + said
+	return said if person_name.is_empty() or said.is_empty() else "%s: %s" % [person_name, said]
 
 
 ## What the team truthfully sees in their work right now.

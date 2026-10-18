@@ -451,19 +451,32 @@ class Persona extends RefCounted:
 
 	func _observe(m: MissionDef) -> bool:
 		var seen: Dictionary = s.missions.progress[m.id]["seen"]
-		var tools: Array[String] = OBSERVE_TOOLS
-		if not m.goal_tool.is_empty():
-			tools = [m.goal_tool]
 		for place in m.goal_places:
 			if not seen.keys().any(func(k: String) -> bool: return k.get_slice("|", 0) == place):
-				return _use(m, place, tools[0])
-		for tool in tools:
-			for place in m.goal_places:
+				return _use(m, place, _observe_tools(m, place)[0])
+		for place in m.goal_places:
+			for tool in _observe_tools(m, place):
 				if not seen.has(place + "|" + tool):
 					return _use(m, place, tool)
 		_dead_end("observe_exhausted", m.id, "every place and tool used, goal not met")
 		_give_up(m)
 		return true
+
+	## The goal's tool, or the usual ones the place's menu offers now.
+	func _observe_tools(m: MissionDef, place: String) -> Array[String]:
+		if not m.goal_tool.is_empty():
+			return [m.goal_tool]
+		var offered := _offered(place)
+		var tools: Array[String] = OBSERVE_TOOLS.filter(func(t: String) -> bool: return t in offered)
+		return tools if not tools.is_empty() else offered
+
+	## What the place menu offers (PLAN 2.12): the known tools that fit, and
+	## "conversation" where someone can be asked.
+	func _offered(place: String) -> Array[String]:
+		var out := s.place_tools(place)
+		if not s.place_questions(place).is_empty() or not s.gemba.has_place(place):
+			out.append("conversation")
+		return out
 
 	## A check-in (a standardised fix slipping): audit its place, where the
 	## rules have the audit; twice without effect is a dead end.
@@ -484,7 +497,8 @@ class Persona extends RefCounted:
 		for step in s.region.net.stream(m.goal_stream).steps:
 			var place := m.goal_stream + "." + step.id
 			if step.kind == SimStep.Kind.WORK and not s.region.observed.has(place):
-				return _use(m, place, "shadow")
+				var offered := _offered(place)
+				return _use(m, place, "shadow" if "shadow" in offered or offered.is_empty() else offered[0])
 		_dead_end("walk_exhausted", m.id, "every work step walked, goal not met")
 		_give_up(m)
 		return true
@@ -642,15 +656,15 @@ class Persona extends RefCounted:
 		while sr["next"] < plan.size():
 			var pair: Array = plan[sr["next"]]
 			sr["next"] += 1
-			if not sr["dead"].has(pair[0] + "|" + pair[1]):
+			if not sr["dead"].has(pair[0] + "|" + pair[1]) and pair[1] in _offered(pair[0]):
 				return _use(m, pair[0], pair[1], p)
 		return false
 
 	func _careless_step(m: MissionDef, p: ProblemDef) -> bool:
 		var places := _stream_places(p, false)
 		var place: String = p.step if rng.randf() < 0.5 else places[rng.randi() % places.size()]
-		var tools := Investigation.TOOLS.keys()
-		return _use(m, place, tools[rng.randi() % tools.size()], p)
+		var tools := _offered(place)
+		return not tools.is_empty() and _use(m, place, tools[rng.randi() % tools.size()], p)
 
 	## Use a tool (or, for "conversation", ask a question) at a place.
 	func _use(m: MissionDef, place: String, tool: String, p: ProblemDef = null) -> bool:
@@ -660,8 +674,7 @@ class Persona extends RefCounted:
 		var result: Dictionary
 		_doing = "%s at %s (mission %s)" % [tool, place, m.id]
 		if tool == "conversation":
-			var questions := Investigation.QUESTIONS.keys()
-			result = s.ask(place, questions[rng.randi() % questions.size()] if persona == "careless" else "walk")
+			result = s.ask(place, _question(place))
 		else:
 			result = s.use_tool(place, tool)
 		if result.has("error"):
@@ -680,6 +693,17 @@ class Persona extends RefCounted:
 				if sr["barren"][pair] >= BARREN_USES:
 					sr["dead"][pair] = true
 		return true
+
+	## A question the place's menu offers: any for the careless persona, else
+	## an open one (all of Investigation.QUESTIONS where the place has none listed).
+	func _question(place: String) -> String:
+		var ids: Array = s.place_questions(place).map(func(q: Dictionary) -> String: return q["id"])
+		if ids.is_empty():
+			ids = Investigation.QUESTIONS.keys()
+		if persona == "careless":
+			return ids[rng.randi() % ids.size()]
+		var open := ids.filter(func(id: String) -> bool: return Investigation.QUESTIONS[id] == "open")
+		return open[0] if not open.is_empty() else ids[0]
 
 	# ── The A3, the Check and the Act ───────────────────────────────────────
 
