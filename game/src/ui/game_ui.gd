@@ -15,6 +15,9 @@ signal title_requested
 
 ## A person asked in the office who has nothing to talk about now.
 const NOTHING_TO_SAY := "%s knikt je toe en werkt door."
+## Ruud's morning note on a training day (the day's move cards).
+const MOVE_NOTE := "Briefje van Ruud"
+const MOVE_NOTE_FOOTER := "Terug te lezen in je codex (K), onder Gesprekken."
 
 var session: GameSession
 var hud: Hud
@@ -263,7 +266,10 @@ func after_action() -> void:
 			_debrief_card(session.missions.defs[e["mission"]], e)
 		_session_event(e)
 	for m in session.missions.active("training"):
-		_glossary_card(m)
+		if not m.id in session_layer.carded:   # a training day's morning, once a game
+			session_layer.carded.append(m.id)
+			_glossary_card(m)
+			_move_note(m)
 	for text in new_concept_toasts():
 		hud.toast(text)
 	_session_beat()
@@ -283,12 +289,11 @@ func _debrief_card(m: MissionDef, e: Dictionary) -> void:
 	hud.show_card(str(session.catalog.coach.get("name", "Coach")), lines)
 
 
-## A training day's concepts on one short card (name and short text), once;
+## A training day's concepts on one short card (name and short text);
 ## they stand in for the "new concept" toasts.
 func _glossary_card(m: MissionDef) -> void:
-	if m.id in session_layer.carded or m.teaches.is_empty():
+	if m.teaches.is_empty():
 		return
-	session_layer.carded.append(m.id)
 	var lines: Array[String] = []
 	for id in m.teaches:
 		var def: ConceptDef = session.catalog.concepts.get(id)
@@ -297,6 +302,19 @@ func _glossary_card(m: MissionDef) -> void:
 			if not id in _known_concepts:
 				_known_concepts.append(id)
 	hud.show_card("Nieuwe begrippen", lines, UiText.CARD_FOOTER)
+
+
+## Ruud's note on a training day's morning (tutorial talks spec §2): the
+## day's move cards, each its name, what it is and why, on note paper; never
+## when to use it. Kept in the codex under Gesprekken.
+func _move_note(m: MissionDef) -> void:
+	var lines: Array[String] = []
+	for card: Dictionary in session.catalog.move_cards:
+		if card["day"] == m.id:
+			lines.append("%s. %s" % [card["title"], card["text"]])
+			lines.append("'%s'" % card["why"])
+	if not lines.is_empty():
+		hud.show_card(tr(MOVE_NOTE), lines, tr(MOVE_NOTE_FOOTER), Palette.NOTE_PAPER)
 
 
 ## Toasts for the concepts learned since the last call, once each.

@@ -184,9 +184,9 @@ func show_overlay(on: bool) -> void:
 
 ## A card: a heading, its lines and a muted footer. The oldest goes when
 ## there are too many.
-func show_card(heading: String, lines: Array[String], footer: String = "") -> void:
+func show_card(heading: String, lines: Array[String], footer: String = "", paper: Color = Color.WHITE) -> void:
 	var card := PanelContainer.new()
-	card.add_theme_stylebox_override("panel", UiTheme.card(Color.WHITE))
+	card.add_theme_stylebox_override("panel", UiTheme.card(paper))
 	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card.set_meta("left", CARD_SECONDS)
 	var box := VBoxContainer.new()

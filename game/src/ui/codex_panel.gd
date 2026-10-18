@@ -13,7 +13,11 @@ const CATEGORY_TITLES := {"lean": "Lean", "kata": "Kata", "measure": "Meten", "s
 const CONCEPTS := "concepts"
 const DISCOVERIES := "discoveries"
 const EXPLAINERS := "explainers"
-const TABS := {CONCEPTS: "Begrippen", DISCOVERIES: "Ontdekkingen", EXPLAINERS: "Hoe werkt het?"}
+const TALKS := "talks"
+const TABS := {CONCEPTS: "Begrippen", DISCOVERIES: "Ontdekkingen", EXPLAINERS: "Hoe werkt het?", TALKS: "Gesprekken"}
+## Gesprekken: Ruud's move cards of the Act 0 days reached, to reread.
+const TALKS_INTRO := "De briefjes van Ruud uit je eerste week: acht manieren van luisteren, en wie er tegenover je zit."
+const NOT_YET := "Komt nog, in je eerste week."
 ## Hoe werkt het? (PLAN 2.7c): the explainers met in the world, to see again.
 const EXPLAINERS_INTRO := "Wat je onderweg uitgelegd kreeg, kun je hier terugzien. De rest kom je tegen op de werkvloer."
 const SEE_AGAIN := "Bekijk opnieuw"
@@ -85,6 +89,9 @@ func refresh() -> void:
 		return
 	if tab == EXPLAINERS:
 		_explainers()
+		return
+	if tab == TALKS:
+		_move_cards()
 		return
 	var all := groups(session.catalog.concepts, session.region.profile.concepts)
 	var known := 0
@@ -170,6 +177,28 @@ func _explainers() -> void:
 		box.add_child(again)
 
 
+## The move cards in content order: a reached day's as its note (title, what
+## it is, why), a later day's as a silhouette.
+func _move_cards() -> void:
+	_list.add_child(paragraph(tr(TALKS_INTRO), Palette.MUTED))
+	var grid := _card_grid()
+	for card: Dictionary in session.catalog.move_cards:
+		var reached := day_reached(session, card["day"])
+		var box := _grid_card(grid, reached, Palette.NOTE_PAPER)
+		if not reached:
+			box.add_child(label(SILHOUETTE, UiTheme.HEADING, Palette.MUTED))
+			box.add_child(paragraph(tr(NOT_YET), Palette.MUTED, 15))
+			continue
+		box.add_child(label(card["title"], UiTheme.FONT_SIZE, Palette.VOLTANA_BLUE))
+		box.add_child(paragraph(card["text"], Palette.INK, 15))
+		box.add_child(paragraph("'%s'" % card["why"], Palette.MUTED, 15))
+
+
+## Whether a training day has come (its mission handed out, or done).
+static func day_reached(s: GameSession, mission_id: String) -> bool:
+	return s.missions.done_once.has(mission_id) or s.missions.status(mission_id) in ["active", "completed"]
+
+
 ## The explainers in content order, read once (the file does not change in play).
 func _explainer_defs() -> Array:
 	if _explainers_read.is_empty():
@@ -191,9 +220,9 @@ func _card_grid() -> GridContainer:
 	return grid
 
 
-## A card in the grid: white when known, a grey silhouette's otherwise.
-static func _grid_card(grid: GridContainer, known: bool) -> VBoxContainer:
-	var box := add_card(grid, "", Color.WHITE if known else Palette.LINE)
+## A card in the grid: on `paper` when known, a grey silhouette's otherwise.
+static func _grid_card(grid: GridContainer, known: bool, paper: Color = Color.WHITE) -> VBoxContainer:
+	var box := add_card(grid, "", paper if known else Palette.LINE)
 	box.get_parent().custom_minimum_size = Vector2(340, 96)
 	return box
 

@@ -71,7 +71,7 @@ func _run() -> void:
 		return
 	var office: Office = load(SCENE).instantiate()
 	office.seed_value = 11
-	office.training = state in ["training_board", "timelapse"]
+	office.training = state in ["training_board", "timelapse", "act0_note", "act0_ruud", "act0_cards"]
 	root.add_child(office)
 	match state:
 		"office":
@@ -141,6 +141,24 @@ func _run() -> void:
 			office.ui.close_panels()
 			office.ui.toggle_journal()
 			office.ui.journal.show_tab(ClueJournal.PEOPLE)
+		"act0_note":   # Monday morning: Ruud's note with the day's move card (PLAN 1.11a)
+			_stand_at(office, DESIGN)
+		"act0_ruud":   # Anouk at seven, one move, then Ruud names it on the summary
+			var anouk := office.people.person("anouk")
+			if anouk != null:
+				office.player.position = anouk.position + anouk.basis.x * 1.1 - anouk.basis.z * 0.2
+				office.use(anouk)
+				office.rig.snap()
+			else:
+				office.ui.open_talk("anouk")
+			for move in ["mood", "empathy", "open_question"]:
+				office.ui.dialog_panel.choose(move)
+			office.ui.dialog_panel.close_talk()
+		"act0_cards":   # the codex's Gesprekken at the week's end: every card, the Friday one last
+			for id in ["training_mon", "training_tue", "training_wed", "training_thu", "training_fri"]:
+				office.session.missions.done_once[id] = true
+			office.ui.toggle_codex()
+			office.ui.codex.show_tab(CodexPanel.TALKS)
 		"explainers":
 			office.session.explainers.see("spanning_stroom_weerstand")
 			office.ui.toggle_codex()

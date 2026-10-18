@@ -43,6 +43,10 @@ const TALK_IT_OVER := "Bespreek met %s"
 const STILL_NEEDED := "Wat nog moet: %s"
 ## When the condition names nothing: first see, then believe.
 const STILL_NEEDED_CHECK := "Eerst zien, dan geloven: een geslaagde Check."
+## Ruud after an Act 0 talk (tutorial talks spec §3): in person on the first
+## day, by phone after that. One move named, never a score.
+const RUUD_DROPPED_BY := "Ruud kwam even langs"
+const RUUD_MESSAGE := "Bericht van Ruud"
 ## Under a ruined talk: the retry, and nothing more.
 const TRY_AGAIN := "%s wil morgen weer praten."
 ## The header's button mid-talk: Esc ends the talk as "Afronden" does.
@@ -551,6 +555,35 @@ func _summary() -> void:
 		learned.add_child(label(ROUTES, CHIP_FONT, Palette.VOLTANA_BLUE))
 		for h: String in hints:
 			learned.add_child(paragraph("• " + h, Palette.INK, CHIP_FONT))
+	_ruud_names(columns, str(summary.get("ruud_names", "")))
+
+
+## Ruud's word after an Act 0 talk: the one move he names (or his question),
+## and after Friday's last talk his question for the weekend. Nothing outside
+## Act 0 (the rules give no line there). A note beside the summary, in view.
+func _ruud_names(columns: HBoxContainer, line: String) -> void:
+	if line.is_empty():
+		return
+	var monday := SimCalendar.weekday(session.region.net.time - SimCalendar.days(GameSession.WARMUP_DAYS)) == 0
+	var card := add_card(columns, tr(RUUD_DROPPED_BY if monday else RUUD_MESSAGE), Palette.NOTE_PAPER)
+	card.get_parent().size_flags_stretch_ratio = 0.9
+	var note := add_scroll_list(card, SUMMARY_HEIGHT)
+	note.add_child(paragraph("'%s'" % line, Palette.INK, CHIP_FONT))
+	var d: DialogDef = session.people.dialogs.get(talk.get("dialog", ""))
+	if d != null and week_ends(session, d):
+		var week_end := str(JsonFile.dict_or_empty(session.catalog.dialog_bank.get("ruud_names")).get("week_end", ""))
+		if not week_end.is_empty():
+			note.add_child(paragraph("'%s'" % week_end, Palette.INK, CHIP_FONT))
+
+
+## Whether talk `d` closes the Act 0 week: a tutorial talk of the last
+## training day, with every tutorial talk of that day had.
+static func week_ends(s: GameSession, d: DialogDef) -> bool:
+	var training := s.missions.defs.values().filter(func(m: MissionDef) -> bool: return m.kind == "training")
+	if not d.tutorial or training.is_empty() or d.mission != training[-1].id:
+		return false
+	return s.people.dialogs.values().all(func(o: DialogDef) -> bool:
+		return not (o.tutorial and o.mission == d.mission) or s.people.outcomes.has(o.id))
 
 
 ## The line under the outcome: what an agreement under condition waits for,

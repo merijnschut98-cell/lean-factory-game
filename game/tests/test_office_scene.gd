@@ -398,12 +398,13 @@ func test_a_training_day_shows_its_glossary_card_once() -> void:
 	var office := _training_office()
 	var hud := office.ui.hud
 	var def: ConceptDef = office.session.catalog.concepts["netbeheerder"]
-	var cards := hud.card_texts()
+	var glossary := func() -> Array: return hud.card_texts().filter(func(t: String) -> bool: return t.begins_with("Nieuwe begrippen"))
+	var cards: Array = glossary.call()
 	assert_eq(cards.size(), 1, "Monday's card")
 	assert_true(cards[0].contains(def.name) and cards[0].contains(def.short), "name and short text")
 	assert_true(cards[0].contains("K voor alle begrippen"))
 	office.ui.after_action()
-	assert_eq(hud.card_texts().size(), 1, "shown once")
+	assert_eq(glossary.call().size(), 1, "shown once")
 	assert_false(hud.toast_texts().any(func(t: String) -> bool: return t.begins_with("Nieuw begrip")),
 		"the card stands in for the toasts")
 	_close(office)
