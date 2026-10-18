@@ -26,12 +26,13 @@ def _check(mutate) -> None:
 def test_the_real_building_is_valid_with_three_floors_and_the_planned_rooms():
     docs = bc.load_content()
     world = docs["world"]
-    assert [f["level"] for f in world["floors"]] == [0, 1, 2]
+    assert [f.get("level") for f in world["floors"]] == [0, 1, 2, None], "three floors and the yard outside"
     by_floor = {f["id"]: [r["name"] for r in world["rooms"] if r["floor"] == f["id"]] for f in world["floors"]}
     assert by_floor == {
         "ground": ["Ontvangst", "Klantcontactcentrum", "Kantine"],
         "first": ["Aansluitingen", "Revisie & GIS", "Meetdata & registratie"],
         "second": ["Directie & Obeya", "Netstrategie", "Congestiedesk", "MT-kamer", "Directeur Netbeheer"],
+        "yard": ["Magazijn", "Werkplaats & storingsdienst", "Bussen"],
     }
     assert world["start_floor"] == "first"
     assert _room(world, "connections")["opens_with"] == ["start"], "the existing floor is open from the start"
@@ -66,6 +67,28 @@ def test_the_week_opens_the_rooms_its_talks_and_tour_need():
     assert "training_mon" in _room(world, "canteen")["opens_with"], "Ruud's tour shows the kantine"
     assert "training_wed" in _room(world, "revision_gis")["opens_with"], "Mieke's Wednesday talk (D9 audit P0)"
     assert "training_thu" in _room(world, "meter_data")["opens_with"], "Petra's Thursday talk (D9 audit P0)"
+
+
+def test_the_yard_is_an_outside_area_of_the_begane_grond_with_the_field_steps():
+    world = REAL["world"]
+    yard = next(f for f in world["floors"] if f["id"] == "yard")
+    assert yard["outside_of"] == "ground" and "level" not in yard, "reached by a door, never by the stairs"
+    rooms = {r["id"]: r for r in world["rooms"] if r["floor"] == "yard"}
+    assert set(rooms) == {"magazijn", "werkplaats", "van_park"}
+    assert set(rooms["magazijn"]["places"]) == {"outages.joint", "connections.materials", "meters.reserve_meter"}
+    assert {"outages.repair", "meters.visit"} == set(rooms["van_park"]["places"])
+    assert "outages.locate" in rooms["werkplaats"]["places"]
+    assert not any("start" in r["opens_with"] for r in rooms.values()), "nothing on the yard is open from the start"
+    assert "fix_wrong_joint" in rooms["magazijn"]["opens_with"], "Dirk's talk"
+
+
+@pytest.mark.parametrize("mutate, message", [
+    (lambda w: w["floors"][-1].update(outside_of="attic"), "outside of unknown floor 'attic'"),
+    (lambda w: w["floors"][-1].update(level=0), "either a level or 'outside_of'"),
+])
+def test_an_outside_area_is_checked(mutate, message):
+    with pytest.raises(bc.ContentError, match=message):
+        _check(mutate)
 
 
 def test_only_the_way_in_and_the_first_teams_are_open_from_the_start():

@@ -837,9 +837,18 @@ def world() -> dict:
     return json.loads(WORLD.read_text(encoding="utf-8"))
 
 
+def indoor(building: dict) -> dict:
+    """The building's floors with a level and their rooms: the signs are the head office's
+    (an outside area, the yard, has no level and no door signs or directory line)."""
+    floors = [f for f in building["floors"] if "level" in f]
+    ids = {f["id"] for f in floors}
+    return {**building, "floors": floors, "rooms": [r for r in building["rooms"] if r["floor"] in ids]}
+
+
 def wayfinding_rects(building: dict) -> dict[str, tuple[float, float, float, float]]:
     """Where each sign sits in wayfinding_albedo.png, as (u0, v0, u1, v1) with v up:
     'room:<id>' and 'sign:<text>' door signs, then the PANELS."""
+    building = indoor(building)
     names = [f"room:{r['id']}" for r in building["rooms"]] + [f"sign:{t}" for t in EXTRA_SIGNS]
     if len(names) > 16:
         sys.exit("wayfinding: more than 16 door signs; grow the atlas")
@@ -932,7 +941,7 @@ def wayfinding(w=WAYFINDING_SIZE, h=WAYFINDING_SIZE):
     """The head office's signs (PLAN 2.1): door signs, the floor directories by the lift and
     stairs, and three status boards. Names come from game/data/world.json; build_office.py
     maps its quads with the same wayfinding_rects()."""
-    building = world()
+    building = indoor(world())
     rects = wayfinding_rects(building)
     img = Image.new("RGB", (w, h), (255, 255, 255))
     d = ImageDraw.Draw(img)

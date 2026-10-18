@@ -18,6 +18,7 @@ Blender's Python module from PyPI needs the Python version it was built for
     .bvenv/bin/python tools/blender/build_office.py --samples 64   # every floor + lightmap bake (~12 min a floor on 4 cores)
     .bvenv/bin/python tools/blender/build_office.py --floors ground  # one floor
     .bvenv/bin/python tools/blender/build_office.py --no-bake  # seconds: reuses lightmap_*_<floor>.png on disk
+    .bvenv/bin/python tools/blender/build_yard.py          # the yard (PLAN 2.2): office_yard.glb, no lightmaps
     godot --headless --path game --import
 
 `--samples N` sets the Cycles bake quality, `--blend out.blend` also saves each floor's scene.

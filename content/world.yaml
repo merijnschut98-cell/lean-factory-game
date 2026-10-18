@@ -5,7 +5,9 @@
 #
 # start_floor  the floor a game starts on (where the player's desk is)
 # floors       id, name (Dutch: the signs, the lift and the map), level (0 = begane grond),
-#              model (the floor's glb under game/assets/office/)
+#              model (the floor's glb under game/assets/office/); an outside area (the yard,
+#              PLAN 2.2) has outside_of: <floor> instead of a level: a door on that floor
+#              leads there (tools/blender/build_yard.py builds it)
 # rooms        id, floor, name (Dutch), places (the "stream.step" places inside it: the
 #              markers the model puts in the room), opens_with: what opens its door. The
 #              progressive rule: nothing is open before a mission needs it.
@@ -23,6 +25,7 @@ floors:
   - {id: ground, level: 0, name: Begane grond, model: office_ground.glb}
   - {id: first, level: 1, name: 1e verdieping, model: office.glb}
   - {id: second, level: 2, name: 2e verdieping, model: office_second.glb}
+  - {id: yard, outside_of: ground, name: Werf, model: office_yard.glb}   # the kantine's back door
 
 rooms:
   # Begane grond: customer-facing.
@@ -90,3 +93,23 @@ rooms:
     name: Directeur Netbeheer
     places: []
     opens_with: []
+
+  # De werf (PLAN 2.2, docs/superpowers/specs/2026-10-17-the-yard.md): the field steps' home
+  # until the town exists. Each opens with every mission that leads to one of its places.
+  - id: magazijn
+    floor: yard
+    name: Magazijn
+    places: [outages.joint, connections.materials, meters.reserve_meter]
+    opens_with: [walk_outages, walk_meters, fix_wrong_joint]
+  - id: werkplaats
+    floor: yard
+    name: Werkplaats & storingsdienst
+    places: [outages.locate, connections.execution, connections.commissioning, voltage_complaints.measurement,
+             voltage_complaints.tap_change]
+    opens_with: [walk_outages, fix_wrong_joint, save_henks_knowledge, fix_digging_damage, fix_installer_not_ready,
+                 fix_planning_reshuffle, fix_silo_kpis, fix_revision_backlog, fix_inverters_tripping]
+  - id: van_park
+    floor: yard
+    name: Bussen
+    places: [outages.repair, meters.visit]
+    opens_with: [walk_outages, walk_meters, fix_wrong_joint, fix_not_at_home, fix_silent_meter]
