@@ -1561,7 +1561,8 @@ class PlayReport extends RefCounted:
 		var reached := {}
 		for run in runs:
 			for c: Dictionary in run["coach"]:
-				if c["mission_kind"] != "side" and not (c["stage"] as String).is_empty():
+				# The talk stage is People.coach_question's bank (dialogs.yaml bank.coach), not a mission insight.
+				if c["mission_kind"] != "side" and not (c["stage"] as String) in ["", "talk"]:
 					(reached.get_or_add(c["mission"], {}) as Dictionary)[c["stage"]] = true
 		var missing := []
 		for id: String in reached:
