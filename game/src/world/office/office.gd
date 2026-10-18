@@ -99,6 +99,8 @@ var _hovered_person: OfficePerson
 var explainer: ExplainerView
 ## Ruud's paper floor plan in the corner (PLAN 2.1b); null when the game cannot be played.
 var minimap: OfficeMinimap
+## The yard's clock-keeper (the vans by the hour, PLAN 2.2) while the yard is loaded, or null.
+var yard: OfficeYard
 ## The character creator open over the world ("Uiterlijk" in the pause menu), or null.
 var look_editor: CreatorScreen
 
@@ -246,7 +248,7 @@ static func _load_geometry(path := MODEL) -> Node3D:
 ## points and its people. The player, the camera, the UI and the game stay as they are.
 func load_floor() -> void:
 	_clear_interactables()
-	for n: Node in [people, geometry]:
+	for n: Node in [people, geometry, yard]:
 		if n != null:
 			remove_child(n)
 			n.free()
@@ -263,6 +265,12 @@ func load_floor() -> void:
 	people = OfficePeople.build(self, CharacterModel.cast(), floors.here)
 	add_child(people)
 	_refresh_people()
+	yard = null
+	if find_marker("van0") != null:   # the yard (PLAN 2.2): its vans go out and come back by the hour
+		yard = OfficeYard.new()
+		yard.name = "Yard"
+		yard.office = self
+		add_child(yard)
 	if ui != null and ui.playable():
 		show_map()
 

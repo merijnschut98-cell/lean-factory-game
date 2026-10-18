@@ -61,6 +61,9 @@ var lunch: Variant = null
 var at_lunch := false
 ## Present only while one of these missions is active ([] = always).
 var missions: Array[String] = []
+## Away until one of these missions is done ([] = never away): Saskia is at home with
+## stress until the callers are fixed (esra_agents).
+var after: Array[String] = []
 ## "coach": using them opens the coach, not a talk.
 var talk := ""
 ## A walker's route (office space) and the corner they walk to.
@@ -89,8 +92,10 @@ static func create(entry: Dictionary) -> OfficePerson:
 	p.pose = str(office.get("pose", "idle")) if str(office.get("pose", "")) in POSES else "idle"
 	for m: Variant in office.get("missions", []):
 		p.missions.append(str(m))
+	for m: Variant in office.get("after", []):
+		p.after.append(str(m))
 	p.talk = str(office.get("talk", ""))
-	p.visible = p.missions.is_empty()   # until the session says a mission of theirs is on
+	p.visible = p.missions.is_empty() and p.after.is_empty()   # until the session says otherwise
 	p.model = CharacterModel.instantiate(p.id)
 	if p.model == null:
 		p.model = _stand_in(p.pose == "sit")
@@ -155,14 +160,11 @@ func height() -> float:
 	return SEATED_HEIGHT if pose == "sit" else STANDING_HEIGHT
 
 
-## Whether they are in the office while these missions are active.
-func present_for(active_missions: Array) -> bool:
-	if missions.is_empty():
-		return true
-	for m in missions:
-		if m in active_missions:
-			return true
-	return false
+## Whether they are in the office while these missions are active and those done.
+func present_for(active_missions: Array, done: Dictionary = {}) -> bool:
+	if not after.is_empty() and not after.any(func(m: String) -> bool: return done.has(m)):
+		return false
+	return missions.is_empty() or missions.any(func(m: String) -> bool: return m in active_missions)
 
 
 func show_tag(on: bool) -> void:

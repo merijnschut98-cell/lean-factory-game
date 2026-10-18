@@ -103,7 +103,9 @@ static func distinct(routes: Array) -> Array:
 ## The best fixed route found over `talks`: {wins, route, won (the ids of the
 ## talks it wins), winners (every route found that won a talk with its last
 ## move, at most one per state)}. `without`: tokens no route may use.
-static func best_route(talks: Array, width: int = WIDTH, without: Array = []) -> Dictionary:
+## `every_winner` false: stop once a route wins every talk; wins, route and won
+## are the same (the best route only changes on more wins), winners is partial.
+static func best_route(talks: Array, width: int = WIDTH, without: Array = [], every_winner := true) -> Dictionary:
 	var tokens := TOKENS.filter(func(t: String) -> bool: return not t in without)
 	var beam := [{"talks": talks.map(func(t: Dialog) -> Dialog: return t.copy()), "route": [], "won": 0}]
 	var best := {"wins": 0, "route": [], "winners": []}
@@ -120,14 +122,22 @@ static func best_route(talks: Array, width: int = WIDTH, without: Array = []) ->
 				if after["won"] > best["wins"]:
 					best["wins"] = after["won"]
 					best["route"] = after["route"]
+					if not every_winner and best["wins"] == talks.size():
+						return _with_won(best, talks)
 				var key := ",".join(after["talks"].map(_key))
 				if not next.has(key):
 					next[key] = after
 		beam = next.values().filter(func(n: Dictionary) -> bool: return n["talks"].any(winnable))
-		beam.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return _score(a) > _score(b))
+		for n: Dictionary in beam:  # scored once, not on every comparison of the sort
+			n["score"] = _score(n)
+		beam.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["score"] > b["score"])
 		beam = beam.slice(0, width)
 		if beam.is_empty():
 			break
+	return _with_won(best, talks)
+
+
+static func _with_won(best: Dictionary, talks: Array) -> Dictionary:
 	best["won"] = talks.filter(func(t: Dialog) -> bool: return wins(t, best["route"])).map(
 		func(t: Dialog) -> String: return t.def.id)
 	return best
@@ -149,10 +159,8 @@ static func pick(talk: Dialog, token: String) -> String:
 		"show_data":
 			return talk.def.data[0] if not talk.def.data.is_empty() else OTHER_CLUE
 		"propose", "propose_experiment":
-			var picks: Array = []
-			for m: Dictionary in talk.moves():
-				if m["id"] == token:
-					picks = m["picks"]
+			# The picks moves() offers, without building the whole palette (hot in the search).
+			var picks: Array = talk._picks(token)
 			for p: Dictionary in picks:
 				if "concern" in talk.def.item(p["id"]).get("addresses", []):
 					return p["id"]

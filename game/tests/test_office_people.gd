@@ -45,6 +45,11 @@ func _office(training := false) -> Office:
 	return office
 
 
+## To floor `id` the way a player gets there: an outside area (the yard) by its door.
+func _go_to(office: Office, id: String) -> void:
+	office.floors.go_to(id, "exit" if office.floors.building.floor_of(id).get("outside_of", "") != "" else "lift", true)
+
+
 func _take(office: Office, mission_id: String) -> void:
 	office.session.missions.progress[mission_id] = {"status": "active", "asks": {}, "seen": {}}
 	office.floors._process(OfficeFloors.POLL_SECONDS)
@@ -91,6 +96,8 @@ func test_the_people_sit_at_their_desks_and_marco_walks_the_aisle() -> void:
 
 func test_henk_and_ahmed_come_only_with_their_missions() -> void:
 	var office := _office()
+	_take(office, "fix_installer_not_ready")   # opens the werkplaats on the yard, where they wait
+	_go_to(office, "yard")
 	var henk := office.people.person("henk")
 	var ahmed := office.people.person("ahmed")
 	assert_true(henk != null and ahmed != null, "Henk and Ahmed are in the cast")
@@ -216,22 +223,62 @@ func test_the_walker_walks_at_the_walk_pace_and_pauses_at_the_ends() -> void:
 
 # ── 2.1c: people in every room (PLAN 1.3, 2.1c) ─────────────────────────────
 
-func test_every_head_office_speaker_of_act_0_to_ii_has_a_body() -> void:
+func test_every_speaker_has_a_body_and_is_there_while_their_talk_is_open() -> void:
 	var office := _office()
-	var acts := {}
-	for m: MissionDef in office.session.catalog.missions:
-		acts[m.id] = m.act
-	var speakers := {}
+	var talks: Array[DialogDef] = []
 	for d: DialogDef in office.session.people.dialogs.values():
-		if d.mission.is_empty() or int(acts.get(d.mission, 99)) <= 2:
-			speakers[d.person] = true
-	assert_true(speakers.size() >= 4, "the talks of Act 0–II are read")
-	for id: String in speakers:
-		var person: PersonDef = office.session.people.persons.get(id)
-		if person == null or person.team == "monteurs" or person.archetype.begins_with("customer"):
-			continue   # the field crews come in for their missions; customers are reached by phone
-		assert_false(_cast(id).get("office", {}).is_empty(), "%s has a place in the office's cast" % id)
-		assert_true(ResourceLoader.exists(CharacterModel.path(id)), "%s has a body" % id)
+		var person: PersonDef = office.session.people.persons.get(d.person)
+		if person != null and not person.archetype.begins_with("customer"):   # customers are phoned
+			talks.append(d)
+	assert_true(talks.size() >= 20, "the talks are read")
+	for d in talks:
+		assert_false(_cast(d.person).get("office", {}).is_empty(), "%s has a place in the office's cast" % d.person)
+		assert_true(ResourceLoader.exists(CharacterModel.path(d.person)), "%s has a body" % d.person)
+	for d in talks:   # a talk tied to a mission: its person is there, reachable, while it is on
+		if d.mission.is_empty() or _cast(d.person).get("office", {}).is_empty():
+			continue
+		_take(office, d.mission)
+		_go_to(office, str(_cast(d.person)["office"].get("floor", "first")))
+		office.people.refresh(office.session)
+		var p := office.people.person(d.person)
+		assert_true(p != null and p.visible, "%s is there for %s (%s)" % [d.person, d.id, d.mission])
+		if p != null and p.visible:
+			assert_false(office.nav().path(office.player.position, p.position).is_empty(), "%s can be walked up to" % d.person)
+	office.free()
+
+
+func test_the_yard_has_its_people_dirk_at_his_counter_henk_and_ahmed_in_the_werkplaats() -> void:
+	var office := _office()
+	_take(office, "fix_wrong_joint")
+	_take(office, "save_henks_knowledge")
+	office.floors.go_to("yard", "exit", true)
+	var m := office.floors.markers()
+	var magazijn := OfficeFloors.room_rect(m["room:magazijn"])
+	var werkplaats := OfficeFloors.room_rect(m["room:werkplaats"])
+	for who: Array in [["dirk", magazijn], ["henk", werkplaats], ["ahmed", werkplaats]]:
+		var p := office.people.person(who[0])
+		assert_true(p != null and p.visible, "%s is on the yard" % who[0])
+		if p != null:
+			assert_true((who[1] as Rect2).has_point(Vector2(p.position.x, p.position.z)), "%s in his room" % who[0])
+			assert_false(office.nav().path(office.player.position, p.position).is_empty(), "%s can be walked up to" % who[0])
+	assert_eq(_cast("dirk")["office"].get("missions", []), [], "the magazijn is Dirk's: he is there whenever it is open")
+	office.free()
+
+
+func test_visitors_come_to_the_ontvangst_for_their_missions() -> void:
+	var office := _office()
+	office.floors.go_to("ground", "lift", true)
+	var reception := OfficeFloors.room_rect(office.floors.markers()["room:reception"])
+	for visit: Array in [["gert", "fix_digging_damage"], ["wim", "fix_inverters_tripping"]]:
+		var p := office.people.person(visit[0])
+		assert_true(p != null and not p.visible, "%s is not here without %s" % visit)
+		if p == null:
+			continue
+		_take(office, visit[1])
+		office.people.refresh(office.session)
+		assert_true(p.visible and reception.has_point(Vector2(p.position.x, p.position.z)), "%s waits at the ontvangst" % visit[0])
+		assert_false(office.nav().path(office.player.position, p.position).is_empty(), "%s can be walked up to" % visit[0])
+		assert_true(ResourceLoader.exists(CharacterModel.path(visit[0])), "%s has a body" % visit[0])
 	office.free()
 
 
@@ -281,10 +328,16 @@ func test_the_kcc_and_the_2e_are_peopled_once_their_rooms_open() -> void:
 	var office := _office()
 	_take(office, "fix_status_callers")
 	office.floors.go_to("ground", "lift", true)
-	for id in ["esra", "kim", "saskia"]:
+	for id in ["esra", "kim"]:
 		var p := office.people.person(id)
 		assert_true(p != null and p.visible, "%s at the Klantcontactcentrum" % id)
 	assert_true(office.people.person("esra").find_child("Headset", true, false) != null, "Esra's headset")
+	var saskia := office.people.person("saskia")
+	assert_true(saskia != null and not saskia.visible, "Saskia is at home with stress (esra_agents) while the mission runs")
+	office.session.missions.progress["fix_status_callers"]["status"] = "completed"
+	office.session.missions.done_once["fix_status_callers"] = true
+	office.people.refresh(office.session)
+	assert_true(saskia.visible, "back once the callers are fixed (esra_after: halve dagen)")
 	office.floors.go_to("second", "lift", true)
 	var frank := office.people.person("frank")
 	var femke := office.people.person("femke")

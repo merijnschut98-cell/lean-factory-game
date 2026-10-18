@@ -60,13 +60,17 @@ func test_targets_per_goal_type_are_rooms_or_people() -> void:
 	assert_eq([t.get("kind"), t.get("person"), t.get("room"), t.get("floor")], ["person", "petra", "meter_data", "first"],
 		"talk_to: the person, wherever they are")
 	t = _of(s, "walk_meters")
-	assert_eq([t.get("kind"), t.get("room")], ["room", "meter_data"], "walk: the first unseen step's room")
+	assert_eq([t.get("kind"), t.get("room"), t.get("floor")], ["room", "van_park", "yard"],
+		"walk: the first unseen work step's room (the meter vans on the yard)")
+	s.region.observed["meters.visit"] = true
+	assert_eq(_of(s, "walk_meters").get("room"), "meter_data", "then the next one")
 	s.region.observed["meters.registration"] = true
 	assert_eq(_of(s, "walk_meters"), {}, "every step with a room seen: no target")
 	t = _of(s, "training_tue")
 	assert_eq(t.get("room"), "connections", "observe: the first unobserved place's room")
 	assert_eq(_of(s, "fix_status_callers").get("room"), "contact_centre", "solve: the room of the problem's step")
-	assert_eq(_of(s, "fix_wrong_joint"), {}, "a problem in the field: no target in the office")
+	assert_eq(_of(s, "fix_wrong_joint").get("room"), "van_park", "a field problem: the yard, where its vans are")
+	assert_eq(_of(s, "fix_permits_in_batches"), {}, "a step in no room: no target")
 	assert_eq(MinimapTargets.of(_talk("el_amrani_fourth_call"), s, b, CharacterModel.cast()), {},
 		"a customer on the phone: no target")
 
@@ -178,6 +182,23 @@ func test_a_target_on_another_floor_points_to_the_nearer_seam_with_the_floor() -
 	office.minimap.refresh()
 	t = map.targets.filter(func(x: Dictionary) -> bool: return x["main"])[0]
 	assert_eq(t["text"], "Begane grond ↓", "from the 2e down to the begane grond")
+	office.free()
+
+
+func test_the_way_to_the_yard_is_the_kantines_back_door() -> void:
+	var office := _office()
+	office.session.missions.progress["fix_wrong_joint"] = {"status": "active", "asks": {}, "seen": {}}
+	office.floors._process(OfficeFloors.POLL_SECONDS)
+	office.floors.go_to("ground", "lift", true)
+	office.minimap.refresh()
+	var t: Dictionary = office.minimap.map.targets.filter(func(x: Dictionary) -> bool: return x["id"].begins_with("fix_wrong_joint"))[0]
+	var door := office.interactable("exit:yard")
+	assert_eq(t["text"], "Werf", "the yard is on this level: no arrow")
+	assert_true(t["at"].distance_to(Vector2(door.position.x, door.position.z)) < 0.01, "the back door, not the lift")
+	office.floors.use(door)
+	office.minimap.refresh()
+	t = office.minimap.map.targets[0]
+	assert_eq(t["kind"], "room", "on the yard: the van park itself")
 	office.free()
 
 

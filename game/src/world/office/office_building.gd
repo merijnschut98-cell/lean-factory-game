@@ -19,7 +19,9 @@ const FALLBACK := {
 	"rooms": [{"id": "connections", "floor": "first", "name": "Aansluitingen", "places": [], "opens_with": [START]}],
 }
 
-## Sorted by level, lowest first: {id, level, name, model}.
+## Sorted by level, lowest first: {id, level, name, model, outside_of}. An outside area (the
+## yard, PLAN 2.2) has outside_of: the floor whose door leads there, and that floor's level;
+## the stairs never lead to it ("" for a floor).
 var floors: Array[Dictionary] = []
 ## {id, floor, name, places, opens_with}.
 var rooms: Array[Dictionary] = []
@@ -57,10 +59,13 @@ static func _shape_error(d: Dictionary) -> String:
 	var model := RegEx.create_from_string("^[a-z][a-z0-9_]*\\.glb$")
 	for f: Variant in d["floors"]:
 		if not f is Dictionary or not f.get("id") is String or not f.get("name") is String \
-				or not (f.get("level") is float or f.get("level") is int) \
+				or not (f.get("level") is float or f.get("level") is int or f.get("outside_of") is String) \
 				or not f.get("model") is String or model.search(f["model"]) == null:
-			return "a floor needs an id, a name, a level and a model (a .glb file name)"
+			return "a floor needs an id, a name, a level (or outside_of) and a model (a .glb file name)"
 		ids.append(f["id"])
+	for f: Dictionary in d["floors"]:
+		if f.get("outside_of") is String and not f["outside_of"] in ids:
+			return "an outside area is outside of an unknown floor"
 	if not d["start_floor"] in ids:
 		return "start_floor is not a floor"
 	for r: Variant in d["rooms"]:
@@ -72,9 +77,16 @@ static func _shape_error(d: Dictionary) -> String:
 
 func _fill(d: Dictionary) -> void:
 	start_floor = d["start_floor"]
+	var levels := {}
 	for f: Dictionary in d["floors"]:
-		floors.append({"id": f["id"], "level": int(f["level"]), "name": f["name"], "model": f["model"]})
-	floors.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["level"] < b["level"])
+		if f.has("level"):
+			levels[f["id"]] = int(f["level"])
+	for f: Dictionary in d["floors"]:
+		var outside := str(f.get("outside_of", "")) if not f.has("level") else ""
+		floors.append({"id": f["id"], "level": levels.get(outside, 0) if not outside.is_empty() else int(f["level"]),
+			"name": f["name"], "model": f["model"], "outside_of": outside})
+	floors.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return a["level"] < b["level"] or (a["level"] == b["level"] and a["outside_of"] < b["outside_of"]))
 	for r: Dictionary in d["rooms"]:
 		rooms.append(r)
 
@@ -91,11 +103,12 @@ func model_path(floor_id: String) -> String:
 	return MODEL_DIR + str(f["model"]) if not f.is_empty() else ""
 
 
-## The floor `step` levels above (+1) or below (-1) `floor_id`; "" for none.
+## The floor `step` levels above (+1) or below (-1) `floor_id` by the stairs (never an
+## outside area); "" for none.
 func next_floor(floor_id: String, step: int) -> String:
 	var f := floor_of(floor_id)
 	for other in floors:
-		if not f.is_empty() and other["level"] == f["level"] + step:
+		if not f.is_empty() and other["level"] == f["level"] + step and other["outside_of"].is_empty():
 			return other["id"]
 	return ""
 
@@ -165,5 +178,5 @@ static func markers(geometry: Node) -> Dictionary:
 			continue
 		var kind: String = extras["interaction"]
 		var id := str(extras.get("id", ""))
-		out[kind + ":" + id if kind in ["place", "door", "room", "arrive"] else kind] = n
+		out[kind + ":" + id if kind in ["place", "door", "room", "arrive", "exit"] else kind] = n
 	return out

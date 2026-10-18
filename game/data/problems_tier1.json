@@ -907,6 +907,14 @@
      "key": true,
      "text": "'Testen? Dan sta ik er tien minuten langer. Als hij niet werkt, hoor ik het vanzelf.'",
      "tool": "conversation"
+    },
+    {
+     "at": "connections.close_out",
+     "depth": 2,
+     "dialog": "petra_silent_meters",
+     "key": true,
+     "text": "'Het lampje op de meter zegt na een paar minuten of hij verbinding heeft. Maar dan is de monteur al weg. Niemand wacht erop.'",
+     "tool": "conversation"
     }
    ],
    "countermeasures": {
@@ -976,6 +984,14 @@
      "key": true,
      "text": "De slimme meters in de straat registreren elk kwartier de spanning. Niemand bij Voltana kijkt ernaar.",
      "tool": "data"
+    },
+    {
+     "at": "customer_contact.answer",
+     "depth": 2,
+     "dialog": "wim_spreadsheet",
+     "key": true,
+     "text": "'Het is niet één huis. Kijk op een zonnige middag naar de hele straat tegelijk. En kijk dan naar de trafo, niet naar mijn omvormer.'",
+     "tool": "conversation"
     }
    ],
    "countermeasures": {

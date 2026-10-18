@@ -228,10 +228,14 @@ var concern_by := ""
 
 ## `start`: {openness, trust, mood, found (clue id → true), facts (fact → true),
 ## retry (the last talk went wrong: repair is offered), version, revealed}.
-func _init(dialog: DialogDef, person: PersonDef, lines: Dictionary, start: Dictionary) -> void:
+## null: a blank talk for copy(), which sets every other variable itself.
+func _init(dialog: DialogDef, person: PersonDef, lines: Dictionary, start_or_null: Variant) -> void:
 	def = dialog
 	who = person
 	bank = lines
+	if start_or_null == null:
+		return
+	var start: Dictionary = start_or_null
 	openness = clampi(int(start.get("openness", 50)), 0, 100)
 	start_openness = openness
 	trust = clampi(int(start.get("trust", person.trust)), 0, 100)
@@ -378,7 +382,7 @@ func say(move: String, pick: String = "") -> Dictionary:
 ## The talk as it stands, as a separate talk (the route check plays ahead on
 ## copies; test_dialog_routes.gd checks that every variable is copied).
 func copy() -> Dialog:
-	var c := Dialog.new(def, who, bank, {})
+	var c := Dialog.new(def, who, bank, null)
 	for key: String in COPIED:
 		var v: Variant = get(key)
 		c.set(key, v.duplicate() if v is Dictionary or v is Array else v)

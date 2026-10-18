@@ -243,8 +243,10 @@ func _run() -> void:
 			_people(office, state)
 		"minimap", "minimap_floor", "minimap_near":
 			_minimap(office, state)
+		"yard", "yard_magazijn", "yard_werkplaats", "yard_vans":
+			_yard(office, state)
 		"people_kcc", "people_lunch", "people_directie", "people_netstrategie", "people_planning", "people_revisie", \
-				"people_whiteboard", "people_explainer":
+				"people_whiteboard", "people_explainer", "people_dirk", "people_gert":
 			await _rooms(office, state)
 		_:
 			printerr("unknown state ", state)
@@ -408,6 +410,24 @@ func _minimap(office: Office, state: String) -> void:
 	office.minimap.refresh()
 
 
+## The yard (2.2), its rooms open: out through the kantine's back door (yard), then at the
+## magazijn's counter, the werkplaats's on-call table and the van with its doors open.
+func _yard(office: Office, state: String) -> void:
+	for m in ["fix_wrong_joint", "walk_outages", "fix_not_at_home", "save_henks_knowledge"]:
+		office.session.missions.progress[m] = {"status": "active", "asks": {}, "seen": {}}
+	office.floors._process(OfficeFloors.POLL_SECONDS)
+	office.floors.go_to("ground", "lift", true)
+	office.floors.use(office.interactable("exit:yard"))
+	var at := {"yard_magazijn": "place:outages.joint", "yard_werkplaats": "place:outages.locate",
+		"yard_vans": "place:outages.repair"}
+	if at.has(state):
+		_stand_at(office, at[state])
+		office.rig.zoom(1)
+	else:
+		office.rig.zoom(4)
+	office.rig.snap()
+
+
 ## The rooms peopled in 2.1c: the floor's room opened by its mission, the player a few
 ## steps from the person, the camera over the shoulder; the explainer from Ruud's board.
 func _rooms(office: Office, state: String) -> void:
@@ -416,7 +436,9 @@ func _rooms(office: Office, state: String) -> void:
 		"people_directie": ["second", "fix_silo_kpis", "frank", Vector3(-1.8, 0, -1.4), -25.0],
 		"people_netstrategie": ["second", "look_at_grid_study", "femke", Vector3(1.0, 0, 2.2), 25.0],
 		"people_planning": ["first", "", "linda", Vector3(0.6, 0, -2.2), 20.0],
-		"people_revisie": ["first", "", "mieke", Vector3(0.4, 0, 2.6), -20.0]}
+		"people_revisie": ["first", "", "mieke", Vector3(0.4, 0, 2.6), -20.0],
+		"people_dirk": ["first", "fix_wrong_joint", "dirk", Vector3(1.6, 0, 1.2), 20.0],
+		"people_gert": ["ground", "fix_digging_damage", "gert", Vector3(1.8, 0, 0.6), 25.0]}
 	if state in ["people_whiteboard", "people_explainer"]:
 		var board := office.interactable(OfficeWhiteboard.ID)
 		office.player.position = board.position + Vector3(1.2, 0, 0.9)
