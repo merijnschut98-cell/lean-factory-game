@@ -1,0 +1,797 @@
+diff --git a/PLAN.md b/PLAN.md
+index 70818c9..0e43cde 100644
+--- a/PLAN.md
++++ b/PLAN.md
+@@ -117,8 +117,8 @@ Each phase ends in a **playable** that Merijn plays before the next phase starts
+   - 🔧 **1.11a Builder:** ✅ the talks into `content/dialogs.yaml`, the people, `teaches`, the tests (`test_dialog_routes.gd`: every tutorial talk won by a route without its day's move, never ruined; three routes each) and the person-needs edits (2026-10-16, with D9). Rachid's talk hangs on `training_tue` until walk-around talks exist; Anouk's 19:00 waits for a scene clock. ⬜ `bank.ruud_names`, the move cards, the naming rule (§3, §5 there), and the tests (three routes each, one without the day's move; never ruined). **Use the shifted schedule** (first five minutes §4.2): Monday `anouk_seven` only; `sanne_tuesday`, optional walk-around Rachid, `mieke_wednesday`. **Include the person-needs edits** (tutorial talks §7, 2026-10-16): `need` per person (Rachid is fairness), a `tell` in every position, the Friday card *Wie zit er tegenover je?*, Ruud's new `week_end` question.
+     - 🔧 **Audit of the D9 talks** (design agent, 2026-10-16 evening; `docs/superpowers/specs/2026-10-16-d9-talks-audit.md`, on the builder's work in progress at 16:35 since D9 had not landed): the writing holds the bar; what fails is around it. **P0:** Mieke's, Petra's and Linda's talks cannot be reached (rooms shut, `connections.planning` in no room) and Rachid, Mieke and Linda have no body; `anouk_seven` dies if the walk completes `training_mon`; `ruud_names`/move cards missing; the El Amrani date is an untracked promise (`{promise_date}` + `promise`). **P1:** the week spends Act I's reveals (Linda, Petra, Sanne repeat), lines claim what the player did not do, two experience lines false after the new opening, Sanne's Friday worry upstream-wrong, El Amrani dates and name, opener limits (compliance "Prima." 10/29, lifted "Weet je wat" 4/7), Henk's "jongen" (`{jongen_meid}`). 40 line-level fixes in Dutch; five talks under 25/35, all 26–31 after. 🔧 **Builder (2026-10-16):** ✅ §2 rows 1, 3–19, 21–27, 31–39 applied word for word (tags, tells and `via` kept); row 20 kept at "27 juli" (the arc fixes the followed order's birth on 27 July, so the date holds); ✅ row 35 (Rachid `teaches: []`); ✅ A3 `bank.ruud_names` and `move_cards` in content (validated: a line per listening move plus `none`/`week_end`; a card per move on its shifted training day, the Friday card `move: null`) and the naming rule in `People.ruud_names` (the day's move if it landed, else the move that landed most, else `none`; never after Act 0), returned in the talk summary as `ruud_names`; ✅ A4 interim: no hard date ("over een week of zes"). ⬜ A1 rooms and bodies (world agent). ⬜ A2 `anouk_seven` outliving the walk: a monday-evening beat (rules builder's dated beats) — a talk that holds the day would soft-lock a player who never meets Anouk until B6/B7 exist. ⬜ A3 UI: the cards on the morning briefing and in the codex, Ruud's line on the summary card (Monday as a 19:41 text), `week_end` after `sanne_friday`, the spec's second naming rule (the move that drew out the concern). ⬜ A4 the promise check (`promise`, `{promise_date}`, 2.4b) and the callback promise (P2). ⬜ rows 28–30 `{jongen_meid}` once the creator's tokens resolve in talks (Henk says "jongen" until then). ⬜ row 40, §2.9 (Rachid Tue–Thu: one mission per talk today). ⬜ T1/T2/T8 opener counts in `build_content.py --check`. ⬜ Designer: re-audit the landed file with route numbers.
+       - 🔧 **Re-audit, batch 1+2** (design agent, 2026-10-16 19:30; § Re-audit there): batch 1+2 as committed equals the audited snapshot, so it carries no fix yet; the builder's uncommitted file fixes 33 of 40 items and adds `ruud_names` and the move cards. **Still open: A1 (Mieke, Petra, Linda unreachable; Rachid, Mieke, Linda without a body) and A2 (`training_mon` vs `anouk_seven`), both P0 and outside `dialogs.yaml`**; A4's promise record; `{aanvraag_datum}`; Henk's `{jongen_meid}`. New: third tells for Gert, Femke, Thomas; three heard lines that assume a mood move; one line said twice in Esra's talk (#41–#44). Route numbers not run (no import cache, load ~8). 🔧 Builder, R4 (2026-10-16): ✅ the 33 fixes and A3 committed (`140ce26`); ✅ **A2**: a mission may end with a talk (`ends_with_talk`, validated: a dialog of its own; `Missions.talked`), so `training_mon` stays open after the walk until `anouk_seven` was had, however it went, and Ruud's briefing says not to go home at once; the autoplay persona has the talk; tested end to end. ✅ **A4 record**: `promise: {kind, days}` on a proposal (El Amrani's six weeks, delivery_date 42; her Friday callback, 3), and `People.promises()` gives each agreed promise with the day of the talk that agreed it, from the saved agreement and talk log (no new save field); ⬜ the check itself is 2.4b. ✅ **#20, #28–#30**: talk text fills `{aanvraag_datum}` (the followed order's birth day, "27 juli" when born as the arc says) and `{jongen_meid}` (through the creator's `PlayerProfile.fill`, by the body the player made) in one pass, everywhere a talk's text leaves the session (`GameSession.fill_tokens`). ✅ **#41–#44** and the third tells for Gert, Femke and Thomas (untagged replies, route-neutral): every tier-1 person now has ≥ 3 tells. Route test on content: **9/20** (`TIER1_RATCHET` lowered to 9). ⬜ Swap the check-ins' mission-state triggers for the dated beats where they fit (henk_last_week already did, rules builder). ✅ Every check-in has a dagstart `prompt` (the validator requires one; `anouk_late` had none). ✅ §2.9: Rachid's talk is open Tuesday to Thursday (`also_during`, a talk open over later missions' days too). ⬜ Beats for the other check-ins: only `henk_farewell` is a dated beat in content; `review_100_days` (Marco) and the overload signals (Anouk, Esra, Linda) need a calendar beat or signal first. ⬜ P2: #40.
+-      - 🔧 **Third pass** (design agent, 2026-10-17; § Third pass there): every first- and second-pass item landed (`bc42d1f`, `1e04a99`) except #40 (P2). **Route numbers: tier 1 best fixed route 9/20 (45 %), exactly `TIER1_RATCHET` 9**; all 20 winnable with ≥ 23 distinct routes; the universal route wins 6 of 7 defender talks (where the next margin is). New: **Dirk and Gert have neither a body nor a place in a room, so `dirk_shelf` and `gert_klic` cannot be opened (P0)**; Saskia sits at her KCC desk while Esra says she is home with stress (P1); three check-in prompts count down, repeat the opening or hand over the layer (P1). Act II talks against Act II missions (2.5): numbers, Lean and sector agree; the revision timeline says June where four months means August (#45–#46); four debriefs state the player's countermeasure or a talk outcome as fact (#48–#51). ⬜ Builder: T6 there. ✅ Designer: side talks for `fix_silent_meter` (Petra) and `fix_inverters_tripping` (Wim Kortekaas), below. ⬜ Designer: templated debrief lines per fact (2.5, C16).
+-      - ✅ **Act II side talks designed** (design agent, 2026-10-17; `docs/superpowers/specs/2026-10-17-act2-side-talks.md`): `petra_silent_meters` (her interest opens on the record or the monteur's side, her doubt on a true story or the numbers) and `wim_spreadsheet` (new person Wim Kortekaas, expert, need recognition: opened by naming the feeling under thirty-six receipts, his concern only on our own data); paste-ready YAML that passes `build_content.py`; on the engine both winnable (221 and 253 routes) and won by neither the tier-1 universal route nor the content-wide best route (15/31); scores 30 and 32. ⬜ Builder: paste them (people + dialogs). ⬜ World agent: Wim's body at the ontvangst during `fix_inverters_tripping`.
++      - 🔧 **Third pass** (design agent, 2026-10-17; § Third pass there): every first- and second-pass item landed (`bc42d1f`, `1e04a99`) except #40 (P2). **Route numbers: tier 1 best fixed route 9/20 (45 %), exactly `TIER1_RATCHET` 9**; all 20 winnable with ≥ 23 distinct routes; the universal route wins 6 of 7 defender talks (where the next margin is). New: **Dirk and Gert have neither a body nor a place in a room, so `dirk_shelf` and `gert_klic` cannot be opened (P0)**; Saskia sits at her KCC desk while Esra says she is home with stress (P1); three check-in prompts count down, repeat the opening or hand over the layer (P1). Act II talks against Act II missions (2.5): numbers, Lean and sector agree; the revision timeline says June where four months means August (#45–#46); four debriefs state the player's countermeasure or a talk outcome as fact (#48–#51). 🔧 Builder: ✅ the three prompts, #45–#51 (and the last "broodzakje" in `mieke_redraw`) (2026-10-17); ⬜ Gert, Dirk bodies and Saskia's absence (world agent); ⬜ #40. ⬜ Designer: side talks for `fix_silent_meter` (Petra) and `fix_inverters_tripping` (Wim Kortekaas); templated debrief lines per fact (2.5, C16).
++      - ✅ **Act II side talks designed** (design agent, 2026-10-17; `docs/superpowers/specs/2026-10-17-act2-side-talks.md`): `petra_silent_meters` (her interest opens on the record or the monteur's side, her doubt on a true story or the numbers) and `wim_spreadsheet` (new person Wim Kortekaas, expert, need recognition: opened by naming the feeling under thirty-six receipts, his concern only on our own data); paste-ready YAML that passes `build_content.py`; on the engine both winnable (221 and 253 routes) and won by neither the tier-1 universal route nor the content-wide best route (15/31); scores 30 and 32. ✅ Builder: pasted (people + dialogs, 2026-10-17); the KCC also opens with `fix_inverters_tripping`, so his talk is reachable by the menu; the body test lists him in `BODY_PENDING` until his body lands. ⬜ World agent: Wim's body at the ontvangst during `fix_inverters_tripping`.
+ - ✅ **1.12 The four human threads as missions** (design agent, 2026-10-16): `thread_zandbergen` (tier-2 draft §2.19), `thread_samira` (tier-3 §1.13), `thread_sem` + `theo_sem_pairing` (tier-4 §1.11), `thread_notebook` (tier-4 §2.6); dialogs in the arc doc §9. Each: a face, a number, a choice with a later cost, a payoff at the act's end. Builder: with each tier.
+ - ✅ **1.13 One designed failed Check per act** (design agent, 2026-10-16; `docs/superpowers/specs/2026-10-16-designed-failed-checks.md`): Acts I–III too early, IV the false bottleneck, V a lagging KPI, VI a release-gated fix; the failed-Check debriefs written. ⬜ Simulation checker: the six content tests (Act V's measure to confirm).
+ - ✅ **1.14 Design agent: audit the dialog UI** (2026-10-16; `docs/superpowers/specs/2026-10-16-dialog-ui-audit.md`): the rules hold (a bar that fills, arrows without numbers, all moves visible, nothing marked right); 18 changes U1–U18 for the UI agent, prioritised, each with its screenshot. The dialog spec's "▲/▼ with the number" lines corrected to Merijn's decision.
+diff --git a/content/dialogs.yaml b/content/dialogs.yaml
+index ef636ab..0a7dd27 100644
+--- a/content/dialogs.yaml
++++ b/content/dialogs.yaml
+@@ -249,6 +249,17 @@ people:
+     morale: 50
+     voice: "Twee jaar."
+ 
++  - id: wim
++    name: Wim Kortekaas
++    short: meneer Kortekaas
++    role: bewoner Zonnestraat, gepensioneerd elektrotechnicus
++    place: customer_contact.answer   # a customer; he comes to the ontvangst with his ring binder (cast), the KCC menu is the fallback
++    team: contact_centre             # where his mails land; he is not on the team
++    archetype: expert                # forty years in electrical engineering; right, polite, thorough
++    need: recognition                # three years of spreadsheets answered by a receipt: he needs someone to look
++    trust: 45                        # thirty-six receipts (estimate: a little below the default)
++    morale: 50
++    voice: "Het staat op tabblad drie."
+ 
+ bank:
+   labels:
+@@ -2110,7 +2121,7 @@ dialogs:
+     name: "Henks laatste week"
+     person: henk
+     kind: checkin
+-    prompt: "Henk ruimt zijn bus leeg. Nog vijf dagen."
++    prompt: "Henk ruimt zijn bus leeg. Zijn laatste week."
+     patience: 8
+     trigger:   # his last five days (scripts §5: henk_farewell, 5 days before; "Ik ben er nog vijf dagen")
+       beat: henk_farewell
+@@ -2172,7 +2183,7 @@ dialogs:
+     name: "Esra en het rooster"
+     person: esra
+     kind: checkin
+-    prompt: "Esra zit al een uur naar het rooster te staren."
++    prompt: "Esra eet haar lunch achter het rooster. Het scherm staat op groen; zij kijkt er niet naar."
+     patience: 8
+     trigger:
+       morale_below: 50
+@@ -2280,7 +2291,7 @@ dialogs:
+     name: "Linda 's avonds"
+     person: linda
+     kind: checkin
+-    prompt: "Linda plant weer 's avonds om, thuis. Haar collega's zien de mails om tien uur."
++    prompt: "Linda's mails komen de laatste tijd om tien uur 's avonds binnen."
+     patience: 8
+     trigger:
+       morale_below: 50
+@@ -2385,7 +2396,7 @@ dialogs:
+     owns: revision_backlog
+     mood: gespannen
+     patience: 10
+-    opening: "Als je komt voor de kabel van Gert: die zat in de doos. Ergens tussen juni en nu."
++    opening: "Als je komt voor de kabel van Gert: die zat in de doos. Ergens tussen augustus en nu."
+     warning: "Ik heb hier een doos die niet kleiner wordt van praten."
+     position: {text: "We tekenen ze over zo snel als we kunnen. Tweehonderdveertig schetsen. Met z'n tweeën.", tags: [claim]}
+     layers:
+@@ -2415,7 +2426,7 @@ dialogs:
+         label: "Een vast sjabloon"
+         say: "Een vast sjabloon voor de schets, elke dag ingeleverd."
+         addresses: [interest]
+-        reply: "Een sjabloon helpt. Een broodzakje is ook een sjabloon, als je het vriendelijk bekijkt."
++        reply: "Een sjabloon helpt. Een boterhamzakje is ook een sjabloon, als je het vriendelijk bekijkt."
+       - id: mieke_sets_the_standard
+         label: "Mieke bepaalt wat een goed as-built is"
+         say: "Wat als jij bepaalt wat een goed as-built is? Jouw A4 met wat er altijd mist. En jouw team controleert, in plaats van over te tekenen."
+@@ -2707,3 +2718,156 @@ dialogs:
+       compliance: "Ik heb geen keus, hè."
+       ruined: "Dan ga ik naar de ACM. En naar de krant."
+ 
++  # ── Petra en de zwijgende meters (Act II side, fix_silent_meter; spec 2026-10-17-act2-side-talks.md) ─────
++  # The way in is the record and then a doubt: her interest opens to the data (her own pattern, confirmed)
++  # or to the monteur's side; her concern is a doubt, drawn out by Ervaring delen or the numbers.
++  - id: petra_silent_meters
++    name: "Petra en de zwijgende meters"
++    person: petra
++    kind: persuade
++    mission: fix_silent_meter
++    owns: silent_meter
++    mood: neutraal
++    patience: 10
++    opening: "Je komt voor de lijst. Hier. Tweeënveertig meters die niks zeggen. Ik heb ze per straat gesorteerd."
++    warning: "Mijn lijst klopt. Daar hoef je niet over te beginnen."
++    position: {text: "Iedereen zegt: de meters van de nieuwe leverancier deugen niet. Dat kan. Maar dan zou het overal zijn. Het is niet overal.", tags: [claim], tell: facts}
++    layers:
++      - id: interest
++        at: 52
++        via: [show_data, perspective]   # the record or the other side; listening alone does not open her pattern
++        text: "De Lindeflats. De Kade. De Hofstede. Allemaal nieuwbouw, allemaal met de meterkast in een betonnen kelderberging. In de rijtjeshuizen heb ik er bijna geen."
++        tags: [claim]
++      - id: concern
++        at: 66
++        via: [experience, show_data]    # a doubt: a true story of the player's own, or the numbers in black and white, make it smaller
++        lead_in: {text: "Ik weet het alleen niet zeker. En wat ik niet zeker weet, zeg ik liever niet.", tags: [hesitation, doubt]}
++        text: "De vorige keer dat er iets bij Meetdata bleef liggen, wist de hele kantine het binnen een week. Als ik nu zeg dat het niet aan de meters ligt maar aan hoe we ze plaatsen, dan zegt Meetdata weer iets over de monteurs. En het staat nog niet in mijn map."
++        tags: [admission]
++        tell: facts
++        unlocks:
++          clue: {key: true, depth: 2, text: "'Het lampje op de meter zegt na een paar minuten of hij verbinding heeft. Maar dan is de monteur al weg. Niemand wacht erop.'"}
++          facts: [heard:petra_meters]
++          proposals: [petra_rides_along]
++    data: [silent_meter:0, silent_meter:3]
++    proposals:
++      - id: supplier_complaint
++        label: "Een klacht naar de leverancier"
++        say: "We sturen een klacht naar de leverancier, met jouw lijst erbij."
++        addresses: []
++        reply: "Kan. Dan sturen ze nieuwe meters. Die hangen dan in dezelfde kelders."
++      - id: list_by_address
++        label: "De lijst per adres naast elkaar"
++        say: "Zullen we je lijst naast de adressen leggen? Flat of rijtjeshuis, kelder of gang."
++        addresses: [interest]
++        reply: "Per adres. Dat kan ik vanmiddag. Dan staat het tenminste in mijn map."
++      - id: petra_rides_along
++        label: "Petra kijkt één ochtend mee bij het plaatsen"
++        say: "Wat als jij één ochtend meegaat naar de Lindeflats? Jij en de monteur kijken samen naar dat lampje. Dan staat het in jouw map én in de zijne."
++        hidden: true
++        addresses: [concern]
++        reply: "Samen kijken. Dan is het geen Meetdata tegen de monteurs. Dan is het gewoon gemeten. … Klopt."
++    experiments:
++      - id: one_street_two_weeks
++        label: "Twee weken, één flat: wachten op het lampje"
++        say: "Twee weken, één flat: de monteur wacht tot de meter verbinding heeft voordat hij wegrijdt. Jij houdt bij wat er gebeurt."
++        addresses: [interest, concern]
++        reply: "Twee weken. Dan heb ik het zwart op wit. Of niet. Dat is ook een uitkomst."
++    co_proposal: {id: petra_rides_along, text: "Laat mij één ochtend met een monteur mee naar de Lindeflats. Hij plaatst, ik kijk naar het lampje. Dan zien we het allebei."}
++    lines:
++      perspective: "Hoe zou de monteur die bij de Lindeflats stond dit zien, denk je?"
++      experience: "Mijn eerste week dacht ik dat de stapel bij Werkvoorbereiding aan Anouk lag. Het lag aan hoe de bakken stonden. Ik had het niet gezien als ik het niet had geteld."
++    replies:
++      show_data:
++        lands: {text: "Drie op de tien in de flats. Eén op de twintig elders. … Dat had ik ook. Ik had het alleen nog niet opgeschreven.", tags: [claim], tell: facts}
++        misses: {text: "Een gemiddelde over de hele regio. Daar zit het niet in."}
++      perspective:
++        lands: {text: "De monteur? Die plaatst, sluit de kast en rijdt door. Zo is het hem geleerd. Hij ziet nooit wat ik zie, een week later.", tags: [claim]}
++      experience:
++        lands: {text: "Geteld. Ja. … Ik heb het eigenlijk al geteld. Ik heb het alleen nog niemand laten zien."}
++    outcomes:
++      commitment: "Klopt. De eerste ochtend dat er een monteur naar de Lindeflats gaat, ga ik mee. Met de lijst. En mijn map."
++      partial: "Ik wil het wel. Als het eerst per adres in de lijst staat."
++      heard: "Hm. Je liet me het zelf zeggen. Dat was nodig, geloof ik."
++      none: "Ik moet de lijst nog bijwerken."
++      compliance: "Als je het zo wilt. Het komt in de map."
++      ruined: "Dan vraag je het maar aan de Molen."
++
++  # ── Wim en tabblad drie (Act II side, fix_inverters_tripping; spec 2026-10-17-act2-side-talks.md) ─────
++  # The way in is a feeling and then the record: his interest opens when someone names what three years of
++  # receipts feel like (or asks how he is); his concern comes out only on our own data, or the monteur's side.
++  - id: wim_spreadsheet
++    name: "Wim en tabblad drie"
++    person: wim
++    kind: persuade
++    mission: fix_inverters_tripping
++    owns: inverters_tripping
++    mood: neutraal
++    patience: 10
++    opening: "Goedemiddag. Kortekaas, Zonnestraat veertien. U kent mij waarschijnlijk van de spreadsheets."
++    warning: "Met alle respect: dit zei de vorige meneer ook."
++    position: {text: "Elke maand stuur ik u mijn metingen. Elke maand krijg ik een ontvangstbevestiging. Zesendertig ontvangstbevestigingen. Ik heb ze bewaard.", tags: [claim, feeling], tell: recognition}
++    layers:
++      - id: interest
++        at: 50
++        via: [reflect, mood]            # a feeling under the irony: name it, or ask how he is
++        text: "Het is winter, dus u denkt: nu heeft hij nergens last van. Maar in maart begint het weer. Op een zonnige middag gaat mijn omvormer uit. Tien minuten later aan. Dan weer uit. Bij de buren ook. Twintig adressen inmiddels."
++        tags: [claim]
++      - id: concern
++        at: 66
++        via: [show_data, perspective]   # the record: our numbers next to his
++        lead_in: {text: "Ik heb het in 2023 al opgeschreven. Tabblad drie. Elke zonnige middag boven de tweehonderddrieënvijftig volt.", tags: [hesitation, claim], tell: recognition}
++        text: "Mijn buren noemen me de zeur van de Zonnestraat. Twintig mensen klagen nu, en ze kijken allemaal naar mij. Ik heb veertig jaar in de elektrotechniek gewerkt. Heb ik het mis, dan ben ik een oude man met een spreadsheet. Heb ik het goed, dan heeft niemand drie jaar gekeken."
++        tags: [admission]
++        tell: recognition
++        unlocks:
++          clue: {key: true, depth: 2, text: "'Het is niet één huis. Kijk op een zonnige middag naar de hele straat tegelijk. En kijk dan naar de trafo, niet naar mijn omvormer.'"}
++          facts: [heard:wim_spreadsheet]
++          proposals: [wim_reads_the_data]
++    data: [inverters_tripping:2, inverters_tripping:4]
++    proposals:
++      - id: retune_inverter
++        label: "Zijn omvormer later laten afschakelen"
++        say: "Wij betalen een monteur die uw omvormer zo instelt dat hij later afschakelt."
++        addresses: []
++        reply: "Dan gaat de spanning nog hoger, en mag dat niet eens. Dat is de thermometer stukmaken omdat je koorts hebt."
++      - id: logger_one_week
++        label: "Een week een meter in zijn meterkast"
++        say: "We komen nog een keer meten. Een hele week, met een logger in uw meterkast."
++        addresses: [interest]
++        reply: "Een week. Bij mij. Dan heeft u één adres. Er zijn er twintig."
++      - id: wim_reads_the_data
++        label: "Zijn spreadsheet naast onze metingen"
++        say: "Wilt u met een van onze netbeheerders naar de metingen van de hele straat kijken? Uw spreadsheet naast onze slimme meters."
++        hidden: true
++        addresses: [concern]
++        reply: "Mijn tabblad naast uw metingen. … Daar zit ik al drie jaar op te wachten."
++    experiments:
++      - id: last_summer_street
++        label: "De metingen van afgelopen zomer, de hele straat"
++        say: "We halen de metingen van afgelopen zomer op: de hele Zonnestraat, elk kwartier, uit de slimme meters. U krijgt de grafiek."
++        addresses: [interest, concern]
++        reply: "Elk kwartier. De hele straat. … Dan hoeft u mijn spreadsheet niet eens meer te geloven."
++    co_proposal: {id: wim_reads_the_data, text: "Laat me één middag naast iemand zitten die bij de gegevens van de trafo kan. Ik neem mijn laptop mee. En ik beloof dat ik niet zeg dat ik het al wist."}
++    lines:
++      mood: "Hoe gaat het met u, met al die spreadsheets?"
++      reflect: "Het klinkt alsof u het gevoel heeft dat niemand ze leest."
++      perspective: "Hoe zou de monteur die bij u kwam meten dit zien, denkt u?"
++      paraphrase: "Dus u stuurt al drie jaar uw metingen, en u krijgt alleen een bevestiging terug."
++    replies:
++      open_question:
++        lands: {text: "Wat er gebeurt? Zevenentwintig keer afgeschakeld op 14 juni. Het staat erin, per minuut.", tags: [claim], tell: recognition}
++      reflect:
++        lands: {text: "Leest. Nou. Ze worden ontvangen. Dat staat er elke keer bij.", tags: [feeling]}
++      show_data:
++        lands: {text: "Tweehonderdvierenvijftig volt, om kwart over één. … Dat is mijn getal. Dat is precies mijn getal.", tags: [claim]}
++        misses: {text: "Een daggemiddelde. Daar zit het niet in. Het zit in de middag."}
++      perspective:
++        lands: {text: "De monteur? Die meet bij mij om tien uur 's ochtends. Dan is er niks. Hij doet zijn werk goed. Hij kijkt alleen op het verkeerde uur.", tags: [claim]}
++    outcomes:
++      commitment: "Dan neem ik mijn laptop mee. En een verlengsnoer; die hebben jullie hier vast niet."
++      partial: "Ik stuur de spreadsheet nog één keer. Als iemand hem deze keer opent."
++      heard: "Dank u. Ik hoef geen gelijk. Ik wil alleen dat iemand kijkt."
++      none: "Ik mail u tabblad drie nog even."
++      compliance: "Goed. Dan wacht ik weer op de ontvangstbevestiging."
++      ruined: "Dan stuur ik volgende maand weer een spreadsheet. En de maand daarna."
+diff --git a/content/missions.yaml b/content/missions.yaml
+index f3ea954..4f9b431 100644
+--- a/content/missions.yaml
++++ b/content/missions.yaml
+@@ -341,7 +341,7 @@ missions:
+     chapter: De kaart klopt niet
+     requires: {missions: [fix_done_but_not_closed]}
+     briefing: "Dinsdag 10.12 uur: de graafmachine van Grondwerk Peeters raakt een middenspanningskabel. Driehonderd huizen en zorgcentrum De Linde zitten zonder stroom; De Linde draait op het noodaggregaat. Uitvoerder Gert Peeters laat zijn KLIC-melding zien: 'Volgens deze kaart lag hier niks.' Het is de vijfde graafschade deze maand. Elke schade kost ons geld, en na vier uur krijgt elke getroffen klant een vergoeding."
+-    debrief: "Er zijn minder graafschades. Gert graaft weer met proefsleuven, en zijn opdrachtgever plant er tijd voor in. Gert deed alles volgens het boekje; de oorzaak zat in ons proces. Maar de kaart klopt nog steeds niet overal. Wie houdt de kaart eigenlijk bij?"
++    debrief: "Er zijn minder graafschades. Gert deed alles volgens het boekje; de oorzaak zat in ons proces. Maar de kaart klopt nog steeds niet overal. Wie houdt de kaart eigenlijk bij?"
+     debrief_variants:
+       blamed: "De schades zijn minder. Gert werkt mee, maar hij vertelt je niets meer dan nodig. Wie houdt de kaart eigenlijk bij?"
+     reopen: "Er komen weer graafschades binnen. Gert belt: 'We graven zoals afgesproken. Klopt jullie kaart nog?'"
+@@ -379,8 +379,8 @@ missions:
+     # Correctness (audit L5): revision sits after commissioning, so the
+     # stream's throughput does not move; the harm is the age of the open
+     # work (the problem's KPI is wip_age).
+-    briefing: "De kabel die Gert Peeters raakte, lag twee meter naast de plek op de kaart; hij was vier maanden eerder verlegd. Bij Revisie & GIS staat een doos met 240 schetsen van opgeleverde aansluitingen. De oudste is van juni; één is getekend op een broodzakje. 'We tekenen ze over zo snel als we kunnen,' zegt Mieke van der Veen. Het GIS-team vraagt om versterking. Hoe oud wordt een schets voordat hij op de kaart staat, en waarom?"
+-    debrief: "Een nieuwe kabel staat nu op de kaart op de dag dat hij in de grond ligt. Mieke tekent niet meer over; ze controleert. Het broodzakje heeft ze ingelijst. Wie merkt het als dit over een jaar wegzakt, en hoe snel?"
++    briefing: "De kabel die Gert Peeters raakte, lag twee meter naast de plek op de kaart; hij was vier maanden eerder verlegd. Bij Revisie & GIS staat een doos met 240 schetsen van opgeleverde aansluitingen. De oudste is van augustus; één is getekend op een boterhamzakje. 'We tekenen ze over zo snel als we kunnen,' zegt Mieke van der Veen. Het GIS-team vraagt om versterking. Hoe oud wordt een schets voordat hij op de kaart staat, en waarom?"
++    debrief: "Een nieuwe kabel staat nu eerder op de kaart, en de doos bij Revisie & GIS wordt kleiner. Wie merkt het als dit over een jaar wegzakt, en hoe snel?"
+     reopen: "De doos bij Revisie & GIS vult zich weer. Mieke tekent weer over. Wat werd er niet meer gedaan?"
+     goal: {type: solve, problem: revision_backlog}
+     rewards: {xp: 900, budget: 10000}
+@@ -438,7 +438,7 @@ missions:
+     chapter: Het net is vol
+     requires: {missions: [fix_transformer_wait]}
+     briefing: "Ilse de Graaf wil de gasovens van haar bakkerij vervangen door elektrische. Ze staat al twee jaar op de wachtlijst voor transportcapaciteit. Naast haar staat een distributiehal met twee megawatt gecontracteerd vermogen; de hal is leeg. 'Leg me eens uit waarom het net vol is,' zei ze tegen Thomas Visser. Ze dreigt naar de ACM te stappen. Volgens Netstrategie is het net vol. Is het dat ook?"
+-    debrief: "Op het drukste kwartier van het jaar gebruikten de grote klanten maar een deel van wat ze gecontracteerd hadden. Een deel daarvan komt, volgens de regels van de ACM en in gesprek met de klant, terug in de wachtrij. Bakkerij De Graaf bakt in het voorjaar elektrisch. Welke andere voorraad houden wij aan die op papier vol lijkt?"
++    debrief: "Op het drukste kwartier van het jaar gebruikten de grote klanten maar een deel van wat ze gecontracteerd hadden. Een deel daarvan komt, volgens de regels van de ACM, terug in de wachtrij. Welke andere voorraad houden wij aan die op papier vol lijkt?"
+     reopen: "De wachtlijst groeit weer, terwijl het gebruik niemand meer bijhoudt. Thomas krijgt weer boze telefoontjes. Wie keek er naar de cijfers, en waarom nu niet meer?"
+     goal: {type: solve, problem: unused_capacity}
+     teaches: [netcongestie, acm]
+@@ -459,7 +459,7 @@ missions:
+     chapter: Wat je meet
+     requires: {missions: [fix_unused_capacity]}
+     briefing: "In het MT presenteerden Sanne en Joost allebei een recordmaand: meer aanvragen door, meer ontwerpen af. Marco Peters zei niets, tot het einde: 'Mooi. En wie bouwt jullie fouten na?' Er gaan niet meer aansluitingen per week de deur uit dan een kwartaal geleden. Kijk wat hun cijfers van hen vragen."
+-    debrief: "Sanne en Joost kijken nu naar dezelfde aansluiting en hetzelfde getal. In het volgende MT presenteren ze samen. Wat je meet, bepaalt wat mensen doen; en wat je níet meet, bepaalt wat ze laten liggen. Wie heeft last gehad van de oude cijfers, en weten ze dat het niet aan hen lag?"
++    debrief: "Intake en Werkvoorbereiding kijken nu naar dezelfde aansluiting en hetzelfde getal. Wat je meet, bepaalt wat mensen doen; en wat je níet meet, bepaalt wat ze laten liggen. Wie heeft last gehad van de oude cijfers, en weten ze dat het niet aan hen lag?"
+     reopen: "In het MT liggen weer twee recordmaanden op tafel en de aansluitingen gaan niet sneller. Waar kijken de teams nu weer naar?"
+     goal: {type: solve, problem: silo_kpis}
+     rewards: {xp: 1500, budget: 12000}
+diff --git a/content/world.yaml b/content/world.yaml
+index 7e1c94c..6aca1b4 100644
+--- a/content/world.yaml
++++ b/content/world.yaml
+@@ -35,7 +35,7 @@ rooms:
+     floor: ground
+     name: Klantcontactcentrum
+     places: [customer_contact.answer]
+-    opens_with: [fix_status_callers, fix_done_but_not_closed]
++    opens_with: [fix_status_callers, fix_done_but_not_closed, fix_inverters_tripping]   # Wim Kortekaas's talk (Act II side)
+   - id: canteen
+     floor: ground
+     name: Kantine
+diff --git a/game/data/dialogs.json b/game/data/dialogs.json
+index 4c8eca8..a73439b 100644
+--- a/game/data/dialogs.json
++++ b/game/data/dialogs.json
+@@ -3694,7 +3694,7 @@
+     ],
+     "text": "Nog vijf dagen. Dan ga ik vissen."
+    },
+-   "prompt": "Henk ruimt zijn bus leeg. Nog vijf dagen.",
++   "prompt": "Henk ruimt zijn bus leeg. Zijn laatste week.",
+    "trigger": {
+     "beat": "henk_farewell",
+     "before_days": 5,
+@@ -3845,7 +3845,7 @@
+     ],
+     "text": "Het gaat wel. De wachtrij is groener."
+    },
+-   "prompt": "Esra zit al een uur naar het rooster te staren.",
++   "prompt": "Esra eet haar lunch achter het rooster. Het scherm staat op groen; zij kijkt er niet naar.",
+    "trigger": {
+     "morale_below": 50,
+     "needs": {
+@@ -4080,7 +4080,7 @@
+     ],
+     "text": "Gaat wel. Morgen is er weer een dag."
+    },
+-   "prompt": "Linda plant weer 's avonds om, thuis. Haar collega's zien de mails om tien uur.",
++   "prompt": "Linda's mails komen de laatste tijd om tien uur 's avonds binnen.",
+    "trigger": {
+     "morale_below": 50,
+     "needs": {
+@@ -4294,7 +4294,7 @@
+    "mission": "fix_revision_backlog",
+    "mood": "gespannen",
+    "name": "Mieke en de revisieberg",
+-   "opening": "Als je komt voor de kabel van Gert: die zat in de doos. Ergens tussen juni en nu.",
++   "opening": "Als je komt voor de kabel van Gert: die zat in de doos. Ergens tussen augustus en nu.",
+    "outcomes": {
+     "commitment": "Dat moet kloppen, dus ja. En het boterhamzakje lijst ik in. Als laatste van zijn soort.",
+     "compliance": "Als het moet. Dan teken ik wat er komt.",
+@@ -4327,7 +4327,7 @@
+      ],
+      "id": "daily_template",
+      "name": "Een vast sjabloon",
+-     "reply": "Een sjabloon helpt. Een broodzakje is ook een sjabloon, als je het vriendelijk bekijkt.",
++     "reply": "Een sjabloon helpt. Een boterhamzakje is ook een sjabloon, als je het vriendelijk bekijkt.",
+      "text": "Een vast sjabloon voor de schets, elke dag ingeleverd."
+     },
+     {
+@@ -4908,6 +4908,319 @@
+     }
+    },
+    "warning": "Als je me een folder gaat voorlezen, hang ik op."
++  },
++  {
++   "co_proposal": {
++    "id": "petra_rides_along",
++    "text": "Laat mij één ochtend met een monteur mee naar de Lindeflats. Hij plaatst, ik kijk naar het lampje. Dan zien we het allebei."
++   },
++   "data": [
++    "silent_meter:0",
++    "silent_meter:3"
++   ],
++   "experiments": [
++    {
++     "addresses": [
++      "interest",
++      "concern"
++     ],
++     "id": "one_street_two_weeks",
++     "name": "Twee weken, één flat: wachten op het lampje",
++     "reply": "Twee weken. Dan heb ik het zwart op wit. Of niet. Dat is ook een uitkomst.",
++     "text": "Twee weken, één flat: de monteur wacht tot de meter verbinding heeft voordat hij wegrijdt. Jij houdt bij wat er gebeurt."
++    }
++   ],
++   "id": "petra_silent_meters",
++   "kind": "persuade",
++   "layers": [
++    {
++     "at": 52,
++     "id": "interest",
++     "tags": [
++      "claim"
++     ],
++     "text": "De Lindeflats. De Kade. De Hofstede. Allemaal nieuwbouw, allemaal met de meterkast in een betonnen kelderberging. In de rijtjeshuizen heb ik er bijna geen.",
++     "via": [
++      "show_data",
++      "perspective"
++     ]
++    },
++    {
++     "at": 66,
++     "id": "concern",
++     "lead_in": {
++      "tags": [
++       "hesitation",
++       "doubt"
++      ],
++      "text": "Ik weet het alleen niet zeker. En wat ik niet zeker weet, zeg ik liever niet."
++     },
++     "tags": [
++      "admission"
++     ],
++     "tell": "facts",
++     "text": "De vorige keer dat er iets bij Meetdata bleef liggen, wist de hele kantine het binnen een week. Als ik nu zeg dat het niet aan de meters ligt maar aan hoe we ze plaatsen, dan zegt Meetdata weer iets over de monteurs. En het staat nog niet in mijn map.",
++     "unlocks": {
++      "clue": "silent_meter:5",
++      "facts": [
++       "heard:petra_meters"
++      ],
++      "proposals": [
++       "petra_rides_along"
++      ]
++     },
++     "via": [
++      "experience",
++      "show_data"
++     ]
++    }
++   ],
++   "lines": {
++    "experience": "Mijn eerste week dacht ik dat de stapel bij Werkvoorbereiding aan Anouk lag. Het lag aan hoe de bakken stonden. Ik had het niet gezien als ik het niet had geteld.",
++    "perspective": "Hoe zou de monteur die bij de Lindeflats stond dit zien, denk je?"
++   },
++   "mission": "fix_silent_meter",
++   "mood": "neutraal",
++   "name": "Petra en de zwijgende meters",
++   "opening": "Je komt voor de lijst. Hier. Tweeënveertig meters die niks zeggen. Ik heb ze per straat gesorteerd.",
++   "outcomes": {
++    "commitment": "Klopt. De eerste ochtend dat er een monteur naar de Lindeflats gaat, ga ik mee. Met de lijst. En mijn map.",
++    "compliance": "Als je het zo wilt. Het komt in de map.",
++    "heard": "Hm. Je liet me het zelf zeggen. Dat was nodig, geloof ik.",
++    "none": "Ik moet de lijst nog bijwerken.",
++    "partial": "Ik wil het wel. Als het eerst per adres in de lijst staat.",
++    "ruined": "Dan vraag je het maar aan de Molen."
++   },
++   "owns": "silent_meter",
++   "patience": 10,
++   "person": "petra",
++   "position": {
++    "tags": [
++     "claim"
++    ],
++    "tell": "facts",
++    "text": "Iedereen zegt: de meters van de nieuwe leverancier deugen niet. Dat kan. Maar dan zou het overal zijn. Het is niet overal."
++   },
++   "proposals": [
++    {
++     "addresses": [],
++     "id": "supplier_complaint",
++     "name": "Een klacht naar de leverancier",
++     "reply": "Kan. Dan sturen ze nieuwe meters. Die hangen dan in dezelfde kelders.",
++     "text": "We sturen een klacht naar de leverancier, met jouw lijst erbij."
++    },
++    {
++     "addresses": [
++      "interest"
++     ],
++     "id": "list_by_address",
++     "name": "De lijst per adres naast elkaar",
++     "reply": "Per adres. Dat kan ik vanmiddag. Dan staat het tenminste in mijn map.",
++     "text": "Zullen we je lijst naast de adressen leggen? Flat of rijtjeshuis, kelder of gang."
++    },
++    {
++     "addresses": [
++      "concern"
++     ],
++     "hidden": true,
++     "id": "petra_rides_along",
++     "name": "Petra kijkt één ochtend mee bij het plaatsen",
++     "reply": "Samen kijken. Dan is het geen Meetdata tegen de monteurs. Dan is het gewoon gemeten. … Klopt.",
++     "text": "Wat als jij één ochtend meegaat naar de Lindeflats? Jij en de monteur kijken samen naar dat lampje. Dan staat het in jouw map én in de zijne."
++    }
++   ],
++   "replies": {
++    "experience": {
++     "lands": {
++      "text": "Geteld. Ja. … Ik heb het eigenlijk al geteld. Ik heb het alleen nog niemand laten zien."
++     }
++    },
++    "perspective": {
++     "lands": {
++      "tags": [
++       "claim"
++      ],
++      "text": "De monteur? Die plaatst, sluit de kast en rijdt door. Zo is het hem geleerd. Hij ziet nooit wat ik zie, een week later."
++     }
++    },
++    "show_data": {
++     "lands": {
++      "tags": [
++       "claim"
++      ],
++      "tell": "facts",
++      "text": "Drie op de tien in de flats. Eén op de twintig elders. … Dat had ik ook. Ik had het alleen nog niet opgeschreven."
++     },
++     "misses": {
++      "text": "Een gemiddelde over de hele regio. Daar zit het niet in."
++     }
++    }
++   },
++   "warning": "Mijn lijst klopt. Daar hoef je niet over te beginnen."
++  },
++  {
++   "co_proposal": {
++    "id": "wim_reads_the_data",
++    "text": "Laat me één middag naast iemand zitten die bij de gegevens van de trafo kan. Ik neem mijn laptop mee. En ik beloof dat ik niet zeg dat ik het al wist."
++   },
++   "data": [
++    "inverters_tripping:2",
++    "inverters_tripping:4"
++   ],
++   "experiments": [
++    {
++     "addresses": [
++      "interest",
++      "concern"
++     ],
++     "id": "last_summer_street",
++     "name": "De metingen van afgelopen zomer, de hele straat",
++     "reply": "Elk kwartier. De hele straat. … Dan hoeft u mijn spreadsheet niet eens meer te geloven.",
++     "text": "We halen de metingen van afgelopen zomer op: de hele Zonnestraat, elk kwartier, uit de slimme meters. U krijgt de grafiek."
++    }
++   ],
++   "id": "wim_spreadsheet",
++   "kind": "persuade",
++   "layers": [
++    {
++     "at": 50,
++     "id": "interest",
++     "tags": [
++      "claim"
++     ],
++     "text": "Het is winter, dus u denkt: nu heeft hij nergens last van. Maar in maart begint het weer. Op een zonnige middag gaat mijn omvormer uit. Tien minuten later aan. Dan weer uit. Bij de buren ook. Twintig adressen inmiddels.",
++     "via": [
++      "reflect",
++      "mood"
++     ]
++    },
++    {
++     "at": 66,
++     "id": "concern",
++     "lead_in": {
++      "tags": [
++       "hesitation",
++       "claim"
++      ],
++      "tell": "recognition",
++      "text": "Ik heb het in 2023 al opgeschreven. Tabblad drie. Elke zonnige middag boven de tweehonderddrieënvijftig volt."
++     },
++     "tags": [
++      "admission"
++     ],
++     "tell": "recognition",
++     "text": "Mijn buren noemen me de zeur van de Zonnestraat. Twintig mensen klagen nu, en ze kijken allemaal naar mij. Ik heb veertig jaar in de elektrotechniek gewerkt. Heb ik het mis, dan ben ik een oude man met een spreadsheet. Heb ik het goed, dan heeft niemand drie jaar gekeken.",
++     "unlocks": {
++      "clue": "inverters_tripping:5",
++      "facts": [
++       "heard:wim_spreadsheet"
++      ],
++      "proposals": [
++       "wim_reads_the_data"
++      ]
++     },
++     "via": [
++      "show_data",
++      "perspective"
++     ]
++    }
++   ],
++   "lines": {
++    "mood": "Hoe gaat het met u, met al die spreadsheets?",
++    "paraphrase": "Dus u stuurt al drie jaar uw metingen, en u krijgt alleen een bevestiging terug.",
++    "perspective": "Hoe zou de monteur die bij u kwam meten dit zien, denkt u?",
++    "reflect": "Het klinkt alsof u het gevoel heeft dat niemand ze leest."
++   },
++   "mission": "fix_inverters_tripping",
++   "mood": "neutraal",
++   "name": "Wim en tabblad drie",
++   "opening": "Goedemiddag. Kortekaas, Zonnestraat veertien. U kent mij waarschijnlijk van de spreadsheets.",
++   "outcomes": {
++    "commitment": "Dan neem ik mijn laptop mee. En een verlengsnoer; die hebben jullie hier vast niet.",
++    "compliance": "Goed. Dan wacht ik weer op de ontvangstbevestiging.",
++    "heard": "Dank u. Ik hoef geen gelijk. Ik wil alleen dat iemand kijkt.",
++    "none": "Ik mail u tabblad drie nog even.",
++    "partial": "Ik stuur de spreadsheet nog één keer. Als iemand hem deze keer opent.",
++    "ruined": "Dan stuur ik volgende maand weer een spreadsheet. En de maand daarna."
++   },
++   "owns": "inverters_tripping",
++   "patience": 10,
++   "person": "wim",
++   "position": {
++    "tags": [
++     "claim",
++     "feeling"
++    ],
++    "tell": "recognition",
++    "text": "Elke maand stuur ik u mijn metingen. Elke maand krijg ik een ontvangstbevestiging. Zesendertig ontvangstbevestigingen. Ik heb ze bewaard."
++   },
++   "proposals": [
++    {
++     "addresses": [],
++     "id": "retune_inverter",
++     "name": "Zijn omvormer later laten afschakelen",
++     "reply": "Dan gaat de spanning nog hoger, en mag dat niet eens. Dat is de thermometer stukmaken omdat je koorts hebt.",
++     "text": "Wij betalen een monteur die uw omvormer zo instelt dat hij later afschakelt."
++    },
++    {
++     "addresses": [
++      "interest"
++     ],
++     "id": "logger_one_week",
++     "name": "Een week een meter in zijn meterkast",
++     "reply": "Een week. Bij mij. Dan heeft u één adres. Er zijn er twintig.",
++     "text": "We komen nog een keer meten. Een hele week, met een logger in uw meterkast."
++    },
++    {
++     "addresses": [
++      "concern"
++     ],
++     "hidden": true,
++     "id": "wim_reads_the_data",
++     "name": "Zijn spreadsheet naast onze metingen",
++     "reply": "Mijn tabblad naast uw metingen. … Daar zit ik al drie jaar op te wachten.",
++     "text": "Wilt u met een van onze netbeheerders naar de metingen van de hele straat kijken? Uw spreadsheet naast onze slimme meters."
++    }
++   ],
++   "replies": {
++    "open_question": {
++     "lands": {
++      "tags": [
++       "claim"
++      ],
++      "tell": "recognition",
++      "text": "Wat er gebeurt? Zevenentwintig keer afgeschakeld op 14 juni. Het staat erin, per minuut."
++     }
++    },
++    "perspective": {
++     "lands": {
++      "tags": [
++       "claim"
++      ],
++      "text": "De monteur? Die meet bij mij om tien uur 's ochtends. Dan is er niks. Hij doet zijn werk goed. Hij kijkt alleen op het verkeerde uur."
++     }
++    },
++    "reflect": {
++     "lands": {
++      "tags": [
++       "feeling"
++      ],
++      "text": "Leest. Nou. Ze worden ontvangen. Dat staat er elke keer bij."
++     }
++    },
++    "show_data": {
++     "lands": {
++      "tags": [
++       "claim"
++      ],
++      "text": "Tweehonderdvierenvijftig volt, om kwart over één. … Dat is mijn getal. Dat is precies mijn getal."
++     },
++     "misses": {
++      "text": "Een daggemiddelde. Daar zit het niet in. Het zit in de middag."
++     }
++    }
++   },
++   "warning": "Met alle respect: dit zei de vorige meneer ook."
+   }
+  ],
+  "move_cards": [
+@@ -5220,6 +5533,19 @@
+    "team": "key_accounts",
+    "trust": 50,
+    "voice": "Twee jaar."
++  },
++  {
++   "archetype": "expert",
++   "id": "wim",
++   "morale": 50,
++   "name": "Wim Kortekaas",
++   "need": "recognition",
++   "place": "customer_contact.answer",
++   "role": "bewoner Zonnestraat, gepensioneerd elektrotechnicus",
++   "short": "meneer Kortekaas",
++   "team": "contact_centre",
++   "trust": 45,
++   "voice": "Het staat op tabblad drie."
+   }
+  ]
+ }
+diff --git a/game/data/missions.json b/game/data/missions.json
+index 8e46d22..304aef9 100644
+--- a/game/data/missions.json
++++ b/game/data/missions.json
+@@ -444,7 +444,7 @@
+     ],
+     "name": "Stop en bel: niet graven bij MS-kabels zonder monteur"
+    },
+-   "debrief": "Er zijn minder graafschades. Gert graaft weer met proefsleuven, en zijn opdrachtgever plant er tijd voor in. Gert deed alles volgens het boekje; de oorzaak zat in ons proces. Maar de kaart klopt nog steeds niet overal. Wie houdt de kaart eigenlijk bij?",
++   "debrief": "Er zijn minder graafschades. Gert deed alles volgens het boekje; de oorzaak zat in ons proces. Maar de kaart klopt nog steeds niet overal. Wie houdt de kaart eigenlijk bij?",
+    "debrief_variants": {
+     "blamed": "De schades zijn minder. Gert werkt mee, maar hij vertelt je niets meer dan nodig. Wie houdt de kaart eigenlijk bij?"
+    },
+@@ -482,9 +482,9 @@
+   },
+   {
+    "act": 2,
+-   "briefing": "De kabel die Gert Peeters raakte, lag twee meter naast de plek op de kaart; hij was vier maanden eerder verlegd. Bij Revisie & GIS staat een doos met 240 schetsen van opgeleverde aansluitingen. De oudste is van juni; één is getekend op een broodzakje. 'We tekenen ze over zo snel als we kunnen,' zegt Mieke van der Veen. Het GIS-team vraagt om versterking. Hoe oud wordt een schets voordat hij op de kaart staat, en waarom?",
++   "briefing": "De kabel die Gert Peeters raakte, lag twee meter naast de plek op de kaart; hij was vier maanden eerder verlegd. Bij Revisie & GIS staat een doos met 240 schetsen van opgeleverde aansluitingen. De oudste is van augustus; één is getekend op een boterhamzakje. 'We tekenen ze over zo snel als we kunnen,' zegt Mieke van der Veen. Het GIS-team vraagt om versterking. Hoe oud wordt een schets voordat hij op de kaart staat, en waarom?",
+    "chapter": "De kaart klopt niet",
+-   "debrief": "Een nieuwe kabel staat nu op de kaart op de dag dat hij in de grond ligt. Mieke tekent niet meer over; ze controleert. Het broodzakje heeft ze ingelijst. Wie merkt het als dit over een jaar wegzakt, en hoe snel?",
++   "debrief": "Een nieuwe kabel staat nu eerder op de kaart, en de doos bij Revisie & GIS wordt kleiner. Wie merkt het als dit over een jaar wegzakt, en hoe snel?",
+    "goal": {
+     "problem": "revision_backlog",
+     "type": "solve"
+@@ -584,7 +584,7 @@
+    "act": 2,
+    "briefing": "Ilse de Graaf wil de gasovens van haar bakkerij vervangen door elektrische. Ze staat al twee jaar op de wachtlijst voor transportcapaciteit. Naast haar staat een distributiehal met twee megawatt gecontracteerd vermogen; de hal is leeg. 'Leg me eens uit waarom het net vol is,' zei ze tegen Thomas Visser. Ze dreigt naar de ACM te stappen. Volgens Netstrategie is het net vol. Is het dat ook?",
+    "chapter": "Het net is vol",
+-   "debrief": "Op het drukste kwartier van het jaar gebruikten de grote klanten maar een deel van wat ze gecontracteerd hadden. Een deel daarvan komt, volgens de regels van de ACM en in gesprek met de klant, terug in de wachtrij. Bakkerij De Graaf bakt in het voorjaar elektrisch. Welke andere voorraad houden wij aan die op papier vol lijkt?",
++   "debrief": "Op het drukste kwartier van het jaar gebruikten de grote klanten maar een deel van wat ze gecontracteerd hadden. Een deel daarvan komt, volgens de regels van de ACM, terug in de wachtrij. Welke andere voorraad houden wij aan die op papier vol lijkt?",
+    "goal": {
+     "problem": "unused_capacity",
+     "type": "solve"
+@@ -621,7 +621,7 @@
+    "act": 2,
+    "briefing": "In het MT presenteerden Sanne en Joost allebei een recordmaand: meer aanvragen door, meer ontwerpen af. Marco Peters zei niets, tot het einde: 'Mooi. En wie bouwt jullie fouten na?' Er gaan niet meer aansluitingen per week de deur uit dan een kwartaal geleden. Kijk wat hun cijfers van hen vragen.",
+    "chapter": "Wat je meet",
+-   "debrief": "Sanne en Joost kijken nu naar dezelfde aansluiting en hetzelfde getal. In het volgende MT presenteren ze samen. Wat je meet, bepaalt wat mensen doen; en wat je níet meet, bepaalt wat ze laten liggen. Wie heeft last gehad van de oude cijfers, en weten ze dat het niet aan hen lag?",
++   "debrief": "Intake en Werkvoorbereiding kijken nu naar dezelfde aansluiting en hetzelfde getal. Wat je meet, bepaalt wat mensen doen; en wat je níet meet, bepaalt wat ze laten liggen. Wie heeft last gehad van de oude cijfers, en weten ze dat het niet aan hen lag?",
+    "goal": {
+     "problem": "silo_kpis",
+     "type": "solve"
+diff --git a/game/data/problems_tier1.json b/game/data/problems_tier1.json
+index a786efc..0e61b88 100644
+--- a/game/data/problems_tier1.json
++++ b/game/data/problems_tier1.json
+@@ -907,6 +907,14 @@
+      "key": true,
+      "text": "'Testen? Dan sta ik er tien minuten langer. Als hij niet werkt, hoor ik het vanzelf.'",
+      "tool": "conversation"
++    },
++    {
++     "at": "connections.close_out",
++     "depth": 2,
++     "dialog": "petra_silent_meters",
++     "key": true,
++     "text": "'Het lampje op de meter zegt na een paar minuten of hij verbinding heeft. Maar dan is de monteur al weg. Niemand wacht erop.'",
++     "tool": "conversation"
+     }
+    ],
+    "countermeasures": {
+@@ -976,6 +984,14 @@
+      "key": true,
+      "text": "De slimme meters in de straat registreren elk kwartier de spanning. Niemand bij Voltana kijkt ernaar.",
+      "tool": "data"
++    },
++    {
++     "at": "customer_contact.answer",
++     "depth": 2,
++     "dialog": "wim_spreadsheet",
++     "key": true,
++     "text": "'Het is niet één huis. Kijk op een zonnige middag naar de hele straat tegelijk. En kijk dan naar de trafo, niet naar mijn omvormer.'",
++     "tool": "conversation"
+     }
+    ],
+    "countermeasures": {
+diff --git a/game/data/world.json b/game/data/world.json
+index 470a1a5..f317896 100644
+--- a/game/data/world.json
++++ b/game/data/world.json
+@@ -35,7 +35,8 @@
+    "name": "Klantcontactcentrum",
+    "opens_with": [
+     "fix_status_callers",
+-    "fix_done_but_not_closed"
++    "fix_done_but_not_closed",
++    "fix_inverters_tripping"
+    ],
+    "places": [
+     "customer_contact.answer"
+diff --git a/game/tests/test_office_people.gd b/game/tests/test_office_people.gd
+index 82cfc97..4ffbd85 100644
+--- a/game/tests/test_office_people.gd
++++ b/game/tests/test_office_people.gd
+@@ -5,6 +5,9 @@ extends TestCase
+ 
+ const SCENE := "res://src/world/office/office.tscn"
+ const AT_DESKS: Array[String] = ["joost", "anouk", "sanne", "petra", "ruud"]
++## Speakers whose body the world agent is still making (PLAN: Wim at the
++## ontvangst, Act II side talks spec §2.1). Remove each as its body lands.
++const BODY_PENDING: Array[String] = ["wim"]
+ 
+ 
+ ## A session stand-in: the active missions, and energy_of when `energy` is given.
+@@ -228,7 +231,7 @@ func test_every_head_office_speaker_of_act_0_to_ii_has_a_body() -> void:
+ 	assert_true(speakers.size() >= 4, "the talks of Act 0–II are read")
+ 	for id: String in speakers:
+ 		var person: PersonDef = office.session.people.persons.get(id)
+-		if person == null or person.team == "monteurs" or person.archetype.begins_with("customer"):
++		if person == null or person.team == "monteurs" or person.archetype.begins_with("customer") or id in BODY_PENDING:
+ 			continue   # the field crews come in for their missions; customers are reached by phone
+ 		assert_false(_cast(id).get("office", {}).is_empty(), "%s has a place in the office's cast" % id)
+ 		assert_true(ResourceLoader.exists(CharacterModel.path(id)), "%s has a body" % id)
