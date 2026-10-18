@@ -37,7 +37,8 @@ func test_the_office_loads_with_a_session_a_player_and_every_interaction_point()
 	# the 1e (PLAN 2.1): the connections office's points, the stairs and the lift, Ruud's
 	# whiteboard (2.7c) and the shut doors of Revisie & GIS and Meetdata (no talk needs them yet)
 	assert_eq(ids, ["coach", "door:meter_data", "door:revision_gis", "lift", "mission_board", "obeya", DESIGN, INTAKE,
-		"place:connections.planning", "stairs_down", "stairs_up", OfficeWhiteboard.ID])
+		"place:connections.permit", "place:connections.planning", "place:meters.appointment", "stairs_down", "stairs_up",
+		OfficeWhiteboard.ID])
 	assert_eq(office.session.clock_text(), "ma 12 okt, 08:30")
 	assert_eq(office.geometry.name == "OfficePlaceholder", not ResourceLoader.exists(Office.MODEL),
 		"the model when it is imported, the stand-in otherwise")

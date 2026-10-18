@@ -60,8 +60,11 @@ func test_targets_per_goal_type_are_rooms_or_people() -> void:
 	assert_eq([t.get("kind"), t.get("person"), t.get("room"), t.get("floor")], ["person", "petra", "meter_data", "first"],
 		"talk_to: the person, wherever they are")
 	t = _of(s, "walk_meters")
-	assert_eq([t.get("kind"), t.get("room"), t.get("floor")], ["room", "van_park", "yard"],
-		"walk: the first unseen work step's room (the meter vans on the yard)")
+	assert_eq([t.get("kind"), t.get("room"), t.get("floor")], ["room", "connections", "first"],
+		"walk: the first unseen work step's room (the planners make the meter appointments)")
+	s.region.observed["meters.appointment"] = true
+	assert_eq([_of(s, "walk_meters").get("room"), _of(s, "walk_meters").get("floor")], ["van_park", "yard"],
+		"then the meter vans on the yard")
 	s.region.observed["meters.visit"] = true
 	assert_eq(_of(s, "walk_meters").get("room"), "meter_data", "then the next one")
 	s.region.observed["meters.registration"] = true
@@ -70,7 +73,12 @@ func test_targets_per_goal_type_are_rooms_or_people() -> void:
 	assert_eq(t.get("room"), "connections", "observe: the first unobserved place's room")
 	assert_eq(_of(s, "fix_status_callers").get("room"), "contact_centre", "solve: the room of the problem's step")
 	assert_eq(_of(s, "fix_wrong_joint").get("room"), "van_park", "a field problem: the yard, where its vans are")
-	assert_eq(_of(s, "fix_permits_in_batches"), {}, "a step in no room: no target")
+	assert_eq(_of(s, "fix_permits_in_batches").get("room"), "connections", "the permits wait in Aansluitingen")
+	var control_room := MissionDef.new()
+	control_room.id = "observe_test"
+	control_room.goal_type = "observe"
+	control_room.goal_places = PackedStringArray(["outages.report"])
+	assert_eq(MinimapTargets.of(control_room, s, b, CharacterModel.cast()), {}, "a step in no room: no target")
 	assert_eq(MinimapTargets.of(_talk("el_amrani_fourth_call"), s, b, CharacterModel.cast()), {},
 		"a customer on the phone: no target")
 
