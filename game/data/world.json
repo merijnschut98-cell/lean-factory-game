@@ -17,6 +17,12 @@
    "level": 2,
    "model": "office_second.glb",
    "name": "2e verdieping"
+  },
+  {
+   "id": "yard",
+   "model": "office_yard.glb",
+   "name": "Werf",
+   "outside_of": "ground"
   }
  ],
  "rooms": [
@@ -144,6 +150,60 @@
    "name": "Directeur Netbeheer",
    "opens_with": [],
    "places": []
+  },
+  {
+   "floor": "yard",
+   "id": "magazijn",
+   "name": "Magazijn",
+   "opens_with": [
+    "walk_outages",
+    "walk_meters",
+    "fix_wrong_joint"
+   ],
+   "places": [
+    "outages.joint",
+    "connections.materials",
+    "meters.reserve_meter"
+   ]
+  },
+  {
+   "floor": "yard",
+   "id": "werkplaats",
+   "name": "Werkplaats & storingsdienst",
+   "opens_with": [
+    "walk_outages",
+    "fix_wrong_joint",
+    "save_henks_knowledge",
+    "fix_digging_damage",
+    "fix_installer_not_ready",
+    "fix_planning_reshuffle",
+    "fix_silo_kpis",
+    "fix_revision_backlog",
+    "fix_inverters_tripping"
+   ],
+   "places": [
+    "outages.locate",
+    "connections.execution",
+    "connections.commissioning",
+    "voltage_complaints.measurement",
+    "voltage_complaints.tap_change"
+   ]
+  },
+  {
+   "floor": "yard",
+   "id": "van_park",
+   "name": "Bussen",
+   "opens_with": [
+    "walk_outages",
+    "walk_meters",
+    "fix_wrong_joint",
+    "fix_not_at_home",
+    "fix_silent_meter"
+   ],
+   "places": [
+    "outages.repair",
+    "meters.visit"
+   ]
   }
  ],
  "start_floor": "first"

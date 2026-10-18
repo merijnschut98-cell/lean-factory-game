@@ -12,9 +12,10 @@ signal floor_changed(floor_id: String)
 
 ## The seams and the doors: the interactables this node answers for.
 const STAIRS: Array[String] = ["stairs_up", "stairs_down"]
-const OWN: Array[String] = ["stairs_up", "stairs_down", "lift", "door"]
+const OWN: Array[String] = ["stairs_up", "stairs_down", "lift", "door", "exit"]
 ## The markers that become interactables (the rest: spawn, arrivals, rooms).
-const USABLE: Array[String] = ["place", "obeya", "coach", "mission_board", "stairs_up", "stairs_down", "lift", "door"]
+const USABLE: Array[String] = ["place", "obeya", "coach", "mission_board", "stairs_up", "stairs_down", "lift", "door",
+	"exit"]
 ## Seconds between checks of which rooms are open.
 const POLL_SECONDS := 0.5
 ## Walking onto the stairs counts when the player moves this fast (m/s) up their run.
@@ -24,6 +25,11 @@ const FLOOR_KEY := "floor"
 
 const CLOSED_DOOR := "%s is dicht: je toegangspas opent deze deur nog niet."
 const CLOSED_FLOOR := "De %s is nog dicht: je toegangspas opent die verdieping nog niet."
+## The yard (an outside area, PLAN 2.2): shut, and never reached by the lift.
+const CLOSED_OUTSIDE := "De %s is nog dicht: je toegangspas opent die deur nog niet."
+const NO_LIFT_OUTSIDE := "De lift gaat niet naar de %s: die bereik je via de achterdeur in de kantine."
+const TO_OUTSIDE := "E — Naar de %s"
+const TO_INSIDE := "E — Naar binnen (%s)"
 
 var office: Office
 var building: OfficeBuilding
@@ -177,6 +183,8 @@ func use(target: Interactable) -> bool:
 			office.ui.toggle_map()
 		"door":
 			office.ui.hud.toast(CLOSED_DOOR % room_name(target))
+		"exit":   # the back door: out to the yard, or back in (exit:<the other side>)
+			go_to(target.id.get_slice(":", 1), "exit")
 	return true
 
 
@@ -195,6 +203,11 @@ func prompt(target: Interactable) -> String:
 			return "E — Trap naar de %s%s" % [floor_name(to).to_lower(), shut] if not to.is_empty() else ""
 		"lift":
 			return "E — Lift"
+		"exit":
+			var to := target.id.get_slice(":", 1)
+			if building.floor_of(to).get("outside_of", "") != "":
+				return tr(TO_OUTSIDE) % floor_name(to).to_lower()
+			return tr(TO_INSIDE) % floor_name(to).to_lower()
 	return "E — %s: dicht" % room_name(target)
 
 
@@ -209,17 +222,23 @@ func label(target: Interactable) -> String:
 			return "Trap omlaag"
 		"lift":
 			return "Lift"
+		"exit":
+			return tr("Achterdeur")
 	return room_name(target) + " (dicht)"
 
 
-## Go to floor `id`, arriving `how` (lift, stairs_up, stairs_down: the floor's
-## `arrive:<how>` marker). A shut floor says so and keeps you here, unless `force`
+## Go to floor `id`, arriving `how` (lift, stairs_up, stairs_down, exit: the floor's
+## `arrive:<how>` marker); an outside area only by its door (exit). A shut floor says so and keeps you here, unless `force`
 ## (tools). True when the floor changed.
 func go_to(id: String, how: String, force := false) -> bool:
 	if building.floor_of(id).is_empty() or id == floor_id:
 		return false
+	var outside: bool = building.floor_of(id)["outside_of"] != ""
+	if outside and how != "exit" and not force:
+		office.ui.hud.toast(tr(NO_LIFT_OUTSIDE) % floor_name(id).to_lower())
+		return false
 	if not force and not building.floor_open(id, open_now()):
-		office.ui.hud.toast(CLOSED_FLOOR % floor_name(id).to_lower())
+		office.ui.hud.toast(tr(CLOSED_OUTSIDE if outside else CLOSED_FLOOR) % floor_name(id).to_lower())
 		return false
 	floor_id = id
 	office.load_floor()

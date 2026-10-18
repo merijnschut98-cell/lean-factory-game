@@ -68,13 +68,13 @@
       "look": {"sex": "m", "height": 1.76, "build": 0.62, "skin": [220, 168, 140], "hair_style": "receding",
                "hair_color": [222, 220, 214], "brow_color": [170, 166, 160], "outfit": "monteur",
                "helmet": false, "stubble": 0.3, "stoop": 0.7, "beard": "full"},
-      "office": {"at": [7.6, -6.4], "face": [6.9, -6.6], "pose": "talk", "missions": ["save_henks_knowledge"]}
+      "office": {"floor": "yard", "at": [-29.9, 0.2], "face": [-31.0, 0.6], "pose": "talk", "missions": ["save_henks_knowledge"]}
     },
     {
       "id": "ahmed", "name": "Ahmed Bouzid", "role": "jonge monteur",
       "look": {"sex": "m", "height": 1.78, "build": 0.42, "skin": [168, 116, 84], "hair_style": "short",
                "hair_color": [28, 22, 20], "outfit": "monteur", "eye_color": [44, 30, 22], "stubble": 0.5},
-      "office": {"at": [7.2, -7.2], "face": [7.6, -6.4], "pose": "idle",
+      "office": {"floor": "yard", "at": [-32.4, -0.3], "face": [-31.0, 0.6], "pose": "idle",
                  "missions": ["walk_outages", "fix_wrong_joint", "save_henks_knowledge"]}
     },
     {
@@ -156,7 +156,7 @@
       "look": {"sex": "m", "height": 1.74, "build": 0.72, "skin": [218, 164, 132], "hair_style": "buzz",
                "hair_color": [120, 112, 104], "outfit": "monteur", "helmet": false, "eye_color": [70, 80, 90],
                "stubble": 0.6, "stoop": 0.25},
-      "office": {"at": [2.4, -6.7], "face": [1.6, -7.95], "pose": "idle", "missions": ["fix_wrong_joint"]}
+      "office": {"floor": "yard", "at": [-31.8, -14.8], "face": [-31.8, -13.0], "pose": "idle"}
     },
     {
       "id": "gert", "name": "Gert Peeters", "role": "uitvoerder, Grondwerk Peeters",

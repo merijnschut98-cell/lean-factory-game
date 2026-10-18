@@ -126,11 +126,17 @@ func _locate(t: Dictionary, shown: Dictionary, player: Vector2) -> bool:
 ## and the floor to go to ("2e verdieping ↑"). False when neither is on this floor.
 func _seam(t: Dictionary, shown: Dictionary) -> bool:
 	var building := office.floors.building
-	var up: bool = building.floor_of(t["floor"]).get("level", 0) > building.floor_of(office.floors.floor_id).get("level", 0)
+	var to := building.floor_of(t["floor"])
+	var here := building.floor_of(office.floors.floor_id)
+	var up: bool = to.get("level", 0) > here.get("level", 0)
+	# the yard (an outside area) is reached through its door, on its own level
+	var by_door: bool = to["level"] == here["level"] and (to["outside_of"] != "" or here["outside_of"] != "")
 	var best: Interactable = null
 	var best_length := INF
 	for i in office.interactables:
-		if i.kind == "lift" or i.kind == ("stairs_up" if up else "stairs_down"):
+		var way: bool = i.kind == "exit" if by_door or here["outside_of"] != "" \
+			else (i.kind == "lift" or i.kind == ("stairs_up" if up else "stairs_down"))
+		if way:
 			var length := _length(office.player.position, office.nav().path(office.player.position, i.position))
 			if length < best_length:
 				best = i
@@ -139,7 +145,8 @@ func _seam(t: Dictionary, shown: Dictionary) -> bool:
 		return false
 	shown["kind"] = "seam"
 	shown["at"] = Vector2(best.position.x, best.position.z)
-	shown["text"] = "%s %s" % [tr(office.floors.floor_name(t["floor"])), "↑" if up else "↓"]
+	var arrow := "" if to["level"] == here["level"] else (" ↑" if up else " ↓")
+	shown["text"] = tr(office.floors.floor_name(t["floor"])) + arrow
 	return true
 
 

@@ -1870,6 +1870,9 @@ def plan_ground(plan: Plan) -> None:
     plan.core_doors = {0.0: opening(*DOOR_Y, room="contact_centre", swing=1),
                        CORE[0]: opening(*DOOR_Y, room="canteen", swing=-1)}
     plan.markers += [("arrive:entrance", {"interaction": "arrive", "id": "entrance"}, (-4.5, 1.4), (-4.5, 5.0)),
+                     # the kantine's back door to the yard (PLAN 2.2; build_yard.py has its other side)
+                     ("exit:yard", {"interaction": "exit", "id": "yard"}, (X0 + 0.8, 8.0), (X0, 8.0)),
+                     ("arrive:exit", {"interaction": "arrive", "id": "exit"}, (X0 + 1.6, 8.0), (X0 + 6.0, 8.0)),
                      place("customer_contact.answer", (10.0, 6.2), (10.0, 3.2))]
 
     def furnish(kits):
@@ -1924,6 +1927,10 @@ def plan_ground(plan: Plan) -> None:
         for k, (x, y) in enumerate(((-17.5, 0.5), (-17.5, 15.5), (-6.8, 0.6), (-12.0, 8.0))):
             put(kits["plant_1.5"], f"canteen_plant{k}", (x, y, 0), k * 53)
             collide((0.45, 0.45, 1.2), (x, y, 0.6))
+        # the back door in the kantine's west gable: to the yard (PLAN 2.2)
+        b.box((0.06, 1.16, 2.2), (X0 + 0.03, 8.0, 1.1), "frame")
+        b.box((0.05, 1.0, 2.1), (X0 + 0.06, 8.0, 1.05), "metal_dark")
+        b.panel((X0 + 0.07, 8.0, 2.35), 0.5, 0.18, "X", "signage", uv_rect=SIGN_RECTS["exit"])
         put(b.mesh("ground_dressing"), "ground_dressing")
 
     plan.furnish = furnish
