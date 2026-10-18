@@ -460,7 +460,7 @@
     ],
     "name": "Stop en bel: niet graven bij MS-kabels zonder monteur"
    },
-   "debrief": "Er zijn minder graafschades. Gert graaft weer met proefsleuven, en zijn opdrachtgever plant er tijd voor in. Gert deed alles volgens het boekje; de oorzaak zat in ons proces. Maar de kaart klopt nog steeds niet overal. Wie houdt de kaart eigenlijk bij?",
+   "debrief": "Er zijn minder graafschades. Gert deed alles volgens het boekje; de oorzaak zat in ons proces. Maar de kaart klopt nog steeds niet overal. Wie houdt de kaart eigenlijk bij?",
    "debrief_variants": {
     "blamed": "De schades zijn minder. Gert werkt mee, maar hij vertelt je niets meer dan nodig. Wie houdt de kaart eigenlijk bij?"
    },
@@ -498,9 +498,9 @@
   },
   {
    "act": 2,
-   "briefing": "De kabel die Gert Peeters raakte, lag twee meter naast de plek op de kaart; hij was vier maanden eerder verlegd. Bij Revisie & GIS staat een doos met 240 schetsen van opgeleverde aansluitingen. De oudste is van juni; één is getekend op een broodzakje. 'We tekenen ze over zo snel als we kunnen,' zegt Mieke van der Veen. Het GIS-team vraagt om versterking. Hoe oud wordt een schets voordat hij op de kaart staat, en waarom?",
+   "briefing": "De kabel die Gert Peeters raakte, lag twee meter naast de plek op de kaart; hij was vier maanden eerder verlegd. Bij Revisie & GIS staat een doos met 240 schetsen van opgeleverde aansluitingen. De oudste is van augustus; één is getekend op een boterhamzakje. 'We tekenen ze over zo snel als we kunnen,' zegt Mieke van der Veen. Het GIS-team vraagt om versterking. Hoe oud wordt een schets voordat hij op de kaart staat, en waarom?",
    "chapter": "De kaart klopt niet",
-   "debrief": "Een nieuwe kabel staat nu op de kaart op de dag dat hij in de grond ligt. Mieke tekent niet meer over; ze controleert. Het broodzakje heeft ze ingelijst. Wie merkt het als dit over een jaar wegzakt, en hoe snel?",
+   "debrief": "Een nieuwe kabel staat nu eerder op de kaart, en de doos bij Revisie & GIS wordt kleiner. Wie merkt het als dit over een jaar wegzakt, en hoe snel?",
    "goal": {
     "problem": "revision_backlog",
     "type": "solve"
@@ -600,7 +600,7 @@
    "act": 2,
    "briefing": "Ilse de Graaf wil de gasovens van haar bakkerij vervangen door elektrische. Ze staat al twee jaar op de wachtlijst voor transportcapaciteit. Naast haar staat een distributiehal met twee megawatt gecontracteerd vermogen; de hal is leeg. 'Leg me eens uit waarom het net vol is,' zei ze tegen Thomas Visser. Ze dreigt naar de ACM te stappen. Volgens Netstrategie is het net vol. Is het dat ook?",
    "chapter": "Het net is vol",
-   "debrief": "Op het drukste kwartier van het jaar gebruikten de grote klanten maar een deel van wat ze gecontracteerd hadden. Een deel daarvan komt, volgens de regels van de ACM en in gesprek met de klant, terug in de wachtrij. Bakkerij De Graaf bakt in het voorjaar elektrisch. Welke andere voorraad houden wij aan die op papier vol lijkt?",
+   "debrief": "Op het drukste kwartier van het jaar gebruikten de grote klanten maar een deel van wat ze gecontracteerd hadden. Een deel daarvan komt, volgens de regels van de ACM, terug in de wachtrij. Welke andere voorraad houden wij aan die op papier vol lijkt?",
    "goal": {
     "problem": "unused_capacity",
     "type": "solve"
@@ -637,7 +637,7 @@
    "act": 2,
    "briefing": "In het MT presenteerden Sanne en Joost allebei een recordmaand: meer aanvragen door, meer ontwerpen af. Marco Peters zei niets, tot het einde: 'Mooi. En wie bouwt jullie fouten na?' Er gaan niet meer aansluitingen per week de deur uit dan een kwartaal geleden. Kijk wat hun cijfers van hen vragen.",
    "chapter": "Wat je meet",
-   "debrief": "Sanne en Joost kijken nu naar dezelfde aansluiting en hetzelfde getal. In het volgende MT presenteren ze samen. Wat je meet, bepaalt wat mensen doen; en wat je níet meet, bepaalt wat ze laten liggen. Wie heeft last gehad van de oude cijfers, en weten ze dat het niet aan hen lag?",
+   "debrief": "Intake en Werkvoorbereiding kijken nu naar dezelfde aansluiting en hetzelfde getal. Wat je meet, bepaalt wat mensen doen; en wat je níet meet, bepaalt wat ze laten liggen. Wie heeft last gehad van de oude cijfers, en weten ze dat het niet aan hen lag?",
    "goal": {
     "problem": "silo_kpis",
     "type": "solve"

@@ -264,6 +264,18 @@ people:
     voice: "Afgesproken."
 
 
+  - id: wim
+    name: Wim Kortekaas
+    short: meneer Kortekaas
+    role: bewoner Zonnestraat, gepensioneerd elektrotechnicus
+    place: customer_contact.answer   # a customer; he comes to the ontvangst with his ring binder (cast), the KCC menu is the fallback
+    team: contact_centre             # where his mails land; he is not on the team
+    archetype: expert                # forty years in electrical engineering; right, polite, thorough
+    need: recognition                # three years of spreadsheets answered by a receipt: he needs someone to look
+    trust: 45                        # thirty-six receipts (estimate: a little below the default)
+    morale: 50
+    voice: "Het staat op tabblad drie."
+
 bank:
   labels:
     bands: [Dicht, Op z'n hoede, Luistert, Open, Denkt mee]
@@ -2124,7 +2136,7 @@ dialogs:
     name: "Henks laatste week"
     person: henk
     kind: checkin
-    prompt: "Henk ruimt zijn bus leeg. Nog vijf dagen."
+    prompt: "Henk ruimt zijn bus leeg. Zijn laatste week."
     patience: 8
     trigger:   # his last five days (scripts §5: henk_farewell, 5 days before; "Ik ben er nog vijf dagen")
       beat: henk_farewell
@@ -2186,7 +2198,7 @@ dialogs:
     name: "Esra en het rooster"
     person: esra
     kind: checkin
-    prompt: "Esra zit al een uur naar het rooster te staren."
+    prompt: "Esra eet haar lunch achter het rooster. Het scherm staat op groen; zij kijkt er niet naar."
     patience: 8
     trigger:
       morale_below: 50
@@ -2294,7 +2306,7 @@ dialogs:
     name: "Linda 's avonds"
     person: linda
     kind: checkin
-    prompt: "Linda plant weer 's avonds om, thuis. Haar collega's zien de mails om tien uur."
+    prompt: "Linda's mails komen de laatste tijd om tien uur 's avonds binnen."
     patience: 8
     trigger:
       morale_below: 50
@@ -2399,7 +2411,7 @@ dialogs:
     owns: revision_backlog
     mood: gespannen
     patience: 10
-    opening: "Als je komt voor de kabel van Gert: die zat in de doos. Ergens tussen juni en nu."
+    opening: "Als je komt voor de kabel van Gert: die zat in de doos. Ergens tussen augustus en nu."
     warning: "Ik heb hier een doos die niet kleiner wordt van praten."
     position: {text: "We tekenen ze over zo snel als we kunnen. Tweehonderdveertig schetsen. Met z'n tweeën.", tags: [claim]}
     layers:
@@ -2429,7 +2441,7 @@ dialogs:
         label: "Een vast sjabloon"
         say: "Een vast sjabloon voor de schets, elke dag ingeleverd."
         addresses: [interest]
-        reply: "Een sjabloon helpt. Een broodzakje is ook een sjabloon, als je het vriendelijk bekijkt."
+        reply: "Een sjabloon helpt. Een boterhamzakje is ook een sjabloon, als je het vriendelijk bekijkt."
       - id: mieke_sets_the_standard
         label: "Mieke bepaalt wat een goed as-built is"
         say: "Wat als jij bepaalt wat een goed as-built is? Jouw A4 met wat er altijd mist. En jouw team controleert, in plaats van over te tekenen."
@@ -2721,3 +2733,156 @@ dialogs:
       compliance: "Ik heb geen keus, hè."
       ruined: "Dan ga ik naar de ACM. En naar de krant."
 
+  # ── Petra en de zwijgende meters (Act II side, fix_silent_meter; spec 2026-10-17-act2-side-talks.md) ─────
+  # The way in is the record and then a doubt: her interest opens to the data (her own pattern, confirmed)
+  # or to the monteur's side; her concern is a doubt, drawn out by Ervaring delen or the numbers.
+  - id: petra_silent_meters
+    name: "Petra en de zwijgende meters"
+    person: petra
+    kind: persuade
+    mission: fix_silent_meter
+    owns: silent_meter
+    mood: neutraal
+    patience: 10
+    opening: "Je komt voor de lijst. Hier. Tweeënveertig meters die niks zeggen. Ik heb ze per straat gesorteerd."
+    warning: "Mijn lijst klopt. Daar hoef je niet over te beginnen."
+    position: {text: "Iedereen zegt: de meters van de nieuwe leverancier deugen niet. Dat kan. Maar dan zou het overal zijn. Het is niet overal.", tags: [claim], tell: facts}
+    layers:
+      - id: interest
+        at: 52
+        via: [show_data, perspective]   # the record or the other side; listening alone does not open her pattern
+        text: "De Lindeflats. De Kade. De Hofstede. Allemaal nieuwbouw, allemaal met de meterkast in een betonnen kelderberging. In de rijtjeshuizen heb ik er bijna geen."
+        tags: [claim]
+      - id: concern
+        at: 66
+        via: [experience, show_data]    # a doubt: a true story of the player's own, or the numbers in black and white, make it smaller
+        lead_in: {text: "Ik weet het alleen niet zeker. En wat ik niet zeker weet, zeg ik liever niet.", tags: [hesitation, doubt]}
+        text: "De vorige keer dat er iets bij Meetdata bleef liggen, wist de hele kantine het binnen een week. Als ik nu zeg dat het niet aan de meters ligt maar aan hoe we ze plaatsen, dan zegt Meetdata weer iets over de monteurs. En het staat nog niet in mijn map."
+        tags: [admission]
+        tell: facts
+        unlocks:
+          clue: {key: true, depth: 2, text: "'Het lampje op de meter zegt na een paar minuten of hij verbinding heeft. Maar dan is de monteur al weg. Niemand wacht erop.'"}
+          facts: [heard:petra_meters]
+          proposals: [petra_rides_along]
+    data: [silent_meter:0, silent_meter:3]
+    proposals:
+      - id: supplier_complaint
+        label: "Een klacht naar de leverancier"
+        say: "We sturen een klacht naar de leverancier, met jouw lijst erbij."
+        addresses: []
+        reply: "Kan. Dan sturen ze nieuwe meters. Die hangen dan in dezelfde kelders."
+      - id: list_by_address
+        label: "De lijst per adres naast elkaar"
+        say: "Zullen we je lijst naast de adressen leggen? Flat of rijtjeshuis, kelder of gang."
+        addresses: [interest]
+        reply: "Per adres. Dat kan ik vanmiddag. Dan staat het tenminste in mijn map."
+      - id: petra_rides_along
+        label: "Petra kijkt één ochtend mee bij het plaatsen"
+        say: "Wat als jij één ochtend meegaat naar de Lindeflats? Jij en de monteur kijken samen naar dat lampje. Dan staat het in jouw map én in de zijne."
+        hidden: true
+        addresses: [concern]
+        reply: "Samen kijken. Dan is het geen Meetdata tegen de monteurs. Dan is het gewoon gemeten. … Klopt."
+    experiments:
+      - id: one_street_two_weeks
+        label: "Twee weken, één flat: wachten op het lampje"
+        say: "Twee weken, één flat: de monteur wacht tot de meter verbinding heeft voordat hij wegrijdt. Jij houdt bij wat er gebeurt."
+        addresses: [interest, concern]
+        reply: "Twee weken. Dan heb ik het zwart op wit. Of niet. Dat is ook een uitkomst."
+    co_proposal: {id: petra_rides_along, text: "Laat mij één ochtend met een monteur mee naar de Lindeflats. Hij plaatst, ik kijk naar het lampje. Dan zien we het allebei."}
+    lines:
+      perspective: "Hoe zou de monteur die bij de Lindeflats stond dit zien, denk je?"
+      experience: "Mijn eerste week dacht ik dat de stapel bij Werkvoorbereiding aan Anouk lag. Het lag aan hoe de bakken stonden. Ik had het niet gezien als ik het niet had geteld."
+    replies:
+      show_data:
+        lands: {text: "Drie op de tien in de flats. Eén op de twintig elders. … Dat had ik ook. Ik had het alleen nog niet opgeschreven.", tags: [claim], tell: facts}
+        misses: {text: "Een gemiddelde over de hele regio. Daar zit het niet in."}
+      perspective:
+        lands: {text: "De monteur? Die plaatst, sluit de kast en rijdt door. Zo is het hem geleerd. Hij ziet nooit wat ik zie, een week later.", tags: [claim]}
+      experience:
+        lands: {text: "Geteld. Ja. … Ik heb het eigenlijk al geteld. Ik heb het alleen nog niemand laten zien."}
+    outcomes:
+      commitment: "Klopt. De eerste ochtend dat er een monteur naar de Lindeflats gaat, ga ik mee. Met de lijst. En mijn map."
+      partial: "Ik wil het wel. Als het eerst per adres in de lijst staat."
+      heard: "Hm. Je liet me het zelf zeggen. Dat was nodig, geloof ik."
+      none: "Ik moet de lijst nog bijwerken."
+      compliance: "Als je het zo wilt. Het komt in de map."
+      ruined: "Dan vraag je het maar aan de Molen."
+
+  # ── Wim en tabblad drie (Act II side, fix_inverters_tripping; spec 2026-10-17-act2-side-talks.md) ─────
+  # The way in is a feeling and then the record: his interest opens when someone names what three years of
+  # receipts feel like (or asks how he is); his concern comes out only on our own data, or the monteur's side.
+  - id: wim_spreadsheet
+    name: "Wim en tabblad drie"
+    person: wim
+    kind: persuade
+    mission: fix_inverters_tripping
+    owns: inverters_tripping
+    mood: neutraal
+    patience: 10
+    opening: "Goedemiddag. Kortekaas, Zonnestraat veertien. U kent mij waarschijnlijk van de spreadsheets."
+    warning: "Met alle respect: dit zei de vorige meneer ook."
+    position: {text: "Elke maand stuur ik u mijn metingen. Elke maand krijg ik een ontvangstbevestiging. Zesendertig ontvangstbevestigingen. Ik heb ze bewaard.", tags: [claim, feeling], tell: recognition}
+    layers:
+      - id: interest
+        at: 50
+        via: [reflect, mood]            # a feeling under the irony: name it, or ask how he is
+        text: "Het is winter, dus u denkt: nu heeft hij nergens last van. Maar in maart begint het weer. Op een zonnige middag gaat mijn omvormer uit. Tien minuten later aan. Dan weer uit. Bij de buren ook. Twintig adressen inmiddels."
+        tags: [claim]
+      - id: concern
+        at: 66
+        via: [show_data, perspective]   # the record: our numbers next to his
+        lead_in: {text: "Ik heb het in 2023 al opgeschreven. Tabblad drie. Elke zonnige middag boven de tweehonderddrieënvijftig volt.", tags: [hesitation, claim], tell: recognition}
+        text: "Mijn buren noemen me de zeur van de Zonnestraat. Twintig mensen klagen nu, en ze kijken allemaal naar mij. Ik heb veertig jaar in de elektrotechniek gewerkt. Heb ik het mis, dan ben ik een oude man met een spreadsheet. Heb ik het goed, dan heeft niemand drie jaar gekeken."
+        tags: [admission]
+        tell: recognition
+        unlocks:
+          clue: {key: true, depth: 2, text: "'Het is niet één huis. Kijk op een zonnige middag naar de hele straat tegelijk. En kijk dan naar de trafo, niet naar mijn omvormer.'"}
+          facts: [heard:wim_spreadsheet]
+          proposals: [wim_reads_the_data]
+    data: [inverters_tripping:2, inverters_tripping:4]
+    proposals:
+      - id: retune_inverter
+        label: "Zijn omvormer later laten afschakelen"
+        say: "Wij betalen een monteur die uw omvormer zo instelt dat hij later afschakelt."
+        addresses: []
+        reply: "Dan gaat de spanning nog hoger, en mag dat niet eens. Dat is de thermometer stukmaken omdat je koorts hebt."
+      - id: logger_one_week
+        label: "Een week een meter in zijn meterkast"
+        say: "We komen nog een keer meten. Een hele week, met een logger in uw meterkast."
+        addresses: [interest]
+        reply: "Een week. Bij mij. Dan heeft u één adres. Er zijn er twintig."
+      - id: wim_reads_the_data
+        label: "Zijn spreadsheet naast onze metingen"
+        say: "Wilt u met een van onze netbeheerders naar de metingen van de hele straat kijken? Uw spreadsheet naast onze slimme meters."
+        hidden: true
+        addresses: [concern]
+        reply: "Mijn tabblad naast uw metingen. … Daar zit ik al drie jaar op te wachten."
+    experiments:
+      - id: last_summer_street
+        label: "De metingen van afgelopen zomer, de hele straat"
+        say: "We halen de metingen van afgelopen zomer op: de hele Zonnestraat, elk kwartier, uit de slimme meters. U krijgt de grafiek."
+        addresses: [interest, concern]
+        reply: "Elk kwartier. De hele straat. … Dan hoeft u mijn spreadsheet niet eens meer te geloven."
+    co_proposal: {id: wim_reads_the_data, text: "Laat me één middag naast iemand zitten die bij de gegevens van de trafo kan. Ik neem mijn laptop mee. En ik beloof dat ik niet zeg dat ik het al wist."}
+    lines:
+      mood: "Hoe gaat het met u, met al die spreadsheets?"
+      reflect: "Het klinkt alsof u het gevoel heeft dat niemand ze leest."
+      perspective: "Hoe zou de monteur die bij u kwam meten dit zien, denkt u?"
+      paraphrase: "Dus u stuurt al drie jaar uw metingen, en u krijgt alleen een bevestiging terug."
+    replies:
+      open_question:
+        lands: {text: "Wat er gebeurt? Zevenentwintig keer afgeschakeld op 14 juni. Het staat erin, per minuut.", tags: [claim], tell: recognition}
+      reflect:
+        lands: {text: "Leest. Nou. Ze worden ontvangen. Dat staat er elke keer bij.", tags: [feeling]}
+      show_data:
+        lands: {text: "Tweehonderdvierenvijftig volt, om kwart over één. … Dat is mijn getal. Dat is precies mijn getal.", tags: [claim]}
+        misses: {text: "Een daggemiddelde. Daar zit het niet in. Het zit in de middag."}
+      perspective:
+        lands: {text: "De monteur? Die meet bij mij om tien uur 's ochtends. Dan is er niks. Hij doet zijn werk goed. Hij kijkt alleen op het verkeerde uur.", tags: [claim]}
+    outcomes:
+      commitment: "Dan neem ik mijn laptop mee. En een verlengsnoer; die hebben jullie hier vast niet."
+      partial: "Ik stuur de spreadsheet nog één keer. Als iemand hem deze keer opent."
+      heard: "Dank u. Ik hoef geen gelijk. Ik wil alleen dat iemand kijkt."
+      none: "Ik mail u tabblad drie nog even."
+      compliance: "Goed. Dan wacht ik weer op de ontvangstbevestiging."
+      ruined: "Dan stuur ik volgende maand weer een spreadsheet. En de maand daarna."
