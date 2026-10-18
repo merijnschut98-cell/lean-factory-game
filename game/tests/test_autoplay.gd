@@ -25,6 +25,36 @@ func test_the_expert_plays_the_training_week_and_three_main_missions_without_a_d
 	assert_true(run["xp"] > 0 and not (run["curve"] as Array).is_empty())
 
 
+func test_the_talker_talks_to_everyone_it_can_and_listens_first() -> void:
+	var run: Dictionary = Autoplay.Persona.new("talker", 11, 1).play()
+	assert_eq(run["dead_ends"], [], "no dead end")
+	assert_eq(run["errors"], [], "no engine error")
+	var talks: Array = run["talks"]
+	var dialogs := talks.map(func(t: Dictionary) -> String: return t["dialog"])
+	for id in ["anouk_seven", "sanne_tuesday", "rachid_counter", "anouk_owns_tray"]:
+		assert_true(id in dialogs, "%s had: %s" % [id, dialogs])
+	assert_true(talks.all(func(t: Dictionary) -> bool: return not t["forced"]), "the talker opens its talks itself")
+	assert_true(talks.all(func(t: Dictionary) -> bool: return not "pressure" in t["moves"] and not "confront" in t["moves"]),
+		"never pressures")
+	assert_true(talks.all(func(t: Dictionary) -> bool: return t["moves"].is_empty() or t["moves"][0] in Dialog.LISTEN),
+		"opens every talk with a listening move")
+	assert_true(talks.any(func(t: Dictionary) -> bool: return t["outcome"] in ["commitment", "partial"]),
+		"wins at least one agreement: %s" % [talks.map(func(t: Dictionary) -> String: return t["outcome"])])
+	assert_true((run["people"] as Dictionary).has("anouk"), "trust and morale per person")
+
+
+func test_never_talks_has_only_the_talk_a_mission_cannot_end_without() -> void:
+	var run: Dictionary = Autoplay.Persona.new("never-talks", 11, 1).play()
+	assert_eq(run["dead_ends"], [], "no dead end")
+	var talks: Array = run["talks"]
+	assert_eq(talks.map(func(t: Dictionary) -> String: return t["dialog"]), ["anouk_seven"], "only Monday's talk")
+	assert_true(talks[0]["forced"])
+	var monday: Array = (run["ends_with_talk"] as Array).filter(func(e: Dictionary) -> bool: return e["mission"] == "training_mon")
+	assert_eq(monday.size(), 1, "Monday waited for Anouk's talk")
+	assert_true(monday[0]["held_open"], "the walk was done, the day stayed open until the talk")
+	assert_true(monday[0]["completed_after_talk"], "the day ended with the talk")
+
+
 func test_the_report_ranks_findings_by_severity() -> void:
 	var run: Dictionary = Autoplay.Persona.new("expert", 11, 1).play()
 	run["dead_ends"] = [{"kind": "belt_gate", "mission": "x", "detail": "d", "day": 1.0}]

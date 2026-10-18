@@ -16,6 +16,17 @@ extends SceneTree
 ##             cheapest fitting countermeasure, standardises half the time.
 ##   careless  skips the training week, uses random tools and questions (blame
 ##             included), random A3 choices, never standardises.
+##   talker    plays the gemba and the A3 as the expert does, and talks to
+##             everyone who has a talk for it (check-ins first), listening
+##             first: it answers the person's last words with the move that
+##             fits them, steers only once the concern is out, never pressures.
+##   never-talks  plays as the expert does and never opens a talk: a fix
+##             nobody asked its owner about is compliance (Sustain.BUY_IN ×0.6).
+##             Only a talk a mission cannot end without (ends_with_talk) is had,
+##             said hello and closed, and logged as forced.
+## Every persona has the talk a mission ends with; the others only say hello.
+## A run that ends with the campaign done plays an epilogue: EPILOGUE_DAYS
+## more with no new work, the persona's audits only, to see which fixes hold.
 ## A persona that cannot get anywhere on a problem is helped by the expert's
 ## next step (logged as "assisted"), so one lost player does not end the
 ## campaign; a state no persona can leave is a dead end.
@@ -24,7 +35,9 @@ extends SceneTree
 ## session.missions are read to decide and to measure (and Missions.abandon
 ## clears a mission nobody can finish: GameSession has no abandon action).
 
-const PERSONAS: Array[String] = ["expert", "average", "careless"]
+const PERSONAS: Array[String] = ["expert", "average", "careless", "talker", "never-talks"]
+## Personas who play the gemba, the A3, the Act and the audits as the expert does.
+const EXPERT_PLAY: Array[String] = ["expert", "talker", "never-talks"]
 const SEEDS: Array[int] = [11, 12, 13]
 const DEFAULT_OUT := "res://../docs/qa"
 const SEVERITIES: Array[String] = ["critical", "high", "medium", "low"]
@@ -39,6 +52,8 @@ func _initialize() -> void:
 
 func _run() -> int:
 	var args := OS.get_cmdline_user_args()
+	if args.size() > 1 and args[0] == "--merge":
+		return _merge(args[1], args.slice(2))
 	var out_dir := ProjectSettings.globalize_path(args[0] if args.size() > 0 else DEFAULT_OUT).simplify_path()
 	var seeds: Array[int] = SEEDS
 	if args.size() > 1:
@@ -57,6 +72,35 @@ func _run() -> int:
 			printerr("played %s seed %d: %s after %.0f days, %d missions (%.1f s)" % [
 				persona, seed_value, run["end"], run["days"], run["completed"], run["wall_seconds"]])
 			runs.append(run)
+	return _report(out_dir, runs)
+
+
+## `-- --merge <out_dir> <a.json> <b.json> …`: one report from the runs of
+## earlier reports (persona-seeds played in parallel processes).
+func _merge(out: String, paths: Array) -> int:
+	var runs: Array[Dictionary] = []
+	for path: String in paths:
+		var f := FileAccess.open(path, FileAccess.READ)
+		var data: Variant = JSON.parse_string(f.get_as_text()) if f != null else null
+		if not (data is Dictionary and data.get("runs") is Array):
+			printerr("cannot read runs from ", path)
+			return 1
+		for run: Dictionary in data["runs"]:
+			run["seed"] = int(run["seed"])
+			runs.append(run)
+	runs.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return [PERSONAS.find(a["persona"]), a["seed"]] < [PERSONAS.find(b["persona"]), b["seed"]])
+	return _report(ProjectSettings.globalize_path(out).simplify_path(), runs)
+
+
+func _report(out_dir: String, runs: Array[Dictionary]) -> int:
+	var seeds: Array[int] = []
+	var personas: Array[String] = []
+	for run in runs:
+		if not int(run["seed"]) in seeds:
+			seeds.append(int(run["seed"]))
+		if not run["persona"] in personas:
+			personas.append(run["persona"])
 	var catalog := Catalog.load_from()
 	var findings := PlayReport.findings(runs, catalog)
 	var report := {"generated": Time.get_datetime_string_from_system(true), "seeds": seeds, "personas": personas,
@@ -123,8 +167,22 @@ class Persona extends RefCounted:
 		"queue_count", "material_check"]
 	const OBSERVE_TOOLS: Array[String] = ["documents", "time_study", "shadow", "data", "conversation", "queue_count"]
 	const SAMPLE_DAYS := 7.0
+	## The talker's limits: a persuasion is tried this often in all (it wants a
+	## commitment), a check-in this often while it is open, each at most once a day.
+	const TALK_TRIES := 3
+	const CHECKIN_TRIES := 6
+	const MAX_MOVES := 40
+	## The listening move for a person's last words (Dialog.ANSWERS), in order.
+	const ANSWER := {"feeling": "reflect", "admission": "empathy", "hesitation": "silence", "claim": "paraphrase",
+		"doubt": "experience"}
+	const FALLBACK_LISTEN: Array[String] = ["open_question", "inquiry", "empathy", "paraphrase", "mood"]
+	## After the campaign: days with no new work, to see which fixes hold.
+	const EPILOGUE_DAYS := 182
+	const EPILOGUE_STEP_DAYS := 7.0
 
 	var persona: String
+	## How it plays the gemba, the A3, the Act and the audits (EXPERT_PLAY).
+	var style: String
 	var seed_value: int
 	## Stop once this many main missions are completed; -1: play the campaign out.
 	var stop_after_main := -1
@@ -134,6 +192,7 @@ class Persona extends RefCounted:
 	var _runs: Dictionary = {}  # mission id → its open run record
 	var _search: Dictionary = {}  # problem id → {actions, plan, next, barren: {pair: n}, dead: {pair: true}, assisted}
 	var _tried: Dictionary = {}  # problem id → countermeasure ids tried
+	var _ruled_out: Dictionary = {}  # problem id → countermeasure ids the A3 refused (a repair needs another)
 	var _coached: Dictionary = {}  # "mission|stage" → true
 	var _refused: Dictionary = {}  # "mission|code" → true
 	var _given_up: Dictionary = {}  # mission ids nobody can finish
@@ -143,9 +202,13 @@ class Persona extends RefCounted:
 	var _sustain_tries: Dictionary = {}  # check-in mission id → audits done for it
 	var _actions := 0
 	var _last_sample := -INF
+	var _talk_tries: Dictionary = {}  # dialog id → talks the talker opened
+	var _talk_day: Dictionary = {}  # dialog id → the day (int) of its last talk
+	var _ever_resolved: Dictionary = {}  # problem id → true, every problem a solve mission fixed
 
 	func _init(persona_name: String, seed_number: int, stop_after_main_missions: int = -1) -> void:
 		persona = persona_name
+		style = "expert" if persona_name in EXPERT_PLAY else persona_name
 		seed_value = seed_number
 		stop_after_main = stop_after_main_missions
 		rng.seed = hash("%s:%d" % [persona_name, seed_number])
@@ -155,9 +218,11 @@ class Persona extends RefCounted:
 		record = {"persona": persona, "seed": seed_value, "end": "", "days": 0.0, "completed": 0, "xp": 0,
 			"budget": 0, "belt": "", "maturity": 0, "missions": [], "checks": [], "curve": [], "dead_ends": [],
 			"assisted": [], "refusals": [], "coach": [], "bad_periods": [], "belts": [], "failed": [],
-			"reopened": [], "kpi_reviews": [], "standardise_refused": [], "slipping": [], "audits": [], "errors": [], "actions": 0}
+			"reopened": [], "kpi_reviews": [], "standardise_refused": [], "slipping": [], "audits": [], "errors": [], "actions": 0,
+			"talks": [], "ends_with_talk": [], "recurred": [], "left": [], "discoveries": [], "people": {}, "fixes": [],
+			"min_budget": 0, "epilogue": {}}
 		OS.add_logger(_catcher)
-		s = GameSession.new_game(seed_value, Catalog.DATA_DIR, persona != "careless")
+		s = GameSession.new_game(seed_value, Catalog.DATA_DIR, style != "careless")
 		if not s.error.is_empty():
 			_dead_end("content_error", "", s.error)
 			record["end"] = "content_error"
@@ -166,6 +231,9 @@ class Persona extends RefCounted:
 			_step()
 			_blame_errors()
 		_finish()
+		if record["end"] == "campaign_done":
+			_epilogue()
+			_blame_errors()
 		OS.remove_logger(_catcher)
 		return record
 
@@ -204,6 +272,9 @@ class Persona extends RefCounted:
 		for m in s.active_missions():
 			if not _runs.has(m.id):
 				_open_run(m)  # handed out by the coach (the training week)
+		if persona == "talker" and _talk_round():
+			_actions += 1
+			return
 		var actives := s.active_missions().filter(func(m: MissionDef) -> bool: return not _given_up.has(m.id))
 		if actives.is_empty():
 			_nothing_active()
@@ -238,6 +309,50 @@ class Persona extends RefCounted:
 				record["orphans"].append({"problem": id, "phase": s.phase_of(id), "missions": why})
 		record["completed"] = (record["missions"] as Array).filter(
 			func(r: Dictionary) -> bool: return r["outcome"] == "completed").size()
+		record["min_budget"] = (record["curve"] as Array).reduce(
+			func(low: int, c: Dictionary) -> int: return mini(low, c["budget"]), s.budget())
+		record["discoveries"] = s.discoveries.found.keys()
+		record["people"] = _people_now()
+		record["fixes"] = _fixes_now()
+
+	## Every person's trust and morale, at the start and now: {id: {trust,
+	## morale, trust_start, morale_start, left, talks}}.
+	func _people_now() -> Dictionary:
+		var out := {}
+		for p: PersonDef in s.people.persons.values():
+			out[p.id] = {"trust": s.people.trust[p.id], "morale": s.people.morale[p.id], "trust_start": p.trust,
+				"morale_start": p.morale, "left": s.people.has_left(p.id),
+				"talks": (record["talks"] as Array).filter(func(t: Dictionary) -> bool: return t["person"] == p.id).size()}
+		return out
+
+	## Every problem a solve mission fixed: [{problem, phase, held (resolved
+	## now), recurred (times), buy_in, standardised, life_days, health}].
+	func _fixes_now() -> Array:
+		var out := []
+		for id: String in _ever_resolved:
+			var st: ProblemState = s.region.state[id]
+			var resolved := st.phase == P.RESOLVED
+			out.append({"problem": id, "phase": s.phase_of(id), "held": resolved,
+				"recurred": (record["recurred"] as Array).filter(func(r: Dictionary) -> bool: return r["problem"] == id).size(),
+				"buy_in": st.buy_in if resolved else "", "standardised": resolved and st.standardised,
+				"life_days": snappedf(s.region.life_days(id), 0.1), "health": snappedf(s.region.health(id), 0.01)})
+		return out
+
+	## After the campaign: time passes with no new work; the persona audits
+	## where it would. What wears, recurs and reopens shows which fixes hold.
+	func _epilogue() -> void:
+		var start := day()
+		var counts := func(key: String) -> int:
+			return (record[key] as Array).filter(func(e: Dictionary) -> bool: return e["day"] > start).size()
+		_doing = "epilogue"
+		while day() - start < EPILOGUE_DAYS:
+			s.wait_days(EPILOGUE_STEP_DAYS)
+			_note_events()
+			while _audit():
+				pass
+		record["epilogue"] = {"days": snappedf(day() - start, 0.1), "slipping": counts.call("slipping"),
+			"recurred": counts.call("recurred"), "reopened": counts.call("reopened"), "audits": counts.call("audits"),
+			"left": counts.call("left"), "budget": s.budget(), "people": _people_now(), "fixes": _fixes_now()}
 
 	func _completed_main() -> int:
 		return (record["missions"] as Array).filter(func(r: Dictionary) -> bool:
@@ -302,7 +417,7 @@ class Persona extends RefCounted:
 
 	func _take_missions() -> void:
 		var open := _open_missions()
-		if persona != "expert":
+		if style != "expert":
 			_shuffle(open)
 		for m: MissionDef in open:
 			if m.kind == "main" and s.missions.active("main").is_empty():
@@ -311,7 +426,7 @@ class Persona extends RefCounted:
 				_accept(m)
 
 	func _side_slots() -> int:
-		return 2 if persona == "average" else Missions.MAX_SIDE
+		return 2 if style == "average" else Missions.MAX_SIDE
 
 	func _accept(m: MissionDef) -> void:
 		var code := s.accept(m.id)
@@ -367,6 +482,11 @@ class Persona extends RefCounted:
 					_close_run(e["mission"], "completed")
 					_sustain_tries.erase(e["mission"])
 					_sample(true)
+					_note_closing_talk(e["mission"], d)
+				"recurred":
+					record["recurred"].append({"problem": e["problem"], "day": d})
+				"left":
+					record["left"].append({"person": e["person"], "day": d})
 				"failed":
 					var failed_def: MissionDef = s.missions.defs[e["mission"]]
 					record["failed"].append({"mission": e["mission"], "day": d, "closes": Array(failed_def.fail_closes),
@@ -385,8 +505,23 @@ class Persona extends RefCounted:
 					record["kpi_reviews"].append(d)
 				"slipping":
 					record["slipping"].append({"problem": e["problem"], "day": d})
-					if persona == "expert" or (persona == "average" and rng.randf() < 0.5):
+					if style == "expert" or (style == "average" and rng.randf() < 0.5):
 						_audits.append(s.region.problems[e["problem"]].step)
+
+	## A mission that ends with a talk completed: whether the talk was had by
+	## then (a talker may have had it before its goal was met, unasked).
+	func _note_closing_talk(mission_id: String, d: float) -> void:
+		var m: MissionDef = s.missions.defs.get(mission_id)
+		if m == null or m.ends_with_talk.is_empty():
+			return
+		var entries := (record["ends_with_talk"] as Array).filter(func(x: Dictionary) -> bool: return x["mission"] == mission_id)
+		var entry: Dictionary = entries.back() if not entries.is_empty() else {}
+		if entry.is_empty():
+			entry = {"mission": mission_id, "dialog": m.ends_with_talk, "day": -1.0, "held_open": false,
+				"outcome": s.talk_outcome(m.ends_with_talk)}
+			record["ends_with_talk"].append(entry)
+		entry["completed_after_talk"] = s.talked(m.ends_with_talk)
+		entry["completed_day"] = d
 
 	func _sample(force: bool = false) -> void:
 		if not force and day() - _last_sample < SAMPLE_DAYS:
@@ -420,7 +555,8 @@ class Persona extends RefCounted:
 	## One action on the mission; false when it can only wait.
 	func _act_on(m: MissionDef) -> bool:
 		_coach(m)
-		if not m.ends_with_talk.is_empty() and not s.people.talks.has(m.ends_with_talk):
+		if not m.ends_with_talk.is_empty() and not s.talked(m.ends_with_talk) \
+				and (persona == "talker" or _goal_met_but_talk(m)):
 			return _have_talk(m)
 		match m.goal_type:
 			"observe":
@@ -429,25 +565,170 @@ class Persona extends RefCounted:
 				return _walk(m)
 			"investigate":
 				return _investigate_goal(m)
-			"solve", "check":
-				return _solve(m)
+			"solve", "check", "rework_fix":
+				return _solve(m)  # a repair quest's accept took the fix back to the A3
 			"sustain":
 				return _sustain(m)
 		_dead_end("unknown_goal", m.id, m.goal_type)
 		_give_up(m)
 		return true
 
-	## The day ends with a talk: have it (the persona says hello and goes).
+	## Whether the mission's own goal is met and only its closing talk is left
+	## (Missions reads the talk through its `talked` Callable).
+	func _goal_met_but_talk(m: MissionDef) -> bool:
+		var talked := s.missions.talked
+		s.missions.talked = func(_dialog_id: String) -> bool: return true
+		var met: bool = s.missions.call("_goal_met", m)
+		s.missions.talked = talked
+		return met
+
+	## The mission ends with a talk: have it (the talker as it talks, the
+	## others say hello and go), and note whether the mission waited for it.
 	func _have_talk(m: MissionDef) -> bool:
-		var opened := s.start_dialog(s.people.dialogs[m.ends_with_talk].person)
-		if opened.get("dialog") != m.ends_with_talk:
+		var d: DialogDef = s.people.dialogs[m.ends_with_talk]
+		var entry := {"mission": m.id, "dialog": d.id, "day": snappedf(day(), 0.1), "held_open": _goal_met_but_talk(m),
+			"completed_after_talk": false, "completed_day": -1.0, "outcome": ""}
+		record["ends_with_talk"].append(entry)
+		var outcome := _converse(d, persona != "talker")
+		if outcome.begins_with("error:"):
+			_dead_end("talk_unavailable", m.id, "%s: %s" % [d.id, outcome])
+			_give_up(m)
+		entry["outcome"] = outcome
+		return true
+
+	# ── Talks ───────────────────────────────────────────────────────────────
+
+	## The talker has the talk it can now: an open check-in prompt first, then
+	## any check-in, the main mission's talk, then the others. False when there
+	## is none it has not tried enough (or today already).
+	func _talk_round() -> bool:
+		var best: DialogDef = null
+		var best_rank := 99
+		var today := floori(day())
+		for p: PersonDef in s.people.persons.values():
+			if s.people.has_left(p.id) or s.people.cooling_down(p.id, s.region.net.time):
+				continue
+			var d := s.people.dialog_for(p.id, s.call("_world", p))
+			if d == null or _talk_day.get(d.id, -1) == today \
+					or int(_talk_tries.get(d.id, 0)) >= (CHECKIN_TRIES if d.kind == "checkin" else TALK_TRIES):
+				continue
+			var rank := 3
+			if d.kind == "checkin":
+				rank = 0 if s.people.prompts.has(d.id) else 1
+			elif s.missions.active("main").any(func(m: MissionDef) -> bool: return m.id == d.mission):
+				rank = 2
+			if rank < best_rank:
+				best = d
+				best_rank = rank
+		if best == null:
+			return false
+		_converse(best)
+		return true
+
+	## Have a talk with `d`'s person: listening first (_talker_move), or, when
+	## `hello`, open and close at once. Returns the outcome, or "error:<code>".
+	func _converse(d: DialogDef, hello: bool = false) -> String:
+		_doing = "talk " + d.id
+		_talk_tries[d.id] = int(_talk_tries.get(d.id, 0)) + 1
+		_talk_day[d.id] = floori(day())
+		var opened := s.start_dialog(d.person)
+		if opened.get("dialog") != d.id:
 			if not opened.has("error"):
 				s.end_dialog()
-			_dead_end("talk_unavailable", m.id, "%s: %s" % [m.ends_with_talk, opened.get("error", opened.get("dialog"))])
-			_give_up(m)
-			return true
-		s.end_dialog()
-		return true
+			return "error:" + str(opened.get("error", opened.get("dialog")))
+		var tags: Array = opened["position"].get("tags", [])
+		var talk := {"proposed": false, "shown_data": false, "co": "", "last": "", "uses": {}, "result": {}}
+		var made: Array[String] = []
+		var result := {}
+		while not hello and made.size() < MAX_MOVES:
+			var pick := _talker_move(d, tags, talk)
+			result = s.choose_move(pick[0], pick[1])
+			if result.has("error"):
+				record["refusals"].append({"action": "talk:" + pick[0], "mission": d.mission, "code": result["error"],
+					"day": snappedf(day(), 0.1)})
+				break
+			made.append(pick[0])
+			talk["last"] = pick[0]
+			talk["uses"][pick[0]] = int(talk["uses"].get(pick[0], 0)) + 1
+			talk["result"] = result
+			if pick[0] in ["propose", "propose_experiment"]:
+				talk["proposed"] = true
+			elif pick[0] == "ask_commitment":
+				talk["proposed"] = false  # refused: listen on, then put it on the table again
+			talk["shown_data"] = talk["shown_data"] or pick[0] == "show_data"
+			if not (result["co_proposal"] as Dictionary).is_empty():
+				talk["co"] = result["co_proposal"]["id"]
+			if result["ended"]:
+				break
+			tags = result["tags"]
+		if not result.get("ended", false):
+			result = s.end_dialog()
+		var summary: Dictionary = result.get("summary", {})
+		var outcome := str(summary.get("outcome", result.get("outcome", "")))
+		record["talks"].append({"dialog": d.id, "person": d.person, "kind": d.kind, "mission": d.mission,
+			"day": snappedf(day(), 0.1), "outcome": outcome, "moves": made, "forced": hello,
+			"trust": summary.get("trust", -1), "morale": summary.get("morale", -1)})
+		return outcome
+
+	## The talker's next move: [move, pick]. A check-in listens until the
+	## concern is out and the person is open, then closes (lifted). A
+	## persuasion listens, shows its data once when heard, and puts a proposal
+	## that answers the concern on the table only once the concern is out and
+	## the meter reads commitment (or patience runs low), then asks.
+	func _talker_move(d: DialogDef, tags: Array, talk: Dictionary) -> Array:
+		var last: Dictionary = talk["result"]
+		var openness: int = s.dialog_meter()["openness"]
+		var concern := s.dialog_layers().any(func(l: Dictionary) -> bool: return l["id"] == "concern" and l["heard"])
+		var patience_low: bool = last.get("patience_low", false)
+		if d.kind == "checkin":
+			if (concern and openness >= Dialog.LIFTED_AT) or patience_low:
+				return ["close", ""]
+			return [_listen_move(tags, talk), ""]
+		if talk["proposed"]:
+			return ["ask_commitment", ""]
+		if (concern and openness >= Dialog.COMMIT_AT) or patience_low:
+			var proposal := _proposal(d, talk["co"], concern)
+			return proposal if not proposal.is_empty() else ["close", ""]
+		if last.get("heard", false) and not talk["shown_data"] and openness >= Dialog.SHOW_DATA["at"]:
+			var data := Array(d.data).filter(func(id: String) -> bool: return s.region.found.has(id))
+			if not data.is_empty():
+				return ["show_data", data[0]]
+		return [_listen_move(tags, talk), ""]
+
+	## The listening move that answers the person's last words, never the same
+	## move twice in a row and never a worn one (the first move asks the mood).
+	func _listen_move(tags: Array, talk: Dictionary) -> String:
+		var uses: Dictionary = talk["uses"]
+		if uses.is_empty():
+			return "mood"
+		var order: Array[String] = []
+		for tag: String in tags:
+			if ANSWER.has(tag):
+				order.append(ANSWER[tag])
+		order.append_array(FALLBACK_LISTEN)
+		for move in order:
+			if move != talk["last"] and int(uses.get(move, 0)) < Dialog.USE_DECAY.size():
+				return move
+		return "silence" if talk["last"] != "silence" else "empathy"
+
+	## The proposal to put on the table: the person's own idea, else one that
+	## answers the concern (a hidden one it unlocked first), else the first
+	## offered; [] when there is none.
+	func _proposal(d: DialogDef, co: String, concern: bool) -> Array:
+		var offered := {}
+		for m: Dictionary in s.dialog_moves():
+			if m["id"] in ["propose", "propose_experiment"]:
+				for p: Dictionary in m.get("picks", []):
+					offered[p["id"]] = m["id"]
+		if offered.has(co):
+			return [offered[co], co]
+		var first: Array = []
+		for id: String in offered:
+			if first.is_empty():
+				first = [offered[id], id]
+			if concern and "concern" in d.item(id).get("addresses", []):
+				return [offered[id], id]
+		return first
 
 	func _observe(m: MissionDef) -> bool:
 		var seen: Dictionary = s.missions.progress[m.id]["seen"]
@@ -547,9 +828,9 @@ class Persona extends RefCounted:
 	## persona (and, for a lost one, the expert's help) has nothing left.
 	func _investigate(m: MissionDef, p: ProblemDef, allow_help: bool = true) -> bool:
 		var sr := _search_of(p)
-		if sr["actions"] < MAX_SEARCH or persona == "expert":
+		if sr["actions"] < MAX_SEARCH or style == "expert":
 			var acted := false
-			match persona:
+			match style:
 				"expert":
 					acted = _expert_step(m, p)
 				"average":
@@ -558,7 +839,7 @@ class Persona extends RefCounted:
 					acted = _careless_step(m, p)
 			if acted:
 				return true
-		if persona == "expert" or not allow_help:
+		if style == "expert" or not allow_help:
 			return false
 		if not sr["assisted"]:
 			sr["assisted"] = true
@@ -570,7 +851,7 @@ class Persona extends RefCounted:
 	func _wants_more(p: ProblemDef) -> bool:
 		var found := s.clues_found(p.id).size()
 		var sr := _search_of(p)
-		match persona:
+		match style:
 			"expert":
 				return _next_key_clue(p) != null or not _scouted(p)
 			"average":
@@ -700,7 +981,7 @@ class Persona extends RefCounted:
 		var ids: Array = s.place_questions(place).map(func(q: Dictionary) -> String: return q["id"])
 		if ids.is_empty():
 			ids = Investigation.QUESTIONS.keys()
-		if persona == "careless":
+		if style == "careless":
 			return ids[rng.randi() % ids.size()]
 		var open := ids.filter(func(id: String) -> bool: return Investigation.QUESTIONS[id] == "open")
 		return open[0] if not open.is_empty() else ids[0]
@@ -719,6 +1000,9 @@ class Persona extends RefCounted:
 			return true
 		if not run.is_empty():
 			run["a3_refusals"].append(code)
+		if code == "same_countermeasure" and not a3["cm"] in _ruled_out.get(p.id, []):
+			(_ruled_out.get_or_add(p.id, []) as Array).append(a3["cm"])
+			return true  # the next A3 puts another countermeasure on it
 		if code == "evidence" and _investigate(m, p):
 			return true
 		_dead_end("a3_refused", m.id, "%s (A3 %s)" % [code, a3])
@@ -731,13 +1015,15 @@ class Persona extends RefCounted:
 		var correct := options.find(p.root_cause)
 		var found := s.clues_found(p.id).map(func(c: Clue) -> String: return c.id)
 		var keys := s.clues_found(p.id).filter(func(c: Clue) -> bool: return c.key).map(func(c: Clue) -> String: return c.id)
-		var available := s.countermeasures()
+		var ruled_out: Array = _ruled_out.get(p.id, [])
+		var available: Array[CountermeasureDef] = []
+		available.assign(s.countermeasures().filter(func(c: CountermeasureDef) -> bool: return not c.id in ruled_out))
 		var fitting := available.filter(func(c: CountermeasureDef) -> bool: return p.countermeasures.has(c.id))
 		fitting.sort_custom(func(a: CountermeasureDef, b: CountermeasureDef) -> bool: return a.budget < b.budget)
 		var tried: Array = _tried.get(p.id, [])
 		var a3 := {"waste": p.waste, "cause": correct, "evidence": keys if not keys.is_empty() else found,
 			"cm": _best_cm(p, available), "prediction": p.kpi}
-		match persona:
+		match style:
 			"average":
 				var wrong_first := st.failed_checks == 0 and tried.is_empty() and rng.randf() < 0.4
 				if rng.randf() >= 0.7:
@@ -813,7 +1099,7 @@ class Persona extends RefCounted:
 		return true
 
 	func _act(m: MissionDef, p: ProblemDef) -> bool:
-		var want := persona == "expert" or (persona == "average" and rng.randf() < 0.5)
+		var want := style == "expert" or (style == "average" and rng.randf() < 0.5)
 		var budget_before := s.budget()
 		var score := s.act(p.id, want)
 		var standardised := want and budget_before >= Region.STANDARDISE_BUDGET
@@ -824,6 +1110,8 @@ class Persona extends RefCounted:
 			_dead_end("act_refused", m.id, score["error"])
 			_give_up(m)
 			return true
+		if s.region.state[p.id].phase == P.RESOLVED and not s.is_practice(p.id):
+			_ever_resolved[p.id] = true
 		if not run.is_empty():
 			run["score"] = score
 			run["standardise_asked"] = want
@@ -887,14 +1175,14 @@ class Persona extends RefCounted:
 				record["coach"].append({"mission": m.id, "mission_kind": m.kind, "stage": "", "kind": reply["kind"],
 					"text": reply.get("text", ""), "day": snappedf(day(), 0.1)})
 			return
-		if persona == "careless":
+		if style == "careless":
 			return
 		var stage := s.missions.stage_of(m)
 		var key := m.id + "|" + stage
 		if _coached.has(key):
 			return
 		_coached[key] = true
-		for i in (3 if persona == "expert" else 1):
+		for i in (3 if style == "expert" else 1):
 			var reply := s.ask_coach()
 			record["coach"].append({"mission": m.id, "mission_kind": m.kind, "stage": reply.get("stage", ""),
 				"kind": reply["kind"], "text": reply.get("text", ""), "day": snappedf(day(), 0.1)})
@@ -1021,6 +1309,8 @@ class PlayReport extends RefCounted:
 		_treadmill(out, runs)
 		_coach_findings(out, runs)
 		_text_findings(out, runs, catalog)
+		_promises(out, runs)
+		_closing_talks(out, runs)
 		var list: Array[Dictionary] = []
 		list.assign(out.values())
 		list.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
@@ -1295,7 +1585,8 @@ class PlayReport extends RefCounted:
 		var reached := {}
 		for run in runs:
 			for c: Dictionary in run["coach"]:
-				if c["mission_kind"] != "side" and not (c["stage"] as String).is_empty():
+				# The talk stage is People.coach_question's bank (dialogs.yaml bank.coach), not a mission insight.
+				if c["mission_kind"] != "side" and not (c["stage"] as String) in ["", "talk"]:
 					(reached.get_or_add(c["mission"], {}) as Dictionary)[c["stage"]] = true
 		var missing := []
 		for id: String in reached:
@@ -1337,6 +1628,125 @@ class PlayReport extends RefCounted:
 				if not table.has(r["code"]):
 					_add(out, "uitext:%s:%s" % [r["action"], r["code"]], "medium", "text", "No Dutch text for refusal " + r["code"], "", who, r["mission"], r["day"], "Add it to UiText.")
 
+	## The design's promises about talking and setbacks (CLAUDE.md §2, the
+	## dialog spec §4.2), seed by seed: each contradiction is its own finding.
+	static func _promises(out: Dictionary, runs: Array[Dictionary]) -> void:
+		var by := _by_persona(runs)
+		for t: Dictionary in by.get("talker", []):
+			var n := _same_seed(by.get("never-talks", []), t["seed"])
+			if n.is_empty():
+				continue
+			var seed: int = t["seed"]
+			var who := {"persona": "talker", "seed": seed}
+			var trust := [mean_of_people(t, "trust"), mean_of_people(n, "trust")]
+			if trust[0] <= trust[1]:
+				_add(out, "promise:trust:%d" % seed, "high", "promise", "The talker does not end with more trust than never-talks",
+					"seed %d, day %.0f: mean trust over %d people talker %.1f, never-talks %.1f" % [seed, end_day(t),
+						(t["people"] as Dictionary).size(), trust[0], trust[1]], who, "", end_day(t),
+					"Trust only moves in talks (People.TRUST); if listening does not raise it, check the outcome table (TRUST) and that talks reach the people who own the fixes.")
+			if fixes_of(t).is_empty() or fixes_of(n).is_empty():
+				continue
+			var life := [mean_life(t), mean_life(n)]
+			var decay := [decay_events(t), decay_events(n)]
+			if life[0] <= life[1] or decay[0] > decay[1]:
+				_add(out, "promise:lasting:%d" % seed, "high", "promise", "The talker's fixes do not last longer than never-talks'",
+					"seed %d, day %.0f: mean life of held fixes talker %.0f d, never-talks %.0f d; slipping + recurred talker %d, never-talks %d" % [
+						seed, end_day(t), life[0], life[1], decay[0], decay[1]], who, "", end_day(t),
+					"Buy-in (Sustain.BUY_IN) multiplies a fix's life only when its problem has an owner dialog (DialogDef.owns); give every fix an owner, or let the talk's outcome reach the fix another way.")
+			if float(n["xp"]) > float(t["xp"]):
+				_add(out, "promise:decay_pays:%d" % seed, "medium", "promise", "Never-talks earns more XP than the talker: the slips pay",
+					"seed %d, day %.0f: XP never-talks %d, talker %d; check-in missions (terugval_) done never-talks %d, talker %d" % [
+						seed, n["days"], n["xp"], t["xp"], _checkins_done(n), _checkins_done(t)],
+					{"persona": "never-talks", "seed": seed}, "", n["days"],
+					"Principle 1 (long term over short term): a check-in for a slipping fix pays Missions.CHECKIN_XP, so faster decay earns more. Pay the check-in nothing, or pay the fix that held (e.g. a bonus per quarter a fix stayed above SLIPPING_HEALTH).")
+			var morale := [_people_mean(n["people"], "morale_start"), mean_of_people(n, "morale")]
+			if morale[1] >= morale[0] and (n["left"] as Array).is_empty():
+				_add(out, "promise:people_flat:%d" % seed, "medium", "promise", "Never talking to people costs their morale nothing",
+					"seed %d, day %.0f: never-talks' mean morale %.1f at the start, %.1f at the end; nobody left; trust %.1f → %.1f" % [
+						seed, end_day(n), morale[0], morale[1], _people_mean(n["people"], "trust_start"), mean_of_people(n, "trust")],
+					{"persona": "never-talks", "seed": seed}, "", end_day(n),
+					"Respect for people (principle 2): morale moves only in talks (People.MORALE) and a goodbye needs morale below 20 for 60 days. Let ignored check-in prompts and fixes pushed through without the owner (compliance) cost morale, so neglect shows before anyone leaves.")
+			var compliance := (fixes_of(n)).filter(func(f: Dictionary) -> bool: return f["buy_in"] == "compliance").size()
+			if decay[1] <= decay[0] and compliance == 0:
+				_add(out, "promise:never_decay:%d" % seed, "high", "promise", "Never-talks' fixes do not decay more than the talker's",
+					"seed %d, day %.0f: slipping + recurred never-talks %d, talker %d; fixes held by compliance %d" % [
+						seed, end_day(n), decay[1], decay[0], compliance], {"persona": "never-talks", "seed": seed}, "", end_day(n),
+					"Acting without asking the owner should count as compliance (×0.6); check People.buy_in.")
+		for n: Dictionary in by.get("never-talks", []):
+			var e := _same_seed(by.get("expert", []), n["seed"])
+			if e.get("end") != "campaign_done":
+				continue
+			if n["end"] != "campaign_done" or float(n["completed"]) < 0.9 * float(e["completed"]):
+				_add(out, "promise:never_completes:%d" % n["seed"], "high", "promise", "Never-talks cannot complete the campaign",
+					"seed %d, day %.0f: %s with %d missions done, expert %d" % [n["seed"], n["days"], n["end"], n["completed"],
+						e["completed"]], {"persona": "never-talks", "seed": n["seed"]}, "", n["days"],
+					"A mission must stay finishable by acting alone (compliance at ×0.6, half pay), never require a commitment.")
+		for c: Dictionary in by.get("careless", []):
+			var who := {"persona": "careless", "seed": c["seed"]}
+			if c["end"] in ["stuck", "content_error"] or not (c["errors"] as Array).is_empty():
+				_add(out, "promise:game_over:%d" % c["seed"], "critical", "promise", "Careless play ends in a state it cannot leave",
+					"seed %d, day %.0f: end %s, %d engine errors" % [c["seed"], c["days"], c["end"], (c["errors"] as Array).size()],
+					who, "", c["days"], "Setbacks, never game over (CLAUDE.md §2): see the dead ends and errors of this run.")
+			if (c["bad_periods"] as Array).is_empty() and float(c["min_budget"]) >= 0.0 and (c["failed"] as Array).is_empty():
+				_add(out, "promise:no_setback:%d" % c["seed"], "medium", "promise", "Careless play never hits a setback",
+					"seed %d, day %.0f: no bad period, no missed deadline, lowest budget %s" % [c["seed"], c["days"],
+						UiText.money(int(c["min_budget"]))], who, "", c["days"],
+					"Neglect must cost: weekly costs of open problems, claims, missed deadlines.")
+
+	## Missions that end with a talk (Monday: anouk_seven): completed without
+	## the talk, or held open and never completed.
+	static func _closing_talks(out: Dictionary, runs: Array[Dictionary]) -> void:
+		for run in runs:
+			var who := {"persona": run["persona"], "seed": run["seed"]}
+			for e: Dictionary in run.get("ends_with_talk", []):
+				if float(e["completed_day"]) >= 0.0 and not e["completed_after_talk"]:
+					_add(out, "closing_talk:skipped", "critical", "stuck", "A mission that ends with a talk completed without it",
+						"%s completed on day %.1f, %s not had" % [e["mission"], e["completed_day"], e["dialog"]], who, e["mission"],
+						e["completed_day"], "Missions._goal_met must wait for MissionDef.ends_with_talk.", e["mission"])
+				elif float(e["completed_day"]) < 0.0:
+					_add(out, "closing_talk:stuck", "critical", "stuck", "A mission held open for its closing talk never completed",
+						"%s waited for %s from day %.1f (talk outcome %s)" % [e["mission"], e["dialog"], e["day"], e["outcome"]], who,
+						e["mission"], e["day"], "The talk must stay reachable while its mission waits for it.", e["mission"])
+
+	static func _checkins_done(run: Dictionary) -> int:
+		return (run["missions"] as Array).filter(func(m: Dictionary) -> bool:
+			return (m["id"] as String).begins_with(Missions.CHECKIN_PREFIX) and m["outcome"] == "completed").size()
+
+	static func _same_seed(list: Array, seed: int) -> Dictionary:
+		for r: Dictionary in list:
+			if int(r["seed"]) == seed:
+				return r
+		return {}
+
+	## The last day the run measured (the epilogue's end when it had one).
+	static func end_day(run: Dictionary) -> float:
+		return float(run["days"]) + float((run["epilogue"] as Dictionary).get("days", 0.0))
+
+	## The people as measured last (after the epilogue when there was one).
+	static func people_of(run: Dictionary) -> Dictionary:
+		return (run["epilogue"] as Dictionary).get("people", run["people"])
+
+	static func fixes_of(run: Dictionary) -> Array:
+		return (run["epilogue"] as Dictionary).get("fixes", run["fixes"])
+
+	static func mean_of_people(run: Dictionary, key: String) -> float:
+		return _people_mean(people_of(run), key)
+
+	static func _people_mean(people: Dictionary, key: String) -> float:
+		return _mean(people.values().map(func(p: Dictionary) -> float: return float(p[key])))
+
+	## Mean life (days of neglect it lasts) of the fixes that still hold.
+	static func mean_life(run: Dictionary) -> float:
+		return _held_life(fixes_of(run))
+
+	static func _held_life(fixes: Array) -> float:
+		return _mean(fixes.filter(func(f: Dictionary) -> bool: return f["held"]).map(
+			func(f: Dictionary) -> float: return float(f["life_days"])))
+
+	## How often a fix slipped or recurred, in the campaign and the epilogue.
+	static func decay_events(run: Dictionary) -> int:
+		return (run["slipping"] as Array).size() + (run["recurred"] as Array).size()
+
 	static func _by_persona(runs: Array[Dictionary]) -> Dictionary:
 		var by := {}
 		for r in runs:
@@ -1374,12 +1784,12 @@ class PlayReport extends RefCounted:
 			"used on every 'slipping' event by the expert, on half of them by the average player" if runs.any(func(r: Dictionary) -> bool:
 				return not (r["audits"] as Array).is_empty()) else "not in GameSession, so fixes are left to wear"))
 		md.append("")
-		md.append("Personas: **expert** does the training week, takes missions in content order, finds the key clues with the tools that reveal them, writes the right A3 with the best-fitting countermeasure, standardises. **average** searches tool by tool at the step and its neighbours, names a wrong cause (with a countermeasure for it) first 40 % of the time, picks the cheapest fitting countermeasure, standardises half the time. **careless** skips the training week, plays random tools, questions (blame included) and A3 choices, reads the mismatch note after 3 failed Checks and follows the coach after 5, never standardises. A lost persona gets the expert's next step (\"assisted\").")
+		md.append("Personas: **expert** does the training week, takes missions in content order, finds the key clues with the tools that reveal them, writes the right A3 with the best-fitting countermeasure, standardises. **average** searches tool by tool at the step and its neighbours, names a wrong cause (with a countermeasure for it) first 40 %% of the time, picks the cheapest fitting countermeasure, standardises half the time. **careless** skips the training week, plays random tools, questions (blame included) and A3 choices, reads the mismatch note after 3 failed Checks and follows the coach after 5, never standardises. **talker** plays the gemba, the A3 and the audits as the expert does and talks to everyone who has a talk for it (check-ins first, each talk at most once a day, a persuasion three times, a check-in six), listening first: it answers the person's last words with the move that fits them, steers only once the concern is out and the meter reads commitment, never pressures. **never-talks** plays as the expert does and never opens a talk; only a talk a mission cannot end without (Monday's `anouk_seven`) is had, hello and goodbye, logged as forced. Every other persona also only says hello there. A lost persona gets the expert's next step (\"assisted\"). A run that ends with the campaign done plays an epilogue of %d days with no new work (the persona's audits only), to see which fixes hold." % Persona.EPILOGUE_DAYS)
 		md.append("")
 		var by_severity := PackedStringArray()
 		for sev in SEVERITIES:
 			by_severity.append("%d %s" % [(report["findings"] as Array).filter(func(f: Dictionary) -> bool: return f["severity"] == sev).size(), sev])
-		md.append("**Summary:** %s. Expert and average reach the end of the campaign without a dead end: %s." % [", ".join(by_severity),
+		md.append("**Summary:** %s. Every persona but careless reaches the end of the campaign without a dead end: %s." % [", ".join(by_severity),
 			"yes" if runs.all(func(r: Dictionary) -> bool: return r["persona"] == "careless" or ((r["dead_ends"] as Array).is_empty() and r["end"] == "campaign_done")) else "no"])
 		md.append("")
 		md.append("## Runs")
@@ -1393,6 +1803,20 @@ class PlayReport extends RefCounted:
 			md.append("| %s | %d | %s | %.0f | %d | %d | %d | %s | %s | %d/%d | %d | %d | %d | %d |" % [r["persona"], r["seed"], r["end"],
 				r["days"], r["completed"], main, r["xp"], r["belt"], UiText.money(r["budget"]), passed, checks.size() - passed,
 				(r["failed"] as Array).size(), (r["reopened"] as Array).size(), (r["bad_periods"] as Array).size(), (r["assisted"] as Array).size()])
+		md.append("")
+		md.append("Days, XP, budget and the counts are the campaign's (the epilogue's are in the next table); reopened counts the epilogue too.")
+		md.append("")
+		md.append("## People, talks and fixes")
+		md.append("")
+		md.append_array(_people_table(runs))
+		md.append("")
+		md.append("## Per persona (mean over seeds)")
+		md.append("")
+		md.append_array(_persona_table(runs))
+		md.append("")
+		md.append("## Monday's closing talk (`ends_with_talk`)")
+		md.append("")
+		md.append_array(_closing_table(runs))
 		md.append("")
 		var findings: Array = report["findings"]
 		md.append("## Findings (%d), ranked by severity" % findings.size())
@@ -1436,17 +1860,93 @@ class PlayReport extends RefCounted:
 		md.append("## Accessors GameSession lacks (the playtester reads Region/Missions instead)")
 		md.append("")
 		for line in [
-			"`abandon(mission_id)`: Missions.abandon exists but the facade has no action; a stuck player cannot drop a mission.",
-			"`kpi_review(choices)` and `kpi_review_due()`: Region.kpi_review is not reachable through GameSession, so the quarterly review (and its large reward, KpiBoard.REVIEW_XP/REVIEW_BUDGET) is not played here.",
+			"`kpi_review_due()`: `kpi_review(choices)` exists, but nothing says when a review is due and no screen calls it (PLAN 2.4c), so the quarterly review is not played here.",
 			"`mission_status(id)` / `mission_progress(id)`: the board needs status, deadline left (opened_at + deadline_days) and observe progress without reaching into session.missions.",
 			"`stage_of(mission_id)`: the coach's stage, for a UI hint and for tests.",
 			"`problem(id)` / `key_clues_found(id)`: the problem's definition and found key clues are read through session.region.",
-			"`wait(minutes)` / `next_day()`: time only passes through tools and Checks; with every mission waiting on a fade or nothing active the player cannot let time pass.",
-			"`act()` returning why standardising was refused (budget below Region.STANDARDISE_BUDGET is dropped silently).",
+			"`dialog_for(person_id)`: which talk a person has now (the talker reads People.dialog_for with GameSession._world); `people_at(place)` gives only has_dialog.",
+			"`goal_met(mission_id)`: whether a mission waits only for its closing talk (the playtester swaps Missions.talked to ask Missions._goal_met).",
+			"`act()` returning why standardising was refused (budget below Region.STANDARDISE_BUDGET is dropped silently; `standardise()` afterwards does say no_budget).",
 		]:
 			md.append("- " + line)
 		md.append("")
 		return "\n".join(md)
+
+	## Per run: talks and their outcomes, trust and morale, who left, the
+	## fixes (held vs recurred, buy-in, life), discoveries, and the epilogue.
+	static func _people_table(runs: Array) -> PackedStringArray:
+		var rows := PackedStringArray([
+			"| persona | seed | talks (forced) | outcomes | trust start→end (mean) | morale start→end (mean) | lowest morale | left | fixes held/made | recurred | slipping | audits | buy-in c/n/x | life of held fixes (d) | discoveries | lowest budget | epilogue: held, recurred, slipping |",
+			"|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"])
+		for r: Dictionary in runs:
+			var talks: Array = r["talks"]
+			var outcomes := {}
+			for t: Dictionary in talks:
+				outcomes[t["outcome"]] = int(outcomes.get(t["outcome"], 0)) + 1
+			var people: Dictionary = r["people"]
+			var low_id := ""
+			for id: String in people:
+				if low_id.is_empty() or people[id]["morale"] < people[low_id]["morale"]:
+					low_id = id
+			var fixes: Array = r["fixes"]
+			var buy := func(kind: String) -> int: return fixes.filter(func(f: Dictionary) -> bool: return f["buy_in"] == kind).size()
+			var ep: Dictionary = r["epilogue"]
+			var ep_cell := "–"
+			if not ep.is_empty():
+				ep_cell = "%d/%d, %d, %d" % [(ep["fixes"] as Array).filter(func(f: Dictionary) -> bool: return f["held"]).size(),
+					(ep["fixes"] as Array).size(), ep["recurred"], ep["slipping"]]
+			rows.append("| %s | %d | %d (%d) | %s | %.1f→%.1f | %.1f→%.1f | %s %d | %s | %d/%d | %d | %d | %d | %d/%d/%d | %.0f | %d | %s | %s |" % [
+				r["persona"], r["seed"], talks.size(), talks.filter(func(t: Dictionary) -> bool: return t["forced"]).size(),
+				", ".join(outcomes.keys().map(func(o: String) -> String: return "%s %d" % [o, outcomes[o]])) if not outcomes.is_empty() else "–",
+				_people_mean(people, "trust_start"), _people_mean(people, "trust"),
+				_people_mean(people, "morale_start"), _people_mean(people, "morale"),
+				low_id, people[low_id]["morale"] if not low_id.is_empty() else 0,
+				", ".join((r["left"] as Array).map(func(x: Dictionary) -> String: return "%s (d%.0f)" % [x["person"], x["day"]])) if not (r["left"] as Array).is_empty() else "–",
+				fixes.filter(func(f: Dictionary) -> bool: return f["held"]).size(), fixes.size(), (r["recurred"] as Array).size(),
+				(r["slipping"] as Array).size(), (r["audits"] as Array).size(), buy.call("commitment"), buy.call("none"), buy.call("compliance"),
+				_held_life(fixes),
+				(r["discoveries"] as Array).size(), UiText.money(int(r["min_budget"])), ep_cell])
+		rows.append("")
+		rows.append("At the campaign's end (careless: the horizon). Trust and morale are means over every person in content (0–100). Recurred, slipping and audits count the epilogue too. Buy-in: of the fixes still held, commitment (life ×1.25) / none (×1.0, also a fix with no owner in content) / compliance (×0.6, Sustain.BUY_IN). Life: days of neglect a held fix lasts at today's habits (Region.life_days).")
+		return rows
+
+	static func _persona_table(runs: Array) -> PackedStringArray:
+		var rows := PackedStringArray(["| persona | runs | missions done | failed | days | budget at end | lowest budget | trust (end) | morale (end) | people left | fixes held after epilogue | slipping + recurred | life of held fixes (d) | discoveries | talks |",
+			"|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"])
+		var by := _by_persona(runs)
+		for persona: String in by:
+			var list: Array = by[persona]
+			var m := func(f: Callable) -> float: return _mean(list.map(f))
+			rows.append("| %s | %d | %.1f | %.1f | %.0f | %s | %s | %.1f | %.1f | %.1f | %s | %.1f | %.0f | %.1f | %.1f |" % [persona, list.size(),
+				m.call(func(r: Dictionary) -> float: return float(r["completed"])),
+				m.call(func(r: Dictionary) -> float: return float((r["failed"] as Array).size())),
+				m.call(func(r: Dictionary) -> float: return float(r["days"])),
+				UiText.money(roundi(m.call(func(r: Dictionary) -> float: return float(r["budget"])))),
+				UiText.money(roundi(m.call(func(r: Dictionary) -> float: return float(r["min_budget"])))),
+				m.call(func(r: Dictionary) -> float: return mean_of_people(r, "trust")),
+				m.call(func(r: Dictionary) -> float: return mean_of_people(r, "morale")),
+				m.call(func(r: Dictionary) -> float: return float((r["left"] as Array).size())),
+				"%.1f/%.1f" % [m.call(func(r: Dictionary) -> float: return float(fixes_of(r).filter(func(f: Dictionary) -> bool: return f["held"]).size())),
+					m.call(func(r: Dictionary) -> float: return float(fixes_of(r).size()))],
+				m.call(func(r: Dictionary) -> float: return float(decay_events(r))),
+				m.call(func(r: Dictionary) -> float: return mean_life(r)),
+				m.call(func(r: Dictionary) -> float: return float((r["discoveries"] as Array).size())),
+				m.call(func(r: Dictionary) -> float: return float((r["talks"] as Array).size()))])
+		rows.append("")
+		rows.append("Trust, morale, fixes and life after the epilogue where the run had one (careless: at the horizon).")
+		return rows
+
+	static func _closing_table(runs: Array) -> PackedStringArray:
+		var rows := PackedStringArray(["| persona | seed | mission | talk | had on day | goal met, day held open | completed on day | completed after the talk | outcome |",
+			"|---|---|---|---|---|---|---|---|---|"])
+		for r: Dictionary in runs:
+			for e: Dictionary in r.get("ends_with_talk", []):
+				rows.append("| %s | %d | %s | %s | %s | %s | %.1f | %s | %s |" % [r["persona"], r["seed"], e["mission"], e["dialog"],
+					"%.1f" % e["day"] if float(e["day"]) >= 0.0 else "before the goal (talk round)", "yes" if e["held_open"] else "no",
+					e["completed_day"], "yes" if e["completed_after_talk"] else "**no**", e["outcome"]])
+		rows.append("")
+		rows.append("Careless skips the training week, so it has no Monday. 'Goal met, day held open': the walk was done and the day stayed open until the talk.")
+		return rows
 
 	static func _mission_table(runs: Array, catalog: Catalog) -> PackedStringArray:
 		var rows := PackedStringArray(["| mission | kind | expert | average | careless |", "|---|---|---|---|---|"])
@@ -1470,7 +1970,7 @@ class PlayReport extends RefCounted:
 		var rows := PackedStringArray(["| persona | problem | try | cm | eff | passed | lesson | predicted | Δ predicted (fix) | KPI | Δ KPI (fix) | Δ KPI before→after | Δ capacity (fix) | flags |",
 			"|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"])
 		for r: Dictionary in runs:
-			if r["seed"] != runs[0]["seed"] or r["persona"] == "careless":
+			if r["seed"] != runs[0]["seed"] or not r["persona"] in ["expert", "average"]:
 				continue
 			for c: Dictionary in r["checks"]:
 				rows.append("| %s | %s | %d | %s | %.2f | %s | %s | %s | %+.1f %% | %s | %+.1f %% | %+.1f %% | %+.1f %% | %s |" % [r["persona"],
