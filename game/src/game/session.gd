@@ -65,8 +65,11 @@ var error := ""
 static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, training: bool = true) -> GameSession:
 	var s := GameSession.new()
 	s.catalog = Catalog.load_from(data_dir)
-	var net := Network.load_file(data_dir + "/value_streams.json", seed_value)
-	s.error = s.catalog.error if not s.catalog.error.is_empty() else net.error
+	if not s.catalog.error.is_empty():
+		s.error = s.catalog.error
+		return s
+	var net := _warmed_up(data_dir, seed_value, s.catalog.kpis.pull_limit_days)
+	s.error = net.error
 	if not s.error.is_empty():
 		return s
 	s.region = Region.new(net, s.catalog.problems, s.catalog.countermeasures, Profile.new())
@@ -82,8 +85,6 @@ static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, t
 		if not s.missions.defs.has(id):
 			s.error = "missing mission: " + id
 			return s
-	# No problems are active yet, so the warm-up costs nothing and teaches nothing.
-	net.advance(SimCalendar.days(WARMUP_DAYS) + START_MINUTE)
 	s.followed.pick(net)
 	if training:
 		s.missions.accept(TRAINING_FIRST)
@@ -92,6 +93,28 @@ static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, t
 		s._walked_before()
 	s._after(0)
 	return s
+
+
+## The warmed-up networks by content, seed and pull limit (_warmed_up).
+static var _warm_networks: Dictionary = {}
+
+
+## The network as play starts: the content's, every team pulling by
+## `pull_limit_days` (Region.use_kpis), after the warm-up. No problems are
+## active yet, so the warm-up costs nothing and teaches nothing. It is ~2 s of
+## simulation, the same for every game with this seed: run once, then each
+## game gets a copy that continues exactly alike (NetworkState.copy).
+static func _warmed_up(data_dir: String, seed_value: int, pull_limit_days: float) -> Network:
+	var key := "%s|%d|%s" % [data_dir, seed_value, pull_limit_days]
+	if not _warm_networks.has(key):
+		var net := Network.load_file(data_dir + "/value_streams.json", seed_value)
+		if not net.error.is_empty():
+			return net
+		for pool: SimPool in net.pools.values():
+			pool.pull_limit_days = pull_limit_days
+		net.advance(SimCalendar.days(WARMUP_DAYS) + START_MINUTE)
+		_warm_networks[key] = net
+	return NetworkState.copy(_warm_networks[key])
 
 
 # ── Actions ─────────────────────────────────────────────────────────────────
