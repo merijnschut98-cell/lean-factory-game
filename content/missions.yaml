@@ -109,9 +109,10 @@ missions:
     tier: 1
     act: 0
     chapter: Inwerkweek
-    briefing: "Welkom bij Voltana Netbeheer. Ik ben Ruud Hoekstra. Deze week oefen je in het klein; als er iets misgaat, raakt niemand iets kwijt. Vanochtend lag er een brief op mijn bureau van de familie El Amrani uit Nova-Oost: ze wachten al {dossier_weken} op een aansluiting voor hun warmtepomp. Zoek met de kaart (M) de Intake en Werkvoorbereiding op en kijk of vraag bij elk team hoe het werk binnenkomt. En loop vanavond niet meteen naar huis: wie er dan nog zit, maak je het beste kennis mee."
+    briefing: "Welkom bij Voltana Netbeheer. Ik ben Ruud Hoekstra. Deze week oefen je in het klein; als er iets misgaat, raakt niemand iets kwijt. Vanochtend lag er een brief op mijn bureau van de familie El Amrani uit Nova-Oost: ze wachten al {dossier_weken} op een aansluiting voor hun warmtepomp. Zoek met de kaart (M) de Intake en Werkvoorbereiding op en vraag bij elk team hoe het werk binnenkomt. En loop vanavond niet meteen naar huis: wie er dan nog zit, maak je het beste kennis mee."
     debrief: "Je kent nu twee plekken waar een aanvraag langskomt. Elf weken onderweg: hoeveel uur is er al echt aan gewerkt, denk je? Morgen ga je beter kijken."
     goal: {type: observe, places: [connections.intake, connections.design]}
+    grant_tools: [conversation]
     # The first talk of the game ends the day (first five minutes B7; D9 talks
     # audit A2): the walk meets the goal in the morning, Anouk at seven closes it.
     ends_with_talk: anouk_seven
@@ -138,6 +139,7 @@ missions:
     briefing: "Bij Werkvoorbereiding zit deze week alleen Anouk de Vries; haar drie collega's zitten op cursus. Ga bij haar kijken met twee verschillende gemba-hulpmiddelen. Elk hulpmiddel kost tijd en laat iets anders zien. Oordeel nog niet, ook niet in je hoofd: schrijf op wát je ziet, niet wat je ervan vindt."
     debrief: "Wat liet het ene hulpmiddel zien dat het andere miste? Anouk werkt snel. Toch ligt er veel. Waar zit dan de tijd?"
     goal: {type: observe, places: [connections.design], uses: 2}
+    grant_tools: [shadow, documents]
     teaches: [gemba, five_whys, eight_wastes]
     rewards: {xp: 50}
     insights:
@@ -155,6 +157,7 @@ missions:
     briefing: "Tel vandaag de wachtrij bij Intake en bij Werkvoorbereiding. Let op: twintig dossiers van een kwartier zijn minder werk dan tien dossiers van vier uur. Waar ligt het meeste werk te wachten, in dagen werk? Schrijf het op voordat je het met je gevoel vergelijkt."
     debrief: "Je telde de dossiers én de dagen werk die ze vragen. Een stroom gaat zo snel als de plek waar het meeste werk wacht. Als Intake morgen twee keer zo hard werkt, waar ligt het werk dan overmorgen?"
     goal: {type: observe, places: [connections.intake, connections.design], tool: queue_count}
+    grant_tools: [queue_count]
     # The week's training setup (on Monday) makes the counts give a clear
     # answer; the debrief adds what the player measured and names the longer queue.
     teaches: [flow, wip, bottleneck_focus, netcongestie]
@@ -172,6 +175,7 @@ missions:
     briefing: "Anouk pakt altijd het oudste dossier. Toch ligt het dossier van de familie El Amrani al negen dagen bij haar. Hoe kan dat? Zoek het uit, schrijf een oefen-A3 met een voorspelling en probeer een tegenmaatregel. Over drie dagen kijken we samen of je voorspelling uitkwam."
     debrief: "Je voorspelling is getoetst aan wat er echt gebeurde. Of het tegenviel of meeviel: je weet nu iets wat je gisteren niet wist. Dat is een experiment."
     goal: {type: check, problem: training_tray}
+    grant_tools: [time_study, data, listen_in, material_check]
     check_days: 3
     teaches: [PDCA, A3, leading_lagging]
     rewards: {xp: 50}

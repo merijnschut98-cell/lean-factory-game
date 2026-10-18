@@ -646,7 +646,7 @@ MIN_REWARD_SHARE = 0.6
 MISSION_KEYS = {"id", "name", "kind", "tier", "requires", "briefing", "debrief", "fail", "goal", "deadline_days",
                 "fail_closes", "rewards", "insights", "teaches", "check_days", "setup", "act", "chapter", "arc",
                 "fork", "debrief_first", "reopen", "sets_flags", "questions", "debrief_variants", "containment",
-                "ends_with_talk", "deadline_beat"}
+                "ends_with_talk", "deadline_beat", "grant_tools"}
 # A safety mission's containment (audit §2.4.1): a short measure against an
 # acute risk, taken once while the mission is active; it fades after `days`.
 CONTAINMENT_KEYS = {"name", "budget", "days", "effects"}
@@ -711,6 +711,9 @@ def validate_missions(doc: Any, source: str) -> None:
         _number(rewards, "reputation", f"{where} rewards", 0, 20, integer=True, default=0)
         _trust_map(rewards, f"{where} rewards", -3, 3)
         _sets_flags(m, where)
+        for tool in _string_list(m, "grant_tools", where):
+            if tool not in TOOLS:
+                raise ContentError(f"{where}: grant_tools names an unknown tool {tool!r}")
         variants = _mapping(m, "debrief_variants", set(DEBRIEF_VARIANTS), where)
         _require_strings(variants, list(variants), f"{where} debrief_variants")
         if variants and "problem" not in m["goal"]:
@@ -1115,6 +1118,208 @@ def check_world(docs: dict[str, Any]) -> None:
             # The game would load the stand-in office for this floor without a word.
             raise ContentError(f"world.yaml: floor '{f['id']}': model {f['model']!r} does not exist in "
                                f"{OFFICE_ASSETS.relative_to(ROOT).as_posix()}")
+
+
+# ── places.yaml (what a player can do at a place, PLAN 2.12) ─────────────────
+# Per place: the gemba tools that fit the work there, each with the place's own
+# label and its observations (shown when a tool finds no clue), the questions to
+# the people who work there, and who else can be met there (people_also). And
+# one tool card per tool for Ruud's morning note (game/src/rules/place_actions.gd;
+# design: docs/superpowers/specs/2026-10-18-place-actions.md §6).
+PLACE_KEYS = {"people_also", "tools", "questions"}
+PLACE_TOOL_KEYS = {"label", "observations"}
+PLACE_QUESTION_KEYS = {"id", "person", "text", "reply"}
+TOOL_CARD_KEYS = {"tool", "title", "text"}
+PLACE_TOOLS = (2, 5)
+PLACE_OBSERVATIONS = (2, 3)
+MAX_PLACE_QUESTIONS = 4
+# Investigation.QUESTIONS: id → kind. `thanks` (repair) is never a chip of its
+# own: it shows after a blame or guarded reply.
+QUESTION_KINDS = {"walk": "open", "obstacle": "open", "last": "open", "standard": "closed", "ok": "closed",
+                  "behind": "blame", "who": "blame", "thanks": "repair"}
+_PLACE = re.compile(r"^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$")
+# The yard's magazijn (world.yaml, 2026-10-18) put three material steps in a room
+# after the place-actions spec was written; their tools, observations and
+# questions wait for the designer (PLAN 2.12). Until then they keep every tool
+# and the team's questions. Shrink this set, never grow it.
+PLACES_AWAITING_CONTENT = {"outages.joint", "connections.materials", "meters.reserve_meter"}
+# A tool result never says there was nothing (Merijn, 2026-10-18).
+_NOTHING = re.compile(r"niets nieuws", re.IGNORECASE)
+
+
+def validate_places(doc: Any, source: str) -> None:
+    if not isinstance(doc, dict):
+        raise ContentError(f"{source}: expected a mapping at the top level")
+    _known_keys(doc, {"places", "tool_cards"}, source)
+    places = doc.get("places")
+    if not isinstance(places, dict) or not all(isinstance(p, dict) for p in places.values()):
+        raise ContentError(f"{source}: 'places' must map a place 'stream.step' to its entry")
+    for place, entry in places.items():
+        where = f"{source}: place {place!r}"
+        if not isinstance(place, str) or not _PLACE.match(place):
+            raise ContentError(f"{where}: a place is named 'stream.step'")
+        _known_keys(entry, PLACE_KEYS, where)
+        _string_list(entry, "people_also", where)
+        _validate_place_tools(entry.get("tools"), where)
+        questions = entry.get("questions", [])
+        if not isinstance(questions, list) or len(questions) > MAX_PLACE_QUESTIONS \
+                or not all(isinstance(q, dict) for q in questions):
+            raise ContentError(f"{where}: 'questions' must list at most {MAX_PLACE_QUESTIONS} questions")
+        for q in questions:
+            _known_keys(q, PLACE_QUESTION_KEYS, f"{where} question")
+            _require_strings(q, ["person", "text", "reply"], f"{where} question")
+            if q.get("id") not in QUESTION_KINDS or q["id"] == "thanks":
+                raise ContentError(f"{where}: question id {q.get('id')!r} must be one of "
+                                   f"{', '.join(k for k in QUESTION_KINDS if k != 'thanks')}")
+        ids = [q["id"] for q in questions]
+        if len(set(ids)) != len(ids):
+            raise ContentError(f"{where}: a question id is asked twice")
+    cards = doc.get("tool_cards")
+    if not isinstance(cards, list) or not all(isinstance(c, dict) for c in cards):
+        raise ContentError(f"{source}: 'tool_cards' must be a list of mappings")
+    for c in cards:
+        _known_keys(c, TOOL_CARD_KEYS, f"{source} tool card")
+        _require_strings(c, ["title", "text"], f"{source} tool card {c.get('tool')!r}")
+    tools = [c.get("tool") for c in cards]
+    if sorted(tools, key=str) != sorted(TOOLS):
+        raise ContentError(f"{source}: 'tool_cards' needs exactly one card per tool ({', '.join(sorted(TOOLS))})")
+
+
+def _validate_place_tools(tools: Any, where: str) -> None:
+    low, high = PLACE_TOOLS
+    if not isinstance(tools, dict) or not low <= len(tools) <= high:
+        raise ContentError(f"{where}: 'tools' must map {low} to {high} tools to their label and observations")
+    for tool, t in tools.items():
+        if tool not in TOOLS - {"conversation"}:
+            raise ContentError(f"{where}: unknown tool {tool!r} (a conversation is the place's questions)")
+        if not isinstance(t, dict):
+            raise ContentError(f"{where} tool '{tool}': needs a label and observations")
+        _known_keys(t, PLACE_TOOL_KEYS, f"{where} tool '{tool}'")
+        _require_strings(t, ["label"], f"{where} tool '{tool}'")
+        lines = _string_list(t, "observations", f"{where} tool '{tool}'", allow_empty=False)
+        n_low, n_high = PLACE_OBSERVATIONS
+        if not n_low <= len(lines) <= n_high or not all(isinstance(x, str) and x.strip() for x in lines):
+            raise ContentError(f"{where} tool '{tool}': needs {n_low} to {n_high} observations")
+        if any(_NOTHING.search(x) for x in lines):
+            raise ContentError(f"{where} tool '{tool}': an observation shows something, never 'niets nieuws'")
+
+
+def _places_used(docs: dict[str, Any]) -> dict[str, str]:
+    """Every place the content leads the player to → who leads there: missions
+    (their goal's places, a walk's work steps, their problem's), problems (step,
+    clue places), discoveries (a full place) and the rooms of world.yaml."""
+    missions = docs["missions"]["missions"]
+    problems = {p["id"]: p for _, p in _all_problems(docs)}
+    streams = {s["id"]: s for s in docs["value_streams"]["streams"]}
+    used: dict[str, str] = {}
+    for m in missions:
+        goal = m["goal"]
+        places = set(goal.get("places", []))
+        if goal["type"] == "walk":
+            places |= {f"{goal['stream']}.{s['id']}" for s in streams[goal["stream"]]["steps"] if s["kind"] == "work"}
+        p = problems.get(goal.get("problem"))
+        if p is not None:
+            places |= {p["step"]} | {c.get("at", p["step"]) for c in p["clues"]}
+        for place in places:
+            used.setdefault(place, f"mission '{m['id']}'")
+    for p in problems.values():
+        for place in [p["step"]] + [c.get("at", p["step"]) for c in p["clues"]]:
+            used.setdefault(place, f"problem '{p['id']}'")
+    for d in docs.get("discoveries", {}).get("discoveries", []):
+        place = d["trigger"].get("place")
+        if place and not place.endswith("."):
+            used.setdefault(place, f"discovery '{d['id']}'")
+    for r in docs.get("world", {}).get("rooms", []):
+        for place in r["places"]:
+            used.setdefault(place, f"room '{r['id']}'")
+    return used
+
+
+def check_places(docs: dict[str, Any]) -> None:
+    """Places against the network, the cast, the missions, the clues and the
+    discoveries: every place used has an entry; every clue can be found there;
+    a question goes to someone who is there; the training week hands out each
+    tool once, before a goal needs it (spec §6, validator rules 1-7)."""
+    places_doc = docs.get("places")
+    if places_doc is None:
+        return
+    places = places_doc["places"]
+    steps = _network_index(docs["value_streams"], docs["kpis"])["step"]
+    for place in places:
+        if place not in steps:
+            raise ContentError(f"places.yaml: unknown place {place!r}")
+    for place, who in sorted(_places_used(docs).items()):
+        if place not in places and place not in PLACES_AWAITING_CONTENT:
+            raise ContentError(f"places.yaml: {who} leads to {place!r}, which has no entry")
+    for _, p in _all_problems(docs):
+        for i, c in enumerate(p["clues"]):
+            at = c.get("at", p["step"])
+            where = f"places.yaml: problem '{p['id']}' clue {i} ({c['tool']} at {at!r})"
+            if c["tool"] == "conversation":
+                if not any(QUESTION_KINDS[q["id"]] == "open" for q in places[at].get("questions", [])):
+                    raise ContentError(f"{where}: no open question there, so the clue can never be found")
+            elif c["tool"] not in places[at]["tools"]:
+                raise ContentError(f"{where}: the tool does not fit the place, so the clue can never be found")
+    for d in docs.get("discoveries", {}).get("discoveries", []):
+        t = d["trigger"]
+        if "tool" in t and t.get("place") in places and t["tool"] not in places[t["place"]]["tools"]:
+            raise ContentError(f"places.yaml: discovery '{d['id']}' needs {t['tool']} at {t['place']!r}, "
+                               f"which does not fit there")
+    if "dialogs" in docs:  # a content set without people has nobody to check the questions against
+        _check_place_people(places, {p["id"]: p for p in docs["dialogs"]["people"]})
+    _check_grants(docs["missions"]["missions"], places)
+
+
+def _check_place_people(places: dict, people: dict) -> None:
+    for pid, entry in places.items():
+        for person in entry.get("people_also", []):
+            if person not in people:
+                raise ContentError(f"places.yaml: place '{pid}': people_also names unknown person {person!r}")
+        for q in entry.get("questions", []):
+            person = people.get(q["person"])
+            if person is None:
+                raise ContentError(f"places.yaml: place '{pid}': question to unknown person {q['person']!r}")
+            if person["place"] != pid and q["person"] not in entry.get("people_also", []):
+                raise ContentError(f"places.yaml: place '{pid}': {q['person']} is not here "
+                                   f"(works at {person['place']!r}; add to people_also)")
+
+
+def order_place_tools(docs: dict[str, Any]) -> None:
+    """A place's tools as a list in the content's order ({tool, label,
+    observations}): the JSON is written with sorted keys, and the menu shows
+    the tools in the order the content gives them."""
+    for entry in docs.get("places", {}).get("places", {}).values():
+        entry["tools"] = [{"tool": tool, **t} for tool, t in entry["tools"].items()]
+
+
+def _check_grants(missions: list[dict], places: dict) -> None:
+    """The training week hands out each tool exactly once, conversation on the
+    first day; an observe goal's tool is known by its day and fits its places."""
+    week = [m for m in missions if m["kind"] == "training"]
+    granted: list[str] = []
+    for day, m in enumerate(week):
+        granted += m.get("grant_tools", [])
+        if day == 0 and "conversation" not in m.get("grant_tools", []):
+            raise ContentError(f"missions.yaml: mission '{m['id']}': the first day grants conversation")
+        tool = m["goal"].get("tool") if m["goal"]["type"] == "observe" else None
+        if tool and tool not in granted:
+            raise ContentError(f"missions.yaml: mission '{m['id']}' needs {tool}, not granted by its day")
+    if sorted(granted) != sorted(TOOLS):
+        raise ContentError(f"missions.yaml: the training week's grant_tools must grant each tool exactly once "
+                           f"(granted: {', '.join(sorted(granted))})")
+    for m in missions:
+        if "grant_tools" in m and m["kind"] != "training":
+            raise ContentError(f"missions.yaml: mission '{m['id']}': only a training day grants tools")
+        goal = m["goal"]
+        if goal["type"] != "observe":
+            continue
+        for place in goal["places"]:
+            where = f"places.yaml: mission '{m['id']}' observes {place!r}"
+            if "tool" in goal and goal["tool"] != "conversation" and goal["tool"] not in places[place]["tools"]:
+                raise ContentError(f"{where} with {goal['tool']}, which does not fit there")
+            actions = len(places[place]["tools"]) + (1 if places[place].get("questions") else 0)
+            if "tool" not in goal and actions < goal.get("uses", 1):
+                raise ContentError(f"{where}: {goal.get('uses', 1)} different actions, the place offers {actions}")
 
 
 # ── kpis.yaml ────────────────────────────────────────────────────────────────
@@ -2066,13 +2271,15 @@ VALIDATORS: dict[str, Callable[[Any, str], None]] = {
     "discoveries": validate_discoveries,
     "explainers": validate_explainers,
     "world": validate_world,
+    "places": validate_places,
 }
 # Registered files a content set may leave out.
-OPTIONAL = {"dialogs", "explainers", "world"}
+OPTIONAL = {"dialogs", "explainers", "world", "places"}
 
 # Checks that need several files at once. Each gets {stem: document}.
 CROSS_CHECKS: list[Callable[[dict[str, Any]], None]] = [check_kpis, check_problems, check_missions, check_concepts,
-                                                      check_dialogs, check_discoveries, check_explainers, check_world]
+                                                      check_dialogs, check_discoveries, check_explainers, check_world,
+                                                      check_places]
 
 
 def _validator_for(stem: str) -> Callable[[Any, str], None] | None:
@@ -2102,6 +2309,7 @@ def load_content(content_dir: Path | None = None) -> dict[str, Any]:
         check(docs)
     merge_dialog_clues(docs)
     name_dialog_items(docs)
+    order_place_tools(docs)
     docs["vocabulary"] = vocabulary()
     return docs
 

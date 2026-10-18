@@ -5220,6 +5220,19 @@
    "team": "key_accounts",
    "trust": 50,
    "voice": "Twee jaar."
+  },
+  {
+   "archetype": "craftsman",
+   "id": "kees",
+   "morale": 50,
+   "name": "Kees Mulder",
+   "need": "recognition",
+   "place": "outages.report",
+   "role": "operator bedrijfsvoeringscentrum",
+   "short": "Kees",
+   "team": "control_room",
+   "trust": 50,
+   "voice": "Afgesproken."
   }
  ]
 }
