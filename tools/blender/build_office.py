@@ -1952,6 +1952,12 @@ def plan_first(plan: Plan) -> None:
     plan.markers += list(INTERACTIONS) + [
         # the planners' bench (Linda): stood at from the aisle, over the low cabinets
         place("connections.planning", (15.0, 6.0), (15.0, 3.0)),
+        # the permit requests waiting on Werkvoorbereiding's sideboard (permits_in_batches)
+        place("connections.permit", (11.8, 5.0), (11.8, 3.8)),
+        # the meter appointments: the planners' bench from its east end
+        place("meters.appointment", (16.9, 2.2), (15.8, 2.2)),
+        # Meetdata's middle desk analyses the voltage complaints
+        place("voltage_complaints.analysis", (-14.0, 4.6), (-14.0, 3.0)),
         place("connections.revision", (-14.5, 10.6), (-14.5, 13.0)),
         place("connections.close_out", (-10.0, 4.6), (-10.0, 3.0)),
         place("meters.registration", (-16.2, 4.6), (-16.2, 3.0)),

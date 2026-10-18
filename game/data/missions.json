@@ -44,7 +44,7 @@
  "missions": [
   {
    "act": 0,
-   "briefing": "Welkom bij Voltana Netbeheer. Ik ben Ruud Hoekstra. Deze week oefen je in het klein; als er iets misgaat, raakt niemand iets kwijt. Vanochtend lag er een brief op mijn bureau van de familie El Amrani uit Nova-Oost: ze wachten al {dossier_weken} op een aansluiting voor hun warmtepomp. Zoek met de kaart (M) de Intake en Werkvoorbereiding op en kijk of vraag bij elk team hoe het werk binnenkomt. En loop vanavond niet meteen naar huis: wie er dan nog zit, maak je het beste kennis mee.",
+   "briefing": "Welkom bij Voltana Netbeheer. Ik ben Ruud Hoekstra. Deze week oefen je in het klein; als er iets misgaat, raakt niemand iets kwijt. Vanochtend lag er een brief op mijn bureau van de familie El Amrani uit Nova-Oost: ze wachten al {dossier_weken} op een aansluiting voor hun warmtepomp. Zoek met de kaart (M) de Intake en Werkvoorbereiding op en vraag bij elk team hoe het werk binnenkomt. En loop vanavond niet meteen naar huis: wie er dan nog zit, maak je het beste kennis mee.",
    "chapter": "Inwerkweek",
    "debrief": "Je kent nu twee plekken waar een aanvraag langskomt. Elf weken onderweg: hoeveel uur is er al echt aan gewerkt, denk je? Morgen ga je beter kijken.",
    "ends_with_talk": "anouk_seven",
@@ -55,6 +55,9 @@
     ],
     "type": "observe"
    },
+   "grant_tools": [
+    "conversation"
+   ],
    "id": "training_mon",
    "insights": {
     "go_see": "Een aanvraag doet er maanden over. Hoeveel van die tijd wordt er echt aan gewerkt, denk je? En hoe zou je dat kunnen zien?"
@@ -90,6 +93,10 @@
     "type": "observe",
     "uses": 2
    },
+   "grant_tools": [
+    "shadow",
+    "documents"
+   ],
    "id": "training_tue",
    "insights": {
     "go_see": "Wat deed Anouk, en wat deed het werk terwijl zij bezig was?"
@@ -124,6 +131,9 @@
     "tool": "queue_count",
     "type": "observe"
    },
+   "grant_tools": [
+    "queue_count"
+   ],
    "id": "training_wed",
    "insights": {
     "go_see": "Welke van de twee getallen vertelt je meer: het aantal dossiers of de dagen werk? Waarom?"
@@ -156,6 +166,12 @@
     "problem": "training_tray",
     "type": "check"
    },
+   "grant_tools": [
+    "time_study",
+    "data",
+    "listen_in",
+    "material_check"
+   ],
    "id": "training_thu",
    "insights": {
     "experiment": "Welk getal laat over drie dagen zien of het werkt, en wat verwacht je dat het dan is?",

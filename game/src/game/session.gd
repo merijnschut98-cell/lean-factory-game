@@ -51,6 +51,8 @@ var discoveries: Discoveries
 var followed := FollowedOrder.new()
 ## The "Hoe werkt het?" explainers seen (PLAN 2.7c), for the codex.
 var explainers := ExplainerLog.new()
+## What fits each place, its observations, and the player's toolbox (PLAN 2.12).
+var gemba: PlaceActions
 ## The player as made in the character creator (PLAN 2.7b): first name, look,
 ## badge photo. Its tokens ({speler}, {hij_zij} …) fill dialog text and briefings.
 var player := PlayerProfile.new()
@@ -81,6 +83,7 @@ static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, t
 	s.missions.talk_outcome = s.talk_outcome
 	s.missions.talked = s.talked
 	s.discoveries = Discoveries.new(s.catalog.discoveries)
+	s.gemba = PlaceActions.from_doc(s.catalog.places)
 	for id in [STORY_MISSION, TRAINING_FIRST]:
 		if not s.missions.defs.has(id):
 			s.error = "missing mission: " + id
@@ -88,10 +91,9 @@ static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, t
 	s.followed.pick(net)
 	if training:
 		s.missions.accept(TRAINING_FIRST)
+		s._after(0)
 	else:
-		s.missions.skip_training()
-		s._walked_before()
-	s._after(0)
+		s.skip_training()
 	return s
 
 
@@ -137,8 +139,11 @@ func abandon(mission_id: String) -> String:
 
 
 ## Use a gemba tool at a place ("stream.step"); the tool's minutes pass.
-## Returns Region.use_tool's {spotted, clues, hidden_signal}, or an error:
-## unknown_tool | use_ask (a conversation is a question) | unknown_place.
+## Returns Region.use_tool's {spotted, clues, hidden_signal}, with the
+## place's next observation (PlaceActions) when no clue was found, or an
+## error (no time passes): unknown_tool | use_ask (a conversation is a
+## question) | unknown_place | tool_not_here (it does not fit the work there)
+## | tool_not_known (the training week has not handed it out yet).
 func use_tool(place: String, tool: String) -> Dictionary:
 	if not Investigation.TOOLS.has(tool):
 		return {"error": "unknown_tool"}
@@ -146,25 +151,90 @@ func use_tool(place: String, tool: String) -> Dictionary:
 		return {"error": "use_ask"}
 	if not _is_place(place):
 		return {"error": "unknown_place"}
+	if not gemba.fits(place, tool):
+		return {"error": "tool_not_here"}
+	if not gemba.known.has(tool):
+		return {"error": "tool_not_known"}
 	var result := region.use_tool(place, tool)
+	if result["clues"].is_empty():
+		var seen := gemba.observe(place, tool, SimCalendar.day_of(region.net.time) - WARMUP_DAYS)
+		if not seen.is_empty():
+			result["observation"] = fill_tokens(seen)
 	missions.note_use(place, tool)
 	discoveries.note_use(self, place, tool, "", result["clues"].any(func(c: Clue) -> bool: return c.key))
 	_after(Investigation.TOOLS[tool]["minutes"])
 	return result
 
 
-## Ask the team at a place a question; a conversation's minutes pass.
-## Returns Region.ask's result, or an error: unknown_question | unknown_place.
+## Ask a question at a place; a conversation's minutes pass. Where the place
+## has questions (content/places.yaml) only those can be asked, each to its
+## person, plus "thanks" to whoever gave a blame or guarded reply there.
+## Returns Region.ask's result (its kind keeps its rules: a clue wins over
+## an open question's answer, a blame costs trust), with the person asked
+## and their own line when no clue came out, or an error: unknown_question |
+## unknown_place.
 func ask(place: String, question_id: String) -> Dictionary:
 	if not Investigation.QUESTIONS.has(question_id):
 		return {"error": "unknown_question"}
 	if not _is_place(place):
 		return {"error": "unknown_place"}
+	var q := gemba.question(place, question_id)
+	var person: String = gemba.repair_due.get(place, "") if question_id == PlaceActions.THANKS else str(q.get("person", ""))
+	if gemba.has_place(place) and person.is_empty():
+		return {"error": "unknown_question"}
 	var result := region.ask(place, question_id)
+	if not person.is_empty():
+		result["person"] = person
+		if result["reply"] in ["observation", "closed", "blame", "nobody"] and q.has("reply"):
+			result["line"] = fill_tokens(q["reply"])
+		if result["reply"] in ["blame", "guarded"]:
+			gemba.repair_due[place] = person
+		elif question_id == PlaceActions.THANKS:
+			gemba.repair_due.erase(place)
 	missions.note_use(place, "conversation")
 	discoveries.note_use(self, place, "conversation", result["reply"], result.has("clue") and result["clue"].key)
 	_after(Investigation.TOOLS["conversation"]["minutes"])
 	return result
+
+
+## The questions to the people at a place who are still here: [{id, person,
+## text, reply}] (content/places.yaml), and "thanks" to whoever a blame or
+## guarded reply there left wanting one.
+func place_questions(place: String) -> Array:
+	var out := gemba.questions_at(place).filter(func(q: Dictionary) -> bool: return _here(q["person"]))
+	if gemba.repair_due.has(place) and _here(gemba.repair_due[place]):
+		out.append({"id": PlaceActions.THANKS, "person": gemba.repair_due[place], "text": "", "reply": ""})
+	return out
+
+
+## Whom the player can ask at a place: those who work there and those met
+## there too (people_also), while they are still around.
+func people_to_ask(place: String) -> Array[String]:
+	var out: Array[String] = []
+	for q: Dictionary in place_questions(place):
+		if not q["person"] in out:
+			out.append(q["person"])
+	return out
+
+
+func _here(person: String) -> bool:
+	return people.persons.has(person) and not people.has_left(person)
+
+
+## The morning note's card for a tool Ruud hands out ({title, text}; {}).
+func tool_card(tool: String) -> Dictionary:
+	return gemba.tool_cards.get(tool, {})
+
+
+## The tool buttons at a place: the fitting tools the player knows.
+func place_tools(place: String) -> Array[String]:
+	return gemba.tools_at(place)
+
+
+## The tools a mission hands out when it is taken on (a training day's
+## morning note names them).
+func new_tools(mission_id: String) -> PackedStringArray:
+	return missions.defs[mission_id].grant_tools if missions.defs.has(mission_id) else PackedStringArray()
 
 
 ## The Check's days for a problem: an active mission's (the training week's
@@ -334,6 +404,7 @@ func skip_training() -> String:
 		return "not_in_training"
 	missions.skip_training()
 	_walked_before()
+	gemba.know_all()
 	_after(0)
 	return ""
 
@@ -636,6 +707,8 @@ func _after(minutes: int) -> void:
 		region.advance(minutes)
 	missions.update()
 	_start_training_day()
+	for id in missions.progress:
+		gemba.grant(new_tools(id))
 	if not missions.in_training():
 		region.start_drift()
 	followed.update(region.net)

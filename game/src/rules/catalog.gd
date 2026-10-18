@@ -29,6 +29,9 @@ var move_cards: Array[Dictionary] = []
 ## The hidden rewards (content/discoveries.yaml), as validated dictionaries
 ## (Discoveries reads them).
 var discoveries: Array = []
+## What can be done at each place, and its observations (content/places.yaml,
+## PLAN 2.12). A data folder without places.json keeps every tool everywhere.
+var places: Dictionary = {}
 ## The first thing wrong with the files; "" when the catalogue is usable.
 var error := ""
 
@@ -65,6 +68,12 @@ static func load_from(dir: String = DATA_DIR) -> Catalog:
 			if card is Dictionary and card.get("day") is String and card.get("title") is String:
 				c.move_cards.append({"move": card.get("move"), "day": card["day"], "title": card["title"],
 					"text": str(card.get("text", "")), "why": str(card.get("why", ""))})
+	if FileAccess.file_exists(dir + "/places.json"):
+		var doc := JsonFile.read_dict(dir + "/places.json")
+		if not doc["error"].is_empty():
+			c.error = doc["error"]
+			return c
+		c.places = doc["data"]
 	var found := JsonFile.read_dict(dir + "/discoveries.json")
 	if not found["error"].is_empty():
 		c.error = found["error"]

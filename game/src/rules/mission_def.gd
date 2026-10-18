@@ -72,6 +72,9 @@ var goal_clues := 0
 var goal_places := PackedStringArray()
 var goal_tool: String
 var goal_uses := 1
+## The gemba tools the player learns when the mission is taken on (the
+## training week's growing toolbox, PLAN 2.12; PlaceActions).
+var grant_tools := PackedStringArray()
 ## A shorter Check for the goal's problem while this mission is active (the
 ## training week); -1: Region.CHECK_DAYS.
 var check_days := -1
@@ -149,6 +152,9 @@ static func from_dict(d: Dictionary) -> MissionDef:
 	m.goal_outcome = str(goal.get("outcome", "commitment"))
 	m.ends_with_talk = str(d.get("ends_with_talk", "")) if d.get("ends_with_talk") is String else ""
 	m.check_days = int(d.get("check_days", -1))
+	m.grant_tools = PackedStringArray(Array(d.get("grant_tools", [])).filter(
+		func(t: Variant) -> bool: return t is String and Investigation.TOOLS.has(t))) if d.get("grant_tools") is Array \
+		else PackedStringArray()
 	m.teaches = PackedStringArray(d.get("teaches", []))
 	var setup: Variant = d.get("setup", [])
 	m.setup = setup.duplicate(true) if setup is Array else []

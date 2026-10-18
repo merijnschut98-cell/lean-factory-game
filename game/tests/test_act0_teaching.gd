@@ -39,6 +39,8 @@ func test_the_morning_brings_ruuds_note_with_the_days_moves() -> void:
 		assert_true(notes[0].contains(card["title"]) and notes[0].contains(card["why"]), card["title"])
 	for card: Dictionary in _cards_of(s, "training_tue"):
 		assert_false(notes[0].contains(card["title"]), "not Tuesday's: " + card["title"])
+	assert_true(notes[0].contains(s.tool_card("conversation")["title"]), "the day's new tool (PLAN 2.12)")
+	assert_false(notes[0].contains(s.tool_card("shadow")["title"]), "not Tuesday's tools")
 	office.ui.after_action()
 	assert_eq(office.ui.hud.card_texts().filter(func(t: String) -> bool: return t.begins_with(GameUI.MOVE_NOTE.left(8))).size(),
 		1, "once a day")

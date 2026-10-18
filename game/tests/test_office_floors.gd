@@ -179,6 +179,15 @@ func _room_markers(id: String, r: Dictionary, m: Dictionary) -> void:
 			assert_true(rect.has_point(_at(m[key])), "%s stands in %s" % [place, r["id"]])
 
 
+func test_every_station_in_an_open_room_can_be_walked_to() -> void:
+	var office := _office()
+	for i: Interactable in office.interactables:
+		if i.kind == "place":
+			assert_false(office.nav().path(office.player.position, i.position).is_empty(), "%s can be reached" % i.id)
+			assert_true(office.nav().walkable(i.position), "%s's ring stands on free floor" % i.id)
+	office.free()
+
+
 func test_the_1e_keeps_its_markers_where_they_were() -> void:
 	var m := _markers(_building(), "first")
 	var expected := {   # Godot (x, z): build_office.py INTERACTIONS, unchanged by the floors

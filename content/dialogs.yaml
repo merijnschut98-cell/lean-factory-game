@@ -249,6 +249,21 @@ people:
     morale: 50
     voice: "Twee jaar."
 
+  # Place actions spec (2026-10-18) §0.6: the operator at the control room, so a
+  # walk of the outage stream has someone to ask. No talks yet (Act III).
+  - id: kees
+    name: Kees Mulder
+    short: Kees
+    role: operator bedrijfsvoeringscentrum
+    place: outages.report
+    team: control_room
+    archetype: craftsman    # four-tier audit: the craftsman, calm night voice, few words
+    need: recognition       # ESTIMATE until his Act III talks are written: "only seeing the light come back"
+    trust: 50
+    morale: 50
+    voice: "Afgesproken."
+
+
   - id: wim
     name: Wim Kortekaas
     short: meneer Kortekaas

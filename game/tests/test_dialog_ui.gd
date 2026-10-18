@@ -543,10 +543,12 @@ func test_after_a_ruin_the_mensen_tab_says_when_to_talk_again() -> void:
 	office.free()
 
 
-## U18: the old questions are named as what they are, apart from a talk.
-func test_the_teams_questions_are_short_questions_not_a_talk() -> void:
+## U18, PLAN 2.12: a question goes to a person who is there, under their
+## name, apart from a talk; no list of questions to an empty room.
+func test_questions_go_to_the_people_here_not_to_the_room() -> void:
 	var office := _office()
 	office.interact(office.interactable("place:" + DESIGN))
-	assert_true(shows(office.ui.place_menu, "Korte vragen aan het team"))
-	assert_false(shows(office.ui.place_menu, "Vraag het team"))
+	var walk: Dictionary = office.session.gemba.question(DESIGN, "walk")
+	assert_true(shows(office.ui.place_menu, walk["text"]))
+	assert_false(shows(office.ui.place_menu, "Korte vragen aan het team"))
 	office.free()

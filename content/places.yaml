@@ -1,0 +1,972 @@
+# What the player can do at each place ("stream.step"), PLAN 2.12, Merijn's
+# playtest 2026-10-18. Content: docs/superpowers/specs/2026-10-18-place-actions.md
+# (designer). Game text is Dutch; keys are English. Built by
+# tools/build_content.py into game/data/places.json; read by
+# game/src/rules/place_actions.gd.
+#
+# people_also  cast ids met here besides those whose dialogs.yaml `place` is here
+# tools        2-5 investigation tools that fit the work here (never `conversation`:
+#              a place's questions are its conversation), each with
+#   label         the button, without duration (the UI appends it)
+#   observations  2-3 Dutch gemba lines on how the work really runs, shown in turn
+#                 when the tool finds no clue (never an empty result), each logged in
+#                 the journal as "Waarneming". They never name a cause or a fix.
+# questions    0-4 {id (Investigation.QUESTIONS, not `thanks`), person, text, reply}:
+#              asked to a named person who is here. Its kind (open, closed, blame)
+#              keeps its rules; a clue the team can tell wins over an open reply.
+#              `thanks` shows only after a blame or guarded reply at the place.
+# tool_cards   one per tool: the card Ruud's morning note shows on the day the
+#              training week hands the tool out (missions.yaml grant_tools).
+#
+# tools/build_content.py checks: every place a mission, problem, discovery or room
+# uses has an entry; every clue's tool is in its place's list (a conversation clue
+# needs an open question there); questions go to someone who is here; the training
+# week grants each tool once (conversation on Monday) and before a goal needs it.
+
+places:
+  connections.intake:
+    tools:
+      listen_in:
+        label: Luister mee met een aanvraaggesprek
+        observations:
+        - 'Een installateur belt namens een klant: kan er een laadpaal op dezelfde aansluiting? Rachid zoekt het
+          aansluitvermogen op in het dossier en legt uit wat een verzwaring kost.'
+        - Een klant vraagt wat een EAN-code is. Sanne legt het uit zonder op haar scherm te kijken; ze heeft het
+          vaker gedaan.
+        - Een aannemer wil voor een nieuwbouwproject een hele straat tegelijk aanvragen. Het portaal kent één adres
+          per aanvraag; Rachid zet de rest in een Excelbestand.
+      documents:
+        label: Blader door de aanvragen van deze week
+        observations:
+        - De aanvragen staan in het portaal op volgorde van binnenkomst. Bij elk dossier hoort een checklist die
+          Intake afvinkt voordat het naar de offerte gaat.
+        - Veel aanvragen van deze week zijn verzwaringen voor een warmtepomp of een laadpaal; de rest is nieuwbouw.
+        - Bij een paar dossiers staat in de kantlijn 'klant gebeld, belt terug'. Er staat geen datum bij.
+      queue_count:
+        label: Tel de inbox
+        observations:
+        - De werkbak telt alleen wat nog geen behandelaar heeft. Wat Rachid of Sanne al heeft geopend, staat onder
+          hun eigen naam.
+        - Op het whiteboard naast Sanne staat het aantal van gisteren, met een pijl erbij. Niemand weet meer of
+          een pijl omhoog goed of slecht is.
+        - Rachid sorteert de werkbak op postcode; Sanne op datum. Ze wisselen het af, afhankelijk van wie er het
+          eerst is.
+      data:
+        label: Draai de intakecijfers uit het systeem
+        observations:
+        - 'Het systeem telt aanvragen per dag en per postcode. Maandag is altijd de drukste dag: dan staat erin
+          wat in het weekend via het portaal binnenkwam.'
+        - Nova-Oost en het nieuwe bedrijventerrein leveren de meeste aanvragen. De rest is verspreid over de regio.
+        - Per medewerker staat hoeveel aanvragen hij deze week heeft verwerkt. Sanne heeft die kolom zelf verborgen.
+    questions:
+    - id: walk
+      person: sanne
+      text: Sanne, wil je me laten zien hoe een aanvraag bij jullie binnenkomt?
+      reply: '"Nou, kijk. Portaal, werkbak, dossiernummer. Drie stappen, hè. Op papier dan." Ze klikt een aanvraag
+        open en laat zien welke velden ze nakijkt.'
+    - id: obstacle
+      person: rachid
+      text: Rachid, wat maakt jouw werk lastiger dan nodig?
+      reply: '"Lastig? Op maandag is het systeem traag. En als een klant belt, weet ik niet altijd bij wie zijn
+        dossier ligt."'
+    - id: standard
+      person: sanne
+      text: Werken jullie volgens de werkinstructie voor de intake?
+      reply: '"Joh, natuurlijk. Die hangt daar." Ze wijst naar een uitgeprint vel bij het raam.'
+    - id: behind
+      person: sanne
+      text: Hoe kan het dat Werkvoorbereiding zoveel dossiers van jullie terugstuurt?
+      reply: '"Van ons?" Ze legt haar pen neer. "Wij zijn het postkantoor, hè. Wij krijgen het altijd."'
+  connections.design:
+    tools:
+      shadow:
+        label: Volg één dossier
+        observations:
+        - Anouk opent een dossier, zoekt het adres op in GIS, tekent het tracé van de kabel en maakt een materiaalstaat.
+          Tussendoor belt Planning twee keer over een ander dossier.
+        - 'Voor een oud huis vraagt Anouk een schouw aan: een monteur moet eerst kijken waar de meterkast precies
+          zit.'
+        - Joost komt langs met een vraag over de overuren van vorige maand. Anouk maakt eerst haar lijn af voordat
+          ze antwoordt.
+      documents:
+        label: Bekijk de tekeningen
+        observations:
+        - Op elke tekening staan het tracé, de kabellengte, de aansluitkast en de kabels en leidingen uit de KLIC-melding.
+          Anouk gebruikt kleuren die je terugvindt in de legenda.
+        - Sommige tekeningen zijn van vorig jaar en opnieuw geopend, omdat de klant toch een ander vermogen wilde.
+          De oude versie staat doorgestreept in het dossier.
+        - 'Naast de tekeningen staat een map ''bijzondere situaties'': een monumentaal pand, een aansluiting over
+          een sloot, een boom met beschermde wortels.'
+      queue_count:
+        label: Tel de stapel
+        observations:
+        - De stapel is een digitale werkbak plus een plank met papieren dossiers die nog niet zijn ingescand.
+        - In de werkbak staan per dossier de datum van binnenkomst en de naam van de klant.
+        - 'Op de plank liggen ook een paar dossiers met een geel briefje: ''wacht op schouw''.'
+      time_study:
+        label: Klok één ontwerp
+        observations:
+        - Je klokt een ontwerp van begin tot eind. Het tekenen zelf gaat snel; het opzoeken van wat er al in de
+          grond ligt, kost meer tijd.
+        - Halverwege moet Anouk een vraag stellen aan Netstudies over de straat. Ze wacht op antwoord en begint
+          intussen aan een ander dossier.
+        - 'Anouk werkt met twee schermen: links GIS, rechts de tekening. Ze kent de sneltoetsen uit haar hoofd.'
+      data:
+        label: Draai de ontwerpcijfers uit het systeem
+        observations:
+        - Het systeem telt ontwerpen per week en per werkvoorbereider. Joost houdt er een eigen Excel naast, met
+          extra tabbladen.
+        - De ontwerpen zijn verdeeld over nieuwbouw, verzwaringen en verleggingen. Verleggingen zijn de kleinste
+          groep.
+        - De overuren van Werkvoorbereiding staan per week in een grafiek. Na de zomer lopen ze op.
+    questions:
+    - id: walk
+      person: anouk
+      text: Anouk, wil je me laten zien hoe jij een dossier oppakt?
+      reply: '"Sorry, het is een beetje een rommeltje." Ze opent een dossier, zoekt het adres op en begint aan het
+        tracé. "Ik zit erbovenop, hoor."'
+    - id: obstacle
+      person: joost
+      text: Joost, wat maakt het werk hier lastiger dan nodig?
+      reply: '"Even voor de duidelijkheid: vier vacatures in twee jaar. Dat is gewoon een feit." Hij opent een tabblad
+        met de bezetting per week.'
+    - id: ok
+      person: frank
+      text: Frank, loopt het hier volgens plan?
+      reply: '"Volgens het jaarplan wel. Ik moet het alleen kunnen uitleggen aan de directie."'
+    - id: who
+      person: joost
+      text: Wie heeft het dossier van de familie El Amrani laten liggen?
+      reply: '"Eerlijk is eerlijk: dat zoek ik uit." Hij kijkt even naar Anouk en dan weer naar jou. "Maar niet
+        hier."'
+  connections.grid_study:
+    tools:
+      shadow:
+        label: Kijk mee bij een netstudie
+        observations:
+        - Femke zet de nieuwe aansluiting in het netmodel van de wijk en laat het rekenprogramma lopen. Intussen
+          tekent ze op een kladblok hoe de kabels van het station lopen.
+        - Een collega vergelijkt de uitkomst van een berekening met de metingen in het middenspanningsstation. Ze
+          komen aardig overeen.
+      documents:
+        label: Lees de werkinstructie netstudies
+        observations:
+        - De werkinstructie is een paar pagina's, met een stroomschema en een lijst met uitzonderingen. De laatste
+          versie is van een paar jaar geleden.
+        - Bij elke studie zit een rapport met een kaartje van de wijk, de belasting van de kabels en een conclusie
+          in één zin.
+      time_study:
+        label: Klok een netstudie
+        observations:
+        - Het meeste werk zit in het opbouwen van het model van de straat; de berekening zelf loopt in een paar
+          minuten.
+        - Tussen twee studies door beantwoordt Femke vragen van Werkvoorbereiding over kabeldiktes.
+      data:
+        label: Bekijk de cijfers van de netstudies
+        observations:
+        - De studies zijn verdeeld over woningen, bedrijven en laadpleinen. De laadpleinen zijn het snelst gegroeid.
+        - Per station staat in een tabel de belasting op het drukste moment van het jaar. Een paar stations kleuren
+          oranje.
+    questions:
+    - id: walk
+      person: femke
+      text: Femke, kun je me laten zien hoe een netstudie gaat?
+      reply: '"Kijk, kort gezegd: aanvraag erin, model rekenen, conclusie eruit." Ze tekent het terwijl ze praat.
+        "Het past, of het past niet."'
+    - id: obstacle
+      person: femke
+      text: Wat maakt jullie werk lastiger dan nodig?
+      reply: '"Het net verandert sneller dan ons model. Elke week komen er zonnepanelen en laadpalen bij die we
+        nog niet kennen."'
+    - id: standard
+      person: femke
+      text: Doen jullie elke studie volgens de procedure?
+      reply: '"Volgens de procedure, ja." Ze tekent verder.'
+  connections.grid_reinforcement:
+    tools:
+      documents:
+        label: Bekijk de dossiers van netverzwaringen
+        observations:
+        - Elk dossier van een netverzwaring heeft een ontwerp, een begroting en een lijst met parafen. Bij een paar
+          zit een brief van de gemeente over de plek van een nieuw station.
+        - 'In een dossier zit een foto van een trafohuisje dat te klein is voor een grotere transformator. Erbij
+          staat: ''nieuwe plek zoeken''.'
+      data:
+        label: Bekijk de lijst met verzwaringen
+        observations:
+        - De verzwaringen staan in een lijst per wijk. Nova-Oost staat bovenaan, met de meeste wachtende aansluitingen
+          erachter.
+        - Bij elke verzwaring staat een geplande opleverdatum. Een paar data zijn al eens verschoven.
+  connections.permit:
+    tools:
+      documents:
+        label: Lees de vergunningsaanvragen
+        observations:
+        - Een vergunningsaanvraag beschrijft het tracé, hoe er gegraven wordt en wanneer de bestrating wordt hersteld.
+          De gemeente wil ook weten welke bomen er staan.
+        - 'Voordat er gegraven wordt, moet er een KLIC-melding zijn gedaan: wie graaft, moet weten welke kabels
+          en leidingen er al liggen.'
+      data:
+        label: Bekijk de doorlooptijden van vergunningen
+        observations:
+        - Per gemeente staat in een tabel hoe lang een vergunning duurt. Nova is de snelste; de kleinere gemeenten
+          wisselen.
+        - Een paar aanvragen kwamen terug met een vraag over de verkeersmaatregelen tijdens het graven.
+  connections.planning:
+    tools:
+      documents:
+        label: Bekijk de weekplanning
+        observations:
+        - 'De weekplanning is een groot rooster: monteurs per rij, dagen per kolom, klussen in vakjes met een kleur
+          per soort werk.'
+        - 'Bij sommige klussen staat een sterretje: de KLIC-melding moet nog worden gedaan.'
+      queue_count:
+        label: Tel de klussen zonder datum
+        observations:
+        - In de werkbak van Planning liggen klussen die klaar zijn voor uitvoering maar nog geen datum hebben. Linda
+          sorteert ze op postcode.
+        - Een aparte lijst houdt de vervolgafspraken van storingen bij. Die gaan voor.
+      data:
+        label: Bekijk de planningscijfers
+        observations:
+        - Het systeem toont per week hoeveel klussen er gepland stonden en hoeveel er zijn gedaan. Linda kijkt er
+          vooral op vrijdag naar.
+        - Per monteur staat in een kolom welke aanwijzing hij heeft volgens de BEI. Niet iedereen mag alles.
+    questions:
+    - id: walk
+      person: linda
+      text: Linda, hoe maak jij de planning van een week?
+      reply: '"Sorry, het gaat snel hoor. Maandag vul ik de week, daarna is het omplannen." Ze laat het rooster
+        zien. "Het is een kaartenhuis."'
+    - id: last
+      person: linda
+      text: Kun je laten zien wat er de laatste keer misging?
+      reply: '"De laatste keer? Een monteur was ziek en ik had geen vervanger met de juiste aanwijzing." Ze zucht.
+        "Dan bel ik de klant, met excuses."'
+    - id: standard
+      person: linda
+      text: Plan je volgens een vaste volgorde?
+      reply: '"Ja. Meestal wel."'
+    - id: behind
+      person: linda
+      text: Waarom staan monteurs zo vaak voor niets bij een klant?
+      reply: '"Dat ligt niet aan de monteurs." Ze neemt de telefoon op, die net gaat.'
+  connections.execution:
+    tools:
+      shadow:
+        label: Rijd een dag mee met een monteur
+        observations:
+        - De monteur graaft een sleuf van de straat naar de gevel, legt de kabel, maakt de mof en zet de aansluitkast.
+          Het weer zit mee; het werk gaat vlot.
+        - Bij het eerste adres wacht de monteur tot een buurman zijn auto heeft weggezet. Intussen drinkt hij koffie
+          uit zijn thermosfles.
+      time_study:
+        label: Klok een aansluiting
+        observations:
+        - 'Je klokt een aansluiting: graven, kabel leggen, moffen, aansluitkast plaatsen, dichtgooien. Het moffen
+          vraagt de meeste precisie.'
+        - De monteur werkt in een vaste volgorde en legt zijn gereedschap telkens op dezelfde plek in de bus terug.
+      material_check:
+        label: Kijk in de bus
+        observations:
+        - In de bus liggen kabelhaspels, moffen en aansluitkasten. Alles staat vast met spanbanden.
+        - 'Achterin staat een doos met kleine onderdelen: kabelschoenen, tape, krimpkousen.'
+      data:
+        label: Bekijk de uitvoeringscijfers
+        observations:
+        - Per monteur staan de afgemelde klussen per week in een lijst. De verschillen tussen monteurs zijn klein.
+        - De uitvoering heeft een eigen afmeldcode voor 'weersomstandigheden'. In de winter wordt die vaker gebruikt.
+    questions:
+    - id: walk
+      person: marco
+      text: Marco, wil je me laten zien hoe een aansluitdag eruitziet?
+      reply: '"Kijk. Om zeven uur de bus in, adres, graven, aansluiten, klaar." Hij haalt zijn schouders op. "Mijn
+        mannen kunnen dit."'
+    - id: obstacle
+      person: marco
+      text: Wat maakt het werk van je mannen lastiger dan nodig?
+      reply: '"Kantoor." Een stilte. "Nee, serieus: een verkeersplan regelen voor een straat waar niemand rijdt."'
+    - id: ok
+      person: marco
+      text: Loopt het vandaag?
+      reply: '"Het loopt."'
+    - id: who
+      person: marco
+      text: Welke monteur maakt de meeste fouten?
+      reply: 'Hij kijkt je aan zonder iets te zeggen. Dan: "Zo begon het in 2012 ook."'
+  connections.commissioning:
+    people_also:
+    - ahmed
+    tools:
+      shadow:
+        label: Kijk mee bij het in bedrijf nemen
+        observations:
+        - De monteur meet de spanning, plaatst de meter, controleert de draairichting en zet de hoofdschakelaar
+          om. Het licht in de meterkast gaat aan.
+        - De klant kijkt mee en vraagt of de laadpaal nu kan. De monteur zegt dat de installateur daarover gaat.
+      documents:
+        label: Bekijk de opleverpapieren
+        observations:
+        - Bij elke oplevering hoort een formulier met de meterstand, het meternummer en de EAN-code.
+        - De oplevering heeft een checklist met veiligheidsmetingen. Elk vakje is aangekruist.
+      time_study:
+        label: Klok een oplevering
+        observations:
+        - Het in bedrijf nemen zelf gaat snel. De klant moet eerst de meterkast vrijmaken.
+        - De monteur doet de metingen in een vaste volgorde, uit zijn hoofd.
+    questions:
+    - id: walk
+      person: ahmed
+      text: Ahmed, wil je me laten zien hoe je een aansluiting oplevert?
+      reply: '"Gewoon. Meten, meter erin, schakelaar om. Echt wel snel, man."'
+    - id: last
+      person: ahmed
+      text: Wat ging er de laatste keer mis bij een oplevering?
+      reply: '"Mis? Niks, toch. Nou ja, de klant had zijn wasmachine al aangesloten voordat ik klaar was."'
+    - id: standard
+      person: ahmed
+      text: Doe je de metingen volgens de checklist?
+      reply: '"Ja, toch."'
+  connections.revision:
+    tools:
+      queue_count:
+        label: Tel de bak met schetsen
+        observations:
+        - De bak met schetsen staat naast Miekes scherm. Daarnaast ligt een mapje met schetsen waar ze nog een vraag
+          over heeft.
+        - In GIS staat een filter 'nog te reviseren'. Mieke opent het elke ochtend als eerste.
+      documents:
+        label: Bekijk de schetsen van de monteurs
+        observations:
+        - Op de schetsen staan de kabel, de mof en de afstanden tot de gevel. Sommige zijn met potlood, andere met
+          balpen.
+        - Bij een schets zit een kopie van de KLIC-kaart, met de nieuwe kabel er met de hand bij getekend.
+      time_study:
+        label: Klok één revisie
+        observations:
+        - Mieke tekent de kabel in GIS, vult de kenmerken in (type, doorsnede, jaar) en controleert hoe hij op het
+          net aansluit. Ze werkt zorgvuldig en in stilte.
+        - Halverwege haalt ze een boterham uit een zakje met een vlek pindakaas. Daarna tekent ze verder.
+      data:
+        label: Bekijk de cijfers in GIS
+        observations:
+        - GIS houdt per kabel bij wanneer en door wie hij is ingetekend. De oudste kabels in Nova-Oud zijn nooit
+          digitaal nagemeten.
+        - Per week staat er hoeveel revisies zijn afgerond. Het getal schommelt met de vakanties.
+    questions:
+    - id: walk
+      person: mieke
+      text: Mieke, wil je laten zien hoe een revisie gaat?
+      reply: '"Dat moet kloppen, dus ik doe het rustig." Ze laat zien hoe een schets een lijn in GIS wordt.'
+    - id: obstacle
+      person: mieke
+      text: Wat maakt jouw werk lastiger dan nodig?
+      reply: '"Het systeem. Na elke update staan de knoppen ergens anders." Ze glimlacht. "Daar wen ik wel aan."'
+    - id: standard
+      person: mieke
+      text: Werken jullie op volgorde van binnenkomst?
+      reply: '"Ja. Dat moet kloppen."'
+    - id: behind
+      person: mieke
+      text: Waarom loopt GIS zo achter op de straat?
+      reply: '"Achter?" Ze legt haar potlood neer. "Mijn team tekent wat het krijgt."'
+  connections.close_out_wait:
+    tools:
+      data:
+        label: Bekijk de status van opgeleverde aansluitingen
+        observations:
+        - 'Elke aansluiting heeft een status: in uitvoering, technisch gereed, administratief open, gesloten. Elke
+          status heeft een eigen kleur.'
+        - Bij 'technisch gereed' staat de datum waarop de monteur heeft afgemeld.
+      queue_count:
+        label: Tel de dossiers die op afhandeling wachten
+        observations:
+        - De dossiers die op afhandeling wachten, staan in een lijst die je kunt filteren op datum en op wijk.
+        - In de lijst staan ook een paar dossiers met de opmerking 'meter nog niet geregistreerd'.
+  connections.close_out:
+    tools:
+      documents:
+        label: Bekijk Petra's afhandelmap
+        observations:
+        - Petra's map heeft een tabblad per maand. In elk tabblad zit een lijst met EAN-codes en een vinkje per
+          stap.
+        - Om een aansluiting aan te melden, vult Petra de gegevens in het landelijke aansluitingenregister in. Daarna
+          kan de klant een energieleverancier kiezen.
+      queue_count:
+        label: Tel de dossiers bij Meetdata
+        observations:
+        - Op Petra's bureau ligt een kleine stapel post. De rest is digitaal.
+        - Op het scherm staat een teller met openstaande taken. Petra heeft het geluid uitgezet.
+      data:
+        label: Bekijk de registratiecijfers
+        observations:
+        - Het systeem telt de aanmeldingen per energieleverancier. De grote leveranciers krijgen de meeste klanten.
+        - Een tabel houdt per wijk bij hoeveel meters op afstand worden uitgelezen.
+    questions:
+    - id: walk
+      person: petra
+      text: Petra, wil je laten zien hoe een aansluiting bij jou wordt afgerond?
+      reply: '"Klopt, dat kan." Ze opent haar map. "Alles staat in mijn map. Stap voor stap."'
+    - id: obstacle
+      person: petra
+      text: Wat maakt jouw werk lastiger dan nodig?
+      reply: '"Ik ben hier alleen. Als ik ziek ben, blijft het liggen."'
+    - id: ok
+      person: petra
+      text: Loopt het een beetje?
+      reply: '"Klopt. Het loopt."'
+  customer_contact.answer:
+    tools:
+      listen_in:
+        label: Luister mee met een klantgesprek
+        observations:
+        - Een klant belt over een storing in zijn straat. Kim kijkt op de storingskaart en zegt dat er een monteur
+          onderweg is.
+        - Een vrouw vraagt waarom haar voorschot omhoog is gegaan. Saskia legt uit dat dat bij de energieleverancier
+          ligt, niet bij de netbeheerder.
+        - Een man wil zijn meter laten verplaatsen voor een verbouwing. Kim zet de aanvraag voor hem klaar in het
+          portaal.
+      queue_count:
+        label: Kijk naar het wachtrijbord
+        observations:
+        - Het wachtrijbord aan de muur toont hoeveel bellers er wachten en hoe lang de langste al wacht. Het getal
+          wisselt elke paar seconden.
+        - 'Naast het bord hangt een A4''tje: ''Eerst de klant, dan de notitie.'''
+      time_study:
+        label: Klok de gesprekken
+        observations:
+        - Elk gesprek eindigt met een korte notitie in het klantsysteem. Wie snel typt, is eerder klaar voor het
+          volgende gesprek.
+        - Tussen twee gesprekken zet Kim haar headset even af en drinkt water. Het lampje op het bord springt meteen
+          weer aan.
+      data:
+        label: Bekijk de belcijfers
+        observations:
+        - Het systeem telt gesprekken per uur. Rond negen uur en na de lunch is het het drukst.
+        - Bij elk gesprek kiest de agent een reden uit een lijst. 'Overig' wordt het vaakst gekozen.
+    questions:
+    - id: walk
+      person: esra
+      text: Esra, wil je laten zien hoe een gesprek bij jullie loopt?
+      reply: '"Kijk, gewoon eerlijk: aannemen, luisteren, opzoeken, antwoorden." Ze doet de wachtmuziek na. "En
+        dit hoort de klant ertussendoor."'
+    - id: behind
+      person: esra
+      text: Waarom duren de gesprekken hier zo lang?
+      reply: '"Serieus?" Ze kijkt je recht aan. "Mijn mensen zijn niet traag."'
+  outages.report:
+    tools:
+      listen_in:
+        label: Luister mee met een storingsmelding
+        observations:
+        - 'Een melding komt binnen: een straat in Nova-Oud zonder stroom. Kees ziet op de videowand welke kabel
+          is uitgevallen en belt de storingsdienst.'
+        - Een beller meldt knipperend licht. Kees vraagt of de buren het ook hebben; dan weet hij of het in het
+          huis zit of in het net.
+      documents:
+        label: Bekijk de schakelinstructies
+        observations:
+        - 'Voor elk middenspanningsstation is er een schakelinstructie: welke schakelaar eerst, welke daarna. Een
+          geplastificeerde kopie hangt in een map bij de videowand.'
+        - Een schakelopdracht wordt door een tweede persoon gecontroleerd voordat hij wordt uitgevoerd.
+      data:
+        label: Bekijk het storingslogboek
+        observations:
+        - Het logboek houdt per storing de tijden bij van melden, uitrukken, lokaliseren en herstellen. De velden
+          zijn verplicht.
+        - Elke storing krijgt een oorzaakcode. 'Onbekend' komt vaker voor dan je zou denken.
+    questions:
+    - id: walk
+      person: kees
+      text: Kees, wat gebeurt er als er een storing binnenkomt?
+      reply: '"Melding. Kijken op de videowand. Schakelen." Hij wijst naar het scherm. "Zo komt het licht terug."'
+    - id: obstacle
+      person: kees
+      text: Wat maakt jouw werk lastiger dan nodig?
+      reply: '"De nacht. Dan ben ik alleen met de wand."'
+    - id: standard
+      person: kees
+      text: Schakel je altijd volgens de instructie?
+      reply: '"Altijd."'
+  outages.locate:
+    tools:
+      shadow:
+        label: Rijd mee met de storingsdienst
+        observations:
+        - De monteur rijdt naar het middenspanningsstation, opent de deur en kijkt welke schakelaar is uitgevallen.
+          Dan begint het zoeken langs de kabel.
+        - 'Vanuit een meetwagen stuurt de monteur een puls door de kabel. Op het scherm verschijnt een piek: daar
+          ergens zit de fout.'
+      time_study:
+        label: Klok het lokaliseren
+        observations:
+        - 'Het lokaliseren bestaat uit drie delen: het juiste station vinden, de foutplaats voormeten en de plek
+          nameten in de straat.'
+        - Tussen het voormeten en het nameten rijdt de monteur een paar straten verder. Het verkeer bepaalt hoe
+          lang dat duurt.
+      documents:
+        label: Bekijk de kabelkaarten
+        observations:
+        - De kabelkaarten tonen per straat de kabels, het type en het jaar van aanleg. Op de kaarten van oude wijken
+          staan handgeschreven aantekeningen.
+        - Als er gegraven werd, zit de KLIC-melding van de aannemer los in het storingsdossier.
+      data:
+        label: Bekijk de storingsgegevens
+        observations:
+        - De storingen staan op een kaart van Nova. De meeste zitten in de oudste wijken.
+        - Per kabeltype is te zien hoe vaak het storing geeft. Oude papierloodkabels staan bovenaan.
+    questions:
+    - id: walk
+      person: henk
+      text: Henk, wil je me laten zien hoe je een fout zoekt?
+      reply: '"Ik laat het je wel zien, {jongen_meid}. In ''87 hadden we alleen een kaart en onze oren."'
+    - id: obstacle
+      person: ahmed
+      text: Ahmed, wat maakt het zoeken lastiger dan nodig?
+      reply: '"Gewoon, de oude wijken. Mijn navigatie kent Nova-Oud beter dan ik."'
+    - id: last
+      person: gert
+      text: Gert, wat ging er de laatste keer mis bij het graven?
+      reply: '"Mis? Een buurman die zijn hond losliet bij de sleuf." Hij lacht kort. "Verder niks."'
+    - id: who
+      person: ahmed
+      text: Wie had deze kabel als laatste in handen?
+      reply: '"Dat moet ik Henk vragen." Ahmed kijkt naar de grond.'
+  outages.repair:
+    tools:
+      shadow:
+        label: Kijk mee bij het herstel
+        observations:
+        - De monteur graaft de fout bloot, zaagt het beschadigde stuk kabel eruit en maakt twee moffen. Een collega
+          houdt de sleuf droog met een pomp.
+        - Voor het moffen zet de monteur een tentje over de sleuf, zodat het droog blijft.
+      material_check:
+        label: Bekijk de voorraad in de bus
+        observations:
+        - In de bus liggen moffen van verschillende merken. Op de dozen staat met stift voor welk kabeltype ze zijn.
+        - In het magazijn ligt elke soort mof in een eigen vak met een etiket. Dirk weet zonder te kijken waar alles
+          ligt.
+      time_study:
+        label: Klok het herstel
+        observations:
+        - 'Het moffen zelf is precisiewerk: strippen, schoonmaken, krimpen. Daar haast niemand zich.'
+        - Na het herstel wacht de monteur op het telefoontje van de meldkamer dat de kabel weer onder spanning gaat.
+      data:
+        label: Bekijk de herstelgegevens
+        observations:
+        - Per storing staat hoe lang het herstel duurde. De lange herstellingen zijn vaak 's nachts.
+        - Het systeem telt hoeveel moffen er per maand worden gebruikt. In de winter zijn het er meer.
+    questions:
+    - id: walk
+      person: dirk
+      text: Dirk, hoe komt een mof van het magazijn in de bus?
+      reply: '"Ik heb ze gewoon liggen." Hij wijst naar de vakken. "Wie iets nodig heeft, pakt het."'
+    - id: ok
+      person: dirk
+      text: Heb je genoeg op voorraad?
+      reply: '"Hm. Genoeg."'
+    - id: behind
+      person: dirk
+      text: Waarom ligt er zo vaak het verkeerde materiaal in de bus?
+      reply: '"Hm." Dirk draait zich om naar de vakken. "Dat is niet het magazijn."'
+  meters.appointment:
+    people_also:
+    - linda
+    tools:
+      documents:
+        label: Bekijk de afspraakbrieven
+        observations:
+        - 'De afspraakbrief noemt de datum, het adres en wat de klant moet doen: de meterkast vrijmaken en thuis
+          zijn.'
+        - In de brief staat een link om de afspraak te verzetten. Weinig klanten gebruiken hem.
+      listen_in:
+        label: Luister mee met het inplannen
+        observations:
+        - Linda belt een klant om een meterwissel in te plannen. De klant vraagt of het na vijf uur kan; dat kan
+          niet.
+        - Een klant belt terug over de brief en vraagt of de wissel iets kost. Dat doet hij niet.
+      data:
+        label: Bekijk de afspraakcijfers
+        observations:
+        - Per wijk staat hoeveel meters er dit jaar gewisseld moeten worden. Nova-Oud loopt achter op het schema.
+        - Het systeem toont per dag hoeveel afspraken er zijn gemaakt en door wie.
+    questions:
+    - id: walk
+      person: linda
+      text: Linda, hoe plan je een meterwissel in?
+      reply: '"Snel, sorry. Postcode, monteur, dag. En dan hopen dat het kaartenhuis blijft staan."'
+    - id: obstacle
+      person: linda
+      text: Wat maakt het inplannen lastiger dan nodig?
+      reply: '"Omplannen. Als er een monteur ziek is, schuift alles."'
+    - id: ok
+      person: linda
+      text: Loopt het inplannen goed?
+      reply: '"Ja. Meestal wel."'
+  meters.visit:
+    people_also:
+    - ahmed
+    tools:
+      shadow:
+        label: Rijd mee met een metermonteur
+        observations:
+        - De monteur belt aan, zegt wie hij is en vraagt naar de meterkast. Hij legt een kleedje op de vloer voordat
+          hij begint.
+        - Bij het wisselen gaat de stroom even van het huis af. De monteur zegt het van tevoren, zodat niemand schrikt.
+      time_study:
+        label: Klok een meterwissel
+        observations:
+        - 'Je klokt een meterwissel: de oude meter eraf, de nieuwe erop, de standen noteren, verzegelen.'
+        - Tussen twee adressen zoekt de monteur een parkeerplek. In de oude wijk duurt dat het langst.
+      material_check:
+        label: Kijk in de bus
+        observations:
+        - In de bus liggen dozen met slimme meters, zegels en communicatiemodules in losse zakjes.
+        - Op elke doos zit een sticker met het serienummer. De monteur scant hem voordat hij de meter plaatst.
+      data:
+        label: Bekijk de wisselcijfers
+        observations:
+        - Per monteur staat hoeveel meters hij per dag wisselt. Het aantal verschilt per wijk.
+        - 'Bij elk bezoek wordt een uitkomst vastgelegd: gewisseld, niet thuis, kast niet bereikbaar.'
+    questions:
+    - id: walk
+      person: ahmed
+      text: Ahmed, hoe gaat een meterwissel?
+      reply: '"Gewoon. Aanbellen, kast open, wisselen. Als het meezit, ben je zo klaar."'
+    - id: obstacle
+      person: ahmed
+      text: Wat maakt het werk lastiger dan nodig?
+      reply: '"Honden." Hij grijnst. "Echt wel."'
+    - id: ok
+      person: ahmed
+      text: Gaat het goed vandaag?
+      reply: '"Ja, toch."'
+  meters.registration:
+    people_also:
+    - petra
+    tools:
+      data:
+        label: Bekijk de uitleesgegevens
+        observations:
+        - 'Het systeem laat per meter zien of hij vandaag standen heeft gestuurd: een groen bolletje of een rood.'
+        - Per wijk is te zien hoeveel meters op afstand worden uitgelezen.
+      queue_count:
+        label: Tel de registraties die wachten
+        observations:
+        - De lijst met meters die nog geregistreerd moeten worden, staat op volgorde van plaatsingsdatum.
+        - 'Een paar regels hebben een opmerking: ''serienummer klopt niet met de bon''.'
+      documents:
+        label: Bekijk de plaatsingsbonnen
+        observations:
+        - Bij elke meter hoort een plaatsingsbon met het serienummer, de meterstand en de EAN-code. De bonnen komen
+          digitaal binnen.
+        - 'Op sommige bonnen staat een opmerking van de monteur: ''kast krap'', ''hond''.'
+    questions:
+    - id: walk
+      person: petra
+      text: Petra, hoe registreer je een nieuwe meter?
+      reply: '"Bon erin, serienummer aan de EAN koppelen, klaar. Klopt het niet, dan gaat het in mijn map."'
+    - id: standard
+      person: petra
+      text: Registreer je alles op dezelfde dag?
+      reply: '"Klopt."'
+  congestion.intake:
+    tools:
+      listen_in:
+        label: Luister mee met een aanvraag voor capaciteit
+        observations:
+        - 'Een ondernemer belt over een nieuwe koelcel. Thomas vraagt hoeveel vermogen hij nodig heeft en wanneer.
+          Het antwoord: zo veel mogelijk, zo snel mogelijk.'
+        - Een projectontwikkelaar vraagt of er nog ruimte is voor een laadplein. Thomas legt uit dat er een wachtrij
+          is en hoe die werkt.
+      documents:
+        label: Bekijk de aanvragen voor transportcapaciteit
+        observations:
+        - Elke aanvraag noemt het gevraagde vermogen, het adres en de gewenste startdatum. Sommige aanvragen zijn
+          al een jaar oud.
+        - Bij één aanvraag zit een brief van een wethouder die vraagt om voorrang voor een nieuwe school.
+      data:
+        label: Bekijk de cijfers van de aanvragen
+        observations:
+        - De wachtrij staat op volgorde van binnenkomst. Bovenaan staan vooral bedrijven van het nieuwe bedrijventerrein.
+        - Per station staat hoeveel capaciteit er is aangevraagd. Bij een paar stations is dat meer dan het station
+          aankan.
+    questions:
+    - id: walk
+      person: thomas
+      text: Thomas, wat gebeurt er met een aanvraag voor capaciteit?
+      reply: '"Mijn klanten vragen, wij rekenen, en dan wachten we samen." Hij glimlacht. "Meestal bij een lunch
+        op het bedrijventerrein."'
+    - id: obstacle
+      person: thomas
+      text: Wat maakt jouw werk lastiger dan nodig?
+      reply: '"Nee zeggen tegen mensen die ik ken. Dat is het lastigste."'
+    - id: ok
+      person: thomas
+      text: Loopt het een beetje met de aanvragen?
+      reply: '"Ja hoor. Het loopt."'
+  congestion.congestion_study:
+    people_also:
+    - femke
+    tools:
+      shadow:
+        label: Kijk mee bij het congestieonderzoek
+        observations:
+        - Femke zet de aanvragen uit de wachtrij één voor één in het model. Bij elke aanvraag kijkt ze of het station
+          het nog houdt.
+        - Ze overlegt met de landelijke netbeheerder over een nieuw station dat over een paar jaar klaar moet zijn.
+      documents:
+        label: Lees het congestieonderzoek
+        observations:
+        - Het congestieonderzoek beschrijft per station de verwachte belasting en of er ruimte is. Het eindigt met
+          een kaart in groen, oranje en rood.
+        - In een bijlage staan de afspraken met de landelijke netbeheerder over hoeveel vermogen er van het hoogspanningsnet
+          kan komen.
+      data:
+        label: Bekijk de belastingsmetingen
+        observations:
+        - De metingen van het station beslaan het hele jaar. In de winter en op zonnige middagen zijn de pieken
+          het hoogst.
+        - De belasting is per kwartier opgeslagen. Het bestand is zo groot dat het rekenprogramma er even over doet.
+    questions:
+    - id: walk
+      person: femke
+      text: Femke, hoe stel je vast of het net vol is?
+      reply: '"Kort gezegd: alles wat is aangevraagd erin, en kijken of het past." Ze tekent een station met pijlen.'
+    - id: standard
+      person: femke
+      text: Rekenen jullie volgens de landelijke methode?
+      reply: '"Ja. Dat past."'
+  congestion.capacity_queue:
+    tools:
+      queue_count:
+        label: Tel de wachtrij
+        observations:
+        - De wachtrij is een lijst op het scherm. Wie van de lijst afgaat, verdwijnt zonder opmerking.
+        - Naast de lijst houdt Thomas een eigen lijstje bij van klanten die hem elke maand bellen.
+      data:
+        label: Bekijk de wachtrij voor netcapaciteit
+        observations:
+        - 'Bij elke aanvrager in de wachtrij staan het gevraagde vermogen en de sector: logistiek, bouw, zorg, onderwijs.'
+        - Een paar aanvragers staan al op de lijst sinds de wachtrij begon.
+      documents:
+        label: Bekijk de brieven aan wachtenden
+        observations:
+        - Elke aanvrager krijgt een brief met zijn plek in de rij en de verwachte datum van de netverzwaring.
+        - In de standaardbrief staat dat die datum kan verschuiven.
+  congestion.offer:
+    people_also:
+    - thomas
+    tools:
+      documents:
+        label: Lees de aanbiedingen en contracten
+        observations:
+        - 'Een aanbod noemt het vermogen, de startdatum en de voorwaarden. Er zijn drie soorten: vast, niet-vast
+          en tijdsduurgebonden.'
+        - Bij elk contract zit een bijlage met de technische gegevens van de aansluiting.
+      data:
+        label: Bekijk de contractcijfers
+        observations:
+        - Per klant staat het gecontracteerde vermogen in een tabel. De grootste klanten staan bovenaan.
+        - Het systeem toont per maand hoeveel aanbiedingen zijn verstuurd en hoeveel er zijn getekend.
+    questions:
+    - id: walk
+      person: thomas
+      text: Thomas, hoe komt een aanbod tot stand?
+      reply: '"Ik ga erheen, ik leg het uit, en dan tekenen ze. Of niet."'
+    - id: ok
+      person: thomas
+      text: Tekenen de klanten een beetje?
+      reply: '"De meesten wel."'
+  voltage_complaints.analysis:
+    people_also:
+    - petra
+    tools:
+      data:
+        label: Bekijk de klachtgegevens
+        observations:
+        - Elke spanningsklacht krijgt een adres, een omschrijving en een datum. Veel klachten gaan over knipperende
+          lampen.
+        - De klachten staan op een kaart. Ze komen uit verschillende wijken, oud en nieuw.
+      documents:
+        label: Lees de klachtformulieren
+        observations:
+        - 'De klant beschrijft wat hij merkt: ''de omvormer valt uit'', ''de lampen knipperen'', ''de wasmachine
+          stopt''. Soms zit er een foto van een foutmelding bij.'
+        - Op het formulier staat de vraag of de buren het ook merken. De meeste klanten laten die leeg.
+    questions:
+    - id: walk
+      person: petra
+      text: Petra, hoe beoordeel je een spanningsklacht?
+      reply: '"Klopt het verhaal, dan gaat er een monteur heen met een meetkastje. Een week meten."'
+  voltage_complaints.measurement:
+    people_also:
+    - ahmed
+    tools:
+      shadow:
+        label: Kijk mee bij het plaatsen van een spanningsmeter
+        observations:
+        - De monteur hangt een meetkastje in de meterkast van de klant. Het legt een week lang de spanning vast.
+        - De klant vraagt of het kastje gevaarlijk is. De monteur legt uit dat het alleen meet.
+      time_study:
+        label: Klok het plaatsen
+        observations:
+        - Het plaatsen van het kastje gaat snel. De meeste tijd zit in de rit en in het uitleggen aan de klant.
+        - De monteur noteert de meterstand en het tijdstip waarop het kastje begint te meten.
+      data:
+        label: Bekijk de meetresultaten
+        observations:
+        - Een meetweek levert een grafiek op met de spanning per uur. De norm is 230 volt, met tien procent marge
+          naar boven en naar beneden.
+        - Bij elke meting staat welke wijktransformator het adres voedt.
+    questions:
+    - id: walk
+      person: ahmed
+      text: Ahmed, wat doe je bij een spanningsklacht?
+      reply: '"Kastje ophangen, week wachten, kastje ophalen. Gewoon."'
+    - id: ok
+      person: ahmed
+      text: Meet het kastje goed?
+      reply: '"Ja, toch."'
+  voltage_complaints.tap_change:
+    people_also:
+    - ahmed
+    tools:
+      documents:
+        label: Bekijk de gegevens van de wijktrafo
+        observations:
+        - Op een kaart in het trafohuisje staan het bouwjaar, het vermogen en de stand van de aftakking.
+        - In het onderhoudsboekje staan de inspecties. De laatste was dit voorjaar.
+      shadow:
+        label: Kijk mee in het trafohuisje
+        observations:
+        - Om de aftakking te verstellen, moet de trafo eerst spanningsloos. De monteur kondigt de onderbreking aan
+          in de straat.
+        - In het trafohuisje hangt een schema van de vertrekkende kabels. Het is met de hand bijgewerkt.
+    questions:
+    - id: walk
+      person: ahmed
+      text: Ahmed, wat doe je in het trafohuisje?
+      reply: '"Trafo uit, aftakking om, trafo weer aan. Henk heeft het me laten zien."'
+  # The three magazijn places on the werf (design agent, 2026-10-18). Dirk is met here
+  # too: he runs the magazijn. No tier-1 clue sits here; the lines stay clear of the
+  # cause of De verkeerde mof in de bus (what belongs in a van, how it is restocked).
+  outages.joint:
+    people_also:
+    - dirk
+    tools:
+      material_check:
+        label: Kijk in de mofvakken
+        observations:
+        - Elke soort mof ligt in een eigen vak, met een etiket voor het kabeltype. Bovenin liggen de moffen voor kunststofkabel, onderin die voor papierloodkabel.
+        - Naast de vakken staat een rek met krimpkousen en gietharsmoffen. De houdbaarheidsdatum staat met stift op de doos.
+      documents:
+        label: Bekijk de uitgiftebonnen
+        observations:
+        - Wie iets meeneemt, schrijft het op een bon met zijn naam en het storingsnummer. 's Nachts liggen de bonnen in een bakje bij de deur.
+        - Op een paar bonnen staat alleen 'mof' en een paraaf. Dirk zoekt later uit welke het was.
+      data:
+        label: Bekijk de voorraadlijst
+        observations:
+        - De voorraadlijst telt per soort mof wat er in het magazijn ligt. Bij de meeste soorten staat een minimum waarop Dirk bijbestelt.
+        - Een paar moffen voor oude kabeltypes zijn al jaren niet meer gebruikt. Ze staan nog op de lijst.
+    questions:
+    - id: walk
+      person: dirk
+      text: Dirk, wat gebeurt er hier als er 's nachts een storing is?
+      reply: '"Dan is het dicht." Hij tikt op het sleutelkastje. "De storingsdienst heeft een sleutel."'
+    - id: standard
+      person: dirk
+      text: Schrijft iedereen op wat hij meeneemt?
+      reply: '"Meestal."'
+  connections.materials:
+    people_also:
+    - dirk
+    tools:
+      material_check:
+        label: Loop langs de stellingen met aansluitsets
+        observations:
+        - Een aansluitset is een kabelhaspel, een aansluitkast, moffen en kleine onderdelen, samen op een pallet met het dossiernummer erop.
+        - De haspels liggen buiten onder een afdak, op dikte gesorteerd. Een heftruck staat ernaast.
+      documents:
+        label: Bekijk de materiaalstaten
+        observations:
+        - Bij elke set hoort de materiaalstaat uit het ontwerp van Werkvoorbereiding. Dirk vinkt af wat hij heeft klaargezet.
+        - Op een materiaalstaat staat in de kantlijn 'kast andere maat, gebeld'. Er staat een datum bij.
+      queue_count:
+        label: Tel de klaargezette sets
+        observations:
+        - De klaargezette sets staan in een rij langs de muur, op volgorde van de uitvoeringsdatum.
+        - Een paar pallets staan apart onder een zeil. Er hangt een kaartje aan met 'wacht'.
+      data:
+        label: Bekijk de reserveringen
+        observations:
+        - Het systeem toont per artikel wat er op voorraad is en wat al voor een klus is gereserveerd. Aansluitkasten zijn het vaakst bijna op.
+        - De leverancier levert op dinsdag en donderdag. Op de lijst staat per bestelling de verwachte datum.
+    questions:
+    - id: walk
+      person: dirk
+      text: Dirk, hoe zet je een aansluitset klaar?
+      reply: '"Staat erop, pak ik." Hij houdt een materiaalstaat omhoog. "Klaar."'
+    - id: obstacle
+      person: dirk
+      text: Wat maakt jouw werk lastiger dan nodig?
+      reply: '"Heftruck." Hij knikt naar buiten. "Die doet het als hij zin heeft."'
+    - id: behind
+      person: dirk
+      text: Waarom staat een set er soms niet als de monteur hem komt halen?
+      reply: '"Hm." Hij kijkt even naar de rij pallets. "Staat er toch."'
+  meters.reserve_meter:
+    people_also:
+    - dirk
+    tools:
+      material_check:
+        label: Kijk in de meterkooi
+        observations:
+        - De slimme meters liggen in een afgesloten kooi, in dozen per type. Een enkelfase meter is kleiner dan een driefase.
+        - Op een plank in de kooi liggen communicatiemodules en zegels, per soort in een bak.
+      data:
+        label: Bekijk de metervoorraad
+        observations:
+        - Per metertype staat hoeveel er in de kooi liggen en hoeveel er voor afspraken zijn gereserveerd.
+        - Elke meter heeft een serienummer dat bij uitgifte wordt gescand. Zo is te zien welke bus welke meter heeft.
+      documents:
+        label: Bekijk de leveringsbonnen
+        observations:
+        - De meters komen per pallet binnen van de fabrikant. Bij elke levering zit een bon met de serienummers.
+        - Op een bon staat dat een doos beschadigd binnenkwam. De meters zijn apart gelegd voor controle.
+    questions:
+    - id: walk
+      person: dirk
+      text: Dirk, hoe gaat een meter van de kooi naar de bus?
+      reply: '"Scannen, tekenen, mee." Hij houdt de scanner omhoog.'
+    - id: ok
+      person: dirk
+      text: Zijn er genoeg meters?
+      reply: '"Deze week wel."'
+tool_cards:
+- tool: conversation
+  title: Vragen stellen
+  text: Wie het werk doet, weet hoe het loopt. Een vraag kost jullie allebei een halfuur.
+- tool: shadow
+  title: Meelopen
+  text: Je loopt een halve dag mee en ziet het werk zoals het echt gaat, ook wat niemand opschrijft.
+- tool: documents
+  title: Dossiers doorlezen
+  text: Papier en schermen laten zien wat er is afgesproken en wat er is vastgelegd.
+- tool: queue_count
+  title: Wachtrij tellen
+  text: 'Je telt wat er ligt te wachten: hoeveel dossiers, en hoeveel dagen werk dat is.'
+- tool: time_study
+  title: Tijdstudie
+  text: Met een stopwatch meet je hoe lang een stap echt duurt, en waar de tijd binnen die stap heen gaat.
+- tool: data
+  title: Data analyseren
+  text: 'Cijfers uit de systemen laten zien wat je met eigen ogen niet ziet: maanden, wijken, honderden dossiers
+    tegelijk.'
+- tool: listen_in
+  title: Meeluisteren
+  text: Je hoort wat de klant zelf zegt, in zijn eigen woorden.
+- tool: material_check
+  title: Materiaal checken
+  text: Je kijkt wat er in de bus of het magazijn ligt, en wat er ontbreekt.

@@ -1,11 +1,14 @@
 class_name PlaceMenu
 extends UiPanel
 ## A team's place, as a narrow panel at the right so the station the camera
-## frames stays in view: what you saw and heard (newest first), the gemba
-## tools with the time each takes, the leader routines where a standardised
-## fix is held, and the questions you can ask. Each one spends simulated
-## time; the results (clues, replies, a feeling that something is off) show
-## at the top.
+## frames stays in view: what you saw and heard (newest first), the people
+## who work here (a talk, and the questions you can ask them), the gemba
+## tools that fit the work here and that you know, by the place's own words
+## (PLAN 2.12: what does not fit is not shown), and the leader routines where
+## a standardised fix is held. Each one spends simulated time; the results
+## (clues, answers, what you see, a feeling that something is off) show at
+## the top. A place without a block in content/places.yaml keeps every tool
+## and the team's short questions.
 
 ## Narrow enough to leave the framed station visible at 1600 × 900.
 const WIDTH := 540
@@ -15,6 +18,9 @@ const NOTHING_TO_SAY := "heeft nu niets met je te bespreken"
 const WANTS_A_WORD := "  (kan wel een goed gesprek gebruiken)"
 ## The team's questions, named apart from a talk with a person (U18).
 const QUESTIONS := "Korte vragen aan het team  (%s per vraag)"
+## A question to a person here (content/places.yaml), under their name.
+const ASK_PERSON := "\"%s\""
+const TOOLS_HEADING := "Kijk zelf  (de tijd loopt door)"
 
 ## A person here was asked for a talk (GameUI opens the dialog).
 signal talk_requested(person_id: String)
@@ -40,16 +46,24 @@ func open_at(at_place: String) -> void:
 func use_tool(tool: String) -> String:
 	var result := session.use_tool(place, tool)
 	var text: String = UiText.tool_result(result) if not result.has("error") else UiText.place_error(result["error"])
-	_record(UiText.tool_label(tool), text)
-	return text
+	return _record(UiText.place_tool(session.gemba.label(place, tool), tool), text)
 
 
-## Ask the team here a question. Returns the Dutch reply.
+## Ask a question here: to its person where the place has questions, else
+## to the team. Returns the Dutch reply.
 func ask(question_id: String) -> String:
+	var said := _said(question_id)
 	var result := session.ask(place, question_id)
-	var text: String = UiText.reply(result) if not result.has("error") else UiText.place_error(result["error"])
-	_record("Jij: \"%s\"" % UiText.question(question_id), text)
-	return text
+	if result.has("error"):
+		return _record("Jij: \"%s\"" % said, UiText.place_error(result["error"]))
+	var person: PersonDef = session.people.persons.get(result.get("person", ""))
+	return _record("Jij: \"%s\"" % said, UiText.reply(result, person.short if person != null else ""))
+
+
+## What the player says: the place's own words for the question, or the team question's.
+func _said(question_id: String) -> String:
+	var q := session.gemba.question(place, question_id)
+	return session.fill_tokens(tr(q["text"])) if not q.is_empty() else UiText.question(question_id)
 
 
 ## The leader routines that apply here: an audit and a routine where a
@@ -102,10 +116,11 @@ func _record_routine(refused: String, done: String) -> String:
 	return text
 
 
-func _record(heading: String, text: String) -> void:
+func _record(heading: String, text: String) -> String:
 	log.push_front({"heading": "%s  —  %s" % [session.clock_text(), heading], "text": text})
 	acted.emit()
 	refresh()
+	return text
 
 
 func refresh() -> void:
@@ -118,7 +133,8 @@ func refresh() -> void:
 	_people(column)
 	_tools(column)
 	_sustain(column)
-	_questions(column)
+	if not session.gemba.has_place(place):
+		_questions(column)
 
 
 func _results(parent: Node) -> void:
@@ -127,39 +143,52 @@ func _results(parent: Node) -> void:
 		results.add_child(paragraph("Kies een gemba-instrument of stel een vraag. Alles wat je vindt, komt in je aanwijzingen (J).",
 			Palette.MUTED, UiTheme.SMALL))
 	for entry in log.slice(0, 3):
-		results.add_child(label(entry["heading"], UiTheme.SMALL, Palette.MUTED))
+		var heading := label(entry["heading"], UiTheme.SMALL, Palette.MUTED)
+		heading.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART   # a question's words can be long: keep the panel narrow
+		results.add_child(heading)
 		results.add_child(paragraph(entry["text"], Palette.INK, UiTheme.SMALL))
 
 
-## The people who work here: a talk with whoever has something to say (a
-## mission's, or a check-in), the bank's "Niet nu." after a ruined one.
+## The people here, first: whoever works here or can be met here, each with
+## a talk when one is open (a mission's, or a check-in), the bank's "Niet
+## nu." after a ruined one, and the questions they answer (a conversation's
+## time each; "thanks" after a blame or a guarded reply).
 func _people(parent: Node) -> void:
 	var here := session.people_at(place)
+	for id in session.people_to_ask(place):
+		if not here.any(func(p: Dictionary) -> bool: return p["id"] == id):
+			here.append({"id": id, "name": session.people.persons[id].name, "cooling_down": false, "has_dialog": false,
+				"needs_talk": false})
 	if here.is_empty():
 		return
 	var card := add_card(parent, PEOPLE_HEADING)
 	var special := JsonFile.dict_or_empty(session.catalog.dialog_bank.get("special"))
+	var questions := session.place_questions(place)
 	for p in here:
+		var asks := questions.filter(func(q: Dictionary) -> bool: return q["person"] == p["id"])
 		if p["cooling_down"]:
 			card.add_child(label("%s: \"%s\"" % [p["name"], special.get("cooling_down", "")], UiTheme.SMALL, Palette.MUTED))
-		elif p["has_dialog"]:
-			card.add_child(_small_button((TALK % p["name"]) + (WANTS_A_WORD if p["needs_talk"] else ""),
+			continue
+		card.add_child(label(p["name"], UiTheme.SMALL, Palette.VOLTANA_BLUE if not asks.is_empty() or p["has_dialog"]
+			else Palette.MUTED))
+		for q: Dictionary in asks:
+			card.add_child(_small_button(tr(ASK_PERSON) % _said(q["id"]), ask.bind(q["id"])))
+		if p["has_dialog"]:
+			card.add_child(_small_button((tr(TALK) % p["name"]) + (tr(WANTS_A_WORD) if p["needs_talk"] else ""),
 				talk_requested.emit.bind(p["id"])))
-		else:
-			card.add_child(label("%s %s" % [p["name"], NOTHING_TO_SAY], UiTheme.SMALL, Palette.MUTED))
+		elif asks.is_empty():
+			card.add_child(label(tr(NOTHING_TO_SAY), UiTheme.SMALL, Palette.MUTED))
 
 
+## The tools that fit the work here and that the player knows, by the
+## place's own words; none known yet: no card.
 func _tools(parent: Node) -> void:
-	var tools := add_card(parent, "Gemba: kijk zelf  (de tijd loopt door)")
-	var grid := GridContainer.new()
-	grid.columns = 2
-	tools.add_child(grid)
-	for tool: String in Investigation.TOOLS:
-		if tool != "conversation":
-			var b := button(UiText.tool_label(tool), use_tool.bind(tool))
-			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			b.add_theme_font_size_override("font_size", UiTheme.SMALL)
-			grid.add_child(b)
+	var known := session.place_tools(place)
+	if known.is_empty():
+		return
+	var tools := add_card(parent, tr(TOOLS_HEADING))
+	for tool in known:
+		tools.add_child(_small_button(UiText.place_tool(session.gemba.label(place, tool), tool), use_tool.bind(tool)))
 
 
 ## The fixes held here and the routines that apply (none: no card).
@@ -186,14 +215,14 @@ func _sustain(parent: Node) -> void:
 func _questions(parent: Node) -> void:
 	var questions := add_card(parent, tr(QUESTIONS) % UiText.duration(Investigation.TOOLS["conversation"]["minutes"]))
 	for q: String in Investigation.QUESTIONS:
-		var b := _small_button(UiText.question(q), ask.bind(q))
-		b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		questions.add_child(b)
+		questions.add_child(_small_button(UiText.question(q), ask.bind(q)))
 
 
-## A left-aligned button in the small type of this narrow panel.
+## A left-aligned button in the small type of this narrow panel, wrapping
+## long words rather than widening it.
 static func _small_button(text: String, on_press: Callable) -> Button:
 	var b := button(text, on_press)
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	b.add_theme_font_size_override("font_size", UiTheme.SMALL)
 	return b

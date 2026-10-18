@@ -43,9 +43,33 @@ func test_a_tool_result_lists_its_clues() -> void:
 	clue.text = "Driekwart is standaard."
 	var text := UiText.tool_result({"spotted": [], "clues": [clue], "hidden_signal": false})
 	assert_true(text.contains("Driekwart is standaard."))
-	assert_eq(UiText.tool_result({"spotted": [], "clues": [], "hidden_signal": false}), UiText.NOTHING_NEW)
-	assert_ne(UiText.tool_result({"spotted": [], "clues": [], "hidden_signal": true}), UiText.NOTHING_NEW,
+	assert_eq(UiText.tool_result({"spotted": [], "clues": [], "hidden_signal": true}), UiText.HIDDEN_SIGNAL,
 		"a hidden problem leaves a feeling that something is off")
+
+
+func test_a_tool_result_without_a_clue_shows_the_places_observation_and_the_feeling() -> void:
+	var text := UiText.tool_result({"spotted": [], "clues": [], "hidden_signal": true, "observation": "De inbox loopt vol."})
+	assert_true(text.contains("De inbox loopt vol."))
+	assert_true(text.contains(UiText.HIDDEN_SIGNAL), "the hidden signal stays")
+	assert_eq(UiText.tool_result({"spotted": [], "clues": [], "hidden_signal": false, "observation": "Rustig."}),
+		"Rustig.")
+
+
+func test_a_place_names_its_tools_its_own_way_with_the_time_they_take() -> void:
+	assert_eq(UiText.place_tool("Tel de inbox", "queue_count"), "Tel de inbox (30 min)")
+	assert_eq(UiText.place_tool("", "queue_count"), UiText.tool_label("queue_count"))
+	for code in ["tool_not_here", "tool_not_known"]:
+		assert_ne(UiText.place_error(code), code)
+
+
+func test_a_person_asked_answers_in_their_own_words() -> void:
+	var said := {"kind": "open", "reply": "observation", "trust": 0, "person": "sanne", "line": "\"Kijk.\"",
+		"observation": {"kind": "queue", "value": 8}}
+	assert_eq(UiText.reply(said, "Sanne"), "Sanne: \"Kijk.\"\n" + UiText.observation(said["observation"]),
+		"an open question: their line, then what the team sees")
+	assert_eq(UiText.reply({"reply": "closed", "line": "\"Ja.\""}, "Linda"), "Linda: \"Ja.\"")
+	assert_eq(UiText.reply({"reply": "guarded"}, "Linda"), "Linda: " + UiText.REPLIES["guarded"])
+	assert_eq(UiText.reply({"reply": "guarded"}), UiText.REPLIES["guarded"], "the team, unnamed")
 
 
 func test_every_reply_and_refusal_has_words() -> void:
