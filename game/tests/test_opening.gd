@@ -250,3 +250,17 @@ func test_the_beat_is_saved() -> void:
 	assert_eq(back.opening_beat, Opening.LETTER)
 	back.load_dict({"opening_beat": "nonsense"})
 	assert_eq(back.opening_beat, "", "junk reads as no opening")
+
+
+## The toolbox grows through the week (place menu rework): on the opening's
+## Monday a team's place offers questions only, no gemba tool.
+func test_the_opening_offers_no_tools_before_they_are_granted() -> void:
+	var office := _named_opening()
+	for place: String in ["connections.intake", "connections.design"]:
+		assert_eq(office.session.gemba.tools_at(place), [], "Monday is questions only: " + place)
+	office.floors.go_to("first", "stairs_up", true)
+	office.ui.open_place("connections.intake")
+	for tool: String in Investigation.TOOLS:
+		if tool != "conversation":
+			assert_false(shows(office.ui.place_menu, UiText.tool_label(tool)), "no tool button: " + tool)
+	office.free()
