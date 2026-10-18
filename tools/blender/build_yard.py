@@ -38,7 +38,7 @@ WERKPLAATS = (-34.0, -6.0, -24.0, 4.0)
 VAN_PARK = (-48.0, -6.0, -36.0, 22.0)
 VAN_YS = (-3.0, 1.0, 5.0, 9.0, 13.0, 17.0)     # the bays (van0, van1: the storingsbussen)
 VAN_X = -44.6                                  # a van's middle; its back doors face east
-OPEN_VAN = 3                                   # the van with its back doors open (a tell)
+OPEN_VAN = 1                                   # a storingsbus (on call, in all day) with its back doors open (a tell)
 
 
 def ground() -> None:

@@ -388,7 +388,7 @@ func _minimap(office: Office, state: String) -> void:
 ## The yard (2.2), its rooms open: out through the kantine's back door (yard), then at the
 ## magazijn's counter, the werkplaats's on-call table and the van with its doors open.
 func _yard(office: Office, state: String) -> void:
-	for m in ["fix_wrong_joint", "walk_outages", "fix_not_at_home"]:
+	for m in ["fix_wrong_joint", "walk_outages", "fix_not_at_home", "save_henks_knowledge"]:
 		office.session.missions.progress[m] = {"status": "active", "asks": {}, "seen": {}}
 	office.floors._process(OfficeFloors.POLL_SECONDS)
 	office.floors.go_to("ground", "lift", true)

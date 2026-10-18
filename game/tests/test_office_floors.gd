@@ -112,6 +112,22 @@ func test_the_back_door_takes_the_same_player_out_and_back_in() -> void:
 	office.free()
 
 
+func test_the_vans_go_out_in_the_morning_and_come_back_in_the_afternoon() -> void:
+	var office := _office()
+	_take(office, "fix_wrong_joint")
+	office.floors.go_to("yard", "exit", true)
+	var vans := range(6).map(func(k: int) -> Node3D: return office.find_marker("van%d" % k))
+	assert_false(vans.has(null), "six vans in the model")
+	var parked := func() -> Array:
+		return range(6).filter(func(k: int) -> bool: return vans[k].visible)
+	for at: Array in [[7 * 60, [0, 1, 2, 3, 4, 5], "07:00: every bay full"],
+			[11 * 60, OfficeYard.ON_CALL, "11:00: only the storingsbussen"],
+			[17 * 60, [0, 1, 2, 3, 4, 5], "17:00: back"]]:
+		OfficeYard.park(office.geometry, at[0])
+		assert_eq(parked.call(), at[1], at[2])
+	office.free()
+
+
 func test_the_yard_is_shut_until_a_mission_needs_it() -> void:
 	var office := _office(true)   # Monday of the training week
 	office.floors.go_to("ground", "lift", true)

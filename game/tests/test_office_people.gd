@@ -45,6 +45,11 @@ func _office(training := false) -> Office:
 	return office
 
 
+## To floor `id` the way a player gets there: an outside area (the yard) by its door.
+func _go_to(office: Office, id: String) -> void:
+	office.floors.go_to(id, "exit" if office.floors.building.floor_of(id).get("outside_of", "") != "" else "lift", true)
+
+
 func _take(office: Office, mission_id: String) -> void:
 	office.session.missions.progress[mission_id] = {"status": "active", "asks": {}, "seen": {}}
 	office.floors._process(OfficeFloors.POLL_SECONDS)
@@ -91,6 +96,8 @@ func test_the_people_sit_at_their_desks_and_marco_walks_the_aisle() -> void:
 
 func test_henk_and_ahmed_come_only_with_their_missions() -> void:
 	var office := _office()
+	_take(office, "fix_installer_not_ready")   # opens the werkplaats on the yard, where they wait
+	_go_to(office, "yard")
 	var henk := office.people.person("henk")
 	var ahmed := office.people.person("ahmed")
 	assert_true(henk != null and ahmed != null, "Henk and Ahmed are in the cast")
@@ -231,12 +238,30 @@ func test_every_speaker_has_a_body_and_is_there_while_their_talk_is_open() -> vo
 		if d.mission.is_empty() or _cast(d.person).get("office", {}).is_empty():
 			continue
 		_take(office, d.mission)
-		office.floors.go_to(str(_cast(d.person)["office"].get("floor", "first")), "lift", true)
+		_go_to(office, str(_cast(d.person)["office"].get("floor", "first")))
 		office.people.refresh(office.session)
 		var p := office.people.person(d.person)
 		assert_true(p != null and p.visible, "%s is there for %s (%s)" % [d.person, d.id, d.mission])
 		if p != null and p.visible:
 			assert_false(office.nav().path(office.player.position, p.position).is_empty(), "%s can be walked up to" % d.person)
+	office.free()
+
+
+func test_the_yard_has_its_people_dirk_at_his_counter_henk_and_ahmed_in_the_werkplaats() -> void:
+	var office := _office()
+	_take(office, "fix_wrong_joint")
+	_take(office, "save_henks_knowledge")
+	office.floors.go_to("yard", "exit", true)
+	var m := office.floors.markers()
+	var magazijn := OfficeFloors.room_rect(m["room:magazijn"])
+	var werkplaats := OfficeFloors.room_rect(m["room:werkplaats"])
+	for who: Array in [["dirk", magazijn], ["henk", werkplaats], ["ahmed", werkplaats]]:
+		var p := office.people.person(who[0])
+		assert_true(p != null and p.visible, "%s is on the yard" % who[0])
+		if p != null:
+			assert_true((who[1] as Rect2).has_point(Vector2(p.position.x, p.position.z)), "%s in his room" % who[0])
+			assert_false(office.nav().path(office.player.position, p.position).is_empty(), "%s can be walked up to" % who[0])
+	assert_eq(_cast("dirk")["office"].get("missions", []), [], "the magazijn is Dirk's: he is there whenever it is open")
 	office.free()
 
 
