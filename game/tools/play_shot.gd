@@ -237,7 +237,7 @@ func _run() -> void:
 		"minimap", "minimap_floor", "minimap_near":
 			_minimap(office, state)
 		"people_kcc", "people_lunch", "people_directie", "people_netstrategie", "people_planning", "people_revisie", \
-				"people_whiteboard", "people_explainer":
+				"people_whiteboard", "people_explainer", "people_dirk", "people_gert":
 			await _rooms(office, state)
 		_:
 			printerr("unknown state ", state)
@@ -409,7 +409,9 @@ func _rooms(office: Office, state: String) -> void:
 		"people_directie": ["second", "fix_silo_kpis", "frank", Vector3(-1.8, 0, -1.4), -25.0],
 		"people_netstrategie": ["second", "look_at_grid_study", "femke", Vector3(1.0, 0, 2.2), 25.0],
 		"people_planning": ["first", "", "linda", Vector3(0.6, 0, -2.2), 20.0],
-		"people_revisie": ["first", "", "mieke", Vector3(0.4, 0, 2.6), -20.0]}
+		"people_revisie": ["first", "", "mieke", Vector3(0.4, 0, 2.6), -20.0],
+		"people_dirk": ["first", "fix_wrong_joint", "dirk", Vector3(1.6, 0, 1.2), 20.0],
+		"people_gert": ["ground", "fix_digging_damage", "gert", Vector3(1.8, 0, 0.6), 25.0]}
 	if state in ["people_whiteboard", "people_explainer"]:
 		var board := office.interactable(OfficeWhiteboard.ID)
 		office.player.position = board.position + Vector3(1.2, 0, 0.9)
