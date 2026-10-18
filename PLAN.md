@@ -230,7 +230,7 @@ Each phase ends in a **playable** that Merijn plays before the next phase starts
   - ✅ UI `place_menu.gd`: people first with their question chips and their talk, then only the known tools that fit, by the place's label.
   - ✅ Autoplay uses only what the menu offers.
   - ✅ Ruud's morning note shows the day's tool cards above the move cards (`GameSession.new_tools` + `tool_card`, in `GameUI._move_note`).
-  - ⬜ The yard's magazijn (landed after the spec) puts `outages.joint`, `connections.materials` and `meters.reserve_meter` in a room: they need tools, labels, observations and (Dirk's) questions from the designer; until then `build_content.PLACES_AWAITING_CONTENT` exempts them and they keep every tool (shrink the set, never grow it).
+  - ✅ The yard's magazijn (landed after the spec): `outages.joint`, `connections.materials` and `meters.reserve_meter` have tools, labels, observations and Dirk's questions in `content/places.yaml` (design agent, 2026-10-18; Dirk via `people_also`); `build_content.PLACES_AWAITING_CONTENT` is empty (shrink, never grow).
   - ⬜ Kim and Saskia's questions at `customer_contact.answer` (spec §3) wait until they are in the cast; Esra's two (walk, behind) stand for now.
   - ⬜ `connections.permit` has no station in the office (`tools/blender/build_office.py` has no `place("connections.permit", …)` marker and the place is in no room): `fix_permits_in_batches` cannot be spotted or its depth-0 key clue found in the 3D game (only through GameSession). Needs a marker beside Werkvoorbereiding and a Blender rebuild (world/art agent).
 - ⬜ 2.8 Phase gate: autoplay on the full tier 1; code review; Merijn's first full playtest → a tuning backlog.

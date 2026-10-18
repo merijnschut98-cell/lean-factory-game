@@ -1138,11 +1138,11 @@ MAX_PLACE_QUESTIONS = 4
 QUESTION_KINDS = {"walk": "open", "obstacle": "open", "last": "open", "standard": "closed", "ok": "closed",
                   "behind": "blame", "who": "blame", "thanks": "repair"}
 _PLACE = re.compile(r"^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$")
-# The yard's magazijn (world.yaml, 2026-10-18) put three material steps in a room
-# after the place-actions spec was written; their tools, observations and
-# questions wait for the designer (PLAN 2.12). Until then they keep every tool
-# and the team's questions. Shrink this set, never grow it.
-PLACES_AWAITING_CONTENT = {"outages.joint", "connections.materials", "meters.reserve_meter"}
+# Places in a room whose tools, observations and questions still wait for the
+# designer (PLAN 2.12); until then they keep every tool and the team's questions.
+# Empty since the magazijn's three places got content (2026-10-18). Shrink this
+# set, never grow it.
+PLACES_AWAITING_CONTENT: set[str] = set()
 # A tool result never says there was nothing (Merijn, 2026-10-18).
 _NOTHING = re.compile(r"niets nieuws", re.IGNORECASE)
 
