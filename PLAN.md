@@ -513,6 +513,16 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 
 Each call is easy to reverse; Merijn can overrule any of them. Newest first.
 
+### Claude's calls, pending Merijn (2026-10-18, design agent: place actions)
+Details in `docs/superpowers/specs/2026-10-18-place-actions.md` §0.
+- **New `content/places.yaml`** per `stream.step`: 2–5 fitting tools with a place-specific label and 2–3 observations each, and 0–4 questions asked to a named person; `conversation` is never a listed tool (the questions are the conversation). 25 places; every tier-1 clue stays reachable (checked mechanically).
+- **"Bekijk de onvolledige aanvragen" is not used**: it names the answer of *De onvolledige aanvraag*; Intake's `documents` reads "Blader door de aanvragen van deze week".
+- **Bad questions are realistic, not cartoons** ("Hoe kan het dat Werkvoorbereiding zoveel dossiers van jullie terugstuurt?"), so the good ones no longer stand out; `thanks` shows only after a blame or guarded reply.
+- **People can be met at more than one place** (`people_also`): Ahmed at four field places, Linda, Petra, Femke and Thomas at a second step of their pool. This fixes four conversation clues nobody could give (two of them key). **Kees Mulder** joins `outages.report` (no talks yet).
+- **Monday grants questions only**; Tue `shadow`, `documents`; Wed `queue_count`; Thu the other four. A time study only where work is timed (never Intake, Planning, Meetdata or a wait).
+- **Observations cycle per place and tool and are saved**; "niets nieuws" is deleted.
+- Found: `connections.permit` (a depth-0 key clue) is in no room in `world.yaml`; to check when `fix_permits_in_batches` is played.
+
 ### Claude's calls, pending Merijn (2026-10-16 evening, creator screen)
 - **"Jan  " is accepted as "Jan"**: the spec's table rejects it but also normalises "  jan  " → "Jan"; trimming wins (only between-letter rules reject).
 - **No NFC step**: Godot has no Unicode normaliser; a name with a combining accent (decomposed é) is refused as a non-letter instead. Keyboards type composed letters, so this should not bite.
