@@ -67,7 +67,9 @@
    "places": [
     "connections.intake",
     "connections.design",
-    "connections.planning"
+    "connections.planning",
+    "connections.permit",
+    "meters.appointment"
    ]
   },
   {
@@ -91,12 +93,14 @@
     "training_thu",
     "walk_meters",
     "fix_done_but_not_closed",
-    "fix_silent_meter"
+    "fix_silent_meter",
+    "fix_inverters_tripping"
    ],
    "places": [
     "connections.close_out",
     "connections.close_out_wait",
-    "meters.registration"
+    "meters.registration",
+    "voltage_complaints.analysis"
    ]
   },
   {

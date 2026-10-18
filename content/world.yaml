@@ -50,7 +50,9 @@ rooms:
   - id: connections
     floor: first
     name: Aansluitingen
-    places: [connections.intake, connections.design, connections.planning]   # Linda plans beside Werkvoorbereiding (D9 audit A1)
+    places: [connections.intake, connections.design, connections.planning, connections.permit, meters.appointment]
+    # Linda plans beside Werkvoorbereiding (D9 audit A1); the permits wait on Werkvoorbereiding's sideboard;
+    # the meter appointments are the planners' too
     opens_with: [start]
   - id: revision_gis
     floor: first
@@ -60,8 +62,9 @@ rooms:
   - id: meter_data
     floor: first
     name: Meetdata & registratie
-    places: [connections.close_out, connections.close_out_wait, meters.registration]
-    opens_with: [training_thu, walk_meters, fix_done_but_not_closed, fix_silent_meter]   # Petra's Thursday talk
+    places: [connections.close_out, connections.close_out_wait, meters.registration, voltage_complaints.analysis]
+    opens_with: [training_thu, walk_meters, fix_done_but_not_closed, fix_silent_meter, fix_inverters_tripping]
+    # Petra's Thursday talk; Meetdata analyses the voltage complaints (fix_inverters_tripping)
 
   # 2e verdieping: direction.
   - id: directors_obeya

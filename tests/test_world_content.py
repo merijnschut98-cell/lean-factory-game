@@ -91,6 +91,19 @@ def test_an_outside_area_is_checked(mutate, message):
         _check(mutate)
 
 
+def test_every_place_a_tier1_problem_or_clue_uses_lies_in_a_room():
+    # Otherwise the 3D game has no station for it: the problem is never spotted there and its
+    # clues there are never found (connections.permit: permits_in_batches, 2026-10-18).
+    docs = bc.load_content()
+    in_room = {p for r in docs["world"]["rooms"] for p in r["places"]}
+    missing = set()
+    for p in docs["problems_tier1"]["problems"]:
+        for place in {p["step"]} | {c.get("at", p["step"]) for c in p.get("clues", [])}:
+            if place not in in_room:
+                missing.add(f"{p['id']}: {place}")
+    assert not missing, sorted(missing)
+
+
 def test_only_the_way_in_and_the_first_teams_are_open_from_the_start():
     world = REAL["world"]
     assert sorted(r["id"] for r in world["rooms"] if "start" in r["opens_with"]) == ["connections", "reception"]
