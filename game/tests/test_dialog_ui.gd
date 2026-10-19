@@ -463,12 +463,12 @@ func test_during_a_talk_the_hud_shows_only_the_date_and_time() -> void:
 	_open_joost(office)
 	assert_true(office.ui.dialog_panel.visible)
 	assert_true(hud.clock_label.visible, "the date and time")
-	for l: Control in [hud.budget_label, hud.xp_label, hud.mission_label, hud.help_label]:
+	for l: Control in [hud.budget_label, hud.xp_label, hud.objective_label, hud.help_label]:
 		assert_false(l.visible, "hidden in a talk: " + l.name)
 	office.ui.close_panels()
 	assert_false(hud.budget_label.visible, "the summary is still the talk")
 	office.ui.close_panels()
-	assert_true(hud.budget_label.visible and hud.xp_label.visible and hud.mission_label.visible, "back after")
+	assert_true(hud.budget_label.visible and hud.xp_label.visible and hud.objective_label.visible, "back after")
 	office.free()
 
 

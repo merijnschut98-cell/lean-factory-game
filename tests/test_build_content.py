@@ -858,3 +858,41 @@ def test_discovery_errors_are_caught(rules_dirs, mutate, message):
     content, _ = rules_dirs
     with pytest.raises(bc.ContentError, match=message):
         _rules(content, mutate)
+
+
+# ── The objective line's own steps (PLAN 2.13 C; Objective in the game) ──────
+
+def test_a_mission_may_word_its_own_objective_steps(rules_dirs):
+    content, _ = rules_dirs
+    _rules(content, lambda d: _mission(d).update(steps={
+        "look": "Ga kijken bij Werkvoorbereiding", "a3": "Schrijf je A3 aan de obeya-wand"}))
+    assert bc.load_content(content)["missions"]["missions"][1]["steps"]["a3"] == "Schrijf je A3 aan de obeya-wand"
+
+
+def test_an_observe_goal_may_word_its_look_per_place(rules_dirs):
+    content, _ = rules_dirs
+    _rules(content, lambda d: _mission(d, 0).update(
+        goal={"type": "observe", "places": ["connections.design"], "uses": 2},
+        steps={"look": {"connections.design": "Kijk bij Anouk hoe ze werkt"}, "again": "Kijk nog eens bij Anouk"}))
+
+
+@pytest.mark.parametrize("mutate, message", [
+    (lambda d: _mission(d).update(steps={"guess": "Raad maar"}), r"unknown key\(s\) 'guess'"),
+    (lambda d: _mission(d).update(steps={"look": ""}), "'look' must be a non-empty"),
+    (lambda d: _mission(d).update(steps={"look": "Ga kijken " * 10}), "at most 60 characters"),
+    (lambda d: _mission(d).update(steps={"look": {"connections.design": "Kijk"}}), "per place only for an observe"),
+    (lambda d: _mission(d).update(goal={"type": "observe", "places": ["connections.design"]},
+                                  steps={"look": {"connections.intake": "Kijk bij Intake"}}),
+     "'connections.intake' is not one of the goal's places"),
+    (lambda d: _mission(d).update(steps={"again": "Nog eens"}), "'again' is for an observe goal"),
+    (lambda d: _mission(d).update(steps={"talk": "Praat met Anouk"}), "'talk' needs a talk"),
+    (lambda d: _mission(d, 0).update(steps={"a3": "Schrijf je A3"}), "'a3' needs a goal with a problem"),
+    (lambda d: _mission(d, 2).update(steps={"look": "Kijk"}), "only main and training missions word their steps"),
+    (lambda d: _mission(d).update(steps={"dig": "Probeer standaardontwerpen"}),
+     "names 'Standaardontwerpen': the how is the player's"),
+    (lambda d: _mission(d).update(steps={"dig": "Gebruik queue_count"}), "names 'queue_count'"),
+])
+def test_objective_step_errors_are_caught(rules_dirs, mutate, message):
+    content, _ = rules_dirs
+    with pytest.raises(bc.ContentError, match=message):
+        _rules(content, mutate)

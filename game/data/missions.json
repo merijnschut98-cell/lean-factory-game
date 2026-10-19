@@ -74,6 +74,12 @@
      "value": -0.75
     }
    ],
+   "steps": {
+    "look": {
+     "connections.design": "Vraag bij Werkvoorbereiding hoe het werk binnenkomt",
+     "connections.intake": "Kijk bij Intake hoe een aanvraag binnenkomt"
+    }
+   },
    "teaches": [
     "netbeheerder",
     "aansluiting",
@@ -111,6 +117,10 @@
    "rewards": {
     "xp": 50
    },
+   "steps": {
+    "again": "Kijk nog eens bij Anouk, op een andere manier",
+    "look": "Kijk bij Anouk hoe ze werkt"
+   },
    "teaches": [
     "gemba",
     "five_whys",
@@ -147,6 +157,12 @@
    },
    "rewards": {
     "xp": 50
+   },
+   "steps": {
+    "look": {
+     "connections.design": "Tel wat er bij Werkvoorbereiding ligt te wachten",
+     "connections.intake": "Tel wat er bij Intake ligt te wachten"
+    }
    },
    "teaches": [
     "flow",
@@ -189,6 +205,12 @@
    "rewards": {
     "xp": 50
    },
+   "steps": {
+    "a3": "Schrijf je oefen-A3 aan de obeya-wand",
+    "dig": "Zoek uit waarom het dossier van El Amrani blijft liggen",
+    "look": "Kijk bij Anouk waar het dossier van El Amrani ligt",
+    "wait": "Wacht de drie dagen af: kijk hoe het bij Anouk gaat"
+   },
    "teaches": [
     "PDCA",
     "A3",
@@ -226,6 +248,9 @@
    "rewards": {
     "xp": 50
    },
+   "steps": {
+    "act": "Beslis aan de obeya-wand: borg je het, of laat je het zo?"
+   },
    "teaches": [
     "standard_work",
     "improvement_kata"
@@ -258,6 +283,12 @@
    },
    "rewards": {
     "xp": 300
+   },
+   "steps": {
+    "look": {
+     "connections.design": "Tel wat er bij Werkvoorbereiding ligt te wachten",
+     "connections.intake": "Tel wat er bij Intake ligt te wachten"
+    }
    },
    "teaches": [
     "lead_time",

@@ -5,6 +5,8 @@ extends UiPanel
 ## to, nor which clues matter: that is for the player to work out. Above
 ## them, the fixes in use with their health and the stagnation drift, as
 ## measured (SustainView): what holds a fix is for the player to find.
+## The "Briefjes" tab: Ruud's notes of the training week's mornings, newest first (the
+## day's new tools and talk moves; PLAN 2.13 C moved them here from the screen).
 ## The "Mensen" tab, the player's notebook on people (dialog spec §11,
 ## person-needs spec §4): per person their trust as pips, their morale as a
 ## word (never a number), what they told you as quotes with the day and the
@@ -14,7 +16,11 @@ extends UiPanel
 
 const CLUES := "clues"
 const PEOPLE := "people"
-const TABS := {CLUES: "Aanwijzingen", PEOPLE: "Mensen"}
+const NOTES := "notes"
+const TABS := {CLUES: "Aanwijzingen", PEOPLE: "Mensen", NOTES: "Briefjes"}
+## Ruud's note on a training day's morning.
+const NOTE_HEADING := "Briefje van Ruud · %s"
+const NO_NOTES := "Nog geen briefjes."
 const MORALE := "Werkplezier: "
 const MORALE_BANDS: Array[String] = ["laag", "gewoon", "hoog"]
 ## The face a morale band shows in the journal, as a meter band (a frown, flat,
@@ -157,6 +163,9 @@ func refresh() -> void:
 	if tab == PEOPLE:
 		_people()
 		return
+	if tab == NOTES:
+		_notes()
+		return
 	_session_row()
 	_dossier()
 	_sustain()
@@ -169,6 +178,43 @@ func refresh() -> void:
 			box.add_child(paragraph("• " + c.text))
 		for line: String in g["seen"]:
 			box.add_child(paragraph("%s: %s" % [tr(SEEN), tr(line)], Palette.MUTED, UiTheme.SMALL))
+
+
+## Ruud's notes, newest first, on note paper.
+func _notes() -> void:
+	var all := notes(session, layer)
+	if all.is_empty():
+		_list.add_child(paragraph(tr(NO_NOTES), Palette.MUTED))
+	for note: Dictionary in all:
+		var box := add_card(_list, note["heading"], Palette.NOTE_PAPER)
+		for line: String in note["lines"]:
+			box.add_child(paragraph(line, Palette.INK, UiTheme.SMALL))
+
+
+## Ruud's note of every training morning so far (the days the session layer carded),
+## newest first: [{mission, heading, lines}]. Each: the gemba tools the day hands out
+## (places.yaml tool_cards), then the day's move cards, each its name, what it is and
+## why (tutorial talks spec §2); never when to use it. A day without either has none.
+static func notes(s: GameSession, of_layer: SessionLayer) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for id: String in of_layer.carded if of_layer != null else []:
+		var m: MissionDef = s.missions.defs.get(id)
+		if m == null:
+			continue
+		var lines: Array[String] = []
+		for tool in s.new_tools(id):
+			var tool_card := s.tool_card(tool)
+			if not tool_card.is_empty():
+				lines.append("%s. %s" % [TranslationServer.translate(tool_card["title"]),
+					TranslationServer.translate(tool_card["text"])])
+		for card: Dictionary in s.catalog.move_cards:
+			if card["day"] == id:
+				lines.append("%s. %s" % [card["title"], card["text"]])
+				lines.append("'%s'" % card["why"])
+		if not lines.is_empty():
+			out.push_front({"mission": id, "heading": TranslationServer.translate(NOTE_HEADING) % UiText.mission_title(m, s),
+				"lines": lines})
+	return out
 
 
 ## The El Amrani dossier you follow (PLAN 1.8), clipped in once a mission

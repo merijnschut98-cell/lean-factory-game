@@ -105,6 +105,10 @@ var reward_trust: Dictionary[String, int] = {}
 ## asked before the general bank.
 var insights: Dictionary[String, Array] = {}
 var questions: Dictionary[String, Array] = {}
+## The objective line's own texts per step (Objective.STEPS → text; `look` may map
+## each of an observe goal's places to its text); a step without one gets
+## Objective's default.
+var steps: Dictionary = {}
 var error := ""
 
 
@@ -175,6 +179,7 @@ static func from_dict(d: Dictionary) -> MissionDef:
 			var lines: Variant = by_stage[stage]
 			(m.insights if key == "insights" else m.questions)[str(stage)] = \
 				(lines as Array).map(func(l: Variant) -> String: return str(l)) if lines is Array else [str(lines)]
+	m.steps = JsonFile.dict_or_empty(d.get("steps")).duplicate(true)
 	if m.id.is_empty() or m.name.is_empty():
 		m.error = "mission %s: needs an id and a name" % m.id
 	elif not m.kind in KINDS or not m.goal_type in GOALS:

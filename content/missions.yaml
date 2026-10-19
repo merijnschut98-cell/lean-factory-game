@@ -47,6 +47,14 @@
 #            against an acute risk (audit §2.4.1), taken once while the mission
 #            is active; its effects fade after `days` (at most 30) and it is
 #            not the fix (hidden reward eerst_veilig when the fix follows)
+# steps      main and training: the objective line's own words per step (the HUD's one
+#            line and the minimap marker, Objective): look (go and see; for an observe
+#            goal it may map each place to its text), again (one more look there),
+#            dig (find out what is going on), a3, wait (the experiment runs), check,
+#            act, talk. Short (at most 60 characters), in-world, the where and with
+#            whom: never a tool, a problem, a countermeasure or what is wrong. A step
+#            without one gets Objective.DEFAULTS ({team}: the team there; {naam}: the
+#            person).
 # {dossier_weken} in a briefing: the El Amrani dossier's age in weeks, read
 #            from the followed order in the simulation (GameSession.mission_briefing)
 #
@@ -113,6 +121,10 @@ missions:
     debrief: "Je kent nu twee plekken waar een aanvraag langskomt. Elf weken onderweg: hoeveel uur is er al echt aan gewerkt, denk je? Morgen ga je beter kijken."
     goal: {type: observe, places: [connections.intake, connections.design]}
     grant_tools: [conversation]
+    steps:
+      look:
+        connections.intake: "Kijk bij Intake hoe een aanvraag binnenkomt"
+        connections.design: "Vraag bij Werkvoorbereiding hoe het werk binnenkomt"
     # The first talk of the game ends the day (first five minutes B7; D9 talks
     # audit A2): the walk meets the goal in the morning, Anouk at seven closes it.
     ends_with_talk: anouk_seven
@@ -139,6 +151,9 @@ missions:
     briefing: "Bij Werkvoorbereiding zit deze week alleen Anouk de Vries; haar drie collega's zitten op cursus. Ga bij haar kijken met twee verschillende gemba-hulpmiddelen. Elk hulpmiddel kost tijd en laat iets anders zien. Oordeel nog niet, ook niet in je hoofd: schrijf op wát je ziet, niet wat je ervan vindt."
     debrief: "Wat liet het ene hulpmiddel zien dat het andere miste? Anouk werkt snel. Toch ligt er veel. Waar zit dan de tijd?"
     goal: {type: observe, places: [connections.design], uses: 2}
+    steps:
+      look: "Kijk bij Anouk hoe ze werkt"
+      again: "Kijk nog eens bij Anouk, op een andere manier"
     grant_tools: [shadow, documents]
     teaches: [gemba, five_whys, eight_wastes]
     rewards: {xp: 50}
@@ -157,6 +172,10 @@ missions:
     briefing: "Tel vandaag de wachtrij bij Intake en bij Werkvoorbereiding. Let op: twintig dossiers van een kwartier zijn minder werk dan tien dossiers van vier uur. Waar ligt het meeste werk te wachten, in dagen werk? Schrijf het op voordat je het met je gevoel vergelijkt."
     debrief: "Je telde de dossiers én de dagen werk die ze vragen. Een stroom gaat zo snel als de plek waar het meeste werk wacht. Als Intake morgen twee keer zo hard werkt, waar ligt het werk dan overmorgen?"
     goal: {type: observe, places: [connections.intake, connections.design], tool: queue_count}
+    steps:
+      look:
+        connections.intake: "Tel wat er bij Intake ligt te wachten"
+        connections.design: "Tel wat er bij Werkvoorbereiding ligt te wachten"
     grant_tools: [queue_count]
     # The week's training setup (on Monday) makes the counts give a clear
     # answer; the debrief adds what the player measured and names the longer queue.
@@ -175,6 +194,11 @@ missions:
     briefing: "Anouk pakt altijd het oudste dossier. Toch ligt het dossier van de familie El Amrani al negen dagen bij haar. Hoe kan dat? Zoek het uit, schrijf een oefen-A3 met een voorspelling en probeer een tegenmaatregel. Over drie dagen kijken we samen of je voorspelling uitkwam."
     debrief: "Je voorspelling is getoetst aan wat er echt gebeurde. Of het tegenviel of meeviel: je weet nu iets wat je gisteren niet wist. Dat is een experiment."
     goal: {type: check, problem: training_tray}
+    steps:
+      look: "Kijk bij Anouk waar het dossier van El Amrani ligt"
+      dig: "Zoek uit waarom het dossier van El Amrani blijft liggen"
+      a3: "Schrijf je oefen-A3 aan de obeya-wand"
+      wait: "Wacht de drie dagen af: kijk hoe het bij Anouk gaat"
     grant_tools: [time_study, data, listen_in, material_check]
     check_days: 3
     teaches: [PDCA, A3, leading_lagging]
@@ -197,6 +221,8 @@ missions:
       not_standardised: "Een maand later staan er weer twee bakken. Niemand deed iets fout; niemand wist het nog. Een verbetering blijft alleen als iemand haar borgt. Je inwerkweek zit erop. Maandag vraagt Joost van Dijk het MT om twee extra werkvoorbereiders; ik heb gezegd dat jij eerst gaat kijken."
     debrief: "Een maand later pakt iedereen het oudste dossier uit één bak. Het staat op een A4 boven de bak, en Anouk legt het aan nieuwe collega's uit. Je inwerkweek zit erop. Maandag vraagt Joost van Dijk het MT om twee extra werkvoorbereiders; ik heb gezegd dat jij eerst gaat kijken."
     goal: {type: solve, problem: training_tray}
+    steps:
+      act: "Beslis aan de obeya-wand: borg je het, of laat je het zo?"
     check_days: 3
     teaches: [standard_work, improvement_kata]
     rewards: {xp: 50}
@@ -221,6 +247,10 @@ missions:
     briefing: "Voordat je iets verandert, wil ik dat je de weg van één aansluiting hebt gezien. Het dossier van de familie El Amrani is nu {dossier_weken} onderweg. Volg het: tel bij Intake en bij Werkvoorbereiding hoeveel er ligt en hoeveel dagen werk dat is. Waar zou jij als dossier het liefst niet liggen?"
     debrief: "Een aansluiting vraagt een paar uur werk, en toch is het dossier weken onderweg. De rest van de tijd ligt het ergens te wachten. Onthoud waar het werk stil lag; daar beginnen we maandag."
     goal: {type: observe, places: [connections.intake, connections.design], tool: queue_count}
+    steps:
+      look:
+        connections.intake: "Tel wat er bij Intake ligt te wachten"
+        connections.design: "Tel wat er bij Werkvoorbereiding ligt te wachten"
     teaches: [lead_time, flow]
     rewards: {xp: 300}
     insights:
