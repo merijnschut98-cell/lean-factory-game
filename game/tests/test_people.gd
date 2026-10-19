@@ -329,6 +329,30 @@ func _open(people: People) -> Array:
 	return ids
 
 
+## A friendly first week (PLAN 2.13 D): everyone the player meets in the training week (a
+## talk of a training day, or Ruud's introductions on the first walk) starts in a good
+## enough mood; bad moods come later, with reasons.
+func test_the_training_weeks_people_start_in_a_friendly_mood() -> void:
+	var s := GameSession.new_game(11, Catalog.DATA_DIR, true)
+	var met := {"sanne": true, "joost": true, "anouk": true}   # Ruud introduces them, and they talk this week
+	for d: DialogDef in s.people.dialogs.values():
+		if d.mission.begins_with("training_") or Array(d.also_during).any(func(m: String) -> bool:
+				return m.begins_with("training_")):
+			met[d.person] = true
+	for id: String in met:
+		assert_true(s.people.morale[id] >= People.FRIENDLY_MORALE, "%s starts at %d" % [id, s.people.morale[id]])
+
+
+## No check-in prompt while the training week runs;
+## the low colleague's comes once it is over.
+func test_no_checkin_prompt_during_the_training_week() -> void:
+	var people := _three_low()
+	people.daily(DialogFixture.world({"now": 0, "training": true}))
+	assert_eq(_open(people), [], "the training week asks nobody to talk")
+	people.daily(DialogFixture.world({"now": SimCalendar.days(1)}))
+	assert_eq(_open(people), ["c_pim"], "after it, the lowest first")
+
+
 func test_one_checkin_prompt_at_a_time_the_lowest_first() -> void:
 	var people := _three_low()
 	_days(people, 0, 1)

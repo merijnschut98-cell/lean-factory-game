@@ -223,13 +223,37 @@ func test_every_creator_trait_has_two_to_five_options_per_body() -> void:
 				assert_true(option.get("label") is String and not option["label"].is_empty(), "%s %s has a label" % [entry["id"], option["id"]])
 
 
-func test_five_hairstyles_per_body_and_any_on_either() -> void:
+## Merijn's playtest (2026-10-19): the styles that read wrong left the creator (the contact
+## sheets docs/screenshots/creator_hair_*_2026-10-19.png): the middle parting's helmet, the
+## ponytail's loose cone, the curls' flat cards. Their glbs stay for a rebuild.
+const DROPPED_HAIR: Array[String] = ["curtains", "staart", "krullen"]
+
+
+func test_at_least_three_hairstyles_per_body_and_any_on_either() -> void:
 	var kapsel := CreatorLook.trait_def("kapsel")
+	var all := 0
 	for body in BODIES:
-		assert_eq(kapsel["per_body"][body].size(), 5, "five hairstyles listed for %s" % body)
-		assert_eq(CreatorLook.options("kapsel", body).size(), 10, "all ten may be chosen with %s" % body)
+		assert_true(kapsel["per_body"][body].size() >= 3, "at least three hairstyles listed for %s" % body)
+		all += kapsel["per_body"][body].size()
+	for body in BODIES:
+		assert_eq(CreatorLook.options("kapsel", body).size(), all, "every style may be chosen with %s" % body)
 		assert_eq(CreatorLook.options("kapsel", body)[0], kapsel["per_body"][body][0], "the body's own list comes first")
 	assert_eq(CreatorLook.options("gezicht", "f").size(), 5, "faces stay per body")
+
+
+func test_the_hairstyles_that_read_wrong_are_not_offered() -> void:
+	for body in BODIES:
+		for option: Dictionary in CreatorLook.options("kapsel", body):
+			assert_false(option["id"] in DROPPED_HAIR, "%s is dropped" % option["id"])
+
+
+func test_an_old_save_with_a_dropped_hairstyle_gets_a_kept_one() -> void:
+	for body: String in BODIES:
+		var kept := CreatorLook.options("kapsel", body).map(func(o: Dictionary) -> String: return o["id"])
+		for id in DROPPED_HAIR:
+			var look := CreatorLook.normalized({"lichaam": "man" if body == "m" else "vrouw", "kapsel": id})
+			assert_true(look["kapsel"] in kept, "%s on %s: %s" % [id, body, look["kapsel"]])
+			assert_eq(look["kapsel"], kept[0], "the body's first style")
 
 
 func test_every_creator_option_resolves_to_a_mesh_or_a_colour() -> void:

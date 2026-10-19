@@ -2,7 +2,8 @@ class_name Hud
 extends Control
 ## The heads-up display: a top bar (day and time, budget with the savings of
 ## held fixes and, in debt, the floor; XP and belt, the
-## region's setback while it stands still, the active mission), the
+## region's setback while it stands still), under it top left the one
+## objective line (Objective: the next step, never a mission title), the
 ## interaction prompt, the controls,
 ## short messages (toasts, bottom right) when something happens, and cards
 ## (top right: a training day's glossary, the coach's debrief) that stay a
@@ -24,7 +25,13 @@ var drift_label: Label
 ## The dagstart's quiet "good moment to stop" note (SessionLayer), beside the
 ## clock; hidden otherwise.
 var stop_note: Label
-var mission_label: Label
+## The objective line, top left under the bar (PLAN 2.13 C): one short line; none
+## during a talk or while a scene's lines run.
+var objective_label: Label
+## The session layer (GameUI): the first day's beat, for the objective.
+var layer: SessionLayer
+var _objective := {}
+var _objective_beat := ""
 var prompt_label: Label
 ## The controls line, bottom left (hidden while a panel is open).
 var help_label: Label
@@ -70,12 +77,24 @@ func _build_bar() -> void:
 	stop_note = _bar_label(STOP_NOTE, Palette.VOLTANA_GREEN)
 	stop_note.add_theme_font_size_override("font_size", 16)
 	stop_note.visible = false
-	mission_label = _bar_label("")
-	mission_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	mission_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	mission_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	for l in [clock_label, stop_note, budget_label, xp_label, drift_label, mission_label]:
+	for l in [clock_label, stop_note, budget_label, xp_label, drift_label]:
 		row.add_child(l)
+	objective_label = _bar_label("")
+	var line := StyleBoxFlat.new()
+	line.bg_color = Color(Palette.HUD_BAR, 0.75)
+	line.border_color = Palette.VOLTANA_GREEN
+	line.border_width_left = 4
+	line.set_corner_radius_all(6)
+	line.content_margin_left = 14
+	line.content_margin_right = 14
+	line.content_margin_top = 5
+	line.content_margin_bottom = 5
+	objective_label.add_theme_stylebox_override("normal", line)
+	objective_label.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	objective_label.offset_left = 20
+	objective_label.offset_top = 62
+	objective_label.visible = false
+	add_child(objective_label)
 
 
 func _build_centre() -> void:
@@ -149,7 +168,9 @@ func refresh() -> void:
 	var drift := roundi(session.drift()["level"] * 100.0)
 	drift_label.visible = drift > 0 and not _talking
 	drift_label.text = "Achteruitgang %d%%" % drift
-	mission_label.text = mission_text()
+	_objective = Objective.of(session, layer)
+	_objective_beat = layer.opening_beat if layer != null else ""
+	objective_label.text = tr(str(_objective.get("text", "")))
 	_apply_reveal()
 
 
@@ -167,7 +188,7 @@ func _apply_reveal() -> void:
 	clock_label.visible = may_show("clock")
 	budget_label.visible = may_show("budget") and not _talking
 	xp_label.visible = may_show("xp") and not _talking
-	mission_label.visible = may_show("mission") and not _talking
+	objective_label.visible = _objective_shown()
 	if not may_show("controls"):
 		help_label.visible = false
 
@@ -176,13 +197,19 @@ func controls_text() -> String:
 	return tr("WASD/klik lopen   ·   Shift rennen   ·   Z/C draaien   ·   wiel zoomen   ·   E gebruiken   ·   J aanwijzingen   ·   M kaart   ·   K begrippen")
 
 
-## The active missions in the top bar: the main one first.
-func mission_text() -> String:
-	var active := session.active_missions()
-	if active.is_empty():
-		return "Geen missie: ga naar het missiebord"
-	return "Missie: " + ", ".join(active.map(func(m: MissionDef) -> String:
-		return UiText.mission_title(m, session)))
+## The objective line shows from its moment (Opening.hud "mission"; the first day's
+## walk behind Ruud before it), never in a talk or while a scene speaks.
+func _objective_shown() -> bool:
+	return not objective_label.text.is_empty() and not _talking and not _scene_running() \
+		and (may_show("mission") or _objective.get("step") == "follow")
+
+
+## A scene's lines, question or paper are up (SceneLines, a child of the HUD).
+func _scene_running() -> bool:
+	for child in get_children():
+		if child is SceneLines and (child.speaking() or child.asking() or child.paper_up()):
+			return true
+	return false
 
 
 ## A talk is open (or over): only the date and time stay in the bar; the
@@ -238,6 +265,9 @@ func card_texts() -> Array[String]:
 
 
 func _process(delta: float) -> void:
+	if session != null and layer != null and layer.opening_beat != _objective_beat:
+		refresh()   # the first day moved on without an action (Opening)
+	objective_label.visible = _objective_shown()
 	if not _cards.visible:
 		return
 	for card in _cards.get_children():

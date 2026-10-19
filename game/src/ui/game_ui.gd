@@ -17,9 +17,8 @@ signal pause_changed(on: bool)
 
 ## A person asked in the office who has nothing to talk about now.
 const NOTHING_TO_SAY := "%s knikt je toe en werkt door."
-## Ruud's morning note on a training day (the day's move cards).
-const MOVE_NOTE := "Briefje van Ruud"
-const MOVE_NOTE_FOOTER := "Terug te lezen in je codex (K), onder Gesprekken."
+## Ruud's morning note on a training day lands in the journal (J); one quiet toast says so.
+const NOTE_TOAST := "Nieuw briefje van Ruud — J"
 
 var session: GameSession
 var hud: Hud
@@ -318,7 +317,7 @@ func after_action() -> void:
 			session_layer.carded.append(m.id)
 			if not Opening.running(session_layer):   # the first day speaks its card (2.7d B5)
 				_glossary_card(m)
-				_move_note(m)
+				_note_arrived(m)
 	for text in new_concept_toasts():
 		if not Opening.running(session_layer):
 			hud.toast(text)
@@ -354,22 +353,12 @@ func _glossary_card(m: MissionDef) -> void:
 	hud.show_card("Nieuwe begrippen", lines, UiText.CARD_FOOTER)
 
 
-## Ruud's note on a training day's morning (tutorial talks spec §2): the
-## day's move cards, each its name, what it is and why, on note paper; never
-## when to use it. Kept in the codex under Gesprekken. Above them, the gemba
-## tools the day hands out (PLAN 2.12: places.yaml tool_cards), what each is for.
-func _move_note(m: MissionDef) -> void:
-	var lines: Array[String] = []
-	for tool in session.new_tools(m.id):
-		var tool_card := session.tool_card(tool)
-		if not tool_card.is_empty():
-			lines.append("%s. %s" % [tr(tool_card["title"]), tr(tool_card["text"])])
-	for card: Dictionary in session.catalog.move_cards:
-		if card["day"] == m.id:
-			lines.append("%s. %s" % [card["title"], card["text"]])
-			lines.append("'%s'" % card["why"])
-	if not lines.is_empty():
-		hud.show_card(tr(MOVE_NOTE), lines, tr(MOVE_NOTE_FOOTER), Palette.NOTE_PAPER)
+## Ruud's note on a training day's morning (ClueJournal.notes) waits in the journal,
+## which opens on it next; one quiet toast, nothing over the world (PLAN 2.13 C).
+func _note_arrived(m: MissionDef) -> void:
+	if ClueJournal.notes(session, session_layer).any(func(n: Dictionary) -> bool: return n["mission"] == m.id):
+		journal.tab = ClueJournal.NOTES
+		hud.toast(tr(NOTE_TOAST))
 
 
 ## Toasts for the concepts learned since the last call, once each.
@@ -394,6 +383,7 @@ const SAVED_IN := "Opgeslagen in slot %d."
 
 func _setup_session_layer(of_layer: SessionLayer) -> void:
 	session_layer = of_layer if of_layer != null else SessionLayer.new()
+	hud.layer = session_layer
 	if of_layer == null:
 		session_layer.begin(session)
 	mission_board.layer = session_layer

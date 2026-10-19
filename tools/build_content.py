@@ -646,7 +646,12 @@ MIN_REWARD_SHARE = 0.6
 MISSION_KEYS = {"id", "name", "kind", "tier", "requires", "briefing", "debrief", "fail", "goal", "deadline_days",
                 "fail_closes", "rewards", "insights", "teaches", "check_days", "setup", "act", "chapter", "arc",
                 "fork", "debrief_first", "reopen", "sets_flags", "questions", "debrief_variants", "containment",
-                "ends_with_talk", "deadline_beat", "grant_tools"}
+                "ends_with_talk", "deadline_beat", "grant_tools", "steps"}
+# The objective line's steps (game/src/rules/objective.gd STEPS, MAX_CHARS): a main or
+# training mission may word its own; the problem steps need a goal with a problem.
+OBJECTIVE_STEPS = ["look", "again", "dig", "a3", "wait", "check", "act", "talk"]
+PROBLEM_STEPS = {"dig", "a3", "wait", "check", "act"}
+MAX_STEP_CHARS = 60
 # A safety mission's containment (audit §2.4.1): a short measure against an
 # acute risk, taken once while the mission is active; it fades after `days`.
 CONTAINMENT_KEYS = {"name", "budget", "days", "effects"}
@@ -727,6 +732,51 @@ def validate_missions(doc: Any, source: str) -> None:
                                                       and all(isinstance(x, str) and x.strip() for x in t))
                     for stage, t in lines.items()):
                 raise ContentError(f"{where}: '{key}' maps a coach stage to a text or a list of texts")
+        _validate_steps(m, where)
+
+
+def _validate_steps(m: dict, where: str) -> None:
+    """The objective line's own words per step (Objective): short, and only for a step
+    the goal has; `look` may map an observe goal's places to their texts."""
+    steps = _mapping(m, "steps", set(OBJECTIVE_STEPS), where)
+    if steps and m["kind"] not in COACHED_KINDS:
+        raise ContentError(f"{where}: only main and training missions word their steps (the HUD shows theirs)")
+    goal = m["goal"]
+    for key, text in steps.items():
+        if key == "look" and isinstance(text, dict):
+            if goal["type"] != "observe":
+                raise ContentError(f"{where} steps: 'look' per place only for an observe goal")
+            for place, line in text.items():
+                if place not in goal.get("places", []):
+                    raise ContentError(f"{where} steps: {place!r} is not one of the goal's places")
+                _step_text(line, f"{where} steps look {place}", key)
+        else:
+            _step_text(text, f"{where} steps", key)
+        if key == "again" and goal["type"] != "observe":
+            raise ContentError(f"{where} steps: 'again' is for an observe goal")
+        if key == "talk" and goal["type"] != "talk_to" and not m.get("ends_with_talk"):
+            raise ContentError(f"{where} steps: 'talk' needs a talk (a talk_to goal or ends_with_talk)")
+        if key in PROBLEM_STEPS and "problem" not in goal:
+            raise ContentError(f"{where} steps: '{key}' needs a goal with a problem")
+
+
+def _step_text(text: Any, where: str, key: str) -> None:
+    if not isinstance(text, str) or not text.strip():
+        raise ContentError(f"{where}: '{key}' must be a non-empty string")
+    if len(text) > MAX_STEP_CHARS:
+        raise ContentError(f"{where}: '{key}' is one line on the HUD: at most {MAX_STEP_CHARS} characters")
+
+
+def _check_step_words(m: dict, where: str, problems: dict, cms: list[dict], tool_titles: list[str]) -> None:
+    """The objective names where and with whom, never how or what is wrong: no tool,
+    problem or countermeasure (id or name) in a step's text."""
+    names = list(TOOLS) + tool_titles + [n for p in problems.values() for n in (p["id"], p.get("name", ""))] \
+        + [n for c in cms for n in (c["id"], c.get("name", ""))]
+    for text in m.get("steps", {}).values():
+        for line in text.values() if isinstance(text, dict) else [text]:
+            for name in names:
+                if len(name) >= 4 and re.search(rf"(?<!\w){re.escape(name.lower())}(?!\w)", line.lower()):
+                    raise ContentError(f"{where} steps: {line!r} names {name!r}: the how is the player's")
 
 
 def _validate_deadline_beat(m: dict, where: str, beats: set[str]) -> None:
@@ -832,9 +882,12 @@ def check_missions(docs: dict[str, Any]) -> None:
     steps = net["step"]
     problems = {p["id"]: p for _, p in _all_problems(docs)}
     pools = {p["id"] for p in docs["value_streams"]["pools"]}
+    cms = docs["countermeasures"]["countermeasures"]
+    tool_titles = [str(c.get("title", "")) for c in docs.get("places", {}).get("tool_cards", [])]
     solved: dict[str, str] = {}
     for m in missions.values():
         where = f"missions.yaml: mission '{m['id']}'"
+        _check_step_words(m, where, problems, cms, tool_titles)
         requires = m.get("requires", {})
         for req in requires.get("missions", []) + requires.get("any_of", []):
             if req not in missions:

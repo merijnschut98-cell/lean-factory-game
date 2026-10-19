@@ -29,7 +29,7 @@ func test_a_new_game_opens_at_the_reception_with_no_hud() -> void:
 	assert_eq(layer.opening_beat, Opening.ARRIVAL)
 	assert_false(layer.has_floor_plan, "the plan comes from Ruud on the walk")
 	var hud := office.ui.hud
-	for l: Control in [hud.clock_label, hud.budget_label, hud.xp_label, hud.mission_label, hud.help_label]:
+	for l: Control in [hud.clock_label, hud.budget_label, hud.xp_label, hud.objective_label, hud.help_label]:
 		assert_false(l.visible, "nothing on screen before it means something: " + l.name)
 	for element: String in Opening.ELEMENTS:
 		assert_false(_shown(office)[element], element)

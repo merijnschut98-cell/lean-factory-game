@@ -29,21 +29,30 @@ func test_the_content_holds_a_card_for_every_listening_move_and_the_friday_card(
 	assert_true(null in moves, "the Friday card names a skill, not a move")
 
 
-## Monday morning: Ruud's note with Monday's card(s), not Tuesday's.
-func test_the_morning_brings_ruuds_note_with_the_days_moves() -> void:
+## Monday morning: Ruud's note with Monday's card(s), not Tuesday's, in the journal (J),
+## announced by one quiet toast; nothing of it on screen (PLAN 2.13 C).
+func test_the_morning_brings_ruuds_note_with_the_days_moves_into_the_journal() -> void:
 	var office := _training_office()
 	var s := office.session
-	var notes := office.ui.hud.card_texts().filter(func(t: String) -> bool: return t.begins_with(GameUI.MOVE_NOTE.left(8)))
+	var ui := office.ui
+	var toasts := func() -> Array: return ui.hud.toast_texts().filter(func(t: String) -> bool: return t == ui.tr(GameUI.NOTE_TOAST))
+	assert_eq(toasts.call().size(), 1, "one quiet toast")
+	assert_false(ui.hud.card_texts().any(func(t: String) -> bool: return t.begins_with(ClueJournal.NOTE_HEADING.left(8))),
+		"no note over the world")
+	var notes := ClueJournal.notes(s, ui.session_layer)
 	assert_eq(notes.size(), 1, "one note from Ruud")
+	var note := "\n".join(notes[0]["lines"])
 	for card: Dictionary in _cards_of(s, "training_mon"):
-		assert_true(notes[0].contains(card["title"]) and notes[0].contains(card["why"]), card["title"])
+		assert_true(note.contains(card["title"]) and note.contains(card["why"]), card["title"])
 	for card: Dictionary in _cards_of(s, "training_tue"):
-		assert_false(notes[0].contains(card["title"]), "not Tuesday's: " + card["title"])
-	assert_true(notes[0].contains(s.tool_card("conversation")["title"]), "the day's new tool (PLAN 2.12)")
-	assert_false(notes[0].contains(s.tool_card("shadow")["title"]), "not Tuesday's tools")
-	office.ui.after_action()
-	assert_eq(office.ui.hud.card_texts().filter(func(t: String) -> bool: return t.begins_with(GameUI.MOVE_NOTE.left(8))).size(),
-		1, "once a day")
+		assert_false(note.contains(card["title"]), "not Tuesday's: " + card["title"])
+	assert_true(note.contains(s.tool_card("conversation")["title"]), "the day's new tool (PLAN 2.12)")
+	assert_false(note.contains(s.tool_card("shadow")["title"]), "not Tuesday's tools")
+	ui.after_action()
+	assert_eq(toasts.call().size(), 1, "once a day")
+	ui.toggle_journal()
+	assert_eq(ui.journal.tab, ClueJournal.NOTES, "J opens on the new note")
+	assert_true(shows(ui.journal, notes[0]["lines"][0]), "the note in the journal")
 	office.free()
 
 

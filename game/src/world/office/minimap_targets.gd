@@ -31,39 +31,23 @@ static func all(s: GameSession, building: OfficeBuilding, cast: Array[Dictionary
 	return mains + sides
 
 
-## The next "where" of mission `m` (see the class doc); {} for a goal without a place
-## in the head office.
+## The next "where" of mission `m`: its objective's step (Objective.step, so the marker
+## and the HUD's line point at the same place): the person, the room of the place, the
+## obeya's room; {} for a step without a place in the head office (a customer on the
+## phone, a step in no room). A walk skips the steps in no room.
 static func of(m: MissionDef, s: GameSession, building: OfficeBuilding, cast: Array[Dictionary]) -> Dictionary:
+	var step := Objective.step(m, s, func(place: String) -> bool: return not room_of(building, place).is_empty())
 	var out := {}
-	match m.goal_type:
-		"talk_to":
-			var d: DialogDef = s.people.dialogs.get(m.goal_dialog)
-			var p: PersonDef = s.people.persons.get(d.person) if d != null else null
-			var spot := _spot(cast, p.id) if p != null else {}
-			if not spot.is_empty():   # someone with a body in the office (a customer is phoned)
-				out = {"kind": "person", "person": p.id, "room": str(room_of(building, p.place).get("id", "")),
-					"floor": str(spot.get(OfficeFloors.FLOOR_KEY, building.start_floor))}
-		"walk":
-			var stream := s.region.net.stream(m.goal_stream)
-			for step in stream.steps if stream != null else []:
-				var place := m.goal_stream + "." + step.id
-				var room := room_of(building, place)
-				if step.kind == SimStep.Kind.WORK and not s.region.observed.has(place) and not room.is_empty():
-					out = _room_target(room, building)
-					break
-		"observe":
-			var seen: Dictionary = s.missions.progress.get(m.id, {}).get("seen", {})
-			for place in m.goal_places:
-				if not seen.keys().any(func(k: String) -> bool: return k.get_slice("|", 0) == place):
-					out = _room_target(room_of(building, place), building)
-					break
-		"check", "solve":
-			var st: ProblemState = s.region.state.get(m.goal_problem)
-			var p: ProblemDef = s.region.problems.get(m.goal_problem)
-			if st != null and st.phase == ProblemState.Phase.CHECK_READY:
-				out = _room_target(building.room(OBEYA_ROOM), building)
-			elif p != null:
-				out = _room_target(room_of(building, p.step), building)
+	if step.has("person"):
+		var p: PersonDef = s.people.persons[step["person"]]
+		var spot := _spot(cast, p.id)
+		if not spot.is_empty():   # someone with a body in the office (a customer is phoned)
+			out = {"kind": "person", "person": p.id, "room": str(room_of(building, p.place).get("id", "")),
+				"floor": str(spot.get(OfficeFloors.FLOOR_KEY, building.start_floor))}
+	elif step.get("obeya", false):
+		out = _room_target(building.room(OBEYA_ROOM), building)
+	elif step.has("place"):
+		out = _room_target(room_of(building, step["place"]), building)
 	if out.is_empty():
 		return {}
 	out.merge({"mission": m.id, "main": m.kind != "side"})

@@ -81,7 +81,7 @@ func test_a_concern_clue_is_found_only_by_listening() -> void:
 func test_joost_pushed_early_ends_ruined() -> void:
 	var people := _people()
 	var d := _talk(people, "joost_output_kpi", ["show_data:silo_kpis:2", "propose:lead_and_oldest", "pressure"])
-	assert_eq([d.outcome, d.meter()["trace"]], ["ruined", [35, 23, 11, 0]], "path A")
+	assert_eq([d.outcome, d.meter()["trace"]], ["ruined", [36, 24, 12, 0]], "path A")
 	assert_eq(people.finish(d, FRIDAY)["trust"], 37)
 
 
@@ -90,7 +90,7 @@ func test_joost_listened_to_the_next_day_agrees_under_condition() -> void:
 	people.finish(_talk(people, "joost_output_kpi", ["show_data:silo_kpis:2", "propose:lead_and_oldest", "pressure"]), FRIDAY)
 	var d := _talk(people, "joost_output_kpi", ["repair", "mood", "paraphrase", "inquiry", "reflect", "silence",
 		"propose:lead_and_oldest"], _world({"now": MONDAY}))
-	assert_eq(d.meter()["trace"], [27, 39, 47, 54, 62, 75, 87, 95], "path B: heard first, then the question lands")
+	assert_eq(d.meter()["trace"], [28, 40, 48, 55, 63, 76, 88, 96], "path B: heard first, then the question lands")
 	var r := d.say("ask_commitment")
 	assert_eq([r["outcome"], r["reply"]], ["partial", "Ik doe mee. Maar Frank moet het goedvinden. Het blijft zijn lijst."])
 	var summary := people.finish(d, MONDAY)
@@ -101,7 +101,7 @@ func test_another_route_reaches_joosts_concern() -> void:
 	var people := _people()
 	people.finish(_talk(people, "joost_output_kpi", ["show_data:silo_kpis:2", "propose:lead_and_oldest", "pressure"]), FRIDAY)
 	var d := _talk(people, "joost_output_kpi", ["repair", "mood", "paraphrase", "inquiry", "empathy"], _world({"now": MONDAY}))
-	assert_eq(d.meter()["trace"].slice(4), [62, 74], "empathy for his feeling brings the cue")
+	assert_eq(d.meter()["trace"].slice(4), [63, 75], "empathy for his feeling brings the cue")
 	var r := d.say("inquiry")
 	assert_eq(r["revealed"], "concern", "a question after his hesitation is another way in")
 	var first := _talk(_people(), "joost_output_kpi", ["empathy", "open_question", "reflect", "silence",
@@ -112,7 +112,7 @@ func test_another_route_reaches_joosts_concern() -> void:
 func test_joost_under_pressure_complies() -> void:
 	var people := _people()
 	var d := _talk(people, "joost_output_kpi", ["open_question", "pressure", "propose:lead_and_oldest", "ask_commitment"])
-	assert_eq([d.outcome, d.meter()["trace"]], ["compliance", [35, 41, 26, 14, 14]], "path C")
+	assert_eq([d.outcome, d.meter()["trace"]], ["compliance", [36, 42, 27, 15, 15]], "path C")
 	assert_eq(people.finish(d, FRIDAY)["trust"], 37)
 	assert_eq(people.buy_in("silo_kpis", people.facts()), "compliance")
 

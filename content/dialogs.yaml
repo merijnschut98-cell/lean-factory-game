@@ -28,7 +28,8 @@ people:
     archetype: defender
     need: safety   # person-needs spec §2.2: his predecessor moved to Inkoop after one bad quarter
     trust: 50
-    morale: 50   # worn down by the conflict between the departments (spec §7)
+    morale: 56   # >= 55: a friendly training week (PLAN 2.13 D, People.FRIENDLY_MORALE); the conflict between the departments
+                 # wears him down later, in Act I (spec §7)
     voice: "Mijn team haalt het doel."
 
   - id: frank
@@ -51,7 +52,7 @@ people:
     archetype: overloaded
     need: recognition   # person-needs spec §2.2: Intake is 'het postkantoor'; nobody asks what she knows
     trust: 50
-    morale: 50
+    morale: 56   # >= 55: a friendly training week (PLAN 2.13 D, People.FRIENDLY_MORALE)
     voice: "We zijn een postkantoor geworden."
 
   - id: ahmed
@@ -75,7 +76,8 @@ people:
     archetype: overloaded
     need: safety   # person-needs spec §2.2: she works till seven so nobody sees she is "slow"
     trust: 50
-    morale: 48     # works late most evenings (an estimate: just under the check-in line, so anouk_late can come in Act I)
+    morale: 56     # works late most evenings, yet glad of the week (PLAN 2.13 D: >= 55); an estimate just
+                   # under anouk_late's line (60), so that check-in can come in Act I
     voice: "Ik zit erbovenop."
 
   - id: rachid
@@ -111,7 +113,7 @@ people:
     archetype: overloaded
     need: time   # person-needs spec §2.2: every minute you take is one she re-plans later
     trust: 50
-    morale: 45
+    morale: 55   # >= 55: a friendly training week (PLAN 2.13 D, People.FRIENDLY_MORALE); under linda_evenings' line
     voice: "Ik plan iedereen. Behalve mezelf."
 
   - id: petra
@@ -136,7 +138,7 @@ people:
     archetype: cynic
     need: fairness   # person-needs spec §2.2: the 2012 programme took his monteurs' hours; "wie bouwt dat na?" asks who pays
     trust: 50
-    morale: 50
+    morale: 50   # no talk in the training week; his cynicism has a history (need: fairness)
     voice: "En wie bouwt dat na?"
 
   - id: esra
@@ -923,7 +925,7 @@ dialogs:
     mission: training_tue
     tutorial: true
     teaches: [open_question]
-    mood: moe
+    mood: neutraal   # a friendly week: busy, not worn out (PLAN 2.13 D)
     patience: 12
     opening: "Goedemorgen! Ik zou gisteren nog langskomen, hè. Sorry. Alles van het weekend ligt er nog."
     position: {text: "Na een weekend ben je hier twee dagen aan het bijwerken. Alles wat zaterdag en zondag binnenkwam, plus wat gisteren bleef liggen. Maar dat ziet boven niemand, hè.", tags: [claim], tell: recognition}
@@ -1214,7 +1216,7 @@ dialogs:
     mission: training_wed
     tutorial: true
     teaches: [reflect]
-    mood: moe
+    mood: neutraal   # a friendly week: busy, not worn out (PLAN 2.13 D)
     patience: 12
     opening: "Sorry, ik zit midden in het omplannen. Twee monteurs moesten naar een storing. Zeg het maar."
     position: {text: "Dit gebeurt elke dag. Er komt een storing, de monteurs gaan erheen en ik plan alles om. Zo gaat dat. Ik heb even, tot de volgende storing.", tags: [claim, feeling], tell: time}
@@ -2092,7 +2094,7 @@ dialogs:
     prompt: "Anouk zat gisteravond om half zeven nog te tekenen. Alleen."
     patience: 8
     trigger:
-      morale_below: 50
+      morale_below: 60   # the friendly week's baseline (55-56) sits under it (PLAN 2.13 D)
       needs: {all: [accepted:fix_custom_design]}
     opening: "O. Hoi. Ik ben zo klaar, hoor. Nog eentje."
     warning: "Echt, het gaat prima. Ik moet dit even afmaken."
@@ -2314,7 +2316,7 @@ dialogs:
     prompt: "Linda's mails komen de laatste tijd om tien uur 's avonds binnen."
     patience: 8
     trigger:
-      morale_below: 50
+      morale_below: 60   # the friendly week's baseline (55-56) sits under it (PLAN 2.13 D)
       needs: {all: [accepted:fix_planning_reshuffle]}   # the planners' overload signal waits for signals (C11)
     opening: "Ik zit nog even. Het kaartenhuis is weer omgevallen."
     warning: "Sorry. Nog tien minuten, dan staat het."
