@@ -40,7 +40,7 @@ explainers:
         - {analogy: de doorstroommeter, real: de stroomtang, pair: [flowmeter, stroomtang]}
         - {analogy: de drukmeter aan het eind, real: de multimeter, pair: [end_gauge, multimeter]}
         - {analogy: de slang wordt warm, real: de kabel wordt warm, pair: [heat_tint_hose_thin, heat_tint_cable_thin]}
-      limit_line: "Eén verschil met de tuin: water loopt de slang uit. Stroom niet. Die gaat door de kabel heen en komt via een andere draad weer terug."
+      limit_line: "Eén verschil met de tuin: water loopt de slang uit. Stroom niet. Die loopt rond: heen door de ene draad, terug door de andere."
 
     controls:
       - {id: lamp, tuin: tap_dripper, meterkast: switch_lamp, key: "1"}
@@ -95,7 +95,7 @@ explainers:
         idea: stroom
         lines:
           - Nu loopt er water. Hoeveel water er per seconde doorheen gaat, dat is de stroom.
-          - Zie je dat wieltje op de slang draaien? Draai er nog eens een open.
+          - Zie je dat wieltje op de slang draaien? Draai er nog maar een open.
         wait_for: two_on
         timeout_s: 10
       - id: a2_dripper
@@ -105,7 +105,7 @@ explainers:
         idea: stroom
         lines:
           - Nu loopt er water. Hoeveel water er per seconde doorheen gaat, dat is de stroom.
-          - "Dat is een druppelaar. Kijk naar het wieltje: dat draait amper. Probeer de grote sproeier eens."
+          - "Dat is maar een druppelaar. Kijk naar het wieltje: dat draait amper. Probeer de grote sproeier eens."
         wait_for: kettle_on
         timeout_s: 10
       - id: a3
@@ -127,7 +127,7 @@ explainers:
         phase: cross
         idea: ""
         lines:
-          - Goed. En nu hetzelfde, maar dan met stroom.
+          - Goed. Nu hetzelfde, maar dan in de meterkast.
       - id: r1
         phase: meterkast
         idea: hetzelfde
@@ -145,7 +145,7 @@ explainers:
         idea: grens
         lines:
           - "Eén verschil met de tuin: water loopt de slang uit."
-          - Stroom niet. Die gaat door de kabel heen en komt via een andere draad weer terug.
+          - "Stroom niet. Die loopt rond: heen door de ene draad, terug door de andere."
       - id: r4
         phase: meterkast
         idea: aan
@@ -166,7 +166,7 @@ explainers:
         idea: kabel_warm
         lines:
           - Dat getal op de tang, dat is de stroom.
-          - Kijk nu naar de meter aan het eind. Daar is een beetje spanning kwijt. Waar is die gebleven?
+          - Kijk nu naar de meter aan het eind. Daar komt wat minder spanning aan. Waar is die gebleven?
           - In de kabel. Die wordt er warm van, net als de slang.
         silence_after: [1]
       - id: r5_lamp

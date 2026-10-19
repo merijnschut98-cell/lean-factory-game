@@ -2,7 +2,7 @@
  "explainers": [
   {
    "analogy": {
-    "limit_line": "Eén verschil met de tuin: water loopt de slang uit. Stroom niet. Die gaat door de kabel heen en komt via een andere draad weer terug.",
+    "limit_line": "Eén verschil met de tuin: water loopt de slang uit. Stroom niet. Die loopt rond: heen door de ene draad, terug door de andere.",
     "mapping": [
      {
       "analogy": "de buitenkraan aan de muur",
@@ -99,7 +99,7 @@
      "idea": "stroom",
      "lines": [
       "Nu loopt er water. Hoeveel water er per seconde doorheen gaat, dat is de stroom.",
-      "Zie je dat wieltje op de slang draaien? Draai er nog eens een open."
+      "Zie je dat wieltje op de slang draaien? Draai er nog maar een open."
      ],
      "phase": "tuin",
      "timeout_s": 10,
@@ -111,7 +111,7 @@
      "idea": "stroom",
      "lines": [
       "Nu loopt er water. Hoeveel water er per seconde doorheen gaat, dat is de stroom.",
-      "Dat is een druppelaar. Kijk naar het wieltje: dat draait amper. Probeer de grote sproeier eens."
+      "Dat is maar een druppelaar. Kijk naar het wieltje: dat draait amper. Probeer de grote sproeier eens."
      ],
      "phase": "tuin",
      "timeout_s": 10,
@@ -147,7 +147,7 @@
      "id": "x",
      "idea": "",
      "lines": [
-      "Goed. En nu hetzelfde, maar dan met stroom."
+      "Goed. Nu hetzelfde, maar dan in de meterkast."
      ],
      "phase": "cross"
     },
@@ -177,7 +177,7 @@
      "idea": "grens",
      "lines": [
       "Eén verschil met de tuin: water loopt de slang uit.",
-      "Stroom niet. Die gaat door de kabel heen en komt via een andere draad weer terug."
+      "Stroom niet. Die loopt rond: heen door de ene draad, terug door de andere."
      ],
      "phase": "meterkast"
     },
@@ -207,7 +207,7 @@
      "idea": "kabel_warm",
      "lines": [
       "Dat getal op de tang, dat is de stroom.",
-      "Kijk nu naar de meter aan het eind. Daar is een beetje spanning kwijt. Waar is die gebleven?",
+      "Kijk nu naar de meter aan het eind. Daar komt wat minder spanning aan. Waar is die gebleven?",
       "In de kabel. Die wordt er warm van, net als de slang."
      ],
      "phase": "meterkast",

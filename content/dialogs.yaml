@@ -858,18 +858,18 @@ dialogs:
     patience: 12
     opening: "O, hoi! Ben jij er ook nog? Ik dacht dat ik de laatste was."
     warning: "Sorry, ik moet echt nog even door."
-    position: {text: "Nog twee tekeningen en dan ga ik. Echt waar. Niet tegen Joost zeggen dat ik er nog zat, hè?", tags: [claim], tell: safety}
+    position: {text: "Nog twee tekeningen en dan ga ik. Echt waar. Niet tegen Joost zeggen dat ik hier nog zit, hè?", tags: [claim], tell: safety}
     layers:
       - id: interest
         at: 45
         via: [mood, empathy, open_question]
-        text: "Morgen zit ik hier alleen. Joost heeft MT en de anderen zitten op cursus. Als dit vanavond niet af is, ligt het er morgen nog. En achter elke tekening zit iemand die wacht."
+        text: "Morgen zit ik hier alleen. Joost zit de hele dag in overleg en de anderen zitten op cursus. Als dit vanavond niet af is, ligt het er morgen nog. En achter elke tekening zit iemand die wacht."
         tags: [claim, feeling]
       - id: concern
         at: 65
         via: [silence, empathy, reflect]
         lead_in: {text: "Mijn vriend appte net…", tags: [hesitation]}
-        text: "Of ik weer laat ben. Ik zou Fenna van de opvang halen. Nu doet hij het. Alweer. … Ik zeg steeds dat het maar tijdelijk is."
+        text: "Of ik weer laat ben. Ik zou Fenna vandaag van de opvang halen. Dat heeft hij nu weer gedaan. … Ik zeg steeds dat het maar tijdelijk is."
         tags: [admission]
         unlocks:
           facts: [heard:anouk_seven]
@@ -890,15 +890,15 @@ dialogs:
         say: "Mag ik morgen overdag even langskomen? Gewoon kijken hoe het gaat als je hier alleen zit."
         hidden: true
         addresses: [concern]
-        reply: "Overdag kijken. … Ja, goed. Dan zie je ook eens hoe het overdag gaat, niet alleen om zeven uur 's avonds."
+        reply: "Ja, kom maar. Dan zie je ook eens hoe het hier overdag gaat, niet alleen om zeven uur 's avonds."
     co_proposal: {id: come_tomorrow, text: "Weet je wat? Kom morgen overdag even langs. Dan zie je hoe het hier gaat. Al ziet het er overdag niet veel beter uit, hoor."}
     lines:
-      mood: "Hé, hoe is het? Je zit hier nog laat."
+      mood: "Hé, hoe is het? Jij bent ook nog laat bezig."
       open_question: "Waar ben je mee bezig?"
       empathy: "In je eentje hier, op een maandagavond. Dat is ook niet niks."
-      reflect: "Je klinkt alsof je eigenlijk liever naar huis wilt."
+      reflect: "Volgens mij wil je eigenlijk gewoon naar huis."
       silence: "(je blijft staan en wacht)"
-      paraphrase: "Dus als het vanavond niet af komt, sta je er morgen alleen voor."
+      paraphrase: "Dus als het vanavond niet af is, sta je er morgen alleen voor."
     replies:
       mood:
         lands: {text: "Hoe het is? … Moe, eerlijk gezegd. Fijn dat je het vraagt.", tags: [feeling]}
@@ -926,7 +926,7 @@ dialogs:
       - id: interest
         at: 45
         via: [mood, empathy, open_question]
-        text: "Kijk, deze. Een warmtepomp, maar geen foto van de meterkast. Die stuur ik terug. Over drie weken komt hij weer binnen, met een boze klant aan de telefoon. En iedereen denkt dat Intake een postkantoor is: stempel erop en door."
+        text: "Kijk, deze. Aanvraag voor een warmtepomp, maar geen foto van de meterkast. Die stuur ik terug. Over drie weken komt hij weer binnen, met een boze klant aan de telefoon. En iedereen denkt dat Intake een postkantoor is: stempel erop en door."
         tags: [claim, feeling]
       - id: concern
         at: 65
@@ -947,7 +947,7 @@ dialogs:
         label: "Een uur meekijken"
         say: "Mag ik een uurtje naast je komen zitten? Ik wil zien hoe een aanvraag binnenkomt. Niet hoe snel je bent."
         addresses: [concern]
-        reply: "Zien hoe het binnenkomt. Ja, dat mag."
+        reply: "Nou, als je niet gaat zitten klokken. Ja, dat mag."
       - id: sanne_shows_the_returns
         label: "Laat zien welke terugkomen"
         say: "Wil je me laten zien welke aanvragen terugkomen? Jij weet dat, ik niet."
@@ -961,7 +961,7 @@ dialogs:
       empathy: "Drie telefoons en een volle bak, en het is pas dinsdagochtend. Pittig, hoor."
     replies:
       mood:
-        lands: {text: "Hoe mijn week begon? Met koffie die koud werd. … Fijn dat je het vraagt, eigenlijk.", tags: [feeling]}
+        lands: {text: "Hoe mijn week begon? Met koude koffie, joh. … Maar fijn dat je het vraagt.", tags: [feeling]}
     outcomes:
       commitment: "Kom maar, na drieën. En neem koffie mee, de onze is op."
       partial: "Goed. Maar niet vandaag, hè. Vandaag ben ik nog aan het bijwerken."
@@ -980,12 +980,12 @@ dialogs:
     tutorial: true
     patience: 12
     opening: "Hoi, ik ben Rachid. Sanne zei dat ik je de bakken moest laten zien."
-    position: {text: "Links wat binnenkomt, rechts wat compleet is. In het midden ligt alles waar nog iets aan mist. Meestal niet door ons, hoor.", tags: [claim], tell: fairness}
+    position: {text: "Links wat binnenkomt, rechts wat compleet is. In het midden ligt alles waar nog iets aan mist. En dat ligt meestal niet aan ons, hoor.", tags: [claim], tell: fairness}
     layers:
       - id: interest
         at: 52
         via: [open_question, mood, silence]
-        text: "In het midden ligt het meeste. Meestal mist er een foto van de meterkast, of klopt het vermogen niet met wat de installateur opgaf. Dan bel ik ze na. Soms wel drie keer."
+        text: "In het midden ligt het meeste. Meestal mist er een foto van de meterkast, of klopt het vermogen niet met wat de installateur opgaf. Dan bel ik de installateur na. Soms wel drie keer."
         tags: [claim]
       - id: concern
         at: 66
@@ -1013,11 +1013,11 @@ dialogs:
         say: "Heb je zelf bijgehouden wat er het vaakst mist?"
         hidden: true
         addresses: [concern]
-        reply: "Ik heb een lijstje in mijn la. Foto van de meterkast, vermogen, handtekening. Ik dacht dat dat een beetje stom was."
+        reply: "Ik heb een lijstje in mijn la. Foto van de meterkast, vermogen, handtekening. Ik vond het eerlijk gezegd een beetje stom."
     co_proposal: {id: rachid_shows_his_list, text: "Ik heb een lijstje in mijn la, van wat er mist. Wil je dat zien?"}
     lines:
       open_question: "Wat gebeurt er met wat in de middelste bak ligt?"
-      mood: "Hoe bevalt het hier, na vier maanden?"
+      mood: "Hoe bevalt het hier tot nu toe?"
       silence: "(je kijkt mee naar de bakken en wacht)"
     replies:   # D9, N5: a third tell (his fairness need, person-needs spec §2.2)
       mood:
@@ -1075,12 +1075,12 @@ dialogs:
         reply: "Kom maar. Dan zie je hoe het begint: koffie, de twee bakken, en dan zoeken."
     co_proposal: {id: come_at_eight, text: "Kom morgen om acht uur. Dan zie je hoe het begint: koffie, de twee bakken, en dan zoeken."}
     lines:
-      empathy: "In je eentje het werk van vier mensen, terwijl de rest op cursus is. Dat is ook niet niks."
+      empathy: "In je eentje het werk van vier mensen doen, terwijl de rest op cursus is. Dat lijkt me zwaar."
       reflect: "Het klinkt alsof je je bekeken voelt."
     outcomes:
       commitment: "Kom maar. Ik zet koffie. Slechte koffie, maar koffie."
       partial: "Goed. Maar zonder stopwatch, hè."
-      heard: "Fijn. Je schreef niks op. Dat merkte ik wel."
+      heard: "Fijn. Je hebt niks opgeschreven. Dat viel me wel op."
       none: "Ik moet echt door. Sorry."
       compliance: "Oké. Als het moet."
       ruined: "Ik moet echt door."
@@ -1095,12 +1095,12 @@ dialogs:
     teaches: [paraphrase]
     patience: 12
     opening: "Kom je voor de revisie? Dan ben je hier goed. Pas op voor die doos."
-    position: {text: "Dit zijn de schetsen van de monteurs: wat ze in de grond hebben gelegd. Wij zetten dat in GIS. 'Overtekenen', noemen ze het boven. We doen het zo snel als we kunnen.", tags: [claim], tell: recognition}
+    position: {text: "Dit zijn de schetsen van de monteurs: wat ze in de grond hebben gelegd. Wij verwerken dat in GIS. 'Overtekenen', noemen ze het boven. We doen het zo snel als we kunnen.", tags: [claim], tell: recognition}
     layers:
       - id: interest
         at: 50
         via: [paraphrase, inquiry, open_question]
-        text: "Een schets is maar een begin. Er staat een mof op, maar niet hoe diep. Een kabel, maar niet welke kant hij op buigt. Dat moet ik uitzoeken. Bellen, foto's zoeken, soms zelf gaan kijken."
+        text: "Een schets is maar een begin. Er staat een mof op, maar niet hoe diep die ligt. Een kabel, maar niet welke kant hij op buigt. Dat moet ik uitzoeken. Bellen, foto's zoeken, soms zelf gaan kijken."
         tags: [claim]
       - id: concern
         at: 68
@@ -1124,7 +1124,7 @@ dialogs:
         reply: "Tel maar. Het zijn er meer dan je denkt."
       - id: show_the_worst_sketch
         label: "De slechtste schets"
-        say: "Laat me de slechtste schets zien die je deze maand kreeg."
+        say: "Mag ik de slechtste schets zien die je deze maand hebt gehad?"
         hidden: true
         addresses: [concern]
         reply: "De slechtste. … Hier. Op een boterhamzakje. Met een pindakaasvlek precies op de mof."
@@ -1136,7 +1136,7 @@ dialogs:
       paraphrase:
         lands: {text: "Precies. Dat zegt bijna niemand. Ze denken dat het overtekenen is.", tags: [claim], tell: recognition}
     outcomes:
-      commitment: "Dat moet kloppen, dus kom maar terug wanneer je wilt. De slechtste leg ik apart. Die raak ik heus niet kwijt."
+      commitment: "Kom maar terug wanneer je wilt. De slechtste leg ik apart. Die raak ik heus niet kwijt."
       partial: "Misschien later in de week, als de doos wat leger is. Al wordt hij dat nooit."
       heard: "Fijn. Je bent de eerste die het niet 'overtekenen' noemt."
       none: "Ik moet verder met deze."
@@ -1186,7 +1186,7 @@ dialogs:
         say: "Mag ik Anouk vragen wat zij ziet, voordat ik iets tel?"
         addresses: [concern]
         reply: "Anouk, ja. Vraag het haar maar. Zij weet het beter dan mijn Excel."
-    co_proposal: {id: count_together, text: "Zoek met me mee naar het oudste dossier. Dan weet ik ook eens iets wat niet in mijn Excel staat."}
+    co_proposal: {id: count_together, text: "Laten we samen het oudste dossier opzoeken. Dan weet ik ook eens iets wat niet in mijn Excel staat."}
     lines:
       inquiry: "Wat bedoel je met 'inhalen'?"
       paraphrase: "Dus deze week ligt er meer, en maandag lossen jullie het op zoals altijd."
@@ -1212,12 +1212,12 @@ dialogs:
     mood: moe
     patience: 12
     opening: "Sorry, ik zit midden in het omplannen. Twee monteurs moesten naar een storing. Zeg het maar."
-    position: {text: "Dit gebeurt elke dag. Er komt een storing, de monteurs gaan erheen en ik plan alles om. Zo gaat dat. Je hebt me tot de volgende storing.", tags: [claim, feeling], tell: time}
+    position: {text: "Dit gebeurt elke dag. Er komt een storing, de monteurs gaan erheen en ik plan alles om. Zo gaat dat. Ik heb even, tot de volgende storing.", tags: [claim, feeling], tell: time}
     layers:
       - id: interest
         at: 45
         via: [reflect, empathy, mood]
-        text: "Ik noem het mijn kaartenhuis. Elke ochtend bouw ik het op, en om tien uur waait er een storing doorheen. Dan bel ik twaalf klanten af. Die zijn boos op mij, niet op de kabel."
+        text: "Mijn planning noem ik het kaartenhuis. Elke ochtend bouw ik het op, en om tien uur waait er een storing doorheen. Dan bel ik twaalf klanten af. Die zijn boos op mij, niet op de kabel."
         tags: [claim, feeling]
       - id: concern
         at: 65
@@ -1254,9 +1254,9 @@ dialogs:
         lands: {text: "Ja. Precies dat. Elke ochtend.", tags: [feeling]}
         misses: {text: "Nee, boos ben ik niet. Ik ben moe. Dat is anders.", tags: [feeling]}
     outcomes:
-      commitment: "Zeven uur. Ik zet een stoel voor je klaar. Die staat er toch, er zit nooit iemand op."
+      commitment: "Zeven uur. Er staat hier toch een lege stoel. Daar zit nooit iemand op."
       partial: "Misschien. Als het morgen rustig is. Dat is het nooit."
-      heard: "Dank je. Je zei het beter dan ik het zelf had kunnen zeggen."
+      heard: "Dank je. Zo had ik het zelf niet kunnen zeggen."
       none: "Ik moet verder omplannen. Sorry."
       compliance: "Oké. Als het moet."
       ruined: "Ik moet verder omplannen. Sorry."
@@ -1292,10 +1292,10 @@ dialogs:
         label: "Gewoon proberen"
         say: "Het is maar een proef. Werkt het niet, dan stoppen we."
         addresses: [interest]
-        reply: "Ja. Een proef."
+        reply: "Ja. Goed. Een proef dan."
       - id: it_is_the_tray
         label: "Het ligt aan de bakken"
-        say: "Als het werkt, zegt dat iets over die twee bakken, niet over jou. Je zocht omdat het werk zo lag."
+        say: "Als het werkt, zegt dat iets over die twee bakken, niet over jou. Je moest wel zoeken, zo lag het werk er nou eenmaal."
         hidden: true
         addresses: [concern]
         reply: "Over de bakken. Niet over mij. … Zo had ik het nog niet bekeken."
@@ -1303,14 +1303,14 @@ dialogs:
         label: "Samen vertellen"
         say: "Vrijdag vertellen we samen wat we zagen. Wat er ook uitkomt."
         addresses: [concern]
-        reply: "Samen. Oké. Dan sta ik er niet alleen."
+        reply: "Samen, oké. Dan sta ik er tenminste niet alleen voor."
     lines:
       silence: "(je knikt, en wacht)"
       empathy: "Twee jaar lang zoeken in twee bakken. Daar word je ook gek van."
     outcomes:
       commitment: "Goed. Eén bak. Oudste bovenop. En vrijdag kijken we samen."
       partial: "Ik doe het. Maar vrijdag zeg jij het, niet ik."
-      heard: "Sorry. Ik wist niet dat ik dat ging zeggen."
+      heard: "Sorry, dat floepte er zomaar uit."
       none: "Ik ga maar beginnen."
       compliance: "Oké."
       ruined: "Ik ga maar beginnen."
@@ -1325,7 +1325,7 @@ dialogs:
     teaches: [experience]
     patience: 12
     opening: "Meetdata en registratie. Jij bent de nieuwe van Ruud. Ga zitten, maar raak de map niet aan."
-    position: {text: "Ik registreer alles één keer per maand. Dan doe ik de hele stapel in één keer. Dat is efficiënter, ik heb het uitgerekend. Klopt.", tags: [claim], tell: facts}
+    position: {text: "Ik registreer één keer per maand, de hele stapel tegelijk. Dat is efficiënter. Ik heb het uitgerekend.", tags: [claim], tell: facts}
     layers:
       - id: interest
         at: 52
@@ -1352,7 +1352,7 @@ dialogs:
         say: "Zullen we samen opschrijven hoe het werkt? Dan heb jij een vervanger, en ik snap het ook."
         hidden: true
         addresses: [concern]
-        reply: "Opschrijven. Met de tokens erbij. Dat staat nog nergens. Klopt."
+        reply: "Klopt, dat staat nog nergens. Met de tokens erbij, dan."
       - id: ask_ruud_backup
         label: "Ruud om een vervanger vragen"
         say: "Wil je dat ik Ruud vraag om iemand die jou kan vervangen?"
@@ -1365,7 +1365,7 @@ dialogs:
       experience:
         lands: {text: "De schoonmaker. Ha. Die weet meer dan het organogram. … Ja. Zo voelt het hier ook.", tags: [feeling]}
     outcomes:
-      commitment: "Klopt. Zeg maar wanneer. Ik leg de map klaar. Jij mag hem aanraken."
+      commitment: "Goed. Zeg maar wanneer. Ik leg de map klaar. Jij mag hem aanraken."
       partial: "Misschien. Als Ruud het goedvindt."
       heard: "Hm. Je vroeg wie het overneemt. Dat had nog niemand gevraagd."
       none: "Ik heb nog een stapel."
@@ -1388,13 +1388,13 @@ dialogs:
       - id: interest
         at: 62
         via: [open_question, inquiry, paraphrase]
-        text: "Eén bak, oudste bovenop. Het is zo simpel dat je het vergeet. Dat is het gevaarlijke."
+        text: "Eén bak, oudste bovenop. Het is zo simpel dat je het vergeet. Dat is juist het gevaar."
         tags: [claim, feeling]
       - id: concern
         at: 72
         via: [reflect, empathy, silence, inquiry]
         lead_in: {text: "Alleen…", tags: [hesitation]}
-        text: "Ze werken alle drie al langer hier dan ik. Wie ben ik om te zeggen hoe het moet?"
+        text: "Ze werken hier alle drie al langer dan ik. Wie ben ik om te zeggen hoe het moet?"
         tags: [admission, doubt]
         tell: safety
         unlocks:
@@ -1413,16 +1413,16 @@ dialogs:
         reply: "Een A4. Ja. Al hangen er hier al zes A4'tjes die niemand leest."
       - id: "anouk_writes_a4"
         label: "Jij schrijft het A4, in jouw woorden"
-        say: "Wat als jij het A4 schrijft, in jouw woorden, en het maandag zelf laat zien? Niet als regel. Als wat je ontdekte."
+        say: "En als jij dat A4 nou schrijft, in je eigen woorden, en het maandag zelf laat zien? Niet als regel, maar als iets wat jij hebt ontdekt."
         hidden: true
         addresses: [concern]
-        reply: "Als wat ik ontdekte. Dan is het geen regel van de nieuwe. Dan is het… mijn trucje."
+        reply: "Iets wat ik heb ontdekt. Dan is het geen regel van de nieuwe. Dan is het… mijn trucje."
     experiments:
       - id: decide_together_friday
         label: "Een week proberen, samen beslissen"
         say: "Probeer het een week met z'n vieren, en beslis vrijdag samen of het blijft."
         addresses: [concern]
-        reply: "Samen beslissen. Dan is het niet mijn regel. Dan is het de onze."
+        reply: "Samen beslissen. Dan is het niet mijn regel, maar die van ons."
     co_proposal: {id: "anouk_writes_a4", text: "Als ik het A4 zelf mag schrijven. En jij er maandag bij staat. Niet om te praten, gewoon erbij."}
     outcomes:
       commitment: "Goed. Ik teken er een bergje bij. Met een vlag."
@@ -1447,7 +1447,7 @@ dialogs:
       - id: interest
         at: 55
         via: [mood, open_question, reflect]
-        text: "Ik dacht maandag: weer iemand van het hoofdkantoor met een stopwatch. Maar je hebt nog niks verbeterd. Je hebt alleen gekeken. Dat is raar. Raar goed, bedoel ik."
+        text: "Ik dacht maandag: weer iemand van het hoofdkantoor met een stopwatch. Maar je hebt niks omgegooid. Je hebt vooral gekeken. Dat is raar. Raar goed, bedoel ik."
         tags: [claim, feeling]
       - id: concern
         at: 70
@@ -1474,8 +1474,8 @@ dialogs:
     co_proposal: {id: walk_the_flow_monday, text: "Neem me maandag mee. Van mijn bak tot de monteur. Dan zie ik het ook eens."}
     outcomes:
       commitment: "Maandag. Om negen uur. Ik neem de stapel terugkomers mee. De echte, niet die uit het weekrapport."
-      partial: "We zien maandag wel. Joh. Fijn weekend."
-      heard: "Hè. Je luistert echt, hè. Dat is ook raar. Raar goed."
+      partial: "We zien maandag wel, joh. Fijn weekend."
+      heard: "Je luistert echt, hè. Dat is ook raar. Raar goed."
       none: "Ik moet de bakken nog leegmaken. Fijn weekend."
       compliance: "Goed hoor. Fijn weekend."
       ruined: "Fijn weekend."

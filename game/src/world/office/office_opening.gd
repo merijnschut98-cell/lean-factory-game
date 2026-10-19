@@ -30,7 +30,7 @@ const HINT_LOOK := "Draaien: Z en C  ·  Zoomen: muiswiel"
 const HINT_JOURNAL := "J  journaal: wat Anouk je vertelde staat erin"
 const TALK_HINT := "Openheid: hoe open Anouk nu met je praat. Kies hoe je reageert; je ziet aan haar wat het doet."
 const EXPLAIN := "Leg maar uit"
-const KNOW_IT := "Dat ken ik al, Ruud"
+const KNOW_IT := "Dat verhaal ken ik al, Ruud"
 const LETTER := ["Geachte heer Hoekstra,",
 	"Op {aanvraag_datum} hebben wij een zwaardere aansluiting aangevraagd voor onze warmtepomp. Inmiddels wachten we al {dossier_weken}. Mijn moeder woont bij ons in en zij heeft het snel koud. Niemand kan ons vertellen wanneer u komt. Ik vraag niet om voorrang. Ik vraag om een datum.",
 	"Met vriendelijke groet,", "F. El Amrani, Nova-Oost"]
@@ -41,7 +41,7 @@ const LINES := {
 		[YVONNE, "Kijk, daar is hij al. Nooit te laat, wel altijd net op tijd."]],
 	"leg1": [[RUUD, "Hoi {speler}, ik ben Ruud. Welkom! Ik wilde je om half negen zelf ophalen, maar het MT liep uit. Dat gebeurt vaker, en meestal is dat geen goed teken."],
 		[RUUD, "We nemen de trap. Goed voor mijn conditie, zegt mijn vrouw."]],
-	"kcc": [[RUUD, "Hier zit het KCC. Daar bellen de mensen die op ons wachten. Daar ga je nog vaak komen."]],
+	"kcc": [[RUUD, "Hier zit het KCC. Iedereen die op ons wacht, belt hierheen. Je komt hier nog vaak."]],
 	"wait": [[RUUD, "Kijk gerust even rond. Ik wacht hier wel."]],
 	"plan": [[RUUD, "Hier, een plattegrond. Ik werk hier al twintig jaar en ik loop nog steeds weleens de verkeerde gang in."],
 		[RUUD, "Aansluitingen is hier rechtsaf. Je ziet het vanzelf: daar liggen de stapels."]],
@@ -49,13 +49,13 @@ const LINES := {
 		[SANNE, "Hoi, welkom! Ik zit net aan de telefoon, maar ik kom straks echt even kennismaken."],
 		[RUUD, "Na het weekend staat de telefoon hier roodgloeiend."]],
 	"marco": [[RUUD, "En dit is Marco, ploegleider van de monteurs. Die komt alleen boven als er iets misgaat."],
-		[MARCO, "Dan zie je me nog vaak genoeg. Klaverstraat. Staan we er weer voor niks. Derde keer al."],
+		[MARCO, "Dan zie je me nog vaak genoeg. Klaverstraat. Meterkast weer niet klaar, dus voor niks gereden. Derde keer al."],
 		[RUUD, "Vertel het {haar_hem_speler} straks maar. Daar is {hij_zij} juist voor."],
 		[MARCO, "Dat zeiden ze in 2012 ook. Maar goed. Welkom."]],
-	"design": [[RUUD, "Joost van Dijk, teamleider Werkvoorbereiding. En dit is Anouk de Vries."],
+	"design": [[RUUD, "Dit is Joost van Dijk, teamleider Werkvoorbereiding. En dit is Anouk de Vries."],
 		[JOOST, "Welkom. Je treft het niet: bijna mijn hele team zit deze week op cursus. Alleen Anouk is er."],
 		[ANOUK, "Hoi! Sorry, ik moet dit even afmaken. Ik spreek je straks!"],
-		[RUUD, "Dat bureau van Anouk: daar kom je nog wel terug."]],
+		[RUUD, "Kijk even goed naar het bureau van Anouk. Daar komen we nog op terug."]],
 	"overtaken": [[RUUD, "Je vond het zelf. Dat is een goed teken."]],
 	"door": [[RUUD, "Dit is mijn kamer. Voorlopig dan."],
 		[RUUD, "Boven heb ik er ook een, met uitzicht op het spoor. Maar daar zit ik te ver van het werk."]],
@@ -65,7 +65,7 @@ const LINES := {
 		[RUUD, "Waar precies? Daar ga jij achter komen."]],
 	"letter": [[RUUD, "Dit lag vanochtend op mijn bureau."]],
 	"after_letter": [[RUUD, "Ik vraag je niet om dit op te lossen. Nog niet. Eerst wil ik dat je gaat kijken. Hoe je dat doet, leer je deze week. Volgende week volg je dit dossier, van de brief tot de meter."],
-		[RUUD, "En als je met iemand praat: vraag eerst hoe het met diegene gaat. En meen het ook."],
+		[RUUD, "En als je met mensen praat: vraag eerst hoe het met ze gaat. En meen het ook."],
 		[RUUD, "De rest van de dag ben je van IT en HR. Laptop, account, wachtwoorden. Sterkte."]],
 }
 ## The rest of the first day, as the phone (B6): [from, at, text].
