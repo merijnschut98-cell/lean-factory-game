@@ -313,17 +313,15 @@ func offer(n: int = OFFERED) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	if not outcome.is_empty():
 		return out
-	var by_fit := {"fits": [], "weak": [], "costly": []}
-	var decisive := []  # the fits that win, or draw a layer or its lead-in out
+	var by_fit := {"decisive": [], "fits": [], "weak": [], "costly": []}
 	for option: Dictionary in _candidates():
-		var fit := _fit(option)
-		(decisive if fit == "decisive" else by_fit[fit]).append(option)
+		by_fit[_fit(option)].append(option)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash([_seed, def.id, state_key()])
-	for options: Array in [decisive] + by_fit.values():
+	for options: Array in by_fit.values():
 		_shuffle(options, rng)
 	var weak: Array = by_fit["weak"]
-	var fits: Array = decisive + by_fit["fits"]  # the moment's turn comes first
+	var fits: Array = by_fit["decisive"] + by_fit["fits"]  # what the moment turns on comes first
 	var chosen: Array = fits.slice(0, 1) + weak.slice(0, rng.randi_range(1, 2))
 	if not by_fit["costly"].is_empty() and rng.randf() < COSTLY_SHARE:
 		chosen.append(by_fit["costly"][0])
