@@ -25,7 +25,11 @@
     "  (2026-10-16), revisit once a year. Skin tones: the Netherlands' real mix, light to dark (Dutch,",
     "  Turkish/Moroccan, Indonesian/Hindustani, Afro-Surinamese/Antillean roots); the values are estimates",
     "  picked to read under the office light, not measured skin colours. Body sizes: player_m 1.82 m,",
-    "  player_f 1.69 m, close to the average height of Dutch 20-30 year olds (CBS, rounded)."
+    "  player_f 1.69 m, close to the average height of Dutch 20-30 year olds (CBS, rounded).",
+    "Dropped from the choices (Merijn's playtest, 2026-10-19: they read wrong; contact sheets",
+    "  docs/screenshots/creator_hair_*_2026-10-19.png): curtains (Middenscheiding, a helmet of flat cards),",
+    "  staart (Strakke staart, a bald cap with a loose cone), krullen (Krullen, flat card strips). Their glbs",
+    "  stay under parts/ for a rebuild; an old save's id falls back to the body's first style."
   ],
   "traits": [
     {
@@ -51,16 +55,13 @@
         "m": [
           {"id": "fade", "label": "Korte fade", "part": "hair_fade"},
           {"id": "crop", "label": "Textured crop", "part": "hair_crop"},
-          {"id": "curtains", "label": "Middenscheiding", "part": "hair_curtains"},
           {"id": "buzzcut", "label": "Buzzcut", "part": "hair_buzzcut"},
           {"id": "krullen_bovenop", "label": "Krullen bovenop", "part": "hair_curls_top"}
         ],
         "f": [
           {"id": "lang_steil", "label": "Lang en steil", "part": "hair_long"},
           {"id": "lange_slagen", "label": "Lange slagen", "part": "hair_waves"},
-          {"id": "lob", "label": "Schouderlengte", "part": "hair_lob"},
-          {"id": "staart", "label": "Strakke staart", "part": "hair_ponytail"},
-          {"id": "krullen", "label": "Krullen", "part": "hair_curls"}
+          {"id": "lob", "label": "Schouderlengte", "part": "hair_lob"}
         ]
       }
     },

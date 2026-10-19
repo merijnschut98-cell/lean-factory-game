@@ -73,19 +73,22 @@ func test_every_option_the_screen_offers_has_two_to_five_and_resolves() -> void:
 	screen.free()
 
 
-func test_kapsel_lists_the_bodys_own_five_first_then_the_others() -> void:
+func test_kapsel_lists_the_bodys_own_first_then_the_others() -> void:
 	var screen := _camera()
 	screen.choose_in(CreatorLook.BODY, "vrouw")
 	var hair := screen.offered("kapsel").map(func(o: Dictionary) -> String: return o["id"])
-	assert_eq(hair.size(), 10, "any style on either body")
-	assert_eq(hair.slice(0, 5), CreatorLook.options("kapsel", "f").slice(0, 5).map(func(o: Dictionary) -> String: return o["id"]))
+	var own: int = CreatorLook.trait_def("kapsel")["per_body"]["f"].size()
+	assert_eq(hair, CreatorLook.options("kapsel", "f").map(func(o: Dictionary) -> String: return o["id"]),
+		"any style on either body")
+	assert_eq(hair.slice(0, own), CreatorLook.trait_def("kapsel")["per_body"]["f"].map(
+		func(o: Dictionary) -> String: return o["id"]), "her own first")
 	screen.free()
 
 
 # ── Body, Willekeurig, the opening look (§4.1 tests 5–7) ───────────────────
 
 func test_a_body_change_resets_the_face_and_keeps_the_rest() -> void:
-	var look := CreatorLook.normalized({"lichaam": "man", "gezicht": "volle_baard", "kapsel": "curtains",
+	var look := CreatorLook.normalized({"lichaam": "man", "gezicht": "volle_baard", "kapsel": "crop",
 		"huidskleur": "bruin", "haarkleur": "zwart", "ogen": "groen", "bril": "transparant", "kleding": "blazer"})
 	var changed := CreatorScreen.with_body(look, "vrouw")
 	assert_eq(changed["lichaam"], "vrouw")
@@ -108,7 +111,7 @@ func test_willekeurig_never_touches_name_or_body_and_stays_in_the_file() -> void
 			assert_true(false, "draw %d not in the file: %s" % [i, screen.profile.look])
 			break
 		seen[screen.profile.look["kapsel"]] = true
-	assert_eq(seen.size(), 10, "every hairstyle comes up, from both lists")
+	assert_eq(seen.size(), CreatorLook.options("kapsel", "m").size(), "every hairstyle comes up, from both lists")
 	screen.free()
 
 
