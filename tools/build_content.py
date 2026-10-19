@@ -2077,6 +2077,7 @@ def vocabulary() -> dict[str, Any]:
         "dialog_moves": DIALOG_MOVES, "dialog_tags": DIALOG_TAGS, "dialog_archetypes": DIALOG_ARCHETYPES,
         "dialog_needs": DIALOG_NEEDS,
         "dialog_kinds": DIALOG_KINDS, "dialog_moods": DIALOG_MOODS, "dialog_outcomes": DIALOG_OUTCOMES,
+        "banned_spoken": {"words": BANNED_SPOKEN, "allowed": ALLOWED_SPOKEN},
     }
 
 
@@ -2260,6 +2261,75 @@ def check_explainers(docs: dict[str, Any]) -> None:
                             raise ContentError(f"{where}: control {c['id']} has no layer {c[skin]}_{state}")
 
 
+# ── Spoken lines never name the game ────────────────────────────────────────
+# PLAN 2.13 E; docs/superpowers/specs/2026-10-19-dutch-style-guide.md §4: the
+# banned words (whole words, outside {tokens}) and what counts as spoken.
+# Exported in vocabulary.json, so the Godot test scans the scene consts too.
+BANNED_SPOKEN = ["game", "games", "gamen", "spel", "spelletje", "spelletjes", "speler", "spelers", "speelster",
+                 "level", "levels", "quest", "quests", "missie", "missies", "player"]
+# Real Dutch that contains a banned word ("er staat veel op het spel").
+ALLOWED_SPOKEN = ["op het spel"]
+_BANNED_RE = re.compile(r"\b(" + "|".join(BANNED_SPOKEN) + r")\b", re.IGNORECASE)
+_TOKEN_RE = re.compile(r"\{[^{}]*\}")
+# Keys inside a spoken part that hold no Dutch text.
+_NOT_SPOKEN = {"id", "label", "tags", "tell", "via", "unlocks", "at", "when", "needs", "kpis", "addresses", "hidden",
+               "promise", "routes", "condition", "wait_for"}
+_SPOKEN_DIALOG = ["opening", "retry_opening", "warning", "position", "layers", "proposals", "experiments",
+                  "co_proposal", "lines", "replies", "outcomes", "beats_after", "block", "variants"]
+_SPOKEN_MISSION = ["briefing", "debrief", "debrief_first", "debrief_variants", "fail", "reopen", "insights",
+                   "questions"]
+
+
+def banned_word(text: str) -> str | None:
+    """The first banned word in a spoken line, lower-cased, or None."""
+    text = _TOKEN_RE.sub(" ", text.lower())
+    for phrase in ALLOWED_SPOKEN:
+        text = text.replace(phrase, " ")
+    hit = _BANNED_RE.search(text)
+    return hit.group(1) if hit else None
+
+
+def _strings(node: Any, where: str) -> list[tuple[str, str]]:
+    """Every string under `node`, skipping keys that hold no text."""
+    if isinstance(node, str):
+        return [(where, node)]
+    if isinstance(node, dict):
+        return [s for k, v in node.items() if k not in _NOT_SPOKEN for s in _strings(v, f"{where} {k}")]
+    if isinstance(node, list):
+        return [s for i, v in enumerate(node) for s in _strings(v, f"{where} {i}")]
+    return []
+
+
+def spoken_texts(docs: dict[str, Any]) -> list[tuple[str, str]]:
+    """(where, text) for every line a person says or writes in the world."""
+    out: list[tuple[str, str]] = []
+    dialogs = docs.get("dialogs") or {}
+    for p in dialogs.get("people", []):
+        out += _strings(p.get("voice"), f"dialogs.yaml: person {p['id']} voice")
+    out += _strings({k: v for k, v in (dialogs.get("bank") or {}).items() if k != "labels"}, "dialogs.yaml: bank")
+    for d in dialogs.get("dialogs", []):
+        out += _strings({k: d[k] for k in _SPOKEN_DIALOG if k in d}, f"dialogs.yaml: dialog {d['id']}")
+    for e in (docs.get("explainers") or {}).get("explainers", []):
+        where = f"explainers.yaml: explainer {e['id']}"
+        out += _strings(e["analogy"]["limit_line"], f"{where} limit_line")
+        out += [s for b in e["beats"] for s in _strings(b["lines"], f"{where} beat {b['id']}")]
+    missions = docs.get("missions") or {}
+    coach = missions.get("coach") or {}
+    out += _strings({k: coach[k] for k in ("stages", "conditional") if k in coach}, "missions.yaml: coach")
+    for m in missions.get("missions", []):
+        out += _strings({k: m[k] for k in _SPOKEN_MISSION if k in m}, f"missions.yaml: mission {m['id']}")
+    for place, entry in ((docs.get("places") or {}).get("places") or {}).items():
+        out += _strings((entry or {}).get("questions", []), f"places.yaml: {place} questions")
+    return out
+
+
+def check_spoken(docs: dict[str, Any]) -> None:
+    for where, text in spoken_texts(docs):
+        hit = banned_word(text)
+        if hit:
+            raise ContentError(f"{where}: {hit!r} names the game in a spoken line (style guide §4): {text!r}")
+
+
 VALIDATORS: dict[str, Callable[[Any, str], None]] = {
     "game": validate_game,
     "value_streams": validate_value_streams,
@@ -2279,7 +2349,7 @@ OPTIONAL = {"dialogs", "explainers", "world", "places"}
 # Checks that need several files at once. Each gets {stem: document}.
 CROSS_CHECKS: list[Callable[[dict[str, Any]], None]] = [check_kpis, check_problems, check_missions, check_concepts,
                                                       check_dialogs, check_discoveries, check_explainers, check_world,
-                                                      check_places]
+                                                      check_places, check_spoken]
 
 
 def _validator_for(stem: str) -> Callable[[Any, str], None] | None:

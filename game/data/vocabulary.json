@@ -1,4 +1,27 @@
 {
+ "banned_spoken": {
+  "allowed": [
+   "op het spel"
+  ],
+  "words": [
+   "game",
+   "games",
+   "gamen",
+   "spel",
+   "spelletje",
+   "spelletjes",
+   "speler",
+   "spelers",
+   "speelster",
+   "level",
+   "levels",
+   "quest",
+   "quests",
+   "missie",
+   "missies",
+   "player"
+  ]
+ },
  "belt_xp": [
   0,
   2000,

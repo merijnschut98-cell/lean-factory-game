@@ -54,7 +54,7 @@ const LINES := {
 	"overtaken": [[RUUD, "Je vond het zelf. Goed teken."]],
 	"door": [[RUUD, "Mijn kamer. Voorlopig."],
 		[RUUD, "Boven heb ik er een met uitzicht op het spoor. Maar boven zit ik te ver van het werk."]],
-	"board_ask": [[RUUD, "Weet je waarom dit spel… sorry. Weet je waarom dit vak spanning heet? Ik leg het iedere nieuwe collega uit. Het duurt een minuut."]],
+	"board_ask": [[RUUD, "Iedereen die hier begint, krijgt van mij hetzelfde verhaal. Over spanning. Heb je een minuutje?"]],
 	"board_known": [[RUUD, "Mooi. Dan laat ik het op het bord staan. Voor als je het ooit wilt zien."]],
 	"board_close": [[RUUD, "Bij ons op kantoor is het net zo. Er staat druk op: mensen willen een aansluiting. Er loopt maar zoveel door. En ergens zit weerstand."],
 		[RUUD, "Waar? Dat weet ik niet. Dat ga jij zien."]],
