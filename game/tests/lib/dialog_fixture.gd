@@ -9,6 +9,7 @@ static func bank() -> Dictionary:
 	for move: String in Dialog.MOVES:
 		player[move] = "speler " + move
 		chips[move] = "chip " + move
+	player["show_data"] += " " + Dialog.DATA_TOKEN
 	var replies := {}
 	for move: String in ["mood", "open_question", "reflect", "empathy", "paraphrase", "inquiry", "experience", "silence",
 			"perspective", "show_data", "propose_experiment"]:

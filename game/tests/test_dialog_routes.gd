@@ -7,7 +7,7 @@ extends TestCase
 
 
 ## The most tier-1 talks one route may win today (target: half, PLAN 1.6c).
-const TIER1_RATCHET := 9
+const TIER1_RATCHET := 2
 
 
 ## Each content talk's full search (id → best_route), kept for the later tests
@@ -20,7 +20,7 @@ static var _searched: Dictionary = {}
 static func _best(talk: Dialog) -> Dictionary:
 	if _searched.has(talk.def.id):
 		return _searched[talk.def.id]
-	return DialogRoutes.best_route([talk], DialogRoutes.WIDTH, [], false)
+	return DialogRoutes.best_route([talk], DialogRoutes.WIDTH, [], false, false)
 
 
 func _catalog() -> Catalog:
@@ -35,6 +35,9 @@ func test_the_checker_finds_a_route_that_wins() -> void:
 	assert_eq(best["wins"], 2, "the same talk twice: one route wins both")
 	assert_true(DialogRoutes.wins(talk, best["route"]), "and replays as a win")
 	assert_eq(best["route"].back(), "ask_commitment")
+	var fresh := talk.copy()
+	assert_false(DialogRoutes._play(fresh, "propose", fresh.offer()), "no proposal on offer before the person feels heard")
+	assert_eq(fresh.moves_made, 0, "and nothing played")
 	var quick := DialogRoutes.best_route([talk, talk], DialogRoutes.WIDTH, [], false)
 	assert_eq([quick["wins"], quick["route"], quick["won"]], [best["wins"], best["route"], best["won"]],
 		"stopping at the first route that wins every talk finds the same best route")
@@ -55,28 +58,38 @@ func test_no_fixed_route_wins_more_than_half_of_the_persuasion_talks() -> void:
 	# wear-out: 11; after the scripts' route variety (El Amrani winnable;
 	# Petra, Mieke and Rob's concerns opened by data, a summary, a story): 8
 	# (PLAN 1.6c); all twenty from content (D9): 10, then 9 after the D9 audit's
-	# lines. The limit only goes down.
+	# lines. With the four offered sentences (PLAN 2.13 B: a route plays only
+	# what a turn offers): 2. The limit only goes down.
 	assert_true(best["wins"] <= TIER1_RATCHET,
 		"%d of %d talks won by one route: %s (%s)" % [best["wins"], talks.size(), " ".join(best["route"]),
 		", ".join(best["won"])])
 
 
-## D10 / T7: no golden path. Three winning routes at least, each pair
-## differing in two positions or more.
+## Every persuasion talk can be won through the sentences its turns offer
+## (PLAN 2.13 B), on the seed the route check plays.
+func test_every_persuasion_can_be_won_through_its_offers() -> void:
+	for talk in DialogRoutes.content_talks(_catalog()):
+		assert_eq(DialogRoutes.best_route([talk], DialogRoutes.WIDTH, [], false)["wins"], 1, talk.def.id)
+
+
+## D10 / T7: no golden path in what the content holds. Three winning routes
+## at least over the whole palette, each pair differing in two positions or
+## more (the offers deal from these, differently per seed).
 func test_every_persuasion_has_three_different_routes() -> void:
 	for talk in DialogRoutes.content_talks(_catalog()):
-		_searched[talk.def.id] = DialogRoutes.best_route([talk])
+		_searched[talk.def.id] = DialogRoutes.best_route([talk], DialogRoutes.WIDTH, [], true, false)
 		var distinct := DialogRoutes.distinct(_searched[talk.def.id]["winners"])
 		assert_true(distinct.size() >= 3, "%s: %d distinct routes" % [talk.def.id, distinct.size()])
 
 
 ## The Act 0 week (tutorial talks spec §1, §5): the day's move is a good way
-## through, never the only one, and no talk can be lost, however hard it is pushed.
+## through, never the only one (over the whole palette), and no talk can be
+## lost, however hard it is pushed.
 func test_every_tutorial_talk_is_won_without_its_day_s_move_and_never_ruined() -> void:
 	var tutorials := DialogRoutes.content_talks(_catalog()).filter(func(t: Dialog) -> bool: return t.def.tutorial)
 	assert_eq(tutorials.size(), 11, "anouk_seven and the ten talks of the training week")
 	for talk: Dialog in tutorials:
-		assert_eq(DialogRoutes.best_route([talk], DialogRoutes.WIDTH, Array(talk.def.teaches), false)["wins"], 1,
+		assert_eq(DialogRoutes.best_route([talk], DialogRoutes.WIDTH, Array(talk.def.teaches), false, false)["wins"], 1,
 			"%s: a route without %s" % [talk.def.id, talk.def.teaches])
 		var pushed := talk.copy()
 		DialogFixture.play(pushed, ["confront", "pressure", "confront", "pressure", "confront"])

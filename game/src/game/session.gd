@@ -878,6 +878,27 @@ func dialog_moves() -> Array[Dictionary]:
 	return out
 
 
+## This turn's sentences in the talk in progress (Dialog.offer: [{move, pick,
+## line}], a shown clue's text in its line); [] when there is none.
+func dialog_offers() -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	if _talk != null:
+		for o: Dictionary in _talk.offer():
+			out.append(_filled(_with_clue(o, o["pick"])))
+	return out
+
+
+## `said` (an offer or a move's result) with the text of the clue it shows
+## (`clue_id`) in its line, for Dialog.DATA_TOKEN.
+func _with_clue(said: Dictionary, clue_id: String) -> Dictionary:
+	if said.get("move") != "show_data" or not Dialog.DATA_TOKEN in str(said.get("line", "")):
+		return said
+	var p: ProblemDef = region.problems.get(clue_id.get_slice(":", 0))
+	var clues := p.clues.filter(func(c: Clue) -> bool: return c.id == clue_id) if p != null else []
+	var text: String = clues[0].text if not clues.is_empty() else ""
+	return said.merged({"line": str(said["line"]).replace(Dialog.DATA_TOKEN, text).strip_edges()}, true)
+
+
 ## The meter of the talk in progress (Dialog.meter); {} when there is none.
 func dialog_meter() -> Dictionary:
 	return _talk.meter() if _talk != null else {}
@@ -909,7 +930,7 @@ func choose_move(move: String, pick: String = "") -> Dictionary:
 	var result := _talk.say(move, pick)
 	if result.get("ended", false):
 		result["summary"] = _finish_talk()
-	return _filled(result)
+	return _filled(_with_clue(result, pick))
 
 
 ## The tokens talk lines speak through: the player's (PlayerProfile.fill:
@@ -964,7 +985,7 @@ func _world(p: PersonDef) -> Dictionary:
 		"main": missions.active("main").map(func(m: MissionDef) -> String: return m.id),
 		"active": missions.active().map(func(m: MissionDef) -> String: return m.id),
 		"found": region.found, "facts": _facts(), "team_trust": region.trust.get(p.team, 0), "blamed": blamed,
-		"now": region.net.time, "beats": missions.beats(),
+		"now": region.net.time, "beats": missions.beats(), "seed": region.net.run_seed,
 	}
 
 

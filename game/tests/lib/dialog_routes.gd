@@ -9,6 +9,9 @@ class_name DialogRoutes
 ## show_data shows a clue this person cares about, propose_experiment and
 ## propose put forward one that meets the concern, ask_commitment asks.
 ## Pressure, blame, repair and close never win a commitment and are left out.
+## A token plays only when the turn offers it (Dialog.offer, PLAN 2.13 B: the
+## player chooses among four sentences), with the offered pick a good player
+## takes; a route whose token is not on offer does not fit that talk.
 ## A talk is won when it ends in commitment; the facts outside the talk (a
 ## block's route, the condition) are given, so only the moves decide.
 ##
@@ -30,6 +33,10 @@ const WIDTH := 300
 ## The most a single move can raise openness (the largest landing Δ, 12, at the
 ## largest weight, 2.0): a bound used to drop talks that can no longer be won.
 const MAX_GAIN := 24
+
+## A talk's offers this turn, by the talk (instance id): the search tries every
+## token on the same talks, so each turn is dealt once (cleared every step).
+static var _dealt: Dictionary = {}
 
 
 ## A talk ready to play: `openness` at the start (People's rule for content,
@@ -105,7 +112,10 @@ static func distinct(routes: Array) -> Array:
 ## move, at most one per state)}. `without`: tokens no route may use.
 ## `every_winner` false: stop once a route wins every talk; wins, route and won
 ## are the same (the best route only changes on more wins), winners is partial.
-static func best_route(talks: Array, width: int = WIDTH, without: Array = [], every_winner := true) -> Dictionary:
+## `offered` false: every token on the whole palette, offered or not (what
+## the content holds, whatever a turn deals; T7 and the Act 0 week's rule).
+static func best_route(talks: Array, width: int = WIDTH, without: Array = [], every_winner := true,
+		offered := true) -> Dictionary:
 	var tokens := TOKENS.filter(func(t: String) -> bool: return not t in without)
 	var beam := [{"talks": talks.map(func(t: Dialog) -> Dialog: return t.copy()), "route": [], "won": 0}]
 	var best := {"wins": 0, "route": [], "winners": []}
@@ -113,17 +123,18 @@ static func best_route(talks: Array, width: int = WIDTH, without: Array = [], ev
 	for t: Dialog in talks:
 		depth = maxi(depth, t.patience)
 	for step in depth:
+		_dealt.clear()
 		var next := {}
 		for node: Dictionary in beam:
 			for token: String in tokens:
-				var after := _step(node, token)
+				var after := _step(node, token, offered)
 				if after["won"] > node["won"]:
 					best["winners"].append(after["route"])
 				if after["won"] > best["wins"]:
 					best["wins"] = after["won"]
 					best["route"] = after["route"]
 					if not every_winner and best["wins"] == talks.size():
-						return _with_won(best, talks)
+						return _with_won(best, talks, offered)
 				var key := ",".join(after["talks"].map(_key))
 				if not next.has(key):
 					next[key] = after
@@ -134,23 +145,71 @@ static func best_route(talks: Array, width: int = WIDTH, without: Array = [], ev
 		beam = beam.slice(0, width)
 		if beam.is_empty():
 			break
-	return _with_won(best, talks)
+	_dealt.clear()
+	return _with_won(best, talks, offered)
 
 
-static func _with_won(best: Dictionary, talks: Array) -> Dictionary:
-	best["won"] = talks.filter(func(t: Dialog) -> bool: return wins(t, best["route"])).map(
+static func _with_won(best: Dictionary, talks: Array, offered: bool) -> Dictionary:
+	best["won"] = talks.filter(func(t: Dialog) -> bool: return wins(t, best["route"], offered)).map(
 		func(t: Dialog) -> String: return t.def.id)
 	return best
 
 
-## Whether `route` wins `talk` (played on a copy).
-static func wins(talk: Dialog, route: Array) -> bool:
+## Whether `route` wins `talk` (played on a copy, through its offers, or
+## with `offered` false on the whole palette).
+static func wins(talk: Dialog, route: Array, offered := true) -> bool:
 	var t := talk.copy()
 	for token: String in route:
-		if not t.outcome.is_empty():
+		if not t.outcome.is_empty() or not _play(t, token, t.offer() if offered else null):
 			break
-		t.say(token, pick(t, token))
 	return t.outcome == "commitment"
+
+
+## The talks of `talks` won by always choosing the offer at `position` (the
+## last one when fewer are offered): no button may be the right one.
+static func position_wins(talks: Array, position: int) -> Array[String]:
+	var out: Array[String] = []
+	for talk: Dialog in talks:
+		var t := talk.copy()
+		while t.outcome.is_empty():
+			var offers := t.offer()
+			var o: Dictionary = offers[mini(position, offers.size() - 1)]
+			t.say(o["move"], o["pick"])
+		if t.outcome == "commitment":
+			out.append(t.def.id)
+	return out
+
+
+## Play `token` in `talk`: the option of `offers` (this turn's) that plays
+## it, or with `offers` null the move itself; false, and nothing played,
+## when it is not on offer or the talk refuses it.
+static func _play(talk: Dialog, token: String, offers: Variant) -> bool:
+	if offers == null:
+		return not talk.say(token, pick(talk, token)).has("error")
+	var o := _option(talk, offers, token)
+	if o.is_empty():
+		return false
+	talk.say(o["move"], o["pick"])
+	return true
+
+
+## The option of `offers` (`talk`'s this turn) that plays `token`, with the
+## pick a good player takes among the offered ones; {} when it is not on offer.
+static func _option(talk: Dialog, offers: Array, token: String) -> Dictionary:
+	var best := pick(talk, token)
+	var chosen := {}
+	for o: Dictionary in offers:
+		if o["move"] == token and (chosen.is_empty() or o["pick"] == best):
+			chosen = o
+	return chosen
+
+
+## `talk`'s offers this turn, dealt once per step of the search (_dealt).
+static func _offers(talk: Dialog) -> Array:
+	var id := talk.get_instance_id()
+	if not _dealt.has(id):
+		_dealt[id] = talk.offer()
+	return _dealt[id]
 
 
 ## The pick a good player makes for a steering token ("" for none).
@@ -185,7 +244,7 @@ static func winnable(talk: Dialog) -> bool:
 	return maxi(needed, rise) <= talk.patience
 
 
-static func _step(node: Dictionary, token: String) -> Dictionary:
+static func _step(node: Dictionary, token: String, offered: bool) -> Dictionary:
 	var won: int = node["won"]
 	var after := []
 	for t: Dialog in node["talks"]:
@@ -193,8 +252,8 @@ static func _step(node: Dictionary, token: String) -> Dictionary:
 			after.append(t)
 			continue
 		var c := t.copy()
-		if c.say(token, pick(c, token)).has("error"):
-			c.outcome = "none"  # a move this talk does not offer (no experiment): the route does not fit
+		if not _play(c, token, _offers(t) if offered else null):
+			c.outcome = "none"  # not on offer this turn (or no experiment here): the route does not fit
 		elif c.outcome == "commitment":
 			won += 1
 		after.append(c)

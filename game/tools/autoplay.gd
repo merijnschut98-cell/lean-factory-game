@@ -641,7 +641,7 @@ class Persona extends RefCounted:
 		var made: Array[String] = []
 		var result := {}
 		while not hello and made.size() < MAX_MOVES:
-			var pick := _talker_move(d, tags, talk)
+			var pick := _from_offers(_talker_move(d, tags, talk), tags, talk)
 			result = s.choose_move(pick[0], pick[1])
 			if result.has("error"):
 				record["refusals"].append({"action": "talk:" + pick[0], "mission": d.mission, "code": result["error"],
@@ -698,28 +698,53 @@ class Persona extends RefCounted:
 	## The listening move that answers the person's last words, never the same
 	## move twice in a row and never a worn one (the first move asks the mood).
 	func _listen_move(tags: Array, talk: Dictionary) -> String:
+		return _listen_order(tags, talk)[0]
+
+	## The listening moves in the order the talker would make them now.
+	func _listen_order(tags: Array, talk: Dictionary) -> Array[String]:
 		var uses: Dictionary = talk["uses"]
-		if uses.is_empty():
-			return "mood"
 		var order: Array[String] = []
+		if uses.is_empty():
+			order.append("mood")
 		for tag: String in tags:
 			if ANSWER.has(tag):
 				order.append(ANSWER[tag])
 		order.append_array(FALLBACK_LISTEN)
-		for move in order:
-			if move != talk["last"] and int(uses.get(move, 0)) < Dialog.USE_DECAY.size():
-				return move
-		return "silence" if talk["last"] != "silence" else "empathy"
+		var fresh := order.filter(func(move: String) -> bool:
+			return move != talk["last"] and int(uses.get(move, 0)) < Dialog.USE_DECAY.size())
+		var out: Array[String] = []
+		out.assign(fresh)
+		out.append("silence" if talk["last"] != "silence" else "empathy")
+		return out
 
-	## The proposal to put on the table: the person's own idea, else one that
-	## answers the concern (a hidden one it unlocked first), else the first
-	## offered; [] when there is none.
+	## The talker says only what the turn offers (PLAN 2.13 B, four sentences):
+	## its own move when offered (a proposal with another offered pick), else
+	## the first offered listening move in the order it would listen, else the
+	## first offer that is no pressure or blame. Closing is always there (Esc).
+	func _from_offers(want: Array, tags: Array, talk: Dictionary) -> Array:
+		var offers := s.dialog_offers()
+		if want[0] == "close" or offers.is_empty():
+			return ["close", ""]
+		for o: Dictionary in offers:
+			if o["move"] == want[0] and (o["pick"] == want[1] or want[0] in ["propose", "propose_experiment"]):
+				return [o["move"], o["pick"]]
+		for move: String in _listen_order(tags, talk):
+			for o: Dictionary in offers:
+				if o["move"] == move:
+					return [move, ""]
+		for o: Dictionary in offers:
+			if not o["move"] in ["pressure", "confront"]:
+				return [o["move"], o["pick"]]
+		return [offers[0]["move"], offers[0]["pick"]]
+
+	## The proposal to put on the table, among this turn's offers: the person's
+	## own idea, else one that answers the concern (a hidden one it unlocked
+	## first), else the first offered; [] when there is none.
 	func _proposal(d: DialogDef, co: String, concern: bool) -> Array:
 		var offered := {}
-		for m: Dictionary in s.dialog_moves():
-			if m["id"] in ["propose", "propose_experiment"]:
-				for p: Dictionary in m.get("picks", []):
-					offered[p["id"]] = m["id"]
+		for o: Dictionary in s.dialog_offers():
+			if o["move"] in ["propose", "propose_experiment"]:
+				offered[o["pick"]] = o["move"]
 		if offered.has(co):
 			return [offered[co], co]
 		var first: Array = []

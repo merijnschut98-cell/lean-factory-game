@@ -19,7 +19,7 @@ extends SceneTree
 ## two found) · simulating (the A3's note while the Check runs) · fork_board
 ## (the board after the first mission: the fork as a pair) · debt (the HUD in
 ## debt, with the floor, and its toasts) · dialog_start, dialog_mid,
-## dialog_picks, dialog_summary, dialog_ruined (a talk with Joost) ·
+## dialog_summary, dialog_ruined (a talk with Joost) ·
 ## dialog_people (the journal's Mensen tab after it) · dialog_place (the
 ## team's menu with its people) · dialog_energy (the low-energy bar) ·
 ## intussen (the A3 in: what happens while the
@@ -145,7 +145,7 @@ func _run() -> void:
 			office.session.region.grant(0, -70000)
 			office.ui.after_action()
 			_stand_at(office, DESIGN)
-		"dialog_start", "dialog_mid", "dialog_picks", "dialog_summary", "dialog_ruined":
+		"dialog_start", "dialog_mid", "dialog_summary", "dialog_ruined":
 			_talk_to_joost(office, state)
 		"dialog_people":
 			_talk_to_joost(office, "dialog_summary")
@@ -666,7 +666,7 @@ func _talk_to_joost(office: Office, state: String) -> void:
 	var panel := office.ui.dialog_panel
 	var moves: Array = []
 	match state:
-		"dialog_mid", "dialog_picks":
+		"dialog_mid":
 			moves = ["mood", "paraphrase", "inquiry", "reflect"]
 		"dialog_summary":
 			moves = ["mood", "paraphrase", "inquiry", "reflect", "silence", "empathy", "propose:lead_and_oldest", "ask_commitment"]
@@ -675,8 +675,6 @@ func _talk_to_joost(office: Office, state: String) -> void:
 	for m: String in moves:
 		var colon := m.find(":")
 		panel.choose(m.left(colon) if colon >= 0 else m, m.substr(colon + 1) if colon >= 0 else "")
-	if state == "dialog_picks":
-		panel.open_picks("propose")
 
 
 ## The A3 a careful player would write (the cause read from the clues).

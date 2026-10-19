@@ -2,38 +2,28 @@ class_name DialogPanel
 extends UiPanel
 ## A talk with a named person (dialog spec §11), across the bottom of the
 ## screen at one fixed height (at most two fifths of it), so the person
-## stays in view above it, framed over the player's shoulder. At the top the meter: the openness bar
-## that FILLS, with ▲/▲▲ or ▼/▼▼ for the last reply and never a number
-## (Merijn, 2026-10-15), its band named under it; trust as five pips; the mood
-## word and the face; the layer tracker (Standpunt · Belang · Zorg); the trace
-## so far. Then what you said, the reply, and the cue "Er zit meer achter…".
-## Below, the reply chips by move type, all of them, always: the line you will
-## say shows on hover, never an effect or a hint about fit. A chip with ▸
-## opens its picks (a clue you found, an experiment, a proposal). When the
-## talk ends the chips give way to the summary card. What changes between
-## states (the speech, the chips, the picks, the summary) scrolls; the meter
-## stays where the eye left it. No chip is styled by fit: pressure looks like
-## listening, an open ▸ chip is outlined. Each chip carries its key, small
-## and dimmed (1–8 listening, Q–T steering, then the rest of the top row;
-## with a ▸ chip's picks open, 1–9 pick). When trust moves, a ▲ or ▼ flashes
-## beside the pips for a moment (never a number).
+## stays in view above it, framed over the player's shoulder. At the top, in
+## one small row by their face (PLAN 2.13 B), the meter: the openness bar that
+## FILLS, with ▲/▲▲ or ▼/▼▼ for the last reply and never a number (Merijn,
+## 2026-10-15), its band named beside it; trust as five pips; the mood word;
+## the layer tracker (Standpunt · Belang · Zorg). Then what you said, the reply, and the cue "Er zit meer achter…".
+## Below, four things you could say (Dialog.offer; Merijn's playtest,
+## 2026-10-19): whole sentences, never a move's name, label or row, none
+## styled by fit; each carries its key, small and dimmed (1–4), and Esc ends
+## the talk ("Afronden"). When the talk ends the sentences give way to the
+## summary card. What changes between states (the speech, the sentences, the
+## summary) scrolls; the meter stays where the eye left it. When trust moves,
+## a ▲ or ▼ flashes beside the pips for a moment (never a number).
 
 ## The summary card asks to talk the main mission's talk over with the coach.
 signal coach_requested
 
-const ROW_NAMES := {"listen": "Luisteren", "steer": "Sturen"}
-## Which move rows sit on which chip row (pressure and the rest on Sturen).
-const CHIP_ROWS := {"listen": ["listen"], "steer": ["steer", "pressure", "other"]}
 const LAYERS := {"position": "Standpunt", "interest": "Belang", "concern": "Zorg"}
 const ARROWS := {2: "▲▲", 1: "▲", 0: "", -1: "▼", -2: "▼▼"}
-const PICK_MARK := " ▸"
 const YOU := "Jij: %s"
 const OPENNESS := "Openheid"
 const TRUST := "Vertrouwen"
 const MOOD := "Stemming: %s"
-const TRACE := "Verloop"
-const PICK_HEADING := "Kies:"
-const NO_PICKS := "Je hebt hier nog niets voor."
 const SUMMARY := "Hoe het gesprek ging"
 const LEARNED := "Wat je hoorde"
 const NEW_CLUE := "Een nieuwe aanwijzing staat in je journaal (J)."
@@ -60,16 +50,13 @@ const HEIGHT_SHARE := 0.4
 ## The space inside the panel's edges (tighter than other panels).
 const PADDING := 14
 const CHIP_FONT := 15
+## The face beside the meter, and the bar's width: a small mood indicator.
+const FACE_SIZE := 44.0
+const BAR_WIDTH := 260.0
 ## How tall "Wat je hoorde" is before it scrolls (beside the summary card).
 const SUMMARY_HEIGHT := 96.0
-## The gap that sets pressure, and then repair and close, apart in their row.
-const CHIP_GAP := 22
-## Picks longer than this are cut on their button (the whole text on hover).
-const PICK_CHARS := 64
-## The keys of the Luisteren row, in order (and of the picks while open).
-const LISTEN_KEYS: Array[Key] = [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9]
-## The keys of the Sturen row, in order: Q–T steer, then pressure, confront, repair, close.
-const STEER_KEYS: Array[Key] = [KEY_Q, KEY_W, KEY_E, KEY_R, KEY_T, KEY_Y, KEY_U, KEY_I, KEY_O]
+## The keys of the offered sentences, in order.
+const OPTION_KEYS: Array[Key] = [KEY_1, KEY_2, KEY_3, KEY_4]
 const KEY_HINT_FONT := 10
 const KEY_HINT_AT := Vector2(3, -1)
 ## How long the trust arrow stays before it fades, and the fade.
@@ -84,10 +71,11 @@ var last: Dictionary = {}
 var heard: Dictionary = {}
 ## Openness after each move, the start first (what the trace draws).
 var trace: Array = []
-## The moves made, by chip label, for the summary.
+## The moves made, by chip label, for the summary (after the talk a move
+## may be named, as Ruud does).
 var made: Array[String] = []
-## The ▸ move whose picks are open ("" for none).
-var picking := ""
+## The sentences on offer this turn (session.dialog_offers), [] when none.
+var offers: Array[Dictionary] = []
 var bar: OpennessBar
 var face: MoodFace
 ## The summary card's trace, its moves under its points (null mid-talk).
@@ -152,7 +140,6 @@ func start(person_id: String) -> String:
 			heard[layer["id"]] = layer["text"]
 	trace = opened["meter"]["trace"].duplicate()
 	made.clear()
-	picking = ""
 	trust_moved = 0
 	_trust_seen = opened["meter"]["trust"]
 	refresh()
@@ -164,13 +151,13 @@ func talking() -> bool:
 	return not talk.is_empty() and not last.get("ended", false)
 
 
-## Make a move (with a pick for a ▸ chip): choose_move's result.
+## Make a move (with its pick): choose_move's result. The buttons make only
+## the offered ones (choose_option).
 func choose(move: String, pick: String = "") -> Dictionary:
 	var result := session.choose_move(move, pick)
 	if result.has("error"):
 		return result
 	last = result
-	picking = ""
 	first_hint = ""
 	# At the end the talk's outcome moves trust too (a partial's +5).
 	var trust: int = result.get("summary", {}).get("trust", result["trust"])
@@ -186,48 +173,21 @@ func choose(move: String, pick: String = "") -> Dictionary:
 	return result
 
 
-## A ▸ chip: show its picks, or hide them again.
-func open_picks(move: String) -> void:
-	picking = "" if picking == move else move
-	trust_moved = 0  # no move made: nothing to flash again
-	refresh()
+## Say the offered sentence at `index`: choose_move's result ({} for none).
+func choose_option(index: int) -> Dictionary:
+	if not talking() or index < 0 or index >= offers.size():
+		return {}
+	return choose(offers[index]["move"], offers[index]["pick"])
 
 
-## Each move's key (U14): the Luisteren row on LISTEN_KEYS, the Sturen row
-## (steering, pressure, repair and close) on STEER_KEYS, in chip order.
-static func keys_for(moves: Array[Dictionary]) -> Dictionary:
-	var out := {}
-	var used := {"listen": 0, "steer": 0}
-	for m in moves:
-		var row := "listen" if m["row"] == "listen" else "steer"
-		var keys := LISTEN_KEYS if row == "listen" else STEER_KEYS
-		if used[row] < keys.size():
-			out[m["id"]] = keys[used[row]]
-		used[row] += 1
-	return out
-
-
-## A key pressed mid-talk: its move (a ▸ chip opens its picks); with picks
-## open, 1–9 pick. False when the key means nothing here (left for others).
+## A key pressed mid-talk: 1–4 say the sentence beside it. False when the key
+## means nothing here (left for others).
 func press_key(key: Key) -> bool:
-	if not talking():
+	var i := OPTION_KEYS.find(key)
+	if not talking() or i < 0 or i >= offers.size():
 		return false
-	var moves := session.dialog_moves()
-	if not picking.is_empty() and key in LISTEN_KEYS:
-		var picks := _picks_of(moves, picking)
-		var i := LISTEN_KEYS.find(key)
-		if i < picks.size():
-			choose(picking, picks[i]["id"])
-		return true
-	var keys := keys_for(moves)
-	for m in moves:
-		if keys.get(m["id"]) == key:
-			if m.has("picks"):
-				open_picks(m["id"])
-			else:
-				choose(m["id"])
-			return true
-	return false
+	choose_option(i)
+	return true
 
 
 func _shortcut_input(event: InputEvent) -> void:
@@ -291,9 +251,10 @@ func refresh() -> void:
 	body.add_child(_header())
 	_flow = add_scroll_list(body)
 	_flow.add_theme_constant_override("separation", 6)
+	offers = session.dialog_offers()  # [] once the talk has ended
 	_speech()
 	if talking():
-		_chips()
+		_sentences()
 	else:
 		_summary()
 
@@ -311,48 +272,33 @@ func meter() -> Dictionary:
 func _header() -> HBoxContainer:
 	var m := meter()
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 20)
-	face = MoodFace.new(64.0)
+	row.add_theme_constant_override("separation", 14)
+	face = MoodFace.new(FACE_SIZE)
+	face.clip_contents = true  # head and shoulders, a portrait in the row
 	face.show_state(m["band"], m["mood"])
 	row.add_child(face)
-	var mid := VBoxContainer.new()
-	mid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	mid.add_theme_constant_override("separation", 2)
-	row.add_child(mid)
-	var top := HBoxContainer.new()
-	top.add_theme_constant_override("separation", 14)
-	mid.add_child(top)
-	var name := label(OPENNESS, UiTheme.SMALL, Palette.MUTED)
-	name.custom_minimum_size.x = 92
-	top.add_child(name)
+	row.add_child(label(OPENNESS, UiTheme.SMALL, Palette.MUTED))
 	bar = OpennessBar.new()
-	bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bar.custom_minimum_size.x = BAR_WIDTH
 	bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	bar.set_openness(trace[-2] if trace.size() >= 2 else m["openness"], false)
 	bar.set_openness(m["openness"])
-	top.add_child(bar)
+	row.add_child(bar)
 	var arrow: int = last.get("arrow", 0)
 	var arrow_label := label(arrow_text(arrow), UiTheme.HEADING, Palette.GREEN_DARK if arrow > 0 else Palette.SAFETY_ORANGE)
-	arrow_label.custom_minimum_size.x = 60
-	top.add_child(arrow_label)
+	arrow_label.custom_minimum_size.x = 44
+	row.add_child(arrow_label)
 	var band := maxi(0, m["band"])  # below Dicht (a ruin) still reads "Dicht"
-	var band_label := label(band_name(band), UiTheme.FONT_SIZE, OpennessBar.COLORS[band].darkened(0.3))
-	band_label.custom_minimum_size.x = 150
-	top.add_child(band_label)
-	mid.add_child(_band_names())
-	var facts := HBoxContainer.new()
-	facts.add_theme_constant_override("separation", 30)
-	mid.add_child(facts)
-	facts.add_child(label("%s  %s" % [TRUST, pips(m["trust_pips"])], UiTheme.SMALL))
-	facts.add_child(_trust_flash())
-	facts.add_child(label(MOOD % m["mood"], UiTheme.SMALL))
-	facts.add_child(_layer_tracker())
-	var right := VBoxContainer.new()
-	row.add_child(right)
-	right.add_child(label(TRACE, 15, Palette.MUTED))
-	var line := TraceLine.new(Vector2(170, 40))
-	line.set_trace(trace)
-	right.add_child(line)
+	var band_label := label(band_name(band), UiTheme.SMALL, OpennessBar.COLORS[band].darkened(0.3))
+	band_label.custom_minimum_size.x = 110
+	row.add_child(band_label)
+	row.add_child(label("%s  %s" % [TRUST, pips(m["trust_pips"])], UiTheme.SMALL))
+	row.add_child(_trust_flash())
+	row.add_child(label(MOOD % m["mood"], UiTheme.SMALL))
+	row.add_child(_layer_tracker())
+	for child in row.get_children():
+		if child is Label:
+			child.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	return row
 
 
@@ -366,29 +312,6 @@ func _trust_flash() -> Label:
 		fade.tween_interval(TRUST_FLASH_S)
 		fade.tween_property(trust_flash, "modulate:a", 0.0, TRUST_FADE_S)
 	return trust_flash
-
-
-## The band names under the bar, each under its own stretch of it.
-func _band_names() -> HBoxContainer:
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 0)
-	var floors: Array[int] = [0]
-	floors.append_array(Dialog.BANDS)
-	floors.append(100)
-	var lead := Control.new()
-	lead.custom_minimum_size.x = 92 + 14  # under "Openheid"
-	row.add_child(lead)
-	for i in floors.size() - 1:
-		var name := label(band_name(i - 1), 14, Palette.MUTED)
-		name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		name.size_flags_stretch_ratio = floors[i + 1] - floors[i]
-		name.clip_text = true
-		row.add_child(name)
-	var tail := Control.new()
-	tail.custom_minimum_size.x = 14 + 60 + 14 + 150  # under the arrow and the band word
-	row.add_child(tail)
-	return row
 
 
 ## Standpunt · Belang · Zorg: a layer lights once heard (its line on hover).
@@ -433,74 +356,21 @@ func _italic() -> FontVariation:
 	return _italic_font
 
 
-## Every chip by row, always; a ▸ chip's picks under them when open. In the
-## Sturen row pressure, and then repair and close, sit apart after a gap.
-func _chips() -> void:
-	var moves := session.dialog_moves()
-	var keys := keys_for(moves)
-	var grid := GridContainer.new()
-	grid.columns = 2
-	grid.add_theme_constant_override("h_separation", 14)
-	grid.add_theme_constant_override("v_separation", 6)
-	_flow.add_child(grid)
-	for row: String in CHIP_ROWS:
-		var name := label(ROW_NAMES[row], UiTheme.SMALL, Palette.MUTED)
-		name.custom_minimum_size = Vector2(92, 34)
-		name.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		name.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-		grid.add_child(name)
-		var flow := HFlowContainer.new()
-		flow.add_theme_constant_override("h_separation", 8)
-		flow.add_theme_constant_override("v_separation", 6)
-		flow.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		grid.add_child(flow)
-		var group := ""
-		for m: Dictionary in moves:
-			if not m["row"] in CHIP_ROWS[row]:
-				continue
-			if not group.is_empty() and m["row"] != group:
-				var gap := Control.new()
-				gap.custom_minimum_size.x = CHIP_GAP
-				flow.add_child(gap)
-			group = m["row"]
-			# With picks open, 1–9 pick: the listening chips lose their digits.
-			var key: Key = keys.get(m["id"], KEY_NONE) if picking.is_empty() or row != "listen" else KEY_NONE
-			flow.add_child(_with_key(_chip(m), key))
-	if not picking.is_empty():
-		_picks(moves)
-
-
-## A chip: the move type as its label, the line you will say on hover.
-func _chip(m: Dictionary) -> Button:
-	var has_picks: bool = m.has("picks")
-	var b := button(m["label"] + (PICK_MARK if has_picks else ""),
-		open_picks.bind(m["id"]) if has_picks else choose.bind(m["id"], ""))
-	b.tooltip_text = "\"%s\"" % m["line"]
-	b.add_theme_font_size_override("font_size", CHIP_FONT)
-	if picking == m["id"]:
-		for state in ["normal", "hover", "pressed"]:
-			b.add_theme_stylebox_override(state, UiTheme.open_chip())
-		for state in ["font_color", "font_hover_color", "font_pressed_color"]:
-			b.add_theme_color_override(state, Palette.VOLTANA_BLUE)
-	return b
-
-
-func _picks(moves: Array[Dictionary]) -> void:
-	var row := HFlowContainer.new()
-	row.add_theme_constant_override("h_separation", 8)
-	row.add_theme_constant_override("v_separation", 6)
-	_flow.add_child(row)
-	row.add_child(label(PICK_HEADING, UiTheme.SMALL, Palette.MUTED))
-	var picks := _picks_of(moves, picking)
-	if picks.is_empty():
-		row.add_child(label(NO_PICKS, UiTheme.SMALL, Palette.MUTED))
-	for i in picks.size():
-		var p: Dictionary = picks[i]
-		var text := str(p.get("name", p.get("text", p["id"])))
-		var b := button(text if text.length() <= PICK_CHARS else text.left(PICK_CHARS) + "…", choose.bind(picking, p["id"]))
-		b.tooltip_text = text
+## The sentences on offer, two by two (the panel keeps its height), each with
+## its key; none styled by fit and none named by its move.
+func _sentences() -> void:
+	var list := GridContainer.new()
+	list.columns = 2
+	list.add_theme_constant_override("h_separation", 8)
+	list.add_theme_constant_override("v_separation", 6)
+	_flow.add_child(list)
+	for i in offers.size():
+		var b := button(str(offers[i]["line"]), choose_option.bind(i))
+		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		b.add_theme_font_size_override("font_size", CHIP_FONT)
-		row.add_child(_with_key(b, LISTEN_KEYS[i] if i < LISTEN_KEYS.size() else KEY_NONE))
+		list.add_child(_with_key(b, OPTION_KEYS[i] if i < OPTION_KEYS.size() else KEY_NONE))
 
 
 ## A chip with its key in its top-left corner, small and dimmed, taking no
@@ -514,14 +384,6 @@ static func _with_key(chip: Button, key: Key) -> Button:
 		hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		chip.add_child(hint)
 	return chip
-
-
-## The picks of a ▸ move ([] for none).
-static func _picks_of(moves: Array[Dictionary], move: String) -> Array:
-	for m in moves:
-		if m["id"] == move:
-			return m.get("picks", [])
-	return []
 
 
 ## The summary card: the outcome and what comes next, the trace with each

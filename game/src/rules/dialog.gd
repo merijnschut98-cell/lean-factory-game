@@ -6,9 +6,10 @@ extends RefCounted
 ## applies its outcome afterwards.
 ##
 ## The person has a state (openness, trust in you, mood, and hidden layers:
-## position → interest → concern). The player picks a move each turn from a
-## fixed palette: the eight listening moves of MORE PIES, five steering moves,
-## pressure and blame. What a move does depends on the state and on what was
+## position → interest → concern). Each turn the player chooses one of four
+## sentences (offer(); Merijn's playtest, 2026-10-19); under each sits a move
+## of the palette: the eight listening moves of MORE PIES, five steering
+## moves, pressure and blame. What a move does depends on the state and on what was
 ## just said (the tags of the last line), so the same move helps at one moment
 ## and hurts at another: there is no golden path. Openness cannot pass the
 ## next hidden layer's threshold + CEILING, so the concern must be earned.
@@ -173,8 +174,23 @@ const ANSWERS := {"paraphrase": ["claim"], "inquiry": ["claim", "hesitation"], "
 const COPIED := ["openness", "trust", "mood", "version", "revealed", "heard", "pressured", "confronted", "table",
 	"patience", "outcome", "_repaired", "_last_move", "_streak", "_last_tags", "_uses", "_mood_asked",
 	"_lead_in_said", "_co_offered", "_warned", "_worn", "moves_made",
-	"trace", "made", "told", "steered_early", "concern_by", "start_openness", "_found", "_facts", "_retry"]
+	"trace", "made", "told", "steered_early", "concern_by", "start_openness", "_found", "_facts", "_retry", "_seed"]
 const STATE_KEYS := 22  # COPIED up to "trace"; test_dialog_routes.gd checks it
+
+# Four sentences a turn (PLAN 2.13 B, Merijn 2026-10-19: "I'd prefer having 4
+# options, all some kind of sentence"): the move stays hidden under each.
+## Options a turn offers.
+const OFFERED := 4
+## A change this low (or pressure, blame) makes an option a costly one: a
+## misread, a refused ask (estimate: the size of the MISREAD and experience misses).
+const COSTLY_AT := -5
+## How often a turn carries the one costly option, when there is one (estimate).
+const COSTLY_SHARE := 0.5
+## Moves never offered in a tutorial talk (Act 0: sentences only, no tools,
+## no pushing; the proposal and the ask stay, the talk needs them).
+const NOT_IN_TUTORIAL := ["perspective", "show_data", "propose_experiment", "pressure", "confront"]
+## Where a shown clue goes in the player's line (GameSession puts its text in).
+const DATA_TOKEN := "{data}"
 
 var def: DialogDef
 var who: PersonDef
@@ -210,6 +226,9 @@ var told: Array[Dictionary] = []
 var _found: Dictionary
 var _facts: Dictionary
 var _retry: bool
+## The game's seed for this talk (start.seed, 0 for none): which options a
+## turn offers, in what order, and which of the player's lines.
+var _seed := 0
 var _repaired := false
 var _last_move := ""
 var _streak := 0
@@ -227,7 +246,7 @@ var concern_by := ""
 
 
 ## `start`: {openness, trust, mood, found (clue id → true), facts (fact → true),
-## retry (the last talk went wrong: repair is offered), version, revealed}.
+## retry (the last talk went wrong: repair is offered), version, revealed, seed}.
 ## null: a blank talk for copy(), which sets every other variable itself.
 func _init(dialog: DialogDef, person: PersonDef, lines: Dictionary, start_or_null: Variant) -> void:
 	def = dialog
@@ -245,6 +264,7 @@ func _init(dialog: DialogDef, person: PersonDef, lines: Dictionary, start_or_nul
 	_found = JsonFile.dict_or_empty(start.get("found"))
 	_facts = JsonFile.dict_or_empty(start.get("facts"))
 	_retry = bool(start.get("retry", false))
+	_seed = int(start.get("seed", 0))
 	_last_tags = position().get("tags", [])
 	if def.tutorial:
 		patience = def.patience if def.patience > 0 else TUTORIAL_PATIENCE
@@ -280,9 +300,101 @@ func moves() -> Array[Dictionary]:
 	return out
 
 
+## This turn's options, up to `n` ([] once the talk has ended): [{move, pick,
+## line}], the line what the player will say (a shown clue's line holds
+## DATA_TOKEN). Judged by the rules on a copy of the talk: at least one fits
+## the moment (lands and helps, draws a layer or its lead-in out, or wins),
+## one or two are plausible but weaker, at most one costs (pressure, blame, a
+## misread). Steering is offered only once the talk is ready for it, never
+## too early. The choice and the order follow the seed and the moment, so the
+## same talk at the same moment offers the same, and no position is the
+## right one.
+func offer(n: int = OFFERED) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	if not outcome.is_empty():
+		return out
+	var by_fit := {"decisive": [], "fits": [], "weak": [], "costly": []}
+	for option: Dictionary in _candidates():
+		by_fit[_fit(option)].append(option)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash([_seed, def.id, state_key()])
+	for options: Array in by_fit.values():
+		_shuffle(options, rng)
+	var weak: Array = by_fit["weak"]
+	var fits: Array = by_fit["decisive"] + by_fit["fits"]  # what the moment turns on comes first
+	var chosen: Array = fits.slice(0, 1) + weak.slice(0, rng.randi_range(1, 2))
+	if not by_fit["costly"].is_empty() and rng.randf() < COSTLY_SHARE:
+		chosen.append(by_fit["costly"][0])
+	for option: Dictionary in fits.slice(1) + weak:  # the rest from what does not cost
+		if chosen.size() >= n:
+			break
+		if not option in chosen:
+			chosen.append(option)
+	chosen = chosen.slice(0, n)
+	_shuffle(chosen, rng)
+	for option: Dictionary in chosen:
+		out.append(option.merged({"line": _player_line(option["move"], option["pick"])}))
+	return out
+
+
+## Every option the talk allows now, as {move, pick}: the listening moves
+## always; repair after a talk that went wrong; pressure and blame (never in
+## a tutorial); steering once ready (heard and open enough: the rules' own
+## "not too early"), a clue you found that matters to them and one that
+## does not; the ask once a proposal is on the table; a check-in's close
+## once its concern is out.
+func _candidates() -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	var moves: Array = LISTEN + ["pressure", "confront"]
+	if _retry and not _repaired:
+		moves.append("repair")
+	if not _too_early():
+		moves.append_array(["perspective", "propose_experiment", "propose"])
+		var found := _found.keys()
+		found.sort()
+		var shown := found.filter(func(id: String) -> bool: return id in def.data).slice(0, 1) \
+			+ found.filter(func(id: String) -> bool: return not id in def.data).slice(0, 1)
+		for id: String in shown:
+			out.append({"move": "show_data", "pick": id})
+	if def.kind != "checkin" and not table.is_empty():
+		moves.append("ask_commitment")
+	if def.kind == "checkin" and revealed.has("concern"):
+		moves.append("close")
+	for move: String in moves:
+		if move in PICK_MOVES:
+			for p: Dictionary in _picks(move):
+				out.append({"move": move, "pick": p["id"]})
+		else:
+			out.append({"move": move, "pick": ""})
+	if def.tutorial:
+		return out.filter(func(o: Dictionary) -> bool: return not o["move"] in NOT_IN_TUTORIAL)
+	return out
+
+
+## How `option` would land now, played on a copy: decisive (it wins, or draws
+## a layer or its lead-in out) | fits (lands and helps) | weak | costly.
+func _fit(option: Dictionary) -> String:
+	var c := copy()
+	var r := c.say(option["move"], option["pick"])
+	if option["move"] in ["pressure", "confront"] or r["delta"] <= COSTLY_AT:
+		return "costly"
+	if not str(r["revealed"]).is_empty() or (c._lead_in_said and not _lead_in_said) or r["outcome"] in ["commitment", "lifted"]:
+		return "decisive"
+	return "fits" if r["lands"] and r["delta"] > 0 else "weak"
+
+
+## Fisher–Yates on `items` in place, with `rng`.
+static func _shuffle(items: Array, rng: RandomNumberGenerator) -> void:
+	for i in range(items.size() - 1, 0, -1):
+		var j := rng.randi_range(0, i)
+		var swap: Variant = items[i]
+		items[i] = items[j]
+		items[j] = swap
+
+
 ## Make a move (with a pick for show_data, propose_experiment and propose).
 ## Returns {move, line, reply, tags, arrow (2 ▲▲, 1 ▲, 0, -1 ▼, -2 ▼▼: what
-## the player sees), delta (for the rules and tests; never shown), openness,
+## the player sees), delta and lands (for the rules and tests; never shown), openness,
 ## trust, band, heard, cue,
 ## revealed (a layer id or ""), unlocked ({clue?, facts?, proposals?}),
 ## co_proposal ({} or {id, text}), patience_low, ended, outcome, outcome_line},
@@ -296,6 +408,7 @@ func say(move: String, pick: String = "") -> Dictionary:
 			or (not move in PICK_MOVES and not pick.is_empty()):
 		return {"error": "bad_pick"}
 	var before := openness
+	var said := _player_line(move, pick)  # before the move counts as used: the line offered
 	var at_lead_in := _lead_in_said and not revealed.has("concern")
 	var effect := _effect(move, pick)
 	var delta: int = effect["delta"]
@@ -368,8 +481,8 @@ func say(move: String, pick: String = "") -> Dictionary:
 	_note(reply, not shown.is_empty())
 	trace.append(openness)
 	return {
-		"move": move, "line": _player_line(move, pick), "reply": reply["text"], "tags": reply["tags"],
-		"delta": openness - before, "arrow": arrow_of(openness - before), "openness": openness, "trust": trust, "band": band_of(openness), "heard": heard,
+		"move": move, "line": said, "reply": reply["text"], "tags": reply["tags"],
+		"delta": openness - before, "lands": lands, "arrow": arrow_of(openness - before), "openness": openness, "trust": trust, "band": band_of(openness), "heard": heard,
 		"cue": outcome.is_empty() and openness >= CUE_AT and not revealed.has("concern")
 			and (lead_in_now or "hesitation" in reply["tags"]),
 		"revealed": shown, "unlocked": unlocked, "co_proposal": co,
@@ -416,13 +529,24 @@ static func bank_error(lines: Dictionary) -> String:
 	var labels := JsonFile.dict_or_empty(lines.get("labels"))
 	if not (labels.get("bands") is Array and labels["bands"].size() == BANDS.size()):
 		return "dialog bank: labels.bands names the %d openness bands" % BANDS.size()
-	for section: Array in [["player", MOVES], ["outcomes", OUTCOMES],
+	var player := JsonFile.dict_or_empty(lines.get("player"))
+	for move: String in MOVES:
+		if not _is_line(player.get(move)):
+			return "dialog bank: player.%s is missing (a line or a list of lines)" % move
+	for section: Array in [["outcomes", OUTCOMES],
 			["special", ["repeat", "refusal", "no_proposal", "other_data", "lucky_guess", "no_repair"]]]:
 		var lines_of := JsonFile.dict_or_empty(lines.get(section[0]))
 		for key: String in section[1]:
 			if not lines_of.get(key) is String:
 				return "dialog bank: %s.%s is missing" % [section[0], key]
 	return ""
+
+
+## A player's line: a string, or a non-empty list of strings (its variants).
+static func _is_line(v: Variant) -> bool:
+	if v is Array:
+		return not v.is_empty() and v.all(func(x: Variant) -> bool: return x is String)
+	return v is String
 
 
 ## The arrow a change shows: ±2 from ARROW_BIG, ±1 below, 0 for none.
@@ -689,10 +813,18 @@ func _reply(move: String, situation: String) -> Dictionary:
 	return _told(position(), "position") if situation == "too_early" else _shared("")
 
 
+## What the player says: a proposal's or experiment's own sentence, else the
+## dialog's line for the move, else the bank's. A list of variants gives the
+## next one each time the move is said in this talk (where it starts differs
+## per seed and move), so a line comes back only once all were said.
 func _player_line(move: String, pick: String = "") -> String:
 	if move in ["propose", "propose_experiment"] and not pick.is_empty():
 		return str(def.item(pick).get("text", ""))
-	return str(def.lines.get(move, bank["player"].get(move, "")))
+	var said: Variant = def.lines.get(move, bank["player"].get(move, ""))
+	if not said is Array:
+		return str(said)
+	var variants: Array = said
+	return str(variants[(absi(hash([_seed, def.id, move])) + int(_uses.get(move, 0))) % variants.size()])
 
 
 func _outcome_text(o: String) -> String:
