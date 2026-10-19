@@ -108,11 +108,16 @@ func test_returning_players_and_old_saves_skip_it() -> void:
 
 # ── The scene, beat by beat ─────────────────────────────────────────────────
 
-## Step the scene until `done` holds (or a minute of game frames passes).
+## Step the scene until `done` holds (or a few minutes of game frames pass).
+## The player reads along: each frame a line is up, Spatie (a paper or a
+## choice waits for the test).
 func _until(office: Office, done: Callable, seconds := 240.0) -> bool:
 	var t := 0.0
 	while not done.call() and t < seconds:
 		office.first_day.step(0.25)
+		var l := office.first_day.lines if office.first_day != null else null
+		if l != null and l.speaking() and not l.asking() and not l.paper_up() and not done.call():
+			l.press()
 		t += 0.25
 	return done.call()
 
@@ -132,6 +137,7 @@ func _named_opening() -> Office:
 	office.new_player = me
 	office.build()
 	office.first_day.start()
+	office.first_day.lines.auto = false   # the default, whatever this machine's settings say
 	return office
 
 
@@ -234,7 +240,11 @@ func test_b4_leg_maar_uit_opens_the_whiteboard_and_ruud_closes_it() -> void:
 
 func test_a_returning_player_can_skip_the_week_at_the_door() -> void:
 	var office := _named_opening()
+	assert_true(_until(office, _said(office, "Jij bent Noor")))
 	office.first_day.skip_week()
+	office.first_day.step(0.1)
+	assert_false(office.first_day.lines.holds(), "no line of the week left to hold you")
+	assert_true(office.player.active, "you walk")
 	assert_false(office.session.in_training())
 	assert_eq(office.ui.session_layer.opening_beat, "")
 	for element: String in Opening.ELEMENTS:
@@ -263,4 +273,109 @@ func test_the_opening_offers_no_tools_before_they_are_granted() -> void:
 	for tool: String in Investigation.TOOLS:
 		if tool != "conversation":
 			assert_false(shows(office.ui.place_menu, UiText.tool_label(tool)), "no tool button: " + tool)
+	office.free()
+
+
+# ── Scenes that behave like scenes (PLAN 2.13 A) ────────────────────────────
+
+func test_a_line_waits_for_the_player() -> void:
+	var office := _named_opening()
+	var o := office.first_day
+	assert_true(_until(office, _said(office, "Jij bent Noor, toch?")))
+	for i in 240:
+		o.step(0.25)
+	assert_true(_said(office, "Jij bent Noor, toch?").call(), "a minute later Yvonne's line is still up")
+	o.lines.press()
+	assert_false(_said(office, "Jij bent Noor, toch?").call(), "the player's key moves on")
+	office.free()
+
+
+func test_a_line_holds_the_player_and_frames_the_speaker() -> void:
+	var office := _named_opening()
+	var o := office.first_day
+	assert_true(_until(office, _said(office, "Jij bent Noor, toch?")))
+	o.step(0.1)
+	assert_false(office.player.active, "no walking while Yvonne speaks")
+	assert_false(office.rig.active, "no free camera")
+	assert_true(office.rig.inspecting(), "the camera frames you and her")
+	assert_false(office.click_floor(office.player.position + Vector3(2, 0, 0)), "no click-to-move")
+	assert_true(_until(office, func() -> bool: return o.lines.paper_up()), "the badge")
+	assert_true(o.lines.holds(), "a paper holds you too")
+	o.lines.close_paper()
+	assert_true(_until(office, func() -> bool: return o.guide != null and not o.lines.holds()), "Ruud's walk, between his lines")
+	o.step(0.1)
+	assert_true(office.player.active, "between lines you walk")
+	assert_true(office.rig.active)
+	office.free()
+
+
+func test_the_first_scene_shows_how_to_skip() -> void:
+	var office := _named_opening()
+	var o := office.first_day
+	assert_true(o.lines.texts().has(SceneLines.SKIP_HINT), "at the ontvangst")
+	o.skip()
+	assert_false(o.lines.texts().has(SceneLines.SKIP_HINT), "once is enough")
+	office.free()
+
+
+## Holding Spatie skips to the end of the beat on screen: the next place
+## where the player acts (a choice, a walk, Anouk's talk).
+func test_holding_space_skips_each_beat_to_its_end() -> void:
+	var office := _named_opening()
+	var o := office.first_day
+	var layer := office.ui.session_layer
+	o.lines.hold_space(true)
+	o.step(SceneLines.HOLD_SKIP_S + 0.1)
+	o.lines.hold_space(false)
+	assert_eq(layer.opening_beat, Opening.WALK, "the ontvangst skipped: Ruud is here")
+	assert_true(o.guide != null and not o.lines.paper_up())
+	o.skip()
+	assert_eq(layer.opening_beat, Opening.BOARD, "the walk skipped: at his door")
+	assert_eq(office.floors.floor_id, "first")
+	assert_true(layer.has_floor_plan, "the plan handed over")
+	assert_true(o.lines.asking(), "his question waits: a choice is the player's")
+	o.skip()
+	assert_true(o.lines.asking(), "a choice is never skipped")
+	o.lines.pick(1)
+	o.skip()
+	assert_eq(layer.opening_beat, Opening.LETTER, "his answer skipped: the letter")
+	o.skip()
+	assert_eq(layer.opening_beat, Opening.EVENING, "the letter skipped: the rest of the day")
+	o.skip()
+	assert_eq(layer.opening_beat, Opening.ANOUK, "the day skipped: the evening")
+	assert_eq(office.session.minute_of_day(), OfficeOpening.EVENING_MINUTE)
+	assert_false(o.lines.holds(), "you walk to the exit yourself")
+	office.free()
+
+
+func test_esc_during_a_line_pauses() -> void:
+	var office := _named_opening()
+	office.saves = SaveSlots.new(TestCase.scratch("opening_saves"))
+	office.ui.saves = office.saves
+	assert_true(_until(office, _said(office, "Jij bent Noor, toch?")))
+	office.player.escape_pressed.emit()
+	assert_true(office.ui.pause_menu.visible, "Esc pauses the scene")
+	assert_true(_said(office, "Jij bent Noor, toch?").call(), "the line waits under it")
+	office.player.escape_pressed.emit()
+	office.free()
+
+
+## Esc pauses the tree: the scene, its lines, the people and the walk stop;
+## only the pause menu runs.
+func test_the_pause_freezes_the_scene() -> void:
+	var office := _named_opening()
+	office.saves = SaveSlots.new(TestCase.scratch("opening_saves"))
+	office.ui.saves = office.saves
+	var tree := Engine.get_main_loop() as SceneTree
+	tree.root.add_child(office)
+	office.ui.open_pause()
+	assert_true(tree.paused, "the tree is paused")
+	for n: Node in [office.first_day, office.first_day.lines, office.player, office.people, office.rig]:
+		assert_false(n.can_process(), "frozen: " + n.name)
+	assert_true(office.ui.pause_menu.can_process(), "the pause menu works")
+	office.ui.pause_menu.close_requested.emit()
+	assert_false(tree.paused, "Verder spelen")
+	assert_true(office.first_day.can_process())
+	tree.root.remove_child(office)
+	tree.paused = false
 	office.free()

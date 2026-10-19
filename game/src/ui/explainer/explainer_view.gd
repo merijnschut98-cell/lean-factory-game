@@ -7,17 +7,23 @@ extends CanvasLayer
 ## swaps from R8 on (click, or H); the cross-fade turns each garden part into
 ## its real counterpart where it stands. Readouts are Godot labels on the
 ## instruments' own LCD faces; the sums wait behind "Laat de rekensom zien"
-## (R). Spatie moves on, Esc or [Klaar] closes at once.
+## (R). Ruud's beats wait for the player (PLAN 2.13 A): Spatie, Enter or a
+## click on his line moves on, ← or Backspace goes back a beat, a counter
+## says where you are ("3/14"); holding Spatie or [Klaar] closes it; Esc asks
+## for the pause menu (pause_requested). In the codex Esc closes.
 ##
 ## Open it with ExplainerView.open(parent, id, options); it emits `closed`
 ## when done and files the explainer in the ExplainerLog it was given.
 ## Options: log (ExplainerLog), codex (bool: no Ruud, the skin tab, the reel
-## free), reduced_motion (bool), data_dir (String).
+## free), reduced_motion (bool), data_dir (String), auto (bool: "Tekst loopt
+## vanzelf door", beats move on by themselves).
 ##
 ## All motion runs through step(dt) (called from _process), so tests drive
 ## it frame by frame; only the open and close fades are Tweens.
 
 signal closed(explainer_id: String)
+## Esc on Ruud's board: the world's pause menu, the sheet stays.
+signal pause_requested
 
 const SCENE := "res://src/ui/explainer/explainer_view.tscn"
 ## The cross-fade: one pair group after another (spec §6.3, estimates).
@@ -29,6 +35,8 @@ const TAG_S := 3.0
 const FLIP_S := 0.08
 const SWAP_S := 0.6
 const OPEN_S := 0.4
+const HOLD_SKIP_S := SceneLines.HOLD_SKIP_S
+const KEYS := "Spatie: verder   ←: terug   Spatie vasthouden: overslaan   Esc: pauze"
 ## The heat tint: a warm orange that deepens as the cable warms to 70 °C.
 const WARM := Color("#ff7a1a")
 const HEAT_SPAN_C := 50.0
@@ -87,6 +95,8 @@ var _ruud: RichTextLabel
 var _keys: Label
 var _strip: RichTextLabel
 var _tabs: Array[Button] = []
+## Seconds Spatie has been held (-1: not held).
+var _held := -1.0
 
 
 ## Make the view (not yet in the tree): check `error`.
@@ -127,6 +137,7 @@ func _setup(explainer_id: String, options: Dictionary) -> void:
 		_shows = {"readout": true, "reveal": true}
 	else:
 		beats = ExplainerBeats.new(def)
+		beats.auto = options.get("auto", false)
 		beats.start()
 	_build()
 	_sync_state()
@@ -160,13 +171,22 @@ func is_open() -> bool:
 # ── Input ───────────────────────────────────────────────────────────────────
 
 func _input(event: InputEvent) -> void:
-	if not _open or not (event is InputEventKey and event.pressed and not event.echo):
+	var key := event as InputEventKey
+	if not _open or key == null or key.echo:
 		return
-	if press(event.keycode):
+	if key.keycode == KEY_SPACE:
+		hold_space(key.pressed)
+	if key.pressed and press(key.keycode):
 		get_viewport().set_input_as_handled()
 
 
-## One key: 1–3 the loads, H the reel, R the reveal, Spatie on, Esc closes.
+## Spatie down (true) or up: held for HOLD_SKIP_S it closes the sheet (a skip).
+func hold_space(on: bool) -> void:
+	_held = 0.0 if on and beats != null else -1.0
+
+
+## One key: 1–3 the loads, H the reel, R the reveal, Spatie or Enter on,
+## ← or Backspace back, Esc the pause (in the codex: closes).
 ## True when the view used it.
 func press(key: Key) -> bool:
 	match key:
@@ -177,15 +197,32 @@ func press(key: Key) -> bool:
 		KEY_R:
 			if reveal_corner.visible:
 				_set_reveal(not reveal_open)
-		KEY_SPACE:
+		KEY_SPACE, KEY_ENTER, KEY_KP_ENTER:
+			next()
+		KEY_LEFT, KEY_BACKSPACE:
 			if beats != null:
-				beats.next()
+				beats.back()
 				_after_beats()
 		KEY_ESCAPE:
-			close()
+			if codex:
+				close()
+			else:
+				pause_requested.emit()
 		_:
 			return false
 	return true
+
+
+## Spatie, Enter or a click on Ruud's line: the rest of the beat, or the next one.
+func next() -> void:
+	if beats != null:
+		beats.next()
+		_after_beats()
+
+
+func _on_ruud_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		next()
 
 
 func _on_stage_input(event: InputEvent) -> void:
@@ -234,7 +271,7 @@ func _show_skin(meterkast: bool) -> void:
 	_refresh()
 
 
-## Esc, [Klaar] or the last beat: back into the room, the explainer filed.
+## [Klaar], a held Spatie, the last beat (or Esc in the codex): back into the room, the explainer filed.
 func close() -> void:
 	if not _open:
 		return
@@ -267,6 +304,10 @@ func step(dt: float) -> void:
 	if beats != null:
 		beats.tick(dt)
 		_after_beats()
+		if _held >= 0.0:
+			_held += dt
+			if _held >= HOLD_SKIP_S:
+				close()
 		if not _open:
 			return
 	_result = OhmCable.solve(_on, _cross_section())
@@ -486,8 +527,10 @@ func _build() -> void:
 	_ruud.add_theme_font_size_override("normal_font_size", 19)
 	_ruud.add_theme_font_size_override("bold_font_size", 19)
 	_ruud.add_theme_color_override("default_color", Color("#1d2b3a"))
+	_ruud.mouse_filter = Control.MOUSE_FILTER_STOP
+	_ruud.gui_input.connect(_on_ruud_input)
 	_card.add_child(_ruud)
-	_keys = _label(tr("Spatie: verder   Esc: klaar"), 13, MUTED)
+	_keys = _label(tr(KEYS), 13, MUTED)
 	_keys.name = "Keys"
 	_strip = RichTextLabel.new()
 	_strip.bbcode_enabled = true
@@ -597,8 +640,8 @@ func _layout() -> void:
 	_readout.position = Vector2(w - CARD_SIDE - _readout.size.x, bottom + 4)
 	_ruud.position = Vector2(CARD_SIDE, bottom + 90)
 	_ruud.size = Vector2(w - 2 * CARD_SIDE, 56)
-	_keys.position = Vector2(w - CARD_SIDE - 260, h - 26)
-	_keys.size = Vector2(260, 20)
+	_keys.position = Vector2(CARD_SIDE, h - 26)
+	_keys.size = Vector2(w - 2 * CARD_SIDE, 20)
 	_keys.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	# The sums unfold over the empty sky of the drawing, top right.
 	_strip.position = Vector2(CARD_SIDE + fig_w * 0.47, CARD_TOP + 4)
@@ -647,7 +690,8 @@ func _refresh() -> void:
 	_ruud.visible = beats != null
 	_keys.visible = beats != null
 	if beats != null:
-		_set_text(_ruud, "[b]Ruud[/b]   " + "  ".join(_ruud_lines(b)))
+		_set_text(_ruud, "[b]Ruud[/b]   " + "  ".join(beats.lines_shown()))
+		_keys.text = "%s      %d/%d" % [tr(KEYS), beats.number(), beats.count()]
 	_overlay.queue_redraw()
 
 
@@ -659,20 +703,6 @@ static func _set_text(label: RichTextLabel, text: String) -> void:
 
 func _haspel_free() -> bool:
 	return codex or (beats != null and beats.haspel_unlocked)
-
-
-## Ruud's lines so far: after a silence the rest waits two seconds.
-func _ruud_lines(b: Dictionary) -> Array:
-	var lines: Array = b.get("lines", [])
-	var silences: Array = b.get("silence_after", [])
-	if silences.is_empty():
-		return lines
-	var cut: int = silences[0]
-	var chars := 0
-	for i in cut + 1:
-		chars += String(lines[i]).length()
-	var until := ExplainerBeats.READ_BASE_S + chars * ExplainerBeats.READ_PER_CHAR_S + ExplainerBeats.SILENCE_S
-	return lines if beats.elapsed() >= until else lines.slice(0, cut + 1)
 
 
 ## An LCD's digits as large as its window allows.

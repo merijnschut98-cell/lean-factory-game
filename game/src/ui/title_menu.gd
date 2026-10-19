@@ -4,7 +4,7 @@ extends Control
 ## used first (the autosave among them), each a card to continue from (a
 ## save that will not load keeps the menu, with a line that says so);
 ## "Nieuw spel" (the character creator, PLAN 2.7b, then a fresh game),
-## "Instellingen" (a stub for now) and "Alles wissen" behind one
+## "Instellingen" ("Tekst loopt vanzelf door", the rest later) and "Alles wissen" behind one
 ## confirmation. A new game's first autosave replaces the autosave, so when
 ## that holds a game "Nieuw spel" asks once: keep it in a slot first,
 ## replace it, or go back (PLAN §10, review S3).
@@ -42,6 +42,8 @@ const KEEP_HEIGHT := 420.0
 enum Page { MAIN, SETTINGS, WIPE, REPLACE, KEEP, OVERWRITE }
 
 var saves := SaveSlots.new()
+## The settings file (tests point it elsewhere).
+var settings_path := SessionLog.SETTINGS
 var page := Page.MAIN
 ## The saves' cards.
 var list: SaveList
@@ -142,6 +144,7 @@ func refresh() -> void:
 				_menu.add_child(UiPanel.button(tr(item[0]), item[1]))
 		Page.SETTINGS:
 			_menu.add_child(UiPanel.label(tr(SETTINGS), UiTheme.HEADING, Palette.VOLTANA_BLUE))
+			_menu.add_child(SceneLines.auto_toggle(settings_path))
 			_menu.add_child(UiPanel.paragraph(tr(SETTINGS_LATER)))
 			_menu.add_child(UiPanel.button(tr(BACK), cancel))
 		Page.WIPE:

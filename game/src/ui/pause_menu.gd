@@ -5,13 +5,17 @@ extends UiPanel
 ## it is overwritten. The autosave is not among them: the game keeps that
 ## one itself. "Uiterlijk" opens the character creator to change the look and
 ## the name (PLAN 2.7b: free, silent). "Naar het titelmenu" saves
-## automatically and leaves.
+## automatically and leaves. "Tekst loopt vanzelf door" switches the timed
+## advance of a scene's lines (PLAN 2.13 A). While it is up the game is paused
+## (GameUI.open_pause); it runs on its own (PROCESS_MODE_ALWAYS).
 
 ## The player chose to save into manual slot `number` (1–5), confirmed.
 signal save_requested(number: int)
 signal title_requested
 ## "Uiterlijk": the player wants to change their look or name.
 signal look_requested
+## "Tekst loopt vanzelf door" switched (kept in the settings; the scene on screen follows).
+signal auto_text_changed(on: bool)
 
 const TITLE := "Pauze"
 const RESUME := "Verder spelen"
@@ -28,6 +32,8 @@ enum Page { MAIN, SLOTS, CONFIRM }
 
 ## The saves (the game's own folder; tests point it elsewhere).
 var saves: SaveSlots
+## The settings file (tests point it elsewhere).
+var settings_path := SessionLog.SETTINGS
 var page := Page.MAIN
 ## The slot waiting for the overwrite answer.
 var pending := 0
@@ -77,6 +83,18 @@ func back() -> void:
 	refresh()
 
 
+## Esc while paused (the world's keys are paused with it): back a page, or play on.
+func _unhandled_key_input(event: InputEvent) -> void:
+	var key := event as InputEventKey
+	if not visible or key == null or not key.pressed or key.echo or key.physical_keycode != KEY_ESCAPE:
+		return
+	if page == Page.MAIN:
+		close_requested.emit()
+	else:
+		back()
+	get_viewport().set_input_as_handled()
+
+
 func refresh() -> void:
 	clear(body)
 	match page:
@@ -87,6 +105,10 @@ func refresh() -> void:
 				b.custom_minimum_size.x = 360
 				b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 				body.add_child(b)
+			var auto := SceneLines.auto_toggle(settings_path)
+			auto.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+			auto.toggled.connect(auto_text_changed.emit)
+			body.add_child(auto)
 		Page.SLOTS:
 			body.add_child(paragraph(tr(PICK), Palette.MUTED, UiTheme.SMALL))
 			list = SaveList.new()
