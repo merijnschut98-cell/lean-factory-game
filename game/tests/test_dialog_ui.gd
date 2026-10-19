@@ -1,7 +1,7 @@
 extends TestCase
 ## The dialog UI (PLAN 1.2, dialog spec §11) on the real content: the meter
-## fills and shows arrows, never a number; every chip, always, with its line
-## on hover; the layer tracker, the cue and the picks; the summary card; the
+## fills and shows arrows, never a number; four sentences to say, never a
+## move's name (PLAN 2.13 B); the layer tracker and the cue; the summary card; the
 ## Mensen tab; the way in from a team's place; the walk-around energy bar.
 
 const SCENE := "res://src/world/office/office.tscn"
@@ -40,35 +40,51 @@ func test_arrows_and_pips_are_never_numbers() -> void:
 	assert_eq(DialogPanel.pips(9), "●●●●●")
 
 
-func test_the_panel_opens_with_the_person_the_meter_and_every_chip() -> void:
+func test_the_panel_opens_with_the_person_the_meter_and_four_sentences() -> void:
 	var s := _silo()
 	var panel := _panel(s)
 	assert_eq(panel.title_label.text, "Joost van Dijk  ·  " + panel.talk["role"])
 	assert_true(shows(panel, "Ik heb tien minuten."), "the opening")
 	assert_true(shows(panel, "Op z'n hoede"), "the band, named")
 	assert_true(shows(panel, "Standpunt"), "the layer tracker")
-	var chips := 0
-	for m in s.dialog_moves():
-		assert_true(shows(panel, m["label"]), m["id"])
-		chips += 1
-	assert_eq(chips, Dialog.MOVES.size(), "every move, always")
+	assert_eq(panel.offers, s.dialog_offers(), "the session's offer")
+	assert_eq(panel.offers.size(), Dialog.OFFERED)
+	var buttons := _chips_of(panel)
+	for o: Dictionary in panel.offers:
+		assert_true(buttons.has(o["line"]), "a button says: " + o["line"])
 	panel.free()
 
 
-func test_a_chip_shows_its_line_on_hover() -> void:
+## Merijn's playtest (2026-10-19): the choice is about what you say. No move's
+## label, no row name, no hover text: only sentences, the whole talk long.
+func test_no_move_label_is_ever_on_screen_mid_talk() -> void:
 	var s := _silo()
 	var panel := _panel(s)
-	var tips := {}
-	var stack: Array[Node] = [panel.body]
-	while not stack.is_empty():
-		var n: Node = stack.pop_back()
-		if n is Button:
-			tips[n.text] = n.tooltip_text
-		stack.append_array(n.get_children())
-	for m in s.dialog_moves():
-		var chip: String = m["label"] + (DialogPanel.PICK_MARK if m.has("picks") else "")
-		assert_eq(tips.get(chip, ""), "\"%s\"" % m["line"], m["id"])
-	assert_true(tips.has("Voorstel doen" + DialogPanel.PICK_MARK), "a ▸ chip")
+	var labels: Array = DialogPanel.labels_of(s).get("chips", {}).values() + ["Luisteren", "Sturen", "Kies:"]
+	for turn in 6:
+		for n: Node in _nodes(panel.body, func(x: Node) -> bool: return x is Control):
+			var texts: Array[String] = [(n as Control).tooltip_text]
+			if n is Label or n is Button:
+				texts.append(n.text)
+			for text in texts:
+				assert_false(text in labels, "a move's label on screen: " + text)
+		for b: Button in _nodes(panel.body, func(x: Node) -> bool: return x is Button):
+			assert_eq(b.tooltip_text, "", "no hover text that names the move")
+			assert_false(b.has_theme_stylebox_override("normal"), "no styling that judges: " + b.text)
+		panel.choose_option(turn % panel.offers.size())
+		if not panel.talking():
+			break
+	panel.free()
+
+
+func test_a_sentence_is_what_you_then_say() -> void:
+	var s := _silo()
+	var panel := _panel(s)
+	var said: Dictionary = panel.offers[2]
+	var r := panel.choose_option(2)
+	assert_eq([r["move"], r["line"]], [said["move"], said["line"]])
+	assert_true(shows(panel, DialogPanel.YOU % said["line"]), "what you said, above their reply")
+	assert_eq(panel.choose_option(7), {}, "no fifth sentence")
 	panel.free()
 
 
@@ -98,19 +114,6 @@ func test_the_tracker_lights_a_layer_once_heard_and_the_cue_shows() -> void:
 	assert_true(shows(panel, "● Belang"), "lit")
 	assert_true(panel.heard.has("interest"))
 	assert_true(cue or panel.heard.has("concern"), "the cue showed before the concern")
-	panel.free()
-
-
-func test_a_pick_chip_opens_its_picks_and_a_pick_is_a_move() -> void:
-	var s := _silo()
-	var panel := _panel(s)
-	panel.open_picks("propose")
-	assert_true(shows(panel, DialogPanel.PICK_HEADING))
-	var picks: Array = s.dialog_moves().filter(func(m: Dictionary) -> bool: return m["id"] == "propose")[0]["picks"]
-	assert_true(shows(panel, str(picks[0].get("name", picks[0]["id"])).left(DialogPanel.PICK_CHARS)))
-	var r := panel.choose("propose", picks[0]["id"])
-	assert_false(r.has("error"))
-	assert_eq(panel.picking, "", "the picks close")
 	panel.free()
 
 
@@ -150,25 +153,6 @@ func _chips_of(panel: DialogPanel) -> Dictionary:
 			out[n.text] = n
 		stack.append_array(n.get_children())
 	return out
-
-
-func test_pressure_and_blame_look_like_every_other_chip() -> void:
-	var panel := _panel(_silo())
-	var chips := _chips_of(panel)
-	for text in ["Druk zetten", "Aanspreken", "Afronden", "Open vraag"]:
-		assert_true(chips.has(text), text)
-		assert_false((chips[text] as Button).has_theme_stylebox_override("normal"), "no styling that judges: " + text)
-	panel.free()
-
-
-func test_an_open_pick_chip_is_outlined_never_the_meters_green() -> void:
-	var panel := _panel(_silo())
-	panel.open_picks("propose")
-	var chip: Button = _chips_of(panel)["Voorstel doen" + DialogPanel.PICK_MARK]
-	var box := chip.get_theme_stylebox("normal") as StyleBoxFlat
-	assert_true(box.border_width_bottom > 0, "outlined")
-	assert_false(box.bg_color in OpennessBar.COLORS or box.bg_color == Palette.GREEN_DARK, "not a colour that says good")
-	panel.free()
 
 
 func test_the_face_follows_the_meter_band() -> void:
@@ -216,8 +200,6 @@ func test_a_trust_change_flashes_beside_the_pips() -> void:
 	assert_eq(panel.trust_moved, -1, "pressure costs trust")
 	assert_true(panel.trust_flash.visible)
 	assert_eq(panel.trust_flash.text, "▼")
-	panel.open_picks("propose")
-	assert_false(panel.trust_flash.visible, "opening the picks is no move: no second flash")
 	panel.free()
 	panel = _panel(_silo())
 	for move in ["mood", "paraphrase", "inquiry", "reflect", "silence", "empathy"]:
@@ -228,30 +210,22 @@ func test_a_trust_change_flashes_beside_the_pips() -> void:
 	panel.free()
 
 
-## U14: every chip carries its key, small and dimmed beside it: 1–8 for
-## listening, Q–T for steering, then the rest of the top row; the key makes
-## the move. A ▸ chip's key opens its picks, and then 1–9 pick.
-func test_each_chip_carries_a_key_that_makes_its_move() -> void:
+## U14: every sentence carries its key, small and dimmed in its corner, 1–4;
+## the key says it.
+func test_each_sentence_carries_a_key_that_says_it() -> void:
 	var s := _silo()
 	var panel := _panel(s)
-	var keys := DialogPanel.keys_for(s.dialog_moves())
-	assert_eq(keys.size(), Dialog.MOVES.size(), "a key for every move")
-	assert_eq(keys.values().size(), keys.values().reduce(func(seen: Array, k: Key) -> Array:
-		return seen if k in seen else seen + [k], []).size(), "no key twice")
-	assert_eq([keys["mood"], keys["silence"]], [KEY_1, KEY_8], "listening on 1–8")
-	assert_eq([keys["perspective"], keys["ask_commitment"]], [KEY_Q, KEY_T], "steering on Q–T")
-	for m in s.dialog_moves():
-		var chip: Button = _chips_of(panel)[m["label"] + (DialogPanel.PICK_MARK if m.has("picks") else "")]
-		var hint := chip.get_child(0) as Label if chip.get_child_count() > 0 else null
-		assert_true(hint != null, "a hint in the corner of " + m["id"])
-		assert_eq(hint.text, OS.get_keycode_string(keys[m["id"]]), m["id"])
-	assert_true(panel.press_key(KEY_1), "1 is a move")
-	assert_eq(panel.made, ["Stemming peilen"], "1 is the first listening move")
-	assert_true(panel.press_key(keys["propose"]))
-	assert_eq(panel.picking, "propose", "a ▸ chip's key opens its picks")
-	assert_true(panel.press_key(KEY_1))
-	assert_eq(panel.made.back(), panel.chip_label("propose"), "1 takes the first pick")
-	assert_false(panel.press_key(KEY_P), "a key without a move is left for others")
+	var buttons := _chips_of(panel)
+	for i in panel.offers.size():
+		var b: Button = buttons[panel.offers[i]["line"]]
+		var hint := b.get_child(0) as Label if b.get_child_count() > 0 else null
+		assert_true(hint != null, "a hint in the corner of sentence %d" % (i + 1))
+		assert_eq(hint.text, OS.get_keycode_string(DialogPanel.OPTION_KEYS[i]))
+	var second: Dictionary = panel.offers[1]
+	assert_true(panel.press_key(KEY_2), "2 says the second sentence")
+	assert_eq(panel.last["line"], second["line"])
+	assert_false(panel.press_key(KEY_5), "no fifth")
+	assert_false(panel.press_key(KEY_Q), "a key without a sentence is left for others")
 	panel.free()
 
 
