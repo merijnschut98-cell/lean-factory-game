@@ -1428,6 +1428,7 @@ def check_concepts(docs: dict[str, Any]) -> None:
 LISTEN_MOVES = ["mood", "open_question", "reflect", "empathy", "paraphrase", "inquiry", "experience", "silence"]
 STEER_MOVES = ["perspective", "show_data", "propose_experiment", "propose", "ask_commitment"]
 DIALOG_MOVES = LISTEN_MOVES + STEER_MOVES + ["pressure", "confront", "repair", "close"]
+DATA_TOKEN = "{data}"  # Dialog.DATA_TOKEN: where a shown clue's text goes in the player's line
 DIALOG_TAGS = ["claim", "feeling", "hesitation", "admission", "doubt"]
 DIALOG_NEEDS = ["facts", "safety", "recognition", "time", "fairness"]  # Dialog.NEEDS (person-needs spec)
 DIALOG_ARCHETYPES = ["defender", "cynic", "craftsman", "overloaded", "rule_bound", "quiet", "customer_upset", "expert", "mentor"]
@@ -1539,7 +1540,7 @@ def _validate_bank(bank: Any, where: str) -> None:
     _require_strings(labels, ["cue"], f"{where} labels")
     for key, ids in (("chips", DIALOG_MOVES), ("outcomes", DIALOG_OUTCOMES)):
         _require_strings(_mapping(labels, key, set(ids), f"{where} labels"), ids, f"{where} labels {key}")
-    _require_strings(_mapping(bank, "player", set(DIALOG_MOVES), where), DIALOG_MOVES, f"{where} player")
+    _player_lines(_mapping(bank, "player", set(DIALOG_MOVES), where), f"{where} player")
     replies = _mapping(bank, "replies", set(BANK_REPLIES), where)
     for move, situations in BANK_REPLIES.items():
         if not isinstance(replies.get(move), dict) or set(situations) - set(replies[move]):
@@ -1555,6 +1556,19 @@ def _validate_bank(bank: Any, where: str) -> None:
         _string_list(coach, "questions", f"{where} coach", allow_empty=False)
         after = _mapping(coach, "after", set(COACH_AFTER), f"{where} coach")
         _require_strings(after, list(after), f"{where} coach after")
+
+
+def _player_lines(player: dict, where: str) -> None:
+    """The player's lines (PLAN 2.13 B, four sentences a turn): per move a line
+    or a list of variants, each a non-empty string; showing data names the
+    clue through DATA_TOKEN (Dialog.DATA_TOKEN)."""
+    for move in DIALOG_MOVES:
+        lines = player.get(move)
+        variants = [lines] if isinstance(lines, str) else lines
+        if not isinstance(variants, list) or not variants or not all(isinstance(v, str) and v.strip() for v in variants):
+            raise ContentError(f"{where} {move}: a line, or a non-empty list of lines")
+        if move == "show_data" and not all(DATA_TOKEN in v for v in variants):
+            raise ContentError(f"{where} show_data: every line names the clue with {DATA_TOKEN}")
 
 
 def _replies(replies: dict, where: str) -> None:
@@ -1639,6 +1653,8 @@ def _validate_dialog(d: dict, where: str) -> None:
     if not isinstance(lines, dict) or set(lines) - set(DIALOG_MOVES):
         raise ContentError(f"{where}: 'lines' maps a move to the player's line (unknown move in {sorted(lines)})")
     _require_strings(lines, list(lines), f"{where} lines")
+    if DATA_TOKEN not in lines.get("show_data", DATA_TOKEN):
+        raise ContentError(f"{where} lines: show_data names the clue with {DATA_TOKEN}")
     replies = d.get("replies", {})
     if not isinstance(replies, dict):
         raise ContentError(f"{where}: 'replies' maps a move to its replies")

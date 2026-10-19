@@ -213,6 +213,8 @@ func start(d: DialogDef, world: Dictionary) -> Dialog:
 		"openness": clampi(roundi(start), START_MIN, START_MAX), "trust": trust[who.id], "mood": mood,
 		"found": world.get("found", {}), "facts": known, "version": v, "revealed": revealed.get(_key(d.id, v), {}),
 		"retry": flags.any(func(f: String) -> bool: return f in REPAIRABLE),
+		# The game's seed, and a new deal of options each time this talk is had again.
+		"seed": hash([int(world.get("seed", 0)), talks.get(d.id, 0)]),
 	})
 
 

@@ -6,8 +6,11 @@ extends SceneTree
 ## Without a file it measures content/dialogs.yaml; with `tier1` it measures
 ## what test_dialog_routes.gd measures (the Acts 0–II scripts' talks, each from
 ## content once it is there: DialogRoutes.tier1_talks). Prints the best fixed route
-## found (DialogRoutes) and how many talks it wins, then per talk whether it
-## can be won and how many different routes win it (T7: three at least).
+## found (DialogRoutes, playing only what each turn offers: PLAN 2.13 B) and
+## how many talks it wins, how many always taking the same button wins (no
+## position may win more than half), then per talk whether it can be won
+## through its offers and how many different routes win it on the whole
+## palette (T7: three at least).
 
 
 func _initialize() -> void:
@@ -28,9 +31,11 @@ func _initialize() -> void:
 		roundi(100.0 * best["wins"] / maxi(talks.size(), 1)), width, (Time.get_ticks_msec() - t0) / 1000.0])
 	print("  route: ", " ".join(best["route"]))
 	print("  wins: ", ", ".join(best["won"]))
+	for position in Dialog.OFFERED:
+		print("  always button %d: %d of %d" % [position + 1, DialogRoutes.position_wins(talks, position).size(), talks.size()])
 	for talk: Dialog in talks:
-		var own := DialogRoutes.best_route([talk], width)
-		var distinct := DialogRoutes.distinct(own["winners"])
+		var own := DialogRoutes.best_route([talk], width, [], false)
+		var distinct := DialogRoutes.distinct(DialogRoutes.best_route([talk], width, [], true, false)["winners"])
 		print("  %-26s %-14s %-11s start %2d  %s, %d distinct routes" % [talk.def.id, talk.who.archetype,
 			talk.who.need, talk.openness, "winnable" if own["wins"] > 0 else "NOT WINNABLE", distinct.size()])
 	quit()

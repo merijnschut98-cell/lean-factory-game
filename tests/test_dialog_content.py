@@ -149,6 +149,11 @@ def _drop_route(d: dict) -> None:
     (lambda d: _dialog(d, "ahmed_after_henk")["variants"][0]["layers"][1].update(
         unlocks={"proposals": ["no_such_proposal"]}), "not a hidden proposal"),
     (lambda d: d["dialogs"]["bank"]["player"].pop("silence"), "silence"),
+    # Four sentences a turn (PLAN 2.13 B): a move's line, or a list of variants.
+    (lambda d: d["dialogs"]["bank"]["player"].update(mood=[]), "player mood"),
+    (lambda d: d["dialogs"]["bank"]["player"].update(mood=["Hoe gaat het?", 3]), "player mood"),
+    (lambda d: d["dialogs"]["bank"]["player"].update(show_data=["Kijk eens."]), r"\{data\}"),
+    (lambda d: _dialog(d, "joost_output_kpi").setdefault("lines", {}).update(show_data="Kijk."), r"lines: show_data"),
     (lambda d: d["dialogs"]["bank"]["replies"]["reflect"].pop("misses"), "reflect"),
     (lambda d: d["dialogs"]["bank"]["special"].pop("repeat"), "repeat"),
     (lambda d: d["dialogs"]["bank"]["outcomes"].pop("ruined"), "ruined"),
@@ -254,7 +259,8 @@ def test_no_false_experience_and_no_untracked_promise(real):
     ahmed = _dialog(real, "ahmed_after_henk")["lines"]
     assert "eerste jaar" not in ahmed["experience"] and "Ruud" in ahmed["experience"]
     assert "langs" not in ahmed["close"]
-    assert "Toen ik net begon" not in real["dialogs"]["bank"]["player"]["experience"]
+    experience = real["dialogs"]["bank"]["player"]["experience"]
+    assert not any("Toen ik net begon" in line for line in ([experience] if isinstance(experience, str) else experience))
 
 
 def test_a_dialog_may_give_the_person_their_own_worn_line(real, tmp_path):

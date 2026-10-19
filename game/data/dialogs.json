@@ -65,23 +65,91 @@
    "ruined": "Ik denk dat we klaar zijn."
   },
   "player": {
-   "ask_commitment": "Spreken we dit af?",
-   "close": "Dank je voor je tijd.",
-   "confront": "Dit ligt toch gewoon aan jouw team?",
-   "empathy": "Dat is ook niet niks, als je zo je best doet.",
-   "experience": "In mijn eerste weken hier wist ik ook niet waar ik moest beginnen.",
-   "inquiry": "Wat maakt dat het zo is?",
-   "mood": "Hoe gaat het vandaag, echt?",
-   "open_question": "Hoe ziet jouw week eruit?",
-   "paraphrase": "Even kijken of ik je goed begrijp. Wat je zegt, is…",
-   "perspective": "Hoe zou de monteur dit zien, denk je?",
-   "pressure": "Het MT wil dat dit verandert. Liever met jou dan zonder jou.",
-   "propose": "Ik heb een voorstel.",
-   "propose_experiment": "Zullen we het eerst klein proberen?",
-   "reflect": "Het klinkt alsof je klem zit.",
-   "repair": "Vorige keer begon ik met mijn verhaal in plaats van met het jouwe. Dat was niet handig.",
-   "show_data": "Kijk eens naar deze cijfers.",
-   "silence": "(je zegt niets en wacht)"
+   "ask_commitment": [
+    "Spreken we dit af?",
+    "Zullen we het zo doen?",
+    "Kan ik op je rekenen?"
+   ],
+   "close": [
+    "Dank je voor je tijd.",
+    "Fijn dat je even tijd had.",
+    "Ik laat je weer gaan. Bedankt."
+   ],
+   "confront": [
+    "Dit ligt toch gewoon aan jouw team?",
+    "Eerlijk gezegd gaat het bij jullie steeds mis.",
+    "Waarom doen jullie het dan niet gewoon goed?"
+   ],
+   "empathy": [
+    "Dat is ook niet niks, als je zo je best doet.",
+    "Snap ik. Dat zou mij ook raken.",
+    "Logisch dat je daar moe van wordt."
+   ],
+   "experience": [
+    "In mijn eerste weken hier wist ik ook niet waar ik moest beginnen.",
+    "Dat herken ik. Daar liep ik vroeger ook tegenaan.",
+    "Ik heb zo'n week ook gehad. Toen hielp het om het hardop te zeggen."
+   ],
+   "inquiry": [
+    "Wat maakt dat het zo is?",
+    "Hoe bedoel je dat precies?",
+    "Kun je daar iets meer over vertellen?"
+   ],
+   "mood": [
+    "Hoe gaat het vandaag, echt?",
+    "Hoe is het met je?",
+    "Hoe zit je erbij vandaag?"
+   ],
+   "open_question": [
+    "Hoe ziet jouw week eruit?",
+    "Vertel eens, hoe gaat dat bij jullie?",
+    "Waar loop je zoal tegenaan?"
+   ],
+   "paraphrase": [
+    "Even kijken of ik je goed begrijp. Wat je zegt, is…",
+    "Dus als ik je goed hoor, zit het daar?",
+    "Mag ik even terugzeggen wat ik hoor?"
+   ],
+   "perspective": [
+    "Hoe zou de monteur dit zien, denk je?",
+    "Wat merkt de klant hiervan, denk je?",
+    "Hoe kijkt het team na jullie hiernaar?"
+   ],
+   "pressure": [
+    "Het MT wil dat dit verandert. Liever met jou dan zonder jou.",
+    "Dit moet gewoon gebeuren. Ik heb geen tijd voor discussie.",
+    "Mijn manager verwacht dit. Doe je mee of niet?"
+   ],
+   "propose": [
+    "Ik heb een voorstel.",
+    "Mag ik iets voorstellen?",
+    "Ik heb een idee. Zullen we het daarover hebben?"
+   ],
+   "propose_experiment": [
+    "Zullen we het eerst klein proberen?",
+    "Wat als we het een week testen?",
+    "Zullen we het één keer uitproberen, en dan kijken?"
+   ],
+   "reflect": [
+    "Het klinkt alsof je klem zit.",
+    "Ik hoor dat het je dwarszit.",
+    "Dat valt je zwaar, hè?"
+   ],
+   "repair": [
+    "Vorige keer begon ik met mijn verhaal in plaats van met het jouwe. Dat was niet handig.",
+    "Ik wil even terugkomen op vorige keer. Dat ging niet goed van mijn kant.",
+    "Sorry voor vorige keer. Ik luisterde niet echt."
+   ],
+   "show_data": [
+    "Kijk, dit zag ik: {data}",
+    "Mag ik je iets laten zien? {data}",
+    "Ik heb iets gevonden. {data} Wat vind jij?"
+   ],
+   "silence": [
+    "(je zegt niets en wacht)",
+    "(je knikt en laat het even stil)",
+    "(je wacht rustig af)"
+   ]
   },
   "replies": {
    "confront": {
