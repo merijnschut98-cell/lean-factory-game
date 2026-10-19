@@ -249,6 +249,47 @@ func test_instellingen_is_a_stub_for_now() -> void:
 	_cleanup()
 
 
+func _auto_box(root: Node) -> CheckBox:
+	for n in root.find_children("*", "CheckBox", true, false):
+		if (n as CheckBox).text == SceneLines.AUTO_LABEL:
+			return n
+	return null
+
+
+## "Tekst loopt vanzelf door" (PLAN 2.13 A): off by default, kept in the settings.
+func test_the_settings_hold_the_auto_text_toggle() -> void:
+	var menu := _menu()
+	menu.settings_path = TestCase.scratch("menu_settings.cfg")
+	DirAccess.remove_absolute(menu.settings_path)
+	menu.open_settings()
+	var box := _auto_box(menu)
+	assert_true(box != null, "the toggle is on the settings page")
+	assert_false(box.button_pressed, "off by default")
+	box.button_pressed = true
+	assert_true(SceneLines.auto_setting(menu.settings_path), "kept")
+	DirAccess.remove_absolute(menu.settings_path)
+	menu.free()
+	_cleanup()
+
+
+func test_the_pause_menu_toggles_auto_text_for_the_scene_on_screen() -> void:
+	var office := _office("")
+	var pause := office.ui.pause_menu
+	pause.settings_path = TestCase.scratch("pause_settings.cfg")
+	DirAccess.remove_absolute(pause.settings_path)
+	office.ui.open_pause()
+	var heard: Array[bool] = []
+	pause.auto_text_changed.connect(func(on: bool) -> void: heard.append(on))
+	var box := _auto_box(pause)
+	assert_true(box != null, "in the pause menu too, to change mid-scene")
+	box.button_pressed = true
+	assert_eq(heard, [true] as Array[bool])
+	assert_true(SceneLines.auto_setting(pause.settings_path))
+	DirAccess.remove_absolute(pause.settings_path)
+	office.free()
+	_cleanup()
+
+
 func test_esc_with_nothing_open_opens_the_pause_menu() -> void:
 	var office := _office("")
 	office.player.escape_pressed.emit()
@@ -315,3 +356,22 @@ func test_tests_and_tools_never_pause_into_saving() -> void:
 	office.player.escape_pressed.emit()
 	assert_false(office.ui.pause_menu.visible, "a game that does not save has no pause menu")
 	office.free()
+
+
+## Esc pauses everything (PLAN 2.13 A): mid-talk the menu comes over the
+## talk, which waits there and goes on after.
+func test_esc_mid_talk_pauses_over_the_talk() -> void:
+	var office := _office("")
+	var s := office.session
+	s.missions.done_once["fix_unused_capacity"] = true
+	s.accept("fix_silo_kpis")
+	s.region.found["silo_kpis:4"] = true
+	assert_eq(office.ui.open_talk("joost"), "")
+	office.player.escape_pressed.emit()
+	assert_true(office.ui.paused(), "Esc pauses the talk")
+	assert_true(office.ui.dialog_panel.visible and office.ui.dialog_panel.talking(), "the talk waits under the menu")
+	office.player.escape_pressed.emit()
+	assert_false(office.ui.paused(), "Esc again: play on")
+	assert_true(office.ui.dialog_panel.talking(), "the talk goes on")
+	office.free()
+	_cleanup()

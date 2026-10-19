@@ -34,6 +34,11 @@ const INSPECT_PITCH := deg_to_rad(40.0)
 ## the other person's face.
 const TALK_DISTANCE := 2.6
 const TALK_PITCH := deg_to_rad(14.0)
+## A scene's two-shot stands this far (m) from the point between the two,
+## looking down this steeply, so a wall a couple of metres behind the player
+## stays under the line of sight (estimates, tuned on the screenshots).
+const SCENE_DISTANCE := 7.5
+const SCENE_PITCH := deg_to_rad(62.0)
 ## Holding the right button this long (s) without dragging more than
 ## HOLD_SLOP pixels frames the place the player stands at.
 const HOLD_SECONDS := 0.3
@@ -116,6 +121,15 @@ func inspect(at: Vector3, look_yaw: float, shift := 0.0) -> void:
 func converse(at: Vector3, look_yaw: float, shift: float, lift: float) -> void:
 	_inspect = {"at": at, "yaw": look_yaw, "shift": shift, "lift": lift,
 		"distance": TALK_DISTANCE, "pitch": TALK_PITCH}
+
+
+## Frame a scene's speaker and the player together (PLAN 2.13 A: you always
+## see yourself): look at `at` (between the two) facing `look_yaw`, from
+## high enough that the walls stay below the camera; `lift` of the screen's
+## height above the middle.
+func two_shot(at: Vector3, look_yaw: float, lift: float) -> void:
+	_inspect = {"at": at, "yaw": look_yaw, "shift": 0.0, "lift": lift,
+		"distance": SCENE_DISTANCE, "pitch": SCENE_PITCH}
 
 
 ## Back to the player.

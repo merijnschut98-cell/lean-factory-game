@@ -7,10 +7,13 @@ extends TestCase
 const ID := "spanning_stroom_weerstand"
 
 
-func _beats() -> ExplainerBeats:
+## The beats; `auto` as the setting "Tekst loopt vanzelf door" (the older
+## tests here walk the timed advance, so on unless a test asks otherwise).
+func _beats(auto := true) -> ExplainerBeats:
 	var defs := ExplainerDef.load_all()
 	assert_eq(defs["error"], "", "explainers.json")
 	var b := ExplainerBeats.new(defs["explainers"][ID])
+	b.auto = auto
 	b.start()
 	return b
 
@@ -120,6 +123,7 @@ func test_r7_asks_for_the_heater_again_if_the_kettle_never_ran_alone() -> void:
 	b.toggle("kettle")
 	b.toggle("heater")
 	_to(b, "r5")
+	b.next()   # the rest of R5's lines after its silence
 	b.next()
 	assert_eq(b.beat_id(), "r7_never_alone", "R6 skipped; the kettle never ran alone")
 	b.toggle("heater")
@@ -163,3 +167,52 @@ func test_no_beat_offers_a_choice() -> void:
 	for beat: Dictionary in def.beats:
 		assert_false(beat.has("choices"), beat["id"])
 		assert_false(beat.has("answers"), beat["id"])
+
+
+# ── The player's key (PLAN 2.13 A) ──────────────────────────────────────────
+
+func test_by_default_no_beat_moves_on_by_itself() -> void:
+	var b := _beats(false)
+	assert_false(ExplainerBeats.new(b.def).auto, "the timed advance is off by default")
+	for i in 120:
+		b.tick(0.5)
+	assert_eq(b.beat_id(), "a1", "a minute later Ruud still waits, even past a wait's timeout")
+	b.next()
+	assert_eq(b.beat_id(), "a2", "Spatie moves on")
+
+
+func test_a_silence_is_completed_by_the_first_press() -> void:
+	var b := _beats(false)
+	_to(b, "a3")
+	b.tick(0.1)
+	assert_true(b.lines_shown().size() < b.beat().get("lines", []).size(), "after the silence the rest waits")
+	b.next()
+	assert_eq(b.beat_id(), "a3", "the first press shows the rest")
+	assert_eq(b.lines_shown().size(), b.beat().get("lines", []).size())
+	b.next()
+	assert_eq(b.beat_id(), "a4", "the second goes on")
+
+
+func test_back_plays_the_previous_beat_again() -> void:
+	var b := _beats(false)
+	b.back()
+	assert_eq(b.beat_id(), "a1", "nothing before the first")
+	b.next()
+	b.next()
+	assert_eq(b.beat_id(), "a3")
+	b.back()
+	assert_eq(b.beat_id(), "a2", "← re-reads")
+	assert_eq(b.lines_shown().size(), b.beat().get("lines", []).size(), "whole")
+	b.back()
+	assert_eq(b.beat_id(), "a1")
+	b.next()
+	assert_eq(b.beat_id(), "a2", "and on again")
+
+
+func test_the_counter_counts_the_main_beats() -> void:
+	var b := _beats(false)
+	assert_eq(b.number(), 1)
+	assert_eq(b.count(), b.def.beats.filter(func(x: Dictionary) -> bool: return not x.has("alt_of")).size())
+	b.toggle("lamp")
+	assert_eq(b.beat_id(), "a2_dripper")
+	assert_eq(b.number(), 2, "an alt beat counts as its main beat")

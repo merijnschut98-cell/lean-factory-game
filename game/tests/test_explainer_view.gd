@@ -43,17 +43,74 @@ func _formulas_on_screen(v: ExplainerView) -> Array[String]:
 
 # ── T5: closing ─────────────────────────────────────────────────────────────
 
-func test_esc_closes_at_once_and_files_the_explainer() -> void:
+## Esc pauses, as everywhere in a scene (PLAN 2.13 A); [Klaar] and a held
+## Spatie close it.
+func test_esc_asks_for_the_pause_and_leaves_the_sheet_open() -> void:
 	for stop in ["a1", "a4", "x", "r6"]:
-		_closed.clear()
-		var book := ExplainerLog.new()
-		var v := _view({"log": book})
+		var v := _view()
+		var paused := [0]
+		v.pause_requested.connect(func() -> void: paused[0] += 1)
 		_to(v, stop)
-		v.press(KEY_ESCAPE)
-		assert_eq(_closed, [ID] as Array[String], stop + ": back in the room")
-		assert_true(book.has_seen(ID), stop + ": in the codex")
-		assert_false(v.is_open(), stop)
+		var at := v.beats.beat_id()
+		assert_true(v.press(KEY_ESCAPE), stop)
+		assert_eq(paused[0], 1, stop + ": the pause menu")
+		assert_true(v.is_open(), stop + ": the sheet waits")
+		assert_eq(v.beats.beat_id(), at, stop)
 		v.free()
+
+
+func test_in_the_codex_esc_closes() -> void:
+	var book := ExplainerLog.new()
+	var v := _view({"codex": true, "log": book})
+	v.press(KEY_ESCAPE)
+	assert_eq(_closed, [ID] as Array[String])
+	v.free()
+
+
+func test_holding_space_closes_and_files_it() -> void:
+	var book := ExplainerLog.new()
+	var v := _view({"log": book})
+	v.hold_space(true)
+	v.step(0.5)
+	assert_true(v.is_open(), "half a second is a press")
+	v.step(ExplainerView.HOLD_SKIP_S)
+	assert_eq(_closed, [ID] as Array[String], "held: skipped")
+	assert_true(book.has_seen(ID), "in the codex")
+	v.free()
+
+
+func test_no_beat_moves_on_by_itself_unless_the_setting_says_so() -> void:
+	var v := _view()
+	for i in 240:
+		v.step(0.25)
+	assert_eq(v.beats.beat_id(), "a1", "a minute later Ruud still waits")
+	v.free()
+	var auto := _view({"auto": true})
+	_past(auto, "a1")
+	assert_ne(auto.beats.beat_id(), "a1", "Tekst loopt vanzelf door")
+	auto.free()
+
+
+func test_enter_goes_on_and_left_or_backspace_go_back() -> void:
+	var v := _view()
+	v.press(KEY_ENTER)
+	assert_eq(v.beats.beat_id(), "a2")
+	v.press(KEY_SPACE)
+	assert_eq(v.beats.beat_id(), "a3")
+	v.press(KEY_LEFT)
+	assert_eq(v.beats.beat_id(), "a2", "←")
+	v.press(KEY_BACKSPACE)
+	assert_eq(v.beats.beat_id(), "a1", "Backspace")
+	v.free()
+
+
+func test_a_counter_says_which_beat_of_how_many() -> void:
+	var v := _view()
+	var total := v.beats.count()
+	assert_true(shows(v, "1/%d" % total), "1/%d" % total)
+	v.press(KEY_SPACE)
+	assert_true(shows(v, "2/%d" % total))
+	v.free()
 
 
 func test_klaar_closes_too() -> void:
@@ -66,7 +123,7 @@ func test_klaar_closes_too() -> void:
 
 
 func test_the_last_beat_closes_it() -> void:
-	var v := _view()
+	var v := _view({"auto": true})
 	_to(v, "r8b")
 	_past(v, "r8b")
 	assert_eq(_closed, [ID] as Array[String])

@@ -12,6 +12,8 @@ signal panels_closed
 signal talk_opened(person_id: String)
 ## The pause menu's "Naar het titelmenu" (the game has saved itself).
 signal title_requested
+## The pause menu came up (true) or went (false): the tree is paused with it.
+signal pause_changed(on: bool)
 
 ## A person asked in the office who has nothing to talk about now.
 const NOTHING_TO_SAY := "%s knikt je toe en werkt door."
@@ -89,8 +91,9 @@ func setup(of_session: GameSession, of_layer: SessionLayer = null) -> void:
 	for p in _panels:
 		p.session = session
 		p.acted.connect(after_action)
-		p.close_requested.connect(close_panels)
+		p.close_requested.connect(resume if p == pause_menu else close_panels)
 		root.add_child(p)
+	pause_menu.process_mode = Node.PROCESS_MODE_ALWAYS   # the one thing that runs while paused
 	a3_form.checked.connect(func(problem_id: String, result: Dictionary) -> void:
 		check_panel.show_result(problem_id, result)
 		_open(check_panel))
@@ -100,6 +103,7 @@ func setup(of_session: GameSession, of_layer: SessionLayer = null) -> void:
 	pause_menu.save_requested.connect(save_to)
 	pause_menu.title_requested.connect(func() -> void:
 		end_session()
+		resume()   # the title menu must not start paused
 		title_requested.emit())
 	root.move_child(hud, -1)
 	_known_concepts = session.region.profile.concepts.duplicate()
@@ -165,13 +169,51 @@ func ask_talk(person_id: String, display_name: String) -> void:
 			hud.toast(tr(NOTHING_TO_SAY) % display_name)
 
 
-## The pause menu (Esc with nothing open); only when the game saves.
+## Esc from the world (PLAN 2.13 A: Esc pauses everything): the pause menu
+## goes away; a panel closes, but a talk pauses under the menu; with nothing
+## open, the pause menu.
+func escape() -> void:
+	if not playable():
+		return
+	if paused():
+		resume()
+	elif is_busy() and not dialog_panel.talking():
+		close_panels()
+	else:
+		open_pause()
+
+
+## The pause menu, over whatever is on screen (a scene, a talk), and the tree
+## paused under it: scenes, talks, people and the clock stop. Only when the
+## game saves.
 func open_pause() -> void:
-	if not playable() or saves == null:
+	if not playable() or saves == null or paused():
 		return
 	pause_menu.saves = saves
 	pause_menu.open()
-	_open(pause_menu)
+	pause_menu.refresh()
+	pause_menu.get_parent().move_child(pause_menu, -1)
+	pause_menu.show()
+	hud.show_prompt("")
+	_set_paused(true)
+
+
+func paused() -> bool:
+	return pause_menu != null and pause_menu.visible
+
+
+## "Verder spelen" or Esc: the menu goes, everything under it runs on.
+func resume() -> void:
+	if not paused():
+		return
+	pause_menu.hide()
+	_set_paused(false)
+
+
+func _set_paused(on: bool) -> void:
+	if is_inside_tree():
+		get_tree().paused = on
+	pause_changed.emit(on)
 
 
 ## Save into manual slot `number` (the pause menu, overwrite confirmed).
@@ -179,7 +221,7 @@ func save_to(number: int) -> void:
 	var error := saves.save(number, session, session_layer) if saves != null else "the game is not saved"
 	if error.is_empty():
 		hud.toast(tr(SAVED_IN) % number)
-		close_panels()
+		resume()
 	else:
 		push_warning(error)
 		hud.toast(tr(SAVE_FAILED) % error)
@@ -226,9 +268,11 @@ func is_busy() -> bool:
 	return _panels.any(func(p: UiPanel) -> bool: return p.visible)
 
 
-## Close what is open. Mid-talk, Esc ends the talk as "Afronden" does (a
-## graceful close, never a ruin) and its summary shows; the next Esc closes.
+## Close what is open (and the pause). Mid-talk it ends the talk as
+## "Afronden" does (a graceful close, never a ruin) and its summary shows;
+## the next call closes. Esc mid-talk pauses instead (escape()).
 func close_panels() -> void:
+	resume()
 	var was_busy := is_busy()
 	if dialog_panel != null and dialog_panel.talking():
 		dialog_panel.close_talk()

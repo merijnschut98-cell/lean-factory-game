@@ -40,6 +40,9 @@ extends SceneTree
 ## question, then the slots to keep it in) ·
 ## pause, pause_slots, pause_confirm (Esc in the office: the pause menu, its
 ## five slots, the overwrite question) ·
+## open_reception … open_after (the opening, beat by beat; PLAN 2.7d) ·
+## open_pause (Esc over Yvonne's line: the pause menu over the frozen scene) ·
+## open_explainer (Ruud's whiteboard a few beats in: the counter; PLAN 2.13 A) ·
 ## place_mon_intake, place_mon_design, place_thu_intake, place_thu_design (PLAN
 ## 2.12: the team's menu on Monday and on Thursday of the training week: the
 ## people and their questions, then only the known tools that fit).
@@ -150,7 +153,8 @@ func _run() -> void:
 			office.ui.toggle_journal()
 			office.ui.journal.show_tab(ClueJournal.PEOPLE)
 		"open_reception", "open_badge", "open_walk", "open_plan", "open_sanne", "open_marco", "open_design", \
-				"open_door", "open_board", "open_letter", "open_phone", "open_evening", "open_anouk", "open_after":
+				"open_door", "open_board", "open_letter", "open_phone", "open_evening", "open_anouk", "open_after", \
+				"open_pause", "open_explainer":
 			_opening(office, state)
 		"act0_note":   # Monday morning: Ruud's note with the day's move card (PLAN 1.11a)
 			_stand_at(office, DESIGN)
@@ -582,11 +586,21 @@ func _opening(office: Office, state: String) -> void:
 					and o.guide.visible and state != "open_plan":
 				office.player.position = o.guide.position + (office.player.position - o.guide.position).normalized() * 1.6
 			o.step(0.25)
+			if o.lines.speaking() and not o.lines.asking() and not o.lines.paper_up() and not done.call():
+				o.lines.press()   # the player reads along (lines wait for the key, PLAN 2.13 A)
 			t += 0.25
+		if not o.lines.revealed():
+			o.lines.press()   # the line on screen whole
 	var said := func(part: String) -> Callable:
 		return func() -> bool: return str(o.lines.current().get("text", "")).contains(part)
 	run.call(said.call("Ik herkende je"))
 	if state == "open_reception":
+		return
+	if state == "open_pause":
+		office.rig.snap()   # the paused tree runs no frame: the camera and the map as play left them
+		office.minimap.map.visible = office.minimap.wanted()
+		office.ui.saves = SaveSlots.new(SHOT_SAVES)
+		office.ui.open_pause()
 		return
 	run.call(func() -> bool: return o.lines.paper_up())
 	if state == "open_badge":
@@ -613,6 +627,12 @@ func _opening(office: Office, state: String) -> void:
 	run.call(func() -> bool: return o.lines.asking())
 	if state == "open_board":
 		office.rig.snap()
+		return
+	if state == "open_explainer":
+		o.lines.pick(0)
+		run.call(func() -> bool: return office.explainer != null)
+		office.explainer.press(KEY_SPACE)
+		office.explainer.press(KEY_SPACE)
 		return
 	o.lines.pick(1)
 	run.call(func() -> bool: return o.lines.paper_up())

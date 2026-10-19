@@ -1,11 +1,17 @@
 class_name SceneLines
 extends Control
 ## What is said in a scripted scene (PLAN 2.7d, the first day): one line at a
-## time at the bottom of the screen, as a film's subtitle, with who says it;
-## a line stays as long as it takes to read and Spatie moves on. Beside it: a
-## one-off control hint, a choice between two answers, a paper held up to the
-## camera (the badge, the letter) and the phone's notifications. Nothing here
-## blocks walking unless a paper or a choice is up.
+## time at the bottom of the screen, as a film's subtitle, with who says it.
+## A line types itself out and stays until the player moves on (PLAN 2.13 A,
+## Merijn 2026-10-19): Spatie, Enter or a click shows the whole line, the next
+## press goes on; ← or Backspace re-reads the last lines; holding Spatie about
+## a second asks the scene to skip (skip_requested). "Tekst loopt vanzelf
+## door" (`auto`, a setting, off by default) brings back the timed advance.
+## An aside (a call-out from afar) moves on by itself and holds nothing.
+## Beside the lines: a one-off control hint, a choice between two answers, a
+## paper held up to the camera (the badge, the letter) and the phone's
+## notifications. While a line, a choice or a paper is up the scene holds the
+## player (holds()); its scene locks walking and the camera.
 ##
 ## All time runs through step(dt) (its scene calls it each frame), so tests
 ## drive it frame by frame.
@@ -16,6 +22,8 @@ signal lines_done
 signal chosen(index: int)
 ## Emitted when the paper is put away (Verder or Spatie).
 signal paper_closed
+## Spatie held for HOLD_SKIP_S: the scene should skip to its end state.
+signal skip_requested
 
 ## A line stays at least this long, plus this per character, at most this long.
 const READ_MIN := 2.4
@@ -24,11 +32,32 @@ const READ_MAX := 7.0
 const HINT_SECONDS := 5.0
 const PHONE_SECONDS := 4.5
 const NEXT := "Verder  (Spatie)"
+const SKIP_HINT := "Houd spatie ingedrukt om over te slaan"
+const AUTO_LABEL := "Tekst loopt vanzelf door"
+## A line types itself out at this many characters a second (estimate: a
+## calm subtitle pace, quicker than reading so it never waits on the text).
+const REVEAL_CPS := 45.0
+## Holding Spatie this long skips the scene (Merijn: "about a second").
+const HOLD_SKIP_S := 1.0
+## The lines ← can go back to.
+const HISTORY := 10
+## The setting (user://settings.cfg, section "text"): lines move on by themselves.
+const SECTION := "text"
+const AUTO_KEY := "auto_advance"
+
+## "Tekst loopt vanzelf door": lines move on after their reading time.
+var auto := false
 
 ## The lines still to show: [{who, text}]; the first is on screen.
 var queue: Array[Dictionary] = []
 var _left := 0.0
 var _hint_left := 0.0
+## The lines already moved past, oldest first (at most HISTORY).
+var _history: Array[Dictionary] = []
+var _shown_chars := 0.0
+## Seconds Spatie has been held (-1: not held, or this hold already skipped).
+var _held := -1.0
+var _skip_hint: Label
 var _subtitle: PanelContainer
 var _who: Label
 var _text: Label
@@ -70,6 +99,11 @@ func _init() -> void:
 	_choices.add_theme_constant_override("separation", 16)
 	box.add_child(_choices)
 	_subtitle.visible = false
+
+	_skip_hint = UiPanel.label("", 15, Color(1, 1, 1, 0.6))
+	_skip_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_skip_hint.visible = false
+	box.add_child(_skip_hint)
 
 	_hint = UiPanel.label("", 17, Color(1, 1, 1, 0.85))
 	_hint.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
@@ -119,18 +153,100 @@ func current() -> Dictionary:
 	return queue[0] if not queue.is_empty() else {}
 
 
-## Move on to the next line (Spatie).
+## Whether the line on screen is shown whole (no line: true).
+func revealed() -> bool:
+	return queue.is_empty() or _shown_chars >= _text.text.length()
+
+
+## Whether the scene holds the player: a line (not an aside), a choice or a paper is up.
+func holds() -> bool:
+	return paper_up() or asking() or (speaking() and not queue[0].get("aside", false))
+
+
+## Spatie, Enter or a click: put the paper away, show the whole line, or go on.
+func press() -> void:
+	if paper_up():
+		close_paper()
+	elif not revealed():
+		_reveal(_text.text.length())
+	else:
+		next()
+
+
+## Move on to the next line now.
 func next() -> void:
-	if queue.is_empty() or not _choices.get_children().is_empty():
+	if queue.is_empty() or asking():
 		return
-	queue.pop_front()
+	_history.append(queue.pop_front())
+	if _history.size() > HISTORY:
+		_history.pop_front()
 	_show_first()
+
+
+## ← or Backspace: the line before this one again, shown whole (none while a choice waits).
+func back() -> void:
+	if _history.is_empty() or asking() or paper_up():
+		return
+	queue.push_front(_history.pop_back())
+	_show_first()
+	_reveal(_text.text.length())
 
 
 ## Show every queued line at once (tests, a skip).
 func finish() -> void:
-	while not queue.is_empty() and _choices.get_children().is_empty():
+	while not queue.is_empty() and not asking():
 		next()
+
+
+## Drop every line, the choice and the paper without a word (a skipped scene).
+func clear() -> void:
+	queue.clear()
+	UiPanel.clear(_choices)
+	_subtitle.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_subtitle.visible = false
+	_paper.visible = false
+	_hint.visible = false
+
+
+## Spatie down (true) or up: held for HOLD_SKIP_S it asks to skip.
+func hold_space(on: bool) -> void:
+	_held = 0.0 if on else -1.0
+
+
+## "Houd spatie ingedrukt om over te slaan", small under the line (the first scene).
+func skip_hint(on: bool) -> void:
+	_skip_hint.text = tr(SKIP_HINT) if on else ""
+	_skip_hint.visible = on
+
+
+## The setting "Tekst loopt vanzelf door" (`path`: user://settings.cfg; tests point it elsewhere).
+static func auto_setting(path: String = SessionLog.SETTINGS) -> bool:
+	var config := ConfigFile.new()
+	if config.load(path) != OK:
+		return false
+	var v: Variant = config.get_value(SECTION, AUTO_KEY, false)
+	return v if v is bool else false
+
+
+## The settings' switch for it (the title menu's Instellingen, the pause menu).
+static func auto_toggle(path: String = SessionLog.SETTINGS) -> CheckBox:
+	var box := CheckBox.new()
+	box.text = AUTO_LABEL   # a Button translates its own text
+	box.button_pressed = auto_setting(path)
+	box.toggled.connect(func(on: bool) -> void:
+		var error := set_auto_setting(on, path)
+		if not error.is_empty():
+			push_warning(error))
+	return box
+
+
+## "" or what went wrong.
+static func set_auto_setting(on: bool, path: String = SessionLog.SETTINGS) -> String:
+	var config := ConfigFile.new()
+	config.load(path)   # a missing file starts empty
+	config.set_value(SECTION, AUTO_KEY, on)
+	var err := config.save(path)
+	return "" if err == OK else "instellingen niet bewaard (%s)" % error_string(err)
 
 
 ## Two or more answers under the line on screen; the scene waits for one.
@@ -242,10 +358,18 @@ func texts() -> Array[String]:
 
 
 func step(dt: float) -> void:
-	if not queue.is_empty() and not asking():
-		_left -= dt
-		if _left <= 0.0:
-			next()
+	mouse_filter = Control.MOUSE_FILTER_STOP if holds() and not asking() else Control.MOUSE_FILTER_IGNORE
+	if not queue.is_empty():
+		_reveal(_shown_chars + REVEAL_CPS * dt)
+		if not asking() and revealed() and (auto or queue[0].get("aside", false)):
+			_left -= dt
+			if _left <= 0.0:
+				next()
+	if _held >= 0.0:
+		_held += dt
+		if _held >= HOLD_SKIP_S:
+			_held = -1.0
+			skip_requested.emit()
 	if _hint.visible:
 		_hint_left -= dt
 		if _hint_left <= 0.0:
@@ -260,15 +384,32 @@ func step(dt: float) -> void:
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	var key := event as InputEventKey
-	if key == null or not key.pressed or key.echo or key.physical_keycode != KEY_SPACE:
+	if key == null or key.echo:
 		return
-	if paper_up():
-		close_paper()
-	elif speaking():
-		next()
-	else:
+	if key.physical_keycode == KEY_SPACE:
+		hold_space(key.pressed)
+	if not key.pressed:
 		return
+	match key.physical_keycode:
+		KEY_SPACE, KEY_ENTER, KEY_KP_ENTER:
+			if not holds():
+				return
+			press()
+		KEY_LEFT, KEY_BACKSPACE:   # also between lines: the last ones again
+			if _history.is_empty() or asking() or paper_up():
+				return
+			back()
+		_:
+			return
 	get_viewport().set_input_as_handled()
+
+
+## A left click while the scene holds: as Spatie (the choice's and the paper's own buttons come first).
+func _gui_input(event: InputEvent) -> void:
+	var click := event as InputEventMouseButton
+	if click != null and click.pressed and click.button_index == MOUSE_BUTTON_LEFT and holds() and not asking():
+		press()
+		accept_event()
 
 
 static func read_seconds(text: String) -> float:
@@ -286,3 +427,9 @@ func _show_first() -> void:
 	_text.text = str(line["text"])
 	_subtitle.visible = true
 	_left = read_seconds(_text.text)
+	_reveal(0.0)
+
+
+func _reveal(chars: float) -> void:
+	_shown_chars = minf(chars, _text.text.length())
+	_text.visible_characters = int(_shown_chars) if _shown_chars < _text.text.length() else -1

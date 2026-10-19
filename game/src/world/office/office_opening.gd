@@ -10,6 +10,11 @@ extends Node
 ##
 ## A cue runner: each beat is a list of cues (callables called every step
 ## until they say they are done), so tests drive the whole scene with step(dt).
+##
+## A scene that behaves like a scene (PLAN 2.13 A, Merijn 2026-10-19): while a
+## line, a choice or a paper is up the player stands and the camera frames
+## them and the speaker; between lines (Ruud's walk) they walk. Holding Spatie
+## skips the beat on screen to its end, the next place where the player acts.
 
 ## Who speaks.
 const RUUD := "Ruud"
@@ -85,6 +90,12 @@ const CALL_DISTANCE := 6.0
 const WAIT_LINE_S := 20.0
 const MOVED_FOR_HINT := 3.0
 const GUIDE_PACE := 1.4
+## A speaker this near (m) is framed with the player; farther (a call down the corridor) the view stays.
+const FRAME_DISTANCE := 8.0
+## The speaker's face this share of the screen's height above the middle (the subtitle is below).
+const FRAME_LIFT := 0.12
+## Where the player stands when the walk is skipped: this far from Ruud's door, back along the corridor.
+const DOOR_GAP := 1.6
 ## What the walk counts as at a place (an observe goal's use).
 const TOUR := "tour"
 
@@ -100,6 +111,10 @@ var _start := Vector3.ZERO
 var _walk_hint_shown := false
 var _look_hint_shown := false
 var _skip_link: Button
+## A line, a choice or a paper holds the player now (Office.hold_for_scene).
+var _holding := false
+## Who the camera frames now ("" for none).
+var _framed := ""
 
 
 ## The opening over `of_office` at the beat its session layer is at.
@@ -109,6 +124,8 @@ static func create(of_office: Office) -> OfficeOpening:
 	o.office = of_office
 	o.layer = of_office.ui.session_layer
 	o.lines = SceneLines.new()
+	o.lines.auto = SceneLines.auto_setting()
+	o.lines.skip_requested.connect(o.skip)
 	of_office.ui.hud.add_child(o.lines)
 	return o
 
@@ -147,6 +164,11 @@ func step(dt: float) -> void:
 	_hints()
 	if yvonne != null:
 		yvonne.visible = office.floors.floor_id == "ground"
+	_run_cues(dt)
+	_hold_player()
+
+
+func _run_cues(dt: float) -> void:
 	while not _cues.is_empty():
 		var cues := _cues
 		var head: Callable = cues[0]
@@ -154,6 +176,35 @@ func step(dt: float) -> void:
 			return
 		if is_same(cues, _cues) and not _cues.is_empty() and _cues[0] == head:
 			_cues.pop_front()   # a cue that started a new beat has replaced the list
+
+
+## While a line, a choice or a paper is up the player stands and the camera
+## frames them and whoever speaks; when it goes, both are free again.
+func _hold_player() -> void:
+	var holds := lines.holds()
+	if holds != _holding:
+		_holding = holds
+		_framed = ""
+		office.hold_for_scene(holds)
+	if not holds:
+		return
+	var who := str(lines.current().get("who", ""))
+	if who == _framed:
+		return
+	_framed = who
+	var speaker := _speaker(who)
+	if speaker != null and speaker.visible and _near(speaker.position, office.player.position, FRAME_DISTANCE):
+		office.frame_scene(speaker, FRAME_LIFT)
+
+
+## The person who says a line: the opening's own Ruud and Yvonne, else the office's.
+func _speaker(who: String) -> OfficePerson:
+	match who:
+		RUUD:
+			return guide if guide != null and guide.visible else office.people.person("ruud")
+		YVONNE:
+			return yvonne
+	return office.people.person(who.to_lower()) if not who.is_empty() else null
 
 
 ## Every cue still to run is done (tests): lines shown, walks arrived.
@@ -175,7 +226,7 @@ func _arrival() -> void:
 	yvonne = _person("kim", "Yvonne Kramer", "Receptie")   # a stand-in look until Yvonne joins the cast (2.7d §4.3)
 	var chair := _point("reception_chair", RECEPTION_CHAIR)
 	yvonne.place(chair + (desk - chair) * 0.45, stand - desk)   # standing behind the counter, by her chair
-	office.rig.converse(office.talk_point(yvonne), office.talk_yaw(yvonne, stand), Office.TALK_SHIFT, 0.12)
+	office.frame_scene(yvonne, FRAME_LIFT)
 	_skip_link = UiPanel.button(tr(SKIP_WEEK), skip_week)
 	_skip_link.flat = true
 	_skip_link.add_theme_color_override("font_color", Color(1, 1, 1, 0.7))
@@ -183,6 +234,7 @@ func _arrival() -> void:
 	_skip_link.offset_left = 16
 	_skip_link.offset_top = 56
 	lines.add_child(_skip_link)
+	lines.skip_hint(true)   # the first scene says how to skip (Merijn 2026-10-19)
 	_run([_wait(1.0), _say("yvonne"), _badge(), _say("yvonne_badge"), _do(_ruud_arrives), _do(_walk)])
 
 
@@ -221,15 +273,76 @@ func skip_week() -> void:
 	office.session.skip_training()
 	layer.opening_beat = ""
 	layer.has_floor_plan = true
+	lines.clear()   # Yvonne's line goes with the week: nothing holds the player
+	lines.skip_hint(false)
 	_end()
 	office.floors.go_to("first", "lift", true)
 	office.ui.after_action()
+
+
+# ── Skipping (PLAN 2.13 A) ─────────────────────────────────────────────────
+
+## Spatie held: the beat on screen jumps to its end, where the player acts
+## next (the ontvangst to Ruud's walk, the walk to his question at his door,
+## his answer to the letter, the letter to the rest of the day, the day to the
+## evening). A choice and a talk are the player's: never skipped. The
+## explainer on his board skips itself (held Spatie there closes it).
+func skip() -> void:
+	lines.skip_hint(false)
+	if lines.asking() or office.explainer != null or office.ui.dialog_panel.visible:
+		return
+	match layer.opening_beat:
+		Opening.ARRIVAL:
+			lines.clear()
+			_walk()
+		Opening.WALK:
+			lines.clear()
+			_skip_walk()
+		Opening.BOARD:
+			_run_cues(0.0)   # an answer just given takes its turn first
+			if lines.asking():
+				return
+			lines.clear()
+			_letter()
+		Opening.LETTER:
+			lines.clear()
+			_evening()
+		Opening.EVENING:
+			_to_evening()
+		_:
+			return
+	step(0.0)
+
+
+## The walk's end without the walk: upstairs, the plan handed over, both
+## teams passed, Ruud at his door and the player in front of him.
+func _skip_walk() -> void:
+	lines.clear_hint()
+	if guide == null:
+		_ruud_arrives()
+	if office.floors.floor_id != "first":
+		office.floors.go_to("first", "stairs_up", true)
+	_hand_over_plan()
+	_hide_seated_ruud(true)
+	_guide_route = PackedVector3Array()
+	guide.visible = true
+	var door := _coach_door()
+	var stand := door + (_v(AT_DESIGN) - door).normalized() * DOOR_GAP
+	guide.place(door, stand - door)
+	office.player.position = stand
+	office.player.face(Basis.looking_at((door - stand).normalized()))
+	office.rig.yaw = office.player.rotation.y
+	office.rig.snap()
+	for place in ["connections.intake", "connections.design"]:
+		_seen(place)
+	_board()
 
 
 # ── B3: Ruud haalt je op ───────────────────────────────────────────────────
 
 func _walk() -> void:
 	Opening.advance(layer, Opening.WALK)
+	lines.skip_hint(false)
 	if guide == null:
 		_ruud_arrives()
 	_start = office.player.position
@@ -298,7 +411,7 @@ func _stop_at(at: Vector3, key: String) -> Callable:
 					state["waited"] += dt
 					if state["waited"] >= WAIT_LINE_S and not state["said_wait"] and not lines.speaking():
 						state["said_wait"] = true
-						lines.say(_lines("wait"))
+						lines.say(_lines("wait", true))
 			3:
 				return not lines.speaking()
 		return false
@@ -344,7 +457,7 @@ func _ask_board() -> Callable:
 		return true
 
 
-## The whiteboard's explainer (2.7c); done when it closes (Esc or Klaar skips it).
+## The whiteboard's explainer (2.7c); done when it closes (Klaar or a held Spatie skips it).
 func _explainer() -> Callable:
 	var state := {"opened": false}
 	return func(_dt: float) -> bool:
@@ -548,10 +661,11 @@ func _until_floor(id: String) -> Callable:
 	return func(_dt: float) -> bool: return office.floors.floor_id == id
 
 
-func _lines(key: String) -> Array[Dictionary]:
+## `key`'s lines; an aside (a call-out from afar) moves on by itself and holds no one.
+func _lines(key: String, aside := false) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	for line: Array in LINES[key]:
-		out.append({"who": line[0], "text": fill(line[1])})
+		out.append({"who": line[0], "text": fill(line[1]), "aside": aside})
 	return out
 
 

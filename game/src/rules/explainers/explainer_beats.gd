@@ -3,8 +3,11 @@ extends RefCounted
 ## Ruud's beats at the whiteboard (spec 2026-10-16-explainer-spanning-stroom-
 ## weerstand §4), as a pure machine the view drives: which beat plays, which
 ## controls are on, and when to move on. Nothing here is a quiz: the player
-## answers with the valves and switches, or not at all, and every beat moves
-## on by itself (a reading time, or a wait's timeout) and on Spatie.
+## answers with the valves and switches, or not at all. A beat moves on on
+## Spatie (the first press shows what waits behind a silence, the second goes
+## on) or when its wait is met; ← plays the beat before again (PLAN 2.13 A).
+## Only with `auto` ("Tekst loopt vanzelf door", off by default) does a beat
+## also move on by itself, after its reading time or its wait's timeout.
 ##
 ## Main beats play in content order. An alt beat (`alt_of`) replaces its main
 ## beat when its `when` holds as the beat starts; it then goes to `then` (that
@@ -31,12 +34,16 @@ var haspel_unlocked := false
 var kettle_alone_seen := false
 var done := false
 var closed_early := false
+## "Tekst loopt vanzelf door": beats move on after their reading time.
+var auto := false
 
 var _beat := {}
 var _elapsed := 0.0
 var _haspel_at_start := 1
 ## Main beats in content order.
 var _mains: Array[String] = []
+## The beats played before this one, oldest first (← goes back through them).
+var _history: Array[Dictionary] = []
 
 
 func _init(explainer: ExplainerDef) -> void:
@@ -67,7 +74,38 @@ func elapsed() -> float:
 	return _elapsed
 
 
-## How long the current beat plays before it moves on by itself.
+## The beat's place among the main beats, from 1 (an alt beat counts as its main beat).
+func number() -> int:
+	return _mains.find(_beat.get("alt_of", beat_id())) + 1
+
+
+## How many main beats there are (the counter's "3/13").
+func count() -> int:
+	return _mains.size()
+
+
+## Ruud's lines so far: after a silence the rest waits two seconds (or Spatie).
+func lines_shown() -> Array:
+	var lines: Array = _beat.get("lines", [])
+	var silences: Array = _beat.get("silence_after", [])
+	if silences.is_empty() or _elapsed >= _full_at():
+		return lines
+	return lines.slice(0, int(silences[0]) + 1)
+
+
+## Seconds into the beat when every line shows (after the first silence).
+func _full_at() -> float:
+	var silences: Array = _beat.get("silence_after", [])
+	if silences.is_empty():
+		return 0.0
+	var chars := 0
+	var lines: Array = _beat.get("lines", [])
+	for i in int(silences[0]) + 1:
+		chars += String(lines[i]).length()
+	return READ_BASE_S + chars * READ_PER_CHAR_S + SILENCE_S
+
+
+## How long the current beat plays before it moves on by itself (with `auto`).
 func duration() -> float:
 	if _beat.has("wait_for"):
 		return float(_beat.get("timeout_s", 10))
@@ -98,17 +136,31 @@ func toggle(control: String) -> bool:
 	return true
 
 
-## Spatie: on to the next beat now.
+## Spatie: the rest of the beat's lines if a silence holds them, else on to the next beat.
 func next() -> void:
-	if not done:
+	if done:
+		return
+	if _elapsed < _full_at():
+		_elapsed = _full_at()
+	else:
 		_leave()
+
+
+## ← or Backspace: the beat before this one again, all its lines at once.
+## The switches stay as they are.
+func back() -> void:
+	if done or _history.is_empty():
+		return
+	_beat = _history.pop_back()
+	_elapsed = _full_at()
+	_haspel_at_start = haspel
 
 
 func tick(dt: float) -> void:
 	if done:
 		return
 	_elapsed += dt
-	if _elapsed >= duration():
+	if auto and _elapsed >= duration():
 		_leave()
 
 
@@ -174,6 +226,8 @@ func _enter(main_id: String, as_is: bool = false) -> void:
 
 
 func _play(b: Dictionary) -> void:
+	if not _beat.is_empty():
+		_history.append(_beat)
 	_beat = b
 	_elapsed = 0.0
 	_haspel_at_start = haspel

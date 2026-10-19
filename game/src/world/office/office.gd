@@ -47,6 +47,9 @@ const TALK_ANGLE := 0.6
 const TALK_SHIFT := -0.08
 ## The person's face sits this far (m) under the top of their head.
 const FACE_DROP := 0.2
+## A scene's two-shot looks from the side with open floor behind the pair, up
+## to this far (m): a wall nearer than that would hide them.
+const SCENE_CLEAR := 3.0
 
 const RESUME_FAILED := "De bewaarde game kon niet worden geladen (%s). Dit spel wordt niet bewaard, zodat de oude bewaard blijft."
 const WHITEBOARD_PROMPT := "E — Whiteboard: hoe werkt het?"
@@ -95,6 +98,8 @@ var _nav: OfficeNav
 var _walk_goal: Node3D
 ## The person under the cursor (their name tag shows).
 var _hovered_person: OfficePerson
+## A scene's line, choice or paper holds the player (hold_for_scene).
+var _scene_holds := false
 ## The "Hoe werkt het?" explainer open over the world (Ruud's whiteboard), or null.
 var explainer: ExplainerView
 ## Ruud's paper floor plan in the corner (PLAN 2.1b); null when the game cannot be played.
@@ -163,6 +168,8 @@ func build() -> void:
 		enter_saved_floor(ui.session_layer.floor_id)
 		ui.title_requested.connect(to_title)
 		ui.pause_menu.look_requested.connect(open_look)
+		ui.pause_changed.connect(_on_pause_changed)
+		ui.pause_menu.auto_text_changed.connect(_on_auto_text)
 		if autosaves:
 			ui.begin_play(saves, loaded.has("session"))
 		if Opening.running(ui.session_layer):
@@ -526,6 +533,8 @@ func open_look() -> CreatorScreen:
 	look_editor = CreatorScreen.open(self, CreatorScreen.Mode.EDIT, session.player)
 	look_editor.done.connect(apply_look)
 	look_editor.cancelled.connect(_close_look)
+	look_editor.get_parent().process_mode = Node.PROCESS_MODE_ALWAYS
+	_pause_world(true)   # the scene under it stays where the pause menu left it
 	return look_editor
 
 
@@ -540,6 +549,7 @@ func _close_look() -> void:
 	remove_child(layer)
 	layer.queue_free()
 	look_editor = null
+	_pause_world(false)
 	_world_input(true)
 	_on_panels_closed()
 
@@ -553,8 +563,29 @@ func open_whiteboard() -> void:
 	_world_input(false)
 	var ahead := -OfficeWhiteboard.FACING
 	rig.converse(OfficeWhiteboard.look_point(), atan2(-ahead.x, -ahead.z), 0.0, 0.0)
-	explainer = ExplainerView.open(self, OfficeWhiteboard.EXPLAINER, {"log": session.explainers})
+	explainer = ExplainerView.open(self, OfficeWhiteboard.EXPLAINER,
+		{"log": session.explainers, "auto": SceneLines.auto_setting()})
 	explainer.closed.connect(_on_explainer_closed)
+	explainer.pause_requested.connect(ui.open_pause)
+
+
+## The pause menu over Ruud's board (Esc in the explainer, as anywhere in a scene).
+func _on_pause_changed(on: bool) -> void:
+	if explainer != null:
+		explainer.visible = not on   # the sheet is over the menu's layer: it waits out of sight
+
+
+## "Tekst loopt vanzelf door" switched in the pause menu: the scene on screen follows.
+func _on_auto_text(on: bool) -> void:
+	if first_day != null:
+		first_day.lines.auto = on
+	if explainer != null and explainer.beats != null:
+		explainer.beats.auto = on
+
+
+func _pause_world(on: bool) -> void:
+	if is_inside_tree():
+		get_tree().paused = on
 
 
 func _on_explainer_closed(_id: String) -> void:
@@ -597,10 +628,61 @@ func frame_talk(person_id: String) -> void:
 	var person := people.person(person_id)
 	if person == null or not person.visible:
 		return
+	_turn_to(person)
+	rig.converse(talk_point(person), talk_yaw(person, player.position), TALK_SHIFT, DialogPanel.HEIGHT_SHARE / 2.0)
+
+
+## A scene's speaker and the player in one view (PLAN 2.13 A): the player
+## turns to them and the camera looks down at the point between the two,
+## from behind the player a little to the side when the floor is open there,
+## else from the side with the most open floor (a wall close behind would
+## hide them); `lift` of the screen's height above the middle.
+func frame_scene(person: OfficePerson, lift: float) -> void:
+	_turn_to(person)
+	var between := (player.position + person.position) / 2.0 * Vector3(1, 0, 1)
+	var behind_player := atan2(player.position.x - person.position.x, player.position.z - person.position.z)
+	var best := talk_yaw(person, player.position)
+	var best_room := _open_floor(between, best)
+	for yaw: float in [behind_player - TALK_ANGLE, behind_player + TALK_ANGLE,
+			behind_player + PI - TALK_ANGLE, behind_player + PI + TALK_ANGLE]:
+		var room := _open_floor(between, yaw)
+		if room > best_room:
+			best = yaw
+			best_room = room
+	rig.two_shot(between + Vector3.UP * CameraRig.FOCUS_HEIGHT, best, lift)
+
+
+## How far (m, up to SCENE_CLEAR) the floor runs open from `at` towards a
+## camera at `yaw`: a wall close behind the pair would hide them.
+func _open_floor(at: Vector3, yaw: float) -> float:
+	var back := Vector3(sin(yaw), 0, cos(yaw))
+	var free := 0.0
+	while free < SCENE_CLEAR and nav().walkable(at + back * (free + 0.5)):
+		free += 0.5
+	return free
+
+
+func _turn_to(person: OfficePerson) -> void:
 	var to_person := (person.position - player.position) * Vector3(1, 0, 1)
 	if to_person.length() > 0.01:
 		player.face(Basis.looking_at(to_person.normalized()))
-	rig.converse(talk_point(person), talk_yaw(person, player.position), TALK_SHIFT, DialogPanel.HEIGHT_SHARE / 2.0)
+
+
+## A scene's line, choice or paper is up (true; PLAN 2.13 A): no walking, no
+## click-to-move, no free camera, until it goes (false).
+func hold_for_scene(on: bool) -> void:
+	_scene_holds = on
+	if on:
+		_on_panel_opened()
+	elif not busy():
+		player.active = true
+		rig.active = true
+		rig.release()
+
+
+## Whether the world takes no clicks or E now: a panel is open, or a scene holds the player.
+func world_waits() -> bool:
+	return ui.is_busy() or _scene_holds
 
 
 ## The camera's yaw for a talk: from behind the player standing `at`, turned
@@ -629,17 +711,14 @@ func _add_player() -> void:
 		player.position = at.origin
 		player.face(at.basis)
 	player.interact_pressed.connect(func() -> void:
-		if not ui.is_busy():
+		if not world_waits():
 			use(target_near(player.position)))
 	player.journal_pressed.connect(func() -> void: ui.toggle_journal())
 	player.map_pressed.connect(func() -> void: ui.toggle_map())
 	player.codex_pressed.connect(func() -> void: ui.toggle_codex())
 	player.escape_pressed.connect(func() -> void:
-		if ui.is_busy():
-			ui.close_panels()
-		else:
-			player.stop()
-			ui.open_pause())
+		player.stop()
+		ui.escape())
 	player.arrived.connect(_on_arrived)
 
 
@@ -723,7 +802,7 @@ func hover_person(person: OfficePerson) -> void:
 ## Walk up to a clicked person and ask for a talk on arrival. False when the
 ## click is not for the world or there is no way there.
 func click_person(person: OfficePerson) -> bool:
-	if ui.is_busy() or not session.error.is_empty():
+	if world_waits() or not session.error.is_empty():
 		return false
 	_walk_goal = person
 	var route := nav().path(player.position, person.position)
@@ -745,7 +824,7 @@ func hover_floor(point: Vector3) -> void:
 ## walks there and opens it on arrival. False when the click is not for the
 ## world (a panel is open, the content failed) or nothing can be reached.
 func click_floor(point: Vector3) -> bool:
-	if ui.is_busy() or not session.error.is_empty():
+	if world_waits() or not session.error.is_empty():
 		return false
 	_walk_goal = interactable_near(point, RING_CLICK)
 	var route := nav().path(player.position, _walk_goal.position if _walk_goal != null else point)
