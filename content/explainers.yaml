@@ -40,7 +40,7 @@ explainers:
         - {analogy: de doorstroommeter, real: de stroomtang, pair: [flowmeter, stroomtang]}
         - {analogy: de drukmeter aan het eind, real: de multimeter, pair: [end_gauge, multimeter]}
         - {analogy: de slang wordt warm, real: de kabel wordt warm, pair: [heat_tint_hose_thin, heat_tint_cable_thin]}
-      limit_line: "Eén verschil. Water loopt de slang uit. Stroom niet: die gaat door de kabel heen, en komt weer terug."
+      limit_line: "Eén verschil met de tuin: water loopt de slang uit. Stroom niet. Die gaat door de kabel heen en komt via een andere draad weer terug."
 
     controls:
       - {id: lamp, tuin: tap_dripper, meterkast: switch_lamp, key: "1"}
@@ -84,9 +84,9 @@ explainers:
         phase: tuin
         idea: druk
         lines:
-          - Vergeet even de elektriciteit. Denk aan een tuinslang.
-          - De kraan duwt het water de slang in. Dat duwen heet druk.
-          - Wat verwacht je als je een kraantje opendraait?
+          - Stroom kun je niet zien. Daarom begin ik altijd met een tuinslang.
+          - De kraan duwt het water de slang in. Dat duwen noemen we druk.
+          - Draai eens een kraantje open. Wat denk je dat er gebeurt?
         wait_for: any_on
         timeout_s: 10
         pulse: kettle
@@ -94,8 +94,8 @@ explainers:
         phase: tuin
         idea: stroom
         lines:
-          - Nu loopt er water. Hoeveel water er per tel doorheen gaat, heet stroom.
-          - Kijk naar het wieltje op de slang. Draai er nog een open.
+          - Nu loopt er water. Hoeveel water er per seconde doorheen gaat, dat is de stroom.
+          - Zie je dat wieltje op de slang draaien? Draai er nog eens een open.
         wait_for: two_on
         timeout_s: 10
       - id: a2_dripper
@@ -104,53 +104,53 @@ explainers:
         phase: tuin
         idea: stroom
         lines:
-          - Nu loopt er water. Hoeveel water er per tel doorheen gaat, heet stroom.
-          - Een druppelaar. Zie je het wieltje? Bijna niks. Probeer de grote sproeier eens.
+          - Nu loopt er water. Hoeveel water er per seconde doorheen gaat, dat is de stroom.
+          - "Dat is een druppelaar. Kijk naar het wieltje: dat draait amper. Probeer de grote sproeier eens."
         wait_for: kettle_on
         timeout_s: 10
       - id: a3
         phase: tuin
         idea: weerstand
         lines:
-          - Meer kraantjes open. Meer water door dezelfde slang.
-          - Kijk naar de drukmeter aan het eind. Waarom zakt die?
-          - De slang houdt het water een beetje tegen. Dat tegenhouden heet weerstand.
+          - Meer kraantjes open, dus meer water door dezelfde slang.
+          - Kijk eens naar de drukmeter aan het eind. Waarom zakt die, denk je?
+          - De slang houdt het water een beetje tegen. Dat noemen we weerstand.
         silence_after: [1]
       - id: a4
         phase: tuin
         idea: warm
         lines:
-          - En duw je heel veel door een smalle slang?
-          - Dan wordt hij warm. Voel maar.
+          - En als je heel veel water door een dunne slang perst?
+          - Dan wordt hij warm. Voel maar eens.
         silence_after: [0]
       - id: x
         phase: cross
         idea: ""
         lines:
-          - Nu hetzelfde. Maar dan echt.
+          - Goed. En nu hetzelfde, maar dan met stroom.
       - id: r1
         phase: meterkast
         idea: hetzelfde
         lines:
-          - De kraan is nu de meterkast. De slang is de kabel. De kraantjes zijn de knoppen.
+          - De kraan is nu de meterkast, de slang is de kabel en de kraantjes zijn de knoppen.
       - id: r2
         phase: meterkast
         idea: namen
         lines:
-          - Druk heet hier spanning. Die tellen we in volt.
-          - Stroom tellen we in ampère. Kijk maar op de tang.
+          - Die druk heet hier spanning. Die meten we in volt.
+          - Stroom meten we in ampère. Dat zie je op de stroomtang.
         shows: [readout, reveal]
       - id: r3
         phase: meterkast
         idea: grens
         lines:
-          - Eén verschil. Water loopt de slang uit.
-          - "Stroom niet: die gaat door de kabel heen, en komt weer terug."
+          - "Eén verschil met de tuin: water loopt de slang uit."
+          - Stroom niet. Die gaat door de kabel heen en komt via een andere draad weer terug.
       - id: r4
         phase: meterkast
         idea: aan
         lines:
-          - Zet de waterkoker eens aan. Wat doet de tang?
+          - Zet de waterkoker eens aan. Wat doet de stroomtang?
         wait_for: kettle_on
         timeout_s: 10
         pulse: kettle
@@ -160,14 +160,14 @@ explainers:
         phase: meterkast
         idea: aan
         lines:
-          - De waterkoker staat al aan. Kijk naar de tang.
+          - De waterkoker staat al aan. Kijk eens naar de stroomtang.
       - id: r5
         phase: meterkast
         idea: kabel_warm
         lines:
-          - Dat getal is de stroom.
-          - Kijk nu naar de meter aan het eind. Waar is dat stukje spanning gebleven?
-          - In de kabel. Daar wordt het warmte. Net als bij de slang.
+          - Dat getal op de tang, dat is de stroom.
+          - Kijk nu naar de meter aan het eind. Daar is een beetje spanning kwijt. Waar is die gebleven?
+          - In de kabel. Die wordt er warm van, net als de slang.
         silence_after: [1]
       - id: r5_lamp
         alt_of: r5
@@ -176,14 +176,14 @@ explainers:
         phase: meterkast
         idea: kabel_warm
         lines:
-          - Een lampje. Bijna niks. Probeer de waterkoker eens.
+          - Een lampje vraagt bijna niks. Probeer de waterkoker eens.
         wait_for: kettle_on
         timeout_s: 10
       - id: r6
         phase: meterkast
         idea: ""
         lines:
-          - Zet de kachel er eens bij. Hoe warm wordt de kabel, denk je?
+          - Zet de kachel er eens bij. Hoe warm wordt de kabel nu, denk je?
         wait_for: heater_on
         timeout_s: 10
         skip_when: heater_on
@@ -192,8 +192,8 @@ explainers:
         phase: meterkast
         idea: veel_warmer
         lines:
-          - Meer stroom. En de kabel wordt veel warmer dan je zou denken.
-          - Dat leerde ik op de MTS. Toen had ik nog haar.
+          - Meer stroom, en de kabel wordt meteen veel warmer dan je zou verwachten.
+          - Dat heb ik op de MTS geleerd. Toen had ik nog haar.
       - id: r7_never_alone
         alt_of: r7
         when: never_kettle_alone
@@ -201,14 +201,14 @@ explainers:
         phase: meterkast
         idea: veel_warmer
         lines:
-          - Zet de kachel eens uit en weer aan. Kijk naar de kabel.
+          - Zet de kachel eens uit en weer aan. Let op de kabel.
         wait_for: heater_again
         timeout_s: 10
       - id: r8a
         phase: meterkast
         idea: dik
         lines:
-          - Pak de dikke haspel eens. Wat zie je?
+          - Pak de haspel met de dikke kabel eens. Wat zie je nu?
         wait_for: haspel
         timeout_s: 10
         unlocks: [haspel]
@@ -216,8 +216,8 @@ explainers:
         phase: meterkast
         idea: lang
         lines:
-          - Dikke kabel, net als een dikke slang.
-          - Een kabel in de straat werkt net zo. Maar soms is hij heel lang. Wat blijft er dan over aan het eind?
+          - "Een dikke kabel werkt net als een dikke slang: er kan meer doorheen."
+          - Met de kabels onder de straat is het precies zo. Alleen zijn die soms heel lang. Hoeveel spanning is er dan nog over aan het eind?
 
     # The model's parameters (game/src/rules/explainers/ohm_cable.gd) with their evidence (spec §3.5).
     parameters:
