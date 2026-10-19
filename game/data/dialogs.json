@@ -1215,7 +1215,7 @@
     "open_question": "Wat komt er na een weekend allemaal binnen?"
    },
    "mission": "training_tue",
-   "mood": "moe",
+   "mood": "neutraal",
    "name": "Sanne op dinsdagochtend",
    "opening": "Goedemorgen. Sorry, het is dinsdag, maar hier is het nog maandag: alles van het weekend ligt er nog.",
    "outcomes": {
@@ -1800,7 +1800,7 @@
     "reflect": "Het klinkt alsof je elke ochtend iets opbouwt waarvan je al weet dat het omvalt."
    },
    "mission": "training_wed",
-   "mood": "moe",
+   "mood": "neutraal",
    "name": "Linda en het kaartenhuis",
    "opening": "Sorry, ik ben aan het omplannen. Twee monteurs zijn naar een storing. Zeg het maar.",
    "outcomes": {
@@ -3575,7 +3575,7 @@
    },
    "prompt": "Anouk zat gisteravond om half zeven nog te tekenen. Alleen.",
    "trigger": {
-    "morale_below": 50,
+    "morale_below": 60,
     "needs": {
      "all": [
       "accepted:fix_custom_design"
@@ -4082,7 +4082,7 @@
    },
    "prompt": "Linda's mails komen de laatste tijd om tien uur 's avonds binnen.",
    "trigger": {
-    "morale_below": 50,
+    "morale_below": 60,
     "needs": {
      "all": [
       "accepted:fix_planning_reshuffle"
@@ -5292,7 +5292,7 @@
   {
    "archetype": "defender",
    "id": "joost",
-   "morale": 50,
+   "morale": 56,
    "name": "Joost van Dijk",
    "need": "safety",
    "place": "connections.design",
@@ -5316,7 +5316,7 @@
   {
    "archetype": "overloaded",
    "id": "sanne",
-   "morale": 50,
+   "morale": 56,
    "name": "Sanne Bakker",
    "need": "recognition",
    "place": "connections.intake",
@@ -5341,7 +5341,7 @@
   {
    "archetype": "overloaded",
    "id": "anouk",
-   "morale": 48,
+   "morale": 56,
    "name": "Anouk de Vries",
    "need": "safety",
    "place": "connections.design",
@@ -5380,7 +5380,7 @@
   {
    "archetype": "overloaded",
    "id": "linda",
-   "morale": 45,
+   "morale": 55,
    "name": "Linda Jansen",
    "need": "time",
    "place": "connections.planning",

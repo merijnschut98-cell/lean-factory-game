@@ -1012,7 +1012,8 @@ func _sync_people() -> void:
 	if people == null:
 		return
 	var world_facts := _facts()
-	_people_events.append_array(people.daily({"now": region.net.time, "facts": world_facts, "beats": missions.beats()}))
+	_people_events.append_array(people.daily({"now": region.net.time, "facts": world_facts, "beats": missions.beats(),
+		"training": missions.in_training()}))
 	var facts := people.facts(world_facts)
 	for fact: String in facts:
 		if fact.get_slice(":", 0) in People.FACT_KINDS:

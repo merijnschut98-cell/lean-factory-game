@@ -14,6 +14,9 @@ extends RefCounted
 const START_BASE := {"defender": 40, "cynic": 30, "craftsman": 40, "overloaded": 35, "rule_bound": 35, "quiet": 47,
 	"customer_upset": 25, "expert": 60, "mentor": 55}
 const MOOD_START := {"goed": 10, "neutraal": 0, "gespannen": -5, "stil": -5, "moe": -10}
+## The least morale anyone the player meets in the training week starts with (a friendly
+## first week, PLAN 2.13 D; content/dialogs.yaml people). Bad moods come later, with reasons.
+const FRIENDLY_MORALE := 55
 const TEAM_TRUST_WEIGHT := 10
 const START_MIN := 5
 const START_MAX := 80
@@ -398,7 +401,9 @@ func coach_question(main_id: String) -> Dictionary:
 ## After every action (world as for dialog_for): a prompt left unanswered
 ## PROMPT_DAYS expires (ignored); a check-in that can be had opens a prompt
 ## when the cadence allows, for the lowest morale first; the low-morale clock
-## runs; a partial agreement whose beats_after line came true speaks up.
+## runs; a partial agreement whose beats_after line came true speaks up. No
+## prompt opens while the training week runs (world `training`: a friendly first
+## week, PLAN 2.13 D; its scripted talks come by mission).
 ## Returns [{type: left, person}] for whoever leaves today and
 ## [{type: beat_line, person, name, dialog, text}] for each line said.
 func daily(world: Dictionary) -> Array[Dictionary]:
@@ -460,7 +465,7 @@ func _beat_lines(world: Dictionary) -> Array[Dictionary]:
 func _open_prompt(world: Dictionary) -> void:
 	var now := int(world.get("now", 0))
 	prompt_log.assign(prompt_log.filter(func(t: int) -> bool: return now - t < SimCalendar.days(7)))
-	if prompts.size() >= PROMPTS_AT_ONCE or prompt_log.size() >= PROMPTS_PER_WEEK:
+	if world.get("training", false) or prompts.size() >= PROMPTS_AT_ONCE or prompt_log.size() >= PROMPTS_PER_WEEK:
 		return
 	var known := facts(world.get("facts", {}))
 	var due := dialogs.values().filter(func(d: DialogDef) -> bool:

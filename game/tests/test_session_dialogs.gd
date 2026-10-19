@@ -36,7 +36,7 @@ func test_a_talk_opens_with_the_person_the_meter_and_the_moves() -> void:
 	var s := _silo()
 	var r := s.start_dialog("joost")
 	assert_eq([r["dialog"], r["name"], r["opening"]], ["joost_output_kpi", "Joost van Dijk", "Ik heb tien minuten. Morgen is het MT."])
-	assert_eq(r["meter"]["openness"], 35)
+	assert_eq(r["meter"]["openness"], 36, "his morale 56 (a friendly first week) adds one")
 	assert_eq(r["moves"].size(), Dialog.MOVES.size(), "every move, always")
 	assert_eq(s.start_dialog("joost"), {"error": "in_dialog"})
 	assert_eq(s.dialog_meter()["band_label"], "Op z'n hoede")

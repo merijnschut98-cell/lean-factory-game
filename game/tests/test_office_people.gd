@@ -135,6 +135,19 @@ func test_the_energy_bar_shows_only_when_the_session_says_someone_needs_a_talk()
 	office.free()
 
 
+## A friendly first week (PLAN 2.13 D): all Monday long nobody in the office shows the
+## energy bar or the check-in mark; the scripted talk (Anouk at seven) comes by mission.
+func test_on_monday_nobody_in_the_office_shows_the_energy_bar() -> void:
+	var office := _office(true)
+	for hour in 10:
+		office.session.pass_time(60)
+		office.people.refresh(office.session)
+		for p: OfficePerson in office.people.people:
+			assert_false(p.bar.visible or p.mark.visible, "%s at %s" % [p.id, office.session.clock_text()])
+	assert_eq(office.session.checkin_prompts(), [], "no check-in prompt in the training week")
+	office.free()
+
+
 func test_e_beside_a_person_opens_the_talk() -> void:
 	var office := _office()
 	office.session.missions.done_once["fix_unused_capacity"] = true
