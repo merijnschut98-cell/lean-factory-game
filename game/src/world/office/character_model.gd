@@ -24,6 +24,9 @@ const CONTACT := 0.02
 const FEET: Array[String] = ["LeftFoot", "LeftToes"]
 
 static var _paces := {}
+## The cast list as read, once (cast).
+static var _cast: Array[Dictionary] = []
+static var _cast_read := false
 
 
 static func path(id: String) -> String:
@@ -47,8 +50,17 @@ static func animations(model: Node) -> AnimationPlayer:
 	return model.find_children("*", "AnimationPlayer", true, false).pop_front() if model != null else null
 
 
-## The cast list's characters ([] when the file is missing or broken).
+## The cast list's characters ([] when the file is missing or broken). The file is read
+## once (it ships with the game); the list is the caller's, its entries are shared and
+## read-only.
 static func cast() -> Array[Dictionary]:
+	if not _cast_read:
+		_cast = _read_cast()
+		_cast_read = true
+	return _cast.duplicate()
+
+
+static func _read_cast() -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	var text := FileAccess.get_file_as_string(CAST)
 	var data: Variant = JSON.parse_string(text) if not text.is_empty() else null

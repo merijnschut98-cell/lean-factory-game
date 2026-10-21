@@ -66,7 +66,9 @@ var _trips: Dictionary[String, Dictionary] = {}
 var _late := {}
 var _late_day := -1
 var _late_for: Object
-## The coffee table's middle on this floor, or null; who stands at which place round it.
+## The coffee tables' middles on this floor (office space, on the floor), found once.
+var coffee_corners: Array[Vector3] = []
+## The coffee table people go to (the first corner), or null; who stands at which place round it.
 var _coffee: Variant = null
 var _at_coffee: Dictionary[int, String] = {}
 ## The ways onto this floor (WAYS_IN found) and the front door (or null).
@@ -388,8 +390,9 @@ func _find_places(at: Office) -> void:
 	for id in COFFEE_TABLES:
 		var table := at.find_marker(id)
 		if table != null:
-			_coffee = at.in_office(table).origin * Vector3(1, 0, 1)
-			break
+			coffee_corners.append(at.in_office(table).origin * Vector3(1, 0, 1))
+	if not coffee_corners.is_empty():
+		_coffee = coffee_corners[0]
 	var markers := at.floors.markers() if at.floors != null else {}
 	var on_floor := func(id: String) -> Vector3: return at.in_office(markers[id]).origin * Vector3(1, 0, 1)
 	for id in WAYS_IN:

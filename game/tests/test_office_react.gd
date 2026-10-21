@@ -144,6 +144,17 @@ func test_chatter_only_with_two_at_the_corner() -> void:
 	office.free()
 
 
+## The corners are found once when the floor loads, not every look round.
+func test_the_coffee_corners_are_found_once_per_floor() -> void:
+	var office := _office()
+	var corners := office.reactions.corner_points()
+	var table := office.find_marker("coffee_table")
+	table.get_parent().remove_child(table)
+	assert_eq(office.reactions.corner_points(), corners, "the floor is not searched again")
+	table.free()
+	office.free()
+
+
 func test_no_chatter_when_the_player_is_far_from_the_corner() -> void:
 	var office := _office()
 	var corner := office.reactions.corner_points()[0]

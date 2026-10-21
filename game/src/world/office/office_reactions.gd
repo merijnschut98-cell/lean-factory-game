@@ -11,9 +11,8 @@ extends Node
 
 ## Seconds between looks at who is near.
 const TICK := 0.25
-## The coffee corners: their table markers in the floor models (build_office.py), and how
-## far (m) from one a person still stands at it.
-const CORNERS: Array[String] = ["coffee_table", "coffee2_table"]
+## How far (m) from a coffee corner's table (OfficePeople.coffee_corners) a person still
+## stands at it.
 const CORNER_RADIUS := 2.0
 ## How close (m) the player must be to a corner to hear the chatter.
 const CHATTER_REACH := 4.0
@@ -94,14 +93,10 @@ func at_corner(corner: Vector3) -> Array[OfficePerson]:
 	return out
 
 
-## The coffee corners on the loaded floor (office space, on the floor).
+## The coffee corners on the loaded floor (office space, on the floor), as OfficePeople
+## found them when the floor loaded.
 func corner_points() -> Array[Vector3]:
-	var out: Array[Vector3] = []
-	for marker in CORNERS:
-		var node := office.find_marker(marker)
-		if node != null:
-			out.append(office.in_office(node).origin * Vector3(1, 0, 1))
-	return out
+	return office.people.coffee_corners if office.people != null else ([] as Array[Vector3])
 
 
 static func _floor_distance(a: Vector3, b: Vector3) -> float:
