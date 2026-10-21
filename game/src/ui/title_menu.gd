@@ -43,7 +43,7 @@ enum Page { MAIN, SETTINGS, WIPE, REPLACE, KEEP, OVERWRITE }
 
 var saves := SaveSlots.new()
 ## The settings file (tests point it elsewhere).
-var settings_path := SessionLog.SETTINGS
+var settings_path := Settings.PATH
 var page := Page.MAIN
 ## The saves' cards.
 var list: SaveList
@@ -265,7 +265,7 @@ func open_creator() -> CreatorScreen:
 	creator.build()
 	add_child(creator)
 	creator.done.connect(func(player: PlayerProfile) -> void:
-		SessionLog.from_settings(SessionLog.SETTINGS, saves.dir).write("Pasfoto gemaakt na %d s" %
+		SessionLog.from_settings(Settings.PATH, saves.dir).write("Pasfoto gemaakt na %d s" %
 			roundi((Time.get_ticks_msec() - creator.opened_ms) / 1000.0))
 		_launch("", player))
 	creator.cancelled.connect(close_creator)

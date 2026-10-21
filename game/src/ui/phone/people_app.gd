@@ -209,7 +209,7 @@ func _talks(card: VBoxContainer, talks: Array) -> void:
 		card.add_child(UiPanel.label("%s · %s" % [session.day_text(t["at"]), TalkView.outcome_name(session, t["outcome"])],
 			UiTheme.SMALL, Palette.MUTED))
 		var moves: Array[String] = []
-		moves.assign(t["moves"].map(func(m: String) -> String: return str(chips.get(m, m))))
+		moves.assign(t["moves"].map(func(m: Variant) -> String: return str(chips.get(m, m))))
 		var curve := TraceLine.new(Vector2(TRACE_WIDTH, 40 + 2 * TraceLine.LABEL_ROW))
 		curve.set_trace(t["trace"], moves)
 		card.add_child(curve)

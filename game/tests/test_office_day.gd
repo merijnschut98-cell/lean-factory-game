@@ -147,6 +147,49 @@ func test_lunch_is_walked_to_the_lift_and_in_the_kantine_never_jumped() -> void:
 	office.free()
 
 
+## Someone stopped mid-walk for a talk stands and talks; their day waits until the talk
+## (its summary too) is over, then they walk on.
+func test_someone_talked_with_on_the_way_stays_until_the_talk_is_over() -> void:
+	var office := _office()
+	var clock := Clock.new()
+	var rachid := office.people.person("rachid")
+	clock.minute = 11 * 60
+	office.people.refresh(clock)
+	clock.minute = office.people.day_of("rachid").lunch + 1
+	office.people.refresh(clock)
+	_run(office, rachid, 1.0)
+	assert_eq(rachid.pose, "walk", "on his way to lunch")
+	office.people.hold(rachid)
+	var stopped := rachid.position
+	assert_eq(rachid.pose, "idle", "he stops and stands")
+	_run(office, rachid, 2.0)
+	clock.minute += 20   # the talk's minutes pass while its summary still shows
+	_run(office, rachid, 2.0)
+	assert_near(rachid.position.distance_to(stopped), 0.0, 0.001, "he stays where he stopped")
+	assert_true(rachid.visible, "and stays on the floor")
+	office.people.release()
+	assert_true(office.people.held == null)
+	var trail := _run(office, rachid, 2.0)
+	assert_true(_moves(trail) > 5, "then he walks on")
+	assert_true(_longest_step(trail) <= rachid.pace * 0.1 + 0.05, "never a jump: %.2f m" % _longest_step(trail))
+	office.free()
+
+
+func test_a_walker_held_for_a_talk_stops_walking_his_round() -> void:
+	var office := _office()
+	var marco := office.people.person("marco")
+	office.people.hold(marco)
+	var stopped := marco.position
+	for i in 20:
+		marco._process(0.1)
+	assert_near(marco.position.distance_to(stopped), 0.0, 0.001, "Marco stands for the talk")
+	office.people.release()
+	for i in 5:
+		marco._process(0.1)
+	assert_true(marco.position.distance_to(stopped) > 0.1, "and walks his round again after")
+	office.free()
+
+
 func test_coffee_at_ten_at_the_coffee_corner() -> void:
 	var office := _office()
 	var clock := Clock.new()

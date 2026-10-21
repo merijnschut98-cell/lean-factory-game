@@ -257,8 +257,10 @@ func start(person_id: String, where: String = STANDING) -> String:
 
 
 ## Who is talked with in the world (null: nobody here, so a call), posed
-## for the band the talk is in now.
+## for the band the talk is in now. Someone staged before lets go of the talk.
 func stage(in_world: OfficePerson) -> void:
+	if person != null and person != in_world and is_instance_valid(person):
+		person.end_talk()
 	person = in_world
 	if person == null and not talk.is_empty():
 		setting = PHONE

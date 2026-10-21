@@ -78,8 +78,8 @@ var player := PlayerProfile.new()
 ## The first thing wrong with the content; "" when the game is usable.
 var error := ""
 ## What people said in passing today (Phase 2 §1.4): person id → the day they greeted
-## you; "a|b" → the day that pair chatted; how many quick lines were said (variety).
-## Not saved: after a reload the morning hello may come once more.
+## you; "a|b" → the day that pair chatted (saved: passing_to_dict); how many quick lines
+## were said (variety).
 var _greeted: Dictionary[String, int] = {}
 var _chatted: Dictionary[String, int] = {}
 var _quick_said := 0
@@ -892,6 +892,28 @@ func chatter(first: String, second: String) -> Array[String]:
 	if not out.is_empty():
 		_chatted[pair] = today
 	out.assign(out.map(fill_tokens))
+	return out
+
+
+## Today's greetings and chatter for the save, so "once a day" survives a reload.
+func passing_to_dict() -> Dictionary:
+	return {"greeted": _greeted.duplicate(), "chatted": _chatted.duplicate()}
+
+
+## Restore passing_to_dict() output, untrusted: an entry that is not id → day is
+## dropped; junk or an old save without it is nobody greeted yet.
+func load_passing(d: Variant) -> void:
+	var saved := JsonFile.dict_or_empty(d)
+	_greeted = _days_by_id(saved.get("greeted"))
+	_chatted = _days_by_id(saved.get("chatted"))
+
+
+static func _days_by_id(v: Variant) -> Dictionary[String, int]:
+	var out: Dictionary[String, int] = {}
+	var days := JsonFile.dict_or_empty(v)
+	for id: Variant in days:
+		if id is String and days[id] is int:
+			out[id] = days[id]
 	return out
 
 

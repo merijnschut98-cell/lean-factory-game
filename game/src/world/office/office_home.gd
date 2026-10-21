@@ -74,7 +74,7 @@ func poll() -> void:
 				want["%s:%s" % [ABSENT, id]] = Transform3D(Basis.IDENTITY, p.desk["at"])
 	_keep(want)
 	var day := SimCalendar.day_of(s.region.net.time)
-	if (minute >= LATE_FROM or minute < LATE_UNTIL) and not scripted and day != _noted_day:
+	if (minute >= LATE_FROM or minute < LATE_UNTIL) and not scripted and day != _noted_day and not office.world_waits():
 		_noted_day = day
 		office.ui.hud.toast(tr(LATE_NOTE))
 

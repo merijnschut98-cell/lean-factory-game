@@ -58,8 +58,8 @@ var skin := SKIN
 
 var _apps: Dictionary[String, PhoneApp] = {}
 var _icons: Dictionary[String, PhoneIcon] = {}
-## What new has been announced with a buzz ("<app>:<id>").
-var _announced: Dictionary[String, bool] = {}
+## What new has been announced with a buzz ("<app>:<id>"): the session layer's (setup).
+var _announced: Array[String] = []
 var _stage: Control
 var _frame: PanelContainer
 var _home: Control
@@ -161,6 +161,8 @@ func _make(id: String) -> PhoneApp:
 ## The apps' session and session layer (GameUI's).
 func setup(of_session: GameSession, of_layer: SessionLayer) -> void:
 	session = of_session
+	if of_layer != null:
+		_announced = of_layer.announced   # saved with the layer: no second buzz after a reload
 	for a: PhoneApp in _apps.values():
 		a.session = of_session
 		a.layer = of_layer
@@ -231,7 +233,7 @@ func announce() -> bool:
 		for item in _apps[id].unread():
 			var key := "%s:%s" % [id, item]
 			if not _announced.has(key):
-				_announced[key] = true
+				_announced.append(key)
 				fresh = true
 	return fresh
 

@@ -14,7 +14,7 @@ const LAYERS := {"position": "Standpunt", "interest": "Belang", "concern": "Zorg
 const LEARNED := "Wat je hoorde"
 const ENDED := "Openheid aan het eind: %s"
 const MOOD := "Stemming: %s"
-const NEW_CLUE := "Een nieuwe aanwijzing staat in je journaal (J)."
+const NEW_CLUE := "Een nieuwe aanwijzing staat in Notities op je telefoon."
 const ROUTES := "Wat zou helpen"
 ## Under the outcome: what an agreement under condition still waits for.
 const STILL_NEEDED := "Wat nog moet: %s"

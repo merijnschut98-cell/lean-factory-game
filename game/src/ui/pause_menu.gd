@@ -33,7 +33,7 @@ enum Page { MAIN, SLOTS, CONFIRM }
 ## The saves (the game's own folder; tests point it elsewhere).
 var saves: SaveSlots
 ## The settings file (tests point it elsewhere).
-var settings_path := SessionLog.SETTINGS
+var settings_path := Settings.PATH
 var page := Page.MAIN
 ## The slot waiting for the overwrite answer.
 var pending := 0

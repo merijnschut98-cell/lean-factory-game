@@ -78,3 +78,12 @@ def test_a_banned_word_in_a_greeting_fails_the_build(real):
     docs["dialogs"]["greetings"]["sanne"]["day"][0] = "Hoi {speler}, klaar voor het volgende level?"
     with pytest.raises(bc.ContentError, match="greetings.*names the game"):
         bc.check_spoken(docs)
+
+
+@pytest.mark.parametrize("characters", [["sanne"], [None], [{"name": "zonder id"}], "sanne"])
+def test_a_damaged_cast_is_a_content_error(tmp_path, monkeypatch, characters):
+    cast = tmp_path / "cast.json"
+    cast.write_text(json.dumps({"characters": characters}), encoding="utf-8")
+    monkeypatch.setattr(bc, "CAST_FILE", cast)
+    with pytest.raises(bc.ContentError, match="cannot read the cast"):
+        bc._cast_ids()

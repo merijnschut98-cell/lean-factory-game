@@ -17,7 +17,7 @@ const SOUND := "Geluid"
 const LOG := "Speellogboek bijhouden (alleen op deze computer, nooit verstuurd)"
 
 ## The settings file (GameUI's; tests point it elsewhere).
-var settings_path := SessionLog.SETTINGS
+var settings_path := Settings.PATH
 
 
 func refresh() -> void:

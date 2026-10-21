@@ -9,7 +9,6 @@ extends RefCounted
 ## choice lives in the settings file.
 
 const PATH := "user://saves/playtest_log.txt"
-const SETTINGS := Settings.PATH
 const _SECTION := "privacy"
 const _KEY := "playtest_log"
 ## A log past this size starts a new file; the previous one is kept once
@@ -27,11 +26,11 @@ func _init(log_path: String = PATH, on: bool = true) -> void:
 
 
 ## The log in a saves folder, as the settings say (on unless switched off).
-static func from_settings(settings: String = SETTINGS, saves_dir: String = SaveFile.DIR) -> SessionLog:
+static func from_settings(settings: String = Settings.PATH, saves_dir: String = SaveFile.DIR) -> SessionLog:
 	return SessionLog.new(saves_dir.path_join(PATH.get_file()), enabled_in(settings))
 
 
-static func enabled_in(settings: String = SETTINGS) -> bool:
+static func enabled_in(settings: String = Settings.PATH) -> bool:
 	return Settings.get_bool(_SECTION, _KEY, true, settings)
 
 

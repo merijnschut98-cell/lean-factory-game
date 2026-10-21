@@ -40,6 +40,10 @@ const ALWAYS_AT_DESK := {"place": OfficeDay.DESK, "since": -SimCalendar.MINUTES_
 const ALWAYS_OUT := {"place": OfficeDay.OUT, "since": -SimCalendar.MINUTES_PER_DAY}
 
 var people: Array[OfficePerson] = []
+## Who is in a talk with the player (Office.frame_talk), or null: they stay for it.
+var held: OfficePerson
+## Whether holding them stopped them on their way (release walks them on).
+var _stopped := false
 ## The floor areas (x, z) of the floor's shut rooms (OfficeFloors.shut_rects).
 var shut: Array[Rect2] = []
 ## Each person's day by id.
@@ -62,7 +66,9 @@ var _trips: Dictionary[String, Dictionary] = {}
 var _late := {}
 var _late_day := -1
 var _late_for: Object
-## The coffee table's middle on this floor, or null; who stands at which place round it.
+## The coffee tables' middles on this floor (office space, on the floor), found once.
+var coffee_corners: Array[Vector3] = []
+## The coffee table people go to (the first corner), or null; who stands at which place round it.
 var _coffee: Variant = null
 var _at_coffee: Dictionary[int, String] = {}
 ## The ways onto this floor (WAYS_IN found) and the front door (or null).
@@ -139,6 +145,38 @@ func person_under(origin: Vector3, direction: Vector3) -> OfficePerson:
 	return best
 
 
+## `p` is in a talk with the player (null: nobody here, a call); whoever was before lets
+## go. Their day waits while the talk lasts: someone on their way stops where they are and
+## stands, a walker stops their round.
+func hold(p: OfficePerson) -> void:
+	if p == held:
+		return
+	release()
+	held = p
+	if p == null:
+		return
+	p.hold()
+	if _trips.has(p.id):
+		_trips.erase(p.id)
+		_stopped = true
+		p.settle({"at": p.position, "face": -p.basis.z, "pose": "idle"})
+
+
+## The talk is over: who was held drops the talk's posture and goes back to their day,
+## walking on from where they stopped.
+func release() -> void:
+	var p := held
+	var stopped := _stopped
+	held = null
+	_stopped = false
+	if p == null or not is_instance_valid(p):
+		return
+	p.end_talk()
+	if stopped and _session != null:
+		var minute := _minute_of(_session)
+		_go(p, _where(p, minute) if minute >= 0 else ALWAYS_AT_DESK, minute, true)
+
+
 ## Name tags on for these people only.
 func show_tags(on: Array[OfficePerson]) -> void:
 	for p in people:
@@ -158,18 +196,24 @@ func refresh(session: Object) -> void:
 		active = session.call("active_missions").map(func(m: MissionDef) -> String: return m.id)
 	var missions: Variant = session.get("missions")
 	var done: Dictionary = missions.done_once if missions is Missions else {}
-	var minute: int = session.call("minute_of_day") if session.has_method("minute_of_day") else -1
+	var minute := _minute_of(session)
 	if minute >= 0:
 		_decide_late(session)
 	var energy := session.has_method("energy_of")
 	for p in people:
 		var where := _where(p, minute) if minute >= 0 else ALWAYS_AT_DESK
-		_go(p, where, minute)
+		if p != held:
+			_go(p, where, minute)
 		p.at_lunch = where["place"] == OfficeDay.LUNCH and p.lunch is Dictionary
 		var shut_out := not _trips.has(p.id) and _behind_shut_door(p.position)
 		p.visible = _here.get(p.id, false) and p.present_for(active, done) and not shut_out
 		var state: Variant = session.call("energy_of", p.id) if energy and p.visible else {}
 		p.show_energy(state if state is Dictionary else {})
+
+
+## The session's minute of the day; -1 when it keeps no clock.
+static func _minute_of(session: Object) -> int:
+	return session.call("minute_of_day") if session.has_method("minute_of_day") else -1
 
 
 ## Where `person` is by their day at `minute` (OfficeDay's places: out, desk, coffee, lunch).
@@ -203,10 +247,11 @@ func _decide_late(session: Object) -> void:
 
 
 ## To the place `where` names: walked when the clock has just reached it, else simply
-## there (the first refresh, a jump of the clock).
-func _go(p: OfficePerson, where: Dictionary, minute: int) -> void:
+## there (the first refresh, a jump of the clock). `walk_on`: walked from where they stand
+## whatever the clock did (someone a talk stopped on their way).
+func _go(p: OfficePerson, where: Dictionary, minute: int, walk_on := false) -> void:
 	var place: String = where["place"]
-	if place == _place.get(p.id, ""):
+	if place == _place.get(p.id, "") and not walk_on:
 		var trip: Variant = _trips.get(p.id)
 		if trip != null and (minute - int(trip["started"]) >= OfficeDay.WALK_WINDOW or minute < int(trip["started"])):
 			_finish(p)
@@ -219,7 +264,7 @@ func _go(p: OfficePerson, where: Dictionary, minute: int) -> void:
 		_at_coffee.erase(stood)
 	var to := _spot_for(p, place)
 	var age := minute - int(where["since"])
-	if first or age < 0 or age >= OfficeDay.WALK_WINDOW or office == null:
+	if office == null or (not walk_on and (first or age < 0 or age >= OfficeDay.WALK_WINDOW)):
 		_arrive(p, to)
 	else:
 		_walk(p, to, minute, by_door)
@@ -345,8 +390,9 @@ func _find_places(at: Office) -> void:
 	for id in COFFEE_TABLES:
 		var table := at.find_marker(id)
 		if table != null:
-			_coffee = at.in_office(table).origin * Vector3(1, 0, 1)
-			break
+			coffee_corners.append(at.in_office(table).origin * Vector3(1, 0, 1))
+	if not coffee_corners.is_empty():
+		_coffee = coffee_corners[0]
 	var markers := at.floors.markers() if at.floors != null else {}
 	var on_floor := func(id: String) -> Vector3: return at.in_office(markers[id]).origin * Vector3(1, 0, 1)
 	for id in WAYS_IN:

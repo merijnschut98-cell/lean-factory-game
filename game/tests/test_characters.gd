@@ -83,6 +83,15 @@ func test_the_cast_lists_everyone_once_with_a_look() -> void:
 		assert_true(entry.get("look") is Dictionary, "%s has a look for the builder" % entry["id"])
 
 
+## The cast file is read once (the office's polls ask for it twice a second).
+func test_the_cast_is_read_once() -> void:
+	var first := CharacterModel.cast()
+	var again := CharacterModel.cast()
+	assert_true(is_same(first[0], again[0]), "the same entries, not a new parse")
+	again.clear()
+	assert_false(CharacterModel.cast().is_empty(), "a caller's list is its own")
+
+
 func test_each_character_has_its_own_loops_and_nothing_else() -> void:
 	for model in _models():
 		var animations := CharacterModel.animations(model)
