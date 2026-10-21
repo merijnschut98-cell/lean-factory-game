@@ -51,6 +51,9 @@ const MORNING_FADE := 4.0
 ## A layer this quiet is off.
 const SILENT_DB := -60.0
 
+## The audio settings as last read or set, by settings file (_audio).
+static var _kept := {}
+
 var settings_path := Settings.PATH
 var office: Office
 ## Layer id → its looping player.
@@ -79,24 +82,41 @@ func _init() -> void:
 # ── Settings ────────────────────────────────────────────────────────────────
 
 static func master(path: String = Settings.PATH) -> float:
-	return clampf(Settings.get_float(SECTION, "master", MASTER_DEFAULT, path), 0.0, 1.0)
+	return _audio(path)["master"]
 
 
 static func muted(path: String = Settings.PATH) -> bool:
-	return Settings.get_bool(SECTION, "muted", false, path)
+	return _audio(path)["muted"]
 
 
-## "" or what went wrong.
+## Forget what was read from `path`: the next look reads the file again.
+static func reload_settings(path: String = Settings.PATH) -> void:
+	_kept.erase(path)
+
+
+## "" or what went wrong. Heard at once, also when the file could not be written.
 static func set_master(value: float, path: String = Settings.PATH) -> String:
-	return Settings.set_value(SECTION, "master", clampf(value, 0.0, 1.0), path)
+	_audio(path)["master"] = clampf(value, 0.0, 1.0)
+	return Settings.set_value(SECTION, "master", _audio(path)["master"], path)
 
 
 static func set_muted(on: bool, path: String = Settings.PATH) -> String:
+	_audio(path)["muted"] = on
 	return Settings.set_value(SECTION, "muted", on, path)
 
 
-## The settings' controls (title menu Instellingen, pause menu): "Geluid uit" and a volume
-## slider, each writing its setting as it changes.
+## The audio settings of `path` as last read or set ({muted, master}): footsteps and the
+## bed's poll read these, never the file.
+static func _audio(path: String) -> Dictionary:
+	if not _kept.has(path):
+		_kept[path] = {"muted": Settings.get_bool(SECTION, "muted", false, path),
+			"master": clampf(Settings.get_float(SECTION, "master", MASTER_DEFAULT, path), 0.0, 1.0)}
+	return _kept[path]
+
+
+## The settings' controls (title menu Instellingen, pause menu, the phone): "Geluid uit"
+## and a volume slider. The volume is heard as the slider moves and written when it is let
+## go; a key's step is written at once.
 static func settings_controls(path: String = Settings.PATH) -> Array[Control]:
 	var box := CheckBox.new()
 	box.text = MUTE_LABEL   # a Button translates its own text
@@ -112,7 +132,17 @@ static func settings_controls(path: String = Settings.PATH) -> Array[Control]:
 	slider.step = 0.05
 	slider.value = master(path)
 	slider.custom_minimum_size.x = 200
-	slider.value_changed.connect(func(v: float) -> void: _warn(set_master(v, path)))
+	var dragging := [false]   # shared with the lambdas
+	slider.drag_started.connect(func() -> void: dragging[0] = true)
+	slider.drag_ended.connect(func(changed: bool) -> void:
+		dragging[0] = false
+		if changed:
+			_warn(set_master(slider.value, path)))
+	slider.value_changed.connect(func(v: float) -> void:
+		if dragging[0]:
+			_audio(path)["master"] = clampf(v, 0.0, 1.0)
+		else:
+			_warn(set_master(v, path)))
 	row.add_child(slider)
 	return [box, row]
 

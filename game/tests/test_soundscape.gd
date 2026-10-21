@@ -10,6 +10,15 @@ var path := scratch("soundscape_settings.cfg")
 
 func _cleanup() -> void:
 	DirAccess.remove_absolute(path)
+	Soundscape.reload_settings(path)
+
+
+## The file as another program would change it, behind the soundscape's back.
+func _write_behind(muted: bool) -> void:
+	var config := ConfigFile.new()
+	config.load(path)
+	config.set_value(Soundscape.SECTION, "muted", muted)
+	config.save(path)
 
 
 func test_the_bed_is_louder_at_ten_than_at_half_past_six() -> void:
@@ -140,4 +149,47 @@ func test_going_home_hushes_the_bed_until_the_morning() -> void:
 	assert_false(scape.hushed)
 	assert_true(scape.layers["keys"].playing, "the morning office")
 	host.free()
+	_cleanup()
+
+
+## Footsteps and the bed's poll read the settings kept in memory, not the file each time;
+## a change through the settings is heard at once, a reload picks up the file.
+func test_footsteps_do_not_read_the_settings_file() -> void:
+	_cleanup()
+	var host := Node.new()
+	(Engine.get_main_loop() as SceneTree).root.add_child(host)
+	var scape := Soundscape.new()
+	scape.settings_path = path
+	host.add_child(scape)
+	assert_true(scape.step(Vector3.ZERO, "first") != null, "a step sounds")
+	_write_behind(true)
+	for i in 20:
+		assert_true(scape.step(Vector3.ZERO, "first") != null, "no file read for step %d" % i)
+	scape.apply_bed(10 * 60, 1.0)
+	assert_true(scape.layers["murmur"].playing, "nor for the bed")
+	Soundscape.reload_settings(path)
+	assert_eq(scape.step(Vector3.ZERO, "first"), null, "reloaded: muted")
+	assert_eq(Soundscape.set_muted(false, path), "")
+	assert_true(scape.step(Vector3.ZERO, "first") != null, "the setting is heard at once")
+	host.free()
+	_cleanup()
+
+
+## Dragging the volume slider is heard as it moves and written once, when let go.
+func test_the_volume_is_written_when_the_slider_is_let_go() -> void:
+	_cleanup()
+	Soundscape.set_master(0.5, path)
+	var controls := Soundscape.settings_controls(path)
+	for c in controls:
+		(Engine.get_main_loop() as SceneTree).root.add_child(c)
+	var slider: HSlider = controls[1].find_children("*", "HSlider", true, false)[0]
+	slider.drag_started.emit()
+	slider.value = 0.3
+	slider.value = 0.25
+	assert_eq(Soundscape.master(path), 0.25, "heard while dragging")
+	assert_eq(Settings.get_float(Soundscape.SECTION, "master", -1.0, path), 0.5, "not written per step")
+	slider.drag_ended.emit(true)
+	assert_eq(Settings.get_float(Soundscape.SECTION, "master", -1.0, path), 0.25, "written when let go")
+	for c in controls:
+		c.free()
 	_cleanup()
