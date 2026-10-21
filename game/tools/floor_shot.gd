@@ -81,7 +81,7 @@ func _play(view: String) -> void:
 			office.rig.distance = CameraRig.MAX_DISTANCE
 			office.rig.snap()
 			if parts[0] == "map":
-				office.ui.toggle_map()
+				office.ui.toggle_phone(Phone.MAP)
 		"lift":
 			office.player.position = office.interactable("lift").position
 			office.rig.snap()

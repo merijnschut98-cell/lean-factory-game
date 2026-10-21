@@ -29,17 +29,15 @@ func test_the_content_holds_a_card_for_every_listening_move_and_the_friday_card(
 	assert_true(null in moves, "the Friday card names a skill, not a move")
 
 
-## Monday morning: Ruud's note with Monday's card(s), not Tuesday's, in the journal (J),
-## announced by one quiet toast; nothing of it on screen (PLAN 2.13 C).
-func test_the_morning_brings_ruuds_note_with_the_days_moves_into_the_journal() -> void:
+## Monday morning: Ruud's note with Monday's card(s), not Tuesday's, in the phone's
+## Berichten, announced by its badge; nothing of it on screen (PLAN 2.13 C, 2.14 S1-F).
+func test_the_morning_brings_ruuds_note_with_the_days_moves_into_berichten() -> void:
 	var office := _training_office()
 	var s := office.session
 	var ui := office.ui
-	var toasts := func() -> Array: return ui.hud.toast_texts().filter(func(t: String) -> bool: return t == ui.tr(GameUI.NOTE_TOAST))
-	assert_eq(toasts.call().size(), 1, "one quiet toast")
-	assert_false(ui.hud.card_texts().any(func(t: String) -> bool: return t.begins_with(ClueJournal.NOTE_HEADING.left(8))),
-		"no note over the world")
-	var notes := ClueJournal.notes(s, ui.session_layer)
+	assert_eq(ui.phone.badge(Phone.MESSAGES), 1, "one note waits")
+	assert_false(ui.hud.toast_texts().any(func(t: String) -> bool: return t.contains("Ruud")), "no note over the world")
+	var notes := PhoneMessages.notes(s, ui.session_layer)
 	assert_eq(notes.size(), 1, "one note from Ruud")
 	var note := "\n".join(notes[0]["lines"])
 	for card: Dictionary in _cards_of(s, "training_mon"):
@@ -49,10 +47,9 @@ func test_the_morning_brings_ruuds_note_with_the_days_moves_into_the_journal() -
 	assert_true(note.contains(s.tool_card("conversation")["title"]), "the day's new tool (PLAN 2.12)")
 	assert_false(note.contains(s.tool_card("shadow")["title"]), "not Tuesday's tools")
 	ui.after_action()
-	assert_eq(toasts.call().size(), 1, "once a day")
-	ui.toggle_journal()
-	assert_eq(ui.journal.tab, ClueJournal.NOTES, "J opens on the new note")
-	assert_true(shows(ui.journal, notes[0]["lines"][0]), "the note in the journal")
+	assert_eq(PhoneMessages.notes(s, ui.session_layer).size(), 1, "once a day")
+	ui.toggle_phone(Phone.MESSAGES)
+	assert_true(shows(ui.phone.app(Phone.MESSAGES), notes[0]["lines"][0]), "the note in Berichten")
 	office.free()
 
 
@@ -60,7 +57,7 @@ func test_the_morning_brings_ruuds_note_with_the_days_moves_into_the_journal() -
 func test_the_codex_keeps_the_cards_of_the_days_reached() -> void:
 	var office := _training_office()
 	var s := office.session
-	office.ui.toggle_codex()
+	office.ui.toggle_phone(Phone.CODEX)
 	office.ui.codex.show_tab(CodexPanel.TALKS)
 	for card: Dictionary in _cards_of(s, "training_mon"):
 		assert_true(shows(office.ui.codex, card["title"]))

@@ -713,9 +713,7 @@ func _add_player() -> void:
 	player.interact_pressed.connect(func() -> void:
 		if not world_waits():
 			use(target_near(player.position)))
-	player.journal_pressed.connect(func() -> void: ui.toggle_journal())
-	player.map_pressed.connect(func() -> void: ui.toggle_map())
-	player.codex_pressed.connect(func() -> void: ui.toggle_codex())
+	player.phone_pressed.connect(func(app: String) -> void: ui.toggle_phone(app))
 	player.escape_pressed.connect(func() -> void:
 		player.stop()
 		ui.escape())

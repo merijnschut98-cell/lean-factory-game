@@ -212,14 +212,14 @@ func test_over_bad_content_the_keys_do_nothing_and_the_error_stays() -> void:
 	office.data_dir = "res://does_not_exist"
 	office.build()
 	assert_ne(office.session.error, "")
-	office.player.journal_pressed.emit()
+	office.player.phone_pressed.emit(Phone.NOTES)
 	office.player.interact_pressed.emit()
 	office.player.escape_pressed.emit()
 	office.ui.open_a3()
 	office.ui.open_coach()
 	office.ui.open_mission_board()
 	office.ui.open_place("connections.design")
-	office.ui.toggle_map()
+	office.ui.toggle_phone(Phone.MAP)
 	assert_false(office.ui.is_busy(), "no panel opens")
 	assert_true(office.ui.hud.prompt_label.text.begins_with("De inhoud kon niet worden geladen"), "the error stays")
 	assert_true(office.ui.hud.prompt_label.visible)
@@ -315,7 +315,7 @@ func test_the_mouse_stays_free_and_esc_closes_a_panel() -> void:
 	assert_false("mouse_captured" in office, "no mouse capture in third person")
 	assert_false("mouse_hint" in office.ui.hud, "no hint to catch the mouse again")
 	assert_eq(office.ui.hud.controls_text(),
-		"WASD/klik lopen   ·   Shift rennen   ·   Z/C draaien   ·   wiel zoomen   ·   E gebruiken   ·   J aanwijzingen   ·   M kaart   ·   K begrippen")
+		"WASD/klik lopen   ·   Shift rennen   ·   Z/C draaien   ·   wiel zoomen   ·   E gebruiken   ·   Tab telefoon")
 	office.player.escape_pressed.emit()
 	assert_false(office.ui.is_busy(), "Esc with nothing open does nothing")
 	office.interact(office.interactable("coach"))
@@ -396,19 +396,18 @@ func test_skipping_the_week_asks_first() -> void:
 	_close(office)
 
 
-func test_a_training_day_shows_its_glossary_card_once() -> void:
+## A training day's concepts wait in the phone's Begrippen (PLAN 2.14 S1-F: no
+## card over the world), readable there with their short text.
+func test_a_training_days_concepts_wait_in_begrippen() -> void:
 	var office := _training_office()
-	var hud := office.ui.hud
+	var ui := office.ui
 	var def: ConceptDef = office.session.catalog.concepts["netbeheerder"]
-	var glossary := func() -> Array: return hud.card_texts().filter(func(t: String) -> bool: return t.begins_with("Nieuwe begrippen"))
-	var cards: Array = glossary.call()
-	assert_eq(cards.size(), 1, "Monday's card")
-	assert_true(cards[0].contains(def.name) and cards[0].contains(def.short), "name and short text")
-	assert_true(cards[0].contains("K voor alle begrippen"))
-	office.ui.after_action()
-	assert_eq(glossary.call().size(), 1, "shown once")
-	assert_false(hud.toast_texts().any(func(t: String) -> bool: return t.begins_with("Nieuw begrip")),
-		"the card stands in for the toasts")
+	assert_true("netbeheerder" in (ui.phone.app(Phone.CODEX) as CodexApp).unread(), "Monday's concept badges it")
+	ui.toggle_phone(Phone.CODEX)
+	assert_true(shows(ui.codex, def.name) and shows(ui.codex, def.short), "name and short text")
+	ui.after_action()
+	assert_eq(ui.phone.badge(Phone.CODEX), 0, "seen once")
+	assert_false(ui.hud.toast_texts().any(func(t: String) -> bool: return t.begins_with("Nieuw begrip")), "no toasts")
 	_close(office)
 
 
@@ -429,7 +428,7 @@ func test_the_training_week_is_played_through_the_ui() -> void:
 	ui.dialog_panel.close_talk()
 	ui.close_panels()
 	assert_eq(Objective.of(s)["mission"], "training_tue")
-	assert_true(ui.hud.card_texts().any(func(t: String) -> bool: return t.contains("Gemba")), "Tuesday's card")
+	assert_eq(PhoneMessages.notes(s, ui.session_layer)[0]["mission"], "training_tue", "Tuesday's note")
 	# Tuesday: two tools at Werkvoorbereiding, the two handed out today.
 	ui.place_menu.use_tool("shadow")
 	ui.place_menu.use_tool("documents")
@@ -439,7 +438,9 @@ func test_the_training_week_is_played_through_the_ui() -> void:
 	assert_true(ui.place_menu.use_tool("queue_count").contains("dossiers"), "counting shows the count")
 	office.interact(office.interactable(DESIGN))
 	ui.place_menu.use_tool("queue_count")
-	var lesson := ui.hud.card_texts().filter(func(t: String) -> bool: return t.contains("wacht het werk het langst"))
+	ui.toggle_phone(Phone.MESSAGES)
+	var lesson := texts_in(ui.phone.app(Phone.MESSAGES)).filter(func(t: String) -> bool: return t.contains("wacht het werk het langst"))
+	ui.close_panels()
 	assert_eq(lesson.size(), 1, "the debrief reports the measured queues")
 	assert_true(lesson[0].contains("langst bij Werkvoorbereiding & ontwerp"), lesson[0])
 	# Thursday: the practice A3 at the bottleneck Wednesday found, with a three-day Check.

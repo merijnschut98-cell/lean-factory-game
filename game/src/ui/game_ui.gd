@@ -1,10 +1,11 @@
 class_name GameUI
 extends CanvasLayer
 ## Everything on screen over the 3D office: the HUD and one panel at a time
-## (mission board, a team's place, the A3, the Check, the coach, the clue
-## journal, the map, the codex). The world asks it to open a panel; the panels act on the
-## session, and after each action the HUD refreshes and events show as
-## toasts.
+## (mission board, a team's place, the A3, the Check, the coach, the talk) or
+## the player's phone (Phone: the notes, the map, the codex, the people, the
+## messages, the missions, the settings). The world asks it to open a panel or
+## raise the phone; they act on the session, and after each action the HUD
+## refreshes, events show as toasts and what is new reaches the phone.
 
 signal panel_opened
 signal panels_closed
@@ -17,8 +18,6 @@ signal pause_changed(on: bool)
 
 ## A person asked in the office who has nothing to talk about now.
 const NOTHING_TO_SAY := "%s knikt je toe en werkt door."
-## Ruud's morning note on a training day lands in the journal (J); one quiet toast says so.
-const NOTE_TOAST := "Nieuw briefje van Ruud — J"
 
 var session: GameSession
 var hud: Hud
@@ -27,6 +26,9 @@ var place_menu: PlaceMenu
 var a3_form: A3Form
 var check_panel: CheckPanel
 var coach_panel: CoachPanel
+## The player's phone (PLAN 2.14 S1-F); the journal, the map and the codex live
+## in its apps (Notities, Kaart, Begrippen) and never open on their own.
+var phone: Phone
 var journal: ClueJournal
 var office_map: OfficeMap
 var codex: CodexPanel
@@ -39,7 +41,11 @@ var intussen: IntussenPanel
 var pause_menu: PauseMenu
 ## Off until the real game starts (begin_play), so tests write no log.
 var playtest_log := SessionLog.new(SessionLog.PATH, false)
-var settings_path := SessionLog.SETTINGS
+var settings_path := SessionLog.SETTINGS:
+	set(value):
+		settings_path = value
+		if phone != null:
+			(phone.app(Phone.SETTINGS) as SettingsApp).settings_path = value
 ## The saves (PLAN 2.7): the game saves itself into the autosave at every
 ## dagstart and on closing, and the pause menu into the five slots; null
 ## saves nothing (tests, tools).
@@ -53,8 +59,6 @@ var _running: Dictionary[String, bool] = {}
 ## Missions taken on this session → when (real ms), until their first key clue.
 var _accepted_ms: Dictionary[String, int] = {}
 var _panels: Array[UiPanel] = []
-## The concepts already known, to toast only new ones.
-var _known_concepts := PackedStringArray()
 
 
 ## `of_layer`: a saved game's session layer (its snapshot opens the
@@ -77,14 +81,15 @@ func setup(of_session: GameSession, of_layer: SessionLayer = null) -> void:
 	a3_form = A3Form.new()
 	check_panel = CheckPanel.new()
 	coach_panel = CoachPanel.new()
-	journal = ClueJournal.new()
-	office_map = OfficeMap.new()
-	codex = CodexPanel.new()
+	phone = Phone.new()
+	journal = (phone.app(Phone.NOTES) as NotesApp).journal
+	office_map = (phone.app(Phone.MAP) as MapApp).map
+	codex = (phone.app(Phone.CODEX) as CodexApp).codex
 	dialog_panel = DialogPanel.new()
 	terugblik = TerugblikCard.new()
 	intussen = IntussenPanel.new()
 	pause_menu = PauseMenu.new()
-	_panels = [mission_board, place_menu, a3_form, check_panel, coach_panel, journal, office_map, codex, terugblik, intussen,
+	_panels = [mission_board, place_menu, a3_form, check_panel, coach_panel, phone, terugblik, intussen,
 		dialog_panel, pause_menu]
 	_setup_session_layer(of_layer)
 	for p in _panels:
@@ -105,7 +110,8 @@ func setup(of_session: GameSession, of_layer: SessionLayer = null) -> void:
 		resume()   # the title menu must not start paused
 		title_requested.emit())
 	root.move_child(hud, -1)
-	_known_concepts = session.region.profile.concepts.duplicate()
+	phone.buzz.connect(hud.buzz)
+	phone.badges_changed.connect(func() -> void: hud.phone_status(phone.unread_count()))
 	after_action()
 
 
@@ -226,30 +232,44 @@ func save_to(number: int) -> void:
 		hud.toast(tr(SAVE_FAILED) % error)
 
 
-func toggle_journal() -> void:
-	if hud.may_show("journal"):   # each key works from its moment on (2.7d §3)
-		_toggle(journal)
-
-
-func toggle_map() -> void:
-	if hud.may_show("map"):
-		_toggle(office_map)
-
-
-func toggle_codex() -> void:
-	if hud.may_show("codex"):
-		_toggle(codex)
-
-
-## J, M and K; never mid-talk (review B1: hiding the talk let the next
-## press end it unseen).
-func _toggle(panel: UiPanel) -> void:
-	if not playable() or dialog_panel.talking():
+## Tab (`app` HOME), or J, M and K (Notities, Kaart, Begrippen): raise the
+## phone on that app, switch to it, or lower the phone when it already shows
+## (or for Tab). Each app from its moment on (Opening.hud, 2.7d §3); never
+## mid-talk (review B1: hiding the talk let the next press end it unseen).
+func toggle_phone(app := Phone.HOME) -> void:
+	if not playable() or dialog_panel.talking() or not phone.may_open(app):
 		return
-	if panel.visible:
+	if phone.visible and (app == Phone.HOME or app == phone.current):
 		close_panels()
-	else:
-		_open(panel)
+		return
+	var raising := not phone.visible
+	if raising:
+		phone.current = Phone.HOME
+		phone.skin = CreatorLook.skin_of(session.player.look)   # your own hand ("Uiterlijk" may have changed it)
+		_open(phone)
+	phone.open_app(app)
+	if raising:
+		phone.slide_in()   # to where the app holds it (the map: sideways)
+
+
+## The lift: the phone's map as the floor switch that takes you there.
+func open_lift() -> void:
+	if not playable():
+		return
+	office_map.lift = true
+	if phone.visible and phone.current == Phone.MAP:
+		phone.refresh()
+		return
+	phone.revealed = {}   # the lift's floors need no moment
+	phone.current = Phone.HOME
+	_open(phone)
+	phone.open_app(Phone.MAP)
+	phone.revealed = hud.revealed
+
+
+## The panels over the world (the phone among them).
+func panels() -> Array[UiPanel]:
+	return _panels
 
 
 ## The share of the screen's width an open docked panel covers (the team's
@@ -293,10 +313,14 @@ func journal_lines() -> Array[String]:
 	return out
 
 
-## After every action: the HUD follows the session and new events show: a
-## training day's debrief and glossary card as cards, the rest as toasts.
+## After every action: the HUD follows the session and new events show as
+## toasts; what reaches the phone (a training day's note and debrief, new
+## concepts) badges its app and buzzes it once, never during the first day's
+## scene (it buzzes when the scene is over).
 func after_action() -> void:
-	hud.reveal(Opening.hud(session, session_layer))
+	var shown := Opening.hud(session, session_layer)
+	hud.reveal(shown)
+	phone.revealed = shown
 	hud.refresh()
 	var names := {}
 	for m: MissionDef in session.missions.defs.values():
@@ -310,68 +334,44 @@ func after_action() -> void:
 		if not text.is_empty() and not Opening.running(session_layer):   # the first day is one scene (2.7d)
 			hud.toast(text)
 		if e["type"] == "completed":
-			_debrief_card(session.missions.defs[e["mission"]], e)
+			_debrief_message(session.missions.defs[e["mission"]], e)
 		_session_event(e)
 	for m in session.missions.active("training"):
 		if not m.id in session_layer.carded:   # a training day's morning, once a game
 			session_layer.carded.append(m.id)
-			if not Opening.running(session_layer):   # the first day speaks its card (2.7d B5)
-				_glossary_card(m)
-				_note_arrived(m)
-	for text in new_concept_toasts():
-		if not Opening.running(session_layer):
-			hud.toast(text)
+	_phone_beat()
 	_session_beat()
 
 
-## A finished training day: the coach's debrief, with what the player
-## measured (the solve day's debrief shows with its score on the Check).
-func _debrief_card(m: MissionDef, e: Dictionary) -> void:
+## A finished training day: the coach's debrief in Berichten, with what the
+## player measured (the solve day's debrief shows with its score on the Check).
+func _debrief_message(m: MissionDef, e: Dictionary) -> void:
 	if m.kind != "training" or m.goal_type == "solve" or Opening.running(session_layer):
 		return   # the first day's debrief is Ruud's Tuesday line (2.7d §4)
-	var lines: Array[String] = ["'%s'" % session.mission_debrief(m.id)]
-	if e.has("queues"):
-		var place_names := {}
-		for place: String in e["queues"]:
-			place_names[place] = session.region.net.step_at(place).name
-		lines.append(UiText.queue_lesson(e["queues"], place_names))
-	hud.show_card(str(session.catalog.coach.get("name", "Coach")), lines)
+	PhoneMessages.push(session_layer, PhoneMessages.DEBRIEF + m.id, session.region.net.time,
+		{"queues": e["queues"]} if e.has("queues") else {})
 
 
-## A training day's concepts on one short card (name and short text);
-## they stand in for the "new concept" toasts.
-func _glossary_card(m: MissionDef) -> void:
-	if m.teaches.is_empty():
+## What reached the phone: the messages that arrive from the game's state; the
+## badges; one buzz for anything new, once the first day's scene is over.
+func _phone_beat() -> void:
+	PhoneMessages.sync(session, session_layer)
+	if not Opening.running(session_layer) and phone.announce():
+		phone.buzz.emit()
+	phone.refresh()
+	hud.phone_status(phone.unread_count())
+
+
+## A save from before the phone: what it holds counts as read and seen, so
+## a resumed game does not open on a pile of badges.
+func _read_old_save() -> void:
+	if session_layer.phone_saved:
 		return
-	var lines: Array[String] = []
-	for id in m.teaches:
-		var def: ConceptDef = session.catalog.concepts.get(id)
-		if def != null:
-			lines.append("%s — %s" % [def.name, def.short])
-			if not id in _known_concepts:
-				_known_concepts.append(id)
-	hud.show_card("Nieuwe begrippen", lines, UiText.CARD_FOOTER)
-
-
-## Ruud's note on a training day's morning (ClueJournal.notes) waits in the journal,
-## which opens on it next; one quiet toast, nothing over the world (PLAN 2.13 C).
-func _note_arrived(m: MissionDef) -> void:
-	if ClueJournal.notes(session, session_layer).any(func(n: Dictionary) -> bool: return n["mission"] == m.id):
-		journal.tab = ClueJournal.NOTES
-		hud.toast(tr(NOTE_TOAST))
-
-
-## Toasts for the concepts learned since the last call, once each.
-func new_concept_toasts() -> Array[String]:
-	var out: Array[String] = []
-	for id in session.region.profile.concepts:
-		if id in _known_concepts:
-			continue
-		_known_concepts.append(id)
-		var def: ConceptDef = session.catalog.concepts.get(id)
-		if def != null:
-			out.append("Nieuw begrip: %s (K)" % def.name)
-	return out
+	PhoneMessages.sync(session, session_layer)
+	for entry: Dictionary in session_layer.inbox:
+		entry["read"] = true
+	session_layer.concepts_seen.assign(session.region.profile.concepts)
+	session_layer.phone_saved = true
 
 
 # ── The session layer ───────────────────────────────────────────────────────
@@ -388,13 +388,17 @@ func _setup_session_layer(of_layer: SessionLayer) -> void:
 		session_layer.begin(session)
 	mission_board.layer = session_layer
 	journal.layer = session_layer
-	journal.log_on = SessionLog.enabled_in(settings_path)
+	phone.setup(session, session_layer)
+	_read_old_save()
+	var settings := phone.app(Phone.SETTINGS) as SettingsApp
+	settings.settings_path = settings_path
+	settings.log_toggled.connect(set_log_enabled)
+	settings.auto_text_changed.connect(pause_menu.auto_text_changed.emit)   # the office follows it as from the pause menu
 	journal.reopen.connect(func(what: String) -> void:
 		if what == "terugblik":
 			open_terugblik(session_layer.last_card)
 		else:
 			open_intussen(_running.keys().front() if not _running.is_empty() else ""))
-	journal.log_toggled.connect(set_log_enabled)
 	intussen.layer = session_layer
 	for id in SessionLayer.running(session):
 		_running[id] = true
@@ -438,13 +442,12 @@ func open_intussen(problem_id: String) -> void:
 	_open(intussen)
 
 
-## The playtest log on or off (the journal's switch), kept in the settings.
+## The playtest log on or off (Instellingen's switch), kept in the settings.
 func set_log_enabled(on: bool) -> void:
 	var error := SessionLog.set_enabled_in(settings_path, on)
 	if not error.is_empty():
 		push_warning(error)
 	playtest_log.enabled = on
-	journal.log_on = on
 
 
 ## One event as the session layer sees it: a discovery's toast (one a day,

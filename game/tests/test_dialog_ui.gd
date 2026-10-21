@@ -267,23 +267,23 @@ func test_a_teams_place_lists_its_people_and_opens_a_talk() -> void:
 	office.free()
 
 
-## Review B1: J, M or K mid-talk never hide or end the talk, pressed once or
-## twice; the talk stays on screen and runs on.
-func test_the_journal_map_and_codex_keys_leave_a_talk_alone() -> void:
+## Review B1: Tab, J, M or K mid-talk never hide or end the talk, pressed once
+## or twice; the talk stays on screen and runs on.
+func test_the_phone_keys_leave_a_talk_alone() -> void:
 	var office := _office()
 	_open_joost(office)
 	var ui := office.ui
-	for toggle: Callable in [ui.toggle_journal, ui.toggle_map, ui.toggle_codex]:
-		toggle.call()
+	for app: String in [Phone.HOME, Phone.NOTES, Phone.MAP, Phone.CODEX]:
+		ui.toggle_phone(app)
 		assert_true(ui.dialog_panel.visible, "the talk stays on screen")
-		toggle.call()
+		ui.toggle_phone(app)
 		assert_true(ui.dialog_panel.talking(), "the talk runs on")
-		assert_false(ui.journal.visible or ui.office_map.visible or ui.codex.visible, "nothing opened over it")
+		assert_false(ui.phone.visible, "the phone stayed down")
 	assert_false(office.session.dialog_meter().is_empty(), "never ended unseen")
 	office.free()
 
 
-## The office with one talk with Joost had, and the journal on the Mensen tab.
+## The office with one talk with Joost had, and the phone on Wie is wie.
 func _mensen_after_joost() -> Office:
 	var office := _office()
 	var s := office.session
@@ -295,18 +295,17 @@ func _mensen_after_joost() -> Office:
 		office.ui.dialog_panel.choose(move)
 	office.ui.dialog_panel.close_talk()
 	office.ui.close_panels()
-	office.ui.toggle_journal()
-	office.ui.journal.show_tab(ClueJournal.PEOPLE)
+	office.ui.toggle_phone(Phone.PEOPLE)
 	return office
 
 
 func test_the_mensen_tab_shows_trust_morale_and_what_you_heard() -> void:
 	var office := _mensen_after_joost()
 	var s := office.session
-	assert_true(shows(office.ui.journal, "Joost van Dijk"))
-	assert_true(shows(office.ui.journal, DialogPanel.pips(s.person("joost")["trust_pips"])))
-	for text in texts_in(office.ui.journal):
-		if text.begins_with(ClueJournal.MORALE):
+	assert_true(shows(office.ui.phone.app(Phone.PEOPLE), "Joost van Dijk"))
+	assert_true(shows(office.ui.phone.app(Phone.PEOPLE), DialogPanel.pips(s.person("joost")["trust_pips"])))
+	for text in texts_in(office.ui.phone.app(Phone.PEOPLE)):
+		if text.begins_with(PeopleApp.MORALE):
 			assert_false(_has_digit(text), "morale is a band, not a number")
 	office.free()
 
@@ -319,25 +318,25 @@ func test_the_mensen_tab_is_the_player_s_notebook() -> void:
 	var joost := s.person("joost")
 	assert_true(joost["observed"].size() >= 2, "his position and what he let out")
 	for o: Dictionary in joost["observed"]:
-		assert_true(shows(office.ui.journal, "\"%s\"" % o["text"]), o["text"])
+		assert_true(shows(office.ui.phone.app(Phone.PEOPLE), "\"%s\"" % o["text"]), o["text"])
 	var heard_at: Dictionary = joost["observed"][0]
-	assert_true(shows(office.ui.journal, "%s · %s" % [s.day_text(heard_at["at"]), "Werkvoorbereiding & ontwerp"]),
+	assert_true(shows(office.ui.phone.app(Phone.PEOPLE), "%s · %s" % [s.day_text(heard_at["at"]), "Werkvoorbereiding & ontwerp"]),
 		"the day and the place")
 	var talk: Dictionary = joost["talks"][0]
-	var curves := _nodes(office.ui.journal, func(n: Node) -> bool: return n is TraceLine)
+	var curves := _nodes(office.ui.phone.app(Phone.PEOPLE), func(n: Node) -> bool: return n is TraceLine)
 	assert_eq(curves.size(), 1, "one talk, one curve")
 	assert_eq(curves[0].trace, talk["trace"])
 	assert_eq(curves[0].labels.size(), talk["moves"].size(), "the moves under the points")
-	assert_true(shows(office.ui.journal, DialogPanel.outcome_name(s, talk["outcome"])))
+	assert_true(shows(office.ui.phone.app(Phone.PEOPLE), DialogPanel.outcome_name(s, talk["outcome"])))
 	# Joost's card (Linda may want a talk too: her evenings check-in).
 	var joosts := func(n: Node) -> bool: return n is TextEdit and n.placeholder_text == "Wat weet je over Joost?"
-	var notes := _nodes(office.ui.journal, joosts)
+	var notes := _nodes(office.ui.phone.app(Phone.PEOPLE), joosts)
 	assert_eq(notes.size(), 1, "one note field on his card")
 	notes[0].text = "Hij wil eerst gehoord worden."
 	notes[0].text_changed.emit()
 	assert_eq(s.person("joost")["note"], "Hij wil eerst gehoord worden.", "the note is kept")
-	office.ui.journal.refresh()
-	notes = _nodes(office.ui.journal, joosts)
+	office.ui.phone.app(Phone.PEOPLE).refresh()
+	notes = _nodes(office.ui.phone.app(Phone.PEOPLE), joosts)
 	assert_eq(notes[0].text, "Hij wil eerst gehoord worden.", "and shown again")
 	office.free()
 
@@ -346,16 +345,16 @@ func test_the_mensen_tab_is_the_player_s_notebook() -> void:
 func test_older_quotes_fold_away() -> void:
 	var office := _mensen_after_joost()
 	var s := office.session
-	for i in ClueJournal.QUOTES_SHOWN + 2:
+	for i in PeopleApp.QUOTES_SHOWN + 2:
 		s.people.observed["joost"].append({"dialog": "joost_output_kpi", "key": "k%d" % i, "text": "Regel %d." % i,
 			"at": s.region.net.time, "place": "connections.design"})
-	office.ui.journal.refresh()
-	assert_false(shows(office.ui.journal, "\"Regel 0.\""), "the oldest folded")
-	assert_true(shows(office.ui.journal, "\"Regel %d.\"" % (ClueJournal.QUOTES_SHOWN + 1)), "the newest shown")
-	var fold: Button = _nodes(office.ui.journal, func(n: Node) -> bool:
-		return n is Button and n.text.begins_with(ClueJournal.EARLIER))[0]
+	office.ui.phone.app(Phone.PEOPLE).refresh()
+	assert_false(shows(office.ui.phone.app(Phone.PEOPLE), "\"Regel 0.\""), "the oldest folded")
+	assert_true(shows(office.ui.phone.app(Phone.PEOPLE), "\"Regel %d.\"" % (PeopleApp.QUOTES_SHOWN + 1)), "the newest shown")
+	var fold: Button = _nodes(office.ui.phone.app(Phone.PEOPLE), func(n: Node) -> bool:
+		return n is Button and n.text.begins_with(PeopleApp.EARLIER))[0]
 	fold.pressed.emit()
-	assert_true(shows(office.ui.journal, "\"Regel 0.\""), "unfolded")
+	assert_true(shows(office.ui.phone.app(Phone.PEOPLE), "\"Regel 0.\""), "unfolded")
 	office.free()
 
 
@@ -378,9 +377,8 @@ func test_the_need_is_never_shown() -> void:
 		office.ui.dialog_panel.close_talk()
 		seen.append_array(_all_text(office.ui.dialog_panel))
 		office.ui.close_panels()
-		office.ui.toggle_journal()
-		office.ui.journal.show_tab(ClueJournal.PEOPLE)
-		seen.append_array(_all_text(office.ui.journal))
+		office.ui.toggle_phone(Phone.PEOPLE)
+		seen.append_array(_all_text(office.ui.phone.app(Phone.PEOPLE)))
 		var spoken: Array = s.people.observed.get("joost", []).map(func(o: Dictionary) -> String: return o["text"])
 		for text in seen:
 			if text.begins_with("\"") or spoken.any(func(line: String) -> bool: return text.contains(line)):
@@ -487,17 +485,16 @@ func test_the_mensen_tab_says_what_is_open_and_when_to_talk_again() -> void:
 	office.ui.dialog_panel.choose("propose", "lead_and_oldest")
 	assert_eq(office.ui.dialog_panel.choose("ask_commitment")["outcome"], "partial")
 	office.ui.close_panels()
-	office.ui.toggle_journal()
-	office.ui.journal.show_tab(ClueJournal.PEOPLE)
-	var journal := office.ui.journal
-	assert_true(shows(journal, ClueJournal.OPEN_HEADING), "Wat nog openstaat")
+	office.ui.toggle_phone(Phone.PEOPLE)
+	var journal := office.ui.phone.app(Phone.PEOPLE)
+	assert_true(shows(journal, PeopleApp.OPEN_HEADING), "Wat nog openstaat")
 	assert_true(shows(journal, "Frank moet het goedvinden."), "the condition")
-	var again := texts_in(journal).filter(func(t: String) -> bool: return t.begins_with(ClueJournal.AGAIN.left(12)))
+	var again := texts_in(journal).filter(func(t: String) -> bool: return t.begins_with(PeopleApp.AGAIN.left(12)))
 	assert_eq(again.size(), 1, "one line on when to talk again")
 	var morale: Array[Node] = _nodes(journal, func(n: Node) -> bool:
-		return n is Label and n.text.begins_with(ClueJournal.MORALE))
+		return n is Label and n.text.begins_with(PeopleApp.MORALE))
 	assert_false(morale.is_empty())
-	assert_eq(morale[0].tooltip_text, tr(ClueJournal.MORALE_TIP))
+	assert_eq(morale[0].tooltip_text, tr(PeopleApp.MORALE_TIP))
 	office.free()
 
 
@@ -509,11 +506,10 @@ func test_after_a_ruin_the_mensen_tab_says_when_to_talk_again() -> void:
 	office.ui.dialog_panel.choose("propose", "lead_and_oldest")
 	assert_eq(office.ui.dialog_panel.choose("pressure")["outcome"], "ruined")
 	office.ui.close_panels()
-	office.ui.toggle_journal()
-	office.ui.journal.show_tab(ClueJournal.PEOPLE)
+	office.ui.toggle_phone(Phone.PEOPLE)
 	var until: int = office.session.person("joost")["cooldown_until"]
-	assert_true(shows(office.ui.journal, ClueJournal.again_text(office.session, until, false)))
-	assert_false(shows(office.ui.journal, tr(ClueJournal.AGAIN_NOW)), "not now")
+	assert_true(shows(office.ui.phone.app(Phone.PEOPLE), PeopleApp.again_text(office.session, until, false)))
+	assert_false(shows(office.ui.phone.app(Phone.PEOPLE), tr(PeopleApp.AGAIN_NOW)), "not now")
 	office.free()
 
 

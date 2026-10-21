@@ -2,19 +2,22 @@ class_name Hud
 extends Control
 ## The heads-up display: a top bar (day and time, budget with the savings of
 ## held fixes and, in debt, the floor; XP and belt, the
-## region's setback while it stands still), under it top left the one
-## objective line (Objective: the next step, never a mission title), the
-## interaction prompt, the controls,
-## short messages (toasts, bottom right) when something happens, and cards
-## (top right: a training day's glossary, the coach's debrief) that stay a
-## while longer. It is drawn over the panels; toasts and cards hide while one
-## is open, and a card's time only runs while it shows.
+## region's setback while it stands still; at its right the phone, its key and
+## what is new on it), under it top left the one objective line (Objective:
+## the next step, never a mission title), the interaction prompt, the controls,
+## and short messages (toasts, bottom right) when something happens. Whatever
+## stays a while (Ruud's notes, a debrief, new concepts) is on the phone
+## (Phone), never a card over the world. It is drawn over the panels; the
+## toasts hide while one is open.
 
 const TOAST_SECONDS := 7.0
 const MAX_TOASTS := 4
-const CARD_SECONDS := 25.0
-const MAX_CARDS := 3
 const STOP_NOTE := "Nieuwe dag · goed moment om te stoppen (opgeslagen)"
+## The bar's phone: its name, its key, and how much is new on it.
+const PHONE := "Telefoon"
+const PHONE_NEW := "%d nieuw"
+## The phone wiggles this far (degrees) when it buzzes.
+const SHAKE_DEGREES := 4.0
 
 var session: GameSession
 var clock_label: Label
@@ -32,11 +35,12 @@ var objective_label: Label
 var layer: SessionLayer
 var _objective := {}
 var _objective_beat := ""
+## The phone in the bar (Phone), from its moment on (Opening.hud "phone").
+var phone_label: Label
 var prompt_label: Label
 ## The controls line, bottom left (hidden while a panel is open).
 var help_label: Label
 var _toasts: VBoxContainer
-var _cards: VBoxContainer
 ## In a talk the bar shows only the date and time: no budget, XP or mission.
 var _talking := false
 ## Which element may show (Opening.hud: the first day reveals them one at a
@@ -79,6 +83,14 @@ func _build_bar() -> void:
 	stop_note.visible = false
 	for l in [clock_label, stop_note, budget_label, xp_label, drift_label]:
 		row.add_child(l)
+	var gap := Control.new()
+	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(gap)
+	phone_label = _bar_label("")
+	phone_label.add_theme_font_size_override("font_size", 17)
+	row.add_child(phone_label)
+	phone_status(0)
 	objective_label = _bar_label("")
 	var line := StyleBoxFlat.new()
 	line.bg_color = Color(Palette.HUD_BAR, 0.75)
@@ -149,16 +161,6 @@ func _build_centre() -> void:
 	_toasts.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_toasts)
 
-	_cards = VBoxContainer.new()
-	_cards.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	_cards.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	_cards.offset_top = 64
-	_cards.offset_right = -20
-	_cards.custom_minimum_size.x = 460
-	_cards.add_theme_constant_override("separation", 10)
-	_cards.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_cards)
-
 
 func refresh() -> void:
 	clock_label.text = session.clock_text()
@@ -189,12 +191,14 @@ func _apply_reveal() -> void:
 	budget_label.visible = may_show("budget") and not _talking
 	xp_label.visible = may_show("xp") and not _talking
 	objective_label.visible = _objective_shown()
+	phone_label.visible = may_show("phone") and not _talking
 	if not may_show("controls"):
 		help_label.visible = false
 
 
 func controls_text() -> String:
-	return tr("WASD/klik lopen   ·   Shift rennen   ·   Z/C draaien   ·   wiel zoomen   ·   E gebruiken   ·   J aanwijzingen   ·   M kaart   ·   K begrippen")
+	return tr("WASD/klik lopen   ·   Shift rennen   ·   Z/C draaien   ·   wiel zoomen   ·   E gebruiken   ·   %s telefoon") \
+		% Phone.key_text()
 
 
 ## The objective line shows from its moment (Opening.hud "mission"; the first day's
@@ -224,58 +228,36 @@ func set_talking(on: bool) -> void:
 		refresh()
 
 
-## The toasts, cards and controls line; hidden while a panel is open.
+## The toasts and controls line; hidden while a panel is open.
 func show_overlay(on: bool) -> void:
 	help_label.visible = on and may_show("controls")
 	_toasts.visible = on
-	_cards.visible = on
 
 
-## A card: a heading, its lines and a muted footer. The oldest goes when
-## there are too many.
-func show_card(heading: String, lines: Array[String], footer: String = "", paper: Color = Color.WHITE) -> void:
-	var card := PanelContainer.new()
-	card.add_theme_stylebox_override("panel", UiTheme.card(paper))
-	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	card.set_meta("left", CARD_SECONDS)
-	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 4)
-	card.add_child(box)
-	box.add_child(UiPanel.label(heading, UiTheme.SMALL, Palette.VOLTANA_BLUE))
-	for line in lines:
-		box.add_child(UiPanel.paragraph(line, Palette.INK, 17))
-	if not footer.is_empty():
-		box.add_child(UiPanel.label(footer, 15, Palette.MUTED))
-	_cards.add_child(card)
-	while _cards.get_child_count() > MAX_CARDS:
-		var oldest := _cards.get_child(0)
-		_cards.remove_child(oldest)
-		oldest.queue_free()
+## The bar's phone: "Telefoon · Tab", and how much is new on it.
+func phone_status(unread: int) -> void:
+	var parts: PackedStringArray = [tr(PHONE), Phone.key_text()]
+	if unread > 0:
+		parts.append(tr(PHONE_NEW) % unread)
+	phone_label.text = "  ·  ".join(parts)
+	phone_label.add_theme_color_override("font_color", Palette.VOLTANA_GREEN if unread > 0 else Color(1, 1, 1, 0.8))
 
 
-## Each card on screen as one text (heading, lines, footer), oldest first.
-func card_texts() -> Array[String]:
-	var out: Array[String] = []
-	for card in _cards.get_children():
-		var texts: PackedStringArray = []
-		for l: Label in card.get_child(0).get_children():
-			texts.append(l.text)
-		out.append("\n".join(texts))
-	return out
+## Something new reached the phone: it wiggles in the bar (a turn about its
+## middle, which the bar's layout leaves alone).
+func buzz() -> void:
+	if not is_inside_tree():
+		return
+	phone_label.pivot_offset = phone_label.size / 2.0
+	var t := create_tween()
+	for degrees: float in [SHAKE_DEGREES, -SHAKE_DEGREES, SHAKE_DEGREES * 0.5, 0.0]:
+		t.tween_property(phone_label, "rotation_degrees", degrees, 0.06)
 
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if session != null and layer != null and layer.opening_beat != _objective_beat:
 		refresh()   # the first day moved on without an action (Opening)
 	objective_label.visible = _objective_shown()
-	if not _cards.visible:
-		return
-	for card in _cards.get_children():
-		var left: float = card.get_meta("left") - delta
-		card.set_meta("left", left)
-		if left <= 0.0:
-			_cards.remove_child(card)
-			card.queue_free()
 
 
 ## "" hides the prompt.
