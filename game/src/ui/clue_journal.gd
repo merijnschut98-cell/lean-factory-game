@@ -1,118 +1,59 @@
 class_name ClueJournal
 extends UiPanel
-## The clue journal (J): every clue the player has found, grouped by the
-## place where it was found. It does not say which problem a clue belongs
+## The player's notes (the phone's Notities, J): every clue the player has
+## found, grouped by the place where it was found, with what the gemba tools
+## showed that was no clue (Waarneming), then each talk's note, newest first
+## (TalkSummary: what the talk screen leaves out, named afterwards). It does not say which problem a clue belongs
 ## to, nor which clues matter: that is for the player to work out. Above
 ## them, the fixes in use with their health and the stagnation drift, as
 ## measured (SustainView): what holds a fix is for the player to find.
-## The "Briefjes" tab: Ruud's notes of the training week's mornings, newest first (the
-## day's new tools and talk moves; PLAN 2.13 C moved them here from the screen).
-## The "Mensen" tab, the player's notebook on people (dialog spec §11,
-## person-needs spec §4): per person their trust as pips, their morale as a
-## word (never a number), what they told you as quotes with the day and the
-## place (newest first, older ones folded), your talks with their curve and
-## moves, your own note, and whether they want to talk now. Never what the
-## person needs: reading them is the player's work.
+## Ruud's notes moved to Berichten (PhoneMessages), the people to Wie is wie
+## (PeopleApp), the playtest log switch to Instellingen (SettingsApp).
 
-const CLUES := "clues"
-const PEOPLE := "people"
-const NOTES := "notes"
-const TABS := {CLUES: "Aanwijzingen", PEOPLE: "Mensen", NOTES: "Briefjes"}
-## Ruud's note on a training day's morning.
-const NOTE_HEADING := "Briefje van Ruud · %s"
-const NO_NOTES := "Nog geen briefjes."
-const MORALE := "Werkplezier: "
-const MORALE_BANDS: Array[String] = ["laag", "gewoon", "hoog"]
-## The face a morale band shows in the journal, as a meter band (a frown, flat,
-## a soft smile); low morale also tires the eyes.
-const MORALE_FACES: Array[int] = [1, 2, 3]
-const TOLD := "Wat %s je vertelde"
-const TALKS := "Jullie gesprekken"
-const NOTE := "Jouw notitie"
-const NOTE_HINT := "Wat weet je over %s?"
-const EARLIER := "Eerder"
-## Quotes shown before the older ones fold under EARLIER.
-const QUOTES_SHOWN := 8
 ## The followed dossier's card (PLAN 1.5): a manila folder among the clues.
 const DOSSIER := "Dossier familie El Amrani · warmtepomp, Nova-Oost"
 const DOSSIER_UNDERWAY := "Onderweg: %d dagen · %s uur werk eraan · ligt nu bij %s"
 const DOSSIER_DONE := "Aangesloten na %d dagen · %s uur werk eraan"
 ## A briefing that reads the dossier names this token (content/missions.yaml).
 const DOSSIER_TOKEN := "{dossier_weken}"
-## Over the morale word: it is how someone has been lately, not the talk's mood.
-const MORALE_TIP := "Hoe iemand er de laatste weken bij zit."
-const NEEDS_TALK := "Kan wel een goed gesprek gebruiken."
-## What an agreement under condition, or a block, still waits for (U16).
-const OPEN_HEADING := "Wat nog openstaat"
-## When the next talk can be (U16): now, tomorrow, from a day, or nothing to say.
-const AGAIN := "Weer praten: %s"
-const AGAIN_NOW := "kan nu."
-const AGAIN_TOMORROW := "morgen."
-const AGAIN_FROM := "vanaf %s."
-const AGAIN_NOTHING := "nu niets te bespreken."
 ## What a gemba tool showed that was no clue (PLAN 2.12), marked apart.
 const SEEN := "Waarneming"
-const NOBODY := "Je hebt nog met niemand gesproken. Mensen vind je op hun plek op de werkvloer."
-
-var tab := CLUES
-var _tabs: Dictionary[String, Button] = {}
-var _list: VBoxContainer
-## Person ids whose older quotes are unfolded.
-var _unfolded: Dictionary[String, bool] = {}
-
+const NOTHING_YET := "Nog niets gevonden. Ga naar de werkvloer en kijk, tel, meet en vraag."
+const TITLE := "Aanwijzingen"
+const FIXES := "Je verbeteringen"
 
 ## The session layer's buttons (GameUI opens what they name).
 const TERUGBLIK := "Terugblik"
 const INTUSSEN := "Intussen"
-const LOG := "Speellogboek bijhouden (alleen op deze computer, nooit verstuurd)"
 
 ## "terugblik" or "intussen": reopen that card or panel.
 signal reopen(what: String)
-signal log_toggled(on: bool)
 
-## Set by GameUI: the session layer (the last terugblik, the running
-## Checks) and whether the playtest log is on.
+## Set by GameUI: the session layer (the last terugblik, the running Checks).
 var layer: SessionLayer
-var log_on := true
+var _list: VBoxContainer
 
 
 func _init() -> void:
-	super("Aanwijzingen", Vector2(1000, 0))
-	var bar := HBoxContainer.new()
-	bar.add_theme_constant_override("separation", 8)
-	body.add_child(bar)
-	for id: String in TABS:
-		var b := button(TABS[id], show_tab.bind(id))
-		b.toggle_mode = true
-		_tabs[id] = b
-		bar.add_child(b)
+	super(TITLE, Vector2(1000, 0))
 	_list = add_scroll_list(body, 620)
 
 
-## Switch the journal to a tab (CLUES or PEOPLE).
-func show_tab(id: String) -> void:
-	tab = id
-	refresh()
-
-
-## Terugblik (when this session opened with one), Intussen (while an
-## experiment runs) and the playtest log switch.
+## Terugblik (when this session opened with one) and Intussen (while an
+## experiment runs).
 func _session_row() -> void:
 	if layer == null:
 		return
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 12)
-	_list.add_child(row)
+	var row := HFlowContainer.new()
+	row.add_theme_constant_override("h_separation", 12)
 	if not layer.last_card.is_empty():
-		row.add_child(button(TERUGBLIK, reopen.emit.bind("terugblik")))
+		row.add_child(button(tr(TERUGBLIK), reopen.emit.bind("terugblik")))
 	if not SessionLayer.running(session).is_empty():
-		row.add_child(button(INTUSSEN, reopen.emit.bind("intussen")))
-	var log_switch := CheckBox.new()
-	log_switch.text = LOG
-	log_switch.button_pressed = log_on
-	log_switch.add_theme_font_size_override("font_size", UiTheme.SMALL)
-	log_switch.toggled.connect(log_toggled.emit)
-	row.add_child(log_switch)
+		row.add_child(button(tr(INTUSSEN), reopen.emit.bind("intussen")))
+	if row.get_child_count() > 0:
+		_list.add_child(row)
+	else:
+		row.free()
 
 
 ## Every clue found so far: by place (the first place a clue was found there
@@ -157,70 +98,24 @@ static func by_place(s: GameSession) -> Array[Dictionary]:
 
 func refresh() -> void:
 	clear(_list)
-	title_label.text = TABS[tab]
-	for id: String in _tabs:
-		_tabs[id].set_pressed_no_signal(id == tab)
-	if tab == PEOPLE:
-		_people()
-		return
-	if tab == NOTES:
-		_notes()
-		return
+	title_label.text = tr(TITLE)
 	_session_row()
 	_dossier()
 	_sustain()
 	var groups := by_place(session)
-	if groups.is_empty():
-		_list.add_child(paragraph("Nog niets gevonden. Ga naar de werkvloer en kijk, tel, meet en vraag.", Palette.MUTED))
+	var talks := TalkSummary.notes(session)
+	if groups.is_empty() and talks.is_empty():
+		_list.add_child(paragraph(tr(NOTHING_YET), Palette.MUTED))
 	for g in groups:
 		var box := add_card(_list, g["place"])
 		for c: Clue in g["clues"]:
 			box.add_child(paragraph("• " + c.text))
 		for line: String in g["seen"]:
 			box.add_child(paragraph("%s: %s" % [tr(SEEN), tr(line)], Palette.MUTED, UiTheme.SMALL))
-
-
-## Ruud's notes, newest first, on note paper; then each talk's note, newest
-## first (TalkSummary: what the talk screen leaves out, named afterwards).
-func _notes() -> void:
-	var all := notes(session, layer)
-	var talks := TalkSummary.notes(session)
-	if all.is_empty() and talks.is_empty():
-		_list.add_child(paragraph(tr(NO_NOTES), Palette.MUTED))
-	for note: Dictionary in all:
-		var box := add_card(_list, note["heading"], Palette.NOTE_PAPER)
-		for line: String in note["lines"]:
-			box.add_child(paragraph(line, Palette.INK, UiTheme.SMALL))
 	for talk: Dictionary in talks:
 		var p: PersonDef = session.people.persons.get(talk["person"])
 		_list.add_child(TalkSummary.card(session, talk, tr(TalkSummary.HEADING) % [p.name if p != null else "",
 			session.day_text(talk["at"])]))
-
-
-## Ruud's note of every training morning so far (the days the session layer carded),
-## newest first: [{mission, heading, lines}]. Each: the gemba tools the day hands out
-## (places.yaml tool_cards), then the day's move cards, each its name, what it is and
-## why (tutorial talks spec §2); never when to use it. A day without either has none.
-static func notes(s: GameSession, of_layer: SessionLayer) -> Array[Dictionary]:
-	var out: Array[Dictionary] = []
-	for id: String in of_layer.carded if of_layer != null else []:
-		var m: MissionDef = s.missions.defs.get(id)
-		if m == null:
-			continue
-		var lines: Array[String] = []
-		for tool in s.new_tools(id):
-			var tool_card := s.tool_card(tool)
-			if not tool_card.is_empty():
-				lines.append("%s. %s" % [TranslationServer.translate(tool_card["title"]),
-					TranslationServer.translate(tool_card["text"])])
-		for card: Dictionary in s.catalog.move_cards:
-			if card["day"] == id:
-				lines.append("%s. %s" % [card["title"], card["text"]])
-				lines.append("'%s'" % card["why"])
-		if not lines.is_empty():
-			out.push_front({"mission": id, "heading": TranslationServer.translate(NOTE_HEADING) % UiText.mission_title(m, s),
-				"lines": lines})
-	return out
 
 
 ## The El Amrani dossier you follow (PLAN 1.8), clipped in once a mission
@@ -254,122 +149,8 @@ func _sustain() -> void:
 	var drift := UiText.drift_line(session.drift())
 	if fixes.is_empty() and drift.is_empty():
 		return
-	var box := add_card(_list, "Je verbeteringen", Palette.BLUE_PALE)
+	var box := add_card(_list, tr(FIXES), Palette.BLUE_PALE)
 	for id in fixes:
 		SustainView.add_fix(box, session, id, true)
 	if not drift.is_empty():
 		box.add_child(paragraph(drift, Palette.MUTED, UiTheme.SMALL))
-
-
-## The people the player knows of: whoever they talked with, or who wants a talk.
-func _people() -> void:
-	var shown := 0
-	for id: String in session.people.persons:
-		if session.people.has_left(id):
-			continue
-		var talked := session.people.talks.keys().any(func(d: String) -> bool: return session.people.dialogs[d].person == id)
-		var wants: bool = session.energy_of(id)["needs_talk"]
-		if talked or wants:
-			_person_card(id, wants)
-			shown += 1
-	if shown == 0:
-		_list.add_child(paragraph(NOBODY, Palette.MUTED))
-
-
-func _person_card(id: String, wants: bool) -> void:
-	var p := session.person(id)
-	var card := add_card(_list)
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 16)
-	card.add_child(row)
-	var face := MoodFace.new(64.0)
-	face.show_state(MORALE_FACES[p["morale_band"]], "moe" if p["morale_band"] == 0 else "")
-	row.add_child(face)
-	var text := VBoxContainer.new()
-	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_child(text)
-	text.add_child(label("%s  ·  %s" % [p["name"], p["role"]], UiTheme.FONT_SIZE, Palette.VOLTANA_BLUE))
-	var standing := HBoxContainer.new()
-	standing.add_theme_constant_override("separation", 30)
-	text.add_child(standing)
-	standing.add_child(label("%s  %s" % [TalkView.TRUST, TalkView.pips(p["trust_pips"])], UiTheme.SMALL))
-	var morale := label(MORALE + MORALE_BANDS[p["morale_band"]], UiTheme.SMALL)
-	morale.tooltip_text = tr(MORALE_TIP)
-	morale.mouse_filter = Control.MOUSE_FILTER_PASS
-	standing.add_child(morale)
-	var cooling := session.people.cooling_down(id, session.region.net.time)
-	text.add_child(label(again_text(session, p["cooldown_until"] if cooling else -1, p["talk_ready"]), UiTheme.SMALL,
-		Palette.SAFETY_ORANGE if cooling else Palette.MUTED))
-	if wants and not cooling:
-		text.add_child(label(NEEDS_TALK, UiTheme.SMALL, Palette.GREEN_DARK))
-	var short: String = session.people.persons[id].short
-	_still_open(card, p["open"])
-	_quotes(card, id, short, p["observed"])
-	_talks(card, p["talks"])
-	card.add_child(label(tr(NOTE), UiTheme.SMALL, Palette.VOLTANA_BLUE))
-	var note := TextEdit.new()
-	note.text = p["note"]
-	note.placeholder_text = tr(NOTE_HINT) % short
-	note.custom_minimum_size = Vector2(0, 64)
-	note.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
-	note.text_changed.connect(func() -> void: session.set_note(id, note.text))
-	card.add_child(note)
-
-
-## "Weer praten: …": from the day a ruin's cooldown ends (`until`, -1 for
-## none), else now or nothing to say.
-static func again_text(s: GameSession, until: int, ready: bool) -> String:
-	var when := AGAIN_NOW if ready else AGAIN_NOTHING
-	if until >= 0:
-		var tomorrow := SimCalendar.day_of(until) == SimCalendar.day_of(s.region.net.time) + 1
-		when = AGAIN_TOMORROW if tomorrow else TranslationServer.translate(AGAIN_FROM) % s.day_text(until)
-	return TranslationServer.translate(AGAIN) % TranslationServer.translate(when)
-
-
-## Under "Wat nog openstaat": what each agreement under condition waits for
-## (or "first see, then believe"), and a block's route hints.
-func _still_open(card: VBoxContainer, open: Array) -> void:
-	if open.is_empty():
-		return
-	card.add_child(label(tr(OPEN_HEADING), UiTheme.SMALL, Palette.VOLTANA_BLUE))
-	for o: Dictionary in open:
-		var lines: Array = o["hints"] if o["outcome"] == "blocked" else \
-			[o["wait_for"] if not o["wait_for"].is_empty() else tr(TalkSummary.STILL_NEEDED_CHECK)]
-		for line: String in lines:
-			card.add_child(paragraph("• " + line, Palette.INK, UiTheme.SMALL))
-
-
-## What the person said, newest first, each with the day and the place; the
-## older ones fold under EARLIER. Not grouped or marked: a notebook.
-func _quotes(card: VBoxContainer, id: String, short: String, observed: Array) -> void:
-	if observed.is_empty():
-		return
-	card.add_child(label(tr(TOLD) % short, UiTheme.SMALL, Palette.VOLTANA_BLUE))
-	var shown: int = observed.size() if _unfolded.has(id) else mini(observed.size(), QUOTES_SHOWN)
-	for o: Dictionary in observed.slice(0, shown):
-		card.add_child(paragraph("\"%s\"" % o["text"], Palette.INK, UiTheme.SMALL))
-		var step := session.region.net.step_at(o["place"])
-		var where := " · ".join([session.day_text(o["at"]), step.name if step != null else ""].filter(
-			func(part: String) -> bool: return not part.is_empty()))
-		if not where.is_empty():
-			card.add_child(label(where, UiTheme.SMALL, Palette.MUTED))
-	if shown < observed.size():
-		card.add_child(button("%s (%d)" % [tr(EARLIER), observed.size() - shown], func() -> void:
-			_unfolded[id] = true
-			refresh()))
-
-
-## Each talk, newest first: its day and outcome, the curve with the moves under it.
-func _talks(card: VBoxContainer, talks: Array) -> void:
-	if talks.is_empty():
-		return
-	card.add_child(label(tr(TALKS), UiTheme.SMALL, Palette.VOLTANA_BLUE))
-	var chips: Dictionary = TalkView.labels_of(session).get("chips", {})
-	for t: Dictionary in talks:
-		card.add_child(label("%s · %s" % [session.day_text(t["at"]), TalkView.outcome_name(session, t["outcome"])],
-			UiTheme.SMALL, Palette.MUTED))
-		var moves: Array[String] = []
-		moves.assign(t["moves"].map(func(m: String) -> String: return str(chips.get(m, m))))
-		var curve := TraceLine.new(Vector2(420, 40 + 2 * TraceLine.LABEL_ROW))
-		curve.set_trace(t["trace"], moves)
-		card.add_child(curve)

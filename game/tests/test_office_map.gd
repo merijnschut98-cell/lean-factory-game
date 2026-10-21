@@ -39,18 +39,18 @@ func test_the_office_floor_is_the_shell() -> void:
 
 func test_m_opens_and_closes_the_map() -> void:
 	var office := _office()
-	office.player.map_pressed.emit()
-	assert_true(office.ui.office_map.visible, "M opens the map")
+	office.player.phone_pressed.emit(Phone.MAP)
+	assert_true(office.ui.phone.visible and office.ui.phone.current == Phone.MAP, "M opens the map on the phone")
 	assert_true(office.ui.is_busy())
-	office.player.map_pressed.emit()
-	assert_false(office.ui.office_map.visible, "M again closes it")
+	office.player.phone_pressed.emit(Phone.MAP)
+	assert_false(office.ui.phone.visible, "M again lowers it")
 	assert_false(office.ui.is_busy())
 	office.free()
 
 
 func test_the_map_shows_every_place_inside_its_frame() -> void:
 	var office := _office()
-	office.ui.toggle_map()
+	office.ui.toggle_phone(Phone.MAP)
 	var map := office.ui.office_map
 	assert_eq(map.places.size(), office.interactables.size())
 	var area := map.area()
@@ -64,7 +64,7 @@ func test_the_map_shows_every_place_inside_its_frame() -> void:
 
 func test_the_player_dot_follows_the_player() -> void:
 	var office := _office()
-	office.ui.toggle_map()
+	office.ui.toggle_phone(Phone.MAP)
 	var map := office.ui.office_map
 	var before := map.player_point()
 	office.player.position += Vector3(3, 0, -2)
@@ -89,7 +89,7 @@ func test_a_problem_mission_marks_its_room_never_the_step() -> void:
 	assert_false(DESIGN in marked, "never the step")
 	assert_false("obeya" in marked, "not before the A3 is ready for a Check")
 	office.ui.close_panels()
-	office.ui.toggle_map()
+	office.ui.toggle_phone(Phone.MAP)
 	var map := office.ui.office_map
 	var rooms := map.marked_rooms()
 	assert_eq(rooms.size(), 1, "the room the briefing sends you to")
@@ -103,7 +103,7 @@ func test_a_problem_mission_marks_its_room_never_the_step() -> void:
 
 func test_the_controls_name_the_map() -> void:
 	var office := _office()
-	assert_true(office.ui.hud.controls_text().contains("M kaart"))
+	assert_true(office.ui.hud.controls_text().contains("Tab telefoon"))
 	office.free()
 
 

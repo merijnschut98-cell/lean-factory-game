@@ -70,7 +70,7 @@ func test_a_date_reads_as_a_day_name() -> void:
 func test_the_journal_reopens_the_terugblik_and_switches_the_log() -> void:
 	var office := _office()
 	var ui := office.ui
-	ui.toggle_journal()
+	ui.toggle_phone(Phone.NOTES)
 	assert_false(shows(ui.journal, ClueJournal.TERUGBLIK), "no card in a new game")
 	ui.session_layer.begin(office.session)
 	ui.session_layer.open_session(office.session)
@@ -78,7 +78,7 @@ func test_the_journal_reopens_the_terugblik_and_switches_the_log() -> void:
 	assert_true(shows(ui.journal, ClueJournal.TERUGBLIK))
 	ui.journal.reopen.emit("terugblik")
 	assert_true(ui.terugblik.visible)
-	assert_false(ui.journal.visible)
+	assert_false(ui.phone.visible, "the phone went down for it")
 	ui.set_log_enabled(false)
 	assert_false(SessionLog.enabled_in(settings_path))
 	assert_false(ui.playtest_log.enabled)
@@ -167,18 +167,21 @@ func test_the_board_shows_two_new_sides_a_week_and_older_ones_under_nog_open() -
 	office.free()
 
 
-## Review N2: a training day's glossary card shows once per game, not again
-## after a resume (the session layer keeps which days had theirs, saved).
-func test_the_glossary_card_does_not_show_again_after_a_resume() -> void:
+## Review N2: a training day's note arrives once per game, and what was read
+## stays read after a resume (the session layer keeps the phone's inbox, saved).
+func test_a_read_note_stays_read_after_a_resume() -> void:
 	var office: Office = load(SCENE).instantiate()
 	office.seed_value = 11
 	office.training = true
 	office.build()
-	assert_false(office.ui.hud.card_texts().is_empty(), "Monday's cards")
+	assert_eq(office.ui.phone.badge(Phone.MESSAGES), 1, "Monday's note")
+	office.ui.toggle_phone(Phone.MESSAGES)
+	office.ui.toggle_phone(Phone.CODEX)
 	var layer := SessionLayer.new()
 	layer.load_dict(office.ui.session_layer.to_dict())
 	var resumed := GameUI.new()
 	resumed.setup(office.session, layer)
-	assert_eq(resumed.hud.card_texts().size(), 0, "not again after the resume")
+	assert_eq(layer.inbox.size(), 1, "not again after the resume")
+	assert_eq(resumed.phone.unread_count(), 0, "read and seen stay so")
 	resumed.free()
 	office.free()

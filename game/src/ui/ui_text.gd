@@ -176,7 +176,6 @@ const ACT_TITLES := {
 const PERIODS := {1: "een dag", 2: "twee dagen", 3: "drie dagen", 7: "een week", 14: "twee weken"}
 const TRAINING_TITLE := "Inwerkweek — %s: %s"
 const SKIP_CONFIRM := "Je mist de oefenweek, het echte werk begint direct."
-const CARD_FOOTER := "K voor alle begrippen"
 
 ## Leader routines at a team's place (GameSession.audit, plan_routine,
 ## stop_routine): the buttons with their cost, and what happened.

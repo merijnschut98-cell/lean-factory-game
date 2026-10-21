@@ -253,10 +253,11 @@ func test_the_lift_takes_the_same_player_to_another_floor() -> void:
 	var clock := session.clock_text()
 	office.interact(office.interactable("lift"))
 	var map := office.ui.office_map
-	assert_true(map.visible and map.lift, "the lift opens the building's directory")
+	assert_true(office.ui.phone.visible and office.ui.phone.current == Phone.MAP and map.lift,
+		"the lift opens the building's directory on the phone's map")
 	assert_eq(map.title_label.text, OfficeMap.LIFT_TITLE)
 	map.choose_floor("ground")
-	assert_false(map.visible, "the lift goes")
+	assert_false(office.ui.phone.visible, "the lift goes")
 	assert_eq(office.floors.floor_id, "ground")
 	assert_true(office.player == player and office.session == session, "the same player, the same game")
 	assert_eq(session.clock_text(), clock, "no time passes")
@@ -319,7 +320,7 @@ func test_walking_onto_the_stairs_takes_them_and_walking_past_does_not() -> void
 
 func test_the_map_switches_floors_and_shows_the_rooms() -> void:
 	var office := _office(true)   # Monday: two rooms on the 1e still shut
-	office.ui.toggle_map()
+	office.ui.toggle_phone(Phone.MAP)
 	var map := office.ui.office_map
 	assert_eq(map.floor_here, "first")
 	assert_eq(map.title_label.text, OfficeMap.TITLE % "1e verdieping")
@@ -343,7 +344,7 @@ func test_a_mission_on_another_floor_marks_that_floor() -> void:
 	var office := _office()
 	_take(office, "fix_status_callers")
 	office.floors._process(OfficeFloors.POLL_SECONDS)
-	office.ui.toggle_map()
+	office.ui.toggle_phone(Phone.MAP)
 	var texts := office.ui.office_map.floor_bar.get_children().filter(func(n: Node) -> bool: return n is Button) \
 		.map(func(b: Button) -> String: return b.text)
 	assert_true(texts.any(func(t: String) -> bool: return t.begins_with("● Begane grond")), "the floor with the mission's place: %s" % [texts])

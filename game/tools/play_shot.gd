@@ -22,7 +22,7 @@ extends SceneTree
 ## dialog_summary, dialog_ruined (a talk with Joost) ·
 ## talk_face, talk_choose, talk_phone (S1-G: Joost speaks in a face shot, you
 ## choose in the two-shot; Mevrouw El Amrani on the phone) ·
-## dialog_people (the journal's Mensen tab after it) · dialog_place (the
+## dialog_people, phone_notes (the phone's Wie is wie and Notities after it) · dialog_place (the
 ## team's menu with its people) · dialog_energy (the low-energy bar) ·
 ## intussen (the A3 in: what happens while the
 ## Check runs, and the named skip) · terugblik (the card a resumed game opens
@@ -44,6 +44,8 @@ extends SceneTree
 ## people coming in by the lift and the stairs in the morning light, lunch in the kantine,
 ## the 1e after six with the late stayers' desk lamps) · play_home, play_home_fade (after
 ## five at the front door: "Naar huis", then the fade with the next morning's date) ·
+## phone_home, phone_messages, phone_map (PLAN 2.14 S1-F: the phone raised on its
+## home screen on Monday of the training week, on Berichten, on Kaart) ·
 ## title (the title menu over a few saves) ·
 ## title_replace, title_keep ("Nieuw spel" over a filled autosave: the
 ## question, then the slots to keep it in) ·
@@ -88,7 +90,8 @@ func _run() -> void:
 		return
 	var office: Office = load(SCENE).instantiate()
 	office.seed_value = 11
-	office.training = state in ["training_board", "timelapse", "act0_note", "act0_ruud", "act0_cards"] \
+	office.training = state in ["training_board", "timelapse", "act0_note", "act0_ruud", "act0_cards", "phone_home",
+			"phone_messages", "phone_map"] \
 		or state.begins_with("place_") or state.begins_with("open_")
 	if state.begins_with("open_"):   # De eerste vijf minuten (PLAN 2.7d), as a new game
 		office.opening = true
@@ -128,16 +131,16 @@ func _run() -> void:
 			office.ui.close_panels()
 			_stand_at(office, INTAKE)
 			office.player.rotation.y += deg_to_rad(-60)
-			office.ui.toggle_map()
+			office.ui.toggle_phone(Phone.MAP)
 		"codex":
 			_investigate(office, true)
 			office.session.region.profile.learn(["flow", "bottleneck_focus", "netbeheerder", "netcongestie", "kata_prediction"])
-			office.ui.toggle_codex()
+			office.ui.toggle_phone(Phone.CODEX)
 		"discoveries":
 			_investigate(office, false)
 			office.session.discoveries.found["het_knelpunt_eerst"] = office.session.region.net.time
 			office.session.discoveries.found["voorspeller"] = office.session.region.net.time
-			office.ui.toggle_codex()
+			office.ui.toggle_phone(Phone.CODEX)
 			office.ui.codex.show_tab(CodexPanel.DISCOVERIES)
 		"simulating":
 			_investigate(office, true)
@@ -160,15 +163,16 @@ func _run() -> void:
 			_talk_to_joost(office, state)
 		"talk_face", "talk_choose", "talk_phone":
 			await _staged_talk(office, state)
-		"dialog_people":
+		"dialog_people", "phone_notes":   # Wie is wie, or Notities with the talk's note
 			_talk_to_joost(office, "dialog_summary")
 			office.ui.close_panels()
-			office.ui.toggle_journal()
-			office.ui.journal.show_tab(ClueJournal.PEOPLE)
+			office.ui.toggle_phone(Phone.PEOPLE if state == "dialog_people" else Phone.NOTES)
 		"open_reception", "open_badge", "open_walk", "open_plan", "open_sanne", "open_marco", "open_design", \
 				"open_door", "open_board", "open_letter", "open_phone", "open_evening", "open_anouk", "open_after", \
 				"open_pause", "open_explainer":
 			_opening(office, state)
+		"phone_home", "phone_messages", "phone_map":   # the phone raised (PLAN 2.14 S1-F)
+			_phone(office, state)
 		"act0_note":   # Monday morning: Ruud's note with the day's move card (PLAN 1.11a)
 			_stand_at(office, DESIGN)
 		"act0_ruud":   # Anouk at seven, one move, then Ruud names it on the summary
@@ -185,11 +189,11 @@ func _run() -> void:
 		"act0_cards":   # the codex's Gesprekken at the week's end: every card, the Friday one last
 			for id in ["training_mon", "training_tue", "training_wed", "training_thu", "training_fri"]:
 				office.session.missions.done_once[id] = true
-			office.ui.toggle_codex()
+			office.ui.toggle_phone(Phone.CODEX)
 			office.ui.codex.show_tab(CodexPanel.TALKS)
 		"explainers":
 			office.session.explainers.see("spanning_stroom_weerstand")
-			office.ui.toggle_codex()
+			office.ui.toggle_phone(Phone.CODEX)
 			office.ui.codex.show_tab(CodexPanel.EXPLAINERS)
 		"contain_board":
 			for id in ["fix_done_but_not_closed", "fix_status_callers", "fix_incomplete_application", MISSION]:
@@ -210,7 +214,7 @@ func _run() -> void:
 			office.rig.snap()
 		"dossier":
 			_investigate(office, false)
-			office.ui.toggle_journal()
+			office.ui.toggle_phone(Phone.NOTES)
 		"dialog_place":
 			_open_silo(office)
 			_stand_at(office, DESIGN)
@@ -344,6 +348,14 @@ func _save_menus(state: String) -> void:
 		office.ui.pause_menu.show_slots()
 	if state == "pause_confirm":
 		office.ui.pause_menu.pick(3)
+
+
+## Monday of the training week at Werkvoorbereiding, Ruud's note in: the phone
+## raised on its home screen, on Berichten or on Kaart.
+func _phone(office: Office, state: String) -> void:
+	var ui := office.ui
+	_stand_at(office, DESIGN)
+	ui.toggle_phone({"phone_messages": Phone.MESSAGES, "phone_map": Phone.MAP}.get(state, Phone.HOME))
 
 
 ## Stand a step behind the marker, looking the way it faces; the camera
