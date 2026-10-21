@@ -340,6 +340,19 @@ func test_the_mensen_tab_is_the_player_s_notebook() -> void:
 	office.free()
 
 
+## A junk save's move that is not a word still shows as text, never a crash.
+func test_a_talk_s_move_that_is_not_a_word_still_shows() -> void:
+	var office := _mensen_after_joost()
+	var log: Array = office.session.people.talk_log["joost"]
+	log[0]["moves"] = [3, "mood"]
+	office.ui.phone.app(Phone.PEOPLE).refresh()
+	var curves := _nodes(office.ui.phone.app(Phone.PEOPLE), func(n: Node) -> bool: return n is TraceLine)
+	assert_eq(curves.size(), 1, "the talk's curve")
+	assert_eq(curves[0].labels.size(), 2, "both moves under it")
+	assert_eq(curves[0].labels[0], "3")
+	office.free()
+
+
 ## More than QUOTES_SHOWN quotes: the newest show, the older fold under "Eerder".
 func test_older_quotes_fold_away() -> void:
 	var office := _mensen_after_joost()
