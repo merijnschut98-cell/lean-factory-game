@@ -27,6 +27,20 @@
       }
      ],
      "name": "Directie en staf"
+    },
+    {
+     "headcount": {
+      "estimate": "Een receptie voor één gebouw met zo'n honderd mensen: Yvonne en een collega voor de middag.",
+      "value": 2
+     },
+     "id": "ontvangst",
+     "members": [
+      {
+       "id": "yvonne",
+       "title": "Receptie"
+      }
+     ],
+     "name": "Ontvangst & facilitair"
     }
    ]
   },

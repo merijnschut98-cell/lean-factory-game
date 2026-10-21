@@ -52,6 +52,13 @@ departments:
         headcount:
           value: 4
           estimate: "De directeur, de CI-lead, een managementassistent en een adviseur regulering: een kleine staf bij een regionale directie."
+      - id: ontvangst
+        name: Ontvangst & facilitair
+        members:
+          - {id: yvonne, title: Receptie}
+        headcount:
+          value: 2
+          estimate: "Een receptie voor één gebouw met zo'n honderd mensen: Yvonne en een collega voor de middag."
 
   - id: aansluitingen
     name: Aansluitingen & Netverzwaring
