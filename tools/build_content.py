@@ -722,12 +722,30 @@ MAX_ACT = 6  # Act 0 is the training week; Act VI the IT value streams
 TRUST_RANGE = (-2, 1)  # Region.TRUST_MIN, TRUST_MAX
 DEFAULT_REPUTATION = {"main": 5, "side": 2}  # Reputation.MAIN_MISSION, SIDE_MISSION
 START_REPUTATION = 30  # Reputation.START
+KATA_QUESTIONS = 5  # Rother's five coaching questions (CoachNumbers)
+NUMBER_STAGES = {"go_see", "reflect"}  # the stages the coach reads the KPI at (CoachNumbers)
+
+
+def _validate_coach_numbers(coach: dict, where: str) -> None:
+    """The coach reads the numbers (phase-2 design §3.6): a way to say every KPI as it is
+    now (with {value}), a question per number stage, and the Kata five in order."""
+    if "numbers" in coach:
+        numbers = _mapping(coach, "numbers", {"kpi_now"} | NUMBER_STAGES, where)
+        kpi_now = _mapping(numbers, "kpi_now", set(KPIS), f"{where} numbers")
+        if set(kpi_now) != set(KPIS) or not all(isinstance(t, str) and t.count("{value}") == 1 for t in kpi_now.values()):
+            raise ContentError(f"{where} numbers: 'kpi_now' says every KPI ({', '.join(KPIS)}) with one {{value}}")
+        _require_strings(numbers, sorted(NUMBER_STAGES & set(numbers)), f"{where} numbers")
+    if "kata" in coach:
+        kata = _string_list(coach, "kata", where, allow_empty=False)
+        if len(kata) != KATA_QUESTIONS:
+            raise ContentError(f"{where}: 'kata' holds the five coaching questions, in order")
 
 
 def validate_missions(doc: Any, source: str) -> None:
     """The campaign: the coach's questions per stage and the missions (CLAUDE.md §2)."""
     _require_strings(doc, [], source)
-    coach = _mapping(doc, "coach", {"name", "role", "stages", "conditional"}, source)
+    coach = _mapping(doc, "coach", {"name", "role", "stages", "conditional", "numbers", "kata"}, source)
+    _validate_coach_numbers(coach, f"{source} coach")
     conditional = _mapping(coach, "conditional", set(COACH_CONDITIONS), f"{source} coach")
     _require_strings(conditional, list(conditional), f"{source} coach conditional")
     _require_strings(coach, ["name", "role"], f"{source} coach")

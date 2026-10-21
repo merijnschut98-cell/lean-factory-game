@@ -338,9 +338,12 @@ func contain(id: String) -> String:
 func knows(atom: String) -> bool:
 	var measure := Facts.measure(atom)
 	if not measure.is_empty():
-		var value: int = {"maturity": region.maturity(), "reputation": region.reputation.value,
-			"floor_days": region.floor_days}[measure[0]]
-		return value >= measure[1]
+		match measure[0]:
+			"maturity":
+				return region.maturity() >= measure[1]
+			"floor_days":
+				return region.floor_days >= measure[1]
+		return region.reputation.value >= measure[1]
 	match atom.get_slice(":", 0):
 		"done":
 			return done_once.has(atom.get_slice(":", 1))
@@ -584,6 +587,9 @@ func _question(m: MissionDef, stage: String, nth: int) -> String:
 		if not said.has(condition) and coach.get("conditional", {}).has(condition):
 			said[condition] = true
 			return _say(coach["conditional"][condition])
+	var read := CoachNumbers.question(region, m, stage, said, coach)
+	if not read.is_empty():
+		return _say(read)
 	var candidates: Array = m.questions.get(stage, []).duplicate()
 	var bank: Array = coach["stages"].get(stage, [])
 	if not bank.is_empty():

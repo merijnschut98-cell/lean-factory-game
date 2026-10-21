@@ -108,6 +108,28 @@ coach:
   conditional:
     blamed: "Wat wilde je eigenlijk weten toen je dat vroeg?"
     fading_fix: "Hoe lang verwacht je dat dit blijft werken? En dan?"
+  # The coach reads the numbers (phase-2 design §3.6; CoachNumbers): the main mission's
+  # KPI as it is now on its stream, said the way Ruud says it ({value}: the number), put
+  # before a question once at go_see and once at reflect.
+  numbers:
+    kpi_now:
+      throughput: "Er komen nu {value} per week klaar"
+      lead_time: "De doorlooptijd is nu {value} dagen"
+      first_time_right: "Nu gaat {value} procent in één keer goed"
+      on_time: "Nu is {value} procent op tijd"
+      wip_age: "Het werk dat openstaat, is nu {value} dagen oud"
+      capacity: "De stroom kan nu {value} per week aan"
+    go_see: "Waar wil je naartoe, en waarom juist dat getal?"
+    reflect: "Wat had je voorspeld, en wat zegt het verschil je?"
+  # The Kata five (Rother, Toyota Kata: target, actual condition, obstacles, next step,
+  # when we go and see), asked in order during an experiment, once an experiment; the
+  # first comes after the KPI as it is now.
+  kata:
+    - "Wat was je doel?"
+    - "En hoe is het nu echt, op de werkvloer? Wat zie je daar?"
+    - "Wat staat er nog tussen nu en je doel? Aan welk obstakel werk je nu?"
+    - "Wat is je volgende stap, en wat verwacht je dat er gebeurt?"
+    - "Wanneer kunnen we gaan kijken wat je van die stap hebt geleerd?"
 
 missions:
   # ── Inwerkweek: five safe days in the connections office ──────────────────
