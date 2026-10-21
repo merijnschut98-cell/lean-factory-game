@@ -108,9 +108,11 @@ func targets() -> Array[Dictionary]:
 func _locate(t: Dictionary, shown: Dictionary, player: Vector2) -> bool:
 	if t["kind"] == "person":
 		var p := office.people.person(t["person"])
-		if p == null or not p.visible:
+		if p == null or (not p.visible and p.desk.is_empty()):
 			return false
-		shown["at"] = Vector2(p.position.x, p.position.z)
+		# someone away from their desk (gone home, at lunch): the marker keeps to the desk
+		var at: Vector3 = p.position if p.visible else p.desk["at"]
+		shown["at"] = Vector2(at.x, at.z)
 		shown["reached"] = player.distance_to(shown["at"]) <= Minimap.NEAR_PERSON
 		return true
 	for room: Dictionary in map.plan.get("rooms", []):
