@@ -63,12 +63,27 @@ func _org_chart() -> void:
 		if not d is Dictionary:
 			continue
 		box.add_child(UiPanel.label(str(d.get("name", "")), UiTheme.SMALL, Palette.VOLTANA_BLUE))
-		if d.get("lead") is String:
-			box.add_child(UiPanel.label(tr(LEAD) % d["lead"], 15, Palette.MUTED))
+		var lead := _head_name(d.get("head"))
+		if not lead.is_empty():
+			box.add_child(UiPanel.label(tr(LEAD) % lead, 15, Palette.MUTED))
 		var teams: Variant = d.get("teams")
 		for t: Variant in teams if teams is Array else []:
 			if t is Dictionary and t.get("name") is String:
 				box.add_child(UiPanel.paragraph("• " + t["name"], Palette.INK, 15))
+
+
+## A department head's name (company.yaml: {id, title} for someone in the cast, or
+## {name, title} for someone not yet in it); "" when there is none.
+func _head_name(head: Variant) -> String:
+	if not head is Dictionary:
+		return ""
+	if head.get("name") is String:
+		return head["name"]
+	var id := str(head.get("id", ""))
+	for entry: Dictionary in CharacterModel.cast():  # the cast has everyone, Ruud too
+		if entry.get("id") == id:
+			return str(entry.get("name", ""))
+	return ""
 
 
 ## The company file's data, or {} (it is optional until S1-E builds it).

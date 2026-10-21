@@ -22,6 +22,17 @@ func test_every_cast_title_agrees_with_the_company_file() -> void:
 			assert_eq(Company.title(entry["id"]), str(entry.get("role", "")), entry["id"])
 
 
+func test_wie_is_wie_names_each_departments_head() -> void:
+	var app := PeopleApp.new()
+	app.session = GameSession.new_game(11, Catalog.DATA_DIR, false)
+	assert_eq(app._head_name({"id": "frank", "title": "manager"}), "Frank Hulshof", "a head in the cast, by name")
+	assert_eq(app._head_name({"name": "Ingrid Bos", "title": "assetmanager"}), "Ingrid Bos", "a head named here")
+	assert_eq(app._head_name(null), "")
+	var heads: Array = app.company()["departments"].map(func(d: Dictionary) -> String: return app._head_name(d["head"]))
+	assert_false(heads.has(""), "every department has a head to show: %s" % [heads])
+	app.free()
+
+
 func test_the_name_tag_reads_the_company_title() -> void:
 	var entry: Dictionary = CharacterModel.cast().filter(func(e: Dictionary) -> bool: return e["id"] == "anouk")[0]
 	var p := OfficePerson.create(entry.merged({"role": "iets anders"}, true))
