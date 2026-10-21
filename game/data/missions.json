@@ -174,9 +174,9 @@
   },
   {
    "act": 0,
-   "briefing": "Anouk pakt altijd het oudste dossier. Toch ligt het dossier van de familie El Amrani al negen dagen bij haar. Hoe kan dat? Zoek het uit, schrijf een oefen-A3 met een voorspelling en probeer een tegenmaatregel. Over drie dagen kijken we samen of je voorspelling uitkwam.",
+   "briefing": "Anouk pakt altijd het oudste dossier. Toch ligt het dossier van de familie El Amrani al negen dagen bij haar. Hoe kan dat? Zoek het uit, schrijf een oefen-A3 met een voorspelling en probeer een tegenmaatregel. Morgen kijken we samen of je voorspelling uitkwam.",
    "chapter": "Inwerkweek",
-   "check_days": 3,
+   "check_days": 1,
    "debrief": "Je voorspelling is getoetst aan wat er echt gebeurde. Of het tegenviel of meeviel: je weet nu iets wat je gisteren niet wist. Dat is een experiment.",
    "goal": {
     "problem": "training_tray",
@@ -190,8 +190,8 @@
    ],
    "id": "training_thu",
    "insights": {
-    "experiment": "Welk getal laat over drie dagen zien of het werkt, en wat verwacht je dat het dan is?",
-    "go_see": "Gisteren telde je waar het werk wacht. Wat wil je over drie dagen anders zien bij Anouk, in een getal?",
+    "experiment": "Welk getal laat morgen zien of het werkt, en wat verwacht je dat het dan is?",
+    "go_see": "Gisteren telde je waar het werk wacht. Wat wil je morgen anders zien bij Anouk, in een getal?",
     "reflect": "Wat had je verwacht, en wat gebeurde er? Wat neem je mee naar maandag?",
     "understand": "Wat doet Anouk voordat het echte werk aan een dossier begint? Hoe lang duurt dat?"
    },
@@ -209,7 +209,7 @@
     "a3": "Schrijf je oefen-A3 aan de obeya-wand",
     "dig": "Zoek uit waarom het dossier van El Amrani blijft liggen",
     "look": "Kijk bij Anouk waar het dossier van El Amrani ligt",
-    "wait": "Wacht de drie dagen af: kijk hoe het bij Anouk gaat"
+    "wait": "Wacht tot morgen: kijk hoe het bij Anouk gaat"
    },
    "teaches": [
     "PDCA",
@@ -222,7 +222,7 @@
    "act": 0,
    "briefing": "Je experiment werkt: Anouk zoekt niet meer. Maandag komen haar drie collega's terug van hun cursus. Weten zij van de ene bak? Beslis: borg je het als standaard werk (dat kost budget), of laat je het zo? Kijk daarna een maand vooruit: hoe loopt het werk met en zonder borgen?",
    "chapter": "Inwerkweek",
-   "check_days": 3,
+   "check_days": 1,
    "debrief": "Een maand later pakt iedereen het oudste dossier uit één bak. Het staat op een A4 boven de bak, en Anouk legt het aan nieuwe collega's uit. Je inwerkweek zit erop. Maandag vraagt Joost van Dijk het MT om twee extra werkvoorbereiders; ik heb gezegd dat jij eerst gaat kijken.",
    "debrief_variants": {
     "not_standardised": "Een maand later staan er weer twee bakken. Niemand deed iets fout; niemand wist het nog. Een verbetering blijft alleen als iemand haar borgt. Je inwerkweek zit erop. Maandag vraagt Joost van Dijk het MT om twee extra werkvoorbereiders; ik heb gezegd dat jij eerst gaat kijken."

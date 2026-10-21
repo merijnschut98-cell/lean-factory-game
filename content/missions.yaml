@@ -191,22 +191,22 @@ missions:
     act: 0
     chapter: Inwerkweek
     requires: {missions: [training_wed]}
-    briefing: "Anouk pakt altijd het oudste dossier. Toch ligt het dossier van de familie El Amrani al negen dagen bij haar. Hoe kan dat? Zoek het uit, schrijf een oefen-A3 met een voorspelling en probeer een tegenmaatregel. Over drie dagen kijken we samen of je voorspelling uitkwam."
+    briefing: "Anouk pakt altijd het oudste dossier. Toch ligt het dossier van de familie El Amrani al negen dagen bij haar. Hoe kan dat? Zoek het uit, schrijf een oefen-A3 met een voorspelling en probeer een tegenmaatregel. Morgen kijken we samen of je voorspelling uitkwam."
     debrief: "Je voorspelling is getoetst aan wat er echt gebeurde. Of het tegenviel of meeviel: je weet nu iets wat je gisteren niet wist. Dat is een experiment."
     goal: {type: check, problem: training_tray}
     steps:
       look: "Kijk bij Anouk waar het dossier van El Amrani ligt"
       dig: "Zoek uit waarom het dossier van El Amrani blijft liggen"
       a3: "Schrijf je oefen-A3 aan de obeya-wand"
-      wait: "Wacht de drie dagen af: kijk hoe het bij Anouk gaat"
+      wait: "Wacht tot morgen: kijk hoe het bij Anouk gaat"
     grant_tools: [time_study, data, listen_in, material_check]
-    check_days: 3
+    check_days: 1
     teaches: [PDCA, A3, leading_lagging]
     rewards: {xp: 50}
     insights:
-      go_see: "Gisteren telde je waar het werk wacht. Wat wil je over drie dagen anders zien bij Anouk, in een getal?"
+      go_see: "Gisteren telde je waar het werk wacht. Wat wil je morgen anders zien bij Anouk, in een getal?"
       understand: "Wat doet Anouk voordat het echte werk aan een dossier begint? Hoe lang duurt dat?"
-      experiment: "Welk getal laat over drie dagen zien of het werkt, en wat verwacht je dat het dan is?"
+      experiment: "Welk getal laat morgen zien of het werkt, en wat verwacht je dat het dan is?"
       reflect: "Wat had je verwacht, en wat gebeurde er? Wat neem je mee naar maandag?"
 
   - id: training_fri
@@ -223,7 +223,7 @@ missions:
     goal: {type: solve, problem: training_tray}
     steps:
       act: "Beslis aan de obeya-wand: borg je het, of laat je het zo?"
-    check_days: 3
+    check_days: 1
     teaches: [standard_work, improvement_kata]
     rewards: {xp: 50}
     insights:

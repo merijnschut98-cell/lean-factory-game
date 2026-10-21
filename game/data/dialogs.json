@@ -1996,7 +1996,7 @@
    },
    "mission": "training_thu",
    "name": "Anouk en het experiment",
-   "opening": "Dus we gaan het proberen? Eén bak, oudste bovenop? Drie dagen?",
+   "opening": "Dus we gaan het proberen? Eén bak, oudste bovenop? En morgen kijken we hoe het ging?",
    "outcomes": {
     "commitment": "Goed. Eén bak. Oudste bovenop. En vrijdag kijken we samen.",
     "compliance": "Oké.",
@@ -2012,7 +2012,7 @@
      "claim"
     ],
     "tell": "safety",
-    "text": "Prima. Ik doe mee. Het is maar drie dagen. En verder hoeft niemand het te weten, toch?"
+    "text": "Prima. Ik doe mee. Het is maar één dag. En verder hoeft niemand het te weten, toch?"
    },
    "proposals": [
     {

@@ -190,6 +190,7 @@ func test_the_mission_is_played_end_to_end() -> void:
 	assert_eq(s.clues_found(PROBLEM).size(), keys.size(), "the four key clues a gemba finds (the fifth is Joost's, in a talk), no red herring")
 	assert_eq(s.phase_of(PROBLEM), "spotted")
 	assert_eq(s.ask_coach()["stage"], "understand")
+	assert_true(MissionTalks.win(s, MISSION), "Joost is brought along (the talk the mission needs)")
 
 	var budget_before := s.budget()
 	assert_eq(s.submit_a3(PROBLEM, _a3(s, "standard_designs")), "")
@@ -240,6 +241,7 @@ func test_the_second_mission_is_played_end_to_end() -> void:
 	var problem_id := "incomplete_application"
 	var s := _accepted()
 	_investigate(s)
+	assert_true(MissionTalks.win(s, MISSION))
 	assert_eq(s.submit_a3(PROBLEM, _a3(s, "standard_designs")), "")
 	assert_eq(s.wait_for_check(PROBLEM), "")
 	assert_true(s.check(PROBLEM)["passed"])
@@ -260,6 +262,7 @@ func test_the_second_mission_is_played_end_to_end() -> void:
 	var problem: ProblemDef = s.region.problems[problem_id]
 	var keys := problem.clues.filter(func(c: Clue) -> bool: return c.key and c.dialog.is_empty())
 	assert_eq(s.clues_found(problem_id).size(), keys.size(), "all key clues a gemba finds at the intake (Sanne's is in her talk)")
+	assert_true(MissionTalks.win(s, second), "Sanne is brought along")
 	var cause: int = Investigation.cause_options(problem, s.region.problem_list())["correct"]
 	var a3 := {"waste": "defects", "cause": cause, "cm": "poka_yoke_application", "prediction": problem.kpi,
 		"evidence": s.clues_found(problem_id).map(func(c: Clue) -> String: return c.id)}
@@ -368,7 +371,7 @@ func test_the_training_week_is_played_end_to_end() -> void:
 		"the training setup makes design clearly the longer wait")
 	assert_true(s.clock_text().begins_with("do 15 okt"))
 	assert_eq(s.phase_of(TRAY), "active", "the practice problem arrives through Thursday's mission")
-	# Thursday: the practice A3 at the bottleneck Wednesday found, and a three-day Check.
+	# Thursday: the practice A3 at the bottleneck Wednesday found, and a one-day trial.
 	assert_eq(s.region.problems[TRAY].step, DESIGN, "the practice problem sits where the work waits")
 	assert_true(s.region.net.pools["work_prep"].availability < 0.5, "the course lasts the whole week")
 	s.use_tool(DESIGN, "shadow")
@@ -383,19 +386,19 @@ func test_the_training_week_is_played_end_to_end() -> void:
 		"prediction": problem.kpi}
 	var submitted_at := s.region.net.time
 	assert_eq(s.submit_a3(TRAY, a3), "")
-	assert_eq(s.region.state[TRAY].check_at - submitted_at, SimCalendar.days(3), "a short Check for practice")
+	assert_eq(s.region.state[TRAY].check_at - submitted_at, SimCalendar.days(1), "a one-day trial for practice")
 	assert_eq(s.wait_for_check(TRAY), "")
 	var checked := s.check(TRAY)
 	assert_true(checked["passed"])
 	assert_true(checked["before"]["at_constraint"] and not checked["not_constraint"],
 		"the Check agrees: Thursday worked on the bottleneck")
 	assert_true(checked["after"][problem.kpi] > checked["before"][problem.kpi],
-		"the leading indicator predicted shows the fix within three days")
+		"the leading indicator predicted shows the fix within a day")
 	assert_eq(s.missions.status("training_thu"), "completed")
 	assert_eq(_active_ids(s), ["training_fri"])
-	# Friday: the three-day Check ended in the weekend; the day starts on the next working morning.
-	assert_eq(s.clock_text(), "ma 19 okt, 08:30")
-	assert_eq(s.training_weekday("training_fri"), "ma", "the day is named by the day it started")
+	# Friday: the trial Anouk ran on Thursday is read the next day, as she was told.
+	assert_true(s.clock_text().begins_with("vr 16 okt"), s.clock_text())
+	assert_eq(s.training_weekday("training_fri"), "vr", "Friday is Friday")
 	assert_eq(s.training_weekday("training_thu"), "do")
 	assert_true(s.region.net.pools["work_prep"].availability < 0.5, "the course still runs: the week is not over")
 	assert_false(s.act(TRAY, false).has("error"))
@@ -500,7 +503,7 @@ func test_the_check_takes_the_missions_check_days() -> void:
 	t.missions.progress.erase("training_thu")
 	t.missions.done_once.erase("training_thu")
 	assert_eq(t.accept("training_thu"), "")
-	assert_eq(t.check_days(TRAY), 3, "Thursday's short practice Check")
+	assert_eq(t.check_days(TRAY), 1, "Thursday's one-day practice trial")
 
 
 func test_training_days_are_numbered_monday_to_friday() -> void:

@@ -55,7 +55,7 @@ func mission() -> MissionDef:
 func submit(a3: Dictionary) -> String:
 	var refused := session.submit_a3(problem_id, a3)
 	message_ok = refused.is_empty()
-	message = ("Het experiment loopt. Over %s doe je de Check." % _period()) if message_ok else UiText.a3_error(refused)
+	message = ("Het experiment loopt. %s doe je de Check." % ("Morgen" if _one_day() else "Over " + _period())) if message_ok else UiText.a3_error(refused)
 	if message_ok:
 		drafts.erase(problem_id)
 		_form_problem = ""
@@ -156,9 +156,10 @@ func refresh() -> void:
 			body.add_child(paragraph(UiText.a3_error("not_spotted"), Palette.INK))
 		"doing":
 			body.add_child(paragraph("Het experiment loopt %s. Het team werkt met de nieuwe aanpak; de stroom laat zien of het helpt." % _period()))
-			body.add_child(button("Wacht tot de Check (%s)" % _period(), wait))
+			body.add_child(button("Wacht tot de Check (%s)" % ("morgen" if _one_day() else _period()), wait))
 		"check_ready":
-			body.add_child(paragraph("Het experiment heeft zijn %s gehad. Vergelijk voor en na: wat zeggen de cijfers?" % _period()))
+			body.add_child(paragraph("Het experiment heeft zijn %s gehad. Vergelijk voor en na: wat zeggen de cijfers?" % (
+				"dag" if _one_day() else _period())))
 			body.add_child(button("Doe de Check", _start_check))
 		"checked":
 			body.add_child(paragraph("De Check is gedaan. Wat doe je nu: standaardiseren of niet?"))
@@ -171,6 +172,10 @@ func refresh() -> void:
 func _period() -> String:
 	return UiText.period(session.check_days(problem_id))
 
+
+## The training week's one-day practice Check (Thursday's trial, read on Friday).
+func _one_day() -> bool:
+	return session.check_days(problem_id) == 1
 
 func _build_form(m: MissionDef) -> void:
 	var sheet := HBoxContainer.new()

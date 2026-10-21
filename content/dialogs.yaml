@@ -1277,8 +1277,8 @@ dialogs:
     tutorial: true
     teaches: [silence]
     patience: 12
-    opening: "Dus we gaan het proberen? Eén bak, oudste bovenop? Drie dagen?"
-    position: {text: "Prima. Ik doe mee. Het is maar drie dagen. En verder hoeft niemand het te weten, toch?", tags: [claim], tell: safety}
+    opening: "Dus we gaan het proberen? Eén bak, oudste bovenop? En morgen kijken we hoe het ging?"
+    position: {text: "Prima. Ik doe mee. Het is maar één dag. En verder hoeft niemand het te weten, toch?", tags: [claim], tell: safety}
     layers:
       - id: interest
         at: 48

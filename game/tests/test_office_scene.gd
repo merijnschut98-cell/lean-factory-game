@@ -133,6 +133,7 @@ func test_the_mission_is_played_through_the_ui() -> void:
 	ui.place_menu.ask("walk")
 	office.interact(office.interactable(DESIGN))
 	ui.place_menu.use_tool("data")
+	assert_true(MissionTalks.win(office.session, MISSION), "Joost is brought along (the talk the mission needs)")
 
 	office.interact(office.interactable("obeya"))
 	assert_true(ui.a3_form.visible, "the obeya wall opens the A3")
@@ -337,6 +338,7 @@ func test_the_board_offers_the_second_mission_once_the_first_is_done() -> void:
 	s.use_tool("connections.design", "documents")
 	s.ask("connections.intake", "walk")
 	s.use_tool("connections.design", "data")
+	assert_true(MissionTalks.win(s, MISSION))
 	var problem: ProblemDef = s.region.problems[PROBLEM]
 	var cause: int = Investigation.cause_options(problem, s.region.problem_list())["correct"]
 	var evidence := s.clues_found(PROBLEM).map(func(c: Clue) -> String: return c.id)
@@ -442,7 +444,7 @@ func test_the_training_week_is_played_through_the_ui() -> void:
 	var lesson := ui.hud.card_texts().filter(func(t: String) -> bool: return t.contains("wacht het werk het langst"))
 	assert_eq(lesson.size(), 1, "the debrief reports the measured queues")
 	assert_true(lesson[0].contains("langst bij Werkvoorbereiding & ontwerp"), lesson[0])
-	# Thursday: the practice A3 at the bottleneck Wednesday found, with a three-day Check.
+	# Thursday: the practice A3 at the bottleneck Wednesday found; the trial is read on Friday.
 	office.interact(office.interactable(DESIGN))
 	ui.place_menu.use_tool("shadow")
 	ui.place_menu.use_tool("time_study")
@@ -453,13 +455,13 @@ func test_the_training_week_is_played_through_the_ui() -> void:
 	assert_eq(ui.a3_form.submit({"waste": problem.waste, "cause": s.cause_options(TRAY).find(problem.root_cause),
 		"evidence": s.clues_found(TRAY).map(func(c: Clue) -> String: return c.id), "cm": "one_tray_fifo",
 		"prediction": problem.kpi}), "")
-	assert_true(ui.a3_form.message.contains("Over drie dagen"), ui.a3_form.message)
-	assert_true(shows(ui.a3_form, "Wacht tot de Check (drie dagen)"))
+	assert_true(ui.a3_form.message.contains("Morgen doe je de Check"), ui.a3_form.message)
+	assert_true(shows(ui.a3_form, "Wacht tot de Check (morgen)"))
 	ui.a3_form.wait()
 	assert_true(ui.a3_form.check().get("passed", false))
 	assert_false(shows(ui.check_panel, "niet het knelpunt"), "the Check agrees with Wednesday's count")
-	assert_eq(Objective.of(s)["mission"], "training_fri", "Friday's work starts Monday morning")
-	assert_true(ui.hud.clock_label.text.begins_with("ma 19 okt"), ui.hud.clock_label.text)
+	assert_eq(Objective.of(s)["mission"], "training_fri", "the trial is read on Friday, as Anouk was told")
+	assert_true(ui.hud.clock_label.text.begins_with("vr 16 okt"), ui.hud.clock_label.text)
 	# Friday: Act without the standard, then look a month ahead.
 	assert_false(shows(ui.check_panel, "Kijk 30 dagen vooruit"), "only after the Act")
 	ui.check_panel.act(false)
