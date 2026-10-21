@@ -167,13 +167,14 @@ func test_e_beside_a_person_opens_the_talk() -> void:
 	office.free()
 
 
-func test_someone_with_nothing_to_say_nods_and_works_on() -> void:
+func test_someone_with_nothing_to_say_says_a_line_about_today() -> void:
 	var office := _office()
 	var sanne := office.people.person("sanne")
 	_beside(office, sanne)
 	office.use(sanne)
 	assert_false(office.ui.is_busy(), "no talk opens")
-	assert_true(GameUI.NOTHING_TO_SAY % sanne.display_name in office.ui.hud.toast_texts(), "a toast says so, by name")
+	assert_true(sanne.saying() and not sanne.subtitle.text.is_empty(), "a quick line over her head (test_office_react)")
+	assert_true(office.ui.hud.toast_texts().is_empty(), "no toast")
 	office.free()
 
 

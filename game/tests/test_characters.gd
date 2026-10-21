@@ -1,7 +1,8 @@
 extends TestCase
 ## The characters (tools/blender/build_character.py: the CC0 Quaternius pack re-dressed for
 ## Voltana, from assets/characters/cast.json): each glb carries only its own looping idle,
-## walk, sit, talk and jog on Godot's humanoid bone names; skin, hair and clothes use the
+## walk, sit, talk and jog, the reaction loops and the two one-shots (nod, look away; Phase 2
+## §1.4) on Godot's humanoid bone names; skin, hair and clothes use the
 ## shared textures under their material colour (no images inside, so a glb stays small);
 ## the creator's parts sit on anyone's head and take a colour. The creator (PLAN 2.7b):
 ## every trait of creator_options.json has 2-5 options per body and each resolves to a glb, a
@@ -9,12 +10,16 @@ extends TestCase
 ## body's skeleton; a look builds, and a broken one falls back. Skipped for a model that is
 ## not built.
 
-const MAX_BYTES := 1_500_000
+## (2.0 MB since the reaction clips, S1-C: nine more clips are ~0.6 MB of keys a person.)
+const MAX_BYTES := 2_000_000
 ## A creator part (hair, an outfit) is smaller: the game loads one per trait.
 const MAX_PART_BYTES := 1_000_000
 ## Where character_import.gd finds the shared textures.
 const TEXTURES := "res://assets/characters/textures/"
-const LOOPS: Array[String] = ["idle", "jog", "sit", "talk", "walk"]
+const LOOPS: Array[String] = ["arms_folded", "carry", "idle", "jog", "lean", "phone", "sit", "sit_talk", "sit_tired",
+	"talk", "tired", "walk"]
+## Played once, then the person settles back (OfficePerson.SETTLES).
+const ONCE: Array[String] = ["look_away", "nod"]
 ## How far (m) a planted foot may slide over one contact when the person moves at the
 ## stride's measured pace (the heel lands and rolls a little; the eye forgives ~4 cm), and
 ## how close (m) to its standing height a foot counts as on the floor for this.
@@ -85,9 +90,12 @@ func test_each_character_has_its_own_loops_and_nothing_else() -> void:
 		if animations != null:
 			var names := Array(animations.get_animation_list())
 			names.sort()
-			assert_eq(names, LOOPS, "%s: its own loops only" % model.name)
+			var all := LOOPS + ONCE
+			all.sort()
+			assert_eq(names, all, "%s: its own clips only" % model.name)
 			for name in names:
-				assert_eq(animations.get_animation(name).loop_mode, Animation.LOOP_LINEAR, "%s %s loops" % [model.name, name])
+				var mode := Animation.LOOP_NONE if name in ONCE else Animation.LOOP_LINEAR
+				assert_eq(animations.get_animation(name).loop_mode, mode, "%s %s loops (or plays once)" % [model.name, name])
 		model.free()
 
 

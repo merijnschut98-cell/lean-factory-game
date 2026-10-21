@@ -25,7 +25,9 @@ What is used from them:
   `Jog_Fwd_Loop`, retargeted onto the base characters' rig.
 - Universal Animation Library 2: fetched and licence-checked with the others; it shares the base
   characters' rig, so its clips (folded arms, a phone call, nodding yes and no, carrying) retarget
-  with no bone map (`Source(path, None)` in `pack_character.py`). The current cast uses none yet.
+  with no bone map (`Source(path, None)` in `pack_character.py`). Used since S1-C (people react):
+  `Idle_FoldArms_Loop`, `Idle_TalkingPhone_Loop`, `Yes` (the nod), `Walk_Carry_Loop`; and from Library 1
+  `Sitting_Talking_Loop`. Lean in, look away and the tired idle are Library 1 clips edited here.
 
 Made here, not from the packs (also free to use under the project's licence): the clothes (cut
 from the body's surface), the ponytail, the glasses, the Voltana logo and the fabric textures
