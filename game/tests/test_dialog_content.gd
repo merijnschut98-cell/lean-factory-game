@@ -178,3 +178,23 @@ func test_when_henk_taught_ahmed_the_checkin_is_about_pride() -> void:
 	assert_eq([d.mood, d.position()["text"]], ["goed", "Goed, eigenlijk."])
 	DialogFixture.play(d, ["mood", "open_question", "reflect", "silence"])
 	assert_eq(d.unlocked_facts(), ["heard:ahmed_trainer"])
+
+
+## QA 2.12 (d): an arc's check-in ends after its beat (its concern heard); it does not
+## come back every CHECKIN_REST_DAYS for the rest of the game.
+func test_an_arc_checkin_ends_once_its_concern_is_heard() -> void:
+	var cases := {"marco_day_100": {"done:fix_installer_not_ready": true},
+		"petra_after": {"checked:done_but_not_closed": true}}
+	for id: String in cases:
+		var people := _people()
+		var d: DialogDef = people.dialogs[id]
+		var world := _world({"main": [], "active": [], "found": {}, "facts": cases[id]})
+		assert_eq(people.dialog_for(d.person, world).id, id, id + " opens on its trigger")
+		var versions: Array = [d.layers]
+		versions.append_array(d.variants.map(func(v: Dictionary) -> Array: return v.get("layers", d.layers)))
+		for layers: Array in versions:
+			var unlocked: Array = JsonFile.dict_or_empty(layers[1].get("unlocks")).get("facts", [])
+			assert_true(("heard:" + id) in unlocked, id + ": every version's concern marks the beat")
+		people.heard_facts["heard:" + id] = true
+		var after: DialogDef = people.dialog_for(d.person, world.merged({"now": FRIDAY + SimCalendar.days(60)}, true))
+		assert_true(after == null or after.id != id, id + " is over once its concern was heard")

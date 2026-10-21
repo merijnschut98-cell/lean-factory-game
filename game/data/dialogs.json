@@ -4078,6 +4078,11 @@
       "admission"
      ],
      "text": "Nu lijkt het alsof ik het al jaren fout deed. Elf jaar die maandrun. Ik dacht dat ik efficiënt was. En iedereen in de kantine weet dat de EAN's twee weken bij mij lagen.",
+     "unlocks": {
+      "facts": [
+       "heard:petra_after"
+      ]
+     },
      "via": [
       "silence",
       "empathy",
@@ -4108,6 +4113,9 @@
     "needs": {
      "all": [
       "checked:done_but_not_closed"
+     ],
+     "none": [
+      "heard:petra_after"
      ]
     }
    },
@@ -4140,6 +4148,11 @@
         "admission"
        ],
        "text": "Dan ligt het stil. Dat zei ik toch. Niemand heeft geluisterd. Ik werk nu met koorts, want anders zien ze het meteen.",
+       "unlocks": {
+        "facts": [
+         "heard:petra_after"
+        ]
+       },
        "via": [
         "silence",
         "empathy",
@@ -4185,6 +4198,11 @@
       "admission"
      ],
      "text": "Ze vragen of jij blijft. Als jij over een jaar weggaat, hangt dit ook in de gang met de cijfers van 2023. Dan heb ik het ze weer beloofd. Voor niks.",
+     "unlocks": {
+      "facts": [
+       "heard:marco_day_100"
+      ]
+     },
      "via": [
       "silence",
       "empathy",
@@ -4215,6 +4233,9 @@
     "needs": {
      "all": [
       "done:fix_installer_not_ready"
+     ],
+     "none": [
+      "heard:marco_day_100"
      ]
     }
    },

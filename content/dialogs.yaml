@@ -2240,7 +2240,8 @@ dialogs:
     prompt: "Petra zegt tegen iedereen dat alles klopt. Iets te vaak."
     patience: 8
     trigger:
-      needs: {all: [checked:done_but_not_closed]}
+      # QA 2.12 (d): the arc's beat is her concern heard; then the check-in is over.
+      needs: {all: [checked:done_but_not_closed], none: [heard:petra_after]}
     opening: "Alles klopt. Tot op de laatste EAN. Ik zeg het maar even, voordat je het vraagt."
     warning: "Als je komt controleren: alles klopt."
     position: {text: "Het gaat goed. Elke ochtend één sessie. De Molen maalt.", tags: [claim]}
@@ -2256,6 +2257,8 @@ dialogs:
         lead_in: {text: "Het is alleen…", tags: [hesitation]}
         text: "Nu lijkt het alsof ik het al jaren fout deed. Elf jaar die maandrun. Ik dacht dat ik efficiënt was. En iedereen in de kantine weet dat de EAN's twee weken bij mij lagen."
         tags: [admission]
+        unlocks:
+          facts: [heard:petra_after]
     lines:
       reflect: "Het klinkt alsof je je schaamt voor iets wat jarenlang logisch was."
     outcomes:
@@ -2276,6 +2279,8 @@ dialogs:
             lead_in: {text: "En als ik ziek word…", tags: [hesitation]}
             text: "Dan ligt het stil. Dat zei ik toch. Niemand heeft geluisterd. Ik werk nu met koorts, want anders zien ze het meteen."
             tags: [admission]
+            unlocks:
+              facts: [heard:petra_after]
 
   # ── Marco na honderd dagen (Acts 0–II scripts §8) ─────────────
   - id: "marco_day_100"
@@ -2285,7 +2290,8 @@ dialogs:
     prompt: "Marco staat bij het bord in de gang, met zijn koffie."
     patience: 8
     trigger:
-      needs: {all: [done:fix_installer_not_ready]}
+      # QA 2.12 (d): the arc's beat is his concern heard; then the check-in is over.
+      needs: {all: [done:fix_installer_not_ready], none: [heard:marco_day_100]}
     opening: "Honderd dagen. Je bent er nog. Dat is al meer dan de vorige drie."
     warning: "Ik moet de bussen in. Kort dan."
     position: {text: "Het gaat goed bij ons. Minder ritten voor niks.", tags: [claim]}
@@ -2301,6 +2307,8 @@ dialogs:
         lead_in: {text: "En eerlijk is eerlijk…", tags: [hesitation]}
         text: "Ze vragen of jij blijft. Als jij over een jaar weggaat, hangt dit ook in de gang met de cijfers van 2023. Dan heb ik het ze weer beloofd. Voor niks."
         tags: [admission]
+        unlocks:
+          facts: [heard:marco_day_100]
     lines:
       experience: "Mijn eerste week liep ik langs dat bord in de gang, met de cijfers van 2023. Ik vroeg van wie het was. Niemand wist het meer."
     outcomes:
