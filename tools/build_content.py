@@ -30,6 +30,8 @@ CONTENT_DIR = ROOT / "content"
 DATA_DIR = ROOT / "game" / "data"
 # The floors' models (world.yaml `model`), built by tools/blender/build_office.py.
 OFFICE_ASSETS = ROOT / "game" / "assets" / "office"
+# The cast list (who is in the office): greetings are written per cast member.
+CAST_FILE = ROOT / "game" / "assets" / "characters" / "cast.json"
 
 
 class ContentError(ValueError):
@@ -1541,7 +1543,7 @@ def _needs(expr: Any, where: str) -> list[str]:
 
 def validate_dialogs(doc: Any, source: str) -> None:
     _require_strings(doc, [], source)
-    _known_keys(doc, {"people", "bank", "move_cards", "dialogs"}, source)
+    _known_keys(doc, {"people", "bank", "move_cards", "dialogs", "greetings", "quick", "chatter"}, source)
     for p in _entries(doc, "people", source):
         where = f"{source}: person '{p['id']}'"
         _known_keys(p, PERSON_KEYS, where)
@@ -1555,6 +1557,69 @@ def validate_dialogs(doc: Any, source: str) -> None:
         _move_card(card, f"{source}: move card {i}")
     for d in _entries(doc, "dialogs", source):
         _validate_dialog(d, f"{source}: dialog '{d['id']}'")
+    _validate_passing(doc, source)
+
+
+# ── In passing (Phase 2 design §1.4; game/src/rules/reactions.gd) ───────────
+# Mirrored in Reactions.FACTS / MOODS / LOADS.
+GREETING_FACTS = ["ruined", "pressured", "committed", "heard", "standardised"]
+QUICK_MOODS = ["tired", "busy", "calm", "morning", "afternoon", "late"]
+CHATTER_LOADS = ["busy", "calm"]
+GREETINGS_PER_PERSON = 3
+SHARED_LINES = "_all"
+
+
+def _lines(value: Any, where: str) -> None:
+    if not isinstance(value, list) or not value or not all(isinstance(t, str) and t.strip() for t in value):
+        raise ContentError(f"{where}: a list of spoken lines, each a non-empty text")
+
+
+def _cast_ids() -> list[str]:
+    try:
+        cast = json.loads(CAST_FILE.read_text(encoding="utf-8"))["characters"]
+        return [str(c["id"]) for c in cast if c.get("id") != "player"]
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise ContentError(f"{CAST_FILE.name}: cannot read the cast ({exc})") from exc
+
+
+def _validate_passing(doc: dict, source: str) -> None:
+    """greetings (every cast member: GREETINGS_PER_PERSON ordinary ones; the shared lines per
+    fact), quick (the shared lines per mood), chatter (two lines, known teams and load)."""
+    if not any(k in doc for k in ("greetings", "quick", "chatter")):
+        return   # a content set without people
+    cast = _cast_ids()
+    teams = {p.get("team") for p in doc.get("people") or []}
+    for key, kinds, shared in (("greetings", ["day"] + GREETING_FACTS, GREETING_FACTS),
+                               ("quick", QUICK_MOODS, QUICK_MOODS)):
+        table = doc.get(key)
+        if not isinstance(table, dict):
+            raise ContentError(f"{source}: {key} is a mapping of people")
+        for pid, own in table.items():
+            where = f"{source}: {key} {pid}"
+            if pid != SHARED_LINES and pid not in cast:
+                raise ContentError(f"{where}: {pid!r} is not in the cast ({CAST_FILE.name})")
+            if not isinstance(own, dict):
+                raise ContentError(f"{where}: a mapping of lines per kind")
+            _known_keys(own, set(kinds), where)
+            for kind, lines in own.items():
+                _lines(lines, f"{where} {kind}")
+        missing = [k for k in shared if k not in (table.get(SHARED_LINES) or {})]
+        if missing:
+            raise ContentError(f"{source}: {key} {SHARED_LINES} has no lines for {', '.join(missing)}")
+    for pid in cast:
+        if len((doc["greetings"].get(pid) or {}).get("day") or []) < GREETINGS_PER_PERSON:
+            raise ContentError(f"{source}: greetings {pid}: needs at least three ordinary greetings (day)")
+    for c in _entries(doc, "chatter", source, name="id"):
+        where = f"{source}: chatter {c['id']}"
+        _known_keys(c, {"id", "teams", "load", "lines"}, where)
+        if not (isinstance(c.get("lines"), list) and len(c["lines"]) == 2):
+            raise ContentError(f"{where}: two lines, the first person's and the second's")
+        _lines(c["lines"], where)
+        unknown = [t for t in c.get("teams", []) if t not in teams] if isinstance(c.get("teams", []), list) else ["?"]
+        if unknown:
+            raise ContentError(f"{where}: teams names people's teams (unknown: {unknown})")
+        if "load" in c and c["load"] not in CHATTER_LOADS:
+            raise ContentError(f"{where}: load is one of {', '.join(CHATTER_LOADS)}")
 
 
 MOVE_CARD_KEYS = {"move", "day", "title", "text", "why"}
@@ -2376,6 +2441,7 @@ def spoken_texts(docs: dict[str, Any]) -> list[tuple[str, str]]:
     for p in dialogs.get("people", []):
         out += _strings(p.get("voice"), f"dialogs.yaml: person {p['id']} voice")
     out += _strings({k: v for k, v in (dialogs.get("bank") or {}).items() if k != "labels"}, "dialogs.yaml: bank")
+    out += _strings({k: dialogs[k] for k in ("greetings", "quick", "chatter") if k in dialogs}, "dialogs.yaml:")
     for d in dialogs.get("dialogs", []):
         out += _strings({k: d[k] for k in _SPOKEN_DIALOG if k in d}, f"dialogs.yaml: dialog {d['id']}")
     for e in (docs.get("explainers") or {}).get("explainers", []):

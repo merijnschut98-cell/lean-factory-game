@@ -15,8 +15,9 @@ signal title_requested
 ## The pause menu came up (true) or went (false): the tree is paused with it.
 signal pause_changed(on: bool)
 
-## A person asked in the office who has nothing to talk about now.
-const NOTHING_TO_SAY := "%s knikt je toe en werkt door."
+## Why a person has no talk for you now that the world answers with a quick line over their
+## head (Office.talk_to; Phase 2 §1.4): nothing to discuss, or not one of the talking cast.
+const NO_TALK: Array[String] = ["nothing_to_say", "unknown_person"]
 ## Ruud's morning note on a training day lands in the journal (J); one quiet toast says so.
 const NOTE_TOAST := "Nieuw briefje van Ruud — J"
 
@@ -156,16 +157,14 @@ func open_talk(person_id: String) -> String:
 
 
 ## A talk asked for in the office (walking up to someone): it opens, or a toast
-## says why not in the person's own way ("Niet nu.", a nod).
-func ask_talk(person_id: String, display_name: String) -> void:
-	match open_talk(person_id):
-		"", "unplayable", "in_dialog":
-			pass
-		"cooling_down":
-			var special := JsonFile.dict_or_empty(session.catalog.dialog_bank.get("special"))
-			hud.toast("%s: \"%s\"" % [display_name, special.get("cooling_down", "")])
-		_:
-			hud.toast(tr(NOTHING_TO_SAY) % display_name)
+## says why not in the person's own way ("Niet nu."). Returns open_talk's code: with
+## one of NO_TALK the world lets them say a quick line instead (Office.talk_to).
+func ask_talk(person_id: String, display_name: String) -> String:
+	var refused := open_talk(person_id)
+	if refused == "cooling_down":
+		var special := JsonFile.dict_or_empty(session.catalog.dialog_bank.get("special"))
+		hud.toast("%s: \"%s\"" % [display_name, special.get("cooling_down", "")])
+	return refused
 
 
 ## Esc from the world (PLAN 2.13 A: Esc pauses everything): the pause menu

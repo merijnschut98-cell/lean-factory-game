@@ -26,6 +26,8 @@ var dialog_bank: Dictionary = {}
 ## The Act 0 move cards (tutorial talks spec §2): [{move (a listening move,
 ## or null for a skill), day (a training mission id), title, text, why}].
 var move_cards: Array[Dictionary] = []
+## What people say in passing: greetings, quick lines, coffee-corner chatter (Reactions).
+var reactions := Reactions.new()
 ## The hidden rewards (content/discoveries.yaml), as validated dictionaries
 ## (Discoveries reads them).
 var discoveries: Array = []
@@ -62,6 +64,7 @@ static func load_from(dir: String = DATA_DIR) -> Catalog:
 				"dialog %s: unknown person %s" % [def.id, def.person])
 			c.dialogs.append(def)
 		c.dialog_bank = JsonFile.dict_or_empty(talk.get("bank"))
+		c.reactions = Reactions.new(talk)
 		c._keep_first(Dialog.bank_error(c.dialog_bank))
 		var cards: Variant = talk.get("move_cards", [])
 		for card: Variant in cards if cards is Array else []:

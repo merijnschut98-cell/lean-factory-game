@@ -36,6 +36,20 @@ const TRAINING_FIRST := "training_mon"
 const TRAINING_PROBLEM := "training_tray"
 ## A fade forecast looks at most a quarter ahead.
 const MAX_FORECAST_DAYS := 91
+## A greeting remembers a talk this many days back (Friday's talk still on Monday).
+const GREETING_MEMORY_DAYS := 3
+## A team's queue in working days of its pool (Network.queue_days) from which its people
+## call the day busy, and under which calm. ESTIMATES for the quick line's tone: a week's
+## backlog feels full, under a day feels quiet.
+const BUSY_QUEUE_DAYS := 5.0
+const CALM_QUEUE_DAYS := 1.0
+## Under this morale (0-100) a person's quick line is a tired one (People's own scale: the
+## leave clock starts at 20, a friendly week is 55 and up). An ESTIMATE.
+const TIRED_MORALE := 40
+## The hour bands of a quick line (minutes since midnight): before half eleven is morning,
+## from half five it is late.
+const MORNING_UNTIL := 11 * 60 + 30
+const LATE_FROM := 17 * 60 + 30
 
 var catalog: Catalog
 var region: Region
@@ -58,6 +72,12 @@ var gemba: PlaceActions
 var player := PlayerProfile.new()
 ## The first thing wrong with the content; "" when the game is usable.
 var error := ""
+## What people said in passing today (Phase 2 §1.4): person id → the day they greeted
+## you; "a|b" → the day that pair chatted; how many quick lines were said (variety).
+## Not saved: after a reload the morning hello may come once more.
+var _greeted: Dictionary[String, int] = {}
+var _chatted: Dictionary[String, int] = {}
+var _quick_said := 0
 
 
 ## A new game on the real content. `seed_value` fixes the simulation's luck.
@@ -774,6 +794,96 @@ func energy_of(person_id: String) -> Dictionary:
 	if not people.persons.has(person_id):
 		return {}
 	return {"energy": people.morale[person_id] / 100.0, "needs_talk": people.needs_talk(person_id)}
+
+
+# ── In passing (Phase 2 §1.4, §2.4): greetings, quick lines, coffee chatter ──
+
+## The morning hello of `person_id` by your name, once a day: their line after what
+## yesterday left (greeting_fact), else an ordinary morning. "" when they greeted you
+## today already or have no greeting.
+func greet(person_id: String) -> String:
+	var today := SimCalendar.day_of(region.net.time)
+	if _greeted.get(person_id, -1) == today:
+		return ""
+	var line := catalog.reactions.greeting(person_id, greeting_fact(person_id), hash(person_id) + today)
+	if not line.is_empty():
+		_greeted[person_id] = today
+	return fill_tokens(line)
+
+
+## What a person remembers this morning (one of Reactions.FACTS, or ""): how the last talk
+## went when it was on an earlier day, at most GREETING_MEMORY_DAYS ago (a ruined or
+## pressured talk first, then an agreement, then being heard), else a fix at their place
+## that was standardised that recently.
+func greeting_fact(person_id: String) -> String:
+	var now := region.net.time
+	var log: Array = people.talk_log.get(person_id, [])
+	var at := int(log[-1].get("at", -1)) if not log.is_empty() else -1
+	var ago := SimCalendar.day_of(now) - SimCalendar.day_of(at)
+	if at >= 0 and ago >= 1 and ago <= GREETING_MEMORY_DAYS:
+		var flags: Array = people.memory.get(person_id, {}).get("flags", [])
+		for flag: String in ["ruined", "pressured"]:
+			if flag in flags:
+				return flag
+		if log[-1].get("outcome") == "commitment":
+			return "committed"
+		if "heard" in flags:
+			return "heard"
+	var p: PersonDef = people.persons.get(person_id)
+	for problem: ProblemDef in region.problem_list() if p != null else []:
+		var st: ProblemState = region.state[problem.id]
+		if problem.step == p.place and st.standardised and st.phase == ProblemState.Phase.RESOLVED \
+				and now - st.check_at <= SimCalendar.days(GREETING_MEMORY_DAYS):
+			return "standardised"
+	return ""
+
+
+## One line about today when there is nothing to discuss (E on a person; no panel): tired
+## when their morale is low, else busy or calm by their team's queue, else the hour.
+func quick_line(person_id: String) -> String:
+	_quick_said += 1
+	var line := catalog.reactions.quick_line(person_id, quick_mood(person_id), hash(person_id) + _quick_said)
+	return fill_tokens(line)
+
+
+## The mood of a quick line now (one of Reactions.MOODS).
+func quick_mood(person_id: String) -> String:
+	if int(people.morale.get(person_id, 100)) < TIRED_MORALE:
+		return "tired"
+	var load := load_of(person_id)
+	if not load.is_empty():
+		return load
+	var minute := minute_of_day()
+	return "morning" if minute < MORNING_UNTIL else ("late" if minute >= LATE_FROM else "afternoon")
+
+
+## How full their team's work is: busy, calm, or "" (in between, or no team or queue known).
+func load_of(person_id: String) -> String:
+	var p: PersonDef = people.persons.get(person_id)
+	var step := region.net.step_at(p.place) if p != null else null
+	if step == null:
+		return ""
+	var days := region.net.queue_days(step)
+	return "busy" if days >= BUSY_QUEUE_DAYS else ("calm" if days < CALM_QUEUE_DAYS else "")
+
+
+## Two colleagues at the coffee corner: their exchange [first line, second line], once a
+## day per pair; [] when they chatted today or nothing fits their teams and load.
+func chatter(first: String, second: String) -> Array[String]:
+	var today := SimCalendar.day_of(region.net.time)
+	var pair := first + "|" + second if first < second else second + "|" + first
+	var out: Array[String] = []
+	if _chatted.get(pair, -1) == today:
+		return out
+	var teams := [first, second].map(func(id: String) -> String:
+		return people.persons[id].team if people.persons.has(id) else "")
+	var loads := [load_of(first), load_of(second)]
+	var load := "busy" if "busy" in loads else ("calm" if loads.all(func(l: String) -> bool: return l == "calm") else "")
+	out = catalog.reactions.chatter_for(teams, load, hash(pair) + today)
+	if not out.is_empty():
+		_chatted[pair] = today
+	out.assign(out.map(fill_tokens))
+	return out
 
 
 ## Who could use a talk now, for the dagstart (spec §5.7; at most one by the

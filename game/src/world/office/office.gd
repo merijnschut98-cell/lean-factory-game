@@ -108,6 +108,8 @@ var minimap: OfficeMinimap
 var yard: OfficeYard
 ## The character creator open over the world ("Uiterlijk" in the pause menu), or null.
 var look_editor: CreatorScreen
+## People turning to you, greeting you, chatting at the coffee corner (Phase 2 §1.4).
+var reactions: OfficeReactions
 
 
 func _ready() -> void:
@@ -152,6 +154,8 @@ func build() -> void:
 			push_warning("office: no marker for " + id)
 	_add_player()
 	_add_camera()
+	reactions = OfficeReactions.create(self)
+	add_child(reactions)
 	ui = GameUI.new()
 	add_child(ui)
 	ui.setup(session, loaded.get("layer", _opening_layer()))
@@ -610,7 +614,8 @@ func use(target: Node3D) -> void:
 
 
 ## Talk with `person` (person_selected says who): the dialog opens, or a toast
-## says why not. The coach opens the coach's panel.
+## says why not; with nothing to discuss they say one line about today over their head
+## (the quick exchange: no panel). The coach opens the coach's panel.
 func talk_to(person: OfficePerson) -> void:
 	if person == null or not session.error.is_empty():
 		return
@@ -618,7 +623,10 @@ func talk_to(person: OfficePerson) -> void:
 		interact(interactable("coach"))
 		return
 	person_selected.emit(person.id)
-	ui.ask_talk(person.id, person.display_name)
+	if ui.ask_talk(person.id, person.display_name) in GameUI.NO_TALK:
+		_turn_to(person)
+		person.face_toward(player.position)
+		person.say(session.quick_line(person.id))
 
 
 ## Frame a talk with a person in the office: the player turns to them and the
