@@ -257,3 +257,39 @@ func test_a_walking_talk_lets_the_player_walk_between_lines() -> void:
 	office.follow_walking_talk(0.1)
 	assert_true(office.rig._inspect["at"].distance_to(before) > 0.1, "the camera follows the pair")
 	office.free()
+
+
+## After the talk the person goes back to their work: their own pose, their whole turn.
+func test_after_the_talk_the_person_drops_the_talk_s_posture() -> void:
+	var office := _office()
+	_open_silo_in(office)
+	var joost := office.people.person("joost")
+	office.player.position = joost.position + joost.basis.x * 1.1 - joost.basis.z * 0.2
+	office.use(joost)
+	assert_eq(office.people.held, joost, "he stays for the talk")
+	joost.pose_for_band(0)   # closed for a moment: half turned away
+	for move in LISTEN_TO_JOOST:
+		office.ui.talk_view.choose(move)
+	office.ui.close_panels()
+	office.ui.close_panels()
+	assert_false(office.ui.talk_view.visible, "the talk is closed")
+	assert_true(joost.clip in ["sit", "sit_tired"], "back to his typing, not '%s'" % joost.clip)
+	assert_eq(joost._turn_share, 1.0, "a whole turn again")
+	assert_false(joost._talking, "no longer in a talk")
+	assert_false(joost.facing(), "back to his screen")
+	assert_true(office.people.held == null, "and free to go")
+	office.free()
+
+
+## Another person staged in the talk view lets the first go.
+func test_restaging_the_talk_lets_the_first_person_go() -> void:
+	var view := _view(_silo())
+	var first := OfficePerson.create({"id": "kim", "office": {"pose": "idle"}})
+	view.stage(first)
+	first.face_toward(Vector3(1, 0, 0), true)
+	first.pose_for_band(0)
+	view.stage(null)
+	assert_eq(first.clip, "idle", "the first person back to their idle")
+	assert_eq(first._turn_share, 1.0)
+	view.free()
+	first.free()

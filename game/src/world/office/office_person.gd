@@ -283,6 +283,12 @@ func face_back() -> void:
 	_turn_share = 1.0
 
 
+## The talk is over: their own pose again (not the band's), and back to their work.
+func end_talk() -> void:
+	_play(pose)
+	face_back()
+
+
 ## Whether they are turned to someone.
 func facing() -> bool:
 	return _look_at != null

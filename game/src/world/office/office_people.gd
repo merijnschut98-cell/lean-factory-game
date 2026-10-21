@@ -40,6 +40,8 @@ const ALWAYS_AT_DESK := {"place": OfficeDay.DESK, "since": -SimCalendar.MINUTES_
 const ALWAYS_OUT := {"place": OfficeDay.OUT, "since": -SimCalendar.MINUTES_PER_DAY}
 
 var people: Array[OfficePerson] = []
+## Who is in a talk with the player (Office.frame_talk), or null: they stay for it.
+var held: OfficePerson
 ## The floor areas (x, z) of the floor's shut rooms (OfficeFloors.shut_rects).
 var shut: Array[Rect2] = []
 ## Each person's day by id.
@@ -137,6 +139,21 @@ func person_under(origin: Vector3, direction: Vector3) -> OfficePerson:
 			best = p
 			best_distance = d
 	return best
+
+
+## `p` is in a talk with the player (null: nobody here, a call); whoever was before lets go.
+func hold(p: OfficePerson) -> void:
+	if p != held:
+		release()
+	held = p
+
+
+## The talk is over: who was held drops the talk's posture and goes back to their day.
+func release() -> void:
+	var p := held
+	held = null
+	if p != null and is_instance_valid(p):
+		p.end_talk()
 
 
 ## Name tags on for these people only.

@@ -674,6 +674,7 @@ func talk_to(person: OfficePerson) -> void:
 func frame_talk(person_id: String) -> void:
 	var person := people.person(person_id)
 	var here := person != null and person.visible
+	people.hold(person if here else null)
 	if here:
 		_turn_to(person)
 		person.face_toward(player.position, true)   # they turn to you, so the face shot sees their face
@@ -974,6 +975,7 @@ func _on_panel_opened() -> void:
 
 
 func _on_panels_closed() -> void:
+	people.release()
 	people.refresh(session)
 	player.active = true
 	rig.active = true
