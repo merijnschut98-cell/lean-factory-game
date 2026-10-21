@@ -62,6 +62,8 @@ var missions: Missions
 ## The cast and what they remember (dialogs); the talk in progress, if any.
 var people: People
 var _talk: Dialog = null
+## An expert talk in progress instead (topic by topic, ExpertTalk), if any.
+var _expert: ExpertTalk = null
 ## People's events ({type: left, person}) not yet drained.
 var _people_events: Array[Dictionary] = []
 ## Hidden rewards for deep thinking; it hears what the player does.
@@ -995,7 +997,7 @@ func set_note(person_id: String, text: String) -> bool:
 ## in_dialog | unknown_person | cooling_down (after a ruined talk; the UI says
 ## the bank's special.cooling_down line) | nothing_to_say.
 func start_dialog(person_id: String) -> Dictionary:
-	if _talk != null:
+	if _talk != null or _expert != null:
 		return {"error": "in_dialog"}
 	var p: PersonDef = people.persons.get(person_id)
 	if p == null:
@@ -1006,6 +1008,10 @@ func start_dialog(person_id: String) -> Dictionary:
 	var d := people.dialog_for(person_id, world)
 	if d == null:
 		return {"error": "nothing_to_say"}
+	if d.kind == ExpertTalk.KIND:   # topic by topic: no position, no moves (phase 2 design §2.5)
+		_expert = people.start_expert(d, world)
+		return _filled({"dialog": d.id, "kind": d.kind, "person": p.id, "name": p.name, "short": p.short,
+			"role": p.role, "opening": people.opening(d), "position": {}, "meter": _expert.meter(), "moves": []})
 	_talk = people.start(d, world)
 	return _filled({"dialog": d.id, "kind": d.kind, "person": p.id, "name": p.name, "short": p.short, "role": p.role,
 		"opening": people.opening(d), "position": _talk.position(), "meter": _talk.meter(), "moves": _talk.moves()})
@@ -1023,6 +1029,8 @@ func dialog_moves() -> Array[Dictionary]:
 ## line}], a shown clue's text in its line); [] when there is none.
 func dialog_offers() -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
+	if _expert != null:
+		out.assign(_filled(_expert.offer()))
 	if _talk != null:
 		for o: Dictionary in _talk.offer():
 			out.append(_filled(_with_clue(o, o["pick"])))
@@ -1042,6 +1050,8 @@ func _with_clue(said: Dictionary, clue_id: String) -> Dictionary:
 
 ## The meter of the talk in progress (Dialog.meter); {} when there is none.
 func dialog_meter() -> Dictionary:
+	if _expert != null:
+		return _expert.meter()
 	return _talk.meter() if _talk != null else {}
 
 
@@ -1066,12 +1076,32 @@ func dialog_layers() -> Array[Dictionary]:
 ## with `summary` (People.finish), and its minutes have passed. Errors:
 ## no_dialog | unknown_move | bad_pick (and nothing changes).
 func choose_move(move: String, pick: String = "") -> Dictionary:
+	if _expert != null:
+		return _ask_expert(move, pick)
 	if _talk == null:
 		return {"error": "no_dialog"}
 	var result := _talk.say(move, pick)
 	if result.get("ended", false):
 		result["summary"] = _finish_talk()
 	return _filled(_with_clue(result, pick))
+
+
+## A question in the expert talk (ExpertTalk.ASK with the topic id) or its close
+## (ExpertTalk.CLOSE, as "Afronden"): ExpertTalk.say's result. A topic's new
+## clue is found at once; when the talk ends, with `summary`
+## (People.finish_expert) and its minutes passed.
+func _ask_expert(move: String, pick: String) -> Dictionary:
+	var result := _expert.say(move, pick)
+	if result.has("error"):
+		return result
+	if not str(result["clue"]).is_empty():
+		region.found[result["clue"]] = true
+	if result["ended"]:
+		var t := _expert
+		_expert = null
+		result["summary"] = people.finish_expert(t, region.net.time)
+		_after(t.minutes())
+	return _filled(result)
 
 
 ## The tokens talk lines speak through: the player's (PlayerProfile.fill:
