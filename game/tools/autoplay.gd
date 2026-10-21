@@ -22,9 +22,12 @@ extends SceneTree
 ##             fits them, steers only once the concern is out, never pressures.
 ##   never-talks  plays as the expert does and never opens a talk: a fix
 ##             nobody asked its owner about is compliance (Sustain.BUY_IN ×0.6).
-##             Only a talk a mission cannot end without (ends_with_talk) is had,
-##             said hello and closed, and logged as forced.
+##             Only a talk a mission cannot end without is had: Monday's
+##             (ends_with_talk) said hello and closed, logged as forced; a talk
+##             a mission needs (talk_to goals) pressed for a yes (_push).
 ## Every persona has the talk a mission ends with; the others only say hello.
+## A talk a mission needs (MissionDef.talk_goals) is had when the objective
+## names it, once a day: never-talks and careless press, the others listen.
 ## A run that ends with the campaign done plays an epilogue: EPILOGUE_DAYS
 ## more with no new work, the persona's audits only, to see which fixes hold.
 ## A persona that cannot get anywhere on a problem is helped by the expert's
@@ -172,6 +175,10 @@ class Persona extends RefCounted:
 	const TALK_TRIES := 3
 	const CHECKIN_TRIES := 6
 	const MAX_MOVES := 40
+	## Who presses for a yes when a mission needs a talk (_have_needed_talk), and how
+	## often before it listens instead.
+	const PUSHERS: Array[String] = ["never-talks", "careless"]
+	const PUSH_TRIES := 5
 	## The listening move for a person's last words (Dialog.ANSWERS), in order.
 	const ANSWER := {"feeling": "reflect", "admission": "empathy", "hesitation": "silence", "claim": "paraphrase",
 		"doubt": "experience"}
@@ -405,6 +412,9 @@ class Persona extends RefCounted:
 		if not problem.is_empty():
 			s.wait_for_check(problem)
 			return
+		if actives.any(func(m: MissionDef) -> bool: return not s.missions.pending_talk(m).is_empty()):
+			s.wait_days(1.0)  # a needed talk tomorrow (once a day, or after a ruined one)
+			return
 		for m: MissionDef in actives:
 			_dead_end("no_action", m.id, "active, nothing to do and nothing to wait for (phase %s)" % _phase(m))
 			_give_up(m)
@@ -555,6 +565,9 @@ class Persona extends RefCounted:
 	## One action on the mission; false when it can only wait.
 	func _act_on(m: MissionDef) -> bool:
 		_coach(m)
+		var needed := s.missions.pending_talk(m)
+		if not needed.is_empty() and Objective.step(m, s).get("step") == "talk" and _talk_day.get(needed, -1) != floori(day()):
+			return _have_needed_talk(m, s.people.dialogs[needed])
 		if not m.ends_with_talk.is_empty() and not s.talked(m.ends_with_talk) \
 				and (persona == "talker" or _goal_met_but_talk(m)):
 			return _have_talk(m)
@@ -595,6 +608,55 @@ class Persona extends RefCounted:
 			_give_up(m)
 		entry["outcome"] = outcome
 		return true
+
+	## A talk the mission needs (MissionDef.talk_goals), when the objective names it: the
+	## pushers (never-talks, careless) press for a yes, the others listen first. A pusher
+	## that got nowhere PUSH_TRIES times listens instead (logged as assisted).
+	func _have_needed_talk(m: MissionDef, d: DialogDef) -> bool:
+		if s.people.cooling_down(d.person, s.region.net.time):
+			_talk_day[d.id] = floori(day())  # after a ruined talk: tomorrow morning
+			return true
+		var pushes := (record["talks"] as Array).filter(func(t: Dictionary) -> bool:
+			return t["dialog"] == d.id and t.get("pushed", false)).size()
+		if persona in PUSHERS and pushes < PUSH_TRIES:
+			_push(d)
+		else:
+			if persona in PUSHERS:
+				record["assisted"].append({"mission": m.id, "problem": m.goal_problem, "day": snappedf(day(), 0.1),
+					"why": "talk %s: pushed %d times" % [d.id, pushes]})
+			_converse(d)
+		return true
+
+	## Press for a yes, as a player who does not listen: a hello, a proposal on the table,
+	## pressure, the ask (Dialog: compliance while openness holds). Returns the outcome.
+	func _push(d: DialogDef) -> String:
+		_doing = "push " + d.id
+		_talk_tries[d.id] = int(_talk_tries.get(d.id, 0)) + 1
+		_talk_day[d.id] = floori(day())
+		var opened := s.start_dialog(d.person)
+		if opened.get("dialog") != d.id:
+			if not opened.has("error"):
+				s.end_dialog()
+			return "error:" + str(opened.get("error", opened.get("dialog")))
+		var proposals: Array = s.dialog_moves().filter(func(mv: Dictionary) -> bool: return mv["id"] == "propose")[0]["picks"]
+		var made: Array[String] = []
+		var result := {}
+		for move: Array in [["mood", ""], ["propose", proposals[0]["id"] if not proposals.is_empty() else ""], ["pressure", ""],
+				["ask_commitment", ""]]:
+			result = s.choose_move(move[0], move[1])
+			if result.has("error"):
+				break
+			made.append(move[0])
+			if result["ended"]:
+				break
+		if not result.get("ended", false):
+			result = s.end_dialog()
+		var summary: Dictionary = result.get("summary", {})
+		var outcome := str(summary.get("outcome", result.get("outcome", "")))
+		record["talks"].append({"dialog": d.id, "person": d.person, "kind": d.kind, "mission": d.mission,
+			"day": snappedf(day(), 0.1), "outcome": outcome, "moves": made, "forced": false, "pushed": true,
+			"trust": summary.get("trust", -1), "morale": summary.get("morale", -1)})
+		return outcome
 
 	# ── Talks ───────────────────────────────────────────────────────────────
 
@@ -834,6 +896,8 @@ class Persona extends RefCounted:
 				return _submit(m, p)
 			P.DOING:
 				return false
+			P.RESOLVED when not s.missions.pending_talk(m).is_empty():
+				return false  # only a needed talk is left (tomorrow)
 			P.CHECK_READY:
 				return _check(m, p)
 			P.CHECKED:
@@ -1809,7 +1873,7 @@ class PlayReport extends RefCounted:
 			"used on every 'slipping' event by the expert, on half of them by the average player" if runs.any(func(r: Dictionary) -> bool:
 				return not (r["audits"] as Array).is_empty()) else "not in GameSession, so fixes are left to wear"))
 		md.append("")
-		md.append("Personas: **expert** does the training week, takes missions in content order, finds the key clues with the tools that reveal them, writes the right A3 with the best-fitting countermeasure, standardises. **average** searches tool by tool at the step and its neighbours, names a wrong cause (with a countermeasure for it) first 40 %% of the time, picks the cheapest fitting countermeasure, standardises half the time. **careless** skips the training week, plays random tools, questions (blame included) and A3 choices, reads the mismatch note after 3 failed Checks and follows the coach after 5, never standardises. **talker** plays the gemba, the A3 and the audits as the expert does and talks to everyone who has a talk for it (check-ins first, each talk at most once a day, a persuasion three times, a check-in six), listening first: it answers the person's last words with the move that fits them, steers only once the concern is out and the meter reads commitment, never pressures. **never-talks** plays as the expert does and never opens a talk; only a talk a mission cannot end without (Monday's `anouk_seven`) is had, hello and goodbye, logged as forced. Every other persona also only says hello there. A lost persona gets the expert's next step (\"assisted\"). A run that ends with the campaign done plays an epilogue of %d days with no new work (the persona's audits only), to see which fixes hold." % Persona.EPILOGUE_DAYS)
+		md.append("Personas: **expert** does the training week, takes missions in content order, finds the key clues with the tools that reveal them, writes the right A3 with the best-fitting countermeasure, standardises. **average** searches tool by tool at the step and its neighbours, names a wrong cause (with a countermeasure for it) first 40 %% of the time, picks the cheapest fitting countermeasure, standardises half the time. **careless** skips the training week, plays random tools, questions (blame included) and A3 choices, reads the mismatch note after 3 failed Checks and follows the coach after 5, never standardises. **talker** plays the gemba, the A3 and the audits as the expert does and talks to everyone who has a talk for it (check-ins first, each talk at most once a day, a persuasion three times, a check-in six), listening first: it answers the person's last words with the move that fits them, steers only once the concern is out and the meter reads commitment, never pressures. **never-talks** plays as the expert does and never opens a talk; only a talk a mission cannot end without is had: Monday's `anouk_seven` hello and goodbye (logged as forced), and a talk a mission needs (`talk_to`) pressed for a yes (a hello, a proposal, pressure, the ask; listening after 5 pushes, logged as assisted). Every other persona also only says hello on Monday; a needed talk is had when the objective names it, careless pressing like never-talks, the others listening first. A lost persona gets the expert's next step (\"assisted\"). A run that ends with the campaign done plays an epilogue of %d days with no new work (the persona's audits only), to see which fixes hold." % Persona.EPILOGUE_DAYS)
 		md.append("")
 		var by_severity := PackedStringArray()
 		for sev in SEVERITIES:

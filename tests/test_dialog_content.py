@@ -184,7 +184,7 @@ def _talk_mission(real: dict, goal: dict) -> dict:
     docs = copy.deepcopy(real)
     side = copy.deepcopy(next(m for m in docs["missions"]["missions"] if m["id"] == "fix_wrong_joint"))
     side.update({"id": "talk_frank", "goal": goal})
-    for key in ("fail_closes", "deadline_days", "check_days", "fork", "debrief_variants", "setup"):
+    for key in ("fail_closes", "deadline_days", "check_days", "fork", "debrief_variants", "setup", "steps", "talk_to"):
         side.pop(key, None)
     docs["missions"]["missions"].append(side)
     frank = _dialog(docs, "frank_kpi_targets")

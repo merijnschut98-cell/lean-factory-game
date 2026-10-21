@@ -118,6 +118,9 @@ var talk_outcome: Callable = func(_dialog_id: String) -> String: return ""
 ## Whether a dialog was had at all, for a mission that ends with a talk
 ## (MissionDef.ends_with_talk). Without people nothing waits.
 var talked: Callable = func(_dialog_id: String) -> bool: return true
+## Whether a dialog's person is still here to talk to (GameSession.can_talk): a talk
+## goal with someone who left is waived, a closed door and never a dead end.
+var can_talk: Callable = func(_dialog_id: String) -> bool: return true
 
 
 func _init(of_region: Region, mission_defs: Array[MissionDef], coach_def: Dictionary) -> void:
@@ -706,8 +709,31 @@ func _unlocked(m: MissionDef) -> bool:
 	return needs_met(m.requires_facts)
 
 
+## The first talk the mission still needs (MissionDef.talk_goals: not met yet and its
+## person still here), or "".
+func pending_talk(m: MissionDef) -> String:
+	for t: Dictionary in m.talk_goals:
+		if not _talk_met(t["dialog"], t["outcome"]) and can_talk.call(t["dialog"]):
+			return t["dialog"]
+	return ""
+
+
+func _talk_met(dialog_id: String, outcome: String) -> bool:
+	return talk_outcome.call(dialog_id) in TALK_MEETS[outcome]
+
+
+## Whether a talk the mission needed was won by pressure (it pays COMPLIANCE_SHARE).
+func _forced(m: MissionDef) -> bool:
+	var dialogs := m.talk_goals.map(func(t: Dictionary) -> String: return t["dialog"])
+	if m.goal_type == "talk_to":
+		dialogs.append(m.goal_dialog)
+	return dialogs.any(func(id: String) -> bool: return talk_outcome.call(id) == "compliance")
+
+
 func _goal_met(m: MissionDef) -> bool:
 	if not m.ends_with_talk.is_empty() and not talked.call(m.ends_with_talk):
+		return false
+	if not pending_talk(m).is_empty():
 		return false
 	match m.goal_type:
 		"walk":
@@ -733,7 +759,7 @@ func _goal_met(m: MissionDef) -> bool:
 					return false
 			return seen.size() >= m.goal_uses
 		"talk_to":
-			return talk_outcome.call(m.goal_dialog) in TALK_MEETS[m.goal_outcome]
+			return _talk_met(m.goal_dialog, m.goal_outcome)
 	return false
 
 
@@ -745,7 +771,7 @@ func _complete(m: MissionDef) -> void:
 	var score: Dictionary = region.state[m.goal_problem].score if m.goal_type == "solve" else {}
 	if not done_once.has(m.id):
 		done_once[m.id] = true
-		var forced: bool = m.goal_type == "talk_to" and talk_outcome.call(m.goal_dialog) == "compliance"
+		var forced := _forced(m)
 		var share := reward_share(score) * (COMPLIANCE_SHARE if forced else 1.0)
 		region.grant(roundi(m.reward_xp * share), roundi(m.reward_budget * share))
 		region.earn_reputation(0 if forced else m.reward_reputation, "mission")

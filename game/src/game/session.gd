@@ -82,6 +82,7 @@ static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, t
 	# cycle (s → missions → lambda → s) and no session would ever be freed.
 	s.missions.talk_outcome = s.talk_outcome
 	s.missions.talked = s.talked
+	s.missions.can_talk = s.can_talk
 	s.discoveries = Discoveries.new(s.catalog.discoveries)
 	s.gemba = PlaceActions.from_doc(s.catalog.places)
 	for id in [STORY_MISSION, TRAINING_FIRST]:
@@ -973,6 +974,13 @@ func talk_outcome(dialog_id: String) -> String:
 ## hold waits for nothing.
 func talked(dialog_id: String) -> bool:
 	return people.talks.has(dialog_id) or not people.dialogs.has(dialog_id)
+
+
+## Whether a dialog's person is still here (Missions.can_talk): someone who left takes
+## their talks with them.
+func can_talk(dialog_id: String) -> bool:
+	var d: DialogDef = people.dialogs.get(dialog_id)
+	return d != null and not people.has_left(d.person)
 
 
 ## What a talk needs to know about the world, for person `p`.

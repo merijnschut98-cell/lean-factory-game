@@ -66,6 +66,10 @@ var goal_outcome := "commitment"
 ## A talk of this mission that must have been had, however it went, before
 ## the goal counts (Monday ends with Anouk at seven: D9 talks audit A2); "".
 var ends_with_talk: String
+## The talks the mission needs besides its goal (`talk_to:` in content, phase-2 design
+## §3.1): [{dialog, outcome (partial | commitment)}]. It completes once its goal and
+## every one of them are met (Missions.pending_talk); the objective line names them.
+var talk_goals: Array[Dictionary] = []
 var goal_clues := 0
 ## observe: a gemba tool (goal_tool, or any tool or question when empty) used
 ## at every place, goal_uses different place-tool pairs in all.
@@ -155,6 +159,13 @@ static func from_dict(d: Dictionary) -> MissionDef:
 	m.goal_dialog = str(goal.get("dialog", ""))
 	m.goal_outcome = str(goal.get("outcome", "commitment"))
 	m.ends_with_talk = str(d.get("ends_with_talk", "")) if d.get("ends_with_talk") is String else ""
+	var talks: Variant = d.get("talk_to", [])
+	var bad_talk := not talks is Array
+	for t: Variant in talks if talks is Array else []:
+		var entry := JsonFile.dict_or_empty(t)
+		var talk := {"dialog": str(entry.get("dialog", "")), "outcome": str(entry.get("outcome", "commitment"))}
+		bad_talk = bad_talk or talk["dialog"].is_empty() or not talk["outcome"] in TALK_OUTCOMES
+		m.talk_goals.append(talk)
 	m.check_days = int(d.get("check_days", -1))
 	m.grant_tools = PackedStringArray(Array(d.get("grant_tools", [])).filter(
 		func(t: Variant) -> bool: return t is String and Investigation.TOOLS.has(t))) if d.get("grant_tools") is Array \
@@ -188,6 +199,8 @@ static func from_dict(d: Dictionary) -> MissionDef:
 		m.error = "mission %s: an observe goal needs places" % m.id
 	elif m.goal_type == "talk_to" and (m.goal_dialog.is_empty() or not m.goal_outcome in TALK_OUTCOMES):
 		m.error = "mission %s: a talk_to goal needs a dialog and an outcome (partial | commitment)" % m.id
+	elif bad_talk:
+		m.error = "mission %s: talk_to lists talks, each with a dialog and an outcome (partial | commitment)" % m.id
 	elif not m.deadline_beat.is_empty() and m.deadline_days < 0:
 		m.error = "mission %s: a deadline_beat needs deadline_days" % m.id
 	elif not m.setup.is_empty() and m.kind != "training":

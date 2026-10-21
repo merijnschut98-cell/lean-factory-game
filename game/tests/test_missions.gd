@@ -790,6 +790,61 @@ func test_compliance_meets_a_talk_goal_at_half_pay_and_no_reputation() -> void:
 	assert_eq(log.region.reputation.value, Reputation.START, "no reputation for a forced yes")
 
 
+## A mission's talk_to goals besides its own (phase-2 design §3.1, S1-H): the talks it
+## needs. It completes once its goal and every talk are met; a person who left waives theirs.
+func _solve_with_talk_log() -> Array:
+	var said := {"o": "", "gone": false}
+	var defs: Array[MissionDef] = [MissionDef.from_dict({"id": "fix_m", "name": "fix_m", "kind": "main", "tier": 1,
+		"goal": {"type": "solve", "problem": "revision_backlog"}, "briefing": "b", "debrief": "d",
+		"talk_to": [{"dialog": "d1", "outcome": "partial"}], "rewards": {"xp": 400, "budget": 2000}})]
+	var log := Missions.new(RulesFixture.region(), defs, RulesFixture.coach())
+	log.talk_outcome = func(id: String) -> String: return said["o"] if id == "d1" else ""
+	log.can_talk = func(_id: String) -> bool: return not said["gone"]
+	assert_eq(log.accept("fix_m"), "")
+	log.region.state["revision_backlog"].phase = ProblemState.Phase.RESOLVED
+	return [log, said]
+
+
+func test_a_mission_waits_for_the_talks_it_needs() -> void:
+	var made: Array = _solve_with_talk_log()
+	var log: Missions = made[0]
+	assert_eq(log.defs["fix_m"].talk_goals, [{"dialog": "d1", "outcome": "partial"}])
+	log.update()
+	assert_eq(log.status("fix_m"), "active", "solved, but Joost was never asked")
+	assert_eq(log.pending_talk(log.defs["fix_m"]), "d1")
+	made[1]["o"] = "heard"
+	log.update()
+	assert_eq(log.status("fix_m"), "active", "heard is not yet an agreement")
+	made[1]["o"] = "partial"
+	log.update()
+	assert_eq(log.status("fix_m"), "completed")
+	assert_eq(log.pending_talk(log.defs["fix_m"]), "")
+	assert_eq(log.region.profile.xp, 400)
+
+
+func test_a_needed_talk_won_by_pressure_pays_half() -> void:
+	var made: Array = _solve_with_talk_log()
+	made[1]["o"] = "compliance"
+	made[0].update()
+	assert_eq(made[0].status("fix_m"), "completed")
+	assert_eq(made[0].region.profile.xp, 200, "a forced yes: half the reward")
+
+
+func test_a_needed_talk_with_someone_who_left_is_waived() -> void:
+	var made: Array = _solve_with_talk_log()
+	made[1]["gone"] = true
+	made[0].update()
+	assert_eq(made[0].status("fix_m"), "completed", "a closed door, never a dead end")
+
+
+func test_a_talk_goal_entry_needs_a_dialog_and_an_outcome() -> void:
+	var base := {"id": "x", "name": "x", "kind": "main", "goal": {"type": "solve", "problem": "p"}}
+	assert_ne(MissionDef.from_dict(base.merged({"talk_to": [{"outcome": "partial"}]})).error, "")
+	assert_ne(MissionDef.from_dict(base.merged({"talk_to": [{"dialog": "d", "outcome": "maybe"}]})).error, "")
+	assert_eq(MissionDef.from_dict(base.merged({"talk_to": [{"dialog": "d"}]})).talk_goals,
+		[{"dialog": "d", "outcome": "commitment"}])
+
+
 func test_a_talk_goal_names_a_dialog() -> void:
 	var bad := MissionDef.from_dict({"id": "x", "name": "x", "kind": "side", "goal": {"type": "talk_to"}})
 	assert_ne(bad.error, "")

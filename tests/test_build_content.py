@@ -877,6 +877,29 @@ def test_a_side_mission_may_word_its_steps(rules_dirs):
     _rules(content, lambda d: _mission(d, 2).update(steps={"look": "Ga kijken bij Werkvoorbereiding"}))
 
 
+def test_every_act_one_persuasion_is_a_talk_goal_of_its_mission():
+    """S1-H: every talk an Act I mission needs is a talk_to goal, so the objective names it."""
+    docs = bc.load_content()
+    missions = {m["id"]: m for m in docs["missions"]["missions"]}
+    for d in docs["dialogs"]["dialogs"]:
+        m = missions.get(d.get("mission"))
+        if d["kind"] == "persuade" and d.get("owns") and m and m.get("act") == 1:
+            assert d["id"] in [t["dialog"] for t in m.get("talk_to", [])], d["id"]
+            assert "talk" in m["steps"], m["id"]
+
+
+@pytest.mark.parametrize("talks, message", [
+    ("nope", "'talk_to' lists talks"),
+    ([{"outcome": "partial"}], "needs a 'dialog'"),
+    ([{"dialog": "x", "outcome": "maybe"}], "'outcome' must be one of"),
+    ([{"dialog": "x", "mood": "goed"}], r"unknown key\(s\) 'mood'"),
+])
+def test_talk_goal_errors_are_caught(rules_dirs, talks, message):
+    content, _ = rules_dirs
+    with pytest.raises(bc.ContentError, match=message):
+        _rules(content, lambda d: _mission(d).update(talk_to=talks))
+
+
 def test_every_main_mission_in_the_repo_words_its_steps():
     for m in bc.load_content()["missions"]["missions"]:
         if m["kind"] == "main":

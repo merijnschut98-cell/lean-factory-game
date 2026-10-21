@@ -29,6 +29,11 @@ const DEFAULTS := {
 	"talk": "Praat met {naam} ({team})",
 }
 const STEPS: Array[String] = ["look", "again", "dig", "a3", "wait", "check", "act", "talk"]
+## A talk the mission needs (MissionDef.talk_goals) comes once the player has looked: it
+## takes the place of these steps ("" when the goal is met and only the talk is left), so
+## the person is met before the digging (phase-2 design §3.4). The Check and the Act at
+## the obeya wall stay first.
+const TALK_BEFORE: Array[String] = ["dig", "a3", "wait", ""]
 ## Key clues found before the A3 becomes the next step (or all of them, when fewer).
 const A3_CLUES := 2
 
@@ -52,6 +57,9 @@ static func of(s: GameSession, layer: SessionLayer = null) -> Dictionary:
 ## skips a walk's steps the player cannot get to (the minimap: a step in no room).
 static func step(m: MissionDef, s: GameSession, reachable := Callable()) -> Dictionary:
 	var out := _where(m, s, reachable)
+	var talk := s.missions.pending_talk(m)
+	if not talk.is_empty() and out.get("step", "") in TALK_BEFORE:
+		out = _talk(s, talk)
 	if out.is_empty() and not m.ends_with_talk.is_empty() and not s.talked(m.ends_with_talk):
 		out = _talk(s, m.ends_with_talk)
 	if out.is_empty():

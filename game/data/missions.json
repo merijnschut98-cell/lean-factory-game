@@ -336,8 +336,15 @@
     "check": "Lees aan de obeya-wand af wat je experiment opleverde",
     "dig": "Zoek uit waar de uren van Anouk naartoe gaan",
     "look": "Ga bij Werkvoorbereiding kijken hoe een ontwerp ontstaat",
+    "talk": "Praat met Joost (Werkvoorbereiding)",
     "wait": "Kijk bij Werkvoorbereiding hoe het experiment loopt"
    },
+   "talk_to": [
+    {
+     "dialog": "joost_vacancies",
+     "outcome": "partial"
+    }
+   ],
    "tier": 1
   },
   {
@@ -382,8 +389,15 @@
     "check": "Lees aan de obeya-wand af wat je experiment opleverde",
     "dig": "Zoek uit waarom aanvragen terug naar de klant gaan",
     "look": "Ga bij Intake kijken wat er met een aanvraag gebeurt",
+    "talk": "Praat met Sanne (Intake)",
     "wait": "Kijk bij Intake hoe het experiment loopt"
    },
+   "talk_to": [
+    {
+     "dialog": "sanne_checker",
+     "outcome": "partial"
+    }
+   ],
    "tier": 1
   },
   {
@@ -428,8 +442,15 @@
     "check": "Lees aan de obeya-wand af wat je experiment opleverde",
     "dig": "Zoek uit waarom monteurs voor niks voor de deur staan",
     "look": "Ga bij de monteurs kijken hoe een klus bij de klant loopt",
+    "talk": "Praat met Marco (Monteurs)",
     "wait": "Kijk bij de monteurs hoe het experiment loopt"
    },
+   "talk_to": [
+    {
+     "dialog": "marco_wasted_trips",
+     "outcome": "partial"
+    }
+   ],
    "tier": 1
   },
   {
@@ -469,8 +490,15 @@
     "check": "Lees aan de obeya-wand af wat je experiment opleverde",
     "dig": "Zoek uit waar de telefoontjes bij het KCC vandaan komen",
     "look": "Ga bij het KCC kijken wie er belt, en waarom",
+    "talk": "Praat met Esra (Klantcontactcentrum)",
     "wait": "Kijk bij het KCC hoe het experiment loopt"
    },
+   "talk_to": [
+    {
+     "dialog": "esra_agents",
+     "outcome": "partial"
+    }
+   ],
    "tier": 1
   },
   {
@@ -508,8 +536,15 @@
     "check": "Lees aan de obeya-wand af wat je experiment opleverde",
     "dig": "Zoek uit waar een dossier op wacht als het klaar is",
     "look": "Ga bij Meetdata kijken wat er na de aansluiting gebeurt",
+    "talk": "Praat met Petra (Meetdata)",
     "wait": "Kijk bij Meetdata hoe het experiment loopt"
    },
+   "talk_to": [
+    {
+     "dialog": "petra_batch",
+     "outcome": "partial"
+    }
+   ],
    "teaches": [
     "ean_code"
    ],
@@ -862,8 +897,15 @@
     "check": "Lees aan de obeya-wand af wat je experiment opleverde",
     "dig": "Zoek uit waarom Ahmed halverwege naar het magazijn reed",
     "look": "Ga bij de storingsdienst kijken hoe een herstel loopt",
+    "talk": "Praat met Dirk (magazijn)",
     "wait": "Kijk bij de storingsdienst hoe het experiment loopt"
    },
+   "talk_to": [
+    {
+     "dialog": "dirk_shelf",
+     "outcome": "partial"
+    }
+   ],
    "tier": 1
   },
   {
@@ -1033,8 +1075,15 @@
     "check": "Lees aan de obeya-wand af wat je experiment opleverde",
     "dig": "Zoek uit wat er wegvalt als Henk met pensioen gaat",
     "look": "Ga bij de storingsdienst kijken hoe Henk werkt",
+    "talk": "Praat met Henk (Storingsdienst)",
     "wait": "Kijk bij de storingsdienst hoe het experiment loopt"
    },
+   "talk_to": [
+    {
+     "dialog": "henk_camera",
+     "outcome": "partial"
+    }
+   ],
    "teaches": [
     "monteurstekort"
    ],
@@ -1066,8 +1115,15 @@
     "check": "Lees aan de obeya-wand af wat je experiment opleverde",
     "dig": "Zoek uit waarom de planning steeds omgaat",
     "look": "Ga bij Planning kijken hoe een week wordt ingepland",
+    "talk": "Praat met Linda (Planning)",
     "wait": "Kijk bij Planning hoe het experiment loopt"
    },
+   "talk_to": [
+    {
+     "dialog": "linda_replanning",
+     "outcome": "partial"
+    }
+   ],
    "tier": 1
   }
  ]

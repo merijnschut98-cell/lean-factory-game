@@ -646,7 +646,7 @@ MIN_REWARD_SHARE = 0.6
 MISSION_KEYS = {"id", "name", "kind", "tier", "requires", "briefing", "debrief", "fail", "goal", "deadline_days",
                 "fail_closes", "rewards", "insights", "teaches", "check_days", "setup", "act", "chapter", "arc",
                 "fork", "debrief_first", "reopen", "sets_flags", "questions", "debrief_variants", "containment",
-                "ends_with_talk", "deadline_beat", "grant_tools", "steps"}
+                "ends_with_talk", "deadline_beat", "grant_tools", "steps", "talk_to"}
 # The objective line's steps (game/src/rules/objective.gd STEPS, MAX_CHARS): a main or
 # training mission may word its own; the problem steps need a goal with a problem.
 OBJECTIVE_STEPS = ["look", "again", "dig", "a3", "wait", "check", "act", "talk"]
@@ -739,7 +739,25 @@ def validate_missions(doc: Any, source: str) -> None:
                                                       and all(isinstance(x, str) and x.strip() for x in t))
                     for stage, t in lines.items()):
                 raise ContentError(f"{where}: '{key}' maps a coach stage to a text or a list of texts")
+        _validate_talk_goals(m, where)
         _validate_steps(m, where)
+
+
+def _validate_talk_goals(m: dict, where: str) -> None:
+    """The talks a mission needs besides its goal (MissionDef.talk_goals): each a dialog
+    and the least outcome that meets it (checked against dialogs.yaml later)."""
+    talks = m.get("talk_to", [])
+    if not isinstance(talks, list):
+        raise ContentError(f"{where}: 'talk_to' lists talks: [{{dialog, outcome}}]")
+    for t in talks:
+        if not isinstance(t, dict):
+            raise ContentError(f"{where}: 'talk_to' lists talks: [{{dialog, outcome}}]")
+        _known_keys(t, {"dialog", "outcome"}, f"{where} talk_to")
+        if "dialog" not in t:
+            raise ContentError(f"{where} talk_to: needs a 'dialog'")
+        _require_strings(t, ["dialog"], f"{where} talk_to")
+        if "outcome" in t:
+            _one_of(t, "outcome", TALK_OUTCOMES, f"{where} talk_to")
 
 
 def _validate_steps(m: dict, where: str) -> None:
@@ -1962,13 +1980,18 @@ def _check_talk_goals(docs: dict[str, Any]) -> None:
         talk = m.get("ends_with_talk")  # the day ends with this talk, however it goes (D9 talks audit A2)
         if talk is not None and dialogs and dialogs.get(talk, {}).get("mission") != m["id"]:
             raise ContentError(f"missions.yaml: mission '{m['id']}': ends_with_talk names no dialog of its own: {talk!r}")
-        if m["goal"]["type"] != "talk_to":
-            continue
-        where, d = f"missions.yaml: mission '{m['id']}'", dialogs.get(m["goal"]["dialog"])
-        if d is None:
-            raise ContentError(f"{where}: talk_to names unknown dialog {m['goal']['dialog']!r}")
-        if d.get("mission") != m["id"]:
-            raise ContentError(f"{where}: dialog {d['id']!r} belongs to mission {d.get('mission')!r}")
+        names = [t["dialog"] for t in m.get("talk_to", [])] if dialogs else []  # a fixture without dialogs
+        if m["goal"]["type"] == "talk_to":
+            names.append(m["goal"]["dialog"])
+        where = f"missions.yaml: mission '{m['id']}'"
+        for name in names:
+            d = dialogs.get(name)
+            if d is None:
+                raise ContentError(f"{where}: talk_to names unknown dialog {name!r}")
+            if d.get("mission") != m["id"]:
+                raise ContentError(f"{where}: dialog {d['id']!r} belongs to mission {d.get('mission')!r}")
+            if d.get("kind") != "persuade":
+                raise ContentError(f"{where}: talk_to names {d['id']!r}, which is no persuasion")
 
 
 def _tells(d: dict) -> list[str]:

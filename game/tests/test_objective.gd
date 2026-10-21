@@ -150,6 +150,8 @@ func test_every_act_one_main_mission_has_a_clean_objective_in_every_phase() -> v
 			if s.missions.progress[id]["status"] == "active":
 				s.missions.progress.erase(id)
 		s.missions.progress[m.id] = {"status": "active", "asks": {}, "seen": {}}
+		for t: Dictionary in m.talk_goals:
+			s.people.outcomes[t["dialog"]] = "commitment"  # the talk had (test_mission_talks.gd)
 		assert_eq(Objective.of(s).get("mission"), m.id)
 		_assert_clean(s, _text(s), m.id + " at the start")
 		if m.goal_problem.is_empty():
