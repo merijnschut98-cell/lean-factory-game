@@ -113,7 +113,7 @@ func _person_card(id: String, wants: bool) -> void:
 	var text := VBoxContainer.new()
 	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(text)
-	text.add_child(UiPanel.label("%s  ·  %s" % [p["name"], p["role"]], UiTheme.FONT_SIZE, Palette.VOLTANA_BLUE))
+	text.add_child(UiPanel.label("%s  ·  %s" % [p["name"], p["role"]], UiTheme.FONT_SIZE, Palette.VOLTANA_BLUE, true))
 	var standing := HBoxContainer.new()
 	standing.add_theme_constant_override("separation", 30)
 	text.add_child(standing)

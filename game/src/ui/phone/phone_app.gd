@@ -20,6 +20,7 @@ func _init() -> void:
 	size_flags_vertical = Control.SIZE_EXPAND_FILL
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	visible = false
+	sort_children.connect(wrap_lines)   # whatever the app (or its carried panel) adds, as it lays out
 
 
 ## Carry `panel` inside the app: no title bar, no frame of its own, sized by
@@ -56,6 +57,19 @@ func title() -> String:
 ## The ids of what is new in this app (its badge); none by default.
 func unread() -> Array[String]:
 	return []
+
+
+## On the upright phone every line wraps: a line laid out for the old wide
+## panels (a heading, a dossier line, a talk's state) would set the width of
+## the whole app and run off the screen.
+func wrap_lines() -> void:
+	if landscape:
+		return
+	for n: Node in find_children("*", "Label", true, false):
+		var l := n as Label
+		if l.autowrap_mode == TextServer.AUTOWRAP_OFF and not l.clip_text:
+			l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 
 ## A column that scrolls, filling the app, cleared first.

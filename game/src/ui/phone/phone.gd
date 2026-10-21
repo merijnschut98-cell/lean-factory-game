@@ -36,13 +36,15 @@ const BACK := "Terug"
 const HOME_TITLE := "Voltana"
 
 ## The phone held upright, and sideways (the map), in px at 1600x900.
-const PORTRAIT := Vector2(470, 800)
+const PORTRAIT := Vector2(510, 800)   # a talk note's curve (TalkSummary, 420 px) fits its card
 const LANDSCAPE := Vector2(980, 600)
 ## Its bezel (as the creator's phone, B1).
 const BEZEL := Color("#121316")
 const BEZEL_PX := 14
 const RADIUS := 38
 const RAISE_S := 0.16
+## The screen's side margin around an app (px).
+const CONTENT_MARGIN := 14
 const BACKDROP := "res://src/ui/phone/phone_backdrop.gdshader"
 const SKIN := Color(0.86, 0.67, 0.54)
 
@@ -61,8 +63,9 @@ var _announced: Dictionary[String, bool] = {}
 var _stage: Control
 var _frame: PanelContainer
 var _home: Control
-## The screen's area under the app bar: the home screen or one app.
-var _content: MarginContainer
+## The screen's area under the app bar: the home screen or one app. Not a
+## container, so a wide line in an app is clipped, never widens the phone.
+var _content: Control
 ## The screen's colour: the wallpaper's blue at home, paper in an app.
 var _paper: StyleBoxFlat
 var _signal: Label
@@ -343,13 +346,13 @@ func _build_frame() -> PanelContainer:
 	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_title.clip_text = true
 	_app_bar.add_child(_title)
-	_content = MarginContainer.new()
+	_content = Control.new()
 	_content.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	for side in ["left", "right"]:
-		_content.add_theme_constant_override("margin_" + side, 14)
+	_content.clip_contents = true
+	_content.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	column.add_child(_content)
 	_home = _build_home()   # on the screen's own colour: the wallpaper
-	_content.add_child(_home)
+	_fill_content(_home)
 	return frame
 
 
@@ -406,7 +409,15 @@ func _build_home() -> Control:
 func _add_app(id: String, a: PhoneApp) -> void:
 	_apps[id] = a
 	a.acted.connect(acted.emit)
-	_content.add_child(a)
+	_fill_content(a)
+
+
+## `c` fills the content area, a margin in from the screen's sides.
+func _fill_content(c: Control) -> void:
+	_content.add_child(c)
+	c.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	c.offset_left = CONTENT_MARGIN
+	c.offset_right = -CONTENT_MARGIN
 
 
 func _layer(draw: Callable) -> Control:

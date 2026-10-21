@@ -22,7 +22,7 @@ extends SceneTree
 ## dialog_summary, dialog_ruined (a talk with Joost) ·
 ## talk_face, talk_choose, talk_phone (S1-G: Joost speaks in a face shot, you
 ## choose in the two-shot; Mevrouw El Amrani on the phone) ·
-## dialog_people (the journal's Mensen tab after it) · dialog_place (the
+## dialog_people, phone_notes (the phone's Wie is wie and Notities after it) · dialog_place (the
 ## team's menu with its people) · dialog_energy (the low-energy bar) ·
 ## intussen (the A3 in: what happens while the
 ## Check runs, and the named skip) · terugblik (the card a resumed game opens
@@ -154,10 +154,10 @@ func _run() -> void:
 			_talk_to_joost(office, state)
 		"talk_face", "talk_choose", "talk_phone":
 			await _staged_talk(office, state)
-		"dialog_people":
+		"dialog_people", "phone_notes":   # Wie is wie, or Notities with the talk's note
 			_talk_to_joost(office, "dialog_summary")
 			office.ui.close_panels()
-			office.ui.toggle_phone(Phone.PEOPLE)
+			office.ui.toggle_phone(Phone.PEOPLE if state == "dialog_people" else Phone.NOTES)
 		"open_reception", "open_badge", "open_walk", "open_plan", "open_sanne", "open_marco", "open_design", \
 				"open_door", "open_board", "open_letter", "open_phone", "open_evening", "open_anouk", "open_after", \
 				"open_pause", "open_explainer":
