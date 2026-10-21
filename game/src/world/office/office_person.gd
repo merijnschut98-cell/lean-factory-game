@@ -46,6 +46,10 @@ const HESITATE_TURN := 0.45
 ## A subtitle stays at least this long (s), longer for a long line (s a character).
 const SAY_SECONDS := 3.0
 const SAY_PER_CHAR := 0.05
+## How far (px) the subtitle floats over the tag's place: clear of the name tag when it shows
+## (two lines and a gap), just over the head when it does not.
+const SUBTITLE_LIFT := 70.0
+const SUBTITLE_LIFT_ALONE := 10.0
 ## Seconds a walker stands at each end of their route.
 const PAUSE := 2.5
 ## How tall the person is in their pose (m): where the tag and the bar float, and the
@@ -257,6 +261,7 @@ func _process(delta: float) -> void:
 	if _say_left > 0.0:
 		_say_left -= delta
 		subtitle.visible = _say_left > 0.0
+		subtitle.offset.y = SUBTITLE_LIFT if tag.visible else SUBTITLE_LIFT_ALONE
 
 
 # ── Reacting ────────────────────────────────────────────────────────────────
@@ -371,7 +376,7 @@ func walk(delta: float) -> void:
 ## The tag, the bar and the mark over their head, at the height of their pose.
 func _float_overhead() -> void:
 	tag.position.y = height() + 0.3
-	subtitle.position.y = height() + 0.5
+	subtitle.position.y = tag.position.y   # over the tag by SUBTITLE_LIFT px, at any zoom
 	bar.position.y = height() + 0.12
 	mark.position.y = bar.position.y
 
@@ -430,6 +435,8 @@ static func _subtitle() -> Label3D:
 	l.name = "Subtitle"
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	l.width = 900
+	l.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM   # wrapped lines grow upwards, clear of the tag
+	l.offset = Vector2(0, SUBTITLE_LIFT)
 	l.outline_size = 12
 	l.outline_modulate = Color(0.05, 0.06, 0.08)
 	return l

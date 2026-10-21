@@ -38,11 +38,16 @@ const TRAINING_PROBLEM := "training_tray"
 const MAX_FORECAST_DAYS := 91
 ## A greeting remembers a talk this many days back (Friday's talk still on Monday).
 const GREETING_MEMORY_DAYS := 3
-## A team's queue in working days of its pool (Network.queue_days) from which its people
-## call the day busy, and under which calm. ESTIMATES for the quick line's tone: a week's
-## backlog feels full, under a day feels quiet.
-const BUSY_QUEUE_DAYS := 5.0
-const CALM_QUEUE_DAYS := 1.0
+## How full a team's work feels (load_of), from its pool's share of present hours spent
+## busy over the last LOAD_DAYS (SimPool.load_since) and its queue in working days
+## (Network.queue_days). ESTIMATES for the quick line's tone, read off a fresh game (the
+## teams run 0.25-0.98 busy): from 85 % busy, or three days of queue, it feels full; under
+## 40 % busy with half a day of queue it feels quiet.
+const LOAD_DAYS := 5
+const BUSY_SHARE := 0.85
+const CALM_SHARE := 0.4
+const BUSY_QUEUE_DAYS := 3.0
+const CALM_QUEUE_DAYS := 0.5
 ## Under this morale (0-100) a person's quick line is a tired one (People's own scale: the
 ## leave clock starts at 20, a friendly week is 55 and up). An ESTIMATE.
 const TIRED_MORALE := 40
@@ -861,10 +866,13 @@ func quick_mood(person_id: String) -> String:
 func load_of(person_id: String) -> String:
 	var p: PersonDef = people.persons.get(person_id)
 	var step := region.net.step_at(p.place) if p != null else null
-	if step == null:
+	if step == null or step.pool_ids.is_empty():
 		return ""
-	var days := region.net.queue_days(step)
-	return "busy" if days >= BUSY_QUEUE_DAYS else ("calm" if days < CALM_QUEUE_DAYS else "")
+	var busy: float = region.net.pools[step.pool_ids[0]].load_since(SimCalendar.day_of(region.net.time) - LOAD_DAYS)
+	var queue := region.net.queue_days(step)
+	if busy >= BUSY_SHARE or queue >= BUSY_QUEUE_DAYS:
+		return "busy"
+	return "calm" if busy < CALM_SHARE and queue < CALM_QUEUE_DAYS else ""
 
 
 ## Two colleagues at the coffee corner: their exchange [first line, second line], once a
