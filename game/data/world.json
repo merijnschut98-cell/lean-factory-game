@@ -25,6 +25,23 @@
    "outside_of": "ground"
   }
  ],
+ "rides": [
+  {
+   "mission": "fix_wrong_joint",
+   "to": "outages.repair",
+   "with": "ahmed"
+  },
+  {
+   "mission": "fix_not_at_home",
+   "to": "meters.visit",
+   "with": "sandra"
+  },
+  {
+   "mission": "save_henks_knowledge",
+   "to": "outages.locate",
+   "with": "henk"
+  }
+ ],
  "rooms": [
   {
    "floor": "ground",
@@ -203,12 +220,22 @@
     "walk_meters",
     "fix_wrong_joint",
     "fix_not_at_home",
-    "fix_silent_meter"
+    "fix_silent_meter",
+    "save_henks_knowledge"
    ],
    "places": [
     "outages.repair",
     "meters.visit"
    ]
+  },
+  {
+   "floor": "yard",
+   "id": "opleidingsterrein",
+   "name": "Opleidingsterrein",
+   "opens_with": [
+    "save_henks_knowledge"
+   ],
+   "places": []
   }
  ],
  "start_floor": "first"

@@ -5508,6 +5508,13 @@
     "Hoi. Even voor de duidelijkheid: dat gesprek van gisteren zit me nog niet lekker."
    ]
   },
+  "joyce": {
+   "day": [
+    "Hoi {speler}. Even mijn kabelschaar zoeken, dan ben ik weg.",
+    "Hé {speler}. Jij bent de nieuwe van Aansluitingen, toch?",
+    "Hoi {speler}. Als je ooit mee wilt, zeg het maar. Dan zie je het echte werk."
+   ]
+  },
   "kim": {
    "day": [
     "Hoi {speler}! Momentje, ik heb nog iemand aan de lijn.",
@@ -5556,6 +5563,13 @@
     "Hoi {speler}. Ik loop de aanvragen van gisteren nog even na."
    ]
   },
+  "ricardo": {
+   "day": [
+    "Hé {speler}. Bus is vol, ik kan zo weg.",
+    "Hoi {speler}. Ik zag je in de appgroep. Welkom, hoor.",
+    "Ha {speler}. Druk dagje in Nova-Oud."
+   ]
+  },
   "rob": {
    "day": [
     "Dag {speler}. Ik zit in de offertes, maar zegt u het maar.",
@@ -5568,6 +5582,13 @@
     "Hoi {speler}! Hoe bevalt het tot nu toe?",
     "Ha {speler}. Wat heb je vandaag al gezien?",
     "Hoi {speler}. De koffie hier is nog steeds slecht. Of went het al?"
+   ]
+  },
+  "sandra": {
+   "day": [
+    "Hoi {speler}. Even de bus inladen, dan ben ik weg.",
+    "Hé {speler}. Rijd je mee? Voorin is plek.",
+    "Hoi {speler}. Nieuwe meters, nieuwe zegels. Ik ben er klaar voor."
    ]
   },
   "sanne": {
