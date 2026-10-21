@@ -29,6 +29,9 @@ extends SceneTree
 ## with, after a session that finished the mission and left it alone) ·
 ## people_desks (Werkvoorbereiding and Intake at work, Anouk's name on hover) ·
 ## people_talk (E beside Joost: the prompt and the talk's placeholder toast) ·
+## people_greet (S1-C: Sanne turns on her chair and says hello by name) ·
+## people_quick (E beside Rachid with nothing to discuss: his line about today) ·
+## people_chatter (Sanne and Rachid at the coffee corner, the first line of their chatter) ·
 ## people_energy (the walk-around energy bars, from a stand-in energy_of) ·
 ## people_monteurs (Henk and Ahmed at the huddle table for Henk's mission, Marco
 ## walking in) · people_meetdata (Petra at the stand-in Meetdata desk) ·
@@ -39,7 +42,8 @@ extends SceneTree
 ## people_whiteboard, people_explainer (Ruud's whiteboard, and E there) ·
 ## play_day_0830, play_day_1230, play_day_1830 (PLAN 2.14 S1-A: the office keeps time:
 ## people coming in by the lift and the stairs in the morning light, lunch in the kantine,
-## the 1e after six with the late stayers' desk lamps) ·
+## the 1e after six with the late stayers' desk lamps) · play_home, play_home_fade (after
+## five at the front door: "Naar huis", then the fade with the next morning's date) ·
 ## title (the title menu over a few saves) ·
 ## title_replace, title_keep ("Nieuw spel" over a filled autosave: the
 ## question, then the slots to keep it in) ·
@@ -265,7 +269,8 @@ func _run() -> void:
 			_stand_at(office, DESIGN)
 			office.ui.close_panels()
 			office.ui.open_terugblik(office.ui.session_layer.open_session(office.session))
-		"people_desks", "people_talk", "people_energy", "people_monteurs", "people_meetdata", "people_gemba":
+		"people_desks", "people_talk", "people_energy", "people_monteurs", "people_meetdata", "people_gemba", \
+				"people_greet", "people_quick", "people_chatter":
 			_people(office, state)
 		"minimap", "minimap_floor", "minimap_near":
 			_minimap(office, state)
@@ -276,6 +281,8 @@ func _run() -> void:
 			await _rooms(office, state)
 		"play_day_0830", "play_day_1230", "play_day_1830":
 			await _day(office, state)
+		"play_home", "play_home_fade":
+			_home(office, state)
 		_:
 			printerr("unknown state ", state)
 			quit(2)
@@ -389,6 +396,30 @@ func _people(office: Office, state: String) -> void:
 			office.rig.yaw = office.player.rotation.y + deg_to_rad(30)
 			office.rig.snap()
 			office.use(office.target_near(office.player.position))
+		"people_greet", "people_quick":
+			office.session.player.name = "Noor"   # a greeting by name
+			var who := people.person("sanne" if state == "people_greet" else "rachid")
+			office.player.position = who.position + who.basis.x * 1.3 + who.basis.z * 0.4
+			office.player.face(Basis.looking_at((who.position - office.player.position) * Vector3(1, 0, 1)))
+			office.rig.yaw = office.player.rotation.y + deg_to_rad(35)
+			office.rig.zoom(-5)
+			office.rig.snap()
+			if state == "people_quick":
+				office.session.greet(who.id)   # greeted earlier today: E gives the quick line
+				office.use(who)
+			else:
+				office.reactions.react()
+		"people_chatter":
+			var corner := office.reactions.corner_points()[0]
+			people.set_process(false)   # no schedules yet (S1-A): keep them at the corner, not back at their desks
+			people.person("sanne").settle({"at": corner + Vector3(-0.45, 0, 0.35), "face": Vector3(1, 0, -0.6), "pose": "idle"})
+			people.person("rachid").settle({"at": corner + Vector3(0.45, 0, -0.2), "face": Vector3(-1, 0, 0.6), "pose": "talk"})
+			office.player.position = corner + Vector3(2.6, 0, 1.2)
+			office.player.face(Basis.looking_at(corner - office.player.position))
+			office.rig.yaw = office.player.rotation.y + deg_to_rad(-50)
+			office.rig.zoom(-1)
+			office.rig.snap()
+			office.reactions.react()
 		"people_energy":
 			stand_in.energy = {"anouk": {"energy": 0.28, "needs_talk": true}, "sanne": {"energy": 0.55, "needs_talk": true}}
 			people.refresh(stand_in)
@@ -524,6 +555,24 @@ func _day(office: Office, state: String) -> void:
 	office.rig.snap()
 	for i in 90:   # people walk
 		await process_frame
+
+
+## Going home (S1-A): the begane grond's front door at half past five, its prompt; then
+## used, the fade with the next morning's date over the ontvangst.
+func _home(office: Office, state: String) -> void:
+	office.session.pass_time(17 * 60 + 30 - office.session.minute_of_day())
+	office.ui.after_action()
+	office.floors.go_to("ground", "lift", true)
+	office.people.refresh(office.session)
+	office.daylight.update(office.session)
+	office.home.poll()
+	var door := office.in_office(office.floors.markers()["arrive:entrance"])
+	office.player.position = door.origin
+	office.player.face(door.basis.rotated(Vector3.UP, PI))
+	office.rig.yaw = office.player.rotation.y
+	office.rig.snap()
+	if state == "play_home_fade":
+		office.use(office.target_near(office.player.position))
 
 
 ## Take the mission and do the gemba work; `all` finds every key clue.

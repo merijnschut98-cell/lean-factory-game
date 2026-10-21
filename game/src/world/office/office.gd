@@ -101,6 +101,8 @@ var interactables: Array[Interactable] = []
 var people: OfficePeople
 ## The sun, the sky and the desk lamps by the clock (PLAN 2.14 S1-A).
 var daylight: OfficeDaylight
+## Going home after five, and the empty desks of the colleagues who have (OfficeHome).
+var home: OfficeHome
 ## The head office's floors (PLAN 2.1): which floor is loaded, the stairs and the lift,
 ## the rooms' doors.
 var floors: OfficeFloors
@@ -120,6 +122,8 @@ var minimap: OfficeMinimap
 var yard: OfficeYard
 ## The character creator open over the world ("Uiterlijk" in the pause menu), or null.
 var look_editor: CreatorScreen
+## People turning to you, greeting you, chatting at the coffee corner (Phase 2 §1.4).
+var reactions: OfficeReactions
 
 
 func _ready() -> void:
@@ -165,6 +169,8 @@ func build() -> void:
 			push_warning("office: no marker for " + id)
 	_add_player()
 	_add_camera()
+	reactions = OfficeReactions.create(self)
+	add_child(reactions)
 	ui = GameUI.new()
 	add_child(ui)
 	ui.setup(session, loaded.get("layer", _opening_layer()))
@@ -173,6 +179,9 @@ func build() -> void:
 	if ui.playable():
 		ui.talk_view.phase_changed.connect(func(_phase: String) -> void: stage_talk())
 	ui.panels_closed.connect(_on_panels_closed)
+	home = OfficeHome.create(self)
+	add_child(home)
+	home.poll()
 	if ui.playable():
 		show_map()
 		minimap = OfficeMinimap.new()
@@ -438,7 +447,7 @@ func prompt_near(at: Vector3) -> String:
 func prompt_for(target: Interactable) -> String:
 	if target == null:
 		return ""
-	var seam := floors.prompt(target)
+	var seam := floors.prompt(target) + home.prompt(target)
 	if not seam.is_empty():
 		return seam
 	match target.kind:
@@ -453,7 +462,7 @@ func prompt_for(target: Interactable) -> String:
 
 ## An interaction point's Dutch name: "Werkvoorbereiding & ontwerp".
 func label_for(target: Interactable) -> String:
-	var seam := floors.label(target)
+	var seam := floors.label(target) + home.label(target)
 	if not seam.is_empty():
 		return seam
 	match target.kind:
@@ -522,7 +531,7 @@ func floor_rect() -> Rect2:
 
 ## Use an interaction point: open its panel, the camera framing the station.
 func interact(target: Interactable) -> void:
-	if target == null or not session.error.is_empty() or floors.use(target):
+	if target == null or not session.error.is_empty() or floors.use(target) or home.use(target):
 		return
 	match target.kind:
 		"place":
@@ -630,7 +639,8 @@ func use(target: Node3D) -> void:
 
 
 ## Talk with `person` (person_selected says who): the dialog opens, or a toast
-## says why not. The coach opens the coach's panel.
+## says why not; with nothing to discuss they say one line about today over their head
+## (the quick exchange: no panel). The coach opens the coach's panel.
 func talk_to(person: OfficePerson) -> void:
 	if person == null or not session.error.is_empty():
 		return
@@ -638,7 +648,10 @@ func talk_to(person: OfficePerson) -> void:
 		interact(interactable("coach"))
 		return
 	person_selected.emit(person.id)
-	ui.ask_talk(person.id, person.display_name)
+	if ui.ask_talk(person.id, person.display_name) in GameUI.NO_TALK:
+		_turn_to(person)
+		person.face_toward(player.position)
+		person.say(session.quick_line(person.id))
 
 
 ## Stage a talk (phase 2 design §2): someone in the office is talked with
@@ -650,6 +663,7 @@ func frame_talk(person_id: String) -> void:
 	var here := person != null and person.visible
 	if here:
 		_turn_to(person)
+		person.face_toward(player.position, true)   # they turn to you, so the face shot sees their face
 	ui.talk_view.stage(person if here else null)
 	stage_talk()
 

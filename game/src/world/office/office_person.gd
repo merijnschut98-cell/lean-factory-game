@@ -7,8 +7,49 @@ extends Node3D
 ## tag's colour with a "…" beside it, audit U17). Where they are is a spot that
 ## OfficePeople resolves: their desk, or between 12:00 and 13:00 their lunch spot when
 ## they have one. The contact centre wears headsets. Faces -Z.
+##
+## They react (Phase 2 §1.4, §2.2): they turn to you when you come close (face_toward; a
+## seated person swivels part of the way) and back to their work after; they say things as
+## a short subtitle over their head (say: a greeting, a quick line, coffee chatter); in a
+## talk their posture carries the openness band (pose_for_band) and a hesitation is a look
+## away (hesitate). Low energy shows in a tired idle. A clip the model lacks falls back to
+## the nearest one it has (FALLBACK).
 
 const POSES: Array[String] = ["sit", "idle", "talk", "walk"]
+## The talk's openness bands (Dialog.BANDS: Dicht, Op z'n hoede, Luistert, Open, Denkt mee)
+## as posture, standing and seated: arms folded (half turned away when Dicht), hands open
+## while talking, a nod that settles into talking, leaning in. A seated person keeps typing
+## when Dicht and talks with their hands from the chair otherwise.
+const BAND_CLIPS: Array[String] = ["arms_folded", "arms_folded", "talk", "nod", "lean"]
+const SEATED_BAND_CLIPS: Array[String] = ["sit", "sit_talk", "sit_talk", "sit_talk", "sit_talk"]
+## A one-shot clip and the loop it settles into.
+const SETTLES := {"nod": "talk"}
+## The nearest clip a model built before the reaction clips has.
+const FALLBACK := {"arms_folded": "idle", "lean": "talk", "nod": "talk", "look_away": "idle", "tired": "idle",
+	"phone": "talk", "carry": "walk", "sit_talk": "sit", "sit_tired": "sit"}
+## Under this energy (morale 0–1) the idle and the typing are the tired ones (slower, the
+## back rounded, the head down). An ESTIMATE: People's leave clock starts at 0.2.
+const TIRED_ENERGY := 0.35
+## How far (m, on the floor) a person notices you and turns to you; how fast they turn
+## (rad/s); how far a seated person swivels on their chair (rad); the share of the turn a
+## closed person (band 0, Dicht) gives you.
+const NOTICE := 2.0
+const TURN_SPEED := 3.0
+const SWIVEL := 0.6
+## In a talk a seated person turns their chair out from the desk this far (rad), so the face
+## shot (CameraRig.face_shot) sees their face; further, their knees would go through the desk.
+const TALK_SWIVEL := 1.2
+const HALF_TURN := 0.5
+## A hesitation: the look away's length (s), and how far a seated person turns aside (rad).
+const HESITATE_SECONDS := 1.6
+const HESITATE_TURN := 0.45
+## A subtitle stays at least this long (s), longer for a long line (s a character).
+const SAY_SECONDS := 3.0
+const SAY_PER_CHAR := 0.05
+## How far (px) the subtitle floats over the tag's place: clear of the name tag when it shows
+## (two lines and a gap), just over the head when it does not.
+const SUBTITLE_LIFT := 70.0
+const SUBTITLE_LIFT_ALONE := 10.0
 ## Seconds a walker stands at each end of their route.
 const PAUSE := 2.5
 ## How tall the person is in their pose (m): where the tag and the bar float, and the
@@ -80,6 +121,22 @@ var mark: Label3D
 var _animations: AnimationPlayer
 ## The spot they were last settled at.
 var _settled := {}
+## The subtitle over their head (say) and how long it still shows (s).
+var subtitle: Label3D
+var _say_left := 0.0
+## Where they look (office space) while someone is close, or null; their own yaw at their spot.
+var _look_at: Variant = null
+var _rest_yaw := 0.0
+## The share of the turn towards _look_at they give (1, or HALF_TURN when closed).
+var _turn_share := 1.0
+## In a talk (face_toward's `talk`): turned at once, seated further.
+var _talking := false
+## Seconds left of a hesitation's turn aside.
+var _hesitating := 0.0
+## Low energy: the idle and the typing are the tired clips.
+var tired := false
+## The clip asked for last (before FALLBACK), e.g. "arms_folded".
+var clip := ""
 
 
 ## A person from a cast entry ({id, name, role, office: {pose, missions, talk, headset}});
@@ -113,6 +170,8 @@ static func create(entry: Dictionary) -> OfficePerson:
 	p.mark.name = "CheckInMark"
 	p.mark.offset = MARK_OFFSET
 	p.add_child(p.mark)
+	p.subtitle = _subtitle()
+	p.add_child(p.subtitle)
 	p.name_as(str(entry.get("name", p.id)), str(entry.get("role", "")))
 	p._float_overhead()
 	p._play(p.pose)
@@ -155,23 +214,11 @@ func place(at: Vector3, direction: Vector3) -> void:
 	direction.y = 0
 	if direction.length() > 0.01:
 		basis = Basis.looking_at(direction.normalized(), Vector3.UP)
+	_rest_yaw = rotation.y
 
 
 func height() -> float:
 	return SEATED_HEIGHT if pose == "sit" else STANDING_HEIGHT
-
-
-## In a talk: the body of an openness band (Dicht … Denkt mee; phase 2 design
-## §2.2). Stub for S1-C's band clips: until they exist a talking pose.
-func pose_for_band(_band: int) -> void:
-	if pose != "sit":
-		_play("talk")
-
-
-## In a talk: the visible hesitation on the cue (a pause, a look away). Stub
-## for S1-C's clip: nothing until it exists.
-func hesitate() -> void:
-	pass
 
 
 ## Whether they are in the office while these missions are active and those done.
@@ -191,6 +238,10 @@ func show_tag(on: bool) -> void:
 func show_energy(state: Dictionary) -> void:
 	bar.visible = bool(state.get("needs_talk", false))
 	mark.visible = bar.visible
+	var was := tired
+	tired = state.has("energy") and float(state["energy"]) < TIRED_ENERGY
+	if tired != was and pose in ["idle", "sit"] and clip in ["idle", "sit", "tired", "sit_tired"]:
+		_play(pose)
 	if bar.visible:
 		(bar.material_override as ShaderMaterial).set_shader_parameter("fill", clampf(float(state.get("energy", 0.5)), 0.0, 1.0))
 
@@ -206,6 +257,99 @@ func picked_by(origin: Vector3, direction: Vector3) -> bool:
 func _process(delta: float) -> void:
 	if pose == "walk":
 		walk(delta)
+	else:
+		turn(delta)
+	if _say_left > 0.0:
+		_say_left -= delta
+		subtitle.visible = _say_left > 0.0
+		subtitle.offset.y = SUBTITLE_LIFT if tag.visible else SUBTITLE_LIFT_ALONE
+
+
+# ── Reacting ────────────────────────────────────────────────────────────────
+
+## Turn to `at` (office space, e.g. the player): standing all the way, seated part of the
+## way (SWIVEL); the turn itself happens over the next frames (turn). A walker walks on.
+## `talk`: a talk starts (the camera cuts to them): at once, and seated as far as TALK_SWIVEL.
+func face_toward(at: Vector3, talk := false) -> void:
+	_look_at = at
+	_talking = talk
+	if talk:
+		rotation.y = _goal_yaw()
+
+
+## Back to their work: the turn eases back to their own yaw.
+func face_back() -> void:
+	_look_at = null
+	_talking = false
+	_turn_share = 1.0
+
+
+## Whether they are turned to someone.
+func facing() -> bool:
+	return _look_at != null
+
+
+## One frame of turning towards where they look (or back to their spot), at TURN_SPEED.
+func turn(delta: float) -> void:
+	var goal := _goal_yaw()
+	if _hesitating > 0.0:
+		_hesitating -= delta
+		goal += HESITATE_TURN
+	rotation.y = rotate_toward(rotation.y, goal, TURN_SPEED * delta)
+
+
+## The yaw they turn to: towards _look_at (by _turn_share; seated within the swivel), else
+## their own at their spot.
+func _goal_yaw() -> float:
+	if _look_at == null:
+		return _rest_yaw
+	var to: Vector3 = (_look_at as Vector3) - position
+	if Vector2(to.x, to.z).length() <= 0.05:
+		return _rest_yaw
+	var off := angle_difference(_rest_yaw, atan2(-to.x, -to.z)) * _turn_share   # -Z is the front
+	var swivel := TALK_SWIVEL if _talking else SWIVEL
+	return _rest_yaw + (clampf(off, -swivel, swivel) if pose == "sit" else off)
+
+
+## Their posture for a talk's openness band (0 Dicht … 4 Denkt mee, Dialog.band_of), with
+## a short blend: see BAND_CLIPS. Dicht also turns them half away from whom they face.
+func pose_for_band(band: int) -> void:
+	band = clampi(band, 0, BAND_CLIPS.size() - 1)
+	_turn_share = HALF_TURN if band == 0 else 1.0
+	_play((SEATED_BAND_CLIPS if pose == "sit" else BAND_CLIPS)[band])
+
+
+## A hesitation ("Er zit meer achter…"): a look away and back. Standing, the look-away clip
+## plays once and they return to what they were doing; seated, they turn aside a moment.
+func hesitate() -> void:
+	_hesitating = HESITATE_SECONDS
+	if pose != "sit" and _animations != null and _animations.has_animation("look_away"):
+		var back := _animations.current_animation
+		_animations.play("look_away", 0.2)
+		if not back.is_empty() and back != "look_away":
+			_animations.queue(back)
+
+
+## Say `text` as a subtitle over their head for a few seconds (longer for a long line).
+func say(text: String) -> void:
+	subtitle.text = text
+	_say_left = say_time(text)
+	subtitle.visible = not text.is_empty()
+
+
+## How long (s) a subtitle of `text` stays.
+static func say_time(text: String) -> float:
+	return maxf(SAY_SECONDS, text.length() * SAY_PER_CHAR)
+
+
+## Whether a subtitle shows now.
+func saying() -> bool:
+	return subtitle.visible
+
+
+## The clip the model plays now ("" for a stand-in without animations).
+func playing() -> String:
+	return _animations.current_animation if _animations != null else ""
 
 
 ## One frame of a walker's round: towards the end of the route at their pace, a pause
@@ -233,13 +377,27 @@ func walk(delta: float) -> void:
 ## The tag, the bar and the mark over their head, at the height of their pose.
 func _float_overhead() -> void:
 	tag.position.y = height() + 0.3
+	subtitle.position.y = tag.position.y   # over the tag by SUBTITLE_LIFT px, at any zoom
 	bar.position.y = height() + 0.12
 	mark.position.y = bar.position.y
 
 
+## Play `animation` (a pose or a reaction clip) with a short blend: the tired version of the
+## idle and the typing when tired, the nearest clip the model has when it lacks this one, and
+## after a one-shot (the nod) the loop it settles into.
 func _play(animation: String) -> void:
-	if _animations != null and _animations.has_animation(animation):
+	if tired and animation in ["idle", "sit"]:
+		animation = "tired" if animation == "idle" else "sit_tired"
+	clip = animation
+	if _animations == null:
+		return
+	if not _animations.has_animation(animation):
+		animation = FALLBACK.get(animation, animation)
+	if _animations.has_animation(animation):
 		_animations.play(animation, 0.25)
+		var then: String = SETTLES.get(animation, "")
+		if not then.is_empty() and _animations.has_animation(then):
+			_animations.queue(then)
 
 
 ## A capsule and a head, seated or standing, while the model is not built.
@@ -269,6 +427,19 @@ static func _tag(text: String, font_size: int) -> Label3D:
 	l.modulate = Color.WHITE
 	l.outline_modulate = Palette.HUD_BAR
 	l.visible = false
+	return l
+
+
+## The subtitle: the line in white on a dark outline, a little over the name tag, wrapped.
+static func _subtitle() -> Label3D:
+	var l := _tag("", 30)
+	l.name = "Subtitle"
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l.width = 900
+	l.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM   # wrapped lines grow upwards, clear of the tag
+	l.offset = Vector2(0, SUBTITLE_LIFT)
+	l.outline_size = 12
+	l.outline_modulate = Color(0.05, 0.06, 0.08)
 	return l
 
 

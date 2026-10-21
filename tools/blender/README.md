@@ -74,7 +74,9 @@ committed:
 - `game/assets/characters/<id>.glb`, ~1 MB each: the pack's humanoid rig renamed to Godot's
   `SkeletonProfileHumanoid` bone names; actions `idle_loop`, `walk_loop`, `sit_loop` (typing at
   a desk, the origin on the chair), `talk_loop` and `jog_loop` (the run), imported as looping
-  `idle`, `walk`, `sit`, `talk`, `jog`. Looks: sex (two base bodies), height (the head keeps its
+  `idle`, `walk`, `sit`, `talk`, `jog`; and the reaction clips (`react()` in `pack_character.py`, Phase 2
+  §1.4): `arms_folded_loop`, `phone_loop`, `lean_loop`, `tired_loop`, `carry_loop`, `sit_talk_loop`,
+  `sit_tired_loop`, and the one-shots `nod` and `look_away`. `--pose-sheet` renders every clip in a row. Looks: sex (two base bodies), height (the head keeps its
   size), build (waist, hips, limbs), skin/hair/eye colours, hair (bob, short, buzz, receding,
   ponytail, buns), beard (full, short), glasses, outfit (polo with logo, shirt and belt,
   blazer, monteur: work shirt, hi-vis vest, boots, optional helmet), stoop (age).

@@ -93,7 +93,27 @@ CLIPS = {
     "jog": ("ual1", "Jog_Fwd_Loop"),
     "walk": ("ual1", "Walk_Formal_Loop"),
     "walk_monteur": ("ual1", "Walk_Loop"),
+    "sit_talk": ("ual1", "Sitting_Talking_Loop"),
+    # Library 2 (S1-C, people react): posture carries mood in a talk and around the office
+    "arms_folded": ("ual2", "Idle_FoldArms_Loop"),
+    "phone": ("ual2", "Idle_TalkingPhone_Loop"),
+    "nod": ("ual2", "Yes"),
+    "carry": ("ual2", "Walk_Carry_Loop"),
 }
+# The look away (a hesitation, "Er zit meer achter..."): frames, how far the head turns aside and
+# down (degrees), estimates by eye for a short glance that reads at the office camera's distance.
+LOOK_AWAY_FRAMES = 48
+LOOK_AWAY_YAW = 38.0
+LOOK_AWAY_PITCH = 10.0
+# Leaning in (Denkt mee): the spine's forward lean (degrees), the head kept level on the listener.
+LEAN_IN = 11.0
+# Tired: the idle and the typing slowed by this, the back rounded (a stoop) and the head down.
+TIRED_SLOW = 1.4
+TIRED_STOOP = 0.8
+TIRED_HEAD = 12.0
+SLUMP = {"Spine": 4.0, "Chest": 7.0, "UpperChest": 4.0, "Neck": 5.0}
+# The carry: the head brought down this far (degrees) from the library's look up over the load.
+CARRY_HEAD = 24.0
 
 HAIR = {   # cast hair_style -> (pack hairstyle per sex, trim)
     "bob": ({"m": "Hair_Long", "f": "Hair_Long"}, None),
@@ -1347,6 +1367,12 @@ def lean(deg: float) -> Quaternion:
     return Quaternion((1, 0, 0), math.radians(-deg))
 
 
+def bow(deg: float) -> Quaternion:
+    """A bone's up direction tipped forward, towards -Y where the person faces, by `deg` (lean() of
+    a negative angle: lean's own positive angle tips +Z towards +Y, backwards)."""
+    return lean(-deg)
+
+
 def with_stoop(world: dict[str, Quaternion], stoop: float, order: list[str], parent: dict) -> dict[str, Quaternion]:
     """Age in the posture: the back rounds and the head comes forward, the eyes level. Each lean
     is relative to the bone's parent, so they add up along the spine."""
@@ -1436,9 +1462,49 @@ class Animator:
             absolute[side + "UpperArm"] = Quaternion((0, 1, 0), math.radians(sx * arms_in)) @ world[side + "UpperArm"]
         return self.t.compose(world, absolute=absolute)
 
-    def standing(self, legs: float):
+    def standing(self, legs: float, arms_in: float = 9.0):
         def edit(f, phase, world, hips):
-            return self.relax(world, legs=legs), hips
+            return self.relax(world, legs=legs, arms_in=arms_in), hips
+        return edit
+
+    def turned(self, world, yaw: float, pitch: float) -> dict[str, Quaternion]:
+        """The head turned `yaw` degrees aside (about the up axis) and `pitch` degrees down, the neck
+        taking a third of it."""
+        for bone, share in (("Neck", 1 / 3), ("Head", 2 / 3)):
+            turn = Quaternion((0, 0, 1), math.radians(yaw * share)) @ bow(pitch * share)
+            world = self.t.compose(world, absolute={bone: turn @ world[bone]})
+        return world
+
+    def leaning(self, deg: float, head_back: float = 0.8):
+        """Leaning in from the hips' top: the spine forward `deg`, the head back up most of it (the
+        eyes stay on the person in front)."""
+        def edit(f, phase, world, hips):
+            world = self.t.compose(world, absolute={"Spine": bow(deg) @ world["Spine"]})
+            return self.t.compose(world, absolute={"Head": bow(-deg * head_back) @ world["Head"]}), hips
+        return edit
+
+    def slumped(self, stoop: float, head: float):
+        """Tired: the back rounded forward (SLUMP's degrees per bone, times `stoop`) and the head
+        `head` degrees further down; each bow adds to the ones above it along the spine."""
+        def edit(f, phase, world, hips):
+            for bone, deg in SLUMP.items():
+                world = self.t.compose(world, absolute={bone: bow(deg * stoop) @ world[bone]})
+            return self.t.compose(world, absolute={"Head": bow(head) @ world["Head"]}), hips
+        return edit
+
+    def glance_away(self):
+        """A look aside and back (once over the clip): the head eases out, holds, eases back."""
+        def edit(f, phase, world, hips):
+            out = bc.smoothstep(0.0, 0.3, phase) * bc.smoothstep(1.0, 0.7, phase)
+            return self.turned(world, LOOK_AWAY_YAW * out, LOOK_AWAY_PITCH * out), hips
+        return edit
+
+    @staticmethod
+    def chain(*edits):
+        def edit(f, phase, world, hips):
+            for e in edits:
+                world, hips = e(f, phase, world, hips)
+            return world, hips
         return edit
 
     def ground(self, act_name: str, frames: int) -> None:
@@ -1460,7 +1526,9 @@ class Animator:
         solo(rig, None)
 
     # --- seated at the desk, typing
-    def sit_edit(self):
+    def sit_edit(self, typing: bool = True):
+        """Seated on the office chair: the legs set on it and, `typing`, the arms at the keyboard
+        (else the library's own arms: talking with the hands, turned from the desk)."""
         t = self.t
         rh = t.rest_head
         thigh_len = (rh["LeftLowerLeg"] - rh["LeftUpperLeg"]).length
@@ -1495,6 +1563,8 @@ class Animator:
                 legs[f"{side}LowerLeg"] = swing(foot - knee, f"{side}LowerLeg", f"{side}Foot") @ t.rest[f"{side}LowerLeg"]
                 legs[f"{side}Foot"] = t.rest[f"{side}Foot"]
             world = t.compose(world, absolute=legs)
+            if not typing:
+                return self.relax(world, arms_in=4.0, fingers=0.5), hips
             # arms: wrists at the keyboard, elbows down and a little out; a typing tap
             world = t.compose(world, absolute=self.type_arms(world, hips, phase, upper_len, fore_len, palms))
             return self.relax(world, arms_in=0.0, fingers=0.7), hips
@@ -1670,6 +1740,7 @@ def animate(sp, rig, sources: dict[str, Source]) -> dict[str, float]:
     an.retarget("talk_loop", CLIPS["talk"], edit=an.standing(0.35))
     an.ground("talk_loop", int(round(sources["ual1"].length(CLIPS["talk"][1]))))
     an.retarget("sit_loop", CLIPS["sit"], frames=120, loops=3, edit=an.sit_edit())
+    react(an, sources)
     walk_clip = CLIPS["walk_monteur" if sp.outfit == "monteur" else "walk"]
     an.retarget("walk_loop", walk_clip, frames=WALK_FRAMES, edit=an.standing(0.0))
     # the jog, timed so it runs at JOG_PACE at speed 1: measure it once, then rebuild at the right length
@@ -1691,6 +1762,35 @@ def animate(sp, rig, sources: dict[str, Source]) -> dict[str, float]:
     paces = {"walk": pace_of(rig, "walk_loop", WALK_FRAMES), "jog": pace_of(rig, "jog_loop", frames)}
     print(f"{sp.name}: walk pace {paces['walk']:.2f} m/s, jog pace {paces['jog']:.2f} m/s ({frames} frames)")
     return paces
+
+
+def react(an: Animator, sources: dict[str, Source]) -> None:
+    """The clips people react with (S1-C): posture carries the talk's openness band and the mood.
+    Loops end in _loop (Godot loops them and drops the suffix); nod and look_away play once."""
+    def standing(name: str, clip: tuple[str, str], edit, frames: int | None = None) -> None:
+        an.retarget(name, clip, frames=frames, edit=edit)
+        an.ground(name, frames or int(round(sources[clip[0]].length(clip[1]))))
+    standing("arms_folded_loop", CLIPS["arms_folded"], an.standing(0.45, arms_in=0.0))
+    standing("phone_loop", CLIPS["phone"], an.standing(0.45, arms_in=0.0))
+    standing("nod", CLIPS["nod"], an.standing(0.35))
+    standing("lean_loop", CLIPS["talk"], Animator.chain(an.standing(0.35), an.leaning(LEAN_IN)))
+    standing("look_away", CLIPS["idle"], Animator.chain(an.standing(0.45), an.glance_away()), frames=LOOK_AWAY_FRAMES)
+    idle_frames = int(round(sources["ual1"].length(CLIPS["idle"][1]) * TIRED_SLOW))
+    standing("tired_loop", CLIPS["idle"], Animator.chain(an.standing(0.45), an.slumped(TIRED_STOOP, TIRED_HEAD)),
+             frames=idle_frames)
+    # the carry walks at the office walk's brisk pace (the library's cycle quickened as the walk is)
+    carry = int(round(sources["ual2"].length(CLIPS["carry"][1]) * WALK_FRAMES / sources["ual1"].length(CLIPS["walk"][1])))
+    # the library's carrier looks up over a big crate; ours carries a box of files and looks ahead
+    an.retarget("carry_loop", CLIPS["carry"], frames=carry, edit=Animator.chain(
+        an.standing(0.0, arms_in=0.0), lambda f, phase, world, hips: (an.turned(world, 0.0, CARRY_HEAD), hips)))
+    an.retarget("sit_talk_loop", CLIPS["sit_talk"], edit=an.sit_edit(typing=False))
+    an.retarget("sit_tired_loop", CLIPS["sit"], frames=int(120 * TIRED_SLOW), loops=3,
+                edit=Animator.chain(an.slumped(TIRED_STOOP * 0.6, TIRED_HEAD), an.sit_edit()))
+
+
+def sources_for(paths: dict) -> dict[str, Source]:
+    """Both animation libraries: Library 1 by its bone map, Library 2 on the base characters' rig."""
+    return {"ual1": Source(paths["ual1"], UAL1_TO_UE), "ual2": Source(paths["ual2"], None)}
 
 
 # ============================================================================= export
@@ -1728,7 +1828,7 @@ def run(keys: list[str], pack: Path, blend: Path | None, sheet: Path | None) -> 
         bpy.ops.wm.read_factory_settings(use_empty=True)
         bpy.context.scene.render.fps = FPS
         bpy.context.preferences.edit.keyframe_new_interpolation_type = "LINEAR"
-        sources = {"ual1": Source(paths["ual1"], UAL1_TO_UE)}
+        sources = sources_for(paths)
         sp = bc.CAST_SPECS[key]
         coll, rig = build_person(sp, paths, sources)
         for src in sources.values():
@@ -1747,7 +1847,9 @@ def pose_sheet(rig, path: Path) -> None:
     bc.studio(10)
     sc = bpy.context.scene
     sc.render.resolution_x, sc.render.resolution_y = 1600, 600
-    actions = ("idle_loop", "walk_loop", "sit_loop", "talk_loop", "jog_loop")
+    actions = ("idle_loop", "walk_loop", "sit_loop", "talk_loop", "jog_loop", "arms_folded_loop", "phone_loop",
+               "nod", "lean_loop", "look_away", "tired_loop", "carry_loop", "sit_talk_loop", "sit_tired_loop")
+    sc.render.resolution_x = 320 * len(actions)
     for i, action in enumerate(actions):
         dup = rig.copy()
         dup.animation_data_clear()
@@ -1758,14 +1860,18 @@ def pose_sheet(rig, path: Path) -> None:
             c.parent = dup
             c.modifiers["Armature"].object = dup
             sc.collection.objects.link(c)
-        dup.location = ((i - 2) * 1.0, 0, 0)
-        dup.rotation_euler = (0, 0, math.radians(-70 if action in ("sit_loop", "walk_loop", "jog_loop") else -25))
+        dup.location = ((i - (len(actions) - 1) / 2) * 1.0, 0, 0)
+        side = action.startswith(("sit", "walk", "jog", "carry", "lean", "tired"))
+        dup.rotation_euler = (0, 0, math.radians(-70 if side else -25))
         solo(dup, action)
-        if action == "sit_loop":
+        if action.startswith("sit"):
             bpy.ops.mesh.primitive_cube_add(size=1, location=(dup.location.x, 0.0, 0.26))
             bpy.context.object.scale = (0.48, 0.47, 0.52)
     rig.hide_render = True
     for child in rig.children:
         child.hide_render = True
-    sc.frame_set(8)
-    bc.render(path, bc.camera("cam_sheet", (0.3, -7.2, 1.5), (0, 0, 0.85), 38))
+    sc.frame_set(20)   # mid-glance in look_away, mid-nod
+    cam = bc.camera("cam_sheet", (0, -10, 1.2), (0, 0, 0.95), 38)
+    cam.data.type = "ORTHO"   # one row of every action: as wide as the row, 320 px a person
+    cam.data.ortho_scale = len(actions) + 0.4
+    bc.render(path, cam)
