@@ -191,6 +191,7 @@ func build() -> void:
 		sound = Soundscape.new()
 		sound.office = self
 		add_child(sound)
+		ui.phone.buzz.connect(sound.play.bind("phone_buzz", -6.0))
 		minimap = OfficeMinimap.new()
 		add_child(minimap)
 		minimap.setup(self)

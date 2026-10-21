@@ -44,7 +44,7 @@ extends SceneTree
 ## people coming in by the lift and the stairs in the morning light, lunch in the kantine,
 ## the 1e after six with the late stayers' desk lamps) · play_home, play_home_fade (after
 ## five at the front door: "Naar huis", then the fade with the next morning's date) ·
-## phone_home, phone_messages, phone_map (PLAN 2.14 S1-F: the phone raised on its
+## phone_home, phone_messages, phone_map, phone_settings (PLAN 2.14 S1-F: the phone raised on its
 ## home screen on Monday of the training week, on Berichten, on Kaart) ·
 ## title (the title menu over a few saves) ·
 ## title_replace, title_keep ("Nieuw spel" over a filled autosave: the
@@ -91,7 +91,7 @@ func _run() -> void:
 	var office: Office = load(SCENE).instantiate()
 	office.seed_value = 11
 	office.training = state in ["training_board", "timelapse", "act0_note", "act0_ruud", "act0_cards", "phone_home",
-			"phone_messages", "phone_map"] \
+			"phone_messages", "phone_map", "phone_settings"] \
 		or state.begins_with("place_") or state.begins_with("open_")
 	if state.begins_with("open_"):   # De eerste vijf minuten (PLAN 2.7d), as a new game
 		office.opening = true
@@ -171,7 +171,7 @@ func _run() -> void:
 				"open_door", "open_board", "open_letter", "open_phone", "open_evening", "open_anouk", "open_after", \
 				"open_pause", "open_explainer":
 			_opening(office, state)
-		"phone_home", "phone_messages", "phone_map":   # the phone raised (PLAN 2.14 S1-F)
+		"phone_home", "phone_messages", "phone_map", "phone_settings":   # the phone raised (PLAN 2.14 S1-F)
 			_phone(office, state)
 		"act0_note":   # Monday morning: Ruud's note with the day's move card (PLAN 1.11a)
 			_stand_at(office, DESIGN)
@@ -355,11 +355,10 @@ func _save_menus(state: String) -> void:
 func _phone(office: Office, state: String) -> void:
 	var ui := office.ui
 	_stand_at(office, DESIGN)
-	ui.toggle_phone({"phone_messages": Phone.MESSAGES, "phone_map": Phone.MAP}.get(state, Phone.HOME))
+	ui.toggle_phone({"phone_messages": Phone.MESSAGES, "phone_map": Phone.MAP, "phone_settings": Phone.SETTINGS}.get(
+		state, Phone.HOME))
 
 
-## Stand a step behind the marker, looking the way it faces; the camera
-## behind the player.
 ## The tells (PLAN 2.6) driven through the simulation: orders piled up at a step, or
 ## the intake queue emptied; the planning board shows its band directly.
 func _tells(office: Office, state: String) -> void:
@@ -387,6 +386,8 @@ func _tells(office: Office, state: String) -> void:
 	office.rig.snap()
 
 
+## Stand a step behind the marker, looking the way it faces; the camera
+## behind the player.
 func _stand_at(office: Office, id: String) -> void:
 	var at := office.interactable(id)
 	office.player.position = at.position + at.basis.z * 0.6

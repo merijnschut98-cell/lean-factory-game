@@ -2,7 +2,8 @@ class_name SettingsApp
 extends PhoneApp
 ## Instellingen (the phone): the game's switches, kept in the settings file.
 ## "Tekst loopt vanzelf door" (SceneLines' own switch, as in the pause menu
-## and the title menu) and the playtest log (once on the journal). Each change
+## and the title menu), the sound (Soundscape's "Geluid uit" and volume) and the playtest
+## log (once on the journal). Each change
 ## is saved at once; the office follows the text switch (auto_text_changed).
 
 ## "Tekst loopt vanzelf door" switched (the scene on screen follows).
@@ -12,6 +13,7 @@ signal log_toggled(on: bool)
 
 const TEXT := "Tekst"
 const PLAYTEST := "Speellogboek"
+const SOUND := "Geluid"
 const LOG := "Speellogboek bijhouden (alleen op deze computer, nooit verstuurd)"
 
 ## The settings file (GameUI's; tests point it elsewhere).
@@ -32,3 +34,6 @@ func refresh() -> void:
 	log_switch.add_theme_font_size_override("font_size", UiTheme.SMALL)
 	log_switch.toggled.connect(log_toggled.emit)
 	log_card.add_child(log_switch)
+	var sound_card := UiPanel.add_card(list, tr(SOUND))
+	for c in Soundscape.settings_controls(settings_path):
+		sound_card.add_child(c)
