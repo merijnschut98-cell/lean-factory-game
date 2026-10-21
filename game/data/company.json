@@ -1,0 +1,449 @@
+{
+ "company": {
+  "about": "Regionale netbeheerder voor stroom in Zuidmark: Nova, Lindeveld, Havenzij en de dorpen ertussen. Regio Zuidmark is een eigen eenheid met een eigen directeur, onder het hoofdkantoor van Voltana.",
+  "name": "Voltana Netbeheer",
+  "region": "Zuidmark"
+ },
+ "departments": [
+  {
+   "head": {
+    "id": "ruud",
+    "title": "Directeur Netbeheer regio Zuidmark"
+   },
+   "id": "directie",
+   "name": "Directie regio Zuidmark",
+   "site": "nova",
+   "teams": [
+    {
+     "headcount": {
+      "estimate": "De directeur, de CI-lead, een managementassistent en een adviseur regulering: een kleine staf bij een regionale directie.",
+      "value": 4
+     },
+     "id": "directie_staf",
+     "members": [
+      {
+       "id": "player",
+       "title": "CI-lead"
+      }
+     ],
+     "name": "Directie en staf"
+    }
+   ]
+  },
+  {
+   "head": {
+    "id": "frank",
+    "title": "manager Aansluitingen & Netverzwaring"
+   },
+   "id": "aansluitingen",
+   "name": "Aansluitingen & Netverzwaring",
+   "reports_to": "directie",
+   "site": "nova",
+   "teams": [
+    {
+     "headcount": {
+      "pool": "intake",
+      "value": 3
+     },
+     "id": "intake",
+     "lead": {
+      "id": "sanne",
+      "title": "teamleider Intake"
+     },
+     "members": [
+      {
+       "id": "rachid",
+       "title": "medewerker Intake"
+      }
+     ],
+     "name": "Intake & aanvraagbeheer",
+     "pool": "intake"
+    },
+    {
+     "headcount": {
+      "pool": "work_prep",
+      "value": 4
+     },
+     "id": "werkvoorbereiding",
+     "lead": {
+      "id": "joost",
+      "title": "teamleider Werkvoorbereiding"
+     },
+     "members": [
+      {
+       "id": "anouk",
+       "title": "werkvoorbereider"
+      }
+     ],
+     "name": "Werkvoorbereiding",
+     "pool": "work_prep"
+    },
+    {
+     "headcount": {
+      "pool": "planners",
+      "value": 2
+     },
+     "id": "planning",
+     "members": [
+      {
+       "id": "linda",
+       "title": "planner"
+      }
+     ],
+     "name": "Planning",
+     "pool": "planners"
+    },
+    {
+     "headcount": {
+      "estimate": "Twee inkopers voor trafo's, kabel en stations van de regio; het meeste inkoopwerk zit bij het hoofdkantoor.",
+      "value": 2
+     },
+     "id": "inkoop",
+     "members": [
+      {
+       "id": "rob",
+       "title": "inkoper"
+      }
+     ],
+     "name": "Inkoop netverzwaring"
+    }
+   ]
+  },
+  {
+   "head": {
+    "name": "Karin Hoekman",
+    "title": "teamleider Revisie & GIS"
+   },
+   "id": "revisie_gis",
+   "name": "Revisie & GIS",
+   "reports_to": "aansluitingen",
+   "site": "nova",
+   "teams": [
+    {
+     "headcount": {
+      "pool": "gis",
+      "value": 2
+     },
+     "id": "revisie",
+     "members": [
+      {
+       "id": "mieke",
+       "title": "tekenaar Revisie & GIS"
+      }
+     ],
+     "name": "Revisie & GIS",
+     "pool": "gis"
+    }
+   ]
+  },
+  {
+   "head": {
+    "id": "petra",
+    "title": "Meetdata & registratie"
+   },
+   "id": "meetdata",
+   "name": "Meetdata & registratie",
+   "reports_to": "aansluitingen",
+   "site": "nova",
+   "teams": [
+    {
+     "headcount": {
+      "pool": "meter_office",
+      "value": 1
+     },
+     "id": "meetdata_team",
+     "name": "Meetdata & registratie",
+     "pool": "meter_office"
+    }
+   ]
+  },
+  {
+   "head": {
+    "id": "esra",
+    "title": "teamleider Klantcontactcentrum"
+   },
+   "id": "kcc",
+   "name": "Klantcontactcentrum",
+   "reports_to": "directie",
+   "site": "nova",
+   "teams": [
+    {
+     "headcount": {
+      "pool": "contact_centre",
+      "value": 4
+     },
+     "id": "kcc_agents",
+     "members": [
+      {
+       "id": "kim",
+       "title": "agent Klantcontactcentrum"
+      },
+      {
+       "id": "saskia",
+       "title": "agent Klantcontactcentrum"
+      }
+     ],
+     "name": "Klantcontactcentrum",
+     "pool": "contact_centre"
+    }
+   ]
+  },
+  {
+   "head": {
+    "id": "marco",
+    "title": "teamleider Monteurs"
+   },
+   "id": "storingsdienst",
+   "name": "Storingsdienst & Werkplaats",
+   "reports_to": "directie",
+   "site": "werf",
+   "teams": [
+    {
+     "headcount": {
+      "pool": "monteurs",
+      "value": 13
+     },
+     "id": "monteurs",
+     "members": [
+      {
+       "id": "henk",
+       "title": "senior monteur"
+      },
+      {
+       "id": "ahmed",
+       "title": "jonge monteur"
+      }
+     ],
+     "name": "Monteurs",
+     "pool": "monteurs"
+    },
+    {
+     "about": "Een rooster, geen apart team: steeds twee monteurs hebben consignatie.",
+     "headcount": {
+      "pool": "on_call",
+      "value": 2
+     },
+     "id": "consignatie",
+     "name": "Storingsdienst (consignatie)",
+     "pool": "on_call"
+    },
+    {
+     "headcount": {
+      "estimate": "Een magazijn voor één werf met dertien monteurs: Dirk en een collega in de vroege dienst.",
+      "value": 2
+     },
+     "id": "magazijn",
+     "members": [
+      {
+       "id": "dirk",
+       "title": "magazijn"
+      }
+     ],
+     "name": "Magazijn"
+    }
+   ]
+  },
+  {
+   "head": {
+    "name": "Wendy de Bruijn",
+    "title": "senior operator Bedrijfsvoeringscentrum"
+   },
+   "id": "bedrijfsvoering",
+   "name": "Bedrijfsvoeringscentrum",
+   "reports_to": "directie",
+   "site": "nova",
+   "teams": [
+    {
+     "headcount": {
+      "pool": "control_room",
+      "value": 2
+     },
+     "id": "bvc",
+     "members": [
+      {
+       "id": "kees",
+       "title": "operator bedrijfsvoeringscentrum"
+      }
+     ],
+     "name": "Bedrijfsvoeringscentrum",
+     "pool": "control_room"
+    }
+   ]
+  },
+  {
+   "head": {
+    "name": "Ingrid Bos",
+    "title": "assetmanager"
+   },
+   "id": "netstrategie",
+   "name": "Netstrategie",
+   "reports_to": "directie",
+   "site": "nova",
+   "teams": [
+    {
+     "headcount": {
+      "pool": "grid_analysts",
+      "value": 2
+     },
+     "id": "netplanning",
+     "members": [
+      {
+       "id": "femke",
+       "title": "netplanner"
+      }
+     ],
+     "name": "Netstudies",
+     "pool": "grid_analysts"
+    }
+   ]
+  },
+  {
+   "head": {
+    "id": "thomas",
+    "title": "accountmanager grootzakelijk"
+   },
+   "id": "congestiedesk",
+   "name": "Congestiedesk & grootzakelijke klanten",
+   "reports_to": "netstrategie",
+   "site": "nova",
+   "teams": [
+    {
+     "headcount": {
+      "pool": "key_accounts",
+      "value": 1
+     },
+     "id": "grootzakelijk",
+     "name": "Grootzakelijke klanten",
+     "pool": "key_accounts"
+    }
+   ]
+  }
+ ],
+ "externals": [
+  {
+   "id": "gert",
+   "organisation": "Grondwerk Peeters",
+   "title": "uitvoerder, Grondwerk Peeters"
+  },
+  {
+   "id": "wim",
+   "organisation": "bewoner",
+   "title": "bewoner Zonnestraat, gepensioneerd elektrotechnicus"
+  },
+  {
+   "id": "el_amrani",
+   "organisation": "klant",
+   "title": "klant, Nova-Oost"
+  },
+  {
+   "id": "ilse",
+   "organisation": "Bakkerij De Graaf",
+   "title": "Bakkerij De Graaf"
+  }
+ ],
+ "history": [
+  {
+   "about": "Een verbeterprogramma met een extern bureau: workshops, dashboards, een programmabureau. Een jaar later was er weinig van over. Wie er toen al werkte, praat er niet graag over.",
+   "id": "programma_2012",
+   "name": "Voltana Vooruit (2012)",
+   "revealed_by": [
+    "heard:marco_2012",
+    "heard:ruud_2012"
+   ],
+   "year": 2012
+  }
+ ],
+ "numbers": [
+  {
+   "id": "wachtlijst_afname_nl",
+   "label": "Aanvragen voor afname op de wachtlijst bij de regionale netbeheerders (30 juni 2026)",
+   "source": {
+    "date": "2026-10-05",
+    "title": "Slimmer netgebruik wint terrein, maar vraag naar transportcapaciteit groeit nog altijd sneller (Stand van de Uitvoering, eerste helft 2026)",
+    "url": "https://www.netbeheernederland.nl/artikelen/nieuws/slimmer-netgebruik-wint-terrein-maar-vraag-naar-transportcapaciteit-groeit-nog"
+   },
+   "unit": "aanvragen",
+   "value": 15498
+  },
+  {
+   "id": "wachtlijst_afname_mw_nl",
+   "label": "Gevraagd transportvermogen van die aanvragen",
+   "source": {
+    "date": "2026-10-05",
+    "title": "Stand van de Uitvoering, eerste helft 2026",
+    "url": "https://www.netbeheernederland.nl/artikelen/nieuws/slimmer-netgebruik-wint-terrein-maar-vraag-naar-transportcapaciteit-groeit-nog"
+   },
+   "unit": "MW",
+   "value": 9986
+  },
+  {
+   "id": "wachtlijst_invoeding_nl",
+   "label": "Aanvragen voor invoeding op de wachtlijst bij de regionale netbeheerders (30 juni 2026)",
+   "source": {
+    "date": "2026-10-05",
+    "title": "Stand van de Uitvoering, eerste helft 2026",
+    "url": "https://www.netbeheernederland.nl/artikelen/nieuws/slimmer-netgebruik-wint-terrein-maar-vraag-naar-transportcapaciteit-groeit-nog"
+   },
+   "unit": "aanvragen",
+   "value": 8558
+  },
+  {
+   "id": "nieuwe_aansluitingen_nl",
+   "label": "Nieuwe aansluitingen voor huishoudens en kleine bedrijven, eerste helft 2026",
+   "source": {
+    "date": "2026-10-05",
+    "title": "Stand van de Uitvoering, eerste helft 2026",
+    "url": "https://www.netbeheernederland.nl/artikelen/nieuws/slimmer-netgebruik-wint-terrein-maar-vraag-naar-transportcapaciteit-groeit-nog"
+   },
+   "unit": "aansluitingen",
+   "value": 53245
+  },
+  {
+   "estimate": "Er komen in Zuidmark zo'n vier aanvragen voor transportcapaciteit per week binnen (value_streams.yaml, congestion), en wie erop staat wacht gemiddeld anderhalf jaar (Ilse de Graaf twee jaar): 4 × 52 × 1,5 ≈ 310. Dat is 2 % van de landelijke 15.498, passend bij een regio van deze omvang.",
+   "id": "wachtlijst_afname_zuidmark",
+   "label": "Aanvragen voor afname op de wachtlijst in Zuidmark",
+   "unit": "aanvragen",
+   "value": 310
+  },
+  {
+   "estimate": "Landelijk vraagt een aanvraag op de wachtlijst gemiddeld 9.986 / 15.498 ≈ 0,64 MW; 310 × 0,64 ≈ 200 MW.",
+   "id": "wachtlijst_afname_mw_zuidmark",
+   "label": "Gevraagd transportvermogen op de wachtlijst in Zuidmark",
+   "unit": "MW",
+   "value": 200
+  },
+  {
+   "estimate": "Het getal waarmee de simulatie rekent (value_streams.yaml, connections). Landelijk kwamen er in een halfjaar 53.245 nieuwe aansluitingen bij (Netbeheer Nederland); 30 per week is zo'n 1,5 % daarvan, voor één kantoor met één team Werkvoorbereiding.",
+   "id": "aansluitingen_per_week_zuidmark",
+   "label": "Nieuwe en gewijzigde kleine aansluitingen per week in Nova en omstreken",
+   "unit": "per week",
+   "value": 30
+  }
+ ],
+ "sites": [
+  {
+   "about": "Drie verdiepingen aan de rand van Nova: beneden ontvangst, het KCC en de kantine; op de eerste Aansluitingen; op de tweede de directie, Netstrategie en de congestiedesk.",
+   "id": "nova",
+   "name": "Hoofdgebouw Nova",
+   "town": "Nova"
+  },
+  {
+   "about": "Achter het hoofdgebouw: magazijn, werkplaats en de bussen van de monteurs en de storingsdienst.",
+   "id": "werf",
+   "name": "De werf",
+   "town": "Nova"
+  },
+  {
+   "about": "Een klein steunpunt op het platteland: lange ritten, vijf monteurs.",
+   "id": "lindeveld",
+   "name": "Steunpunt Lindeveld",
+   "town": "Lindeveld"
+  },
+  {
+   "about": "Het steunpunt in de havenstad: een volle ondergrond, stikstof, zes monteurs en drie tekenaars.",
+   "id": "havenzij",
+   "name": "Steunpunt Havenzij",
+   "town": "Havenzij"
+  }
+ ]
+}

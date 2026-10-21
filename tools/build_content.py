@@ -2439,8 +2439,212 @@ def check_spoken(docs: dict[str, Any]) -> None:
             raise ContentError(f"{where}: {hit!r} names the game in a spoken line (style guide §4): {text!r}")
 
 
+# ── company.yaml (phase-2 design §1.6, S1-E) ─────────────────────────────────
+
+CAST_FILE = ROOT / "game" / "assets" / "characters" / "cast.json"
+COMPANY_KEYS = {"company", "sites", "departments", "externals", "history", "numbers"}
+DEPARTMENT_KEYS = {"id", "name", "site", "head", "reports_to", "teams"}
+TEAM_KEYS = {"id", "name", "pool", "lead", "members", "headcount", "about"}
+NUMBER_KEYS = {"id", "label", "value", "unit", "source", "estimate"}
+# The source domains Merijn approved (CLAUDE.md, network rule); a number from anywhere
+# else is an estimate until he approves the domain.
+SOURCE_DOMAINS = ("rijksoverheid.nl", "officielebekendmakingen.nl", "wetten.overheid.nl", "acm.nl",
+                  "netbeheernederland.nl", "cbs.nl", "knmi.nl", "nen.nl", "tennet.eu")
+
+
+def validate_company(doc: Any, source: str) -> None:
+    """The company's shape: sites, departments with a head and teams, externals, the
+    2012 programme, and numbers that carry a source or an estimate."""
+    if not isinstance(doc, dict):
+        raise ContentError(f"{source}: expected a mapping at the top level")
+    _known_keys(doc, COMPANY_KEYS, source)
+    _require_strings(_mapping(doc, "company", {"name", "region", "about"}, source), ["name", "region", "about"],
+                     f"{source} company")
+    sites = {s["id"] for s in _entries(doc, "sites", source)}
+    departments = _entries(doc, "departments", source)
+    for d in departments:
+        where = f"{source}: department '{d['id']}'"
+        _known_keys(d, DEPARTMENT_KEYS, where)
+        if d.get("site") not in sites:
+            raise ContentError(f"{where}: unknown site {d.get('site')!r}")
+        _person_ref(d.get("head"), f"{where} head")
+        teams = _entries(d, "teams", where)
+        for t in teams:
+            _validate_team(t, f"{where} team '{t['id']}'")
+    _check_ids([t["id"] for d in departments for t in d["teams"]], "team", source)
+    ids = {d["id"] for d in departments}
+    for d in departments:
+        boss = d.get("reports_to")
+        if d["id"] == "directie" and boss is not None:
+            raise ContentError(f"{source}: the directie reports to no department (it reports to the hoofdkantoor)")
+        if d["id"] != "directie" and boss not in ids:
+            raise ContentError(f"{source}: department '{d['id']}' reports to unknown department {boss!r}")
+    for e in _entries(doc, "externals", source, name="title"):
+        _known_keys(e, {"id", "title", "organisation"}, f"{source}: external '{e['id']}'")
+        _require_strings(e, ["organisation"], f"{source}: external '{e['id']}'")
+    for h in _entries(doc, "history", source):
+        _require_strings(h, ["about"], f"{source}: history '{h['id']}'")
+    for n in _entries(doc, "numbers", source, name="label"):
+        where = f"{source}: number '{n['id']}'"
+        _known_keys(n, NUMBER_KEYS, where)
+        _number(n, "value", where, 0)
+        _require_strings(n, ["unit"], where)
+        _evidence(n, where)
+
+
+def _validate_team(t: dict, where: str) -> None:
+    _known_keys(t, TEAM_KEYS, where)
+    if "lead" in t:
+        _person_ref(t["lead"], f"{where} lead", named=False)
+    members = t.get("members", [])
+    if not isinstance(members, list):
+        raise ContentError(f"{where}: 'members' must be a list of {{id, title}}")
+    for m in members:
+        _person_ref(m, f"{where} member", named=False)
+    headcount = t.get("headcount")
+    if "pool" in t:
+        if headcount is not None and headcount.get("pool") != t["pool"]:
+            raise ContentError(f"{where}: a team with a pool has the pool's headcount (value_streams.yaml)")
+        return
+    if not isinstance(headcount, dict):
+        raise ContentError(f"{where}: a team without a pool needs a 'headcount' with a source or an estimate")
+    _known_keys(headcount, {"value", "source", "estimate"}, f"{where} headcount")
+    _number(headcount, "value", f"{where} headcount", 1, integer=True)
+    _evidence(headcount, f"{where} headcount")
+
+
+def _person_ref(ref: Any, where: str, named: bool = True) -> None:
+    """{id, title} for someone in the cast, or (a head only) {name, title} for someone not yet."""
+    keys = {"id", "title"} | ({"name"} if named else set())
+    if not isinstance(ref, dict) or ("id" in ref) == ("name" in ref):
+        raise ContentError(f"{where}: needs {{id, title}}" + (" or {name, title}" if named else ""))
+    _known_keys(ref, keys, where)
+    _require_strings(ref, ["title", "id" if "id" in ref else "name"], where)
+
+
+def _evidence(item: dict, where: str) -> None:
+    """A number carries a source on an approved domain, or an estimate with its reasoning."""
+    if ("source" in item) == ("estimate" in item):
+        raise ContentError(f"{where}: give a source or an estimate (one of them)")
+    if "estimate" in item:
+        _require_strings(item, ["estimate"], where)
+        return
+    src = item["source"]
+    if not isinstance(src, dict):
+        raise ContentError(f"{where}: 'source' is {{url, title, date}}")
+    _known_keys(src, {"url", "title", "date"}, f"{where} source")
+    _require_strings(src, ["url", "title", "date"], f"{where} source")
+    host = re.sub(r"^https://([^/]+)/.*$", r"\1", src["url"])
+    if not any(host == d or host.endswith("." + d) for d in SOURCE_DOMAINS):
+        raise ContentError(f"{where}: {src['url']!r} is not an approved source domain (an estimate until Merijn "
+                           f"approves it)")
+
+
+def company_people(company: dict) -> dict[str, dict]:
+    """Every placed person: id → {title, department ("" for an external), team, lead
+    (the team's lead's id, or "")}."""
+    out: dict[str, dict] = {}
+
+    def place(ref: dict, department: str, team: str, lead: str) -> None:
+        pid = ref.get("id")
+        if pid is None:
+            return
+        if pid in out:
+            raise ContentError(f"company.yaml: {pid!r} is placed twice")
+        out[pid] = {"title": ref["title"], "department": department, "team": team, "lead": lead}
+
+    for d in company["departments"]:
+        place(d["head"], d["id"], "", "")
+        for t in d["teams"]:
+            lead = t.get("lead", {})
+            place(lead, d["id"], t["id"], "") if lead else None
+            for m in t.get("members", []):
+                place(m, d["id"], t["id"], lead.get("id", ""))
+    for e in company["externals"]:
+        place(e, "", "", "")
+    return out
+
+
+def company_managers(company: dict, names: dict[str, str] | None = None) -> dict[str, str]:
+    """Each Voltana person's manager by name: their team's lead, else their department's
+    head, else (the head themself) the head of the department theirs reports to; "" for
+    the directeur. `names`: id → name for cast ids (the dialogs' and cast's names)."""
+    names = names or _cast_names()
+    depts = {d["id"]: d for d in company["departments"]}
+
+    def name_of(ref: dict) -> str:
+        return ref.get("name") or names.get(ref.get("id"), ref.get("id", ""))
+
+    out = {}
+    for pid, p in company_people(company).items():
+        if not p["department"]:
+            continue
+        d = depts[p["department"]]
+        if p["lead"]:
+            out[pid] = names.get(p["lead"], p["lead"])
+        elif d["head"].get("id") != pid:
+            out[pid] = name_of(d["head"])
+        else:
+            boss = d.get("reports_to")
+            out[pid] = name_of(depts[boss]["head"]) if boss else ""
+    return out
+
+
+def _cast() -> list[dict]:
+    try:
+        return json.loads(CAST_FILE.read_text(encoding="utf-8"))["characters"]
+    except (OSError, ValueError, KeyError) as exc:
+        raise ContentError(f"{CAST_FILE.name}: cannot read the cast ({exc})") from exc
+
+
+def _cast_names() -> dict[str, str]:
+    return {c["id"]: c.get("name", "") for c in _cast()}
+
+
+def check_company(docs: dict[str, Any]) -> None:
+    """The company against the cast, the dialogs' people and the pools: everyone placed
+    once with the same title everywhere; heads and leads in the cast (or named heads not
+    in it); pooled teams get their pool's headcount."""
+    company = docs.get("company")
+    if company is None:
+        return
+    cast = _cast()
+    speakers = docs.get("dialogs", {}).get("people", [])
+    roles: dict[str, list[tuple[str, str]]] = {}
+    for c in cast:
+        roles.setdefault(c["id"], []).append(("cast.json", c.get("role", "")))
+    for p in speakers:
+        roles.setdefault(p["id"], []).append(("dialogs.yaml", p.get("role", "")))
+    placed = company_people(company)
+    for pid, said in roles.items():
+        if pid not in placed:
+            raise ContentError(f"company.yaml: {pid!r} ({said[0][0]}) is not in company.yaml")
+        for where, role in said:
+            if role != placed[pid]["title"]:
+                raise ContentError(f"company.yaml: {pid!r}: title {placed[pid]['title']!r} but {where} says {role!r}")
+    cast_names = {c.get("name") for c in cast} | {p.get("name") for p in speakers}
+    for d in company["departments"]:
+        head = d["head"]
+        if "id" in head and head["id"] not in roles and "dialogs" in docs:
+            raise ContentError(f"company.yaml: department '{d['id']}': {head['id']!r} is not in the cast")
+        if "name" in head and head["name"] in cast_names:
+            raise ContentError(f"company.yaml: department '{d['id']}': {head['name']!r} is in the cast: name them by id")
+    for pid in placed if "dialogs" in docs else []:  # a content set without people knows only the cast
+        if pid not in roles:
+            raise ContentError(f"company.yaml: {pid!r} is not in the cast")
+    pools = {p["id"]: p for p in docs["value_streams"]["pools"]}
+    for d in company["departments"]:
+        for t in d["teams"]:
+            if "pool" not in t:
+                continue
+            if t["pool"] not in pools:
+                raise ContentError(f"company.yaml: team '{t['id']}': unknown pool {t['pool']!r}")
+            t["headcount"] = {"value": pools[t["pool"]]["headcount"], "pool": t["pool"]}
+
+
 VALIDATORS: dict[str, Callable[[Any, str], None]] = {
     "game": validate_game,
+    "company": validate_company,
     "value_streams": validate_value_streams,
     "countermeasures": validate_countermeasures,
     "missions": validate_missions,
@@ -2453,12 +2657,12 @@ VALIDATORS: dict[str, Callable[[Any, str], None]] = {
     "places": validate_places,
 }
 # Registered files a content set may leave out.
-OPTIONAL = {"dialogs", "explainers", "world", "places"}
+OPTIONAL = {"dialogs", "explainers", "world", "places", "company"}
 
 # Checks that need several files at once. Each gets {stem: document}.
 CROSS_CHECKS: list[Callable[[dict[str, Any]], None]] = [check_kpis, check_problems, check_missions, check_concepts,
                                                       check_dialogs, check_discoveries, check_explainers, check_world,
-                                                      check_places, check_spoken]
+                                                      check_places, check_spoken, check_company]
 
 
 def _validator_for(stem: str) -> Callable[[Any, str], None] | None:

@@ -167,7 +167,7 @@
                  "missions": ["fix_digging_damage"]}
     },
     {
-      "id": "wim", "name": "Wim Kortekaas", "role": "gepensioneerd elektrotechnicus",
+      "id": "wim", "name": "Wim Kortekaas", "role": "bewoner Zonnestraat, gepensioneerd elektrotechnicus",
       "look": {"sex": "m", "height": 1.77, "build": 0.5, "skin": [232, 190, 166], "hair_style": "receding",
                "hair_color": [206, 204, 200], "brow_color": [176, 172, 166], "outfit": "shirt", "glasses": true,
                "eye_color": [84, 100, 116], "stoop": 0.5,

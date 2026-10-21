@@ -119,10 +119,11 @@ static func create(entry: Dictionary) -> OfficePerson:
 	return p
 
 
-## Their name and role on the tag (GameSession.person's when the session knows them).
+## Their name and role on the tag: the title in the company file (Company), else
+## `person_role` (GameSession.person's when the session knows them).
 func name_as(person_name: String, person_role: String) -> void:
 	display_name = person_name
-	role = person_role
+	role = Company.title(id, person_role)
 	tag.text = display_name + ("\n" + role if not role.is_empty() else "")
 
 
