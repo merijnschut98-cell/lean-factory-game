@@ -46,16 +46,19 @@ func test_the_beats_run_in_order_and_never_back() -> void:
 	assert_eq(layer.opening_beat, Opening.DONE)
 
 
-func test_the_clock_comes_with_the_evening_and_the_journal_after_the_talk() -> void:
+func test_the_clock_comes_with_the_evening_and_the_notes_after_the_talk() -> void:
 	var office := _opening_office()
 	var layer := office.ui.session_layer
 	Opening.advance(layer, Opening.ANOUK)
 	office.ui.after_action()
 	assert_true(_shown(office)["clock"], "the first time time has passed")
 	assert_true(office.ui.hud.clock_label.visible)
-	assert_false(_shown(office)["journal"])
+	assert_true(_shown(office)["phone"], "the phone came with the evening's messages")
+	assert_false(_shown(office)["notes"])
+	assert_false(_shown(office)["people"])
 	Opening.advance(layer, Opening.DONE)
-	assert_true(_shown(office)["journal"], "the first thing worth remembering")
+	assert_true(_shown(office)["notes"], "the first thing worth remembering")
+	assert_true(_shown(office)["people"], "and the first person to remember")
 	assert_false(_shown(office)["mission"], "the mission line waits for Tuesday")
 	assert_false(_shown(office)["budget"])
 	office.free()
@@ -82,10 +85,9 @@ func test_no_mission_board_and_no_j_m_k_before_their_time() -> void:
 	var office := _opening_office()
 	office.ui.open_mission_board()
 	assert_false(office.ui.mission_board.visible, "no board before the first talk")
-	office.ui.toggle_journal()
-	office.ui.toggle_map()
-	office.ui.toggle_codex()
-	assert_false(office.ui.is_busy(), "J, M and K wait for their moment")
+	for app: String in [Phone.HOME, Phone.NOTES, Phone.MAP, Phone.CODEX]:
+		office.ui.toggle_phone(app)
+	assert_false(office.ui.is_busy(), "Tab, J, M and K wait for their moment")
 	office.free()
 
 
@@ -219,8 +221,8 @@ func test_b4_to_b7_the_board_the_letter_the_evening_and_anouk() -> void:
 	office.ui.close_panels()
 	office.ui.close_panels()
 	assert_true(_until(office, func() -> bool: return office.ui.session_layer.opening_beat == Opening.DONE), "the scene ends")
-	assert_true(office.first_day.lines.hint_text().begins_with("J"), "the journal key")
-	assert_true(Opening.hud(office.session, office.ui.session_layer)["journal"])
+	assert_true(office.first_day.lines.hint_text().begins_with(Phone.key_text()), "the phone key")
+	assert_true(Opening.hud(office.session, office.ui.session_layer)["people"])
 	assert_eq(office.session.minute_of_day(), GameSession.START_MINUTE, "the screen goes to Tuesday morning")
 	assert_true(Opening.hud(office.session, office.ui.session_layer)["mission"], "Tuesday brings the mission line")
 	office.free()

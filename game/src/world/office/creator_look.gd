@@ -119,7 +119,7 @@ static func build(look: Dictionary) -> Node3D:
 	_part(model, face, body, hair)
 	var glasses: Dictionary = pick.call("bril")
 	_part(model, glasses, body, _color(glasses.get("color"), Color.BLACK))
-	var skin := _color(pick.call("huidskleur").get("color"), Color(0.86, 0.67, 0.54))
+	var skin := skin_of(look)
 	CharacterModel.tint(meshes(model, "_body"), Color(minf(skin.r / SKIN_HEADROOM, 1.0), minf(skin.g / SKIN_HEADROOM, 1.0),
 		minf(skin.b / SKIN_HEADROOM, 1.0)))
 	CharacterModel.tint(meshes(model, "_brows"), hair.darkened(1.0 - BROW_SHADE))
@@ -172,6 +172,11 @@ static func _part(model: Node3D, entry: Dictionary, body: String, color: Color) 
 	if color.a < 1.0:
 		for mi in attached:
 			(mi.material_override as BaseMaterial3D).transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+
+
+## The skin colour of `look` (the hand that holds the phone wears it too).
+static func skin_of(look: Dictionary) -> Color:
+	return _color(option("huidskleur", look.get("huidskleur"), body_of(look)).get("color"), Color(0.86, 0.67, 0.54))
 
 
 ## A catalogue colour ([r, g, b] sRGB 0..255, or with a fourth alpha 0..1) or `fallback`.

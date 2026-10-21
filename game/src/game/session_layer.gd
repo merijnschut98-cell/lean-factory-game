@@ -55,6 +55,13 @@ var carded: Array[String] = []
 ## Where a new game's opening is (Opening.BEATS, PLAN 2.7d); "" for a game
 ## without one (a returning player, an old save).
 var opening_beat := ""
+## The phone's Berichten (PLAN 2.14 S1-F, PhoneMessages): each message once,
+## in arrival order: {id, at (game minutes), read, and its wording's extras}.
+var inbox: Array[Dictionary] = []
+## The concepts the player has looked at in the phone's Begrippen (its badge).
+var concepts_seen: Array[String] = []
+## False for a save from before the phone: GameUI then counts what it holds as read.
+var phone_saved := true
 ## The card shown when this session opened ({} when none): the journal
 ## reopens it.
 var last_card := {}
@@ -410,7 +417,8 @@ static func _days(minutes: int) -> int:
 func to_dict() -> Dictionary:
 	return {"start": start.duplicate(true), "offered": offered.duplicate(), "toast_day": toast_day,
 		"queued": queued.duplicate(), "floor_id": floor_id, "carded": carded.duplicate(),
-		"has_floor_plan": has_floor_plan, "opening_beat": opening_beat}
+		"has_floor_plan": has_floor_plan, "opening_beat": opening_beat,
+		"inbox": inbox.duplicate(true), "concepts_seen": concepts_seen.duplicate()}
 
 
 ## Restore to_dict() output, untrusted: anything of the wrong shape is
@@ -437,6 +445,34 @@ func load_dict(d: Dictionary) -> void:
 	for id: Variant in days if days is Array else []:
 		if id is String:
 			carded.append(id)
+	phone_saved = d.get("inbox") is Array
+	inbox.clear()
+	for e: Variant in d["inbox"] if phone_saved else []:
+		var entry := _clean_message(e)
+		if not entry.is_empty():
+			inbox.append(entry)
+	concepts_seen.clear()
+	var seen: Variant = d.get("concepts_seen", [])
+	for id: Variant in seen if seen is Array else []:
+		if id is String:
+			concepts_seen.append(id)
+
+
+## A saved inbox message, untrusted: {} unless it has its id, time and read
+## flag; a debrief's measured queues kept only as place -> number.
+static func _clean_message(e: Variant) -> Dictionary:
+	if not (e is Dictionary and e.get("id") is String and (e.get("at") is int or e.get("at") is float) \
+			and e.get("read") is bool):
+		return {}
+	var out := {"id": e["id"], "at": int(e["at"]), "read": e["read"]}
+	var queues := JsonFile.dict_or_empty(e.get("queues"))
+	var clean := {}
+	for place: Variant in queues:
+		if queues[place] is int or queues[place] is float:
+			clean[str(place)] = queues[place]
+	if not clean.is_empty():
+		out["queues"] = clean
+	return out
 
 
 static func _clean_snapshot(v: Variant) -> Dictionary:

@@ -36,8 +36,9 @@ var _explainers_read: Array = []
 
 func _init() -> void:
 	super("Begrippen", Vector2(1100, 0))
-	var bar := HBoxContainer.new()
-	bar.add_theme_constant_override("separation", 8)
+	var bar := HFlowContainer.new()   # the tabs wrap on the phone's narrow screen
+	bar.add_theme_constant_override("h_separation", 8)
+	bar.add_theme_constant_override("v_separation", 8)
 	body.add_child(bar)
 	for id: String in TABS:
 		var b := button(TABS[id], show_tab.bind(id))
@@ -205,10 +206,10 @@ func _explainer_defs() -> Array:
 	return _explainers_read
 
 
-## Three cards to a row, for Ontdekkingen and Hoe werkt het?.
+## Three cards to a row, for Ontdekkingen and Hoe werkt het? (one on the phone).
 func _card_grid() -> GridContainer:
 	var grid := GridContainer.new()
-	grid.columns = 3
+	grid.columns = 1 if embedded else 3
 	grid.add_theme_constant_override("h_separation", 10)
 	grid.add_theme_constant_override("v_separation", 10)
 	_list.add_child(grid)
@@ -218,7 +219,7 @@ func _card_grid() -> GridContainer:
 ## A card in the grid: on `paper` when known, a grey silhouette's otherwise.
 static func _grid_card(grid: GridContainer, known: bool, paper: Color = Color.WHITE) -> VBoxContainer:
 	var box := add_card(grid, "", paper if known else Palette.LINE)
-	box.get_parent().custom_minimum_size = Vector2(340, 96)
+	box.get_parent().custom_minimum_size = Vector2(340 if grid.columns > 1 else 0, 96)
 	return box
 
 

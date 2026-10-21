@@ -167,7 +167,11 @@ static func rows(missions: Array[MissionDef]) -> Array:
 ## The missions offered as new: all available ones, or with the session
 ## layer at most two new sides a week (SessionLayer.new_offers).
 func offers() -> Array[MissionDef]:
-	return layer.new_offers(session) if layer != null else session.available_missions()
+	return offers_of(session, layer)
+
+
+static func offers_of(s: GameSession, of_layer: SessionLayer) -> Array[MissionDef]:
+	return of_layer.new_offers(s) if of_layer != null else s.available_missions()
 
 
 func toggle_older() -> void:

@@ -19,11 +19,11 @@ func _text(office: Office) -> String:
 
 func test_k_opens_and_closes_the_codex() -> void:
 	var office := _office()
-	office.player.codex_pressed.emit()
-	assert_true(office.ui.codex.visible, "K opens it")
+	office.player.phone_pressed.emit(Phone.CODEX)
+	assert_true(office.ui.phone.visible and office.ui.phone.current == Phone.CODEX, "K opens it on the phone")
 	assert_true(office.ui.is_busy())
-	office.player.codex_pressed.emit()
-	assert_false(office.ui.codex.visible, "K closes it")
+	office.player.phone_pressed.emit(Phone.CODEX)
+	assert_false(office.ui.phone.visible, "K lowers it")
 	office.free()
 
 
@@ -33,7 +33,7 @@ func test_a_learned_concept_is_readable_and_an_unlearned_one_is_not() -> void:
 	var kata: ConceptDef = concepts["PDCA"]
 	var other: ConceptDef = concepts["flow"]
 	office.session.region.profile.learn(["PDCA"])
-	office.ui.toggle_codex()
+	office.ui.toggle_phone(Phone.CODEX)
 	var text := _text(office)
 	for part in [kata.name, kata.short, kata.text, kata.example]:
 		assert_true(text.contains(part), part)
@@ -47,7 +47,7 @@ func test_a_learned_concept_is_readable_and_an_unlearned_one_is_not() -> void:
 func test_a_category_counts_what_is_left() -> void:
 	var office := _office()
 	office.session.region.profile.learn(["PDCA"])
-	office.ui.toggle_codex()
+	office.ui.toggle_phone(Phone.CODEX)
 	var groups := CodexPanel.groups(office.session.catalog.concepts, office.session.region.profile.concepts)
 	var left: int = groups[0]["entries"].size() - 1
 	assert_true(office.ui.codex.shown_texts().has(CodexPanel.undiscovered_line(left)), "lean: count of the rest")
@@ -78,22 +78,25 @@ func test_sources_and_estimates_are_shown_for_sector_entries() -> void:
 	assert_eq(CodexPanel.source_line(c.concepts["PDCA"]), "", "lean entries need no source")
 
 
-func test_a_new_concept_toasts_once() -> void:
+## A concept learned badges Begrippen on the phone once (no toast over the world).
+func test_a_new_concept_badges_begrippen_once() -> void:
 	var office := _office()
 	var profile := office.session.region.profile
-	var name: String = office.session.catalog.concepts["PDCA"].name
+	var before := office.ui.phone.badge(Phone.CODEX)
+	var buzzes := {"n": 0}
+	office.ui.phone.buzz.connect(func() -> void: buzzes["n"] += 1)
 	profile.learn(["PDCA"])
 	office.ui.after_action()
 	office.ui.after_action()
-	var toasts := office.ui.hud.toast_texts().filter(func(t: String) -> bool: return t.begins_with("Nieuw begrip"))
-	assert_eq(toasts, ["Nieuw begrip: %s (K)" % name])
-	profile.learn(["PDCA"])
-	office.ui.after_action()
-	assert_eq(office.ui.hud.toast_texts().size(), 1, "known concepts do not toast again")
+	assert_eq(office.ui.phone.badge(Phone.CODEX), before + 1, "one more on the badge")
+	assert_eq(buzzes["n"], 1, "one buzz")
+	assert_false(office.ui.hud.toast_texts().any(func(t: String) -> bool: return t.begins_with("Nieuw begrip")), "no toast")
+	office.ui.toggle_phone(Phone.CODEX)
+	assert_eq(office.ui.phone.badge(Phone.CODEX), 0, "seen once opened")
 	office.free()
 
 
-func test_the_controls_hint_names_k() -> void:
+func test_the_controls_hint_names_the_phone() -> void:
 	var hud := Hud.new()
-	assert_true(hud.controls_text().contains("K begrippen"))
+	assert_true(hud.controls_text().contains("Tab telefoon"))
 	hud.free()
