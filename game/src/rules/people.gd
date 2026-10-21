@@ -36,15 +36,17 @@ const MORALE := {"commitment": 10, "partial": 5, "heard": 3, "compliance": -10, 
 ## someone whose fix was won by pressure (their best agreement is compliance) loses
 ## COMPLIED_DRIFT a day; a check-in prompt left to expire costs IGNORED_MORALE; at a
 ## load under the norm, morale creeps back towards where the person started by
-## RECOVER_DRIFT a day (never above it: good talks lift people higher). The load
-## alone wears no one below LOAD_FLOOR (people leave rarely, Merijn 2026-10-15: only
-## pressure and ignored check-ins take them further, towards LEAVE_MORALE).
+## RECOVER_DRIFT a day (never above it: good talks lift people higher). Neglect (the
+## load, ignored check-ins) wears no one below NEGLECT_FLOOR: tired, not gone. Only
+## pressure (a fix they owned won by compliance) takes them further, towards
+## LEAVE_MORALE (people leave rarely, Merijn 2026-10-15; coordinator's tuning,
+## 2026-10-21: nobody before day 100, nobody for a player who listens).
 const LOAD_NORM := 0.85
-const LOAD_FLOOR := 30
+const NEGLECT_FLOOR := 30
 const LOAD_SPAN := 0.15
 const LOAD_DRIFT := 0.25
-const COMPLIED_DRIFT := 0.1
-const IGNORED_MORALE := -5
+const COMPLIED_DRIFT := 0.05
+const IGNORED_MORALE := -3
 const RECOVER_DRIFT := 0.1
 ## A blame of their team.
 const MORALE_CONFRONTED := -10
@@ -74,7 +76,7 @@ const PROMPT_REST_DAYS := 14
 ## LEAVE_DAYS, and LEAVE_IGNORED check-in prompts left unanswered. It closes
 ## a door (their talks, their ownership of a fix), never the game.
 const LEAVE_MORALE := 20
-const LEAVE_DAYS := 60
+const LEAVE_DAYS := 90
 const LEAVE_IGNORED := 2
 ## Main-mission talks that end this way bring the coach's question about the
 ## talk on the next ask (spec §5.6); a talk that only listened does not.
@@ -452,13 +454,15 @@ func daily(world: Dictionary) -> Array[Dictionary]:
 	var now := int(world.get("now", 0))
 	_retire(JsonFile.dict_or_empty(world.get("beats")), now)
 	var events := _beat_lines(world)
+	var pressured := _pressured(facts(world.get("facts", {})))
 	for id: String in prompts.keys():
 		if now - prompts[id] >= SimCalendar.days(PROMPT_DAYS):
 			prompts.erase(id)
 			var who := dialogs[id].person
 			ignored[who] = ignored.get(who, 0) + 1
-			morale[who] = clampi(morale[who] + IGNORED_MORALE, 0, 100)
-	_drift(world)
+			var floor_at := 0 if pressured.has(who) else mini(NEGLECT_FLOOR, morale[who])
+			morale[who] = maxi(floor_at, morale[who] + IGNORED_MORALE)
+	_drift(world, pressured)
 	_open_prompt(world)
 	for id: String in persons:
 		if left.has(id):
@@ -473,27 +477,32 @@ func daily(world: Dictionary) -> Array[Dictionary]:
 	return events
 
 
+## The people whose fix was won by pressure: their best agreement on a dialog that owns
+## a fix is compliance (`known`: every fact, facts()).
+func _pressured(known: Dictionary) -> Dictionary:
+	var out := {}
+	for d: DialogDef in dialogs.values():
+		if not d.owns.is_empty() and effective_outcome(d.id, known) == "compliance":
+			out[d.person] = true
+	return out
+
+
 ## Morale's drift for every day since the last (the constants above): world `loads`
 ## (team → utilisation, Capacity) and the facts. Not in the training week (a friendly
 ## first week, PLAN 2.13 D), and not before the first day it runs.
-func _drift(world: Dictionary) -> void:
+func _drift(world: Dictionary, pressured: Dictionary) -> void:
 	var today := SimCalendar.day_of(int(world.get("now", 0)))
 	var days := today - drift_day if drift_day >= 0 else 0
 	drift_day = today
 	if days <= 0 or world.get("training", false):
 		return
 	var loads := JsonFile.dict_or_empty(world.get("loads"))
-	var known := facts(world.get("facts", {}))
-	var complied := {}
-	for d: DialogDef in dialogs.values():
-		if not d.owns.is_empty() and effective_outcome(d.id, known) == "compliance":
-			complied[d.person] = true
 	for p: PersonDef in persons.values():
 		if left.has(p.id):
 			continue
 		var over := clampf((float(loads.get(p.team, 0.0)) - LOAD_NORM) / LOAD_SPAN, 0.0, 2.0)
-		var per_day := -(COMPLIED_DRIFT if complied.has(p.id) else 0.0)
-		if over > 0.0 and morale[p.id] > LOAD_FLOOR:
+		var per_day := -(COMPLIED_DRIFT if pressured.has(p.id) else 0.0)
+		if over > 0.0 and morale[p.id] > NEGLECT_FLOOR:
 			per_day -= LOAD_DRIFT * over  # work alone makes people tired, not gone: neglect does the rest
 		elif over == 0.0 and per_day == 0.0 and morale[p.id] < p.morale:
 			per_day = RECOVER_DRIFT

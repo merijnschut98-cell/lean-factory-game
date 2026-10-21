@@ -181,6 +181,8 @@ class Persona extends RefCounted:
 	const PUSH_TRIES := 5
 	## A needed talk not won in this many talks is a dead end (a talk nobody can win).
 	const NEEDED_TRIES := 20
+	## Everyone's morale is recorded once this day is reached (record morale_day_100).
+	const MORALE_CHECK_DAY := 100.0
 	## The listening move for a person's last words (Dialog.ANSWERS), in order.
 	const ANSWER := {"feeling": "reflect", "admission": "empathy", "hesitation": "silence", "claim": "paraphrase",
 		"doubt": "experience"}
@@ -539,6 +541,8 @@ class Persona extends RefCounted:
 		if not force and day() - _last_sample < SAMPLE_DAYS:
 			return
 		_last_sample = day()
+		if day() >= MORALE_CHECK_DAY and not record.has("morale_day_100"):
+			record["morale_day_100"] = s.people.morale.duplicate()  # QA 2.12 (b): someone under 40 by day 100?
 		var point := {"day": snappedf(day(), 0.1), "xp": s.xp(), "budget": s.budget(), "belt": s.belt()}
 		if s.has_method("drift"):
 			point["drift"] = snappedf(s.call("drift")["level"], 0.001)

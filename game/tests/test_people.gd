@@ -233,9 +233,9 @@ func _low_pim() -> People:
 
 func test_a_colleague_left_low_and_unheard_leaves() -> void:
 	var people := _low_pim()
-	assert_eq(_days(people, 0, 60), [], "not before 60 days")
+	assert_eq(_days(people, 0, People.LEAVE_DAYS), [], "not before LEAVE_DAYS")
 	assert_true(people.ignored["pim"] >= 2, "check-ins that expired unanswered")
-	assert_eq(_days(people, 60, 70), [{"type": "left", "person": "pim"}])
+	assert_eq(_days(people, People.LEAVE_DAYS, People.LEAVE_DAYS + 10), [{"type": "left", "person": "pim"}])
 	assert_true(people.has_left("pim"))
 	assert_eq(people.dialog_for("pim", DialogFixture.world()), null, "a door closes")
 	assert_eq(people.buy_in("custom_design", people.facts()), "none", "the fix they owned has no owner now")
@@ -247,9 +247,9 @@ func test_better_morale_or_answered_checkins_keep_them() -> void:
 	people.morale["pim"] = 25
 	_days(people, 30, 31)
 	people.morale["pim"] = 15
-	assert_eq(_days(people, 31, 80), [], "the 60 days start again")
+	assert_eq(_days(people, 31, 31 + People.LEAVE_DAYS - 1), [], "the clock starts again")
 	var heard := _low_pim()
-	for day in 70:
+	for day in People.LEAVE_DAYS + 10:
 		var world := DialogFixture.world({"now": SimCalendar.days(day)})
 		heard.daily(world)
 		var d := heard.start(heard.dialogs["checkin"], world)
@@ -281,7 +281,7 @@ func test_a_team_planned_above_the_norm_wears_its_people_down() -> void:
 func test_the_load_alone_wears_no_one_below_the_floor() -> void:
 	var people := DialogFixture.people([DialogFixture.def()], [DialogFixture.person("defender", 50, 35)])
 	_drift_days(people, 200, {"loads": {"prep": 1.3}})
-	assert_eq(people.morale["pim"], People.LOAD_FLOOR, "tired, not gone: people leave rarely")
+	assert_eq(people.morale["pim"], People.NEGLECT_FLOOR, "tired, not gone: people leave rarely")
 
 
 func test_morale_creeps_back_when_the_load_is_fine_but_never_above_the_start() -> void:
@@ -294,8 +294,8 @@ func test_morale_creeps_back_when_the_load_is_fine_but_never_above_the_start() -
 func test_a_fix_won_by_pressure_and_an_ignored_check_in_cost_morale() -> void:
 	var people := DialogFixture.people([DialogFixture.def()], [DialogFixture.person("defender", 50, 60)])
 	people.outcomes["talk"] = "compliance"
-	_drift_days(people, 50)
-	assert_eq(people.morale["pim"], 60 - roundi(50 * People.COMPLIED_DRIFT), "a yes under pressure keeps costing")
+	_drift_days(people, 60)
+	assert_eq(people.morale["pim"], 60 - roundi(60 * People.COMPLIED_DRIFT), "a yes under pressure keeps costing")
 	var ignored := _low_pim()
 	ignored.morale["pim"] = 40
 	ignored.daily(DialogFixture.world({"now": 0}))
@@ -306,7 +306,7 @@ func test_a_fix_won_by_pressure_and_an_ignored_check_in_cost_morale() -> void:
 
 func test_leaving_survives_a_save() -> void:
 	var people := _low_pim()
-	_days(people, 0, 70)
+	_days(people, 0, People.LEAVE_DAYS + 10)
 	var restored := _low_pim()
 	assert_eq(restored.load_dict(bytes_to_var(var_to_bytes(people.to_dict()))), [])
 	assert_eq(restored.to_dict(), people.to_dict())
@@ -432,7 +432,21 @@ func test_a_person_gets_a_prompt_at_most_every_fourteen_days() -> void:
 func test_an_expired_prompt_costs_morale_not_trust() -> void:
 	var people := _three_low()
 	_days(people, 0, 5)
-	assert_eq([people.morale["pim"], people.trust["pim"]], [20 + People.IGNORED_MORALE, 50])
+	assert_eq([people.morale["pim"], people.trust["pim"]], [20, 50], "already below the floor: neglect takes no more")
+	var pressed := _low_pim()
+	pressed.outcomes["talk"] = "compliance"  # Pim's fix was won by pressure
+	_days(pressed, 0, 5)
+	assert_eq(pressed.morale["pim"], 15 + People.IGNORED_MORALE, "after pressure, an ignored check-in still costs")
+
+
+## Neglect alone (load, ignored check-ins) makes people tired, never gone: only a
+## fix won by pressure takes them below the floor (people leave rarely).
+func test_neglect_alone_stops_at_the_floor() -> void:
+	var people := DialogFixture.people([DialogFixture.def(), DialogFixture.checkin({"trigger": {"morale_below": 101}})],
+		[DialogFixture.person("defender", 50, 40)])
+	_drift_days(people, 300, {"loads": {"prep": 1.3}})
+	assert_eq(people.morale["pim"], People.NEGLECT_FLOOR)
+	assert_false(people.has_left("pim"))
 
 
 # ── What the player saw and heard (person-needs spec §4, §6): the Mensen tab ─
