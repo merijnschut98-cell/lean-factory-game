@@ -86,9 +86,9 @@ const COACHED := ["ruined", "blocked", "compliance", "partial", "commitment"]
 const TALK_LOG_MAX := 12
 ## The player's note on a person is kept to this many characters.
 const NOTE_MAX := 600
-## The keys and value types of a saved observed line and a saved talk.
 ## An expert's answer among what they told you: its key is TOPIC + the topic id.
 const TOPIC := "topic:"
+## The keys and value types of a saved observed line and a saved talk.
 const OBSERVED_KEYS := {"dialog": TYPE_STRING, "key": TYPE_STRING, "text": TYPE_STRING, "place": TYPE_STRING}
 const TALK_KEYS := {"dialog": TYPE_STRING, "outcome": TYPE_STRING, "trace": TYPE_ARRAY, "moves": TYPE_ARRAY}
 

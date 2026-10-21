@@ -532,7 +532,7 @@ func show_error(text: String) -> void:
 
 
 func _open(panel: UiPanel) -> void:
-	if incoming.visible:
+	if incoming != null and incoming.visible:
 		incoming.decline()   # taken up with something else: the call goes to voicemail
 	for p in _panels:
 		if p != panel:
