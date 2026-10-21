@@ -32,6 +32,8 @@ const YARD_DOOR := "arrive:exit"
 const ENTRANCE := "arrive:entrance"
 ## A walk to or from a seat starts or ends this far (m) behind the chair, in the aisle.
 const AISLE := 0.7
+## People coming in by the same way at the same time step out this many seconds apart.
+const STAGGER := 1.6
 ## Where someone without a clock to keep is (a session without one, the story), and
 ## someone the opening's evening has sent home.
 const ALWAYS_AT_DESK := {"place": OfficeDay.DESK, "since": -SimCalendar.MINUTES_PER_DAY}
@@ -53,8 +55,8 @@ var _named_by: Object
 var _place: Dictionary[String, String] = {}
 ## Whether each person is on this floor now (at a spot or walking), by id.
 var _here: Dictionary[String, bool] = {}
-## The walks under way by id: {path, leg (the corner walked to), to (the spot, or {} to
-## leave the floor), started (the minute)}.
+## The walks under way by id: {who, path, leg (the corner walked to), to (the spot, or {}
+## to leave the floor), started (the minute), wait (seconds before stepping out)}.
 var _trips: Dictionary[String, Dictionary] = {}
 ## Who stays late today, and the day that was decided for.
 var _late := {}
@@ -66,6 +68,8 @@ var _at_coffee: Dictionary[int, String] = {}
 ## The ways onto this floor (WAYS_IN found) and the front door (or null).
 var _ways: Array[Vector3] = []
 var _entrance: Variant = null
+## Seconds until the next person may step out of each way onto this floor.
+var _queues: Dictionary[Vector3, float] = {}
 
 
 ## The cast's people with a spot on this floor (`here` tells whether a spot's floor is
@@ -280,9 +284,13 @@ func _walk(p: OfficePerson, to: Dictionary, minute: int, by_door: bool) -> void:
 	for corner: Vector3 in [end, goal]:
 		if path[path.size() - 1].distance_to(corner) > 0.01:
 			path.append(corner)
-	_here[p.id] = true
+	# Those coming in by the same way at once step out one after the other, not as one body.
+	var wait: float = 0.0 if here else _queues.get(from, 0.0)
+	if not here:
+		_queues[from] = wait + STAGGER
+	_here[p.id] = wait <= 0.0
 	p.settle({"at": from, "face": path[0] - from, "pose": "walk"})
-	_trips[p.id] = {"path": path, "leg": 0, "to": to, "started": minute}
+	_trips[p.id] = {"who": p, "path": path, "leg": 0, "to": to, "started": minute, "wait": wait}
 
 
 ## The way onto or off this floor for `p`: the front door for someone whose desk is on
@@ -297,6 +305,10 @@ func _way_for(p: OfficePerson, by_door: bool) -> Variant:
 ## One frame of a walk: along the path at their walking pace; at its end they settle at
 ## the spot, or leave the floor.
 func _step(p: OfficePerson, trip: Dictionary, delta: float) -> void:
+	if trip["wait"] > 0.0:   # still in the lift or on the stairs, behind someone
+		trip["wait"] -= delta
+		_here[p.id] = trip["wait"] <= 0.0
+		return
 	var path: PackedVector3Array = trip["path"]
 	var left := p.pace * delta
 	while left > 0.0 and int(trip["leg"]) < path.size():
@@ -336,13 +348,14 @@ func _find_places(at: Office) -> void:
 			_coffee = at.in_office(table).origin * Vector3(1, 0, 1)
 			break
 	var markers := at.floors.markers() if at.floors != null else {}
+	var on_floor := func(id: String) -> Vector3: return at.in_office(markers[id]).origin * Vector3(1, 0, 1)
 	for id in WAYS_IN:
 		if markers.has(id):
-			_ways.append(at.in_office(markers[id]).origin * Vector3(1, 0, 1))
+			_ways.append(on_floor.call(id))
 	if _ways.is_empty() and markers.has(YARD_DOOR):
-		_ways.append(at.in_office(markers[YARD_DOOR]).origin * Vector3(1, 0, 1))
+		_ways.append(on_floor.call(YARD_DOOR))
 	if markers.has(ENTRANCE):
-		_entrance = at.in_office(markers[ENTRANCE]).origin * Vector3(1, 0, 1)
+		_entrance = on_floor.call(ENTRANCE)
 
 
 ## Names and roles from the session for the people it knows (one source, PLAN 1.3).
@@ -360,8 +373,10 @@ func _behind_shut_door(at: Vector3) -> bool:
 
 
 func _process(delta: float) -> void:
-	for id: String in _trips.keys():
-		_step(person(id), _trips[id], delta)
+	for way: Vector3 in _queues.keys():
+		_queues[way] = maxf(0.0, _queues[way] - delta)
+	for trip: Dictionary in _trips.values():
+		_step(trip["who"], trip, delta)
 	_since_refresh += delta
 	if _session != null and _since_refresh >= REFRESH_SECONDS:
 		_since_refresh = 0.0

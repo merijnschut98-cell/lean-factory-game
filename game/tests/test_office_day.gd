@@ -86,6 +86,10 @@ func test_someone_comes_in_by_the_lift_or_the_stairs_and_is_at_the_desk_by_a_qua
 	assert_false(sanne.visible, "nobody at Intake at seven")
 	clock.minute = 8 * 60 + 5
 	office.people.refresh(clock)
+	var t := 0.0
+	while not sanne.visible and t < 5.0:   # someone may step out before her
+		office.people._process(0.1)
+		t += 0.1
 	assert_true(sanne.visible, "she has come in")
 	assert_true(_from_way_in(office, sanne.position) < 1.0, "at the lift or the stairs: %.1f m" % _from_way_in(office, sanne.position))
 	assert_eq(sanne.pose, "walk")
@@ -121,8 +125,21 @@ func test_lunch_is_walked_to_the_lift_and_in_the_kantine_never_jumped() -> void:
 	assert_false(rachid.visible, "not down yet")
 	clock.minute = lunch + 1
 	office.people.refresh(clock)
-	assert_true(rachid.visible and _from_way_in(office, rachid.position) < 1.0, "out of the lift")
-	trail = _run(office, rachid, 30.0)
+	var closest := INF
+	var first_seen := Vector3.INF
+	trail = PackedVector3Array()
+	for i in 300:   # 30 s; nobody walks through anybody coming out of the lift with them
+		office.people._process(0.1)
+		if rachid.visible:
+			trail.append(rachid.position)
+			if first_seen == Vector3.INF:
+				first_seen = rachid.position
+		var out := office.people.people.filter(func(p: OfficePerson) -> bool: return p.visible and p.pose == "walk")
+		for a in out.size():
+			for b in range(a + 1, out.size()):
+				closest = minf(closest, (out[a] as OfficePerson).position.distance_to((out[b] as OfficePerson).position))
+	assert_true(_from_way_in(office, first_seen) < 1.0, "out of the lift or off the stairs")
+	assert_true(closest > 0.5, "walkers keep apart: %.2f m" % closest)
 	assert_true(_longest_step(trail) <= rachid.pace * 0.1 + 0.05, "never a jump")
 	var canteen := OfficeFloors.room_rect(office.floors.markers()["room:canteen"])
 	assert_true(canteen.has_point(Vector2(rachid.position.x, rachid.position.z)), "at his table in the kantine")
@@ -174,15 +191,15 @@ func test_at_half_past_six_only_those_who_stay_late_are_still_in() -> void:
 	clock.energy = {"linda": {"energy": 0.2, "needs_talk": false}}
 	clock.minute = 9 * 60
 	office.people.refresh(clock)
-	clock.minute = 18 * 60 + 25
+	clock.minute = 18 * 60 + 30
 	office.people.refresh(clock)
 	assert_true(office.people.person("linda").visible, "Linda, worn down, is still at it")
 	for p in office.people.people:
 		if p.id != "linda":
 			assert_false(p.visible, "%s has gone home" % p.id)
-	clock.minute = 18 * 60 + 30 + OfficeDay.WALK_WINDOW
+	clock.minute = OfficeDay.LATE_UNTIL + OfficeDay.WALK_WINDOW
 	office.people.refresh(clock)
-	assert_false(office.people.person("linda").visible, "and home at half past six")
+	assert_false(office.people.person("linda").visible, "and home by a quarter to seven")
 	office.free()
 
 
@@ -257,7 +274,7 @@ func test_desk_lamps_burn_where_people_work_late() -> void:
 	office.people.refresh(clock)
 	office.daylight.update(clock)
 	assert_eq(office.daylight.lit_desks(), 0, "no lamps in the afternoon")
-	clock.minute = 18 * 60 + 25
+	clock.minute = 18 * 60 + 30
 	office.people.refresh(clock)
 	office.daylight.update(clock)
 	assert_eq(office.daylight.lit_desks(), 1, "one lamp: Linda's")

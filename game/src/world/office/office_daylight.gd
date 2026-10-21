@@ -23,8 +23,8 @@ const BANDS: Array[Array] = [[0, "night"], [7 * 60, "morning"], [9 * 60, "day"],
 ## Values by eye on the office's screenshots (estimates); the day is the office's look
 ## from before the clock (Office.SUN_DIRECTION, office_environment.tres).
 const LOOKS := {
-	"morning": {"sun": Vector3(-0.62, -0.3, -0.72), "sun_color": Color(1.0, 0.8, 0.6), "sun_energy": 1.1,
-		"ambient": Color(1.0, 0.9, 0.8), "ambient_energy": 0.45,
+	"morning": {"sun": Vector3(-0.62, -0.3, -0.72), "sun_color": Color(1.0, 0.74, 0.5), "sun_energy": 1.1,
+		"ambient": Color(1.0, 0.86, 0.72), "ambient_energy": 0.45,
 		"sky_top": Color(0.42, 0.52, 0.72), "sky_horizon": Color(0.98, 0.8, 0.62)},
 	"day": {"sun": Office.SUN_DIRECTION, "sun_color": Color(1, 0.95, 0.86), "sun_energy": 1.6,
 		"ambient": Color(0.93, 0.95, 1), "ambient_energy": 0.55,
@@ -33,7 +33,7 @@ const LOOKS := {
 		"ambient": Color(1.0, 0.85, 0.74), "ambient_energy": 0.4,
 		"sky_top": Color(0.33, 0.38, 0.6), "sky_horizon": Color(0.95, 0.62, 0.45)},
 	"night": {"sun": Vector3(0.2, -0.6, -0.77), "sun_color": Color(0.55, 0.62, 0.85), "sun_energy": 0.06,
-		"ambient": Color(0.5, 0.56, 0.75), "ambient_energy": 0.14,
+		"ambient": Color(0.62, 0.68, 0.85), "ambient_energy": 0.3,
 		"sky_top": Color(0.02, 0.03, 0.07), "sky_horizon": Color(0.06, 0.08, 0.14)},
 }
 ## Desk lamps burn from this minute (design §1.2: after 17:00).

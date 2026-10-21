@@ -19,8 +19,9 @@ const COFFEE_MINUTES := 10
 ## the common office lunch; the starts spread over 12:00–12:30, so the kantine is busy
 ## from twelve to one.
 const LUNCH_MINUTES := 30
-## When someone who stays late goes home (design §1.1).
-const LATE_UNTIL := 18 * 60 + 30
+## When someone who stays late goes home (design §1.1: "late_until 18:30"): still at it at
+## half past six, out by a quarter to seven (an estimate).
+const LATE_UNTIL := 18 * 60 + 45
 ## A change of place this recent (game minutes) is walked; an older one has happened
 ## while the clock jumped (a talk, a skip): they are simply there. An estimate: a walk
 ## across a floor and down the stairs takes a few minutes, with slack for a chat.
