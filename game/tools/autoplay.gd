@@ -778,6 +778,8 @@ class Persona extends RefCounted:
 	func _listen_order(tags: Array, talk: Dictionary) -> Array[String]:
 		var uses: Dictionary = talk["uses"]
 		var order: Array[String] = []
+		if not uses.has("repair"):
+			order.append("repair")  # after a talk that went wrong, put it right first (offered only then)
 		if uses.is_empty():
 			order.append("mood")
 		for tag: String in tags:
