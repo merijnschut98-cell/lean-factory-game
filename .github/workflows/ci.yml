@@ -78,7 +78,7 @@ jobs:
           path: build/${{ matrix.dir }}
 
   # A Windows build for playtesting without Godot, only for a PR commit whose
-  # subject contains "[playtest]" (each build is ~150 MB and the artifact
+  # subject starts with "[playtest]" (each build is ~150 MB and the artifact
   # storage quota filled up when every push built one): open that commit's CI
   # run and download the "Spanning-windows-playtest" artifact.
   # (The full export above needs "Run workflow", which GitHub only offers once
@@ -96,7 +96,7 @@ jobs:
         id: want
         run: |
           subject="$(git log -1 --format=%s ${{ github.event.pull_request.head.sha }})"
-          if [[ "$subject" == *"[playtest]"* ]]; then echo "build=true" >> "$GITHUB_OUTPUT"; else echo "No [playtest] in: $subject"; fi
+          if [[ "$subject" == "[playtest]"* ]]; then echo "build=true" >> "$GITHUB_OUTPUT"; else echo "No [playtest] in: $subject"; fi
       - uses: ./.github/actions/setup-godot
         if: steps.want.outputs.build == 'true'
         with:

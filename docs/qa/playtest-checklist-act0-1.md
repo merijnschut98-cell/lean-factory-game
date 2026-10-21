@@ -1,6 +1,6 @@
 # Playtest checklist: Act 0 and Act I (Merijn)
 
-Build: `Spanning-windows-playtest` from the CI run of the latest commit marked `[playtest]` on PR #1 (only those commits build it, kept 5 days).
+Build: `Spanning-windows-playtest` from the CI run of the latest commit whose subject starts with `[playtest]` on PR #1 (only those commits build it, kept 5 days).
 Aim: play as a new CI lead would, not as the designer. Note what you *feel*, not only what is broken.
 Time: about 60–90 minutes for Act 0 plus the start of Act I. Stop whenever you like; that is data too.
 
