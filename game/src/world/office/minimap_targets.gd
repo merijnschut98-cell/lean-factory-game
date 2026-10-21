@@ -46,6 +46,8 @@ static func of(m: MissionDef, s: GameSession, building: OfficeBuilding, cast: Ar
 				"floor": str(spot.get(OfficeFloors.FLOOR_KEY, building.start_floor))}
 	elif step.get("obeya", false):
 		out = _room_target(building.room(OBEYA_ROOM), building)
+	elif step.has("room"):   # a milestone's scene waits there
+		out = _room_target(building.room(step["room"]), building)
 	elif step.has("place"):
 		out = _room_target(room_of(building, step["place"]), building)
 	if out.is_empty():

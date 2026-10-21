@@ -9,10 +9,12 @@ extends PhoneApp
 ## read badges the app, and its arrival buzzes the phone (GameUI).
 ##
 ## Inbox ids: "note:<training day>", "debrief:<training day>", "week_end",
-## "opening:<n>" (OfficeOpening.PHONE's n-th). The text is worded when shown,
-## so a translation reads the current words.
+## "opening:<n>" (OfficeOpening.PHONE's n-th), "payoff:<mission>:<n>" (a milestone
+## kept in time: MissionDef.payoff's n-th, a voicemail or a letter on your desk). The
+## text is worded when shown, so a translation reads the current words.
 
 const NOTE_HEADING := "Briefje van Ruud · %s"
+const PAYOFF_HEADINGS := {"call": "Voicemail", "letter": "Een brief op je bureau"}
 const DEBRIEF_HEADING := "Terugblik op %s"
 const WEEK_END_HEADING := "Je eerste week"
 const NONE := "Nog geen berichten."
@@ -20,6 +22,7 @@ const NOTE := "note:"
 const DEBRIEF := "debrief:"
 const WEEK_END := "week_end"
 const OPENING := "opening:"
+const PAYOFF := "payoff:"
 
 
 func refresh() -> void:
@@ -82,6 +85,10 @@ static func sync(s: GameSession, of_layer: SessionLayer) -> void:
 			push(of_layer, OPENING + str(n), now)
 	if week_over(s):
 		push(of_layer, WEEK_END, now)
+	for m: MissionDef in s.missions.defs.values():
+		if not m.payoff.is_empty() and s.missions.done_once.has(m.id):
+			for n in m.payoff.size():
+				push(of_layer, PAYOFF + "%s:%d" % [m.id, n], now)
 
 
 ## A message as shown: {from, heading, lines, paper}; {} for an unknown one.
@@ -120,6 +127,18 @@ static func render(s: GameSession, entry: Dictionary) -> Dictionary:
 		var p: Array = OfficeOpening.PHONE[n]
 		return {"from": "%s · %s" % [_tr(p[0]), p[1]], "heading": _tr(p[0]), "lines": [_tr(p[2])] as Array[String],
 			"paper": Color.WHITE}
+	if id.begins_with(PAYOFF):
+		var m: MissionDef = s.missions.defs.get(id.trim_prefix(PAYOFF).get_slice(":", 0))
+		var n := id.get_slice(":", 2).to_int()
+		if m == null or n < 0 or n >= m.payoff.size():
+			return {}
+		var p: Dictionary = m.payoff[n]
+		var person: PersonDef = s.people.persons.get(p["who"])
+		var lines: Array[String] = []
+		lines.assign(s.fill_tokens(p["text"]).split("\n\n"))
+		return {"from": "%s · %s" % [person.name if person != null else s.speaker_name(p["who"]), when],
+			"heading": _tr(PAYOFF_HEADINGS[p["by"]]), "lines": lines,
+			"paper": Palette.NOTE_PAPER if p["by"] == "letter" else Color.WHITE}
 	return {}
 
 

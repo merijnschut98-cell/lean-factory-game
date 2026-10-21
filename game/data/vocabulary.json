@@ -51,7 +51,8 @@
  "debrief_variants": [
   "blamed",
   "poor_fix",
-  "not_standardised"
+  "not_standardised",
+  "too_early"
  ],
  "dialog_archetypes": [
   "defender",
@@ -266,19 +267,25 @@
  },
  "fact_kinds": [
   "accepted",
+  "agreed",
   "blocked",
   "checked",
   "chose",
   "committed",
   "complied",
+  "delivered",
   "done",
   "failed",
   "flag",
   "forecast_positive",
   "fork_first",
   "heard",
+  "holds",
+  "left",
   "partial",
   "poor_fix",
+  "promise_broken",
+  "promise_kept",
   "repaired",
   "standardised"
  ],
@@ -308,7 +315,9 @@
   "investigate",
   "observe",
   "rework_fix",
+  "scene",
   "solve",
+  "story_order",
   "sustain",
   "talk_to",
   "walk"
@@ -316,7 +325,8 @@
  "mission_kinds": [
   "main",
   "side",
-  "training"
+  "training",
+  "milestone"
  ],
  "order_rules": [
   "first_come",
