@@ -4605,7 +4605,7 @@
    "kind": "persuade",
    "layers": [
     {
-     "at": 52,
+     "at": 45,
      "id": "interest",
      "tags": [
       "claim",
@@ -4615,7 +4615,8 @@
      "text": "Bij de meeste studies weet ik na vijf minuten al dat het past. Daarna reken ik nog vier uur, omdat de werkinstructie het zegt. En die school in Nova-Oost wacht.",
      "via": [
       "inquiry",
-      "open_question"
+      "open_question",
+      "reflect"
      ]
     },
     {
@@ -4664,7 +4665,8 @@
    "person": "femke",
    "position": {
     "tags": [
-     "claim"
+     "claim",
+     "feeling"
     ],
     "tell": "time",
     "text": "We hebben twee analisten extra nodig. Achtendertig studies op het bord. Kort gezegd: ik heb geen tijd voor een gesprek over tijd."
@@ -4700,6 +4702,9 @@
    "replies": {
     "mood": {
      "lands": {
+      "tags": [
+       "feeling"
+      ],
       "tell": "time",
       "text": "Hoe het gaat? Ik heb vanochtend drie keer koffie gehaald. Drie keer koud laten worden. Zo gaat het."
      }
@@ -5020,7 +5025,8 @@
      "text": "En naast me staat een hal met twee megawatt. Leeg. Leg me eens uit waarom het net vol is.",
      "via": [
       "paraphrase",
-      "empathy"
+      "empathy",
+      "reflect"
      ]
     },
     {
@@ -5104,6 +5110,15 @@
     }
    ],
    "replies": {
+    "mood": {
+     "lands": {
+      "tags": [
+       "feeling"
+      ],
+      "tell": "time",
+      "text": "Hoe het gaat? Mijn deeg rijst, mijn oven is oud, en ik hang bij jullie aan de lijn. Raad maar."
+     }
+    },
     "perspective": {
      "lands": {
       "text": "Vanuit jullie? Ja, ja. Iedereen wil tegelijk. Maar ik bak niet tegelijk. Ik bak als iedereen slaapt."

@@ -72,6 +72,21 @@ func test_every_persuasion_can_be_won_through_its_offers() -> void:
 		assert_eq(DialogRoutes.best_route([talk], DialogRoutes.WIDTH, [], false)["wins"], 1, talk.def.id)
 
 
+## QA 2.12 (e): a player who listens first (answers the person's last words, steers
+## only once the concern is out, never presses) wins Femke's and Ilse's talks on at
+## least half of the deals (seeds 0–9), through the offered sentences.
+func test_listening_first_wins_femke_and_ilse() -> void:
+	for talk: Dialog in DialogRoutes.content_talks(_catalog()):
+		if not talk.def.id in ["femke_triage", "ilse_queue"]:
+			continue
+		var wins := 0
+		for s in 10:
+			var dealt := talk.copy()
+			dealt._seed = s
+			wins += 1 if DialogRoutes.listen_first(dealt).outcome == "commitment" else 0
+		assert_true(wins >= 5, "%s: listening first won %d of 10 deals" % [talk.def.id, wins])
+
+
 ## D10 / T7: no golden path in what the content holds. Three winning routes
 ## at least over the whole palette, each pair differing in two positions or
 ## more (the offers deal from these, differently per seed).
