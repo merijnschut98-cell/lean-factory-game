@@ -182,6 +182,7 @@ func build() -> void:
 	ui.talk_opened.connect(frame_talk)
 	if ui.playable():
 		ui.talk_view.phase_changed.connect(func(_phase: String) -> void: stage_talk())
+		ui.talk_view.explainer_requested.connect(open_talk_explainer)
 	ui.panels_closed.connect(_on_panels_closed)
 	home = OfficeHome.create(self)
 	add_child(home)
@@ -609,6 +610,24 @@ func open_whiteboard() -> void:
 		{"log": session.explainers, "auto": SceneLines.auto_setting()})
 	explainer.closed.connect(_on_explainer_closed)
 	explainer.pause_requested.connect(ui.open_pause)
+
+
+## An expert's topic opens a "Hoe werkt het?" explainer over the talk (phase 2
+## design §2.5): the drawing free to play with (the codex's way, no Ruud: the
+## expert's answer is the explanation); closing it goes back to the talk.
+func open_talk_explainer(explainer_id: String) -> void:
+	if explainer != null:
+		return
+	explainer = ExplainerView.open(self, explainer_id, {"codex": true, "log": session.explainers})
+	if not explainer.error.is_empty():
+		push_warning("talk explainer: " + explainer.error)
+		explainer.queue_free()
+		explainer = null
+		return
+	ui.talk_view.process_mode = Node.PROCESS_MODE_DISABLED   # its keys 1–4 are the drawing's now
+	explainer.closed.connect(func(_id: String) -> void:
+		explainer = null
+		ui.talk_view.process_mode = Node.PROCESS_MODE_INHERIT)
 
 
 ## The pause menu over Ruud's board (Esc in the explainer, as anywhere in a scene).
