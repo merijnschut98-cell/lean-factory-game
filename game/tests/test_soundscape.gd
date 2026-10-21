@@ -152,6 +152,21 @@ func test_going_home_hushes_the_bed_until_the_morning() -> void:
 	_cleanup()
 
 
+## With nothing playing there is nothing to fade: no empty fade is started.
+func test_going_home_in_silence_starts_no_fade() -> void:
+	_cleanup()
+	var host := Node.new()
+	(Engine.get_main_loop() as SceneTree).root.add_child(host)
+	var scape := Soundscape.new()
+	scape.settings_path = path
+	host.add_child(scape)
+	scape.go_home()
+	assert_true(scape._fade_out == null, "no empty fade")
+	assert_true(scape.hushed)
+	host.free()
+	_cleanup()
+
+
 ## Footsteps and the bed's poll read the settings kept in memory, not the file each time;
 ## a change through the settings is heard at once, a reload picks up the file.
 func test_footsteps_do_not_read_the_settings_file() -> void:
