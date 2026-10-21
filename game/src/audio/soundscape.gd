@@ -18,7 +18,8 @@ const SOUNDS := {
 	"door_open": ["door_open.ogg"], "door_close": ["door_close.ogg"],
 	"lift_ding": ["lift_ding.ogg"], "lift_door": ["lift_door.ogg"],
 	"shutter": ["shutter.ogg"], "van_start": ["van_start.ogg"], "van_drive": ["van_drive.ogg"],
-	"phone_buzz": [],   # no CC0 vibration found on the approved sites (SOURCES.md)
+	"street": ["street_evening.ogg"],
+	"phone_buzz": ["phone_buzz.ogg"],   # made for Spanning (SOURCES.md): no CC0 vibration found
 }
 const SECTION := "audio"
 const MASTER_DEFAULT := 0.6
@@ -44,11 +45,18 @@ const CORE_X := Vector2(-6.0, 0.0)
 ## A far phone rings now and then: seconds between rings at a full office.
 const PHONE_EVERY := 45.0
 const POLL_SECONDS := 1.0
+## Seconds the bed takes to fade out on the way home, and back in the next morning.
+const HOME_FADE := 2.5
+const MORNING_FADE := 4.0
+## A layer this quiet is off.
+const SILENT_DB := -60.0
 
 var settings_path := Settings.PATH
 var office: Office
 ## Layer id → its looping player.
 var layers := {}
+## Gone home (OfficeHome): the bed stays silent until morning() whatever the clock says.
+var hushed := false
 var _since := POLL_SECONDS   # the first frame looks at the clock
 var _phone_in := PHONE_EVERY
 var _walked := 0.0
@@ -122,8 +130,11 @@ static func bed_level(minute: int, occupancy: float) -> float:
 	return day * (0.25 + 0.75 * clampf(occupancy, 0.0, 1.0))
 
 
-## Set the bed's layers for this hour and occupancy (muted: all stopped).
-func apply_bed(minute: int, occupancy: float) -> void:
+## Set the bed's layers for this hour and occupancy (muted: all stopped). `fade`: seconds
+## to reach the new levels from silence (the morning); 0 sets them at once.
+func apply_bed(minute: int, occupancy: float, fade := 0.0) -> void:
+	if hushed:
+		return
 	var off := muted(settings_path)
 	var gain := master(settings_path)
 	var busy := bed_level(minute, occupancy)
@@ -135,9 +146,38 @@ func apply_bed(minute: int, occupancy: float) -> void:
 		if off or linear <= 0.001 or player.stream == null:
 			player.stop()
 			continue
-		player.volume_db = linear_to_db(linear)
 		if not player.playing and player.is_inside_tree():
+			player.volume_db = SILENT_DB if fade > 0.0 else linear_to_db(linear)
 			player.play(randf() * player.stream.get_length())
+		if fade > 0.0 and player.is_inside_tree():
+			create_tween().tween_property(player, "volume_db", linear_to_db(linear), fade)
+		else:
+			player.volume_db = linear_to_db(linear)
+
+
+## Going home (OfficeHome's "Naar huis"): the front door and the street, and the office
+## fades out behind you; it stays silent until morning(). The one-shots played.
+func go_home() -> Array[AudioStreamPlayer]:
+	hushed = true
+	for player: AudioStreamPlayer in layers.values():
+		if player.playing and player.is_inside_tree():
+			var out := create_tween()
+			out.tween_property(player, "volume_db", SILENT_DB, HOME_FADE)
+			out.tween_callback(player.stop)
+		else:
+			player.stop()
+	var shots: Array[AudioStreamPlayer] = []
+	for id in ["door_open", "street"]:
+		var shot := play(id, -6.0)
+		if shot != null:
+			shots.append(shot)
+	return shots
+
+
+## The next morning: the office bed fades in for this hour.
+func morning(minute: int, occupancy: float) -> void:
+	hushed = false
+	apply_bed(minute, occupancy, MORNING_FADE)
 
 
 # ── One-shots ───────────────────────────────────────────────────────────────

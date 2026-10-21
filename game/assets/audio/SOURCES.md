@@ -18,6 +18,7 @@ enough to redo it.
 | lift_ding.ogg | https://opengameart.org/content/elevator-ding | fvcalderan | CC0 | `elevatording_0.ogg` |
 | lift_door.ogg | https://opengameart.org/content/elevatordoor | PagDev | CC0 | `elevator_door.wav` |
 | shutter.ogg | https://opengameart.org/content/camera | themightyglider | CC0 | `photo.ogg` (itself from a CC0 archive.org recording, per the page) |
+| street_evening.ogg | https://opengameart.org/content/high-traffic-road-sounds | IgnasD | CC0 | `gatve Varniu_2.ogg`, 4–12 s; low-pass 2.5 kHz, fade in and a long fade out (the street outside the front door, going home) |
 | van_start.ogg | https://opengameart.org/content/car-sound-effects-pack-low-quality | GGBotNet | CC0 | `Car_Engine_Start_Up.ogg`; low-pass 3 kHz |
 | van_drive.ogg | https://opengameart.org/content/car-sound-effects-pack-low-quality | GGBotNet | CC0 | `Car_Acceleration.ogg`; low-pass 2.5 kHz, fade out |
 | step_tile_1.ogg … step_tile_4.ogg | https://opengameart.org/content/footsteps-0 | GboxMikeFozzy | CC0 | `01-footstep_0.ogg`, `02-` … `04-footstep.ogg`; high-pass 80 Hz |
@@ -25,5 +26,8 @@ enough to redo it.
 
 Every file is peak-normalised to -3 dBFS; the game sets the levels.
 
-Not found as CC0 on the approved sites, so the hook stays silent: **the phone's buzz**
-(a vibrating phone). `Soundscape.SOUNDS["phone_buzz"]` is empty until a sound is found.
+Made for Spanning, no third-party source (no CC0 vibration was found on the approved sites):
+
+| File | Source | Author | Licence | How |
+|---|---|---|---|---|
+| phone_buzz.ogg | synthesised with ffmpeg (`aevalsrc`) | Spanning | the project's own | two 0.32 s pulses of a 172 Hz tone with two harmonics and a 31 Hz flutter, low-pass 1.8 kHz: a phone vibrating on a desk |

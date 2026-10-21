@@ -37,6 +37,9 @@ extends SceneTree
 ## people_netstrategie, people_planning, people_revisie (2.1c: Esra and her agents,
 ## lunch in the kantine, Frank and Femke on the 2e, Linda and Mieke on the 1e) ·
 ## people_whiteboard, people_explainer (Ruud's whiteboard, and E there) ·
+## play_day_0830, play_day_1230, play_day_1830 (PLAN 2.14 S1-A: the office keeps time:
+## people coming in by the lift and the stairs in the morning light, lunch in the kantine,
+## the 1e after six with the late stayers' desk lamps) ·
 ## title (the title menu over a few saves) ·
 ## title_replace, title_keep ("Nieuw spel" over a filled autosave: the
 ## question, then the slots to keep it in) ·
@@ -275,6 +278,8 @@ func _run() -> void:
 		"people_kcc", "people_lunch", "people_directie", "people_netstrategie", "people_planning", "people_revisie", \
 				"people_whiteboard", "people_explainer", "people_dirk", "people_gert":
 			await _rooms(office, state)
+		"play_day_0830", "play_day_1230", "play_day_1830":
+			await _day(office, state)
 		_:
 			printerr("unknown state ", state)
 			quit(2)
@@ -511,11 +516,10 @@ func _rooms(office: Office, state: String) -> void:
 		office.floors._process(OfficeFloors.POLL_SECONDS)
 	office.floors.go_to(spec[0], "lift", true)
 	if state == "people_lunch":
-		var clock := PeopleSession.new()
-		clock.session = office.session
-		clock.minute = 12 * 60 + 20
-		office.people.refresh(clock)
-		office.people.set_process(false)   # keep the lunch hour for the shot
+		office.session.pass_time(12 * 60 + 20 - office.session.minute_of_day())   # the game's own lunch hour (S1-A)
+		office.ui.after_action()
+		office.people.refresh(office.session)
+		office.daylight.update(office.session)
 	var p := office.people.person(spec[2])
 	office.player.position = p.position + spec[3]
 	office.player.face(Basis.looking_at((p.position - office.player.position) * Vector3(1, 0, 1)))
@@ -524,6 +528,33 @@ func _rooms(office: Office, state: String) -> void:
 		office.rig.zoom(-3)   # close enough to see the headsets
 	office.rig.snap()
 	office.hover_person(p)
+
+
+## The office keeps time (S1-A): the game's clock moved on to the state's hour, the
+## people seen a quarter of an hour before it (so those whose place changed since walk),
+## a few seconds of the world, the camera over the floor.
+func _day(office: Office, state: String) -> void:
+	var spec: Array = {"play_day_0830": [8 * 60 + 30, "first", Vector3(7.0, 0, -6.6), 1.35, 2.0],
+		"play_day_1230": [12 * 60 + 30, "ground", Vector3(-11.8, 0, -7.6), 1.9, 3.0],
+		"play_day_1830": [18 * 60 + 30, "first", Vector3(5.8, 0, -6.0), -2.7, 3.0]}[state]
+	var minute: int = spec[0]
+	office.session.pass_time(minute - office.session.minute_of_day())
+	office.ui.after_action()
+	if office.floors.floor_id != spec[1]:
+		office.floors.go_to(spec[1], "lift", true)
+	var before := PeopleSession.new()
+	before.session = office.session
+	before.minute = minute - 15
+	office.people.refresh(before)
+	office.people.refresh(office.session)
+	office.daylight.update(office.session)
+	office.player.position = spec[2]
+	office.player.face(Basis(Vector3.UP, spec[3]))
+	office.rig.yaw = spec[3]
+	office.rig.zoom(spec[4])
+	office.rig.snap()
+	for i in 90:   # people walk
+		await process_frame
 
 
 ## Take the mission and do the gemba work; `all` finds every key clue.

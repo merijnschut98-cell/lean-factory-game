@@ -70,7 +70,7 @@ func test_unmuted_the_bed_plays_and_a_one_shot_frees_itself() -> void:
 	var shot := Soundscape.play_at(host, "door_open", path)
 	assert_true(shot != null and shot.stream != null)
 	assert_true(shot.finished.is_connected(shot.queue_free))
-	assert_eq(Soundscape.play_at(host, "phone_buzz", path), null, "a silent hook plays nothing")
+	assert_eq(Soundscape.play_at(host, "no_such_sound", path), null, "an unknown sound plays nothing")
 	host.free()
 	_cleanup()
 
@@ -92,8 +92,7 @@ func test_every_referenced_file_exists_and_is_listed_in_sources() -> void:
 			var listed := sources.contains(file) or sources.contains(file.trim_suffix(".ogg").rstrip("0123456789"))
 			assert_true(listed, "%s in SOURCES.md" % file)
 	assert_true(files >= 10)
-	assert_true(Soundscape.SOUNDS["phone_buzz"].is_empty(), "no CC0 buzz found yet: SOURCES.md says so")
-	assert_true(sources.contains("phone's buzz"))
+	assert_true(sources.contains("Made for Spanning"), "the buzz is the project's own and says so")
 
 
 func test_every_audio_file_is_used() -> void:
@@ -119,4 +118,26 @@ func test_the_settings_controls_write_the_settings() -> void:
 	assert_eq(Soundscape.master(path), 0.2)
 	for c in controls:
 		c.free()
+	_cleanup()
+
+
+## Going home (OfficeHome's fade): the door and the street, the bed fades out and stays
+## out; the next morning it fades back in.
+func test_going_home_hushes_the_bed_until_the_morning() -> void:
+	_cleanup()
+	var host := Node.new()
+	(Engine.get_main_loop() as SceneTree).root.add_child(host)
+	var scape := Soundscape.new()
+	scape.settings_path = path
+	host.add_child(scape)
+	scape.apply_bed(17 * 60 + 10, 1.0)
+	var shots := scape.go_home()
+	assert_eq(shots.size(), 2, "the door and the street")
+	assert_true(scape.hushed)
+	scape.apply_bed(10 * 60, 1.0)
+	assert_true(scape.hushed, "the clock does not wake the bed while you are away")
+	scape.morning(8 * 60 + 30, 1.0)
+	assert_false(scape.hushed)
+	assert_true(scape.layers["keys"].playing, "the morning office")
+	host.free()
 	_cleanup()
