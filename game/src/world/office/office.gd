@@ -651,12 +651,12 @@ func frame_talk(person_id: String) -> void:
 ## The camera for the talk's phase: their face while they speak (over the
 ## player's shoulder where the floor is too tight for it), the two of you
 ## while you choose and after; walking, always the pair, following; on the
-## phone the player, free to walk.
+## phone the player where they stand. Only a walking talk lets the player walk.
 func stage_talk() -> void:
 	var view := ui.talk_view
 	if not view.visible or view.talk.is_empty():
 		return
-	player.active = view.setting in [TalkView.WALKING, TalkView.PHONE]
+	player.active = view.setting == TalkView.WALKING
 	if view.person == null:
 		rig.release()
 	elif view.phase() == TalkView.SPEAK and view.setting == TalkView.STANDING:
