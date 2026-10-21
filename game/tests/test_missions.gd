@@ -870,6 +870,18 @@ func test_a_mission_waits_for_the_talks_it_needs() -> void:
 	assert_eq(log.region.profile.xp, 400)
 
 
+## Found by autoplay (careless/11): a fix that fades while its mission still waits for
+## its talk comes back through that same mission, never a mission stuck on a sleeping problem.
+func test_a_fix_that_fades_while_the_talk_waits_comes_back_through_the_mission() -> void:
+	var made: Array = _solve_with_talk_log()
+	var log: Missions = made[0]
+	log.update()
+	log.region.state["revision_backlog"].phase = ProblemState.Phase.DORMANT  # worn out and recurred
+	log.update()
+	assert_eq(log.status("fix_m"), "active")
+	assert_eq(log.region.state["revision_backlog"].phase, ProblemState.Phase.ACTIVE, "back to work")
+
+
 func test_a_needed_talk_won_by_pressure_pays_half() -> void:
 	var made: Array = _solve_with_talk_log()
 	made[1]["o"] = "compliance"

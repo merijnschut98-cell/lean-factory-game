@@ -1385,6 +1385,13 @@ class PlayReport extends RefCounted:
 						else "Working as designed for players who do not standardise; check the reopened mission tells why it is back.",
 					"%s/%d: %d" % [run["persona"], run["seed"], (run["reopened"] as Array).size()])
 			for a: Dictionary in run["assisted"]:
+				if a.has("why"):  # a needed talk the persona could not push through (_have_needed_talk)
+					_add(out, "assisted_talk:" + run["persona"], "low", "people",
+						"%s could not press a needed talk to a yes" % run["persona"],
+						"after Persona.PUSH_TRIES pushes it listened instead", who, a["mission"], a["day"],
+						"Working as designed: pressure fails with someone already closed (openness under 10 ruins the talk); listening is the way through.",
+						a["why"])
+					continue
 				_add(out, "assisted:" + run["persona"], "medium", "balance", "%s play gets lost searching for clues" % run["persona"],
 					"after the persona's own search (%s) the problem was still unspotted or without evidence" % (
 						"every tool at the step, four at its two neighbours" if run["persona"] == "average" else "30 random gemba actions"),

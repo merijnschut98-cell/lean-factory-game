@@ -278,6 +278,9 @@ func update() -> void:
 	_sync_repairs()
 	events.append_array(stewardship.update(region))
 	for m in active():
+		# A fix that faded while its mission waited for a talk comes back through it.
+		if _holds_problem(m) and m.goal_type == "solve" and region.state[m.goal_problem].phase == P.DORMANT:
+			region.activate(m.goal_problem)
 		if _goal_met(m):
 			_complete(m)
 	for m: MissionDef in defs.values():
