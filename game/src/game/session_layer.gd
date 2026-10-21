@@ -60,6 +60,8 @@ var opening_beat := ""
 var inbox: Array[Dictionary] = []
 ## The concepts the player has looked at in the phone's Begrippen (its badge).
 var concepts_seen: Array[String] = []
+## What new the phone has buzzed for ("<app>:<id>", Phone.announce): once, reload or not.
+var announced: Array[String] = []
 ## False for a save from before the phone: GameUI then counts what it holds as read.
 var phone_saved := true
 ## The card shown when this session opened ({} when none): the journal
@@ -418,7 +420,7 @@ func to_dict() -> Dictionary:
 	return {"start": start.duplicate(true), "offered": offered.duplicate(), "toast_day": toast_day,
 		"queued": queued.duplicate(), "floor_id": floor_id, "carded": carded.duplicate(),
 		"has_floor_plan": has_floor_plan, "opening_beat": opening_beat,
-		"inbox": inbox.duplicate(true), "concepts_seen": concepts_seen.duplicate()}
+		"inbox": inbox.duplicate(true), "concepts_seen": concepts_seen.duplicate(), "announced": announced.duplicate()}
 
 
 ## Restore to_dict() output, untrusted: anything of the wrong shape is
@@ -451,11 +453,17 @@ func load_dict(d: Dictionary) -> void:
 		var entry := _clean_message(e)
 		if not entry.is_empty():
 			inbox.append(entry)
-	concepts_seen.clear()
-	var seen: Variant = d.get("concepts_seen", [])
-	for id: Variant in seen if seen is Array else []:
+	concepts_seen.assign(_names(d.get("concepts_seen")))
+	announced.assign(_names(d.get("announced")))
+
+
+## The strings of a saved list, untrusted: anything else is dropped.
+static func _names(v: Variant) -> Array[String]:
+	var out: Array[String] = []
+	for id: Variant in v if v is Array else []:
 		if id is String:
-			concepts_seen.append(id)
+			out.append(id)
+	return out
 
 
 ## A saved inbox message, untrusted: {} unless it has its id, time and read

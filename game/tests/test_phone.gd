@@ -144,6 +144,31 @@ func test_the_next_note_buzzes_once() -> void:
 	office.free()
 
 
+## What buzzed before a save does not buzz again after the reload.
+func test_a_buzz_is_not_repeated_after_a_reload() -> void:
+	var office := _office(true)
+	office.ui.session_layer.carded.append("training_tue")
+	office.ui.after_action()
+	var d := office.ui.session_layer.to_dict()
+	var back := SessionLayer.new()
+	back.load_dict(d)
+	var phone := Phone.new()
+	phone.setup(office.session, back)
+	assert_false(phone.announce(), "already announced before the save")
+	d.erase("announced")
+	var old := SessionLayer.new()
+	old.load_dict(d)
+	var old_phone := Phone.new()
+	old_phone.setup(office.session, old)
+	assert_true(old_phone.announce(), "an old save buzzes once for what is unread")
+	d["announced"] = [3, "x"]
+	old.load_dict(d)
+	assert_eq(old.announced, ["x"] as Array[String], "only names are kept")
+	phone.free()
+	old_phone.free()
+	office.free()
+
+
 ## The opening's Monday (2.13 follow-up): the note waits through the scene and
 ## the phone buzzes when the scene is over.
 func test_the_opening_monday_buzzes_after_the_scene() -> void:

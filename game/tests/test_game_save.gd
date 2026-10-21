@@ -51,6 +51,30 @@ func test_a_saved_game_keeps_the_people() -> void:
 	_cleanup()
 
 
+## "Once a day" survives a reload: who greeted you and which pair chatted today.
+func test_todays_greetings_and_chatter_survive_a_reload() -> void:
+	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
+	assert_ne(s.greet("anouk"), "", "Anouk says good morning")
+	assert_eq(s.chatter("sanne", "anouk").size(), 2, "Sanne and Anouk chat")
+	assert_eq(GameSave.write(slot, s, SessionLayer.new()), "")
+	var back: GameSession = GameSave.read(slot)["session"]
+	assert_eq(back.greet("anouk"), "", "not twice the same day, reload or not")
+	assert_eq(back.chatter("anouk", "sanne"), [] as Array[String], "nor the same chat")
+	back.pass_time(SimCalendar.days(1))
+	assert_ne(back.greet("anouk"), "", "the next day she greets again")
+	_cleanup()
+
+
+## Junk where the day's greetings are saved reads as nobody greeted yet.
+func test_junk_greetings_read_as_none() -> void:
+	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
+	s.load_passing({"greeted": {"anouk": "maandag", "3": 4}, "chatted": [1]})
+	assert_ne(s.greet("anouk"), "", "a junk day is no greeting")
+	s.load_passing("x")
+	s.load_passing(null)
+	assert_ne(s.greet("anouk"), "", "junk, or an old save without them: nobody greeted yet")
+
+
 ## A save from before the session layer (the region only) loads: the
 ## missions start as a new game's, and there is no terugblik.
 func test_an_old_save_still_loads() -> void:

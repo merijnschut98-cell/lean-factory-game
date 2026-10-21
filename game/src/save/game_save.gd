@@ -21,7 +21,8 @@ static func write(slot: String, s: GameSession, layer: SessionLayer, dir: String
 		saved: float = Time.get_unix_time_from_system()) -> String:
 	return SaveFile.write(slot, s.region, {"missions": s.missions.to_dict(), "discoveries": s.discoveries.to_dict(),
 		"followed": s.followed.to_dict(), "explainers": s.explainers.to_dict(), "people": s.people.to_dict(),
-		"session": layer.to_dict(), "player": s.player.to_dict(), "gemba": s.gemba.to_dict(), "meta": meta(s, saved)}, dir)
+		"session": layer.to_dict(), "player": s.player.to_dict(), "gemba": s.gemba.to_dict(),
+		"passing": s.passing_to_dict(), "meta": meta(s, saved)}, dir)
 
 
 ## What a save list shows: the player's first name ("" for none) and badge
@@ -63,6 +64,7 @@ static func read(slot: String = AUTOSAVE, data_dir: String = Catalog.DATA_DIR, d
 	s.player = PlayerProfile.from_dict(extra.get("player"), JsonFile.dict_or_empty(extra.get("meta")).get("portrait"))
 	# An old save has no toolbox: it knows every tool.
 	s.gemba.load_dict(JsonFile.dict_or_empty(extra.get("gemba")))
+	s.load_passing(extra.get("passing"))   # who greeted you today
 	var layer := SessionLayer.new()
 	layer.load_dict(extra.get("session", {}))
 	s.drain_events()  # the throwaway new game's, not the player's
