@@ -57,6 +57,7 @@ var office: Office
 var layers := {}
 ## Gone home (OfficeHome): the bed stays silent until morning() whatever the clock says.
 var hushed := false
+var _fade_out: Tween
 var _since := POLL_SECONDS   # the first frame looks at the clock
 var _phone_in := PHONE_EVERY
 var _walked := 0.0
@@ -159,11 +160,11 @@ func apply_bed(minute: int, occupancy: float, fade := 0.0) -> void:
 ## fades out behind you; it stays silent until morning(). The one-shots played.
 func go_home() -> Array[AudioStreamPlayer]:
 	hushed = true
+	if is_inside_tree():
+		_fade_out = create_tween().set_parallel()
 	for player: AudioStreamPlayer in layers.values():
-		if player.playing and player.is_inside_tree():
-			var out := create_tween()
-			out.tween_property(player, "volume_db", SILENT_DB, HOME_FADE)
-			out.tween_callback(player.stop)
+		if player.playing and _fade_out != null:
+			_fade_out.tween_property(player, "volume_db", SILENT_DB, HOME_FADE)
 		else:
 			player.stop()
 	var shots: Array[AudioStreamPlayer] = []
@@ -176,8 +177,19 @@ func go_home() -> Array[AudioStreamPlayer]:
 
 ## The next morning: the office bed fades in for this hour.
 func morning(minute: int, occupancy: float) -> void:
+	if _fade_out != null:
+		_fade_out.kill()
+		_fade_out = null
 	hushed = false
 	apply_bed(minute, occupancy, MORNING_FADE)
+
+
+## The morning after `seconds` (as the going-home fade clears), at the office's clock then.
+func wake_after(seconds: float) -> void:
+	if not is_inside_tree() or office == null:
+		return
+	await get_tree().create_timer(seconds).timeout
+	morning(office.session.minute_of_day(), occupancy())
 
 
 # ── One-shots ───────────────────────────────────────────────────────────────
