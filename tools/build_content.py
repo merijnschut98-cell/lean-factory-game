@@ -289,7 +289,8 @@ KPIS = ["throughput", "lead_time", "first_time_right", "on_time", "wip_age", "ca
 SEVERITIES = ["low", "medium", "high", "critical"]
 VISIBILITIES = ["obvious", "subtle", "hidden"]
 PROBLEM_KEYS = {"id", "tier", "name", "step", "waste", "severity", "visibility", "kpi", "symptoms", "root_cause",
-                "plausible_causes", "mismatch_note", "countermeasures", "teaches", "effects", "clues", "cost_per_week"}
+                "plausible_causes", "mismatch_note", "countermeasures", "teaches", "effects", "clues", "cost_per_week",
+                "tells"}
 COUNTERMEASURE_KEYS = {"id", "tier", "name", "category", "description", "budget", "team_hours", "decay_days", "needs",
                        "preparation",
                        "multipliers", "effects", "unlocks", "sustains", "trust", "aftermath"}
@@ -298,6 +299,14 @@ COUNTERMEASURE_KEYS = {"id", "tier", "name", "category", "description", "budget"
 AFTERMATH_KEYS = {"after_days", "days", "effects", "cost"}
 UNLOCKS = ["kpi_board"]  # CountermeasureDef.UNLOCKS: what a countermeasure opens in the game
 CLUE_KEYS = {"tool", "text", "key", "depth", "at", "note", "teaches"}
+# The props that read the simulation (PLAN 2.6, design §1.5): tell id → the world.yaml room
+# it stands in. The game's OfficeTells.THRESHOLDS (game/src/world/office/office_tells.gd)
+# has the same ids, and tools/blender/build_office.py builds a node `tell_<id>` for each.
+TELLS = {"intake_stack": "connections", "prep_tray": "connections", "planning_board": "connections"}
+TELL_KEYS = {"tell", "text"}
+# A tell text names its problem if it holds the name or one of its words this long.
+_TELL_NAME_WORD = 7
+_WORD = re.compile(r"[a-zà-ÿ]+")
 EFFECT_KEYS = {"target", "property", "value"}
 START_RULES = ["push", "pull"]  # SimPool.START_RULES
 ORDER_RULES = ["first_come", "oldest", "shortest", "due"]  # SimPool.ORDER_RULES
@@ -415,6 +424,28 @@ def validate_problems(doc: Any, source: str) -> None:
             _number(fits, cm, f"{where} countermeasure '{cm}' fit", 0.05, 1)
         _effects_shape(p, where)
         _validate_clues(p, where)
+        _validate_tells(p, where)
+
+
+def _validate_tells(p: dict, where: str) -> None:
+    """`tells`: [{tell, text}], what a prop shows of the problem, ambiguous by design: the text
+    describes what anyone can see and never names the problem."""
+    tells = p.get("tells", [])
+    if not isinstance(tells, list):
+        raise ContentError(f"{where}: 'tells' must be a list of {{tell, text}}")
+    name = p["name"].lower()
+    name_words = {w for w in _WORD.findall(name) if len(w) >= _TELL_NAME_WORD}
+    for i, t in enumerate(tells):
+        here = f"{where} tell {i}"
+        if not isinstance(t, dict):
+            raise ContentError(f"{here}: must be a mapping {{tell, text}}")
+        _known_keys(t, TELL_KEYS, here)
+        _require_strings(t, ["tell", "text"], here)
+        if t["tell"] not in TELLS:
+            raise ContentError(f"{here}: unknown tell {t['tell']!r} (known: {', '.join(sorted(TELLS))})")
+        text = t["text"].lower()
+        if name in text or name_words & set(_WORD.findall(text)):
+            raise ContentError(f"{here}: the text names the problem ({p['name']!r}); a tell shows, it never says")
 
 
 def _validate_clues(p: dict, where: str, keys: set[str] = CLUE_KEYS) -> None:
@@ -559,6 +590,22 @@ def check_problems(docs: dict[str, Any]) -> None:
 def _all_problems(docs: dict[str, Any]) -> list[tuple[str, dict]]:
     """(file stem, problem) for every problem in every problems_tier* file."""
     return [(stem, p) for stem, doc in docs.items() if stem.startswith(PROBLEM_FILES) for p in doc["problems"]]
+
+
+def check_tells(docs: dict[str, Any]) -> None:
+    """Every problem whose place is in a room with tells shows on at least one of them."""
+    world = docs.get("world")
+    if world is None:
+        return
+    room_of = {place: r["id"] for r in world["rooms"] for place in r["places"]}
+    unknown = set(TELLS.values()) - {r["id"] for r in world["rooms"]}
+    if unknown:
+        raise ContentError(f"build_content.TELLS: unknown room(s) {', '.join(sorted(unknown))}")
+    for stem, p in _all_problems(docs):
+        room = room_of.get(p["step"])
+        if room in TELLS.values() and not p.get("tells"):
+            raise ContentError(f"{stem}.yaml: problem '{p['id']}' at {p['step']} (room '{room}') has no tell; "
+                               f"list one under 'tells:' ({', '.join(t for t, r in TELLS.items() if r == room)})")
 
 
 # ── facts and needs (path dependence, game/src/rules/facts.gd) ───────────────
@@ -2418,7 +2465,7 @@ OPTIONAL = {"dialogs", "explainers", "world", "places"}
 # Checks that need several files at once. Each gets {stem: document}.
 CROSS_CHECKS: list[Callable[[dict[str, Any]], None]] = [check_kpis, check_problems, check_missions, check_concepts,
                                                       check_dialogs, check_discoveries, check_explainers, check_world,
-                                                      check_places, check_spoken]
+                                                      check_places, check_spoken, check_tells]
 
 
 def _validator_for(stem: str) -> Callable[[Any, str], None] | None:

@@ -45,7 +45,9 @@ extends SceneTree
 ## open_explainer (Ruud's whiteboard a few beats in: the counter; PLAN 2.13 A) ·
 ## place_mon_intake, place_mon_design, place_thu_intake, place_thu_design (PLAN
 ## 2.12: the team's menu on Monday and on Thursday of the training week: the
-## people and their questions, then only the known tools that fit).
+## people and their questions, then only the known tools that fit) ·
+## tell_intake_high, tell_intake_low, tell_prep_high, tell_planning_high (PLAN 2.6:
+## the 1e's props read the region; a long intake queue, then none).
 ## The mission is played through the UI's own handlers, as a player would;
 ## only the training states start with the training week.
 
@@ -260,6 +262,8 @@ func _run() -> void:
 			office.ui.open_terugblik(office.ui.session_layer.open_session(office.session))
 		"people_desks", "people_talk", "people_energy", "people_monteurs", "people_meetdata", "people_gemba":
 			_people(office, state)
+		"tell_intake_high", "tell_intake_low", "tell_prep_high", "tell_planning_high":
+			_tells(office, state)
 		"minimap", "minimap_floor", "minimap_near":
 			_minimap(office, state)
 		"yard", "yard_magazijn", "yard_werkplaats", "yard_vans":
@@ -328,6 +332,33 @@ func _save_menus(state: String) -> void:
 
 ## Stand a step behind the marker, looking the way it faces; the camera
 ## behind the player.
+## The tells (PLAN 2.6) driven through the simulation: orders piled up at a step, or
+## the intake queue emptied; the planning board shows its band directly.
+func _tells(office: Office, state: String) -> void:
+	var net := office.session.region.net
+	match state:
+		"tell_intake_high":
+			for i in 60:
+				net.open_order(net.stream("connections"))
+		"tell_intake_low":
+			net.queue_of(net.step_at("connections.intake")).clear()
+		"tell_prep_high":
+			for i in 20:
+				net.queue_of(net.step_at("connections.design")).append(WorkOrder.new(-1 - i, net.stream("connections"), net.time))
+	office.tells.refresh()
+	if state == "tell_planning_high":
+		OfficeTells.show(office.geometry, {"planning_board": OfficeTells.HIGH})
+	print("tells: ", OfficeTells.readings(net), " -> ", OfficeTells.bands(net))
+	_stand_at(office, DESIGN if state == "tell_prep_high" else INTAKE)
+	if state == "tell_planning_high":
+		office.player.position = Vector3(15.6, 0, -6.2)
+		office.player.face(Basis.looking_at(Vector3(17.7, 0, -3.9) - office.player.position))
+	office.player.position -= office.player.basis.x * 0.8
+	office.rig.yaw = office.player.rotation.y + deg_to_rad(25)
+	office.rig.zoom(-4)
+	office.rig.snap()
+
+
 func _stand_at(office: Office, id: String) -> void:
 	var at := office.interactable(id)
 	office.player.position = at.position + at.basis.z * 0.6

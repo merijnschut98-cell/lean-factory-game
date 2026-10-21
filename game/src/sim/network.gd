@@ -212,6 +212,13 @@ func waiting_at(step: SimStep) -> int:
 	return orders.filter(func(o: WorkOrder) -> bool: return o.current_step() == step).size()
 
 
+## How many orders are out on a wait before they come back to `step` (sent back for
+## rework or gone stale: an application waiting for the customer's missing details).
+func returning_to(step: SimStep) -> int:
+	return _waiting.filter(func(o: WorkOrder) -> bool:
+		return o.pending_step <= o.step_index and o.stream.steps[o.pending_step] == step).size()
+
+
 ## Turn on, or replace, the effects of one source (a problem, a countermeasure,
 ## an event). Returns an error and changes nothing if any effect is invalid.
 func set_effects(source: String, effects: Array) -> String:

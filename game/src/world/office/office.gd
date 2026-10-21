@@ -106,6 +106,8 @@ var explainer: ExplainerView
 var minimap: OfficeMinimap
 ## The yard's clock-keeper (the vans by the hour, PLAN 2.2) while the yard is loaded, or null.
 var yard: OfficeYard
+## The props that read the region (PLAN 2.6) while a floor with tells is loaded, or null.
+var tells: OfficeTells
 ## The character creator open over the world ("Uiterlijk" in the pause menu), or null.
 var look_editor: CreatorScreen
 
@@ -255,7 +257,7 @@ static func _load_geometry(path := MODEL) -> Node3D:
 ## points and its people. The player, the camera, the UI and the game stay as they are.
 func load_floor() -> void:
 	_clear_interactables()
-	for n: Node in [people, geometry, yard]:
+	for n: Node in [people, geometry, yard, tells]:
 		if n != null:
 			remove_child(n)
 			n.free()
@@ -273,6 +275,11 @@ func load_floor() -> void:
 	add_child(people)
 	_refresh_people()
 	yard = null
+	tells = OfficeTells.create(self)
+	if tells != null:
+		add_child(tells)
+		if session.error.is_empty():
+			tells.refresh()
 	if find_marker("van0") != null:   # the yard (PLAN 2.2): its vans go out and come back by the hour
 		yard = OfficeYard.new()
 		yard.name = "Yard"

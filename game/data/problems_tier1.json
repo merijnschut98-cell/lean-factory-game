@@ -71,6 +71,12 @@
     "quality_at_the_source",
     "poka_yoke"
    ],
+   "tells": [
+    {
+     "tell": "intake_stack",
+     "text": "De stapel dossiers op de kast bij Intake is hoger dan het werk van een dag."
+    }
+   ],
    "tier": 1,
    "visibility": "obvious",
    "waste": "defects"
@@ -147,6 +153,12 @@
    "teaches": [
     "readiness_check",
     "quality_at_the_source"
+   ],
+   "tells": [
+    {
+     "tell": "planning_board",
+     "text": "Op het weekbord bij de planners hangen rode kaartjes: klussen die verzet zijn."
+    }
    ],
    "tier": 1,
    "visibility": "subtle",
@@ -293,6 +305,12 @@
     "standard_work",
     "waste_overprocessing"
    ],
+   "tells": [
+    {
+     "tell": "prep_tray",
+     "text": "In het postbakje bij Werkvoorbereiding liggen de dossiers hoger dan het bakje."
+    }
+   ],
    "tier": 1,
    "visibility": "obvious",
    "waste": "overprocessing"
@@ -431,6 +449,12 @@
    "teaches": [
     "batching",
     "flow"
+   ],
+   "tells": [
+    {
+     "tell": "prep_tray",
+     "text": "Bij Werkvoorbereiding ligt een stapel dossiers waarvan het ontwerp af lijkt."
+    }
    ],
    "tier": 1,
    "visibility": "subtle",
@@ -1249,6 +1273,12 @@
     "heijunka",
     "capacity_planning"
    ],
+   "tells": [
+    {
+     "tell": "planning_board",
+     "text": "Op het weekbord bij de planners hangen veel rode kaartjes tussen de gele."
+    }
+   ],
    "tier": 1,
    "visibility": "subtle",
    "waste": "waiting"
@@ -1361,6 +1391,16 @@
     "waste_overproduction",
     "kpi_alignment"
    ],
+   "tells": [
+    {
+     "tell": "intake_stack",
+     "text": "Op de kast bij Intake liggen meer dossiers dan het team op een dag wegwerkt."
+    },
+    {
+     "tell": "prep_tray",
+     "text": "Het postbakje bij Werkvoorbereiding ligt vol."
+    }
+   ],
    "tier": 1,
    "visibility": "subtle",
    "waste": "overproduction"
@@ -1420,6 +1460,12 @@
    "teaches": [
     "waste_motion",
     "5s"
+   ],
+   "tells": [
+    {
+     "tell": "prep_tray",
+     "text": "Naast het postbakje bij Werkvoorbereiding ligt nog een stapel dossiers."
+    }
    ],
    "tier": 1,
    "visibility": "obvious",
