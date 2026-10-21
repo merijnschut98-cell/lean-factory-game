@@ -166,6 +166,39 @@ func test_an_expert_talk_bound_to_a_mission_waits_for_it() -> void:
 	assert_eq(p.dialog_for("pim", _world({"main": [], "active": []})), null)
 
 
+# ── The content: Wim and Henk ───────────────────────────────────────────────
+
+func test_henk_and_wim_have_expert_talks_with_four_or_five_topics() -> void:
+	var c := Catalog.load_from(Catalog.DATA_DIR)
+	for id in ["henk_expert", "wim_expert"]:
+		var d: DialogDef = c.dialogs.filter(func(x: DialogDef) -> bool: return x.id == id)[0]
+		assert_eq([d.kind, d.error], [ExpertTalk.KIND, ""], id)
+		assert_true(d.topics.size() >= 4 and d.topics.size() <= 5, id + ": four or five topics")
+		assert_false(d.closing.is_empty(), id + " says goodbye")
+
+
+func test_henk_talks_about_the_craft_and_about_ahmed_once_he_said_what_he_fears() -> void:
+	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
+	var world: Dictionary = s.call("_world", s.people.persons["henk"])
+	var t := s.people.start_expert(s.people.dialogs["henk_expert"], world)
+	var asks := _asks(t)
+	assert_eq(asks, ["joints", "old_cable", "digging", "trench"], "Ahmed waits for what Henk fears")
+	s.people.heard_facts["heard:henk_teach"] = true
+	var heard := s.people.start_expert(s.people.dialogs["henk_expert"], world)
+	assert_eq(heard.open_topics().size(), 5, "Ahmed's topic opens")
+	assert_eq(_asks(heard).size(), ExpertTalk.OFFERED, "and waits for a free place among the four questions")
+	var r := t.say(ExpertTalk.ASK, "joints")
+	assert_true(str(r["clue"]).begins_with("wrong_joint_in_van:"), "the joint topic gives a clue (no cable explainer yet)")
+
+
+func test_wim_explains_only_after_he_felt_heard() -> void:
+	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
+	var world: Dictionary = s.call("_world", s.people.persons["wim"])
+	assert_eq(s.people.dialog_for("wim", world), null, "the persuasion is not on, and he was not heard yet")
+	s.people.heard_facts["heard:wim_spreadsheet"] = true
+	assert_eq(s.people.dialog_for("wim", world).id, "wim_expert")
+
+
 # ── Through the session ─────────────────────────────────────────────────────
 
 ## A returning player's game where Petra (nothing to discuss) knows about meters.
