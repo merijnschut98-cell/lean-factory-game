@@ -121,7 +121,8 @@
     "look_at_grid_study",
     "fix_grid_study_queue",
     "fix_transformer_wait",
-    "fix_unused_capacity"
+    "fix_unused_capacity",
+    "talk_netplanner"
    ],
    "places": [
     "connections.grid_study",
@@ -203,7 +204,9 @@
     "walk_meters",
     "fix_wrong_joint",
     "fix_not_at_home",
-    "fix_silent_meter"
+    "fix_silent_meter",
+    "fix_double_visits",
+    "fix_overtime_planning"
    ],
    "places": [
     "outages.repair",

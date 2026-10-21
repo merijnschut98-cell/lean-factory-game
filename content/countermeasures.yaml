@@ -592,3 +592,77 @@ countermeasures:
       days: 28
       effects:
         - {target: grid_analysts, property: availability, value: -0.1}
+
+  # ── The way back (QA 2.12 (c)): the meter round's double visits and overtime ──
+  - id: cupboard_photo_at_booking
+    name: Foto van de meterkast bij de afspraak
+    tier: 1
+    category: quality
+    description: Bij het maken van de afspraak vraagt planning de klant om een foto van de meterkast. Is de kast niet geschikt, dan komen de aansluitmonteur en de meterwisselaar samen, in één bezoek.
+    # ESTIMATE: the booking form and the letter changed, about a week of the planners' time.
+    budget: 2500
+    team_hours: {planners: 15}
+    decay_days: 60
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: register_cupboard_check
+    name: Bouwjaar uit het register bij het plannen
+    tier: 1
+    category: standard_work
+    description: Het planningsscherm toont het bouwjaar en het kasttype uit het aansluitregister. Bij een oude kast plant planning de aansluitmonteur en de meterwissel op dezelfde dag.
+    # ESTIMATE: a field in the planning tool (EUR 4,000) and the planners' rule.
+    budget: 4000
+    team_hours: {planners: 10}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: customer_self_report
+    name: De klant meldt zelf een oude meterkast
+    shortcut: true   # the check moves to the customer, who cannot judge a cupboard: a poor fix that fades in a month
+    tier: 1
+    category: quality
+    description: In de afspraakbrief komt te staan dat de klant moet bellen als de meterkast oud is. Het kost bijna niets, maar een klant weet zelden of zijn kast geschikt is.
+    budget: 300
+    team_hours: {planners: 2}
+    decay_days: 30
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: route_by_area
+    name: Plannen per wijk
+    tier: 1
+    category: flow
+    description: Planning bundelt de meterwissels per wijk. Een monteur werkt op een dag in één of twee wijken, en de klant kiest uit de dagen dat de monteur toch in de buurt is.
+    # ESTIMATE: the planning rules and the letter changed, two weeks of a planner.
+    budget: 3000
+    team_hours: {planners: 20}
+    decay_days: 60
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: area_teams
+    name: Vaste wijkploegen
+    tier: 1
+    category: flow
+    description: Elke meterwisselaar krijgt een vaste wijk. Hij kent de straten, de parkeerplekken en de oude kasten, en de planning volgt de wijken vanzelf.
+    budget: 2000
+    team_hours: {planners: 10, monteurs: 10}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: overtime_cap
+    name: Een plafond op het overwerk
+    shortcut: true   # the hours drop at once, the kilometres stay and the work waits: a poor fix with an aftermath
+    tier: 1
+    category: flow
+    description: Vanaf nu hooguit twee uur overwerk per monteur per week. Wat niet past, schuift door naar een andere dag. De overuren dalen meteen; de kilometers blijven, en het werk wacht langer.
+    budget: 0
+    team_hours: {}
+    decay_days: 30
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+    # The later cost (ESTIMATE): two weeks after the Act the pushed work shows, and for
+    # six weeks a customer waits about a third longer for the meter appointment.
+    aftermath:
+      after_days: 14
+      days: 42
+      effects:
+        - {target: meters.customer_window, property: wait_time, value: 1.3}

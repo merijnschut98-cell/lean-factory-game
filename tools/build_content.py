@@ -624,7 +624,7 @@ FORECAST_SUBJECTS = ["kpi_board"] + KPIS
 DIALOG_FACTS = {"heard", "committed", "complied", "partial", "blocked"}
 # Facts.MEASURES: "maturity>=3"; floor_days: days the budget spent at the debt floor (QA 2.12 (c))
 MEASURES = {"maturity": (1, 4), "reputation": (0, 100), "floor_days": (1, 3650)}
-_MEASURE = re.compile(r"^([a-z]+)>=(\d+)$")
+_MEASURE = re.compile(r"^([a-z_]+)>=(\d+)$")
 NEEDS_KEYS = ["all", "any", "none"]
 
 

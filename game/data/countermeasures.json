@@ -1076,6 +1076,126 @@
    "shortcut": true,
    "team_hours": {},
    "tier": 1
+  },
+  {
+   "budget": 2500,
+   "category": "quality",
+   "decay_days": 60,
+   "description": "Bij het maken van de afspraak vraagt planning de klant om een foto van de meterkast. Is de kast niet geschikt, dan komen de aansluitmonteur en de meterwisselaar samen, in één bezoek.",
+   "effects": [],
+   "id": "cupboard_photo_at_booking",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Foto van de meterkast bij de afspraak",
+   "team_hours": {
+    "planners": 15
+   },
+   "tier": 1
+  },
+  {
+   "budget": 4000,
+   "category": "standard_work",
+   "decay_days": null,
+   "description": "Het planningsscherm toont het bouwjaar en het kasttype uit het aansluitregister. Bij een oude kast plant planning de aansluitmonteur en de meterwissel op dezelfde dag.",
+   "effects": [],
+   "id": "register_cupboard_check",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Bouwjaar uit het register bij het plannen",
+   "team_hours": {
+    "planners": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 300,
+   "category": "quality",
+   "decay_days": 30,
+   "description": "In de afspraakbrief komt te staan dat de klant moet bellen als de meterkast oud is. Het kost bijna niets, maar een klant weet zelden of zijn kast geschikt is.",
+   "effects": [],
+   "id": "customer_self_report",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "De klant meldt zelf een oude meterkast",
+   "shortcut": true,
+   "team_hours": {
+    "planners": 2
+   },
+   "tier": 1
+  },
+  {
+   "budget": 3000,
+   "category": "flow",
+   "decay_days": 60,
+   "description": "Planning bundelt de meterwissels per wijk. Een monteur werkt op een dag in één of twee wijken, en de klant kiest uit de dagen dat de monteur toch in de buurt is.",
+   "effects": [],
+   "id": "route_by_area",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Plannen per wijk",
+   "team_hours": {
+    "planners": 20
+   },
+   "tier": 1
+  },
+  {
+   "budget": 2000,
+   "category": "flow",
+   "decay_days": null,
+   "description": "Elke meterwisselaar krijgt een vaste wijk. Hij kent de straten, de parkeerplekken en de oude kasten, en de planning volgt de wijken vanzelf.",
+   "effects": [],
+   "id": "area_teams",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Vaste wijkploegen",
+   "team_hours": {
+    "monteurs": 10,
+    "planners": 10
+   },
+   "tier": 1
+  },
+  {
+   "aftermath": {
+    "after_days": 14,
+    "days": 42,
+    "effects": [
+     {
+      "property": "wait_time",
+      "target": "meters.customer_window",
+      "value": 1.3
+     }
+    ]
+   },
+   "budget": 0,
+   "category": "flow",
+   "decay_days": 30,
+   "description": "Vanaf nu hooguit twee uur overwerk per monteur per week. Wat niet past, schuift door naar een andere dag. De overuren dalen meteen; de kilometers blijven, en het werk wacht langer.",
+   "effects": [],
+   "id": "overtime_cap",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Een plafond op het overwerk",
+   "shortcut": true,
+   "team_hours": {},
+   "tier": 1
   }
  ]
 }
