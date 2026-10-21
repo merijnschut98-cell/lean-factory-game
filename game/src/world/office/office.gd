@@ -1,8 +1,8 @@
 class_name Office
 extends Node3D
 ## Voltana's connections office, played in third person (Sims-like). Loads
-## the office model (or a plain stand-in while it is missing), adds the sun
-## and the environment, finds the interaction markers in the geometry by their
+## the office model (or a plain stand-in while it is missing), adds the light
+## by the clock (OfficeDaylight), finds the interaction markers in the geometry by their
 ## glTF extras or their name, and routes E at a marker, or a click on its
 ## ring, to the UI. A left click on the floor walks the player there. The people
 ## at their desks (OfficePeople, from the cast list) show their name on hover;
@@ -24,7 +24,7 @@ const REACH := 1.6
 ## The model's own sky and ambient light (made with it); the project's
 ## default environment otherwise.
 const ENVIRONMENT := "res://assets/office/office_environment.tres"
-## The sun through the south windows, as in the model's preview.
+## The sun through the south windows by day, as in the model's preview (OfficeDaylight).
 const SUN_DIRECTION := Vector3(0.36, -0.53, -0.77)
 ## What the raised camera cuts away (by name in the geometry): the ceiling and
 ## what hangs from it, and the slabs (the roof).
@@ -89,6 +89,8 @@ var rig: CameraRig
 var ui: GameUI
 var interactables: Array[Interactable] = []
 var people: OfficePeople
+## The sun, the sky and the desk lamps by the clock (PLAN 2.14 S1-A).
+var daylight: OfficeDaylight
 ## The head office's floors (PLAN 2.1): which floor is loaded, the stairs and the lift,
 ## the rooms' doors.
 var floors: OfficeFloors
@@ -145,7 +147,8 @@ func build() -> void:
 	floors = OfficeFloors.new()
 	floors.setup(self)
 	add_child(floors)
-	_add_light()
+	daylight = OfficeDaylight.create(self)
+	add_child(daylight)
 	load_floor()
 	for id in INTERACTIONS:
 		if interactable(id) == null:
@@ -255,6 +258,7 @@ static func _load_geometry(path := MODEL) -> Node3D:
 ## points and its people. The player, the camera, the UI and the game stay as they are.
 func load_floor() -> void:
 	_clear_interactables()
+	var stay_in: Array[String] = people.stay_in if people != null else ([] as Array[String])
 	for n: Node in [people, geometry, yard]:
 		if n != null:
 			remove_child(n)
@@ -270,8 +274,10 @@ func load_floor() -> void:
 	floors.apply_rooms()
 	_add_interactables()
 	people = OfficePeople.build(self, CharacterModel.cast(), floors.here)
+	people.stay_in = stay_in
 	add_child(people)
 	_refresh_people()
+	daylight.update(session)
 	yard = null
 	if find_marker("van0") != null:   # the yard (PLAN 2.2): its vans go out and come back by the hour
 		yard = OfficeYard.new()
@@ -864,23 +870,6 @@ func _collision_faces() -> PackedVector3Array:
 		for v in local:
 			faces.append(to_office * v)
 	return faces
-
-
-## The sun through the windows and the sky's ambient light.
-func _add_light() -> void:
-	if ResourceLoader.exists(ENVIRONMENT):
-		var env := WorldEnvironment.new()
-		env.environment = load(ENVIRONMENT)
-		add_child(env)
-	var sun := DirectionalLight3D.new()
-	sun.basis = Basis.looking_at(SUN_DIRECTION)
-	sun.light_color = Color(1, 0.95, 0.86)
-	sun.light_energy = 1.6
-	sun.shadow_enabled = true
-	sun.shadow_blur = 1.5
-	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
-	sun.directional_shadow_max_distance = 40.0
-	add_child(sun)
 
 
 func _on_panel_opened() -> void:

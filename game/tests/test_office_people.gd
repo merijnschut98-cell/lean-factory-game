@@ -371,7 +371,7 @@ func test_the_kcc_and_the_2e_are_peopled_once_their_rooms_open() -> void:
 	office.free()
 
 
-func test_two_of_the_cast_lunch_in_the_kantine_between_twelve_and_one() -> void:
+func test_most_of_the_cast_lunch_in_the_kantine_between_twelve_and_one() -> void:
 	var office := _office()
 	var clock := FakeSessionWithClock.new()
 	var rachid := office.people.person("rachid")
@@ -380,12 +380,13 @@ func test_two_of_the_cast_lunch_in_the_kantine_between_twelve_and_one() -> void:
 		office.free()
 		return
 	var desk := rachid.position
-	clock.minute = 12 * 60 + 30
+	var day := office.people.day_of("rachid")
+	clock.minute = day.lunch + OfficeDay.WALK_WINDOW
 	office.people.refresh(clock)
-	assert_false(rachid.visible, "at half past twelve his desk is empty")
-	clock.minute = 13 * 60
+	assert_false(rachid.visible, "at lunch his desk is empty")
+	clock.minute = 13 * 60 + OfficeDay.WALK_WINDOW
 	office.people.refresh(clock)
-	assert_true(rachid.visible and rachid.position.distance_to(desk) < 0.01, "back at one")
+	assert_true(rachid.visible and rachid.position.distance_to(desk) < 0.01, "back after one")
 	office.floors.go_to("ground", "lift", true)
 	assert_true("canteen" in office.floors.open, "the kantine opened with the tour")
 	var lunchers: Array[OfficePerson] = []
@@ -395,11 +396,11 @@ func test_two_of_the_cast_lunch_in_the_kantine_between_twelve_and_one() -> void:
 		if p.lunch is Dictionary and not (p.lunch as Dictionary).is_empty():
 			lunchers.append(p)
 			assert_false(p.visible and p.at_lunch, "%s not at lunch yet" % p.id)
-	assert_eq(lunchers.size(), 2, "two people lunch here")
-	clock.minute = 12 * 60
-	office.people.refresh(clock)
+	assert_true(lunchers.size() >= 8, "most of the office lunches here: %d" % lunchers.size())
 	var canteen := OfficeFloors.room_rect(office.floors.markers()["room:canteen"])
 	for p in lunchers:
+		clock.minute = office.people.day_of(p.id).lunch + OfficeDay.LUNCH_MINUTES - 1
+		office.people.refresh(clock)
 		assert_true(p.visible and p.at_lunch, "%s at lunch" % p.id)
 		assert_true(canteen.has_point(Vector2(p.position.x, p.position.z)), "%s in the kantine" % p.id)
 		assert_eq(p.pose, "sit")
