@@ -194,7 +194,7 @@ Assigned by the rule of §2.1 so the route check (`tools/dialog_drafts.py` NEEDS
 | 3 | Lisette | rule_bound | safety | The report to the AP would carry her name. |
 | 4 | Theo | craftsman | safety | One station on his conscience. |
 | 4 | Rianne | rule_bound | facts | An auditor: what is in the work, not the folder. |
-| 4 | Yvonne | quiet | safety | The man with the baseball bat she never reported. |
+| 4 | Sandra | quiet | safety | The man with the baseball bat she never reported. |
 | 4 | Harrie | craftsman | recognition | The last years of a gas trade. |
 | 4 | Tim | defender | fairness | Asked why he "allowed" another team's break. |
 

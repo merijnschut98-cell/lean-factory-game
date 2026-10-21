@@ -133,7 +133,7 @@ All numbers are **estimates**, sized so that no team is above 85 % in the base (
 - **Audit:** Rianne Hoogendoorn (lead auditor of the certifying body; fictional, no real body named).
 - **IT:** Tim de Haan (lead, Team Werkorderplatform).
 - **Returning, with new stages:**
-  - Frank Hulshof, Kees Mulder, Yvonne Kok, Mieke van der Veen;
+  - Frank Hulshof, Kees Mulder, Sandra Vermeulen, Mieke van der Veen;
   - Femke de Wit, Thomas Visser, Mohammed Aziz, Wim Kortekaas;
   - Noor Hendriks, Mark van Leeuwen, Lisette Koster, Carla Wijnands, Bas Kuipers.
 - **The finale's Lotte** stays a name in a beat (catalogue).
@@ -898,7 +898,7 @@ missions:
     goal: {type: solve, problem: grid_losses_theft}
     principles: [respect, long_term]
     briefing: "Voltana koopt elk jaar stroom in om de verliezen in het net aan te vullen. Een deel is natuurkunde: kabels worden warm. Een deel is diefstal, vaak voor hennepkwekerijen. Monique de Ruiter van Financiën: 'Ik betaal elke week voor stroom die iemand anders gebruikt. En soms vliegt er een meterkast in brand.'"
-    debrief: "De verliezen in Zuidmark zijn met {losses_delta} euro per week gedaald. Drie illegale aftakkingen zijn samen met de politie gevonden, zonder dat een meterwisselaar alleen naar binnen ging. De storingen duurden voor klanten even lang als voor deze missie: gestolen stroom kost geld, geen storingsminuten. Yvonne: 'Ik hoef niet meer te raden achter welke deur iets zit.'"
+    debrief: "De verliezen in Zuidmark zijn met {losses_delta} euro per week gedaald. Drie illegale aftakkingen zijn samen met de politie gevonden, zonder dat een meterwisselaar alleen naar binnen ging. De storingen duurden voor klanten even lang als voor deze missie: gestolen stroom kost geld, geen storingsminuten. Sandra: 'Ik hoef niet meer te raden achter welke deur iets zit.'"
     debrief_first: "Je koos de gestolen stroom. Het geld is terug. De straten die 's nachts donker worden, worden nog steeds pas gezien als iemand belt. Kees heeft het genoteerd."
     reopen: "De verliezen lopen weer op. De balansanalyse wordt niet meer elke maand gedraaid."
     beats:
@@ -1000,11 +1000,11 @@ countermeasures:
 
 `cost_per_week` here is the problem's own (as in tier 1). The countermeasures' recovered share is their effectiveness on that cost: `balance_analytics` at full recovers most of it, `joint_checks_police` part, and the solo checks a little (an estimate, calibrated in K8).
 
-**Dialog: `yvonne_theft`.** Yvonne, the meter technician from Act I's stack of cards, knows the addresses and is afraid of one door. Her concern is safety, and the mission's best countermeasure must answer it.
+**Dialog: `sandra_theft`.** Sandra, the meter technician from Act I's stack of cards, knows the addresses and is afraid of one door. Her concern is safety, and the mission's best countermeasure must answer it.
 
 ```yaml
 dialogs:
-  - id: yvonne_theft
+  - id: sandra_theft
     person: yvonne
     kind: persuade
     mission: fix_grid_losses_theft
@@ -1044,15 +1044,15 @@ dialogs:
       ruined: "Toch even binnenkijken. Dan doe je dat zelf maar."
     # route (start 47): open question +6 53 > paraphrase +7 60 (heard, interest) > reflect +10 70
     #        > empathy +6 76 (lead-in, cue) > silence +18 (quiet x1.5) > 81 capped (concern) > propose never_alone_rule +8 89 > ask (7 moves)
-    # Safety (spec §4.2): pressure on Yvonne to "even kijken" ends the talk as compliance and sets flag:solo_checks' trust cost.
+    # Safety (spec §4.2): pressure on Sandra to "even kijken" ends the talk as compliance and sets flag:solo_checks' trust cost.
     # 2026-10-16 (four-tier audit §4): interest via [open_question, silence, paraphrase] -> [open_question, mood, silence] (quiet). Route re-checked by the simulator (audit §4.4).
     # 2026-10-16 (four-tier audit §4.4): thresholds by archetype (quiet): interest.at 55->50, concern.at 72->66.
-    # 2026-10-16 (1.6c, route variety): at the lead-in Yvonne doubts whether to say it; only the player's own story (Ervaring delen, once heard and trusted) draws the concern out. Silence or a question lets the moment pass.
+    # 2026-10-16 (1.6c, route variety): at the lead-in Sandra doubts whether to say it; only the player's own story (Ervaring delen, once heard and trusted) draws the concern out. Silence or a question lets the moment pass.
 ```
 
 **Path dependence.**
 - **`flag:solo_checks`** (the temptation): +€5,000 now, and the goal does not complete by it. Within 60 days an event: a meter technician is threatened at a door.
-  - The event costs reputation −5 and trust meters −2. Yvonne's next check-in opens at a low bar.
+  - The event costs reputation −5 and trust meters −2. Sandra's next check-in opens at a low bar.
   - Cleared only by `joint_checks_police` or `field_reports_never_alone`.
   - D48 *Niemand alleen naar binnen* (§4) can never fire once it was set.
 - **`committed:petra_station_data`** (Act III): the station query exists, so balance analytics is cheaper.
@@ -2550,7 +2550,7 @@ Tier 4 is the campaign's widest reader. The table lists every earlier fact these
 | `committed:acm_inspector` (Act III) | `rianne_audit` | Rianne starts at 40. |
 | `committed:petra_station_data` (Act III) | `fix_ls_grid_blind`, `fix_grid_losses_theft` | The meter log and the balance analytics are cheaper. |
 | `committed:wendy_handover` (Act III) | `kees_meter_alarms` | Control-room team trust +1. |
-| `kees_night`, `yvonne_cards`, `mieke_archive` lifted (Acts 0–II check-ins) | `kees_meter_alarms`, `yvonne_theft`, `mieke_register` | +5 each: a walk-around talk remembered two acts later. |
+| `kees_night`, `yvonne_cards`, `mieke_archive` lifted (Acts 0–II check-ins) | `kees_meter_alarms`, `sandra_theft`, `mieke_register` | +5 each: a walk-around talk remembered two acts later. |
 | `standardised:revision_backlog` (Act II) | `nta8120_audit`, `mieke_register` | Mieke's observation and beat, or a minor finding; she starts at 55. |
 | D15 *Wims spreadsheet* (Act II) | `fix_flex_market_unused` | Wim's beat; D49. |
 | `standardised:custom_design` (Act I) | `t4_investment_plan` | One branch of "Standaardstations in serie". |
@@ -2616,7 +2616,7 @@ Shown as silhouettes with a hint (Merijn, 2026-10-15).
 | D45 | **Gewone taal** (moved from the engagement loop) | `committed:noor_status` with `listen_with_esra`, status calls down ≥ 30 % (Check), and `forecast_from_planning` live | V: Esra's headset in the vitrine, with Noor's name on a sticker | RP, AI | Needs the shipped forecast, so it includes the release lesson. |
 | D46 | **Drie eraf** | `committed:frank_twenty` with `stop_list_with_the_board`, `flag:matrix_of_twenty` never set, and 91 days later `strategy_silos` holds ≥ 0.9 with `lsw_catchball` done once | T "Eén richting"; Frank's crossed-out project list, framed | LT | Needs a quarter of hold and the routine, not only the talk. |
 | D47 | **De mof van 1978** | A sim event: with `risk_based_maintenance` and `committed:theo_calendar`, a joint at the top of the risk list is replaced, and its street has no outage for 365 days | V: Theo's torch; R ("Wat je ruikt, is ook data.") | LT, AI | Needs a year, and the people-first choice (Theo's notes in the score). |
-| D48 | **Niemand alleen naar binnen** | `fix_grid_losses_theft` solved with `joint_checks_police` or `field_reports_never_alone`, `flag:solo_checks` never set, and `committed:yvonne_theft` | V: a "nooit alleen" sticker on Yvonne's van; Tr +1 meters | RP | The flag guard: one shortcut, and it never fires. Earnable on the fork's N branch (every branch can earn something). |
+| D48 | **Niemand alleen naar binnen** | `fix_grid_losses_theft` solved with `joint_checks_police` or `field_reports_never_alone`, `flag:solo_checks` never set, and `committed:sandra_theft` | V: a "nooit alleen" sticker on Sandra's van; Tr +1 meters | RP | The flag guard: one shortcut, and it never fires. Earnable on the fork's N branch (every branch can earn something). |
 | D49 | **Wims batterij** | D15 earned (Act II), `aggregator_for_small` chosen, and the Kanaalzone capacity queue's lead time down ≥ 15 % (Check) | V: a new tab in Wim's spreadsheet, "Flexmarkt", shown in his Christmas card | RP, LT | Needs a measured queue gain and the player's own Act II reward. A callback across three acts. |
 | D50 | **Een plan dat klopte** | `t4_investment_plan` with ≥ 4 options unlocked, a choice that is neither the baseline nor "Van alles een beetje", and `forecast_check` held within 10 % after 182 days | T "Planmaker"; R from Ruud ("Een plan is een experiment met een datum. Jij hebt de datum gehaald.") | LT, AI | Needs forecast accuracy measured half a year later, not the choice. |
 
@@ -2646,7 +2646,7 @@ Shown as silhouettes with a hint (Merijn, 2026-10-15).
 | fix_maintenance_calendar | grid · V | M | solve | maintenance_calendar | — | improve, respect | stretch all intervals (a major audit finding; outage aftermath) | theo_calendar |
 | nta8120_audit | grid · V | Ms | audit | — | 90 d → sensor pilot closed; re-audit opens | long_term, improve | (every earlier shortcut, as findings) | rianne_audit |
 | fix_ls_grid_blind | grid · V | M (B) | solve | ls_grid_blind | — | improve, respect | every meter alarm (control-room trust; alarm fatigue) | kees_meter_alarms |
-| fix_grid_losses_theft | grid · V | M (N) | solve | grid_losses_theft | — | respect, long_term | solo checks (a threat incident; D48 closed) | yvonne_theft |
+| fix_grid_losses_theft | grid · V | M (N) | solve | grid_losses_theft | — | respect, long_term | solo checks (a threat incident; D48 closed) | sandra_theft |
 | fix_flex_market_unused | grid · V | M | solve | flex_market_unused | — | long_term, respect | one big seller (€4k a week for a year) | thomas_flex |
 | t4_investment_plan | grid · V | M | strategy (182 d, forecast check) | — | — | long_term, improve | a sixth of everything (nothing finishes) | monique_plan |
 | t4_new_ci_lead | grid · V | M (placeholder) | — | — | — | — | — | — |
@@ -2717,7 +2717,7 @@ As in the Acts 0–II scripts §2. Everyone speaks standard Dutch (decided 2026-
 | `tim` | Tim de Haan (44), lead Team Werkorderplatform | Protective, technical: "mijn platform", "elke tabel", "vangrails". | — | The night the billing broke and the director asked why he allowed it. |
 | `frank` (returning) | Frank Hulshof, manager Aansluitingen & Netverzwaring | As in the Acts 0–II voice sheet. | | Act V stage: six projects that shield the one he cares about. |
 | `kees` (returning) | Kees Mulder, operator | As in the tier-2 voice sheet. | | Act V stage: the alarm he clicks away. |
-| `yvonne` (returning) | Yvonne Kok, meterwisselaar | As in the Acts 0–II audit cast. | | Act V stage: the man with the baseball bat she never reported. |
+| `yvonne` (returning) | Sandra Vermeulen, meterwisselaar | As in the Acts 0–II audit cast. | | Act V stage: the man with the baseball bat she never reported. |
 | `thomas` (returning) | Thomas Visser, accountmanager | As in the Acts 0–II voice sheet. | | Act V stage: selling a restriction with a price tag. |
 | `mieke` (returning) | Mieke van der Veen, Revisie & GIS | As in the Acts 0–II voice sheet. | | Act V stage: what is left of her trade when the app captures it. |
 | `mark` (returning) | Mark van Leeuwen, developer | As in the tier-3 voice sheet. | | Tier-4 stage: cleaning up at night, again. |
@@ -2734,7 +2734,7 @@ As in the Acts 0–II scripts §9: layers in range, a lead-in, ≥ 2 `via` moves
 | theo_calendar | 55 | 72 | 2 | 8 / 10 |
 | rianne_audit | 52 | 72 | 2 | 9 / 10 |
 | kees_meter_alarms | 55 | 72 | 2 | 7 / 10 |
-| yvonne_theft | 55 | 72 | 2 | 7 / 9 |
+| sandra_theft | 55 | 72 | 2 | 7 / 9 |
 | thomas_flex | 58 | 74 | 2 | 7 / 10 (8 without team trust) |
 | monique_plan | 52 | 72 | 2 | 8 / 9 |
 | harrie_gas | 55 | 70 | 2 | 7 / 9 |

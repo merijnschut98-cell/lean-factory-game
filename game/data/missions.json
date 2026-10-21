@@ -849,8 +849,8 @@
   },
   {
    "act": 1,
-   "briefing": "Loop een dag mee met meterwisselaar Yvonne Kok. Er staan acht adressen op haar lijst; de laatste analoge meters in Nova moeten eruit. Tel hoe vaak de deur opengaat.",
-   "debrief": "Niet elke deur ging open. Yvonne liet weer een kaartje achter: 'helaas niet thuis'. Ze heeft er een dikke stapel van in de bus.",
+   "briefing": "Loop een dag mee met meterwisselaar Sandra Vermeulen. Er staan acht adressen op haar lijst; de laatste analoge meters in Nova moeten eruit. Tel hoe vaak de deur opengaat.",
+   "debrief": "Niet elke deur ging open. Sandra liet weer een kaartje achter: 'helaas niet thuis'. Ze heeft er een dikke stapel van in de bus.",
    "goal": {
     "stream": "meters",
     "type": "walk"
@@ -867,7 +867,7 @@
     "xp": 200
    },
    "steps": {
-    "look": "Loop met Yvonne mee en kijk bij {team}"
+    "look": "Loop met Sandra mee en kijk bij {team}"
    },
    "tier": 1
   },
@@ -910,8 +910,8 @@
   },
   {
    "act": 1,
-   "briefing": "Yvonne Kok laat elke dag drie kaartjes achter: 'helaas niet thuis'. Het programma om de laatste analoge meters te vervangen loopt achter. Meneer De Jong belde boos: hij had een halve dag vrij genomen, en er kwam niemand. Wie is hier eigenlijk niet thuis?",
-   "debrief": "Klanten zijn thuis als ze weten wanneer we komen. Yvonne's stapel kaartjes is bijna op; ze bestelt geen nieuwe.",
+   "briefing": "Sandra Vermeulen laat elke dag drie kaartjes achter: 'helaas niet thuis'. Het programma om de laatste analoge meters te vervangen loopt achter. Meneer De Jong belde boos: hij had een halve dag vrij genomen, en er kwam niemand. Wie is hier eigenlijk niet thuis?",
+   "debrief": "Klanten zijn thuis als ze weten wanneer we komen. Sandra's stapel kaartjes is bijna op; ze bestelt geen nieuwe.",
    "goal": {
     "problem": "not_at_home",
     "type": "solve"
@@ -933,8 +933,8 @@
     "act": "Beslis aan de obeya-wand hoe de meterwisselaars verdergaat",
     "check": "Lees aan de obeya-wand af wat je experiment opleverde",
     "dig": "Zoek uit waarom de deur zo vaak dicht blijft",
-    "look": "Ga met Yvonne mee langs haar adressen",
-    "wait": "Kijk bij Yvonne hoe het experiment loopt"
+    "look": "Ga met Sandra mee langs haar adressen",
+    "wait": "Kijk bij Sandra hoe het experiment loopt"
    },
    "tier": 1
   },

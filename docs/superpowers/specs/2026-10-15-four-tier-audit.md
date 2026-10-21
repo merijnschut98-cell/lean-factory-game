@@ -160,7 +160,7 @@ No two consecutive mains share a shape. The repeat that does exist is structural
 
 ### 4.3 Voice consistency of returning people (to do)
 
-- **Spot-checked consistent:** Frank (rule-bound, "uitleggen"), Kees (craftsman), Mieke (craftsman, "klopt"), Yvonne (quiet), Marco (cynic), Ruben (craftsman).
+- **Spot-checked consistent:** Frank (rule-bound, "uitleggen"), Kees (craftsman), Mieke (craftsman, "klopt"), Sandra (quiet), Marco (cynic), Ruben (craftsman).
 - **Thomas:** an expert in talk_to and a defender in `thomas_flex`. That is allowed (the archetype is per talk), but note it in the voice sheet.
 - **Done 2026-10-16:** a full read of each returning person's lines across tiers, now written down as the voice sheet in §6. Fixes made while reading: Marco's commitments no longer all start alike ("Klaar." / "Kijk."); Noor's two talks (field app, status page) had identical outcome lines and now differ; Mieke's tier-4 lines now carry her "dat moet kloppen"; Petra's tier-2 commitment uses her "Klopt."; Frank's tier-4 lines keep his formal register ("paraaf", "directie"). Thomas stays an expert in `talk_to` and a defender in `thomas_flex`; his interest `via` is the relational one in both persuasions.
 

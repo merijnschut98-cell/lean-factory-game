@@ -779,8 +779,8 @@ Both missions open together under one fork card on the board: "**Twee teams vrag
 | Correct | 4 | — |
 
 **Rewrite**
-- **Briefing:** "Loop een dag mee met meterwisselaar Yvonne Kok†. Er staan acht adressen op haar lijst; de laatste analoge meters in Nova moeten eruit. Tel hoe vaak de deur opengaat."
-- **Debrief:** "Van de {n} adressen deed {k} keer niemand open. Yvonne liet {k} kaartjes achter: 'helaas niet thuis'. Ze heeft er een dikke stapel van in de bus."
+- **Briefing:** "Loop een dag mee met meterwisselaar Sandra Vermeulen†. Er staan acht adressen op haar lijst; de laatste analoge meters in Nova moeten eruit. Tel hoe vaak de deur opengaat."
+- **Debrief:** "Van de {n} adressen deed {k} keer niemand open. Sandra liet {k} kaartjes achter: 'helaas niet thuis'. Ze heeft er een dikke stapel van in de bus."
   - It seeds `fix_not_at_home`. The stack of cards is the object.
 
 ### S3 · `fix_wrong_joint` — De verkeerde mof in de bus
@@ -816,8 +816,8 @@ Both missions open together under one fork card on the board: "**Twee teams vrag
 | Correct | 4 | — |
 
 **Rewrite**
-- **Briefing:** "Yvonne Kok laat elke dag drie kaartjes achter: 'helaas niet thuis'. Het programma om de laatste analoge meters te vervangen loopt achter. Meneer De Jong belde boos: hij had een halve dag vrij genomen, en er kwam niemand. Wie is hier eigenlijk niet thuis?"
-- **Debrief:** "Klanten zijn thuis als ze weten wanneer we komen. Yvonne's stapel kaartjes is bijna op; ze bestelt geen nieuwe."
+- **Briefing:** "Sandra Vermeulen laat elke dag drie kaartjes achter: 'helaas niet thuis'. Het programma om de laatste analoge meters te vervangen loopt achter. Meneer De Jong belde boos: hij had een halve dag vrij genomen, en er kwam niemand. Wie is hier eigenlijk niet thuis?"
+- **Debrief:** "Klanten zijn thuis als ze weten wanneer we komen. Sandra's stapel kaartjes is bijna op; ze bestelt geen nieuwe."
 - **Twist:** the customer who wasn't home was also the customer who waited for nothing. Both sides lose.
 - **Grounding:** the Energiewet and ~500,000 analogue meters (Solar Magazine).
 
@@ -1214,7 +1214,7 @@ Extends the catalogue doc's cast (§2.3). New entries are marked †. Each arc h
 | `el_amrani`† | familie El Amrani | customer, Nova-Oost | the letter → a FIFO victim → the fourth call → "EAN bestaat niet" → the heat pump runs | D14 |
 | `ilse`† | Ilse de Graaf | Bakkerij De Graaf | queue for two years → electric ovens → Act IV: wants to join an energy hub | `sector_energy_hub` |
 | `de_linde`† | Zorgcentrum De Linde (manager mevr. Brouwer) | priority customer | on its generator (Act II) → storm (Act III) → prioritisation framework (Act IV), where it is the face of "maatschappelijk prioriteren" | — |
-| `yvonne`† | Yvonne Kok | meterwisselaar | the stack of cards → none left | — |
+| `yvonne`† | Sandra Vermeulen | meterwisselaar | the stack of cards → none left | — |
 | `dirk`† | Dirk Smits | magazijn | "ik heb ze gewoon liggen" → kanban owner → Act III `safety_stock_calendar` | — |
 | `hermans`† | Hermans Bouw | project developer | 48 homes waiting → Act IV `uneven_release` (De maandpiek: he releases 200 homes at once) | — |
 
@@ -1224,7 +1224,7 @@ Extends the catalogue doc's cast (§2.3). New entries are marked †. Each arc h
 
 ### 5.4 Side missions: small but memorable
 
-**The four ones:** one **person**, one **place**, one **twist**, one **object** (Yvonne's stack of cards, Henk's knife, the sandwich-bag sketch, Wim's spreadsheet).
+**The four ones:** one **person**, one **place**, one **twist**, one **object** (Sandra's stack of cards, Henk's knife, the sandwich-bag sketch, Wim's spreadsheet).
 
 - **Size:**
   - ≤ 4 clues, ≤ 2 tools needed;

@@ -16,7 +16,7 @@
   - 10 in Act I (Joost's vacancies, Sanne's checker, Marco the cynic, Esra's agents, Mrs El Amrani's fourth call, Petra's batch, Henk and the camera, Linda, Dirk, Femke as an expert);
   - 10 in Act II (Gert after the cable strike, Mieke's sketches, Femke's triage, Rob from Inkoop, Thomas and the unused capacity, Ilse the baker, Joost's KPI talk rewritten, Sanne's KPI, Frank's block, Thomas as an expert);
   - 7 check-ins: Ahmed (rewritten) plus 6 new (Anouk, Henk's last week, Esra, Petra, Marco at day 100, Linda);
-  - 5 short walk-around check-ins (§8.1, added after Merijn's decision on the meter): Yvonne, Kees, Mieke, Rachid, Femke.
+  - 5 short walk-around check-ins (§8.1, added after Merijn's decision on the meter): Sandra, Kees, Mieke, Rachid, Femke.
 - **Every person has a voice sheet (§2):** word choice, rhythm, humour, worry, a recurring line, and what they never say. Everyone speaks standard Dutch (Merijn, 2026-10-15: no dialect); voices differ in what people say and how, not in spelling.
 - **Every concern is a real workplace fear** that also carries the Lean or sector point: Joost protects Anouk's face (respect), Petra's batch hides that she is a single point of failure, Femke fears signing a fast check without authority (psychological safety, exploit before elevate), Rob was named in an audit for a wrong transformer size (standard sizes, L9), Gert saw a man fall after an MS flash (safety, test trenches), Ilse will buy a new *gas* oven if hers breaks (lock-in in the energy transition), Mrs El Amrani's heat pump hangs on the wall without power while her mother lives with them.
 - **No golden path:** each persuasion dialog lists at least three working routes and the trap, and at least two proposals or experiments that address the concern. The dialog never judges *which* proposal is better; the Check does (Sanne may commit gladly to the weaker checker).
@@ -1780,7 +1780,7 @@ Merijn's decision: people the player passes while walking around show their ener
 ```yaml
 dialogs:
   - id: yvonne_cards
-    person: yvonne                         # Yvonne Kok, meterwisselaar (audit §5.3)
+    person: yvonne                         # Sandra Vermeulen, meterwisselaar (audit §5.3)
     kind: checkin
     trigger: {walkaround: true, morale_below: 45, after_mission_open: walk_meters}
     patience: 7
@@ -1796,7 +1796,7 @@ dialogs:
         text: "Meneer De Jong had een halve dag vrij genomen. Hij was er wel, maar om één uur. Ik kwam om drie uur. Hij schreeuwde tegen mij. Niet tegen de planning. Tegen mij, op de stoep."
         tags: [admission]
     outcomes:
-      lifted: "Weet je wat ik eigenlijk zou willen? Dat ze een sms krijgen. 'Yvonne komt tussen twee en vier.' Dan kennen ze mijn naam ook."
+      lifted: "Weet je wat ik eigenlijk zou willen? Dat ze een sms krijgen. 'Sandra komt tussen twee en vier.' Dan kennen ze mijn naam ook."
       heard: "Dank je. Ik ga weer."
       none: "Ja. Nog vier adressen."
     observation: {text: "Dat ze een sms krijgen met een tijdvak. Dan zijn ze thuis.", plants: fix_not_at_home, needs: {none: ["done:fix_not_at_home"]}}

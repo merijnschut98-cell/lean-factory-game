@@ -614,11 +614,11 @@ missions:
     tier: 1
     act: 1
     requires: {missions: [walk_connections]}
-    briefing: "Loop een dag mee met meterwisselaar Yvonne Kok. Er staan acht adressen op haar lijst; de laatste analoge meters in Nova moeten eruit. Tel hoe vaak de deur opengaat."
-    debrief: "Niet elke deur ging open. Yvonne liet weer een kaartje achter: 'helaas niet thuis'. Ze heeft er een dikke stapel van in de bus."
+    briefing: "Loop een dag mee met meterwisselaar Sandra Vermeulen. Er staan acht adressen op haar lijst; de laatste analoge meters in Nova moeten eruit. Tel hoe vaak de deur opengaat."
+    debrief: "Niet elke deur ging open. Sandra liet weer een kaartje achter: 'helaas niet thuis'. Ze heeft er een dikke stapel van in de bus."
     goal: {type: walk, stream: meters}
     steps:
-      look: "Loop met Yvonne mee en kijk bij {team}"
+      look: "Loop met Sandra mee en kijk bij {team}"
     rewards: {xp: 200}
 
   - id: fix_wrong_joint
@@ -647,14 +647,14 @@ missions:
     tier: 1
     act: 1
     requires: {missions: [walk_meters]}
-    briefing: "Yvonne Kok laat elke dag drie kaartjes achter: 'helaas niet thuis'. Het programma om de laatste analoge meters te vervangen loopt achter. Meneer De Jong belde boos: hij had een halve dag vrij genomen, en er kwam niemand. Wie is hier eigenlijk niet thuis?"
-    debrief: "Klanten zijn thuis als ze weten wanneer we komen. Yvonne's stapel kaartjes is bijna op; ze bestelt geen nieuwe."
+    briefing: "Sandra Vermeulen laat elke dag drie kaartjes achter: 'helaas niet thuis'. Het programma om de laatste analoge meters te vervangen loopt achter. Meneer De Jong belde boos: hij had een halve dag vrij genomen, en er kwam niemand. Wie is hier eigenlijk niet thuis?"
+    debrief: "Klanten zijn thuis als ze weten wanneer we komen. Sandra's stapel kaartjes is bijna op; ze bestelt geen nieuwe."
     goal: {type: solve, problem: not_at_home}
     steps:
-      look: "Ga met Yvonne mee langs haar adressen"
+      look: "Ga met Sandra mee langs haar adressen"
       dig: "Zoek uit waarom de deur zo vaak dicht blijft"
       a3: "Schrijf je A3 voor de meterwisselaars aan de obeya-wand"
-      wait: "Kijk bij Yvonne hoe het experiment loopt"
+      wait: "Kijk bij Sandra hoe het experiment loopt"
       check: "Lees aan de obeya-wand af wat je experiment opleverde"
       act: "Beslis aan de obeya-wand hoe de meterwisselaars verdergaat"
     rewards: {xp: 400, budget: 4000}
