@@ -160,6 +160,19 @@ func height() -> float:
 	return SEATED_HEIGHT if pose == "sit" else STANDING_HEIGHT
 
 
+## In a talk: the body of an openness band (Dicht … Denkt mee; phase 2 design
+## §2.2). Stub for S1-C's band clips: until they exist a talking pose.
+func pose_for_band(_band: int) -> void:
+	if pose != "sit":
+		_play("talk")
+
+
+## In a talk: the visible hesitation on the cue (a pause, a look away). Stub
+## for S1-C's clip: nothing until it exists.
+func hesitate() -> void:
+	pass
+
+
 ## Whether they are in the office while these missions are active and those done.
 func present_for(active_missions: Array, done: Dictionary = {}) -> bool:
 	if not after.is_empty() and not after.any(func(m: String) -> bool: return done.has(m)):

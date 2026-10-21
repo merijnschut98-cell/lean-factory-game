@@ -289,7 +289,7 @@ func skip_week() -> void:
 ## explainer on his board skips itself (held Spatie there closes it).
 func skip() -> void:
 	lines.skip_hint(false)
-	if lines.asking() or office.explainer != null or office.ui.dialog_panel.visible:
+	if lines.asking() or office.explainer != null or office.ui.talk_view.visible:
 		return
 	match layer.opening_beat:
 		Opening.ARRIVAL:
@@ -534,18 +534,18 @@ func _anouk() -> void:
 	var state := {"called": false}
 	_run([func(_dt: float) -> bool:
 		var anouk := office.people.person("anouk")
-		if office.ui.dialog_panel.visible:
+		if office.ui.talk_view.visible:
 			state["called"] = true
 		elif anouk != null and _near(office.player.position, anouk.position, CALL_DISTANCE) and not office.busy():
 			call_out()
-		return state["called"] or office.ui.dialog_panel.visible,
-		func(_dt: float) -> bool: return not office.ui.dialog_panel.visible,
+		return state["called"] or office.ui.talk_view.visible,
+		func(_dt: float) -> bool: return not office.ui.talk_view.visible,
 		_do(_after_talk)])
 
 
 ## Anouk calls out as you pass (the exit passes her desk): her talk opens.
 func call_out() -> void:
-	office.ui.dialog_panel.first_hint = tr(TALK_HINT)
+	office.ui.talk_view.first_hint = tr(TALK_HINT)
 	var anouk := office.people.person("anouk")
 	if anouk != null:
 		office.talk_to(anouk)

@@ -59,6 +59,8 @@ var _shown_chars := 0.0
 var _held := -1.0
 var _skip_hint: Label
 var _subtitle: PanelContainer
+## A line's `lead`: what came just before it, small over it (a talk: your own line).
+var _lead: Label
 var _who: Label
 var _text: Label
 var _choices: HBoxContainer
@@ -72,14 +74,7 @@ func _init() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_subtitle = PanelContainer.new()
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(Palette.HUD_BAR, 0.82)
-	style.set_corner_radius_all(14)
-	style.content_margin_left = 26
-	style.content_margin_right = 26
-	style.content_margin_top = 12
-	style.content_margin_bottom = 14
-	_subtitle.add_theme_stylebox_override("panel", style)
+	_subtitle.add_theme_stylebox_override("panel", subtitle_style())
 	_subtitle.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	_subtitle.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	_subtitle.grow_vertical = Control.GROW_DIRECTION_BEGIN
@@ -90,6 +85,9 @@ func _init() -> void:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 4)
 	_subtitle.add_child(box)
+	_lead = UiPanel.paragraph("", Color(1, 1, 1, 0.6), UiTheme.SMALL)
+	_lead.visible = false
+	box.add_child(_lead)
 	_who = UiPanel.label("", UiTheme.SMALL, Palette.VOLTANA_GREEN)
 	box.add_child(_who)
 	_text = UiPanel.paragraph("", Color.WHITE, 22)
@@ -135,7 +133,7 @@ func _init() -> void:
 	add_child(_phone)
 
 
-## Queue lines ({who, text}) after any still showing.
+## Queue lines ({who, text, lead?, aside?}) after any still showing.
 func say(lines: Array[Dictionary]) -> void:
 	var was_idle := queue.is_empty()
 	queue.append_array(lines)
@@ -404,6 +402,18 @@ func _gui_input(event: InputEvent) -> void:
 		accept_event()
 
 
+## The subtitle's backing: dark, rounded, see-through (a talk's still line uses it too).
+static func subtitle_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(Palette.HUD_BAR, 0.82)
+	style.set_corner_radius_all(14)
+	style.content_margin_left = 26
+	style.content_margin_right = 26
+	style.content_margin_top = 12
+	style.content_margin_bottom = 14
+	return style
+
+
 static func read_seconds(text: String) -> float:
 	return clampf(READ_MIN + READ_PER_CHAR * text.length(), READ_MIN, READ_MAX)
 
@@ -414,6 +424,8 @@ func _show_first() -> void:
 		lines_done.emit()
 		return
 	var line := queue[0]
+	_lead.text = str(line.get("lead", ""))
+	_lead.visible = not _lead.text.is_empty()
 	_who.text = str(line.get("who", ""))
 	_who.visible = not _who.text.is_empty()
 	_text.text = str(line["text"])
