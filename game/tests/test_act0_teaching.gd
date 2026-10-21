@@ -75,7 +75,7 @@ func test_the_codex_keeps_the_cards_of_the_days_reached() -> void:
 ## in words only (no number, no score).
 func test_ruud_names_a_move_after_a_tutorial_talk() -> void:
 	var office := _training_office()
-	var panel := office.ui.dialog_panel
+	var panel := office.ui.talk_view
 	assert_eq(office.ui.open_talk("anouk"), "")
 	assert_true(panel.talk.get("dialog", "") == "anouk_seven", "Monday's talk")
 	panel.choose("mood")
@@ -83,7 +83,7 @@ func test_ruud_names_a_move_after_a_tutorial_talk() -> void:
 	var line: String = r["summary"]["ruud_names"]
 	assert_false(line.is_empty(), "he names or asks")
 	assert_true(shows(panel, line), "on the summary card")
-	assert_true(shows(panel, DialogPanel.RUUD_DROPPED_BY), "Monday: Ruud came by")
+	assert_true(shows(panel, TalkView.RUUD_DROPPED_BY), "Monday: Ruud came by")
 	for text in texts_in(panel):
 		if text == line:
 			for ch in text:
@@ -97,13 +97,13 @@ func test_ruud_never_names_after_act_0() -> void:
 	s.missions.done_once["fix_unused_capacity"] = true
 	assert_eq(s.accept("fix_silo_kpis"), "")
 	s.region.found["silo_kpis:4"] = true
-	var panel := DialogPanel.new()
+	var panel := TalkView.new()
 	panel.session = s
 	assert_eq(panel.start("joost"), "")
 	panel.choose("mood")
 	panel.close_talk()
-	assert_false(shows(panel, DialogPanel.RUUD_DROPPED_BY))
-	assert_false(shows(panel, DialogPanel.RUUD_MESSAGE))
+	assert_false(shows(panel, TalkView.RUUD_DROPPED_BY))
+	assert_false(shows(panel, TalkView.RUUD_MESSAGE))
 	panel.free()
 
 
@@ -114,10 +114,10 @@ func test_the_week_ends_after_fridays_last_talk() -> void:
 		return d.tutorial and d.mission == "training_fri")
 	assert_true(friday.size() >= 2, "Friday has talks")
 	var last: DialogDef = friday[-1]
-	assert_false(DialogPanel.week_ends(s, last), "not before the others were had")
+	assert_false(TalkView.week_ends(s, last), "not before the others were had")
 	for d: DialogDef in friday:
 		s.people.outcomes[d.id] = "commitment"
-	assert_true(DialogPanel.week_ends(s, last), "after Friday's last talk")
+	assert_true(TalkView.week_ends(s, last), "after Friday's last talk")
 	var thursday: DialogDef = s.people.dialogs.values().filter(func(d: DialogDef) -> bool:
 		return d.tutorial and d.mission == "training_thu")[0]
-	assert_false(DialogPanel.week_ends(s, thursday), "Thursday is not the week's end")
+	assert_false(TalkView.week_ends(s, thursday), "Thursday is not the week's end")

@@ -20,6 +20,8 @@ extends SceneTree
 ## (the board after the first mission: the fork as a pair) · debt (the HUD in
 ## debt, with the floor, and its toasts) · dialog_start, dialog_mid,
 ## dialog_summary, dialog_ruined (a talk with Joost) ·
+## talk_face, talk_choose, talk_phone (S1-G: Joost speaks in a face shot, you
+## choose in the two-shot; Mevrouw El Amrani on the phone) ·
 ## dialog_people (the journal's Mensen tab after it) · dialog_place (the
 ## team's menu with its people) · dialog_energy (the low-energy bar) ·
 ## intussen (the A3 in: what happens while the
@@ -35,6 +37,9 @@ extends SceneTree
 ## people_netstrategie, people_planning, people_revisie (2.1c: Esra and her agents,
 ## lunch in the kantine, Frank and Femke on the 2e, Linda and Mieke on the 1e) ·
 ## people_whiteboard, people_explainer (Ruud's whiteboard, and E there) ·
+## play_day_0830, play_day_1230, play_day_1830 (PLAN 2.14 S1-A: the office keeps time:
+## people coming in by the lift and the stairs in the morning light, lunch in the kantine,
+## the 1e after six with the late stayers' desk lamps) ·
 ## title (the title menu over a few saves) ·
 ## title_replace, title_keep ("Nieuw spel" over a filled autosave: the
 ## question, then the slots to keep it in) ·
@@ -147,6 +152,8 @@ func _run() -> void:
 			_stand_at(office, DESIGN)
 		"dialog_start", "dialog_mid", "dialog_summary", "dialog_ruined":
 			_talk_to_joost(office, state)
+		"talk_face", "talk_choose", "talk_phone":
+			await _staged_talk(office, state)
 		"dialog_people":
 			_talk_to_joost(office, "dialog_summary")
 			office.ui.close_panels()
@@ -167,8 +174,8 @@ func _run() -> void:
 			else:
 				office.ui.open_talk("anouk")
 			for move in ["mood", "empathy", "open_question"]:
-				office.ui.dialog_panel.choose(move)
-			office.ui.dialog_panel.close_talk()
+				office.ui.talk_view.choose(move)
+			office.ui.talk_view.close_talk()
 		"act0_cards":   # the codex's Gesprekken at the week's end: every card, the Friday one last
 			for id in ["training_mon", "training_tue", "training_wed", "training_thu", "training_fri"]:
 				office.session.missions.done_once[id] = true
@@ -267,6 +274,8 @@ func _run() -> void:
 		"people_kcc", "people_lunch", "people_directie", "people_netstrategie", "people_planning", "people_revisie", \
 				"people_whiteboard", "people_explainer", "people_dirk", "people_gert":
 			await _rooms(office, state)
+		"play_day_0830", "play_day_1230", "play_day_1830":
+			await _day(office, state)
 		_:
 			printerr("unknown state ", state)
 			quit(2)
@@ -476,11 +485,10 @@ func _rooms(office: Office, state: String) -> void:
 		office.floors._process(OfficeFloors.POLL_SECONDS)
 	office.floors.go_to(spec[0], "lift", true)
 	if state == "people_lunch":
-		var clock := PeopleSession.new()
-		clock.session = office.session
-		clock.minute = 12 * 60 + 20
-		office.people.refresh(clock)
-		office.people.set_process(false)   # keep the lunch hour for the shot
+		office.session.pass_time(12 * 60 + 20 - office.session.minute_of_day())   # the game's own lunch hour (S1-A)
+		office.ui.after_action()
+		office.people.refresh(office.session)
+		office.daylight.update(office.session)
 	var p := office.people.person(spec[2])
 	office.player.position = p.position + spec[3]
 	office.player.face(Basis.looking_at((p.position - office.player.position) * Vector3(1, 0, 1)))
@@ -489,6 +497,33 @@ func _rooms(office: Office, state: String) -> void:
 		office.rig.zoom(-3)   # close enough to see the headsets
 	office.rig.snap()
 	office.hover_person(p)
+
+
+## The office keeps time (S1-A): the game's clock moved on to the state's hour, the
+## people seen a quarter of an hour before it (so those whose place changed since walk),
+## a few seconds of the world, the camera over the floor.
+func _day(office: Office, state: String) -> void:
+	var spec: Array = {"play_day_0830": [8 * 60 + 30, "first", Vector3(7.0, 0, -6.6), 1.35, 2.0],
+		"play_day_1230": [12 * 60 + 30, "ground", Vector3(-11.8, 0, -7.6), 1.9, 3.0],
+		"play_day_1830": [18 * 60 + 30, "first", Vector3(5.8, 0, -6.0), -2.7, 3.0]}[state]
+	var minute: int = spec[0]
+	office.session.pass_time(minute - office.session.minute_of_day())
+	office.ui.after_action()
+	if office.floors.floor_id != spec[1]:
+		office.floors.go_to(spec[1], "lift", true)
+	var before := PeopleSession.new()
+	before.session = office.session
+	before.minute = minute - 15
+	office.people.refresh(before)
+	office.people.refresh(office.session)
+	office.daylight.update(office.session)
+	office.player.position = spec[2]
+	office.player.face(Basis(Vector3.UP, spec[3]))
+	office.rig.yaw = spec[3]
+	office.rig.zoom(spec[4])
+	office.rig.snap()
+	for i in 90:   # people walk
+		await process_frame
 
 
 ## Take the mission and do the gemba work; `all` finds every key clue.
@@ -533,8 +568,8 @@ func _play_to_thursday(office: Office) -> void:
 	var ui := office.ui
 	_steps(office, [[INTAKE, "walk"], [DESIGN, "walk"]])
 	ui.open_talk("anouk")   # Monday ends with Anouk at seven
-	ui.dialog_panel.choose("close")
-	ui.dialog_panel.close_talk()
+	ui.talk_view.choose("close")
+	ui.talk_view.close_talk()
 	ui.close_panels()
 	_steps(office, [[DESIGN, "shadow"], [DESIGN, "documents"], [INTAKE, "queue_count"], [DESIGN, "queue_count"]])
 	ui.close_panels()
@@ -570,6 +605,34 @@ func _open_silo(office: Office) -> void:
 	office.session.accept("fix_silo_kpis")
 	office.session.region.found["silo_kpis:4"] = true
 	office.ui.after_action()
+
+
+## The staged talk (phase 2 design §2): Joost's answer to a listening move in
+## his face shot, typed out; then the choice in the two-shot; or the fourth
+## call of Mevrouw El Amrani, on the phone.
+func _staged_talk(office: Office, state: String) -> void:
+	var view := office.ui.talk_view
+	if state == "talk_phone":
+		for id in ["fix_unused_capacity", "fix_incomplete_application"]:
+			office.session.missions.done_once[id] = true
+		office.session.accept("fix_status_callers")
+		office.ui.after_action()
+		_stand_at(office, "place:customer_contact.answer" if office.interactable("place:customer_contact.answer") != null
+			else DESIGN)
+		office.ui.open_talk("el_amrani")
+	else:
+		_open_silo(office)
+		office.people.refresh(office.session)
+		var joost := office.people.person("joost")
+		office.player.position = joost.position + joost.basis.x * 1.1 - joost.basis.z * 0.2  # beside his desk
+		office.use(joost)
+		view.lines.finish()
+		view.press_key(KEY_1)
+	if state == "talk_choose":
+		view.lines.finish()
+	office.rig.snap()
+	for i in 90:   # the line types itself out
+		await process_frame
 
 
 ## A talk with Joost at Werkvoorbereiding, played to the state's moment:
@@ -647,13 +710,13 @@ func _opening(office: Office, state: String) -> void:
 		return
 	var anouk := office.people.person("anouk")
 	office.player.position = anouk.position + Vector3(3.5, 0, -2.5)
-	run.call(func() -> bool: return office.ui.dialog_panel.visible)
+	run.call(func() -> bool: return office.ui.talk_view.visible)
 	office.rig.snap()
 	if state == "open_anouk":
 		return
 	for move in ["mood", "empathy", "open_question", "reflect"]:
-		office.ui.dialog_panel.choose(move)
-	office.ui.dialog_panel.close_talk()
+		office.ui.talk_view.choose(move)
+	office.ui.talk_view.close_talk()
 
 
 func _talk_to_joost(office: Office, state: String) -> void:
@@ -663,7 +726,7 @@ func _talk_to_joost(office: Office, state: String) -> void:
 	office.player.position = joost.position + joost.basis.x * 1.1 - joost.basis.z * 0.2  # beside his desk
 	office.use(joost)
 	office.rig.snap()
-	var panel := office.ui.dialog_panel
+	var panel := office.ui.talk_view
 	var moves: Array = []
 	match state:
 		"dialog_mid":
@@ -675,6 +738,7 @@ func _talk_to_joost(office: Office, state: String) -> void:
 	for m: String in moves:
 		var colon := m.find(":")
 		panel.choose(m.left(colon) if colon >= 0 else m, m.substr(colon + 1) if colon >= 0 else "")
+	panel.lines.finish()   # their words heard: the choice, or the note
 
 
 ## The A3 a careful player would write (the cause read from the clues).

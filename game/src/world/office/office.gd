@@ -1,8 +1,8 @@
 class_name Office
 extends Node3D
 ## Voltana's connections office, played in third person (Sims-like). Loads
-## the office model (or a plain stand-in while it is missing), adds the sun
-## and the environment, finds the interaction markers in the geometry by their
+## the office model (or a plain stand-in while it is missing), adds the light
+## by the clock (OfficeDaylight), finds the interaction markers in the geometry by their
 ## glTF extras or their name, and routes E at a marker, or a click on its
 ## ring, to the UI. A left click on the floor walks the player there. The people
 ## at their desks (OfficePeople, from the cast list) show their name on hover;
@@ -24,7 +24,7 @@ const REACH := 1.6
 ## The model's own sky and ambient light (made with it); the project's
 ## default environment otherwise.
 const ENVIRONMENT := "res://assets/office/office_environment.tres"
-## The sun through the south windows, as in the model's preview.
+## The sun through the south windows by day, as in the model's preview (OfficeDaylight).
 const SUN_DIRECTION := Vector3(0.36, -0.53, -0.77)
 ## What the raised camera cuts away (by name in the geometry): the ceiling and
 ## what hangs from it, and the slabs (the roof).
@@ -47,6 +47,16 @@ const TALK_ANGLE := 0.6
 const TALK_SHIFT := -0.08
 ## The person's face sits this far (m) under the top of their head.
 const FACE_DROP := 0.2
+## A face shot stands this far round (rad) from the line between the person
+## and the player, so the player's head stays at the edge of the frame.
+const FACE_ANGLE := 0.5
+## The face this share of the screen's height above the middle while they
+## speak, the pair while you choose (the subtitle and the sentences cover the
+## bottom; estimates, tuned on the screenshots).
+const FACE_LIFT := 0.06
+const PAIR_LIFT := 0.12
+## In a walking talk the person keeps this far (m) from the player.
+const WALK_BESIDE := 1.3
 ## A scene's two-shot looks from the side with open floor behind the pair, up
 ## to this far (m): a wall nearer than that would hide them.
 const SCENE_CLEAR := 3.0
@@ -89,6 +99,8 @@ var rig: CameraRig
 var ui: GameUI
 var interactables: Array[Interactable] = []
 var people: OfficePeople
+## The sun, the sky and the desk lamps by the clock (PLAN 2.14 S1-A).
+var daylight: OfficeDaylight
 ## The head office's floors (PLAN 2.1): which floor is loaded, the stairs and the lift,
 ## the rooms' doors.
 var floors: OfficeFloors
@@ -145,7 +157,8 @@ func build() -> void:
 	floors = OfficeFloors.new()
 	floors.setup(self)
 	add_child(floors)
-	_add_light()
+	daylight = OfficeDaylight.create(self)
+	add_child(daylight)
 	load_floor()
 	for id in INTERACTIONS:
 		if interactable(id) == null:
@@ -157,6 +170,8 @@ func build() -> void:
 	ui.setup(session, loaded.get("layer", _opening_layer()))
 	ui.panel_opened.connect(_on_panel_opened)
 	ui.talk_opened.connect(frame_talk)
+	if ui.playable():
+		ui.talk_view.phase_changed.connect(func(_phase: String) -> void: stage_talk())
 	ui.panels_closed.connect(_on_panels_closed)
 	if ui.playable():
 		show_map()
@@ -229,8 +244,10 @@ func to_title() -> void:
 		get_tree().change_scene_to_file(TitleMenu.SCENE)
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	player.view_yaw = rig.yaw
+	if ui.playable():
+		follow_walking_talk(delta)
 	if session.error.is_empty() and not busy():
 		ui.hud.show_prompt(prompt_near(player.position))
 	var tagged: Array[OfficePerson] = []
@@ -255,6 +272,7 @@ static func _load_geometry(path := MODEL) -> Node3D:
 ## points and its people. The player, the camera, the UI and the game stay as they are.
 func load_floor() -> void:
 	_clear_interactables()
+	var stay_in: Array[String] = people.stay_in if people != null else ([] as Array[String])
 	for n: Node in [people, geometry, yard]:
 		if n != null:
 			remove_child(n)
@@ -270,8 +288,10 @@ func load_floor() -> void:
 	floors.apply_rooms()
 	_add_interactables()
 	people = OfficePeople.build(self, CharacterModel.cast(), floors.here)
+	people.stay_in = stay_in
 	add_child(people)
 	_refresh_people()
+	daylight.update(session)
 	yard = null
 	if find_marker("van0") != null:   # the yard (PLAN 2.2): its vans go out and come back by the hour
 		yard = OfficeYard.new()
@@ -621,24 +641,80 @@ func talk_to(person: OfficePerson) -> void:
 	ui.ask_talk(person.id, person.display_name)
 
 
-## Frame a talk with a person in the office: the player turns to them and the
-## camera looks at their face over the player's shoulder, above the panel.
-## Someone not here (a phone call) leaves the view as it is.
+## Stage a talk (phase 2 design §2): someone in the office is talked with
+## where they are (the player turns to them, their body takes the talk's
+## band); someone not here makes it a phone call. Then the camera for the
+## talk's phase (stage_talk).
 func frame_talk(person_id: String) -> void:
 	var person := people.person(person_id)
-	if person == null or not person.visible:
+	var here := person != null and person.visible
+	if here:
+		_turn_to(person)
+	ui.talk_view.stage(person if here else null)
+	stage_talk()
+
+
+## The camera for the talk's phase: their face while they speak (over the
+## player's shoulder where the floor is too tight for it), the two of you
+## while you choose and after; walking, always the pair, following; on the
+## phone the player where they stand. Only a walking talk lets the player walk.
+func stage_talk() -> void:
+	var view := ui.talk_view
+	if not view.visible or view.talk.is_empty():
 		return
-	_turn_to(person)
-	rig.converse(talk_point(person), talk_yaw(person, player.position), TALK_SHIFT, DialogPanel.HEIGHT_SHARE / 2.0)
+	player.active = view.setting == TalkView.WALKING
+	if view.person == null:
+		rig.release()
+	elif view.phase() == TalkView.SPEAK and view.setting == TalkView.STANDING:
+		frame_face(view.person)
+	else:
+		_two_shot(view.person, PAIR_LIFT)
+
+
+## A walking talk, each frame: the person keeps beside the player at their
+## pace and the two-shot follows the pair.
+func follow_walking_talk(delta: float) -> void:
+	var view := ui.talk_view
+	if not view.visible or view.setting != TalkView.WALKING or view.person == null:
+		return
+	var person := view.person
+	var to_player := (player.position - person.position) * Vector3(1, 0, 1)
+	var gap := to_player.length() - WALK_BESIDE
+	if gap > 0.05:
+		person.place(person.position + to_player.normalized() * minf(gap, person.pace * delta), to_player)
+	_two_shot(person, PAIR_LIFT)
+
+
+## Their face and shoulders while they speak, from a little to one side of
+## the player: the side that sees more of their face, where the camera stands
+## over open floor; over the player's shoulder when neither side has room.
+func frame_face(person: OfficePerson) -> void:
+	var face := talk_point(person)
+	var to_player := (player.position - person.position) * Vector3(1, 0, 1)
+	var toward := atan2(to_player.x, to_player.z)
+	var faces := -person.basis.z
+	var sides: Array[float] = [toward + FACE_ANGLE, toward - FACE_ANGLE]
+	sides.sort_custom(func(a: float, b: float) -> bool: return Vector3(sin(a), 0, cos(a)).dot(faces) > Vector3(sin(b), 0, cos(b)).dot(faces))
+	var reach := CameraRig.FACE_DISTANCE * cos(CameraRig.FACE_PITCH)
+	for yaw in sides:
+		if nav().walkable(face * Vector3(1, 0, 1) + Vector3(sin(yaw), 0, cos(yaw)) * reach):
+			rig.face_shot(face, yaw, FACE_LIFT)
+			return
+	rig.converse(face, talk_yaw(person, player.position), TALK_SHIFT, FACE_LIFT)
 
 
 ## A scene's speaker and the player in one view (PLAN 2.13 A): the player
-## turns to them and the camera looks down at the point between the two,
-## from behind the player a little to the side when the floor is open there,
-## else from the side with the most open floor (a wall close behind would
-## hide them); `lift` of the screen's height above the middle.
+## turns to them and the camera looks down at the point between the two
+## (_two_shot); `lift` of the screen's height above the middle.
 func frame_scene(person: OfficePerson, lift: float) -> void:
 	_turn_to(person)
+	_two_shot(person, lift)
+
+
+## The camera looks down at the point between the player and `person`, from
+## behind the player a little to the side when the floor is open there, else
+## from the side with the most open floor (a wall close behind would hide them).
+func _two_shot(person: OfficePerson, lift: float) -> void:
 	var between := (player.position + person.position) / 2.0 * Vector3(1, 0, 1)
 	var behind_player := atan2(player.position.x - person.position.x, player.position.z - person.position.z)
 	var best := talk_yaw(person, player.position)
@@ -864,23 +940,6 @@ func _collision_faces() -> PackedVector3Array:
 		for v in local:
 			faces.append(to_office * v)
 	return faces
-
-
-## The sun through the windows and the sky's ambient light.
-func _add_light() -> void:
-	if ResourceLoader.exists(ENVIRONMENT):
-		var env := WorldEnvironment.new()
-		env.environment = load(ENVIRONMENT)
-		add_child(env)
-	var sun := DirectionalLight3D.new()
-	sun.basis = Basis.looking_at(SUN_DIRECTION)
-	sun.light_color = Color(1, 0.95, 0.86)
-	sun.light_energy = 1.6
-	sun.shadow_enabled = true
-	sun.shadow_blur = 1.5
-	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
-	sun.directional_shadow_max_distance = 40.0
-	add_child(sun)
 
 
 func _on_panel_opened() -> void:

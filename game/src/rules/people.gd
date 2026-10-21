@@ -124,7 +124,8 @@ var coach_asks := 0
 ## spec §4, §6): person id → [{dialog, key, text, at (minutes; -1 unknown),
 ## place}], in the order heard, each line once. Never read by the rules.
 var observed: Dictionary[String, Array] = {}
-## person id → their talks, oldest first: [{dialog, at, outcome, trace, moves}].
+## person id → their talks, oldest first: [{dialog, at, outcome, trace, moves,
+## summary (talk_note; absent in older saves, TalkSummary.of reads it safely)}].
 var talk_log: Dictionary[String, Array] = {}
 ## person id → the player's own note: never read by the rules, never judged.
 var note: Dictionary[String, String] = {}
@@ -294,8 +295,7 @@ func finish(d: Dialog, now: int, main: bool = false) -> Dictionary:
 	prompts.erase(d.def.id)
 	if main and d.def.kind == "persuade" and o in COACHED:
 		coach_after = {"mission": d.def.mission, "person": who.short, "outcome": o}
-	_keep(d, now)
-	return {
+	var result := {
 		"dialog": d.def.id, "person": who.id, "outcome": o, "trust": trust[who.id], "morale": morale[who.id],
 		"reputation": REPUTATION.get(o, 0), "team_trust": 1 if o == "commitment" else 0, "confronted": d.confronted,
 		"clue": d.unlocked_clue(), "facts": facts, "cooldown_until": cooldown, "wait_for": d.wait_for(),
@@ -303,6 +303,23 @@ func finish(d: Dialog, now: int, main: bool = false) -> Dictionary:
 			if o == "blocked" else [],
 		"ruud_names": ruud_names(d),
 	}
+	_keep(d, now, result)
+	return result
+
+
+## The talk's note for the journal (phase 2 design §2.2): what the talk screen
+## no longer shows while it runs, kept with the talk: the band it ended in, the
+## mood, what was heard per layer (position | interest | concern → line), and
+## from `result` whether a clue came of it, a block's route hints, what an
+## agreement still waits for and Ruud's naming. Never read by the rules.
+static func talk_note(d: Dialog, result: Dictionary) -> Dictionary:
+	var heard := {"position": str(d.position().get("text", ""))}
+	for layer: Dictionary in d.layers():
+		if d.revealed.has(layer["id"]):
+			heard[str(layer["id"])] = str(layer.get("text", ""))
+	return {"band": Dialog.band_of(d.openness), "mood": d.mood, "heard": heard,
+		"new_clue": not str(result["clue"]).is_empty(),
+		"hints": result["hints"], "wait_for": result["wait_for"], "ruud_names": result["ruud_names"]}
 
 
 ## The promises the player made and the person agreed to (a proposal with a
@@ -364,13 +381,14 @@ func _remembers(flag: String, d: Dialog) -> bool:
 
 
 ## What the talk adds to the Mensen tab: each new line the person said, and
-## the talk itself.
-func _keep(d: Dialog, now: int) -> void:
+## the talk itself with its note (talk_note).
+func _keep(d: Dialog, now: int, result: Dictionary) -> void:
 	var who := d.who.id
 	for line: Dictionary in d.told:
 		_observe(who, {"dialog": d.def.id, "key": line["key"], "text": line["text"], "at": now, "place": d.who.place})
 	var log: Array = talk_log.get(who, [])
-	log.append({"dialog": d.def.id, "at": now, "outcome": d.outcome, "trace": Array(d.trace), "moves": Array(d.made)})
+	log.append({"dialog": d.def.id, "at": now, "outcome": d.outcome, "trace": Array(d.trace), "moves": Array(d.made),
+		"summary": talk_note(d, result)})
 	talk_log[who] = log.slice(-TALK_LOG_MAX)
 
 
