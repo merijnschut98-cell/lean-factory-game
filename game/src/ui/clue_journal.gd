@@ -180,15 +180,21 @@ func refresh() -> void:
 			box.add_child(paragraph("%s: %s" % [tr(SEEN), tr(line)], Palette.MUTED, UiTheme.SMALL))
 
 
-## Ruud's notes, newest first, on note paper.
+## Ruud's notes, newest first, on note paper; then each talk's note, newest
+## first (TalkSummary: what the talk screen leaves out, named afterwards).
 func _notes() -> void:
 	var all := notes(session, layer)
-	if all.is_empty():
+	var talks := TalkSummary.notes(session)
+	if all.is_empty() and talks.is_empty():
 		_list.add_child(paragraph(tr(NO_NOTES), Palette.MUTED))
 	for note: Dictionary in all:
 		var box := add_card(_list, note["heading"], Palette.NOTE_PAPER)
 		for line: String in note["lines"]:
 			box.add_child(paragraph(line, Palette.INK, UiTheme.SMALL))
+	for talk: Dictionary in talks:
+		var p: PersonDef = session.people.persons.get(talk["person"])
+		_list.add_child(TalkSummary.card(session, talk, tr(TalkSummary.HEADING) % [p.name if p != null else "",
+			session.day_text(talk["at"])]))
 
 
 ## Ruud's note of every training morning so far (the days the session layer carded),
@@ -286,7 +292,7 @@ func _person_card(id: String, wants: bool) -> void:
 	var standing := HBoxContainer.new()
 	standing.add_theme_constant_override("separation", 30)
 	text.add_child(standing)
-	standing.add_child(label("%s  %s" % [DialogPanel.TRUST, DialogPanel.pips(p["trust_pips"])], UiTheme.SMALL))
+	standing.add_child(label("%s  %s" % [TalkView.TRUST, TalkView.pips(p["trust_pips"])], UiTheme.SMALL))
 	var morale := label(MORALE + MORALE_BANDS[p["morale_band"]], UiTheme.SMALL)
 	morale.tooltip_text = tr(MORALE_TIP)
 	morale.mouse_filter = Control.MOUSE_FILTER_PASS
@@ -328,7 +334,7 @@ func _still_open(card: VBoxContainer, open: Array) -> void:
 	card.add_child(label(tr(OPEN_HEADING), UiTheme.SMALL, Palette.VOLTANA_BLUE))
 	for o: Dictionary in open:
 		var lines: Array = o["hints"] if o["outcome"] == "blocked" else \
-			[o["wait_for"] if not o["wait_for"].is_empty() else tr(DialogPanel.STILL_NEEDED_CHECK)]
+			[o["wait_for"] if not o["wait_for"].is_empty() else tr(TalkSummary.STILL_NEEDED_CHECK)]
 		for line: String in lines:
 			card.add_child(paragraph("• " + line, Palette.INK, UiTheme.SMALL))
 
@@ -358,9 +364,9 @@ func _talks(card: VBoxContainer, talks: Array) -> void:
 	if talks.is_empty():
 		return
 	card.add_child(label(tr(TALKS), UiTheme.SMALL, Palette.VOLTANA_BLUE))
-	var chips: Dictionary = DialogPanel.labels_of(session).get("chips", {})
+	var chips: Dictionary = TalkView.labels_of(session).get("chips", {})
 	for t: Dictionary in talks:
-		card.add_child(label("%s · %s" % [session.day_text(t["at"]), DialogPanel.outcome_name(session, t["outcome"])],
+		card.add_child(label("%s · %s" % [session.day_text(t["at"]), TalkView.outcome_name(session, t["outcome"])],
 			UiTheme.SMALL, Palette.MUTED))
 		var moves: Array[String] = []
 		moves.assign(t["moves"].map(func(m: String) -> String: return str(chips.get(m, m))))

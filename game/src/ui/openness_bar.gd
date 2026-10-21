@@ -3,7 +3,7 @@ extends Control
 ## The dialog meter's main bar (dialog spec §3.7, Merijn 2026-10-15): a
 ## horizontal bar that FILLS with the person's openness, its five bands named
 ## under it, so colour is never the only signal. It never shows a number: the
-## change of a reply is the arrow beside it (DialogPanel), the band word says
+## change of a reply is the arrow beside it (TalkView), the band word says
 ## where it stands. The fill slides to a new value.
 
 ## Band colours, from closed (red) to thinking along (green), always with the

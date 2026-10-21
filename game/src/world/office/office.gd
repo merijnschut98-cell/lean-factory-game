@@ -47,6 +47,16 @@ const TALK_ANGLE := 0.6
 const TALK_SHIFT := -0.08
 ## The person's face sits this far (m) under the top of their head.
 const FACE_DROP := 0.2
+## A face shot stands this far round (rad) from the line between the person
+## and the player, so the player's head stays at the edge of the frame.
+const FACE_ANGLE := 0.5
+## The face this share of the screen's height above the middle while they
+## speak, the pair while you choose (the subtitle and the sentences cover the
+## bottom; estimates, tuned on the screenshots).
+const FACE_LIFT := 0.06
+const PAIR_LIFT := 0.12
+## In a walking talk the person keeps this far (m) from the player.
+const WALK_BESIDE := 1.3
 ## A scene's two-shot looks from the side with open floor behind the pair, up
 ## to this far (m): a wall nearer than that would hide them.
 const SCENE_CLEAR := 3.0
@@ -162,6 +172,8 @@ func build() -> void:
 	ui.setup(session, loaded.get("layer", _opening_layer()))
 	ui.panel_opened.connect(_on_panel_opened)
 	ui.talk_opened.connect(frame_talk)
+	if ui.playable():
+		ui.talk_view.phase_changed.connect(func(_phase: String) -> void: stage_talk())
 	ui.panels_closed.connect(_on_panels_closed)
 	home = OfficeHome.create(self)
 	add_child(home)
@@ -237,8 +249,10 @@ func to_title() -> void:
 		get_tree().change_scene_to_file(TitleMenu.SCENE)
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	player.view_yaw = rig.yaw
+	if ui.playable():
+		follow_walking_talk(delta)
 	if session.error.is_empty() and not busy():
 		ui.hud.show_prompt(prompt_near(player.position))
 	var tagged: Array[OfficePerson] = []
@@ -632,24 +646,80 @@ func talk_to(person: OfficePerson) -> void:
 	ui.ask_talk(person.id, person.display_name)
 
 
-## Frame a talk with a person in the office: the player turns to them and the
-## camera looks at their face over the player's shoulder, above the panel.
-## Someone not here (a phone call) leaves the view as it is.
+## Stage a talk (phase 2 design §2): someone in the office is talked with
+## where they are (the player turns to them, their body takes the talk's
+## band); someone not here makes it a phone call. Then the camera for the
+## talk's phase (stage_talk).
 func frame_talk(person_id: String) -> void:
 	var person := people.person(person_id)
-	if person == null or not person.visible:
+	var here := person != null and person.visible
+	if here:
+		_turn_to(person)
+	ui.talk_view.stage(person if here else null)
+	stage_talk()
+
+
+## The camera for the talk's phase: their face while they speak (over the
+## player's shoulder where the floor is too tight for it), the two of you
+## while you choose and after; walking, always the pair, following; on the
+## phone the player where they stand. Only a walking talk lets the player walk.
+func stage_talk() -> void:
+	var view := ui.talk_view
+	if not view.visible or view.talk.is_empty():
 		return
-	_turn_to(person)
-	rig.converse(talk_point(person), talk_yaw(person, player.position), TALK_SHIFT, DialogPanel.HEIGHT_SHARE / 2.0)
+	player.active = view.setting == TalkView.WALKING
+	if view.person == null:
+		rig.release()
+	elif view.phase() == TalkView.SPEAK and view.setting == TalkView.STANDING:
+		frame_face(view.person)
+	else:
+		_two_shot(view.person, PAIR_LIFT)
+
+
+## A walking talk, each frame: the person keeps beside the player at their
+## pace and the two-shot follows the pair.
+func follow_walking_talk(delta: float) -> void:
+	var view := ui.talk_view
+	if not view.visible or view.setting != TalkView.WALKING or view.person == null:
+		return
+	var person := view.person
+	var to_player := (player.position - person.position) * Vector3(1, 0, 1)
+	var gap := to_player.length() - WALK_BESIDE
+	if gap > 0.05:
+		person.place(person.position + to_player.normalized() * minf(gap, person.pace * delta), to_player)
+	_two_shot(person, PAIR_LIFT)
+
+
+## Their face and shoulders while they speak, from a little to one side of
+## the player: the side that sees more of their face, where the camera stands
+## over open floor; over the player's shoulder when neither side has room.
+func frame_face(person: OfficePerson) -> void:
+	var face := talk_point(person)
+	var to_player := (player.position - person.position) * Vector3(1, 0, 1)
+	var toward := atan2(to_player.x, to_player.z)
+	var faces := -person.basis.z
+	var sides: Array[float] = [toward + FACE_ANGLE, toward - FACE_ANGLE]
+	sides.sort_custom(func(a: float, b: float) -> bool: return Vector3(sin(a), 0, cos(a)).dot(faces) > Vector3(sin(b), 0, cos(b)).dot(faces))
+	var reach := CameraRig.FACE_DISTANCE * cos(CameraRig.FACE_PITCH)
+	for yaw in sides:
+		if nav().walkable(face * Vector3(1, 0, 1) + Vector3(sin(yaw), 0, cos(yaw)) * reach):
+			rig.face_shot(face, yaw, FACE_LIFT)
+			return
+	rig.converse(face, talk_yaw(person, player.position), TALK_SHIFT, FACE_LIFT)
 
 
 ## A scene's speaker and the player in one view (PLAN 2.13 A): the player
-## turns to them and the camera looks down at the point between the two,
-## from behind the player a little to the side when the floor is open there,
-## else from the side with the most open floor (a wall close behind would
-## hide them); `lift` of the screen's height above the middle.
+## turns to them and the camera looks down at the point between the two
+## (_two_shot); `lift` of the screen's height above the middle.
 func frame_scene(person: OfficePerson, lift: float) -> void:
 	_turn_to(person)
+	_two_shot(person, lift)
+
+
+## The camera looks down at the point between the player and `person`, from
+## behind the player a little to the side when the floor is open there, else
+## from the side with the most open floor (a wall close behind would hide them).
+func _two_shot(person: OfficePerson, lift: float) -> void:
 	var between := (player.position + person.position) / 2.0 * Vector3(1, 0, 1)
 	var behind_player := atan2(player.position.x - person.position.x, player.position.z - person.position.z)
 	var best := talk_yaw(person, player.position)

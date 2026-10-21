@@ -162,7 +162,7 @@ func test_e_beside_a_person_opens_the_talk() -> void:
 	office.person_selected.connect(func(id: String) -> void: heard.append(id))
 	office.use(office.target_near(office.player.position))
 	assert_eq(heard, ["joost"], "who was asked")
-	assert_true(office.ui.dialog_panel.talking(), "the talk with Joost opens")
+	assert_true(office.ui.talk_view.talking(), "the talk with Joost opens")
 	assert_true(office.ui.is_busy())
 	office.free()
 
