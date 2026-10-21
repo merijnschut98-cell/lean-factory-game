@@ -25,8 +25,9 @@ extends RefCounted
 const KINDS: Array[String] = ["done", "failed", "chose", "standardised", "poor_fix", "repaired", "fork_first", "flag",
 	"heard", "committed", "complied", "partial", "blocked", "checked", "accepted", "forecast_positive"]
 const FORECAST_POSITIVE := "forecast_positive:"
-## Live measures an atom can compare with ">=".
-const MEASURES: Array[String] = ["maturity", "reputation"]
+## Live measures an atom can compare with ">=": the region's maturity and reputation,
+## and the days its budget spent at the debt floor (Region.floor_days, QA 2.12 (c)).
+const MEASURES: Array[String] = ["maturity", "reputation", "floor_days"]
 
 var _facts: Dictionary[String, bool] = {}
 

@@ -299,6 +299,7 @@
   "capacity"
  ],
  "measures": [
+  "floor_days",
   "maturity",
   "reputation"
  ],

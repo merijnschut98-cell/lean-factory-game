@@ -384,6 +384,24 @@ func test_debt_stops_at_a_floor_so_recovery_stays_within_reach() -> void:
 	assert_eq(r.profile.budget, Region.DEBT_FLOOR + 5000, "every reward counts towards recovery")
 
 
+## QA 2.12 (c): the region counts the days its budget spent at the floor (the way back,
+## a cost-saving side chain, opens on it); the count is kept across a save and never
+## falls, so the chain does not flicker on the board as the budget moves.
+func test_the_region_counts_the_days_at_the_debt_floor() -> void:
+	var r := _region(Region.DEBT_FLOOR + 100)
+	r.advance_days(3)
+	assert_eq(r.floor_days, 0, "just above the floor")
+	r.grant(0, -100)
+	r.advance_days(5)
+	assert_eq(r.floor_days, 5)
+	r.grant(0, 20000)
+	r.advance_days(4)
+	assert_eq(r.floor_days, 5, "off the floor the count stands still")
+	var copy := _region()
+	assert_eq(RegionState.restore(copy, RegionState.capture(r))["error"], "")
+	assert_eq(copy.floor_days, 5)
+
+
 ## Long-term, respectful play pays its way: finance books part of what a
 ## held fix saves into the improvement budget every week, at the fix's health,
 ## while the team that runs it trusts you (a blamed team stops reporting it).

@@ -87,6 +87,9 @@ var events: Array[Dictionary] = []
 var board := KpiBoard.new(KpiMenu.new())
 ## Problem costs not yet taken from the budget (charged in whole euros).
 var _cost_owed := 0.0
+## Whole days that ended with the budget at DEBT_FLOOR, in all (it never falls): the way
+## back, a cost-saving side chain, opens on it (QA 2.12 (c); the measure floor_days>=n).
+var floor_days := 0
 ## Since when the region has not improved (minutes; the last resolved Act or
 ## the campaign's start); -1: drift has not started (start_drift).
 var drift_from := -1
@@ -249,6 +252,8 @@ func _charge_costs(days: int) -> void:
 	var whole := floori(_cost_owed)
 	_cost_owed -= whole
 	_add_budget(-whole)
+	if profile.budget <= DEBT_FLOOR:
+		floor_days += days
 
 
 ## Debt is allowed, down to DEBT_FLOOR; it starts a bad period, and paying it

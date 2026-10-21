@@ -620,7 +620,8 @@ FACT_KINDS = {"done": 1, "failed": 1, "chose": 2, "standardised": 1, "poor_fix":
 # review, or the KPI a Check predicted (Investigation.KPIS).
 FORECAST_SUBJECTS = ["kpi_board"] + KPIS
 DIALOG_FACTS = {"heard", "committed", "complied", "partial", "blocked"}
-MEASURES = {"maturity": (1, 4), "reputation": (0, 100)}  # Facts.MEASURES: "maturity>=3"
+# Facts.MEASURES: "maturity>=3"; floor_days: days the budget spent at the debt floor (QA 2.12 (c))
+MEASURES = {"maturity": (1, 4), "reputation": (0, 100), "floor_days": (1, 3650)}
 _MEASURE = re.compile(r"^([a-z]+)>=(\d+)$")
 NEEDS_KEYS = ["all", "any", "none"]
 
@@ -1098,6 +1099,8 @@ def _fact_reachable(atom: str, done: set, maturity: int, reputation: int, index:
     player's choices and luck taken at their best)."""
     kind, ids = _atom_parts(atom, "needs")
     if kind == "measure":
+        if ids[0] == "floor_days":
+            return True  # any campaign can run into debt
         return (maturity if ids[0] == "maturity" else reputation) >= int(ids[1])
     if kind in ("done", "fork_first", "accepted"):
         return ids[-1] in done

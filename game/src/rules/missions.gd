@@ -334,11 +334,13 @@ func contain(id: String) -> String:
 
 
 ## Whether a fact or a measure holds (Facts): done: and failed: from the
-## missions, maturity>= and reputation>= from the region, the rest recorded.
+## missions, maturity>=, reputation>= and floor_days>= from the region, the rest recorded.
 func knows(atom: String) -> bool:
 	var measure := Facts.measure(atom)
 	if not measure.is_empty():
-		return (region.maturity() if measure[0] == "maturity" else region.reputation.value) >= measure[1]
+		var value: int = {"maturity": region.maturity(), "reputation": region.reputation.value,
+			"floor_days": region.floor_days}[measure[0]]
+		return value >= measure[1]
 	match atom.get_slice(":", 0):
 		"done":
 			return done_once.has(atom.get_slice(":", 1))
