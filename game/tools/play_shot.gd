@@ -39,7 +39,8 @@ extends SceneTree
 ## people_whiteboard, people_explainer (Ruud's whiteboard, and E there) ·
 ## play_day_0830, play_day_1230, play_day_1830 (PLAN 2.14 S1-A: the office keeps time:
 ## people coming in by the lift and the stairs in the morning light, lunch in the kantine,
-## the 1e after six with the late stayers' desk lamps) ·
+## the 1e after six with the late stayers' desk lamps) · play_home, play_home_fade (after
+## five at the front door: "Naar huis", then the fade with the next morning's date) ·
 ## title (the title menu over a few saves) ·
 ## title_replace, title_keep ("Nieuw spel" over a filled autosave: the
 ## question, then the slots to keep it in) ·
@@ -280,6 +281,8 @@ func _run() -> void:
 			await _rooms(office, state)
 		"play_day_0830", "play_day_1230", "play_day_1830":
 			await _day(office, state)
+		"play_home", "play_home_fade":
+			_home(office, state)
 		_:
 			printerr("unknown state ", state)
 			quit(2)
@@ -555,6 +558,24 @@ func _day(office: Office, state: String) -> void:
 	office.rig.snap()
 	for i in 90:   # people walk
 		await process_frame
+
+
+## Going home (S1-A): the begane grond's front door at half past five, its prompt; then
+## used, the fade with the next morning's date over the ontvangst.
+func _home(office: Office, state: String) -> void:
+	office.session.pass_time(17 * 60 + 30 - office.session.minute_of_day())
+	office.ui.after_action()
+	office.floors.go_to("ground", "lift", true)
+	office.people.refresh(office.session)
+	office.daylight.update(office.session)
+	office.home.poll()
+	var door := office.in_office(office.floors.markers()["arrive:entrance"])
+	office.player.position = door.origin
+	office.player.face(door.basis.rotated(Vector3.UP, PI))
+	office.rig.yaw = office.player.rotation.y
+	office.rig.snap()
+	if state == "play_home_fade":
+		office.use(office.target_near(office.player.position))
 
 
 ## Take the mission and do the gemba work; `all` finds every key clue.
