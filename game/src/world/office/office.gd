@@ -101,6 +101,8 @@ var interactables: Array[Interactable] = []
 var people: OfficePeople
 ## The sun, the sky and the desk lamps by the clock (PLAN 2.14 S1-A).
 var daylight: OfficeDaylight
+## Going home after five, and the empty desks of the colleagues who have (OfficeHome).
+var home: OfficeHome
 ## The head office's floors (PLAN 2.1): which floor is loaded, the stairs and the lift,
 ## the rooms' doors.
 var floors: OfficeFloors
@@ -173,6 +175,9 @@ func build() -> void:
 	if ui.playable():
 		ui.talk_view.phase_changed.connect(func(_phase: String) -> void: stage_talk())
 	ui.panels_closed.connect(_on_panels_closed)
+	home = OfficeHome.create(self)
+	add_child(home)
+	home.poll()
 	if ui.playable():
 		show_map()
 		minimap = OfficeMinimap.new()
@@ -438,7 +443,7 @@ func prompt_near(at: Vector3) -> String:
 func prompt_for(target: Interactable) -> String:
 	if target == null:
 		return ""
-	var seam := floors.prompt(target)
+	var seam := floors.prompt(target) + home.prompt(target)
 	if not seam.is_empty():
 		return seam
 	match target.kind:
@@ -453,7 +458,7 @@ func prompt_for(target: Interactable) -> String:
 
 ## An interaction point's Dutch name: "Werkvoorbereiding & ontwerp".
 func label_for(target: Interactable) -> String:
-	var seam := floors.label(target)
+	var seam := floors.label(target) + home.label(target)
 	if not seam.is_empty():
 		return seam
 	match target.kind:
@@ -522,7 +527,7 @@ func floor_rect() -> Rect2:
 
 ## Use an interaction point: open its panel, the camera framing the station.
 func interact(target: Interactable) -> void:
-	if target == null or not session.error.is_empty() or floors.use(target):
+	if target == null or not session.error.is_empty() or floors.use(target) or home.use(target):
 		return
 	match target.kind:
 		"place":
