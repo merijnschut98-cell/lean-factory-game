@@ -604,3 +604,92 @@ func test_a_positive_kpi_review_forecast_is_a_fact() -> void:
 func test_a_dropped_session_is_freed() -> void:
 	var gone: WeakRef = weakref(GameSession.new_game(11, Catalog.DATA_DIR, false))
 	assert_true(gone.get_ref() == null, "something the session owns still holds it (a reference cycle)")
+
+
+# ── Act I milestones (phase-2 design §3.2) ──────────────────────────────────
+
+func _lines(scene: Dictionary) -> Array:
+	return (scene["before"] + scene["after"]).map(func(l: Dictionary) -> String: return l["text"])
+
+
+## Honderd dagen: Ruud and Frank read the facts aloud, no score screen. The lines
+## change with what the first hundred days left behind; one answer is remembered.
+func test_review_100_days_reads_the_facts_and_remembers_the_answer() -> void:
+	var s := _campaign()
+	assert_eq(s.scene_of("review_100_days"), {}, "not before day 100")
+	s.missions.play_start -= SimCalendar.days(100)
+	s.pass_time(0)
+	var scene := s.scene_of("review_100_days")
+	assert_eq(scene["room"], "mt_room")
+	var lines := _lines(scene)
+	assert_true(lines.any(func(t: String) -> bool: return t.begins_with("Aan Werkvoorbereiding ben je nog niet")), "nothing fixed yet")
+	assert_true(lines.any(func(t: String) -> bool: return t.contains("iedereen die er in oktober zat")), "nobody left")
+	assert_eq([scene["before"][0]["name"], scene["choice"]["name"]], ["Ruud", "Frank"])
+	assert_eq(scene["choice"]["options"].size(), 3)
+	s.missions.facts.add("left:anouk")
+	s.missions.facts.add("committed:joost_vacancies")
+	lines = _lines(s.scene_of("review_100_days"))
+	assert_true(lines.any(func(t: String) -> bool: return t.begins_with("Anouk heeft ontslag genomen")), "who left")
+	assert_false(lines.any(func(t: String) -> bool: return t.contains("iedereen die er in oktober zat")))
+	assert_true(lines.any(func(t: String) -> bool: return t.contains("ons eigen werk geworden")), "who committed")
+	assert_eq(s.finish_scene("review_100_days", 7), "bad_answer")
+	assert_eq(s.finish_scene("review_100_days", 1), "")
+	assert_eq(s.missions.status("review_100_days"), "completed")
+	assert_true(s.knows("flag:day100_people"), "the answer is a fact for later")
+	assert_eq(s.scene_of("review_100_days"), {}, "played once")
+
+
+## Voor de vorst, kept: the followed order (the simulation, never a script) is
+## connected before the first frost period.
+func test_winter_el_amrani_is_kept_when_the_followed_order_is_delivered_in_time() -> void:
+	var s := _campaign()
+	var days := 0
+	while s.missions.status("winter_el_amrani") != "completed" and days < 71:
+		s.wait_days(1.0)
+		days += 1
+	assert_true(s.followed.delivered_at >= 0, "the dossier was connected")
+	assert_true(s.knows("delivered:el_amrani"))
+	assert_eq(s.missions.status("winter_el_amrani"), "completed")
+	assert_false(s.missions.failed("winter_el_amrani"))
+	assert_false(s.knows("flag:el_amrani_complaint"))
+	var layer := SessionLayer.new()
+	PhoneMessages.sync(s, layer)
+	var payoff := layer.inbox.filter(func(e: Dictionary) -> bool: return str(e["id"]).begins_with(PhoneMessages.PAYOFF))
+	assert_eq(payoff.size(), 2, "her call and her letter")
+	for entry: Dictionary in payoff:
+		assert_false(PhoneMessages.render(s, entry).is_empty())
+
+
+## Voor de vorst, missed: a door closes (her complaint, for Act III), the moment
+## passes, and the problem stays solvable through its own mission.
+func test_winter_el_amrani_missed_closes_a_door_not_the_problem() -> void:
+	var s := _campaign()
+	s.missions.play_start -= SimCalendar.days(45)   # the frost on day 25 of this game: too soon for the dossier
+	s.wait_days(27.0)
+	assert_true(s.followed.delivered_at < 0)
+	assert_true(s.missions.failed("winter_el_amrani"))
+	assert_eq(s.missions.status("winter_el_amrani"), "locked")
+	assert_true(s.knows("flag:el_amrani_complaint") and s.knows("flag:el_amrani_cold_winter"))
+	assert_false(s.missions.failed("fix_status_callers"), "the call's own mission is untouched")
+	assert_false(s.region.closed.has("close_out_at_completion"), "no countermeasure closes")
+
+
+## The date named on the phone (name_a_date in el_amrani_fourth_call: a delivery_date
+## promise, People.promises) is checked by the simulation on that date.
+func test_the_promised_date_is_checked_by_the_simulation() -> void:
+	var s := _campaign()
+	var call := "el_amrani_fourth_call"
+	s.people.agreed[call] = "name_a_date"
+	s.people.outcomes[call] = "partial"
+	# "over een week of zes", said 40 days ago: due in two days, the dossier not yet connected
+	s.people.talk_log["el_amrani"] = [{"dialog": call, "outcome": "partial", "at": s.region.net.time - SimCalendar.days(40)}]
+	assert_eq(s.people.promises()[call]["days"], 42)
+	s.pass_time(0)
+	assert_true(s.followed.delivered_at < 0)
+	assert_false(s.knows("promise_kept:" + call) or s.knows("promise_broken:" + call), "not yet its date")
+	assert_true(s.knows("agreed:%s:name_a_date" % call), "the agreement is a fact")
+	var reputation := s.reputation()
+	s.wait_days(2.5)
+	assert_true(s.followed.delivered_at < 0)
+	assert_true(s.knows("promise_broken:" + call), "judged on its date: not connected")
+	assert_eq(s.reputation(), reputation + Missions.PROMISE_BROKEN)
