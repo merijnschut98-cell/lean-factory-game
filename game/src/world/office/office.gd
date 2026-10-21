@@ -106,6 +106,8 @@ var explainer: ExplainerView
 var minimap: OfficeMinimap
 ## The yard's clock-keeper (the vans by the hour, PLAN 2.2) while the yard is loaded, or null.
 var yard: OfficeYard
+## The office's sound (S1-B) while the game can be played, or null.
+var sound: Soundscape
 ## The props that read the region (PLAN 2.6) while a floor with tells is loaded, or null.
 var tells: OfficeTells
 ## The character creator open over the world ("Uiterlijk" in the pause menu), or null.
@@ -162,6 +164,9 @@ func build() -> void:
 	ui.panels_closed.connect(_on_panels_closed)
 	if ui.playable():
 		show_map()
+		sound = Soundscape.new()
+		sound.office = self
+		add_child(sound)
 		minimap = OfficeMinimap.new()
 		add_child(minimap)
 		minimap.setup(self)

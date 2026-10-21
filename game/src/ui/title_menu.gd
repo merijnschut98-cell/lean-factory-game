@@ -22,7 +22,7 @@ const NO_SAVES := "Nog geen opgeslagen spel. Begin met \"Nieuw spel\"."
 const PLAY := "Verder spelen"
 const NEW_GAME := "Nieuw spel"
 const SETTINGS := "Instellingen"
-const SETTINGS_LATER := "Toetsen, camera en geluid: deze instellingen komen later. Voor nu speel je met WASD, de muis en E."
+const SETTINGS_LATER := "Toetsen en camera: deze instellingen komen later. Voor nu speel je met WASD, de muis en E."
 const WIPE := "Alles wissen"
 const WIPE_ASK := "Alle opgeslagen spellen wissen? Ook het automatisch opgeslagen spel. Dit kan niet ongedaan worden gemaakt."
 const WIPE_YES := "Ja, alles wissen"
@@ -145,6 +145,8 @@ func refresh() -> void:
 		Page.SETTINGS:
 			_menu.add_child(UiPanel.label(tr(SETTINGS), UiTheme.HEADING, Palette.VOLTANA_BLUE))
 			_menu.add_child(SceneLines.auto_toggle(settings_path))
+			for c in Soundscape.settings_controls(settings_path):
+				_menu.add_child(c)
 			_menu.add_child(UiPanel.paragraph(tr(SETTINGS_LATER)))
 			_menu.add_child(UiPanel.button(tr(BACK), cancel))
 		Page.WIPE:

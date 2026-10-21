@@ -254,6 +254,8 @@ func go_to(id: String, how: String, force := false) -> bool:
 	office.rig.snap()
 	_on_stairs = office.interactable_near(office.player.position, Interactable.RING_RADIUS)
 	floor_changed.emit(id)
+	if office.sound != null:
+		office.sound.arrive(how)
 	return true
 
 

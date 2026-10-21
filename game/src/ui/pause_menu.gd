@@ -109,6 +109,9 @@ func refresh() -> void:
 			auto.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 			auto.toggled.connect(auto_text_changed.emit)
 			body.add_child(auto)
+			for c in Soundscape.settings_controls(settings_path):
+				c.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+				body.add_child(c)
 		Page.SLOTS:
 			body.add_child(paragraph(tr(PICK), Palette.MUTED, UiTheme.SMALL))
 			list = SaveList.new()
