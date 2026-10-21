@@ -18,7 +18,7 @@ const HEADING_M := 2.0
 var office: Office
 var map: Minimap
 ## Where the settings are read (tests point it at their own file).
-var settings_path := SessionLog.SETTINGS
+var settings_path := Settings.PATH
 var _since := INF
 var _plan_key := ""
 var _drawn := {}

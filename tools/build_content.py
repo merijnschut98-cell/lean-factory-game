@@ -1625,7 +1625,7 @@ def _cast_ids() -> list[str]:
     try:
         cast = json.loads(CAST_FILE.read_text(encoding="utf-8"))["characters"]
         return [str(c["id"]) for c in cast if c.get("id") != "player"]
-    except (OSError, ValueError, KeyError, TypeError) as exc:
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
         raise ContentError(f"{CAST_FILE.name}: cannot read the cast ({exc})") from exc
 
 

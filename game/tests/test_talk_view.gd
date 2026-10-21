@@ -281,6 +281,12 @@ func test_after_the_talk_the_person_drops_the_talk_s_posture() -> void:
 	office.free()
 
 
+## The summary sends the player to the phone's app by its name, not the old journal.
+func test_a_new_clue_points_at_notities() -> void:
+	assert_true(TalkSummary.NEW_CLUE.contains(Phone.NAMES[Phone.NOTES]), TalkSummary.NEW_CLUE)
+	assert_false(TalkSummary.NEW_CLUE.contains("journaal"))
+
+
 ## Another person staged in the talk view lets the first go.
 func test_restaging_the_talk_lets_the_first_person_go() -> void:
 	var view := _view(_silo())

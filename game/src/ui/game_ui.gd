@@ -42,7 +42,7 @@ var intussen: IntussenPanel
 var pause_menu: PauseMenu
 ## Off until the real game starts (begin_play), so tests write no log.
 var playtest_log := SessionLog.new(SessionLog.PATH, false)
-var settings_path := SessionLog.SETTINGS:
+var settings_path := Settings.PATH:
 	set(value):
 		settings_path = value
 		if phone != null:

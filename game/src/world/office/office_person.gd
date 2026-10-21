@@ -203,12 +203,6 @@ func settle(spot: Dictionary) -> void:
 		_play(pose)
 
 
-## Where they are at this hour: their lunch spot at lunchtime when they lunch away from
-## their desk ({} when that is on another floor), else their desk.
-func spot_at(lunchtime: bool) -> Dictionary:
-	return lunch if lunchtime and lunch is Dictionary else desk
-
-
 ## Stand at `at` (office space, on the floor) facing `direction`.
 func place(at: Vector3, direction: Vector3) -> void:
 	position = at
