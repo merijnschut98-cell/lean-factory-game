@@ -77,8 +77,10 @@ jobs:
           name: Spanning-${{ matrix.dir }}
           path: build/${{ matrix.dir }}
 
-  # A Windows build on every PR update, for playtesting without Godot: open the
-  # latest CI run of the PR and download the "Spanning-windows-playtest" artifact.
+  # A Windows build for playtesting without Godot, only for a PR commit whose
+  # subject starts with "[playtest]" (each build is ~150 MB and the artifact
+  # storage quota filled up when every push built one): open that commit's CI
+  # run and download the "Spanning-windows-playtest" artifact.
   # (The full export above needs "Run workflow", which GitHub only offers once
   # this file is on the default branch.)
   playtest-build:
@@ -88,18 +90,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Is this a playtest commit?
+        id: want
+        run: |
+          subject="$(git log -1 --format=%s ${{ github.event.pull_request.head.sha }})"
+          if [[ "$subject" == "[playtest]"* ]]; then echo "build=true" >> "$GITHUB_OUTPUT"; else echo "No [playtest] in: $subject"; fi
       - uses: ./.github/actions/setup-godot
+        if: steps.want.outputs.build == 'true'
         with:
           version: ${{ env.GODOT_VERSION }}
           templates: "true"
       - name: Export Windows
+        if: steps.want.outputs.build == 'true'
         run: |
           godot --headless --path game --import
           mkdir -p build/windows
           godot --headless --path game --export-release "Windows Desktop"
           ls -la build/windows
       - uses: actions/upload-artifact@v4
+        if: steps.want.outputs.build == 'true'
         with:
           name: Spanning-windows-playtest
           path: build/windows
-          retention-days: 14
+          retention-days: 5
