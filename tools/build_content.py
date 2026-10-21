@@ -304,7 +304,8 @@ CLUE_KEYS = {"tool", "text", "key", "depth", "at", "note", "teaches"}
 # The props that read the simulation (PLAN 2.6, design §1.5): tell id → the world.yaml room
 # it stands in. The game's OfficeTells.THRESHOLDS (game/src/world/office/office_tells.gd)
 # has the same ids, and tools/blender/build_office.py builds a node `tell_<id>` for each.
-TELLS = {"intake_stack": "connections", "prep_tray": "connections", "planning_board": "connections"}
+TELLS = {"intake_stack": "connections", "prep_tray": "connections", "planning_board": "connections",
+         "revision_cabinet": "revision_gis", "close_out_cabinet": "meter_data", "meter_board": "meter_data"}
 TELL_KEYS = {"tell", "text"}
 # A tell text names its problem if it holds the name or one of its words this long.
 _TELL_NAME_WORD = 7

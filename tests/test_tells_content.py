@@ -28,13 +28,16 @@ def test_the_real_tells_are_valid():
     _check(lambda docs: None)
 
 
-def test_the_tells_on_the_1e_cover_its_connections_room():
+def test_the_tells_cover_every_room_of_the_1e():
     rooms_with_tells = set(bc.TELLS.values())
-    assert rooms_with_tells == {"connections"}
+    assert rooms_with_tells == {"connections", "revision_gis", "meter_data"}
     shown = {p["id"]: [t["tell"] for t in p.get("tells", [])] for p in REAL["problems_tier1"]["problems"]}
     assert "intake_stack" in shown["incomplete_application"]
     assert "prep_tray" in shown["custom_design"]
     assert "planning_board" in shown["planning_reshuffle"]
+    assert "revision_cabinet" in shown["revision_backlog"]
+    assert "close_out_cabinet" in shown["done_but_not_closed"]
+    assert "meter_board" in shown["silent_meter"]
 
 
 def test_an_unknown_tell_is_refused():

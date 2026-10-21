@@ -58,7 +58,9 @@ extends SceneTree
 ## 2.12: the team's menu on Monday and on Thursday of the training week: the
 ## people and their questions, then only the known tools that fit) ·
 ## tell_intake_high, tell_intake_low, tell_prep_high, tell_planning_high (PLAN 2.6:
-## the 1e's props read the region; a long intake queue, then none).
+## the 1e's props read the region; a long intake queue, then none) ·
+## tell_revision_high, tell_meetdata_high, tell_closeout_high (PLAN 2.15: Revisie & GIS's
+## sketches, Meetdata's whiteboard, its close-out cabinet).
 ## The mission is played through the UI's own handlers, as a player would;
 ## only the training states start with the training week.
 
@@ -278,7 +280,8 @@ func _run() -> void:
 		"people_desks", "people_talk", "people_energy", "people_monteurs", "people_meetdata", "people_gemba", \
 				"people_greet", "people_quick", "people_chatter":
 			_people(office, state)
-		"tell_intake_high", "tell_intake_low", "tell_prep_high", "tell_planning_high":
+		"tell_intake_high", "tell_intake_low", "tell_prep_high", "tell_planning_high", "tell_revision_high", \
+				"tell_meetdata_high", "tell_closeout_high":
 			_tells(office, state)
 		"minimap", "minimap_floor", "minimap_near":
 			_minimap(office, state)
@@ -370,20 +373,36 @@ func _tells(office: Office, state: String) -> void:
 		"tell_intake_low":
 			net.queue_of(net.step_at("connections.intake")).clear()
 		"tell_prep_high":
-			for i in 20:
-				net.queue_of(net.step_at("connections.design")).append(WorkOrder.new(-1 - i, net.stream("connections"), net.time))
+			_pile_up(net, "connections.design", 20)
+		"tell_revision_high":
+			_pile_up(net, "connections.revision", 16)
+		"tell_meetdata_high", "tell_closeout_high":
+			_pile_up(net, "connections.close_out", 40)
 	office.tells.refresh()
 	if state == "tell_planning_high":
 		OfficeTells.show(office.geometry, {"planning_board": OfficeTells.HIGH})
+	if state == "tell_meetdata_high":   # silent meters are counted from past registrations: shown directly
+		OfficeTells.show(office.geometry, {"meter_board": OfficeTells.HIGH})
 	print("tells: ", OfficeTells.readings(net), " -> ", OfficeTells.bands(net))
 	_stand_at(office, DESIGN if state == "tell_prep_high" else INTAKE)
-	if state == "tell_planning_high":
-		office.player.position = Vector3(15.6, 0, -6.2)
-		office.player.face(Basis.looking_at(Vector3(17.7, 0, -3.9) - office.player.position))
+	var looks := {"tell_planning_high": [Vector3(15.6, 0, -6.2), Vector3(17.7, 0, -3.9)],
+		"tell_revision_high": [Vector3(-15.6, 0, -11.2), Vector3(-17.7, 0, -12.6)],
+		"tell_meetdata_high": [Vector3(-12.6, 0, -4.6), Vector3(-15.2, 0, -6.9)],
+		"tell_closeout_high": [Vector3(-9.0, 0, -5.4), Vector3(-6.5, 0, -3.6)]}
+	if looks.has(state):
+		office.player.position = looks[state][0]
+		office.player.face(Basis.looking_at(looks[state][1] - office.player.position))
 	office.player.position -= office.player.basis.x * 0.8
 	office.rig.yaw = office.player.rotation.y + deg_to_rad(25)
 	office.rig.zoom(-4)
 	office.rig.snap()
+
+
+## `n` stand-in orders in the queue of the work step at `place`.
+func _pile_up(net: Network, place: String, n: int) -> void:
+	var step := net.step_at(place)
+	for i in n:
+		net.queue_of(step).append(WorkOrder.new(-1 - i, net.stream(place.get_slice(".", 0)), net.time))
 
 
 ## Stand a step behind the marker, looking the way it faces; the camera

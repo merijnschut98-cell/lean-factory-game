@@ -25,9 +25,20 @@ const VARIANTS: Array[String] = ["low", "mid", "high"]
 ## - planning_board (jobs moved in the last 5 days: execution sent back to planning,
 ##   for a meterkast not ready or a monteur pulled away to an outage): base 4 and 9,
 ##   planning_reshuffle 17 and 18, installer_not_ready 18 and 20.
-const THRESHOLDS := {"intake_stack": [15, 30], "prep_tray": [6, 12], "planning_board": [8, 16]}
+## - revision_cabinet (sketches of finished jobs waiting at Revisie & GIS): base 1 (peaks
+##   12), revision_backlog 9 (peaks 19). A quiet stretch can still leave a high pile.
+## - close_out_cabinet (finished connections waiting for the close-out, on the wait and at
+##   Meetdata's desk): base 9 (peaks 18), done_but_not_closed 52 (the monthly batch).
+## - meter_board (new meters that sent no reading in the last METER_DAYS: a failed
+##   registration): base 6 (peaks 9), silent_meter 11 (peaks 16).
+##   (Probe 2026-10-21, same method; not_at_home leaves all three at base.)
+const THRESHOLDS := {"intake_stack": [15, 30], "prep_tray": [6, 12], "planning_board": [8, 16],
+	"revision_cabinet": [6, 12], "close_out_cabinet": [15, 35], "meter_board": [8, 12]}
 ## The window the planning board counts moved jobs over (a working week).
 const MOVED_DAYS := 5
+## The window Meetdata's whiteboard lists silent meters over (two weeks: five days hold too
+## few to tell a bad week from a normal one).
+const METER_DAYS := 10
 ## Seconds between looks at the clock.
 const POLL_SECONDS := 1.0
 
@@ -63,7 +74,10 @@ static func bands(net: Network) -> Dictionary:
 
 ## Each tell's number now (see THRESHOLDS); a step the network lacks reads 0.
 static func readings(net: Network) -> Dictionary:
-	return {"intake_stack": _intake_stack(net), "prep_tray": _prep_tray(net), "planning_board": _moved_jobs(net)}
+	return {"intake_stack": _intake_stack(net), "prep_tray": _prep_tray(net), "planning_board": _moved_jobs(net),
+		"revision_cabinet": _waiting(net, ["connections.revision"]),
+		"close_out_cabinet": _waiting(net, ["connections.close_out_wait", "connections.close_out"]),
+		"meter_board": _silent_meters(net)}
 
 
 static func band(tell: String, value: int) -> int:
@@ -123,3 +137,19 @@ static func _moved_jobs(net: Network) -> int:
 		return 0
 	var recent := execution.stats_since(SimCalendar.day_of(net.time) - MOVED_DAYS)
 	return recent["reworked"] + recent["interrupted"]
+
+
+## How many orders wait at these places now (a place the network lacks counts 0).
+static func _waiting(net: Network, places: Array[String]) -> int:
+	var n := 0
+	for place in places:
+		var step := net.step_at(place)
+		n += 0 if step == null else net.waiting_at(step)
+	return n
+
+
+static func _silent_meters(net: Network) -> int:
+	var registration := net.step_at("meters.registration")
+	if registration == null:
+		return 0
+	return registration.stats_since(SimCalendar.day_of(net.time) - METER_DAYS)["reworked"]

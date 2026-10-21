@@ -36,7 +36,49 @@ func test_a_long_intake_queue_shows_the_tall_stack_and_a_short_one_the_low() -> 
 
 func test_a_network_without_the_steps_reads_low() -> void:
 	var net := NetFixture.net([NetFixture.pool("p")], [NetFixture.stream("other", [NetFixture.work("w", "p", 1.0)])])
-	assert_eq(OfficeTells.bands(net), {"intake_stack": 0, "prep_tray": 0, "planning_board": 0})
+	assert_eq(OfficeTells.bands(net), {"intake_stack": 0, "prep_tray": 0, "planning_board": 0,
+		"revision_cabinet": 0, "close_out_cabinet": 0, "meter_board": 0})
+
+
+## Revisie & GIS: the sketches of finished jobs waiting to be drawn into the GIS.
+func test_the_revision_cabinet_follows_the_revision_queue() -> void:
+	var net := NetFixture.net([NetFixture.pool("gis", 2)], [
+		NetFixture.stream("connections", [NetFixture.work("revision", "gis", 1.0)], 0.0)])
+	assert_eq(OfficeTells.bands(net)["revision_cabinet"], OfficeTells.LOW, "nothing waits")
+	for i in OfficeTells.THRESHOLDS["revision_cabinet"][1]:
+		net.open_order(net.stream("connections"))
+	assert_eq(OfficeTells.bands(net)["revision_cabinet"], OfficeTells.HIGH)
+	net.advance_days(7)
+	assert_eq(OfficeTells.bands(net)["revision_cabinet"], OfficeTells.LOW, "drawn in")
+
+
+## Meetdata: finished connections waiting for the administrative close-out (the wait and
+## the queue at the desk both lie on the cabinet).
+func test_the_close_out_cabinet_follows_the_finished_connections_waiting() -> void:
+	var net := NetFixture.net([NetFixture.pool("meter_office")], [
+		NetFixture.stream("connections", [NetFixture.wait("close_out_wait", 30.0),
+			NetFixture.work("close_out", "meter_office", 0.25)], 0.0)])
+	assert_eq(OfficeTells.bands(net)["close_out_cabinet"], OfficeTells.LOW)
+	for i in OfficeTells.THRESHOLDS["close_out_cabinet"][1]:
+		net.open_order(net.stream("connections"))
+	assert_eq(OfficeTells.readings(net)["close_out_cabinet"], OfficeTells.THRESHOLDS["close_out_cabinet"][1])
+	assert_eq(OfficeTells.bands(net)["close_out_cabinet"], OfficeTells.HIGH)
+
+
+## Meetdata's whiteboard: the new meters that sent no reading in the last days (a
+## registration that failed and went back for a new visit).
+func test_the_meter_board_counts_the_silent_meters_of_the_last_days() -> void:
+	for ftr: float in [0.0, 1.0]:
+		var net := NetFixture.net([NetFixture.pool("meter_office", 2)], [
+			NetFixture.stream("meters", [NetFixture.work("registration", "meter_office", 0.25, ftr,
+				{"rework_wait_days": 30})], 0.0)])
+		for i in 20:
+			net.open_order(net.stream("meters"))
+		net.advance_days(3)
+		assert_eq(OfficeTells.bands(net)["meter_board"], OfficeTells.HIGH if ftr == 0.0 else OfficeTells.LOW,
+			"first time right %s" % ftr)
+		net.advance_days(OfficeTells.METER_DAYS + 1)
+		assert_eq(OfficeTells.bands(net)["meter_board"], OfficeTells.LOW, "older ones are wiped off the board")
 
 
 func test_the_1e_model_has_every_tell_with_three_variants() -> void:
