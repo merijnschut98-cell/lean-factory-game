@@ -1,33 +1,49 @@
 # Autoplay report
 
-Generated 2026-10-21T12:01:53 by `game/tools/autoplay.gd` (personas expert, average, careless, talker, never-talks, seeds 11, 12, 13). Reproduce one run with
+Generated 2026-10-21T14:52:35 by `game/tools/autoplay.gd` (personas expert, average, careless, talker, never-talks, seeds 11, 12, 13). Reproduce one run with
 `godot --headless --path game --script res://tools/autoplay.gd -- ../docs/qa <seed> <persona>`.
 Raw data (every Check's numbers, the XP/budget curve, coach replies) is in `autoplay-report.json`.
 The rules are played as they stand in the working tree; the gemba audit (leader routine) is used on every 'slipping' event by the expert, on half of them by the average player.
 
 Personas: **expert** does the training week, takes missions in content order, finds the key clues with the tools that reveal them, writes the right A3 with the best-fitting countermeasure, standardises. **average** searches tool by tool at the step and its neighbours, names a wrong cause (with a countermeasure for it) first 40 % of the time, picks the cheapest fitting countermeasure, standardises half the time. **careless** skips the training week, plays random tools, questions (blame included) and A3 choices, reads the mismatch note after 3 failed Checks and follows the coach after 5, never standardises. **talker** plays the gemba, the A3 and the audits as the expert does and talks to everyone who has a talk for it (check-ins first, each talk at most once a day, a persuasion three times, a check-in six), listening first: it answers the person's last words with the move that fits them, steers only once the concern is out and the meter reads commitment, never pressures. **never-talks** plays as the expert does and never opens a talk; only a talk a mission cannot end without is had: Monday's `anouk_seven` hello and goodbye (logged as forced), and a talk a mission needs (`talk_to`) pressed for a yes (a hello, a proposal, pressure, the ask; listening after 5 pushes, logged as assisted). Every other persona also only says hello on Monday; a needed talk is had when the objective names it, careless pressing like never-talks, the others listening first. A lost persona gets the expert's next step ("assisted"). A run that ends with the campaign done plays an epilogue of 182 days with no new work (the persona's audits only), to see which fixes hold.
 
-**Summary:** 0 critical, 6 high, 4 medium, 8 low. Every persona but careless reaches the end of the campaign without a dead end: no.
+**Summary:** 0 critical, 6 high, 4 medium, 7 low. Every persona but careless reaches the end of the campaign without a dead end: no.
 
-## S1-H verdict: QA 2.12 (a) and (b), before and after (written 2026-10-21; the rest of this file is generated)
+## S1-H verdict: QA 2.12 (a) and (b), before and after (2026-10-21; retuned the same day so people leave rarely; the rest of this file is generated)
 
-**Runs.** Talker and never-talks on seeds 11, 12, 13; expert, average and careless on seed 11 only (careless takes about 18 minutes a run, and six agents shared four CPUs). *Before* is `e62ee52`; *after* is the S1-H commits: `talk_to` goals on the Act I missions, check-ins at 25 XP with holding at 100, the daily morale drift, and Anouk's one-day trial.
+**Runs.** Talker and never-talks played seeds 11, 12 and 13. Expert, average and careless played seed 11 only. *Before* is `e62ee52`. *After* is S1-H:
+- `talk_to` goals on the Act I missions;
+- a check-in pays 25 XP and holding a fix pays 100;
+- morale drifts daily;
+- the leave tuning (`4d889f9`): neglect stops at 30, only pressure goes lower, and leaving needs 90 days under 20.
 
-| | before (e62ee52) | after (S1-H) |
+| | before (e62ee52) | after (S1-H, retuned) |
 |---|---|---|
 | XP, talker 11 / 12 / 13 | 20 376 / 19 992 / 20 442 | 19 733 / 19 767 / 19 753 |
-| XP, never-talks 11 / 12 / 13 | 20 490 / 20 840 / 20 322 (**more** than the talker) | 17 511 / 17 767 / 17 493 (about 2 200 **less**) |
-| never-talks: mean morale, start → end | 51.9 → 51.9 (flat; nobody leaves) | 51.9 → 42–43; Linda under 20 by about day 90 and gone on day 148–161; Esra and Petra leave later |
-| talker: lowest morale, who leaves | 50, nobody | 45–50, nobody |
-| expert 11: XP, who leaves | 20 490, nobody | 19 718; Anouk (day 211) and Ahmed (day 324) leave: the expert never answers a check-in |
-| average 11: XP | 22 355 | 19 955 |
-| careless 11 | not run before | horizon, 11 625 XP, five people leave |
+| XP, never-talks 11 / 12 / 13 | 20 490 / 20 840 / 20 322 (**more** than the talker) | 17 549 / 17 893 / 17 742 (about 2 000 **less**) |
+| never-talks: morale on day 100 | about 52, flat | Linda 26, Esra 33, Dirk 36 |
+| never-talks: who leaves in about a year (campaign + 182-day epilogue) | nobody | Linda (day ~222) and Esra (day ~306–321), both pressured into a yes |
+| talker: who leaves | nobody | nobody (lowest on day 100: Ahmed 42, who starts at 42) |
+| expert 11: XP, who leaves | 20 490, nobody | 19 718, nobody |
+| average 11: XP, who leaves | 22 355, nobody | 19 955, nobody |
+| careless 11 | not run before | horizon, 11 849 XP; Linda (day 169) and Esra (day 578) leave |
 
-**(a) Decay no longer pays.** Never-talks now ends below the talker on every seed. It still opens more check-ins than the talker (16–19 against 13), but a check-in now pays 25 XP. A yes under pressure pays half the mission (the `talk_to` goals), and that half is most of the gap. No persona holds a fix before it slips, because all of them audit only on a 'slipping' event, so the holding reward (100, once a fix) never shows up here. The unit tests cover it.
+**(a) Decay no longer pays.** Never-talks ends below the talker on every seed. A check-in pays 25 XP, and a yes under pressure pays half the mission (the `talk_to` goals). No persona holds a fix before it slips, because they all audit only on a 'slipping' event. So the holding reward (100, once per fix) shows only in the unit tests.
 
-**(b) Ignoring people costs.** Morale now drifts every day. A team planned above 85 % of its time loses morale (the load alone stops at 30), a fix won by pressure keeps costing, and an unanswered check-in costs 5. People recover under the norm. The acceptance holds: never-talks has someone under 40 by day 100 (Linda), and the talker keeps everyone. **To tune:** people now leave in every run that ignores check-ins. That is three in never-talks, two for the expert and five for careless. Merijn said people leave rarely. Raising `LEAVE_IGNORED` or `LEAVE_DAYS`, or the load floor, would make that rarer.
+**(b) Ignoring people costs, and leaving stays rare.**
+- Morale drifts every day:
+  - an overloaded team wears its people down;
+  - an ignored check-in costs 3;
+  - a fix won by pressure keeps costing 0.05 a day.
+- Neglect alone stops at 30: tired, not gone. Only someone pressured into a yes goes lower, and leaving takes 90 days under 20.
+- Results: nobody leaves before day 100 in any persona. The talker, the expert and average lose nobody. Never-talks loses two people in about a year, both pressured; careless loses two.
+- The acceptance holds: never-talks is below the talker in XP, and Linda is under 40 by day 100.
 
-**Needed talks.** Never-talks presses each needed talk to a yes (hello, a proposal, pressure, the ask): 7 compliances a run. With Marco it ruins the talk 5 times (he is closed, so pressure takes his openness under 10). After that it listens, which is logged as assisted (a low finding). Before a fix in this round, the talker went through 987 'heard' talks with Petra on seed 12, because it closed whenever no proposal was offered. It now listens on, and a needed talk not won in 20 talks is a dead end. Careless also found a mission stuck on a dormant problem (its fix faded while the mission still waited for the talk). That is fixed in `5f75d23`, and the careless run above was played after the fix.
+**Needed talks.** Never-talks presses each needed talk to a yes: hello, a proposal, pressure, then the ask.
+- That gives 7 compliances a run.
+- With Marco the push ruins the talk 5 times, because he is closed. After that the bot listens, which the report logs as assisted.
+- A listening player now starts with *repair* after a talk that went wrong. Without it, careless/11 could not win back Sanne after pressuring her: 20 'heard' talks.
+- A needed talk not won in 20 talks is a dead end. No run hits it.
 
 ## Runs
 
@@ -35,13 +51,13 @@ Personas: **expert** does the training week, takes missions in content order, fi
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | expert | 11 | campaign_done | 162 | 40 | 12 | 19718 | green | € 275.697 | 20/0 | 0 | 0 | 0 | 0 |
 | average | 11 | campaign_done | 444 | 59 | 16 | 19955 | green | € 193.807 | 32/47 | 0 | 28 | 0 | 0 |
-| careless | 11 | horizon | 1096 | 58 | 14 | 11625 | green | € -50.000 | 56/231 | 1 | 53 | 1 | 30 |
+| careless | 11 | horizon | 1098 | 59 | 13 | 11849 | green | € -49.777 | 57/231 | 0 | 50 | 1 | 36 |
 | talker | 11 | campaign_done | 162 | 39 | 12 | 19733 | green | € 278.449 | 20/0 | 0 | 0 | 0 | 0 |
 | talker | 12 | campaign_done | 176 | 41 | 12 | 19767 | green | € 285.389 | 20/0 | 0 | 0 | 0 | 0 |
 | talker | 13 | campaign_done | 162 | 37 | 12 | 19753 | green | € 282.375 | 20/0 | 0 | 0 | 0 | 0 |
-| never-talks | 11 | campaign_done | 176 | 47 | 12 | 17511 | green | € 248.906 | 20/0 | 0 | 0 | 0 | 5 |
-| never-talks | 12 | campaign_done | 177 | 49 | 12 | 17767 | green | € 244.421 | 21/0 | 0 | 0 | 0 | 6 |
-| never-talks | 13 | campaign_done | 173 | 47 | 12 | 17493 | green | € 248.411 | 20/0 | 0 | 0 | 0 | 2 |
+| never-talks | 11 | campaign_done | 173 | 46 | 12 | 17549 | green | € 249.552 | 20/0 | 0 | 0 | 0 | 2 |
+| never-talks | 12 | campaign_done | 187 | 52 | 12 | 17893 | green | € 241.601 | 21/1 | 0 | 0 | 0 | 2 |
+| never-talks | 13 | campaign_done | 173 | 47 | 12 | 17742 | green | € 241.287 | 21/0 | 0 | 0 | 0 | 2 |
 
 Days, XP, budget and the counts are the campaign's (the epilogue's are in the next table); reopened counts the epilogue too.
 
@@ -49,15 +65,15 @@ Days, XP, budget and the counts are the campaign's (the epilogue's are in the ne
 
 | persona | seed | talks (forced) | outcomes | trust start→end (mean) | morale start→end (mean) | lowest morale | left | fixes held/made | recurred | slipping | audits | buy-in c/n/x | life of held fixes (d) | discoveries | lowest budget | epilogue: held, recurred, slipping |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| expert | 11 | 13 (1) | none 1, commitment 6, heard 4, partial 2 | 50.2→54.1 | 51.9→52.9 | anouk 12 | anouk (d211), ahmed (d324) | 18/18 | 1 | 40 | 40 | 7/4/7 | 380 | 11 | € 34.800 | 18/18, 0, 27 |
-| average | 11 | 16 (1) | none 1, heard 7, commitment 7, partial 1 | 50.2→54.8 | 51.9→46.8 | ahmed 0 | anouk (d161), ahmed (d344), marco (d570) | 14/18 | 29 | 57 | 36 | 3/4/7 | 226 | 11 | € 31.800 | 3/18, 11, 18 |
-| careless | 11 | 49 (0) | compliance 4, ruined 17, heard 24, partial 3, none 1 | 50.2→47.5 | 51.9→28.5 | ahmed 0 | linda (d127), anouk (d239), ahmed (d394), marco (d590), esra (d717) | 2/12 | 54 | 54 | 0 | 0/1/1 | 196 | 3 | € -50.000 | – |
-| talker | 11 | 62 (0) | commitment 22, heard 17, partial 9, lifted 13, none 1 | 50.2→67.5 | 51.9→67.8 | femke 45 | – | 18/18 | 1 | 36 | 36 | 11/4/3 | 447 | 11 | € 34.800 | 18/18, 0, 24 |
-| talker | 12 | 63 (0) | heard 22, commitment 19, partial 8, none 1, lifted 13 | 50.2→67.0 | 51.9→67.2 | femke 48 | – | 18/18 | 1 | 39 | 39 | 10/4/4 | 416 | 11 | € 34.800 | 18/18, 0, 25 |
-| talker | 13 | 66 (0) | commitment 20, heard 25, partial 7, lifted 13, blocked 1 | 50.2→67.8 | 51.9→68.4 | esra 50 | – | 18/18 | 1 | 31 | 31 | 11/5/2 | 424 | 11 | € 34.800 | 18/18, 0, 21 |
-| never-talks | 11 | 18 (1) | none 1, compliance 7, ruined 5, heard 4, commitment 1 | 50.2→45.0 | 51.9→42.9 | linda 0 | linda (d161), esra (d246), petra (d281) | 18/18 | 1 | 50 | 50 | 1/5/12 | 284 | 6 | € 34.800 | 18/18, 0, 30 |
-| never-talks | 12 | 19 (1) | none 1, compliance 7, ruined 5, heard 5, commitment 1 | 50.2→45.1 | 51.9→43.0 | linda 0 | linda (d148), esra (d240), petra (d282) | 18/18 | 1 | 48 | 48 | 1/5/12 | 306 | 6 | € 34.800 | 18/18, 0, 27 |
-| never-talks | 13 | 15 (1) | none 1, compliance 7, ruined 5, heard 1, partial 1 | 50.2→44.3 | 51.9→42.3 | linda 0 | linda (d158), esra (d243), petra (d278) | 18/18 | 1 | 49 | 49 | 1/5/12 | 284 | 6 | € 34.800 | 18/18, 0, 29 |
+| expert | 11 | 13 (1) | none 1, commitment 6, heard 4, partial 2 | 50.2→54.1 | 51.9→54.0 | anouk 34 | – | 18/18 | 1 | 40 | 40 | 7/4/7 | 380 | 11 | € 34.800 | 18/18, 0, 27 |
+| average | 11 | 16 (1) | none 1, heard 7, commitment 7, partial 1 | 50.2→54.8 | 51.9→51.4 | anouk 30 | – | 14/18 | 29 | 57 | 36 | 3/4/7 | 226 | 11 | € 31.800 | 3/18, 11, 18 |
+| careless | 11 | 60 (0) | compliance 4, ruined 20, heard 31, commitment 2, partial 2, none 1 | 50.2→47.9 | 51.9→35.0 | dirk 0 | linda (d169), esra (d578) | 4/12 | 51 | 53 | 0 | 0/3/1 | 119 | 4 | € -50.000 | – |
+| talker | 11 | 62 (0) | commitment 22, heard 17, partial 9, lifted 13, none 1 | 50.2→67.5 | 51.9→68.1 | femke 45 | – | 18/18 | 1 | 36 | 36 | 11/4/3 | 447 | 11 | € 34.800 | 18/18, 0, 24 |
+| talker | 12 | 63 (0) | heard 22, commitment 19, partial 8, none 1, lifted 13 | 50.2→67.0 | 51.9→67.6 | femke 48 | – | 18/18 | 1 | 39 | 39 | 10/4/4 | 416 | 11 | € 34.800 | 18/18, 0, 25 |
+| talker | 13 | 66 (0) | commitment 20, heard 25, partial 7, lifted 13, blocked 1 | 50.2→67.8 | 51.9→68.7 | kees 50 | – | 18/18 | 1 | 31 | 31 | 11/5/2 | 424 | 11 | € 34.800 | 18/18, 0, 21 |
+| never-talks | 11 | 15 (1) | none 1, compliance 7, ruined 5, heard 1, commitment 1 | 50.2→44.7 | 51.9→44.8 | linda 7 | linda (d222), esra (d306) | 18/18 | 1 | 48 | 48 | 1/4/13 | 280 | 7 | € 34.800 | 18/18, 0, 29 |
+| never-talks | 12 | 15 (1) | none 1, compliance 7, ruined 5, heard 1, commitment 1 | 50.2→44.7 | 51.9→44.3 | linda 3 | linda (d222), esra (d321) | 18/18 | 1 | 52 | 52 | 1/4/13 | 302 | 6 | € 34.800 | 18/18, 0, 28 |
+| never-talks | 13 | 15 (1) | none 1, compliance 7, ruined 5, heard 1, partial 1 | 50.2→44.5 | 51.9→44.5 | linda 7 | linda (d222), esra (d306) | 18/18 | 1 | 45 | 45 | 1/4/13 | 302 | 6 | € 34.800 | 18/18, 0, 26 |
 
 At the campaign's end (careless: the horizon). Trust and morale are means over every person in content (0–100). Recurred, slipping and audits count the epilogue too. Buy-in: of the fixes still held, commitment (life ×1.25) / none (×1.0, also a fix with no owner in content) / compliance (×0.6, Sustain.BUY_IN). Life: days of neglect a held fix lasts at today's habits (Region.life_days).
 
@@ -65,11 +81,11 @@ At the campaign's end (careless: the horizon). Trust and morale are means over e
 
 | persona | runs | missions done | failed | days | budget at end | lowest budget | trust (end) | morale (end) | people left | fixes held after epilogue | slipping + recurred | life of held fixes (d) | discoveries | talks |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| expert | 1 | 40.0 | 0.0 | 162 | € 275.697 | € 34.800 | 54.1 | 47.9 | 2.0 | 18.0/18.0 | 41.0 | 380 | 11.0 | 13.0 |
-| average | 1 | 59.0 | 0.0 | 444 | € 193.807 | € 31.800 | 54.8 | 44.9 | 3.0 | 3.0/18.0 | 86.0 | 615 | 11.0 | 16.0 |
-| careless | 1 | 58.0 | 1.0 | 1096 | € -50.000 | € -50.000 | 47.5 | 28.5 | 5.0 | 2.0/12.0 | 108.0 | 196 | 3.0 | 49.0 |
-| talker | 3 | 39.0 | 0.0 | 167 | € 282.071 | € 34.800 | 67.4 | 61.5 | 0.0 | 18.0/18.0 | 36.3 | 429 | 11.0 | 63.7 |
-| never-talks | 3 | 47.7 | 0.0 | 175 | € 247.246 | € 34.800 | 44.8 | 34.6 | 3.0 | 18.0/18.0 | 50.0 | 305 | 6.0 | 17.3 |
+| expert | 1 | 40.0 | 0.0 | 162 | € 275.697 | € 34.800 | 54.1 | 52.9 | 0.0 | 18.0/18.0 | 41.0 | 380 | 11.0 | 13.0 |
+| average | 1 | 59.0 | 0.0 | 444 | € 193.807 | € 31.800 | 54.8 | 50.6 | 0.0 | 3.0/18.0 | 86.0 | 615 | 11.0 | 16.0 |
+| careless | 1 | 59.0 | 0.0 | 1098 | € -49.777 | € -50.000 | 47.9 | 35.0 | 2.0 | 4.0/12.0 | 104.0 | 119 | 4.0 | 60.0 |
+| talker | 3 | 39.0 | 0.0 | 167 | € 282.071 | € 34.800 | 67.4 | 63.8 | 0.0 | 18.0/18.0 | 36.3 | 429 | 11.0 | 63.7 |
+| never-talks | 3 | 48.3 | 0.0 | 177 | € 244.147 | € 34.800 | 44.6 | 38.9 | 2.0 | 18.0/18.0 | 49.3 | 311 | 6.3 | 15.0 |
 
 Trust, morale, fixes and life after the epilogue where the run had one (careless: at the horizon).
 
@@ -88,46 +104,46 @@ Trust, morale, fixes and life after the epilogue where the run had one (careless
 
 Careless skips the training week, so it has no Monday. 'Goal met, day held open': the walk was done and the day stayed open until the talk.
 
-## Findings (18), ranked by severity
+## Findings (17), ranked by severity
 
 ### 1. [high] Treadmill: players who do not always standardise spend most of the campaign redoing faded fixes
 
 - **Category:** balance · **occurrences:** 2 · **seen in:** average/11, careless/11
 - **Detail:** average/11: 24 of 54 completed missions were re-runs of a faded fix; the campaign took 444 days (campaign_done) against the expert's 162
-- **Affects:** average/11: 24/54, careless/11: 43/58
+- **Affects:** average/11: 24/54, careless/11: 43/59
 - **Reproduce:** persona `average`, seed 11, day 444
 - **Proposed fix:** A reopened main mission takes the only main slot for another 14+ days, so new missions wait. Let a reopened mission come back as a side mission (or a short 're-standardise' task without a new Check), and make decay_days longer than the Check so one lapse is not a full redo.
 
 ### 2. [high] Debt spiral: the budget keeps falling and the bad period never ends
 
 - **Category:** balance · **occurrences:** 1 · **seen in:** careless/11
-- **Detail:** careless ends at € -50.000 after 1096 days, still falling about € 1.093 a month; 1 bad periods
+- **Detail:** careless ends at € -49.777 after 1098 days, still falling about € 910 a month; 1 bad periods
 - **Affects:** careless/11
-- **Reproduce:** persona `careless`, seed 11, day 1096
+- **Reproduce:** persona `careless`, seed 11, day 1098
 - **Proposed fix:** CLAUDE.md: recovery must always be possible. Open problems (and worn fixes) keep costing and the bad period cuts capacity, while rewards come only from solved problems. Add a floor (e.g. the board grants a recovery budget, or costs stop at a debt limit), or let a bad period lower costs (no overtime) instead of only capacity.
 
 ### 3. [high] The Check panel's before/after table shows the problem's KPI worse although the fix helped
 
-- **Category:** contradiction · **occurrences:** 73 · **seen in:** expert/11, average/11, careless/11, talker/11, talker/12, talker/13, never-talks/11, never-talks/12, never-talks/13
+- **Category:** contradiction · **occurrences:** 72 · **seen in:** expert/11, average/11, careless/11, talker/11, talker/12, talker/13, never-talks/11, never-talks/12, never-talks/13
 - **Detail:** cm standard_designs, predicted throughput +8.7 % (fix), problem KPI throughput +8.7 % (fix), -32.3 % (before/after), capacity +26.2 % (fix), eff 0.90, lesson cause_right
-- **Affects:** custom_design ×11, not_at_home ×7, wrong_joint_in_van ×7, silent_meter ×7, planning_reshuffle ×7, status_callers ×7, installer_not_ready ×6, permits_in_batches ×5, knowledge_drain ×4, done_but_not_closed ×4, unused_capacity ×4, silo_kpis ×3, inverters_tripping
+- **Affects:** custom_design ×10, not_at_home ×8, planning_reshuffle ×8, wrong_joint_in_van ×7, status_callers ×7, silent_meter ×6, installer_not_ready ×5, permits_in_batches ×5, done_but_not_closed ×5, unused_capacity ×4, knowledge_drain ×3, silo_kpis ×3, inverters_tripping
 - **Reproduce:** persona `expert`, seed 11, mission `fix_custom_design`, day 19
 - **Proposed fix:** The verdict now uses the Check's counterfactual (Region.check's forecast: the coming lead time with and without the fix), but CheckPanel still shows before/after, two different 14-day windows, so the stream's own trend lands on the player's fix. Show forecast.without ('zonder jouw maatregel') and forecast.with as the columns, and say how far ahead the Check looks (forecast.days).
 
 ### 4. [high] Check fails while the fix moved the predicted KPI
 
-- **Category:** contradiction · **occurrences:** 25 · **seen in:** average/11, careless/11
+- **Category:** contradiction · **occurrences:** 20 · **seen in:** average/11, careless/11
 - **Detail:** cm planning_with_fault_windows, predicted first_time_right +37.7 % (fix), problem KPI first_time_right +37.7 % (fix), -14.8 % (before/after), capacity +0.0 % (fix), eff 0.42, lesson too_early
-- **Affects:** planning_reshuffle ×6, wrong_joint_in_van ×5, silent_meter ×5, knowledge_drain ×4, not_at_home ×2, inverters_tripping ×2, installer_not_ready
+- **Affects:** planning_reshuffle ×7, wrong_joint_in_van ×5, silent_meter ×4, inverters_tripping ×2, not_at_home, installer_not_ready
 - **Reproduce:** persona `average`, seed 11, mission `fix_planning_reshuffle`, day 63
 - **Proposed fix:** A too-early countermeasure weakens the problem, but below Pdca.CHECK_PASS it does not work: the verdict and the numbers disagree. Word the too_early lesson with the numbers ('het helpt een beetje, maar werkt maar half').
 
 ### 5. [high] Campaign not finished within the horizon
 
 - **Category:** stuck · **occurrences:** 1 · **seen in:** careless/11
-- **Detail:** 58 missions after 1096 days
+- **Detail:** 59 missions after 1098 days
 - **Affects:** horizon
-- **Reproduce:** persona `careless`, seed 11, day 1096
+- **Reproduce:** persona `careless`, seed 11, day 1098
 - **Proposed fix:** See the slowest missions; shorten Checks or let the player run missions in parallel.
 
 ### 6. [high] Check passes while the problem's own KPI got worse (prediction named another KPI)
@@ -140,25 +156,25 @@ Careless skips the training week, so it has no Monday. 'Goal met, day held open'
 
 ### 7. [medium] A player can fail the Check 8 times in a row without a way out
 
-- **Category:** balance · **occurrences:** 5 · **seen in:** average/11, careless/11
+- **Category:** balance · **occurrences:** 3 · **seen in:** average/11, careless/11
 - **Detail:** 8 failed Checks on wrong_joint_in_van
-- **Affects:** repair_wrong_joint_in_van, fix_wrong_joint, repair_knowledge_drain, save_henks_knowledge, fix_permits_in_batches
+- **Affects:** repair_wrong_joint_in_van, fix_wrong_joint, fix_status_callers
 - **Reproduce:** persona `average`, seed 11, mission `repair_wrong_joint_in_van`, day 175
 - **Proposed fix:** After two mismatches the coach (or the Check panel) should point at the clues that rule the countermeasure out; today the only feedback is the mismatch note.
 
 ### 8. [medium] A wrong root cause still passes the Check
 
-- **Category:** contradiction · **occurrences:** 45 · **seen in:** careless/11
+- **Category:** contradiction · **occurrences:** 51 · **seen in:** careless/11
 - **Detail:** cm delegated_approval, predicted lead_time +9.2 % (fix), problem KPI throughput +2.1 % (fix), +16.7 % (before/after), capacity +14.7 % (fix), eff 0.55, lesson cause_wrong
-- **Affects:** wrong_joint_in_van ×10, silent_meter ×9, custom_design ×6, planning_reshuffle ×6, permits_in_batches ×5, not_at_home ×3, installer_not_ready ×2, inverters_tripping ×2, incomplete_application, done_but_not_closed
+- **Affects:** planning_reshuffle ×8, silent_meter ×7, wrong_joint_in_van ×7, permits_in_batches ×7, custom_design ×4, knowledge_drain ×4, not_at_home ×3, installer_not_ready ×3, inverters_tripping ×3, done_but_not_closed ×3, incomplete_application ×2
 - **Reproduce:** persona `careless`, seed 11, mission `fix_custom_design`, day 57
 - **Proposed fix:** By design the fit decides the pass and the lesson says cause_wrong, so a lucky countermeasure passes. Lower eff when the cause is wrong (e.g. x0.6), or make the root-cause dimension of the score cost more.
 
 ### 9. [medium] A fix at the constraint passes but stream capacity does not rise
 
-- **Category:** contradiction · **occurrences:** 28 · **seen in:** expert/11, average/11, careless/11, talker/11, talker/12, talker/13, never-talks/11, never-talks/12, never-talks/13
+- **Category:** contradiction · **occurrences:** 30 · **seen in:** expert/11, average/11, careless/11, talker/11, talker/12, talker/13, never-talks/11, never-talks/12, never-talks/13
 - **Detail:** cm readiness_check, predicted lead_time +11.6 % (fix), problem KPI lead_time +11.6 % (fix), -5.1 % (before/after), capacity +0.0 % (fix), eff 0.90, lesson cause_right
-- **Affects:** status_callers ×12, inverters_tripping ×9, installer_not_ready ×5, not_at_home, planning_reshuffle
+- **Affects:** status_callers ×13, inverters_tripping ×10, installer_not_ready ×4, not_at_home, planning_reshuffle, custom_design
 - **Reproduce:** persona `expert`, seed 11, mission `fix_installer_not_ready`, day 48
 - **Proposed fix:** Check that the countermeasure's effects touch the constraint's touch time or availability; otherwise the 'bottleneck first' lesson reads false.
 
@@ -171,17 +187,17 @@ Careless skips the training week, so it has no Monday. 'Goal met, day held open'
 
 ### 11. [low] careless could not press a needed talk to a yes
 
-- **Category:** people · **occurrences:** 30 · **seen in:** careless/11
+- **Category:** people · **occurrences:** 36 · **seen in:** careless/11
 - **Detail:** after Persona.PUSH_TRIES pushes it listened instead
-- **Affects:** talk petra_batch: pushed 5 times ×14, talk marco_wasted_trips: pushed 5 times ×9, talk sanne_checker: pushed 5 times ×7
+- **Affects:** talk marco_wasted_trips: pushed 5 times ×12, talk petra_batch: pushed 5 times ×12, talk sanne_checker: pushed 5 times ×11, talk henk_camera: pushed 5 times
 - **Reproduce:** persona `careless`, seed 11, mission `fix_installer_not_ready`, day 73
 - **Proposed fix:** Working as designed: pressure fails with someone already closed (openness under 10 ruins the talk); listening is the way through.
 
 ### 12. [low] never-talks could not press a needed talk to a yes
 
-- **Category:** people · **occurrences:** 13 · **seen in:** never-talks/11, never-talks/12, never-talks/13
+- **Category:** people · **occurrences:** 6 · **seen in:** never-talks/11, never-talks/12, never-talks/13
 - **Detail:** after Persona.PUSH_TRIES pushes it listened instead
-- **Affects:** talk marco_wasted_trips: pushed 5 times ×13
+- **Affects:** talk marco_wasted_trips: pushed 5 times ×6
 - **Reproduce:** persona `never-talks`, seed 11, mission `fix_installer_not_ready`, day 57
 - **Proposed fix:** Working as designed: pressure fails with someone already closed (openness under 10 ruins the talk); listening is the way through.
 
@@ -197,35 +213,27 @@ Careless skips the training week, so it has no Monday. 'Goal met, day held open'
 
 - **Category:** fade · **occurrences:** 2 · **seen in:** average/11, careless/11
 - **Detail:** reopenings per run (the expert standardises every fix and audits on every 'slipping' event)
-- **Affects:** average/11: 28, careless/11: 53
+- **Affects:** average/11: 28, careless/11: 50
 - **Reproduce:** persona `average`, seed 11, day 0
 - **Proposed fix:** Working as designed for players who do not standardise; check the reopened mission tells why it is back.
 
 ### 15. [low] Slow missions for careless play (over 30 days and twice the median of 70)
 
 - **Category:** balance · **occurrences:** 1 · **seen in:** careless/11
-- **Detail:** fix_done_but_not_closed took 141 days, 8 Checks, 6 gemba actions
-- **Affects:** fix_done_but_not_closed (141 d)
-- **Reproduce:** persona `careless`, seed 11, mission `fix_done_but_not_closed`, day 647
+- **Detail:** fix_done_but_not_closed took 183 days, 10 Checks, 5 gemba actions
+- **Affects:** fix_done_but_not_closed (183 d)
+- **Reproduce:** persona `careless`, seed 11, mission `fix_done_but_not_closed`, day 718
 - **Proposed fix:** Each failed Check costs another 14 days; offer a shorter re-run after a failed Check (7 days), or a hint after the first mismatch.
 
 ### 16. [low] Play reaches the debt floor
 
 - **Category:** balance · **occurrences:** 1 · **seen in:** careless/11
-- **Detail:** careless spends 67 % of the run within €5.000 of the floor (€ -50.000) and ends at € -50.000
+- **Detail:** careless spends 66 % of the run within €5.000 of the floor (€ -50.000) and ends at € -49.777
 - **Affects:** careless/11
-- **Reproduce:** persona `careless`, seed 11, day 169
+- **Reproduce:** persona `careless`, seed 11, day 155
 - **Proposed fix:** Working as designed (recovery is always possible): the directie carries losses beyond the floor; held fixes' savings and solved problems pay the way back. Check the persona ever climbs out.
 
-### 17. [low] Deadline missed: save_henks_knowledge
-
-- **Category:** deadline · **occurrences:** 1 · **seen in:** careless/11
-- **Detail:** failed on day 171 (taken on: false), closes ["skills_matrix_buddy", "twi_job_instruction"]
-- **Affects:** careless
-- **Reproduce:** persona `careless`, seed 11, mission `save_henks_knowledge`, day 171
-- **Proposed fix:** Working as designed (a missed deadline closes a door); see the orphan finding for what happens to its problem.
-
-### 18. [low] Key clues without a coach note for the debrief
+### 17. [low] Key clues without a coach note for the debrief
 
 - **Category:** text · **occurrences:** 1 · **seen in:** content
 - **Detail:** 84 key clues: incomplete_application:0, incomplete_application:2, incomplete_application:3, incomplete_application:4, incomplete_application:5, installer_not_ready:0, installer_not_ready:2, installer_not_ready:3, installer_not_ready:4, installer_not_ready:5, wrong_joint_in_van:0, wrong_joint_in_van:2
@@ -241,27 +249,27 @@ Careless skips the training week, so it has no Monday. 'Goal met, day held open'
 | training_thu | training | 1.3 (1) | 1.4 (1) | – | 1.3 (3) | 1.3 (3) |
 | training_fri | training | 0.0 (1) | 0.0 (1) | – | 0.0 (3) | 0.0 (3) |
 | walk_connections | main | 0.0 (1) | 0.0 (1) | – | 0.0 (3) | 0.0 (3) |
-| fix_custom_design | main | 14.3 (1) | 28.4 (1) | 66.3 (7) | 14.2 (3) | 14.3 (3) |
-| fix_incomplete_application | main | 14.2 (1) | 28.1 (2) | 70.5 (1) | 14.3 (3) | 14.2 (3) |
-| fix_installer_not_ready | main | 14.3 (1) | 14.2 (1) | 70.2 (4) | 14.3 (3) | 27.5 (3) |
+| fix_custom_design | main | 14.3 (1) | 28.4 (1) | 59.0 (5) | 14.2 (3) | 14.3 (3) |
+| fix_incomplete_application | main | 14.2 (1) | 28.1 (2) | 78.1 (2) | 14.3 (3) | 14.2 (3) |
+| fix_installer_not_ready | main | 14.3 (1) | 14.2 (1) | 70.2 (3) | 14.3 (3) | 25.1 (3) |
 | fix_status_callers | main | 14.2 (1) | 28.3 (1) | 56.2 (1) | 14.3 (3) | 14.3 (3) |
-| fix_done_but_not_closed | main | 14.3 (1) | 28.4 (1) | 140.6 (1) | 14.3 (3) | 14.3 (3) |
+| fix_done_but_not_closed | main | 14.3 (1) | 28.4 (1) | 126.4 (2) | 14.3 (3) | 14.3 (3) |
 | fix_digging_damage | main | 14.2 (1) | 35.4 (2) | – | 14.3 (3) | 14.3 (3) |
-| fix_revision_backlog | main | 14.2 (1) | 32.8 (3) | – | 14.3 (3) | 14.3 (3) |
+| fix_revision_backlog | main | 14.2 (1) | 32.8 (3) | – | 14.3 (3) | 14.2 (3) |
 | fix_grid_study_queue | main | 14.2 (1) | 28.2 (1) | – | 14.3 (3) | 14.4 (3) |
 | fix_transformer_wait | main | 14.2 (1) | 28.6 (1) | – | 14.2 (3) | 14.2 (3) |
-| fix_unused_capacity | main | 14.3 (1) | 14.5 (1) | – | 14.3 (3) | 14.3 (3) |
+| fix_unused_capacity | main | 14.3 (1) | 14.5 (1) | – | 14.3 (3) | 19.0 (3) |
 | fix_silo_kpis | main | 14.5 (1) | 43.1 (1) | – | 14.5 (3) | 14.4 (3) |
 | walk_outages | side | 0.6 (1) | 1.1 (1) | 1.0 (1) | 0.7 (3) | 0.6 (3) |
 | walk_meters | side | 0.9 (1) | 0.7 (1) | 0.6 (1) | 0.9 (3) | 0.9 (3) |
-| fix_wrong_joint | side | 14.6 (1) | 28.8 (1) | 71.7 (10) | 14.6 (3) | 14.6 (3) |
-| fix_not_at_home | side | 14.9 (1) | 28.9 (1) | 61.1 (3) | 14.9 (3) | 14.9 (3) |
-| fix_silent_meter | side | 14.3 (1) | 19.0 (6) | 57.8 (9) | 14.3 (3) | 14.3 (3) |
-| fix_permits_in_batches | side | 14.2 (1) | 63.3 (2) | 66.2 (7) | 14.2 (3) | 14.2 (3) |
-| look_at_grid_study | side | 0.3 (1) | 0.3 (1) | 0.5 (1) | 0.3 (3) | 0.3 (3) |
+| fix_wrong_joint | side | 14.6 (1) | 28.8 (1) | 75.0 (9) | 14.6 (3) | 14.6 (3) |
+| fix_not_at_home | side | 14.9 (1) | 28.9 (1) | 61.0 (3) | 14.9 (3) | 14.9 (3) |
+| fix_silent_meter | side | 14.3 (1) | 19.0 (6) | 61.5 (8) | 14.3 (3) | 14.3 (3) |
+| fix_permits_in_batches | side | 14.2 (1) | 63.3 (2) | 80.7 (8) | 14.2 (3) | 14.2 (3) |
+| look_at_grid_study | side | 0.3 (1) | 0.3 (1) | 0.8 (1) | 0.3 (3) | 0.4 (3) |
 | fix_inverters_tripping | side | 14.3 (1) | 21.4 (2) | 84.5 (3) | 14.4 (3) | 14.3 (3) |
-| save_henks_knowledge | side | 14.3 (1) | 28.3 (1) | 56.2 (1) | 14.3 (3) | 14.3 (3) |
-| fix_planning_reshuffle | side | 14.9 (1) | 28.2 (3) | 63.3 (8) | 14.9 (3) | 14.8 (3) |
+| save_henks_knowledge | side | 14.3 (1) | 28.3 (1) | 56.4 (2) | 14.3 (3) | 14.3 (3) |
+| fix_planning_reshuffle | side | 14.9 (1) | 28.2 (3) | 67.0 (8) | 14.9 (3) | 14.8 (3) |
 
 Cells: mean days from accept to completion (number of completed runs). Training days of a careless player are skipped.
 
@@ -369,7 +377,7 @@ Cells: mean days from accept to completion (number of completed runs). Training 
 | average | silent_meter | 2 | on_site_comm_test | 0.90 | yes | cause_right | wip_age | +4.7 % | first_time_right | +18.2 % | -9.2 % | +12.3 % | trend_hides_gain |
 | average | silo_kpis | 3 | shared_team_goals | 0.63 | yes | cause_right | first_time_right | +4.5 % | first_time_right | +4.5 % | -10.0 % | -0.5 % | trend_hides_gain |
 
-Expert and average, first seed; Δ is the relative change, positive = better. (fix): the Check's own counterfactual, the coming lead time with against without the fix (Region.check's forecast); before→after: the two 14-day windows the Check panel still shows. All Checks (expert 20 of 20 passed; average 32 of 79 passed; careless 56 of 287 passed; talker 60 of 60 passed; never-talks 61 of 61 passed) are in the JSON.
+Expert and average, first seed; Δ is the relative change, positive = better. (fix): the Check's own counterfactual, the coming lead time with against without the fix (Region.check's forecast); before→after: the two 14-day windows the Check panel still shows. All Checks (expert 20 of 20 passed; average 32 of 79 passed; careless 57 of 288 passed; talker 60 of 60 passed; never-talks 62 of 63 passed) are in the JSON.
 
 ## The fork (two main missions open at once)
 
@@ -379,8 +387,8 @@ Expert and average, first seed; Δ is the relative change, positive = better. (f
 | expert | 11 | fix_incomplete_application | fix_installer_not_ready | yes | no | +6.6 % |
 | average | 11 | fix_installer_not_ready | fix_incomplete_application | yes | no | +10.0 % |
 | average | 11 | fix_installer_not_ready | fix_installer_not_ready | no | yes | +0.0 % |
-| careless | 11 | fix_installer_not_ready | fix_incomplete_application | yes | no | +12.4 % |
-| careless | 11 | fix_installer_not_ready | fix_installer_not_ready | yes | no | -0.0 % |
+| careless | 11 | fix_installer_not_ready | fix_incomplete_application | no | no | +18.5 % |
+| careless | 11 | fix_installer_not_ready | fix_installer_not_ready | yes | no | -0.9 % |
 | talker | 11 | fix_incomplete_application | fix_incomplete_application | yes | no | +18.4 % |
 | talker | 11 | fix_incomplete_application | fix_installer_not_ready | yes | no | +6.6 % |
 | talker | 12 | fix_incomplete_application | fix_incomplete_application | yes | no | +18.4 % |
