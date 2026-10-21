@@ -5920,6 +5920,7 @@
   },
   {
    "archetype": "customer_upset",
+   "customer": true,
    "id": "el_amrani",
    "morale": 50,
    "name": "Fatima El Amrani",
@@ -5929,7 +5930,8 @@
    "short": "mevrouw El Amrani",
    "team": "contact_centre",
    "trust": 50,
-   "voice": "Ik heb het opgeschreven."
+   "voice": "Ik heb het opgeschreven.",
+   "voicemail": "Met Fatima El Amrani. Ik had u graag even gesproken. Ik heb het genoteerd: vandaag, geen gehoor. Ik bel morgen terug."
   },
   {
    "archetype": "craftsman",
@@ -6012,6 +6014,7 @@
   },
   {
    "archetype": "customer_upset",
+   "customer": true,
    "id": "ilse",
    "morale": 50,
    "name": "Ilse de Graaf",
@@ -6021,7 +6024,8 @@
    "short": "Ilse",
    "team": "key_accounts",
    "trust": 50,
-   "voice": "Twee jaar."
+   "voice": "Twee jaar.",
+   "voicemail": "Met Ilse de Graaf, van de bakkerij. Ik sta zo weer aan de oven. Ik probeer het morgen nog een keer."
   },
   {
    "archetype": "craftsman",

@@ -18,7 +18,8 @@ extends UiPanel
 ## name, none styled by fit (Merijn's playtest, 2026-10-19).
 ## Settings: STANDING (at their desk), WALKING (the player walks between lines
 ## and the camera follows the pair), PHONE (nobody to see: the phone raised and
-## the subtitles carry it).
+## the subtitles carry it), HEADSET (a call at the KCC's desk: as PHONE, no
+## phone in the hand).
 ## An expert talk (kind expert, ExpertTalk) is the same stage with questions for
 ## sentences: no arrow after your line, the pips stay (trust still moves), a
 ## new clue noted over the questions, and no summary: after their goodbye the
@@ -37,6 +38,9 @@ const SUMMARY_SCREEN := "summary"
 const STANDING := "standing"
 const WALKING := "walking"
 const PHONE := "phone"
+## A call on a KCC headset (OfficeHeadset): as PHONE, but sitting at the desk,
+## no phone in the hand.
+const HEADSET := "headset"
 const ARROWS := {2: "▲▲", 1: "▲", 0: "", -1: "▼", -2: "▼▼"}
 ## Your line over their answer, the arrow after it.
 const YOU := "Jij: %s"
@@ -276,7 +280,7 @@ func stage(in_world: OfficePerson) -> void:
 	if person != null and person != in_world and is_instance_valid(person):
 		person.end_talk()
 	person = in_world
-	if person == null and not talk.is_empty():
+	if person == null and not talk.is_empty() and setting != HEADSET:
 		setting = PHONE
 	_posed = -1
 	if talking():

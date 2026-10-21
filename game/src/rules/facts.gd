@@ -21,9 +21,12 @@ extends RefCounted
 ## (its Check passed) and accepted:<mission> (taken on, maybe done since),
 ## both derived live by Missions.knows; forecast_positive:<kpi_board | a
 ## Check KPI> (a quarterly review's forecast beat the habit, or a Check's
-## forecast moved its predicted KPI; GameSession records it).
+## forecast moved its predicted KPI; GameSession records it);
+## promised:<dialog>:<ISO date | action kind> (a promise agreed in a talk, PLAN
+## 2.4: the date the simulation checks, or the action promised; GameSession).
 const KINDS: Array[String] = ["done", "failed", "chose", "standardised", "poor_fix", "repaired", "fork_first", "flag",
-	"heard", "committed", "complied", "partial", "blocked", "checked", "accepted", "forecast_positive"]
+	"heard", "committed", "complied", "partial", "blocked", "checked", "accepted", "forecast_positive", "promised"]
+const PROMISED := "promised:"
 const FORECAST_POSITIVE := "forecast_positive:"
 ## Live measures an atom can compare with ">=".
 const MEASURES: Array[String] = ["maturity", "reputation"]

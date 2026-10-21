@@ -34,6 +34,8 @@ var journal: ClueJournal
 var office_map: OfficeMap
 var codex: CodexPanel
 var talk_view: TalkView
+## A customer ringing the phone (PLAN 2.4, CustomerCalls); not a panel: the world goes on.
+var incoming: IncomingCall
 ## The session layer (PLAN 1.4): the terugblik, Intussen, the stop note, the
 ## discovery toasts and the side offers; the playtest log; autosave.
 var session_layer: SessionLayer
@@ -110,6 +112,10 @@ func setup(of_session: GameSession, of_layer: SessionLayer = null) -> void:
 		end_session()
 		resume()   # the title menu must not start paused
 		title_requested.emit())
+	incoming = IncomingCall.new()
+	incoming.answered.connect(func(call: Dictionary) -> void: open_talk(call["person"]))
+	incoming.declined.connect(_let_call_go)
+	root.add_child(incoming)
 	root.move_child(hud, -1)
 	phone.buzz.connect(hud.buzz)
 	phone.badges_changed.connect(func() -> void: hud.phone_status(phone.unread_count()))
@@ -303,6 +309,7 @@ func close_panels() -> void:
 	hud.set_talking(false)
 	if was_busy:
 		panels_closed.emit()
+		_ring()
 
 
 ## The clue texts in the journal.
@@ -341,6 +348,26 @@ func after_action() -> void:
 			session_layer.carded.append(m.id)
 	_phone_beat()
 	_session_beat()
+	_ring()
+
+
+## A customer whose talk is due rings, once a day in office hours, while the
+## player is free (CustomerCalls); the phone buzzes with it.
+func _ring() -> void:
+	if incoming == null or incoming.visible or is_busy() or Opening.running(session_layer):
+		return
+	var call := CustomerCalls.ringing(session, session_layer)
+	if call.is_empty():
+		return
+	CustomerCalls.rang(session, session_layer, call)
+	incoming.ring(call)
+	phone.buzz.emit()
+
+
+## A call let go: their voicemail in Berichten, nothing else.
+func _let_call_go(call: Dictionary) -> void:
+	CustomerCalls.missed(session, session_layer, call)
+	_phone_beat()
 
 
 ## A finished training day: the coach's debrief in Berichten, with what the
@@ -503,6 +530,8 @@ func show_error(text: String) -> void:
 
 
 func _open(panel: UiPanel) -> void:
+	if incoming.visible:
+		incoming.decline()   # taken up with something else: the call goes to voicemail
 	for p in _panels:
 		if p != panel:
 			p.hide()

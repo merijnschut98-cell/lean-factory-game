@@ -615,7 +615,8 @@ def check_tells(docs: dict[str, Any]) -> None:
 # facts (heard: ... blocked:) name a dialog; they are checked once dialogs exist.
 FACT_KINDS = {"done": 1, "failed": 1, "chose": 2, "standardised": 1, "poor_fix": 1, "repaired": 1, "fork_first": 2,
               "flag": 1, "heard": 1, "committed": 1, "complied": 1, "partial": 1, "blocked": 1,
-              "checked": 1, "accepted": 1, "forecast_positive": 1}  # Facts.KINDS
+              "checked": 1, "accepted": 1, "forecast_positive": 1,
+              "promised": 2}  # Facts.KINDS; promised:<dialog>:<ISO date | action kind>, recorded by GameSession
 # What a forecast_positive:<subject> fact names: the KPI board's quarterly
 # review, or the KPI a Check predicted (Investigation.KPIS).
 FORECAST_SUBJECTS = ["kpi_board"] + KPIS
@@ -1584,7 +1585,7 @@ BANK_SPECIAL = ["repeat", "refusal", "no_proposal", "other_data", "lucky_guess",
 # pressure: a yes under pressure).
 COACH_AFTER = ["pressure", "ruined", "blocked", "commitment"]
 PERSON_KEYS = {"id", "name", "short", "role", "place", "team", "archetype", "need", "trust", "morale", "voice",
-               "leaves_on"}
+               "leaves_on", "customer", "voicemail"}   # a customer's talks are calls (PLAN 2.4), with a voicemail
 DIALOG_KEYS = {"id", "name", "person", "kind", "mission", "requires_clue", "needs", "owns", "kpi_team", "mood",
                "patience", "opening", "retry_opening", "position", "layers", "data", "proposals", "experiments",
                "co_proposal", "condition_needs", "block", "lines", "replies", "outcomes", "variants", "trigger",
@@ -1641,6 +1642,12 @@ def validate_dialogs(doc: Any, source: str) -> None:
         _one_of(p, "need", DIALOG_NEEDS, where)
         _number(p, "trust", where, 0, 100, integer=True)
         _number(p, "morale", where, 0, 100, integer=True, default=60)
+        if not isinstance(p.get("customer", False), bool):
+            raise ContentError(f"{where}: 'customer' must be true or false")
+        if p.get("customer", False) != ("voicemail" in p):
+            raise ContentError(f"{where}: a customer, and only a customer, leaves a 'voicemail' line")
+        if "voicemail" in p:
+            _require_strings(p, ["voicemail"], where)
     _validate_bank(doc.get("bank"), f"{source}: bank")
     for i, card in enumerate(doc.get("move_cards") or []):
         _move_card(card, f"{source}: move card {i}")
@@ -2591,6 +2598,7 @@ def spoken_texts(docs: dict[str, Any]) -> list[tuple[str, str]]:
     dialogs = docs.get("dialogs") or {}
     for p in dialogs.get("people", []):
         out += _strings(p.get("voice"), f"dialogs.yaml: person {p['id']} voice")
+        out += _strings(p.get("voicemail"), f"dialogs.yaml: person {p['id']} voicemail")
     out += _strings({k: v for k, v in (dialogs.get("bank") or {}).items() if k != "labels"}, "dialogs.yaml: bank")
     out += _strings({k: dialogs[k] for k in ("greetings", "quick", "chatter") if k in dialogs}, "dialogs.yaml:")
     for d in dialogs.get("dialogs", []):

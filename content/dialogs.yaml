@@ -164,6 +164,8 @@ people:
     trust: 50
     morale: 50
     voice: "Ik heb het opgeschreven."
+    customer: true   # her talks are calls: the KCC headset, or she rings your phone (PLAN 2.4)
+    voicemail: "Met Fatima El Amrani. Ik had u graag even gesproken. Ik heb het genoteerd: vandaag, geen gehoor. Ik bel morgen terug."
 
   - id: henk
     name: Henk Verbeek
@@ -250,6 +252,8 @@ people:
     trust: 50
     morale: 50
     voice: "Twee jaar."
+    customer: true
+    voicemail: "Met Ilse de Graaf, van de bakkerij. Ik sta zo weer aan de oven. Ik probeer het morgen nog een keer."
 
   # Place actions spec (2026-10-18) §0.6: the operator at the control room, so a
   # walk of the outage stream has someone to ask. No talks yet (Act III).

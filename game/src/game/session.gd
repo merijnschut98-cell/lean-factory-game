@@ -55,6 +55,8 @@ const TIRED_MORALE := 40
 ## from half five it is late.
 const MORNING_UNTIL := 11 * 60 + 30
 const LATE_FROM := 17 * 60 + 30
+## Promise kinds that name a date (content's PROMISE_KINDS); the others are an action.
+const DATE_PROMISES: Array[String] = ["delivery_date"]
 
 var catalog: Catalog
 var region: Region
@@ -529,6 +531,12 @@ static func date_of(t: int) -> Dictionary:
 	var played := t - SimCalendar.days(WARMUP_DAYS)
 	return Time.get_date_dict_from_unix_time(
 		Time.get_unix_time_from_datetime_dict(PLAY_START_DATE) + SimCalendar.day_of(played) * 86400)
+
+
+## "2026-12-01" for a moment `t` (minutes): the date a promise names (PLAN 2.4).
+static func iso_date(t: int) -> String:
+	var date := date_of(t)
+	return "%04d-%02d-%02d" % [date["year"], date["month"], date["day"]]
 
 
 ## "di 13 okt" for a moment `t` (minutes); "" for an unknown one (t < 0).
@@ -1196,6 +1204,7 @@ func _finish_talk() -> Dictionary:
 	var main := missions.active("main").any(func(m: MissionDef) -> bool: return m.id == d.def.mission)
 	var morale_before: int = people.morale[d.who.id]
 	var summary := people.finish(d, region.net.time, main)
+	_keep_promise(d)
 	discoveries.note_talk(self, {"person": d.who.id, "team": d.who.team, "kind": d.def.kind, "outcome": d.outcome,
 		"listened_first": not d.steered_early and d.revealed.has("concern"), "silence_reveal": d.concern_by == "silence",
 		"own_idea": d.own_idea(), "morale_before": morale_before, "pressured": d.pressured, "confronted": d.confronted})
@@ -1209,6 +1218,38 @@ func _finish_talk() -> Dictionary:
 		region.earn_reputation(summary["reputation"], "dialog_" + summary["outcome"])
 	_after(d.minutes())
 	return summary
+
+
+## A promise agreed in talk `d` (a proposal with `promise`, PLAN 2.4) becomes a
+## fact the simulation checks: promised:<dialog>:<ISO date> for a date promised
+## (`days` from today), promised:<dialog>:<kind> for an action (a callback). It
+## replaces the dialog's earlier promise only when this talk's agreement is now
+## the best one (People.finish keeps that).
+func _keep_promise(d: Dialog) -> void:
+	if not d.outcome in People.BUY_IN_OF or people.agreed.get(d.def.id) != d.table:
+		return
+	var promise := JsonFile.dict_or_empty(d.def.item(d.table).get("promise"))
+	if promise.is_empty():
+		return
+	var kind := str(promise.get("kind", ""))
+	var value := iso_date(region.net.time + SimCalendar.days(int(promise.get("days", 0)))) \
+		if kind in DATE_PROMISES else kind
+	missions.facts.remove_prefix("%s%s:" % [Facts.PROMISED, d.def.id])
+	missions.facts.add("%s%s:%s" % [Facts.PROMISED, d.def.id, value])
+
+
+## Customers whose talk is due now (PLAN 2.4): the KCC's headset takes their
+## call, and they ring the player's phone (CustomerCalls). [{person, dialog,
+## name}], in content order; [] when none.
+func customer_calls() -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for p: PersonDef in people.persons.values():
+		if not p.customer or people.cooling_down(p.id, region.net.time):
+			continue
+		var d := people.dialog_for(p.id, _world(p))
+		if d != null:
+			out.append({"person": p.id, "dialog": d.id, "name": p.name})
+	return out
 
 
 ## After every action: check-in prompts and the low-morale clock move on

@@ -364,6 +364,10 @@ func _add_interactables() -> void:
 		var board := Interactable.create(OfficeWhiteboard.ID, OfficeWhiteboard.stand())
 		interactables.append(board)
 		add_child(board)
+	var headset := OfficeHeadset.place(self)   # the KCC's free desk (begane grond, once its room is open)
+	if headset != null:
+		interactables.append(headset)
+		add_child(headset)
 
 
 ## The player map shows the floor the player is on, with the floor switch.
@@ -471,6 +475,8 @@ func prompt_for(target: Interactable) -> String:
 			return "E — Coach: " + str(session.catalog.coach.get("name", ""))
 		OfficeWhiteboard.ID:
 			return tr(WHITEBOARD_PROMPT)
+		OfficeHeadset.ID:
+			return tr(OfficeHeadset.PROMPT)
 	return "E — " + label_for(target)
 
 
@@ -491,6 +497,8 @@ func label_for(target: Interactable) -> String:
 			return "Missiebord"
 		OfficeWhiteboard.ID:
 			return tr(WHITEBOARD_LABEL)
+		OfficeHeadset.ID:
+			return tr(OfficeHeadset.LABEL)
 	return target.id
 
 
@@ -558,6 +566,8 @@ func interact(target: Interactable) -> void:
 			ui.open_mission_board()
 		OfficeWhiteboard.ID:
 			open_whiteboard()
+		OfficeHeadset.ID:
+			OfficeHeadset.take_call(self)
 	if ui.is_busy():
 		frame(target)
 
@@ -710,6 +720,8 @@ func stage_talk() -> void:
 	if not view.visible or view.talk.is_empty():
 		return
 	player.active = view.setting == TalkView.WALKING
+	if view.setting == TalkView.HEADSET:
+		return   # the camera stays on the desk where the player sits (interact frames it)
 	if view.person == null:
 		rig.release()
 	elif view.phase() == TalkView.SPEAK and view.setting == TalkView.STANDING:
@@ -996,6 +1008,7 @@ func _on_panel_opened() -> void:
 func _on_panels_closed() -> void:
 	people.release()
 	people.refresh(session)
+	player.stand_up()   # after a call at the KCC's headset
 	player.active = true
 	rig.active = true
 	rig.release()

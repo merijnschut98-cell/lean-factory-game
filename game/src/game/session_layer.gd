@@ -62,6 +62,8 @@ var inbox: Array[Dictionary] = []
 var concepts_seen: Array[String] = []
 ## What new the phone has buzzed for ("<app>:<id>", Phone.announce): once, reload or not.
 var announced: Array[String] = []
+## Customers' calls (CustomerCalls): dialog id → the day it last rang the phone.
+var rang: Dictionary[String, int] = {}
 ## False for a save from before the phone: GameUI then counts what it holds as read.
 var phone_saved := true
 ## The card shown when this session opened ({} when none): the journal
@@ -420,7 +422,8 @@ func to_dict() -> Dictionary:
 	return {"start": start.duplicate(true), "offered": offered.duplicate(), "toast_day": toast_day,
 		"queued": queued.duplicate(), "floor_id": floor_id, "carded": carded.duplicate(),
 		"has_floor_plan": has_floor_plan, "opening_beat": opening_beat,
-		"inbox": inbox.duplicate(true), "concepts_seen": concepts_seen.duplicate(), "announced": announced.duplicate()}
+		"inbox": inbox.duplicate(true), "concepts_seen": concepts_seen.duplicate(), "announced": announced.duplicate(),
+		"rang": rang.duplicate()}
 
 
 ## Restore to_dict() output, untrusted: anything of the wrong shape is
@@ -455,6 +458,11 @@ func load_dict(d: Dictionary) -> void:
 			inbox.append(entry)
 	concepts_seen.assign(_names(d.get("concepts_seen")))
 	announced.assign(_names(d.get("announced")))
+	rang.clear()
+	var calls := JsonFile.dict_or_empty(d.get("rang"))
+	for id: Variant in calls:
+		if calls[id] is int or calls[id] is float:   # JSON gives whole numbers back as floats
+			rang[str(id)] = int(calls[id])
 
 
 ## The strings of a saved list, untrusted: anything else is dropped.
