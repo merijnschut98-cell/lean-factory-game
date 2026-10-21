@@ -28,7 +28,24 @@ const MEMORY_POSITIVE := {"committed": 15, "heard": 10}
 const REPAIRABLE := ["ruined", "pressured", "confronted"]
 ## What an outcome does to trust, morale and reputation (ESTIMATES, §4.1, §5.4).
 const TRUST := {"commitment": 10, "partial": 5, "heard": 3, "lifted": 5, "compliance": -5, "ruined": -5}
-const MORALE := {"commitment": 10, "compliance": -10, "lifted": 15}
+const MORALE := {"commitment": 10, "partial": 5, "heard": 3, "compliance": -10, "lifted": 15}
+## Morale drifts once a day between talks (QA 2.12 (b), phase-2 design §3.5: ignoring
+## people is not free). ESTIMATES, tuned with autoplay (never-talks against the talker,
+## docs/qa/autoplay-report.md): a team planned above LOAD_NORM of its time wears its
+## people by up to LOAD_DRIFT a day at 100 % (twice that at LOAD_NORM + 2 × LOAD_SPAN);
+## someone whose fix was won by pressure (their best agreement is compliance) loses
+## COMPLIED_DRIFT a day; a check-in prompt left to expire costs IGNORED_MORALE; at a
+## load under the norm, morale creeps back towards where the person started by
+## RECOVER_DRIFT a day (never above it: good talks lift people higher). The load
+## alone wears no one below LOAD_FLOOR (people leave rarely, Merijn 2026-10-15: only
+## pressure and ignored check-ins take them further, towards LEAVE_MORALE).
+const LOAD_NORM := 0.85
+const LOAD_FLOOR := 30
+const LOAD_SPAN := 0.15
+const LOAD_DRIFT := 0.25
+const COMPLIED_DRIFT := 0.1
+const IGNORED_MORALE := -5
+const RECOVER_DRIFT := 0.1
 ## A blame of their team.
 const MORALE_CONFRONTED := -10
 const REPUTATION := {"commitment": 1, "ruined": -1}
@@ -113,6 +130,10 @@ var talk_log: Dictionary[String, Array] = {}
 var note: Dictionary[String, String] = {}
 ## The beats_after lines already said: "dialog id/index" → true.
 var beat_lines: Dictionary[String, bool] = {}
+## The daily drift (_drift): the last day it ran (-1 before the first), and each
+## person's part-point not yet taken from or added to morale.
+var drift_day := -1
+var drift_carry: Dictionary[String, float] = {}
 
 
 func _init(person_defs: Array[PersonDef], dialog_defs: Array[DialogDef], lines: Dictionary) -> void:
@@ -126,9 +147,10 @@ func _init(person_defs: Array[PersonDef], dialog_defs: Array[DialogDef], lines: 
 
 func _reset() -> void:
 	for state: Dictionary in [trust, morale, memory, revealed, outcomes, agreed, talks, rest_until, heard_facts, prompts,
-			low_since, ignored, left, coach_after, last_prompt, observed, talk_log, note, beat_lines]:
+			low_since, ignored, left, coach_after, last_prompt, observed, talk_log, note, beat_lines, drift_carry]:
 		state.clear()
 	prompt_log.clear()
+	drift_day = -1
 	coach_asks = 0
 	for p: PersonDef in persons.values():
 		trust[p.id] = p.trust
@@ -415,7 +437,10 @@ func daily(world: Dictionary) -> Array[Dictionary]:
 	for id: String in prompts.keys():
 		if now - prompts[id] >= SimCalendar.days(PROMPT_DAYS):
 			prompts.erase(id)
-			ignored[dialogs[id].person] = ignored.get(dialogs[id].person, 0) + 1
+			var who := dialogs[id].person
+			ignored[who] = ignored.get(who, 0) + 1
+			morale[who] = clampi(morale[who] + IGNORED_MORALE, 0, 100)
+	_drift(world)
 	_open_prompt(world)
 	for id: String in persons:
 		if left.has(id):
@@ -428,6 +453,37 @@ func daily(world: Dictionary) -> Array[Dictionary]:
 			left[id] = true
 			events.append({"type": "left", "person": id})
 	return events
+
+
+## Morale's drift for every day since the last (the constants above): world `loads`
+## (team → utilisation, Capacity) and the facts. Not in the training week (a friendly
+## first week, PLAN 2.13 D), and not before the first day it runs.
+func _drift(world: Dictionary) -> void:
+	var today := SimCalendar.day_of(int(world.get("now", 0)))
+	var days := today - drift_day if drift_day >= 0 else 0
+	drift_day = today
+	if days <= 0 or world.get("training", false):
+		return
+	var loads := JsonFile.dict_or_empty(world.get("loads"))
+	var known := facts(world.get("facts", {}))
+	var complied := {}
+	for d: DialogDef in dialogs.values():
+		if not d.owns.is_empty() and effective_outcome(d.id, known) == "compliance":
+			complied[d.person] = true
+	for p: PersonDef in persons.values():
+		if left.has(p.id):
+			continue
+		var over := clampf((float(loads.get(p.team, 0.0)) - LOAD_NORM) / LOAD_SPAN, 0.0, 2.0)
+		var per_day := -(COMPLIED_DRIFT if complied.has(p.id) else 0.0)
+		if over > 0.0 and morale[p.id] > LOAD_FLOOR:
+			per_day -= LOAD_DRIFT * over  # work alone makes people tired, not gone: neglect does the rest
+		elif over == 0.0 and per_day == 0.0 and morale[p.id] < p.morale:
+			per_day = RECOVER_DRIFT
+		var change: float = drift_carry.get(p.id, 0.0) + per_day * days
+		var whole := int(snappedf(change, 1e-6))  # towards zero: the part-point waits for tomorrow
+		drift_carry[p.id] = change - whole
+		if whole != 0:
+			morale[p.id] = maxi(0, morale[p.id] + whole) if per_day < 0.0 else mini(morale[p.id] + whole, p.morale)
 
 
 ## Whoever leaves on a dated beat that has come is gone (PersonDef.leaves_on),
@@ -603,7 +659,7 @@ func to_dict() -> Dictionary:
 		"left": left.keys(), "coach_after": coach_after.duplicate(), "coach_asks": coach_asks,
 		"prompt_log": prompt_log.duplicate(), "last_prompt": last_prompt.duplicate(),
 		"observed": observed.duplicate(true), "talk_log": talk_log.duplicate(true), "note": note.duplicate(),
-		"beat_lines": beat_lines.keys(),
+		"beat_lines": beat_lines.keys(), "drift_day": drift_day, "drift_carry": drift_carry.duplicate(),
 	}
 
 
@@ -659,6 +715,10 @@ func load_dict(d: Dictionary) -> Array[String]:
 	for key: Variant in saved_lines if saved_lines is Array else []:
 		if key is String and dialogs.has(key.get_slice("/", 0)):
 			beat_lines[key] = true
+	var day: Variant = whole.call(d.get("drift_day"))
+	drift_day = day if day != null else -1
+	dropped.append_array(_load_map(d.get("drift_carry"), persons, drift_carry,
+		func(v: Variant) -> Variant: return clampf(float(v), -1.0, 1.0) if v is int or v is float else null))
 	var saved_facts: Variant = d.get("facts", [])
 	for f: Variant in saved_facts if saved_facts is Array else []:
 		heard_facts[str(f)] = true

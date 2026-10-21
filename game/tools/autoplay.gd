@@ -179,6 +179,8 @@ class Persona extends RefCounted:
 	## often before it listens instead.
 	const PUSHERS: Array[String] = ["never-talks", "careless"]
 	const PUSH_TRIES := 5
+	## A needed talk not won in this many talks is a dead end (a talk nobody can win).
+	const NEEDED_TRIES := 20
 	## The listening move for a person's last words (Dialog.ANSWERS), in order.
 	const ANSWER := {"feeling": "reflect", "admission": "empathy", "hesitation": "silence", "claim": "paraphrase",
 		"doubt": "experience"}
@@ -616,8 +618,12 @@ class Persona extends RefCounted:
 		if s.people.cooling_down(d.person, s.region.net.time):
 			_talk_day[d.id] = floori(day())  # after a ruined talk: tomorrow morning
 			return true
-		var pushes := (record["talks"] as Array).filter(func(t: Dictionary) -> bool:
-			return t["dialog"] == d.id and t.get("pushed", false)).size()
+		var tries := (record["talks"] as Array).filter(func(t: Dictionary) -> bool: return t["dialog"] == d.id)
+		if tries.size() >= NEEDED_TRIES:
+			_dead_end("talk_never_won", m.id, "%s: %d talks, still %s" % [d.id, tries.size(), s.talk_outcome(d.id)])
+			_give_up(m)
+			return true
+		var pushes := tries.filter(func(t: Dictionary) -> bool: return t.get("pushed", false)).size()
 		if persona in PUSHERS and pushes < PUSH_TRIES:
 			_push(d)
 		else:
@@ -750,7 +756,9 @@ class Persona extends RefCounted:
 			return ["ask_commitment", ""]
 		if (concern and openness >= Dialog.COMMIT_AT) or patience_low:
 			var proposal := _proposal(d, talk["co"], concern)
-			return proposal if not proposal.is_empty() else ["close", ""]
+			if not proposal.is_empty():
+				return proposal
+			return ["close", ""] if patience_low else [_listen_move(tags, talk), ""]  # no proposal offered yet: listen on
 		if last.get("heard", false) and not talk["shown_data"] and openness >= Dialog.SHOW_DATA["at"]:
 			var data := Array(d.data).filter(func(id: String) -> bool: return s.region.found.has(id))
 			if not data.is_empty():

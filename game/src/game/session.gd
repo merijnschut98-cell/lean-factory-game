@@ -719,8 +719,8 @@ func _after(minutes: int) -> void:
 
 ## A training day handed out starts on its own morning (Monday to Friday of
 ## the first week of play) when that is still ahead, or on the next working
-## day's morning when the clock stands in a weekend (Thursday's three-day
-## Check ends on a Sunday). When it started is kept (Missions.opened_at): its
+## day's morning when the clock stands in a weekend (a Check that ends on a
+## weekend). When it started is kept (Missions.opened_at): its
 ## weekday names the day (training_weekday).
 func _start_training_day() -> void:
 	for m in missions.active("training"):
@@ -976,6 +976,15 @@ func talked(dialog_id: String) -> bool:
 	return people.talks.has(dialog_id) or not people.dialogs.has(dialog_id)
 
 
+## Each team's planned load now: pool id → utilisation (Capacity; 1.0 is all its hours).
+func _team_loads() -> Dictionary:
+	var out := {}
+	var pools: Dictionary = Capacity.analyse(region.net)["pools"]
+	for id: String in pools:
+		out[id] = float(pools[id].get("utilisation", 0.0))
+	return out
+
+
 ## Whether a dialog's person is still here (Missions.can_talk): someone who left takes
 ## their talks with them.
 func can_talk(dialog_id: String) -> bool:
@@ -1041,8 +1050,10 @@ func _sync_people() -> void:
 	if people == null:
 		return
 	var world_facts := _facts()
-	_people_events.append_array(people.daily({"now": region.net.time, "facts": world_facts, "beats": missions.beats(),
-		"training": missions.in_training()}))
+	var world := {"now": region.net.time, "facts": world_facts, "beats": missions.beats(), "training": missions.in_training()}
+	if SimCalendar.day_of(region.net.time) != people.drift_day:
+		world["loads"] = _team_loads()  # morale's daily drift (People._drift)
+	_people_events.append_array(people.daily(world))
 	var facts := people.facts(world_facts)
 	for fact: String in facts:
 		if fact.get_slice(":", 0) in People.FACT_KINDS:

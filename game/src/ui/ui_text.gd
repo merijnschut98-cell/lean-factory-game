@@ -149,6 +149,7 @@ const EVENTS := {
 	"checkin": "Op het missiebord: %s",
 	"repair": "Herstel op het missiebord: %s",
 	"contained": "Ingedamd: %s. Nu de oorzaak nog.",
+	"held": "De verbetering bij %s houdt stand: je was er op tijd bij.",
 }
 
 ## Why the MT's view of the CI lead changed (Reputation's reasons).

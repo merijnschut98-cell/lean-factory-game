@@ -258,6 +258,52 @@ func test_better_morale_or_answered_checkins_keep_them() -> void:
 	assert_false(heard.has_left("pim"), "every prompt answered")
 
 
+## QA 2.12 (b): ignoring people is not free. Morale drifts daily with the team's load
+## above the norm, a fix won by pressure and check-ins left to expire; it creeps back
+## when the load is fine, and never in the training week.
+func _drift_days(people: People, days: int, extra: Dictionary = {}) -> void:
+	for day in days + 1:
+		people.daily(DialogFixture.world({"now": SimCalendar.days(day)}).merged(extra, true))
+
+
+func test_a_team_planned_above_the_norm_wears_its_people_down() -> void:
+	var busy := DialogFixture.people([DialogFixture.def()], [DialogFixture.person("defender", 50, 60)])
+	_drift_days(busy, 40, {"loads": {"prep": 1.0}})
+	assert_eq(busy.morale["pim"], 60 - roundi(40 * People.LOAD_DRIFT), "a quarter point a day at full load")
+	var calm := DialogFixture.people([DialogFixture.def()], [DialogFixture.person("defender", 50, 60)])
+	_drift_days(calm, 40, {"loads": {"prep": People.LOAD_NORM}})
+	assert_eq(calm.morale["pim"], 60, "at the norm nothing wears")
+	var week := DialogFixture.people([DialogFixture.def()], [DialogFixture.person("defender", 50, 60)])
+	_drift_days(week, 40, {"loads": {"prep": 1.3}, "training": true})
+	assert_eq(week.morale["pim"], 60, "a friendly training week")
+
+
+func test_the_load_alone_wears_no_one_below_the_floor() -> void:
+	var people := DialogFixture.people([DialogFixture.def()], [DialogFixture.person("defender", 50, 35)])
+	_drift_days(people, 200, {"loads": {"prep": 1.3}})
+	assert_eq(people.morale["pim"], People.LOAD_FLOOR, "tired, not gone: people leave rarely")
+
+
+func test_morale_creeps_back_when_the_load_is_fine_but_never_above_the_start() -> void:
+	var people := DialogFixture.people([DialogFixture.def()], [DialogFixture.person("defender", 50, 60)])
+	people.morale["pim"] = 50
+	_drift_days(people, 200, {"loads": {"prep": 0.5}})
+	assert_eq(people.morale["pim"], 60)
+
+
+func test_a_fix_won_by_pressure_and_an_ignored_check_in_cost_morale() -> void:
+	var people := DialogFixture.people([DialogFixture.def()], [DialogFixture.person("defender", 50, 60)])
+	people.outcomes["talk"] = "compliance"
+	_drift_days(people, 50)
+	assert_eq(people.morale["pim"], 60 - roundi(50 * People.COMPLIED_DRIFT), "a yes under pressure keeps costing")
+	var ignored := _low_pim()
+	ignored.morale["pim"] = 40
+	ignored.daily(DialogFixture.world({"now": 0}))
+	ignored.prompts["checkin"] = 0
+	ignored.daily(DialogFixture.world({"now": SimCalendar.days(People.PROMPT_DAYS)}))
+	assert_eq(ignored.morale["pim"], 40 + People.IGNORED_MORALE, "a check-in left to expire")
+
+
 func test_leaving_survives_a_save() -> void:
 	var people := _low_pim()
 	_days(people, 0, 70)
@@ -381,10 +427,12 @@ func test_a_person_gets_a_prompt_at_most_every_fourteen_days() -> void:
 	assert_eq(_open(people), ["checkin"])
 
 
-func test_an_expired_prompt_costs_nothing() -> void:
+## An expired prompt costs no trust (it was never a promise), but it costs morale: the
+## person asked for a moment and got none (QA 2.12 (b)).
+func test_an_expired_prompt_costs_morale_not_trust() -> void:
 	var people := _three_low()
 	_days(people, 0, 5)
-	assert_eq([people.morale["pim"], people.trust["pim"]], [20, 50])
+	assert_eq([people.morale["pim"], people.trust["pim"]], [20 + People.IGNORED_MORALE, 50])
 
 
 # ── What the player saw and heard (person-needs spec §4, §6): the Mensen tab ─

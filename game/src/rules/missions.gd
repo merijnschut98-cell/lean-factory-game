@@ -51,8 +51,16 @@ const STAGES := ["go_see", "understand", "experiment", "reflect"]
 const SETUP_SOURCE := "setup:"
 ## Check-in missions are named after their problem.
 const CHECKIN_PREFIX := "terugval_"
-## ESTIMATE: a small reward, like a side mission's smallest (an hour's work).
-const CHECKIN_XP := 100
+## Decay must not pay (QA 2.12 (a), phase-2 design §3.5): a check-in for your own fix
+## that slipped earns a little (ESTIMATE: a quarter of the old 100, an hour's work put
+## right), holding the fix before it slips (an audit while it is worn but not yet
+## slipping, or a routine that holds it) earns HOLD_XP, once a fix (ESTIMATE: what a
+## check-in paid before, so keeping a fix pays more than letting it slip and fixing it).
+const CHECKIN_XP := 25
+const HOLD_XP := 100
+## A fix worn below this health, and not yet slipping, is due a look (ESTIMATE: about
+## a third of the way from fresh to slipping).
+const HOLD_FROM := 0.9
 ## Half a solve mission's reward is for finishing it, half for how well the
 ## problem was solved (its PDCA score), so the thorough, lasting fix pays more
 ## than the quick one (CLAUDE.md §2, long term over short term; audit R1).
@@ -107,6 +115,10 @@ var _resolved: Dictionary[String, String] = {}
 var repairs := Repairs.new()
 ## Dividends for fixes that hold, trust lost to overload (Stewardship).
 var stewardship := Stewardship.new()
+## Fixes whose holding was paid (HOLD_XP), until a new Act; each fix's health at the
+## last update, to see an audit lift it (not saved: it starts again from now).
+var held_paid: Dictionary[String, bool] = {}
+var _health_seen: Dictionary[String, float] = {}
 ## Deadlines met because the fix was in place when the date came (R5).
 var deadline_kept: Dictionary[String, bool] = {}
 ## Safety missions contained: mission → when the containment ends (minutes);
@@ -119,8 +131,9 @@ var talk_outcome: Callable = func(_dialog_id: String) -> String: return ""
 ## (MissionDef.ends_with_talk). Without people nothing waits.
 var talked: Callable = func(_dialog_id: String) -> bool: return true
 ## Whether a dialog's person is still here to talk to (GameSession.can_talk): a talk
-## goal with someone who left is waived, a closed door and never a dead end.
-var can_talk: Callable = func(_dialog_id: String) -> bool: return true
+## goal with someone who left is waived, a closed door and never a dead end. Without
+## people (rules alone) there is nobody to talk to, so nothing waits.
+var can_talk: Callable = func(_dialog_id: String) -> bool: return false
 
 
 func _init(of_region: Region, mission_defs: Array[MissionDef], coach_def: Dictionary) -> void:
@@ -259,6 +272,7 @@ func abandon(id: String) -> String:
 ## The game loop calls it after every Region action and time step.
 func update() -> void:
 	_note_fixes()
+	_note_holds()
 	_reopen_faded()
 	_sync_checkins()
 	_sync_repairs()
@@ -393,8 +407,27 @@ func _note_fixes() -> void:
 			_resolved.erase(p.id)
 
 
+## Pay for holding a standardised fix before it slipped (HOLD_XP, once a fix): a
+## routine holds it, or an audit lifted it while it was worn but not slipping.
+func _note_holds() -> void:
+	for p in region.problem_list():
+		var st: ProblemState = region.state[p.id]
+		if st.phase != P.RESOLVED or not st.standardised or region.practice.has(p.id):
+			_health_seen.erase(p.id)
+			continue
+		var now := region.health(p.id)
+		var was: float = _health_seen.get(p.id, now)
+		_health_seen[p.id] = now
+		var audited := now > was and was >= Sustain.SLIPPING_HEALTH and was < HOLD_FROM
+		if (audited or region.held_by_routine(p.id)) and not held_paid.has(p.id):
+			held_paid[p.id] = true
+			region.grant(HOLD_XP, 0)
+			events.append({"type": "held", "problem": p.id})
+
+
 func _note_fix(p: ProblemDef, st: ProblemState) -> void:
 	var cm: String = st.a3["cm"]
+	held_paid.erase(p.id)
 	facts.remove_prefix("chose:%s:" % p.id)
 	facts.add("chose:%s:%s" % [p.id, cm])
 	stewardship.noted(p.id, region.net.time)
@@ -615,7 +648,7 @@ func to_dict() -> Dictionary:
 	return {"progress": progress.duplicate(true), "opened_at": opened_at.duplicate(), "done_once": done_once.keys(),
 		"failed_once": failed_once.keys(), "facts": facts.to_list(), "repair_due": repairs.to_dict(),
 		"heard": heard.duplicate(), "stewardship": stewardship.to_dict(), "deadline_kept": deadline_kept.keys(),
-		"contained": contained.duplicate()}
+		"contained": contained.duplicate(), "held_paid": held_paid.keys()}
 
 
 ## Restore to_dict() output. Returns the mission ids the content no longer
@@ -653,6 +686,11 @@ func load_dict(d: Dictionary) -> Array[String]:
 		for id: Variant in ids if ids is Array else []:
 			if defs.has(str(id)):
 				(done_once if key == "done_once" else failed_once)[str(id)] = true
+	held_paid.clear()
+	var paid: Variant = d.get("held_paid", [])
+	for id: Variant in paid if paid is Array else []:
+		if region.problems.has(str(id)):
+			held_paid[str(id)] = true
 	var opened := JsonFile.dict_or_empty(d.get("opened_at"))
 	for id: Variant in opened:
 		if defs.has(str(id)):

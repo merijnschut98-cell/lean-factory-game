@@ -445,6 +445,54 @@ func test_a_slipping_standardised_fix_opens_a_check_in() -> void:
 	assert_eq(r.profile.budget, budget, "rewarded once")
 
 
+## QA 2.12 (a): decay must not pay. A check-in for your own slipped fix pays a little;
+## holding the fix before it slips (an audit, a routine) pays the full reward, once a fix.
+func test_a_check_in_pays_little_and_holding_the_fix_pays_the_reward() -> void:
+	var log := _log()
+	var r := _slipping_fix(log)
+	log.update()
+	var id := Missions.CHECKIN_PREFIX + "custom_design"
+	log.accept(id)
+	var xp := r.profile.xp
+	r.audit("connections.design")
+	log.update()
+	assert_eq(log.status(id), "completed")
+	assert_eq(r.profile.xp - xp, Missions.CHECKIN_XP, "it slipped on your watch")
+	assert_true(Missions.CHECKIN_XP < Missions.HOLD_XP)
+	var worn := _log()
+	var held := _slipping_fix(worn)
+	held.state["custom_design"].wear = 0.3  # health 0.81: worn, not yet slipping
+	worn.update()
+	assert_false(worn.defs.has(id), "no check-in: it has not slipped")
+	xp = held.profile.xp
+	held.audit("connections.design")
+	worn.update()
+	assert_eq(held.profile.xp - xp, Missions.HOLD_XP, "a look before it slipped holds the fix")
+	assert_true(worn.drain_events().has({"type": "held", "problem": "custom_design"}))
+	held.state["custom_design"].wear = 0.3
+	worn.update()
+	held.audit("connections.design")
+	worn.update()
+	assert_eq(held.profile.xp - xp, Missions.HOLD_XP, "once a fix: the routine is its own reward after that")
+
+
+func test_a_routine_that_holds_a_fix_pays_the_reward_once() -> void:
+	var log := _log()
+	var r := _slipping_fix(log)
+	r.state["custom_design"].wear = 0.0
+	log.update()
+	var xp := r.profile.xp
+	assert_eq(r.plan_routine("connections.design"), "")
+	log.update()
+	log.update()
+	assert_eq(r.profile.xp - xp, Missions.HOLD_XP)
+	assert_eq(RulesFixture.mission_log(r).load_dict(log.to_dict()), [])
+	var restored := RulesFixture.mission_log(r)
+	restored.load_dict(log.to_dict())
+	restored.update()
+	assert_eq(r.profile.xp - xp, Missions.HOLD_XP, "a save remembers it was paid")
+
+
 func test_an_ignored_check_in_ends_with_its_problem_back_through_the_main_mission() -> void:
 	var log := _log()
 	log.accept("walk_connections")
