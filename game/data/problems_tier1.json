@@ -125,6 +125,7 @@
     }
    ],
    "countermeasures": {
+    "backup_job_per_day": 0.6,
     "installer_photo_upload": 0.9,
     "readiness_check": 1.0
    },
@@ -789,7 +790,8 @@
    ],
    "countermeasures": {
     "automatic_ean_registration": 0.9,
-    "close_out_at_completion": 1.0
+    "close_out_at_completion": 1.0,
+    "mid_month_run": 0.6
    },
    "effects": [
     {
@@ -864,6 +866,7 @@
    ],
    "countermeasures": {
     "calculation_templates": 0.7,
+    "study_overtime_sprint": 0.6,
     "triage_fast_lane": 1.0
    },
    "effects": [

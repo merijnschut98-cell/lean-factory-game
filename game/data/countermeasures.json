@@ -73,6 +73,7 @@
     "reduced": 0.45
    },
    "name": "Checklist bij de intake",
+   "shortcut": true,
    "team_hours": {
     "intake": 10
    },
@@ -158,6 +159,7 @@
     "reduced": 0.45
    },
    "name": "Gedelegeerde goedkeuring",
+   "shortcut": true,
    "team_hours": {
     "work_prep": 10
    },
@@ -333,6 +335,7 @@
     "reduced": 0.5
    },
    "name": "Standaard revisieschets en dagelijks verwerken",
+   "shortcut": true,
    "team_hours": {
     "gis": 15,
     "monteurs": 10
@@ -370,6 +373,7 @@
     "reduced": 0.4
    },
    "name": "Briefing van graafaannemers",
+   "shortcut": true,
    "team_hours": {
     "key_accounts": 8
    },
@@ -454,6 +458,7 @@
     "reduced": 0.5
    },
    "name": "Realistische toezegging en statuspagina",
+   "shortcut": true,
    "team_hours": {
     "contact_centre": 20,
     "intake": 10
@@ -768,6 +773,7 @@
     "reduced": 0.5
    },
    "name": "Strategische voorraad transformatoren",
+   "shortcut": true,
    "team_hours": {
     "work_prep": 10
    },
@@ -786,6 +792,7 @@
     "reduced": 0.5
    },
    "name": "Dashboard gecontracteerd versus gebruikt",
+   "shortcut": true,
    "team_hours": {
     "grid_analysts": 10,
     "key_accounts": 10
@@ -997,11 +1004,78 @@
     "reduced": 0.5
    },
    "name": "Gezamenlijke teamdoelen",
+   "shortcut": true,
    "team_hours": {
     "intake": 10,
     "work_prep": 10
    },
    "tier": 2
+  },
+  {
+   "budget": 500,
+   "category": "flow",
+   "decay_days": 30,
+   "description": "Planning geeft elke monteur een reserveklus mee. Staat hij voor een meterkast die niet klaar is, dan rijdt hij door naar de reserve. De rit is niet verloren, maar de klant van wie de kast niet klaar was, wacht nog steeds.",
+   "effects": [],
+   "id": "backup_job_per_day",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Een reserveklus per monteur",
+   "shortcut": true,
+   "team_hours": {
+    "planners": 8
+   },
+   "tier": 1
+  },
+  {
+   "budget": 500,
+   "category": "flow",
+   "decay_days": 30,
+   "description": "Meetdata draait de afhandeling voortaan twee keer per maand in plaats van één keer. Een aansluiting wacht gemiddeld half zo lang, maar het blijft een batch, en wie net na de run klaar is, wacht nog twee weken.",
+   "effects": [],
+   "id": "mid_month_run",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Een tweede maandrun halverwege",
+   "shortcut": true,
+   "team_hours": {
+    "meter_office": 4
+   },
+   "tier": 1
+  },
+  {
+   "aftermath": {
+    "after_days": 21,
+    "days": 28,
+    "effects": [
+     {
+      "property": "availability",
+      "target": "grid_analysts",
+      "value": -0.1
+     }
+    ]
+   },
+   "budget": 5000,
+   "category": "people",
+   "decay_days": 21,
+   "description": "Zes weken lang werken de netplanners twee avonden per week over om het bord leeg te krijgen. Het bord wordt korter, maar elke aanvraag krijgt nog steeds de volle studie, en de vermoeidheid komt later.",
+   "effects": [],
+   "id": "study_overtime_sprint",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Inhaalslag in overwerk",
+   "shortcut": true,
+   "team_hours": {},
+   "tier": 1
   }
  ]
 }

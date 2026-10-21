@@ -55,6 +55,7 @@ countermeasures:
       - {target: connections.intake, property: ftr, value: 0.05}
   - id: intake_checklist
     name: Checklist bij de intake
+    shortcut: true   # tempting, costs later: checking harder instead of preventing: a poor fix that fades in a month
     tier: 1
     category: standard_work
     description: De intakemedewerker loopt elke aanvraag na met een checklist en vraagt ontbrekende gegevens direct op.
@@ -97,6 +98,7 @@ countermeasures:
       - {target: connections.design, property: touch_time, value: 0.85}
   - id: delegated_approval
     name: Gedelegeerde goedkeuring
+    shortcut: true   # tempting, costs later: fewer signatures, the same maatwerk: a poor fix that fades in a month
     tier: 1
     category: flow
     description: De werkvoorbereider keurt standaardontwerpen zelf goed; alleen afwijkingen gaan naar de teamleider.
@@ -188,6 +190,7 @@ countermeasures:
       - {target: connections.revision, property: touch_time, value: 0.8}
   - id: daily_revision_template
     name: Standaard revisieschets en dagelijks verwerken
+    shortcut: true   # tempting, costs later: draws faster instead of at the source: a poor fix that fades
     tier: 1
     category: standard_work
     description: Eén vaste schets per standaardaansluiting, elke dag verwerkt in plaats van per maand opgespaard.
@@ -208,6 +211,7 @@ countermeasures:
     effects: []
   - id: contractor_briefing
     name: Briefing van graafaannemers
+    shortcut: true   # tempting, costs later: puts it on the contractor, the map stays wrong: a poor fix that fades in a month
     tier: 1
     category: people
     description: Aannemers krijgen voor de start een briefing met actuele kaarten en de afspraak over proefsleuven.
@@ -257,6 +261,7 @@ countermeasures:
   # ── Klantcontact ─────────────────────────────────────────────────────────
   - id: realistic_promise
     name: Realistische toezegging en statuspagina
+    shortcut: true   # tempting, costs later: managing the expectation instead of telling the customer: a poor fix
     tier: 1
     category: visual_management
     description: De klant krijgt bij de aanvraag een realistische datum en kan de stand van zijn aanvraag online volgen.
@@ -412,6 +417,7 @@ countermeasures:
 
   - id: strategic_transformer_stock
     name: Strategische voorraad transformatoren
+    shortcut: true   # tempting, costs later: buys the wait away (EUR 40k) instead of ordering on time: a poor fix
     tier: 3
     category: flow
     description: Een kleine voorraad standaardtransformatoren op het magazijn, aangevuld via de fabrikant. Een verzwaring hoeft niet meer op de levering te wachten; de voorraad kost wel geld.
@@ -425,6 +431,7 @@ countermeasures:
 
   - id: capacity_usage_dashboard
     name: Dashboard gecontracteerd versus gebruikt
+    shortcut: true   # tempting, costs later: measures without giving capacity back: a poor fix that fades
     tier: 1
     category: visual_management
     description: Per klant en per station staan het gecontracteerde en het werkelijk gebruikte vermogen naast elkaar, elke week bijgewerkt uit de meetdata. Ongebruikte capaciteit wordt zichtbaar; teruggeven gebeurt nog per geval.
@@ -524,6 +531,7 @@ countermeasures:
 
   - id: shared_team_goals
     name: Gezamenlijke teamdoelen
+    shortcut: true   # tempting, costs later: a shared goal on top of the old counts: a poor fix that fades
     tier: 2
     category: standard_work
     description: Intake en Werkvoorbereiding krijgen als doel de doorlooptijd van een aansluiting en een complete overdracht (compleet doorgezet, eerste keer goed bij uitvoering). Aantallen per week blijven zichtbaar, maar sturen niet meer.
@@ -534,3 +542,53 @@ countermeasures:
     effects:
       - {target: intake, property: kpis, value: [intake_lead_time, intake_complete]}
       - {target: work_prep, property: kpis, value: [work_prep_lead_time, work_prep_ftr]}
+
+  # ── Shortcuts (phase-2 design §3.4: face, number, choice) ────────────────
+  # Tempting ways out that cost later (a poor fix: Missions.POOR_FIT_GAP; and they fade
+  # sooner than the patient fix). Numbers are estimates with their reasoning.
+  - id: backup_job_per_day
+    name: Een reserveklus per monteur
+    shortcut: true   # the trip is no longer lost, the customer whose cupboard was not ready still waits
+    tier: 1
+    category: flow
+    description: Planning geeft elke monteur een reserveklus mee. Staat hij voor een meterkast die niet klaar is, dan rijdt hij door naar de reserve. De rit is niet verloren, maar de klant van wie de kast niet klaar was, wacht nog steeds.
+    # ESTIMATE: a planner's afternoon to set it up (EUR 500, 8 h); it leans on the
+    # planners remembering it on busy days, so it fades in a month.
+    budget: 500
+    team_hours: {planners: 8}
+    decay_days: 30
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: mid_month_run
+    name: Een tweede maandrun halverwege
+    shortcut: true   # half the wait, still a batch
+    tier: 1
+    category: flow
+    description: Meetdata draait de afhandeling voortaan twee keer per maand in plaats van één keer. Een aansluiting wacht gemiddeld half zo lang, maar het blijft een batch, en wie net na de run klaar is, wacht nog twee weken.
+    # ESTIMATE: one extra login session a month (4 h); without a trigger in the
+    # process the second run is the first to go when it gets busy.
+    budget: 500
+    team_hours: {meter_office: 4}
+    decay_days: 30
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: study_overtime_sprint
+    name: Inhaalslag in overwerk
+    shortcut: true   # the board gets shorter, every request still gets the full study; tired analysts later
+    tier: 1
+    category: people
+    description: Zes weken lang werken de netplanners twee avonden per week over om het bord leeg te krijgen. Het bord wordt korter, maar elke aanvraag krijgt nog steeds de volle studie, en de vermoeidheid komt later.
+    # ESTIMATE: 2 analysts x 2 evenings x 3 h x 6 weeks = 72 h at about EUR 70 an hour
+    # with the overtime surcharge: EUR 5,000; overtime is no daily work taken away.
+    budget: 5000
+    team_hours: {}
+    decay_days: 21
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+    # The later cost (ESTIMATE): three weeks after the Act the tiredness shows for a
+    # month, a tenth of the analysts' time lost to sickness and recovery.
+    aftermath:
+      after_days: 21
+      days: 28
+      effects:
+        - {target: grid_analysts, property: availability, value: -0.1}

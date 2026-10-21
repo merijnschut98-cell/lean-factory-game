@@ -503,7 +503,7 @@
   },
   {
    "act": 1,
-   "briefing": "De aansluiting van de familie El Amrani ligt er sinds vorige week. Toch zegt hun energieleverancier dat hun EAN-code niet bestaat, en hun nieuwe warmtepomp staat uit. Bij Meetdata & registratie heeft Petra Vos tijd over. Ergens ligt werk dat niemand ziet.",
+   "briefing": "De aansluiting van de familie El Amrani ligt er al acht dagen. Toch zegt hun energieleverancier dat hun EAN-code niet bestaat, en hun nieuwe warmtepomp staat uit. Bij Meetdata & registratie heeft Petra Vos tijd over. Ergens ligt werk dat niemand ziet.",
    "chapter": "De telefoon",
    "debrief": "Een dossier wordt nu afgehandeld op de dag dat het klaar is. De warmtepomp van de familie El Amrani draait. Bij Petra is de stapel niet kleiner geworden, want er was geen stapel werk: er was een stapel wachten. Welke andere batches zie je in de stroom die niemand een batch noemt?",
    "goal": {
@@ -602,8 +602,15 @@
     "check": "Lees aan de obeya-wand af wat je experiment opleverde",
     "dig": "Zoek uit wat Gert van ons kreeg voordat hij ging graven",
     "look": "Ga bij de storingsdienst kijken wat er dinsdag gebeurde",
+    "talk": "Praat met Gert (Grondwerk Peeters)",
     "wait": "Kijk bij de storingsdienst hoe het experiment loopt"
    },
+   "talk_to": [
+    {
+     "dialog": "gert_klic",
+     "outcome": "partial"
+    }
+   ],
    "teaches": [
     "klic_melding",
     "compensatieregeling"
@@ -644,8 +651,15 @@
     "check": "Lees aan de obeya-wand af wat je experiment opleverde",
     "dig": "Zoek uit hoe een schets op de kaart komt",
     "look": "Ga bij Revisie & GIS kijken naar de doos met schetsen",
+    "talk": "Praat met Mieke (Revisie & GIS)",
     "wait": "Kijk bij Revisie & GIS hoe het experiment loopt"
    },
+   "talk_to": [
+    {
+     "dialog": "mieke_redraw",
+     "outcome": "partial"
+    }
+   ],
    "tier": 1
   },
   {
@@ -686,8 +700,15 @@
     "check": "Lees aan de obeya-wand af wat je experiment opleverde",
     "dig": "Zoek uit wat Femke op een dag allemaal doet",
     "look": "Ga bij Femke kijken naar het bord met netstudies",
+    "talk": "Praat met Femke (Netstrategie)",
     "wait": "Kijk bij Netstrategie hoe het experiment loopt"
    },
+   "talk_to": [
+    {
+     "dialog": "femke_triage",
+     "outcome": "partial"
+    }
+   ],
    "teaches": [
     "netcongestie"
    ],
@@ -727,8 +748,15 @@
     "check": "Lees aan de obeya-wand af wat je experiment opleverde",
     "dig": "Zoek uit wat er gebeurt tussen netstudie en trafo",
     "look": "Ga bij Netstrategie kijken waar De Boomgaard op wacht",
+    "talk": "Praat met Rob (Inkoop)",
     "wait": "Kijk bij Netstrategie hoe het experiment loopt"
    },
+   "talk_to": [
+    {
+     "dialog": "rob_order_rule",
+     "outcome": "partial"
+    }
+   ],
    "teaches": [
     "transformator"
    ],
@@ -771,8 +799,15 @@
     "check": "Lees aan de obeya-wand af wat je experiment opleverde",
     "dig": "Zoek uit hoeveel gecontracteerd vermogen er echt draait",
     "look": "Ga bij de congestiedesk kijken wie er op de wachtlijst staat",
+    "talk": "Praat met Thomas (Grootzakelijke klanten)",
     "wait": "Kijk bij de congestiedesk hoe het experiment loopt"
    },
+   "talk_to": [
+    {
+     "dialog": "thomas_reclaim",
+     "outcome": "partial"
+    }
+   ],
    "teaches": [
     "netcongestie",
     "acm"
@@ -781,7 +816,7 @@
   },
   {
    "act": 2,
-   "briefing": "In het MT presenteerden Sanne en Joost allebei een recordmaand: meer aanvragen door, meer ontwerpen af. Marco Peters zei niets, tot het einde: 'Mooi. En wie bouwt jullie fouten na?' Er gaan niet meer aansluitingen per week de deur uit dan een kwartaal geleden. Kijk wat hun cijfers van hen vragen.",
+   "briefing": "In het MT presenteerden Sanne en Joost allebei een recordmaand: 132 aanvragen door bij Intake, 128 ontwerpen af bij Werkvoorbereiding. Marco Peters zei niets, tot het einde: 'Mooi. En wie bouwt jullie fouten na?' Er gaan niet meer aansluitingen per week de deur uit dan een kwartaal geleden. Kijk wat hun cijfers van hen vragen.",
    "chapter": "Wat je meet",
    "debrief": "Intake en Werkvoorbereiding kijken nu naar dezelfde aansluiting en hetzelfde getal. Wat je meet, bepaalt wat mensen doen; en wat je níet meet, bepaalt wat ze laten liggen. Wie heeft last gehad van de oude cijfers, en weten ze dat het niet aan hen lag?",
    "goal": {
@@ -816,8 +851,15 @@
     "check": "Lees aan de obeya-wand af wat je experiment opleverde",
     "dig": "Zoek uit waarop beide teams worden afgerekend",
     "look": "Ga bij Intake en Werkvoorbereiding naar hun borden kijken",
+    "talk": "Praat met Sanne (Intake)",
     "wait": "Kijk bij beide teams hoe het experiment loopt"
    },
+   "talk_to": [
+    {
+     "dialog": "sanne_kpi",
+     "outcome": "partial"
+    }
+   ],
    "tier": 1
   },
   {

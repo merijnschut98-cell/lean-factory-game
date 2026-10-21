@@ -293,8 +293,9 @@ VISIBILITIES = ["obvious", "subtle", "hidden"]
 PROBLEM_KEYS = {"id", "tier", "name", "step", "waste", "severity", "visibility", "kpi", "symptoms", "root_cause",
                 "plausible_causes", "mismatch_note", "countermeasures", "teaches", "effects", "clues", "cost_per_week",
                 "tells"}
+# shortcut: a tempting way out whose cost comes later (phase-2 design §3.4, tests/test_mission_shape.py)
 COUNTERMEASURE_KEYS = {"id", "tier", "name", "category", "description", "budget", "team_hours", "decay_days", "needs",
-                       "preparation",
+                       "preparation", "shortcut",
                        "multipliers", "effects", "unlocks", "sustains", "trust", "aftermath"}
 # A short-term fix's later cost (tier-2 draft §0.1): effects for `days` from
 # `after_days` after the Act, and a one-off cost.
@@ -383,8 +384,9 @@ def validate_countermeasures(doc: Any, source: str) -> None:
             raise ContentError(f"{where}: multipliers must be full >= reduced >= minimal")
         if "unlocks" in cm:
             _one_of(cm, "unlocks", UNLOCKS, where)
-        if not isinstance(cm.get("sustains", False), bool):
-            raise ContentError(f"{where}: 'sustains' must be true or false")
+        for flag in ("sustains", "shortcut"):
+            if not isinstance(cm.get(flag, False), bool):
+                raise ContentError(f"{where}: '{flag}' must be true or false")
         if "needs" in cm:
             # Path dependence: an option that needs earlier preparations shows
             # as "niet voorbereid" with this hint (a place or team, never the answer).

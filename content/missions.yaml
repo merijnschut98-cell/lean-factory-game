@@ -390,7 +390,7 @@ missions:
     act: 1
     chapter: De telefoon
     requires: {missions: [fix_status_callers], belt: 1}
-    briefing: "De aansluiting van de familie El Amrani ligt er sinds vorige week. Toch zegt hun energieleverancier dat hun EAN-code niet bestaat, en hun nieuwe warmtepomp staat uit. Bij Meetdata & registratie heeft Petra Vos tijd over. Ergens ligt werk dat niemand ziet."
+    briefing: "De aansluiting van de familie El Amrani ligt er al acht dagen. Toch zegt hun energieleverancier dat hun EAN-code niet bestaat, en hun nieuwe warmtepomp staat uit. Bij Meetdata & registratie heeft Petra Vos tijd over. Ergens ligt werk dat niemand ziet."
     debrief: "Een dossier wordt nu afgehandeld op de dag dat het klaar is. De warmtepomp van de familie El Amrani draait. Bij Petra is de stapel niet kleiner geworden, want er was geen stapel werk: er was een stapel wachten. Welke andere batches zie je in de stroom die niemand een batch noemt?"
     reopen: "Klanten bellen weer dat hun EAN-code niet bestaat. Bij Petra staat het werk weer te wachten tot het einde van de maand. Wie heeft dat zo besloten?"
     goal: {type: solve, problem: done_but_not_closed}
@@ -425,7 +425,9 @@ missions:
       blamed: "De schades zijn minder. Gert werkt mee, maar hij vertelt je niets meer dan nodig. Wie houdt de kaart eigenlijk bij?"
     reopen: "Er komen weer graafschades binnen. Gert belt: 'We graven zoals afgesproken. Klopt jullie kaart nog?'"
     goal: {type: solve, problem: digging_damage}
+    talk_to: [{dialog: gert_klic, outcome: partial}]
     steps:
+      talk: "Praat met Gert (Grondwerk Peeters)"
       look: "Ga bij de storingsdienst kijken wat er dinsdag gebeurde"
       dig: "Zoek uit wat Gert van ons kreeg voordat hij ging graven"
       a3: "Schrijf je A3 voor de storingsdienst aan de obeya-wand"
@@ -469,7 +471,9 @@ missions:
     debrief: "Een nieuwe kabel staat nu eerder op de kaart, en de doos bij Revisie & GIS wordt kleiner. Wie merkt het als dit over een jaar wegzakt, en hoe snel?"
     reopen: "De doos bij Revisie & GIS vult zich weer. Mieke tekent weer over. Wat werd er niet meer gedaan?"
     goal: {type: solve, problem: revision_backlog}
+    talk_to: [{dialog: mieke_redraw, outcome: partial}]
     steps:
+      talk: "Praat met Mieke (Revisie & GIS)"
       look: "Ga bij Revisie & GIS kijken naar de doos met schetsen"
       dig: "Zoek uit hoe een schets op de kaart komt"
       a3: "Schrijf je A3 voor Revisie & GIS aan de obeya-wand"
@@ -494,7 +498,9 @@ missions:
     debrief: "Niet elke aanvraag heeft een volledige studie nodig. Femke rekent weer aan de studies die ertoe doen, en de school had binnen een week antwoord. Je hebt het knelpunt eerst beter benut voordat je het groter maakte. Wanneer is extra analisten aannemen wél de goede stap?"
     reopen: "Op Femke's bord staan weer bijna veertig studies. Elke aanvraag krijgt weer de volle studie. Wie besliste dat, en wanneer?"
     goal: {type: solve, problem: grid_study_queue}
+    talk_to: [{dialog: femke_triage, outcome: partial}]
     steps:
+      talk: "Praat met Femke (Netstrategie)"
       look: "Ga bij Femke kijken naar het bord met netstudies"
       dig: "Zoek uit wat Femke op een dag allemaal doet"
       a3: "Schrijf je A3 voor Netstrategie aan de obeya-wand"
@@ -522,7 +528,9 @@ missions:
     debrief: "De fabrikant is niet sneller geworden. We bestellen alleen niet meer te laat: zodra de netstudie zegt dat er een trafo bij moet. De oudste wachtende verzwaring is jonger geworden, en De Boomgaard krijgt eerder stroom. Welke andere wachttijden lopen na elkaar terwijl ze naast elkaar zouden kunnen?"
     reopen: "De trafo's worden weer pas besteld als het ontwerp klaar is. Hermans Bouw belt opnieuw. Wat is er in de bestelroute teruggeslopen?"
     goal: {type: solve, problem: transformer_wait}
+    talk_to: [{dialog: rob_order_rule, outcome: partial}]
     steps:
+      talk: "Praat met Rob (Inkoop)"
       look: "Ga bij Netstrategie kijken waar De Boomgaard op wacht"
       dig: "Zoek uit wat er gebeurt tussen netstudie en trafo"
       a3: "Schrijf je A3 voor Netstrategie aan de obeya-wand"
@@ -548,7 +556,9 @@ missions:
     debrief: "Op het drukste kwartier van het jaar gebruikten de grote klanten maar een deel van wat ze gecontracteerd hadden. Een deel daarvan komt, volgens de regels van de ACM, terug in de wachtrij. Welke andere voorraad houden wij aan die op papier vol lijkt?"
     reopen: "De wachtlijst groeit weer, terwijl het gebruik niemand meer bijhoudt. Thomas krijgt weer boze telefoontjes. Wie keek er naar de cijfers, en waarom nu niet meer?"
     goal: {type: solve, problem: unused_capacity}
+    talk_to: [{dialog: thomas_reclaim, outcome: partial}]
     steps:
+      talk: "Praat met Thomas (Grootzakelijke klanten)"
       look: "Ga bij de congestiedesk kijken wie er op de wachtlijst staat"
       dig: "Zoek uit hoeveel gecontracteerd vermogen er echt draait"
       a3: "Schrijf je A3 voor de congestiedesk aan de obeya-wand"
@@ -572,11 +582,15 @@ missions:
     act: 2
     chapter: Wat je meet
     requires: {missions: [fix_unused_capacity]}
-    briefing: "In het MT presenteerden Sanne en Joost allebei een recordmaand: meer aanvragen door, meer ontwerpen af. Marco Peters zei niets, tot het einde: 'Mooi. En wie bouwt jullie fouten na?' Er gaan niet meer aansluitingen per week de deur uit dan een kwartaal geleden. Kijk wat hun cijfers van hen vragen."
+    # The record month (ESTIMATE, the stream's 30 requests a week): 132 requests through,
+    # 128 designs done; their local counts, not the stream's.
+    briefing: "In het MT presenteerden Sanne en Joost allebei een recordmaand: 132 aanvragen door bij Intake, 128 ontwerpen af bij Werkvoorbereiding. Marco Peters zei niets, tot het einde: 'Mooi. En wie bouwt jullie fouten na?' Er gaan niet meer aansluitingen per week de deur uit dan een kwartaal geleden. Kijk wat hun cijfers van hen vragen."
     debrief: "Intake en Werkvoorbereiding kijken nu naar dezelfde aansluiting en hetzelfde getal. Wat je meet, bepaalt wat mensen doen; en wat je níet meet, bepaalt wat ze laten liggen. Wie heeft last gehad van de oude cijfers, en weten ze dat het niet aan hen lag?"
     reopen: "In het MT liggen weer twee recordmaanden op tafel en de aansluitingen gaan niet sneller. Waar kijken de teams nu weer naar?"
     goal: {type: solve, problem: silo_kpis}
+    talk_to: [{dialog: sanne_kpi, outcome: partial}]
     steps:
+      talk: "Praat met Sanne (Intake)"
       look: "Ga bij Intake en Werkvoorbereiding naar hun borden kijken"
       dig: "Zoek uit waarop beide teams worden afgerekend"
       a3: "Schrijf je A3 voor beide teams aan de obeya-wand"

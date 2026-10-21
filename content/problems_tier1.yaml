@@ -72,7 +72,7 @@ problems:
       - De monteurs zijn te laat op locatie.
       - Klanten zeggen hun afspraak af.
     mismatch_note: De monteur doet zijn werk goed; het probleem ontstaat bij het plannen, voordat hij rijdt.
-    countermeasures: {readiness_check: 1.0, installer_photo_upload: 0.9}
+    countermeasures: {readiness_check: 1.0, installer_photo_upload: 0.9, backup_job_per_day: 0.6}
     teaches: [readiness_check, quality_at_the_source]
     effects:
       - {target: connections.execution, property: ftr, value: -0.25}  # 2 of 5 addresses not ready
@@ -341,7 +341,7 @@ problems:
       - De energieleverancier is traag.
       - Meetdata & registratie heeft te weinig mensen.
     mismatch_note: Het team heeft genoeg tijd; het werk wacht op de maandelijkse batch, niet op mensen.
-    countermeasures: {close_out_at_completion: 1.0, automatic_ean_registration: 0.9}
+    countermeasures: {close_out_at_completion: 1.0, automatic_ean_registration: 0.9, mid_month_run: 0.6}
     teaches: [batching, one_piece_flow]
     effects:
       - {target: connections.close_out_wait, property: batch_days, value: 28}
@@ -370,7 +370,7 @@ problems:
       - Er zijn te weinig netanalisten.
       - De rekensoftware is te traag.
     mismatch_note: Meer analisten werken de stapel sneller weg, maar een groot deel van de studies is niet nodig.
-    countermeasures: {triage_fast_lane: 1.0, calculation_templates: 0.7}
+    countermeasures: {triage_fast_lane: 1.0, calculation_templates: 0.7, study_overtime_sprint: 0.6}
     teaches: [triage, theory_of_constraints, waste_overprocessing]
     effects:
       - {target: connections.grid_study, property: applies, value: 0.15}  # 40% of connections instead of 25%
