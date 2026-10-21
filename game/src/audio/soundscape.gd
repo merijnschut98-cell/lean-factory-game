@@ -96,8 +96,9 @@ static func reload_settings(path: String = Settings.PATH) -> void:
 
 ## "" or what went wrong. Heard at once, also when the file could not be written.
 static func set_master(value: float, path: String = Settings.PATH) -> String:
-	_audio(path)["master"] = clampf(value, 0.0, 1.0)
-	return Settings.set_value(SECTION, "master", _audio(path)["master"], path)
+	var level := clampf(value, 0.0, 1.0)
+	_audio(path)["master"] = level
+	return Settings.set_value(SECTION, "master", level, path)
 
 
 static func set_muted(on: bool, path: String = Settings.PATH) -> String:
