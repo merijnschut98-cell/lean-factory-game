@@ -164,6 +164,8 @@ func open_talk(person_id: String, where: String = TalkView.STANDING) -> String:
 		return "unplayable"
 	var refused := talk_view.start(person_id, where)
 	if refused.is_empty():
+		if incoming.call.get("person") == person_id:
+			incoming.stop()   # their ringing call, taken another way (the headset): no voicemail
 		_open(talk_view)
 		talk_opened.emit(person_id)
 	return refused

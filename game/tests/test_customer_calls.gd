@@ -174,6 +174,19 @@ func test_an_incoming_call_can_be_let_go_and_leaves_a_message() -> void:
 	office.free()
 
 
+func test_a_ringing_call_taken_at_the_headset_leaves_no_voicemail() -> void:
+	var office := _office()
+	_calling(office.session)
+	_at(office.session, 10 * 60)
+	office.ui.after_action()
+	assert_true(office.ui.incoming.visible)
+	var unread := office.ui.phone.unread_count()
+	assert_eq(office.ui.open_talk("el_amrani", TalkView.HEADSET), "")
+	assert_false(office.ui.incoming.visible, "she is on the line now")
+	assert_eq(office.ui.phone.unread_count(), unread, "no voicemail")
+	office.free()
+
+
 func test_the_kcc_has_a_free_desk_with_a_headset() -> void:
 	for c: Dictionary in CharacterModel.cast():
 		assert_false(str(c.get("office", {}).get("seat", "")) == OfficeHeadset.DESK, "nobody sits there: " + str(c["id"]))

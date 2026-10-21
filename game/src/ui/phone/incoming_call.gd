@@ -33,6 +33,7 @@ func _init() -> void:
 	grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	grow_vertical = Control.GROW_DIRECTION_BOTH
 	offset_right = -120
+	offset_top = -240   # above the toasts at the right
 	visible = false
 	var box := VBoxContainer.new()
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -58,6 +59,13 @@ func ring(c: Dictionary) -> void:
 
 func answer() -> void:
 	_end(answered)
+
+
+## Stop ringing without a choice: the call is being taken another way (the
+## KCC's headset).
+func stop() -> void:
+	call = {}
+	hide()
 
 
 func decline() -> void:
