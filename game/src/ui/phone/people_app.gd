@@ -117,7 +117,7 @@ func _person_card(id: String, wants: bool) -> void:
 	var standing := HBoxContainer.new()
 	standing.add_theme_constant_override("separation", 30)
 	text.add_child(standing)
-	standing.add_child(UiPanel.label("%s  %s" % [DialogPanel.TRUST, DialogPanel.pips(p["trust_pips"])], UiTheme.SMALL))
+	standing.add_child(UiPanel.label("%s  %s" % [TalkView.TRUST, TalkView.pips(p["trust_pips"])], UiTheme.SMALL))
 	var morale := UiPanel.label(tr(MORALE) + tr(MORALE_BANDS[p["morale_band"]]), UiTheme.SMALL)
 	morale.tooltip_text = tr(MORALE_TIP)
 	morale.mouse_filter = Control.MOUSE_FILTER_PASS
@@ -159,7 +159,7 @@ func _still_open(card: VBoxContainer, open: Array) -> void:
 	card.add_child(UiPanel.label(tr(OPEN_HEADING), UiTheme.SMALL, Palette.VOLTANA_BLUE))
 	for o: Dictionary in open:
 		var lines: Array = o["hints"] if o["outcome"] == "blocked" else \
-			[o["wait_for"] if not o["wait_for"].is_empty() else tr(DialogPanel.STILL_NEEDED_CHECK)]
+			[o["wait_for"] if not o["wait_for"].is_empty() else tr(TalkSummary.STILL_NEEDED_CHECK)]
 		for line: String in lines:
 			card.add_child(UiPanel.paragraph("• " + line, Palette.INK, UiTheme.SMALL))
 
@@ -189,9 +189,9 @@ func _talks(card: VBoxContainer, talks: Array) -> void:
 	if talks.is_empty():
 		return
 	card.add_child(UiPanel.label(tr(TALKS), UiTheme.SMALL, Palette.VOLTANA_BLUE))
-	var chips: Dictionary = DialogPanel.labels_of(session).get("chips", {})
+	var chips: Dictionary = TalkView.labels_of(session).get("chips", {})
 	for t: Dictionary in talks:
-		card.add_child(UiPanel.label("%s · %s" % [session.day_text(t["at"]), DialogPanel.outcome_name(session, t["outcome"])],
+		card.add_child(UiPanel.label("%s · %s" % [session.day_text(t["at"]), TalkView.outcome_name(session, t["outcome"])],
 			UiTheme.SMALL, Palette.MUTED))
 		var moves: Array[String] = []
 		moves.assign(t["moves"].map(func(m: String) -> String: return str(chips.get(m, m))))

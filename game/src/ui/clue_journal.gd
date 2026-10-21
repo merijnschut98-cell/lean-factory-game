@@ -2,8 +2,8 @@ class_name ClueJournal
 extends UiPanel
 ## The player's notes (the phone's Notities, J): every clue the player has
 ## found, grouped by the place where it was found, with what the gemba tools
-## showed that was no clue (Waarneming) and any other entry the rules write
-## to the journal, by its kind. It does not say which problem a clue belongs
+## showed that was no clue (Waarneming), then each talk's note, newest first
+## (TalkSummary: what the talk screen leaves out, named afterwards). It does not say which problem a clue belongs
 ## to, nor which clues matter: that is for the player to work out. Above
 ## them, the fixes in use with their health and the stagnation drift, as
 ## measured (SustainView): what holds a fix is for the player to find.
@@ -21,8 +21,6 @@ const SEEN := "Waarneming"
 const NOTHING_YET := "Nog niets gevonden. Ga naar de werkvloer en kijk, tel, meet en vraag."
 const TITLE := "Aanwijzingen"
 const FIXES := "Je verbeteringen"
-## A journal entry's kind with its heading; an entry without a kind is a Waarneming.
-const KINDS := {"talk": "Gesprekken"}
 
 ## The session layer's buttons (GameUI opens what they name).
 const TERUGBLIK := "Terugblik"
@@ -81,7 +79,7 @@ static func found(s: GameSession) -> Array[Clue]:
 
 ## The found clues by place, with what the player saw there that was no clue
 ## (PlaceActions' observations, PLAN 2.12): [{place (the step's Dutch name),
-## clues, seen}]. Entries of another kind are not here (by_kind).
+## clues, seen}].
 static func by_place(s: GameSession) -> Array[Dictionary]:
 	var groups: Array[Dictionary] = []
 	var index := {}
@@ -94,22 +92,8 @@ static func by_place(s: GameSession) -> Array[Dictionary]:
 	for c in found(s):
 		add.call(c.at)["clues"].append(c)
 	for entry in s.gemba.journal:
-		if str(entry.get("kind", "")).is_empty():
-			add.call(entry["place"])["seen"].append(entry["text"])
+		add.call(entry["place"])["seen"].append(entry["text"])
 	return groups
-
-
-## The journal's entries of each other kind (a talk's summary, ...), newest
-## first: {kind: [entry]}.
-static func by_kind(s: GameSession) -> Dictionary:
-	var out := {}
-	for entry in s.gemba.journal:
-		var kind := str(entry.get("kind", ""))
-		if not kind.is_empty():
-			if not out.has(kind):
-				out[kind] = []
-			out[kind].push_front(entry)
-	return out
 
 
 func refresh() -> void:
@@ -119,8 +103,8 @@ func refresh() -> void:
 	_dossier()
 	_sustain()
 	var groups := by_place(session)
-	var kinds := by_kind(session)
-	if groups.is_empty() and kinds.is_empty():
+	var talks := TalkSummary.notes(session)
+	if groups.is_empty() and talks.is_empty():
 		_list.add_child(paragraph(tr(NOTHING_YET), Palette.MUTED))
 	for g in groups:
 		var box := add_card(_list, g["place"])
@@ -128,10 +112,10 @@ func refresh() -> void:
 			box.add_child(paragraph("• " + c.text))
 		for line: String in g["seen"]:
 			box.add_child(paragraph("%s: %s" % [tr(SEEN), tr(line)], Palette.MUTED, UiTheme.SMALL))
-	for kind: String in kinds:
-		var box := add_card(_list, tr(KINDS.get(kind, kind)))
-		for entry: Dictionary in kinds[kind]:
-			box.add_child(paragraph(str(entry.get("text", "")), Palette.INK, UiTheme.SMALL))
+	for talk: Dictionary in talks:
+		var p: PersonDef = session.people.persons.get(talk["person"])
+		_list.add_child(TalkSummary.card(session, talk, tr(TalkSummary.HEADING) % [p.name if p != null else "",
+			session.day_text(talk["at"])]))
 
 
 ## The El Amrani dossier you follow (PLAN 1.8), clipped in once a mission

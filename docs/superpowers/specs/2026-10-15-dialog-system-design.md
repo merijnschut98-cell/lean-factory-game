@@ -114,6 +114,8 @@ All ids are English; chips show the Dutch label and, on hover, the line the play
 
 The listening row always shows all eight, and the steering row all five plus the two pressure chips: a fixed palette. Nothing is filtered by fit, so the palette itself hands nothing over (§14 Q1).
 
+> **Superseded on screen (PLAN 2.13 B, Merijn's playtest 2026-10-19; staged in 2.14 S1-G):** the player no longer picks from a palette of 17 named chips. Each turn `Dialog.offer` gives **four whole sentences** (one move hidden under each, never its name, none styled by fit, at most one costly), keys 1–4, with "Afronden" under them. The moves, their effects and the palette stay in the rules; the move names appear only afterwards, under the curve of the talk's note.
+
 ### 3.3 What a move does
 
 All numbers are **estimates**, chosen so that listening first, then steering, reaches commitment in 7–9 moves, and pushing first ruins a guarded person in 3. They live as constants in `rules/dialog.gd` (like `Sustain`), each with this reasoning. Each NPC line carries *tags* (authored): `claim` (a statement of position or fact), `feeling`, `hesitation`, `admission`, `doubt`.
@@ -188,7 +190,9 @@ An expert conversation (`kind: expert`, Femke, Thomas, Jeroen) uses the same eng
 
 ### 3.7 The meter
 
-**What it displays** (top of the speech panel, §11):
+> **Superseded on screen (2026-10-21, phase 2 design §2.1–2.2, built in PLAN 2.14 S1-G):** the meter still exists in the rules (`Dialog.meter`), but a talk no longer shows it as instruments. Mid-talk only the five **trust pips** stay, small by the name (a ▲/▼ flashes beside them when trust moves), and the **▲/▼ arrow after your own line**. Openness and its band are the person's posture and gaze (`OfficePerson.pose_for_band`), the mood is their idle, and the cue is a visible hesitation (`OfficePerson.hesitate`) plus the line trailing off ("…"), never the words "Er zit meer achter…". The Openheid bar, the band name, Stemming and the Standpunt/Belang/Zorg tracker move to the **talk's note** (`People.talk_note`, drawn by `TalkSummary`): shown once as the talk's last screen and kept in the journal's notes. The list below is the original design, kept for the rules.
+
+**What it displays** (originally the top of the speech panel, §11):
 
 - **Openheid:** a horizontal bar with five labelled bands. After each move the marker slides to the new value; the change flashes as ▲ or ▲▲ (▼ or ▼▼) by its size for a second, **never a number** (Merijn, 2026-10-15). Nothing is shown before the move.
 - **Vertrouwen:** five pips (one per 20 points of trust), next to the person's name; a pip fills or empties with a short animation.
@@ -700,7 +704,15 @@ func person(person_id: String) -> Dictionary          # {trust_pips, morale_band
 
 **Walking up.** In the Sims-like office, people stand or sit at their workstations. A person with something to say has a small speech bubble; a check-in prompt is a quiet "…". Hovering shows the name, role and mood word. Click or E: the player walks over (as with place rings) and the camera frames the two of them over the player's shoulder, close, as it frames a workstation today.
 
-**The speech panel** (bottom third of the screen):
+**The talk view** (since 2026-10-21: phase 2 design §2, built in PLAN 2.14 S1-G as `game/src/ui/talk_view.gd`, replacing the speech panel below). A talk looks like two people talking, not a panel. There is no panel behind it; the world is the background. Two modes, watch then choose:
+
+- **They speak.** The camera frames their face and shoulders (`CameraRig.face_shot`, from the side that sees the face; over the player's shoulder, `converse`, where the floor is too tight). The line types out as a film's subtitle and waits for the key (`SceneLines`: the first press shows it whole, the next goes on, ← re-reads). Your own line sits small over their answer, with ▲/▲▲ or ▼/▼▼ after it (never a number). On the cue they hesitate (`OfficePerson.hesitate`) and the line trails off "…".
+- **You choose.** The camera returns to the two-shot; their last line stays as the subtitle and the four sentences sit above it, one under the other, each with its key (1–4), none named by its move, none styled by fit. "Afronden" sits small under them. Esc pauses (the pause menu of 2.13), mid-talk as everywhere.
+- **On screen through the talk:** the name and role with the five trust pips beside them (a ▲/▼ flashes there when trust moves), the ▲/▼ after your line, the subtitle and the sentences. Nothing else: openness is the person's posture and gaze (`OfficePerson.pose_for_band`, five band poses), mood their idle.
+- **Settings:** *standing* (at their desk), *walking* (Ruud's walk, a shadow day: `GameUI.open_talk(id, TalkView.WALKING)`; the player walks between lines, the person keeps beside them, the camera a following two-shot) and the *phone call* (someone not in the office, El Amrani and Ilse from the KCC's place menu: no face shot, the phone raised on screen, the subtitles carry it).
+- **The talk's note** after their last words, shown once as the last screen and kept in the journal's notes (`People.talk_note` with the talk log, drawn by `TalkSummary`): the outcome and what comes next, the curve with the move names under it (named afterwards, never during), the band it ended in and the mood, what was heard per layer (Standpunt, Belang, Zorg), a new clue, a block's route hints ("Wat zou helpen"), Ruud's word after an Act 0 talk, and for a main-mission talk "Bespreek met Ruud".
+
+**The speech panel** (the original design, superseded by the talk view above; bottom third of the screen):
 
 ```
 ┌─ Joost van Dijk · teamleider Werkvoorbereiding ─────────── ●●○○○ · neutraal ─┐
@@ -718,7 +730,7 @@ func person(person_id: String) -> Dictionary          # {trust_pips, morale_band
 └────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-- **Chips:** the move type as the label; hover or focus shows the line you will say. Never an effect, a colour or a hint about fit. "▸" chips open a small picker (your found clues, the dialog's proposals, your A3's countermeasures). Keys 1–8 for listening, Q–T for steering.
+- **Chips** (superseded: four sentences, see the talk view): the move type as the label; hover or focus shows the line you will say. Never an effect, a colour or a hint about fit. "▸" chips open a small picker (your found clues, the dialog's proposals, your A3's countermeasures). Keys 1–8 for listening, Q–T for steering.
 - **The meter** animates *after* the reply: the marker slides, ▲/▲▲ or ▼/▼▼ flashes (never a number), pips fill or empty. Band names are always written, so colour is never the only signal.
 - **The reply** types out; tags show only through the portrait's face and the 3D body language.
 - **The summary card** after the talk: the outcome in Dutch ("Staat erachter", "Afspraak onder voorwaarde", "Gehoord", "Geblokkeerd", "Gaat akkoord onder druk", "Mislukt — morgen weer"), the openness trace with the move chips under it, what you learned (a revealed layer, a new clue, a route hint) and, for a main-mission talk, "Bespreek met Ruud".

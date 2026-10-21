@@ -1,8 +1,9 @@
 extends TestCase
-## The dialog UI (PLAN 1.2, dialog spec §11) on the real content: the meter
-## fills and shows arrows, never a number; four sentences to say, never a
-## move's name (PLAN 2.13 B); the layer tracker and the cue; the summary card; the
-## Mensen tab; the way in from a team's place; the walk-around energy bar.
+## The dialog UI (PLAN 1.2, dialog spec §11; the talk view of phase 2 design
+## §2) on the real content: arrows and pips, never a number, and no meter on
+## screen mid-talk; four sentences to say, never a move's name (PLAN 2.13 B);
+## the cue as a line that trails off; the summary; the Mensen tab; the way in
+## from a team's place; the walk-around energy bar.
 
 const SCENE := "res://src/world/office/office.tscn"
 const DESIGN := "connections.design"
@@ -19,8 +20,8 @@ func _silo() -> GameSession:
 	return s
 
 
-func _panel(s: GameSession) -> DialogPanel:
-	var panel := DialogPanel.new()
+func _panel(s: GameSession) -> TalkView:
+	var panel := TalkView.new()
 	panel.session = s
 	assert_eq(panel.start("joost"), "")
 	return panel
@@ -34,19 +35,19 @@ func _has_digit(text: String) -> bool:
 
 
 func test_arrows_and_pips_are_never_numbers() -> void:
-	assert_eq([DialogPanel.arrow_text(2), DialogPanel.arrow_text(1), DialogPanel.arrow_text(0),
-		DialogPanel.arrow_text(-1), DialogPanel.arrow_text(-2), DialogPanel.arrow_text(-7)], ["▲▲", "▲", "", "▼", "▼▼", "▼▼"])
-	assert_eq(DialogPanel.pips(2), "●●○○○")
-	assert_eq(DialogPanel.pips(9), "●●●●●")
+	assert_eq([TalkView.arrow_text(2), TalkView.arrow_text(1), TalkView.arrow_text(0),
+		TalkView.arrow_text(-1), TalkView.arrow_text(-2), TalkView.arrow_text(-7)], ["▲▲", "▲", "", "▼", "▼▼", "▼▼"])
+	assert_eq(TalkView.pips(2), "●●○○○")
+	assert_eq(TalkView.pips(9), "●●●●●")
 
 
-func test_the_panel_opens_with_the_person_the_meter_and_four_sentences() -> void:
+func test_the_talk_opens_with_the_person_their_words_and_four_sentences() -> void:
 	var s := _silo()
 	var panel := _panel(s)
 	assert_eq(panel.title_label.text, "Joost van Dijk  ·  " + panel.talk["role"])
 	assert_true(shows(panel, "Ik heb tien minuten."), "the opening")
-	assert_true(shows(panel, "Op z'n hoede"), "the band, named")
-	assert_true(shows(panel, "Standpunt"), "the layer tracker")
+	assert_false(shows(panel, "Op z'n hoede"), "the band is his body, not a word")
+	assert_false(shows(panel, "Standpunt"), "no layer tracker")
 	assert_eq(panel.offers, s.dialog_offers(), "the session's offer")
 	assert_eq(panel.offers.size(), Dialog.OFFERED)
 	var buttons := _chips_of(panel)
@@ -60,7 +61,10 @@ func test_the_panel_opens_with_the_person_the_meter_and_four_sentences() -> void
 func test_no_move_label_is_ever_on_screen_mid_talk() -> void:
 	var s := _silo()
 	var panel := _panel(s)
-	var labels: Array = DialogPanel.labels_of(s).get("chips", {}).values() + ["Luisteren", "Sturen", "Kies:"]
+	var chips: Dictionary = TalkView.labels_of(s).get("chips", {})
+	# "Afronden" under the sentences ends the talk (phase 2 design §2.1); it is no sentence.
+	var labels: Array = chips.values().filter(func(l: String) -> bool: return l != chips["close"]) \
+		+ ["Luisteren", "Sturen", "Kies:"]
 	for turn in 6:
 		for n: Node in _nodes(panel.body, func(x: Node) -> bool: return x is Control):
 			var texts: Array[String] = [(n as Control).tooltip_text]
@@ -83,36 +87,37 @@ func test_a_sentence_is_what_you_then_say() -> void:
 	var said: Dictionary = panel.offers[2]
 	var r := panel.choose_option(2)
 	assert_eq([r["move"], r["line"]], [said["move"], said["line"]])
-	assert_true(shows(panel, DialogPanel.YOU % said["line"]), "what you said, above their reply")
+	assert_true(shows(panel, TalkView.YOU % said["line"]), "what you said, above their reply")
 	assert_eq(panel.choose_option(7), {}, "no fifth sentence")
 	panel.free()
 
 
-func test_the_bar_fills_and_the_meter_never_shows_a_number() -> void:
+func test_no_meter_and_never_a_number_by_the_name() -> void:
 	var s := _silo()
 	var panel := _panel(s)
 	for move in LISTEN_TO_JOOST:
 		var r := panel.choose(move)
-		assert_eq(panel.bar.target, float(r["openness"]), "the bar fills to the openness")
-		var header := panel.body.get_child(0)
-		for text in texts_in(header):
-			assert_false(_has_digit(text), "no number in the meter: " + text)
-		assert_true(shows(header, DialogPanel.arrow_text(r["arrow"])) or r["arrow"] == 0, "the arrow")
+		assert_true(panel.find_children("*", "OpennessBar", true, false).is_empty(), "no openness bar")
+		for text in texts_in(panel.title_label.get_parent()):
+			assert_false(_has_digit(text), "no number by the name: " + text)
+		assert_true(shows(panel, TalkView.arrow_text(r["arrow"])) or r["arrow"] == 0, "the arrow after your line")
 	panel.free()
 
 
-func test_the_tracker_lights_a_layer_once_heard_and_the_cue_shows() -> void:
+## The layers are heard (kept for the note); the cue is no label but a line
+## that trails off.
+func test_the_layers_are_heard_and_the_cue_trails_off() -> void:
 	var s := _silo()
 	var panel := _panel(s)
 	var cue := false
 	var interest := false
 	for move in LISTEN_TO_JOOST:
 		var r := panel.choose(move)
-		cue = cue or (r["cue"] and shows(panel, "Er zit meer achter"))
+		cue = cue or (r["cue"] and str(panel.said_last()["text"]).ends_with("…"))
 		interest = interest or r["revealed"] == "interest"
 	assert_true(interest, "the interest was heard on this path")
-	assert_true(shows(panel, "● Belang"), "lit")
 	assert_true(panel.heard.has("interest"))
+	assert_false(shows(panel, "Er zit meer achter"), "the cue is never written out")
 	assert_true(cue or panel.heard.has("concern"), "the cue showed before the concern")
 	panel.free()
 
@@ -125,11 +130,11 @@ func test_the_summary_card_shows_the_outcome_and_the_trace() -> void:
 	var r := panel.close_talk()
 	assert_true(r["ended"])
 	assert_false(panel.talking())
-	assert_true(shows(panel, DialogPanel.SUMMARY))
-	assert_true(shows(panel, panel.outcome_label(r["outcome"])))
+	assert_true(shows(panel, TalkSummary.SUMMARY))
+	assert_true(shows(panel, TalkView.outcome_name(s, r["outcome"])))
 	assert_eq(panel.trace.size(), 4, "the start and three moves")
 	assert_eq(panel.summary_trace.labels, ["Stemming peilen", "Samenvatten", "Afronden"], "each move under its point")
-	assert_true(shows(panel, DialogPanel.TALK_IT_OVER % "Ruud Hoekstra"), "a main mission's talk")
+	assert_true(shows(panel, TalkView.TALK_IT_OVER % "Ruud Hoekstra"), "a main mission's talk")
 	panel.free()
 
 
@@ -144,7 +149,7 @@ func test_the_session_reports_the_layers_of_the_talk() -> void:
 
 
 ## The chips found in the panel, by their text.
-func _chips_of(panel: DialogPanel) -> Dictionary:
+func _chips_of(panel: TalkView) -> Dictionary:
 	var out := {}
 	var stack: Array[Node] = [panel.body]
 	while not stack.is_empty():
@@ -155,15 +160,10 @@ func _chips_of(panel: DialogPanel) -> Dictionary:
 	return out
 
 
-func test_the_face_follows_the_meter_band() -> void:
+## The Mensen tab's portrait (the talk shows the person's own body: test_talk_view).
+func test_the_face_follows_the_band() -> void:
 	assert_eq([MoodFace.mouth_for(-1), MoodFace.mouth_for(0), MoodFace.mouth_for(1), MoodFace.mouth_for(2),
 		MoodFace.mouth_for(3), MoodFace.mouth_for(4)], ["closed", "closed", "frown", "flat", "soft_smile", "smile"])
-	var s := _silo()
-	var panel := _panel(s)
-	for move in LISTEN_TO_JOOST:
-		panel.choose(move)
-		assert_eq(panel.face.band, panel.meter()["band"], "the face is the band's, whatever the mood word")
-	panel.free()
 
 
 func test_a_partial_agreement_says_what_still_has_to_happen() -> void:
@@ -173,7 +173,7 @@ func test_a_partial_agreement_says_what_still_has_to_happen() -> void:
 	panel.choose("propose", "lead_and_oldest")
 	var r := panel.choose("ask_commitment")
 	assert_eq(r["outcome"], "partial")
-	assert_true(shows(panel, DialogPanel.STILL_NEEDED % "Frank moet het goedvinden."), "the condition, in a line")
+	assert_true(shows(panel, TalkSummary.STILL_NEEDED % "Frank moet het goedvinden."), "the condition, in a line")
 	panel.free()
 
 
@@ -183,8 +183,8 @@ func test_a_ruined_talk_says_when_to_try_again_and_nothing_more() -> void:
 	panel.choose("propose", "lead_and_oldest")
 	var r := panel.choose("pressure")
 	assert_eq(r["outcome"], "ruined")
-	assert_true(shows(panel, DialogPanel.TRY_AGAIN % "Joost"))
-	assert_false(shows(panel, DialogPanel.STILL_NEEDED.left(10)))
+	assert_true(shows(panel, TalkSummary.TRY_AGAIN % "Joost"))
+	assert_false(shows(panel, TalkSummary.STILL_NEEDED.left(10)))
 	panel.free()
 
 
@@ -220,8 +220,9 @@ func test_each_sentence_carries_a_key_that_says_it() -> void:
 		var b: Button = buttons[panel.offers[i]["line"]]
 		var hint := b.get_child(0) as Label if b.get_child_count() > 0 else null
 		assert_true(hint != null, "a hint in the corner of sentence %d" % (i + 1))
-		assert_eq(hint.text, OS.get_keycode_string(DialogPanel.OPTION_KEYS[i]))
+		assert_eq(hint.text, OS.get_keycode_string(TalkView.OPTION_KEYS[i]))
 	var second: Dictionary = panel.offers[1]
+	panel.lines.finish()   # their words first, then the choice
 	assert_true(panel.press_key(KEY_2), "2 says the second sentence")
 	assert_eq(panel.last["line"], second["line"])
 	assert_false(panel.press_key(KEY_5), "no fifth")
@@ -229,13 +230,11 @@ func test_each_sentence_carries_a_key_that_says_it() -> void:
 	panel.free()
 
 
-func test_the_panel_keeps_one_height_of_at_most_two_fifths_of_the_screen() -> void:
-	for screen: Vector2 in [Vector2(1600, 900), Vector2(1280, 720), Vector2(1920, 1080)]:
-		var rect := DialogPanel.rect_on(screen)
-		assert_true(rect.size.y <= screen.y * 0.4 + 0.5, "at most 40 %% of %s" % screen)
-		assert_eq(rect.end.y, screen.y - DialogPanel.MARGIN, "at the bottom")
+## Phase 2 design §2.1: no bottom panel; the world is the talk's background.
+func test_no_panel_stands_behind_the_talk() -> void:
 	var panel := _panel(_silo())
-	assert_true(panel.find_children("*", "ScrollContainer", true, false).size() > 0, "what changes scrolls, the panel does not grow")
+	assert_true(panel.get_theme_stylebox("panel") is StyleBoxEmpty, "nothing behind the words")
+	assert_eq(panel.mouse_filter, Control.MOUSE_FILTER_IGNORE, "the world shows through")
 	panel.free()
 
 
@@ -258,10 +257,10 @@ func test_a_teams_place_lists_its_people_and_opens_a_talk() -> void:
 	office.interact(office.interactable("place:" + DESIGN))
 	assert_true(shows(office.ui.place_menu, "Joost van Dijk"))
 	assert_eq(office.ui.open_talk("joost"), "")
-	assert_true(office.ui.dialog_panel.visible)
+	assert_true(office.ui.talk_view.visible)
 	office.ui.close_panels()
 	assert_false(s.dialog_meter().size() > 0, "Esc mid-talk ends it gracefully")
-	assert_true(office.ui.dialog_panel.visible and shows(office.ui.dialog_panel, DialogPanel.SUMMARY), "its summary shows")
+	assert_true(office.ui.talk_view.visible and shows(office.ui.talk_view, TalkSummary.SUMMARY), "its summary shows")
 	office.ui.close_panels()
 	assert_false(office.ui.is_busy(), "the next Esc closes")
 	office.free()
@@ -275,9 +274,9 @@ func test_the_phone_keys_leave_a_talk_alone() -> void:
 	var ui := office.ui
 	for app: String in [Phone.HOME, Phone.NOTES, Phone.MAP, Phone.CODEX]:
 		ui.toggle_phone(app)
-		assert_true(ui.dialog_panel.visible, "the talk stays on screen")
+		assert_true(ui.talk_view.visible, "the talk stays on screen")
 		ui.toggle_phone(app)
-		assert_true(ui.dialog_panel.talking(), "the talk runs on")
+		assert_true(ui.talk_view.talking(), "the talk runs on")
 		assert_false(ui.phone.visible, "the phone stayed down")
 	assert_false(office.session.dialog_meter().is_empty(), "never ended unseen")
 	office.free()
@@ -292,8 +291,8 @@ func _mensen_after_joost() -> Office:
 	s.region.found["silo_kpis:4"] = true
 	office.ui.open_talk("joost")
 	for move in LISTEN_TO_JOOST:
-		office.ui.dialog_panel.choose(move)
-	office.ui.dialog_panel.close_talk()
+		office.ui.talk_view.choose(move)
+	office.ui.talk_view.close_talk()
 	office.ui.close_panels()
 	office.ui.toggle_phone(Phone.PEOPLE)
 	return office
@@ -303,7 +302,7 @@ func test_the_mensen_tab_shows_trust_morale_and_what_you_heard() -> void:
 	var office := _mensen_after_joost()
 	var s := office.session
 	assert_true(shows(office.ui.phone.app(Phone.PEOPLE), "Joost van Dijk"))
-	assert_true(shows(office.ui.phone.app(Phone.PEOPLE), DialogPanel.pips(s.person("joost")["trust_pips"])))
+	assert_true(shows(office.ui.phone.app(Phone.PEOPLE), TalkView.pips(s.person("joost")["trust_pips"])))
 	for text in texts_in(office.ui.phone.app(Phone.PEOPLE)):
 		if text.begins_with(PeopleApp.MORALE):
 			assert_false(_has_digit(text), "morale is a band, not a number")
@@ -327,7 +326,7 @@ func test_the_mensen_tab_is_the_player_s_notebook() -> void:
 	assert_eq(curves.size(), 1, "one talk, one curve")
 	assert_eq(curves[0].trace, talk["trace"])
 	assert_eq(curves[0].labels.size(), talk["moves"].size(), "the moves under the points")
-	assert_true(shows(office.ui.phone.app(Phone.PEOPLE), DialogPanel.outcome_name(s, talk["outcome"])))
+	assert_true(shows(office.ui.phone.app(Phone.PEOPLE), TalkView.outcome_name(s, talk["outcome"])))
 	# Joost's card (Linda may want a talk too: her evenings check-in).
 	var joosts := func(n: Node) -> bool: return n is TextEdit and n.placeholder_text == "Wat weet je over Joost?"
 	var notes := _nodes(office.ui.phone.app(Phone.PEOPLE), joosts)
@@ -370,18 +369,18 @@ func test_the_need_is_never_shown() -> void:
 		s.accept("fix_silo_kpis")
 		s.region.found["silo_kpis:4"] = true
 		office.ui.open_talk("joost")
-		var seen := _all_text(office.ui.dialog_panel)
+		var seen := _all_text(office.ui.talk_view)
 		for move in LISTEN_TO_JOOST:
-			office.ui.dialog_panel.choose(move)
-			seen.append_array(_all_text(office.ui.dialog_panel))
-		office.ui.dialog_panel.close_talk()
-		seen.append_array(_all_text(office.ui.dialog_panel))
+			office.ui.talk_view.choose(move)
+			seen.append_array(_all_text(office.ui.talk_view))
+		office.ui.talk_view.close_talk()
+		seen.append_array(_all_text(office.ui.talk_view))
 		office.ui.close_panels()
 		office.ui.toggle_phone(Phone.PEOPLE)
 		seen.append_array(_all_text(office.ui.phone.app(Phone.PEOPLE)))
 		var spoken: Array = s.people.observed.get("joost", []).map(func(o: Dictionary) -> String: return o["text"])
 		for text in seen:
-			if text.begins_with("\"") or spoken.any(func(line: String) -> bool: return text.contains(line)):
+			if text.begins_with("\"") or text.begins_with(TalkView.YOU.left(5)) or spoken.any(func(line: String) -> bool: return text.contains(line)):
 				continue  # a quote, his or the player's, may say anything
 			for word: String in words:
 				var hit := RegEx.create_from_string("(?i)\\b%s\\b" % word).search(text)
@@ -433,7 +432,7 @@ func test_during_a_talk_the_hud_shows_only_the_date_and_time() -> void:
 	var office := _office()
 	var hud := office.ui.hud
 	_open_joost(office)
-	assert_true(office.ui.dialog_panel.visible)
+	assert_true(office.ui.talk_view.visible)
 	assert_true(hud.clock_label.visible, "the date and time")
 	for l: Control in [hud.budget_label, hud.xp_label, hud.objective_label, hud.help_label]:
 		assert_false(l.visible, "hidden in a talk: " + l.name)
@@ -450,7 +449,7 @@ func test_a_talk_frames_the_person_over_the_players_shoulder() -> void:
 	var joost := office.people.person("joost")
 	office.player.position = joost.position + joost.basis.z * 1.3 + joost.basis.x * 0.3
 	office.use(joost)
-	assert_true(office.ui.dialog_panel.talking())
+	assert_true(office.ui.talk_view.talking())
 	assert_true(office.rig.inspecting(), "the camera frames the talk")
 	var at := office.talk_point(joost)
 	assert_near(Vector2(at.x, at.z).distance_to(Vector2(joost.position.x, joost.position.z)), 0.0, 0.01, "looking at Joost")
@@ -481,9 +480,9 @@ func test_the_mensen_tab_says_what_is_open_and_when_to_talk_again() -> void:
 	_open_silo_in(office)
 	office.ui.open_talk("joost")
 	for move in ["mood", "paraphrase", "inquiry", "reflect", "silence", "empathy"]:
-		office.ui.dialog_panel.choose(move)
-	office.ui.dialog_panel.choose("propose", "lead_and_oldest")
-	assert_eq(office.ui.dialog_panel.choose("ask_commitment")["outcome"], "partial")
+		office.ui.talk_view.choose(move)
+	office.ui.talk_view.choose("propose", "lead_and_oldest")
+	assert_eq(office.ui.talk_view.choose("ask_commitment")["outcome"], "partial")
 	office.ui.close_panels()
 	office.ui.toggle_phone(Phone.PEOPLE)
 	var journal := office.ui.phone.app(Phone.PEOPLE)
@@ -502,9 +501,9 @@ func test_after_a_ruin_the_mensen_tab_says_when_to_talk_again() -> void:
 	var office := _office()
 	_open_silo_in(office)
 	office.ui.open_talk("joost")
-	office.ui.dialog_panel.choose("show_data", "silo_kpis:4")
-	office.ui.dialog_panel.choose("propose", "lead_and_oldest")
-	assert_eq(office.ui.dialog_panel.choose("pressure")["outcome"], "ruined")
+	office.ui.talk_view.choose("show_data", "silo_kpis:4")
+	office.ui.talk_view.choose("propose", "lead_and_oldest")
+	assert_eq(office.ui.talk_view.choose("pressure")["outcome"], "ruined")
 	office.ui.close_panels()
 	office.ui.toggle_phone(Phone.PEOPLE)
 	var until: int = office.session.person("joost")["cooldown_until"]

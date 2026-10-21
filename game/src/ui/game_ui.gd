@@ -32,7 +32,7 @@ var phone: Phone
 var journal: ClueJournal
 var office_map: OfficeMap
 var codex: CodexPanel
-var dialog_panel: DialogPanel
+var talk_view: TalkView
 ## The session layer (PLAN 1.4): the terugblik, Intussen, the stop note, the
 ## discovery toasts and the side offers; the playtest log; autosave.
 var session_layer: SessionLayer
@@ -85,12 +85,12 @@ func setup(of_session: GameSession, of_layer: SessionLayer = null) -> void:
 	journal = (phone.app(Phone.NOTES) as NotesApp).journal
 	office_map = (phone.app(Phone.MAP) as MapApp).map
 	codex = (phone.app(Phone.CODEX) as CodexApp).codex
-	dialog_panel = DialogPanel.new()
+	talk_view = TalkView.new()
 	terugblik = TerugblikCard.new()
 	intussen = IntussenPanel.new()
 	pause_menu = PauseMenu.new()
 	_panels = [mission_board, place_menu, a3_form, check_panel, coach_panel, phone, terugblik, intussen,
-		dialog_panel, pause_menu]
+		talk_view, pause_menu]
 	_setup_session_layer(of_layer)
 	for p in _panels:
 		p.session = session
@@ -103,7 +103,7 @@ func setup(of_session: GameSession, of_layer: SessionLayer = null) -> void:
 		_open(check_panel))
 	check_panel.back_to_a3.connect(open_a3)
 	place_menu.talk_requested.connect(open_talk)
-	dialog_panel.coach_requested.connect(open_coach)
+	talk_view.coach_requested.connect(open_coach)
 	pause_menu.save_requested.connect(save_to)
 	pause_menu.title_requested.connect(func() -> void:
 		end_session()
@@ -150,13 +150,14 @@ func open_coach() -> void:
 
 
 ## Talk with a person: "" or why not (start_dialog's code; cooling_down
-## shows the person's "Niet nu." as the prompt).
-func open_talk(person_id: String) -> String:
+## shows the person's "Niet nu." as the prompt). `where`: TalkView.STANDING, or
+## WALKING (Ruud's walk, a shadow day); the world makes it a call when they are not here.
+func open_talk(person_id: String, where: String = TalkView.STANDING) -> String:
 	if not playable():
 		return "unplayable"
-	var refused := dialog_panel.start(person_id)
+	var refused := talk_view.start(person_id, where)
 	if refused.is_empty():
-		_open(dialog_panel)
+		_open(talk_view)
 		talk_opened.emit(person_id)
 	return refused
 
@@ -182,7 +183,7 @@ func escape() -> void:
 		return
 	if paused():
 		resume()
-	elif is_busy() and not dialog_panel.talking():
+	elif is_busy() and not talk_view.talking():
 		close_panels()
 	else:
 		open_pause()
@@ -237,7 +238,7 @@ func save_to(number: int) -> void:
 ## (or for Tab). Each app from its moment on (Opening.hud, 2.7d §3); never
 ## mid-talk (review B1: hiding the talk let the next press end it unseen).
 func toggle_phone(app := Phone.HOME) -> void:
-	if not playable() or dialog_panel.talking() or not phone.may_open(app):
+	if not playable() or talk_view.talking() or not phone.may_open(app):
 		return
 	if phone.visible and (app == Phone.HOME or app == phone.current):
 		close_panels()
@@ -293,9 +294,9 @@ func is_busy() -> bool:
 func close_panels() -> void:
 	resume()
 	var was_busy := is_busy()
-	if dialog_panel != null and dialog_panel.talking():
-		dialog_panel.close_talk()
-		_open(dialog_panel)  # its summary shows, whatever else was open
+	if talk_view != null and talk_view.talking():
+		talk_view.close_talk()
+		_open(talk_view)  # its summary shows, whatever else was open
 		return
 	for p in _panels:
 		p.hide()
@@ -510,5 +511,5 @@ func _open(panel: UiPanel) -> void:
 	panel.show()
 	hud.show_prompt("")
 	hud.show_overlay(false)
-	hud.set_talking(panel == dialog_panel)
+	hud.set_talking(panel == talk_view)
 	panel_opened.emit()
