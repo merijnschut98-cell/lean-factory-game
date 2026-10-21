@@ -131,6 +131,8 @@ var _rest_yaw := 0.0
 var _turn_share := 1.0
 ## In a talk (face_toward's `talk`): turned at once, seated further.
 var _talking := false
+## Held for a talk (OfficePeople.hold): a walker stands instead of walking their round.
+var held := false
 ## Seconds left of a hesitation's turn aside.
 var _hesitating := 0.0
 ## Low energy: the idle and the typing are the tired clips.
@@ -254,7 +256,7 @@ func picked_by(origin: Vector3, direction: Vector3) -> bool:
 
 
 func _process(delta: float) -> void:
-	if pose == "walk":
+	if pose == "walk" and not held:
 		walk(delta)
 	else:
 		turn(delta)
@@ -283,9 +285,18 @@ func face_back() -> void:
 	_turn_share = 1.0
 
 
-## The talk is over: their own pose again (not the band's), and back to their work.
+## A talk holds them (OfficePeople.hold): a walker stops and stands.
+func hold() -> void:
+	held = true
+	if pose == "walk":
+		_play("idle")
+
+
+## The talk is over: their own pose again (not the band's; a walker pausing at a route's
+## end stands on), and back to their work.
 func end_talk() -> void:
-	_play(pose)
+	held = false
+	_play("idle" if pose == "walk" and _wait > 0.0 else pose)
 	face_back()
 
 
