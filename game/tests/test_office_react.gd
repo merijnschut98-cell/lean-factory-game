@@ -232,3 +232,20 @@ func test_low_energy_shows_in_a_tired_idle() -> void:
 	p.show_energy({"energy": 0.8, "needs_talk": false})
 	assert_eq(p.playing(), "idle")
 	p.free()
+
+
+func test_a_talk_turns_a_seated_person_to_the_player_at_once() -> void:
+	var office := _office()
+	office.session.missions.done_once["fix_unused_capacity"] = true
+	office.session.accept("fix_silo_kpis")   # Joost's talk is about its KPI
+	office.session.region.found["silo_kpis:4"] = true
+	office.people.refresh(office.session)
+	var joost := office.people.person("joost")
+	var rest := joost.rotation.y
+	office.player.position = joost.position + joost.basis.x * 0.9 + joost.basis.z * 0.6   # beside and behind
+	office.use(joost)
+	assert_true(office.ui.is_busy(), "the talk opens")
+	var turned := absf(angle_difference(rest, joost.rotation.y))
+	assert_true(turned > OfficePerson.SWIVEL, "his chair turns out from the desk, no frames needed: %.2f" % turned)
+	assert_true(turned <= OfficePerson.TALK_SWIVEL + 0.01, "but not through the desk")
+	office.free()

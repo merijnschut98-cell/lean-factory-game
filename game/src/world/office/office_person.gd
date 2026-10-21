@@ -36,6 +36,9 @@ const TIRED_ENERGY := 0.35
 const NOTICE := 2.0
 const TURN_SPEED := 3.0
 const SWIVEL := 0.6
+## In a talk a seated person turns their chair out from the desk this far (rad), so the face
+## shot (CameraRig.face_shot) sees their face; further, their knees would go through the desk.
+const TALK_SWIVEL := 1.2
 const HALF_TURN := 0.5
 ## A hesitation: the look away's length (s), and how far a seated person turns aside (rad).
 const HESITATE_SECONDS := 1.6
@@ -122,6 +125,8 @@ var _look_at: Variant = null
 var _rest_yaw := 0.0
 ## The share of the turn towards _look_at they give (1, or HALF_TURN when closed).
 var _turn_share := 1.0
+## In a talk (face_toward's `talk`): turned at once, seated further.
+var _talking := false
 ## Seconds left of a hesitation's turn aside.
 var _hesitating := 0.0
 ## Low energy: the idle and the typing are the tired clips.
@@ -258,13 +263,18 @@ func _process(delta: float) -> void:
 
 ## Turn to `at` (office space, e.g. the player): standing all the way, seated part of the
 ## way (SWIVEL); the turn itself happens over the next frames (turn). A walker walks on.
-func face_toward(at: Vector3) -> void:
+## `talk`: a talk starts (the camera cuts to them): at once, and seated as far as TALK_SWIVEL.
+func face_toward(at: Vector3, talk := false) -> void:
 	_look_at = at
+	_talking = talk
+	if talk:
+		rotation.y = _goal_yaw()
 
 
 ## Back to their work: the turn eases back to their own yaw.
 func face_back() -> void:
 	_look_at = null
+	_talking = false
 	_turn_share = 1.0
 
 
@@ -275,16 +285,24 @@ func facing() -> bool:
 
 ## One frame of turning towards where they look (or back to their spot), at TURN_SPEED.
 func turn(delta: float) -> void:
-	var goal := _rest_yaw
-	if _look_at != null:
-		var to: Vector3 = (_look_at as Vector3) - position
-		if Vector2(to.x, to.z).length() > 0.05:
-			var off := angle_difference(_rest_yaw, atan2(-to.x, -to.z)) * _turn_share   # -Z is the front
-			goal = _rest_yaw + (clampf(off, -SWIVEL, SWIVEL) if pose == "sit" else off)
+	var goal := _goal_yaw()
 	if _hesitating > 0.0:
 		_hesitating -= delta
 		goal += HESITATE_TURN
 	rotation.y = rotate_toward(rotation.y, goal, TURN_SPEED * delta)
+
+
+## The yaw they turn to: towards _look_at (by _turn_share; seated within the swivel), else
+## their own at their spot.
+func _goal_yaw() -> float:
+	if _look_at == null:
+		return _rest_yaw
+	var to: Vector3 = (_look_at as Vector3) - position
+	if Vector2(to.x, to.z).length() <= 0.05:
+		return _rest_yaw
+	var off := angle_difference(_rest_yaw, atan2(-to.x, -to.z)) * _turn_share   # -Z is the front
+	var swivel := TALK_SWIVEL if _talking else SWIVEL
+	return _rest_yaw + (clampf(off, -swivel, swivel) if pose == "sit" else off)
 
 
 ## Their posture for a talk's openness band (0 Dicht … 4 Denkt mee, Dialog.band_of), with

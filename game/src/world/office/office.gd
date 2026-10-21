@@ -637,6 +637,7 @@ func frame_talk(person_id: String) -> void:
 	if person == null or not person.visible:
 		return
 	_turn_to(person)
+	person.face_toward(player.position, true)   # they turn to you, so the shot sees their face
 	rig.converse(talk_point(person), talk_yaw(person, player.position), TALK_SHIFT, DialogPanel.HEIGHT_SHARE / 2.0)
 
 
