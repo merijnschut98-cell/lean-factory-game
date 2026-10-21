@@ -220,16 +220,12 @@ func skip_hint(on: bool) -> void:
 
 
 ## The setting "Tekst loopt vanzelf door" (`path`: user://settings.cfg; tests point it elsewhere).
-static func auto_setting(path: String = SessionLog.SETTINGS) -> bool:
-	var config := ConfigFile.new()
-	if config.load(path) != OK:
-		return false
-	var v: Variant = config.get_value(SECTION, AUTO_KEY, false)
-	return v if v is bool else false
+static func auto_setting(path: String = Settings.PATH) -> bool:
+	return Settings.get_bool(SECTION, AUTO_KEY, false, path)
 
 
 ## The settings' switch for it (the title menu's Instellingen, the pause menu).
-static func auto_toggle(path: String = SessionLog.SETTINGS) -> CheckBox:
+static func auto_toggle(path: String = Settings.PATH) -> CheckBox:
 	var box := CheckBox.new()
 	box.text = AUTO_LABEL   # a Button translates its own text
 	box.button_pressed = auto_setting(path)
@@ -241,12 +237,8 @@ static func auto_toggle(path: String = SessionLog.SETTINGS) -> CheckBox:
 
 
 ## "" or what went wrong.
-static func set_auto_setting(on: bool, path: String = SessionLog.SETTINGS) -> String:
-	var config := ConfigFile.new()
-	config.load(path)   # a missing file starts empty
-	config.set_value(SECTION, AUTO_KEY, on)
-	var err := config.save(path)
-	return "" if err == OK else "instellingen niet bewaard (%s)" % error_string(err)
+static func set_auto_setting(on: bool, path: String = Settings.PATH) -> String:
+	return Settings.set_value(SECTION, AUTO_KEY, on, path)
 
 
 ## Two or more answers under the line on screen; the scene waits for one.

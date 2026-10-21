@@ -5,6 +5,22 @@ extends RefCounted
 ## fresh instance and reports every failed assertion with its message.
 
 var failures: PackedStringArray = []
+## Engine errors and warnings this test means to cause (a substring each): the
+## runner does not count those against it. See expect_error.
+var expected_errors: PackedStringArray = []
+
+
+## The test provokes an engine error or warning containing `substring` (e.g. a
+## damaged file the code must survive); without this the runner fails it.
+func expect_error(substring: String) -> void:
+	expected_errors.append(substring)
+
+
+func is_expected_error(error: String) -> bool:
+	for part in expected_errors:
+		if part in error:
+			return true
+	return false
 
 
 ## A path under user:// that is this test run's own: every worktree's run
