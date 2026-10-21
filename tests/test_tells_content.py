@@ -66,11 +66,12 @@ def test_every_problem_on_the_1e_needs_a_tell_whatever_its_room():
     """A new room on the 1e with no prop of its own still needs its problems shown somewhere."""
     def mutate(docs):
         rooms = docs["world"]["rooms"]
-        next(r for r in rooms if r["id"] == "revision_gis")["places"].remove("connections.revision")
-        rooms.append({"id": "archive", "floor": "first", "name": "Archief", "places": ["connections.revision"],
+        next(r for r in rooms if r["id"] == "meter_data")["places"].remove("connections.close_out_wait")
+        rooms.append({"id": "archive", "floor": "first", "name": "Archief", "places": ["connections.close_out_wait"],
                       "opens_with": []})
-        _problem(docs, "revision_backlog").pop("tells")
-    with pytest.raises(bc.ContentError, match="revision_backlog.*no tell"):
+        next(t for t in docs["world"]["tells"] if t["id"] == "close_out_cabinet")["place"] = "connections.close_out"
+        _problem(docs, "done_but_not_closed").pop("tells")
+    with pytest.raises(bc.ContentError, match="done_but_not_closed.*no tell"):
         _check(mutate)
 
 
@@ -78,6 +79,44 @@ def test_a_problem_off_the_1e_needs_no_tell():
     def mutate(docs):
         assert not _problem(docs, "wrong_joint_in_van").get("tells")
     _check(mutate)
+
+
+def _look(docs: dict, tell_id: str) -> dict:
+    return next(t for t in docs["world"]["tells"] if t["id"] == tell_id)
+
+
+def test_the_world_has_words_for_every_tell_at_every_height():
+    assert {t["id"] for t in REAL["world"]["tells"]} == set(bc.TELLS)
+    for t in REAL["world"]["tells"]:
+        assert all(t[v] for v in ("low", "mid", "high")), t["id"]
+
+
+def test_a_tell_missing_from_the_world_is_refused():
+    def mutate(docs):
+        docs["world"]["tells"] = [t for t in docs["world"]["tells"] if t["id"] != "meter_board"]
+    with pytest.raises(bc.ContentError, match="meter_board"):
+        _check(mutate)
+
+
+def test_a_look_that_names_a_problem_is_refused():
+    def mutate(docs):
+        _look(docs, "meter_board")["high"] = "Het bord staat vol: de zwijgende meter."
+    with pytest.raises(bc.ContentError, match="names the problem"):
+        _check(mutate)
+
+
+def test_a_look_placed_outside_its_room_is_refused():
+    def mutate(docs):
+        _look(docs, "meter_board")["place"] = "connections.intake"
+    with pytest.raises(bc.ContentError, match="meter_board.*room"):
+        _check(mutate)
+
+
+def test_a_look_needs_every_height():
+    docs = copy.deepcopy(REAL)
+    _look(docs, "prep_tray").pop("mid")
+    with pytest.raises(bc.ContentError, match="prep_tray"):
+        bc.validate_world(docs["world"], "world.yaml")
 
 
 def test_a_tell_needs_a_text():

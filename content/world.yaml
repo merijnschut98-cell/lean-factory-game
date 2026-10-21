@@ -116,3 +116,42 @@ rooms:
     name: Bussen
     places: [outages.repair, meters.visit]
     opens_with: [walk_outages, walk_meters, fix_wrong_joint, fix_not_at_home, fix_silent_meter]
+
+# The tells (PLAN 2.6, design §1.5): the props that read the simulation. Each `id` is a
+# `tell_<id>` node in its floor's model (tools/blender/build_office.py) with three heights
+# (game/src/world/office/office_tells.gd picks one by the numbers). When the player looks
+# closer, one line says what anyone would see at the height shown: low, mid, high. An open
+# problem that lists the tell (problems_tier*.yaml `tells:`) speaks instead from mid up.
+# A line describes, never explains: it never names a problem or its cause (checked).
+# `place` is where the journal (Notities, "Waarneming") files what was seen.
+tells:
+  - id: intake_stack
+    place: connections.intake
+    low: "Op de kast bij Intake ligt een dun stapeltje dossiers."
+    mid: "Op de kast bij Intake liggen twee stapels dossiers."
+    high: "Op de kast bij Intake liggen drie hoge stapels dossiers; op de onderste staat een datum van weken terug."
+  - id: prep_tray
+    place: connections.design
+    low: "Het postbakje bij Werkvoorbereiding is bijna leeg."
+    mid: "In het postbakje bij Werkvoorbereiding ligt een stapeltje dossiers."
+    high: "Het postbakje bij Werkvoorbereiding puilt uit, en ernaast ligt nog een stapel."
+  - id: planning_board
+    place: connections.planning
+    low: "Op het weekbord van de planners hangt één rood kaartje tussen de gele en witte."
+    mid: "Op het weekbord van de planners hangen een paar rode kaartjes tussen de gele en witte."
+    high: "Op het weekbord van de planners hangen bij bijna elke dag rode kaartjes."
+  - id: revision_cabinet
+    place: connections.revision
+    low: "Op de kast bij Revisie & GIS ligt een dun stapeltje schetsen naast een paar opgerolde tekeningen."
+    mid: "Op de kast bij Revisie & GIS liggen twee stapels schetsen en een paar opgerolde tekeningen."
+    high: "De kast bij Revisie & GIS ligt vol schetsen, en op de vloer ernaast ligt nog een stapel."
+  - id: close_out_cabinet
+    place: connections.close_out_wait
+    low: "Op de kast bij de deur liggen twee stapeltjes dossiers."
+    mid: "Op de kast bij de deur liggen vier stapels dossiers naast elkaar."
+    high: "De kast bij de deur ligt vol dossiers, en op de vloer ernaast staan er nog twee stapels."
+  - id: meter_board
+    place: meters.registration
+    low: "Op het whiteboard bij Meetdata staat één adres, met een rood streepje erachter."
+    mid: "Op het whiteboard bij Meetdata staat een rijtje adressen, elk met een rood streepje erachter."
+    high: "Het whiteboard bij Meetdata staat vol adressen in twee kolommen, elk met een rood streepje erachter."

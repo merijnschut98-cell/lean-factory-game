@@ -60,7 +60,8 @@ extends SceneTree
 ## tell_intake_high, tell_intake_low, tell_prep_high, tell_planning_high (PLAN 2.6:
 ## the 1e's props read the region; a long intake queue, then none) ·
 ## tell_revision_high, tell_meetdata_high, tell_closeout_high (PLAN 2.15: Revisie & GIS's
-## sketches, Meetdata's whiteboard, its close-out cabinet).
+## sketches, Meetdata's whiteboard, its close-out cabinet) · tell_inspect (E beside the
+## sketches: the camera moves in and one line says what you see).
 ## The mission is played through the UI's own handlers, as a player would;
 ## only the training states start with the training week.
 
@@ -283,6 +284,10 @@ func _run() -> void:
 		"tell_intake_high", "tell_intake_low", "tell_prep_high", "tell_planning_high", "tell_revision_high", \
 				"tell_meetdata_high", "tell_closeout_high":
 			_tells(office, state)
+		"tell_inspect":
+			_tells(office, "tell_revision_high")
+			office.player.position = Vector3(-16.6, 0, -12.2)
+			office.use(OfficeTells.node(office.geometry, "revision_cabinet"))   # capture with ~25 frames
 		"minimap", "minimap_floor", "minimap_near":
 			_minimap(office, state)
 		"yard", "yard_magazijn", "yard_werkplaats", "yard_vans":

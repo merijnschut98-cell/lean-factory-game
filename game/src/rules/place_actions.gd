@@ -14,6 +14,8 @@ extends RefCounted
 
 ## Investigation.QUESTIONS' repair: never a chip of its own.
 const THANKS := "thanks"
+## The journal's "tool" for what was seen by looking closer at a prop (note), no gemba tool.
+const LOOK := "look"
 
 ## place → {tools: {tool: {label, observations}}, order: [tool] (as listed), questions:
 ## [{id, person, text, reply}], people_also: [person id]}.
@@ -119,6 +121,15 @@ func observe(place: String, tool: String, day: int = 0) -> String:
 	var text: String = lines[n % lines.size()]
 	journal.append({"day": day, "place": place, "tool": tool, "text": text})
 	return text
+
+
+## Log what the player saw at `place` without a tool (a prop looked at closer, `tool` "look"),
+## once per text; false when it was already logged.
+func note(place: String, text: String, day: int = 0) -> bool:
+	if text.is_empty() or journal.any(func(e: Dictionary) -> bool: return e["place"] == place and e["text"] == text):
+		return false
+	journal.append({"day": day, "place": place, "tool": LOOK, "text": text})
+	return true
 
 
 func grant(tools: PackedStringArray) -> void:

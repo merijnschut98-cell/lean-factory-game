@@ -21,6 +21,8 @@ const SPAWN := "spawn"
 const FLOOR := "shell_floor"
 ## How close (m, on the floor) the player must stand to a marker to use it.
 const REACH := 1.6
+## How much farther (m) a tell counts than its footprint is, against a place or a person.
+const TELL_BIAS := 0.6
 ## The model's own sky and ambient light (made with it); the project's
 ## default environment otherwise.
 const ENVIRONMENT := "res://assets/office/office_environment.tres"
@@ -435,16 +437,21 @@ func interactable_near(at: Vector3, reach := REACH) -> Interactable:
 	return best
 
 
-## What E uses from `at`: the nearer of the interaction point and the person
-## within REACH, or null.
+## What E uses from `at`: the nearest of the interaction point, the person and the tell
+## (by its footprint, PLAN 2.15) within REACH, or null. A tie goes to the place; a tell
+## counts TELL_BIAS farther than it is, so the person at a desk comes before their in-tray.
 func target_near(at: Vector3) -> Node3D:
-	var place := interactable_near(at)
-	var person := people.person_near(at, REACH)
-	if person == null or place == null:
-		return person if person != null else place
-	var to_person := Vector2(at.x - person.position.x, at.z - person.position.z).length()
-	var to_place := Vector2(at.x - place.position.x, at.z - place.position.z).length()
-	return person if to_person < to_place else place
+	var best: Node3D = null
+	var best_distance := INF
+	for n: Node3D in [interactable_near(at), people.person_near(at, REACH)]:
+		var d := Vector2(at.x - n.position.x, at.z - n.position.z).length() if n != null else INF
+		if d < best_distance:
+			best = n
+			best_distance = d
+	var tell := tells.nearest(at, REACH) if tells != null else ""
+	if not tell.is_empty() and tells.distance(tell, at) + TELL_BIAS < best_distance:
+		best = tells.roots[tell]
+	return best
 
 
 ## The prompt for what E uses from `at` ("" for nothing).
@@ -453,6 +460,8 @@ func prompt_near(at: Vector3) -> String:
 	if target is OfficePerson:
 		var p := target as OfficePerson
 		return "E — Coach: " + p.display_name if p.talk == "coach" else "E — Praat met " + p.display_name
+	if tells != null and not tells.id_of(target).is_empty():
+		return tr(OfficeTells.PROMPT) if tells.looking() != tells.id_of(target) else ""
 	return prompt_for(target as Interactable)
 
 
@@ -643,12 +652,14 @@ func _world_input(on: bool) -> void:
 	player.set_process_unhandled_input(on)
 
 
-## Use what is in reach: a person (a talk) or an interaction point.
+## Use what is in reach: a person (a talk), an interaction point, or a tell (look closer).
 func use(target: Node3D) -> void:
 	if target is OfficePerson:
 		talk_to(target)
 	elif target is Interactable:
 		interact(target)
+	elif tells != null and not tells.id_of(target).is_empty() and session.error.is_empty():
+		tells.look(tells.id_of(target))
 
 
 ## Talk with `person` (person_selected says who): the dialog opens, or a toast
@@ -878,6 +889,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if clicked and person != null:
 		click_person(person)
 		return
+	if clicked and tells != null and click_tell(tells.under(origin, ray)):
+		return
 	if not clicked:
 		hover_person(person)
 	if ray.y >= -0.01:
@@ -912,6 +925,21 @@ func click_person(person: OfficePerson) -> bool:
 	return not route.is_empty()
 
 
+## A click on a tell (PLAN 2.15): within reach, look closer; else walk up to it and look on
+## arrival. False when the click is not for the world, there is no tell or no way there.
+func click_tell(tell: String) -> bool:
+	if tell.is_empty() or world_waits() or not session.error.is_empty():
+		return false
+	var root: Node3D = tells.roots[tell]
+	if tells.distance(tell, player.position) <= REACH:
+		use(root)
+		return true
+	_walk_goal = root
+	var route := nav().path(player.position, tells.bounds(tell).get_center() * Vector3(1, 0, 1))
+	player.walk(route)
+	return not route.is_empty()
+
+
 ## Light up the ring at a floor point under the cursor (office space), and
 ## only that one; the cursor becomes a hand over it.
 func hover_floor(point: Vector3) -> void:
@@ -939,7 +967,9 @@ func _on_arrived() -> void:
 	_walk_goal = null
 	if goal == null or ui.is_busy():
 		return
-	if goal == interactable_near(player.position) or goal == people.person_near(player.position, REACH):
+	var tell := tells.id_of(goal) if tells != null else ""
+	if goal == interactable_near(player.position) or goal == people.person_near(player.position, REACH) \
+			or (not tell.is_empty() and tells.distance(tell, player.position) <= REACH):
 		use(goal)
 
 

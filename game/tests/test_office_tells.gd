@@ -137,3 +137,102 @@ func test_every_tell_the_content_names_is_read_here() -> void:
 			named += 1
 			assert_true(OfficeTells.THRESHOLDS.has(t["tell"]), "%s: tell %s" % [p["id"], t["tell"]])
 	assert_true(named >= 3, "the 1e's problems list tells")
+
+
+# --- looking closer (PLAN 2.15): E or a click at a tell, the camera moves in, one line says
+# what you see (world.yaml `tells:` by the variant shown, or an open problem's own text).
+
+const LOOKS := {"intake_stack": {"place": "connections.intake", "low": "Weinig.", "mid": "Wat.", "high": "Veel."}}
+
+
+func _office() -> Office:
+	var office: Office = load("res://src/world/office/office.tscn").instantiate()
+	office.seed_value = 11
+	office.training = false
+	office.build()
+	return office
+
+
+func _problem_on(tell: String, text: String) -> ProblemDef:
+	var p := ProblemDef.from_dict({"id": "p", "name": "Een probleem", "step": "connections.intake", "waste": "waiting",
+		"severity": "low", "visibility": "subtle", "kpi": "lead_time", "root_cause": "x",
+		"tells": [{"tell": tell, "text": text}]})
+	assert_eq(p.error, "")
+	return p
+
+
+func test_the_line_follows_the_variant_shown() -> void:
+	for band in OfficeTells.VARIANTS.size():
+		assert_eq(OfficeTells.text("intake_stack", band, LOOKS, []), LOOKS["intake_stack"][OfficeTells.VARIANTS[band]])
+	assert_eq(OfficeTells.text("prep_tray", OfficeTells.HIGH, LOOKS, []), "", "no words for it: nothing")
+
+
+func test_an_open_problem_on_the_tell_speaks_from_mid_up() -> void:
+	var open: Array[ProblemDef] = [_problem_on("intake_stack", "Hoger dan het werk van een dag.")]
+	assert_eq(OfficeTells.text("intake_stack", OfficeTells.HIGH, LOOKS, open), "Hoger dan het werk van een dag.")
+	assert_eq(OfficeTells.text("intake_stack", OfficeTells.MID, LOOKS, open), "Hoger dan het werk van een dag.")
+	assert_eq(OfficeTells.text("intake_stack", OfficeTells.LOW, LOOKS, open), "Weinig.", "a low pile shows nothing odd")
+	var other: Array[ProblemDef] = [_problem_on("prep_tray", "Vol.")]
+	assert_eq(OfficeTells.text("intake_stack", OfficeTells.HIGH, LOOKS, other), "Veel.")
+
+
+func test_every_tell_has_words_for_each_variant_and_none_names_a_problem() -> void:
+	var looks := OfficeBuilding.load_from(Catalog.DATA_DIR).tells
+	var problems: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/problems_tier1.json"))
+	for tell: String in OfficeTells.THRESHOLDS:
+		assert_true(looks.has(tell), "world.yaml tells: " + tell)
+		for v in OfficeTells.VARIANTS:
+			var line: String = looks.get(tell, {}).get(v, "")
+			assert_false(line.is_empty(), "%s %s" % [tell, v])
+			for p: Dictionary in problems["problems"]:
+				assert_false(line.to_lower().contains(str(p["name"]).to_lower()), "%s %s names %s" % [tell, v, p["id"]])
+
+
+func test_looking_at_a_tell_frames_it_says_what_you_see_and_notes_it_once() -> void:
+	var office := _office()
+	var looks := OfficeBuilding.load_from(Catalog.DATA_DIR).tells
+	var band: int = OfficeTells.bands(office.session.region.net)["revision_cabinet"]
+	var said := office.tells.look("revision_cabinet")
+	assert_eq(said, looks["revision_cabinet"][OfficeTells.VARIANTS[band]])
+	assert_true(office.rig.inspecting(), "the camera moves to it")
+	assert_eq(office.tells.line.text, said, "the line shows in the world")
+	assert_true(office.tells.line.visible)
+	var noted := func() -> Array: return office.session.gemba.journal.filter(
+		func(e: Dictionary) -> bool: return e["text"] == said)
+	assert_eq(noted.call().size(), 1, "Notities holds it as a Waarneming")
+	assert_eq(noted.call()[0]["place"], "connections.revision")
+	office.tells.look("revision_cabinet")
+	assert_eq(noted.call().size(), 1, "once")
+	office.free()
+
+
+func test_the_line_goes_and_the_camera_comes_back_when_you_walk_on() -> void:
+	var office := _office()
+	office.player.position = Vector3(-16.4, 0, -12.6)
+	office.tells.look("revision_cabinet")
+	office.player.position += Vector3(1.0, 0, 0)
+	office.tells._process(0.1)
+	assert_false(office.tells.line.visible)
+	assert_false(office.rig.inspecting())
+	office.tells.look("revision_cabinet")
+	office.tells._process(60.0)
+	assert_true(office.tells.line.visible, "one long frame (a hitch) does not end it")
+	for i in ceili(OfficePerson.say_time(office.tells.line.text) / OfficeTells.MAX_STEP):
+		office.tells._process(OfficeTells.MAX_STEP)
+	assert_false(office.tells.line.visible, "it fades after its time")
+	assert_false(office.rig.inspecting())
+	office.free()
+
+
+func test_e_beside_a_tell_looks_at_it_and_a_place_ring_still_wins_on_its_ring() -> void:
+	var office := _office()
+	var cabinet := OfficeTells.node(office.geometry, "revision_cabinet")
+	var beside := Vector3(-16.9, 0, -12.6)   # east of the cabinet by the west wall
+	assert_eq(office.target_near(beside), cabinet)
+	assert_eq(office.prompt_near(beside), office.tr(OfficeTells.PROMPT))
+	var ring := office.interactable("place:connections.intake")
+	assert_eq(office.target_near(ring.position), ring, "on the intake ring, Intake")
+	office.use(cabinet)
+	assert_true(office.tells.line.visible)
+	assert_eq(office.prompt_near(beside), "", "no prompt while you look")
+	office.free()

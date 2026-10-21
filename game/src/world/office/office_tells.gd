@@ -9,6 +9,10 @@ extends Node
 ## The tells are ambiguous on purpose: a tall stack can be a normal busy week, and the
 ## same pile shows whatever fills it. They never say what is wrong; the player still has
 ## to go and look (content/problems_tier1.yaml `tells:` lists which problem can show where).
+##
+## Looking closer (PLAN 2.15): E beside a tell, or a click on it, moves the camera in and one
+## line over it says what anyone would see (`text`); the line is noted once in Notities as a
+## "Waarneming". Walking on, or the line's time, gives the camera back.
 
 const LOW := 0
 const MID := 1
@@ -41,20 +45,154 @@ const MOVED_DAYS := 5
 const METER_DAYS := 10
 ## Seconds between looks at the clock.
 const POLL_SECONDS := 1.0
+## The prompt beside a tell: it says you can look, never what is there.
+const PROMPT := "E — Van dichtbij bekijken"
+## A look ends when the player has walked this far (m) from where they stood.
+const LEAVE := 0.5
+## The line floats this high (m) over the tell's top.
+const LINE_LIFT := 0.1
+## The camera looks a little past the player's shoulder (rad), so they do not hide the tell.
+const LOOK_ANGLE := 0.5
+## The most (s) one frame takes off a line's time.
+const MAX_STEP := 0.1
 
 var office: Office
+## What each tell looks like: OfficeBuilding.tells.
+var looks: Dictionary = {}
+## The line over the tell looked at (OfficePerson's subtitle style), hidden between looks.
+var line: Label3D
 var _seen_time := -1
 var _since := INF
+## The tell looked at now ("" for none), how long its line still shows, where the player stood.
+var _looking := ""
+var _look_left := 0.0
+var _look_from := Vector3.ZERO
+## tell → its bounds in the office's space (all variants), filled on first use.
+var _boxes: Dictionary = {}
+## tell → its root node in the floor's model (only the tells this floor has).
+var roots: Dictionary = {}
 
 
 ## The tells on the office's floor, or null when its model has none.
 static func create(of_office: Office) -> OfficeTells:
-	if THRESHOLDS.keys().all(func(tell: String) -> bool: return node(of_office.geometry, tell) == null):
+	var found := {}
+	for tell: String in THRESHOLDS:
+		var root := node(of_office.geometry, tell)
+		if root != null:
+			found[tell] = root
+	if found.is_empty():
 		return null
 	var tells := OfficeTells.new()
+	tells.roots = found
 	tells.name = "Tells"
 	tells.office = of_office
+	tells.looks = of_office.floors.building.tells if of_office.floors != null else {}
+	tells.line = OfficePerson._subtitle()
+	tells.add_child(tells.line)
 	return tells
+
+
+## What the player sees of `tell` at `band`: from mid up, the own words of an open problem
+## that shows there (`open`); else the tell's look at that height (`looks`, world.yaml).
+static func text(tell: String, band: int, tell_looks: Dictionary, open: Array[ProblemDef]) -> String:
+	if band >= MID:
+		for p in open:
+			for t: Dictionary in p.tells:
+				if t["tell"] == tell:
+					return t["text"]
+	return str(tell_looks.get(tell, {}).get(VARIANTS[band], ""))
+
+
+## Look closer at `tell`: the camera moves in, its line shows over it and is noted once in
+## the journal at the tell's place. Returns the line ("" when the tell has no words).
+func look(tell: String) -> String:
+	var region := office.session.region
+	var open: Array[ProblemDef] = []
+	open.assign(region.problem_list().filter(func(p: ProblemDef) -> bool: return region.state[p.id].is_open()))
+	var said := text(tell, bands(region.net)[tell], looks, open)
+	if said.is_empty():
+		return ""
+	var box := bounds(tell)
+	var ahead := (box.get_center() - office.player.position) * Vector3(1, 0, 1)
+	office.rig.inspect(box.get_center(), atan2(-ahead.x, -ahead.z) + LOOK_ANGLE)
+	line.text = said
+	line.position = box.get_center() + Vector3.UP * (box.size.y / 2.0 + LINE_LIFT)
+	line.visible = true
+	_looking = tell
+	_look_left = OfficePerson.say_time(said)
+	_look_from = office.player.position
+	office.session.gemba.note(looks[tell]["place"], said,
+		SimCalendar.day_of(region.net.time) - GameSession.WARMUP_DAYS)
+	return said
+
+
+## The tell looked at now ("" for none).
+func looking() -> String:
+	return _looking
+
+
+## The tell `n` is the root of ("" when it is none).
+func id_of(n: Node) -> String:
+	for tell: String in roots:
+		if n != null and n == roots[tell]:
+			return tell
+	return ""
+
+
+## The nearest tell with words whose footprint lies within `reach` of `at` (office space;
+## "" for none).
+func nearest(at: Vector3, reach: float) -> String:
+	var best := ""
+	for tell in _lookable():
+		var d := distance(tell, at)
+		if d <= reach:
+			best = tell
+			reach = d
+	return best
+
+
+## How far `at` is from the tell's footprint on the floor (0 over it; INF without the tell).
+func distance(tell: String, at: Vector3) -> float:
+	var box := bounds(tell)
+	if box.size == Vector3.ZERO:
+		return INF
+	var foot := Rect2(box.position.x, box.position.z, box.size.x, box.size.z)
+	var p := Vector2(at.x, at.z)
+	return p.distance_to(p.clamp(foot.position, foot.end))
+
+
+## The tell with words under a ray from `origin` along `ray` (office space; "" for none).
+func under(origin: Vector3, ray: Vector3) -> String:
+	for tell in _lookable():
+		if bounds(tell).intersects_ray(origin, ray) != null:
+			return tell
+	return ""
+
+
+## The tells on this floor that have words.
+func _lookable() -> Array[String]:
+	var out: Array[String] = []
+	out.assign(roots.keys().filter(func(tell: String) -> bool: return looks.has(tell)))
+	return out
+
+
+## The tell's bounds in the office's space, every variant included (empty without it).
+func bounds(tell: String) -> AABB:
+	if not _boxes.has(tell):
+		var box := AABB()
+		var root: Node3D = roots.get(tell)
+		for n in root.find_children("*", "MeshInstance3D", true, false) if root != null else []:
+			var b: AABB = office.in_office(n) * (n as MeshInstance3D).get_aabb()
+			box = b if box.size == Vector3.ZERO else box.merge(b)
+		_boxes[tell] = box
+	return _boxes[tell]
+
+
+func _end_look() -> void:
+	_looking = ""
+	line.visible = false
+	if not office.busy():
+		office.rig.release()
 
 
 ## The node `tell_<id>` in `geometry` (null if there is none).
@@ -107,6 +245,11 @@ func refresh() -> void:
 
 
 func _process(delta: float) -> void:
+	if not _looking.is_empty():
+		_look_left -= minf(delta, MAX_STEP)   # a hitch (a shader compiling) does not eat the line
+		var moved := (office.player.position - _look_from) * Vector3(1, 0, 1)
+		if _look_left <= 0.0 or moved.length() > LEAVE:
+			_end_look()
 	_since += delta
 	if office == null or _since < POLL_SECONDS or not office.session.error.is_empty():
 		return
