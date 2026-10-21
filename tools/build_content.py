@@ -651,6 +651,13 @@ MISSION_KEYS = {"id", "name", "kind", "tier", "requires", "briefing", "debrief",
 # training mission may word its own; the problem steps need a goal with a problem.
 OBJECTIVE_STEPS = ["look", "again", "dig", "a3", "wait", "check", "act", "talk"]
 PROBLEM_STEPS = {"dig", "a3", "wait", "check", "act"}
+# The steps each goal can reach (Objective._where): a main mission words every one of
+# them, so its objective is authored at every state (phase-2 design §3.1).
+GOAL_STEPS = {
+    "walk": ["look"], "observe": ["look"], "investigate": ["look", "dig"],
+    "solve": ["look", "dig", "a3", "wait", "check", "act"], "check": ["look", "dig", "a3", "wait", "check"],
+    "rework_fix": ["a3", "wait", "check", "act"], "sustain": [], "talk_to": ["talk"],
+}
 MAX_STEP_CHARS = 60
 # A safety mission's containment (audit §2.4.1): a short measure against an
 # acute risk, taken once while the mission is active; it fades after `days`.
@@ -737,11 +744,16 @@ def validate_missions(doc: Any, source: str) -> None:
 
 def _validate_steps(m: dict, where: str) -> None:
     """The objective line's own words per step (Objective): short, and only for a step
-    the goal has; `look` may map an observe goal's places to their texts."""
+    the goal has; `look` may map an observe goal's places to their texts. A main mission
+    words every step its goal can reach (and its talk, when it has one)."""
     steps = _mapping(m, "steps", set(OBJECTIVE_STEPS), where)
-    if steps and m["kind"] not in COACHED_KINDS:
-        raise ContentError(f"{where}: only main and training missions word their steps (the HUD shows theirs)")
     goal = m["goal"]
+    if m["kind"] == "main":
+        needed = GOAL_STEPS[goal["type"]] + (["talk"] if _has_talk(m) and goal["type"] != "talk_to" else [])
+        missing = [key for key in needed if key not in steps]
+        if missing:
+            raise ContentError(f"{where} steps: a main mission words every step its goal reaches; "
+                               f"missing {', '.join(missing)}")
     for key, text in steps.items():
         if key == "look" and isinstance(text, dict):
             if goal["type"] != "observe":
@@ -754,10 +766,15 @@ def _validate_steps(m: dict, where: str) -> None:
             _step_text(text, f"{where} steps", key)
         if key == "again" and goal["type"] != "observe":
             raise ContentError(f"{where} steps: 'again' is for an observe goal")
-        if key == "talk" and goal["type"] != "talk_to" and not m.get("ends_with_talk"):
+        if key == "talk" and goal["type"] != "talk_to" and not _has_talk(m):
             raise ContentError(f"{where} steps: 'talk' needs a talk (a talk_to goal or ends_with_talk)")
         if key in PROBLEM_STEPS and "problem" not in goal:
             raise ContentError(f"{where} steps: '{key}' needs a goal with a problem")
+
+
+def _has_talk(m: dict) -> bool:
+    """The mission waits for a talk besides its goal (ends_with_talk, talk_to goals)."""
+    return bool(m.get("ends_with_talk") or m.get("talk_to"))
 
 
 def _step_text(text: Any, where: str, key: str) -> None:

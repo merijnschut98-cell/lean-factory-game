@@ -269,6 +269,13 @@ missions:
       poor_fix: "Er zijn minder handtekeningen, maar elk ontwerp wordt nog steeds van nul getekend. De stapel zakt, langzaam. Joost houdt zijn vacatures nog even aan. Wat zou het werk zelf lichter maken?"
     reopen: "De stapel bij Werkvoorbereiding groeit weer en Anouk blijft weer tot zeven uur. Wat er ooit werkte, wordt niet meer gedaan. Waarom niet?"
     goal: {type: solve, problem: custom_design}
+    steps:
+      look: "Ga bij Werkvoorbereiding kijken hoe een ontwerp ontstaat"
+      dig: "Zoek uit waar de uren van Anouk naartoe gaan"
+      a3: "Schrijf je A3 voor Werkvoorbereiding aan de obeya-wand"
+      wait: "Kijk bij Werkvoorbereiding hoe het experiment loopt"
+      check: "Lees aan de obeya-wand af wat je experiment opleverde"
+      act: "Beslis aan de obeya-wand hoe Werkvoorbereiding verdergaat"
     rewards: {xp: 600, budget: 10000}
     insights:
       go_see: "Wat is je doel voor Werkvoorbereiding, in een getal? En hoe ziet het er nu uit?"
@@ -295,6 +302,13 @@ missions:
     debrief_first: "Wat binnenkomt is nu compleet: het formulier voorkomt de fout, niemand hoeft harder te controleren. Sanne heeft niemand extra nodig, en er gaan méér aansluitingen per week door: je pakte het knelpunt. Marco wacht nog. Wat verwacht je dat zijn verbetering met de stroom doet?"
     reopen: "Bij de Intake gaan weer aanvragen terug naar de klant. Sanne's turflijst is terug. Wat is er sinds de vorige keer veranderd?"
     goal: {type: solve, problem: incomplete_application}
+    steps:
+      look: "Ga bij Intake kijken wat er met een aanvraag gebeurt"
+      dig: "Zoek uit waarom aanvragen terug naar de klant gaan"
+      a3: "Schrijf je A3 voor Intake aan de obeya-wand"
+      wait: "Kijk bij Intake hoe het experiment loopt"
+      check: "Lees aan de obeya-wand af wat je experiment opleverde"
+      act: "Beslis aan de obeya-wand hoe Intake verdergaat"
     rewards: {xp: 700, budget: 8000}
     insights:
       go_see: "Twee teams vragen om je aandacht. Waar ligt het meeste werk te wachten, in dagen werk? Heb je dat zelf geteld?"
@@ -318,6 +332,13 @@ missions:
     debrief_first: "Er rijdt pas een monteur als de meterkast klaar is: minder ritten voor niets, en de klanten van wie het adres niet klaar was, zijn eerder aangesloten. Maar kijk naar de stroom: er gaan niet méér aansluitingen per week door. Het werk wacht nog ergens anders. Bewaar die monteursuren goed; je zult ze nog nodig hebben."
     reopen: "Monteurs staan weer voor meterkasten die niet klaar zijn. Marco belt. Wat is er weggezakt?"
     goal: {type: solve, problem: installer_not_ready}
+    steps:
+      look: "Ga bij de monteurs kijken hoe een klus bij de klant loopt"
+      dig: "Zoek uit waarom monteurs voor niks voor de deur staan"
+      a3: "Schrijf je A3 voor de monteurs aan de obeya-wand"
+      wait: "Kijk bij de monteurs hoe het experiment loopt"
+      check: "Lees aan de obeya-wand af wat je experiment opleverde"
+      act: "Beslis aan de obeya-wand hoe de monteurs verdergaat"
     rewards: {xp: 500, budget: 5000}
     insights:
       go_see: "Twee teams vragen om je aandacht. Waar staat het werk het langst te wachten?"
@@ -338,6 +359,13 @@ missions:
     debrief: "Er komen minder statusvragen binnen. Esra houdt haar team zoals het is, en haar agents hebben weer tijd voor de vragen die ertoe doen. Een groot deel van wat ze binnenkregen, was vraag die wíj veroorzaakten: niemand vertelde de klant hoe het ervoor stond. Mevrouw El Amrani kreeg een bericht en hoefde niet meer te bellen. Wat zegt dit over meer agents?"
     reopen: "De telefoon staat weer roodgloeiend. Esra's agents beantwoorden weer dezelfde vraag. Wat hoort de klant nu niet meer?"
     goal: {type: solve, problem: status_callers}
+    steps:
+      look: "Ga bij het KCC kijken wie er belt, en waarom"
+      dig: "Zoek uit waar de telefoontjes bij het KCC vandaan komen"
+      a3: "Schrijf je A3 voor het KCC aan de obeya-wand"
+      wait: "Kijk bij het KCC hoe het experiment loopt"
+      check: "Lees aan de obeya-wand af wat je experiment opleverde"
+      act: "Beslis aan de obeya-wand hoe het KCC verdergaat"
     rewards: {xp: 800, budget: 8000}
     insights:
       go_see: "Wat wil je dat er over vier weken anders is aan de telefoon? In een getal?"
@@ -358,6 +386,13 @@ missions:
     debrief: "Een dossier wordt nu afgehandeld op de dag dat het klaar is. De warmtepomp van de familie El Amrani draait. Bij Petra is de stapel niet kleiner geworden, want er was geen stapel werk: er was een stapel wachten. Welke andere batches zie je in de stroom die niemand een batch noemt?"
     reopen: "Klanten bellen weer dat hun EAN-code niet bestaat. Bij Petra staat het werk weer te wachten tot het einde van de maand. Wie heeft dat zo besloten?"
     goal: {type: solve, problem: done_but_not_closed}
+    steps:
+      look: "Ga bij Meetdata kijken wat er na de aansluiting gebeurt"
+      dig: "Zoek uit waar een dossier op wacht als het klaar is"
+      a3: "Schrijf je A3 voor Meetdata aan de obeya-wand"
+      wait: "Kijk bij Meetdata hoe het experiment loopt"
+      check: "Lees aan de obeya-wand af wat je experiment opleverde"
+      act: "Beslis aan de obeya-wand hoe Meetdata verdergaat"
     teaches: [ean_code]
     rewards: {xp: 900, budget: 8000}
     insights:
@@ -380,6 +415,13 @@ missions:
       blamed: "De schades zijn minder. Gert werkt mee, maar hij vertelt je niets meer dan nodig. Wie houdt de kaart eigenlijk bij?"
     reopen: "Er komen weer graafschades binnen. Gert belt: 'We graven zoals afgesproken. Klopt jullie kaart nog?'"
     goal: {type: solve, problem: digging_damage}
+    steps:
+      look: "Ga bij de storingsdienst kijken wat er dinsdag gebeurde"
+      dig: "Zoek uit wat Gert van ons kreeg voordat hij ging graven"
+      a3: "Schrijf je A3 voor de storingsdienst aan de obeya-wand"
+      wait: "Kijk bij de storingsdienst hoe het experiment loopt"
+      check: "Lees aan de obeya-wand af wat je experiment opleverde"
+      act: "Beslis aan de obeya-wand hoe de storingsdienst verdergaat"
     # Containment (audit §2.4.1): until the cause is fixed, contractors stop
     # and call the storingsdienst before digging within a metre of a
     # middenspanningskabel, and a monteur points out the cable on site. All
@@ -417,6 +459,13 @@ missions:
     debrief: "Een nieuwe kabel staat nu eerder op de kaart, en de doos bij Revisie & GIS wordt kleiner. Wie merkt het als dit over een jaar wegzakt, en hoe snel?"
     reopen: "De doos bij Revisie & GIS vult zich weer. Mieke tekent weer over. Wat werd er niet meer gedaan?"
     goal: {type: solve, problem: revision_backlog}
+    steps:
+      look: "Ga bij Revisie & GIS kijken naar de doos met schetsen"
+      dig: "Zoek uit hoe een schets op de kaart komt"
+      a3: "Schrijf je A3 voor Revisie & GIS aan de obeya-wand"
+      wait: "Kijk bij Revisie & GIS hoe het experiment loopt"
+      check: "Lees aan de obeya-wand af wat je experiment opleverde"
+      act: "Beslis aan de obeya-wand hoe Revisie & GIS verdergaat"
     rewards: {xp: 900, budget: 10000}
     insights:
       go_see: "Hoe oud is de oudste schets in de doos? Wat betekent dat voor wie morgen gaat graven?"
@@ -435,6 +484,13 @@ missions:
     debrief: "Niet elke aanvraag heeft een volledige studie nodig. Femke rekent weer aan de studies die ertoe doen, en de school had binnen een week antwoord. Je hebt het knelpunt eerst beter benut voordat je het groter maakte. Wanneer is extra analisten aannemen wél de goede stap?"
     reopen: "Op Femke's bord staan weer bijna veertig studies. Elke aanvraag krijgt weer de volle studie. Wie besliste dat, en wanneer?"
     goal: {type: solve, problem: grid_study_queue}
+    steps:
+      look: "Ga bij Femke kijken naar het bord met netstudies"
+      dig: "Zoek uit wat Femke op een dag allemaal doet"
+      a3: "Schrijf je A3 voor Netstrategie aan de obeya-wand"
+      wait: "Kijk bij Netstrategie hoe het experiment loopt"
+      check: "Lees aan de obeya-wand af wat je experiment opleverde"
+      act: "Beslis aan de obeya-wand hoe Netstrategie verdergaat"
     teaches: [netcongestie]
     rewards: {xp: 1200, budget: 12000}
     insights:
@@ -456,6 +512,13 @@ missions:
     debrief: "De fabrikant is niet sneller geworden. We bestellen alleen niet meer te laat: zodra de netstudie zegt dat er een trafo bij moet. De oudste wachtende verzwaring is jonger geworden, en De Boomgaard krijgt eerder stroom. Welke andere wachttijden lopen na elkaar terwijl ze naast elkaar zouden kunnen?"
     reopen: "De trafo's worden weer pas besteld als het ontwerp klaar is. Hermans Bouw belt opnieuw. Wat is er in de bestelroute teruggeslopen?"
     goal: {type: solve, problem: transformer_wait}
+    steps:
+      look: "Ga bij Netstrategie kijken waar De Boomgaard op wacht"
+      dig: "Zoek uit wat er gebeurt tussen netstudie en trafo"
+      a3: "Schrijf je A3 voor Netstrategie aan de obeya-wand"
+      wait: "Kijk bij Netstrategie hoe het experiment loopt"
+      check: "Lees aan de obeya-wand af wat je experiment opleverde"
+      act: "Beslis aan de obeya-wand hoe Netstrategie verdergaat"
     teaches: [transformator]
     rewards: {xp: 1300, budget: 12000}
     insights:
@@ -475,6 +538,13 @@ missions:
     debrief: "Op het drukste kwartier van het jaar gebruikten de grote klanten maar een deel van wat ze gecontracteerd hadden. Een deel daarvan komt, volgens de regels van de ACM, terug in de wachtrij. Welke andere voorraad houden wij aan die op papier vol lijkt?"
     reopen: "De wachtlijst groeit weer, terwijl het gebruik niemand meer bijhoudt. Thomas krijgt weer boze telefoontjes. Wie keek er naar de cijfers, en waarom nu niet meer?"
     goal: {type: solve, problem: unused_capacity}
+    steps:
+      look: "Ga bij de congestiedesk kijken wie er op de wachtlijst staat"
+      dig: "Zoek uit hoeveel gecontracteerd vermogen er echt draait"
+      a3: "Schrijf je A3 voor de congestiedesk aan de obeya-wand"
+      wait: "Kijk bij de congestiedesk hoe het experiment loopt"
+      check: "Lees aan de obeya-wand af wat je experiment opleverde"
+      act: "Beslis aan de obeya-wand hoe de congestiedesk verdergaat"
     teaches: [netcongestie, acm]
     rewards: {xp: 1400, budget: 12000}
     insights:
@@ -496,6 +566,13 @@ missions:
     debrief: "Intake en Werkvoorbereiding kijken nu naar dezelfde aansluiting en hetzelfde getal. Wat je meet, bepaalt wat mensen doen; en wat je níet meet, bepaalt wat ze laten liggen. Wie heeft last gehad van de oude cijfers, en weten ze dat het niet aan hen lag?"
     reopen: "In het MT liggen weer twee recordmaanden op tafel en de aansluitingen gaan niet sneller. Waar kijken de teams nu weer naar?"
     goal: {type: solve, problem: silo_kpis}
+    steps:
+      look: "Ga bij Intake en Werkvoorbereiding naar hun borden kijken"
+      dig: "Zoek uit waarop beide teams worden afgerekend"
+      a3: "Schrijf je A3 voor beide teams aan de obeya-wand"
+      wait: "Kijk bij beide teams hoe het experiment loopt"
+      check: "Lees aan de obeya-wand af wat je experiment opleverde"
+      act: "Beslis aan de obeya-wand hoe beide teams verdergaat"
     rewards: {xp: 1500, budget: 12000}
     insights:
       go_see: "Vraag eens aan twee teams waar ze op worden beoordeeld. Passen die doelen bij elkaar?"
@@ -515,6 +592,8 @@ missions:
     briefing: "De storingsdienst werkt als de rest slaapt. Loop een dienst mee met monteur Ahmed Bouzid, van melding tot herstel. Let op de klok: na vier uur zonder stroom krijgt elke klant een vergoeding. Waar gaat de tijd naartoe?"
     debrief: "Je zag een storing van melding tot herstel. Halverwege reed Ahmed naar het magazijn voor een mof. Dat onthoud je."
     goal: {type: walk, stream: outages}
+    steps:
+      look: "Loop met Ahmed mee en kijk bij {team}"
     teaches: [compensatieregeling]
     rewards: {xp: 200}
 
@@ -528,6 +607,8 @@ missions:
     briefing: "Loop een dag mee met meterwisselaar Yvonne Kok. Er staan acht adressen op haar lijst; de laatste analoge meters in Nova moeten eruit. Tel hoe vaak de deur opengaat."
     debrief: "Niet elke deur ging open. Yvonne liet weer een kaartje achter: 'helaas niet thuis'. Ze heeft er een dikke stapel van in de bus."
     goal: {type: walk, stream: meters}
+    steps:
+      look: "Loop met Yvonne mee en kijk bij {team}"
     rewards: {xp: 200}
 
   - id: fix_wrong_joint
@@ -539,6 +620,13 @@ missions:
     briefing: "Bij de storing in de Lindelaan was de stroom vijf uur weg; 140 huishoudens krijgen elk 35 euro vergoeding. Ahmed reed halverwege veertig minuten heen en terug naar het magazijn voor een mof. 'Het magazijn levert te laat,' zeggen de monteurs. Dirk Smits van het magazijn: 'Ik heb ze gewoon liggen.' Ze hebben allebei gelijk. Hoe kan dat?"
     debrief: "Wat in de bus hoort, ligt er nu ook, en een lege bak zegt Dirk wat hij moet aanvullen. De volgende lange storing kostte geen rit naar het magazijn."
     goal: {type: solve, problem: wrong_joint_in_van}
+    steps:
+      look: "Ga bij de storingsdienst kijken hoe een herstel loopt"
+      dig: "Zoek uit waarom Ahmed halverwege naar het magazijn reed"
+      a3: "Schrijf je A3 voor de storingsdienst aan de obeya-wand"
+      wait: "Kijk bij de storingsdienst hoe het experiment loopt"
+      check: "Lees aan de obeya-wand af wat je experiment opleverde"
+      act: "Beslis aan de obeya-wand hoe de storingsdienst verdergaat"
     rewards: {xp: 400, budget: 4000}
 
   - id: fix_not_at_home
@@ -550,6 +638,13 @@ missions:
     briefing: "Yvonne Kok laat elke dag drie kaartjes achter: 'helaas niet thuis'. Het programma om de laatste analoge meters te vervangen loopt achter. Meneer De Jong belde boos: hij had een halve dag vrij genomen, en er kwam niemand. Wie is hier eigenlijk niet thuis?"
     debrief: "Klanten zijn thuis als ze weten wanneer we komen. Yvonne's stapel kaartjes is bijna op; ze bestelt geen nieuwe."
     goal: {type: solve, problem: not_at_home}
+    steps:
+      look: "Ga met Yvonne mee langs haar adressen"
+      dig: "Zoek uit waarom de deur zo vaak dicht blijft"
+      a3: "Schrijf je A3 voor de meterwisselaars aan de obeya-wand"
+      wait: "Kijk bij Yvonne hoe het experiment loopt"
+      check: "Lees aan de obeya-wand af wat je experiment opleverde"
+      act: "Beslis aan de obeya-wand hoe de meterwisselaars verdergaat"
     rewards: {xp: 400, budget: 4000}
 
   - id: fix_silent_meter
@@ -574,6 +669,13 @@ missions:
     briefing: "Het dossier van de familie Bos is al drie weken klaar bij Werkvoorbereiding. Het ligt in een map met de andere elf woningen van De Appelgaard, want de vergunning gaat per project de deur uit. De gemeente haalt haar termijn bijna altijd. Waar wacht het dossier dan op?"
     debrief: "Een dossier gaat nu naar de gemeente zodra het tracé bekend is. Er gaan niet méér aansluitingen per week door, want de capaciteit is gelijk gebleven. Maar elke klant is eerder klaar, en de familie Bos had haar vergunning binnen drie weken. Een knelpunt bepaalt hoeveel er doorgaat; elke wachttijd onderweg bepaalt hoe lang het duurt."
     goal: {type: solve, problem: permits_in_batches}
+    steps:
+      look: "Kijk bij Werkvoorbereiding waar het dossier van Bos ligt"
+      dig: "Zoek uit waar het dossier van de familie Bos op wacht"
+      a3: "Schrijf je A3 voor Werkvoorbereiding aan de obeya-wand"
+      wait: "Kijk bij Werkvoorbereiding hoe het experiment loopt"
+      check: "Lees aan de obeya-wand af wat je experiment opleverde"
+      act: "Beslis aan de obeya-wand hoe Werkvoorbereiding verdergaat"
     rewards: {xp: 400, budget: 4000}
 
   - id: look_at_grid_study
@@ -585,6 +687,9 @@ missions:
     briefing: "Bij Netstrategie hangt een bord vol netstudies, met gele briefjes die er al maanden hangen. Femke de Wit heeft vijf minuten voor je. Zoek twee feiten over waarom het zo vol is. Oplossen hoeft nog niet."
     debrief: "Je weet nu twee dingen over dat bord. Femke ook: ze vroeg of je terugkomt."
     goal: {type: investigate, problem: grid_study_queue, clues: 2}
+    steps:
+      look: "Ga bij Netstrategie naar het bord van Femke kijken"
+      dig: "Zoek twee dingen uit over het bord van Femke"
     rewards: {xp: 250}
 
   - id: fix_inverters_tripping
@@ -614,6 +719,13 @@ missions:
       poor_fix: "Henks video's staan op de tablet. Of ze genoeg zijn, merk je bij de eerste lastige storing zonder hem."
     fail: "Henk is met pensioen. Zijn afscheid was mooi, maar zijn kennis van de oude netten is met hem vertrokken. Een buddy die het kan voordoen is er niet meer. Wat er op papier staat, en wat Ahmed zelf leert, moet het nu doen."
     goal: {type: solve, problem: knowledge_drain}
+    steps:
+      look: "Ga bij de storingsdienst kijken hoe Henk werkt"
+      dig: "Zoek uit wat er wegvalt als Henk met pensioen gaat"
+      a3: "Schrijf je A3 voor de storingsdienst aan de obeya-wand"
+      wait: "Kijk bij de storingsdienst hoe het experiment loopt"
+      check: "Lees aan de obeya-wand af wat je experiment opleverde"
+      act: "Beslis aan de obeya-wand hoe de storingsdienst verdergaat"
     deadline_days: 56
     deadline_beat: henk_farewell   # his farewell party is that day, his knowledge saved or not (dated beat)
     fail_closes: [skills_matrix_buddy, twi_job_instruction]
@@ -629,4 +741,11 @@ missions:
     briefing: "Planner Linda Jansen is de halve week bezig met omplannen. Vorige week werd een op de drie klussen verschoven, de meeste op de dag zelf. 'Ik werk harder dan ooit,' zegt ze, 'en het wordt alleen maar erger.' Storingen gaan altijd voor. Maar zijn storingen eigenlijk een verrassing?"
     debrief: "Er staan nu elke dag mensen klaar voor storingen, en de rest van de planning blijft staan. Een planning die voor honderd procent vol zit, breekt bij het eerste onverwachte; hoe voller, hoe harder."
     goal: {type: solve, problem: planning_reshuffle}
+    steps:
+      look: "Ga bij Planning kijken hoe een week wordt ingepland"
+      dig: "Zoek uit waarom de planning steeds omgaat"
+      a3: "Schrijf je A3 voor Planning aan de obeya-wand"
+      wait: "Kijk bij Planning hoe het experiment loopt"
+      check: "Lees aan de obeya-wand af wat je experiment opleverde"
+      act: "Beslis aan de obeya-wand hoe Planning verdergaat"
     rewards: {xp: 500, budget: 5000}

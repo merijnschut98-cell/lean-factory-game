@@ -287,6 +287,7 @@ missions:
     briefing: Loop mee.
     debrief: Goed gedaan.
     goal: {type: walk, stream: connections}
+    steps: {look: "Loop mee langs {team}"}
     rewards: {xp: 300}
   - id: fix_design
     name: De stapel
@@ -296,6 +297,8 @@ missions:
     briefing: Zoek het uit.
     debrief: Opgelost.
     goal: {type: solve, problem: custom_design}
+    steps: {look: Ga kijken, dig: Zoek het uit, a3: Schrijf je A3, wait: Kijk hoe het loopt, check: Bekijk de Check,
+            act: Beslis hoe je verdergaat}
     insights: {understand: Vergelijk eens.}
   - id: peek
     name: Een kijkje
@@ -679,7 +682,7 @@ def _fork_branch(d: dict) -> None:
     d["missions"]["missions"].append({
         "id": "walk_meters", "name": "De meters", "kind": "main", "tier": 1, "briefing": "Kijk.", "debrief": "Gezien.",
         "requires": {"missions": ["walk_connections"]}, "goal": {"type": "walk", "stream": "meters"},
-        "fork": {"group": "after_walk", "role": "non_bottleneck"}, "debrief_first": "Eerst de meters."})
+        "steps": {"look": "Loop mee langs {team}"}, "fork": {"group": "after_walk", "role": "non_bottleneck"}, "debrief_first": "Eerst de meters."})
     _mission(d)["fork"] = {"group": "after_walk", "role": "bottleneck"}
 
 
@@ -864,9 +867,20 @@ def test_discovery_errors_are_caught(rules_dirs, mutate, message):
 
 def test_a_mission_may_word_its_own_objective_steps(rules_dirs):
     content, _ = rules_dirs
-    _rules(content, lambda d: _mission(d).update(steps={
+    _rules(content, lambda d: _mission(d)["steps"].update({
         "look": "Ga kijken bij Werkvoorbereiding", "a3": "Schrijf je A3 aan de obeya-wand"}))
     assert bc.load_content(content)["missions"]["missions"][1]["steps"]["a3"] == "Schrijf je A3 aan de obeya-wand"
+
+
+def test_a_side_mission_may_word_its_steps(rules_dirs):
+    content, _ = rules_dirs
+    _rules(content, lambda d: _mission(d, 2).update(steps={"look": "Ga kijken bij Werkvoorbereiding"}))
+
+
+def test_every_main_mission_in_the_repo_words_its_steps():
+    for m in bc.load_content()["missions"]["missions"]:
+        if m["kind"] == "main":
+            assert set(bc.GOAL_STEPS[m["goal"]["type"]]) <= set(m["steps"]), m["id"]
 
 
 def test_an_observe_goal_may_word_its_look_per_place(rules_dirs):
@@ -877,20 +891,21 @@ def test_an_observe_goal_may_word_its_look_per_place(rules_dirs):
 
 
 @pytest.mark.parametrize("mutate, message", [
-    (lambda d: _mission(d).update(steps={"guess": "Raad maar"}), r"unknown key\(s\) 'guess'"),
-    (lambda d: _mission(d).update(steps={"look": ""}), "'look' must be a non-empty"),
-    (lambda d: _mission(d).update(steps={"look": "Ga kijken " * 10}), "at most 60 characters"),
-    (lambda d: _mission(d).update(steps={"look": {"connections.design": "Kijk"}}), "per place only for an observe"),
+    (lambda d: _mission(d)["steps"].update({"guess": "Raad maar"}), r"unknown key\(s\) 'guess'"),
+    (lambda d: _mission(d)["steps"].update({"look": ""}), "'look' must be a non-empty"),
+    (lambda d: _mission(d)["steps"].update({"look": "Ga kijken " * 10}), "at most 60 characters"),
+    (lambda d: _mission(d)["steps"].update({"look": {"connections.design": "Kijk"}}), "per place only for an observe"),
     (lambda d: _mission(d).update(goal={"type": "observe", "places": ["connections.design"]},
                                   steps={"look": {"connections.intake": "Kijk bij Intake"}}),
      "'connections.intake' is not one of the goal's places"),
-    (lambda d: _mission(d).update(steps={"again": "Nog eens"}), "'again' is for an observe goal"),
-    (lambda d: _mission(d).update(steps={"talk": "Praat met Anouk"}), "'talk' needs a talk"),
-    (lambda d: _mission(d, 0).update(steps={"a3": "Schrijf je A3"}), "'a3' needs a goal with a problem"),
-    (lambda d: _mission(d, 2).update(steps={"look": "Kijk"}), "only main and training missions word their steps"),
-    (lambda d: _mission(d).update(steps={"dig": "Probeer standaardontwerpen"}),
+    (lambda d: _mission(d)["steps"].update({"again": "Nog eens"}), "'again' is for an observe goal"),
+    (lambda d: _mission(d)["steps"].update({"talk": "Praat met Anouk"}), "'talk' needs a talk"),
+    (lambda d: _mission(d, 0)["steps"].update({"a3": "Schrijf je A3"}), "'a3' needs a goal with a problem"),
+    (lambda d: _mission(d)["steps"].pop("wait"), "a main mission words every step its goal reaches; missing wait"),
+    (lambda d: _mission(d, 0).pop("steps"), "missing look"),
+    (lambda d: _mission(d)["steps"].update({"dig": "Probeer standaardontwerpen"}),
      "names 'Standaardontwerpen': the how is the player's"),
-    (lambda d: _mission(d).update(steps={"dig": "Gebruik queue_count"}), "names 'queue_count'"),
+    (lambda d: _mission(d)["steps"].update({"dig": "Gebruik queue_count"}), "names 'queue_count'"),
 ])
 def test_objective_step_errors_are_caught(rules_dirs, mutate, message):
     content, _ = rules_dirs

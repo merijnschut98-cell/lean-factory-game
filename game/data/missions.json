@@ -330,6 +330,14 @@
     "budget": 10000,
     "xp": 600
    },
+   "steps": {
+    "a3": "Schrijf je A3 voor Werkvoorbereiding aan de obeya-wand",
+    "act": "Beslis aan de obeya-wand hoe Werkvoorbereiding verdergaat",
+    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "dig": "Zoek uit waar de uren van Anouk naartoe gaan",
+    "look": "Ga bij Werkvoorbereiding kijken hoe een ontwerp ontstaat",
+    "wait": "Kijk bij Werkvoorbereiding hoe het experiment loopt"
+   },
    "tier": 1
   },
   {
@@ -367,6 +375,14 @@
    "rewards": {
     "budget": 8000,
     "xp": 700
+   },
+   "steps": {
+    "a3": "Schrijf je A3 voor Intake aan de obeya-wand",
+    "act": "Beslis aan de obeya-wand hoe Intake verdergaat",
+    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "dig": "Zoek uit waarom aanvragen terug naar de klant gaan",
+    "look": "Ga bij Intake kijken wat er met een aanvraag gebeurt",
+    "wait": "Kijk bij Intake hoe het experiment loopt"
    },
    "tier": 1
   },
@@ -406,6 +422,14 @@
     "budget": 5000,
     "xp": 500
    },
+   "steps": {
+    "a3": "Schrijf je A3 voor de monteurs aan de obeya-wand",
+    "act": "Beslis aan de obeya-wand hoe de monteurs verdergaat",
+    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "dig": "Zoek uit waarom monteurs voor niks voor de deur staan",
+    "look": "Ga bij de monteurs kijken hoe een klus bij de klant loopt",
+    "wait": "Kijk bij de monteurs hoe het experiment loopt"
+   },
    "tier": 1
   },
   {
@@ -439,6 +463,14 @@
     "budget": 8000,
     "xp": 800
    },
+   "steps": {
+    "a3": "Schrijf je A3 voor het KCC aan de obeya-wand",
+    "act": "Beslis aan de obeya-wand hoe het KCC verdergaat",
+    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "dig": "Zoek uit waar de telefoontjes bij het KCC vandaan komen",
+    "look": "Ga bij het KCC kijken wie er belt, en waarom",
+    "wait": "Kijk bij het KCC hoe het experiment loopt"
+   },
    "tier": 1
   },
   {
@@ -469,6 +501,14 @@
    "rewards": {
     "budget": 8000,
     "xp": 900
+   },
+   "steps": {
+    "a3": "Schrijf je A3 voor Meetdata aan de obeya-wand",
+    "act": "Beslis aan de obeya-wand hoe Meetdata verdergaat",
+    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "dig": "Zoek uit waar een dossier op wacht als het klaar is",
+    "look": "Ga bij Meetdata kijken wat er na de aansluiting gebeurt",
+    "wait": "Kijk bij Meetdata hoe het experiment loopt"
    },
    "teaches": [
     "ean_code"
@@ -521,6 +561,14 @@
     "budget": 12000,
     "xp": 1000
    },
+   "steps": {
+    "a3": "Schrijf je A3 voor de storingsdienst aan de obeya-wand",
+    "act": "Beslis aan de obeya-wand hoe de storingsdienst verdergaat",
+    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "dig": "Zoek uit wat Gert van ons kreeg voordat hij ging graven",
+    "look": "Ga bij de storingsdienst kijken wat er dinsdag gebeurde",
+    "wait": "Kijk bij de storingsdienst hoe het experiment loopt"
+   },
    "teaches": [
     "klic_melding",
     "compensatieregeling"
@@ -554,6 +602,14 @@
    "rewards": {
     "budget": 10000,
     "xp": 900
+   },
+   "steps": {
+    "a3": "Schrijf je A3 voor Revisie & GIS aan de obeya-wand",
+    "act": "Beslis aan de obeya-wand hoe Revisie & GIS verdergaat",
+    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "dig": "Zoek uit hoe een schets op de kaart komt",
+    "look": "Ga bij Revisie & GIS kijken naar de doos met schetsen",
+    "wait": "Kijk bij Revisie & GIS hoe het experiment loopt"
    },
    "tier": 1
   },
@@ -589,6 +645,14 @@
     "budget": 12000,
     "xp": 1200
    },
+   "steps": {
+    "a3": "Schrijf je A3 voor Netstrategie aan de obeya-wand",
+    "act": "Beslis aan de obeya-wand hoe Netstrategie verdergaat",
+    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "dig": "Zoek uit wat Femke op een dag allemaal doet",
+    "look": "Ga bij Femke kijken naar het bord met netstudies",
+    "wait": "Kijk bij Netstrategie hoe het experiment loopt"
+   },
    "teaches": [
     "netcongestie"
    ],
@@ -621,6 +685,14 @@
    "rewards": {
     "budget": 12000,
     "xp": 1300
+   },
+   "steps": {
+    "a3": "Schrijf je A3 voor Netstrategie aan de obeya-wand",
+    "act": "Beslis aan de obeya-wand hoe Netstrategie verdergaat",
+    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "dig": "Zoek uit wat er gebeurt tussen netstudie en trafo",
+    "look": "Ga bij Netstrategie kijken waar De Boomgaard op wacht",
+    "wait": "Kijk bij Netstrategie hoe het experiment loopt"
    },
    "teaches": [
     "transformator"
@@ -657,6 +729,14 @@
    "rewards": {
     "budget": 12000,
     "xp": 1400
+   },
+   "steps": {
+    "a3": "Schrijf je A3 voor de congestiedesk aan de obeya-wand",
+    "act": "Beslis aan de obeya-wand hoe de congestiedesk verdergaat",
+    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "dig": "Zoek uit hoeveel gecontracteerd vermogen er echt draait",
+    "look": "Ga bij de congestiedesk kijken wie er op de wachtlijst staat",
+    "wait": "Kijk bij de congestiedesk hoe het experiment loopt"
    },
    "teaches": [
     "netcongestie",
@@ -695,6 +775,14 @@
     "budget": 12000,
     "xp": 1500
    },
+   "steps": {
+    "a3": "Schrijf je A3 voor beide teams aan de obeya-wand",
+    "act": "Beslis aan de obeya-wand hoe beide teams verdergaat",
+    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "dig": "Zoek uit waarop beide teams worden afgerekend",
+    "look": "Ga bij Intake en Werkvoorbereiding naar hun borden kijken",
+    "wait": "Kijk bij beide teams hoe het experiment loopt"
+   },
    "tier": 1
   },
   {
@@ -715,6 +803,9 @@
    },
    "rewards": {
     "xp": 200
+   },
+   "steps": {
+    "look": "Loop met Ahmed mee en kijk bij {team}"
    },
    "teaches": [
     "compensatieregeling"
@@ -740,6 +831,9 @@
    "rewards": {
     "xp": 200
    },
+   "steps": {
+    "look": "Loop met Yvonne mee en kijk bij {team}"
+   },
    "tier": 1
   },
   {
@@ -762,6 +856,14 @@
     "budget": 4000,
     "xp": 400
    },
+   "steps": {
+    "a3": "Schrijf je A3 voor de storingsdienst aan de obeya-wand",
+    "act": "Beslis aan de obeya-wand hoe de storingsdienst verdergaat",
+    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "dig": "Zoek uit waarom Ahmed halverwege naar het magazijn reed",
+    "look": "Ga bij de storingsdienst kijken hoe een herstel loopt",
+    "wait": "Kijk bij de storingsdienst hoe het experiment loopt"
+   },
    "tier": 1
   },
   {
@@ -783,6 +885,14 @@
    "rewards": {
     "budget": 4000,
     "xp": 400
+   },
+   "steps": {
+    "a3": "Schrijf je A3 voor de meterwisselaars aan de obeya-wand",
+    "act": "Beslis aan de obeya-wand hoe de meterwisselaars verdergaat",
+    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "dig": "Zoek uit waarom de deur zo vaak dicht blijft",
+    "look": "Ga met Yvonne mee langs haar adressen",
+    "wait": "Kijk bij Yvonne hoe het experiment loopt"
    },
    "tier": 1
   },
@@ -828,6 +938,14 @@
     "budget": 4000,
     "xp": 400
    },
+   "steps": {
+    "a3": "Schrijf je A3 voor Werkvoorbereiding aan de obeya-wand",
+    "act": "Beslis aan de obeya-wand hoe Werkvoorbereiding verdergaat",
+    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "dig": "Zoek uit waar het dossier van de familie Bos op wacht",
+    "look": "Kijk bij Werkvoorbereiding waar het dossier van Bos ligt",
+    "wait": "Kijk bij Werkvoorbereiding hoe het experiment loopt"
+   },
    "tier": 1
   },
   {
@@ -849,6 +967,10 @@
    },
    "rewards": {
     "xp": 250
+   },
+   "steps": {
+    "dig": "Zoek twee dingen uit over het bord van Femke",
+    "look": "Ga bij Netstrategie naar het bord van Femke kijken"
    },
    "tier": 1
   },
@@ -905,6 +1027,14 @@
     "budget": 6000,
     "xp": 600
    },
+   "steps": {
+    "a3": "Schrijf je A3 voor de storingsdienst aan de obeya-wand",
+    "act": "Beslis aan de obeya-wand hoe de storingsdienst verdergaat",
+    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "dig": "Zoek uit wat er wegvalt als Henk met pensioen gaat",
+    "look": "Ga bij de storingsdienst kijken hoe Henk werkt",
+    "wait": "Kijk bij de storingsdienst hoe het experiment loopt"
+   },
    "teaches": [
     "monteurstekort"
    ],
@@ -929,6 +1059,14 @@
    "rewards": {
     "budget": 5000,
     "xp": 500
+   },
+   "steps": {
+    "a3": "Schrijf je A3 voor Planning aan de obeya-wand",
+    "act": "Beslis aan de obeya-wand hoe Planning verdergaat",
+    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "dig": "Zoek uit waarom de planning steeds omgaat",
+    "look": "Ga bij Planning kijken hoe een week wordt ingepland",
+    "wait": "Kijk bij Planning hoe het experiment loopt"
    },
    "tier": 1
   }

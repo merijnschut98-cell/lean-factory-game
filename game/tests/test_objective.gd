@@ -167,6 +167,34 @@ func test_every_act_one_main_mission_has_a_clean_objective_in_every_phase() -> v
 		st.phase = P.DORMANT
 
 
+## Phase-2 design §3.1 (S1-H): every Act I mission, main and side, has an authored
+## objective (its own `steps:` text, not a default) in every phase of its goal.
+func test_every_act_one_mission_has_its_own_objective_at_every_state() -> void:
+	var s := _campaign()
+	var checked := 0
+	for m: MissionDef in s.missions.defs.values():
+		if m.act != 1:
+			continue
+		s.missions.progress[m.id] = {"status": "active", "asks": {}, "seen": {}}
+		var phases: Array = [-1]
+		if not m.goal_problem.is_empty():
+			phases = [P.ACTIVE, P.SPOTTED, P.DOING, P.CHECK_READY, P.CHECKED] if m.goal_type == "solve" \
+				else [P.ACTIVE, P.SPOTTED]
+		for phase: int in phases:
+			if phase >= 0:
+				s.region.state[m.goal_problem].phase = phase
+			var o := Objective.step(m, s)
+			var where := "%s in %s" % [m.id, "start" if phase < 0 else P.keys()[phase]]
+			assert_false(o.is_empty(), where + ": an objective")
+			assert_true(m.steps.has(o.get("step", "")), "%s: its own words for '%s'" % [where, o.get("step")])
+			_assert_clean(s, str(o.get("text", "")), where)
+			checked += 1
+		if not m.goal_problem.is_empty():
+			s.region.state[m.goal_problem].phase = P.DORMANT
+		s.missions.progress.erase(m.id)
+	assert_true(checked >= 14, "the Act I missions were checked: %d states" % checked)
+
+
 func test_without_a_main_mission_the_board_is_the_next_step() -> void:
 	var s := _campaign()
 	for id: String in s.missions.progress.keys():
