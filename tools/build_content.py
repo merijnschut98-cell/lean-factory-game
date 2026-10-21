@@ -596,19 +596,24 @@ def _all_problems(docs: dict[str, Any]) -> list[tuple[str, dict]]:
 
 
 def check_tells(docs: dict[str, Any]) -> None:
-    """Every problem whose place is in a room with tells shows on at least one of them."""
+    """Every problem whose place is on a floor with tells (the 1e) shows on at least one of them,
+    whichever room it is in."""
     world = docs.get("world")
     if world is None:
         return
+    floor_of = {r["id"]: r["floor"] for r in world["rooms"]}
     room_of = {place: r["id"] for r in world["rooms"] for place in r["places"]}
-    unknown = set(TELLS.values()) - {r["id"] for r in world["rooms"]}
+    unknown = set(TELLS.values()) - set(floor_of)
     if unknown:
         raise ContentError(f"build_content.TELLS: unknown room(s) {', '.join(sorted(unknown))}")
+    floors = {floor_of[room] for room in TELLS.values()}
     for stem, p in _all_problems(docs):
         room = room_of.get(p["step"])
-        if room in TELLS.values() and not p.get("tells"):
+        if floor_of.get(room) in floors and not p.get("tells"):
+            near = [t for t, r in TELLS.items() if r == room] \
+                or [t for t, r in TELLS.items() if floor_of[r] == floor_of[room]]
             raise ContentError(f"{stem}.yaml: problem '{p['id']}' at {p['step']} (room '{room}') has no tell; "
-                               f"list one under 'tells:' ({', '.join(t for t, r in TELLS.items() if r == room)})")
+                               f"list one under 'tells:' ({', '.join(near)})")
 
 
 # ── facts and needs (path dependence, game/src/rules/facts.gd) ───────────────
