@@ -34,6 +34,16 @@ const INSPECT_PITCH := deg_to_rad(40.0)
 ## the other person's face.
 const TALK_DISTANCE := 2.6
 const TALK_PITCH := deg_to_rad(14.0)
+## Framing a face while they speak (phase 2 design §2.1): a medium shot of
+## face and shoulders, closer than over the shoulder and nearly level.
+const FACE_DISTANCE := 1.5
+const FACE_PITCH := deg_to_rad(5.0)
+## What the camera frames (`shot`): nothing (the player), a station, a talk
+## over the shoulder, a face, a scene's two-shot.
+const INSPECT := "inspect"
+const CONVERSE := "converse"
+const FACE := "face"
+const TWO_SHOT := "two_shot"
 ## A scene's two-shot stands this far (m) from the point between the two,
 ## looking down this steeply, so a wall a couple of metres behind the player
 ## stays under the line of sight (estimates, tuned on the screenshots).
@@ -71,6 +81,10 @@ var distance := DEFAULT_DISTANCE
 var focus := Vector3.ZERO
 ## False while a panel is open.
 var active := true
+## What the camera frames now (INSPECT, CONVERSE, FACE, TWO_SHOT; "" the player).
+var shot: String:
+	get:
+		return _inspect.get("shot", "")
 var camera: Camera3D
 var _turn := 0.0
 ## The framing: {at, yaw, shift} while inspecting, else empty.
@@ -111,7 +125,7 @@ func pitch() -> float:
 ## station `shift` of the screen's width left of the middle (a panel docked
 ## at the right covers the rest).
 func inspect(at: Vector3, look_yaw: float, shift := 0.0) -> void:
-	_inspect = {"at": at, "yaw": look_yaw, "shift": shift}
+	_inspect = {"shot": INSPECT, "at": at, "yaw": look_yaw, "shift": shift}
 
 
 ## Frame a talk: look at `at` (the person's face) facing `look_yaw` from over
@@ -119,8 +133,16 @@ func inspect(at: Vector3, look_yaw: float, shift := 0.0) -> void:
 ## middle and `lift` of its height above it (a panel across the bottom
 ## covers the rest).
 func converse(at: Vector3, look_yaw: float, shift: float, lift: float) -> void:
-	_inspect = {"at": at, "yaw": look_yaw, "shift": shift, "lift": lift,
+	_inspect = {"shot": CONVERSE, "at": at, "yaw": look_yaw, "shift": shift, "lift": lift,
 		"distance": TALK_DISTANCE, "pitch": TALK_PITCH}
+
+
+## Frame a face while its person speaks: look at `at` (the face) from
+## `look_yaw` (a side in front of them), close and nearly level; `lift` of the
+## screen's height above the middle (the subtitle covers the bottom).
+func face_shot(at: Vector3, look_yaw: float, lift: float) -> void:
+	_inspect = {"shot": FACE, "at": at, "yaw": look_yaw, "shift": 0.0, "lift": lift,
+		"distance": FACE_DISTANCE, "pitch": FACE_PITCH}
 
 
 ## Frame a scene's speaker and the player together (PLAN 2.13 A: you always
@@ -128,7 +150,7 @@ func converse(at: Vector3, look_yaw: float, shift: float, lift: float) -> void:
 ## high enough that the walls stay below the camera; `lift` of the screen's
 ## height above the middle.
 func two_shot(at: Vector3, look_yaw: float, lift: float) -> void:
-	_inspect = {"at": at, "yaw": look_yaw, "shift": 0.0, "lift": lift,
+	_inspect = {"shot": TWO_SHOT, "at": at, "yaw": look_yaw, "shift": 0.0, "lift": lift,
 		"distance": SCENE_DISTANCE, "pitch": SCENE_PITCH}
 
 

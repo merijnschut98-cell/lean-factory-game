@@ -167,8 +167,8 @@ func _run() -> void:
 			else:
 				office.ui.open_talk("anouk")
 			for move in ["mood", "empathy", "open_question"]:
-				office.ui.dialog_panel.choose(move)
-			office.ui.dialog_panel.close_talk()
+				office.ui.talk_view.choose(move)
+			office.ui.talk_view.close_talk()
 		"act0_cards":   # the codex's Gesprekken at the week's end: every card, the Friday one last
 			for id in ["training_mon", "training_tue", "training_wed", "training_thu", "training_fri"]:
 				office.session.missions.done_once[id] = true
@@ -533,8 +533,8 @@ func _play_to_thursday(office: Office) -> void:
 	var ui := office.ui
 	_steps(office, [[INTAKE, "walk"], [DESIGN, "walk"]])
 	ui.open_talk("anouk")   # Monday ends with Anouk at seven
-	ui.dialog_panel.choose("close")
-	ui.dialog_panel.close_talk()
+	ui.talk_view.choose("close")
+	ui.talk_view.close_talk()
 	ui.close_panels()
 	_steps(office, [[DESIGN, "shadow"], [DESIGN, "documents"], [INTAKE, "queue_count"], [DESIGN, "queue_count"]])
 	ui.close_panels()
@@ -647,13 +647,13 @@ func _opening(office: Office, state: String) -> void:
 		return
 	var anouk := office.people.person("anouk")
 	office.player.position = anouk.position + Vector3(3.5, 0, -2.5)
-	run.call(func() -> bool: return office.ui.dialog_panel.visible)
+	run.call(func() -> bool: return office.ui.talk_view.visible)
 	office.rig.snap()
 	if state == "open_anouk":
 		return
 	for move in ["mood", "empathy", "open_question", "reflect"]:
-		office.ui.dialog_panel.choose(move)
-	office.ui.dialog_panel.close_talk()
+		office.ui.talk_view.choose(move)
+	office.ui.talk_view.close_talk()
 
 
 func _talk_to_joost(office: Office, state: String) -> void:
@@ -663,7 +663,7 @@ func _talk_to_joost(office: Office, state: String) -> void:
 	office.player.position = joost.position + joost.basis.x * 1.1 - joost.basis.z * 0.2  # beside his desk
 	office.use(joost)
 	office.rig.snap()
-	var panel := office.ui.dialog_panel
+	var panel := office.ui.talk_view
 	var moves: Array = []
 	match state:
 		"dialog_mid":
