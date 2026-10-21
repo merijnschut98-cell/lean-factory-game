@@ -200,7 +200,9 @@ func test_the_face_shot_looks_at_the_face_from_the_front() -> void:
 	var joost := office.people.person("joost")
 	office.player.position = joost.position + joost.basis.x * 1.1 - joost.basis.z * 0.2
 	office.use(joost)
+	assert_eq(office.rig.shot, CameraRig.FACE, "open floor beside his desk: a face shot")
 	if office.rig.shot == CameraRig.FACE:
+		office.rig.snap()
 		var to_camera := (office.rig.camera.position - joost.position) * Vector3(1, 0, 1)
 		var to_player := (office.player.position - joost.position) * Vector3(1, 0, 1)
 		assert_true(to_camera.normalized().dot(to_player.normalized()) > 0.5, "on the player's side of him")

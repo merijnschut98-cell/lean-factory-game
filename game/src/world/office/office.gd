@@ -679,15 +679,19 @@ func follow_walking_talk(delta: float) -> void:
 	_two_shot(person, PAIR_LIFT)
 
 
-## Their face and shoulders while they speak, from in front of them a little
-## to one side of the player (the side with open floor behind the camera);
-## over the player's shoulder when neither side has room.
+## Their face and shoulders while they speak, from a little to one side of
+## the player: the side that sees more of their face, where the camera stands
+## over open floor; over the player's shoulder when neither side has room.
 func frame_face(person: OfficePerson) -> void:
 	var face := talk_point(person)
 	var to_player := (player.position - person.position) * Vector3(1, 0, 1)
 	var toward := atan2(to_player.x, to_player.z)
-	for yaw: float in [toward + FACE_ANGLE, toward - FACE_ANGLE]:
-		if _open_floor(face * Vector3(1, 0, 1), yaw) >= CameraRig.FACE_DISTANCE:
+	var faces := -person.basis.z
+	var sides: Array[float] = [toward + FACE_ANGLE, toward - FACE_ANGLE]
+	sides.sort_custom(func(a: float, b: float) -> bool: return Vector3(sin(a), 0, cos(a)).dot(faces) > Vector3(sin(b), 0, cos(b)).dot(faces))
+	var reach := CameraRig.FACE_DISTANCE * cos(CameraRig.FACE_PITCH)
+	for yaw in sides:
+		if nav().walkable(face * Vector3(1, 0, 1) + Vector3(sin(yaw), 0, cos(yaw)) * reach):
 			rig.face_shot(face, yaw, FACE_LIFT)
 			return
 	rig.converse(face, talk_yaw(person, player.position), TALK_SHIFT, FACE_LIFT)

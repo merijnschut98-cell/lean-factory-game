@@ -20,6 +20,8 @@ extends SceneTree
 ## (the board after the first mission: the fork as a pair) · debt (the HUD in
 ## debt, with the floor, and its toasts) · dialog_start, dialog_mid,
 ## dialog_summary, dialog_ruined (a talk with Joost) ·
+## talk_face, talk_choose, talk_phone (S1-G: Joost speaks in a face shot, you
+## choose in the two-shot; Mevrouw El Amrani on the phone) ·
 ## dialog_people (the journal's Mensen tab after it) · dialog_place (the
 ## team's menu with its people) · dialog_energy (the low-energy bar) ·
 ## intussen (the A3 in: what happens while the
@@ -147,6 +149,8 @@ func _run() -> void:
 			_stand_at(office, DESIGN)
 		"dialog_start", "dialog_mid", "dialog_summary", "dialog_ruined":
 			_talk_to_joost(office, state)
+		"talk_face", "talk_choose", "talk_phone":
+			await _staged_talk(office, state)
 		"dialog_people":
 			_talk_to_joost(office, "dialog_summary")
 			office.ui.close_panels()
@@ -572,6 +576,34 @@ func _open_silo(office: Office) -> void:
 	office.ui.after_action()
 
 
+## The staged talk (phase 2 design §2): Joost's answer to a listening move in
+## his face shot, typed out; then the choice in the two-shot; or the fourth
+## call of Mevrouw El Amrani, on the phone.
+func _staged_talk(office: Office, state: String) -> void:
+	var view := office.ui.talk_view
+	if state == "talk_phone":
+		for id in ["fix_unused_capacity", "fix_incomplete_application"]:
+			office.session.missions.done_once[id] = true
+		office.session.accept("fix_status_callers")
+		office.ui.after_action()
+		_stand_at(office, "place:customer_contact.answer" if office.interactable("place:customer_contact.answer") != null
+			else DESIGN)
+		office.ui.open_talk("el_amrani")
+	else:
+		_open_silo(office)
+		office.people.refresh(office.session)
+		var joost := office.people.person("joost")
+		office.player.position = joost.position + joost.basis.x * 1.1 - joost.basis.z * 0.2  # beside his desk
+		office.use(joost)
+		view.lines.finish()
+		view.press_key(KEY_1)
+	if state == "talk_choose":
+		view.lines.finish()
+	office.rig.snap()
+	for i in 90:   # the line types itself out
+		await process_frame
+
+
 ## A talk with Joost at Werkvoorbereiding, played to the state's moment:
 ## the opening, a few listening moves (the cue), the proposal's picks, the
 ## summary of an agreement, or a ruined talk (pushing early).
@@ -675,6 +707,7 @@ func _talk_to_joost(office: Office, state: String) -> void:
 	for m: String in moves:
 		var colon := m.find(":")
 		panel.choose(m.left(colon) if colon >= 0 else m, m.substr(colon + 1) if colon >= 0 else "")
+	panel.lines.finish()   # their words heard: the choice, or the note
 
 
 ## The A3 a careful player would write (the cause read from the clues).
