@@ -223,7 +223,7 @@ func _arrival() -> void:
 	office.player.face(Basis.looking_at((desk - stand) * Vector3(1, 0, 1)))
 	office.rig.yaw = office.player.rotation.y
 	office.rig.snap()
-	yvonne = _person("kim", "Yvonne Kramer", "Receptie")   # a stand-in look until Yvonne joins the cast (2.7d §4.3)
+	yvonne = _person("yvonne", "Yvonne Kramer", "Receptie")   # her own look in cast.json (S1-C)
 	var chair := _point("reception_chair", RECEPTION_CHAIR)
 	yvonne.place(chair + (desk - chair) * 0.45, stand - desk)   # standing behind the counter, by her chair
 	office.frame_scene(yvonne, FRAME_LIFT)
