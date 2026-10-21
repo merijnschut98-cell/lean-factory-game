@@ -2893,3 +2893,276 @@ dialogs:
       none: "Ik mail u tabblad drie nog even."
       compliance: "Goed. Dan wacht ik weer op de ontvangstbevestiging."
       ruined: "Dan stuur ik volgende maand weer een spreadsheet. En de maand daarna."
+
+# ── In passing (Phase 2 design §1.4, §2.4; game/src/rules/reactions.gd) ──────────
+# What people say without a talk: no panel, no meter, a subtitle over their head.
+# Spoken Dutch by each person's voice sheet (style guide §7). The office shows it at
+# any hour, so a greeting never says "goedemorgen" or "goedemiddag".
+#
+# greetings: once a day, the first time you pass within two metres, by your name.
+#   <cast id>: day (an ordinary day, 3+ lines) and optionally a line per fact of the last
+#   talk or fix (ruined, pressured, committed, heard, standardised; GameSession.greeting_fact).
+#   _all: the shared lines per fact for a person without their own.
+# quick: E on someone with nothing to discuss: one line about today. Moods: tired (low
+#   morale), busy / calm (their team's queue), else morning, afternoon, late (the hour).
+#   _all has every mood; a person may have their own for some.
+# chatter: two colleagues at the coffee corner, one line each, once a day per pair.
+#   teams: one of the two is in one of these (people's `team`); load: busy | calm.
+greetings:
+  _all:
+    ruined:
+      - "Hoi. Over gisteren: dat liep niet lekker, hè. We hebben het er later nog wel over."
+      - "Hé {speler}. Ik moest gisteren even afkoelen. Vandaag is een nieuwe dag."
+      - "Hoi. Ik heb nog even nagedacht over ons gesprek. Later misschien."
+    pressured:
+      - "Hoi {speler}. Ik voelde me gisteren een beetje voor het blok gezet, eerlijk gezegd."
+      - "Hé. Dat ging gisteren wel erg snel, vond ik. Laten we het rustiger aanpakken."
+    committed:
+      - "Hoi {speler}! Ik ben er al mee begonnen, met wat we hadden afgesproken."
+      - "Hé {speler}. Onze afspraak staat, hoor. Ik hou je op de hoogte."
+    heard:
+      - "Hoi {speler}. Fijn dat je gisteren even de tijd nam."
+      - "Hé {speler}. Ik heb nog nagedacht over ons gesprek. Goed dat je doorvroeg."
+    standardised:
+      - "Hoi {speler}! Die nieuwe afspraak werkt, hoor. Iedereen doet het nu zo."
+      - "Hé {speler}. Het loopt een stuk rustiger sinds we het zo doen."
+  joost:
+    day:
+      - "Hoi {speler}. Alles goed? Wij liggen op schema, even voor de duidelijkheid."
+      - "Hé {speler}. Kom je weer even kijken bij Werkvoorbereiding? Prima, hoor."
+      - "Hoi {speler}. Eerlijk is eerlijk, het wordt weer een volle week."
+    ruined:
+      - "Hoi. Even voor de duidelijkheid: dat gesprek van gisteren zit me nog niet lekker."
+  anouk:
+    day:
+      - "Oh, hoi {speler}! Sorry, het is een beetje een rommeltje hier."
+      - "Hoi {speler}! Ik zit erbovenop, hoor. Heb je al koffie gehad?"
+      - "Hé {speler}. Sorry, ik ben nog even met een tekening bezig. Zeg het maar."
+    committed:
+      - "Hoi {speler}! Ik heb het geprobeerd zoals we zeiden. Het valt me eigenlijk mee."
+  sanne:
+    day:
+      - "Hoi {speler}! Portaal open, koffie op, telefoon aan. We zijn er klaar voor."
+      - "Nou, daar is {speler}. Kom je weer even op het postkantoor kijken?"
+      - "Hé {speler}. Joh, het is weer een drukte vandaag, hè."
+    ruined:
+      - "Hoi. Nou, gisteren was niet ons beste gesprek, hè. Laat maar even."
+  rachid:
+    day:
+      - "Hoi {speler}. Ik had nog een vraag voor je. Of nee, die zoek ik eerst zelf even uit."
+      - "Hallo {speler}. Alles goed met je?"
+      - "Hoi {speler}. Ik loop de aanvragen van gisteren nog even na."
+  petra:
+    day:
+      - "Hoi {speler}. De Molen draait. Dat is al heel wat."
+      - "Dag {speler}. Zoek je iets? Dan staat het waarschijnlijk in mijn map."
+      - "Hoi {speler}. Klopt, ik ben er weer. Alles staat klaar."
+  ruud:
+    day:
+      - "Hoi {speler}! Hoe bevalt het tot nu toe?"
+      - "Ha {speler}. Wat heb je vandaag al gezien?"
+      - "Hoi {speler}. De koffie hier is nog steeds slecht. Of went het al?"
+  marco:
+    day:
+      - "Hé {speler}. Mijn mannen zijn al op pad."
+      - "Hoi {speler}. Alles goed? Mooi."
+      - "Hoi {speler}. Nog niks gesloopt vandaag. Dat komt vast nog."
+    ruined:
+      - "Kijk. Gisteren was niks. Laat maar zitten."
+  henk:
+    day:
+      - "Ha {speler}. Kom je weer even kijken? Prima."
+      - "Hoi {speler}. Sinds 1987 sta ik hier elke ochtend. Jij bent er ook vroeg bij."
+      - "Ha {speler}. Er staat koffie in de keet, als je wilt."
+  ahmed:
+    day:
+      - "Hé {speler}. Gaat wel, man."
+      - "Hoi {speler}. Rustig vandaag. Hopelijk blijft het zo."
+      - "Hé {speler}. Alles goed?"
+  linda:
+    day:
+      - "Hoi {speler}! Sorry, ik ben aan het omplannen. Zeg het maar."
+      - "Hé {speler}. Het kaartenhuis staat nog. Voor nu."
+      - "Hoi {speler}. Sorry, drie telefoontjes tegelijk. Loop je zo nog even langs?"
+  mieke:
+    day:
+      - "Hoi {speler}. Ik zit in de revisies van vorige week. Dat moet kloppen, hè."
+      - "Hallo {speler}. Alles goed?"
+      - "Hoi {speler}. Kom je kijken? Pak gerust een stoel."
+    standardised:
+      - "Hoi {speler}. Sinds we het zo doen, kloppen de tekeningen veel vaker. Dat merk ik echt."
+  frank:
+    day:
+      - "Goed je te zien, {speler}. Ik zit vandaag vol met overleggen."
+      - "Hallo {speler}. Ik moet straks de cijfers verantwoorden bij de directie. Hoe gaat het bij jou?"
+      - "Hoi {speler}. Als je iets hebt voor het jaarplan, hoor ik het graag."
+  femke:
+    day:
+      - "Hoi {speler}! Ik rond net een netstudie af. Kort gezegd: het past nét."
+      - "Hé {speler}! Kom eens kijken, ik heb een mooie tekening."
+      - "Hoi {speler}. Druk, druk. Maar wel leuk druk."
+  esra:
+    day:
+      - "Hoi {speler}. Mijn mensen zitten al vanaf acht uur aan de telefoon."
+      - "Hé {speler}. Kijk, als je iets wilt weten, vraag het mijn mensen. Die horen alles."
+      - "Hoi {speler}. Serieus, heb je die wachtmuziek weleens gehoord? Tien minuten lang."
+  kim:
+    day:
+      - "Hoi {speler}! Momentje, ik heb nog iemand aan de lijn."
+      - "Hé {speler}! Alles goed?"
+      - "Hoi {speler}. Het is al druk aan de lijn vandaag."
+  saskia:
+    day:
+      - "Hoi {speler}. Ik doe het rustig aan, maar het gaat goed."
+      - "Hé {speler}. Fijn je weer te zien."
+      - "Hoi {speler}. Ik werk weer halve dagen. Dat bevalt prima."
+  rob:
+    day:
+      - "Dag {speler}. Ik zit in de offertes, maar zegt u het maar."
+      - "Dag. Het contract ligt hier, mocht u het zoeken."
+      - "Hallo {speler}. Alles volgens afspraak bij u?"
+  thomas:
+    day:
+      - "Hoi {speler}! Drie klanten vandaag die een zwaardere aansluiting willen. Allemaal met haast."
+      - "Hé {speler}. Weet jij al iets over de wachtlijst? Mijn klanten vragen het me elke dag."
+      - "Hoi {speler}. Druk aan de telefoon, maar dat zijn we gewend."
+  dirk:
+    day:
+      - "Hoi {speler}."
+      - "Ja. Hoi."
+      - "Hé {speler}. Zoek je wat?"
+  gert:
+    day:
+      - "Hoi {speler}. Mijn ploeg staat al te graven, hoor."
+      - "Hé {speler}. Zolang de KLIC-melding klopt, gaat het goed."
+      - "Hoi {speler}. Ik kom even langs voor het overleg."
+  wim:
+    day:
+      - "Hallo {speler}! Ik ben weer even binnengewipt."
+      - "Dag {speler}. Ik heb mijn aantekeningen meegenomen."
+      - "Hoi {speler}. Veertig jaar in het vak, en nog steeds nieuwsgierig."
+  yvonne:
+    day:
+      - "Hoi {speler}! Ruud zit boven, als je hem zoekt."
+      - "Kijk, daar is {speler}. Nooit te laat, wel altijd net op tijd."
+      - "Hé {speler}! Je pas doet het nog? Mooi zo."
+
+quick:
+  _all:
+    tired:
+      - "Lange dag, hoor. Ik ben er een beetje doorheen."
+      - "Sorry, ik ben moe. Het werd gisteren weer laat."
+      - "Ik moet echt even koffie. Het gaat wel."
+    busy:
+      - "Druk, druk, druk. De stapel wordt alleen maar hoger."
+      - "Sorry, ik moet echt door. Het loopt vol vandaag."
+      - "Ik weet eerlijk gezegd niet waar ik moet beginnen."
+    calm:
+      - "Lekker rustig vandaag. Dat mag ook wel eens."
+      - "Rustige dag. Ik werk wat achterstallige dingen weg."
+      - "Eindelijk een dag zonder brandjes."
+    morning:
+      - "Ik ben net begonnen. Eerst even mijn mail."
+      - "Heb je al koffie gehad? Ik ga zo even."
+      - "Even opstarten, hoor."
+    afternoon:
+      - "Nog een paar uurtjes. Het gaat lekker."
+      - "Na de lunch is het altijd even een dipje."
+      - "Ik werk dit nog even af."
+    late:
+      - "Ik ga zo naar huis. Nog even dit afmaken."
+      - "Bijna klaar voor vandaag."
+      - "Jij bent ook nog laat, zie ik."
+  sanne:
+    busy:
+      - "Joh, de werkbak loopt over. Portaal, mail, telefoon, alles tegelijk."
+  anouk:
+    busy:
+      - "Sorry, de stapel is weer gegroeid. Ik zit erbovenop, hoor."
+  joost:
+    busy:
+      - "Even voor de duidelijkheid: we halen het. Maar het is krap."
+  linda:
+    busy:
+      - "Sorry, ik ben aan het omplannen. Alweer."
+  petra:
+    calm:
+      - "Rustig. Klopt, dat gebeurt soms."
+  marco:
+    busy:
+      - "Mijn mannen rijden zich vandaag het schompes."
+    tired:
+      - "Lange week. Maar goed, we gaan door."
+  esra:
+    busy:
+      - "Serieus, er staan twintig bellers in de wacht."
+  dirk:
+    tired: ["Lang dagje."]
+    busy: ["Druk."]
+    calm: ["Rustig."]
+    morning: ["Koffie eerst."]
+    afternoon: ["Gaat wel."]
+    late: ["Bijna klaar."]
+
+chatter:
+  - id: intake_half_requests
+    teams: [intake]
+    load: busy
+    lines:
+      - "Heb jij die aanvraag van gisteren nog gezien? Die met die foto van de meterkast?"
+      - "Welke? Er zaten er vanochtend vijftig in de werkbak."
+  - id: prep_stack
+    teams: [work_prep]
+    load: busy
+    lines:
+      - "Hoeveel liggen er nog op jouw stapel?"
+      - "Niet vragen. Ik tel ze niet meer."
+  - id: portal_asks_too_little
+    teams: [work_prep, intake]
+    lines:
+      - "Waarom komen die aanvragen eigenlijk altijd half binnen?"
+      - "Omdat het portaal niet vraagt wat wij nodig hebben. Al jaren niet."
+  - id: card_house
+    teams: [planners]
+    lines:
+      - "Heb je het bord gezien? Alles is weer omgegooid."
+      - "Ja. Het kaartenhuis, hè. Eén kaart eruit en alles valt om."
+  - id: stood_for_nothing
+    teams: [monteurs]
+    load: busy
+    lines:
+      - "Weer voor niks gestaan vanochtend. Meterkast niet klaar."
+      - "Bij ons ook. Twee keer deze week al."
+  - id: revision_lindeveld
+    teams: [gis, meter_office]
+    lines:
+      - "Klopt die revisie van Lindeveld nou of niet?"
+      - "Dat moet ik nog uitzoeken. Ik wil het eerst zeker weten."
+  - id: dont_say_it
+    load: calm
+    lines:
+      - "Rustig vandaag, hè?"
+      - "Niet hardop zeggen. Dan gaat meteen de telefoon."
+  - id: lunch_at_desk
+    load: busy
+    lines:
+      - "Ga jij nog lunchen vandaag?"
+      - "Ik eet wel aan mijn bureau. Weer."
+  - id: weekend
+    lines:
+      - "Nog plannen voor het weekend?"
+      - "Slapen. En de tuin, als het droog blijft."
+  - id: the_new_one
+    lines:
+      - "Heb je de nieuwe van Ruud al gesproken?"
+      - "Even, bij de koffie. Die vraagt wel door, hoor."
+  - id: third_call
+    teams: [contact_centre]
+    lines:
+      - "Die mevrouw van gisteren belde weer. Al voor de derde keer."
+      - "En wij kunnen haar weer niks vertellen. Dat is nog het ergste."
+  - id: charging_plaza
+    teams: [key_accounts, grid_analysts]
+    lines:
+      - "Past dat laadplein nog op het net, denk je?"
+      - "Kort gezegd: nee. Niet zonder verzwaring."

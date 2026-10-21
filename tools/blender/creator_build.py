@@ -227,8 +227,12 @@ def hair_fade(h, coll):
 
 
 def hair_buzzcut(h, coll):
+    """Buzzcut: the pack's buzzed cap, close to the skull. Subdivided first and kept 2.5 mm off the
+    skin: on the female head the cap's long flat triangles let the scalp's vertices poke through
+    at the back (white specks) when it lay 1.5 mm off."""
     ob = pack_style(h, coll, "Hair_Buzzed")
-    fade(h, ob, 0.0, 0.12, 0.7, gap=0.0015)
+    subdivide(ob)
+    fade(h, ob, 0.0, 0.12, 0.7, gap=0.0025)
     return ob
 
 
@@ -643,7 +647,7 @@ def build_body(paths, sex: str, want: dict) -> None:
         ob.name = f"{model}_{key}"
     for ob in (body, eyes, iris, brows):
         pc.lean_mesh(ob)
-    sources = {"ual1": pc.Source(paths["ual1"], pc.UAL1_TO_UE)}
+    sources = pc.sources_for(paths)
     pc.animate(sp, rig, sources)
     for src in sources.values():
         bpy.data.objects.remove(src.rig)

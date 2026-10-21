@@ -154,6 +154,13 @@
       "day": {"arrive": "07:55", "coffee": "10:00", "lunch": "12:00", "leave": "17:00"}
     },
     {
+      "id": "yvonne", "name": "Yvonne Kramer", "role": "Receptie",
+      "look": {"sex": "f", "height": 1.67, "build": 0.56, "skin": [232, 190, 162], "hair_style": "bob",
+               "hair_color": [176, 150, 116], "brow_color": [120, 96, 74], "outfit": "sweater", "eye_color": [76, 104, 92],
+               "glasses": true, "stoop": 0.05,
+               "colors": {"sweater": [168, 64, 82], "shirt": [240, 238, 232], "chinos": [52, 54, 64]}}
+    },
+    {
       "id": "saskia", "name": "Saskia Mulder", "role": "agent Klantcontactcentrum",
       "look": {"sex": "f", "height": 1.74, "build": 0.6, "skin": [222, 176, 146], "hair_style": "bob",
                "hair_color": [150, 62, 36], "outfit": "shirt", "eye_color": [70, 90, 70],
