@@ -295,6 +295,7 @@ func shoot() -> void:
 		_ask_name()
 		return
 	stage = Stage.SENT
+	Soundscape.play_at(self, "shutter")
 	var made := profile.copy()
 	made.name = PlayerProfile.clean_name(name_text)
 	made.portrait = PackedByteArray()

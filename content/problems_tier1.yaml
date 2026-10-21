@@ -13,6 +13,11 @@
 # kpi             what a good prediction names (wip_age: the age of open work,
 #                 for problems whose harm hides in orders that have not finished)
 # plausible_causes  wrong but believable causes for the A3's cause bank
+# tells           what a prop on the floor shows of it (PLAN 2.6): {tell, text}; tell is
+#                 a node in the floor's model (build_content.TELLS), text what anyone can
+#                 see there. Ambiguous on purpose: a tall stack can be a normal week, and
+#                 a text never names the problem. Every problem whose place is in a room
+#                 with tells lists at least one (checked).
 #
 # Quote clue texts: inside {…} an unquoted comma ends the text (the build refuses it).
 
@@ -42,6 +47,8 @@ problems:
     teaches: [quality_at_the_source, poka_yoke]
     effects:
       - {target: connections.intake, property: ftr, value: -0.2}
+    tells:
+      - {tell: intake_stack, text: "De stapel dossiers op de kast bij Intake is hoger dan het werk van een dag."}
     clues:
       - {tool: documents, key: true, depth: 0, text: "Van de laatste twintig aanvragen missen er negen het aansluitvermogen of de gegevens van de installateur."}
       - {tool: queue_count, key: false, depth: 0, text: "In de intake-wachtrij liggen maar een paar aanvragen. Het team werkt ze snel weg."}
@@ -69,6 +76,8 @@ problems:
     teaches: [readiness_check, quality_at_the_source]
     effects:
       - {target: connections.execution, property: ftr, value: -0.25}  # 2 of 5 addresses not ready
+    tells:
+      - {tell: planning_board, text: "Op het weekbord bij de planners hangen rode kaartjes: klussen die verzet zijn."}
     clues:
       - {tool: shadow, key: true, depth: 0, text: "Op twee van de vijf adressen is de meterkast niet klaar (geen ruimte, geen aarding, de installateur is nog niet geweest). De monteur rijdt onverrichter zake terug."}
       - {tool: time_study, key: false, depth: 0, text: "Een aansluiting maken kost de monteur ruim vier uur, binnen de norm."}
@@ -123,6 +132,8 @@ problems:
     teaches: [standard_work, waste_overprocessing]
     effects:
       - {target: connections.design, property: touch_time, value: 1.3}
+    tells:
+      - {tell: prep_tray, text: "In het postbakje bij Werkvoorbereiding liggen de dossiers hoger dan het bakje."}
     clues:
       - {tool: time_study, key: true, depth: 0, text: "Een gewone woningaansluiting kost vijf uur ontwerp, net zoveel als een bedrijfsaansluiting."}
       - {tool: queue_count, key: false, depth: 0, text: "In de bak liggen meer dan honderd dossiers te wachten."}
@@ -179,6 +190,8 @@ problems:
       # Per project (Merijn, 2026-10-13): a street's connections go together once
       # the last design is done; about every two weeks (an estimate).
       - {target: connections.permit, property: batch_days, value: 14}
+    tells:
+      - {tell: prep_tray, text: "Bij Werkvoorbereiding ligt een stapel dossiers waarvan het ontwerp af lijkt."}
     clues:
       - {tool: data, key: true, depth: 0, text: "Vergunningsaanvragen gaan per project de deur uit. Een dossier dat klaar is, wacht gemiddeld een week op de rest van de straat."}
       - {tool: documents, key: false, depth: 0, text: "De gemeente haalt haar wettelijke termijn bijna altijd."}
@@ -515,6 +528,8 @@ problems:
       - {target: connections.execution, property: ftr, value: -0.25}  # a quarter of the planned jobs need a new appointment
       - {target: meters.visit, property: ftr, value: -0.1}
       - {target: connections.planning, property: touch_time, value: 2.0}  # re-planning the week
+    tells:
+      - {tell: planning_board, text: "Op het weekbord bij de planners hangen veel rode kaartjes tussen de gele."}
     clues:
       - {tool: data, key: true, depth: 0, text: "Een op de drie geplande klussen van vorige week is verschoven, de meeste op de dag zelf."}
       - {tool: conversation, key: false, depth: 0, text: "'Klanten zijn gewoon niet flexibel. Als we een nieuwe afspraak voorstellen, kan het nooit.'"}
@@ -552,6 +567,9 @@ problems:
     # step's 0.85 to 80 % and intake's 0.75 to 70 % (value_streams.yaml); a
     # design takes the design touch time of 3.2 h x 0.9 (hasty) = 2.9 h, so
     # "bijna drie uur".
+    tells:
+      - {tell: intake_stack, text: "Op de kast bij Intake liggen meer dossiers dan het team op een dag wegwerkt."}
+      - {tell: prep_tray, text: "Het postbakje bij Werkvoorbereiding ligt vol."}
     clues:
       - {tool: data, key: true, depth: 0, text: "Intake zette vorige maand een record aan aanvragen door en Werkvoorbereiding leverde een record aan ontwerpen af. Toch gaan er niet meer aansluitingen per week uit, en er komt meer terug."}
       - {tool: time_study, key: false, depth: 0, text: "Een ontwerp maken kost de werkvoorbereider bijna drie uur, binnen de norm."}
@@ -594,6 +612,8 @@ problems:
       # dossier holds, about half an hour on the 3.2 h design touch time
       # (value_streams.yaml): roughly a seventh extra.
       - {target: connections.design, property: touch_time, value: 1.12}
+    tells:
+      - {tell: prep_tray, text: "Naast het postbakje bij Werkvoorbereiding ligt nog een stapel dossiers."}
     clues:
       - {tool: shadow, key: true, depth: 0, text: "Bij elk dossier kijkt de werkvoorbereider eerst in twee bakken welk dossier het oudst is, en sorteert dan om."}
       - {tool: queue_count, key: false, depth: 0, text: "De stapel is groot nu drie van de vier werkvoorbereiders op cursus zijn. Aan de cursus verander jij deze week niets; aan wat de ene werkvoorbereider met haar tijd doet misschien wel."}

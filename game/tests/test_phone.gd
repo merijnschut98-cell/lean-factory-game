@@ -238,6 +238,16 @@ func test_instellingen_holds_the_text_and_log_switches() -> void:
 	app.refresh()
 	assert_true(_buttons(app).has(SceneLines.AUTO_LABEL), "Tekst loopt vanzelf door")
 	assert_true(_buttons(app).has(SettingsApp.LOG), "the playtest log")
+	assert_true(_buttons(app).has(Soundscape.MUTE_LABEL), "Geluid uit")
+	assert_eq(app.find_children("*", "HSlider", true, false).size(), 1, "the volume")
+	office.free()
+
+
+func test_a_buzz_plays_the_phone_sound() -> void:
+	var office := _office()
+	var before := office.sound.get_child_count()
+	office.ui.phone.buzz.emit()
+	assert_eq(office.sound.get_child_count(), before + (0 if Soundscape.muted() else 1), "the buzz under the soundscape")
 	office.free()
 
 

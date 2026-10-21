@@ -175,3 +175,15 @@ func test_the_training_week_completes_when_you_go_home_every_evening() -> void:
 	ui.check_panel.act(false)
 	assert_false(s.in_training(), "the week is done")
 	office.free()
+
+
+## The sound of going home (S1-B): the office fades out behind the front door, and the
+## next morning's office comes back.
+func test_going_home_hushes_the_office_sound_until_the_morning() -> void:
+	var office := _office()
+	_clock_to(office, 18 * 60)
+	_go_home(office)
+	assert_true(office.sound.hushed, "the office fades out behind you")
+	office.sound.morning(office.session.minute_of_day(), office.sound.occupancy())
+	assert_false(office.sound.hushed, "the morning office")
+	office.free()

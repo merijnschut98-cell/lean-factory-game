@@ -152,6 +152,8 @@ func _first_name(id: String) -> String:
 ## door; a short fade with the new date.
 func go_home() -> void:
 	var s := office.session
+	if office.sound != null:   # the front door, the street; the office fades out behind you
+		office.sound.go_home()
 	s.pass_time(next_morning(s.region.net.time) - s.region.net.time)
 	if office.floors.floor_id != "ground":
 		office.floors.go_to("ground", "entrance", true)
@@ -167,6 +169,8 @@ func go_home() -> void:
 	office.daylight.update(s)
 	poll()
 	_show_fade(GameSession.day_text(s.region.net.time))
+	if office.sound != null:   # the morning office fades in as the black clears
+		office.sound.wake_after(FADE_HOLD + FADE_SECONDS * 0.5)
 
 
 ## The next working day's START_MINUTE after `t` (Saturday and Sunday skipped).

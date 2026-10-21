@@ -120,6 +120,10 @@ var explainer: ExplainerView
 var minimap: OfficeMinimap
 ## The yard's clock-keeper (the vans by the hour, PLAN 2.2) while the yard is loaded, or null.
 var yard: OfficeYard
+## The office's sound (S1-B) while the game can be played, or null.
+var sound: Soundscape
+## The props that read the region (PLAN 2.6) while a floor with tells is loaded, or null.
+var tells: OfficeTells
 ## The character creator open over the world ("Uiterlijk" in the pause menu), or null.
 var look_editor: CreatorScreen
 ## People turning to you, greeting you, chatting at the coffee corner (Phase 2 §1.4).
@@ -184,6 +188,10 @@ func build() -> void:
 	home.poll()
 	if ui.playable():
 		show_map()
+		sound = Soundscape.new()
+		sound.office = self
+		add_child(sound)
+		ui.phone.buzz.connect(sound.play.bind("phone_buzz", -6.0))
 		minimap = OfficeMinimap.new()
 		add_child(minimap)
 		minimap.setup(self)
@@ -282,7 +290,7 @@ static func _load_geometry(path := MODEL) -> Node3D:
 func load_floor() -> void:
 	_clear_interactables()
 	var stay_in: Array[String] = people.stay_in if people != null else ([] as Array[String])
-	for n: Node in [people, geometry, yard]:
+	for n: Node in [people, geometry, yard, tells]:
 		if n != null:
 			remove_child(n)
 			n.free()
@@ -302,6 +310,11 @@ func load_floor() -> void:
 	_refresh_people()
 	daylight.update(session)
 	yard = null
+	tells = OfficeTells.create(self)
+	if tells != null:
+		add_child(tells)
+		if session.error.is_empty():
+			tells.refresh()
 	if find_marker("van0") != null:   # the yard (PLAN 2.2): its vans go out and come back by the hour
 		yard = OfficeYard.new()
 		yard.name = "Yard"

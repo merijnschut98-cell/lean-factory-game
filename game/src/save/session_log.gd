@@ -9,7 +9,7 @@ extends RefCounted
 ## choice lives in the settings file.
 
 const PATH := "user://saves/playtest_log.txt"
-const SETTINGS := "user://settings.cfg"
+const SETTINGS := Settings.PATH
 const _SECTION := "privacy"
 const _KEY := "playtest_log"
 ## A log past this size starts a new file; the previous one is kept once
@@ -32,20 +32,12 @@ static func from_settings(settings: String = SETTINGS, saves_dir: String = SaveF
 
 
 static func enabled_in(settings: String = SETTINGS) -> bool:
-	var config := ConfigFile.new()
-	if config.load(settings) != OK:
-		return true  # no settings yet (or unreadable): the default
-	var on: Variant = config.get_value(_SECTION, _KEY, true)
-	return on if on is bool else true
+	return Settings.get_bool(_SECTION, _KEY, true, settings)
 
 
 ## "" or what went wrong.
 static func set_enabled_in(settings: String, on: bool) -> String:
-	var config := ConfigFile.new()
-	config.load(settings)  # missing is fine: a new file
-	config.set_value(_SECTION, _KEY, on)
-	var error := config.save(settings)
-	return "" if error == OK else "cannot write %s (%s)" % [settings, error_string(error)]
+	return Settings.set_value(_SECTION, _KEY, on, settings)
 
 
 ## Append one line with the real date and time. "" (also when switched

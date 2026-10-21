@@ -225,6 +225,7 @@ def make_materials() -> None:
     m("sticky_pink", None, color=srgb(246, 140, 170), rough=0.85)
     m("sticky_green", None, color=srgb(150, 220, 120), rough=0.85)
     m("sticky_blue", None, color=srgb(120, 196, 236), rough=0.85)
+    m("card_red", None, color=srgb(214, 48, 44), rough=0.85)   # a moved job on the planning board
     m("screens", "screens", color=(0.02, 0.02, 0.02, 1), emission="screens", rough=0.12,
       normal=False, orm=False, uv_size=1.0)
     m("signage", "signage", rough=0.45, normal=False, orm=False, uv_size=1.0)
@@ -1211,8 +1212,6 @@ def build_areas(kits) -> None:
     put(kits["cabinet_1.2"], "intake_cabinet", (3.2, 3.95, 0), 0)
     collide((1.2, 0.45, 0.75), (3.2, 3.95, 0.375))
     put(kits["tray"], "intake_cabinet_tray", (2.85, 3.95, 0.0), 0)
-    for k, (x, rot) in enumerate(((3.3, 3), (3.62, -6))):
-        put(kits["dossiers_2"], f"intake_cabinet_dossiers{k}", (x, 3.95, 0.0), rot)
     # --- werkvoorbereiding (connections.design): 4 desks with dual monitors, rolls, plotter, backlog
     bench("design", 9.0, 3.0, kits, 2, [(3, 0), (1, 3), (0, 5), (3, 1)],
           {0: (("rolls", 0.0, 0.2, 80), ("dossiers_3", 0.62, 0.15, 0)),
@@ -1268,6 +1267,93 @@ def build_areas(kits) -> None:
     coffee_corner(kits)
     lounge_and_lockers(kits)
     walls_dressing(kits)
+    build_tells(kits)
+
+
+# --------------------------------------------------------------------------- tells (PLAN 2.6)
+# Props that read the simulation (design §1.5): each `tell_<id>` empty holds its fixed parts
+# and three variants `tell_<id>_low`, `_mid` and `_high`; game/src/world/office/office_tells.gd
+# shows one variant by the region's numbers. The tells are left out of the lightmap bake.
+TELL_VARIANTS = ("low", "mid", "high")
+
+
+def tell(tell_id: str, loc, rot: float, variants: dict, fixed=()) -> None:
+    """The tell's empty at loc (rot degrees about Z) with its parts in local space:
+    variants {band: [(mesh, (x, y, z), rot)]}, fixed [(name, mesh, (x, y, z), rot)]."""
+    root = bpy.data.objects.new(f"tell_{tell_id}", None)
+    root.empty_display_type = "PLAIN_AXES"
+    root.location = loc
+    root.rotation_euler = (0, 0, math.radians(rot))
+    bpy.context.scene.collection.objects.link(root)
+    for name, mesh, at, r in fixed:
+        put(mesh, f"tell_{tell_id}_{name}", at, r).parent = root
+    for band in TELL_VARIANTS:
+        holder = bpy.data.objects.new(f"tell_{tell_id}_{band}", None)
+        holder.parent = root
+        bpy.context.scene.collection.objects.link(holder)
+        for k, (mesh, at, r) in enumerate(variants[band]):
+            put(mesh, f"tell_{tell_id}_{band}{k}", at, r).parent = holder
+
+
+def kit_planning_board() -> tuple[bpy.types.Mesh, dict]:
+    """A mobile week board (1.5 x 1.0 on two posts), front at local -X: the fixed board with
+    the week's job cards, and per band a mesh of red cards (jobs moved this week)."""
+    b = MeshBuilder()
+    for y in (-0.8, 0.8):
+        b.box((0.04, 0.04, 1.95), (0, y, 0.975), "alu")
+        b.box((0.5, 0.05, 0.04), (0, y, 0.02), "alu")
+    cols, rows = 5, 6   # ma..vr; the first row holds the day headers
+
+    def cell(c: int, r: int) -> tuple[float, float]:
+        return -0.6 + c * 0.3, 1.82 - r * 0.15
+
+    rng = np.random.default_rng(11)
+    for c in range(cols):
+        b.box((0.004, 0.26, 0.03), (-0.017, cell(c, 0)[0], 1.84), "metal_blue")
+        for r in range(1, rows):
+            if rng.uniform() < 0.85:
+                y, z = cell(c, r)
+                b.box((0.004, 0.24, 0.11), (-0.017, y + float(rng.normal(0, 0.01)), z),
+                      ("paper", "sticky_yellow")[(c + r) % 2])
+    board = b.mesh("planning_board")
+    order = [(c, r) for r in range(1, rows) for c in range(cols)]
+    rng.shuffle(order)
+    reds = {}
+    for band, n in zip(TELL_VARIANTS, (1, 4, 10)):
+        rb = MeshBuilder()
+        for c, r in order[:n]:
+            y, z = cell(c, r)
+            rb.box((0.004, 0.2, 0.09), (-0.021, y + 0.02, z - 0.01), "card_red", rot=float(rng.normal(0, 3)))
+        reds[band] = rb.mesh(f"planning_red_{band}")
+    return board, reds
+
+
+def build_tells(kits) -> None:
+    """The 1e's three tells: the dossiers on Intake's cabinet, Werkvoorbereiding's in-tray and
+    the planners' week board."""
+    def pile(h: float, seed: int, base: float = 0.75) -> bpy.types.Mesh:
+        return _raise(kit_dossier_stack(h, 20 + seed), base)
+
+    # Intake: what lies on the cabinet in front of its desks (the queue, and the applications
+    # waiting for the customer's missing details). The cabinet top is at 0.75 m.
+    tell("intake_stack", (3.45, 3.95, 0.0), 0, {
+        "low": [(pile(0.05, 0), (0, 0, 0), 3)],
+        "mid": [(pile(0.16, 1), (-0.13, 0, 0), 3), (pile(0.1, 2), (0.15, 0, 0), -6)],
+        "high": [(pile(0.4, 3), (-0.2, 0, 0), 3), (pile(0.32, 4), (0.07, 0, 0), -5),
+                 (pile(0.22, 5), (0.3, 0.02, 0), 8)]})
+    # Werkvoorbereiding: the in-tray at the aisle end of the north-east desk (design3).
+    on_tray = 0.75 + 0.145
+    tell("prep_tray", (9.5, 4.42, 0.0), 90, {
+        "low": [(kits["tray"], (0, 0, 0), 0)],
+        "mid": [(kits["tray"], (0, 0, 0), 0), (pile(0.12, 6, on_tray), (0, 0, 0), 4)],
+        "high": [(kits["tray"], (0, 0, 0), 0), (pile(0.32, 7, on_tray), (0, 0, 0), 4),
+                 (pile(0.18, 8), (-0.3, 0.02, 0), -7)]})
+    # Planning: the week board east of the planners' desks, turned toward them and the aisle.
+    board, reds = kit_planning_board()
+    at, rot = (17.7, 3.9, 0.0), -40   # clear of meters.appointment's standing point (16.9, 2.2)
+    tell("planning_board", at, rot, {band: [(reds[band], (0, 0, 0), 0)] for band in TELL_VARIANTS},
+         fixed=[("board", board, (0, 0, 0), 0), ("frame", kit_board_frame(1.5, 1.0), (0, 0, 1.4), 180)])
+    collide(*world_box((0.5, 1.7, 1.95), (0, 0, 0.975), at, rot))
 
 
 def meeting_table(kits) -> None:
@@ -1607,7 +1693,8 @@ def bake_lightmaps(spots, samples: int, floor_id: str) -> None:
         scene.collection.objects.link(lo)
         lights.append(lo)
     # glass, colliders and the doors the game opens or shuts cast no baked light or AO
-    hidden = [o for o in scene.objects if o.name.startswith(("glass", "collision", "lockleaf_", "lockcol_", "openleaf_"))
+    hidden = [o for o in scene.objects if o.name.startswith(("glass", "collision", "lockleaf_", "lockcol_", "openleaf_",
+                                                             "tell_"))
               or o.name == "light_panels"]
     for o in hidden:
         o.hide_render = True

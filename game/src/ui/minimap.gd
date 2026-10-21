@@ -69,20 +69,12 @@ func _init() -> void:
 
 
 ## The settings (`path`: user://settings.cfg; tests point it elsewhere).
-static func setting(key: String, path: String = SessionLog.SETTINGS) -> bool:
-	var config := ConfigFile.new()
-	if config.load(path) != OK:
-		return true
-	var v: Variant = config.get_value(SECTION, key, true)
-	return v if v is bool else true
+static func setting(key: String, path: String = Settings.PATH) -> bool:
+	return Settings.get_bool(SECTION, key, true, path)
 
 
-static func set_setting(key: String, on: bool, path: String = SessionLog.SETTINGS) -> String:
-	var config := ConfigFile.new()
-	config.load(path)   # a missing file starts empty
-	config.set_value(SECTION, key, on)
-	var err := config.save(path)
-	return "" if err == OK else "instellingen niet bewaard (%s)" % error_string(err)
+static func set_setting(key: String, on: bool, path: String = Settings.PATH) -> String:
+	return Settings.set_value(SECTION, key, on, path)
 
 
 ## The map's turn on screen: the camera's yaw while it turns with the camera (screen-up is

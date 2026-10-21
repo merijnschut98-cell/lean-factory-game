@@ -61,7 +61,8 @@ func _initialize() -> void:
 			# while deleting count against it), not piled up until quit.
 			await process_frame
 			for err in catcher.take():
-				case.failures.append("runtime error: " + err)
+				if not case.is_expected_error(err):
+					case.failures.append("runtime error: " + err)
 			if case.failures.is_empty():
 				passed += 1
 			else:

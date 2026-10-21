@@ -44,7 +44,7 @@ extends SceneTree
 ## people coming in by the lift and the stairs in the morning light, lunch in the kantine,
 ## the 1e after six with the late stayers' desk lamps) · play_home, play_home_fade (after
 ## five at the front door: "Naar huis", then the fade with the next morning's date) ·
-## phone_home, phone_messages, phone_map (PLAN 2.14 S1-F: the phone raised on its
+## phone_home, phone_messages, phone_map, phone_settings (PLAN 2.14 S1-F: the phone raised on its
 ## home screen on Monday of the training week, on Berichten, on Kaart) ·
 ## title (the title menu over a few saves) ·
 ## title_replace, title_keep ("Nieuw spel" over a filled autosave: the
@@ -56,7 +56,9 @@ extends SceneTree
 ## open_explainer (Ruud's whiteboard a few beats in: the counter; PLAN 2.13 A) ·
 ## place_mon_intake, place_mon_design, place_thu_intake, place_thu_design (PLAN
 ## 2.12: the team's menu on Monday and on Thursday of the training week: the
-## people and their questions, then only the known tools that fit).
+## people and their questions, then only the known tools that fit) ·
+## tell_intake_high, tell_intake_low, tell_prep_high, tell_planning_high (PLAN 2.6:
+## the 1e's props read the region; a long intake queue, then none).
 ## The mission is played through the UI's own handlers, as a player would;
 ## only the training states start with the training week.
 
@@ -89,7 +91,7 @@ func _run() -> void:
 	var office: Office = load(SCENE).instantiate()
 	office.seed_value = 11
 	office.training = state in ["training_board", "timelapse", "act0_note", "act0_ruud", "act0_cards", "phone_home",
-			"phone_messages", "phone_map"] \
+			"phone_messages", "phone_map", "phone_settings"] \
 		or state.begins_with("place_") or state.begins_with("open_")
 	if state.begins_with("open_"):   # De eerste vijf minuten (PLAN 2.7d), as a new game
 		office.opening = true
@@ -169,7 +171,7 @@ func _run() -> void:
 				"open_door", "open_board", "open_letter", "open_phone", "open_evening", "open_anouk", "open_after", \
 				"open_pause", "open_explainer":
 			_opening(office, state)
-		"phone_home", "phone_messages", "phone_map":   # the phone raised (PLAN 2.14 S1-F)
+		"phone_home", "phone_messages", "phone_map", "phone_settings":   # the phone raised (PLAN 2.14 S1-F)
 			_phone(office, state)
 		"act0_note":   # Monday morning: Ruud's note with the day's move card (PLAN 1.11a)
 			_stand_at(office, DESIGN)
@@ -276,6 +278,8 @@ func _run() -> void:
 		"people_desks", "people_talk", "people_energy", "people_monteurs", "people_meetdata", "people_gemba", \
 				"people_greet", "people_quick", "people_chatter":
 			_people(office, state)
+		"tell_intake_high", "tell_intake_low", "tell_prep_high", "tell_planning_high":
+			_tells(office, state)
 		"minimap", "minimap_floor", "minimap_near":
 			_minimap(office, state)
 		"yard", "yard_magazijn", "yard_werkplaats", "yard_vans":
@@ -351,7 +355,35 @@ func _save_menus(state: String) -> void:
 func _phone(office: Office, state: String) -> void:
 	var ui := office.ui
 	_stand_at(office, DESIGN)
-	ui.toggle_phone({"phone_messages": Phone.MESSAGES, "phone_map": Phone.MAP}.get(state, Phone.HOME))
+	ui.toggle_phone({"phone_messages": Phone.MESSAGES, "phone_map": Phone.MAP, "phone_settings": Phone.SETTINGS}.get(
+		state, Phone.HOME))
+
+
+## The tells (PLAN 2.6) driven through the simulation: orders piled up at a step, or
+## the intake queue emptied; the planning board shows its band directly.
+func _tells(office: Office, state: String) -> void:
+	var net := office.session.region.net
+	match state:
+		"tell_intake_high":
+			for i in 60:
+				net.open_order(net.stream("connections"))
+		"tell_intake_low":
+			net.queue_of(net.step_at("connections.intake")).clear()
+		"tell_prep_high":
+			for i in 20:
+				net.queue_of(net.step_at("connections.design")).append(WorkOrder.new(-1 - i, net.stream("connections"), net.time))
+	office.tells.refresh()
+	if state == "tell_planning_high":
+		OfficeTells.show(office.geometry, {"planning_board": OfficeTells.HIGH})
+	print("tells: ", OfficeTells.readings(net), " -> ", OfficeTells.bands(net))
+	_stand_at(office, DESIGN if state == "tell_prep_high" else INTAKE)
+	if state == "tell_planning_high":
+		office.player.position = Vector3(15.6, 0, -6.2)
+		office.player.face(Basis.looking_at(Vector3(17.7, 0, -3.9) - office.player.position))
+	office.player.position -= office.player.basis.x * 0.8
+	office.rig.yaw = office.player.rotation.y + deg_to_rad(25)
+	office.rig.zoom(-4)
+	office.rig.snap()
 
 
 ## Stand a step behind the marker, looking the way it faces; the camera
