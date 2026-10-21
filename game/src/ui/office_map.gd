@@ -67,6 +67,12 @@ func _init() -> void:
 			lift = false)
 
 
+## The drawing's size (the phone's sideways screen; SIZE otherwise).
+func set_view_size(px: Vector2) -> void:
+	view.custom_minimum_size = px
+	view.queue_redraw()
+
+
 func show_office(floor_in_office: Rect2, office_places: Array[Dictionary], office_player: Node3D) -> void:
 	floor_rect = floor_in_office
 	places = office_places
@@ -215,7 +221,7 @@ func marked_rooms() -> Array[String]:
 
 ## The drawing area inside the view.
 func area() -> Rect2:
-	return Rect2(Vector2(24, 24), SIZE - Vector2(48, 48))
+	return Rect2(Vector2(24, 24), view.custom_minimum_size - Vector2(48, 48))
 
 
 func to_view(at: Vector2) -> Vector2:
@@ -247,7 +253,7 @@ func player_facing() -> Vector2:
 func _draw_map() -> void:
 	var font := view.get_theme_default_font()
 	var r := Rect2(to_view(floor_rect.position), to_view(floor_rect.end) - to_view(floor_rect.position))
-	view.draw_rect(Rect2(Vector2.ZERO, SIZE), Palette.BLUE_PALE)
+	view.draw_rect(Rect2(Vector2.ZERO, view.custom_minimum_size), Palette.BLUE_PALE)
 	view.draw_rect(r, Color.WHITE)
 	var step := r.size.x / floor_rect.size.x * GRID_METRES
 	var x := r.position.x + step
@@ -279,7 +285,7 @@ func _draw_map() -> void:
 			view.draw_string(font, corner + Vector2(8, -10), room["name"], HORIZONTAL_ALIGNMENT_LEFT, -1, 17,
 				Palette.SAFETY_ORANGE if target else Palette.VOLTANA_BLUE)
 	view.draw_rect(r, Palette.VOLTANA_BLUE, false, 5.0)
-	_draw_north(font, Vector2(SIZE.x - 40, 52))
+	_draw_north(font, Vector2(view.custom_minimum_size.x - 40, 52))
 	var scale_label := "%d m" % int(GRID_METRES)
 	view.draw_line(Vector2(r.position.x, r.end.y + 12), Vector2(r.position.x + step, r.end.y + 12), Palette.MUTED, 2.0)
 	view.draw_string(font, Vector2(r.position.x + step + 8, r.end.y + 18), scale_label, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Palette.MUTED)

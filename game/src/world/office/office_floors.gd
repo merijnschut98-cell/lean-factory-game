@@ -179,8 +179,7 @@ func use(target: Interactable) -> bool:
 			var to := building.next_floor(floor_id, 1 if target.kind == "stairs_up" else -1)
 			go_to(to, target.kind)
 		"lift":
-			office.ui.office_map.lift = true
-			office.ui.toggle_map()
+			office.ui.open_lift()
 		"door":
 			office.ui.hud.toast(CLOSED_DOOR % room_name(target))
 		"exit":   # the back door: out to the yard, or back in (exit:<the other side>)

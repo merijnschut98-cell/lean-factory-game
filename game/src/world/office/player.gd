@@ -1,16 +1,16 @@
 class_name Player
 extends CharacterBody3D
 ## The CI-lead, seen from above (third person): WASD walks relative to the
-## camera, a route from a click is walked corner by corner, E interacts, J
-## opens the clue journal, M the map, K the codex, Esc closes a panel. While
+## camera, a route from a click is walked corner by corner, E interacts, Tab
+## (the remappable action Phone.ACTION) raises the phone, J, M and K raise it on
+## Notities, Kaart and Begrippen, Esc closes a panel. While
 ## a panel is open the player stands still (`active` is false) and the keys
 ## only signal the office. Shift jogs (keys or a clicked route). The body turns to face where it walks; the avatar
 ## (a stand-in until a character model replaces it) turns with it.
 
 signal interact_pressed
-signal journal_pressed
-signal map_pressed
-signal codex_pressed
+## The phone key (`app` Phone.HOME) or J, M, K (`app` the app they open).
+signal phone_pressed(app: String)
 signal escape_pressed
 ## The end of a route was reached.
 signal arrived
@@ -97,19 +97,33 @@ static func walk_direction(input: Vector2, yaw: float) -> Vector3:
 	return (Basis(Vector3.UP, yaw) * Vector3(input.x, 0, input.y)).normalized()
 
 
+## The phone app a key opens (J Notities, M Kaart, K Begrippen); "" for none.
+static func app_for_key(key: Key) -> String:
+	match key:
+		KEY_J:
+			return Phone.NOTES
+		KEY_M:
+			return Phone.MAP
+		KEY_K:
+			return Phone.CODEX
+	return ""
+
+
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo:
-		match event.physical_keycode:
-			KEY_E:
-				interact_pressed.emit()
-			KEY_J:
-				journal_pressed.emit()
-			KEY_M:
-				map_pressed.emit()
-			KEY_K:
-				codex_pressed.emit()
-			KEY_ESCAPE:
-				escape_pressed.emit()
+	if not (event is InputEventKey and event.pressed and not event.echo):
+		return
+	if event.is_action(Phone.ACTION):
+		phone_pressed.emit(Phone.HOME)
+		return
+	var app := app_for_key(event.physical_keycode)
+	if not app.is_empty():
+		phone_pressed.emit(app)
+		return
+	match event.physical_keycode:
+		KEY_E:
+			interact_pressed.emit()
+		KEY_ESCAPE:
+			escape_pressed.emit()
 
 
 func _physics_process(delta: float) -> void:

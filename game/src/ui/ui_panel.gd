@@ -47,16 +47,35 @@ func _init(title: String, size: Vector2 = Vector2(1100, 0)) -> void:
 	outer.add_child(body)
 
 
+## Carried inside a phone app (PhoneApp.carry): the app places and sizes it.
+var embedded := false
+
+
 ## Centre the panel at its current minimum size, or dock it at the right.
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_RESIZED or what == NOTIFICATION_VISIBILITY_CHANGED:
 		_place.call_deferred()
 
 
+## Inside a phone app: no header or frame of its own, no fixed size (its
+## scrolling lists fill the phone's screen), always shown while the app is.
+func embed() -> void:
+	embedded = true
+	visible = true
+	custom_minimum_size = Vector2.ZERO
+	size_flags_vertical = Control.SIZE_EXPAND_FILL
+	size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+	title_label.get_parent().visible = false
+	rule.visible = false
+	for scroll: Node in find_children("*", "ScrollContainer", true, false):
+		(scroll as Control).custom_minimum_size.y = 0
+
+
 ## Set the size once: each resize queues another placement, so a size set
 ## twice (shrunk, then grown) never settles.
 func _place() -> void:
-	if not is_inside_tree():
+	if not is_inside_tree() or embedded:
 		return
 	var rect := placement(get_parent_area_size(), get_combined_minimum_size(), docked)
 	size = rect.size

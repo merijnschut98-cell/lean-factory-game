@@ -14,8 +14,11 @@ const ANOUK := "anouk"         # B7: Anouk at seven
 const DONE := "done"           # the opening is over (the week goes on)
 const BEATS: Array[String] = [ARRIVAL, WALK, BOARD, LETTER, EVENING, ANOUK, DONE]
 
-## The HUD elements that wait for their moment.
-const ELEMENTS: Array[String] = ["clock", "controls", "journal", "codex", "map", "mission", "board", "budget", "xp"]
+## The HUD elements and the phone's apps (design 2026-10-21 §1.8) that wait
+## for their moment. "phone" is the phone itself (and its Instellingen),
+## "board" the mission board in the world, "mission" the objective line.
+const ELEMENTS: Array[String] = ["clock", "controls", "phone", "messages", "notes", "people", "codex", "map", "missions",
+	"mission", "board", "budget", "xp"]
 
 
 ## Move the opening on to `beat` (never back). False when it is not ahead.
@@ -36,19 +39,25 @@ static func running(layer: SessionLayer) -> bool:
 	return not layer.opening_beat.is_empty() and layer.opening_beat != DONE
 
 
-## Which HUD element shows now (spec §3), {element: bool}: each comes when it
-## is first needed and stays; all of them without an opening or once the
-## training week is over.
+## Which HUD element and phone app shows now (spec §3), {element: bool}: each
+## comes when it is first needed and stays; all of them without an opening or
+## once the training week is over. The phone comes at B6, where the day's
+## messages reach it (Berichten); Notities and Wie is wie after Anouk's talk
+## (what she told you); the map, Opdrachten and the board on Tuesday.
 static func hud(s: GameSession, layer: SessionLayer) -> Dictionary:
 	var out := {}
 	var all := layer.opening_beat.is_empty() or not s.in_training()
 	var tuesday := day_reached(s, "training_tue")
 	var shown := {
 		"clock": reached(layer, ANOUK) or tuesday,
-		"journal": reached(layer, DONE),
+		"phone": reached(layer, EVENING),
+		"messages": reached(layer, EVENING),
+		"notes": reached(layer, DONE),
+		"people": reached(layer, DONE),
 		"controls": tuesday,
 		"codex": tuesday or s.explainers.seen.size() > 0,
 		"map": tuesday,
+		"missions": tuesday,
 		"mission": tuesday,
 		"board": tuesday,
 		"budget": day_reached(s, "training_thu"),
