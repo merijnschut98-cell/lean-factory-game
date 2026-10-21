@@ -97,6 +97,18 @@ func test_staying_late_is_never_forced_and_one_line_suggests_home() -> void:
 	office.free()
 
 
+## The suggestion waits while a panel or a scene holds the world (a talk, the phone).
+func test_the_late_line_waits_until_the_world_is_free() -> void:
+	var office := _office()
+	office.hold_for_scene(true)
+	_clock_to(office, 19 * 60 + 20)
+	assert_false(office.ui.hud.toast_texts().has(OfficeHome.LATE_NOTE), "not over a scene")
+	office.hold_for_scene(false)
+	office.home.poll()
+	assert_true(office.ui.hud.toast_texts().has(OfficeHome.LATE_NOTE), "once it is over")
+	office.free()
+
+
 func test_a_needed_colleague_who_went_home_says_so_and_is_back_in_the_morning() -> void:
 	var office := _office(true)
 	var ui := office.ui
