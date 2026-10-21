@@ -266,7 +266,8 @@ func test_the_lift_takes_the_same_player_to_another_floor() -> void:
 	assert_true(player.active, "and walk on")
 	assert_true(office.interactable("door:contact_centre") != null, "the begane grond's points")
 	assert_eq(office.interactable("obeya"), null, "not the 1e's")
-	assert_eq(office.people.person("joost"), null, "nobody of the 1e's desks is down here")
+	assert_true(office.people.person("joost") == null or not office.people.person("joost").visible,
+		"nobody of the 1e's desks is down here (Joost comes down only for lunch)")
 	assert_false(office.people.people.any(func(p: OfficePerson) -> bool: return p.visible),
 		"the Klantcontactcentrum is shut and it is not lunchtime: nobody about")
 	assert_true(office.rig.bounds.has_point(Vector2(player.position.x, player.position.z)), "the camera follows")
