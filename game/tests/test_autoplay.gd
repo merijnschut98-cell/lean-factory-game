@@ -36,8 +36,9 @@ func test_the_talker_talks_to_everyone_it_can_and_listens_first() -> void:
 	assert_true(talks.all(func(t: Dictionary) -> bool: return not t["forced"]), "the talker opens its talks itself")
 	assert_true(talks.all(func(t: Dictionary) -> bool: return not "pressure" in t["moves"] and not "confront" in t["moves"]),
 		"never pressures")
-	assert_true(talks.all(func(t: Dictionary) -> bool: return t["moves"].is_empty() or t["moves"][0] in Dialog.LISTEN),
-		"opens every talk with a listening move")
+	assert_true(talks.all(func(t: Dictionary) -> bool:
+		return t["kind"] == ExpertTalk.KIND or t["moves"].is_empty() or t["moves"][0] in Dialog.LISTEN),
+		"opens every talk with a listening move (an expert's talk is questions: its moves are the topics)")
 	assert_true(talks.any(func(t: Dictionary) -> bool: return t["outcome"] in ["commitment", "partial"]),
 		"wins at least one agreement: %s" % [talks.map(func(t: Dictionary) -> String: return t["outcome"])])
 	assert_true((run["people"] as Dictionary).has("anouk"), "trust and morale per person")

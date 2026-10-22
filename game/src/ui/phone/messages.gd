@@ -10,13 +10,16 @@ extends PhoneApp
 ##
 ## Inbox ids: "note:<training day>", "debrief:<training day>", "week_end",
 ## "opening:<n>" (OfficeOpening.PHONE's n-th), "payoff:<mission>:<n>" (a milestone
-## kept in time: MissionDef.payoff's n-th, a voicemail or a letter on your desk). The
-## text is worded when shown, so a translation reads the current words.
+## kept in time: MissionDef.payoff's n-th, a voicemail or a letter on your desk),
+## "missed:<dialog>:<day>" (a customer's call let go: their voicemail, CustomerCalls).
+## The text is worded when shown, so a translation reads the current words.
 
 const NOTE_HEADING := "Briefje van Ruud · %s"
 const PAYOFF_HEADINGS := {"call": "Voicemail", "letter": "Een brief op je bureau"}
 const DEBRIEF_HEADING := "Terugblik op %s"
 const WEEK_END_HEADING := "Je eerste week"
+## A customer's call let go (CustomerCalls.missed): their voicemail.
+const MISSED_HEADING := "Gemiste oproep · voicemail"
 const NONE := "Nog geen berichten."
 const NOTE := "note:"
 const DEBRIEF := "debrief:"
@@ -120,6 +123,13 @@ static func render(s: GameSession, entry: Dictionary) -> Dictionary:
 		var line := str(JsonFile.dict_or_empty(s.catalog.dialog_bank.get("ruud_names")).get("week_end", ""))
 		return {"from": "%s · %s" % [ruud, when], "heading": _tr(WEEK_END_HEADING),
 			"lines": ["'%s'" % line] as Array[String], "paper": Palette.NOTE_PAPER} if not line.is_empty() else {}
+	if id.begins_with(CustomerCalls.MISSED):
+		var d: DialogDef = s.people.dialogs.get(id.trim_prefix(CustomerCalls.MISSED).get_slice(":", 0))
+		var p: PersonDef = s.people.persons.get(d.person) if d != null else null
+		if p == null:
+			return {}
+		return {"from": "%s · %s" % [p.name, when], "heading": _tr(MISSED_HEADING),
+			"lines": ["'%s'" % s.fill_tokens(p.voicemail)] as Array[String], "paper": Color.WHITE}
 	if id.begins_with(OPENING):
 		var n := id.trim_prefix(OPENING).to_int()
 		if n < 0 or n >= OfficeOpening.PHONE.size():

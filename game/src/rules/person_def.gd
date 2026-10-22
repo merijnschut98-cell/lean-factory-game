@@ -25,6 +25,11 @@ var short: String
 ## A dated beat (Missions.beats) on which the person leaves for good (Henk
 ## retires on henk_farewell); "" for none. People marks them gone once it passed.
 var leaves_on: String
+## A customer, reached by phone (PLAN 2.4): their talks are calls, taken at the
+## KCC's headset or ringing on the player's phone (CustomerCalls).
+var customer := false
+## What a customer says on the voicemail when the player lets a call go; "".
+var voicemail: String
 var error := ""
 
 
@@ -41,6 +46,8 @@ static func from_dict(d: Dictionary) -> PersonDef:
 	p.morale = clampi(int(d.get("morale", 60)), 0, 100)
 	p.voice = str(d.get("voice", ""))
 	p.leaves_on = str(d.get("leaves_on", ""))
+	p.customer = d.get("customer", false) == true
+	p.voicemail = str(d.get("voicemail", ""))
 	p.short = str(d.get("short", p.name.get_slice(" ", 0)))
 	if p.id.is_empty() or p.name.is_empty() or p.place.is_empty():
 		p.error = "person %s: needs an id, a name and a place" % p.id

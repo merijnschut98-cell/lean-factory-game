@@ -721,6 +721,8 @@ class Persona extends RefCounted:
 			if not opened.has("error"):
 				s.end_dialog()
 			return "error:" + str(opened.get("error", opened.get("dialog")))
+		if d.kind == ExpertTalk.KIND:
+			return _ask_expert(d, hello)
 		var tags: Array = opened["position"].get("tags", [])
 		var talk := {"proposed": false, "shown_data": false, "co": "", "last": "", "uses": {}, "result": {}}
 		var made: Array[String] = []
@@ -754,6 +756,20 @@ class Persona extends RefCounted:
 			"day": snappedf(day(), 0.1), "outcome": outcome, "moves": made, "forced": hello,
 			"trust": summary.get("trust", -1), "morale": summary.get("morale", -1)})
 		return outcome
+
+	## An expert talk (no meter, nothing to win): ask every question on offer, in
+	## order, then round off. Its outcome is "" (none).
+	func _ask_expert(d: DialogDef, hello: bool) -> String:
+		var made: Array[String] = []
+		while not hello and not s.dialog_offers().is_empty():
+			var topic: String = s.dialog_offers()[0]["pick"]
+			s.choose_move(ExpertTalk.ASK, topic)
+			made.append(topic)
+		var summary: Dictionary = s.end_dialog().get("summary", {})
+		record["talks"].append({"dialog": d.id, "person": d.person, "kind": d.kind, "mission": d.mission,
+			"day": snappedf(day(), 0.1), "outcome": "", "moves": made, "forced": hello,
+			"trust": summary.get("trust", -1), "morale": summary.get("morale", -1)})
+		return ""
 
 	## The talker's next move: [move, pick]. A check-in listens until the
 	## concern is out and the person is open, then closes (lifted). A

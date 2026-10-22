@@ -36,6 +36,8 @@ var view_yaw := 0.0
 var avatar: Node3D
 ## The corners still to walk to (office space).
 var route := PackedVector3Array()
+## Sitting at a desk (sit_at, stand_up).
+var seated := false
 var _animations: AnimationPlayer
 ## The model, for its measured paces (null for the stand-in).
 var _model: Node3D
@@ -78,6 +80,24 @@ func wear(look: Dictionary) -> void:
 func face(basis_to_match: Basis) -> void:
 	var forward := -basis_to_match.z
 	rotation.y = atan2(-forward.x, -forward.z)
+
+
+## Sit on a chair at `seat` (its origin on the floor, facing its -Z): a call at
+## the KCC's headset (OfficeHeadset). The body plays its seated clip until
+## stand_up; the player does not walk meanwhile.
+func sit_at(seat: Transform3D) -> void:
+	stop()
+	position = Vector3(seat.origin.x, position.y, seat.origin.z)
+	face(seat.basis)
+	seated = true
+	_animate("sit")
+
+
+## Get up again (nothing changes when standing).
+func stand_up() -> void:
+	if seated:
+		seated = false
+		_animate("idle")
 
 
 func walk(corners: PackedVector3Array) -> void:
@@ -137,6 +157,10 @@ func _physics_process(delta: float) -> void:
 ## route, at a jog while `running`. Sets the horizontal velocity and turns the
 ## body; the physics step (or a test) moves it.
 func step(delta: float, input := Vector2.ZERO, running := false) -> void:
+	if seated:
+		velocity.x = 0
+		velocity.z = 0
+		return
 	var speed := RUN_SPEED if running else SPEED
 	var direction := Vector3.ZERO
 	if not active:

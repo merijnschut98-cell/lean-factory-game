@@ -25,11 +25,14 @@ extends RefCounted
 ## (phase-2 design §3.2): agreed:<dialog>:<proposal> (a proposal agreed),
 ## delivered:<story> (a followed order connected), left:<person> (someone who left;
 ## GameSession records these three), promise_kept:/promise_broken:<dialog> (a
-## promised date checked, Missions), and holds:<problem> (its fix in use and not
-## slipped, derived live by Missions.knows).
+## promised date checked, Missions), holds:<problem> (its fix in use and not
+## slipped, derived live by Missions.knows), and promised:<dialog>:<ISO date |
+## action kind> (a promise agreed in a talk, PLAN 2.4: the date the simulation
+## checks, or the action promised; GameSession).
 const KINDS: Array[String] = ["done", "failed", "chose", "standardised", "poor_fix", "repaired", "fork_first", "flag",
 	"heard", "committed", "complied", "partial", "blocked", "checked", "accepted", "forecast_positive", "agreed",
-	"delivered", "left", "promise_kept", "promise_broken", "holds"]
+	"delivered", "left", "promise_kept", "promise_broken", "holds", "promised"]
+const PROMISED := "promised:"
 const FORECAST_POSITIVE := "forecast_positive:"
 ## Live measures an atom can compare with ">=".
 const MEASURES: Array[String] = ["maturity", "reputation"]

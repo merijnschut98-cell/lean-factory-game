@@ -18,10 +18,17 @@ extends UiPanel
 ## name, none styled by fit (Merijn's playtest, 2026-10-19).
 ## Settings: STANDING (at their desk), WALKING (the player walks between lines
 ## and the camera follows the pair), PHONE (nobody to see: the phone raised and
-## the subtitles carry it).
+## the subtitles carry it), HEADSET (a call at the KCC's desk: as PHONE, no
+## phone in the hand).
+## An expert talk (kind expert, ExpertTalk) is the same stage with questions for
+## sentences: no arrow after your line, the pips stay (trust still moves), a
+## new clue noted over the questions, and no summary: after their goodbye the
+## talk closes (what they told you waits in Wie is wie).
 
 ## The note asks to talk the main mission's talk over with the coach.
 signal coach_requested
+## An expert's topic opens a "Hoe werkt het?" explainer (the world shows it).
+signal explainer_requested(explainer_id: String)
 ## The talk went to another phase (SPEAK, CHOOSE, SUMMARY_SCREEN): the world restages.
 signal phase_changed(phase: String)
 
@@ -31,6 +38,9 @@ const SUMMARY_SCREEN := "summary"
 const STANDING := "standing"
 const WALKING := "walking"
 const PHONE := "phone"
+## A call on a KCC headset (OfficeHeadset): as PHONE, but sitting at the desk,
+## no phone in the hand.
+const HEADSET := "headset"
 const ARROWS := {2: "▲▲", 1: "▲", 0: "", -1: "▼", -2: "▼▼"}
 ## Your line over their answer, the arrow after it.
 const YOU := "Jij: %s"
@@ -251,9 +261,17 @@ func start(person_id: String, where: String = STANDING) -> String:
 	_trust_seen = opened["meter"]["trust"]
 	person = null   # the world stages who (stage)
 	lines.clear()
-	_speak([_line(talk["opening"]), _line(talk["position"].get("text", ""))])
+	if expert():
+		_speak([_line(talk["opening"])])
+	else:
+		_speak([_line(talk["opening"]), _line(talk["position"].get("text", ""))])
 	refresh()
 	return ""
+
+
+## Whether the talk is an expert's (questions and answers, ExpertTalk).
+func expert() -> bool:
+	return talk.get("kind") == ExpertTalk.KIND
 
 
 ## Who is talked with in the world (null: nobody here, so a call), posed
@@ -262,7 +280,7 @@ func stage(in_world: OfficePerson) -> void:
 	if person != null and person != in_world and is_instance_valid(person):
 		person.end_talk()
 	person = in_world
-	if person == null and not talk.is_empty():
+	if person == null and not talk.is_empty() and setting != HEADSET:
 		setting = PHONE
 	_posed = -1
 	if talking():
@@ -305,16 +323,22 @@ func choose(move: String, pick: String = "") -> Dictionary:
 	var result := session.choose_move(move, pick)
 	if result.has("error"):
 		return result
+	lines.finish()   # a move made over their words (Afronden): those words were heard, while the talk still runs
 	last = result
 	first_hint = ""
 	# At the end the talk's outcome moves trust too (a partial's +5).
 	var trust: int = result.get("summary", {}).get("trust", result["trust"])
 	trust_moved = signi(trust - _trust_seen)
 	_trust_seen = trust
-	trace.append(result["openness"])
-	if not result["revealed"].is_empty():
-		heard[result["revealed"]] = result["reply"]
-	_pose(Dialog.band_of(result["openness"]))
+	if expert():
+		first_hint = tr(TalkSummary.NEW_CLUE) if not str(result.get("clue", "")).is_empty() else ""
+		if not str(result.get("explainer", "")).is_empty():
+			explainer_requested.emit(result["explainer"])
+	else:
+		trace.append(result["openness"])
+		if not result["revealed"].is_empty():
+			heard[result["revealed"]] = result["reply"]
+		_pose(Dialog.band_of(result["openness"]))
 	_answer(result)
 	if result["ended"]:
 		acted.emit()
@@ -336,7 +360,6 @@ func _answer(result: Dictionary) -> void:
 	var said: Array[Dictionary] = [reply]
 	if not result.get("co_proposal", {}).is_empty():
 		said.append(_line(result["co_proposal"]["text"]))
-	lines.finish()   # a move made over their words (Afronden): those words were heard
 	_speak(said)
 
 
@@ -404,6 +427,8 @@ func _sync() -> void:
 	if now != _phase:
 		_phase = now
 		phase_changed.emit(now)
+		if now == SUMMARY_SCREEN and expert():
+			close_requested.emit()   # nothing to sum up: their goodbye was the last screen
 
 
 ## "▲▲", "▲", "", "▼" or "▼▼" for a reply's arrow: never a number.
@@ -447,7 +472,7 @@ func refresh() -> void:
 	_phone_name.text = talk["name"]
 	summary_trace = null
 	clear(_summary)
-	if not talking():
+	if not talking() and not expert():
 		_fill_summary()
 	_sync()
 

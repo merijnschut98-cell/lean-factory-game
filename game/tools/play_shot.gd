@@ -58,7 +58,10 @@ extends SceneTree
 ## 2.12: the team's menu on Monday and on Thursday of the training week: the
 ## people and their questions, then only the known tools that fit) ·
 ## tell_intake_high, tell_intake_low, tell_prep_high, tell_planning_high (PLAN 2.6:
-## the 1e's props read the region; a long intake queue, then none).
+## the 1e's props read the region; a long intake queue, then none) ·
+## play_kcc_headset, play_phone_incoming, play_talk_expert (PLAN 2.4 and 2.15: mevrouw
+## El Amrani's call on the KCC's headset, her call ringing on the phone at ten, Henk's
+## expert talk on the yard after his first answer).
 ## The mission is played through the UI's own handlers, as a player would;
 ## only the training states start with the training week.
 
@@ -305,6 +308,8 @@ func _run() -> void:
 			await _day(office, state)
 		"play_home", "play_home_fade":
 			_home(office, state)
+		"play_kcc_headset", "play_phone_incoming", "play_talk_expert":
+			await _calls_and_experts(office, state)
 		_:
 			printerr("unknown state ", state)
 			quit(2)
@@ -543,6 +548,43 @@ func _yard(office: Office, state: String) -> void:
 	else:
 		office.rig.zoom(4)
 	office.rig.snap()
+
+
+## The customer call and the expert talk (S2-K): El Amrani's mission on (it opens the
+## KCC), then at the headset or ten o'clock with the phone ringing; or Henk, his camera
+## talk agreed, asked about joints.
+func _calls_and_experts(office: Office, state: String) -> void:
+	var s := office.session
+	var view := office.ui.talk_view
+	if state == "play_talk_expert":
+		_yard(office, "yard")
+		s.people.outcomes["henk_camera"] = "commitment"
+		s.people.heard_facts["heard:henk_teach"] = true
+		var henk := office.people.person("henk")
+		office.player.position = henk.position + (office.player.position - henk.position).normalized() * 1.3
+		office.use(henk)
+		view.lines.finish()
+		view.press_key(KEY_1)
+		view.lines.finish()
+		office.rig.snap()
+		return
+	for id in ["fix_unused_capacity", "fix_incomplete_application"]:
+		s.missions.done_once[id] = true
+	s.accept("fix_status_callers")
+	s.pass_time(10 * 60 - s.minute_of_day())
+	if state == "play_phone_incoming":
+		_stand_at(office, DESIGN)
+		office.ui.after_action()
+		return
+	office.floors._process(OfficeFloors.POLL_SECONDS)
+	office.floors.go_to("ground", "lift", true)
+	_stand_at(office, OfficeHeadset.ID)
+	office.interact(office.interactable(OfficeHeadset.ID))
+	office.ui.hud.refresh()
+	view.lines.finish()
+	office.rig.snap()
+	for i in 30:
+		await process_frame
 
 
 ## The rooms peopled in 2.1c: the floor's room opened by its mission, the player a few
