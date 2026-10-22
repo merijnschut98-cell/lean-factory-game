@@ -216,6 +216,8 @@ class Persona extends RefCounted:
 	var _talk_tries: Dictionary = {}  # dialog id → talks the talker opened
 	var _talk_day: Dictionary = {}  # dialog id → the day (int) of its last talk
 	var _ever_resolved: Dictionary = {}  # problem id → true, every problem a solve mission fixed
+	## The story's calendar starts this many days on (tests: day 100's milestone at once).
+	var story_day := 0
 
 	func _init(persona_name: String, seed_number: int, stop_after_main_missions: int = -1) -> void:
 		persona = persona_name
@@ -238,6 +240,7 @@ class Persona extends RefCounted:
 			_dead_end("content_error", "", s.error)
 			record["end"] = "content_error"
 			return record
+		s.missions.play_start -= SimCalendar.days(story_day)
 		while (record["end"] as String).is_empty():
 			_step()
 			_blame_errors()
@@ -273,7 +276,8 @@ class Persona extends RefCounted:
 			_end("stop_after")
 			return
 		if s.missions.defs.keys().all(func(id: String) -> bool:
-				return s.missions.done_once.has(id) or s.missions.status(id) == "failed" or _given_up.has(id)):
+				return s.missions.done_once.has(id) or s.missions.status(id) == "failed" or _given_up.has(id) \
+					or s.missions.defs[id].kind == "milestone" and s.missions.failed(id)):  # its moment passed
 			_end("campaign_done")
 			return
 		if _audit():
@@ -416,8 +420,9 @@ class Persona extends RefCounted:
 		if not problem.is_empty():
 			s.wait_for_check(problem)
 			return
-		if actives.any(func(m: MissionDef) -> bool: return not s.missions.pending_talk(m).is_empty()):
-			s.wait_days(1.0)  # a needed talk tomorrow (once a day, or after a ruined one)
+		if actives.any(func(m: MissionDef) -> bool: return not s.missions.pending_talk(m).is_empty() \
+				or m.goal_type == "story_order"):
+			s.wait_days(1.0)  # a needed talk tomorrow (once a day, or after a ruined one); the story's day
 			return
 		for m: MissionDef in actives:
 			_dead_end("no_action", m.id, "active, nothing to do and nothing to wait for (phase %s)" % _phase(m))
@@ -588,6 +593,14 @@ class Persona extends RefCounted:
 				return _solve(m)  # a repair quest's accept took the fix back to the A3
 			"sustain":
 				return _sustain(m)
+			"scene":  # a milestone's scene: go to its room and sit through it, the first answer
+				var code := s.finish_scene(m.id, 0)
+				if not code.is_empty():
+					_dead_end("scene_refused", m.id, code)
+					_give_up(m)
+				return true
+			"story_order":
+				return false  # the simulation judges it on its day: nothing to do but play on
 		_dead_end("unknown_goal", m.id, m.goal_type)
 		_give_up(m)
 		return true
@@ -1271,6 +1284,8 @@ class Persona extends RefCounted:
 	## Ask the coach at each new stage (the expert three times, to see an
 	## insight; careless only tries it on a side mission).
 	func _coach(m: MissionDef) -> void:
+		if m.kind == "milestone":
+			return  # the story's moment: nothing to coach
 		if m.kind == "side":
 			if not _coached.has(m.id):
 				_coached[m.id] = true

@@ -175,8 +175,8 @@ func test_every_act_one_mission_has_its_own_objective_at_every_state() -> void:
 	var s := _campaign()
 	var checked := 0
 	for m: MissionDef in s.missions.defs.values():
-		if m.act != 1:
-			continue
+		if m.act != 1 or m.goal_type == "story_order":
+			continue  # the story's order is judged by the simulation: it has no line (see below)
 		s.missions.progress[m.id] = {"status": "active", "asks": {}, "seen": {}}
 		var phases: Array = [-1]
 		if not m.goal_problem.is_empty():
@@ -252,3 +252,23 @@ func test_the_minimap_marker_follows_the_objective() -> void:
 	s.ask(DESIGN, "walk")
 	var t := MinimapTargets.of(s.missions.defs["training_mon"], s, b, cast)
 	assert_eq([t.get("kind"), t.get("person")], ["person", "anouk"], "the talk that ends Monday")
+
+
+## A milestone's scene waits in its room (phase-2 design §3.1): on its day the line
+## leads there, before the main mission, and the minimap marks the room; once the
+## scene is played the main mission leads again. A story_order milestone has no line:
+## nothing is handed over, the simulation judges it.
+func test_a_scene_milestone_leads_to_its_room_on_its_day() -> void:
+	var s := _campaign()
+	var main_text := _text(s)
+	s.missions.play_start -= SimCalendar.days(100)   # day 100 of play
+	s.pass_time(0)
+	assert_eq(s.missions.status("review_100_days"), "active")
+	var step := Objective.of(s)
+	assert_eq([step.get("step"), step.get("room"), step.get("text")], ["go", "mt_room", "Ga naar de MT-kamer op de 2e"])
+	var t := MinimapTargets.of(s.missions.defs["review_100_days"], s, OfficeBuilding.load_from(Catalog.DATA_DIR),
+		CharacterModel.cast())
+	assert_eq([t.get("kind"), t.get("room"), t.get("floor")], ["room", "mt_room", "second"])
+	assert_eq(Objective.step(s.missions.defs["winter_el_amrani"], s), {}, "the frost is judged, not walked to")
+	assert_eq(s.finish_scene("review_100_days", 0), "")
+	assert_eq(_text(s), main_text, "the main mission leads again")

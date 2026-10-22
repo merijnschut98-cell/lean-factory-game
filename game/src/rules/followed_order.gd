@@ -6,6 +6,8 @@ extends RefCounted
 ## it is delivered are computed, never scripted. It makes lead time personal.
 
 const STREAM := "connections"
+## The story it is (delivered:<story> once it is connected; a story_order goal's story).
+const STORY := "el_amrani"
 ## Where the family's dossier lies when play starts: early in the stream
 ## (Anouk's tray in the training week).
 const START_STEPS := ["intake", "design"]

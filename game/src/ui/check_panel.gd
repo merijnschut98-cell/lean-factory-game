@@ -120,7 +120,9 @@ func refresh() -> void:
 	_table(columns)
 	var verdict := add_card(columns, "Wat zegt de Check?")
 	verdict.get_parent().custom_minimum_size.x = 520
-	verdict.add_child(paragraph(UiText.lesson(result["lesson"])))
+	var own := str(result.get("debrief", ""))   # a designed failed Check speaks in its own words
+	for text in own.split("\n\n") if not own.is_empty() else [UiText.lesson(result["lesson"])]:
+		verdict.add_child(paragraph(text))
 	if result["lesson"] == "mismatch":
 		verdict.add_child(paragraph(session.region.problems[problem_id].mismatch_note, Palette.MUTED, UiTheme.SMALL))
 	if result["not_constraint"]:

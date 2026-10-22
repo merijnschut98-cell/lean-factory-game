@@ -55,6 +55,8 @@ const TIRED_MORALE := 40
 ## from half five it is late.
 const MORNING_UNTIL := 11 * 60 + 30
 const LATE_FROM := 17 * 60 + 30
+## A milestone's scene takes half an hour of the day (ESTIMATE: a sit-down with two managers).
+const SCENE_MINUTES := 30
 
 var catalog: Catalog
 var region: Region
@@ -108,6 +110,8 @@ static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, t
 	s.missions.talk_outcome = s.talk_outcome
 	s.missions.talked = s.talked
 	s.missions.can_talk = s.can_talk
+	s.missions.promises = s.people.promises
+	s.missions.play_start = SimCalendar.days(WARMUP_DAYS)
 	s.discoveries = Discoveries.new(s.catalog.discoveries)
 	s.gemba = PlaceActions.from_doc(s.catalog.places)
 	for id in [STORY_MISSION, TRAINING_FIRST]:
@@ -306,7 +310,8 @@ func pass_time(minutes: int) -> void:
 
 
 ## The Check: the fix against no fix over the coming lead time
-## (Region.check's result, a few seconds of simulation on copies), or an
+## (Region.check's result, a few seconds of simulation on copies; a failed one with
+## `debrief`, the mission's own text for its verdict or ""), or an
 ## error: unknown_problem | not_check_ready | a forecast copy's error.
 func check(problem_id: String) -> Dictionary:
 	if not region.state.has(problem_id):
@@ -316,6 +321,8 @@ func check(problem_id: String) -> Dictionary:
 		discoveries.note_check(self, problem_id, result)
 		if result.has("forecast") and result["forecast"]["gain"] > Pdca.CHECK_NOISE:
 			missions.facts.add(Facts.FORECAST_POSITIVE + str(result["forecast"]["kpi"]))
+		if not result.get("passed", true):  # a designed failed Check has its mission's own words
+			result["debrief"] = player.fill(missions.check_debrief(problem_id, str(result["lesson"])))
 	_after(0)
 	return result if not result.is_empty() else {"error": "not_check_ready"}
 
@@ -638,11 +645,12 @@ func is_practice(problem_id: String) -> bool:
 
 
 ## The active missions: the main one first, then the training day, then the
-## side missions.
+## side missions, then the milestones (no slot: the story's moments).
 func active_missions() -> Array[MissionDef]:
 	var out := missions.active("main")
 	out.append_array(missions.active("training"))
 	out.append_array(missions.active("side"))
+	out.append_array(missions.active("milestone"))
 	return out
 
 
@@ -731,15 +739,71 @@ func _walked_before() -> void:
 func _after(minutes: int) -> void:
 	if minutes > 0:
 		region.advance(minutes)
+	followed.update(region.net)
+	_note_story()
 	missions.update()
 	_start_training_day()
 	for id in missions.progress:
 		gemba.grant(new_tools(id))
 	if not missions.in_training():
 		region.start_drift()
-	followed.update(region.net)
 	_sync_people()
 	discoveries.update(self)
+
+
+## The story's facts the missions read (phase-2 design §3.2): the followed order
+## connected (delivered:<story>), the proposals agreed (agreed:<dialog>:<proposal>),
+## and who left (left:<person>).
+func _note_story() -> void:
+	if followed.delivered_at >= 0:
+		missions.facts.add("delivered:" + FollowedOrder.STORY)
+	if people == null:
+		return
+	for id: String in people.agreed:
+		missions.facts.add("agreed:%s:%s" % [id, people.agreed[id]])
+	for id: String in people.left:
+		missions.facts.add("left:" + id)
+
+
+## A milestone's scene as it plays now (SceneScript.play, the facts choosing the
+## lines), each line's `name` the speaker's, its texts filled; {} when `mission_id` is
+## no active scene milestone.
+func scene_of(mission_id: String) -> Dictionary:
+	var m: MissionDef = missions.defs.get(mission_id)
+	if m == null or m.goal_type != "scene" or missions.status(mission_id) != "active" \
+			or not catalog.scenes.has(m.scene):
+		return {}
+	var out := SceneScript.play(catalog.scenes[m.scene], missions.knows)
+	for line: Dictionary in out["before"] + out["after"] + ([out["choice"]] if not out["choice"].is_empty() else []):
+		line["name"] = speaker_name(line["who"])
+		line["text"] = fill_tokens(line["text"])
+		for o: Dictionary in line.get("options", []):
+			o["label"] = fill_tokens(o["label"])
+			o["reply"] = fill_tokens(o["reply"])
+	return out
+
+
+## Who says a scene's line, as the line box names them: the cast's short name, the coach's.
+func speaker_name(person_id: String) -> String:
+	var p: PersonDef = people.persons.get(person_id) if people != null else null
+	if p != null:
+		return p.short
+	var coach := str(catalog.coach.get("name", ""))
+	return coach.get_slice(" ", 0) if person_id == "ruud" and not coach.is_empty() else person_id.capitalize()
+
+
+## The scene of milestone `mission_id` was played and answered with option `answer`
+## (-1: it asked nothing); its minutes pass and the milestone completes. "" or
+## Missions.finish_scene's code, or bad_answer.
+func finish_scene(mission_id: String, answer: int = -1) -> String:
+	var scene := scene_of(mission_id)
+	var options: Array = scene.get("choice", {}).get("options", [])
+	if not options.is_empty() and (answer < 0 or answer >= options.size()):
+		return "bad_answer"
+	var refused := missions.finish_scene(mission_id, options[answer]["fact"] if not options.is_empty() else "")
+	if refused.is_empty():
+		_after(SCENE_MINUTES)
+	return refused
 
 
 ## A training day handed out starts on its own morning (Monday to Friday of

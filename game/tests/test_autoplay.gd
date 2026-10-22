@@ -55,6 +55,19 @@ func test_never_talks_has_only_the_talk_a_mission_cannot_end_without() -> void:
 	assert_true(monday[0]["completed_after_talk"], "the day ended with the talk")
 
 
+## Milestones never dead-end a run (phase-2 design §3.1): a scene is sat through, the
+## story's order is judged by the simulation while the player plays on.
+func test_milestones_do_not_dead_end_a_run() -> void:
+	var persona := Autoplay.Persona.new("expert", 11, 2)
+	persona.story_day = 100   # Honderd dagen at once; the first frost long past
+	var run: Dictionary = persona.play()
+	assert_eq(run["dead_ends"], [], "no dead end")
+	assert_eq(run["errors"], [], "no engine error")
+	assert_eq(run["end"], "stop_after")
+	var review := (run["missions"] as Array).filter(func(m: Dictionary) -> bool: return m["id"] == "review_100_days")
+	assert_eq(review.map(func(m: Dictionary) -> String: return m["outcome"]), ["completed"], "the scene was played")
+
+
 func test_the_report_ranks_findings_by_severity() -> void:
 	var run: Dictionary = Autoplay.Persona.new("expert", 11, 1).play()
 	run["dead_ends"] = [{"kind": "belt_gate", "mission": "x", "detail": "d", "day": 1.0}]

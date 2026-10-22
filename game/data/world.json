@@ -147,7 +147,9 @@
    "floor": "second",
    "id": "mt_room",
    "name": "MT-kamer",
-   "opens_with": [],
+   "opens_with": [
+    "review_100_days"
+   ],
    "places": []
   },
   {

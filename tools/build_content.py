@@ -20,6 +20,7 @@ import json
 import re
 import sys
 from collections import Counter
+from datetime import date
 from pathlib import Path
 from typing import Any, Callable
 
@@ -617,7 +618,13 @@ def check_tells(docs: dict[str, Any]) -> None:
 # facts (heard: ... blocked:) name a dialog; they are checked once dialogs exist.
 FACT_KINDS = {"done": 1, "failed": 1, "chose": 2, "standardised": 1, "poor_fix": 1, "repaired": 1, "fork_first": 2,
               "flag": 1, "heard": 1, "committed": 1, "complied": 1, "partial": 1, "blocked": 1,
-              "checked": 1, "accepted": 1, "forecast_positive": 1}  # Facts.KINDS
+              "checked": 1, "accepted": 1, "forecast_positive": 1,
+              # the story's (phase-2 design §3.2): a proposal agreed, a followed story delivered,
+              # a person who left, a promised date checked, a fix that holds (live)
+              "agreed": 2, "delivered": 1, "left": 1, "promise_kept": 1, "promise_broken": 1,
+              "holds": 1}  # Facts.KINDS
+# The followed stories (FollowedOrder.STORY): delivered:<story>, a story_order goal's story.
+STORIES = ["el_amrani"]
 # What a forecast_positive:<subject> fact names: the KPI board's quarterly
 # review, or the KPI a Check predicted (Investigation.KPIS).
 FORECAST_SUBJECTS = ["kpi_board"] + KPIS
@@ -659,17 +666,25 @@ def _validate_needs(needs: Any, where: str) -> None:
             _atom_parts(atom, f"{where} needs")
 
 
-def _sets_flags(item: dict, where: str) -> list:
-    flags = _string_list(item, "sets_flags", where)
+def _sets_flags(item: dict, where: str, key: str = "sets_flags") -> list:
+    flags = _string_list(item, key, where)
     for flag in flags:
         if _atom_parts(flag, where)[0] != "flag":
-            raise ContentError(f"{where}: 'sets_flags' entries are flag:<name> (got {flag!r})")
+            raise ContentError(f"{where}: '{key}' entries are flag:<name> (got {flag!r})")
     return flags
 
 
 # training: the Inwerkweek before the campaign; it takes no side slot and the
-# coach helps with it (Missions).
-MISSION_KINDS = ["main", "side", "training"]
+# coach helps with it (Missions). milestone: a dated moment of the story that opens
+# itself and takes no slot (phase-2 design §3.1): its scene played, or the story's
+# order met by its deadline_on_day.
+MISSION_KINDS = ["main", "side", "training", "milestone"]
+MILESTONE_GOALS = ["scene", "story_order"]  # MissionDef.MILESTONE_GOALS
+STORY_BY = ["deadline"]  # MissionDef.STORY_BY
+# What reaches the player once a mission is done in time (MissionDef.payoff, Berichten).
+PAYOFF_KEYS = {"who", "by", "text"}
+PAYOFF_BY = ["call", "letter"]  # MissionDef.PAYOFF_BY
+PLAY_START = date(2026, 10, 12)  # MissionDef.PLAY_START, GameSession.PLAY_START_DATE: day 0 of play
 COACHED_KINDS = ["main", "training"]
 # goal type → (required keys, optional keys). observe: use a gemba tool (or any,
 # without `tool`) at each place, `uses` distinct place-tool pairs in all;
@@ -683,6 +698,10 @@ MISSION_GOALS = {
     "observe": ({"places"}, {"tool", "uses"}), "check": ({"problem"}, set()),
     "sustain": ({"problem"}, set()), "rework_fix": ({"problem"}, set()),
     "talk_to": ({"dialog"}, {"outcome"}),
+    # scene: the milestone's `scene` (content/scenes.yaml) played; story_order (drie winters
+    # S12): met_if holds by the deadline_on_day, and the date promised in `promise`'s call
+    # is checked on its day (Missions._judge_promises).
+    "scene": (set(), set()), "story_order": ({"story", "by", "met_if"}, {"promise"}),
 }
 TALK_OUTCOMES = ["partial", "commitment"]  # MissionDef.TALK_OUTCOMES
 MAX_CHECK_DAYS = 14  # Region.CHECK_DAYS: a mission may only shorten the Check
@@ -698,10 +717,12 @@ MIN_REWARD_SHARE = 0.6
 MISSION_KEYS = {"id", "name", "kind", "tier", "requires", "briefing", "debrief", "fail", "goal", "deadline_days",
                 "fail_closes", "rewards", "insights", "teaches", "check_days", "setup", "act", "chapter", "arc",
                 "fork", "debrief_first", "reopen", "sets_flags", "questions", "debrief_variants", "containment",
-                "ends_with_talk", "deadline_beat", "grant_tools", "steps", "talk_to"}
+                "ends_with_talk", "deadline_beat", "grant_tools", "steps", "talk_to", "scene", "opens_on",
+                "deadline_on_day", "sets_flags_on_fail", "payoff"}
 # The objective line's steps (game/src/rules/objective.gd STEPS, MAX_CHARS): a main or
-# training mission may word its own; the problem steps need a goal with a problem.
-OBJECTIVE_STEPS = ["look", "again", "dig", "a3", "wait", "check", "act", "talk"]
+# training mission may word its own; the problem steps need a goal with a problem; `go`
+# is a scene milestone's way to its room.
+OBJECTIVE_STEPS = ["look", "again", "dig", "a3", "wait", "check", "act", "talk", "go"]
 PROBLEM_STEPS = {"dig", "a3", "wait", "check", "act"}
 # The steps each goal can reach (Objective._where): a main mission words every one of
 # them, so its objective is authored at every state (phase-2 design §3.1).
@@ -709,13 +730,16 @@ GOAL_STEPS = {
     "walk": ["look"], "observe": ["look"], "investigate": ["look", "dig"],
     "solve": ["look", "dig", "a3", "wait", "check", "act"], "check": ["look", "dig", "a3", "wait", "check"],
     "rework_fix": ["a3", "wait", "check", "act"], "sustain": [], "talk_to": ["talk"],
+    "scene": ["go"], "story_order": [],
 }
 MAX_STEP_CHARS = 60
 # A safety mission's containment (audit §2.4.1): a short measure against an
 # acute risk, taken once while the mission is active; it fades after `days`.
 CONTAINMENT_KEYS = {"name", "budget", "days", "effects"}
 MAX_CONTAINMENT_DAYS = 30  # containment buys time for the fix; it is not the fix
-DEBRIEF_VARIANTS = ["blamed", "poor_fix", "not_standardised"]  # Missions.DEBRIEF_VARIANTS, in the order they win
+# Missions.DEBRIEF_VARIANTS, in the order they win; too_early is said at a failed Check
+# (Missions.check_debrief: the designed failed Checks, 2026-10-16 spec).
+DEBRIEF_VARIANTS = ["blamed", "poor_fix", "not_standardised", "too_early"]
 REQUIRES_KEYS = {"missions", "belt", "maturity", "reputation", "trust", "any_of", "facts"}
 FORK_ROLES = ["bottleneck", "non_bottleneck"]
 MAX_ACT = 6  # Act 0 is the training week; Act VI the IT value streams
@@ -772,6 +796,7 @@ def validate_missions(doc: Any, source: str) -> None:
         fail_closes = _string_list(m, "fail_closes", where)
         if fail_closes and "deadline_days" not in m:
             raise ContentError(f"{where}: 'fail_closes' needs a deadline")
+        _validate_milestone(m, where)
         _validate_deadline_beat(m, where, beats)
         if "check_days" in m:
             if "problem" not in m["goal"]:
@@ -813,6 +838,64 @@ def validate_missions(doc: Any, source: str) -> None:
         _validate_steps(m, where)
 
 
+def _opens_on_day(m: dict, where: str) -> int | None:
+    """The day of play `opens_on` names ({day: N} or {date: "YYYY-MM-DD"} from PLAY_START), or None."""
+    if "opens_on" not in m:
+        return None
+    on = m["opens_on"]
+    shape = f"{where}: 'opens_on' is {{day: N}} or {{date: \"YYYY-MM-DD\"}}"
+    if not isinstance(on, dict) or len(on) != 1 or not set(on) <= {"day", "date"}:
+        raise ContentError(shape)
+    if "day" in on:
+        return int(_number(on, "day", where, 0, integer=True))
+    try:
+        when = date.fromisoformat(on["date"]) if isinstance(on["date"], str) else None
+    except ValueError:
+        when = None
+    if when is None:
+        raise ContentError(shape)
+    if when < PLAY_START:
+        raise ContentError(f"{where}: 'opens_on' {when} is before the first day of play ({PLAY_START})")
+    return (when - PLAY_START).days
+
+
+def _validate_milestone(m: dict, where: str) -> None:
+    """A milestone (and only a milestone) has a scene or story_order goal; dates count days of
+    play; a deadline on a day of play is told (`fail`) and may set flags for later acts."""
+    goal = m["goal"]
+    if (m["kind"] == "milestone") != (goal["type"] in MILESTONE_GOALS):
+        raise ContentError(f"{where}: a milestone, and only a milestone, has a scene or story_order goal")
+    if goal["type"] == "scene":
+        _require_strings(m, ["scene"], where)
+    elif "scene" in m:
+        raise ContentError(f"{where}: 'scene' is for a scene goal")
+    opens = _opens_on_day(m, where)
+    if "deadline_on_day" in m:
+        if m["kind"] == "training":
+            raise ContentError(f"{where}: a training mission has no deadline (it is practice)")
+        due = _number(m, "deadline_on_day", where, 1, integer=True)
+        _require_strings(m, ["fail"], where)
+        if opens is not None and due < opens:
+            raise ContentError(f"{where}: deadline_on_day {due} falls before it opens (day {opens})")
+    if goal["type"] == "story_order":
+        _one_of(goal, "story", STORIES, f"{where} goal")
+        _one_of(goal, "by", STORY_BY, f"{where} goal")
+        _validate_needs(goal["met_if"], f"{where} goal met_if")
+        if "promise" in goal:
+            _require_strings(goal, ["promise"], f"{where} goal")
+        if "deadline_on_day" not in m:
+            raise ContentError(f"{where}: a story_order goal is judged on its deadline_on_day")
+    if _sets_flags(m, where, "sets_flags_on_fail") and not ("deadline_days" in m or "deadline_on_day" in m):
+        raise ContentError(f"{where}: 'sets_flags_on_fail' needs a deadline")
+    payoff = m.get("payoff", [])
+    if not isinstance(payoff, list) or not all(isinstance(e, dict) for e in payoff):
+        raise ContentError(f"{where}: 'payoff' lists {{who, by, text}}")
+    for e in payoff:
+        _known_keys(e, PAYOFF_KEYS, f"{where} payoff")
+        _require_strings(e, ["who", "text"], f"{where} payoff")
+        _one_of(e, "by", PAYOFF_BY, f"{where} payoff")
+
+
 def _validate_talk_goals(m: dict, where: str) -> None:
     """The talks a mission needs besides its goal (MissionDef.talk_goals): each a dialog
     and the least outcome that meets it (checked against dialogs.yaml later)."""
@@ -836,7 +919,7 @@ def _validate_steps(m: dict, where: str) -> None:
     words every step its goal can reach (and its talk, when it has one)."""
     steps = _mapping(m, "steps", set(OBJECTIVE_STEPS), where)
     goal = m["goal"]
-    if m["kind"] == "main":
+    if m["kind"] in ("main", "milestone"):
         needed = GOAL_STEPS[goal["type"]] + (["talk"] if _has_talk(m) and goal["type"] != "talk_to" else [])
         missing = [key for key in needed if key not in steps]
         if missing:
@@ -856,6 +939,8 @@ def _validate_steps(m: dict, where: str) -> None:
             raise ContentError(f"{where} steps: 'again' is for an observe goal")
         if key == "talk" and goal["type"] != "talk_to" and not _has_talk(m):
             raise ContentError(f"{where} steps: 'talk' needs a talk (a talk_to goal or ends_with_talk)")
+        if key == "go" and goal["type"] != "scene":
+            raise ContentError(f"{where} steps: 'go' leads to a milestone's scene")
         if key in PROBLEM_STEPS and "problem" not in goal:
             raise ContentError(f"{where} steps: '{key}' needs a goal with a problem")
 
@@ -1039,6 +1124,8 @@ def check_missions(docs: dict[str, Any]) -> None:
     for m in missions.values():
         if "facts" in m.get("requires", {}):
             _check_needs(m["requires"]["facts"], f"missions.yaml: mission '{m['id']}' requires", index)
+        if m["goal"]["type"] == "story_order":
+            _check_story_order(m, index)
     gated = set()
     for cm in docs["countermeasures"]["countermeasures"]:
         if "needs" in cm:
@@ -1053,6 +1140,18 @@ def check_missions(docs: dict[str, Any]) -> None:
     if stuck:
         raise ContentError(f"missions.yaml: missions that can never unlock (a cycle, too little XP, reputation, "
                            f"maturity or facts): {', '.join(stuck)}")
+
+
+def _check_story_order(m: dict, index: dict) -> None:
+    """The facts that meet the story's order name real things; the promise is a call whose
+    agreement can name a delivery date."""
+    where = f"missions.yaml: mission '{m['id']}' goal"
+    for atoms in m["goal"]["met_if"].values():
+        for atom in atoms:
+            _atom_robust(atom, where, index)
+    promise = m["goal"].get("promise")
+    if promise is not None and index["dialogs"] is not None and promise not in index["dialogs"]:
+        raise ContentError(f"{where}: 'promise' names an unknown dialog {promise!r}")
 
 
 def _check_forks(missions: dict) -> None:
@@ -1074,15 +1173,28 @@ def _fact_index(docs: dict[str, Any]) -> dict:
     """What facts content can name, and which choices a missed deadline can
     take away for good (its fail_closes)."""
     missions = docs["missions"]["missions"]
+    dialogs = (docs.get("dialogs") or {}).get("dialogs")
     return {
         "missions": {m["id"] for m in missions},
-        "deadlines": {m["id"] for m in missions if "deadline_days" in m},
+        "deadlines": {m["id"] for m in missions if "deadline_days" in m or "deadline_on_day" in m},
         "problems": {p["id"]: set(p["countermeasures"]) for _, p in _all_problems(docs)},
         "fork_members": {(m["fork"]["group"], m["id"]) for m in missions if "fork" in m},
-        "flags": {f for m in missions for f in m.get("sets_flags", [])},
+        "flags_by": _flags_by(docs),
+        "flags": set().union(*_flags_by(docs).values()),
         "closable": {c for m in missions for c in m.get("fail_closes", [])},
         "solved_by": {m["goal"]["problem"]: m["id"] for m in missions if m["goal"]["type"] == "solve"},
+        # dialog id → its proposals, and the people (None: a content set without dialogs)
+        "dialogs": {d["id"]: {p["id"] for p in d.get("proposals", [])} for d in dialogs} if dialogs is not None else None,
+        "people": {p["id"] for p in docs["dialogs"]["people"]} if dialogs is not None else None,
     }
+
+
+def _flags_by(docs: dict[str, Any]) -> dict[str, set]:
+    """mission id → the flags it can set: done (sets_flags), missed (sets_flags_on_fail),
+    or answered in its scene."""
+    scenes = _scene_flags(docs)
+    return {m["id"]: set(m.get("sets_flags", [])) | set(m.get("sets_flags_on_fail", [])) | scenes.get(m.get("scene"), set())
+            for m in docs["missions"]["missions"]}
 
 
 def _check_needs(needs: dict, where: str, index: dict) -> None:
@@ -1103,8 +1215,17 @@ def _atom_robust(atom: str, where: str, index: dict) -> bool:
     kind, ids = _atom_parts(atom, where)
     if kind in ("done", "accepted") and ids[0] not in index["missions"] or kind == "failed" and ids[0] not in index["deadlines"]:
         raise ContentError(f"{where}: {atom!r} names no such mission{' with a deadline' if kind == 'failed' else ''}")
-    if kind in ("chose", "standardised", "poor_fix", "repaired", "checked") and ids[0] not in index["problems"]:
+    if kind in ("chose", "standardised", "poor_fix", "repaired", "checked", "holds") and ids[0] not in index["problems"]:
         raise ContentError(f"{where}: {atom!r} names an unknown problem")
+    if kind == "delivered" and ids[0] not in STORIES:
+        raise ContentError(f"{where}: {atom!r} names no followed story ({', '.join(STORIES)})")
+    dialogs, people = index.get("dialogs"), index.get("people")
+    if kind in ("agreed", "promise_kept", "promise_broken") and dialogs is not None and ids[0] not in dialogs:
+        raise ContentError(f"{where}: {atom!r} names an unknown dialog")
+    if kind == "agreed" and dialogs is not None and ids[1] not in dialogs[ids[0]]:
+        raise ContentError(f"{where}: {atom!r}: dialog {ids[0]!r} has no such proposal")
+    if kind == "left" and people is not None and ids[0] not in people:
+        raise ContentError(f"{where}: {atom!r} names an unknown person")
     if kind == "chose" and ids[1] not in index["problems"][ids[0]]:
         raise ContentError(f"{where}: {atom!r}: problem {ids[0]!r} does not list that countermeasure")
     if kind == "fork_first" and tuple(ids) not in index["fork_members"]:
@@ -1138,7 +1259,6 @@ def _reachable(missions: dict, problems: dict, index: dict) -> set[str]:
     the missions' own XP and reputation, solve missions at their lowest share
     (problems give more XP, so this is the hard case). Maturity follows the
     problems the done missions solve; trust can always be repaired."""
-    index = dict(index, flags_by={m["id"]: set(m.get("sets_flags", [])) for m in missions.values()})
     practice = {m["goal"].get("problem") for m in missions.values() if m["kind"] == "training"}
     done: set[str] = set()
     xp, reputation = 0, START_REPUTATION
@@ -2521,7 +2641,7 @@ _NOT_SPOKEN = {"id", "label", "tags", "tell", "via", "unlocks", "at", "when", "n
 _SPOKEN_DIALOG = ["opening", "retry_opening", "warning", "position", "layers", "proposals", "experiments",
                   "co_proposal", "lines", "replies", "outcomes", "beats_after", "block", "variants"]
 _SPOKEN_MISSION = ["briefing", "debrief", "debrief_first", "debrief_variants", "fail", "reopen", "insights",
-                   "questions"]
+                   "questions", "payoff"]
 
 
 def banned_word(text: str) -> str | None:
@@ -2563,6 +2683,9 @@ def spoken_texts(docs: dict[str, Any]) -> list[tuple[str, str]]:
     out += _strings({k: coach[k] for k in ("stages", "conditional") if k in coach}, "missions.yaml: coach")
     for m in missions.get("missions", []):
         out += _strings({k: m[k] for k in _SPOKEN_MISSION if k in m}, f"missions.yaml: mission {m['id']}")
+    for s in (docs.get("scenes") or {}).get("scenes", []):  # the lines and the replies; a choice's label is UI
+        out += [(f"scenes.yaml: scene {s['id']} beat {i}", text) for i, b in enumerate(s["beats"])
+                for text in [b["line"]] + [o["reply"] for o in b.get("choice", []) if "reply" in o]]
     for place, entry in ((docs.get("places") or {}).get("places") or {}).items():
         out += _strings((entry or {}).get("questions", []), f"places.yaml: {place} questions")
     return out
@@ -2778,6 +2901,99 @@ def check_company(docs: dict[str, Any]) -> None:
             t["headcount"] = {"value": pools[t["pool"]]["headcount"], "pool": t["pool"]}
 
 
+# ── scenes.yaml (a milestone's scene, phase-2 design §3.1) ───────────────────
+# A scene plays where it happens (`room`, opened for its milestone), with the people
+# `present`: beats of SceneLines (speaker, line), a beat only when its `needs` hold
+# (the facts choose the lines), and at most one beat asking the player a question
+# (`choice`): each answer a flag remembered for later, and what is said back.
+SCENE_KEYS = {"id", "room", "present", "beats"}
+BEAT_KEYS = {"speaker", "line", "needs", "choice"}
+CHOICE_KEYS = {"label", "fact", "reply"}
+CHOICE_OPTIONS = (2, 4)
+
+
+def validate_scenes(doc: Any, source: str) -> None:
+    _require_strings(doc, [], source)
+    for s in _entries(doc, "scenes", source, name="room"):
+        where = f"{source}: scene '{s['id']}'"
+        _known_keys(s, SCENE_KEYS, where)
+        present = _string_list(s, "present", where)
+        beats = s.get("beats")
+        if not isinstance(beats, list) or not beats or not all(isinstance(b, dict) for b in beats):
+            raise ContentError(f"{where}: 'beats' must be a non-empty list of {{speaker, line}}")
+        if sum(1 for b in beats if "choice" in b) > 1:
+            raise ContentError(f"{where}: one question for the player at most")
+        for i, b in enumerate(beats):
+            at = f"{where} beat {i}"
+            _known_keys(b, BEAT_KEYS, at)
+            _require_strings(b, ["speaker", "line"], at)
+            if b["speaker"] not in present:
+                raise ContentError(f"{at}: {b['speaker']!r} speaks but is not 'present'")
+            if "needs" in b:
+                _validate_needs(b["needs"], at)
+            if "choice" in b:
+                _validate_choice(b["choice"], at)
+
+
+def _validate_choice(options: Any, where: str) -> None:
+    low, high = CHOICE_OPTIONS
+    if not isinstance(options, list) or not low <= len(options) <= high or not all(isinstance(o, dict) for o in options):
+        raise ContentError(f"{where}: 'choice' lists {low} to {high} answers {{label, fact, reply?}}")
+    for o in options:
+        _known_keys(o, CHOICE_KEYS, f"{where} choice")
+        _require_strings(o, ["label", "fact"] + (["reply"] if "reply" in o else []), f"{where} choice")
+        if _atom_parts(o["fact"], f"{where} choice")[0] != "flag":
+            raise ContentError(f"{where}: a choice's fact is flag:<name> (got {o['fact']!r})")
+
+
+def _scene_flags(docs: dict[str, Any]) -> dict[str, set]:
+    """scene id → the flags its answers set."""
+    return {s["id"]: {o["fact"] for b in s["beats"] for o in b.get("choice", [])}
+            for s in (docs.get("scenes") or {}).get("scenes", [])}
+
+
+def check_scenes(docs: dict[str, Any]) -> None:
+    """Every milestone's scene exists and is used once; it plays in a room its milestone
+    opens (world.yaml), with people of the cast; its facts name real things."""
+    scenes = {s["id"]: s for s in (docs.get("scenes") or {}).get("scenes", [])}
+    # Who can be named: the talkers and the cast (Ruud, the coach, has no talks of his own;
+    # a customer has no body, only talks). A content set without people names nobody.
+    people = {p["id"] for p in (docs.get("dialogs") or {}).get("people", [])}
+    if people:
+        people |= {c["id"] for c in _cast()}
+    users: dict[str, str] = {}
+    for m in docs["missions"]["missions"]:
+        for e in m.get("payoff", []) if people else []:
+            if e["who"] not in people:
+                raise ContentError(f"missions.yaml: mission '{m['id']}' payoff: {e['who']!r} is not in the cast")
+        if "scene" not in m:
+            continue
+        where = f"missions.yaml: mission '{m['id']}'"
+        if m["scene"] not in scenes:
+            raise ContentError(f"{where}: names no scene {m['scene']!r} (content/scenes.yaml)")
+        if m["scene"] in users:
+            raise ContentError(f"{where}: scene {m['scene']!r} is already {users[m['scene']]!r}'s")
+        users[m["scene"]] = m["id"]
+    rooms = {r["id"]: r for r in (docs.get("world") or {}).get("rooms", [])}
+    index = _fact_index(docs)
+    for s in scenes.values():
+        where = f"scenes.yaml: scene '{s['id']}'"
+        if s["id"] not in users:
+            raise ContentError(f"{where}: no milestone plays it")
+        if rooms:
+            room = rooms.get(s["room"])
+            if room is None:
+                raise ContentError(f"{where}: unknown room {s['room']!r}")
+            if not ({OPEN_FROM_START, users[s["id"]]} & set(room["opens_with"])):
+                raise ContentError(f"{where}: room {s['room']!r} must open with {users[s['id']]!r} (world.yaml opens_with)")
+        for person in s.get("present", []) if people else []:
+            if person not in people:
+                raise ContentError(f"{where}: {person!r} is not in the cast")
+        for b in s["beats"]:
+            for atom in _needs(b["needs"], where) if "needs" in b else []:
+                _atom_robust(atom, where, index)
+
+
 VALIDATORS: dict[str, Callable[[Any, str], None]] = {
     "game": validate_game,
     "company": validate_company,
@@ -2791,14 +3007,16 @@ VALIDATORS: dict[str, Callable[[Any, str], None]] = {
     "explainers": validate_explainers,
     "world": validate_world,
     "places": validate_places,
+    "scenes": validate_scenes,
 }
 # Registered files a content set may leave out.
-OPTIONAL = {"dialogs", "explainers", "world", "places", "company"}
+OPTIONAL = {"dialogs", "explainers", "world", "places", "company", "scenes"}
 
 # Checks that need several files at once. Each gets {stem: document}.
 CROSS_CHECKS: list[Callable[[dict[str, Any]], None]] = [check_kpis, check_problems, check_missions, check_concepts,
                                                       check_dialogs, check_discoveries, check_explainers, check_world,
-                                                      check_places, check_spoken, check_tells, check_company]
+                                                      check_places, check_spoken, check_tells, check_company,
+                                                      check_scenes]
 
 
 def _validator_for(stem: str) -> Callable[[Any, str], None] | None:
