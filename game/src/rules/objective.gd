@@ -27,8 +27,10 @@ const DEFAULTS := {
 	"check": "Bekijk de Check aan de obeya-wand",
 	"act": "Beslis aan de obeya-wand hoe je verder gaat",
 	"talk": "Praat met {naam} ({team})",
+	"go": "Je wordt verwacht",
 }
-const STEPS: Array[String] = ["look", "again", "dig", "a3", "wait", "check", "act", "talk"]
+## `go`: a scene milestone's way to the room its scene plays in (content words it).
+const STEPS: Array[String] = ["look", "again", "dig", "a3", "wait", "check", "act", "talk", "go"]
 ## A talk the mission needs (MissionDef.talk_goals) comes once the player has looked: it
 ## takes the place of these steps ("" when the goal is met and only the talk is left), so
 ## the person is met before the digging (phase-2 design §3.4). The Check and the Act at
@@ -40,13 +42,15 @@ const A3_CLUES := 2
 const P := ProblemState.Phase
 
 
-## The objective now: the training day's step, else the (first) main mission's, else the
-## board when a mission waits there; {} when there is nothing to do. During the first
-## day's scene (`layer`, Opening) only the walk behind Ruud has a line.
+## The objective now: the training day's step, else a scene milestone's (the story's
+## moment waits in its room), else the (first) main mission's, else the board when a
+## mission waits there; {} when there is nothing to do. During the first day's scene
+## (`layer`, Opening) only the walk behind Ruud has a line.
 static func of(s: GameSession, layer: SessionLayer = null) -> Dictionary:
 	if layer != null and Opening.running(layer):
 		return {"step": "follow", "text": FOLLOW_TEXT} if layer.opening_beat == Opening.WALK else {}
 	var leading := s.missions.active("training")
+	leading.append_array(s.missions.active("milestone").filter(func(m: MissionDef) -> bool: return m.goal_type == "scene"))
 	leading.append_array(s.missions.active("main"))
 	if not leading.is_empty():
 		return step(leading[0], s)
@@ -89,6 +93,9 @@ static func _where(m: MissionDef, s: GameSession, reachable: Callable) -> Dictio
 				return {"step": "again", "place": m.goal_places[0]}
 		"investigate", "solve", "check", "rework_fix", "sustain":
 			return _problem_step(m, s)
+		"scene":
+			var scene: Dictionary = s.catalog.scenes.get(m.scene, {})
+			return {"step": "go", "room": scene["room"]} if scene.has("room") else {}
 	return {}
 
 

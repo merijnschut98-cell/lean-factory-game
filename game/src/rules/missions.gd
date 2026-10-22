@@ -40,8 +40,16 @@ const NO_REPEAT := 6
 const FADING_DAYS := 45
 ## The coach's conditional questions (content: coach.conditional).
 const CONDITIONS: Array[String] = ["blamed", "fading_fix"]
-## A debrief's variants, in the order they win (content: debrief_variants).
-const DEBRIEF_VARIANTS: Array[String] = ["blamed", "poor_fix", "not_standardised"]
+## A debrief's variants, in the order they win (content: debrief_variants). The
+## Check's own verdicts (CHECK_VARIANTS) are said at a failed Check (check_debrief),
+## never at the end: the designed failed Checks (2026-10-16 spec).
+const DEBRIEF_VARIANTS: Array[String] = ["blamed", "poor_fix", "not_standardised", "too_early"]
+const CHECK_VARIANTS: Array[String] = ["too_early"]
+## A milestone missed costs a little reputation (ESTIMATE, drie winters §3: one family,
+## and the region does not know it yet), not a mission deadline's Reputation.DEADLINE_MISSED.
+const MILESTONE_MISSED := -2
+## A promised date not kept (dialog spec §6; drie winters §3: reputation −1).
+const PROMISE_BROKEN := -1
 ## The effects source of a safety mission's containment.
 const CONTAIN_SOURCE := "contain:"
 const P := ProblemState.Phase
@@ -134,6 +142,12 @@ var talked: Callable = func(_dialog_id: String) -> bool: return true
 ## goal with someone who left is waived, a closed door and never a dead end. Without
 ## people (rules alone) there is nobody to talk to, so nothing waits.
 var can_talk: Callable = func(_dialog_id: String) -> bool: return false
+## The promises agreed in talks (GameSession hands in People.promises): dialog id →
+## {proposal, kind, days, at}. A story_order goal's `promise` dialog is checked by them.
+var promises: Callable = func() -> Dictionary: return {}
+## When day 0 of play starts (minutes; GameSession: after the warm-up): opens_on and
+## deadline_on_day count days from it.
+var play_start := 0
 
 
 func _init(of_region: Region, mission_defs: Array[MissionDef], coach_def: Dictionary) -> void:
@@ -277,12 +291,14 @@ func update() -> void:
 	_sync_checkins()
 	_sync_repairs()
 	events.append_array(stewardship.update(region))
+	_judge_promises()
 	for m in active():
 		# A fix that faded while its mission waited for a talk comes back through it.
 		if _holds_problem(m) and m.goal_type == "solve" and region.state[m.goal_problem].phase == P.DORMANT:
 			region.activate(m.goal_problem)
 		if _goal_met(m):
 			_complete(m)
+	_open_milestones()  # after the completions that unlock them
 	for m: MissionDef in defs.values():
 		if m.deadline_days < 0 or done_once.has(m.id) or failed_once.has(m.id) or deadline_kept.has(m.id) \
 				or not status(m.id) in ["available", "active"]:
@@ -294,11 +310,78 @@ func update() -> void:
 				deadline_kept[m.id] = true  # the A3 is in: the Check still judges it (R5)
 			else:
 				_fail(m)
+	for m: MissionDef in defs.values():  # a deadline on a day of play: judged after that day
+		if m.deadline_on_day >= 0 and play_day() > m.deadline_on_day and not done_once.has(m.id) \
+				and not failed_once.has(m.id) and not deadline_kept.has(m.id) and status(m.id) in ["available", "active"]:
+			if _fix_in_place(m):
+				deadline_kept[m.id] = true
+			else:
+				_fail(m)
 	_retire_orphans()
 	_lock_unprepared()
 	for id: String in contained:
 		if region.net.time >= contained[id]:
 			region.net.clear_effects(CONTAIN_SOURCE + id)
+
+
+## The day of play now (0: the first Monday, after the warm-up).
+func play_day() -> int:
+	return SimCalendar.day_of(region.net.time - play_start)
+
+
+## A milestone opens itself once it is unlocked and its day has come: nobody takes it
+## from the board, and it takes no slot (phase-2 design §3.1).
+func _open_milestones() -> void:
+	for m: MissionDef in defs.values():
+		if m.kind == "milestone" and not progress.has(m.id) and not done_once.has(m.id) and _unlocked(m):
+			progress[m.id] = {"status": "active", "asks": {}, "seen": {}}
+			opened_at[m.id] = region.net.time
+			events.append({"type": "milestone", "mission": m.id})
+
+
+## The scene of active milestone `id` was played; `fact` (the answer chosen in it, or
+## "") is remembered for later. "" or not_active | not_a_scene.
+func finish_scene(id: String, fact: String) -> String:
+	var m: MissionDef = defs.get(id)
+	if m == null or m.goal_type != "scene":
+		return "not_a_scene"
+	if status(id) != "active":
+		return "not_active"
+	if not fact.is_empty():
+		facts.add(fact)
+	progress[id]["played"] = true
+	return ""
+
+
+## A date promised in a story's call (a story_order goal's `promise`; People.promises,
+## kind delivery_date) is checked on that date: kept when the story was delivered by
+## then, broken otherwise (once each; a broken one costs PROMISE_BROKEN).
+func _judge_promises() -> void:
+	for m: MissionDef in defs.values():
+		if m.goal_promise.is_empty() or knows("promise_kept:" + m.goal_promise) \
+				or knows("promise_broken:" + m.goal_promise):
+			continue
+		var promise: Dictionary = promises.call().get(m.goal_promise, {})
+		if promise.get("kind") != "delivery_date" or int(promise.get("at", -1)) < 0:
+			continue
+		var kept := knows("delivered:" + m.goal_story)
+		if not kept and region.net.time < int(promise["at"]) + SimCalendar.days(int(promise.get("days", 0))):
+			continue
+		facts.add(("promise_kept:" if kept else "promise_broken:") + m.goal_promise)
+		if not kept:
+			region.earn_reputation(PROMISE_BROKEN, "promise")
+		events.append({"type": "promise", "dialog": m.goal_promise, "kept": kept})
+
+
+## What a failed Check says on the active mission that holds `problem_id`, when the
+## mission has its own text for the verdict (`lesson`, CHECK_VARIANTS); "" otherwise.
+func check_debrief(problem_id: String, lesson: String) -> String:
+	if not lesson in CHECK_VARIANTS:
+		return ""
+	for m in active():
+		if m.goal_problem == problem_id and m.debrief_variants.has(lesson):
+			return m.debrief_variants[lesson]
+	return ""
 
 
 ## The dated beats known so far: beat id → its time (minutes), the day a
@@ -349,6 +432,10 @@ func knows(atom: String) -> bool:
 		"checked":
 			var st: ProblemState = region.state.get(atom.get_slice(":", 1))
 			return st != null and st.phase in [P.CHECKED, P.RESOLVED]
+		"holds":  # the fix is in use and has not slipped (Sustain)
+			var problem := atom.get_slice(":", 1)
+			return region.state.has(problem) and region.state[problem].phase == P.RESOLVED \
+				and region.health(problem) >= Sustain.SLIPPING_HEALTH
 	return facts.has(atom)
 
 
@@ -385,6 +472,7 @@ func debrief_of(id: String) -> String:
 		"blamed": st != null and st.blamed,
 		"poor_fix": knows("poor_fix:" + m.goal_problem),
 		"not_standardised": st != null and st.phase == P.RESOLVED and not st.standardised,
+		"too_early": false,  # said at the failed Check (check_debrief)
 	}
 	for variant: String in DEBRIEF_VARIANTS:
 		if holds[variant] and m.debrief_variants.has(variant):
@@ -544,10 +632,15 @@ static func checkin_def(p: ProblemDef) -> MissionDef:
 
 ## The deadline passed: the door closes for good, the mission stays (active
 ## with its work, or on the board without a clock).
+## A milestone's moment passes with it: it leaves the active list for good.
 func _fail(m: MissionDef) -> void:
 	failed_once[m.id] = true
 	region.close_countermeasures(m.fail_closes)
-	region.earn_reputation(Reputation.DEADLINE_MISSED, "deadline")
+	for flag in m.sets_flags_on_fail:
+		facts.add(flag)
+	if m.kind == "milestone":
+		progress.erase(m.id)
+	region.earn_reputation(MILESTONE_MISSED if m.kind == "milestone" else Reputation.DEADLINE_MISSED, "deadline")
 	events.append({"type": "failed", "mission": m.id})
 
 
@@ -555,7 +648,7 @@ func _fail(m: MissionDef) -> void:
 ## the campaign, the training day). Returns {kind: question | insight |
 ## no_main | not_main, text?, stage?}.
 func ask_coach(mission_id: String = "") -> Dictionary:
-	if not mission_id.is_empty() and defs.has(mission_id) and defs[mission_id].kind == "side":
+	if not mission_id.is_empty() and defs.has(mission_id) and defs[mission_id].kind in ["side", "milestone"]:
 		return {"kind": "not_main"}
 	var coached := active("main")
 	coached.append_array(active("training"))
@@ -711,6 +804,8 @@ func load_dict(d: Dictionary) -> Array[String]:
 				"seen": JsonFile.dict_or_empty(entry.get("seen"))}
 			if entry.has("said"):  # the coach's conditional questions already asked
 				progress[str(id)]["said"] = JsonFile.dict_or_empty(entry["said"])
+			if entry.get("played") == true:  # a milestone's scene, played
+				progress[str(id)]["played"] = true
 		else:
 			dropped.append(str(id))
 	# A missed deadline closed its doors for good.
@@ -735,6 +830,8 @@ func _rebuild_checkins(d: Dictionary) -> void:
 
 
 func _unlocked(m: MissionDef) -> bool:
+	if m.opens_on_day >= 0 and m.opens_on_day > play_day() or m.kind == "milestone" and failed_once.has(m.id):
+		return false
 	if Progression.belt_index(region.profile.xp) < m.requires_belt or region.reputation.value < m.requires_reputation:
 		return false
 	for id in m.requires_missions:
@@ -801,6 +898,10 @@ func _goal_met(m: MissionDef) -> bool:
 			return seen.size() >= m.goal_uses
 		"talk_to":
 			return _talk_met(m.goal_dialog, m.goal_outcome)
+		"scene":
+			return progress[m.id].get("played", false)
+		"story_order":
+			return needs_met(m.goal_met_if)
 	return false
 
 

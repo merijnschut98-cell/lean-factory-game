@@ -941,3 +941,183 @@ func test_a_deadline_marks_a_dated_beat() -> void:
 	var restored := _log()
 	restored.load_dict(bytes_to_var(var_to_bytes(log.to_dict())))
 	assert_eq(restored.beats(), {"henk_farewell": farewell}, "saved with the mission's clock")
+
+
+# ── Milestones, dates and the story's order (phase-2 design §3.1–3.2) ─────────
+
+## The fixture's missions plus `extra` (each merged over a milestone's defaults).
+func _with(extra: Array) -> Missions:
+	var defs: Array[MissionDef] = []
+	for d: Dictionary in RulesFixture.missions():
+		defs.append(MissionDef.from_dict(d))
+	for e: Dictionary in extra:
+		var d := {"id": "review", "name": "review", "kind": "milestone", "tier": 1, "goal": {"type": "scene"},
+			"scene": "review", "requires": {"missions": ["walk_connections"]}, "briefing": "b", "debrief": "d",
+			"rewards": {"xp": 200}}
+		d.merge(e, true)
+		if not d["goal"].get("type") == "scene":
+			d.erase("scene")
+		var m := MissionDef.from_dict(d)
+		assert_eq(m.error, "", "fixture milestone %s" % d["id"])
+		defs.append(m)
+	return Missions.new(RulesFixture.region(), defs, RulesFixture.coach())
+
+
+func _winter(extra: Dictionary = {}) -> Dictionary:
+	var d := {"id": "winter", "goal": {"type": "story_order", "story": "el_amrani", "by": "deadline",
+		"met_if": {"any": ["delivered:el_amrani", "agreed:call:existing"]}, "promise": "call"},
+		"deadline_on_day": 10, "fail": "koud", "sets_flags_on_fail": ["flag:el_amrani_complaint"]}
+	d.merge(extra, true)
+	return d
+
+
+func test_milestone_schema_is_parsed_and_checked() -> void:
+	var m := MissionDef.from_dict({"id": "x", "name": "x", "kind": "milestone", "goal": {"type": "scene"},
+		"scene": "review_100_days", "opens_on": {"day": 100}, "deadline_on_day": 120, "fail": "f",
+		"sets_flags_on_fail": ["flag:late"]})
+	assert_eq(m.error, "")
+	assert_eq([m.scene, m.opens_on_day, m.deadline_on_day, Array(m.sets_flags_on_fail)],
+		["review_100_days", 100, 120, ["flag:late"]])
+	var by_date := MissionDef.from_dict({"id": "x", "name": "x", "kind": "milestone", "goal": {"type": "scene"},
+		"scene": "s", "opens_on": {"date": "2026-12-21"}})
+	assert_eq(by_date.opens_on_day, 70, "21 December is day 70 of play (day 0: Monday 12 October 2026)")
+	var story := MissionDef.from_dict(_winter().merged({"name": "w", "kind": "milestone"}))
+	assert_eq(story.error, "")
+	assert_eq([story.goal_story, story.goal_by, story.goal_promise], ["el_amrani", "deadline", "call"])
+	assert_eq(story.goal_met_if, {"any": ["delivered:el_amrani", "agreed:call:existing"]})
+	for bad: Dictionary in [
+		{"id": "x", "name": "x", "kind": "milestone", "goal": {"type": "scene"}},
+		{"id": "x", "name": "x", "kind": "side", "goal": {"type": "scene"}, "scene": "s"},
+		{"id": "x", "name": "x", "kind": "milestone", "goal": {"type": "scene"}, "scene": "s", "opens_on": {"date": "21-12-2026"}},
+		{"id": "x", "name": "x", "kind": "milestone", "goal": {"type": "scene"}, "scene": "s", "opens_on": {"week": 3}},
+		{"id": "x", "name": "x", "kind": "milestone", "goal": {"type": "story_order", "story": "el_amrani"}},
+		{"id": "x", "name": "x", "kind": "milestone", "goal": {"type": "walk", "stream": "connections"}},
+	]:
+		assert_ne(MissionDef.from_dict(bad).error, "", "refused: %s" % bad)
+
+
+## A milestone opens itself on its day: nobody picks it from the board, and it
+## takes neither the main mission's place nor a side slot (CLAUDE.md §2).
+func test_a_milestone_opens_on_its_day_and_takes_no_slot() -> void:
+	var log := _with([{"opens_on": {"day": 5}}])
+	log.accept("walk_connections")
+	_walk_connections(log)
+	assert_eq(log.status("review"), "locked", "not before its day")
+	assert_eq(log.accept("review"), "locked")
+	log.region.advance_days(5)
+	log.update()
+	assert_eq(log.status("review"), "active", "it opened by itself on day 5")
+	assert_true(log.drain_events().has({"type": "milestone", "mission": "review"}))
+	log.region.profile.xp = Progression.BELTS[2]["xp"]
+	assert_eq(log.accept("fix_design"), "", "the main mission still has its place")
+	for id in ["look_at_intake", "fix_revision", "walk_meters"]:
+		assert_eq(log.accept(id), "", "three side missions besides it: %s" % id)
+
+
+func test_opens_on_counts_from_the_first_day_of_play() -> void:
+	var log := _with([{"opens_on": {"day": 3}}])
+	log.play_start = SimCalendar.days(2)  # a warm-up before play
+	log.accept("walk_connections")
+	_walk_connections(log)
+	log.region.advance_days(4)
+	log.update()
+	assert_eq(log.play_day(), 2)
+	assert_eq(log.status("review"), "locked", "day 2 of play, not 4")
+	log.region.advance_days(1)
+	log.update()
+	assert_eq(log.status("review"), "active")
+
+
+## A scene milestone is done once its scene has been played; the answer given in
+## it is a fact for later.
+func test_a_scene_milestone_completes_when_its_scene_is_played() -> void:
+	var log := _with([{}])
+	log.accept("walk_connections")
+	_walk_connections(log)
+	assert_eq(log.status("review"), "active")
+	assert_eq(log.ask_coach("review")["kind"], "not_main", "the coach helps with the main quest only")
+	var xp := log.region.profile.xp
+	assert_eq(log.finish_scene("walk_meters", "flag:x"), "not_a_scene")
+	assert_eq(log.finish_scene("review", "flag:people_first"), "")
+	log.update()
+	assert_eq(log.status("review"), "completed")
+	assert_true(log.knows("flag:people_first"), "the answer is remembered")
+	assert_eq(log.region.profile.xp, xp + 200)
+	assert_eq(log.finish_scene("review", "flag:again"), "not_active", "played once")
+
+
+## Winter 1 (arc S12): the story's order is judged against its absolute day.
+## Missed: a door closes (the flags), and the moment passes; the problem itself
+## stays solvable through its own mission.
+func test_a_story_order_missed_by_its_day_fails_and_sets_its_flags() -> void:
+	var log := _with([_winter()])
+	log.accept("walk_connections")
+	_walk_connections(log)
+	assert_eq(log.status("winter"), "active", "no opens_on: open once unlocked")
+	log.region.advance_days(10)
+	log.update()
+	assert_eq(log.status("winter"), "active", "day 10 is still in time")
+	var reputation := log.region.reputation.value
+	log.region.advance_days(1)
+	log.update()
+	assert_true(log.failed("winter"))
+	assert_eq(log.status("winter"), "locked", "the frost has come: the moment is over")
+	assert_true(log.knows("flag:el_amrani_complaint"), "a door closes for Act III")
+	assert_true(log.region.reputation.value < reputation)
+	assert_true(log.drain_events().has({"type": "failed", "mission": "winter"}))
+	var restored := _with([_winter()])
+	restored.load_dict(bytes_to_var(var_to_bytes(log.to_dict())))
+	assert_eq(restored.status("winter"), "locked", "saved")
+
+
+func test_a_story_order_is_met_by_delivery_or_by_the_agreement() -> void:
+	for fact in ["delivered:el_amrani", "agreed:call:existing"]:
+		var log := _with([_winter()])
+		log.accept("walk_connections")
+		_walk_connections(log)
+		log.region.advance_days(4)
+		log.facts.add(fact)
+		log.update()
+		assert_eq(log.status("winter"), "completed", fact)
+		assert_false(log.failed("winter"))
+
+
+## The date the player promised (People.promises: a delivery_date proposal agreed
+## in the story's call) is checked by the simulation on that date.
+func test_a_promised_date_is_checked_on_its_day() -> void:
+	for delivered in [false, true]:
+		var log := _with([_winter({"deadline_on_day": 60})])
+		log.promises = func() -> Dictionary:
+			return {"call": {"proposal": "date", "kind": "delivery_date", "days": 6, "at": SimCalendar.days(1)}}
+		log.accept("walk_connections")
+		_walk_connections(log)
+		log.region.advance_days(6)
+		log.update()
+		assert_false(log.knows("promise_broken:call") or log.knows("promise_kept:call"), "not yet day 7")
+		if delivered:
+			log.facts.add("delivered:el_amrani")
+		var reputation := log.region.reputation.value
+		log.region.advance_days(1.1)
+		log.update()
+		assert_eq(log.knows("promise_kept:call"), delivered)
+		assert_eq(log.knows("promise_broken:call"), not delivered)
+		if not delivered:
+			assert_eq(log.region.reputation.value, reputation + Missions.PROMISE_BROKEN)
+			assert_true(log.drain_events().has({"type": "promise", "dialog": "call", "kept": false}))
+
+
+## The designed failed Check (designed-failed-checks spec): a too_early verdict
+## on the active mission's problem reads its own debrief.
+func test_a_too_early_check_reads_the_missions_own_debrief() -> void:
+	var log := _with([])
+	log.defs["fix_design"].debrief_variants["too_early"] = "Te vroeg."
+	log.accept("walk_connections")
+	_walk_connections(log)
+	log.accept("fix_design")
+	assert_eq(log.check_debrief("custom_design", "too_early"), "Te vroeg.")
+	assert_eq(log.check_debrief("custom_design", "not_moved"), "", "no text of its own")
+	assert_eq(log.check_debrief("revision_backlog", "too_early"), "", "no active mission holds it")
+	assert_true("too_early" in Missions.DEBRIEF_VARIANTS)
+	log.region.state["custom_design"].phase = ProblemState.Phase.RESOLVED
+	log.update()
+	assert_ne(log.debrief_of("fix_design"), "Te vroeg.", "said at the failed Check, never at the end")

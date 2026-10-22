@@ -34,6 +34,9 @@ var discoveries: Array = []
 ## What can be done at each place, and its observations (content/places.yaml,
 ## PLAN 2.12). A data folder without places.json keeps every tool everywhere.
 var places: Dictionary = {}
+## The milestones' scenes (content/scenes.yaml, validated): scene id → {id, room,
+## present, beats} (SceneScript reads them). A data folder without scenes.json has none.
+var scenes: Dictionary = {}
 ## The first thing wrong with the files; "" when the catalogue is usable.
 var error := ""
 
@@ -77,6 +80,15 @@ static func load_from(dir: String = DATA_DIR) -> Catalog:
 			c.error = doc["error"]
 			return c
 		c.places = doc["data"]
+	if FileAccess.file_exists(dir + "/scenes.json"):
+		var doc := JsonFile.read_dict(dir + "/scenes.json")
+		if not doc["error"].is_empty():
+			c.error = doc["error"]
+			return c
+		var list: Variant = doc["data"].get("scenes", [])
+		for s: Variant in list if list is Array else []:
+			if s is Dictionary and s.get("id") is String:
+				c.scenes[s["id"]] = s
 	var found := JsonFile.read_dict(dir + "/discoveries.json")
 	if not found["error"].is_empty():
 		c.error = found["error"]

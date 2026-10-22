@@ -2,11 +2,23 @@ class_name MissionDef
 extends RefCounted
 ## One mission from content/missions.yaml: a main mission (one at a time,
 ## with the coach), a small side mission, or a day of the training week
-## (Inwerkweek: with the coach, no side slot), unlocked by earlier missions and
-## the player's belt, with a goal the rules can check.
+## (Inwerkweek: with the coach, no side slot), or a milestone (phase-2 design
+## §3.1: a dated moment of the story that opens itself and takes no slot), unlocked
+## by earlier missions and the player's belt, with a goal the rules can check.
 
-const KINDS := ["main", "side", "training"]
-const GOALS := ["walk", "investigate", "solve", "observe", "check", "sustain", "rework_fix", "talk_to"]
+const KINDS := ["main", "side", "training", "milestone"]
+const GOALS := ["walk", "investigate", "solve", "observe", "check", "sustain", "rework_fix", "talk_to", "scene",
+	"story_order"]
+## A milestone's goals: its scene played (content/scenes.yaml), or the story's order
+## met by its day (drie winters S12).
+const MILESTONE_GOALS := ["scene", "story_order"]
+## What a story_order goal is judged by: its mission's deadline_on_day.
+const STORY_BY := ["deadline"]
+## Day 0 of play (GameSession.PLAY_START_DATE): opens_on {date} counts from it.
+const PLAY_START := "2026-10-12"
+## How a payoff reaches the player: a call on the phone, a letter on the desk.
+const PAYOFF_BY := ["call", "letter"]
+const _DATE :="^\\d{4}-\\d{2}-\\d{2}$"
 ## A talk_to goal's outcomes: partial | commitment (dialog spec §5.1).
 const TALK_OUTCOMES := ["partial", "commitment"]
 const FORK_ROLES := ["bottleneck", "non_bottleneck"]
@@ -47,8 +59,20 @@ var reopen_text: String
 ## effects}, a short measure against an acute risk, taken once while the
 ## mission is active; it fades after `days` and is not the fix.
 var containment: Dictionary = {}
-## Facts ("flag:<name>") its completion sets.
+## Facts ("flag:<name>") its completion sets, and the ones a missed deadline sets
+## (a door that closes for a later act: flag:el_amrani_complaint).
 var sets_flags := PackedStringArray()
+var sets_flags_on_fail := PackedStringArray()
+## A milestone's scene (an id in content/scenes.yaml), for a `scene` goal.
+var scene: String
+## The day of play (0: PLAY_START) it becomes available, from `opens_on: {day}` or
+## `{date: "YYYY-MM-DD"}`; -1: as soon as it is unlocked.
+var opens_on_day := -1
+## The day of play its deadline falls on, whenever it opened (the first frost); -1: none.
+var deadline_on_day := -1
+## What reaches the player once it is done in time (Berichten): [{who (a cast id),
+## by (call | letter), text}], her call on your phone and her letter on your desk.
+var payoff: Array[Dictionary] = []
 var briefing: String
 var debrief: String
 ## Said when the deadline passes (e.g. Henk has retired).
@@ -70,6 +94,13 @@ var ends_with_talk: String
 ## §3.1): [{dialog, outcome (partial | commitment)}]. It completes once its goal and
 ## every one of them are met (Missions.pending_talk); the objective line names them.
 var talk_goals: Array[Dictionary] = []
+## story_order: the followed story (FollowedOrder.STORY), what it is judged by
+## (STORY_BY), the facts that meet it (Facts.met) and the dialog whose promised
+## date the simulation checks (People.promises; "" for none).
+var goal_story: String
+var goal_by: String
+var goal_met_if: Dictionary = {}
+var goal_promise: String
 var goal_clues := 0
 ## observe: a gemba tool (goal_tool, or any tool or question when empty) used
 ## at every place, goal_uses different place-tool pairs in all.
@@ -144,6 +175,15 @@ static func from_dict(d: Dictionary) -> MissionDef:
 		m.debrief_variants[str(key)] = str(variants[key])
 	m.reopen_text = str(d.get("reopen", ""))
 	m.sets_flags = PackedStringArray(d.get("sets_flags", []))
+	m.sets_flags_on_fail = PackedStringArray(d.get("sets_flags_on_fail", []))
+	m.scene = str(d.get("scene", ""))
+	m.opens_on_day = _opens_on(d.get("opens_on"))
+	m.deadline_on_day = int(d.get("deadline_on_day", -1))
+	var payoff: Variant = d.get("payoff", [])
+	for p: Variant in payoff if payoff is Array else []:
+		var entry := JsonFile.dict_or_empty(p)
+		if str(entry.get("by", "")) in PAYOFF_BY:
+			m.payoff.append({"who": str(entry.get("who", "")), "by": entry["by"], "text": str(entry.get("text", ""))})
 	m.containment = JsonFile.dict_or_empty(d.get("containment")).duplicate(true)
 	m.briefing = str(d.get("briefing", ""))
 	m.debrief = str(d.get("debrief", ""))
@@ -158,6 +198,10 @@ static func from_dict(d: Dictionary) -> MissionDef:
 	m.goal_uses = int(goal.get("uses", 1))
 	m.goal_dialog = str(goal.get("dialog", ""))
 	m.goal_outcome = str(goal.get("outcome", "commitment"))
+	m.goal_story = str(goal.get("story", ""))
+	m.goal_by = str(goal.get("by", ""))
+	m.goal_met_if = JsonFile.dict_or_empty(goal.get("met_if")).duplicate(true)
+	m.goal_promise = str(goal.get("promise", ""))
 	m.ends_with_talk = str(d.get("ends_with_talk", "")) if d.get("ends_with_talk") is String else ""
 	var talks: Variant = d.get("talk_to", [])
 	var bad_talk := not talks is Array
@@ -205,4 +249,31 @@ static func from_dict(d: Dictionary) -> MissionDef:
 		m.error = "mission %s: a deadline_beat needs deadline_days" % m.id
 	elif not m.setup.is_empty() and m.kind != "training":
 		m.error = "mission %s: only a training day has a setup" % m.id
+	elif (m.kind == "milestone") != (m.goal_type in MILESTONE_GOALS):
+		m.error = "mission %s: a milestone, and only a milestone, has a scene or story_order goal" % m.id
+	elif m.goal_type == "scene" and m.scene.is_empty():
+		m.error = "mission %s: a scene goal names its scene" % m.id
+	elif m.goal_type == "story_order" and (m.goal_story.is_empty() or not m.goal_by in STORY_BY
+			or m.goal_met_if.is_empty() or m.deadline_on_day < 0):
+		m.error = "mission %s: a story_order goal needs a story, by: deadline, met_if and a deadline_on_day" % m.id
+	elif m.opens_on_day == -2:
+		m.error = "mission %s: opens_on is {day: N} or {date: YYYY-MM-DD} from %s on" % [m.id, PLAY_START]
 	return m
+
+
+## The day of play `opens_on` names: {day: N}, or {date: "YYYY-MM-DD"} counted from
+## PLAY_START; -1 when it is absent, -2 when it is malformed.
+static func _opens_on(v: Variant) -> int:
+	if v == null:
+		return -1
+	var on := JsonFile.dict_or_empty(v)
+	if on.size() != 1:
+		return -2
+	if on.has("day"):
+		var day: Variant = on["day"]
+		return int(day) if (day is int or day is float) and day >= 0 else -2
+	var date: Variant = on.get("date")
+	if not date is String or RegEx.create_from_string(_DATE).search(date) == null:
+		return -2
+	var days := int(Time.get_unix_time_from_datetime_string(date) - Time.get_unix_time_from_datetime_string(PLAY_START)) / 86400
+	return days if days >= 0 else -2

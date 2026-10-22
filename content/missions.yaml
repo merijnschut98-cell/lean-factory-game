@@ -393,6 +393,10 @@ missions:
     briefing: "De aansluiting van de familie El Amrani ligt er sinds vorige week. Toch zegt hun energieleverancier dat hun EAN-code niet bestaat, en hun nieuwe warmtepomp staat uit. Bij Meetdata & registratie heeft Petra Vos tijd over. Ergens ligt werk dat niemand ziet."
     debrief: "Een dossier wordt nu afgehandeld op de dag dat het klaar is. De warmtepomp van de familie El Amrani draait. Bij Petra is de stapel niet kleiner geworden, want er was geen stapel werk: er was een stapel wachten. Welke andere batches zie je in de stroom die niemand een batch noemt?"
     reopen: "Klanten bellen weer dat hun EAN-code niet bestaat. Bij Petra staat het werk weer te wachten tot het einde van de maand. Wie heeft dat zo besloten?"
+    debrief_variants:
+      # The designed failed Check (docs/superpowers/specs/2026-10-16-designed-failed-checks.md §1):
+      # automatic EAN registration is tier 3; at maturity 1 it works at its minimal level.
+      too_early: "Je verwachtte dat Meetdata sneller zou afmelden als het systeem de EAN-codes zelf aanmeldt. De Check zegt: maar half. De koppeling werkt wel. Een dossier dat Petra invoert, staat nu binnen een uur bij de leverancier. Alleen voert Petra de dossiers nog steeds aan het eind van de maand in, want zo is het ooit afgesproken. Het wachten zat niet in het systeem. Wanneer gaat een dossier eigenlijk van de stapel af, en wie heeft dat zo bepaald?\n\nPetra: \"Die koppeling is mooi, hoor. Maar die had ik niet nodig om morgen anders te beginnen.\""
     goal: {type: solve, problem: done_but_not_closed}
     talk_to: [{dialog: petra_batch, outcome: partial}]
     steps:
@@ -411,6 +415,66 @@ missions:
       experiment: "Als de batch kleiner wordt, wat verwacht je dan van de doorlooptijd? En van Petra's werkdag?"
       reflect: "Welke andere batches zie je in de stroom die niemand een batch noemt?"
 
+  # ── Act I milestones (phase-2 design §3.2): they open themselves on their day and take
+  # no slot; the story's moments, not problems.
+  - id: winter_el_amrani
+    name: Voor de vorst
+    kind: milestone
+    tier: 1
+    act: 1
+    chapter: De telefoon
+    arc: winters
+    requires: {missions: [walk_connections]}
+    # Monday 30 November 2026, day 49: three weeks before the frost (drie winters §3).
+    opens_on: {date: "2026-11-30"}
+    # estimate: the first frost PERIOD is Monday 21 December 2026 (day 70, the shortest day).
+    # Reasoning: KNMI counts frost days from October to April; the first single frost night
+    # comes much earlier (national average about 21 October over 1991-2020, De Bilt early
+    # November in older tables; in 2024 Eelde froze on 15 October while Beek in Limburg still
+    # reached 23 degrees on 26 October), but one frost night leaves no family cold. A run of
+    # frost nights, when a house without heating gets cold, is a December-January event in
+    # the south. Sources: knmi.nl/kennis-en-datacentrum/uitleg/vorstdagen;
+    # knmi.nl/nederland-nu/klimatologie/maand-en-seizoensoverzichten/2024/jaar (search
+    # extracts; the 1991-2020 station tables in the KNMI Klimaatviewer can sharpen it).
+    deadline_on_day: 70
+    goal:
+      type: story_order
+      story: el_amrani
+      by: deadline
+      # warm in time: the followed order connected, or the heat pump on the existing
+      # connection after a monteur looked (the hidden proposal a listener finds)
+      met_if: {any: ["delivered:el_amrani", "agreed:el_amrani_fourth_call:check_existing_connection"]}
+      promise: el_amrani_fourth_call   # the date named on the phone is checked on its day
+    briefing: "Het KNMI verwacht rond 21 december de eerste echte vorst: een paar nachten achter elkaar onder nul. In Nova-Oost hangt een warmtepomp zonder stroom aan de muur, en de cv-ketel is al weg. Mevrouw El Amrani belt vast nog een keer."
+    debrief: "Op de eerste vorstnacht draaide de warmtepomp van de familie El Amrani. Haar moeder zat warm. Wie wacht er nog meer op een aansluiting, en weet die waar hij aan toe is?"
+    fail: "De eerste vorstnachten logeert de moeder van mevrouw El Amrani bij haar andere dochter in Havenzij. 'Het is maar voor even,' zegt mevrouw El Amrani. Ze schrijft het op, en ze stuurt een brief. Aan de directie, met een kopie aan de ACM."
+    sets_flags_on_fail: ["flag:el_amrani_complaint", "flag:el_amrani_cold_winter"]   # Act III's ACM visit, Act IV's bakery
+    # Kept: her call on your phone and her letter on your desk (Phase 4: her front door).
+    payoff:
+      - who: el_amrani
+        by: call
+        text: "Goedemiddag, u spreekt met Fatima El Amrani. Ik bel alleen even om te zeggen dat mijn moeder het warm heeft. Ze vroeg wie u bent. Ik heb gezegd: iemand die terugbelde. Dat was het. Dag."
+      - who: el_amrani
+        by: letter
+        text: "Beste {speler},\n\nToen het ging vriezen, draaide de warmtepomp. Mijn moeder zit 's avonds weer gewoon in de kamer, en niet meer onder twee dekens. U weet dat ik alles opschrijf. Deze keer schrijf ik iets anders op: dank u wel.\n\nMet vriendelijke groet,\nFatima El Amrani"
+    teaches: [lead_time]
+    rewards: {xp: 300, reputation: 3}
+
+  - id: review_100_days
+    name: Honderd dagen
+    kind: milestone
+    tier: 1
+    act: 1
+    chapter: De eerste honderd dagen
+    requires: {missions: [walk_connections]}
+    opens_on: {day: 100}   # Wednesday 20 January 2027 (drie winters §1)
+    goal: {type: scene}
+    scene: review_100_days
+    steps: {go: "Ga naar de MT-kamer op de 2e"}
+    briefing: "Frank en ik willen je even spreken, in de MT-kamer op de 2e. Je zit hier nu honderd dagen. Neem niks mee, alleen jezelf."
+    debrief: "Honderd dagen. Wat zou je anders doen als je morgen opnieuw begon?"
+    rewards: {xp: 200}
+
   # ── Act II: Wat onder de grond zit ─────────────────────────────────────────
   - id: fix_digging_damage
     name: Graafschade
@@ -423,6 +487,9 @@ missions:
     debrief: "Er zijn minder graafschades. Gert deed alles volgens het boekje; de oorzaak zat in ons proces. Maar de kaart klopt nog steeds niet overal. Wie houdt de kaart eigenlijk bij?"
     debrief_variants:
       blamed: "De schades zijn minder. Gert werkt mee, maar hij vertelt je niets meer dan nodig. Wie houdt de kaart eigenlijk bij?"
+      # The designed failed Check (2026-10-16 spec §2): revision at the source is tier 3,
+      # at maturity 1-2 it works at 0.15-0.30. The cause is right, the order is not.
+      too_early: "Je verwachtte minder graafschade, omdat de kaart beter zou worden. De Check zegt: nauwelijks. Over de kaart had je wel gelijk. Wat Revisie vanaf nu intekent, klopt. Maar de oude afwijkingen liggen er nog allemaal, en de graafmachine van volgende week graaft op de kaart van vorig jaar. Wat kan er deze week al veilig, terwijl de kaart wordt rechtgezet?\n\nGert: \"Een goede kaart is mooi. Maar volgende week sta ik weer met een schop in de grond. Wat doe ik dan?\""
     reopen: "Er komen weer graafschades binnen. Gert belt: 'We graven zoals afgesproken. Klopt jullie kaart nog?'"
     goal: {type: solve, problem: digging_damage}
     steps:

@@ -130,6 +130,8 @@ var tells: OfficeTells
 var look_editor: CreatorScreen
 ## People turning to you, greeting you, chatting at the coffee corner (Phase 2 §1.4).
 var reactions: OfficeReactions
+## A milestone's scene in its room (phase-2 design §3.1) while the game can be played, or null.
+var milestone: OfficeMilestone
 
 
 func _ready() -> void:
@@ -204,6 +206,8 @@ func build() -> void:
 		ui.pause_menu.look_requested.connect(open_look)
 		ui.pause_changed.connect(_on_pause_changed)
 		ui.pause_menu.auto_text_changed.connect(_on_auto_text)
+		milestone = OfficeMilestone.create(self)
+		add_child(milestone)
 		if autosaves:
 			ui.begin_play(saves, loaded.has("session"))
 		if Opening.running(ui.session_layer):

@@ -162,6 +162,20 @@ func _run() -> void:
 			office.session.region.grant(0, -70000)
 			office.ui.after_action()
 			_stand_at(office, DESIGN)
+		"milestone_review", "milestone_question":   # S2-M: Honderd dagen in the MT-kamer, a line, then Frank's question
+			office.session.missions.play_start -= SimCalendar.days(100)
+			office.session.pass_time(0)
+			office.ui.after_action()
+			office.floors.go_to("second", "lift")
+			var rect := OfficeFloors.room_rect(office.floors.markers()["room:mt_room"])
+			office.player.position = Vector3(rect.get_center().x, 0.0, rect.end.y - 1.0)
+			office.milestone.step(1.0)
+			office.milestone.step(1.0)
+			if state == "milestone_question":
+				office.milestone.lines.finish()
+			else:
+				office.milestone.lines.next()
+				office.milestone.lines.press()
 		"dialog_start", "dialog_mid", "dialog_summary", "dialog_ruined":
 			_talk_to_joost(office, state)
 		"talk_face", "talk_choose", "talk_phone":

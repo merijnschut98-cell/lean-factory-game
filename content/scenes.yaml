@@ -1,0 +1,96 @@
+# A milestone's scene (phase-2 design §3.1; tools/build_content.py validate_scenes):
+# played where it happens, as SceneLines (one line at a time, who says it).
+#
+# id        the scene (a milestone's `scene:` names it; one milestone each)
+# room      where it plays (world.yaml; the room opens with its milestone)
+# present   who is in the room (the cast's ids)
+# beats     speaker (one of present), line; `needs` (the facts grammar, Facts.met):
+#           the line is said only when it holds, so the facts choose the lines;
+#           at most one beat has a `choice`: 2-4 answers {label (the player's words,
+#           UI), fact (flag:<name>, remembered), reply (said back, optional)}.
+# No score screen: the scene reads the facts out loud, through people.
+
+scenes:
+  # ── Honderd dagen (Act I, around day 100: 20 January 2027) ─────────────────────
+  # Ruud and Frank in the MT-kamer read what the first hundred days left behind: the
+  # fixes that hold, who carries a change and who only follows it, who left. Frank asks
+  # one question; the answer is remembered (flag:day100_*) for what comes later.
+  - id: review_100_days
+    room: mt_room
+    present: [ruud, frank]
+    beats:
+      - {speaker: ruud, line: "Kom erbij zitten. Na honderd dagen kijken Frank en ik altijd even terug met iemand die nieuw is. Het is geen beoordeling, hoor."}
+      - {speaker: frank, line: "Ik heb de cijfers van Aansluitingen bij me. Maar ik hoor eerst graag van jou wat er anders gaat dan in oktober."}
+
+      # Werkvoorbereiding: the first fix.
+      - speaker: frank
+        line: "Bij Werkvoorbereiding liggen de standaardontwerpen nog steeds bovenop. Joost laat ze zelf zien als ik langskom."
+        needs: {all: ["holds:custom_design"]}
+      - speaker: ruud
+        line: "Bij Werkvoorbereiding ging het een tijd goed. Nu ligt de stapel van Anouk weer net zo hoog als in oktober. Hoe komt dat, denk je?"
+        needs: {all: ["done:fix_custom_design"], none: ["holds:custom_design"]}
+      - speaker: ruud
+        line: "Aan Werkvoorbereiding ben je nog niet toegekomen. Dat geeft niet. Honderd dagen is kort."
+        needs: {none: ["done:fix_custom_design"]}
+
+      # Meetdata: the batch at the end of the month.
+      - speaker: frank
+        line: "En Meetdata meldt aansluitingen nu af op de dag dat ze klaar zijn. Het KCC krijgt daar een stuk minder telefoon over."
+        needs: {all: ["holds:done_but_not_closed"]}
+
+      # Who carries a change, and who only does what was agreed.
+      - speaker: ruud
+        line: "Joost zei vorige week tegen me: 'Dit is ons eigen werk geworden.' Dat hoor je niet vaak van een teamleider."
+        needs: {all: ["committed:joost_vacancies"]}
+      - speaker: ruud
+        line: "Joost doet wat er is afgesproken. Maar hij begint er zelf nooit meer over. Merk jij dat ook?"
+        needs: {all: ["complied:joost_vacancies"]}
+      - speaker: frank
+        line: "Petra heeft haar eigen werkinstructie herschreven, hoorde ik. Zonder dat iemand erom vroeg."
+        needs: {all: ["committed:petra_batch"]}
+      - speaker: frank
+        line: "Petra volgt de nieuwe afspraak keurig. Ze zegt alleen wel tegen iedereen dat het niet haar idee was."
+        needs: {all: ["complied:petra_batch"]}
+
+      # Who left.
+      - speaker: ruud
+        line: "Henk is met pensioen. Zijn tang ligt nog bij Ahmed in de bus. Ahmed laat hem aan iedereen zien."
+        needs: {all: ["left:henk", "done:save_henks_knowledge"]}
+      - speaker: ruud
+        line: "Henk is met pensioen. Ahmed belt hem nog wel eens, als hij een mof niet vertrouwt."
+        needs: {all: ["left:henk"], none: ["done:save_henks_knowledge"]}
+      - speaker: frank
+        line: "Anouk heeft ontslag genomen. Ze gaat naar een ingenieursbureau. Haar stapel is er nog, zij niet meer."
+        needs: {all: ["left:anouk"]}
+      - speaker: frank
+        line: "Marco is weg. Zijn ploeg heeft het er nog steeds over. Ik heb het niet zien aankomen, eerlijk gezegd."
+        needs: {all: ["left:marco"]}
+      - speaker: ruud
+        line: "Sanne is vertrokken. Rachid doet de intake nu bijna alleen. Hij vraagt het nog steeds drie keer na."
+        needs: {all: ["left:sanne"]}
+      - speaker: ruud
+        line: "Wat ik wel fijn vind: iedereen die er in oktober zat, zit er nog. Dat is minder vanzelfsprekend dan het klinkt."
+        needs: {none: ["left:anouk", "left:marco", "left:sanne", "left:joost", "left:petra"]}
+
+      # The family before the frost.
+      - speaker: frank
+        line: "Mevrouw El Amrani heeft een brief gestuurd. Aan de directie, met een kopie aan de ACM. Die moet ik beantwoorden."
+        needs: {all: ["failed:winter_el_amrani"]}
+      - speaker: ruud
+        line: "Mevrouw El Amrani belde me laatst. Ze wilde alleen even zeggen dat haar moeder het warm heeft."
+        needs: {all: ["done:winter_el_amrani"]}
+
+      # The one question.
+      - speaker: frank
+        line: "Over twee weken moet ik de directie vertellen hoe het met Aansluitingen gaat. Wat zou jij ze vertellen?"
+        choice:
+          - label: "Dat het werk beter loopt, in getallen."
+            fact: "flag:day100_numbers"
+            reply: "Getallen kan ik verantwoorden. Daar ben ik eerlijk gezegd blij mee."
+          - label: "Dat de mensen het zelf doen."
+            fact: "flag:day100_people"
+            reply: "Dat is lastiger uit te leggen aan de directie. Maar ik snap wat je bedoelt."
+          - label: "Dat het nog te vroeg is."
+            fact: "flag:day100_patience"
+            reply: "Dat zeg ik liever niet hardop. Maar het is wel eerlijk."
+      - {speaker: ruud, line: "Dank je. Ik ben benieuwd waar we over honderd dagen staan. Jij ook?"}
