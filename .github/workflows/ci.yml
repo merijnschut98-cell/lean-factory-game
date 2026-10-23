@@ -78,9 +78,10 @@ jobs:
           path: build/${{ matrix.dir }}
 
   # A Windows build for playtesting without Godot, only for a PR commit whose
-  # subject starts with "[playtest]" (each build is ~150 MB and the artifact
-  # storage quota filled up when every push built one): open that commit's CI
-  # run and download the "Spanning-windows-playtest" artifact.
+  # subject starts with "[playtest]". It is published as the "playtest" GitHub
+  # Release (Releases → Playtest → Spanning-windows-playtest.zip), replaced on
+  # every playtest commit: release files do not count toward the Actions
+  # artifact storage quota, which a ~150 MB build per push filled up (2026-10-21).
   # (The full export above needs "Run workflow", which GitHub only offers once
   # this file is on the default branch.)
   playtest-build:
@@ -88,6 +89,8 @@ jobs:
     if: github.event_name == 'pull_request'
     needs: [godot-tests, python]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -109,9 +112,15 @@ jobs:
           mkdir -p build/windows
           godot --headless --path game --export-release "Windows Desktop"
           ls -la build/windows
-      - uses: actions/upload-artifact@v4
+      - name: Publish as the playtest release
         if: steps.want.outputs.build == 'true'
-        with:
-          name: Spanning-windows-playtest
-          path: build/windows
-          retention-days: 5
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          (cd build/windows && zip -9 -q ../Spanning-windows-playtest.zip ./*)
+          subject="$(git log -1 --format=%s "$SHA")"
+          gh release delete playtest --cleanup-tag --yes || true
+          gh release create playtest build/Spanning-windows-playtest.zip \
+            --prerelease --target "$SHA" --title "Playtest" \
+            --notes "Windows playtest build of ${SHA::7}: ${subject}. Unzip and run Spanning.exe."

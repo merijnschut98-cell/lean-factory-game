@@ -8,6 +8,27 @@ Sources were read through search-engine extracts (this environment blocks direct
 
 *(Notes collected while building Spanning land here; the Friday digest moves them into a dated section.)*
 
+## Digest 2026-10-23
+
+A thin week for hard news: no new ACM decision, no new technician figures, no Lean/CI vacancies surfaced. Everything below comes from search extracts (the sources are not on the approved list, so the pages were not opened); dates in the extracts were inconsistent, so treat "this week" loosely and verify before quoting.
+
+### News (around 16–23 Oct)
+- **Enexis releases reserved capacity to the queue.** Capacity that was reserved for small consumers until the 1 July 2026 priority rules is now released step by step to waiting customers: up to **195 MW**, for up to **~2,500 prioritised requests**; the final number depends on calculations on the lower grid levels. ([Solar Magazine](https://solarmagazine.nl/nieuws-zonne-energie/i45142/enexis-opent-deur-voor-2-500-geprioriteerde-aanvragen-netbeheerder-geeft-195-megawatt-ruimte-op-stroomnet-vrij), search extract)
+- **Flex contracts barely land.** Enexis CEO Rutger van der Leeuw: only **3–5%** of the companies approached agree to a flexible contract. ([TW.nl](https://tw.nl/overvol-stroomnet-kan-worden-ontlast-maar-bijna-geen-bedrijf-wil-meewerken/), search extract)
+- **Standard stations, fast.** Enexis built the new distribution station in **Ulrum in seven months**; nationally it aims at 800 new stations (75 in Groningen). ([RTV Noord](https://www.rtvnoord.nl/economie/1447357/nieuw-elektriciteitsstation-ulrum-moet-stroomnet-het-hogeland-ontlasten), search extract)
+- **Local consequences both ways.** Tilburg's business park Wijkevoort stays stuck because Enexis cannot connect new companies (22 Oct); in Dordrecht, Stedin committed that all **5,164 homes** planned for the next ten years will get a connection. ([Drimble/Tilburg](https://drimble.nl/regio/noord-brabant/tilburg/108367386/wijkevoort-komt-ook-bij-groen-licht-van-de-raad-van-state-voorlopig-nog-niet-van-de-grond.html), [Drimble/Dordrecht](https://drimble.nl/regio/zuid-holland/drechtsteden/108377950/netcongestie-of-niet-dik-5000-nieuwe-dordtse-woningen-krijgen-van-stedin-sowieso-stroom.html), search extracts)
+
+### Why it matters for you
+- **The 3–5% flex uptake is a change-management problem, not a tariff problem.** The operators built the products (GOPACS auctions, CBC, time-bound rights); customers don't adopt them. That is exactly the gap between a good countermeasure and commitment that Lean people work on: understand the customer's process, remove their risk, start with a small experiment.
+- **Seven months for a station is the standard-design dividend** from the 13 Oct digest, now visible in a single project. Good evidence for "standard work for standard jobs".
+
+### Actions
+1. **Interview talking point:** "Your flex products exist, but only 3–5% of customers sign. How do you find out what stops them, and who owns that conversion step?" Then sketch the customer's journey from first contact to signed flex contract as a value stream and point at where it stalls.
+2. **Follow Enexis' news page** ([enexis.nl/nieuws](https://www.enexis.nl/nieuws)) for the outcome of the capacity release: how many of the ~2,500 requests actually get connected, and how long it takes. That release is itself a queue-processing project.
+
+### Notes digested
+- None. The notes section was empty this week (the build work paused on 22 Oct).
+
 ## Digest 2026-10-16
 
 A quieter week. No new ACM decision, no new technician or scale-up figures, and no Lean or CI vacancies at the grid operators were found. All items below come from search snippets; verify them before quoting.
