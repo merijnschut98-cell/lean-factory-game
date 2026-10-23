@@ -22,7 +22,10 @@ const START_MIN := 5
 const START_MAX := 80
 ## The last talk with this person: the most negative and the most positive
 ## memory count (ESTIMATES).
-const MEMORY_NEGATIVE := {"confronted": -15, "ruined": -10, "pressured": -10}
+const MEMORY_NEGATIVE := {"confronted": -15, "ruined": -10, "pressured": -10, "promise_broken": -15}
+## A promised date kept (the simulation judged it, Missions): the person's trust
+## (dialog spec §6; drie winters §3: trust +5). Broken: memory "promise_broken".
+const PROMISE_KEPT_TRUST := 5
 const MEMORY_POSITIVE := {"committed": 15, "heard": 10}
 ## A talk that went wrong this way offers the repair move next time.
 const REPAIRABLE := ["ruined", "pressured", "confronted"]
@@ -102,6 +105,8 @@ var revealed: Dictionary[String, Dictionary] = {}
 ## dialog id → its best outcome so far, and what was on the table then.
 var outcomes: Dictionary[String, String] = {}
 var agreed: Dictionary[String, String] = {}
+## Promises the simulation judged: dialog id → kept (judge_promise).
+var judged: Dictionary[String, bool] = {}
 ## dialog id → how often it was had.
 var talks: Dictionary[String, int] = {}
 ## check-in id → when it can come again (minutes).
@@ -150,7 +155,7 @@ func _init(person_defs: Array[PersonDef], dialog_defs: Array[DialogDef], lines: 
 
 func _reset() -> void:
 	for state: Dictionary in [trust, morale, memory, revealed, outcomes, agreed, talks, rest_until, heard_facts, prompts,
-			low_since, ignored, left, coach_after, last_prompt, observed, talk_log, note, beat_lines, drift_carry]:
+			low_since, ignored, left, coach_after, last_prompt, observed, talk_log, note, beat_lines, drift_carry, judged]:
 		state.clear()
 	prompt_log.clear()
 	drift_day = -1
@@ -220,8 +225,26 @@ func cooling_down(person_id: String, now: int) -> bool:
 	return int(memory.get(person_id, {}).get("cooldown_until", 0)) > now
 
 
-func opening(d: DialogDef) -> String:
+## The talk's first line: version `v`'s own (a variant keyed on a fact, e.g. a broken
+## promise), else the retry opening once it was had, else the opening.
+func opening(d: DialogDef, v: int = -1) -> String:
+	if v >= 0 and v < d.variants.size() and d.variants[v].get("opening") is String:
+		return d.variants[v]["opening"]
 	return d.retry_opening if talks.get(d.id, 0) > 0 and not d.retry_opening.is_empty() else d.opening
+
+
+## The simulation judged the date promised in talk `dialog_id` (once): kept, the
+## person's trust rises; broken, they remember it at the next talk.
+func judge_promise(dialog_id: String, kept: bool) -> void:
+	var d: DialogDef = dialogs.get(dialog_id)
+	if d == null or judged.has(dialog_id) or not persons.has(d.person):
+		return
+	judged[dialog_id] = kept
+	if kept:
+		trust[d.person] = clampi(trust[d.person] + PROMISE_KEPT_TRUST, 0, 100)
+		return
+	var remembered: Dictionary = memory.get_or_add(d.person, {"flags": [], "cooldown_until": 0})
+	remembered["flags"].append("promise_broken")
 
 
 # ── A talk ──────────────────────────────────────────────────────────────────
@@ -687,6 +710,7 @@ func to_dict() -> Dictionary:
 		"prompt_log": prompt_log.duplicate(), "last_prompt": last_prompt.duplicate(),
 		"observed": observed.duplicate(true), "talk_log": talk_log.duplicate(true), "note": note.duplicate(),
 		"beat_lines": beat_lines.keys(), "drift_day": drift_day, "drift_carry": drift_carry.duplicate(),
+		"judged": judged.duplicate(),
 	}
 
 
@@ -742,6 +766,7 @@ func load_dict(d: Dictionary) -> Array[String]:
 	for key: Variant in saved_lines if saved_lines is Array else []:
 		if key is String and dialogs.has(key.get_slice("/", 0)):
 			beat_lines[key] = true
+	dropped.append_array(_load_map(d.get("judged"), dialogs, judged, func(v: Variant) -> Variant: return v if v is bool else null))
 	var day: Variant = whole.call(d.get("drift_day"))
 	drift_day = day if day != null else -1
 	dropped.append_array(_load_map(d.get("drift_carry"), persons, drift_carry,

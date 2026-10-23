@@ -73,6 +73,9 @@ var deadline_on_day := -1
 ## What reaches the player once it is done in time (Berichten): [{who (a cast id),
 ## by (call | letter), text}], her call on your phone and her letter on your desk.
 var payoff: Array[Dictionary] = []
+## A milestone's own short line when its moment passes (the toast, UI chrome): "De
+## vorst is er."; "" for the plain one (UiText.MILESTONE_PASSED).
+var missed: String
 var briefing: String
 var debrief: String
 ## Said when the deadline passes (e.g. Henk has retired).
@@ -179,6 +182,7 @@ static func from_dict(d: Dictionary) -> MissionDef:
 	m.scene = str(d.get("scene", ""))
 	m.opens_on_day = _opens_on(d.get("opens_on"))
 	m.deadline_on_day = int(d.get("deadline_on_day", -1))
+	m.missed = str(d.get("missed", ""))
 	var payoff: Variant = d.get("payoff", [])
 	for p: Variant in payoff if payoff is Array else []:
 		var entry := JsonFile.dict_or_empty(p)

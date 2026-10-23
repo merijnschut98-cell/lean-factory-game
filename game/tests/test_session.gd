@@ -693,3 +693,17 @@ func test_the_promised_date_is_checked_by_the_simulation() -> void:
 	assert_true(s.followed.delivered_at < 0)
 	assert_true(s.knows("promise_broken:" + call), "judged on its date: not connected")
 	assert_eq(s.reputation(), reputation + Missions.PROMISE_BROKEN)
+	# It reaches her: remembered at the next call, which she opens from her notebook.
+	assert_eq(s.people.judged, {call: false})
+	assert_true("promise_broken" in s.people.memory["el_amrani"]["flags"])
+	var d := s.people.start(s.people.dialogs[call], s.call("_world", s.people.persons["el_amrani"]))
+	assert_true(s.people.opening(s.people.dialogs[call], d.version).contains("Ik heb mijn schrift voor me"))
+
+
+## The date named on the phone is a real date (the promise UI): {promise_date:N} is
+## the day N days from now, said as people say it.
+func test_a_promised_date_is_named_as_a_date() -> void:
+	var s := _campaign()
+	assert_eq(s.missions.play_day(), 0)
+	assert_eq(s.fill_tokens("Op {promise_date:42}."), "Op maandag 23 november.", "day 0 is Monday 12 October")
+	assert_eq(s.fill_tokens("{promise_date:1}"), "dinsdag 13 oktober")

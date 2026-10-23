@@ -29,6 +29,8 @@ const STORY_MISSION := "walk_connections"
 const PLAY_START_DATE := {"year": 2026, "month": 10, "day": 12, "hour": 0, "minute": 0, "second": 0}
 const WEEKDAYS: Array[String] = ["ma", "di", "wo", "do", "vr", "za", "zo"]
 const MONTHS: Array[String] = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"]
+const WEEKDAY_NAMES: Array[String] = ["maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag", "zondag"]
+static var _PROMISE_DATE := RegEx.create_from_string("\\{promise_date:(\\d+)\\}")
 const MONTH_NAMES: Array[String] = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus",
 	"september", "oktober", "november", "december"]
 ## The training week's first day, and its practice problem (fade_forecast's default).
@@ -747,6 +749,8 @@ func _after(minutes: int) -> void:
 		gemba.grant(new_tools(id))
 	if not missions.in_training():
 		region.start_drift()
+	if people != null:
+		_note_promises()
 	_sync_people()
 	discoveries.update(self)
 
@@ -763,6 +767,15 @@ func _note_story() -> void:
 		missions.facts.add("agreed:%s:%s" % [id, people.agreed[id]])
 	for id: String in people.left:
 		missions.facts.add("left:" + id)
+
+
+## A promised date the simulation judged (Missions: promise_kept / promise_broken)
+## reaches the person it was promised to (People.judge_promise, once).
+func _note_promises() -> void:
+	for id: String in people.agreed:
+		for kept in [true, false]:
+			if missions.knows(("promise_kept:" if kept else "promise_broken:") + id):
+				people.judge_promise(id, kept)
 
 
 ## A milestone's scene as it plays now (SceneScript.play, the facts choosing the
@@ -1072,7 +1085,7 @@ func start_dialog(person_id: String) -> Dictionary:
 		return {"error": "nothing_to_say"}
 	_talk = people.start(d, world)
 	return _filled({"dialog": d.id, "kind": d.kind, "person": p.id, "name": p.name, "short": p.short, "role": p.role,
-		"opening": people.opening(d), "position": _talk.position(), "meter": _talk.meter(), "moves": _talk.moves()})
+		"opening": people.opening(d, _talk.version), "position": _talk.position(), "meter": _talk.meter(), "moves": _talk.moves()})
 
 
 ## The moves of the talk in progress (Dialog.moves); [] when there is none.
@@ -1145,7 +1158,13 @@ func fill_tokens(text: String) -> String:
 	if not "{" in text:
 		return text
 	var born := date_of(followed.born)
-	return player.fill(text).replace("{aanvraag_datum}", "%d %s" % [born["day"], MONTH_NAMES[born["month"] - 1]])
+	var out := player.fill(text).replace("{aanvraag_datum}", "%d %s" % [born["day"], MONTH_NAMES[born["month"] - 1]])
+	for found in _PROMISE_DATE.search_all(out):   # {promise_date:N}: the date N days from now (the promise checked)
+		var t := region.net.time + SimCalendar.days(found.get_string(1).to_int())
+		var date := date_of(t)
+		out = out.replace(found.get_string(), "%s %d %s" % [WEEKDAY_NAMES[SimCalendar.weekday(t - SimCalendar.days(WARMUP_DAYS))],
+			date["day"], MONTH_NAMES[date["month"] - 1]])
+	return out
 
 
 ## Every text in a talk's result, filled (fill_tokens).

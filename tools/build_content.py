@@ -681,6 +681,7 @@ STORY_BY = ["deadline"]  # MissionDef.STORY_BY
 # What reaches the player once a mission is done in time (MissionDef.payoff, Berichten).
 PAYOFF_KEYS = {"who", "by", "text"}
 PAYOFF_BY = ["call", "letter"]  # MissionDef.PAYOFF_BY
+MAX_MISSED_CHARS = 80  # a toast's line
 PLAY_START = date(2026, 10, 12)  # MissionDef.PLAY_START, GameSession.PLAY_START_DATE: day 0 of play
 COACHED_KINDS = ["main", "training"]
 # goal type → (required keys, optional keys). observe: use a gemba tool (or any,
@@ -715,7 +716,7 @@ MISSION_KEYS = {"id", "name", "kind", "tier", "requires", "briefing", "debrief",
                 "fail_closes", "rewards", "insights", "teaches", "check_days", "setup", "act", "chapter", "arc",
                 "fork", "debrief_first", "reopen", "sets_flags", "questions", "debrief_variants", "containment",
                 "ends_with_talk", "deadline_beat", "grant_tools", "steps", "talk_to", "scene", "opens_on",
-                "deadline_on_day", "sets_flags_on_fail", "payoff"}
+                "deadline_on_day", "sets_flags_on_fail", "payoff", "missed"}
 # The objective line's steps (game/src/rules/objective.gd STEPS, MAX_CHARS): a main or
 # training mission may word its own; the problem steps need a goal with a problem; `go`
 # is a scene milestone's way to its room.
@@ -866,6 +867,11 @@ def _validate_milestone(m: dict, where: str) -> None:
             raise ContentError(f"{where}: a story_order goal is judged on its deadline_on_day")
     if _sets_flags(m, where, "sets_flags_on_fail") and not ("deadline_days" in m or "deadline_on_day" in m):
         raise ContentError(f"{where}: 'sets_flags_on_fail' needs a deadline")
+    if "missed" in m:  # the toast when a milestone's moment passes: one short line of UI
+        _require_strings(m, ["missed"], where)
+        if m["kind"] != "milestone" or "deadline_on_day" not in m or len(m["missed"]) > MAX_MISSED_CHARS:
+            raise ContentError(f"{where}: 'missed' is a milestone's line (with deadline_on_day), "
+                               f"at most {MAX_MISSED_CHARS} characters")
     payoff = m.get("payoff", [])
     if not isinstance(payoff, list) or not all(isinstance(e, dict) for e in payoff):
         raise ContentError(f"{where}: 'payoff' lists {{who, by, text}}")
@@ -1714,13 +1720,14 @@ PROPOSAL_KEYS = {"id", "label", "say", "kpis", "addresses", "reply", "hidden", "
 # A proposal that promises the person something the game checks later (D9
 # talks audit A4; the check is 2.4b): {kind, days}.
 PROMISE_KINDS = ["delivery_date", "callback"]
+_PROMISE_DATE = re.compile(r"\{promise_date:(\d+)\}")
 # A persuasion speaks its own outcomes in the person's voice; the bank's are a
 # narrator, kept for check-ins and experts (tier-1 content audit C9).
 PERSUADE_OUTCOMES = ["commitment", "partial", "heard", "compliance", "ruined"]
 # A bank reply never carries these: whether a summary or a named feeling lands
 # must depend on what this person said (tier-1 content audit C8).
 BANK_UNTAGGED = {"claim", "feeling"}
-VARIANT_KEYS = {"needs", "mood", "position", "layers"}
+VARIANT_KEYS = {"needs", "mood", "position", "layers", "opening"}  # opening: said first in this version
 
 
 def _line(item: Any, where: str) -> dict:
@@ -1939,6 +1946,12 @@ def _validate_dialog(d: dict, where: str) -> None:
                 raise ContentError(f"{at}: a promise is {{kind, days}}")
             _one_of(promise, "kind", PROMISE_KINDS, f"{at} promise")
             _number(promise, "days", f"{at} promise", 1, 365, integer=True)
+        # {promise_date:N}: the date named, N days from the talk (GameSession.fill_tokens); it
+        # must be the date the promise is checked on.
+        for text in (item["say"], item.get("reply", "")):
+            for n in _PROMISE_DATE.findall(text):
+                if item.get("promise", {}).get("kind") != "delivery_date" or int(n) != item["promise"]["days"]:
+                    raise ContentError(f"{at}: {{promise_date:{n}}} must name its delivery_date promise's days")
         if is_proposal and "reply" not in item:
             raise ContentError(f"{at}: a proposal needs the person's reply")
         if not isinstance(item.get("hidden", False), bool):
@@ -1993,6 +2006,8 @@ def _validate_dialog(d: dict, where: str) -> None:
             _one_of(variant, "mood", DIALOG_MOODS, at)
         if "position" in variant:
             _line(variant["position"], f"{at} position")
+        if "opening" in variant:
+            _require_strings(variant, ["opening"], at)
         if "layers" in variant:
             _layers(variant["layers"], at)
     if "prompt" in d:

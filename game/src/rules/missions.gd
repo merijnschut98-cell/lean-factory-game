@@ -638,10 +638,13 @@ func _fail(m: MissionDef) -> void:
 	region.close_countermeasures(m.fail_closes)
 	for flag in m.sets_flags_on_fail:
 		facts.add(flag)
+	var event := {"type": "failed", "mission": m.id}
 	if m.kind == "milestone":
 		progress.erase(m.id)
-	region.earn_reputation(MILESTONE_MISSED if m.kind == "milestone" else Reputation.DEADLINE_MISSED, "deadline")
-	events.append({"type": "failed", "mission": m.id})
+		event.merge({"milestone": true, "text": m.missed})
+	region.earn_reputation(MILESTONE_MISSED if m.kind == "milestone" else Reputation.DEADLINE_MISSED,
+		"milestone" if m.kind == "milestone" else "deadline")
+	events.append(event)
 
 
 ## Ask the coach. With no mission named, about the main mission (or, before
