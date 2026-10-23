@@ -114,7 +114,7 @@ static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, t
 	s.missions.talk_outcome = s.talk_outcome
 	s.missions.talked = s.talked
 	s.missions.can_talk = s.can_talk
-	s.missions.topics_heard = func(dialog_id: String) -> int: return s.people.asked_topics(dialog_id).size()
+	s.missions.topics_heard = s.topics_heard
 	s.missions.promises = s.people.promises
 	s.missions.play_start = SimCalendar.days(WARMUP_DAYS)
 	s.discoveries = Discoveries.new(s.catalog.discoveries)
@@ -1211,6 +1211,11 @@ func end_dialog() -> Dictionary:
 ## (Missions.talk_outcome).
 func talk_outcome(dialog_id: String) -> String:
 	return people.effective_outcome(dialog_id, people.facts(_facts()))
+
+
+## How many topics of an expert talk were heard (Missions.topics_heard).
+func topics_heard(dialog_id: String) -> int:
+	return people.asked_topics(dialog_id).size()
 
 
 ## Whether a dialog was had (Missions.talked); a talk the content does not
