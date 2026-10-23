@@ -606,6 +606,12 @@ class Persona extends RefCounted:
 				return true
 			"story_order":
 				return false  # the simulation judges it on its day: nothing to do but play on
+			"talk_to" when m.goal_topics > 0:  # an expert talk's topics (talk_netplanner): have the talk
+				var code := _converse(s.people.dialogs[m.goal_dialog])
+				if code.begins_with("error:"):
+					_dead_end("expert_talk_refused", m.id, code)
+					_give_up(m)
+				return true
 		_dead_end("unknown_goal", m.id, m.goal_type)
 		_give_up(m)
 		return true
