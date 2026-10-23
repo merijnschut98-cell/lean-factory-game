@@ -172,7 +172,9 @@
    "floor": "second",
    "id": "ruud_office",
    "name": "Directeur Netbeheer",
-   "opens_with": [],
+   "opens_with": [
+    "review_100_days"
+   ],
    "places": []
   },
   {

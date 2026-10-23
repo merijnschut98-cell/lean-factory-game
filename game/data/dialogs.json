@@ -433,6 +433,27 @@
    ]
   },
   {
+   "id": "study_board",
+   "lines": [
+    "Hoeveel netstudies staan er nu op het bord?",
+    "Meer dan vorige week. Kort gezegd: te veel."
+   ],
+   "load": "busy",
+   "teams": [
+    "grid_analysts"
+   ]
+  },
+  {
+   "id": "no_date_to_give",
+   "lines": [
+    "Belde die ondernemer van het bedrijventerrein weer?",
+    "Twee keer vandaag al. Hij wil een datum, en die heb ik niet."
+   ],
+   "teams": [
+    "key_accounts"
+   ]
+  },
+  {
    "id": "charging_plaza",
    "lines": [
     "Past dat laadplein nog op het net, denk je?",
@@ -5599,6 +5620,13 @@
     "Ha {speler}. Kom je weer even kijken? Prima.",
     "Hoi {speler}. Sinds 1987 sta ik hier elke ochtend. Jij bent er ook vroeg bij.",
     "Ha {speler}. Er staat koffie in de keet, als je wilt."
+   ]
+  },
+  "ingrid": {
+   "day": [
+    "Hoi {speler}. Ik zit vandaag de hele dag met de onderhoudsplanning. Kans maal gevolg, weet je wel.",
+    "Hé {speler}. Als je ooit een eerlijk antwoord wilt over de staat van het net, loop gerust even binnen.",
+    "Hoi {speler}. Ik ben de storingen van vorig jaar aan het doorlopen. Er zit een patroon in, denk ik."
    ]
   },
   "joost": {

@@ -88,14 +88,14 @@ rooms:
     places: []
     opens_with: [review_100_days]   # day 100 (its scene plays here); the ACM visit, hoshin: their missions open it
   # Ruud's office (Merijn, 2026-10-16, Q10). In Act 0-I he sits with Aansluitingen by choice
-  # (the coach's room on the 1e: "Boven zit ik te ver van het werk."), so it stays shut until a
-  # mission opens the 2e for him (Act II). Phase 3: Frank Hulshof takes this office in the
+  # (the coach's room on the 1e: "Boven zit ik te ver van het werk."), so it stays shut until day 100; then he moves back up
+  # (the coach's room on the 1e becomes the team's overlegkamer). Phase 3: Frank Hulshof takes this office in the
   # interim year (Act IV); the room shows it by the sponsor/regime fact.
   - id: ruud_office
     floor: second
     name: Directeur Netbeheer
     places: []
-    opens_with: []
+    opens_with: [review_100_days]   # day 100: he moves back up (cast.json `moves`)
 
   # De werf (PLAN 2.2, docs/superpowers/specs/2026-10-17-the-yard.md): the field steps' home
   # until the town exists. Each opens with every mission that leads to one of its places.
