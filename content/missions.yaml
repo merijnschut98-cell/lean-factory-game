@@ -871,10 +871,8 @@ missions:
 
 
   # ── Act I sides from the catalogue (mission-system spec §3.3; phase-2 design §3.2) ──
-  # The sector arc's first side: why is the grid full? Femke answers at her board and at
-  # the congestion study, the two places she works (her questions in places.yaml). An
-  # expert talk with topics (`kind: expert`, S2-K) can replace the questions once it is
-  # in the rules; the goal stays "hear it from Femke".
+  # The sector arc's first side: why is the grid full? Femke explains in her expert talk
+  # (femke_expert, dialogs.yaml); two of its topics heard meet the goal.
   - id: talk_netplanner
     name: Waarom is het net vol?
     kind: side
@@ -884,11 +882,9 @@ missions:
     requires: {missions: [training_fri]}
     briefing: "Je hoort het overal in dit gebouw: het net is vol. Maar wat betekent dat voor een straat in Nova-Oost? Femke de Wit van Netstrategie weet het beter dan wie ook. Ze heeft het druk, dus neem koffie mee. Vraag haar hoe een netstudie gaat, en hoe ze ziet of een station vol is."
     debrief: "Een wijk krijgt stroom via een middenspanningsruimte, en die is ontworpen op wat een straat tegelijk vraagt. Een warmtepomp en een laadpaal vragen meer, en vaak op hetzelfde moment. Femke rekent dat elke dag door. Je weet nu waar haar bord vandaan komt."
-    goal: {type: observe, places: [connections.grid_study, congestion.congestion_study], tool: conversation}
+    goal: {type: talk_to, dialog: femke_expert, topics: 2}
     steps:
-      look:
-        connections.grid_study: "Vraag Femke bij haar bord hoe een netstudie gaat"
-        congestion.congestion_study: "Vraag Femke hoe ze ziet of een station vol is"
+      talk: "Vraag Femke (Netstrategie) waarom het net vol is"
     teaches: [netcongestie, middenspanningsruimte, transformator]
     rewards: {xp: 150, trust: {grid_analysts: 1}}
 

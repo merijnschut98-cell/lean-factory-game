@@ -114,6 +114,7 @@ static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, t
 	s.missions.talk_outcome = s.talk_outcome
 	s.missions.talked = s.talked
 	s.missions.can_talk = s.can_talk
+	s.missions.topics_heard = func(dialog_id: String) -> int: return s.people.asked_topics(dialog_id).size()
 	s.missions.promises = s.people.promises
 	s.missions.play_start = SimCalendar.days(WARMUP_DAYS)
 	s.discoveries = Discoveries.new(s.catalog.discoveries)

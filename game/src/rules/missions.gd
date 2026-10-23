@@ -142,6 +142,9 @@ var talked: Callable = func(_dialog_id: String) -> bool: return true
 ## goal with someone who left is waived, a closed door and never a dead end. Without
 ## people (rules alone) there is nobody to talk to, so nothing waits.
 var can_talk: Callable = func(_dialog_id: String) -> bool: return false
+## How many topics of an expert talk were heard (GameSession: People.asked_topics), for a
+## talk_to goal on an expert talk (MissionDef.goal_topics).
+var topics_heard: Callable = func(_dialog_id: String) -> int: return 0
 ## The promises agreed in talks (GameSession hands in People.promises): dialog id →
 ## {proposal, kind, days, at}. A story_order goal's `promise` dialog is checked by them.
 var promises: Callable = func() -> Dictionary: return {}
@@ -918,6 +921,8 @@ func _goal_met(m: MissionDef) -> bool:
 					return false
 			return seen.size() >= m.goal_uses
 		"talk_to":
+			if m.goal_topics > 0:
+				return topics_heard.call(m.goal_dialog) >= m.goal_topics
 			return _talk_met(m.goal_dialog, m.goal_outcome)
 		"scene":
 			return progress[m.id].get("played", false)

@@ -87,6 +87,9 @@ var goal_problem: String
 ## talk_to: the dialog, and the least outcome that meets the goal.
 var goal_dialog: String
 var goal_outcome := "commitment"
+## talk_to with an expert talk (kind expert): how many of its topics must have been heard
+## (0: a persuasion, judged by goal_outcome).
+var goal_topics := 0
 ## A talk of this mission that must have been had, however it went, before
 ## the goal counts (Monday ends with Anouk at seven: D9 talks audit A2); "".
 var ends_with_talk: String
@@ -202,6 +205,7 @@ static func from_dict(d: Dictionary) -> MissionDef:
 	m.goal_uses = int(goal.get("uses", 1))
 	m.goal_dialog = str(goal.get("dialog", ""))
 	m.goal_outcome = str(goal.get("outcome", "commitment"))
+	m.goal_topics = int(goal.get("topics", 0))
 	m.goal_story = str(goal.get("story", ""))
 	m.goal_by = str(goal.get("by", ""))
 	m.goal_met_if = JsonFile.dict_or_empty(goal.get("met_if")).duplicate(true)

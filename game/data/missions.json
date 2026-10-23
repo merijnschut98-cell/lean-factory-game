@@ -1281,12 +1281,9 @@
    "briefing": "Je hoort het overal in dit gebouw: het net is vol. Maar wat betekent dat voor een straat in Nova-Oost? Femke de Wit van Netstrategie weet het beter dan wie ook. Ze heeft het druk, dus neem koffie mee. Vraag haar hoe een netstudie gaat, en hoe ze ziet of een station vol is.",
    "debrief": "Een wijk krijgt stroom via een middenspanningsruimte, en die is ontworpen op wat een straat tegelijk vraagt. Een warmtepomp en een laadpaal vragen meer, en vaak op hetzelfde moment. Femke rekent dat elke dag door. Je weet nu waar haar bord vandaan komt.",
    "goal": {
-    "places": [
-     "connections.grid_study",
-     "congestion.congestion_study"
-    ],
-    "tool": "conversation",
-    "type": "observe"
+    "dialog": "femke_expert",
+    "topics": 2,
+    "type": "talk_to"
    },
    "id": "talk_netplanner",
    "kind": "side",
@@ -1303,10 +1300,7 @@
     "xp": 150
    },
    "steps": {
-    "look": {
-     "congestion.congestion_study": "Vraag Femke hoe ze ziet of een station vol is",
-     "connections.grid_study": "Vraag Femke bij haar bord hoe een netstudie gaat"
-    }
+    "talk": "Vraag Femke (Netstrategie) waarom het net vol is"
    },
    "teaches": [
     "netcongestie",

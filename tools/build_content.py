@@ -724,7 +724,7 @@ MISSION_GOALS = {
     "walk": ({"stream"}, set()), "investigate": ({"problem", "clues"}, set()), "solve": ({"problem"}, set()),
     "observe": ({"places"}, {"tool", "uses"}), "check": ({"problem"}, set()),
     "sustain": ({"problem"}, set()), "rework_fix": ({"problem"}, set()),
-    "talk_to": ({"dialog"}, {"outcome"}),
+    "talk_to": ({"dialog"}, {"outcome", "topics"}),  # topics: an expert talk's topics heard
     # scene: the milestone's `scene` (content/scenes.yaml) played; story_order (drie winters
     # S12): met_if holds by the deadline_on_day, and the date promised in `promise`'s call
     # is checked on its day (Missions._judge_promises).
@@ -1092,6 +1092,8 @@ def _validate_goal(goal: Any, where: str) -> None:
         _require_strings(goal, ["dialog"], f"{where} goal")
         if "outcome" in goal:
             _one_of(goal, "outcome", TALK_OUTCOMES, f"{where} goal")
+        if "topics" in goal:
+            _number(goal, "topics", f"{where} goal", 1, integer=True)
     if goal["type"] == "observe":
         places = _string_list(goal, "places", f"{where} goal", allow_empty=False)
         if "tool" in goal and goal["tool"] not in TOOLS:
@@ -2377,9 +2379,15 @@ def _check_talk_goals(docs: dict[str, Any]) -> None:
         if talk is not None and dialogs and dialogs.get(talk, {}).get("mission") != m["id"]:
             raise ContentError(f"missions.yaml: mission '{m['id']}': ends_with_talk names no dialog of its own: {talk!r}")
         names = [t["dialog"] for t in m.get("talk_to", [])] if dialogs else []  # a fixture without dialogs
-        if m["goal"]["type"] == "talk_to":
-            names.append(m["goal"]["dialog"])
         where = f"missions.yaml: mission '{m['id']}'"
+        topics = m["goal"].get("topics") if m["goal"]["type"] == "talk_to" else None
+        if topics is not None:
+            # An expert talk as the goal: enough topics to hear (the persuasion rules below do not apply).
+            d = dialogs.get(m["goal"]["dialog"], {})
+            if dialogs and (d.get("kind") != "expert" or d.get("mission") != m["id"] or len(d.get("topics", [])) < topics):
+                raise ContentError(f"{where}: a goal on {topics} topics names an expert talk of its own with that many")
+        elif m["goal"]["type"] == "talk_to":
+            names.append(m["goal"]["dialog"])
         for name in names:
             d = dialogs.get(name)
             if d is None:
