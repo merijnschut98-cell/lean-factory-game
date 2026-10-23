@@ -112,6 +112,30 @@ func walking() -> bool:
 	return not route.is_empty()
 
 
+## Seated at `at` (office space; the van ride's passenger seat): no gravity, no walking,
+## the sit clip, until stand().
+func sit(at: Transform3D) -> void:
+	stop()
+	set_physics_process(false)
+	velocity = Vector3.ZERO
+	position = at.origin
+	face(at.basis)
+	if _animations != null and _animations.has_animation("sit"):
+		_animations.play("sit", 0.2)
+		_animations.speed_scale = 1.0
+
+
+## Up again (stood where the caller puts them): gravity and walking back.
+func stand() -> void:
+	set_physics_process(true)
+	velocity = Vector3.ZERO
+	_animate("idle")
+
+
+func seated() -> bool:
+	return not is_physics_processing()
+
+
 ## The floor direction of WASD `input` (x right, y back) seen from `yaw`.
 static func walk_direction(input: Vector2, yaw: float) -> Vector3:
 	return (Basis(Vector3.UP, yaw) * Vector3(input.x, 0, input.y)).normalized()

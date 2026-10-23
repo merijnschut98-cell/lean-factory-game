@@ -32,7 +32,7 @@ def test_the_real_building_is_valid_with_three_floors_and_the_planned_rooms():
         "ground": ["Ontvangst", "Klantcontactcentrum", "Kantine"],
         "first": ["Aansluitingen", "Revisie & GIS", "Meetdata & registratie"],
         "second": ["Directie & Obeya", "Netstrategie", "Congestiedesk", "MT-kamer", "Directeur Netbeheer"],
-        "yard": ["Magazijn", "Werkplaats & storingsdienst", "Bussen"],
+        "yard": ["Magazijn", "Werkplaats & storingsdienst", "Bussen", "Opleidingsterrein"],
     }
     assert world["start_floor"] == "first"
     assert _room(world, "connections")["opens_with"] == ["start"], "the existing floor is open from the start"
@@ -74,12 +74,41 @@ def test_the_yard_is_an_outside_area_of_the_begane_grond_with_the_field_steps():
     yard = next(f for f in world["floors"] if f["id"] == "yard")
     assert yard["outside_of"] == "ground" and "level" not in yard, "reached by a door, never by the stairs"
     rooms = {r["id"]: r for r in world["rooms"] if r["floor"] == "yard"}
-    assert set(rooms) == {"magazijn", "werkplaats", "van_park"}
+    assert set(rooms) == {"magazijn", "werkplaats", "van_park", "opleidingsterrein"}
     assert set(rooms["magazijn"]["places"]) == {"outages.joint", "connections.materials", "meters.reserve_meter"}
     assert {"outages.repair", "meters.visit"} == set(rooms["van_park"]["places"])
     assert "outages.locate" in rooms["werkplaats"]["places"]
     assert not any("start" in r["opens_with"] for r in rooms.values()), "nothing on the yard is open from the start"
     assert "fix_wrong_joint" in rooms["magazijn"]["opens_with"], "Dirk's talk"
+
+
+def test_the_opleidingsterrein_opens_with_henks_knowledge():
+    # PLAN 2.3: a small fenced training ground off the yard where Henk teaches Ahmed by doing.
+    room = _room(REAL["world"], "opleidingsterrein")
+    assert room["floor"] == "yard" and room["places"] == []
+    assert room["opens_with"] == ["save_henks_knowledge"]
+
+
+def test_the_three_yard_sides_ride_out_in_a_van():
+    # The van ride (design §1.7): you sit beside the monteur, the ride ends at the side's field step.
+    rides = {r["mission"]: (r["with"], r["to"]) for r in REAL["world"]["rides"]}
+    assert rides == {"fix_wrong_joint": ("ahmed", "outages.repair"), "fix_not_at_home": ("sandra", "meters.visit"),
+                     "save_henks_knowledge": ("henk", "outages.locate")}
+
+
+@pytest.mark.parametrize("mutate, message", [
+    (lambda w: w["rides"].append({"mission": "fix_ghost", "with": "henk", "to": "outages.locate"}),
+     "ride: unknown mission 'fix_ghost'"),
+    (lambda w: w["rides"].append(dict(w["rides"][0])), "two rides for mission"),
+    (lambda w: w["rides"][0].update(to="connections.intake"), "not a place on the yard"),
+    (lambda w: w["rides"][1].update(to="outages.joint"), "does not open"),
+    (lambda w: w["rides"][0].update(**{"with": "anouk"}), "has no van"),
+    (lambda w: w["rides"][0].update(**{"with": "nobody"}), "not in the cast"),
+    (lambda w: w["rides"][0].update(by="bike"), "unknown key"),
+])
+def test_a_ride_is_checked(mutate, message):
+    with pytest.raises(bc.ContentError, match=message):
+        _check(mutate)
 
 
 @pytest.mark.parametrize("mutate, message", [

@@ -1280,6 +1280,9 @@ def _maturity(problems: dict, practice: set, done: set, index: dict) -> int:
 # ── world.yaml (the head office: floors and rooms, PLAN 2.1) ─────────────────
 WORLD_FLOOR_KEYS = {"id", "name", "level", "outside_of", "model"}
 WORLD_ROOM_KEYS = {"id", "floor", "name", "places", "opens_with"}
+# The van ride (design §1.7): a side rides out with its monteur from the van park.
+WORLD_RIDE_KEYS = {"mission", "with", "to"}
+VAN_ROOM = "van_park"
 _MODEL = re.compile(r"^[a-z][a-z0-9_]*\.glb$")
 # Missions made during play (game/src/rules/missions.gd CHECKIN_PREFIX, repairs.gd
 # PREFIX): a room may open with any of them ("terugval_*").
@@ -1290,7 +1293,7 @@ OPEN_FROM_START = "start"
 def validate_world(doc: Any, source: str) -> None:
     if not isinstance(doc, dict):
         raise ContentError(f"{source}: expected a mapping at the top level")
-    _known_keys(doc, {"start_floor", "floors", "rooms"}, source)
+    _known_keys(doc, {"start_floor", "floors", "rooms", "rides"}, source)
     floors = _entries(doc, "floors", source)
     levels: dict[int, str] = {}
     for f in floors:
@@ -1324,6 +1327,13 @@ def validate_world(doc: Any, source: str) -> None:
     for f in floors:
         if not any(r["floor"] == f["id"] for r in rooms):
             raise ContentError(f"{source}: floor '{f['id']}' has no rooms")
+    rides = doc.get("rides", [])
+    if not isinstance(rides, list) or not all(isinstance(r, dict) for r in rides):
+        raise ContentError(f"{source}: 'rides' must be a list of mappings")
+    for ride in rides:
+        where = f"{source}: ride {ride.get('mission')!r}"
+        _known_keys(ride, WORLD_RIDE_KEYS, where)
+        _require_strings(ride, sorted(WORLD_RIDE_KEYS), where)
 
 
 def _mission_places(m: dict, problems: dict, streams: dict) -> set[str]:
@@ -1338,6 +1348,32 @@ def _mission_places(m: dict, problems: dict, streams: dict) -> set[str]:
         places.add(p["step"])
         places |= {c.get("at", p["step"]) for c in p.get("clues", [])}
     return places
+
+
+def _check_rides(world: dict, missions: dict, room_of: dict[str, str]) -> None:
+    """A ride: one per mission, which opens the van park; its monteur is in the cast with a
+    van; it ends at a place on the yard in a room the mission opens."""
+    rooms = {r["id"]: r for r in world["rooms"]}
+    vans = {str(c["id"]): (c.get("office") or {}).get("van") for c in _cast_entries()}
+    seen: set[str] = set()
+    for ride in world.get("rides", []):
+        mission, who, to = ride["mission"], ride["with"], ride["to"]
+        where = f"world.yaml: ride {mission!r}"
+        if mission not in missions:
+            raise ContentError(f"world.yaml: ride: unknown mission {mission!r}")
+        if mission in seen:
+            raise ContentError(f"{where}: two rides for mission {mission!r}")
+        seen.add(mission)
+        if who not in vans:
+            raise ContentError(f"{where}: {who!r} is not in the cast ({CAST_FILE.name})")
+        if not isinstance(vans[who], int) or isinstance(vans[who], bool):
+            raise ContentError(f"{where}: {who!r} has no van (cast.json office.van)")
+        room = rooms.get(room_of.get(to, ""))
+        if room is None or room["floor"] != "yard":
+            raise ContentError(f"{where}: {to!r} is not a place on the yard")
+        for needed in (room, rooms.get(VAN_ROOM)):
+            if needed is not None and mission not in needed["opens_with"]:
+                raise ContentError(f"{where}: room '{needed['id']}' does not open with it")
 
 
 def check_world(docs: dict[str, Any]) -> None:
@@ -1371,6 +1407,7 @@ def check_world(docs: dict[str, Any]) -> None:
             if room is not None and OPEN_FROM_START not in room["opens_with"] and m["id"] not in room["opens_with"]:
                 raise ContentError(f"world.yaml: mission '{m['id']}' leads to {place!r} in room '{room['id']}', "
                                    f"which does not open with it")
+    _check_rides(world, missions, room_of)
     for f in world["floors"]:
         if not (OFFICE_ASSETS / f["model"]).is_file():
             # The game would load the stand-in office for this floor without a word.
@@ -1790,12 +1827,22 @@ def _lines(value: Any, where: str) -> None:
         raise ContentError(f"{where}: a list of spoken lines, each a non-empty text")
 
 
-def _cast_ids() -> list[str]:
+def _cast_entries() -> list[dict]:
+    """The cast list's people (cast.json), the player left out."""
     try:
         cast = json.loads(CAST_FILE.read_text(encoding="utf-8"))["characters"]
-        return [str(c["id"]) for c in cast if c.get("id") != "player"]
+        out = [c for c in cast if c.get("id") != "player"]
+        for c in out:
+            str(c["id"])
+            if not isinstance(c.get("office") or {}, dict):
+                raise TypeError(f"{c['id']}: office is not a mapping")
+        return out
     except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
         raise ContentError(f"{CAST_FILE.name}: cannot read the cast ({exc})") from exc
+
+
+def _cast_ids() -> list[str]:
+    return [str(c["id"]) for c in _cast_entries()]
 
 
 def _validate_passing(doc: dict, source: str) -> None:

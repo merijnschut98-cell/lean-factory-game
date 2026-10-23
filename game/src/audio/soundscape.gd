@@ -18,6 +18,7 @@ const SOUNDS := {
 	"door_open": ["door_open.ogg"], "door_close": ["door_close.ogg"],
 	"lift_ding": ["lift_ding.ogg"], "lift_door": ["lift_door.ogg"],
 	"shutter": ["shutter.ogg"], "van_start": ["van_start.ogg"], "van_drive": ["van_drive.ogg"],
+	"van_cab": ["van_cab.ogg"],   # the van ride's cab, on a loop (made for Spanning, SOURCES.md)
 	"street": ["street_evening.ogg"],
 	"phone_buzz": ["phone_buzz.ogg"],   # made for Spanning (SOURCES.md): no CC0 vibration found
 }
@@ -256,6 +257,22 @@ static func play_at(parent: Node, id: String, path: String = Settings.PATH, volu
 
 func play(id: String, volume_db := 0.0) -> AudioStreamPlayer:
 	return play_at(self, id, settings_path, volume_db)
+
+
+## Sound `id` on a loop under `parent` until the caller frees it (the van ride's cab); null
+## when muted or missing. Starts when `parent` is in the tree.
+func loop_under(parent: Node, id: String, volume_db := 0.0) -> AudioStreamPlayer:
+	if muted(settings_path) or SOUNDS.get(id, []).is_empty():
+		return null
+	var stream := _looping(id)
+	if stream == null:
+		return null
+	var player := AudioStreamPlayer.new()
+	player.stream = stream
+	player.volume_db = volume_db + linear_to_db(maxf(master(settings_path), 0.001))
+	player.autoplay = true
+	parent.add_child(player)
+	return player
 
 
 ## Arriving on a floor: the lift's ding and doors, or the yard's back door behind you.

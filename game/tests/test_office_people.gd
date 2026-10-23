@@ -112,6 +112,8 @@ func test_henk_and_ahmed_come_only_with_their_missions() -> void:
 	assert_false(henk.visible, "Henk is not on the outage walk")
 	assert_true(ahmed.visible, "Ahmed comes for the outage walk")
 	session.active = [_mission("save_henks_knowledge")]
+	_take(office, "save_henks_knowledge")   # opens the opleidingsterrein, where they work (PLAN 2.3)
+	office.reload_rooms()
 	office.people.refresh(session)
 	assert_true(henk.visible and ahmed.visible, "both for Henk's knowledge")
 	assert_eq(office.people.person_near(henk.position, Office.REACH), henk, "and can be talked to")
@@ -261,21 +263,30 @@ func test_every_speaker_has_a_body_and_is_there_while_their_talk_is_open() -> vo
 	office.free()
 
 
-func test_the_yard_has_its_people_dirk_at_his_counter_henk_and_ahmed_in_the_werkplaats() -> void:
+## The yard's people (spec 2026-10-17 §5, PLAN 2.15 S2-Y): Dirk at his counter, Ahmed at the
+## werkplaats's on-call table for the outage walk; for Henk's knowledge Henk waits by the
+## storingsbus to take you along (the van ride) and Ahmed practises at the opleidingsterrein.
+func test_the_yard_has_its_people_dirk_at_his_counter_henk_and_ahmed_where_their_missions_put_them() -> void:
 	var office := _office()
-	_take(office, "fix_wrong_joint")
+	_take(office, "walk_outages")
 	_take(office, "save_henks_knowledge")
 	office.floors.go_to("yard", "exit", true)
 	var m := office.floors.markers()
 	var magazijn := OfficeFloors.room_rect(m["room:magazijn"])
-	var werkplaats := OfficeFloors.room_rect(m["room:werkplaats"])
-	for who: Array in [["dirk", magazijn], ["henk", werkplaats], ["ahmed", werkplaats]]:
+	var vans := OfficeFloors.room_rect(m["room:van_park"])
+	var training := OfficeFloors.room_rect(m["room:opleidingsterrein"])
+	for who: Array in [["dirk", magazijn], ["henk", vans], ["ahmed", training]]:
 		var p := office.people.person(who[0])
 		assert_true(p != null and p.visible, "%s is on the yard" % who[0])
 		if p != null:
 			assert_true((who[1] as Rect2).has_point(Vector2(p.position.x, p.position.z)), "%s in his room" % who[0])
 			assert_false(office.nav().path(office.player.position, p.position).is_empty(), "%s can be walked up to" % who[0])
 	assert_eq(_cast("dirk")["office"].get("missions", []), [], "the magazijn is Dirk's: he is there whenever it is open")
+	office.session.missions.progress.erase("save_henks_knowledge")
+	office.people.refresh(office.session)
+	var ahmed := office.people.person("ahmed")
+	assert_true(OfficeFloors.room_rect(m["room:werkplaats"]).has_point(Vector2(ahmed.position.x, ahmed.position.z)),
+		"Ahmed at the on-call table for the outage walk")
 	office.free()
 
 
