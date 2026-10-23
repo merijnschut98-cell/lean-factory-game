@@ -1778,7 +1778,8 @@ dialogs:
     name: "Het vierde telefoontje van mevrouw El Amrani"
     person: el_amrani
     kind: persuade
-    mission: fix_status_callers
+    # She rings during the status callers, or before the frost if the player never got there (arc S11).
+    missions: [fix_status_callers, winter_el_amrani]
     mood: gespannen
     patience: 10
     opening: "Goedemiddag. U spreekt met Fatima El Amrani. Ik bel voor de vierde keer, en ik heb ze allemaal opgeschreven."

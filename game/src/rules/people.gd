@@ -185,7 +185,7 @@ func dialog_for(person_id: String, world: Dictionary) -> DialogDef:
 func _rank(d: DialogDef, world: Dictionary, known: Dictionary) -> int:
 	if d.kind == ExpertTalk.KIND:
 		var active: Array = world.get("active", [])
-		var on := d.mission.is_empty() or ([d.mission] + Array(d.also_during)).any(func(m: String) -> bool: return m in active)
+		var on := d.mission.is_empty() or d.on_any(active) or Array(d.also_during).any(func(m: String) -> bool: return m in active)
 		return 0 if on and DialogDef.needs_met(d.needs, known) and _has_open_topic(d, known) else -1
 	if d.kind == "checkin":
 		var below := int(d.trigger.get("morale_below", 101))
@@ -196,10 +196,10 @@ func _rank(d: DialogDef, world: Dictionary, known: Dictionary) -> int:
 	if not (d.requires_clue.is_empty() or world.get("found", {}).has(d.requires_clue)) \
 			or not DialogDef.needs_met(d.needs, known) or effective_outcome(d.id, known) == "commitment":
 		return -1
-	if d.mission in world.get("main", []):
+	if d.on_any(world.get("main", [])):
 		return 2
 	var active: Array = world.get("active", [])
-	return 1 if d.mission in active or Array(d.also_during).any(func(m: String) -> bool: return m in active) else -1
+	return 1 if d.on_any(active) or Array(d.also_during).any(func(m: String) -> bool: return m in active) else -1
 
 
 ## A trigger without a beat always holds; with one (`beats`: id → minutes;

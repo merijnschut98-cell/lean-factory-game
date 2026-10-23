@@ -585,5 +585,4 @@ static func week_ends(s: GameSession, d: DialogDef) -> bool:
 ## Whether this talk belongs to the main mission (the coach talks it over).
 func is_main_talk() -> bool:
 	var d: DialogDef = session.people.dialogs.get(talk.get("dialog", ""))
-	return d != null and not d.mission.is_empty() \
-		and session.missions.active("main").any(func(m: MissionDef) -> bool: return m.id == d.mission)
+	return d != null and d.on_any(session.missions.active("main").map(func(m: MissionDef) -> String: return m.id))

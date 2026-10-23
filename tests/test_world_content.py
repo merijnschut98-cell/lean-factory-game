@@ -54,12 +54,10 @@ def test_every_talk_is_reachable_when_its_mission_is_on():
     world, dialogs = docs["world"], docs["dialogs"]
     people = {p["id"]: p for p in dialogs["people"]}
     for talk in dialogs["dialogs"]:
-        mission = talk.get("mission")
         room = _room_of(world, people[talk["person"]]["place"])
-        if not mission or room is None:
-            continue
-        assert "start" in room["opens_with"] or mission in room["opens_with"], \
-            f"{talk['id']}: {talk['person']} sits in {room['id']}, which does not open with {mission}"
+        for mission in bc.dialog_missions(talk) if room is not None else []:
+            assert "start" in room["opens_with"] or mission in room["opens_with"], \
+                f"{talk['id']}: {talk['person']} sits in {room['id']}, which does not open with {mission}"
 
 
 def test_the_week_opens_the_rooms_its_talks_and_tour_need():
