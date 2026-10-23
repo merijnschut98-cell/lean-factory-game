@@ -138,6 +138,7 @@ rooms:
 rides:
   - {mission: fix_wrong_joint, with: ahmed, to: outages.repair}        # the storingsdienst to the Lindelaan
   - {mission: fix_not_at_home, with: sandra, to: meters.visit}         # Sandra's addresses
+  - {mission: walk_meters, with: sandra, to: meters.visit}             # Acht adressen: a day along with Sandra
   - {mission: save_henks_knowledge, with: henk, to: outages.locate}    # an old paper-lead cable in Nova-Oud
 
 # The tells (PLAN 2.6, design §1.5): the props that read the simulation. Each `id` is a

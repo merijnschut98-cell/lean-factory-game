@@ -37,6 +37,11 @@
    "with": "sandra"
   },
   {
+   "mission": "walk_meters",
+   "to": "meters.visit",
+   "with": "sandra"
+  },
+  {
    "mission": "save_henks_knowledge",
    "to": "outages.locate",
    "with": "henk"

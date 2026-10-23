@@ -87,11 +87,11 @@ def test_the_opleidingsterrein_opens_with_henks_knowledge():
     assert room["opens_with"] == ["save_henks_knowledge"]
 
 
-def test_the_three_yard_sides_ride_out_in_a_van():
+def test_the_yard_sides_ride_out_in_a_van():
     # The van ride (design §1.7): you sit beside the monteur, the ride ends at the side's field step.
     rides = {r["mission"]: (r["with"], r["to"]) for r in REAL["world"]["rides"]}
     assert rides == {"fix_wrong_joint": ("ahmed", "outages.repair"), "fix_not_at_home": ("sandra", "meters.visit"),
-                     "save_henks_knowledge": ("henk", "outages.locate")}
+                     "save_henks_knowledge": ("henk", "outages.locate"), "walk_meters": ("sandra", "meters.visit")}
 
 
 @pytest.mark.parametrize("mutate, message", [
