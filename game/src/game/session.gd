@@ -750,7 +750,7 @@ func _walked_before() -> void:
 func _after(minutes: int) -> void:
 	if minutes > 0:
 		region.advance(minutes)
-	followed.update(region.net)
+	followed.update(region.net, missions.knows("holds:" + FollowedOrder.DEFECT_PROBLEM))
 	_note_story()
 	missions.update()
 	_start_training_day()

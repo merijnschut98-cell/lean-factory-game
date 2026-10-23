@@ -580,7 +580,7 @@ func _work_on(pool: SimPool, order: WorkOrder, minutes: int) -> int:
 ## Whether this attempt fails is known when work starts, so a failed attempt
 ## can cost less than the job (`fail_minutes`).
 func _draw_outcome(order: WorkOrder, step: SimStep) -> void:
-	order.failing = step.ftr < 1.0 and not step.rng.chance(step.ftr)
+	order.failing = order.defect_at == step.id or step.ftr < 1.0 and not step.rng.chance(step.ftr)
 	if order.failing:
 		order.remaining = step.failed_minutes()
 

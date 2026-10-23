@@ -643,6 +643,7 @@ func test_review_100_days_reads_the_facts_and_remembers_the_answer() -> void:
 ## connected before the first frost period.
 func test_winter_el_amrani_is_kept_when_the_followed_order_is_delivered_in_time() -> void:
 	var s := _campaign()
+	s.region.state[FollowedOrder.DEFECT_PROBLEM].phase = ProblemState.Phase.RESOLVED   # the intake catches her document
 	var days := 0
 	while s.missions.status("winter_el_amrani") != "completed" and days < 71:
 		s.wait_days(1.0)

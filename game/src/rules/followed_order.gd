@@ -17,6 +17,14 @@ const START_STEPS := ["intake"]
 ## digging permit, and never the 120-day grid reinforcement (a 15 % draw that would
 ## make winter 1 a coin toss). Real queues decide the rest (WorkOrder.needs).
 const ROUTE := {"grid_study": true, "permit": false, "grid_reinforcement": false}
+## Winter 1's stakes (coordinator's ruling, 2026-10-23; PLAN 1.8a / D14): her
+## application misses a document the intake does not ask for, so every intake sends it
+## back to her and it joins the queue again (the step's own rework wait: her answer,
+## then the queue), until the intake catches missing documents: the fix for
+## DEFECT_PROBLEM in place and holding (the fork's bottleneck branch). She is one order
+## of that problem; the problem itself still arrives only through its mission.
+const DEFECT_STEP := "intake"
+const DEFECT_PROBLEM := "incomplete_application"
 
 ## Week counts in words, for the briefings (index = weeks).
 const WEEK_WORDS := ["één", "één", "twee", "drie", "vier", "vijf", "zes", "zeven", "acht", "negen", "tien", "elf", "twaalf",
@@ -39,18 +47,23 @@ func pick(net: Network) -> void:
 			oldest = o
 	if oldest != null:
 		oldest.needs = ROUTE.duplicate()
+		oldest.defect_at = DEFECT_STEP
 		order_id = oldest.id
 		born = oldest.born
 		_note(oldest)
 
 
-## Where it is now; delivered once it is no longer open.
-func update(net: Network) -> void:
+## Where it is now; delivered once it is no longer open. `caught`: the intake catches
+## the missing document now (DEFECT_PROBLEM's fix holds), so its next intake passes;
+## should the fix slip before it got through, it is sent back again.
+func update(net: Network, caught: bool = false) -> void:
 	if order_id < 0 or delivered_at >= 0:
 		return
 	var stream := net.stream(STREAM)
 	for o in net.open_orders(stream):
 		if o.id == order_id:
+			if o.step_index <= stream.step_index(DEFECT_STEP):
+				o.defect_at = "" if caught else DEFECT_STEP
 			_note(o)
 			return
 	delivered_at = net.time   # when it was noticed, unless the stream says when it was done
@@ -59,6 +72,14 @@ func update(net: Network) -> void:
 			delivered_at = int(stream.finished[i]["done_at"])
 			break
 	_step = ""
+
+
+## The step where the dossier fails every attempt now ("" when caught, or past it).
+func defect_at(net: Network) -> String:
+	for o in net.open_orders(net.stream(STREAM)):
+		if o.id == order_id:
+			return o.defect_at
+	return ""
 
 
 ## The hours of work it has had: every work step before its current one,
