@@ -142,9 +142,6 @@ var talked: Callable = func(_dialog_id: String) -> bool: return true
 ## goal with someone who left is waived, a closed door and never a dead end. Without
 ## people (rules alone) there is nobody to talk to, so nothing waits.
 var can_talk: Callable = func(_dialog_id: String) -> bool: return false
-## The promises agreed in talks (GameSession hands in People.promises): dialog id →
-## {proposal, kind, days, at}. A story_order goal's `promise` dialog is checked by them.
-var promises: Callable = func() -> Dictionary: return {}
 ## When day 0 of play starts (minutes; GameSession: after the warm-up): opens_on and
 ## deadline_on_day count days from it.
 var play_start := 0
@@ -353,19 +350,21 @@ func finish_scene(id: String, fact: String) -> String:
 	return ""
 
 
-## A date promised in a story's call (a story_order goal's `promise`; People.promises,
-## kind delivery_date) is checked on that date: kept when the story was delivered by
-## then, broken otherwise (once each; a broken one costs PROMISE_BROKEN).
+## A date promised in a story's call (a story_order goal's `promise`: the fact
+## promised:<dialog>:<ISO date> GameSession records at the talk) is checked once that
+## day is over: kept when the story was delivered by then, broken otherwise (once
+## each; a broken one costs PROMISE_BROKEN).
 func _judge_promises() -> void:
 	for m: MissionDef in defs.values():
 		if m.goal_promise.is_empty() or knows("promise_kept:" + m.goal_promise) \
 				or knows("promise_broken:" + m.goal_promise):
 			continue
-		var promise: Dictionary = promises.call().get(m.goal_promise, {})
-		if promise.get("kind") != "delivery_date" or int(promise.get("at", -1)) < 0:
-			continue
+		var promised := facts.with_prefix(Facts.PROMISED + m.goal_promise + ":")
+		var day := MissionDef.day_of(promised[0].get_slice(":", 2)) if not promised.is_empty() else -1
+		if day < 0:
+			continue  # no date promised (or an action, such as a callback)
 		var kept := knows("delivered:" + m.goal_story)
-		if not kept and region.net.time < int(promise["at"]) + SimCalendar.days(int(promise.get("days", 0))):
+		if not kept and play_day() <= day:
 			continue
 		facts.add(("promise_kept:" if kept else "promise_broken:") + m.goal_promise)
 		if not kept:
@@ -640,10 +639,13 @@ func _fail(m: MissionDef) -> void:
 	region.close_countermeasures(m.fail_closes)
 	for flag in m.sets_flags_on_fail:
 		facts.add(flag)
+	var event := {"type": "failed", "mission": m.id}
 	if m.kind == "milestone":
 		progress.erase(m.id)
-	region.earn_reputation(MILESTONE_MISSED if m.kind == "milestone" else Reputation.DEADLINE_MISSED, "deadline")
-	events.append({"type": "failed", "mission": m.id})
+		event.merge({"milestone": true, "text": m.missed})
+	region.earn_reputation(MILESTONE_MISSED if m.kind == "milestone" else Reputation.DEADLINE_MISSED,
+		"milestone" if m.kind == "milestone" else "deadline")
+	events.append(event)
 
 
 ## Ask the coach. With no mission named, about the main mission (or, before

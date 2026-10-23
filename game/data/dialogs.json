@@ -3134,8 +3134,8 @@
       "days": 42,
       "kind": "delivery_date"
      },
-     "reply": "Zes weken. Ik schrijf het op, met de datum van vandaag erbij.",
-     "text": "Volgens de planning bent u over een week of zes aangesloten."
+     "reply": "Op {promise_date:42}. Ik schrijf het op, met de datum van vandaag erbij.",
+     "text": "Volgens de planning bent u over een week of zes aangesloten. Op {promise_date:42}."
     },
     {
      "addresses": [
@@ -3212,6 +3212,16 @@
      }
     }
    },
+   "variants": [
+    {
+     "needs": {
+      "all": [
+       "promise_broken:el_amrani_fourth_call"
+      ]
+     },
+     "opening": "Goedemiddag, met Fatima El Amrani. Ik heb mijn schrift voor me. Hier staat: 'Volgens de planning over een week of zes aangesloten.' Met de datum erbij, en uw naam. Die datum is geweest."
+    }
+   ],
    "warning": "Ik heb geen behoefte aan een riedeltje."
   },
   {
