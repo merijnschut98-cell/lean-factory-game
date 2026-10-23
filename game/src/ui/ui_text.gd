@@ -74,6 +74,8 @@ const A3_ERRORS := {
 	"not_check_ready": "De Check is nog niet klaar.",
 	"not_checked": "Doe eerst de Check.",
 	"same_countermeasure": "Deze maatregel heb je hier al geprobeerd. Kies voor het herstel een andere.",
+	# QA 2.12 (c): in a bad period the directie pays only what the region can carry.
+	"no_funds": "Ruud: 'Daar is nu geen geld voor. Wat kun je doen met wat er wel is?'",
 }
 
 ## Refusals at a team's place (GameSession.use_tool and ask).
