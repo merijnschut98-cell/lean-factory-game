@@ -8,9 +8,15 @@ extends RefCounted
 const STREAM := "connections"
 ## The story it is (delivered:<story> once it is connected; a story_order goal's story).
 const STORY := "el_amrani"
-## Where the family's dossier lies when play starts: early in the stream
-## (Anouk's tray in the training week).
-const START_STEPS := ["intake", "design"]
+## Where the family's dossier lies when play starts: at intake, the whole stream ahead
+## (PLAN 1.8a / D14: picked further on, at Werkvoorbereiding, it was connected within
+## days of the start whatever the player did).
+const START_STEPS := ["intake"]
+## A heavier connection (a heat pump on a house whose aansluiting is too light): it
+## takes the netcheck when that is still ahead, and is done in the meter cabinet: no
+## digging permit, and never the 120-day grid reinforcement (a 15 % draw that would
+## make winter 1 a coin toss). Real queues decide the rest (WorkOrder.needs).
+const ROUTE := {"grid_study": true, "permit": false, "grid_reinforcement": false}
 
 ## Week counts in words, for the briefings (index = weeks).
 const WEEK_WORDS := ["één", "één", "twee", "drie", "vier", "vijf", "zes", "zeven", "acht", "negen", "tien", "elf", "twaalf",
@@ -32,6 +38,7 @@ func pick(net: Network) -> void:
 		if o.current_step().id in START_STEPS and (oldest == null or o.born < oldest.born):
 			oldest = o
 	if oldest != null:
+		oldest.needs = ROUTE.duplicate()
 		order_id = oldest.id
 		born = oldest.born
 		_note(oldest)
@@ -41,11 +48,16 @@ func pick(net: Network) -> void:
 func update(net: Network) -> void:
 	if order_id < 0 or delivered_at >= 0:
 		return
-	for o in net.open_orders(net.stream(STREAM)):
+	var stream := net.stream(STREAM)
+	for o in net.open_orders(stream):
 		if o.id == order_id:
 			_note(o)
 			return
-	delivered_at = net.time
+	delivered_at = net.time   # when it was noticed, unless the stream says when it was done
+	for i in range(stream.finished.size() - 1, -1, -1):
+		if stream.finished[i].get("order", -1) == order_id:
+			delivered_at = int(stream.finished[i]["done_at"])
+			break
 	_step = ""
 
 

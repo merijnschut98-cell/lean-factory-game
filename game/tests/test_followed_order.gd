@@ -14,16 +14,34 @@ func _session() -> GameSession:
 func test_the_el_amrani_dossier_is_a_real_order() -> void:
 	var s := _session()
 	var dossier := s.followed_order()
-	assert_true(dossier["step"] in ["intake", "design"], "it waits early in the stream: %s" % dossier)
+	assert_eq(dossier["step"], "intake", "the whole stream ahead: %s" % dossier)
 	assert_true(dossier["age_days"] > 0.0)
 	assert_eq(dossier["delivered_days"], -1.0)
 	var age: float = dossier["age_days"]
 	assert_eq(s.wait_days(7), "")
 	assert_near(s.followed_order()["age_days"], age + 7.0, 0.01)
-	s.wait_days(200)
+	for week in 29:   # looked at once a week, as a player passing by would
+		s.wait_days(7)
 	var done := s.followed_order()
 	assert_true(done["delivered_days"] > 0.0, "delivered at last: %s" % done)
 	assert_true(done["touch_hours"] > 1.0, "hours of work against weeks of waiting")
+
+
+## A heavier connection (winter 1's stakes, PLAN 1.8a / D14): the heat pump needs more
+## than the house has, so the dossier always takes the netcheck, never a permit or a
+## reinforcement (a meter-cabinet job), whatever the stream's shares say.
+func test_the_dossier_is_a_heavier_connection_with_its_own_route() -> void:
+	var s := _session()
+	var o: WorkOrder = s.region.net.open_orders(s.region.net.stream(FollowedOrder.STREAM)).filter(
+		func(w: WorkOrder) -> bool: return w.id == s.followed.order_id)[0]
+	assert_eq(o.needs, FollowedOrder.ROUTE)
+	var copy := WorkOrder.from_dict(bytes_to_var(var_to_bytes(o.to_dict())), o.stream)
+	assert_eq(copy.needs, o.needs, "saved with the order")
+	var stream := s.region.net.stream(FollowedOrder.STREAM)
+	for i in 20:   # the stream's shares no longer decide for this order
+		assert_true(s.region.net.call("_needed", stream.steps[stream.step_index("grid_study")], o), "the netcheck")
+		assert_false(s.region.net.call("_needed", stream.steps[stream.step_index("permit")], o), "no permit")
+		assert_false(s.region.net.call("_needed", stream.steps[stream.step_index("grid_reinforcement")], o))
 
 
 func test_the_followed_order_survives_a_save() -> void:

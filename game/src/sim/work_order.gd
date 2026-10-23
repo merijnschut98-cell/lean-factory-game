@@ -28,6 +28,9 @@ var failing := false
 var failure_demand := false
 ## Waits started in parallel: wait step index → when it is over.
 var early: Dictionary[int, int] = {}
+## This order's own route where it differs from the stream's shares: step id → whether
+## it needs the step (a heavier connection always takes the netcheck); {} for none.
+var needs: Dictionary = {}
 
 
 func _init(order_id: int, of_stream: ValueStream, now: int) -> void:
@@ -51,7 +54,7 @@ func to_dict() -> Dictionary:
 		"id": id, "stream": stream.id, "step": steps[step_index].id, "born": born, "due": due,
 		"remaining": remaining, "queued_at": queued_at, "started": started, "wait_until": wait_until,
 		"pending": steps[pending_step].id if pending_step < steps.size() else "", "reworks": reworks,
-		"early": early_ids, "failure_demand": failure_demand, "failing": failing,
+		"early": early_ids, "failure_demand": failure_demand, "failing": failing, "needs": needs.duplicate(),
 	}
 
 
@@ -73,6 +76,10 @@ static func from_dict(d: Dictionary, s: ValueStream) -> WorkOrder:
 	o.reworks = int(d.get("reworks", 0))
 	o.failure_demand = bool(d.get("failure_demand", false))
 	o.failing = bool(d.get("failing", false))
+	var route: Variant = d.get("needs", {})
+	for step_id: Variant in route if route is Dictionary else {}:
+		if s.step_index(str(step_id)) >= 0 and route[step_id] is bool:
+			o.needs[str(step_id)] = route[step_id]
 	var early: Variant = d.get("early", {})
 	if early is Dictionary:
 		for step_id: Variant in early:
