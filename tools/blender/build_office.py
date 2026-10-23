@@ -1329,8 +1329,9 @@ def kit_planning_board() -> tuple[bpy.types.Mesh, dict]:
 
 
 def build_tells(kits) -> None:
-    """The 1e's three tells: the dossiers on Intake's cabinet, Werkvoorbereiding's in-tray and
-    the planners' week board."""
+    """The 1e's tells: the dossiers on Intake's cabinet, Werkvoorbereiding's in-tray, the
+    planners' week board, Revisie & GIS's sketches, and Meetdata's close-out cabinet and
+    whiteboard."""
     def pile(h: float, seed: int, base: float = 0.75) -> bpy.types.Mesh:
         return _raise(kit_dossier_stack(h, 20 + seed), base)
 
@@ -1354,6 +1355,49 @@ def build_tells(kits) -> None:
     tell("planning_board", at, rot, {band: [(reds[band], (0, 0, 0), 0)] for band in TELL_VARIANTS},
          fixed=[("board", board, (0, 0, 0), 0), ("frame", kit_board_frame(1.5, 1.0), (0, 0, 1.4), 180)])
     collide(*world_box((0.5, 1.7, 1.95), (0, 0, 0.975), at, rot))
+    # Revisie & GIS: the sketches of finished jobs on the cabinet by the west wall (local x runs
+    # along the cabinet, northwards), the rolled drawings at its north end; at its highest a
+    # pile on the floor beside it (no collider: the variants come and go).
+    rolls = (kits["rolls"], (0.5, 0, 0), 90)
+    tell("revision_cabinet", (-17.72, 12.6, 0.0), 90, {
+        "low": [(pile(0.05, 9), (-0.45, 0, 0), 4), rolls],
+        "mid": [(pile(0.16, 10), (-0.55, 0, 0), 4), (pile(0.1, 11), (-0.2, 0.02, 0), -7), rolls],
+        "high": [(pile(0.3, 12), (-0.6, 0, 0), 4), (pile(0.24, 13), (-0.25, 0.01, 0), -6),
+                 (pile(0.3, 14), (0.1, 0, 0), 3), rolls, (pile(0.42, 15, 0.0), (-1.1, 0.02, 0), 11)]})
+    # Meetdata & registratie: the finished connections waiting for the close-out, on the cabinet
+    # by the door to the core (local x runs southwards along it) and, at the highest, on the
+    # floor north of it.
+    tell("close_out_cabinet", (CORE[0] - WALL_T - 0.245, 3.6, 0.0), -90, {
+        "low": [(pile(0.12, 16), (0.2, 0, 0), -3), (pile(0.06, 17), (-0.15, 0.01, 0), 5)],
+        "mid": [(pile(0.24, 18), (0.55, 0, 0), -4), (pile(0.3, 19), (0.2, 0, 0), 2),
+                (pile(0.24, 20), (-0.15, 0.01, 0), -2), (pile(0.16, 21), (-0.5, 0, 0), 5)],
+        "high": [(pile(0.4, 22), (0.55, 0, 0), -4), (pile(0.36, 23), (0.2, 0, 0), 2),
+                 (pile(0.42, 24), (-0.15, 0.01, 0), -2), (pile(0.3, 25), (-0.5, 0, 0), 5),
+                 (kits["dossiers_floor"], (-1.6, -0.055, 0), 0), (kits["dossiers_floor"], (-1.9, -0.055, 0), 17)]})
+    # Meetdata's whiteboard on the corridor wall: the new meters that sent no reading, an
+    # address per line with a red stroke behind it.
+    tell("meter_board", (-15.2, 7.0 - PART_T / 2 - 0.01, 0.0), 90,
+         {band: [(mesh, (0, 0, 0), 0)] for band, mesh in kit_meter_list().items()},
+         fixed=[("frame", kit_board_frame(1.2, 0.9), (0, 0, 1.5), 180)])
+
+
+def kit_meter_list() -> dict:
+    """Per band the writing on a 1.2 x 0.9 whiteboard (front at local -X, centre 1.5 m up): a
+    blue heading and lines of addresses in black marker, each with a red stroke after it. The
+    reader's left is local +Y."""
+    rng = np.random.default_rng(23)
+    rows = [(col, row) for col in range(2) for row in range(8)]
+    lines = [(float(rng.uniform(0.26, 0.4)), float(rng.normal(0, 0.004))) for _ in rows]
+    out = {}
+    for band, n in zip(TELL_VARIANTS, (1, 5, 11)):
+        b = MeshBuilder()
+        b.box((0.003, 0.42, 0.016), (-0.004, 0.33, 1.88), "metal_blue")
+        for (col, row), (length, dz) in list(zip(rows, lines))[:n]:
+            y0, z = 0.54 - col * 0.6, 1.8 - row * 0.085 + dz
+            b.box((0.003, length, 0.012), (-0.004, y0 - length / 2, z), "plastic_black")
+            b.box((0.003, 0.05, 0.01), (-0.004, y0 - length - 0.06, z), "card_red")
+        out[band] = b.mesh(f"meter_list_{band}")
+    return out
 
 
 def meeting_table(kits) -> None:
@@ -2066,9 +2110,7 @@ def plan_first(plan: Plan) -> None:
         b.panel((-9.6, 12.4, 0.762), 1.0, 1.0, "Z", "posters", uv_rect=(0, 0, 0.5, 1))
         put(kits["rolls"], "revision_map_rolls", (-9.0, 12.1, 0), 10)
         put(kits["cabinet_1.6"], "revision_backlog_cabinet", (-17.72, 12.6, 0), 90)
-        collide((0.45, 1.6, 0.75), (-17.72, 12.6, 0.375))
-        for k, (y, s) in enumerate(((12.0, "dossiers_4"), (12.35, "dossiers_5"), (12.7, "dossiers_4"), (13.05, "dossiers_5"))):
-            put(kits[s], f"revision_backlog{k}", (-17.72, y, 0), (k * 9) % 13 - 6)
+        collide((0.45, 1.6, 0.75), (-17.72, 12.6, 0.375))   # its sketches: tell_revision_cabinet
         put(kits["plant_1.5"], "revision_plant", (-17.5, 15.5, 0), 20)
         collide((0.45, 0.45, 1.2), (-17.5, 15.5, 0.6))
         # Meetdata & registratie: Petra's desk and two more, the finished dossiers waiting
@@ -2078,12 +2120,7 @@ def plan_first(plan: Plan) -> None:
         workstation("meetdata1", (-14.0, 3.0, 0), 0, kits, (2, 3), (("dossiers_1", 0.6, 0.15, 0),))
         workstation("meetdata2", (-16.2, 3.0, 0), 0, kits, (4,), (("phone", -0.55, 0.05, 0),))
         put(kits["cabinet_1.6"], "close_out_cabinet", (CORE[0] - WALL_T - 0.245, 3.6, 0), -90)
-        collide((0.45, 1.6, 0.75), (CORE[0] - WALL_T - 0.245, 3.6, 0.375))
-        for k, (y, s) in enumerate(((3.05, "dossiers_5"), (3.4, "dossiers_4"), (3.75, "dossiers_5"), (4.1, "dossiers_3"))):
-            put(kits[s], f"close_out_waiting{k}", (CORE[0] - WALL_T - 0.245, y, 0), (k * 11) % 9 - 4)
-        for k, y in enumerate((5.2, 5.5)):
-            put(kits["dossiers_floor"], f"close_out_floor{k}", (CORE[0] - WALL_T - 0.3, y, 0), k * 17)
-            collide((0.3, 0.36, 0.5), (CORE[0] - WALL_T - 0.3, y, 0.25))
+        collide((0.45, 1.6, 0.75), (CORE[0] - WALL_T - 0.245, 3.6, 0.375))   # its dossiers: tell_close_out_cabinet
         put(kits["meter_shelf"], "meter_shelf", (-17.72, 5.4, 0), 90)
         collide((0.5, 1.85, 2.0), (-17.72, 5.4, 1.0))
         # the corridor's end: a printer and a plant

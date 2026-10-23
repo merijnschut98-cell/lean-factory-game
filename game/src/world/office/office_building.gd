@@ -12,6 +12,8 @@ const MODEL_DIR := "res://assets/office/"
 const START := "start"
 ## A mission taken on: active, or done.
 const TAKEN: Array[String] = ["active", "completed"]
+## Marker kinds that come many to a model, keyed "<kind>:<id>" (markers).
+const KEYED: Array[String] = ["place", "door", "room", "arrive", "exit", "driver", "ride", "seat"]
 ## The building when world.json cannot be read: the connections office alone.
 const FALLBACK := {
 	"start_floor": "first",
@@ -26,6 +28,11 @@ var floors: Array[Dictionary] = []
 ## {id, floor, name, places, opens_with}.
 var rooms: Array[Dictionary] = []
 var start_floor := ""
+## The van rides (design §1.7): {mission, with (the monteur), to (the place it ends at)}.
+var rides: Array[Dictionary] = []
+## What each tell looks like (PLAN 2.15, world.yaml `tells:`): id → {place, low, mid, high}.
+## An entry without all of them is left out (the tell then has no words).
+var tells: Dictionary = {}
 ## Why world.json was not used ("" when it was).
 var error := ""
 
@@ -42,6 +49,8 @@ static func load_from(data_dir: String) -> OfficeBuilding:
 	var read := JsonFile.read_dict(path)
 	var problem: String = read["error"] if not read["error"].is_empty() else _shape_error(read["data"])
 	b._fill(FALLBACK if not problem.is_empty() else read["data"])
+	if problem.is_empty():
+		b.tells = _tells(read["data"].get("tells"))
 	b.error = problem
 	if not problem.is_empty():
 		push_warning("office: building: " + problem)
@@ -75,6 +84,21 @@ static func _shape_error(d: Dictionary) -> String:
 	return ""
 
 
+## The well-formed entries of world.json's `tells` (none when it is missing or not a list).
+static func _tells(v: Variant) -> Dictionary:
+	var out := {}
+	for t: Variant in v if v is Array else []:
+		if not t is Dictionary or not t.get("id") is String:
+			continue
+		var look := {}
+		for key in ["place", "low", "mid", "high"]:
+			if t.get(key) is String and not t[key].is_empty():
+				look[key] = t[key]
+		if look.size() == 4:
+			out[t["id"]] = look
+	return out
+
+
 func _fill(d: Dictionary) -> void:
 	start_floor = d["start_floor"]
 	var levels := {}
@@ -89,6 +113,20 @@ func _fill(d: Dictionary) -> void:
 		return a["level"] < b["level"] or (a["level"] == b["level"] and a["outside_of"] < b["outside_of"]))
 	for r: Dictionary in d["rooms"]:
 		rooms.append(r)
+	var given: Variant = d.get("rides", [])
+	for r: Variant in given if given is Array else []:
+		if r is Dictionary and r.get("mission") is String and r.get("with") is String and r.get("to") is String:
+			rides.append({"mission": r["mission"], "with": r["with"], "to": r["to"]})
+		else:
+			push_warning("office: building: a ride needs a mission, a monteur (with) and a place (to): %s" % [r])
+
+
+## The ride of mission `mission_id`, or {}.
+func ride_of(mission_id: String) -> Dictionary:
+	for r in rides:
+		if r["mission"] == mission_id:
+			return r
+	return {}
 
 
 func floor_of(id: String) -> Dictionary:
@@ -168,7 +206,8 @@ func floor_open(floor_id: String, open: Array[String]) -> bool:
 
 
 ## The markers in a floor's geometry by id: "place:<step>", "door:<room>",
-## "room:<room>", "arrive:<how>", or the role ("obeya", "lift", "spawn", ...), from
+## "room:<room>", "arrive:<how>", the yard's "driver:van<k>", "ride:van<k>", the cab's
+## "seat:<who>", or the role ("obeya", "lift", "spawn", ...), from
 ## each node's glTF extras {interaction, id}.
 static func markers(geometry: Node) -> Dictionary:
 	var out := {}
@@ -178,5 +217,5 @@ static func markers(geometry: Node) -> Dictionary:
 			continue
 		var kind: String = extras["interaction"]
 		var id := str(extras.get("id", ""))
-		out[kind + ":" + id if kind in ["place", "door", "room", "arrive", "exit"] else kind] = n
+		out[kind + ":" + id if kind in KEYED else kind] = n
 	return out

@@ -107,6 +107,12 @@ var missions: Array[String] = []
 var after: Array[String] = []
 ## "coach": using them opens the coach, not a talk.
 var talk := ""
+## The yard's van they drive (OfficeYard), or -1.
+var van := -1
+## Where they are instead while a mission is active: {mission: spot} (cast `during`), and
+## the other spots of their story by place (OfficePeople: at their van, during:<mission>).
+var during: Dictionary = {}
+var spots: Dictionary = {}
 ## A walker's route (office space) and the corner they walk to.
 var route := PackedVector3Array()
 var _leg := 1
@@ -154,6 +160,13 @@ static func create(entry: Dictionary) -> OfficePerson:
 	for m: Variant in office.get("after", []):
 		p.after.append(str(m))
 	p.talk = str(office.get("talk", ""))
+	var drives: Variant = office.get("van", -1)
+	p.van = int(drives) if (drives is int or drives is float) and drives >= 0 else -1
+	var instead: Variant = office.get("during", {})
+	if instead is Dictionary:
+		for m: Variant in instead:
+			if instead[m] is Dictionary:
+				p.during[str(m)] = instead[m]
 	p.visible = p.missions.is_empty() and p.after.is_empty()   # until the session says otherwise
 	p.model = CharacterModel.instantiate(p.id)
 	if p.model == null:

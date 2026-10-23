@@ -62,6 +62,12 @@ extends SceneTree
 ## play_kcc_headset, play_phone_incoming, play_talk_expert (PLAN 2.4 and 2.15: mevrouw
 ## El Amrani's call on the KCC's headset, her call ringing on the phone at ten, Henk's
 ## expert talk on the yard after his first answer).
+## play_van_ride, play_van_talk, play_van_choose (PLAN 2.15 S2-Y: riding along with Sandra,
+## the edge of town going by; Henk's talk in the cab, his face, then the two of you) · play_opleidingsterrein (Henk shows Ahmed the
+## joint at the practice trench) · play_yard_morning (07:38: the monteurs at their vans).
+## tell_revision_high, tell_meetdata_high, tell_closeout_high (PLAN 2.15: Revisie & GIS's
+## sketches, Meetdata's whiteboard, its close-out cabinet) · tell_inspect (E beside the
+## sketches: the camera moves in and one line says what you see).
 ## The mission is played through the UI's own handlers, as a player would;
 ## only the training states start with the training week.
 
@@ -295,8 +301,13 @@ func _run() -> void:
 		"people_desks", "people_talk", "people_energy", "people_monteurs", "people_meetdata", "people_gemba", \
 				"people_greet", "people_quick", "people_chatter":
 			_people(office, state)
-		"tell_intake_high", "tell_intake_low", "tell_prep_high", "tell_planning_high":
+		"tell_intake_high", "tell_intake_low", "tell_prep_high", "tell_planning_high", "tell_revision_high", \
+				"tell_meetdata_high", "tell_closeout_high":
 			_tells(office, state)
+		"tell_inspect":
+			_tells(office, "tell_revision_high")
+			office.player.position = Vector3(-16.6, 0, -12.2)
+			office.use(OfficeTells.node(office.geometry, "revision_cabinet"))   # capture with ~25 frames
 		"minimap", "minimap_floor", "minimap_near":
 			_minimap(office, state)
 		"yard", "yard_magazijn", "yard_werkplaats", "yard_vans":
@@ -310,6 +321,8 @@ func _run() -> void:
 			_home(office, state)
 		"play_kcc_headset", "play_phone_incoming", "play_talk_expert":
 			await _calls_and_experts(office, state)
+		"play_van_ride", "play_van_talk", "play_van_choose", "play_opleidingsterrein", "play_yard_morning":
+			await _yard_life(office, state)
 		_:
 			printerr("unknown state ", state)
 			quit(2)
@@ -389,20 +402,36 @@ func _tells(office: Office, state: String) -> void:
 		"tell_intake_low":
 			net.queue_of(net.step_at("connections.intake")).clear()
 		"tell_prep_high":
-			for i in 20:
-				net.queue_of(net.step_at("connections.design")).append(WorkOrder.new(-1 - i, net.stream("connections"), net.time))
+			_pile_up(net, "connections.design", 20)
+		"tell_revision_high":
+			_pile_up(net, "connections.revision", 16)
+		"tell_meetdata_high", "tell_closeout_high":
+			_pile_up(net, "connections.close_out", 40)
 	office.tells.refresh()
 	if state == "tell_planning_high":
 		OfficeTells.show(office.geometry, {"planning_board": OfficeTells.HIGH})
+	if state == "tell_meetdata_high":   # silent meters are counted from past registrations: shown directly
+		OfficeTells.show(office.geometry, {"meter_board": OfficeTells.HIGH})
 	print("tells: ", OfficeTells.readings(net), " -> ", OfficeTells.bands(net))
 	_stand_at(office, DESIGN if state == "tell_prep_high" else INTAKE)
-	if state == "tell_planning_high":
-		office.player.position = Vector3(15.6, 0, -6.2)
-		office.player.face(Basis.looking_at(Vector3(17.7, 0, -3.9) - office.player.position))
+	var looks := {"tell_planning_high": [Vector3(15.6, 0, -6.2), Vector3(17.7, 0, -3.9)],
+		"tell_revision_high": [Vector3(-15.6, 0, -11.2), Vector3(-17.7, 0, -12.6)],
+		"tell_meetdata_high": [Vector3(-12.6, 0, -4.6), Vector3(-15.2, 0, -6.9)],
+		"tell_closeout_high": [Vector3(-9.0, 0, -5.4), Vector3(-6.5, 0, -3.6)]}
+	if looks.has(state):
+		office.player.position = looks[state][0]
+		office.player.face(Basis.looking_at(looks[state][1] - office.player.position))
 	office.player.position -= office.player.basis.x * 0.8
 	office.rig.yaw = office.player.rotation.y + deg_to_rad(25)
 	office.rig.zoom(-4)
 	office.rig.snap()
+
+
+## `n` stand-in orders in the queue of the work step at `place`.
+func _pile_up(net: Network, place: String, n: int) -> void:
+	var step := net.step_at(place)
+	for i in n:
+		net.queue_of(step).append(WorkOrder.new(-1 - i, net.stream(place.get_slice(".", 0)), net.time))
 
 
 ## Stand a step behind the marker, looking the way it faces; the camera
@@ -655,6 +684,53 @@ func _day(office: Office, state: String) -> void:
 	office.rig.snap()
 	for i in 90:   # people walk
 		await process_frame
+
+
+## The yard lives (S2-Y): the van ride with Sandra (the drive) or Henk (his talk in the
+## cab, his face while he speaks); the opleidingsterrein after the ride with Henk; the yard at
+## 07:38 with the monteurs at their vans, seen a quarter of an hour earlier first so they walk.
+func _yard_life(office: Office, state: String) -> void:
+	var mission: String = {"play_van_ride": "fix_not_at_home", "play_yard_morning": "fix_wrong_joint"}.get(
+		state, "save_henks_knowledge")
+	office.session.missions.progress[mission] = {"status": "active", "asks": {}, "seen": {}}
+	var minute := 7 * 60 + 38 if state == "play_yard_morning" else 10 * 60 + 20
+	office.session.pass_time(posmod(minute - office.session.minute_of_day(), SimCalendar.MINUTES_PER_DAY))
+	office.ui.after_action()
+	if state == "play_opleidingsterrein":
+		office.session.missions.facts.add(OfficeYard.rode(mission))
+	office.floors._process(OfficeFloors.POLL_SECONDS)
+	office.floors.go_to("yard", "exit", true)
+	office.daylight.update(office.session)
+	match state:
+		"play_van_ride", "play_van_talk", "play_van_choose":
+			office.interact(office.interactable("ride:" + mission))
+			for i in (60 if state == "play_van_ride" else 260):
+				await process_frame
+			if state == "play_van_choose":
+				office.ui.talk_view.lines.finish()
+				for i in 30:
+					await process_frame
+		"play_opleidingsterrein":
+			office.people.refresh(office.session)
+			var henk := office.people.person("henk")
+			office.player.position = henk.position + Vector3(2.4, 0, -1.6)
+			office.player.face(Basis.looking_at((henk.position - office.player.position) * Vector3(1, 0, 1)))
+			office.rig.yaw = office.player.rotation.y + deg_to_rad(25)
+			office.rig.zoom(-1)
+			office.rig.snap()
+		"play_yard_morning":
+			var before := PeopleSession.new()
+			before.session = office.session
+			before.minute = minute - 15
+			office.people.refresh(before)
+			office.people.refresh(office.session)
+			office.player.position = Vector3(-39.5, 0, -2.5)   # east of the bays, looking down the gaps
+			office.player.face(Basis(Vector3.UP, 1.25))
+			office.rig.yaw = 1.25
+			office.rig.zoom(1)
+			office.rig.snap()
+			for i in 120:
+				await process_frame
 
 
 ## Going home (S1-A): the begane grond's front door at half past five, its prompt; then

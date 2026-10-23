@@ -3135,6 +3135,22 @@ greetings:
       - "Hoi {speler}! Ruud zit boven, als je hem zoekt."
       - "Kijk, daar is {speler}. Nooit te laat, wel altijd net op tijd."
       - "Hé {speler}! Je pas doet het nog? Mooi zo."
+  # The yard's monteurs (PLAN 2.15 S2-Y): they greet you at their vans, morning and afternoon.
+  sandra:
+    day:
+      - "Hoi {speler}. Even de bus inladen, dan ben ik weg."
+      - "Hé {speler}. Rijd je mee? Voorin is plek."
+      - "Hoi {speler}. Nieuwe meters, nieuwe zegels. Ik ben er klaar voor."
+  ricardo:
+    day:
+      - "Hé {speler}. Bus is vol, ik kan zo weg."
+      - "Hoi {speler}. Ik zag je in de appgroep. Welkom, hoor."
+      - "Ha {speler}. Druk dagje in Nova-Oud."
+  joyce:
+    day:
+      - "Hoi {speler}. Even mijn kabelschaar zoeken, dan ben ik weg."
+      - "Hé {speler}. Jij bent de nieuwe van Aansluitingen, toch?"
+      - "Hoi {speler}. Als je ooit mee wilt, zeg het maar. Dan zie je het echte werk."
 
 quick:
   _all:

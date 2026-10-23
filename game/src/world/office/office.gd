@@ -21,6 +21,8 @@ const SPAWN := "spawn"
 const FLOOR := "shell_floor"
 ## How close (m, on the floor) the player must stand to a marker to use it.
 const REACH := 1.6
+## How much farther (m) a tell counts than its footprint is, against a place or a person.
+const TELL_BIAS := 0.6
 ## The model's own sky and ambient light (made with it); the project's
 ## default environment otherwise.
 const ENVIRONMENT := "res://assets/office/office_environment.tres"
@@ -120,6 +122,8 @@ var explainer: ExplainerView
 var minimap: OfficeMinimap
 ## The yard's clock-keeper (the vans by the hour, PLAN 2.2) while the yard is loaded, or null.
 var yard: OfficeYard
+## The van ride under way (PLAN 2.15 S2-Y), or null.
+var ride: VanRide
 ## The office's sound (S1-B) while the game can be played, or null.
 var sound: Soundscape
 ## The props that read the region (PLAN 2.6) while a floor with tells is loaded, or null.
@@ -325,6 +329,8 @@ func load_floor() -> void:
 		yard.name = "Yard"
 		yard.office = self
 		add_child(yard)
+		if session.error.is_empty():
+			yard.poll()
 	if ui != null and ui.playable():
 		show_map()
 
@@ -444,16 +450,21 @@ func interactable_near(at: Vector3, reach := REACH) -> Interactable:
 	return best
 
 
-## What E uses from `at`: the nearer of the interaction point and the person
-## within REACH, or null.
+## What E uses from `at`: the nearest of the interaction point, the person and the tell
+## (by its footprint, PLAN 2.15) within REACH, or null. A tie goes to the place; a tell
+## counts TELL_BIAS farther than it is, so the person at a desk comes before their in-tray.
 func target_near(at: Vector3) -> Node3D:
-	var place := interactable_near(at)
-	var person := people.person_near(at, REACH)
-	if person == null or place == null:
-		return person if person != null else place
-	var to_person := Vector2(at.x - person.position.x, at.z - person.position.z).length()
-	var to_place := Vector2(at.x - place.position.x, at.z - place.position.z).length()
-	return person if to_person < to_place else place
+	var best: Node3D = null
+	var best_distance := INF
+	for n: Node3D in [interactable_near(at), people.person_near(at, REACH)]:
+		var d := Vector2(at.x - n.position.x, at.z - n.position.z).length() if n != null else INF
+		if d < best_distance:
+			best = n
+			best_distance = d
+	var tell := tells.nearest(at, REACH) if tells != null else ""
+	if not tell.is_empty() and tells.distance(tell, at) + TELL_BIAS < best_distance:
+		best = tells.roots[tell]
+	return best
 
 
 ## The prompt for what E uses from `at` ("" for nothing).
@@ -462,6 +473,8 @@ func prompt_near(at: Vector3) -> String:
 	if target is OfficePerson:
 		var p := target as OfficePerson
 		return "E — Coach: " + p.display_name if p.talk == "coach" else "E — Praat met " + p.display_name
+	if tells != null and not tells.id_of(target).is_empty():
+		return tr(OfficeTells.PROMPT) if tells.looking() != tells.id_of(target) else ""
 	return prompt_for(target as Interactable)
 
 
@@ -469,7 +482,7 @@ func prompt_near(at: Vector3) -> String:
 func prompt_for(target: Interactable) -> String:
 	if target == null:
 		return ""
-	var seam := floors.prompt(target) + home.prompt(target)
+	var seam := floors.prompt(target) + home.prompt(target) + (yard.prompt(target) if yard != null else "")
 	if not seam.is_empty():
 		return seam
 	match target.kind:
@@ -486,7 +499,7 @@ func prompt_for(target: Interactable) -> String:
 
 ## An interaction point's Dutch name: "Werkvoorbereiding & ontwerp".
 func label_for(target: Interactable) -> String:
-	var seam := floors.label(target) + home.label(target)
+	var seam := floors.label(target) + home.label(target) + (yard.label(target) if yard != null else "")
 	if not seam.is_empty():
 		return seam
 	match target.kind:
@@ -557,7 +570,8 @@ func floor_rect() -> Rect2:
 
 ## Use an interaction point: open its panel, the camera framing the station.
 func interact(target: Interactable) -> void:
-	if target == null or not session.error.is_empty() or floors.use(target) or home.use(target):
+	if target == null or not session.error.is_empty() or floors.use(target) or home.use(target) \
+			or (yard != null and yard.use(target)):
 		return
 	match target.kind:
 		"place":
@@ -576,9 +590,9 @@ func interact(target: Interactable) -> void:
 		frame(target)
 
 
-## Whether the world waits: a panel, the explainer or the creator is open.
+## Whether the world waits: a panel, the explainer or the creator is open, or a van ride is on.
 func busy() -> bool:
-	return ui.is_busy() or explainer != null or look_editor != null
+	return ui.is_busy() or explainer != null or look_editor != null or ride != null
 
 
 ## "Uiterlijk" (PLAN 2.7b): the creator over the world on the current look and
@@ -676,12 +690,14 @@ func _world_input(on: bool) -> void:
 	player.set_process_unhandled_input(on)
 
 
-## Use what is in reach: a person (a talk) or an interaction point.
+## Use what is in reach: a person (a talk), an interaction point, or a tell (look closer).
 func use(target: Node3D) -> void:
 	if target is OfficePerson:
 		talk_to(target)
 	elif target is Interactable:
 		interact(target)
+	elif tells != null and not tells.id_of(target).is_empty() and session.error.is_empty():
+		tells.look(tells.id_of(target))
 
 
 ## Talk with `person` (person_selected says who): the dialog opens, or a toast
@@ -708,7 +724,7 @@ func frame_talk(person_id: String) -> void:
 	var person := people.person(person_id)
 	var here := person != null and person.visible
 	people.hold(person if here else null)
-	if here:
+	if here and ride == null:   # in the van they sit side by side; the cab frames them (VanRide)
 		_turn_to(person)
 		person.face_toward(player.position, true)   # they turn to you, so the face shot sees their face
 	ui.talk_view.stage(person if here else null)
@@ -726,7 +742,9 @@ func stage_talk() -> void:
 	player.active = view.setting == TalkView.WALKING
 	if view.setting == TalkView.HEADSET:
 		return   # the camera stays on the desk where the player sits (interact frames it)
-	if view.person == null:
+	if ride != null:
+		ride.frame_talk(view.phase())
+	elif view.person == null:
 		rig.release()
 	elif view.phase() == TalkView.SPEAK and view.setting == TalkView.STANDING:
 		frame_face(view.person)
@@ -913,6 +931,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if clicked and person != null:
 		click_person(person)
 		return
+	if clicked and tells != null and click_tell(tells.under(origin, ray)):
+		return
 	if not clicked:
 		hover_person(person)
 	if ray.y >= -0.01:
@@ -947,6 +967,21 @@ func click_person(person: OfficePerson) -> bool:
 	return not route.is_empty()
 
 
+## A click on a tell (PLAN 2.15): within reach, look closer; else walk up to it and look on
+## arrival. False when the click is not for the world, there is no tell or no way there.
+func click_tell(tell: String) -> bool:
+	if tell.is_empty() or world_waits() or not session.error.is_empty():
+		return false
+	var root: Node3D = tells.roots[tell]
+	if tells.distance(tell, player.position) <= REACH:
+		use(root)
+		return true
+	_walk_goal = root
+	var route := nav().path(player.position, tells.bounds(tell).get_center() * Vector3(1, 0, 1))
+	player.walk(route)
+	return not route.is_empty()
+
+
 ## Light up the ring at a floor point under the cursor (office space), and
 ## only that one; the cursor becomes a hand over it.
 func hover_floor(point: Vector3) -> void:
@@ -974,7 +1009,9 @@ func _on_arrived() -> void:
 	_walk_goal = null
 	if goal == null or ui.is_busy():
 		return
-	if goal == interactable_near(player.position) or goal == people.person_near(player.position, REACH):
+	var tell := tells.id_of(goal) if tells != null else ""
+	if goal == interactable_near(player.position) or goal == people.person_near(player.position, REACH) \
+			or (not tell.is_empty() and tells.distance(tell, player.position) <= REACH):
 		use(goal)
 
 
@@ -1010,6 +1047,9 @@ func _on_panel_opened() -> void:
 
 
 func _on_panels_closed() -> void:
+	if ride != null:   # a talk in the cab, or the field step's place: the ride goes on
+		ride.panels_closed()
+		return
 	people.release()
 	people.refresh(session)
 	player.stand_up()   # after a call at the KCC's headset
