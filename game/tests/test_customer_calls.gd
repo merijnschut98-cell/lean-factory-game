@@ -243,3 +243,23 @@ func test_the_headset_offers_a_call_only_when_a_customer_talk_is_due() -> void:
 	office.ui.close_panels()
 	assert_false(office.player.seated, "up again after the call")
 	office.free()
+
+
+## On the call you wear the desk's headset: on your head, gone from the desk;
+## after it, back on the desk.
+func test_the_player_wears_the_desk_s_headset_on_the_call() -> void:
+	var office := _office()
+	_calling(office.session)
+	office.reload_rooms()
+	office.floors.go_to("ground", "lift", true)
+	var on_desk := office.find_marker(OfficeHeadset.DESK + "_headset")
+	assert_false(office.player.wears_headset(), "not before the call")
+	office.interact(office.interactable(OfficeHeadset.ID))
+	assert_true(office.ui.talk_view.talking())
+	assert_true(office.player.wears_headset(), "on your head")
+	assert_false(on_desk.visible, "gone from the desk")
+	office.ui.close_panels()
+	office.ui.close_panels()
+	assert_false(office.player.wears_headset(), "off again after the call")
+	assert_true(on_desk.visible, "back on the desk")
+	office.free()
