@@ -115,4 +115,26 @@ rooms:
     floor: yard
     name: Bussen
     places: [outages.repair, meters.visit]
-    opens_with: [walk_outages, walk_meters, fix_wrong_joint, fix_not_at_home, fix_silent_meter, fix_double_visits, fix_overtime_planning]
+    opens_with: [walk_outages, walk_meters, fix_wrong_joint, fix_not_at_home, fix_silent_meter,
+                 save_henks_knowledge, fix_double_visits, fix_overtime_planning]   # the rides start at the vans (rides below)
+  # PLAN 2.3: a small fenced training ground off the yard, south of the werkplaats: a practice
+  # trench with a cable and a joint, a meterkast on a stand, a trafohuisje mock-up. Henk
+  # teaches Ahmed there by doing while his knowledge is still in the building.
+  - id: opleidingsterrein
+    floor: yard
+    name: Opleidingsterrein
+    places: []
+    opens_with: [save_henks_knowledge]
+
+# The van ride (phase 2 design §1.7; game/src/world/office/van_ride.gd): a side that sends you
+# out rides there. At the van park its monteur waits at their van (cast.json `office.van`);
+# E there and you sit beside them in the cab while the edge of town goes by; the mission's
+# talk with them runs in the cab; you arrive at the field step `to` (a place on the yard,
+# standing in for the field until the town exists) and ride back after.
+#   mission  the side (one ride each); the van park must open with it
+#   with     the monteur (a cast id with a van)
+#   to       where the ride ends: a place in a yard room the mission opens
+rides:
+  - {mission: fix_wrong_joint, with: ahmed, to: outages.repair}        # the storingsdienst to the Lindelaan
+  - {mission: fix_not_at_home, with: sandra, to: meters.visit}         # Sandra's addresses
+  - {mission: save_henks_knowledge, with: henk, to: outages.locate}    # an old paper-lead cable in Nova-Oud

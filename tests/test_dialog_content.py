@@ -106,6 +106,11 @@ def _drop_route(d: dict) -> None:
     (lambda d: _layer(d, "joost_output_kpi", "concern").update(wait_for=3), "wait_for"),
     (lambda d: _layer(d, "joost_output_kpi", "interest").update(wait_for="Frank."), "without a condition"),
     (lambda d: _dialog(d, "joost_output_kpi")["layers"].reverse(), "interest, then concern"),
+    # A customer's talks are calls with a voicemail (PLAN 2.4, CustomerCalls).
+    (lambda d: _person(d, "el_amrani").pop("voicemail"), "voicemail"),
+    (lambda d: _person(d, "joost").update(voicemail="Hoi, met Joost."), "voicemail"),
+    (lambda d: _person(d, "ilse").update(customer="ja"), "true or false"),
+    (lambda d: _person(d, "ilse").update(voicemail="Dit is een spel."), "names the game"),
     (lambda d: _layer(d, "joost_output_kpi", "concern")["unlocks"].update(facts=["loved:joost"]), "fact"),
     (lambda d: _layer(d, "joost_output_kpi", "concern")["unlocks"].update(proposals=["lead_and_oldest"]), "hidden"),
     (lambda d: _layer(d, "joost_output_kpi", "concern")["unlocks"]["clue"].update(depth=9), "depth"),

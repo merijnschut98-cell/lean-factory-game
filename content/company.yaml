@@ -138,6 +138,9 @@ departments:
         members:
           - {id: henk, title: senior monteur}
           - {id: ahmed, title: jonge monteur}
+          - {id: ricardo, title: monteur}
+          - {id: joyce, title: monteur}
+          - {id: sandra, title: meterwisselaar}   # the meter visits are the monteurs' pool
       - id: consignatie
         name: Storingsdienst (consignatie)
         pool: on_call

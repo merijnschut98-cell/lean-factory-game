@@ -58,7 +58,13 @@ extends SceneTree
 ## 2.12: the team's menu on Monday and on Thursday of the training week: the
 ## people and their questions, then only the known tools that fit) ·
 ## tell_intake_high, tell_intake_low, tell_prep_high, tell_planning_high (PLAN 2.6:
-## the 1e's props read the region; a long intake queue, then none).
+## the 1e's props read the region; a long intake queue, then none) ·
+## play_kcc_headset, play_phone_incoming, play_talk_expert (PLAN 2.4 and 2.15: mevrouw
+## El Amrani's call on the KCC's headset, her call ringing on the phone at ten, Henk's
+## expert talk on the yard after his first answer).
+## play_van_ride, play_van_talk, play_van_choose (PLAN 2.15 S2-Y: riding along with Sandra,
+## the edge of town going by; Henk's talk in the cab, his face, then the two of you) · play_opleidingsterrein (Henk shows Ahmed the
+## joint at the practice trench) · play_yard_morning (07:38: the monteurs at their vans).
 ## The mission is played through the UI's own handlers, as a player would;
 ## only the training states start with the training week.
 
@@ -305,6 +311,10 @@ func _run() -> void:
 			await _day(office, state)
 		"play_home", "play_home_fade":
 			_home(office, state)
+		"play_kcc_headset", "play_phone_incoming", "play_talk_expert":
+			await _calls_and_experts(office, state)
+		"play_van_ride", "play_van_talk", "play_van_choose", "play_opleidingsterrein", "play_yard_morning":
+			await _yard_life(office, state)
 		_:
 			printerr("unknown state ", state)
 			quit(2)
@@ -545,6 +555,43 @@ func _yard(office: Office, state: String) -> void:
 	office.rig.snap()
 
 
+## The customer call and the expert talk (S2-K): El Amrani's mission on (it opens the
+## KCC), then at the headset or ten o'clock with the phone ringing; or Henk, his camera
+## talk agreed, asked about joints.
+func _calls_and_experts(office: Office, state: String) -> void:
+	var s := office.session
+	var view := office.ui.talk_view
+	if state == "play_talk_expert":
+		_yard(office, "yard")
+		s.people.outcomes["henk_camera"] = "commitment"
+		s.people.heard_facts["heard:henk_teach"] = true
+		var henk := office.people.person("henk")
+		office.player.position = henk.position + (office.player.position - henk.position).normalized() * 1.3
+		office.use(henk)
+		view.lines.finish()
+		view.press_key(KEY_1)
+		view.lines.finish()
+		office.rig.snap()
+		return
+	for id in ["fix_unused_capacity", "fix_incomplete_application"]:
+		s.missions.done_once[id] = true
+	s.accept("fix_status_callers")
+	s.pass_time(10 * 60 - s.minute_of_day())
+	if state == "play_phone_incoming":
+		_stand_at(office, DESIGN)
+		office.ui.after_action()
+		return
+	office.floors._process(OfficeFloors.POLL_SECONDS)
+	office.floors.go_to("ground", "lift", true)
+	_stand_at(office, OfficeHeadset.ID)
+	office.interact(office.interactable(OfficeHeadset.ID))
+	office.ui.hud.refresh()
+	view.lines.finish()
+	office.rig.snap()
+	for i in 30:
+		await process_frame
+
+
 ## The rooms peopled in 2.1c: the floor's room opened by its mission, the player a few
 ## steps from the person, the camera over the shoulder; the explainer from Ruud's board.
 func _rooms(office: Office, state: String) -> void:
@@ -613,6 +660,53 @@ func _day(office: Office, state: String) -> void:
 	office.rig.snap()
 	for i in 90:   # people walk
 		await process_frame
+
+
+## The yard lives (S2-Y): the van ride with Sandra (the drive) or Henk (his talk in the
+## cab, his face while he speaks); the opleidingsterrein after the ride with Henk; the yard at
+## 07:38 with the monteurs at their vans, seen a quarter of an hour earlier first so they walk.
+func _yard_life(office: Office, state: String) -> void:
+	var mission: String = {"play_van_ride": "fix_not_at_home", "play_yard_morning": "fix_wrong_joint"}.get(
+		state, "save_henks_knowledge")
+	office.session.missions.progress[mission] = {"status": "active", "asks": {}, "seen": {}}
+	var minute := 7 * 60 + 38 if state == "play_yard_morning" else 10 * 60 + 20
+	office.session.pass_time(posmod(minute - office.session.minute_of_day(), SimCalendar.MINUTES_PER_DAY))
+	office.ui.after_action()
+	if state == "play_opleidingsterrein":
+		office.session.missions.facts.add(OfficeYard.rode(mission))
+	office.floors._process(OfficeFloors.POLL_SECONDS)
+	office.floors.go_to("yard", "exit", true)
+	office.daylight.update(office.session)
+	match state:
+		"play_van_ride", "play_van_talk", "play_van_choose":
+			office.interact(office.interactable("ride:" + mission))
+			for i in (60 if state == "play_van_ride" else 260):
+				await process_frame
+			if state == "play_van_choose":
+				office.ui.talk_view.lines.finish()
+				for i in 30:
+					await process_frame
+		"play_opleidingsterrein":
+			office.people.refresh(office.session)
+			var henk := office.people.person("henk")
+			office.player.position = henk.position + Vector3(2.4, 0, -1.6)
+			office.player.face(Basis.looking_at((henk.position - office.player.position) * Vector3(1, 0, 1)))
+			office.rig.yaw = office.player.rotation.y + deg_to_rad(25)
+			office.rig.zoom(-1)
+			office.rig.snap()
+		"play_yard_morning":
+			var before := PeopleSession.new()
+			before.session = office.session
+			before.minute = minute - 15
+			office.people.refresh(before)
+			office.people.refresh(office.session)
+			office.player.position = Vector3(-39.5, 0, -2.5)   # east of the bays, looking down the gaps
+			office.player.face(Basis(Vector3.UP, 1.25))
+			office.rig.yaw = 1.25
+			office.rig.zoom(1)
+			office.rig.snap()
+			for i in 120:
+				await process_frame
 
 
 ## Going home (S1-A): the begane grond's front door at half past five, its prompt; then

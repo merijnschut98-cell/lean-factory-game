@@ -164,6 +164,8 @@ people:
     trust: 50
     morale: 50
     voice: "Ik heb het opgeschreven."
+    customer: true   # her talks are calls: the KCC headset, or she rings your phone (PLAN 2.4)
+    voicemail: "Met Fatima El Amrani. Ik had u graag even gesproken. Ik heb het genoteerd: vandaag, geen gehoor. Ik bel morgen terug."
 
   - id: henk
     name: Henk Verbeek
@@ -250,6 +252,8 @@ people:
     trust: 50
     morale: 50
     voice: "Twee jaar."
+    customer: true
+    voicemail: "Met Ilse de Graaf, van de bakkerij. Ik sta zo weer aan de oven. Ik probeer het morgen nog een keer."
 
   # Place actions spec (2026-10-18) §0.6: the operator at the control room, so a
   # walk of the outage stream has someone to ask. No talks yet (Act III).
@@ -2904,6 +2908,84 @@ dialogs:
       compliance: "Goed. Dan wacht ik weer op de ontvangstbevestiging."
       ruined: "Dan stuur ik volgende maand weer een spreadsheet. En de maand daarna."
 
+  # ── Expert talks (phase 2 design §2.5; game/src/rules/expert_talk.gd) ─────────────
+  # Topic by topic, no meters, nothing won or lost: the player asks (at most four open
+  # questions at a time), the expert answers in their own voice. A topic may unlock a clue
+  # (inline, naming its problem), a fact (heard:<id>) or an explainer; it may wait for a fact
+  # (needs) or for trust. An expert talk comes after a person's persuasion and check-in.
+  # Numbers are the sector's (NEN-EN 50160 and the Netcode: 230 V ± 10 %, so 253 V; an
+  # inverter disconnects above it) or marked as an estimate where they are a person's own.
+
+  # Wim, after he felt heard (wim_spreadsheet's concern): his own measurements, the street.
+  # He is a customer: he says u, and is asked with u (style guide §2).
+  - id: wim_expert
+    name: "Wim en zijn metingen"
+    person: wim
+    kind: expert
+    needs: {all: [heard:wim_spreadsheet]}
+    opening: "U wilt meer weten over mijn metingen? Daar maak ik graag tijd voor."
+    retry_opening: "Daar bent u weer. Ik heb tabblad drie al openstaan."
+    closing: "Graag gedaan. En als er iets niet klopt, hoor ik het graag. Ik meet ook maar met wat ik heb."
+    topics:
+      - id: logger
+        ask: "Hoe meet u dat eigenlijk, die spanning?"
+        # Estimate: a home-made logger every five minutes; a plausible hobbyist set-up, not a source.
+        answer: "Met een logger in de meterkast. Die schrijft elke vijf minuten de spanning op. Zelf gebouwd, hoor, van een printplaatje en een oude telefoonlader. Elke eerste van de maand haal ik de gegevens eraf."
+      - id: limit
+        ask: "Waarom is tweehonderddrieënvijftig volt zo'n grens?"
+        answer: "Tweehonderddertig volt, plus tien procent. Zit de spanning tien minuten lang daarboven, dan moet een omvormer afschakelen. Zo staat het in de norm. Mijn omvormer doet dus precies wat hij moet doen. Het probleem zit ergens anders."
+      - id: tab_three
+        ask: "Wat staat er precies op tabblad drie?"
+        answer: "Per dag de hoogste spanning, met het weer van het KNMI ernaast. Op een zonnige middag in mei zit ik boven de tweehonderdvijftig, op een grijze dag kom ik niet boven de tweehonderdveertig. En elk voorjaar komen er een paar volt bij. Sinds de halve straat panelen heeft."
+        unlocks:
+          clue: {problem: inverters_tripping, key: false, depth: 1, text: "'Hoe zonniger de middag, hoe hoger de spanning. En elk voorjaar een paar volt meer, sinds de halve straat panelen heeft.'"}
+      - id: the_street
+        ask: "Wat zou u doen met de metingen van de hele straat?"
+        trust: 50
+        answer: "Ik zou ze naast elkaar leggen, per kabel. Dan ziet u dat de spanning het hoogst is aan het eind van de kabel, het verst van de trafo. Dan weet u ook waar u moet kijken. Ik zou het zelf doen, maar ik kan niet bij die gegevens. Terecht, hoor. Privacy."
+        unlocks:
+          clue: {problem: inverters_tripping, key: false, depth: 2, text: "'Leg de meters van de straat naast elkaar, per kabel. Aan het eind van de kabel, het verst van de trafo, is de spanning het hoogst.'"}
+      - id: how_it_began
+        ask: "Hoe bent u eigenlijk met die spreadsheet begonnen?"
+        answer: "Toen de panelen op het dak kwamen, in 2021. Ik wilde weten wat ze opleverden. Veertig jaar heb ik storingen gezocht in fabrieken, en daar leer je één ding: eerst meten, dan praten. Mijn vrouw noemt het een hobby. Ik noem het een meetreeks."
+
+  # Henk, before he retires: cable joints, the old cable, digging, his practice trench at the
+  # opleidingsterrein, and what Ahmed still has to learn. No explainer on cables and joints
+  # exists yet, so the joint topic unlocks a clue instead.
+  - id: henk_expert
+    name: "Henk over het vak"
+    person: henk
+    kind: expert
+    opening: "Vragen over het vak? Daar heb ik altijd tijd voor. Zolang ik hier nog rondloop."
+    retry_opening: "Jij weer, {jongen_meid}. Wat wil je nog weten?"
+    closing: "Goed. En als je het wilt zien in plaats van horen: je weet me te vinden."
+    topics:
+      - id: joints
+        ask: "Wat is eigenlijk het verschil tussen al die moffen?"
+        answer: "Een mof verbindt twee stukken kabel. Welke je pakt, hangt af van wat er aan weerszijden ligt. Twee kunststof kabels: een krimpmof, klaar. Oude papierloodkabel aan kunststof: dan heb je een overgangsmof nodig, en die heeft niet elke bus bij zich. Pak je de verkeerde, dan sta je om twee uur 's nachts met lege handen in de sleuf."
+        unlocks:
+          clue: {problem: wrong_joint_in_van, key: false, depth: 1, text: "'Een overgangsmof, van papierlood naar kunststof, heeft niet elke bus bij zich. Met de verkeerde sta je met lege handen in de sleuf.'"}
+      - id: old_cable
+        ask: "Hoe herken je een kabel van voor 1970?"
+        answer: "Aan het lood. Papier met olie erin en een loodmantel eromheen, GPLK noemen we dat. Zwaar spul, en het gaat langer mee dan je denkt. Maar je pakt het anders aan dan kunststof: dat lood moet je netjes dicht solderen, anders trekt er vocht in. Mijn eerste mof op zo'n kabel maakte ik in 1979, achter de oude gasfabriek."
+        unlocks:
+          clue: {problem: knowledge_drain, key: false, depth: 1, text: "'Een GPLK-kabel pak je anders aan dan kunststof. Dat lood moet je netjes dicht solderen, anders trekt er vocht in. Dat staat nergens opgeschreven.'"}
+      - id: digging
+        ask: "Hoe kan het dat er zo vaak in een kabel wordt gegraven, met al die KLIC-meldingen?"
+        answer: "Die melding doen ze heus wel. Maar de kaart klopt niet altijd. Wij hebben in de jaren tachtig kabels verlegd die nooit op tekening zijn gekomen. Een goede aannemer graaft eerst een proefsleuf, met de schop. Maar als de planning krap is, slaan ze die over. En dan zit de graafbak er zo in."
+        unlocks:
+          clue: {problem: digging_damage, key: false, depth: 1, text: "'De KLIC-kaart klopt niet altijd. Kabels die in de jaren tachtig zijn verlegd, staan er soms nooit op.'"}
+      - id: trench
+        ask: "Wat heb je eigenlijk liggen in die sleuf op het opleidingsterrein?"
+        # Estimate: Henk's own practice length of old cable (six metres, 1968, laid in 2019).
+        answer: "Zes meter GPLK uit de Lindenlaan, van 1968. Die heb ik er in 2019 zelf in gelegd. Daar kunnen de jongens een overgangsmof op oefenen zonder dat er een wijk zonder stroom zit. Alleen wordt hij te weinig gebruikt. Iedereen heeft het druk."
+        unlocks:
+          facts: [heard:henk_trench]
+      - id: ahmed
+        ask: "Wat moet Ahmed nog leren, volgens jou?"
+        needs: {all: [heard:henk_teach]}   # after Henk said what he fears (henk_camera's concern)
+        answer: "Uit het boekje weet die jongen alles. Beter dan ik, eerlijk gezegd. Maar hij moet het nog in z'n handen krijgen: voelen of een kabel nat is, ruiken of een mof is doorgeslagen. Dat leer je alleen door het vaak te doen, met iemand naast je die zegt: nog een keer. Zo heeft ouwe Toon het mij geleerd. In 1984."
+
 # ── In passing (Phase 2 design §1.4, §2.4; game/src/rules/reactions.gd) ──────────
 # What people say without a talk: no panel, no meter, a subtitle over their head.
 # Spoken Dutch by each person's voice sheet (style guide §7). The office shows it at
@@ -3056,6 +3138,22 @@ greetings:
       - "Hoi {speler}! Ruud zit boven, als je hem zoekt."
       - "Kijk, daar is {speler}. Nooit te laat, wel altijd net op tijd."
       - "Hé {speler}! Je pas doet het nog? Mooi zo."
+  # The yard's monteurs (PLAN 2.15 S2-Y): they greet you at their vans, morning and afternoon.
+  sandra:
+    day:
+      - "Hoi {speler}. Even de bus inladen, dan ben ik weg."
+      - "Hé {speler}. Rijd je mee? Voorin is plek."
+      - "Hoi {speler}. Nieuwe meters, nieuwe zegels. Ik ben er klaar voor."
+  ricardo:
+    day:
+      - "Hé {speler}. Bus is vol, ik kan zo weg."
+      - "Hoi {speler}. Ik zag je in de appgroep. Welkom, hoor."
+      - "Ha {speler}. Druk dagje in Nova-Oud."
+  joyce:
+    day:
+      - "Hoi {speler}. Even mijn kabelschaar zoeken, dan ben ik weg."
+      - "Hé {speler}. Jij bent de nieuwe van Aansluitingen, toch?"
+      - "Hoi {speler}. Als je ooit mee wilt, zeg het maar. Dan zie je het echte werk."
 
 quick:
   _all:

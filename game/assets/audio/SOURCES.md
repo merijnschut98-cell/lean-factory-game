@@ -31,3 +31,4 @@ Made for Spanning, no third-party source (no CC0 vibration was found on the appr
 | File | Source | Author | Licence | How |
 |---|---|---|---|---|
 | phone_buzz.ogg | synthesised with ffmpeg (`aevalsrc`) | Spanning | the project's own | two 0.32 s pulses of a 172 Hz tone with two harmonics and a 31 Hz flutter, low-pass 1.8 kHz: a phone vibrating on a desk |
+| van_cab.ogg | synthesised with ffmpeg (`aevalsrc`, `anoisesrc`) | Spanning | the project's own | 8 s loop for the van ride's cab: a 62.5 Hz diesel drone with two harmonics and a slow swell, brown noise for the tyres and the road, low-pass 900 Hz (the cab, heard from inside) |

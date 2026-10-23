@@ -12,7 +12,10 @@
     "  or at + face, or route (walked back and forth); pose sit|idle|talk|walk; missions: present",
     "  only while one of these missions is active; after: away until one of these missions is done; talk: coach opens the coach instead of a talk;",
     "  floor: its floor (the start floor when none); chair: a chair marker, sat on facing its way; headset;",
-    "  lunch: a second spot (with its own floor), the kantine, for lunch; without one they lunch at their desk.",
+    "  lunch: a second spot (with its own floor), the kantine, for lunch; without one they lunch at their desk;",
+    "  van: the yard's van they drive (office_yard.gd): a spot with no at/seat/route is by its back (driver:van<k>),",
+    "  they are out with it while it is out, and a ride with them (world.yaml rides) starts there;",
+    "  during: {mission: spot}, where they are instead while that mission is active (the opleidingsterrein).",
     "day: their working day (office_day.gd, PLAN 2.14 S1-A), times HH:MM: arrive (by the lift or the stairs,",
     "  the front door on the begane grond), coffee (10 min at the floor's coffee corner), lunch (30 min at the",
     "  lunch spot), leave; late_until (optional) keeps them later, else the simulation does (load or morale).",
@@ -82,14 +85,16 @@
       "look": {"sex": "m", "height": 1.76, "build": 0.62, "skin": [220, 168, 140], "hair_style": "receding",
                "hair_color": [222, 220, 214], "brow_color": [170, 166, 160], "outfit": "monteur",
                "helmet": false, "stubble": 0.3, "stoop": 0.7, "beard": "full"},
-      "office": {"floor": "yard", "at": [-29.9, 0.2], "face": [-31.0, 0.6], "pose": "talk", "missions": ["save_henks_knowledge"]}
+      "office": {"floor": "yard", "at": [-26.6, 10.9], "face": [-25.6, 12.0], "pose": "talk", "van": 0,
+                 "missions": ["save_henks_knowledge"]}
     },
     {
       "id": "ahmed", "name": "Ahmed Bouzid", "role": "jonge monteur",
       "look": {"sex": "m", "height": 1.78, "build": 0.42, "skin": [168, 116, 84], "hair_style": "short",
                "hair_color": [28, 22, 20], "outfit": "monteur", "eye_color": [44, 30, 22], "stubble": 0.5},
-      "office": {"floor": "yard", "at": [-32.4, -0.3], "face": [-31.0, 0.6], "pose": "idle",
-                 "missions": ["walk_outages", "fix_wrong_joint", "save_henks_knowledge"]}
+      "office": {"floor": "yard", "at": [-32.4, -0.3], "face": [-31.0, 0.6], "pose": "idle", "van": 0,
+                 "missions": ["walk_outages", "fix_wrong_joint", "save_henks_knowledge"],
+                 "during": {"save_henks_knowledge": {"at": [-25.3, 11.0], "face": [-25.5, 12.0], "pose": "idle"}}}
     },
     {
       "id": "rachid", "name": "Rachid Ouali", "role": "medewerker Intake",
@@ -211,6 +216,27 @@
                "colors": {"shirt": [150, 118, 82], "trousers": [70, 66, 60]}},
       "office": {"floor": "ground", "at": [-2.2, -3.4], "face": [-4.6, -4.7], "pose": "idle",
                  "missions": ["fix_inverters_tripping"]}
+    },
+    {
+      "id": "sandra", "name": "Sandra Vermeulen", "role": "meterwisselaar",
+      "look": {"sex": "f", "height": 1.68, "build": 0.55, "skin": [224, 176, 146], "hair_style": "ponytail",
+               "hair_color": [112, 78, 52], "outfit": "monteur", "helmet": false, "eye_color": [80, 98, 70]},
+      "office": {"floor": "yard", "van": 5, "pose": "idle", "missions": ["walk_meters", "fix_not_at_home"]}
+    },
+    {
+      "id": "ricardo", "name": "Ricardo Martens", "role": "monteur",
+      "look": {"sex": "m", "height": 1.83, "build": 0.6, "skin": [196, 142, 108], "hair_style": "short",
+               "hair_color": [36, 28, 24], "outfit": "monteur", "helmet": false, "eye_color": [60, 44, 30],
+               "stubble": 0.7},
+      "office": {"floor": "yard", "van": 2, "pose": "idle"},
+      "day": {"arrive": "07:18", "coffee": "10:00", "lunch": "12:00", "leave": "16:35"}
+    },
+    {
+      "id": "joyce", "name": "Joyce Hoekstra", "role": "monteur",
+      "look": {"sex": "f", "height": 1.71, "build": 0.48, "skin": [236, 196, 170], "hair_style": "buns",
+               "hair_color": [196, 160, 104], "outfit": "monteur", "helmet": false, "eye_color": [70, 96, 120]},
+      "office": {"floor": "yard", "van": 3, "pose": "idle"},
+      "day": {"arrive": "07:25", "coffee": "10:00", "lunch": "12:00", "leave": "16:40"}
     }
   ]
 }

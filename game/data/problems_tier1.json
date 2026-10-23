@@ -197,6 +197,14 @@
      "key": true,
      "text": "'Wat op is, vul ik aan als ik toevallig langs het magazijn kom. Niemand houdt bij wat eruit gaat.'",
      "tool": "conversation"
+    },
+    {
+     "at": "outages.locate",
+     "depth": 1,
+     "dialog": "henk_expert",
+     "key": false,
+     "text": "'Een overgangsmof, van papierlood naar kunststof, heeft niet elke bus bij zich. Met de verkeerde sta je met lege handen in de sleuf.'",
+     "tool": "conversation"
     }
    ],
    "countermeasures": {
@@ -568,6 +576,14 @@
      "key": true,
      "text": "De kabels die anders lagen dan op de kaart, zijn bijna allemaal nog niet gerevideerd.",
      "tool": "data"
+    },
+    {
+     "at": "outages.locate",
+     "depth": 1,
+     "dialog": "henk_expert",
+     "key": false,
+     "text": "'De KLIC-kaart klopt niet altijd. Kabels die in de jaren tachtig zijn verlegd, staan er soms nooit op.'",
+     "tool": "conversation"
     }
    ],
    "cost_per_week": 4250,
@@ -644,6 +660,14 @@
      "dialog": "henk_camera",
      "key": true,
      "text": "'Dit vak leer je niet uit een boek. Je leert het naast iemand die het kan, tot je het zelf doet en hij alleen nog kijkt.'",
+     "tool": "conversation"
+    },
+    {
+     "at": "outages.locate",
+     "depth": 1,
+     "dialog": "henk_expert",
+     "key": false,
+     "text": "'Een GPLK-kabel pak je anders aan dan kunststof. Dat lood moet je netjes dicht solderen, anders trekt er vocht in. Dat staat nergens opgeschreven.'",
      "tool": "conversation"
     }
    ],
@@ -1018,6 +1042,22 @@
      "dialog": "wim_spreadsheet",
      "key": true,
      "text": "'Het is niet één huis. Kijk op een zonnige middag naar de hele straat tegelijk. En kijk dan naar de trafo, niet naar mijn omvormer.'",
+     "tool": "conversation"
+    },
+    {
+     "at": "customer_contact.answer",
+     "depth": 1,
+     "dialog": "wim_expert",
+     "key": false,
+     "text": "'Hoe zonniger de middag, hoe hoger de spanning. En elk voorjaar een paar volt meer, sinds de halve straat panelen heeft.'",
+     "tool": "conversation"
+    },
+    {
+     "at": "customer_contact.answer",
+     "depth": 2,
+     "dialog": "wim_expert",
+     "key": false,
+     "text": "'Leg de meters van de straat naast elkaar, per kabel. Aan het eind van de kabel, het verst van de trafo, is de spanning het hoogst.'",
      "tool": "conversation"
     }
    ],

@@ -11,7 +11,9 @@ extends Node3D
 ## or home late when the simulation keeps them (OfficeDay.late_ids). A change of place
 ## the clock has just reached is walked over the floor's walk grid (Office.nav) with the
 ## walk clip; an older one (the clock jumped) is simply done. Someone tied to missions
-## keeps to the story, not the clock. Names and roles come from GameSession.person when
+## keeps to the story, not the clock. On the yard the vans have their say (OfficeYard.where):
+## a monteur waits at their van for a ride, is out while their van is out, or stands where a
+## mission puts them (the opleidingsterrein). Names and roles come from GameSession.person when
 ## the session knows the person (cast.json otherwise). The walk-around energy bar follows
 ## GameSession.energy_of when the session has it.
 
@@ -100,6 +102,7 @@ static func build(office: Office, cast: Array[Dictionary], here: Callable) -> Of
 				push_warning("office: no place for %s" % p.id)
 				p.free()
 				continue
+			p.spots = OfficeYard.spots_of(p, func(spot: Dictionary) -> Dictionary: return _spot(office, spot, p.pose))
 		if at_lunch is Dictionary:
 			p.lunch = _spot(office, at_lunch, p.pose) if lunch_here else {}
 		p.settle(p.desk)
@@ -230,6 +233,10 @@ func day_of(id: String) -> OfficeDay:
 func _where(p: OfficePerson, minute: int) -> Dictionary:
 	if not stay_in.is_empty():
 		return ALWAYS_AT_DESK if p.id in stay_in else ALWAYS_OUT
+	var yard := OfficeYard.where(p, _session, office.floors.building.rides if office != null and office.floors != null else [],
+		minute)
+	if not yard.is_empty():
+		return yard
 	if not p.missions.is_empty():
 		return ALWAYS_AT_DESK
 	return day_of(p.id).place_at(minute, _late.has(p.id))
@@ -279,7 +286,7 @@ func _spot_for(p: OfficePerson, place: String) -> Dictionary:
 			return p.lunch if p.lunch is Dictionary else p.desk
 		OfficeDay.COFFEE:
 			return _coffee_spot(p) if _coffee != null and not p.desk.is_empty() else p.desk
-	return p.desk
+	return p.spots.get(place, p.desk)
 
 
 ## A free place round the coffee table, facing it, talking.
@@ -454,6 +461,12 @@ static func _spot(office: Office, spot: Dictionary, pose: String) -> Dictionary:
 	elif spot.has("at"):
 		var at := _floor(spot["at"])
 		out.merge({"at": at, "face": _floor(spot.get("face", [at.x, at.z - 1.0])) - at})
+	elif spot.get("van") is float or spot.get("van") is int:   # by their van (the yard's driver:van<k>)
+		var door := office.find_marker("driver:van%d" % int(spot["van"]))
+		if door == null:
+			return {}
+		var t := office.in_office(door)
+		out.merge({"at": t.origin * Vector3(1, 0, 1), "face": -t.basis.z})
 	else:
 		return {}
 	return out

@@ -281,6 +281,92 @@ func test_after_the_talk_the_person_drops_the_talk_s_posture() -> void:
 	office.free()
 
 
+# ── An expert talk (phase 2 design §2.5): questions, answers, no meters ───────
+
+## Petra (nothing to discuss in a returning player's first week) explains her meters.
+func _expert_view() -> TalkView:
+	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
+	var d := DialogDef.from_dict({"id": "petra_expert", "name": "Petra legt uit", "person": "petra", "kind": "expert",
+		"opening": "Wat wil je weten?", "closing": "Graag gedaan.", "topics": [
+			{"id": "molen", "ask": "Wat is de Molen?", "answer": "Ons register.",
+				"unlocks": {"clue": "silent_meter:0"}},
+			{"id": "board", "ask": "Hoe werkt die tekening?", "answer": "Kijk maar mee.",
+				"unlocks": {"explainer": "spanning_stroom_weerstand"}},
+			{"id": "map", "ask": "Wat staat er in je map?", "answer": "Alles."}]})
+	s.people.dialogs[d.id] = d
+	var view := TalkView.new()
+	view.session = s
+	assert_eq(view.start("petra"), "")
+	return view
+
+
+func test_an_expert_talk_shows_the_person_their_line_and_the_questions_only() -> void:
+	var view := _expert_view()
+	assert_true(view.expert(), "an expert talk")
+	assert_eq(view.said_last()["text"], "Wat wil je weten?", "their opening, no position after it")
+	view.lines.finish()
+	assert_eq(view.offers.map(func(o: Dictionary) -> String: return o["line"]),
+		["Wat is de Molen?", "Hoe werkt die tekening?", "Wat staat er in je map?"])
+	for q in ["Wat is de Molen?", "Wat staat er in je map?"]:
+		assert_true(shows(view, q), "the question on screen: " + q)
+	assert_true(shows(view, TalkView.pips(view.session.dialog_meter()["trust_pips"])), "the small trust pips stay")
+	for word in _instruments(view.session):
+		for text in texts_in(view):
+			assert_false(text.contains(word), "no instrument: \"%s\" in \"%s\"" % [word, text])
+	view.free()
+
+
+func test_an_answer_carries_no_arrow_and_a_new_clue_points_at_notities() -> void:
+	var view := _expert_view()
+	view.lines.finish()
+	var r := view.choose_option(0)
+	assert_eq(r["reply"], "Ons register.")
+	assert_true(shows(view, TalkView.YOU % "Wat is de Molen?"), "your question over the answer, no arrow after it")
+	view.lines.finish()
+	assert_true(shows(view, TalkSummary.NEW_CLUE), "the clue is noted")
+	assert_eq(view.offers.size(), 2, "the asked question is gone")
+	view.free()
+
+
+func test_a_topic_with_an_explainer_asks_for_it() -> void:
+	var view := _expert_view()
+	var asked: Array[String] = []
+	view.explainer_requested.connect(func(id: String) -> void: asked.append(id))
+	view.choose(ExpertTalk.ASK, "board")
+	assert_eq(asked, ["spanning_stroom_weerstand"])
+	view.free()
+
+
+func test_after_their_goodbye_an_expert_talk_closes_without_a_summary() -> void:
+	var view := _expert_view()
+	var closed := [0]
+	view.close_requested.connect(func() -> void: closed[0] += 1)
+	view.choose_option(0)
+	var r := view.close_talk()
+	assert_true(r["ended"])
+	assert_eq(view.said_last()["text"], "Graag gedaan.")
+	assert_eq(closed[0], 0, "their goodbye is read first")
+	view.lines.finish()
+	assert_eq(closed[0], 1, "then the talk closes")
+	assert_true(view.summary_trace == null, "no curve: nothing was measured")
+	view.free()
+
+
+func test_an_expert_s_explainer_opens_over_the_talk_and_gives_it_back() -> void:
+	var office := _office()
+	office.ui.talk_view.free()   # replaced by the expert's view below
+	office.ui.talk_view = _expert_view()
+	office.ui.talk_view.explainer_requested.connect(office.open_talk_explainer)
+	office.ui.talk_view.choose(ExpertTalk.ASK, "board")
+	assert_true(office.explainer != null, "the drawing opens")
+	assert_eq(office.ui.talk_view.process_mode, Node.PROCESS_MODE_DISABLED, "the talk's keys wait")
+	office.explainer.closed.emit("spanning_stroom_weerstand")
+	assert_true(office.explainer == null)
+	assert_eq(office.ui.talk_view.process_mode, Node.PROCESS_MODE_INHERIT, "back to the talk")
+	office.ui.talk_view.free()
+	office.free()
+
+
 ## The summary sends the player to the phone's app by its name, not the old journal.
 func test_a_new_clue_points_at_notities() -> void:
 	assert_true(TalkSummary.NEW_CLUE.contains(Phone.NAMES[Phone.NOTES]), TalkSummary.NEW_CLUE)

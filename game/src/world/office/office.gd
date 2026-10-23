@@ -120,6 +120,8 @@ var explainer: ExplainerView
 var minimap: OfficeMinimap
 ## The yard's clock-keeper (the vans by the hour, PLAN 2.2) while the yard is loaded, or null.
 var yard: OfficeYard
+## The van ride under way (PLAN 2.15 S2-Y), or null.
+var ride: VanRide
 ## The office's sound (S1-B) while the game can be played, or null.
 var sound: Soundscape
 ## The props that read the region (PLAN 2.6) while a floor with tells is loaded, or null.
@@ -184,6 +186,7 @@ func build() -> void:
 	ui.talk_opened.connect(frame_talk)
 	if ui.playable():
 		ui.talk_view.phase_changed.connect(func(_phase: String) -> void: stage_talk())
+		ui.talk_view.explainer_requested.connect(open_talk_explainer)
 	ui.panels_closed.connect(_on_panels_closed)
 	home = OfficeHome.create(self)
 	add_child(home)
@@ -324,6 +327,8 @@ func load_floor() -> void:
 		yard.name = "Yard"
 		yard.office = self
 		add_child(yard)
+		if session.error.is_empty():
+			yard.poll()
 	if ui != null and ui.playable():
 		show_map()
 
@@ -367,6 +372,10 @@ func _add_interactables() -> void:
 		var board := Interactable.create(OfficeWhiteboard.ID, OfficeWhiteboard.stand())
 		interactables.append(board)
 		add_child(board)
+	var headset := OfficeHeadset.place(self)   # the KCC's free desk (begane grond, once its room is open)
+	if headset != null:
+		interactables.append(headset)
+		add_child(headset)
 
 
 ## The player map shows the floor the player is on, with the floor switch.
@@ -464,7 +473,7 @@ func prompt_near(at: Vector3) -> String:
 func prompt_for(target: Interactable) -> String:
 	if target == null:
 		return ""
-	var seam := floors.prompt(target) + home.prompt(target)
+	var seam := floors.prompt(target) + home.prompt(target) + (yard.prompt(target) if yard != null else "")
 	if not seam.is_empty():
 		return seam
 	match target.kind:
@@ -474,12 +483,14 @@ func prompt_for(target: Interactable) -> String:
 			return "E — Coach: " + str(session.catalog.coach.get("name", ""))
 		OfficeWhiteboard.ID:
 			return tr(WHITEBOARD_PROMPT)
+		OfficeHeadset.ID:
+			return tr(OfficeHeadset.PROMPT)
 	return "E — " + label_for(target)
 
 
 ## An interaction point's Dutch name: "Werkvoorbereiding & ontwerp".
 func label_for(target: Interactable) -> String:
-	var seam := floors.label(target) + home.label(target)
+	var seam := floors.label(target) + home.label(target) + (yard.label(target) if yard != null else "")
 	if not seam.is_empty():
 		return seam
 	match target.kind:
@@ -494,6 +505,8 @@ func label_for(target: Interactable) -> String:
 			return "Missiebord"
 		OfficeWhiteboard.ID:
 			return tr(WHITEBOARD_LABEL)
+		OfficeHeadset.ID:
+			return tr(OfficeHeadset.LABEL)
 	return target.id
 
 
@@ -548,7 +561,8 @@ func floor_rect() -> Rect2:
 
 ## Use an interaction point: open its panel, the camera framing the station.
 func interact(target: Interactable) -> void:
-	if target == null or not session.error.is_empty() or floors.use(target) or home.use(target):
+	if target == null or not session.error.is_empty() or floors.use(target) or home.use(target) \
+			or (yard != null and yard.use(target)):
 		return
 	match target.kind:
 		"place":
@@ -561,13 +575,15 @@ func interact(target: Interactable) -> void:
 			ui.open_mission_board()
 		OfficeWhiteboard.ID:
 			open_whiteboard()
+		OfficeHeadset.ID:
+			OfficeHeadset.take_call(self)
 	if ui.is_busy():
 		frame(target)
 
 
-## Whether the world waits: a panel, the explainer or the creator is open.
+## Whether the world waits: a panel, the explainer or the creator is open, or a van ride is on.
 func busy() -> bool:
-	return ui.is_busy() or explainer != null or look_editor != null
+	return ui.is_busy() or explainer != null or look_editor != null or ride != null
 
 
 ## "Uiterlijk" (PLAN 2.7b): the creator over the world on the current look and
@@ -613,6 +629,24 @@ func open_whiteboard() -> void:
 		{"log": session.explainers, "auto": SceneLines.auto_setting()})
 	explainer.closed.connect(_on_explainer_closed)
 	explainer.pause_requested.connect(ui.open_pause)
+
+
+## An expert's topic opens a "Hoe werkt het?" explainer over the talk (phase 2
+## design §2.5): the drawing free to play with (the codex's way, no Ruud: the
+## expert's answer is the explanation); closing it goes back to the talk.
+func open_talk_explainer(explainer_id: String) -> void:
+	if explainer != null:
+		return
+	explainer = ExplainerView.open(self, explainer_id, {"codex": true, "log": session.explainers})
+	if not explainer.error.is_empty():
+		push_warning("talk explainer: " + explainer.error)
+		explainer.queue_free()
+		explainer = null
+		return
+	ui.talk_view.process_mode = Node.PROCESS_MODE_DISABLED   # its keys 1–4 are the drawing's now
+	explainer.closed.connect(func(_id: String) -> void:
+		explainer = null
+		ui.talk_view.process_mode = Node.PROCESS_MODE_INHERIT)
 
 
 ## The pause menu over Ruud's board (Esc in the explainer, as anywhere in a scene).
@@ -679,7 +713,7 @@ func frame_talk(person_id: String) -> void:
 	var person := people.person(person_id)
 	var here := person != null and person.visible
 	people.hold(person if here else null)
-	if here:
+	if here and ride == null:   # in the van they sit side by side; the cab frames them (VanRide)
 		_turn_to(person)
 		person.face_toward(player.position, true)   # they turn to you, so the face shot sees their face
 	ui.talk_view.stage(person if here else null)
@@ -695,7 +729,11 @@ func stage_talk() -> void:
 	if not view.visible or view.talk.is_empty():
 		return
 	player.active = view.setting == TalkView.WALKING
-	if view.person == null:
+	if view.setting == TalkView.HEADSET:
+		return   # the camera stays on the desk where the player sits (interact frames it)
+	if ride != null:
+		ride.frame_talk(view.phase())
+	elif view.person == null:
 		rig.release()
 	elif view.phase() == TalkView.SPEAK and view.setting == TalkView.STANDING:
 		frame_face(view.person)
@@ -979,8 +1017,12 @@ func _on_panel_opened() -> void:
 
 
 func _on_panels_closed() -> void:
+	if ride != null:   # a talk in the cab, or the field step's place: the ride goes on
+		ride.panels_closed()
+		return
 	people.release()
 	people.refresh(session)
+	player.stand_up()   # after a call at the KCC's headset
 	player.active = true
 	rig.active = true
 	rig.release()
