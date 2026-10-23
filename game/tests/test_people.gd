@@ -45,6 +45,25 @@ func test_a_talk_also_open_during_later_missions() -> void:
 	assert_eq(people.dialog_for("pim", DialogFixture.world({"main": [], "active": ["fri"]})), null)
 
 
+## A talk on more than one mission (arc S11: `missions:`, the first owns it):
+## open during either, and the main mission's talk when either is the main one.
+func test_a_talk_on_two_missions_is_open_during_either() -> void:
+	var data := DialogFixture.dialog_data({"missions": ["fix_design", "winter"]})
+	data.erase("mission")
+	var two := DialogDef.from_dict(data)
+	assert_eq(two.mission, "fix_design", "the first owns it")
+	assert_eq(Array(two.missions), ["fix_design", "winter"])
+	assert_eq(Array(DialogFixture.def().missions), ["fix_design"], "a talk on one mission")
+	var people := DialogFixture.people([two])
+	for on in ["fix_design", "winter"]:
+		assert_eq(people.dialog_for("pim", DialogFixture.world({"main": [], "active": [on]})).id, "talk", on)
+	assert_eq(people.dialog_for("pim", DialogFixture.world({"main": [], "active": ["fri"]})), null)
+	var side := DialogFixture.def({"id": "side_talk", "mission": "fri"})
+	var both := DialogFixture.people([side, two])
+	assert_eq(both.dialog_for("pim", DialogFixture.world({"main": ["winter"], "active": ["fri", "winter"]})).id,
+		"talk", "the main mission's talk first, whichever of its missions is main")
+
+
 # ── Promises the game checks later (D9 talks audit A4; the check is 2.4b) ────
 
 func test_an_agreed_promise_is_kept_with_the_day_it_was_made() -> void:

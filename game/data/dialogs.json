@@ -3103,7 +3103,10 @@
     "confront": "Mevrouw, als u de aanvraag compleet had ingevuld, was het sneller gegaan.",
     "inquiry": "Wat wilt u het liefst weten, als u één ding mocht vragen?"
    },
-   "mission": "fix_status_callers",
+   "missions": [
+    "fix_status_callers",
+    "winter_el_amrani"
+   ],
    "mood": "gespannen",
    "name": "Het vierde telefoontje van mevrouw El Amrani",
    "opening": "Goedemiddag. U spreekt met Fatima El Amrani. Ik bel voor de vierde keer, en ik heb ze allemaal opgeschreven.",

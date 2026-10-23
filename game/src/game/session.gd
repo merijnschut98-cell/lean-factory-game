@@ -1283,7 +1283,7 @@ func _facts() -> Dictionary:
 func _finish_talk() -> Dictionary:
 	var d := _talk
 	_talk = null
-	var main := missions.active("main").any(func(m: MissionDef) -> bool: return m.id == d.def.mission)
+	var main := d.def.on_any(missions.active("main").map(func(m: MissionDef) -> String: return m.id))
 	var morale_before: int = people.morale[d.who.id]
 	var summary := people.finish(d, region.net.time, main)
 	_keep_promise(d)
