@@ -87,6 +87,16 @@ def test_the_opleidingsterrein_opens_with_henks_knowledge():
     assert room["opens_with"] == ["save_henks_knowledge"]
 
 
+def test_the_kcc_opens_for_every_customer_call():
+    # A customer is reached by phone; at the KCC you take their call on a headset (PLAN 2.4),
+    # so the room opens with every mission a customer's talk is on (Ilse's queue too).
+    kcc = _room(REAL["world"], "contact_centre")["opens_with"]
+    customers = {p["id"] for p in REAL["dialogs"]["people"] if p.get("customer")}
+    on = {m for d in REAL["dialogs"]["dialogs"] if d["person"] in customers for m in bc.dialog_missions(d)}
+    assert {"fix_unused_capacity", "fix_status_callers", "winter_el_amrani"} <= on
+    assert on <= set(kcc), sorted(on - set(kcc))
+
+
 def test_the_yard_sides_ride_out_in_a_van():
     # The van ride (design §1.7): you sit beside the monteur, the ride ends at the side's field step.
     rides = {r["mission"]: (r["with"], r["to"]) for r in REAL["world"]["rides"]}

@@ -215,6 +215,16 @@ func test_the_kcc_has_a_free_desk_with_a_headset() -> void:
 	office.free()
 
 
+## Ilse's queue is a customer call too: the KCC opens with her mission.
+func test_the_kcc_opens_for_ilse_s_call() -> void:
+	var office := _office()
+	office.session.missions.progress["fix_unused_capacity"] = {"status": "active", "asks": {}, "seen": {}}
+	office.reload_rooms()
+	office.floors.go_to("ground", "lift", true)
+	assert_true(office.interactable(OfficeHeadset.ID) != null, "the headset place at the KCC")
+	office.free()
+
+
 func test_the_headset_offers_a_call_only_when_a_customer_talk_is_due() -> void:
 	var office := _office()
 	office.floors.go_to("ground", "lift", true)
