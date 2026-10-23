@@ -30,6 +30,9 @@ var rooms: Array[Dictionary] = []
 var start_floor := ""
 ## The van rides (design §1.7): {mission, with (the monteur), to (the place it ends at)}.
 var rides: Array[Dictionary] = []
+## What each tell looks like (PLAN 2.15, world.yaml `tells:`): id → {place, low, mid, high}.
+## An entry without all of them is left out (the tell then has no words).
+var tells: Dictionary = {}
 ## Why world.json was not used ("" when it was).
 var error := ""
 
@@ -46,6 +49,8 @@ static func load_from(data_dir: String) -> OfficeBuilding:
 	var read := JsonFile.read_dict(path)
 	var problem: String = read["error"] if not read["error"].is_empty() else _shape_error(read["data"])
 	b._fill(FALLBACK if not problem.is_empty() else read["data"])
+	if problem.is_empty():
+		b.tells = _tells(read["data"].get("tells"))
 	b.error = problem
 	if not problem.is_empty():
 		push_warning("office: building: " + problem)
@@ -77,6 +82,21 @@ static func _shape_error(d: Dictionary) -> String:
 				or not r.get("floor") in ids or not r.get("opens_with") is Array or not r.get("places") is Array:
 			return "a room needs an id, a name, a known floor, places and opens_with"
 	return ""
+
+
+## The well-formed entries of world.json's `tells` (none when it is missing or not a list).
+static func _tells(v: Variant) -> Dictionary:
+	var out := {}
+	for t: Variant in v if v is Array else []:
+		if not t is Dictionary or not t.get("id") is String:
+			continue
+		var look := {}
+		for key in ["place", "low", "mid", "high"]:
+			if t.get(key) is String and not t[key].is_empty():
+				look[key] = t[key]
+		if look.size() == 4:
+			out[t["id"]] = look
+	return out
 
 
 func _fill(d: Dictionary) -> void:

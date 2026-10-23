@@ -540,6 +540,12 @@
     "waste_inventory",
     "quality_at_the_source"
    ],
+   "tells": [
+    {
+     "tell": "revision_cabinet",
+     "text": "Op de kast bij Revisie & GIS liggen stapels schetsen; op de onderste staat een datum van maanden terug."
+    }
+   ],
    "tier": 1,
    "visibility": "hidden",
    "waste": "inventory"
@@ -843,6 +849,12 @@
     "batching",
     "one_piece_flow"
    ],
+   "tells": [
+    {
+     "tell": "close_out_cabinet",
+     "text": "Op en naast de kast bij de deur liggen dossiers met 'gereed gemeld' erop, de oudste van weken geleden."
+    }
+   ],
    "tier": 1,
    "visibility": "subtle",
    "waste": "inventory"
@@ -997,6 +1009,12 @@
    "teaches": [
     "jidoka",
     "quality_at_the_source"
+   ],
+   "tells": [
+    {
+     "tell": "meter_board",
+     "text": "Op het whiteboard bij Meetdata staan twee kolommen adressen, elk met een rood streepje erachter."
+    }
    ],
    "tier": 1,
    "visibility": "subtle",

@@ -306,8 +306,12 @@ CLUE_KEYS = {"tool", "text", "key", "depth", "at", "note", "teaches"}
 # The props that read the simulation (PLAN 2.6, design §1.5): tell id → the world.yaml room
 # it stands in. The game's OfficeTells.THRESHOLDS (game/src/world/office/office_tells.gd)
 # has the same ids, and tools/blender/build_office.py builds a node `tell_<id>` for each.
-TELLS = {"intake_stack": "connections", "prep_tray": "connections", "planning_board": "connections"}
+TELLS = {"intake_stack": "connections", "prep_tray": "connections", "planning_board": "connections",
+         "revision_cabinet": "revision_gis", "close_out_cabinet": "meter_data", "meter_board": "meter_data"}
 TELL_KEYS = {"tell", "text"}
+# world.yaml `tells:`: what each tell looks like at each height (OfficeTells.VARIANTS).
+TELL_HEIGHTS = ("low", "mid", "high")
+WORLD_TELL_KEYS = {"id", "place", *TELL_HEIGHTS}
 # A tell text names its problem if it holds the name or one of its words this long.
 _TELL_NAME_WORD = 7
 _WORD = re.compile(r"[a-zà-ÿ]+")
@@ -438,8 +442,6 @@ def _validate_tells(p: dict, where: str) -> None:
     tells = p.get("tells", [])
     if not isinstance(tells, list):
         raise ContentError(f"{where}: 'tells' must be a list of {{tell, text}}")
-    name = p["name"].lower()
-    name_words = {w for w in _WORD.findall(name) if len(w) >= _TELL_NAME_WORD}
     for i, t in enumerate(tells):
         here = f"{where} tell {i}"
         if not isinstance(t, dict):
@@ -448,9 +450,16 @@ def _validate_tells(p: dict, where: str) -> None:
         _require_strings(t, ["tell", "text"], here)
         if t["tell"] not in TELLS:
             raise ContentError(f"{here}: unknown tell {t['tell']!r} (known: {', '.join(sorted(TELLS))})")
-        text = t["text"].lower()
-        if name in text or name_words & set(_WORD.findall(text)):
-            raise ContentError(f"{here}: the text names the problem ({p['name']!r}); a tell shows, it never says")
+        _never_names(t["text"], p, here)
+
+
+def _never_names(text: str, p: dict, where: str) -> None:
+    """A tell's words describe what anyone can see: they never hold the problem's name or one
+    of its long words."""
+    name = p["name"].lower()
+    name_words = {w for w in _WORD.findall(name) if len(w) >= _TELL_NAME_WORD}
+    if name in text.lower() or name_words & set(_WORD.findall(text.lower())):
+        raise ContentError(f"{where}: the text names the problem ({p['name']!r}); a tell shows, it never says")
 
 
 def _validate_clues(p: dict, where: str, keys: set[str] = CLUE_KEYS) -> None:
@@ -598,19 +607,36 @@ def _all_problems(docs: dict[str, Any]) -> list[tuple[str, dict]]:
 
 
 def check_tells(docs: dict[str, Any]) -> None:
-    """Every problem whose place is in a room with tells shows on at least one of them."""
+    """Every problem whose place is on a floor with tells (the 1e) shows on at least one of them,
+    whichever room it is in."""
     world = docs.get("world")
     if world is None:
         return
+    floor_of = {r["id"]: r["floor"] for r in world["rooms"]}
     room_of = {place: r["id"] for r in world["rooms"] for place in r["places"]}
-    unknown = set(TELLS.values()) - {r["id"] for r in world["rooms"]}
+    unknown = set(TELLS.values()) - set(floor_of)
     if unknown:
         raise ContentError(f"build_content.TELLS: unknown room(s) {', '.join(sorted(unknown))}")
+    looks = {t["id"]: t for t in world.get("tells", [])}
+    if set(looks) != set(TELLS):
+        raise ContentError(f"world.yaml tells: must hold exactly {', '.join(sorted(TELLS))} "
+                           f"(missing: {', '.join(sorted(set(TELLS) - set(looks))) or '-'}; "
+                           f"unknown: {', '.join(sorted(set(looks) - set(TELLS))) or '-'})")
+    problems = [p for _, p in _all_problems(docs)]
+    for tell, look in looks.items():
+        if room_of.get(look["place"]) != TELLS[tell]:
+            raise ContentError(f"world.yaml tell '{tell}': place {look['place']!r} is not in its room '{TELLS[tell]}'")
+        for v in TELL_HEIGHTS:
+            for p in problems:
+                _never_names(look[v], p, f"world.yaml tell '{tell}' {v}")
+    floors = {floor_of[room] for room in TELLS.values()}
     for stem, p in _all_problems(docs):
         room = room_of.get(p["step"])
-        if room in TELLS.values() and not p.get("tells"):
+        if floor_of.get(room) in floors and not p.get("tells"):
+            near = [t for t, r in TELLS.items() if r == room] \
+                or [t for t, r in TELLS.items() if floor_of[r] == floor_of[room]]
             raise ContentError(f"{stem}.yaml: problem '{p['id']}' at {p['step']} (room '{room}') has no tell; "
-                               f"list one under 'tells:' ({', '.join(t for t, r in TELLS.items() if r == room)})")
+                               f"list one under 'tells:' ({', '.join(near)})")
 
 
 # ── facts and needs (path dependence, game/src/rules/facts.gd) ───────────────
@@ -1316,7 +1342,7 @@ OPEN_FROM_START = "start"
 def validate_world(doc: Any, source: str) -> None:
     if not isinstance(doc, dict):
         raise ContentError(f"{source}: expected a mapping at the top level")
-    _known_keys(doc, {"start_floor", "floors", "rooms", "rides"}, source)
+    _known_keys(doc, {"start_floor", "floors", "rooms", "rides", "tells"}, source)
     floors = _entries(doc, "floors", source)
     levels: dict[int, str] = {}
     for f in floors:
@@ -1357,6 +1383,11 @@ def validate_world(doc: Any, source: str) -> None:
         where = f"{source}: ride {ride.get('mission')!r}"
         _known_keys(ride, WORLD_RIDE_KEYS, where)
         _require_strings(ride, sorted(WORLD_RIDE_KEYS), where)
+    if "tells" in doc:
+        for t in _entries(doc, "tells", source, name="place"):
+            where = f"{source}: tell '{t['id']}'"
+            _known_keys(t, WORLD_TELL_KEYS, where)
+            _require_strings(t, ["place", *TELL_HEIGHTS], where)
 
 
 def _mission_places(m: dict, problems: dict, streams: dict) -> set[str]:

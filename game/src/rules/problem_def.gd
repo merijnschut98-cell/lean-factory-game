@@ -28,6 +28,9 @@ var effects: Array = []
 var cost_per_week := 0
 var teaches: PackedStringArray
 var clues: Array[Clue] = []
+## The props on the 1e that show it while it is open (PLAN 2.6): [{tell, text}], the text
+## what the player sees when they look closer (OfficeTells.text).
+var tells: Array[Dictionary] = []
 ## Why the definition is unusable; "" when fine.
 var error := ""
 
@@ -70,6 +73,9 @@ static func from_dict(d: Dictionary) -> ProblemDef:
 		if not Investigation.TOOLS.has(clue.tool):
 			p.error = "problem %s clue %d: unknown tool %s" % [p.id, i, clue.tool]
 		p.clues.append(clue)
+	for t: Variant in d.get("tells", []) if d.get("tells") is Array else []:
+		if t is Dictionary and t.get("tell") is String and t.get("text") is String:
+			p.tells.append({"tell": t["tell"], "text": t["text"]})
 	if not p.waste in Investigation.WASTES:
 		p.error = "problem %s: unknown waste %s" % [p.id, p.waste]
 	elif not p.severity in SEVERITIES or not p.visibility in VISIBILITIES or not p.kpi in Investigation.KPIS:
