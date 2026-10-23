@@ -190,7 +190,9 @@ func test_the_coach_answers_with_a_question_about_the_main_mission() -> void:
 	assert_true(office.ui.coach_panel.visible)
 	assert_eq(office.ui.coach_panel.ask(), UiText.coach_reply({"kind": "no_main"}))
 	office.ui.mission_board.accept(MISSION)
-	assert_true(office.ui.coach_panel.ask() in office.session.catalog.coach["stages"]["go_see"], "a go-see question")
+	var coach: Dictionary = office.session.catalog.coach
+	assert_true(office.ui.coach_panel.ask().ends_with(coach["numbers"]["go_see"]), "first he reads the number (design §3.6)")
+	assert_true(office.ui.coach_panel.ask() in coach["stages"]["go_see"], "then a go-see question")
 	_close(office)
 
 
