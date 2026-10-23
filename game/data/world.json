@@ -240,5 +240,49 @@
    "places": []
   }
  ],
- "start_floor": "first"
+ "start_floor": "first",
+ "tells": [
+  {
+   "high": "Op de kast bij Intake liggen drie hoge stapels dossiers; op de onderste staat een datum van weken terug.",
+   "id": "intake_stack",
+   "low": "Op de kast bij Intake ligt een dun stapeltje dossiers.",
+   "mid": "Op de kast bij Intake liggen twee stapels dossiers.",
+   "place": "connections.intake"
+  },
+  {
+   "high": "Het postbakje bij Werkvoorbereiding puilt uit, en ernaast ligt nog een stapel.",
+   "id": "prep_tray",
+   "low": "Het postbakje bij Werkvoorbereiding is bijna leeg.",
+   "mid": "In het postbakje bij Werkvoorbereiding ligt een stapeltje dossiers.",
+   "place": "connections.design"
+  },
+  {
+   "high": "Op het weekbord van de planners hangen bij bijna elke dag rode kaartjes.",
+   "id": "planning_board",
+   "low": "Op het weekbord van de planners hangt één rood kaartje tussen de gele en witte.",
+   "mid": "Op het weekbord van de planners hangen een paar rode kaartjes tussen de gele en witte.",
+   "place": "connections.planning"
+  },
+  {
+   "high": "De kast bij Revisie & GIS ligt vol schetsen, en op de vloer ernaast ligt nog een stapel.",
+   "id": "revision_cabinet",
+   "low": "Op de kast bij Revisie & GIS ligt een dun stapeltje schetsen naast een paar opgerolde tekeningen.",
+   "mid": "Op de kast bij Revisie & GIS liggen twee stapels schetsen en een paar opgerolde tekeningen.",
+   "place": "connections.revision"
+  },
+  {
+   "high": "De kast bij de deur ligt vol dossiers, en op de vloer ernaast staan er nog twee stapels.",
+   "id": "close_out_cabinet",
+   "low": "Op de kast bij de deur liggen twee stapeltjes dossiers.",
+   "mid": "Op de kast bij de deur liggen vier stapels dossiers naast elkaar.",
+   "place": "connections.close_out_wait"
+  },
+  {
+   "high": "Het whiteboard bij Meetdata staat vol adressen in twee kolommen, elk met een rood streepje erachter.",
+   "id": "meter_board",
+   "low": "Op het whiteboard bij Meetdata staat één adres, met een rood streepje erachter.",
+   "mid": "Op het whiteboard bij Meetdata staat een rijtje adressen, elk met een rood streepje erachter.",
+   "place": "meters.registration"
+  }
+ ]
 }

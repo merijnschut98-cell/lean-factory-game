@@ -230,6 +230,8 @@ problems:
       # new-build streets where digging happens.
       - {target: outages.daytime, property: demand, value: 1.05}
     cost_per_week: 425  # ~0.5 extra damage a week x EUR 850
+    tells:
+      - {tell: revision_cabinet, text: "Op de kast bij Revisie & GIS liggen stapels schetsen; op de onderste staat een datum van maanden terug."}
     clues:
       - {tool: data, key: true, depth: 0, text: "Er staan 240 opgeleverde aansluitingen open in GIS; de oudste is vier maanden oud."}
       - {tool: queue_count, key: false, depth: 0, text: "De bak met schetsen is overzichtelijk geordend op datum."}
@@ -345,6 +347,8 @@ problems:
     teaches: [batching, one_piece_flow]
     effects:
       - {target: connections.close_out_wait, property: batch_days, value: 28}
+    tells:
+      - {tell: close_out_cabinet, text: "Op en naast de kast bij de deur liggen dossiers met 'gereed gemeld' erop, de oudste van weken geleden."}
     clues:
       - {tool: data, key: true, depth: 0, text: "Aansluitingen die technisch klaar zijn, staan gemiddeld twee weken op 'administratief open'."}
       - {tool: queue_count, key: false, depth: 0, at: connections.close_out, text: "Bij Meetdata & registratie ligt weinig werk; het team heeft tijd over."}
@@ -404,6 +408,8 @@ problems:
       # stay silent, one in twenty elsewhere; with about a quarter of new meters
       # in basements that is roughly one in nine overall.
       - {target: meters.registration, property: ftr, value: -0.1}
+    tells:
+      - {tell: meter_board, text: "Op het whiteboard bij Meetdata staan twee kolommen adressen, elk met een rood streepje erachter."}
     clues:
       - {tool: data, key: true, depth: 0, text: "In de nieuwe flats met een betonnen kelderberging stuurt drie op de tien nieuwe meters de eerste week geen standen; elders één op de twintig."}
       - {tool: queue_count, key: false, depth: 0, text: "Bij Meetdata & registratie ligt weinig werk; de lijst is kort en netjes op volgorde."}
