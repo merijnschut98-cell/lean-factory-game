@@ -377,10 +377,10 @@ func _add_interactables() -> void:
 		var board := Interactable.create(OfficeWhiteboard.ID, OfficeWhiteboard.stand())
 		interactables.append(board)
 		add_child(board)
-	var obeya2 := OfficeKpiBoard.room_of(self)   # the KPI board, once it exists and its room is open
-	if obeya2.has_area() and OfficeKpiBoard.ROOM in floors.open and session.error.is_empty() \
+	var kpi_wall: Variant = OfficeKpiBoard.placement_in(self)   # the KPI board, once it exists and its room is open
+	if kpi_wall != null and OfficeKpiBoard.ROOM in floors.open and session.error.is_empty() \
 			and session.region.board.unlocked:
-		var kpi := Interactable.create(OfficeKpiBoard.ID, OfficeKpiBoard.stand(obeya2))
+		var kpi := Interactable.create(OfficeKpiBoard.ID, OfficeKpiBoard.stand(kpi_wall))
 		interactables.append(kpi)
 		add_child(kpi)
 	var headset := OfficeHeadset.place(self)   # the KCC's free desk (begane grond, once its room is open)
@@ -659,13 +659,13 @@ func open_whiteboard() -> void:
 ## the board opens (KpiBoardView); closing it gives the world back and the wall shows
 ## the choice in force. Null when the world is busy or the board does not exist yet.
 func open_kpi_board() -> KpiBoardView:
-	var room := OfficeKpiBoard.room_of(self)
-	if busy() or not room.has_area() or not session.region.board.unlocked:
+	var wall: Variant = OfficeKpiBoard.placement_in(self)
+	if busy() or wall == null or not session.region.board.unlocked:
 		return null
 	_on_panel_opened()
 	_world_input(false)
-	var ahead := -OfficeKpiBoard.FACING
-	rig.converse(OfficeKpiBoard.look_point(room), atan2(-ahead.x, -ahead.z), 0.0, 0.0)
+	var ahead: Vector3 = -(wall as Transform3D).basis.z
+	rig.converse(OfficeKpiBoard.look_point(wall), atan2(-ahead.x, -ahead.z), 0.0, 0.0)
 	kpi_board = KpiBoardView.open(self, session)
 	kpi_board.closed.connect(_on_kpi_board_closed)
 	return kpi_board
@@ -681,13 +681,13 @@ func _on_kpi_board_closed(_result: Dictionary) -> void:
 
 ## The KPI board on Directie & Obeya's wall (on the 2e), as the teams steer now.
 func _hang_kpi_wall() -> void:
-	var room := OfficeKpiBoard.room_of(self)
 	var old := find_marker(OfficeKpiBoard.NODE)
 	if old != null:
 		old.get_parent().remove_child(old)
 		old.free()
-	if room.has_area() and session.error.is_empty():
-		geometry.add_child(OfficeKpiBoard.build(in_office(geometry).affine_inverse(), room, OfficeKpiBoard.columns_of(session)))
+	var wall: Variant = OfficeKpiBoard.placement_in(self)
+	if wall != null and session.error.is_empty():
+		geometry.add_child(OfficeKpiBoard.build(in_office(geometry).affine_inverse(), wall, OfficeKpiBoard.columns_of(session)))
 
 
 ## An expert's topic opens a "Hoe werkt het?" explainer over the talk (phase 2

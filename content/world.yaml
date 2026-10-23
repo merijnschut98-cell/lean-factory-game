@@ -71,7 +71,7 @@ rooms:
     floor: second
     name: Directie & Obeya
     places: []
-    opens_with: [fix_silo_kpis]  # the KPI board's home
+    opens_with: [fix_silo_kpis, first_kpi_review]  # the KPI board's home; its first quarterly review plays here
   - id: grid_strategy
     floor: second
     name: Netstrategie

@@ -31,6 +31,7 @@ const MAGNET_RADIUS := 13.0
 ## The board leaves this share of the screen around it (x, y), so the room still shows
 ## and the HUD's bars above and below stay readable.
 const MARGIN := Vector2(0.035, 0.065)
+const TITLE := "Waar sturen de teams op?"
 const THINKING := "De analisten rekenen het kwartaal door…"
 const HINT := "Klik per team twee kaarten aan."
 
@@ -179,7 +180,7 @@ func _build() -> void:
 	board.add_child(page)
 	var head := HBoxContainer.new()
 	page.add_child(head)
-	head.add_child(_written("KPI-bord Aansluitingen", 34, MARKER_BLUE))
+	head.add_child(_written(TITLE, 34, MARKER_BLUE))
 	var gap := Control.new()
 	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(gap)

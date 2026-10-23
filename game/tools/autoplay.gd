@@ -593,8 +593,8 @@ class Persona extends RefCounted:
 				return _solve(m)  # a repair quest's accept took the fix back to the A3
 			"sustain":
 				return _sustain(m)
-			"scene":  # a milestone's scene: go to its room and sit through it, the first answer
-				var code := s.finish_scene(m.id, 0)
+			"scene":
+				var code := play_scene(m)
 				if not code.is_empty():
 					_dead_end("scene_refused", m.id, code)
 					_give_up(m)
@@ -604,6 +604,35 @@ class Persona extends RefCounted:
 		_dead_end("unknown_goal", m.id, m.goal_type)
 		_give_up(m)
 		return true
+
+	## A milestone's scene: go to its room and sit through it, the first answer; a scene
+	## that ends at the KPI board (PLAN 2.4c) hangs the persona's KPIs there first
+	## (kpi_choice). "" or GameSession.finish_scene's code.
+	func play_scene(m: MissionDef) -> String:
+		if s.scene_of(m.id).get("board", false) and s.hang_kpi_board() \
+				and s.region.board.review_due(s.region.net.time):
+			var result := s.kpi_review(kpi_choice())
+			if not result["error"].is_empty():
+				return "kpi_review:" + result["error"]
+		return s.finish_scene(m.id, 0)
+
+	## Two KPIs per team the persona's way: the expert's play hangs flow first, then the
+	## customer; the careless the output numbers it knows; the average any two.
+	func kpi_choice() -> Dictionary:
+		var order: Array = {"expert": ["flow", "customer", "output"], "careless": ["output", "customer", "flow"]}.get(style, [])
+		var choice := {}
+		for pool: String in s.catalog.kpis.menus:
+			var menu: Array = (s.catalog.kpis.menus[pool] as Array).duplicate()
+			if order.is_empty():   # the average persona's two are any two (its own seeded draws)
+				for i in range(menu.size() - 1, 0, -1):
+					var j := rng.randi_range(0, i)
+					var held: KpiDef = menu[i]
+					menu[i] = menu[j]
+					menu[j] = held
+			else:
+				menu.sort_custom(func(a: KpiDef, b: KpiDef) -> bool: return order.find(a.focus) < order.find(b.focus))
+			choice[pool] = menu.slice(0, 2).map(func(k: KpiDef) -> String: return k.id)
+		return choice
 
 	## Whether the mission's own goal is met and only its closing talk is left
 	## (Missions reads the talk through its `talked` Callable).
@@ -2001,7 +2030,7 @@ class PlayReport extends RefCounted:
 		md.append("## Accessors GameSession lacks (the playtester reads Region/Missions instead)")
 		md.append("")
 		for line in [
-			"`kpi_review_due()`: `kpi_review(choices)` exists, but nothing says when a review is due and no screen calls it (PLAN 2.4c), so the quarterly review is not played here.",
+			"`kpi_review_due()`: the first quarterly review is played in its scene (first_kpi_review, at the KPI board); the playtester reads Region.board.review_due for it, and the later quarters (tier 2's lsw_kpi_review) are not played here.",
 			"`mission_status(id)` / `mission_progress(id)`: the board needs status, deadline left (opened_at + deadline_days) and observe progress without reaching into session.missions.",
 			"`stage_of(mission_id)`: the coach's stage, for a UI hint and for tests.",
 			"`problem(id)` / `key_clues_found(id)`: the problem's definition and found key clues are read through session.region.",

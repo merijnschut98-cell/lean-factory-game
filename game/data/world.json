@@ -126,7 +126,8 @@
    "id": "directors_obeya",
    "name": "Directie & Obeya",
    "opens_with": [
-    "fix_silo_kpis"
+    "fix_silo_kpis",
+    "first_kpi_review"
    ],
    "places": []
   },

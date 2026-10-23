@@ -909,6 +909,37 @@
    "tier": 1
   },
   {
+   "act": 2,
+   "briefing": "Elk kwartaal kijken Frank en ik samen naar de getallen waar de teams op sturen. Deze keer wil ik dat jij erbij bent. Directie & Obeya, op de 2e.",
+   "chapter": "Wat je meet",
+   "debrief": "Het bord hangt. Over een kwartaal zien we of de getallen deden wat we ervan verwachtten. Welk getal ga jij zelf in de gaten houden?",
+   "goal": {
+    "type": "scene"
+   },
+   "id": "first_kpi_review",
+   "kind": "milestone",
+   "name": "Het eerste kwartaal",
+   "requires": {
+    "missions": [
+     "fix_silo_kpis"
+    ]
+   },
+   "rewards": {
+    "budget": 8000,
+    "reputation": 5,
+    "xp": 800
+   },
+   "scene": "first_kpi_review",
+   "steps": {
+    "go": "Ga naar Directie & Obeya op de 2e"
+   },
+   "teaches": [
+    "kpi",
+    "leading_lagging"
+   ],
+   "tier": 1
+  },
+  {
    "act": 1,
    "briefing": "De storingsdienst werkt als de rest slaapt. Loop een dienst mee met monteur Ahmed Bouzid, van melding tot herstel. Let op de klok: na vier uur zonder stroom krijgt elke klant een vergoeding. Waar gaat de tijd naartoe?",
    "debrief": "Je zag een storing van melding tot herstel. Halverwege reed Ahmed naar het magazijn voor een mof. Dat onthoud je.",

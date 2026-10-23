@@ -3,58 +3,63 @@ class_name OfficeKpiBoard
 ## board with a column per team and the cards they steer by, magnets on them. Once the
 ## board exists (KpiBoard.unlocked, born at the obeya or in the first quarterly review's
 ## scene) you step up to it (E, or a click on its ring) and the camera moves in; the
-## board itself opens (KpiBoardView). Built in Godot like Ruud's whiteboard, against
-## the room's west wall from the room's own marker, so the floor's model needs nothing.
+## board itself opens (KpiBoardView). Built in Godot like Ruud's whiteboard, hung over
+## the third of the room's obeya boards (the model's second KPI chart, a copy of the
+## first), or on the room's west wall when the model has no such board; the floor's
+## model needs nothing.
 
 ## The interaction point's id (an Interactable kind of its own) and the board's node.
 const ID := "kpi_board"
 const NODE := "kpi_board_wall"
 const ROOM := "directors_obeya"
+## The obeya board it hangs over (build_office.py plan_second: obeya2_board<k>).
+const OVER := "obeya2_board2_frame"
 ## The board (m): as the obeya boards beside it, 2.4 wide and 1.2 high, its middle at
-## 1.55 m, this far off the wall line; the player stands this far in front.
+## 1.55 m, its back this far before the wall board's middle (or the wall line); the
+## player stands this far in front.
 const SIZE := Vector2(2.4, 1.2)
 const MIDDLE_HEIGHT := 1.55
-const OFF_WALL := 0.09
+const OFF_WALL := 0.04
 const STAND := 1.1
-## Facing +X into the room, from its west wall.
-const FACING := Vector3(1, 0, 0)
-const PROMPT := "E — KPI-bord"
+const PROMPT := "E — KPI-bord: waar sturen de teams op?"
 const LABEL := "KPI-bord"
 const CARD := Vector2(0.5, 0.16)
 
 
-## Directie & Obeya's floor area (x, z) on the loaded floor; empty when it is elsewhere.
-static func room_of(office: Office) -> Rect2:
+## Where the board hangs on the loaded floor (office space; the board's front is +Z of
+## the basis), or null when Directie & Obeya is not on it.
+static func placement_in(office: Office) -> Variant:
 	var marker: Node = office.floors.markers().get("room:" + ROOM)
-	return OfficeFloors.room_rect(marker) if marker != null else Rect2()
-
-
-## The board's transform in office space for its room's rect (x, z).
-static func placement(room: Rect2) -> Transform3D:
-	var at := Vector3(room.position.x + OFF_WALL, 0, room.get_center().y)
-	return Transform3D(Basis.looking_at(-FACING, Vector3.UP), at)
+	if marker == null:
+		return null
+	var room := OfficeFloors.room_rect(marker)
+	var over := office.find_marker(OVER)
+	var at := Vector3(room.position.x + OFF_WALL, 0, room.get_center().y)   # the west wall
+	if over != null:
+		at = office.in_office(over).origin * Vector3(1, 0, 1)
+	var facing := Vector3(1, 0, 0) if over == null else Vector3(0, 0, signf(room.get_center().y - at.z))
+	return Transform3D(Basis.looking_at(-facing, Vector3.UP), at + facing * OFF_WALL)
 
 
 ## Where the player stands to use it, facing the board.
-static func stand(room: Rect2) -> Transform3D:
-	var t := placement(room)
-	return Transform3D(t.basis, t.origin + FACING * STAND)
+static func stand(at: Transform3D) -> Transform3D:
+	return Transform3D(at.basis, at.origin + at.basis.z * STAND)
 
 
-static func look_point(room: Rect2) -> Vector3:
-	return placement(room).origin + Vector3.UP * MIDDLE_HEIGHT
+static func look_point(at: Transform3D) -> Vector3:
+	return at.origin + Vector3.UP * MIDDLE_HEIGHT
 
 
-## The board, placed in the geometry by `to_geometry` (office space → geometry), with
-## `columns`: [[team name, [card names]]] as the teams steer now (empty cards: none yet).
-static func build(to_geometry: Transform3D, room: Rect2, columns: Array) -> Node3D:
+## The board at `at` (office space), placed in the geometry by `to_geometry` (office
+## space → geometry), with `columns`: [[team name, [card names]]] as the teams steer now.
+static func build(to_geometry: Transform3D, at: Transform3D, columns: Array) -> Node3D:
 	var root := Node3D.new()
 	root.name = NODE
-	root.transform = to_geometry * placement(room)
+	root.transform = to_geometry * at
 	var frame := _material(Color(0.72, 0.74, 0.77), 0.6, 0.35)
 	_box(root, Vector3(SIZE.x + 0.06, SIZE.y + 0.06, 0.03), Vector3(0, MIDDLE_HEIGHT, -0.005), frame)
 	_box(root, Vector3(SIZE.x, SIZE.y, 0.01), Vector3(0, MIDDLE_HEIGHT, 0.012), _material(KpiBoardView.ENAMEL, 0.0, 0.25))
-	_text(root, "KPI-bord Aansluitingen", 72, KpiBoardView.MARKER_BLUE, Vector3(-SIZE.x / 2 + 0.55, MIDDLE_HEIGHT + 0.49, 0.019), 1200.0)
+	_text(root, KpiBoardView.TITLE, 72, KpiBoardView.MARKER_BLUE, Vector3(-SIZE.x / 2 + 0.55, MIDDLE_HEIGHT + 0.49, 0.019), 1200.0)
 	var width := SIZE.x / maxf(1.0, columns.size())
 	for i in columns.size():
 		var x := -SIZE.x / 2 + width * (i + 0.5)

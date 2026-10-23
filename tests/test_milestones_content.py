@@ -141,3 +141,53 @@ def test_real_act_one_milestones():
     assert sum(1 for b in scene["beats"] if "choice" in b) == 1, "one question for the player"
     for variant, mission in [("too_early", "fix_done_but_not_closed"), ("too_early", "fix_digging_damage")]:
         assert missions[mission]["debrief_variants"][variant]
+
+
+BOARD_SCENE = SCENES_YAML.replace("""        choice:
+          - {label: "De mensen", fact: "flag:review_people", reply: "Dat dacht ik al."}
+          - {label: "De getallen", fact: "flag:review_numbers"}
+""", """        board: true
+      - {speaker: ruud, line: "Doorlooptijd, dus.", needs: {all: ["steers:flow"]}}
+""")
+
+
+def test_a_scene_can_end_at_the_kpi_board(rules_dirs):
+    """The first quarterly review (PLAN 2.4c): a beat with `board: true` opens the KPI
+    board where the scene's question would be; steers:<focus> reads the choice after it."""
+    content, _ = rules_dirs
+    docs = _load(content, _add(_review(), scenes=BOARD_SCENE))
+    assert docs["scenes"]["scenes"][0]["beats"][2]["board"] is True
+
+
+@pytest.mark.parametrize("scenes, message", [
+    (BOARD_SCENE.replace("board: true", "board: yes please"), "'board' must be true"),
+    (BOARD_SCENE.replace("        board: true\n", """        board: true
+        choice:
+          - {label: "De mensen", fact: "flag:review_people"}
+          - {label: "De getallen", fact: "flag:review_numbers"}
+"""), "one question for the player at most"),
+    (BOARD_SCENE.replace("steers:flow", "steers:speed"), "the board steers on"),
+])
+def test_board_scene_errors_are_caught(rules_dirs, scenes, message):
+    content, _ = rules_dirs
+    with pytest.raises(bc.ContentError, match=message):
+        _load(content, _add(_review(), scenes=scenes))
+
+
+def test_the_real_first_kpi_review():
+    """Act II's quarterly review (catalogue: first_kpi_review): a milestone after
+    fix_silo_kpis, Ruud and Frank at Directie & Obeya, ending at the board."""
+    docs = bc.load_content()
+    m = next(m for m in docs["missions"]["missions"] if m["id"] == "first_kpi_review")
+    assert m["kind"] == "milestone" and m["act"] == 2 and m["requires"]["missions"] == ["fix_silo_kpis"]
+    scene = next(s for s in docs["scenes"]["scenes"] if s["id"] == m["scene"])
+    assert scene["room"] == "directors_obeya" and set(scene["present"]) == {"ruud", "frank"}
+    assert sum(1 for b in scene["beats"] if b.get("board")) == 1
+    assert not any("choice" in b for b in scene["beats"])
+    rooms = {r["id"]: r for r in docs["world"]["rooms"]}
+    assert "first_kpi_review" in rooms["directors_obeya"]["opens_with"]
+    read = {atom for b in scene["beats"] for atoms in b.get("needs", {}).values() for atom in atoms}
+    for fact in ["holds:silo_kpis", "committed:frank_kpi_targets", "complied:frank_kpi_targets",
+                 "blocked:frank_kpi_targets", "steers:output", "steers:flow", "steers:customer",
+                 "forecast_positive:kpi_board"]:
+        assert fact in read, f"the scene reads {fact}"

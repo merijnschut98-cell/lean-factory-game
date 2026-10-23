@@ -802,14 +802,25 @@ func speaker_name(person_id: String) -> String:
 	return coach.get_slice(" ", 0) if person_id == "ruud" and not coach.is_empty() else person_id.capitalize()
 
 
+## The KPI board's birth (PLAN 2.5): a scene that ends at the board (SceneScript
+## `board`) hangs it when no fix did (KpiBoard.unlock: its first review is due at once).
+## Whether the board is up.
+func hang_kpi_board() -> bool:
+	region.board.unlock(region.net.time)
+	return region.board.unlocked
+
+
 ## The scene of milestone `mission_id` was played and answered with option `answer`
 ## (-1: it asked nothing); its minutes pass and the milestone completes. "" or
-## Missions.finish_scene's code, or bad_answer.
+## Missions.finish_scene's code, bad_answer, or review_first (a scene that ends at the
+## KPI board, before the board's review is done).
 func finish_scene(mission_id: String, answer: int = -1) -> String:
 	var scene := scene_of(mission_id)
 	var options: Array = scene.get("choice", {}).get("options", [])
 	if not options.is_empty() and (answer < 0 or answer >= options.size()):
 		return "bad_answer"
+	if scene.get("board", false) and (not region.board.unlocked or region.board.review_due(region.net.time)):
+		return "review_first"   # a scene that ends at the KPI board ends once it is hung
 	var refused := missions.finish_scene(mission_id, options[answer]["fact"] if not options.is_empty() else "")
 	if refused.is_empty():
 		_after(SCENE_MINUTES)

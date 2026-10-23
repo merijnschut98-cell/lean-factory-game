@@ -3066,7 +3066,7 @@ def check_company(docs: dict[str, Any]) -> None:
 # (the facts choose the lines), and at most one beat asking the player a question
 # (`choice`): each answer a flag remembered for later, and what is said back.
 SCENE_KEYS = {"id", "room", "present", "beats"}
-BEAT_KEYS = {"speaker", "line", "needs", "choice"}
+BEAT_KEYS = {"speaker", "line", "needs", "choice", "board"}
 CHOICE_KEYS = {"label", "fact", "reply"}
 CHOICE_OPTIONS = (2, 4)
 
@@ -3080,12 +3080,15 @@ def validate_scenes(doc: Any, source: str) -> None:
         beats = s.get("beats")
         if not isinstance(beats, list) or not beats or not all(isinstance(b, dict) for b in beats):
             raise ContentError(f"{where}: 'beats' must be a non-empty list of {{speaker, line}}")
-        if sum(1 for b in beats if "choice" in b) > 1:
-            raise ContentError(f"{where}: one question for the player at most")
+        # The KPI board (`board: true`, PLAN 2.4c) is the scene's question when it has one.
+        if sum(1 for b in beats if "choice" in b) + sum(1 for b in beats if "board" in b) > 1:
+            raise ContentError(f"{where}: one question for the player at most (a choice or the KPI board)")
         for i, b in enumerate(beats):
             at = f"{where} beat {i}"
             _known_keys(b, BEAT_KEYS, at)
             _require_strings(b, ["speaker", "line"], at)
+            if "board" in b and b["board"] is not True:
+                raise ContentError(f"{at}: 'board' must be true (the KPI board opens after this line)")
             if b["speaker"] not in present:
                 raise ContentError(f"{at}: {b['speaker']!r} speaks but is not 'present'")
             if "needs" in b:
