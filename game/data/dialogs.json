@@ -5423,6 +5423,109 @@
     }
    },
    "warning": "Met alle respect: dit zei de vorige meneer ook."
+  },
+  {
+   "closing": "Graag gedaan. En als er iets niet klopt, hoor ik het graag. Ik meet ook maar met wat ik heb.",
+   "id": "wim_expert",
+   "kind": "expert",
+   "name": "Wim en zijn metingen",
+   "needs": {
+    "all": [
+     "heard:wim_spreadsheet"
+    ]
+   },
+   "opening": "U wilt meer weten over mijn metingen? Daar maak ik graag tijd voor.",
+   "person": "wim",
+   "retry_opening": "Daar bent u weer. Ik heb tabblad drie al openstaan.",
+   "topics": [
+    {
+     "answer": "Met een logger in de meterkast. Die schrijft elke vijf minuten de spanning op. Zelf gebouwd, hoor, van een printplaatje en een oude telefoonlader. Elke eerste van de maand haal ik de gegevens eraf.",
+     "ask": "Hoe meet u dat eigenlijk, die spanning?",
+     "id": "logger"
+    },
+    {
+     "answer": "Tweehonderddertig volt, plus tien procent. Zit de spanning tien minuten lang daarboven, dan moet een omvormer afschakelen. Zo staat het in de norm. Mijn omvormer doet dus precies wat hij moet doen. Het probleem zit ergens anders.",
+     "ask": "Waarom is tweehonderddrieënvijftig volt zo'n grens?",
+     "id": "limit"
+    },
+    {
+     "answer": "Per dag de hoogste spanning, met het weer van het KNMI ernaast. Op een zonnige middag in mei zit ik boven de tweehonderdvijftig, op een grijze dag kom ik niet boven de tweehonderdveertig. En elk voorjaar komen er een paar volt bij. Sinds de halve straat panelen heeft.",
+     "ask": "Wat staat er precies op tabblad drie?",
+     "id": "tab_three",
+     "unlocks": {
+      "clue": "inverters_tripping:6"
+     }
+    },
+    {
+     "answer": "Ik zou ze naast elkaar leggen, per kabel. Dan ziet u dat de spanning het hoogst is aan het eind van de kabel, het verst van de trafo. Dan weet u ook waar u moet kijken. Ik zou het zelf doen, maar ik kan niet bij die gegevens. Terecht, hoor. Privacy.",
+     "ask": "Wat zou u doen met de metingen van de hele straat?",
+     "id": "the_street",
+     "trust": 50,
+     "unlocks": {
+      "clue": "inverters_tripping:7"
+     }
+    },
+    {
+     "answer": "Toen de panelen op het dak kwamen, in 2021. Ik wilde weten wat ze opleverden. Veertig jaar heb ik storingen gezocht in fabrieken, en daar leer je één ding: eerst meten, dan praten. Mijn vrouw noemt het een hobby. Ik noem het een meetreeks.",
+     "ask": "Hoe bent u eigenlijk met die spreadsheet begonnen?",
+     "id": "how_it_began"
+    }
+   ]
+  },
+  {
+   "closing": "Goed. En als je het wilt zien in plaats van horen: je weet me te vinden.",
+   "id": "henk_expert",
+   "kind": "expert",
+   "name": "Henk over het vak",
+   "opening": "Vragen over het vak? Daar heb ik altijd tijd voor. Zolang ik hier nog rondloop.",
+   "person": "henk",
+   "retry_opening": "Jij weer, {jongen_meid}. Wat wil je nog weten?",
+   "topics": [
+    {
+     "answer": "Een mof verbindt twee stukken kabel. Welke je pakt, hangt af van wat er aan weerszijden ligt. Twee kunststof kabels: een krimpmof, klaar. Oude papierloodkabel aan kunststof: dan heb je een overgangsmof nodig, en die heeft niet elke bus bij zich. Pak je de verkeerde, dan sta je om twee uur 's nachts met lege handen in de sleuf.",
+     "ask": "Wat is eigenlijk het verschil tussen al die moffen?",
+     "id": "joints",
+     "unlocks": {
+      "clue": "wrong_joint_in_van:5"
+     }
+    },
+    {
+     "answer": "Aan het lood. Papier met olie erin en een loodmantel eromheen, GPLK noemen we dat. Zwaar spul, en het gaat langer mee dan je denkt. Maar je pakt het anders aan dan kunststof: dat lood moet je netjes dicht solderen, anders trekt er vocht in. Mijn eerste mof op zo'n kabel maakte ik in 1979, achter de oude gasfabriek.",
+     "ask": "Hoe herken je een kabel van voor 1970?",
+     "id": "old_cable",
+     "unlocks": {
+      "clue": "knowledge_drain:6"
+     }
+    },
+    {
+     "answer": "Die melding doen ze heus wel. Maar de kaart klopt niet altijd. Wij hebben in de jaren tachtig kabels verlegd die nooit op tekening zijn gekomen. Een goede aannemer graaft eerst een proefsleuf, met de schop. Maar als de planning krap is, slaan ze die over. En dan zit de graafbak er zo in.",
+     "ask": "Hoe kan het dat er zo vaak in een kabel wordt gegraven, met al die KLIC-meldingen?",
+     "id": "digging",
+     "unlocks": {
+      "clue": "digging_damage:5"
+     }
+    },
+    {
+     "answer": "Zes meter GPLK uit de Lindenlaan, van 1968. Die heb ik er in 2019 zelf in gelegd. Daar kunnen de jongens een overgangsmof op oefenen zonder dat er een wijk zonder stroom zit. Alleen wordt hij te weinig gebruikt. Iedereen heeft het druk.",
+     "ask": "Wat heb je eigenlijk liggen in die sleuf op het opleidingsterrein?",
+     "id": "trench",
+     "unlocks": {
+      "facts": [
+       "heard:henk_trench"
+      ]
+     }
+    },
+    {
+     "answer": "Uit het boekje weet die jongen alles. Beter dan ik, eerlijk gezegd. Maar hij moet het nog in z'n handen krijgen: voelen of een kabel nat is, ruiken of een mof is doorgeslagen. Dat leer je alleen door het vaak te doen, met iemand naast je die zegt: nog een keer. Zo heeft ouwe Toon het mij geleerd. In 1984.",
+     "ask": "Wat moet Ahmed nog leren, volgens jou?",
+     "id": "ahmed",
+     "needs": {
+      "all": [
+       "heard:henk_teach"
+      ]
+     }
+    }
+   ]
   }
  ],
  "greetings": {
@@ -5827,6 +5930,7 @@
   },
   {
    "archetype": "customer_upset",
+   "customer": true,
    "id": "el_amrani",
    "morale": 50,
    "name": "Fatima El Amrani",
@@ -5836,7 +5940,8 @@
    "short": "mevrouw El Amrani",
    "team": "contact_centre",
    "trust": 50,
-   "voice": "Ik heb het opgeschreven."
+   "voice": "Ik heb het opgeschreven.",
+   "voicemail": "Met Fatima El Amrani. Ik had u graag even gesproken. Ik heb het genoteerd: vandaag, geen gehoor. Ik bel morgen terug."
   },
   {
    "archetype": "craftsman",
@@ -5919,6 +6024,7 @@
   },
   {
    "archetype": "customer_upset",
+   "customer": true,
    "id": "ilse",
    "morale": 50,
    "name": "Ilse de Graaf",
@@ -5928,7 +6034,8 @@
    "short": "Ilse",
    "team": "key_accounts",
    "trust": 50,
-   "voice": "Twee jaar."
+   "voice": "Twee jaar.",
+   "voicemail": "Met Ilse de Graaf, van de bakkerij. Ik sta zo weer aan de oven. Ik probeer het morgen nog een keer."
   },
   {
    "archetype": "craftsman",

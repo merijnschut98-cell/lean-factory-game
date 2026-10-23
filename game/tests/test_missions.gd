@@ -1091,8 +1091,7 @@ func test_a_story_order_is_met_by_delivery_or_by_the_agreement() -> void:
 func test_a_promised_date_is_checked_on_its_day() -> void:
 	for delivered in [false, true]:
 		var log := _with([_winter({"deadline_on_day": 60})])
-		log.promises = func() -> Dictionary:
-			return {"call": {"proposal": "date", "kind": "delivery_date", "days": 6, "at": SimCalendar.days(1)}}
+		log.facts.add("promised:call:2026-10-18")   # day 6 of play (GameSession records it at the talk)
 		log.accept("walk_connections")
 		_walk_connections(log)
 		log.region.advance_days(6)

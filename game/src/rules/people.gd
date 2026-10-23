@@ -89,6 +89,8 @@ const COACHED := ["ruined", "blocked", "compliance", "partial", "commitment"]
 const TALK_LOG_MAX := 12
 ## The player's note on a person is kept to this many characters.
 const NOTE_MAX := 600
+## An expert's answer among what they told you: its key is TOPIC + the topic id.
+const TOPIC := "topic:"
 ## The keys and value types of a saved observed line and a saved talk.
 const OBSERVED_KEYS := {"dialog": TYPE_STRING, "key": TYPE_STRING, "text": TYPE_STRING, "place": TYPE_STRING}
 const TALK_KEYS := {"dialog": TYPE_STRING, "outcome": TYPE_STRING, "trace": TYPE_ARRAY, "moves": TYPE_ARRAY}
@@ -168,22 +170,28 @@ func _reset() -> void:
 # ── Who has something to say ────────────────────────────────────────────────
 
 ## The talk a person has for the player now: a persuasion of the main mission,
-## then of another active mission, then a check-in; null when there is none.
+## then of another active mission, then a check-in, then an expert talk; null
+## when there is none.
 func dialog_for(person_id: String, world: Dictionary) -> DialogDef:
 	var best: DialogDef = null
 	var best_rank := -1
 	var known := facts(world.get("facts", {}))
 	for d: DialogDef in dialogs.values():
 		var rank := _rank(d, world, known) if d.person == person_id and not left.has(person_id) else -1
-		if rank > best_rank:
+		if rank > best_rank or (rank == best_rank and rank >= 0 and best.kind == ExpertTalk.KIND):
 			best = d
 			best_rank = rank
 	return best
 
 
 ## 2 for the main mission's talk, 1 for another active mission's, 0 for a
-## check-in; -1 when it cannot be had now. `known`: every fact (facts()).
+## check-in or an expert talk (dialog_for puts the expert last); -1 when it
+## cannot be had now. `known`: every fact (facts()).
 func _rank(d: DialogDef, world: Dictionary, known: Dictionary) -> int:
+	if d.kind == ExpertTalk.KIND:
+		var active: Array = world.get("active", [])
+		var on := d.mission.is_empty() or ([d.mission] + Array(d.also_during)).any(func(m: String) -> bool: return m in active)
+		return 0 if on and DialogDef.needs_met(d.needs, known) and _has_open_topic(d, known) else -1
 	if d.kind == "checkin":
 		var below := int(d.trigger.get("morale_below", 101))
 		var now := int(world.get("now", 0))
@@ -345,6 +353,49 @@ static func talk_note(d: Dialog, result: Dictionary) -> Dictionary:
 	return {"band": Dialog.band_of(d.openness), "mood": d.mood, "heard": heard,
 		"new_clue": not str(result["clue"]).is_empty(),
 		"hints": result["hints"], "wait_for": result["wait_for"], "ruud_names": result["ruud_names"]}
+
+
+# ── An expert talk (ExpertTalk) ─────────────────────────────────────────────
+
+## Start an expert talk: the person's trust, what was asked before, the facts
+## and the clues found (a clue found already is not new).
+func start_expert(d: DialogDef, world: Dictionary) -> ExpertTalk:
+	return ExpertTalk.new(d, persons[d.person], {"trust": trust[d.person], "asked": asked_topics(d.id),
+		"facts": facts(world.get("facts", {})), "found": world.get("found", {})})
+
+
+## Apply an ended expert talk: trust, what was asked (kept as what they told
+## you: an answer is an observed line under the key "topic:<id>"), the facts
+## its topics unlocked. Nothing is won or lost: no outcome, no memory flag.
+## Returns {dialog, person, trust, morale, asked (this talk's topic ids), facts}.
+func finish_expert(t: ExpertTalk, now: int) -> Dictionary:
+	var who := t.who
+	trust[who.id] = t.trust
+	talks[t.def.id] = talks.get(t.def.id, 0) + 1
+	for id in t.asked_now:
+		_observe(who.id, {"dialog": t.def.id, "key": TOPIC + id, "text": str(t.def.topic(id)["answer"]), "at": now,
+			"place": who.place})
+	var unlocked := t.unlocked_facts()
+	for f: String in unlocked:
+		heard_facts[f] = true
+	return {"dialog": t.def.id, "person": who.id, "trust": trust[who.id], "morale": morale[who.id],
+		"asked": t.asked_now.duplicate(), "facts": unlocked}
+
+
+## The topic ids of expert talk `dialog_id` asked so far, in order.
+func asked_topics(dialog_id: String) -> Array[String]:
+	var out: Array[String] = []
+	var d: DialogDef = dialogs.get(dialog_id)
+	for line: Dictionary in observed.get(d.person, []) if d != null else []:
+		if line["dialog"] == dialog_id and str(line["key"]).begins_with(TOPIC):
+			out.append(str(line["key"]).trim_prefix(TOPIC))
+	return out
+
+
+func _has_open_topic(d: DialogDef, known: Dictionary) -> bool:
+	var asked := asked_topics(d.id)
+	return d.topics.any(func(t: Dictionary) -> bool:
+		return not t["id"] in asked and ExpertTalk.is_open(t, known, trust[d.person]))
 
 
 ## The promises the player made and the person agreed to (a proposal with a
@@ -627,6 +678,7 @@ func atoms() -> Array[String]:
 		var exprs: Array = [d.needs, d.condition_needs, JsonFile.dict_or_empty(d.trigger.get("needs"))]
 		exprs.append_array(d.block.get("routes", []).map(func(r: Dictionary) -> Variant: return r.get("needs", {})))
 		exprs.append_array(d.variants.map(func(v: Dictionary) -> Variant: return v.get("needs", {})))
+		exprs.append_array(d.topics.map(func(t: Dictionary) -> Variant: return t.get("needs", {})))
 		if d.condition_needs.is_empty() and not d.owns.is_empty():
 			exprs.append({"all": ["checked:" + d.owns]})
 		for expr: Variant in exprs:

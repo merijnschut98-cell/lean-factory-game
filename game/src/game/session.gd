@@ -59,6 +59,8 @@ const MORNING_UNTIL := 11 * 60 + 30
 const LATE_FROM := 17 * 60 + 30
 ## A milestone's scene takes half an hour of the day (ESTIMATE: a sit-down with two managers).
 const SCENE_MINUTES := 30
+## Promise kinds that name a date (content's PROMISE_KINDS); the others are an action.
+const DATE_PROMISES: Array[String] = ["delivery_date"]
 
 var catalog: Catalog
 var region: Region
@@ -66,6 +68,8 @@ var missions: Missions
 ## The cast and what they remember (dialogs); the talk in progress, if any.
 var people: People
 var _talk: Dialog = null
+## An expert talk in progress instead (topic by topic, ExpertTalk), if any.
+var _expert: ExpertTalk = null
 ## People's events ({type: left, person}) not yet drained.
 var _people_events: Array[Dictionary] = []
 ## Hidden rewards for deep thinking; it hears what the player does.
@@ -112,7 +116,6 @@ static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, t
 	s.missions.talk_outcome = s.talk_outcome
 	s.missions.talked = s.talked
 	s.missions.can_talk = s.can_talk
-	s.missions.promises = s.people.promises
 	s.missions.play_start = SimCalendar.days(WARMUP_DAYS)
 	s.discoveries = Discoveries.new(s.catalog.discoveries)
 	s.gemba = PlaceActions.from_doc(s.catalog.places)
@@ -536,6 +539,12 @@ static func date_of(t: int) -> Dictionary:
 	var played := t - SimCalendar.days(WARMUP_DAYS)
 	return Time.get_date_dict_from_unix_time(
 		Time.get_unix_time_from_datetime_dict(PLAY_START_DATE) + SimCalendar.day_of(played) * 86400)
+
+
+## "2026-12-01" for a moment `t` (minutes): the date a promise names (PLAN 2.4).
+static func iso_date(t: int) -> String:
+	var date := date_of(t)
+	return "%04d-%02d-%02d" % [date["year"], date["month"], date["day"]]
 
 
 ## "di 13 okt" for a moment `t` (minutes); "" for an unknown one (t < 0).
@@ -1072,7 +1081,7 @@ func set_note(person_id: String, text: String) -> bool:
 ## in_dialog | unknown_person | cooling_down (after a ruined talk; the UI says
 ## the bank's special.cooling_down line) | nothing_to_say.
 func start_dialog(person_id: String) -> Dictionary:
-	if _talk != null:
+	if _talk != null or _expert != null:
 		return {"error": "in_dialog"}
 	var p: PersonDef = people.persons.get(person_id)
 	if p == null:
@@ -1083,6 +1092,10 @@ func start_dialog(person_id: String) -> Dictionary:
 	var d := people.dialog_for(person_id, world)
 	if d == null:
 		return {"error": "nothing_to_say"}
+	if d.kind == ExpertTalk.KIND:   # topic by topic: no position, no moves (phase 2 design §2.5)
+		_expert = people.start_expert(d, world)
+		return _filled({"dialog": d.id, "kind": d.kind, "person": p.id, "name": p.name, "short": p.short,
+			"role": p.role, "opening": people.opening(d), "position": {}, "meter": _expert.meter(), "moves": []})
 	_talk = people.start(d, world)
 	return _filled({"dialog": d.id, "kind": d.kind, "person": p.id, "name": p.name, "short": p.short, "role": p.role,
 		"opening": people.opening(d, _talk.version), "position": _talk.position(), "meter": _talk.meter(), "moves": _talk.moves()})
@@ -1100,6 +1113,8 @@ func dialog_moves() -> Array[Dictionary]:
 ## line}], a shown clue's text in its line); [] when there is none.
 func dialog_offers() -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
+	if _expert != null:
+		out.assign(_filled(_expert.offer()))
 	if _talk != null:
 		for o: Dictionary in _talk.offer():
 			out.append(_filled(_with_clue(o, o["pick"])))
@@ -1119,6 +1134,8 @@ func _with_clue(said: Dictionary, clue_id: String) -> Dictionary:
 
 ## The meter of the talk in progress (Dialog.meter); {} when there is none.
 func dialog_meter() -> Dictionary:
+	if _expert != null:
+		return _expert.meter()
 	return _talk.meter() if _talk != null else {}
 
 
@@ -1143,12 +1160,32 @@ func dialog_layers() -> Array[Dictionary]:
 ## with `summary` (People.finish), and its minutes have passed. Errors:
 ## no_dialog | unknown_move | bad_pick (and nothing changes).
 func choose_move(move: String, pick: String = "") -> Dictionary:
+	if _expert != null:
+		return _ask_expert(move, pick)
 	if _talk == null:
 		return {"error": "no_dialog"}
 	var result := _talk.say(move, pick)
 	if result.get("ended", false):
 		result["summary"] = _finish_talk()
 	return _filled(_with_clue(result, pick))
+
+
+## A question in the expert talk (ExpertTalk.ASK with the topic id) or its close
+## (ExpertTalk.CLOSE, as "Afronden"): ExpertTalk.say's result. A topic's new
+## clue is found at once; when the talk ends, with `summary`
+## (People.finish_expert) and its minutes passed.
+func _ask_expert(move: String, pick: String) -> Dictionary:
+	var result := _expert.say(move, pick)
+	if result.has("error"):
+		return result
+	if not str(result["clue"]).is_empty():
+		region.found[result["clue"]] = true
+	if result["ended"]:
+		var t := _expert
+		_expert = null
+		result["summary"] = people.finish_expert(t, region.net.time)
+		_after(t.minutes())
+	return _filled(result)
 
 
 ## The tokens talk lines speak through: the player's (PlayerProfile.fill:
@@ -1249,6 +1286,7 @@ func _finish_talk() -> Dictionary:
 	var main := missions.active("main").any(func(m: MissionDef) -> bool: return m.id == d.def.mission)
 	var morale_before: int = people.morale[d.who.id]
 	var summary := people.finish(d, region.net.time, main)
+	_keep_promise(d)
 	discoveries.note_talk(self, {"person": d.who.id, "team": d.who.team, "kind": d.def.kind, "outcome": d.outcome,
 		"listened_first": not d.steered_early and d.revealed.has("concern"), "silence_reveal": d.concern_by == "silence",
 		"own_idea": d.own_idea(), "morale_before": morale_before, "pressured": d.pressured, "confronted": d.confronted})
@@ -1262,6 +1300,38 @@ func _finish_talk() -> Dictionary:
 		region.earn_reputation(summary["reputation"], "dialog_" + summary["outcome"])
 	_after(d.minutes())
 	return summary
+
+
+## A promise agreed in talk `d` (a proposal with `promise`, PLAN 2.4) becomes a
+## fact the simulation checks: promised:<dialog>:<ISO date> for a date promised
+## (`days` from today), promised:<dialog>:<kind> for an action (a callback). It
+## replaces the dialog's earlier promise only when this talk's agreement is now
+## the best one (People.finish keeps that).
+func _keep_promise(d: Dialog) -> void:
+	if not d.outcome in People.BUY_IN_OF or people.agreed.get(d.def.id) != d.table:
+		return
+	var promise := JsonFile.dict_or_empty(d.def.item(d.table).get("promise"))
+	if promise.is_empty():
+		return
+	var kind := str(promise.get("kind", ""))
+	var value := iso_date(region.net.time + SimCalendar.days(int(promise.get("days", 0)))) \
+		if kind in DATE_PROMISES else kind
+	missions.facts.remove_prefix("%s%s:" % [Facts.PROMISED, d.def.id])
+	missions.facts.add("%s%s:%s" % [Facts.PROMISED, d.def.id, value])
+
+
+## Customers whose talk is due now (PLAN 2.4): the KCC's headset takes their
+## call, and they ring the player's phone (CustomerCalls). [{person, dialog,
+## name}], in content order; [] when none.
+func customer_calls() -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for p: PersonDef in people.persons.values():
+		if not p.customer or people.cooling_down(p.id, region.net.time):
+			continue
+		var d := people.dialog_for(p.id, _world(p))
+		if d != null:
+			out.append({"person": p.id, "dialog": d.id, "name": p.name})
+	return out
 
 
 ## After every action: check-in prompts and the low-morale clock move on

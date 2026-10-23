@@ -620,7 +620,8 @@ FACT_KINDS = {"done": 1, "failed": 1, "chose": 2, "standardised": 1, "poor_fix":
               # the story's (phase-2 design §3.2): a proposal agreed, a followed story delivered,
               # a person who left, a promised date checked, a fix that holds (live)
               "agreed": 2, "delivered": 1, "left": 1, "promise_kept": 1, "promise_broken": 1,
-              "holds": 1}  # Facts.KINDS
+              "holds": 1,
+              "promised": 2}  # Facts.KINDS; promised:<dialog>:<ISO date | action kind>, recorded by GameSession
 # The followed stories (FollowedOrder.STORY): delivered:<story>, a story_order goal's story.
 STORIES = ["el_amrani"]
 # What a forecast_positive:<subject> fact names: the KPI board's quarterly
@@ -1710,7 +1711,7 @@ BANK_SPECIAL = ["repeat", "refusal", "no_proposal", "other_data", "lucky_guess",
 # pressure: a yes under pressure).
 COACH_AFTER = ["pressure", "ruined", "blocked", "commitment"]
 PERSON_KEYS = {"id", "name", "short", "role", "place", "team", "archetype", "need", "trust", "morale", "voice",
-               "leaves_on"}
+               "leaves_on", "customer", "voicemail"}   # a customer's talks are calls (PLAN 2.4), with a voicemail
 DIALOG_KEYS = {"id", "name", "person", "kind", "mission", "requires_clue", "needs", "owns", "kpi_team", "mood",
                "patience", "opening", "retry_opening", "position", "layers", "data", "proposals", "experiments",
                "co_proposal", "condition_needs", "block", "lines", "replies", "outcomes", "variants", "trigger",
@@ -1728,6 +1729,13 @@ PERSUADE_OUTCOMES = ["commitment", "partial", "heard", "compliance", "ruined"]
 # must depend on what this person said (tier-1 content audit C8).
 BANK_UNTAGGED = {"claim", "feeling"}
 VARIANT_KEYS = {"needs", "mood", "position", "layers", "opening"}  # opening: said first in this version
+# An expert talk (phase 2 design §2.5; ExpertTalk): topic by topic, no meters.
+EXPERT_KEYS = {"id", "name", "person", "kind", "mission", "also_during", "needs", "need", "opening",
+               "retry_opening", "closing", "topics"}
+TOPIC_KEYS = {"id", "ask", "answer", "needs", "trust", "unlocks"}
+# A topic's clue is inline ({problem, key, depth, text}, merged into that
+# problem like a concern's), its explainer an id of explainers.yaml.
+TOPIC_UNLOCKS = {"clue", "explainer", "facts"}
 
 
 def _line(item: Any, where: str) -> dict:
@@ -1761,6 +1769,12 @@ def validate_dialogs(doc: Any, source: str) -> None:
         _one_of(p, "need", DIALOG_NEEDS, where)
         _number(p, "trust", where, 0, 100, integer=True)
         _number(p, "morale", where, 0, 100, integer=True, default=60)
+        if not isinstance(p.get("customer", False), bool):
+            raise ContentError(f"{where}: 'customer' must be true or false")
+        if p.get("customer", False) != ("voicemail" in p):
+            raise ContentError(f"{where}: a customer, and only a customer, leaves a 'voicemail' line")
+        if "voicemail" in p:
+            _require_strings(p, ["voicemail"], where)
     _validate_bank(doc.get("bank"), f"{source}: bank")
     for i, card in enumerate(doc.get("move_cards") or []):
         _move_card(card, f"{source}: move card {i}")
@@ -1910,7 +1924,48 @@ def _replies(replies: dict, where: str) -> None:
             _line(line, f"{where} {move} {situation}")
 
 
+def _validate_expert(d: dict, where: str) -> None:
+    """An expert talk (game/src/rules/expert_talk.gd): topics, each a question the
+    player asks and the expert's answer; no layers, meters or outcomes."""
+    _known_keys(d, EXPERT_KEYS, where)
+    _require_strings(d, ["person", "opening", "closing"] + [k for k in ("retry_opening", "mission") if k in d], where)
+    if "needs" in d:
+        _needs(d["needs"], f"{where} needs")
+    topics = _entries(d, "topics", where, "ask")
+    if not topics:
+        raise ContentError(f"{where}: an expert talk needs topics")
+    for t in topics:
+        at = f"{where} topic '{t['id']}'"
+        _known_keys(t, TOPIC_KEYS, at)
+        _require_strings(t, ["ask", "answer"], at)
+        if "needs" in t:
+            _needs(t["needs"], f"{at} needs")
+        if "trust" in t:
+            _number(t, "trust", at, 0, 100, integer=True)
+        unlocks = _mapping(t, "unlocks", TOPIC_UNLOCKS, at)
+        for fact in _string_list(unlocks, "facts", f"{at} unlocks"):
+            if _atom_parts(fact, f"{at} unlocks")[0] != "heard":
+                raise ContentError(f"{at} unlocks: {fact!r} is not a fact heard:<id>")
+        if "explainer" in unlocks:
+            _require_strings(unlocks, ["explainer"], f"{at} unlocks")
+        if "clue" in unlocks:
+            _inline_clue(unlocks["clue"], f"{at} unlocks", ["problem"])
+
+
+def _inline_clue(clue: Any, where: str, more: list[str]) -> None:
+    """A clue a talk unlocks, written where it is said: {key, depth, text, note?} and `more`."""
+    if not isinstance(clue, dict):
+        raise ContentError(f"{where}: 'clue' is a mapping with {', '.join(more + ['key', 'depth', 'text'])}")
+    _known_keys(clue, {"key", "depth", "text", "note", *more}, f"{where} clue")
+    _require_strings(clue, more + ["text"], f"{where} clue")
+    if not isinstance(clue.get("key"), bool):
+        raise ContentError(f"{where} clue: 'key' must be true or false")
+    _number(clue, "depth", f"{where} clue", 0, integer=True)
+
+
 def _validate_dialog(d: dict, where: str) -> None:
+    if d.get("kind") == "expert":
+        return _validate_expert(d, where)
     _known_keys(d, DIALOG_KEYS, where)
     _require_strings(d, ["person", "opening"], where)
     for key in ("retry_opening", "warning"):
@@ -2056,14 +2111,7 @@ def _layers(layers: Any, where: str) -> None:
                 raise ContentError(f"{at} unlocks: {fact!r} is not a fact heard:<id>")
         _string_list(unlocks, "proposals", f"{at} unlocks")
         if "clue" in unlocks:
-            clue = unlocks["clue"]
-            if not isinstance(clue, dict):
-                raise ContentError(f"{at} unlocks: 'clue' is a mapping with key, depth and text")
-            _known_keys(clue, {"key", "depth", "text", "note"}, f"{at} unlocks clue")
-            _require_strings(clue, ["text"], f"{at} unlocks clue")
-            if not isinstance(clue.get("key"), bool):
-                raise ContentError(f"{at} unlocks clue: 'key' must be true or false")
-            _number(clue, "depth", f"{at} unlocks clue", 0, integer=True)
+            _inline_clue(unlocks["clue"], f"{at} unlocks", [])
     concern = layers[1]
     if not isinstance(concern.get("lead_in"), dict):
         raise ContentError(f"{where}: the concern needs a lead_in (the line that carries the cue)")
@@ -2155,6 +2203,8 @@ def check_dialogs(docs: dict[str, Any]) -> None:
     dialogs = {d["id"]: d for d in doc["dialogs"]}
     heard = {f for d in dialogs.values() for layers in _all_layers(d) for layer in layers
              for f in layer.get("unlocks", {}).get("facts", [])}
+    heard |= {f for d in dialogs.values() for t in d.get("topics", []) for f in t.get("unlocks", {}).get("facts", [])}
+    explainers = {e["id"] for e in (docs.get("explainers") or {}).get("explainers", [])}
     index = _fact_index(docs)
     beats = {m["deadline_beat"] for m in missions.values() if "deadline_beat" in m}
     for p in people.values():
@@ -2180,7 +2230,9 @@ def check_dialogs(docs: dict[str, Any]) -> None:
         if "block" in d and not any("none" not in r["needs"] and _robust_route(r["needs"], where, index, dialogs, heard)
                                     for r in d["block"]["routes"]):
             raise ContentError(f"{where}: never game over: the block needs a route no failure or skip can close")
-        if d["kind"] != "checkin":
+        if d["kind"] == "expert":
+            _check_expert(d, where, missions, problems, explainers)
+        elif d["kind"] != "checkin":
             _check_mission_dialog(d, where, missions, problems, net)
     check_need_spread(speaking_cast(docs))
     training = {m["id"] for m in missions.values() if m.get("kind") == "training"}
@@ -2243,7 +2295,8 @@ def _check_talk_goals(docs: dict[str, Any]) -> None:
 
 def _tells(d: dict) -> list[str]:
     """Every `tell` on the dialog's lines (person-needs spec §1.5, N5)."""
-    lines = [d["position"]] + [v["position"] for v in d.get("variants", []) if "position" in v]
+    lines = [d["position"]] if "position" in d else []
+    lines += [v["position"] for v in d.get("variants", []) if "position" in v]
     for layers in _all_layers(d):
         lines += layers + [layer["lead_in"] for layer in layers if "lead_in" in layer]
     lines += [line for by_situation in d.get("replies", {}).values() for line in by_situation.values()]
@@ -2251,6 +2304,8 @@ def _tells(d: dict) -> list[str]:
 
 
 def _all_layers(d: dict) -> list[list[dict]]:
+    if d["kind"] == "expert":   # topics, no layers
+        return []
     return [d["layers"]] + [v["layers"] for v in d.get("variants", []) if "layers" in v]
 
 
@@ -2259,6 +2314,7 @@ def _needs_of(d: dict) -> list[dict]:
     exprs += [r["needs"] for r in d.get("block", {}).get("routes", [])]
     exprs += [v["needs"] for v in d.get("variants", [])]
     exprs += [{"all": [line["when"]]} for line in d.get("beats_after", [])]
+    exprs += [t["needs"] for t in d.get("topics", []) if "needs" in t]
     return exprs + ([d["trigger"]["needs"]] if "needs" in d.get("trigger", {}) else [])
 
 
@@ -2278,6 +2334,19 @@ def _robust_route(expr: dict, where: str, index: dict, dialogs: dict, heard: set
     robust = [_dialog_atom_robust(a, where, index, dialogs, heard) for a in expr.get("all", [])]
     either = [_dialog_atom_robust(a, where, index, dialogs, heard) for a in expr.get("any", [])]
     return all(robust) and (not either or any(either))
+
+
+def _check_expert(d: dict, where: str, missions: dict, problems: dict, explainers: set) -> None:
+    """An expert talk's mission (optional), and what its topics unlock exists."""
+    for m in ([d["mission"]] if "mission" in d else []) + _string_list(d, "also_during", where):
+        if m not in missions:
+            raise ContentError(f"{where}: unknown mission {m!r}")
+    for t in d["topics"]:
+        unlocks = t.get("unlocks", {})
+        if "explainer" in unlocks and unlocks["explainer"] not in explainers:
+            raise ContentError(f"{where} topic '{t['id']}': unknown explainer {unlocks['explainer']!r}")
+        if isinstance(unlocks.get("clue"), dict) and unlocks["clue"]["problem"] not in problems:
+            raise ContentError(f"{where} topic '{t['id']}': its clue names unknown problem {unlocks['clue']['problem']!r}")
 
 
 def _check_mission_dialog(d: dict, where: str, missions: dict, problems: dict, net: dict) -> None:
@@ -2325,11 +2394,12 @@ def merge_dialog_clues(docs: dict[str, Any]) -> None:
     people = {p["id"]: p for p in docs["dialogs"]["people"]}
     problems = {p["id"]: (stem, p) for stem, p in _all_problems(docs)}
     for d in docs["dialogs"]["dialogs"]:
-        for layers in _all_layers(d):
-            unlocks = layers[1].get("unlocks", {})
+        unlocking = [layers[1].get("unlocks", {}) for layers in _all_layers(d)]
+        unlocking += [t["unlocks"] for t in d.get("topics", []) if "unlocks" in t]   # an expert's topic names its problem
+        for unlocks in unlocking:
             if not isinstance(unlocks.get("clue"), dict):
                 continue
-            stem, problem = problems[d["owns"]]
+            stem, problem = problems[unlocks["clue"].pop("problem", None) or d["owns"]]
             clue = {"tool": "conversation", "at": people[d["person"]]["place"], "dialog": d["id"], **unlocks["clue"]}
             problem["clues"].append(clue)
             _validate_clues(problem, f"{stem}.yaml: problem '{problem['id']}' (with dialog '{d['id']}')",
@@ -2631,7 +2701,8 @@ _TOKEN_RE = re.compile(r"\{[^{}]*\}")
 _NOT_SPOKEN = {"id", "label", "tags", "tell", "via", "unlocks", "at", "when", "needs", "kpis", "addresses", "hidden",
                "promise", "routes", "condition", "wait_for"}
 _SPOKEN_DIALOG = ["opening", "retry_opening", "warning", "position", "layers", "proposals", "experiments",
-                  "co_proposal", "lines", "replies", "outcomes", "beats_after", "block", "variants"]
+                  "co_proposal", "lines", "replies", "outcomes", "beats_after", "block", "variants", "topics",
+                  "closing"]
 _SPOKEN_MISSION = ["briefing", "debrief", "debrief_first", "debrief_variants", "fail", "reopen", "insights",
                    "questions", "payoff"]
 
@@ -2662,6 +2733,7 @@ def spoken_texts(docs: dict[str, Any]) -> list[tuple[str, str]]:
     dialogs = docs.get("dialogs") or {}
     for p in dialogs.get("people", []):
         out += _strings(p.get("voice"), f"dialogs.yaml: person {p['id']} voice")
+        out += _strings(p.get("voicemail"), f"dialogs.yaml: person {p['id']} voicemail")
     out += _strings({k: v for k, v in (dialogs.get("bank") or {}).items() if k != "labels"}, "dialogs.yaml: bank")
     out += _strings({k: dialogs[k] for k in ("greetings", "quick", "chatter") if k in dialogs}, "dialogs.yaml:")
     for d in dialogs.get("dialogs", []):

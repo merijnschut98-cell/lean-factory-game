@@ -681,15 +681,15 @@ func test_the_promised_date_is_checked_by_the_simulation() -> void:
 	var call := "el_amrani_fourth_call"
 	s.people.agreed[call] = "name_a_date"
 	s.people.outcomes[call] = "partial"
-	# "over een week of zes", said 40 days ago: due in two days, the dossier not yet connected
-	s.people.talk_log["el_amrani"] = [{"dialog": call, "outcome": "partial", "at": s.region.net.time - SimCalendar.days(40)}]
-	assert_eq(s.people.promises()[call]["days"], 42)
+	# "over een week of zes", said 40 days ago: the date falls the day after tomorrow,
+	# the dossier not yet connected (the fact GameSession records at the talk)
+	s.missions.facts.add("promised:%s:%s" % [call, GameSession.iso_date(s.region.net.time + SimCalendar.days(2))])
 	s.pass_time(0)
 	assert_true(s.followed.delivered_at < 0)
 	assert_false(s.knows("promise_kept:" + call) or s.knows("promise_broken:" + call), "not yet its date")
 	assert_true(s.knows("agreed:%s:name_a_date" % call), "the agreement is a fact")
 	var reputation := s.reputation()
-	s.wait_days(2.5)
+	s.wait_days(3.0)   # that day is over
 	assert_true(s.followed.delivered_at < 0)
 	assert_true(s.knows("promise_broken:" + call), "judged on its date: not connected")
 	assert_eq(s.reputation(), reputation + Missions.PROMISE_BROKEN)

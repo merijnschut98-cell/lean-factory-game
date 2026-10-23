@@ -72,6 +72,13 @@ var prompt: String
 var warning: String
 ## The person's need for this one scene (Dialog.NEEDS); "" for their own.
 var need: String
+## expert: what the player can ask, in order (ExpertTalk): [{id, ask (the
+## player's question), answer (in the expert's voice), needs? (a needs
+## expression), trust? (0–100 it waits for), unlocks? ({clue?, explainer?,
+## facts?})}].
+var topics: Array = []
+## expert: what they say when the player rounds off.
+var closing: String
 var error := ""
 
 
@@ -92,19 +99,22 @@ static func from_dict(d: Dictionary) -> DialogDef:
 	g.prompt = str(d.get("prompt", ""))
 	g.warning = str(d.get("warning", ""))
 	g.need = str(d.get("need", ""))
+	g.closing = str(d.get("closing", ""))
 	g.data = PackedStringArray(d.get("data", []))
 	g.tutorial = d.get("tutorial", false) == true
 	g.teaches = PackedStringArray(d.get("teaches", []))
 	g.also_during = PackedStringArray(d.get("also_during", []) if d.get("also_during") is Array else [])
 	for key: String in ["needs", "position", "co_proposal", "condition_needs", "block", "lines", "replies", "outcomes", "trigger"]:
 		g.set(key, JsonFile.dict_or_empty(d.get(key)).duplicate(true))
-	for key: String in ["layers", "proposals", "experiments", "variants", "beats_after"]:
+	for key: String in ["layers", "proposals", "experiments", "variants", "beats_after", "topics"]:
 		var items: Variant = d.get(key, [])
 		g.set(key, items.filter(func(i: Variant) -> bool: return i is Dictionary).duplicate(true) if items is Array else [])
 	if g.id.is_empty() or g.person.is_empty():
 		g.error = "dialog %s: needs an id and a person" % g.id
 	elif not g.kind in Dialog.KINDS:
 		g.error = "dialog %s: unknown kind %s" % [g.id, g.kind]
+	elif g.kind == ExpertTalk.KIND:
+		g.error = _topics_error(g)
 	elif g.layers.map(func(l: Dictionary) -> Variant: return l.get("id")) != ["interest", "concern"]:
 		g.error = "dialog %s: needs the layers interest, then concern" % g.id
 	elif str(g.position.get("text", "")).is_empty():
@@ -114,6 +124,24 @@ static func from_dict(d: Dictionary) -> DialogDef:
 	elif not (g.proposals + g.experiments).all(func(i: Dictionary) -> bool: return i.get("id") is String):
 		g.error = "dialog %s: every proposal and experiment needs an id" % g.id
 	return g
+
+
+## An expert talk's topics: at least one, each with an id, a question and an answer.
+static func _topics_error(g: DialogDef) -> String:
+	if g.topics.is_empty():
+		return "dialog %s: an expert talk needs topics" % g.id
+	for t: Dictionary in g.topics:
+		if not (t.get("id") is String and t.get("ask") is String and t.get("answer") is String):
+			return "dialog %s: every topic needs an id, an ask and an answer" % g.id
+	return ""
+
+
+## A topic by id; {} when there is none.
+func topic(topic_id: String) -> Dictionary:
+	for t: Dictionary in topics:
+		if t.get("id") == topic_id:
+			return t
+	return {}
 
 
 ## The version a talk uses given the facts: the first variant whose needs are
