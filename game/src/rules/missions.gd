@@ -288,6 +288,7 @@ func update() -> void:
 	_note_fixes()
 	_note_holds()
 	_reopen_faded()
+	_reoffer_recurring()
 	_sync_checkins()
 	_sync_repairs()
 	events.append_array(stewardship.update(region))
@@ -572,6 +573,16 @@ func _retire_orphans() -> void:
 			region.deactivate(id)
 
 
+## A recurring mission (leader standard work) is offered again its days after it was last done.
+func _reoffer_recurring() -> void:
+	for id: String in progress.keys():
+		var m := defs[id]
+		if m.recurring_days > 0 and progress[id]["status"] == "completed" \
+				and region.net.time >= int(progress[id].get("done_at", 0)) + SimCalendar.days(m.recurring_days):
+			progress.erase(id)
+			events.append({"type": "recurring", "mission": id})
+
+
 ## A completed solve mission whose problem is dormant again (the fix faded)
 ## opens again: the problem comes back through it. Not a training day: its
 ## practice problem is retired once the day is done (the Friday lesson's
@@ -810,6 +821,8 @@ func load_dict(d: Dictionary) -> Array[String]:
 		elif defs.has(str(id)) and entry is Dictionary and entry.get("status") in ["active", "completed"]:
 			progress[str(id)] = {"status": entry["status"], "asks": JsonFile.dict_or_empty(entry.get("asks")),
 				"seen": JsonFile.dict_or_empty(entry.get("seen"))}
+			if entry.has("done_at"):  # a recurring mission's last round
+				progress[str(id)]["done_at"] = int(entry["done_at"])
 			if entry.has("said"):  # the coach's conditional questions already asked
 				progress[str(id)]["said"] = JsonFile.dict_or_empty(entry["said"])
 			if entry.get("played") == true:  # a milestone's scene, played
@@ -918,6 +931,7 @@ func _goal_met(m: MissionDef) -> bool:
 ## lesson names what the numbers say.
 func _complete(m: MissionDef) -> void:
 	progress[m.id]["status"] = "completed"
+	progress[m.id]["done_at"] = region.net.time
 	var score: Dictionary = region.state[m.goal_problem].score if m.goal_type == "solve" else {}
 	if not done_once.has(m.id):
 		done_once[m.id] = true
@@ -925,6 +939,10 @@ func _complete(m: MissionDef) -> void:
 		var share := reward_share(score) * (COMPLIANCE_SHARE if forced else 1.0)
 		region.grant(roundi(m.reward_xp * share), roundi(m.reward_budget * share))
 		region.earn_reputation(0 if forced else m.reward_reputation, "mission")
+		for team in m.reward_trust:
+			region.change_trust(team, m.reward_trust[team])
+	elif m.recurring_days > 0:
+		region.earn_reputation(m.reward_reputation, "routine")  # the routine is seen, no XP again
 		for team in m.reward_trust:
 			region.change_trust(team, m.reward_trust[team])
 	else:

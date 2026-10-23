@@ -68,3 +68,34 @@ func test_still_one_main_and_at_most_three_sides() -> void:
 	assert_eq(s.accept("walk_outages"), "side_full")
 	assert_eq(s.accept("fix_incomplete_application"), "")
 	assert_eq(s.accept("fix_installer_not_ready"), "main_active")
+
+
+## Leader standard work recurs (catalogue §2.9): the round comes back a week after it was
+## walked; XP the first time, after that reputation and the team's trust, and it survives
+## a save.
+func test_the_gemba_round_comes_back_every_week_without_xp() -> void:
+	var s := _campaign()
+	_done(s, ["walk_connections", "fix_custom_design"])
+	var m: MissionDef = s.missions.defs["lsw_gemba_round"]
+	assert_eq(m.recurring_days, 7)
+	assert_eq(s.accept("lsw_gemba_round"), "")
+	s.use_tool("connections.intake", "documents")
+	s.use_tool("connections.design", "shadow")
+	s.ask("connections.planning", "walk")
+	assert_eq(s.missions.status("lsw_gemba_round"), "completed")
+	s.wait_days(3.0)
+	assert_eq(s.missions.status("lsw_gemba_round"), "completed", "not before the week is out")
+	s.wait_days(5.0)
+	assert_eq(s.missions.status("lsw_gemba_round"), "available", "next week's round")
+	var xp := s.xp()
+	var reputation := s.region.reputation.value
+	assert_eq(s.accept("lsw_gemba_round"), "")
+	s.use_tool("connections.intake", "documents")
+	s.use_tool("connections.design", "shadow")
+	s.ask("connections.planning", "walk")
+	assert_eq(s.missions.status("lsw_gemba_round"), "completed")
+	assert_true(s.xp() - xp < m.reward_xp, "no mission XP for a repeat")
+	assert_eq(s.region.reputation.value, reputation + Reputation.SIDE_MISSION, "the routine is seen")
+	var copy := _campaign()
+	copy.missions.load_dict(bytes_to_var(var_to_bytes(s.missions.to_dict())))
+	assert_eq(copy.missions.progress["lsw_gemba_round"].get("done_at"), s.missions.progress["lsw_gemba_round"]["done_at"])

@@ -894,8 +894,7 @@ missions:
 
   # Leader standard work (spec §2.9): a weekly round of the stream, to see, not to check.
   # It brings the routine and the audit that hold a fix (Sustain; the place's "vaste
-  # routine"). The recurrence (`recurring: {every_days: 7}`, support instead of XP) waits
-  # for the schema; until then the round is had once.
+  # routine"). Weekly: XP the first time, after that reputation and the teams' trust.
   - id: lsw_gemba_round
     name: De gemba-ronde
     kind: side
@@ -904,6 +903,7 @@ missions:
     requires: {missions: [fix_custom_design]}
     briefing: "Een verbetering die niemand meer ziet, zakt weg. Dat is geen gebrek aan discipline; zo gaat werk als niemand kijkt. Ik loop zelf elke week een vaste ronde. Loop deze week mee: kijk bij Intake, Werkvoorbereiding en Planning hoe het werk gaat, en vraag wat er schuurt. Niet om te controleren. Om te zien."
     debrief: "Drie plekken in één ronde, en je weet hoe het er deze week voor staat. Bij Werkvoorbereiding hangt het standaardontwerp nog boven het bureau. Hoe lang nog, als niemand langskomt? Een vaste routine op zo'n plek houdt een verbetering vast, en kost het team maar een paar uur per week."
+    recurring: {every_days: 7}
     goal: {type: observe, places: [connections.intake, connections.design, connections.planning]}
     steps:
       look:

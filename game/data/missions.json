@@ -1330,6 +1330,9 @@
    "id": "lsw_gemba_round",
    "kind": "side",
    "name": "De gemba-ronde",
+   "recurring": {
+    "every_days": 7
+   },
    "requires": {
     "missions": [
      "fix_custom_design"

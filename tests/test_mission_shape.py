@@ -7,6 +7,7 @@ fades sooner than another way to fix it). Failures block the slice: fix the cont
 never the test."""
 from __future__ import annotations
 
+import copy
 import re
 
 import pytest
@@ -107,3 +108,12 @@ def test_every_shortcut_anywhere_has_a_later_cost_and_is_never_the_only_way():
         assert len(shortcuts) < len(p["countermeasures"]), f"{p['id']}: every way is a shortcut"
         for c in shortcuts:
             assert _later_cost(p["id"], c), f"{p['id']}: shortcut {c} costs nothing later"
+
+
+@pytest.mark.parametrize("change", [{"kind": "main"}, {"recurring": {"every_days": 0}}])
+def test_only_a_side_mission_recurs_and_at_least_daily(change):
+    doc = copy.deepcopy(REAL["missions"])
+    mission = next(x for x in doc["missions"] if x["id"] == "lsw_gemba_round")
+    mission.update(change)
+    with pytest.raises(bc.ContentError):
+        bc.validate_missions(doc, "missions.yaml")

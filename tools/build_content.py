@@ -745,7 +745,7 @@ MISSION_KEYS = {"id", "name", "kind", "tier", "requires", "briefing", "debrief",
                 "fail_closes", "rewards", "insights", "teaches", "check_days", "setup", "act", "chapter", "arc",
                 "fork", "debrief_first", "reopen", "sets_flags", "questions", "debrief_variants", "containment",
                 "ends_with_talk", "deadline_beat", "grant_tools", "steps", "talk_to", "scene", "opens_on",
-                "deadline_on_day", "sets_flags_on_fail", "payoff"}
+                "deadline_on_day", "sets_flags_on_fail", "payoff", "recurring"}
 # The objective line's steps (game/src/rules/objective.gd STEPS, MAX_CHARS): a main or
 # training mission may word its own; the problem steps need a goal with a problem; `go`
 # is a scene milestone's way to its room.
@@ -839,6 +839,7 @@ def validate_missions(doc: Any, source: str) -> None:
                 raise ContentError(f"{where} setup: a setup changes the simulation, not the KPI board")
         if "containment" in m:
             _validate_containment(m, where)
+        _validate_recurring(m, where)
         rewards = _mapping(m, "rewards", {"xp", "budget", "reputation", "trust"}, where)
         for key in ("xp", "budget"):
             _number(rewards, key, f"{where} rewards", 0, integer=True, default=0)
@@ -1010,6 +1011,16 @@ def _validate_deadline_beat(m: dict, where: str, beats: set[str]) -> None:
     if beat in beats:
         raise ContentError(f"{where}: 'deadline_beat' {beat!r} is already another mission's")
     beats.add(beat)
+
+
+def _validate_recurring(m: dict, where: str) -> None:
+    """Leader standard work (catalogue §2.9): a side mission offered again `every_days` after
+    it was done (MissionDef.recurring_days)."""
+    if "recurring" in m:
+        recurring = _mapping(m, "recurring", {"every_days"}, where)
+        _number(recurring, "every_days", f"{where} recurring", 1, integer=True)
+        if m["kind"] != "side":
+            raise ContentError(f"{where}: only a side mission recurs")
 
 
 def _validate_containment(m: dict, where: str) -> None:
