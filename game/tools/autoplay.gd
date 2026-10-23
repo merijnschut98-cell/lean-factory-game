@@ -394,7 +394,9 @@ class Persona extends RefCounted:
 				continue
 			var needs_done := Array(m.requires_missions).filter(func(id: String) -> bool:
 				return not s.missions.done_once.has(id))
-			if needs_done.is_empty():
+			# Locked by its belt alone is a gate; locked by a situation that may never come
+			# (the way back opens at the debt floor: requires.facts) is not a dead end.
+			if needs_done.is_empty() and s.xp() < Progression.BELTS[m.requires_belt]["xp"]:
 				gated.append("%s needs %s (%d XP), has %d XP" % [m.id, Progression.BELTS[m.requires_belt]["id"],
 					Progression.BELTS[m.requires_belt]["xp"], s.xp()])
 			elif needs_done.any(func(id: String) -> bool: return s.missions.status(id) == "failed"):
