@@ -36,7 +36,7 @@ var view_yaw := 0.0
 var avatar: Node3D
 ## The corners still to walk to (office space).
 var route := PackedVector3Array()
-## Sitting at a desk (sit_at, stand_up).
+## Sitting: at a desk (sit_at, stand_up) or in a van (sit, stand).
 var seated := false
 var _animations: AnimationPlayer
 ## The model, for its measured paces (null for the stand-in).
@@ -120,6 +120,7 @@ func sit(at: Transform3D) -> void:
 	velocity = Vector3.ZERO
 	position = at.origin
 	face(at.basis)
+	seated = true
 	if _animations != null and _animations.has_animation("sit"):
 		_animations.play("sit", 0.2)
 		_animations.speed_scale = 1.0
@@ -129,11 +130,8 @@ func sit(at: Transform3D) -> void:
 func stand() -> void:
 	set_physics_process(true)
 	velocity = Vector3.ZERO
+	seated = false
 	_animate("idle")
-
-
-func seated() -> bool:
-	return not is_physics_processing()
 
 
 ## The floor direction of WASD `input` (x right, y back) seen from `yaw`.
