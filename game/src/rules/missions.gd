@@ -436,6 +436,8 @@ func knows(atom: String) -> bool:
 			var problem := atom.get_slice(":", 1)
 			return region.state.has(problem) and region.state[problem].phase == P.RESOLVED \
 				and region.health(problem) >= Sustain.SLIPPING_HEALTH
+		"steers":  # the KPI board's choice in force
+			return region.board.menu.steers(region.board.chosen).has(atom.get_slice(":", 1))
 	return facts.has(atom)
 
 

@@ -321,7 +321,16 @@ WORK_RULES = {"start_rule": START_RULES, "order_rule": ORDER_RULES}  # value typ
 CARE_RULES = ["normal", "careful", "hasty"]  # KpiDef.CARE_RULES
 KPI_KINDS = ["leading", "lagging"]  # KpiDef.KINDS
 KPI_RULES = {"start": START_RULES, "order": ORDER_RULES, "care": CARE_RULES}  # a KPI's rule → its values
-KPI_KEYS = {"id", "name", "pool", "kind", "rules", "note"}
+KPI_KEYS = {"id", "name", "pool", "kind", "rules", "note", "focus", "measure", "at"}
+# What a KPI asks of a team (KpiDef.FOCI; the steers:<focus> fact of the board's choice).
+KPI_FOCI = ["output", "flow", "customer"]
+# The number the board writes on a KPI's card (KpiReading): of a stream (`at` a stream
+# id), of a work step (`at` a place) or of the KPI's own team (no `at`).
+KPI_STREAM_MEASURES = ["throughput_per_week", "lead_days_p50", "on_time", "first_time_right", "wip_age"]
+KPI_STEP_MEASURES = ["done_per_week", "step_ftr", "touch_minutes"]
+KPI_POOL_MEASURES = ["utilisation"]
+# Ruud's lines at the KPI board once the choice hangs (KpiMenu.review_lines).
+KPI_REVIEW_LINES = ["paid", "flat", "read"]
 KPIS_PER_POOL = 5
 KPI_EFFECT = "kpis"  # not a simulation property: the game expands it into the KPIs' rule effects
 CHECK_PASS = 0.5  # the effectiveness a Check needs to pass (Pdca.CHECK_PASS)
@@ -647,7 +656,8 @@ FACT_KINDS = {"done": 1, "failed": 1, "chose": 2, "standardised": 1, "poor_fix":
               # a person who left, a promised date checked, a fix that holds (live)
               "agreed": 2, "delivered": 1, "left": 1, "promise_kept": 1, "promise_broken": 1,
               "holds": 1,
-              "promised": 2}  # Facts.KINDS; promised:<dialog>:<ISO date | action kind>, recorded by GameSession
+              "promised": 2,  # Facts.KINDS; promised:<dialog>:<ISO date | action kind>, recorded by GameSession
+              "steers": 1}  # steers:<KPI focus>: what the KPI board's choice in force asks most (live)
 # The followed stories (FollowedOrder.STORY): delivered:<story>, a story_order goal's story.
 STORIES = ["el_amrani"]
 # What a forecast_positive:<subject> fact names: the KPI board's quarterly
@@ -675,6 +685,8 @@ def _atom_parts(atom: Any, where: str) -> tuple[str, list[str]]:
         raise ContentError(f"{where}: {atom!r} is not a fact (kinds: {', '.join(FACT_KINDS)}) or a measure")
     if kind == "forecast_positive" and ids[0] not in FORECAST_SUBJECTS:
         raise ContentError(f"{where}: {atom!r}: a forecast is of {', '.join(FORECAST_SUBJECTS)}")
+    if kind == "steers" and ids[0] not in KPI_FOCI:
+        raise ContentError(f"{where}: {atom!r}: the board steers on {', '.join(KPI_FOCI)}")
     return kind, ids
 
 
@@ -1652,7 +1664,15 @@ def _check_grants(missions: list[dict], places: dict) -> None:
 
 def validate_kpis(doc: Any, source: str) -> None:
     _require_strings(doc, ["review_question"], source)
-    _known_keys(doc, {"pull_limit_days", "review_question", "care", "kpis"}, source)
+    _known_keys(doc, {"pull_limit_days", "review_question", "review_lines", "care", "kpis"}, source)
+    lines = doc.get("review_lines")
+    if not isinstance(lines, dict) or sorted(lines) != sorted(KPI_REVIEW_LINES):
+        raise ContentError(f"{source}: 'review_lines' needs exactly {', '.join(KPI_REVIEW_LINES)}")
+    _require_strings(lines, KPI_REVIEW_LINES, f"{source}: review_lines")
+    for text in [doc["review_question"], *lines.values()]:
+        word = banned_word(text)
+        if word:
+            raise ContentError(f"{source}: Ruud says {word!r} at the KPI board; he never names the game (style guide §4)")
     _number(doc, "pull_limit_days", source, 0.5)
     care = doc.get("care")
     levels = [c for c in CARE_RULES if c != "normal"]  # normal is the habit: no effects
@@ -1676,6 +1696,10 @@ def validate_kpis(doc: Any, source: str) -> None:
             raise ContentError(f"{where}: needs at least one rule")
         for rule in rules:
             _one_of(rules, rule, KPI_RULES[rule], f"{where} rules")
+        _one_of(k, "focus", KPI_FOCI, where)
+        _one_of(k, "measure", KPI_STREAM_MEASURES + KPI_STEP_MEASURES + KPI_POOL_MEASURES, where)
+        if k["measure"] in KPI_POOL_MEASURES and "at" in k:
+            raise ContentError(f"{where}: a team's utilisation has no 'at'")
     for pool, n in Counter(k["pool"] for k in kpis).items():
         if n > KPIS_PER_POOL:
             raise ContentError(f"{source}: '{pool}' has {n} KPIs; at most {KPIS_PER_POOL} KPIs per department")
@@ -1684,9 +1708,17 @@ def validate_kpis(doc: Any, source: str) -> None:
 def check_kpis(docs: dict[str, Any]) -> None:
     """KPIs against the value streams: each belongs to a team."""
     pools = {p["id"] for p in docs["value_streams"]["pools"]}
+    steps = {s["id"]: {step["id"] for step in s["steps"]} for s in docs["value_streams"]["streams"]}
     for k in docs["kpis"]["kpis"]:
+        where = f"kpis.yaml: kpi '{k['id']}'"
         if k["pool"] not in pools:
-            raise ContentError(f"kpis.yaml: kpi '{k['id']}': unknown pool {k['pool']!r}")
+            raise ContentError(f"{where}: unknown pool {k['pool']!r}")
+        at = str(k.get("at", ""))
+        stream, _, step = at.partition(".")
+        if k["measure"] in KPI_STREAM_MEASURES and (step or stream not in steps):
+            raise ContentError(f"{where}: measures stream {at!r}, which value_streams.yaml does not have")
+        if k["measure"] in KPI_STEP_MEASURES and step not in steps.get(stream, set()):
+            raise ContentError(f"{where}: measures the step {at!r}; 'at' must be a place stream.step")
 
 
 # ── concepts.yaml ────────────────────────────────────────────────────────────
