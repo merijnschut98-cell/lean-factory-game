@@ -178,3 +178,35 @@ def test_a_site_staff_count_carries_an_estimate(real):
 def test_company_errors_are_caught(real, mutate, message):
     with pytest.raises(bc.ContentError, match=message):
         _check(real, mutate)
+
+
+# ── {functie:<id>}: a title in a mission's text comes from the company file ────
+
+def _missions_with(real: dict, mission_id: str, **texts) -> dict:
+    docs = copy.deepcopy(real)
+    next(m for m in docs["missions"]["missions"] if m["id"] == mission_id).update(texts)
+    return docs
+
+
+def test_a_title_token_reads_the_company_file(real):
+    """A briefing names a person's title through {functie:<id>}, so it can never disagree
+    with company.yaml (the name tags and Wie is wie read the same title)."""
+    docs = _missions_with(real, "fix_silo_kpis", briefing="Joost ({functie:joost}) en Gert ({functie:gert}).",
+                          debrief_variants={"blamed": "Vraag het {functie:sanne}."})
+    bc.fill_titles(docs)
+    m = next(m for m in docs["missions"]["missions"] if m["id"] == "fix_silo_kpis")
+    assert m["briefing"] == "Joost (teamleider Werkvoorbereiding) en Gert (uitvoerder, Grondwerk Peeters)."
+    assert m["debrief_variants"]["blamed"] == "Vraag het teamleider Intake."
+
+
+def test_the_built_missions_hold_no_title_token(real):
+    assert "{functie:" not in json.dumps(real["missions"], ensure_ascii=False)
+
+
+@pytest.mark.parametrize("texts, message", [
+    ({"briefing": "Praat met {functie:nobody}."}, "unknown person 'nobody'"),
+    ({"steps": {"talk": "Praat met {functie:sanne}"}}, "only in a briefing"),
+])
+def test_title_token_errors_are_caught(real, texts, message):
+    with pytest.raises(bc.ContentError, match=message):
+        bc.fill_titles(_missions_with(real, "fix_silo_kpis", **texts))

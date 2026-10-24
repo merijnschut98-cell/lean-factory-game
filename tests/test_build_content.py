@@ -27,7 +27,8 @@ def dirs(tmp_path: Path) -> tuple[Path, Path]:
     content.mkdir()
     (content / "game.yaml").write_text(GAME_YAML, encoding="utf-8")
     (content / "value_streams.yaml").write_text(REAL_STREAMS, encoding="utf-8")
-    for stem in ("countermeasures", "problems_tier1", "missions", "kpis", "concepts", "scenes"):
+    # company: the missions' {functie:<id>} titles come from it
+    for stem in ("countermeasures", "problems_tier1", "missions", "kpis", "concepts", "scenes", "company"):
         (content / f"{stem}.yaml").write_text((bc.CONTENT_DIR / f"{stem}.yaml").read_text(encoding="utf-8"), encoding="utf-8")
     (content / "discoveries.yaml").write_text("discoveries: []\n", encoding="utf-8")
     return content, data
