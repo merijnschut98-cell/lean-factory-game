@@ -70,6 +70,15 @@ func test_the_weakness_is_measured_against_the_best_countermeasure() -> void:
 	assert_true(Repairs.kpi_gap(log.region, PROBLEM) > 0.0)
 
 
+## A missed deadline closed the better fix for good (Henk retired): there is nothing to
+## swap to, so no repair quest asks for one (Act 0/I mission audit, 2026-10-24).
+func test_no_repair_quest_when_the_better_fix_is_closed() -> void:
+	var log := _log()
+	_solve(log, "delegated_approval")
+	log.region.close_countermeasures(PackedStringArray(["standard_designs"]))
+	assert_eq(Repairs.kpi_gap(log.region, PROBLEM), 0.0)
+
+
 func test_reworking_swaps_the_fix_without_the_problem_coming_back() -> void:
 	var log := _log()
 	_solve(log, "delegated_approval")

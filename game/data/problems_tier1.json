@@ -212,7 +212,7 @@
     }
    ],
    "countermeasures": {
-    "standard_van_stock": 0.8,
+    "standard_van_stock": 0.85,
     "two_bin_van_kanban": 1.0,
     "van_refill_card": 0.65
    },
@@ -772,7 +772,7 @@
     {
      "depth": 1,
      "key": true,
-     "text": "Statusvragen komen bijna allemaal van klanten die al meer dan drie weken wachten; sommigen bellen elke week.",
+     "text": "Statusvragen komen bijna allemaal van klanten die al meer dan twee maanden wachten; sommigen bellen elke week.",
      "tool": "data"
     },
     {
@@ -791,7 +791,7 @@
     }
    ],
    "countermeasures": {
-    "milestone_mail_by_hand": 0.75,
+    "milestone_mail_by_hand": 0.85,
     "proactive_status_updates": 1.0,
     "realistic_promise": 0.7
    },
@@ -1650,7 +1650,7 @@
    "countermeasures": {
     "cupboard_photo_at_booking": 1.0,
     "customer_self_report": 0.6,
-    "register_cupboard_check": 0.8
+    "register_cupboard_check": 0.85
    },
    "effects": [
     {
@@ -1725,7 +1725,7 @@
    ],
    "cost_per_week": 1100,
    "countermeasures": {
-    "area_teams": 0.8,
+    "area_teams": 0.85,
     "overtime_cap": 0.6,
     "route_by_area": 1.0
    },
@@ -1763,7 +1763,7 @@
    "tells": [
     {
      "tell": "planning_board",
-     "text": "Op het weekbord bij de planners staan de meterwissels van één monteur verspreid over vier wijken."
+     "text": "Op het weekbord bij de planners staat achter de namen van de meterwisselaars bijna elke dag een overuur in rood."
     }
    ],
    "tier": 1,
