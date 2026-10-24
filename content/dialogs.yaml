@@ -3014,9 +3014,9 @@ dialogs:
       - id: trench
         ask: "Wat heb je eigenlijk liggen in die sleuf op het opleidingsterrein?"
         # Estimate: Henk's own practice length of old cable (six metres, 1968, laid in 2019).
+        # No unlock (R-1 #1): nothing reads a fact for the trench; his mission (save_henks_knowledge)
+        # takes you there.
         answer: "Zes meter GPLK uit de Lindenlaan, van 1968. Die heb ik er in 2019 zelf in gelegd. Daar kunnen de jongens een overgangsmof op oefenen zonder dat er een wijk zonder stroom zit. Alleen wordt hij te weinig gebruikt. Iedereen heeft het druk."
-        unlocks:
-          facts: [heard:henk_trench]
       - id: ahmed
         ask: "Wat moet Ahmed nog leren, volgens jou?"
         needs: {all: [heard:henk_teach]}   # after Henk said what he fears (henk_camera's concern)

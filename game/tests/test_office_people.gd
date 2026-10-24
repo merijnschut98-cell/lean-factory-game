@@ -94,9 +94,13 @@ func test_the_people_sit_at_their_desks_and_marco_walks_the_aisle() -> void:
 	office.free()
 
 
-func test_henk_and_ahmed_come_only_with_their_missions() -> void:
+## Henk and Ahmed work at the storingsdienst (R-1 #1, #2): they are in the werkplaats whenever
+## it is open, not only for their missions, so Henk's expert talk is there while the wrong
+## joint is open, and the check-ins of Henk's last week and of Ahmed after the farewell find
+## them. Henk is gone once he has retired (People.left).
+func test_henk_and_ahmed_work_on_the_yard_until_henk_retires() -> void:
 	var office := _office()
-	_take(office, "fix_installer_not_ready")   # opens the werkplaats on the yard, where they wait
+	_take(office, "fix_wrong_joint")   # opens the werkplaats on the yard
 	_go_to(office, "yard")
 	var henk := office.people.person("henk")
 	var ahmed := office.people.person("ahmed")
@@ -104,21 +108,38 @@ func test_henk_and_ahmed_come_only_with_their_missions() -> void:
 	if henk == null or ahmed == null:
 		office.free()
 		return
-	assert_false(henk.visible, "no Henk without his mission")
-	assert_false(ahmed.visible, "no Ahmed without his missions")
-	var session := FakeSession.new()
-	session.active = [_mission("walk_outages")]
-	office.people.refresh(session)
-	assert_false(henk.visible, "Henk is not on the outage walk")
-	assert_true(ahmed.visible, "Ahmed comes for the outage walk")
-	session.active = [_mission("save_henks_knowledge")]
-	_take(office, "save_henks_knowledge")   # opens the opleidingsterrein, where they work (PLAN 2.3)
-	office.reload_rooms()
-	office.people.refresh(session)
-	assert_true(henk.visible and ahmed.visible, "both for Henk's knowledge")
-	assert_eq(office.people.person_near(henk.position, Office.REACH), henk, "and can be talked to")
-	office.people.refresh(FakeSession.new())
-	assert_eq(office.people.person_near(henk.position, 0.1), null, "absent people are out of reach")
+	office.session.missions.facts.add(OfficeYard.rode("fix_wrong_joint"))   # Ahmed no longer waits at his van
+	office.people.refresh(office.session)
+	var werkplaats := OfficeFloors.room_rect(office.floors.markers()["room:werkplaats"])
+	for p: OfficePerson in [henk, ahmed]:
+		assert_true(p.visible, "%s is on the yard during the wrong joint" % p.id)
+		assert_true(werkplaats.has_point(Vector2(p.position.x, p.position.z)), "%s in the werkplaats" % p.id)
+		assert_false(office.nav().path(office.player.position, p.position).is_empty(), "%s can be walked up to" % p.id)
+	assert_eq(office.session.people.dialog_for("henk", office.session._world(office.session.people.persons["henk"])).id,
+		"henk_expert", "and Henk has his expert talk for you")
+	office.session.missions.progress["fix_wrong_joint"]["status"] = "completed"   # the werkplaats stays open
+	office.session.missions.done_once["save_henks_knowledge"] = true   # his knowledge saved, the farewell to come
+	office.people.refresh(office.session)
+	assert_true(henk.visible and ahmed.visible, "after his mission, in his last days, Henk is still at work")
+	office.session.people.left["henk"] = true   # the farewell came
+	office.people.refresh(office.session)
+	assert_false(henk.visible, "retired: Henk is gone")
+	assert_eq(office.people.person_near(henk.position, 0.1), null, "and out of reach")
+	assert_true(ahmed.visible, "Ahmed is still there for his check-in after the farewell")
+	office.free()
+
+
+## A check-in (the Intussen skip stops for it) always has someone to find: its person is in
+## the office whatever missions are on (cast `missions` would hide them), until they leave.
+func test_everyone_with_a_check_in_is_in_the_office_whatever_the_missions() -> void:
+	var office := _office()
+	for d: DialogDef in office.session.people.dialogs.values():
+		if d.kind != "checkin":
+			continue
+		var at: Dictionary = _cast(d.person).get("office", {})
+		assert_false(at.is_empty(), "%s (%s) has a place in the office" % [d.person, d.id])
+		assert_eq(at.get("missions", []), [], "%s is not tied to missions (%s)" % [d.person, d.id])
+		assert_eq(at.get("after", []), [], "%s is not away until a mission (%s)" % [d.person, d.id])
 	office.free()
 
 
