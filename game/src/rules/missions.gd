@@ -175,6 +175,16 @@ func available() -> Array[MissionDef]:
 	return out
 
 
+## The problems missions raised: every active or done mission's (ExpertTalk.is_open:
+## an expert tells a clue only for these). Problem id → true.
+func worked_problems() -> Dictionary:
+	var out := {}
+	for m: MissionDef in defs.values():
+		if not m.goal_problem.is_empty() and (done_once.has(m.id) or status(m.id) == "active"):
+			out[m.goal_problem] = true
+	return out
+
+
 ## Active missions, of one kind ("main", "side" or "training") or all.
 func active(kind: String = "") -> Array[MissionDef]:
 	var out: Array[MissionDef] = []

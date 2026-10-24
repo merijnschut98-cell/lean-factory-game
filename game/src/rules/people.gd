@@ -191,7 +191,8 @@ func _rank(d: DialogDef, world: Dictionary, known: Dictionary) -> int:
 	if d.kind == ExpertTalk.KIND:
 		var active: Array = world.get("active", [])
 		var on := d.mission.is_empty() or d.on_any(active)
-		return 0 if on and DialogDef.needs_met(d.needs, known) and _has_open_topic(d, known) else -1
+		var open := _has_open_topic(d, known, JsonFile.dict_or_empty(world.get("problems")))
+		return 0 if on and DialogDef.needs_met(d.needs, known) and open else -1
 	if d.kind == "checkin":
 		var below := int(d.trigger.get("morale_below", 101))
 		var now := int(world.get("now", 0))
@@ -357,11 +358,12 @@ static func talk_note(d: Dialog, result: Dictionary) -> Dictionary:
 
 # ── An expert talk (ExpertTalk) ─────────────────────────────────────────────
 
-## Start an expert talk: the person's trust, what was asked before, the facts
-## and the clues found (a clue found already is not new).
+## Start an expert talk: the person's trust, what was asked before, the facts,
+## the clues found (a clue found already is not new) and the problems missions
+## raised (ExpertTalk.is_open).
 func start_expert(d: DialogDef, world: Dictionary) -> ExpertTalk:
 	return ExpertTalk.new(d, persons[d.person], {"trust": trust[d.person], "asked": asked_topics(d.id),
-		"facts": facts(world.get("facts", {})), "found": world.get("found", {})})
+		"facts": facts(world.get("facts", {})), "found": world.get("found", {}), "problems": world.get("problems", {})})
 
 
 ## Apply an ended expert talk: trust, what was asked (kept as what they told
@@ -392,10 +394,10 @@ func asked_topics(dialog_id: String) -> Array[String]:
 	return out
 
 
-func _has_open_topic(d: DialogDef, known: Dictionary) -> bool:
+func _has_open_topic(d: DialogDef, known: Dictionary, problems: Dictionary) -> bool:
 	var asked := asked_topics(d.id)
 	return d.topics.any(func(t: Dictionary) -> bool:
-		return not t["id"] in asked and ExpertTalk.is_open(t, known, trust[d.person]))
+		return not t["id"] in asked and ExpertTalk.is_open(t, known, trust[d.person], problems))
 
 
 ## The promises the player made and the person agreed to (a proposal with a

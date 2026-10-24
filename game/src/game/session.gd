@@ -1309,7 +1309,7 @@ func _world(p: PersonDef) -> Dictionary:
 	return {
 		"main": missions.active("main").map(func(m: MissionDef) -> String: return m.id),
 		"active": missions.active().map(func(m: MissionDef) -> String: return m.id),
-		"found": region.found, "facts": _facts(), "team_trust": region.trust.get(p.team, 0), "blamed": blamed,
+		"found": region.found, "facts": _facts(), "problems": missions.worked_problems(), "team_trust": region.trust.get(p.team, 0), "blamed": blamed,
 		"now": region.net.time, "beats": missions.beats(), "seed": region.net.run_seed,
 	}
 
@@ -1398,13 +1398,15 @@ func expert_serves_active(dialog_id: String) -> bool:
 	var d: DialogDef = people.dialogs.get(dialog_id)
 	if d == null:
 		return false
-	var problems := missions.active().map(func(m: MissionDef) -> String: return m.goal_problem)
+	var problems := {}
+	for m in missions.active():
+		problems[m.goal_problem] = true
 	var known := people.facts(_facts())
 	var asked := people.asked_topics(dialog_id)
 	return d.topics.any(func(t: Dictionary) -> bool:
-		var clue := str(JsonFile.dict_or_empty(t.get("unlocks")).get("clue", ""))
-		return not clue.is_empty() and not region.found.has(clue) and clue.get_slice(":", 0) in problems \
-			and not t["id"] in asked and ExpertTalk.is_open(t, known, people.trust[d.person]))
+		var clue := ExpertTalk.clue_of(t)
+		return not clue.is_empty() and not region.found.has(clue) and not t["id"] in asked \
+			and ExpertTalk.is_open(t, known, people.trust[d.person], problems))
 
 
 ## After every action: check-in prompts and the low-morale clock move on

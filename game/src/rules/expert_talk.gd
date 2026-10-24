@@ -6,7 +6,8 @@ extends RefCounted
 ## (at most OFFERED, in the content's order), the expert answers in their own
 ## voice. A topic can unlock a clue (the first time only: one already found is
 ## not new), a fact, or a "Hoe werkt het?" explainer, and can wait for a fact
-## (`needs`) or for trust (`trust`). Being asked about your craft is a little
+## (`needs`) or for trust (`trust`). A topic with a clue waits for its problem to
+## be a mission's (problems only arrive through missions, CLAUDE.md). Being asked about your craft is a little
 ## recognition: each answered topic adds TRUST_PER_TOPIC. Deterministic, no
 ## nodes: People builds it and keeps what it asked afterwards.
 
@@ -35,9 +36,10 @@ var asked_now: Array[String] = []
 var ended := false
 var _facts: Dictionary
 var _found: Dictionary
+var _problems: Dictionary
 
 
-## `start`: {trust, asked (earlier talks' topics), facts, found}.
+## `start`: {trust, asked (earlier talks' topics), facts, found, problems (is_open)}.
 func _init(dialog: DialogDef, person: PersonDef, start: Dictionary) -> void:
 	def = dialog
 	who = person
@@ -45,20 +47,31 @@ func _init(dialog: DialogDef, person: PersonDef, start: Dictionary) -> void:
 	asked.assign(start.get("asked", []))
 	_facts = JsonFile.dict_or_empty(start.get("facts"))
 	_found = JsonFile.dict_or_empty(start.get("found"))
+	_problems = JsonFile.dict_or_empty(start.get("problems"))
 
 
-## The topics the player can ask now: not asked yet, their fact and trust met.
+## The topics the player can ask now: not asked yet, their gate open (is_open).
 func open_topics() -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	for t: Dictionary in def.topics:
-		if not t["id"] in asked and is_open(t, _facts, trust):
+		if not t["id"] in asked and is_open(t, _facts, trust, _problems):
 			out.append(t)
 	return out
 
 
-## Whether a topic's gate holds for `facts` (atom → true) and `trust_now`.
-static func is_open(t: Dictionary, facts: Dictionary, trust_now: int) -> bool:
-	return trust_now >= int(t.get("trust", 0)) and DialogDef.needs_met(JsonFile.dict_or_empty(t.get("needs")), facts)
+## Whether a topic's gate holds for `facts` (atom → true), `trust_now` and
+## `problems` (problem id → true: the problems of the missions active or done,
+## Missions.worked_problems). A topic that unlocks a clue opens only for one of
+## those problems: no expert hands over a clue for a problem no mission raised.
+static func is_open(t: Dictionary, facts: Dictionary, trust_now: int, problems: Dictionary) -> bool:
+	var clue := clue_of(t)
+	return trust_now >= int(t.get("trust", 0)) and DialogDef.needs_met(JsonFile.dict_or_empty(t.get("needs")), facts) \
+		and (clue.is_empty() or problems.has(clue.get_slice(":", 0)))
+
+
+## The clue a topic unlocks ("problem:index"), "" for none.
+static func clue_of(t: Dictionary) -> String:
+	return str(JsonFile.dict_or_empty(t.get("unlocks")).get("clue", ""))
 
 
 ## This turn's questions, as a persuasion's offers ([{move, pick, line}]); []

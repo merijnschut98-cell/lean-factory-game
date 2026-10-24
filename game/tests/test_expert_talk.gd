@@ -173,6 +173,17 @@ func test_an_expert_with_nothing_left_to_ask_has_no_talk() -> void:
 	assert_eq(p.dialog_for("pim", _world()), null)
 
 
+func test_a_clue_topic_waits_for_its_problem_s_mission() -> void:
+	var none := _people().start_expert(expert(), _world({"problems": {}}))
+	assert_eq(_asks(none), ["cable", "trench"], "no mission on custom_design: its clue topic is closed")
+	assert_eq(none.say(ExpertTalk.ASK, "joint"), {"error": "bad_pick"})
+	var on := _people().start_expert(expert(), _world({"problems": {"custom_design": true}}))
+	assert_true("joint" in _asks(on), "its mission is on (or done): open")
+	var only_joint := _people([expert({"topics": [expert().topics[1]]})])
+	assert_eq(only_joint.dialog_for("pim", _world({"main": [], "active": [], "problems": {}})), null,
+		"an expert whose only topic waits for a mission has no talk")
+
+
 func test_an_expert_talk_bound_to_a_mission_waits_for_it() -> void:
 	var p := _people([expert({"mission": "fix_design"})])
 	assert_eq(p.dialog_for("pim", _world()).id, "pim_expert")
@@ -190,18 +201,36 @@ func test_henk_and_wim_have_expert_talks_with_four_or_five_topics() -> void:
 		assert_false(d.closing.is_empty(), id + " says goodbye")
 
 
-func test_henk_talks_about_the_craft_and_about_ahmed_once_he_said_what_he_fears() -> void:
+## Henk is on the yard from day 1 with no mission of his own: a topic that gives a clue
+## waits for that clue's problem to be a mission's (active or done); shop talk stays open
+## (review 381d21c..0ec040f #1).
+func test_henk_talks_shop_from_day_one_but_tells_clues_only_for_a_mission_s_problem() -> void:
 	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
-	var world: Dictionary = s.call("_world", s.people.persons["henk"])
-	var t := s.people.start_expert(s.people.dialogs["henk_expert"], world)
-	var asks := _asks(t)
-	assert_eq(asks, ["joints", "old_cable", "digging", "trench"], "Ahmed waits for what Henk fears")
+	var henk := func() -> ExpertTalk:
+		return s.people.start_expert(s.people.dialogs["henk_expert"], s.call("_world", s.people.persons["henk"]))
+	assert_eq(_asks(henk.call()), ["trench"], "a new game: no clue topic, only shop talk")
 	s.people.heard_facts["heard:henk_teach"] = true
-	var heard := s.people.start_expert(s.people.dialogs["henk_expert"], world)
-	assert_eq(heard.open_topics().size(), 5, "Ahmed's topic opens")
-	assert_eq(_asks(heard).size(), ExpertTalk.OFFERED, "and waits for a free place among the four questions")
+	assert_eq(_asks(henk.call()), ["trench", "ahmed"], "Ahmed's topic opens once Henk said what he fears")
+	s.missions.progress["fix_wrong_joint"] = {"status": "active", "asks": {}, "seen": {}}
+	var t: ExpertTalk = henk.call()
+	assert_eq(_asks(t), ["joints", "trench", "ahmed"], "the joint topic opens with its mission")
 	var r := t.say(ExpertTalk.ASK, "joints")
-	assert_true(str(r["clue"]).begins_with("wrong_joint_in_van:"), "the joint topic gives a clue (no cable explainer yet)")
+	assert_true(str(r["clue"]).begins_with("wrong_joint_in_van:"), "the joint topic gives a clue")
+	s.missions.progress.erase("fix_wrong_joint")
+	s.missions.done_once["fix_wrong_joint"] = true
+	assert_true("joints" in _asks(henk.call()), "and stays open once that mission is done")
+
+
+func test_new_game_henk_puts_no_clue_in_the_journal() -> void:
+	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
+	var r := s.start_dialog("henk")
+	assert_eq(r.get("dialog"), "henk_expert")
+	var picks := s.dialog_offers().map(func(o: Dictionary) -> String: return o["pick"])
+	assert_false(picks.any(func(p: String) -> bool: return p in ["joints", "digging", "old_cable"]), str(picks))
+	for pick in ["joints", "digging", "old_cable"]:
+		assert_true(s.choose_move(ExpertTalk.ASK, pick).has("error"), pick + " is not open")
+	assert_false(s.region.found.keys().any(func(k: String) -> bool:
+		return k.begins_with("wrong_joint_in_van:") or k.begins_with("digging_damage:") or k.begins_with("knowledge_drain:")))
 
 
 func test_wim_explains_only_after_he_felt_heard() -> void:
@@ -223,6 +252,7 @@ func _session() -> GameSession:
 			"unlocks": {"clue": "silent_meter:0", "facts": ["heard:petra_molen"]}},
 			{"id": "map", "ask": "Wat staat er in je map?", "answer": "Alles."}]})
 	s.people.dialogs[d.id] = d
+	s.missions.done_once["fix_silent_meter"] = true   # the Molen's clue is its problem's (ExpertTalk.is_open)
 	return s
 
 
