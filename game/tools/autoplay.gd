@@ -2177,15 +2177,17 @@ class PlayReport extends RefCounted:
 		var rows := PackedStringArray(["| persona | seed | fork: first | dead ends by day 100 | El Amrani connected (day) | winter | Act II mains done | Act II done on day | throughput/wk, lead (d) at day 100 | directie advance (most owed) |",
 			"|---|---|---|---|---|---|---|---|---|---|"])
 		for r: Dictionary in runs:
-			var act2 := (r["missions"] as Array).filter(func(m: Dictionary) -> bool:
-				return m["outcome"] == "completed" and m["id"] in ACT2_MAINS)
+			var act2 := {}  # each Act II main → the day it was first done (a reopened one counts once)
+			for m: Dictionary in r["missions"]:
+				if m["outcome"] == "completed" and m["id"] in ACT2_MAINS and not act2.has(m["id"]):
+					act2[m["id"]] = m["completed_day"]
 			var fork := (r["missions"] as Array).filter(func(m: Dictionary) -> bool: return m["id"] in FORK_BRANCHES)
 			var at_100 := (r["curve"] as Array).filter(func(c: Dictionary) -> bool: return c["day"] <= 100.0 and c.has("throughput"))
 			rows.append("| %s | %d | %s | %d | %s | %s | %d of %d | %s | %s | %s |" % [r["persona"], r["seed"],
 				(fork[0]["id"] as String).trim_prefix("fix_") if not fork.is_empty() else "–",
 				(r["dead_ends"] as Array).filter(func(d: Dictionary) -> bool: return d["day"] <= 100.0).size(),
 				"%.0f" % r["followed_day"] if r.get("followed_day", -1.0) >= 0.0 else "not yet", r.get("winter", "–"),
-				act2.size(), ACT2_MAINS.size(), "%.0f" % act2.map(func(m: Dictionary) -> float: return m["completed_day"]).max() if act2.size() == ACT2_MAINS.size() else "–",
+				act2.size(), ACT2_MAINS.size(), "%.0f" % act2.values().max() if act2.size() == ACT2_MAINS.size() else "–",
 				"%.1f, %.0f" % [at_100.back()["throughput"], at_100.back()["lead_days"]] if not at_100.is_empty() else "–",
 				UiText.money(int(r.get("advance_max", 0)))])
 		rows.append("")

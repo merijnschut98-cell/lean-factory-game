@@ -102,6 +102,17 @@ func test_the_first_quarterly_review_is_played_at_the_board() -> void:
 			assert_eq(Array(steers), ["flow"] if persona == "expert" else ["output"], persona)
 
 
+## A main done again after it reopened counts once in the story table's Act II column.
+func test_the_story_table_counts_each_act_ii_main_once() -> void:
+	var missions := Autoplay.ACT2_MAINS.map(func(id: String) -> Dictionary:
+		return {"id": id, "outcome": "completed", "completed_day": 150.0})
+	missions.append({"id": Autoplay.ACT2_MAINS[0], "outcome": "completed", "completed_day": 200.0})
+	var run := {"persona": "average", "seed": 11, "missions": missions, "dead_ends": [], "curve": [],
+		"followed_day": 80.0, "winter": "missed"}
+	var row: String = Autoplay.PlayReport._story_table([run])[2]
+	assert_true(" | 6 of 6 | 150 | " in row, row)
+
+
 func test_the_report_ranks_findings_by_severity() -> void:
 	var run: Dictionary = Autoplay.Persona.new("expert", 11, 1).play()
 	run["dead_ends"] = [{"kind": "belt_gate", "mission": "x", "detail": "d", "day": 1.0}]
