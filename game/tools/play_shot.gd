@@ -69,10 +69,10 @@ extends SceneTree
 ## play_explainer_trafo_trafo (PLAN 2.7c S3-X: at the trafohuisje mock-up on the
 ## opleidingsterrein, its prompt; E there: "Hoe werkt het? 2" with the chain warm on the
 ## fiets, the cross-fade half-way, the trafo above its nameplate with the hours).
-## play_tell_yard_kanban_high, play_tell_storingsbord_high, play_tell_rack_high,
+## play_tell_uitgifte_high, play_tell_storingsbord_high, play_tell_rack_high,
 ## play_tell_returns_high, play_tell_measurement_high, play_tell_yard_low (S3-Y: the yard's tells:
-## the van kanban wall, the storingsbord looked at closer, the joint shelf, the returns pallet,
-## the complaints' tray at their highest; the wall and the pallet at their lowest).
+## the uitgiftelijst on the magazijn's counter and the storingsbord looked at closer, the joint
+## shelf, the returns pallet, the complaints' tray at their highest; the list at its lowest).
 ## play_desk, play_a3_clipboard, play_check_screen (PLAN 2.10 S3-D: your desk with your name
 ## plate, badge photo, the letter and your clipboard; E there, the A3 on the clipboard; the
 ## Check at Petra's screen, drawn as her monitor).
@@ -350,7 +350,7 @@ func _run() -> void:
 			await _yard_life(office, state)
 		"play_trafohuisje", "play_explainer_trafo_fiets", "play_explainer_trafo_cross", "play_explainer_trafo_trafo":
 			await _trafohuisje(office, state)
-		"play_tell_yard_kanban_high", "play_tell_storingsbord_high", "play_tell_rack_high", "play_tell_returns_high", \
+		"play_tell_uitgifte_high", "play_tell_storingsbord_high", "play_tell_rack_high", "play_tell_returns_high", \
 				"play_tell_measurement_high", "play_tell_yard_low":
 			_yard_tells(office, state)
 		"play_2e_day", "play_mt_room_scene", "play_mt_room_ruud", "play_tell_obeya_high", "tell_grid_study_high", \
@@ -872,10 +872,11 @@ func _yard_life(office: Office, state: String) -> void:
 				await process_frame
 
 
-## The yard's tells (S3-Y) at their highest, at twenty past ten with the vans out: the kanban
-## wall seen from the vans' side; the storingsbord driven by a week of late outages and looked
-## at closer (its line over it); the joint shelf, the returns pallet, the complaints' tray;
-## play_tell_yard_low the kanban wall and the pallet at their lowest.
+## The yard's tells (S3-Y) at their highest, at twenty past ten with the vans out: the
+## uitgiftelijst on the magazijn's counter, seen from the monteurs' side and looked at closer;
+## the storingsbord driven by a week of late outages and looked at closer (its line over it);
+## the joint shelf, the returns pallet, the complaints' tray; play_tell_yard_low the list at
+## its lowest.
 func _yard_tells(office: Office, state: String) -> void:
 	for m in ["fix_wrong_joint", "walk_outages", "walk_meters", "fix_inverters_tripping"]:
 		office.session.missions.progress[m] = {"status": "active", "asks": {}, "seen": {}}
@@ -890,16 +891,16 @@ func _yard_tells(office: Office, state: String) -> void:
 			net.stream("outages").finished.append({"done_at": net.time, "lead_minutes": 400, "on_time": false,
 				"reworks": 0, "failure_demand": false})
 	office.tells.refresh()
-	var shown := {"play_tell_yard_kanban_high": "van_kanban", "play_tell_rack_high": "magazijn_rack",
+	var shown := {"play_tell_uitgifte_high": "uitgiftelijst", "play_tell_rack_high": "magazijn_rack",
 		"play_tell_returns_high": "van_returns", "play_tell_measurement_high": "measurement_tray"}
 	if shown.has(state):   # read from past days' counts and the stock: shown directly
 		OfficeTells.show(office.geometry, {shown[state]: OfficeTells.HIGH})
 	if state == "play_tell_yard_low":
-		OfficeTells.show(office.geometry, {"van_kanban": OfficeTells.LOW, "van_returns": OfficeTells.LOW})
+		OfficeTells.show(office.geometry, {"uitgiftelijst": OfficeTells.LOW})
 	print("tells: ", OfficeTells.readings(net), " -> ", OfficeTells.bands(net))
 	# Godot space: Blender (x, y) is (x, -y); [where you stand, what you look at, zoom]
-	var spec: Array = {"play_tell_yard_kanban_high": [Vector3(-35.4, 0, -16.2), Vector3(-34.1, 0, -17.0), -3.0],
-		"play_tell_yard_low": [Vector3(-35.4, 0, -16.2), Vector3(-34.1, 0, -17.0), -1.0],
+	var spec: Array = {"play_tell_uitgifte_high": [Vector3(-32.7, 0, -12.9), Vector3(-32.85, 0, -13.92), -4.0],
+		"play_tell_yard_low": [Vector3(-32.7, 0, -12.9), Vector3(-32.85, 0, -13.92), -3.0],
 		"play_tell_storingsbord_high": [Vector3(-32.4, 0, 1.6), Vector3(-33.9, 0, 0.6), -4.0],
 		"play_tell_rack_high": [Vector3(-28.8, 0, -19.6), Vector3(-28.8, 0, -21.5), -2.0],
 		"play_tell_returns_high": [Vector3(-38.4, 0, -18.4), Vector3(-37.2, 0, -20.4), -3.0],
@@ -909,8 +910,10 @@ func _yard_tells(office: Office, state: String) -> void:
 	office.rig.yaw = office.player.rotation.y + deg_to_rad(25)
 	office.rig.zoom(spec[2])
 	office.rig.snap()
-	if state == "play_tell_storingsbord_high":   # capture within ~25 frames, before the line's time is up
-		office.use(OfficeTells.node(office.geometry, "storingsbord"))
+	var looked := {"play_tell_storingsbord_high": "storingsbord", "play_tell_uitgifte_high": "uitgiftelijst",
+		"play_tell_yard_low": "uitgiftelijst"}   # behind the shed's wall: seen only up close
+	if looked.has(state):   # capture within ~25 frames, before the line's time is up
+		office.use(OfficeTells.node(office.geometry, looked[state]))
 
 
 ## Going home (S1-A): the begane grond's front door at half past five, its prompt; then

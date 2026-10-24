@@ -313,7 +313,7 @@ TELLS = {"intake_stack": "connections", "prep_tray": "connections", "planning_bo
          "obeya_board": "directors_obeya", "grid_study_tray": "grid_strategy", "reinforcement_board": "grid_strategy",
          "congestion_list": "congestion_desk",
          # the yard (S3-Y; tools/blender/build_yard.py builds these)
-         "van_kanban": "van_park", "van_returns": "van_park", "magazijn_rack": "magazijn",
+         "uitgiftelijst": "magazijn", "van_returns": "van_park", "magazijn_rack": "magazijn",
          "storingsbord": "werkplaats", "measurement_tray": "werkplaats"}
 TELL_KEYS = {"tell", "text"}
 # world.yaml `tells:`: what each tell looks like at each height (OfficeTells.VARIANTS).

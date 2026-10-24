@@ -326,11 +326,11 @@
    "place": "congestion.capacity_queue"
   },
   {
-   "high": "Op de kanbanwand bij de bussen is de helft van de vakjes leeg; de kolom Bestellen hangt vol kaartjes.",
-   "id": "van_kanban",
-   "low": "Op de kanbanwand bij de bussen steekt bijna elk kaartje in zijn vak; in de kolom Bestellen hangen er twee.",
-   "mid": "Op de kanbanwand bij de bussen zijn een paar vakjes leeg, en in de kolom Bestellen hangt een rijtje kaartjes.",
-   "place": "outages.repair"
+   "high": "De uitgiftelijst op de balie van het magazijn is deze week al op het derde kantje; de eerste twee zijn over de klem geslagen.",
+   "id": "uitgiftelijst",
+   "low": "Op de balie van het magazijn ligt de uitgiftelijst van deze week, met een paar regels erop.",
+   "mid": "De uitgiftelijst op de balie van het magazijn is deze week al een vol kantje: datum, bus, wat er mee is gegaan en een paraaf.",
+   "place": "outages.joint"
   },
   {
    "high": "In het magazijn staan op de stelling met moffen nog een paar dozen; de meeste vakken zijn leeg.",
@@ -357,7 +357,7 @@
    "high": "Het bakje bij de meetkoffers puilt uit van de spanningsklachten, en op de kast ernaast liggen nog twee stapels.",
    "id": "measurement_tray",
    "low": "In het bakje bij de meetkoffers liggen een paar spanningsklachten.",
-   "mid": "In het bakje bij de meetkoffers ligt een stapeltje spanningsklachten, met een paperclip per straat.",
+   "mid": "In het bakje bij de meetkoffers ligt een stapeltje spanningsklachten, met een paperclip per adres.",
    "place": "voltage_complaints.measurement"
   }
  ]

@@ -203,11 +203,11 @@ tells:
     mid: "Op het bureau van Thomas ligt een uitgeprinte wachtlijst van een paar kantjes, aan elkaar geplakt."
     high: "De uitgeprinte wachtlijst op het bureau van Thomas is zo lang geworden dat hij over de rand tot op de vloer hangt."
   # De werf (S3-Y): the field work.
-  - id: van_kanban
-    place: outages.repair
-    low: "Op de kanbanwand bij de bussen steekt bijna elk kaartje in zijn vak; in de kolom Bestellen hangen er twee."
-    mid: "Op de kanbanwand bij de bussen zijn een paar vakjes leeg, en in de kolom Bestellen hangt een rijtje kaartjes."
-    high: "Op de kanbanwand bij de bussen is de helft van de vakjes leeg; de kolom Bestellen hangt vol kaartjes."
+  - id: uitgiftelijst
+    place: outages.joint
+    low: "Op de balie van het magazijn ligt de uitgiftelijst van deze week, met een paar regels erop."
+    mid: "De uitgiftelijst op de balie van het magazijn is deze week al een vol kantje: datum, bus, wat er mee is gegaan en een paraaf."
+    high: "De uitgiftelijst op de balie van het magazijn is deze week al op het derde kantje; de eerste twee zijn over de klem geslagen."
   - id: magazijn_rack
     place: outages.joint
     low: "In het magazijn staat de stelling met moffen vol dozen."
@@ -226,5 +226,5 @@ tells:
   - id: measurement_tray
     place: voltage_complaints.measurement
     low: "In het bakje bij de meetkoffers liggen een paar spanningsklachten."
-    mid: "In het bakje bij de meetkoffers ligt een stapeltje spanningsklachten, met een paperclip per straat."
+    mid: "In het bakje bij de meetkoffers ligt een stapeltje spanningsklachten, met een paperclip per adres."
     high: "Het bakje bij de meetkoffers puilt uit van de spanningsklachten, en op de kast ernaast liggen nog twee stapels."

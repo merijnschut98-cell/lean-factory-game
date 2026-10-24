@@ -8,8 +8,8 @@ The yard lies west of the head office, in the building's own coordinates (Blende
 Z up): the building's west gable stands at x = -18 with the kantine's back door at y = 8,
 the yard runs x -50..-18, y -8..24, with the opleidingsterrein (PLAN 2.3) fenced off south of
 it. Two single-storey sheds, the magazijn (north) and the
-werkplaats & storingsdienst (south), and the van park along the west fence; the van kanban
-wall hangs on the magazijn's west wall, facing the vans. Spec:
+werkplaats & storingsdienst (south), and the van park along the west fence; the uitgiftelijst
+(where the monteurs sign out parts) lies on Dirk's counter in the magazijn. Spec:
 docs/superpowers/specs/2026-10-17-the-yard.md.
 
 Outdoors: no lightmaps (Godot's sun and shadows). The ground is `shell_floor` (the game
@@ -19,7 +19,7 @@ them away). Markers as on the floors: `place:<step>`, `room:<id>` with its rect,
 `van<k>` (van0 and van1 the storingsbussen on call); the game parks and sends them out by
 the hour (office_yard.gd); at each van `driver:van<k>` is where its monteur stands (by its back) and
 `ride:van<k>` the passenger door, where the van ride starts (van_ride.gd). The tells (PLAN 2.6), as
-on the floors: `tell_van_kanban` (the kanban wall), `tell_magazijn_rack` (the joint shelf),
+on the floors: `tell_uitgiftelijst` (the issue list), `tell_magazijn_rack` (the joint shelf),
 `tell_van_returns` (the returns pallet), `tell_storingsbord` and `tell_measurement_tray` (the
 werkplaats), each with `_low`, `_mid` and `_high` variants.
 
@@ -169,7 +169,7 @@ def magazijn(kits, plan) -> None:
     bo.put(kits["laptop"], "magazijn_laptop", (-31.4, 14.0, 1.04), 180)
     bo.put(b.mesh("magazijn_inside"), "magazijn_inside")
     joint_shelf(x0 + 0.5, x1 - 0.5, y1 - 0.5, 0.6)
-    van_kanban((x0 - WALL / 2 - 0.011, 17.0, 0.0))
+    uitgiftelijst(COUNTER_LIST)
 
 
 # --------------------------------------------------------------------------- tells (PLAN 2.6, S3-Y)
@@ -191,45 +191,49 @@ def joint_shelf(x0: float, x1: float, y: float, depth: float) -> None:
     bo.tell("magazijn_rack", (0, 0, 0), 0, variants)
 
 
-KANBAN_ROWS = 5                      # the parts a storingsbus carries (a row each)
-KANBAN_VANS = 6                      # a column per van
-KANBAN_COL_Y = [1.3 - c * 0.34 for c in range(KANBAN_VANS)]   # the van columns (the reader's left: +Y)
-KANBAN_ORDER_Y = (-0.9, -1.08, -1.26)                        # the "bestellen" column's three lanes
-KANBAN_COLOURS = ("sticky_yellow", "sticky_blue", "sticky_green", "sticky_pink", "card_old")   # a colour a part
+COUNTER_LIST = (-32.85, 13.92, 1.04)   # the uitgiftelijst: the west end of the counter (clear of the joint)
+LIST_ROW = 0.0165                      # a written line's pitch on the A4
 
 
-def van_kanban(at) -> None:
-    """The van kanban wall on the magazijn's west wall, facing the vans (front at local -X): a
-    slot per van and part, and on the right the "bestellen" column. Per band the cards: low two
-    slots empty and their cards in bestellen, mid six, high fifteen (a card taken from its slot
-    hangs in bestellen until the part is back)."""
-    w, h, zc = 3.0, 1.2, 1.55
+def _list_sheet(b: bo.MeshBuilder, lines: int, z: float, seed: int, dx: float = 0.0, dy: float = 0.0,
+                rot: float = 0.0) -> None:
+    """An A4 sheet of the list (top of the page at local +Y) with `lines` lines written on it in
+    pen: what was taken, by which bus, and a paraaf at the end."""
+    b.box((0.21, 0.297, 0.0015), (dx, dy - 0.01, z), "paper", rot=rot)
+    a = np.radians(rot)
+    rng = np.random.default_rng(seed)
+
+    def at(x: float, y: float) -> tuple[float, float, float]:
+        return dx + x * np.cos(a) - y * np.sin(a), dy + x * np.sin(a) + y * np.cos(a), z + 0.001
+
+    b.box((0.17, 0.003, 0.0005), at(0.0, 0.112), "metal_blue", rot=rot)   # the printed heading
+    for r in range(lines):
+        y = 0.09 - r * LIST_ROW
+        length = float(rng.uniform(0.09, 0.14))
+        b.box((length, 0.003, 0.0005), at(-0.085 + length / 2, y), "plastic_black", rot=rot)
+        b.box((0.022, 0.004, 0.0005), at(0.07, y + float(rng.normal(0, 0.001))), "plastic_black",
+              rot=rot + float(rng.normal(0, 8)))
+
+
+def uitgiftelijst(at) -> None:
+    """The magazijn's uitgiftelijst on Dirk's counter, a clipboard with this week's list: a line
+    per part a monteur signed out (date, bus, what, paraaf). Low a few lines; mid a full sheet;
+    high the third sheet begun, the first two folded back under the board (their edges show).
+    It is what anyone keeps at a counter, never the van kanban (two_bin_van_kanban, a fix)."""
     b = bo.MeshBuilder()
-    b.box((0.003, w, 0.05), (-0.004, 0, zc + h / 2 - 0.06), "metal_blue")      # the header strip
-    b.box((0.003, 0.012, h - 0.16), (-0.004, -0.72, zc - 0.06), "plastic_grey")  # bestellen's border
-
-    def row_z(r: int) -> float:
-        return zc + h / 2 - 0.2 - r * 0.19
-
-    for c, y in enumerate(KANBAN_COL_Y):
-        b.box((0.003, 0.16, 0.02), (-0.004, y, zc + h / 2 - 0.12), "plastic_black")   # the van's number
-        for r in range(KANBAN_ROWS):
-            b.box((0.004, 0.18, 0.012), (-0.005, y, row_z(r) - 0.06), "plastic_grey")   # the slot's lip
-    fixed = [("frame", bo.kit_board_frame(w, h), (0, 0, zc), 180), ("slots", b.mesh("kanban_slots"), (0, 0, 0), 0)]
-    rng = np.random.default_rng(29)
-    slots = [(c, r) for c in range(KANBAN_VANS) for r in range(KANBAN_ROWS)]
-    order = [slots[i] for i in rng.permutation(len(slots))]
+    b.box((0.23, 0.32, 0.004), (0, 0, 0.0055), "wood")   # the board, on whatever sheets lie under it
+    b.box((0.1, 0.03, 0.012), (0, 0.145, 0.0135), "alu")  # its clip
+    b.cyl(0.004, 0.14, (0.16, -0.02, 0.004), "plastic_black", segs=8, axis="Y")  # the pen beside it
+    fixed = [("board", b.mesh("uitgifte_board"), (0, 0, 0), 0)]
     variants = {}
-    for band, n in zip(bo.TELL_VARIANTS, (2, 6, 15)):
+    for band, lines, under in (("low", 4, 0), ("mid", 15, 0), ("high", 9, 2)):
         v = bo.MeshBuilder()
-        for c, r in order[n:]:   # the cards still in their slots, a colour a part
-            v.box((0.004, 0.14, 0.1), (-0.008, KANBAN_COL_Y[c], row_z(r)), KANBAN_COLOURS[r])
-        for k, (c, r) in enumerate(order[:n]):   # and those taken, in bestellen, three lanes from the top
-            lane, depth = k % 3, k // 3
-            v.box((0.004, 0.14, 0.1), (-0.008, KANBAN_ORDER_Y[lane], row_z(0) - depth * 0.15 + float(rng.normal(0, 0.006))),
-                  KANBAN_COLOURS[r], rot=float(rng.normal(0, 2)))
-        variants[band] = [(v.mesh(f"kanban_cards_{band}"), (0, 0, 0), 0)]
-    bo.tell("van_kanban", at, 0, variants, fixed=fixed)
+        for k in range(under):   # folded back under the board: their edges stick out
+            v.box((0.21, 0.297, 0.0015), (0.006 - 0.012 * k, -0.026 - 0.008 * k, 0.00075 + 0.0016 * k), "paper",
+                  rot=2.5 - 4.0 * k)
+        _list_sheet(v, lines, 0.0083, 41 + lines)
+        variants[band] = [(v.mesh(f"uitgifte_{band}"), (0, 0, 0), 0)]
+    bo.tell("uitgiftelijst", at, 0, variants, fixed=fixed)
 
 
 def storingsbord(at) -> None:

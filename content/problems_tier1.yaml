@@ -107,10 +107,11 @@ problems:
     teaches: [5s, kanban, standard_work]
     effects:
       - {target: outages.repair, property: touch_time, value: 1.5}
-    # Its harm is the drive to fetch a joint, not more joints: the kanban wall and the board read
-    # busy weeks as they would (OfficeTells.THRESHOLDS, probe 2026-10-24).
+    # Its harm is the drive to fetch a joint, not more joints: the uitgiftelijst and the board read
+    # busy weeks as they would (OfficeTells.THRESHOLDS, probe 2026-10-24). The tell is what anyone
+    # at the counter sees (a bus back for material the same day), never the missing standard stock.
     tells:
-      - {tell: van_kanban, text: "Bij de storingsbussen staan op de kanbanwand vakjes leeg, zonder kaartje in de kolom Bestellen."}
+      - {tell: uitgiftelijst, text: "Op de uitgiftelijst bij de balie staat dezelfde storingsbus soms twee keer op één dag, met een paar uur ertussen."}
       - {tell: storingsbord, text: "Op het storingsbord staat bij een paar kabelstoringen een hersteltijd van ruim vier uur."}
     clues:
       - {tool: shadow, key: true, depth: 0, text: "Bij een kabelstoring ligt de juiste mof niet in de bus. De monteur rijdt veertig minuten heen en terug naar het magazijn."}
@@ -457,7 +458,7 @@ problems:
       # complaints come back after the change (an estimate).
       - {target: voltage_complaints.tap_change, property: ftr, value: -0.3}
     tells:
-      - {tell: measurement_tray, text: "Op de spanningsklachten in het bakje staan steeds dezelfde straten, en bijna altijd een tijd rond het middaguur."}
+      - {tell: measurement_tray, text: "De spanningsklachten in het bakje zitten met een paperclip per adres bij elkaar, en op bijna elke klacht staat een tijd rond het middaguur."}
     clues:
       - {tool: data, key: true, depth: 0, text: "Negen van de tien spanningsklachten komen binnen tussen elf en drie uur, op zonnige dagen."}
       - {tool: conversation, key: false, depth: 0, text: "'Het zijn die goedkope omvormers. Met een goed merk heb je hier geen last van.'"}

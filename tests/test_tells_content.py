@@ -117,7 +117,7 @@ def test_a_problem_off_the_floors_with_tells_needs_no_tell():
 def test_the_yard_shows_its_field_problems():
     """PLAN 2.6 (S3-Y): the werf shows the field work as the 1e and the 2e show the office work."""
     shown = {p["id"]: [t["tell"] for t in p.get("tells", [])] for p in REAL["problems_tier1"]["problems"]}
-    assert "van_kanban" in shown["wrong_joint_in_van"]
+    assert "uitgiftelijst" in shown["wrong_joint_in_van"]
     assert "storingsbord" in shown["wrong_joint_in_van"]
     assert "storingsbord" in shown["digging_damage"]
     assert "magazijn_rack" in shown["digging_damage"]
@@ -188,3 +188,26 @@ def test_a_tell_needs_a_text():
         _problem(docs, "custom_design")["tells"] = [{"tell": "prep_tray"}]
     with pytest.raises(bc.ContentError, match="tell"):
         _check(mutate)
+
+
+@pytest.mark.parametrize("problem_id, giveaways", [
+    # The street-level insight is the investigation's to find (review of 3c40ed8..381d21c #5).
+    ("inverters_tripping", ["dezelfde straten", "straat"]),
+    # The van kanban wall is wrong_joint_in_van's countermeasure, its empty column the root cause (#3).
+    ("wrong_joint_in_van", ["kanban", "bestellen", "kaartje", "aanvul"]),
+])
+def test_a_tell_is_a_neutral_observation_never_the_cause_or_the_fix(problem_id, giveaways):
+    for tell in _problem(REAL, problem_id)["tells"]:
+        for word in giveaways:
+            assert word not in tell["text"].lower(), (tell["tell"], word)
+
+
+def test_henks_one_point_lessons_cost_what_their_estimate_says():
+    """Review of 3c40ed8..381d21c #6 (a countermeasure, tested here beside its problem's tell):
+    ten half-day lessons for Henk and a young monteur is 80 hours of the monteurs' time; it
+    stays the cheapest option in money."""
+    cms = {c["id"]: c for c in REAL["countermeasures"]["countermeasures"]}
+    lessons = cms["henks_one_point_lessons"]
+    assert lessons["team_hours"] == {"monteurs": 80}
+    for other in _problem(REAL, "knowledge_drain")["countermeasures"]:
+        assert lessons["budget"] <= min(3000, cms[other]["budget"]), other

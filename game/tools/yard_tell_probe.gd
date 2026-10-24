@@ -6,7 +6,7 @@ extends SceneTree
 
 const PROBLEMS: Array[String] = ["", "wrong_joint_in_van", "not_at_home", "double_visits", "installer_not_ready",
 	"digging_damage", "knowledge_drain", "inverters_tripping", "revision_backlog"]
-const YARD: Array[String] = ["van_kanban", "magazijn_rack", "van_returns", "storingsbord", "measurement_tray"]
+const YARD: Array[String] = ["uitgiftelijst", "magazijn_rack", "van_returns", "storingsbord", "measurement_tray"]
 ## Readings before this day are the problem still settling in.
 const SETTLE_DAYS := 9
 
