@@ -83,16 +83,10 @@ func face(basis_to_match: Basis) -> void:
 
 
 ## Sit on a chair at `seat` (its origin on the floor, facing its -Z): a call at
-## the KCC's headset (OfficeHeadset). The body plays its seated clip until
-## stand_up; the player does not walk meanwhile.
+## the KCC's headset (OfficeHeadset), a scene's table. The body stays at its own
+## height; otherwise as sit.
 func sit_at(seat: Transform3D) -> void:
-	stop()
-	set_physics_process(false)   # the chair's and the table's collision would push the body off the seat
-	velocity = Vector3.ZERO
-	position = Vector3(seat.origin.x, position.y, seat.origin.z)
-	face(seat.basis)
-	seated = true
-	_animate("sit")
+	sit(Transform3D(seat.basis, Vector3(seat.origin.x, position.y, seat.origin.z)))
 
 
 ## Put a KCC headset on (OfficeHeadset, the contact centre's own: OfficePerson.headset)
@@ -117,9 +111,7 @@ func _headset() -> Node3D:
 ## Get up again (nothing changes when standing).
 func stand_up() -> void:
 	if seated:
-		seated = false
-		set_physics_process(true)
-		_animate("idle")
+		stand()
 
 
 func walk(corners: PackedVector3Array) -> void:
@@ -134,8 +126,9 @@ func walking() -> bool:
 	return not route.is_empty()
 
 
-## Seated at `at` (office space; the van ride's passenger seat): no gravity, no walking,
-## the sit clip, until stand().
+## Seated at `at` (office space, its height too: the van ride's passenger seat): no
+## physics step (gravity, or a chair's and a table's collision pushing the body off the
+## seat), no walking, the sit clip, until stand() or stand_up().
 func sit(at: Transform3D) -> void:
 	stop()
 	set_physics_process(false)
@@ -143,9 +136,7 @@ func sit(at: Transform3D) -> void:
 	position = at.origin
 	face(at.basis)
 	seated = true
-	if _animations != null and _animations.has_animation("sit"):
-		_animations.play("sit", 0.2)
-		_animations.speed_scale = 1.0
+	_animate("sit")
 
 
 ## Up again (stood where the caller puts them): gravity and walking back.

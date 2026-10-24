@@ -276,3 +276,23 @@ func test_a_ride_lets_a_ringing_call_go_to_voicemail() -> void:
 	assert_eq(office.ui.phone.unread_count(), unread + 1, "her voicemail in Berichten")
 	assert_false(office.world_free(), "the cab is not the world")
 	office.free()
+
+
+## Review S3 #11: one way to sit: sit (the cab's seat, its height too) and sit_at (a chair
+## on the floor) seat the body alike, and either way up (stand or stand_up) gives the
+## physics back.
+func test_both_ways_of_sitting_get_up_alike() -> void:
+	var player := Player.new()
+	(Engine.get_main_loop() as SceneTree).root.add_child(player)
+	var seat := Transform3D(Basis(), Vector3(1, 0.6, 2))
+	for up in ["stand", "stand_up"]:
+		for down in ["sit", "sit_at"]:
+			player.position = Vector3.ZERO
+			player.velocity = Vector3(1, 0, 0)
+			player.call(down, seat)
+			assert_true(player.seated and not player.is_physics_processing(), down)
+			assert_eq(player.velocity, Vector3.ZERO, down)
+			assert_near(player.position.y, 0.6 if down == "sit" else 0.0, 0.001, down + ": the cab's seat has a height")
+			player.call(up)
+			assert_true(not player.seated and player.is_physics_processing(), "%s after %s" % [up, down])
+	player.free()
