@@ -222,8 +222,11 @@ func _company_page() -> void:
 			box.add_child(paragraph(str(entry.get("about", "")), Palette.INK, 15))
 	var numbers := add_card(_list, tr(NUMBERS))
 	numbers.add_child(paragraph(tr(NUMBERS_INTRO), Palette.MUTED, 15))
+	var known := func(atom: String) -> bool: return session.region.found.has(atom) or session.knows(atom)
 	for item: Variant in doc.get("numbers", []) if doc.get("numbers") is Array else []:
 		var n := JsonFile.dict_or_empty(item)
+		if not Company.revealed(n, known):  # a problem's clue waits until the player found it
+			continue
 		var value: Variant = n.get("value")
 		numbers.add_child(label("%s %s" % [Company.number_text(value if value is float or value is int else 0.0),
 			n.get("unit", "")], UiTheme.FONT_SIZE, Palette.BLUE_LIGHT))
@@ -231,12 +234,13 @@ func _company_page() -> void:
 		numbers.add_child(paragraph(evidence_line(n), Palette.MUTED, 15))
 
 
-## "Bron: <title>" or "Schatting: <reasoning>" for a company number.
+## "Bron: <title>" or "Schatting: <basis>" for a company number; the `estimate` is the
+## developer's reasoning and never shown.
 static func evidence_line(n: Dictionary) -> String:
 	var source := JsonFile.dict_or_empty(n.get("source"))
 	if source.get("title") is String:
 		return "Bron: " + source["title"]
-	return "Schatting: " + str(n.get("estimate", "")) if n.get("estimate") is String else ""
+	return "Schatting: " + n["basis"] if n.get("basis") is String else ""
 
 
 ## The explainers in content order, read once (the file does not change in play).
