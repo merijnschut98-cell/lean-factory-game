@@ -4,6 +4,8 @@
 # id        the scene (a milestone's `scene:` names it; one milestone each)
 # room      where it plays (world.yaml; the room opens with its milestone)
 # present   who is in the room (the cast's ids)
+# stands    one of present who presents standing beside the screen (optional; the others sit
+#           round the table where the room's model has scene spots, PLAN 2.16)
 # beats     speaker (one of present), line; `needs` (the facts grammar, Facts.met):
 #           the line is said only when it holds, so the facts choose the lines;
 #           at most one beat has a `choice`: 2-4 answers {label (the player's words,
@@ -22,6 +24,7 @@ scenes:
   - id: review_100_days
     room: mt_room
     present: [ruud, frank]
+    stands: frank   # "Ik heb de cijfers van Aansluitingen bij me"
     beats:
       - {speaker: ruud, line: "Kom erbij zitten. Na honderd dagen kijken Frank en ik altijd even terug met iemand die nieuw is. Het is geen beoordeling, hoor."}
       - {speaker: frank, line: "Ik heb de cijfers van Aansluitingen bij me. Maar ik hoor eerst graag van jou wat er nu anders gaat dan in oktober."}

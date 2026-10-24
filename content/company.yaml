@@ -169,7 +169,7 @@ departments:
     name: Netstrategie
     site: nova
     reports_to: directie
-    head: {name: Ingrid Bos, title: assetmanager}
+    head: {id: ingrid, title: assetmanager}
     teams:
       - id: netplanning
         name: Netstudies

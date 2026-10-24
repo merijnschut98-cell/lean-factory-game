@@ -3128,6 +3128,11 @@ greetings:
       - "Hoi {speler}! Ik rond net een netstudie af. Kort gezegd: het past nét."
       - "Hé {speler}! Kom eens kijken, ik heb een mooie tekening."
       - "Hoi {speler}. Druk, druk. Maar wel leuk druk."
+  ingrid:   # assetmanager, head of Netstrategie (company.yaml): calm, weighs; "kans maal gevolg" (four-tier audit §6)
+    day:
+      - "Hoi {speler}. Ik zit vandaag de hele dag met de onderhoudsplanning. Kans maal gevolg, weet je wel."
+      - "Hé {speler}. Als je ooit een eerlijk antwoord wilt over de staat van het net, loop gerust even binnen."
+      - "Hoi {speler}. Ik ben de storingen van vorig jaar aan het doorlopen. Er zit een patroon in, denk ik."
   esra:
     day:
       - "Hoi {speler}. Mijn mensen zitten al vanaf acht uur aan de telefoon."
@@ -3304,6 +3309,17 @@ chatter:
     lines:
       - "Die mevrouw van gisteren belde weer. Al voor de derde keer."
       - "En wij kunnen haar weer niks vertellen. Dat is nog het ergste."
+  - id: study_board
+    teams: [grid_analysts]
+    load: busy
+    lines:
+      - "Hoeveel netstudies staan er nu op het bord?"
+      - "Meer dan vorige week. Kort gezegd: te veel."
+  - id: no_date_to_give
+    teams: [key_accounts]
+    lines:
+      - "Belde die ondernemer van het bedrijventerrein weer?"
+      - "Twee keer vandaag al. Hij wil een datum, en die heb ik niet."
   - id: charging_plaza
     teams: [key_accounts, grid_analysts]
     lines:

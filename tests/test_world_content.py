@@ -38,9 +38,13 @@ def test_the_real_building_is_valid_with_three_floors_and_the_planned_rooms():
     assert _room(world, "connections")["opens_with"] == ["start"], "the existing floor is open from the start"
 
 
-def test_ruuds_office_upstairs_stays_shut_until_a_mission_opens_the_2e():
-    # Merijn, 2026-10-16 (Q10): Ruud sits with Aansluitingen in Act 0-I by choice.
-    assert _room(REAL["world"], "ruud_office")["opens_with"] == []
+def test_ruuds_office_upstairs_stays_shut_until_day_100():
+    # Merijn, 2026-10-16 (Q10): Ruud sits with Aansluitingen in Act 0-I by choice and moves
+    # back up when Act II opens the 2e (the cast's `moves`, after the hundred-day review).
+    assert _room(REAL["world"], "ruud_office")["opens_with"] == ["review_100_days"]
+    ruud = next(c for c in bc._cast() if c["id"] == "ruud")
+    assert ruud["office"]["moves"]["after"] == ["review_100_days"]
+    assert ruud["office"]["moves"]["floor"] == "second"
 
 
 def _room_of(world: dict, place: str) -> dict | None:
