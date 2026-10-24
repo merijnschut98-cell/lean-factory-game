@@ -710,16 +710,24 @@ func _conditions(m: MissionDef, stage: String) -> Array[String]:
 		return out
 	if st.blamed:
 		out.append("blamed")
-	var cm: CountermeasureDef = region.countermeasures.get(st.a3.get("cm", ""))
-	if stage == "experiment" and cm != null and cm.decay_days > 0 and cm.decay_days <= FADING_DAYS:
-		var p: ProblemDef = region.problems[m.goal_problem]
-		var chosen_fit: float = p.countermeasures.get(cm.id, 0.0)
-		if p.countermeasures.keys().any(func(id: String) -> bool:
-				var other: CountermeasureDef = region.countermeasures.get(id)
-				return other != null and (other.decay_days < 0 or other.decay_days > FADING_DAYS) \
-					and p.countermeasures[id] >= chosen_fit):
-			out.append("fading_fix")
+	if stage == "experiment" and fading_fix(m):
+		out.append("fading_fix")
 	return out
+
+
+## Whether `m`'s fix was chosen to fade within FADING_DAYS while a lasting one fit as
+## well (the short term over the long term).
+func fading_fix(m: MissionDef) -> bool:
+	var st: ProblemState = region.state.get(m.goal_problem)
+	var cm: CountermeasureDef = region.countermeasures.get(st.a3.get("cm", "")) if st != null else null
+	if cm == null or cm.decay_days <= 0 or cm.decay_days > FADING_DAYS:
+		return false
+	var p: ProblemDef = region.problems[m.goal_problem]
+	var chosen_fit: float = p.countermeasures.get(cm.id, 0.0)
+	return p.countermeasures.keys().any(func(id: String) -> bool:
+		var other: CountermeasureDef = region.countermeasures.get(id)
+		return other != null and (other.decay_days < 0 or other.decay_days > FADING_DAYS) \
+			and p.countermeasures[id] >= chosen_fit)
 
 
 ## Where the player stands, as the coach sees it: go_see (find the problem

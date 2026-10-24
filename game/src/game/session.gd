@@ -600,8 +600,31 @@ func mission_briefing(mission_id: String) -> String:
 	return player.fill(missions.briefing_of(mission_id).replace("{dossier_weken}", FollowedOrder.weeks_text(age)))
 
 
+## The debrief to show, with a main mission's principle line after it.
 func mission_debrief(mission_id: String) -> String:
-	return player.fill(missions.debrief_of(mission_id)) if missions.defs.has(mission_id) else ""
+	if not missions.defs.has(mission_id):
+		return ""
+	var principle := principle_line(mission_id)
+	return player.fill(missions.debrief_of(mission_id)) + ("\n\n" + principle if not principle.is_empty() else "")
+
+
+## The principle line of main mission `mission_id` with a problem (design §3.7,
+## PrincipleLine): which principle the play paid or cost, from its facts; "" otherwise.
+func principle_line(mission_id: String) -> String:
+	var m: MissionDef = missions.defs.get(mission_id)
+	if m == null or m.kind != "main" or m.goal_problem.is_empty():
+		return ""
+	var st: ProblemState = region.state.get(m.goal_problem)
+	var facts := {"poor_fix": missions.knows("poor_fix:" + m.goal_problem), "fading": missions.fading_fix(m),
+		"blamed": st != null and st.blamed, "complied": "", "committed": "",
+		"standardised": st != null and st.standardised, "failed_checks": st.failed_checks if st != null else 0}
+	for d: DialogDef in (people.dialogs.values() if people != null else []):
+		for kind: String in ["committed", "complied"]:
+			if d.missions.has(mission_id) and facts[kind] == "" and missions.knows("%s:%s" % [kind, d.id]):
+				facts[kind] = speaker_name(d.person)
+	var code := PrincipleLine.code(facts)
+	var who: String = facts["complied"] if code == "respect_complied" else facts["committed"]
+	return player.fill(PrincipleLine.line(catalog.principles, code, mission_id, who))
 
 
 ## Countermeasures not offered because an earlier preparation is missing:
