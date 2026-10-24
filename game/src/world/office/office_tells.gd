@@ -23,7 +23,11 @@ const VARIANTS: Array[String] = ["low", "mid", "high"]
 ## (2026-10-21; GameSession, 2 seeds x 30 days, sampled daily after day 9; medians):
 ## - intake_stack (applications in Intake's queue plus those back with the customer for
 ##   missing details): base 14 and 25, incomplete_application 31 and 36. Base seed 2
-##   reads mid and peaks high: a tall stack can be a normal week.
+##   reads mid and peaks high: a tall stack can be a normal week. Re-probed 2026-10-24 (S3
+##   T-1, the chase of a return now costs intake time; seeds 11 and 12, daily over 90 days
+##   after day 9, min/median/max): base 5/12/20 and 5/13/26, incomplete_application 13/30/58
+##   and 18/44/68; the thresholds hold. The terugbelbord stays at base with it inside 99 days
+##   (17/29/39 and 27/37/49: a status call comes after nine weeks without news).
 ## - prep_tray (Werkvoorbereiding's queue plus finished designs held for their project's
 ##   permit batch): base 5 and 6, custom_design 10 and 13, training_tray 9 and 10,
 ##   permits_in_batches 16 and 17.
