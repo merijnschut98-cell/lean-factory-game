@@ -25,6 +25,9 @@ extends SceneTree
 ##             Only a talk a mission cannot end without is had: Monday's
 ##             (ends_with_talk) said hello and closed, logged as forced; a talk
 ##             a mission needs (talk_to goals) pressed for a yes (_push).
+##   non-bottleneck  a control for the fork (not in the default run): plays as the
+##             expert does, but where the main quest forks it takes the
+##             non-bottleneck branch first, so the two orders compare on flow.
 ## Every persona has the talk a mission ends with; the others only say hello.
 ## A talk a mission needs (MissionDef.talk_goals) is had when the objective
 ## names it, once a day: never-talks and careless press, the others listen.
@@ -39,8 +42,10 @@ extends SceneTree
 ## clears a mission nobody can finish: GameSession has no abandon action).
 
 const PERSONAS: Array[String] = ["expert", "average", "careless", "talker", "never-talks"]
+## Played only when named on the command line.
+const CONTROLS: Array[String] = ["non-bottleneck"]
 ## Personas who play the gemba, the A3, the Act and the audits as the expert does.
-const EXPERT_PLAY: Array[String] = ["expert", "talker", "never-talks"]
+const EXPERT_PLAY: Array[String] = ["expert", "talker", "never-talks", "non-bottleneck"]
 const SEEDS: Array[int] = [11, 12, 13]
 const DEFAULT_OUT := "res://../docs/qa"
 const SEVERITIES: Array[String] = ["critical", "high", "medium", "low"]
@@ -65,7 +70,7 @@ func _run() -> int:
 			seeds.append(int(part))
 	var personas: Array[String] = PERSONAS.duplicate()
 	if args.size() > 2:
-		personas.assign(Array(args[2].split(",", false)).filter(func(p: String) -> bool: return p in PERSONAS))
+		personas.assign(Array(args[2].split(",", false)).filter(func(p: String) -> bool: return p in PERSONAS or p in CONTROLS))
 	var runs: Array[Dictionary] = []
 	for persona in personas:
 		for seed_value in seeds:
@@ -92,8 +97,13 @@ func _merge(out: String, paths: Array) -> int:
 			run["seed"] = int(run["seed"])
 			runs.append(run)
 	runs.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-		return [PERSONAS.find(a["persona"]), a["seed"]] < [PERSONAS.find(b["persona"]), b["seed"]])
+		return [_order(a["persona"]), a["seed"]] < [_order(b["persona"]), b["seed"]])
 	return _report(ProjectSettings.globalize_path(out).simplify_path(), runs)
+
+
+## Where a persona sorts in the report: the five first, then the controls.
+static func _order(persona: String) -> int:
+	return (PERSONAS + CONTROLS).find(persona)
 
 
 func _report(out_dir: String, runs: Array[Dictionary]) -> int:
@@ -189,6 +199,9 @@ class Persona extends RefCounted:
 	const FALLBACK_LISTEN: Array[String] = ["open_question", "inquiry", "empathy", "paraphrase", "mood"]
 	## After the campaign: days with no new work, to see which fixes hold.
 	const EPILOGUE_DAYS := 182
+	## The stream the curve samples the flow of (throughput per week, lead time), over a window.
+	const FLOW_STREAM := "connections"
+	const FLOW_DAYS := 28
 	const EPILOGUE_STEP_DAYS := 7.0
 
 	var persona: String
@@ -453,6 +466,9 @@ class Persona extends RefCounted:
 		var open := _open_missions()
 		if style != "expert":
 			_shuffle(open)
+		if persona == "non-bottleneck":
+			var detour := func(m: MissionDef) -> bool: return m.fork_role == "non_bottleneck"
+			open = open.filter(detour) + open.filter(func(m: MissionDef) -> bool: return not detour.call(m))
 		for m: MissionDef in open:
 			if m.kind == "main" and s.missions.active("main").is_empty():
 				_accept(m)
@@ -564,6 +580,10 @@ class Persona extends RefCounted:
 		if day() >= MORALE_CHECK_DAY and not record.has("morale_day_100"):
 			record["morale_day_100"] = s.people.morale.duplicate()  # QA 2.12 (b): someone under 40 by day 100?
 		var point := {"day": snappedf(day(), 0.1), "xp": s.xp(), "budget": s.budget(), "belt": s.belt()}
+		# The connections flow over the last FLOW_DAYS: where the fork's choice shows.
+		var flow := s.region.net.stream(FLOW_STREAM).kpis(s.region.net.time, FLOW_DAYS)
+		point["throughput"] = snappedf(flow["throughput_per_week"], 0.1)
+		point["lead_days"] = snappedf(flow["lead_days_p50"], 0.1)
 		if s.has_method("drift"):
 			point["drift"] = snappedf(s.call("drift")["level"], 0.001)
 		record["curve"].append(point)
@@ -2148,7 +2168,7 @@ class PlayReport extends RefCounted:
 		return rows
 
 	static func _mission_table(runs: Array, catalog: Catalog) -> PackedStringArray:
-		var rows := PackedStringArray(["| mission | kind | expert | average | careless |", "|---|---|---|---|---|"])
+		var rows := PackedStringArray(["| mission | kind | %s |" % " | ".join(PERSONAS), "|---|---|%s" % "---|".repeat(PERSONAS.size())])
 		for m in catalog.missions:
 			var cells := []
 			for persona in PERSONAS:

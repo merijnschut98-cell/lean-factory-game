@@ -56,6 +56,19 @@ func test_never_talks_has_only_the_talk_a_mission_cannot_end_without() -> void:
 	assert_true(monday[0]["completed_after_talk"], "the day ended with the talk")
 
 
+## The fork's control (Phase 2 gate): plays as the expert, but where the main quest forks it
+## takes the non-bottleneck branch first; the curve samples the connections flow, so the two
+## orders can be compared on throughput.
+func test_the_non_bottleneck_control_takes_the_other_branch_first_and_the_curve_has_the_flow() -> void:
+	var run: Dictionary = Autoplay.Persona.new("non-bottleneck", 11, 3).play()
+	assert_eq(run["dead_ends"], [], "no dead end")
+	var mains := (run["missions"] as Array).filter(func(m: Dictionary) -> bool: return m["kind"] == "main") \
+		.map(func(m: Dictionary) -> String: return m["id"])
+	assert_eq(mains, ["walk_connections", "fix_custom_design", "fix_installer_not_ready"], "the non-bottleneck first")
+	var point: Dictionary = (run["curve"] as Array).back()
+	assert_true(point.has("throughput") and point.has("lead_days"), "the connections flow: %s" % [point])
+
+
 ## Milestones never dead-end a run (phase-2 design §3.1): a scene is sat through, the
 ## story's order is judged by the simulation while the player plays on.
 func test_milestones_do_not_dead_end_a_run() -> void:
