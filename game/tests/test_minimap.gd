@@ -83,12 +83,16 @@ func test_targets_per_goal_type_are_rooms_or_people() -> void:
 		"a customer on the phone: no target")
 
 
-func test_a_problems_target_moves_to_the_obeya_when_the_a3_is_ready() -> void:
+## PLAN 2.10: the Check is read at Petra's screen (her, at Meetdata), the A3 written at
+## your desk (in the connections office).
+func test_a_problems_target_moves_to_petra_when_the_check_is_ready() -> void:
 	var s := _session()
 	_take(s, "fix_status_callers")
 	var st: ProblemState = s.region.state["status_callers"]
 	st.phase = ProblemState.Phase.CHECK_READY
-	assert_eq(_of(s, "fix_status_callers").get("room"), MinimapTargets.OBEYA_ROOM)
+	var target := _of(s, "fix_status_callers")
+	assert_eq(target.get("person"), Objective.CHECK_PERSON)
+	assert_eq(target.get("room"), "meter_data")
 
 
 func test_every_tier1_target_is_a_room_or_a_person_never_a_place() -> void:

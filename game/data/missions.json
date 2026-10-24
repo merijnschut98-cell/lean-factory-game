@@ -225,7 +225,7 @@
     "xp": 50
    },
    "steps": {
-    "a3": "Schrijf je oefen-A3 aan de obeya-wand",
+    "a3": "Schrijf je oefen-A3 aan je bureau",
     "dig": "Zoek uit waarom het dossier van El Amrani blijft liggen",
     "look": "Kijk bij Anouk waar het dossier van El Amrani ligt",
     "wait": "Wacht tot morgen: kijk hoe het bij Anouk gaat"
@@ -268,7 +268,7 @@
     "xp": 50
    },
    "steps": {
-    "act": "Beslis aan de obeya-wand: borg je het, of laat je het zo?"
+    "act": "Beslis bij Petra's scherm: borg je het, of laat je het zo?"
    },
    "teaches": [
     "standard_work",
@@ -350,9 +350,9 @@
     "xp": 600
    },
    "steps": {
-    "a3": "Schrijf je A3 voor Werkvoorbereiding aan de obeya-wand",
-    "act": "Beslis aan de obeya-wand hoe Werkvoorbereiding verdergaat",
-    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "a3": "Schrijf je A3 voor Werkvoorbereiding aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe Werkvoorbereiding verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
     "dig": "Zoek uit waar de uren van Anouk naartoe gaan",
     "look": "Ga bij Werkvoorbereiding kijken hoe een ontwerp ontstaat",
     "talk": "Praat met Joost (Werkvoorbereiding)",
@@ -403,9 +403,9 @@
     "xp": 700
    },
    "steps": {
-    "a3": "Schrijf je A3 voor Intake aan de obeya-wand",
-    "act": "Beslis aan de obeya-wand hoe Intake verdergaat",
-    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "a3": "Schrijf je A3 voor Intake aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe Intake verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
     "dig": "Zoek uit waarom aanvragen terug naar de klant gaan",
     "look": "Ga bij Intake kijken wat er met een aanvraag gebeurt",
     "talk": "Praat met Sanne (Intake)",
@@ -456,9 +456,9 @@
     "xp": 500
    },
    "steps": {
-    "a3": "Schrijf je A3 voor de monteurs aan de obeya-wand",
-    "act": "Beslis aan de obeya-wand hoe de monteurs verdergaan",
-    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "a3": "Schrijf je A3 voor de monteurs aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe de monteurs verdergaan",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
     "dig": "Zoek uit waarom monteurs voor niks voor de deur staan",
     "look": "Ga bij de monteurs kijken hoe een klus bij de klant loopt",
     "talk": "Praat met Marco (Monteurs)",
@@ -504,9 +504,9 @@
     "xp": 800
    },
    "steps": {
-    "a3": "Schrijf je A3 voor het KCC aan de obeya-wand",
-    "act": "Beslis aan de obeya-wand hoe het KCC verdergaat",
-    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "a3": "Schrijf je A3 voor het KCC aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe het KCC verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
     "dig": "Zoek uit waar de telefoontjes bij het KCC vandaan komen",
     "look": "Ga bij het KCC kijken wie er belt, en waarom",
     "talk": "Praat met Esra (Klantcontactcentrum)",
@@ -553,9 +553,9 @@
     "xp": 900
    },
    "steps": {
-    "a3": "Schrijf je A3 voor Meetdata aan de obeya-wand",
-    "act": "Beslis aan de obeya-wand hoe Meetdata verdergaat",
-    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "a3": "Schrijf je A3 voor Meetdata aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe Meetdata verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
     "dig": "Zoek uit waar een dossier op wacht als het klaar is",
     "look": "Ga bij Meetdata kijken wat er na de aansluiting gebeurt",
     "talk": "Praat met Petra (Meetdata)",
@@ -705,9 +705,9 @@
     "xp": 1000
    },
    "steps": {
-    "a3": "Schrijf je A3 voor de storingsdienst aan de obeya-wand",
-    "act": "Beslis aan de obeya-wand hoe de storingsdienst verdergaat",
-    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "a3": "Schrijf je A3 voor de storingsdienst aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe de storingsdienst verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
     "dig": "Zoek uit wat Gert van ons kreeg voordat hij ging graven",
     "look": "Ga bij de storingsdienst kijken wat er dinsdag gebeurde",
     "talk": "Praat met Gert (Grondwerk Peeters)",
@@ -754,9 +754,9 @@
     "xp": 900
    },
    "steps": {
-    "a3": "Schrijf je A3 voor Revisie & GIS aan de obeya-wand",
-    "act": "Beslis aan de obeya-wand hoe Revisie & GIS verdergaat",
-    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "a3": "Schrijf je A3 voor Revisie & GIS aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe Revisie & GIS verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
     "dig": "Zoek uit hoe een schets op de kaart komt",
     "look": "Ga bij Revisie & GIS kijken naar de doos met schetsen",
     "talk": "Praat met Mieke (Revisie & GIS)",
@@ -803,9 +803,9 @@
     "xp": 1200
    },
    "steps": {
-    "a3": "Schrijf je A3 voor Netstrategie aan de obeya-wand",
-    "act": "Beslis aan de obeya-wand hoe Netstrategie verdergaat",
-    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "a3": "Schrijf je A3 voor Netstrategie aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe Netstrategie verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
     "dig": "Zoek uit wat Femke op een dag allemaal doet",
     "look": "Ga bij Femke kijken naar het bord met netstudies",
     "talk": "Praat met Femke (Netstrategie)",
@@ -851,9 +851,9 @@
     "xp": 1300
    },
    "steps": {
-    "a3": "Schrijf je A3 voor Netstrategie aan de obeya-wand",
-    "act": "Beslis aan de obeya-wand hoe Netstrategie verdergaat",
-    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "a3": "Schrijf je A3 voor Netstrategie aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe Netstrategie verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
     "dig": "Zoek uit wat er gebeurt tussen netstudie en trafo",
     "look": "Ga bij Netstrategie kijken waar De Boomgaard op wacht",
     "talk": "Praat met Rob (Inkoop)",
@@ -902,9 +902,9 @@
     "xp": 1400
    },
    "steps": {
-    "a3": "Schrijf je A3 voor de congestiedesk aan de obeya-wand",
-    "act": "Beslis aan de obeya-wand hoe de congestiedesk verdergaat",
-    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "a3": "Schrijf je A3 voor de congestiedesk aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe de congestiedesk verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
     "dig": "Zoek uit hoeveel gecontracteerd vermogen echt wordt gebruikt",
     "look": "Ga bij de congestiedesk kijken wie er op de wachtlijst staat",
     "talk": "Praat met Thomas (Grootzakelijke klanten)",
@@ -954,9 +954,9 @@
     "xp": 1500
    },
    "steps": {
-    "a3": "Schrijf je A3 voor beide teams aan de obeya-wand",
-    "act": "Beslis aan de obeya-wand hoe beide teams verdergaan",
-    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "a3": "Schrijf je A3 voor beide teams aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe beide teams verdergaan",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
     "dig": "Zoek uit waarop beide teams worden afgerekend",
     "look": "Ga bij Intake en Werkvoorbereiding naar hun borden kijken",
     "talk": "Praat met Sanne (Intake)",
@@ -1073,9 +1073,9 @@
     "xp": 400
    },
    "steps": {
-    "a3": "Schrijf je A3 voor de storingsdienst aan de obeya-wand",
-    "act": "Beslis aan de obeya-wand hoe de storingsdienst verdergaat",
-    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "a3": "Schrijf je A3 voor de storingsdienst aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe de storingsdienst verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
     "dig": "Zoek uit waarom Ahmed halverwege naar het magazijn reed",
     "look": "Ga bij de storingsdienst kijken hoe een herstel loopt",
     "talk": "Praat met Dirk (magazijn)",
@@ -1110,9 +1110,9 @@
     "xp": 400
    },
    "steps": {
-    "a3": "Schrijf je A3 voor de meterwisselaars aan de obeya-wand",
-    "act": "Beslis aan de obeya-wand hoe de meterwisselaars verdergaan",
-    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "a3": "Schrijf je A3 voor de meterwisselaars aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe de meterwisselaars verdergaan",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
     "dig": "Zoek uit waarom de deur zo vaak dicht blijft",
     "look": "Ga met Sandra mee langs haar adressen",
     "wait": "Kijk bij Sandra hoe het experiment loopt"
@@ -1162,9 +1162,9 @@
     "xp": 400
    },
    "steps": {
-    "a3": "Schrijf je A3 voor Werkvoorbereiding aan de obeya-wand",
-    "act": "Beslis aan de obeya-wand hoe Werkvoorbereiding verdergaat",
-    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "a3": "Schrijf je A3 voor Werkvoorbereiding aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe Werkvoorbereiding verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
     "dig": "Zoek uit waar het dossier van de familie Bos op wacht",
     "look": "Kijk bij Werkvoorbereiding waar het dossier van Bos ligt",
     "wait": "Kijk bij Werkvoorbereiding hoe het experiment loopt"
@@ -1252,9 +1252,9 @@
     "xp": 600
    },
    "steps": {
-    "a3": "Schrijf je A3 voor de storingsdienst aan de obeya-wand",
-    "act": "Beslis aan de obeya-wand hoe de storingsdienst verdergaat",
-    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "a3": "Schrijf je A3 voor de storingsdienst aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe de storingsdienst verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
     "dig": "Zoek uit wat er wegvalt als Henk met pensioen gaat",
     "look": "Ga bij de storingsdienst kijken hoe Henk werkt",
     "talk": "Praat met Henk (Storingsdienst)",
@@ -1292,9 +1292,9 @@
     "xp": 500
    },
    "steps": {
-    "a3": "Schrijf je A3 voor Planning aan de obeya-wand",
-    "act": "Beslis aan de obeya-wand hoe Planning verdergaat",
-    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "a3": "Schrijf je A3 voor Planning aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe Planning verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
     "dig": "Zoek uit waarom de planning steeds wordt omgegooid",
     "look": "Ga bij Planning kijken hoe een week wordt ingepland",
     "talk": "Praat met Linda (Planning)",
@@ -1411,9 +1411,9 @@
     "xp": 400
    },
    "steps": {
-    "a3": "Schrijf je A3 voor de meterwisselaars aan de obeya-wand",
-    "act": "Beslis aan de obeya-wand hoe de meterwisselaars verdergaan",
-    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "a3": "Schrijf je A3 voor de meterwisselaars aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe de meterwisselaars verdergaan",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
     "dig": "Zoek uit waarom de meterwisselaar terug moet",
     "look": "Rijd mee met een meterwisselaar en kijk bij {team}",
     "wait": "Kijk bij de meterwisselaars hoe het experiment loopt"
@@ -1449,9 +1449,9 @@
     "xp": 400
    },
    "steps": {
-    "a3": "Schrijf je A3 voor Planning aan de obeya-wand",
-    "act": "Beslis aan de obeya-wand hoe Planning verdergaat",
-    "check": "Lees aan de obeya-wand af wat je experiment opleverde",
+    "a3": "Schrijf je A3 voor Planning aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe Planning verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
     "dig": "Zoek uit waar de overuren van de monteurs vandaan komen",
     "look": "Kijk bij Planning hoe de meterwissels worden ingepland",
     "wait": "Kijk bij Planning hoe het experiment loopt"

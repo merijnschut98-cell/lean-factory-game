@@ -85,16 +85,15 @@ func test_the_check_shows_its_forecast_with_and_without_the_fix() -> void:
 	panel.free()
 
 
-func test_the_a3_says_the_check_is_simulating_before_it_runs() -> void:
+func test_petras_screen_says_the_check_is_simulating_before_it_runs() -> void:
 	var s := _session()
-	var a3 := A3Form.new()
-	a3.session = s
+	var check := CheckPanel.new()
+	check.session = s
 	s.accept(MISSION)
 	s.region.state[PROBLEM].phase = ProblemState.Phase.CHECK_READY
-	a3.refresh()
-	a3.show_simulating()
-	assert_true(shows(a3, A3Form.SIMULATING), "the note shows while the forecast runs")
-	a3.free()
+	check.show_simulating(PROBLEM)
+	assert_true(shows(check, CheckPanel.SIMULATING), "the note shows while the forecast runs")
+	check.free()
 
 
 func test_a_practice_fix_does_not_claim_a_bottleneck() -> void:

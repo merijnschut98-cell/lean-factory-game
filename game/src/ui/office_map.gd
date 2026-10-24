@@ -175,7 +175,7 @@ static func project(at: Vector2, floor_in: Rect2, area_in: Rect2) -> Vector2:
 
 ## The marker ids of the active missions' places: a walk marks its stream's
 ## places; an observe goal its places (the briefing names them); a problem's
-## mission the obeya wall once its A3 is ready for the Check. A problem's own
+## mission Petra's screen once its A3 is ready for the Check (PLAN 2.10). A problem's own
 ## step is never marked (room_targets: its room only).
 static func mission_places(s: GameSession) -> Array[String]:
 	var out: Array[String] = []
@@ -187,7 +187,7 @@ static func mission_places(s: GameSession) -> Array[String]:
 			out.append("place:" + place)
 		var st: ProblemState = s.region.state.get(m.goal_problem)
 		if st != null and m.goal_type in ["solve", "check"] and st.phase == ProblemState.Phase.CHECK_READY:
-			out.append("obeya")
+			out.append(OfficeCheckScreen.ID)
 	return out
 
 

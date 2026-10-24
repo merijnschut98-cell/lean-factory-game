@@ -252,7 +252,7 @@ missions:
     steps:
       look: "Kijk bij Anouk waar het dossier van El Amrani ligt"
       dig: "Zoek uit waarom het dossier van El Amrani blijft liggen"
-      a3: "Schrijf je oefen-A3 aan de obeya-wand"
+      a3: "Schrijf je oefen-A3 aan je bureau"
       wait: "Wacht tot morgen: kijk hoe het bij Anouk gaat"
     grant_tools: [time_study, data, listen_in, material_check]
     check_days: 1
@@ -277,7 +277,7 @@ missions:
     debrief: "Een maand later pakt iedereen het oudste dossier uit één bak. Het staat op een A4 boven de bak, en Anouk legt het aan nieuwe collega's uit. Je inwerkweek zit erop. Maandag vraagt Joost van Dijk het MT om twee extra werkvoorbereiders; ik heb gezegd dat jij eerst gaat kijken."
     goal: {type: solve, problem: training_tray}
     steps:
-      act: "Beslis aan de obeya-wand: borg je het, of laat je het zo?"
+      act: "Beslis bij Petra's scherm: borg je het, of laat je het zo?"
     check_days: 1
     teaches: [standard_work, improvement_kata]
     rewards: {xp: 50}
@@ -329,10 +329,10 @@ missions:
       talk: "Praat met Joost (Werkvoorbereiding)"
       look: "Ga bij Werkvoorbereiding kijken hoe een ontwerp ontstaat"
       dig: "Zoek uit waar de uren van Anouk naartoe gaan"
-      a3: "Schrijf je A3 voor Werkvoorbereiding aan de obeya-wand"
+      a3: "Schrijf je A3 voor Werkvoorbereiding aan je bureau"
       wait: "Kijk bij Werkvoorbereiding hoe het experiment loopt"
-      check: "Lees aan de obeya-wand af wat je experiment opleverde"
-      act: "Beslis aan de obeya-wand hoe Werkvoorbereiding verdergaat"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe Werkvoorbereiding verdergaat"
     rewards: {xp: 600, budget: 10000}
     insights:
       go_see: "Wat is je doel voor Werkvoorbereiding, in een getal? En hoe ziet het er nu uit?"
@@ -364,10 +364,10 @@ missions:
       talk: "Praat met Sanne (Intake)"
       look: "Ga bij Intake kijken wat er met een aanvraag gebeurt"
       dig: "Zoek uit waarom aanvragen terug naar de klant gaan"
-      a3: "Schrijf je A3 voor Intake aan de obeya-wand"
+      a3: "Schrijf je A3 voor Intake aan je bureau"
       wait: "Kijk bij Intake hoe het experiment loopt"
-      check: "Lees aan de obeya-wand af wat je experiment opleverde"
-      act: "Beslis aan de obeya-wand hoe Intake verdergaat"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe Intake verdergaat"
     rewards: {xp: 700, budget: 8000}
     insights:
       go_see: "Twee teams vragen om je aandacht. Waar ligt het meeste werk te wachten, in dagen werk? Heb je dat zelf geteld?"
@@ -396,10 +396,10 @@ missions:
       talk: "Praat met Marco (Monteurs)"
       look: "Ga bij de monteurs kijken hoe een klus bij de klant loopt"
       dig: "Zoek uit waarom monteurs voor niks voor de deur staan"
-      a3: "Schrijf je A3 voor de monteurs aan de obeya-wand"
+      a3: "Schrijf je A3 voor de monteurs aan je bureau"
       wait: "Kijk bij de monteurs hoe het experiment loopt"
-      check: "Lees aan de obeya-wand af wat je experiment opleverde"
-      act: "Beslis aan de obeya-wand hoe de monteurs verdergaan"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe de monteurs verdergaan"
     rewards: {xp: 500, budget: 5000}
     insights:
       go_see: "Twee teams vragen om je aandacht. Waar staat het werk het langst te wachten?"
@@ -425,10 +425,10 @@ missions:
       talk: "Praat met Esra (Klantcontactcentrum)"
       look: "Ga bij het KCC kijken wie er belt, en waarom"
       dig: "Zoek uit waar de telefoontjes bij het KCC vandaan komen"
-      a3: "Schrijf je A3 voor het KCC aan de obeya-wand"
+      a3: "Schrijf je A3 voor het KCC aan je bureau"
       wait: "Kijk bij het KCC hoe het experiment loopt"
-      check: "Lees aan de obeya-wand af wat je experiment opleverde"
-      act: "Beslis aan de obeya-wand hoe het KCC verdergaat"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe het KCC verdergaat"
     rewards: {xp: 800, budget: 8000}
     insights:
       go_see: "Wat wil je dat er over vier weken anders is aan de telefoon? In een getal?"
@@ -458,10 +458,10 @@ missions:
       talk: "Praat met Petra (Meetdata)"
       look: "Ga bij Meetdata kijken wat er na de aansluiting gebeurt"
       dig: "Zoek uit waar een dossier op wacht als het klaar is"
-      a3: "Schrijf je A3 voor Meetdata aan de obeya-wand"
+      a3: "Schrijf je A3 voor Meetdata aan je bureau"
       wait: "Kijk bij Meetdata hoe het experiment loopt"
-      check: "Lees aan de obeya-wand af wat je experiment opleverde"
-      act: "Beslis aan de obeya-wand hoe Meetdata verdergaat"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe Meetdata verdergaat"
     teaches: [ean_code]
     rewards: {xp: 900, budget: 8000}
     insights:
@@ -553,10 +553,10 @@ missions:
       talk: "Praat met Gert (Grondwerk Peeters)"
       look: "Ga bij de storingsdienst kijken wat er dinsdag gebeurde"
       dig: "Zoek uit wat Gert van ons kreeg voordat hij ging graven"
-      a3: "Schrijf je A3 voor de storingsdienst aan de obeya-wand"
+      a3: "Schrijf je A3 voor de storingsdienst aan je bureau"
       wait: "Kijk bij de storingsdienst hoe het experiment loopt"
-      check: "Lees aan de obeya-wand af wat je experiment opleverde"
-      act: "Beslis aan de obeya-wand hoe de storingsdienst verdergaat"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe de storingsdienst verdergaat"
     # Containment (audit §2.4.1): until the cause is fixed, contractors stop
     # and call the storingsdienst before digging within a metre of a
     # middenspanningskabel, and a monteur points out the cable on site. All
@@ -599,10 +599,10 @@ missions:
       talk: "Praat met Mieke (Revisie & GIS)"
       look: "Ga bij Revisie & GIS kijken naar de doos met schetsen"
       dig: "Zoek uit hoe een schets op de kaart komt"
-      a3: "Schrijf je A3 voor Revisie & GIS aan de obeya-wand"
+      a3: "Schrijf je A3 voor Revisie & GIS aan je bureau"
       wait: "Kijk bij Revisie & GIS hoe het experiment loopt"
-      check: "Lees aan de obeya-wand af wat je experiment opleverde"
-      act: "Beslis aan de obeya-wand hoe Revisie & GIS verdergaat"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe Revisie & GIS verdergaat"
     rewards: {xp: 900, budget: 10000}
     insights:
       go_see: "Hoe oud is de oudste schets in de doos? Wat betekent dat voor wie morgen gaat graven?"
@@ -626,10 +626,10 @@ missions:
       talk: "Praat met Femke (Netstrategie)"
       look: "Ga bij Femke kijken naar het bord met netstudies"
       dig: "Zoek uit wat Femke op een dag allemaal doet"
-      a3: "Schrijf je A3 voor Netstrategie aan de obeya-wand"
+      a3: "Schrijf je A3 voor Netstrategie aan je bureau"
       wait: "Kijk bij Netstrategie hoe het experiment loopt"
-      check: "Lees aan de obeya-wand af wat je experiment opleverde"
-      act: "Beslis aan de obeya-wand hoe Netstrategie verdergaat"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe Netstrategie verdergaat"
     teaches: [netcongestie]
     rewards: {xp: 1200, budget: 12000}
     insights:
@@ -656,10 +656,10 @@ missions:
       talk: "Praat met Rob (Inkoop)"
       look: "Ga bij Netstrategie kijken waar De Boomgaard op wacht"
       dig: "Zoek uit wat er gebeurt tussen netstudie en trafo"
-      a3: "Schrijf je A3 voor Netstrategie aan de obeya-wand"
+      a3: "Schrijf je A3 voor Netstrategie aan je bureau"
       wait: "Kijk bij Netstrategie hoe het experiment loopt"
-      check: "Lees aan de obeya-wand af wat je experiment opleverde"
-      act: "Beslis aan de obeya-wand hoe Netstrategie verdergaat"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe Netstrategie verdergaat"
     teaches: [transformator]
     rewards: {xp: 1300, budget: 12000}
     insights:
@@ -684,10 +684,10 @@ missions:
       talk: "Praat met Thomas (Grootzakelijke klanten)"
       look: "Ga bij de congestiedesk kijken wie er op de wachtlijst staat"
       dig: "Zoek uit hoeveel gecontracteerd vermogen echt wordt gebruikt"
-      a3: "Schrijf je A3 voor de congestiedesk aan de obeya-wand"
+      a3: "Schrijf je A3 voor de congestiedesk aan je bureau"
       wait: "Kijk bij de congestiedesk hoe het experiment loopt"
-      check: "Lees aan de obeya-wand af wat je experiment opleverde"
-      act: "Beslis aan de obeya-wand hoe de congestiedesk verdergaat"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe de congestiedesk verdergaat"
     teaches: [netcongestie, acm]
     rewards: {xp: 1400, budget: 12000}
     insights:
@@ -716,10 +716,10 @@ missions:
       talk: "Praat met Sanne (Intake)"
       look: "Ga bij Intake en Werkvoorbereiding naar hun borden kijken"
       dig: "Zoek uit waarop beide teams worden afgerekend"
-      a3: "Schrijf je A3 voor beide teams aan de obeya-wand"
+      a3: "Schrijf je A3 voor beide teams aan je bureau"
       wait: "Kijk bij beide teams hoe het experiment loopt"
-      check: "Lees aan de obeya-wand af wat je experiment opleverde"
-      act: "Beslis aan de obeya-wand hoe beide teams verdergaan"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe beide teams verdergaan"
     rewards: {xp: 1500, budget: 12000}
     insights:
       go_see: "Vraag eens aan twee teams waar ze op worden beoordeeld. Passen die doelen bij elkaar?"
@@ -792,10 +792,10 @@ missions:
       talk: "Praat met Dirk (magazijn)"
       look: "Ga bij de storingsdienst kijken hoe een herstel loopt"
       dig: "Zoek uit waarom Ahmed halverwege naar het magazijn reed"
-      a3: "Schrijf je A3 voor de storingsdienst aan de obeya-wand"
+      a3: "Schrijf je A3 voor de storingsdienst aan je bureau"
       wait: "Kijk bij de storingsdienst hoe het experiment loopt"
-      check: "Lees aan de obeya-wand af wat je experiment opleverde"
-      act: "Beslis aan de obeya-wand hoe de storingsdienst verdergaat"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe de storingsdienst verdergaat"
     rewards: {xp: 400, budget: 4000}
 
   - id: fix_not_at_home
@@ -810,10 +810,10 @@ missions:
     steps:
       look: "Ga met Sandra mee langs haar adressen"
       dig: "Zoek uit waarom de deur zo vaak dicht blijft"
-      a3: "Schrijf je A3 voor de meterwisselaars aan de obeya-wand"
+      a3: "Schrijf je A3 voor de meterwisselaars aan je bureau"
       wait: "Kijk bij Sandra hoe het experiment loopt"
-      check: "Lees aan de obeya-wand af wat je experiment opleverde"
-      act: "Beslis aan de obeya-wand hoe de meterwisselaars verdergaan"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe de meterwisselaars verdergaan"
     rewards: {xp: 400, budget: 4000}
 
   - id: fix_silent_meter
@@ -841,10 +841,10 @@ missions:
     steps:
       look: "Kijk bij Werkvoorbereiding waar het dossier van Bos ligt"
       dig: "Zoek uit waar het dossier van de familie Bos op wacht"
-      a3: "Schrijf je A3 voor Werkvoorbereiding aan de obeya-wand"
+      a3: "Schrijf je A3 voor Werkvoorbereiding aan je bureau"
       wait: "Kijk bij Werkvoorbereiding hoe het experiment loopt"
-      check: "Lees aan de obeya-wand af wat je experiment opleverde"
-      act: "Beslis aan de obeya-wand hoe Werkvoorbereiding verdergaat"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe Werkvoorbereiding verdergaat"
     rewards: {xp: 400, budget: 4000}
 
   - id: look_at_grid_study
@@ -893,10 +893,10 @@ missions:
       talk: "Praat met Henk (Storingsdienst)"
       look: "Ga bij de storingsdienst kijken hoe Henk werkt"
       dig: "Zoek uit wat er wegvalt als Henk met pensioen gaat"
-      a3: "Schrijf je A3 voor de storingsdienst aan de obeya-wand"
+      a3: "Schrijf je A3 voor de storingsdienst aan je bureau"
       wait: "Kijk bij de storingsdienst hoe het experiment loopt"
-      check: "Lees aan de obeya-wand af wat je experiment opleverde"
-      act: "Beslis aan de obeya-wand hoe de storingsdienst verdergaat"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe de storingsdienst verdergaat"
     deadline_days: 56
     deadline_beat: henk_farewell   # his farewell party is that day, his knowledge saved or not (dated beat)
     fail_closes: [skills_matrix_buddy, twi_job_instruction, henks_one_point_lessons]
@@ -917,10 +917,10 @@ missions:
       talk: "Praat met Linda (Planning)"
       look: "Ga bij Planning kijken hoe een week wordt ingepland"
       dig: "Zoek uit waarom de planning steeds wordt omgegooid"
-      a3: "Schrijf je A3 voor Planning aan de obeya-wand"
+      a3: "Schrijf je A3 voor Planning aan je bureau"
       wait: "Kijk bij Planning hoe het experiment loopt"
-      check: "Lees aan de obeya-wand af wat je experiment opleverde"
-      act: "Beslis aan de obeya-wand hoe Planning verdergaat"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe Planning verdergaat"
     rewards: {xp: 500, budget: 5000}
 
 
@@ -983,10 +983,10 @@ missions:
     steps:
       look: "Rijd mee met een meterwisselaar en kijk bij {team}"
       dig: "Zoek uit waarom de meterwisselaar terug moet"
-      a3: "Schrijf je A3 voor de meterwisselaars aan de obeya-wand"
+      a3: "Schrijf je A3 voor de meterwisselaars aan je bureau"
       wait: "Kijk bij de meterwisselaars hoe het experiment loopt"
-      check: "Lees aan de obeya-wand af wat je experiment opleverde"
-      act: "Beslis aan de obeya-wand hoe de meterwisselaars verdergaan"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe de meterwisselaars verdergaan"
     teaches: [waste_defects, quality_at_the_source]
     rewards: {xp: 400, budget: 5000}
 
@@ -1005,9 +1005,9 @@ missions:
     steps:
       look: "Kijk bij Planning hoe de meterwissels worden ingepland"
       dig: "Zoek uit waar de overuren van de monteurs vandaan komen"
-      a3: "Schrijf je A3 voor Planning aan de obeya-wand"
+      a3: "Schrijf je A3 voor Planning aan je bureau"
       wait: "Kijk bij Planning hoe het experiment loopt"
-      check: "Lees aan de obeya-wand af wat je experiment opleverde"
-      act: "Beslis aan de obeya-wand hoe Planning verdergaat"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe Planning verdergaat"
     teaches: [waste_transport, heijunka]
     rewards: {xp: 400, budget: 5000}

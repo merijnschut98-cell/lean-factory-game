@@ -136,6 +136,8 @@ var look_editor: CreatorScreen
 var reactions: OfficeReactions
 ## A milestone's scene in its room (phase-2 design §3.1) while the game can be played, or null.
 var milestone: OfficeMilestone
+## Your desk's things (name plate, photo, letter, clipboard) while its floor is loaded, or null.
+var desk: OfficeDesk
 
 
 func _ready() -> void:
@@ -277,6 +279,7 @@ func _process(delta: float) -> void:
 	if ui.playable():
 		follow_walking_talk(delta)
 	if session.error.is_empty() and not busy():
+		OfficeCheckScreen.refresh(self)
 		ui.hud.show_prompt(prompt_near(player.position))
 	var tagged: Array[OfficePerson] = []
 	if not busy():
@@ -301,7 +304,7 @@ static func _load_geometry(path := MODEL) -> Node3D:
 func load_floor() -> void:
 	_clear_interactables()
 	var stay_in: Array[String] = people.stay_in if people != null else ([] as Array[String])
-	for n: Node in [people, geometry, yard, tells]:
+	for n: Node in [people, geometry, yard, tells, desk]:
 		if n != null:
 			remove_child(n)
 			n.free()
@@ -311,6 +314,9 @@ func load_floor() -> void:
 	geometry = _load_geometry(floors.model_path())
 	add_child(geometry)
 	_cut_away_ceiling()
+	desk = OfficeDesk.create(self)   # your desk at Aansluitingen (PLAN 2.10)
+	if desk != null:
+		add_child(desk)
 	if find_marker("coach") != null:   # the coach's room is on this floor: Ruud's whiteboard
 		geometry.add_child(OfficeWhiteboard.build(in_office(geometry).affine_inverse()))
 	_hang_kpi_wall()
@@ -385,10 +391,11 @@ func _add_interactables() -> void:
 		var kpi := Interactable.create(OfficeKpiBoard.ID, OfficeKpiBoard.stand(kpi_wall))
 		interactables.append(kpi)
 		add_child(kpi)
-	var headset := OfficeHeadset.place(self)   # the KCC's free desk (begane grond, once its room is open)
-	if headset != null:
-		interactables.append(headset)
-		add_child(headset)
+	# the KCC's free desk (begane grond, once its room is open); your desk; Petra's screen (2.10)
+	for at: Interactable in [OfficeHeadset.place(self), OfficeDesk.place(self), OfficeCheckScreen.place(self)]:
+		if at != null:
+			interactables.append(at)
+			add_child(at)
 
 
 ## Whether the coach has moved out of the coach's room (cast `moves`: Ruud back up to his
@@ -458,11 +465,14 @@ func in_office(node: Node3D) -> Transform3D:
 
 
 ## The nearest interaction point within `reach` on the floor, or null. `at`
-## is in the office's space (the player's position, or a click).
+## is in the office's space (the player's position, or a click). A hidden one (Petra's
+## screen while no Check waits) is not there.
 func interactable_near(at: Vector3, reach := REACH) -> Interactable:
 	var best: Interactable = null
 	var best_distance := reach
 	for i in interactables:
+		if not i.visible:
+			continue
 		var d := Vector2(at.x - i.position.x, at.z - i.position.z).length()
 		if d <= best_distance:
 			best = i
@@ -507,7 +517,7 @@ func prompt_for(target: Interactable) -> String:
 		return seam
 	match target.kind:
 		"obeya":
-			return "E — Obeya-wand: A3 en Check"
+			return "E — Obeya-wand: je A3"
 		"coach":
 			return "E — Coach: " + str(session.catalog.coach.get("name", ""))
 		OfficeWhiteboard.ID:
@@ -516,6 +526,10 @@ func prompt_for(target: Interactable) -> String:
 			return tr(OfficeHeadset.PROMPT)
 		OfficeKpiBoard.ID:
 			return tr(OfficeKpiBoard.PROMPT)
+		OfficeDesk.ID:
+			return tr(OfficeDesk.PROMPT)
+		OfficeCheckScreen.ID:
+			return tr(OfficeCheckScreen.PROMPT)
 	return "E — " + label_for(target)
 
 
@@ -540,6 +554,10 @@ func label_for(target: Interactable) -> String:
 			return tr(OfficeHeadset.LABEL)
 		OfficeKpiBoard.ID:
 			return tr(OfficeKpiBoard.LABEL)
+		OfficeDesk.ID:
+			return tr(OfficeDesk.LABEL)
+		OfficeCheckScreen.ID:
+			return tr(OfficeCheckScreen.LABEL)
 	return target.id
 
 
@@ -612,6 +630,10 @@ func interact(target: Interactable) -> void:
 			OfficeHeadset.take_call(self)
 		OfficeKpiBoard.ID:
 			open_kpi_board()
+		OfficeDesk.ID:
+			ui.open_a3()
+		OfficeCheckScreen.ID:
+			ui.open_check()
 	if ui.is_busy():
 		frame(target)
 

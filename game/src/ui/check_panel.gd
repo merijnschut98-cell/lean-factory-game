@@ -44,6 +44,9 @@ const SCORE_PARTS := {
 	"check_act": "Check en Act", "impact": "Impact op de hele stroom",
 }
 
+## Shown on her screen while the Check's forecast runs (a few seconds of simulation).
+const SIMULATING := "De Check rekent de komende maanden twee keer door, met en zonder jouw maatregel. Even geduld, dat duurt een paar seconden…"
+
 ## How far the practice forecast looks ahead.
 const FORECAST_DAYS := 30
 
@@ -56,6 +59,26 @@ var forecast: Dictionary = {}
 
 func _init() -> void:
 	super("Check", Vector2(1240, 0))
+	add_theme_stylebox_override("panel", MonitorScreen.new())
+
+
+## The problem whose Check waits at Petra's screen: the first accepted mission's problem
+## that is ready for its Check or checked and waiting for the Act; "" when none is.
+static func due(s: GameSession) -> String:
+	for m in s.active_missions():
+		if not m.goal_problem.is_empty() and s.phase_of(m.goal_problem) in ["check_ready", "checked"]:
+			return m.goal_problem
+	return ""
+
+
+## The note that the Check is simulating, while it runs.
+func show_simulating(of_problem: String) -> void:
+	problem_id = of_problem
+	result = {}
+	clear(body)
+	title_label.text = "Check"
+	title_label.add_theme_color_override("font_color", Palette.VOLTANA_BLUE)
+	body.add_child(paragraph(tr(SIMULATING), Palette.VOLTANA_BLUE))
 
 
 func show_result(of_problem: String, check_result: Dictionary) -> void:

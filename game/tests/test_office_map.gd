@@ -87,7 +87,7 @@ func test_a_problem_mission_marks_its_room_never_the_step() -> void:
 	office.ui.mission_board.accept(MISSION)
 	var marked := OfficeMap.mission_places(s)
 	assert_false(DESIGN in marked, "never the step")
-	assert_false("obeya" in marked, "not before the A3 is ready for a Check")
+	assert_false(OfficeCheckScreen.ID in marked, "not before the A3 is ready for a Check")
 	office.ui.close_panels()
 	office.ui.toggle_phone(Phone.MAP)
 	var map := office.ui.office_map
@@ -97,7 +97,7 @@ func test_a_problem_mission_marks_its_room_never_the_step() -> void:
 	var room: Dictionary = map.rooms.filter(func(r: Dictionary) -> bool: return r["id"] == rooms[0])[0]
 	assert_true(room["rect"].has_point(design["at"]), "the room around the step")
 	s.region.state["custom_design"].phase = ProblemState.Phase.CHECK_READY
-	assert_true("obeya" in OfficeMap.mission_places(s), "then the obeya")
+	assert_true(OfficeCheckScreen.ID in OfficeMap.mission_places(s), "then Petra's screen (PLAN 2.10)")
 	office.free()
 
 
