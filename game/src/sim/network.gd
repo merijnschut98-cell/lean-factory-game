@@ -12,6 +12,8 @@ const MAX_EVENTS := 2000
 ## Days of finished records and step statistics kept (KPI windows, Check,
 ## the value stream map); older history is dropped so memory and saves stay bounded.
 const HISTORY_DAYS := 120
+## Where a monteur without the right material breaks off to fetch it (material_trips_since).
+const MATERIAL_TRIP_PLACE := "outages.repair"
 
 var time := 0
 var run_seed := 1
@@ -251,6 +253,13 @@ func effects() -> Dictionary[String, Array]:
 
 
 ## The step at a place "stream.step" (null if there is none).
+## Drives back to the magazijn for missing material in the middle of a repair, from `day` on
+## ("materiaal halen": SimStep trips at outages.repair; wrong_joint_in_van switches them on).
+func material_trips_since(day: int) -> int:
+	var repair := step_at(MATERIAL_TRIP_PLACE)
+	return 0 if repair == null else repair.stats_since(day)["trips"]
+
+
 func step_at(place: String) -> SimStep:
 	var s := stream(place.get_slice(".", 0))
 	return s.step(place.get_slice(".", 1)) if s != null and place.get_slice_count(".") == 2 else null
