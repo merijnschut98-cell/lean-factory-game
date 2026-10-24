@@ -275,7 +275,8 @@
     {
      "board": true,
      "line": "Het bord is vandaag van jou. Waar laten we de teams het komende kwartaal op sturen?",
-     "speaker": "ruud"
+     "speaker": "ruud",
+     "stand_at": "scene:directors_obeya:board"
     },
     {
      "line": "Aanvragen en ontwerpen per week. Dat ken ik, dat kan ik verantwoorden.",

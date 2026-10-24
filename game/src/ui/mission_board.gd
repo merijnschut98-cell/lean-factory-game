@@ -13,6 +13,8 @@ const NO_CLOCK := "de deadline is voorbij."
 ## Over a fork: two main missions open at once, and the player picks the order.
 const FORK_HEADING := "Twee hoofdmissies tegelijk: welke pak je eerst aan?"
 const REPAIR_KIND := "herstel"
+## A recurring side (MissionDef.is_routine): no side slot, walked every week.
+const ROUTINE_KIND := "vaste routine"
 ## The drawer of side offers older than a week (SessionLayer.older_offers).
 const OLDER := "Nog open"
 ## A safety mission's containment (audit §2.4.1): the button names the
@@ -250,6 +252,8 @@ func _title(m: MissionDef) -> String:
 static func kind_label(m: MissionDef) -> String:
 	if m.goal_type == "rework_fix":
 		return REPAIR_KIND
+	if m.is_routine():
+		return ROUTINE_KIND
 	match m.kind:
 		"main":
 			return "hoofdmissie"

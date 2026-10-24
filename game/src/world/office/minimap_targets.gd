@@ -10,7 +10,8 @@ class_name MinimapTargets
 ## The room of your desk (OfficeDesk) and of the obeya wall: a problem's mission points
 ## there once its A3 is to be written (build_office.py puts both in the connections office).
 const OBEYA_ROOM := "connections"
-## At most this many targets of each kind are drawn (the 1 + 3 rule; two mains in a fork).
+## At most this many targets of each kind are drawn (the 1 + 3 rule; two mains in a fork);
+## a routine takes no side slot (MissionDef.is_routine).
 const MAX_MAIN := 2
 const MAX_SIDE := 3
 
@@ -26,7 +27,7 @@ static func all(s: GameSession, building: OfficeBuilding, cast: Array[Dictionary
 			continue
 		if t["main"] and mains.size() < MAX_MAIN:
 			mains.append(t)
-		elif not t["main"] and sides.size() < MAX_SIDE:
+		elif not t["main"] and (m.is_routine() or sides.size() < MAX_SIDE):
 			sides.append(t)
 	return mains + sides
 

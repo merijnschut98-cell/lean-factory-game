@@ -87,6 +87,8 @@ func face(basis_to_match: Basis) -> void:
 ## stand_up; the player does not walk meanwhile.
 func sit_at(seat: Transform3D) -> void:
 	stop()
+	set_physics_process(false)   # the chair's and the table's collision would push the body off the seat
+	velocity = Vector3.ZERO
 	position = Vector3(seat.origin.x, position.y, seat.origin.z)
 	face(seat.basis)
 	seated = true
@@ -116,6 +118,7 @@ func _headset() -> Node3D:
 func stand_up() -> void:
 	if seated:
 		seated = false
+		set_physics_process(true)
 		_animate("idle")
 
 

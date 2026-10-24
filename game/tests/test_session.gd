@@ -167,6 +167,17 @@ func test_the_coach_asks_about_the_main_mission_only() -> void:
 	assert_eq(s.ask_coach("walk_meters"), {"kind": "not_main"}, "the coach helps only with the main quest")
 
 
+## A talk on more missions (`missions:`, arc S11): the main mission it belongs to is the
+## active main one among them, not merely the first it names.
+func test_a_talk_on_more_missions_belongs_to_the_active_main_one() -> void:
+	var s := _campaign()
+	s.accept(MISSION)
+	var def := DialogDef.from_dict({"id": "both", "person": "joost", "kind": "persuade", "missions": ["walk_meters", MISSION]})
+	assert_eq(s.talk_main(def), MISSION)
+	def.missions = PackedStringArray(["walk_meters"])
+	assert_eq(s.talk_main(def), "", "a side's talk")
+
+
 func test_the_choices_are_the_same_for_every_problem() -> void:
 	var s := _accepted()
 	var ids := s.countermeasures().map(func(c: CountermeasureDef) -> String: return c.id)

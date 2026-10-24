@@ -456,7 +456,7 @@ class Persona extends RefCounted:
 		for m: MissionDef in open:
 			if m.kind == "main" and s.missions.active("main").is_empty():
 				_accept(m)
-			elif m.kind == "side" and s.missions.active("side").size() < _side_slots():
+			elif m.kind == "side" and (m.is_routine() or s.missions.sides_taken() < _side_slots()):
 				_accept(m)
 
 	func _side_slots() -> int:

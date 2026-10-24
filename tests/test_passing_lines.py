@@ -47,6 +47,12 @@ def test_the_shared_lines_cover_every_fact_and_mood(real):
     assert len(real["dialogs"]["chatter"]) >= 10
 
 
+def test_weekend_chatter_waits_for_the_end_of_the_week(real):
+    """A chatter's `days` (mon..sun): the weekend's plans come up on Thursday or Friday."""
+    weekend = next(c for c in real["dialogs"]["chatter"] if c["id"] == "weekend")
+    assert weekend["days"] and "mon" not in weekend["days"]
+
+
 def test_the_real_lines_build_and_are_spoken(real):
     texts = [t for _, t in bc.spoken_texts(real)]
     assert real["dialogs"]["greetings"]["sanne"]["day"][0] in texts
@@ -64,6 +70,8 @@ def test_the_real_lines_build_and_are_spoken(real):
     (lambda d: d["chatter"][0]["lines"].append("En verder?"), "chatter intake_half_requests.*two lines"),
     (lambda d: d["chatter"][0].__setitem__("teams", ["kantine"]), "chatter intake_half_requests.*team"),
     (lambda d: d["chatter"][0].__setitem__("load", "vol"), "chatter intake_half_requests.*load"),
+    (lambda d: d["chatter"][0].__setitem__("days", ["vrijdag"]), "chatter intake_half_requests: days lists"),
+    (lambda d: d["chatter"][0].__setitem__("days", []), "chatter intake_half_requests: days lists"),
     (lambda d: d["greetings"]["sanne"]["day"].__setitem__(0, ""), "sanne.*text"),
 ])
 def test_passing_line_errors_are_caught(real, tmp_path, mutate, message):

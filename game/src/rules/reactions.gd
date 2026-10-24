@@ -9,7 +9,8 @@ extends RefCounted
 ## greetings: {<person id>: {day: [...], <fact>: [...]}, _all: {<fact>: [...]}}: a person's
 ##   own line for the fact, else the shared one, else an ordinary morning (`day`).
 ## quick: {<person id>: {<mood>: [...]}, _all: {<mood>: [...]}}, moods as MOODS.
-## chatter: [{id, lines: [first, second], teams: [...] (optional), load: busy|calm (optional)}].
+## chatter: [{id, lines: [first, second], teams: [...] (optional), load: busy|calm (optional),
+##   days: [mon..sun] (optional: only on those days, SimCalendar.DAY_NAMES)}].
 
 ## What yesterday left, strongest first (GameSession.greeting_fact picks one).
 const FACTS: Array[String] = ["ruined", "pressured", "committed", "heard", "standardised"]
@@ -51,16 +52,19 @@ func quick_line(person_id: String, mood: String, n: int) -> String:
 
 
 ## A two-line exchange for two colleagues of `teams` (theirs, "" when unknown) at `load`
-## (busy | calm | ""), variant `n` among those that fit: [first, second], or [] when none fits.
-## A snippet with teams fits when one of the two is in one of them; with a load, at that load.
-func chatter_for(teams: Array, load: String, n: int) -> Array[String]:
+## (busy | calm | "") on `weekday` (0 Monday; -1 any day), variant `n` among those that fit:
+## [first, second], or [] when none fits. A snippet with teams fits when one of the two is in
+## one of them; with a load, at that load; with days, on one of them.
+func chatter_for(teams: Array, load: String, n: int, weekday := -1) -> Array[String]:
 	var fits: Array = chatter.filter(func(c: Variant) -> bool:
 		if not c is Dictionary or not (c.get("lines") is Array and c["lines"].size() == 2):
 			return false
 		var want: Array = c.get("teams", []) if c.get("teams") is Array else []
 		var at := str(c.get("load", ""))
+		var days: Array = c.get("days", []) if c.get("days") is Array else []
 		return (want.is_empty() or teams.any(func(t: Variant) -> bool: return t in want)) \
-			and (at.is_empty() or at == load))
+			and (at.is_empty() or at == load) \
+			and (days.is_empty() or weekday < 0 or SimCalendar.DAY_NAMES[weekday] in days))
 	var out: Array[String] = []
 	if fits.is_empty():
 		return out
