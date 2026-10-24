@@ -911,7 +911,7 @@ def test_every_act_one_persuasion_is_a_talk_goal_of_its_mission():
     docs = bc.load_content()
     missions = {m["id"]: m for m in docs["missions"]["missions"]}
     for d in docs["dialogs"]["dialogs"]:
-        m = missions.get(d.get("mission"))
+        m = missions.get(next(iter(bc.dialog_missions(d)), None))  # the first owns the talk
         if d["kind"] == "persuade" and d.get("owns") and m and m.get("act") == 1:
             assert d["id"] in [t["dialog"] for t in m.get("talk_to", [])], d["id"]
             assert "talk" in m["steps"], m["id"]

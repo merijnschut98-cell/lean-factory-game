@@ -1841,7 +1841,7 @@ PERSON_KEYS = {"id", "name", "short", "role", "place", "team", "archetype", "nee
 DIALOG_KEYS = {"id", "name", "person", "kind", "mission", "requires_clue", "needs", "owns", "kpi_team", "mood",
                "patience", "opening", "retry_opening", "position", "layers", "data", "proposals", "experiments",
                "co_proposal", "condition_needs", "block", "lines", "replies", "outcomes", "variants", "trigger",
-               "tutorial", "teaches", "prompt", "warning", "need", "beats_after", "also_during"}
+               "tutorial", "teaches", "prompt", "warning", "need", "beats_after", "also_during", "missions"}
 LAYER_KEYS = {"id", "at", "via", "text", "tags", "tell", "lead_in", "condition", "wait_for", "unlocks"}
 PROPOSAL_KEYS = {"id", "label", "say", "kpis", "addresses", "reply", "hidden", "promise"}
 # A proposal that promises the person something the game checks later (D9
@@ -2210,7 +2210,12 @@ def _validate_dialog(d: dict, where: str) -> None:
     if d["kind"] == "checkin":
         _checkin(d, proposals + experiments, where)
     else:
-        _require_strings(d, ["mission"], where)
+        if "missions" not in d:
+            _require_strings(d, ["mission"], where)
+        elif "mission" in d:  # a talk on more than one mission (arc S11) names them in one list
+            raise ContentError(f"{where}: 'mission' or 'missions', not both")
+        else:
+            _string_list(d, "missions", where, allow_empty=False)
         # No single right answer (spec §9.2 rule 10): two ways at least to meet the concern.
         if d["kind"] == "persuade" and sum(1 for i in proposals + experiments if "concern" in i.get("addresses", [])) < 2:
             raise ContentError(f"{where}: no single right answer: needs two proposals or experiments that address the concern")
@@ -2296,7 +2301,7 @@ def _beats_after(d: dict, where: str) -> None:
 
 def _checkin(d: dict, items: list[dict], where: str) -> None:
     """A check-in has no mission, owns nothing and asks no KPIs (spec §9.2 rule 12)."""
-    for key in ("mission", "owns", "kpi_team", "requires_clue", "data", "condition_needs", "block", "co_proposal"):
+    for key in ("mission", "missions", "owns", "kpi_team", "requires_clue", "data", "condition_needs", "block", "co_proposal"):
         if key in d:
             raise ContentError(f"{where}: a check-in has no {key!r}")
     if any("kpis" in i for i in items):
@@ -2388,8 +2393,9 @@ def speaking_cast(docs: dict[str, Any]) -> dict[int, dict[str, str]]:
     people = {p["id"]: p["need"] for p in docs["dialogs"]["people"]}
     cast: dict[int, dict[str, str]] = {}
     for d in docs["dialogs"]["dialogs"]:
-        if d.get("mission") in acts:
-            cast.setdefault(TIER_OF_ACT[acts[d["mission"]]], {})[d["person"]] = people[d["person"]]
+        owner = next(iter(dialog_missions(d)), None)
+        if owner in acts:
+            cast.setdefault(TIER_OF_ACT[acts[owner]], {})[d["person"]] = people[d["person"]]
     return cast
 
 
@@ -2413,7 +2419,7 @@ def _check_talk_goals(docs: dict[str, Any]) -> None:
     dialogs = {d["id"]: d for d in docs.get("dialogs", {}).get("dialogs", [])}
     for m in docs["missions"]["missions"]:
         talk = m.get("ends_with_talk")  # the day ends with this talk, however it goes (D9 talks audit A2)
-        if talk is not None and dialogs and dialogs.get(talk, {}).get("mission") != m["id"]:
+        if talk is not None and dialogs and m["id"] not in dialog_missions(dialogs.get(talk, {})):
             raise ContentError(f"missions.yaml: mission '{m['id']}': ends_with_talk names no dialog of its own: {talk!r}")
         names = [t["dialog"] for t in m.get("talk_to", [])] if dialogs else []  # a fixture without dialogs
         if m["goal"]["type"] == "talk_to":
@@ -2423,8 +2429,8 @@ def _check_talk_goals(docs: dict[str, Any]) -> None:
             d = dialogs.get(name)
             if d is None:
                 raise ContentError(f"{where}: talk_to names unknown dialog {name!r}")
-            if d.get("mission") != m["id"]:
-                raise ContentError(f"{where}: dialog {d['id']!r} belongs to mission {d.get('mission')!r}")
+            if m["id"] not in dialog_missions(d):
+                raise ContentError(f"{where}: dialog {d['id']!r} belongs to mission(s) {dialog_missions(d)!r}")
             if d.get("kind") != "persuade":
                 raise ContentError(f"{where}: talk_to names {d['id']!r}, which is no persuasion")
 
@@ -2472,6 +2478,11 @@ def _robust_route(expr: dict, where: str, index: dict, dialogs: dict, heard: set
     return all(robust) and (not either or any(either))
 
 
+def dialog_missions(d: dict) -> list:
+    """The missions a talk is on: `missions:` (arc S11, the first owns it) or the one `mission:`."""
+    return d["missions"] if "missions" in d else [d["mission"]] if "mission" in d else []
+
+
 def _check_expert(d: dict, where: str, missions: dict, problems: dict, explainers: set) -> None:
     """An expert talk's mission (optional), and what its topics unlock exists."""
     for m in ([d["mission"]] if "mission" in d else []) + _string_list(d, "also_during", where):
@@ -2486,9 +2497,10 @@ def _check_expert(d: dict, where: str, missions: dict, problems: dict, explainer
 
 
 def _check_mission_dialog(d: dict, where: str, missions: dict, problems: dict, net: dict) -> None:
-    mission = missions.get(d["mission"])
-    if mission is None:
-        raise ContentError(f"{where}: unknown mission {d['mission']!r}")
+    for m in dialog_missions(d):
+        if m not in missions:
+            raise ContentError(f"{where}: unknown mission {m!r}")
+    mission = missions[dialog_missions(d)[0]]  # the first owns the talk: its problem, data and KPI menu
     for later in _string_list(d, "also_during", where):  # open over these missions' days too
         if later not in missions:
             raise ContentError(f"{where}: also_during names unknown mission {later!r}")

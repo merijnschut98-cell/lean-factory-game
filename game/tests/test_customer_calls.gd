@@ -52,6 +52,21 @@ func test_a_customer_call_is_due_only_when_their_talk_is() -> void:
 	assert_eq(calls[0]["name"], "Fatima El Amrani")
 
 
+## Arc S11: her call is a talk on two missions, so a player who never reached
+## the status callers still hears from her before the frost.
+func test_her_call_rings_before_the_frost_without_the_status_callers() -> void:
+	var s := _session()
+	s.missions.done_once["walk_connections"] = true
+	s.missions.play_start -= SimCalendar.days(49)   # 30 November: Voor de vorst opens
+	s.pass_time(0)
+	assert_eq(s.missions.status("winter_el_amrani"), "active")
+	assert_ne(s.missions.status("fix_status_callers"), "active")
+	var calls := s.customer_calls().filter(func(c: Dictionary) -> bool: return c["person"] == "el_amrani")
+	assert_eq(calls.map(func(c: Dictionary) -> String: return c["dialog"]), ["el_amrani_fourth_call"])
+	_at(s, 10 * 60)
+	assert_eq(CustomerCalls.ringing(s, SessionLayer.new()).get("dialog"), "el_amrani_fourth_call", "her phone call")
+
+
 # ── The promise ─────────────────────────────────────────────────────────────
 
 ## Agree on a proposal at the end of the call (the moves that lead there are
@@ -200,6 +215,16 @@ func test_the_kcc_has_a_free_desk_with_a_headset() -> void:
 	office.free()
 
 
+## Ilse's queue is a customer call too: the KCC opens with her mission.
+func test_the_kcc_opens_for_ilse_s_call() -> void:
+	var office := _office()
+	office.session.missions.progress["fix_unused_capacity"] = {"status": "active", "asks": {}, "seen": {}}
+	office.reload_rooms()
+	office.floors.go_to("ground", "lift", true)
+	assert_true(office.interactable(OfficeHeadset.ID) != null, "the headset place at the KCC")
+	office.free()
+
+
 func test_the_headset_offers_a_call_only_when_a_customer_talk_is_due() -> void:
 	var office := _office()
 	office.floors.go_to("ground", "lift", true)
@@ -217,4 +242,24 @@ func test_the_headset_offers_a_call_only_when_a_customer_talk_is_due() -> void:
 	office.ui.close_panels()
 	office.ui.close_panels()
 	assert_false(office.player.seated, "up again after the call")
+	office.free()
+
+
+## On the call you wear the desk's headset: on your head, gone from the desk;
+## after it, back on the desk.
+func test_the_player_wears_the_desk_s_headset_on_the_call() -> void:
+	var office := _office()
+	_calling(office.session)
+	office.reload_rooms()
+	office.floors.go_to("ground", "lift", true)
+	var on_desk := office.find_marker(OfficeHeadset.DESK + "_headset")
+	assert_false(office.player.wears_headset(), "not before the call")
+	office.interact(office.interactable(OfficeHeadset.ID))
+	assert_true(office.ui.talk_view.talking())
+	assert_true(office.player.wears_headset(), "on your head")
+	assert_false(on_desk.visible, "gone from the desk")
+	office.ui.close_panels()
+	office.ui.close_panels()
+	assert_false(office.player.wears_headset(), "off again after the call")
+	assert_true(on_desk.visible, "back on the desk")
 	office.free()
