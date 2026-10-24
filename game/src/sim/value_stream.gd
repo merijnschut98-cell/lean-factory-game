@@ -10,6 +10,11 @@ var norm_minutes: int
 var priority: int
 ## Urgent work (outages) interrupts lower-priority work in progress.
 var preempts := false
+## Which way the finished-per-week is better (Pdca.direction): 1 higher, −1 lower,
+## where an order is a fault or a complaint (fewer outages a week is prevented demand).
+var throughput_direction := 1
+## How the screens name such a throughput ("storingen per week"); "" for the plain one.
+var throughput_phrase := ""
 ## At most this many started orders at once (CONWIP); new orders beyond it
 ## wait, not yet started. 0 = no limit.
 var wip_limit := 0

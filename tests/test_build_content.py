@@ -202,6 +202,9 @@ def test_real_value_streams_are_valid():
     (lambda d: d["pools"].append(dict(d["pools"][0])), "duplicate pools ids: intake"),
     (lambda d: d["pools"][0].update(id="Intake Team"), "snake_case"),
     (lambda d: _connections(d).update(steps=[]), "at least one step"),
+    (lambda d: _connections(d).update(throughput_direction="up"), "'throughput_direction' must be one of"),
+    (lambda d: _connections(d).update(throughput_direction="lower_is_better"), "'throughput_phrase'"),
+    (lambda d: _connections(d).update(throughput_phrase=""), "'throughput_phrase'"),
 ])
 def test_value_stream_errors_are_caught(mutate, message):
     doc = _streams()
@@ -214,6 +217,15 @@ def test_unquoted_time_in_yaml_is_caught():
     doc = yaml.safe_load(REAL_STREAMS.replace('to: "15:30"', "to: 15:30", 1))
     with pytest.raises(bc.ContentError, match="HH:MM"):
         bc.validate_value_streams(doc, "value_streams.yaml")
+
+
+def test_fewer_outages_calls_and_complaints_read_as_better():
+    """A drop in outages, customer calls or voltage complaints a week is prevented demand:
+    those streams' throughput is lower-is-better; every other stream's stays higher."""
+    lower = {s["id"]: s.get("throughput_phrase") for s in _streams()["streams"]
+             if s.get("throughput_direction") == "lower_is_better"}
+    assert lower == {"outages": "storingen per week", "voltage_complaints": "spanningsklachten per week",
+                     "customer_contact": "klantvragen per week"}
 
 
 def test_real_streams_cover_the_value_streams_and_customer_contact():

@@ -28,6 +28,7 @@ static func run(net: Network, problem: ProblemDef, days: int, window: int) -> Di
 		var twin: Network = with_fix if run == "with" else without
 		twin.advance_days(days)
 		out[run] = Region.measures(twin, problem.step, window)
+	var throughput := net.stream_of(problem.step).throughput_direction
 	for kpi: String in Investigation.KPIS:
-		out["gains"][kpi] = Pdca.kpi_gain(kpi, out["without"], out["with"])
+		out["gains"][kpi] = Pdca.kpi_gain(kpi, out["without"], out["with"], throughput)
 	return out

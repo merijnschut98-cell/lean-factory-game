@@ -67,8 +67,13 @@ static func kpi_gap(r: Region, problem_id: String) -> float:
 	var possible: float = Region.measures(better, p.step)[p.kpi]
 	if is_zero_approx(possible):
 		return 0.0
-	var behind := today - possible if p.kpi in Investigation.LOWER_IS_BETTER else possible - today
-	return behind / absf(possible)
+	return behind(p.kpi, today, possible, r.net.stream_of(p.step).throughput_direction)
+
+
+## How far `today` is behind `possible` on `kpi` (relative, > 0 when behind), on a
+## stream whose throughput direction is `throughput` (more outages than possible is behind).
+static func behind(kpi: String, today: float, possible: float, throughput := 1) -> float:
+	return Pdca.direction(kpi, throughput) * (possible - today) / absf(possible)
 
 
 ## The repair quest for a poor fix (Dutch game text).

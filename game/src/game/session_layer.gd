@@ -27,8 +27,8 @@ const CHANGE_MIN := 0.05
 const MIN_COMPLETED := 10
 ## The window the numbers are measured over (days).
 const WINDOW_DAYS := 28
-## The measures compared, with their direction (1: higher is better).
-const MEASURES := {"lead_days_p50": -1, "on_time": 1, "first_time_right": 1, "throughput_per_week": 1}
+## The measures compared (which way is better: Pdca.direction).
+const MEASURES: Array[String] = ["lead_days_p50", "on_time", "first_time_right", "throughput_per_week"]
 ## Built side quests (a slipping fix's check-in, a poor fix's repair) are the
 ## player's own work coming back: they are never held back.
 const BUILT_PREFIXES: Array[String] = [Missions.CHECKIN_PREFIX, Repairs.PREFIX]
@@ -149,11 +149,13 @@ func _changed(s: GameSession) -> Dictionary:
 	for st: ProblemState in s.region.state.values():
 		if st.phase != ProblemState.Phase.DORMANT:
 			worked[s.region.problems[st.id].step.get_slice(".", 0)] = true
-	var own := _most_moved(then, now, then.keys().filter(func(id: String) -> bool: return worked.has(id)))
-	return own if not own.is_empty() else _most_moved(then, now, then.keys())
+	var net := s.region.net
+	var own := _most_moved(then, now, then.keys().filter(func(id: String) -> bool: return worked.has(id)), net)
+	return own if not own.is_empty() else _most_moved(then, now, then.keys(), net)
 
 
-static func _most_moved(then: Dictionary, now: Dictionary, streams: Array) -> Dictionary:
+## `net` says which way each stream's throughput is better (fewer outages is).
+static func _most_moved(then: Dictionary, now: Dictionary, streams: Array, net: Network) -> Dictionary:
 	var best := {}
 	var most := CHANGE_MIN
 	for stream: String in streams:
@@ -169,7 +171,8 @@ static func _most_moved(then: Dictionary, now: Dictionary, streams: Array) -> Di
 			if share >= most:
 				most = share
 				best = {"kind": "changed", "what": "measure", "stream": stream, "measure": id, "before": was,
-					"after": a[id], "better": MEASURES[id] * (a[id] - was) > 0.0}
+					"after": a[id],
+					"better": Pdca.direction(id, KpiBoard.throughput_direction(net, stream)) * (a[id] - was) > 0.0}
 	return best
 
 
@@ -506,7 +509,7 @@ static func _clean_snapshot(v: Variant) -> Dictionary:
 		if not saved[stream] is Dictionary:
 			continue
 		var m := {}
-		for id: String in ["completed"] + MEASURES.keys():
+		for id: String in ["completed"] + MEASURES:
 			var value: Variant = saved[stream].get(id)
 			if value is float or value is int:
 				m[id] = float(value)

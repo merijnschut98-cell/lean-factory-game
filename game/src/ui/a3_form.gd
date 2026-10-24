@@ -216,7 +216,8 @@ func _build_form(m: MissionDef) -> void:
 	plan.add_child(_cm)
 	_add_unprepared(plan)
 	plan.add_child(label("Op welke KPI verwacht je het effect?", UiTheme.SMALL, Palette.MUTED))
-	_prediction = _options(Investigation.KPIS.map(func(k: String) -> String: return UiText.kpi(k)))
+	var stream := session.region.net.stream_of(session.region.problems[problem_id].step)
+	_prediction = _options(Investigation.KPIS.map(func(k: String) -> String: return UiText.kpi(k, stream)))
 	plan.add_child(_prediction)
 	var start := button("Start experiment", func() -> void: submit(selected_a3()))
 	start.size_flags_horizontal = Control.SIZE_SHRINK_END
@@ -244,8 +245,9 @@ func _numbers_row(snapshot: Dictionary) -> GridContainer:
 	var grid := GridContainer.new()
 	grid.columns = NUMBERS.size()
 	grid.add_theme_constant_override("h_separation", 18)
+	var stream := session.region.net.stream_of(session.region.problems[problem_id].step)
 	for k: String in NUMBERS:
-		var name := label(UiText.kpi(k), 15, Palette.MUTED, true)
+		var name := label(UiText.kpi(k, stream), 15, Palette.MUTED, true)
 		name.custom_minimum_size.x = 118
 		name.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 		grid.add_child(name)

@@ -109,6 +109,8 @@ func _build_stream(v: Dictionary) -> ValueStream:
 	stream.priority = int(v["priority"])
 	stream.preempts = bool(v.get("preempts", false))
 	stream.wip_limit = int(v.get("wip_limit", 0))
+	stream.throughput_direction = -1 if v.get("throughput_direction") == "lower_is_better" else 1
+	stream.throughput_phrase = str(v.get("throughput_phrase", ""))
 	var calls: Dictionary = v.get("status_calls", {})
 	stream.calls_to = calls.get("to", "")
 	stream.call_after_minutes = _days(calls, "after_days")
@@ -275,6 +277,11 @@ func stream(stream_id: String) -> ValueStream:
 		if s.id == stream_id:
 			return s
 	return null
+
+
+## The stream a place ("outages.locate") is in; null when there is none.
+func stream_of(place: String) -> ValueStream:
+	return stream(place.get_slice(".", 0))
 
 
 # ── Time ────────────────────────────────────────────────────────────────────
