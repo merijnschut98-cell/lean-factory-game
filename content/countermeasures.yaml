@@ -473,7 +473,10 @@ countermeasures:
   - id: strategic_transformer_stock
     name: Strategische voorraad transformatoren
     shortcut: true   # tempting, costs later: buys the wait away (EUR 40k) instead of ordering on time: a poor fix
-    tier: 3
+    # Tier 1 (mission audit 2026-10-24): buying stock asks no maturity of the organisation,
+    # which is why it tempts. At tier 3 it failed every Act II Check (maturity 2: 0.5 x 0.8
+    # = 0.40), so the shortcut was never a real choice when the mission is played.
+    tier: 1
     category: flow
     description: Een kleine voorraad standaardtransformatoren op het magazijn, aangevuld via de fabrikant. Een verzwaring hoeft niet meer op de levering te wachten; de voorraad kost wel geld.
     budget: 40000
