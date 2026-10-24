@@ -15,7 +15,7 @@ Personas: **expert** does the training week, takes missions in content order, fi
 
 **What T-1 changed** (the tuning backlog below says which item each one answers):
 - The directie advance has a ceiling, `Region.ADVANCE_CEILING` € 25 000 (an estimate). In a bad period it advances the whole of an exempt experiment the region cannot carry, so the region pays none of it. A failed Check's advance is written off: the directie took the risk. In debt the directie also funds a problem's cheapest fix still open (Henk's farewell closes the cheap fixes for the knowledge drain).
-- `incomplete_application`: each return also costs the chase (×1.3 intake touch time, an estimate). At the fork the intake runs at 1.20: about 25 a week against 30.5 arriving, 34.5 once fixed (`Capacity`).
+- `incomplete_application`: each return also costs the chase (×1.3 intake touch time, an estimate). At the fork the intake runs at 1.16: about 26 (25.9) a week against 30 arriving, 35 once fixed (`Capacity.analyse`, the same on seeds 11–13).
 - The fork is one main quest: once a branch is taken, the bottleneck branch's problem is on while it waits, outside the mission slots (`Missions._waiting_fork_branches`, `Region.uncounted`). Before, the control fixed the monteurs against a healthy intake.
 - `installer_not_ready` predicts first time right. `inverters_tripping` measures the Check's longest window (`measure_days`, `Region.check_window`).
 - `standard_test_trenches` draws on Werkvoorbereiding.

@@ -50,8 +50,9 @@ problems:
     # costs the chase: the request for completion, the calls with the customer and the
     # installer, logging it. ESTIMATE: about 40 minutes a return, x1.3 on every intake visit.
     # With it the intake clearly fails demand (gate backlog 3, 2026-10-24: with the ftr alone
-    # it ran at 1.03, so the fix's flow gain hid in the seed noise): about 26 a week against
-    # 30 arriving (Capacity), 35 once fixed. Fixing the monteurs' problem moves none of it.
+    # it ran at 1.03, so the fix's flow gain hid in the seed noise): 25.9 a week against
+    # 30 arriving (Capacity.analyse, seeds 11-13), 35 once fixed. Fixing the monteurs'
+    # problem moves none of it.
     effects:
       - {target: connections.intake, property: ftr, value: -0.2}
       - {target: connections.intake, property: touch_time, value: 1.3}
