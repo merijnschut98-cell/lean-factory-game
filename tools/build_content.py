@@ -306,11 +306,16 @@ CLUE_KEYS = {"tool", "text", "key", "depth", "at", "note", "teaches"}
 # it stands in. The game's OfficeTells.THRESHOLDS (game/src/world/office/office_tells.gd)
 # has the same ids, and tools/blender/build_office.py builds a node `tell_<id>` for each.
 TELLS = {"intake_stack": "connections", "prep_tray": "connections", "planning_board": "connections",
-         "revision_cabinet": "revision_gis", "close_out_cabinet": "meter_data", "meter_board": "meter_data"}
+         "revision_cabinet": "revision_gis", "close_out_cabinet": "meter_data", "meter_board": "meter_data",
+         # the 2e (PLAN 2.16)
+         "obeya_board": "directors_obeya", "grid_study_tray": "grid_strategy", "reinforcement_board": "grid_strategy",
+         "congestion_list": "congestion_desk"}
 TELL_KEYS = {"tell", "text"}
 # world.yaml `tells:`: what each tell looks like at each height (OfficeTells.VARIANTS).
 TELL_HEIGHTS = ("low", "mid", "high")
-WORLD_TELL_KEYS = {"id", "place", *TELL_HEIGHTS}
+# `place` files what was seen under a team's place; `room` (instead) under a room with no
+# team's place in it (the directie's KPI board).
+WORLD_TELL_KEYS = {"id", "place", "room", *TELL_HEIGHTS}
 # A tell text names its problem if it holds the name or one of its words this long.
 _TELL_NAME_WORD = 7
 _WORD = re.compile(r"[a-zà-ÿ]+")
@@ -605,8 +610,8 @@ def _all_problems(docs: dict[str, Any]) -> list[tuple[str, dict]]:
 
 
 def check_tells(docs: dict[str, Any]) -> None:
-    """Every problem whose place is on a floor with tells (the 1e) shows on at least one of them,
-    whichever room it is in."""
+    """Every problem whose place is on a floor with tells (the 1e, the 2e) shows on at least one
+    of them, whichever room it is in."""
     world = docs.get("world")
     if world is None:
         return
@@ -622,8 +627,9 @@ def check_tells(docs: dict[str, Any]) -> None:
                            f"unknown: {', '.join(sorted(set(looks) - set(TELLS))) or '-'})")
     problems = [p for _, p in _all_problems(docs)]
     for tell, look in looks.items():
-        if room_of.get(look["place"]) != TELLS[tell]:
-            raise ContentError(f"world.yaml tell '{tell}': place {look['place']!r} is not in its room '{TELLS[tell]}'")
+        if look.get("room", room_of.get(look.get("place"))) != TELLS[tell]:
+            raise ContentError(f"world.yaml tell '{tell}': {look.get('place') or look.get('room')!r} is not "
+                               f"its room '{TELLS[tell]}'")
         for v in TELL_HEIGHTS:
             for p in problems:
                 _never_names(look[v], p, f"world.yaml tell '{tell}' {v}")
@@ -1361,10 +1367,12 @@ def validate_world(doc: Any, source: str) -> None:
         _known_keys(ride, WORLD_RIDE_KEYS, where)
         _require_strings(ride, sorted(WORLD_RIDE_KEYS), where)
     if "tells" in doc:
-        for t in _entries(doc, "tells", source, name="place"):
+        for t in _entries(doc, "tells", source, name="low"):
             where = f"{source}: tell '{t['id']}'"
             _known_keys(t, WORLD_TELL_KEYS, where)
-            _require_strings(t, ["place", *TELL_HEIGHTS], where)
+            if ("place" in t) == ("room" in t):
+                raise ContentError(f"{where}: name its 'place' or, in a room without places, its 'room' (one of them)")
+            _require_strings(t, ["place" if "place" in t else "room", *TELL_HEIGHTS], where)
 
 
 def _mission_places(m: dict, problems: dict, streams: dict) -> set[str]:
@@ -3033,7 +3041,7 @@ def check_company(docs: dict[str, Any]) -> None:
 # `present`: beats of SceneLines (speaker, line), a beat only when its `needs` hold
 # (the facts choose the lines), and at most one beat asking the player a question
 # (`choice`): each answer a flag remembered for later, and what is said back.
-SCENE_KEYS = {"id", "room", "present", "beats"}
+SCENE_KEYS = {"id", "room", "present", "stands", "beats"}
 BEAT_KEYS = {"speaker", "line", "needs", "choice"}
 CHOICE_KEYS = {"label", "fact", "reply"}
 CHOICE_OPTIONS = (2, 4)
@@ -3045,6 +3053,8 @@ def validate_scenes(doc: Any, source: str) -> None:
         where = f"{source}: scene '{s['id']}'"
         _known_keys(s, SCENE_KEYS, where)
         present = _string_list(s, "present", where)
+        if "stands" in s and s["stands"] not in present:
+            raise ContentError(f"{where}: 'stands' ({s['stands']!r}) is not 'present'")
         beats = s.get("beats")
         if not isinstance(beats, list) or not beats or not all(isinstance(b, dict) for b in beats):
             raise ContentError(f"{where}: 'beats' must be a non-empty list of {{speaker, line}}")

@@ -804,7 +804,8 @@ func frame_face(person: OfficePerson) -> void:
 ## turns to them and the camera looks down at the point between the two
 ## (_two_shot); `lift` of the screen's height above the middle.
 func frame_scene(person: OfficePerson, lift: float) -> void:
-	_turn_to(person)
+	if not player.seated:   # seated at a table you face the table
+		_turn_to(person)
 	_two_shot(person, lift)
 
 

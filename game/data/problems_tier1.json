@@ -929,6 +929,12 @@
     "theory_of_constraints",
     "waste_overprocessing"
    ],
+   "tells": [
+    {
+     "tell": "grid_study_tray",
+     "text": "Bovenop de stapel in het bakje ligt een studieaanvraag voor een gewone woning met een warmtepomp."
+    }
+   ],
    "tier": 1,
    "visibility": "subtle",
    "waste": "waiting"
@@ -1181,6 +1187,12 @@
     "waste_waiting",
     "flow"
    ],
+   "tells": [
+    {
+     "tell": "reinforcement_board",
+     "text": "Achter de oudste straatnamen op het bord staat in pen: 'trafo nog niet binnen'."
+    }
+   ],
    "tier": 1,
    "visibility": "subtle",
    "waste": "waiting"
@@ -1257,6 +1269,12 @@
    "teaches": [
     "waste_inventory",
     "visual_management"
+   ],
+   "tells": [
+    {
+     "tell": "congestion_list",
+     "text": "Naast een paar bedrijfsnamen op de lijst staat in de kantlijn, in potlood: 'hal staat leeg'."
+    }
    ],
    "tier": 1,
    "visibility": "hidden",
@@ -1457,6 +1475,10 @@
     {
      "tell": "prep_tray",
      "text": "Het postbakje bij Werkvoorbereiding ligt vol."
+    },
+    {
+     "tell": "obeya_board",
+     "text": "Onder de kaart van de aansluitingen hangen de weekcijfers van Intake en Werkvoorbereiding, allebei met een groen vinkje."
     }
    ],
    "tier": 1,

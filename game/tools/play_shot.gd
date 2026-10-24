@@ -65,6 +65,11 @@ extends SceneTree
 ## play_van_ride, play_van_talk, play_van_choose (PLAN 2.15 S2-Y: riding along with Sandra,
 ## the edge of town going by; Henk's talk in the cab, his face, then the two of you) · play_opleidingsterrein (Henk shows Ahmed the
 ## joint at the practice trench) · play_yard_morning (07:38: the monteurs at their vans).
+## play_2e_day, play_mt_room_scene, play_tell_obeya_high (PLAN 2.16 S3-A: the 2e at ten,
+## coffee and chatter at its corner; Honderd dagen in the MT-kamer, you seated, Ruud at the
+## table and Frank at the screen asking his question (play_mt_room_ruud: Ruud's first line,
+## his face across the table); the directie's KPI board looked at closer) · tell_grid_study_high,
+## tell_reinforcement_high, tell_congestion_high (the 2e's other tells at their highest).
 ## tell_revision_high, tell_meetdata_high, tell_closeout_high (PLAN 2.15: Revisie & GIS's
 ## sketches, Meetdata's whiteboard, its close-out cabinet) · tell_inspect (E beside the
 ## sketches: the camera moves in and one line says what you see).
@@ -323,6 +328,9 @@ func _run() -> void:
 			await _calls_and_experts(office, state)
 		"play_van_ride", "play_van_talk", "play_van_choose", "play_opleidingsterrein", "play_yard_morning":
 			await _yard_life(office, state)
+		"play_2e_day", "play_mt_room_scene", "play_mt_room_ruud", "play_tell_obeya_high", "tell_grid_study_high", \
+				"tell_reinforcement_high", "tell_congestion_high":
+			await _second(office, state)
 		_:
 			printerr("unknown state ", state)
 			quit(2)
@@ -974,3 +982,74 @@ func _a3(office: Office) -> Dictionary:
 		.map(func(c: Clue) -> String: return c.id)
 	return {"waste": "overprocessing", "cause": s.cause_options(problem.id).find(problem.root_cause),
 		"evidence": evidence, "cm": "standard_designs", "prediction": "throughput"}
+
+
+## The 2e alive (PLAN 2.16 S3-A), its rooms opened by their missions: the coffee corner at
+## ten (seen a quarter of an hour earlier first, so they walk there and talk); Honderd dagen
+## in the MT-kamer; a tell at its highest, the KPI board looked at closer.
+func _second(office: Office, state: String) -> void:
+	for m in ["fix_silo_kpis", "look_at_grid_study", "fix_unused_capacity"]:
+		office.session.missions.progress[m] = {"status": "active", "asks": {}, "seen": {}}
+	if state.begins_with("play_mt_room"):
+		office.session.missions.play_start -= SimCalendar.days(100)
+		office.session.pass_time(0)
+	office.floors._process(OfficeFloors.POLL_SECONDS)
+	office.ui.after_action()
+	office.floors.go_to("second", "lift", true)
+	match state:
+		"play_2e_day":
+			var minute := 10 * 60 + 6
+			office.session.pass_time(minute - office.session.minute_of_day())
+			office.ui.after_action()
+			var before := PeopleSession.new()
+			before.session = office.session
+			before.minute = minute - 15
+			office.people.refresh(before)
+			office.people.refresh(office.session)
+			office.daylight.update(office.session)
+			for i in 600:   # a minute of the world: they walk to the coffee corner
+				office.people._process(0.1)
+			office.player.position = Vector3(-11.6, 0, -3.0)
+			office.player.face(Basis.looking_at(Vector3(-14.0, 0, -3.6) - office.player.position))
+			office.rig.yaw = office.player.rotation.y + deg_to_rad(30)
+			office.rig.zoom(1.0)
+			office.rig.snap()
+			office.reactions.chatter(office.player.position)
+			for i in 30:
+				await process_frame
+		"play_mt_room_scene", "play_mt_room_ruud":
+			var rect := OfficeFloors.room_rect(office.floors.markers()["room:mt_room"])
+			office.player.position = Vector3(rect.get_center().x, 0.0, rect.end.y - 1.0)
+			office.milestone.step(1.0)
+			office.milestone.step(1.0)
+			if state == "play_mt_room_scene":
+				office.milestone.lines.finish()   # Frank's question: the two of you, Ruud at the table
+			for i in 90:   # the camera moves in
+				await process_frame
+		_:
+			var net := office.session.region.net
+			match state:
+				"play_tell_obeya_high":
+					for s in net.streams:
+						for i in 40:
+							s.finished.append({"done_at": net.time, "lead_minutes": 60, "on_time": false, "reworks": 0,
+								"failure_demand": false})
+				"tell_grid_study_high":
+					_pile_up(net, "connections.grid_study", 20)
+			office.tells.refresh()
+			if state == "tell_reinforcement_high":   # a wait of months: shown directly
+				OfficeTells.show(office.geometry, {"reinforcement_board": OfficeTells.HIGH})
+			if state == "tell_congestion_high":
+				OfficeTells.show(office.geometry, {"congestion_list": OfficeTells.HIGH})
+			print("tells: ", OfficeTells.readings(net), " -> ", OfficeTells.bands(net))
+			var spec: Array = {"play_tell_obeya_high": [Vector3(4.9, 0, -3.2), Vector3(4.06, 0, -3.5)],
+				"tell_grid_study_high": [Vector3(5.2, 0, -10.2), Vector3(4.0, 0, -11.25)],
+				"tell_reinforcement_high": [Vector3(1.8, 0, -11.6), Vector3(0.0, 0, -12.6)],
+				"tell_congestion_high": [Vector3(20.4, 0, -10.4), Vector3(19.4, 0, -11.6)]}[state]
+			office.player.position = spec[0]
+			office.player.face(Basis.looking_at(spec[1] - office.player.position))
+			office.rig.yaw = office.player.rotation.y + deg_to_rad(25)
+			office.rig.zoom(-4)
+			office.rig.snap()
+			if state == "play_tell_obeya_high":   # capture with ~25 frames, before the line's time is up
+				office.use(OfficeTells.node(office.geometry, "obeya_board"))

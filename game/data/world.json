@@ -285,6 +285,34 @@
    "low": "Op het whiteboard bij Meetdata staat één adres, met een rood streepje erachter.",
    "mid": "Op het whiteboard bij Meetdata staat een rijtje adressen, elk met een rood streepje erachter.",
    "place": "meters.registration"
+  },
+  {
+   "high": "Op het bord van de directie staan bijna alle kaarten op rood.",
+   "id": "obeya_board",
+   "low": "Op het bord van de directie hangt voor elk proces een kaart met een grafiekje. Bijna alles staat op groen.",
+   "mid": "Op het bord van de directie staan een paar van de kaarten op rood.",
+   "room": "directors_obeya"
+  },
+  {
+   "high": "Het bakje bij de netplanners puilt uit, en op de kast ernaast liggen nog twee stapels studieaanvragen.",
+   "id": "grid_study_tray",
+   "low": "In het bakje bij de netplanners ligt één nieuwe studieaanvraag.",
+   "mid": "In het bakje bij de netplanners ligt een stapeltje studieaanvragen.",
+   "place": "connections.grid_study"
+  },
+  {
+   "high": "Het bord Netverzwaring hangt vol kaartjes met straatnamen; de oudste zijn al vergeeld.",
+   "id": "reinforcement_board",
+   "low": "Op het bord Netverzwaring hangen een paar kaartjes met straatnamen.",
+   "mid": "Op het bord Netverzwaring hangt een flinke rij kaartjes met straatnamen.",
+   "place": "connections.grid_reinforcement"
+  },
+  {
+   "high": "De uitgeprinte wachtlijst op het bureau van Thomas is zo lang geworden dat hij over de rand tot op de vloer hangt.",
+   "id": "congestion_list",
+   "low": "Op het bureau van Thomas ligt een uitgeprinte wachtlijst van één kantje.",
+   "mid": "Op het bureau van Thomas ligt een uitgeprinte wachtlijst van een paar kantjes, aan elkaar geplakt.",
+   "place": "congestion.capacity_queue"
   }
  ]
 }

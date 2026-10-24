@@ -53,6 +53,8 @@ var shut: Array[Rect2] = []
 var days: Dictionary[String, OfficeDay] = {}
 ## Only these are in, whatever the clock (the opening's evening: Anouk); [] for the day.
 var stay_in: Array[String] = []
+## These are elsewhere in the building, whatever the clock (a milestone's scene: OfficeMilestone).
+var away: Array[String] = []
 var office: Office
 var _since_refresh := 0.0
 var _session: Object
@@ -253,6 +255,8 @@ func day_of(id: String) -> OfficeDay:
 func _where(p: OfficePerson, minute: int) -> Dictionary:
 	if not stay_in.is_empty():
 		return ALWAYS_AT_DESK if p.id in stay_in else ALWAYS_OUT
+	if p.id in away:
+		return ALWAYS_OUT
 	var yard := OfficeYard.where(p, _session, office.floors.building.rides if office != null and office.floors != null else [],
 		minute)
 	if not yard.is_empty():

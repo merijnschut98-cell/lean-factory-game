@@ -145,7 +145,8 @@ rides:
 # closer, one line says what anyone would see at the height shown: low, mid, high. An open
 # problem that lists the tell (problems_tier*.yaml `tells:`) speaks instead from mid up.
 # A line describes, never explains: it never names a problem or its cause (checked).
-# `place` is where the journal (Notities, "Waarneming") files what was seen.
+# `place` is where the journal (Notities, "Waarneming") files what was seen; a tell in a room with
+# no team's place (the directie's KPI board) names its `room` instead and is filed under its name.
 tells:
   - id: intake_stack
     place: connections.intake
@@ -177,3 +178,24 @@ tells:
     low: "Op het whiteboard bij Meetdata staat één adres, met een rood streepje erachter."
     mid: "Op het whiteboard bij Meetdata staat een rijtje adressen, elk met een rood streepje erachter."
     high: "Het whiteboard bij Meetdata staat vol adressen in twee kolommen, elk met een rood streepje erachter."
+  # The 2e (PLAN 2.16).
+  - id: obeya_board
+    room: directors_obeya
+    low: "Op het bord van de directie hangt voor elk proces een kaart met een grafiekje. Bijna alles staat op groen."
+    mid: "Op het bord van de directie staan een paar van de kaarten op rood."
+    high: "Op het bord van de directie staan bijna alle kaarten op rood."
+  - id: grid_study_tray
+    place: connections.grid_study
+    low: "In het bakje bij de netplanners ligt één nieuwe studieaanvraag."
+    mid: "In het bakje bij de netplanners ligt een stapeltje studieaanvragen."
+    high: "Het bakje bij de netplanners puilt uit, en op de kast ernaast liggen nog twee stapels studieaanvragen."
+  - id: reinforcement_board
+    place: connections.grid_reinforcement
+    low: "Op het bord Netverzwaring hangen een paar kaartjes met straatnamen."
+    mid: "Op het bord Netverzwaring hangt een flinke rij kaartjes met straatnamen."
+    high: "Het bord Netverzwaring hangt vol kaartjes met straatnamen; de oudste zijn al vergeeld."
+  - id: congestion_list
+    place: congestion.capacity_queue
+    low: "Op het bureau van Thomas ligt een uitgeprinte wachtlijst van één kantje."
+    mid: "Op het bureau van Thomas ligt een uitgeprinte wachtlijst van een paar kantjes, aan elkaar geplakt."
+    high: "De uitgeprinte wachtlijst op het bureau van Thomas is zo lang geworden dat hij over de rand tot op de vloer hangt."

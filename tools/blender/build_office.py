@@ -32,6 +32,9 @@ What goes into each glb:
   the door itself is `openleaf_<id>` (shown when the room is open), `lockleaf_<id>` and
   its blocker `lockcol_<id>-colonly` (shown while it is shut), so the game opens a room
   when a mission needs it (office_floors.gd).
+- a scene's spots in a room where milestones play (the MT-kamer): `scene:<room>:player`,
+  `scene:<room>:seat<k>` on the chairs round the table, facing it, and `scene:<room>:screen`,
+  standing beside the wall screen (office_milestone.gd puts the people there).
 """
 from __future__ import annotations
 
@@ -226,6 +229,8 @@ def make_materials() -> None:
     m("sticky_green", None, color=srgb(150, 220, 120), rough=0.85)
     m("sticky_blue", None, color=srgb(120, 196, 236), rough=0.85)
     m("card_red", None, color=srgb(214, 48, 44), rough=0.85)   # a moved job on the planning board
+    m("card_green", None, color=srgb(56, 168, 84), rough=0.85)  # a KPI on its norm (the directie's board)
+    m("card_old", None, color=srgb(222, 204, 150), rough=0.9)   # a card that has hung there for months
     m("screens", "screens", color=(0.02, 0.02, 0.02, 1), emission="screens", rough=0.12,
       normal=False, orm=False, uv_size=1.0)
     m("signage", "signage", rough=0.45, normal=False, orm=False, uv_size=1.0)
@@ -1381,6 +1386,126 @@ def build_tells(kits) -> None:
          fixed=[("frame", kit_board_frame(1.2, 0.9), (0, 0, 1.5), 180)])
 
 
+def build_second_tells(kits) -> None:
+    """The 2e's tells (PLAN 2.16): the directie's KPI board, Netstrategie's study tray and its
+    reinforcement board, and the printed waiting list on Thomas's desk at the congestion desk."""
+    # Directie & Obeya: the region's KPI board on the room's west wall, facing the directors'
+    # table (front at local -X, facing the room).
+    board, reds = kit_kpi_cards()
+    tell("obeya_board", (4.0 + PART_T / 2 + 0.01, 3.5, 0.0), 180,
+         {band: [(reds[band], (0, 0, 0), 0)] for band in TELL_VARIANTS},
+         fixed=[("frame", kit_board_frame(2.6, 1.2), (0, 0, 1.55), 180), ("cards", board, (0, 0, 0), 0)])
+    # Netstrategie: the tray where the study requests land, on a cabinet at the analysts'
+    # bench end, before connections.grid_study's standing point.
+    put(kits["cabinet_1.2"], "grid_study_cabinet", (4.0, 11.25, 0))
+    collide((1.2, 0.45, 0.75), (4.0, 11.25, 0.375))
+
+    def pile(h: float, seed: int, base: float = 0.75) -> bpy.types.Mesh:
+        return _raise(kit_dossier_stack(h, 40 + seed), base)
+
+    on_tray = 0.75 + 0.145
+    tell("grid_study_tray", (4.0, 11.25, 0.0), 0, {
+        "low": [(kits["tray"], (0, 0, 0), 0)],
+        "mid": [(kits["tray"], (0, 0, 0), 0), (pile(0.12, 0, on_tray), (0, 0, 0), 4)],
+        "high": [(kits["tray"], (0, 0, 0), 0), (pile(0.3, 1, on_tray), (0, 0, 0), 4),
+                 (pile(0.22, 2), (-0.4, 0.02, 0), -7), (pile(0.16, 3), (0.42, 0, 0), 5)]})
+    # Netstrategie's reinforcement board (on the core wall, facing +X): a card per street that
+    # waits for its reinforcement, in the columns Studie, Ontwerp, Vergunning, Bouw.
+    tell("reinforcement_board", (0.032 + 0.006, 12.6, 0.0), 180,
+         {band: [(mesh, (0, 0, 0), 0)] for band, mesh in kit_street_cards().items()})
+    # Congestiedesk: the printed waiting list on Thomas's desk (congestion0), taped page to
+    # page; the longer it gets, the further it hangs over the desk's end and onto the floor.
+    tell("congestion_list", (19.42, 11.6, 0.0), 0, {band: [(mesh, (0, 0, 0), 0)]
+                                                    for band, mesh in kit_waiting_list().items()})
+
+
+def kit_kpi_cards() -> tuple[bpy.types.Mesh, dict]:
+    """A KPI card per value stream (six) on a 2.6 x 1.2 board (front at local -X, the reader's
+    left at local +Y): a blue header, a bar chart and a status block, green; per band the red
+    blocks laid over the green ones (low one, mid three, high five). Under the first card
+    (Aansluitingen) two small sheets with a green tick: the departments' own weekly figures."""
+    rng = np.random.default_rng(31)
+    b = MeshBuilder()
+    centres = [(2.5 - k) * 0.42 for k in range(6)]
+    for cy in centres:
+        b.box((0.003, 0.36, 0.85), (-0.004, cy, 1.52), "paper")
+        b.box((0.002, 0.36, 0.07), (-0.0065, cy, 1.91), "metal_blue")
+        b.box((0.002, 0.3, 0.006), (-0.0065, cy, 1.39), "plastic_black")
+        for i in range(6):
+            h = float(rng.uniform(0.08, 0.3))
+            b.box((0.002, 0.03, h), (-0.0065, cy + 0.125 - i * 0.05, 1.395 + h / 2), "sticky_blue")
+        b.box((0.002, 0.3, 0.12), (-0.0065, cy, 1.21), "card_green")
+    for k, y in enumerate((centres[0] + 0.08, centres[0] - 0.08)):
+        b.box((0.003, 0.13, 0.1), (-0.004, y, 1.02), "sticky_yellow", rot=float(rng.normal(0, 2)))
+        b.box((0.002, 0.04, 0.02), (-0.0065, y, 1.0), "card_green")
+    cards = b.mesh("kpi_cards")
+    reds = {}
+    for band, red in zip(TELL_VARIANTS, ((0,), (0, 2, 3), (0, 1, 2, 3, 5))):
+        rb = MeshBuilder()
+        for k in red:
+            rb.box((0.002, 0.3, 0.12), (-0.0085, centres[k], 1.21), "card_red")
+        reds[band] = rb.mesh(f"kpi_red_{band}")
+    return cards, reds
+
+
+def kit_street_cards() -> dict:
+    """Per band the cards on the reinforcement board (a 2.0 x 1.0 panel, centre 1.55 m up,
+    front at local -X, the reader's left at local +Y): one card a street, a red pin on each;
+    the high band's oldest have yellowed. Most hang in Ontwerp and Vergunning."""
+    rng = np.random.default_rng(47)
+    columns = [0.75, 0.25, -0.25, -0.75]     # Studie, Ontwerp, Vergunning, Bouw
+    order = [(c, r, side) for r in range(7) for c in (1, 2, 0, 3) for side in (-1, 1)]
+    out = {}
+    for band, n in zip(TELL_VARIANTS, (5, 14, 26)):
+        b = MeshBuilder()
+        for i, (c, r, side) in enumerate(order[:n]):
+            y = columns[c] + side * 0.1 + float(rng.normal(0, 0.012))
+            z = 1.77 - r * 0.08 + float(rng.normal(0, 0.006))
+            old = band == "high" and i < 8
+            b.box((0.003, 0.11, 0.065), (0.0, y, z), "card_old" if old else "sticky_yellow")
+            b.box((0.004, 0.012, 0.012), (-0.002, y, z + 0.022), "card_red")
+        out[band] = b.mesh(f"street_cards_{band}")
+    return out
+
+
+def kit_waiting_list() -> dict:
+    """Per band the printed waiting list on a desk whose end is at local y = 0, its top at
+    0.75 m: A4 pages taped end to end, rows of print on each. Low one page on the desk; mid
+    one on the desk and two hanging down its end; high the same, hanging to the floor and
+    trailing on along it."""
+    def page(b: MeshBuilder, centre, standing: bool, rot: float = 0.0) -> None:
+        x, y, z = centre
+        if standing:   # hanging down the desk's end, print facing -Y
+            b.box((0.21, 0.0015, 0.297), (x, y, z), "paper")
+            for r in range(9):
+                b.box((0.15, 0.0005, 0.004), (x - 0.01, y - 0.001, z + 0.12 - r * 0.03), "plastic_black")
+        else:
+            b.box((0.21, 0.297, 0.0015), (x, y, z), "paper", rot=rot)
+            for r in range(9):
+                dy = 0.12 - r * 0.03
+                a = math.radians(rot)
+                b.box((0.15, 0.004, 0.0005), (x - 0.01 * math.cos(a) - dy * math.sin(a),
+                                              y - 0.01 * math.sin(a) + dy * math.cos(a), z + 0.001), "plastic_black",
+                      rot=rot)
+
+    out = {}
+    desk = 0.75 + 0.00075
+    for band in TELL_VARIANTS:
+        b = MeshBuilder()
+        if band == "low":
+            page(b, (0.0, 0.2, desk), False, rot=6)
+        else:
+            page(b, (0.0, 0.16, desk), False)
+            for k in range(2):
+                page(b, (0.0, -0.012, 0.75 - 0.1485 - k * 0.297), True)
+            if band == "high":   # down to the floor, then curling away from the desk along it
+                b.box((0.21, 0.0015, 0.156), (0.0, -0.012, 0.078), "paper")
+                for k, rot in enumerate((4, 9, 15)):
+                    page(b, (0.02 * k, -0.17 - k * 0.29, 0.001 + 0.0015 * k), False, rot=rot)
+        out[band] = b.mesh(f"waiting_list_{band}")
+    return out
+
+
 def kit_meter_list() -> dict:
     """Per band the writing on a 1.2 x 0.9 whiteboard (front at local -X, centre 1.5 m up): a
     blue heading and lines of addresses in black marker, each with a red stroke after it. The
@@ -2158,6 +2283,17 @@ def plan_second(plan: Plan) -> None:
         place("congestion.capacity_queue", (22.6, 11.2), (W, 11.2)),
         place("congestion.offer", (16.0, 12.3), (16.0, 14.3)),
     ]
+    # The MT-kamer as a stage (PLAN 2.16): you on the south side, the others across the
+    # table, at the end near the screen on the west wall, where one presents standing.
+    def scene(role: str, at, faces) -> tuple:
+        return (f"scene:mt_room:{role}", {"interaction": "scene", "id": f"mt_room:{role}"}, at, faces)
+
+    table = MT_TABLE
+    plan.markers += [scene("player", _table_chair(table, "s", 1), (_table_chair(table, "s", 1)[0], table[1]))]
+    for k, chair in enumerate((1, 2, 0, 3)):
+        at = _table_chair(table, "n", chair)
+        plan.markers.append(scene(f"seat{k}", at, (at[0], table[1])))
+    plan.markers.append(scene("screen", (X0 + 1.25, table[1] - 0.85), table[:2]))
 
     def furnish(kits):
         b = MeshBuilder()
@@ -2195,8 +2331,8 @@ def plan_second(plan: Plan) -> None:
         put(kits["plant_1.2"], "printer_corner_plant", (3.4, 0.6, 0))
         collide((0.45, 0.45, 1.2), (3.4, 0.6, 0.6))
         # MT-kamer: the long table for the management team, a wall screen
-        table_with_chairs(kits, "mt_table", (-11.5, 13.2), 5.0, 1.4, 6, chair="chair_teal", ends=True)
-        put(kits["screen_wall"], "mt_screen", (X0, 13.2, 1.5), 0)
+        table_with_chairs(kits, "mt_table", MT_TABLE[:2], *MT_TABLE[2:], chair="chair_teal", ends=True)
+        put(kits["screen_wall"], "mt_screen", (X0, MT_TABLE[1], 1.5), 0)
         put(kits["cabinet_1.6"], "mt_cabinet", (CORE[0] - WALL_T - 0.245, 13.0, 0), -90)
         collide((0.45, 1.6, 0.75), (CORE[0] - WALL_T - 0.245, 13.0, 0.375))
         # Ruud's office: his desk facing the door, a round table, binders
@@ -2218,8 +2354,20 @@ def plan_second(plan: Plan) -> None:
             put(kits["plant_1.5"], f"west2_plant{k}", (x, y, 0), k * 47)
             collide((0.45, 0.45, 1.2), (x, y, 0.6))
         put(b.mesh("second_dressing"), "second_dressing")
+        build_second_tells(kits)
 
     plan.furnish = furnish
+
+
+# The MT-kamer's table: centre x, y, length, depth, chairs per long side.
+MT_TABLE = (-11.5, 13.2, 5.0, 1.4, 6)
+
+
+def _table_chair(table, side: str, k: int) -> tuple[float, float]:
+    """Where chair `k` of a table_with_chairs (x, y, w, d, per_side; not turned) stands, on its
+    south ('s') or north ('n') side."""
+    x, y, w, d, per_side = table
+    return (x + (k - (per_side - 1) / 2) * (w / per_side), y + (d / 2 + 0.3) * (1 if side == "n" else -1))
 
 
 PLANS = {"ground": plan_ground, "first": plan_first, "second": plan_second}
