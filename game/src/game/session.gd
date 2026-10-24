@@ -681,12 +681,15 @@ func is_practice(problem_id: String) -> bool:
 
 
 ## The active missions: the main one first, then the training day, then the
-## side missions, then the milestones (no slot: the story's moments).
+## side missions, then the milestones (no slot: the story's moments), then the
+## routines (no slot either: the weekly round).
 func active_missions() -> Array[MissionDef]:
 	var out := missions.active("main")
 	out.append_array(missions.active("training"))
-	out.append_array(missions.active("side"))
+	var sides := missions.active("side")
+	out.append_array(sides.filter(func(m: MissionDef) -> bool: return not m.is_routine()))
 	out.append_array(missions.active("milestone"))
+	out.append_array(sides.filter(func(m: MissionDef) -> bool: return m.is_routine()))
 	return out
 
 
@@ -1012,7 +1015,8 @@ func chatter(first: String, second: String) -> Array[String]:
 		return people.persons[id].team if people.persons.has(id) else "")
 	var loads := [load_of(first), load_of(second)]
 	var load := "busy" if "busy" in loads else ("calm" if loads.all(func(l: String) -> bool: return l == "calm") else "")
-	out = catalog.reactions.chatter_for(teams, load, hash(pair) + today)
+	out = catalog.reactions.chatter_for(teams, load, hash(pair) + today,
+		SimCalendar.weekday(region.net.time - SimCalendar.days(WARMUP_DAYS)))
 	if not out.is_empty():
 		_chatted[pair] = today
 	out.assign(out.map(fill_tokens))
@@ -1320,13 +1324,22 @@ func _facts() -> Dictionary:
 	return out
 
 
+## The active main mission talk `def` is on ("" for none): with `missions:` (arc S11)
+## not always the first it names, so the coach's after-talk question finds it.
+func talk_main(def: DialogDef) -> String:
+	for m in missions.active("main"):
+		if m.id in def.missions:
+			return m.id
+	return ""
+
+
 ## The talk ended: People applies it, the world takes what it changed (a blame
 ## by the gemba's own rule, a commitment's team trust, a learned clue), then
 ## its minutes pass.
 func _finish_talk() -> Dictionary:
 	var d := _talk
 	_talk = null
-	var main := d.def.on_any(missions.active("main").map(func(m: MissionDef) -> String: return m.id))
+	var main := talk_main(d.def)
 	var morale_before: int = people.morale[d.who.id]
 	var summary := people.finish(d, region.net.time, main)
 	_keep_promise(d)

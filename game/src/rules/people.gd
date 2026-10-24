@@ -302,9 +302,9 @@ func _memory_term(flags: Array) -> int:
 ## reputation (this talk's change), team_trust (+1 for a commitment),
 ## confronted, clue ("" or the clue the concern unlocked), facts (heard:),
 ## cooldown_until (0 for none), hints (a block's route hints), wait_for (what an
-## agreement under condition still waits for, or "")}. `main`: the
-## talk belongs to the main mission, so the coach asks about it next.
-func finish(d: Dialog, now: int, main: bool = false) -> Dictionary:
+## agreement under condition still waits for, or "")}. `main`: the main
+## mission the talk belongs to ("" for none), so the coach asks about it next.
+func finish(d: Dialog, now: int, main := "") -> Dictionary:
 	var who := d.who
 	var o := d.outcome
 	trust[who.id] = clampi(d.trust + TRUST.get(o, 0), 0, 100)
@@ -326,8 +326,8 @@ func finish(d: Dialog, now: int, main: bool = false) -> Dictionary:
 	if o == "lifted":
 		rest_until[d.def.id] = now + SimCalendar.days(CHECKIN_REST_DAYS)
 	prompts.erase(d.def.id)
-	if main and d.def.kind == "persuade" and o in COACHED:
-		coach_after = {"mission": d.def.mission, "person": who.short, "outcome": o}
+	if not main.is_empty() and d.def.kind == "persuade" and o in COACHED:
+		coach_after = {"mission": main, "person": who.short, "outcome": o}
 	var result := {
 		"dialog": d.def.id, "person": who.id, "outcome": o, "trust": trust[who.id], "morale": morale[who.id],
 		"reputation": REPUTATION.get(o, 0), "team_trust": 1 if o == "commitment" else 0, "confronted": d.confronted,
