@@ -315,6 +315,15 @@
      "key": "H"
     }
    ],
+   "groups": [
+    "source",
+    "cable",
+    "switches",
+    "meter_flow",
+    "meter_end",
+    "loads",
+    "reels"
+   ],
    "hint": {
     "haspel": "Zet een apparaat aan. Pak de andere haspel.",
     "meterkast": "Zet een apparaat aan.",
@@ -328,6 +337,10 @@
    },
    "model": "ohm_cable",
    "name": "Spanning, stroom, weerstand",
+   "never": [
+    "trafo",
+    "transformator"
+   ],
    "number": 1,
    "one_idea": "Hoe meer stroom er door dezelfde kabel moet, hoe warmer die kabel wordt.",
    "parameters": [
@@ -454,6 +467,14 @@
      }
     ]
    },
+   "skins": {
+    "analogy": "tuin",
+    "real": "meterkast",
+    "tabs": {
+     "meterkast": "De meterkast",
+     "tuin": "De tuin"
+    }
+   },
    "sources": [
     {
      "fact": "230 V, 50 Hz in het laagspanningsnet",
@@ -468,6 +489,7 @@
      "url": "https://www.netbeheernederland.nl/sites/default/files/2025-04/04.03._achtergronddocument_spanningskwaliteit_2024_0.pdf"
     }
    ],
+   "speaker": "Ruud",
    "tags": [
     "druk",
     "stroom",

@@ -26,7 +26,16 @@ explainers:
     place: ruud.office.whiteboard
     assets: explainers/spanning
     model: ohm_cable
+    speaker: Ruud
     one_idea: Hoe meer stroom er door dezelfde kabel moet, hoe warmer die kabel wordt.
+    skins:
+      analogy: tuin
+      real: meterkast
+      tabs: {tuin: De tuin, meterkast: De meterkast}
+    # The cross-fade turns these pair groups one after another (spec §6.3).
+    groups: [source, cable, switches, meter_flow, meter_end, loads, reels]
+    # Explainer #1 never names the transformer: its wait is a mission's (transformer_wait).
+    never: [trafo, transformator]
 
     analogy:
       skin: tuin

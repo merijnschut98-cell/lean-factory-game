@@ -36,7 +36,7 @@ def _refused(doc: dict, match: str) -> None:
 def test_the_repo_explainer_is_valid_and_built(docs):
     first = docs["explainers"]["explainers"][0]
     assert first["id"] == "spanning_stroom_weerstand"
-    assert {b["id"] for b in first["beats"]} >= set(bc.EXPLAINER_BEATS)
+    assert {b["id"] for b in first["beats"]} >= set(bc.EXPLAINER_RIGS["ohm_cable"]["beats"])
 
 
 def test_a_digit_in_a_beat_is_refused(doc):
