@@ -143,7 +143,7 @@ rides:
   - {mission: save_henks_knowledge, with: henk, to: outages.locate}    # an old paper-lead cable in Nova-Oud
 
 # The tells (PLAN 2.6, design §1.5): the props that read the simulation. Each `id` is a
-# `tell_<id>` node in its floor's model (tools/blender/build_office.py) with three heights
+# `tell_<id>` node in its floor's model (tools/blender/build_office.py; the yard's build_yard.py) with three heights
 # (game/src/world/office/office_tells.gd picks one by the numbers). When the player looks
 # closer, one line says what anyone would see at the height shown: low, mid, high. An open
 # problem that lists the tell (problems_tier*.yaml `tells:`) speaks instead from mid up.
@@ -202,3 +202,29 @@ tells:
     low: "Op het bureau van Thomas ligt een uitgeprinte wachtlijst van één kantje."
     mid: "Op het bureau van Thomas ligt een uitgeprinte wachtlijst van een paar kantjes, aan elkaar geplakt."
     high: "De uitgeprinte wachtlijst op het bureau van Thomas is zo lang geworden dat hij over de rand tot op de vloer hangt."
+  # De werf (S3-Y): the field work.
+  - id: van_kanban
+    place: outages.repair
+    low: "Op de kanbanwand bij de bussen steekt bijna elk kaartje in zijn vak; in de kolom Bestellen hangen er twee."
+    mid: "Op de kanbanwand bij de bussen zijn een paar vakjes leeg, en in de kolom Bestellen hangt een rijtje kaartjes."
+    high: "Op de kanbanwand bij de bussen is de helft van de vakjes leeg; de kolom Bestellen hangt vol kaartjes."
+  - id: magazijn_rack
+    place: outages.joint
+    low: "In het magazijn staat de stelling met moffen vol dozen."
+    mid: "In het magazijn is de stelling met moffen half leeg."
+    high: "In het magazijn staan op de stelling met moffen nog een paar dozen; de meeste vakken zijn leeg."
+  - id: van_returns
+    place: meters.visit
+    low: "Op de retourpallet bij de bussen staan een paar meterdozen."
+    mid: "Op de retourpallet bij de bussen staat een stapel meterdozen en een aansluitset, elk met een bon eraan."
+    high: "De retourpallet bij de bussen staat vol meterdozen en aansluitsets, en ernaast staat er nog een, ook vol."
+  - id: storingsbord
+    place: outages.locate
+    low: "Op het storingsbord in de werkplaats staan de storingen van deze week: een kort rijtje, alles afgevinkt."
+    mid: "Het storingsbord in de werkplaats staat half vol storingen; bij een paar staat een rode streep."
+    high: "Het storingsbord in de werkplaats staat vol storingen tot in de hoek, met rode strepen en hier en daar een tweede tijd."
+  - id: measurement_tray
+    place: voltage_complaints.measurement
+    low: "In het bakje bij de meetkoffers liggen een paar spanningsklachten."
+    mid: "In het bakje bij de meetkoffers ligt een stapeltje spanningsklachten, met een paperclip per straat."
+    high: "Het bakje bij de meetkoffers puilt uit van de spanningsklachten, en op de kast ernaast liggen nog twee stapels."
