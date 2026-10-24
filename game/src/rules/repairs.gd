@@ -40,14 +40,16 @@ func shows(r: Region, problem_id: String) -> bool:
 
 
 ## How far the problem's KPI with today's fix is behind the problem's
-## best-fitting countermeasure, FORECAST_DAYS ahead on two copies of the
-## network (the same random sequences, as KpiBoard.forecast): relative, > 0
-## when today's fix is behind. 0 when the best fix is already in place or a
-## copy fails.
+## best-fitting countermeasure still open (a missed deadline may have closed the
+## best for good), FORECAST_DAYS ahead on two copies of the network (the same
+## random sequences, as KpiBoard.forecast): relative, > 0 when today's fix is
+## behind. 0 when the best open fix is already in place or a copy fails.
 static func kpi_gap(r: Region, problem_id: String) -> float:
 	var p: ProblemDef = r.problems[problem_id]
 	var best_id := ""
 	for cm_id: String in p.countermeasures:
+		if r.closed.has(cm_id):
+			continue
 		if best_id.is_empty() or p.countermeasures[cm_id] > p.countermeasures[best_id]:
 			best_id = cm_id
 	if best_id == r.state[problem_id].a3.get("cm", "") or not r.countermeasures.has(best_id):
