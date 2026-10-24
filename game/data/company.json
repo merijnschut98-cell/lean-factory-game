@@ -15,6 +15,7 @@
    "site": "nova",
    "teams": [
     {
+     "about": "Het MT van de regio komt elke week bij elkaar in de MT-kamer op de 2e: Ruud met de managers van Aansluitingen, Netstrategie, het KCC, de storingsdienst en het Bedrijfsvoeringscentrum. Thomas schuift aan als de wachtlijst op de agenda staat.",
      "headcount": {
       "estimate": "De directeur, de CI-lead, een managementassistent en een adviseur regulering: een kleine staf bij een regionale directie.",
       "value": 4
@@ -307,17 +308,16 @@
    "site": "nova",
    "teams": [
     {
+     "about": "Twee netplanners, Femke en een collega, voor alle netstudies van de regio. Femke verdeelt het werk.",
      "headcount": {
       "pool": "grid_analysts",
       "value": 2
      },
      "id": "netplanning",
-     "members": [
-      {
-       "id": "femke",
-       "title": "netplanner"
-      }
-     ],
+     "lead": {
+      "id": "femke",
+      "title": "netplanner"
+     },
      "name": "Netstudies",
      "pool": "grid_analysts"
     }
@@ -330,10 +330,11 @@
    },
    "id": "congestiedesk",
    "name": "Congestiedesk & grootzakelijke klanten",
-   "reports_to": "netstrategie",
+   "reports_to": "directie",
    "site": "nova",
    "teams": [
     {
+     "about": "De wachtlijst voor transportcapaciteit, de contracten van de grote klanten en de gesprekken over wat ze echt gebruiken. Netstrategie rekent, de congestiedesk belt.",
      "headcount": {
       "pool": "key_accounts",
       "value": 1
@@ -444,6 +445,53 @@
    "label": "Nieuwe en gewijzigde kleine aansluitingen per week in Nova en omstreken",
    "unit": "per week",
    "value": 30
+  },
+  {
+   "id": "gotork_drempel_benut",
+   "label": "GOTORK: een grote klant die twaalf maanden ten hoogste de helft van zijn gecontracteerd vermogen benut, krijgt een gesprek over teruggeven",
+   "source": {
+    "date": "2024-04-16",
+    "title": "ACM, Codebesluit niet gebruikte transportrechten (GOTORK), ACM/UIT/612014",
+    "url": "https://www.acm.nl/system/files/documents/codebesluit-niet-gebruikte-transportrechten-gotork_3.pdf"
+   },
+   "unit": "procent",
+   "value": 50
+  },
+  {
+   "id": "gotork_drempel_mw",
+   "label": "GOTORK: of die klant laat twaalf maanden 1 MW of meer ongebruikt (middenspanning en hoogspanning onder 110 kV)",
+   "source": {
+    "date": "2024-04-16",
+    "title": "ACM, Codebesluit niet gebruikte transportrechten (GOTORK), ACM/UIT/612014",
+    "url": "https://www.acm.nl/system/files/documents/codebesluit-niet-gebruikte-transportrechten-gotork_3.pdf"
+   },
+   "unit": "MW",
+   "value": 1
+  },
+  {
+   "id": "technici_nodig_nl",
+   "label": "Technici die netbeheerders en aannemers tot 2030 extra nodig hebben",
+   "source": {
+    "date": "2025-11-14",
+    "title": "Netbeheerders en aannemers zetten samen in op 5.000 extra technici voor uitbreiden elektriciteitsnet",
+    "url": "https://www.netbeheernederland.nl/artikelen/persbericht/netbeheerders-en-aannemers-zetten-samen-op-5000-extra-technici-voor"
+   },
+   "unit": "technici",
+   "value": 30000
+  },
+  {
+   "estimate": "De aanwijzing in de data van de congestiedesk (problems_tier1.yaml, unused_capacity), zelf een schatting: grote klanten contracteren met ruimte voor groei en blijven op de piek ruim onder hun contract. Wie twaalf maanden onder de helft blijft, valt onder GOTORK.",
+   "id": "gecontracteerd_benut_zuidmark",
+   "label": "Deel van het gecontracteerd vermogen dat de grootzakelijke klanten in Zuidmark op het drukste kwartier van het jaar gebruiken",
+   "unit": "procent",
+   "value": 62
+  },
+  {
+   "estimate": "Landelijk 30.000 extra technici bij netbeheerders en aannemers (Netbeheer Nederland, 2025); naar rato van Zuidmarks 2 % van de wachtlijst zo'n 600, waarvan het grootste deel bij aannemers. Voor Voltana's eigen werf (dertien monteurs, value_streams.yaml) is 25 erbij bijna een verdubbeling: een schatting van de orde van grootte.",
+   "id": "technici_zuidmark",
+   "label": "Monteurs die Zuidmark tot 2030 extra nodig heeft",
+   "unit": "monteurs",
+   "value": 25
   }
  ],
  "sites": [
