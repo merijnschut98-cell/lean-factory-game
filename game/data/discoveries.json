@@ -334,6 +334,23 @@
    }
   },
   {
+   "act": 1,
+   "hint": "Als Werkvoorbereiding sneller wordt, waar gaat het werk dan wachten?",
+   "id": "het_volgende_knelpunt",
+   "line": "Een knelpunt verdwijnt niet; het verhuist.",
+   "name": "Het volgende knelpunt",
+   "reward": {
+    "note": "Je keek al waar het werk zou gaan wachten voordat het daar wachtte. Goldratt noemt het de vijfde stap: is het knelpunt verschoven, begin dan opnieuw.",
+    "object": "Een turflijst met twee kolommen: Intake en Werkvoorbereiding"
+   },
+   "trigger": {
+    "place": "connections.intake",
+    "problem_active": "custom_design",
+    "tool": "queue_count",
+    "type": "tool_at"
+   }
+  },
+  {
    "act": 2,
    "hint": "Een kabel die geraakt wordt, is ooit ergens getekend.",
    "id": "stroomopwaarts",

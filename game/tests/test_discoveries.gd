@@ -60,6 +60,19 @@ func test_act2_upstream_and_evening_peak() -> void:
 	assert_eq(_found(s), ["het_drukste_kwartier"])
 
 
+## Act I (mission audit 2026-10-24): while the stack at Werkvoorbereiding is open, the
+## player counts the queue at Intake, where the work will wait once design is faster.
+func test_act1_the_next_bottleneck() -> void:
+	var s := _session()
+	var minute := s.region.net.time % SimCalendar.MINUTES_PER_DAY
+	s.region.advance(SimCalendar.days(1) + 10 * 60 - minute)  # 10.00 the next day
+	s.use_tool("connections.intake", "queue_count")
+	assert_eq(_found(s), [], "no stack at Werkvoorbereiding yet")
+	assert_true(s.region.activate("custom_design"))
+	s.use_tool("connections.intake", "queue_count")
+	assert_eq(_found(s), ["het_volgende_knelpunt"])
+
+
 ## Unfound discoveries are silhouettes; their hint shows once their act is over.
 func test_silhouettes_get_their_hint_after_their_act() -> void:
 	var s := _session()
