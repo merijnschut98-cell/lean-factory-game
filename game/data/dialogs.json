@@ -5607,12 +5607,7 @@
     {
      "answer": "Zes meter GPLK uit de Lindenlaan, van 1968. Die heb ik er in 2019 zelf in gelegd. Daar kunnen de jongens een overgangsmof op oefenen zonder dat er een wijk zonder stroom zit. Alleen wordt hij te weinig gebruikt. Iedereen heeft het druk.",
      "ask": "Wat heb je eigenlijk liggen in die sleuf op het opleidingsterrein?",
-     "id": "trench",
-     "unlocks": {
-      "facts": [
-       "heard:henk_trench"
-      ]
-     }
+     "id": "trench"
     },
     {
      "answer": "Uit het boekje weet die jongen alles. Beter dan ik, eerlijk gezegd. Maar hij moet het nog in z'n handen krijgen: voelen of een kabel nat is, ruiken of een mof is doorgeslagen. Dat leer je alleen door het vaak te doen, met iemand naast je die zegt: nog een keer. Zo heeft ouwe Toon het mij geleerd. In 1984.",

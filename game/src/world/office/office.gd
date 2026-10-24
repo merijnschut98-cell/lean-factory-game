@@ -331,6 +331,8 @@ func load_floor() -> void:
 		add_child(desk)
 	if find_marker("coach") != null:   # the coach's room is on this floor: Ruud's whiteboard
 		geometry.add_child(OfficeWhiteboard.build(in_office(geometry).affine_inverse()))
+	if find_marker(OfficeTerugbelbord.KCC_MARKER) != null:   # the KCC is on this floor: its callback board (a tell)
+		geometry.add_child(OfficeTerugbelbord.build(in_office(geometry).affine_inverse()))
 	_hang_kpi_wall()
 	floors.apply_rooms()
 	_add_interactables()

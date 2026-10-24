@@ -315,7 +315,9 @@ TELLS = {"intake_stack": "connections", "prep_tray": "connections", "planning_bo
          "congestion_list": "congestion_desk",
          # the yard (S3-Y; tools/blender/build_yard.py builds these)
          "uitgiftelijst": "magazijn", "van_returns": "van_park", "magazijn_rack": "magazijn",
-         "storingsbord": "werkplaats", "measurement_tray": "werkplaats"}
+         "storingsbord": "werkplaats", "measurement_tray": "werkplaats",
+         # the begane grond (R-1 #4; built in Godot: game/src/world/office/office_terugbelbord.gd)
+         "terugbelbord": "contact_centre"}
 TELL_KEYS = {"tell", "text"}
 # world.yaml `tells:`: what each tell looks like at each height (OfficeTells.VARIANTS).
 TELL_HEIGHTS = ("low", "mid", "high")

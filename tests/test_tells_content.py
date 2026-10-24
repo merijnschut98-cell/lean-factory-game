@@ -1,5 +1,5 @@
 """The tells (PLAN 2.6, design §1.5): problems_tier1.yaml `tells:` names which prop on the 1e, the
-2e or the yard shows a problem's symptom. Every listed tell exists, its text never names the
+2e, the begane grond or the yard shows a problem's symptom. Every listed tell exists, its text never names the
 problem, and every problem whose place is on a floor with tells has at least one on that floor."""
 from __future__ import annotations
 
@@ -28,10 +28,11 @@ def test_the_real_tells_are_valid():
     _check(lambda docs: None)
 
 
-def test_the_tells_cover_every_room_of_the_1e_the_2e_and_the_yard():
+def test_the_tells_cover_every_room_of_the_1e_the_2e_the_begane_grond_and_the_yard():
     rooms_with_tells = set(bc.TELLS.values())
     assert rooms_with_tells == {"connections", "revision_gis", "meter_data",
                                 "directors_obeya", "grid_strategy", "congestion_desk",
+                                "contact_centre",
                                 "magazijn", "werkplaats", "van_park"}
     shown = {p["id"]: [t["tell"] for t in p.get("tells", [])] for p in REAL["problems_tier1"]["problems"]}
     assert "intake_stack" in shown["incomplete_application"]
@@ -44,6 +45,7 @@ def test_the_tells_cover_every_room_of_the_1e_the_2e_and_the_yard():
     assert "reinforcement_board" in shown["transformer_wait"]
     assert "congestion_list" in shown["unused_capacity"]
     assert "obeya_board" in shown["silo_kpis"]
+    assert "terugbelbord" in shown["status_callers"]
 
 
 def test_every_problem_on_the_2e_needs_a_tell():
@@ -109,9 +111,26 @@ def test_every_problem_on_the_1e_needs_a_tell_whatever_its_room():
 
 
 def test_a_problem_off_the_floors_with_tells_needs_no_tell():
+    """A room on a floor with no tells at all (here a made-up attic) asks for none."""
     def mutate(docs):
-        assert not _problem(docs, "status_callers").get("tells")   # the begane grond has no tells
+        rooms = docs["world"]["rooms"]
+        next(r for r in rooms if r["id"] == "contact_centre")["places"].remove("customer_contact.answer")
+        rooms.append({"id": "attic", "floor": "attic", "name": "Zolder", "places": ["customer_contact.answer"],
+                      "opens_with": []})
+        docs["world"]["floors"].append({"id": "attic", "name": "Zolder", "level": 3, "model": "x.glb"})
+        _look(docs, "terugbelbord").pop("place")
+        _look(docs, "terugbelbord")["room"] = "contact_centre"
+        _problem(docs, "status_callers").pop("tells")
     _check(mutate)
+
+
+def test_every_problem_on_the_begane_grond_needs_a_tell():
+    """R-1 #4: the KCC's callback board shows the status callers (PLAN 2.6: every active tier-1
+    problem has a tell)."""
+    def mutate(docs):
+        _problem(docs, "status_callers").pop("tells")
+    with pytest.raises(bc.ContentError, match="status_callers.*no tell"):
+        _check(mutate)
 
 
 def test_the_yard_shows_its_field_problems():
@@ -195,6 +214,8 @@ def test_a_tell_needs_a_text():
     ("inverters_tripping", ["dezelfde straten", "straat"]),
     # The van kanban wall is wrong_joint_in_van's countermeasure, its empty column the root cause (#3).
     ("wrong_joint_in_van", ["kanban", "bestellen", "kaartje", "aanvul"]),
+    # The root cause (no word about progress after the application) is the investigation's (R-1 #4).
+    ("status_callers", ["voortgang", "niets meer", "geen bericht", "wachttijd", "faalvraag"]),
 ])
 def test_a_tell_is_a_neutral_observation_never_the_cause_or_the_fix(problem_id, giveaways):
     for tell in _problem(REAL, problem_id)["tells"]:

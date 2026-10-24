@@ -8,6 +8,7 @@ const SECOND_MODEL := "res://assets/office/office_second.glb"
 const FIRST: Array[String] = ["intake_stack", "prep_tray", "planning_board", "revision_cabinet", "close_out_cabinet",
 	"meter_board"]
 const SECOND: Array[String] = ["obeya_board", "grid_study_tray", "reinforcement_board", "congestion_list"]
+const GROUND: Array[String] = ["terugbelbord"]   # built in Godot (OfficeTerugbelbord), not in the model
 const YARD_MODEL := "res://assets/office/office_yard.glb"
 const YARD: Array[String] = ["uitgiftelijst", "magazijn_rack", "van_returns", "storingsbord", "measurement_tray"]
 
@@ -44,7 +45,7 @@ func test_a_long_intake_queue_shows_the_tall_stack_and_a_short_one_the_low() -> 
 func test_a_network_without_the_steps_reads_low() -> void:
 	var net := NetFixture.net([NetFixture.pool("p")], [NetFixture.stream("other", [NetFixture.work("w", "p", 1.0)])])
 	var none := {}
-	for tell: String in FIRST + SECOND + YARD:
+	for tell: String in FIRST + SECOND + GROUND + YARD:
 		none[tell] = OfficeTells.LOW
 	assert_eq(OfficeTells.bands(net), none)
 	assert_eq(OfficeTells.bands(net).size(), OfficeTells.THRESHOLDS.size(), "every tell is read")
@@ -480,4 +481,52 @@ func test_e_beside_the_uitgiftelijst_looks_at_it() -> void:
 	var beside := office.tells.bounds("uitgiftelijst").get_center() * Vector3(1, 0, 1) + Vector3(0, 0, 0.5)  # the monteurs' side, at the counter's west end
 	assert_eq(office.target_near(beside), wall)
 	assert_eq(office.prompt_near(beside), office.tr(OfficeTells.PROMPT))
+	office.free()
+
+
+# --- the begane grond (R-1 #4): the KCC's callback board, so the status callers show too.
+
+## `n` customer questions answered just now at the contact centre, status calls or not.
+func _answered(net: Network, n: int, status: bool) -> void:
+	for i in n:
+		net.stream("customer_contact").finished.append({"done_at": net.time, "lead_minutes": 30, "on_time": true,
+			"reworks": 0, "failure_demand": status})
+
+
+func test_the_callback_board_counts_the_status_calls_of_this_week() -> void:
+	var net := NetFixture.net([NetFixture.pool("contact_centre", 2)], [
+		NetFixture.stream("customer_contact", [NetFixture.work("answer", "contact_centre", 0.25)], 0.0)])
+	assert_eq(OfficeTells.readings(net)["terugbelbord"], 0, "no calls")
+	_answered(net, 50, false)
+	assert_eq(OfficeTells.readings(net)["terugbelbord"], 0, "ordinary questions leave no callback note")
+	_answered(net, OfficeTells.THRESHOLDS["terugbelbord"][1], true)
+	assert_eq(OfficeTells.bands(net)["terugbelbord"], OfficeTells.HIGH, "a week of status calls")
+	net.time += SimCalendar.days(OfficeTells.WEEK_DAYS + 1)
+	assert_eq(OfficeTells.bands(net)["terugbelbord"], OfficeTells.LOW, "last week's notes are taken down")
+
+
+func test_the_begane_grond_has_the_callback_board_at_the_kcc() -> void:
+	var office := _office()
+	office.session.missions.progress["fix_status_callers"] = {"status": "active", "asks": {}, "seen": {}}
+	office.floors._process(OfficeFloors.POLL_SECONDS)
+	office.floors.go_to("ground", "lift", true)
+	assert_true(office.tells != null and office.tells.roots.has("terugbelbord"), "the begane grond has its tell")
+	if office.tells == null or not office.tells.roots.has("terugbelbord"):
+		office.free()
+		return
+	var kcc := OfficeFloors.room_rect(office.floors.markers()["room:contact_centre"])
+	var at := office.tells.bounds("terugbelbord").get_center()
+	assert_true(kcc.has_point(Vector2(at.x, at.z)), "in the KCC")
+	for v in OfficeTells.VARIANTS:
+		assert_true(OfficeTells.node(office.geometry, "terugbelbord_" + v) != null, "its %s variant" % v)
+	_answered(office.session.region.net, OfficeTells.THRESHOLDS["terugbelbord"][1], true)
+	office.tells.refresh()
+	assert_true(OfficeTells.node(office.geometry, "terugbelbord_high").visible, "a week of status calls")
+	var beside := OfficeTerugbelbord.stand()
+	assert_false(office.nav().path(office.player.position, beside).is_empty(), "the board can be walked up to")
+	assert_eq(office.prompt_near(beside), office.tr(OfficeTells.PROMPT), "E beside it looks closer")
+	var said := office.tells.look("terugbelbord")
+	assert_false(said.is_empty(), "it says what you see")
+	var noted := office.session.gemba.journal.filter(func(e: Dictionary) -> bool: return e["text"] == said)
+	assert_eq(noted[0]["place"] if not noted.is_empty() else "", "customer_contact.answer", "noted at the KCC")
 	office.free()

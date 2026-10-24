@@ -3,8 +3,9 @@ extends Node3D
 ## The people on the loaded floor (PLAN 1.3, 2.1c), placed from the cast list (cast.json):
 ## at a workstation of the floor's model (<seat>_chair, facing <seat>_desk), on a chair
 ## (facing the way it faces), at a spot, or walking a route. Who is there follows the
-## session: someone tied to missions is present only while one of them is active; nobody
-## sits behind a shut door (a room's area, `shut`). The office keeps time (PLAN 2.14
+## session: someone tied to missions is present only while one of them is active; someone
+## who left (People.left: Henk retired, a colleague gone to another grid operator) is not
+## there any more; nobody sits behind a shut door (a room's area, `shut`). The office keeps time (PLAN 2.14
 ## S1-A): with the session's clock (minute_of_day) each person keeps their own day
 ## (OfficeDay, cast.json `day:`): in by the lift or the stairs, coffee at the floor's
 ## coffee corner, lunch at their lunch spot (the kantine; their desk without one), home,
@@ -207,6 +208,8 @@ func refresh(session: Object) -> void:
 		active = session.call("active_missions").map(func(m: MissionDef) -> String: return m.id)
 	var missions: Variant = session.get("missions")
 	var done: Dictionary = missions.done_once if missions is Missions else {}
+	var people_of: Variant = session.get("people")
+	var gone: Dictionary = (people_of as People).left if people_of is People else {}
 	var minute := _minute_of(session)
 	if minute >= 0:
 		_decide_late(session)
@@ -218,7 +221,7 @@ func refresh(session: Object) -> void:
 			_go(p, where, minute)
 		p.at_lunch = where["place"] == OfficeDay.LUNCH and p.lunch is Dictionary
 		var shut_out := not _trips.has(p.id) and _behind_shut_door(p.position)
-		p.visible = _here.get(p.id, false) and p.present_for(active, done) and not shut_out
+		p.visible = _here.get(p.id, false) and p.present_for(active, done) and not gone.has(p.id) and not shut_out
 		var state: Variant = session.call("energy_of", p.id) if energy and p.visible else {}
 		p.show_energy(state if state is Dictionary else {})
 

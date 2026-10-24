@@ -64,7 +64,7 @@ extends SceneTree
 ## expert talk on the yard after his first answer).
 ## play_van_ride, play_van_talk, play_van_choose (PLAN 2.15 S2-Y: riding along with Sandra,
 ## the edge of town going by; Henk's talk in the cab, his face, then the two of you) · play_opleidingsterrein (Henk shows Ahmed the
-## joint at the practice trench) · play_yard_morning (07:38: the monteurs at their vans).
+## joint at the practice trench) · play_yard_morning (08:45: the monteurs walk to their vans, R-1 #3).
 ## play_trafohuisje, play_explainer_trafo_fiets, play_explainer_trafo_cross,
 ## play_explainer_trafo_trafo (PLAN 2.7c S3-X: at the trafohuisje mock-up on the
 ## opleidingsterrein, its prompt; E there: "Hoe werkt het? 2" with the chain warm on the
@@ -73,9 +73,12 @@ extends SceneTree
 ## play_tell_returns_high, play_tell_measurement_high, play_tell_yard_low (S3-Y: the yard's tells:
 ## the uitgiftelijst on the magazijn's counter and the storingsbord looked at closer, the joint
 ## shelf, the returns pallet, the complaints' tray at their highest; the list at its lowest).
+## play_tell_kcc_high, play_tell_kcc_low, play_tell_kcc_look (R-1 #4: the KCC's callback board
+## by the team lead's desk, full with the status callers on, nearly empty without; then looked at).
 ## play_desk, play_a3_clipboard, play_check_screen (PLAN 2.10 S3-D: your desk with your name
 ## plate, badge photo, the letter and your clipboard; E there, the A3 on the clipboard; the
-## Check at Petra's screen, drawn as her monitor).
+## Check at Petra's screen, drawn as her monitor) · play_desk_thanks (R-1 #5: the winter promise
+## kept, mevrouw El Amrani's thank-you letter lies beside her first one).
 ## play_2e_day, play_mt_room_scene, play_tell_obeya_high (PLAN 2.16 S3-A: the 2e at ten,
 ## coffee and chatter at its corner; Honderd dagen in the MT-kamer, you seated, Ruud at the
 ## table and Frank at the screen asking his question (play_mt_room_ruud: Ruud's first line,
@@ -147,7 +150,7 @@ func _run() -> void:
 				_stand_at(office, DESIGN)
 				office.interact(office.interactable(DESIGN))
 				office.rig.snap()
-		"play_desk", "play_a3_clipboard", "play_check_screen":
+		"play_desk", "play_desk_thanks", "play_a3_clipboard", "play_check_screen":
 			await _desk(office, state)
 		"coach":
 			_investigate(office, false)
@@ -353,6 +356,8 @@ func _run() -> void:
 		"play_tell_uitgifte_high", "play_tell_storingsbord_high", "play_tell_rack_high", "play_tell_returns_high", \
 				"play_tell_measurement_high", "play_tell_yard_low":
 			_yard_tells(office, state)
+		"play_tell_kcc_high", "play_tell_kcc_low", "play_tell_kcc_look":
+			_kcc_tell(office, state)
 		"play_2e_day", "play_mt_room_scene", "play_mt_room_ruud", "play_tell_obeya_high", "tell_grid_study_high", \
 				"tell_reinforcement_high", "tell_congestion_high":
 			await _second(office, state)
@@ -486,6 +491,11 @@ func _desk(office: Office, state: String) -> void:
 	var desk := office.interactable(OfficeDesk.ID)
 	match state:
 		"play_desk":
+			office.frame(desk)
+			office.rig.snap()
+		"play_desk_thanks":
+			office.session.missions.done_once["winter_el_amrani"] = true
+			office.desk.refresh()
 			office.frame(desk)
 			office.rig.snap()
 		"play_a3_clipboard":
@@ -827,12 +837,12 @@ func _kpi_review_scene(office: Office, state: String) -> void:
 
 ## The yard lives (S2-Y): the van ride with Sandra (the drive) or Henk (his talk in the
 ## cab, his face while he speaks); the opleidingsterrein after the ride with Henk; the yard at
-## 07:38 with the monteurs at their vans, seen a quarter of an hour earlier first so they walk.
+## 08:45 with the monteurs on their way to their vans, seen at 08:30 (your day's start) first so they walk.
 func _yard_life(office: Office, state: String) -> void:
 	var mission: String = {"play_van_ride": "fix_not_at_home", "play_yard_morning": "fix_wrong_joint"}.get(
 		state, "save_henks_knowledge")
 	office.session.missions.progress[mission] = {"status": "active", "asks": {}, "seen": {}}
-	var minute := 7 * 60 + 38 if state == "play_yard_morning" else 10 * 60 + 20
+	var minute := 8 * 60 + 45 if state == "play_yard_morning" else 10 * 60 + 20
 	office.session.pass_time(posmod(minute - office.session.minute_of_day(), SimCalendar.MINUTES_PER_DAY))
 	office.ui.after_action()
 	if state == "play_opleidingsterrein":
@@ -914,6 +924,33 @@ func _yard_tells(office: Office, state: String) -> void:
 		"play_tell_yard_low": "uitgiftelijst"}   # behind the shed's wall: seen only up close
 	if looked.has(state):   # capture within ~25 frames, before the line's time is up
 		office.use(OfficeTells.node(office.geometry, looked[state]))
+
+
+## The KCC's callback board (R-1 #4) at twenty past ten: full after weeks of the status callers
+## (play_tell_kcc_high, and looked at closer: play_tell_kcc_look), a few notes in the base region
+## (play_tell_kcc_low).
+func _kcc_tell(office: Office, state: String) -> void:
+	office.session.missions.progress["fix_status_callers"] = {"status": "active", "asks": {}, "seen": {}}
+	if state != "play_tell_kcc_low":
+		office.session.region.activate("status_callers")
+		office.session.region.advance_days(14)
+	office.session.pass_time(posmod(10 * 60 + 20 - office.session.minute_of_day(), SimCalendar.MINUTES_PER_DAY))
+	office.ui.after_action()
+	office.ui.let_ringing_go()   # mevrouw El Amrani's call, not this shot's subject
+	office.floors._process(OfficeFloors.POLL_SECONDS)
+	office.floors.go_to("ground", "lift", true)
+	office.daylight.update(office.session)
+	office.tells.refresh()
+	if state == "play_tell_kcc_low":
+		OfficeTells.show(office.geometry, {"terugbelbord": OfficeTells.LOW})
+	print("terugbelbord: ", OfficeTells.readings(office.session.region.net)["terugbelbord"])
+	office.player.position = OfficeTerugbelbord.stand() + Vector3(-0.4, 0, 0.6)
+	office.player.face(Basis.looking_at((OfficeTerugbelbord.AT - office.player.position) * Vector3(1, 0, 1)))
+	office.rig.yaw = office.player.rotation.y + deg_to_rad(20)
+	office.rig.zoom(-5.0)
+	office.rig.snap()
+	if state == "play_tell_kcc_look":
+		office.use(OfficeTells.node(office.geometry, OfficeTerugbelbord.TELL))
 
 
 ## Going home (S1-A): the begane grond's front door at half past five, its prompt; then

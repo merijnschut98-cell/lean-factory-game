@@ -3,11 +3,12 @@ extends Node3D
 ## Your desk at Aansluitingen (phase-2 design §1.8, PLAN 2.10): the free desk on
 ## Werkvoorbereiding's bench, beside Joost and Anouk. On it: a name plate with your first
 ## name, your badge photo (the creator's portrait) in a small frame, the El Amrani letter
-## once Ruud has handed it over (the opening's letter beat), and your clipboard with the
-## A3. Standing behind its chair (E, or a click on the ring) the camera drops to the desk
-## and the A3 opens, drawn as the sheet on that clipboard. The desk is in the floor's
-## model already (build_office.py's design bench), so its things are added here and the
-## floor needs no rebuild; they follow the profile ("Uiterlijk") and the opening as they change.
+## once Ruud has handed it over (the opening's letter beat), her thank-you letter beside it
+## once a kept promise sent one (a mission's `payoff` by letter: winter_el_amrani; design
+## §3.2), and your clipboard with the A3. Standing behind its chair (E, or a click on the
+## ring) the camera drops to the desk and the A3 opens, drawn as the sheet on that
+## clipboard. The desk is in the floor's model already (build_office.py's design bench), so
+## its things are added here and the floor needs no rebuild; they follow the profile ("Uiterlijk") and the opening as they change.
 
 ## The interaction point's id (an Interactable kind of its own).
 const ID := "desk"
@@ -23,6 +24,8 @@ const TOP := 0.75
 const PLATE_AT := Vector3(0.02, TOP, -0.01)
 const PHOTO_AT := Vector3(0.66, TOP, -0.24)
 const LETTER_AT := Vector3(0.56, TOP + 0.001, 0.06)
+## A letter that came later lies half over the first, a little nearer the chair.
+const THANKS_AT := Vector3(0.42, TOP + 0.002, 0.16)
 const CLIPBOARD_AT := Vector3(-0.44, TOP, 0.12)
 ## The photo's frame: passport ratio (PlayerProfile.PORTRAIT_SIZE), 12 cm wide.
 const PHOTO_SIZE := Vector2(0.12, 0.154)
@@ -37,6 +40,11 @@ var office: Office
 var _plate: Label3D
 var _photo: MeshInstance3D
 var _letter: Node3D
+## The letter a kept promise sent (null until one did), and the text it shows.
+var _thanks: Node3D
+var _thanks_text := ""
+## The missions done when the thank-you letter was last looked for (-1: not yet).
+var _done_seen := -1
 ## The profile the plate and the photo show (a new one comes with "Uiterlijk").
 var _shown: PlayerProfile
 
@@ -93,12 +101,14 @@ func _process(_delta: float) -> void:
 	refresh()
 
 
-## Follow the player's profile (name, photo) and the opening (the letter). Cheap: the
-## plate and the photo change only with a new profile.
+## Follow the player's profile (name, photo), the opening (the letter) and the missions
+## done (a thank-you letter). Cheap: the plate and the photo change only with a new
+## profile, the thank-you only with a mission done.
 func refresh() -> void:
 	var me := office.session.player
 	if me != _shown:
 		_shown = me
+		_done_seen = -1   # the thank-you letter greets you by the new name
 		_plate.text = me.display_name()
 		var photo := PlayerProfile.texture_of(me.portrait)
 		var look := _photo.material_override as StandardMaterial3D
@@ -106,6 +116,31 @@ func refresh() -> void:
 		look.albedo_color = Color.WHITE if photo != null else NO_PHOTO
 	var layer := office.ui.session_layer if office.ui != null else null
 	_letter.visible = layer == null or Opening.reached(layer, Opening.EVENING)
+	if office.session.missions == null:   # the content did not load: no missions, no letters
+		return
+	var done := office.session.missions.done_once.size()
+	if done == _done_seen:
+		return
+	_done_seen = done
+	var thanks := payoff_letter(office.session)
+	if thanks != _thanks_text:
+		_thanks_text = thanks
+		if _thanks != null:
+			_thanks.free()
+		_thanks = null if thanks.is_empty() else _letter_sheet("Thanks", thanks.split("\n\n"), THANKS_AT, 8.0)
+		if _thanks != null:
+			add_child(_thanks)
+
+
+## The text of the letter a kept promise sent you (MissionDef.payoff by letter, its tokens
+## filled), "" when none came yet.
+static func payoff_letter(s: GameSession) -> String:
+	for m: MissionDef in s.missions.defs.values():
+		if s.missions.done_once.has(m.id):
+			for p: Dictionary in m.payoff:
+				if p["by"] == "letter":
+					return s.fill_tokens(p["text"])
+	return ""
 
 
 func plate_text() -> String:
@@ -121,17 +156,35 @@ func letter_shown() -> bool:
 	return _letter.visible
 
 
+func thanks_shown() -> bool:
+	return _thanks != null
+
+
+## The thank-you letter's text ("" when there is none).
+func thanks_text() -> String:
+	return _thanks_text
+
+
 func _build() -> void:
 	add_child(_name_plate())
 	add_child(_photo_frame())
-	_letter = _sheet("Letter", Vector2(0.21, 0.297), Color("#fbfaf4"), LETTER_AT, -14.0)
 	var letter := OfficeOpening.LETTER
-	var lines := _text("\n".join([letter[0], ""] + INK_LINES + ["", letter[2], letter[3]]), 0.00042, Color("#2b3550"))
-	lines.rotation_degrees.x = -90
-	lines.position = Vector3(0, 0.002, 0)
-	_letter.add_child(lines)
+	_letter = _letter_sheet("Letter", PackedStringArray([letter[0], letter[2] + "\n" + letter[3]]), LETTER_AT, -14.0)
 	add_child(_letter)
 	add_child(_clipboard())
+
+
+## A letter lying on the desk at `at`, turned `yaw` degrees: its first paragraph (the
+## greeting) and its last (the close) readable, ink lines between, too small to read from
+## the chair.
+static func _letter_sheet(node_name: String, paragraphs: PackedStringArray, at: Vector3, yaw: float) -> Node3D:
+	var sheet := _sheet(node_name, Vector2(0.21, 0.297), Color("#fbfaf4"), at, yaw)
+	var lines := _text("\n".join([paragraphs[0], ""] + INK_LINES + ["", paragraphs[paragraphs.size() - 1]]), 0.00042,
+		Color("#2b3550"))
+	lines.rotation_degrees.x = -90
+	lines.position = Vector3(0, 0.002, 0)
+	sheet.add_child(lines)
+	return sheet
 
 
 ## A small wedge of dark wood with your first name in white, facing the chair.

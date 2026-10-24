@@ -123,6 +123,37 @@ func test_the_phone_rings_once_a_day_in_office_hours() -> void:
 	assert_eq(CustomerCalls.ringing(s, layer).get("person"), "el_amrani", "and again the next day")
 
 
+## R-1 #6: an expert talk belongs to no mission, so it is due for as long as a topic is left.
+## A customer's expert talk rings rarely and with a reason: only while a mission its clues
+## serve is on, and then at most once a week; the headset at the KCC still takes it any day.
+## (Wim is no customer today, so he never rings; the checklist's "once a day" did not
+## reproduce. Made one here, he shows the rule a phoned expert keeps.)
+func test_an_expert_rings_only_while_his_clues_serve_a_mission_and_once_a_week() -> void:
+	var s := _session()
+	var layer := SessionLayer.new()
+	assert_false(s.people.persons["wim"].customer, "Wim comes to the ontvangst; he does not phone")
+	s.people.persons["wim"].customer = true
+	s.people.heard_facts["heard:wim_spreadsheet"] = true   # he felt heard: his expert talk is due
+	s.people.outcomes["wim_spreadsheet"] = "commitment"
+	_at(s, 10 * 60)
+	assert_eq(s.customer_calls().map(func(c: Dictionary) -> String: return c["dialog"]), ["wim_expert"],
+		"his talk is due (the headset takes it)")
+	assert_eq(CustomerCalls.ringing(s, layer), {}, "but no mission his metingen serve: he does not ring")
+	s.missions.progress["fix_inverters_tripping"] = {"status": "active", "asks": {}, "seen": {}}
+	var call := CustomerCalls.ringing(s, layer)
+	assert_eq(call.get("dialog"), "wim_expert", "the inverters trip: Wim rings")
+	CustomerCalls.rang(s, layer, call)
+	for day in 6:
+		s.region.net.time += SimCalendar.days(1)
+		assert_eq(CustomerCalls.ringing(s, layer), {}, "not again the next days (%d)" % (day + 1))
+	s.region.net.time += SimCalendar.days(1)
+	assert_eq(CustomerCalls.ringing(s, layer).get("dialog"), "wim_expert", "a week later, again")
+	for clue: String in ["inverters_tripping:6", "inverters_tripping:7"]:
+		s.region.found[clue] = true
+	s.region.net.time += SimCalendar.days(7)
+	assert_eq(CustomerCalls.ringing(s, layer), {}, "nothing left to tell for the mission: he does not ring")
+
+
 func test_a_call_let_go_is_a_voicemail_never_a_cost() -> void:
 	var s := _calling(_session())
 	var layer := SessionLayer.new()

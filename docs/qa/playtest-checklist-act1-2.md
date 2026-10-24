@@ -170,7 +170,7 @@ Sides: "De zwijgende meter", "Omvormers die afschakelen" (Wim).
 - [ ] **Ilse's call** (KCC headset or the phone) and **Wim**:
   - Wim's spreadsheet talk (`wim_spreadsheet`);
   - after it, his expert talk by phone ("Wim en zijn metingen", he says u).
-  - Wim rings once a day while he has a topic left: too often?
+  - Wim is not a customer, so he never rings; an expert who is a customer rings unasked at most once a week, and only while a topic serves an active mission. Should Wim be reachable by phone?
 - [ ] Femke and Ilse can now be won by listening (QA (e)). Try it.
 - [ ] **Your call (§7, Act II fork and deadline):** after the act, Act II has neither a fork nor a deadline. Claude's proposal:
   - no fork here; plan one in Act III;
@@ -205,5 +205,4 @@ After "Twee recordmaanden" (or when its fix makes the board), at Directie & Obey
 - The talks still look and read as in slice 1. The Act I and Act II rewrites and any restyle wait for your feedback (design §2.7).
 - Nothing starts a walking talk yet. Ruud's walk is a scripted scene.
 - No weather or seasons: the frost is a date, not a sight.
-- The yard's morning is never seen: monteurs Ricardo and Joyce arrive at 07:18–07:25, and every day starts at 08:30.
 - The El Amrani front door is Phase 4. In Phase 2 the payoff is her call and her letter.
