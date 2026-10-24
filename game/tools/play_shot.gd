@@ -16,7 +16,7 @@ extends SceneTree
 ## without the standard) · sustain (the fix standardised, then left alone for
 ## weeks: its health, the audit and the routine in the team's menu, and the
 ## toasts of a slipping fix) · discoveries (the codex's Ontdekkingen tab with
-## two found) · simulating (Petra's screen's note while the Check runs) · fork_board
+## two found) · codex_company, codex_company_numbers (its Voltana page: sites, 2012; scrolled to the numbers) · simulating (Petra's screen's note while the Check runs) · fork_board
 ## (the board after the first mission: the fork as a pair) · debt (the HUD in
 ## debt, with the floor, and its toasts) · dialog_start, dialog_mid,
 ## dialog_summary, dialog_ruined (a talk with Joost) ·
@@ -161,6 +161,12 @@ func _run() -> void:
 			office.session.discoveries.found["voorspeller"] = office.session.region.net.time
 			office.ui.toggle_phone(Phone.CODEX)
 			office.ui.codex.show_tab(CodexPanel.DISCOVERIES)
+		"codex_company", "codex_company_numbers":   # the codex's Voltana page (PLAN 2.16, design §1.6)
+			office.ui.toggle_phone(Phone.CODEX)
+			office.ui.codex.show_tab(CodexPanel.COMPANY)
+			if state == "codex_company_numbers":   # scrolled to the numbers once laid out
+				var scroll: ScrollContainer = office.ui.codex._list.get_parent()
+				create_timer(0.3).timeout.connect(func() -> void: scroll.scroll_vertical = 1500)
 		"simulating":
 			_investigate(office, true)
 			office.interact(office.interactable("obeya"))

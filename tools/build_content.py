@@ -2986,6 +2986,9 @@ def check_spoken(docs: dict[str, Any]) -> None:
 
 CAST_FILE = ROOT / "game" / "assets" / "characters" / "cast.json"
 COMPANY_KEYS = {"company", "sites", "departments", "externals", "history", "numbers"}
+SITE_KEYS = {"id", "name", "town", "about", "headcount"}
+# A team's `lead` may be this word: the department's head leads the team directly.
+HEAD_LEADS = "head"
 DEPARTMENT_KEYS = {"id", "name", "site", "head", "reports_to", "teams"}
 TEAM_KEYS = {"id", "name", "pool", "lead", "members", "headcount", "about"}
 NUMBER_KEYS = {"id", "label", "value", "unit", "source", "estimate"}
@@ -3004,6 +3007,11 @@ def validate_company(doc: Any, source: str) -> None:
     _require_strings(_mapping(doc, "company", {"name", "region", "about"}, source), ["name", "region", "about"],
                      f"{source} company")
     sites = {s["id"] for s in _entries(doc, "sites", source)}
+    for s in doc["sites"]:
+        where = f"{source}: site '{s['id']}'"
+        _known_keys(s, SITE_KEYS, where)
+        if "headcount" in s:
+            _headcount(s["headcount"], f"{where} headcount")
     departments = _entries(doc, "departments", source)
     for d in departments:
         where = f"{source}: department '{d['id']}'"
@@ -3037,8 +3045,10 @@ def validate_company(doc: Any, source: str) -> None:
 
 def _validate_team(t: dict, where: str) -> None:
     _known_keys(t, TEAM_KEYS, where)
-    if "lead" in t:
-        _person_ref(t["lead"], f"{where} lead", named=False)
+    if "lead" not in t:
+        raise ContentError(f"{where}: needs a 'lead' ({{id, title}}, {{name, title}} or '{HEAD_LEADS}')")
+    if t["lead"] != HEAD_LEADS:
+        _person_ref(t["lead"], f"{where} lead")
     members = t.get("members", [])
     if not isinstance(members, list):
         raise ContentError(f"{where}: 'members' must be a list of {{id, title}}")
@@ -3051,13 +3061,19 @@ def _validate_team(t: dict, where: str) -> None:
         return
     if not isinstance(headcount, dict):
         raise ContentError(f"{where}: a team without a pool needs a 'headcount' with a source or an estimate")
-    _known_keys(headcount, {"value", "source", "estimate"}, f"{where} headcount")
-    _number(headcount, "value", f"{where} headcount", 1, integer=True)
-    _evidence(headcount, f"{where} headcount")
+    _headcount(headcount, f"{where} headcount")
+
+
+def _headcount(headcount: Any, where: str) -> None:
+    if not isinstance(headcount, dict):
+        raise ContentError(f"{where}: must be {{value, source or estimate}}")
+    _known_keys(headcount, {"value", "source", "estimate"}, where)
+    _number(headcount, "value", where, 1, integer=True)
+    _evidence(headcount, where)
 
 
 def _person_ref(ref: Any, where: str, named: bool = True) -> None:
-    """{id, title} for someone in the cast, or (a head only) {name, title} for someone not yet."""
+    """{id, title} for someone in the cast, or (a head or lead) {name, title} for someone not yet."""
     keys = {"id", "title"} | ({"name"} if named else set())
     if not isinstance(ref, dict) or ("id" in ref) == ("name" in ref):
         raise ContentError(f"{where}: needs {{id, title}}" + (" or {name, title}" if named else ""))
@@ -3085,10 +3101,10 @@ def _evidence(item: dict, where: str) -> None:
 
 def company_people(company: dict) -> dict[str, dict]:
     """Every placed person: id → {title, department ("" for an external), team, lead
-    (the team's lead's id, or "")}."""
+    (the ref of the team lead over them; {} for a head, a lead, or a team its head leads)}."""
     out: dict[str, dict] = {}
 
-    def place(ref: dict, department: str, team: str, lead: str) -> None:
+    def place(ref: dict, department: str, team: str, lead: dict) -> None:
         pid = ref.get("id")
         if pid is None:
             return
@@ -3097,14 +3113,14 @@ def company_people(company: dict) -> dict[str, dict]:
         out[pid] = {"title": ref["title"], "department": department, "team": team, "lead": lead}
 
     for d in company["departments"]:
-        place(d["head"], d["id"], "", "")
+        place(d["head"], d["id"], "", {})
         for t in d["teams"]:
-            lead = t.get("lead", {})
-            place(lead, d["id"], t["id"], "") if lead else None
+            lead = t["lead"] if isinstance(t["lead"], dict) else {}
+            place(lead, d["id"], t["id"], {})
             for m in t.get("members", []):
-                place(m, d["id"], t["id"], lead.get("id", ""))
+                place(m, d["id"], t["id"], lead)
     for e in company["externals"]:
-        place(e, "", "", "")
+        place(e, "", "", {})
     return out
 
 
@@ -3124,12 +3140,29 @@ def company_managers(company: dict, names: dict[str, str] | None = None) -> dict
             continue
         d = depts[p["department"]]
         if p["lead"]:
-            out[pid] = names.get(p["lead"], p["lead"])
+            out[pid] = name_of(p["lead"])
         elif d["head"].get("id") != pid:
             out[pid] = name_of(d["head"])
         else:
             boss = d.get("reports_to")
             out[pid] = name_of(depts[boss]["head"]) if boss else ""
+    return out
+
+
+def company_index(company: dict) -> dict[str, dict]:
+    """The built file's `people`: id → {title, department, team, manager} (names) for
+    Voltana's people (a head's team is ""), {title, organisation} for an external."""
+    managers = company_managers(company)
+    depts = {d["id"]: d["name"] for d in company["departments"]}
+    teams = {t["id"]: t["name"] for d in company["departments"] for t in d["teams"]}
+    orgs = {e["id"]: e["organisation"] for e in company["externals"]}
+    out = {}
+    for pid, p in company_people(company).items():
+        if not p["department"]:
+            out[pid] = {"title": p["title"], "organisation": orgs[pid]}
+        else:
+            out[pid] = {"title": p["title"], "department": depts[p["department"]], "team": teams.get(p["team"], ""),
+                        "manager": managers[pid]}
     return out
 
 
@@ -3183,6 +3216,13 @@ def check_company(docs: dict[str, Any]) -> None:
             if t["pool"] not in pools:
                 raise ContentError(f"company.yaml: team '{t['id']}': unknown pool {t['pool']!r}")
             t["headcount"] = {"value": pools[t["pool"]]["headcount"], "pool": t["pool"]}
+    for d in company["departments"]:
+        for t in d["teams"]:
+            seated = len(t.get("members", [])) + int("id" in t["lead"] if isinstance(t["lead"], dict) else False)
+            if seated > t["headcount"]["value"]:
+                raise ContentError(f"company.yaml: team '{t['id']}': {seated} people placed but a headcount of "
+                                   f"{t['headcount']['value']}")
+    company["people"] = company_index(company)
 
 
 # ── scenes.yaml (a milestone's scene, phase-2 design §3.1) ───────────────────
