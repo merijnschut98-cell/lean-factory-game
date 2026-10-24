@@ -55,9 +55,10 @@ const VARIANTS: Array[String] = ["low", "mid", "high"]
 ## - uitgiftelijst (the joints the monteurs signed out at the magazijn's counter this week, a
 ##   line each on the list; the same reading the van kanban wall had, which was the
 ##   countermeasure two_bin_van_kanban and so no tell, review of 3c40ed8..381d21c #3):
-##   base 3/7/11 and 3/8/12, digging_damage 5/12/18 and 6/10/16. wrong_joint_in_van takes no
-##   more joints (its harm is the drive to fetch one), so the list shows it only in a busy
-##   week, as it would.
+##   base 3/7/11 and 3/8/12, digging_damage 5/12/18 and 6/10/16. A monteur back mid-repair for
+##   the right joint signs out a second one (Network.material_trips_since): wrong_joint_in_van
+##   5/12/16 and 3/12/19 (re-probed 2026-10-24, S3 G-A; the thresholds hold: base low, the
+##   problem mid, its busy weeks high).
 ## - magazijn_rack (the share of the joint shelf that is empty, % of reorder point plus an
 ##   order): base 16/51/83 and 13/44/79 (it empties and refills with each delivery: a low
 ##   shelf can be the day before the truck), digging_damage 27/60/92 and 15/60/89.
@@ -265,7 +266,8 @@ static func readings(net: Network) -> Dictionary:
 		"grid_study_tray": _waiting(net, ["connections.grid_study", "congestion.congestion_study"]),
 		"reinforcement_board": _waiting(net, ["connections.grid_reinforcement"]),
 		"congestion_list": _waiting(net, ["congestion.capacity_queue"]),
-		"uitgiftelijst": _counted(net, "outages.joint", WEEK_DAYS, "entered"), "magazijn_rack": _shelf_empty(net, "cable_joint"),
+		"uitgiftelijst": _counted(net, "outages.joint", WEEK_DAYS, "entered") + _week_trips(net),
+		"magazijn_rack": _shelf_empty(net, "cable_joint"),
 		"van_returns": _counted(net, "meters.visit", MOVED_DAYS) + _counted(net, "connections.execution", MOVED_DAYS),
 		"storingsbord": _callouts(net),
 		"measurement_tray": _waiting(net, ["voltage_complaints.measurement", "voltage_complaints.measurement_week"])}
@@ -370,7 +372,12 @@ static func _callouts(net: Network) -> int:
 	var k := outages.kpis(net.time, WEEK_DAYS)
 	var late := roundi(k["completed"] * (1.0 - k["on_time"])) if k["completed"] > 0 else 0
 	return _counted(net, "outages.report", WEEK_DAYS, "entered") + _counted(net, "outages.locate", WEEK_DAYS) + late \
-		+ net.material_trips_since(SimCalendar.day_of(net.time) - WEEK_DAYS)
+		+ _week_trips(net)
+
+
+## This week's drives back to the counter for material in the middle of a repair.
+static func _week_trips(net: Network) -> int:
+	return net.material_trips_since(SimCalendar.day_of(net.time) - WEEK_DAYS)
 
 
 ## The value streams whose KPI card is red: too few of their finished orders met the norm.
