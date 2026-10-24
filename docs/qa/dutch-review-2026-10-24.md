@@ -11,7 +11,9 @@ Everything new since `46f6dbf` (the last reviewed state) in `content/` and the D
 - `scenes.yaml` (`review_100_days`), `world.yaml` `tells:`, the `tells:` in `problems_tier1.yaml`, `company.yaml` descriptions.
 - GDScript: the phone apps (Berichten, Opdrachten, Notities, Wie is wie, Instellingen), the incoming call, TalkView and its summary, the KCC headset, the van ride and look-closer prompts, the door ("Naar huis"), the away lines, the late-evening note, the reputation reasons and the new toasts.
 
-**Not landed yet when I read** (so not reviewed): `femke_expert`, new feeling lines for Femke and Ilse, new `bank.player` variants, the coach's `numbers`/`kata` lines, the missions `talk_netplanner`, `lsw_gemba_round`, `fix_double_visits`, `fix_overtime_planning`, and the principle lines in debriefs. They need the same pass when they land.
+**Second round** (landed while I worked, merged and read the same way): `femke_expert`, Ilse's new mood line, the coach's `numbers` and `kata`, the `principles:` bank, the missions `talk_netplanner`, `lsw_gemba_round`, `fix_double_visits`, `fix_overtime_planning`, `first_kpi_review` (mission and scene), `kpis.yaml` `review_lines`, the KPI board strings, the new problems and countermeasures, Ruud's "Daar is nu geen geld voor…".
+
+**Not landed when I finished:** new `bank.player` variants and new feeling lines for Femke beyond her persuasion talk's tags. They need the same pass when they land.
 
 ## What I changed, and why
 
@@ -74,7 +76,6 @@ Two of them were also translated or empty:
 - Frank: "de standaardontwerpen liggen nog steeds bovenop" (unclear) → "werken ze nog steeds met de standaardontwerpen. Joost laat ze me zelf zien…"
 - Frank: "een stuk minder telefoon" → "telefoontjes".
 - Ruud: "Mevrouw El Amrani belde me laatst": she called the player, not Ruud → "Ik hoorde dat mevrouw El Amrani nog heeft gebeld. Alleen om te zeggen dat haar moeder het warm heeft."
-- Frank's question: "Over twee weken moet ik de directie vertellen…" while the directeur sits next to him → "…op het hoofdkantoor vertellen…" (company.yaml: the regional directie reports to Voltana's hoofdkantoor); the matching reply too.
 - "wat er anders gaat dan in oktober" → "wat er nu anders gaat…".
 
 ### Tells
@@ -83,6 +84,19 @@ Two of them were also translated or empty:
 ### GDScript
 - Incoming call: "Laten gaan" (*let it go*) → "Niet opnemen", the words on a Dutch phone screen.
 - KCC headset when nobody waits: "Er wacht niemand op jou" (stressed *jou*, sounds reproachful) → "Er hangt niemand voor je in de wacht."
+
+### Second round: Femke's expert talk
+- Opening: "Kort gezegd: dat leg ik je graag uit" used her tic for a long explanation, and "Neem een stoel" is *take a seat* → "Dat leg ik je graag uit. Pak een stoel. De koffie is wel koud, sorry."
+- Retry: "Jij weer. Goed. Waar waren we?" is curt for the enthusiastic one → "Daar ben je weer! Waar waren we gebleven?"
+- "Hoeveel er tegelijk gebeurt, daar rekenen wij **op**" (*we count on it*) → "Hoeveel er tegelijk aanstaat, daar rekenen wij **aan**." That is the whole point of her job, so the preposition matters.
+- "ontworpen op wat die huizen tegelijk vragen" → "berekend op" (also in the `talk_netplanner` debrief); "Wat is zo'n middenspanningsruimte precies?" → "Wat is een middenspanningsruimte eigenlijk?" (nobody had mentioned one yet); "Dat huisje in je straat" → "bij jou in de straat"; two fragments joined ("Niet de hele dag, maar op dat ene moment."; "Er staan achtendertig studies op het bord").
+
+### Second round: missions, principles, scenes
+- Principles: "wie zich aangesproken voelde op een fout" (*zich aangesproken voelen* means to feel addressed) → "wie de schuld kreeg van een fout"; "glijdt dit vanzelf terug naar hoe het was" → "gaat het vanzelf weer zoals het was"; "die betaalt zich elke week terug" → "die verdient zich elke week terug".
+- `fix_double_visits`: Ruud wrote "aan de grens van wat de directie draagt", but Ruud is the directie → "aan de grens van ons budget".
+- `fix_overtime_planning`: "waar die uren in gaan zitten" → "waar die uren naartoe gaan"; "een dag dat de monteur…" → "een dag waarop" (also in the countermeasure `route_by_area`).
+- `first_kpi_review`: "Sanne en Joost hadden vorige week in het MT één getal bij zich": teamleiders do not sit in the MT (fixed the same way in the last review) → "Sanne en Joost kwamen vorige week samen bij me, met één getal: de doorlooptijd."
+- Read and kept: the coach's number clauses and the Kata five, the `review_lines`, the gemba round (briefing, debrief, steps), both way-back sides' briefings and clues, the KPI board's strings ("Waar sturen de teams op?", "Ophangen", "Kwartaalreview"), Ruud's "Daar is nu geen geld voor. Wat kun je doen met wat er wel is?", Ilse's "Mijn deeg rijst, mijn oven is oud, en ik hang bij jullie aan de lijn. Raad maar."
 
 ## Read and kept
 
@@ -98,6 +112,6 @@ Two of them were also translated or empty:
 2. **Rob says *u* with a first name** ("Dag {speler}… zegt u het maar"). Deliberate stiffness from his sheet; some readers will find the mix odd.
 3. **Ricardo: "Ik zag je in de appgroep."** Would the CI-lead be in the monteurs' app group? Plausible if Ruud announced the new colleague there.
 4. **"Nog plannen voor het weekend?"** (chatter `weekend`) can come on a Monday. A `days:` filter would fix it; that is code, not text.
-5. **Frank "op het hoofdkantoor"** in the hundred-days scene: if Merijn sees Frank reporting to "de directie" as Ruud's MT, change both lines back and let Ruud be absent from that sentence.
+5. **Who is "de directie"?** Frank says it often (his voice sheet), also in the hundred-days and KPI scenes, while Ruud, "Directeur Netbeheer regio Zuidmark", sits next to him. I first changed it to "het hoofdkantoor" and then put it back: it is Frank's word, and in corporate Dutch *de directie* often means the board above the region. Merijn should say which it is; if it means Ruud, Frank's lines in both scenes need rewording.
 6. **"Akte I · …"** in the act titles (pre-existing UI): theatre Dutch says *bedrijf*, but "akte" is understood and fits a game menu.
 7. **Speaking Henk's years**: "Sinds 1984" and "in 1984 gemaakt" are digits in a spoken line; the guide allows years in Henk's stories. A voice actor reads them as *negentien vierentachtig*.

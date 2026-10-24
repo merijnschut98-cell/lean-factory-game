@@ -1136,7 +1136,7 @@
    "budget": 3000,
    "category": "flow",
    "decay_days": 60,
-   "description": "Planning bundelt de meterwissels per wijk. Een monteur werkt op een dag in één of twee wijken, en de klant kiest uit de dagen dat de monteur toch in de buurt is.",
+   "description": "Planning bundelt de meterwissels per wijk. Een monteur werkt op een dag in één of twee wijken, en de klant kiest uit de dagen waarop de monteur toch in de buurt is.",
    "effects": [],
    "id": "route_by_area",
    "multipliers": {

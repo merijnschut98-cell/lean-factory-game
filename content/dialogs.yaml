@@ -2967,22 +2967,22 @@ dialogs:
     person: femke
     kind: expert
     mission: talk_netplanner
-    opening: "Waarom het net vol is? Kort gezegd: dat leg ik je graag uit. Neem een stoel, de koffie is koud."
-    retry_opening: "Jij weer. Goed. Waar waren we?"
-    closing: "Zo. Nu weet je meer dan de meeste mensen die ons bellen. Ik moet verder rekenen."
+    opening: "Waarom het net vol is? Dat leg ik je graag uit. Pak een stoel. De koffie is wel koud, sorry."
+    retry_opening: "Daar ben je weer! Waar waren we gebleven?"
+    closing: "Zo. Nu weet je meer dan de meeste mensen die ons bellen. Ik moet weer verder rekenen."
     topics:
       - id: full
         ask: "Wat bedoelen jullie eigenlijk als het net vol is?"
-        answer: "Kort gezegd: op het drukste moment van het jaar mag een kabel of een trafo niet harder werken dan waarvoor hij gemaakt is. Zit een station op een koude winteravond al tegen die grens, dan kan er niks meer bij. Niet de hele dag. Op dat ene moment."
+        answer: "Kort gezegd: op het drukste moment van het jaar mag een kabel of een trafo niet harder werken dan waarvoor hij gemaakt is. Zit een station op een koude winteravond al tegen die grens, dan kan er niks meer bij. Niet de hele dag, maar op dat ene moment."
       - id: msr
-        ask: "Wat is zo'n middenspanningsruimte precies?"
-        answer: "Dat huisje in je straat, met een trafo erin. Die zet tienduizend volt om naar wat er uit je stopcontact komt. Eén ruimte voedt een paar honderd huizen, en hij is ontworpen op wat die huizen tegelijk vragen. Dat was lange tijd niet zoveel."
+        ask: "Wat is een middenspanningsruimte eigenlijk?"
+        answer: "Dat huisje bij jou in de straat, met een trafo erin. Die zet tienduizend volt om naar wat er uit je stopcontact komt. Eén ruimte voedt een paar honderd huizen, en hij is berekend op wat die huizen tegelijk vragen. Dat was lange tijd niet zoveel."
       - id: together
         ask: "Waarom maakt een warmtepomp zoveel uit?"
-        answer: "Omdat ze allemaal tegelijk aangaan. Op een koude avond draait in de hele straat de warmtepomp, en de auto hangt aan de laadpaal. Vroeger kookte de ene buurvrouw om zes uur en de andere om zeven. Hoeveel er tegelijk gebeurt, daar rekenen wij op. Dat is eigenlijk het hele vak."
+        answer: "Omdat ze allemaal tegelijk aangaan. Op een koude avond draait in de hele straat de warmtepomp, en de auto hangt aan de laadpaal. Vroeger kookte de ene buurvrouw om zes uur en de andere om zeven. Hoeveel er tegelijk aanstaat, daar rekenen wij aan. Dat is eigenlijk het hele vak."
       - id: board
         ask: "Hoe lang staat een aanvraag bij jullie op het bord?"
-        answer: "Te lang. Achtendertig studies op het bord, en we zijn met z'n tweeën. Een studie kost me een halve dag. Reken maar uit. En elke week komen er een paar bij."
+        answer: "Te lang. Er staan achtendertig studies op het bord, en we zijn met z'n tweeën. Een studie kost me een halve dag. Reken maar uit. En elke week komen er een paar bij."
 
   # Henk, before he retires: cable joints, the old cable, digging, his practice trench at the
   # opleidingsterrein, and what Ahmed still has to learn. No explainer on cables and joints

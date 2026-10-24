@@ -175,7 +175,7 @@
       {
        "fact": "flag:day100_people",
        "label": "Dat de mensen het zelf doen.",
-       "reply": "Dat is lastiger uit te leggen op het hoofdkantoor. Maar ik snap wat je bedoelt."
+       "reply": "Dat is lastiger uit te leggen aan de directie. Maar ik snap wat je bedoelt."
       },
       {
        "fact": "flag:day100_patience",
@@ -183,7 +183,7 @@
        "reply": "Dat zeg ik liever niet hardop. Maar het is wel eerlijk."
       }
      ],
-     "line": "Over twee weken moet ik op het hoofdkantoor vertellen hoe het met Aansluitingen gaat. Wat zou jij ze vertellen?",
+     "line": "Over twee weken moet ik de directie vertellen hoe het met Aansluitingen gaat. Wat zou jij ze vertellen?",
      "speaker": "frank"
     },
     {
@@ -209,7 +209,7 @@
      "speaker": "frank"
     },
     {
-     "line": "Sanne en Joost hadden vorige week in het MT één getal bij zich: de doorlooptijd. Samen. Dat had ik nog niet eerder gezien.",
+     "line": "Sanne en Joost kwamen vorige week samen bij me, met één getal: de doorlooptijd. Dat had ik nog niet eerder gezien.",
      "needs": {
       "all": [
        "holds:silo_kpis"

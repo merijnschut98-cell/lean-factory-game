@@ -631,7 +631,7 @@ countermeasures:
     name: Plannen per wijk
     tier: 1
     category: flow
-    description: Planning bundelt de meterwissels per wijk. Een monteur werkt op een dag in één of twee wijken, en de klant kiest uit de dagen dat de monteur toch in de buurt is.
+    description: Planning bundelt de meterwissels per wijk. Een monteur werkt op een dag in één of twee wijken, en de klant kiest uit de dagen waarop de monteur toch in de buurt is.
     # ESTIMATE: the planning rules and the letter changed, two weeks of a planner.
     budget: 3000
     team_hours: {planners: 20}
