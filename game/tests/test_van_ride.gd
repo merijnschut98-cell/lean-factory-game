@@ -256,3 +256,23 @@ func test_a_monteur_walks_in_from_the_back_door_in_the_morning() -> void:
 	assert_true(ricardo.visible and ricardo.playing() in ["walk", ""], "walking to his van")
 	assert_true(_flat(ricardo.position).distance_to(_flat(_marker(office, "arrive:exit"))) < 3.0, "from the back door")
 	office.free()
+
+
+## Review S3 #2: a ride starting lets a ringing call go to voicemail (no penalty), and
+## nothing rings in the cab.
+func test_a_ride_lets_a_ringing_call_go_to_voicemail() -> void:
+	var office := _office()
+	for id in ["fix_unused_capacity", "fix_incomplete_application"]:
+		office.session.missions.done_once[id] = true
+	assert_eq(office.session.accept("fix_status_callers"), "")
+	_on_yard(office, ["fix_wrong_joint"])
+	_at(office, 10 * 60)
+	office.ui.after_action()
+	assert_true(office.ui.incoming.visible, "El Amrani rings")
+	var unread := office.ui.phone.unread_count()
+	office.interact(office.interactable("ride:fix_wrong_joint"))
+	assert_true(office.ride != null, "the ride starts")
+	assert_false(office.ui.incoming.visible, "the call goes to voicemail")
+	assert_eq(office.ui.phone.unread_count(), unread + 1, "her voicemail in Berichten")
+	assert_false(office.world_free(), "the cab is not the world")
+	office.free()

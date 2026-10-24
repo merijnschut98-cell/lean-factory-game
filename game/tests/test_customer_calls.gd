@@ -202,6 +202,52 @@ func test_a_ringing_call_taken_at_the_headset_leaves_no_voicemail() -> void:
 	office.free()
 
 
+static func _key(code: Key) -> InputEventKey:
+	var key := InputEventKey.new()
+	key.physical_keycode = code
+	key.pressed = true
+	return key
+
+
+## Review S3 #2: a view over the world that is not a panel (the KPI board) lets the
+## ringing call go to voicemail, rings nothing while it is up, and its keys stay its own.
+func test_the_kpi_board_lets_a_ringing_call_go_and_keeps_its_keys() -> void:
+	var office := _office()
+	_calling(office.session)
+	_at(office.session, 10 * 60)
+	office.session.hang_kpi_board()
+	office.floors.go_to("second", "lift", true)
+	office.ui.after_action()
+	var ring := office.ui.incoming
+	var call := ring.call.duplicate()
+	assert_true(ring.visible, "the phone rings")
+	var unread := office.ui.phone.unread_count()
+	assert_true(office.open_kpi_board() != null, "the board opens")
+	assert_false(ring.visible, "the call goes to voicemail")
+	assert_eq(office.ui.phone.unread_count(), unread + 1, "her voicemail in Berichten")
+	assert_false(office.world_free())
+	ring.ring(call)   # a ring that slipped through
+	ring._shortcut_input(_key(IncomingCall.ANSWER_KEY))
+	assert_false(office.ui.talk_view.visible, "1 is the board's key: no talk opens")
+	assert_true(office.kpi_board != null and not office.player.active, "the world stays locked")
+	office.free()
+
+
+func test_no_call_rings_over_a_view_on_the_world() -> void:
+	var office := _office()
+	_calling(office.session)
+	_at(office.session, 10 * 60)
+	office.session.hang_kpi_board()
+	office.floors.go_to("second", "lift", true)
+	assert_true(office.open_kpi_board() != null)
+	office.ui.after_action()
+	assert_false(office.ui.incoming.visible, "not while the board is up")
+	office.kpi_board.close()
+	assert_true(office.world_free())
+	assert_true(office.ui.incoming.visible, "it rings once the world is free again (today's ring was not used)")
+	office.free()
+
+
 func test_the_kcc_has_a_free_desk_with_a_headset() -> void:
 	for c: Dictionary in CharacterModel.cast():
 		assert_false(str(c.get("office", {}).get("seat", "")) == OfficeHeadset.DESK, "nobody sits there: " + str(c["id"]))

@@ -189,6 +189,7 @@ func build() -> void:
 	add_child(ui)
 	ui.setup(session, loaded.get("layer", _opening_layer()))
 	ui.panel_opened.connect(_on_panel_opened)
+	ui.world_free = world_free
 	ui.talk_opened.connect(frame_talk)
 	if ui.playable():
 		ui.talk_view.phase_changed.connect(func(_phase: String) -> void: stage_talk())
@@ -641,6 +642,13 @@ func interact(target: Interactable) -> void:
 ## Whether the world waits: a panel, the explainer or the creator is open, or a van ride is on.
 func busy() -> bool:
 	return ui.is_busy() or explainer != null or look_editor != null or ride != null or kpi_board != null
+
+
+## Whether the world is the player's (review S3 #2): no panel, talk or phone, no view over
+## it (the KPI board, the explainer, the creator), no ride, no scene holding them or playing.
+## Only then does a call ring, and only then are its keys 1 and 2 its own.
+func world_free() -> bool:
+	return not busy() and not _scene_holds and (milestone == null or milestone.playing.is_empty())
 
 
 ## "Uiterlijk" (PLAN 2.7b): the creator over the world on the current look and
@@ -1130,6 +1138,7 @@ func _collision_faces() -> PackedVector3Array:
 
 
 func _on_panel_opened() -> void:
+	ui.let_ringing_go()   # taken up with something else: the call goes to voicemail
 	player.active = false
 	player.stop()
 	rig.active = false

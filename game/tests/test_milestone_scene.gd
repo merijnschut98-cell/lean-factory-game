@@ -185,3 +185,32 @@ func test_leaving_the_board_unhung_waits_for_you_to_come_back() -> void:
 	_walk_in(office)
 	assert_eq(m.playing, "first_kpi_review", "back in, it starts again")
 	office.free()
+
+
+## Review S3 #2: a scene starting lets a ringing call go to voicemail (no penalty).
+func test_a_scene_lets_a_ringing_call_go_to_voicemail() -> void:
+	var office: Office = load(SCENE).instantiate()
+	office.seed_value = 11
+	office.training = false
+	office.build()
+	var s := office.session
+	s.missions.play_start -= SimCalendar.days(100)
+	for id in ["fix_unused_capacity", "fix_incomplete_application"]:
+		s.missions.done_once[id] = true
+	assert_eq(s.accept("fix_status_callers"), "")
+	s.region.net.time += 10 * 60 - s.minute_of_day()
+	s.pass_time(0)
+	assert_true(office.floors.go_to("second", "lift", true))
+	office.ui.after_action()
+	assert_true(office.ui.incoming.visible, "El Amrani rings")
+	var unread := office.ui.phone.unread_count()
+	var m := office.milestone
+	m.step(1.0)
+	var rect := OfficeFloors.room_rect(office.floors.markers()["room:mt_room"])
+	office.player.position = Vector3(rect.get_center().x, 0.0, rect.get_center().y)
+	m.step(1.0)
+	assert_eq(m.playing, "review_100_days")
+	assert_false(office.world_free(), "a scene plays")
+	assert_false(office.ui.incoming.visible, "the call goes to voicemail")
+	assert_eq(office.ui.phone.unread_count(), unread + 1, "her voicemail in Berichten")
+	office.free()

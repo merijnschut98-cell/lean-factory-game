@@ -101,6 +101,7 @@ func start(mission_id: String) -> void:
 	if _scene.is_empty():
 		return
 	playing = mission_id
+	office.ui.let_ringing_go()   # the scene takes you up: a ringing call goes to voicemail
 	_answer = -1
 	_asked = false
 	_boarded = false

@@ -17,6 +17,9 @@ const LET_GO_KEY := KEY_2
 
 ## The call ringing ({person, dialog, name}); {} when none.
 var call: Dictionary = {}
+## Whether its keys 1 and 2 are its own now (GameUI: the world is free; review S3 #2);
+## unset: always. Over the KPI board or a scene they are that view's.
+var keys_free := Callable()
 var _name: Label
 
 
@@ -84,6 +87,8 @@ func _end(outcome: Signal) -> void:
 func _shortcut_input(event: InputEvent) -> void:
 	var key := event as InputEventKey
 	if not visible or key == null or not key.pressed or key.echo:
+		return
+	if keys_free.is_valid() and not keys_free.call():
 		return
 	match key.physical_keycode:
 		ANSWER_KEY:

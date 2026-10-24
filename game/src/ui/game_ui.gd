@@ -36,6 +36,9 @@ var codex: CodexPanel
 var talk_view: TalkView
 ## A customer ringing the phone (PLAN 2.4, CustomerCalls); not a panel: the world goes on.
 var incoming: IncomingCall
+## Whether the world is free for a ringing call (Office.world_free, set by the world);
+## unset (tests, tools): no panel open.
+var world_free := Callable()
 ## The session layer (PLAN 1.4): the terugblik, Intussen, the stop note, the
 ## discovery toasts and the side offers; the playtest log; autosave.
 var session_layer: SessionLayer
@@ -116,6 +119,7 @@ func setup(of_session: GameSession, of_layer: SessionLayer = null) -> void:
 	incoming = IncomingCall.new()
 	incoming.answered.connect(func(call: Dictionary) -> void: open_talk(call["person"]))
 	incoming.declined.connect(_let_call_go)
+	incoming.keys_free = _world_free
 	root.add_child(incoming)
 	root.move_child(hud, -1)
 	phone.buzz.connect(hud.buzz)
@@ -384,7 +388,7 @@ func after_action() -> void:
 ## A customer whose talk is due rings, once a day in office hours, while the
 ## player is free (CustomerCalls); the phone buzzes with it.
 func _ring() -> void:
-	if incoming == null or incoming.visible or is_busy() or Opening.running(session_layer):
+	if incoming == null or incoming.visible or not _world_free() or Opening.running(session_layer):
 		return
 	var call := CustomerCalls.ringing(session, session_layer)
 	if call.is_empty():
@@ -392,6 +396,17 @@ func _ring() -> void:
 	CustomerCalls.rang(session, session_layer, call)
 	incoming.ring(call)
 	phone.buzz.emit()
+
+
+func _world_free() -> bool:
+	return world_free.call() if world_free.is_valid() else not is_busy()
+
+
+## Something takes the player up (a panel, a view over the world, a scene, a ride): a
+## ringing call goes to voicemail, at no cost.
+func let_ringing_go() -> void:
+	if incoming != null and incoming.visible:
+		incoming.decline()
 
 
 ## A call let go: their voicemail in Berichten, nothing else.
@@ -560,8 +575,7 @@ func show_error(text: String) -> void:
 
 
 func _open(panel: UiPanel) -> void:
-	if incoming != null and incoming.visible:
-		incoming.decline()   # taken up with something else: the call goes to voicemail
+	let_ringing_go()
 	for p in _panels:
 		if p != panel:
 			p.hide()
