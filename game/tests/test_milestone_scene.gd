@@ -185,3 +185,34 @@ func test_leaving_the_board_unhung_waits_for_you_to_come_back() -> void:
 	_walk_in(office)
 	assert_eq(m.playing, "first_kpi_review", "back in, it starts again")
 	office.free()
+
+
+## A beat's `stand_at` (scenes.yaml): Ruud and Frank walk up to the KPI board for the
+## board's line, not left between the door and the room's middle.
+func test_ruud_and_frank_stand_at_the_kpi_board_for_its_line() -> void:
+	var office := _quarter_office()
+	var m := office.milestone
+	var spot := office.in_office(office.floors.markers()["scene:directors_obeya:board"]).origin * Vector3(1, 0, 1)
+	var far := func() -> float:
+		return maxf(m._people["ruud"].position.distance_to(spot), m._people["frank"].position.distance_to(spot))
+	assert_true(far.call() > 2.0, "not at the board while they wait")
+	_walk_in(office)
+	while m.lines.speaking() and not m.lines.current().has("stand_at"):
+		m.lines.next()
+	assert_true(m.lines.current().has("stand_at"), "the board's line stages them")
+	m.step(0.0)
+	assert_true(far.call() < 1.5, "both at the board while Ruud hands it over: %.2f m" % far.call())
+	assert_true(m._people["ruud"].position.distance_to(m._people["frank"].position) > 0.8, "side by side, not in one spot")
+	office.free()
+
+
+## Skipping the lines still leaves them at the board when it opens.
+func test_skipping_to_the_board_still_stages_them() -> void:
+	var office := _quarter_office()
+	var m := office.milestone
+	var spot := office.in_office(office.floors.markers()["scene:directors_obeya:board"]).origin * Vector3(1, 0, 1)
+	_walk_in(office)
+	m.lines.finish()
+	assert_ne(office.kpi_board, null)
+	assert_true(m._people["frank"].position.distance_to(spot) < 1.5, "Frank at the board")
+	office.free()

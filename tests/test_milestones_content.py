@@ -162,6 +162,15 @@ def test_a_scene_can_end_at_the_kpi_board(rules_dirs):
     assert docs["scenes"]["scenes"][0]["beats"][2]["board"] is True
 
 
+def test_a_beat_can_stage_the_people_at_a_spot(rules_dirs):
+    """`stand_at: scene:<room>:<spot>`: from this line on the people present stand at
+    that spot of the scene's own room (Ruud and Frank at the KPI board)."""
+    content, _ = rules_dirs
+    docs = _load(content, _add(_review(), scenes=BOARD_SCENE.replace(
+        "board: true", "board: true\n        stand_at: \"scene:mt_room:screen\"")))
+    assert docs["scenes"]["scenes"][0]["beats"][2]["stand_at"] == "scene:mt_room:screen"
+
+
 @pytest.mark.parametrize("scenes, message", [
     (BOARD_SCENE.replace("board: true", "board: yes please"), "'board' must be true"),
     (BOARD_SCENE.replace("        board: true\n", """        board: true
@@ -170,6 +179,9 @@ def test_a_scene_can_end_at_the_kpi_board(rules_dirs):
           - {label: "De getallen", fact: "flag:review_numbers"}
 """), "one question for the player at most"),
     (BOARD_SCENE.replace("steers:flow", "steers:speed"), "the board steers on"),
+    (BOARD_SCENE.replace("board: true", "board: true\n        stand_at: board"), "'stand_at' is scene:mt_room:<spot>"),
+    (BOARD_SCENE.replace("board: true", "board: true\n        stand_at: \"scene:directors_obeya:board\""),
+     "'stand_at' is scene:mt_room:<spot>"),
 ])
 def test_board_scene_errors_are_caught(rules_dirs, scenes, message):
     content, _ = rules_dirs
@@ -186,6 +198,8 @@ def test_the_real_first_kpi_review():
     scene = next(s for s in docs["scenes"]["scenes"] if s["id"] == m["scene"])
     assert scene["room"] == "directors_obeya" and set(scene["present"]) == {"ruud", "frank"}
     assert sum(1 for b in scene["beats"] if b.get("board")) == 1
+    board_beat = next(b for b in scene["beats"] if b.get("board"))
+    assert board_beat.get("stand_at") == "scene:directors_obeya:board", "they stand at the board for it"
     assert not any("choice" in b for b in scene["beats"])
     rooms = {r["id"]: r for r in docs["world"]["rooms"]}
     assert "first_kpi_review" in rooms["directors_obeya"]["opens_with"]

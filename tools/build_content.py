@@ -3169,7 +3169,7 @@ def check_company(docs: dict[str, Any]) -> None:
 # (the facts choose the lines), and at most one beat asking the player a question
 # (`choice`): each answer a flag remembered for later, and what is said back.
 SCENE_KEYS = {"id", "room", "present", "stands", "beats"}
-BEAT_KEYS = {"speaker", "line", "needs", "choice", "board"}
+BEAT_KEYS = {"speaker", "line", "needs", "choice", "board", "stand_at"}
 CHOICE_KEYS = {"label", "fact", "reply"}
 CHOICE_OPTIONS = (2, 4)
 
@@ -3196,6 +3196,10 @@ def validate_scenes(doc: Any, source: str) -> None:
                 raise ContentError(f"{at}: 'board' must be true (the KPI board opens after this line)")
             if b["speaker"] not in present:
                 raise ContentError(f"{at}: {b['speaker']!r} speaks but is not 'present'")
+            # From this line on the people present stand at a spot of the scene's own room
+            # (a `scene:<room>:<spot>` marker in the floor's model, PLAN 2.16).
+            if "stand_at" in b and not re.fullmatch(rf"scene:{re.escape(s['room'])}:[a-z0-9_]+", str(b["stand_at"])):
+                raise ContentError(f"{at}: 'stand_at' is scene:{s['room']}:<spot> (got {b['stand_at']!r})")
             if "needs" in b:
                 _validate_needs(b["needs"], at)
             if "choice" in b:
