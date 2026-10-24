@@ -6,8 +6,8 @@ extends RefCounted
 ## (at most OFFERED, in the content's order), the expert answers in their own
 ## voice. A topic can unlock a clue (the first time only: one already found is
 ## not new), a fact, or a "Hoe werkt het?" explainer, and can wait for a fact
-## (`needs`) or for trust (`trust`). A topic with a clue waits for its problem to
-## be a mission's (problems only arrive through missions, CLAUDE.md). Being asked about your craft is a little
+## (`needs`) or for trust (`trust`); a topic with a clue waits for its problem
+## to be a mission's (is_open). Being asked about your craft is a little
 ## recognition: each answered topic adds TRUST_PER_TOPIC. Deterministic, no
 ## nodes: People builds it and keeps what it asked afterwards.
 

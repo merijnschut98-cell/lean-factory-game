@@ -191,8 +191,8 @@ func _rank(d: DialogDef, world: Dictionary, known: Dictionary) -> int:
 	if d.kind == ExpertTalk.KIND:
 		var active: Array = world.get("active", [])
 		var on := d.mission.is_empty() or d.on_any(active)
-		var open := _has_open_topic(d, known, JsonFile.dict_or_empty(world.get("problems")))
-		return 0 if on and DialogDef.needs_met(d.needs, known) and open else -1
+		var problems := JsonFile.dict_or_empty(world.get("problems"))
+		return 0 if on and DialogDef.needs_met(d.needs, known) and _has_open_topic(d, known, problems) else -1
 	if d.kind == "checkin":
 		var below := int(d.trigger.get("morale_below", 101))
 		var now := int(world.get("now", 0))

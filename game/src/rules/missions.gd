@@ -180,7 +180,8 @@ func available() -> Array[MissionDef]:
 func worked_problems() -> Dictionary:
 	var out := {}
 	for m: MissionDef in defs.values():
-		if not m.goal_problem.is_empty() and (done_once.has(m.id) or status(m.id) == "active"):
+		var raised: bool = done_once.has(m.id) or progress.get(m.id, {}).get("status") == "active"
+		if raised and not m.goal_problem.is_empty():
 			out[m.goal_problem] = true
 	return out
 

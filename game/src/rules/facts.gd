@@ -33,9 +33,9 @@ extends RefCounted
 ## checks, or the action promised; GameSession); steers:<output | flow | customer>
 ## (what the KPI board's choice in force asks of the teams most, KpiMenu.steers;
 ## derived live by Missions.knows).
-const KINDS: Array[String] = ["done", "failed", "chose", "standardised", "poor_fix", "wrong_cause", "repaired", "fork_first", "flag",
-	"heard", "committed", "complied", "partial", "blocked", "checked", "accepted", "forecast_positive", "agreed",
-	"delivered", "left", "promise_kept", "promise_broken", "holds", "promised", "steers"]
+const KINDS: Array[String] = ["done", "failed", "chose", "standardised", "poor_fix", "wrong_cause", "repaired",
+	"fork_first", "flag", "heard", "committed", "complied", "partial", "blocked", "checked", "accepted",
+	"forecast_positive", "agreed", "delivered", "left", "promise_kept", "promise_broken", "holds", "promised", "steers"]
 const PROMISED := "promised:"
 const FORECAST_POSITIVE := "forecast_positive:"
 ## Live measures an atom can compare with ">=": the region's maturity and reputation,
