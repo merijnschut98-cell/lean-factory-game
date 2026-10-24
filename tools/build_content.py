@@ -253,6 +253,7 @@ def validate_value_streams(doc: Any, source: str) -> None:
         if not isinstance(stream.get("preempts", False), bool):
             raise ContentError(f"{where}: 'preempts' must be true or false")
         _number(stream, "wip_limit", where, 0, integer=True, default=0)
+        _throughput_direction(stream, where)
         calls = stream.get("status_calls")
         if calls is not None:
             # Failure demand: late orders make customers call another stream.
@@ -267,6 +268,23 @@ def validate_value_streams(doc: Any, source: str) -> None:
         for step in steps:
             _validate_step(step, f"{where} step '{step['id']}'", pool_ids, stock_ids, step_ids)
         _check_rework_loops(steps, step_ids, where)
+
+
+# Which way a stream's finished-per-week is better (Pdca.direction): fewer outages a week
+# is prevented demand, not lost output.
+THROUGHPUT_DIRECTIONS = ["higher_is_better", "lower_is_better"]
+
+
+def _throughput_direction(stream: dict, where: str) -> None:
+    """`throughput_direction` (default higher_is_better), and the Dutch `throughput_phrase`
+    the screens name such a throughput by ("storingen per week"), required when lower."""
+    _one_of({"throughput_direction": stream.get("throughput_direction", THROUGHPUT_DIRECTIONS[0])},
+            "throughput_direction", THROUGHPUT_DIRECTIONS, where)
+    phrase = stream.get("throughput_phrase")
+    needed = stream.get("throughput_direction") == "lower_is_better"
+    if (needed or phrase is not None) and not (isinstance(phrase, str) and phrase.strip()):
+        raise ContentError(f"{where}: 'throughput_phrase' must be a Dutch text (e.g. 'storingen per week')"
+                           + (" when throughput is lower_is_better" if needed else ""))
 
 
 def _check_rework_loops(steps: list[dict], step_ids: list[str], where: str) -> None:

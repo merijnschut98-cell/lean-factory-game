@@ -30,8 +30,6 @@ const WASTES := ["transport", "inventory", "motion", "waiting", "overproduction"
 
 ## What a prediction can name.
 const KPIS := ["throughput", "lead_time", "first_time_right", "on_time", "wip_age", "capacity"]
-## KPIs where a smaller number is better (days); the rest are better higher.
-const LOWER_IS_BETTER := ["lead_time", "wip_age"]
 
 
 ## Whether `clue` can be found now: not yet found, not one only its dialog

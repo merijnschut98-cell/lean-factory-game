@@ -48,6 +48,9 @@ const KPIS := {
 	"capacity": "Capaciteit van de stroom",
 }
 
+## After a throughput where fewer a week is better (outages).
+const FEWER_IS_BETTER := " (minder is beter)"
+
 const BELTS := {
 	"white": "Witte band", "yellow": "Gele band", "green": "Groene band",
 	"black": "Zwarte band", "master_black": "Master Black Belt",
@@ -228,7 +231,12 @@ static func waste(id: String) -> String:
 	return WASTES.get(id, id)
 
 
-static func kpi(id: String) -> String:
+## A KPI's name; on a stream that names its throughput (`stream`: the problem's), that
+## phrase, and whether fewer is better: "Storingen per week (minder is beter)".
+static func kpi(id: String, stream: ValueStream = null) -> String:
+	if id in Pdca.THROUGHPUT and stream != null and not stream.throughput_phrase.is_empty():
+		var phrase := stream.throughput_phrase.left(1).to_upper() + stream.throughput_phrase.substr(1)
+		return phrase + (FEWER_IS_BETTER if stream.throughput_direction < 0 else "")
 	return KPIS.get(id, id)
 
 

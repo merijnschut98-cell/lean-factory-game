@@ -114,20 +114,26 @@ static func kind(row: String) -> String:
 	return KIND[row]
 
 
-## Whether `after` is an improvement on `before` for this number.
-static func improved(row: String, before: float, after: float) -> bool:
-	return after < before if row in Pdca.LOWER_IS_BETTER else after > before
+## Whether `after` is an improvement on `before` for this number, on a stream
+## whose throughput direction is `throughput` (Pdca.direction).
+static func improved(row: String, before: float, after: float, throughput := 1) -> bool:
+	return Pdca.direction(row, throughput) * (after - before) > 0.0
 
 
 ## Green for better, orange for worse, ink for no change: a change within the Check's noise
 ## (Pdca.CHECK_NOISE, relative) is no change (gate backlog 3). When the Check found the step
 ## was `not_constraint`, the flow rows (FLOW_ROWS) read ink whatever they did, so the flow
 ## never reads green next to "dit was niet het knelpunt" (review 2453246..3c0a190 #4).
-static func change_color(row: String, before: float, after: float, not_constraint := false) -> Color:
+static func change_color(row: String, before: float, after: float, throughput := 1, not_constraint := false) -> Color:
 	if not_constraint and row in FLOW_ROWS or is_equal_approx(before, after) \
 			or before != 0.0 and absf(after - before) / absf(before) < Pdca.CHECK_NOISE:
 		return Palette.INK
-	return Palette.GREEN_DARK if improved(row, before, after) else Palette.SAFETY_ORANGE
+	return Palette.GREEN_DARK if improved(row, before, after, throughput) else Palette.SAFETY_ORANGE
+
+
+## The problem's stream: which way its throughput is better, and its name for it.
+func _stream() -> ValueStream:
+	return session.region.net.stream_of(session.region.problems[problem_id].step)
 
 
 func refresh() -> void:
@@ -185,7 +191,7 @@ func _table(parent: Node) -> void:
 				grid.add_child(label(heading, UiTheme.SMALL, Palette.MUTED))
 		var before: float = result["before"][row]
 		var after: float = result["after"][row]
-		var name := UiText.kpi(row) + ("   (jouw voorspelling)" if row == prediction else "")
+		var name := UiText.kpi(row, _stream()) + ("   (jouw voorspelling)" if row == prediction else "")
 		grid.add_child(label(name, UiTheme.SMALL, Palette.VOLTANA_BLUE if row == prediction else Palette.INK))
 		_add_before_after(grid, row, before, after)
 	box.add_child(paragraph(LAGGING_NOTE, Palette.MUTED, UiTheme.SMALL))
@@ -206,25 +212,26 @@ func _check_forecast(f: Dictionary) -> void:
 	grid.columns = rows.size() + 1
 	grid.add_child(label(""))
 	for row: String in rows:
-		var name := label(UiText.kpi(row), 15, Palette.VOLTANA_BLUE if row == predicted else Palette.MUTED, true)
+		var name := label(UiText.kpi(row, _stream()), 15, Palette.VOLTANA_BLUE if row == predicted else Palette.MUTED, true)
 		name.custom_minimum_size.x = 150
 		name.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 		grid.add_child(name)
+	var throughput := _stream().throughput_direction
 	for run: String in ["without", "with"]:
 		grid.add_child(label(WITHOUT if run == "without" else WITH, UiTheme.SMALL))
 		for row: String in rows:
 			var without: float = f["without"][row]
 			var value: float = f[run][row]
 			grid.add_child(label(UiText.kpi_value(row, value), UiTheme.SMALL,
-				change_color(row, without, value, result["not_constraint"])))
+				change_color(row, without, value, throughput, result["not_constraint"])))
 	card.add_child(paragraph(FORECAST_NOTE % f.get("window", f["days"]), Palette.MUTED, 15))
 
 
 ## A row's before, after (green better, orange worse) and its tag.
 func _add_before_after(grid: GridContainer, row: String, before: float, after: float) -> void:
 	grid.add_child(label(UiText.kpi_value(row, before)))
-	grid.add_child(label(UiText.kpi_value(row, after), UiTheme.FONT_SIZE,
-		change_color(row, before, after, result["not_constraint"])))
+	var colour := change_color(row, before, after, _stream().throughput_direction, result["not_constraint"])
+	grid.add_child(label(UiText.kpi_value(row, after), UiTheme.FONT_SIZE, colour))
 	grid.add_child(label(KIND_TAGS[kind(row)], UiTheme.SMALL, Palette.MUTED))
 
 
@@ -290,7 +297,7 @@ func _forecast_view() -> void:
 	for heading in ["", "Met borgen", "Zonder borgen", ""]:
 		grid.add_child(label(heading, UiTheme.SMALL, Palette.MUTED))
 	var kpi: String = forecast["kpi"]
-	grid.add_child(label(UiText.kpi(kpi) + "   (jouw voorspelling)", UiTheme.SMALL, Palette.VOLTANA_BLUE))
+	grid.add_child(label(UiText.kpi(kpi, _stream()) + "   (jouw voorspelling)", UiTheme.SMALL, Palette.VOLTANA_BLUE))
 	_add_before_after(grid, kpi, forecast["held"][kpi], forecast["faded"][kpi])
 	var held_queue: Dictionary = forecast["held"]["queue"]
 	var faded_queue: Dictionary = forecast["faded"]["queue"]

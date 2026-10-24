@@ -18,8 +18,11 @@ const NONE_EFF := 0.05
 ## the age of open work, so a lucky guess there can pass (the score's
 ## prediction_wrong note still counts it).
 const CHECK_NOISE := 0.02
-## KPIs where lower is better (the rest: higher).
-const LOWER_IS_BETTER: Array[String] = ["lead_time", "wip_age"]
+## KPIs where lower is better (the rest: higher), by the Check's names
+## (Investigation.KPIS) and the streams' own (ValueStream.kpis).
+const LOWER_IS_BETTER: Array[String] = ["lead_time", "wip_age", "lead_days_p50"]
+## The throughput's names: which way it is better is its stream's.
+const THROUGHPUT: Array[String] = ["throughput", "throughput_per_week"]
 const MAX_SCORE := 25
 const BUDGET_BASE := {"low": 5000, "medium": 8000, "high": 12000, "critical": 18000}
 
@@ -50,14 +53,24 @@ static func treated_effects(problem: ProblemDef, cm: CountermeasureDef, eff: flo
 	return out
 
 
+## 1 when a higher `kpi` is better, −1 when a lower one is: days lower, shares and
+## capacity higher, and the throughput as its stream says (`throughput`:
+## ValueStream.throughput_direction; −1 for outages, fewer a week is better). The one
+## place that says which way a number is better.
+static func direction(kpi: String, throughput := 1) -> int:
+	if kpi in THROUGHPUT:
+		return throughput
+	return -1 if kpi in LOWER_IS_BETTER else 1
+
+
 ## The relative gain of `kpi` from `without` to `with_fix` (Region.measures
-## or snapshots): positive when better; 0 when there was nothing to compare.
-static func kpi_gain(kpi: String, without: Dictionary, with_fix: Dictionary) -> float:
+## or snapshots) on a stream whose throughput direction is `throughput`:
+## positive when better; 0 when there was nothing to compare.
+static func kpi_gain(kpi: String, without: Dictionary, with_fix: Dictionary, throughput := 1) -> float:
 	var base: float = without[kpi]
 	if base == 0.0:
 		return 0.0
-	var change: float = (with_fix[kpi] - base) / base
-	return -change if kpi in LOWER_IS_BETTER else change
+	return direction(kpi, throughput) * (with_fix[kpi] - base) / base
 
 
 ## The score of one solved problem. Inputs:

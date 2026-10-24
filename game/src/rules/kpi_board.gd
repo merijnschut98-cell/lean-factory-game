@@ -28,9 +28,9 @@ const REVIEW_BUDGET := 300000
 ## between seeds, and Obeya's lead time + oldest averages +0.06 % (noise).
 ## Only the gain beyond this band pays.
 const DEAD_BAND := 0.003
-## The end-to-end KPIs a review compares per stream: +1 when higher is
-## better, −1 when lower is.
-const MEASURES := {"lead_days_p50": -1, "on_time": 1, "first_time_right": 1, "throughput_per_week": 1, "wip_age": -1}
+## The end-to-end KPIs a review compares per stream (which way is better:
+## Pdca.direction, the throughput as its stream says).
+const MEASURES: Array[String] = ["lead_days_p50", "on_time", "first_time_right", "throughput_per_week", "wip_age"]
 ## ESTIMATE: one KPI's relative change counts for at most ±50 %. Small
 ## denominators make relative changes explode (on time from 5 % to 50 % is
 ## +900 %), and the reward must follow only a real gain.
@@ -87,7 +87,7 @@ func review(net: Network, choices: Dictionary) -> Dictionary:
 	for pool: String in menu.menus:
 		chosen[pool] = _ids(choices[pool])
 	next_review_at = net.time + SimCalendar.days(REVIEW_DAYS)
-	var gain := improvement(runs["habit"], runs["chosen"], menu.streams())
+	var gain := improvement(runs["habit"], runs["chosen"], menu.streams(), net)
 	var pay := maxf(0.0, gain - DEAD_BAND)
 	return {
 		"error": "", "improvement": gain, "paid": pay, "xp": roundi(pay * REVIEW_XP),
@@ -173,8 +173,11 @@ static func _measured_now(net: Network) -> Dictionary:
 ## The mean relative change from `before` to `after` of the MEASURES (better
 ## is positive, each within ±MAX_CHANGE), averaged over `streams` that
 ## finished at least MIN_COMPLETED orders in both; negative when worse. A
-## KPI that was 0 counts as no change, as does a quiet or thin stream.
-static func improvement(before: Dictionary, after: Dictionary, streams: PackedStringArray) -> float:
+## KPI that was 0 counts as no change, as does a quiet or thin stream. `net`
+## says which streams count fewer finished a week as better (outages); without
+## it every throughput is better higher.
+static func improvement(before: Dictionary, after: Dictionary, streams: PackedStringArray,
+		net: Network = null) -> float:
 	var total := 0.0
 	var counted := 0
 	for id in streams:
@@ -183,12 +186,19 @@ static func improvement(before: Dictionary, after: Dictionary, streams: PackedSt
 		if b.get("completed", 0) < MIN_COMPLETED or a.get("completed", 0) < MIN_COMPLETED:
 			continue
 		var change := 0.0
+		var throughput := throughput_direction(net, id)
 		for m: String in MEASURES:
 			if b[m] != 0.0:
-				change += clampf(MEASURES[m] * (a[m] - b[m]) / b[m], -MAX_CHANGE, MAX_CHANGE)
+				change += clampf(Pdca.direction(m, throughput) * (a[m] - b[m]) / b[m], -MAX_CHANGE, MAX_CHANGE)
 		total += change / MEASURES.size()
 		counted += 1
 	return total / counted if counted > 0 else 0.0
+
+
+## `stream_id`'s ValueStream.throughput_direction on `net`; 1 without either.
+static func throughput_direction(net: Network, stream_id: String) -> int:
+	var stream := net.stream(stream_id) if net != null else null
+	return stream.throughput_direction if stream != null else 1
 
 
 func to_dict() -> Dictionary:

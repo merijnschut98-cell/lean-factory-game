@@ -24,6 +24,12 @@
 #             start and goes back to an earlier step: what waiting costs
 #   stream `wip_limit`  at most this many started orders (CONWIP); new ones
 #             wait, not yet started
+#
+# Stream `throughput_direction` (default higher_is_better): lower_is_better
+# where an order is a fault or a complaint (outages, voltage complaints,
+# customers calling): fewer a week is prevented demand, so the Check, the KPI
+# review, the repairs and the terugblik count a drop as a gain. Such a stream
+# names its throughput with `throughput_phrase` ("storingen per week").
 #   wait step `batch_days`  requests go out in batches (e.g. weekly)
 #   wait step `starts_with: <earlier step>`  the wait runs in parallel from there
 #
@@ -247,6 +253,8 @@ streams:
 
   - id: outages
     name: Storingen
+    throughput_direction: lower_is_better   # fewer a week is better
+    throughput_phrase: storingen per week
     arrivals:
       - {id: daytime, per_week: 10, days: mon-fri, from: "07:00", to: "17:00"}  # incl. graafschade during working hours
       - {id: around_the_clock, per_week: 8, days: mon-sun, from: "00:00", to: "24:00"}
@@ -370,6 +378,8 @@ streams:
 
   - id: voltage_complaints
     name: Spanningsklachten
+    throughput_direction: lower_is_better   # fewer a week is better
+    throughput_phrase: spanningsklachten per week
     # Customers report voltage problems (flickering lights, inverters that trip).
     # The voltage must stay within 230 V ±10% (Netcode, EN 50160); a complaint
     # is answered with a week of measurement at the address.
@@ -406,6 +416,8 @@ streams:
 
   - id: customer_contact
     name: Klantvragen
+    throughput_direction: lower_is_better   # fewer a week is better
+    throughput_phrase: klantvragen per week
     # Value demand: questions about connections, meters, bills and outages.
     # Status calls from late orders (failure demand) come on top.
     arrivals: [{per_week: 380, days: mon-fri, from: "08:00", to: "17:00"}]

@@ -1300,7 +1300,7 @@ class Persona extends RefCounted:
 			"at_constraint": r["before"]["at_constraint"], "constraint_before": r["before"]["constraint_pool"],
 			"constraint_after": r["after"]["constraint_pool"], "prediction": a3["prediction"], "kpi": p.kpi,
 			"cause_correct": r["cause_correct"], "waste_right": r["waste_right"],
-			"wait_step": _at_wait(p.id),
+			"wait_step": _at_wait(p.id), "throughput_direction": s.region.net.stream_of(p.step).throughput_direction,
 			"before": _rows(r["before"]), "after": _rows(r["after"]),
 			# The Check's own counterfactual (Region.check): the fix's effect.
 			"with": _rows(r["forecast"]["with"]), "without": _rows(r["forecast"]["without"]),
@@ -1345,12 +1345,13 @@ class Persona extends RefCounted:
 			out[row] = snappedf(float(snapshot.get(row, 0.0)), 0.001)
 		return out
 
-	## Signed relative change of a KPI, positive when better.
-	static func better_by(row: String, before: Dictionary, after: Dictionary) -> float:
+	## Signed relative change of a KPI, positive when better (Pdca.direction:
+	## `throughput` is the stream's throughput_direction, −1 for outages).
+	static func better_by(row: String, before: Dictionary, after: Dictionary, throughput := 1) -> float:
 		var b: float = before.get(row, 0.0)
 		var a: float = after.get(row, 0.0)
 		var change := (a - b) / absf(b) if absf(b) > 0.0001 else (a - b)
-		return -change if row in Pdca.LOWER_IS_BETTER else change
+		return Pdca.direction(row, throughput) * change
 
 	## What would read as contradictory: the verdict against the Check's own
 	## counterfactual (the fix's effect, `gains`), and the panel's before/after
@@ -1371,7 +1372,7 @@ class Persona extends RefCounted:
 				flags.append("passed_with_wrong_cause")
 			if e["at_constraint"] and e["gains"]["capacity"] < 0.005:
 				flags.append("constraint_fixed_no_capacity_gain")
-			if better_by(e["kpi"], e["before"], e["after"]) < -NOISE and own > Pdca.CHECK_NOISE:
+			if better_by(e["kpi"], e["before"], e["after"], e["throughput_direction"]) < -NOISE and own > Pdca.CHECK_NOISE:
 				flags.append("trend_hides_gain")
 		else:
 			if pred > Pdca.CHECK_NOISE:
@@ -1488,7 +1489,8 @@ class PlayReport extends RefCounted:
 					var f: Array = FLAGS[flag]
 					var detail := "cm %s, predicted %s %+.1f %% (fix), problem KPI %s %+.1f %% (fix), %+.1f %% (before/after), capacity %+.1f %% (fix), eff %.2f, lesson %s" % [
 						c["cm"], c["prediction"], 100.0 * c["gains"][c["prediction"]], c["kpi"], 100.0 * c["gains"][c["kpi"]],
-						100.0 * Persona.better_by(c["kpi"], c["before"], c["after"]), 100.0 * c["gains"]["capacity"], c["eff"], c["lesson"]]
+						100.0 * Persona.better_by(c["kpi"], c["before"], c["after"], int(c["throughput_direction"])),
+						100.0 * c["gains"]["capacity"], c["eff"], c["lesson"]]
 					_add(out, "flag:" + flag, f[0], "contradiction", f[1], detail, who, c["mission"], c["day"], f[2], c["problem"])
 				if expert and not c["passed"]:
 					_add(out, "expert_fail", "high", "balance", "The expert's best countermeasure fails the Check",
@@ -2234,7 +2236,8 @@ class PlayReport extends RefCounted:
 				rows.append("| %s | %s | %d | %s | %.2f | %s | %s | %s | %+.1f %% | %s | %+.1f %% | %+.1f %% | %+.1f %% | %s |" % [r["persona"],
 					c["problem"], c["attempt"], c["cm"], c["eff"], "yes" if c["passed"] else "no", c["lesson"], c["prediction"],
 					100.0 * c["gains"][c["prediction"]], c["kpi"], 100.0 * c["gains"][c["kpi"]],
-					100.0 * Persona.better_by(c["kpi"], c["before"], c["after"]), 100.0 * c["gains"]["capacity"], ", ".join(c["flags"])])
+					100.0 * Persona.better_by(c["kpi"], c["before"], c["after"], int(c["throughput_direction"])),
+					100.0 * c["gains"]["capacity"], ", ".join(c["flags"])])
 		rows.append("")
 		var counts := PackedStringArray()
 		for persona in PERSONAS:

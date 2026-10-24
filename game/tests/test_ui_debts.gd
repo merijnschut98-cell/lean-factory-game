@@ -80,10 +80,10 @@ func test_a_change_within_the_checks_noise_reads_as_unchanged() -> void:
 ## neutral, whatever they did. The step's own numbers keep their colour.
 func test_next_to_not_the_constraint_the_flow_rows_read_neutral() -> void:
 	for row in ["capacity", "throughput"]:
-		assert_eq(CheckPanel.change_color(row, 30.0, 33.0, true), Palette.INK, row)
-		assert_eq(CheckPanel.change_color(row, 30.0, 27.0, true), Palette.INK, row)
+		assert_eq(CheckPanel.change_color(row, 30.0, 33.0, 1, true), Palette.INK, row)
+		assert_eq(CheckPanel.change_color(row, 30.0, 27.0, 1, true), Palette.INK, row)
 		assert_eq(CheckPanel.change_color(row, 30.0, 33.0), Palette.GREEN_DARK, row + ": a bottleneck's flow is green")
-	assert_eq(CheckPanel.change_color("lead_time", 50.0, 40.0, true), Palette.GREEN_DARK)
+	assert_eq(CheckPanel.change_color("lead_time", 50.0, 40.0, 1, true), Palette.GREEN_DARK)
 
 
 func _numbers(v: float) -> Dictionary:

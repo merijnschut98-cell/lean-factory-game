@@ -409,8 +409,9 @@ func _summary(runs: Array, window: int) -> Dictionary:
 ## KpiBoard.improvement of `after` over `before` on `stream`, per seed pair.
 func _gains(before: Array, after: Array, stream_id: String) -> Dictionary:
 	var gains := []
+	var net := _net({}, SEEDS[0])  # which way the stream's throughput is better
 	for i in before.size():
-		gains.append(KpiBoard.improvement(before[i]["streams"], after[i]["streams"], PackedStringArray([stream_id])))
+		gains.append(KpiBoard.improvement(before[i]["streams"], after[i]["streams"], PackedStringArray([stream_id]), net))
 	return _stats(gains)
 
 

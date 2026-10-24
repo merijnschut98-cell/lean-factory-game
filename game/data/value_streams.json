@@ -386,7 +386,9 @@
      "touch_hours": 1.5,
      "trip_hours": 1.0
     }
-   ]
+   ],
+   "throughput_direction": "lower_is_better",
+   "throughput_phrase": "storingen per week"
   },
   {
    "arrivals": [
@@ -558,7 +560,9 @@
      "rework_to": "measurement",
      "touch_hours": 2.0
     }
-   ]
+   ],
+   "throughput_direction": "lower_is_better",
+   "throughput_phrase": "spanningsklachten per week"
   },
   {
    "arrivals": [
@@ -582,7 +586,9 @@
      "pool": "contact_centre",
      "touch_hours": 0.25
     }
-   ]
+   ],
+   "throughput_direction": "lower_is_better",
+   "throughput_phrase": "klantvragen per week"
   }
  ]
 }
