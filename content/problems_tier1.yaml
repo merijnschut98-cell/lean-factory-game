@@ -17,7 +17,8 @@
 #                 a node in the floor's model (build_content.TELLS), text what anyone can
 #                 see there. Ambiguous on purpose: a tall stack can be a normal week, and
 #                 a text never names the problem. Every problem whose place is on a floor
-#                 with tells (the 1e, the 2e) lists at least one (checked).
+#                 with tells (the 1e, the 2e, the yard) lists at least one on that floor
+#                 (checked).
 #
 # Quote clue texts: inside {…} an unquoted comma ends the text (the build refuses it).
 
@@ -78,6 +79,7 @@ problems:
       - {target: connections.execution, property: ftr, value: -0.25}  # 2 of 5 addresses not ready
     tells:
       - {tell: planning_board, text: "Op het weekbord bij de planners hangen rode kaartjes: klussen die verzet zijn."}
+      - {tell: van_returns, text: "Op de retourpallet staan aansluitsets die nog in hun folie zitten."}
     clues:
       - {tool: shadow, key: true, depth: 0, text: "Op twee van de vijf adressen is de meterkast niet klaar (geen ruimte, geen aarding, de installateur is nog niet geweest). De monteur rijdt onverrichter zake terug."}
       - {tool: time_study, key: false, depth: 0, text: "Een aansluiting maken kost de monteur ruim vier uur, binnen de norm."}
@@ -105,6 +107,11 @@ problems:
     teaches: [5s, kanban, standard_work]
     effects:
       - {target: outages.repair, property: touch_time, value: 1.5}
+    # Its harm is the drive to fetch a joint, not more joints: the kanban wall and the board read
+    # busy weeks as they would (OfficeTells.THRESHOLDS, probe 2026-10-24).
+    tells:
+      - {tell: van_kanban, text: "Bij de storingsbussen staan op de kanbanwand vakjes leeg, zonder kaartje in de kolom Bestellen."}
+      - {tell: storingsbord, text: "Op het storingsbord staat bij een paar kabelstoringen een hersteltijd van ruim vier uur."}
     clues:
       - {tool: shadow, key: true, depth: 0, text: "Bij een kabelstoring ligt de juiste mof niet in de bus. De monteur rijdt veertig minuten heen en terug naar het magazijn."}
       - {tool: time_study, key: false, depth: 0, at: outages.locate, text: "Het lokaliseren van de fout duurt steeds rond het uur."}
@@ -161,6 +168,8 @@ problems:
     teaches: [failure_demand, customer_value]
     effects:
       - {target: meters.visit, property: ftr, value: -0.15}
+    tells:
+      - {tell: van_returns, text: "Op de retourpallet staan meterdozen die nog dicht zijn, elk met een afspraakbon eraan."}
     clues:
       - {tool: shadow, key: true, depth: 0, text: "Bij drie van de acht adressen doet niemand open. De monteur laat een kaartje achter."}
       - {tool: time_study, key: false, depth: 0, text: "Een meterwissel zelf duurt vijfendertig minuten, ruim binnen de planning."}
@@ -265,6 +274,9 @@ problems:
     # Repairs and claims: ~5 extra damages a week x ~EUR 850 direct repair cost
     # each (Wibon evaluation: EUR 38.8M a year over 46,799 damages, 2022).
     cost_per_week: 4250
+    tells:
+      - {tell: storingsbord, text: "Op het storingsbord staan overdag storingen achter elkaar, steeds met 'kabel geraakt' en de naam van een aannemer."}
+      - {tell: magazijn_rack, text: "Op de stelling met moffen zijn de meeste vakken leeg; op de toonbank ligt een bestelbon voor nog een doos."}
     clues:
       - {tool: data, key: true, depth: 0, text: "Een derde van de storingen overdag is graafschade; zeven procent van de graafwerken raakt een kabel."}
       - {tool: shadow, key: false, depth: 0, text: "De monteurs herstellen graafschade snel en vakkundig."}
@@ -293,6 +305,8 @@ problems:
     teaches: [waste_skills, respect_for_people]
     effects:
       - {target: outages.locate, property: ftr, value: -0.3}
+    tells:
+      - {tell: storingsbord, text: "Op het storingsbord staat bij de storingen in Nova-Oud vaak een tweede tijd, en daarachter in hoofdletters: HENK."}
     clues:
       - {tool: shadow, key: true, depth: 0, text: "Een jonge monteur zoekt anderhalf uur naar de fout in een oude papierloodkabel (GPLK) en belt dan een collega."}
       - {tool: time_study, key: false, depth: 0, text: "Het herstel zelf duurt bij iedereen ongeveer even lang."}
@@ -442,6 +456,8 @@ problems:
       # A tap set for one address does not hold for the street: three in ten
       # complaints come back after the change (an estimate).
       - {target: voltage_complaints.tap_change, property: ftr, value: -0.3}
+    tells:
+      - {tell: measurement_tray, text: "Op de spanningsklachten in het bakje staan steeds dezelfde straten, en bijna altijd een tijd rond het middaguur."}
     clues:
       - {tool: data, key: true, depth: 0, text: "Negen van de tien spanningsklachten komen binnen tussen elf en drie uur, op zonnige dagen."}
       - {tool: conversation, key: false, depth: 0, text: "'Het zijn die goedkope omvormers. Met een goed merk heb je hier geen last van.'"}
@@ -665,6 +681,8 @@ problems:
     # ESTIMATE: 40 meter visits a week, one in seven back again (about 6), at about
     # EUR 100 a return trip (1.5 h of a monteur at ~EUR 55 an hour, the van ~EUR 20).
     cost_per_week: 600
+    tells:
+      - {tell: van_returns, text: "Op de retourpallet staan meterdozen die weer terug zijn; op een paar zit een oranje sticker."}
     clues:
       - {tool: shadow, key: true, depth: 0, text: "Op het vierde adres kijkt de monteur in de meterkast en schudt zijn hoofd: een oude stoppenkast, met een plaat die asbest kan bevatten. Hij plakt er een sticker op. Eerst moet er een aansluitmonteur komen; daarna komt hij terug."}
       - {tool: time_study, key: false, depth: 0, text: "Een meterwissel duurt veertig minuten, netjes binnen de norm."}

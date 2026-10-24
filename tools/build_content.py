@@ -305,12 +305,16 @@ UNLOCKS = ["kpi_board"]  # CountermeasureDef.UNLOCKS: what a countermeasure open
 CLUE_KEYS = {"tool", "text", "key", "depth", "at", "note", "teaches"}
 # The props that read the simulation (PLAN 2.6, design §1.5): tell id → the world.yaml room
 # it stands in. The game's OfficeTells.THRESHOLDS (game/src/world/office/office_tells.gd)
-# has the same ids, and tools/blender/build_office.py builds a node `tell_<id>` for each.
+# has the same ids, and tools/blender/build_office.py (the yard's: build_yard.py) builds a node
+# `tell_<id>` for each.
 TELLS = {"intake_stack": "connections", "prep_tray": "connections", "planning_board": "connections",
          "revision_cabinet": "revision_gis", "close_out_cabinet": "meter_data", "meter_board": "meter_data",
          # the 2e (PLAN 2.16)
          "obeya_board": "directors_obeya", "grid_study_tray": "grid_strategy", "reinforcement_board": "grid_strategy",
-         "congestion_list": "congestion_desk"}
+         "congestion_list": "congestion_desk",
+         # the yard (S3-Y; tools/blender/build_yard.py builds these)
+         "van_kanban": "van_park", "van_returns": "van_park", "magazijn_rack": "magazijn",
+         "storingsbord": "werkplaats", "measurement_tray": "werkplaats"}
 TELL_KEYS = {"tell", "text"}
 # world.yaml `tells:`: what each tell looks like at each height (OfficeTells.VARIANTS).
 TELL_HEIGHTS = ("low", "mid", "high")
@@ -621,8 +625,9 @@ def _all_problems(docs: dict[str, Any]) -> list[tuple[str, dict]]:
 
 
 def check_tells(docs: dict[str, Any]) -> None:
-    """Every problem whose place is on a floor with tells (the 1e, the 2e) shows on at least one
-    of them, whichever room it is in."""
+    """Every problem whose place is on a floor with tells (the 1e, the 2e, the yard) shows on at
+    least one tell on that floor, whichever room it is in (a tell upstairs leaves its own floor
+    silent)."""
     world = docs.get("world")
     if world is None:
         return
@@ -647,11 +652,12 @@ def check_tells(docs: dict[str, Any]) -> None:
     floors = {floor_of[room] for room in TELLS.values()}
     for stem, p in _all_problems(docs):
         room = room_of.get(p["step"])
-        if floor_of.get(room) in floors and not p.get("tells"):
+        floor = floor_of.get(room)
+        if floor in floors and not any(floor_of[TELLS[t["tell"]]] == floor for t in p.get("tells", [])):
             near = [t for t, r in TELLS.items() if r == room] \
-                or [t for t, r in TELLS.items() if floor_of[r] == floor_of[room]]
-            raise ContentError(f"{stem}.yaml: problem '{p['id']}' at {p['step']} (room '{room}') has no tell; "
-                               f"list one under 'tells:' ({', '.join(near)})")
+                or [t for t, r in TELLS.items() if floor_of[r] == floor]
+            raise ContentError(f"{stem}.yaml: problem '{p['id']}' at {p['step']} (room '{room}') has no tell on its "
+                               f"floor '{floor}'; list one under 'tells:' ({', '.join(near)})")
 
 
 # ── facts and needs (path dependence, game/src/rules/facts.gd) ───────────────

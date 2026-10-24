@@ -1,11 +1,11 @@
 class_name OfficeTells
 extends Node
-## The world shows the work (PLAN 2.6, design §1.5): props on the 1e and the 2e that read the
-## region.
-## Each tell is a node `tell_<id>` in the floor's model (tools/blender/build_office.py) with
-## three variants `tell_<id>_low`, `_mid` and `_high`; this shows one, by a number from the
-## simulation, and looks again when time has passed. A child of the Office while a floor
-## with tells is loaded.
+## The world shows the work (PLAN 2.6, design §1.5): props on the 1e, the 2e and the yard that
+## read the region.
+## Each tell is a node `tell_<id>` in the floor's model (tools/blender/build_office.py, the
+## yard's build_yard.py) with three variants `tell_<id>_low`, `_mid` and `_high`; this shows
+## one, by a number from the simulation, and looks again when time has passed. A child of the
+## Office while a floor with tells is loaded.
 ##
 ## The tells are ambiguous on purpose: a tall stack can be a normal busy week, and the
 ## same pile shows whatever fills it. They never say what is wrong; the player still has
@@ -48,9 +48,30 @@ const VARIANTS: Array[String] = ["low", "mid", "high"]
 ##   transformer_wait climbs to 104 and 115 by week 30 (a wait of months fills slowly).
 ## - congestion_list (requests waiting for capacity): base 21 to 45, unused_capacity 43 and
 ##   63 after half a year, transformer_wait up to 51.
+## The yard (PLAN 2.6, S3-Y; probe 2026-10-24: tools/yard_tell_probe.gd, GameSession, seeds 11
+## and 12, daily over 60 days after day 9, each problem active from the first day; min/median/max).
+## No job waits for material there: the stock covers every week (0 in every run), so the
+## field tells read what the field work uses and brings back.
+## - van_kanban (the joints the storingsbussen took this week: a card each in the kanban
+##   wall's "bestellen" column): base 3/7/11 and 3/8/12, digging_damage 5/12/18 and 6/10/16.
+##   wrong_joint_in_van takes no more joints (its harm is the drive to fetch one), so the wall
+##   shows it only in a busy week, as it would.
+## - magazijn_rack (the share of the joint shelf that is empty, % of reorder point plus an
+##   order): base 16/51/83 and 13/44/79 (it empties and refills with each delivery: a low
+##   shelf can be the day before the truck), digging_damage 27/60/92 and 15/60/89.
+## - van_returns (meters and connection kits back on the pallet from a failed visit in the last
+##   MOVED_DAYS: no one home, the meterkast not ready): base 6/12/20 and 7/13/23, not_at_home
+##   and double_visits 7/21/35 and 10/22/38, installer_not_ready 11/23/34 and 13/25/43.
+## - storingsbord (this week's callouts, plus those searched for again and those past the
+##   norm): base 11/18/27 and 7/19/37, digging_damage 13/25/35 and 15/26/35, knowledge_drain
+##   13/28/43 and 10/27/66, wrong_joint_in_van 11/19/29 and 8/20/42.
+## - measurement_tray (voltage complaints waiting for a measurement or with a logger out):
+##   base 2/6/11 and 1/6/12, inverters_tripping 12/22/33 and 9/16/30.
 const THRESHOLDS := {"intake_stack": [15, 30], "prep_tray": [6, 12], "planning_board": [8, 16],
 	"revision_cabinet": [6, 12], "close_out_cabinet": [15, 35], "meter_board": [8, 12],
-	"obeya_board": [3, 5], "grid_study_tray": [6, 15], "reinforcement_board": [90, 105], "congestion_list": [40, 55]}
+	"obeya_board": [3, 5], "grid_study_tray": [6, 15], "reinforcement_board": [90, 105], "congestion_list": [40, 55],
+	"van_kanban": [10, 14], "magazijn_rack": [55, 80], "van_returns": [18, 28], "storingsbord": [24, 32],
+	"measurement_tray": [10, 18]}
 ## A value stream's KPI card is red when fewer than this share of the orders finished over
 ## the last KPI_DAYS met its norm: the healthy base meets the norm about nine times in ten
 ## (value_streams.yaml, connections). A card shows no colour with fewer than
@@ -63,6 +84,8 @@ const MOVED_DAYS := 5
 ## The window Meetdata's whiteboard lists silent meters over (two weeks: five days hold too
 ## few to tell a bad week from a normal one).
 const METER_DAYS := 10
+## The window the yard's week tells count over (the kanban wall's cards, the storingsbord).
+const WEEK_DAYS := 7
 ## Seconds between looks at the clock.
 const POLL_SECONDS := 1.0
 ## The prompt beside a tell: it says you can look, never what is there.
@@ -235,10 +258,14 @@ static func readings(net: Network) -> Dictionary:
 	return {"intake_stack": _intake_stack(net), "prep_tray": _prep_tray(net), "planning_board": _moved_jobs(net),
 		"revision_cabinet": _waiting(net, ["connections.revision"]),
 		"close_out_cabinet": _waiting(net, ["connections.close_out_wait", "connections.close_out"]),
-		"meter_board": _silent_meters(net), "obeya_board": _red_cards(net),
+		"meter_board": _counted(net, "meters.registration", METER_DAYS), "obeya_board": _red_cards(net),
 		"grid_study_tray": _waiting(net, ["connections.grid_study", "congestion.congestion_study"]),
 		"reinforcement_board": _waiting(net, ["connections.grid_reinforcement"]),
-		"congestion_list": _waiting(net, ["congestion.capacity_queue"])}
+		"congestion_list": _waiting(net, ["congestion.capacity_queue"]),
+		"van_kanban": _counted(net, "outages.joint", WEEK_DAYS, "entered"), "magazijn_rack": _shelf_empty(net, "cable_joint"),
+		"van_returns": _counted(net, "meters.visit", MOVED_DAYS) + _counted(net, "connections.execution", MOVED_DAYS),
+		"storingsbord": _callouts(net),
+		"measurement_tray": _waiting(net, ["voltage_complaints.measurement", "voltage_complaints.measurement_week"])}
 
 
 static func band(tell: String, value: int) -> int:
@@ -314,11 +341,31 @@ static func _waiting(net: Network, places: Array[String]) -> int:
 	return n
 
 
-static func _silent_meters(net: Network) -> int:
-	var registration := net.step_at("meters.registration")
-	if registration == null:
+## A count (SimStep.stats_since: "reworked", "entered") at `place` over the last `days` (0
+## when the network lacks the place). Meetdata's silent meters are the registrations reworked.
+static func _counted(net: Network, place: String, days: int, what := "reworked") -> int:
+	var step := net.step_at(place)
+	return 0 if step == null else step.stats_since(SimCalendar.day_of(net.time) - days)[what]
+
+
+## How much of a full shelf of `item` (its reorder point plus an order) is empty, in percent.
+static func _shelf_empty(net: Network, item: String) -> int:
+	var stock: SimStock = net.stock.get(item)
+	if stock == null:
 		return 0
-	return registration.stats_since(SimCalendar.day_of(net.time) - METER_DAYS)["reworked"]
+	var full := stock.reorder_point + stock.order_quantity
+	return clampi(roundi(100.0 * (full - stock.level) / full), 0, 100) if full > 0 else 0
+
+
+## The storingsdienst's board: this week's callouts, plus a mark for each fault searched for
+## again and each outage that lasted past its norm.
+static func _callouts(net: Network) -> int:
+	var outages := net.stream("outages")
+	if outages == null:
+		return 0
+	var k := outages.kpis(net.time, WEEK_DAYS)
+	var late := roundi(k["completed"] * (1.0 - k["on_time"])) if k["completed"] > 0 else 0
+	return _counted(net, "outages.report", WEEK_DAYS, "entered") + _counted(net, "outages.locate", WEEK_DAYS) + late
 
 
 ## The value streams whose KPI card is red: too few of their finished orders met the norm.

@@ -159,6 +159,10 @@
     {
      "tell": "planning_board",
      "text": "Op het weekbord bij de planners hangen rode kaartjes: klussen die verzet zijn."
+    },
+    {
+     "tell": "van_returns",
+     "text": "Op de retourpallet staan aansluitsets die nog in hun folie zitten."
     }
    ],
    "tier": 1,
@@ -237,6 +241,16 @@
     "5s",
     "kanban",
     "standard_work"
+   ],
+   "tells": [
+    {
+     "tell": "van_kanban",
+     "text": "Bij de storingsbussen staan op de kanbanwand vakjes leeg, zonder kaartje in de kolom Bestellen."
+    },
+    {
+     "tell": "storingsbord",
+     "text": "Op het storingsbord staat bij een paar kabelstoringen een hersteltijd van ruim vier uur."
+    }
    ],
    "tier": 1,
    "visibility": "subtle",
@@ -388,6 +402,12 @@
    "teaches": [
     "failure_demand",
     "customer_value"
+   ],
+   "tells": [
+    {
+     "tell": "van_returns",
+     "text": "Op de retourpallet staan meterdozen die nog dicht zijn, elk met een afspraakbon eraan."
+    }
    ],
    "tier": 1,
    "visibility": "obvious",
@@ -624,6 +644,16 @@
     "waste_defects",
     "systems_thinking"
    ],
+   "tells": [
+    {
+     "tell": "storingsbord",
+     "text": "Op het storingsbord staan overdag storingen achter elkaar, steeds met 'kabel geraakt' en de naam van een aannemer."
+    },
+    {
+     "tell": "magazijn_rack",
+     "text": "Op de stelling met moffen zijn de meeste vakken leeg; op de toonbank ligt een bestelbon voor nog een doos."
+    }
+   ],
    "tier": 1,
    "visibility": "obvious",
    "waste": "defects"
@@ -707,6 +737,12 @@
    "teaches": [
     "waste_skills",
     "respect_for_people"
+   ],
+   "tells": [
+    {
+     "tell": "storingsbord",
+     "text": "Op het storingsbord staat bij de storingen in Nova-Oud vaak een tweede tijd, en daarachter in hoofdletters: HENK."
+    }
    ],
    "tier": 1,
    "visibility": "subtle",
@@ -1120,6 +1156,12 @@
    "teaches": [
     "root_cause",
     "systems_thinking"
+   ],
+   "tells": [
+    {
+     "tell": "measurement_tray",
+     "text": "Op de spanningsklachten in het bakje staan steeds dezelfde straten, en bijna altijd een tijd rond het middaguur."
+    }
    ],
    "tier": 1,
    "visibility": "obvious",
@@ -1626,6 +1668,12 @@
    "teaches": [
     "waste_defects",
     "quality_at_the_source"
+   ],
+   "tells": [
+    {
+     "tell": "van_returns",
+     "text": "Op de retourpallet staan meterdozen die weer terug zijn; op een paar zit een oranje sticker."
+    }
    ],
    "tier": 1,
    "visibility": "subtle",
