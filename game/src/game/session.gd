@@ -802,7 +802,8 @@ func _note_story() -> void:
 		missions.facts.add("delivered:%s:%s" % [FollowedOrder.STORY, iso_date(followed.delivered_at)])
 	if people == null:
 		return
-	for id: String in people.agreed:
+	for id: String in people.agreed:   # the newest agreement in a talk replaces the older one
+		missions.facts.remove_prefix("agreed:%s:" % id)
 		missions.facts.add("agreed:%s:%s" % [id, people.agreed[id]])
 	for id: String in people.left:
 		missions.facts.add("left:" + id)

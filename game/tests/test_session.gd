@@ -739,3 +739,17 @@ func test_a_deadline_mission_is_always_funded_a_plain_side_is_not() -> void:
 	assert_true(s.missions.always_funded("knowledge_drain"), "Henk retires on a date")
 	assert_false(s.missions.always_funded("wrong_joint_in_van"), "a side without a deadline")
 	assert_false(s.missions.always_funded("revision_backlog"), "no active mission holds it")
+
+
+## Review S3 #8: a later agreement in the same talk replaces the earlier one as a fact
+## (a retried talk agrees something else): never both at once.
+func test_a_newer_agreement_replaces_the_older_fact() -> void:
+	var s := _campaign()
+	var call := "el_amrani_fourth_call"
+	s.people.agreed[call] = "name_a_date"
+	s.pass_time(0)
+	assert_true(s.knows("agreed:%s:name_a_date" % call))
+	s.people.agreed[call] = "check_existing_connection"
+	s.pass_time(0)
+	assert_true(s.knows("agreed:%s:check_existing_connection" % call))
+	assert_false(s.knows("agreed:%s:name_a_date" % call), "the older agreement is gone")
