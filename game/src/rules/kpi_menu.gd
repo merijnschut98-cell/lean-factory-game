@@ -12,6 +12,8 @@ var pool_steps: Dictionary[String, PackedStringArray] = {}
 ## Pull holds a job while the next team has this many days of work queued.
 var pull_limit_days := 3.0
 var review_question := ""
+## Ruud at the board once the choice hangs: {paid, flat, read} (content/kpis.yaml).
+var review_lines: Dictionary = {}
 ## Care level → {touch_time (factor), ftr (addition)} for every work step.
 var care: Dictionary = {}
 
@@ -21,6 +23,9 @@ static func from_docs(defs: Array, doc: Dictionary, streams: Dictionary) -> KpiM
 	var m := KpiMenu.new()
 	m.pull_limit_days = float(doc.get("pull_limit_days", m.pull_limit_days))
 	m.review_question = str(doc.get("review_question", ""))
+	var lines := JsonFile.dict_or_empty(doc.get("review_lines"))
+	for key: String in ["paid", "flat", "read"]:
+		m.review_lines[key] = str(lines.get(key, ""))
 	m.care = JsonFile.dict_or_empty(doc.get("care"))
 	for k: KpiDef in defs:
 		m.menus.get_or_add(k.pool, []).append(k)
@@ -51,6 +56,18 @@ func streams() -> PackedStringArray:
 ## The KPIs of `pool_id`'s menu among `kpi_ids`, in menu order.
 func defs_for(pool_id: String, kpi_ids: PackedStringArray) -> Array:
 	return (menus.get(pool_id, []) as Array).filter(func(k: KpiDef) -> bool: return kpi_ids.has(k.id))
+
+
+## What a board steers on with `chosen` (pool → KPI ids): the focus (KpiDef.FOCI)
+## picked most, in FOCI order; several on a tie, none when nothing is chosen.
+func steers(chosen: Dictionary) -> PackedStringArray:
+	var picks := {}
+	for pool: Variant in chosen:
+		for k: KpiDef in defs_for(str(pool), PackedStringArray(chosen[pool])):
+			if not k.focus.is_empty():
+				picks[k.focus] = picks.get(k.focus, 0) + 1
+	var most: int = picks.values().max() if not picks.is_empty() else 0
+	return PackedStringArray(KpiDef.FOCI.filter(func(f: String) -> bool: return most > 0 and picks.get(f, 0) == most))
 
 
 ## The rule effects of a department following these KPIs: start and order on

@@ -379,13 +379,49 @@ func test_debt_stops_at_a_floor_so_recovery_stays_within_reach() -> void:
 	var r := _region(Region.DEBT_FLOOR + 1000)
 	r.activate("custom_design")
 	_investigate(r)
-	assert_eq(r.submit_a3("custom_design", _a3(r, "standard_designs")), "", "an experiment can still be started")
+	assert_eq(r.submit_a3("custom_design", _a3(r, "delegated_approval")), "", "a small experiment can still be started")
 	assert_eq(r.profile.budget, Region.DEBT_FLOOR)
 	assert_true(r.in_bad_period())
 	r.advance_days(7)
 	assert_eq(r.profile.budget, Region.DEBT_FLOOR, "the problem's costs stop at the floor")
 	r.grant(0, 5000)
 	assert_eq(r.profile.budget, Region.DEBT_FLOOR + 5000, "every reward counts towards recovery")
+
+
+## QA 2.12 (c), ruling 2026-10-23: in a bad period the directie funds an experiment only up
+## to what the region has above the floor (and always a small one, DEBT_FUNDED_MINIMUM), so
+## the cheap fixes are the way out; out of debt an experiment may still run into it.
+func test_in_debt_only_what_the_region_can_carry_is_funded() -> void:
+	var r := _region(Region.DEBT_FLOOR + 5000)
+	r.activate("custom_design")
+	_investigate(r)
+	assert_eq(r.submit_a3("custom_design", _a3(r, "standard_designs")), "no_funds", "EUR 8,000 with 5,000 above the floor")
+	assert_eq(r.profile.budget, Region.DEBT_FLOOR + 5000, "nothing paid")
+	assert_eq(r.submit_a3("custom_design", _a3(r, "delegated_approval")), "", "EUR 1,500 fits")
+	var floor := _region(Region.DEBT_FLOOR)
+	floor.activate("custom_design")
+	_investigate(floor)
+	assert_eq(floor.submit_a3("custom_design", _a3(floor, "delegated_approval")), "",
+		"at the floor a small experiment is still paid: never locked out")
+	assert_true(Region.DEBT_FUNDED_MINIMUM >= 1500)
+
+
+## QA 2.12 (c): the region counts the days its budget spent at the floor (the way back,
+## a cost-saving side chain, opens on it); the count is kept across a save and never
+## falls, so the chain does not flicker on the board as the budget moves.
+func test_the_region_counts_the_days_at_the_debt_floor() -> void:
+	var r := _region(Region.DEBT_FLOOR + 100)
+	r.advance_days(3)
+	assert_eq(r.floor_days, 0, "just above the floor")
+	r.grant(0, -100)
+	r.advance_days(5)
+	assert_eq(r.floor_days, 5)
+	r.grant(0, 20000)
+	r.advance_days(4)
+	assert_eq(r.floor_days, 5, "off the floor the count stands still")
+	var copy := _region()
+	assert_eq(RegionState.restore(copy, RegionState.capture(r))["error"], "")
+	assert_eq(copy.floor_days, 5)
 
 
 ## Long-term, respectful play pays its way: finance books part of what a
@@ -417,7 +453,7 @@ func test_savings_pay_off_debt() -> void:
 	var r := _region(Region.DEBT_FLOOR)
 	r.activate("custom_design")
 	_investigate(r)
-	r.submit_a3("custom_design", _a3(r, "standard_designs"))
+	assert_eq(r.submit_a3("custom_design", _a3(r, "delegated_approval")), "")
 	r.advance_days(Region.CHECK_DAYS)
 	r.check("custom_design")
 	r.act("custom_design", false)

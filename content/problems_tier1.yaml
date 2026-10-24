@@ -72,7 +72,7 @@ problems:
       - De monteurs zijn te laat op locatie.
       - Klanten zeggen hun afspraak af.
     mismatch_note: De monteur doet zijn werk goed; het probleem ontstaat bij het plannen, voordat hij rijdt.
-    countermeasures: {readiness_check: 1.0, installer_photo_upload: 0.9}
+    countermeasures: {readiness_check: 1.0, installer_photo_upload: 0.9, backup_job_per_day: 0.6}
     teaches: [readiness_check, quality_at_the_source]
     effects:
       - {target: connections.execution, property: ftr, value: -0.25}  # 2 of 5 addresses not ready
@@ -343,7 +343,7 @@ problems:
       - De energieleverancier is traag.
       - Meetdata & registratie heeft te weinig mensen.
     mismatch_note: Het team heeft genoeg tijd; het werk wacht op de maandelijkse batch, niet op mensen.
-    countermeasures: {close_out_at_completion: 1.0, automatic_ean_registration: 0.9}
+    countermeasures: {close_out_at_completion: 1.0, automatic_ean_registration: 0.9, mid_month_run: 0.6}
     teaches: [batching, one_piece_flow]
     effects:
       - {target: connections.close_out_wait, property: batch_days, value: 28}
@@ -374,7 +374,7 @@ problems:
       - Er zijn te weinig netanalisten.
       - De rekensoftware is te traag.
     mismatch_note: Meer analisten werken de stapel sneller weg, maar een groot deel van de studies is niet nodig.
-    countermeasures: {triage_fast_lane: 1.0, calculation_templates: 0.7}
+    countermeasures: {triage_fast_lane: 1.0, calculation_templates: 0.7, study_overtime_sprint: 0.6}
     teaches: [triage, theory_of_constraints, waste_overprocessing]
     effects:
       - {target: connections.grid_study, property: applies, value: 0.15}  # 40% of connections instead of 25%
@@ -625,3 +625,82 @@ problems:
       - {tool: queue_count, key: false, depth: 0, text: "De stapel is groot nu drie van de vier werkvoorbereiders op cursus zijn. Aan de cursus verander jij deze week niets; aan wat de ene werkvoorbereider met haar tijd doet misschien wel."}
       - {tool: time_study, key: true, depth: 1, text: "Zoeken, omsorteren en uitzoeken welke versie van een dossier geldt kost zo'n half uur per dossier: ongeveer een zevende bovenop ruim drie uur ontwerpwerk."}
       - {tool: conversation, key: true, depth: 1, text: "'De ene bak is voor nieuwe dossiers van de Intake, de andere voor dossiers die terugkomen met aanvullingen van de klant. Zo is het ooit gegroeid; niemand weet meer waarom.'"}
+
+  # ── The way back (QA 2.12 (c), phase-2 design §3.5) ──────────────────────────
+  # Two real wastes in the meter round, money lost every week, opened only through
+  # their side missions when the budget sits at the debt floor (missions.yaml,
+  # fix_double_visits). Fixing them is how the region climbs back; nothing is given.
+  - id: double_visits
+    tier: 1
+    name: Twee keer naar hetzelfde adres
+    step: meters.visit
+    waste: defects
+    severity: medium
+    visibility: subtle
+    # The return visit is rework at the visit step (ftr). ESTIMATE: about one meter
+    # visit in seven ends 'kast niet geschikt' (an old fuse box, no room, a plate that
+    # may hold asbestos in a house from before the 1993 ban), so a connection monteur
+    # must come first and the meter monteur comes back. Measured where rework shows: the
+    # share of meter visits right the first time.
+    kpi: first_time_right
+    symptoms:
+      - Meterwisselaars rijden terug naar adressen waar ze vorige week al waren.
+      - Het programma voor de laatste analoge meters loopt achter, terwijl de monteurs volle dagen maken.
+    root_cause: Bij het inplannen kijkt niemand naar de meterkast; pas aan de deur blijkt dat eerst een aansluitmonteur moet komen, en dan rijdt de meterwisselaar een tweede keer.
+    plausible_causes:
+      - De monteurs zijn niet opgeleid voor oude meterkasten.
+      - Klanten maken de meterkast niet vrij.
+    mismatch_note: Aan de deur valt niets meer te winnen; de kast was al oud voordat de monteur kwam. Wat ontbreekt, is een blik op de kast bij het inplannen.
+    countermeasures: {cupboard_photo_at_booking: 1.0, register_cupboard_check: 0.8, customer_self_report: 0.6}
+    teaches: [waste_defects, quality_at_the_source]
+    effects:
+      - {target: meters.visit, property: ftr, value: -0.15}
+    # ESTIMATE: 40 meter visits a week, one in seven back again (about 6), at about
+    # EUR 100 a return trip (1.5 h of a monteur at ~EUR 55 an hour, the van ~EUR 20).
+    cost_per_week: 600
+    clues:
+      - {tool: shadow, key: true, depth: 0, text: "Op het vierde adres kijkt de monteur in de meterkast en schudt zijn hoofd: een oude stoppenkast, met een plaat die asbest kan bevatten. Hij plakt er een sticker op. Eerst moet er een aansluitmonteur komen; daarna komt hij terug."}
+      - {tool: time_study, key: false, depth: 0, text: "Een meterwissel duurt veertig minuten, netjes binnen de norm."}
+      - {tool: material_check, key: false, depth: 0, text: "In de bus liggen genoeg meters, ook driefasemeters. Aan materiaal ligt het niet."}
+      - {tool: data, key: true, depth: 1, text: "Bij één op de zeven bezoeken staat als uitkomst 'kast niet geschikt'. Bijna allemaal in huizen van voor 1990."}
+      - {tool: documents, key: true, depth: 1, at: meters.appointment, text: "De afspraakbrief vraagt de klant de meterkast vrij te maken. Naar de meterkast zelf vraagt niemand, ook niet aan de telefoon."}
+      - {tool: listen_in, key: true, depth: 2, at: meters.appointment, text: "Linda plant een meterwissel in Nova-Oud: 'Postcode, dag, klaar.' Het bouwjaar van het huis staat in het register, maar dat scherm heeft ze niet open."}
+
+  - id: overtime_planning
+    tier: 1
+    name: Overwerk dat in de planning zit
+    step: meters.appointment
+    waste: transport
+    severity: high
+    visibility: subtle
+    # The zigzag adds driving to every visit (touch_time; ESTIMATE: three of a monteur's
+    # eight hours in the van on a day across four districts, against about one and a
+    # half when a day stays in one or two, so 5 h of work where 6.5 h fit: x1.3), and the
+    # last address of a day that overruns is moved to another day (ftr; ESTIMATE: one
+    # visit in ten). The overtime itself is money (cost_per_week); with slack in the
+    # monteurs' week the flow shows it in appointments kept on time.
+    kpi: on_time
+    symptoms:
+      - De meterwisselaars schrijven elke week overuren, ook in een rustige week.
+      - Een monteur rijdt op één dag naar adressen in drie of vier wijken.
+    root_cause: Afspraken worden ingepland op volgorde van binnenkomst, niet per wijk; de monteurs rijden kriskras door de regio, en wat aan het eind van de dag overblijft, wordt overwerk.
+    plausible_causes:
+      - De monteurs werken te langzaam.
+      - Er zijn te weinig meterwisselaars.
+    mismatch_note: Meer mensen of harder werken haalt de kilometers er niet uit. De rit tussen de adressen zit in de planning.
+    countermeasures: {route_by_area: 1.0, area_teams: 0.8, overtime_cap: 0.6}
+    teaches: [waste_transport, heijunka]
+    effects:
+      - {target: meters.visit, property: touch_time, value: 1.3}
+      - {target: meters.visit, property: ftr, value: -0.1}
+    # ESTIMATE: six meter monteurs with about three hours of overtime a week each, at
+    # ~EUR 60 an hour with the overtime surcharge: about EUR 1,100 a week.
+    cost_per_week: 1100
+    tells:
+      - {tell: planning_board, text: "Op het weekbord bij de planners staan de meterwissels van één monteur verspreid over vier wijken."}
+    clues:
+      - {tool: data, key: true, depth: 0, text: "De meterwisselaars schreven de laatste acht weken samen 140 overuren, in rustige weken net zoveel als in drukke."}
+      - {tool: shadow, key: true, depth: 0, at: meters.visit, text: "Je rijdt een dag mee: Nova-Oud, De Hofstede, terug naar Nova-Oud, dan de Kanaalzone. Van de acht uur zit de monteur er drie in de bus."}
+      - {tool: time_study, key: false, depth: 0, at: meters.visit, text: "Bij de klant werkt de monteur vlot: de wissel zelf zit binnen de norm."}
+      - {tool: documents, key: true, depth: 1, text: "De planning zet afspraken op volgorde van aanvraagdatum. Een wijk of postcode komt in de planningsregels niet voor."}
+      - {tool: listen_in, key: true, depth: 2, text: "Een klant uit Nova-Oud wil dinsdag. Linda zet hem erin, al werkt die monteur dinsdag verder alleen in de Kanaalzone. 'Wie het eerst belt, krijgt de eerste plek.'"}

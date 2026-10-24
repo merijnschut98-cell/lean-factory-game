@@ -90,6 +90,9 @@ var goal_problem: String
 ## talk_to: the dialog, and the least outcome that meets the goal.
 var goal_dialog: String
 var goal_outcome := "commitment"
+## talk_to with an expert talk (kind expert): how many of its topics must have been heard
+## (0: a persuasion, judged by goal_outcome).
+var goal_topics := 0
 ## A talk of this mission that must have been had, however it went, before
 ## the goal counts (Monday ends with Anouk at seven: D9 talks audit A2); "".
 var ends_with_talk: String
@@ -129,6 +132,10 @@ var deadline_days := -1
 ## falls on the deadline's day whether the mission was done, failed or never
 ## taken on (Henk retires on his day), e.g. henk_farewell; "" for none.
 var deadline_beat: String
+## Leader standard work (catalogue §2.9; `recurring: {every_days: n}`, side missions only): once
+## done it is offered again n days later; XP the first time, after that reputation and the
+## reward's team trust. -1: not recurring.
+var recurring_days := -1
 ## Countermeasures a missed deadline closes for good (Henk's knowledge transfer).
 var fail_closes := PackedStringArray()
 var reward_xp := 0
@@ -202,6 +209,7 @@ static func from_dict(d: Dictionary) -> MissionDef:
 	m.goal_uses = int(goal.get("uses", 1))
 	m.goal_dialog = str(goal.get("dialog", ""))
 	m.goal_outcome = str(goal.get("outcome", "commitment"))
+	m.goal_topics = int(goal.get("topics", 0))
 	m.goal_story = str(goal.get("story", ""))
 	m.goal_by = str(goal.get("by", ""))
 	m.goal_met_if = JsonFile.dict_or_empty(goal.get("met_if")).duplicate(true)
@@ -224,6 +232,7 @@ static func from_dict(d: Dictionary) -> MissionDef:
 	m.deadline_days = int(d.get("deadline_days", -1))
 	m.fail_closes = PackedStringArray(d.get("fail_closes", []))
 	m.deadline_beat = str(d.get("deadline_beat", ""))
+	m.recurring_days = int(JsonFile.dict_or_empty(d.get("recurring")).get("every_days", -1))
 	var rewards := JsonFile.dict_or_empty(d.get("rewards"))
 	m.reward_xp = int(rewards.get("xp", 0))
 	m.reward_budget = int(rewards.get("budget", 0))
@@ -251,6 +260,8 @@ static func from_dict(d: Dictionary) -> MissionDef:
 		m.error = "mission %s: talk_to lists talks, each with a dialog and an outcome (partial | commitment)" % m.id
 	elif not m.deadline_beat.is_empty() and m.deadline_days < 0:
 		m.error = "mission %s: a deadline_beat needs deadline_days" % m.id
+	elif m.recurring_days == 0 or m.recurring_days < -1 or (m.recurring_days > 0 and m.kind != "side"):
+		m.error = "mission %s: only a side mission recurs, every_days at least 1" % m.id
 	elif not m.setup.is_empty() and m.kind != "training":
 		m.error = "mission %s: only a training day has a setup" % m.id
 	elif (m.kind == "milestone") != (m.goal_type in MILESTONE_GOALS):

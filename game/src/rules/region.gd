@@ -36,6 +36,11 @@ const BAD_PERIOD_AVAILABILITY := 0.03
 ## §2). ESTIMATE: the size of the starting budget, about four solved problems
 ## with their missions' rewards, or a few months of held fixes' savings.
 const DEBT_FLOOR := -50000
+## In a bad period the directie funds an experiment only up to what the region has above
+## the floor, and always one this small (QA 2.12 (c), ruling 2026-10-23): the cheap fixes
+## and the way back are the way out, never a lock-out. ESTIMATE: a small team experiment, a
+## few days of time and material (the way back's own fixes cost EUR 0-3,000).
+const DEBT_FUNDED_MINIMUM := 3000
 ## Finance books part of what a held fix saves (less overtime, rework, repeat
 ## visits, status calls) into the improvement budget: every week this share
 ## of the grant for a perfect result on the problem (Pdca.BUDGET_BASE), at
@@ -87,6 +92,9 @@ var events: Array[Dictionary] = []
 var board := KpiBoard.new(KpiMenu.new())
 ## Problem costs not yet taken from the budget (charged in whole euros).
 var _cost_owed := 0.0
+## Whole days that ended with the budget at DEBT_FLOOR, in all (it never falls): the way
+## back, a cost-saving side chain, opens on it (QA 2.12 (c); the measure floor_days>=n).
+var floor_days := 0
 ## Since when the region has not improved (minutes; the last resolved Act or
 ## the campaign's start); -1: drift has not started (start_drift).
 var drift_from := -1
@@ -249,6 +257,14 @@ func _charge_costs(days: int) -> void:
 	var whole := floori(_cost_owed)
 	_cost_owed -= whole
 	_add_budget(-whole)
+	if profile.budget <= DEBT_FLOOR:
+		floor_days += days
+
+
+## Whether the directie pays for `cm` now: always out of debt (an experiment may still run
+## into it); in a bad period only up to what the region has above the floor, or a small one.
+func fundable(cm: CountermeasureDef) -> bool:
+	return not in_bad_period() or cm.budget <= maxi(DEBT_FUNDED_MINIMUM, profile.budget - DEBT_FLOOR)
 
 
 ## Debt is allowed, down to DEBT_FLOOR; it starts a bad period, and paying it
@@ -469,10 +485,11 @@ func close_countermeasures(ids: PackedStringArray) -> void:
 
 ## Submit the A3 {waste, cause (index into the cause bank), evidence (clue
 ## ids), cm, prediction (a KPI)} and start the experiment; it may be paid
-## into debt. The Check is due after `check_days` (a mission may shorten it
-## for practice). Returns "" or why not: not_spotted | waste | cause |
-## evidence | countermeasure | prediction | same_countermeasure (a rework
-## must try another one).
+## into debt, but in a bad period only what the region can carry (fundable).
+## The Check is due after `check_days` (a mission may shorten it for
+## practice). Returns "" or why not: not_spotted | waste | cause | evidence |
+## countermeasure | prediction | same_countermeasure (a rework must try
+## another one) | no_funds.
 func submit_a3(problem_id: String, a3: Dictionary, check_days: int = CHECK_DAYS) -> String:
 	var st := state[problem_id]
 	if st.phase != P.SPOTTED:
@@ -492,6 +509,8 @@ func submit_a3(problem_id: String, a3: Dictionary, check_days: int = CHECK_DAYS)
 		return "prediction"
 	if st.rework_from.get("cm") == cm.id:
 		return "same_countermeasure"
+	if not fundable(cm):
+		return "no_funds"
 
 	var p := problems[problem_id]
 	_add_budget(-cm.budget)

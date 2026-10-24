@@ -180,6 +180,75 @@ static func position_wins(talks: Array, position: int) -> Array[String]:
 	return out
 
 
+## The listening move for a person's last words (the autoplay talker's, QA 2.12 (e)).
+const ANSWER := {"feeling": "reflect", "admission": "empathy", "hesitation": "silence", "claim": "paraphrase",
+	"doubt": "experience"}
+const FALLBACK_LISTEN: Array[String] = ["open_question", "inquiry", "empathy", "paraphrase", "mood"]
+
+
+## A persuasion played by a listen-first player through the turns' offers, as the
+## autoplay talker plays it (game/tools/autoplay.gd, _talker_move): ask the mood, answer
+## the person's last words with the move that fits them, show the data once when they
+## feel heard, put a proposal that meets the concern on the table only once the concern
+## is out and the meter reads commitment (or time runs short), then ask. Never presses.
+## Returns the played copy.
+static func listen_first(talk: Dialog) -> Dialog:
+	var t := talk.copy()
+	var tags: Array = t.position().get("tags", [])
+	var last := {}
+	var uses := {}
+	var proposed := false
+	var shown_data := false
+	while t.outcome.is_empty():
+		var want := ["", ""]
+		var concern := t.revealed.has("concern")
+		if proposed:
+			want = ["ask_commitment", ""]
+		elif (concern and t.openness >= Dialog.COMMIT_AT) or last.get("patience_low", false):
+			want = ["propose", pick(t, "propose")]
+		elif last.get("heard", false) and not shown_data and t.openness >= Dialog.SHOW_DATA["at"] \
+				and not t.def.data.is_empty():
+			want = ["show_data", t.def.data[0]]
+		var order := _listen_order(tags, uses, str(last.get("move", "")))
+		var choice := _offered(t.offer(), want, order)
+		last = t.say(choice[0], choice[1])
+		uses[choice[0]] = int(uses.get(choice[0], 0)) + 1
+		proposed = choice[0] in ["propose", "propose_experiment"]
+		shown_data = shown_data or choice[0] == "show_data"
+		tags = last.get("tags", [])
+	return t
+
+
+## The listening moves in the order a listen-first player makes them now.
+static func _listen_order(tags: Array, uses: Dictionary, last_move: String) -> Array:
+	var order: Array = ["mood"] if uses.is_empty() else []
+	for tag: Variant in tags:
+		if ANSWER.has(tag):
+			order.append(ANSWER[tag])
+	order.append_array(FALLBACK_LISTEN)
+	order = order.filter(func(m: String) -> bool: return m != last_move and int(uses.get(m, 0)) < Dialog.USE_DECAY.size())
+	order.append("silence" if last_move != "silence" else "empathy")
+	return order
+
+
+## Among `offers`: the wanted move (a proposal with any offered pick, the one meeting
+## the concern first), else the first offered listening move in `order`, else the
+## first offer that is no pressure or blame.
+static func _offered(offers: Array, want: Array, order: Array) -> Array:
+	for exact: bool in [true, false]:
+		for o: Dictionary in offers:
+			if o["move"] == want[0] and (o["pick"] == want[1] or (not exact and want[0] == "propose")):
+				return [o["move"], o["pick"]]
+	for move: String in order:
+		for o: Dictionary in offers:
+			if o["move"] == move:
+				return [move, ""]
+	for o: Dictionary in offers:
+		if not o["move"] in ["pressure", "confront"]:
+			return [o["move"], o["pick"]]
+	return ["close", ""]
+
+
 ## Play `token` in `talk`: the option of `offers` (this turn's) that plays
 ## it, or with `offers` null the move itself; false, and nothing played,
 ## when it is not on offer or the talk refuses it.

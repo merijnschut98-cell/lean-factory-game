@@ -1140,7 +1140,7 @@ func test_a_debrief_reads_the_checks_numbers() -> void:
 	var kpi: String = log.region.problems["custom_design"].kpi
 	st.checked = {"without": {kpi: 54.4}, "with": {kpi: 40.6}}
 	assert_eq(log.debrief_of("fix_design"), "Klaar. De doorlooptijd ging van 54 naar 41 dagen. Wat nu?")
-	assert_eq(Missions.spoken_number("first_time_right", 0.826), "83")
-	assert_eq(Missions.spoken_number("throughput", 31.0), "31")
-	assert_eq(Missions.spoken_number("capacity", 37.94), "37,9")
-	assert_eq(Missions.spoken_number("lead_time", 54.4), "54")
+	assert_eq(CoachNumbers.spoken("first_time_right", 0.826), "83")
+	assert_eq(CoachNumbers.spoken("throughput", 31.0), "31")
+	assert_eq(CoachNumbers.spoken("capacity", 37.94), "37,9")
+	assert_eq(CoachNumbers.spoken("lead_time", 54.4), "54")

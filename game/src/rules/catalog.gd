@@ -18,6 +18,9 @@ var kpis := KpiMenu.new()
 var concepts: Dictionary[String, ConceptDef] = {}
 ## The senior manager who coaches the main mission: {name, role, stages}.
 var coach: Dictionary = {}
+## The principle lines of main debriefs (missions.yaml `principles`): code → lines; a
+## campaign without them names no principle.
+var principles: Dictionary = {}
 ## The cast, their conversations and the shared lines (content/dialogs.yaml).
 ## A data folder without dialogs.json has none (a content set without people).
 var persons: Array[PersonDef] = []
@@ -49,6 +52,10 @@ static func load_from(dir: String = DATA_DIR) -> Catalog:
 	if campaign.is_empty():
 		return c
 	c.coach = JsonFile.dict_or_empty(campaign.get("coach"))
+	var bank := JsonFile.dict_or_empty(campaign.get("principles"))
+	for code: Variant in bank:
+		if code in PrincipleLine.CODES and bank[code] is Array:
+			c.principles[code] = (bank[code] as Array).filter(func(l: Variant) -> bool: return l is String)
 	if not c._load_kpis(dir):
 		return c
 	var glossary: Array[ConceptDef] = []

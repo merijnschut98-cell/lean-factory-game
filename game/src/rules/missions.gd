@@ -142,6 +142,9 @@ var talked: Callable = func(_dialog_id: String) -> bool: return true
 ## goal with someone who left is waived, a closed door and never a dead end. Without
 ## people (rules alone) there is nobody to talk to, so nothing waits.
 var can_talk: Callable = func(_dialog_id: String) -> bool: return false
+## How many topics of an expert talk were heard (GameSession: People.asked_topics), for a
+## talk_to goal on an expert talk (MissionDef.goal_topics).
+var topics_heard: Callable = func(_dialog_id: String) -> int: return 0
 ## When day 0 of play starts (minutes; GameSession: after the warm-up): opens_on and
 ## deadline_on_day count days from it.
 var play_start := 0
@@ -285,6 +288,7 @@ func update() -> void:
 	_note_fixes()
 	_note_holds()
 	_reopen_faded()
+	_reoffer_recurring()
 	_sync_checkins()
 	_sync_repairs()
 	events.append_array(stewardship.update(region))
@@ -416,11 +420,16 @@ func contain(id: String) -> String:
 
 
 ## Whether a fact or a measure holds (Facts): done: and failed: from the
-## missions, maturity>= and reputation>= from the region, the rest recorded.
+## missions, maturity>=, reputation>= and floor_days>= from the region, the rest recorded.
 func knows(atom: String) -> bool:
 	var measure := Facts.measure(atom)
 	if not measure.is_empty():
-		return (region.maturity() if measure[0] == "maturity" else region.reputation.value) >= measure[1]
+		match measure[0]:
+			"maturity":
+				return region.maturity() >= measure[1]
+			"floor_days":
+				return region.floor_days >= measure[1]
+		return region.reputation.value >= measure[1]
 	match atom.get_slice(":", 0):
 		"done":
 			return done_once.has(atom.get_slice(":", 1))
@@ -435,6 +444,8 @@ func knows(atom: String) -> bool:
 			var problem := atom.get_slice(":", 1)
 			return region.state.has(problem) and region.state[problem].phase == P.RESOLVED \
 				and region.health(problem) >= Sustain.SLIPPING_HEALTH
+		"steers":  # the KPI board's choice in force
+			return region.board.menu.steers(region.board.chosen).has(atom.get_slice(":", 1))
 	return facts.has(atom)
 
 
@@ -496,8 +507,8 @@ func _with_numbers(text: String, problem_id: String) -> String:
 	var kpi := p.kpi if p != null else ""
 	var tokens := {}
 	if st != null and st.checked["without"].has(kpi) and st.checked["with"].has(kpi):
-		tokens = {"{kpi_before}": spoken_number(kpi, st.checked["without"][kpi]),
-			"{kpi_after}": spoken_number(kpi, st.checked["with"][kpi])}
+		tokens = {"{kpi_before}": CoachNumbers.spoken(kpi, st.checked["without"][kpi]),
+			"{kpi_after}": CoachNumbers.spoken(kpi, st.checked["with"][kpi])}
 	var kept: Array[String] = []
 	for sentence in text.split(". "):
 		for token: String in tokens:
@@ -505,17 +516,6 @@ func _with_numbers(text: String, problem_id: String) -> String:
 		if not "{kpi_" in sentence:
 			kept.append(sentence)
 	return ". ".join(kept)
-
-
-## A KPI's value as people say it: whole days and percents, per week whole or with
-## a decimal comma.
-static func spoken_number(kpi: String, value: float) -> String:
-	match kpi:
-		"first_time_right", "on_time":
-			return str(roundi(value * 100.0))
-		"throughput", "capacity":
-			return str(roundi(value)) if absf(value - roundf(value)) < 0.05 else String.num(value, 1).replace(".", ",")
-	return str(roundi(value))
 
 
 ## Note the facts of every new Act: the countermeasure chosen (replacing an
@@ -602,6 +602,16 @@ func _retire_orphans() -> void:
 	for id: String in region.state:
 		if region.state[id].is_open() and not held.has(id):
 			region.deactivate(id)
+
+
+## A recurring mission (leader standard work) is offered again its days after it was last done.
+func _reoffer_recurring() -> void:
+	for id: String in progress.keys():
+		var m := defs[id]
+		if m.recurring_days > 0 and progress[id]["status"] == "completed" \
+				and region.net.time >= int(progress[id].get("done_at", 0)) + SimCalendar.days(m.recurring_days):
+			progress.erase(id)
+			events.append({"type": "recurring", "mission": id})
 
 
 ## A completed solve mission whose problem is dormant again (the fix faded)
@@ -715,6 +725,9 @@ func _question(m: MissionDef, stage: String, nth: int) -> String:
 		if not said.has(condition) and coach.get("conditional", {}).has(condition):
 			said[condition] = true
 			return _say(coach["conditional"][condition])
+	var read := CoachNumbers.question(region, m, stage, said, coach)
+	if not read.is_empty():
+		return _say(read)
 	var candidates: Array = m.questions.get(stage, []).duplicate()
 	var bank: Array = coach["stages"].get(stage, [])
 	if not bank.is_empty():
@@ -746,16 +759,24 @@ func _conditions(m: MissionDef, stage: String) -> Array[String]:
 		return out
 	if st.blamed:
 		out.append("blamed")
-	var cm: CountermeasureDef = region.countermeasures.get(st.a3.get("cm", ""))
-	if stage == "experiment" and cm != null and cm.decay_days > 0 and cm.decay_days <= FADING_DAYS:
-		var p: ProblemDef = region.problems[m.goal_problem]
-		var chosen_fit: float = p.countermeasures.get(cm.id, 0.0)
-		if p.countermeasures.keys().any(func(id: String) -> bool:
-				var other: CountermeasureDef = region.countermeasures.get(id)
-				return other != null and (other.decay_days < 0 or other.decay_days > FADING_DAYS) \
-					and p.countermeasures[id] >= chosen_fit):
-			out.append("fading_fix")
+	if stage == "experiment" and fading_fix(m):
+		out.append("fading_fix")
 	return out
+
+
+## Whether `m`'s fix was chosen to fade within FADING_DAYS while a lasting one fit as
+## well (the short term over the long term).
+func fading_fix(m: MissionDef) -> bool:
+	var st: ProblemState = region.state.get(m.goal_problem)
+	var cm: CountermeasureDef = region.countermeasures.get(st.a3.get("cm", "")) if st != null else null
+	if cm == null or cm.decay_days <= 0 or cm.decay_days > FADING_DAYS:
+		return false
+	var p: ProblemDef = region.problems[m.goal_problem]
+	var chosen_fit: float = p.countermeasures.get(cm.id, 0.0)
+	return p.countermeasures.keys().any(func(id: String) -> bool:
+		var other: CountermeasureDef = region.countermeasures.get(id)
+		return other != null and (other.decay_days < 0 or other.decay_days > FADING_DAYS) \
+			and p.countermeasures[id] >= chosen_fit)
 
 
 ## Where the player stands, as the coach sees it: go_see (find the problem
@@ -842,6 +863,8 @@ func load_dict(d: Dictionary) -> Array[String]:
 		elif defs.has(str(id)) and entry is Dictionary and entry.get("status") in ["active", "completed"]:
 			progress[str(id)] = {"status": entry["status"], "asks": JsonFile.dict_or_empty(entry.get("asks")),
 				"seen": JsonFile.dict_or_empty(entry.get("seen"))}
+			if entry.has("done_at"):  # a recurring mission's last round
+				progress[str(id)]["done_at"] = int(entry["done_at"])
 			if entry.has("said"):  # the coach's conditional questions already asked
 				progress[str(id)]["said"] = JsonFile.dict_or_empty(entry["said"])
 			if entry.get("played") == true:  # a milestone's scene, played
@@ -937,6 +960,8 @@ func _goal_met(m: MissionDef) -> bool:
 					return false
 			return seen.size() >= m.goal_uses
 		"talk_to":
+			if m.goal_topics > 0:
+				return topics_heard.call(m.goal_dialog) >= m.goal_topics
 			return _talk_met(m.goal_dialog, m.goal_outcome)
 		"scene":
 			return progress[m.id].get("played", false)
@@ -950,6 +975,7 @@ func _goal_met(m: MissionDef) -> bool:
 ## lesson names what the numbers say.
 func _complete(m: MissionDef) -> void:
 	progress[m.id]["status"] = "completed"
+	progress[m.id]["done_at"] = region.net.time
 	var score: Dictionary = region.state[m.goal_problem].score if m.goal_type == "solve" else {}
 	if not done_once.has(m.id):
 		done_once[m.id] = true
@@ -957,6 +983,10 @@ func _complete(m: MissionDef) -> void:
 		var share := reward_share(score) * (COMPLIANCE_SHARE if forced else 1.0)
 		region.grant(roundi(m.reward_xp * share), roundi(m.reward_budget * share))
 		region.earn_reputation(0 if forced else m.reward_reputation, "mission")
+		for team in m.reward_trust:
+			region.change_trust(team, m.reward_trust[team])
+	elif m.recurring_days > 0:
+		region.earn_reputation(m.reward_reputation, "routine")  # the routine is seen, no XP again
 		for team in m.reward_trust:
 			region.change_trust(team, m.reward_trust[team])
 	else:

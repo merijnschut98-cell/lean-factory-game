@@ -19,12 +19,12 @@ const HASTY := {"intake": ["intake_volume", "intake_hasty"], "prep": ["prep_outp
 static func _menu() -> KpiMenu:
 	var m := KpiMenu.new()
 	for d: Dictionary in [
-		{"id": "intake_output", "pool": "intake", "kind": "lagging", "rules": {"start": "push", "order": "shortest"}},
-		{"id": "intake_lead_time", "pool": "intake", "kind": "lagging", "rules": {"start": "pull"}},
-		{"id": "intake_oldest", "pool": "intake", "kind": "leading", "rules": {"order": "oldest"}},
-		{"id": "prep_output", "pool": "prep", "kind": "lagging", "rules": {"start": "push"}},
-		{"id": "prep_lead_time", "pool": "prep", "kind": "lagging", "rules": {"start": "pull"}},
-		{"id": "prep_due", "pool": "prep", "kind": "leading", "rules": {"order": "due"}},
+		{"id": "intake_output", "pool": "intake", "kind": "lagging", "focus": "output", "rules": {"start": "push", "order": "shortest"}},
+		{"id": "intake_lead_time", "pool": "intake", "kind": "lagging", "focus": "flow", "rules": {"start": "pull"}},
+		{"id": "intake_oldest", "pool": "intake", "kind": "leading", "focus": "flow", "rules": {"order": "oldest"}},
+		{"id": "prep_output", "pool": "prep", "kind": "lagging", "focus": "output", "rules": {"start": "push"}},
+		{"id": "prep_lead_time", "pool": "prep", "kind": "lagging", "focus": "flow", "rules": {"start": "pull"}},
+		{"id": "prep_due", "pool": "prep", "kind": "leading", "focus": "customer", "rules": {"order": "due"}},
 		# The habit's own rules, and care, which the tests below make strong.
 		{"id": "intake_volume", "pool": "intake", "kind": "lagging", "rules": {"start": "push"}},
 		{"id": "intake_queue", "pool": "intake", "kind": "leading", "rules": {"order": "first_come"}},
@@ -126,6 +126,21 @@ func test_chosen_kpis_change_the_work_rules() -> void:
 	r.advance_days(KpiBoard.REVIEW_DAYS)
 	assert_eq(r.kpi_review({"intake": ["intake_output", "intake_lead_time"], "prep": GOOD["prep"]})["error"], "")
 	assert_eq([intake.start_rule, intake.order_rule], ["push", "shortest"])
+
+
+## What the board steers on is a live fact (steers:<focus>, KpiMenu.steers): scenes and
+## talks read the choice in force, never an old one.
+func test_the_choice_in_force_is_a_fact() -> void:
+	var r := _due_region()
+	var log := Missions.new(r, [] as Array[MissionDef], RulesFixture.coach())
+	assert_false(log.knows("steers:flow"), "nothing chosen yet")
+	assert_eq(r.kpi_review(GOOD)["error"], "")
+	assert_true(log.knows("steers:flow"), "three flow KPIs of four")
+	assert_false(log.knows("steers:output"))
+	r.advance_days(KpiBoard.REVIEW_DAYS)
+	assert_eq(r.kpi_review({"intake": ["intake_output", "intake_volume"], "prep": ["prep_output", "prep_due"]})["error"], "")
+	assert_true(log.knows("steers:output"), "the next quarter's choice")
+	assert_false(log.knows("steers:flow"))
 
 
 func test_a_board_without_a_menu_grants_nothing() -> void:

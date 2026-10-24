@@ -4091,6 +4091,11 @@
       "admission"
      ],
      "text": "Nu lijkt het alsof ik het al jaren fout deed. Elf jaar die maandrun. Ik dacht dat ik efficiënt was. En iedereen in de kantine weet dat de EAN's twee weken bij mij lagen.",
+     "unlocks": {
+      "facts": [
+       "heard:petra_after"
+      ]
+     },
      "via": [
       "silence",
       "empathy",
@@ -4121,6 +4126,9 @@
     "needs": {
      "all": [
       "checked:done_but_not_closed"
+     ],
+     "none": [
+      "heard:petra_after"
      ]
     }
    },
@@ -4153,6 +4161,11 @@
         "admission"
        ],
        "text": "Dan ligt het stil. Dat zei ik toch. Niemand heeft geluisterd. Ik werk nu met koorts, want anders zien ze het meteen.",
+       "unlocks": {
+        "facts": [
+         "heard:petra_after"
+        ]
+       },
        "via": [
         "silence",
         "empathy",
@@ -4198,6 +4211,11 @@
       "admission"
      ],
      "text": "Ze vragen of jij blijft. Als jij over een jaar weggaat, hangt dit ook in de gang met de cijfers van 2023. Dan heb ik het ze weer beloofd. Voor niks.",
+     "unlocks": {
+      "facts": [
+       "heard:marco_day_100"
+      ]
+     },
      "via": [
       "silence",
       "empathy",
@@ -4228,6 +4246,9 @@
     "needs": {
      "all": [
       "done:fix_installer_not_ready"
+     ],
+     "none": [
+      "heard:marco_day_100"
      ]
     }
    },
@@ -4597,7 +4618,7 @@
    "kind": "persuade",
    "layers": [
     {
-     "at": 52,
+     "at": 45,
      "id": "interest",
      "tags": [
       "claim",
@@ -4607,7 +4628,8 @@
      "text": "Bij de meeste studies weet ik na vijf minuten al dat het past. Daarna reken ik nog vier uur, omdat de werkinstructie het zegt. En die school in Nova-Oost wacht.",
      "via": [
       "inquiry",
-      "open_question"
+      "open_question",
+      "reflect"
      ]
     },
     {
@@ -4656,7 +4678,8 @@
    "person": "femke",
    "position": {
     "tags": [
-     "claim"
+     "claim",
+     "feeling"
     ],
     "tell": "time",
     "text": "We hebben twee analisten extra nodig. Achtendertig studies op het bord. Kort gezegd: ik heb geen tijd voor een gesprek over tijd."
@@ -4692,6 +4715,9 @@
    "replies": {
     "mood": {
      "lands": {
+      "tags": [
+       "feeling"
+      ],
       "tell": "time",
       "text": "Hoe het gaat? Ik heb vanochtend drie keer koffie gehaald. Drie keer koud laten worden. Zo gaat het."
      }
@@ -5012,7 +5038,8 @@
      "text": "En naast me staat een hal met twee megawatt. Leeg. Leg me eens uit waarom het net vol is.",
      "via": [
       "paraphrase",
-      "empathy"
+      "empathy",
+      "reflect"
      ]
     },
     {
@@ -5096,6 +5123,15 @@
     }
    ],
    "replies": {
+    "mood": {
+     "lands": {
+      "tags": [
+       "feeling"
+      ],
+      "tell": "time",
+      "text": "Hoe het gaat? Mijn deeg rijst, mijn oven is oud, en ik hang bij jullie aan de lijn. Raad maar."
+     }
+    },
     "perspective": {
      "lands": {
       "text": "Vanuit jullie? Ja, ja. Iedereen wil tegelijk. Maar ik bak niet tegelijk. Ik bak als iedereen slaapt."
@@ -5472,6 +5508,38 @@
      "answer": "Toen de panelen op het dak kwamen, in 2021. Ik wilde weten wat ze opleverden. Veertig jaar heb ik storingen gezocht in fabrieken, en daar leer je één ding: eerst meten, dan praten. Mijn vrouw noemt het een hobby. Ik noem het een meetreeks.",
      "ask": "Hoe bent u eigenlijk met die spreadsheet begonnen?",
      "id": "how_it_began"
+    }
+   ]
+  },
+  {
+   "closing": "Zo. Nu weet je meer dan de meeste mensen die ons bellen. Ik moet verder rekenen.",
+   "id": "femke_expert",
+   "kind": "expert",
+   "mission": "talk_netplanner",
+   "name": "Femke over het volle net",
+   "opening": "Waarom het net vol is? Kort gezegd: dat leg ik je graag uit. Neem een stoel, de koffie is koud.",
+   "person": "femke",
+   "retry_opening": "Jij weer. Goed. Waar waren we?",
+   "topics": [
+    {
+     "answer": "Kort gezegd: op het drukste moment van het jaar mag een kabel of een trafo niet harder werken dan waarvoor hij gemaakt is. Zit een station op een koude winteravond al tegen die grens, dan kan er niks meer bij. Niet de hele dag. Op dat ene moment.",
+     "ask": "Wat bedoelen jullie eigenlijk als het net vol is?",
+     "id": "full"
+    },
+    {
+     "answer": "Dat huisje in je straat, met een trafo erin. Die zet tienduizend volt om naar wat er uit je stopcontact komt. Eén ruimte voedt een paar honderd huizen, en hij is ontworpen op wat die huizen tegelijk vragen. Dat was lange tijd niet zoveel.",
+     "ask": "Wat is zo'n middenspanningsruimte precies?",
+     "id": "msr"
+    },
+    {
+     "answer": "Omdat ze allemaal tegelijk aangaan. Op een koude avond draait in de hele straat de warmtepomp, en de auto hangt aan de laadpaal. Vroeger kookte de ene buurvrouw om zes uur en de andere om zeven. Hoeveel er tegelijk gebeurt, daar rekenen wij op. Dat is eigenlijk het hele vak.",
+     "ask": "Waarom maakt een warmtepomp zoveel uit?",
+     "id": "together"
+    },
+    {
+     "answer": "Te lang. Achtendertig studies op het bord, en we zijn met z'n tweeën. Een studie kost me een halve dag. Reken maar uit. En elke week komen er een paar bij.",
+     "ask": "Hoe lang staat een aanvraag bij jullie op het bord?",
+     "id": "board"
     }
    ]
   },
