@@ -438,7 +438,7 @@ func _can_release(s: ValueStream) -> bool:
 ## Put an order into step `index`, skipping steps it does not need.
 func _enter(order: WorkOrder, index: int) -> void:
 	var steps := order.stream.steps
-	while index < steps.size() and not _needed(steps[index]):
+	while index < steps.size() and not _needed(steps[index], order):
 		index += 1
 	if index >= steps.size():
 		_finish_order(order)
@@ -465,8 +465,11 @@ func _enter(order: WorkOrder, index: int) -> void:
 			_take_material(order, step)
 
 
-## Whether this order needs the step (`applies` is the share that does).
-func _needed(step: SimStep) -> bool:
+## Whether this order needs the step: its own route (WorkOrder.needs), else `applies`
+## (the share that does).
+func _needed(step: SimStep, order: WorkOrder) -> bool:
+	if order.needs.has(step.id):
+		return order.needs[step.id]
 	return step.applies >= 1.0 or step.rng.chance(step.applies)
 
 
@@ -577,7 +580,7 @@ func _work_on(pool: SimPool, order: WorkOrder, minutes: int) -> int:
 ## Whether this attempt fails is known when work starts, so a failed attempt
 ## can cost less than the job (`fail_minutes`).
 func _draw_outcome(order: WorkOrder, step: SimStep) -> void:
-	order.failing = step.ftr < 1.0 and not step.rng.chance(step.ftr)
+	order.failing = order.defect_at == step.id or step.ftr < 1.0 and not step.rng.chance(step.ftr)
 	if order.failing:
 		order.remaining = step.failed_minutes()
 
@@ -768,7 +771,7 @@ func _finish_order(order: WorkOrder) -> void:
 	var lead := time - order.born
 	order.stream.finished.append({
 		"done_at": time, "lead_minutes": lead, "on_time": time <= order.due, "reworks": order.reworks,
-		"failure_demand": order.failure_demand,
+		"failure_demand": order.failure_demand, "order": order.id,
 	})
 	_emit("finished", order)
 	_release_held(order.stream)

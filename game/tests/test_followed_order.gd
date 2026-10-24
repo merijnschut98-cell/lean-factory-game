@@ -14,16 +14,82 @@ func _session() -> GameSession:
 func test_the_el_amrani_dossier_is_a_real_order() -> void:
 	var s := _session()
 	var dossier := s.followed_order()
-	assert_true(dossier["step"] in ["intake", "design"], "it waits early in the stream: %s" % dossier)
+	assert_eq(dossier["step"], "intake", "the whole stream ahead: %s" % dossier)
 	assert_true(dossier["age_days"] > 0.0)
 	assert_eq(dossier["delivered_days"], -1.0)
 	var age: float = dossier["age_days"]
+	_catch_missing_documents(s)
 	assert_eq(s.wait_days(7), "")
 	assert_near(s.followed_order()["age_days"], age + 7.0, 0.01)
-	s.wait_days(200)
+	for week in 29:   # looked at once a week, as a player passing by would
+		s.wait_days(7)
 	var done := s.followed_order()
 	assert_true(done["delivered_days"] > 0.0, "delivered at last: %s" % done)
 	assert_true(done["touch_hours"] > 1.0, "hours of work against weeks of waiting")
+
+
+## The intake catches missing documents now: the fix for incomplete_application in
+## place and holding (as a resolved, unworn fix reads).
+func _catch_missing_documents(s: GameSession) -> void:
+	s.region.state[FollowedOrder.DEFECT_PROBLEM].phase = ProblemState.Phase.RESOLVED
+	s.pass_time(0)
+
+
+## The day of play the dossier is connected (its real done_at), looking once a week (-1: not by `days`).
+func _connected_day(s: GameSession, days: int) -> float:
+	for week in ceili(days / 7.0):
+		if s.followed.delivered_at >= 0:
+			break
+		s.wait_days(7.0)
+	return (s.followed.delivered_at - s.missions.play_start) / 1440.0 if s.followed.delivered_at >= 0 else -1.0
+
+
+## Winter 1's stakes (coordinator's ruling, PLAN 1.8a / D14): her application misses a
+## document today's intake does not ask for, so it goes back to her and joins the queue
+## again, loop after loop, while incomplete_application stands unfixed.
+func test_the_dossier_loops_at_intake_while_missing_documents_go_uncaught() -> void:
+	var s := _session()
+	assert_eq(s.followed.defect_at(s.region.net), FollowedOrder.DEFECT_STEP)
+	var dossier := _connected_day(s, 60)
+	assert_eq(dossier, -1.0, "not connected in two months")
+	var o: WorkOrder = s.region.net.open_orders(s.region.net.stream(FollowedOrder.STREAM)).filter(
+		func(w: WorkOrder) -> bool: return w.id == s.followed.order_id)[0]
+	assert_true(o.reworks >= 5, "back to the customer again and again: %d" % o.reworks)
+	assert_true(o.step_index <= o.stream.step_index(FollowedOrder.DEFECT_STEP), "still at intake")
+
+
+## Once the intake catches it (the bottleneck branch's fix holds), her dossier goes on
+## and is connected within a normal lead time; the other branch's fix does not help her.
+func test_the_dossier_goes_on_once_the_intake_catches_it_and_only_then() -> void:
+	var s := _session()
+	s.wait_days(10.0)
+	_catch_missing_documents(s)
+	assert_eq(s.followed.defect_at(s.region.net), "")
+	var day := _connected_day(s, 80)
+	assert_between(day, 11.0, 60.0, "connected after the fix, within a lead time: %s" % day)
+	var other := _session()
+	other.wait_days(10.0)
+	other.region.state["installer_not_ready"].phase = ProblemState.Phase.RESOLVED   # the non-bottleneck branch
+	other.pass_time(0)
+	assert_eq(other.followed.defect_at(other.region.net), FollowedOrder.DEFECT_STEP, "still uncaught")
+	assert_eq(_connected_day(other, 50), -1.0, "the other branch's fix does not reach her")
+
+
+## A heavier connection (winter 1's stakes, PLAN 1.8a / D14): the heat pump needs more
+## than the house has, so the dossier always takes the netcheck, never a permit or a
+## reinforcement (a meter-cabinet job), whatever the stream's shares say.
+func test_the_dossier_is_a_heavier_connection_with_its_own_route() -> void:
+	var s := _session()
+	var o: WorkOrder = s.region.net.open_orders(s.region.net.stream(FollowedOrder.STREAM)).filter(
+		func(w: WorkOrder) -> bool: return w.id == s.followed.order_id)[0]
+	assert_eq(o.needs, FollowedOrder.ROUTE)
+	var copy := WorkOrder.from_dict(bytes_to_var(var_to_bytes(o.to_dict())), o.stream)
+	assert_eq(copy.needs, o.needs, "saved with the order")
+	var stream := s.region.net.stream(FollowedOrder.STREAM)
+	for i in 20:   # the stream's shares no longer decide for this order
+		assert_true(s.region.net.call("_needed", stream.steps[stream.step_index("grid_study")], o), "the netcheck")
+		assert_false(s.region.net.call("_needed", stream.steps[stream.step_index("permit")], o), "no permit")
+		assert_false(s.region.net.call("_needed", stream.steps[stream.step_index("grid_reinforcement")], o))
 
 
 func test_the_followed_order_survives_a_save() -> void:
@@ -66,9 +132,12 @@ func _found(s: GameSession) -> Array:
 ## industry norm) is a discovery, computed from the simulation.
 func test_the_dossier_delivered_in_time_is_a_discovery() -> void:
 	var s := _session()
+	_catch_missing_documents(s)   # her missing document is caught at intake from the start
 	s.drain_events()
 	var found := []
-	while s.followed_order()["delivered_days"] < 0.0:
+	for week in 30:
+		if s.followed_order()["delivered_days"] >= 0.0:
+			break
 		assert_eq(s.wait_days(7), "")
 		found += _found(s)
 	assert_true(s.followed_order()["delivered_days"] <= 126.0, "the base flow delivers within the norm")

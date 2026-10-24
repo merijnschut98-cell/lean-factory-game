@@ -183,7 +183,7 @@ static func create(entry: Dictionary) -> OfficePerson:
 	if p._animations != null:
 		p.pace = CharacterModel.walk_pace(p.model)
 	if office.get("headset", false):
-		_headset(p.model)
+		headset(p.model)
 	p.tag = _tag("", 32)
 	p.add_child(p.tag)
 	p.bar = _bar()
@@ -509,12 +509,13 @@ static func _bar() -> MeshInstance3D:
 
 
 ## A headset on `model`'s head that follows its Head bone: a band over the crown, an ear
-## cup each side and a boom to the mouth (plain meshes; nothing without a Head bone).
-static func _headset(model: Node3D) -> void:
+## cup each side and a boom to the mouth (plain meshes). Returns it (its node is named
+## "Headset"); null without a Head bone. The player wears one on a KCC call too.
+static func headset(model: Node3D) -> Node3D:
 	var skeleton: Skeleton3D = model.find_children("*", "Skeleton3D", true, false).pop_front()
 	var head := skeleton.find_bone("Head") if skeleton != null else -1
 	if head < 0:
-		return
+		return null
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = HEADSET_COLOR
 	mat.roughness = 0.5
@@ -551,6 +552,7 @@ static func _headset(model: Node3D) -> void:
 	attach.add_child(upright)
 	for part in parts:
 		upright.add_child(part)
+	return attach
 
 
 static func _part(mesh: Mesh, mat: Material, at: Transform3D) -> MeshInstance3D:

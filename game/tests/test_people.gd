@@ -45,6 +45,25 @@ func test_a_talk_also_open_during_later_missions() -> void:
 	assert_eq(people.dialog_for("pim", DialogFixture.world({"main": [], "active": ["fri"]})), null)
 
 
+## A talk on more than one mission (arc S11: `missions:`, the first owns it):
+## open during either, and the main mission's talk when either is the main one.
+func test_a_talk_on_two_missions_is_open_during_either() -> void:
+	var data := DialogFixture.dialog_data({"missions": ["fix_design", "winter"]})
+	data.erase("mission")
+	var two := DialogDef.from_dict(data)
+	assert_eq(two.mission, "fix_design", "the first owns it")
+	assert_eq(Array(two.missions), ["fix_design", "winter"])
+	assert_eq(Array(DialogFixture.def().missions), ["fix_design"], "a talk on one mission")
+	var people := DialogFixture.people([two])
+	for on in ["fix_design", "winter"]:
+		assert_eq(people.dialog_for("pim", DialogFixture.world({"main": [], "active": [on]})).id, "talk", on)
+	assert_eq(people.dialog_for("pim", DialogFixture.world({"main": [], "active": ["fri"]})), null)
+	var side := DialogFixture.def({"id": "side_talk", "mission": "fri"})
+	var both := DialogFixture.people([side, two])
+	assert_eq(both.dialog_for("pim", DialogFixture.world({"main": ["winter"], "active": ["fri", "winter"]})).id,
+		"talk", "the main mission's talk first, whichever of its missions is main")
+
+
 # ── Promises the game checks later (D9 talks audit A4; the check is 2.4b) ────
 
 func test_an_agreed_promise_is_kept_with_the_day_it_was_made() -> void:
@@ -57,6 +76,31 @@ func test_an_agreed_promise_is_kept_with_the_day_it_was_made() -> void:
 	var bare := DialogFixture.people()
 	_talk(bare, LISTENING, DialogFixture.world({"now": FRIDAY}))
 	assert_eq(bare.promises(), {}, "an agreement that promises nothing")
+
+
+## The simulation judged a promised date (Missions: promise_kept / promise_broken):
+## kept, the person trusts you more; broken, the next talk opens 15 lower, once, and a
+## variant keyed on the fact lets her say so (dialog spec §6; drie winters §3).
+func test_a_judged_promise_moves_the_person() -> void:
+	var data := DialogFixture.dialog_data()
+	data["proposals"][0]["promise"] = {"kind": "delivery_date", "days": 3}
+	data["variants"] = [{"needs": {"all": ["promise_broken:talk"]}, "opening": "U zei vrijdag. Het is dinsdag."}]
+	for kept in [true, false]:
+		var people := DialogFixture.people([DialogFixture.def(data)])
+		_talk(people, LISTENING, DialogFixture.world({"now": FRIDAY}))
+		var who: String = people.dialogs["talk"].person
+		var trust: int = people.trust[who]
+		var before := people.start(people.dialogs["talk"], DialogFixture.world()).openness
+		people.judge_promise("talk", kept)
+		people.judge_promise("talk", kept)  # once
+		assert_eq(people.trust[who], trust + (People.PROMISE_KEPT_TRUST if kept else 0), "kept: trust")
+		var facts := {} if kept else {"promise_broken:talk": true}
+		var d := people.start(people.dialogs["talk"], DialogFixture.world({"facts": facts}))
+		assert_eq(d.openness, before + (1 if kept else -15), "kept: +5 trust is +1 open; broken: remembered")
+		assert_eq(people.opening(people.dialogs["talk"], d.version) == "U zei vrijdag. Het is dinsdag.", not kept)
+		var restored := DialogFixture.people([DialogFixture.def(data)])
+		restored.load_dict(people.to_dict())
+		assert_eq(restored.judged, people.judged, "saved")
 
 
 # ── The start of a talk ─────────────────────────────────────────────────────

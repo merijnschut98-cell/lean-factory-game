@@ -218,6 +218,8 @@ class Persona extends RefCounted:
 	var _ever_resolved: Dictionary = {}  # problem id → true, every problem a solve mission fixed
 	## The story's calendar starts this many days on (tests: day 100's milestone at once).
 	var story_day := 0
+	## Stop after this day of play (> 0; the winter probe), else play on.
+	var stop_day := -1.0
 
 	func _init(persona_name: String, seed_number: int, stop_after_main_missions: int = -1) -> void:
 		persona = persona_name
@@ -268,6 +270,9 @@ class Persona extends RefCounted:
 		_sample()
 		if day() > MAX_PLAY_DAYS:
 			_end("horizon")
+			return
+		if stop_day > 0.0 and day() > stop_day:
+			_end("stop_day")
 			return
 		if _actions >= MAX_ACTIONS:
 			_end("action_cap")
@@ -329,6 +334,11 @@ class Persona extends RefCounted:
 		record["discoveries"] = s.discoveries.found.keys()
 		record["people"] = _people_now()
 		record["fixes"] = _fixes_now()
+		# The El Amrani dossier (winter 1): the day of play it was connected (-1: not yet).
+		record["followed_day"] = snappedf((s.followed.delivered_at - s.missions.play_start) / float(SimCalendar.MINUTES_PER_DAY), 0.1) \
+			if s.followed.delivered_at >= 0 else -1.0
+		record["winter"] = "kept" if s.missions.done_once.has("winter_el_amrani") else \
+			("missed" if s.missions.failed("winter_el_amrani") else "open")
 
 	## Every person's trust and morale, at the start and now: {id: {trust,
 	## morale, trust_start, morale_start, left, talks}}.

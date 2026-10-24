@@ -643,6 +643,7 @@ func test_review_100_days_reads_the_facts_and_remembers_the_answer() -> void:
 ## connected before the first frost period.
 func test_winter_el_amrani_is_kept_when_the_followed_order_is_delivered_in_time() -> void:
 	var s := _campaign()
+	s.region.state[FollowedOrder.DEFECT_PROBLEM].phase = ProblemState.Phase.RESOLVED   # the intake catches her document
 	var days := 0
 	while s.missions.status("winter_el_amrani") != "completed" and days < 71:
 		s.wait_days(1.0)
@@ -681,15 +682,29 @@ func test_the_promised_date_is_checked_by_the_simulation() -> void:
 	var call := "el_amrani_fourth_call"
 	s.people.agreed[call] = "name_a_date"
 	s.people.outcomes[call] = "partial"
-	# "over een week of zes", said 40 days ago: due in two days, the dossier not yet connected
-	s.people.talk_log["el_amrani"] = [{"dialog": call, "outcome": "partial", "at": s.region.net.time - SimCalendar.days(40)}]
-	assert_eq(s.people.promises()[call]["days"], 42)
+	# "over een week of zes", said 40 days ago: the date falls the day after tomorrow,
+	# the dossier not yet connected (the fact GameSession records at the talk)
+	s.missions.facts.add("promised:%s:%s" % [call, GameSession.iso_date(s.region.net.time + SimCalendar.days(2))])
 	s.pass_time(0)
 	assert_true(s.followed.delivered_at < 0)
 	assert_false(s.knows("promise_kept:" + call) or s.knows("promise_broken:" + call), "not yet its date")
 	assert_true(s.knows("agreed:%s:name_a_date" % call), "the agreement is a fact")
 	var reputation := s.reputation()
-	s.wait_days(2.5)
+	s.wait_days(3.0)   # that day is over
 	assert_true(s.followed.delivered_at < 0)
 	assert_true(s.knows("promise_broken:" + call), "judged on its date: not connected")
 	assert_eq(s.reputation(), reputation + Missions.PROMISE_BROKEN)
+	# It reaches her: remembered at the next call, which she opens from her notebook.
+	assert_eq(s.people.judged, {call: false})
+	assert_true("promise_broken" in s.people.memory["el_amrani"]["flags"])
+	var d := s.people.start(s.people.dialogs[call], s.call("_world", s.people.persons["el_amrani"]))
+	assert_true(s.people.opening(s.people.dialogs[call], d.version).contains("Ik heb mijn schrift voor me"))
+
+
+## The date named on the phone is a real date (the promise UI): {promise_date:N} is
+## the day N days from now, said as people say it.
+func test_a_promised_date_is_named_as_a_date() -> void:
+	var s := _campaign()
+	assert_eq(s.missions.play_day(), 0)
+	assert_eq(s.fill_tokens("Op {promise_date:42}."), "Op maandag 23 november.", "day 0 is Monday 12 October")
+	assert_eq(s.fill_tokens("{promise_date:1}"), "dinsdag 13 oktober")

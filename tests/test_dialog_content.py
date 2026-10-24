@@ -59,6 +59,14 @@ def test_a_learned_concern_adds_a_clue_only_its_dialog_reveals():
     assert clue["depth"] == 2
 
 
+def test_el_amrani_s_call_comes_during_status_callers_or_before_the_frost():
+    """Arc S11: her fourth call is one talk on two missions, so a player who
+    has not reached the status callers still hears from her before the frost."""
+    d = _dialog(bc.load_content(), "el_amrani_fourth_call")
+    assert d["missions"] == ["fix_status_callers", "winter_el_amrani"]
+    assert "mission" not in d
+
+
 def test_dialogs_are_optional_for_a_content_set_without_people(tmp_path, real):
     docs = {stem: doc for stem, doc in real.items() if stem != "dialogs"}
     assert "dialogs" not in _load(tmp_path, docs)
@@ -138,6 +146,14 @@ def _drop_route(d: dict) -> None:
     (lambda d: _dialog(d, "el_amrani_fourth_call")["proposals"][0].update(promise={"kind": "lie", "days": 3}), "promise.*kind"),
     # A talk open over later days too (D9 talks audit §2.9): missions that exist.
     (lambda d: _dialog(d, "rachid_counter").update(also_during=["fix_nothing"]), "also_during names unknown mission"),
+    # A talk on more than one mission (arc S11): `missions:` instead of `mission:`.
+    (lambda d: _dialog(d, "el_amrani_fourth_call").update(missions=["fix_status_callers", "fix_nothing"]),
+     "unknown mission"),
+    (lambda d: _dialog(d, "el_amrani_fourth_call").update(missions=[]), "missions"),
+    (lambda d: _dialog(d, "el_amrani_fourth_call").update(missions="winter_el_amrani"), "missions"),
+    (lambda d: _dialog(d, "el_amrani_fourth_call").update(mission="fix_status_callers",
+                                                         missions=["fix_status_callers", "winter_el_amrani"]),
+     "'mission' or 'missions'"),
     # The Act 0 talks name the day's move (tutorial talks spec §5).
     (lambda d: _dialog(d, "joost_output_kpi").update(teaches=["mood"]), "'teaches' only on a tutorial"),
     (lambda d: _dialog(d, "joost_output_kpi").update(tutorial=True, teaches=["shout"]), "'teaches' names listening"),

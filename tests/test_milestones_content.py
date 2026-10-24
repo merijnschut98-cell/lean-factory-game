@@ -91,6 +91,8 @@ def test_a_designed_failed_check_has_its_own_debrief(rules_dirs):
     (_add(_review(scene="ghost")), "names no scene 'ghost'"),
     (_add(_review(scene=None)), "'scene' must be"),
     (_add(_review(steps=None)), "missing go"),
+    (_add(_review(missed="Te laat.")), "'missed' is a milestone's line"),
+    (_add(_winter(missed="x" * 81)), "at most 80 characters"),
     (_add(_winter(payoff=[{"who": "ruud", "by": "fax", "text": "Hoi."}])), "'by' must be one of"),
     (_add(_winter(steps={"go": "Ga naar huis"})), "'go' leads to a milestone's scene"),
     (_add(_review(opens_on={"week": 3})), "'opens_on' is"),
@@ -134,6 +136,7 @@ def test_real_act_one_milestones():
     assert review["opens_on"] == {"day": 100} and review["scene"] == "review_100_days"
     assert winter["goal"]["promise"] == "el_amrani_fourth_call" and winter["deadline_on_day"] == 70
     assert "flag:el_amrani_complaint" in winter["sets_flags_on_fail"]
+    assert winter["missed"] and "missie" not in winter["missed"].lower()
     rooms = {r["id"]: r for r in docs["world"]["rooms"]}
     assert "review_100_days" in rooms["mt_room"]["opens_with"]
     scene = next(s for s in docs["scenes"]["scenes"] if s["id"] == "review_100_days")
