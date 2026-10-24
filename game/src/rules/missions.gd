@@ -184,6 +184,11 @@ func active(kind: String = "") -> Array[MissionDef]:
 	return out
 
 
+## The side slots in use (of MAX_SIDE): the active sides, a routine not counted.
+func sides_taken() -> int:
+	return active("side").filter(func(m: MissionDef) -> bool: return not m.is_routine()).size()
+
+
 ## The act the player is in: the active main mission's, else the latest act
 ## with a main mission done (0, the training week, before any).
 func current_act() -> int:
@@ -208,7 +213,7 @@ func accept(id: String) -> String:
 		return "locked"
 	if m.kind == "main" and active("main").size() >= MAX_MAIN:
 		return "main_active"
-	if m.kind == "side" and active("side").size() >= MAX_SIDE:
+	if m.kind == "side" and not m.is_routine() and sides_taken() >= MAX_SIDE:
 		return "side_full"
 	if m.goal_type == "rework_fix":
 		if not region.start_rework(m.goal_problem).is_empty():

@@ -363,8 +363,20 @@ func _coached(moves: Array, main: bool = true, def: DialogDef = null) -> People:
 	var people := DialogFixture.people([DialogFixture.def(), DialogFixture.checkin()])
 	var d := people.start(def if def != null else people.dialogs["talk"], DialogFixture.world())
 	DialogFixture.play(d, moves)
-	people.finish(d, 0, main)
+	people.finish(d, 0, "fix_design" if main else "")
 	return people
+
+
+## A talk on more than one mission (`missions:`, arc S11) whose main mission is not its
+## first: the coach still asks about it (S2-L's note: the first was stored, so the question
+## was dropped).
+func test_the_coach_asks_about_a_talk_on_more_missions_by_its_main_one() -> void:
+	var def := DialogFixture.def({"mission": null, "missions": ["walk_side", "fix_design"]})
+	var people := DialogFixture.people([def, DialogFixture.checkin()])
+	var d := people.start(people.dialogs["talk"], DialogFixture.world())
+	DialogFixture.play(d, COMPLY)
+	people.finish(d, 0, "fix_design")
+	assert_eq(people.coach_question("fix_design")["stage"], "talk", "Ruud asks about the main mission's talk")
 
 
 func test_the_coach_asks_once_about_a_main_mission_talk() -> void:
@@ -389,7 +401,7 @@ func test_the_coach_never_asks_about_a_side_talk_or_a_checkin() -> void:
 	var d := people.start(people.dialogs["checkin"], DialogFixture.world())
 	DialogFixture.play(d, ["confront", "confront"])
 	assert_eq(d.outcome, "ruined")
-	people.finish(d, 0, true)
+	people.finish(d, 0, "fix_design")
 	assert_eq(people.coach_question("fix_design"), {})
 
 

@@ -14,6 +14,8 @@
 #           opens (PLAN 2.4c) and the player hangs the teams' KPIs; the beats after it
 #           are chosen once the board closes, so they can read the choice
 #           (steers:<output | flow | customer>) and the forecast (forecast_positive:kpi_board).
+#           `stand_at: scene:<room>:<spot>` (a spot in the room's model): from this line on
+#           the people present stand there side by side (Ruud and Frank at the KPI board).
 # No score screen: the scene reads the facts out loud, through people.
 
 scenes:
@@ -140,6 +142,7 @@ scenes:
       - speaker: ruud
         line: "Het bord is vandaag van jou. Waar laten we de teams het komende kwartaal op sturen?"
         board: true
+        stand_at: "scene:directors_obeya:board"
 
       # What hangs now, in Frank's words.
       - speaker: frank

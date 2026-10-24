@@ -20,6 +20,8 @@ const INSIDE_DOOR := 3.5
 ## others at the table stay clear of the question and its answers (an estimate, tuned on
 ## play_mt_room_scene).
 const TABLE_LIFT := 0.16
+## Staged at a spot (a beat's `stand_at`), the player stands this far (m) behind the people.
+const STAGE_BEHIND := 1.1
 
 var office: Office
 var lines: SceneLines
@@ -39,6 +41,10 @@ var _since_poll := 0.0
 var _holding := false
 ## Who the camera frames now, and whether as the one asking ("" for none).
 var _framed := ""
+## The scene spot the people were staged at by a line's `stand_at` ("" for none).
+var _staged := ""
+## The lines said now (the last `stand_at` among them holds when they are skipped).
+var _saying: Array = []
 
 
 static func create(of_office: Office) -> OfficeMilestone:
@@ -60,6 +66,7 @@ func _process(delta: float) -> void:
 ## One frame (tests call it with their own dt).
 func step(dt: float) -> void:
 	lines.step(dt)
+	_stage(str(lines.current().get("stand_at", "")))
 	_hold()
 	_since_poll += dt
 	if not playing.is_empty() or _since_poll < POLL_SECONDS:
@@ -107,7 +114,7 @@ func start(mission_id: String) -> void:
 	var seat := _spot("player")
 	if seat != null:   # "Kom erbij zitten"
 		office.player.sit_at(office.in_office(seat))
-	lines.say(_said(_scene["before"]))
+	_say(_scene["before"])
 	if _scene["before"].is_empty():
 		_on_lines_done()
 
@@ -115,6 +122,9 @@ func start(mission_id: String) -> void:
 func _on_lines_done() -> void:
 	if playing.is_empty():
 		return
+	for l: Dictionary in _saying:   # skipped lines still leave the people where they said them
+		_stage(str(l.get("stand_at", "")))
+	_saying = []
 	if _scene["board"] and not _boarded:
 		_open_board()
 		return
@@ -159,7 +169,7 @@ func _on_board_closed(_result: Dictionary) -> void:
 	if _scene["after"].is_empty():
 		_on_lines_done()
 	else:
-		lines.say(_said(_scene["after"]))
+		_say(_scene["after"])
 
 
 ## Stop the scene without finishing it; it starts again once the player comes back in.
@@ -182,11 +192,42 @@ func _on_chosen(index: int) -> void:
 		lines.say(said)
 
 
+func _say(scene_lines: Array) -> void:
+	_saying = scene_lines
+	lines.say(_said(scene_lines))
+
+
 static func _said(scene_lines: Array) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	for l: Dictionary in scene_lines:
-		out.append({"who": l["name"], "text": l["text"]})
+		var said := {"who": l["name"], "text": l["text"]}
+		if l.has("stand_at"):
+			said["stand_at"] = l["stand_at"]
+		out.append(said)
 	return out
+
+
+## The people present stand side by side at scene spot `marker` (a line's `stand_at`,
+## facing what the spot looks at), the player standing just behind them, between them,
+## looking the same way ("Kom erbij staan", as the MT-kamer sits you down); they turn to
+## the player. Once per spot, nothing for "" or a spot the floor lacks.
+func _stage(marker: String) -> void:
+	var spot: Node3D = office.floors.markers().get(marker) if not marker.is_empty() else null
+	if spot == null or marker == _staged:
+		return
+	_staged = marker
+	var t := office.in_office(spot)
+	var at := t.origin * Vector3(1, 0, 1)
+	var across := (t.basis.x * Vector3(1, 0, 1)).normalized()
+	if not office.player.seated:
+		office.player.stop()
+		office.player.position = at + (t.basis.z * Vector3(1, 0, 1)).normalized() * STAGE_BEHIND
+		office.player.face(Basis.looking_at(-t.basis.z * Vector3(1, 0, 1)))
+	var ids := _people.keys()
+	for i in ids.size():
+		var p: OfficePerson = _people[ids[i]]
+		var stand := at + across * (i - (ids.size() - 1) / 2.0) * SPACING
+		p.settle({"at": stand, "face": office.player.position - stand, "pose": "talk"})
 
 
 func _room_of(m: MissionDef) -> String:
@@ -208,6 +249,7 @@ func _place_people(m: MissionDef) -> void:
 		p.queue_free()
 	_people.clear()
 	_waiting_for = id
+	_staged = ""
 	if m == null:
 		return
 	var markers := office.floors.markers()

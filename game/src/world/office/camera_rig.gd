@@ -229,20 +229,33 @@ func _goal() -> Vector3:
 
 
 func _place() -> void:
-	var back := Vector2(sin(_shown_yaw), cos(_shown_yaw))
-	var d := _shown_distance
-	var p := _shown_pitch
-	var room := _room_behind(Vector2(focus.x, focus.z), back)
-	if d * cos(p) > room:
-		p = minf(acos(room / d), MAX_PITCH)
-	var ground := Vector2(focus.x, focus.z) + back * d * cos(p)
-	var at := Vector3(ground.x, focus.y + d * sin(p), ground.y)
+	var at := eye(focus, _shown_yaw, _shown_distance, _shown_pitch)
 	camera.transform = Transform3D(Basis.looking_at(focus - at), at)
 	# Sideways and down, not turned: the focus moves off the middle.
-	var half_height := d * tan(deg_to_rad(camera.fov) / 2.0)
+	var half_height := _shown_distance * tan(deg_to_rad(camera.fov) / 2.0)
 	camera.h_offset = _shown_shift * 2.0 * half_height * _aspect()
 	# Down, so the focus rises on screen by the lift.
 	camera.v_offset = -_shown_lift * 2.0 * half_height
+
+
+## Where the camera stands looking at `at` from `look_yaw`, `d` away and `p` steep:
+## steeper where the floor behind ends sooner (it stays over the floor).
+func eye(at: Vector3, look_yaw: float, d: float, p: float) -> Vector3:
+	var back := Vector2(sin(look_yaw), cos(look_yaw))
+	var room := _room_behind(Vector2(at.x, at.z), back)
+	if d * cos(p) > room:
+		p = minf(acos(room / d), MAX_PITCH)
+	var ground := Vector2(at.x, at.z) + back * d * cos(p)
+	return Vector3(ground.x, at.y + d * sin(p), ground.y)
+
+
+## Where the view starts for that framing, `lift` and `shift` included: the camera's
+## offsets move it (Camera3D.get_camera_transform), so this is the point it sees from.
+func view_from(at: Vector3, look_yaw: float, d: float, p: float, lift := 0.0, shift := 0.0) -> Vector3:
+	var origin := eye(at, look_yaw, d, p)
+	var b := Basis.looking_at(at - origin)
+	var half_height := d * tan(deg_to_rad(camera.fov) / 2.0)
+	return origin + b.y * (-lift * 2.0 * half_height) + b.x * (shift * 2.0 * half_height * _aspect())
 
 
 ## The screen's width over its height (16:9, the project's, outside a window).
