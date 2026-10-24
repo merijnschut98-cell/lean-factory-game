@@ -43,6 +43,9 @@ var help_label: Label
 var _toasts: VBoxContainer
 ## In a talk the bar shows only the date and time: no budget, XP or mission.
 var _talking := false
+## A panel is open over the world (show_overlay): the objective line steps aside, so it
+## never covers the panel's title (a tall one reaches the top bar; PLAN 2.10 S3-D).
+var _panel_open := false
 ## Which element may show (Opening.hud: the first day reveals them one at a
 ## time); everything when not set.
 var revealed: Dictionary = {}
@@ -202,9 +205,9 @@ func controls_text() -> String:
 
 
 ## The objective line shows from its moment (Opening.hud "mission"; the first day's
-## walk behind Ruud before it), never in a talk or while a scene speaks.
+## walk behind Ruud before it), never in a talk, over a panel or while a scene speaks.
 func _objective_shown() -> bool:
-	return not objective_label.text.is_empty() and not _talking and not _scene_running() \
+	return not objective_label.text.is_empty() and not _talking and not _panel_open and not _scene_running() \
 		and (may_show("mission") or _objective.get("step") == "follow")
 
 
@@ -228,10 +231,12 @@ func set_talking(on: bool) -> void:
 		refresh()
 
 
-## The toasts and controls line; hidden while a panel is open.
+## The toasts, the controls line and the objective line; hidden while a panel is open.
 func show_overlay(on: bool) -> void:
+	_panel_open = not on
 	help_label.visible = on and may_show("controls")
 	_toasts.visible = on
+	objective_label.visible = _objective_shown()
 
 
 ## The bar's phone: "Telefoon · Tab", and how much is new on it.

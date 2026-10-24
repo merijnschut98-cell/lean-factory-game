@@ -16,20 +16,21 @@ var rule_color := Color(0.42, 0.62, 0.82, 0.32)
 ## The red margin line of a writing pad.
 var margin_color := Color(0.85, 0.35, 0.33, 0.42)
 
-## The board's rim around the sheet, and the clip's room above it (px).
-const RIM := 16
-const CLIP_ROOM := 34
-const CLIP := Vector2(220, 46)
+## The board's rim around the sheet, and the board's room above it where the clip holds
+## the sheet's top edge (px).
+const RIM := 10
+const CLIP_ROOM := 8
+const CLIP := Vector2(220, 34)
 ## Where the ruling starts under the sheet's top (the title sits above it).
-const HEADER := 64
+const HEADER := 62
 const MARGIN_LINE := 30
 
 
 func _init() -> void:
-	content_margin_left = RIM + MARGIN_LINE + 18
-	content_margin_right = RIM + 28
-	content_margin_top = RIM + CLIP_ROOM + 18
-	content_margin_bottom = RIM + 24
+	content_margin_left = RIM + MARGIN_LINE + 16
+	content_margin_right = RIM + 24
+	content_margin_top = RIM + CLIP_ROOM + 16
+	content_margin_bottom = RIM + 12
 
 
 func _draw(to_canvas_item: RID, rect: Rect2) -> void:
@@ -53,7 +54,7 @@ func _draw(to_canvas_item: RID, rect: Rect2) -> void:
 
 ## The metal clip over the sheet's top edge: a plate, its rivets and the lever.
 func _clip(ci: RID, rect: Rect2) -> void:
-	var at := Rect2(Vector2(rect.get_center().x - CLIP.x / 2.0, rect.position.y + 6), CLIP)
+	var at := Rect2(Vector2(rect.get_center().x - CLIP.x / 2.0, rect.position.y + 2), CLIP)
 	flat(Color("#b9bcc2"), 10, 3).draw(ci, at)
 	flat(Color("#d9dbe0"), 8, 0).draw(ci, at.grow_individual(-8, -6, -8, -CLIP.y / 2.0))
 	for dx in [-CLIP.x * 0.36, CLIP.x * 0.36]:

@@ -16,7 +16,7 @@ extends SceneTree
 ## without the standard) · sustain (the fix standardised, then left alone for
 ## weeks: its health, the audit and the routine in the team's menu, and the
 ## toasts of a slipping fix) · discoveries (the codex's Ontdekkingen tab with
-## two found) · simulating (the A3's note while the Check runs) · fork_board
+## two found) · simulating (Petra's screen's note while the Check runs) · fork_board
 ## (the board after the first mission: the fork as a pair) · debt (the HUD in
 ## debt, with the floor, and its toasts) · dialog_start, dialog_mid,
 ## dialog_summary, dialog_ruined (a talk with Joost) ·
@@ -65,6 +65,9 @@ extends SceneTree
 ## play_van_ride, play_van_talk, play_van_choose (PLAN 2.15 S2-Y: riding along with Sandra,
 ## the edge of town going by; Henk's talk in the cab, his face, then the two of you) · play_opleidingsterrein (Henk shows Ahmed the
 ## joint at the practice trench) · play_yard_morning (07:38: the monteurs at their vans).
+## play_desk, play_a3_clipboard, play_check_screen (PLAN 2.10 S3-D: your desk with your name
+## plate, badge photo, the letter and your clipboard; E there, the A3 on the clipboard; the
+## Check at Petra's screen, drawn as her monitor).
 ## play_2e_day, play_mt_room_scene, play_tell_obeya_high (PLAN 2.16 S3-A: the 2e at ten,
 ## coffee and chatter at its corner; Honderd dagen in the MT-kamer, you seated, Ruud at the
 ## table and Frank at the screen asking his question (play_mt_room_ruud: Ruud's first line,
@@ -136,6 +139,8 @@ func _run() -> void:
 				_stand_at(office, DESIGN)
 				office.interact(office.interactable(DESIGN))
 				office.rig.snap()
+		"play_desk", "play_a3_clipboard", "play_check_screen":
+			await _desk(office, state)
 		"coach":
 			_investigate(office, false)
 			office.interact(office.interactable("coach"))
@@ -161,7 +166,9 @@ func _run() -> void:
 			office.interact(office.interactable("obeya"))
 			office.ui.a3_form.submit(_a3(office))
 			office.ui.a3_form.wait()
-			office.ui.a3_form.show_simulating()
+			office.ui.close_panels()
+			office.ui.check_panel.show_simulating(office.ui.a3_form.problem_id)   # as open_check shows it
+			office.ui.check_panel.show()
 		"fork_board":
 			office.session.missions.done_once[MISSION] = true
 			office.session.missions.progress[MISSION] = {"status": "completed", "asks": {}, "seen": {}}
@@ -444,6 +451,38 @@ func _pile_up(net: Network, place: String, n: int) -> void:
 	var step := net.step_at(place)
 	for i in n:
 		net.queue_of(step).append(WorkOrder.new(-1 - i, net.stream(place.get_slice(".", 0)), net.time))
+
+
+## Your desk at Aansluitingen (PLAN 2.10, S3-D): Noor's desk with her name plate, her badge
+## photo, the El Amrani letter and her clipboard (play_desk); E there, the A3 on the
+## clipboard (play_a3_clipboard); the experiment run, the Check at Petra's screen
+## (play_check_screen).
+func _desk(office: Office, state: String) -> void:
+	var me := office.session.player.copy()
+	me.name = "Noor"
+	me.portrait = await PortraitPhoto.take(root, me.look)
+	office.session.player = me
+	_investigate(office, true)
+	office.ui.close_panels()
+	_stand_at(office, OfficeDesk.ID)
+	var desk := office.interactable(OfficeDesk.ID)
+	match state:
+		"play_desk":
+			office.frame(desk)
+			office.rig.snap()
+		"play_a3_clipboard":
+			office.interact(desk)
+			office.ui.a3_form.fill(_a3(office))
+			office.rig.snap()
+		"play_check_screen":
+			office.interact(desk)
+			office.ui.a3_form.submit(_a3(office))
+			office.ui.a3_form.wait()
+			office.ui.close_panels()
+			OfficeCheckScreen.refresh(office)   # each frame in the office
+			_stand_at(office, OfficeCheckScreen.ID)
+			office.interact(office.interactable(OfficeCheckScreen.ID))
+			office.rig.snap()
 
 
 ## Stand a step behind the marker, looking the way it faces; the camera

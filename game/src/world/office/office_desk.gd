@@ -24,8 +24,8 @@ const PLATE_AT := Vector3(0.02, TOP, -0.01)
 const PHOTO_AT := Vector3(0.66, TOP, -0.24)
 const LETTER_AT := Vector3(0.56, TOP + 0.001, 0.06)
 const CLIPBOARD_AT := Vector3(-0.44, TOP, 0.12)
-## The photo's frame: passport ratio (PlayerProfile.PORTRAIT_SIZE), 9 cm wide.
-const PHOTO_SIZE := Vector2(0.09, 0.1157)
+## The photo's frame: passport ratio (PlayerProfile.PORTRAIT_SIZE), 12 cm wide.
+const PHOTO_SIZE := Vector2(0.12, 0.154)
 ## The badge's colours while no photo was taken (the creator's placeholder).
 const NO_PHOTO := Color("#c9d6e3")
 ## The letter's ink lines between its greeting and its close (OfficeOpening.LETTER), too
