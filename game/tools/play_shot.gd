@@ -75,7 +75,8 @@ extends SceneTree
 ## shelf, the returns pallet, the complaints' tray at their highest; the list at its lowest).
 ## play_desk, play_a3_clipboard, play_check_screen (PLAN 2.10 S3-D: your desk with your name
 ## plate, badge photo, the letter and your clipboard; E there, the A3 on the clipboard; the
-## Check at Petra's screen, drawn as her monitor).
+## Check at Petra's screen, drawn as her monitor) · play_desk_thanks (R-1 #5: the winter promise
+## kept, mevrouw El Amrani's thank-you letter lies beside her first one).
 ## play_2e_day, play_mt_room_scene, play_tell_obeya_high (PLAN 2.16 S3-A: the 2e at ten,
 ## coffee and chatter at its corner; Honderd dagen in the MT-kamer, you seated, Ruud at the
 ## table and Frank at the screen asking his question (play_mt_room_ruud: Ruud's first line,
@@ -147,7 +148,7 @@ func _run() -> void:
 				_stand_at(office, DESIGN)
 				office.interact(office.interactable(DESIGN))
 				office.rig.snap()
-		"play_desk", "play_a3_clipboard", "play_check_screen":
+		"play_desk", "play_desk_thanks", "play_a3_clipboard", "play_check_screen":
 			await _desk(office, state)
 		"coach":
 			_investigate(office, false)
@@ -486,6 +487,11 @@ func _desk(office: Office, state: String) -> void:
 	var desk := office.interactable(OfficeDesk.ID)
 	match state:
 		"play_desk":
+			office.frame(desk)
+			office.rig.snap()
+		"play_desk_thanks":
+			office.session.missions.done_once["winter_el_amrani"] = true
+			office.desk.refresh()
 			office.frame(desk)
 			office.rig.snap()
 		"play_a3_clipboard":

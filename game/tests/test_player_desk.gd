@@ -103,6 +103,25 @@ func test_the_el_amrani_letter_lies_on_the_desk_once_ruud_has_handed_it_over() -
 	office.free()
 
 
+## R-1 #5 (design §3.2: "her call and the letter's reply on your desk"): once the winter
+## promise is kept, her thank-you letter lies on your desk beside her first letter, its
+## greeting and close readable, as well as in Berichten.
+func test_her_thank_you_letter_lies_on_your_desk_once_the_winter_promise_is_kept() -> void:
+	var office := _office()
+	assert_false(office.desk.thanks_shown(), "no thank-you before the frost")
+	office.session.missions.done_once["winter_el_amrani"] = true
+	office.desk.refresh()
+	assert_true(office.desk.thanks_shown(), "her letter on your desk")
+	var text := office.desk.thanks_text()
+	assert_true(text.begins_with("Beste Noor,"), "to you, by name: " + text)
+	assert_true(text.ends_with("Fatima El Amrani"), "signed by her")
+	assert_true(office.desk.letter_shown(), "beside her first letter")
+	PhoneMessages.sync(office.session, office.ui.session_layer)
+	assert_true(office.ui.session_layer.inbox.any(func(e: Dictionary) -> bool:
+		return e["id"] == PhoneMessages.PAYOFF + "winter_el_amrani:1"), "and in Berichten")
+	office.free()
+
+
 func test_e_at_your_desk_opens_your_a3_with_the_camera_on_the_desk() -> void:
 	var office := _office()
 	office.ui.mission_board.accept(MISSION)
