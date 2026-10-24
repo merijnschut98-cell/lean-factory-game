@@ -1012,7 +1012,8 @@ func chatter(first: String, second: String) -> Array[String]:
 		return people.persons[id].team if people.persons.has(id) else "")
 	var loads := [load_of(first), load_of(second)]
 	var load := "busy" if "busy" in loads else ("calm" if loads.all(func(l: String) -> bool: return l == "calm") else "")
-	out = catalog.reactions.chatter_for(teams, load, hash(pair) + today)
+	out = catalog.reactions.chatter_for(teams, load, hash(pair) + today,
+		SimCalendar.weekday(region.net.time - SimCalendar.days(WARMUP_DAYS)))
 	if not out.is_empty():
 		_chatted[pair] = today
 	out.assign(out.map(fill_tokens))

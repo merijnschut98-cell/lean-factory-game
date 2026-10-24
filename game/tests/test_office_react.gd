@@ -144,6 +144,21 @@ func test_chatter_only_with_two_at_the_corner() -> void:
 	office.free()
 
 
+## A chatter with `days` (content/dialogs.yaml) is said only on those days: plans for the
+## weekend on Thursday or Friday, never on a Monday.
+func test_weekend_plans_are_not_chatted_about_on_a_monday() -> void:
+	var r := Reactions.new({"chatter": [
+		{"id": "weekend", "days": ["thu", "fri"], "lines": ["Nog plannen voor het weekend?", "Slapen."]},
+		{"id": "monday", "lines": ["Goed weekend gehad?", "Te kort."]}]})
+	for n in 4:
+		assert_eq(r.chatter_for([], "", n, 0)[0], "Goed weekend gehad?", "Monday, variant %d" % n)
+	var friday := range(4).map(func(n: int) -> String: return r.chatter_for([], "", n, 4)[0])
+	assert_true("Nog plannen voor het weekend?" in friday, "on Friday it can come up")
+	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
+	var weekend: Dictionary = s.catalog.reactions.chatter.filter(func(c: Dictionary) -> bool: return c["id"] == "weekend")[0]
+	assert_false("mon" in weekend.get("days", ["mon"]), "the real weekend chatter waits for the end of the week")
+
+
 ## The corners are found once when the floor loads, not every look round.
 func test_the_coffee_corners_are_found_once_per_floor() -> void:
 	var office := _office()
