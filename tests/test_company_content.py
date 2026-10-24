@@ -21,6 +21,7 @@ def _cast() -> list[dict]:
 
 def _check(real: dict, mutate) -> None:
     docs = copy.deepcopy(real)
+    docs["company"].pop("people")  # built by check_company, never authored
     mutate(docs["company"])
     bc.validate_company(docs["company"], "company.yaml")
     bc.check_company(docs)
@@ -97,7 +98,67 @@ def test_a_pooled_team_has_its_pools_headcount_and_every_number_its_source(real)
         assert ("source" in n) != ("estimate" in n), n["id"]
 
 
+def test_every_team_has_a_lead(real):
+    """Slice 3 (§1.6): a team names its lead: someone in the cast, a named person not in
+    it yet, or `head` (the department's head leads it directly)."""
+    company = real["company"]
+    managers = bc.company_managers(company)
+    for d in company["departments"]:
+        for t in d["teams"]:
+            assert "lead" in t, t["id"]
+    assert _team(company, "planning")["lead"] == "head"
+    assert managers["linda"] == "Frank Hulshof"
+    assert managers["yvonne"] == _team(company, "ontvangst")["lead"]["name"], "a named lead"
+    assert managers["dirk"] == "Marco Peters"
+
+
+def test_act_two_has_its_teams(real):
+    """The six Act II mains touch Revisie & GIS, Netstudies, the projectteam netverzwaring
+    and Inkoop, the congestiedesk and the MT: all are in the company with a lead."""
+    company = real["company"]
+    for team in ["revisie", "netplanning", "projecten", "inkoop", "grootzakelijk", "directie_staf"]:
+        assert _team(company, team)["lead"], team
+    assert _team(company, "projecten")["lead"]["title"] == "projectleider netverzwaring"
+
+
+def test_a_teams_headcount_holds_the_people_placed_in_it(real):
+    for d in real["company"]["departments"]:
+        for t in d["teams"]:
+            placed = len(t.get("members", [])) + int(isinstance(t["lead"], dict) and "id" in t["lead"])
+            assert t["headcount"]["value"] >= placed, t["id"]
+
+
+def test_the_built_file_indexes_every_person(real):
+    """company.json carries `people`: id → title, department, team and manager (by name),
+    so Wie is wie and the briefings read one place."""
+    people = real["company"]["people"]
+    assert people["anouk"] == {"title": "werkvoorbereider", "department": "Aansluitingen & Netverzwaring",
+                               "team": "Werkvoorbereiding", "manager": "Joost van Dijk"}
+    assert people["ruud"]["manager"] == ""
+    assert people["gert"] == {"title": "uitvoerder, Grondwerk Peeters", "organisation": "Grondwerk Peeters"}
+    assert set(people) == set(bc.company_people(real["company"]))
+
+
+def test_the_sector_numbers_come_from_all_three_named_sources(real):
+    """Design §1.6 names netbeheernederland.nl, acm.nl and cbs.nl."""
+    hosts = {n["source"]["url"].split("/")[2] for n in real["company"]["numbers"] if "source" in n}
+    for host in ["www.netbeheernederland.nl", "www.acm.nl", "www.cbs.nl"]:
+        assert host in hosts, host
+
+
+def test_a_site_staff_count_carries_an_estimate(real):
+    sites = {s["id"]: s for s in real["company"]["sites"]}
+    for site in ["lindeveld", "havenzij"]:
+        assert "estimate" in sites[site]["headcount"], site
+
+
 @pytest.mark.parametrize("mutate, message", [
+    (lambda c: _team(c, "planning").pop("lead"), "team 'planning': needs a 'lead'"),
+    (lambda c: _team(c, "planning").update(lead="boss"), "team 'planning' lead: needs"),
+    (lambda c: _team(c, "magazijn")["members"].extend(_team(c, "kcc_agents").pop("members")),
+     "team 'magazijn': 3 people placed but a headcount of 2"),
+    (lambda c: next(s for s in c["sites"] if s["id"] == "havenzij")["headcount"].pop("estimate"),
+     "site 'havenzij' headcount: give a source or an estimate"),
     (lambda c: _team(c, "werkvoorbereiding")["members"].clear(), "'anouk' .* is not in company.yaml"),
     (lambda c: _team(c, "werkvoorbereiding")["members"][0].update(title="tekenaar"),
      "'anouk': title 'tekenaar' .* 'werkvoorbereider'"),

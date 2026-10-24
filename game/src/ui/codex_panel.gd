@@ -6,7 +6,9 @@ extends UiPanel
 ## fold; those with learned entries start open. "Ontdekkingen": the hidden
 ## rewards, found ones with their story, the rest as silhouettes with a hint
 ## once their act is over (Merijn, 2026-10-15), and the titles earned under
-## the player's name.
+## the player's name. "Voltana": the company page (Company: the sites, the 2012
+## programme, the sector numbers with their source or estimate; who works where
+## is in Wie is wie).
 
 const CATEGORY_ORDER := ["lean", "kata", "measure", "sector"]
 const CATEGORY_TITLES := {"lean": "Lean", "kata": "Kata", "measure": "Meten", "sector": "Energiesector"}
@@ -14,7 +16,14 @@ const CONCEPTS := "concepts"
 const DISCOVERIES := "discoveries"
 const EXPLAINERS := "explainers"
 const TALKS := "talks"
-const TABS := {CONCEPTS: "Begrippen", DISCOVERIES: "Ontdekkingen", EXPLAINERS: "Hoe werkt het?", TALKS: "Gesprekken"}
+const COMPANY := "company"
+const TABS := {CONCEPTS: "Begrippen", DISCOVERIES: "Ontdekkingen", EXPLAINERS: "Hoe werkt het?", TALKS: "Gesprekken",
+	COMPANY: "Voltana"}
+## The company page's sections.
+const SITES := "Locaties"
+const HISTORY := "Geschiedenis"
+const NUMBERS := "Cijfers"
+const NUMBERS_INTRO := "Wat er speelt in de sector, en wat dat voor Zuidmark betekent."
 ## Gesprekken: Ruud's move cards of the Act 0 days reached, to reread.
 const TALKS_INTRO := "De briefjes van Ruud uit je eerste week: acht manieren van luisteren, en wie er tegenover je zit."
 const NOT_YET := "Komt nog, in je eerste week."
@@ -93,6 +102,9 @@ func refresh() -> void:
 		return
 	if tab == TALKS:
 		_move_cards()
+		return
+	if tab == COMPANY:
+		_company_page()
 		return
 	var all := groups(session.catalog.concepts, session.region.profile.concepts)
 	var known := 0
@@ -193,6 +205,38 @@ func _move_cards() -> void:
 		box.add_child(label(card["title"], UiTheme.FONT_SIZE, Palette.VOLTANA_BLUE))
 		box.add_child(paragraph(card["text"], Palette.INK, 15))
 		box.add_child(paragraph("'%s'" % card["why"], Palette.MUTED, 15))
+
+
+## The company page: what Voltana is, its sites, its history as everyone knows it
+## (who led 2012 is for the talks), and the numbers with their source or estimate.
+func _company_page() -> void:
+	var doc := Company.doc()
+	var company := JsonFile.dict_or_empty(doc.get("company"))
+	var me := add_card(_list, "%s · regio %s" % [company.get("name", ""), company.get("region", "")], Palette.BLUE_PALE)
+	me.add_child(paragraph(str(company.get("about", "")), Palette.INK, UiTheme.SMALL))
+	for section: Array in [[SITES, "sites"], [HISTORY, "history"]]:
+		var box := add_card(_list, tr(section[0]))
+		for item: Variant in doc.get(section[1], []) if doc.get(section[1]) is Array else []:
+			var entry := JsonFile.dict_or_empty(item)
+			box.add_child(label(str(entry.get("name", "")), UiTheme.SMALL, Palette.VOLTANA_BLUE))
+			box.add_child(paragraph(str(entry.get("about", "")), Palette.INK, 15))
+	var numbers := add_card(_list, tr(NUMBERS))
+	numbers.add_child(paragraph(tr(NUMBERS_INTRO), Palette.MUTED, 15))
+	for item: Variant in doc.get("numbers", []) if doc.get("numbers") is Array else []:
+		var n := JsonFile.dict_or_empty(item)
+		var value: Variant = n.get("value")
+		numbers.add_child(label("%s %s" % [Company.number_text(value if value is float or value is int else 0.0),
+			n.get("unit", "")], UiTheme.FONT_SIZE, Palette.BLUE_LIGHT))
+		numbers.add_child(paragraph(str(n.get("label", "")), Palette.INK, 15))
+		numbers.add_child(paragraph(evidence_line(n), Palette.MUTED, 15))
+
+
+## "Bron: <title>" or "Schatting: <reasoning>" for a company number.
+static func evidence_line(n: Dictionary) -> String:
+	var source := JsonFile.dict_or_empty(n.get("source"))
+	if source.get("title") is String:
+		return "Bron: " + source["title"]
+	return "Schatting: " + str(n.get("estimate", "")) if n.get("estimate") is String else ""
 
 
 ## The explainers in content order, read once (the file does not change in play).

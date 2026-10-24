@@ -2,10 +2,10 @@ class_name PeopleApp
 extends PhoneApp
 ## Wie is wie (the phone, design 2026-10-21 §1.6/§1.8): the player's notebook on
 ## people, once the journal's Mensen tab (dialog spec §11, person-needs spec §4).
-## Above it the company's org chart when content/company.yaml is built
-## (`res://data/company.json`, S1-E); without it, just the people. Per person
-## their trust as pips, their morale as a word (never a number), what they
-## told you as quotes with the day and the place (newest first, older ones
+## Under it the company's org chart (Company: content/company.yaml); without
+## it, just the people. Per person where they sit and who leads them, their
+## trust as pips, their morale as a word (never a number), what they told you
+## as quotes with the day and the place (newest first, older ones
 ## folded), your talks with their curve and moves, your own note, and whether
 ## they want to talk now. Never what the person needs: reading them is the
 ## player's work.
@@ -37,15 +37,12 @@ const NOBODY := "Je hebt nog met niemand gesproken. Mensen vind je op hun plek o
 ## The org chart (company.json): its heading and a team's line.
 const ORG := "Voltana, regio Zuidmark"
 const LEAD := "leiding: %s"
-const COMPANY := "res://data/company.json"
 ## A talk's curve, as wide as the phone's screen allows.
 const TRACE_WIDTH := 340
 
 var _list: VBoxContainer
 ## Person ids whose older quotes are unfolded.
 var _unfolded: Dictionary[String, bool] = {}
-## The company file, read once ({} without one).
-var _company: Variant = null
 
 
 func refresh() -> void:
@@ -53,9 +50,10 @@ func refresh() -> void:
 
 
 ## The departments and their teams from company.json, if it is there: a short
-## chart, each department with its lead and its teams (any field may be missing).
+## chart, each department with its head, each team with its headcount and its lead
+## (left out when the head leads it); any field may be missing.
 func _org_chart() -> void:
-	var departments: Variant = company().get("departments")
+	var departments: Variant = Company.doc().get("departments")
 	if not departments is Array or departments.is_empty():
 		return
 	var box := UiPanel.add_card(_list, tr(ORG), Palette.BLUE_PALE)
@@ -63,46 +61,29 @@ func _org_chart() -> void:
 		if not d is Dictionary:
 			continue
 		box.add_child(UiPanel.label(str(d.get("name", "")), UiTheme.SMALL, Palette.VOLTANA_BLUE))
-		var lead := _head_name(d.get("head"))
-		if not lead.is_empty():
-			box.add_child(UiPanel.label(tr(LEAD) % lead, 15, Palette.MUTED))
+		var head := Company.name_of(d.get("head"))
+		if not head.is_empty():
+			box.add_child(UiPanel.label(tr(LEAD) % head, 15, Palette.MUTED))
 		var teams: Variant = d.get("teams")
 		for t: Variant in teams if teams is Array else []:
 			if t is Dictionary and t.get("name") is String:
-				box.add_child(UiPanel.paragraph("• " + t["name"], Palette.INK, 15))
+				box.add_child(UiPanel.paragraph(team_line(t), Palette.INK, 15))
 
 
-## A department head's name (company.yaml: {id, title} for someone in the cast, or
-## {name, title} for someone not yet in it); "" when there is none.
-func _head_name(head: Variant) -> String:
-	if not head is Dictionary:
-		return ""
-	if head.get("name") is String:
-		return head["name"]
-	var id := str(head.get("id", ""))
-	for entry: Dictionary in CharacterModel.cast():  # the cast has everyone, Ruud too
-		if entry.get("id") == id:
-			return str(entry.get("name", ""))
-	return ""
+## "• Werkvoorbereiding (4) · Joost van Dijk": a team, its headcount and its lead.
+static func team_line(team: Dictionary) -> String:
+	var line := "• " + str(team.get("name", ""))
+	var count: Variant = JsonFile.dict_or_empty(team.get("headcount")).get("value")
+	if count is float or count is int:
+		line += " (%d)" % int(count)
+	var lead := Company.name_of(team.get("lead"))
+	return line + (" · " + lead if not lead.is_empty() else "")
 
 
-## The company file's data, or {} (it is optional until S1-E builds it).
-func company() -> Dictionary:
-	if _company == null:
-		_company = {}
-		if FileAccess.file_exists(COMPANY):
-			var read := JsonFile.read_dict(COMPANY)
-			if read["error"].is_empty():
-				_company = read["data"]
-			else:
-				push_warning("Wie is wie: " + read["error"])
-	return _company
-
-
-## The people the player knows of: whoever they talked with, or who wants a talk.
+## The people the player knows of (whoever they talked with, or who wants a
+## talk), then the org chart under them.
 func _people() -> void:
 	_list = scroll_list()
-	_org_chart()
 	var shown := 0
 	for id: String in session.people.persons:
 		if session.people.has_left(id):
@@ -114,6 +95,7 @@ func _people() -> void:
 			shown += 1
 	if shown == 0:
 		_list.add_child(UiPanel.paragraph(tr(NOBODY), Palette.MUTED))
+	_org_chart()
 
 
 func _person_card(id: String, wants: bool) -> void:
@@ -129,6 +111,9 @@ func _person_card(id: String, wants: bool) -> void:
 	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(text)
 	text.add_child(UiPanel.label("%s  ·  %s" % [p["name"], p["role"]], UiTheme.FONT_SIZE, Palette.VOLTANA_BLUE, true))
+	var place := Company.place_line(id)
+	if not place.is_empty():
+		text.add_child(UiPanel.label(place, UiTheme.SMALL, Palette.MUTED))
 	var standing := HBoxContainer.new()
 	standing.add_theme_constant_override("separation", 30)
 	text.add_child(standing)

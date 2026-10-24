@@ -6,11 +6,16 @@
 #     here once, as a department head, a team lead or member, or an external;
 #   - every Voltana person has a department and a manager (their team's lead, else
 #     their department's head, else the head of the department theirs reports to);
-#   - a head or lead is a cast id or a named person ({name, title}) not in the cast;
+#   - every team has a `lead`: a cast id, a named person ({name, title}) not in the
+#     cast, or `head` (the department's head leads it directly); a head or lead named
+#     here is never someone in the cast;
+#   - every team has a headcount at least the people placed in it;
 #   - a title here is the cast's `role` and the dialogs' `role` word for word;
 #   - a team with a `pool` has that simulation pool's headcount (value_streams.yaml);
-#     any other number carries a `source` (an approved domain, CLAUDE.md network rule)
-#     or an `estimate` with its reasoning.
+#     any other number (a team's or a site's headcount, the sector numbers) carries a
+#     `source` (an approved domain, CLAUDE.md network rule) or an `estimate` with its
+#     reasoning.
+# The build adds `people` (id → title, department, team, manager) for Wie is wie.
 # Game text (names, titles, about) is Dutch; ids and keys are English.
 
 company:
@@ -31,10 +36,16 @@ sites:
     name: Steunpunt Lindeveld
     town: Lindeveld
     about: "Een klein steunpunt op het platteland: lange ritten, vijf monteurs."
+    headcount:
+      value: 5
+      estimate: "Vijf monteurs voor de dorpen rond Lindeveld, naast de dertien op de werf in Nova (value_streams.yaml, monteurs). Een buitensteunpunt houdt een kleine ploeg dicht bij het werk, zodat niet elke storing een uur rijden is."
   - id: havenzij
     name: Steunpunt Havenzij
     town: Havenzij
     about: "Het steunpunt in de havenstad: een volle ondergrond, stikstof, zes monteurs en drie tekenaars."
+    headcount:
+      value: 9
+      estimate: "Zes monteurs en drie tekenaars: een stad met een volle ondergrond vraagt meer revisiewerk per aansluiting dan het platteland. Ze tellen niet mee in de teams van Nova die de simulatie rekent."
 
 # Departments: `head` (a cast id, or {name, title} for someone not in the cast yet),
 # `reports_to` (a department; the directie reports to Voltana's hoofdkantoor), teams
@@ -47,6 +58,7 @@ departments:
     teams:
       - id: directie_staf
         name: Directie en staf
+        lead: head
         about: "Het MT van de regio komt elke week bij elkaar in de MT-kamer op de 2e: Ruud met de managers van Aansluitingen, Netstrategie, het KCC, de storingsdienst en het Bedrijfsvoeringscentrum. Thomas schuift aan als de wachtlijst op de agenda staat."
         members:
           - {id: player, title: CI-lead}
@@ -55,11 +67,12 @@ departments:
           estimate: "De directeur, de CI-lead, een managementassistent en een adviseur regulering: een kleine staf bij een regionale directie."
       - id: ontvangst
         name: Ontvangst & facilitair
+        lead: {name: Marloes Dekker, title: coördinator facilitair}
         members:
           - {id: yvonne, title: Receptie}
         headcount:
-          value: 2
-          estimate: "Een receptie voor één gebouw met zo'n honderd mensen: Yvonne en een collega voor de middag."
+          value: 3
+          estimate: "Een receptie voor één gebouw met zo'n veertig vaste plekken en de hele dag bezoek, aannemers en monteurs die even binnenlopen: Yvonne, een collega voor de middag en Marloes, die ook de kantine, de schoonmaak en het wagenpark regelt."
 
   - id: aansluitingen
     name: Aansluitingen & Netverzwaring
@@ -82,15 +95,24 @@ departments:
       - id: planning
         name: Planning
         pool: planners
+        lead: head
         members:
           - {id: linda, title: planner}
       - id: inkoop
         name: Inkoop netverzwaring
+        lead: head
         members:
           - {id: rob, title: inkoper}
         headcount:
           value: 2
           estimate: "Twee inkopers voor trafo's, kabel en stations van de regio; het meeste inkoopwerk zit bij het hoofdkantoor."
+      - id: projecten
+        name: Projecten netverzwaring
+        lead: {name: Bas Willems, title: projectleider netverzwaring}
+        about: "Nieuwe stations en verzwaarde wijken, van ontwerp tot oplevering. Zij wachten op de trafo's die Inkoop bestelt."
+        headcount:
+          value: 3
+          estimate: "Een projectleider en twee projectmedewerkers voor de stations en verzwaringen van één regio; het uitvoerende werk doen aannemers. Landelijk plaatsten de netbeheerders in een halfjaar 1.176 transformatorhuisjes (Netbeheer Nederland, eerste helft 2026); voor Zuidmark, zo'n 2 % daarvan, is dat er één per week."
 
   - id: revisie_gis
     name: Revisie & GIS
@@ -101,6 +123,7 @@ departments:
       - id: revisie
         name: Revisie & GIS
         pool: gis
+        lead: head
         members:
           - {id: mieke, title: tekenaar Revisie & GIS}
 
@@ -113,6 +136,7 @@ departments:
       - id: meetdata_team
         name: Meetdata & registratie
         pool: meter_office
+        lead: head
 
   - id: kcc
     name: Klantcontactcentrum
@@ -123,6 +147,7 @@ departments:
       - id: kcc_agents
         name: Klantcontactcentrum
         pool: contact_centre
+        lead: head
         members:
           - {id: kim, title: agent Klantcontactcentrum}
           - {id: saskia, title: agent Klantcontactcentrum}
@@ -136,6 +161,7 @@ departments:
       - id: monteurs
         name: Monteurs
         pool: monteurs
+        lead: head
         members:
           - {id: henk, title: senior monteur}
           - {id: ahmed, title: jonge monteur}
@@ -145,9 +171,11 @@ departments:
       - id: consignatie
         name: Storingsdienst (consignatie)
         pool: on_call
+        lead: head
         about: "Een rooster, geen apart team: steeds twee monteurs hebben consignatie."
       - id: magazijn
         name: Magazijn
+        lead: head
         members:
           - {id: dirk, title: magazijn}
         headcount:
@@ -163,6 +191,7 @@ departments:
       - id: bvc
         name: Bedrijfsvoeringscentrum
         pool: control_room
+        lead: head
         members:
           - {id: kees, title: operator bedrijfsvoeringscentrum}
 
@@ -187,6 +216,7 @@ departments:
       - id: grootzakelijk
         name: Grootzakelijke klanten
         pool: key_accounts
+        lead: head
         about: "De wachtlijst voor transportcapaciteit, de contracten van de grote klanten en de gesprekken over wat ze echt gebruiken. Netstrategie rekent, de congestiedesk belt."
 
 # People the player meets who do not work at Voltana.
@@ -215,7 +245,7 @@ numbers:
     unit: aanvragen
     source:
       url: "https://www.netbeheernederland.nl/artikelen/nieuws/slimmer-netgebruik-wint-terrein-maar-vraag-naar-transportcapaciteit-groeit-nog"
-      title: "Slimmer netgebruik wint terrein, maar vraag naar transportcapaciteit groeit nog altijd sneller (Stand van de Uitvoering, eerste helft 2026)"
+      title: "Netbeheer Nederland: Slimmer netgebruik wint terrein, maar vraag naar transportcapaciteit groeit nog altijd sneller (Stand van de Uitvoering, eerste helft 2026)"
       date: "2026-10-05"
   - id: wachtlijst_afname_mw_nl
     label: "Gevraagd transportvermogen van die aanvragen"
@@ -223,7 +253,7 @@ numbers:
     unit: MW
     source:
       url: "https://www.netbeheernederland.nl/artikelen/nieuws/slimmer-netgebruik-wint-terrein-maar-vraag-naar-transportcapaciteit-groeit-nog"
-      title: "Stand van de Uitvoering, eerste helft 2026"
+      title: "Netbeheer Nederland, Stand van de Uitvoering, eerste helft 2026"
       date: "2026-10-05"
   - id: wachtlijst_invoeding_nl
     label: "Aanvragen voor invoeding op de wachtlijst bij de regionale netbeheerders (30 juni 2026)"
@@ -231,7 +261,7 @@ numbers:
     unit: aanvragen
     source:
       url: "https://www.netbeheernederland.nl/artikelen/nieuws/slimmer-netgebruik-wint-terrein-maar-vraag-naar-transportcapaciteit-groeit-nog"
-      title: "Stand van de Uitvoering, eerste helft 2026"
+      title: "Netbeheer Nederland, Stand van de Uitvoering, eerste helft 2026"
       date: "2026-10-05"
   - id: nieuwe_aansluitingen_nl
     label: "Nieuwe aansluitingen voor huishoudens en kleine bedrijven, eerste helft 2026"
@@ -239,8 +269,40 @@ numbers:
     unit: aansluitingen
     source:
       url: "https://www.netbeheernederland.nl/artikelen/nieuws/slimmer-netgebruik-wint-terrein-maar-vraag-naar-transportcapaciteit-groeit-nog"
-      title: "Stand van de Uitvoering, eerste helft 2026"
+      title: "Netbeheer Nederland, Stand van de Uitvoering, eerste helft 2026"
       date: "2026-10-05"
+  - id: gewijzigde_aansluitingen_nl
+    label: "Gewijzigde aansluitingen voor huishoudens en kleine bedrijven, eerste helft 2026 (een zwaardere aansluiting voor een warmtepomp of laadpaal)"
+    value: 36479
+    unit: aansluitingen
+    source:
+      url: "https://www.netbeheernederland.nl/artikelen/nieuws/slimmer-netgebruik-wint-terrein-maar-vraag-naar-transportcapaciteit-groeit-nog"
+      title: "Netbeheer Nederland, Stand van de Uitvoering, eerste helft 2026"
+      date: "2026-10-05"
+  - id: capaciteitssturing_nl
+    label: "Actieve contracten voor capaciteitssturing (afname en invoeding) op 30 juni 2026: samen zo'n 4,4 GW aan vermogen dat op drukke momenten meebeweegt"
+    value: 769
+    unit: contracten
+    source:
+      url: "https://www.netbeheernederland.nl/artikelen/nieuws/slimmer-netgebruik-wint-terrein-maar-vraag-naar-transportcapaciteit-groeit-nog"
+      title: "Netbeheer Nederland, Stand van de Uitvoering, eerste helft 2026 (394 voor invoeding, 375 voor afname)"
+      date: "2026-10-05"
+  - id: aansluittermijn_klein
+    label: "ACM: een kleine aansluiting (tot 3x80 A) binnen 18 weken, zonder graafwerk binnen 12. Het CBb vernietigde dat codebesluit in 2024 grotendeels; de ACM werkt aan een nieuw besluit."
+    value: 18
+    unit: weken
+    source:
+      url: "https://www.acm.nl/nl/publicaties/codebesluit-aansluittermijnen-elektriciteit-kleine-aansluitingen"
+      title: "ACM, Codebesluit aansluittermijnen elektriciteit kleine aansluitingen (update 28 april 2026)"
+      date: "2026-04-28"
+  - id: elektrisch_verwarmde_woningen_nl
+    label: "Woningen die eind 2024 elektrisch verwarmd werden, de meeste met een warmtepomp"
+    value: 707000
+    unit: woningen
+    source:
+      url: "https://www.cbs.nl/nl-nl/longread/aanvullende-statistische-diensten/2025/monitor-warmtepompen-2025/4-totaalbeeld"
+      title: "CBS, Monitor Warmtepompen 2025, 4. Totaalbeeld"
+      date: "2025-10-17"
   - id: wachtlijst_afname_zuidmark
     label: "Aanvragen voor afname op de wachtlijst in Zuidmark"
     value: 310
@@ -278,7 +340,7 @@ numbers:
     unit: technici
     source:
       url: "https://www.netbeheernederland.nl/artikelen/persbericht/netbeheerders-en-aannemers-zetten-samen-op-5000-extra-technici-voor"
-      title: "Netbeheerders en aannemers zetten samen in op 5.000 extra technici voor uitbreiden elektriciteitsnet"
+      title: "Netbeheer Nederland: Netbeheerders en aannemers zetten samen in op 5.000 extra technici voor uitbreiden elektriciteitsnet"
       date: "2025-11-14"
   - id: gecontracteerd_benut_zuidmark
     label: "Deel van het gecontracteerd vermogen dat de grootzakelijke klanten in Zuidmark op het drukste kwartier van het jaar gebruiken"
