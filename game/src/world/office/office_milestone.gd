@@ -20,6 +20,8 @@ const INSIDE_DOOR := 3.5
 ## others at the table stay clear of the question and its answers (an estimate, tuned on
 ## play_mt_room_scene).
 const TABLE_LIFT := 0.16
+## Staged at a spot (a beat's `stand_at`), the player stands this far (m) behind the people.
+const STAGE_BEHIND := 1.1
 
 var office: Office
 var lines: SceneLines
@@ -205,8 +207,10 @@ static func _said(scene_lines: Array) -> Array[Dictionary]:
 	return out
 
 
-## The people present stand side by side at scene spot `marker` (a line's `stand_at`),
-## facing the player; once per spot, nothing for "" or a spot the floor lacks.
+## The people present stand side by side at scene spot `marker` (a line's `stand_at`,
+## facing what the spot looks at), the player standing just behind them, between them,
+## looking the same way ("Kom erbij staan", as the MT-kamer sits you down); they turn to
+## the player. Once per spot, nothing for "" or a spot the floor lacks.
 func _stage(marker: String) -> void:
 	var spot: Node3D = office.floors.markers().get(marker) if not marker.is_empty() else null
 	if spot == null or marker == _staged:
@@ -215,6 +219,10 @@ func _stage(marker: String) -> void:
 	var t := office.in_office(spot)
 	var at := t.origin * Vector3(1, 0, 1)
 	var across := (t.basis.x * Vector3(1, 0, 1)).normalized()
+	if not office.player.seated:
+		office.player.stop()
+		office.player.position = at + (t.basis.z * Vector3(1, 0, 1)).normalized() * STAGE_BEHIND
+		office.player.face(Basis.looking_at(-t.basis.z * Vector3(1, 0, 1)))
 	var ids := _people.keys()
 	for i in ids.size():
 		var p: OfficePerson = _people[ids[i]]

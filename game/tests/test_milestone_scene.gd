@@ -203,6 +203,7 @@ func test_ruud_and_frank_stand_at_the_kpi_board_for_its_line() -> void:
 	m.step(0.0)
 	assert_true(far.call() < 1.5, "both at the board while Ruud hands it over: %.2f m" % far.call())
 	assert_true(m._people["ruud"].position.distance_to(m._people["frank"].position) > 0.8, "side by side, not in one spot")
+	assert_true(office.player.position.distance_to(spot) < 2.0, "'Kom erbij staan': you stand at the board with them")
 	office.free()
 
 
