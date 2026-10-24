@@ -141,7 +141,8 @@ func note_check(s: GameSession, problem_id: String, result: Dictionary) -> void:
 	_after_fail.erase(problem_id)
 
 
-## An Act: a lasting fix chosen over a quick one starts its clock.
+## An Act: a lasting fix chosen over a quick one starts its clock (a shortcut
+## never counts as lasting, standardised or not).
 func note_act(s: GameSession, problem_id: String) -> void:
 	var r := s.region
 	var p: ProblemDef = r.problems[problem_id]
@@ -149,7 +150,7 @@ func note_act(s: GameSession, problem_id: String) -> void:
 	var cm: CountermeasureDef = r.countermeasures.get(st.a3.get("cm", ""))
 	if cm == null:
 		return
-	var lasting := cm.decay_days < 0 or st.standardised
+	var lasting := not cm.shortcut and (cm.decay_days < 0 or st.standardised)
 	var quick_fitted := p.countermeasures.keys().any(func(id: String) -> bool:
 		var other: CountermeasureDef = r.countermeasures.get(id)
 		return other != null and other.id != cm.id and other.decay_days > 0 and other.decay_days <= QUICK_DAYS \

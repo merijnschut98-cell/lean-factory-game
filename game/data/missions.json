@@ -844,7 +844,7 @@
    "chapter": "Het net is vol",
    "debrief": "De fabrikant is niet sneller geworden; wij hebben veranderd wanneer en hoe we bestellen. Bij de Check waren de oudste openstaande aansluitingen zonder je aanpak {kpi_before} dagen oud, met je aanpak {kpi_after}. De oudste wachtende verzwaring is jonger geworden, en De Boomgaard krijgt eerder stroom. Welke andere wachttijden lopen na elkaar terwijl ze naast elkaar zouden kunnen?",
    "debrief_variants": {
-    "poor_fix": "De Boomgaard krijgt eerder stroom: er staan nu trafo's op voorraad. Bij de Check waren de oudste openstaande aansluitingen zonder je aanpak {kpi_before} dagen oud, met je aanpak {kpi_after}. Maar we bestellen nog steeds pas als het ontwerp is goedgekeurd. De voorraad vangt dat op, en die voorraad kost elke maand geld. Wat gebeurt er als drie projecten tegelijk een trafo uit die voorraad willen?"
+    "poor_fix": "De Boomgaard krijgt eerder stroom: er staan nu trafo's op voorraad. Bij de Check waren de oudste openstaande aansluitingen zonder je aanpak {kpi_before} dagen oud, met je aanpak {kpi_after}. Maar we bestellen nog steeds pas als het ontwerp is goedgekeurd. De voorraad vangt dat op, maar die kost geld: opslag, verzekering en het geld dat erin vastzit. Wat gebeurt er als drie projecten tegelijk een trafo uit die voorraad willen?"
    },
    "goal": {
     "problem": "transformer_wait",
