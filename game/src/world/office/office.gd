@@ -368,6 +368,8 @@ func _clear_interactables() -> void:
 ## a shut door shows no ring, only its prompt.
 func _add_interactables() -> void:
 	var markers := floors.usable_markers(geometry)
+	if coach_moved():   # the coach's room on the 1e is the team's overlegkamer now
+		markers.erase("coach")
 	for id: String in markers:
 		var i := Interactable.create(id, in_office(markers[id]))
 		i.show_ring(i.kind != "door")
@@ -387,6 +389,15 @@ func _add_interactables() -> void:
 	if headset != null:
 		interactables.append(headset)
 		add_child(headset)
+
+
+## Whether the coach has moved out of the coach's room (cast `moves`: Ruud back up to his
+## own office on the 2e after the first hundred days).
+func coach_moved() -> bool:
+	var done: Dictionary = session.missions.done_once if session.error.is_empty() else {}
+	return CharacterModel.cast().any(func(e: Dictionary) -> bool:
+		var at: Dictionary = e.get("office", {})
+		return at.get("talk", "") == "coach" and OfficePerson.moves_of(at).any(func(m: String) -> bool: return done.has(m)))
 
 
 ## The player map shows the floor the player is on, with the floor switch.
@@ -757,7 +768,12 @@ func talk_to(person: OfficePerson) -> void:
 	if person == null or not session.error.is_empty():
 		return
 	if person.talk == "coach":
-		interact(interactable("coach"))
+		var coach := interactable("coach")
+		if coach != null:
+			interact(coach)
+		else:   # in his own office on the 2e
+			_turn_to(person)
+			ui.open_coach()
 		return
 	person_selected.emit(person.id)
 	if ui.ask_talk(person.id, person.display_name) in GameUI.NO_TALK:
@@ -838,7 +854,8 @@ func frame_face(person: OfficePerson) -> void:
 ## turns to them and the camera looks down at the point between the two
 ## (_two_shot); `lift` of the screen's height above the middle.
 func frame_scene(person: OfficePerson, lift: float) -> void:
-	_turn_to(person)
+	if not player.seated:   # seated at a table you face the table
+		_turn_to(person)
 	_two_shot(person, lift)
 
 

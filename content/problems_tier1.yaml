@@ -16,8 +16,8 @@
 # tells           what a prop on the floor shows of it (PLAN 2.6): {tell, text}; tell is
 #                 a node in the floor's model (build_content.TELLS), text what anyone can
 #                 see there. Ambiguous on purpose: a tall stack can be a normal week, and
-#                 a text never names the problem. Every problem whose place is in a room
-#                 with tells lists at least one (checked).
+#                 a text never names the problem. Every problem whose place is on a floor
+#                 with tells (the 1e, the 2e) lists at least one (checked).
 #
 # Quote clue texts: inside {…} an unquoted comma ends the text (the build refuses it).
 
@@ -378,6 +378,8 @@ problems:
     teaches: [triage, theory_of_constraints, waste_overprocessing]
     effects:
       - {target: connections.grid_study, property: applies, value: 0.15}  # 40% of connections instead of 25%
+    tells:
+      - {tell: grid_study_tray, text: "Bovenop de stapel in het bakje ligt een studieaanvraag voor een gewone woning met een warmtepomp."}
     clues:
       - {tool: data, key: true, depth: 0, text: "Vier op de tien nieuwe aansluitingen krijgen een netstudie; vorig jaar was dat een kwart."}
       - {tool: shadow, key: false, depth: 0, text: "De analisten maken lange dagen en werken geconcentreerd; niemand zit stil."}
@@ -472,6 +474,8 @@ problems:
       # Estimate: the station reinforcements that free capacity for large
       # consumers wait for the same late-ordered transformers.
       - {target: congestion.capacity_queue, property: wait_time, value: 1.2}
+    tells:
+      - {tell: reinforcement_board, text: "Achter de oudste straatnamen op het bord staat in pen: 'trafo nog niet binnen'."}
     clues:
       - {tool: data, key: true, depth: 0, text: "Een netverzwaring duurt gemiddeld zeven maanden. Het werk in de straat zelf duurt twee weken."}
       - {tool: conversation, key: false, depth: 0, at: connections.design, text: "'De fabrikanten hebben het druk. Heel Europa wil transformatoren.'"}
@@ -503,6 +507,8 @@ problems:
       # and fewer requests fit straight away (an estimate).
       - {target: congestion.capacity_queue, property: wait_time, value: 1.4}
       - {target: congestion.capacity_queue, property: applies, value: 0.1}
+    tells:
+      - {tell: congestion_list, text: "Naast een paar bedrijfsnamen op de lijst staat in de kantlijn, in potlood: 'hal staat leeg'."}
     clues:
       - {tool: data, key: true, depth: 0, text: "Op het drukste kwartier van het jaar gebruiken de grootzakelijke klanten samen 62% van het vermogen dat ze gecontracteerd hebben."}
       - {tool: conversation, key: false, depth: 0, at: congestion.congestion_study, text: "'Het net is vol. Tot de verzwaring klaar is, kunnen we niets doen.'"}
@@ -576,6 +582,7 @@ problems:
     tells:
       - {tell: intake_stack, text: "Op de kast bij Intake liggen meer dossiers dan het team op een dag wegwerkt."}
       - {tell: prep_tray, text: "Het postbakje bij Werkvoorbereiding ligt vol."}
+      - {tell: obeya_board, text: "Onder de kaart van de aansluitingen hangen de weekcijfers van Intake en Werkvoorbereiding, allebei met een groen vinkje."}
     clues:
       - {tool: data, key: true, depth: 0, text: "Intake zette vorige maand een record aan aanvragen door en Werkvoorbereiding leverde een record aan ontwerpen af. Toch gaan er niet meer aansluitingen per week uit, en er komt meer terug."}
       - {tool: time_study, key: false, depth: 0, text: "Een ontwerp maken kost de werkvoorbereider bijna drie uur, binnen de norm."}

@@ -11,7 +11,8 @@ extends Node3D
 ## or home late when the simulation keeps them (OfficeDay.late_ids). A change of place
 ## the clock has just reached is walked over the floor's walk grid (Office.nav) with the
 ## walk clip; an older one (the clock jumped) is simply done. Someone tied to missions
-## keeps to the story, not the clock. On the yard the vans have their say (OfficeYard.where):
+## keeps to the story, not the clock. A desk can move with the story (cast `moves`: Ruud
+## back up to his own office on the 2e after the first hundred days). On the yard the vans have their say (OfficeYard.where):
 ## a monteur waits at their van for a ride, is out while their van is out, or stands where a
 ## mission puts them (the opleidingsterrein). Names and roles come from GameSession.person when
 ## the session knows the person (cast.json otherwise). The walk-around energy bar follows
@@ -52,6 +53,8 @@ var shut: Array[Rect2] = []
 var days: Dictionary[String, OfficeDay] = {}
 ## Only these are in, whatever the clock (the opening's evening: Anouk); [] for the day.
 var stay_in: Array[String] = []
+## These are elsewhere in the building, whatever the clock (a milestone's scene: OfficeMilestone).
+var away: Array[String] = []
 var office: Office
 var _since_refresh := 0.0
 var _session: Object
@@ -93,16 +96,21 @@ static func build(office: Office, cast: Array[Dictionary], here: Callable) -> Of
 		var at_lunch: Variant = at_desk.get("lunch")
 		var lunch_here: bool = at_lunch is Dictionary and here.call(at_lunch)
 		var desk_here: bool = not at_desk.is_empty() and here.call(at_desk)
-		if not (desk_here or lunch_here):
+		var moves: Variant = at_desk.get("moves")
+		var moved_here: bool = moves is Dictionary and here.call(moves)
+		if not (desk_here or lunch_here or moved_here):
 			continue
 		var p := OfficePerson.create(entry)
 		if desk_here:
 			p.desk = _spot(office, at_desk, p.pose)
-			if p.desk.is_empty():
-				push_warning("office: no place for %s" % p.id)
-				p.free()
-				continue
 			p.spots = OfficeYard.spots_of(p, func(spot: Dictionary) -> Dictionary: return _spot(office, spot, p.pose))
+		if moved_here:
+			p.moved_desk = _spot(office, moves, p.pose)
+		if (desk_here and p.desk.is_empty()) or (moved_here and p.moved_desk.is_empty()):
+			push_warning("office: no place for %s" % p.id)
+			p.free()
+			continue
+		p.home_desk = p.desk
 		if at_lunch is Dictionary:
 			p.lunch = _spot(office, at_lunch, p.pose) if lunch_here else {}
 		p.settle(p.desk)
@@ -204,6 +212,7 @@ func refresh(session: Object) -> void:
 		_decide_late(session)
 	var energy := session.has_method("energy_of")
 	for p in people:
+		_move_desk(p, done)
 		var where := _where(p, minute) if minute >= 0 else ALWAYS_AT_DESK
 		if p != held:
 			_go(p, where, minute)
@@ -212,6 +221,19 @@ func refresh(session: Object) -> void:
 		p.visible = _here.get(p.id, false) and p.present_for(active, done) and not shut_out
 		var state: Variant = session.call("energy_of", p.id) if energy and p.visible else {}
 		p.show_energy(state if state is Dictionary else {})
+
+
+## `p`'s desk before or after it moves (cast `moves`), by the missions done; on a new desk
+## they are simply there (or off this floor), never walked over from the old one.
+func _move_desk(p: OfficePerson, done: Dictionary) -> void:
+	if p.moves_after.is_empty():
+		return
+	var desk := p.moved_desk if p.has_moved(done) else p.home_desk
+	if desk == p.desk:
+		return
+	p.desk = desk
+	_place.erase(p.id)
+	_trips.erase(p.id)
 
 
 ## The session's minute of the day; -1 when it keeps no clock.
@@ -233,6 +255,8 @@ func day_of(id: String) -> OfficeDay:
 func _where(p: OfficePerson, minute: int) -> Dictionary:
 	if not stay_in.is_empty():
 		return ALWAYS_AT_DESK if p.id in stay_in else ALWAYS_OUT
+	if p.id in away:
+		return ALWAYS_OUT
 	var yard := OfficeYard.where(p, _session, office.floors.building.rides if office != null and office.floors != null else [],
 		minute)
 	if not yard.is_empty():

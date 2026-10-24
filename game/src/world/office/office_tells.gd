@@ -1,6 +1,7 @@
 class_name OfficeTells
 extends Node
-## The world shows the work (PLAN 2.6, design §1.5): props on the 1e that read the region.
+## The world shows the work (PLAN 2.6, design §1.5): props on the 1e and the 2e that read the
+## region.
 ## Each tell is a node `tell_<id>` in the floor's model (tools/blender/build_office.py) with
 ## three variants `tell_<id>_low`, `_mid` and `_high`; this shows one, by a number from the
 ## simulation, and looks again when time has passed. A child of the Office while a floor
@@ -36,8 +37,27 @@ const VARIANTS: Array[String] = ["low", "mid", "high"]
 ## - meter_board (new meters that sent no reading in the last METER_DAYS: a failed
 ##   registration): base 6 (peaks 9), silent_meter 11 (peaks 16).
 ##   (Probe 2026-10-21, same method; not_at_home leaves all three at base.)
+## The 2e (PLAN 2.16; probe 2026-10-23: GameSession, seeds 11 and 12, daily over 60 days and
+## weekly over 240 days, each problem active from the first day):
+## - obeya_board (the value streams late on their norm, KPI cards in red): base 1 to 5 of 6,
+##   median 3 (seeds 11-13, weekly over 150 days), every problem alike: the board reads the
+##   region, not one problem.
+## - grid_study_tray (studies waiting for the grid analysts, connections and congestion):
+##   base median 0 and 2 (peaks 11), grid_study_queue 12 and 21 (peaks 27).
+## - reinforcement_board (streets waiting for their reinforcement): base 53 to 86,
+##   transformer_wait climbs to 104 and 115 by week 30 (a wait of months fills slowly).
+## - congestion_list (requests waiting for capacity): base 21 to 45, unused_capacity 43 and
+##   63 after half a year, transformer_wait up to 51.
 const THRESHOLDS := {"intake_stack": [15, 30], "prep_tray": [6, 12], "planning_board": [8, 16],
-	"revision_cabinet": [6, 12], "close_out_cabinet": [15, 35], "meter_board": [8, 12]}
+	"revision_cabinet": [6, 12], "close_out_cabinet": [15, 35], "meter_board": [8, 12],
+	"obeya_board": [3, 5], "grid_study_tray": [6, 15], "reinforcement_board": [90, 105], "congestion_list": [40, 55]}
+## A value stream's KPI card is red when fewer than this share of the orders finished over
+## the last KPI_DAYS met its norm: the healthy base meets the norm about nine times in ten
+## (value_streams.yaml, connections). A card shows no colour with fewer than
+## KPI_MIN_FINISHED finished (KpiBoard's rule: chance moves a few orders more than the work).
+const ON_TIME_BAR := 0.9
+const KPI_DAYS := 28
+const KPI_MIN_FINISHED := KpiBoard.MIN_COMPLETED
 ## The window the planning board counts moved jobs over (a working week).
 const MOVED_DAYS := 5
 ## The window Meetdata's whiteboard lists silent meters over (two weeks: five days hold too
@@ -215,7 +235,10 @@ static func readings(net: Network) -> Dictionary:
 	return {"intake_stack": _intake_stack(net), "prep_tray": _prep_tray(net), "planning_board": _moved_jobs(net),
 		"revision_cabinet": _waiting(net, ["connections.revision"]),
 		"close_out_cabinet": _waiting(net, ["connections.close_out_wait", "connections.close_out"]),
-		"meter_board": _silent_meters(net)}
+		"meter_board": _silent_meters(net), "obeya_board": _red_cards(net),
+		"grid_study_tray": _waiting(net, ["connections.grid_study", "congestion.congestion_study"]),
+		"reinforcement_board": _waiting(net, ["connections.grid_reinforcement"]),
+		"congestion_list": _waiting(net, ["congestion.capacity_queue"])}
 
 
 static func band(tell: String, value: int) -> int:
@@ -296,3 +319,10 @@ static func _silent_meters(net: Network) -> int:
 	if registration == null:
 		return 0
 	return registration.stats_since(SimCalendar.day_of(net.time) - METER_DAYS)["reworked"]
+
+
+## The value streams whose KPI card is red: too few of their finished orders met the norm.
+static func _red_cards(net: Network) -> int:
+	return net.streams.filter(func(s: ValueStream) -> bool:
+		var k := s.kpis(net.time, KPI_DAYS)
+		return k["completed"] >= KPI_MIN_FINISHED and k["on_time"] < ON_TIME_BAR).size()

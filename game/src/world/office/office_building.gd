@@ -13,7 +13,7 @@ const START := "start"
 ## A mission taken on: active, or done.
 const TAKEN: Array[String] = ["active", "completed"]
 ## Marker kinds that come many to a model, keyed "<kind>:<id>" (markers).
-const KEYED: Array[String] = ["place", "door", "room", "arrive", "exit", "driver", "ride", "seat"]
+const KEYED: Array[String] = ["place", "door", "room", "arrive", "exit", "driver", "ride", "seat", "scene"]
 ## The building when world.json cannot be read: the connections office alone.
 const FALLBACK := {
 	"start_floor": "first",
@@ -30,8 +30,9 @@ var rooms: Array[Dictionary] = []
 var start_floor := ""
 ## The van rides (design §1.7): {mission, with (the monteur), to (the place it ends at)}.
 var rides: Array[Dictionary] = []
-## What each tell looks like (PLAN 2.15, world.yaml `tells:`): id → {place, low, mid, high}.
-## An entry without all of them is left out (the tell then has no words).
+## What each tell looks like (PLAN 2.15, world.yaml `tells:`): id → {place, low, mid, high};
+## `place` is where Notities files it: a team's place, or the Dutch name of the room a tell
+## names instead (world.yaml `room`). An entry without all of them is left out (no words).
 var tells: Dictionary = {}
 ## Why world.json was not used ("" when it was).
 var error := ""
@@ -50,7 +51,7 @@ static func load_from(data_dir: String) -> OfficeBuilding:
 	var problem: String = read["error"] if not read["error"].is_empty() else _shape_error(read["data"])
 	b._fill(FALLBACK if not problem.is_empty() else read["data"])
 	if problem.is_empty():
-		b.tells = _tells(read["data"].get("tells"))
+		b.tells = b._tells(read["data"].get("tells"))
 	b.error = problem
 	if not problem.is_empty():
 		push_warning("office: building: " + problem)
@@ -85,12 +86,14 @@ static func _shape_error(d: Dictionary) -> String:
 
 
 ## The well-formed entries of world.json's `tells` (none when it is missing or not a list).
-static func _tells(v: Variant) -> Dictionary:
+func _tells(v: Variant) -> Dictionary:
 	var out := {}
 	for t: Variant in v if v is Array else []:
 		if not t is Dictionary or not t.get("id") is String:
 			continue
 		var look := {}
+		if t.get("room") is String and not t.has("place"):
+			look["place"] = str(room(t["room"]).get("name", ""))
 		for key in ["place", "low", "mid", "high"]:
 			if t.get(key) is String and not t[key].is_empty():
 				look[key] = t[key]
@@ -207,7 +210,7 @@ func floor_open(floor_id: String, open: Array[String]) -> bool:
 
 ## The markers in a floor's geometry by id: "place:<step>", "door:<room>",
 ## "room:<room>", "arrive:<how>", the yard's "driver:van<k>", "ride:van<k>", the cab's
-## "seat:<who>", or the role ("obeya", "lift", "spawn", ...), from
+## "seat:<who>", a scene's "scene:<room>:<spot>", or the role ("obeya", "lift", "spawn", ...), from
 ## each node's glTF extras {interaction, id}.
 static func markers(geometry: Node) -> Dictionary:
 	var out := {}
