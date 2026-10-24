@@ -1782,6 +1782,11 @@ dialogs:
     mood: gespannen
     patience: 10
     opening: "Goedemiddag. U spreekt met Fatima El Amrani. Ik bel voor de vierde keer, en ik heb ze allemaal opgeschreven."
+    variants:
+      # The date she was given has passed without a connection (Missions: promise_broken): she
+      # reads it from her notebook (drie winters §3); the talk opens lower (People memory).
+      - needs: {all: ["promise_broken:el_amrani_fourth_call"]}
+        opening: "Goedemiddag, met Fatima El Amrani. Ik heb mijn schrift voor me. Hier staat: 'Volgens de planning over een week of zes aangesloten.' Met de datum erbij, en uw naam. Die datum is geweest."
     warning: "Ik heb geen behoefte aan een riedeltje."
     position: {text: "Ik wil een datum. Een echte. Anders ga ik naar de Geschillencommissie.", tags: [claim], tell: facts}
     layers:
@@ -1802,10 +1807,12 @@ dialogs:
     proposals:
       - id: name_a_date
         label: "Een datum noemen"
-        say: "Volgens de planning bent u over een week of zes aangesloten."
+        say: "Volgens de planning bent u over een week of zes aangesloten. Op {promise_date:42}."
         addresses: [interest]
-        reply: "Zes weken. Ik schrijf het op, met de datum van vandaag erbij."
-        promise: {kind: delivery_date, days: 42}   # D9 talks audit A4: recorded with the talk's day (People.promises); checked by 2.4b
+        reply: "Op {promise_date:42}. Ik schrijf het op, met de datum van vandaag erbij."
+        # D9 talks audit A4: recorded with the talk's day (People.promises); the date named
+        # ({promise_date:42}, GameSession.fill_tokens) is the day the simulation checks (Missions)
+        promise: {kind: delivery_date, days: 42}
       - id: honest_window_and_contact
         label: "Eerlijk zijn, en één aanspreekpunt"
         say: "Ik ga u geen datum beloven die ik niet zeker weet. Ik zoek uit waar uw dossier ligt, ik bel u vrijdag terug, en vanaf nu heeft u één aanspreekpunt: mij."

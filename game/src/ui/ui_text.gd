@@ -163,9 +163,13 @@ const REPUTATION_REASONS := {
 	"discovery": "een ontdekking",
 	"blame": "een vraag gaf het team de schuld",
 	"deadline": "een deadline gemist",
+	"milestone": "niet op tijd",
+	"promise": "een toegezegde datum niet gehaald",
 	"bad_period": "het budget staat rood",
 }
-const DIVIDEND := "Een verbetering houdt stand na %d dagen: %s. De besparing levert %s op voor het verbeterbudget."
+## A milestone whose moment passed without its own `missed:` line.
+const MILESTONE_PASSED := "%s: het moment is voorbij"
+const DIVIDEND :="Een verbetering houdt stand na %d dagen: %s. De besparing levert %s op voor het verbeterbudget."
 const OVERLOAD := "%s draait op %d%% bezetting door je experiment bij %s, al twee weken te vol. Het team vertrouwt je wat minder."
 const REPUTATION := "Reputatie bij het MT %s (%s)"
 ## The six acts of the campaign (PLAN §2.3), by the act number in the content.
@@ -401,6 +405,9 @@ static func event(e: Dictionary, mission_names: Dictionary, problem_names: Dicti
 	if type == "bad_period":
 		return "Het budget staat rood: een slechte periode voor de regio." if e.get("started", false) \
 			else "Het budget is weer op orde."
+	if type == "failed" and e.get("milestone", false):  # a moment of the story passed, gently
+		return str(e.get("text", "")) if not str(e.get("text", "")).is_empty() \
+			else MILESTONE_PASSED % mission_names.get(e["mission"], "")
 	if not EVENTS.has(type):
 		return ""
 	var text: String = EVENTS[type]

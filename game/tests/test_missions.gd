@@ -966,7 +966,7 @@ func _with(extra: Array) -> Missions:
 func _winter(extra: Dictionary = {}) -> Dictionary:
 	var d := {"id": "winter", "goal": {"type": "story_order", "story": "el_amrani", "by": "deadline",
 		"met_if": {"any": ["delivered:el_amrani", "agreed:call:existing"]}, "promise": "call"},
-		"deadline_on_day": 10, "fail": "koud", "sets_flags_on_fail": ["flag:el_amrani_complaint"]}
+		"deadline_on_day": 10, "fail": "koud", "sets_flags_on_fail": ["flag:el_amrani_complaint"], "missed": "Koud."}
 	d.merge(extra, true)
 	return d
 
@@ -1064,7 +1064,11 @@ func test_a_story_order_missed_by_its_day_fails_and_sets_its_flags() -> void:
 	assert_eq(log.status("winter"), "locked", "the frost has come: the moment is over")
 	assert_true(log.knows("flag:el_amrani_complaint"), "a door closes for Act III")
 	assert_true(log.region.reputation.value < reputation)
-	assert_true(log.drain_events().has({"type": "failed", "mission": "winter"}))
+	assert_true(log.drain_events().has({"type": "failed", "mission": "winter", "milestone": true, "text": "Koud."}),
+		"its own gentle line, not 'Missie verlopen'")
+	assert_eq(UiText.event({"type": "failed", "mission": "winter", "milestone": true, "text": "Koud."}, {}), "Koud.")
+	assert_eq(UiText.event({"type": "failed", "mission": "winter", "milestone": true, "text": ""}, {"winter": "Voor de vorst"}),
+		"Voor de vorst: het moment is voorbij")
 	var restored := _with([_winter()])
 	restored.load_dict(bytes_to_var(var_to_bytes(log.to_dict())))
 	assert_eq(restored.status("winter"), "locked", "saved")
@@ -1087,8 +1091,7 @@ func test_a_story_order_is_met_by_delivery_or_by_the_agreement() -> void:
 func test_a_promised_date_is_checked_on_its_day() -> void:
 	for delivered in [false, true]:
 		var log := _with([_winter({"deadline_on_day": 60})])
-		log.promises = func() -> Dictionary:
-			return {"call": {"proposal": "date", "kind": "delivery_date", "days": 6, "at": SimCalendar.days(1)}}
+		log.facts.add("promised:call:2026-10-18")   # day 6 of play (GameSession records it at the talk)
 		log.accept("walk_connections")
 		_walk_connections(log)
 		log.region.advance_days(6)

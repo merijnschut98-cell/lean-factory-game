@@ -594,6 +594,7 @@
    },
    "id": "winter_el_amrani",
    "kind": "milestone",
+   "missed": "Het vriest. In Nova-Oost staat een warmtepomp nog uit.",
    "name": "Voor de vorst",
    "opens_on": {
     "date": "2026-11-30"

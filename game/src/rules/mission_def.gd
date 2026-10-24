@@ -73,6 +73,9 @@ var deadline_on_day := -1
 ## What reaches the player once it is done in time (Berichten): [{who (a cast id),
 ## by (call | letter), text}], her call on your phone and her letter on your desk.
 var payoff: Array[Dictionary] = []
+## A milestone's own short line when its moment passes (the toast, UI chrome): "De
+## vorst is er."; "" for the plain one (UiText.MILESTONE_PASSED).
+var missed: String
 var briefing: String
 var debrief: String
 ## Said when the deadline passes (e.g. Henk has retired).
@@ -186,6 +189,7 @@ static func from_dict(d: Dictionary) -> MissionDef:
 	m.scene = str(d.get("scene", ""))
 	m.opens_on_day = _opens_on(d.get("opens_on"))
 	m.deadline_on_day = int(d.get("deadline_on_day", -1))
+	m.missed = str(d.get("missed", ""))
 	var payoff: Variant = d.get("payoff", [])
 	for p: Variant in payoff if payoff is Array else []:
 		var entry := JsonFile.dict_or_empty(p)
@@ -283,8 +287,14 @@ static func _opens_on(v: Variant) -> int:
 	if on.has("day"):
 		var day: Variant = on["day"]
 		return int(day) if (day is int or day is float) and day >= 0 else -2
-	var date: Variant = on.get("date")
+	var day := day_of(on.get("date"))
+	return day if day >= 0 else -2
+
+
+## The day of play (0: PLAY_START) of an ISO date "YYYY-MM-DD"; -1 when it is no such
+## date or before play.
+static func day_of(date: Variant) -> int:
 	if not date is String or RegEx.create_from_string(_DATE).search(date) == null:
-		return -2
+		return -1
 	var days := int(Time.get_unix_time_from_datetime_string(date) - Time.get_unix_time_from_datetime_string(PLAY_START)) / 86400
-	return days if days >= 0 else -2
+	return days if days >= 0 else -1

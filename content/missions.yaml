@@ -471,6 +471,7 @@ missions:
     debrief: "Op de eerste vorstnacht draaide de warmtepomp van de familie El Amrani. Haar moeder zat warm. Wie wacht er nog meer op een aansluiting, en weet die waar hij aan toe is?"
     fail: "De eerste vorstnachten logeert de moeder van mevrouw El Amrani bij haar andere dochter in Havenzij. 'Het is maar voor even,' zegt mevrouw El Amrani. Ze schrijft het op, en ze stuurt een brief. Aan de directie, met een kopie aan de ACM."
     sets_flags_on_fail: ["flag:el_amrani_complaint", "flag:el_amrani_cold_winter"]   # Act III's ACM visit, Act IV's bakery
+    missed: "Het vriest. In Nova-Oost staat een warmtepomp nog uit."   # the toast when the frost comes first
     # Kept: her call on your phone and her letter on your desk (Phase 4: her front door).
     payoff:
       - who: el_amrani
