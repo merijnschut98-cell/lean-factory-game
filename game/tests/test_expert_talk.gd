@@ -118,6 +118,19 @@ func test_what_was_asked_is_remembered_across_talks() -> void:
 	assert_eq(saved.asked_topics("pim_expert"), ["cable", "joint"], "kept in the save, as what they told you")
 
 
+## Review S3 #9: two topics with the same answer are two topics asked, kept by their key.
+func test_topics_with_the_same_answer_are_both_remembered() -> void:
+	var same := expert({"topics": [{"id": "cable", "ask": "Hoe oud is die kabel?", "answer": "Geen idee."},
+		{"id": "joint", "ask": "Welke mof hoort daarbij?", "answer": "Geen idee."}]})
+	var p := _people([same])
+	var t := p.start_expert(same, _world())
+	t.say(ExpertTalk.ASK, "cable")
+	t.say(ExpertTalk.ASK, "joint")
+	p.finish_expert(t, 0)
+	assert_eq(p.asked_topics("pim_expert"), ["cable", "joint"])
+	assert_eq(_asks(p.start_expert(same, _world())), [], "neither is offered again")
+
+
 func test_the_answers_go_to_what_they_told_you() -> void:
 	var p := _people()
 	var t := p.start_expert(expert(), _world())

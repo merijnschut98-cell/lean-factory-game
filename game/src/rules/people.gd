@@ -468,9 +468,13 @@ func _keep(d: Dialog, now: int, result: Dictionary) -> void:
 	talk_log[who] = log.slice(-TALK_LOG_MAX)
 
 
+## A line is kept once: an expert's answer by its topic key in its talk (two topics may
+## answer alike), any other line by its text.
 func _observe(person_id: String, entry: Dictionary) -> void:
 	var heard: Array = observed.get(person_id, [])
-	if not heard.any(func(o: Dictionary) -> bool: return o["text"] == entry["text"]):
+	var topic := str(entry["key"]).begins_with(TOPIC)
+	if not heard.any(func(o: Dictionary) -> bool:
+			return o.get("dialog") == entry["dialog"] and o.get("key") == entry["key"] if topic else o.get("text") == entry["text"]):
 		heard.append(entry)
 	observed[person_id] = heard
 
