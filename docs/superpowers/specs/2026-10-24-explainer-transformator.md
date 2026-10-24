@@ -108,7 +108,7 @@ What it deliberately does **not** teach: feed-in, voltage rise and the tap chang
 
 *What moves and what it means:* the crank (fast) and the wheel (slow) turn at a fixed tempo whatever the load (the voltage stays); the knob raises the load; the wheel's gauge climbs a lot, the pedal's a little (the analogy's ratio of three; the real one is twenty-five, in the reveal); the chain warms. In the trafo the two current meters climb (twenty-five to one), the houses light up, the windings warm (a heat tint), the oil thermometer climbs; the readout shows the winding's warmest point and how long the trafo holds this; the wall thermometer changes the weather.
 
-**Card:** top left `Hoe werkt het? 2`, top right **DE TRANSFORMATOR**; bottom left the hint (*fiets*: "Draai aan de knop." · *trafo*: "Draai aan de knop: dat is de straat." · from T6: "Draai aan de knop. Tik op de thermometer."), the reveal corner from T2; bottom right the readout in the trafo skin only. Light theme (paper); the one `lit` accent is the chain, then the windings.
+**Card:** top left `Hoe werkt het? 2`, top right **DE TRANSFORMATOR**; bottom left the hint (*fiets*: "Draai aan de knop." · *trafo*: "Draai aan de knop: dat is de straat." · from t5: "Draai aan de knop. Tik op de thermometer."), the reveal corner from T2; bottom right the readout in the trafo skin only. Light theme (paper); the one `lit` accent is the chain, then the windings.
 
 ### 3.2 Parts (a Figure: ~45 parts per skin)
 
@@ -135,7 +135,7 @@ Back to front: bench → backboard and wall thermometer → control box (back ri
 **Two controls**, both parts of the drawing:
 
 1. **Belasting** (the knob on the control box; ↑/↓, or a click on the knob's right or left half): 0, 25, 50, 75, 100, 125, 150 % of the nameplate. It starts at 25 %. In the fiets skin it is the trainer's resistance ("een berg op"), in the trafo skin the street's demand. The state carries over the cross-fade.
-2. **Buitentemperatuur** (a click on the wall thermometer, or T), **only from T6 on** (in the codex from the start): 20 → 30 → 0 → 10 °C, round. It starts at 20 °C.
+2. **Buitentemperatuur** (a click on the wall thermometer, or T), **only from t5 on** (in the codex from the start): 20 → 30 → 0 → 10 °C, round. It starts at 20 °C.
 
 **In the fiets there are no numbers**: the crank and the wheel turn, the two gauges show force without units (the wheel's gauge spans the full load, the pedal's moves a third of it: `estimate:` the analogy's gear ratio of three, so both move visibly), the chain warms.
 
@@ -147,7 +147,7 @@ Back to front: bench → backboard and wall thermometer → control box (back ri
 | I₂ | Stroom eruit | the rek's LCD | `682 A` |
 | θ_oil | — | the oil thermometer's needle (0–120 °C dial) | — |
 | θ_h | Wikkeling | card | `73 °C` |
-| hours | Volhouden | card | "Kan dit blijven dragen" · "Houdt dit zo'n 5,5 uur vol" · "Minder dan een uur" |
+| hours | Volhouden | card | "Kan dit blijven dragen" · "Houdt dit zo'n 5,5 uur vol" · "Houdt dit nog geen uur vol" (to the half hour) |
 | θ_a | — | the wall thermometer's needle (−10–40 °C) and the card | `Buiten 20 °C` |
 | S, ratio, ageing | — | reveal only | |
 
@@ -217,23 +217,25 @@ What the player can find by playing: the current out is always twenty-five times
 
 | Beat | Trigger | Ruud | The figure | The one idea |
 |---|---|---|---|---|
-| **f1** | opened | "Een trafo leg ik altijd uit met een fiets." · "In een lichte versnelling trap je snel, maar je hoeft bijna geen kracht te zetten. Het wiel draait langzamer, maar met veel meer kracht." · "Zie je dat het tempo niet verandert, ook al trapt niemand hard?" | the crank turns fast, the wheel slow; the gauges rest | **snel en licht, langzaam en sterk** |
-| **f2** | after f1 | "Draai de knop van de trainer eens verder open. Dan wordt het zwaarder, alsof je een berg op fietst." | the knob pulses; waits for a step up or 10 s (auto) | **zwaarder = meer kracht** |
-| **f2_already** (alt of f2, the load already ≥ 50 %) | | "Je hebt hem al zwaarder gezet. Kijk eens naar de twee meters." | | |
-| **f3** | after f2 | "Kijk naar de meters. Bij het wiel stijgt de kracht flink, bij de trapper maar een beetje." · "En het tempo? Dat blijft precies hetzelfde." · "Zet hem eens helemaal zwaar. Wat merk je aan de ketting?" · *(silence)* "Die wordt warm. Hoe zwaarder, hoe warmer." | waits for the load ≥ 100 % (or 10 s); the chain tints | **zwaar = warm** |
-| **x** | after f3 | "Goed. En nu hetzelfde, maar dan met een echte trafo." | the cross-fade, part by part; tags *snel en licht*, *ketting*, *langzaam en sterk* | — |
-| **t1** | done | "De trapper is nu de kabel van de middenspanning. Het wiel is de kant van de straat. En de ketting is de ijzeren kern met de wikkelingen." | the tags fade | **hetzelfde, maar echt** |
-| **t2** | after t1 | "Er gaat hoge spanning in, met weinig stroom. Er komt lage spanning uit, met heel veel stroom." · "Kijk maar op de twee stroommeters." | the readout and the reveal corner appear | **spanning in, stroom uit** |
-| **t3** | after t2 | "Eén verschil met de fiets: in een trafo beweegt niks. Er draait geen ketting." · "Het ijzer geeft het door, zonder dat de draden elkaar raken." | the core's three legs pulse once | **waar de vergelijking stopt** |
-| **t4** | after t3 | "Zet de straat eens zwaarder, alsof iedereen tegelijk gaat koken." | waits for the load ≥ 100 % or 10 s; the houses light | **meer vraag = meer stroom** |
-| **t4_already** (alt, ≥ 100 % already) | | "De straat vraagt al veel. Kijk eens naar de huizen." | | |
-| **t5** | after t4 | "De wikkelingen worden warm. De olie neemt die warmte mee naar de koelribben, daar raakt hij hem kwijt." · "Kijk eens naar de thermometer op de ketel. Hoe snel gaat dat, denk je?" | the windings tint, the oil needle climbs | **de olie koelt** |
-| **t6** | after t5 | "Draai nog eens verder, boven wat er op het typeplaatje staat." · "Dat houdt hij een poosje vol. Hoe lang, dat staat onderaan het blad." | waits for the load > 100 % or 10 s; the hours line | **even meer kan, niet eeuwig** |
-| **t7** | after t6 | "Tik eens op de thermometer aan de muur. Wat doet een hete zomerdag met die tijd?" · *(after the change or 10 s)* "Op een warme dag houdt hij het korter vol." · "Net als ik op de fiets, tegenwoordig. Met rust is hij zo weer koel, maar elke dag te zwaar, dan slijt hij hard." | the thermometer becomes clickable (`unlocks: [ambient]`) | **warm weer = korter; te zwaar slijt** |
+| **f1** | opened | "Een trafo leg ik altijd uit met een fiets." · "In een lichte versnelling trap je snel, en je hoeft bijna geen kracht te zetten." · "Het wiel draait langzamer, maar met veel meer kracht." | the crank turns fast, the valve on the wheel slowly; the gauges rest low | **snel en licht, langzaam en sterk** |
+| **f2** | after f1 | "Draai de knop van de trainer eens verder open. Dan is het alsof je een berg op fietst." · "Let op de twee meters." | the knob pulses; waits for a step up (10 s with auto) | **zwaarder** |
+| f2_already (alt, the load ≥ 50 %) | | "Je hebt hem al zwaarder gezet. Let dan eens op de twee meters." | | |
+| **f3** | after f2 | "Bij het wiel gaat de kracht flink omhoog, bij de trapper maar een klein beetje." · "Het tempo blijft gewoon hetzelfde." · "Zet hem nu eens helemaal zwaar. Wat doet de ketting?" | waits for the load ≥ 100 % | **kracht, niet tempo** |
+| f3_full (alt, ≥ 100 % already) | | the first two lines | | |
+| **f4** | after f3 | "Kijk eens naar de ketting. Die wordt warm." · "Hoe zwaarder je trapt, hoe warmer hij wordt." | the chain tints (a beat of its own, so the warmth is seen before the cross-fade) | **zwaar = warm** (the one idea, on a bike) |
+| **x** | after f4 | "Goed. Nu hetzelfde, maar dan met een echte trafo." | the cross-fade, group by group; tags *snel en licht*, *ketting*, *langzaam en sterk* | — |
+| **t1** | done | "De trapper is nu de kabel met de hoge spanning. Het wiel is de kant van de straat, en de ketting is de ijzeren kern met de wikkelingen." · "Eén verschil: in een trafo beweegt niks. Het ijzer geeft het door, zonder dat de draden elkaar raken." | the tags fade | **hetzelfde, maar zonder beweging** (the mapping and where it stops) |
+| **t2** | after t1 | "Er gaat hoge spanning in, met weinig stroom. Er komt lage spanning uit, met heel veel stroom." · "Kijk maar eens op de twee stroommeters." | the readout and the reveal corner appear | **spanning in, stroom uit** |
+| **t3** | after t2 | "Draai de knop eens verder open: dan vraagt de straat meer, alsof iedereen tegelijk gaat koken." | waits for the load ≥ 100 %; the houses light | **meer vraag = meer stroom** |
+| t3_already (alt, ≥ 100 % already) | | "De straat vraagt nu al veel. Kijk maar hoe de huizen aan staan." | | |
+| **t4** | after t3 | "De wikkelingen worden warm. De olie neemt die warmte mee naar de koelribben." · "Kijk eens naar de thermometer op de ketel. Dat gaat langzamer dan je denkt." · "Draai nu eens verder, boven wat er op het typeplaatje staat." | the windings tint, the oil needle climbs; waits for the load > 100 % | **de olie koelt** |
+| t4_over (alt, > 100 % already) | | the first line, then "Hij staat nu al boven wat er op het typeplaatje staat. Kijk eens naar de thermometer op de ketel." | | |
+| **t5** | after t4 | "Dat houdt hij een poosje vol. Hoe lang, dat staat onderaan het blad." · "Tik eens op de thermometer aan de muur. Wat doet een hete zomerdag daarmee?" | the hours line; the thermometer becomes clickable (`unlocks: [ambient]`) and pulses; waits for the weather | **even meer kan, niet eeuwig** |
+| **t6** | after t5 | "Op een warme dag houdt hij het korter vol. Net als ik op de fiets, tegenwoordig." · "Met rust koelt hij weer af. Maar elke dag te zwaar, dan slijt hij hard." | the hours shorten | **warm weer = korter; te zwaar slijt** |
 
-Ten main beats (f1, f2, f3, x, t1–t7 is eleven with x; the counter counts mains: 11). **State rules:** the lines depend only on the controls (f2's and t4's already-variants); the thermometer is not clickable before t7; Ruud never says which load is "right".
+**Eleven main beats** (the counter says 11/11; the brief asked for six to ten: the warmth on the bike needs its own beat, f4, or the cross-fade swallows it, and the limit line rides with the mapping in t1 to keep the count down). A wait is only ever ended by the player's own turn of the knob or the thermometer, by Spatie, or, with "Tekst loopt vanzelf door", by its timeout; the lines after a wait therefore live in the next beat. **State rules:** the lines depend only on the controls (the already-variants); the thermometer is not clickable before t5; Ruud never says which load is "right".
 
-**Real time:** `estimate:` 75–100 s for a player who follows the prompts.
+**Real time:** `estimate:` 80–110 s for a player who follows the prompts.
 
 **Codex revisit** (K → Hoe werkt het? → De transformator, and Femke's topic *msr*): the same figure without Ruud, the trafo skin with **[De fiets]** / **[De trafo]** tabs, both controls free, the reveal, and the caption:
 
@@ -274,7 +276,7 @@ Checked against `content/problems_tier1.yaml` and `content/missions.yaml`. **It 
 
 - **T1** the model matches §3.4's table; **T2** `fixtures.json` (both models); **T3** properties: I₂ = 25 · I₁ always; more load never cools; more ambient never lengthens the hours; the hours are none at or below the nameplate in 20 °C air.
 - **T4** the parts load (every layer a texture, z unique, the knob's two hit halves, the thermometer's hit, the LCDs and needles).
-- **T5** the beats in order for a player who follows, the already-variants, the thermometer locked until t7, Esc and [Klaar].
+- **T5** the beats in order for a player who follows, the already-variants, the thermometer locked until t5, Esc and [Klaar].
 - **T6** no quiz (only [Klaar] and the reveal corner; the codex adds the two tabs).
 - **T7** never the answer (the lists above, and no step or KPI name).
 - **T8** the codex lists it once seen, and the log round-trips it.
@@ -282,7 +284,7 @@ Checked against `content/problems_tier1.yaml` and `content/missions.yaml`. **It 
 - **T10** the analogy maps (every pair a fiets and a trafo layer; after X the fiets is gone; the load carries over).
 - **World:** the trafohuisje's point exists on the yard once the opleidingsterrein is open, says "hoe werkt een trafo?", and opens the explainer; Femke's *msr* topic returns it.
 
-Screenshots: `docs/screenshots/play_explainer_trafo_{fiets,cross,trafo}.png` (f3 with the chain warm, the cross-fade mid-way, t6 above the nameplate with the hours line).
+Screenshots: `docs/screenshots/play_explainer_trafo_{fiets,cross,trafo}.png` (f4 with the chain warm, the cross-fade mid-way, t5 above the nameplate with the hours line), opened at the trafohuisje (`play_shot.gd`), and `play_trafohuisje.png` (the prompt at the mock-up).
 
 ## 7. Claude's calls
 

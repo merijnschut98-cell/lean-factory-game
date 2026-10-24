@@ -9,7 +9,7 @@ extends CanvasLayer
 ## stands. What the controls do and what the drawing shows for it is the
 ## explainer's rig's (ExplainerRig). Readouts are Godot labels on the
 ## instruments' own LCD faces; the sums wait behind "Laat de rekensom zien"
-## (R). Ruud's beats wait for the player (PLAN 2.13 A): Spatie, Enter or a
+## (R). The speaker's beats wait for the player (PLAN 2.13 A): Spatie, Enter or a
 ## click on his line moves on, ← or Backspace goes back a beat, a counter
 ## says where you are ("3/14"); holding Spatie or [Klaar] closes it; Esc asks
 ## for the pause menu (pause_requested). In the codex Esc closes.
@@ -24,7 +24,7 @@ extends CanvasLayer
 ## it frame by frame; only the open and close fades are Tweens.
 
 signal closed(explainer_id: String)
-## Esc on Ruud's board: the world's pause menu, the sheet stays.
+## Esc on the sheet: the world's pause menu, the sheet stays.
 signal pause_requested
 
 const SCENE := "res://src/ui/explainer/explainer_view.tscn"
@@ -206,7 +206,7 @@ func press(key: Key) -> bool:
 	return true
 
 
-## Spatie, Enter or a click on Ruud's line: the rest of the beat, or the next one.
+## Spatie, Enter or a click on the speaker's line: the rest of the beat, or the next one.
 func next() -> void:
 	if beats != null:
 		beats.next()
@@ -261,8 +261,8 @@ func _set_reveal(open_it: bool) -> void:
 	_refresh()
 
 
-func _show_skin(meterkast: bool) -> void:
-	_skin_target = 1.0 if meterkast else 0.0
+func _show_skin(real: bool) -> void:
+	_skin_target = 1.0 if real else 0.0
 	_xfade_t = 0.0
 	_refresh()
 
@@ -673,13 +673,9 @@ static func _set_text(label: RichTextLabel, text: String) -> void:
 func _freed_control() -> String:
 	for c: Dictionary in def.controls:
 		var id: String = c["id"]
-		if def.hint.has(id) and _opened_by_a_beat(id) and not rig.is_locked(id):
+		if def.hint.has(id) and rig.lockable.has(id) and not rig.is_locked(id):
 			return id
 	return ""
-
-
-func _opened_by_a_beat(control: String) -> bool:
-	return def.beats.any(func(b: Dictionary) -> bool: return control in b.get("unlocks", []))
 
 
 ## An LCD's digits as large as its window allows.

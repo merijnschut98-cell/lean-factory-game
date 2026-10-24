@@ -12,6 +12,8 @@ extends RefCounted
 ## good in the codex: unlock_all).
 
 var def: ExplainerDef
+## The controls a beat opens (named in a beat's `unlocks`), and those still shut.
+var lockable: Array[String] = []
 var locked: Array[String] = []
 ## The state as the current beat began (waits that ask "changed since").
 var at_start := {}
@@ -27,8 +29,9 @@ func _init(explainer: ExplainerDef) -> void:
 	def = explainer
 	for b: Dictionary in def.beats:
 		for control: String in b.get("unlocks", []):
-			if not locked.has(control):
-				locked.append(control)
+			if not lockable.has(control):
+				lockable.append(control)
+	locked = lockable.duplicate()
 
 
 func unlock(control: String) -> void:

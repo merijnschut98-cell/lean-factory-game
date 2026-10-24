@@ -238,6 +238,14 @@ function crank() {
   out.push(S(k.slabOf(foot, 0, 3, P, 4, 0.6), { tone: "lo" }));
   out.push(D(k.corners(foot, 4).map(([x, y]) => at([x, y, 3])), { size: 0.5 }));
   out.push(S(k.slabOf({ x: BB.x - 5, y: -5, w: 10, d: 10, r: 1.5 }, 3, BB.z - 9, P, 3, 0.4), { tone: "mid" }));
+  // The seat tube on up from the bottom bracket, its clamp, the saddle: a bike at once.
+  out.push(S(k.cylinder(BB.x - 2, 0, 3.4, BB.z + 6, 52, P, 20), { tone: "mid" }));
+  out.push(S(k.cylinder(BB.x - 2, 0, 4.4, BB.z + 50, 5, P, 20), { tone: "mid" }));
+  out.push(S(k.cylinder(BB.x - 2, 0, 2.4, BB.z + 55, 14, P, 16), { tone: "hi" }));
+  const saddle = { x: BB.x - 24, y: -8, w: 42, d: 16, r: 7 };
+  out.push(S(k.slabOf({ x: BB.x - 10, y: -3, w: 16, d: 6, r: 1 }, BB.z + 67, 3, P, 2), { tone: "mid" }));
+  out.push(S(k.slabOf(saddle, BB.z + 70, 6, P, 8, 1.4), { tone: "hi", inner: L(k.sideSeam(saddle, BB.z + 72.5, P, 8), { tone: "faint" }) }));
+  out.push(L(k.lineOnTop([saddle.x + 8, 0], [saddle.x + saddle.w - 4, 0], BB.z + 76, P), { tone: "faint" }));
   const shell = G.frameAlong([BB.x, -9, BB.z], AY);
   out.push(S(G.disc(0, 18, 6.5, shell, P), { tone: "mid", inner: L(G.arcOf(shell, 9, 6.5, P), { tone: "faint" }) }));
   out.push(S(G.disc(18, CHAIN_Y - 1 + 9, 3.2, shell, P), { tone: "mid" }));
