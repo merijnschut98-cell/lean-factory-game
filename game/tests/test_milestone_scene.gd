@@ -216,3 +216,53 @@ func test_skipping_to_the_board_still_stages_them() -> void:
 	assert_ne(office.kpi_board, null)
 	assert_true(m._people["frank"].position.distance_to(spot) < 1.5, "Frank at the board")
 	office.free()
+
+
+## Where the rig's camera sees from for its framing now.
+func _eye(office: Office) -> Vector3:
+	var f := office.rig._inspect
+	return office.rig.view_from(f["at"], f["yaw"], f["distance"], f["pitch"], f["lift"], f["shift"])
+
+
+## The MT-kamer's pillar stands by the table's door end: whichever seat you take (and a
+## little off it), the scene camera picks a side from which you and the speaker are both
+## in sight (docs/screenshots/play_mt_room_scene.png had the pillar over the seated player).
+func test_the_scene_camera_keeps_the_pillar_out_of_the_way() -> void:
+	var office: Office = load(SCENE).instantiate()
+	office.seed_value = 11
+	office.training = false
+	office.build()
+	var s := office.session
+	s.missions.play_start -= SimCalendar.days(100)
+	s.pass_time(0)
+	office.floors.go_to("second", "lift", true)
+	var m := office.milestone
+	m.step(1.0)
+	for spot in ["player", "seat0", "seat1", "seat2", "seat3"]:
+		for nudge: Vector3 in [Vector3.ZERO, Vector3(0, 0, 0.45)]:   # as a body settles in its chair
+			office.player.sit_at(office.in_office(office.floors.markers()["scene:mt_room:" + spot]))
+			office.player.position += nudge
+			var at := "you at %s%s" % [spot, " (nudged)" if nudge != Vector3.ZERO else ""]
+			for who: String in m._people:
+				var speaker: OfficePerson = m._people[who]
+				office.frame_scene(speaker, OfficeMilestone.TABLE_LIFT)
+				var eye := _eye(office)
+				assert_true(office.sees(eye, speaker), "%s: %s whole in the two-shot" % [at, who])
+				assert_true(office.sees(eye, null), "%s: you whole in the two-shot on %s" % [at, who])
+				office.frame_face(speaker)
+				if office.rig.shot == CameraRig.FACE:
+					assert_true(office.in_sight(_eye(office), office.talk_point(speaker)), "%s: %s's face" % [at, who])
+	office.free()
+
+
+## Seated at a scene's table the player stays in the chair: the physics does not push the
+## body off it (it slid half a metre in play_mt_room_scene).
+func test_sitting_down_at_the_table_stops_the_body_sliding() -> void:
+	var player := Player.new()
+	(Engine.get_main_loop() as SceneTree).root.add_child(player)
+	assert_true(player.is_physics_processing(), "a standing body walks")
+	player.sit_at(Transform3D(Basis(), Vector3(1, 0, 2)))
+	assert_false(player.is_physics_processing(), "no physics step while seated")
+	player.stand_up()
+	assert_true(player.is_physics_processing(), "walking again once up")
+	player.free()

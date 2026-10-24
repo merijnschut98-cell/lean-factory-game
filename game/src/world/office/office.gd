@@ -62,6 +62,14 @@ const WALK_BESIDE := 1.3
 ## A scene's two-shot looks from the side with open floor behind the pair, up
 ## to this far (m): a wall nearer than that would hide them.
 const SCENE_CLEAR := 3.0
+## Where a shot looks for a body (m above the floor: waist, head), seated and standing.
+const BODY_SEATED: Array[float] = [0.55, 1.15]
+const BODY_STANDING: Array[float] = [0.9, 1.55]
+## Half a body's width (m), shoulders and arms.
+const BODY_HALF_WIDTH := 0.3
+## A sight line ends this far (m) short of what it looks at: the chair or desk
+## right beside a person does not hide them.
+const SIGHT_SHORT := 0.3
 
 const RESUME_FAILED := "De bewaarde game kon niet worden geladen (%s). Dit spel wordt niet bewaard, zodat de oude bewaard blijft."
 const WHITEBOARD_PROMPT := "E — Whiteboard: hoe werkt het?"
@@ -110,6 +118,8 @@ var home: OfficeHome
 var floors: OfficeFloors
 ## The walk grid, baked on first use.
 var _nav: OfficeNav
+## The geometry's collision triangles, for sight lines (in_sight; empty until asked).
+var _sight_faces := PackedVector3Array()
 ## The ring or person clicked last: used when the walk there ends.
 var _walk_goal: Node3D
 ## The person under the cursor (their name tag shows).
@@ -306,6 +316,7 @@ func load_floor() -> void:
 			remove_child(n)
 			n.free()
 	_nav = null
+	_sight_faces = PackedVector3Array()
 	_walk_goal = null
 	_hovered_person = null
 	geometry = _load_geometry(floors.model_path())
@@ -346,6 +357,7 @@ func reload_rooms() -> void:
 	_add_interactables()
 	_refresh_people()
 	_nav = null
+	_sight_faces = PackedVector3Array()   # an opened door no longer hides anything
 	if ui.playable():
 		show_map()
 
@@ -829,12 +841,13 @@ func follow_walking_talk(delta: float) -> void:
 	var gap := to_player.length() - WALK_BESIDE
 	if gap > 0.05:
 		person.place(person.position + to_player.normalized() * minf(gap, person.pace * delta), to_player)
-	_two_shot(person, PAIR_LIFT)
+	_two_shot(person, PAIR_LIFT, true)
 
 
 ## Their face and shoulders while they speak, from a little to one side of
 ## the player: the side that sees more of their face, where the camera stands
-## over open floor; over the player's shoulder when neither side has room.
+## over open floor with nothing between it and the face (in_sight); a side over
+## open floor when neither is clear; over the player's shoulder when neither has room.
 func frame_face(person: OfficePerson) -> void:
 	var face := talk_point(person)
 	var to_player := (player.position - person.position) * Vector3(1, 0, 1)
@@ -843,11 +856,16 @@ func frame_face(person: OfficePerson) -> void:
 	var sides: Array[float] = [toward + FACE_ANGLE, toward - FACE_ANGLE]
 	sides.sort_custom(func(a: float, b: float) -> bool: return Vector3(sin(a), 0, cos(a)).dot(faces) > Vector3(sin(b), 0, cos(b)).dot(faces))
 	var reach := CameraRig.FACE_DISTANCE * cos(CameraRig.FACE_PITCH)
+	sides = sides.filter(func(yaw: float) -> bool:
+		return nav().walkable(face * Vector3(1, 0, 1) + Vector3(sin(yaw), 0, cos(yaw)) * reach))
+	if sides.is_empty():
+		rig.converse(face, talk_yaw(person, player.position), TALK_SHIFT, FACE_LIFT)
+		return
 	for yaw in sides:
-		if nav().walkable(face * Vector3(1, 0, 1) + Vector3(sin(yaw), 0, cos(yaw)) * reach):
+		if in_sight(rig.view_from(face, yaw, CameraRig.FACE_DISTANCE, CameraRig.FACE_PITCH, FACE_LIFT), face):
 			rig.face_shot(face, yaw, FACE_LIFT)
 			return
-	rig.converse(face, talk_yaw(person, player.position), TALK_SHIFT, FACE_LIFT)
+	rig.face_shot(face, sides[0], FACE_LIFT)
 
 
 ## A scene's speaker and the player in one view (PLAN 2.13 A): the player
@@ -862,18 +880,52 @@ func frame_scene(person: OfficePerson, lift: float) -> void:
 ## The camera looks down at the point between the player and `person`, from
 ## behind the player a little to the side when the floor is open there, else
 ## from the side with the most open floor (a wall close behind would hide them).
-func _two_shot(person: OfficePerson, lift: float) -> void:
+## Unless `anywhere` (a walking talk, reframed every step), it takes the first of
+## those sides, then square to the pair, from which both are seen whole (a pillar
+## or a wall between would hide one); none clear, the one with the most open floor.
+func _two_shot(person: OfficePerson, lift: float, anywhere := false) -> void:
 	var between := (player.position + person.position) / 2.0 * Vector3(1, 0, 1)
 	var behind_player := atan2(player.position.x - person.position.x, player.position.z - person.position.z)
-	var best := talk_yaw(person, player.position)
-	var best_room := _open_floor(between, best)
-	for yaw: float in [behind_player - TALK_ANGLE, behind_player + TALK_ANGLE,
-			behind_player + PI - TALK_ANGLE, behind_player + PI + TALK_ANGLE]:
-		var room := _open_floor(between, yaw)
-		if room > best_room:
-			best = yaw
-			best_room = room
-	rig.two_shot(between + Vector3.UP * CameraRig.FOCUS_HEIGHT, best, lift)
+	var sides: Array = [talk_yaw(person, player.position), behind_player - TALK_ANGLE, behind_player + TALK_ANGLE,
+		behind_player + PI - TALK_ANGLE, behind_player + PI + TALK_ANGLE]
+	var room := sides.map(func(yaw: float) -> float: return _open_floor(between, yaw))
+	var order := range(sides.size())
+	order.sort_custom(func(a: int, b: int) -> bool: return room[a] > room[b] or (room[a] == room[b] and a < b))
+	var yaws: Array = order.map(func(i: int) -> float: return sides[i])
+	var at := between + Vector3.UP * CameraRig.FOCUS_HEIGHT
+	if not anywhere:
+		for yaw: float in yaws + [behind_player - PI / 2.0, behind_player + PI / 2.0]:
+			var eye := rig.view_from(at, yaw, CameraRig.SCENE_DISTANCE, CameraRig.SCENE_PITCH, lift)
+			if sees(eye, null) and sees(eye, person):
+				rig.two_shot(at, yaw, lift)
+				return
+	rig.two_shot(at, yaws[0], lift)
+
+
+## Whether a camera at `eye` sees `point` (office space): no wall, pillar or shut door of
+## the geometry's collision crosses the line between them, up to SIGHT_SHORT before it.
+func in_sight(eye: Vector3, point: Vector3) -> bool:
+	if _sight_faces.is_empty():
+		_sight_faces = _collision_faces()
+	var to := point + (eye - point).normalized() * SIGHT_SHORT
+	for i in range(0, _sight_faces.size() - 2, 3):
+		if Geometry3D.segment_intersects_triangle(eye, to, _sight_faces[i], _sight_faces[i + 1], _sight_faces[i + 2]) != null:
+			return false
+	return true
+
+
+## Whether a camera at `eye` sees `person` (the player for null) whole: waist and head
+## (lower when seated), each with its left and right edge.
+func sees(eye: Vector3, person: OfficePerson) -> bool:
+	var at := person.position if person != null else player.position
+	var sits := person.pose == "sit" if person != null else player.seated
+	var across := (at - eye).cross(Vector3.UP) * Vector3(1, 0, 1)
+	across = across.normalized() * BODY_HALF_WIDTH if across.length() > 0.01 else Vector3.ZERO
+	for h: float in BODY_SEATED if sits else BODY_STANDING:
+		for side in [-1.0, 0.0, 1.0]:
+			if not in_sight(eye, at + Vector3.UP * h + across * side):
+				return false
+	return true
 
 
 ## How far (m, up to SCENE_CLEAR) the floor runs open from `at` towards a
