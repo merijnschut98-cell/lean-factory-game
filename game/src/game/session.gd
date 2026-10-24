@@ -1391,6 +1391,22 @@ func customer_calls() -> Array[Dictionary]:
 	return out
 
 
+## Whether expert talk `dialog_id` still has a clue to tell for an active mission's problem:
+## a topic open now whose clue is not found yet (CustomerCalls: only then does an expert ring
+## unasked, R-1 #6).
+func expert_serves_active(dialog_id: String) -> bool:
+	var d: DialogDef = people.dialogs.get(dialog_id)
+	if d == null:
+		return false
+	var problems := missions.active().map(func(m: MissionDef) -> String: return m.goal_problem)
+	var known := people.facts(_facts())
+	var asked := people.asked_topics(dialog_id)
+	return d.topics.any(func(t: Dictionary) -> bool:
+		var clue := str(JsonFile.dict_or_empty(t.get("unlocks")).get("clue", ""))
+		return not clue.is_empty() and not region.found.has(clue) and clue.get_slice(":", 0) in problems \
+			and not t["id"] in asked and ExpertTalk.is_open(t, known, people.trust[d.person]))
+
+
 ## After every action: check-in prompts and the low-morale clock move on
 ## (People.daily; a goodbye is an event), the facts talks set join the ones missions and
 ## countermeasures read (Missions.facts), and every resolved fix with an owner
