@@ -3334,15 +3334,15 @@ def check_company(docs: dict[str, Any]) -> None:
             if seated > t["headcount"]["value"]:
                 raise ContentError(f"company.yaml: team '{t['id']}': {seated} people placed but a headcount of "
                                    f"{t['headcount']['value']}")
-    check_company_spoilers(docs)
+    check_company_spoilers(docs, cast_names)
     company["people"] = company_index(company)
 
 
-def _repeats(shown: str, clue: str) -> bool:
-    """`shown` shares _REPEAT_WORDS words in a row with `clue`."""
-    a, b = re.findall(r"\w+", shown.lower()), re.findall(r"\w+", clue.lower())
-    runs = {tuple(b[i:i + _REPEAT_WORDS]) for i in range(len(b) - _REPEAT_WORDS + 1)}
-    return any(tuple(a[i:i + _REPEAT_WORDS]) in runs for i in range(len(a) - _REPEAT_WORDS + 1))
+def _runs(text: str) -> set[tuple[str, ...]]:
+    """Every _REPEAT_WORDS words in a row in `text` (lower case): two texts repeat each other
+    when they share one."""
+    words = re.findall(r"\w+", text.lower())
+    return {tuple(words[i:i + _REPEAT_WORDS]) for i in range(len(words) - _REPEAT_WORDS + 1)}
 
 
 def _clue_numbers(text: str) -> set[tuple[float, bool]]:
@@ -3355,25 +3355,23 @@ def _clue_numbers(text: str) -> set[tuple[float, bool]]:
     return out
 
 
-def _problem_people(docs: dict[str, Any], problem_ids: set[str]) -> set[str]:
-    """The full names of the people a problem's mission is about (named in its briefing or
+def _problem_people(docs: dict[str, Any], people: set[str], problem_ids: set[str]) -> set[str]:
+    """The full names of `people` a problem's mission is about (named in its briefing or
     debrief, by first name or in full)."""
-    people = [c.get("name", "") for c in _cast()] + [p.get("name", "") for p in
-                                                      (docs.get("dialogs") or {}).get("people", [])]
     out: set[str] = set()
     for m in (docs.get("missions") or {}).get("missions", []):
         if (m.get("goal") or {}).get("problem") in problem_ids:
             told = " ".join(str(m.get(k, "")) for k in ("briefing", "debrief"))
-            out |= {name for name in people if " " in name and re.search(rf"\b{re.escape(name.split()[0])}\b", told)}
+            out |= {name for name in people if name and " " in name and re.search(rf"\b{re.escape(name.split()[0])}\b", told)}
     return out
 
 
-def check_company_spoilers(docs: dict[str, Any]) -> None:
+def check_company_spoilers(docs: dict[str, Any], people: set[str]) -> None:
     """Nothing is handed over (CLAUDE.md): a company text shown without a gate never
     repeats a problem's clue (its words, or its number as a number's value), names one of
-    its countermeasures, or names a person a problem's mission is about. A Zuidmark number
-    that is a clue carries `revealed_by` (the clue's id, or a fact) and shows only once the
-    player knows it."""
+    its countermeasures, or names a person (of `people`) a problem's mission is about. A
+    Zuidmark number that is a clue carries `revealed_by` (the clue's id, or a fact) and shows
+    only once the player knows it."""
     company = docs["company"]
     problems = [p for stem, doc in docs.items() if stem.startswith("problems") for p in doc["problems"]]
     clues = {f"{p['id']}:{i}": c["text"] for p in problems for i, c in enumerate(p.get("clues", []))}
@@ -3385,23 +3383,31 @@ def check_company_spoilers(docs: dict[str, Any]) -> None:
                 except ContentError:
                     raise ContentError(f"company.yaml: number '{n['id']}': revealed_by {atom!r} is not a clue or "
                                        f"a fact") from None
+    clue_runs = {clue_id: _runs(text) for clue_id, text in clues.items()}
+    clue_numbers = {clue_id: _clue_numbers(text) for clue_id, text in clues.items()}
     cm_names = {c["id"]: c["name"] for c in (docs.get("countermeasures") or {}).get("countermeasures", [])}
-    names = sorted({cm_names[cm] for p in problems for cm in p.get("countermeasures", {}) if cm in cm_names})
-    cm_of = {cm_names[cm]: cm for p in problems for cm in p.get("countermeasures", {}) if cm in cm_names}
-    tied = sorted(_problem_people(docs, {p["id"] for p in problems}))
-    shown = [(w, t, None) for w, t in company_shown_texts(company) if not w.startswith("number ")]
-    shown += [(f"number '{n['id']}'", t, n) for n in company.get("numbers", []) if "revealed_by" not in n
-              for t in _number_texts(n)]
-    for where, text, number in shown:
-        for clue_id, clue in clues.items():
-            same_number = number is not None and text == number["label"] \
-                and (float(number["value"]), number["unit"] == "procent") in _clue_numbers(clue)
-            if same_number or _repeats(text, clue):
-                raise ContentError(f"company.yaml: {where} repeats clue {clue_id!r} ({clue!r}): gate it with "
-                                   f"'revealed_by: [{clue_id}]'")
-        for name in names:
-            if name.lower() in text.lower():
-                raise ContentError(f"company.yaml: {where} names countermeasure {cm_of[name]!r} ({name!r})")
+    cm_of = {cm_names[cm].lower(): cm for p in problems for cm in p.get("countermeasures", {}) if cm in cm_names}
+    tied = sorted(_problem_people(docs, people, {p["id"] for p in problems}))
+
+    def repeated(clue_id: str, where: str) -> ContentError:
+        return ContentError(f"company.yaml: {where} repeats clue {clue_id!r} ({clues[clue_id]!r}): gate it with "
+                            f"'revealed_by: [{clue_id}]'")
+
+    ungated = [n for n in company.get("numbers", []) if "revealed_by" not in n]
+    for n in ungated:   # its value is a clue's number
+        for clue_id, numbers in clue_numbers.items():
+            if (float(n["value"]), n["unit"] == "procent") in numbers:
+                raise repeated(clue_id, f"number '{n['id']}'")
+    shown = [(w, t) for w, t in company_shown_texts(company) if not w.startswith("number ")]
+    shown += [(f"number '{n['id']}'", t) for n in ungated for t in _number_texts(n)]
+    for where, text in shown:
+        runs = _runs(text)
+        for clue_id, clue_run in clue_runs.items():
+            if runs & clue_run:
+                raise repeated(clue_id, where)
+        for name, cm in sorted(cm_of.items()):
+            if name in text.lower():
+                raise ContentError(f"company.yaml: {where} names countermeasure {cm!r} ({cm_names[cm]!r})")
         for name in tied:
             if name in text:
                 raise ContentError(f"company.yaml: {where} names {name!r}, whom a problem's mission is about")
