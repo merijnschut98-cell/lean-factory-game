@@ -18,7 +18,10 @@ them away). Markers as on the floors: `place:<step>`, `room:<id>` with its rect,
 `exit:ground` (back inside) and `arrive:exit` where the player steps out. The vans are
 `van<k>` (van0 and van1 the storingsbussen on call); the game parks and sends them out by
 the hour (office_yard.gd); at each van `driver:van<k>` is where its monteur stands (by its back) and
-`ride:van<k>` the passenger door, where the van ride starts (van_ride.gd).
+`ride:van<k>` the passenger door, where the van ride starts (van_ride.gd). The tells (PLAN 2.6), as
+on the floors: `tell_van_kanban` (the kanban wall), `tell_magazijn_rack` (the joint shelf),
+`tell_van_returns` (the returns pallet), `tell_storingsbord` and `tell_measurement_tray` (the
+werkplaats), each with `_low`, `_mid` and `_high` variants.
 
 It also builds the van's cab from inside for the van ride: game/assets/office/van_cab.glb (the
 cab faces Blender +Y, Godot -Z; `seat:driver` and `seat:passenger` where the two sit).
@@ -33,6 +36,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import build_office as bo  # noqa: E402  (materials, kits, MeshBuilder, colliders, markers)
 import bpy  # noqa: E402
+import numpy as np  # noqa: E402
 
 OUT = bo.ASSETS / "office_yard.glb"
 CAB_OUT = bo.ASSETS / "van_cab.glb"
@@ -117,28 +121,45 @@ def shed(name: str, rect, door_side: str, door_x: float, plan) -> None:
     bo.put(f.mesh(f"{name}_floor"), f"{name}_floor")
 
 
-def rack(b: bo.MeshBuilder, x0: float, x1: float, y: float, depth: float, empty_bay: int = -1) -> None:
-    """Steel shelving along x with boxed stock on four shelves; `empty_bay` holds nothing."""
+SHELVES = (0.15, 0.7, 1.25, 1.8)   # a rack's shelf heights
+
+
+def rack(b: bo.MeshBuilder, x0: float, x1: float, y: float, depth: float, stocked: bool = True) -> None:
+    """Steel shelving along x on four shelves, with boxed stock (`stocked`) or empty (its stock
+    is a tell's: rack_boxes)."""
     bays = max(1, round((x1 - x0) / 1.8))
     bw = (x1 - x0) / bays
     for i in range(bays + 1):
         b.box((0.05, depth, 2.2), (x0 + i * bw, y, 1.1), "metal_blue")
-    for z in (0.15, 0.7, 1.25, 1.8):
+    for z in SHELVES:
         b.box((x1 - x0, depth, 0.03), ((x0 + x1) / 2, y, z), "steel")
+    if stocked:
+        rack_boxes(b, x0, x1, y, depth, set())
+    bo.collide((x1 - x0, depth, 2.2), ((x0 + x1) / 2, y, 1.1))
+
+
+def rack_boxes(b: bo.MeshBuilder, x0: float, x1: float, y: float, depth: float, gone: set) -> list[tuple]:
+    """The boxes on a rack (three a bay a shelf), but those in `gone`; returns every box's key
+    (bay, shelf, k)."""
+    bays = max(1, round((x1 - x0) / 1.8))
+    bw = (x1 - x0) / bays
+    keys = []
+    for s, z in enumerate(SHELVES):
         for i in range(bays):
-            if i == empty_bay:
-                continue
             for k in range(3):
+                keys.append((i, s, k))
+                if (i, s, k) in gone:
+                    continue
                 cx = x0 + i * bw + (k + 0.6) * bw / 3.4
                 b.box((bw / 3.8, depth * 0.8, 0.32), (cx, y, z + 0.17), "dossier" if (i + k) % 2 else "plastic_grey")
-    bo.collide((x1 - x0, depth, 2.2), ((x0 + x1) / 2, y, 1.1))
+    return keys
 
 
 def magazijn(kits, plan) -> None:
     x0, y0, x1, y1 = MAGAZIJN
     shed("magazijn", MAGAZIJN, "south", -28.5, plan)
     b = bo.MeshBuilder()
-    rack(b, x0 + 0.5, x1 - 0.5, y1 - 0.5, 0.6, empty_bay=2)       # the moffen: one bay empty
+    rack(b, x0 + 0.5, x1 - 0.5, y1 - 0.5, 0.6, stocked=False)     # the moffen: their boxes are a tell
     rack(b, x0 + 3.0, x1 - 2.5, 17.0, 0.6)                         # a middle row
     b.box((2.6, 0.6, 1.0), (-31.8, 14.0, 0.5), "wood")             # Dirk's counter
     b.box((2.6, 0.62, 0.04), (-31.8, 14.0, 1.02), "metal_white")
@@ -147,11 +168,139 @@ def magazijn(kits, plan) -> None:
     bo.collide((0.5, 1.85, 2.0), (x0 + 0.35, 19.0, 1.0))
     bo.put(kits["laptop"], "magazijn_laptop", (-31.4, 14.0, 1.04), 180)
     bo.put(b.mesh("magazijn_inside"), "magazijn_inside")
-    # the van kanban wall outside, on the west wall, facing the vans: cards in slots
-    k = bo.MeshBuilder()
-    bo.wall_board(k, "kanban_wall", "X", x0 - WALL / 2, 17.0, -1, 3.0, 1.2, (0, 0, 0.5, 1.0), mat="obeya")
-    bo.sticky_notes(k, "X", x0 - WALL / 2 - 0.02, 17.0, -1, 3.0, 23, 22)
-    bo.put(k.mesh("kanban_cards"), "kanban_cards")
+    joint_shelf(x0 + 0.5, x1 - 0.5, y1 - 0.5, 0.6)
+    van_kanban((x0 - WALL / 2 - 0.011, 17.0, 0.0))
+
+
+# --------------------------------------------------------------------------- tells (PLAN 2.6, S3-Y)
+# The yard's props that read the simulation, as on the floors (build_office.tell): a `tell_<id>`
+# empty with `_low`, `_mid` and `_high` variants; game/src/world/office/office_tells.gd shows one.
+# Outdoors there is no bake to keep them out of.
+
+def joint_shelf(x0: float, x1: float, y: float, depth: float) -> None:
+    """The magazijn's joint shelf (the rack on its back wall): its boxes per band, emptying bay by
+    bay from the middle as the moffen run low (low: half a bay gone; mid: two bays and some;
+    high: a few boxes left)."""
+    keys = rack_boxes(bo.MeshBuilder(), x0, x1, y, depth, set())
+    order = sorted(keys, key=lambda key: ([2, 4, 0, 3, 1].index(key[0]), -key[1], key[2]))
+    variants = {}
+    for band, n in zip(bo.TELL_VARIANTS, (6, 30, 51)):
+        b = bo.MeshBuilder()
+        rack_boxes(b, x0, x1, y, depth, set(order[:n]))
+        variants[band] = [(b.mesh(f"joint_shelf_{band}"), (0, 0, 0), 0)]
+    bo.tell("magazijn_rack", (0, 0, 0), 0, variants)
+
+
+KANBAN_ROWS = 5                      # the parts a storingsbus carries (a row each)
+KANBAN_VANS = 6                      # a column per van
+KANBAN_COL_Y = [1.3 - c * 0.34 for c in range(KANBAN_VANS)]   # the van columns (the reader's left: +Y)
+KANBAN_ORDER_Y = (-0.9, -1.08, -1.26)                        # the "bestellen" column's three lanes
+KANBAN_COLOURS = ("sticky_yellow", "sticky_blue", "sticky_green", "sticky_pink", "card_old")   # a colour a part
+
+
+def van_kanban(at) -> None:
+    """The van kanban wall on the magazijn's west wall, facing the vans (front at local -X): a
+    slot per van and part, and on the right the "bestellen" column. Per band the cards: low two
+    slots empty and their cards in bestellen, mid six, high fifteen (a card taken from its slot
+    hangs in bestellen until the part is back)."""
+    w, h, zc = 3.0, 1.2, 1.55
+    b = bo.MeshBuilder()
+    b.box((0.003, w, 0.05), (-0.004, 0, zc + h / 2 - 0.06), "metal_blue")      # the header strip
+    b.box((0.003, 0.012, h - 0.16), (-0.004, -0.72, zc - 0.06), "plastic_grey")  # bestellen's border
+
+    def row_z(r: int) -> float:
+        return zc + h / 2 - 0.2 - r * 0.19
+
+    for c, y in enumerate(KANBAN_COL_Y):
+        b.box((0.003, 0.16, 0.02), (-0.004, y, zc + h / 2 - 0.12), "plastic_black")   # the van's number
+        for r in range(KANBAN_ROWS):
+            b.box((0.004, 0.18, 0.012), (-0.005, y, row_z(r) - 0.06), "plastic_grey")   # the slot's lip
+    fixed = [("frame", bo.kit_board_frame(w, h), (0, 0, zc), 180), ("slots", b.mesh("kanban_slots"), (0, 0, 0), 0)]
+    rng = np.random.default_rng(29)
+    slots = [(c, r) for c in range(KANBAN_VANS) for r in range(KANBAN_ROWS)]
+    order = [slots[i] for i in rng.permutation(len(slots))]
+    variants = {}
+    for band, n in zip(bo.TELL_VARIANTS, (2, 6, 15)):
+        v = bo.MeshBuilder()
+        for c, r in order[n:]:   # the cards still in their slots, a colour a part
+            v.box((0.004, 0.14, 0.1), (-0.008, KANBAN_COL_Y[c], row_z(r)), KANBAN_COLOURS[r])
+        for k, (c, r) in enumerate(order[:n]):   # and those taken, in bestellen, three lanes from the top
+            lane, depth = k % 3, k // 3
+            v.box((0.004, 0.14, 0.1), (-0.008, KANBAN_ORDER_Y[lane], row_z(0) - depth * 0.15 + float(rng.normal(0, 0.006))),
+                  KANBAN_COLOURS[r], rot=float(rng.normal(0, 2)))
+        variants[band] = [(v.mesh(f"kanban_cards_{band}"), (0, 0, 0), 0)]
+    bo.tell("van_kanban", at, 0, variants, fixed=fixed)
+
+
+def storingsbord(at) -> None:
+    """The storingsdienst's whiteboard on the werkplaats's west wall (front at local -X, facing
+    the room): this week's callouts, a line each in marker, a green tick when it went well, a red
+    stroke when it took long, and at the highest a second time behind some (searched again).
+    Low seven lines, all ticked; mid fifteen, three red; high the board full, eleven red."""
+    w, h, zc = 1.8, 1.0, 1.5
+    rng = np.random.default_rng(37)
+    rows = [(col, row) for col in range(3) for row in range(9)]
+    lines = [(float(rng.uniform(0.24, 0.34)), float(rng.normal(0, 0.004))) for _ in rows]
+    reds = {band: set(rng.choice(n, size=k, replace=False).tolist())
+            for band, n, k in (("low", 7, 0), ("mid", 15, 3), ("high", 27, 11))}
+    variants = {}
+    for band, n in zip(bo.TELL_VARIANTS, (7, 15, 27)):
+        b = bo.MeshBuilder()
+        b.box((0.003, 0.5, 0.018), (-0.004, 0.6, zc + h / 2 - 0.07), "metal_blue")   # the heading
+        for i, ((col, row), (length, dz)) in enumerate(list(zip(rows, lines))[:n]):
+            y0, z = 0.84 - col * 0.58, zc + h / 2 - 0.15 - row * 0.09 + dz
+            b.box((0.003, length, 0.011), (-0.004, y0 - length / 2, z), "plastic_black")
+            red = i in reds[band]
+            b.box((0.003, 0.06 if red else 0.025, 0.012), (-0.004, y0 - length - 0.06, z),
+                  "card_red" if red else "card_green")
+            if red and band == "high" and i % 2:   # a second time: the fault searched for again
+                b.box((0.003, 0.07, 0.009), (-0.004, y0 - length - 0.16, z), "plastic_black")
+        variants[band] = [(b.mesh(f"storingsbord_{band}"), (0, 0, 0), 0)]
+    bo.tell("storingsbord", at, 180, variants, fixed=[("frame", bo.kit_board_frame(w, h), (0, 0, zc), 180)])
+
+
+def measurement_tray(kits, at) -> None:
+    """The tray of voltage complaints on the cabinet by the measuring kit (local x along the
+    cabinet): low the tray, mid a pile on it, high a full tray and two piles beside it."""
+    def pile(h: float, seed: int, base: float = 0.75) -> bpy.types.Mesh:
+        return bo._raise(bo.kit_dossier_stack(h, 60 + seed), base)
+
+    on_tray = 0.75 + 0.145
+    bo.tell("measurement_tray", at, 90, {
+        "low": [(kits["tray"], (0.25, 0, 0), 0)],
+        "mid": [(kits["tray"], (0.25, 0, 0), 0), (pile(0.12, 0, on_tray), (0.25, 0, 0), 4)],
+        "high": [(kits["tray"], (0.25, 0, 0), 0), (pile(0.3, 1, on_tray), (0.25, 0, 0), 4),
+                 (pile(0.22, 2), (-0.12, 0.02, 0), -7), (pile(0.14, 3), (-0.42, 0, 0), 5)]})
+
+
+RETURNS = (-37.2, 20.4)   # the returns pallet: in the van park's north-east corner, clear of the bays
+
+
+def van_returns() -> None:
+    """The returns pallet at the van park: what came back from a visit that failed, meter boxes
+    (cardboard) and connection kits (a coil of cable on a box), each with its slip. Low three
+    boxes, mid a stack and a kit, high a full pallet and a second one beside it."""
+    def load(b: bo.MeshBuilder, x: float, n_boxes: int, kits_: int) -> None:
+        b.box((1.2, 0.8, 0.14), (x, 0, 0.07), "wood")
+        spots = [(x - 0.4 + (k % 3) * 0.4, -0.2 + (k // 3 % 2) * 0.4, k // 6) for k in range(12)]
+        for k, (sx, sy, layer) in enumerate(spots[:n_boxes]):
+            z = 0.14 + layer * 0.26 + 0.13
+            b.box((0.36, 0.36, 0.25), (sx, sy, z), "card_old", rot=float((k * 37) % 7 - 3))
+            b.box((0.08, 0.002, 0.1), (sx, sy - 0.181, z), "paper")   # its slip, facing the yard (east)
+        for k in range(kits_):
+            sx, sy, layer = spots[n_boxes + k] if n_boxes + k < len(spots) else (x, 0, 2)
+            z = 0.14 + layer * 0.26
+            b.box((0.36, 0.36, 0.12), (sx, sy, z + 0.06), "plastic_grey")
+            b.cyl(0.15, 0.08, (sx, sy, z + 0.16), "plastic_black", segs=14)
+    variants = {}
+    for band, boxes, kits_, second in (("low", 3, 0, 0), ("mid", 7, 1, 0), ("high", 10, 2, 6)):
+        b = bo.MeshBuilder()
+        load(b, 0.0, boxes, kits_)
+        if second:
+            load(b, 0.0 - 1.35, second, 1)
+        variants[band] = [(b.mesh(f"returns_{band}"), (0, 0, 0), 0)]
+    bo.tell("van_returns", (*RETURNS, 0.0), 90, variants)
+    bo.collide((0.8, 1.2, 0.6), (*RETURNS, 0.3))   # the first pallet (the second comes and goes)
 
 
 def werkplaats(kits, plan) -> None:
@@ -170,10 +319,11 @@ def werkplaats(kits, plan) -> None:
     b.box((1.0, 0.8, 1.2), (-29.0, y0 + 1.1, 0.6), "metal_dark")       # a small transformer (tap change)
     bo.collide((1.0, 0.8, 1.2), (-29.0, y0 + 1.1, 0.6))
     bo.put(b.mesh("werkplaats_inside"), "werkplaats_inside")
-    w = bo.MeshBuilder()   # the storingsdienst's board: last night's callouts
-    bo.wall_board(w, "callout_board", "X", x0 + WALL / 2, -0.6, 1, 1.8, 1.0, (0.5, 0, 1.0, 1.0), mat="obeya")
-    bo.sticky_notes(w, "X", x0 + WALL / 2 + 0.02, -0.6, 1, 1.8, 41, 9)
-    bo.put(w.mesh("callout_cards"), "callout_cards")
+    storingsbord((x0 + WALL / 2 + 0.011, -0.6, 0.0))
+    cabinet = (x0 + WALL / 2 + 0.235, -2.6)   # by the measuring kit: the voltage complaints' tray
+    bo.put(kits["cabinet_1.2"], "werkplaats_cabinet", (*cabinet, 0), 90)
+    bo.collide((0.45, 1.2, 0.75), (*cabinet, 0.375))
+    measurement_tray(kits, (*cabinet, 0.0))
     for k, (x, y) in enumerate(((-33.4, 3.4), (-24.6, -5.4))):
         bo.put(kits["chair"], f"werkplaats_chair{k}", (x, y, 0), 45 * k)
 
@@ -397,6 +547,7 @@ def build_yard() -> None:
     magazijn(kits, plan)
     werkplaats(kits, plan)
     van_park_fence(plan)
+    van_returns()
     opleidingsterrein(plan)
     for k in range(len(VAN_YS)):
         van(k)

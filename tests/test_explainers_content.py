@@ -36,7 +36,7 @@ def _refused(doc: dict, match: str) -> None:
 def test_the_repo_explainer_is_valid_and_built(docs):
     first = docs["explainers"]["explainers"][0]
     assert first["id"] == "spanning_stroom_weerstand"
-    assert {b["id"] for b in first["beats"]} >= set(bc.EXPLAINER_BEATS)
+    assert {b["id"] for b in first["beats"]} >= set(bc.EXPLAINER_RIGS["ohm_cable"]["beats"])
 
 
 def test_a_digit_in_a_beat_is_refused(doc):
@@ -104,3 +104,60 @@ def test_a_control_needs_its_layers_in_the_manifest(docs):
     broken["explainers"]["explainers"][0]["controls"][0]["meterkast"] = "switch_toaster"
     with pytest.raises(bc.ContentError, match="switch_toaster"):
         bc.check_explainers(broken)
+
+
+# ── The second explainer and the fields a second one needed (spec 2026-10-24 §6) ──
+
+def _trafo(doc: dict) -> dict:
+    return next(e for e in doc["explainers"] if e["id"] == "transformator")
+
+
+def test_the_transformer_is_valid_and_built(docs):
+    trafo = _trafo(docs["explainers"])
+    assert trafo["model"] == "transformer" and trafo["skins"]["analogy"] == "fiets"
+    assert {b["id"] for b in trafo["beats"]} >= set(bc.EXPLAINER_RIGS["transformer"]["beats"])
+
+
+@pytest.mark.parametrize("token", ["levertijd", "bestellen", "gecontracteerd", "De Boomgaard"])
+def test_the_transformer_never_names_its_missions_answers(doc, token):
+    _trafo(doc)["caption"].append(f"Denk ook aan {token}.")
+    _refused(doc, "never the answer")
+
+
+def test_the_first_explainer_may_not_name_the_trafo_but_the_second_may(doc):
+    bc.validate_explainers(doc, "explainers.yaml")
+    assert "trafo" in _trafo(doc)["one_idea"].lower()
+    _first(doc)["caption"].append("Daarna komt de trafo.")
+    _refused(doc, "never the answer")
+
+
+def test_an_unknown_model_is_refused(doc):
+    _trafo(doc)["model"] = "flux_capacitor"
+    _refused(doc, "model must be one of")
+
+
+def test_a_wait_of_another_model_is_refused(doc):
+    next(b for b in _trafo(doc)["beats"] if b["id"] == "f2")["wait_for"] = "kettle_on"
+    _refused(doc, "wait_for")
+
+
+def test_the_tabs_must_name_both_skins(doc):
+    _trafo(doc)["skins"]["tabs"] = {"fiets": "De fiets"}
+    _refused(doc, "tabs")
+
+
+def test_a_label_the_rig_needs_is_required(doc):
+    del _trafo(doc)["labels"]["hours"]
+    _refused(doc, "hours")
+
+
+def test_the_groups_must_be_the_manifests(docs):
+    broken = copy.deepcopy(docs)
+    _trafo(broken["explainers"])["groups"].remove("street")
+    with pytest.raises(bc.ContentError, match="groups"):
+        bc.check_explainers(broken)
+
+
+def test_a_beat_may_only_unlock_a_control(doc):
+    next(b for b in _trafo(doc)["beats"] if b["id"] == "t5")["unlocks"] = ["warp_drive"]
+    _refused(doc, "unlocks must name controls")

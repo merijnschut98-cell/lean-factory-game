@@ -12,8 +12,9 @@ extends RefCounted
 ## Main beats play in content order. An alt beat (`alt_of`) replaces its main
 ## beat when its `when` holds as the beat starts; it then goes to `then` (that
 ## main beat, played as is) or past its main beat. `skip_when` drops a main
-## beat. The state carries over the cross-fade: what was open in the garden
-## is switched on in the meterkast.
+## beat. What the conditions and waits mean is the explainer's rig's
+## (ExplainerRig: OhmRig for #1, TrafoRig for #2). The state carries over the
+## cross-fade: what was open in the garden is switched on in the meterkast.
 
 ## Reading time of a beat: a base plus per character (estimate: about 20
 ## characters a second, a slow reader's pace, since Ruud's lines are short).
@@ -23,15 +24,24 @@ const READ_PER_CHAR_S := 0.05
 const SILENCE_S := 2.0
 ## The cross-fade's own time on top of its line (§6.3: about 1.4 s).
 const CROSS_S := 1.6
-const LOADS: Array[String] = ["lamp", "kettle", "heater"]
+const LOADS := OhmRig.LOADS
 
 var def: ExplainerDef
-var on := {"lamp": false, "kettle": false, "heater": false}
-## The reel in use: 1 (thin) or 2 (thick).
-var haspel := 1
-var haspel_unlocked := false
-## The kettle ran without the heater in the meterkast (R7's variant).
-var kettle_alone_seen := false
+## The controls and the model the beats wait on.
+var rig: ExplainerRig
+## #1's switches, reel and its memory, read through from its rig.
+var on: Dictionary:
+	get:
+		return rig.get("on")
+var haspel: int:
+	get:
+		return rig.get("haspel")
+var haspel_unlocked: bool:
+	get:
+		return not rig.is_locked("haspel")
+var kettle_alone_seen: bool:
+	get:
+		return rig.get("kettle_alone_seen")
 var done := false
 var closed_early := false
 ## "Tekst loopt vanzelf door": beats move on after their reading time.
@@ -39,15 +49,16 @@ var auto := false
 
 var _beat := {}
 var _elapsed := 0.0
-var _haspel_at_start := 1
 ## Main beats in content order.
 var _mains: Array[String] = []
 ## The beats played before this one, oldest first (← goes back through them).
 var _history: Array[Dictionary] = []
 
 
-func _init(explainer: ExplainerDef) -> void:
+## `with_rig`: the rig the view draws from (made from the content when null).
+func _init(explainer: ExplainerDef, with_rig: ExplainerRig = null) -> void:
 	def = explainer
+	rig = with_rig if with_rig != null else ExplainerRig.create(explainer)
 	for b: Dictionary in def.beats:
 		if not b.has("alt_of"):
 			_mains.append(b["id"])
@@ -117,21 +128,13 @@ func duration() -> float:
 	return t + (CROSS_S if phase() == "cross" else 0.0)
 
 
-## Flip a control (lamp, kettle, heater) or swap the reel (haspel). False
-## when refused: the reel stays until R8 opens it, nothing moves once done.
-func toggle(control: String) -> bool:
-	if done:
+## Flip a control or turn a stepped one by `step`. False when refused: a
+## locked control stays until its beat opens it, nothing moves once done.
+func toggle(control: String, step: int = 1) -> bool:
+	if done or not rig.toggle(control, step):
 		return false
-	if control == "haspel":
-		if not haspel_unlocked:
-			return false
-		haspel = 3 - haspel
-	elif on.has(control):
-		on[control] = not on[control]
-	else:
-		return false
-	_note_state()
-	if _beat.has("wait_for") and _met(_beat["wait_for"]):
+	rig.note(phase())
+	if _beat.has("wait_for") and rig.met(_beat["wait_for"]):
 		_leave()
 	return true
 
@@ -153,7 +156,7 @@ func back() -> void:
 		return
 	_beat = _history.pop_back()
 	_elapsed = _full_at()
-	_haspel_at_start = haspel
+	rig.mark()
 
 
 func tick(dt: float) -> void:
@@ -171,55 +174,16 @@ func close() -> void:
 		done = true
 
 
-func _count() -> int:
-	return on.values().count(true)
-
-
-func _note_state() -> void:
-	if phase() != "tuin" and on["kettle"] and not on["heater"]:
-		kettle_alone_seen = true
-
-
-func _holds(condition: String) -> bool:
-	match condition:
-		"only_lamp":
-			return on["lamp"] and _count() == 1
-		"kettle_on":
-			return on["kettle"]
-		"heater_on":
-			return on["heater"]
-		"never_kettle_alone":
-			return not kettle_alone_seen
-	return false
-
-
-func _met(wait: String) -> bool:
-	match wait:
-		"any_on":
-			return _count() >= 1
-		"two_on":
-			return _count() >= 2
-		"kettle_on":
-			return on["kettle"]
-		"heater_on":
-			return on["heater"]
-		"heater_again":
-			return kettle_alone_seen and on["heater"]
-		"haspel":
-			return haspel != _haspel_at_start
-	return false
-
-
 ## Start a main beat: its alt if one holds, or past it if it is skipped.
 ## `as_is` plays the main beat itself (an alt's `then`).
 func _enter(main_id: String, as_is: bool = false) -> void:
 	var main := def.beat(main_id)
 	if not as_is:
-		if main.has("skip_when") and _holds(main["skip_when"]):
+		if main.has("skip_when") and rig.holds(main["skip_when"]):
 			_after(main_id)
 			return
 		for b: Dictionary in def.beats:
-			if b.get("alt_of") == main_id and _holds(b["when"]):
+			if b.get("alt_of") == main_id and rig.holds(b["when"]):
 				_play(b)
 				return
 	_play(main)
@@ -230,10 +194,10 @@ func _play(b: Dictionary) -> void:
 		_history.append(_beat)
 	_beat = b
 	_elapsed = 0.0
-	_haspel_at_start = haspel
-	if "haspel" in b.get("unlocks", []):
-		haspel_unlocked = true
-	_note_state()
+	rig.mark()
+	for control: String in b.get("unlocks", []):
+		rig.unlock(control)
+	rig.note(phase())
 
 
 func _leave() -> void:
