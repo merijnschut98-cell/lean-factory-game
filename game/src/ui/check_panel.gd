@@ -10,6 +10,8 @@ signal back_to_a3
 
 ## The stream's numbers in the table, in this order.
 const ROWS := ["capacity", "throughput", "wip_age", "lead_time", "first_time_right", "on_time"]
+## The stream's flow: what "dit was niet het knelpunt" says did not grow.
+const FLOW_ROWS := ["capacity", "throughput"]
 ## Leading ("Stuurindicator") reacts within the two weeks of the experiment;
 ## lagging ("Volgindicator") measures finished orders and only moves after
 ## about one lead time. The one place that classifies the numbers.
@@ -118,10 +120,12 @@ static func improved(row: String, before: float, after: float) -> bool:
 
 
 ## Green for better, orange for worse, ink for no change: a change within the Check's noise
-## (Pdca.CHECK_NOISE, relative) is no change, so a flow that only shifted inside the window
-## never reads green next to "dit was niet het knelpunt" (gate backlog 3).
-static func change_color(row: String, before: float, after: float) -> Color:
-	if is_equal_approx(before, after) or before != 0.0 and absf(after - before) / absf(before) < Pdca.CHECK_NOISE:
+## (Pdca.CHECK_NOISE, relative) is no change (gate backlog 3). When the Check found the step
+## was `not_constraint`, the flow rows (FLOW_ROWS) read ink whatever they did, so the flow
+## never reads green next to "dit was niet het knelpunt" (review 2453246..3c0a190 #4).
+static func change_color(row: String, before: float, after: float, not_constraint := false) -> Color:
+	if not_constraint and row in FLOW_ROWS or is_equal_approx(before, after) \
+			or before != 0.0 and absf(after - before) / absf(before) < Pdca.CHECK_NOISE:
 		return Palette.INK
 	return Palette.GREEN_DARK if improved(row, before, after) else Palette.SAFETY_ORANGE
 
@@ -211,14 +215,16 @@ func _check_forecast(f: Dictionary) -> void:
 		for row: String in rows:
 			var without: float = f["without"][row]
 			var value: float = f[run][row]
-			grid.add_child(label(UiText.kpi_value(row, value), UiTheme.SMALL, change_color(row, without, value)))
+			grid.add_child(label(UiText.kpi_value(row, value), UiTheme.SMALL,
+				change_color(row, without, value, result["not_constraint"])))
 	card.add_child(paragraph(FORECAST_NOTE % f.get("window", f["days"]), Palette.MUTED, 15))
 
 
 ## A row's before, after (green better, orange worse) and its tag.
 func _add_before_after(grid: GridContainer, row: String, before: float, after: float) -> void:
 	grid.add_child(label(UiText.kpi_value(row, before)))
-	grid.add_child(label(UiText.kpi_value(row, after), UiTheme.FONT_SIZE, change_color(row, before, after)))
+	grid.add_child(label(UiText.kpi_value(row, after), UiTheme.FONT_SIZE,
+		change_color(row, before, after, result["not_constraint"])))
 	grid.add_child(label(KIND_TAGS[kind(row)], UiTheme.SMALL, Palette.MUTED))
 
 

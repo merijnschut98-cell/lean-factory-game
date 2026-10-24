@@ -75,6 +75,17 @@ func test_a_change_within_the_checks_noise_reads_as_unchanged() -> void:
 	assert_eq(CheckPanel.change_color("on_time", 0.0, 0.5), Palette.GREEN_DARK, "from nothing, any change counts")
 
 
+## Review of 2453246..3c0a190 #4: the noise band alone lets a flow that shifted past it read
+## green; next to "dit was niet het knelpunt" the flow rows (capacity, throughput) read
+## neutral, whatever they did. The step's own numbers keep their colour.
+func test_next_to_not_the_constraint_the_flow_rows_read_neutral() -> void:
+	for row in ["capacity", "throughput"]:
+		assert_eq(CheckPanel.change_color(row, 30.0, 33.0, true), Palette.INK, row)
+		assert_eq(CheckPanel.change_color(row, 30.0, 27.0, true), Palette.INK, row)
+		assert_eq(CheckPanel.change_color(row, 30.0, 33.0), Palette.GREEN_DARK, row + ": a bottleneck's flow is green")
+	assert_eq(CheckPanel.change_color("lead_time", 50.0, 40.0, true), Palette.GREEN_DARK)
+
+
 func _numbers(v: float) -> Dictionary:
 	return {"capacity": v, "throughput": v, "wip_age": v, "lead_time": v, "first_time_right": 0.8, "on_time": 0.7}
 
