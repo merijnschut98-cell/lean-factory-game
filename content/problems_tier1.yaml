@@ -48,7 +48,7 @@ problems:
     effects:
       - {target: connections.intake, property: ftr, value: -0.2}
     tells:
-      - {tell: intake_stack, text: "De stapel dossiers op de kast bij Intake is hoger dan het werk van een dag."}
+      - {tell: intake_stack, text: "Op de kast bij Intake ligt meer dan een dag werk aan dossiers."}
     clues:
       - {tool: documents, key: true, depth: 0, text: "Van de laatste twintig aanvragen missen er negen het aansluitvermogen of de gegevens van de installateur."}
       - {tool: queue_count, key: false, depth: 0, text: "In de intake-wachtrij liggen maar een paar aanvragen. Het team werkt ze snel weg."}

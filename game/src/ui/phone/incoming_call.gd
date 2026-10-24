@@ -11,7 +11,7 @@ signal declined(call: Dictionary)
 
 const CALLING := "belt je"
 const ANSWER := "Opnemen"
-const LET_GO := "Laten gaan"
+const LET_GO := "Niet opnemen"
 const ANSWER_KEY := KEY_1
 const LET_GO_KEY := KEY_2
 

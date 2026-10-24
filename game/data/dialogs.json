@@ -352,8 +352,8 @@
   {
    "id": "portal_asks_too_little",
    "lines": [
-    "Waarom komen die aanvragen eigenlijk altijd half binnen?",
-    "Omdat het portaal niet vraagt wat wij nodig hebben. Al jaren niet."
+    "Waarom komen die aanvragen eigenlijk zo vaak half binnen?",
+    "Geen idee. Dat is al zo zolang ik hier zit."
    ],
    "teams": [
     "work_prep",
@@ -3138,7 +3138,7 @@
       "kind": "delivery_date"
      },
      "reply": "Op {promise_date:42}. Ik schrijf het op, met de datum van vandaag erbij.",
-     "text": "Volgens de planning bent u over een week of zes aangesloten. Op {promise_date:42}."
+     "text": "Volgens de planning bent u over een week of zes aangesloten. Dat wordt dan {promise_date:42}."
     },
     {
      "addresses": [
@@ -5442,7 +5442,7 @@
    "retry_opening": "Daar bent u weer. Ik heb tabblad drie al openstaan.",
    "topics": [
     {
-     "answer": "Met een logger in de meterkast. Die schrijft elke vijf minuten de spanning op. Zelf gebouwd, hoor, van een printplaatje en een oude telefoonlader. Elke eerste van de maand haal ik de gegevens eraf.",
+     "answer": "Met een logger in de meterkast. Die schrijft elke vijf minuten de spanning op. Zelf in elkaar gezet, hoor: een printplaatje en een oude telefoonlader. Elke eerste van de maand haal ik de gegevens eraf.",
      "ask": "Hoe meet u dat eigenlijk, die spanning?",
      "id": "logger"
     },
@@ -5452,7 +5452,7 @@
      "id": "limit"
     },
     {
-     "answer": "Per dag de hoogste spanning, met het weer van het KNMI ernaast. Op een zonnige middag in mei zit ik boven de tweehonderdvijftig, op een grijze dag kom ik niet boven de tweehonderdveertig. En elk voorjaar komen er een paar volt bij. Sinds de halve straat panelen heeft.",
+     "answer": "Per dag de hoogste spanning, met het weer van het KNMI ernaast. Op een zonnige middag in mei zit ik boven de tweehonderdvijftig, op een grijze dag kom ik niet boven de tweehonderdveertig. En sinds de halve straat panelen heeft, komen er elk voorjaar een paar volt bij.",
      "ask": "Wat staat er precies op tabblad drie?",
      "id": "tab_three",
      "unlocks": {
@@ -5460,7 +5460,7 @@
      }
     },
     {
-     "answer": "Ik zou ze naast elkaar leggen, per kabel. Dan ziet u dat de spanning het hoogst is aan het eind van de kabel, het verst van de trafo. Dan weet u ook waar u moet kijken. Ik zou het zelf doen, maar ik kan niet bij die gegevens. Terecht, hoor. Privacy.",
+     "answer": "Ik zou ze naast elkaar leggen, per kabel. Dan ziet u dat de spanning het hoogst is aan het eind van de kabel, het verst van de trafo. En dan weet u meteen waar u moet zoeken. Ik zou het zelf doen, maar ik kan niet bij die gegevens. Terecht, hoor. Privacy.",
      "ask": "Wat zou u doen met de metingen van de hele straat?",
      "id": "the_street",
      "trust": 50,
@@ -5476,16 +5476,16 @@
    ]
   },
   {
-   "closing": "Goed. En als je het wilt zien in plaats van horen: je weet me te vinden.",
+   "closing": "Goed. Maar zien is beter dan horen. Als je wilt, doe ik het je een keer voor.",
    "id": "henk_expert",
    "kind": "expert",
    "name": "Henk over het vak",
    "opening": "Vragen over het vak? Daar heb ik altijd tijd voor. Zolang ik hier nog rondloop.",
    "person": "henk",
-   "retry_opening": "Jij weer, {jongen_meid}. Wat wil je nog weten?",
+   "retry_opening": "Daar ben je weer, {jongen_meid}. Wat wil je nog weten?",
    "topics": [
     {
-     "answer": "Een mof verbindt twee stukken kabel. Welke je pakt, hangt af van wat er aan weerszijden ligt. Twee kunststof kabels: een krimpmof, klaar. Oude papierloodkabel aan kunststof: dan heb je een overgangsmof nodig, en die heeft niet elke bus bij zich. Pak je de verkeerde, dan sta je om twee uur 's nachts met lege handen in de sleuf.",
+     "answer": "Een mof verbindt twee stukken kabel. Welke je pakt, hangt af van wat er aan allebei de kanten ligt. Twee kunststofkabels: een krimpmof, klaar. Oude papierloodkabel aan kunststof: dan heb je een overgangsmof nodig, en die ligt niet in elke bus. Pak je de verkeerde, dan sta je om twee uur 's nachts met lege handen in de sleuf.",
      "ask": "Wat is eigenlijk het verschil tussen al die moffen?",
      "id": "joints",
      "unlocks": {
@@ -5493,7 +5493,7 @@
      }
     },
     {
-     "answer": "Aan het lood. Papier met olie erin en een loodmantel eromheen, GPLK noemen we dat. Zwaar spul, en het gaat langer mee dan je denkt. Maar je pakt het anders aan dan kunststof: dat lood moet je netjes dicht solderen, anders trekt er vocht in. Mijn eerste mof op zo'n kabel maakte ik in 1979, achter de oude gasfabriek.",
+     "answer": "Aan het lood. Papier met olie erin en een loodmantel eromheen, GPLK noemen we dat. Zwaar spul, en het gaat langer mee dan je denkt. Maar je pakt het anders aan dan kunststof: dat lood moet je netjes dichtsolderen, anders trekt er vocht in. Mijn eerste mof op zo'n kabel heb ik in 1984 gemaakt, achter de oude gasfabriek.",
      "ask": "Hoe herken je een kabel van voor 1970?",
      "id": "old_cable",
      "unlocks": {
@@ -5534,21 +5534,21 @@
  "greetings": {
   "_all": {
    "committed": [
-    "Hoi {speler}! Ik ben er al mee begonnen, met wat we hadden afgesproken.",
+    "Hoi {speler}! Ik ben al begonnen met wat we hadden afgesproken.",
     "Hé {speler}. Onze afspraak staat, hoor. Ik hou je op de hoogte."
    ],
    "heard": [
-    "Hoi {speler}. Fijn dat je gisteren even de tijd nam.",
-    "Hé {speler}. Ik heb nog nagedacht over ons gesprek. Goed dat je doorvroeg."
+    "Hoi {speler}. Fijn dat je laatst even de tijd voor me nam.",
+    "Hé {speler}. Ik heb nog eens nagedacht over ons gesprek. Goed dat je doorvroeg."
    ],
    "pressured": [
-    "Hoi {speler}. Ik voelde me gisteren een beetje voor het blok gezet, eerlijk gezegd.",
-    "Hé. Dat ging gisteren wel erg snel, vond ik. Laten we het rustiger aanpakken."
+    "Hoi {speler}. Ik voelde me laatst een beetje voor het blok gezet, eerlijk gezegd.",
+    "Hé. Dat ging laatst wel erg snel, vond ik. Kunnen we het de volgende keer rustiger aanpakken?"
    ],
    "ruined": [
-    "Hoi. Over gisteren: dat liep niet lekker, hè. We hebben het er later nog wel over.",
-    "Hé {speler}. Ik moest gisteren even afkoelen. Vandaag is een nieuwe dag.",
-    "Hoi. Ik heb nog even nagedacht over ons gesprek. Later misschien."
+    "Hoi. Ons vorige gesprek liep niet lekker, hè. Daar hebben we het later nog wel over.",
+    "Hé {speler}. Ik was na ons gesprek nog wel even chagrijnig. Het zakt wel weer.",
+    "Hoi. Ik zit nog een beetje met ons gesprek. Laten we het even laten rusten."
    ],
    "standardised": [
     "Hoi {speler}! Die nieuwe afspraak werkt, hoor. Iedereen doet het nu zo.",
@@ -5557,18 +5557,18 @@
   },
   "ahmed": {
    "day": [
-    "Hé {speler}. Gaat wel, man.",
+    "Hé {speler}. Ook weer hier, man?",
     "Hoi {speler}. Rustig vandaag. Hopelijk blijft het zo.",
     "Hé {speler}. Alles goed?"
    ]
   },
   "anouk": {
    "committed": [
-    "Hoi {speler}! Ik heb het geprobeerd zoals we zeiden. Het valt me eigenlijk mee."
+    "Hoi {speler}! Ik heb het geprobeerd zoals we hadden afgesproken. Het valt me eigenlijk mee."
    ],
    "day": [
-    "Oh, hoi {speler}! Sorry, het is een beetje een rommeltje hier.",
-    "Hoi {speler}! Ik zit erbovenop, hoor. Heb je al koffie gehad?",
+    "O, hoi {speler}! Sorry, het is een beetje een rommeltje hier.",
+    "Hoi {speler}! Heb je al koffie gehad? Ik wilde net gaan.",
     "Hé {speler}. Sorry, ik ben nog even met een tekening bezig. Zeg het maar."
    ]
   },
@@ -5595,7 +5595,7 @@
   },
   "frank": {
    "day": [
-    "Goed je te zien, {speler}. Ik zit vandaag vol met overleggen.",
+    "Dag {speler}. Ik heb vandaag het ene overleg na het andere.",
     "Hallo {speler}. Ik moet straks de cijfers verantwoorden bij de directie. Hoe gaat het bij jou?",
     "Hoi {speler}. Als je iets hebt voor het jaarplan, hoor ik het graag."
    ]
@@ -5610,7 +5610,7 @@
   "henk": {
    "day": [
     "Ha {speler}. Kom je weer even kijken? Prima.",
-    "Hoi {speler}. Sinds 1987 sta ik hier elke ochtend. Jij bent er ook vroeg bij.",
+    "Ha {speler}. Sinds 1984 loop ik hier rond. Nog steeds niet uitgeleerd, hoor.",
     "Ha {speler}. Er staat koffie in de keet, als je wilt."
    ]
   },
@@ -5621,13 +5621,13 @@
     "Hoi {speler}. Eerlijk is eerlijk, het wordt weer een volle week."
    ],
    "ruined": [
-    "Hoi. Even voor de duidelijkheid: dat gesprek van gisteren zit me nog niet lekker."
+    "Hoi. Even voor de duidelijkheid: dat gesprek van laatst zit me nog steeds niet lekker."
    ]
   },
   "joyce": {
    "day": [
     "Hoi {speler}. Even mijn kabelschaar zoeken, dan ben ik weg.",
-    "Hé {speler}. Jij bent de nieuwe van Aansluitingen, toch?",
+    "Hé {speler}. Jij bent de nieuwe van Ruud, toch?",
     "Hoi {speler}. Als je ooit mee wilt, zeg het maar. Dan zie je het echte werk."
    ]
   },
@@ -5652,12 +5652,12 @@
     "Hoi {speler}. Nog niks gesloopt vandaag. Dat komt vast nog."
    ],
    "ruined": [
-    "Kijk. Gisteren was niks. Laat maar zitten."
+    "Kijk. Dat gesprek van laatst was niks. Laat maar zitten."
    ]
   },
   "mieke": {
    "day": [
-    "Hoi {speler}. Ik zit in de revisies van vorige week. Dat moet kloppen, hè.",
+    "Hoi {speler}. Ik ben de revisies van vorige week nog aan het uitzoeken.",
     "Hallo {speler}. Alles goed?",
     "Hoi {speler}. Kom je kijken? Pak gerust een stoel."
    ],
@@ -5669,7 +5669,7 @@
    "day": [
     "Hoi {speler}. De Molen draait. Dat is al heel wat.",
     "Dag {speler}. Zoek je iets? Dan staat het waarschijnlijk in mijn map.",
-    "Hoi {speler}. Klopt, ik ben er weer. Alles staat klaar."
+    "Hoi {speler}. Alles staat klaar voor vandaag. Zoals altijd."
    ]
   },
   "rachid": {
@@ -5697,7 +5697,7 @@
    "day": [
     "Hoi {speler}! Hoe bevalt het tot nu toe?",
     "Ha {speler}. Wat heb je vandaag al gezien?",
-    "Hoi {speler}. De koffie hier is nog steeds slecht. Of went het al?"
+    "Hoi {speler}. Ben je al gewend aan de koffie hier? Ik nog steeds niet."
    ]
   },
   "sandra": {
@@ -5709,12 +5709,12 @@
   },
   "sanne": {
    "day": [
-    "Hoi {speler}! Portaal open, koffie op, telefoon aan. We zijn er klaar voor.",
+    "Hoi {speler}! Portaal open, koffie erbij, telefoon aan. Kom maar op.",
     "Nou, daar is {speler}. Kom je weer even op het postkantoor kijken?",
-    "Hé {speler}. Joh, het is weer een drukte vandaag, hè."
+    "Hé {speler}. Wat een drukte weer vandaag, joh."
    ],
    "ruined": [
-    "Hoi. Nou, gisteren was niet ons beste gesprek, hè. Laat maar even."
+    "Hoi. Nou, dat was niet ons beste gesprek, hè. Laat maar even zitten."
    ]
   },
   "saskia": {
@@ -5735,7 +5735,7 @@
    "day": [
     "Hallo {speler}! Ik ben weer even binnengewipt.",
     "Dag {speler}. Ik heb mijn aantekeningen meegenomen.",
-    "Hoi {speler}. Veertig jaar in het vak, en nog steeds nieuwsgierig."
+    "Goedendag, {speler}. Veertig jaar in het vak gezeten, en nog steeds nieuwsgierig."
    ]
   },
   "yvonne": {
@@ -5965,7 +5965,7 @@
    "team": "contact_centre",
    "trust": 50,
    "voice": "Ik heb het opgeschreven.",
-   "voicemail": "Met Fatima El Amrani. Ik had u graag even gesproken. Ik heb het genoteerd: vandaag, geen gehoor. Ik bel morgen terug."
+   "voicemail": "Met Fatima El Amrani. Ik had u graag even gesproken. Ik heb het genoteerd: vandaag, geen gehoor. Ik bel morgen weer."
   },
   {
    "archetype": "craftsman",
@@ -6092,7 +6092,7 @@
   "_all": {
    "afternoon": [
     "Nog een paar uurtjes. Het gaat lekker.",
-    "Na de lunch is het altijd even een dipje.",
+    "Na de lunch heb ik altijd even een dipje.",
     "Ik werk dit nog even af."
    ],
    "busy": [
@@ -6102,7 +6102,7 @@
    ],
    "calm": [
     "Lekker rustig vandaag. Dat mag ook wel eens.",
-    "Rustige dag. Ik werk wat achterstallige dingen weg.",
+    "Rustige dag. Eindelijk tijd voor wat er al weken blijft liggen.",
     "Eindelijk een dag zonder brandjes."
    ],
    "late": [
@@ -6118,7 +6118,7 @@
    "tired": [
     "Lange dag, hoor. Ik ben er een beetje doorheen.",
     "Sorry, ik ben moe. Het werd gisteren weer laat.",
-    "Ik moet echt even koffie. Het gaat wel."
+    "Ik moet echt even koffie hebben. Het gaat wel."
    ]
   },
   "anouk": {
@@ -6148,7 +6148,7 @@
   },
   "esra": {
    "busy": [
-    "Serieus, er staan twintig bellers in de wacht."
+    "Serieus, er hangen twintig mensen in de wacht."
    ]
   },
   "joost": {
@@ -6171,7 +6171,7 @@
   },
   "petra": {
    "calm": [
-    "Rustig. Klopt, dat gebeurt soms."
+    "Rustig vandaag. Dat komt voor."
    ]
   },
   "sanne": {

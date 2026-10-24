@@ -438,7 +438,7 @@
    },
    "steps": {
     "a3": "Schrijf je A3 voor de monteurs aan de obeya-wand",
-    "act": "Beslis aan de obeya-wand hoe de monteurs verdergaat",
+    "act": "Beslis aan de obeya-wand hoe de monteurs verdergaan",
     "check": "Lees aan de obeya-wand af wat je experiment opleverde",
     "dig": "Zoek uit waarom monteurs voor niks voor de deur staan",
     "look": "Ga bij de monteurs kijken hoe een klus bij de klant loopt",
@@ -507,7 +507,7 @@
    "chapter": "De telefoon",
    "debrief": "Een dossier wordt nu afgehandeld op de dag dat het klaar is. De warmtepomp van de familie El Amrani draait. Bij Petra is de stapel niet kleiner geworden, want er was geen stapel werk: er was een stapel wachten. Welke andere batches zie je in de stroom die niemand een batch noemt?",
    "debrief_variants": {
-    "too_early": "Je verwachtte dat Meetdata sneller zou afmelden als het systeem de EAN-codes zelf aanmeldt. De Check zegt: maar half. De koppeling werkt wel. Een dossier dat Petra invoert, staat nu binnen een uur bij de leverancier. Alleen voert Petra de dossiers nog steeds aan het eind van de maand in, want zo is het ooit afgesproken. Het wachten zat niet in het systeem. Wanneer gaat een dossier eigenlijk van de stapel af, en wie heeft dat zo bepaald?\n\nPetra: \"Die koppeling is mooi, hoor. Maar die had ik niet nodig om morgen anders te beginnen.\""
+    "too_early": "Je verwachtte dat dossiers sneller afgemeld zouden worden als het systeem de EAN-codes zelf aanmeldt. De Check laat zien: dat helpt maar half. De koppeling werkt wel. Een dossier dat Petra invoert, staat nu binnen een uur bij de leverancier. Alleen voert Petra de dossiers nog steeds aan het eind van de maand in, want zo is het ooit afgesproken. Het wachten zat niet in het systeem. Wanneer gaat een dossier eigenlijk van de stapel af, en wie heeft dat zo bepaald?\n\nPetra: \"Die koppeling is mooi, hoor. Maar die had ik niet nodig om morgen anders te beginnen.\""
    },
    "goal": {
     "problem": "done_but_not_closed",
@@ -556,11 +556,11 @@
   {
    "act": 1,
    "arc": "winters",
-   "briefing": "Het KNMI verwacht rond 21 december de eerste echte vorst: een paar nachten achter elkaar onder nul. In Nova-Oost hangt een warmtepomp zonder stroom aan de muur, en de cv-ketel is al weg. Mevrouw El Amrani belt vast nog een keer.",
+   "briefing": "Rond de kortste dag, 21 december, gaat het meestal echt vriezen: een paar nachten achter elkaar onder nul. In Nova-Oost hangt een warmtepomp zonder stroom aan de muur, en de cv-ketel is al weg. Mevrouw El Amrani belt vast nog een keer.",
    "chapter": "De telefoon",
    "deadline_on_day": 70,
-   "debrief": "Op de eerste vorstnacht draaide de warmtepomp van de familie El Amrani. Haar moeder zat warm. Wie wacht er nog meer op een aansluiting, en weet die waar hij aan toe is?",
-   "fail": "De eerste vorstnachten logeert de moeder van mevrouw El Amrani bij haar andere dochter in Havenzij. 'Het is maar voor even,' zegt mevrouw El Amrani. Ze schrijft het op, en ze stuurt een brief. Aan de directie, met een kopie aan de ACM.",
+   "debrief": "In de eerste vorstnacht draaide de warmtepomp van de familie El Amrani. Haar moeder had het warm. Wie wacht er nog meer op een aansluiting, en weet die waar hij aan toe is?",
+   "fail": "Tijdens de eerste vorstnachten logeert de moeder van mevrouw El Amrani bij haar andere dochter in Havenzij. 'Het is maar voor even,' zegt mevrouw El Amrani. Ze schrijft het op, en ze stuurt een brief. Aan de directie, met een kopie aan de ACM.",
    "goal": {
     "by": "deadline",
     "met_if": {
@@ -575,7 +575,7 @@
    },
    "id": "winter_el_amrani",
    "kind": "milestone",
-   "missed": "Het vriest. In Nova-Oost staat een warmtepomp nog uit.",
+   "missed": "Het vriest. In Nova-Oost staat een warmtepomp nog steeds uit.",
    "name": "Voor de vorst",
    "opens_on": {
     "date": "2026-11-30"
@@ -612,7 +612,7 @@
   },
   {
    "act": 1,
-   "briefing": "Frank en ik willen je even spreken, in de MT-kamer op de 2e. Je zit hier nu honderd dagen. Neem niks mee, alleen jezelf.",
+   "briefing": "Frank en ik willen je even spreken, in de MT-kamer op de 2e. Je werkt hier nu honderd dagen. Je hoeft niks voor te bereiden.",
    "chapter": "De eerste honderd dagen",
    "debrief": "Honderd dagen. Wat zou je anders doen als je morgen opnieuw begon?",
    "goal": {
@@ -657,7 +657,7 @@
    "debrief": "Er zijn minder graafschades. Gert deed alles volgens het boekje; de oorzaak zat in ons proces. Maar de kaart klopt nog steeds niet overal. Wie houdt de kaart eigenlijk bij?",
    "debrief_variants": {
     "blamed": "De schades zijn minder. Gert werkt mee, maar hij vertelt je niets meer dan nodig. Wie houdt de kaart eigenlijk bij?",
-    "too_early": "Je verwachtte minder graafschade, omdat de kaart beter zou worden. De Check zegt: nauwelijks. Over de kaart had je wel gelijk. Wat Revisie vanaf nu intekent, klopt. Maar de oude afwijkingen liggen er nog allemaal, en de graafmachine van volgende week graaft op de kaart van vorig jaar. Wat kan er deze week al veilig, terwijl de kaart wordt rechtgezet?\n\nGert: \"Een goede kaart is mooi. Maar volgende week sta ik weer met een schop in de grond. Wat doe ik dan?\""
+    "too_early": "Je verwachtte minder graafschade, omdat de kaart beter zou worden. De Check laat zien: nauwelijks minder. Over de kaart had je wel gelijk. Wat Revisie vanaf nu intekent, klopt. Maar de oude afwijkingen liggen er nog allemaal, en de aannemer die volgende week graaft, graaft op de kaart van vorig jaar. Wat maakt het graven deze week al veiliger, terwijl de kaart wordt rechtgezet?\n\nGert: \"Een goede kaart is mooi. Maar volgende week staat mijn ploeg weer te graven. Waar kijken we dan op?\""
    },
    "goal": {
     "problem": "digging_damage",
@@ -858,7 +858,7 @@
     "a3": "Schrijf je A3 voor de congestiedesk aan de obeya-wand",
     "act": "Beslis aan de obeya-wand hoe de congestiedesk verdergaat",
     "check": "Lees aan de obeya-wand af wat je experiment opleverde",
-    "dig": "Zoek uit hoeveel gecontracteerd vermogen er echt draait",
+    "dig": "Zoek uit hoeveel gecontracteerd vermogen echt wordt gebruikt",
     "look": "Ga bij de congestiedesk kijken wie er op de wachtlijst staat",
     "wait": "Kijk bij de congestiedesk hoe het experiment loopt"
    },
@@ -901,7 +901,7 @@
    },
    "steps": {
     "a3": "Schrijf je A3 voor beide teams aan de obeya-wand",
-    "act": "Beslis aan de obeya-wand hoe beide teams verdergaat",
+    "act": "Beslis aan de obeya-wand hoe beide teams verdergaan",
     "check": "Lees aan de obeya-wand af wat je experiment opleverde",
     "dig": "Zoek uit waarop beide teams worden afgerekend",
     "look": "Ga bij Intake en Werkvoorbereiding naar hun borden kijken",
@@ -1019,7 +1019,7 @@
    },
    "steps": {
     "a3": "Schrijf je A3 voor de meterwisselaars aan de obeya-wand",
-    "act": "Beslis aan de obeya-wand hoe de meterwisselaars verdergaat",
+    "act": "Beslis aan de obeya-wand hoe de meterwisselaars verdergaan",
     "check": "Lees aan de obeya-wand af wat je experiment opleverde",
     "dig": "Zoek uit waarom de deur zo vaak dicht blijft",
     "look": "Ga met Sandra mee langs haar adressen",
@@ -1202,7 +1202,7 @@
     "a3": "Schrijf je A3 voor Planning aan de obeya-wand",
     "act": "Beslis aan de obeya-wand hoe Planning verdergaat",
     "check": "Lees aan de obeya-wand af wat je experiment opleverde",
-    "dig": "Zoek uit waarom de planning steeds omgaat",
+    "dig": "Zoek uit waarom de planning steeds wordt omgegooid",
     "look": "Ga bij Planning kijken hoe een week wordt ingepland",
     "talk": "Praat met Linda (Planning)",
     "wait": "Kijk bij Planning hoe het experiment loopt"
