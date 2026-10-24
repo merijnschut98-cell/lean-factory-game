@@ -288,7 +288,7 @@ func submit_a3(problem_id: String, a3: Dictionary) -> String:
 	if not region.state.has(problem_id):
 		return "unknown_problem"
 	var refused := region.submit_a3(problem_id, _cleaned(a3), check_days(problem_id),
-		missions.always_funded(problem_id))
+		missions.backing(problem_id))
 	if refused.is_empty():
 		discoveries.note_a3(self, problem_id)
 	_after(0)

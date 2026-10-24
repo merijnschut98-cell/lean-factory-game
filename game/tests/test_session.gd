@@ -734,15 +734,17 @@ func test_at_the_debt_floor_the_main_mission_is_still_funded() -> void:
 		"advanced by the directie, owed in full: the cheap fix stays the cheaper one")
 
 
-func test_a_deadline_mission_is_always_funded_a_plain_side_is_not() -> void:
+func test_the_main_and_a_deadline_mission_are_backed_a_plain_side_is_not() -> void:
 	var s := _campaign()
 	for id in ["save_henks_knowledge", "fix_wrong_joint"]:
 		s.missions.progress[id] = {"status": "active", "asks": {}, "seen": {}}
-	assert_true(s.missions.always_funded("knowledge_drain"), "Henk retires on a date")
-	assert_false(s.missions.always_funded("wrong_joint_in_van"), "a side without a deadline")
-	assert_false(s.missions.always_funded("revision_backlog"), "no active mission holds it")
+	assert_eq(s.missions.backing("knowledge_drain"), Region.Backing.DEADLINE, "Henk retires on a date")
+	assert_eq(s.missions.backing("wrong_joint_in_van"), Region.Backing.NONE, "a side without a deadline")
+	assert_eq(s.missions.backing("revision_backlog"), Region.Backing.NONE, "no active mission holds it")
 	s.missions.failed_once["save_henks_knowledge"] = true
-	assert_false(s.missions.always_funded("knowledge_drain"), "past its deadline: no longer exempt")
+	assert_eq(s.missions.backing("knowledge_drain"), Region.Backing.NONE, "past its deadline: no longer backed")
+	var main := _accepted()
+	assert_eq(main.missions.backing(PROBLEM), Region.Backing.MAIN)
 
 
 ## Review S3 #8: a later agreement in the same talk replaces the earlier one as a fact

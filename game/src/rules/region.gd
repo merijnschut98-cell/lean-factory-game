@@ -41,13 +41,19 @@ const DEBT_FLOOR := -50000
 ## and the way back are the way out, never a lock-out. ESTIMATE: a small team experiment, a
 ## few days of time and material (the way back's own fixes cost EUR 0-3,000).
 const DEBT_FUNDED_MINIMUM := 3000
-## The most the directie advances for the story's experiments (advance_owed); past it they
-## are funded only as any experiment in a bad period is (fundable), so recovery
-## stays within reach (gate backlog 1, 2026-10-24: careless play owed EUR 233,000-250,000
-## and spent 80-88 % of its days at the floor without it). ESTIMATE: half the floor, two or
-## three of the larger experiments (EUR 8,000-12,000); about what a held fix's grants and
-## savings repay in a few months. Every tier-1 problem keeps a fix within DEBT_FUNDED_MINIMUM.
+## The most the directie advances (advance_owed): an experiment that would take the advance
+## past it waits until income has repaid enough, unless it is the main quest's patient fix
+## (Backing.MAIN, not a shortcut: the story never stalls), so recovery stays within reach
+## (gate backlog 1, 2026-10-24: careless play owed EUR 233,000-250,000 and spent 80-88 % of
+## its days at the floor without it). ESTIMATE: half the floor, two or three of the larger
+## experiments (EUR 8,000-12,000); about what a held fix's grants and savings repay in a few
+## months.
 const ADVANCE_CEILING := 25000
+## Who backs an experiment in a bad period (Missions.backing): NONE only what fundable
+## allows; DEADLINE (a mission whose deadline has not passed) whatever it costs, within
+## ADVANCE_CEILING; MAIN (the active main mission's) also past the ceiling for a fix that
+## is not a shortcut (review S3 #1, review 2453246..3c0a190 #2: the story never locks out).
+enum Backing { NONE, DEADLINE, MAIN }
 ## Finance books part of what a held fix saves (less overtime, rework, repeat
 ## visits, status calls) into the improvement budget: every week this share
 ## of the grant for a perfect result on the problem (Pdca.BUDGET_BASE), at
@@ -104,8 +110,9 @@ var _cost_owed := 0.0
 var floor_days := 0
 ## What the directie advanced (EUR): the part of an experiment's cost the floor would have
 ## swallowed. Any later income repays it first, before the budget rises again, so a fix
-## started at the floor is never free (review of 3c40ed8..381d21c #4). At most
-## ADVANCE_CEILING for the story's experiments; a failed Check's part is written off.
+## started at the floor is never free (review of 3c40ed8..381d21c #4). Capped by
+## ADVANCE_CEILING; a failed Check writes off its experiment's unrepaid part
+## (ProblemState.advanced, repaid in order, see _repay).
 var advance_owed := 0
 ## Since when the region has not improved (minutes; the last resolved Act or
 ## the campaign's start); -1: drift has not started (start_drift).
@@ -276,23 +283,35 @@ func _charge_costs(days: int) -> void:
 		floor_days += days
 
 
-## Whether the directie pays for `cm` on `problem_id` now: always out of debt (an experiment
-## may still run into it); in a bad period only up to what the region has above the floor, a
-## small one, or the problem's cheapest fix still open (review 381d21c..0ec040f #8: a missed
-## deadline can close the cheap ones, as Henk's farewell does; no problem is locked out).
-func fundable(cm: CountermeasureDef, problem_id: String = "") -> bool:
-	return not in_bad_period() or cm.budget <= maxi(DEBT_FUNDED_MINIMUM, profile.budget - DEBT_FLOOR) \
-		or cm.budget <= _cheapest_fix(problem_id)
+## Whether the directie pays for `cm` on `problem_id` now. Never when its part past the floor
+## would take the advance past ADVANCE_CEILING, unless it is the main quest's patient fix.
+## Otherwise always out of debt (an experiment may still run into it) or when backed; in a bad
+## period only up to what the region has above the floor, a small one, or the problem's
+## cheapest patient fix still open (review 381d21c..0ec040f #8: a missed deadline can close
+## the cheap ones, as Henk's farewell does; no problem is locked out, and never onto a
+## shortcut, review 2453246..3c0a190 #2).
+func fundable(cm: CountermeasureDef, problem_id: String = "", backing := Backing.NONE) -> bool:
+	var past_floor := _past_floor(cm)
+	if past_floor > 0 and advance_owed + past_floor > ADVANCE_CEILING and (backing != Backing.MAIN or cm.shortcut):
+		return false
+	return not in_bad_period() or backing != Backing.NONE or past_floor == 0 \
+		or cm.budget <= DEBT_FUNDED_MINIMUM or cm.budget <= _cheapest_fix(problem_id)
 
 
-## The budget of the problem's cheapest fitting countermeasure still available (0: none).
+## The part of `cm`'s cost the region cannot carry above the floor: the directie advances it.
+func _past_floor(cm: CountermeasureDef) -> int:
+	return maxi(0, cm.budget - (profile.budget - DEBT_FLOOR))
+
+
+## The budget of the problem's cheapest fitting countermeasure still available that is not a
+## shortcut (0: none).
 func _cheapest_fix(problem_id: String) -> int:
 	var p: ProblemDef = problems.get(problem_id)
 	if p == null:
 		return 0
 	var cheapest := -1
 	for c in available_countermeasures():
-		if p.countermeasures.has(c.id) and (cheapest < 0 or c.budget < cheapest):
+		if p.countermeasures.has(c.id) and not c.shortcut and (cheapest < 0 or c.budget < cheapest):
 			cheapest = c.budget
 	return maxi(0, cheapest)
 
@@ -305,7 +324,7 @@ func in_bad_period() -> bool:
 
 func _add_budget(amount: int) -> void:
 	var repaid := clampi(amount, 0, advance_owed)  # income repays the directie's advance first
-	advance_owed -= repaid
+	_repay(repaid)
 	amount -= repaid
 	var was_bad := in_bad_period()
 	profile.budget = maxi(DEBT_FLOOR, profile.budget + amount)
@@ -314,6 +333,22 @@ func _add_budget(amount: int) -> void:
 		events.append({"type": "bad_period", "started": in_bad_period()})
 		if in_bad_period():
 			earn_reputation(Reputation.BAD_PERIOD, "bad_period")
+
+
+## Repay `amount` of the advance in the order it was made: what is no longer at risk (a
+## Check passed, a save's from before it was tracked) first, then the running experiments,
+## the oldest first, so a failed Check writes off only its own unrepaid part.
+func _repay(amount: int) -> void:
+	var running := state.values().filter(func(st: ProblemState) -> bool: return st.advanced > 0)
+	running.sort_custom(func(a: ProblemState, b: ProblemState) -> bool:
+		return a.advanced_at < b.advanced_at or a.advanced_at == b.advanced_at and a.id < b.id)
+	var at_risk: int = running.reduce(func(sum: int, st: ProblemState) -> int: return sum + st.advanced, 0)
+	var left := amount - maxi(0, advance_owed - at_risk)
+	advance_owed -= amount
+	for st: ProblemState in running:
+		var part := clampi(left, 0, st.advanced)
+		st.advanced -= part
+		left -= part
 
 
 ## The bad period's effect on the teams follows the budget. Idempotent:
@@ -519,15 +554,13 @@ func close_countermeasures(ids: PackedStringArray) -> void:
 
 ## Submit the A3 {waste, cause (index into the cause bank), evidence (clue
 ## ids), cm, prediction (a KPI)} and start the experiment; it may be paid
-## into debt, but in a bad period only what the region can carry (fundable), unless it is
-## `always_funded` (the active main mission's or a deadline mission's: never locked out);
-## what the region cannot carry the directie advances (advance_owed), up to ADVANCE_CEILING:
-## past the floor, or the whole of an exempt experiment a bad period would refuse.
+## into debt, but in a bad period only what fundable allows for its `backing`; the region pays
+## down to the floor and the directie advances the rest (advance_owed, ADVANCE_CEILING).
 ## The Check is due after `check_days` (a mission may shorten it for
 ## practice). Returns "" or why not: not_spotted | waste | cause | evidence |
 ## countermeasure | prediction | same_countermeasure (a rework must try
 ## another one) | no_funds.
-func submit_a3(problem_id: String, a3: Dictionary, check_days: int = CHECK_DAYS, always_funded := false) -> String:
+func submit_a3(problem_id: String, a3: Dictionary, check_days: int = CHECK_DAYS, backing := Backing.NONE) -> String:
 	var st := state[problem_id]
 	if st.phase != P.SPOTTED:
 		return "not_spotted"
@@ -546,17 +579,14 @@ func submit_a3(problem_id: String, a3: Dictionary, check_days: int = CHECK_DAYS,
 		return "prediction"
 	if st.rework_from.get("cm") == cm.id:
 		return "same_countermeasure"
-	# What the region cannot carry the directie advances: past the floor, or all of an exempt
-	# experiment a bad period would refuse (the region pays none of it, as if refused).
-	var carried := fundable(cm, problem_id)
-	var advanced := maxi(0, cm.budget - (profile.budget - DEBT_FLOOR)) if carried else cm.budget
-	if not carried and not (always_funded and advance_owed + advanced <= ADVANCE_CEILING):
+	if not fundable(cm, problem_id, backing):
 		return "no_funds"
 
 	var p := problems[problem_id]
-	advance_owed += advanced
-	st.advanced = advanced
-	_add_budget(advanced - cm.budget)
+	st.advanced = _past_floor(cm)
+	st.advanced_at = net.time
+	advance_owed += st.advanced
+	_add_budget(-cm.budget)
 	st.baseline = snapshot(problem_id)
 	var e := Pdca.effectiveness(p, cm, maturity())
 	st.a3 = a3.duplicate()

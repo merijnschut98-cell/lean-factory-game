@@ -20,9 +20,11 @@ var eff := 0.0
 var level := ""
 var failed_checks := 0
 var check_at := 0
-## What the directie advanced of the running experiment's cost (Region.advance_owed): written
-## off if its Check fails.
+## What the directie advanced of the running experiment's cost and income has not repaid yet
+## (Region.advance_owed): written off if its Check fails. advanced_at: when (minutes), for
+## the order of repayment (Region._repay).
 var advanced := 0
+var advanced_at := 0
 ## Snapshot before the experiment (see Region.snapshot).
 var baseline: Dictionary = {}
 ## The last Check's gain of every KPI with the fix over without it
@@ -57,7 +59,7 @@ func to_dict() -> Dictionary:
 	return {
 		"phase": Phase.keys()[phase], "blamed": blamed, "a3": a3, "cause_correct": cause_correct,
 		"waste_right": waste_right, "eff": eff, "level": level, "failed_checks": failed_checks,
-		"check_at": check_at, "advanced": advanced, "baseline": baseline, "gains": gains, "checked": checked,
+		"check_at": check_at, "advanced": advanced, "advanced_at": advanced_at, "baseline": baseline, "gains": gains, "checked": checked,
 		"standardised": standardised, "wear": wear,
 		"neglect": neglect, "buy_in": buy_in,
 		"score": score, "rework_from": rework_from,
@@ -79,6 +81,7 @@ func load_dict(d: Dictionary) -> bool:
 	failed_checks = int(d.get("failed_checks", 0))
 	check_at = int(d.get("check_at", 0))
 	advanced = maxi(0, JsonFile.int_or(d.get("advanced"), 0))  # older saves or junk: nothing to write off
+	advanced_at = maxi(0, JsonFile.int_or(d.get("advanced_at"), 0))
 	baseline = d.get("baseline", {}) if d.get("baseline") is Dictionary else {}
 	gains = kpi_values(d.get("gains"))
 	var runs: Dictionary = d.get("checked", {}) if d.get("checked") is Dictionary else {}

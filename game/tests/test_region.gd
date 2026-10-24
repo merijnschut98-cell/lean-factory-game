@@ -427,41 +427,63 @@ func test_in_debt_only_what_the_region_can_carry_is_funded() -> void:
 
 ## Review S3 #1: the funding rule never locks out the story: the active main mission's or a
 ## deadline mission's experiment is funded at the floor whatever it costs.
-func test_at_the_floor_an_always_funded_experiment_is_paid() -> void:
+func test_at_the_floor_a_backed_experiment_is_paid() -> void:
 	var r := _region(Region.DEBT_FLOOR)
 	r.activate("custom_design")
 	_investigate(r)
 	assert_eq(r.submit_a3("custom_design", _a3(r, "standard_designs")), "no_funds")
-	assert_eq(r.submit_a3("custom_design", _a3(r, "standard_designs"), Region.CHECK_DAYS, true), "",
-		"EUR 8,000 for the main or a deadline mission at the floor")
+	assert_eq(r.submit_a3("custom_design", _a3(r, "standard_designs"), Region.CHECK_DAYS, Region.Backing.DEADLINE), "",
+		"EUR 8,000 for a deadline mission at the floor")
 	assert_eq(r.profile.budget, Region.DEBT_FLOOR, "the budget stops at the floor")
 	assert_eq(r.advance_owed, 8000, "the directie advances it: owed in full, never free")
 
 
-## Gate backlog 1 (2026-10-24): the advance has a ceiling, so recovery stays possible. Past
-## it the directie funds an exempt experiment only as it funds any other at the floor: a
-## small one (DEBT_FUNDED_MINIMUM), still advanced in full, never free.
-func test_the_directie_advances_only_up_to_a_ceiling() -> void:
-	var r := _region(Region.DEBT_FLOOR)
+## Review of 2453246..3c0a190 #3: the ceiling caps every advance, a small or carried one
+## too; only the main quest's patient fixes go past it (#2: the story never stalls, and never
+## on a shortcut). Income repays the advance first, so the sides wait for it, not for good.
+func test_the_ceiling_caps_every_advance_but_the_main_quests_patient_fix() -> void:
+	var cms := RulesFixture.countermeasures()
+	cms[2]["shortcut"] = true  # delegated_approval: fewer signatures, the same maatwerk
+	var r := RulesFixture.region(Region.DEBT_FLOOR, 5, RulesFixture.problems(), cms)
 	r.activate("custom_design")
 	_investigate(r)
-	r.advance_owed = Region.ADVANCE_CEILING - 7000
-	assert_eq(r.submit_a3("custom_design", _a3(r, "standard_designs"), Region.CHECK_DAYS, true), "no_funds",
-		"EUR 8,000 would take the advance past its ceiling")
-	assert_eq(r.advance_owed, Region.ADVANCE_CEILING - 7000, "nothing advanced")
-	assert_eq(r.submit_a3("custom_design", _a3(r, "delegated_approval"), Region.CHECK_DAYS, true), "",
-		"a small experiment is still paid: never locked out")
-	assert_eq(r.advance_owed, Region.ADVANCE_CEILING - 5000, "and advanced in full")
+	r.advance_owed = Region.ADVANCE_CEILING - 1000
+	for backing in [Region.Backing.NONE, Region.Backing.DEADLINE, Region.Backing.MAIN]:
+		assert_eq(r.submit_a3("custom_design", _a3(r, "delegated_approval"), Region.CHECK_DAYS, backing), "no_funds",
+			"EUR 2,000 past the ceiling, backing %d" % backing)
+	assert_eq(r.submit_a3("custom_design", _a3(r, "standard_designs"), Region.CHECK_DAYS, Region.Backing.DEADLINE),
+		"no_funds", "a deadline mission waits for the repayment too")
+	assert_eq(r.advance_owed, Region.ADVANCE_CEILING - 1000, "nothing advanced")
+	assert_eq(r.submit_a3("custom_design", _a3(r, "standard_designs"), Region.CHECK_DAYS, Region.Backing.MAIN), "",
+		"the main quest's patient fix is never refused")
+	assert_eq(r.advance_owed, Region.ADVANCE_CEILING + 7000, "and owed in full")
 	var room := _region(Region.DEBT_FLOOR)
 	room.activate("custom_design")
 	_investigate(room)
-	room.advance_owed = Region.ADVANCE_CEILING - 8000
-	assert_eq(room.submit_a3("custom_design", _a3(room, "standard_designs"), Region.CHECK_DAYS, true), "",
-		"up to the ceiling the main's experiment is advanced")
+	room.advance_owed = Region.ADVANCE_CEILING - 2000
+	assert_eq(room.submit_a3("custom_design", _a3(room, "delegated_approval")), "", "up to the ceiling it is advanced")
 	assert_eq(room.advance_owed, Region.ADVANCE_CEILING)
 
 
-## Review 381d21c..0ec040f #8: a missed deadline can close a problem's cheap fixes (Henk
+## Review of 2453246..3c0a190 #2: in debt the cheapest-fix rule never makes a shortcut the
+## only fix funded (long term over short term): it reads the cheapest patient fix, and at the
+## ceiling the main quest's patient fix stays fundable while its shortcut does not.
+func test_in_debt_the_patient_fix_stays_fundable_never_only_the_shortcut() -> void:
+	var cms := RulesFixture.countermeasures()
+	cms[2]["shortcut"] = true
+	cms[2]["budget"] = 4000  # a shortcut dearer than DEBT_FUNDED_MINIMUM, cheaper than the patient fix
+	var r := RulesFixture.region(Region.DEBT_FLOOR, 5, RulesFixture.problems(), cms)
+	r._apply_bad_period()
+	var patient := r.countermeasures["standard_designs"]
+	var shortcut := r.countermeasures["delegated_approval"]
+	assert_true(r.fundable(patient, "custom_design"), "the cheapest patient fix is funded")
+	r.advance_owed = Region.ADVANCE_CEILING
+	assert_true(r.fundable(patient, "custom_design", Region.Backing.MAIN), "the main's patient fix at the ceiling")
+	assert_false(r.fundable(shortcut, "custom_design", Region.Backing.MAIN), "its shortcut is not")
+	assert_false(r.fundable(patient, "custom_design"), "a side's waits for the repayment")
+
+
+## Review S3 #8 / 381d21c..0ec040f: a missed deadline can close a problem's cheap fixes (Henk
 ## retired), leaving only dearer ones. In a bad period the directie still funds the cheapest
 ## fix left for a problem, so no problem is locked out at the floor.
 func test_in_debt_the_cheapest_fix_left_is_always_funded() -> void:
@@ -475,46 +497,66 @@ func test_in_debt_the_cheapest_fix_left_is_always_funded() -> void:
 	assert_eq(r.profile.budget, Region.DEBT_FLOOR)
 
 
-## Gate backlog 1: in a bad period an exempt experiment the region cannot carry is the
-## directie's whole: it advances all of it and the region's budget stays where it is (so a
-## failed one costs the region nothing, as when it was refused; a passed one is owed in full).
-func test_in_debt_the_directie_advances_an_exempt_experiment_whole() -> void:
+## Review of 2453246..3c0a190 #3: the directie advances only the part past the floor; what
+## the region can carry it pays itself, a backed experiment as any other.
+func test_the_directie_advances_only_the_part_past_the_floor() -> void:
 	var r := _region(Region.DEBT_FLOOR + 5000)
 	r.activate("custom_design")
 	_investigate(r)
-	assert_eq(r.submit_a3("custom_design", _a3(r, "standard_designs"), Region.CHECK_DAYS, true), "")
-	assert_eq(r.profile.budget, Region.DEBT_FLOOR + 5000, "the region pays none of it")
-	assert_eq(r.advance_owed, 8000)
-	var small := _region(Region.DEBT_FLOOR + 5000)
-	small.activate("custom_design")
-	_investigate(small)
-	assert_eq(small.submit_a3("custom_design", _a3(small, "delegated_approval"), Region.CHECK_DAYS, true), "")
-	assert_eq(small.profile.budget, Region.DEBT_FLOOR + 3000, "what the region can carry it pays itself")
-	assert_eq(small.advance_owed, 0)
+	assert_eq(r.submit_a3("custom_design", _a3(r, "standard_designs"), Region.CHECK_DAYS, Region.Backing.DEADLINE), "")
+	assert_eq(r.profile.budget, Region.DEBT_FLOOR, "the region pays what it can")
+	assert_eq(r.advance_owed, 3000, "the rest is advanced")
+	assert_eq(r.state["custom_design"].advanced, 3000)
 
 
 ## Gate backlog 1: the directie took the risk of the experiment it advanced; a failed Check
-## writes that advance off. A passed one stays owed (the patient cheap fix stays cheaper).
+## writes off what is still unrepaid of that advance. A passed one stays owed (the patient
+## cheap fix stays cheaper).
 func test_a_failed_checks_advance_is_written_off() -> void:
 	var r := _region(Region.DEBT_FLOOR)
 	r.activate("custom_design")
 	_investigate(r)
 	r.advance_owed = 1000
-	assert_eq(r.submit_a3("custom_design", _a3(r, "poka_yoke_form"), Region.CHECK_DAYS, true), "")
+	assert_eq(r.submit_a3("custom_design", _a3(r, "poka_yoke_form"), Region.CHECK_DAYS, Region.Backing.MAIN), "")
 	assert_eq(r.advance_owed, 6000)
 	var copy := _region()
 	assert_eq(RegionState.restore(copy, RegionState.capture(r))["error"], "")
 	assert_eq(copy.state["custom_design"].advanced, 5000, "what this experiment was advanced is saved")
+	assert_eq(copy.state["custom_design"].advanced_at, r.state["custom_design"].advanced_at)
 	r.advance_days(Region.CHECK_DAYS)
 	assert_false(r.check("custom_design")["passed"])
 	assert_eq(r.advance_owed, 1000, "only this experiment's advance is written off")
 	assert_eq(r.state["custom_design"].advanced, 0)
-	assert_eq(r.submit_a3("custom_design", _a3(r, "standard_designs"), Region.CHECK_DAYS, true), "")
+	assert_eq(r.submit_a3("custom_design", _a3(r, "standard_designs"), Region.CHECK_DAYS, Region.Backing.MAIN), "")
 	assert_eq(r.advance_owed, 9000)
 	r.advance_days(Region.CHECK_DAYS)
 	assert_true(r.check("custom_design")["passed"])
 	assert_eq(r.advance_owed, 9000, "a fix that worked stays owed")
 	assert_eq(r.state["custom_design"].advanced, 0)
+
+
+## Review of 2453246..3c0a190 #3: income repays the advances in the order they were made
+## (what is no longer at risk first), so a failed Check writes off only its own unrepaid
+## part, never another experiment's.
+func test_income_repays_the_oldest_advance_first() -> void:
+	var r := _region(Region.DEBT_FLOOR)
+	r.activate("custom_design")
+	r.activate("incomplete_application")
+	_investigate(r)
+	r.use_tool("connections.intake", "documents")
+	r.advance_owed = 1000  # settled: an older experiment that passed
+	assert_eq(r.submit_a3("custom_design", _a3(r, "poka_yoke_form"), Region.CHECK_DAYS, Region.Backing.DEADLINE), "")
+	r.advance_days(1)
+	assert_eq(r.submit_a3("incomplete_application", RulesFixture.a3(r, "incomplete_application", "defects",
+		"poka_yoke_form", ["incomplete_application:0"], "first_time_right"), Region.CHECK_DAYS, Region.Backing.DEADLINE), "")
+	assert_eq(r.advance_owed, 11000)
+	r.grant(0, 7000)
+	assert_eq(r.advance_owed, 4000)
+	assert_eq(r.state["custom_design"].advanced, 0, "the settled 1,000 first, then the oldest experiment")
+	assert_eq(r.state["incomplete_application"].advanced, 4000)
+	r.advance_days(Region.CHECK_DAYS - 1)
+	assert_false(r.check("custom_design")["passed"])
+	assert_eq(r.advance_owed, 4000, "its advance was repaid: nothing of another's is written off")
 
 
 ## Review of 3c40ed8..381d21c #4: what the directie advanced is repaid first from any later
@@ -550,6 +592,10 @@ func test_an_advance_is_saved_and_junk_reads_as_none() -> void:
 	var before := _region()
 	assert_eq(RegionState.restore(before, old)["error"], "")
 	assert_eq(before.advance_owed, 0, "a save from before it owes nothing")
+	for junk: Variant in [{"x": 1}, "veel", -500, null]:
+		var st := ProblemState.new("custom_design")
+		assert_true(st.load_dict({"phase": "DOING", "advanced": junk, "advanced_at": junk}))
+		assert_eq([st.advanced, st.advanced_at], [0, 0], "an experiment's advance: junk or an older save is none")
 
 
 ## QA 2.12 (c): the region counts the days its budget spent at the floor (the way back,
