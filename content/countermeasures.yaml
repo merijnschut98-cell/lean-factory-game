@@ -335,9 +335,13 @@ countermeasures:
     decay_days: 45
     multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
     effects: []
+  # Act 0/I audit (2026-10-24): tier 2, so Act I's A3 offers it (up to one tier above
+  # maturity 1) and it works at `reduced`: 0.5 x 0.9 = 0.45, the designed failed Check
+  # (docs/superpowers/specs/2026-10-16-designed-failed-checks.md §1, "dat helpt maar half").
+  # At tier 3 the A3 never offered it in Act I, so that Check could not happen.
   - id: automatic_ean_registration
     name: Automatische EAN-aanmelding
-    tier: 3
+    tier: 2
     category: flow
     description: Bij gereedmelding wordt de EAN automatisch aangemeld in het centraal aansluitregister; handwerk alleen bij afwijkingen.
     budget: 25000
