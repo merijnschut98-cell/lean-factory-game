@@ -101,6 +101,15 @@ static func name_of(ref: Variant) -> String:
 	return ""
 
 
+## Whether a company entry may show: always without `revealed_by`, else once `known`
+## (a clue id or a fact → bool) holds for any of its atoms; a malformed gate hides it.
+static func revealed(entry: Dictionary, known: Callable) -> bool:
+	if not entry.has("revealed_by"):
+		return true
+	var atoms: Variant = entry["revealed_by"]
+	return atoms is Array and atoms.any(func(a: Variant) -> bool: return a is String and known.call(a))
+
+
 ## A Dutch whole number with a dot per thousand: 15498 → "15.498".
 static func number_text(value: float) -> String:
 	var digits := str(int(round(absf(value))))

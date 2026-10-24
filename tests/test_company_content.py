@@ -35,6 +35,23 @@ def _team(company: dict, team_id: str) -> dict:
     return next(t for d in company["departments"] for t in d["teams"] if t["id"] == team_id)
 
 
+def _number(company: dict, number_id: str) -> dict:
+    return next(n for n in company["numbers"] if n["id"] == number_id)
+
+
+def test_a_zuidmark_number_that_is_a_clue_waits_for_the_clue(real):
+    """The 62 % is unused_capacity's key data clue: the codex shows it only once found."""
+    assert _number(real["company"], "gecontracteerd_benut_zuidmark")["revealed_by"] == ["unused_capacity:0"]
+    for nid in ["gotork_drempel_benut", "gotork_drempel_mw"]:
+        assert "revealed_by" not in _number(real["company"], nid), "national regulation stays a sector fact"
+
+
+def test_an_estimated_number_shows_its_basis_never_its_reasoning(real):
+    for n in real["company"]["numbers"]:
+        if "estimate" in n:
+            assert n["basis"] and bc.developer_word(n["basis"]) is None, n["id"]
+
+
 def test_every_cast_member_and_speaking_person_is_placed(real):
     placed = bc.company_people(real["company"])
     for c in _cast():
@@ -174,6 +191,21 @@ def test_a_site_staff_count_carries_an_estimate(real):
      "'anouk' is placed twice"),
     (lambda c: _dept(c, "directie").update(reports_to="kcc"), "the directie reports to no department"),
     (lambda c: _dept(c, "kcc").update(site="mars"), "unknown site 'mars'"),
+    # A Zuidmark number that is a problem's clue shows only once the clue is found.
+    (lambda c: _number(c, "gecontracteerd_benut_zuidmark").pop("revealed_by"), "repeats clue 'unused_capacity:0'"),
+    (lambda c: _number(c, "gotork_drempel_mw").update(label="Use-it-or-lose-it-gesprekken"),
+     "names countermeasure 'use_it_or_lose_it'"),
+    (lambda c: _number(c, "technici_zuidmark").update(basis="Zoals Ilse de Graaf zegt."),
+     "names 'Ilse de Graaf'"),
+    (lambda c: _number(c, "wachtlijst_afname_zuidmark").update(revealed_by=["unused_capacity:99"]),
+     "'unused_capacity:99' is not a clue or a fact"),
+    # Shown text is in-world: the developer's reasoning stays in `estimate`.
+    (lambda c: _number(c, "technici_zuidmark").update(basis="Zie value_streams.yaml, monteurs."), "developer word"),
+    (lambda c: _number(c, "technici_zuidmark").update(label="Monteurs die de simulatie rekent"), "developer word"),
+    (lambda c: next(s for s in c["sites"] if s["id"] == "havenzij").update(about="Het spel begint hier."),
+     "developer word"),
+    (lambda c: _number(c, "technici_zuidmark").pop("basis"), "number 'technici_zuidmark': an estimate needs a "
+                                                             "'basis'"),
 ])
 def test_company_errors_are_caught(real, mutate, message):
     with pytest.raises(bc.ContentError, match=message):

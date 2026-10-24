@@ -730,6 +730,8 @@ func test_at_the_debt_floor_the_main_mission_is_still_funded() -> void:
 	s.region.profile.budget = Region.DEBT_FLOOR
 	_investigate(s)
 	assert_eq(s.submit_a3(PROBLEM, _a3(s, "standard_designs")), "", "EUR 8,000 for the main mission at the floor")
+	assert_eq(s.region.advance_owed, s.region.countermeasures["standard_designs"].budget,
+		"advanced by the directie, owed in full: the cheap fix stays the cheaper one")
 
 
 func test_a_deadline_mission_is_always_funded_a_plain_side_is_not() -> void:
@@ -739,6 +741,8 @@ func test_a_deadline_mission_is_always_funded_a_plain_side_is_not() -> void:
 	assert_true(s.missions.always_funded("knowledge_drain"), "Henk retires on a date")
 	assert_false(s.missions.always_funded("wrong_joint_in_van"), "a side without a deadline")
 	assert_false(s.missions.always_funded("revision_backlog"), "no active mission holds it")
+	s.missions.failed_once["save_henks_knowledge"] = true
+	assert_false(s.missions.always_funded("knowledge_drain"), "past its deadline: no longer exempt")
 
 
 ## Review S3 #8: a later agreement in the same talk replaces the earlier one as a fact

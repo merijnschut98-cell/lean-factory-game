@@ -98,6 +98,36 @@ func test_the_codex_has_a_company_page() -> void:
 	codex.free()
 
 
+func test_the_codex_shows_a_basis_never_the_developers_reasoning() -> void:
+	var codex := CodexPanel.new()
+	codex.session = GameSession.new_game(11, Catalog.DATA_DIR, false)
+	codex.show_tab(CodexPanel.COMPANY)
+	var text := "\n".join(codex.shown_texts())
+	assert_true(text.contains("Schatting: Zo'n vier aanvragen per week"), "an estimate shows its basis")
+	for word: String in [".yaml", "simulatie", "spel", "Ilse de Graaf"]:
+		assert_false(text.containsn(word), word)
+	assert_eq(CodexPanel.evidence_line({"estimate": "Het getal uit value_streams.yaml", "basis": "Uit de weekcijfers."}),
+		"Schatting: Uit de weekcijfers.")
+	assert_eq(CodexPanel.evidence_line({"estimate": "reasoning only"}), "", "no basis: nothing, never the reasoning")
+	codex.free()
+
+
+func test_a_number_that_is_a_clue_waits_until_the_clue_is_found() -> void:
+	var codex := CodexPanel.new()
+	codex.session = GameSession.new_game(11, Catalog.DATA_DIR, false)
+	codex.show_tab(CodexPanel.COMPANY)
+	assert_false("\n".join(codex.shown_texts()).contains("62 procent"), "unused_capacity's clue: not before it is found")
+	codex.session.region.found["unused_capacity:0"] = true
+	codex.show_tab(CodexPanel.COMPANY)
+	assert_true("\n".join(codex.shown_texts()).contains("62 procent"), "found: now it is a number the player knows")
+	assert_true(Company.revealed({}, func(_a: String) -> bool: return false), "no gate: always shown")
+	assert_false(Company.revealed({"revealed_by": ["x:0"]}, func(_a: String) -> bool: return false))
+	assert_true(Company.revealed({"revealed_by": ["x:0", "flag:y"]}, func(a: String) -> bool: return a == "flag:y"),
+		"any one of them")
+	assert_false(Company.revealed({"revealed_by": "x:0"}, func(_a: String) -> bool: return true), "junk: hidden")
+	codex.free()
+
+
 func _labels(root: Node) -> Array[String]:
 	var out: Array[String] = []
 	var stack: Array[Node] = [root]

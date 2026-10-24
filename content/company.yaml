@@ -237,7 +237,10 @@ history:
     revealed_by: [heard:marco_2012, heard:ruud_2012]
 
 # The numbers behind the waiting list. National numbers carry their source (approved
-# domains only); Zuidmark's are estimates with their reasoning.
+# domains only); Zuidmark's are estimates: `estimate` holds the developer's reasoning and
+# is never shown, `basis` is the short in-world line the codex shows under the number.
+# A Zuidmark number that is a problem's clue waits for it (`revealed_by`: the clue's id),
+# so the codex never hands over what the player has to find (the build checks it).
 numbers:
   - id: wachtlijst_afname_nl
     label: "Aanvragen voor afname op de wachtlijst bij de regionale netbeheerders (30 juni 2026)"
@@ -308,18 +311,21 @@ numbers:
     value: 310
     unit: aanvragen
     estimate: "Er komen in Zuidmark zo'n vier aanvragen voor transportcapaciteit per week binnen (value_streams.yaml, congestion), en wie erop staat wacht gemiddeld anderhalf jaar (Ilse de Graaf twee jaar): 4 × 52 × 1,5 ≈ 310. Dat is 2 % van de landelijke 15.498, passend bij een regio van deze omvang."
+    basis: "Zo'n vier aanvragen per week, en wie op de lijst staat, wacht gemiddeld anderhalf jaar."
   - id: wachtlijst_afname_mw_zuidmark
     label: "Gevraagd transportvermogen op de wachtlijst in Zuidmark"
     value: 200
     unit: MW
     estimate: "Landelijk vraagt een aanvraag op de wachtlijst gemiddeld 9.986 / 15.498 ≈ 0,64 MW; 310 × 0,64 ≈ 200 MW."
+    basis: "Landelijk vraagt een aanvraag op de wachtlijst gemiddeld zo'n 0,64 MW."
   - id: aansluitingen_per_week_zuidmark
     label: "Nieuwe en gewijzigde kleine aansluitingen per week in Nova en omstreken"
     value: 30
     unit: per week
     estimate: "Het getal waarmee de simulatie rekent (value_streams.yaml, connections). Landelijk kwamen er in een halfjaar 53.245 nieuwe aansluitingen bij (Netbeheer Nederland); 30 per week is zo'n 1,5 % daarvan, voor één kantoor met één team Werkvoorbereiding."
+    basis: "Zo'n 1,5 % van wat er landelijk bijkomt, voor één kantoor met één team Werkvoorbereiding."
   - id: gotork_drempel_benut
-    label: "GOTORK: een grote klant die twaalf maanden ten hoogste de helft van zijn gecontracteerd vermogen benut, krijgt een gesprek over teruggeven"
+    label: "ACM-regel GOTORK: transportvermogen dat een grote klant twaalf maanden lang voor ten hoogste de helft benut, geldt als niet gebruikt"
     value: 50
     unit: procent
     source:
@@ -327,7 +333,7 @@ numbers:
       title: "ACM, Codebesluit niet gebruikte transportrechten (GOTORK), ACM/UIT/612014"
       date: "2024-04-16"
   - id: gotork_drempel_mw
-    label: "GOTORK: of die klant laat twaalf maanden 1 MW of meer ongebruikt (middenspanning en hoogspanning onder 110 kV)"
+    label: "ACM-regel GOTORK: hetzelfde geldt als een klant twaalf maanden lang 1 MW of meer niet gebruikt (middenspanning en hoogspanning onder 110 kV)"
     value: 1
     unit: MW
     source:
@@ -346,9 +352,13 @@ numbers:
     label: "Deel van het gecontracteerd vermogen dat de grootzakelijke klanten in Zuidmark op het drukste kwartier van het jaar gebruiken"
     value: 62
     unit: procent
-    estimate: "De aanwijzing in de data van de congestiedesk (problems_tier1.yaml, unused_capacity), zelf een schatting: grote klanten contracteren met ruimte voor groei en blijven op de piek ruim onder hun contract. Wie twaalf maanden onder de helft blijft, valt onder GOTORK."
+    # unused_capacity's key data clue (problems_tier1.yaml): shown only once the player found it.
+    revealed_by: ["unused_capacity:0"]
+    estimate: "The same estimate as the clue: large customers contract with room to grow and stay well under their contract at the peak."
+    basis: "Uit de meetdata van de congestiedesk, naast de contracten gelegd."
   - id: technici_zuidmark
     label: "Monteurs die Zuidmark tot 2030 extra nodig heeft"
     value: 25
     unit: monteurs
     estimate: "Landelijk 30.000 extra technici bij netbeheerders en aannemers (Netbeheer Nederland, 2025); naar rato van Zuidmarks 2 % van de wachtlijst zo'n 600, waarvan het grootste deel bij aannemers. Voor Voltana's eigen werf (dertien monteurs, value_streams.yaml) is 25 erbij bijna een verdubbeling: een schatting van de orde van grootte."
+    basis: "Het landelijke tekort naar rato van de regio, voor een eigen werf van dertien monteurs: de orde van grootte."

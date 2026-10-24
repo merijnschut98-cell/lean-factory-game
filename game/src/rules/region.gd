@@ -95,6 +95,10 @@ var _cost_owed := 0.0
 ## Whole days that ended with the budget at DEBT_FLOOR, in all (it never falls): the way
 ## back, a cost-saving side chain, opens on it (QA 2.12 (c); the measure floor_days>=n).
 var floor_days := 0
+## What the directie advanced (EUR): the part of an experiment's cost the floor would have
+## swallowed. Any later income repays it first, before the budget rises again, so a fix
+## started at the floor is never free (review of 3c40ed8..381d21c #4).
+var advance_owed := 0
 ## Since when the region has not improved (minutes; the last resolved Act or
 ## the campaign's start); -1: drift has not started (start_drift).
 var drift_from := -1
@@ -274,6 +278,9 @@ func in_bad_period() -> bool:
 
 
 func _add_budget(amount: int) -> void:
+	var repaid := clampi(amount, 0, advance_owed)  # income repays the directie's advance first
+	advance_owed -= repaid
+	amount -= repaid
 	var was_bad := in_bad_period()
 	profile.budget = maxi(DEBT_FLOOR, profile.budget + amount)
 	if in_bad_period() != was_bad:
@@ -486,7 +493,8 @@ func close_countermeasures(ids: PackedStringArray) -> void:
 ## Submit the A3 {waste, cause (index into the cause bank), evidence (clue
 ## ids), cm, prediction (a KPI)} and start the experiment; it may be paid
 ## into debt, but in a bad period only what the region can carry (fundable), unless it is
-## `always_funded` (the active main mission's or a deadline mission's: never locked out).
+## `always_funded` (the active main mission's or a deadline mission's: never locked out);
+## what goes past the floor the directie advances (advance_owed).
 ## The Check is due after `check_days` (a mission may shorten it for
 ## practice). Returns "" or why not: not_spotted | waste | cause | evidence |
 ## countermeasure | prediction | same_countermeasure (a rework must try
@@ -514,6 +522,7 @@ func submit_a3(problem_id: String, a3: Dictionary, check_days: int = CHECK_DAYS,
 		return "no_funds"
 
 	var p := problems[problem_id]
+	advance_owed += maxi(0, cm.budget - (profile.budget - DEBT_FLOOR))  # past the floor: advanced
 	_add_budget(-cm.budget)
 	st.baseline = snapshot(problem_id)
 	var e := Pdca.effectiveness(p, cm, maturity())

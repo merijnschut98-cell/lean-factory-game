@@ -43,6 +43,9 @@ func test_the_budget_line_shows_savings_and_the_floor_in_debt() -> void:
 	assert_true(UiText.budget_line(12000, 250.4).contains("€ 250"), "the weekly savings")
 	var debt := UiText.budget_line(-8000, 0.0)
 	assert_true(debt.contains(UiText.money(Region.DEBT_FLOOR)), debt)
+	assert_false(debt.contains("voorschot"), "nothing advanced: no line for it")
+	var advanced := UiText.budget_line(Region.DEBT_FLOOR, 0.0, 8000)
+	assert_true(advanced.contains("voorschot directie " + UiText.money(8000)), advanced)
 
 
 func test_the_hud_shows_the_savings_of_held_fixes() -> void:
@@ -50,7 +53,7 @@ func test_the_hud_shows_the_savings_of_held_fixes() -> void:
 	var hud := Hud.new()
 	hud.session = s
 	hud.refresh()
-	assert_eq(hud.budget_label.text, UiText.budget_line(s.budget(), s.region.weekly_savings()))
+	assert_eq(hud.budget_label.text, UiText.budget_line(s.budget(), s.region.weekly_savings(), s.region.advance_owed))
 	hud.free()
 
 

@@ -250,8 +250,8 @@
    ],
    "tells": [
     {
-     "tell": "van_kanban",
-     "text": "Bij de storingsbussen staan op de kanbanwand vakjes leeg, zonder kaartje in de kolom Bestellen."
+     "tell": "uitgiftelijst",
+     "text": "Op de uitgiftelijst bij de balie staat dezelfde storingsbus soms twee keer op één dag, met een paar uur ertussen."
     },
     {
      "tell": "storingsbord",
@@ -1169,7 +1169,7 @@
    "tells": [
     {
      "tell": "measurement_tray",
-     "text": "Op de spanningsklachten in het bakje staan steeds dezelfde straten, en bijna altijd een tijd rond het middaguur."
+     "text": "De spanningsklachten in het bakje zitten met een paperclip per adres bij elkaar, en op bijna elke klacht staat een tijd rond het middaguur."
     }
    ],
    "tier": 1,

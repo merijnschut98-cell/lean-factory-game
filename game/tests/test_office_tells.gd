@@ -9,7 +9,7 @@ const FIRST: Array[String] = ["intake_stack", "prep_tray", "planning_board", "re
 	"meter_board"]
 const SECOND: Array[String] = ["obeya_board", "grid_study_tray", "reinforcement_board", "congestion_list"]
 const YARD_MODEL := "res://assets/office/office_yard.glb"
-const YARD: Array[String] = ["van_kanban", "magazijn_rack", "van_returns", "storingsbord", "measurement_tray"]
+const YARD: Array[String] = ["uitgiftelijst", "magazijn_rack", "van_returns", "storingsbord", "measurement_tray"]
 
 
 func _net() -> Network:
@@ -357,20 +357,21 @@ func test_the_yard_model_has_every_tell_with_three_variants() -> void:
 	_has_tells(YARD_MODEL, YARD)
 
 
-## The van kanban wall: a card in the "bestellen" column for each joint the storingsbussen took
-## this week (a joint taken is a slot to refill).
-func test_the_van_kanban_counts_the_joints_taken_this_week() -> void:
+## The uitgiftelijst at the magazijn's counter: a line for each joint the monteurs signed out
+## this week (review of 3c40ed8..381d21c #3: a record anyone keeps, never the countermeasure).
+func test_the_uitgiftelijst_counts_the_joints_signed_out_this_week() -> void:
 	var net := NetFixture.net([NetFixture.pool("monteurs", 4)], [
 		NetFixture.stream("outages", [NetFixture.material("joint", "cable_joint"),
 			NetFixture.work("repair", "monteurs", 1.0)], 0.0)], [NetFixture.stock("cable_joint", 200, 10, 50, 10)])
-	assert_eq(OfficeTells.bands(net)["van_kanban"], OfficeTells.LOW, "nothing taken")
-	var high: int = OfficeTells.THRESHOLDS["van_kanban"][1]
+	assert_false(OfficeTells.THRESHOLDS.has("van_kanban"), "the kanban wall is two_bin_van_kanban, not a tell")
+	assert_eq(OfficeTells.bands(net)["uitgiftelijst"], OfficeTells.LOW, "nothing signed out")
+	var high: int = OfficeTells.THRESHOLDS["uitgiftelijst"][1]
 	for i in high:
 		net.open_order(net.stream("outages"))
-	assert_eq(OfficeTells.readings(net)["van_kanban"], high)
-	assert_eq(OfficeTells.bands(net)["van_kanban"], OfficeTells.HIGH)
+	assert_eq(OfficeTells.readings(net)["uitgiftelijst"], high)
+	assert_eq(OfficeTells.bands(net)["uitgiftelijst"], OfficeTells.HIGH)
 	net.advance_days(OfficeTells.WEEK_DAYS + 1)
-	assert_eq(OfficeTells.bands(net)["van_kanban"], OfficeTells.LOW, "last week's cards are refilled")
+	assert_eq(OfficeTells.bands(net)["uitgiftelijst"], OfficeTells.LOW, "a new week, a new list")
 
 
 ## The magazijn's joint shelf: the share of a full shelf (reorder point plus an order) that is
@@ -468,14 +469,15 @@ func test_the_yard_follows_the_region_and_a_look_closer_is_noted_once() -> void:
 	office.free()
 
 
-func test_e_beside_the_kanban_wall_looks_at_it() -> void:
+func test_e_beside_the_uitgiftelijst_looks_at_it() -> void:
 	var office := _on_yard()
-	var wall := OfficeTells.node(office.geometry, "van_kanban")
-	assert_true(wall != null and office.tells != null, "the wall is on the yard")
+	var wall := OfficeTells.node(office.geometry, "uitgiftelijst")
+	assert_true(wall != null and office.tells != null, "the list is on the magazijn's counter")
+	assert_true(OfficeTells.node(office.geometry, "van_kanban") == null, "no kanban wall on the yard")
 	if wall == null or office.tells == null:
 		office.free()
 		return
-	var beside := office.tells.bounds("van_kanban").get_center() * Vector3(1, 0, 1) + Vector3(-0.6, 0, 0)  # the vans' side
+	var beside := office.tells.bounds("uitgiftelijst").get_center() * Vector3(1, 0, 1) + Vector3(0, 0, 0.5)  # the monteurs' side, at the counter's west end
 	assert_eq(office.target_near(beside), wall)
 	assert_eq(office.prompt_near(beside), office.tr(OfficeTells.PROMPT))
 	office.free()

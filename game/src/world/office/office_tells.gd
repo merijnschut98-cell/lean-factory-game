@@ -52,10 +52,12 @@ const VARIANTS: Array[String] = ["low", "mid", "high"]
 ## and 12, daily over 60 days after day 9, each problem active from the first day; min/median/max).
 ## No job waits for material there: the stock covers every week (0 in every run), so the
 ## field tells read what the field work uses and brings back.
-## - van_kanban (the joints the storingsbussen took this week: a card each in the kanban
-##   wall's "bestellen" column): base 3/7/11 and 3/8/12, digging_damage 5/12/18 and 6/10/16.
-##   wrong_joint_in_van takes no more joints (its harm is the drive to fetch one), so the wall
-##   shows it only in a busy week, as it would.
+## - uitgiftelijst (the joints the monteurs signed out at the magazijn's counter this week, a
+##   line each on the list; the same reading the van kanban wall had, which was the
+##   countermeasure two_bin_van_kanban and so no tell, review of 3c40ed8..381d21c #3):
+##   base 3/7/11 and 3/8/12, digging_damage 5/12/18 and 6/10/16. wrong_joint_in_van takes no
+##   more joints (its harm is the drive to fetch one), so the list shows it only in a busy
+##   week, as it would.
 ## - magazijn_rack (the share of the joint shelf that is empty, % of reorder point plus an
 ##   order): base 16/51/83 and 13/44/79 (it empties and refills with each delivery: a low
 ##   shelf can be the day before the truck), digging_damage 27/60/92 and 15/60/89.
@@ -71,7 +73,7 @@ const VARIANTS: Array[String] = ["low", "mid", "high"]
 const THRESHOLDS := {"intake_stack": [15, 30], "prep_tray": [6, 12], "planning_board": [8, 16],
 	"revision_cabinet": [6, 12], "close_out_cabinet": [15, 35], "meter_board": [8, 12],
 	"obeya_board": [3, 5], "grid_study_tray": [6, 15], "reinforcement_board": [90, 105], "congestion_list": [40, 55],
-	"van_kanban": [10, 14], "magazijn_rack": [55, 80], "van_returns": [18, 28], "storingsbord": [24, 32],
+	"uitgiftelijst": [10, 14], "magazijn_rack": [55, 80], "van_returns": [18, 28], "storingsbord": [24, 32],
 	"measurement_tray": [10, 18]}
 ## A value stream's KPI card is red when fewer than this share of the orders finished over
 ## the last KPI_DAYS met its norm: the healthy base meets the norm about nine times in ten
@@ -85,7 +87,7 @@ const MOVED_DAYS := 5
 ## The window Meetdata's whiteboard lists silent meters over (two weeks: five days hold too
 ## few to tell a bad week from a normal one).
 const METER_DAYS := 10
-## The window the yard's week tells count over (the kanban wall's cards, the storingsbord).
+## The window the yard's week tells count over (the uitgiftelijst's lines, the storingsbord).
 const WEEK_DAYS := 7
 ## Seconds between looks at the clock.
 const POLL_SECONDS := 1.0
@@ -263,7 +265,7 @@ static func readings(net: Network) -> Dictionary:
 		"grid_study_tray": _waiting(net, ["connections.grid_study", "congestion.congestion_study"]),
 		"reinforcement_board": _waiting(net, ["connections.grid_reinforcement"]),
 		"congestion_list": _waiting(net, ["congestion.capacity_queue"]),
-		"van_kanban": _counted(net, "outages.joint", WEEK_DAYS, "entered"), "magazijn_rack": _shelf_empty(net, "cable_joint"),
+		"uitgiftelijst": _counted(net, "outages.joint", WEEK_DAYS, "entered"), "magazijn_rack": _shelf_empty(net, "cable_joint"),
 		"van_returns": _counted(net, "meters.visit", MOVED_DAYS) + _counted(net, "connections.execution", MOVED_DAYS),
 		"storingsbord": _callouts(net),
 		"measurement_tray": _waiting(net, ["voltage_complaints.measurement", "voltage_complaints.measurement_week"])}
