@@ -47,8 +47,11 @@ const SECOND_MODEL := "res://assets/office/office_second.glb"
 func test_the_mt_room_has_seats_round_the_table_and_a_spot_at_the_screen() -> void:
 	var geometry: Node3D = load(SECOND_MODEL).instantiate()
 	var markers := OfficeBuilding.markers(geometry)
-	for id in ["scene:mt_room:player", "scene:mt_room:seat0", "scene:mt_room:seat1", "scene:mt_room:screen"]:
+	for id in ["scene:mt_room:player", "scene:mt_room:seat0", "scene:mt_room:seat1", "scene:mt_room:screen",
+			"kpi_board", "scene:directors_obeya:board"]:
 		assert_true(markers.has(id), id)
+	assert_true(Office._find_marker(geometry, "obeya2_board2_frame", Office._loose("obeya2_board2_frame")) != null,
+		"the obeya wall's board S3-B anchors to keeps its name")
 	geometry.free()
 
 

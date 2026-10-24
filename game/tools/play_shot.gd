@@ -988,7 +988,8 @@ func _a3(office: Office) -> Dictionary:
 ## ten (seen a quarter of an hour earlier first, so they walk there and talk); Honderd dagen
 ## in the MT-kamer; a tell at its highest, the KPI board looked at closer.
 func _second(office: Office, state: String) -> void:
-	for m in ["fix_silo_kpis", "look_at_grid_study", "fix_unused_capacity"]:
+	# (the congestion desk's mission rings Ilse's call at ten: left shut for the day's view)
+	for m in ["fix_silo_kpis", "look_at_grid_study"] + ([] if state == "play_2e_day" else ["fix_unused_capacity"]):
 		office.session.missions.progress[m] = {"status": "active", "asks": {}, "seen": {}}
 	if state.begins_with("play_mt_room"):
 		office.session.missions.play_start -= SimCalendar.days(100)
@@ -1012,11 +1013,9 @@ func _second(office: Office, state: String) -> void:
 			office.player.position = Vector3(-11.6, 0, -3.0)
 			office.player.face(Basis.looking_at(Vector3(-14.0, 0, -3.6) - office.player.position))
 			office.rig.yaw = office.player.rotation.y + deg_to_rad(30)
-			office.rig.zoom(1.0)
+			office.rig.zoom(-1.0)
 			office.rig.snap()
-			office.reactions.chatter(office.player.position)
-			for i in 30:
-				await process_frame
+			office.reactions.chatter(office.player.position)   # capture soon (~10 frames), while the line shows
 		"play_mt_room_scene", "play_mt_room_ruud":
 			var rect := OfficeFloors.room_rect(office.floors.markers()["room:mt_room"])
 			office.player.position = Vector3(rect.get_center().x, 0.0, rect.end.y - 1.0)

@@ -2294,6 +2294,12 @@ def plan_second(plan: Plan) -> None:
         at = _table_chair(table, "n", chair)
         plan.markers.append(scene(f"seat{k}", at, (at[0], table[1])))
     plan.markers.append(scene("screen", (X0 + 1.25, table[1] - 0.85), table[:2]))
+    # Directie & Obeya: the department KPI board on the obeya wall (obeya2_board2, east) where
+    # the quarterly KPI review is held (S3-B's OfficeKpiBoard), and a spot for standing at it.
+    board = (18.7, 7.0 - PART_T / 2)
+    plan.markers += [("kpi_board", {"interaction": "kpi_board", "id": "kpi_board"}, (board[0], 5.9), board),
+                     ("scene:directors_obeya:board", {"interaction": "scene", "id": "directors_obeya:board"},
+                      (board[0] - 1.3, 5.6), board)]
 
     def furnish(kits):
         b = MeshBuilder()
