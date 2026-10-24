@@ -2977,6 +2977,8 @@ dialogs:
       - id: msr
         ask: "Wat is een middenspanningsruimte eigenlijk?"
         answer: "Dat huisje bij jou in de straat, met een trafo erin. Die zet tienduizend volt om naar wat er uit je stopcontact komt. Eén ruimte voedt een paar honderd huizen, en hij is berekend op wat die huizen tegelijk vragen. Dat was lange tijd niet zoveel."
+        unlocks:
+          explainer: transformator
       - id: together
         ask: "Waarom maakt een warmtepomp zoveel uit?"
         answer: "Omdat ze allemaal tegelijk aangaan. Op een koude avond draait in de hele straat de warmtepomp, en de auto hangt aan de laadpaal. Vroeger kookte de ene buurvrouw om zes uur en de andere om zeven. Hoeveel er tegelijk aanstaat, daar rekenen wij aan. Dat is eigenlijk het hele vak."
