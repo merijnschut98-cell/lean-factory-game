@@ -362,8 +362,8 @@ missions:
     debrief: "Wat binnenkomt is nu compleet: het formulier voorkomt de fout, niemand hoeft harder te controleren. Sanne heeft niemand extra nodig. Kijk naar de stroom: er gaan nu méér aansluitingen per week door. Waarom hier wel, en waar wacht het werk nu?"
     debrief_first: "Wat binnenkomt is nu compleet: het formulier voorkomt de fout, niemand hoeft harder te controleren. Sanne heeft niemand extra nodig, en er gaan méér aansluitingen per week door: je pakte het knelpunt. Marco wacht nog. Wat verwacht je dat zijn verbetering met de stroom doet?"
     debrief_variants:
-      poor_fix: "Je team loopt nu elke aanvraag na met een checklist en vraagt meteen op wat ontbreekt. Er gaat minder heen en weer. Maar het formulier laat nog steeds doorklikken zonder vermogen of meterkastfoto: elke fout wordt nog gemaakt, alleen eerder gevonden, en het nalopen kost Sanne's team elke dag tijd. Waar ontstaat die fout eigenlijk?"
-    reopen: "Bij de Intake gaan weer aanvragen terug naar de klant. Sanne's turflijst is terug. Wat is er sinds de vorige keer veranderd?"
+      poor_fix: "Je team loopt nu elke aanvraag na met een checklist en vraagt meteen op wat ontbreekt. Er gaat minder heen en weer. Maar het formulier laat nog steeds doorklikken zonder vermogen of meterkastfoto: elke fout wordt nog gemaakt, alleen eerder gevonden, en het nalopen kost Sannes team elke dag tijd. Waar ontstaat die fout eigenlijk?"
+    reopen: "Bij de Intake gaan weer aanvragen terug naar de klant. Sannes turflijst is terug. Wat is er sinds de vorige keer veranderd?"
     goal: {type: solve, problem: incomplete_application}
     talk_to: [{dialog: sanne_checker, outcome: partial}]
     steps:
@@ -836,7 +836,7 @@ missions:
     briefing: "Bij de storing in de Lindelaan was de stroom vijf uur weg; 140 huishoudens krijgen elk 35 euro vergoeding. Ahmed reed halverwege veertig minuten heen en terug naar het magazijn voor een mof. 'Het magazijn levert te laat,' zeggen de monteurs. Dirk Smits van het magazijn: 'Ik heb ze gewoon liggen.' Ze hebben allebei gelijk. Hoe kan dat?"
     debrief: "Wat in de bus hoort, ligt er nu ook, en wat eruit gaat, wordt aangevuld voordat de bus weer uitrukt. De volgende lange storing kostte geen rit naar het magazijn."
     debrief_variants:
-      poor_fix: "Bij de schuifdeur hangt nu een kaart, en Dirk vult 's ochtends aan wat is aangestreept. Na een drukke nacht vergeet de monteur weleens een streepje, en dan ligt de volgende storing precies dat vak leeg. Hoe weet Dirk wat er op is, als niemand iets aanstreept?"
+      poor_fix: "Bij de schuifdeur hangt nu een kaart, en Dirk vult 's ochtends aan wat is aangestreept. Na een drukke nacht vergeet de monteur weleens een streepje, en dan is bij de volgende storing precies dat vak leeg. Hoe weet Dirk wat er op is, als niemand iets aanstreept?"
     goal: {type: solve, problem: wrong_joint_in_van}
     talk_to: [{dialog: dirk_shelf, outcome: partial}]
     steps:
