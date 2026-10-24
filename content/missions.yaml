@@ -460,9 +460,10 @@ missions:
     debrief: "Een dossier wordt nu afgehandeld op de dag dat het klaar is. De warmtepomp van de familie Hendriks draait. Bij Petra is de stapel niet kleiner geworden, want er was geen stapel werk: er was een stapel wachten. Welke andere batches zie je in de stroom die niemand een batch noemt?"
     reopen: "Klanten bellen weer dat hun EAN-code niet bestaat. Bij Petra staat het werk weer te wachten tot het einde van de maand. Wie heeft dat zo besloten?"
     debrief_variants:
-      # The designed failed Check (docs/superpowers/specs/2026-10-16-designed-failed-checks.md §1):
-      # automatic EAN registration is tier 3; at maturity 1 it works at its minimal level.
       poor_fix: "Meetdata draait de afhandeling nu twee keer per maand. Een dossier wacht gemiddeld een week in plaats van twee, maar wie net na de run klaar is, wacht nog steeds twee weken op zijn EAN. De batch is kleiner, niet weg. Waarom moet een dossier eigenlijk op een run wachten?"
+      # The designed failed Check (docs/superpowers/specs/2026-10-16-designed-failed-checks.md §1):
+      # automatic EAN registration is tier 2; at maturity 1 it works at its reduced level
+      # (fit 0.9 x 0.5 = 0.45), below the Check's pass.
       too_early: "Je verwachtte dat dossiers sneller afgemeld zouden worden als het systeem de EAN-codes zelf aanmeldt. De Check laat zien: dat helpt maar half. De koppeling werkt wel. Een dossier dat Petra invoert, staat nu binnen een uur bij de leverancier. Alleen voert Petra de dossiers nog steeds aan het eind van de maand in, want zo is het ooit afgesproken. Het wachten zat niet in het systeem. Wanneer gaat een dossier eigenlijk van de stapel af, en wie heeft dat zo bepaald?\n\nPetra: \"Die koppeling is mooi, hoor. Maar die had ik niet nodig om morgen anders te beginnen.\""
     goal: {type: solve, problem: done_but_not_closed}
     talk_to: [{dialog: petra_batch, outcome: partial}]
