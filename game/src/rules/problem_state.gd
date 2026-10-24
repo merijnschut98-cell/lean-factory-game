@@ -59,7 +59,8 @@ func to_dict() -> Dictionary:
 	return {
 		"phase": Phase.keys()[phase], "blamed": blamed, "a3": a3, "cause_correct": cause_correct,
 		"waste_right": waste_right, "eff": eff, "level": level, "failed_checks": failed_checks,
-		"check_at": check_at, "advanced": advanced, "advanced_at": advanced_at, "baseline": baseline, "gains": gains, "checked": checked,
+		"check_at": check_at, "advanced": advanced, "advanced_at": advanced_at, "baseline": baseline, "gains": gains,
+		"checked": checked,
 		"standardised": standardised, "wear": wear,
 		"neglect": neglect, "buy_in": buy_in,
 		"score": score, "rework_from": rework_from,
