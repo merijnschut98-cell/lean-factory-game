@@ -131,6 +131,39 @@ coach:
     - "Wat is je volgende stap, en wat verwacht je dat er gebeurt?"
     - "Wanneer kunnen we gaan kijken wat je van die stap hebt geleerd?"
 
+# The principle line (phase-2 design §3.7; game/src/rules/principle_line.gd): one
+# sentence after every main mission's debrief, Ruud's note on which of the three
+# principles paid or cost (CLAUDE.md §2: long term over short term, respect for people,
+# always improve), chosen from what the play left, first that holds: a poor or fading
+# fix (long_term_cost), someone blamed (respect_blamed), a talk that ended in compliance
+# without anyone committing (respect_complied, {wie}: who complied), the fix not
+# standardised (improve_cost), someone who committed (respect_committed, {wie}), a
+# failed Check that was learned from (improve_paid), else the patient fix
+# (long_term_paid). One line per code is picked per mission, the same each time.
+# Observations and questions, never a lesson.
+principles:
+  long_term_cost:
+    - "Snel was het zeker, maar wie staat hier over een half jaar weer met hetzelfde probleem?"
+    - "Dit werkt voor nu; de rekening komt later, en meestal bij iemand anders."
+  respect_blamed:
+    - "Het werk loopt beter, maar wie zich aangesproken voelde op een fout, vertelt je de volgende keer minder."
+    - "De cijfers zijn beter; of de mensen je de volgende keer nog iets vertellen, is een andere vraag."
+  respect_complied:
+    - "{wie} doet wat er is afgesproken; wat zou er nodig zijn om het ook echt van het team zelf te maken?"
+    - "{wie} volgt de nieuwe afspraak keurig, maar een afspraak die je niet zelf bedacht hebt, laat je ook makkelijk weer los."
+  improve_cost:
+    - "Zonder vaste afspraak glijdt dit vanzelf terug naar hoe het was; wie gaat het bijhouden?"
+    - "Niemand heeft dit vastgelegd, en wat niemand bijhoudt, zakt langzaam terug."
+  respect_committed:
+    - "{wie} draagt dit nu zelf; zo'n verandering hoeft niemand te bewaken."
+    - "Dat {wie} er zelf achter staat, merk je de komende maanden: het blijft staan, ook als jij er niet bij bent."
+  improve_paid:
+    - "Je eerste experiment liep anders dan je dacht, en toch ging je door; zo wordt het hier beter."
+    - "Je zat er eerst naast, je hebt gekeken waarom en het opnieuw geprobeerd."
+  long_term_paid:
+    - "Dit kostte meer tijd dan een snelle oplossing, maar het staat er over een jaar nog."
+    - "Je koos de langere weg, en die betaalt zich elke week terug zonder dat iemand ernaar omkijkt."
+
 missions:
   # ── Inwerkweek: five safe days in the connections office ──────────────────
   - id: training_mon
@@ -695,6 +728,26 @@ missions:
       reflect:
         - "Wat gebeurt er als je een team op één getal afrekent: wat verbetert, en wat gaat er stilletjes mis?"
         - "Wie heeft last gehad van de oude cijfers, en weten ze dat het niet aan hen lag?"
+
+  # The KPI board's birth (catalogue: first_kpi_review; PLAN 2.4c and 2.5): the first
+  # quarterly review, a scene at Directie & Obeya with Ruud and Frank that reads what the
+  # silo fix left (holds, Frank committed or only complied) and ends at the KPI board,
+  # where the player hangs the teams' KPIs; what is said after reads the choice
+  # (steers:<focus>) and the analysts' forecast. A board no fix hung is hung here.
+  - id: first_kpi_review
+    name: Het eerste kwartaal
+    kind: milestone
+    tier: 1
+    act: 2
+    chapter: Wat je meet
+    requires: {missions: [fix_silo_kpis]}
+    goal: {type: scene}
+    scene: first_kpi_review
+    steps: {go: "Ga naar Directie & Obeya op de 2e"}
+    briefing: "Elk kwartaal kijken Frank en ik samen naar de getallen waar de teams op sturen. Deze keer wil ik dat jij erbij bent. Directie & Obeya, op de 2e."
+    debrief: "Het bord hangt. Over een kwartaal zien we of de getallen deden wat we ervan verwachtten. Welk getal ga jij zelf in de gaten houden?"
+    teaches: [kpi, leading_lagging]
+    rewards: {xp: 800, budget: 8000, reputation: 5}
 
   # ── Side missions: small, without the coach ────────────────────────────────
   - id: walk_outages

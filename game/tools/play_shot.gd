@@ -323,6 +323,10 @@ func _run() -> void:
 			await _calls_and_experts(office, state)
 		"play_van_ride", "play_van_talk", "play_van_choose", "play_opleidingsterrein", "play_yard_morning":
 			await _yard_life(office, state)
+		"play_kpi_wall", "play_kpi_board", "play_kpi_board_result":
+			await _kpi_board(office, state)
+		"play_kpi_review_start", "play_kpi_review_scene":
+			await _kpi_review_scene(office, state)
 		_:
 			printerr("unknown state ", state)
 			quit(2)
@@ -683,6 +687,68 @@ func _day(office: Office, state: String) -> void:
 	office.rig.zoom(spec[4])
 	office.rig.snap()
 	for i in 90:   # people walk
+		await process_frame
+
+
+## The KPI board at the directie obeya (S3-B, PLAN 2.4c): the wall from the room
+## (play_kpi_wall), E there with five magnets placed (play_kpi_board), and the choice
+## hung: the chosen cards with their numbers and Ruud's question (play_kpi_board_result).
+func _kpi_board(office: Office, state: String) -> void:
+	var s := office.session
+	s.region.advance_days(40)
+	s.missions.progress["fix_silo_kpis"] = {"status": "completed", "asks": {}, "seen": {}}   # its room opened
+	s.region.board.unlock(s.region.net.time)
+	office.ui.after_action()
+	office.floors.go_to("second", "lift")
+	_stand_at(office, OfficeKpiBoard.ID)
+	if state == "play_kpi_wall":
+		office.player.position += office.interactable(OfficeKpiBoard.ID).basis.z * 2.0
+		office.rig.snap()
+		return
+	office.use(office.interactable(OfficeKpiBoard.ID))
+	var picks := [["intake", "intake_lead_time"], ["intake", "intake_complete"], ["work_prep", "work_prep_output"],
+		["planners", "planners_on_time"], ["contact_centre", "contact_centre_resolved"]]
+	if state == "play_kpi_board_result":
+		picks += [["work_prep", "work_prep_oldest"], ["planners", "planners_oldest"], ["contact_centre", "contact_centre_reachable"]]
+	for p: Array in picks:
+		office.kpi_board.pick(p[0], p[1])
+	if state == "play_kpi_board_result":
+		office.kpi_board.hang_now()
+	for i in 30:
+		await process_frame
+
+
+## Het eerste kwartaal (S3-B): Ruud and Frank at Directie & Obeya, Frank's second line
+## (play_kpi_review_start); the board hung with flow KPIs, Frank reading them out
+## (play_kpi_review_scene).
+func _kpi_review_scene(office: Office, state: String) -> void:
+	var s := office.session
+	s.region.advance_days(40)
+	s.missions.done_once["fix_silo_kpis"] = true
+	s.pass_time(0)
+	office.ui.after_action()
+	office.floors.go_to("second", "lift")
+	var rect := OfficeFloors.room_rect(office.floors.markers()["room:directors_obeya"])
+	var door := office.in_office(office.floors.markers()["door:directors_obeya"]).origin * Vector3(1, 0, 1)
+	var centre := Vector3(rect.get_center().x, 0.0, rect.get_center().y)
+	office.player.position = door + (centre - door).normalized() * 2.4   # just in through the door
+	office.player.face(Basis.looking_at(centre - door))
+	var m := office.milestone
+	m.step(1.0)
+	m.step(1.0)
+	if state == "play_kpi_review_start":
+		m.lines.next()
+		m.lines.press()
+	else:
+		m.lines.finish()
+		var picks := {"intake": ["intake_lead_time", "intake_complete"], "work_prep": ["work_prep_lead_time", "work_prep_ftr"],
+			"planners": ["planners_on_time", "planners_oldest"], "contact_centre": ["contact_centre_resolved", "contact_centre_reachable"]}
+		for pool: String in picks:
+			for id: String in picks[pool]:
+				office.kpi_board.pick(pool, id)
+		office.kpi_board.hang_now()
+		office.kpi_board.close()
+	for i in 40:
 		await process_frame
 
 

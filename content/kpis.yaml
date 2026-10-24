@@ -13,6 +13,17 @@
 # that set the same rule differently give mixed signals: that rule keeps the
 # habit. Which choice is better is measured in the simulation, never awarded.
 #
+# What the KPI board shows (PLAN 2.4c; game/src/rules/kpi_reading.gd):
+#   focus    what the KPI asks of the team: output (aantallen, bezetting) | flow
+#            (doorlooptijd, oudste werk, goed doorgeven) | customer (de belofte aan
+#            de klant). The board's choice is the fact steers:<focus> (the focus most
+#            picked), which the first quarterly review's scene reads. Never shown.
+#   measure  the real number written on the card, from the region now (last 28 days):
+#            of the stream `at` (throughput_per_week, lead_days_p50, on_time,
+#            first_time_right, wip_age), of the work step `at` (done_per_week,
+#            step_ftr: its first-time-right rate, touch_minutes: its time per job),
+#            or of the KPI's own team (utilisation, no `at`).
+#
 # ESTIMATE: all numbers below are estimates without a public source; they are
 # chosen to make the trade-off visible, and checked by probe on the real
 # network (docs: PLAN.md, "Department KPIs, task 2").
@@ -23,6 +34,13 @@ pull_limit_days: 3
 
 # What the quarterly review and the coach ask (Toyota Kata style).
 review_question: "Welke van deze KPI's stuurt het werk van morgen, en welke laat zien of je strategie klopt?"
+# What Ruud says at the KPI board (game/src/ui/kpi_board_view.gd) once the choice hangs:
+# paid when the analysts' forecast beats the habit (KpiBoard.review), flat when it does
+# not; read between reviews, over the choice in force. Questions, never the answer.
+review_lines:
+  paid: "De analisten hebben het kwartaal twee keer doorgerekend: met deze getallen, en zoals we het altijd deden. Met deze getallen loopt het werk beter door. Welk getal ga jij zelf elke week bekijken?"
+  flat: "De analisten hebben het kwartaal twee keer doorgerekend: met deze getallen, en zoals we het altijd deden. Veel verschil zit er niet in. Wat vragen deze getallen van de teams, denk je?"
+  read: "Dit is wat de teams dit kwartaal volgen. Wat zie je aan de getallen? En wat had je verwacht?"
 
 # Care, applied to every work step of the team as a step effect.
 # ESTIMATE: taking ten percent more time per job costs capacity and buys five
@@ -41,30 +59,44 @@ kpis:
     name: Aanvragen per week
     pool: intake
     kind: lagging
+    focus: output
+    measure: done_per_week
+    at: connections.intake
     rules: {start: push, order: shortest, care: hasty}
     note: "Gangbare productiviteits-KPI. Wie op aantallen stuurt, pakt het makkelijke werk en haast zich: een aanvraag die snel de deur uit moet, komt later fout terug (de wet van Goodhart). Regels en haast zijn een schatting, zie care."
   - id: intake_lead_time
     name: Doorlooptijd end-to-end
     pool: intake
     kind: lagging
+    focus: flow
+    measure: lead_days_p50
+    at: connections
     rules: {start: pull}
     note: "Doorlooptijd van aanvraag tot aansluiting (wet van Little: meer werk in uitvoering is langere doorlooptijd). Regel is een schatting."
   - id: intake_oldest
     name: Oudste aanvraag in de bak
     pool: intake
     kind: leading
+    focus: flow
+    measure: wip_age
+    at: connections
     rules: {order: oldest}
     note: "Leeftijd van het oudste openstaande werk (wip_age). Wie op het oudste werk stuurt, pakt het oudste eerst. Regel is een schatting."
   - id: intake_complete
     name: Compleet doorgezet
     pool: intake
     kind: leading
+    focus: flow
+    measure: step_ftr
+    at: connections.intake
     rules: {care: careful}
     note: "Aandeel aanvragen dat zonder ontbrekende gegevens doorgaat. Zorgvuldig werken is een schatting, zie care."
   - id: intake_utilisation
     name: Bezettingsgraad
     pool: intake
     kind: leading
+    focus: output
+    measure: utilisation
     rules: {start: push}
     note: "Gangbare KPI voor capaciteitsbenutting. Wie op bezetting stuurt, houdt iedereen bezig: werk duwen. Regel is een schatting."
 
@@ -73,30 +105,44 @@ kpis:
     name: Ontwerpen per week
     pool: work_prep
     kind: lagging
+    focus: output
+    measure: done_per_week
+    at: connections.design
     rules: {start: push, order: shortest, care: hasty}
     note: "Gangbare productiviteits-KPI. Wie op aantallen stuurt, pakt de korte ontwerpen en haast zich: wat snel af moet, komt later fout terug (de wet van Goodhart). Regels en haast zijn een schatting, zie care."
   - id: work_prep_lead_time
     name: Doorlooptijd end-to-end
     pool: work_prep
     kind: lagging
+    focus: flow
+    measure: lead_days_p50
+    at: connections
     rules: {start: pull}
     note: "Doorlooptijd van aanvraag tot aansluiting (wet van Little). Regel is een schatting."
   - id: work_prep_ftr
     name: Eerste keer goed bij uitvoering
     pool: work_prep
     kind: lagging
+    focus: flow
+    measure: first_time_right
+    at: connections
     rules: {care: careful}
     note: "Aandeel ontwerpen dat de monteur zonder aanpassing kan bouwen (first-time-right). Zorgvuldig werken is een schatting, zie care."
   - id: work_prep_oldest
     name: Oudste dossier
     pool: work_prep
     kind: leading
+    focus: flow
+    measure: wip_age
+    at: connections
     rules: {order: oldest}
     note: "Leeftijd van het oudste openstaande dossier (wip_age). Wie op het oudste dossier stuurt, pakt het oudste eerst. Regel is een schatting."
   - id: work_prep_utilisation
     name: Bezettingsgraad
     pool: work_prep
     kind: leading
+    focus: output
+    measure: utilisation
     rules: {start: push}
     note: "Gangbare KPI voor capaciteitsbenutting. Wie op bezetting stuurt, houdt iedereen bezig: werk duwen. Regel is een schatting."
 
@@ -105,24 +151,35 @@ kpis:
     name: Ingeplande monteursuren
     pool: planners
     kind: leading
+    focus: output
+    measure: utilisation
     rules: {start: push}
     note: "Gangbare KPI voor volle agenda's. Wie op ingeplande uren stuurt, plant door. Regel is een schatting."
   - id: planners_kept
     name: Afspraak nagekomen
     pool: planners
     kind: lagging
+    focus: customer
+    measure: on_time
+    at: meters
     rules: {care: careful}
     note: "Aandeel afspraken dat de klant krijgt zoals toegezegd. Zorgvuldig plannen is een schatting, zie care."
   - id: planners_on_time
     name: Klussen op tijd
     pool: planners
     kind: lagging
+    focus: customer
+    measure: on_time
+    at: connections
     rules: {order: due}
     note: "Aandeel klussen binnen de afgesproken termijn (on_time). Wie op tijd stuurt, plant eerst de klus waarvan de termijn het eerst verloopt. Regel is een schatting."
   - id: planners_oldest
     name: Oudste klus
     pool: planners
     kind: leading
+    focus: flow
+    measure: wip_age
+    at: connections
     rules: {order: oldest}
     note: "Leeftijd van de oudste openstaande klus (wip_age). Wie op de oudste klus stuurt, plant de oudste eerst. Regel is een schatting."
 
@@ -131,17 +188,26 @@ kpis:
     name: Gemiddelde afhandeltijd
     pool: contact_centre
     kind: leading
+    focus: output
+    measure: touch_minutes
+    at: customer_contact.answer
     rules: {care: hasty}
     note: "Gangbare callcenter-KPI (AHT). Wie op korte gesprekken stuurt, jaagt door. Haast is een schatting, zie care."
   - id: contact_centre_resolved
     name: In één keer opgelost
     pool: contact_centre
     kind: lagging
+    focus: customer
+    measure: step_ftr
+    at: customer_contact.answer
     rules: {care: careful}
     note: "First contact resolution, gangbare callcenter-KPI. Zorgvuldig werken is een schatting, zie care."
   - id: contact_centre_reachable
     name: Bereikbaar binnen 2 uur
     pool: contact_centre
     kind: lagging
+    focus: customer
+    measure: on_time
+    at: customer_contact
     rules: {order: due}
     note: "Klantvragen worden binnen twee uur beantwoord (norm van deze stroom, norm_hours). Wie op die termijn stuurt, beantwoordt eerst de vraag die het dichtst bij de twee uur zit. Regel is een schatting."
