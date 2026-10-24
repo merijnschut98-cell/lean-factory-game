@@ -443,6 +443,20 @@ func test_the_directie_advances_only_up_to_a_ceiling() -> void:
 	assert_eq(room.advance_owed, Region.ADVANCE_CEILING)
 
 
+## Review 381d21c..0ec040f #8: a missed deadline can close a problem's cheap fixes (Henk
+## retired), leaving only dearer ones. In a bad period the directie still funds the cheapest
+## fix left for a problem, so no problem is locked out at the floor.
+func test_in_debt_the_cheapest_fix_left_is_always_funded() -> void:
+	var r := _region(Region.DEBT_FLOOR)
+	r.activate("custom_design")
+	_investigate(r)
+	r.close_countermeasures(PackedStringArray(["delegated_approval"]))
+	assert_eq(r.submit_a3("custom_design", _a3(r, "standard_designs")), "",
+		"EUR 8,000 is the cheapest fix left: never locked out")
+	assert_eq(r.advance_owed, 8000, "advanced in full, never free")
+	assert_eq(r.profile.budget, Region.DEBT_FLOOR)
+
+
 ## Gate backlog 1: in a bad period an exempt experiment the region cannot carry is the
 ## directie's whole: it advances all of it and the region's budget stays where it is (so a
 ## failed one costs the region nothing, as when it was refused; a passed one is owed in full).

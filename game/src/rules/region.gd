@@ -273,10 +273,25 @@ func _charge_costs(days: int) -> void:
 		floor_days += days
 
 
-## Whether the directie pays for `cm` now: always out of debt (an experiment may still run
-## into it); in a bad period only up to what the region has above the floor, or a small one.
-func fundable(cm: CountermeasureDef) -> bool:
-	return not in_bad_period() or cm.budget <= maxi(DEBT_FUNDED_MINIMUM, profile.budget - DEBT_FLOOR)
+## Whether the directie pays for `cm` on `problem_id` now: always out of debt (an experiment
+## may still run into it); in a bad period only up to what the region has above the floor, a
+## small one, or the problem's cheapest fix still open (review 381d21c..0ec040f #8: a missed
+## deadline can close the cheap ones, as Henk's farewell does; no problem is locked out).
+func fundable(cm: CountermeasureDef, problem_id: String = "") -> bool:
+	return not in_bad_period() or cm.budget <= maxi(DEBT_FUNDED_MINIMUM, profile.budget - DEBT_FLOOR) \
+		or cm.budget <= _cheapest_fix(problem_id)
+
+
+## The budget of the problem's cheapest fitting countermeasure still available (0: none).
+func _cheapest_fix(problem_id: String) -> int:
+	var p: ProblemDef = problems.get(problem_id)
+	if p == null:
+		return 0
+	var cheapest := -1
+	for c in available_countermeasures():
+		if p.countermeasures.has(c.id) and (cheapest < 0 or c.budget < cheapest):
+			cheapest = c.budget
+	return maxi(0, cheapest)
 
 
 ## Debt is allowed, down to DEBT_FLOOR; it starts a bad period, and paying it
@@ -529,7 +544,7 @@ func submit_a3(problem_id: String, a3: Dictionary, check_days: int = CHECK_DAYS,
 		return "same_countermeasure"
 	# What the region cannot carry the directie advances: past the floor, or all of an exempt
 	# experiment a bad period would refuse (the region pays none of it, as if refused).
-	var carried := fundable(cm)
+	var carried := fundable(cm, problem_id)
 	var advanced := maxi(0, cm.budget - (profile.budget - DEBT_FLOOR)) if carried else cm.budget
 	if not carried and not (always_funded and advance_owed + advanced <= ADVANCE_CEILING):
 		return "no_funds"

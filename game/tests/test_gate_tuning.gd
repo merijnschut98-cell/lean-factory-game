@@ -77,3 +77,21 @@ func test_the_tap_review_passes_at_the_floor() -> void:
 	for seed_value in [11, 13]:
 		var gain := _best_fix_gain("inverters_tripping", seed_value, [], true)
 		assert_true(gain > Pdca.CHECK_NOISE, "seed %d: %+.1f %%" % [seed_value, 100.0 * gain])
+
+
+## Review 381d21c..0ec040f #8: once Henk's farewell has closed the cheap fixes for the
+## knowledge drain, the one left (work instruction videos, EUR 5,000) is still funded at the
+## debt floor, so the failed side mission never holds its slot for good.
+func test_after_henks_farewell_the_knowledge_drain_stays_fundable_at_the_floor() -> void:
+	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
+	var r := s.region
+	r.profile.budget = Region.DEBT_FLOOR
+	r._apply_bad_period()
+	var henk: MissionDef = s.missions.defs["save_henks_knowledge"]
+	r.close_countermeasures(henk.fail_closes)
+	var left: Array = r.available_countermeasures().filter(
+		func(c: CountermeasureDef) -> bool: return r.problems["knowledge_drain"].countermeasures.has(c.id))
+	assert_false(left.is_empty(), "a fix is left")
+	for c: CountermeasureDef in left:
+		if c.budget == left.map(func(x: CountermeasureDef) -> int: return x.budget).min():
+			assert_true(r.fundable(c, "knowledge_drain"), "%s (EUR %d) is funded at the floor" % [c.id, c.budget])
