@@ -114,7 +114,11 @@ problems:
       - De monteurs pakken de verkeerde mof mee.
       - Het magazijn levert te laat.
     mismatch_note: Het magazijn heeft de moffen wel; ze liggen alleen niet in de bus op het moment dat het nodig is.
-    countermeasures: {van_refill_card: 0.65, standard_van_stock: 0.8, two_bin_van_kanban: 1.0}
+    # Act 0/I audit (2026-10-24): the standard stock is refilled at the end of every shift
+    # (its description), so it removes most of the cause; only the signal still leans on a
+    # routine, which the kanban (tier 3, offered from maturity 2) builds in. At 0.8 every fix
+    # Act I offers was a poor fix and even the expert got a repair quest.
+    countermeasures: {van_refill_card: 0.65, standard_van_stock: 0.85, two_bin_van_kanban: 1.0}
     teaches: [5s, kanban, standard_work]
     # The waste is mostly the drive back for the right joint (QA 2026-10-24: a touch time
     # x 1.5 alone hid it from the storingsbord). A quarter of the outages takes the trip
@@ -353,14 +357,17 @@ problems:
       - Het contactcentrum heeft te weinig agents.
       - Klanten zijn ongeduldig.
     mismatch_note: Meer agents beantwoorden de vragen sneller, maar de vragen blijven komen. Dit is faalvraag.
-    countermeasures: {realistic_promise: 0.7, milestone_mail_by_hand: 0.75, proactive_status_updates: 1.0}
+    # Act 0/I audit (2026-10-24): the hand-made mail at the two moments most calls are about
+    # (a week's tally, Pareto) takes away most of the failure demand; it is the patient first
+    # step, not a poor fix (0.75 was one), and it fades sooner than the built-in messages.
+    countermeasures: {realistic_promise: 0.7, milestone_mail_by_hand: 0.85, proactive_status_updates: 1.0}
     teaches: [failure_demand, value_demand]
     effects:
       - {target: connections, property: call_rate, value: 3.0}
     clues:
       - {tool: listen_in, key: true, depth: 0, text: "Van de tien gesprekken gaan er vier over één vraag: 'Waar blijft mijn aansluiting?'"}
       - {tool: time_study, key: false, depth: 0, text: "Een gesprek duurt gemiddeld vijftien minuten; de agents zijn vriendelijk en snel."}
-      - {tool: data, key: true, depth: 1, text: "Statusvragen komen bijna allemaal van klanten die al meer dan drie weken wachten; sommigen bellen elke week."}
+      - {tool: data, key: true, depth: 1, text: "Statusvragen komen bijna allemaal van klanten die al meer dan twee maanden wachten; sommigen bellen elke week."}
       - {tool: documents, key: true, depth: 1, at: connections.intake, text: "Na de ontvangstbevestiging hoort de klant niets meer, tot de monteur belt voor een afspraak."}
       - {tool: conversation, key: true, depth: 2, at: connections.design, text: "'Wij weten zelf ook niet wanneer het klaar is. Er is geen planning die we met de klant kunnen delen.'"}
 
@@ -704,7 +711,10 @@ problems:
       - De monteurs zijn niet opgeleid voor oude meterkasten.
       - Klanten maken de meterkast niet vrij.
     mismatch_note: Aan de deur valt niets meer te winnen; de kast was al oud voordat de monteur kwam. Wat ontbreekt, is een blik op de kast bij het inplannen.
-    countermeasures: {cupboard_photo_at_booking: 1.0, register_cupboard_check: 0.8, customer_self_report: 0.6}
+    # Act 0/I audit (2026-10-24): the build year looks at the cupboard at planning, the root
+    # cause, built into the tool; a little less than the photo (a renovated old house reads as
+    # old), not a poor fix. The poor_fix debrief is the shortcut's.
+    countermeasures: {cupboard_photo_at_booking: 1.0, register_cupboard_check: 0.85, customer_self_report: 0.6}
     teaches: [waste_defects, quality_at_the_source]
     effects:
       - {target: meters.visit, property: ftr, value: -0.15}
@@ -743,7 +753,9 @@ problems:
       - De monteurs werken te langzaam.
       - Er zijn te weinig meterwisselaars.
     mismatch_note: Meer mensen of harder werken haalt de kilometers er niet uit. De rit tussen de adressen zit in de planning.
-    countermeasures: {route_by_area: 1.0, area_teams: 0.8, overtime_cap: 0.6}
+    # Act 0/I audit (2026-10-24): fixed district teams take the zigzag out as well (the
+    # planning follows the districts); not a poor fix. The poor_fix debrief is the cap's.
+    countermeasures: {route_by_area: 1.0, area_teams: 0.85, overtime_cap: 0.6}
     teaches: [waste_transport, heijunka]
     effects:
       - {target: meters.visit, property: touch_time, value: 1.3}
@@ -752,7 +764,7 @@ problems:
     # ~EUR 60 an hour with the overtime surcharge: about EUR 1,100 a week.
     cost_per_week: 1100
     tells:
-      - {tell: planning_board, text: "Op het weekbord bij de planners staan de meterwissels van één monteur verspreid over vier wijken."}
+      - {tell: planning_board, text: "Op het weekbord bij de planners staat achter de namen van de meterwisselaars bijna elke dag een overuur in rood."}
     clues:
       - {tool: data, key: true, depth: 0, text: "De meterwisselaars schreven de laatste acht weken samen 140 overuren, in rustige weken net zoveel als in drukke."}
       - {tool: shadow, key: true, depth: 0, at: meters.visit, text: "Je rijdt een dag mee: Nova-Oud, De Hofstede, terug naar Nova-Oud, dan de Kanaalzone. Van de acht uur zit de monteur er drie in de bus."}

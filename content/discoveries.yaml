@@ -184,6 +184,18 @@ discoveries:
     act: 2
     trigger: {type: contain_then_fix, days: 2}
     reward: {object: "Een veiligheidshelm met een Voltana-sticker", note: "Indammen is geen oplossen, maar soms moet het eerst."}
+  # ── Act I (mission audit 2026-10-24): the bottleneck moves ───────────────────
+  # While the stack at Werkvoorbereiding is open, the player counts the queue at Intake:
+  # where the work will wait once design is faster (Goldratt's fifth step; in the autoplay
+  # the constraint moves from work_prep to intake with the standard designs).
+  - id: het_volgende_knelpunt
+    name: Het volgende knelpunt
+    line: "Een knelpunt verdwijnt niet; het verhuist."
+    hint: "Als Werkvoorbereiding sneller wordt, waar gaat het werk dan wachten?"
+    act: 1
+    trigger: {type: tool_at, place: connections.intake, tool: queue_count, problem_active: custom_design}
+    reward: {object: "Een turflijst met twee kolommen: Intake en Werkvoorbereiding", note: "Je keek al waar het werk zou gaan wachten voordat het daar wachtte. Goldratt noemt het de vijfde stap: is het knelpunt verschoven, begin dan opnieuw."}
+
   # ── Act II (mission audit 2026-10-24): end to end, the peak, the full net ────
   # While the damage in the street is still open, the player reads the data at Revisie &
   # GIS, a floor up and a stream upstream: the cause of a defect lies where it began.
