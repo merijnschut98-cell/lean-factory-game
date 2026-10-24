@@ -528,7 +528,7 @@ missions:
     goal: {type: scene}
     scene: review_100_days
     steps: {go: "Ga naar de MT-kamer op de 2e"}
-    briefing: "Frank en ik willen je even spreken, in de MT-kamer op de 2e. Je werkt hier nu honderd dagen. Je hoeft niks voor te bereiden."
+    briefing: "Frank Hulshof ({functie:frank}) en ik willen je even spreken, in de MT-kamer op de 2e. Je werkt hier nu honderd dagen. Je hoeft niks voor te bereiden."
     debrief: "Honderd dagen. Wat zou je anders doen als je morgen opnieuw begon?"
     rewards: {xp: 200}
 
@@ -540,7 +540,12 @@ missions:
     act: 2
     chapter: De kaart klopt niet
     requires: {missions: [fix_done_but_not_closed]}
-    briefing: "Dinsdag 10.12 uur: de graafmachine van Grondwerk Peeters raakt een middenspanningskabel. Driehonderd huizen en zorgcentrum De Linde zitten zonder stroom; De Linde draait op het noodaggregaat. Uitvoerder Gert Peeters laat zijn KLIC-melding zien: 'Volgens deze kaart lag hier niks.' Het is de vijfde graafschade deze maand. Elke schade kost ons geld, en na vier uur krijgt elke getroffen klant een vergoeding."
+    # "De vijfde deze week" (estimate): the problem adds 5 daytime outages a week to the
+    # stream's 10 (a third of them, the depth-0 clue). Nationally Wibon counted 46,799
+    # digging damages in 2022, about 900 a week over every utility; electricity's share
+    # and Zuidmark's ~2 % of the country (company.yaml) put a region at a few a week.
+    # The compensation after four hours: the compensatieregeling (concepts.yaml).
+    briefing: "Dinsdag 10.12 uur: een graafmachine raakt een middenspanningskabel. Driehonderd huizen en zorgcentrum De Linde zitten zonder stroom; De Linde draait op het noodaggregaat. Gert Peeters ({functie:gert}) laat zijn KLIC-melding zien: 'Volgens deze kaart lag hier niks.' Het is de vijfde graafschade deze week. Elke schade kost ons geld, en na vier uur krijgt elke getroffen klant een vergoeding."
     debrief: "Er zijn minder graafschades. Bij de Check konden de monteurs zonder je aanpak {kpi_before} storingen per week aan, met je aanpak {kpi_after}. Gert deed alles volgens het boekje; de oorzaak zat in ons proces. Maar de kaart klopt nog steeds niet overal. Wie houdt de kaart eigenlijk bij?"
     debrief_variants:
       blamed: "De schades zijn minder. Gert werkt mee, maar hij vertelt je niets meer dan nodig. Wie houdt de kaart eigenlijk bij?"
@@ -588,11 +593,17 @@ missions:
     act: 2
     chapter: De kaart klopt niet
     requires: {missions: [fix_digging_damage]}
-    # Correctness (audit L5): revision sits after commissioning, so the
-    # stream's throughput does not move; the harm is the age of the open
-    # work (the problem's KPI is wip_age).
-    briefing: "De kabel die Gert Peeters raakte, lag twee meter naast de plek op de kaart; hij was vier maanden eerder verlegd. Bij Revisie & GIS staat een doos met 240 schetsen van opgeleverde aansluitingen. De oudste is van augustus; één is getekend op een boterhamzakje. 'We tekenen ze over zo snel als we kunnen,' zegt Mieke van der Veen. Het GIS-team vraagt om versterking. Hoe oud wordt een schets voordat hij op de kaart staat, en waarom?"
+    # The problem's KPI is the stream's capacity (problems_tier1.yaml: GIS is the
+    # constraint while the box grows). The numbers hold by Little's law (estimate): 30
+    # connections a week come in, 240 sketches open and the oldest four months old means
+    # GIS draws about 15 a week, so the box grew by about 15 a week for four months.
+    # The oldest sketch is "van maanden terug", never a month name: Act II starts on a
+    # different date in every play.
+    briefing: "De kabel die Gert Peeters raakte, lag twee meter naast de plek op de kaart; hij was vier maanden eerder verlegd. Bij Revisie & GIS staat een doos met 240 schetsen van opgeleverde aansluitingen. Onderop liggen er van maanden terug; één is getekend op een boterhamzakje. 'We tekenen ze over zo snel als we kunnen,' zegt Mieke van der Veen ({functie:mieke}). Het GIS-team vraagt om versterking. Hoe oud wordt een schets voordat hij op de kaart staat, en waarom?"
     debrief: "Een nieuwe kabel staat nu eerder op de kaart, en de doos bij Revisie & GIS wordt kleiner. Volgens de Check kan de stroom met je aanpak {kpi_after} aansluitingen per week aan; zonder was dat {kpi_before}. Wie merkt het als dit over een jaar wegzakt, en hoe snel?"
+    debrief_variants:
+      # A poor fix here is the daily template: drawn sooner, but still drawn twice.
+      poor_fix: "De doos wordt kleiner: er wordt nu elke dag getekend. Volgens de Check kan de stroom met je aanpak {kpi_after} aansluitingen per week aan; zonder was dat {kpi_before}. Maar Mieke tekent nog steeds over wat een monteur op de motorkap schetste. Het dubbele werk is er nog; het gaat alleen sneller. Wat gebeurt er met de doos in de eerste drukke maand?"
     reopen: "De doos bij Revisie & GIS vult zich weer. Mieke tekent weer over. Wat werd er niet meer gedaan?"
     goal: {type: solve, problem: revision_backlog}
     talk_to: [{dialog: mieke_redraw, outcome: partial}]
@@ -618,8 +629,15 @@ missions:
     act: 2
     chapter: Het net is vol
     requires: {missions: [fix_revision_backlog], belt: 2}
-    briefing: "Femke de Wit en haar collega maken lange dagen: er staan 38 netstudies op het bord. De uitbreiding van de basisschool in Nova-Oost wacht al negen weken op een studie die volgens Femke 'waarschijnlijk vijf minuten werk is, als ik eraan toekom'. Netstrategie vraagt om twee extra analisten, en die zijn in heel Nederland schaars. Wat kan er nog meer?"
+    # Femke's "five minutes" is a key clue (her conversation, depth 1): the briefing gives
+    # her struggle, not the answer. 38 studies at four hours is two weeks for the two
+    # analysts (value_streams.yaml, grid_analysts), yet the school waits nine: congestion
+    # studies go first and more come in than go out (estimate).
+    briefing: "Femke de Wit ({functie:femke}) en haar collega maken lange dagen: er staan 38 netstudies op het bord. De uitbreiding van de basisschool in Nova-Oost wacht al negen weken op een studie. 'Er komen er elke week meer bij dan we af krijgen,' zegt Femke. 'Ik kom niet eens toe aan de studies die er echt toe doen.' Netstrategie vraagt om twee extra analisten, en die zijn in heel Nederland schaars. Wat kan er nog meer?"
     debrief: "Niet elke aanvraag heeft een volledige studie nodig. Bij de Check kon de stroom zonder je aanpak {kpi_before} aansluitingen per week aan, met je aanpak {kpi_after}. Femke rekent weer aan de studies die ertoe doen, en de school had binnen een week antwoord. Je hebt het knelpunt eerst beter benut voordat je het groter maakte. Wanneer is extra analisten aannemen wél de goede stap?"
+    debrief_variants:
+      # A poor fix: the overtime sprint or the templates. Faster or longer, still every study.
+      poor_fix: "Het bord is korter. Bij de Check kon de stroom zonder je aanpak {kpi_before} aansluitingen per week aan, met je aanpak {kpi_after}. Maar nog steeds krijgt elke aanvraag boven 3x25A de volle studie, ook de warmtepomp in een straat waar ruimte genoeg is. Femke rekent sneller of langer, niet minder. Hoeveel van die studies hadden eigenlijk gehoeven?"
     reopen: "Op Femke's bord staan weer bijna veertig studies. Elke aanvraag krijgt weer de volle studie. Wie besliste dat, en wanneer?"
     goal: {type: solve, problem: grid_study_queue}
     talk_to: [{dialog: femke_triage, outcome: partial}]
@@ -648,8 +666,13 @@ missions:
     act: 2
     chapter: Het net is vol
     requires: {missions: [fix_grid_study_queue]}
-    briefing: "Projectontwikkelaar Hermans Bouw levert over vijf maanden 48 woningen op in De Boomgaard. Volgens onze planning hebben die dan nog geen stroom: de trafo voor het nieuwe station heeft zes maanden levertijd. 'Heel Europa wil trafo's,' zegt het projectteam. Dat klopt. Wat kunnen wíj dan nog doen?"
-    debrief: "De fabrikant is niet sneller geworden. Bij de Check waren de oudste openstaande aansluitingen zonder je aanpak {kpi_before} dagen oud, met je aanpak {kpi_after}. We bestellen alleen niet meer te laat: zodra de netstudie zegt dat er een trafo bij moet. De oudste wachtende verzwaring is jonger geworden, en De Boomgaard krijgt eerder stroom. Welke andere wachttijden lopen na elkaar terwijl ze naast elkaar zouden kunnen?"
+    # Rob is the talk this mission needs (rob_order_rule): the briefing names him. The
+    # plain debrief holds for the early order and the framework contract alike; the
+    # stock is a poor fix (fit 0.8 against 1.0): it hides the late order, at a price.
+    briefing: "Projectontwikkelaar Hermans Bouw levert over vijf maanden 48 woningen op in De Boomgaard. Volgens onze planning hebben die dan nog geen stroom: de trafo voor het nieuwe station heeft zes maanden levertijd. 'Heel Europa wil trafo's,' zegt Rob Verhagen ({functie:rob}). Dat klopt. Wat kunnen wíj dan nog doen?"
+    debrief: "De fabrikant is niet sneller geworden; wij hebben veranderd wanneer en hoe we bestellen. Bij de Check waren de oudste openstaande aansluitingen zonder je aanpak {kpi_before} dagen oud, met je aanpak {kpi_after}. De oudste wachtende verzwaring is jonger geworden, en De Boomgaard krijgt eerder stroom. Welke andere wachttijden lopen na elkaar terwijl ze naast elkaar zouden kunnen?"
+    debrief_variants:
+      poor_fix: "De Boomgaard krijgt eerder stroom: er staan nu trafo's op voorraad. Bij de Check waren de oudste openstaande aansluitingen zonder je aanpak {kpi_before} dagen oud, met je aanpak {kpi_after}. Maar we bestellen nog steeds pas als het ontwerp is goedgekeurd. De voorraad vangt dat op, en die voorraad kost elke maand geld. Wat gebeurt er als drie projecten tegelijk een trafo uit die voorraad willen?"
     reopen: "De trafo's worden weer pas besteld als het ontwerp klaar is. Hermans Bouw belt opnieuw. Wat is er in de bestelroute teruggeslopen?"
     goal: {type: solve, problem: transformer_wait}
     talk_to: [{dialog: rob_order_rule, outcome: partial}]
@@ -670,14 +693,21 @@ missions:
       reflect: "Wat kon je niet veranderen, en wat wel? Waar geldt dat nog meer?"
 
   - id: fix_unused_capacity
-    name: Gereserveerd maar ongebruikt
+    # The name and the briefing never say the capacity is unused: the empty hall next door
+    # is the listen-in clue's to find (depth 1). The ACM's rule is GOTORK (company.yaml
+    # numbers: twelve months at most half used, or 1 MW or more unused).
+    name: Twee jaar op de wachtlijst
     kind: main
     tier: 1
     act: 2
     chapter: Het net is vol
     requires: {missions: [fix_transformer_wait]}
-    briefing: "Ilse de Graaf wil de gasovens van haar bakkerij vervangen door elektrische. Ze staat al twee jaar op de wachtlijst voor transportcapaciteit. Naast haar staat een distributiehal met twee megawatt gecontracteerd vermogen; de hal is leeg. 'Leg me eens uit waarom het net vol is,' zei ze tegen Thomas Visser. Ze dreigt naar de ACM te stappen. Volgens Netstrategie is het net vol. Is het dat ook?"
+    briefing: "Ilse de Graaf ({functie:ilse}) wil haar gasovens vervangen door elektrische. Ze staat al twee jaar op de wachtlijst voor transportcapaciteit. 'Leg me eens uit waarom het net vol is,' zei ze tegen Thomas Visser ({functie:thomas}). 'Op ons bedrijventerrein staat de helft van de hallen 's avonds donker.' Ze dreigt naar de ACM te stappen. Volgens Netstrategie is het net vol. Is het dat ook?"
     debrief: "Op het drukste kwartier van het jaar gebruikten de grote klanten maar een deel van wat ze gecontracteerd hadden. Bij de Check kregen zonder je aanpak {kpi_before} aanvragen per week capaciteit, met je aanpak {kpi_after}. Een deel daarvan komt, volgens de regels van de ACM, terug in de wachtrij. Welke andere voorraad houden wij aan die op papier vol lijkt?"
+    debrief_variants:
+      # A poor fix: the dashboard (it shows, nobody hands back) or flexible contracts for
+      # newcomers (they fit beside the old contracts, which stay as they are).
+      poor_fix: "Er past weer wat meer op het net. Bij de Check kregen zonder je aanpak {kpi_before} aanvragen per week capaciteit, met je aanpak {kpi_after}. Maar de capaciteit die al jaren gecontracteerd is en niet gebruikt wordt, staat nog steeds op naam van wie hem niet gebruikt. Ilse wacht daar nog steeds naast. Wie gaat met die klanten in gesprek?"
     reopen: "De wachtlijst groeit weer, terwijl het gebruik niemand meer bijhoudt. Thomas krijgt weer boze telefoontjes. Wie keek er naar de cijfers, en waarom nu niet meer?"
     goal: {type: solve, problem: unused_capacity}
     talk_to: [{dialog: thomas_reclaim, outcome: partial}]
@@ -700,7 +730,9 @@ missions:
         - "Hoe heb je de klanten behandeld die capaciteit teruggaven? Komen ze bij ons terug als ze groeien?"
 
   - id: fix_silo_kpis
-    name: KPI's die elkaar bevechten
+    # The name and the briefing show the symptom (two records, no more connections); that
+    # the KPIs pull against each other is for the player to find.
+    name: Twee recordmaanden
     kind: main
     tier: 1
     act: 2
@@ -708,8 +740,12 @@ missions:
     requires: {missions: [fix_unused_capacity]}
     # The record month (ESTIMATE, the stream's 30 requests a week): 132 requests through,
     # 128 designs done; their local counts, not the stream's.
-    briefing: "In het MT presenteerden Sanne en Joost allebei een recordmaand: 132 aanvragen door bij Intake, 128 ontwerpen af bij Werkvoorbereiding. Marco Peters zei niets, tot het einde: 'Mooi. En wie bouwt jullie fouten na?' Er gaan niet meer aansluitingen per week de deur uit dan een kwartaal geleden. Kijk wat hun cijfers van hen vragen."
+    briefing: "In het MT presenteerden Sanne Bakker ({functie:sanne}) en Joost van Dijk ({functie:joost}) allebei een recordmaand: 132 aanvragen door bij Intake, 128 ontwerpen af bij Werkvoorbereiding. Marco Peters ({functie:marco}) zei niets, tot het einde: 'Mooi. En wie bouwt jullie fouten na?' Er gaan niet meer aansluitingen per week de deur uit dan een kwartaal geleden. Hoe kunnen twee teams allebei een record halen, terwijl de klant niets merkt?"
     debrief: "Intake en Werkvoorbereiding kijken nu naar dezelfde aansluiting en hetzelfde getal. Bij de Check was zonder je aanpak {kpi_before} procent van de aansluitingen in één keer goed, met je aanpak {kpi_after} procent. Wat je meet, bepaalt wat mensen doen; en wat je níet meet, bepaalt wat ze laten liggen. Wie heeft last gehad van de oude cijfers, en weten ze dat het niet aan hen lag?"
+    debrief_variants:
+      # A poor fix: the WIP limit (the counts still steer) or shared goals without one
+      # board (each team still sees its own part).
+      poor_fix: "Er komt minder terug bij de monteurs. Bij de Check was zonder je aanpak {kpi_before} procent van de aansluitingen in één keer goed, met je aanpak {kpi_after} procent. Maar nog steeds kijkt elk team naar zijn eigen stuk; de aansluiting van begin tot eind ziet niemand. Waar zou Marco moeten kijken om te zien of het beter gaat?"
     reopen: "In het MT liggen weer twee recordmaanden op tafel en de aansluitingen gaan niet sneller. Waar kijken de teams nu weer naar?"
     goal: {type: solve, problem: silo_kpis}
     talk_to: [{dialog: sanne_kpi, outcome: partial}]
@@ -745,7 +781,7 @@ missions:
     goal: {type: scene}
     scene: first_kpi_review
     steps: {go: "Ga naar Directie & Obeya op de 2e"}
-    briefing: "Elk kwartaal kijken Frank en ik samen naar de getallen waar de teams op sturen. Deze keer wil ik dat jij erbij bent. Directie & Obeya, op de 2e."
+    briefing: "Elk kwartaal kijken Frank Hulshof ({functie:frank}) en ik samen naar de getallen waar de teams op sturen. Deze keer wil ik dat jij erbij bent. Directie & Obeya, op de 2e."
     debrief: "Het bord hangt. Over een kwartaal zien we of de getallen deden wat we ervan verwachtten. Welk getal ga jij zelf in de gaten houden?"
     teaches: [kpi, leading_lagging]
     rewards: {xp: 800, budget: 8000, reputation: 5}

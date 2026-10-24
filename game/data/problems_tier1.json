@@ -1322,7 +1322,7 @@
    "tells": [
     {
      "tell": "congestion_list",
-     "text": "Naast een paar bedrijfsnamen op de lijst staat in de kantlijn, in potlood: 'hal staat leeg'."
+     "text": "Naast een paar bedrijfsnamen op de lijst staat in de kantlijn een vraagteken in potlood."
     }
    ],
    "tier": 1,

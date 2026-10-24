@@ -631,7 +631,7 @@
   },
   {
    "act": 1,
-   "briefing": "Frank en ik willen je even spreken, in de MT-kamer op de 2e. Je werkt hier nu honderd dagen. Je hoeft niks voor te bereiden.",
+   "briefing": "Frank Hulshof (manager Aansluitingen & Netverzwaring) en ik willen je even spreken, in de MT-kamer op de 2e. Je werkt hier nu honderd dagen. Je hoeft niks voor te bereiden.",
    "chapter": "De eerste honderd dagen",
    "debrief": "Honderd dagen. Wat zou je anders doen als je morgen opnieuw begon?",
    "goal": {
@@ -659,7 +659,7 @@
   },
   {
    "act": 2,
-   "briefing": "Dinsdag 10.12 uur: de graafmachine van Grondwerk Peeters raakt een middenspanningskabel. Driehonderd huizen en zorgcentrum De Linde zitten zonder stroom; De Linde draait op het noodaggregaat. Uitvoerder Gert Peeters laat zijn KLIC-melding zien: 'Volgens deze kaart lag hier niks.' Het is de vijfde graafschade deze maand. Elke schade kost ons geld, en na vier uur krijgt elke getroffen klant een vergoeding.",
+   "briefing": "Dinsdag 10.12 uur: een graafmachine raakt een middenspanningskabel. Driehonderd huizen en zorgcentrum De Linde zitten zonder stroom; De Linde draait op het noodaggregaat. Gert Peeters (uitvoerder, Grondwerk Peeters) laat zijn KLIC-melding zien: 'Volgens deze kaart lag hier niks.' Het is de vijfde graafschade deze week. Elke schade kost ons geld, en na vier uur krijgt elke getroffen klant een vergoeding.",
    "chapter": "De kaart klopt niet",
    "containment": {
     "budget": 500,
@@ -727,9 +727,12 @@
   },
   {
    "act": 2,
-   "briefing": "De kabel die Gert Peeters raakte, lag twee meter naast de plek op de kaart; hij was vier maanden eerder verlegd. Bij Revisie & GIS staat een doos met 240 schetsen van opgeleverde aansluitingen. De oudste is van augustus; één is getekend op een boterhamzakje. 'We tekenen ze over zo snel als we kunnen,' zegt Mieke van der Veen. Het GIS-team vraagt om versterking. Hoe oud wordt een schets voordat hij op de kaart staat, en waarom?",
+   "briefing": "De kabel die Gert Peeters raakte, lag twee meter naast de plek op de kaart; hij was vier maanden eerder verlegd. Bij Revisie & GIS staat een doos met 240 schetsen van opgeleverde aansluitingen. Onderop liggen er van maanden terug; één is getekend op een boterhamzakje. 'We tekenen ze over zo snel als we kunnen,' zegt Mieke van der Veen (tekenaar Revisie & GIS). Het GIS-team vraagt om versterking. Hoe oud wordt een schets voordat hij op de kaart staat, en waarom?",
    "chapter": "De kaart klopt niet",
    "debrief": "Een nieuwe kabel staat nu eerder op de kaart, en de doos bij Revisie & GIS wordt kleiner. Volgens de Check kan de stroom met je aanpak {kpi_after} aansluitingen per week aan; zonder was dat {kpi_before}. Wie merkt het als dit over een jaar wegzakt, en hoe snel?",
+   "debrief_variants": {
+    "poor_fix": "De doos wordt kleiner: er wordt nu elke dag getekend. Volgens de Check kan de stroom met je aanpak {kpi_after} aansluitingen per week aan; zonder was dat {kpi_before}. Maar Mieke tekent nog steeds over wat een monteur op de motorkap schetste. Het dubbele werk is er nog; het gaat alleen sneller. Wat gebeurt er met de doos in de eerste drukke maand?"
+   },
    "goal": {
     "problem": "revision_backlog",
     "type": "solve"
@@ -772,9 +775,12 @@
   },
   {
    "act": 2,
-   "briefing": "Femke de Wit en haar collega maken lange dagen: er staan 38 netstudies op het bord. De uitbreiding van de basisschool in Nova-Oost wacht al negen weken op een studie die volgens Femke 'waarschijnlijk vijf minuten werk is, als ik eraan toekom'. Netstrategie vraagt om twee extra analisten, en die zijn in heel Nederland schaars. Wat kan er nog meer?",
+   "briefing": "Femke de Wit (netplanner) en haar collega maken lange dagen: er staan 38 netstudies op het bord. De uitbreiding van de basisschool in Nova-Oost wacht al negen weken op een studie. 'Er komen er elke week meer bij dan we af krijgen,' zegt Femke. 'Ik kom niet eens toe aan de studies die er echt toe doen.' Netstrategie vraagt om twee extra analisten, en die zijn in heel Nederland schaars. Wat kan er nog meer?",
    "chapter": "Het net is vol",
    "debrief": "Niet elke aanvraag heeft een volledige studie nodig. Bij de Check kon de stroom zonder je aanpak {kpi_before} aansluitingen per week aan, met je aanpak {kpi_after}. Femke rekent weer aan de studies die ertoe doen, en de school had binnen een week antwoord. Je hebt het knelpunt eerst beter benut voordat je het groter maakte. Wanneer is extra analisten aannemen wél de goede stap?",
+   "debrief_variants": {
+    "poor_fix": "Het bord is korter. Bij de Check kon de stroom zonder je aanpak {kpi_before} aansluitingen per week aan, met je aanpak {kpi_after}. Maar nog steeds krijgt elke aanvraag boven 3x25A de volle studie, ook de warmtepomp in een straat waar ruimte genoeg is. Femke rekent sneller of langer, niet minder. Hoeveel van die studies hadden eigenlijk gehoeven?"
+   },
    "goal": {
     "problem": "grid_study_queue",
     "type": "solve"
@@ -824,9 +830,12 @@
   },
   {
    "act": 2,
-   "briefing": "Projectontwikkelaar Hermans Bouw levert over vijf maanden 48 woningen op in De Boomgaard. Volgens onze planning hebben die dan nog geen stroom: de trafo voor het nieuwe station heeft zes maanden levertijd. 'Heel Europa wil trafo's,' zegt het projectteam. Dat klopt. Wat kunnen wíj dan nog doen?",
+   "briefing": "Projectontwikkelaar Hermans Bouw levert over vijf maanden 48 woningen op in De Boomgaard. Volgens onze planning hebben die dan nog geen stroom: de trafo voor het nieuwe station heeft zes maanden levertijd. 'Heel Europa wil trafo's,' zegt Rob Verhagen (inkoper). Dat klopt. Wat kunnen wíj dan nog doen?",
    "chapter": "Het net is vol",
-   "debrief": "De fabrikant is niet sneller geworden. Bij de Check waren de oudste openstaande aansluitingen zonder je aanpak {kpi_before} dagen oud, met je aanpak {kpi_after}. We bestellen alleen niet meer te laat: zodra de netstudie zegt dat er een trafo bij moet. De oudste wachtende verzwaring is jonger geworden, en De Boomgaard krijgt eerder stroom. Welke andere wachttijden lopen na elkaar terwijl ze naast elkaar zouden kunnen?",
+   "debrief": "De fabrikant is niet sneller geworden; wij hebben veranderd wanneer en hoe we bestellen. Bij de Check waren de oudste openstaande aansluitingen zonder je aanpak {kpi_before} dagen oud, met je aanpak {kpi_after}. De oudste wachtende verzwaring is jonger geworden, en De Boomgaard krijgt eerder stroom. Welke andere wachttijden lopen na elkaar terwijl ze naast elkaar zouden kunnen?",
+   "debrief_variants": {
+    "poor_fix": "De Boomgaard krijgt eerder stroom: er staan nu trafo's op voorraad. Bij de Check waren de oudste openstaande aansluitingen zonder je aanpak {kpi_before} dagen oud, met je aanpak {kpi_after}. Maar we bestellen nog steeds pas als het ontwerp is goedgekeurd. De voorraad vangt dat op, en die voorraad kost elke maand geld. Wat gebeurt er als drie projecten tegelijk een trafo uit die voorraad willen?"
+   },
    "goal": {
     "problem": "transformer_wait",
     "type": "solve"
@@ -872,9 +881,12 @@
   },
   {
    "act": 2,
-   "briefing": "Ilse de Graaf wil de gasovens van haar bakkerij vervangen door elektrische. Ze staat al twee jaar op de wachtlijst voor transportcapaciteit. Naast haar staat een distributiehal met twee megawatt gecontracteerd vermogen; de hal is leeg. 'Leg me eens uit waarom het net vol is,' zei ze tegen Thomas Visser. Ze dreigt naar de ACM te stappen. Volgens Netstrategie is het net vol. Is het dat ook?",
+   "briefing": "Ilse de Graaf (Bakkerij De Graaf) wil haar gasovens vervangen door elektrische. Ze staat al twee jaar op de wachtlijst voor transportcapaciteit. 'Leg me eens uit waarom het net vol is,' zei ze tegen Thomas Visser (accountmanager grootzakelijk). 'Op ons bedrijventerrein staat de helft van de hallen 's avonds donker.' Ze dreigt naar de ACM te stappen. Volgens Netstrategie is het net vol. Is het dat ook?",
    "chapter": "Het net is vol",
    "debrief": "Op het drukste kwartier van het jaar gebruikten de grote klanten maar een deel van wat ze gecontracteerd hadden. Bij de Check kregen zonder je aanpak {kpi_before} aanvragen per week capaciteit, met je aanpak {kpi_after}. Een deel daarvan komt, volgens de regels van de ACM, terug in de wachtrij. Welke andere voorraad houden wij aan die op papier vol lijkt?",
+   "debrief_variants": {
+    "poor_fix": "Er past weer wat meer op het net. Bij de Check kregen zonder je aanpak {kpi_before} aanvragen per week capaciteit, met je aanpak {kpi_after}. Maar de capaciteit die al jaren gecontracteerd is en niet gebruikt wordt, staat nog steeds op naam van wie hem niet gebruikt. Ilse wacht daar nog steeds naast. Wie gaat met die klanten in gesprek?"
+   },
    "goal": {
     "problem": "unused_capacity",
     "type": "solve"
@@ -890,7 +902,7 @@
     "understand": "Is het net vol, of zijn de contracten vol?"
    },
    "kind": "main",
-   "name": "Gereserveerd maar ongebruikt",
+   "name": "Twee jaar op de wachtlijst",
    "reopen": "De wachtlijst groeit weer, terwijl het gebruik niemand meer bijhoudt. Thomas krijgt weer boze telefoontjes. Wie keek er naar de cijfers, en waarom nu niet meer?",
    "requires": {
     "missions": [
@@ -924,9 +936,12 @@
   },
   {
    "act": 2,
-   "briefing": "In het MT presenteerden Sanne en Joost allebei een recordmaand: 132 aanvragen door bij Intake, 128 ontwerpen af bij Werkvoorbereiding. Marco Peters zei niets, tot het einde: 'Mooi. En wie bouwt jullie fouten na?' Er gaan niet meer aansluitingen per week de deur uit dan een kwartaal geleden. Kijk wat hun cijfers van hen vragen.",
+   "briefing": "In het MT presenteerden Sanne Bakker (teamleider Intake) en Joost van Dijk (teamleider Werkvoorbereiding) allebei een recordmaand: 132 aanvragen door bij Intake, 128 ontwerpen af bij Werkvoorbereiding. Marco Peters (teamleider Monteurs) zei niets, tot het einde: 'Mooi. En wie bouwt jullie fouten na?' Er gaan niet meer aansluitingen per week de deur uit dan een kwartaal geleden. Hoe kunnen twee teams allebei een record halen, terwijl de klant niets merkt?",
    "chapter": "Wat je meet",
    "debrief": "Intake en Werkvoorbereiding kijken nu naar dezelfde aansluiting en hetzelfde getal. Bij de Check was zonder je aanpak {kpi_before} procent van de aansluitingen in één keer goed, met je aanpak {kpi_after} procent. Wat je meet, bepaalt wat mensen doen; en wat je níet meet, bepaalt wat ze laten liggen. Wie heeft last gehad van de oude cijfers, en weten ze dat het niet aan hen lag?",
+   "debrief_variants": {
+    "poor_fix": "Er komt minder terug bij de monteurs. Bij de Check was zonder je aanpak {kpi_before} procent van de aansluitingen in één keer goed, met je aanpak {kpi_after} procent. Maar nog steeds kijkt elk team naar zijn eigen stuk; de aansluiting van begin tot eind ziet niemand. Waar zou Marco moeten kijken om te zien of het beter gaat?"
+   },
    "goal": {
     "problem": "silo_kpis",
     "type": "solve"
@@ -942,7 +957,7 @@
     "understand": "Wat doe jij als je op aantallen wordt afgerekend en het werk is bijna niet te halen?"
    },
    "kind": "main",
-   "name": "KPI's die elkaar bevechten",
+   "name": "Twee recordmaanden",
    "reopen": "In het MT liggen weer twee recordmaanden op tafel en de aansluitingen gaan niet sneller. Waar kijken de teams nu weer naar?",
    "requires": {
     "missions": [
@@ -972,7 +987,7 @@
   },
   {
    "act": 2,
-   "briefing": "Elk kwartaal kijken Frank en ik samen naar de getallen waar de teams op sturen. Deze keer wil ik dat jij erbij bent. Directie & Obeya, op de 2e.",
+   "briefing": "Elk kwartaal kijken Frank Hulshof (manager Aansluitingen & Netverzwaring) en ik samen naar de getallen waar de teams op sturen. Deze keer wil ik dat jij erbij bent. Directie & Obeya, op de 2e.",
    "chapter": "Wat je meet",
    "debrief": "Het bord hangt. Over een kwartaal zien we of de getallen deden wat we ervan verwachtten. Welk getal ga jij zelf in de gaten houden?",
    "goal": {

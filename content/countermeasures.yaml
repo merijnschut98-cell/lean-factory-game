@@ -495,11 +495,14 @@ countermeasures:
     multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
     effects: []
 
+  # The ACM's GOTORK code decision (ACM/UIT/612014, acm.nl; company.yaml numbers): a large
+  # customer who uses at most half of the contracted capacity for twelve months, or leaves
+  # 1 MW or more unused, can be asked to hand the rest back.
   - id: use_it_or_lose_it
     name: Use-it-or-lose-it-gesprekken
     tier: 2
     category: flow
-    description: Klanten die structureel veel minder gebruiken dan ze gecontracteerd hebben, krijgen een gesprek en een voorstel om capaciteit terug te geven, binnen de regels van de ACM en het contract. Wat vrijkomt, gaat naar de wachtrij.
+    description: Klanten die twaalf maanden lang hooguit de helft gebruiken van wat ze gecontracteerd hebben, of 1 MW of meer laten liggen, krijgen een gesprek en een voorstel om capaciteit terug te geven, zoals de regels van de ACM het toestaan. Wat vrijkomt, gaat naar de wachtrij.
     budget: 5000
     team_hours: {key_accounts: 30, grid_analysts: 10}
     decay_days: null
