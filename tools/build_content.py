@@ -3403,6 +3403,34 @@ def _problem_people(docs: dict[str, Any], people: set[str], problem_ids: set[str
     return out
 
 
+def check_clue_spoilers(docs: dict[str, Any]) -> None:
+    """Nothing is handed over (CLAUDE.md): what the player reads before digging (a mission's
+    name, briefing and reopen text; a problem's tell; the look-closer lines of a tell a
+    problem lists) never repeats a key clue of that problem (_REPEAT_WORDS words in a row)."""
+    problems = [(stem, p) for stem, p in _all_problems(docs)]
+    key_runs = {p["id"]: {f"{p['id']}:{i}": (_runs(c["text"]), c["text"])
+                          for i, c in enumerate(p.get("clues", [])) if c.get("key")} for _, p in problems}
+
+    def check(text: str, problem_id: str, where: str) -> None:
+        runs = _runs(text)
+        for clue_id, (clue_run, clue_text) in key_runs.get(problem_id, {}).items():
+            if runs & clue_run:
+                raise ContentError(f"{where} repeats key clue {clue_id!r} ({clue_text!r}): the player finds it")
+
+    for m in (docs.get("missions") or {}).get("missions", []):
+        problem_id = (m.get("goal") or {}).get("problem")
+        for field in ("name", "briefing", "reopen"):
+            if problem_id and field in m:
+                check(str(m[field]), problem_id, f"missions.yaml: mission '{m['id']}' {field}")
+    looks = {t["id"]: t for t in (docs.get("world") or {}).get("tells", [])}
+    for stem, p in problems:
+        for t in p.get("tells", []):
+            check(t["text"], p["id"], f"{stem}.yaml: problem '{p['id']}' tell '{t['tell']}'")
+            for height in TELL_HEIGHTS:
+                if height in looks.get(t["tell"], {}):
+                    check(looks[t["tell"]][height], p["id"], f"world.yaml tell '{t['tell']}' {height}")
+
+
 def check_company_spoilers(docs: dict[str, Any], people: set[str]) -> None:
     """Nothing is handed over (CLAUDE.md): a company text shown without a gate never
     repeats a problem's clue (its words, or its number as a number's value), names one of
@@ -3574,7 +3602,7 @@ OPTIONAL = {"dialogs", "explainers", "world", "places", "company", "scenes"}
 CROSS_CHECKS: list[Callable[[dict[str, Any]], None]] = [check_kpis, check_problems, check_missions, check_concepts,
                                                       check_dialogs, check_discoveries, check_explainers, check_world,
                                                       check_places, check_spoken, check_tells, check_company,
-                                                      check_scenes]
+                                                      check_scenes, check_clue_spoilers]
 
 
 def _validator_for(stem: str) -> Callable[[Any, str], None] | None:

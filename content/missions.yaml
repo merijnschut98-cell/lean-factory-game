@@ -705,7 +705,7 @@ missions:
 
   - id: fix_unused_capacity
     # The name and the briefing never say the capacity is unused: the empty hall next door
-    # is the listen-in clue's to find (depth 1). The ACM's rule is GOTORK (company.yaml
+    # is the listen-in clue's to find (depth 1), so the briefing has no dark or empty halls. The ACM's rule is GOTORK (company.yaml
     # numbers: twelve months at most half used, or 1 MW or more unused).
     name: Twee jaar op de wachtlijst
     kind: main
@@ -713,7 +713,7 @@ missions:
     act: 2
     chapter: Het net is vol
     requires: {missions: [fix_transformer_wait]}
-    briefing: "Ilse de Graaf ({functie:ilse}) wil haar gasovens vervangen door elektrische. Ze staat al twee jaar op de wachtlijst voor transportcapaciteit. 'Leg me eens uit waarom het net vol is,' zei ze tegen Thomas Visser ({functie:thomas}). 'Op ons bedrijventerrein staat de helft van de hallen 's avonds donker.' Ze dreigt naar de ACM te stappen. Volgens Netstrategie is het net vol. Is het dat ook?"
+    briefing: "Ilse de Graaf ({functie:ilse}) wil haar gasovens vervangen door elektrische. Ze staat al twee jaar op de wachtlijst voor transportcapaciteit, en zolang ze wacht, stookt ze op gas dat elk jaar duurder wordt. 'Leg me eens uit waarom het net vol is,' zei ze tegen Thomas Visser ({functie:thomas}). 'Anders zoek ik een plek waar ik wél stroom krijg, en ik stap naar de ACM.' Volgens Netstrategie is het net vol. Is het dat ook?"
     debrief: "Op het drukste kwartier van het jaar gebruikten de grote klanten maar een deel van wat ze gecontracteerd hadden. Bij de Check kregen zonder je aanpak {kpi_before} aanvragen per week capaciteit, met je aanpak {kpi_after}. Een deel daarvan komt, volgens de regels van de ACM, terug in de wachtrij. Welke andere voorraad houden wij aan die op papier vol lijkt?"
     debrief_variants:
       # A poor fix: the dashboard (it shows, nobody hands back) or flexible contracts for
@@ -751,7 +751,7 @@ missions:
     requires: {missions: [fix_unused_capacity]}
     # The record month (ESTIMATE, the stream's 30 requests a week): 132 requests through,
     # 128 designs done; their local counts, not the stream's.
-    briefing: "In het MT presenteerden Sanne Bakker ({functie:sanne}) en Joost van Dijk ({functie:joost}) allebei een recordmaand: 132 aanvragen door bij Intake, 128 ontwerpen af bij Werkvoorbereiding. Marco Peters ({functie:marco}) zei niets, tot het einde: 'Mooi. En wie bouwt jullie fouten na?' Er gaan niet meer aansluitingen per week de deur uit dan een kwartaal geleden. Hoe kunnen twee teams allebei een record halen, terwijl de klant niets merkt?"
+    briefing: "In het MT presenteerden Sanne Bakker ({functie:sanne}) en Joost van Dijk ({functie:joost}) allebei een recordmaand: 132 aanvragen door bij Intake, 128 ontwerpen af bij Werkvoorbereiding. Marco Peters ({functie:marco}) zei niets, tot het einde: 'Mooi. En wie bouwt jullie fouten na?' Hoe kunnen twee teams allebei een record halen, terwijl de klant niets merkt?"
     debrief: "Intake en Werkvoorbereiding kijken nu naar dezelfde aansluiting en hetzelfde getal. Bij de Check was zonder je aanpak {kpi_before} procent van de aansluitingen in één keer goed, met je aanpak {kpi_after} procent. Wat je meet, bepaalt wat mensen doen; en wat je níet meet, bepaalt wat ze laten liggen. Wie heeft last gehad van de oude cijfers, en weten ze dat het niet aan hen lag?"
     debrief_variants:
       # A poor fix: the WIP limit (the counts still steer) or shared goals without one
@@ -834,7 +834,7 @@ missions:
     tier: 1
     act: 1
     requires: {missions: [walk_outages]}
-    briefing: "Bij de storing in de Lindelaan was de stroom vijf uur weg; 140 huishoudens krijgen elk 35 euro vergoeding. Ahmed reed halverwege veertig minuten heen en terug naar het magazijn voor een mof. 'Het magazijn levert te laat,' zeggen de monteurs. Dirk Smits van het magazijn: 'Ik heb ze gewoon liggen.' Ze hebben allebei gelijk. Hoe kan dat?"
+    briefing: "Bij de storing in de Lindelaan was de stroom vijf uur weg; 140 huishoudens krijgen elk 35 euro vergoeding. Ahmed moest halverwege de reparatie terug naar het magazijn, voor een mof. 'Het magazijn levert te laat,' zeggen de monteurs. Dirk Smits van het magazijn: 'Ik heb ze gewoon liggen.' Ze hebben allebei gelijk. Hoe kan dat?"
     debrief: "Wat in de bus hoort, ligt er nu ook, en wat eruit gaat, wordt aangevuld voordat de bus weer uitrukt. De volgende lange storing kostte geen rit naar het magazijn."
     debrief_variants:
       poor_fix: "Bij de schuifdeur hangt nu een kaart, en Dirk vult 's ochtends aan wat is aangestreept. Na een drukke nacht vergeet de monteur weleens een streepje, en dan is bij de volgende storing precies dat vak leeg. Hoe weet Dirk wat er op is, als niemand iets aanstreept?"
@@ -856,7 +856,7 @@ missions:
     tier: 1
     act: 1
     requires: {missions: [walk_meters]}
-    briefing: "Sandra Vermeulen laat elke dag drie kaartjes achter: 'helaas niet thuis'. Het programma om de laatste analoge meters te vervangen loopt achter. Meneer De Jong belde boos: hij had een halve dag vrij genomen, en er kwam niemand. Wie is hier eigenlijk niet thuis?"
+    briefing: "Sandra Vermeulen laat elke dag drie kaartjes achter: 'helaas niet thuis'. Het programma om de laatste analoge meters te vervangen loopt achter. Meneer De Jong belde boos: hij had de hele ochtend thuis gezeten, en er kwam niemand. Wie is hier eigenlijk niet thuis?"
     debrief: "Klanten zijn thuis als ze weten wanneer we komen. Sandra's stapel kaartjes is bijna op; ze bestelt geen nieuwe."
     goal: {type: solve, problem: not_at_home}
     steps:
@@ -889,7 +889,7 @@ missions:
     tier: 1
     act: 1
     requires: {missions: [fix_custom_design]}
-    briefing: "Het dossier van de familie Bos is al bijna twee weken klaar bij Werkvoorbereiding. Het ligt in een map met de andere elf woningen van De Appelgaard, want de vergunning gaat per project de deur uit. De gemeente haalt haar termijn bijna altijd. Waar wacht het dossier dan op?"
+    briefing: "Het dossier van de familie Bos is al bijna twee weken klaar bij Werkvoorbereiding. Het ligt in een map, bij de dossiers van de andere elf woningen van De Appelgaard. De gemeente haalt haar termijn bijna altijd. Waar wacht het dossier dan op?"
     debrief: "Een dossier gaat nu naar de gemeente zodra het klaar is, niet meer samen met de rest van de straat. Er gaan niet méér aansluitingen per week door, want de capaciteit is gelijk gebleven. Maar elke klant is eerder klaar, en de aanvraag van de familie Bos ging de deur uit op de dag dat haar dossier af was. Een knelpunt bepaalt hoeveel er doorgaat; elke wachttijd onderweg bepaalt hoe lang het duurt."
     goal: {type: solve, problem: permits_in_batches}
     steps:
@@ -938,7 +938,7 @@ missions:
     act: 1
     arc: henk
     requires: {missions: [fix_wrong_joint]}
-    briefing: "Henk Verbeek werkt veertig jaar bij Voltana. Als in een oude wijk de stroom uitvalt, belt iedereen Henk. Over acht weken geeft hij zijn afscheidsfeest; de uitnodiging hangt al op het prikbord. Vorige week zocht Ahmed Bouzid anderhalf uur naar een fout in een oude papierloodkabel en belde toen... Henk. Zorg dat Henks vakmanschap niet met hem de deur uit gaat."
+    briefing: "Henk Verbeek werkt veertig jaar bij Voltana. Als in een oude wijk de stroom uitvalt, belt iedereen Henk. Over acht weken geeft hij zijn afscheidsfeest; de uitnodiging hangt al op het prikbord. Vorige week stond Ahmed Bouzid bij een storing in een oude wijk, en belde toen... Henk. Zorg dat Henks vakmanschap niet met hem de deur uit gaat."
     debrief: "Gisteren vond Ahmed zelf de fout in een papierloodkabel in Nova-Oud. Henk stond ernaast en zei niets. Dat was het compliment. Henk kan met een gerust hart met pensioen."
     debrief_variants:
       poor_fix: "Een deel van wat Henk weet, staat nu vastgelegd. Of dat genoeg is, merk je bij de eerste lastige storing zonder hem. Voelen of een kabel nat is, leer je niet uit een instructie alleen."
@@ -965,7 +965,7 @@ missions:
     tier: 1
     act: 1
     requires: {missions: [walk_outages]}
-    briefing: "Planner Linda Jansen is de halve week bezig met omplannen. Vorige week werd een op de drie klussen verschoven, de meeste op de dag zelf. 'Ik werk harder dan ooit,' zegt ze, 'en het wordt alleen maar erger.' Storingen gaan altijd voor. Waar komen al die wijzigingen vandaan?"
+    briefing: "Planner Linda Jansen is de halve week bezig met omplannen. 'Ik werk harder dan ooit,' zegt ze, 'en het wordt alleen maar erger.' Storingen gaan altijd voor. Waar komen al die wijzigingen vandaan?"
     debrief: "Er staan nu elke dag mensen klaar voor storingen, en de rest van de planning blijft staan. Een planning die voor honderd procent vol zit, breekt bij het eerste onverwachte; hoe voller, hoe harder."
     goal: {type: solve, problem: planning_reshuffle}
     talk_to: [{dialog: linda_replanning, outcome: partial}]
