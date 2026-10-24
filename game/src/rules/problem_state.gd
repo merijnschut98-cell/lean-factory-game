@@ -76,9 +76,9 @@ func load_dict(d: Dictionary) -> bool:
 	failed_checks = int(d.get("failed_checks", 0))
 	check_at = int(d.get("check_at", 0))
 	baseline = d.get("baseline", {}) if d.get("baseline") is Dictionary else {}
-	gains = _gains(d.get("gains"))
+	gains = kpi_values(d.get("gains"))
 	var runs: Dictionary = d.get("checked", {}) if d.get("checked") is Dictionary else {}
-	checked = {"with": _gains(runs.get("with")), "without": _gains(runs.get("without"))}
+	checked = {"with": kpi_values(runs.get("with")), "without": kpi_values(runs.get("without"))}
 	# Saves from before graded sustainment: a fix that never faded was standardised.
 	standardised = bool(d.get("standardised", phase == Phase.RESOLVED and int(d.get("recur_at", 0)) < 0))
 	wear = maxf(0.0, float(d.get("wear", 0.0)))
@@ -93,7 +93,7 @@ func load_dict(d: Dictionary) -> bool:
 ## Saved gains (or a Check run's values), untrusted: known KPIs with finite numbers only. A save from
 ## before the counterfactual Check has none (a checked problem then scores no
 ## impact).
-static func _gains(saved: Variant) -> Dictionary:
+static func kpi_values(saved: Variant) -> Dictionary:
 	var out := {}
 	if not saved is Dictionary:
 		return out
