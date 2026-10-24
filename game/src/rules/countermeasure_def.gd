@@ -24,6 +24,9 @@ var decay_days := -1
 ## A board or dashboard the teams look at daily: while it holds, it helps
 ## sustain the other fixes in its value stream (Sustain, visual_management).
 var sustains := false
+## A tempting way out whose cost comes later (phase 2 design §3.4): never the
+## lasting choice (Discoveries.note_act).
+var shortcut := false
 ## What it opens in the game once it works: "" or "kpi_board" (the quarterly
 ## KPI review of the departments).
 var unlocks := ""
@@ -67,10 +70,12 @@ static func from_dict(d: Dictionary) -> CountermeasureDef:
 	c.preparation = str(d.get("preparation", ""))
 	c.trust = JsonFile.dict_or_empty(d.get("trust")).duplicate()
 	c.aftermath = JsonFile.dict_or_empty(d.get("aftermath")).duplicate(true)
-	if not d.get("sustains", false) is bool:
-		c.error = "countermeasure %s: 'sustains' must be true or false" % c.id
-		return c
+	for flag: String in ["sustains", "shortcut"]:
+		if not d.get(flag, false) is bool:
+			c.error = "countermeasure %s: '%s' must be true or false" % [c.id, flag]
+			return c
 	c.sustains = d.get("sustains", false)
+	c.shortcut = d.get("shortcut", false)
 	if not c.unlocks.is_empty() and not UNLOCKS.has(c.unlocks):
 		c.error = "countermeasure %s: 'unlocks' must be one of %s" % [c.id, UNLOCKS]
 	return c

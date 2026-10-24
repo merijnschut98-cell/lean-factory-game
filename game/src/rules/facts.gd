@@ -15,7 +15,8 @@ extends RefCounted
 
 ## Fact kinds content may name (mirrored in build_content.py as FACT_KINDS):
 ## done:<mission>, failed:<mission>, chose:<problem>:<cm>,
-## standardised:<problem>, poor_fix:<problem>, repaired:<problem>,
+## standardised:<problem>, poor_fix:<problem> (a poor fit), wrong_cause:<problem>
+## (the A3 named a wrong root cause), repaired:<problem>,
 ## fork_first:<group>:<mission>, flag:<name>; the dialog system's
 ## heard:/committed:/complied:/partial:/blocked:<dialog>; checked:<problem>
 ## (its Check passed) and accepted:<mission> (taken on, maybe done since),
@@ -32,9 +33,9 @@ extends RefCounted
 ## checks, or the action promised; GameSession); steers:<output | flow | customer>
 ## (what the KPI board's choice in force asks of the teams most, KpiMenu.steers;
 ## derived live by Missions.knows).
-const KINDS: Array[String] = ["done", "failed", "chose", "standardised", "poor_fix", "repaired", "fork_first", "flag",
-	"heard", "committed", "complied", "partial", "blocked", "checked", "accepted", "forecast_positive", "agreed",
-	"delivered", "left", "promise_kept", "promise_broken", "holds", "promised", "steers"]
+const KINDS: Array[String] = ["done", "failed", "chose", "standardised", "poor_fix", "wrong_cause", "repaired",
+	"fork_first", "flag", "heard", "committed", "complied", "partial", "blocked", "checked", "accepted",
+	"forecast_positive", "agreed", "delivered", "left", "promise_kept", "promise_broken", "holds", "promised", "steers"]
 const PROMISED := "promised:"
 const FORECAST_POSITIVE := "forecast_positive:"
 ## Live measures an atom can compare with ">=": the region's maturity and reputation,

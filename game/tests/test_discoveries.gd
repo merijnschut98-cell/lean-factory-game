@@ -211,3 +211,30 @@ func test_talks_survive_a_save() -> void:
 	var restored := Discoveries.new(s.catalog.discoveries)
 	restored.load_dict(bytes_to_var(var_to_bytes(s.discoveries.to_dict())))
 	assert_eq(restored.to_dict(), s.discoveries.to_dict())
+
+
+## Review 381d21c..0ec040f #2: a shortcut never counts as the lasting fix for "De lange adem",
+## even with no decay of its own or standardised; a real lasting fix still does.
+func test_a_shortcut_is_never_the_lasting_choice() -> void:
+	var durable := func(cm: String, standardised: bool) -> bool:
+		var s := _session()
+		var st: ProblemState = s.region.state["transformer_wait"]
+		st.a3["cm"] = cm
+		st.standardised = standardised
+		s.discoveries.note_act(s, "transformer_wait")
+		return s.discoveries.to_dict()["durable"].has("transformer_wait")
+	assert_true(s_cm("strategic_transformer_stock").shortcut, "tagged in the content")
+	assert_false(durable.call("strategic_transformer_stock", false), "the stock is a shortcut")
+	assert_false(durable.call("strategic_transformer_stock", true), "standardised, still a shortcut")
+	assert_true(durable.call("framework_contracts", false), "a framework contract is the lasting choice")
+
+
+## The stock is not free and does not hold for ever: it runs empty (decay) and holding it costs.
+func test_the_transformer_stock_fades_and_costs_later() -> void:
+	var cm := s_cm("strategic_transformer_stock")
+	assert_true(cm.decay_days > 0, "the stock runs empty unless someone refills it")
+	assert_true(int(cm.aftermath.get("cost", 0)) > 0, "holding the stock costs money")
+
+
+func s_cm(id: String) -> CountermeasureDef:
+	return _session().region.countermeasures[id]

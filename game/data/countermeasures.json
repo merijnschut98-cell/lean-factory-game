@@ -824,9 +824,13 @@
    "tier": 2
   },
   {
+   "aftermath": {
+    "after_days": 30,
+    "cost": 3500
+   },
    "budget": 40000,
    "category": "flow",
-   "decay_days": null,
+   "decay_days": 120,
    "description": "Een kleine voorraad standaardtransformatoren op het magazijn, aangevuld via de fabrikant. Een verzwaring hoeft niet meer op de levering te wachten; de voorraad kost wel geld.",
    "effects": [
     {

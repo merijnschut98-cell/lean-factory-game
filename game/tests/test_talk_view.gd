@@ -294,6 +294,7 @@ func _expert_view() -> TalkView:
 				"unlocks": {"explainer": "spanning_stroom_weerstand"}},
 			{"id": "map", "ask": "Wat staat er in je map?", "answer": "Alles."}]})
 	s.people.dialogs[d.id] = d
+	s.missions.done_once["fix_silent_meter"] = true   # the Molen's clue is its problem's (ExpertTalk.is_open)
 	var view := TalkView.new()
 	view.session = s
 	assert_eq(view.start("petra"), "")

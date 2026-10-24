@@ -488,11 +488,22 @@ countermeasures:
     description: Een kleine voorraad standaardtransformatoren op het magazijn, aangevuld via de fabrikant. Een verzwaring hoeft niet meer op de levering te wachten; de voorraad kost wel geld.
     budget: 40000
     team_hours: {work_prep: 10}
-    decay_days: null
+    # ESTIMATE: EUR 40k buys three or four standard distribution transformers. Every
+    # reinforcement draws one, and the order moment did not change (still after design
+    # approval), so the stock runs empty within about four months and the wait is back.
+    decay_days: 120
     multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
     effects:
       - {target: connections.grid_reinforcement, property: wait_time, value: 0.85}
       - {target: congestion.capacity_queue, property: wait_time, value: 0.95}
+    # The later cost (ESTIMATE): holding stock costs about a quarter of its value a year
+    # (the usual inventory carrying-cost rule of thumb: capital tied up, dry storage,
+    # insurance, the periodic inspection a stored transformer needs), EUR 10k a year on
+    # EUR 40k. Over the four months the stock lasts that is about EUR 3,500, billed after
+    # the first month.
+    aftermath:
+      after_days: 30
+      cost: 3500
 
   - id: capacity_usage_dashboard
     name: Dashboard gecontracteerd versus gebruikt

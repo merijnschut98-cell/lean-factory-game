@@ -95,7 +95,7 @@ static func people(defs: Array = [def()], who: Array = [person()]) -> People:
 ## What People needs to know about the world when a talk starts.
 static func world(extra: Dictionary = {}) -> Dictionary:
 	var w := {"main": ["fix_design"], "active": ["fix_design"], "found": {"custom_design:0": true}, "facts": {},
-		"team_trust": 0, "blamed": false, "now": 0}
+		"problems": {"custom_design": true}, "team_trust": 0, "blamed": false, "now": 0}
 	w.merge(extra, true)
 	return w
 

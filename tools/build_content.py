@@ -675,7 +675,8 @@ def check_tells(docs: dict[str, Any]) -> None:
 # ── facts and needs (path dependence, game/src/rules/facts.gd) ───────────────
 # A fact kind → how many ids follow it ("chose:<problem>:<cm>"). The dialog
 # facts (heard: ... blocked:) name a dialog; they are checked once dialogs exist.
-FACT_KINDS = {"done": 1, "failed": 1, "chose": 2, "standardised": 1, "poor_fix": 1, "repaired": 1, "fork_first": 2,
+FACT_KINDS = {"done": 1, "failed": 1, "chose": 2, "standardised": 1, "poor_fix": 1, "wrong_cause": 1,
+              "repaired": 1, "fork_first": 2,
               "flag": 1, "heard": 1, "committed": 1, "complied": 1, "partial": 1, "blocked": 1,
               "checked": 1, "accepted": 1, "forecast_positive": 1,
               # the story's (phase-2 design §3.2): a proposal agreed, a followed story delivered,
@@ -1338,7 +1339,8 @@ def _atom_robust(atom: str, where: str, index: dict) -> bool:
     kind, ids = _atom_parts(atom, where)
     if kind in ("done", "accepted") and ids[0] not in index["missions"] or kind == "failed" and ids[0] not in index["deadlines"]:
         raise ContentError(f"{where}: {atom!r} names no such mission{' with a deadline' if kind == 'failed' else ''}")
-    if kind in ("chose", "standardised", "poor_fix", "repaired", "checked", "holds") and ids[0] not in index["problems"]:
+    if kind in ("chose", "standardised", "poor_fix", "wrong_cause", "repaired", "checked", "holds") \
+            and ids[0] not in index["problems"]:
         raise ContentError(f"{where}: {atom!r} names an unknown problem")
     if kind == "delivered" and ids[0] not in STORIES:
         raise ContentError(f"{where}: {atom!r} names no followed story ({', '.join(STORIES)})")
@@ -1370,7 +1372,7 @@ def _fact_reachable(atom: str, done: set, maturity: int, reputation: int, index:
         return ids[-1] in done
     if kind == "failed":
         return True  # a deadline can always be missed
-    if kind in ("chose", "standardised", "poor_fix", "repaired", "checked"):
+    if kind in ("chose", "standardised", "poor_fix", "wrong_cause", "repaired", "checked"):
         return index["solved_by"].get(ids[0]) in done
     if kind == "flag":
         return any(atom in m_flags for m_id, m_flags in index["flags_by"].items() if m_id in done)
@@ -3403,6 +3405,34 @@ def _problem_people(docs: dict[str, Any], people: set[str], problem_ids: set[str
     return out
 
 
+def check_clue_spoilers(docs: dict[str, Any]) -> None:
+    """Nothing is handed over (CLAUDE.md): what the player reads before digging (a mission's
+    name, briefing and reopen text; a problem's tell; the look-closer lines of a tell a
+    problem lists) never repeats a key clue of that problem (_REPEAT_WORDS words in a row)."""
+    problems = [(stem, p) for stem, p in _all_problems(docs)]
+    key_runs = {p["id"]: {f"{p['id']}:{i}": (_runs(c["text"]), c["text"])
+                          for i, c in enumerate(p.get("clues", [])) if c.get("key")} for _, p in problems}
+
+    def check(text: str, problem_id: str, where: str) -> None:
+        runs = _runs(text)
+        for clue_id, (clue_run, clue_text) in key_runs.get(problem_id, {}).items():
+            if runs & clue_run:
+                raise ContentError(f"{where} repeats key clue {clue_id!r} ({clue_text!r}): the player finds it")
+
+    for m in (docs.get("missions") or {}).get("missions", []):
+        problem_id = (m.get("goal") or {}).get("problem")
+        for field in ("name", "briefing", "reopen"):
+            if problem_id and field in m:
+                check(str(m[field]), problem_id, f"missions.yaml: mission '{m['id']}' {field}")
+    looks = {t["id"]: t for t in (docs.get("world") or {}).get("tells", [])}
+    for stem, p in problems:
+        for t in p.get("tells", []):
+            check(t["text"], p["id"], f"{stem}.yaml: problem '{p['id']}' tell '{t['tell']}'")
+            for height in TELL_HEIGHTS:
+                if height in looks.get(t["tell"], {}):
+                    check(looks[t["tell"]][height], p["id"], f"world.yaml tell '{t['tell']}' {height}")
+
+
 def check_company_spoilers(docs: dict[str, Any], people: set[str]) -> None:
     """Nothing is handed over (CLAUDE.md): a company text shown without a gate never
     repeats a problem's clue (its words, or its number as a number's value), names one of
@@ -3574,7 +3604,7 @@ OPTIONAL = {"dialogs", "explainers", "world", "places", "company", "scenes"}
 CROSS_CHECKS: list[Callable[[dict[str, Any]], None]] = [check_kpis, check_problems, check_missions, check_concepts,
                                                       check_dialogs, check_discoveries, check_explainers, check_world,
                                                       check_places, check_spoken, check_tells, check_company,
-                                                      check_scenes]
+                                                      check_scenes, check_clue_spoilers]
 
 
 def _validator_for(stem: str) -> Callable[[Any, str], None] | None:
