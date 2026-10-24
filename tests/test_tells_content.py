@@ -232,3 +232,14 @@ def test_henks_one_point_lessons_cost_what_their_estimate_says():
     assert lessons["team_hours"] == {"monteurs": 80}
     for other in _problem(REAL, "knowledge_drain")["countermeasures"]:
         assert lessons["budget"] <= min(3000, cms[other]["budget"]), other
+
+
+def test_the_callback_board_shows_volume_and_repeats_not_the_question():
+    """Review 381d21c..0ec040f #5: looking gives what anyone sees (how many slips, names twice),
+    never what the callers ask: that is the listen-in's key clue (status_callers:0)."""
+    board = REAL["world"]["tells"]
+    lines = [t["text"] for t in _problem(REAL, "status_callers")["tells"]]
+    lines += [t[h] for t in board if t["id"] == "terugbelbord" for h in bc.TELL_HEIGHTS]
+    for line in lines:
+        for word in ("aansluiting", "wanneer", "waar blijft"):
+            assert word not in line.lower(), f"{line!r} says what they ask"
