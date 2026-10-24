@@ -197,6 +197,10 @@ func test_the_check_passes_when_the_predicted_kpi_moved_against_the_no_fix_forec
 	assert_near(forecast["gain"], forecast["gains"]["capacity"], 1e-9)
 	assert_true(forecast["gain"] > Pdca.CHECK_NOISE)
 	assert_true(check["passed"])
+	var st: ProblemState = r.state["custom_design"]
+	for run: String in ["with", "without"]:
+		for kpi: String in Investigation.KPIS:
+			assert_near(st.checked[run][kpi], forecast[run][kpi], 1e-9, "the Check's %s run stays with the problem (debriefs read it)" % run)
 
 
 ## A lagging KPI (lead time, on time, first time right) measures orders that

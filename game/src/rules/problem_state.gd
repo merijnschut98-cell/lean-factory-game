@@ -25,6 +25,9 @@ var baseline: Dictionary = {}
 ## The last Check's gain of every KPI with the fix over without it
 ## (Investigation.KPIS → relative gain, see CheckForecast); the Act scores on it.
 var gains: Dictionary = {}
+## The last Check's two runs, {with, without}: every KPI's value with the fix and
+## without it (CheckForecast); the debrief reads the player's numbers here.
+var checked: Dictionary = {"with": {}, "without": {}}
 ## The Act standardised the fix (the main sustaining habit, see Sustain).
 var standardised := false
 ## How worn the resolved fix is (Sustain): health 0.5^wear, it recurs at 1.
@@ -51,7 +54,8 @@ func to_dict() -> Dictionary:
 	return {
 		"phase": Phase.keys()[phase], "blamed": blamed, "a3": a3, "cause_correct": cause_correct,
 		"waste_right": waste_right, "eff": eff, "level": level, "failed_checks": failed_checks,
-		"check_at": check_at, "baseline": baseline, "gains": gains, "standardised": standardised, "wear": wear,
+		"check_at": check_at, "baseline": baseline, "gains": gains, "checked": checked,
+		"standardised": standardised, "wear": wear,
 		"neglect": neglect, "buy_in": buy_in,
 		"score": score, "rework_from": rework_from,
 	}
@@ -73,6 +77,8 @@ func load_dict(d: Dictionary) -> bool:
 	check_at = int(d.get("check_at", 0))
 	baseline = d.get("baseline", {}) if d.get("baseline") is Dictionary else {}
 	gains = _gains(d.get("gains"))
+	var runs: Dictionary = d.get("checked", {}) if d.get("checked") is Dictionary else {}
+	checked = {"with": _gains(runs.get("with")), "without": _gains(runs.get("without"))}
 	# Saves from before graded sustainment: a fix that never faded was standardised.
 	standardised = bool(d.get("standardised", phase == Phase.RESOLVED and int(d.get("recur_at", 0)) < 0))
 	wear = maxf(0.0, float(d.get("wear", 0.0)))
@@ -84,7 +90,7 @@ func load_dict(d: Dictionary) -> bool:
 	return true
 
 
-## Saved gains, untrusted: known KPIs with finite numbers only. A save from
+## Saved gains (or a Check run's values), untrusted: known KPIs with finite numbers only. A save from
 ## before the counterfactual Check has none (a checked problem then scores no
 ## impact).
 static func _gains(saved: Variant) -> Dictionary:

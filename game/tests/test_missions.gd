@@ -1124,3 +1124,23 @@ func test_a_too_early_check_reads_the_missions_own_debrief() -> void:
 	log.region.state["custom_design"].phase = ProblemState.Phase.RESOLVED
 	log.update()
 	assert_ne(log.debrief_of("fix_design"), "Te vroeg.", "said at the failed Check, never at the end")
+
+
+## Debriefs read the player's numbers (catalogue C16): {kpi_before} and {kpi_after} are
+## the problem's KPI in the Check's runs without and with the fix, as people say them;
+## a sentence whose number is not there (no Check yet) is left out.
+func test_a_debrief_reads_the_checks_numbers() -> void:
+	var log := _with([])
+	var m: MissionDef = log.defs["fix_design"]
+	m.debrief = "Klaar. De doorlooptijd ging van {kpi_before} naar {kpi_after} dagen. Wat nu?"
+	var st: ProblemState = log.region.state["custom_design"]
+	st.phase = ProblemState.Phase.RESOLVED
+	st.standardised = true
+	assert_eq(log.debrief_of("fix_design"), "Klaar. Wat nu?", "no Check, no numbers: the sentence goes")
+	var kpi: String = log.region.problems["custom_design"].kpi
+	st.checked = {"without": {kpi: 54.4}, "with": {kpi: 40.6}}
+	assert_eq(log.debrief_of("fix_design"), "Klaar. De doorlooptijd ging van 54 naar 41 dagen. Wat nu?")
+	assert_eq(Missions.spoken_number("first_time_right", 0.826), "83")
+	assert_eq(Missions.spoken_number("throughput", 31.0), "31")
+	assert_eq(Missions.spoken_number("capacity", 37.94), "37,9")
+	assert_eq(Missions.spoken_number("lead_time", 54.4), "54")

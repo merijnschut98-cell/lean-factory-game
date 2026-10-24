@@ -581,6 +581,7 @@ func check(problem_id: String) -> Dictionary:
 	forecast["kpi"] = st.a3["prediction"]
 	forecast["gain"] = forecast["gains"][forecast["kpi"]]
 	st.gains = forecast["gains"]
+	st.checked = {"with": ProblemState._gains(forecast["with"]), "without": ProblemState._gains(forecast["without"])}
 	var works := st.eff >= Pdca.CHECK_PASS
 	var result := {
 		"passed": works and forecast["gain"] > Pdca.CHECK_NOISE, "before": st.baseline, "after": after,

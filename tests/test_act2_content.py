@@ -2,6 +2,8 @@
 and the designed failure that lives on digging damage."""
 from __future__ import annotations
 
+import copy
+
 import pytest
 
 import build_content as bc
@@ -50,3 +52,23 @@ def test_revision_at_the_source_is_too_early_on_digging_damage(real):
     assert _eff(real, "digging_damage", "revision_at_source", 2) < CHECK_PASS
     assert _eff(real, "revision_backlog", "revision_at_source", 2) >= CHECK_PASS
     assert _missions(real)["fix_digging_damage"]["debrief_variants"]["too_early"]
+
+
+def test_every_act2_debrief_reads_the_players_numbers(real):
+    """C16 (PLAN 2.5): the debrief names the problem's KPI as the player's Check measured
+    it, without and with the fix (Missions._with_numbers)."""
+    missions = _missions(real)
+    for mid in ACT2_MAINS:
+        text = missions[mid]["debrief"]
+        assert "{kpi_before}" in text and "{kpi_after}" in text, mid
+
+
+@pytest.mark.parametrize("mission, debrief, message", [
+    ("fix_custom_design", "Van {kpi_before} naar {kpi_now}.", "unknown number token"),
+    ("walk_outages", "Van {kpi_before} naar {kpi_after}.", "needs a goal with a problem"),
+])
+def test_debrief_numbers_are_checked(real, mission, debrief, message):
+    doc = copy.deepcopy(real["missions"])
+    next(m for m in doc["missions"] if m["id"] == mission)["debrief"] = debrief
+    with pytest.raises(bc.ContentError, match=message):
+        bc.validate_missions(doc, "missions.yaml")

@@ -832,6 +832,7 @@ def validate_missions(doc: Any, source: str) -> None:
         _require_strings(variants, list(variants), f"{where} debrief_variants")
         if variants and "problem" not in m["goal"]:
             raise ContentError(f"{where}: 'debrief_variants' read the play on the goal's problem")
+        _debrief_numbers([m["debrief"], m.get("debrief_first", ""), *variants.values()], m, where)
         for key in ("insights", "questions"):
             lines = m.get(key, {})
             if lines and m["kind"] not in COACHED_KINDS:
@@ -864,6 +865,20 @@ def _opens_on_day(m: dict, where: str) -> int | None:
     if when < PLAY_START:
         raise ContentError(f"{where}: 'opens_on' {when} is before the first day of play ({PLAY_START})")
     return (when - PLAY_START).days
+
+
+# The player's numbers in a debrief (catalogue C16, Missions._with_numbers): the goal
+# problem's KPI in the last Check's runs without and with the fix.
+DEBRIEF_NUMBERS = {"{kpi_before}", "{kpi_after}"}
+
+
+def _debrief_numbers(texts: list[str], m: dict, where: str) -> None:
+    tokens = {t for text in texts for t in re.findall(r"\{kpi_[a-z_]*\}", text)}
+    if tokens - DEBRIEF_NUMBERS:
+        raise ContentError(f"{where}: unknown number token(s) {sorted(tokens - DEBRIEF_NUMBERS)} in a debrief "
+                           f"(known: {sorted(DEBRIEF_NUMBERS)})")
+    if tokens and "problem" not in m["goal"]:
+        raise ContentError(f"{where}: a debrief's numbers read the Check, so it needs a goal with a problem")
 
 
 def _validate_milestone(m: dict, where: str) -> None:
