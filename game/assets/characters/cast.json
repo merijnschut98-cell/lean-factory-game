@@ -243,14 +243,14 @@
                "hair_color": [36, 28, 24], "outfit": "monteur", "helmet": false, "eye_color": [60, 44, 30],
                "stubble": 0.7},
       "office": {"floor": "yard", "van": 2, "pose": "idle"},
-      "day": {"arrive": "07:18", "coffee": "10:00", "lunch": "12:00", "leave": "16:35"}
+      "day": {"arrive": "08:32", "coffee": "10:00", "lunch": "12:00", "leave": "16:35"}
     },
     {
       "id": "joyce", "name": "Joyce Hoekstra", "role": "monteur",
       "look": {"sex": "f", "height": 1.71, "build": 0.48, "skin": [236, 196, 170], "hair_style": "buns",
                "hair_color": [196, 160, 104], "outfit": "monteur", "helmet": false, "eye_color": [70, 96, 120]},
       "office": {"floor": "yard", "van": 3, "pose": "idle"},
-      "day": {"arrive": "07:25", "coffee": "10:00", "lunch": "12:00", "leave": "16:40"}
+      "day": {"arrive": "08:38", "coffee": "10:00", "lunch": "12:00", "leave": "16:40"}
     }
   ]
 }

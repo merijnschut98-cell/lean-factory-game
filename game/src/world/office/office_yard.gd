@@ -1,7 +1,7 @@
 class_name OfficeYard
 extends Node
 ## The yard by the hour (PLAN 2.2; spec 2026-10-17-the-yard.md §5): the monteurs take their
-## vans out in the morning and bring them back in the afternoon. Before 07:45 and from 16:15
+## vans out in the morning and bring them back in the afternoon. Before 09:00 and from 16:15
 ## every bay holds a van; in between only the storingsbussen on call stay, and a van whose
 ## monteur waits to take you along (a ride). A child of the Office while the yard is loaded;
 ## it reads the session's clock.
@@ -17,8 +17,11 @@ extends Node
 ## The storingsbussen (van0, van1): on call, they stay in the yard all day.
 const ON_CALL: Array[int] = [0, 1]
 const VANS := 6
-## Out from (minutes since midnight) and back at.
-const OUT := 7 * 60 + 45
+## Out from (minutes since midnight) and back at. Claude's call (R-1 #3): the spec's 07:45
+## fell before the player's day (GameSession.START_MINUTE, 08:30), so the walk to the vans and
+## the vans driving out were never seen; the field morning is shifted into it (a real crew
+## would often be out by eight: game time, not a norm).
+const OUT := 9 * 60
 const BACK := 16 * 60 + 15
 ## Seconds between looks at the clock.
 const POLL_SECONDS := 1.0

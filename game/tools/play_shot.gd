@@ -64,7 +64,7 @@ extends SceneTree
 ## expert talk on the yard after his first answer).
 ## play_van_ride, play_van_talk, play_van_choose (PLAN 2.15 S2-Y: riding along with Sandra,
 ## the edge of town going by; Henk's talk in the cab, his face, then the two of you) · play_opleidingsterrein (Henk shows Ahmed the
-## joint at the practice trench) · play_yard_morning (07:38: the monteurs at their vans).
+## joint at the practice trench) · play_yard_morning (08:45: the monteurs walk to their vans, R-1 #3).
 ## play_trafohuisje, play_explainer_trafo_fiets, play_explainer_trafo_cross,
 ## play_explainer_trafo_trafo (PLAN 2.7c S3-X: at the trafohuisje mock-up on the
 ## opleidingsterrein, its prompt; E there: "Hoe werkt het? 2" with the chain warm on the
@@ -827,12 +827,12 @@ func _kpi_review_scene(office: Office, state: String) -> void:
 
 ## The yard lives (S2-Y): the van ride with Sandra (the drive) or Henk (his talk in the
 ## cab, his face while he speaks); the opleidingsterrein after the ride with Henk; the yard at
-## 07:38 with the monteurs at their vans, seen a quarter of an hour earlier first so they walk.
+## 08:45 with the monteurs on their way to their vans, seen at 08:30 (your day's start) first so they walk.
 func _yard_life(office: Office, state: String) -> void:
 	var mission: String = {"play_van_ride": "fix_not_at_home", "play_yard_morning": "fix_wrong_joint"}.get(
 		state, "save_henks_knowledge")
 	office.session.missions.progress[mission] = {"status": "active", "asks": {}, "seen": {}}
-	var minute := 7 * 60 + 38 if state == "play_yard_morning" else 10 * 60 + 20
+	var minute := 8 * 60 + 45 if state == "play_yard_morning" else 10 * 60 + 20
 	office.session.pass_time(posmod(minute - office.session.minute_of_day(), SimCalendar.MINUTES_PER_DAY))
 	office.ui.after_action()
 	if state == "play_opleidingsterrein":

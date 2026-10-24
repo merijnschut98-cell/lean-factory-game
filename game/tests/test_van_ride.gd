@@ -221,17 +221,18 @@ func test_the_monteurs_are_at_their_vans_before_they_drive_out() -> void:
 		office.free()
 		return
 	var vans := ["van2", "van3"]
-	for minute: int in [7 * 60 + 40, 7 * 60 + 44]:
+	for minute: int in [8 * 60 + 50, 8 * 60 + 59]:
 		_at(office, minute)
 		office.people.refresh(office.session)
-		office.people._process(60.0)   # whoever was still walking from the door is there
+		for i in 2:   # whoever was still walking from the door is there (one steps in after the other)
+			office.people._process(60.0)
 		for k in crew.size():
 			assert_true(crew[k].visible, "%s in at %d" % [crew[k].id, minute])
 			assert_true(_flat(crew[k].position).distance_to(_flat(_marker(office, "driver:" + vans[k]))) < 0.3,
 				"%s at the van at %d" % [crew[k].id, minute])
-	_at(office, 7 * 60 + 45)
+	_at(office, 9 * 60)
 	office.people.refresh(office.session)
-	assert_true(crew.all(func(p: OfficePerson) -> bool: return not p.visible), "07:45: they drove out")
+	assert_true(crew.all(func(p: OfficePerson) -> bool: return not p.visible), "09:00: they drove out")
 	_at(office, 16 * 60 + 20)
 	office.people.refresh(office.session)
 	assert_true(crew.all(func(p: OfficePerson) -> bool: return p.visible), "back in the afternoon")
@@ -242,16 +243,30 @@ func test_the_monteurs_are_at_their_vans_before_they_drive_out() -> void:
 	office.free()
 
 
+## R-1 #3: the yard's morning falls in the player's day (it starts at GameSession.START_MINUTE):
+## the monteurs come in after it and their vans leave after they are in, so the walk to the vans
+## and the vans driving out can be seen.
+func test_the_yards_morning_falls_in_the_players_day() -> void:
+	var office := _office()
+	_on_yard(office, ["fix_wrong_joint"])
+	assert_true(OfficeYard.OUT > GameSession.START_MINUTE, "the vans leave after your day starts")
+	for id in ["ricardo", "joyce"]:
+		var arrive := office.people.day_of(id).arrive
+		assert_true(arrive > GameSession.START_MINUTE and arrive < OfficeYard.OUT - 10,
+			"%s comes in after your day starts, well before the vans leave" % id)
+	office.free()
+
+
 func test_a_monteur_walks_in_from_the_back_door_in_the_morning() -> void:
 	var office := _office()
 	_on_yard(office, ["fix_wrong_joint"])
-	_at(office, 7 * 60)
+	_at(office, GameSession.START_MINUTE)   # the player's day starts: the yard's morning is still to come
 	office.people.refresh(office.session)
 	var ricardo := office.people.person("ricardo")
-	assert_false(ricardo.visible, "not in yet at seven")
-	_at(office, 7 * 60 + 19)
+	assert_false(ricardo.visible, "not in yet when your day starts")
+	_at(office, 8 * 60 + 33)
 	office.people.refresh(office.session)
-	for i in 20:   # Dirk came in by the same door just before him: he steps out after
+	for i in 10:   # a second after he came in
 		office.people._process(0.1)
 	assert_true(ricardo.visible and ricardo.playing() in ["walk", ""], "walking to his van")
 	assert_true(_flat(ricardo.position).distance_to(_flat(_marker(office, "arrive:exit"))) < 3.0, "from the back door")
