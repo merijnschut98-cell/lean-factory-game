@@ -8,6 +8,8 @@ const SECOND_MODEL := "res://assets/office/office_second.glb"
 const FIRST: Array[String] = ["intake_stack", "prep_tray", "planning_board", "revision_cabinet", "close_out_cabinet",
 	"meter_board"]
 const SECOND: Array[String] = ["obeya_board", "grid_study_tray", "reinforcement_board", "congestion_list"]
+const YARD_MODEL := "res://assets/office/office_yard.glb"
+const YARD: Array[String] = ["van_kanban", "magazijn_rack", "van_returns", "storingsbord", "measurement_tray"]
 
 
 func _net() -> Network:
@@ -42,7 +44,7 @@ func test_a_long_intake_queue_shows_the_tall_stack_and_a_short_one_the_low() -> 
 func test_a_network_without_the_steps_reads_low() -> void:
 	var net := NetFixture.net([NetFixture.pool("p")], [NetFixture.stream("other", [NetFixture.work("w", "p", 1.0)])])
 	var none := {}
-	for tell: String in FIRST + SECOND:
+	for tell: String in FIRST + SECOND + YARD:
 		none[tell] = OfficeTells.LOW
 	assert_eq(OfficeTells.bands(net), none)
 	assert_eq(OfficeTells.bands(net).size(), OfficeTells.THRESHOLDS.size(), "every tell is read")
@@ -344,4 +346,136 @@ func test_e_beside_a_tell_looks_at_it_and_a_place_ring_still_wins_on_its_ring() 
 	office.use(cabinet)
 	assert_true(office.tells.line.visible)
 	assert_eq(office.prompt_near(beside), "", "no prompt while you look")
+	office.free()
+
+
+# --- the yard (PLAN 2.6, S3-Y): the field work shows on the werf as the office work does on the
+# 1e and the 2e: the van kanban wall, the magazijn's joint shelf, the returns pallet at the vans,
+# the storingsdienst's board and the werkplaats's tray of voltage complaints.
+
+func test_the_yard_model_has_every_tell_with_three_variants() -> void:
+	_has_tells(YARD_MODEL, YARD)
+
+
+## The van kanban wall: a card in the "bestellen" column for each joint the storingsbussen took
+## this week (a joint taken is a slot to refill).
+func test_the_van_kanban_counts_the_joints_taken_this_week() -> void:
+	var net := NetFixture.net([NetFixture.pool("monteurs", 4)], [
+		NetFixture.stream("outages", [NetFixture.material("joint", "cable_joint"),
+			NetFixture.work("repair", "monteurs", 1.0)], 0.0)], [NetFixture.stock("cable_joint", 200, 10, 50, 10)])
+	assert_eq(OfficeTells.bands(net)["van_kanban"], OfficeTells.LOW, "nothing taken")
+	var high: int = OfficeTells.THRESHOLDS["van_kanban"][1]
+	for i in high:
+		net.open_order(net.stream("outages"))
+	assert_eq(OfficeTells.readings(net)["van_kanban"], high)
+	assert_eq(OfficeTells.bands(net)["van_kanban"], OfficeTells.HIGH)
+	net.advance_days(OfficeTells.WEEK_DAYS + 1)
+	assert_eq(OfficeTells.bands(net)["van_kanban"], OfficeTells.LOW, "last week's cards are refilled")
+
+
+## The magazijn's joint shelf: the share of a full shelf (reorder point plus an order) that is
+## empty, in percent.
+func test_the_magazijn_rack_empties_as_the_joints_run_low() -> void:
+	var net := NetFixture.net([NetFixture.pool("p")], [NetFixture.stream("other", [NetFixture.work("w", "p", 1.0)], 0.0)],
+		[NetFixture.stock("cable_joint", 75, 25, 50, 10)])
+	assert_eq(OfficeTells.readings(net)["magazijn_rack"], 0, "a full shelf")
+	assert_eq(OfficeTells.bands(net)["magazijn_rack"], OfficeTells.LOW)
+	net.stock["cable_joint"].level = 15
+	assert_eq(OfficeTells.readings(net)["magazijn_rack"], 80)
+	assert_eq(OfficeTells.bands(net)["magazijn_rack"], OfficeTells.HIGH)
+	net.stock["cable_joint"].level = 90
+	assert_eq(OfficeTells.readings(net)["magazijn_rack"], 0, "more than a full shelf is still full")
+
+
+## The returns pallet at the van park: the meters and connection kits that came back from a
+## visit that failed in the last days (no one home, the meterkast not ready).
+func test_the_van_returns_count_the_failed_field_visits_of_the_last_days() -> void:
+	for ftr: float in [0.0, 1.0]:
+		var net := NetFixture.net([NetFixture.pool("monteurs", 4)], [
+			NetFixture.stream("meters", [NetFixture.work("visit", "monteurs", 0.5, ftr, {"rework_wait_days": 30})], 0.0),
+			NetFixture.stream("connections", [NetFixture.work("execution", "monteurs", 0.5, ftr,
+				{"rework_wait_days": 30})], 0.0)])
+		for i in 15:
+			net.open_order(net.stream("meters"))
+			net.open_order(net.stream("connections"))
+		net.advance_days(3)
+		assert_eq(OfficeTells.readings(net)["van_returns"], 30 if ftr == 0.0 else 0, "first time right %s" % ftr)
+		net.advance_days(OfficeTells.MOVED_DAYS + 1)
+		assert_eq(OfficeTells.bands(net)["van_returns"], OfficeTells.LOW, "taken back to the magazijn")
+
+
+## The storingsdienst's board: a line for each callout this week, and the troubled ones besides
+## (searched again, or longer than the norm).
+func test_the_storingsbord_counts_the_weeks_callouts_and_the_troubled_ones() -> void:
+	var readings := []
+	for ftr: float in [1.0, 0.0]:
+		var net := NetFixture.net([NetFixture.pool("control_room", 2), NetFixture.pool("monteurs", 4)], [
+			NetFixture.stream("outages", [NetFixture.work("report", "control_room", 0.25),
+				NetFixture.work("locate", "monteurs", 1.0, ftr)], 0.0)])
+		for i in 5:
+			net.open_order(net.stream("outages"))
+		net.advance_days(1)
+		readings.append(OfficeTells.readings(net)["storingsbord"])
+	assert_eq(readings[0], 5, "five callouts, each found the first time")
+	assert_true(readings[1] > readings[0], "a fault searched for again marks the board")
+	var net := NetFixture.net([NetFixture.pool("p")], [NetFixture.stream("outages", [NetFixture.work("w", "p", 1.0)], 0.0)])
+	net.advance_days(1)
+	_finished(net, "outages", 3, false)
+	assert_eq(OfficeTells.readings(net)["storingsbord"], 3, "an outage past the norm marks the board")
+	net.advance_days(OfficeTells.WEEK_DAYS + 1)
+	assert_eq(OfficeTells.bands(net)["storingsbord"], OfficeTells.LOW, "wiped after the week")
+
+
+## The werkplaats's tray of voltage complaints: the addresses waiting for a measurement or with
+## a logger out.
+func test_the_measurement_tray_holds_the_complaints_waiting_to_be_measured() -> void:
+	var net := NetFixture.net([NetFixture.pool("monteurs")], [
+		NetFixture.stream("voltage_complaints", [NetFixture.work("measurement", "monteurs", 2.0),
+			NetFixture.wait("measurement_week", 7.0)], 0.0)])
+	var high: int = OfficeTells.THRESHOLDS["measurement_tray"][1]
+	for i in high:
+		net.open_order(net.stream("voltage_complaints"))
+	assert_eq(OfficeTells.bands(net)["measurement_tray"], OfficeTells.HIGH)
+	net.advance_days(60)
+	assert_eq(OfficeTells.bands(net)["measurement_tray"], OfficeTells.LOW, "measured")
+
+
+func _on_yard() -> Office:
+	var office := _office()
+	office.session.missions.progress["walk_outages"] = {"status": "active", "asks": {}, "seen": {}}
+	office.floors.go_to("yard", "exit", true)
+	return office
+
+
+func test_the_yard_follows_the_region_and_a_look_closer_is_noted_once() -> void:
+	var office := _on_yard()
+	assert_true(office.tells != null, "the yard has tells")
+	if office.tells == null:
+		office.free()
+		return
+	assert_eq(office.tells.roots.keys().size(), YARD.size(), "the yard's tells, none of the floors'")
+	_finished(office.session.region.net, "outages", OfficeTells.THRESHOLDS["storingsbord"][1], false)
+	office.tells.refresh()
+	assert_true(OfficeTells.node(office.geometry, "storingsbord_high").visible, "a week of late outages")
+	assert_false(OfficeTells.node(office.geometry, "storingsbord_low").visible)
+	var said := office.tells.look("storingsbord")
+	assert_false(said.is_empty())
+	assert_true(office.rig.inspecting(), "the camera moves to it")
+	office.tells.look("storingsbord")
+	var noted := office.session.gemba.journal.filter(func(e: Dictionary) -> bool: return e["text"] == said)
+	assert_eq(noted.size(), 1, "noted once")
+	assert_eq(noted[0]["place"] if not noted.is_empty() else "", "outages.locate")
+	office.free()
+
+
+func test_e_beside_the_kanban_wall_looks_at_it() -> void:
+	var office := _on_yard()
+	var wall := OfficeTells.node(office.geometry, "van_kanban")
+	assert_true(wall != null and office.tells != null, "the wall is on the yard")
+	if wall == null or office.tells == null:
+		office.free()
+		return
+	var beside := office.tells.bounds("van_kanban").get_center() * Vector3(1, 0, 1) + Vector3(-0.6, 0, 0)  # the vans' side
+	assert_eq(office.target_near(beside), wall)
+	assert_eq(office.prompt_near(beside), office.tr(OfficeTells.PROMPT))
 	office.free()

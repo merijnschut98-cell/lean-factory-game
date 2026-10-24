@@ -324,6 +324,41 @@
    "low": "Op het bureau van Thomas ligt een uitgeprinte wachtlijst van één kantje.",
    "mid": "Op het bureau van Thomas ligt een uitgeprinte wachtlijst van een paar kantjes, aan elkaar geplakt.",
    "place": "congestion.capacity_queue"
+  },
+  {
+   "high": "Op de kanbanwand bij de bussen is de helft van de vakjes leeg; de kolom Bestellen hangt vol kaartjes.",
+   "id": "van_kanban",
+   "low": "Op de kanbanwand bij de bussen steekt bijna elk kaartje in zijn vak; in de kolom Bestellen hangen er twee.",
+   "mid": "Op de kanbanwand bij de bussen zijn een paar vakjes leeg, en in de kolom Bestellen hangt een rijtje kaartjes.",
+   "place": "outages.repair"
+  },
+  {
+   "high": "In het magazijn staan op de stelling met moffen nog een paar dozen; de meeste vakken zijn leeg.",
+   "id": "magazijn_rack",
+   "low": "In het magazijn staat de stelling met moffen vol dozen.",
+   "mid": "In het magazijn is de stelling met moffen half leeg.",
+   "place": "outages.joint"
+  },
+  {
+   "high": "De retourpallet bij de bussen staat vol meterdozen en aansluitsets, en ernaast staat er nog een, ook vol.",
+   "id": "van_returns",
+   "low": "Op de retourpallet bij de bussen staan een paar meterdozen.",
+   "mid": "Op de retourpallet bij de bussen staat een stapel meterdozen en een aansluitset, elk met een bon eraan.",
+   "place": "meters.visit"
+  },
+  {
+   "high": "Het storingsbord in de werkplaats staat vol storingen tot in de hoek, met rode strepen en hier en daar een tweede tijd.",
+   "id": "storingsbord",
+   "low": "Op het storingsbord in de werkplaats staan de storingen van deze week: een kort rijtje, alles afgevinkt.",
+   "mid": "Het storingsbord in de werkplaats staat half vol storingen; bij een paar staat een rode streep.",
+   "place": "outages.locate"
+  },
+  {
+   "high": "Het bakje bij de meetkoffers puilt uit van de spanningsklachten, en op de kast ernaast liggen nog twee stapels.",
+   "id": "measurement_tray",
+   "low": "In het bakje bij de meetkoffers liggen een paar spanningsklachten.",
+   "mid": "In het bakje bij de meetkoffers ligt een stapeltje spanningsklachten, met een paperclip per straat.",
+   "place": "voltage_complaints.measurement"
   }
  ]
 }

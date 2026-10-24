@@ -1,6 +1,6 @@
-"""The tells (PLAN 2.6, design §1.5): problems_tier1.yaml `tells:` names which prop on the 1e or
-the 2e shows a problem's symptom. Every listed tell exists, its text never names the problem, and
-every problem whose place is on a floor with tells has at least one."""
+"""The tells (PLAN 2.6, design §1.5): problems_tier1.yaml `tells:` names which prop on the 1e, the
+2e or the yard shows a problem's symptom. Every listed tell exists, its text never names the
+problem, and every problem whose place is on a floor with tells has at least one on that floor."""
 from __future__ import annotations
 
 import copy
@@ -28,10 +28,11 @@ def test_the_real_tells_are_valid():
     _check(lambda docs: None)
 
 
-def test_the_tells_cover_every_room_of_the_1e_and_the_2e():
+def test_the_tells_cover_every_room_of_the_1e_the_2e_and_the_yard():
     rooms_with_tells = set(bc.TELLS.values())
     assert rooms_with_tells == {"connections", "revision_gis", "meter_data",
-                                "directors_obeya", "grid_strategy", "congestion_desk"}
+                                "directors_obeya", "grid_strategy", "congestion_desk",
+                                "magazijn", "werkplaats", "van_park"}
     shown = {p["id"]: [t["tell"] for t in p.get("tells", [])] for p in REAL["problems_tier1"]["problems"]}
     assert "intake_stack" in shown["incomplete_application"]
     assert "prep_tray" in shown["custom_design"]
@@ -109,8 +110,39 @@ def test_every_problem_on_the_1e_needs_a_tell_whatever_its_room():
 
 def test_a_problem_off_the_floors_with_tells_needs_no_tell():
     def mutate(docs):
-        assert not _problem(docs, "wrong_joint_in_van").get("tells")
+        assert not _problem(docs, "status_callers").get("tells")   # the begane grond has no tells
     _check(mutate)
+
+
+def test_the_yard_shows_its_field_problems():
+    """PLAN 2.6 (S3-Y): the werf shows the field work as the 1e and the 2e show the office work."""
+    shown = {p["id"]: [t["tell"] for t in p.get("tells", [])] for p in REAL["problems_tier1"]["problems"]}
+    assert "van_kanban" in shown["wrong_joint_in_van"]
+    assert "storingsbord" in shown["wrong_joint_in_van"]
+    assert "storingsbord" in shown["digging_damage"]
+    assert "magazijn_rack" in shown["digging_damage"]
+    assert "storingsbord" in shown["knowledge_drain"]
+    assert "van_returns" in shown["not_at_home"]
+    assert "van_returns" in shown["double_visits"]
+    assert "van_returns" in shown["installer_not_ready"]
+    assert "measurement_tray" in shown["inverters_tripping"]
+
+
+def test_every_problem_on_the_yard_needs_a_tell():
+    def mutate(docs):
+        _problem(docs, "knowledge_drain").pop("tells")
+    with pytest.raises(bc.ContentError, match="knowledge_drain.*no tell"):
+        _check(mutate)
+
+
+def test_a_problem_needs_a_tell_on_its_own_floor():
+    """Meterkast niet gereed shows on the planners' board upstairs too, but its place is on the
+    yard: a tell only on the 1e leaves the yard silent about it."""
+    def mutate(docs):
+        _problem(docs, "installer_not_ready")["tells"] = [
+            t for t in _problem(docs, "installer_not_ready")["tells"] if t["tell"] == "planning_board"]
+    with pytest.raises(bc.ContentError, match="installer_not_ready.*no tell"):
+        _check(mutate)
 
 
 def _look(docs: dict, tell_id: str) -> dict:

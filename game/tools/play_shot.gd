@@ -69,6 +69,10 @@ extends SceneTree
 ## play_explainer_trafo_trafo (PLAN 2.7c S3-X: at the trafohuisje mock-up on the
 ## opleidingsterrein, its prompt; E there: "Hoe werkt het? 2" with the chain warm on the
 ## fiets, the cross-fade half-way, the trafo above its nameplate with the hours).
+## play_tell_yard_kanban_high, play_tell_storingsbord_high, play_tell_rack_high,
+## play_tell_returns_high, play_tell_measurement_high, play_tell_yard_low (S3-Y: the yard's tells:
+## the van kanban wall, the storingsbord looked at closer, the joint shelf, the returns pallet,
+## the complaints' tray at their highest; the wall and the pallet at their lowest).
 ## play_desk, play_a3_clipboard, play_check_screen (PLAN 2.10 S3-D: your desk with your name
 ## plate, badge photo, the letter and your clipboard; E there, the A3 on the clipboard; the
 ## Check at Petra's screen, drawn as her monitor).
@@ -340,6 +344,9 @@ func _run() -> void:
 			await _yard_life(office, state)
 		"play_trafohuisje", "play_explainer_trafo_fiets", "play_explainer_trafo_cross", "play_explainer_trafo_trafo":
 			await _trafohuisje(office, state)
+		"play_tell_yard_kanban_high", "play_tell_storingsbord_high", "play_tell_rack_high", "play_tell_returns_high", \
+				"play_tell_measurement_high", "play_tell_yard_low":
+			_yard_tells(office, state)
 		"play_2e_day", "play_mt_room_scene", "play_mt_room_ruud", "play_tell_obeya_high", "tell_grid_study_high", \
 				"tell_reinforcement_high", "tell_congestion_high":
 			await _second(office, state)
@@ -857,6 +864,47 @@ func _yard_life(office: Office, state: String) -> void:
 			office.rig.snap()
 			for i in 120:
 				await process_frame
+
+
+## The yard's tells (S3-Y) at their highest, at twenty past ten with the vans out: the kanban
+## wall seen from the vans' side; the storingsbord driven by a week of late outages and looked
+## at closer (its line over it); the joint shelf, the returns pallet, the complaints' tray;
+## play_tell_yard_low the kanban wall and the pallet at their lowest.
+func _yard_tells(office: Office, state: String) -> void:
+	for m in ["fix_wrong_joint", "walk_outages", "walk_meters", "fix_inverters_tripping"]:
+		office.session.missions.progress[m] = {"status": "active", "asks": {}, "seen": {}}
+	office.session.pass_time(posmod(10 * 60 + 20 - office.session.minute_of_day(), SimCalendar.MINUTES_PER_DAY))
+	office.ui.after_action()
+	office.floors._process(OfficeFloors.POLL_SECONDS)
+	office.floors.go_to("yard", "exit", true)
+	office.daylight.update(office.session)
+	var net := office.session.region.net
+	if state == "play_tell_storingsbord_high":
+		for i in OfficeTells.THRESHOLDS["storingsbord"][1]:
+			net.stream("outages").finished.append({"done_at": net.time, "lead_minutes": 400, "on_time": false,
+				"reworks": 0, "failure_demand": false})
+	office.tells.refresh()
+	var shown := {"play_tell_yard_kanban_high": "van_kanban", "play_tell_rack_high": "magazijn_rack",
+		"play_tell_returns_high": "van_returns", "play_tell_measurement_high": "measurement_tray"}
+	if shown.has(state):   # read from past days' counts and the stock: shown directly
+		OfficeTells.show(office.geometry, {shown[state]: OfficeTells.HIGH})
+	if state == "play_tell_yard_low":
+		OfficeTells.show(office.geometry, {"van_kanban": OfficeTells.LOW, "van_returns": OfficeTells.LOW})
+	print("tells: ", OfficeTells.readings(net), " -> ", OfficeTells.bands(net))
+	# Godot space: Blender (x, y) is (x, -y); [where you stand, what you look at, zoom]
+	var spec: Array = {"play_tell_yard_kanban_high": [Vector3(-35.4, 0, -16.2), Vector3(-34.1, 0, -17.0), -3.0],
+		"play_tell_yard_low": [Vector3(-35.4, 0, -16.2), Vector3(-34.1, 0, -17.0), -1.0],
+		"play_tell_storingsbord_high": [Vector3(-32.4, 0, 1.6), Vector3(-33.9, 0, 0.6), -4.0],
+		"play_tell_rack_high": [Vector3(-28.8, 0, -19.6), Vector3(-28.8, 0, -21.5), -2.0],
+		"play_tell_returns_high": [Vector3(-38.4, 0, -18.4), Vector3(-37.2, 0, -20.4), -3.0],
+		"play_tell_measurement_high": [Vector3(-32.6, 0, 2.2), Vector3(-33.66, 0, 2.6), -4.0]}[state]
+	office.player.position = spec[0]
+	office.player.face(Basis.looking_at((spec[1] - office.player.position) * Vector3(1, 0, 1)))
+	office.rig.yaw = office.player.rotation.y + deg_to_rad(25)
+	office.rig.zoom(spec[2])
+	office.rig.snap()
+	if state == "play_tell_storingsbord_high":   # capture within ~25 frames, before the line's time is up
+		office.use(OfficeTells.node(office.geometry, "storingsbord"))
 
 
 ## Going home (S1-A): the begane grond's front door at half past five, its prompt; then
