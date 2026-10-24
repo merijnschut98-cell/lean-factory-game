@@ -116,6 +116,8 @@ func refresh() -> void:
 		look.albedo_color = Color.WHITE if photo != null else NO_PHOTO
 	var layer := office.ui.session_layer if office.ui != null else null
 	_letter.visible = layer == null or Opening.reached(layer, Opening.EVENING)
+	if office.session.missions == null:   # the content did not load: no missions, no letters
+		return
 	var done := office.session.missions.done_once.size()
 	if done == _done_seen:
 		return
