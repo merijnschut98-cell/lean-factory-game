@@ -136,6 +136,7 @@ func _build_stream(v: Dictionary) -> ValueStream:
 				step.touch_minutes = SimCalendar.hours(float(s["touch_hours"]))
 				step.ftr = float(s["ftr"])
 				step.fail_minutes = SimCalendar.hours(float(s.get("fail_hours", 0.0)))
+				step.trip_minutes = SimCalendar.hours(float(s.get("trip_hours", 0.0)))
 				# Where an order goes back to, and after how long: on rework, after an
 				# interruption, or when its dossier went stale.
 				step.rework_index = ids.find(s.get("rework_to", step.id))
@@ -583,6 +584,10 @@ func _draw_outcome(order: WorkOrder, step: SimStep) -> void:
 	order.failing = order.defect_at == step.id or step.ftr < 1.0 and not step.rng.chance(step.ftr)
 	if order.failing:
 		order.remaining = step.failed_minutes()
+	# Drawn only while a share is on, so a healthy process keeps its random sequence.
+	if step.trip_share > 0.0 and step.rng.chance(step.trip_share):
+		order.remaining += step.trip_minutes
+		_record(step, SimStep.Stat.TRIPS)
 
 
 func _complete_work(order: WorkOrder) -> void:

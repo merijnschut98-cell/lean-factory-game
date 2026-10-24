@@ -7,7 +7,7 @@ extends RefCounted
 
 enum Kind { WORK, WAIT, MATERIAL }
 ## What the daily statistics count (see record / stats_since).
-enum Stat { ENTERED, DONE, REWORKED, STARTED, QUEUE_MINUTES, STALE, WAIT_MINUTES, INTERRUPTED }
+enum Stat { ENTERED, DONE, REWORKED, STARTED, QUEUE_MINUTES, STALE, WAIT_MINUTES, INTERRUPTED, TRIPS }
 
 var id: String
 var name: String
@@ -24,6 +24,11 @@ var ftr := 1.0
 ## What a failed attempt costs (the trip to an address where nobody is home);
 ## 0: the full touch time (work done, then found wrong).
 var fail_minutes := 0
+## A share of the attempts needs a trip first (`trip_share`, 0 in a healthy process: a
+## problem switches it on), each costing `trip_minutes` more of the same person: the
+## monteur who drives back to the magazijn for the right joint.
+var trip_share := 0.0
+var trip_minutes := 0
 var rework_index := 0
 var rework_wait_minutes := 0
 ## Where an order goes when urgent work interrupts it (e.g. back to planning
@@ -63,10 +68,10 @@ func failed_minutes() -> int:
 
 ## Expected minutes of work per visit, failed attempts included.
 func minutes_per_visit() -> float:
-	return ftr * touch_minutes + (1.0 - ftr) * failed_minutes()
+	return ftr * touch_minutes + (1.0 - ftr) * failed_minutes() + trip_share * trip_minutes
 
 
-## Totals from `day` on: {entered, done, reworked, stale, interrupted, queue_hours (mean
+## Totals from `day` on: {entered, done, reworked, stale, interrupted, trips, queue_hours (mean
 ## wait before the first start, for work steps), wait_hours (mean external
 ## wait per order, for wait steps; the stock-out wait, for material steps)}.
 func stats_since(day: int) -> Dictionary:
@@ -79,5 +84,6 @@ func stats_since(day: int) -> Dictionary:
 		"queue_hours": totals[Stat.QUEUE_MINUTES] / 60.0 / started if started > 0 else 0.0,
 		"stale": totals[Stat.STALE],
 		"interrupted": totals[Stat.INTERRUPTED],
+		"trips": totals[Stat.TRIPS],
 		"wait_hours": totals[Stat.WAIT_MINUTES] / 60.0 / totals[Stat.ENTERED] if totals[Stat.ENTERED] > 0 else 0.0,
 	}

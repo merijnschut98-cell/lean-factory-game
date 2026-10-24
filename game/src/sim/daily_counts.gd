@@ -42,11 +42,14 @@ func export_days() -> Dictionary:
 	return _days.duplicate(true)
 
 
-## Restore export_days() output; malformed days are skipped.
+## Restore export_days() output; malformed days are skipped. Days saved before a slot was
+## added (fewer slots) load with the new ones at 0.
 func import_days(saved: Dictionary) -> void:
 	_days.clear()
 	_last_day = 0
 	for day: Variant in saved:
-		if day is int and saved[day] is PackedInt64Array and saved[day].size() == _slots:
-			_days[day] = saved[day]
+		if day is int and saved[day] is PackedInt64Array and saved[day].size() <= _slots:
+			var counts: PackedInt64Array = saved[day].duplicate()
+			counts.resize(_slots)
+			_days[day] = counts
 			_last_day = maxi(_last_day, day)

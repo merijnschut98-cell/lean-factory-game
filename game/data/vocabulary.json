@@ -256,6 +256,10 @@
    "kind": "step",
    "step_kind": "work"
   },
+  "trip_share": {
+   "kind": "step",
+   "step_kind": "work"
+  },
   "wait_time": {
    "kind": "step",
    "step_kind": "wait"

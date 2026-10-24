@@ -32,7 +32,9 @@
 #             pools (the monteurs by day, the on-call crew at night); `ftr` =
 #             first-time-right chance; on failure the order returns to
 #             `rework_to` (default: the same step), after `rework_wait_days`
-#             if given (e.g. waiting for the customer to supply missing details)
+#             if given (e.g. waiting for the customer to supply missing details);
+#             `trip_hours`: what a trip for missing material costs on top, for the
+#             share of attempts a problem sets (effect `trip_share`)
 #   wait      an external delay of `days` (± `spread` fraction); nobody at
 #             Voltana works on it, it can only be managed
 #   material  takes `quantity` of `item` from stock; waits if out of stock.
@@ -277,6 +279,11 @@ streams:
         touch_hours: 1.5
         ftr: 0.95
         rework_to: locate     # a second fault further along the cable
+        # A monteur without the right joint drives back to the magazijn for it ("materiaal
+        # halen"); a problem sets the share (trip_share). ESTIMATE: 40 minutes there and back
+        # (the shadow clue of wrong_joint_in_van) plus about 20 minutes to find the joint,
+        # fill in the uitgiftebon and load it (places.yaml, outages.joint): 1 hour.
+        trip_hours: 1.0
 
   - id: meters
     name: Veldservice & slimme meters

@@ -105,8 +105,15 @@ problems:
     mismatch_note: Het magazijn heeft de moffen wel; ze liggen alleen niet in de bus op het moment dat het nodig is.
     countermeasures: {van_refill_card: 0.65, standard_van_stock: 0.8, two_bin_van_kanban: 1.0}
     teaches: [5s, kanban, standard_work]
+    # The waste is mostly the drive back for the right joint (QA 2026-10-24: a touch time
+    # x 1.5 alone hid it from the storingsbord). A quarter of the outages takes the trip
+    # (the data clue: 'materiaal halen' in a quarter of the logs), each an hour of the
+    # monteur while the customer waits (outages.repair trip_hours, an estimate). The rest
+    # is motion: no two vans are stocked alike, so every repair starts with a search.
+    # ESTIMATE: about 15 minutes of a 1.5-hour repair, x 1.15.
     effects:
-      - {target: outages.repair, property: touch_time, value: 1.5}
+      - {target: outages.repair, property: trip_share, value: 0.25}
+      - {target: outages.repair, property: touch_time, value: 1.15}
     # Its harm is the drive to fetch a joint, not more joints: the kanban wall and the board read
     # busy weeks as they would (OfficeTells.THRESHOLDS, probe 2026-10-24).
     tells:

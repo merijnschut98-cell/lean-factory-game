@@ -216,6 +216,35 @@ func test_actual_load_is_measured() -> void:
 	assert_eq(crew.load_since(1000), 0.0, "no days, no load")
 
 
+## A share of the attempts needs a trip first (the monteur drives back to the magazijn for
+## the right joint): each costs `trip_hours` of the crew on top of the job, is counted
+## ("trips"), and none happen while the share is 0. Planned load (Capacity) agrees: 2 h
+## jobs, half with a 1 h trip, is 2.5 h per order.
+func test_a_trip_share_adds_counted_trips_to_the_work() -> void:
+	var nets := []
+	for share: float in [0.0, 0.5]:
+		var net := NetFixture.net([NetFixture.pool("crew", 3)], [
+			NetFixture.stream("jobs", [NetFixture.work("repair", "crew", 2.0, 1.0, {"trip_hours": 1.0})], 10.0),
+		])
+		net.set_effects("problem:p", [NetFixture.effect("jobs.repair", "trip_share", share)])
+		net.advance_days(84)
+		nets.append(net)
+	var none: Dictionary = nets[0].step_at("jobs.repair").stats_since(0)
+	var half: Dictionary = nets[1].step_at("jobs.repair").stats_since(0)
+	assert_eq(none["trips"], 0, "no share, no trips")
+	assert_between(half["trips"] / float(half["done"]), 0.35, 0.65, "%d trips of %d" % [half["trips"], half["done"]])
+	assert_between(nets[1].pools["crew"].load_since(0) / nets[0].pools["crew"].load_since(0), 1.1, 1.4)
+	assert_near(Capacity.analyse(nets[1])["pools"]["crew"]["load"] / Capacity.analyse(nets[0])["pools"]["crew"]["load"],
+		2.5 / 2.0, 1e-6)
+
+
+## Daily counts saved before a statistic was added still load (the new one reads 0).
+func test_daily_counts_from_before_a_new_statistic_still_load() -> void:
+	var counts := DailyCounts.new(3)
+	counts.import_days({4: PackedInt64Array([1, 2])})
+	assert_eq(Array(counts.since(0)), [1, 2, 0])
+
+
 ## A failed attempt (nobody home, meterkast not ready) costs the trip, not
 ## the whole job: 4 h work, half the visits fail after 1 h → about 5 h per
 ## order instead of 8 h. Planned load (Capacity) agrees.

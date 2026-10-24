@@ -26,6 +26,7 @@ enum Op { ADD, MUL, SET }
 const PROPERTIES := {
 	"touch_time": {"kind": "step", "step_kind": SimStep.Kind.WORK, "field": "touch_minutes", "op": Op.MUL, "min": 1.0},
 	"ftr": {"kind": "step", "step_kind": SimStep.Kind.WORK, "field": "ftr", "op": Op.ADD, "min": 0.05, "max": 1.0},
+	"trip_share": {"kind": "step", "step_kind": SimStep.Kind.WORK, "field": "trip_share", "op": Op.ADD, "min": 0.0, "max": 1.0},
 	"applies": {"kind": "step", "field": "applies", "op": Op.ADD, "min": 0.0, "max": 1.0},
 	"wait_time": {"kind": "step", "step_kind": SimStep.Kind.WAIT, "field": "wait_minutes", "op": Op.MUL, "min": 0.0},
 	"availability": {"kind": "pool", "field": "availability", "op": Op.ADD, "min": 0.0, "max": 1.0},

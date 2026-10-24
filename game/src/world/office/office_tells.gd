@@ -52,10 +52,10 @@ const VARIANTS: Array[String] = ["low", "mid", "high"]
 ## and 12, daily over 60 days after day 9, each problem active from the first day; min/median/max).
 ## No job waits for material there: the stock covers every week (0 in every run), so the
 ## field tells read what the field work uses and brings back.
-## - van_kanban (the joints the storingsbussen took this week: a card each in the kanban
-##   wall's "bestellen" column): base 3/7/11 and 3/8/12, digging_damage 5/12/18 and 6/10/16.
-##   wrong_joint_in_van takes no more joints (its harm is the drive to fetch one), so the wall
-##   shows it only in a busy week, as it would.
+## - van_kanban (the joints the storingsbussen took this week, plus each one fetched mid-repair
+##   for the wrong one in the van: a card each in the kanban wall's "bestellen" column): base
+##   3/7/11 and 3/8/12, digging_damage 5/12/18 and 6/10/16, wrong_joint_in_van 5/12/16
+##   and 3/12/19 (probe 2026-10-24, S3 G-A).
 ## - magazijn_rack (the share of the joint shelf that is empty, % of reorder point plus an
 ##   order): base 16/51/83 and 13/44/79 (it empties and refills with each delivery: a low
 ##   shelf can be the day before the truck), digging_damage 27/60/92 and 15/60/89.
@@ -63,8 +63,9 @@ const VARIANTS: Array[String] = ["low", "mid", "high"]
 ##   MOVED_DAYS: no one home, the meterkast not ready): base 6/12/20 and 7/13/23, not_at_home
 ##   and double_visits 7/21/35 and 10/22/38, installer_not_ready 11/23/34 and 13/25/43.
 ## - storingsbord (this week's callouts, plus those searched for again and those past the
-##   norm): base 11/18/27 and 7/19/37, digging_damage 13/25/35 and 15/26/35, knowledge_drain
-##   13/28/43 and 10/27/66, wrong_joint_in_van 11/19/29 and 8/20/42.
+##   norm, plus each "materiaal halen"): base 11/18/27 and 7/19/37, digging_damage 13/25/35
+##   and 15/26/35, knowledge_drain 13/28/43 and 10/27/66, wrong_joint_in_van 14/27/36 and
+##   8/28/44 (probe 2026-10-24, S3 G-A: the trips; before them 11/19/29 and 8/20/42).
 ## - measurement_tray (voltage complaints waiting for a measurement or with a logger out):
 ##   base 2/6/11 and 1/6/12, inverters_tripping 12/22/33 and 9/16/30.
 const THRESHOLDS := {"intake_stack": [15, 30], "prep_tray": [6, 12], "planning_board": [8, 16],
@@ -262,7 +263,8 @@ static func readings(net: Network) -> Dictionary:
 		"grid_study_tray": _waiting(net, ["connections.grid_study", "congestion.congestion_study"]),
 		"reinforcement_board": _waiting(net, ["connections.grid_reinforcement"]),
 		"congestion_list": _waiting(net, ["congestion.capacity_queue"]),
-		"van_kanban": _counted(net, "outages.joint", WEEK_DAYS, "entered"), "magazijn_rack": _shelf_empty(net, "cable_joint"),
+		"van_kanban": _counted(net, "outages.joint", WEEK_DAYS, "entered") + _fetched(net),
+		"magazijn_rack": _shelf_empty(net, "cable_joint"),
 		"van_returns": _counted(net, "meters.visit", MOVED_DAYS) + _counted(net, "connections.execution", MOVED_DAYS),
 		"storingsbord": _callouts(net),
 		"measurement_tray": _waiting(net, ["voltage_complaints.measurement", "voltage_complaints.measurement_week"])}
@@ -358,14 +360,21 @@ static func _shelf_empty(net: Network, item: String) -> int:
 
 
 ## The storingsdienst's board: this week's callouts, plus a mark for each fault searched for
-## again and each outage that lasted past its norm.
+## again, each "materiaal halen" (a monteur back to the magazijn mid-repair) and each outage
+## that lasted past its norm.
 static func _callouts(net: Network) -> int:
 	var outages := net.stream("outages")
 	if outages == null:
 		return 0
 	var k := outages.kpis(net.time, WEEK_DAYS)
 	var late := roundi(k["completed"] * (1.0 - k["on_time"])) if k["completed"] > 0 else 0
-	return _counted(net, "outages.report", WEEK_DAYS, "entered") + _counted(net, "outages.locate", WEEK_DAYS) + late
+	return _counted(net, "outages.report", WEEK_DAYS, "entered") + _counted(net, "outages.locate", WEEK_DAYS) + late \
+		+ _fetched(net)
+
+
+## This week's drives back to the magazijn for material in the middle of a repair.
+static func _fetched(net: Network) -> int:
+	return _counted(net, "outages.repair", WEEK_DAYS, "trips")
 
 
 ## The value streams whose KPI card is red: too few of their finished orders met the norm.

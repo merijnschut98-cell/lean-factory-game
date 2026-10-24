@@ -218,9 +218,14 @@
    },
    "effects": [
     {
+     "property": "trip_share",
+     "target": "outages.repair",
+     "value": 0.25
+    },
+    {
      "property": "touch_time",
      "target": "outages.repair",
-     "value": 1.5
+     "value": 1.15
     }
    ],
    "id": "wrong_joint_in_van",
