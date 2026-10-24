@@ -11,7 +11,7 @@
     {
      "depth": 0,
      "key": false,
-     "text": "In de intake-wachtrij liggen maar een paar aanvragen. Het team werkt ze snel weg.",
+     "text": "De wachtrij bij Intake is lang, maar hij staat netjes op datum: wie vrij is, pakt de oudste aanvraag.",
      "tool": "queue_count"
     },
     {
@@ -50,6 +50,11 @@
      "property": "ftr",
      "target": "connections.intake",
      "value": -0.2
+    },
+    {
+     "property": "touch_time",
+     "target": "connections.intake",
+     "value": 1.3
     }
    ],
    "id": "incomplete_application",
@@ -137,7 +142,7 @@
     }
    ],
    "id": "installer_not_ready",
-   "kpi": "lead_time",
+   "kpi": "first_time_right",
    "mismatch_note": "De monteur doet zijn werk goed; het probleem ontstaat bij het plannen, voordat hij rijdt.",
    "name": "Meterkast niet gereed",
    "plausible_causes": [
@@ -1149,6 +1154,7 @@
    ],
    "id": "inverters_tripping",
    "kpi": "first_time_right",
+   "measure_days": 263,
    "mismatch_note": "Elke klacht apart meten en oplossen bestrijdt het symptoom. De spanning is te hoog in de hele straat.",
    "name": "Omvormers die afschakelen",
    "plausible_causes": [

@@ -117,9 +117,11 @@ static func improved(row: String, before: float, after: float) -> bool:
 	return after < before if row in Pdca.LOWER_IS_BETTER else after > before
 
 
-## Green for better, orange for worse, ink for no change.
+## Green for better, orange for worse, ink for no change: a change within the Check's noise
+## (Pdca.CHECK_NOISE, relative) is no change, so a flow that only shifted inside the window
+## never reads green next to "dit was niet het knelpunt" (gate backlog 3).
 static func change_color(row: String, before: float, after: float) -> Color:
-	if is_equal_approx(before, after):
+	if is_equal_approx(before, after) or before != 0.0 and absf(after - before) / absf(before) < Pdca.CHECK_NOISE:
 		return Palette.INK
 	return Palette.GREEN_DARK if improved(row, before, after) else Palette.SAFETY_ORANGE
 

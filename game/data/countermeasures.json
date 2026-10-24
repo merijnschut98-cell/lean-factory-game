@@ -374,7 +374,7 @@
    },
    "name": "Proefsleuven als standaard",
    "team_hours": {
-    "key_accounts": 10
+    "work_prep": 10
    },
    "tier": 1
   },

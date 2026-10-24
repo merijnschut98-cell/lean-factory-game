@@ -30,8 +30,8 @@ problems:
     waste: defects
     severity: medium
     visibility: obvious
-    # Less rework gives the intake team back time (+18 % capacity, the same on
-    # every seed). First time right over finished orders lags: a returned
+    # Less rework gives the intake team back time (capacity, the same on every
+    # seed). First time right over finished orders lags: a returned
     # application finishes weeks later, so a fresh problem's Check shows it
     # on some seeds only (probe 2026-10-15: −1 to +43 %); lead time hardly
     # moves, since most of it is waiting further down the stream.
@@ -46,13 +46,20 @@ problems:
     mismatch_note: Sneller of strenger controleren verandert niets aan wat er binnenkomt. De fout ontstaat in het formulier.
     countermeasures: {poka_yoke_application: 1.0, intake_checklist: 0.7}
     teaches: [quality_at_the_source, poka_yoke]
+    # Nine in twenty applications come back (the clues): ftr 0.75 -> 0.55. Each return also
+    # costs the chase: the request for completion, the calls with the customer and the
+    # installer, logging it. ESTIMATE: about 40 minutes a return, x1.3 on every intake visit.
+    # With it the intake clearly fails demand (gate backlog 3, 2026-10-24: with the ftr alone
+    # it ran at 1.03, so the fix's flow gain hid in the seed noise): about 26 a week against
+    # 30 arriving (Capacity), 35 once fixed. Fixing the monteurs' problem moves none of it.
     effects:
       - {target: connections.intake, property: ftr, value: -0.2}
+      - {target: connections.intake, property: touch_time, value: 1.3}
     tells:
       - {tell: intake_stack, text: "Op de kast bij Intake ligt meer dan een dag werk aan dossiers."}
     clues:
       - {tool: documents, key: true, depth: 0, text: "Van de laatste twintig aanvragen missen er negen het aansluitvermogen of de gegevens van de installateur."}
-      - {tool: queue_count, key: false, depth: 0, text: "In de intake-wachtrij liggen maar een paar aanvragen. Het team werkt ze snel weg."}
+      - {tool: queue_count, key: false, depth: 0, text: "De wachtrij bij Intake is lang, maar hij staat netjes op datum: wie vrij is, pakt de oudste aanvraag."}
       - {tool: data, key: true, depth: 1, text: "Bijna de helft van de aanvragen gaat terug naar de klant voor aanvulling; die wachten gemiddeld een week."}
       - {tool: conversation, key: true, depth: 1, text: "'Het webformulier laat je gewoon doorklikken zonder vermogen of meterkastfoto. Wij zien het pas als we het dossier openen.'"}
       - {tool: listen_in, key: true, depth: 2, text: "Een klant aan de telefoon: 'Ik wist niet dat ik dat moest invullen, het formulier vroeg er niet om.'"}
@@ -64,7 +71,11 @@ problems:
     waste: waiting
     severity: high
     visibility: subtle
-    kpi: lead_time
+    # A wasted trip is a job not done right the first time: two in five addresses send the
+    # job back to planning (first time right falls by a third). Lead time hardly moves, since
+    # the median order is not one of them (gate backlog 4, 2026-10-24: the best fix gained
+    # +0.1 to +1.4 % lead time on some seeds, inside the Check's 2 % noise).
+    kpi: first_time_right
     symptoms:
       - Monteurs rijden terug zonder dat de aansluiting is gemaakt.
       - Klussen worden steeds opnieuw ingepland.
@@ -453,6 +464,12 @@ problems:
     severity: medium
     visibility: obvious
     kpi: first_time_right
+    # Five complaints a week, most of them in the sunny months: eight weeks hold too few to
+    # read first time right (gate backlog 5, 2026-10-24: the best fix gained +0.8 to +17 %
+    # over 12 probe runs, 2 of them inside the 2 % noise; +4 to +21 % over the longest
+    # horizon). The fix's own standard measures a summer and a winter week, so the Check
+    # measures the longest window it has (Region.check_window), not a sunny spell.
+    measure_days: 263
     symptoms:
       - Het aantal spanningsklachten is in twee jaar verdrievoudigd, vooral op zonnige middagen.
       - Klanten melden dat hun omvormer uitvalt en hun zonnepanelen niets opleveren.

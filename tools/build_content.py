@@ -294,7 +294,7 @@ SEVERITIES = ["low", "medium", "high", "critical"]
 VISIBILITIES = ["obvious", "subtle", "hidden"]
 PROBLEM_KEYS = {"id", "tier", "name", "step", "waste", "severity", "visibility", "kpi", "symptoms", "root_cause",
                 "plausible_causes", "mismatch_note", "countermeasures", "teaches", "effects", "clues", "cost_per_week",
-                "tells"}
+                "tells", "measure_days"}
 # shortcut: a tempting way out whose cost comes later (phase-2 design §3.4, tests/test_mission_shape.py)
 COUNTERMEASURE_KEYS = {"id", "tier", "name", "category", "description", "budget", "team_hours", "decay_days", "needs",
                        "preparation", "shortcut",
@@ -442,6 +442,8 @@ def validate_problems(doc: Any, source: str) -> None:
         _require_strings(p, ["step", "root_cause", "mismatch_note"], where)
         _number(p, "tier", where, 1, 4, integer=True)
         _number(p, "cost_per_week", where, 0, integer=True, default=0)
+        # Region.MEASURE_DAYS .. MAX_CHECK_HORIZON less a short lead time: how long the Check measures
+        _number(p, "measure_days", where, 56, 263, integer=True, default=56)
         _one_of(p, "waste", WASTES, where)
         _one_of(p, "severity", SEVERITIES, where)
         _one_of(p, "visibility", VISIBILITIES, where)

@@ -41,6 +41,13 @@ const DEBT_FLOOR := -50000
 ## and the way back are the way out, never a lock-out. ESTIMATE: a small team experiment, a
 ## few days of time and material (the way back's own fixes cost EUR 0-3,000).
 const DEBT_FUNDED_MINIMUM := 3000
+## The most the directie advances past the floor for the story's experiments (advance_owed);
+## past it they fund only what any experiment at the floor gets (fundable), so recovery
+## stays within reach (gate backlog 1, 2026-10-24: careless play owed EUR 233,000-250,000
+## and spent 80-88 % of its days at the floor without it). ESTIMATE: half the floor, two or
+## three of the larger experiments (EUR 8,000-12,000); about what a held fix's grants and
+## savings repay in a few months. Every tier-1 problem keeps a fix within DEBT_FUNDED_MINIMUM.
+const ADVANCE_CEILING := 25000
 ## Finance books part of what a held fix saves (less overtime, rework, repeat
 ## visits, status calls) into the improvement budget: every week this share
 ## of the grant for a perfect result on the problem (Pdca.BUDGET_BASE), at
@@ -97,7 +104,8 @@ var _cost_owed := 0.0
 var floor_days := 0
 ## What the directie advanced (EUR): the part of an experiment's cost the floor would have
 ## swallowed. Any later income repays it first, before the budget rises again, so a fix
-## started at the floor is never free (review of 3c40ed8..381d21c #4).
+## started at the floor is never free (review of 3c40ed8..381d21c #4). At most
+## ADVANCE_CEILING for the story's experiments; a failed Check's part is written off.
 var advance_owed := 0
 ## Since when the region has not improved (minutes; the last resolved Act or
 ## the campaign's start); -1: drift has not started (start_drift).
@@ -494,7 +502,8 @@ func close_countermeasures(ids: PackedStringArray) -> void:
 ## ids), cm, prediction (a KPI)} and start the experiment; it may be paid
 ## into debt, but in a bad period only what the region can carry (fundable), unless it is
 ## `always_funded` (the active main mission's or a deadline mission's: never locked out);
-## what goes past the floor the directie advances (advance_owed).
+## what the region cannot carry the directie advances (advance_owed), up to ADVANCE_CEILING:
+## past the floor, or the whole of an exempt experiment a bad period would refuse.
 ## The Check is due after `check_days` (a mission may shorten it for
 ## practice). Returns "" or why not: not_spotted | waste | cause | evidence |
 ## countermeasure | prediction | same_countermeasure (a rework must try
@@ -518,12 +527,16 @@ func submit_a3(problem_id: String, a3: Dictionary, check_days: int = CHECK_DAYS,
 		return "prediction"
 	if st.rework_from.get("cm") == cm.id:
 		return "same_countermeasure"
-	if not always_funded and not fundable(cm):
+	# What the region cannot carry the directie advances: past the floor, or all of an exempt
+	# experiment a bad period would refuse (the region pays none of it, as if refused).
+	var advanced := cm.budget if not fundable(cm) else maxi(0, cm.budget - (profile.budget - DEBT_FLOOR))
+	if not fundable(cm) and not (always_funded and advance_owed + advanced <= ADVANCE_CEILING):
 		return "no_funds"
 
 	var p := problems[problem_id]
-	advance_owed += maxi(0, cm.budget - (profile.budget - DEBT_FLOOR))  # past the floor: advanced
-	_add_budget(-cm.budget)
+	advance_owed += advanced
+	st.advanced = advanced
+	_add_budget(advanced - cm.budget)
 	st.baseline = snapshot(problem_id)
 	var e := Pdca.effectiveness(p, cm, maturity())
 	st.a3 = a3.duplicate()
@@ -602,9 +615,8 @@ func check(problem_id: String) -> Dictionary:
 	var p := problems[problem_id]
 	net.clear_effects("do:" + problem_id)
 	var after := snapshot(problem_id)
-	var lead := _lead_days(p, after)
-	var days := clampi(lead + MEASURE_DAYS, CHECK_HORIZON, MAX_CHECK_HORIZON)
-	var forecast := CheckForecast.run(net, p, days, clampi(days - lead, MEASURE_DAYS, days))
+	var horizon := check_window(p, _lead_days(p, after))
+	var forecast := CheckForecast.run(net, p, horizon.x, horizon.y)
 	if not forecast["error"].is_empty():
 		return {"error": forecast["error"]}
 	forecast["kpi"] = st.a3["prediction"]
@@ -625,6 +637,9 @@ func check(problem_id: String) -> Dictionary:
 	profile.learn(["PDCA", "eight_wastes", "waste_" + p.waste])
 	if result["not_constraint"]:
 		profile.learn(["bottleneck_focus", "theory_of_constraints"])
+	if not result["passed"]:
+		advance_owed -= mini(advance_owed, st.advanced)  # the directie took the risk
+	st.advanced = 0
 	if result["passed"]:
 		st.phase = P.CHECKED
 		if countermeasures[st.a3["cm"]].unlocks == KpiBoard.UNLOCK and board.unlock(net.time):
@@ -641,6 +656,14 @@ func check(problem_id: String) -> Dictionary:
 	else:
 		_apply_old_fix(st)  # a rework that failed: the old fix is still there
 	return result
+
+
+## The Check's forecast (days ahead, the measured window at their end): one lead time of
+## the orders the problem holds up, then the problem's measure_days (MEASURE_DAYS unless it
+## names more, for a stream with few orders), within CHECK_HORIZON..MAX_CHECK_HORIZON.
+static func check_window(p: ProblemDef, lead: int) -> Vector2i:
+	var days := clampi(lead + maxi(MEASURE_DAYS, p.measure_days), CHECK_HORIZON, MAX_CHECK_HORIZON)
+	return Vector2i(days, clampi(days - lead, MEASURE_DAYS, days))
 
 
 ## One lead time of the orders the problem holds up, in whole days: the

@@ -218,7 +218,10 @@ countermeasures:
     category: safety
     description: Bij graven in de buurt van kabels altijd eerst een proefsleuf; de opdrachtgever plant er tijd voor in.
     budget: 3000
-    team_hours: {key_accounts: 10}
+    # Werkvoorbereiding writes where a test trench is needed into every work order and its
+    # planning (the dialog's 'Proefsleuven in de opdracht': Voltana says so in advance), not
+    # the account managers (gate backlog, 2026-10-24). ESTIMATE: 10 hours to set the standard.
+    team_hours: {work_prep: 10}
     decay_days: 60
     multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
     effects: []

@@ -420,6 +420,71 @@ func test_at_the_floor_an_always_funded_experiment_is_paid() -> void:
 	assert_eq(r.advance_owed, 8000, "the directie advances it: owed in full, never free")
 
 
+## Gate backlog 1 (2026-10-24): the advance has a ceiling, so recovery stays possible. Past
+## it the directie funds an exempt experiment only as it funds any other at the floor: a
+## small one (DEBT_FUNDED_MINIMUM), still advanced in full, never free.
+func test_the_directie_advances_only_up_to_a_ceiling() -> void:
+	var r := _region(Region.DEBT_FLOOR)
+	r.activate("custom_design")
+	_investigate(r)
+	r.advance_owed = Region.ADVANCE_CEILING - 7000
+	assert_eq(r.submit_a3("custom_design", _a3(r, "standard_designs"), Region.CHECK_DAYS, true), "no_funds",
+		"EUR 8,000 would take the advance past its ceiling")
+	assert_eq(r.advance_owed, Region.ADVANCE_CEILING - 7000, "nothing advanced")
+	assert_eq(r.submit_a3("custom_design", _a3(r, "delegated_approval"), Region.CHECK_DAYS, true), "",
+		"a small experiment is still paid: never locked out")
+	assert_eq(r.advance_owed, Region.ADVANCE_CEILING - 5000, "and advanced in full")
+	var room := _region(Region.DEBT_FLOOR)
+	room.activate("custom_design")
+	_investigate(room)
+	room.advance_owed = Region.ADVANCE_CEILING - 8000
+	assert_eq(room.submit_a3("custom_design", _a3(room, "standard_designs"), Region.CHECK_DAYS, true), "",
+		"up to the ceiling the main's experiment is advanced")
+	assert_eq(room.advance_owed, Region.ADVANCE_CEILING)
+
+
+## Gate backlog 1: in a bad period an exempt experiment the region cannot carry is the
+## directie's whole: it advances all of it and the region's budget stays where it is (so a
+## failed one costs the region nothing, as when it was refused; a passed one is owed in full).
+func test_in_debt_the_directie_advances_an_exempt_experiment_whole() -> void:
+	var r := _region(Region.DEBT_FLOOR + 5000)
+	r.activate("custom_design")
+	_investigate(r)
+	assert_eq(r.submit_a3("custom_design", _a3(r, "standard_designs"), Region.CHECK_DAYS, true), "")
+	assert_eq(r.profile.budget, Region.DEBT_FLOOR + 5000, "the region pays none of it")
+	assert_eq(r.advance_owed, 8000)
+	var small := _region(Region.DEBT_FLOOR + 5000)
+	small.activate("custom_design")
+	_investigate(small)
+	assert_eq(small.submit_a3("custom_design", _a3(small, "delegated_approval"), Region.CHECK_DAYS, true), "")
+	assert_eq(small.profile.budget, Region.DEBT_FLOOR + 3000, "what the region can carry it pays itself")
+	assert_eq(small.advance_owed, 0)
+
+
+## Gate backlog 1: the directie took the risk of the experiment it advanced; a failed Check
+## writes that advance off. A passed one stays owed (the patient cheap fix stays cheaper).
+func test_a_failed_checks_advance_is_written_off() -> void:
+	var r := _region(Region.DEBT_FLOOR)
+	r.activate("custom_design")
+	_investigate(r)
+	r.advance_owed = 1000
+	assert_eq(r.submit_a3("custom_design", _a3(r, "poka_yoke_form"), Region.CHECK_DAYS, true), "")
+	assert_eq(r.advance_owed, 6000)
+	var copy := _region()
+	assert_eq(RegionState.restore(copy, RegionState.capture(r))["error"], "")
+	assert_eq(copy.state["custom_design"].advanced, 5000, "what this experiment was advanced is saved")
+	r.advance_days(Region.CHECK_DAYS)
+	assert_false(r.check("custom_design")["passed"])
+	assert_eq(r.advance_owed, 1000, "only this experiment's advance is written off")
+	assert_eq(r.state["custom_design"].advanced, 0)
+	assert_eq(r.submit_a3("custom_design", _a3(r, "standard_designs"), Region.CHECK_DAYS, true), "")
+	assert_eq(r.advance_owed, 9000)
+	r.advance_days(Region.CHECK_DAYS)
+	assert_true(r.check("custom_design")["passed"])
+	assert_eq(r.advance_owed, 9000, "a fix that worked stays owed")
+	assert_eq(r.state["custom_design"].advanced, 0)
+
+
 ## Review of 3c40ed8..381d21c #4: what the directie advanced is repaid first from any later
 ## income (rewards, savings) before the budget rises again, so the patient cheap fix stays
 ## cheaper than the expensive one even at the floor.
@@ -629,3 +694,16 @@ func test_every_tool_works_at_every_kind_of_step() -> void:
 		var here := net.open_orders(s).filter(func(o: WorkOrder) -> bool: return o.current_step() == step)
 		assert_true(here.size() > 0, "orders wait at " + place)
 		assert_eq(counted, {"count": here.size(), "days": 0.0}, place)
+
+
+## Gate backlog 5: a stream with few orders (5 voltage complaints a week, seasonal) is
+## measured longer, so the Check reads the fix and not the chance of a few orders.
+func test_a_problem_can_ask_the_check_to_measure_longer() -> void:
+	var p := ProblemDef.new()
+	assert_eq(Region.check_window(p, 10), Vector2i(Region.CHECK_HORIZON, Region.CHECK_HORIZON - 10), "the default")
+	assert_eq(Region.check_window(p, 250), Vector2i(Region.MAX_CHECK_HORIZON, Region.MEASURE_DAYS))
+	p.measure_days = 200
+	assert_eq(Region.check_window(p, 10), Vector2i(210, 200))
+	assert_eq(Region.check_window(p, 100), Vector2i(Region.MAX_CHECK_HORIZON, 173), "never past the longest horizon")
+	assert_eq(ProblemDef.from_dict({"id": "x", "name": "x", "step": "a.b", "waste": "defects", "severity": "low",
+		"visibility": "obvious", "kpi": "lead_time", "root_cause": "r", "measure_days": 120}).measure_days, 120)

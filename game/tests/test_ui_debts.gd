@@ -65,6 +65,16 @@ func test_the_check_panel_takes_lower_is_better_from_the_rules() -> void:
 	assert_true(CheckPanel.improved("throughput", 4.0, 5.0))
 
 
+## Gate backlog 3 (M-B): a number that moved within the Check's noise reads as unchanged,
+## never green next to "dit was niet het knelpunt".
+func test_a_change_within_the_checks_noise_reads_as_unchanged() -> void:
+	assert_eq(CheckPanel.change_color("throughput", 30.0, 30.0 * (1.0 + Pdca.CHECK_NOISE * 0.9)), Palette.INK)
+	assert_eq(CheckPanel.change_color("lead_time", 50.0, 50.0 * (1.0 - Pdca.CHECK_NOISE * 0.9)), Palette.INK)
+	assert_eq(CheckPanel.change_color("throughput", 30.0, 30.0 * (1.0 + Pdca.CHECK_NOISE * 1.5)), Palette.GREEN_DARK)
+	assert_eq(CheckPanel.change_color("lead_time", 50.0, 50.0 * (1.0 + Pdca.CHECK_NOISE * 1.5)), Palette.SAFETY_ORANGE)
+	assert_eq(CheckPanel.change_color("on_time", 0.0, 0.5), Palette.GREEN_DARK, "from nothing, any change counts")
+
+
 func _numbers(v: float) -> Dictionary:
 	return {"capacity": v, "throughput": v, "wip_age": v, "lead_time": v, "first_time_right": 0.8, "on_time": 0.7}
 

@@ -26,6 +26,9 @@ var mismatch_note: String
 var effects: Array = []
 ## Euros it costs every week while active (overtime, damage repairs, claims).
 var cost_per_week := 0
+## Days the Check measures at least (Region.check_window); 0: Region.MEASURE_DAYS. A stream
+## with few orders asks for more, so chance does not decide the Check.
+var measure_days := 0
 var teaches: PackedStringArray
 var clues: Array[Clue] = []
 ## The props on the 1e that show it while it is open (PLAN 2.6): [{tell, text}], the text
@@ -54,6 +57,7 @@ static func from_dict(d: Dictionary) -> ProblemDef:
 	p.mismatch_note = d.get("mismatch_note", "")
 	p.effects = d.get("effects", []).duplicate(true)
 	p.cost_per_week = int(d.get("cost_per_week", 0))
+	p.measure_days = JsonFile.int_or(d.get("measure_days"), 0)
 	p.teaches = PackedStringArray(d.get("teaches", []))
 	var fits: Dictionary = d.get("countermeasures", {})
 	for cm: String in fits:

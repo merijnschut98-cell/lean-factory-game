@@ -418,6 +418,8 @@ def test_a_countermeasure_can_unlock_the_kpi_board(rules_dirs):
     (lambda d: _cm(d).update(sustains="yes"), "'sustains' must be true or false"),
     (lambda d: _problem(d).update(cost_per_week=-5), "'cost_per_week' must be >= 0"),
     (lambda d: _problem(d).update(cost_per_week=99.5), "'cost_per_week' must be an integer"),
+    (lambda d: _problem(d).update(measure_days=20), "'measure_days' must be between 56 and 263"),
+    (lambda d: _problem(d).update(measure_days=90.5), "'measure_days' must be an integer"),
     (lambda d: d["countermeasures"]["countermeasures"].append(dict(_cm(d))), "duplicate countermeasures ids"),
 ])
 def test_problem_errors_are_caught(rules_dirs, mutate, message):
