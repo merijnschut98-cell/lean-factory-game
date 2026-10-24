@@ -20,6 +20,10 @@ var playing := ""
 var _scene: Dictionary = {}
 var _answer := -1
 var _asked := false
+## Whether the scene's KPI board was opened (a board scene, PLAN 2.4c).
+var _boarded := false
+## A board scene left with the board unhung waits until the player has left its room.
+var _paused := ""
 ## The people waiting in the room now, by cast id; the milestone they wait for.
 var _people: Dictionary = {}
 var _waiting_for := ""
@@ -55,8 +59,11 @@ func step(dt: float) -> void:
 	_since_poll = 0.0
 	var m := waiting()
 	_place_people(m)
-	if m != null and in_room(_room_of(m)):
+	var inside := m != null and in_room(_room_of(m))
+	if inside and m.id != _paused:
 		start(m.id)
+	elif not inside:
+		_paused = ""
 
 
 ## The active scene milestone whose room is on the loaded floor, or null.
@@ -83,6 +90,7 @@ func start(mission_id: String) -> void:
 	playing = mission_id
 	_answer = -1
 	_asked = false
+	_boarded = false
 	lines.say(_said(_scene["before"]))
 	if _scene["before"].is_empty():
 		_on_lines_done()
@@ -90,6 +98,9 @@ func start(mission_id: String) -> void:
 
 func _on_lines_done() -> void:
 	if playing.is_empty():
+		return
+	if _scene["board"] and not _boarded:
+		_open_board()
 		return
 	var choice: Dictionary = _scene["choice"]
 	if _answer < 0 and not choice.is_empty():
@@ -107,6 +118,38 @@ func _on_lines_done() -> void:
 	_scene = {}
 	_place_people(null)
 	office.ui.after_action()
+
+
+## The scene's KPI board (PLAN 2.4c): born here when no fix hung it, then opened at its
+## wall; what is said after it is chosen once it closes.
+func _open_board() -> void:
+	_boarded = true
+	office.session.hang_kpi_board()
+	office.reload_rooms()   # the board's ring
+	var board := office.open_kpi_board()
+	if board == null:
+		push_warning("milestone %s: the KPI board cannot open here" % playing)
+		_pause()
+		return
+	board.closed.connect(_on_board_closed)
+
+
+func _on_board_closed(_result: Dictionary) -> void:
+	if office.session.region.board.review_due(office.session.region.net.time):
+		_pause()   # left unhung: nothing is lost, the review waits
+		return
+	_scene = office.session.scene_of(playing)   # the lines after it read the choice and the forecast
+	if _scene["after"].is_empty():
+		_on_lines_done()
+	else:
+		lines.say(_said(_scene["after"]))
+
+
+## Stop the scene without finishing it; it starts again once the player comes back in.
+func _pause() -> void:
+	_paused = playing
+	playing = ""
+	_scene = {}
 
 
 func _on_chosen(index: int) -> void:

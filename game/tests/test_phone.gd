@@ -236,7 +236,9 @@ func test_opdrachten_lists_the_active_and_the_board_read_only() -> void:
 	var ui := office.ui
 	ui.toggle_phone(Phone.MISSIONS)
 	var app := ui.phone.app(Phone.MISSIONS)
-	for m: MissionDef in s.available_missions():
+	var offers := MissionBoard.offers_of(s, app.layer)   # the board's pace: at most two new sides a week
+	assert_false(offers.is_empty())
+	for m: MissionDef in offers:
 		assert_true(shows(app, UiText.mission_title(m, s)), "on the board: " + m.id)
 	assert_false(_buttons(app).any(func(t: String) -> bool: return t == "Aannemen"), "accepting is at the board")
 	assert_true(shows(app, MissionsApp.AT_THE_BOARD), "says where to take one on")

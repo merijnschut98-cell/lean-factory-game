@@ -2252,7 +2252,8 @@ dialogs:
     prompt: "Petra zegt tegen iedereen dat alles klopt. Iets te vaak."
     patience: 8
     trigger:
-      needs: {all: [checked:done_but_not_closed]}
+      # QA 2.12 (d): the arc's beat is her concern heard; then the check-in is over.
+      needs: {all: [checked:done_but_not_closed], none: [heard:petra_after]}
     opening: "Alles klopt. Tot op de laatste EAN. Ik zeg het maar even, voordat je het vraagt."
     warning: "Als je komt controleren: alles klopt."
     position: {text: "Het gaat goed. Elke ochtend één sessie. De Molen maalt.", tags: [claim]}
@@ -2268,6 +2269,8 @@ dialogs:
         lead_in: {text: "Het is alleen…", tags: [hesitation]}
         text: "Nu lijkt het alsof ik het al jaren fout deed. Elf jaar die maandrun. Ik dacht dat ik efficiënt was. En iedereen in de kantine weet dat de EAN's twee weken bij mij lagen."
         tags: [admission]
+        unlocks:
+          facts: [heard:petra_after]
     lines:
       reflect: "Het klinkt alsof je je schaamt voor iets wat jarenlang logisch was."
     outcomes:
@@ -2288,6 +2291,8 @@ dialogs:
             lead_in: {text: "En als ik ziek word…", tags: [hesitation]}
             text: "Dan ligt het stil. Dat zei ik toch. Niemand heeft geluisterd. Ik werk nu met koorts, want anders zien ze het meteen."
             tags: [admission]
+            unlocks:
+              facts: [heard:petra_after]
 
   # ── Marco na honderd dagen (Acts 0–II scripts §8) ─────────────
   - id: "marco_day_100"
@@ -2297,7 +2302,8 @@ dialogs:
     prompt: "Marco staat bij het bord in de gang, met zijn koffie."
     patience: 8
     trigger:
-      needs: {all: [done:fix_installer_not_ready]}
+      # QA 2.12 (d): the arc's beat is his concern heard; then the check-in is over.
+      needs: {all: [done:fix_installer_not_ready], none: [heard:marco_day_100]}
     opening: "Honderd dagen. Je bent er nog. Dat is al meer dan de vorige drie."
     warning: "Ik moet de bussen in. Kort dan."
     position: {text: "Het gaat goed bij ons. Minder ritten voor niks.", tags: [claim]}
@@ -2313,6 +2319,8 @@ dialogs:
         lead_in: {text: "En eerlijk is eerlijk…", tags: [hesitation]}
         text: "Ze vragen of jij blijft. Als jij over een jaar weggaat, hangt dit ook in de gang met de cijfers van 2023. Dan heb ik het ze weer beloofd. Voor niks."
         tags: [admission]
+        unlocks:
+          facts: [heard:marco_day_100]
     lines:
       experience: "Mijn eerste week liep ik langs dat bord in de gang, met de cijfers van 2023. Ik vroeg van wie het was. Niemand wist het meer."
     outcomes:
@@ -2498,11 +2506,11 @@ dialogs:
     patience: 9
     opening: "Vijf minuten werk, als ik eraan toekom. Dat zeg ik nu over alles. Sorry. Ga zitten."
     warning: "Ik moet echt verder rekenen."
-    position: {text: "We hebben twee analisten extra nodig. Achtendertig studies op het bord. Kort gezegd: ik heb geen tijd voor een gesprek over tijd.", tags: [claim], tell: time}
+    position: {text: "We hebben twee analisten extra nodig. Achtendertig studies op het bord. Kort gezegd: ik heb geen tijd voor een gesprek over tijd.", tags: [claim, feeling], tell: time}
     layers:
       - id: interest
-        at: 52
-        via: [inquiry, open_question]
+        at: 45
+        via: [inquiry, open_question, reflect]   # QA 2.12 (e): reflecting how tired she is opens her too
         text: "Bij de meeste studies weet ik na vijf minuten al dat het past. Daarna reken ik nog vier uur, omdat de werkinstructie het zegt. En die school in Nova-Oost wacht."
         tags: [claim, feeling]
         tell: time
@@ -2544,7 +2552,7 @@ dialogs:
     co_proposal: {id: signed_triage_rule, text: "Ik schrijf de grens. Op basis van de vrije ruimte per station, niet per aansluiting. Dat had ik in 2019 al moeten doen."}
     replies:
       mood:
-        lands: {text: "Hoe het gaat? Ik heb vanochtend drie keer koffie gehaald. Drie keer koud laten worden. Zo gaat het.", tell: time}
+        lands: {text: "Hoe het gaat? Ik heb vanochtend drie keer koffie gehaald. Drie keer koud laten worden. Zo gaat het.", tags: [feeling], tell: time}
       show_data:
         lands: {text: "Vier uur tegen een kwartier. Ja. Ik weet het. Ik zie het elke dag gebeuren."}
         misses: {text: "Ik weet hoe lang een studie duurt. Ik maak ze."}
@@ -2708,7 +2716,7 @@ dialogs:
     layers:
       - id: interest
         at: 45
-        via: [paraphrase, empathy]
+        via: [paraphrase, empathy, reflect]   # QA 2.12 (e): naming how tired she is opens her too
         text: "En naast me staat een hal met twee megawatt. Leeg. Leg me eens uit waarom het net vol is."
         tags: [claim, feeling]
       - id: concern
@@ -2741,6 +2749,8 @@ dialogs:
         reply: "Bellen voordat ik een gasoven koop. Ja. Dat beloof ik."
     co_proposal: {id: night_contract, text: "Ik bak om vier uur 's nachts. Is jullie net dan ook vol?"}
     replies:
+      mood:   # QA 2.12 (e): a feeling to answer, so listening has somewhere to go
+        lands: {text: "Hoe het gaat? Mijn deeg rijst, mijn oven is oud, en ik hang bij jullie aan de lijn. Raad maar.", tags: [feeling], tell: time}
       reflect:
         lands: {text: "Ja. Ik ben moe. Ik bak al dertig jaar op dezelfde plek, en ik wil gewoon verder.", tags: [claim, feeling], tell: time}
       perspective:
@@ -2946,6 +2956,33 @@ dialogs:
       - id: how_it_began
         ask: "Hoe bent u eigenlijk met die spreadsheet begonnen?"
         answer: "Toen de panelen op het dak kwamen, in 2021. Ik wilde weten wat ze opleverden. Veertig jaar heb ik storingen gezocht in fabrieken, en daar leer je één ding: eerst meten, dan praten. Mijn vrouw noemt het een hobby. Ik noem het een meetreeks."
+
+  # Femke on why the grid is full (catalogue §2.10 sector arc, Act I; talk_netplanner's goal:
+  # two topics heard). Her voice: "kort gezegd", tired, exact. ESTIMATES with their reasoning:
+  # a middenspanningsruimte turns 10 kV into the 400/230 V of the street and feeds a few
+  # hundred homes (the common Dutch layout, Netbeheer Nederland's descriptions); the 38
+  # studies and the four hours are the fix_grid_study_queue briefing's and its clue's.
+  - id: femke_expert
+    name: "Femke over het volle net"
+    person: femke
+    kind: expert
+    mission: talk_netplanner
+    opening: "Waarom het net vol is? Kort gezegd: dat leg ik je graag uit. Neem een stoel, de koffie is koud."
+    retry_opening: "Jij weer. Goed. Waar waren we?"
+    closing: "Zo. Nu weet je meer dan de meeste mensen die ons bellen. Ik moet verder rekenen."
+    topics:
+      - id: full
+        ask: "Wat bedoelen jullie eigenlijk als het net vol is?"
+        answer: "Kort gezegd: op het drukste moment van het jaar mag een kabel of een trafo niet harder werken dan waarvoor hij gemaakt is. Zit een station op een koude winteravond al tegen die grens, dan kan er niks meer bij. Niet de hele dag. Op dat ene moment."
+      - id: msr
+        ask: "Wat is zo'n middenspanningsruimte precies?"
+        answer: "Dat huisje in je straat, met een trafo erin. Die zet tienduizend volt om naar wat er uit je stopcontact komt. Eén ruimte voedt een paar honderd huizen, en hij is ontworpen op wat die huizen tegelijk vragen. Dat was lange tijd niet zoveel."
+      - id: together
+        ask: "Waarom maakt een warmtepomp zoveel uit?"
+        answer: "Omdat ze allemaal tegelijk aangaan. Op een koude avond draait in de hele straat de warmtepomp, en de auto hangt aan de laadpaal. Vroeger kookte de ene buurvrouw om zes uur en de andere om zeven. Hoeveel er tegelijk gebeurt, daar rekenen wij op. Dat is eigenlijk het hele vak."
+      - id: board
+        ask: "Hoe lang staat een aanvraag bij jullie op het bord?"
+        answer: "Te lang. Achtendertig studies op het bord, en we zijn met z'n tweeën. Een studie kost me een halve dag. Reken maar uit. En elke week komen er een paar bij."
 
   # Henk, before he retires: cable joints, the old cable, digging, his practice trench at the
   # opleidingsterrein, and what Ahmed still has to learn. No explainer on cables and joints

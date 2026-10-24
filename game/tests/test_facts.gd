@@ -122,6 +122,10 @@ func test_derived_facts_follow_play() -> void:
 	assert_true(log.knows("poor_fix:revision_backlog"), "the wrong root cause")
 	assert_true(log.knows("reputation>=30"))
 	assert_false(log.knows("maturity>=3"))
+	assert_eq(Facts.measure("floor_days>=28"), ["floor_days", 28])
+	assert_false(log.knows("floor_days>=28"), "QA 2.12 (c): the way back opens at the debt floor")
+	log.region.floor_days = 28
+	assert_true(log.knows("floor_days>=28"))
 
 
 func test_flags_and_the_fork_branch_done_first() -> void:

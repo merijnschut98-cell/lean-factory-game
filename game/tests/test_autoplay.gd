@@ -69,6 +69,22 @@ func test_milestones_do_not_dead_end_a_run() -> void:
 	assert_eq(review.map(func(m: Dictionary) -> String: return m["outcome"]), ["completed"], "the scene was played")
 
 
+## Het eerste kwartaal ends at the KPI board (PLAN 2.4c): autoplay hangs the persona's
+## KPIs there (the expert's play flow first), then the scene completes.
+func test_the_first_quarterly_review_is_played_at_the_board() -> void:
+	for persona: String in ["expert", "careless", "average"]:
+		var p := Autoplay.Persona.new(persona, 11)
+		p.s = GameSession.new_game(11, Catalog.DATA_DIR, false)
+		p.s.missions.done_once["fix_silo_kpis"] = true
+		p.s.pass_time(0)
+		assert_eq(p.s.missions.status("first_kpi_review"), "active")
+		assert_eq(p.play_scene(p.s.missions.defs["first_kpi_review"]), "", persona)
+		assert_eq(p.s.missions.status("first_kpi_review"), "completed", persona)
+		var steers := p.s.catalog.kpis.steers(p.s.region.board.chosen)
+		if persona != "average":
+			assert_eq(Array(steers), ["flow"] if persona == "expert" else ["output"], persona)
+
+
 func test_the_report_ranks_findings_by_severity() -> void:
 	var run: Dictionary = Autoplay.Persona.new("expert", 11, 1).play()
 	run["dead_ends"] = [{"kind": "belt_gate", "mission": "x", "detail": "d", "day": 1.0}]

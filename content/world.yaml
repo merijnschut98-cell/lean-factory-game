@@ -73,12 +73,12 @@ rooms:
     floor: second
     name: Directie & Obeya
     places: []
-    opens_with: [fix_silo_kpis]  # the KPI board's home
+    opens_with: [fix_silo_kpis, first_kpi_review]  # the KPI board's home; its first quarterly review plays here
   - id: grid_strategy
     floor: second
     name: Netstrategie
     places: [connections.grid_study, connections.grid_reinforcement, congestion.congestion_study]
-    opens_with: [look_at_grid_study, fix_grid_study_queue, fix_transformer_wait, fix_unused_capacity]
+    opens_with: [look_at_grid_study, fix_grid_study_queue, fix_transformer_wait, fix_unused_capacity, talk_netplanner]
   - id: congestion_desk
     floor: second
     name: Congestiedesk
@@ -118,7 +118,7 @@ rooms:
     name: Bussen
     places: [outages.repair, meters.visit]
     opens_with: [walk_outages, walk_meters, fix_wrong_joint, fix_not_at_home, fix_silent_meter,
-                 save_henks_knowledge]   # the rides start at the vans (rides below)
+                 save_henks_knowledge, fix_double_visits, fix_overtime_planning]   # the rides start at the vans (rides below)
   # PLAN 2.3: a small fenced training ground off the yard, south of the werkplaats: a practice
   # trench with a cable and a joint, a meterkast on a stand, a trafohuisje mock-up. Henk
   # teaches Ahmed there by doing while his knowledge is still in the building.

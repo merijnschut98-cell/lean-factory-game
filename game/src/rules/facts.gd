@@ -28,14 +28,17 @@ extends RefCounted
 ## promised date checked, Missions), holds:<problem> (its fix in use and not
 ## slipped, derived live by Missions.knows), and promised:<dialog>:<ISO date |
 ## action kind> (a promise agreed in a talk, PLAN 2.4: the date the simulation
-## checks, or the action promised; GameSession).
+## checks, or the action promised; GameSession); steers:<output | flow | customer>
+## (what the KPI board's choice in force asks of the teams most, KpiMenu.steers;
+## derived live by Missions.knows).
 const KINDS: Array[String] = ["done", "failed", "chose", "standardised", "poor_fix", "repaired", "fork_first", "flag",
 	"heard", "committed", "complied", "partial", "blocked", "checked", "accepted", "forecast_positive", "agreed",
-	"delivered", "left", "promise_kept", "promise_broken", "holds", "promised"]
+	"delivered", "left", "promise_kept", "promise_broken", "holds", "promised", "steers"]
 const PROMISED := "promised:"
 const FORECAST_POSITIVE := "forecast_positive:"
-## Live measures an atom can compare with ">=".
-const MEASURES: Array[String] = ["maturity", "reputation"]
+## Live measures an atom can compare with ">=": the region's maturity and reputation,
+## and the days its budget spent at the debt floor (Region.floor_days, QA 2.12 (c)).
+const MEASURES: Array[String] = ["maturity", "reputation", "floor_days"]
 
 var _facts: Dictionary[String, bool] = {}
 

@@ -204,6 +204,9 @@ class Persona extends RefCounted:
 	var _search: Dictionary = {}  # problem id → {actions, plan, next, barren: {pair: n}, dead: {pair: true}, assisted}
 	var _tried: Dictionary = {}  # problem id → countermeasure ids tried
 	var _ruled_out: Dictionary = {}  # problem id → countermeasure ids the A3 refused (a repair needs another)
+	## problem id → countermeasures the directie would not fund in a bad period (no_funds); tried
+	## again once nothing else is left and a week has passed.
+	var _unfunded: Dictionary = {}
 	var _coached: Dictionary = {}  # "mission|stage" → true
 	var _refused: Dictionary = {}  # "mission|code" → true
 	var _given_up: Dictionary = {}  # mission ids nobody can finish
@@ -404,7 +407,9 @@ class Persona extends RefCounted:
 				continue
 			var needs_done := Array(m.requires_missions).filter(func(id: String) -> bool:
 				return not s.missions.done_once.has(id))
-			if needs_done.is_empty():
+			# Locked by its belt alone is a gate; locked by a situation that may never come
+			# (the way back opens at the debt floor: requires.facts) is not a dead end.
+			if needs_done.is_empty() and s.xp() < Progression.BELTS[m.requires_belt]["xp"]:
 				gated.append("%s needs %s (%d XP), has %d XP" % [m.id, Progression.BELTS[m.requires_belt]["id"],
 					Progression.BELTS[m.requires_belt]["xp"], s.xp()])
 			elif needs_done.any(func(id: String) -> bool: return s.missions.status(id) == "failed"):
@@ -603,17 +608,52 @@ class Persona extends RefCounted:
 				return _solve(m)  # a repair quest's accept took the fix back to the A3
 			"sustain":
 				return _sustain(m)
-			"scene":  # a milestone's scene: go to its room and sit through it, the first answer
-				var code := s.finish_scene(m.id, 0)
+			"scene":
+				var code := play_scene(m)
 				if not code.is_empty():
 					_dead_end("scene_refused", m.id, code)
 					_give_up(m)
 				return true
 			"story_order":
 				return false  # the simulation judges it on its day: nothing to do but play on
+			"talk_to" when m.goal_topics > 0:  # an expert talk's topics (talk_netplanner): have the talk
+				var code := _converse(s.people.dialogs[m.goal_dialog])
+				if code.begins_with("error:"):
+					_dead_end("expert_talk_refused", m.id, code)
+					_give_up(m)
+				return true
 		_dead_end("unknown_goal", m.id, m.goal_type)
 		_give_up(m)
 		return true
+
+	## A milestone's scene: go to its room and sit through it, the first answer; a scene
+	## that ends at the KPI board (PLAN 2.4c) hangs the persona's KPIs there first
+	## (kpi_choice). "" or GameSession.finish_scene's code.
+	func play_scene(m: MissionDef) -> String:
+		if s.scene_of(m.id).get("board", false) and s.hang_kpi_board() \
+				and s.region.board.review_due(s.region.net.time):
+			var result := s.kpi_review(kpi_choice())
+			if not result["error"].is_empty():
+				return "kpi_review:" + result["error"]
+		return s.finish_scene(m.id, 0)
+
+	## Two KPIs per team the persona's way: the expert's play hangs flow first, then the
+	## customer; the careless the output numbers it knows; the average any two.
+	func kpi_choice() -> Dictionary:
+		var order: Array = {"expert": ["flow", "customer", "output"], "careless": ["output", "customer", "flow"]}.get(style, [])
+		var choice := {}
+		for pool: String in s.catalog.kpis.menus:
+			var menu: Array = (s.catalog.kpis.menus[pool] as Array).duplicate()
+			if order.is_empty():   # the average persona's two are any two (its own seeded draws)
+				for i in range(menu.size() - 1, 0, -1):
+					var j := rng.randi_range(0, i)
+					var held: KpiDef = menu[i]
+					menu[i] = menu[j]
+					menu[j] = held
+			else:
+				menu.sort_custom(func(a: KpiDef, b: KpiDef) -> bool: return order.find(a.focus) < order.find(b.focus))
+			choice[pool] = menu.slice(0, 2).map(func(k: KpiDef) -> String: return k.id)
+		return choice
 
 	## Whether the mission's own goal is met and only its closing talk is left
 	## (Missions reads the talk through its `talked` Callable).
@@ -1131,6 +1171,11 @@ class Persona extends RefCounted:
 	# ── The A3, the Check and the Act ───────────────────────────────────────
 
 	func _submit(m: MissionDef, p: ProblemDef) -> bool:
+		var out: Array = _ruled_out.get(p.id, []) + _unfunded.get(p.id, [])
+		if _unfunded.has(p.id) and s.countermeasures().all(func(c: CountermeasureDef) -> bool: return c.id in out):
+			_unfunded.erase(p.id)  # nothing the region can pay now: wait for money, then try again
+			s.wait_days(7.0)
+			return true
 		var a3 := _compose_a3(p)
 		var cost: int = s.region.countermeasures[a3["cm"]].budget if s.region.countermeasures.has(a3["cm"]) else 0
 		var code := s.submit_a3(p.id, a3)
@@ -1147,6 +1192,9 @@ class Persona extends RefCounted:
 			return true  # the next A3 puts another countermeasure on it
 		if code == "evidence" and _investigate(m, p):
 			return true
+		if code == "no_funds":
+			(_unfunded.get_or_add(p.id, []) as Array).append(a3["cm"])
+			return true  # the next A3 puts a cheaper countermeasure on it
 		_dead_end("a3_refused", m.id, "%s (A3 %s)" % [code, a3])
 		_give_up(m)
 		return true
@@ -1157,7 +1205,7 @@ class Persona extends RefCounted:
 		var correct := options.find(p.root_cause)
 		var found := s.clues_found(p.id).map(func(c: Clue) -> String: return c.id)
 		var keys := s.clues_found(p.id).filter(func(c: Clue) -> bool: return c.key).map(func(c: Clue) -> String: return c.id)
-		var ruled_out: Array = _ruled_out.get(p.id, [])
+		var ruled_out: Array = _ruled_out.get(p.id, []) + _unfunded.get(p.id, [])
 		var available: Array[CountermeasureDef] = []
 		available.assign(s.countermeasures().filter(func(c: CountermeasureDef) -> bool: return not c.id in ruled_out))
 		var fitting := available.filter(func(c: CountermeasureDef) -> bool: return p.countermeasures.has(c.id))
@@ -2011,7 +2059,7 @@ class PlayReport extends RefCounted:
 		md.append("## Accessors GameSession lacks (the playtester reads Region/Missions instead)")
 		md.append("")
 		for line in [
-			"`kpi_review_due()`: `kpi_review(choices)` exists, but nothing says when a review is due and no screen calls it (PLAN 2.4c), so the quarterly review is not played here.",
+			"`kpi_review_due()`: the first quarterly review is played in its scene (first_kpi_review, at the KPI board); the playtester reads Region.board.review_due for it, and the later quarters (tier 2's lsw_kpi_review) are not played here.",
 			"`mission_status(id)` / `mission_progress(id)`: the board needs status, deadline left (opened_at + deadline_days) and observe progress without reaching into session.missions.",
 			"`stage_of(mission_id)`: the coach's stage, for a UI hint and for tests.",
 			"`problem(id)` / `key_clues_found(id)`: the problem's definition and found key clues are read through session.region.",
