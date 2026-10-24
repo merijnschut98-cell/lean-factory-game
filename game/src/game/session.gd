@@ -680,12 +680,15 @@ func is_practice(problem_id: String) -> bool:
 
 
 ## The active missions: the main one first, then the training day, then the
-## side missions, then the milestones (no slot: the story's moments).
+## side missions, then the milestones (no slot: the story's moments), then the
+## routines (no slot either: the weekly round).
 func active_missions() -> Array[MissionDef]:
 	var out := missions.active("main")
 	out.append_array(missions.active("training"))
-	out.append_array(missions.active("side"))
+	var sides := missions.active("side")
+	out.append_array(sides.filter(func(m: MissionDef) -> bool: return not m.is_routine()))
 	out.append_array(missions.active("milestone"))
+	out.append_array(sides.filter(func(m: MissionDef) -> bool: return m.is_routine()))
 	return out
 
 

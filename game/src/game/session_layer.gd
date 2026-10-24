@@ -276,9 +276,15 @@ func discovery_toast(s: GameSession, id: String) -> bool:
 
 ## Whether the board holds a mission back until it is offered: authored side
 ## missions without a clock. A main mission, a side with a deadline (its
-## clock runs from when it opens) and a built side quest never wait.
+## clock runs from when it opens), a built side quest and a routine never wait.
 func held_back(m: MissionDef) -> bool:
-	return m.kind == "side" and m.deadline_days < 0 and not is_built(m) and not offered.has(m.id)
+	return _paced(m) and m.deadline_days < 0 and not offered.has(m.id)
+
+
+## A side the weekly pacing counts: authored, not a routine (the weekly round is
+## on the board every week it is due, and never "Nog open").
+static func _paced(m: MissionDef) -> bool:
+	return m.kind == "side" and not is_built(m) and not m.is_routine()
 
 
 ## A side quest the rules build (a check-in or a repair), not content.
@@ -293,7 +299,7 @@ func _offer(s: GameSession) -> void:
 	var week := _week(today)
 	var this_week := offered.values().filter(func(d: int) -> bool: return _week(d) == week).size()
 	for m in s.available_missions():
-		if m.kind != "side" or is_built(m) or offered.has(m.id):
+		if not _paced(m) or offered.has(m.id):
 			continue
 		if m.deadline_days >= 0 or this_week < NEW_SIDES_PER_WEEK:
 			offered[m.id] = today
@@ -305,14 +311,14 @@ func _offer(s: GameSession) -> void:
 func new_offers(s: GameSession) -> Array[MissionDef]:
 	var today := SimCalendar.day_of(s.region.net.time)
 	return s.available_missions().filter(func(m: MissionDef) -> bool:
-		return not held_back(m) and (m.kind != "side" or not offered.has(m.id) or today - offered[m.id] < 7))
+		return not held_back(m) and (not _paced(m) or not offered.has(m.id) or today - offered[m.id] < 7))
 
 
 ## Sides offered more than a week ago and still open ("Nog open").
 func older_offers(s: GameSession) -> Array[MissionDef]:
 	var today := SimCalendar.day_of(s.region.net.time)
 	return s.available_missions().filter(func(m: MissionDef) -> bool:
-		return m.kind == "side" and offered.has(m.id) and today - offered[m.id] >= 7)
+		return _paced(m) and offered.has(m.id) and today - offered[m.id] >= 7)
 
 
 ## The sim's weeks start on Monday (SimCalendar.weekday).

@@ -157,6 +157,12 @@ var steps: Dictionary = {}
 var error := ""
 
 
+## A recurring side (leader standard work: the weekly gemba round) is a routine, not a
+## problem's side: it takes no side slot, as a milestone takes none.
+func is_routine() -> bool:
+	return kind == "side" and recurring_days > 0
+
+
 static func from_dict(d: Dictionary) -> MissionDef:
 	var m := MissionDef.new()
 	m.id = str(d.get("id", ""))
