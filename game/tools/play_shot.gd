@@ -65,6 +65,10 @@ extends SceneTree
 ## play_van_ride, play_van_talk, play_van_choose (PLAN 2.15 S2-Y: riding along with Sandra,
 ## the edge of town going by; Henk's talk in the cab, his face, then the two of you) · play_opleidingsterrein (Henk shows Ahmed the
 ## joint at the practice trench) · play_yard_morning (07:38: the monteurs at their vans).
+## play_trafohuisje, play_explainer_trafo_fiets, play_explainer_trafo_cross,
+## play_explainer_trafo_trafo (PLAN 2.7c S3-X: at the trafohuisje mock-up on the
+## opleidingsterrein, its prompt; E there: "Hoe werkt het? 2" with the chain warm on the
+## fiets, the cross-fade half-way, the trafo above its nameplate with the hours).
 ## play_tell_yard_kanban_high, play_tell_storingsbord_high, play_tell_rack_high,
 ## play_tell_returns_high, play_tell_measurement_high, play_tell_yard_low (S3-Y: the yard's tells:
 ## the van kanban wall, the storingsbord looked at closer, the joint shelf, the returns pallet,
@@ -338,6 +342,8 @@ func _run() -> void:
 			await _calls_and_experts(office, state)
 		"play_van_ride", "play_van_talk", "play_van_choose", "play_opleidingsterrein", "play_yard_morning":
 			await _yard_life(office, state)
+		"play_trafohuisje", "play_explainer_trafo_fiets", "play_explainer_trafo_cross", "play_explainer_trafo_trafo":
+			await _trafohuisje(office, state)
 		"play_tell_yard_kanban_high", "play_tell_storingsbord_high", "play_tell_rack_high", "play_tell_returns_high", \
 				"play_tell_measurement_high", "play_tell_yard_low":
 			_yard_tells(office, state)
@@ -1211,3 +1217,54 @@ func _second(office: Office, state: String) -> void:
 			office.rig.snap()
 			if state == "play_tell_obeya_high":   # capture with ~25 frames, before the line's time is up
 				office.use(OfficeTells.node(office.geometry, "obeya_board"))
+
+
+## The trafohuisje on the opleidingsterrein (S3-X): the ground open with Henk's knowledge,
+## you at the mock-up's doors; E there opens "Hoe werkt het? 2", driven by hand to a beat.
+func _trafohuisje(office: Office, state: String) -> void:
+	office.session.missions.progress["save_henks_knowledge"] = {"status": "active", "asks": {}, "seen": {}}
+	office.session.pass_time(posmod(10 * 60 + 20 - office.session.minute_of_day(), SimCalendar.MINUTES_PER_DAY))
+	office.ui.after_action()
+	office.floors._process(OfficeFloors.POLL_SECONDS)
+	office.floors.go_to("yard", "exit", true)
+	office.daylight.update(office.session)
+	var at := office.interactable(OfficeTrafohuisje.ID)
+	if at == null:
+		printerr("no trafohuisje on the yard")
+		return
+	var stand := OfficeTrafohuisje.stand(office)
+	office.player.position = stand.origin + stand.basis.z * 0.3
+	office.player.face(Basis.looking_at(stand.origin - stand.basis.z * 2.0 - office.player.position))
+	office.rig.yaw = office.player.rotation.y + deg_to_rad(20)
+	office.rig.snap()
+	if state == "play_trafohuisje":
+		for i in 20:
+			await process_frame
+		return
+	office.player.position = stand.origin
+	office.interact(at)
+	var v := office.explainer
+	v.set_process(false)
+	var play := func(seconds: float) -> void:
+		var t := 0.0
+		while t < seconds:
+			v.step(1.0 / 30.0)
+			t += 1.0 / 30.0
+	var skip_to := func(id: String) -> void:
+		var guard := 0
+		while v.beats.beat_id() != id and guard < 30:
+			v.press(KEY_SPACE)
+			guard += 1
+	skip_to.call("f2")
+	for i in 3:
+		v.press(KEY_UP)
+	play.call(8.0)
+	if state == "play_explainer_trafo_cross":
+		skip_to.call("x")
+		play.call(0.7)
+	elif state == "play_explainer_trafo_trafo":
+		skip_to.call("t4")
+		v.press(KEY_UP)
+		play.call(8.0)
+	for i in 30:
+		await process_frame
