@@ -153,3 +153,20 @@ func test_the_checks_gains_are_saved() -> void:
 	junk["gains"] = "none"
 	assert_true(loaded.load_dict(junk))
 	assert_eq(loaded.gains, {})
+
+
+## The Check's two runs (with and without the fix) travel with the problem for the
+## debrief's numbers; untrusted like the gains.
+func test_the_checks_numbers_are_saved() -> void:
+	var st := ProblemState.new("custom_design")
+	st.checked = {"with": {"lead_time": 41.0}, "without": {"lead_time": 54.0}}
+	var loaded := ProblemState.new("custom_design")
+	assert_true(loaded.load_dict(_via_file(st.to_dict())))
+	assert_eq(loaded.checked, st.checked)
+	var junk := st.to_dict()
+	junk["checked"] = {"with": {"lead_time": "soon"}, "without": 3, "made_up": {"lead_time": 1.0}}
+	assert_true(loaded.load_dict(junk))
+	assert_eq(loaded.checked, {"with": {}, "without": {}})
+	junk.erase("checked")
+	assert_true(loaded.load_dict(junk), "a save from before has none")
+	assert_eq(loaded.checked, {"with": {}, "without": {}})

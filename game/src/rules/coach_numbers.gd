@@ -54,11 +54,12 @@ static func kpi_now(region: Region, m: MissionDef, clauses: Dictionary) -> Strin
 	var value := float(now.get(p.kpi, 0.0))
 	if value <= 0.0 or (p.kpi != "capacity" and float(now["throughput"]) <= 0.0):
 		return ""
-	return str(clauses[p.kpi]).replace("{value}", _number(p.kpi, value))
+	return str(clauses[p.kpi]).replace("{value}", spoken(p.kpi, value))
 
 
-## A KPI's value as Ruud says it: whole days and percents, per week with a decimal comma.
-static func _number(kpi: String, value: float) -> String:
+## A KPI's value as Ruud says it: whole days and percents, per week with a decimal comma
+## (the coach's questions, the debriefs' numbers).
+static func spoken(kpi: String, value: float) -> String:
 	match kpi:
 		"first_time_right", "on_time":
 			return str(roundi(value * 100.0))
