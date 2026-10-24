@@ -673,7 +673,8 @@ def check_tells(docs: dict[str, Any]) -> None:
 # ── facts and needs (path dependence, game/src/rules/facts.gd) ───────────────
 # A fact kind → how many ids follow it ("chose:<problem>:<cm>"). The dialog
 # facts (heard: ... blocked:) name a dialog; they are checked once dialogs exist.
-FACT_KINDS = {"done": 1, "failed": 1, "chose": 2, "standardised": 1, "poor_fix": 1, "repaired": 1, "fork_first": 2,
+FACT_KINDS = {"done": 1, "failed": 1, "chose": 2, "standardised": 1, "poor_fix": 1, "wrong_cause": 1,
+              "repaired": 1, "fork_first": 2,
               "flag": 1, "heard": 1, "committed": 1, "complied": 1, "partial": 1, "blocked": 1,
               "checked": 1, "accepted": 1, "forecast_positive": 1,
               # the story's (phase-2 design §3.2): a proposal agreed, a followed story delivered,
@@ -1336,7 +1337,8 @@ def _atom_robust(atom: str, where: str, index: dict) -> bool:
     kind, ids = _atom_parts(atom, where)
     if kind in ("done", "accepted") and ids[0] not in index["missions"] or kind == "failed" and ids[0] not in index["deadlines"]:
         raise ContentError(f"{where}: {atom!r} names no such mission{' with a deadline' if kind == 'failed' else ''}")
-    if kind in ("chose", "standardised", "poor_fix", "repaired", "checked", "holds") and ids[0] not in index["problems"]:
+    if kind in ("chose", "standardised", "poor_fix", "wrong_cause", "repaired", "checked", "holds") \
+            and ids[0] not in index["problems"]:
         raise ContentError(f"{where}: {atom!r} names an unknown problem")
     if kind == "delivered" and ids[0] not in STORIES:
         raise ContentError(f"{where}: {atom!r} names no followed story ({', '.join(STORIES)})")
@@ -1368,7 +1370,7 @@ def _fact_reachable(atom: str, done: set, maturity: int, reputation: int, index:
         return ids[-1] in done
     if kind == "failed":
         return True  # a deadline can always be missed
-    if kind in ("chose", "standardised", "poor_fix", "repaired", "checked"):
+    if kind in ("chose", "standardised", "poor_fix", "wrong_cause", "repaired", "checked"):
         return index["solved_by"].get(ids[0]) in done
     if kind == "flag":
         return any(atom in m_flags for m_id, m_flags in index["flags_by"].items() if m_id in done)

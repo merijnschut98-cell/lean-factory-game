@@ -94,8 +94,8 @@ func test_missions_open_on_maturity_reputation_trust_any_of_and_facts() -> void:
 
 
 ## Facts the rules derive: done and failed missions, the fix the Act chose
-## (replaced by a later one), whether it was standardised, and a poor fix:
-## a countermeasure fitting 0.2 or more below the best, or a wrong root cause.
+## (replaced by a later one), whether it was standardised, a poor fix (a
+## countermeasure fitting 0.2 or more below the best) and a wrong root cause.
 func test_derived_facts_follow_play() -> void:
 	var log := _log()
 	_walk_connections(log)
@@ -119,7 +119,8 @@ func test_derived_facts_follow_play() -> void:
 	assert_false(log.knows("poor_fix:custom_design"))
 	log.accept("fix_revision")
 	_resolve(log, "revision_backlog", "revision_at_source", true, false)
-	assert_true(log.knows("poor_fix:revision_backlog"), "the wrong root cause")
+	assert_false(log.knows("poor_fix:revision_backlog"), "the wrong root cause is no poor fit")
+	assert_true(log.knows("wrong_cause:revision_backlog"), "the wrong root cause")
 	assert_true(log.knows("reputation>=30"))
 	assert_false(log.knows("maturity>=3"))
 	assert_eq(Facts.measure("floor_days>=28"), ["floor_days", 28])
@@ -217,3 +218,14 @@ func test_the_debrief_reads_the_play() -> void:
 	assert_eq(log.debrief_of("fix_it"), "b")
 	var plain := MissionDef.from_dict(_mission("x", "side", {"type": "walk", "stream": "meters"}, {"debrief_variants": {"blamed": "b"}}))
 	assert_eq(plain.debrief_variants, {"blamed": "b"})
+
+
+## Review 381d21c..0ec040f #3: the poor-fix debrief names the countermeasure it was written
+## for, so a wrong root cause with a well-fitting fix never shows it.
+func test_a_wrong_cause_with_a_good_fix_shows_no_poor_fix_debrief() -> void:
+	var log := _log(RulesFixture.countermeasures(), [_mission("fix_it", "side", {"type": "solve", "problem": "revision_backlog"},
+		{"debrief": "plain", "debrief_variants": {"poor_fix": "p"}})])
+	log.accept("fix_it")
+	_resolve(log, "revision_backlog", "revision_at_source", true, false)
+	assert_true(log.knows("wrong_cause:revision_backlog"))
+	assert_eq(log.debrief_of("fix_it"), "plain")

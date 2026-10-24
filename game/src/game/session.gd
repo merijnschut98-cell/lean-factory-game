@@ -617,7 +617,8 @@ func principle_line(mission_id: String) -> String:
 	if m == null or m.kind != "main" or m.goal_problem.is_empty():
 		return ""
 	var st: ProblemState = region.state.get(m.goal_problem)
-	var facts := {"poor_fix": missions.knows("poor_fix:" + m.goal_problem), "fading": missions.fading_fix(m),
+	var short := ["poor_fix", "wrong_cause"].any(func(k: String) -> bool: return missions.knows("%s:%s" % [k, m.goal_problem]))
+	var facts := {"poor_fix": short, "fading": missions.fading_fix(m),
 		"blamed": st != null and st.blamed, "complied": "", "committed": "",
 		"standardised": st != null and st.standardised, "failed_checks": st.failed_checks if st != null else 0}
 	for d: DialogDef in (people.dialogs.values() if people != null else []):

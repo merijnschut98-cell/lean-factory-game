@@ -83,3 +83,37 @@ def test_a_passing_poor_fix_has_its_own_debrief(m):
     poor = [c for c in _passing(m) if _poor(m["goal"]["problem"], c)]
     assert not poor or "poor_fix" in m.get("debrief_variants", {}), \
         f"{m['id']}: {poor} pass as poor fixes, but the debrief describes the best fix"
+
+
+
+# A `poor_fix` debrief describes the poor fix the player chose, so it must read true for every
+# poor fix that can trigger it (review 381d21c..0ec040f #3; a wrong root cause no longer does:
+# fact wrong_cause). Each text was read against these countermeasures; a new poor fix for one of
+# these problems fails here until someone rereads the text for it and adds it.
+POOR_FIX_TEXT_READ_FOR = {
+    "fix_custom_design": {"delegated_approval"},
+    "fix_incomplete_application": {"intake_checklist"},
+    "fix_installer_not_ready": {"backup_job_per_day"},
+    "fix_status_callers": {"realistic_promise"},
+    "fix_done_but_not_closed": {"mid_month_run"},
+    "fix_revision_backlog": {"daily_revision_template"},
+    "fix_grid_study_queue": {"calculation_templates", "study_overtime_sprint"},
+    "fix_transformer_wait": {"strategic_transformer_stock"},
+    "fix_unused_capacity": {"capacity_usage_dashboard", "flexible_contracts"},
+    "fix_silo_kpis": {"connections_wip_limit", "shared_team_goals"},
+    "fix_wrong_joint": {"van_refill_card"},
+    "fix_silent_meter": {"coverage_check_in_planning"},
+    "fix_inverters_tripping": {"tap_trial_one_station", "smart_meter_voltage_data", "targeted_reinforcement"},
+    "save_henks_knowledge": {"henks_one_point_lessons", "work_instruction_videos"},
+    "fix_double_visits": {"customer_self_report"},
+    "fix_overtime_planning": {"overtime_cap"},
+}
+
+
+def test_every_poor_fix_debrief_was_read_for_every_poor_fix_that_shows_it():
+    with_text = {m["id"]: m for m in REAL["missions"]["missions"] if "poor_fix" in m.get("debrief_variants", {})}
+    assert set(with_text) == set(POOR_FIX_TEXT_READ_FOR), "a poor_fix debrief added or removed: read it and list it"
+    for mission_id, m in with_text.items():
+        fits = PROBLEMS[m["goal"]["problem"]]["countermeasures"]
+        poor = {c for c, f in fits.items() if f <= max(fits.values()) - POOR_FIT_GAP + 1e-9}
+        assert poor == POOR_FIX_TEXT_READ_FOR[mission_id], f"{mission_id}: reread its poor_fix debrief for {poor}"

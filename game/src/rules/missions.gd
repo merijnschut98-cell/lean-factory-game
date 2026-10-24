@@ -590,13 +590,15 @@ func _note_fix(p: ProblemDef, st: ProblemState) -> void:
 	facts.remove_prefix("chose:%s:" % p.id)
 	facts.add("chose:%s:%s" % [p.id, cm])
 	stewardship.noted(p.id, region.net.time)
-	for kind in ["standardised", "poor_fix"]:
+	for kind in ["standardised", "poor_fix", "wrong_cause"]:
 		facts.remove("%s:%s" % [kind, p.id])
 	if st.standardised:
 		facts.add("standardised:" + p.id)
+	if not st.cause_correct:   # no poor fix: the poor-fix debrief names the countermeasure it was written for
+		facts.add("wrong_cause:" + p.id)
 	var best: float = p.countermeasures.values().max()
 	repairs.due.erase(p.id)
-	if not st.cause_correct or p.countermeasures.get(cm, 0.0) <= best - POOR_FIT_GAP + 1e-9:
+	if p.countermeasures.get(cm, 0.0) <= best - POOR_FIT_GAP + 1e-9:
 		facts.add("poor_fix:" + p.id)
 		repairs.due[p.id] = region.net.time + SimCalendar.days(Repairs.AFTER_DAYS)
 

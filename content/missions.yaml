@@ -35,7 +35,8 @@
 # reopen     the briefing when the mission is back because its fix faded
 # requires   also maturity (1-4), reputation (0-100), trust {team: n},
 #            any_of [missions], facts {all, any, none} (facts such as
-#            done:<mission>, chose:<problem>:<cm>, poor_fix:<problem>,
+#            done:<mission>, chose:<problem>:<cm>, poor_fix:<problem> (a poor
+#            fit), wrong_cause:<problem> (the A3's root cause was wrong),
 #            flag:<name>, or measures such as maturity>=3)
 # rewards    also reputation (default: main 5, side 2) and trust {team: n}
 # sets_flags [flag:<name>] facts its completion sets
@@ -755,7 +756,7 @@ missions:
     debrief_variants:
       # A poor fix: the WIP limit (the counts still steer) or shared goals without one
       # board (each team still sees its own part).
-      poor_fix: "Er komt minder terug bij de monteurs. Bij de Check was zonder je aanpak {kpi_before} procent van de aansluitingen in één keer goed, met je aanpak {kpi_after} procent. Maar nog steeds kijkt elk team naar zijn eigen stuk; de aansluiting van begin tot eind ziet niemand. Waar zou Marco moeten kijken om te zien of het beter gaat?"
+      poor_fix: "Er komt minder terug bij de monteurs. Bij de Check was zonder je aanpak {kpi_before} procent van de aansluitingen in één keer goed, met je aanpak {kpi_after} procent. Maar de aansluiting van aanvraag tot meter staat nog nergens op één plek; elk team ziet vooral zijn eigen stuk. Waar zou Marco moeten kijken om te zien of het beter gaat?"
     reopen: "In het MT liggen weer twee recordmaanden op tafel en de aansluitingen gaan niet sneller. Waar kijken de teams nu weer naar?"
     goal: {type: solve, problem: silo_kpis}
     talk_to: [{dialog: sanne_kpi, outcome: partial}]
@@ -923,7 +924,7 @@ missions:
     briefing: "Wim Kortekaas, gepensioneerd elektrotechnicus in de Zonnestraat, stuurt ons elke maand een spreadsheet: zijn omvormer schakelt op zonnige middagen uit, al drie jaar. Inmiddels klagen er twintig buren. Onze monteurs meten adres na adres en vinden in de woning niets mis. Wat zien ze niet?"
     debrief: "Eén aftakking per wijk lost tientallen klachten op. De slimme meters hadden het al die tijd gezien. Wim stuurt geen spreadsheet meer, alleen een kerstkaart. Eén ding nog: wie de spanning in juli omlaag zet, moet in januari kijken wat de warmtepompen ervan vinden."
     debrief_variants:
-      poor_fix: "In de Zonnestraat zijn de klachten minder geworden. Maar de aftakkingen zijn niet in elke wijk nagekeken, en elders valt op een zonnige middag nog steeds een omvormer uit. Wim is tevreden; zijn buren twee straten verderop nog niet. Waar staat de aftakking nog zoals in 2009?"
+      poor_fix: "In de Zonnestraat zijn de klachten minder geworden. Maar in de meeste wijken staat de aftakking nog zoals hij stond, en elders valt op een zonnige middag nog steeds een omvormer uit. Wim is tevreden; zijn buren twee straten verderop nog niet. Waar staat de aftakking nog zoals in 2009?"
     goal: {type: solve, problem: inverters_tripping}
     rewards: {xp: 400, budget: 4000}
 
@@ -940,7 +941,7 @@ missions:
     briefing: "Henk Verbeek werkt veertig jaar bij Voltana. Als in een oude wijk de stroom uitvalt, belt iedereen Henk. Over acht weken geeft hij zijn afscheidsfeest; de uitnodiging hangt al op het prikbord. Vorige week zocht Ahmed Bouzid anderhalf uur naar een fout in een oude papierloodkabel en belde toen... Henk. Zorg dat Henks vakmanschap niet met hem de deur uit gaat."
     debrief: "Gisteren vond Ahmed zelf de fout in een papierloodkabel in Nova-Oud. Henk stond ernaast en zei niets. Dat was het compliment. Henk kan met een gerust hart met pensioen."
     debrief_variants:
-      poor_fix: "Henks video's staan op de tablet. Of ze genoeg zijn, merk je bij de eerste lastige storing zonder hem."
+      poor_fix: "Een deel van wat Henk weet, staat nu vastgelegd. Of dat genoeg is, merk je bij de eerste lastige storing zonder hem. Voelen of een kabel nat is, leer je niet uit een instructie alleen."
     fail: "Henk is met pensioen. Zijn afscheid was mooi, maar zijn kennis van de oude netten is met hem vertrokken. Een buddy die het kan voordoen is er niet meer. Wat er op papier staat, en wat Ahmed zelf leert, moet het nu doen."
     goal: {type: solve, problem: knowledge_drain}
     talk_to: [{dialog: henk_camera, outcome: partial}]
