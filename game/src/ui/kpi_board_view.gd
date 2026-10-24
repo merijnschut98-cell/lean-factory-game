@@ -137,20 +137,21 @@ func close() -> void:
 
 
 ## A number as it is written on a card: "54 dagen", "87%", "28 per week", "15 min".
+## The number itself as Ruud says it (CoachNumbers.spoken: one way of rounding).
 static func number_text(measure: String, value: float) -> String:
 	match measure:
 		"lead_days_p50", "wip_age":
-			return "%d dagen" % roundi(value)
+			return CoachNumbers.spoken("lead_time", value) + " dagen"
 		"throughput_per_week", "done_per_week":
-			return "%d per week" % roundi(value)
+			return CoachNumbers.spoken("throughput", value) + " per week"
 		"touch_minutes":
-			return "%d min" % roundi(value)
-	return "%d%%" % roundi(value * 100.0)
+			return CoachNumbers.spoken("lead_time", value) + " min"
+	return CoachNumbers.spoken("on_time", value) + "%"
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	var key := event as InputEventKey
-	if key != null and key.pressed and not key.echo and key.keycode == KEY_ESCAPE:
+	if key != null and key.pressed and not key.echo and key.physical_keycode == KEY_ESCAPE:
 		close()
 		get_viewport().set_input_as_handled()
 

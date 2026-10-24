@@ -95,6 +95,25 @@ func test_numbers_read_as_people_write_them() -> void:
 	assert_eq(KpiBoardView.number_text("touch_minutes", 15.0), "15 min")
 
 
+## Review S3 #11: the board writes a number as Ruud says it (one formatter, CoachNumbers.spoken).
+func test_the_board_and_ruud_round_alike() -> void:
+	assert_eq(KpiBoardView.number_text("done_per_week", 27.5), CoachNumbers.spoken("throughput", 27.5) + " per week")
+	assert_eq(KpiBoardView.number_text("on_time", 0.874), CoachNumbers.spoken("on_time", 0.874) + "%")
+
+
+## Review S3 #11: Esc closes the board by the key's place, whatever the keyboard layout.
+func test_esc_closes_the_board_by_its_physical_key() -> void:
+	var v := _open(_session())
+	(Engine.get_main_loop() as SceneTree).root.add_child(v)
+	var got := []
+	v.closed.connect(func(r: Dictionary) -> void: got.append(r))
+	var esc := InputEventKey.new()
+	esc.physical_keycode = KEY_ESCAPE
+	esc.pressed = true
+	v._unhandled_key_input(esc)
+	assert_eq(got, [{}])
+
+
 ## In the world: the board hangs on Directie & Obeya's wall on the 2e; once it exists,
 ## E there moves the camera in and opens it, and closing gives the world back with the
 ## wall showing the choice in force.
