@@ -20,7 +20,7 @@ static func capture(r: Region) -> Dictionary:
 		"profile": {"budget": r.profile.budget, "xp": r.profile.xp, "concepts": r.profile.concepts},
 		"observed": r.observed.keys(), "found": r.found.keys(), "trust": r.trust, "problems": problems,
 		"cost_owed": r._cost_owed, "kpi_board": r.board.to_dict(), "drift_from": r.drift_from,
-		"floor_days": r.floor_days,
+		"floor_days": r.floor_days, "advance_owed": r.advance_owed,
 		"routines": r.routines.keys(), "reputation": r.reputation.value, "aftermaths": r.aftermaths.duplicate(true),
 	}
 
@@ -44,6 +44,7 @@ static func restore(r: Region, d: Dictionary) -> Dictionary:
 		r.found[str(clue_id)] = true
 	r._cost_owed = float(d.get("cost_owed", 0.0))
 	r.floor_days = maxi(0, JsonFile.int_or(d.get("floor_days"), 0))  # saves from before it: none counted
+	r.advance_owed = maxi(0, JsonFile.int_or(d.get("advance_owed"), 0))  # junk or older saves: nothing owed
 	# Saves from before reputation start where a new game does.
 	r.reputation.value = clampi(int(d.get("reputation", Reputation.START)), 0, Reputation.MAX)
 	r._apply_bad_period()

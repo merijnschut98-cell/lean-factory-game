@@ -381,11 +381,12 @@ func test_debt_stops_at_a_floor_so_recovery_stays_within_reach() -> void:
 	_investigate(r)
 	assert_eq(r.submit_a3("custom_design", _a3(r, "delegated_approval")), "", "a small experiment can still be started")
 	assert_eq(r.profile.budget, Region.DEBT_FLOOR)
+	assert_eq(r.advance_owed, 1000, "EUR 2,000 with 1,000 above the floor: the rest is advanced")
 	assert_true(r.in_bad_period())
 	r.advance_days(7)
 	assert_eq(r.profile.budget, Region.DEBT_FLOOR, "the problem's costs stop at the floor")
 	r.grant(0, 5000)
-	assert_eq(r.profile.budget, Region.DEBT_FLOOR + 5000, "every reward counts towards recovery")
+	assert_eq(r.profile.budget, Region.DEBT_FLOOR + 4000, "every reward counts towards recovery, the advance first")
 
 
 ## QA 2.12 (c), ruling 2026-10-23: in a bad period the directie funds an experiment only up
@@ -415,7 +416,43 @@ func test_at_the_floor_an_always_funded_experiment_is_paid() -> void:
 	assert_eq(r.submit_a3("custom_design", _a3(r, "standard_designs")), "no_funds")
 	assert_eq(r.submit_a3("custom_design", _a3(r, "standard_designs"), Region.CHECK_DAYS, true), "",
 		"EUR 8,000 for the main or a deadline mission at the floor")
-	assert_eq(r.profile.budget, Region.DEBT_FLOOR, "the directie carries what goes beyond the floor")
+	assert_eq(r.profile.budget, Region.DEBT_FLOOR, "the budget stops at the floor")
+	assert_eq(r.advance_owed, 8000, "the directie advances it: owed in full, never free")
+
+
+## Review of 3c40ed8..381d21c #4: what the directie advanced is repaid first from any later
+## income (rewards, savings) before the budget rises again, so the patient cheap fix stays
+## cheaper than the expensive one even at the floor.
+func test_an_advance_is_repaid_before_the_budget_rises() -> void:
+	var r := _region(Region.DEBT_FLOOR)
+	r.advance_owed = 8000
+	r.grant(0, 5000)
+	assert_eq(r.advance_owed, 3000)
+	assert_eq(r.profile.budget, Region.DEBT_FLOOR, "the income went to the advance")
+	r.grant(0, 5000)
+	assert_eq(r.advance_owed, 0)
+	assert_eq(r.profile.budget, Region.DEBT_FLOOR + 2000, "the rest counts towards recovery")
+	r.grant(0, -1000)
+	assert_eq(r.advance_owed, 0, "a cost is never an advance; only an experiment past the floor is")
+
+
+func test_an_advance_is_saved_and_junk_reads_as_none() -> void:
+	var r := _region(Region.DEBT_FLOOR)
+	r.advance_owed = 4200
+	var copy := _region()
+	assert_eq(RegionState.restore(copy, RegionState.capture(r))["error"], "")
+	assert_eq(copy.advance_owed, 4200)
+	for junk: Variant in [{"x": 1}, "veel", -500]:
+		var saved := RegionState.capture(r)
+		saved["advance_owed"] = junk
+		var again := _region()
+		assert_eq(RegionState.restore(again, saved)["error"], "")
+		assert_eq(again.advance_owed, 0, str(junk))
+	var old := RegionState.capture(r)
+	old.erase("advance_owed")
+	var before := _region()
+	assert_eq(RegionState.restore(before, old)["error"], "")
+	assert_eq(before.advance_owed, 0, "a save from before it owes nothing")
 
 
 ## QA 2.12 (c): the region counts the days its budget spent at the floor (the way back,
