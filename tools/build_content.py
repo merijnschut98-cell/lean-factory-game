@@ -2730,22 +2730,37 @@ def vocabulary() -> dict[str, Any]:
 # Required files and their validators; problems_tier<n>.yaml files (one per
 # tier) all use validate_problems.
 # ── explainers.yaml ─────────────────────────────────────────────────────────
-# "Hoe werkt het?" (PLAN 2.7c; spec 2026-10-16-explainer-spanning-stroom-weerstand §6.2).
+# "Hoe werkt het?" (PLAN 2.7c; specs 2026-10-16-explainer-spanning-stroom-weerstand §6.2 and
+# 2026-10-24-explainer-transformator §6).
 
-# The beats the beat machine (game/src/rules/explainers/explainer_beats.gd) plays.
-EXPLAINER_BEATS = ["a1", "a2", "a2_dripper", "a3", "a4", "x", "r1", "r2", "r3", "r4", "r4_already_on",
-                   "r5", "r5_lamp", "r6", "r7", "r7_never_alone", "r8a", "r8b"]
-EXPLAINER_PHASES = {"tuin", "cross", "meterkast"}
-EXPLAINER_WAITS = {"any_on", "two_on", "kettle_on", "heater_on", "heater_again", "haspel"}
-EXPLAINER_CONDITIONS = {"only_lamp", "kettle_on", "heater_on", "never_kettle_alone"}
+# Per model, its rig (game/src/rules/explainers/*_rig.gd): the beats it must have, the waits and
+# conditions it knows, and the readout labels it fills.
+EXPLAINER_RIGS = {
+    "ohm_cable": {
+        "beats": ["a1", "a2", "a2_dripper", "a3", "a4", "x", "r1", "r2", "r3", "r4", "r4_already_on",
+                  "r5", "r5_lamp", "r6", "r7", "r7_never_alone", "r8a", "r8b"],
+        "waits": {"any_on", "two_on", "kettle_on", "heater_on", "heater_again", "haspel"},
+        "conditions": {"only_lamp", "kettle_on", "heater_on", "never_kettle_alone"},
+        "labels": {"current", "u_end", "t_cable"},
+    },
+    "transformer": {
+        "beats": ["f1", "f2", "f2_already", "f3", "f3_full", "f4", "x", "t1", "t2", "t3", "t3_already", "t4", "t4_over",
+                  "t5", "t6"],
+        "waits": {"load_up", "load_full", "over_rated", "ambient"},
+        "conditions": {"load_half", "load_full", "over_rated"},
+        "labels": {"current_in", "current_out", "hotspot", "outside", "holds", "hours", "under_an_hour"},
+    },
+}
 EXPLAINER_SHOWS = {"readout", "reveal"}
 # A formula on screen (test T9): operators, units as symbols, I/U/P/R in an equation.
 FORMULA = re.compile(r"[=÷×²·Ω]|ΔU|\b[IUPR]\s*[=/]")
-# "The how, never the answer" (spec §5, test T7): mission clues and countermeasures.
-NEVER_THE_ANSWER = ["3x25", "3×25", "zonnepaneel", "zonnepanelen", "omvormer", "253", "trafo", "transformator",
-                    "aftakking", "warmtepomp", "el amrani", "netstudie", "wachtlijst", "verzwar"]
-_EXPLAINER_KEYS = {"id", "name", "number", "place", "assets", "model", "one_idea", "analogy", "controls", "hint",
-                   "labels", "tags", "caption", "reveal", "beats", "parameters", "sources"}
+# "The how, never the answer" (spec §5, test T7): mission clues and countermeasures every
+# explainer keeps out; each adds its own under `never`.
+NEVER_THE_ANSWER = ["3x25", "3×25", "zonnepaneel", "zonnepanelen", "omvormer", "253", "aftakking", "warmtepomp",
+                    "el amrani", "netstudie", "wachtlijst", "verzwar"]
+_EXPLAINER_KEYS = {"id", "name", "number", "place", "assets", "model", "speaker", "one_idea", "skins", "groups",
+                   "analogy", "controls", "hint", "labels", "tags", "caption", "reveal", "beats", "parameters",
+                   "sources", "never"}
 _BEAT_KEYS = {"id", "phase", "idea", "lines", "wait_for", "timeout_s", "alt_of", "when", "then", "skip_when",
               "silence_after", "pulse", "shows", "unlocks"}
 
@@ -2756,6 +2771,7 @@ def _explainer_texts(e: dict) -> list[tuple[str, str]]:
     out += [(f"mapping {i}", row[side]) for i, row in enumerate(e["analogy"]["mapping"]) for side in ("analogy", "real")]
     out += [(f"hint {k}", v) for k, v in e["hint"].items()]
     out += [(f"label {k}", v) for k, v in e["labels"].items()]
+    out += [(f"tab {k}", v) for k, v in e["skins"]["tabs"].items()]
     out += [("tag", t) for t in e["tags"]]
     out += [("caption", c) for c in e["caption"]]
     out += [(f"beat {b['id']}", line) for b in e["beats"] for line in b["lines"]]
@@ -2773,13 +2789,17 @@ def validate_explainers(doc: Any, source: str) -> None:
     for e in _entries(doc, "explainers", source):
         where = f"{source}: explainer {e['id']}"
         _known_keys(e, _EXPLAINER_KEYS, where)
-        _require_strings(e, ["name", "place", "assets", "model", "one_idea"], where)
+        _require_strings(e, ["name", "place", "assets", "model", "one_idea", "speaker"], where)
+        if e["model"] not in EXPLAINER_RIGS:
+            raise ContentError(f"{where}: model must be one of {sorted(EXPLAINER_RIGS)}")
+        _validate_explainer_skins(e, where)
         _validate_explainer_parts(e, where)
         _validate_explainer_beats(e, where)
         _validate_explainer_evidence(e, where)
+        never = NEVER_THE_ANSWER + [t.lower() for t in e["never"]]
         for w, text in _explainer_texts(e):
             low = text.lower()
-            hit = next((t for t in NEVER_THE_ANSWER if t in low), None)
+            hit = next((t for t in never if t in low), None)
             if hit:
                 raise ContentError(f"{where}: {w} names {hit!r}, a mission's answer (the how, never the answer)")
         for w, text in _plain_texts(e):
@@ -2787,6 +2807,21 @@ def validate_explainers(doc: Any, source: str) -> None:
                 raise ContentError(f"{where}: {w} has a digit (numbers are readouts on the instruments): {text!r}")
             if FORMULA.search(text):
                 raise ContentError(f"{where}: {w} has a formula (formulas only under reveal): {text!r}")
+
+
+def _validate_explainer_skins(e: dict, where: str) -> None:
+    skins = _mapping(e, "skins", {"analogy", "real", "tabs"}, where)
+    _require_strings(skins, ["analogy", "real"], f"{where} skins")
+    if skins["analogy"] == skins["real"] or "cross" in (skins["analogy"], skins["real"]):
+        raise ContentError(f"{where}: skins.analogy and skins.real must be two names other than 'cross'")
+    tabs = skins.get("tabs")
+    if not isinstance(tabs, dict) or set(tabs) != {skins["analogy"], skins["real"]} or not all(isinstance(v, str) and v for v in tabs.values()):
+        raise ContentError(f"{where}: skins.tabs must name both skins")
+    for key in ("groups", "never"):
+        if not isinstance(e.get(key), list) or not all(isinstance(v, str) and v for v in e[key]):
+            raise ContentError(f"{where}: '{key}' must be a list of non-empty strings")
+    if not e["groups"]:
+        raise ContentError(f"{where}: 'groups' must list the cross-fade's pair groups")
 
 
 def _validate_explainer_parts(e: dict, where: str) -> None:
@@ -2803,12 +2838,18 @@ def _validate_explainer_parts(e: dict, where: str) -> None:
     if not isinstance(controls, list) or not all(isinstance(c, dict) for c in controls):
         raise ContentError(f"{where}: 'controls' must be a list of mappings")
     _check_ids([c.get("id") for c in controls], "controls", where)
+    for c in controls:
+        _known_keys(c, {"id", "key", "down_key", "layer", e["skins"]["analogy"], e["skins"]["real"]}, f"{where} control {c['id']}")
+        _require_strings(c, ["key"], f"{where} control {c['id']}")
     for name in ("hint", "labels"):
         if not isinstance(e.get(name), dict) or not all(isinstance(v, str) and v for v in e[name].values()):
             raise ContentError(f"{where}: '{name}' must map to non-empty strings")
     for name in ("tags", "caption"):
         if not isinstance(e.get(name), list) or not all(isinstance(v, str) and v for v in e[name]):
             raise ContentError(f"{where}: '{name}' must be a list of non-empty strings")
+    missing = EXPLAINER_RIGS[e["model"]]["labels"] - set(e["labels"])
+    if missing:
+        raise ContentError(f"{where}: labels missing for its model: {', '.join(sorted(missing))}")
     reveal = _mapping(e, "reveal", {"label", "lines"}, where)
     _require_strings(reveal, ["label"], f"{where} reveal")
     for i, line in enumerate(reveal.get("lines") or []):
@@ -2828,24 +2869,31 @@ def _id_list(doc: dict, key: str, where: str) -> list[dict]:
 def _validate_explainer_beats(e: dict, where: str) -> None:
     beats = _id_list(e, "beats", where)
     ids = [b["id"] for b in beats]
-    missing = [b for b in EXPLAINER_BEATS if b not in ids]
+    rig = EXPLAINER_RIGS[e["model"]]
+    missing = [b for b in rig["beats"] if b not in ids]
     if missing:
         raise ContentError(f"{where}: beats missing: {', '.join(missing)}")
+    phases = {e["skins"]["analogy"], "cross", e["skins"]["real"]}
+    controls = {c["id"] for c in e["controls"]}
     mains = {b["id"] for b in beats if "alt_of" not in b}
     for b in beats:
         at = f"{where} beat {b['id']}"
         _known_keys(b, _BEAT_KEYS, at)
-        if b.get("phase") not in EXPLAINER_PHASES:
-            raise ContentError(f"{at}: 'phase' must be one of {sorted(EXPLAINER_PHASES)}")
+        if b.get("phase") not in phases:
+            raise ContentError(f"{at}: 'phase' must be one of {sorted(phases)}")
         if not isinstance(b.get("lines"), list) or not b["lines"] or not all(isinstance(t, str) and t for t in b["lines"]):
             raise ContentError(f"{at}: 'lines' must be a list of non-empty strings")
         if "wait_for" in b:
-            if b["wait_for"] not in EXPLAINER_WAITS:
-                raise ContentError(f"{at}: wait_for must be one of {sorted(EXPLAINER_WAITS)}")
+            if b["wait_for"] not in rig["waits"]:
+                raise ContentError(f"{at}: wait_for must be one of {sorted(rig['waits'])}")
             _number(b, "timeout_s", at, 1, 60)
         for key in ("when", "skip_when"):
-            if key in b and b[key] not in EXPLAINER_CONDITIONS:
-                raise ContentError(f"{at}: {key} must be one of {sorted(EXPLAINER_CONDITIONS)}")
+            if key in b and b[key] not in rig["conditions"]:
+                raise ContentError(f"{at}: {key} must be one of {sorted(rig['conditions'])}")
+        for key in ("unlocks", "pulse"):
+            named = b.get(key, [])
+            if not set(named if isinstance(named, list) else [named]) <= controls:
+                raise ContentError(f"{at}: {key} must name controls")
         if "alt_of" in b and (b["alt_of"] not in mains or "when" not in b):
             raise ContentError(f"{at}: alt_of must name a main beat, with a 'when'")
         if "then" in b and b["then"] not in mains:
@@ -2896,15 +2944,23 @@ def check_explainers(docs: dict[str, Any]) -> None:
         except (OSError, ValueError) as exc:
             raise ContentError(f"{where}: cannot read {manifest_path.name} ({exc}); run tools/explainers/*/export.mjs") from exc
         skins = {layer["id"]: layer["skin"] for layer in manifest.get("layers", [])}
+        analogy, real = e["skins"]["analogy"], e["skins"]["real"]
         for i, row in enumerate(e["analogy"]["mapping"]):
-            if [skins.get(p) for p in row["pair"]] != ["tuin", "meterkast"]:
-                raise ContentError(f"{where} mapping {i}: pair {row['pair']} must name a tuin layer and a meterkast layer")
+            if [skins.get(p) for p in row["pair"]] != [analogy, real]:
+                raise ContentError(f"{where} mapping {i}: pair {row['pair']} must name a {analogy} layer and a {real} layer")
+        groups = {layer.get("group") for layer in manifest.get("layers", [])} - {""}
+        if groups != set(e["groups"]):
+            raise ContentError(f"{where}: groups {e['groups']} must be the manifest's pair groups {sorted(groups)}")
+        hits = {h.get("control") for h in manifest.get("hits", [])}
         for c in e["controls"]:
-            for skin, states in (("tuin", ("closed", "open")), ("meterkast", ("off", "on"))):
-                if skin in c:
-                    for state in states:
-                        if f"{c[skin]}_{state}" not in skins:
-                            raise ContentError(f"{where}: control {c['id']} has no layer {c[skin]}_{state}")
+            if c["id"] not in hits:
+                raise ContentError(f"{where}: control {c['id']} has no hit rect in the manifest")
+            if "layer" in c and c["layer"] not in skins:
+                raise ContentError(f"{where}: control {c['id']} names no layer {c['layer']}")
+            for skin in (analogy, real):
+                for state in (("closed", "open") if skin == "tuin" else ("off", "on")):
+                    if skin in c and f"{c[skin]}_{state}" not in skins:
+                        raise ContentError(f"{where}: control {c['id']} has no layer {c[skin]}_{state}")
 
 
 # ── Spoken lines never name the game ────────────────────────────────────────

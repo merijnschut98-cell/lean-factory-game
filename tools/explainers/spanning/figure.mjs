@@ -673,3 +673,7 @@ layer("multimeter", "meterkast", multimeter(), { group: "meter_end", pair: "end_
 extras.tags.push({ id: "druk", at: at([TAP.x + 40, FACE_Y + 12, TAP.z + 30]) });
 extras.tags.push({ id: "stroom", at: at([CLAMP_X, 20, 40]) });
 extras.tags.push({ id: "tegenhouden", at: at([THERMO_X + 20, ROUTE_Y, 30]) });
+
+// The cross-fade group each overlay fades with (the view weighs it like a layer of that group).
+const OVERLAY_GROUP = { stroomtang: "meter_flow", thermometer: "meter_flow", multimeter: "meter_end", kwh_pulse: "source", tap_gauge_needle: "source", end_gauge_needle: "meter_end", flowmeter_wheel: "meter_flow" };
+for (const list of [extras.lcds, extras.needles, extras.wheels, extras.leds]) for (const o of list) o.group = OVERLAY_GROUP[o.id];

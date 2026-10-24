@@ -1,33 +1,34 @@
 class_name ExplainerView
 extends CanvasLayer
-## "Hoe werkt het?": a sheet clipped to Ruud's whiteboard with the anatomy
-## figure on it (PLAN 2.7c; spec 2026-10-16-explainer-spanning-stroom-
-## weerstand §4 and §6.3). The garden skin first; Ruud's beats at the bottom;
-## the valves and switches are parts of the drawing (click, or 1–3), the reel
-## swaps from R8 on (click, or H); the cross-fade turns each garden part into
-## its real counterpart where it stands. Readouts are Godot labels on the
+## "Hoe werkt het?": a sheet with the anatomy figure on it (PLAN 2.7c; spec
+## 2026-10-16-explainer-spanning-stroom-weerstand §4 and §6.3, generalised by
+## 2026-10-24-explainer-transformator §6). The analogy's skin first; the
+## speaker's beats at the bottom; the controls are parts of the drawing (a
+## click, or their keys from the content), a locked one opens at its beat;
+## the cross-fade turns each analogy part into its real counterpart where it
+## stands. What the controls do and what the drawing shows for it is the
+## explainer's rig's (ExplainerRig). Readouts are Godot labels on the
 ## instruments' own LCD faces; the sums wait behind "Laat de rekensom zien"
-## (R). Ruud's beats wait for the player (PLAN 2.13 A): Spatie, Enter or a
+## (R). The speaker's beats wait for the player (PLAN 2.13 A): Spatie, Enter or a
 ## click on his line moves on, ← or Backspace goes back a beat, a counter
 ## says where you are ("3/14"); holding Spatie or [Klaar] closes it; Esc asks
 ## for the pause menu (pause_requested). In the codex Esc closes.
 ##
 ## Open it with ExplainerView.open(parent, id, options); it emits `closed`
 ## when done and files the explainer in the ExplainerLog it was given.
-## Options: log (ExplainerLog), codex (bool: no Ruud, the skin tab, the reel
-## free), reduced_motion (bool), data_dir (String), auto (bool: "Tekst loopt
+## Options: log (ExplainerLog), codex (bool: no speaker, the skin tab, every
+## control free), reduced_motion (bool), data_dir (String), auto (bool: "Tekst loopt
 ## vanzelf door", beats move on by themselves).
 ##
 ## All motion runs through step(dt) (called from _process), so tests drive
 ## it frame by frame; only the open and close fades are Tweens.
 
 signal closed(explainer_id: String)
-## Esc on Ruud's board: the world's pause menu, the sheet stays.
+## Esc on the sheet: the world's pause menu, the sheet stays.
 signal pause_requested
 
 const SCENE := "res://src/ui/explainer/explainer_view.tscn"
-## The cross-fade: one pair group after another (spec §6.3, estimates).
-const GROUP_ORDER: Array[String] = ["source", "cable", "switches", "meter_flow", "meter_end", "loads", "reels"]
+## The cross-fade: one pair group after another (the content's `groups`; spec §6.3, estimates).
 const XFADE_EACH_S := 0.3
 const XFADE_STAGGER_S := 0.25
 const TAG_S := 3.0
@@ -37,14 +38,9 @@ const SWAP_S := 0.6
 const OPEN_S := 0.4
 const HOLD_SKIP_S := SceneLines.HOLD_SKIP_S
 const KEYS := "Spatie: verder   ←: terug   Spatie vasthouden: overslaan   Esc: pauze"
-## The heat tint: a warm orange that deepens as the cable warms to 70 °C.
+## The heat tint: a warm orange, as deep as the rig's heat says.
 const WARM := Color("#ff7a1a")
-const HEAT_SPAN_C := 50.0
 const HEAT_MAX_ALPHA := 0.85
-## The end gauge's zoomed band (spec §3.4, estimate) and the paddle wheel's
-## turns per second per ampère (estimate: a calm spin at a kettle's 8,5 A).
-const END_GAUGE_V := Vector2(210.0, 230.0)
-const WHEEL_TURNS_PER_A := 0.12
 ## Labels on the drawing are laid out this many times larger and scaled
 ## down, so their glyphs stay sharp on the small faces.
 const TEXT_SCALE := 6.0
@@ -57,7 +53,9 @@ const MUTED := Color("#6e6e72")
 
 var def: ExplainerDef
 var figure: ExplainerFigure
-## Ruud's beats; null in the codex.
+## The controls and the model (the beats' own rig when there are beats).
+var rig: ExplainerRig
+## The speaker's beats; null in the codex.
 var beats: ExplainerBeats
 var error := ""
 var codex := false
@@ -68,17 +66,12 @@ var reveal_corner: Button
 
 var _log: ExplainerLog
 var _open := true
-var _on := {"lamp": false, "kettle": false, "heater": false}
-var _haspel := 1
-var _skin_target := 0.0  # 0 the garden, 1 the meterkast
+var _skin_target := 0.0  # 0 the analogy, 1 the real thing
+var _groups: Array = []  # the pair groups in cross-fade order
 var _mix := {}  # pair group → 0..1
 var _xfade_t := INF
 var _tag_t := INF
 var _shows := {"readout": false, "reveal": false}
-var _t_cable := OhmCable.ROOM_C
-var _result := {}
-var _wheel_turn := 0.0
-var _led_t := 0.0
 var _beat_seen := ""
 var _pulse := {}  # layer id → seconds left
 var _vis := {}  # layer id → 0..1, easing toward its state
@@ -128,20 +121,19 @@ func _setup(explainer_id: String, options: Dictionary) -> void:
 		return
 	if _log != null:
 		reveal_open = _log.reveal_open and codex
-	for g in GROUP_ORDER:
-		_mix[g] = 0.0
+	_groups = def.groups
+	for g: String in _groups:
+		_mix[g] = 1.0 if codex else 0.0
+	rig = ExplainerRig.create(def)
 	if codex:
 		_skin_target = 1.0
-		for g in GROUP_ORDER:
-			_mix[g] = 1.0
 		_shows = {"readout": true, "reveal": true}
+		rig.unlock_all()
 	else:
-		beats = ExplainerBeats.new(def)
+		beats = ExplainerBeats.new(def, rig)
 		beats.auto = options.get("auto", false)
 		beats.start()
 	_build()
-	_sync_state()
-	_result = OhmCable.solve(_on, _cross_section())
 	for entry: Dictionary in figure.layers:
 		_vis[entry["id"]] = 1.0 if _shown_by_state(entry) else 0.0
 	_refresh()
@@ -185,15 +177,16 @@ func hold_space(on: bool) -> void:
 	_held = 0.0 if on and beats != null else -1.0
 
 
-## One key: 1–3 the loads, H the reel, R the reveal, Spatie or Enter on,
-## ← or Backspace back, Esc the pause (in the codex: closes).
-## True when the view used it.
+## One key: a control's own (the content's `key`, and `down_key` for a
+## stepped one), R the reveal, Spatie or Enter on, ← or Backspace back, Esc
+## the pause (in the codex: closes). True when the view used it.
 func press(key: Key) -> bool:
+	for c: Dictionary in def.controls:
+		for which: String in ["key", "down_key"]:
+			if c.has(which) and OS.find_keycode_from_string(str(c[which])) == key:
+				_toggle(c["id"], -1 if which == "down_key" else 1)
+				return true
 	match key:
-		KEY_1, KEY_2, KEY_3:
-			_toggle(ExplainerBeats.LOADS[key - KEY_1])
-		KEY_H:
-			_toggle("haspel")
 		KEY_R:
 			if reveal_corner.visible:
 				_set_reveal(not reveal_open)
@@ -213,7 +206,7 @@ func press(key: Key) -> bool:
 	return true
 
 
-## Spatie, Enter or a click on Ruud's line: the rest of the beat, or the next one.
+## Spatie, Enter or a click on the speaker's line: the rest of the beat, or the next one.
 func next() -> void:
 	if beats != null:
 		beats.next()
@@ -230,32 +223,35 @@ func _on_stage_input(event: InputEvent) -> void:
 		click_figure(_root.transform.affine_inverse() * event.position)
 
 
-## A click at a point of the figure (viewBox units): the control under it.
-## Neighbouring valves' rects overlap on screen; the nearest centre wins.
+## A click at a point of the figure (viewBox units): the control under it
+## (a hit's `step` turns a stepped control down or up). Neighbouring hits'
+## rects overlap on screen; the nearest centre wins.
 func click_figure(point: Vector2) -> void:
-	var skin := "meterkast" if _skin_target >= 0.5 else "tuin"
-	var best := ""
+	var skin := _skin()
+	var best := {}
 	var nearest := INF
 	for hit: Dictionary in figure.hits:
 		var r: Array = hit["rect"]
 		var rect := Rect2(r[0], r[1], r[2], r[3])
 		if hit["skin"] in [skin, "shared"] and rect.has_point(point) and rect.get_center().distance_to(point) < nearest:
 			nearest = rect.get_center().distance_to(point)
-			best = hit["control"]
+			best = hit
 	if not best.is_empty():
-		_toggle(best)
+		_toggle(best["control"], int(best.get("step", 1)))
 
 
-func _toggle(control: String) -> void:
+func _toggle(control: String, step: int = 1) -> void:
 	if beats != null:
-		if beats.toggle(control):
+		if beats.toggle(control, step):
 			_after_beats()
-	elif control == "haspel":
-		_haspel = 3 - _haspel
-	elif _on.has(control):
-		_on[control] = not _on[control]
-	_sync_state()
+	else:
+		rig.toggle(control, step)
 	_refresh()
+
+
+## The skin on show: the analogy's or the real one's id.
+func _skin() -> String:
+	return def.real_skin() if _skin_target >= 0.5 else def.analogy_skin()
 
 
 func _set_reveal(open_it: bool) -> void:
@@ -265,8 +261,8 @@ func _set_reveal(open_it: bool) -> void:
 	_refresh()
 
 
-func _show_skin(meterkast: bool) -> void:
-	_skin_target = 1.0 if meterkast else 0.0
+func _show_skin(real: bool) -> void:
+	_skin_target = 1.0 if real else 0.0
 	_xfade_t = 0.0
 	_refresh()
 
@@ -310,15 +306,11 @@ func step(dt: float) -> void:
 				close()
 		if not _open:
 			return
-	_result = OhmCable.solve(_on, _cross_section())
-	_t_cable = OhmCable.ease_temperature(_t_cable, _result["t_cable_c"], dt, 0.0 if reduced_motion else OhmCable.TAU_S)
-	if not reduced_motion:
-		_wheel_turn = fmod(_wheel_turn + _result["current_a"] * WHEEL_TURNS_PER_A * dt, 1.0)
-	_led_t += dt
+	rig.step(dt, reduced_motion)
 	_xfade_t += dt
 	_tag_t += dt
-	for g_index in GROUP_ORDER.size():
-		var g := GROUP_ORDER[g_index]
+	for g_index in _groups.size():
+		var g: String = _groups[g_index]
 		var start := 0.0 if reduced_motion else XFADE_STAGGER_S * g_index
 		if _xfade_t >= start:
 			_mix[g] = move_toward(_mix[g], _skin_target, dt / XFADE_EACH_S)
@@ -335,7 +327,6 @@ func step(dt: float) -> void:
 
 
 func _after_beats() -> void:
-	_sync_state()
 	if beats.done:
 		close()
 		return
@@ -354,59 +345,40 @@ func _after_beats() -> void:
 	_refresh()
 
 
-func _sync_state() -> void:
-	if beats != null:
-		_on = beats.on.duplicate()
-		_haspel = beats.haspel
-
-
-func _cross_section() -> float:
-	return 1.5 if _haspel == 1 else 2.5
-
-
-## The off/closed layer of a control in the skin on show (it pulses).
+## The layer of a control that pulses: its off (closed) layer in the skin on
+## show, or its own shared `layer`.
 func _control_layer(control: String) -> String:
+	var skin := _skin()
 	for c: Dictionary in def.controls:
 		if c["id"] == control:
-			return "%s_%s" % [c["meterkast"], "off"] if _skin_target >= 0.5 else "%s_%s" % [c["tuin"], "closed"]
+			if c.has(skin):
+				return "%s_%s" % [c[skin], "closed" if skin == "tuin" else "off"]
+			return c.get("layer", "")
 	return ""
 
 
 # ── What shows ──────────────────────────────────────────────────────────────
 
-## Whether the switches, valves and reel put this layer on show (its skin aside).
+## Whether the controls put this layer on show (its skin aside).
 func _shown_by_state(entry: Dictionary) -> bool:
 	var w: Dictionary = entry.get("when", {})
-	if w.is_empty():
-		return true
-	if w.has("haspel"):
-		return (_haspel == int(w["haspel"])) == w["active"]
-	if w.has("control"):
-		return _on[w["control"]] == w["on"]
-	if w.has("spray"):
-		return spray_level(w["spray"]) == int(w["level"])
-	return true
-
-
-## 0 when the outlet is shut, else 1–3 by its own flow (an estimate: below
-## 1 A a trickle, below 5 A a spray, above it the full arc).
-func spray_level(outlet: String) -> int:
-	if not _on.get(outlet, false):
-		return 0
-	var current: float = _result.get("u_end_v", OhmCable.U_NOMINAL) * OhmCable.LOADS[outlet] / pow(OhmCable.U_NOMINAL, 2.0)
-	return 1 if current < 1.0 else (2 if current < 5.0 else 3)
+	return w.is_empty() or rig.shows(w)
 
 
 ## How much of its skin a layer shows: 1 for shared layers, else by the
 ## cross-fade of its pair group.
 func skin_weight(id: String) -> float:
-	var entry := figure.layer(id)
+	return _weight(figure.layer(id))
+
+
+## The same for any manifest entry with a skin and a group (layers, LCDs, needles).
+func _weight(entry: Dictionary) -> float:
 	var mix: float = _mix.get(entry.get("group", ""), _skin_target)
-	match entry.get("skin"):
-		"tuin":
-			return 1.0 - mix
-		"meterkast":
-			return mix
+	var skin: String = entry.get("skin", "shared")
+	if skin == def.analogy_skin():
+		return 1.0 - mix
+	if skin == def.real_skin():
+		return mix
 	return 1.0
 
 
@@ -418,9 +390,9 @@ func group_mix(group: String) -> float:
 	return _mix.get(group, 0.0)
 
 
-## 0..1: how warm the hose or cable looks (the same value in both skins).
+## 0..1: how warm the subject looks (the same value in both skins).
 func heat_level() -> float:
-	return clampf((_t_cable - OhmCable.ROOM_C) / HEAT_SPAN_C, 0.0, 1.0)
+	return rig.heat_level()
 
 
 func tags_visible() -> bool:
@@ -547,9 +519,9 @@ func _build() -> void:
 	_strip.add_theme_stylebox_override("normal", strip_bg)
 	_card.add_child(_strip)
 	if codex:
-		for meterkast in [false, true]:
-			var tab := _button(tr("De meterkast") if meterkast else tr("De tuin"))
-			tab.pressed.connect(_show_skin.bind(meterkast))
+		for real in [false, true]:
+			var tab := _button(def.tab(def.real_skin() if real else def.analogy_skin()))
+			tab.pressed.connect(_show_skin.bind(real))
 			_tabs.append(tab)
 	_layout()
 
@@ -655,7 +627,6 @@ func _layout() -> void:
 func _refresh() -> void:
 	if _card == null:
 		return
-	var heat := heat_level()
 	for entry: Dictionary in figure.layers:
 		var id: String = entry["id"]
 		var s: Sprite2D = _sprites[id]
@@ -663,26 +634,23 @@ func _refresh() -> void:
 		s.visible = a > 0.001
 		var glow := 1.0 + 0.35 * sin(_pulse[id] / 0.8 * PI) if _pulse.has(id) else 1.0
 		if entry.get("heat", false):
-			var level := heat if id != "heater_glow" else 1.0
-			s.modulate = Color(WARM, a * level * HEAT_MAX_ALPHA)
+			s.modulate = Color(WARM, a * rig.heat(id) * HEAT_MAX_ALPHA)
 		else:
 			s.modulate = Color(glow, glow, glow, a)
 	var meter := _skin_target >= 0.5
-	var lcd_on := group_mix("meter_flow")
-	for id: String in _lcd_labels:
-		var l: Label = _lcd_labels[id]
-		var w := group_mix("meter_end") if id == "multimeter" else lcd_on
+	for lcd: Dictionary in figure.lcds:
+		var l: Label = _lcd_labels[lcd["id"]]
+		var w := _weight(lcd)
 		l.get_parent().visible = w > 0.001
 		l.modulate.a = w
-		_fit_lcd(l, _lcd_text(id))
+		_fit_lcd(l, rig.lcd_text(lcd["id"]))
 	for tag in _tag_labels:
 		tag.visible = _tag_t < TAG_S
 	var b := beats.beat() if beats != null else {}
-	var phase: String = b.get("phase", "meterkast" if meter else "tuin")
-	_hint.text = def.hint.get("haspel" if _haspel_free() and meter else ("tuin" if phase == "tuin" else "meterkast"), "")
+	var phase: String = b.get("phase", _skin())
+	_hint.text = def.hint.get(_freed_control() if meter else "", def.hint.get(def.analogy_skin() if phase == def.analogy_skin() else def.real_skin(), ""))
 	_readout.visible = meter and _shows["readout"]
-	_readout.text = "%s  %s\n%s  %s\n%s  %s" % [def.labels.get("current", ""), _amps(_result.get("current_a", 0.0)),
-		def.labels.get("u_end", ""), _volts(_result.get("u_end_v", 230.0)), def.labels.get("t_cable", ""), "%d °C" % roundi(_t_cable)]
+	_readout.text = rig.readout(def.labels)
 	reveal_corner.visible = _shows["reveal"] and meter
 	_strip.visible = reveal_open and reveal_corner.visible
 	if _strip.visible:
@@ -690,7 +658,7 @@ func _refresh() -> void:
 	_ruud.visible = beats != null
 	_keys.visible = beats != null
 	if beats != null:
-		_set_text(_ruud, "[b]Ruud[/b]   " + "  ".join(beats.lines_shown()))
+		_set_text(_ruud, "[b]%s[/b]   %s" % [def.speaker, "  ".join(beats.lines_shown())])
 		_keys.text = "%s      %d/%d" % [tr(KEYS), beats.number(), beats.count()]
 	_overlay.queue_redraw()
 
@@ -701,8 +669,13 @@ static func _set_text(label: RichTextLabel, text: String) -> void:
 		label.text = text
 
 
-func _haspel_free() -> bool:
-	return codex or (beats != null and beats.haspel_unlocked)
+## The control a beat opened (or the codex frees) with its own hint, or "".
+func _freed_control() -> String:
+	for c: Dictionary in def.controls:
+		var id: String = c["id"]
+		if def.hint.has(id) and rig.lockable.has(id) and not rig.is_locked(id):
+			return id
+	return ""
 
 
 ## An LCD's digits as large as its window allows.
@@ -715,29 +688,8 @@ func _fit_lcd(l: Label, text: String) -> void:
 	l.add_theme_font_size_override("font_size", int(minf(window.y * 0.8, by_width) * TEXT_SCALE))
 
 
-func _lcd_text(id: String) -> String:
-	match id:
-		"stroomtang":
-			return _amps(_result.get("current_a", 0.0))
-		"multimeter":
-			return _volts(_result.get("u_end_v", 230.0))
-		"thermometer":
-			return "%d °C" % roundi(_t_cable)
-	return ""
-
-
 func _reveal_text() -> String:
-	var r := _result
-	var values := {
-		"u_n": _nl(OhmCable.U_NOMINAL, 0),
-		"r_total": "—" if is_inf(r["r_total_ohm"]) else _nl(r["r_total_ohm"], 1),
-		"current": _nl(r["current_a"], 2 if r["current_a"] < 1.0 else 1),
-		"r_cable": _nl(r["r_cable_ohm"], 2),
-		"p_cable": _nl(r["p_cable_w"], 0),
-		"du": _nl(r["du_v"], 1),
-		"u_end": _nl(r["u_end_v"], 0),
-		"p_app": _nl(r["p_app_w"], 0),
-	}
+	var values := rig.reveal_values()
 	var out: Array[String] = []
 	for line: Dictionary in def.reveal.get("lines", []):
 		var text := "[i]%s[/i]" % line["words"]
@@ -749,52 +701,34 @@ func _reveal_text() -> String:
 	return "\n".join(out)
 
 
-func _amps(a: float) -> String:
-	return "%s A" % _nl(a, 2 if a < 1.0 and a > 0.0 else 1)
-
-
-func _volts(v: float) -> String:
-	return "%s V" % _nl(v, 0)
-
-
-## Dutch number: a decimal comma, a thousands dot.
-static func _nl(x: float, decimals: int) -> String:
-	var text := ("%." + str(decimals) + "f") % x if decimals > 0 else str(roundi(x))
-	var parts := text.split(".")
-	var whole := parts[0]
-	var grouped := ""
-	while whole.lstrip("-").length() > 3:
-		grouped = "." + whole.right(3) + grouped
-		whole = whole.left(whole.length() - 3)
-	return whole + grouped + ("," + parts[1] if parts.size() > 1 else "")
-
-
 # ── The overlays: needles, the paddle wheel, the pulse LED ──────────────────
 
 func _draw_overlay() -> void:
 	for n: Dictionary in figure.needles:
-		var w := 1.0 - group_mix("source") if n["id"] == "tap_gauge_needle" else 1.0 - group_mix("meter_end")
+		var w := _weight(n)
 		if w <= 0.001:
 			continue
-		var value: float = n.get("fixed", clampf((_result.get("u_end_v", 230.0) - END_GAUGE_V.x) / (END_GAUGE_V.y - END_GAUGE_V.x), 0.0, 1.0))
+		var value: float = n.get("fixed", rig.needle(n["id"]))
 		var theta := PI * (float(n["from"]) + (float(n["to"]) - float(n["from"])) * value)
 		var t := ExplainerFigure.plane(n)
 		var dir := Vector2(sin(theta), -cos(theta))
-		_overlay.draw_line(t * (-dir * float(n["tail"])), t * (dir * float(n["length"])), Color(0, 0, 0, w), 1.3, true)
+		_overlay.draw_line(t * (-dir * float(n["tail"])), t * (dir * float(n["length"])), Color(0, 0, 0, w), float(n.get("width", 1.3)), true)
 		_overlay.draw_circle(t * Vector2.ZERO, 1.4, Color(0.15, 0.15, 0.16, w))
 	for wheel: Dictionary in figure.wheels:
-		var w := 1.0 - group_mix("meter_flow")
+		var w := _weight(wheel)
 		if w <= 0.001:
 			continue
 		var t := ExplainerFigure.plane(wheel)
 		var blades: int = wheel["blades"]
+		var turn := rig.turn(wheel["id"])
 		for k in blades:
-			var a := TAU * (_wheel_turn + float(k) / blades)
-			_overlay.draw_line(t * Vector2.ZERO, t * (Vector2(cos(a), sin(a)) * float(wheel["r"])), Color(0.2, 0.2, 0.22, w), 1.1, true)
+			var a := TAU * (turn + float(k) / blades)
+			var dir := Vector2(cos(a), sin(a))
+			var tip := t * (dir * float(wheel["r"]))
+			_overlay.draw_line(t * (dir * float(wheel.get("r0", 0.0))), tip, Color(0.2, 0.2, 0.22, w), float(wheel.get("width", 1.1)), true)
+			if wheel.has("tip"):  # a crank's pedal at the end of its arm
+				_overlay.draw_circle(tip, float(wheel["tip"]), Color(0.15, 0.15, 0.16, w))
 	for led: Dictionary in figure.leds:
-		var w := group_mix("source")
-		var watts: float = _result.get("p_app_w", 0.0)
-		# Blinks faster with more power (estimate: 1 flash a second per kilowatt).
-		var lit := watts > 1.0 and fmod(_led_t * watts / 1000.0, 1.0) < 0.25
-		if w > 0.001 and lit:
+		var w := _weight(led)
+		if w > 0.001 and rig.led(led["id"]):
 			_overlay.draw_circle(Vector2(led["at"][0], led["at"][1]), 2.0, Color(0.9, 0.15, 0.1, w))

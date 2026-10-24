@@ -6,16 +6,20 @@ extends SceneTree
 ## Modes: beats (a player who follows Ruud, a shot at every beat; the reveal
 ## opened at R5) · contact (ten frames through the cross-fade X) · codex
 ## (the codex revisit, meterkast and tuin) · small (A1 and R5 at whatever
-## --resolution is given, e.g. 1280x720).
+## --resolution is given, e.g. 1280x720) · trafo ("Hoe werkt het? 2": a player
+## who follows Ruud through the fiets and the trafo, the cross-fade mid-way,
+## the reveal) · trafo_codex (its codex revisit, both skins).
 ## Each shot is <out_prefix>_<name>.png. The view's clock is stepped by hand,
 ## so the shots are the same on every run.
 
 const ID := "spanning_stroom_weerstand"
+const TRAFO := "transformator"
 ## Seconds to let each beat play before its shot (enough for the needles,
 ## the spray and the warming cable to settle into what the beat shows).
 const SETTLE := {"a1": 1.0, "a2": 2.0, "a3": 5.0, "a4": 6.0, "x": 0.8}
 
 var _prefix := ""
+var _id := ID
 
 
 func _initialize() -> void:
@@ -42,6 +46,12 @@ func _run() -> void:
 			await _codex()
 		"small":
 			await _small()
+		"trafo":
+			_id = TRAFO
+			await _trafo()
+		"trafo_codex":
+			_id = TRAFO
+			await _trafo_codex()
 		_:
 			printerr("unknown mode ", args[0])
 			quit(2)
@@ -50,7 +60,7 @@ func _run() -> void:
 
 
 func _open(options: Dictionary = {}) -> ExplainerView:
-	var v := ExplainerView.open(root, ID, options)
+	var v := ExplainerView.open(root, _id, options)
 	v.set_process(false)
 	v.set_process_input(false)
 	return v
@@ -163,3 +173,48 @@ func _small() -> void:
 	_skip_to(v, "r5")
 	_play(v, 6.0)
 	await _shot("r5")
+
+
+## "Hoe werkt het? 2" for a player who follows Ruud: the knob up on the fiets
+## until the chain warms, the cross-fade, the trafo above its nameplate, a hot day.
+func _trafo() -> void:
+	var v := _open()
+	_play(v, 1.5)
+	await _shot("f1")
+	_skip_to(v, "f2")
+	v.press(KEY_UP)
+	_play(v, 1.0)
+	await _shot("f3")
+	v.press(KEY_UP)
+	v.press(KEY_UP)
+	_play(v, 8.0)
+	await _shot("fiets_warm")
+	_skip_to(v, "x")
+	_play(v, 0.7)
+	await _shot("cross")
+	_play(v, 3.0)
+	_skip_to(v, "t2")
+	_play(v, 2.0)
+	await _shot("t2")
+	_skip_to(v, "t4")
+	v.press(KEY_UP)
+	v.press(KEY_UP)
+	_play(v, 8.0)
+	await _shot("trafo_over")
+	v.press(KEY_R)
+	_play(v, 0.3)
+	await _shot("trafo_reveal")
+	v.press(KEY_R)
+	_skip_to(v, "t5")
+	v.press(KEY_T)
+	_play(v, 6.0)
+	await _shot("trafo_hot")
+
+
+func _trafo_codex() -> void:
+	var v := _open({"codex": true, "log": ExplainerLog.new()})
+	_play(v, 2.0)
+	await _shot("codex_trafo")
+	(v._tabs[0] as Button).pressed.emit()
+	_play(v, 3.0)
+	await _shot("codex_fiets")

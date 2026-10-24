@@ -1,0 +1,285 @@
+{
+ "model": "transformer",
+ "cases": [
+  {
+   "load_pct": 0,
+   "ambient_c": 0,
+   "i_primary_a": 0,
+   "i_secondary_a": 0,
+   "oil_c": 13.117216576798173,
+   "hotspot_c": 13.117216576798173,
+   "hours": null,
+   "ageing": 0.00005511747904964783
+  },
+  {
+   "load_pct": 25,
+   "ambient_c": 0,
+   "i_primary_a": 9.093266739736606,
+   "i_secondary_a": 227.33166849341515,
+   "oil_c": 16.305012603699073,
+   "hotspot_c": 18.80784547317543,
+   "hours": null,
+   "ageing": 0.00010636473874138295
+  },
+  {
+   "load_pct": 50,
+   "ambient_c": 0,
+   "i_primary_a": 18.186533479473212,
+   "i_secondary_a": 454.6633369868303,
+   "oil_c": 25.095029103094735,
+   "hotspot_c": 32.68219959003888,
+   "hours": null,
+   "ageing": 0.000528320104682504
+  },
+  {
+   "load_pct": 75,
+   "ambient_c": 0,
+   "i_primary_a": 27.279800219209818,
+   "i_secondary_a": 681.9950054802455,
+   "oil_c": 38.265691957415854,
+   "hotspot_c": 52.78098665162606,
+   "hours": null,
+   "ageing": 0.0053862532354113125
+  },
+  {
+   "load_pct": 100,
+   "ambient_c": 0,
+   "i_primary_a": 36.373066958946424,
+   "i_secondary_a": 909.3266739736606,
+   "oil_c": 55,
+   "hotspot_c": 78,
+   "hours": null,
+   "ageing": 0.09921256574801246
+  },
+  {
+   "load_pct": 125,
+   "ambient_c": 0,
+   "i_primary_a": 45.46633369868303,
+   "i_secondary_a": 1136.6583424670757,
+   "oil_c": 74.80334059624073,
+   "hotspot_c": 107.67214120351731,
+   "hours": null,
+   "ageing": 3.056802905129273
+  },
+  {
+   "load_pct": 150,
+   "ambient_c": 0,
+   "i_primary_a": 54.559600438419636,
+   "i_secondary_a": 1363.990010960491,
+   "oil_c": 97.35327370427916,
+   "hotspot_c": 141.35541897586893,
+   "hours": 3.6568227268219995,
+   "ageing": 149.69717260700276
+  },
+  {
+   "load_pct": 0,
+   "ambient_c": 10,
+   "i_primary_a": 0,
+   "i_secondary_a": 0,
+   "oil_c": 23.11721657679817,
+   "hotspot_c": 23.11721657679817,
+   "hours": null,
+   "ageing": 0.00017498708845049246
+  },
+  {
+   "load_pct": 25,
+   "ambient_c": 10,
+   "i_primary_a": 9.093266739736606,
+   "i_secondary_a": 227.33166849341515,
+   "oil_c": 26.305012603699073,
+   "hotspot_c": 28.80784547317543,
+   "hours": null,
+   "ageing": 0.0003376869963407883
+  },
+  {
+   "load_pct": 50,
+   "ambient_c": 10,
+   "i_primary_a": 18.186533479473212,
+   "i_secondary_a": 454.6633369868303,
+   "oil_c": 35.09502910309473,
+   "hotspot_c": 42.68219959003887,
+   "hours": null,
+   "ageing": 0.0016773117798979113
+  },
+  {
+   "load_pct": 75,
+   "ambient_c": 10,
+   "i_primary_a": 27.279800219209818,
+   "i_secondary_a": 681.9950054802455,
+   "oil_c": 48.265691957415854,
+   "hotspot_c": 62.78098665162606,
+   "hours": null,
+   "ageing": 0.017100288104118073
+  },
+  {
+   "load_pct": 100,
+   "ambient_c": 10,
+   "i_primary_a": 36.373066958946424,
+   "i_secondary_a": 909.3266739736606,
+   "oil_c": 65,
+   "hotspot_c": 88,
+   "hours": null,
+   "ageing": 0.3149802624737183
+  },
+  {
+   "load_pct": 125,
+   "ambient_c": 10,
+   "i_primary_a": 45.46633369868303,
+   "i_secondary_a": 1136.6583424670757,
+   "oil_c": 84.80334059624073,
+   "hotspot_c": 117.67214120351731,
+   "hours": null,
+   "ageing": 9.704744294523312
+  },
+  {
+   "load_pct": 150,
+   "ambient_c": 10,
+   "i_primary_a": 54.559600438419636,
+   "i_secondary_a": 1363.990010960491,
+   "oil_c": 107.35327370427916,
+   "hotspot_c": 151.35541897586893,
+   "hours": 2.5045779791198495,
+   "ageing": 475.25889854604276
+  },
+  {
+   "load_pct": 0,
+   "ambient_c": 20,
+   "i_primary_a": 0,
+   "i_secondary_a": 0,
+   "oil_c": 33.11721657679817,
+   "hotspot_c": 33.11721657679817,
+   "hours": null,
+   "ageing": 0.0005555493765743279
+  },
+  {
+   "load_pct": 25,
+   "ambient_c": 20,
+   "i_primary_a": 9.093266739736606,
+   "i_secondary_a": 227.33166849341515,
+   "oil_c": 36.30501260369907,
+   "hotspot_c": 38.807845473175426,
+   "hours": null,
+   "ageing": 0.001072089386454696
+  },
+  {
+   "load_pct": 50,
+   "ambient_c": 20,
+   "i_primary_a": 18.186533479473212,
+   "i_secondary_a": 454.6633369868303,
+   "oil_c": 45.09502910309473,
+   "hotspot_c": 52.68219959003887,
+   "hours": null,
+   "ageing": 0.005325132967777193
+  },
+  {
+   "load_pct": 75,
+   "ambient_c": 20,
+   "i_primary_a": 27.279800219209818,
+   "i_secondary_a": 681.9950054802455,
+   "oil_c": 58.265691957415854,
+   "hotspot_c": 72.78098665162607,
+   "hours": null,
+   "ageing": 0.05429003065087268
+  },
+  {
+   "load_pct": 100,
+   "ambient_c": 20,
+   "i_primary_a": 36.373066958946424,
+   "i_secondary_a": 909.3266739736606,
+   "oil_c": 75,
+   "hotspot_c": 98,
+   "hours": null,
+   "ageing": 1
+  },
+  {
+   "load_pct": 125,
+   "ambient_c": 20,
+   "i_primary_a": 45.46633369868303,
+   "i_secondary_a": 1136.6583424670757,
+   "oil_c": 94.80334059624073,
+   "hotspot_c": 127.67214120351731,
+   "hours": 5.605729229774445,
+   "ageing": 30.810642604417385
+  },
+  {
+   "load_pct": 150,
+   "ambient_c": 20,
+   "i_primary_a": 54.559600438419636,
+   "i_secondary_a": 1363.990010960491,
+   "oil_c": 117.35327370427916,
+   "hotspot_c": 161.35541897586893,
+   "hours": 1.6741289049437138,
+   "ageing": 1508.8529510184715
+  },
+  {
+   "load_pct": 0,
+   "ambient_c": 30,
+   "i_primary_a": 0,
+   "i_secondary_a": 0,
+   "oil_c": 43.11721657679817,
+   "hotspot_c": 43.11721657679817,
+   "hours": null,
+   "ageing": 0.0017637593295887306
+  },
+  {
+   "load_pct": 25,
+   "ambient_c": 30,
+   "i_primary_a": 9.093266739736606,
+   "i_secondary_a": 227.33166849341515,
+   "oil_c": 46.30501260369907,
+   "hotspot_c": 48.807845473175426,
+   "hours": null,
+   "ageing": 0.0034036716397242545
+  },
+  {
+   "load_pct": 50,
+   "ambient_c": 30,
+   "i_primary_a": 18.186533479473212,
+   "i_secondary_a": 454.6633369868303,
+   "oil_c": 55.09502910309473,
+   "hotspot_c": 62.68219959003887,
+   "hours": null,
+   "ageing": 0.016906243349840117
+  },
+  {
+   "load_pct": 75,
+   "ambient_c": 30,
+   "i_primary_a": 27.279800219209818,
+   "i_secondary_a": 681.9950054802455,
+   "oil_c": 68.26569195741585,
+   "hotspot_c": 82.78098665162607,
+   "hours": null,
+   "ageing": 0.17236010353316214
+  },
+  {
+   "load_pct": 100,
+   "ambient_c": 30,
+   "i_primary_a": 36.373066958946424,
+   "i_secondary_a": 909.3266739736606,
+   "oil_c": 85,
+   "hotspot_c": 108,
+   "hours": null,
+   "ageing": 3.174802103936399
+  },
+  {
+   "load_pct": 125,
+   "ambient_c": 30,
+   "i_primary_a": 45.46633369868303,
+   "i_secondary_a": 1136.6583424670757,
+   "oil_c": 104.80334059624073,
+   "hotspot_c": 137.6721412035173,
+   "hours": 3.102548088172455,
+   "ageing": 97.8176929641366
+  },
+  {
+   "load_pct": 150,
+   "ambient_c": 30,
+   "i_primary_a": 54.559600438419636,
+   "i_secondary_a": 1363.990010960491,
+   "oil_c": 127.35327370427916,
+   "hotspot_c": 171.35541897586893,
+   "hours": 1.0244279148023823,
+   "ageing": 4790.3095234240855
+  }
+ ]
+}

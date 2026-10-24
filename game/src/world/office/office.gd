@@ -405,7 +405,9 @@ func _add_interactables() -> void:
 		interactables.append(kpi)
 		add_child(kpi)
 	# the KCC's free desk (begane grond, once its room is open); your desk; Petra's screen (2.10)
-	for at: Interactable in [OfficeHeadset.place(self), OfficeDesk.place(self), OfficeCheckScreen.place(self)]:
+	# and on the yard the trafohuisje mock-up once the opleidingsterrein is open (2.7c)
+	for at: Interactable in [OfficeHeadset.place(self), OfficeDesk.place(self), OfficeCheckScreen.place(self),
+			OfficeTrafohuisje.place(self)]:
 		if at != null:
 			interactables.append(at)
 			add_child(at)
@@ -543,6 +545,8 @@ func prompt_for(target: Interactable) -> String:
 			return tr(OfficeDesk.PROMPT)
 		OfficeCheckScreen.ID:
 			return tr(OfficeCheckScreen.PROMPT)
+		OfficeTrafohuisje.ID:
+			return tr(OfficeTrafohuisje.PROMPT)
 	return "E — " + label_for(target)
 
 
@@ -571,6 +575,8 @@ func label_for(target: Interactable) -> String:
 			return tr(OfficeDesk.LABEL)
 		OfficeCheckScreen.ID:
 			return tr(OfficeCheckScreen.LABEL)
+		OfficeTrafohuisje.ID:
+			return tr(OfficeTrafohuisje.LABEL)
 	return target.id
 
 
@@ -647,6 +653,8 @@ func interact(target: Interactable) -> void:
 			ui.open_a3()
 		OfficeCheckScreen.ID:
 			ui.open_check()
+		OfficeTrafohuisje.ID:
+			open_trafohuisje()
 	if ui.is_busy():
 		frame(target)
 
@@ -696,13 +704,24 @@ func _close_look() -> void:
 ## Ruud's whiteboard (PLAN 2.7c): the camera moves in to the board and the explainer
 ## "Hoe werkt het?" opens over it; closing it gives the world back. Never forced.
 func open_whiteboard() -> void:
+	_open_explainer_at(OfficeWhiteboard.EXPLAINER, OfficeWhiteboard.look_point(), -OfficeWhiteboard.FACING)
+
+
+## The trafohuisje on the opleidingsterrein (2.7c): the same, for "Hoe werkt het? 2".
+func open_trafohuisje() -> void:
+	var at := OfficeTrafohuisje.stand(self)
+	_open_explainer_at(OfficeTrafohuisje.EXPLAINER, OfficeTrafohuisje.look_point(self), -at.basis.z)
+
+
+## The camera moves in to `look` (seen along `ahead`) and the explainer opens with its
+## speaker's beats; the world's keys are off until it closes.
+func _open_explainer_at(explainer_id: String, look: Vector3, ahead: Vector3) -> void:
 	if busy():
 		return
 	_on_panel_opened()
 	_world_input(false)
-	var ahead := -OfficeWhiteboard.FACING
-	rig.converse(OfficeWhiteboard.look_point(), atan2(-ahead.x, -ahead.z), 0.0, 0.0)
-	explainer = ExplainerView.open(self, OfficeWhiteboard.EXPLAINER,
+	rig.converse(look, atan2(-ahead.x, -ahead.z), 0.0, 0.0)
+	explainer = ExplainerView.open(self, explainer_id,
 		{"log": session.explainers, "auto": SceneLines.auto_setting()})
 	explainer.closed.connect(_on_explainer_closed)
 	explainer.pause_requested.connect(ui.open_pause)
