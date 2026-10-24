@@ -167,7 +167,7 @@ func _build_centre() -> void:
 
 func refresh() -> void:
 	clock_label.text = session.clock_text()
-	budget_label.text = UiText.budget_line(session.budget(), session.region.weekly_savings())
+	budget_label.text = UiText.budget_line(session.budget(), session.region.weekly_savings(), session.region.advance_owed)
 	budget_label.add_theme_color_override("font_color", Palette.SAFETY_ORANGE if session.budget() < 0 else Color.WHITE)
 	xp_label.text = "%d XP  ·  %s" % [session.xp(), UiText.belt(session.belt())]
 	var drift := roundi(session.drift()["level"] * 100.0)

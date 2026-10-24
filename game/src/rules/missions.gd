@@ -246,11 +246,12 @@ func check_days_for(problem_id: String) -> int:
 	return -1
 
 
-## Whether the directie funds the problem's experiment even at the debt floor: the active
-## main mission's, or one with a deadline (review S3 #1: the story never locks out).
+## Whether the directie funds the problem's experiment even at the debt floor (as an
+## advance, Region.advance_owed): the active main mission's, or one whose deadline has not
+## passed (review S3 #1: the story never locks out; a missed deadline is not exempt).
 func always_funded(problem_id: String) -> bool:
-	return active().any(func(m: MissionDef) -> bool: return m.goal_problem == problem_id \
-			and (m.kind == "main" or m.deadline_days >= 0 or m.deadline_on_day >= 0))
+	return active().any(func(m: MissionDef) -> bool: return m.goal_problem == problem_id and (m.kind == "main"
+			or (m.deadline_days >= 0 or m.deadline_on_day >= 0) and not failed_once.has(m.id)))
 
 
 ## Still in the training week: a training day not yet done.

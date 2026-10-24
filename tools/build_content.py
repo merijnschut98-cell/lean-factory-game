@@ -313,7 +313,7 @@ TELLS = {"intake_stack": "connections", "prep_tray": "connections", "planning_bo
          "obeya_board": "directors_obeya", "grid_study_tray": "grid_strategy", "reinforcement_board": "grid_strategy",
          "congestion_list": "congestion_desk",
          # the yard (S3-Y; tools/blender/build_yard.py builds these)
-         "van_kanban": "van_park", "van_returns": "van_park", "magazijn_rack": "magazijn",
+         "uitgiftelijst": "magazijn", "van_returns": "van_park", "magazijn_rack": "magazijn",
          "storingsbord": "werkplaats", "measurement_tray": "werkplaats"}
 TELL_KEYS = {"tell", "text"}
 # world.yaml `tells:`: what each tell looks like at each height (OfficeTells.VARIANTS).
@@ -3084,7 +3084,14 @@ SITE_KEYS = {"id", "name", "town", "about", "headcount"}
 HEAD_LEADS = "head"
 DEPARTMENT_KEYS = {"id", "name", "site", "head", "reports_to", "teams"}
 TEAM_KEYS = {"id", "name", "pool", "lead", "members", "headcount", "about"}
-NUMBER_KEYS = {"id", "label", "value", "unit", "source", "estimate"}
+# `estimate` is the developer's reasoning and never shown; `basis` is what the codex shows
+# under an estimated number (in-world Dutch). `revealed_by`: clue ids (<problem>:<index>)
+# or facts, any of which shows the number (a problem's clue waits for the player to find it).
+NUMBER_KEYS = {"id", "label", "value", "unit", "source", "estimate", "basis", "revealed_by"}
+# Words that betray the machinery in text a player reads (on top of BANNED_SPOKEN).
+_DEVELOPER_RE = re.compile(r"\.ya?ml\b|\bsimulatie\w*", re.IGNORECASE)
+# Two texts "repeat" each other when they share this many words in a row.
+_REPEAT_WORDS = 5
 # The source domains Merijn approved (CLAUDE.md, network rule); a number from anywhere
 # else is an estimate until he approves the domain.
 SOURCE_DOMAINS = ("rijksoverheid.nl", "officielebekendmakingen.nl", "wetten.overheid.nl", "acm.nl",
@@ -3134,6 +3141,49 @@ def validate_company(doc: Any, source: str) -> None:
         _number(n, "value", where, 0)
         _require_strings(n, ["unit"], where)
         _evidence(n, where)
+        if "estimate" in n:
+            if not isinstance(n.get("basis"), str) or not n["basis"].strip():
+                raise ContentError(f"{where}: an estimate needs a 'basis' (the short in-world line the codex shows)")
+        elif "basis" in n:
+            raise ContentError(f"{where}: a 'basis' goes with an estimate (a source shows its title)")
+        if "revealed_by" in n and (not isinstance(n["revealed_by"], list) or not n["revealed_by"]
+                                   or not all(isinstance(a, str) for a in n["revealed_by"])):
+            raise ContentError(f"{where}: 'revealed_by' is a list of clue ids or facts")
+    for where, text in company_shown_texts(doc):
+        hit = developer_word(text)
+        if hit:
+            raise ContentError(f"{source}: {where}: developer word {hit!r} in text the player reads: {text!r}")
+
+
+def developer_word(text: str) -> str | None:
+    """The first word in shown text that names the machinery (a file, the simulation, the
+    game or the player), or None."""
+    hit = _DEVELOPER_RE.search(text)
+    return hit.group(0) if hit else banned_word(text)
+
+
+def company_shown_texts(company: dict) -> list[tuple[str, str]]:
+    """(where, text) for every company text a player reads (the codex, Wie is wie); never
+    an `estimate`, which is the developer's reasoning."""
+    out = [("company", company["company"][k]) for k in ("name", "region", "about")]
+    for s in company.get("sites", []):
+        out += [(f"site '{s['id']}'", s[k]) for k in ("name", "town", "about") if isinstance(s.get(k), str)]
+    for d in company.get("departments", []):
+        out.append((f"department '{d['id']}'", d["name"]))
+        for t in d.get("teams", []):
+            out += [(f"team '{t['id']}'", t[k]) for k in ("name", "about") if isinstance(t.get(k), str)]
+    for h in company.get("history", []):
+        out += [(f"history '{h['id']}'", h[k]) for k in ("name", "about") if isinstance(h.get(k), str)]
+    out += [(f"number '{n['id']}'", text) for n in company.get("numbers", []) for text in _number_texts(n)]
+    return out
+
+
+def _number_texts(n: dict) -> list[str]:
+    """What the codex shows of a number: its label, unit and basis or source title."""
+    texts = [n["label"], n["unit"], n.get("basis")]
+    if isinstance(n.get("source"), dict):
+        texts.append(n["source"].get("title"))
+    return [t for t in texts if isinstance(t, str)]
 
 
 def _validate_team(t: dict, where: str) -> None:
@@ -3315,7 +3365,83 @@ def check_company(docs: dict[str, Any]) -> None:
             if seated > t["headcount"]["value"]:
                 raise ContentError(f"company.yaml: team '{t['id']}': {seated} people placed but a headcount of "
                                    f"{t['headcount']['value']}")
+    check_company_spoilers(docs, cast_names)
     company["people"] = company_index(company)
+
+
+def _runs(text: str) -> set[tuple[str, ...]]:
+    """Every _REPEAT_WORDS words in a row in `text` (lower case): two texts repeat each other
+    when they share one."""
+    words = re.findall(r"\w+", text.lower())
+    return {tuple(words[i:i + _REPEAT_WORDS]) for i in range(len(words) - _REPEAT_WORDS + 1)}
+
+
+def _clue_numbers(text: str) -> set[tuple[float, bool]]:
+    """(value, is a percentage) for each number of 10 or more in a clue ("62%", "1.176")."""
+    out = set()
+    for digits, pct in re.findall(r"(?<![\w,.])(\d[\d.]*(?:,\d+)?)(?![\w,])\s*(%|procent)?", text):
+        value = float(digits.rstrip(".").replace(".", "").replace(",", "."))
+        if value >= 10:
+            out.add((value, bool(pct)))
+    return out
+
+
+def _problem_people(docs: dict[str, Any], people: set[str], problem_ids: set[str]) -> set[str]:
+    """The full names of `people` a problem's mission is about (named in its briefing or
+    debrief, by first name or in full)."""
+    out: set[str] = set()
+    for m in (docs.get("missions") or {}).get("missions", []):
+        if (m.get("goal") or {}).get("problem") in problem_ids:
+            told = " ".join(str(m.get(k, "")) for k in ("briefing", "debrief"))
+            out |= {name for name in people if name and " " in name and re.search(rf"\b{re.escape(name.split()[0])}\b", told)}
+    return out
+
+
+def check_company_spoilers(docs: dict[str, Any], people: set[str]) -> None:
+    """Nothing is handed over (CLAUDE.md): a company text shown without a gate never
+    repeats a problem's clue (its words, or its number as a number's value), names one of
+    its countermeasures, or names a person (of `people`) a problem's mission is about. A
+    Zuidmark number that is a clue carries `revealed_by` (the clue's id, or a fact) and shows
+    only once the player knows it."""
+    company = docs["company"]
+    problems = [p for stem, doc in docs.items() if stem.startswith("problems") for p in doc["problems"]]
+    clues = {f"{p['id']}:{i}": c["text"] for p in problems for i, c in enumerate(p.get("clues", []))}
+    for n in company.get("numbers", []):
+        for atom in n.get("revealed_by", []):
+            if atom not in clues:
+                try:
+                    _atom_parts(atom, "")
+                except ContentError:
+                    raise ContentError(f"company.yaml: number '{n['id']}': revealed_by {atom!r} is not a clue or "
+                                       f"a fact") from None
+    clue_runs = {clue_id: _runs(text) for clue_id, text in clues.items()}
+    clue_numbers = {clue_id: _clue_numbers(text) for clue_id, text in clues.items()}
+    cm_names = {c["id"]: c["name"] for c in (docs.get("countermeasures") or {}).get("countermeasures", [])}
+    cm_of = {cm_names[cm].lower(): cm for p in problems for cm in p.get("countermeasures", {}) if cm in cm_names}
+    tied = sorted(_problem_people(docs, people, {p["id"] for p in problems}))
+
+    def repeated(clue_id: str, where: str) -> ContentError:
+        return ContentError(f"company.yaml: {where} repeats clue {clue_id!r} ({clues[clue_id]!r}): gate it with "
+                            f"'revealed_by: [{clue_id}]'")
+
+    ungated = [n for n in company.get("numbers", []) if "revealed_by" not in n]
+    for n in ungated:   # its value is a clue's number
+        for clue_id, numbers in clue_numbers.items():
+            if (float(n["value"]), n["unit"] == "procent") in numbers:
+                raise repeated(clue_id, f"number '{n['id']}'")
+    shown = [(w, t) for w, t in company_shown_texts(company) if not w.startswith("number ")]
+    shown += [(f"number '{n['id']}'", t) for n in ungated for t in _number_texts(n)]
+    for where, text in shown:
+        runs = _runs(text)
+        for clue_id, clue_run in clue_runs.items():
+            if runs & clue_run:
+                raise repeated(clue_id, where)
+        for name, cm in sorted(cm_of.items()):
+            if name in text.lower():
+                raise ContentError(f"company.yaml: {where} names countermeasure {cm!r} ({cm_names[cm]!r})")
+        for name in tied:
+            if name in text:
+                raise ContentError(f"company.yaml: {where} names {name!r}, whom a problem's mission is about")
 
 
 # ── scenes.yaml (a milestone's scene, phase-2 design §3.1) ───────────────────

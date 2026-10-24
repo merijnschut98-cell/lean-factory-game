@@ -248,14 +248,15 @@ countermeasures:
   # Review S3 #1: one-point lessons (TPM): a start, not the feel for it that only
   # doing it beside Henk passes on (the fit says so). It needs Henk, so his
   # deadline closes it. ESTIMATE: about ten lessons of half a day each for Henk
-  # and a young monteur, printing and a binder per van: EUR 2,000.
+  # and a young monteur (10 x 4 h x 2 = 80 h of their time), printing and a binder
+  # per van: EUR 2,000.
   - id: henks_one_point_lessons
     name: Eénpuntslessen van Henk
     tier: 1
     category: standard_work
     description: Henk zet per oud kabeltype zijn vaste trucs op één A4, met een foto en de fout die je het makkelijkst maakt. Een jonge monteur schrijft mee en probeert elke les uit op een echte storing.
     budget: 2000
-    team_hours: {monteurs: 30}
+    team_hours: {monteurs: 80}
     decay_days: 60
     multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
     effects: []

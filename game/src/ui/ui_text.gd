@@ -421,14 +421,17 @@ static func signed(n: int) -> String:
 	return ("+%d" if n >= 0 else "−%d") % absi(n)
 
 
-## The HUD's budget: the weekly savings of held fixes, and in debt the floor
-## the directie carries (Region.DEBT_FLOOR), so a setback reads as one.
-static func budget_line(budget: int, savings_per_week: float) -> String:
+## The HUD's budget: the weekly savings of held fixes, in debt the floor the directie
+## carries (Region.DEBT_FLOOR), and what it advanced past the floor (Region.advance_owed,
+## repaid first from income), so a setback reads as one.
+static func budget_line(budget: int, savings_per_week: float, advance_owed: int = 0) -> String:
 	var out := "Budget " + money(budget)
 	if roundi(savings_per_week) > 0:
 		out += "  ·  besparing %s /week" % money(roundi(savings_per_week))
 	if budget < 0:
 		out += "  ·  ondergrens %s" % money(Region.DEBT_FLOOR)
+	if advance_owed > 0:
+		out += "  ·  voorschot directie %s" % money(advance_owed)
 	return out
 
 
