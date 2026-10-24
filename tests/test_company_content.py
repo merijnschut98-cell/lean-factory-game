@@ -57,6 +57,31 @@ def test_every_voltana_person_has_a_department_and_a_manager(real):
             assert managers[pid] or pid == "ruud", pid
 
 
+def test_the_second_floor_reports_to_ruud(real):
+    """Design §1.6 to the 2e: the directie, Netstrategie and the congestiedesk each report
+    to Ruud; their teams have the cast's people as leads."""
+    company = real["company"]
+    managers = bc.company_managers(company)
+    for dept in ["netstrategie", "congestiedesk"]:
+        assert _dept(company, dept)["reports_to"] == "directie", dept
+    assert managers["thomas"] == "Ruud Hoekstra", "the congestiedesk is the directie's"
+    assert _team(company, "netplanning")["lead"]["id"] == "femke"
+    assert managers["femke"] == "Ingrid Bos"
+    assert managers["frank"] == "Ruud Hoekstra"
+    assert _team(company, "directie_staf").get("about"), "the MT and who sits in it"
+
+
+def test_the_congestion_numbers_carry_their_sources(real):
+    """The waiting list, GOTORK (fix_unused_capacity) and the technician shortage: national
+    numbers from an approved source, Zuidmark's as estimates with their reasoning."""
+    numbers = {n["id"]: n for n in real["company"]["numbers"]}
+    for nid in ["wachtlijst_afname_nl", "gotork_drempel_benut", "gotork_drempel_mw", "technici_nodig_nl"]:
+        assert "source" in numbers[nid], nid
+    assert numbers["gotork_drempel_benut"]["source"]["url"].startswith("https://www.acm.nl/")
+    for nid in ["wachtlijst_afname_zuidmark", "gecontracteerd_benut_zuidmark", "technici_zuidmark"]:
+        assert "estimate" in numbers[nid], nid
+
+
 def test_titles_agree_with_the_cast_and_the_dialogs(real):
     titles = {pid: e["title"] for pid, e in bc.company_people(real["company"]).items()}
     for c in _cast():

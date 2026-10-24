@@ -5,6 +5,10 @@ extends Node
 ## walking in plays it as SceneLines: the lines the facts chose (GameSession.scene_of),
 ## the one question with its answers, what is said back, the rest. Then the milestone
 ## completes (GameSession.finish_scene) and the people leave. No score screen.
+## A room with scene spots in its model (`scene:<room>:<spot>`, PLAN 2.16) is a stage: the
+## one the scene names `stands` presents beside the screen, the others sit round the table
+## (seat0, seat1, ...), and walking in you sit down at yours; the camera is on whoever
+## speaks, and on the two of you while you answer. They are not at their desks meanwhile.
 
 ## How often (s) it looks whether the player walked into a scene's room.
 const POLL_SECONDS := 0.5
@@ -12,6 +16,10 @@ const POLL_SECONDS := 0.5
 const SPACING := 1.4
 ## They wait this far (m) into the room from its door.
 const INSIDE_DOOR := 3.5
+## At a table the two-shot sits this share of the screen's height above the middle, so the
+## others at the table stay clear of the question and its answers (an estimate, tuned on
+## play_mt_room_scene).
+const TABLE_LIFT := 0.16
 
 var office: Office
 var lines: SceneLines
@@ -29,7 +37,7 @@ var _people: Dictionary = {}
 var _waiting_for := ""
 var _since_poll := 0.0
 var _holding := false
-## Who the camera frames now ("" for none).
+## Who the camera frames now, and whether as the one asking ("" for none).
 var _framed := ""
 
 
@@ -59,6 +67,11 @@ func step(dt: float) -> void:
 	_since_poll = 0.0
 	var m := waiting()
 	_place_people(m)
+	var away: Array[String] = []
+	away.assign(_people.keys())
+	if office.people != null and office.people.away != away:   # also after a floor change made them anew
+		office.people.away = away
+		office.people.refresh(office.session)
 	var inside := m != null and in_room(_room_of(m))
 	if inside and m.id != _paused:
 		start(m.id)
@@ -91,6 +104,9 @@ func start(mission_id: String) -> void:
 	_answer = -1
 	_asked = false
 	_boarded = false
+	var seat := _spot("player")
+	if seat != null:   # "Kom erbij zitten"
+		office.player.sit_at(office.in_office(seat))
 	lines.say(_said(_scene["before"]))
 	if _scene["before"].is_empty():
 		_on_lines_done()
@@ -116,6 +132,7 @@ func _on_lines_done() -> void:
 		push_warning("milestone %s: %s" % [playing, refused])
 	playing = ""
 	_scene = {}
+	office.player.stand_up()
 	_place_people(null)
 	office.ui.after_action()
 
@@ -176,6 +193,12 @@ func _room_of(m: MissionDef) -> String:
 	return str(office.session.catalog.scenes.get(m.scene, {}).get("room", ""))
 
 
+## The scene spot `spot` of the room whose scene waits or plays (null without one).
+func _spot(spot: String) -> Node3D:
+	var m: MissionDef = office.session.missions.defs.get(_waiting_for)
+	return office.floors.markers().get("scene:%s:%s" % [_room_of(m), spot]) if m != null else null
+
+
 ## The people of `m`'s scene stand in its room while it waits; none for null.
 func _place_people(m: MissionDef) -> void:
 	var id := m.id if m != null else ""
@@ -195,7 +218,9 @@ func _place_people(m: MissionDef) -> void:
 		var at_door := office.in_office(door).origin * Vector3(1, 0, 1)
 		inside = at_door + (inside - at_door).normalized() * minf(INSIDE_DOOR, at_door.distance_to(inside))
 	var across := (inside - Vector3(centre.x, 0.0, centre.y)).cross(Vector3.UP).normalized()
-	var present: Array = office.session.catalog.scenes[m.scene].get("present", [])
+	var scene: Dictionary = office.session.catalog.scenes[m.scene]
+	var present: Array = scene.get("present", [])
+	var seated := 0
 	for i in present.size():
 		var who := str(present[i])
 		var p := OfficePerson.create({"id": who, "name": office.session.speaker_name(who), "role": "",
@@ -205,14 +230,23 @@ func _place_people(m: MissionDef) -> void:
 		p.bar.visible = false
 		p.mark.visible = false
 		office.add_child(p)
+		_people[who] = p
+		var stands := who == str(scene.get("stands", ""))
+		var spot := _spot("screen" if stands else "seat%d" % seated)
+		if spot != null:   # the room is a stage
+			var t := office.in_office(spot)
+			p.settle({"at": t.origin * Vector3(1, 0, 1), "face": -t.basis.z, "pose": "talk" if stands else "sit"})
+			if not stands:
+				seated += 1
+				p.pose_for_band(2)   # seated, turned to the table, talking
+			continue
 		var at := inside + across * (i - (present.size() - 1) / 2.0) * SPACING
 		var facing := (at - Vector3(centre.x, 0.0, centre.y)) if door == null else (office.in_office(door).origin - at)
 		p.place(at, facing * Vector3(1, 0, 1))
-		_people[who] = p
 
 
-## While a line or the question is up the player stands still, the camera on them and
-## whoever speaks.
+## While a line or the question is up the player stands (or sits) still, the camera on
+## whoever speaks (their face), and on the two of you while you answer them.
 func _hold() -> void:
 	var holds := lines.holds()
 	if holds != _holding:
@@ -220,9 +254,14 @@ func _hold() -> void:
 		_framed = ""
 		office.hold_for_scene(holds)
 	var who := str(lines.current().get("who", "")) if holds else ""
-	if who == _framed:
+	var framing := who + ("?" if lines.asking() else "")
+	if framing == _framed:
 		return
-	_framed = who
+	_framed = framing
 	for id: String in _people:
-		if office.session.speaker_name(id) == who:
-			office.frame_scene(_people[id], OfficeOpening.FRAME_LIFT)
+		if office.session.speaker_name(id) != who:
+			continue
+		if lines.asking() or not office.player.seated:
+			office.frame_scene(_people[id], TABLE_LIFT if office.player.seated else OfficeOpening.FRAME_LIFT)
+		else:
+			office.frame_face(_people[id])

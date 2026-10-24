@@ -484,11 +484,38 @@ func debrief_of(id: String) -> String:
 		"not_standardised": st != null and st.phase == P.RESOLVED and not st.standardised,
 		"too_early": false,  # said at the failed Check (check_debrief)
 	}
+	var text := m.debrief
+	var first := not m.fork_group.is_empty() and facts.has("fork_first:%s:%s" % [m.fork_group, id])
+	if first and not m.debrief_first.is_empty():
+		text = m.debrief_first
 	for variant: String in DEBRIEF_VARIANTS:
 		if holds[variant] and m.debrief_variants.has(variant):
-			return m.debrief_variants[variant]
-	var first := not m.fork_group.is_empty() and facts.has("fork_first:%s:%s" % [m.fork_group, id])
-	return m.debrief_first if first and not m.debrief_first.is_empty() else m.debrief
+			text = m.debrief_variants[variant]
+			break
+	return _with_numbers(text, m.goal_problem)
+
+
+## The player's numbers in a debrief (catalogue C16): {kpi_before} and {kpi_after}, the
+## problem's KPI in the last Check's runs without and with the fix. A sentence whose
+## number is not there (no Check: a save from before, a mission with no problem) is left
+## out rather than shown with a hole.
+func _with_numbers(text: String, problem_id: String) -> String:
+	if not "{kpi_" in text:
+		return text
+	var st: ProblemState = region.state.get(problem_id)
+	var p: ProblemDef = region.problems.get(problem_id)
+	var kpi := p.kpi if p != null else ""
+	var tokens := {}
+	if st != null and st.checked["without"].has(kpi) and st.checked["with"].has(kpi):
+		tokens = {"{kpi_before}": CoachNumbers.spoken(kpi, st.checked["without"][kpi]),
+			"{kpi_after}": CoachNumbers.spoken(kpi, st.checked["with"][kpi])}
+	var kept: Array[String] = []
+	for sentence in text.split(". "):
+		for token: String in tokens:
+			sentence = sentence.replace(token, tokens[token])
+		if not "{kpi_" in sentence:
+			kept.append(sentence)
+	return ". ".join(kept)
 
 
 ## Note the facts of every new Act: the countermeasure chosen (replacing an

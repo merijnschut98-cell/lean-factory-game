@@ -1,6 +1,6 @@
-"""The tells (PLAN 2.6, design §1.5): problems_tier1.yaml `tells:` names which prop on the 1e
-shows a problem's symptom. Every listed tell exists, its text never names the problem, and
-every problem whose place is on the 1e has at least one."""
+"""The tells (PLAN 2.6, design §1.5): problems_tier1.yaml `tells:` names which prop on the 1e or
+the 2e shows a problem's symptom. Every listed tell exists, its text never names the problem, and
+every problem whose place is on a floor with tells has at least one."""
 from __future__ import annotations
 
 import copy
@@ -28,9 +28,10 @@ def test_the_real_tells_are_valid():
     _check(lambda docs: None)
 
 
-def test_the_tells_cover_every_room_of_the_1e():
+def test_the_tells_cover_every_room_of_the_1e_and_the_2e():
     rooms_with_tells = set(bc.TELLS.values())
-    assert rooms_with_tells == {"connections", "revision_gis", "meter_data"}
+    assert rooms_with_tells == {"connections", "revision_gis", "meter_data",
+                                "directors_obeya", "grid_strategy", "congestion_desk"}
     shown = {p["id"]: [t["tell"] for t in p.get("tells", [])] for p in REAL["problems_tier1"]["problems"]}
     assert "intake_stack" in shown["incomplete_application"]
     assert "prep_tray" in shown["custom_design"]
@@ -38,6 +39,37 @@ def test_the_tells_cover_every_room_of_the_1e():
     assert "revision_cabinet" in shown["revision_backlog"]
     assert "close_out_cabinet" in shown["done_but_not_closed"]
     assert "meter_board" in shown["silent_meter"]
+    assert "grid_study_tray" in shown["grid_study_queue"]
+    assert "reinforcement_board" in shown["transformer_wait"]
+    assert "congestion_list" in shown["unused_capacity"]
+    assert "obeya_board" in shown["silo_kpis"]
+
+
+def test_every_problem_on_the_2e_needs_a_tell():
+    def mutate(docs):
+        _problem(docs, "unused_capacity").pop("tells")
+    with pytest.raises(bc.ContentError, match="unused_capacity.*no tell"):
+        _check(mutate)
+
+
+def test_a_look_in_a_room_without_places_is_filed_under_its_room():
+    assert "place" not in _look(REAL, "obeya_board") and _look(REAL, "obeya_board")["room"] == "directors_obeya"
+
+    def elsewhere(docs):
+        _look(docs, "obeya_board")["room"] = "mt_room"
+    with pytest.raises(bc.ContentError, match="obeya_board.*room"):
+        _check(elsewhere)
+
+
+def test_a_look_names_a_place_or_its_room_never_both():
+    docs = copy.deepcopy(REAL)
+    _look(docs, "obeya_board")["place"] = "connections.design"
+    with pytest.raises(bc.ContentError, match="obeya_board"):
+        bc.validate_world(docs["world"], "world.yaml")
+    docs = copy.deepcopy(REAL)
+    _look(docs, "obeya_board").pop("room")
+    with pytest.raises(bc.ContentError, match="obeya_board"):
+        bc.validate_world(docs["world"], "world.yaml")
 
 
 def test_an_unknown_tell_is_refused():
@@ -75,7 +107,7 @@ def test_every_problem_on_the_1e_needs_a_tell_whatever_its_room():
         _check(mutate)
 
 
-def test_a_problem_off_the_1e_needs_no_tell():
+def test_a_problem_off_the_floors_with_tells_needs_no_tell():
     def mutate(docs):
         assert not _problem(docs, "wrong_joint_in_van").get("tells")
     _check(mutate)

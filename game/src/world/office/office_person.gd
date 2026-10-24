@@ -105,6 +105,12 @@ var missions: Array[String] = []
 ## Away until one of these missions is done ([] = never away): Saskia is at home with
 ## stress until the callers are fixed (esra_agents).
 var after: Array[String] = []
+## Their desk moves once one of these missions is done (cast `moves`; [] = never): Ruud
+## back up to his own office on the 2e after the first hundred days. OfficePeople puts the
+## desk before (`home_desk`) or after (`moved_desk`) in `desk`; {} when it is on another floor.
+var moves_after: Array[String] = []
+var home_desk := {}
+var moved_desk := {}
 ## "coach": using them opens the coach, not a talk.
 var talk := ""
 ## The yard's van they drive (OfficeYard), or -1.
@@ -159,6 +165,7 @@ static func create(entry: Dictionary) -> OfficePerson:
 		p.missions.append(str(m))
 	for m: Variant in office.get("after", []):
 		p.after.append(str(m))
+	p.moves_after = moves_of(office)
 	p.talk = str(office.get("talk", ""))
 	var drives: Variant = office.get("van", -1)
 	p.van = int(drives) if (drives is int or drives is float) and drives >= 0 else -1
@@ -235,6 +242,21 @@ func present_for(active_missions: Array, done: Dictionary = {}) -> bool:
 	if not after.is_empty() and not after.any(func(m: String) -> bool: return done.has(m)):
 		return false
 	return missions.is_empty() or missions.any(func(m: String) -> bool: return m in active_missions)
+
+
+## The missions after which a cast `office` entry's desk moves (its `moves.after`).
+static func moves_of(office: Dictionary) -> Array[String]:
+	var out: Array[String] = []
+	var moves: Variant = office.get("moves")
+	var after: Variant = moves.get("after", []) if moves is Dictionary else []
+	for m: Variant in after if after is Array else []:
+		out.append(str(m))
+	return out
+
+
+## Whether their desk has moved (cast `moves`), with these missions done.
+func has_moved(done: Dictionary) -> bool:
+	return moves_after.any(func(m: String) -> bool: return done.has(m))
 
 
 func show_tag(on: bool) -> void:

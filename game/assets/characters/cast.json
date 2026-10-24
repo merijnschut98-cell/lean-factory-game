@@ -16,6 +16,8 @@
     "  van: the yard's van they drive (office_yard.gd): a spot with no at/seat/route is by its back (driver:van<k>),",
     "  they are out with it while it is out, and a ride with them (world.yaml rides) starts there;",
     "  during: {mission: spot}, where they are instead while that mission is active (the opleidingsterrein).",
+    "  moves: {after: [missions], <a spot with its floor>}: their desk from the day one of these missions is",
+    "  done (Ruud back up to his own office on the 2e after the first hundred days, PLAN 2.1c Q10).",
     "day: their working day (office_day.gd, PLAN 2.14 S1-A), times HH:MM: arrive (by the lift or the stairs,",
     "  the front door on the begane grond), coffee (10 min at the floor's coffee corner), lunch (30 min at the",
     "  lunch spot), leave; late_until (optional) keeps them later, else the simulation does (load or morale).",
@@ -68,7 +70,8 @@
       "look": {"sex": "m", "height": 1.83, "build": 0.66, "skin": [222, 170, 140], "hair_style": "receding",
                "hair_color": [168, 166, 162], "outfit": "manager", "brow_color": [110, 104, 98],
                "stubble": 0.25, "glasses": true},
-      "office": {"seat": "coach", "pose": "sit", "talk": "coach"},
+      "office": {"seat": "coach", "pose": "sit", "talk": "coach",
+                 "moves": {"after": ["review_100_days"], "floor": "second", "seat": "ruud_office", "pose": "sit"}},
       "day": {"arrive": "07:45", "coffee": "10:00", "lunch": "12:15", "leave": "17:30"}
     },
     {
@@ -139,6 +142,16 @@
       "office": {"floor": "second", "seat": "grid_a0", "pose": "sit",
                  "lunch": {"floor": "ground", "chair": "canteen_table5_chair_s0", "pose": "sit"}},
       "day": {"arrive": "08:15", "coffee": "09:55", "lunch": "12:20", "leave": "17:05"}
+    },
+    {
+      "id": "ingrid", "name": "Ingrid Bos", "role": "assetmanager",
+      "look": {"sex": "f", "height": 1.73, "build": 0.52, "skin": [228, 184, 156], "hair_style": "short",
+               "hair_color": [132, 128, 124], "brow_color": [104, 98, 92], "outfit": "manager", "eye_color": [92, 112, 104],
+               "glasses": true, "stoop": 0.1,
+               "colors": {"blazer": [96, 54, 62], "shirt": [238, 234, 226], "trousers": [48, 48, 56]}},
+      "office": {"floor": "second", "seat": "grid_b1", "pose": "sit",
+                 "lunch": {"floor": "ground", "chair": "canteen_table5_chair_s2", "pose": "sit"}},
+      "day": {"arrive": "07:50", "coffee": "10:05", "lunch": "12:30", "leave": "17:15"}
     },
     {
       "id": "esra", "name": "Esra Yilmaz", "role": "teamleider Klantcontactcentrum",
