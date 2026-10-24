@@ -181,8 +181,7 @@ func _run() -> void:
 			office.ui.after_action()
 			_stand_at(office, DESIGN)
 		"milestone_review", "milestone_question":   # S2-M: Honderd dagen in the MT-kamer, a line, then Frank's question
-			office.session.missions.play_start -= SimCalendar.days(100)
-			office.session.pass_time(0)
+			_to_milestone_day(office, "review_100_days")
 			office.ui.after_action()
 			office.floors.go_to("second", "lift")
 			var rect := OfficeFloors.room_rect(office.floors.markers()["room:mt_room"])
@@ -487,6 +486,14 @@ func _desk(office: Office, state: String) -> void:
 
 ## Stand a step behind the marker, looking the way it faces; the camera
 ## behind the player.
+## The clock runs on to milestone `id`'s day (its opens_on), so the HUD's date is the
+## scene's: 20 January for Honderd dagen, not the first Monday.
+func _to_milestone_day(office: Office, id: String) -> void:
+	var s := office.session
+	var days := maxi(0, s.missions.defs[id].opens_on_day - s.missions.play_day())
+	s.pass_time(SimCalendar.days(days))
+
+
 func _stand_at(office: Office, id: String) -> void:
 	var at := office.interactable(id)
 	office.player.position = at.position + at.basis.z * 0.6
@@ -1097,8 +1104,7 @@ func _second(office: Office, state: String) -> void:
 	for m in ["fix_silo_kpis", "look_at_grid_study"] + ([] if state == "play_2e_day" else ["fix_unused_capacity"]):
 		office.session.missions.progress[m] = {"status": "active", "asks": {}, "seen": {}}
 	if state.begins_with("play_mt_room"):
-		office.session.missions.play_start -= SimCalendar.days(100)
-		office.session.pass_time(0)
+		_to_milestone_day(office, "review_100_days")
 	office.floors._process(OfficeFloors.POLL_SECONDS)
 	office.ui.after_action()
 	office.floors.go_to("second", "lift", true)

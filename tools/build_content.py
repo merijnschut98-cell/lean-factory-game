@@ -2029,7 +2029,7 @@ def _validate_passing(doc: dict, source: str) -> None:
             raise ContentError(f"{source}: greetings {pid}: needs at least three ordinary greetings (day)")
     for c in _entries(doc, "chatter", source, name="id"):
         where = f"{source}: chatter {c['id']}"
-        _known_keys(c, {"id", "teams", "load", "lines"}, where)
+        _known_keys(c, {"id", "teams", "load", "lines", "days"}, where)
         if not (isinstance(c.get("lines"), list) and len(c["lines"]) == 2):
             raise ContentError(f"{where}: two lines, the first person's and the second's")
         _lines(c["lines"], where)
@@ -2038,6 +2038,10 @@ def _validate_passing(doc: dict, source: str) -> None:
             raise ContentError(f"{where}: teams names people's teams (unknown: {unknown})")
         if "load" in c and c["load"] not in CHATTER_LOADS:
             raise ContentError(f"{where}: load is one of {', '.join(CHATTER_LOADS)}")
+        # Only on these days (the weekend's plans on Thursday or Friday, never on a Monday).
+        days = c.get("days", DAY_NAMES)
+        if not (isinstance(days, list) and days and all(d in DAY_NAMES for d in days)):
+            raise ContentError(f"{where}: days lists days of {', '.join(DAY_NAMES)} (got {days!r})")
 
 
 MOVE_CARD_KEYS = {"move", "day", "title", "text", "why"}
@@ -3239,7 +3243,7 @@ def check_company(docs: dict[str, Any]) -> None:
 # (the facts choose the lines), and at most one beat asking the player a question
 # (`choice`): each answer a flag remembered for later, and what is said back.
 SCENE_KEYS = {"id", "room", "present", "stands", "beats"}
-BEAT_KEYS = {"speaker", "line", "needs", "choice", "board"}
+BEAT_KEYS = {"speaker", "line", "needs", "choice", "board", "stand_at"}
 CHOICE_KEYS = {"label", "fact", "reply"}
 CHOICE_OPTIONS = (2, 4)
 
@@ -3266,6 +3270,10 @@ def validate_scenes(doc: Any, source: str) -> None:
                 raise ContentError(f"{at}: 'board' must be true (the KPI board opens after this line)")
             if b["speaker"] not in present:
                 raise ContentError(f"{at}: {b['speaker']!r} speaks but is not 'present'")
+            # From this line on the people present stand at a spot of the scene's own room
+            # (a `scene:<room>:<spot>` marker in the floor's model, PLAN 2.16).
+            if "stand_at" in b and not re.fullmatch(rf"scene:{re.escape(s['room'])}:[a-z0-9_]+", str(b["stand_at"])):
+                raise ContentError(f"{at}: 'stand_at' is scene:{s['room']}:<spot> (got {b['stand_at']!r})")
             if "needs" in b:
                 _validate_needs(b["needs"], at)
             if "choice" in b:

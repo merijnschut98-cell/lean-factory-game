@@ -3034,7 +3034,8 @@ dialogs:
 #   morale), busy / calm (their team's queue), else morning, afternoon, late (the hour).
 #   _all has every mood; a person may have their own for some.
 # chatter: two colleagues at the coffee corner, one line each, once a day per pair.
-#   teams: one of the two is in one of these (people's `team`); load: busy | calm.
+#   teams: one of the two is in one of these (people's `team`); load: busy | calm;
+#   days: only on these days (mon..sun; the weekend's plans on Thursday or Friday).
 greetings:
   _all:
     ruined:
@@ -3297,6 +3298,7 @@ chatter:
       - "Ga jij nog lunchen vandaag?"
       - "Ik eet wel aan mijn bureau. Weer."
   - id: weekend
+    days: [thu, fri]
     lines:
       - "Nog plannen voor het weekend?"
       - "Slapen. En de tuin, als het droog blijft."

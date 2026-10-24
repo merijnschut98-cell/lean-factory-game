@@ -70,11 +70,34 @@ func test_still_one_main_and_at_most_three_sides() -> void:
 	var s := _campaign()
 	_done(s, ["walk_connections", "fix_custom_design"])
 	s.region.floor_days = 28
-	for id in ["talk_netplanner", "lsw_gemba_round", "fix_double_visits"]:
+	for id in ["talk_netplanner", "walk_outages", "fix_double_visits"]:
 		assert_eq(s.accept(id), "", id)
-	assert_eq(s.accept("walk_outages"), "side_full")
+	var fourth := s.available_missions().filter(func(m: MissionDef) -> bool: return m.kind == "side" and not m.is_routine())
+	assert_true(not fourth.is_empty(), "another side waits on the board")
+	if not fourth.is_empty():
+		assert_eq(s.accept(fourth[0].id), "side_full", fourth[0].id)
 	assert_eq(s.accept("fix_incomplete_application"), "")
 	assert_eq(s.accept("fix_installer_not_ready"), "main_active")
+
+
+## A recurring routine (the weekly gemba round) takes no side slot, as a milestone takes
+## none: with three real sides on, the round is still offered and can be walked; the
+## board counts three sides, Opdrachten shows it as a routine, the objective never leads with it.
+func test_the_weekly_round_takes_no_side_slot() -> void:
+	var s := _campaign()
+	_done(s, ["walk_connections", "fix_custom_design"])
+	s.region.floor_days = 28
+	for id in ["talk_netplanner", "walk_outages", "fix_double_visits"]:
+		assert_eq(s.accept(id), "", id)
+	assert_eq(s.missions.status("lsw_gemba_round"), "available", "the round still offers")
+	assert_eq(s.accept("lsw_gemba_round"), "", "and can be walked beside three sides")
+	assert_eq(s.missions.sides_taken(), Missions.MAX_SIDE, "the board counts the three real sides")
+	var round_def: MissionDef = s.missions.defs["lsw_gemba_round"]
+	assert_true(round_def.is_routine())
+	assert_eq(MissionBoard.kind_label(round_def), MissionBoard.ROUTINE_KIND, "shown as a routine")
+	assert_ne(Objective.of(s).get("mission", ""), "lsw_gemba_round", "the objective never leads with it")
+	var order := s.active_missions().map(func(m: MissionDef) -> String: return m.id)
+	assert_eq(order.back(), "lsw_gemba_round", "listed after the real sides")
 
 
 ## Leader standard work recurs (catalogue §2.9): the round comes back a week after it was
