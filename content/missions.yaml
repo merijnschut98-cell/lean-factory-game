@@ -146,13 +146,13 @@ principles:
     - "Snel was het zeker, maar wie staat hier over een half jaar weer met hetzelfde probleem?"
     - "Dit werkt voor nu; de rekening komt later, en meestal bij iemand anders."
   respect_blamed:
-    - "Het werk loopt beter, maar wie zich aangesproken voelde op een fout, vertelt je de volgende keer minder."
+    - "Het werk loopt beter, maar wie de schuld kreeg van een fout, vertelt je de volgende keer minder."
     - "De cijfers zijn beter; of de mensen je de volgende keer nog iets vertellen, is een andere vraag."
   respect_complied:
     - "{wie} doet wat er is afgesproken; wat zou er nodig zijn om het ook echt van het team zelf te maken?"
     - "{wie} volgt de nieuwe afspraak keurig, maar een afspraak die je niet zelf bedacht hebt, laat je ook makkelijk weer los."
   improve_cost:
-    - "Zonder vaste afspraak glijdt dit vanzelf terug naar hoe het was; wie gaat het bijhouden?"
+    - "Zonder vaste afspraak gaat het vanzelf weer zoals het was; wie gaat het bijhouden?"
     - "Niemand heeft dit vastgelegd, en wat niemand bijhoudt, zakt langzaam terug."
   respect_committed:
     - "{wie} draagt dit nu zelf; zo'n verandering hoeft niemand te bewaken."
@@ -162,7 +162,7 @@ principles:
     - "Je zat er eerst naast, je hebt gekeken waarom en het opnieuw geprobeerd."
   long_term_paid:
     - "Dit kostte meer tijd dan een snelle oplossing, maar het staat er over een jaar nog."
-    - "Je koos de langere weg, en die betaalt zich elke week terug zonder dat iemand ernaar omkijkt."
+    - "Je koos de langere weg, en die verdient zich elke week terug zonder dat iemand ernaar omkijkt."
 
 missions:
   # ── Inwerkweek: five safe days in the connections office ──────────────────
@@ -399,7 +399,7 @@ missions:
       a3: "Schrijf je A3 voor de monteurs aan de obeya-wand"
       wait: "Kijk bij de monteurs hoe het experiment loopt"
       check: "Lees aan de obeya-wand af wat je experiment opleverde"
-      act: "Beslis aan de obeya-wand hoe de monteurs verdergaat"
+      act: "Beslis aan de obeya-wand hoe de monteurs verdergaan"
     rewards: {xp: 500, budget: 5000}
     insights:
       go_see: "Twee teams vragen om je aandacht. Waar staat het werk het langst te wachten?"
@@ -451,7 +451,7 @@ missions:
     debrief_variants:
       # The designed failed Check (docs/superpowers/specs/2026-10-16-designed-failed-checks.md §1):
       # automatic EAN registration is tier 3; at maturity 1 it works at its minimal level.
-      too_early: "Je verwachtte dat Meetdata sneller zou afmelden als het systeem de EAN-codes zelf aanmeldt. De Check zegt: maar half. De koppeling werkt wel. Een dossier dat Petra invoert, staat nu binnen een uur bij de leverancier. Alleen voert Petra de dossiers nog steeds aan het eind van de maand in, want zo is het ooit afgesproken. Het wachten zat niet in het systeem. Wanneer gaat een dossier eigenlijk van de stapel af, en wie heeft dat zo bepaald?\n\nPetra: \"Die koppeling is mooi, hoor. Maar die had ik niet nodig om morgen anders te beginnen.\""
+      too_early: "Je verwachtte dat dossiers sneller afgemeld zouden worden als het systeem de EAN-codes zelf aanmeldt. De Check laat zien: dat helpt maar half. De koppeling werkt wel. Een dossier dat Petra invoert, staat nu binnen een uur bij de leverancier. Alleen voert Petra de dossiers nog steeds aan het eind van de maand in, want zo is het ooit afgesproken. Het wachten zat niet in het systeem. Wanneer gaat een dossier eigenlijk van de stapel af, en wie heeft dat zo bepaald?\n\nPetra: \"Die koppeling is mooi, hoor. Maar die had ik niet nodig om morgen anders te beginnen.\""
     goal: {type: solve, problem: done_but_not_closed}
     talk_to: [{dialog: petra_batch, outcome: partial}]
     steps:
@@ -500,11 +500,11 @@ missions:
       # connection after a monteur looked (the hidden proposal a listener finds)
       met_if: {any: ["delivered:el_amrani", "agreed:el_amrani_fourth_call:check_existing_connection"]}
       promise: el_amrani_fourth_call   # the date named on the phone is checked on its day
-    briefing: "Het KNMI verwacht rond 21 december de eerste echte vorst: een paar nachten achter elkaar onder nul. In Nova-Oost hangt een warmtepomp zonder stroom aan de muur, en de cv-ketel is al weg. Mevrouw El Amrani belt vast nog een keer."
-    debrief: "Op de eerste vorstnacht draaide de warmtepomp van de familie El Amrani. Haar moeder zat warm. Wie wacht er nog meer op een aansluiting, en weet die waar hij aan toe is?"
-    fail: "De eerste vorstnachten logeert de moeder van mevrouw El Amrani bij haar andere dochter in Havenzij. 'Het is maar voor even,' zegt mevrouw El Amrani. Ze schrijft het op, en ze stuurt een brief. Aan de directie, met een kopie aan de ACM."
+    briefing: "Rond de kortste dag, 21 december, gaat het meestal echt vriezen: een paar nachten achter elkaar onder nul. In Nova-Oost hangt een warmtepomp zonder stroom aan de muur, en de cv-ketel is al weg. Mevrouw El Amrani belt vast nog een keer."
+    debrief: "In de eerste vorstnacht draaide de warmtepomp van de familie El Amrani. Haar moeder had het warm. Wie wacht er nog meer op een aansluiting, en weet die waar hij aan toe is?"
+    fail: "Tijdens de eerste vorstnachten logeert de moeder van mevrouw El Amrani bij haar andere dochter in Havenzij. 'Het is maar voor even,' zegt mevrouw El Amrani. Ze schrijft het op, en ze stuurt een brief. Aan de directie, met een kopie aan de ACM."
     sets_flags_on_fail: ["flag:el_amrani_complaint", "flag:el_amrani_cold_winter"]   # Act III's ACM visit, Act IV's bakery
-    missed: "Het vriest. In Nova-Oost staat een warmtepomp nog uit."   # the toast when the frost comes first
+    missed: "Het vriest. In Nova-Oost staat een warmtepomp nog steeds uit."   # the toast when the frost comes first
     # Kept: her call on your phone and her letter on your desk (Phase 4: her front door).
     payoff:
       - who: el_amrani
@@ -527,7 +527,7 @@ missions:
     goal: {type: scene}
     scene: review_100_days
     steps: {go: "Ga naar de MT-kamer op de 2e"}
-    briefing: "Frank en ik willen je even spreken, in de MT-kamer op de 2e. Je zit hier nu honderd dagen. Neem niks mee, alleen jezelf."
+    briefing: "Frank en ik willen je even spreken, in de MT-kamer op de 2e. Je werkt hier nu honderd dagen. Je hoeft niks voor te bereiden."
     debrief: "Honderd dagen. Wat zou je anders doen als je morgen opnieuw begon?"
     rewards: {xp: 200}
 
@@ -545,7 +545,7 @@ missions:
       blamed: "De schades zijn minder. Gert werkt mee, maar hij vertelt je niets meer dan nodig. Wie houdt de kaart eigenlijk bij?"
       # The designed failed Check (2026-10-16 spec §2): revision at the source is tier 3,
       # at maturity 1-2 it works at 0.15-0.30. The cause is right, the order is not.
-      too_early: "Je verwachtte minder graafschade, omdat de kaart beter zou worden. De Check zegt: nauwelijks. Over de kaart had je wel gelijk. Wat Revisie vanaf nu intekent, klopt. Maar de oude afwijkingen liggen er nog allemaal, en de graafmachine van volgende week graaft op de kaart van vorig jaar. Wat kan er deze week al veilig, terwijl de kaart wordt rechtgezet?\n\nGert: \"Een goede kaart is mooi. Maar volgende week sta ik weer met een schop in de grond. Wat doe ik dan?\""
+      too_early: "Je verwachtte minder graafschade, omdat de kaart beter zou worden. De Check laat zien: nauwelijks minder. Over de kaart had je wel gelijk. Wat Revisie vanaf nu intekent, klopt. Maar de oude afwijkingen liggen er nog allemaal, en de aannemer die volgende week graaft, graaft op de kaart van vorig jaar. Wat maakt het graven deze week al veiliger, terwijl de kaart wordt rechtgezet?\n\nGert: \"Een goede kaart is mooi. Maar volgende week staat mijn ploeg weer te graven. Waar kijken we dan op?\""
     reopen: "Er komen weer graafschades binnen. Gert belt: 'We graven zoals afgesproken. Klopt jullie kaart nog?'"
     goal: {type: solve, problem: digging_damage}
     talk_to: [{dialog: gert_klic, outcome: partial}]
@@ -683,7 +683,7 @@ missions:
     steps:
       talk: "Praat met Thomas (Grootzakelijke klanten)"
       look: "Ga bij de congestiedesk kijken wie er op de wachtlijst staat"
-      dig: "Zoek uit hoeveel gecontracteerd vermogen er echt draait"
+      dig: "Zoek uit hoeveel gecontracteerd vermogen echt wordt gebruikt"
       a3: "Schrijf je A3 voor de congestiedesk aan de obeya-wand"
       wait: "Kijk bij de congestiedesk hoe het experiment loopt"
       check: "Lees aan de obeya-wand af wat je experiment opleverde"
@@ -719,7 +719,7 @@ missions:
       a3: "Schrijf je A3 voor beide teams aan de obeya-wand"
       wait: "Kijk bij beide teams hoe het experiment loopt"
       check: "Lees aan de obeya-wand af wat je experiment opleverde"
-      act: "Beslis aan de obeya-wand hoe beide teams verdergaat"
+      act: "Beslis aan de obeya-wand hoe beide teams verdergaan"
     rewards: {xp: 1500, budget: 12000}
     insights:
       go_see: "Vraag eens aan twee teams waar ze op worden beoordeeld. Passen die doelen bij elkaar?"
@@ -813,7 +813,7 @@ missions:
       a3: "Schrijf je A3 voor de meterwisselaars aan de obeya-wand"
       wait: "Kijk bij Sandra hoe het experiment loopt"
       check: "Lees aan de obeya-wand af wat je experiment opleverde"
-      act: "Beslis aan de obeya-wand hoe de meterwisselaars verdergaat"
+      act: "Beslis aan de obeya-wand hoe de meterwisselaars verdergaan"
     rewards: {xp: 400, budget: 4000}
 
   - id: fix_silent_meter
@@ -916,7 +916,7 @@ missions:
     steps:
       talk: "Praat met Linda (Planning)"
       look: "Ga bij Planning kijken hoe een week wordt ingepland"
-      dig: "Zoek uit waarom de planning steeds omgaat"
+      dig: "Zoek uit waarom de planning steeds wordt omgegooid"
       a3: "Schrijf je A3 voor Planning aan de obeya-wand"
       wait: "Kijk bij Planning hoe het experiment loopt"
       check: "Lees aan de obeya-wand af wat je experiment opleverde"
@@ -935,7 +935,7 @@ missions:
     arc: sector
     requires: {missions: [training_fri]}
     briefing: "Je hoort het overal in dit gebouw: het net is vol. Maar wat betekent dat voor een straat in Nova-Oost? Femke de Wit van Netstrategie weet het beter dan wie ook. Ze heeft het druk, dus neem koffie mee. Vraag haar hoe een netstudie gaat, en hoe ze ziet of een station vol is."
-    debrief: "Een wijk krijgt stroom via een middenspanningsruimte, en die is ontworpen op wat een straat tegelijk vraagt. Een warmtepomp en een laadpaal vragen meer, en vaak op hetzelfde moment. Femke rekent dat elke dag door. Je weet nu waar haar bord vandaan komt."
+    debrief: "Een wijk krijgt stroom via een middenspanningsruimte, en die is berekend op wat een straat tegelijk vraagt. Een warmtepomp en een laadpaal vragen meer, en vaak op hetzelfde moment. Femke rekent dat elke dag door. Je weet nu waar haar bord vandaan komt."
     goal: {type: talk_to, dialog: femke_expert, topics: 2}
     steps:
       talk: "Vraag Femke (Netstrategie) waarom het net vol is"
@@ -975,7 +975,7 @@ missions:
     act: 1
     arc: way_back
     requires: {missions: [walk_connections], facts: {all: ["floor_days>=28"]}}
-    briefing: "Financiën belde. We zitten al weken aan de grens van wat de directie draagt; geen verwijt, wel een vraag. Bij de meterwisselaars staan elke week zo'n zes adressen twee keer op de lijst, en elke rit voor niks kost ons zo'n honderd euro. Waarom gaan we twee keer?"
+    briefing: "Financiën belde. We zitten al weken aan de grens van ons budget; geen verwijt, wel een vraag. Bij de meterwisselaars staan elke week zo'n zes adressen twee keer op de lijst, en elke rit voor niks kost ons zo'n honderd euro. Waarom gaan we twee keer?"
     debrief: "Een oude meterkast zie je nu bij het plannen, niet pas aan de deur. De meterwisselaar komt één keer, samen met de aansluitmonteur als dat moet. Dat scheelt elke week ritten, en Financiën ziet het. Waar rijden we nog meer voor niks?"
     debrief_variants:
       poor_fix: "Een paar klanten bellen nu zelf over hun meterkast. De meeste weten niet waar ze naar moeten kijken, dus de monteurs rijden nog steeds terug. Wie kan die kast wél beoordelen, en wanneer?"
@@ -997,8 +997,8 @@ missions:
     act: 1
     arc: way_back
     requires: {missions: [fix_double_visits]}
-    briefing: "De meterwisselaars schrijven samen zo'n achttien overuren per week, ook als het rustig is. Financiën vraagt om een overwerkstop. Dat kan morgen, maar dan schuift het werk door. Kijk eerst waar die uren in gaan zitten."
-    debrief: "De monteurs werken nu per wijk. Minder kilometers, minder overuren, en de klant kiest een dag dat de monteur toch in de buurt is. Een overwerkstop had de uren weggehaald, niet de kilometers. Wat zie je nog meer in de planning dat niemand een keuze noemt?"
+    briefing: "De meterwisselaars schrijven samen zo'n achttien overuren per week, ook als het rustig is. Financiën vraagt om een overwerkstop. Dat kan morgen, maar dan schuift het werk door. Kijk eerst waar die uren naartoe gaan."
+    debrief: "De monteurs werken nu per wijk. Minder kilometers, minder overuren, en de klant kiest een dag waarop de monteur toch in de buurt is. Een overwerkstop had de uren weggehaald, niet de kilometers. Wat zie je nog meer in de planning dat niemand een keuze noemt?"
     debrief_variants:
       poor_fix: "De overuren zijn gezakt, want het mag niet meer. De kilometers zijn gebleven, en de klanten wachten langer op hun afspraak. Waar zitten die uren nu?"
     goal: {type: solve, problem: overtime_planning}

@@ -7,11 +7,11 @@
      "speaker": "ruud"
     },
     {
-     "line": "Ik heb de cijfers van Aansluitingen bij me. Maar ik hoor eerst graag van jou wat er anders gaat dan in oktober.",
+     "line": "Ik heb de cijfers van Aansluitingen bij me. Maar ik hoor eerst graag van jou wat er nu anders gaat dan in oktober.",
      "speaker": "frank"
     },
     {
-     "line": "Bij Werkvoorbereiding liggen de standaardontwerpen nog steeds bovenop. Joost laat ze zelf zien als ik langskom.",
+     "line": "Bij Werkvoorbereiding werken ze nog steeds met de standaardontwerpen. Joost laat ze me zelf zien als ik langskom.",
      "needs": {
       "all": [
        "holds:custom_design"
@@ -41,7 +41,7 @@
      "speaker": "ruud"
     },
     {
-     "line": "En Meetdata meldt aansluitingen nu af op de dag dat ze klaar zijn. Het KCC krijgt daar een stuk minder telefoon over.",
+     "line": "En Meetdata meldt aansluitingen nu af op de dag dat ze klaar zijn. Het KCC krijgt daar een stuk minder telefoontjes over.",
      "needs": {
       "all": [
        "holds:done_but_not_closed"
@@ -157,7 +157,7 @@
      "speaker": "frank"
     },
     {
-     "line": "Mevrouw El Amrani belde me laatst. Ze wilde alleen even zeggen dat haar moeder het warm heeft.",
+     "line": "Ik hoorde dat mevrouw El Amrani nog heeft gebeld. Alleen om te zeggen dat haar moeder het warm heeft.",
      "needs": {
       "all": [
        "done:winter_el_amrani"
@@ -209,7 +209,7 @@
      "speaker": "frank"
     },
     {
-     "line": "Sanne en Joost hadden vorige week in het MT één getal bij zich: de doorlooptijd. Samen. Dat had ik nog niet eerder gezien.",
+     "line": "Sanne en Joost kwamen vorige week samen bij me, met één getal: de doorlooptijd. Dat had ik nog niet eerder gezien.",
      "needs": {
       "all": [
        "holds:silo_kpis"

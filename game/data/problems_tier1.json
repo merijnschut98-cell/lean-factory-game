@@ -74,7 +74,7 @@
    "tells": [
     {
      "tell": "intake_stack",
-     "text": "De stapel dossiers op de kast bij Intake is hoger dan het werk van een dag."
+     "text": "Op de kast bij Intake ligt meer dan een dag werk aan dossiers."
     }
    ],
    "tier": 1,
@@ -203,7 +203,7 @@
      "depth": 1,
      "dialog": "henk_expert",
      "key": false,
-     "text": "'Een overgangsmof, van papierlood naar kunststof, heeft niet elke bus bij zich. Met de verkeerde sta je met lege handen in de sleuf.'",
+     "text": "'Een overgangsmof, van papierlood naar kunststof, ligt niet in elke bus. Met de verkeerde sta je met lege handen in de sleuf.'",
      "tool": "conversation"
     }
    ],
@@ -673,7 +673,7 @@
      "depth": 1,
      "dialog": "henk_expert",
      "key": false,
-     "text": "'Een GPLK-kabel pak je anders aan dan kunststof. Dat lood moet je netjes dicht solderen, anders trekt er vocht in. Dat staat nergens opgeschreven.'",
+     "text": "'Een GPLK-kabel pak je anders aan dan kunststof. Dat lood moet je netjes dichtsolderen, anders trekt er vocht in. Dat staat nergens opgeschreven.'",
      "tool": "conversation"
     }
    ],

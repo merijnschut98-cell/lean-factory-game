@@ -16,7 +16,7 @@ const BEHIND := 0.7
 const PROMPT := "E — Headset opzetten"
 const LABEL := "Headset (KCC)"
 ## Nobody waiting for the player on the line.
-const QUIET := "Het is rustig op de lijn. Er wacht niemand op jou."
+const QUIET := "Het is rustig op de lijn. Er hangt niemand voor je in de wacht."
 
 
 ## The ring behind the free desk's chair, facing the desk; null when the desk is

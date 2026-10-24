@@ -165,7 +165,7 @@ people:
     morale: 50
     voice: "Ik heb het opgeschreven."
     customer: true   # her talks are calls: the KCC headset, or she rings your phone (PLAN 2.4)
-    voicemail: "Met Fatima El Amrani. Ik had u graag even gesproken. Ik heb het genoteerd: vandaag, geen gehoor. Ik bel morgen terug."
+    voicemail: "Met Fatima El Amrani. Ik had u graag even gesproken. Ik heb het genoteerd: vandaag, geen gehoor. Ik bel morgen weer."
 
   - id: henk
     name: Henk Verbeek
@@ -1808,7 +1808,7 @@ dialogs:
     proposals:
       - id: name_a_date
         label: "Een datum noemen"
-        say: "Volgens de planning bent u over een week of zes aangesloten. Op {promise_date:42}."
+        say: "Volgens de planning bent u over een week of zes aangesloten. Dat wordt dan {promise_date:42}."
         addresses: [interest]
         reply: "Op {promise_date:42}. Ik schrijf het op, met de datum van vandaag erbij."
         # D9 talks audit A4: recorded with the talk's day (People.promises); the date named
@@ -2938,19 +2938,19 @@ dialogs:
       - id: logger
         ask: "Hoe meet u dat eigenlijk, die spanning?"
         # Estimate: a home-made logger every five minutes; a plausible hobbyist set-up, not a source.
-        answer: "Met een logger in de meterkast. Die schrijft elke vijf minuten de spanning op. Zelf gebouwd, hoor, van een printplaatje en een oude telefoonlader. Elke eerste van de maand haal ik de gegevens eraf."
+        answer: "Met een logger in de meterkast. Die schrijft elke vijf minuten de spanning op. Zelf in elkaar gezet, hoor: een printplaatje en een oude telefoonlader. Elke eerste van de maand haal ik de gegevens eraf."
       - id: limit
         ask: "Waarom is tweehonderddrieënvijftig volt zo'n grens?"
         answer: "Tweehonderddertig volt, plus tien procent. Zit de spanning tien minuten lang daarboven, dan moet een omvormer afschakelen. Zo staat het in de norm. Mijn omvormer doet dus precies wat hij moet doen. Het probleem zit ergens anders."
       - id: tab_three
         ask: "Wat staat er precies op tabblad drie?"
-        answer: "Per dag de hoogste spanning, met het weer van het KNMI ernaast. Op een zonnige middag in mei zit ik boven de tweehonderdvijftig, op een grijze dag kom ik niet boven de tweehonderdveertig. En elk voorjaar komen er een paar volt bij. Sinds de halve straat panelen heeft."
+        answer: "Per dag de hoogste spanning, met het weer van het KNMI ernaast. Op een zonnige middag in mei zit ik boven de tweehonderdvijftig, op een grijze dag kom ik niet boven de tweehonderdveertig. En sinds de halve straat panelen heeft, komen er elk voorjaar een paar volt bij."
         unlocks:
           clue: {problem: inverters_tripping, key: false, depth: 1, text: "'Hoe zonniger de middag, hoe hoger de spanning. En elk voorjaar een paar volt meer, sinds de halve straat panelen heeft.'"}
       - id: the_street
         ask: "Wat zou u doen met de metingen van de hele straat?"
         trust: 50
-        answer: "Ik zou ze naast elkaar leggen, per kabel. Dan ziet u dat de spanning het hoogst is aan het eind van de kabel, het verst van de trafo. Dan weet u ook waar u moet kijken. Ik zou het zelf doen, maar ik kan niet bij die gegevens. Terecht, hoor. Privacy."
+        answer: "Ik zou ze naast elkaar leggen, per kabel. Dan ziet u dat de spanning het hoogst is aan het eind van de kabel, het verst van de trafo. En dan weet u meteen waar u moet zoeken. Ik zou het zelf doen, maar ik kan niet bij die gegevens. Terecht, hoor. Privacy."
         unlocks:
           clue: {problem: inverters_tripping, key: false, depth: 2, text: "'Leg de meters van de straat naast elkaar, per kabel. Aan het eind van de kabel, het verst van de trafo, is de spanning het hoogst.'"}
       - id: how_it_began
@@ -2967,22 +2967,22 @@ dialogs:
     person: femke
     kind: expert
     mission: talk_netplanner
-    opening: "Waarom het net vol is? Kort gezegd: dat leg ik je graag uit. Neem een stoel, de koffie is koud."
-    retry_opening: "Jij weer. Goed. Waar waren we?"
-    closing: "Zo. Nu weet je meer dan de meeste mensen die ons bellen. Ik moet verder rekenen."
+    opening: "Waarom het net vol is? Dat leg ik je graag uit. Pak een stoel. De koffie is wel koud, sorry."
+    retry_opening: "Daar ben je weer! Waar waren we gebleven?"
+    closing: "Zo. Nu weet je meer dan de meeste mensen die ons bellen. Ik moet weer verder rekenen."
     topics:
       - id: full
         ask: "Wat bedoelen jullie eigenlijk als het net vol is?"
-        answer: "Kort gezegd: op het drukste moment van het jaar mag een kabel of een trafo niet harder werken dan waarvoor hij gemaakt is. Zit een station op een koude winteravond al tegen die grens, dan kan er niks meer bij. Niet de hele dag. Op dat ene moment."
+        answer: "Kort gezegd: op het drukste moment van het jaar mag een kabel of een trafo niet harder werken dan waarvoor hij gemaakt is. Zit een station op een koude winteravond al tegen die grens, dan kan er niks meer bij. Niet de hele dag, maar op dat ene moment."
       - id: msr
-        ask: "Wat is zo'n middenspanningsruimte precies?"
-        answer: "Dat huisje in je straat, met een trafo erin. Die zet tienduizend volt om naar wat er uit je stopcontact komt. Eén ruimte voedt een paar honderd huizen, en hij is ontworpen op wat die huizen tegelijk vragen. Dat was lange tijd niet zoveel."
+        ask: "Wat is een middenspanningsruimte eigenlijk?"
+        answer: "Dat huisje bij jou in de straat, met een trafo erin. Die zet tienduizend volt om naar wat er uit je stopcontact komt. Eén ruimte voedt een paar honderd huizen, en hij is berekend op wat die huizen tegelijk vragen. Dat was lange tijd niet zoveel."
       - id: together
         ask: "Waarom maakt een warmtepomp zoveel uit?"
-        answer: "Omdat ze allemaal tegelijk aangaan. Op een koude avond draait in de hele straat de warmtepomp, en de auto hangt aan de laadpaal. Vroeger kookte de ene buurvrouw om zes uur en de andere om zeven. Hoeveel er tegelijk gebeurt, daar rekenen wij op. Dat is eigenlijk het hele vak."
+        answer: "Omdat ze allemaal tegelijk aangaan. Op een koude avond draait in de hele straat de warmtepomp, en de auto hangt aan de laadpaal. Vroeger kookte de ene buurvrouw om zes uur en de andere om zeven. Hoeveel er tegelijk aanstaat, daar rekenen wij aan. Dat is eigenlijk het hele vak."
       - id: board
         ask: "Hoe lang staat een aanvraag bij jullie op het bord?"
-        answer: "Te lang. Achtendertig studies op het bord, en we zijn met z'n tweeën. Een studie kost me een halve dag. Reken maar uit. En elke week komen er een paar bij."
+        answer: "Te lang. Er staan achtendertig studies op het bord, en we zijn met z'n tweeën. Een studie kost me een halve dag. Reken maar uit. En elke week komen er een paar bij."
 
   # Henk, before he retires: cable joints, the old cable, digging, his practice trench at the
   # opleidingsterrein, and what Ahmed still has to learn. No explainer on cables and joints
@@ -2992,19 +2992,19 @@ dialogs:
     person: henk
     kind: expert
     opening: "Vragen over het vak? Daar heb ik altijd tijd voor. Zolang ik hier nog rondloop."
-    retry_opening: "Jij weer, {jongen_meid}. Wat wil je nog weten?"
-    closing: "Goed. En als je het wilt zien in plaats van horen: je weet me te vinden."
+    retry_opening: "Daar ben je weer, {jongen_meid}. Wat wil je nog weten?"
+    closing: "Goed. Maar zien is beter dan horen. Als je wilt, doe ik het je een keer voor."
     topics:
       - id: joints
         ask: "Wat is eigenlijk het verschil tussen al die moffen?"
-        answer: "Een mof verbindt twee stukken kabel. Welke je pakt, hangt af van wat er aan weerszijden ligt. Twee kunststof kabels: een krimpmof, klaar. Oude papierloodkabel aan kunststof: dan heb je een overgangsmof nodig, en die heeft niet elke bus bij zich. Pak je de verkeerde, dan sta je om twee uur 's nachts met lege handen in de sleuf."
+        answer: "Een mof verbindt twee stukken kabel. Welke je pakt, hangt af van wat er aan allebei de kanten ligt. Twee kunststofkabels: een krimpmof, klaar. Oude papierloodkabel aan kunststof: dan heb je een overgangsmof nodig, en die ligt niet in elke bus. Pak je de verkeerde, dan sta je om twee uur 's nachts met lege handen in de sleuf."
         unlocks:
-          clue: {problem: wrong_joint_in_van, key: false, depth: 1, text: "'Een overgangsmof, van papierlood naar kunststof, heeft niet elke bus bij zich. Met de verkeerde sta je met lege handen in de sleuf.'"}
+          clue: {problem: wrong_joint_in_van, key: false, depth: 1, text: "'Een overgangsmof, van papierlood naar kunststof, ligt niet in elke bus. Met de verkeerde sta je met lege handen in de sleuf.'"}
       - id: old_cable
         ask: "Hoe herken je een kabel van voor 1970?"
-        answer: "Aan het lood. Papier met olie erin en een loodmantel eromheen, GPLK noemen we dat. Zwaar spul, en het gaat langer mee dan je denkt. Maar je pakt het anders aan dan kunststof: dat lood moet je netjes dicht solderen, anders trekt er vocht in. Mijn eerste mof op zo'n kabel maakte ik in 1979, achter de oude gasfabriek."
+        answer: "Aan het lood. Papier met olie erin en een loodmantel eromheen, GPLK noemen we dat. Zwaar spul, en het gaat langer mee dan je denkt. Maar je pakt het anders aan dan kunststof: dat lood moet je netjes dichtsolderen, anders trekt er vocht in. Mijn eerste mof op zo'n kabel heb ik in 1984 gemaakt, achter de oude gasfabriek."
         unlocks:
-          clue: {problem: knowledge_drain, key: false, depth: 1, text: "'Een GPLK-kabel pak je anders aan dan kunststof. Dat lood moet je netjes dicht solderen, anders trekt er vocht in. Dat staat nergens opgeschreven.'"}
+          clue: {problem: knowledge_drain, key: false, depth: 1, text: "'Een GPLK-kabel pak je anders aan dan kunststof. Dat lood moet je netjes dichtsolderen, anders trekt er vocht in. Dat staat nergens opgeschreven.'"}
       - id: digging
         ask: "Hoe kan het dat er zo vaak in een kabel wordt gegraven, met al die KLIC-meldingen?"
         answer: "Die melding doen ze heus wel. Maar de kaart klopt niet altijd. Wij hebben in de jaren tachtig kabels verlegd die nooit op tekening zijn gekomen. Een goede aannemer graaft eerst een proefsleuf, met de schop. Maar als de planning krap is, slaan ze die over. En dan zit de graafbak er zo in."
@@ -3038,18 +3038,18 @@ dialogs:
 greetings:
   _all:
     ruined:
-      - "Hoi. Over gisteren: dat liep niet lekker, hè. We hebben het er later nog wel over."
-      - "Hé {speler}. Ik moest gisteren even afkoelen. Vandaag is een nieuwe dag."
-      - "Hoi. Ik heb nog even nagedacht over ons gesprek. Later misschien."
+      - "Hoi. Ons vorige gesprek liep niet lekker, hè. Daar hebben we het later nog wel over."
+      - "Hé {speler}. Ik was na ons gesprek nog wel even chagrijnig. Het zakt wel weer."
+      - "Hoi. Ik zit nog een beetje met ons gesprek. Laten we het even laten rusten."
     pressured:
-      - "Hoi {speler}. Ik voelde me gisteren een beetje voor het blok gezet, eerlijk gezegd."
-      - "Hé. Dat ging gisteren wel erg snel, vond ik. Laten we het rustiger aanpakken."
+      - "Hoi {speler}. Ik voelde me laatst een beetje voor het blok gezet, eerlijk gezegd."
+      - "Hé. Dat ging laatst wel erg snel, vond ik. Kunnen we het de volgende keer rustiger aanpakken?"
     committed:
-      - "Hoi {speler}! Ik ben er al mee begonnen, met wat we hadden afgesproken."
+      - "Hoi {speler}! Ik ben al begonnen met wat we hadden afgesproken."
       - "Hé {speler}. Onze afspraak staat, hoor. Ik hou je op de hoogte."
     heard:
-      - "Hoi {speler}. Fijn dat je gisteren even de tijd nam."
-      - "Hé {speler}. Ik heb nog nagedacht over ons gesprek. Goed dat je doorvroeg."
+      - "Hoi {speler}. Fijn dat je laatst even de tijd voor me nam."
+      - "Hé {speler}. Ik heb nog eens nagedacht over ons gesprek. Goed dat je doorvroeg."
     standardised:
       - "Hoi {speler}! Die nieuwe afspraak werkt, hoor. Iedereen doet het nu zo."
       - "Hé {speler}. Het loopt een stuk rustiger sinds we het zo doen."
@@ -3059,21 +3059,21 @@ greetings:
       - "Hé {speler}. Kom je weer even kijken bij Werkvoorbereiding? Prima, hoor."
       - "Hoi {speler}. Eerlijk is eerlijk, het wordt weer een volle week."
     ruined:
-      - "Hoi. Even voor de duidelijkheid: dat gesprek van gisteren zit me nog niet lekker."
+      - "Hoi. Even voor de duidelijkheid: dat gesprek van laatst zit me nog steeds niet lekker."
   anouk:
     day:
-      - "Oh, hoi {speler}! Sorry, het is een beetje een rommeltje hier."
-      - "Hoi {speler}! Ik zit erbovenop, hoor. Heb je al koffie gehad?"
+      - "O, hoi {speler}! Sorry, het is een beetje een rommeltje hier."
+      - "Hoi {speler}! Heb je al koffie gehad? Ik wilde net gaan."
       - "Hé {speler}. Sorry, ik ben nog even met een tekening bezig. Zeg het maar."
     committed:
-      - "Hoi {speler}! Ik heb het geprobeerd zoals we zeiden. Het valt me eigenlijk mee."
+      - "Hoi {speler}! Ik heb het geprobeerd zoals we hadden afgesproken. Het valt me eigenlijk mee."
   sanne:
     day:
-      - "Hoi {speler}! Portaal open, koffie op, telefoon aan. We zijn er klaar voor."
+      - "Hoi {speler}! Portaal open, koffie erbij, telefoon aan. Kom maar op."
       - "Nou, daar is {speler}. Kom je weer even op het postkantoor kijken?"
-      - "Hé {speler}. Joh, het is weer een drukte vandaag, hè."
+      - "Hé {speler}. Wat een drukte weer vandaag, joh."
     ruined:
-      - "Hoi. Nou, gisteren was niet ons beste gesprek, hè. Laat maar even."
+      - "Hoi. Nou, dat was niet ons beste gesprek, hè. Laat maar even zitten."
   rachid:
     day:
       - "Hoi {speler}. Ik had nog een vraag voor je. Of nee, die zoek ik eerst zelf even uit."
@@ -3083,27 +3083,27 @@ greetings:
     day:
       - "Hoi {speler}. De Molen draait. Dat is al heel wat."
       - "Dag {speler}. Zoek je iets? Dan staat het waarschijnlijk in mijn map."
-      - "Hoi {speler}. Klopt, ik ben er weer. Alles staat klaar."
+      - "Hoi {speler}. Alles staat klaar voor vandaag. Zoals altijd."
   ruud:
     day:
       - "Hoi {speler}! Hoe bevalt het tot nu toe?"
       - "Ha {speler}. Wat heb je vandaag al gezien?"
-      - "Hoi {speler}. De koffie hier is nog steeds slecht. Of went het al?"
+      - "Hoi {speler}. Ben je al gewend aan de koffie hier? Ik nog steeds niet."
   marco:
     day:
       - "Hé {speler}. Mijn mannen zijn al op pad."
       - "Hoi {speler}. Alles goed? Mooi."
       - "Hoi {speler}. Nog niks gesloopt vandaag. Dat komt vast nog."
     ruined:
-      - "Kijk. Gisteren was niks. Laat maar zitten."
+      - "Kijk. Dat gesprek van laatst was niks. Laat maar zitten."
   henk:
     day:
       - "Ha {speler}. Kom je weer even kijken? Prima."
-      - "Hoi {speler}. Sinds 1987 sta ik hier elke ochtend. Jij bent er ook vroeg bij."
+      - "Ha {speler}. Sinds 1984 loop ik hier rond. Nog steeds niet uitgeleerd, hoor."
       - "Ha {speler}. Er staat koffie in de keet, als je wilt."
   ahmed:
     day:
-      - "Hé {speler}. Gaat wel, man."
+      - "Hé {speler}. Ook weer hier, man?"
       - "Hoi {speler}. Rustig vandaag. Hopelijk blijft het zo."
       - "Hé {speler}. Alles goed?"
   linda:
@@ -3113,14 +3113,14 @@ greetings:
       - "Hoi {speler}. Sorry, drie telefoontjes tegelijk. Loop je zo nog even langs?"
   mieke:
     day:
-      - "Hoi {speler}. Ik zit in de revisies van vorige week. Dat moet kloppen, hè."
+      - "Hoi {speler}. Ik ben de revisies van vorige week nog aan het uitzoeken."
       - "Hallo {speler}. Alles goed?"
       - "Hoi {speler}. Kom je kijken? Pak gerust een stoel."
     standardised:
       - "Hoi {speler}. Sinds we het zo doen, kloppen de tekeningen veel vaker. Dat merk ik echt."
   frank:
     day:
-      - "Goed je te zien, {speler}. Ik zit vandaag vol met overleggen."
+      - "Dag {speler}. Ik heb vandaag het ene overleg na het andere."
       - "Hallo {speler}. Ik moet straks de cijfers verantwoorden bij de directie. Hoe gaat het bij jou?"
       - "Hoi {speler}. Als je iets hebt voor het jaarplan, hoor ik het graag."
   femke:
@@ -3167,7 +3167,7 @@ greetings:
     day:
       - "Hallo {speler}! Ik ben weer even binnengewipt."
       - "Dag {speler}. Ik heb mijn aantekeningen meegenomen."
-      - "Hoi {speler}. Veertig jaar in het vak, en nog steeds nieuwsgierig."
+      - "Goedendag, {speler}. Veertig jaar in het vak gezeten, en nog steeds nieuwsgierig."
   yvonne:
     day:
       - "Hoi {speler}! Ruud zit boven, als je hem zoekt."
@@ -3187,7 +3187,7 @@ greetings:
   joyce:
     day:
       - "Hoi {speler}. Even mijn kabelschaar zoeken, dan ben ik weg."
-      - "Hé {speler}. Jij bent de nieuwe van Aansluitingen, toch?"
+      - "Hé {speler}. Jij bent de nieuwe van Ruud, toch?"
       - "Hoi {speler}. Als je ooit mee wilt, zeg het maar. Dan zie je het echte werk."
 
 quick:
@@ -3195,14 +3195,14 @@ quick:
     tired:
       - "Lange dag, hoor. Ik ben er een beetje doorheen."
       - "Sorry, ik ben moe. Het werd gisteren weer laat."
-      - "Ik moet echt even koffie. Het gaat wel."
+      - "Ik moet echt even koffie hebben. Het gaat wel."
     busy:
       - "Druk, druk, druk. De stapel wordt alleen maar hoger."
       - "Sorry, ik moet echt door. Het loopt vol vandaag."
       - "Ik weet eerlijk gezegd niet waar ik moet beginnen."
     calm:
       - "Lekker rustig vandaag. Dat mag ook wel eens."
-      - "Rustige dag. Ik werk wat achterstallige dingen weg."
+      - "Rustige dag. Eindelijk tijd voor wat er al weken blijft liggen."
       - "Eindelijk een dag zonder brandjes."
     morning:
       - "Ik ben net begonnen. Eerst even mijn mail."
@@ -3210,7 +3210,7 @@ quick:
       - "Even opstarten, hoor."
     afternoon:
       - "Nog een paar uurtjes. Het gaat lekker."
-      - "Na de lunch is het altijd even een dipje."
+      - "Na de lunch heb ik altijd even een dipje."
       - "Ik werk dit nog even af."
     late:
       - "Ik ga zo naar huis. Nog even dit afmaken."
@@ -3230,7 +3230,7 @@ quick:
       - "Sorry, ik ben aan het omplannen. Alweer."
   petra:
     calm:
-      - "Rustig. Klopt, dat gebeurt soms."
+      - "Rustig vandaag. Dat komt voor."
   marco:
     busy:
       - "Mijn mannen rijden zich vandaag het schompes."
@@ -3238,7 +3238,7 @@ quick:
       - "Lange week. Maar goed, we gaan door."
   esra:
     busy:
-      - "Serieus, er staan twintig bellers in de wacht."
+      - "Serieus, er hangen twintig mensen in de wacht."
   dirk:
     tired: ["Lang dagje."]
     busy: ["Druk."]
@@ -3263,8 +3263,8 @@ chatter:
   - id: portal_asks_too_little
     teams: [work_prep, intake]
     lines:
-      - "Waarom komen die aanvragen eigenlijk altijd half binnen?"
-      - "Omdat het portaal niet vraagt wat wij nodig hebben. Al jaren niet."
+      - "Waarom komen die aanvragen eigenlijk zo vaak half binnen?"
+      - "Geen idee. Dat is al zo zolang ik hier zit."
   - id: card_house
     teams: [planners]
     lines:
