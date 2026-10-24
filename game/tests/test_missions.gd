@@ -1109,8 +1109,9 @@ func test_a_promised_date_is_checked_on_its_day() -> void:
 		log.region.advance_days(6)
 		log.update()
 		assert_false(log.knows("promise_broken:call") or log.knows("promise_kept:call"), "not yet day 7")
-		if delivered:
+		if delivered:   # connected on day 6 (GameSession records both facts)
 			log.facts.add("delivered:el_amrani")
+			log.facts.add("delivered:el_amrani:2026-10-18")
 		var reputation := log.region.reputation.value
 		log.region.advance_days(1.1)
 		log.update()

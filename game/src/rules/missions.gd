@@ -374,13 +374,21 @@ func _judge_promises() -> void:
 		var day := MissionDef.day_of(promised[0].get_slice(":", 2)) if not promised.is_empty() else -1
 		if day < 0:
 			continue  # no date promised (or an action, such as a callback)
-		var kept := knows("delivered:" + m.goal_story)
+		var delivered := delivered_day(m.goal_story)
+		var kept := delivered >= 0 and delivered <= day
 		if not kept and play_day() <= day:
 			continue
 		facts.add(("promise_kept:" if kept else "promise_broken:") + m.goal_promise)
 		if not kept:
 			region.earn_reputation(PROMISE_BROKEN, "promise")
 		events.append({"type": "promise", "dialog": m.goal_promise, "kept": kept})
+
+
+## The day of play a followed story was really connected (its delivered:<story>:<ISO date>
+## fact, from the order's done_at, not the step that noticed it); -1 while it is not.
+func delivered_day(story: String) -> int:
+	var on := facts.with_prefix("delivered:%s:" % story)
+	return MissionDef.day_of(on[0].get_slice(":", 2)) if not on.is_empty() else -1
 
 
 ## What a failed Check says on the active mission that holds `problem_id`, when the
@@ -973,8 +981,10 @@ func _goal_met(m: MissionDef) -> bool:
 			return _talk_met(m.goal_dialog, m.goal_outcome)
 		"scene":
 			return progress[m.id].get("played", false)
-		"story_order":
-			return needs_met(m.goal_met_if)
+		"story_order":   # the story connected after the deadline's day is no longer in time
+			var late := delivered_day(m.goal_story) > m.deadline_on_day
+			return Facts.met(m.goal_met_if, func(atom: String) -> bool:
+				return knows(atom) and not (late and atom == "delivered:" + m.goal_story))
 	return false
 
 

@@ -790,11 +790,13 @@ func _after(minutes: int) -> void:
 
 
 ## The story's facts the missions read (phase-2 design §3.2): the followed order
-## connected (delivered:<story>), the proposals agreed (agreed:<dialog>:<proposal>),
+## connected (delivered:<story>, and delivered:<story>:<ISO date> of its real done_at, which
+## the promise and the deadline are judged by), the proposals agreed (agreed:<dialog>:<proposal>),
 ## and who left (left:<person>).
 func _note_story() -> void:
 	if followed.delivered_at >= 0:
 		missions.facts.add("delivered:" + FollowedOrder.STORY)
+		missions.facts.add("delivered:%s:%s" % [FollowedOrder.STORY, iso_date(followed.delivered_at)])
 	if people == null:
 		return
 	for id: String in people.agreed:

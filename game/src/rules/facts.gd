@@ -23,7 +23,8 @@ extends RefCounted
 ## Check KPI> (a quarterly review's forecast beat the habit, or a Check's
 ## forecast moved its predicted KPI; GameSession records it); the story's
 ## (phase-2 design §3.2): agreed:<dialog>:<proposal> (a proposal agreed),
-## delivered:<story> (a followed order connected), left:<person> (someone who left;
+## delivered:<story> (a followed order connected; with :<ISO date> the day it was),
+## left:<person> (someone who left;
 ## GameSession records these three), promise_kept:/promise_broken:<dialog> (a
 ## promised date checked, Missions), holds:<problem> (its fix in use and not
 ## slipped, derived live by Missions.knows), and promised:<dialog>:<ISO date |

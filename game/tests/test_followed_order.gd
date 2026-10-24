@@ -196,3 +196,21 @@ func test_a_late_containment_earns_nothing() -> void:
 	assert_eq(s.contain("fix_digging_damage"), "")
 	_resolve(s, "digging_damage")
 	assert_false("eerst_veilig" in _found(s))
+
+
+## Review S3 #5: the promise and the frost are judged by the day the dossier was really
+## connected (its done_at), not the day the game noticed it: a delivery on day 71, inside
+## one long step past the frost (day 70), is late.
+func test_a_delivery_after_the_frost_in_one_long_step_counts_as_missed() -> void:
+	var s := _session()
+	s.missions.done_once["walk_connections"] = true
+	s.region.net.time += SimCalendar.days(68)   # day 68, two days before the frost (the calendar the dates are named in)
+	s.pass_time(0)
+	assert_eq(s.missions.status("winter_el_amrani"), "active")
+	var call := "el_amrani_fourth_call"
+	s.missions.facts.add("promised:%s:%s" % [call, GameSession.iso_date(s.region.net.time + SimCalendar.days(1))])
+	s.followed.delivered_at = s.region.net.time + SimCalendar.days(3)   # connected on day 71
+	s.pass_time(SimCalendar.days(4))   # one step, overnight past it all
+	assert_true(s.knows("delivered:el_amrani"), "it was connected")
+	assert_true(s.missions.failed("winter_el_amrani"), "but after the frost")
+	assert_true(s.knows("promise_broken:" + call), "and after the date named on the phone")
