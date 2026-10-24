@@ -57,4 +57,13 @@ static func take_call(office: Office) -> bool:
 	if not office.ui.open_talk(calls[0]["person"], TalkView.HEADSET).is_empty():
 		return false
 	office.player.sit_at(seat_at(office))
+	wear(office, true)
 	return true
+
+
+## The player puts the desk's headset on (`on`) or back on the desk after the call.
+static func wear(office: Office, on: bool) -> void:
+	office.player.wear_headset(on)
+	var on_desk := office.find_marker(DESK + "_headset")
+	if on_desk != null:
+		on_desk.visible = not on

@@ -38,7 +38,9 @@ rooms:
     floor: ground
     name: Klantcontactcentrum
     places: [customer_contact.answer]
-    opens_with: [fix_status_callers, fix_done_but_not_closed, fix_inverters_tripping]   # Wim Kortekaas's talk (Act II side)
+    # Wim Kortekaas's talk (Act II side); every customer's call, taken at the headset (PLAN 2.4)
+    opens_with: [fix_status_callers, winter_el_amrani, fix_unused_capacity, fix_done_but_not_closed,
+                 fix_inverters_tripping]
   - id: canteen
     floor: ground
     name: Kantine
@@ -137,6 +139,7 @@ rooms:
 rides:
   - {mission: fix_wrong_joint, with: ahmed, to: outages.repair}        # the storingsdienst to the Lindelaan
   - {mission: fix_not_at_home, with: sandra, to: meters.visit}         # Sandra's addresses
+  - {mission: walk_meters, with: sandra, to: meters.visit}             # Acht adressen: a day along with Sandra
   - {mission: save_henks_knowledge, with: henk, to: outages.locate}    # an old paper-lead cable in Nova-Oud
 
 # The tells (PLAN 2.6, design §1.5): the props that read the simulation. Each `id` is a

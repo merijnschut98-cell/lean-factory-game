@@ -1052,7 +1052,9 @@ func _on_panels_closed() -> void:
 		return
 	people.release()
 	people.refresh(session)
-	player.stand_up()   # after a call at the KCC's headset
+	if player.seated:   # after a call at the KCC's headset
+		OfficeHeadset.wear(self, false)
+	player.stand_up()
 	player.active = true
 	rig.active = true
 	rig.release()

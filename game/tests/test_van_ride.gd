@@ -125,6 +125,28 @@ func test_the_ride_seats_you_beside_the_monteur_and_ends_at_the_field_step() -> 
 	office.free()
 
 
+## Acht adressen: you ride along with Sandra to her addresses (the walk of the
+## meters stream, its field step on the yard).
+func test_walking_the_meters_stream_rides_with_sandra() -> void:
+	var office := _office()
+	_on_yard(office, ["walk_meters"])
+	var door := office.interactable("ride:walk_meters")
+	assert_true(door != null, "her passenger door")
+	if door == null:
+		office.free()
+		return
+	assert_eq(office.prompt_for(door), "E — Meerijden met Sandra")
+	office.interact(door)
+	var ride := office.ride
+	assert_true(ride != null, "the ride starts")
+	if ride != null:
+		ride.hold_space(true)
+		_drive(ride, SceneLines.HOLD_SKIP_S + VanRide.FADE_SECONDS + 0.3)
+		assert_true(ride.arrived(), "there")
+		assert_eq(office.ui.place_menu.place, "meters.visit", "at the addresses")
+	office.free()
+
+
 func test_holding_space_skips_the_drive() -> void:
 	var office := _office()
 	_on_yard(office, ["fix_not_at_home"])

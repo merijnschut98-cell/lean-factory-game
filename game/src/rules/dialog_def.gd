@@ -12,8 +12,12 @@ var name: String
 var person: String
 ## persuade | checkin | expert (Dialog.KINDS)
 var kind: String
-## persuade: available while this mission is active.
+## persuade: available while this mission is active; the first of `missions`.
 var mission: String
+## Every mission the talk is on (arc S11, `missions:` in content; else just
+## `mission`): open during any, the main mission's talk when any is main. The
+## first owns it (its problem, data and KPI menu).
+var missions := PackedStringArray()
 ## Missions during which the talk stays open too (an optional talk over
 ## several days: Rachid, Tuesday to Thursday).
 var also_during := PackedStringArray()
@@ -82,13 +86,20 @@ var closing: String
 var error := ""
 
 
+## Whether the talk is on one of `ids` (mission ids).
+func on_any(ids: Array) -> bool:
+	return Array(missions).any(func(m: String) -> bool: return m in ids)
+
+
 static func from_dict(d: Dictionary) -> DialogDef:
 	var g := DialogDef.new()
 	g.id = str(d.get("id", ""))
 	g.name = str(d.get("name", ""))
 	g.person = str(d.get("person", ""))
 	g.kind = str(d.get("kind", ""))
-	g.mission = str(d.get("mission", ""))
+	g.missions = PackedStringArray(d["missions"]) if d.get("missions") is Array \
+		else PackedStringArray([str(d["mission"])] if d.has("mission") else [])
+	g.mission = g.missions[0] if not g.missions.is_empty() else ""
 	g.requires_clue = str(d.get("requires_clue", "")) if d.get("requires_clue") != null else ""
 	g.owns = str(d.get("owns", ""))
 	g.kpi_team = str(d.get("kpi_team", ""))

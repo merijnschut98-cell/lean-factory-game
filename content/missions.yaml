@@ -722,7 +722,7 @@ missions:
     debrief: "Niet elke deur ging open. Sandra liet weer een kaartje achter: 'helaas niet thuis'. Ze heeft er een dikke stapel van in de bus."
     goal: {type: walk, stream: meters}
     steps:
-      look: "Loop met Sandra mee en kijk bij {team}"
+      look: "Rijd met Sandra mee en kijk bij {team}"
     rewards: {xp: 200}
 
   - id: fix_wrong_joint

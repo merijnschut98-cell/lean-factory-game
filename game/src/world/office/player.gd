@@ -93,6 +93,25 @@ func sit_at(seat: Transform3D) -> void:
 	_animate("sit")
 
 
+## Put a KCC headset on (OfficeHeadset, the contact centre's own: OfficePerson.headset)
+## or take it off again. Nothing shows on the stand-in, which has no head bone.
+func wear_headset(on: bool) -> void:
+	var worn := _headset()
+	if on and worn == null and _model != null:
+		worn = OfficePerson.headset(_model)
+	if worn != null:
+		worn.visible = on
+
+
+func wears_headset() -> bool:
+	var worn := _headset()
+	return worn != null and worn.visible
+
+
+func _headset() -> Node3D:
+	return _model.find_child("Headset", true, false) as Node3D if _model != null else null
+
+
 ## Get up again (nothing changes when standing).
 func stand_up() -> void:
 	if seated:
