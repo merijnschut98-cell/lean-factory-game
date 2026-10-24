@@ -118,6 +118,8 @@ var _hovered_person: OfficePerson
 var _scene_holds := false
 ## The "Hoe werkt het?" explainer open over the world (Ruud's whiteboard), or null.
 var explainer: ExplainerView
+## The KPI board open at the directie obeya (PLAN 2.4c), or null.
+var kpi_board: KpiBoardView
 ## Ruud's paper floor plan in the corner (PLAN 2.1b); null when the game cannot be played.
 var minimap: OfficeMinimap
 ## The yard's clock-keeper (the vans by the hour, PLAN 2.2) while the yard is loaded, or null.
@@ -311,6 +313,7 @@ func load_floor() -> void:
 	_cut_away_ceiling()
 	if find_marker("coach") != null:   # the coach's room is on this floor: Ruud's whiteboard
 		geometry.add_child(OfficeWhiteboard.build(in_office(geometry).affine_inverse()))
+	_hang_kpi_wall()
 	floors.apply_rooms()
 	_add_interactables()
 	people = OfficePeople.build(self, CharacterModel.cast(), floors.here)
@@ -376,6 +379,12 @@ func _add_interactables() -> void:
 		var board := Interactable.create(OfficeWhiteboard.ID, OfficeWhiteboard.stand())
 		interactables.append(board)
 		add_child(board)
+	var kpi_wall: Variant = OfficeKpiBoard.placement_in(self)   # the KPI board, once it exists and its room is open
+	if kpi_wall != null and OfficeKpiBoard.ROOM in floors.open and session.error.is_empty() \
+			and session.region.board.unlocked:
+		var kpi := Interactable.create(OfficeKpiBoard.ID, OfficeKpiBoard.stand(kpi_wall))
+		interactables.append(kpi)
+		add_child(kpi)
 	var headset := OfficeHeadset.place(self)   # the KCC's free desk (begane grond, once its room is open)
 	if headset != null:
 		interactables.append(headset)
@@ -505,6 +514,8 @@ func prompt_for(target: Interactable) -> String:
 			return tr(WHITEBOARD_PROMPT)
 		OfficeHeadset.ID:
 			return tr(OfficeHeadset.PROMPT)
+		OfficeKpiBoard.ID:
+			return tr(OfficeKpiBoard.PROMPT)
 	return "E — " + label_for(target)
 
 
@@ -527,6 +538,8 @@ func label_for(target: Interactable) -> String:
 			return tr(WHITEBOARD_LABEL)
 		OfficeHeadset.ID:
 			return tr(OfficeHeadset.LABEL)
+		OfficeKpiBoard.ID:
+			return tr(OfficeKpiBoard.LABEL)
 	return target.id
 
 
@@ -597,13 +610,15 @@ func interact(target: Interactable) -> void:
 			open_whiteboard()
 		OfficeHeadset.ID:
 			OfficeHeadset.take_call(self)
+		OfficeKpiBoard.ID:
+			open_kpi_board()
 	if ui.is_busy():
 		frame(target)
 
 
 ## Whether the world waits: a panel, the explainer or the creator is open, or a van ride is on.
 func busy() -> bool:
-	return ui.is_busy() or explainer != null or look_editor != null or ride != null
+	return ui.is_busy() or explainer != null or look_editor != null or ride != null or kpi_board != null
 
 
 ## "Uiterlijk" (PLAN 2.7b): the creator over the world on the current look and
@@ -649,6 +664,41 @@ func open_whiteboard() -> void:
 		{"log": session.explainers, "auto": SceneLines.auto_setting()})
 	explainer.closed.connect(_on_explainer_closed)
 	explainer.pause_requested.connect(ui.open_pause)
+
+
+## The KPI board at the directie obeya (PLAN 2.4c): the camera moves in to the wall and
+## the board opens (KpiBoardView); closing it gives the world back and the wall shows
+## the choice in force. Null when the world is busy or the board does not exist yet.
+func open_kpi_board() -> KpiBoardView:
+	var wall: Variant = OfficeKpiBoard.placement_in(self)
+	if busy() or wall == null or not session.region.board.unlocked:
+		return null
+	_on_panel_opened()
+	_world_input(false)
+	var ahead: Vector3 = -(wall as Transform3D).basis.z
+	rig.converse(OfficeKpiBoard.look_point(wall), atan2(-ahead.x, -ahead.z), 0.0, 0.0)
+	kpi_board = KpiBoardView.open(self, session)
+	kpi_board.closed.connect(_on_kpi_board_closed)
+	return kpi_board
+
+
+func _on_kpi_board_closed(_result: Dictionary) -> void:
+	kpi_board = null
+	_hang_kpi_wall()
+	_world_input(true)
+	_on_panels_closed()
+	ui.after_action()
+
+
+## The KPI board on Directie & Obeya's wall (on the 2e), as the teams steer now.
+func _hang_kpi_wall() -> void:
+	var old := find_marker(OfficeKpiBoard.NODE)
+	if old != null:
+		old.get_parent().remove_child(old)
+		old.free()
+	var wall: Variant = OfficeKpiBoard.placement_in(self)
+	if wall != null and session.error.is_empty():
+		geometry.add_child(OfficeKpiBoard.build(in_office(geometry).affine_inverse(), wall, OfficeKpiBoard.columns_of(session)))
 
 
 ## An expert's topic opens a "Hoe werkt het?" explainer over the talk (phase 2

@@ -288,7 +288,8 @@
   "promise_kept",
   "promised",
   "repaired",
-  "standardised"
+  "standardised",
+  "steers"
  ],
  "fork_roles": [
   "bottleneck",
@@ -307,6 +308,7 @@
   "capacity"
  ],
  "measures": [
+  "floor_days",
   "maturity",
   "reputation"
  ],

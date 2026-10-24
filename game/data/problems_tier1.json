@@ -125,6 +125,7 @@
     }
    ],
    "countermeasures": {
+    "backup_job_per_day": 0.6,
     "installer_photo_upload": 0.9,
     "readiness_check": 1.0
    },
@@ -819,7 +820,8 @@
    ],
    "countermeasures": {
     "automatic_ean_registration": 0.9,
-    "close_out_at_completion": 1.0
+    "close_out_at_completion": 1.0,
+    "mid_month_run": 0.6
    },
    "effects": [
     {
@@ -900,6 +902,7 @@
    ],
    "countermeasures": {
     "calculation_templates": 0.7,
+    "study_overtime_sprint": 0.6,
     "triage_fast_lane": 1.0
    },
    "effects": [
@@ -1550,6 +1553,165 @@
    "tier": 1,
    "visibility": "obvious",
    "waste": "motion"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Op het vierde adres kijkt de monteur in de meterkast en schudt zijn hoofd: een oude stoppenkast, met een plaat die asbest kan bevatten. Hij plakt er een sticker op. Eerst moet er een aansluitmonteur komen; daarna komt hij terug.",
+     "tool": "shadow"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "Een meterwissel duurt veertig minuten, netjes binnen de norm.",
+     "tool": "time_study"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "In de bus liggen genoeg meters, ook driefasemeters. Aan materiaal ligt het niet.",
+     "tool": "material_check"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "Bij één op de zeven bezoeken staat als uitkomst 'kast niet geschikt'. Bijna allemaal in huizen van voor 1990.",
+     "tool": "data"
+    },
+    {
+     "at": "meters.appointment",
+     "depth": 1,
+     "key": true,
+     "text": "De afspraakbrief vraagt de klant de meterkast vrij te maken. Naar de meterkast zelf vraagt niemand, ook niet aan de telefoon.",
+     "tool": "documents"
+    },
+    {
+     "at": "meters.appointment",
+     "depth": 2,
+     "key": true,
+     "text": "Linda plant een meterwissel in Nova-Oud: 'Postcode, dag, klaar.' Het bouwjaar van het huis staat in het register, maar dat scherm heeft ze niet open.",
+     "tool": "listen_in"
+    }
+   ],
+   "cost_per_week": 600,
+   "countermeasures": {
+    "cupboard_photo_at_booking": 1.0,
+    "customer_self_report": 0.6,
+    "register_cupboard_check": 0.8
+   },
+   "effects": [
+    {
+     "property": "ftr",
+     "target": "meters.visit",
+     "value": -0.15
+    }
+   ],
+   "id": "double_visits",
+   "kpi": "first_time_right",
+   "mismatch_note": "Aan de deur valt niets meer te winnen; de kast was al oud voordat de monteur kwam. Wat ontbreekt, is een blik op de kast bij het inplannen.",
+   "name": "Twee keer naar hetzelfde adres",
+   "plausible_causes": [
+    "De monteurs zijn niet opgeleid voor oude meterkasten.",
+    "Klanten maken de meterkast niet vrij."
+   ],
+   "root_cause": "Bij het inplannen kijkt niemand naar de meterkast; pas aan de deur blijkt dat eerst een aansluitmonteur moet komen, en dan rijdt de meterwisselaar een tweede keer.",
+   "severity": "medium",
+   "step": "meters.visit",
+   "symptoms": [
+    "Meterwisselaars rijden terug naar adressen waar ze vorige week al waren.",
+    "Het programma voor de laatste analoge meters loopt achter, terwijl de monteurs volle dagen maken."
+   ],
+   "teaches": [
+    "waste_defects",
+    "quality_at_the_source"
+   ],
+   "tier": 1,
+   "visibility": "subtle",
+   "waste": "defects"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "De meterwisselaars schreven de laatste acht weken samen 140 overuren, in rustige weken net zoveel als in drukke.",
+     "tool": "data"
+    },
+    {
+     "at": "meters.visit",
+     "depth": 0,
+     "key": true,
+     "text": "Je rijdt een dag mee: Nova-Oud, De Hofstede, terug naar Nova-Oud, dan de Kanaalzone. Van de acht uur zit de monteur er drie in de bus.",
+     "tool": "shadow"
+    },
+    {
+     "at": "meters.visit",
+     "depth": 0,
+     "key": false,
+     "text": "Bij de klant werkt de monteur vlot: de wissel zelf zit binnen de norm.",
+     "tool": "time_study"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "De planning zet afspraken op volgorde van aanvraagdatum. Een wijk of postcode komt in de planningsregels niet voor.",
+     "tool": "documents"
+    },
+    {
+     "depth": 2,
+     "key": true,
+     "text": "Een klant uit Nova-Oud wil dinsdag. Linda zet hem erin, al werkt die monteur dinsdag verder alleen in de Kanaalzone. 'Wie het eerst belt, krijgt de eerste plek.'",
+     "tool": "listen_in"
+    }
+   ],
+   "cost_per_week": 1100,
+   "countermeasures": {
+    "area_teams": 0.8,
+    "overtime_cap": 0.6,
+    "route_by_area": 1.0
+   },
+   "effects": [
+    {
+     "property": "touch_time",
+     "target": "meters.visit",
+     "value": 1.3
+    },
+    {
+     "property": "ftr",
+     "target": "meters.visit",
+     "value": -0.1
+    }
+   ],
+   "id": "overtime_planning",
+   "kpi": "on_time",
+   "mismatch_note": "Meer mensen of harder werken haalt de kilometers er niet uit. De rit tussen de adressen zit in de planning.",
+   "name": "Overwerk dat in de planning zit",
+   "plausible_causes": [
+    "De monteurs werken te langzaam.",
+    "Er zijn te weinig meterwisselaars."
+   ],
+   "root_cause": "Afspraken worden ingepland op volgorde van binnenkomst, niet per wijk; de monteurs rijden kriskras door de regio, en wat aan het eind van de dag overblijft, wordt overwerk.",
+   "severity": "high",
+   "step": "meters.appointment",
+   "symptoms": [
+    "De meterwisselaars schrijven elke week overuren, ook in een rustige week.",
+    "Een monteur rijdt op één dag naar adressen in drie of vier wijken."
+   ],
+   "teaches": [
+    "waste_transport",
+    "heijunka"
+   ],
+   "tells": [
+    {
+     "tell": "planning_board",
+     "text": "Op het weekbord bij de planners staan de meterwissels van één monteur verspreid over vier wijken."
+    }
+   ],
+   "tier": 1,
+   "visibility": "subtle",
+   "waste": "transport"
   }
  ]
 }

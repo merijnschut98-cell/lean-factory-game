@@ -116,6 +116,7 @@ static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, t
 	s.missions.talk_outcome = s.talk_outcome
 	s.missions.talked = s.talked
 	s.missions.can_talk = s.can_talk
+	s.missions.topics_heard = s.topics_heard
 	s.missions.play_start = SimCalendar.days(WARMUP_DAYS)
 	s.discoveries = Discoveries.new(s.catalog.discoveries)
 	s.gemba = PlaceActions.from_doc(s.catalog.places)
@@ -600,8 +601,31 @@ func mission_briefing(mission_id: String) -> String:
 	return player.fill(missions.briefing_of(mission_id).replace("{dossier_weken}", FollowedOrder.weeks_text(age)))
 
 
+## The debrief to show, with a main mission's principle line after it.
 func mission_debrief(mission_id: String) -> String:
-	return player.fill(missions.debrief_of(mission_id)) if missions.defs.has(mission_id) else ""
+	if not missions.defs.has(mission_id):
+		return ""
+	var principle := principle_line(mission_id)
+	return player.fill(missions.debrief_of(mission_id)) + ("\n\n" + principle if not principle.is_empty() else "")
+
+
+## The principle line of main mission `mission_id` with a problem (design §3.7,
+## PrincipleLine): which principle the play paid or cost, from its facts; "" otherwise.
+func principle_line(mission_id: String) -> String:
+	var m: MissionDef = missions.defs.get(mission_id)
+	if m == null or m.kind != "main" or m.goal_problem.is_empty():
+		return ""
+	var st: ProblemState = region.state.get(m.goal_problem)
+	var facts := {"poor_fix": missions.knows("poor_fix:" + m.goal_problem), "fading": missions.fading_fix(m),
+		"blamed": st != null and st.blamed, "complied": "", "committed": "",
+		"standardised": st != null and st.standardised, "failed_checks": st.failed_checks if st != null else 0}
+	for d: DialogDef in (people.dialogs.values() if people != null else []):
+		for kind: String in ["committed", "complied"]:
+			if d.missions.has(mission_id) and facts[kind] == "" and missions.knows("%s:%s" % [kind, d.id]):
+				facts[kind] = speaker_name(d.person)
+	var code := PrincipleLine.code(facts)
+	var who: String = facts["complied"] if code == "respect_complied" else facts["committed"]
+	return player.fill(PrincipleLine.line(catalog.principles, code, mission_id, who))
 
 
 ## Countermeasures not offered because an earlier preparation is missing:
@@ -814,14 +838,25 @@ func speaker_name(person_id: String) -> String:
 	return coach.get_slice(" ", 0) if person_id == "ruud" and not coach.is_empty() else person_id.capitalize()
 
 
+## The KPI board's birth (PLAN 2.5): a scene that ends at the board (SceneScript
+## `board`) hangs it when no fix did (KpiBoard.unlock: its first review is due at once).
+## Whether the board is up.
+func hang_kpi_board() -> bool:
+	region.board.unlock(region.net.time)
+	return region.board.unlocked
+
+
 ## The scene of milestone `mission_id` was played and answered with option `answer`
 ## (-1: it asked nothing); its minutes pass and the milestone completes. "" or
-## Missions.finish_scene's code, or bad_answer.
+## Missions.finish_scene's code, bad_answer, or review_first (a scene that ends at the
+## KPI board, before the board's review is done).
 func finish_scene(mission_id: String, answer: int = -1) -> String:
 	var scene := scene_of(mission_id)
 	var options: Array = scene.get("choice", {}).get("options", [])
 	if not options.is_empty() and (answer < 0 or answer >= options.size()):
 		return "bad_answer"
+	if scene.get("board", false) and (not region.board.unlocked or region.board.review_due(region.net.time)):
+		return "review_first"   # a scene that ends at the KPI board ends once it is hung
 	var refused := missions.finish_scene(mission_id, options[answer]["fact"] if not options.is_empty() else "")
 	if refused.is_empty():
 		_after(SCENE_MINUTES)
@@ -1228,6 +1263,11 @@ func end_dialog() -> Dictionary:
 ## (Missions.talk_outcome).
 func talk_outcome(dialog_id: String) -> String:
 	return people.effective_outcome(dialog_id, people.facts(_facts()))
+
+
+## How many topics of an expert talk were heard (Missions.topics_heard).
+func topics_heard(dialog_id: String) -> int:
+	return people.asked_topics(dialog_id).size()
 
 
 ## Whether a dialog was had (Missions.talked); a talk the content does not

@@ -103,3 +103,85 @@ func test_the_review_seats_ruud_frank_presents_at_the_screen_and_you_sit_down() 
 	office.people.refresh(s)
 	assert_true(office.people.person("frank").visible, "Frank back at his desk")
 	office.free()
+
+
+const FLOW := {"intake": ["intake_lead_time", "intake_oldest"], "work_prep": ["work_prep_lead_time", "work_prep_oldest"],
+	"planners": ["planners_on_time", "planners_oldest"], "contact_centre": ["contact_centre_resolved", "contact_centre_reachable"]}
+
+
+## The office on the 2e with Het eerste kwartaal open (fix_silo_kpis done): Ruud and Frank
+## wait at Directie & Obeya.
+func _quarter_office() -> Office:
+	var office: Office = load(SCENE).instantiate()
+	office.seed_value = 11
+	office.training = false
+	office.build()
+	var s := office.session
+	s.missions.done_once["fix_silo_kpis"] = true
+	s.pass_time(0)
+	assert_eq(s.missions.status("first_kpi_review"), "active", "it opens after fix_silo_kpis")
+	assert_true("directors_obeya" in office.floors.open_now())
+	assert_true(office.floors.go_to("second", "lift"))
+	office.milestone.step(1.0)
+	assert_eq(office.milestone._people.keys(), ["ruud", "frank"])
+	return office
+
+
+func _walk_in(office: Office) -> void:
+	var rect := OfficeFloors.room_rect(office.floors.markers()["room:directors_obeya"])
+	office.player.position = Vector3(rect.get_center().x, 0.0, rect.get_center().y)
+	office.milestone.step(1.0)
+
+
+## Het eerste kwartaal (PLAN 2.4c, 2.5): the scene reads the silo fix and Frank, ends at
+## the KPI board (born here when no fix hung it), and what is said after it reads the
+## choice hung and the forecast. It completes only once the board is hung.
+func test_the_first_quarterly_review_ends_at_the_kpi_board() -> void:
+	var office := _quarter_office()
+	var s := office.session
+	var m := office.milestone
+	assert_false(s.region.board.unlocked, "no fix hung the board")
+	_walk_in(office)
+	assert_eq(m.playing, "first_kpi_review")
+	var before: Array = m._scene["before"].map(func(l: Dictionary) -> String: return l["text"])
+	m.lines.finish()
+	assert_ne(office.kpi_board, null, "the scene ends at the board")
+	assert_true(s.region.board.unlocked, "the board is born in the scene")
+	assert_eq(s.finish_scene("first_kpi_review"), "review_first", "not done before the board is hung")
+	for pool: String in FLOW:
+		for id: String in FLOW[pool]:
+			office.kpi_board.pick(pool, id)
+	var result := office.kpi_board.hang_now()
+	office.kpi_board.close()
+	assert_true(m.lines.holds(), "Ruud and Frank go on")
+	var said: Array = m._scene["after"].map(func(l: Dictionary) -> String: return l["text"])
+	var frank_flow := "Hoe lang iets duurt, en wat er blijft liggen."
+	assert_true(said.any(func(t: String) -> bool: return t.contains(frank_flow)), "Frank reads the flow KPIs: %s" % [said])
+	var forecast := "De analisten zien met deze getallen een beter kwartaal"
+	assert_eq(said.any(func(t: String) -> bool: return t.contains(forecast)), result["paid"] > 0.0, "Ruud reads the forecast")
+	assert_false(before.any(func(t: String) -> bool: return t.contains(frank_flow)), "the choice is read after the board")
+	m.lines.finish()
+	assert_eq(s.missions.status("first_kpi_review"), "completed")
+	m.step(1.0)
+	assert_true(m._people.is_empty(), "they leave the room")
+	office.free()
+
+
+## Walking away from the board without hanging it pauses the review: nothing is lost,
+## and walking back in starts it again.
+func test_leaving_the_board_unhung_waits_for_you_to_come_back() -> void:
+	var office := _quarter_office()
+	var m := office.milestone
+	_walk_in(office)
+	m.lines.finish()
+	office.kpi_board.close()
+	assert_eq(m.playing, "", "the review waits")
+	assert_eq(office.session.missions.status("first_kpi_review"), "active")
+	m.step(1.0)
+	assert_eq(m.playing, "", "not again while you are still in the room")
+	assert_eq(m._people.keys(), ["ruud", "frank"], "they wait for you")
+	office.player.position = Vector3(1000, 0, 1000)
+	m.step(1.0)
+	_walk_in(office)
+	assert_eq(m.playing, "first_kpi_review", "back in, it starts again")
+	office.free()

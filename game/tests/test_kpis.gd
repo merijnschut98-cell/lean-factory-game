@@ -31,6 +31,34 @@ func test_the_real_menus_follow_the_rules() -> void:
 	assert_false(menu.review_question.is_empty())
 
 
+## The KPI board (PLAN 2.4c) writes each KPI's real number on its card and reads which
+## focus the board steers on; every real KPI has both.
+func test_every_real_kpi_has_a_focus_and_a_number_the_region_measures() -> void:
+	var menu := _menu()
+	var net := Network.load_file(Network.DEFAULT_PATH)
+	net.advance_days(30)
+	for pool: String in menu.menus:
+		for k: KpiDef in menu.menus[pool]:
+			assert_true(k.focus in KpiDef.FOCI, k.id)
+			var v := KpiReading.value(net, k)
+			assert_true(is_finite(v) and v > 0.0, "%s reads %s" % [k.id, v])
+	var lead: KpiDef = menu.defs_for("intake", PackedStringArray(["intake_lead_time"]))[0]
+	assert_eq(KpiReading.value(net, lead), net.stream("connections").kpis(net.time, KpiReading.WINDOW_DAYS)["lead_days_p50"])
+
+
+func test_the_board_steers_on_the_focus_picked_most() -> void:
+	var menu := _menu()
+	var flow := {"intake": ["intake_lead_time", "intake_oldest"], "work_prep": ["work_prep_lead_time", "work_prep_oldest"],
+		"planners": ["planners_on_time", "planners_oldest"], "contact_centre": ["contact_centre_resolved", "contact_centre_reachable"]}
+	assert_eq(Array(menu.steers(flow)), ["flow"], "five flow, three customer")
+	var habit := {"intake": ["intake_output", "intake_utilisation"], "work_prep": ["work_prep_output", "work_prep_utilisation"],
+		"planners": ["planners_hours", "planners_on_time"], "contact_centre": ["contact_centre_handle_time", "contact_centre_resolved"]}
+	assert_eq(Array(menu.steers(habit)), ["output"])
+	var tie := {"intake": ["intake_output", "intake_lead_time"], "work_prep": ["work_prep_output", "work_prep_ftr"]}
+	assert_eq(Array(menu.steers(tie)), ["output", "flow"], "a tie steers on both")
+	assert_eq(Array(menu.steers({})), [], "nothing chosen yet")
+
+
 func test_a_lagging_and_a_leading_kpi_set_all_their_rules() -> void:
 	var effects := _menu().effects_for("intake", PackedStringArray(["intake_lead_time", "intake_oldest"]))
 	assert_eq(_by_property(effects, "start_rule"), [NetFixture.effect("intake", "start_rule", "pull")])
@@ -95,6 +123,8 @@ func test_a_bad_kpi_definition_reports_its_error() -> void:
 	assert_ne(KpiDef.from_dict({"id": "x_y", "name": "X", "pool": "x", "kind": "leading", "rules": {"order": "random"}}).error, "")
 	assert_ne(KpiDef.from_dict({"id": "", "name": "X"}).error, "")
 	assert_eq(KpiDef.from_dict({"id": "x_y", "name": "X", "pool": "x", "kind": "leading", "rules": {"care": "hasty"}}).error, "")
+	assert_ne(KpiDef.from_dict({"id": "x_y", "name": "X", "pool": "x", "kind": "leading", "focus": "speed"}).error, "")
+	assert_ne(KpiDef.from_dict({"id": "x_y", "name": "X", "pool": "x", "kind": "leading", "measure": "joy"}).error, "")
 
 
 ## A problem (or countermeasure) lists the KPIs a department follows; the

@@ -133,7 +133,8 @@
    "id": "directors_obeya",
    "name": "Directie & Obeya",
    "opens_with": [
-    "fix_silo_kpis"
+    "fix_silo_kpis",
+    "first_kpi_review"
    ],
    "places": []
   },
@@ -145,7 +146,8 @@
     "look_at_grid_study",
     "fix_grid_study_queue",
     "fix_transformer_wait",
-    "fix_unused_capacity"
+    "fix_unused_capacity",
+    "talk_netplanner"
    ],
    "places": [
     "connections.grid_study",
@@ -232,7 +234,9 @@
     "fix_wrong_joint",
     "fix_not_at_home",
     "fix_silent_meter",
-    "save_henks_knowledge"
+    "save_henks_knowledge",
+    "fix_double_visits",
+    "fix_overtime_planning"
    ],
    "places": [
     "outages.repair",

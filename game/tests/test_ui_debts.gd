@@ -183,7 +183,7 @@ func test_the_debrief_card_reads_the_play() -> void:
 	var m: MissionDef = s.missions.defs[MISSION]
 	m.debrief_variants["not_standardised"] = "Zonder standaard zakt dit weg."
 	s.region.state[PROBLEM].phase = ProblemState.Phase.RESOLVED
-	assert_eq(s.mission_debrief(MISSION), "Zonder standaard zakt dit weg.")
+	assert_true(s.mission_debrief(MISSION).begins_with("Zonder standaard zakt dit weg."), "the variant leads; the principle line follows (design §3.7)")
 
 
 # ── Codex ───────────────────────────────────────────────────────────────────

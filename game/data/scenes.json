@@ -198,6 +198,165 @@
    ],
    "room": "mt_room",
    "stands": "frank"
+  },
+  {
+   "beats": [
+    {
+     "line": "Kom erbij staan. Frank en ik kijken elk kwartaal naar de getallen waar de teams op sturen. Vandaag doen we dat met z'n drieën.",
+     "speaker": "ruud"
+    },
+    {
+     "line": "Ik heb een kwartier. Daarna moet ik naar de regiegroep.",
+     "speaker": "frank"
+    },
+    {
+     "line": "Sanne en Joost hadden vorige week in het MT één getal bij zich: de doorlooptijd. Samen. Dat had ik nog niet eerder gezien.",
+     "needs": {
+      "all": [
+       "holds:silo_kpis"
+      ]
+     },
+     "speaker": "frank"
+    },
+    {
+     "line": "In het MT lagen vorige week toch weer twee recordmaanden op tafel. Hoe kan dat, denk je?",
+     "needs": {
+      "none": [
+       "holds:silo_kpis"
+      ]
+     },
+     "speaker": "ruud"
+    },
+    {
+     "line": "Ik heb het jaarplan aangepast. De doorlooptijd staat nu bovenaan, de aantallen eronder. De directie vroeg ernaar, en ik kon het uitleggen.",
+     "needs": {
+      "all": [
+       "committed:frank_kpi_targets"
+      ]
+     },
+     "speaker": "frank"
+    },
+    {
+     "line": "Ik heb ermee ingestemd, dat weet je. Maar in de najaarsronde moet ik het kunnen verantwoorden. Ik wil vandaag getallen zien.",
+     "needs": {
+      "all": [
+       "complied:frank_kpi_targets"
+      ],
+      "none": [
+       "committed:frank_kpi_targets"
+      ]
+     },
+     "speaker": "frank"
+    },
+    {
+     "line": "Ik zeg het eerlijk: ik ben nog niet overtuigd. Het jaarplan stuurt op aantallen, en dat moet ik kunnen uitleggen.",
+     "needs": {
+      "all": [
+       "blocked:frank_kpi_targets"
+      ],
+      "none": [
+       "committed:frank_kpi_targets",
+       "complied:frank_kpi_targets"
+      ]
+     },
+     "speaker": "frank"
+    },
+    {
+     "line": "Ik heb er eerlijk gezegd weinig van meegekregen. Laat maar zien wat er op het bord komt.",
+     "needs": {
+      "none": [
+       "committed:frank_kpi_targets",
+       "complied:frank_kpi_targets",
+       "blocked:frank_kpi_targets"
+      ]
+     },
+     "speaker": "frank"
+    },
+    {
+     "board": true,
+     "line": "Het bord is vandaag van jou. Waar laten we de teams het komende kwartaal op sturen?",
+     "speaker": "ruud"
+    },
+    {
+     "line": "Aanvragen en ontwerpen per week. Dat ken ik, dat kan ik verantwoorden.",
+     "needs": {
+      "all": [
+       "steers:output"
+      ]
+     },
+     "speaker": "frank"
+    },
+    {
+     "line": "En mevrouw El Amrani? Aan welk van deze getallen ziet zij dat haar aansluiting sneller komt?",
+     "needs": {
+      "all": [
+       "steers:output"
+      ]
+     },
+     "speaker": "ruud"
+    },
+    {
+     "line": "Hoe lang iets duurt, en wat er blijft liggen. Dat zijn andere getallen dan in mijn jaarplan. Die moet ik straks wel kunnen uitleggen.",
+     "needs": {
+      "all": [
+       "steers:flow"
+      ],
+      "none": [
+       "steers:output"
+      ]
+     },
+     "speaker": "frank"
+    },
+    {
+     "line": "Op tijd, en afspraak is afspraak. Dat vraagt de ACM ook. Dat kan ik aan de directie uitleggen.",
+     "needs": {
+      "all": [
+       "steers:customer"
+      ],
+      "none": [
+       "steers:output"
+      ]
+     },
+     "speaker": "frank"
+    },
+    {
+     "line": "De analisten zien met deze getallen een beter kwartaal dan met hoe we het altijd deden. Frank, kun je daar iets mee in de regiegroep?",
+     "needs": {
+      "all": [
+       "forecast_positive:kpi_board"
+      ]
+     },
+     "speaker": "ruud"
+    },
+    {
+     "line": "Met de oude getallen ernaast, ja. Dan kan ik het uitleggen.",
+     "needs": {
+      "all": [
+       "forecast_positive:kpi_board"
+      ]
+     },
+     "speaker": "frank"
+    },
+    {
+     "line": "De analisten zien nog weinig verschil met hoe we het altijd deden. Wat zou jij over een kwartaal anders willen zien?",
+     "needs": {
+      "none": [
+       "forecast_positive:kpi_board"
+      ]
+     },
+     "speaker": "ruud"
+    },
+    {
+     "line": "Over drie maanden staan we hier weer. Dan kijken we samen of de getallen deden wat we dachten.",
+     "speaker": "ruud"
+    }
+   ],
+   "id": "first_kpi_review",
+   "present": [
+    "ruud",
+    "frank"
+   ],
+   "room": "directors_obeya"
   }
  ]
 }
