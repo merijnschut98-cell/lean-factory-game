@@ -67,6 +67,10 @@ func test_the_non_bottleneck_control_takes_the_other_branch_first_and_the_curve_
 	assert_eq(mains, ["walk_connections", "fix_custom_design", "fix_installer_not_ready"], "the non-bottleneck first")
 	var point: Dictionary = (run["curve"] as Array).back()
 	assert_true(point.has("throughput") and point.has("lead_days"), "the connections flow: %s" % [point])
+	assert_eq([point.get("advance"), run.get("advance_max")], [0, 0], "the directie's advance (none above the floor)")
+	var rows := Autoplay.PlayReport._story_table([run])
+	assert_true(rows[2].begins_with("| non-bottleneck | 11 | installer_not_ready | "),
+		"a row per run: the fork branch taken first, the winter, Act II: %s" % rows[2])
 
 
 ## Milestones never dead-end a run (phase-2 design §3.1): a scene is sat through, the

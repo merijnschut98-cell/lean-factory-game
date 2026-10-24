@@ -48,6 +48,11 @@ const CONTROLS: Array[String] = ["non-bottleneck"]
 const EXPERT_PLAY: Array[String] = ["expert", "talker", "never-talks", "non-bottleneck"]
 const SEEDS: Array[int] = [11, 12, 13]
 const DEFAULT_OUT := "res://../docs/qa"
+## The Act II main missions (the Phase 2 gate: each reachable and completable).
+const ACT2_MAINS: Array[String] = ["fix_digging_damage", "fix_revision_backlog", "fix_grid_study_queue",
+	"fix_transformer_wait", "fix_unused_capacity", "fix_silo_kpis"]
+## The tier-1 fork after fix_custom_design: the bottleneck branch first.
+const FORK_BRANCHES: Array[String] = ["fix_incomplete_application", "fix_installer_not_ready"]
 const SEVERITIES: Array[String] = ["critical", "high", "medium", "low"]
 ## Findings that explain others come first within a severity (key prefixes).
 const ROOTS: Array[String] = ["error:", "dead_end:", "orphan", "refused:", "check_window", "treadmill", "debt_spiral",
@@ -251,7 +256,7 @@ class Persona extends RefCounted:
 			"assisted": [], "refusals": [], "coach": [], "bad_periods": [], "belts": [], "failed": [],
 			"reopened": [], "kpi_reviews": [], "standardise_refused": [], "slipping": [], "audits": [], "errors": [], "actions": 0,
 			"talks": [], "ends_with_talk": [], "recurred": [], "left": [], "discoveries": [], "people": {}, "fixes": [],
-			"min_budget": 0, "epilogue": {}}
+			"min_budget": 0, "advance_max": 0, "advance_end": 0, "epilogue": {}}
 		OS.add_logger(_catcher)
 		s = GameSession.new_game(seed_value, Catalog.DATA_DIR, style != "careless")
 		if not s.error.is_empty():
@@ -345,6 +350,9 @@ class Persona extends RefCounted:
 				record["orphans"].append({"problem": id, "phase": s.phase_of(id), "missions": why})
 		record["completed"] = (record["missions"] as Array).filter(
 			func(r: Dictionary) -> bool: return r["outcome"] == "completed").size()
+		record["advance_end"] = s.region.advance_owed
+		record["advance_max"] = (record["curve"] as Array).reduce(
+			func(high: int, c: Dictionary) -> int: return maxi(high, c.get("advance", 0)), s.region.advance_owed)
 		record["min_budget"] = (record["curve"] as Array).reduce(
 			func(low: int, c: Dictionary) -> int: return mini(low, c["budget"]), s.budget())
 		record["discoveries"] = s.discoveries.found.keys()
@@ -584,6 +592,7 @@ class Persona extends RefCounted:
 		var flow := s.region.net.stream(FLOW_STREAM).kpis(s.region.net.time, FLOW_DAYS)
 		point["throughput"] = snappedf(flow["throughput_per_week"], 0.1)
 		point["lead_days"] = snappedf(flow["lead_days_p50"], 0.1)
+		point["advance"] = s.region.advance_owed  # what the directie advanced past the debt floor
 		if s.has_method("drift"):
 			point["drift"] = snappedf(s.call("drift")["level"], 0.001)
 		record["curve"].append(point)
@@ -2025,6 +2034,10 @@ class PlayReport extends RefCounted:
 		md.append("")
 		md.append("Days, XP, budget and the counts are the campaign's (the epilogue's are in the next table); reopened counts the epilogue too.")
 		md.append("")
+		md.append("## The story per run (Phase 2 gate)")
+		md.append("")
+		md.append_array(_story_table(runs))
+		md.append("")
 		md.append("## People, talks and fixes")
 		md.append("")
 		md.append_array(_people_table(runs))
@@ -2130,13 +2143,13 @@ class PlayReport extends RefCounted:
 		return rows
 
 	static func _persona_table(runs: Array) -> PackedStringArray:
-		var rows := PackedStringArray(["| persona | runs | missions done | failed | days | budget at end | lowest budget | trust (end) | morale (end) | people left | fixes held after epilogue | slipping + recurred | life of held fixes (d) | discoveries | talks |",
-			"|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"])
+		var rows := PackedStringArray(["| persona | runs | missions done | failed | days | budget at end | lowest budget | trust (end) | morale (end) | people left | fixes held after epilogue | slipping + recurred | life of held fixes (d) | discoveries | talks | directie advance: most owed / at end |",
+			"|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"])
 		var by := _by_persona(runs)
 		for persona: String in by:
 			var list: Array = by[persona]
 			var m := func(f: Callable) -> float: return _mean(list.map(f))
-			rows.append("| %s | %d | %.1f | %.1f | %.0f | %s | %s | %.1f | %.1f | %.1f | %s | %.1f | %.0f | %.1f | %.1f |" % [persona, list.size(),
+			rows.append("| %s | %d | %.1f | %.1f | %.0f | %s | %s | %.1f | %.1f | %.1f | %s | %.1f | %.0f | %.1f | %.1f | %s / %s |" % [persona, list.size(),
 				m.call(func(r: Dictionary) -> float: return float(r["completed"])),
 				m.call(func(r: Dictionary) -> float: return float((r["failed"] as Array).size())),
 				m.call(func(r: Dictionary) -> float: return float(r["days"])),
@@ -2150,9 +2163,33 @@ class PlayReport extends RefCounted:
 				m.call(func(r: Dictionary) -> float: return float(decay_events(r))),
 				m.call(func(r: Dictionary) -> float: return mean_life(r)),
 				m.call(func(r: Dictionary) -> float: return float((r["discoveries"] as Array).size())),
-				m.call(func(r: Dictionary) -> float: return float((r["talks"] as Array).size()))])
+				m.call(func(r: Dictionary) -> float: return float((r["talks"] as Array).size())),
+				UiText.money(roundi(m.call(func(r: Dictionary) -> float: return float(r.get("advance_max", 0))))),
+				UiText.money(roundi(m.call(func(r: Dictionary) -> float: return float(r.get("advance_end", 0)))))])
 		rows.append("")
-		rows.append("Trust, morale, fixes and life after the epilogue where the run had one (careless: at the horizon).")
+		rows.append("Trust, morale, fixes and life after the epilogue where the run had one (careless: at the horizon). The directie advance: what an experiment cost past the debt floor, repaid first from income (Region.advance_owed).")
+		return rows
+
+	## Per run, the Phase 2 gate's story beats: a dead end before day 100, the fork branch
+	## taken first, the day the El Amrani dossier was connected and the winter promise, the
+	## Act II mains done (and the day of the last), the connections flow at day 100.
+	static func _story_table(runs: Array) -> PackedStringArray:
+		var rows := PackedStringArray(["| persona | seed | fork: first | dead ends by day 100 | El Amrani connected (day) | winter | Act II mains done | Act II done on day | throughput/wk, lead (d) at day 100 | directie advance (most owed) |",
+			"|---|---|---|---|---|---|---|---|---|---|"])
+		for r: Dictionary in runs:
+			var act2 := (r["missions"] as Array).filter(func(m: Dictionary) -> bool:
+				return m["outcome"] == "completed" and m["id"] in ACT2_MAINS)
+			var fork := (r["missions"] as Array).filter(func(m: Dictionary) -> bool: return m["id"] in FORK_BRANCHES)
+			var at_100 := (r["curve"] as Array).filter(func(c: Dictionary) -> bool: return c["day"] <= 100.0 and c.has("throughput"))
+			rows.append("| %s | %d | %s | %d | %s | %s | %d of %d | %s | %s | %s |" % [r["persona"], r["seed"],
+				(fork[0]["id"] as String).trim_prefix("fix_") if not fork.is_empty() else "–",
+				(r["dead_ends"] as Array).filter(func(d: Dictionary) -> bool: return d["day"] <= 100.0).size(),
+				"%.0f" % r["followed_day"] if r.get("followed_day", -1.0) >= 0.0 else "not yet", r.get("winter", "–"),
+				act2.size(), ACT2_MAINS.size(), "%.0f" % act2.map(func(m: Dictionary) -> float: return m["completed_day"]).max() if act2.size() == ACT2_MAINS.size() else "–",
+				"%.1f, %.0f" % [at_100.back()["throughput"], at_100.back()["lead_days"]] if not at_100.is_empty() else "–",
+				UiText.money(int(r.get("advance_max", 0)))])
+		rows.append("")
+		rows.append("Winter: kept (connected before the first frost, day 70), missed, or open. The fork: `incomplete_application` is the bottleneck branch, `installer_not_ready` the other.")
 		return rows
 
 	static func _closing_table(runs: Array) -> PackedStringArray:
