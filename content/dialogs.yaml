@@ -986,8 +986,7 @@ dialogs:
     name: "Rachid aan de balie"
     person: rachid
     kind: persuade
-    mission: training_tue
-    also_during: [training_wed, training_thu]   # optional, Tuesday to Thursday (first five minutes §4.2; D9 talks audit §2.9)
+    missions: [training_tue, training_wed, training_thu]   # optional, Tuesday to Thursday (first five minutes §4.2; D9 talks audit §2.9)
     tutorial: true
     patience: 12
     opening: "Hoi, ik ben Rachid. Sanne zei dat ik je de bakken moest laten zien."

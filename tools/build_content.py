@@ -1906,7 +1906,7 @@ PERSON_KEYS = {"id", "name", "short", "role", "place", "team", "archetype", "nee
 DIALOG_KEYS = {"id", "name", "person", "kind", "mission", "requires_clue", "needs", "owns", "kpi_team", "mood",
                "patience", "opening", "retry_opening", "position", "layers", "data", "proposals", "experiments",
                "co_proposal", "condition_needs", "block", "lines", "replies", "outcomes", "variants", "trigger",
-               "tutorial", "teaches", "prompt", "warning", "need", "beats_after", "also_during", "missions"}
+               "tutorial", "teaches", "prompt", "warning", "need", "beats_after", "missions"}
 LAYER_KEYS = {"id", "at", "via", "text", "tags", "tell", "lead_in", "condition", "wait_for", "unlocks"}
 PROPOSAL_KEYS = {"id", "label", "say", "kpis", "addresses", "reply", "hidden", "promise"}
 # A proposal that promises the person something the game checks later (D9
@@ -1921,7 +1921,7 @@ PERSUADE_OUTCOMES = ["commitment", "partial", "heard", "compliance", "ruined"]
 BANK_UNTAGGED = {"claim", "feeling"}
 VARIANT_KEYS = {"needs", "mood", "position", "layers", "opening"}  # opening: said first in this version
 # An expert talk (phase 2 design §2.5; ExpertTalk): topic by topic, no meters.
-EXPERT_KEYS = {"id", "name", "person", "kind", "mission", "also_during", "needs", "need", "opening",
+EXPERT_KEYS = {"id", "name", "person", "kind", "mission", "missions", "needs", "need", "opening",
                "retry_opening", "closing", "topics"}
 TOPIC_KEYS = {"id", "ask", "answer", "needs", "trust", "unlocks"}
 # A topic's clue is inline ({problem, key, depth, text}, merged into that
@@ -2560,7 +2560,7 @@ def dialog_missions(d: dict) -> list:
 
 def _check_expert(d: dict, where: str, missions: dict, problems: dict, explainers: set) -> None:
     """An expert talk's mission (optional), and what its topics unlock exists."""
-    for m in ([d["mission"]] if "mission" in d else []) + _string_list(d, "also_during", where):
+    for m in dialog_missions(d):
         if m not in missions:
             raise ContentError(f"{where}: unknown mission {m!r}")
     for t in d["topics"]:
@@ -2576,9 +2576,6 @@ def _check_mission_dialog(d: dict, where: str, missions: dict, problems: dict, n
         if m not in missions:
             raise ContentError(f"{where}: unknown mission {m!r}")
     mission = missions[dialog_missions(d)[0]]  # the first owns the talk: its problem, data and KPI menu
-    for later in _string_list(d, "also_during", where):  # open over these missions' days too
-        if later not in missions:
-            raise ContentError(f"{where}: also_during names unknown mission {later!r}")
     problem = mission["goal"].get("problem")
     if "owns" in d and d["owns"] != problem:
         raise ContentError(f"{where}: owns {d['owns']!r}, which is not the problem of mission {mission['id']!r}")

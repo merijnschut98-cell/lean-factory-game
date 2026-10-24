@@ -39,7 +39,7 @@ func test_ruud_asks_instead_when_nothing_landed_and_never_names_after_act_0() ->
 ## A talk may stay open over several missions' days (Rachid, Tuesday to
 ## Thursday: D9 talks audit §2.9).
 func test_a_talk_also_open_during_later_missions() -> void:
-	var people := DialogFixture.people([DialogFixture.def({"also_during": ["wed", "thu"]})])
+	var people := DialogFixture.people([DialogFixture.def({"missions": ["fix_design", "wed", "thu"]})])
 	for day in ["fix_design", "wed", "thu"]:
 		assert_eq(people.dialog_for("pim", DialogFixture.world({"main": [], "active": [day]})).id, "talk", day)
 	assert_eq(people.dialog_for("pim", DialogFixture.world({"main": [], "active": ["fri"]})), null)
@@ -438,8 +438,7 @@ func test_the_training_weeks_people_start_in_a_friendly_mood() -> void:
 	var s := GameSession.new_game(11, Catalog.DATA_DIR, true)
 	var met := {"sanne": true, "joost": true, "anouk": true}   # Ruud introduces them, and they talk this week
 	for d: DialogDef in s.people.dialogs.values():
-		if d.mission.begins_with("training_") or Array(d.also_during).any(func(m: String) -> bool:
-				return m.begins_with("training_")):
+		if Array(d.missions).any(func(m: String) -> bool: return m.begins_with("training_")):
 			met[d.person] = true
 	for id: String in met:
 		assert_true(s.people.morale[id] >= People.FRIENDLY_MORALE, "%s starts at %d" % [id, s.people.morale[id]])

@@ -1498,10 +1498,6 @@
    "tutorial": true
   },
   {
-   "also_during": [
-    "training_wed",
-    "training_thu"
-   ],
    "co_proposal": {
     "id": "rachid_shows_his_list",
     "text": "Ik heb een lijstje in mijn la, van wat er mist. Wil je dat zien?"
@@ -1557,7 +1553,11 @@
     "open_question": "Wat gebeurt er met wat in de middelste bak ligt?",
     "silence": "(je kijkt mee naar de bakken en wacht)"
    },
-   "mission": "training_tue",
+   "missions": [
+    "training_tue",
+    "training_wed",
+    "training_thu"
+   ],
    "name": "Rachid aan de balie",
    "opening": "Hoi, ik ben Rachid. Sanne zei dat ik je de bakken moest laten zien.",
    "outcomes": {

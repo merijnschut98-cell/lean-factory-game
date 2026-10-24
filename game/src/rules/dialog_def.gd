@@ -18,9 +18,6 @@ var mission: String
 ## `mission`): open during any, the main mission's talk when any is main. The
 ## first owns it (its problem, data and KPI menu).
 var missions := PackedStringArray()
-## Missions during which the talk stays open too (an optional talk over
-## several days: Rachid, Tuesday to Thursday).
-var also_during := PackedStringArray()
 ## A clue id ("problem:index") that opens the talk once found; "" for none.
 var requires_clue: String
 ## Further conditions (needs_met); {} for none.
@@ -114,7 +111,6 @@ static func from_dict(d: Dictionary) -> DialogDef:
 	g.data = PackedStringArray(d.get("data", []))
 	g.tutorial = d.get("tutorial", false) == true
 	g.teaches = PackedStringArray(d.get("teaches", []))
-	g.also_during = PackedStringArray(d.get("also_during", []) if d.get("also_during") is Array else [])
 	for key: String in ["needs", "position", "co_proposal", "condition_needs", "block", "lines", "replies", "outcomes", "trigger"]:
 		g.set(key, JsonFile.dict_or_empty(d.get(key)).duplicate(true))
 	for key: String in ["layers", "proposals", "experiments", "variants", "beats_after", "topics"]:
