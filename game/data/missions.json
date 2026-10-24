@@ -1232,7 +1232,8 @@
    "fail": "Henk is met pensioen. Zijn afscheid was mooi, maar zijn kennis van de oude netten is met hem vertrokken. Een buddy die het kan voordoen is er niet meer. Wat er op papier staat, en wat Ahmed zelf leert, moet het nu doen.",
    "fail_closes": [
     "skills_matrix_buddy",
-    "twi_job_instruction"
+    "twi_job_instruction",
+    "henks_one_point_lessons"
    ],
    "goal": {
     "problem": "knowledge_drain",

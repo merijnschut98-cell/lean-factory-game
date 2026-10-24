@@ -228,7 +228,7 @@ CMS_YAML = """countermeasures:
     tier: 1
     category: standard_work
     description: Een standaardontwerp voor standaardaansluitingen.
-    budget: 8000
+    budget: 2500
     team_hours: {work_prep: 40}
     decay_days: 45
     multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
@@ -383,6 +383,9 @@ def test_a_countermeasure_can_unlock_the_kpi_board(rules_dirs):
     (lambda d: _problem(d).update(countermeasures={"magic_wand": 1.0}), "unknown countermeasure 'magic_wand'"),
     (lambda d: _problem(d).update(countermeasures={"standard_designs": 1.5}), "fit"),
     (lambda d: _cm(d).update(tier=2), "no countermeasure that can solve it"),
+    # Review S3 #1: in debt the directie funds only a small experiment, so every tier-1
+    # problem needs one (or a reason in NO_CHEAP_FIX).
+    (lambda d: _cm(d).update(budget=8000), "no countermeasure the directie funds in debt"),
     # Every listed countermeasure is an improvement (some more than others), so each can pass the Check.
     (lambda d: _problem(d).update(countermeasures={"standard_designs": 1.0, "weekly_meeting": 0.5}),
      "'weekly_meeting' can never pass the Check"),
@@ -963,3 +966,8 @@ def test_objective_step_errors_are_caught(rules_dirs, mutate, message):
     content, _ = rules_dirs
     with pytest.raises(bc.ContentError, match=message):
         _rules(content, mutate)
+
+
+def test_the_debt_funded_minimum_matches_the_game():
+    region = (Path(__file__).parent.parent / "game/src/rules/region.gd").read_text(encoding="utf-8")
+    assert f"const DEBT_FUNDED_MINIMUM := {bc.DEBT_FUNDED_MINIMUM}" in region

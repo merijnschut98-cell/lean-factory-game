@@ -406,6 +406,18 @@ func test_in_debt_only_what_the_region_can_carry_is_funded() -> void:
 	assert_true(Region.DEBT_FUNDED_MINIMUM >= 1500)
 
 
+## Review S3 #1: the funding rule never locks out the story: the active main mission's or a
+## deadline mission's experiment is funded at the floor whatever it costs.
+func test_at_the_floor_an_always_funded_experiment_is_paid() -> void:
+	var r := _region(Region.DEBT_FLOOR)
+	r.activate("custom_design")
+	_investigate(r)
+	assert_eq(r.submit_a3("custom_design", _a3(r, "standard_designs")), "no_funds")
+	assert_eq(r.submit_a3("custom_design", _a3(r, "standard_designs"), Region.CHECK_DAYS, true), "",
+		"EUR 8,000 for the main or a deadline mission at the floor")
+	assert_eq(r.profile.budget, Region.DEBT_FLOOR, "the directie carries what goes beyond the floor")
+
+
 ## QA 2.12 (c): the region counts the days its budget spent at the floor (the way back,
 ## a cost-saving side chain, opens on it); the count is kept across a save and never
 ## falls, so the chain does not flicker on the board as the budget moves.

@@ -152,6 +152,19 @@ countermeasures:
     multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
     effects:
       - {target: outages.repair, property: touch_time, value: 0.9}
+  # Review S3 #1: a small first step towards the standard van stock: a one-card
+  # replenishment signal. ESTIMATE: cards and a holder per van, about 10 hours of
+  # the monteurs to agree with the warehouse what goes on the card: EUR 1,000.
+  - id: van_refill_card
+    name: Aanvulkaart in de bus
+    tier: 1
+    category: workplace_organization
+    description: Bij de schuifdeur van elke bus hangt een kaart met de moffen en verbinders die erin horen. Wat de monteur gebruikt, streept hij aan; het magazijn vult 's ochtends aan wat is aangestreept.
+    budget: 1000
+    team_hours: {monteurs: 10}
+    decay_days: 30
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
 
   # ── Veldservice & slimme meters ───────────────────────────────────────────
   - id: appointment_reminder
@@ -232,6 +245,20 @@ countermeasures:
     decay_days: null
     multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
     effects: []
+  # Review S3 #1: one-point lessons (TPM): a start, not the feel for it that only
+  # doing it beside Henk passes on (the fit says so). It needs Henk, so his
+  # deadline closes it. ESTIMATE: about ten lessons of half a day each for Henk
+  # and a young monteur, printing and a binder per van: EUR 2,000.
+  - id: henks_one_point_lessons
+    name: Eénpuntslessen van Henk
+    tier: 1
+    category: standard_work
+    description: Henk zet per oud kabeltype zijn vaste trucs op één A4, met een foto en de fout die je het makkelijkst maakt. Een jonge monteur schrijft mee en probeert elke les uit op een echte storing.
+    budget: 2000
+    team_hours: {monteurs: 30}
+    decay_days: 60
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
   # Audit L10: TWI Job Instruction, Henk teaching the way he knows; it needs Henk
   # (Henk's deadline closes it). Effects and hours: estimates, between the
   # videos and the buddy system.
@@ -268,6 +295,20 @@ countermeasures:
     budget: 6000
     team_hours: {contact_centre: 20, intake: 10}
     decay_days: 60
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  # Review S3 #1: do it by hand before you automate it: the intake tells the customer
+  # at the two moments they call about most. ESTIMATE: a week of tallying the calls,
+  # two mail templates and a list, about 20 hours of the intake and the contact
+  # centre: EUR 2,500.
+  - id: milestone_mail_by_hand
+    name: Mijlpaalmail met de hand
+    tier: 1
+    category: flow
+    description: Het contactcentrum turft een week waarover statusbellers bellen. Bij de twee momenten waar het meest over gebeld wordt, stuurt de intake de klant voortaan zelf een korte mail met de stand en de volgende stap. Eerst met de hand; automatiseren als het werkt.
+    budget: 2500
+    team_hours: {contact_centre: 10, intake: 10}
+    decay_days: 45
     multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
     effects: []
   - id: proactive_status_updates
@@ -361,6 +402,19 @@ countermeasures:
     description: In wijken met veel zonnepanelen gaat de aftakking van de wijktransformator een stand lager, op basis van een meetweek in de zomer én een in de winter (op een koude avond met warmtepompen mag de spanning niet onder 207 V zakken). De spanning klopt dan voor de hele straat in plaats van voor één klant.
     budget: 4000
     team_hours: {monteurs: 30, grid_analysts: 10}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  # Review S3 #1: the review per neighbourhood, first as one experiment. ESTIMATE: a
+  # crew for half a day, a short planned interruption announced to the street, and a
+  # measurement week at a few addresses before and after: EUR 1,500.
+  - id: tap_trial_one_station
+    name: Proef met één wijktrafo
+    tier: 1
+    category: standard_work
+    description: Eerst één station. Na een meetweek in de straat gaat de aftakking van die wijktransformator een stand lager; op een koude avond wordt nagemeten dat de spanning niet onder 207 V zakt. Klopt het, dan volgen de andere wijken.
+    budget: 1500
+    team_hours: {monteurs: 10, grid_analysts: 5}
     decay_days: null
     multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
     effects: []

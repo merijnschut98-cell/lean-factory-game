@@ -256,6 +256,24 @@
    "tier": 3
   },
   {
+   "budget": 1000,
+   "category": "workplace_organization",
+   "decay_days": 30,
+   "description": "Bij de schuifdeur van elke bus hangt een kaart met de moffen en verbinders die erin horen. Wat de monteur gebruikt, streept hij aan; het magazijn vult 's ochtends aan wat is aangestreept.",
+   "effects": [],
+   "id": "van_refill_card",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Aanvulkaart in de bus",
+   "team_hours": {
+    "monteurs": 10
+   },
+   "tier": 1
+  },
+  {
    "budget": 3000,
    "category": "quality",
    "decay_days": null,
@@ -398,6 +416,24 @@
    "tier": 1
   },
   {
+   "budget": 2000,
+   "category": "standard_work",
+   "decay_days": 60,
+   "description": "Henk zet per oud kabeltype zijn vaste trucs op één A4, met een foto en de fout die je het makkelijkst maakt. Een jonge monteur schrijft mee en probeert elke les uit op een echte storing.",
+   "effects": [],
+   "id": "henks_one_point_lessons",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Eénpuntslessen van Henk",
+   "team_hours": {
+    "monteurs": 30
+   },
+   "tier": 1
+  },
+  {
    "budget": 4000,
    "category": "people",
    "decay_days": null,
@@ -461,6 +497,25 @@
    "shortcut": true,
    "team_hours": {
     "contact_centre": 20,
+    "intake": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 2500,
+   "category": "flow",
+   "decay_days": 45,
+   "description": "Het contactcentrum turft een week waarover statusbellers bellen. Bij de twee momenten waar het meest over gebeld wordt, stuurt de intake de klant voortaan zelf een korte mail met de stand en de volgende stap. Eerst met de hand; automatiseren als het werkt.",
+   "effects": [],
+   "id": "milestone_mail_by_hand",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Mijlpaalmail met de hand",
+   "team_hours": {
+    "contact_centre": 10,
     "intake": 10
    },
    "tier": 1
@@ -643,6 +698,25 @@
    "team_hours": {
     "grid_analysts": 10,
     "monteurs": 30
+   },
+   "tier": 1
+  },
+  {
+   "budget": 1500,
+   "category": "standard_work",
+   "decay_days": null,
+   "description": "Eerst één station. Na een meetweek in de straat gaat de aftakking van die wijktransformator een stand lager; op een koude avond wordt nagemeten dat de spanning niet onder 207 V zakt. Klopt het, dan volgen de andere wijken.",
+   "effects": [],
+   "id": "tap_trial_one_station",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Proef met één wijktrafo",
+   "team_hours": {
+    "grid_analysts": 5,
+    "monteurs": 10
    },
    "tier": 1
   },

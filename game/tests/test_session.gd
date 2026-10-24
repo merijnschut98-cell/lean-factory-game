@@ -710,3 +710,21 @@ func test_a_promised_date_is_named_as_a_date() -> void:
 	assert_eq(s.missions.play_day(), 0)
 	assert_eq(s.fill_tokens("Op {promise_date:42}."), "Op maandag 23 november.", "day 0 is Monday 12 October")
 	assert_eq(s.fill_tokens("{promise_date:1}"), "dinsdag 13 oktober")
+
+
+## Review S3 #1: at the debt floor the main mission and a mission with a deadline are still
+## funded (never locked out of the story); a side without a deadline only gets a cheap fix.
+func test_at_the_debt_floor_the_main_mission_is_still_funded() -> void:
+	var s := _accepted()
+	s.region.profile.budget = Region.DEBT_FLOOR
+	_investigate(s)
+	assert_eq(s.submit_a3(PROBLEM, _a3(s, "standard_designs")), "", "EUR 8,000 for the main mission at the floor")
+
+
+func test_a_deadline_mission_is_always_funded_a_plain_side_is_not() -> void:
+	var s := _campaign()
+	for id in ["save_henks_knowledge", "fix_wrong_joint"]:
+		s.missions.progress[id] = {"status": "active", "asks": {}, "seen": {}}
+	assert_true(s.missions.always_funded("knowledge_drain"), "Henk retires on a date")
+	assert_false(s.missions.always_funded("wrong_joint_in_van"), "a side without a deadline")
+	assert_false(s.missions.always_funded("revision_backlog"), "no active mission holds it")

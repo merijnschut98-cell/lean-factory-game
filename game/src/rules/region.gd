@@ -485,12 +485,13 @@ func close_countermeasures(ids: PackedStringArray) -> void:
 
 ## Submit the A3 {waste, cause (index into the cause bank), evidence (clue
 ## ids), cm, prediction (a KPI)} and start the experiment; it may be paid
-## into debt, but in a bad period only what the region can carry (fundable).
+## into debt, but in a bad period only what the region can carry (fundable), unless it is
+## `always_funded` (the active main mission's or a deadline mission's: never locked out).
 ## The Check is due after `check_days` (a mission may shorten it for
 ## practice). Returns "" or why not: not_spotted | waste | cause | evidence |
 ## countermeasure | prediction | same_countermeasure (a rework must try
 ## another one) | no_funds.
-func submit_a3(problem_id: String, a3: Dictionary, check_days: int = CHECK_DAYS) -> String:
+func submit_a3(problem_id: String, a3: Dictionary, check_days: int = CHECK_DAYS, always_funded := false) -> String:
 	var st := state[problem_id]
 	if st.phase != P.SPOTTED:
 		return "not_spotted"
@@ -509,7 +510,7 @@ func submit_a3(problem_id: String, a3: Dictionary, check_days: int = CHECK_DAYS)
 		return "prediction"
 	if st.rework_from.get("cm") == cm.id:
 		return "same_countermeasure"
-	if not fundable(cm):
+	if not always_funded and not fundable(cm):
 		return "no_funds"
 
 	var p := problems[problem_id]

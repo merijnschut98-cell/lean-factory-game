@@ -340,6 +340,9 @@ KPI_REVIEW_LINES = ["paid", "flat", "read"]
 KPIS_PER_POOL = 5
 KPI_EFFECT = "kpis"  # not a simulation property: the game expands it into the KPIs' rule effects
 CHECK_PASS = 0.5  # the effectiveness a Check needs to pass (Pdca.CHECK_PASS)
+# In debt the directie funds a side mission's experiment only up to this (Region.DEBT_FUNDED_MINIMUM):
+# every tier-1 problem has one this small, so a bad period never locks a problem out.
+DEBT_FUNDED_MINIMUM = 3000
 # property → (target kind, required step kind or None, value type: factor | number | bool | count | reserve | step | start_rule | order_rule)
 EFFECT_PROPERTIES = {
     "touch_time": ("step", "work", "factor"), "ftr": ("step", "work", "number"),
@@ -600,6 +603,9 @@ def _check_problem(p: dict, where: str, net: dict, cms: dict) -> None:
                                f"(full multiplier x fit < {CHECK_PASS})")
     if not any(cms[c]["tier"] <= p["tier"] for c in p["countermeasures"]):
         raise ContentError(f"{where}: no countermeasure that can solve it at its tier")
+    if p["tier"] == 1 and not any(cms[c]["budget"] <= DEBT_FUNDED_MINIMUM for c in p["countermeasures"]):
+        raise ContentError(f"{where}: no countermeasure the directie funds in debt "
+                           f"(budget <= {DEBT_FUNDED_MINIMUM}); give it a small, real experiment")
 
 
 PROBLEM_FILES = "problems_tier"

@@ -209,7 +209,8 @@
    ],
    "countermeasures": {
     "standard_van_stock": 0.8,
-    "two_bin_van_kanban": 1.0
+    "two_bin_van_kanban": 1.0,
+    "van_refill_card": 0.65
    },
    "effects": [
     {
@@ -678,6 +679,7 @@
     }
    ],
    "countermeasures": {
+    "henks_one_point_lessons": 0.6,
     "skills_matrix_buddy": 1.0,
     "twi_job_instruction": 0.9,
     "work_instruction_videos": 0.7
@@ -748,6 +750,7 @@
     }
    ],
    "countermeasures": {
+    "milestone_mail_by_hand": 0.75,
     "proactive_status_updates": 1.0,
     "realistic_promise": 0.7
    },
@@ -1088,6 +1091,7 @@
    "countermeasures": {
     "smart_meter_voltage_data": 0.8,
     "tap_review_per_neighbourhood": 1.0,
+    "tap_trial_one_station": 0.6,
     "targeted_reinforcement": 0.7
    },
    "effects": [
