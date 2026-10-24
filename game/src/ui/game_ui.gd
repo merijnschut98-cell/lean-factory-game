@@ -117,7 +117,7 @@ func setup(of_session: GameSession, of_layer: SessionLayer = null) -> void:
 		resume()   # the title menu must not start paused
 		title_requested.emit())
 	incoming = IncomingCall.new()
-	incoming.answered.connect(func(call: Dictionary) -> void: open_talk(call["person"]))
+	incoming.answered.connect(_answer_call)
 	incoming.declined.connect(_let_call_go)
 	incoming.keys_free = _world_free
 	root.add_child(incoming)
@@ -407,6 +407,15 @@ func _world_free() -> bool:
 func let_ringing_go() -> void:
 	if incoming != null and incoming.visible:
 		incoming.decline()
+
+
+## A call answered opens its talk; one the talk refuses now (it moved on while it rang)
+## is a voicemail, and its ring today is not used up.
+func _answer_call(call: Dictionary) -> void:
+	if open_talk(call["person"]).is_empty():
+		return
+	session_layer.rang.erase(call["dialog"])
+	_let_call_go(call)
 
 
 ## A call let go: their voicemail in Berichten, nothing else.

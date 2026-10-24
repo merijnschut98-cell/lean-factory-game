@@ -202,6 +202,24 @@ func test_a_ringing_call_taken_at_the_headset_leaves_no_voicemail() -> void:
 	office.free()
 
 
+## Review S3 #10: answering a call the talk then refuses (it moved on while it rang)
+## leaves a voicemail, and today's ring is not used up.
+func test_an_answered_call_the_talk_refuses_leaves_a_voicemail() -> void:
+	var office := _office()
+	_calling(office.session)
+	_at(office.session, 10 * 60)
+	office.ui.after_action()
+	var ring := office.ui.incoming
+	var dialog: String = ring.call["dialog"]
+	var unread := office.ui.phone.unread_count()
+	office.session.people.memory["el_amrani"] = {"cooldown_until": office.session.region.net.time + 60}
+	ring.answer()
+	assert_false(office.ui.talk_view.visible, "no talk opens")
+	assert_eq(office.ui.phone.unread_count(), unread + 1, "her voicemail in Berichten")
+	assert_false(office.ui.session_layer.rang.has(dialog), "today's ring is not used up")
+	office.free()
+
+
 static func _key(code: Key) -> InputEventKey:
 	var key := InputEventKey.new()
 	key.physical_keycode = code
