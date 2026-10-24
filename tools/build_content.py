@@ -785,6 +785,31 @@ DEFAULT_REPUTATION = {"main": 5, "side": 2}  # Reputation.MAIN_MISSION, SIDE_MIS
 START_REPUTATION = 30  # Reputation.START
 
 
+# The principle line in every main mission's debrief (phase-2 design §3.7; PrincipleLine):
+# which of the three principles paid or cost, by what the play left. Only the talk codes
+# name the person ({wie}); {speler} is the player's name.
+PRINCIPLE_CODES = ["long_term_cost", "respect_blamed", "respect_complied", "improve_cost", "respect_committed",
+                   "improve_paid", "long_term_paid"]
+PRINCIPLE_PERSON_CODES = ["respect_committed", "respect_complied"]
+PRINCIPLE_TOKENS = {"{wie}", "{speler}"}
+
+
+def _validate_principles(bank: Any, source: str) -> None:
+    where = f"{source}: principles"
+    if not isinstance(bank, dict) or sorted(bank) != sorted(PRINCIPLE_CODES):
+        raise ContentError(f"{where}: 'principles' needs lines for exactly {', '.join(PRINCIPLE_CODES)}")
+    for code in PRINCIPLE_CODES:
+        for line in _string_list(bank, code, where, allow_empty=False):
+            for token in _TOKEN_RE.findall(line):
+                if token not in PRINCIPLE_TOKENS:
+                    raise ContentError(f"{where} {code}: unknown token {token} (only {', '.join(sorted(PRINCIPLE_TOKENS))})")
+            if "{wie}" in line and code not in PRINCIPLE_PERSON_CODES:
+                raise ContentError(f"{where} {code}: only {' and '.join(PRINCIPLE_PERSON_CODES)} name {{wie}}")
+            word = banned_word(line)
+            if word:
+                raise ContentError(f"{where} {code}: {line!r} names the game ({word!r}, style guide §4)")
+
+
 def validate_missions(doc: Any, source: str) -> None:
     """The campaign: the coach's questions per stage and the missions (CLAUDE.md §2)."""
     _require_strings(doc, [], source)
@@ -797,6 +822,7 @@ def validate_missions(doc: Any, source: str) -> None:
         raise ContentError(f"{source} coach: 'stages' must give questions for {', '.join(COACH_STAGES)}")
     for stage in COACH_STAGES:
         _string_list(stages, stage, f"{source} coach stages", allow_empty=False)
+    _validate_principles(doc.get("principles"), source)
     beats: set[str] = set()
     for m in _entries(doc, "missions", source):
         where = f"{source}: mission '{m['id']}'"

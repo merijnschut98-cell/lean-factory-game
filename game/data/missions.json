@@ -1246,5 +1246,35 @@
    ],
    "tier": 1
   }
- ]
+ ],
+ "principles": {
+  "improve_cost": [
+   "Zonder vaste afspraak glijdt dit vanzelf terug naar hoe het was; wie gaat het bijhouden?",
+   "Niemand heeft dit vastgelegd, en wat niemand bijhoudt, zakt langzaam terug."
+  ],
+  "improve_paid": [
+   "Je eerste experiment liep anders dan je dacht, en toch ging je door; zo wordt het hier beter.",
+   "Je zat er eerst naast, je hebt gekeken waarom en het opnieuw geprobeerd."
+  ],
+  "long_term_cost": [
+   "Snel was het zeker, maar wie staat hier over een half jaar weer met hetzelfde probleem?",
+   "Dit werkt voor nu; de rekening komt later, en meestal bij iemand anders."
+  ],
+  "long_term_paid": [
+   "Dit kostte meer tijd dan een snelle oplossing, maar het staat er over een jaar nog.",
+   "Je koos de langere weg, en die betaalt zich elke week terug zonder dat iemand ernaar omkijkt."
+  ],
+  "respect_blamed": [
+   "Het werk loopt beter, maar wie zich aangesproken voelde op een fout, vertelt je de volgende keer minder.",
+   "De cijfers zijn beter; of de mensen je de volgende keer nog iets vertellen, is een andere vraag."
+  ],
+  "respect_committed": [
+   "{wie} draagt dit nu zelf; zo'n verandering hoeft niemand te bewaken.",
+   "Dat {wie} er zelf achter staat, merk je de komende maanden: het blijft staan, ook als jij er niet bij bent."
+  ],
+  "respect_complied": [
+   "{wie} doet wat er is afgesproken; wat zou er nodig zijn om het ook echt van het team zelf te maken?",
+   "{wie} volgt de nieuwe afspraak keurig, maar een afspraak die je niet zelf bedacht hebt, laat je ook makkelijk weer los."
+  ]
+ }
 }

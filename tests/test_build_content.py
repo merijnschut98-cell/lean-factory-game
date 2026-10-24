@@ -279,6 +279,14 @@ MISSIONS_YAML = """coach:
     understand: ["Wat is het obstakel?"]
     experiment: ["Wat verwacht je?"]
     reflect: ["Wat heb je geleerd?"]
+principles:
+  long_term_cost: ["Snel, maar voor hoe lang?"]
+  respect_blamed: ["Wie vertelt je nog iets?"]
+  respect_complied: ["{wie} doet mee, maar is het van het team?"]
+  improve_cost: ["Wie houdt het bij?"]
+  respect_committed: ["{wie} draagt het zelf."]
+  improve_paid: ["Je bleef proberen."]
+  long_term_paid: ["Het staat er over een jaar nog."]
 missions:
   - id: walk_connections
     name: Loop de stroom
@@ -445,6 +453,15 @@ def test_problem_errors_are_caught(rules_dirs, mutate, message):
      "no other way to solve 'custom_design'"),
     (lambda d: _mission(d)["goal"].update(type="dance"), "'goal' needs a type"),
     (lambda d: d["missions"]["coach"]["stages"].pop("reflect"), "'stages' must give questions"),
+    # The principle line in a main mission's debrief (phase-2 design §3.7).
+    (lambda d: d["missions"].pop("principles"), "'principles' needs lines for"),
+    (lambda d: d["missions"]["principles"].pop("long_term_paid"), "'principles' needs lines for"),
+    (lambda d: d["missions"]["principles"].update(improve_paid=[]), "'improve_paid' must be a non-empty list"),
+    (lambda d: d["missions"]["principles"].update(improve_cost=["{wie} houdt het niet bij."]),
+     "only respect_committed and respect_complied name {wie}"),
+    (lambda d: d["missions"]["principles"].update(respect_committed=["Dat is goed voor {team}."]),
+     "unknown token {team}"),
+    (lambda d: d["missions"]["principles"].update(long_term_cost=["Mooi spel, dit."]), "names the game"),
 ])
 def test_mission_errors_are_caught(rules_dirs, mutate, message):
     content, _ = rules_dirs
