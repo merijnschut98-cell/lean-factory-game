@@ -644,10 +644,17 @@ func _waiting_fork_branches() -> Array[MissionDef]:
 
 
 ## Switch on the problem of a fork's bottleneck branch still waiting (_waiting_fork_branches).
+## It takes none of the mission slots (Region.uncounted): it must never keep a mission's own
+## problem from coming back.
 func _switch_on_forks() -> void:
+	var waiting: Dictionary[String, bool] = {}
 	for m in _waiting_fork_branches():
-		if region.state.has(m.goal_problem) and region.state[m.goal_problem].phase == P.DORMANT:
-			region.activate(m.goal_problem)
+		if region.state.has(m.goal_problem):
+			waiting[m.goal_problem] = true
+	region.uncounted = waiting
+	for id: String in waiting:
+		if region.state[id].phase == P.DORMANT:
+			region.activate(id)
 
 
 ## A recurring mission (leader standard work) is offered again its days after it was last done.

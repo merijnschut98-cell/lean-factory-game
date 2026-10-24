@@ -43,6 +43,24 @@ func test_at_most_four_problems_open() -> void:
 	assert_eq(activated, Region.MAX_OPEN)
 
 
+## Gate backlog 3: a fork's waiting bottleneck problem is held open by the main quest outside
+## the mission slots (Missions marks it uncounted), so it never keeps a mission's own problem
+## from coming back.
+func test_an_uncounted_open_problem_takes_no_slot() -> void:
+	var defs := RulesFixture.problem_defs()
+	for i in 3:
+		var d: Dictionary = RulesFixture.problems()[1].duplicate(true)
+		d["id"] = "extra_%d" % i
+		defs.append(ProblemDef.from_dict(d))
+	var r := Region.new(RulesFixture.net(), defs, RulesFixture.countermeasure_defs(), Profile.new())
+	assert_true(r.activate(defs[0].id))
+	r.uncounted = {defs[0].id: true}
+	var activated := 0
+	for p in defs.slice(1):
+		activated += 1 if r.activate(p.id) else 0
+	assert_eq(activated, Region.MAX_OPEN)
+
+
 func test_tools_spot_and_reveal_one_why_at_a_time() -> void:
 	var r := _region()
 	r.activate("custom_design")

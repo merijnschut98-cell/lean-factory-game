@@ -169,10 +169,13 @@ func test_taking_the_other_fork_branch_switches_the_bottlenecks_problem_on() -> 
 	assert_eq(problem.call("custom_design"), ProblemState.Phase.ACTIVE)
 	assert_eq(problem.call("incomplete_application"), ProblemState.Phase.ACTIVE, "the other branch's problem is on")
 	assert_eq(log.status("branch_b"), "available", "but its mission waits for the player")
+	assert_true(log.region.uncounted.has("incomplete_application"), "held outside the mission slots")
 	_resolve(log, "custom_design", "standard_designs")
 	assert_eq(log.status("branch_n"), "completed")
 	assert_eq(problem.call("incomplete_application"), ProblemState.Phase.ACTIVE, "still on while its branch waits")
 	assert_eq(log.accept("branch_b"), "")
+	log.update()
+	assert_false(log.region.uncounted.has("incomplete_application"), "its own mission holds it now")
 	_resolve(log, "incomplete_application", "poka_yoke_form")
 	assert_eq(problem.call("incomplete_application"), ProblemState.Phase.RESOLVED)
 	var other := _log(RulesFixture.countermeasures(), [

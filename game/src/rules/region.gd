@@ -112,6 +112,9 @@ var advance_owed := 0
 var drift_from := -1
 ## The drift level now on the network (set only when it changes).
 var _drift_applied := 0.0
+## Open problems the main quest holds outside the mission slots (MAX_OPEN): a fork's waiting
+## bottleneck branch (Missions keeps it current every update; not saved, derived).
+var uncounted: Dictionary[String, bool] = {}
 ## Places with a planned routine (leader standard work), see plan_routine.
 var routines: Dictionary[String, bool] = {}
 ## Aftermaths of short-term fixes (CountermeasureDef.aftermath): problem →
@@ -328,10 +331,11 @@ func _apply_bad_period() -> void:
 # ── Problems ────────────────────────────────────────────────────────────────
 
 ## Make a dormant problem active (missions and the story decide which).
-## False when it is not dormant or MAX_OPEN problems are already open.
+## False when it is not dormant or MAX_OPEN problems are already open (an uncounted one needs
+## no slot).
 func activate(problem_id: String) -> bool:
 	var st: ProblemState = state.get(problem_id)
-	if st == null or st.phase != P.DORMANT or _open_count() >= MAX_OPEN:
+	if st == null or st.phase != P.DORMANT or _open_count() >= MAX_OPEN and not uncounted.has(problem_id):
 		return false
 	st.phase = P.ACTIVE
 	_apply_problem(st)
@@ -351,7 +355,7 @@ func deactivate(problem_id: String) -> void:
 
 
 func _open_count() -> int:
-	return state.values().filter(func(s: ProblemState) -> bool: return s.is_open()).size()
+	return state.values().filter(func(s: ProblemState) -> bool: return s.is_open() and not uncounted.has(s.id)).size()
 
 
 ## The problem hurts the simulation at the strength a countermeasure leaves;
