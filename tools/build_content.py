@@ -2741,9 +2741,10 @@ EXPLAINER_RIGS = {
         "labels": {"current", "u_end", "t_cable"},
     },
     "transformer": {
-        "beats": ["f1", "f2", "f3", "x", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
+        "beats": ["f1", "f2", "f2_already", "f3", "f3_full", "f4", "x", "t1", "t2", "t3", "t3_already", "t4", "t4_over",
+                  "t5", "t6"],
         "waits": {"load_up", "load_full", "over_rated", "ambient"},
-        "conditions": {"load_half", "load_full"},
+        "conditions": {"load_half", "load_full", "over_rated"},
         "labels": {"current_in", "current_out", "hotspot", "outside", "holds", "hours", "under_an_hour"},
     },
 }

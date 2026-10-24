@@ -727,8 +727,9 @@ func _draw_overlay() -> void:
 		var turn := rig.turn(wheel["id"])
 		for k in blades:
 			var a := TAU * (turn + float(k) / blades)
-			var tip := t * (Vector2(cos(a), sin(a)) * float(wheel["r"]))
-			_overlay.draw_line(t * Vector2.ZERO, tip, Color(0.2, 0.2, 0.22, w), float(wheel.get("width", 1.1)), true)
+			var dir := Vector2(cos(a), sin(a))
+			var tip := t * (dir * float(wheel["r"]))
+			_overlay.draw_line(t * (dir * float(wheel.get("r0", 0.0))), tip, Color(0.2, 0.2, 0.22, w), float(wheel.get("width", 1.1)), true)
 			if wheel.has("tip"):  # a crank's pedal at the end of its arm
 				_overlay.draw_circle(tip, float(wheel["tip"]), Color(0.15, 0.15, 0.16, w))
 	for led: Dictionary in figure.leds:

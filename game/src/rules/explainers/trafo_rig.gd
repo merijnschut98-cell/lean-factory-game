@@ -14,9 +14,11 @@ const AMBIENT_START := 2
 ## (estimate: a light bicycle gear); the same at any load, as the voltage is.
 const CRANK_TURNS_S := 0.9
 const GEAR_RATIO := 3.0
-## The heat tint: from a winding at 60 °C (nothing) to 130 °C (full).
+## The heat tint: from a winding at 60 °C (nothing) to 130 °C (full), at most
+## this strong so the copper and its turns still show through.
 const HEAT_FROM_C := 60.0
 const HEAT_SPAN_C := 70.0
+const HEAT_MAX := 0.6
 ## The dials' spans: the oil thermometer 0–120 °C, the wall thermometer −10–40 °C.
 const OIL_DIAL_C := Vector2(0.0, 120.0)
 const AIR_DIAL_C := Vector2(-10.0, 40.0)
@@ -74,6 +76,8 @@ func holds(condition: String) -> bool:
 			return load_pct() >= 50
 		"load_full":
 			return load_pct() >= 100
+		"over_rated":
+			return load_pct() > 100
 	return false
 
 
@@ -119,6 +123,10 @@ func heat_level() -> float:
 	return clampf((hotspot_c() - HEAT_FROM_C) / HEAT_SPAN_C, 0.0, 1.0)
 
 
+func heat(_layer_id: String) -> float:
+	return heat_level() * HEAT_MAX
+
+
 ## The wheel's force gauge spans the full load; the pedal's moves a third of
 ## it (the analogy's gear); the dials read the oil and the air; the knob its step.
 func needle(id: String) -> float:
@@ -151,7 +159,7 @@ func lcd_text(id: String) -> String:
 
 
 func readout(labels: Dictionary) -> String:
-	return "%s  %s A\n%s  %s A\n%s  %d °C    %s  %d °C\n%s" % [
+	return "%s  %s A     %s  %s A\n%s  %d °C     %s  %d °C\n%s" % [
 		labels.get("current_in", ""), nl(result["i_primary_a"], 1),
 		labels.get("current_out", ""), nl(result["i_secondary_a"], 0),
 		labels.get("hotspot", ""), roundi(hotspot_c()), labels.get("outside", ""), ambient(),

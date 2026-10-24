@@ -495,6 +495,490 @@
     "stroom",
     "tegenhouden"
    ]
+  },
+  {
+   "analogy": {
+    "limit_line": "Eén verschil: in een trafo beweegt niks. Het ijzer geeft het door, zonder dat de draden elkaar raken.",
+    "mapping": [
+     {
+      "analogy": "de trapper met het kleine voorblad",
+      "pair": [
+       "crank",
+       "hv_side"
+      ],
+      "real": "de middenspanningskabel en de hoge doorvoeren"
+     },
+     {
+      "analogy": "de ketting tussen de bladen",
+      "pair": [
+       "chain",
+       "core_inside"
+      ],
+      "real": "de ijzeren kern met de wikkelingen"
+     },
+     {
+      "analogy": "het grote achterblad en het wiel",
+      "pair": [
+       "wheel",
+       "lv_side"
+      ],
+      "real": "de lage doorvoeren en het laagspanningsrek"
+     },
+     {
+      "analogy": "de rol van de trainer met zijn rem",
+      "pair": [
+       "resistance",
+       "street"
+      ],
+      "real": "de straat"
+     },
+     {
+      "analogy": "de krachtmeter bij de trapper",
+      "pair": [
+       "gauge_pedal",
+       "mv_meter"
+      ],
+      "real": "de stroommeter aan de hoge kant"
+     },
+     {
+      "analogy": "de krachtmeter bij het wiel",
+      "pair": [
+       "gauge_wheel",
+       "lv_meter"
+      ],
+      "real": "de stroommeter aan de lage kant"
+     },
+     {
+      "analogy": "de ketting wordt warm",
+      "pair": [
+       "heat_chain",
+       "heat_coils"
+      ],
+      "real": "de wikkelingen worden warm"
+     },
+     {
+      "analogy": "de standaard van de trainer",
+      "pair": [
+       "trainer_frame",
+       "tank_front"
+      ],
+      "real": "de ketel met olie en koelribben"
+     }
+    ],
+    "skin": "fiets"
+   },
+   "assets": "explainers/trafo",
+   "beats": [
+    {
+     "id": "f1",
+     "idea": "snel_licht",
+     "lines": [
+      "Een trafo leg ik altijd uit met een fiets.",
+      "In een lichte versnelling trap je snel, en je hoeft bijna geen kracht te zetten.",
+      "Het wiel draait langzamer, maar met veel meer kracht."
+     ],
+     "phase": "fiets"
+    },
+    {
+     "id": "f2",
+     "idea": "zwaarder",
+     "lines": [
+      "Draai de knop van de trainer eens verder open. Dan is het alsof je een berg op fietst.",
+      "Let op de twee meters."
+     ],
+     "phase": "fiets",
+     "pulse": "load",
+     "timeout_s": 10,
+     "wait_for": "load_up"
+    },
+    {
+     "alt_of": "f2",
+     "id": "f2_already",
+     "idea": "zwaarder",
+     "lines": [
+      "Je hebt hem al zwaarder gezet. Let dan eens op de twee meters."
+     ],
+     "phase": "fiets",
+     "when": "load_half"
+    },
+    {
+     "id": "f3",
+     "idea": "kracht",
+     "lines": [
+      "Bij het wiel gaat de kracht flink omhoog, bij de trapper maar een klein beetje.",
+      "Het tempo blijft gewoon hetzelfde.",
+      "Zet hem nu eens helemaal zwaar. Wat doet de ketting?"
+     ],
+     "phase": "fiets",
+     "pulse": "load",
+     "timeout_s": 10,
+     "wait_for": "load_full"
+    },
+    {
+     "alt_of": "f3",
+     "id": "f3_full",
+     "idea": "kracht",
+     "lines": [
+      "Bij het wiel gaat de kracht flink omhoog, bij de trapper maar een klein beetje.",
+      "Het tempo blijft gewoon hetzelfde."
+     ],
+     "phase": "fiets",
+     "when": "load_full"
+    },
+    {
+     "id": "f4",
+     "idea": "warm",
+     "lines": [
+      "Kijk eens naar de ketting. Die wordt warm.",
+      "Hoe zwaarder je trapt, hoe warmer hij wordt."
+     ],
+     "phase": "fiets"
+    },
+    {
+     "id": "x",
+     "idea": "",
+     "lines": [
+      "Goed. Nu hetzelfde, maar dan met een echte trafo."
+     ],
+     "phase": "cross"
+    },
+    {
+     "id": "t1",
+     "idea": "hetzelfde",
+     "lines": [
+      "De trapper is nu de kabel met de hoge spanning. Het wiel is de kant van de straat, en de ketting is de ijzeren kern met de wikkelingen.",
+      "Eén verschil: in een trafo beweegt niks. Het ijzer geeft het door, zonder dat de draden elkaar raken."
+     ],
+     "phase": "trafo"
+    },
+    {
+     "id": "t2",
+     "idea": "namen",
+     "lines": [
+      "Er gaat hoge spanning in, met weinig stroom. Er komt lage spanning uit, met heel veel stroom.",
+      "Kijk maar eens op de twee stroommeters."
+     ],
+     "phase": "trafo",
+     "shows": [
+      "readout",
+      "reveal"
+     ]
+    },
+    {
+     "id": "t3",
+     "idea": "vraag",
+     "lines": [
+      "Draai de knop eens verder open: dan vraagt de straat meer, alsof iedereen tegelijk gaat koken."
+     ],
+     "phase": "trafo",
+     "pulse": "load",
+     "timeout_s": 10,
+     "wait_for": "load_full"
+    },
+    {
+     "alt_of": "t3",
+     "id": "t3_already",
+     "idea": "vraag",
+     "lines": [
+      "De straat vraagt nu al veel. Kijk maar hoe de huizen aan staan."
+     ],
+     "phase": "trafo",
+     "when": "load_full"
+    },
+    {
+     "id": "t4",
+     "idea": "olie",
+     "lines": [
+      "De wikkelingen worden warm. De olie neemt die warmte mee naar de koelribben.",
+      "Kijk eens naar de thermometer op de ketel. Dat gaat langzamer dan je denkt.",
+      "Draai nu eens verder, boven wat er op het typeplaatje staat."
+     ],
+     "phase": "trafo",
+     "pulse": "load",
+     "timeout_s": 10,
+     "wait_for": "over_rated"
+    },
+    {
+     "alt_of": "t4",
+     "id": "t4_over",
+     "idea": "olie",
+     "lines": [
+      "De wikkelingen worden warm. De olie neemt die warmte mee naar de koelribben.",
+      "Hij staat nu al boven wat er op het typeplaatje staat. Kijk eens naar de thermometer op de ketel."
+     ],
+     "phase": "trafo",
+     "when": "over_rated"
+    },
+    {
+     "id": "t5",
+     "idea": "poosje",
+     "lines": [
+      "Dat houdt hij een poosje vol. Hoe lang, dat staat onderaan het blad.",
+      "Tik eens op de thermometer aan de muur. Wat doet een hete zomerdag daarmee?"
+     ],
+     "phase": "trafo",
+     "pulse": "ambient",
+     "timeout_s": 10,
+     "unlocks": [
+      "ambient"
+     ],
+     "wait_for": "ambient"
+    },
+    {
+     "id": "t6",
+     "idea": "slijten",
+     "lines": [
+      "Op een warme dag houdt hij het korter vol. Net als ik op de fiets, tegenwoordig.",
+      "Met rust koelt hij weer af. Maar elke dag te zwaar, dan slijt hij hard."
+     ],
+     "phase": "trafo"
+    }
+   ],
+   "caption": [
+    "Een trafo ruilt spanning in voor stroom. Erin gaat hoge spanning met weinig stroom, eruit komt lage spanning met veel stroom.",
+    "Hoe meer de straat vraagt, hoe warmer de wikkelingen. De olie brengt die warmte naar de koelribben.",
+    "Even meer dan het typeplaatje kan, na een gewone dag op half vermogen. Op een hete dag korter, en elk uur te heet slijt hij sneller.",
+    "De fiets is een vergelijking. In een trafo draait niks, en hij ruilt veel sterker dan een fietsversnelling. Een echte ketting wordt nauwelijks warm; een trafo wel. Opwarmen duurt in het echt uren; hier gaat het sneller."
+   ],
+   "controls": [
+    {
+     "down_key": "Down",
+     "id": "load",
+     "key": "Up",
+     "layer": "control_box"
+    },
+    {
+     "id": "ambient",
+     "key": "T",
+     "layer": "backboard"
+    }
+   ],
+   "groups": [
+    "source",
+    "core",
+    "tank",
+    "out",
+    "street",
+    "meter_in",
+    "meter_out"
+   ],
+   "hint": {
+    "ambient": "Draai aan de knop. Tik op de thermometer.",
+    "fiets": "Draai aan de knop.",
+    "trafo": "Draai aan de knop: dat is de straat."
+   },
+   "id": "transformator",
+   "labels": {
+    "current_in": "Stroom erin",
+    "current_out": "Stroom eruit",
+    "holds": "Kan dit blijven dragen",
+    "hotspot": "Wikkeling",
+    "hours": "Houdt dit zo'n {hours} uur vol",
+    "outside": "Buiten",
+    "under_an_hour": "Houdt dit nog geen uur vol"
+   },
+   "model": "transformer",
+   "name": "De transformator",
+   "never": [
+    "bestel",
+    "levertijd",
+    "fabrikant",
+    "voorraad",
+    "raamcontract",
+    "contract",
+    "reserver",
+    "ongebruikt",
+    "boomgaard",
+    "hermans",
+    "bakkerij",
+    "ilse",
+    "net is vol",
+    "net vol",
+    "zwaarder belasten",
+    "gotork"
+   ],
+   "number": 2,
+   "one_idea": "Een trafo ruilt spanning in voor stroom, en hoe meer stroom de straat vraagt, hoe warmer hij wordt.",
+   "parameters": [
+    {
+     "name": "u_primary",
+     "source": "netbeheer_betrouwbaarheid_2017",
+     "unit": "V",
+     "value": 10000
+    },
+    {
+     "name": "u_secondary",
+     "source": "netbeheer_betrouwbaarheid_2017",
+     "unit": "V",
+     "value": 400
+    },
+    {
+     "name": "loading_guide",
+     "source": "nen_iec_60076_7",
+     "unit": "",
+     "value": "IEC 60076-7"
+    },
+    {
+     "estimate": "A common size of a distribution transformer in a Dutch MSR (400 and 630 kVA are the usual steps); the ratio and the thermal shape do not depend on it.",
+     "name": "rated",
+     "unit": "kVA",
+     "value": 630
+    },
+    {
+     "estimate": "The IEC 60076-7 default top-oil rise for ONAN distribution transformers, recalled (the standard is paywalled); with the gradient it gives the classic 98 °C hot spot at rated load in 20 °C air.",
+     "name": "oil_rise_rated",
+     "unit": "K",
+     "value": 55
+    },
+    {
+     "estimate": "The IEC 60076-7 default hot-spot-to-top-oil gradient (H·gr) for distribution transformers, recalled.",
+     "name": "gradient_rated",
+     "unit": "K",
+     "value": 23
+    },
+    {
+     "estimate": "The IEC 60076-7 default ratio of load losses to no-load losses for distribution transformers, recalled; it sets how warm the oil is at no load.",
+     "name": "loss_ratio",
+     "unit": "",
+     "value": 5
+    },
+    {
+     "estimate": "The IEC 60076-7 oil and winding exponents for ONAN, recalled.",
+     "name": "exponents",
+     "unit": "",
+     "value": "x 0,8 · y 1,6"
+    },
+    {
+     "estimate": "The IEC 60076-7 default top-oil time constant for distribution transformers, recalled; the view speeds it up.",
+     "name": "tau_oil",
+     "unit": "min",
+     "value": 180
+    },
+    {
+     "estimate": "The IEC 60076-7 hot-spot limit for normal cyclic loading, recalled.",
+     "name": "hotspot_limit",
+     "unit": "°C",
+     "value": 120
+    },
+    {
+     "estimate": "IEC 60076-7 relative ageing for non-thermally-upgraded paper, recalled.",
+     "name": "ageing",
+     "unit": "",
+     "value": "1 at 98 °C, ×2 per 6 K"
+    },
+    {
+     "estimate": "IEC 60076-7's current limit for distribution transformers, recalled; beyond it the model does not hold.",
+     "name": "load_max",
+     "unit": "%",
+     "value": 150
+    },
+    {
+     "estimate": "The overload's hours start after a long day at half load: a design choice so the hours mean something; a trafo that was already hot holds shorter (the caption says so).",
+     "name": "before",
+     "unit": "%",
+     "value": 50
+    },
+    {
+     "name": "tropical",
+     "source": "knmi_hittegolf",
+     "unit": "°C",
+     "value": 30
+    },
+    {
+     "estimate": "A winter evening, spring, and the loading guide's reference ambient of 20 °C (recalled).",
+     "name": "ambient_steps",
+     "unit": "°C",
+     "value": "0 / 10 / 20"
+    },
+    {
+     "estimate": "Ignored: the air round the trafo is taken as the outside air; a trafohuisje adds a few kelvin (IEC 60076-7 has a correction for it).",
+     "name": "enclosure",
+     "unit": "K",
+     "value": 0
+    },
+    {
+     "estimate": "A design choice so the player sees the oil climb; the codex caption says the real one is hours.",
+     "name": "tau_view",
+     "unit": "s",
+     "value": 6
+    },
+    {
+     "estimate": "A light bicycle gear, so both force gauges move visibly; the real trafo trades twenty-five times (the reveal says so).",
+     "name": "gear_ratio",
+     "unit": "",
+     "value": 3
+    }
+   ],
+   "place": "yard.opleidingsterrein.trafohuisje",
+   "reveal": {
+    "label": "Laat de rekensom zien",
+    "lines": [
+     {
+      "formula": "S = √3 · U · I",
+      "live": "{rated} kVA × {load} % = {s} kVA",
+      "words": "Wat erin gaat, komt er (bijna) helemaal weer uit: vermogen erin = vermogen eruit."
+     },
+     {
+      "formula": "I = S / (√3 · U)",
+      "live": "{s} kVA ÷ (1,73 × 10.000 V) = {i1} A",
+      "words": "Stroom erin = vermogen ÷ (√3 × hoge spanning)."
+     },
+     {
+      "live": "{s} kVA ÷ (1,73 × 400 V) = {i2} A",
+      "words": "Stroom eruit = vermogen ÷ (√3 × lage spanning)."
+     },
+     {
+      "words": "10.000 V ÷ 400 V = 25: eruit komt vijfentwintig keer zoveel stroom als erin. Daarom heeft de hoge kant vijfentwintig keer zoveel windingen."
+     },
+     {
+      "formula": "Δθ = 55 K · ((1 + 5K²) / 6)^0,8 + 23 K · K^1,6",
+      "live": "{oil} °C olie, {hot} °C wikkeling, buiten {ambient} °C",
+      "words": "De warmte groeit met de stroom in het kwadraat. De olie volgt in uren, de wikkeling in minuten."
+     },
+     {
+      "formula": "V = 2^((θ − 98) / 6)",
+      "live": "{ageing} × zo snel",
+      "words": "Boven de 98 °C slijt het papier om de wikkeling sneller: elke 6 graden twee keer zo snel."
+     },
+     {
+      "words": "De fiets was een vergelijking: in een trafo draait niks. Wisselstroom in de ene wikkeling maakt een wisselend veld in het ijzer, en dat drijft de stroom in de andere."
+     }
+    ]
+   },
+   "skins": {
+    "analogy": "fiets",
+    "real": "trafo",
+    "tabs": {
+     "fiets": "De fiets",
+     "trafo": "De trafo"
+    }
+   },
+   "sources": [
+    {
+     "fact": "10 kV is het meest voorkomende spanningsniveau in het middenspanningsnet; laagspanning 400 V tussen de fasen; de transformatie gebeurt in transformatorhuisjes in woonwijken",
+     "id": "netbeheer_betrouwbaarheid_2017",
+     "title": "Netbeheer Nederland, Betrouwbaarheid van elektriciteitsnetten in Nederland, resultaten 2017, §2.4–2.5",
+     "url": "https://www.netbeheernederland.nl/sites/default/files/Betrouwbaarheid_van_elektriciteitsnetten_2017_120.pdf"
+    },
+    {
+     "fact": "De leidraad voor het belasten van met olie gevulde transformatoren: het effect van belasting en omgevingstemperatuur op de levensduur",
+     "id": "nen_iec_60076_7",
+     "title": "NEN, IEC 60076-7:2018 Energietransformatoren – Deel 7",
+     "url": "https://www.nen.nl/en/iec-60076-7-2018-en-242851"
+    },
+    {
+     "fact": "Een tropische dag: maximumtemperatuur 30,0 °C of hoger",
+     "id": "knmi_hittegolf",
+     "title": "KNMI, Hittegolf",
+     "url": "https://www.knmi.nl/kennis-en-datacentrum/uitleg/hittegolf"
+    }
+   ],
+   "speaker": "Ruud",
+   "tags": [
+    "snel en licht",
+    "ketting",
+    "langzaam en sterk"
+   ]
   }
  ]
 }
