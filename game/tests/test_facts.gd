@@ -149,11 +149,12 @@ func test_flags_and_the_fork_branch_done_first() -> void:
 	assert_eq(log.debrief_of("branch_n"), "debrief branch_n")
 
 
-## Gate backlog 3 (2026-10-24): the fork is one main quest, so once the player picks a
-## branch, the other branch's problem hurts too (the intake does not heal while the monteurs
-## are helped); otherwise the non-bottleneck branch's Check could never show that fixing it
-## brings no flow. It is held until its own branch is taken and solved.
-func test_taking_one_fork_branch_switches_the_others_problem_on() -> void:
+## Gate backlog 3 (2026-10-24): once the player picks a fork branch, the bottleneck branch's
+## problem hurts too (the intake does not heal while the monteurs are helped); otherwise the
+## non-bottleneck branch's Check could never show that fixing it brings no flow. It is held
+## until its own branch is taken and solved. The non-bottleneck problem still arrives only
+## through its own mission (the one exception to that rule stays as small as the lesson needs).
+func test_taking_the_other_fork_branch_switches_the_bottlenecks_problem_on() -> void:
 	var log := _log(RulesFixture.countermeasures(), [
 		_mission("branch_b", "main", {"type": "solve", "problem": "incomplete_application"},
 			{"fork": {"group": "g", "role": "bottleneck"}}),
@@ -174,6 +175,16 @@ func test_taking_one_fork_branch_switches_the_others_problem_on() -> void:
 	assert_eq(log.accept("branch_b"), "")
 	_resolve(log, "incomplete_application", "poka_yoke_form")
 	assert_eq(problem.call("incomplete_application"), ProblemState.Phase.RESOLVED)
+	var other := _log(RulesFixture.countermeasures(), [
+		_mission("branch_b", "main", {"type": "solve", "problem": "incomplete_application"},
+			{"fork": {"group": "g", "role": "bottleneck"}}),
+		_mission("branch_n", "main", {"type": "solve", "problem": "custom_design"},
+			{"fork": {"group": "g", "role": "non_bottleneck"}}),
+	])
+	assert_eq(other.accept("branch_b"), "")
+	other.update()
+	assert_eq(other.region.state["custom_design"].phase, ProblemState.Phase.DORMANT,
+		"the non-bottleneck problem comes only through its own mission")
 
 
 func test_a_reopened_mission_tells_its_reopen_text() -> void:

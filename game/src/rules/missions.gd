@@ -629,19 +629,21 @@ func _retire_orphans() -> void:
 
 
 ## The fork is one main quest (gate backlog 3, 2026-10-24): once a branch is taken, the
-## branches still waiting for the player hurt too, so the intake does not heal while the
-## monteurs are helped, and the non-bottleneck branch's Check can show it brought no flow.
-## A branch once done is not waiting: a fix that faded comes back through its mission.
+## bottleneck branch still waiting for the player hurts too, so the intake does not heal
+## while the monteurs are helped, and the non-bottleneck branch's Check can show it brought
+## no flow. Only the bottleneck's: the exception to "problems arrive through their mission"
+## stays as small as the lesson needs. A branch once done is not waiting: a fix that faded
+## comes back through its mission.
 func _waiting_fork_branches() -> Array[MissionDef]:
 	var taken := {}
 	for id: String in progress:
 		if not defs[id].fork_group.is_empty():
 			taken[defs[id].fork_group] = true
 	return available().filter(func(m: MissionDef) -> bool:
-		return taken.has(m.fork_group) and not done_once.has(m.id) and _holds_problem(m) and m.goal_type == "solve")
+		return taken.has(m.fork_group) and m.fork_role == "bottleneck" and not done_once.has(m.id) and _holds_problem(m) and m.goal_type == "solve")
 
 
-## Switch on the problems of the fork branches still waiting (see _waiting_fork_branches).
+## Switch on the problem of a fork's bottleneck branch still waiting (_waiting_fork_branches).
 func _switch_on_forks() -> void:
 	for m in _waiting_fork_branches():
 		if region.state.has(m.goal_problem) and region.state[m.goal_problem].phase == P.DORMANT:
