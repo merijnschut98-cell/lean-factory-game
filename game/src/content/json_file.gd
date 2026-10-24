@@ -15,6 +15,12 @@ static func dict_or_empty(v: Variant) -> Dictionary:
 	return v if v is Dictionary else {}
 
 
+## `v` as an int if it is a number (JSON reads every number as a float), else `fallback`:
+## a junk value in a save is read as missing, never a crash.
+static func int_or(v: Variant, fallback: int) -> int:
+	return int(v) if v is int or v is float else fallback
+
+
 ## Returns {"data": Dictionary, "error": String}; `error` is empty on success.
 static func read_dict(path: String) -> Dictionary:
 	var text := FileAccess.get_file_as_string(path)

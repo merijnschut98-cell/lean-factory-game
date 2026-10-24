@@ -436,6 +436,15 @@ func test_the_region_counts_the_days_at_the_debt_floor() -> void:
 	assert_eq(copy.floor_days, 5)
 
 
+## Review S3 #4: a junk count in a save is read as none, never a crash.
+func test_a_junk_floor_count_in_a_save_counts_none() -> void:
+	var saved := RegionState.capture(_region())
+	saved["floor_days"] = {"days": 5}
+	var copy := _region()
+	assert_eq(RegionState.restore(copy, saved)["error"], "")
+	assert_eq(copy.floor_days, 0)
+
+
 ## Long-term, respectful play pays its way: finance books part of what a
 ## held fix saves into the improvement budget every week, at the fix's health,
 ## while the team that runs it trusts you (a blamed team stops reporting it).

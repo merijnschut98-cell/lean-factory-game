@@ -870,8 +870,9 @@ func load_dict(d: Dictionary) -> Array[String]:
 		elif defs.has(str(id)) and entry is Dictionary and entry.get("status") in ["active", "completed"]:
 			progress[str(id)] = {"status": entry["status"], "asks": JsonFile.dict_or_empty(entry.get("asks")),
 				"seen": JsonFile.dict_or_empty(entry.get("seen"))}
-			if entry.has("done_at"):  # a recurring mission's last round
-				progress[str(id)]["done_at"] = int(entry["done_at"])
+			var done_at := JsonFile.int_or(entry.get("done_at"), -1)
+			if done_at >= 0:  # a recurring mission's last round
+				progress[str(id)]["done_at"] = done_at
 			if entry.has("said"):  # the coach's conditional questions already asked
 				progress[str(id)]["said"] = JsonFile.dict_or_empty(entry["said"])
 			if entry.get("played") == true:  # a milestone's scene, played

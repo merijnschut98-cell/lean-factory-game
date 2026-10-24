@@ -241,6 +241,18 @@ func test_a_deadline_passing_on_an_active_mission_keeps_its_work() -> void:
 	assert_true(log.region.state["incomplete_application"].is_open(), "still held by its mission")
 
 
+## Review S3 #4: a junk round time in a save is dropped, never a crash.
+func test_a_junk_done_at_in_a_save_is_dropped() -> void:
+	var log := _log()
+	log.accept("walk_connections")
+	var saved := log.to_dict()
+	saved["progress"]["walk_connections"]["done_at"] = {"day": 3}
+	var restored := _log()
+	restored.load_dict(saved)
+	assert_eq(restored.status("walk_connections"), "active")
+	assert_false(restored.progress["walk_connections"].has("done_at"))
+
+
 func test_failed_missions_survive_save_and_load() -> void:
 	var log := _log()
 	log.accept("walk_connections")

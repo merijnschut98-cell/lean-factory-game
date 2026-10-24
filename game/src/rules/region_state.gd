@@ -43,7 +43,7 @@ static func restore(r: Region, d: Dictionary) -> Dictionary:
 	for clue_id: Variant in d["found"]:
 		r.found[str(clue_id)] = true
 	r._cost_owed = float(d.get("cost_owed", 0.0))
-	r.floor_days = maxi(0, int(d.get("floor_days", 0)))  # saves from before it: none counted
+	r.floor_days = maxi(0, JsonFile.int_or(d.get("floor_days"), 0))  # saves from before it: none counted
 	# Saves from before reputation start where a new game does.
 	r.reputation.value = clampi(int(d.get("reputation", Reputation.START)), 0, Reputation.MAX)
 	r._apply_bad_period()
