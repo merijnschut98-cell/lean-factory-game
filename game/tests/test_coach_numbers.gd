@@ -16,9 +16,10 @@ func _accepted() -> GameSession:
 	return s
 
 
-## Ruud's words for the KPI now, from content (coach.numbers.kpi_now), with the number in.
-func _kpi_now(s: GameSession) -> String:
-	var clause: String = s.missions.coach["numbers"]["kpi_now"][s.region.problems[PROBLEM].kpi]
+## Ruud's words for a KPI now (the problem's own by default), from content
+## (coach.numbers.kpi_now), up to the number.
+func _kpi_now(s: GameSession, kpi := "") -> String:
+	var clause: String = s.missions.coach["numbers"]["kpi_now"][kpi if kpi != "" else s.region.problems[PROBLEM].kpi]
 	return clause.get_slice("{value}", 0)
 
 
@@ -31,13 +32,14 @@ func _questions(s: GameSession, n: int) -> Array:
 	return out
 
 
-func test_the_coach_first_asks_about_the_kpi_as_it_is_now() -> void:
+func test_the_coach_first_asks_about_the_stream_s_number_as_it_is_now() -> void:
 	var s := _accepted()
 	var first: String = s.ask_coach()["text"]
-	assert_true(first.begins_with(_kpi_now(s)), "the number first: %s" % first)
+	var headline := _kpi_now(s, CoachNumbers.headline_kpi(s.region.problems[PROBLEM]))
+	assert_true(first.begins_with(headline), "the stream's number first: %s" % first)
 	assert_true(first.ends_with(s.missions.coach["numbers"]["go_see"]))
 	assert_true(RegEx.create_from_string("\\d").search(first) != null, "with the number in it")
-	assert_false(s.ask_coach()["text"].begins_with(_kpi_now(s)), "once a stage, then his other questions")
+	assert_false(s.ask_coach()["text"].begins_with(headline), "once a stage, then his other questions")
 
 
 func test_during_an_experiment_the_kata_five_come_in_order() -> void:
@@ -65,3 +67,28 @@ func test_a_mission_without_a_problem_gets_no_number() -> void:
 	var clauses: Dictionary = s.missions.coach["numbers"]["kpi_now"]
 	assert_eq(CoachNumbers.kpi_now(s.region, s.missions.defs["walk_connections"], clauses), "", "a walk has no KPI to read")
 	assert_ne(CoachNumbers.kpi_now(s.region, s.missions.defs[MISSION], clauses), "")
+
+
+## Review S3 #3: before the A3 Ruud never names the problem's own KPI (the prediction is the
+## player's to find); he reads the stream's headline number, its end-to-end lead time (or its
+## on-time share when the lead time is the problem's KPI). At reflect, after the prediction,
+## he reads the problem's own KPI.
+func test_before_the_a3_the_coach_reads_the_stream_not_the_problem_s_kpi() -> void:
+	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
+	var numbers: Dictionary = s.missions.coach["numbers"]
+	var read := 0
+	for m: MissionDef in s.missions.defs.values():
+		var p: ProblemDef = s.region.problems.get(m.goal_problem)
+		if m.kind != "main" or p == null:
+			continue
+		var own := str(numbers["kpi_now"][p.kpi]).get_slice("{value}", 0)
+		var headline := "on_time" if p.kpi == "lead_time" else "lead_time"
+		var line := CoachNumbers.question(s.region, m, "go_see", {}, s.missions.coach)
+		if line.is_empty():
+			continue   # nothing finished on the stream yet
+		read += 1
+		assert_false(line.contains(own), "%s: go_see names its own KPI: %s" % [m.id, line])
+		assert_true(line.begins_with(str(numbers["kpi_now"][headline]).get_slice("{value}", 0)), "%s: %s" % [m.id, line])
+		var reflect := CoachNumbers.question(s.region, m, "reflect", {}, s.missions.coach)
+		assert_true(reflect.is_empty() or reflect.begins_with(own), "%s: at reflect its own KPI: %s" % [m.id, reflect])
+	assert_true(read >= 3, "the stream's number read for %d main missions" % read)

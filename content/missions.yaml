@@ -108,9 +108,10 @@ coach:
   conditional:
     blamed: "Wat wilde je eigenlijk weten toen je dat vroeg?"
     fading_fix: "Hoe lang verwacht je dat dit blijft werken? En dan?"
-  # The coach reads the numbers (phase-2 design §3.6; CoachNumbers): the main mission's
-  # KPI as it is now on its stream, said the way Ruud says it ({value}: the number), put
-  # before a question once at go_see and once at reflect.
+  # The coach reads the numbers (phase-2 design §3.6; CoachNumbers): a number as it is now
+  # on the main mission's stream, said the way Ruud says it ({value}: the number), put
+  # before a question once at go_see (the stream's lead time, or its on-time share: never
+  # the problem's own KPI before the A3) and once at reflect (the problem's own KPI).
   numbers:
     kpi_now:
       throughput: "Er komen nu {value} per week klaar"

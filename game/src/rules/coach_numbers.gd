@@ -1,10 +1,11 @@
 class_name CoachNumbers
 extends RefCounted
-## The coach reads the numbers (phase-2 design §3.6): Ruud names the main mission's KPI as
-## it is now on its stream ("De doorlooptijd is nu 54 dagen") before a question, once at
-## go_see and once at reflect, and during an experiment he asks the Kata five in order
-## (Rother: target, actual condition, obstacles, next step, when we go and see), once an
-## experiment, the first after the number. Questions, never the answer. The lines are
+## The coach reads the numbers (phase-2 design §3.6): Ruud names a number as it is now on
+## the main mission's stream ("De doorlooptijd is nu 54 dagen") before a question: at
+## go_see the stream's headline (headline_kpi: never the problem's own KPI before the A3,
+## review S3 #3), at reflect and before the first Kata question the problem's KPI. During
+## an experiment he asks the Kata five in order (Rother: target, actual condition,
+## obstacles, next step, when we go and see), once an experiment, the first after the number. Questions, never the answer. The lines are
 ## content (missions.yaml coach.numbers and coach.kata); Missions asks here first.
 
 ## The stages the number is read at (coach.numbers has a question for each).
@@ -21,7 +22,9 @@ static func question(region: Region, m: MissionDef, stage: String, said: Diction
 	var key := "numbers:" + stage
 	if not stage in NUMBER_STAGES or said.has(key) or not numbers.get(stage) is String:
 		return ""
-	var now := kpi_now(region, m, clauses)
+	var p: ProblemDef = region.problems.get(m.goal_problem)
+	var kpi := headline_kpi(p) if stage == "go_see" and p != null else ""
+	var now := kpi_now(region, m, clauses, kpi)
 	if now.is_empty():
 		return ""
 	said[key] = true
@@ -43,18 +46,29 @@ static func _kata(region: Region, m: MissionDef, said: Dictionary, kata: Array, 
 	return _after(kpi_now(region, m, clauses) if n == 0 else "", str(kata[n]))
 
 
-## The mission's KPI as it is now on its problem's stream, in Ruud's words (`clauses`: KPI
-## → a line with {value}), or "" when the mission has no problem or the stream has no
-## number to read yet (nothing finished in the window).
-static func kpi_now(region: Region, m: MissionDef, clauses: Dictionary) -> String:
+## The stream's headline number before the A3: its end-to-end lead time, or its on-time
+## share when the lead time is the problem's own KPI, so the prediction stays the player's
+## to find (nothing handed over).
+static func headline_kpi(p: ProblemDef) -> String:
+	return "on_time" if p.kpi == "lead_time" else "lead_time"
+
+
+## A KPI (`kpi`; "": the problem's own) as it is now on the mission's problem's stream, in
+## Ruud's words (`clauses`: KPI → a line with {value}), or "" when the mission has no
+## problem or the stream has no number to read yet (nothing finished in the window).
+static func kpi_now(region: Region, m: MissionDef, clauses: Dictionary, kpi := "") -> String:
 	var p: ProblemDef = region.problems.get(m.goal_problem)
-	if p == null or not clauses.get(p.kpi) is String:
+	if p == null:
+		return ""
+	if kpi.is_empty():
+		kpi = p.kpi
+	if not clauses.get(kpi) is String:
 		return ""
 	var now := Region.measures(region.net, p.step)
-	var value := float(now.get(p.kpi, 0.0))
-	if value <= 0.0 or (p.kpi != "capacity" and float(now["throughput"]) <= 0.0):
+	var value := float(now.get(kpi, 0.0))
+	if value <= 0.0 or (kpi != "capacity" and float(now["throughput"]) <= 0.0):
 		return ""
-	return str(clauses[p.kpi]).replace("{value}", spoken(p.kpi, value))
+	return str(clauses[kpi]).replace("{value}", spoken(kpi, value))
 
 
 ## A KPI's value as Ruud says it: whole days and percents, per week with a decimal comma
