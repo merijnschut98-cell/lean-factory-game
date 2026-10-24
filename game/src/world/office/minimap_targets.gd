@@ -7,8 +7,8 @@ class_name MinimapTargets
 ## A target: {mission, main (bool), kind: "room" | "person", room (id), person (id,
 ## for a person), floor (id)}. No target: {}.
 
-## The obeya wall's room: a problem's mission points there once its A3 is ready for the
-## Check (build_office.py puts the obeya in the connections office).
+## The room of your desk (OfficeDesk) and of the obeya wall: a problem's mission points
+## there once its A3 is to be written (build_office.py puts both in the connections office).
 const OBEYA_ROOM := "connections"
 ## At most this many targets of each kind are drawn (the 1 + 3 rule; two mains in a fork).
 const MAX_MAIN := 2
@@ -33,7 +33,7 @@ static func all(s: GameSession, building: OfficeBuilding, cast: Array[Dictionary
 
 ## The next "where" of mission `m`: its objective's step (Objective.step, so the marker
 ## and the HUD's line point at the same place): the person, the room of the place, the
-## obeya's room; {} for a step without a place in the head office (a customer on the
+## desk's (or obeya's) room; {} for a step without a place in the head office (a customer on the
 ## phone, a step in no room). A walk skips the steps in no room.
 static func of(m: MissionDef, s: GameSession, building: OfficeBuilding, cast: Array[Dictionary]) -> Dictionary:
 	var step := Objective.step(m, s, func(place: String) -> bool: return not room_of(building, place).is_empty())
@@ -44,7 +44,7 @@ static func of(m: MissionDef, s: GameSession, building: OfficeBuilding, cast: Ar
 		if not spot.is_empty():   # someone with a body in the office (a customer is phoned)
 			out = {"kind": "person", "person": p.id, "room": str(room_of(building, p.place).get("id", "")),
 				"floor": str(spot.get(OfficeFloors.FLOOR_KEY, building.start_floor))}
-	elif step.get("obeya", false):
+	elif step.get("desk", false) or step.get("obeya", false):
 		out = _room_target(building.room(OBEYA_ROOM), building)
 	elif step.has("room"):   # a milestone's scene waits there
 		out = _room_target(building.room(step["room"]), building)

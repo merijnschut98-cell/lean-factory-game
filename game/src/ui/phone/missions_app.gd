@@ -4,7 +4,11 @@ extends PhoneApp
 ## the board, read-only. The active main with its next step and briefing, the
 ## sides beside it, then the board's list as the board shows it (MissionBoard's
 ## own offers and order). Taking one on still happens at the board by the
-## entrance: the app says so, and has no button for it.
+## entrance: the app says so, and has no button for it. A mission with a problem
+## has your clipboard with its A3 at hand (PLAN 2.10: the A3 from anywhere).
+
+## "Je klembord": the A3 asked for (GameUI opens it; the phone goes down).
+signal a3_requested
 
 const ACTIVE := "Nu bezig"
 const NONE_ACTIVE := "Nog niets aangenomen."
@@ -12,6 +16,7 @@ const ON_THE_BOARD := "Op het bord"
 const NONE_OPEN := "Er staat nu niets nieuws op het bord."
 const AT_THE_BOARD := "Aannemen doe je bij het missiebord bij de ingang."
 const NEXT := "Volgende stap: %s"
+const CLIPBOARD := "Pak je klembord (A3)"
 
 
 func refresh() -> void:
@@ -26,6 +31,10 @@ func refresh() -> void:
 		if m.kind != "side" and not step.is_empty():
 			active.add_child(UiPanel.paragraph(tr(NEXT) % tr(step), Palette.GREEN_DARK, UiTheme.SMALL))
 		active.add_child(UiPanel.paragraph(session.mission_briefing(m.id), Palette.INK, UiTheme.SMALL))
+	if missions.any(func(m: MissionDef) -> bool: return not m.goal_problem.is_empty()):
+		var clipboard := UiPanel.button(tr(CLIPBOARD), a3_requested.emit)
+		clipboard.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+		active.add_child(clipboard)
 	var board := UiPanel.add_card(list, tr(ON_THE_BOARD))
 	var offers := MissionBoard.offers_of(session, layer)   # as the board offers them
 	if offers.is_empty():

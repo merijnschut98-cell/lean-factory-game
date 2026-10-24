@@ -36,7 +36,8 @@ func test_the_office_loads_with_a_session_a_player_and_every_interaction_point()
 	ids.sort()
 	# the 1e (PLAN 2.1): the connections office's points, the stairs and the lift, Ruud's
 	# whiteboard (2.7c) and the shut doors of Revisie & GIS and Meetdata (no talk needs them yet)
-	assert_eq(ids, ["coach", "door:meter_data", "door:revision_gis", "lift", "mission_board", "obeya", DESIGN, INTAKE,
+	# and your desk at Aansluitingen (PLAN 2.10)
+	assert_eq(ids, ["coach", OfficeDesk.ID, "door:meter_data", "door:revision_gis", "lift", "mission_board", "obeya", DESIGN, INTAKE,
 		"place:connections.permit", "place:connections.planning", "place:meters.appointment", "stairs_down", "stairs_up",
 		OfficeWhiteboard.ID])
 	assert_eq(office.session.clock_text(), "ma 12 okt, 08:30")
@@ -51,7 +52,8 @@ func test_every_interaction_point_maps_to_a_place_or_a_role() -> void:
 		if i.kind == "place":
 			assert_true(office.session.region.net.step_at(i.place) != null, "%s is a step of the network" % i.id)
 		else:
-			assert_true(i.kind in ["obeya", "coach", "mission_board", "stairs_up", "stairs_down", "lift", "door", OfficeWhiteboard.ID],
+			assert_true(i.kind in ["obeya", "coach", "mission_board", "stairs_up", "stairs_down", "lift", "door", OfficeWhiteboard.ID,
+				OfficeDesk.ID, OfficeCheckScreen.ID],
 				"%s has a role" % i.id)
 		assert_false(office.prompt_for(i).is_empty(), "%s has a prompt" % i.id)
 	assert_eq(office.prompt_for(office.interactable(DESIGN)), "E — Werkvoorbereiding & ontwerp")

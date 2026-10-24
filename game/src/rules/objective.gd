@@ -8,7 +8,9 @@ class_name Objective
 ## minimap marker points at the same place (MinimapTargets reads step()).
 ##
 ## A step: {mission, step (a STEPS key), text, and where: place ("stream.step") |
-## person (id) | obeya (true)}. No step: {}.
+## person (id) | desk (true: your desk at Aansluitingen) | obeya (true)}. No step: {}.
+## PLAN 2.10: the A3 is written at your desk; the Check is read, and the Act decided, at
+## Petra's screen at Meetdata (CHECK_PERSON; the obeya wall when she is not in the content).
 
 ## The line stays one short line on the HUD (build_content.py MAX_STEP_CHARS).
 const MAX_CHARS := 60
@@ -22,10 +24,10 @@ const DEFAULTS := {
 	"look": "Ga kijken bij {team}",
 	"again": "Kijk nog eens bij {team}, op een andere manier",
 	"dig": "Zoek uit wat er speelt bij {team}",
-	"a3": "Schrijf je A3 aan de obeya-wand",
+	"a3": "Schrijf je A3 aan je bureau",
 	"wait": "Kijk hoe je experiment loopt bij {team}",
-	"check": "Bekijk de Check aan de obeya-wand",
-	"act": "Beslis aan de obeya-wand hoe je verder gaat",
+	"check": "Bekijk de Check op het scherm van {naam}",
+	"act": "Beslis bij het scherm van {naam} hoe je verdergaat",
 	"talk": "Praat met {naam} ({team})",
 	"go": "Je wordt verwacht",
 }
@@ -34,10 +36,12 @@ const STEPS: Array[String] = ["look", "again", "dig", "a3", "wait", "check", "ac
 ## A talk the mission needs (MissionDef.talk_goals) comes once the player has looked: it
 ## takes the place of these steps ("" when the goal is met and only the talk is left), so
 ## the person is met before the digging (phase-2 design §3.4). The Check and the Act at
-## the obeya wall stay first.
+## Petra's screen stay first.
 const TALK_BEFORE: Array[String] = ["dig", "a3", "wait", ""]
 ## Key clues found before the A3 becomes the next step (or all of them, when fewer).
 const A3_CLUES := 2
+## Whose screen the Check is read at: Petra keeps the stream's numbers (Meetdata).
+const CHECK_PERSON := "petra"
 
 const P := ProblemState.Phase
 
@@ -110,17 +114,22 @@ static func _problem_step(m: MissionDef, s: GameSession) -> Dictionary:
 		P.SPOTTED:
 			var keys := p.clues.filter(func(c: Clue) -> bool: return c.key).size()
 			if m.goal_type != "investigate" and s.region.key_clues_found(p.id) >= mini(A3_CLUES, keys):
-				return {"step": "a3", "obeya": true}
+				return {"step": "a3", "desk": true}
 			return {"step": "dig", "place": p.step}
 		P.DOING:
 			return {"step": "wait", "place": p.step}
 		P.CHECK_READY:
-			return {"step": "check", "obeya": true}
+			return _at_check_screen(s, "check")
 		P.CHECKED:
-			return {"step": "act", "obeya": true}
+			return _at_check_screen(s, "act")
 		P.RESOLVED:
 			return {}
 	return {"step": "look", "place": p.step}
+
+
+## The Check's step at Petra's screen; at the obeya wall when she is not in the content.
+static func _at_check_screen(s: GameSession, step: String) -> Dictionary:
+	return {"step": step, "person": CHECK_PERSON} if s.people.persons.has(CHECK_PERSON) else {"step": step, "obeya": true}
 
 
 static func _talk(s: GameSession, dialog_id: String) -> Dictionary:

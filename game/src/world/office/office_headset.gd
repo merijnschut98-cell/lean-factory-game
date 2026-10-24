@@ -22,13 +22,9 @@ const QUIET := "Het is rustig op de lijn. Er hangt niemand voor je in de wacht."
 ## The ring behind the free desk's chair, facing the desk; null when the desk is
 ## not on the loaded floor or its room is shut.
 static func place(office: Office) -> Interactable:
-	if office.find_marker(DESK + "_headset") == null or office.find_marker(DESK + "_chair") == null:
+	if office.find_marker(DESK + "_headset") == null:
 		return null
-	var at := stand(office)
-	var shut := office.floors.shut_rects(office.floors.markers())
-	if shut.any(func(r: Rect2) -> bool: return r.has_point(Vector2(at.origin.x, at.origin.z))):
-		return null
-	return Interactable.create(ID, at)
+	return OfficeDesk.place_at(office, ID, DESK, stand(office))
 
 
 ## Where the player stands to use it: behind the chair, facing the desk.
@@ -39,12 +35,7 @@ static func stand(office: Office) -> Transform3D:
 
 ## The chair, facing the desk (the desk's -Z, as a seated person faces it).
 static func seat_at(office: Office) -> Transform3D:
-	var chair := office.find_marker(DESK + "_chair")
-	var desk := office.find_marker(DESK + "_desk")
-	if chair == null or desk == null:
-		return Transform3D.IDENTITY
-	var forward := -office.in_office(desk).basis.z * Vector3(1, 0, 1)
-	return Transform3D(Basis.looking_at(forward.normalized(), Vector3.UP), office.in_office(chair).origin * Vector3(1, 0, 1))
+	return OfficeDesk.seat(office, DESK)
 
 
 ## Sit down and take the next call; with nobody waiting, a note that the line

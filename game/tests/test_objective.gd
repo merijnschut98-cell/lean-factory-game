@@ -122,7 +122,7 @@ func test_every_state_of_the_training_week_has_a_clean_objective() -> void:
 	assert_true(s.check(TRAY).get("passed", false))
 	assert_eq(Objective.of(s)["mission"], "training_fri")
 	note.call("fri act")
-	assert_true(Objective.of(s).get("obeya", false), "the Act is at the obeya wall")
+	assert_eq(Objective.of(s).get("person"), Objective.CHECK_PERSON, "the Act at Petra's screen (PLAN 2.10)")
 	assert_eq(seen.size(), 12, "every state checked")
 
 
@@ -165,7 +165,7 @@ func test_every_act_one_main_mission_has_a_clean_objective_in_every_phase() -> v
 			if c.key:
 				s.region.found[c.id] = true
 		_assert_clean(s, _text(s), m.id + " with its key clues")
-		assert_true(Objective.of(s).get("obeya", false), m.id + ": the A3 is written at the obeya wall")
+		assert_true(Objective.of(s).get("desk", false), m.id + ": the A3 is written at your desk (PLAN 2.10)")
 		st.phase = P.DORMANT
 
 

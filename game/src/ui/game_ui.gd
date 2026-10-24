@@ -105,6 +105,7 @@ func setup(of_session: GameSession, of_layer: SessionLayer = null) -> void:
 		check_panel.show_result(problem_id, result)
 		_open(check_panel))
 	check_panel.back_to_a3.connect(open_a3)
+	(phone.app(Phone.MISSIONS) as MissionsApp).a3_requested.connect(open_a3)   # your clipboard, from anywhere
 	place_menu.talk_requested.connect(open_talk)
 	talk_view.coach_requested.connect(open_coach)
 	pause_menu.save_requested.connect(save_to)
@@ -147,6 +148,33 @@ func open_a3() -> void:
 		return
 	a3_form.message = ""
 	_open(a3_form)
+
+
+## The Check at Petra's screen (PLAN 2.10): the Check that waits (CheckPanel.due) runs
+## there, its note that it is simulating on the screen first (two frames to draw it), or
+## the result it gave shows again for the Act. False when no Check waits.
+func open_check() -> bool:
+	var problem := CheckPanel.due(session) if playable() else ""
+	if problem.is_empty():
+		return false
+	a3_form.problem_id = problem
+	var ready := session.phase_of(problem) == "check_ready"
+	if not ready:
+		check_panel.show_result(problem, a3_form.results.get(problem, {}))
+	_open(check_panel)
+	if ready:
+		_run_check()
+	return true
+
+
+## The Check run at the screen: the note that it is simulating first (two frames to draw
+## it), then the A3's Check; its result comes back on the screen (A3Form.checked).
+func _run_check() -> void:
+	check_panel.show_simulating(a3_form.problem_id)
+	if is_inside_tree():
+		await get_tree().process_frame
+		await get_tree().process_frame
+	a3_form.check()
 
 
 func open_coach() -> void:
