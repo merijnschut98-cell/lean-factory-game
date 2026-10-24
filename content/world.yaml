@@ -223,6 +223,12 @@ tells:
     low: "Op het storingsbord in de werkplaats staan de storingen van deze week: een kort rijtje, alles afgevinkt."
     mid: "Het storingsbord in de werkplaats staat half vol storingen; bij een paar staat een rode streep."
     high: "Het storingsbord in de werkplaats staat vol storingen tot in de hoek, met rode strepen en hier en daar een tweede tijd."
+  # The begane grond (R-1 #4): the KCC's callback board, built in Godot (office_terugbelbord.gd).
+  - id: terugbelbord
+    place: customer_contact.answer
+    low: "Op het prikbord van het klantcontactcentrum hangen een paar gele terugbelbriefjes."
+    mid: "Op het prikbord van het klantcontactcentrum hangen twee rijen gele terugbelbriefjes."
+    high: "Het prikbord van het klantcontactcentrum hangt vol gele terugbelbriefjes, sommige over elkaar heen."
   - id: measurement_tray
     place: voltage_complaints.measurement
     low: "In het bakje bij de meetkoffers liggen een paar spanningsklachten."

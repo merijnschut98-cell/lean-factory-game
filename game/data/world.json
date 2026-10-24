@@ -354,6 +354,13 @@
    "place": "outages.locate"
   },
   {
+   "high": "Het prikbord van het klantcontactcentrum hangt vol gele terugbelbriefjes, sommige over elkaar heen.",
+   "id": "terugbelbord",
+   "low": "Op het prikbord van het klantcontactcentrum hangen een paar gele terugbelbriefjes.",
+   "mid": "Op het prikbord van het klantcontactcentrum hangen twee rijen gele terugbelbriefjes.",
+   "place": "customer_contact.answer"
+  },
+  {
    "high": "Het bakje bij de meetkoffers puilt uit van de spanningsklachten, en op de kast ernaast liggen nog twee stapels.",
    "id": "measurement_tray",
    "low": "In het bakje bij de meetkoffers liggen een paar spanningsklachten.",

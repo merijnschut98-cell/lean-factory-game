@@ -821,6 +821,12 @@
     "failure_demand",
     "value_demand"
    ],
+   "tells": [
+    {
+     "tell": "terugbelbord",
+     "text": "Op de meeste briefjes staat hetzelfde: 'aansluiting, wanneer?' Sommige namen hangen er twee keer."
+    }
+   ],
    "tier": 1,
    "visibility": "obvious",
    "waste": "defects"

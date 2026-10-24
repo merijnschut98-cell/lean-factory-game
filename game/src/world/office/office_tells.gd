@@ -1,7 +1,7 @@
 class_name OfficeTells
 extends Node
-## The world shows the work (PLAN 2.6, design §1.5): props on the 1e, the 2e and the yard that
-## read the region.
+## The world shows the work (PLAN 2.6, design §1.5): props on the 1e, the 2e, the begane grond
+## (the KCC's callback board, OfficeTerugbelbord) and the yard that read the region.
 ## Each tell is a node `tell_<id>` in the floor's model (tools/blender/build_office.py, the
 ## yard's build_yard.py) with three variants `tell_<id>_low`, `_mid` and `_high`; this shows
 ## one, by a number from the simulation, and looks again when time has passed. A child of the
@@ -75,7 +75,13 @@ const THRESHOLDS := {"intake_stack": [15, 30], "prep_tray": [6, 12], "planning_b
 	"revision_cabinet": [6, 12], "close_out_cabinet": [15, 35], "meter_board": [8, 12],
 	"obeya_board": [3, 5], "grid_study_tray": [6, 15], "reinforcement_board": [90, 105], "congestion_list": [40, 55],
 	"uitgiftelijst": [10, 14], "magazijn_rack": [55, 80], "van_returns": [18, 28], "storingsbord": [24, 32],
-	"measurement_tray": [10, 18]}
+	"measurement_tray": [10, 18], "terugbelbord": [45, 75]}
+## The begane grond (R-1 #4; probe 2026-10-24: GameSession, seeds 11 and 12, daily over 90 days
+## after day 9, each problem active from the first day; min/median/max):
+## - terugbelbord (the status calls the KCC answered this week: a customer of a late order
+##   asking where it is): base 17/30/39 and 24/37/56, status_callers 52/85/113 and 88/111/142;
+##   incomplete_application, custom_design and permits_in_batches stay at base (24..60). A bad
+##   week in the base reads mid; the status callers read high.
 ## A value stream's KPI card is red when fewer than this share of the orders finished over
 ## the last KPI_DAYS met its norm: the healthy base meets the norm about nine times in ten
 ## (value_streams.yaml, connections). A card shows no colour with fewer than
@@ -270,7 +276,8 @@ static func readings(net: Network) -> Dictionary:
 		"magazijn_rack": _shelf_empty(net, "cable_joint"),
 		"van_returns": _counted(net, "meters.visit", MOVED_DAYS) + _counted(net, "connections.execution", MOVED_DAYS),
 		"storingsbord": _callouts(net),
-		"measurement_tray": _waiting(net, ["voltage_complaints.measurement", "voltage_complaints.measurement_week"])}
+		"measurement_tray": _waiting(net, ["voltage_complaints.measurement", "voltage_complaints.measurement_week"]),
+		"terugbelbord": _status_calls(net)}
 
 
 static func band(tell: String, value: int) -> int:
@@ -373,6 +380,18 @@ static func _callouts(net: Network) -> int:
 	var late := roundi(k["completed"] * (1.0 - k["on_time"])) if k["completed"] > 0 else 0
 	return _counted(net, "outages.report", WEEK_DAYS, "entered") + _counted(net, "outages.locate", WEEK_DAYS) + late \
 		+ _week_trips(net)
+
+
+## The KCC's callback notes: the status calls it answered this week (failure demand: a customer
+## of a late order asking where it is; Network._schedule_status_calls).
+static func _status_calls(net: Network) -> int:
+	var contact := net.stream("customer_contact")
+	if contact == null:
+		return 0
+	var since := net.time - SimCalendar.days(WEEK_DAYS)
+	var first := contact.finished.bsearch_custom({"done_at": since},
+		func(a: Dictionary, b: Dictionary) -> bool: return a["done_at"] < b["done_at"])
+	return contact.finished.slice(first).filter(func(f: Dictionary) -> bool: return f.get("failure_demand", false)).size()
 
 
 ## This week's drives back to the counter for material in the middle of a repair.

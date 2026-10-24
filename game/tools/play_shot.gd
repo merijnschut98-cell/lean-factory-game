@@ -73,6 +73,8 @@ extends SceneTree
 ## play_tell_returns_high, play_tell_measurement_high, play_tell_yard_low (S3-Y: the yard's tells:
 ## the uitgiftelijst on the magazijn's counter and the storingsbord looked at closer, the joint
 ## shelf, the returns pallet, the complaints' tray at their highest; the list at its lowest).
+## play_tell_kcc_high, play_tell_kcc_low, play_tell_kcc_look (R-1 #4: the KCC's callback board
+## by the team lead's desk, full with the status callers on, nearly empty without; then looked at).
 ## play_desk, play_a3_clipboard, play_check_screen (PLAN 2.10 S3-D: your desk with your name
 ## plate, badge photo, the letter and your clipboard; E there, the A3 on the clipboard; the
 ## Check at Petra's screen, drawn as her monitor) · play_desk_thanks (R-1 #5: the winter promise
@@ -354,6 +356,8 @@ func _run() -> void:
 		"play_tell_uitgifte_high", "play_tell_storingsbord_high", "play_tell_rack_high", "play_tell_returns_high", \
 				"play_tell_measurement_high", "play_tell_yard_low":
 			_yard_tells(office, state)
+		"play_tell_kcc_high", "play_tell_kcc_low", "play_tell_kcc_look":
+			_kcc_tell(office, state)
 		"play_2e_day", "play_mt_room_scene", "play_mt_room_ruud", "play_tell_obeya_high", "tell_grid_study_high", \
 				"tell_reinforcement_high", "tell_congestion_high":
 			await _second(office, state)
@@ -920,6 +924,33 @@ func _yard_tells(office: Office, state: String) -> void:
 		"play_tell_yard_low": "uitgiftelijst"}   # behind the shed's wall: seen only up close
 	if looked.has(state):   # capture within ~25 frames, before the line's time is up
 		office.use(OfficeTells.node(office.geometry, looked[state]))
+
+
+## The KCC's callback board (R-1 #4) at twenty past ten: full after weeks of the status callers
+## (play_tell_kcc_high, and looked at closer: play_tell_kcc_look), a few notes in the base region
+## (play_tell_kcc_low).
+func _kcc_tell(office: Office, state: String) -> void:
+	office.session.missions.progress["fix_status_callers"] = {"status": "active", "asks": {}, "seen": {}}
+	if state != "play_tell_kcc_low":
+		office.session.region.activate("status_callers")
+		office.session.region.advance_days(14)
+	office.session.pass_time(posmod(10 * 60 + 20 - office.session.minute_of_day(), SimCalendar.MINUTES_PER_DAY))
+	office.ui.after_action()
+	office.ui.let_ringing_go()   # mevrouw El Amrani's call, not this shot's subject
+	office.floors._process(OfficeFloors.POLL_SECONDS)
+	office.floors.go_to("ground", "lift", true)
+	office.daylight.update(office.session)
+	office.tells.refresh()
+	if state == "play_tell_kcc_low":
+		OfficeTells.show(office.geometry, {"terugbelbord": OfficeTells.LOW})
+	print("terugbelbord: ", OfficeTells.readings(office.session.region.net)["terugbelbord"])
+	office.player.position = OfficeTerugbelbord.stand() + Vector3(-0.4, 0, 0.6)
+	office.player.face(Basis.looking_at((OfficeTerugbelbord.AT - office.player.position) * Vector3(1, 0, 1)))
+	office.rig.yaw = office.player.rotation.y + deg_to_rad(20)
+	office.rig.zoom(-5.0)
+	office.rig.snap()
+	if state == "play_tell_kcc_look":
+		office.use(OfficeTells.node(office.geometry, OfficeTerugbelbord.TELL))
 
 
 ## Going home (S1-A): the begane grond's front door at half past five, its prompt; then
