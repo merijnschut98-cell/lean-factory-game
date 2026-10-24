@@ -215,6 +215,7 @@ func current_act() -> int:
 ## Start a mission. Returns "" or an error code: unknown, not_available,
 ## locked, main_active, side_full, problem_unavailable.
 func accept(id: String) -> String:
+	_sync_uncounted()
 	var m: MissionDef = defs.get(id)
 	if m == null:
 		return "unknown"
@@ -309,6 +310,7 @@ func abandon(id: String) -> String:
 ## a deadline that just opened, and fail those past it (taken on or not).
 ## The game loop calls it after every Region action and time step.
 func update() -> void:
+	_sync_uncounted()
 	_note_fixes()
 	_note_holds()
 	_reopen_faded()
@@ -657,17 +659,22 @@ func _waiting_fork_branches() -> Array[MissionDef]:
 
 
 ## Switch on the problem of a fork's bottleneck branch still waiting (_waiting_fork_branches).
-## It takes none of the mission slots (Region.uncounted): it must never keep a mission's own
-## problem from coming back.
 func _switch_on_forks() -> void:
+	_sync_uncounted()
+	for id: String in region.uncounted:
+		if region.state[id].phase == P.DORMANT:
+			region.activate(id)
+
+
+## The waiting fork problems take none of the mission slots (Region.uncounted): they must
+## never keep a mission's own problem from coming back. Derived, not saved: kept current on
+## load, before every update and before a mission is taken on (review 2453246..3c0a190 #1).
+func _sync_uncounted() -> void:
 	var waiting: Dictionary[String, bool] = {}
 	for m in _waiting_fork_branches():
 		if region.state.has(m.goal_problem):
 			waiting[m.goal_problem] = true
 	region.uncounted = waiting
-	for id: String in waiting:
-		if region.state[id].phase == P.DORMANT:
-			region.activate(id)
 
 
 ## A recurring mission (leader standard work) is offered again its days after it was last done.
@@ -920,9 +927,7 @@ func load_dict(d: Dictionary) -> Array[String]:
 			opened_at[str(id)] = int(opened[id])
 	var dropped: Array[String] = []
 	var saved: Variant = d.get("progress", {})
-	if not saved is Dictionary:
-		return dropped
-	for id: Variant in saved:
+	for id: Variant in saved if saved is Dictionary else {}:
 		var entry: Variant = saved[id]
 		if defs.has(str(id)) and entry is Dictionary and entry.get("status") == "failed":
 			failed_once[str(id)] = true  # a save from before failed missions came back
@@ -942,6 +947,7 @@ func load_dict(d: Dictionary) -> Array[String]:
 	for id: String in failed_once:
 		region.close_countermeasures(defs[id].fail_closes)
 	_lock_unprepared()
+	_sync_uncounted()
 	return dropped
 
 

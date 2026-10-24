@@ -191,6 +191,38 @@ func test_taking_the_other_fork_branch_switches_the_bottlenecks_problem_on() -> 
 		"the non-bottleneck problem comes only through its own mission")
 
 
+## Review of 2453246..3c0a190 #1: the fork's waiting problem stays outside the mission slots
+## after a save is loaded (Region.uncounted is derived, not saved), so it never refuses a
+## third side before the first update.
+func test_after_a_load_the_waiting_fork_problem_takes_no_mission_slot() -> void:
+	var problems := RulesFixture.problems()
+	var extra := []
+	for i in 3:
+		var p: Dictionary = problems[2].duplicate(true)
+		p["id"] = "backlog_%d" % i
+		problems.append(p)
+		extra.append(_mission("side_%d" % i, "side", {"type": "solve", "problem": p["id"]}))
+	extra.append(_mission("branch_b", "main", {"type": "solve", "problem": "incomplete_application"},
+		{"fork": {"group": "g", "role": "bottleneck"}}))
+	extra.append(_mission("branch_n", "main", {"type": "solve", "problem": "custom_design"},
+		{"fork": {"group": "g", "role": "non_bottleneck"}}))
+	var build := func() -> Missions:
+		var defs: Array[MissionDef] = []
+		for d: Dictionary in RulesFixture.missions() + extra:
+			defs.append(MissionDef.from_dict(d))
+		return Missions.new(RulesFixture.region(50000, 5, problems), defs, RulesFixture.coach())
+	var log: Missions = build.call()
+	for id in ["branch_n", "side_0", "side_1"]:
+		assert_eq(log.accept(id), "", id)
+		log.update()
+	assert_true(log.region.uncounted.has("incomplete_application"))
+	var loaded: Missions = build.call()
+	assert_eq(RegionState.restore(loaded.region, RegionState.capture(log.region))["error"], "")
+	loaded.load_dict(log.to_dict())
+	assert_true(loaded.region.uncounted.has("incomplete_application"), "derived again on load")
+	assert_eq(loaded.accept("side_2"), "", "a third side still has its slot")
+
+
 func test_a_reopened_mission_tells_its_reopen_text() -> void:
 	var log := _log(RulesFixture.countermeasures(), [
 		_mission("fix_again", "side", {"type": "solve", "problem": "revision_backlog"}, {"reopen": "Het is terug."})])
