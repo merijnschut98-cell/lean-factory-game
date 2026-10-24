@@ -106,3 +106,14 @@ func test_the_gemba_round_comes_back_every_week_without_xp() -> void:
 	var copy := _campaign()
 	copy.missions.load_dict(bytes_to_var(var_to_bytes(s.missions.to_dict())))
 	assert_eq(copy.missions.progress["lsw_gemba_round"].get("done_at"), s.missions.progress["lsw_gemba_round"]["done_at"])
+
+
+## Review S3 #6: the round's debrief claims no fix still holds (the custom_design fix may
+## have faded, or never been the standard design): it asks the player to look.
+func test_the_gemba_round_s_debrief_claims_no_fix_holds() -> void:
+	var s := _campaign()
+	_done(s, ["walk_connections", "fix_custom_design", "lsw_gemba_round"])
+	assert_false(s.knows("holds:custom_design"), "nothing holds in this game")
+	var debrief := s.missions.debrief_of("lsw_gemba_round")
+	assert_false(debrief.contains("hangt het standaardontwerp nog"), debrief)
+	assert_true(debrief.contains("?"), "a question to look for yourself")
