@@ -41,8 +41,8 @@ const DEBT_FLOOR := -50000
 ## and the way back are the way out, never a lock-out. ESTIMATE: a small team experiment, a
 ## few days of time and material (the way back's own fixes cost EUR 0-3,000).
 const DEBT_FUNDED_MINIMUM := 3000
-## The most the directie advances past the floor for the story's experiments (advance_owed);
-## past it they fund only what any experiment at the floor gets (fundable), so recovery
+## The most the directie advances for the story's experiments (advance_owed); past it they
+## are funded only as any experiment in a bad period is (fundable), so recovery
 ## stays within reach (gate backlog 1, 2026-10-24: careless play owed EUR 233,000-250,000
 ## and spent 80-88 % of its days at the floor without it). ESTIMATE: half the floor, two or
 ## three of the larger experiments (EUR 8,000-12,000); about what a held fix's grants and
@@ -529,8 +529,9 @@ func submit_a3(problem_id: String, a3: Dictionary, check_days: int = CHECK_DAYS,
 		return "same_countermeasure"
 	# What the region cannot carry the directie advances: past the floor, or all of an exempt
 	# experiment a bad period would refuse (the region pays none of it, as if refused).
-	var advanced := cm.budget if not fundable(cm) else maxi(0, cm.budget - (profile.budget - DEBT_FLOOR))
-	if not fundable(cm) and not (always_funded and advance_owed + advanced <= ADVANCE_CEILING):
+	var carried := fundable(cm)
+	var advanced := maxi(0, cm.budget - (profile.budget - DEBT_FLOOR)) if carried else cm.budget
+	if not carried and not (always_funded and advance_owed + advanced <= ADVANCE_CEILING):
 		return "no_funds"
 
 	var p := problems[problem_id]

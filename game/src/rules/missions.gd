@@ -312,6 +312,7 @@ func update() -> void:
 			region.activate(m.goal_problem)
 		if _goal_met(m):
 			_complete(m)
+	_switch_on_forks()
 	_open_milestones()  # after the completions that unlock them
 	for m: MissionDef in defs.values():
 		if m.deadline_days < 0 or done_once.has(m.id) or failed_once.has(m.id) or deadline_kept.has(m.id) \
@@ -620,9 +621,31 @@ func _retire_orphans() -> void:
 	for m in active():
 		if _holds_problem(m):
 			held[m.goal_problem] = true
+	for m in _waiting_fork_branches():
+		held[m.goal_problem] = true
 	for id: String in region.state:
 		if region.state[id].is_open() and not held.has(id):
 			region.deactivate(id)
+
+
+## The fork is one main quest (gate backlog 3, 2026-10-24): once a branch is taken, the
+## branches still waiting for the player hurt too, so the intake does not heal while the
+## monteurs are helped, and the non-bottleneck branch's Check can show it brought no flow.
+## A branch once done is not waiting: a fix that faded comes back through its mission.
+func _waiting_fork_branches() -> Array[MissionDef]:
+	var taken := {}
+	for id: String in progress:
+		if not defs[id].fork_group.is_empty():
+			taken[defs[id].fork_group] = true
+	return available().filter(func(m: MissionDef) -> bool:
+		return taken.has(m.fork_group) and not done_once.has(m.id) and _holds_problem(m) and m.goal_type == "solve")
+
+
+## Switch on the problems of the fork branches still waiting (see _waiting_fork_branches).
+func _switch_on_forks() -> void:
+	for m in _waiting_fork_branches():
+		if region.state.has(m.goal_problem) and region.state[m.goal_problem].phase == P.DORMANT:
+			region.activate(m.goal_problem)
 
 
 ## A recurring mission (leader standard work) is offered again its days after it was last done.

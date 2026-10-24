@@ -149,6 +149,33 @@ func test_flags_and_the_fork_branch_done_first() -> void:
 	assert_eq(log.debrief_of("branch_n"), "debrief branch_n")
 
 
+## Gate backlog 3 (2026-10-24): the fork is one main quest, so once the player picks a
+## branch, the other branch's problem hurts too (the intake does not heal while the monteurs
+## are helped); otherwise the non-bottleneck branch's Check could never show that fixing it
+## brings no flow. It is held until its own branch is taken and solved.
+func test_taking_one_fork_branch_switches_the_others_problem_on() -> void:
+	var log := _log(RulesFixture.countermeasures(), [
+		_mission("branch_b", "main", {"type": "solve", "problem": "incomplete_application"},
+			{"fork": {"group": "g", "role": "bottleneck"}}),
+		_mission("branch_n", "main", {"type": "solve", "problem": "custom_design"},
+			{"fork": {"group": "g", "role": "non_bottleneck"}}),
+	])
+	var problem := func(id: String) -> ProblemState.Phase: return log.region.state[id].phase
+	log.update()
+	assert_eq(problem.call("incomplete_application"), ProblemState.Phase.DORMANT, "nothing until a branch is taken")
+	assert_eq(log.accept("branch_n"), "")
+	log.update()
+	assert_eq(problem.call("custom_design"), ProblemState.Phase.ACTIVE)
+	assert_eq(problem.call("incomplete_application"), ProblemState.Phase.ACTIVE, "the other branch's problem is on")
+	assert_eq(log.status("branch_b"), "available", "but its mission waits for the player")
+	_resolve(log, "custom_design", "standard_designs")
+	assert_eq(log.status("branch_n"), "completed")
+	assert_eq(problem.call("incomplete_application"), ProblemState.Phase.ACTIVE, "still on while its branch waits")
+	assert_eq(log.accept("branch_b"), "")
+	_resolve(log, "incomplete_application", "poka_yoke_form")
+	assert_eq(problem.call("incomplete_application"), ProblemState.Phase.RESOLVED)
+
+
 func test_a_reopened_mission_tells_its_reopen_text() -> void:
 	var log := _log(RulesFixture.countermeasures(), [
 		_mission("fix_again", "side", {"type": "solve", "problem": "revision_backlog"}, {"reopen": "Het is terug."})])
