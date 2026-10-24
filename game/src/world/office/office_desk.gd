@@ -5,10 +5,10 @@ extends Node3D
 ## name, your badge photo (the creator's portrait) in a small frame, the El Amrani letter
 ## once Ruud has handed it over (the opening's letter beat), her thank-you letter beside it
 ## once a kept promise sent one (a mission's `payoff` by letter: winter_el_amrani; design
-## §3.2), and your clipboard with the A3. Standing behind its chair (E, or a click on the ring) the camera drops to the desk
-## and the A3 opens, drawn as the sheet on that clipboard. The desk is in the floor's
-## model already (build_office.py's design bench), so its things are added here and the
-## floor needs no rebuild; they follow the profile ("Uiterlijk") and the opening as they change.
+## §3.2), and your clipboard with the A3. Standing behind its chair (E, or a click on the
+## ring) the camera drops to the desk and the A3 opens, drawn as the sheet on that
+## clipboard. The desk is in the floor's model already (build_office.py's design bench), so
+## its things are added here and the floor needs no rebuild; they follow the profile ("Uiterlijk") and the opening as they change.
 
 ## The interaction point's id (an Interactable kind of its own).
 const ID := "desk"
@@ -157,7 +157,7 @@ func letter_shown() -> bool:
 
 
 func thanks_shown() -> bool:
-	return _thanks != null and _thanks.visible
+	return _thanks != null
 
 
 ## The thank-you letter's text ("" when there is none).
