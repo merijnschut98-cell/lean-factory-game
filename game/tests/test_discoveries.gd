@@ -39,6 +39,27 @@ func test_a_night_at_the_outage_stream_is_a_discovery() -> void:
 	assert_eq(_found(s), [], "once")
 
 
+## Act II (mission audit 2026-10-24): the data at Revisie & GIS while the digging damage
+## is open (the cause upstream), and the congestion desk's data in the evening peak while
+## Ilse waits. Neither fires without its problem open.
+func test_act2_upstream_and_evening_peak() -> void:
+	var s := _session()
+	var minute := s.region.net.time % SimCalendar.MINUTES_PER_DAY
+	s.region.advance(SimCalendar.days(1) + 10 * 60 - minute)  # 10.00 the next day
+	s.use_tool("connections.revision", "data")
+	assert_eq(_found(s), [], "no damage in the street yet")
+	assert_true(s.region.activate("digging_damage"))
+	s.use_tool("connections.revision", "data")
+	assert_eq(_found(s), ["stroomopwaarts"])
+	assert_true(s.region.activate("unused_capacity"))
+	s.use_tool("congestion.capacity_queue", "data")
+	assert_eq(_found(s), [], "by day the net looks full")
+	s.region.advance(18 * 60 - s.region.net.time % SimCalendar.MINUTES_PER_DAY)  # 18.00, the same day
+	assert_true(s.region.activate("unused_capacity"), "no mission holds it, so the last action put it back to sleep")
+	s.use_tool("congestion.capacity_queue", "data")
+	assert_eq(_found(s), ["het_drukste_kwartier"])
+
+
 ## Unfound discoveries are silhouettes; their hint shows once their act is over.
 func test_silhouettes_get_their_hint_after_their_act() -> void:
 	var s := _session()

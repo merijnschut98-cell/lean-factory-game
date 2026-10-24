@@ -286,6 +286,9 @@ problems:
     tells:
       - {tell: storingsbord, text: "Op het storingsbord staan overdag storingen achter elkaar, steeds met 'kabel geraakt' en de naam van een aannemer."}
       - {tell: magazijn_rack, text: "Op de stelling met moffen zijn de meeste vakken leeg; op de toonbank ligt een bestelbon voor nog een doos."}
+    # "Zeven procent" (estimate): Wibon's 46,799 damages a year (2022) against several
+    # hundred thousand KLIC-meldingen a year is a few to seven in a hundred digs; the
+    # count of meldingen is Kadaster's, not on an approved domain, so not checked here.
     clues:
       - {tool: data, key: true, depth: 0, text: "Een derde van de storingen overdag is graafschade; zeven procent van de graafwerken raakt een kabel."}
       - {tool: shadow, key: false, depth: 0, text: "De monteurs herstellen graafschade snel en vakkundig."}
@@ -533,7 +536,8 @@ problems:
       - {target: congestion.capacity_queue, property: wait_time, value: 1.4}
       - {target: congestion.capacity_queue, property: applies, value: 0.1}
     tells:
-      - {tell: congestion_list, text: "Naast een paar bedrijfsnamen op de lijst staat in de kantlijn, in potlood: 'hal staat leeg'."}
+      # The empty hall is the listen-in clue's (depth 1); the tell only shows that someone wondered.
+      - {tell: congestion_list, text: "Naast een paar bedrijfsnamen op de lijst staat in de kantlijn een vraagteken in potlood."}
     clues:
       - {tool: data, key: true, depth: 0, text: "Op het drukste kwartier van het jaar gebruiken de grootzakelijke klanten samen 62% van het vermogen dat ze gecontracteerd hebben."}
       - {tool: conversation, key: false, depth: 0, at: congestion.congestion_study, text: "'Het net is vol. Tot de verzwaring klaar is, kunnen we niets doen.'"}

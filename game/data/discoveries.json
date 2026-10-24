@@ -335,6 +335,65 @@
   },
   {
    "act": 2,
+   "hint": "Een kabel die geraakt wordt, is ooit ergens getekend.",
+   "id": "stroomopwaarts",
+   "line": "De schade zit in de straat; waar begint ze?",
+   "name": "Stroomopwaarts",
+   "reward": {
+    "note": "Je zocht de oorzaak van een schade niet bij wie groef, maar bij wie de kaart bijhield. Zo los je iets van begin tot eind op.",
+    "object": "Een oude KLIC-kaart met een rode pijl"
+   },
+   "trigger": {
+    "place": "connections.revision",
+    "problem_active": "digging_damage",
+    "tool": "data",
+    "type": "tool_at"
+   }
+  },
+  {
+   "act": 2,
+   "hint": "Een net is niet de hele dag even vol.",
+   "id": "het_drukste_kwartier",
+   "line": "Of het net vol is, zie je op het drukste moment.",
+   "name": "Het drukste kwartier",
+   "reward": {
+    "note": "Je ging kijken op het uur dat het ertoe doet. Wat op papier vol is, is dat op de piek niet altijd.",
+    "object": "Een uitdraai van de avondpiek, met een potloodstreep"
+   },
+   "trigger": {
+    "hours": [
+     17,
+     20
+    ],
+    "place": "congestion.",
+    "problem_active": "unused_capacity",
+    "tool": "data",
+    "type": "tool_at"
+   }
+  },
+  {
+   "act": 2,
+   "hint": "Drie keer zei iemand dat het vol zat.",
+   "id": "het_net_was_niet_vol",
+   "line": "Eerst benutten wat er is, dan pas bijbouwen.",
+   "name": "Het net was niet vol",
+   "reward": {
+    "note": "Een netstudie die niet hoefde, een trafo die te laat werd besteld, capaciteit die niemand gebruikte. Drie keer was er meer ruimte dan het leek.",
+    "reputation": 2,
+    "title": "Ruimtezoeker"
+   },
+   "trigger": {
+    "missions": [
+     "fix_grid_study_queue",
+     "fix_transformer_wait",
+     "fix_unused_capacity"
+    ],
+    "score": 20,
+    "type": "missions_scored"
+   }
+  },
+  {
+   "act": 2,
    "hint": "Sommige mensen zeggen pas ja als ze eerst gehoord zijn.",
    "id": "twee_oren_een_mond",
    "line": "Wie eerst begrijpt, hoeft daarna minder te overtuigen.",

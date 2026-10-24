@@ -851,7 +851,7 @@
    "team_hours": {
     "work_prep": 10
    },
-   "tier": 3
+   "tier": 1
   },
   {
    "budget": 3000,
@@ -877,7 +877,7 @@
    "budget": 5000,
    "category": "flow",
    "decay_days": null,
-   "description": "Klanten die structureel veel minder gebruiken dan ze gecontracteerd hebben, krijgen een gesprek en een voorstel om capaciteit terug te geven, binnen de regels van de ACM en het contract. Wat vrijkomt, gaat naar de wachtrij.",
+   "description": "Klanten die twaalf maanden lang hooguit de helft gebruiken van wat ze gecontracteerd hebben, of 1 MW of meer laten liggen, krijgen een gesprek en een voorstel om capaciteit terug te geven, zoals de regels van de ACM het toestaan. Wat vrijkomt, gaat naar de wachtrij.",
    "effects": [],
    "id": "use_it_or_lose_it",
    "multipliers": {

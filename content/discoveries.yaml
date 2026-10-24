@@ -184,6 +184,39 @@ discoveries:
     act: 2
     trigger: {type: contain_then_fix, days: 2}
     reward: {object: "Een veiligheidshelm met een Voltana-sticker", note: "Indammen is geen oplossen, maar soms moet het eerst."}
+  # ── Act II (mission audit 2026-10-24): end to end, the peak, the full net ────
+  # While the damage in the street is still open, the player reads the data at Revisie &
+  # GIS, a floor up and a stream upstream: the cause of a defect lies where it began.
+  - id: stroomopwaarts
+    name: Stroomopwaarts
+    line: "De schade zit in de straat; waar begint ze?"
+    hint: "Een kabel die geraakt wordt, is ooit ergens getekend."
+    act: 2
+    trigger: {type: tool_at, place: connections.revision, tool: data, problem_active: digging_damage}
+    reward: {object: "Een oude KLIC-kaart met een rode pijl", note: "Je zocht de oorzaak van een schade niet bij wie groef, maar bij wie de kaart bijhield. Zo los je iets van begin tot eind op."}
+
+  # Whether a net is full shows at its busiest hour, not on paper: the player reads the
+  # congestion desk's data in the evening peak (estimate: on the distribution grid the
+  # daily peak falls between about 17.00 and 20.00) while Ilse still waits.
+  - id: het_drukste_kwartier
+    name: Het drukste kwartier
+    line: "Of het net vol is, zie je op het drukste moment."
+    hint: "Een net is niet de hele dag even vol."
+    act: 2
+    trigger: {type: tool_at, place: "congestion.", tool: data, hours: [17, 20], problem_active: unused_capacity}
+    reward: {object: "Een uitdraai van de avondpiek, met een potloodstreep", note: "Je ging kijken op het uur dat het ertoe doet. Wat op papier vol is, is dat op de piek niet altijd."}
+
+  # The chapter "Het net is vol" solved well three times: the work and the contracts
+  # held the room, not more people or more copper first (score 20 of 25, like
+  # capaciteit_gevonden).
+  - id: het_net_was_niet_vol
+    name: Het net was niet vol
+    line: "Eerst benutten wat er is, dan pas bijbouwen."
+    hint: "Drie keer zei iemand dat het vol zat."
+    act: 2
+    trigger: {type: missions_scored, missions: [fix_grid_study_queue, fix_transformer_wait, fix_unused_capacity], score: 20}
+    reward: {reputation: 2, title: Ruimtezoeker, note: "Een netstudie die niet hoefde, een trafo die te laat werd besteld, capaciteit die niemand gebruikte. Drie keer was er meer ruimte dan het leek."}
+
   # ── Talks (dialog spec §5.5, D29–D34) ──────────────────────────────────────
   - id: twee_oren_een_mond
     name: Twee oren, één mond

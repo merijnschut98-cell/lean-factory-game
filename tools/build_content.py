@@ -2613,6 +2613,37 @@ def name_dialog_items(docs: dict[str, Any]) -> None:
             item["text"] = item.pop("say")
 
 
+# {functie:<id>} in a mission's text: that person's title from company.yaml, filled in at
+# build time, so a briefing can never disagree with the name tags and Wie is wie.
+_TITLE_TOKEN = re.compile(r"\{functie:([a-z0-9_]+)\}")
+_TITLE_FIELDS = {"briefing", "debrief", "debrief_first", "debrief_variants", "reopen", "fail", "missed"}
+
+
+def fill_titles(docs: dict[str, Any]) -> None:
+    """Replace every {functie:<id>} in the missions' texts with the person's title in
+    company.yaml (company_people); an unknown person or a token in any other field
+    (a step, a name) is an error, and so is a token in a content set without company.yaml."""
+    titles = {pid: p["title"] for pid, p in company_people(docs["company"]).items()} if "company" in docs else {}
+
+    def fill(text: str, where: str) -> str:
+        def title(match: re.Match) -> str:
+            if match.group(1) not in titles:
+                raise ContentError(f"{where}: {{functie:…}} names unknown person {match.group(1)!r} (company.yaml)")
+            return titles[match.group(1)]
+        return _TITLE_TOKEN.sub(title, text)
+
+    for m in docs["missions"]["missions"]:
+        where = f"missions.yaml: mission '{m['id']}'"
+        for key, value in m.items():
+            if key in _TITLE_FIELDS and isinstance(value, dict):
+                m[key] = {k: fill(v, f"{where} {key}") for k, v in value.items()}
+            elif key in _TITLE_FIELDS:
+                m[key] = fill(value, f"{where} {key}")
+            elif "{functie:" in json.dumps(value, ensure_ascii=False):
+                raise ContentError(f"{where} {key}: {{functie:…}} goes only in a briefing, debrief, reopen, fail or "
+                                   f"missed text")
+
+
 def merge_dialog_clues(docs: dict[str, Any]) -> None:
     """Append every clue a concern unlocks to its owned problem's clues (tool
     conversation at the person's place, marked with the dialog: only the
@@ -3567,6 +3598,7 @@ def load_content(content_dir: Path | None = None) -> dict[str, Any]:
         raise ContentError(f"missing content files: {', '.join(m + '.yaml' for m in missing)}")
     for check in CROSS_CHECKS:
         check(docs)
+    fill_titles(docs)
     merge_dialog_clues(docs)
     name_dialog_items(docs)
     order_place_tools(docs)
