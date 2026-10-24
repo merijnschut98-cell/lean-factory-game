@@ -327,6 +327,7 @@ def rules_dirs(dirs):
     (content / "problems_tier1.yaml").write_text(PROBLEMS_YAML, encoding="utf-8")
     (content / "missions.yaml").write_text(MISSIONS_YAML, encoding="utf-8")
     (content / "scenes.yaml").unlink()  # the real scenes belong to the real milestones
+    (content / "company.yaml").unlink()  # the real company's numbers wait for the real clues
     return content, data
 
 
