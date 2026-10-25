@@ -842,7 +842,7 @@
    "act": 2,
    "briefing": "Projectontwikkelaar Hermans Bouw levert over vijf maanden 48 woningen op in De Boomgaard. Volgens onze planning hebben die dan nog geen stroom: de trafo voor het nieuwe station heeft zes maanden levertijd. 'Heel Europa wil trafo's,' zegt Rob Verhagen (inkoper). Dat klopt. Wat kunnen wíj dan nog doen?",
    "chapter": "Het net is vol",
-   "debrief": "De fabrikant is niet sneller geworden; wij hebben veranderd wanneer en hoe we bestellen. Bij de Check waren de oudste openstaande aansluitingen zonder je aanpak {kpi_before} dagen oud, met je aanpak {kpi_after}. De oudste wachtende verzwaring is jonger geworden, en De Boomgaard krijgt eerder stroom. Welke andere wachttijden lopen na elkaar terwijl ze naast elkaar zouden kunnen?",
+   "debrief": "De fabrikant is niet sneller geworden; wij hebben veranderd wanneer en hoe we bestellen. Bij de Check waren de oudste openstaande aansluitingen zonder je aanpak {kpi_before} dagen oud, met je aanpak {kpi_after}. De oudste wachtende verzwaring is jonger geworden, en De Boomgaard krijgt eerder stroom. Welke andere wachttijd leggen we bij een ander neer, terwijl hij bij ons begint?",
    "debrief_variants": {
     "poor_fix": "De Boomgaard krijgt eerder stroom: er staan nu trafo's op voorraad. Bij de Check waren de oudste openstaande aansluitingen zonder je aanpak {kpi_before} dagen oud, met je aanpak {kpi_after}. Maar we bestellen nog steeds pas als het ontwerp is goedgekeurd. De voorraad vangt dat op, maar die kost geld: opslag, verzekering en het geld dat erin vastzit. Wat gebeurt er als drie projecten tegelijk een trafo uit die voorraad willen?"
    },
@@ -1175,7 +1175,7 @@
   {
    "act": 1,
    "briefing": "Het dossier van de familie Bos is al bijna twee weken klaar bij Werkvoorbereiding. Het ligt in een map, bij de dossiers van de andere elf woningen van De Appelgaard. De gemeente haalt haar termijn bijna altijd. Waar wacht het dossier dan op?",
-   "debrief": "Een dossier gaat nu naar de gemeente zodra het klaar is, niet meer samen met de rest van de straat. Er gaan niet méér aansluitingen per week door, want de capaciteit is gelijk gebleven. Maar elke klant is eerder klaar, en de aanvraag van de familie Bos ging de deur uit op de dag dat haar dossier af was. Een knelpunt bepaalt hoeveel er doorgaat; elke wachttijd onderweg bepaalt hoe lang het duurt.",
+   "debrief": "Een vergunningsaanvraag wacht nu niet meer op de rest van de straat: die gaat naar de gemeente zodra het dossier zover is. Er gaan niet méér aansluitingen per week door, want de capaciteit is gelijk gebleven. Maar elke klant is eerder klaar, en de aanvraag van de familie Bos lag niet meer weken op een stapel te wachten. Een knelpunt bepaalt hoeveel er doorgaat; elke wachttijd onderweg bepaalt hoe lang het duurt.",
    "goal": {
     "problem": "permits_in_batches",
     "type": "solve"
@@ -1308,7 +1308,7 @@
   {
    "act": 1,
    "briefing": "Planner Linda Jansen is de halve week bezig met omplannen. 'Ik werk harder dan ooit,' zegt ze, 'en het wordt alleen maar erger.' Storingen gaan altijd voor. Waar komen al die wijzigingen vandaan?",
-   "debrief": "Er staan nu elke dag mensen klaar voor storingen, en de rest van de planning blijft staan. Een planning die voor honderd procent vol zit, breekt bij het eerste onverwachte; hoe voller, hoe harder.",
+   "debrief": "Er is nu elke dag ruimte voor storingen, en de rest van de planning blijft staan. Een planning die voor honderd procent vol zit, breekt bij het eerste onverwachte; hoe voller, hoe harder.",
    "goal": {
     "problem": "planning_reshuffle",
     "type": "solve"
@@ -1462,7 +1462,7 @@
    "act": 1,
    "arc": "way_back",
    "briefing": "De meterwisselaars schrijven samen zo'n achttien overuren per week, ook als het rustig is. Financiën vraagt om een overwerkstop. Dat kan morgen, maar dan schuift het werk door. Kijk eerst waar die uren naartoe gaan.",
-   "debrief": "De monteurs werken nu per wijk. Minder kilometers, minder overuren, en de klant kiest een dag waarop de monteur toch in de buurt is. Een overwerkstop had de uren weggehaald, niet de kilometers. Wat zie je nog meer in de planning dat niemand een keuze noemt?",
+   "debrief": "De monteurs werken nu per wijk. Minder kilometers, minder overuren, en een monteur rijdt niet meer van de ene kant van de regio naar de andere. Een overwerkstop had de uren weggehaald, niet de kilometers. Wat zie je nog meer in de planning dat niemand een keuze noemt?",
    "debrief_variants": {
     "poor_fix": "De overuren zijn gezakt, want het mag niet meer. De kilometers zijn gebleven, en de klanten wachten langer op hun afspraak. Waar zitten die uren nu?"
    },

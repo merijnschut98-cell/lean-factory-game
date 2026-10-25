@@ -117,3 +117,46 @@ def test_every_poor_fix_debrief_was_read_for_every_poor_fix_that_shows_it():
         fits = PROBLEMS[m["goal"]["problem"]]["countermeasures"]
         poor = {c for c, f in fits.items() if f <= max(fits.values()) - POOR_FIT_GAP + 1e-9}
         assert poor == POOR_FIX_TEXT_READ_FOR[mission_id], f"{mission_id}: reread its poor_fix debrief for {poor}"
+
+
+# The plain debrief (and a fork branch's `debrief_first`) is what every other fix that passes
+# gets: a good fit, or a poor one where the mission has no `poor_fix` debrief, with the cause
+# named right or wrong. It describes what changed in the work and the numbers, so it must
+# read true for each of them, not only for the best fix (Q-1, 2026-10-25). A mission can be
+# played after its act (a careless player, a fix that faded), so this counts every fix that
+# passes at full maturity. Each text was read against these countermeasures; a new one fails
+# here until someone rereads the text for it and adds it.
+PLAIN_TEXT_READ_FOR = {
+    "fix_custom_design": {"standard_designs"},
+    "fix_incomplete_application": {"poka_yoke_application"},
+    "fix_installer_not_ready": {"readiness_check", "installer_photo_upload"},
+    "fix_status_callers": {"milestone_mail_by_hand", "proactive_status_updates"},
+    "fix_done_but_not_closed": {"close_out_at_completion", "automatic_ean_registration"},
+    "fix_digging_damage": {"standard_test_trenches", "contractor_briefing", "revision_at_source"},
+    "fix_revision_backlog": {"revision_at_source"},
+    "fix_grid_study_queue": {"triage_fast_lane"},
+    "fix_transformer_wait": {"early_transformer_order", "framework_contracts"},
+    "fix_unused_capacity": {"use_it_or_lose_it"},
+    "fix_silo_kpis": {"obeya_end_to_end"},
+    "fix_wrong_joint": {"standard_van_stock", "two_bin_van_kanban"},
+    "fix_not_at_home": {"appointment_reminder", "two_hour_window"},
+    "fix_silent_meter": {"on_site_comm_test"},
+    "fix_permits_in_batches": {"request_permits_daily", "parallel_permits"},
+    "fix_inverters_tripping": {"tap_review_per_neighbourhood"},
+    "save_henks_knowledge": {"twi_job_instruction", "skills_matrix_buddy"},
+    "fix_planning_reshuffle": {"daytime_outage_crew", "planning_with_fault_windows", "heijunka_release"},
+    "fix_double_visits": {"cupboard_photo_at_booking", "register_cupboard_check"},
+    "fix_overtime_planning": {"route_by_area", "area_teams"},
+}
+
+
+def test_every_plain_debrief_was_read_for_every_fix_that_shows_it():
+    with_text = {m["id"]: m for m in SOLVES if m["kind"] != "training"}
+    assert set(with_text) == set(PLAIN_TEXT_READ_FOR), "a solve mission added or removed: read its debrief and list it"
+    for mission_id, m in with_text.items():
+        problem_id = m["goal"]["problem"]
+        has_poor_text = "poor_fix" in m.get("debrief_variants", {})
+        # at a maturity of its own tier, a countermeasure works at full strength
+        shown = {c for c in PROBLEMS[problem_id]["countermeasures"]
+                 if _eff(problem_id, c, CMS[c]["tier"]) >= CHECK_PASS and not (has_poor_text and _poor(problem_id, c))}
+        assert shown == PLAIN_TEXT_READ_FOR[mission_id], f"{mission_id}: reread its plain debrief for {shown}"
