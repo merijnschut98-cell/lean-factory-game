@@ -57,20 +57,20 @@ static func build(to_geometry: Transform3D, at: Transform3D, columns: Array) -> 
 	root.name = NODE
 	root.transform = to_geometry * at
 	var frame := _material(Color(0.72, 0.74, 0.77), 0.6, 0.35)
-	_box(root, Vector3(SIZE.x + 0.06, SIZE.y + 0.06, 0.03), Vector3(0, MIDDLE_HEIGHT, -0.005), frame)
-	_box(root, Vector3(SIZE.x, SIZE.y, 0.01), Vector3(0, MIDDLE_HEIGHT, 0.012), _material(KpiBoardView.ENAMEL, 0.0, 0.25))
+	OfficeMesh.box(root, Vector3(SIZE.x + 0.06, SIZE.y + 0.06, 0.03), Vector3(0, MIDDLE_HEIGHT, -0.005), frame)
+	OfficeMesh.box(root, Vector3(SIZE.x, SIZE.y, 0.01), Vector3(0, MIDDLE_HEIGHT, 0.012), _material(KpiBoardView.ENAMEL, 0.0, 0.25))
 	_text(root, KpiBoardView.TITLE, 72, KpiBoardView.MARKER_BLUE, Vector3(-SIZE.x / 2 + 0.55, MIDDLE_HEIGHT + 0.49, 0.019), 1200.0)
 	var width := SIZE.x / maxf(1.0, columns.size())
 	for i in columns.size():
 		var x := -SIZE.x / 2 + width * (i + 0.5)
-		_box(root, Vector3(width - 0.08, 0.07, 0.004), Vector3(x, MIDDLE_HEIGHT + 0.36, 0.018),
+		OfficeMesh.box(root, Vector3(width - 0.08, 0.07, 0.004), Vector3(x, MIDDLE_HEIGHT + 0.36, 0.018),
 			_material(Palette.VOLTANA_BLUE, 0.0, 0.6))
 		_text(root, str(columns[i][0]), 40, Color.WHITE, Vector3(x, MIDDLE_HEIGHT + 0.36, 0.021))
 		var cards: Array = columns[i][1]
 		for j in cards.size():
 			var y := MIDDLE_HEIGHT + 0.2 - j * (CARD.y + 0.06)
 			var colour := KpiBoardView.CARD_COLOURS[i % KpiBoardView.CARD_COLOURS.size()]
-			_box(root, Vector3(CARD.x, CARD.y, 0.003), Vector3(x, y, 0.019), _material(colour, 0.0, 0.8))
+			OfficeMesh.box(root, Vector3(CARD.x, CARD.y, 0.003), Vector3(x, y, 0.019), _material(colour, 0.0, 0.8))
 			_text(root, str(cards[j]), 34, Palette.INK, Vector3(x, y - 0.02, 0.022))
 			var magnet := MeshInstance3D.new()
 			var disc := CylinderMesh.new()
@@ -123,13 +123,3 @@ static func _material(colour: Color, metallic: float, roughness: float) -> Stand
 	m.metallic = metallic
 	m.roughness = roughness
 	return m
-
-
-static func _box(parent: Node3D, size: Vector3, at: Vector3, mat: Material) -> void:
-	var mi := MeshInstance3D.new()
-	var box := BoxMesh.new()
-	box.size = size
-	mi.mesh = box
-	mi.material_override = mat
-	mi.position = at
-	parent.add_child(mi)

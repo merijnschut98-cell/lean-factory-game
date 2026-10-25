@@ -134,7 +134,7 @@ func _dossier() -> void:
 ## "Onderweg: 43 dagen · 3,5 uur werk eraan · ligt nu bij Werkvoorbereiding",
 ## or once delivered, after how long.
 static func dossier_line(s: GameSession, view: Dictionary) -> String:
-	var hours := String.num(view["touch_hours"], 1).replace(".", ",")
+	var hours := UiText.decimal(view["touch_hours"], 1)
 	if view["delivered_days"] >= 0.0:
 		return TranslationServer.translate(DOSSIER_DONE) % [roundi(view["delivered_days"]), hours]
 	var step := s.region.net.step_at(FollowedOrder.STREAM + "." + str(view["step"]))

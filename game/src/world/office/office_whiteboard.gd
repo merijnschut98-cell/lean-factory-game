@@ -43,13 +43,13 @@ static func build(to_geometry: Transform3D) -> Node3D:
 	var white := StandardMaterial3D.new()
 	white.albedo_color = Color(0.97, 0.97, 0.96)
 	white.roughness = 0.2
-	_box(root, Vector3(SIZE.x + 0.06, SIZE.y + 0.06, 0.03), Vector3(0, MIDDLE_HEIGHT, -0.005), frame)
-	_box(root, Vector3(SIZE.x, SIZE.y, 0.01), Vector3(0, MIDDLE_HEIGHT, 0.012), white)
+	OfficeMesh.box(root, Vector3(SIZE.x + 0.06, SIZE.y + 0.06, 0.03), Vector3(0, MIDDLE_HEIGHT, -0.005), frame)
+	OfficeMesh.box(root, Vector3(SIZE.x, SIZE.y, 0.01), Vector3(0, MIDDLE_HEIGHT, 0.012), white)
 	for side: float in [-1.0, 1.0]:   # the stand: two legs on feet with castors
-		_box(root, Vector3(0.035, MIDDLE_HEIGHT + SIZE.y / 2.0, 0.035),
+		OfficeMesh.box(root, Vector3(0.035, MIDDLE_HEIGHT + SIZE.y / 2.0, 0.035),
 			Vector3(side * (SIZE.x / 2.0 + 0.05), (MIDDLE_HEIGHT + SIZE.y / 2.0) / 2.0, 0), frame)
-		_box(root, Vector3(0.05, 0.04, 0.6), Vector3(side * (SIZE.x / 2.0 + 0.05), 0.06, 0), frame)
-	_box(root, Vector3(SIZE.x * 0.5, 0.025, 0.07), Vector3(0, MIDDLE_HEIGHT - SIZE.y / 2.0 - 0.02, 0.04), frame)   # the pen tray
+		OfficeMesh.box(root, Vector3(0.05, 0.04, 0.6), Vector3(side * (SIZE.x / 2.0 + 0.05), 0.06, 0), frame)
+	OfficeMesh.box(root, Vector3(SIZE.x * 0.5, 0.025, 0.07), Vector3(0, MIDDLE_HEIGHT - SIZE.y / 2.0 - 0.02, 0.04), frame)   # the pen tray
 	var title := Label3D.new()
 	title.name = "Title"
 	title.text = "spanning · stroom · weerstand"
@@ -92,13 +92,3 @@ static func stand() -> Transform3D:
 ## The point the camera looks at: the board's middle.
 static func look_point() -> Vector3:
 	return AT + Vector3.UP * MIDDLE_HEIGHT
-
-
-static func _box(parent: Node3D, size: Vector3, at: Vector3, mat: Material) -> void:
-	var mi := MeshInstance3D.new()
-	var box := BoxMesh.new()
-	box.size = size
-	mi.mesh = box
-	mi.material_override = mat
-	mi.position = at
-	parent.add_child(mi)

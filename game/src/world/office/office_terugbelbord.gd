@@ -45,9 +45,9 @@ static func build(to_geometry: Transform3D) -> Node3D:
 	root.transform = to_geometry * Transform3D(Basis.looking_at(-FACING, Vector3.UP), AT)
 	var frame := _mat(FRAME, 0.35)
 	frame.metallic = 0.6
-	_box(root, Vector3(SIZE.x + 0.05, SIZE.y + 0.05, 0.025), Vector3(0, MIDDLE_HEIGHT, -0.005), frame)
-	_box(root, Vector3(SIZE.x, SIZE.y, 0.012), Vector3(0, MIDDLE_HEIGHT, 0.008), _mat(CORK, 0.9))
-	_box(root, Vector3(SIZE.x * 0.45, 0.07, 0.004), Vector3(0, MIDDLE_HEIGHT + SIZE.y / 2.0 - 0.06, 0.016),
+	OfficeMesh.box(root, Vector3(SIZE.x + 0.05, SIZE.y + 0.05, 0.025), Vector3(0, MIDDLE_HEIGHT, -0.005), frame)
+	OfficeMesh.box(root, Vector3(SIZE.x, SIZE.y, 0.012), Vector3(0, MIDDLE_HEIGHT, 0.008), _mat(CORK, 0.9))
+	OfficeMesh.box(root, Vector3(SIZE.x * 0.45, 0.07, 0.004), Vector3(0, MIDDLE_HEIGHT + SIZE.y / 2.0 - 0.06, 0.016),
 		_mat(Color.WHITE, 0.6))
 	var title := Label3D.new()
 	title.name = "Title"
@@ -59,9 +59,9 @@ static func build(to_geometry: Transform3D) -> Node3D:
 	title.position = Vector3(0, MIDDLE_HEIGHT + SIZE.y / 2.0 - 0.06, 0.019)
 	root.add_child(title)
 	for side: float in [-1.0, 1.0]:   # the stand: two legs on feet
-		_box(root, Vector3(0.035, MIDDLE_HEIGHT + SIZE.y / 2.0, 0.035),
+		OfficeMesh.box(root, Vector3(0.035, MIDDLE_HEIGHT + SIZE.y / 2.0, 0.035),
 			Vector3(side * (SIZE.x / 2.0 + 0.04), (MIDDLE_HEIGHT + SIZE.y / 2.0) / 2.0, 0), frame)
-		_box(root, Vector3(0.05, 0.04, 0.55), Vector3(side * (SIZE.x / 2.0 + 0.04), 0.05, 0), frame)
+		OfficeMesh.box(root, Vector3(0.05, 0.04, 0.55), Vector3(side * (SIZE.x / 2.0 + 0.04), 0.05, 0), frame)
 	var paper := _mat(PAPER, 0.8)
 	var ink := _mat(INK, 0.9)
 	for variant: String in NOTES:
@@ -104,9 +104,9 @@ static func _slot(k: int, n: int) -> Vector3:
 
 ## A yellow note at `at` (the board's space) with two lines of ink on it.
 static func _note(parent: Node3D, at: Vector3, paper: Material, ink: Material) -> void:
-	_box(parent, Vector3(NOTE, NOTE, 0.002), at, paper)
+	OfficeMesh.box(parent, Vector3(NOTE, NOTE, 0.002), at, paper)
 	for line in 2:
-		_box(parent, Vector3(NOTE * (0.7 - line * 0.25), 0.006, 0.001),
+		OfficeMesh.box(parent, Vector3(NOTE * (0.7 - line * 0.25), 0.006, 0.001),
 			at + Vector3(-NOTE * line * 0.12, 0.015 - line * 0.02, 0.0015), ink)
 
 
@@ -115,13 +115,3 @@ static func _mat(color: Color, roughness: float) -> StandardMaterial3D:
 	m.albedo_color = color
 	m.roughness = roughness
 	return m
-
-
-static func _box(parent: Node3D, size: Vector3, at: Vector3, mat: Material) -> void:
-	var mi := MeshInstance3D.new()
-	var box := BoxMesh.new()
-	box.size = size
-	mi.mesh = box
-	mi.material_override = mat
-	mi.position = at
-	parent.add_child(mi)

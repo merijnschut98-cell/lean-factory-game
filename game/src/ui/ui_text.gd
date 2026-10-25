@@ -269,7 +269,7 @@ static func duration(minutes: int) -> String:
 	if minutes < 60:
 		return "%d min" % minutes
 	var hours := minutes / 60.0
-	return ("%d uur" % int(hours)) if is_equal_approx(hours, roundf(hours)) else ("%s uur" % _decimal(hours, 1))
+	return ("%d uur" % int(hours)) if is_equal_approx(hours, roundf(hours)) else ("%s uur" % decimal(hours, 1))
 
 
 ## "€ 50.000": whole euros with Dutch thousands.
@@ -286,7 +286,7 @@ static func money(euros: int) -> String:
 static func kpi_value(id: String, value: float) -> String:
 	match id:
 		"throughput", "capacity":
-			return "%s /week" % _decimal(value, 1)
+			return "%s /week" % decimal(value, 1)
 		"first_time_right", "on_time":
 			return "%d%%" % roundi(value * 100.0)
 	return "%d dagen" % roundi(value)
@@ -322,7 +322,7 @@ static func period(days: int) -> String:
 
 ## A counted queue (Region.queue_at): "8 dossiers (0,4 dagen werk)".
 static func queue(q: Dictionary) -> String:
-	return "%d %s (%s dagen werk)" % [q["count"], "dossier" if q["count"] == 1 else "dossiers", _decimal(q["days"], 1)]
+	return "%d %s (%s dagen werk)" % [q["count"], "dossier" if q["count"] == 1 else "dossiers", decimal(q["days"], 1)]
 
 
 ## The bottleneck lesson from the queues the player counted ({place:
@@ -482,5 +482,6 @@ static func drift_line(drift: Dictionary) -> String:
 		roundi(drift["stagnant_days"]), roundi(drift["level"] * 100.0)]
 
 
-static func _decimal(value: float, places: int) -> String:
+## A number with a decimal comma: "3,5".
+static func decimal(value: float, places: int) -> String:
 	return String.num(value, places).replace(".", ",")
