@@ -21,7 +21,7 @@ game/                      Godot project (res://)
     rules/                 pure logic: problems, clues, conversations, A3, PDCA score, progression, story
     content/               JSON helpers and small content readers (most typed loading lives in rules/catalog.gd)
     save/                  save files: versioned, validated, written to user://; slots, settings
-    game/                  GameSession (owns the Region, missions, people; time and actions), SessionLayer, the opening, the player profile (no autoloads)
+    game/                  GameSession (owns the Region, missions, people; time and actions), SessionTalks (in passing, talks), SessionLayer, the opening, the player profile (no autoloads)
     world/office/          3D scenes and scripts: the office building and its floors, people, desks and boards, the yard, the van ride
     audio/                 the soundscape
     ui/                    Control scripts: title menu, HUD, phone, TalkView, A3, Check, mission and KPI boards, codex, creator, explainers

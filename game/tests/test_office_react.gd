@@ -207,7 +207,7 @@ func test_a_kept_agreement_and_a_standardised_fix_come_up_too() -> void:
 		"outcome": "commitment", "trace": [], "moves": []}]
 	session.people.memory["anouk"] = {"flags": ["committed"], "cooldown_until": 0}
 	assert_eq(session.greeting_fact("anouk"), "committed")
-	session.people.talk_log["anouk"][0]["at"] = now - SimCalendar.days(GameSession.GREETING_MEMORY_DAYS + 1)
+	session.people.talk_log["anouk"][0]["at"] = now - SimCalendar.days(SessionTalks.GREETING_MEMORY_DAYS + 1)
 	assert_eq(session.greeting_fact("anouk"), "", "a talk long ago is not news")
 	office.free()
 

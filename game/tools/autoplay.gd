@@ -772,7 +772,7 @@ class Persona extends RefCounted:
 		for p: PersonDef in s.people.persons.values():
 			if s.people.has_left(p.id) or s.people.cooling_down(p.id, s.region.net.time):
 				continue
-			var d := s.people.dialog_for(p.id, s.call("_world", p))
+			var d := s.people.dialog_for(p.id, SessionTalks.world(s, p))
 			if d == null or _talk_day.get(d.id, -1) == today \
 					or int(_talk_tries.get(d.id, 0)) >= (CHECKIN_TRIES if d.kind == "checkin" else TALK_TRIES):
 				continue
@@ -2100,7 +2100,7 @@ class PlayReport extends RefCounted:
 			"`mission_status(id)` / `mission_progress(id)`: the board needs status, deadline left (opened_at + deadline_days) and observe progress without reaching into session.missions.",
 			"`stage_of(mission_id)`: the coach's stage, for a UI hint and for tests.",
 			"`problem(id)` / `key_clues_found(id)`: the problem's definition and found key clues are read through session.region.",
-			"`dialog_for(person_id)`: which talk a person has now (the talker reads People.dialog_for with GameSession._world); `people_at(place)` gives only has_dialog.",
+			"`dialog_for(person_id)`: which talk a person has now (the talker reads People.dialog_for with SessionTalks.world); `people_at(place)` gives only has_dialog.",
 			"`goal_met(mission_id)`: whether a mission waits only for its closing talk (the playtester swaps Missions.talked to ask Missions._goal_met).",
 			"`act()` returning why standardising was refused (budget below Region.STANDARDISE_BUDGET is dropped silently; `standardise()` afterwards does say no_budget).",
 		]:

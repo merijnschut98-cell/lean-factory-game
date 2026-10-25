@@ -710,7 +710,7 @@ func test_the_promised_date_is_checked_by_the_simulation() -> void:
 	# It reaches her: remembered at the next call, which she opens from her notebook.
 	assert_eq(s.people.judged, {call: false})
 	assert_true("promise_broken" in s.people.memory["el_amrani"]["flags"])
-	var d := s.people.start(s.people.dialogs[call], s.call("_world", s.people.persons["el_amrani"]))
+	var d := s.people.start(s.people.dialogs[call], SessionTalks.world(s, s.people.persons["el_amrani"]))
 	assert_true(s.people.opening(s.people.dialogs[call], d.version).contains("Ik heb mijn schrift voor me"))
 
 

@@ -207,7 +207,7 @@ func test_henk_and_wim_have_expert_talks_with_four_or_five_topics() -> void:
 func test_henk_talks_shop_from_day_one_but_tells_clues_only_for_a_mission_s_problem() -> void:
 	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
 	var henk := func() -> ExpertTalk:
-		return s.people.start_expert(s.people.dialogs["henk_expert"], s.call("_world", s.people.persons["henk"]))
+		return s.people.start_expert(s.people.dialogs["henk_expert"], SessionTalks.world(s, s.people.persons["henk"]))
 	assert_eq(_asks(henk.call()), ["trench"], "a new game: no clue topic, only shop talk")
 	s.people.heard_facts["heard:henk_teach"] = true
 	assert_eq(_asks(henk.call()), ["trench", "ahmed"], "Ahmed's topic opens once Henk said what he fears")
@@ -235,7 +235,7 @@ func test_new_game_henk_puts_no_clue_in_the_journal() -> void:
 
 func test_wim_explains_only_after_he_felt_heard() -> void:
 	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
-	var world: Dictionary = s.call("_world", s.people.persons["wim"])
+	var world: Dictionary = SessionTalks.world(s, s.people.persons["wim"])
 	assert_eq(s.people.dialog_for("wim", world), null, "the persuasion is not on, and he was not heard yet")
 	s.people.heard_facts["heard:wim_spreadsheet"] = true
 	assert_eq(s.people.dialog_for("wim", world).id, "wim_expert")

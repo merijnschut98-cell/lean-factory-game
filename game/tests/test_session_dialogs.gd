@@ -269,7 +269,7 @@ func test_henk_s_last_week_then_ahmed_s_grief() -> void:
 		s.missions.opened_at["save_henks_knowledge"] = s.region.net.time - SimCalendar.days(56 + days_ago)
 		s.pass_time(1)
 	farewell.call(-3)
-	assert_eq(s.people.dialog_for("henk", s._world(s.people.persons["henk"])).id, "henk_last_week", "three days left")
+	assert_eq(s.people.dialog_for("henk", SessionTalks.world(s, s.people.persons["henk"])).id, "henk_last_week", "three days left")
 	farewell.call(0)
 	assert_true(s.people.has_left("henk"), "retired on his day")
 	assert_true(s.checkin_prompts().all(func(p: Dictionary) -> bool: return p["person"] != "henk"))

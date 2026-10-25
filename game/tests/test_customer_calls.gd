@@ -73,9 +73,9 @@ func test_her_call_rings_before_the_frost_without_the_status_callers() -> void:
 ## the dialog tests' business; this is about what the agreement leaves behind).
 func _agree(s: GameSession, proposal: String) -> Dictionary:
 	assert_eq(s.start_dialog("el_amrani")["dialog"], "el_amrani_fourth_call")
-	s._talk.openness = 60
-	s._talk.revealed = {"interest": true, "concern": true}
-	s._talk.table = proposal
+	s.talks.talk.openness = 60
+	s.talks.talk.revealed = {"interest": true, "concern": true}
+	s.talks.talk.table = proposal
 	return s.choose_move("ask_commitment")
 
 

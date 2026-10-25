@@ -38,38 +38,16 @@ const TRAINING_FIRST := "training_mon"
 const TRAINING_PROBLEM := "training_tray"
 ## A fade forecast looks at most a quarter ahead.
 const MAX_FORECAST_DAYS := 91
-## A greeting remembers a talk this many days back (Friday's talk still on Monday).
-const GREETING_MEMORY_DAYS := 3
-## How full a team's work feels (load_of), from its pool's share of present hours spent
-## busy over the last LOAD_DAYS (SimPool.load_since) and its queue in working days
-## (Network.queue_days). ESTIMATES for the quick line's tone, read off a fresh game (the
-## teams run 0.25-0.98 busy): from 85 % busy, or three days of queue, it feels full; under
-## 40 % busy with half a day of queue it feels quiet.
-const LOAD_DAYS := 5
-const BUSY_SHARE := 0.85
-const CALM_SHARE := 0.4
-const BUSY_QUEUE_DAYS := 3.0
-const CALM_QUEUE_DAYS := 0.5
-## Under this morale (0-100) a person's quick line is a tired one (People's own scale: the
-## leave clock starts at 20, a friendly week is 55 and up). An ESTIMATE.
-const TIRED_MORALE := 40
-## The hour bands of a quick line (minutes since midnight): before half eleven is morning,
-## from half five it is late.
-const MORNING_UNTIL := 11 * 60 + 30
-const LATE_FROM := 17 * 60 + 30
 ## A milestone's scene takes half an hour of the day (ESTIMATE: a sit-down with two managers).
 const SCENE_MINUTES := 30
-## Promise kinds that name a date (content's PROMISE_KINDS); the others are an action.
-const DATE_PROMISES: Array[String] = ["delivery_date"]
 
 var catalog: Catalog
 var region: Region
 var missions: Missions
-## The cast and what they remember (dialogs); the talk in progress, if any.
+## The cast and what they remember (dialogs).
 var people: People
-var _talk: Dialog = null
-## An expert talk in progress instead (topic by topic, ExpertTalk), if any.
-var _expert: ExpertTalk = null
+## What people say in passing and the talk in progress (SessionTalks).
+var talks := SessionTalks.new()
 ## People's events ({type: left, person}) not yet drained.
 var _people_events: Array[Dictionary] = []
 ## Hidden rewards for deep thinking; it hears what the player does.
@@ -85,12 +63,6 @@ var gemba: PlaceActions
 var player := PlayerProfile.new()
 ## The first thing wrong with the content; "" when the game is usable.
 var error := ""
-## What people said in passing today (Phase 2 §1.4): person id → the day they greeted
-## you; "a|b" → the day that pair chatted (saved: passing_to_dict); how many quick lines
-## were said (variety).
-var _greeted: Dictionary[String, int] = {}
-var _chatted: Dictionary[String, int] = {}
-var _quick_said := 0
 
 
 ## A new game on the real content. `seed_value` fixes the simulation's luck.
@@ -913,7 +885,7 @@ func people_at(place: String) -> Array[Dictionary]:
 	for p: PersonDef in people.persons.values():
 		if p.place != place or people.has_left(p.id):
 			continue
-		var d := people.dialog_for(p.id, _world(p))
+		var d := people.dialog_for(p.id, SessionTalks.world(self, p))
 		var entry := {"id": p.id, "name": p.name, "role": p.role, "has_dialog": d != null,
 			"checkin": d != null and d.kind == "checkin", "cooling_down": people.cooling_down(p.id, region.net.time)}
 		entry.merge(energy_of(p.id))
@@ -931,305 +903,83 @@ func energy_of(person_id: String) -> Dictionary:
 	return {"energy": people.morale[person_id] / 100.0, "needs_talk": people.needs_talk(person_id)}
 
 
-# ── In passing (Phase 2 §1.4, §2.4): greetings, quick lines, coffee chatter ──
+# ── In passing and talks: forwards to SessionTalks (see there) ──────────────
 
-## The morning hello of `person_id` by your name, once a day: their line after what
-## yesterday left (greeting_fact), else an ordinary morning. "" when they greeted you
-## today already or have no greeting.
 func greet(person_id: String) -> String:
-	var today := SimCalendar.day_of(region.net.time)
-	if _greeted.get(person_id, -1) == today:
-		return ""
-	var line := catalog.reactions.greeting(person_id, greeting_fact(person_id), hash(person_id) + today)
-	if not line.is_empty():
-		_greeted[person_id] = today
-	return fill_tokens(line)
+	return talks.greet(self, person_id)
 
 
-## What a person remembers this morning (one of Reactions.FACTS, or ""): how the last talk
-## went when it was on an earlier day, at most GREETING_MEMORY_DAYS ago (a ruined or
-## pressured talk first, then an agreement, then being heard), else a fix at their place
-## that was standardised that recently.
 func greeting_fact(person_id: String) -> String:
-	var now := region.net.time
-	var log: Array = people.talk_log.get(person_id, [])
-	var at := int(log[-1].get("at", -1)) if not log.is_empty() else -1
-	var ago := SimCalendar.day_of(now) - SimCalendar.day_of(at)
-	if at >= 0 and ago >= 1 and ago <= GREETING_MEMORY_DAYS:
-		var flags: Array = people.memory.get(person_id, {}).get("flags", [])
-		for flag: String in ["ruined", "pressured"]:
-			if flag in flags:
-				return flag
-		if log[-1].get("outcome") == "commitment":
-			return "committed"
-		if "heard" in flags:
-			return "heard"
-	var p: PersonDef = people.persons.get(person_id)
-	for problem: ProblemDef in region.problem_list() if p != null else []:
-		var st: ProblemState = region.state[problem.id]
-		if problem.step == p.place and st.standardised and st.phase == ProblemState.Phase.RESOLVED \
-				and now - st.check_at <= SimCalendar.days(GREETING_MEMORY_DAYS):
-			return "standardised"
-	return ""
+	return SessionTalks.greeting_fact(self, person_id)
 
 
-## One line about today when there is nothing to discuss (E on a person; no panel): tired
-## when their morale is low, else busy or calm by their team's queue, else the hour.
 func quick_line(person_id: String) -> String:
-	_quick_said += 1
-	var line := catalog.reactions.quick_line(person_id, quick_mood(person_id), hash(person_id) + _quick_said)
-	return fill_tokens(line)
+	return talks.quick_line(self, person_id)
 
 
-## The mood of a quick line now (one of Reactions.MOODS).
 func quick_mood(person_id: String) -> String:
-	if int(people.morale.get(person_id, 100)) < TIRED_MORALE:
-		return "tired"
-	var load := load_of(person_id)
-	if not load.is_empty():
-		return load
-	var minute := minute_of_day()
-	return "morning" if minute < MORNING_UNTIL else ("late" if minute >= LATE_FROM else "afternoon")
+	return SessionTalks.quick_mood(self, person_id)
 
 
-## How full their team's work is: busy, calm, or "" (in between, or no team or queue known).
-func load_of(person_id: String) -> String:
-	var p: PersonDef = people.persons.get(person_id)
-	var step := region.net.step_at(p.place) if p != null else null
-	if step == null or step.pool_ids.is_empty():
-		return ""
-	var busy: float = region.net.pools[step.pool_ids[0]].load_since(SimCalendar.day_of(region.net.time) - LOAD_DAYS)
-	var queue := region.net.queue_days(step)
-	if busy >= BUSY_SHARE or queue >= BUSY_QUEUE_DAYS:
-		return "busy"
-	return "calm" if busy < CALM_SHARE and queue < CALM_QUEUE_DAYS else ""
-
-
-## Two colleagues at the coffee corner: their exchange [first line, second line], once a
-## day per pair; [] when they chatted today or nothing fits their teams and load.
 func chatter(first: String, second: String) -> Array[String]:
-	var today := SimCalendar.day_of(region.net.time)
-	var pair := first + "|" + second if first < second else second + "|" + first
-	var out: Array[String] = []
-	if _chatted.get(pair, -1) == today:
-		return out
-	var teams := [first, second].map(func(id: String) -> String:
-		return people.persons[id].team if people.persons.has(id) else "")
-	var loads := [load_of(first), load_of(second)]
-	var load := "busy" if "busy" in loads else ("calm" if loads.all(func(l: String) -> bool: return l == "calm") else "")
-	out = catalog.reactions.chatter_for(teams, load, hash(pair) + today,
-		SimCalendar.weekday(region.net.time - SimCalendar.days(WARMUP_DAYS)))
-	if not out.is_empty():
-		_chatted[pair] = today
-	out.assign(out.map(fill_tokens))
-	return out
+	return talks.chatter(self, first, second)
 
 
-## Today's greetings and chatter for the save, so "once a day" survives a reload.
 func passing_to_dict() -> Dictionary:
-	return {"greeted": _greeted.duplicate(), "chatted": _chatted.duplicate()}
+	return talks.passing_to_dict()
 
 
-## Restore passing_to_dict() output, untrusted: an entry that is not id → day is
-## dropped; junk or an old save without it is nobody greeted yet.
 func load_passing(d: Variant) -> void:
-	var saved := JsonFile.dict_or_empty(d)
-	_greeted = _days_by_id(saved.get("greeted"))
-	_chatted = _days_by_id(saved.get("chatted"))
+	talks.load_passing(d)
 
 
-static func _days_by_id(v: Variant) -> Dictionary[String, int]:
-	var out: Dictionary[String, int] = {}
-	var days := JsonFile.dict_or_empty(v)
-	for id: Variant in days:
-		if id is String and days[id] is int:
-			out[id] = days[id]
-	return out
-
-
-## Who could use a talk now, for the dagstart (spec §5.7; at most one by the
-## cadence in People): [{person, name, dialog, line}].
 func checkin_prompts() -> Array[Dictionary]:
-	var out: Array[Dictionary] = []
-	for p: Dictionary in people.prompt_lines():
-		p["name"] = people.persons[p["person"]].name
-		out.append(p)
-	return out
+	return SessionTalks.checkin_prompts(self)
 
 
-## What the player knows of a person (the journal's Mensen tab): {id, name,
-## role, place, trust_pips, morale_band (0 low · 1 middling · 2 high),
-## cooldown_until, outcomes (dialog id → its best outcome), observed (what they
-## said, newest first: People.observed), talks (newest first: People.talk_log),
-## note (the player's own, "" for none), open (_still_open), talk_ready (they
-## have a talk for you now)}; {} for an unknown id.
 func person(person_id: String) -> Dictionary:
-	var p: PersonDef = people.persons.get(person_id)
-	if p == null:
-		return {}
-	var facts := people.facts(_facts())
-	var outcomes := {}
-	for d: DialogDef in people.dialogs.values():
-		if d.person == person_id and people.outcomes.has(d.id):
-			outcomes[d.id] = people.effective_outcome(d.id, facts)
-	var morale: int = people.morale[person_id]
-	return {"id": p.id, "name": p.name, "role": p.role, "place": p.place,
-		"trust_pips": floori(people.trust[person_id] / float(Dialog.TRUST_PER_PIP)),
-		"morale_band": 0 if morale < 30 else (1 if morale < 70 else 2),
-		"cooldown_until": int(people.memory.get(person_id, {}).get("cooldown_until", 0)), "outcomes": outcomes,
-		"observed": _filled(_newest_first(people.observed.get(person_id, []))),
-		"talks": _filled(_newest_first(people.talk_log.get(person_id, []))), "note": people.note.get(person_id, ""),
-		"open": _still_open(person_id, facts),
-		"talk_ready": not people.cooling_down(person_id, region.net.time) and people.dialog_for(person_id, _world(p)) != null}
+	return SessionTalks.person(self, person_id)
 
 
-## What a person's agreements still wait for (the Mensen tab, U16): [{dialog,
-## outcome (partial | blocked), wait_for (a heard concern's condition, else
-## ""), hints (a block's route hints)}].
-func _still_open(person_id: String, facts: Dictionary) -> Array[Dictionary]:
-	var out: Array[Dictionary] = []
-	for d: DialogDef in people.dialogs.values():
-		var o := people.effective_outcome(d.id, facts) if d.person == person_id else ""
-		if o == "partial":
-			out.append({"dialog": d.id, "outcome": o, "wait_for": _heard_wait_for(d), "hints": []})
-		elif o == "blocked":
-			out.append({"dialog": d.id, "outcome": o, "wait_for": "",
-				"hints": d.block.get("routes", []).map(func(r: Dictionary) -> String: return str(r.get("hint", "")))})
-	return out
+func start_dialog(person_id: String) -> Dictionary:
+	return talks.start_dialog(self, person_id)
 
 
-## The concern's `wait_for` of a dialog whose concern the player heard ("" if
-## not heard or it names nothing): a condition never shows before its concern.
-func _heard_wait_for(d: DialogDef) -> String:
-	for key: String in people.revealed:
-		if key.get_slice("/", 0) == d.id and people.revealed[key].has("concern"):
-			var layers := d.layers_of(int(key.get_slice("/", 1)))
-			if layers.size() > 1:
-				return str(layers[1].get("wait_for", ""))
-	return ""
+func dialog_moves() -> Array[Dictionary]:
+	return talks.dialog_moves(self)
 
 
-static func _newest_first(entries: Array) -> Array:
-	var out := entries.duplicate(true)
-	out.reverse()
-	return out
+func dialog_offers() -> Array[Dictionary]:
+	return talks.dialog_offers(self)
+
+
+func dialog_meter() -> Dictionary:
+	return talks.dialog_meter()
+
+
+func dialog_layers() -> Array[Dictionary]:
+	return talks.dialog_layers(self)
+
+
+func choose_move(move: String, pick: String = "") -> Dictionary:
+	return talks.choose_move(self, move, pick)
+
+
+func talk_main(def: DialogDef) -> String:
+	return SessionTalks.talk_main(missions, def)
+
+
+func customer_calls() -> Array[Dictionary]:
+	return SessionTalks.customer_calls(self)
+
+
+func expert_serves_active(dialog_id: String) -> bool:
+	return SessionTalks.expert_serves_active(self, dialog_id)
 
 
 ## The player's note on a person (the Mensen tab; People.set_note).
 func set_note(person_id: String, text: String) -> bool:
 	return people.set_note(person_id, text)
-
-
-## Open the talk a person has for the player: {dialog, kind, person, name, short,
-## role, opening, position ({text, tags}), meter, moves}, or an error:
-## in_dialog | unknown_person | cooling_down (after a ruined talk; the UI says
-## the bank's special.cooling_down line) | nothing_to_say.
-func start_dialog(person_id: String) -> Dictionary:
-	if _talk != null or _expert != null:
-		return {"error": "in_dialog"}
-	var p: PersonDef = people.persons.get(person_id)
-	if p == null:
-		return {"error": "unknown_person"}
-	if people.cooling_down(person_id, region.net.time):
-		return {"error": "cooling_down"}
-	var world := _world(p)
-	var d := people.dialog_for(person_id, world)
-	if d == null:
-		return {"error": "nothing_to_say"}
-	if d.kind == ExpertTalk.KIND:   # topic by topic: no position, no moves (phase 2 design §2.5)
-		_expert = people.start_expert(d, world)
-		return _filled({"dialog": d.id, "kind": d.kind, "person": p.id, "name": p.name, "short": p.short,
-			"role": p.role, "opening": people.opening(d), "position": {}, "meter": _expert.meter(), "moves": []})
-	_talk = people.start(d, world)
-	return _filled({"dialog": d.id, "kind": d.kind, "person": p.id, "name": p.name, "short": p.short, "role": p.role,
-		"opening": people.opening(d, _talk.version), "position": _talk.position(), "meter": _talk.meter(), "moves": _talk.moves()})
-
-
-## The moves of the talk in progress (Dialog.moves); [] when there is none.
-func dialog_moves() -> Array[Dictionary]:
-	var out: Array[Dictionary] = []
-	if _talk != null:
-		out.assign(_filled(_talk.moves()))
-	return out
-
-
-## This turn's sentences in the talk in progress (Dialog.offer: [{move, pick,
-## line}], a shown clue's text in its line); [] when there is none.
-func dialog_offers() -> Array[Dictionary]:
-	var out: Array[Dictionary] = []
-	if _expert != null:
-		out.assign(_filled(_expert.offer()))
-	if _talk != null:
-		for o: Dictionary in _talk.offer():
-			out.append(_filled(_with_clue(o, o["pick"])))
-	return out
-
-
-## `said` (an offer or a move's result) with the text of the clue it shows
-## (`clue_id`) in its line, for Dialog.DATA_TOKEN.
-func _with_clue(said: Dictionary, clue_id: String) -> Dictionary:
-	if said.get("move") != "show_data" or not Dialog.DATA_TOKEN in str(said.get("line", "")):
-		return said
-	var p: ProblemDef = region.problems.get(clue_id.get_slice(":", 0))
-	var clues := p.clues.filter(func(c: Clue) -> bool: return c.id == clue_id) if p != null else []
-	var text: String = clues[0].text if not clues.is_empty() else ""
-	return said.merged({"line": str(said["line"]).replace(Dialog.DATA_TOKEN, text).strip_edges()}, true)
-
-
-## The meter of the talk in progress (Dialog.meter); {} when there is none.
-func dialog_meter() -> Dictionary:
-	if _expert != null:
-		return _expert.meter()
-	return _talk.meter() if _talk != null else {}
-
-
-## The layers of the talk in progress, for the layer tracker: [{id
-## (position | interest | concern), text ("" until heard), heard}]; the
-## position is heard from the start, a layer from an earlier talk stays heard.
-## [] when there is no talk.
-func dialog_layers() -> Array[Dictionary]:
-	var out: Array[Dictionary] = []
-	if _talk == null:
-		return out
-	out.append({"id": "position", "text": str(_talk.position().get("text", "")), "heard": true})
-	for layer: Dictionary in _talk.layers():
-		var heard := _talk.revealed.has(layer["id"])
-		out.append({"id": str(layer["id"]), "text": str(layer.get("text", "")) if heard else "", "heard": heard})
-	out.assign(_filled(out))
-	return out
-
-
-## Make a move in the talk (a pick for show_data, propose_experiment and
-## propose: one the moves offered). Dialog.say's result; when the talk ended,
-## with `summary` (People.finish), and its minutes have passed. Errors:
-## no_dialog | unknown_move | bad_pick (and nothing changes).
-func choose_move(move: String, pick: String = "") -> Dictionary:
-	if _expert != null:
-		return _ask_expert(move, pick)
-	if _talk == null:
-		return {"error": "no_dialog"}
-	var result := _talk.say(move, pick)
-	if result.get("ended", false):
-		result["summary"] = _finish_talk()
-	return _filled(_with_clue(result, pick))
-
-
-## A question in the expert talk (ExpertTalk.ASK with the topic id) or its close
-## (ExpertTalk.CLOSE, as "Afronden"): ExpertTalk.say's result. A topic's new
-## clue is found at once; when the talk ends, with `summary`
-## (People.finish_expert) and its minutes passed.
-func _ask_expert(move: String, pick: String) -> Dictionary:
-	var result := _expert.say(move, pick)
-	if result.has("error"):
-		return result
-	if not str(result["clue"]).is_empty():
-		region.found[result["clue"]] = true
-	if result["ended"]:
-		var t := _expert
-		_expert = null
-		result["summary"] = people.finish_expert(t, region.net.time)
-		_after(t.minutes())
-	return _filled(result)
 
 
 ## The tokens talk lines speak through: the player's (PlayerProfile.fill:
@@ -1248,20 +998,6 @@ func fill_tokens(text: String) -> String:
 	return out
 
 
-## Every text in a talk's result, filled (fill_tokens).
-func _filled(v: Variant) -> Variant:
-	if v is String:
-		return fill_tokens(v)
-	if v is Dictionary:
-		var d := {}
-		for k: Variant in v:
-			d[k] = _filled(v[k])
-		return d
-	if v is Array:
-		return (v as Array).map(_filled)
-	return v
-
-
 ## End the talk gracefully (the close move); see choose_move.
 func end_dialog() -> Dictionary:
 	return choose_move("close")
@@ -1271,7 +1007,7 @@ func end_dialog() -> Dictionary:
 ## ("" when never had). What a mission's talk_to {dialog, outcome} goal reads
 ## (Missions.talk_outcome).
 func talk_outcome(dialog_id: String) -> String:
-	return people.effective_outcome(dialog_id, people.facts(_facts()))
+	return people.effective_outcome(dialog_id, people.facts(SessionTalks.facts(self)))
 
 
 ## How many topics of an expert talk were heard (Missions.topics_heard).
@@ -1301,116 +1037,6 @@ func can_talk(dialog_id: String) -> bool:
 	return d != null and not people.has_left(d.person)
 
 
-## What a talk needs to know about the world, for person `p`.
-func _world(p: PersonDef) -> Dictionary:
-	var blamed := region.problem_list().any(func(problem: ProblemDef) -> bool:
-		var step := region.net.step_at(problem.step)
-		return region.state[problem.id].blamed and region.state[problem.id].is_open() \
-			and step != null and p.team in step.pool_ids)
-	return {
-		"main": missions.active("main").map(func(m: MissionDef) -> String: return m.id),
-		"active": missions.active().map(func(m: MissionDef) -> String: return m.id),
-		"found": region.found, "facts": _facts(), "problems": missions.worked_problems(),
-		"team_trust": region.trust.get(p.team, 0), "blamed": blamed,
-		"now": region.net.time, "beats": missions.beats(), "seed": region.net.run_seed,
-	}
-
-
-## The world's facts a talk can need, as Missions.knows answers them (the
-## catalogue's C19: done:, failed:, chose:, checked:, flags and measures such
-## as reputation>=40), for every atom the dialogs name.
-func _facts() -> Dictionary:
-	var out := {}
-	for atom: String in people.atoms():
-		if missions.knows(atom):
-			out[atom] = true
-	return out
-
-
-## The active main mission talk `def` is on ("" for none): with `missions:` (arc S11)
-## not always the first it names, so the coach's after-talk question finds it.
-func talk_main(def: DialogDef) -> String:
-	for m in missions.active("main"):
-		if m.id in def.missions:
-			return m.id
-	return ""
-
-
-## The talk ended: People applies it, the world takes what it changed (a blame
-## by the gemba's own rule, a commitment's team trust, a learned clue), then
-## its minutes pass.
-func _finish_talk() -> Dictionary:
-	var d := _talk
-	_talk = null
-	var main := talk_main(d.def)
-	var morale_before: int = people.morale[d.who.id]
-	var summary := people.finish(d, region.net.time, main)
-	_keep_promise(d)
-	discoveries.note_talk(self, {"person": d.who.id, "team": d.who.team, "kind": d.def.kind, "outcome": d.outcome,
-		"listened_first": not d.steered_early and d.revealed.has("concern"), "silence_reveal": d.concern_by == "silence",
-		"own_idea": d.own_idea(), "morale_before": morale_before, "pressured": d.pressured, "confronted": d.confronted})
-	if summary["confronted"]:
-		region.ask(d.who.place, "behind")
-	if summary["team_trust"] > 0:
-		region.trust[d.who.team] = mini(1, region.trust.get(d.who.team, 0) + summary["team_trust"])
-	if not summary["clue"].is_empty():
-		region.found[summary["clue"]] = true
-	if summary["reputation"] != 0:
-		region.earn_reputation(summary["reputation"], "dialog_" + summary["outcome"])
-	_after(d.minutes())
-	return summary
-
-
-## A promise agreed in talk `d` (a proposal with `promise`, PLAN 2.4) becomes a
-## fact the simulation checks: promised:<dialog>:<ISO date> for a date promised
-## (`days` from today), promised:<dialog>:<kind> for an action (a callback). It
-## replaces the dialog's earlier promise only when this talk's agreement is now
-## the best one (People.finish keeps that).
-func _keep_promise(d: Dialog) -> void:
-	if not d.outcome in People.BUY_IN_OF or people.agreed.get(d.def.id) != d.table:
-		return
-	var promise := JsonFile.dict_or_empty(d.def.item(d.table).get("promise"))
-	if promise.is_empty():
-		return
-	var kind := str(promise.get("kind", ""))
-	var value := iso_date(region.net.time + SimCalendar.days(int(promise.get("days", 0)))) \
-		if kind in DATE_PROMISES else kind
-	missions.facts.remove_prefix("%s%s:" % [Facts.PROMISED, d.def.id])
-	missions.facts.add("%s%s:%s" % [Facts.PROMISED, d.def.id, value])
-
-
-## Customers whose talk is due now (PLAN 2.4): the KCC's headset takes their
-## call, and they ring the player's phone (CustomerCalls). [{person, dialog,
-## name}], in content order; [] when none.
-func customer_calls() -> Array[Dictionary]:
-	var out: Array[Dictionary] = []
-	for p: PersonDef in people.persons.values():
-		if not p.customer or people.cooling_down(p.id, region.net.time):
-			continue
-		var d := people.dialog_for(p.id, _world(p))
-		if d != null:
-			out.append({"person": p.id, "dialog": d.id, "name": p.name})
-	return out
-
-
-## Whether expert talk `dialog_id` still has a clue to tell for an active mission's problem:
-## a topic open now whose clue is not found yet (CustomerCalls: only then does an expert ring
-## unasked, R-1 #6).
-func expert_serves_active(dialog_id: String) -> bool:
-	var d: DialogDef = people.dialogs.get(dialog_id)
-	if d == null:
-		return false
-	var problems := {}
-	for m in missions.active():
-		problems[m.goal_problem] = true
-	var known := people.facts(_facts())
-	var asked := people.asked_topics(dialog_id)
-	return d.topics.any(func(t: Dictionary) -> bool:
-		var clue := ExpertTalk.clue_of(t)
-		return not clue.is_empty() and not region.found.has(clue) and not t["id"] in asked \
-			and ExpertTalk.is_open(t, known, people.trust[d.person], problems))
-
-
 ## After every action: check-in prompts and the low-morale clock move on
 ## (People.daily; a goodbye is an event), the facts talks set join the ones missions and
 ## countermeasures read (Missions.facts), and every resolved fix with an owner
@@ -1419,7 +1045,7 @@ func expert_serves_active(dialog_id: String) -> bool:
 func _sync_people() -> void:
 	if people == null:
 		return
-	var world_facts := _facts()
+	var world_facts := SessionTalks.facts(self)
 	var world := {"now": region.net.time, "facts": world_facts, "beats": missions.beats(), "training": missions.in_training()}
 	if SimCalendar.day_of(region.net.time) != people.drift_day:
 		world["loads"] = _team_loads()  # morale's daily drift (People._drift)

@@ -115,7 +115,7 @@ func test_henk_and_ahmed_work_on_the_yard_until_henk_retires() -> void:
 		assert_true(p.visible, "%s is on the yard during the wrong joint" % p.id)
 		assert_true(werkplaats.has_point(Vector2(p.position.x, p.position.z)), "%s in the werkplaats" % p.id)
 		assert_false(office.nav().path(office.player.position, p.position).is_empty(), "%s can be walked up to" % p.id)
-	assert_eq(office.session.people.dialog_for("henk", office.session._world(office.session.people.persons["henk"])).id,
+	assert_eq(office.session.people.dialog_for("henk", SessionTalks.world(office.session, office.session.people.persons["henk"])).id,
 		"henk_expert", "and Henk has his expert talk for you")
 	office.session.missions.progress["fix_wrong_joint"]["status"] = "completed"   # the werkplaats stays open
 	office.session.missions.done_once["save_henks_knowledge"] = true   # his knowledge saved, the farewell to come
