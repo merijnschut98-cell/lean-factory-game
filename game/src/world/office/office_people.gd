@@ -44,7 +44,7 @@ const ALWAYS_AT_DESK := {"place": OfficeDay.DESK, "since": -SimCalendar.MINUTES_
 const ALWAYS_OUT := {"place": OfficeDay.OUT, "since": -SimCalendar.MINUTES_PER_DAY}
 
 var people: Array[OfficePerson] = []
-## Who is in a talk with the player (Office.frame_talk), or null: they stay for it.
+## Who is in a talk with the player (OfficeStaging.frame_talk), or null: they stay for it.
 var held: OfficePerson
 ## Whether holding them stopped them on their way (release walks them on).
 var _stopped := false

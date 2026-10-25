@@ -305,6 +305,6 @@ func _hold() -> void:
 		if office.session.speaker_name(id) != who:
 			continue
 		if lines.asking() or not office.player.seated:
-			office.frame_scene(_people[id], TABLE_LIFT if office.player.seated else OfficeOpening.FRAME_LIFT)
+			office.staging.frame_scene(_people[id], TABLE_LIFT if office.player.seated else OfficeOpening.FRAME_LIFT)
 		else:
-			office.frame_face(_people[id])
+			office.staging.frame_face(_people[id])

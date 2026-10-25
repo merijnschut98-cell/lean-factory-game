@@ -254,7 +254,7 @@ func test_a_walking_talk_lets_the_player_walk_between_lines() -> void:
 	assert_eq(office.rig.shot, CameraRig.TWO_SHOT, "a two-shot that follows")
 	var before: Vector3 = office.rig._inspect["at"]
 	office.player.position += Vector3(1.0, 0, 0)
-	office.follow_walking_talk(0.1)
+	office.staging.follow_walking_talk(0.1)
 	assert_true(office.rig._inspect["at"].distance_to(before) > 0.1, "the camera follows the pair")
 	office.free()
 

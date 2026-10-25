@@ -300,7 +300,7 @@ func test_a_line_holds_the_player_and_frames_the_speaker() -> void:
 	assert_false(office.player.active, "no walking while Yvonne speaks")
 	assert_false(office.rig.active, "no free camera")
 	assert_true(office.rig.inspecting(), "the camera frames you and her")
-	assert_false(office.click_floor(office.player.position + Vector3(2, 0, 0)), "no click-to-move")
+	assert_false(office.pointer.click_floor(office.player.position + Vector3(2, 0, 0)), "no click-to-move")
 	assert_true(_until(office, func() -> bool: return o.lines.paper_up()), "the badge")
 	assert_true(o.lines.holds(), "a paper holds you too")
 	o.lines.close_paper()

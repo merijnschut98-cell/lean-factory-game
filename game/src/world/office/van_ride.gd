@@ -116,7 +116,7 @@ func scenery_moves(seconds: float) -> bool:
 	return _movers[0].position != before
 
 
-## Frame the talk's phase in the cab (Office.stage_talk): their face while they speak, the
+## Frame the talk's phase in the cab (OfficeStaging.stage_talk): their face while they speak, the
 ## two of you while you choose.
 func frame_talk(phase: String) -> void:
 	_frame(FACE if phase == TalkView.SPEAK else TWO_SHOT)

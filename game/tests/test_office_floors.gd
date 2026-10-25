@@ -96,7 +96,7 @@ func test_the_back_door_takes_the_same_player_out_and_back_in() -> void:
 	assert_true(player.position.distance_to(arrive) < 0.01, "outside the door")
 	assert_eq(office.interactable("lift"), null, "no lift on the yard")
 	var under := PackedVector2Array()   # the collision's corners below the ground's surface
-	for v in office._collision_faces():
+	for v in office.collision_faces():
 		if v.y < -0.15:
 			under.append(Vector2(v.x, v.z))
 	var ground := Rect2(under[0], Vector2.ZERO) if not under.is_empty() else Rect2()

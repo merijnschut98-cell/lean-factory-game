@@ -246,13 +246,13 @@ func test_the_scene_camera_keeps_the_pillar_out_of_the_way() -> void:
 			var at := "you at %s%s" % [spot, " (nudged)" if nudge != Vector3.ZERO else ""]
 			for who: String in m._people:
 				var speaker: OfficePerson = m._people[who]
-				office.frame_scene(speaker, OfficeMilestone.TABLE_LIFT)
+				office.staging.frame_scene(speaker, OfficeMilestone.TABLE_LIFT)
 				var eye := _eye(office)
-				assert_true(office.sees(eye, speaker), "%s: %s whole in the two-shot" % [at, who])
-				assert_true(office.sees(eye, null), "%s: you whole in the two-shot on %s" % [at, who])
-				office.frame_face(speaker)
+				assert_true(office.staging.sees(eye, speaker), "%s: %s whole in the two-shot" % [at, who])
+				assert_true(office.staging.sees(eye, null), "%s: you whole in the two-shot on %s" % [at, who])
+				office.staging.frame_face(speaker)
 				if office.rig.shot == CameraRig.FACE:
-					assert_true(office.in_sight(_eye(office), office.talk_point(speaker)), "%s: %s's face" % [at, who])
+					assert_true(office.staging.in_sight(_eye(office), office.staging.talk_point(speaker)), "%s: %s's face" % [at, who])
 	office.free()
 
 

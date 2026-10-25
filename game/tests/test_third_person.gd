@@ -241,7 +241,7 @@ func test_wasd_walks_relative_to_the_camera() -> void:
 func test_a_click_on_the_floor_walks_the_player_there() -> void:
 	var office := _office()
 	var goal := Vector3(6.0, 0, -9.0)
-	assert_true(office.click_floor(goal), "a walkable spot")
+	assert_true(office.pointer.click_floor(goal), "a walkable spot")
 	assert_true(office.player.walking())
 	_walk(office, 10.0)
 	assert_false(office.player.walking(), "arrived")
@@ -276,7 +276,7 @@ func test_the_walk_goes_around_furniture() -> void:
 
 func test_wasd_cancels_a_click_walk() -> void:
 	var office := _office()
-	office.click_floor(Vector3(6.0, 0, -9.0))
+	office.pointer.click_floor(Vector3(6.0, 0, -9.0))
 	office.player.step(FRAME, Vector2(1, 0))
 	assert_false(office.player.walking(), "a key takes over from the click")
 	office.free()
@@ -285,7 +285,7 @@ func test_wasd_cancels_a_click_walk() -> void:
 func test_clicking_a_ring_walks_there_and_opens_the_place_on_arrival() -> void:
 	var office := _office()
 	var design := office.interactable(DESIGN)
-	assert_true(office.click_floor(design.position + Vector3(0.3, 0, 0.2)), "the ring is clicked")
+	assert_true(office.pointer.click_floor(design.position + Vector3(0.3, 0, 0.2)), "the ring is clicked")
 	assert_false(office.ui.is_busy(), "nothing opens before arrival")
 	_walk(office, 15.0)
 	assert_true(office.ui.place_menu.visible, "the team's menu opens on arrival")
@@ -297,15 +297,15 @@ func test_clicking_a_ring_walks_there_and_opens_the_place_on_arrival() -> void:
 func test_a_click_with_a_panel_open_is_for_the_panel() -> void:
 	var office := _office()
 	office.interact(office.interactable("coach"))
-	assert_false(office.click_floor(Vector3(6.0, 0, -9.0)))
+	assert_false(office.pointer.click_floor(Vector3(6.0, 0, -9.0)))
 	assert_false(office.player.walking())
 	office.free()
 
 
 func test_a_click_on_the_floor_after_a_ring_click_forgets_the_ring() -> void:
 	var office := _office()
-	office.click_floor(office.interactable(DESIGN).position)
-	office.click_floor(Vector3(6.0, 0, -9.0))
+	office.pointer.click_floor(office.interactable(DESIGN).position)
+	office.pointer.click_floor(Vector3(6.0, 0, -9.0))
 	_walk(office, 10.0)
 	assert_false(office.ui.is_busy(), "no panel opens at a plain spot")
 	office.free()
@@ -340,7 +340,7 @@ func test_using_a_place_frames_its_workstation_and_closing_returns() -> void:
 	assert_true(rig.inspecting(), "the camera frames the station")
 	for n in 120:
 		rig.update(FRAME)
-	var look := office.frame_point(design)
+	var look := office.staging.frame_point(design)
 	assert_true(rig.focus.distance_to(look) < 0.05, "it looks at the desk")
 	assert_between(_shown_distance(rig), 2.0, 3.5, "at close range")
 	var ahead := -design.basis.z
@@ -377,13 +377,13 @@ func test_with_the_menu_docked_the_station_is_framed_beside_it() -> void:
 	assert_between(share, 0.3, 0.4, "the menu covers about a third")
 	for n in 180:
 		rig.update(FRAME)
-	assert_near(_screen_x(rig, office.frame_point(design)), (1.0 - share) / 2.0, 0.01, "in the middle of the free room")
+	assert_near(_screen_x(rig, office.staging.frame_point(design)), (1.0 - share) / 2.0, 0.01, "in the middle of the free room")
 	office.ui.close_panels()
 	assert_eq(office.ui.docked_share(), 0.0)
-	office.frame(design)
+	office.staging.frame(design)
 	for n in 180:
 		rig.update(FRAME)
-	assert_near(_screen_x(rig, office.frame_point(design)), 0.5, 0.01, "no panel: centred")
+	assert_near(_screen_x(rig, office.staging.frame_point(design)), 0.5, 0.01, "no panel: centred")
 	office.free()
 
 
@@ -435,9 +435,9 @@ func test_holding_right_click_away_from_a_place_frames_nothing() -> void:
 func test_the_ring_under_the_cursor_lights_up() -> void:
 	var office := _office()
 	var design := office.interactable(DESIGN)
-	office.hover_floor(design.position + Vector3(0.2, 0, 0))
+	office.pointer.hover_floor(design.position + Vector3(0.2, 0, 0))
 	assert_true(design.hovered, "the ring under the cursor")
 	assert_eq(office.interactables.filter(func(i: Interactable) -> bool: return i.hovered).size(), 1, "only that one")
-	office.hover_floor(Vector3(12, 0, -9))
+	office.pointer.hover_floor(Vector3(12, 0, -9))
 	assert_false(design.hovered, "off again when the cursor leaves")
 	office.free()

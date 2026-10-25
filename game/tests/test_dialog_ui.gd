@@ -464,7 +464,7 @@ func test_a_talk_frames_the_person_over_the_players_shoulder() -> void:
 	office.use(joost)
 	assert_true(office.ui.talk_view.talking())
 	assert_true(office.rig.inspecting(), "the camera frames the talk")
-	var at := office.talk_point(joost)
+	var at := office.staging.talk_point(joost)
 	assert_near(Vector2(at.x, at.z).distance_to(Vector2(joost.position.x, joost.position.z)), 0.0, 0.01, "looking at Joost")
 	var facing := -office.player.basis.z
 	var to_joost := (joost.position - office.player.position) * Vector3(1, 0, 1)

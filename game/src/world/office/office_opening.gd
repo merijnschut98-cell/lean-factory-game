@@ -194,7 +194,7 @@ func _hold_player() -> void:
 	_framed = who
 	var speaker := _speaker(who)
 	if speaker != null and speaker.visible and _near(speaker.position, office.player.position, FRAME_DISTANCE):
-		office.frame_scene(speaker, FRAME_LIFT)
+		office.staging.frame_scene(speaker, FRAME_LIFT)
 
 
 ## The person who says a line: the opening's own Ruud and Yvonne, else the office's.
@@ -226,7 +226,7 @@ func _arrival() -> void:
 	yvonne = _person("yvonne", "Yvonne Kramer", "Receptie")   # her own look in cast.json (S1-C)
 	var chair := _point("reception_chair", RECEPTION_CHAIR)
 	yvonne.place(chair + (desk - chair) * 0.45, stand - desk)   # standing behind the counter, by her chair
-	office.frame_scene(yvonne, FRAME_LIFT)
+	office.staging.frame_scene(yvonne, FRAME_LIFT)
 	_skip_link = UiPanel.button(tr(SKIP_WEEK), skip_week)
 	_skip_link.flat = true
 	_skip_link.add_theme_color_override("font_color", Color(1, 1, 1, 0.7))

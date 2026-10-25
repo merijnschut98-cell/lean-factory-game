@@ -491,12 +491,12 @@ func _desk(office: Office, state: String) -> void:
 	var desk := office.interactable(OfficeDesk.ID)
 	match state:
 		"play_desk":
-			office.frame(desk)
+			office.staging.frame(desk)
 			office.rig.snap()
 		"play_desk_thanks":
 			office.session.missions.done_once["winter_el_amrani"] = true
 			office.desk.refresh()
-			office.frame(desk)
+			office.staging.frame(desk)
 			office.rig.snap()
 		"play_a3_clipboard":
 			office.interact(desk)
@@ -567,7 +567,7 @@ func _people(office: Office, state: String) -> void:
 			office.rig.yaw = office.player.rotation.y + deg_to_rad(-25)
 			office.rig.zoom(3)
 			office.rig.snap()
-			office.hover_person(people.person("anouk"))
+			office.pointer.hover_person(people.person("anouk"))
 		"people_talk":
 			var joost := people.person("joost")
 			office.player.position = joost.position + joost.basis.x * 0.8 + joost.basis.z * 0.3
@@ -617,14 +617,14 @@ func _people(office: Office, state: String) -> void:
 			office.player.face(Basis.looking_at(people.person("henk").position - office.player.position))
 			office.rig.yaw = office.player.rotation.y + deg_to_rad(20)
 			office.rig.snap()
-			office.hover_person(people.person("henk"))
+			office.pointer.hover_person(people.person("henk"))
 		"people_meetdata":
 			var petra := people.person("petra")
 			office.player.position = petra.position + Vector3(-1.4, 0, 0.6)
 			office.player.face(Basis.looking_at(petra.position - office.player.position))
 			office.rig.yaw = office.player.rotation.y + deg_to_rad(-20)
 			office.rig.snap()
-			office.hover_person(petra)
+			office.pointer.hover_person(petra)
 		"people_gemba":
 			_stand_at(office, DESIGN)
 			office.interact(office.interactable(DESIGN))
@@ -743,7 +743,7 @@ func _rooms(office: Office, state: String) -> void:
 	if state == "people_kcc":
 		office.rig.zoom(-3)   # close enough to see the headsets
 	office.rig.snap()
-	office.hover_person(p)
+	office.pointer.hover_person(p)
 
 
 ## The office keeps time (S1-A): the game's clock moved on to the state's hour, the

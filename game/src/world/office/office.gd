@@ -34,42 +34,6 @@ const CUTAWAY: Array[String] = ["shell_ceiling", "light_panels", "air_diffusers"
 ## The camera's first view from the entrance: south-south-east over both
 ## teams to the windows, with room behind it to stay at its usual angle.
 const START_YAW := -2.64
-## Framing a station: the point looked at lies this far (m) ahead of where
-## the player stands, at desk-top height (the in-tray, the screens, the board).
-const FRAME_AHEAD := 0.9
-const FRAME_HEIGHT := 0.8
-## A click this close (m) to a ring's centre is a click on the ring.
-const RING_CLICK := Interactable.RING_RADIUS + 0.3
-## A talk is framed this far round (rad) from straight behind the player,
-## towards the side the person faces, so their face shows beside the
-## player's shoulder.
-const TALK_ANGLE := 0.6
-## The person's face this share of the screen's width right of the middle
-## (the player's shoulder on the left).
-const TALK_SHIFT := -0.08
-## The person's face sits this far (m) under the top of their head.
-const FACE_DROP := 0.2
-## A face shot stands this far round (rad) from the line between the person
-## and the player, so the player's head stays at the edge of the frame.
-const FACE_ANGLE := 0.5
-## The face this share of the screen's height above the middle while they
-## speak, the pair while you choose (the subtitle and the sentences cover the
-## bottom; estimates, tuned on the screenshots).
-const FACE_LIFT := 0.06
-const PAIR_LIFT := 0.12
-## In a walking talk the person keeps this far (m) from the player.
-const WALK_BESIDE := 1.3
-## A scene's two-shot looks from the side with open floor behind the pair, up
-## to this far (m): a wall nearer than that would hide them.
-const SCENE_CLEAR := 3.0
-## Where a shot looks for a body (m above the floor: waist, head), seated and standing.
-const BODY_SEATED: Array[float] = [0.55, 1.15]
-const BODY_STANDING: Array[float] = [0.9, 1.55]
-## Half a body's width (m), shoulders and arms.
-const BODY_HALF_WIDTH := 0.3
-## A sight line ends this far (m) short of what it looks at: the chair or desk
-## right beside a person does not hide them.
-const SIGHT_SHORT := 0.3
 
 const RESUME_FAILED := "De bewaarde game kon niet worden geladen (%s). Dit spel wordt niet bewaard, zodat de oude bewaard blijft."
 const WHITEBOARD_PROMPT := "E — Whiteboard: hoe werkt het?"
@@ -118,12 +82,10 @@ var home: OfficeHome
 var floors: OfficeFloors
 ## The walk grid, baked on first use.
 var _nav: OfficeNav
-## The geometry's collision triangles, for sight lines (in_sight; empty until asked).
-var _sight_faces := PackedVector3Array()
-## The ring or person clicked last: used when the walk there ends.
-var _walk_goal: Node3D
-## The person under the cursor (their name tag shows).
-var _hovered_person: OfficePerson
+## The camera for talks, scenes and stations (OfficeStaging).
+var staging := OfficeStaging.new(self)
+## The mouse: hover and click on people, rings, tells and the floor (OfficePointer).
+var pointer := OfficePointer.new(self)
 ## A scene's line, choice or paper holds the player (hold_for_scene).
 var _scene_holds := false
 ## The "Hoe werkt het?" explainer open over the world (Ruud's whiteboard), or null.
@@ -200,9 +162,9 @@ func build() -> void:
 	ui.setup(session, loaded.get("layer", _opening_layer()))
 	ui.panel_opened.connect(_on_panel_opened)
 	ui.world_free = world_free
-	ui.talk_opened.connect(frame_talk)
+	ui.talk_opened.connect(staging.frame_talk)
 	if ui.playable():
-		ui.talk_view.phase_changed.connect(func(_phase: String) -> void: stage_talk())
+		ui.talk_view.phase_changed.connect(func(_phase: String) -> void: staging.stage_talk())
 		ui.talk_view.explainer_requested.connect(open_talk_explainer)
 	ui.panels_closed.connect(_on_panels_closed)
 	home = OfficeHome.create(self)
@@ -288,13 +250,13 @@ func to_title() -> void:
 func _process(delta: float) -> void:
 	player.view_yaw = rig.yaw
 	if ui.playable():
-		follow_walking_talk(delta)
+		staging.follow_walking_talk(delta)
 	if session.error.is_empty() and not busy():
 		OfficeCheckScreen.refresh(self)
 		ui.hud.show_prompt(prompt_near(player.position))
 	var tagged: Array[OfficePerson] = []
 	if not busy():
-		for p: OfficePerson in [_hovered_person, people.person_near(player.position, REACH)]:
+		for p: OfficePerson in [pointer.hovered, people.person_near(player.position, REACH)]:
 			if p != null:
 				tagged.append(p)
 	people.show_tags(tagged)
@@ -320,9 +282,8 @@ func load_floor() -> void:
 			remove_child(n)
 			n.free()
 	_nav = null
-	_sight_faces = PackedVector3Array()
-	_walk_goal = null
-	_hovered_person = null
+	staging.forget_walls()
+	pointer.forget()
 	geometry = _load_geometry(floors.model_path())
 	add_child(geometry)
 	_cut_away_ceiling()
@@ -366,7 +327,7 @@ func reload_rooms() -> void:
 	_add_interactables()
 	_refresh_people()
 	_nav = null
-	_sight_faces = PackedVector3Array()   # an opened door no longer hides anything
+	staging.forget_walls()   # an opened door no longer hides anything
 	if ui.playable():
 		show_map()
 
@@ -658,7 +619,7 @@ func interact(target: Interactable) -> void:
 		OfficeTrafohuisje.ID:
 			open_trafohuisje()
 	if ui.is_busy():
-		frame(target)
+		staging.frame(target)
 
 
 ## Whether the world waits: a panel, the explainer or the creator is open, or a van ride is on.
@@ -835,164 +796,14 @@ func talk_to(person: OfficePerson) -> void:
 		if coach != null:
 			interact(coach)
 		else:   # in his own office on the 2e
-			_turn_to(person)
+			staging.turn_to(person)
 			ui.open_coach()
 		return
 	person_selected.emit(person.id)
 	if ui.ask_talk(person.id, person.display_name) in GameUI.NO_TALK:
-		_turn_to(person)
+		staging.turn_to(person)
 		person.face_toward(player.position)
 		person.say(session.quick_line(person.id))
-
-
-## Stage a talk (phase 2 design §2): someone in the office is talked with
-## where they are (the player turns to them, their body takes the talk's
-## band); someone not here makes it a phone call. Then the camera for the
-## talk's phase (stage_talk).
-func frame_talk(person_id: String) -> void:
-	var person := people.person(person_id)
-	var here := person != null and person.visible
-	people.hold(person if here else null)
-	if here and ride == null:   # in the van they sit side by side; the cab frames them (VanRide)
-		_turn_to(person)
-		person.face_toward(player.position, true)   # they turn to you, so the face shot sees their face
-	ui.talk_view.stage(person if here else null)
-	stage_talk()
-
-
-## The camera for the talk's phase: their face while they speak (over the
-## player's shoulder where the floor is too tight for it), the two of you
-## while you choose and after; walking, always the pair, following; on the
-## phone the player where they stand. Only a walking talk lets the player walk.
-func stage_talk() -> void:
-	var view := ui.talk_view
-	if not view.visible or view.talk.is_empty():
-		return
-	player.active = view.setting == TalkView.WALKING
-	if view.setting == TalkView.HEADSET:
-		return   # the camera stays on the desk where the player sits (interact frames it)
-	if ride != null:
-		ride.frame_talk(view.phase())
-	elif view.person == null:
-		rig.release()
-	elif view.phase() == TalkView.SPEAK and view.setting == TalkView.STANDING:
-		frame_face(view.person)
-	else:
-		_two_shot(view.person, PAIR_LIFT)
-
-
-## A walking talk, each frame: the person keeps beside the player at their
-## pace and the two-shot follows the pair.
-func follow_walking_talk(delta: float) -> void:
-	var view := ui.talk_view
-	if not view.visible or view.setting != TalkView.WALKING or view.person == null:
-		return
-	var person := view.person
-	var to_player := (player.position - person.position) * Vector3(1, 0, 1)
-	var gap := to_player.length() - WALK_BESIDE
-	if gap > 0.05:
-		person.place(person.position + to_player.normalized() * minf(gap, person.pace * delta), to_player)
-	_two_shot(person, PAIR_LIFT, true)
-
-
-## Their face and shoulders while they speak, from a little to one side of
-## the player: the side that sees more of their face, where the camera stands
-## over open floor with nothing between it and the face (in_sight); a side over
-## open floor when neither is clear; over the player's shoulder when neither has room.
-func frame_face(person: OfficePerson) -> void:
-	var face := talk_point(person)
-	var to_player := (player.position - person.position) * Vector3(1, 0, 1)
-	var toward := atan2(to_player.x, to_player.z)
-	var faces := -person.basis.z
-	var sides: Array[float] = [toward + FACE_ANGLE, toward - FACE_ANGLE]
-	sides.sort_custom(func(a: float, b: float) -> bool: return Vector3(sin(a), 0, cos(a)).dot(faces) > Vector3(sin(b), 0, cos(b)).dot(faces))
-	var reach := CameraRig.FACE_DISTANCE * cos(CameraRig.FACE_PITCH)
-	sides = sides.filter(func(yaw: float) -> bool:
-		return nav().walkable(face * Vector3(1, 0, 1) + Vector3(sin(yaw), 0, cos(yaw)) * reach))
-	if sides.is_empty():
-		rig.converse(face, talk_yaw(person, player.position), TALK_SHIFT, FACE_LIFT)
-		return
-	for yaw in sides:
-		if in_sight(rig.view_from(face, yaw, CameraRig.FACE_DISTANCE, CameraRig.FACE_PITCH, FACE_LIFT), face):
-			rig.face_shot(face, yaw, FACE_LIFT)
-			return
-	rig.face_shot(face, sides[0], FACE_LIFT)
-
-
-## A scene's speaker and the player in one view (PLAN 2.13 A): the player
-## turns to them and the camera looks down at the point between the two
-## (_two_shot); `lift` of the screen's height above the middle.
-func frame_scene(person: OfficePerson, lift: float) -> void:
-	if not player.seated:   # seated at a table you face the table
-		_turn_to(person)
-	_two_shot(person, lift)
-
-
-## The camera looks down at the point between the player and `person`, from
-## behind the player a little to the side when the floor is open there, else
-## from the side with the most open floor (a wall close behind would hide them).
-## Unless `anywhere` (a walking talk, reframed every step), it takes the first of
-## those sides, then square to the pair, from which both are seen whole (a pillar
-## or a wall between would hide one); none clear, the one with the most open floor.
-func _two_shot(person: OfficePerson, lift: float, anywhere := false) -> void:
-	var between := (player.position + person.position) / 2.0 * Vector3(1, 0, 1)
-	var behind_player := atan2(player.position.x - person.position.x, player.position.z - person.position.z)
-	var sides: Array = [talk_yaw(person, player.position), behind_player - TALK_ANGLE, behind_player + TALK_ANGLE,
-		behind_player + PI - TALK_ANGLE, behind_player + PI + TALK_ANGLE]
-	var room := sides.map(func(yaw: float) -> float: return _open_floor(between, yaw))
-	var order := range(sides.size())
-	order.sort_custom(func(a: int, b: int) -> bool: return room[a] > room[b] or (room[a] == room[b] and a < b))
-	var yaws: Array = order.map(func(i: int) -> float: return sides[i])
-	var at := between + Vector3.UP * CameraRig.FOCUS_HEIGHT
-	if not anywhere:
-		for yaw: float in yaws + [behind_player - PI / 2.0, behind_player + PI / 2.0]:
-			var eye := rig.view_from(at, yaw, CameraRig.SCENE_DISTANCE, CameraRig.SCENE_PITCH, lift)
-			if sees(eye, null) and sees(eye, person):
-				rig.two_shot(at, yaw, lift)
-				return
-	rig.two_shot(at, yaws[0], lift)
-
-
-## Whether a camera at `eye` sees `point` (office space): no wall, pillar or shut door of
-## the geometry's collision crosses the line between them, up to SIGHT_SHORT before it.
-func in_sight(eye: Vector3, point: Vector3) -> bool:
-	if _sight_faces.is_empty():
-		_sight_faces = _collision_faces()
-	var to := point + (eye - point).normalized() * SIGHT_SHORT
-	for i in range(0, _sight_faces.size() - 2, 3):
-		if Geometry3D.segment_intersects_triangle(eye, to, _sight_faces[i], _sight_faces[i + 1], _sight_faces[i + 2]) != null:
-			return false
-	return true
-
-
-## Whether a camera at `eye` sees `person` (the player for null) whole: waist and head
-## (lower when seated), each with its left and right edge.
-func sees(eye: Vector3, person: OfficePerson) -> bool:
-	var at := person.position if person != null else player.position
-	var sits := person.pose == "sit" if person != null else player.seated
-	var across := (at - eye).cross(Vector3.UP) * Vector3(1, 0, 1)
-	across = across.normalized() * BODY_HALF_WIDTH if across.length() > 0.01 else Vector3.ZERO
-	for h: float in BODY_SEATED if sits else BODY_STANDING:
-		for side in [-1.0, 0.0, 1.0]:
-			if not in_sight(eye, at + Vector3.UP * h + across * side):
-				return false
-	return true
-
-
-## How far (m, up to SCENE_CLEAR) the floor runs open from `at` towards a
-## camera at `yaw`: a wall close behind the pair would hide them.
-func _open_floor(at: Vector3, yaw: float) -> float:
-	var back := Vector3(sin(yaw), 0, cos(yaw))
-	var free := 0.0
-	while free < SCENE_CLEAR and nav().walkable(at + back * (free + 0.5)):
-		free += 0.5
-	return free
-
-
-func _turn_to(person: OfficePerson) -> void:
-	var to_person := (person.position - player.position) * Vector3(1, 0, 1)
-	if to_person.length() > 0.01:
-		player.face(Basis.looking_at(to_person.normalized()))
 
 
 ## A scene's line, choice or paper is up (true; PLAN 2.13 A): no walking, no
@@ -1012,23 +823,6 @@ func world_waits() -> bool:
 	return ui.is_busy() or _scene_holds
 
 
-## The camera's yaw for a talk: from behind the player standing `at`, turned
-## TALK_ANGLE to whichever side sees more of the person's face.
-func talk_yaw(person: OfficePerson, at: Vector3) -> float:
-	var back := (at - person.position) * Vector3(1, 0, 1)
-	var straight := atan2(back.x, back.z)
-	var faces := -person.basis.z
-	var left := straight + TALK_ANGLE
-	var right := straight - TALK_ANGLE
-	# the side whose camera stands more in front of the person
-	return left if Vector3(sin(left), 0, cos(left)).dot(faces) >= Vector3(sin(right), 0, cos(right)).dot(faces) else right
-
-
-## The point a talk looks at: the person's face.
-func talk_point(person: OfficePerson) -> Vector3:
-	return person.position + Vector3.UP * (person.height() - FACE_DROP)
-
-
 func _add_player() -> void:
 	player = Player.new(session.player.look)
 	add_child(player)
@@ -1044,7 +838,7 @@ func _add_player() -> void:
 	player.escape_pressed.connect(func() -> void:
 		player.stop()
 		ui.escape())
-	player.arrived.connect(_on_arrived)
+	player.arrived.connect(pointer.on_arrived)
 
 
 func _add_camera() -> void:
@@ -1057,23 +851,9 @@ func _add_camera() -> void:
 	rig.hold_inspect.connect(func(on: bool) -> void:
 		var near := interactable_near(player.position)
 		if on and near != null and not ui.is_busy():
-			frame(near)
+			staging.frame(near)
 		elif not on and not ui.is_busy():
 			rig.release())
-
-
-## Frame a station with the camera: its desk, in-tray and board, close by,
-## in the middle of the room a docked panel leaves.
-func frame(target: Interactable) -> void:
-	var ahead := -target.basis.z
-	rig.inspect(frame_point(target), atan2(-ahead.x, -ahead.z), ui.docked_share() / 2.0)
-
-
-## The point the camera looks at when it frames `target`.
-func frame_point(target: Interactable) -> Vector3:
-	var ahead := -target.basis.z
-	ahead.y = 0
-	return target.position + ahead.normalized() * FRAME_AHEAD + Vector3.UP * FRAME_HEIGHT
 
 
 ## The ceiling's meshes go on the layer the camera does not draw (they still
@@ -1090,110 +870,20 @@ func _cut_away_ceiling() -> void:
 
 ## A left click on the view (no panel took it): on a person, walk up and ask
 ## for a talk; else walk to that spot. A mouse move shows the name of the
-## person under the cursor, or lights up the ring under it.
+## person under the cursor, or lights up the ring under it (OfficePointer).
 func _unhandled_input(event: InputEvent) -> void:
-	var clicked: bool = event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT
-	if not clicked and not event is InputEventMouseMotion:
-		return
-	var origin := to_local(rig.camera.project_ray_origin(event.position))
-	var ray := (to_local(rig.camera.project_ray_origin(event.position) + rig.camera.project_ray_normal(event.position)) - origin).normalized()
-	var person := people.person_under(origin, ray) if not ui.is_busy() else null
-	if clicked and person != null:
-		click_person(person)
-		return
-	if clicked and tells != null and click_tell(tells.under(origin, ray)):
-		return
-	if not clicked:
-		hover_person(person)
-	if ray.y >= -0.01:
-		return
-	var point := origin + ray * (-origin.y / ray.y)
-	if clicked:
-		click_floor(point)
-	elif person == null:
-		hover_floor(point)
-
-
-## The person under the cursor (null for none): their name tag shows, the rings
-## go dark, the cursor becomes a hand.
-func hover_person(person: OfficePerson) -> void:
-	_hovered_person = person
-	if person == null:
-		return
-	for i in interactables:
-		i.set_hovered(false)
-	if DisplayServer.get_name() != "headless":
-		Input.set_default_cursor_shape(Input.CURSOR_POINTING_HAND)
-
-
-## Walk up to a clicked person and ask for a talk on arrival. False when the
-## click is not for the world or there is no way there.
-func click_person(person: OfficePerson) -> bool:
-	if world_waits() or not session.error.is_empty():
-		return false
-	_walk_goal = person
-	var route := nav().path(player.position, person.position)
-	player.walk(route)
-	return not route.is_empty()
-
-
-## A click on a tell (PLAN 2.15): within reach, look closer; else walk up to it and look on
-## arrival. False when the click is not for the world, there is no tell or no way there.
-func click_tell(tell: String) -> bool:
-	if tell.is_empty() or world_waits() or not session.error.is_empty():
-		return false
-	var root: Node3D = tells.roots[tell]
-	if tells.distance(tell, player.position) <= REACH:
-		use(root)
-		return true
-	_walk_goal = root
-	var route := nav().path(player.position, tells.bounds(tell).get_center() * Vector3(1, 0, 1))
-	player.walk(route)
-	return not route.is_empty()
-
-
-## Light up the ring at a floor point under the cursor (office space), and
-## only that one; the cursor becomes a hand over it.
-func hover_floor(point: Vector3) -> void:
-	var under := interactable_near(point, RING_CLICK) if not ui.is_busy() else null
-	for i in interactables:
-		i.set_hovered(i == under)
-	if DisplayServer.get_name() != "headless":
-		Input.set_default_cursor_shape(Input.CURSOR_POINTING_HAND if under != null else Input.CURSOR_ARROW)
-
-
-## Walk to a clicked floor point (office space); a click on a place's ring
-## walks there and opens it on arrival. False when the click is not for the
-## world (a panel is open, the content failed) or nothing can be reached.
-func click_floor(point: Vector3) -> bool:
-	if world_waits() or not session.error.is_empty():
-		return false
-	_walk_goal = interactable_near(point, RING_CLICK)
-	var route := nav().path(player.position, _walk_goal.position if _walk_goal != null else point)
-	player.walk(route)
-	return not route.is_empty()
-
-
-func _on_arrived() -> void:
-	var goal := _walk_goal
-	_walk_goal = null
-	if goal == null or ui.is_busy():
-		return
-	var tell := tells.id_of(goal) if tells != null else ""
-	if goal == interactable_near(player.position) or goal == people.person_near(player.position, REACH) \
-			or (not tell.is_empty() and tells.distance(tell, player.position) <= REACH):
-		use(goal)
+	pointer.handle(event)
 
 
 ## The walk grid, baked from the office's collision on first use.
 func nav() -> OfficeNav:
 	if _nav == null:
-		_nav = OfficeNav.bake(_collision_faces(), floor_rect())
+		_nav = OfficeNav.bake(collision_faces(), floor_rect())
 	return _nav
 
 
 ## Every collision triangle of the geometry, in the office's space.
-func _collision_faces() -> PackedVector3Array:
+func collision_faces() -> PackedVector3Array:
 	var faces := PackedVector3Array()
 	for n in geometry.find_children("*", "CollisionShape3D", true, false):
 		var shape := (n as CollisionShape3D).shape

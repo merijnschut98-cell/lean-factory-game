@@ -5,7 +5,7 @@ extends UiPanel
 ##   SPEAK: their words as a film's subtitle that types out and waits for the
 ##   key (SceneLines: the first press completes, the next goes on, ← re-reads),
 ##   your own line small over their answer with ▲/▼ after it; the world frames
-##   their face (Office.stage_talk).
+##   their face (OfficeStaging.stage_talk).
 ##   CHOOSE: back to the two of you; their last line stays as the subtitle and
 ##   the four sentences sit above it (keys 1–4, "Afronden" under them).
 ##   SUMMARY_SCREEN: after their last words the talk's note (TalkSummary),

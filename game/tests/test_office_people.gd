@@ -230,7 +230,7 @@ func test_the_cursor_picks_a_person_and_a_click_walks_up_to_talk() -> void:
 	assert_eq(office.people.person_under(eye, (at_chest + Vector3(2, 0, 0) - eye).normalized()), null, "beside him: nobody")
 	var heard: Array[String] = []
 	office.person_selected.connect(func(id: String) -> void: heard.append(id))
-	assert_true(office.click_person(joost), "a way to him")
+	assert_true(office.pointer.click_person(joost), "a way to him")
 	for i in 600:
 		if not office.player.walking():
 			break
