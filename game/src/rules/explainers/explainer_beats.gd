@@ -36,9 +36,6 @@ var on: Dictionary:
 var haspel: int:
 	get:
 		return rig.get("haspel")
-var haspel_unlocked: bool:
-	get:
-		return not rig.is_locked("haspel")
 var kettle_alone_seen: bool:
 	get:
 		return rig.get("kettle_alone_seen")
@@ -78,11 +75,6 @@ func beat() -> Dictionary:
 
 func phase() -> String:
 	return _beat.get("phase", "meterkast")
-
-
-## Seconds into the current beat.
-func elapsed() -> float:
-	return _elapsed
 
 
 ## The beat's place among the main beats, from 1 (an alt beat counts as its main beat).

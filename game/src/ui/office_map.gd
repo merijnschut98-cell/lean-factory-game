@@ -157,14 +157,6 @@ func _floor_marked(id: String) -> bool:
 	return plan.get("places", []).any(func(p: Dictionary) -> bool: return p["id"] in _marked or p["id"] in _room_targets)
 
 
-## The labels of floor `id`'s places.
-func floor_labels(id: String) -> Array[String]:
-	var out: Array[String] = []
-	for p: Dictionary in (_plan_of.call(id).get("places", []) if _plan_of.is_valid() else []):
-		out.append(p["label"])
-	return out
-
-
 ## A point on the floor (x, z) in a map area: the floor fitted to the area
 ## keeping its shape, centred, north (-z) up.
 static func project(at: Vector2, floor_in: Rect2, area_in: Rect2) -> Vector2:

@@ -58,12 +58,6 @@ static func panel(margin: int = 26) -> StyleBoxFlat:
 	return _box(Palette.PAPER, 12, Palette.VOLTANA_BLUE, 6, margin)
 
 
-## A chip that is open (its picks show): outlined, never filled with a
-## colour that could read as "right".
-static func open_chip() -> StyleBoxFlat:
-	return _box(Color.WHITE, 8, Palette.VOLTANA_BLUE, 2, 10)
-
-
 ## A paper card inside a panel (a section of the A3, a mission).
 static func card(fill: Color = Color.WHITE) -> StyleBoxFlat:
 	return _box(fill, 8, Palette.LINE, 1, 14)

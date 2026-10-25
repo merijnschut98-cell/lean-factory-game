@@ -189,7 +189,7 @@ UI strings that are not content (button labels, HUD) go through Godot's translat
   - scoring, saves;
   - content validity.
   This mirrors the prototype's 57 tests.
-- **Visual checks:** `game/tools/screenshot.gd` renders a named scene to PNG under Xvfb, so world and UI changes are reviewed as pictures before they are committed: `xvfb-run -a godot --path game --rendering-driver opengl3 --resolution 1600x900 --script res://tools/screenshot.gd -- res://src/boot/boot.tscn out.png`.
+- **Visual checks:** `game/tools/screenshot.gd` renders a named scene to PNG under Xvfb, so world and UI changes are reviewed as pictures before they are committed: `xvfb-run -a godot --path game --rendering-driver opengl3 --resolution 1600x900 --script res://tools/screenshot.gd -- res://src/ui/title_menu.tscn out.png`.
 - **Legacy:** the Python factory game keeps its own `pytest` suite.
 
 ## CI and builds (GitHub Actions)

@@ -1,7 +1,7 @@
 extends SceneTree
 ## Render a scene to PNG for visual review (needs a display, e.g. Xvfb):
 ##   xvfb-run -a godot --path game --rendering-driver opengl3 --resolution 1600x900 \
-##     --script res://tools/screenshot.gd -- res://src/boot/boot.tscn /tmp/out.png [frames]
+##     --script res://tools/screenshot.gd -- res://src/ui/title_menu.tscn /tmp/out.png [frames]
 
 func _initialize() -> void:
 	_run.call_deferred()

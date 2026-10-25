@@ -6,6 +6,8 @@ extends Control
 ## With labels, each move's name sits under its own point (in two staggered
 ## rows, so neighbours do not overlap).
 
+## Band colours of the points, from closed (red) to thinking along (green).
+const BAND_COLORS: Array[Color] = [Color("#d64545"), Color("#f07b22"), Color("#e5b821"), Color("#7fcf6a"), Color("#1f9a57")]
 const LABEL_SIZE := 13
 ## The height of one row of labels under the line.
 const LABEL_ROW := 16.0
@@ -53,7 +55,7 @@ func _draw() -> void:
 		points.append(point(i, trace.size(), trace[i], area - Vector2(2 * inset, 0)) + Vector2(inset, 0))
 	draw_polyline(points, Palette.VOLTANA_BLUE, 2.0, true)
 	for i in trace.size():
-		draw_circle(points[i], 2.5, OpennessBar.COLORS[maxi(0, Dialog.band_of(roundi(trace[i])))])
+		draw_circle(points[i], 2.5, BAND_COLORS[maxi(0, Dialog.band_of(roundi(trace[i])))])
 	_draw_labels(points, area)
 
 
