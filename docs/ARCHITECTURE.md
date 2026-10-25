@@ -19,11 +19,12 @@ game/                      Godot project (res://)
   src/
     sim/                   pure logic: work orders, value streams, pools, stock, time
     rules/                 pure logic: problems, clues, conversations, A3, PDCA score, progression, story
-    content/               loads generated JSON into typed objects, validates references
-    save/                  save files: versioned, validated, written to user://
-    game/                  autoloads: Game (owns sim + rules, time control), Events (signal bus)
-    world/                 3D scenes and scripts: campus, town, characters, vans, WIP visuals
-    ui/                    Control scenes: HUD, dagstart, gemba toolkit, A3, Check & Act, VSM, notebook, codex
+    content/               JSON helpers and small content readers (most typed loading lives in rules/catalog.gd)
+    save/                  save files: versioned, validated, written to user://; slots, settings
+    game/                  GameSession (owns the Region, missions, people; time and actions), SessionLayer, the opening, the player profile (no autoloads)
+    world/office/          3D scenes and scripts: the office building and its floors, people, desks and boards, the yard, the van ride
+    audio/                 the soundscape
+    ui/                    Control scripts: title menu, HUD, phone, TalkView, A3, Check, mission and KPI boards, codex, creator, explainers
   data/                    generated JSON (never edited by hand)
   assets/                  models, textures, fonts, audio (with licence files)
   tests/                   headless test runner + test_*.gd (helpers such as TestCase in tests/lib/)
@@ -138,7 +139,7 @@ Problem effects are generic modifiers (`sim/modifiers.gd`):
 ## Content pipeline
 
 - **Authoring:** content is written in **YAML** under `content/`. YAML is readable for review, handles long Dutch texts well, and keeps comments. Game text is Dutch; keys and field names are English.
-- **Files so far:** `game.yaml`, `value_streams.yaml` (a healthy base), `countermeasures.yaml` and `problems_tier1.yaml` (the problems switched on as effects on top of the base). `rules/catalog.gd` loads the last two.
+- **Files:** every `content/*.yaml` (game, value streams (a healthy base), problems and countermeasures (switched on as effects on top of the base), missions, dialogs, kpis, places, world, scenes, company, concepts, discoveries, explainers). `rules/catalog.gd` loads most of them.
 - **Build:** `tools/build_content.py` validates everything in two passes (each file against its own validator, then `CROSS_CHECKS` over all files for references between them) and writes JSON to `game/data/`. Godot parses JSON natively, so the game needs no YAML parser. Validation covers:
   - required fields;
   - every problem has at least one key clue at depth 0;
