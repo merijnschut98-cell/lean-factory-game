@@ -1305,7 +1305,7 @@ class Persona extends RefCounted:
 			# The Check's own counterfactual (Region.check): the fix's effect.
 			"with": _rows(r["forecast"]["with"]), "without": _rows(r["forecast"]["without"]),
 			"gains": _rows(r["forecast"]["gains"])}
-		entry["flags"] = _flags(entry)
+		entry["flags"] = _flags(entry, r["forecast"]["gains"])
 		record["checks"].append(entry)
 		var run: Dictionary = _runs.get(m.id, {})
 		if not run.is_empty():
@@ -1355,11 +1355,13 @@ class Persona extends RefCounted:
 
 	## What would read as contradictory: the verdict against the Check's own
 	## counterfactual (the fix's effect, `gains`), and the panel's before/after
-	## table against it.
-	static func _flags(e: Dictionary) -> Array[String]:
+	## table against it. `gains` is the Check's unrounded copy: the entry's is
+	## rounded for the report, and a gain just over Pdca.CHECK_NOISE (which
+	## passes) must not read as inside it (finding 13).
+	static func _flags(e: Dictionary, gains: Dictionary) -> Array[String]:
 		var flags: Array[String] = []
-		var pred: float = e["gains"][e["prediction"]]
-		var own: float = e["gains"][e["kpi"]]
+		var pred: float = gains[e["prediction"]]
+		var own: float = gains[e["kpi"]]
 		if e["passed"]:
 			if pred < -Pdca.CHECK_NOISE:
 				flags.append("passed_leading_kpi_worse" if CheckPanel.kind(e["prediction"]) == CheckPanel.LEADING
@@ -1370,7 +1372,7 @@ class Persona extends RefCounted:
 				flags.append("passed_no_visible_change")
 			if not e["cause_correct"]:
 				flags.append("passed_with_wrong_cause")
-			if e["at_constraint"] and e["gains"]["capacity"] < 0.005:
+			if e["at_constraint"] and gains["capacity"] < 0.005:
 				flags.append("constraint_fixed_no_capacity_gain")
 			if better_by(e["kpi"], e["before"], e["after"], e["throughput_direction"]) < -NOISE and own > Pdca.CHECK_NOISE:
 				flags.append("trend_hides_gain")

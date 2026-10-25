@@ -125,3 +125,24 @@ func test_the_report_ranks_findings_by_severity() -> void:
 	var sorted := order.duplicate()
 	sorted.sort()
 	assert_eq(order, sorted, "ranked by severity")
+
+
+## Finding 13 (careless seed 12, day 467): the Check passed on a lead-time gain
+## of 2.04 %, just over Pdca.CHECK_NOISE; the report's copy rounds it to 2.0 %,
+## and the flag read that copy as "no visible change". The flags judge the
+## Check's own unrounded gains, as Region.check does.
+func test_the_flags_judge_the_unrounded_gain_not_the_reports_rounded_copy() -> void:
+	var raw := {"capacity": 0.0, "first_time_right": 0.062, "lead_time": 0.02036, "on_time": 0.101,
+		"throughput": 0.005, "wip_age": -0.001}
+	var rows := {"capacity": 25.0, "first_time_right": 0.3, "lead_time": 130.0, "on_time": 0.85,
+		"throughput": 20.0, "wip_age": 90.0}
+	var entry := {"passed": true, "prediction": "lead_time", "kpi": "lead_time", "cause_correct": true,
+		"at_constraint": false, "before": rows, "after": rows, "throughput_direction": 1,
+		"not_constraint": false, "wait_step": true, "lesson": "cause_right", "level": "full",
+		"gains": Autoplay.Persona._rows(raw)}
+	assert_eq(entry["gains"]["lead_time"], 0.02, "the report's copy rounds to the noise edge")
+	assert_false("passed_no_visible_change" in Autoplay.Persona._flags(entry, raw),
+		"2.04 % is over the noise: the Check saw a change")
+	raw["lead_time"] = 0.01
+	assert_true("passed_no_visible_change" in Autoplay.Persona._flags(entry, raw),
+		"a pass with its gain inside the noise is still flagged")
