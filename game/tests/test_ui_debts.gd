@@ -60,7 +60,9 @@ func test_the_hud_shows_the_savings_of_held_fixes() -> void:
 # ── Check ───────────────────────────────────────────────────────────────────
 
 func test_the_check_panel_takes_lower_is_better_from_the_rules() -> void:
-	assert_false(CheckPanel.new().get_script().get_script_constant_map().has("LOWER_IS_BETTER"))
+	var panel := CheckPanel.new()
+	assert_false(panel.get_script().get_script_constant_map().has("LOWER_IS_BETTER"))
+	panel.free()
 	assert_true(CheckPanel.improved("lead_time", 40.0, 30.0))
 	assert_true(CheckPanel.improved("throughput", 4.0, 5.0))
 

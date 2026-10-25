@@ -7,7 +7,7 @@ extends SceneTree
 ## (matched on the path: `-- /test_x.gd` is exactly one). The whole suite runs
 ## one file per process through tools/run_godot_tests.py. SPANNING_TEST_MEM=1
 ## prints memory and object counts after each file, SPANNING_TEST_TIMES=1 each
-## test's time.
+## test's time, SPANNING_TEST_ONLY=<substring> runs only the matching test methods.
 
 const TEST_DIR := "res://tests"
 
@@ -38,6 +38,7 @@ func _initialize() -> void:
 	if not args.is_empty():
 		filter = args[0]
 	var files := _test_files(filter)
+	var only := OS.get_environment("SPANNING_TEST_ONLY")
 	var catcher := ErrorCatcher.new()
 	OS.add_logger(catcher)
 	var passed := 0
@@ -49,7 +50,7 @@ func _initialize() -> void:
 			continue
 		for method in script.get_script_method_list():
 			var name: String = method["name"]
-			if not name.begins_with("test_"):
+			if not name.begins_with("test_") or not (only.is_empty() or name.contains(only)):
 				continue
 			var case: TestCase = script.new()
 			catcher.take()
@@ -77,7 +78,12 @@ func _initialize() -> void:
 		printerr("FAIL ", line)
 	OS.remove_logger(catcher)
 	print("%d passed, %d failed (%d files)" % [passed, failed.size(), files.size()])
-	quit(1 if not failed.is_empty() or files.is_empty() else 0)
+	# The warm-up cache would outlive the script and report ~600 objects as leaked at exit.
+	GameSession._warm_networks.clear()
+	var none_matched := not only.is_empty() and passed == 0 and failed.is_empty()
+	if none_matched:
+		printerr("no test method matches SPANNING_TEST_ONLY=", only)
+	quit(1 if not failed.is_empty() or files.is_empty() or none_matched else 0)
 
 
 func _test_files(filter: String) -> PackedStringArray:
