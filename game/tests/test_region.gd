@@ -785,3 +785,30 @@ func test_a_problem_can_ask_the_check_to_measure_longer() -> void:
 	assert_eq(Region.check_window(p, 100), Vector2i(Region.MAX_CHECK_HORIZON, 173), "never past the longest horizon")
 	assert_eq(ProblemDef.from_dict({"id": "x", "name": "x", "step": "a.b", "waste": "defects", "severity": "low",
 		"visibility": "obvious", "kpi": "lead_time", "root_cause": "r", "measure_days": 120}).measure_days, 120)
+
+
+## TD-4: moving the sustain rules out of Region changes nothing a save writes:
+## a resolved, standardised fix with a routine and drift running.
+func test_split_keeps_save_keys() -> void:
+	var r := _region()
+	r.activate("custom_design")
+	_investigate(r)
+	assert_eq(r.submit_a3("custom_design", _a3(r, "standard_designs")), "")
+	r.advance_days(Region.CHECK_DAYS)
+	assert_true(r.check("custom_design")["passed"])
+	assert_false(r.act("custom_design", true).is_empty())
+	r.start_drift()
+	assert_eq(r.plan_routine("connections.design"), "")
+	r.advance_days(10)
+	var saved := RegionState.capture(r)
+	var keys := saved.keys()
+	keys.sort()
+	assert_eq(keys, ["advance_owed", "aftermaths", "cost_owed", "drift_from", "floor_days", "found", "kpi_board",
+		"network", "observed", "problems", "profile", "reputation", "routines", "trust"])
+	var problem_keys: Array = saved["problems"]["custom_design"].keys()
+	problem_keys.sort()
+	assert_eq(problem_keys, ["a3", "advanced", "advanced_at", "baseline", "blamed", "buy_in", "cause_correct", "check_at",
+		"checked", "eff", "failed_checks", "gains", "level", "neglect", "phase", "rework_from", "score", "standardised",
+		"waste_right", "wear"])
+	assert_eq(saved["routines"], ["connections.design"])
+	assert_true(saved["drift_from"] >= 0, "drift is running")

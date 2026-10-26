@@ -129,7 +129,13 @@ var routines: Dictionary[String, bool] = {}
 var aftermaths: Dictionary[String, Dictionary] = {}
 
 
+## The sustain rules (wear, audits, routines, drift); the state they read and
+## write stays here, where it is saved.
+var sustain_rules: RegionSustain
+
+
 func _init(network: Network, problem_defs: Array[ProblemDef], cm_defs: Array[CountermeasureDef], player: Profile) -> void:
+	sustain_rules = RegionSustain.new(self)
 	net = network
 	profile = player
 	for p in problem_defs:
@@ -219,9 +225,9 @@ func _advance_within_day(minutes: int) -> void:
 			st.phase = P.CHECK_READY
 			events.append({"type": "check_ready", "problem": st.id})
 		elif st.phase == P.RESOLVED and st.a3.has("cm"):
-			_wear(st, minutes)
+			sustain_rules.wear(st, minutes)
 	_run_aftermaths()
-	_apply_drift()
+	sustain_rules.apply_drift()
 
 
 ## Start and end the aftermaths whose time has come.
@@ -748,7 +754,7 @@ func act(problem_id: String, standardise: bool) -> Dictionary:
 	_reassert_board()
 	if drift_from >= 0:
 		drift_from = net.time
-		_apply_drift()
+		sustain_rules.apply_drift()
 	profile.learn(p.teaches + (PackedStringArray(["standard_work"]) if standardise else PackedStringArray()))
 	_after_act(problem_id, countermeasures[st.a3["cm"]])
 	grant(Pdca.xp_for(st.score, p.tier), Pdca.budget_for(st.score, p.severity))
@@ -901,52 +907,18 @@ func _apply_old_fix(st: ProblemState) -> void:
 		net.set_effects(source, sources[source])
 
 
-# ── Sustain: fixes wear, audits refresh them ────────────────────────────────
+# ── Sustain: fixes wear, audits refresh them (RegionSustain holds the rules) ──
 
-## The sustaining habits holding a resolved fix: {strength 0..1, mechanisms
-## (Sustain.WEIGHTS keys, in that order)}. Standard work from the Act; a held
-## fix in the same stream whose countermeasure `sustains` (a board); a team at
-## the step that steers by KPIs on the board.
 func sustain(problem_id: String) -> Dictionary:
-	var st: ProblemState = state.get(problem_id)
-	var mechanisms: Array[String] = []
-	if st == null or st.phase != P.RESOLVED:
-		return {"strength": 0.0, "mechanisms": mechanisms}
-	var p := problems[problem_id]
-	if st.standardised:
-		mechanisms.append("standard_work")
-	if _board_holds(p):
-		mechanisms.append("visual_management")
-	if Array(_pools_at(p.step)).any(func(pool: String) -> bool: return not board.chosen.get(pool, []).is_empty()):
-		mechanisms.append("kpis")
-	var strength := 0.0
-	for m in mechanisms:
-		strength += Sustain.WEIGHTS[m]
-	return {"strength": strength, "mechanisms": mechanisms}
+	return sustain_rules.sustain(problem_id)
 
 
-## Another resolved fix in the problem's stream holds with a board (`sustains`).
-func _board_holds(p: ProblemDef) -> bool:
-	return problem_list().any(func(other: ProblemDef) -> bool:
-		var st := state[other.id]
-		return other.id != p.id and other.stream_id() == p.stream_id() and st.phase == P.RESOLVED \
-			and countermeasures.has(st.a3.get("cm", "")) and countermeasures[st.a3["cm"]].sustains)
-
-
-## A resolved fix's health (1 fresh, 0.5 at recurrence); 1 for anything else.
 func health(problem_id: String) -> float:
-	var st: ProblemState = state.get(problem_id)
-	return Sustain.health(st.wear) if st != null and st.phase == P.RESOLVED else 1.0
+	return sustain_rules.health(problem_id)
 
 
-## The days of neglect the fix lasts at today's habits (Sustain.life_days),
-## times its owner's buy-in (Sustain.BUY_IN); 0 when there is no fix.
 func life_days(problem_id: String) -> float:
-	var st: ProblemState = state.get(problem_id)
-	if st == null or st.phase != P.RESOLVED or not countermeasures.has(st.a3.get("cm", "")):
-		return 0.0
-	return Sustain.life_days(Sustain.base_days(countermeasures[st.a3["cm"]]), sustain(problem_id)["strength"]) \
-		* Sustain.BUY_IN[st.buy_in]
+	return sustain_rules.life_days(problem_id)
 
 
 ## Days until a resolved fix recurs if nothing changes: INF while a routine
@@ -958,99 +930,26 @@ func days_to_recur(problem_id: String) -> float:
 	return INF if held_by_routine(problem_id) else Sustain.days_left(state[problem_id].wear, life)
 
 
-## A planned routine at the step holds a standardised fix (there is a
-## standard to hold it to).
 func held_by_routine(problem_id: String) -> bool:
-	var st: ProblemState = state.get(problem_id)
-	return st != null and st.phase == P.RESOLVED and st.standardised and routines.has(problems[problem_id].step)
+	return sustain_rules.held_by_routine(problem_id)
 
 
-## A gemba audit of the standard at a place (the caller advances the clock
-## by Sustain.AUDIT_MINUTES): standardised fixes there are back in full use;
-## unstandardised ones have no standard to audit against.
-## Returns {refreshed, no_standard}: problem ids.
 func audit(place: String) -> Dictionary:
-	var refreshed: Array[String] = []
-	var no_standard: Array[String] = []
-	for p in problem_list():
-		var st := state[p.id]
-		if p.step != place or st.phase != P.RESOLVED:
-			continue
-		if st.standardised:
-			st.wear = 0.0
-			st.neglect = 0.0
-			if countermeasures.has(st.a3.get("cm", "")):
-				_apply_wear(st)
-			refreshed.append(p.id)
-		else:
-			no_standard.append(p.id)
-	observed[place] = true
-	profile.learn(["standard_work", "leader_standard_work"])
-	return {"refreshed": refreshed, "no_standard": no_standard}
+	return sustain_rules.audit(place)
 
 
-## `minutes` of wear on a resolved fix, at its life now and faster the
-## longer it is neglected; worn to 1 it recurs. A routine holds it as it is.
-func _wear(st: ProblemState, minutes: int) -> void:
-	if held_by_routine(st.id):
-		st.neglect = 0.0
-		return
-	var was := Sustain.health(st.wear)
-	var days := minutes / float(SimCalendar.MINUTES_PER_DAY)
-	st.wear += Sustain.wear_over(st.neglect, days, life_days(st.id))
-	st.neglect += days
-	if st.wear >= 1.0 - 1e-9:
-		_recur(st)
-		return
-	if was >= Sustain.SLIPPING_HEALTH and Sustain.health(st.wear) < Sustain.SLIPPING_HEALTH:
-		events.append({"type": "slipping", "problem": st.id})
-	_apply_wear(st)
-
-
-## The fix's and the problem's effects at the fix's health.
-func _apply_wear(st: ProblemState) -> void:
-	var sources := Sustain.eroded_effects(problems[st.id], countermeasures[st.a3["cm"]], st.eff, Sustain.health(st.wear))
-	for source: String in sources:
-		net.set_effects(source, sources[source])
-
-
-## Plan a routine at a place (leader standard work, no mission needed): the
-## team gives Sustain.ROUTINE_HOURS_PER_WEEK every week, and standardised
-## fixes there stop wearing while it runs. "" or why not: unknown_place |
-## no_team (a wait step) | planned.
 func plan_routine(place: String) -> String:
-	if net.step_at(place) == null:
-		return "unknown_place"
-	var pool: SimPool = net.pools.get(_team(place))
-	if pool == null:
-		return "no_team"
-	if routines.has(place):
-		return "planned"
-	var weekly_hours := pool.headcount * pool.schedule.hours()
-	var refused := net.set_effects(ROUTINE_SOURCE + place,
-		[{"target": pool.id, "property": "availability", "value": -Sustain.ROUTINE_HOURS_PER_WEEK / weekly_hours}])
-	if not refused.is_empty():
-		return "no_team"
-	routines[place] = true
-	profile.learn(["standard_work", "leader_standard_work"])
-	return ""
+	return sustain_rules.plan_routine(place)
 
 
-## Stop a routine: the team's time is back, and neglect counts from now.
-## "" or not_planned.
 func stop_routine(place: String) -> String:
-	if not routines.erase(place):
-		return "not_planned"
-	net.clear_effects(ROUTINE_SOURCE + place)
-	return ""
+	return sustain_rules.stop_routine(place)
 
 
 # ── Stagnation drift ────────────────────────────────────────────────────────
 
-## Start counting stagnation (the campaign opens). Idempotent.
 func start_drift() -> void:
-	if drift_from < 0:
-		drift_from = net.time
+	sustain_rules.start_drift()
 
 
 ## Days since the last resolved improvement (0 before drift starts).
@@ -1059,19 +958,4 @@ func stagnant_days() -> float:
 
 
 func drift_level() -> float:
-	return Sustain.drift_level(stagnant_days())
-
-
-## The drift's effects follow its level. Content validates the
-## targets, so a refusal is a bug worth a warning, not a crash.
-func _apply_drift() -> void:
-	var level := drift_level()
-	if is_equal_approx(level, _drift_applied):
-		return
-	_drift_applied = level
-	if level <= 0.0:
-		net.clear_effects(DRIFT_SOURCE)
-		return
-	var refused := net.set_effects(DRIFT_SOURCE, Sustain.drift_effects(net, level))
-	if not refused.is_empty():
-		push_warning("drift refused: " + refused)
+	return sustain_rules.drift_level()
