@@ -46,6 +46,9 @@ var world_free := Callable()
 ## Where the player stands, as the playtest marker names it (Office.marker_place); unset
 ## (tests, tools): no place.
 var world_place := Callable()
+## Whether a view that reads the keys before the GUI is up (Office.input_taken: the explainer,
+## the creator); unset (tests, tools): none.
+var input_taken := Callable()
 ## The session layer (PLAN 1.4): the terugblik, Intussen, the stop note, the
 ## discovery toasts and the side offers; the playtest log; autosave.
 var session_layer: SessionLayer
@@ -368,11 +371,13 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 
 ## Open the marker line; false when it does not (not the designer's build, the game
-## has no session, the pause menu is up, it is open already, or a ride, scene or view
-## holds the world).
+## has no session, the pause menu is up, it is open already, a view reads the keys, or a
+## ride or scene holds the world).
 func open_marker() -> bool:
 	if not Designer.enabled() or not playable() or session_layer == null or paused() or marker_open():
 		return false
+	if input_taken.is_valid() and input_taken.call():
+		return false   # the explainer or creator eats Enter and Esc before the line could
 	var held := is_busy()   # a panel already holds the player still
 	if not held and not _world_free():
 		return false   # a ride, a scene or a view holds the world: a marker must not change the moment

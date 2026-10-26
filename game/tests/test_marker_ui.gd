@@ -113,6 +113,23 @@ func test_the_line_does_not_open_in_a_ride_or_a_scene() -> void:
 	scene.free()
 
 
+## The explainer (opened over a talk, which stays up) reads Space, Enter and Esc before the
+## GUI: the line cannot share the keys with it, so it does not open; closed, it does.
+func test_the_line_does_not_open_over_an_explainer_on_a_talk() -> void:
+	var office := _office()
+	Designer.force(true)
+	office.ui.talk_view.show()   # a talk is up (a panel), as when the expert's drawing opens over it
+	office.open_talk_explainer(OfficeTrafohuisje.EXPLAINER)
+	assert_true(office.explainer != null, "the explainer is over the talk")
+	assert_true(office.ui.talk_view.visible, "the talk is still up under it")
+	assert_false(office.ui.open_marker(), "the explainer holds the keys")
+	assert_false(office.ui.marker_open())
+	office.explainer.close()
+	assert_true(office.ui.open_marker(), "over the talk alone it opens")
+	_cleanup()
+	office.free()
+
+
 ## Tab lowers the phone (Phone._input); typed in the line it must not.
 func test_tab_in_the_line_does_not_close_the_phone() -> void:
 	var office := _office()

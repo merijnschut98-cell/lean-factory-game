@@ -165,6 +165,7 @@ func build() -> void:
 	ui.panel_opened.connect(_on_panel_opened)
 	ui.world_free = world_free
 	ui.world_place = marker_place
+	ui.input_taken = input_taken
 	ui.talk_opened.connect(staging.frame_talk)
 	if ui.playable():
 		ui.talk_view.phase_changed.connect(func(_phase: String) -> void: staging.stage_talk())
@@ -627,7 +628,13 @@ func interact(target: Interactable) -> void:
 
 ## Whether the world waits: a panel, the explainer or the creator is open, or a van ride is on.
 func busy() -> bool:
-	return ui.is_busy() or explainer != null or look_editor != null or ride != null or kpi_board != null
+	return ui.is_busy() or input_taken() or ride != null or kpi_board != null
+
+
+## Whether a view that reads the keys before the GUI is up (the explainer, the creator): a
+## text line cannot share them with it.
+func input_taken() -> bool:
+	return explainer != null or look_editor != null
 
 
 ## Whether the world is the player's (review S3 #2): no panel, talk or phone, no view over
