@@ -95,9 +95,9 @@ Ports of the prototype's tested logic, adapted to a service organisation (plan: 
 | content types | `ProblemDef`, `CountermeasureDef`, `Clue`: the shape of the Phase B content |
 | `investigation.ts`: tools, clues with depth, questions, cause bank | `Investigation` (ids only; the UI words them) |
 | `pdca.ts`: effectiveness by maturity, five-dimension score | `Pdca` (effectiveness = maturity multiplier × the countermeasure's fit for the problem) |
-| `game.ts`: problem phases, A3, Check/Act, recurrence | `Region` + `ProblemState` + `Profile` |
+| `game.ts`: problem phases, A3, Check/Act, recurrence | `Region` + `ProblemState` + `Profile`; the sustain rules (wear, audits, routines, drift) in `RegionSustain` (`Region.sustain_rules`, with forwards on `Region`) |
 | `progression.ts`: belts | `Progression` |
-| missions | `MissionDef` + `Missions` (the campaign; see below) |
+| missions | `MissionDef` + `Missions` (the campaign; see below), `Coach` and `MissionSync` |
 | story | later (`rules/story.gd`) |
 
 How the rules differ from the factory:
@@ -115,8 +115,8 @@ How the rules differ from the factory:
 - At most one main mission and three side missions are active (`Region.MAX_OPEN` is 4 to match).
 - A goal is `walk` (see every work step of a stream), `investigate` (find N key clues) or `solve` (resolve a problem). Accepting a mission activates its problem.
 - A deadline is a real event: its clock starts when the mission opens, whether or not the player takes it on (`Missions.opened_at`). Missing it fails the mission for good and closes the countermeasures it names (`fail_closes` → `Region.closed`, saved): Henk retires and his knowledge transfer is gone. The validator makes sure another countermeasure still solves the problem.
-- The coach (a senior manager) only talks about the main mission. Its stage (`go_see`, `understand`, `experiment`, `reflect`) follows from the problem's PDCA phase; it asks the stage's Kata questions in turn, and every third time shares the mission's insight for that stage.
-- Problems only arrive through missions (CLAUDE.md §2). A fix that was not standardised fades: the Region puts the problem back to dormant, and `Missions.update` reopens its solve mission (erased from `progress`; `done_once` keeps the reward, the unlocks and any deadline from repeating); accepting it switches the problem on again, within the limit.
+- The coach (a senior manager, `Coach`, reached as `Missions.coaching`; `Missions.coach` is the coach's content) only talks about the main mission. Its stage (`go_see`, `understand`, `experiment`, `reflect`) follows from the problem's PDCA phase; it asks the stage's Kata questions in turn, and every third time shares the mission's insight for that stage.
+- Problems only arrive through missions (CLAUDE.md §2). A fix that was not standardised fades: the Region puts the problem back to dormant, and `Missions.update` reopens its solve mission (erased from `progress`; `done_once` keeps the reward, the unlocks and any deadline from repeating); accepting it switches the problem on again, within the limit. These per-update passes (reopen, re-offer, check-ins, repairs, forks, orphans) live in `MissionSync`, called from `Missions.update` in a fixed order.
 - The main quest sometimes forks: two main missions open at once, one at the bottleneck and one not (after De stapel bij Werkvoorbereiding: the intake or the meterkasten).
 - `Missions` holds the Region; the Region does not know about missions (no reference cycle). Saved with `to_dict`/`load_dict`; missions the content no longer has are dropped and reported.
 

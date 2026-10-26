@@ -105,7 +105,7 @@ coach:
       - "Wie heeft dit mogelijk gemaakt, en weten ze dat?"
       - "Wat is de volgende kleine stap?"
       - "Wat zou je anders doen als je opnieuw begon?"
-  # Asked once per mission when the situation holds (Missions._conditions).
+  # Asked once per mission when the situation holds (Coach.conditions).
   conditional:
     blamed: "Wat wilde je eigenlijk weten toen je dat vroeg?"
     fading_fix: "Hoe lang verwacht je dat dit blijft werken? En dan?"

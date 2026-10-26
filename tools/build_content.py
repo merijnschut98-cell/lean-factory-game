@@ -790,7 +790,7 @@ TALK_OUTCOMES = ["partial", "commitment"]  # MissionDef.TALK_OUTCOMES
 MAX_CHECK_DAYS = 14  # Region.CHECK_DAYS: a mission may only shorten the Check
 MATURITY_STEP = 0.6  # Region.MATURITY_STEP
 COACH_STAGES = ["go_see", "understand", "experiment", "reflect"]  # Missions.STAGES
-# The coach's questions for a situation (Missions._conditions): after a
+# The coach's questions for a situation (Coach.conditions): after a
 # blaming question, and a fix chosen to fade soon while a lasting one fits.
 COACH_CONDITIONS = ["blamed", "fading_fix"]
 BELT_XP = [0, 2000, 6000, 30000, 110000]  # Progression.BELTS
