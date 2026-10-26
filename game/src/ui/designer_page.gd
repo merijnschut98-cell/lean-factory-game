@@ -17,6 +17,10 @@ const NONE := "Nog geen opslagen. Maak ze met: python tools/make_designer_saves.
 const DAY := "dag %d"
 const PLAY := "Spelen"
 const REPLAY := "Praat opnieuw"
+## A save this version cannot read: why (SaveList.STATUS), and what to do.
+const REMAKE := "%s: maak de opslag opnieuw (tools/make_designer_saves.py)"
+## The load faults that list a save to be made again, with its status for SaveList.STATUS.
+const UNREADABLE := {SaveFile.Fault.TOO_OLD: SaveSlots.TOO_OLD, SaveFile.Fault.TOO_NEW: SaveSlots.TOO_NEW}
 const LABELS := {
 	"designer_training_done": "Opleiding klaar",
 	"designer_day045": "Dag 45",
@@ -53,7 +57,9 @@ func build() -> void:
 
 
 ## The designer saves in `dir`, earliest play day first: {slot, label, persona, seed, play_day,
-## stale}. Files that are not whole designer saves are left out.
+## stale, reason}. A save of a version this game cannot read is listed last, stale, with the
+## reason (SaveList.STATUS) to make it again; other files that are not whole designer saves
+## (damaged, not a designer save) are left out.
 func entries() -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	var current := DesignerSaves.content_hash()
@@ -64,6 +70,10 @@ func entries() -> Array[Dictionary]:
 		if slot == file or not SaveFile.valid_slot(slot):
 			continue
 		var loaded := SaveFile.load_slot(slot, dir)
+		if loaded["fault"] in UNREADABLE:
+			out.append({"slot": slot, "label": LABELS.get(slot, slot), "persona": "", "seed": 0, "play_day": -1,
+				"stale": true, "reason": SaveList.STATUS[UNREADABLE[loaded["fault"]]]})
+			continue
 		if loaded["fault"] != SaveFile.Fault.NONE:
 			continue
 		var meta := JsonFile.dict_or_empty(loaded["data"].get("meta"))
@@ -74,8 +84,11 @@ func entries() -> Array[Dictionary]:
 		out.append({"slot": slot, "label": LABELS.get(slot, slot), "persona": str(made.get("persona", "")),
 			"seed": made["seed"] if made.get("seed") is int else 0,
 			"play_day": SimCalendar.day_of(time) - GameSession.WARMUP_DAYS if time is int else -1,
-			"stale": made.get("content_hash") != current})
-	out.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["play_day"] < b["play_day"])
+			"stale": made.get("content_hash") != current, "reason": ""})
+	out.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		if (a["reason"] == "") != (b["reason"] == ""):
+			return a["reason"] == ""
+		return a["play_day"] < b["play_day"])
 	return out
 
 
@@ -108,6 +121,9 @@ func _card(parent: Node, e: Dictionary) -> void:
 	texts.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(texts)
 	texts.add_child(UiPanel.label(e["label"], UiTheme.FONT_SIZE, Palette.VOLTANA_BLUE))
+	if not e["reason"].is_empty():   # cannot be read: only what to do about it
+		box.add_child(UiPanel.paragraph(tr(REMAKE) % tr(e["reason"]), Palette.SAFETY_ORANGE, UiTheme.SMALL))
+		return
 	texts.add_child(UiPanel.label("%s  ·  seed %d  ·  %s" % [e["persona"], e["seed"], tr(DAY) % e["play_day"]],
 		UiTheme.SMALL, Palette.INK))
 	var go := UiPanel.button(tr(PLAY), pick.bind(e["slot"]))

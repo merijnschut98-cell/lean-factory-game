@@ -114,7 +114,7 @@ func _run() -> void:
 	var args := OS.get_cmdline_user_args()
 	var shot := PlayShotArgs.parse(args)
 	if shot["out"] == "":
-		printerr("usage: -- <office|overview|inspect|tools|a3|check|act|board|coach|map|codex|training_board|timelapse|sustain|intussen|terugblik|people_desks|people_talk|people_energy|people_monteurs|people_meetdata|people_gemba|title|title_replace|title_keep|pause|pause_slots|pause_confirm> <out.png> [frames]")
+		printerr("usage: -- <office|overview|inspect|tools|a3|check|act|board|coach|map|codex|training_board|timelapse|sustain|intussen|terugblik|people_desks|people_talk|people_energy|people_monteurs|people_meetdata|people_gemba|title|title_replace|title_keep|pause|pause_slots|pause_confirm> <out.png> [frames] [--at HH:MM] [--season <name>]")
 		quit(2)
 		return
 	var state: String = shot["state"]

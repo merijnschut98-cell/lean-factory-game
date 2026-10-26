@@ -13,19 +13,19 @@ const SAVES: Array[Dictionary] = [
 	{"slot": "designer_day095", "stop_day": 95.0},
 	{"slot": "designer_act2", "stop_act": 2},
 ]
-## What a save's content hash covers: the missions and the problems they play on.
-const HASHED: Array[String] = ["missions.json", "problems_tier1.json"]
-
-
-## SHA-256 (hex) of the mission and problem content; "" when a file is missing.
-static func content_hash() -> String:
+## SHA-256 (hex) of all the content a save was made on: every *.json in `data_dir`, name and
+## bytes, in sorted order (a dialog changed makes a save as stale as a mission changed);
+## "" when there is none.
+static func content_hash(data_dir: String = Catalog.DATA_DIR) -> String:
+	var files := Array(DirAccess.get_files_at(data_dir)).filter(func(f: String) -> bool: return f.get_extension() == "json")
+	if files.is_empty():
+		return ""
+	files.sort()
 	var hashing := HashingContext.new()
 	hashing.start(HashingContext.HASH_SHA256)
-	for file: String in HASHED:
-		var path := "%s/%s" % [Catalog.DATA_DIR, file]
-		if not FileAccess.file_exists(path):
-			return ""
-		hashing.update(FileAccess.get_file_as_bytes(path))
+	for file: String in files:
+		hashing.update(file.to_utf8_buffer())
+		hashing.update(FileAccess.get_file_as_bytes(data_dir.path_join(file)))
 	return hashing.finish().hex_encode()
 
 

@@ -327,9 +327,9 @@ func open_creator() -> CreatorScreen:
 	return creator
 
 
-## "Praat opnieuw" on the designer page: the list of talks over the menu.
+## "Praat opnieuw" on the designer page: the list of talks over the menu (designer only).
 func open_replay() -> void:
-	if replay != null:
+	if replay != null or not Designer.enabled():
 		return
 	replay = TalkReplay.new()
 	replay.build()

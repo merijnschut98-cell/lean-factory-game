@@ -220,3 +220,61 @@ func _press(root: Node, text: String) -> void:
 	for button: Node in root.find_children("*", "Button", true, false):
 		if (button as Button).text == text:
 			(button as Button).pressed.emit()
+
+
+func _write_raw(slot: String, bytes: PackedByteArray) -> void:
+	DirAccess.make_dir_recursive_absolute(designer_dir)
+	var file := FileAccess.open(SaveFile.path_of(slot, designer_dir), FileAccess.WRITE)
+	file.store_buffer(bytes)
+	file.close()
+
+
+## A designer save this version cannot read (too old, too new) is listed to be made again, with
+## the reason and no Spelen, instead of vanishing from the page.
+func test_an_unreadable_version_is_listed_to_be_made_again() -> void:
+	_save("designer_t1", 3)
+	_write_raw("designer_old", var_to_bytes({"version": SaveFile.OLDEST - 1, "region": {}}))
+	_write_raw("designer_new", SaveFile.encode({"version": SaveFile.VERSION + 1, "region": {}}))
+	Designer.force(true)
+	var menu := _menu()
+	menu.open_designer()
+	var by_slot := {}
+	for e: Dictionary in menu.designer.entries():
+		by_slot[e["slot"]] = e
+	assert_eq(by_slot.size(), 3, "all three listed")
+	assert_eq(by_slot["designer_t1"]["reason"], "", "a readable one has no reason")
+	for pair: Array in [["designer_old", SaveSlots.TOO_OLD], ["designer_new", SaveSlots.TOO_NEW]]:
+		var reason: String = SaveList.STATUS[pair[1]]
+		assert_true(by_slot[pair[0]]["stale"], pair[0])
+		assert_eq(by_slot[pair[0]]["reason"], reason, pair[0])
+		assert_true(shows(menu.designer, DesignerPage.REMAKE % reason), "%s says why" % pair[0])
+	assert_eq(texts_in(menu.designer).filter(func(t: String) -> bool: return t == DesignerPage.PLAY).size(), 1,
+		"only the readable one can be played")
+	menu.free()
+	_cleanup()
+
+
+func test_a_damaged_file_or_an_empty_folder_lists_nothing() -> void:
+	_cleanup()  # whatever an earlier test left
+	var page := DesignerPage.new()
+	page.dir = designer_dir
+	assert_eq(page.entries(), [], "no folder yet")
+	DirAccess.make_dir_recursive_absolute(designer_dir)
+	assert_eq(page.entries(), [], "an empty folder")
+	_write_raw("designer_bad", "not a save".to_utf8_buffer())
+	assert_eq(page.entries(), [], "a damaged file is no entry")
+	page.free()
+	_cleanup()
+
+
+## Like the Ontwerper page, the replay opens only with the designer flag (Designer.enabled).
+func test_the_replay_does_not_open_without_the_flag() -> void:
+	Designer.force(false)
+	var menu := _menu()
+	menu.open_replay()
+	assert_true(menu.replay == null, "no replay without the flag")
+	Designer.force(true)
+	menu.open_replay()
+	assert_true(menu.replay != null, "with it")
+	menu.free()
+	_cleanup()

@@ -21,6 +21,8 @@ func _cleanup() -> void:
 func test_designer_disabled_without_flag_or_editor() -> void:
 	Designer.force(null)
 	var flagged := OS.get_cmdline_user_args().has("--designer")
+	# The tests run under the editor binary (feature "editor"), so this assert sees it on; the
+	# real disabled case is the exported player build, which has neither the editor nor the flag.
 	assert_eq(Designer.enabled(), OS.has_feature("editor") or flagged, "only the editor or the flag turns it on")
 	Designer.force(true)
 	assert_true(Designer.enabled(), "the test hook forces it on")
@@ -90,6 +92,22 @@ func test_write_at_an_act_stop_saves_its_stop_on_a_morning() -> void:
 	assert_true(back.missions.active("main").any(func(m: MissionDef) -> bool: return m.act >= 1), "the act is in play")
 	assert_true(back.talks.talk == null and back.talks.expert == null, "no talk open")
 	_assert_working_morning(back)
+	_cleanup()
+
+
+## The hash covers all the content (every *.json in the data folder, in sorted order), so a
+## save made before a dialog changed shows as stale too.
+func test_content_hash_covers_every_content_file() -> void:
+	DirAccess.make_dir_recursive_absolute(dir)
+	for file: String in DirAccess.get_files_at(Catalog.DATA_DIR):
+		if file.get_extension() == "json":
+			DirAccess.copy_absolute(Catalog.DATA_DIR.path_join(file), dir.path_join(file))
+	assert_eq(DesignerSaves.content_hash(dir), DesignerSaves.content_hash(), "the same files, the same hash")
+	var dialogs := FileAccess.open(dir.path_join("dialogs.json"), FileAccess.READ_WRITE)
+	dialogs.seek_end()
+	dialogs.store_string("\n")
+	dialogs.close()
+	assert_ne(DesignerSaves.content_hash(dir), DesignerSaves.content_hash(), "a dialog change changes it")
 	_cleanup()
 
 
