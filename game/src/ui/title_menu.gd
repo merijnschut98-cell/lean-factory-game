@@ -68,6 +68,8 @@ var _pending := 0
 var _designer_slot := ""
 ## The character creator over the menu while a new player is made, or null.
 var creator: CreatorScreen
+## The designer's talk replay over the menu (TalkReplay), or null.
+var replay: TalkReplay
 
 
 func _ready() -> void:
@@ -169,6 +171,7 @@ func refresh() -> void:
 			designer.play_requested.connect(start_requested.emit)
 			designer.back_requested.connect(cancel)
 			designer.replace_requested.connect(_ask_replace_for)
+			designer.replay_requested.connect(open_replay)
 			designer.build()
 			_menu.add_child(designer)
 		Page.WIPE:
@@ -322,6 +325,24 @@ func open_creator() -> CreatorScreen:
 		_launch("", player))
 	creator.cancelled.connect(close_creator)
 	return creator
+
+
+## "Praat opnieuw" on the designer page: the list of talks over the menu.
+func open_replay() -> void:
+	if replay != null:
+		return
+	replay = TalkReplay.new()
+	replay.build()
+	add_child(replay)
+	replay.back_requested.connect(close_replay)
+
+
+func close_replay() -> void:
+	if replay == null:
+		return
+	remove_child(replay)
+	replay.queue_free()
+	replay = null
 
 
 func close_creator() -> void:
