@@ -26,17 +26,21 @@ Time: a guess, not measured: Act I to the frost is 2–3 hours at a normal pace.
 ## How to get there fast
 
 The designer (you) jumps to a play day with the **designer saves**: the autoplay bot plays the campaign to a stop and writes a save. They are not in the player build's menu: only with the flag.
-- [ ] **Make the saves** (once, and again after a content change; several minutes each): `python tools/make_designer_saves.py` (expert bot, seed 11). They land in Godot's `user://saves/designer/` (on Windows `%APPDATA%\Godot\app_userdata\Spanning\saves\designer\`).
-- [ ] **Start the game with `--designer`** after `--` (`Spanning.exe -- --designer`, or `godot --path game -- --designer`; the editor has it on already). The title menu then has **Ontwerper**: one card per save with its play day. "Spelen" copies it into the autosave and plays from there, so it replaces whatever the autosave held (keep your own game in a slot first).
-- [ ] A card that says "Oude inhoud: maak de opslag opnieuw" was made before the missions changed: make the saves again.
+- [ ] **Make the saves** (once, and again after any content change; several minutes each): `python tools/make_designer_saves.py` (expert bot, seed 11). They land in Godot's `user://saves/designer/` (on Windows `%APPDATA%\Godot\app_userdata\Spanning\saves\designer\`).
+- [ ] **Play the Playtest build with `--designer`** after `--`: `Spanning.exe -- --designer` (or `godot --path game -- --designer`). Use the build, not the editor: F8 below is also the editor's stop key. The title menu then has **Ontwerper**: one card per save with its play day. "Spelen" copies it into the autosave and plays from there. If the autosave holds a game, it asks first: "Eerst bewaren in een slot", "Vervangen" or "Terug".
+- [ ] A card that says "Oude inhoud: maak de opslag opnieuw" was made on older content (any file in the content changed), and one that says "Te oud voor deze versie" or "Van een nieuwere versie van het spel" cannot be read by this build: make the saves again.
+- [ ] **F8: "Noteer dit moment".** Press F8 anywhere in play, type one line, Enter. Each line lands with the play day, the clock, the place, the main mission and what just happened in `user://saves/playtest_markers.md` (on Windows `%APPDATA%\Godot\app_userdata\Spanning\saves\playtest_markers.md`). Hand that file back with your notes.
+- [ ] **"Praat opnieuw"** on the Ontwerper page: every talk, started at once, for the per-talk verdicts at the end. Pick what the person remembers first: "Geen voorgeschiedenis", "Gisteren verpest", and for a talk with a promise "Belofte nagekomen" or "Belofte gebroken". Esc leaves the talk, then the list.
+
+Every save opens at 08:30 on a working day, as a day starts in play; a stop that falls on a weekend opens on the Monday after.
 
 | Save | Starts at | Use it for |
 |---|---|---|
-| `designer_training_done` | day 5 | §1: Act I just open |
+| `designer_training_done` | day 7 (the Monday after the training week) | §1: Act I just open |
 | `designer_day045` | day 45 | §6: just before "Voor de vorst" (day 49) |
 | `designer_day070` | day 70 | §6: the first frost, the winter judged |
 | `designer_day095` | day 95 | §7: just before "Honderd dagen" (day 100) |
-| `designer_act2` | about day 76 on seed 11 | §8: Act II just opened |
+| `designer_act2` | the morning after Act II opens (about day 76 on seed 11) | §8: Act II just opened |
 
 The bot plays an expert on seed 11, so the world is the bot's, not yours (its name, its fixes). It does not play Act I the way you would; note what feels off.
 
@@ -186,7 +190,9 @@ The order of the mains:
 Sides: "De zwijgende meter", "Omvormers die afschakelen" (Wim).
 - [ ] **The 2e alive:** directie, Netstrategie, the congestiedesk, the MT-kamer, Ingrid Bos (Netstrategie's head), coffee and chatter at the 2e's corner. Does the floor feel like where decisions are made?
 - [ ] Briefings now name people by their function (from the company file). In *Wie is wie*, each person shows where they sit and who their manager is; Begrippen (K) has a Voltana page. Believable company?
-- [ ] **Ilse's call** (KCC headset or the phone) and **Wim**:
+- [ ] **Ilse's call** (KCC headset or the phone):
+  - **Kon je voorspellen waarom dit antwoord werkte?** Verdict: houden / herschrijven / anders in beeld (note it in the table at the end).
+- [ ] **Wim**:
   - Wim's spreadsheet talk (`wim_spreadsheet`);
   - after it, his expert talk by phone ("Wim en zijn metingen", he says u).
   - Wim is not a customer, so he never rings; an expert who is a customer rings unasked at most once a week, and only while a topic serves an active mission. Should Wim be reachable by phone?
@@ -234,7 +240,7 @@ One row per talk, filled in while you play. "Voorspelbaar": could you say before
 - [ ] The moment you almost stopped, and why.
 - [ ] Without looking: what is the waiting list, and why is the grid "vol"? (The phase acceptance.)
 - [ ] Would you play on to Act III? Why, or why not?
-- [ ] Share the playtest log: `%APPDATA%\Godot\app_userdata\Spanning\saves\playtest_log.txt`.
+- [ ] Share the playtest log: `%APPDATA%\Godot\app_userdata\Spanning\saves\playtest_log.txt`, and the F8 markers beside it: `playtest_markers.md`.
 
 ## Known before you play (do not log these)
 - The talks still look and read as in slice 1. The Act I and Act II rewrites and any restyle wait for your feedback (design §2.7).
