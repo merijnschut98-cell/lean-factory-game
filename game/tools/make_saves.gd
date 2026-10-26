@@ -13,7 +13,8 @@ const DEFAULT_SEED := 11
 
 
 ## Play to the spec's stop (`stop_day` or `stop_act`) and write its slot into `dir`; the meta
-## says how (persona, seed, stop, content hash). "" or what went wrong.
+## says how (persona, seed, stop, content hash) and the act in play (the save list's act).
+## "" or what went wrong.
 static func write(spec: Dictionary, persona: String, seed_value: int, dir: String = DesignerSaves.DIR) -> String:
 	var bot := Autoplay.Persona.new(persona, seed_value)
 	bot.stop_day = spec.get("stop_day", -1.0)
@@ -27,7 +28,7 @@ static func write(spec: Dictionary, persona: String, seed_value: int, dir: Strin
 		if spec.has(stop):
 			designer[stop] = spec[stop]
 	return GameSave.write(spec["slot"], bot.s, SessionLayer.new(), dir, Time.get_unix_time_from_system(),
-		{"designer": designer})
+		{"designer": designer, "act": bot.act_in_play()})
 
 
 func _initialize() -> void:
@@ -47,7 +48,8 @@ func _run(args: PackedStringArray) -> int:
 		var error := write(spec, persona, seed_value)
 		if error.is_empty():
 			var back: GameSession = GameSave.read(spec["slot"], Catalog.DATA_DIR, DesignerSaves.DIR)["session"]
-			print("%s: play day %d, act %d" % [spec["slot"], back.missions.play_day(), back.missions.current_act()])
+			var act: int = SaveFile.load_slot(spec["slot"], DesignerSaves.DIR)["data"]["meta"]["act"]
+			print("%s: play day %d, act %d" % [spec["slot"], back.missions.play_day(), act])
 		else:
 			printerr(error)
 			failed = true

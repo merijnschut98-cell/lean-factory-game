@@ -69,3 +69,25 @@ func test_load_into_autosave_copies_bytes() -> void:
 	assert_eq(autosave["data"]["meta"]["time"], designer_time)
 	assert_ne(DesignerSaves.load_into_autosave("designer_nothing", dir, dir), "", "a missing slot is an error")
 	_cleanup()
+
+
+## A done Act II side in a gap between mains makes Missions.current_act() say 2 (it counts every
+## completed mission); the stop wants an Act II main in play.
+func test_a_done_side_of_a_later_act_is_not_the_act_stop() -> void:
+	var persona := Autoplay.Persona.new("expert", 11)
+	persona.stop_act = 2
+	persona.s = GameSession.new_game(11, Catalog.DATA_DIR, false)
+	persona.s.missions.progress.clear()
+	persona.s.missions.done_once["fix_silent_meter"] = true
+	assert_eq(persona.s.missions.current_act(), 2, "the false Act II this guards against")
+	assert_false(persona.stop_act_reached(), "no Act II main is in play")
+	assert_eq(persona.act_in_play(), 2, "the gap falls back to current_act()")
+
+
+func test_saved_act_is_the_act_of_the_main_in_play() -> void:
+	assert_eq(MakeSaves.write({"slot": SLOT, "stop_day": 10.0}, "expert", 11, dir), "")
+	var back: GameSession = GameSave.read(SLOT, Catalog.DATA_DIR, dir)["session"]
+	var mains := back.missions.active("main")
+	var meta: Dictionary = SaveFile.load_slot(SLOT, dir)["data"]["meta"]
+	assert_eq(meta["act"], mains[0].act if not mains.is_empty() else back.missions.current_act())
+	_cleanup()

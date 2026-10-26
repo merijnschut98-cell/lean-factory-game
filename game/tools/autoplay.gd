@@ -298,7 +298,7 @@ class Persona extends RefCounted:
 			if stop_day > 0.0 and day() > stop_day:
 				_end("stop_day")
 				return
-			if stop_act > 0 and s.missions.current_act() >= stop_act:
+			if stop_act > 0 and stop_act_reached():
 				_end("stop_act")
 				return
 		if _actions >= MAX_ACTIONS:
@@ -337,6 +337,16 @@ class Persona extends RefCounted:
 		if stop_day <= 0.0:
 			return -1
 		return maxi(1, ceili((stop_day - day()) * SimCalendar.MINUTES_PER_DAY) + 1)
+
+	## The act the player is in: the active main mission's, else Missions.current_act().
+	func act_in_play() -> int:
+		var mains := s.missions.active("main")
+		return mains[0].act if not mains.is_empty() else s.missions.current_act()
+
+	## An Act `stop_act` main mission is in play (not merely a side of that Act done: in a gap
+	## between mains current_act() counts every completed mission, sides included).
+	func stop_act_reached() -> bool:
+		return s.missions.active("main").any(func(m: MissionDef) -> bool: return m.act >= stop_act)
 
 	func _no_talk_open() -> bool:
 		return s.talks.talk == null and s.talks.expert == null
