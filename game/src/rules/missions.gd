@@ -30,14 +30,6 @@ extends RefCounted
 
 const MAX_MAIN := 1
 const MAX_SIDE := 3
-## Every third question at the same stage, the coach shares an insight.
-const INSIGHT_EVERY := 3
-## The coach does not repeat a line the player heard in the last this many
-## asks (audit §3A.1: the same opener came back in 14 missions).
-const NO_REPEAT := 6
-## A fix chosen to fade within this many days, while a lasting one fits as
-## well, gets the coach's long-term question (audit §3A.2, an estimate).
-const FADING_DAYS := 45
 ## The coach's conditional questions (content: coach.conditional).
 const CONDITIONS: Array[String] = ["blamed", "fading_fix"]
 ## A debrief's variants, in the order they win (content: debrief_variants). The
@@ -53,7 +45,7 @@ const PROMISE_BROKEN := -1
 ## The effects source of a safety mission's containment.
 const CONTAIN_SOURCE := "contain:"
 const P := ProblemState.Phase
-## Where the player stands, as the coach sees it (see stage_of).
+## Where the player stands, as the coach sees it (see Coach.stage_of).
 const STAGES := ["go_see", "understand", "experiment", "reflect"]
 ## The effects source of a training day's setup.
 const SETUP_SOURCE := "setup:"
@@ -90,7 +82,9 @@ var defs: Dictionary[String, MissionDef] = {}
 ## {name, role, stages: {stage: [questions]}, conditional: {blamed?,
 ## fading_fix?}}
 var coach: Dictionary
-## The coach's last NO_REPEAT lines, across missions.
+## The coach himself (asks, stages, fading fixes); `coach` above is his content.
+var coaching: Coach
+## The coach's last Coach.NO_REPEAT lines, across missions (saved; Coach reads and writes it).
 var heard: Array[String] = []
 ## Missions the player has accepted: id → {status: active | completed, asks:
 ## {stage: count}, seen: {"place|tool": true} (observe goals: what was used
@@ -153,6 +147,7 @@ var play_start := 0
 func _init(of_region: Region, mission_defs: Array[MissionDef], coach_def: Dictionary) -> void:
 	region = of_region
 	coach = coach_def
+	coaching = Coach.new(self)
 	for m in mission_defs:
 		defs[m.id] = m
 		if m.kind == "training" and not m.goal_problem.is_empty():
@@ -230,7 +225,7 @@ func accept(id: String) -> String:
 	if m.goal_type == "rework_fix":
 		if not region.start_rework(m.goal_problem).is_empty():
 			return "problem_unavailable"
-	elif _holds_problem(m):
+	elif holds_problem(m):
 		var st: ProblemState = region.state.get(m.goal_problem)
 		if st == null or st.phase == P.RESOLVED or (st.phase == P.DORMANT and not region.activate(m.goal_problem)):
 			return "problem_unavailable"
@@ -301,13 +296,13 @@ func abandon(id: String) -> String:
 	if not defs.has(id) or status(id) != "active":
 		return "not_active"
 	var m := defs[id]
-	if _holds_problem(m) and region.state[m.goal_problem].phase in [P.DOING, P.CHECK_READY, P.CHECKED]:
+	if holds_problem(m) and region.state[m.goal_problem].phase in [P.DOING, P.CHECK_READY, P.CHECKED]:
 		return "experiment_running"
 	progress.erase(id)
 	_clear_setup(m)
 	if m.goal_type == "rework_fix":
 		region.cancel_rework(m.goal_problem)  # the old fix stays
-	_retire_orphans()
+	MissionSync.retire_orphans(self)
 	return ""
 
 
@@ -318,19 +313,19 @@ func update() -> void:
 	_sync_uncounted()
 	_note_fixes()
 	_note_holds()
-	_reopen_faded()
-	_reoffer_recurring()
-	_sync_checkins()
-	_sync_repairs()
+	MissionSync.reopen_faded(self)
+	MissionSync.reoffer_recurring(self)
+	MissionSync.sync_checkins(self)
+	MissionSync.sync_repairs(self)
 	events.append_array(stewardship.update(region))
 	_judge_promises()
 	for m in active():
 		# A fix that faded while its mission waited for a talk comes back through it.
-		if _holds_problem(m) and m.goal_type == "solve" and region.state[m.goal_problem].phase == P.DORMANT:
+		if holds_problem(m) and m.goal_type == "solve" and region.state[m.goal_problem].phase == P.DORMANT:
 			region.activate(m.goal_problem)
 		if _goal_met(m):
 			_complete(m)
-	_switch_on_forks()
+	MissionSync.switch_on_forks(self)
 	_open_milestones()  # after the completions that unlock them
 	for m: MissionDef in defs.values():
 		if m.deadline_days < 0 or done_once.has(m.id) or failed_once.has(m.id) or deadline_kept.has(m.id) \
@@ -350,7 +345,7 @@ func update() -> void:
 				deadline_kept[m.id] = true
 			else:
 				_fail(m)
-	_retire_orphans()
+	MissionSync.retire_orphans(self)
 	_lock_unprepared()
 	for id: String in contained:
 		if region.net.time >= contained[id]:
@@ -623,125 +618,20 @@ func _lock_unprepared() -> void:
 ## Whether an active mission's countermeasure is in place: its A3 submitted
 ## (or further), so a deadline counts as met (audit R5, QA #19).
 func _fix_in_place(m: MissionDef) -> bool:
-	return status(m.id) == "active" and _holds_problem(m) \
+	return status(m.id) == "active" and holds_problem(m) \
 		and region.state[m.goal_problem].phase in [P.DOING, P.CHECK_READY, P.CHECKED, P.RESOLVED]
 
 
 ## Whether the mission's goal brings and holds a problem (a check-in looks
 ## at a resolved fix and holds nothing).
-static func _holds_problem(m: MissionDef) -> bool:
+static func holds_problem(m: MissionDef) -> bool:
 	return not m.goal_problem.is_empty() and m.goal_type != "sustain"
 
 
-## Every open problem belongs to an active mission: one nobody works on any
-## more (an investigation done, a mission dropped) goes back to sleep, so it
-## neither hurts the simulation nor takes one of Region.MAX_OPEN's places.
-func _retire_orphans() -> void:
-	var held := {}
-	for m in active():
-		if _holds_problem(m):
-			held[m.goal_problem] = true
-	for m in _waiting_fork_branches():
-		held[m.goal_problem] = true
-	for id: String in region.state:
-		if region.state[id].is_open() and not held.has(id):
-			region.deactivate(id)
-
-
-## The fork is one main quest (gate backlog 3, 2026-10-24): once a branch is taken, the
-## bottleneck branch still waiting for the player hurts too, so the intake does not heal
-## while the monteurs are helped, and the non-bottleneck branch's Check can show it brought
-## no flow. Only the bottleneck's: the exception to "problems arrive through their mission"
-## stays as small as the lesson needs. A branch once done is not waiting: a fix that faded
-## comes back through its mission.
-func _waiting_fork_branches() -> Array[MissionDef]:
-	var taken := {}
-	for id: String in progress:
-		if not defs[id].fork_group.is_empty():
-			taken[defs[id].fork_group] = true
-	return available().filter(func(m: MissionDef) -> bool:
-		return taken.has(m.fork_group) and m.fork_role == "bottleneck" and not done_once.has(m.id) and _holds_problem(m) and m.goal_type == "solve")
-
-
-## Switch on the problem of a fork's bottleneck branch still waiting (_waiting_fork_branches).
-func _switch_on_forks() -> void:
-	_sync_uncounted()
-	for id: String in region.uncounted:
-		if region.state[id].phase == P.DORMANT:
-			region.activate(id)
-
-
-## The waiting fork problems take none of the mission slots (Region.uncounted): they must
-## never keep a mission's own problem from coming back. Derived, not saved: kept current on
-## load, before every update and before a mission is taken on (review 2453246..3c0a190 #1).
+## Derived, not saved (MissionSync.sync_uncounted): kept current on load, before every update
+## and before a mission is taken on.
 func _sync_uncounted() -> void:
-	var waiting: Dictionary[String, bool] = {}
-	for m in _waiting_fork_branches():
-		if region.state.has(m.goal_problem):
-			waiting[m.goal_problem] = true
-	region.uncounted = waiting
-
-
-## A recurring mission (leader standard work) is offered again its days after it was last done.
-func _reoffer_recurring() -> void:
-	for id: String in progress.keys():
-		var m := defs[id]
-		if m.recurring_days > 0 and progress[id]["status"] == "completed" \
-				and region.net.time >= int(progress[id].get("done_at", 0)) + SimCalendar.days(m.recurring_days):
-			progress.erase(id)
-			events.append({"type": "recurring", "mission": id})
-
-
-## A completed solve mission whose problem is dormant again (the fix faded)
-## opens again: the problem comes back through it. Not a training day: its
-## practice problem is retired once the day is done (the Friday lesson's
-## fade shows in its forecast, GameSession.fade_forecast).
-func _reopen_faded() -> void:
-	for id: String in progress.keys():
-		var m := defs[id]
-		if progress[id]["status"] == "completed" and m.goal_type == "solve" and m.kind != "training" \
-				and region.state[m.goal_problem].phase == P.DORMANT:
-			progress.erase(id)
-			events.append({"type": "reopened", "mission": id})
-
-
-## Open a check-in for every standardised fix that slipped (no routine
-## holding it; again once an earlier one is done), and end those whose fix
-## wore out: its own mission reopens instead.
-func _sync_checkins() -> void:
-	for id: String in defs.keys():
-		if id.begins_with(CHECKIN_PREFIX) and region.state[defs[id].goal_problem].phase != P.RESOLVED:
-			defs.erase(id)
-			progress.erase(id)
-	for p: ProblemDef in region.problem_list():
-		var st: ProblemState = region.state[p.id]
-		var id := CHECKIN_PREFIX + p.id
-		if st.phase != P.RESOLVED or not st.standardised or region.practice.has(p.id) \
-				or region.held_by_routine(p.id) or region.health(p.id) >= Sustain.SLIPPING_HEALTH \
-				or (defs.has(id) and status(id) != "completed"):
-			continue
-		defs[id] = checkin_def(p)
-		progress.erase(id)
-		events.append({"type": "checkin", "mission": id})
-
-
-## Open a repair quest for a poor fix whose weakness shows (Repairs), and
-## take back the ones whose fix is gone or no longer poor (not one being
-## worked on).
-func _sync_repairs() -> void:
-	for id: String in defs.keys():
-		var problem_id := defs[id].goal_problem if id.begins_with(Repairs.PREFIX) else ""
-		if not problem_id.is_empty() and status(id) != "active" and (region.state[problem_id].phase != P.RESOLVED
-				or status(id) == "available" and not knows("poor_fix:" + problem_id)):
-			defs.erase(id)
-			progress.erase(id)
-	for problem_id: String in repairs.due.keys():
-		var id := Repairs.PREFIX + problem_id
-		if region.state[problem_id].phase != P.RESOLVED or not knows("poor_fix:" + problem_id):
-			repairs.due.erase(problem_id)
-		elif region.net.time >= repairs.due[problem_id] and not defs.has(id) and repairs.shows(region, problem_id):
-			defs[id] = Repairs.def_for(region.problems[problem_id])
-			events.append({"type": "repair", "mission": id})
+	MissionSync.sync_uncounted(self)
 
 
 ## The check-in mission for a slipping fix (Dutch game text).
@@ -772,105 +662,19 @@ func _fail(m: MissionDef) -> void:
 	events.append(event)
 
 
-## Ask the coach. With no mission named, about the main mission (or, before
-## the campaign, the training day). Returns {kind: question | insight |
-## no_main | not_main, text?, stage?}.
+## Ask the coach (Coach.ask): about the main mission, or the training day.
 func ask_coach(mission_id: String = "") -> Dictionary:
-	if not mission_id.is_empty() and defs.has(mission_id) and defs[mission_id].kind in ["side", "milestone"]:
-		return {"kind": "not_main"}
-	var coached := active("main")
-	coached.append_array(active("training"))
-	if coached.is_empty():
-		return {"kind": "no_main"}
-	var m := coached[0]
-	var stage := stage_of(m)
-	var asks: Dictionary = progress[m.id]["asks"]
-	asks[stage] = int(asks.get(stage, 0)) + 1
-	var insights: Array = m.insights.get(stage, [])
-	var nth_insight: int = asks[stage] / INSIGHT_EVERY - 1
-	if asks[stage] % INSIGHT_EVERY == 0 and nth_insight < insights.size():
-		return {"kind": "insight", "text": insights[nth_insight], "stage": stage}
-	return {"kind": "question", "text": _question(m, stage, asks[stage]), "stage": stage}
+	return coaching.ask(mission_id)
 
 
-## The next question: a conditional one that applies (once per mission),
-## the mission's own, then the general bank starting at a place of the
-## mission's own; the first the player did not hear in the last NO_REPEAT
-## asks (all heard: in turn).
-func _question(m: MissionDef, stage: String, nth: int) -> String:
-	var said: Dictionary = progress[m.id].get_or_add("said", {})
-	for condition: String in _conditions(m, stage):
-		if not said.has(condition) and coach.get("conditional", {}).has(condition):
-			said[condition] = true
-			return _say(coach["conditional"][condition])
-	var read := CoachNumbers.question(region, m, stage, said, coach)
-	if not read.is_empty():
-		return _say(read)
-	var candidates: Array = m.questions.get(stage, []).duplicate()
-	var bank: Array = coach["stages"].get(stage, [])
-	if not bank.is_empty():
-		var start := absi(m.id.hash()) % bank.size()
-		candidates.append_array(bank.slice(start) + bank.slice(0, start))
-	if candidates.is_empty():
-		return ""
-	for line: String in candidates:
-		if not line in heard:
-			return _say(line)
-	return _say(candidates[(nth - 1) % candidates.size()])
-
-
-func _say(line: String) -> String:
-	heard.erase(line)
-	heard.append(line)
-	if heard.size() > NO_REPEAT:
-		heard.remove_at(0)
-	return line
-
-
-## Conditions the coach asks about now: a blaming question while the problem
-## was open (respect for people), and a fix chosen to fade soon while a
-## lasting one fits as well (long term over short term).
-func _conditions(m: MissionDef, stage: String) -> Array[String]:
-	var out: Array[String] = []
-	var st: ProblemState = region.state.get(m.goal_problem)
-	if st == null:
-		return out
-	if st.blamed:
-		out.append("blamed")
-	if stage == "experiment" and fading_fix(m):
-		out.append("fading_fix")
-	return out
-
-
-## Whether `m`'s fix was chosen to fade within FADING_DAYS while a lasting one fit as
-## well (the short term over the long term).
+## Whether the fix was chosen to fade while a lasting one fit as well (Coach.fading_fix).
 func fading_fix(m: MissionDef) -> bool:
-	var st: ProblemState = region.state.get(m.goal_problem)
-	var cm: CountermeasureDef = region.countermeasures.get(st.a3.get("cm", "")) if st != null else null
-	if cm == null or cm.decay_days <= 0 or cm.decay_days > FADING_DAYS:
-		return false
-	var p: ProblemDef = region.problems[m.goal_problem]
-	var chosen_fit: float = p.countermeasures.get(cm.id, 0.0)
-	return p.countermeasures.keys().any(func(id: String) -> bool:
-		var other: CountermeasureDef = region.countermeasures.get(id)
-		return other != null and (other.decay_days < 0 or other.decay_days > FADING_DAYS) \
-			and p.countermeasures[id] >= chosen_fit)
+	return coaching.fading_fix(m)
 
 
-## Where the player stands, as the coach sees it: go_see (find the problem
-## at the gemba), understand (grasp the actual condition and the cause),
-## experiment (an A3 running), reflect (checked or done).
+## Where the player stands, as the coach sees it (Coach.stage_of).
 func stage_of(m: MissionDef) -> String:
-	if m.goal_problem.is_empty():
-		return "go_see"
-	match region.state[m.goal_problem].phase:
-		P.SPOTTED:
-			return "understand"
-		P.DOING, P.CHECK_READY:
-			return "experiment"
-		P.CHECKED, P.RESOLVED:
-			return "reflect"
-	return "understand" if region.key_clues_found(m.goal_problem) > 0 else "go_see"
+	return coaching.stage_of(m)
 
 
 func drain_events() -> Array[Dictionary]:
