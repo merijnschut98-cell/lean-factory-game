@@ -38,8 +38,65 @@ func test_write_stops_at_day_and_saves_meta() -> void:
 	assert_eq(designer["seed"], 11)
 	assert_eq(designer["content_hash"], DesignerSaves.content_hash())
 	assert_false((designer["content_hash"] as String).is_empty())
+	assert_false(designer.has("stop_act"), "a day stop names no act")
 	var back: GameSession = GameSave.read(SLOT, Catalog.DATA_DIR, dir)["session"]
 	assert_between(back.missions.play_day(), 10, 10, "the save is on the stop day")
+	_assert_working_morning(back)
+	_cleanup()
+
+
+## A save resumes the way a day starts in play: 08:30 on a working day (the office open,
+## the front door there by evening), never in the night or on a weekend.
+func _assert_working_morning(s: GameSession) -> void:
+	assert_eq(s.minute_of_day(), GameSession.START_MINUTE, "08:30")
+	var weekday := SimCalendar.weekday(s.region.net.time - SimCalendar.days(GameSession.WARMUP_DAYS))
+	assert_true(weekday < 5, "a working day, not day %d of the week" % weekday)
+
+
+## The play day a run stopped on `play_day` at `minute` resumes on (MakeSaves.working_morning).
+func _resumes(play_day: int, minute: int) -> int:
+	var t := SimCalendar.days(GameSession.WARMUP_DAYS + play_day) + minute
+	return SimCalendar.day_of(MakeSaves.working_morning(t)) - GameSession.WARMUP_DAYS
+
+
+func test_a_stop_resumes_on_the_first_working_morning_at_or_after_it() -> void:
+	assert_eq(_resumes(4, 1), 4, "Friday in the night: that Friday's morning")
+	assert_eq(_resumes(5, 1), 7, "Saturday: the Monday after")
+	assert_eq(_resumes(6, 600), 7, "Sunday: the Monday after")
+	assert_eq(_resumes(10, GameSession.START_MINUTE), 10, "08:30 itself stays")
+	assert_eq(_resumes(10, 9 * 60), 11, "past 08:30: the next morning")
+	assert_eq(_resumes(11, 23 * 60), 14, "Friday evening: the Monday after")
+	var t := SimCalendar.days(GameSession.WARMUP_DAYS + 5) + 1
+	assert_eq(MakeSaves.working_morning(t) % SimCalendar.MINUTES_PER_DAY, GameSession.START_MINUTE, "at 08:30")
+
+
+## designer_training_done stops after day 5 (the Saturday after the training week): it
+## resumes on the Monday, day 7, at 08:30.
+func test_the_training_week_save_resumes_on_monday() -> void:
+	assert_eq(MakeSaves.write({"slot": SLOT, "stop_day": 5.0}, "expert", 11, dir), "")
+	var back: GameSession = GameSave.read(SLOT, Catalog.DATA_DIR, dir)["session"]
+	assert_eq(back.missions.play_day(), 7, "Monday after the training week")
+	_assert_working_morning(back)
+	_cleanup()
+
+
+func test_write_at_an_act_stop_saves_its_stop_on_a_morning() -> void:
+	assert_eq(MakeSaves.write({"slot": SLOT, "stop_act": 1}, "expert", 11, dir), "")
+	var designer: Dictionary = SaveFile.load_slot(SLOT, dir)["data"]["meta"]["designer"]
+	assert_eq(designer["stop_act"], 1)
+	assert_false(designer.has("stop_day"), "an act stop names no day")
+	assert_eq(designer["content_hash"], DesignerSaves.content_hash())
+	var back: GameSession = GameSave.read(SLOT, Catalog.DATA_DIR, dir)["session"]
+	assert_true(back.missions.active("main").any(func(m: MissionDef) -> bool: return m.act >= 1), "the act is in play")
+	assert_true(back.talks.talk == null and back.talks.expert == null, "no talk open")
+	_assert_working_morning(back)
+	_cleanup()
+
+
+func test_write_says_what_went_wrong() -> void:
+	assert_true(MakeSaves.write({"slot": SLOT}, "expert", 11, dir).contains("no stop"), "a spec without a stop, refused before a run")
+	assert_false(SaveFile.exists(SLOT, dir), "nothing written")
+	assert_ne(MakeSaves.write({"slot": "../escape", "stop_day": 1.0}, "expert", 11, dir), "", "a bad slot")
 	_cleanup()
 
 
@@ -95,12 +152,3 @@ func test_a_done_side_of_a_later_act_is_not_the_act_stop() -> void:
 	assert_eq(gap["end"], "action_cap", "the step goes past the act stop")
 	var in_play := _step_at_the_act_stop({"fix_unused_capacity": {"status": "active", "asks": {}, "seen": {}}}, [])
 	assert_eq(in_play["end"], "stop_act", "an Act II main in play is the stop")
-
-
-func test_saved_act_is_the_act_of_the_main_in_play() -> void:
-	assert_eq(MakeSaves.write({"slot": SLOT, "stop_day": 10.0}, "expert", 11, dir), "")
-	var back: GameSession = GameSave.read(SLOT, Catalog.DATA_DIR, dir)["session"]
-	var mains := back.missions.active("main")
-	var meta: Dictionary = SaveFile.load_slot(SLOT, dir)["data"]["meta"]
-	assert_eq(meta["act"], mains[0].act if not mains.is_empty() else back.missions.current_act())
-	_cleanup()

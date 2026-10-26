@@ -108,3 +108,15 @@ func test_a_bad_slot_or_a_missing_save_is_refused() -> void:
 	assert_false(GameSave.exists("../escape"))
 	assert_ne(GameSave.read("no_such_slot")["error"], "")
 	assert_eq(GameSave.read("no_such_slot")["session"], null)
+
+
+## The save list's meta can be told more (a designer save says how it was made); a key given
+## there wins over the meta's own.
+func test_extra_meta_is_merged_over_the_meta() -> void:
+	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
+	assert_eq(GameSave.write(slot, s, SessionLayer.new(), SaveFile.DIR, 5.0, {"designer": {"seed": 11}, "act": 9}), "")
+	var meta: Dictionary = SaveFile.load_slot(slot)["data"]["meta"]
+	assert_eq(meta["designer"], {"seed": 11})
+	assert_eq(meta["act"], 9, "the extra key wins")
+	assert_eq(meta["saved"], 5.0, "the rest is the meta's own")
+	_cleanup()

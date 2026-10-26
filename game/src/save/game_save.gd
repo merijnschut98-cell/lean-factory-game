@@ -17,13 +17,13 @@ static func exists(slot: String = AUTOSAVE, dir: String = SaveFile.DIR) -> bool:
 
 
 ## "" or what went wrong. `saved`: the real time (unix seconds) it is saved at;
-## `extra_meta`: more for the save list (a designer save says how it was made).
+## `extra_meta`: more for the save list (a designer save says how it was made); its keys win.
 static func write(slot: String, s: GameSession, layer: SessionLayer, dir: String = SaveFile.DIR,
 		saved: float = Time.get_unix_time_from_system(), extra_meta: Dictionary = {}) -> String:
 	return SaveFile.write(slot, s.region, {"missions": s.missions.to_dict(), "discoveries": s.discoveries.to_dict(),
 		"followed": s.followed.to_dict(), "explainers": s.explainers.to_dict(), "people": s.people.to_dict(),
 		"session": layer.to_dict(), "player": s.player.to_dict(), "gemba": s.gemba.to_dict(),
-		"passing": s.passing_to_dict(), "meta": meta(s, saved).merged(extra_meta)}, dir)
+		"passing": s.passing_to_dict(), "meta": meta(s, saved).merged(extra_meta, true)}, dir)
 
 
 ## What a save list shows: the player's first name ("" for none) and badge

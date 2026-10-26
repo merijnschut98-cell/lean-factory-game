@@ -12,23 +12,37 @@ const DEFAULT_PERSONA := "expert"
 const DEFAULT_SEED := 11
 
 
-## Play to the spec's stop (`stop_day` or `stop_act`) and write its slot into `dir`; the meta
-## says how (persona, seed, stop, content hash) and the act in play (the save list's act).
+const STOPS: Array[String] = ["stop_day", "stop_act"]
+
+
+## Play to the spec's stop (`stop_day` or `stop_act`), on to the next working morning, and
+## write its slot into `dir`; the meta says how (persona, seed, stop, content hash).
 ## "" or what went wrong.
 static func write(spec: Dictionary, persona: String, seed_value: int, dir: String = DesignerSaves.DIR) -> String:
+	if not STOPS.any(func(stop: String) -> bool: return spec.has(stop)):
+		return "%s: no stop_day or stop_act" % spec.get("slot", "")
 	var bot := Autoplay.Persona.new(persona, seed_value)
 	bot.stop_day = spec.get("stop_day", -1.0)
 	bot.stop_act = spec.get("stop_act", -1)
-	var run := bot.play()
-	var ended: String = run["end"]
-	if not ended in ["stop_day", "stop_act"]:
+	var ended: String = bot.play()["end"]
+	if not ended in STOPS:
 		return "%s: the run ended on %s before its stop" % [spec["slot"], ended]
+	var s := bot.s
+	s.pass_time(working_morning(s.region.net.time) - s.region.net.time)
 	var designer := {"persona": persona, "seed": seed_value, "content_hash": DesignerSaves.content_hash()}
-	for stop: String in ["stop_day", "stop_act"]:
+	for stop: String in STOPS:
 		if spec.has(stop):
 			designer[stop] = spec[stop]
-	return GameSave.write(spec["slot"], bot.s, SessionLayer.new(), dir, Time.get_unix_time_from_system(),
-		{"designer": designer, "act": bot.act_in_play()})
+	return GameSave.write(spec["slot"], s, SessionLayer.new(), dir, Time.get_unix_time_from_system(),
+		{"designer": designer})
+
+
+## Where a save resumes after a run stopped at `t`: the way a day starts in play, 08:30 on the
+## first working day at or after `t` (OfficeHome.next_morning). A run stops in the night, and a
+## save there opens on a dark office with no way home.
+static func working_morning(t: int) -> int:
+	var morning := OfficeHome.next_morning(t - SimCalendar.days(1))
+	return morning if morning >= t else OfficeHome.next_morning(t)
 
 
 func _initialize() -> void:
@@ -48,8 +62,9 @@ func _run(args: PackedStringArray) -> int:
 		var error := write(spec, persona, seed_value)
 		if error.is_empty():
 			var back: GameSession = GameSave.read(spec["slot"], Catalog.DATA_DIR, DesignerSaves.DIR)["session"]
-			var act: int = SaveFile.load_slot(spec["slot"], DesignerSaves.DIR)["data"]["meta"]["act"]
-			print("%s: play day %d, act %d" % [spec["slot"], back.missions.play_day(), act])
+			var minute := back.minute_of_day()
+			print("%s: play day %d at %02d:%02d, act %d" % [spec["slot"], back.missions.play_day(), minute / 60,
+				minute % 60, back.missions.current_act()])
 		else:
 			printerr(error)
 			failed = true
