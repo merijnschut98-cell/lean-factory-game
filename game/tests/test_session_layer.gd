@@ -318,3 +318,23 @@ func test_the_skip_stops_at_a_due_check_in() -> void:
 	assert_false(on.has("error"), "the experiment still ran")
 	assert_false(on.get("stopped", "") == "talk" and on.get("id", "") == due[0]["person"],
 		"an open check-in does not stop the next skip")
+
+
+## The marker's context: the last texts the player saw as events, a ring of live context
+## (not saved; an old save loads with an empty one).
+func test_recent_keeps_the_last_twenty() -> void:
+	var layer := SessionLayer.new()
+	for i in 21:
+		layer.note_event("gebeurtenis %d" % i)
+	assert_eq(layer.recent.size(), SessionLayer.RECENT_MAX)
+	assert_eq(layer.recent[0], "gebeurtenis 1", "the oldest is gone")
+	assert_eq(layer.recent[-1], "gebeurtenis 20")
+
+
+func test_recent_is_not_saved() -> void:
+	var layer := SessionLayer.new()
+	layer.note_event("iets")
+	assert_false(layer.to_dict().has("recent"))
+	var loaded := SessionLayer.new()
+	loaded.load_dict(layer.to_dict())
+	assert_true(loaded.recent.is_empty())

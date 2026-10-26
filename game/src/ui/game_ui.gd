@@ -19,6 +19,10 @@ signal pause_changed(on: bool)
 ## Why a person has no talk for you now that the world answers with a quick line over their
 ## head (Office.talk_to; Phase 2 §1.4): nothing to discuss, or not one of the talking cast.
 const NO_TALK: Array[String] = ["nothing_to_say", "unknown_person"]
+## The designer's F8 marker (Designer.enabled() only): its prompt and the toasts after it.
+const MARKER_PROMPT := MarkerInput.PROMPT
+const MARKER_SAVED := "Markering bewaard"
+const MARKER_FAILED := "Markering niet bewaard: %s"
 
 var session: GameSession
 var hud: Hud
@@ -39,6 +43,9 @@ var incoming: IncomingCall
 ## Whether the world is free for a ringing call (Office.world_free, set by the world);
 ## unset (tests, tools): no panel open.
 var world_free := Callable()
+## Where the player stands, as the playtest marker names it (Office.marker_place); unset
+## (tests, tools): no place.
+var world_place := Callable()
 ## The session layer (PLAN 1.4): the terugblik, Intussen, the stop note, the
 ## discovery toasts and the side offers; the playtest log; autosave.
 var session_layer: SessionLayer
@@ -65,6 +72,10 @@ var _running: Dictionary[String, bool] = {}
 ## Missions taken on this session → when (real ms), until their first key clue.
 var _accepted_ms: Dictionary[String, int] = {}
 var _panels: Array[UiPanel] = []
+## The F8 line, built on first use. `_marker_froze`: it stopped the world itself (no panel
+## had), so closing it gives the world back.
+var _marker_input: MarkerInput
+var _marker_froze := false
 
 
 ## `of_layer`: a saved game's session layer (its snapshot opens the
@@ -324,7 +335,7 @@ func docked_share() -> float:
 
 
 func is_busy() -> bool:
-	return _panels.any(func(p: UiPanel) -> bool: return p.visible)
+	return _panels.any(func(p: UiPanel) -> bool: return p.visible) or marker_open()
 
 
 ## Close what is open (and the pause). Mid-talk it ends the talk as
@@ -339,11 +350,55 @@ func close_panels() -> void:
 		return
 	for p in _panels:
 		p.hide()
+	if marker_open():
+		_marker_input.close()
+		_marker_froze = false   # the signal below gives the world back
 	hud.show_overlay(true)
 	hud.set_talking(false)
 	if was_busy:
 		panels_closed.emit()
 		_ring()
+
+
+## F8, the designer's marker (Designer.enabled() only): a line over the HUD.
+func _unhandled_key_input(event: InputEvent) -> void:
+	var key := event as InputEventKey
+	if key != null and key.pressed and not key.echo and key.physical_keycode == KEY_F8 and open_marker():
+		get_viewport().set_input_as_handled()
+
+
+## Open the marker line; false when it does not (not the designer's build, the game
+## has no session, the pause menu is up, or it is open already).
+func open_marker() -> bool:
+	if not Designer.enabled() or not playable() or session_layer == null or paused() or marker_open():
+		return false
+	if _marker_input == null:
+		_marker_input = MarkerInput.new()
+		_marker_input.submitted.connect(_write_marker)
+		_marker_input.cancelled.connect(_marker_closed)
+		hud.get_parent().add_child(_marker_input)
+	_marker_froze = not is_busy()
+	if _marker_froze:
+		panel_opened.emit()   # the player stands still while typing
+	_marker_input.open()
+	return true
+
+
+func marker_open() -> bool:
+	return _marker_input != null and _marker_input.visible
+
+
+func _write_marker(text: String) -> void:
+	var place: String = world_place.call() if world_place.is_valid() else ""
+	var error := playtest_log.marker(text, session, session_layer, place)
+	hud.toast(tr(MARKER_SAVED) if error.is_empty() else tr(MARKER_FAILED) % error)
+	_marker_closed()
+
+
+func _marker_closed() -> void:
+	if _marker_froze:
+		_marker_froze = false
+		panels_closed.emit()
 
 
 ## The clue texts in the journal.
@@ -372,8 +427,10 @@ func after_action() -> void:
 		if e["type"] in ["recurred", "slipping"] and session.is_practice(e.get("problem", "")):
 			continue  # the practice problem is retired; the Friday forecast tells the fade
 		var text := UiText.event(e, names, problem_names, team_names)
-		if not text.is_empty() and not Opening.running(session_layer):   # the first day is one scene (2.7d)
-			hud.toast(text)
+		if not text.is_empty():
+			session_layer.note_event(text)   # the playtest marker's context, also in the first day's scene
+			if not Opening.running(session_layer):   # the first day is one scene (2.7d)
+				hud.toast(text)
 		if e["type"] == "completed":
 			_debrief_message(session.missions.defs[e["mission"]], e)
 		_session_event(e)

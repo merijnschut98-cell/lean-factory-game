@@ -21,6 +21,8 @@ const SPAWN := "spawn"
 const FLOOR := "shell_floor"
 ## How close (m, on the floor) the player must stand to a marker to use it.
 const REACH := 1.6
+## How close (m) a marker must be for the designer's playtest marker to name it as the place.
+const MARKER_REACH := 6.0
 ## How much farther (m) a tell counts than its footprint is, against a place or a person.
 const TELL_BIAS := 0.6
 ## The model's own sky and ambient light (made with it); the project's
@@ -162,6 +164,7 @@ func build() -> void:
 	ui.setup(session, loaded.get("layer", _opening_layer()))
 	ui.panel_opened.connect(_on_panel_opened)
 	ui.world_free = world_free
+	ui.world_place = marker_place
 	ui.talk_opened.connect(staging.frame_talk)
 	if ui.playable():
 		ui.talk_view.phase_changed.connect(func(_phase: String) -> void: staging.stage_talk())
@@ -632,6 +635,13 @@ func busy() -> bool:
 ## Only then does a call ring, and only then are its keys 1 and 2 its own.
 func world_free() -> bool:
 	return not busy() and not _scene_holds and (milestone == null or milestone.playing.is_empty())
+
+
+## Where the player stands for the designer's playtest marker: the floor and the nearest
+## interaction point within MARKER_REACH ("floor" alone when none is near).
+func marker_place() -> String:
+	var near := interactable_near(player.position, MARKER_REACH)
+	return floors.floor_id if near == null else "%s/%s" % [floors.floor_id, near.id]
 
 
 ## "Uiterlijk" (PLAN 2.7b): the creator over the world on the current look and

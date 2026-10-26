@@ -33,11 +33,16 @@ const MEASURES: Array[String] = ["lead_days_p50", "on_time", "first_time_right",
 ## player's own work coming back: they are never held back.
 const BUILT_PREFIXES: Array[String] = [Missions.CHECKIN_PREFIX, Repairs.PREFIX]
 const DAY := SimCalendar.MINUTES_PER_DAY
+## How many of the latest event texts are kept as the playtest marker's context.
+const RECENT_MAX := 20
 
 ## The snapshot at the start of this session; {} in a new game.
 var start := {}
 ## Side missions offered so far → the in-game day they were offered.
 var offered: Dictionary[String, int] = {}
+## The latest event texts the player saw, oldest first: live context for the
+## designer's F8 marker (SessionLog.marker). Not saved: a resumed game starts empty.
+var recent: Array[String] = []
 ## The in-game day of the last discovery toast.
 var toast_day := -1
 ## Discoveries found after the day's toast: shown at the next terugblik.
@@ -423,6 +428,13 @@ func _built_ids(s: GameSession) -> Array[String]:
 
 static func _days(minutes: int) -> int:
 	return roundi(minutes / float(DAY))
+
+
+## One more event text the player saw; only the latest RECENT_MAX are kept.
+func note_event(text: String) -> void:
+	recent.append(text)
+	if recent.size() > RECENT_MAX:
+		recent.pop_front()
 
 
 # ── Saved state ─────────────────────────────────────────────────────────────

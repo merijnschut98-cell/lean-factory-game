@@ -9,6 +9,11 @@ extends RefCounted
 ## choice lives in the settings file.
 
 const PATH := "user://saves/playtest_log.txt"
+## The designer's F8 markers (Markdown, handed back after a playtest), beside the log.
+const MARKERS := "user://saves/playtest_markers.md"
+## A marker's own line is cut here, the events under it are the last RECENT of the layer.
+const MARKER_MAX_CHARS := 500
+const MARKER_RECENT := 5
 const _SECTION := "privacy"
 const _KEY := "playtest_log"
 ## A log past this size starts a new file; the previous one is kept once
@@ -16,12 +21,14 @@ const _KEY := "playtest_log"
 const MAX_BYTES := 512 * 1024
 
 var path: String
+var markers_path: String
 var enabled: bool
 var max_bytes := MAX_BYTES
 
 
 func _init(log_path: String = PATH, on: bool = true) -> void:
 	path = log_path
+	markers_path = log_path.get_base_dir().path_join(MARKERS.get_file())
 	enabled = on
 
 
@@ -51,18 +58,44 @@ func write(line: String) -> String:
 	return error
 
 
-func _append(text: String) -> String:
-	var dir_error := DirAccess.make_dir_recursive_absolute(path.get_base_dir())
+## One designer marker (F8) as a Markdown block: day, time, place and the active main
+## mission in a header, the designer's line, the last events he saw. Written whether or
+## not the log is on (he asked for it). "" or what went wrong, also as a warning.
+func marker(text: String, s: GameSession, layer: SessionLayer, place := "") -> String:
+	var t := s.region.net.time
+	var minute := GameSession.minute_at(t)
+	var main := s.missions.active("main")
+	var block := "## dag %d · %02d:%02d · %s · %s\n\n%s\n\n" % [SimCalendar.day_of(t) - GameSession.WARMUP_DAYS,
+		minute / 60, minute % 60, _one_line(place, "-"), main[0].id if not main.is_empty() else "geen",
+		_one_line(text.left(MARKER_MAX_CHARS), "-")]
+	for event in layer.recent.slice(-MARKER_RECENT):
+		block += "- %s\n" % _one_line(event, "-")
+	var error := _append(block + "\n", markers_path)
+	if not error.is_empty():
+		push_warning("playtest markers: " + error)
+	return error
+
+
+## Player text on one line that starts no Markdown block (heading, quote, list, code, table).
+static func _one_line(text: String, empty: String) -> String:
+	var line := " ".join(text.replace("\r", "\n").split("\n", false)).replace("\t", " ").strip_edges()
+	if line.is_empty():
+		return empty
+	return "\\" + line if line[0] in "#>-*+`|" else line
+
+
+func _append(text: String, to := path) -> String:
+	var dir_error := DirAccess.make_dir_recursive_absolute(to.get_base_dir())
 	if dir_error != OK:
-		return "cannot create %s (%s)" % [path.get_base_dir(), error_string(dir_error)]
-	var file := FileAccess.open(path, FileAccess.READ_WRITE if FileAccess.file_exists(path) else FileAccess.WRITE)
+		return "cannot create %s (%s)" % [to.get_base_dir(), error_string(dir_error)]
+	var file := FileAccess.open(to, FileAccess.READ_WRITE if FileAccess.file_exists(to) else FileAccess.WRITE)
 	if file != null and file.get_length() > max_bytes:
 		file.close()
-		DirAccess.remove_absolute(path + ".old")
-		DirAccess.rename_absolute(path, path + ".old")
-		file = FileAccess.open(path, FileAccess.WRITE)
+		DirAccess.remove_absolute(to + ".old")
+		DirAccess.rename_absolute(to, to + ".old")
+		file = FileAccess.open(to, FileAccess.WRITE)
 	if file == null:
-		return "cannot write %s (%s)" % [path, error_string(FileAccess.get_open_error())]
+		return "cannot write %s (%s)" % [to, error_string(FileAccess.get_open_error())]
 	file.seek_end()
 	file.store_string(text)
 	file.close()
