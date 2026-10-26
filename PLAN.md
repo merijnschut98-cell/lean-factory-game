@@ -602,6 +602,14 @@ Standing instruction from Merijn (2026-10-12): the v1 mix of 18 problems is fine
 
 Each call is easy to reverse; Merijn can overrule any of them. Newest first.
 
+### Claude's calls, pending Merijn (2026-10-26, slice 3.0 *Spelen*)
+- **Designer saves open at 08:30 on the first working day at or after the stop**, so a jump never starts at night or on a weekend; the training-week save (stop day 5, a Saturday) opens on Monday 19 October, play day 7.
+- **"Spelen" on the Ontwerper page asks before it replaces a playable autosave** (the same Vervangen / Eerst bewaren question as Nieuw spel); the plan only said "loads into the autosave".
+- **F8 stays the marker key** (the spec names it); in the Godot editor F8 also stops the game, so the checklist says to play the Playtest build with `-- --designer`.
+- **Talk replay:** an expert talk opens at full trust so every topic can be read (a gated topic play keeps closed at the person's trust shows too); a persuasion keeps the person's own trust; "Belofte nagekomen" and "Belofte gebroken" act as in play (agreed proposal, trust, the fact) but skip the reputation cost of a broken promise, which does not change the talk.
+- **A designer save's content hash covers every content file**, so a dialog or countermeasure change marks the saves stale too; saves made before this change show as stale once.
+- **The split names:** the coach object is `Missions.coaching` (`Missions.coach` was already the coach's content); `RegionSustain` reads four private Region fields, as the save code already does.
+
 ### Claude's calls, pending Merijn (2026-10-24, slice 3 and the review fixes)
 - **Funding at the debt floor:** the active main mission and any mission with a deadline (even past it) stay fundable; the budget stops at the floor and the directie carries the rest. Every tier-1 problem has a countermeasure ≤ € 3,000 (new, estimates): `van_refill_card` € 1,000, `henks_one_point_lessons` € 2,000 (closes with Henk's deadline), `milestone_mail_by_hand` € 2,500, `tap_trial_one_station` € 1,500. Cost if wrong: more debt than intended, one easy way through four problems.
 - **The weekly gemba round pays no trust** (only the side mission's +2 reputation): +1 a week could be farmed. Its debrief asks whether the agreed way still holds instead of claiming it does.
