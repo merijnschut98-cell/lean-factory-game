@@ -4,6 +4,8 @@ extends TestCase
 ## when the talk closes. The tests build the screen outside the tree, like the other UI tests.
 
 const JOOST := "joost_output_kpi"
+## A talk with a proposal that promises a date (and a variant for a broken one).
+const PROMISED := "el_amrani_fourth_call"
 
 
 func _cleanup() -> void:
@@ -15,12 +17,39 @@ func _kinds() -> Array[String]:
 
 
 func test_presets_fill_the_dialog_id() -> void:
-	var s := TalkReplay.session_for(JOOST, "none")
-	assert_false(s.missions.knows("promise_kept:" + JOOST))
-	assert_false(s.people.memory.has("joost"), "nothing is remembered")
-	s = TalkReplay.session_for(JOOST, "kept_promise")
-	assert_true(s.missions.knows("promise_kept:" + JOOST), "the promise was kept")
+	var s := TalkReplay.session_for(PROMISED, "none")
+	assert_false(s.missions.knows("promise_kept:" + PROMISED))
+	assert_false(s.people.memory.has("el_amrani"), "nothing is remembered")
+	s = TalkReplay.session_for(PROMISED, "kept_promise")
+	assert_true(s.missions.knows("promise_kept:" + PROMISED), "the promise was kept")
 	assert_false(s.missions.knows("promise_kept:other"))
+
+
+## As play keeps a promise (People.judge_promise after Missions judged the date): the
+## proposal with the promise agreed, the trust up by PROMISE_KEPT_TRUST.
+func test_a_kept_promise_raises_trust_as_play_does() -> void:
+	var before: int = TalkReplay.session_for(PROMISED, "none").people.trust["el_amrani"]
+	assert_true(before <= 100 - People.PROMISE_KEPT_TRUST, "the rise shows")
+	var s := TalkReplay.session_for(PROMISED, "kept_promise")
+	assert_eq(s.people.trust["el_amrani"], before + People.PROMISE_KEPT_TRUST)
+	assert_eq(s.people.judged.get(PROMISED), true, "judged once, kept")
+	var agreed: Dictionary = s.people.dialogs[PROMISED].item(s.people.agreed.get(PROMISED, ""))
+	assert_false(agreed.get("promise", {}).is_empty(), "a proposal with a promise was agreed")
+	assert_false(s.people.memory.has("el_amrani"), "nothing bad remembered")
+
+
+## As play breaks one: she remembers it, the fact play records stands, and the talk opens
+## with the variant written for it (she reads the date from her notebook).
+func test_a_broken_promise_opens_with_its_variant() -> void:
+	var s := TalkReplay.session_for(PROMISED, "broken_promise")
+	assert_true(s.missions.knows("promise_broken:" + PROMISED))
+	assert_true("promise_broken" in s.people.memory["el_amrani"]["flags"], "she remembers it")
+	assert_eq(s.people.judged.get(PROMISED), false, "judged once, broken")
+	var opened := s.start_dialog("el_amrani")
+	assert_eq(opened.get("dialog"), PROMISED, "opens: %s" % opened.get("error", ""))
+	var variant: Dictionary = s.people.dialogs[PROMISED].variants[0]
+	assert_true("promise_broken:" + PROMISED in variant["needs"]["all"], "the variant this checks")
+	assert_eq(opened["opening"], s.fill_tokens(variant["opening"]), "the broken-promise opening")
 
 
 func test_ruined_yesterday_is_a_ruined_talk_as_play_records_it() -> void:
@@ -68,10 +97,21 @@ func test_every_content_dialog_is_listed_and_opens() -> void:
 		assert_eq(opened.get("dialog"), row["id"], "%s opens: %s" % [row["id"], opened.get("error", "")])
 
 
-func test_the_presets_a_kind_offers() -> void:
-	assert_eq(TalkReplay.presets_for("persuade"), ["none", "ruined_yesterday", "kept_promise"])
-	for kind in ["expert", "checkin"]:
-		assert_eq(TalkReplay.presets_for(kind), ["none"], "a %s has no ruin or promise to remember" % kind)
+## Only a persuasion can be ruined; only a talk with a proposal that promises something
+## can have that promise kept or broken.
+func test_the_presets_a_dialog_offers() -> void:
+	var by_id := {}
+	for d: DialogDef in Catalog.load_from().dialogs:
+		by_id[d.id] = d
+	assert_eq(TalkReplay.presets_for(by_id[JOOST]), ["none", "ruined_yesterday"], "no promise in Joost's talk")
+	assert_eq(TalkReplay.presets_for(by_id[PROMISED]), ["none", "ruined_yesterday", "kept_promise", "broken_promise"])
+	for d: DialogDef in by_id.values():
+		if d.kind != "persuade":
+			assert_eq(TalkReplay.presets_for(d), ["none"], "%s: a %s has no ruin or promise to remember" % [d.id, d.kind])
+	var screen := _screen()
+	assert_eq(screen.pickers[JOOST].item_count, 2, "the picker offers what the talk can have")
+	assert_eq(screen.pickers[PROMISED].item_count, 4)
+	screen.free()
 
 
 func test_an_unknown_dialog_is_an_error_on_the_session() -> void:
@@ -112,7 +152,8 @@ func test_play_opens_the_real_talk_view_and_esc_throws_the_session_away() -> voi
 func test_the_speel_button_uses_the_preset_picked_in_its_row() -> void:
 	var screen := _screen()
 	var picker: OptionButton = screen.pickers[JOOST]
-	picker.select(TalkReplay.presets_for("persuade").find("ruined_yesterday"))
+	picker.select(1)
+	assert_eq(picker.get_item_metadata(picker.selected), "ruined_yesterday")
 	screen.play(JOOST)
 	assert_eq(screen.view.talk["opening"], screen.view.session.fill_tokens(
 		screen.view.session.people.dialogs[JOOST].retry_opening), "Joost remembers yesterday")

@@ -2,7 +2,7 @@ class_name TalkReplay
 extends Control
 ## "Praat opnieuw" on the designer page (Phase 3 slice 3.0): every talk of the content, started at
 ## once in the real TalkView over a plain backdrop, with a preset of what the person remembers
-## (nothing, a talk ruined yesterday, a kept promise). Each play is on a session of its own,
+## (nothing, a talk ruined yesterday, a promise kept or broken). Each play is on a session of its own,
 ## thrown away when the talk closes; the summary card shows the route taken (TalkSummary). Esc
 ## leaves the talk for the list, and the list for the designer page. Dutch for the designer, as
 ## the page around it.
@@ -20,9 +20,11 @@ const KIND_NAMES := {"persuade": "gesprek", "checkin": "check-in", "expert": "de
 const NONE := "none"
 const RUINED := "ruined_yesterday"
 const KEPT := "kept_promise"
+const BROKEN := "broken_promise"
 ## The presets, with their names in the picker.
-const PRESETS: Array[String] = [NONE, RUINED, KEPT]
-const PRESET_NAMES := {NONE: "Geen voorgeschiedenis", RUINED: "Gisteren verpest", KEPT: "Belofte nagekomen"}
+const PRESETS: Array[String] = [NONE, RUINED, KEPT, BROKEN]
+const PRESET_NAMES := {NONE: "Geen voorgeschiedenis", RUINED: "Gisteren verpest", KEPT: "Belofte nagekomen",
+	BROKEN: "Belofte gebroken"}
 ## The list's scrolling height (px), so the buttons below stay on a 900 px screen.
 const LIST_HEIGHT := 640.0
 
@@ -61,7 +63,7 @@ func build() -> void:
 	list.add_child(UiPanel.button(tr(TitleMenu.BACK), back_requested.emit))
 
 
-## Every talk of the content, in the bank's order: [{id, person (id), name, kind}].
+## Every talk of the content, in the bank's order: [{id, person (id), name, kind, presets}].
 static func rows(catalog: Catalog) -> Array[Dictionary]:
 	var names := {}
 	for p in catalog.persons:
@@ -69,13 +71,25 @@ static func rows(catalog: Catalog) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	for d in catalog.dialogs:
 		if d.kind in Dialog.KINDS:
-			out.append({"id": d.id, "person": d.person, "name": names.get(d.person, d.person), "kind": d.kind})
+			out.append({"id": d.id, "person": d.person, "name": names.get(d.person, d.person), "kind": d.kind,
+				"presets": presets_for(d)})
 	return out
 
 
-## The presets a talk of `kind` can have: only a persuasion can be ruined or hold a promise.
-static func presets_for(kind: String) -> Array[String]:
-	return PRESETS if kind == "persuade" else [NONE]
+## The presets talk `d` can have: only a persuasion can be ruined, and only one with a proposal
+## that promises something can have that promise kept or broken.
+static func presets_for(d: DialogDef) -> Array[String]:
+	if d.kind != "persuade":
+		return [NONE]
+	return PRESETS if not _promising(d).is_empty() else [NONE, RUINED]
+
+
+## The id of `d`'s first proposal with a `promise`, "" for none.
+static func _promising(d: DialogDef) -> String:
+	for proposal: Dictionary in d.proposals:
+		if proposal.get("promise") is Dictionary:
+			return str(proposal.get("id", ""))
+	return ""
 
 
 ## A new game with talk `dialog_id` ready to open and `preset` applied. Its person is present,
@@ -95,7 +109,9 @@ static func session_for(dialog_id: String, preset: String, seed_value: int = 11)
 
 ## Put the session in the state `preset` names for talk `d` (anything else leaves it be):
 ## RUINED the way play records a ruined talk (People.finish, a day back: memory, log, the
-## retry, the morning hello), KEPT as the fact Missions records for a kept promise.
+## retry, the morning hello); KEPT and BROKEN the way play judges a promised date: the proposal
+## with the promise agreed, People.judge_promise (trust up, or remembered) and the fact
+## Missions records (which picks a variant written for it).
 static func apply(preset: String, s: GameSession, d: DialogDef) -> void:
 	match preset:
 		RUINED:
@@ -104,8 +120,11 @@ static func apply(preset: String, s: GameSession, d: DialogDef) -> void:
 			s.people.finish(talk, s.region.net.time - SimCalendar.days(1))
 			while s.people.cooling_down(d.person, s.region.net.time):   # a weekend between
 				s.region.advance_days(1)
-		KEPT:
-			s.missions.facts.add("promise_kept:" + d.id)
+		KEPT, BROKEN:
+			var kept := preset == KEPT
+			s.people.agreed[d.id] = _promising(d)
+			s.people.judge_promise(d.id, kept)
+			s.missions.facts.add(("promise_kept:" if kept else "promise_broken:") + d.id)
 
 
 ## This talk is the only one its person has, and open: the world is not asked for its mission,
@@ -190,7 +209,7 @@ func _row(parent: Node, row: Dictionary) -> void:
 	texts.add_child(UiPanel.label(row["id"], UiTheme.FONT_SIZE, Palette.VOLTANA_BLUE))
 	texts.add_child(UiPanel.label("%s  ·  %s" % [row["name"], tr(KIND_NAMES[row["kind"]])], UiTheme.SMALL, Palette.INK))
 	var picker := OptionButton.new()
-	for preset in presets_for(row["kind"]):
+	for preset: String in row["presets"]:
 		picker.add_item(tr(PRESET_NAMES[preset]))
 		picker.set_item_metadata(picker.item_count - 1, preset)
 	picker.size_flags_vertical = Control.SIZE_SHRINK_CENTER
