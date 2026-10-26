@@ -50,6 +50,8 @@ extends SceneTree
 ## title_replace, title_keep ("Nieuw spel" over a filled autosave: the
 ## question, then the slots to keep it in) · designer_page (Phase 3 3.0: the title menu's
 ## Ontwerper page over three designer saves, the last one made on old content) ·
+## designer_replay, designer_replay_talk ("Praat opnieuw": the list of talks; Joost's talk
+## replayed with "Gisteren verpest", his retry opening on screen) ·
 ## pause, pause_slots, pause_confirm (Esc in the office: the pause menu, its
 ## five slots, the overwrite question) ·
 ## open_reception … open_after (the opening, beat by beat; PLAN 2.7d) ·
@@ -113,7 +115,7 @@ func _run() -> void:
 		quit(2)
 		return
 	var state := args[0]
-	if state in ["title", "title_replace", "title_keep", "designer_page", "pause", "pause_slots", "pause_confirm"]:
+	if state in ["title", "title_replace", "title_keep", "designer_page", "designer_replay", "designer_replay_talk", "pause", "pause_slots", "pause_confirm"]:
 		await _save_menus(state)
 		_capture(args)
 		return
@@ -402,8 +404,12 @@ func _save_menus(state: String) -> void:
 	old.store_buffer(var_to_bytes({"version": 0, "region": {}}))
 	old.close()
 	slots.now = func() -> float: return now
-	if state == "designer_page":
-		_designer_page(slots)
+	if state.begins_with("designer_"):
+		var menu := _designer_page(slots)
+		if state != "designer_page":
+			menu.open_replay()
+		if state == "designer_replay_talk":
+			menu.replay.start("joost_output_kpi", TalkReplay.RUINED)
 		return
 	if state.begins_with("title"):
 		var menu: TitleMenu = load(TitleMenu.SCENE).instantiate()
@@ -430,7 +436,7 @@ func _save_menus(state: String) -> void:
 
 ## The title menu's Ontwerper page over three designer saves (the first played by the bot, the
 ## others written at once); the last carries an old content hash.
-func _designer_page(slots: SaveSlots) -> void:
+func _designer_page(slots: SaveSlots) -> TitleMenu:
 	Designer.force(true)
 	var dir := SHOT_SAVES + "/designer"
 	for slot: String in DesignerSaves.SAVES.map(func(spec: Dictionary) -> String: return spec["slot"]):
@@ -448,6 +454,7 @@ func _designer_page(slots: SaveSlots) -> void:
 	menu.designer_dir = dir
 	root.add_child(menu)
 	menu.open_designer()
+	return menu
 
 
 ## Monday of the training week at Werkvoorbereiding, Ruud's note in: the phone
