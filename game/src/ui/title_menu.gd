@@ -222,8 +222,7 @@ func _begin() -> void:
 		start_requested.emit("")
 		return
 	var slot := _designer_slot
-	_designer_slot = ""
-	_go(Page.DESIGNER)  # shows an error, if there is one
+	_go(Page.DESIGNER)  # forgets the pending slot; the page shows an error from start()
 	designer.start(slot)
 
 
@@ -287,19 +286,22 @@ func cancel() -> void:
 	if page == Page.OVERWRITE:
 		_go(Page.KEEP)
 		return
-	var back := Page.DESIGNER if page == Page.REPLACE and not _designer_slot.is_empty() else Page.MAIN
-	_designer_slot = ""
-	_go(back)
+	_go(Page.DESIGNER if page == Page.REPLACE and not _designer_slot.is_empty() else Page.MAIN)
 
 
 ## The main page with a line under the menu.
 func _say(line: String) -> void:
+	_designer_slot = ""
 	page = Page.MAIN
 	message = line
 	refresh()
 
 
+## Show page `to`. The pending designer save lives only in the question about the autosave and
+## the slots (Page.REPLACE, KEEP, OVERWRITE); any other page forgets it.
 func _go(to: Page) -> void:
+	if not to in [Page.REPLACE, Page.KEEP, Page.OVERWRITE]:
+		_designer_slot = ""
 	page = to
 	message = ""
 	refresh()

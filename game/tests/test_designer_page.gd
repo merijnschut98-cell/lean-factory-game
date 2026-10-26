@@ -194,6 +194,28 @@ func test_terug_from_the_question_returns_to_the_designer_page_and_changes_nothi
 	_cleanup()
 
 
+func test_a_failed_keep_forgets_the_designer_save_so_nieuw_spel_starts_a_new_game() -> void:
+	var menu := _menu_over_autosave()
+	var asked := _asked(menu)
+	expect_error("cannot move")  # the failed keep says so
+	var blocked := SaveFile.path_of("slot_2", saves_dir)
+	DirAccess.make_dir_recursive_absolute(blocked)  # slot 2 cannot be written
+	menu.designer.pick("designer_t1")
+	menu.keep_first()
+	menu.keep_in(2)
+	assert_eq(menu.page, TitleMenu.Page.MAIN, "the keep failed")
+	assert_eq(asked, [])
+	assert_eq(_autosave_bytes(), autosaved)
+	menu.new_game()
+	assert_eq(menu.page, TitleMenu.Page.REPLACE)
+	menu.replace_autosave()
+	assert_eq(asked, [""], "a new game, not the designer save")
+	assert_eq(_autosave_bytes(), autosaved)
+	DirAccess.remove_absolute(blocked)
+	menu.free()
+	_cleanup()
+
+
 func _press(root: Node, text: String) -> void:
 	for button: Node in root.find_children("*", "Button", true, false):
 		if (button as Button).text == text:
