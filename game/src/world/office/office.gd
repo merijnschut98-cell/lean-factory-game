@@ -628,11 +628,12 @@ func interact(target: Interactable) -> void:
 
 ## Whether the world waits: a panel, the explainer or the creator is open, or a van ride is on.
 func busy() -> bool:
-	return ui.is_busy() or input_taken() or ride != null or kpi_board != null
+	return ui.is_busy() or explainer != null or look_editor != null or ride != null or kpi_board != null
 
 
-## Whether a view that reads the keys before the GUI is up (any explainer, the creator): a
-## text line cannot share them with it.
+## Whether a view that reads the keys before the GUI is up: the office's explainer, the
+## creator, or an explainer opened elsewhere (the codex). The marker's key guard only: a
+## text line cannot share the keys with it. The world's hold is busy().
 func input_taken() -> bool:
 	return explainer != null or look_editor != null or ExplainerView.any_open(self)
 

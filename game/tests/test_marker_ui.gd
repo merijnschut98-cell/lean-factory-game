@@ -149,6 +149,27 @@ func test_the_line_does_not_open_over_a_codex_explainer() -> void:
 	office.free()
 
 
+## The marker's key guard is not the world's hold: a codex explainer left up after Tab
+## lowered the phone must not keep the player still once a scene (or a ride) has held and
+## let go, nor after it closes.
+func test_a_codex_explainer_does_not_strand_the_walk_after_a_scene() -> void:
+	var office := _office()
+	var tree := Engine.get_main_loop() as SceneTree
+	tree.root.add_child(office)
+	var ui := office.ui
+	ui.phone.show()
+	var view := ui.codex.open_explainer(OfficeTrafohuisje.EXPLAINER)
+	ui.close_panels()   # Tab: the phone goes down, the explainer stays
+	assert_true(ExplainerView.any_open(office), "the explainer is still up")
+	office.hold_for_scene(true)
+	office.hold_for_scene(false)
+	assert_true(office.player.active, "the scene let go: the player walks")
+	view.close()
+	assert_true(office.player.active, "the explainer closed: the player walks")
+	_cleanup()
+	office.free()
+
+
 ## Tab lowers the phone (Phone._input); typed in the line it must not.
 func test_tab_in_the_line_does_not_close_the_phone() -> void:
 	var office := _office()
