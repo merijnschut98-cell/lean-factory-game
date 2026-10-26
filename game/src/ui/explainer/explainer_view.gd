@@ -28,6 +28,8 @@ signal closed(explainer_id: String)
 signal pause_requested
 
 const SCENE := "res://src/ui/explainer/explainer_view.tscn"
+## Every open explainer is in this group (ExplainerView.any_open).
+const GROUP := "explainer_views"
 ## The cross-fade: one pair group after another (the content's `groups`; spec §6.3, estimates).
 const XFADE_EACH_S := 0.3
 const XFADE_STAGGER_S := 0.25
@@ -99,6 +101,12 @@ static func create(explainer_id: String, options: Dictionary = {}) -> ExplainerV
 	return v
 
 
+## Whether any explainer is up in the tree `from` is in, wherever it was opened from (the
+## office, a talk, the codex): they all read the keys before the GUI does.
+static func any_open(from: Node) -> bool:
+	return from.is_inside_tree() and not from.get_tree().get_nodes_in_group(GROUP).is_empty()
+
+
 ## Open it over `parent` (the office, the codex): the entry point.
 static func open(parent: Node, explainer_id: String, options: Dictionary = {}) -> ExplainerView:
 	var v := create(explainer_id, options)
@@ -140,6 +148,7 @@ func _setup(explainer_id: String, options: Dictionary) -> void:
 
 
 func _ready() -> void:
+	add_to_group(GROUP)
 	if not error.is_empty():
 		push_warning("explainer not opened: " + error)
 		_finish()
@@ -272,6 +281,7 @@ func close() -> void:
 	if not _open:
 		return
 	_open = false
+	remove_from_group(GROUP)   # its fade-out reads no keys
 	if beats != null:
 		beats.close()
 	if _log != null:
@@ -288,6 +298,7 @@ func close() -> void:
 
 func _finish() -> void:
 	_open = false
+	remove_from_group(GROUP)
 	closed.emit(def.id if def != null else "")
 	queue_free()
 

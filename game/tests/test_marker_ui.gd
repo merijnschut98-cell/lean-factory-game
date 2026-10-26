@@ -130,6 +130,25 @@ func test_the_line_does_not_open_over_an_explainer_on_a_talk() -> void:
 	office.free()
 
 
+## An explainer opened again from the codex (an app of the phone, so a panel is up) is no
+## `Office.explainer`, but reads the same keys: one rule for every explainer wherever it opens.
+func test_the_line_does_not_open_over_a_codex_explainer() -> void:
+	var office := _office()
+	Designer.force(true)
+	var tree := Engine.get_main_loop() as SceneTree
+	tree.root.add_child(office)
+	office.ui.phone.show()
+	var view := office.ui.codex.open_explainer(OfficeTrafohuisje.EXPLAINER)
+	assert_true(view != null, "the codex opens it")
+	assert_true(office.explainer == null, "not the office's own")
+	assert_false(office.ui.open_marker(), "the codex's explainer holds the keys")
+	view.close()
+	assert_false(ExplainerView.any_open(office), "a closed one no longer counts, though it fades")
+	assert_true(office.ui.open_marker())
+	_cleanup()
+	office.free()
+
+
 ## Tab lowers the phone (Phone._input); typed in the line it must not.
 func test_tab_in_the_line_does_not_close_the_phone() -> void:
 	var office := _office()

@@ -631,10 +631,10 @@ func busy() -> bool:
 	return ui.is_busy() or input_taken() or ride != null or kpi_board != null
 
 
-## Whether a view that reads the keys before the GUI is up (the explainer, the creator): a
+## Whether a view that reads the keys before the GUI is up (any explainer, the creator): a
 ## text line cannot share them with it.
 func input_taken() -> bool:
-	return explainer != null or look_editor != null
+	return explainer != null or look_editor != null or ExplainerView.any_open(self)
 
 
 ## Whether the world is the player's (review S3 #2): no panel, talk or phone, no view over
