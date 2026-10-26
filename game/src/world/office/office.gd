@@ -332,6 +332,20 @@ func reload_rooms() -> void:
 		show_map()
 
 
+## Move the game's clock to `minute` of today (the screenshot tool's --at), and the light and
+## the people with it. Forward only: false (and a message) when `minute` has already passed.
+func set_minute_of_day(minute: int) -> bool:
+	var now := session.minute_of_day()
+	if minute < now:
+		printerr("clock: ", minute, " is earlier than now (", now, "), the clock does not go back")
+		return false
+	session.pass_time(minute - now)
+	ui.after_action()
+	_refresh_people()
+	daylight.update(session)
+	return true
+
+
 ## Who is where, with the doors as they are now.
 func _refresh_people() -> void:
 	people.shut = floors.shut_rects(floors.markers())

@@ -1,7 +1,9 @@
 extends SceneTree
 ## Screenshots of the office in a given play state (needs a display, e.g. Xvfb):
 ##   xvfb-run -a godot --path game --rendering-driver opengl3 --resolution 1600x900 \
-##     --script res://tools/play_shot.gd -- <state> <out.png> [frames]
+##     --script res://tools/play_shot.gd -- <state> <out.png> [frames] [--at HH:MM] [--season name]
+## `--at` moves the office clock forward to that time of day first (evening light, who is
+## still at their desk); `--season` is parsed for Phase 3.3, not built yet.
 ## States: office (third person at Werkvoorbereiding, HUD and prompt) ·
 ## overview (the same, zoomed out over the floor) · inspect (E at
 ## Werkvoorbereiding: the team's menu docked at the right, the camera framing
@@ -110,14 +112,15 @@ func _initialize() -> void:
 
 func _run() -> void:
 	var args := OS.get_cmdline_user_args()
-	if args.size() < 2:
+	var shot := PlayShotArgs.parse(args)
+	if shot["out"] == "":
 		printerr("usage: -- <office|overview|inspect|tools|a3|check|act|board|coach|map|codex|training_board|timelapse|sustain|intussen|terugblik|people_desks|people_talk|people_energy|people_monteurs|people_meetdata|people_gemba|title|title_replace|title_keep|pause|pause_slots|pause_confirm> <out.png> [frames]")
 		quit(2)
 		return
-	var state := args[0]
+	var state: String = shot["state"]
 	if state in ["title", "title_replace", "title_keep", "designer_page", "designer_replay", "designer_replay_talk", "pause", "pause_slots", "pause_confirm"]:
 		await _save_menus(state)
-		_capture(args)
+		_capture(shot)
 		return
 	var office: Office = load(SCENE).instantiate()
 	office.seed_value = 11
@@ -372,17 +375,28 @@ func _run() -> void:
 			printerr("unknown state ", state)
 			quit(2)
 			return
-	_capture(args)
+	_apply_clock(office, args, shot)
+	_capture(shot)
 
 
-## Wait `frames` (args[2], default 20), then save the screen to args[1].
-func _capture(args: PackedStringArray) -> void:
-	var frames := int(args[2]) if args.size() > 2 else 20
-	for i in frames:
+## `--at` and `--season` of the shot: the office clock to that time of day (a bad or
+## past one is said and ignored); the season waits for 3.3.
+func _apply_clock(office: Office, args: PackedStringArray, shot: Dictionary) -> void:
+	if shot["at"] >= 0:
+		office.set_minute_of_day(shot["at"])
+	elif "--at" in args:
+		printerr("--at wants a time of day like 18:30")
+	if shot["season"] != "":
+		printerr("season not built yet: ", shot["season"])
+
+
+## Wait `frames`, then save the screen to the shot's out file.
+func _capture(shot: Dictionary) -> void:
+	for i: int in shot["frames"]:
 		await process_frame
-	var err := root.get_viewport().get_texture().get_image().save_png(args[1])
+	var err := root.get_viewport().get_texture().get_image().save_png(shot["out"])
 	if err != OK:
-		printerr("cannot write ", args[1], ": ", error_string(err))
+		printerr("cannot write ", shot["out"], ": ", error_string(err))
 	quit(0 if err == OK else 1)
 
 
