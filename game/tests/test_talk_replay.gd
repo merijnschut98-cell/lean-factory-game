@@ -44,6 +44,18 @@ func test_session_for_opens_the_dialog() -> void:
 	assert_false(str(opened["opening"]).is_empty(), "the first line")
 
 
+func test_a_persuasion_keeps_the_trust_the_person_has() -> void:
+	var s := TalkReplay.session_for(JOOST, "none")
+	var own: int = s.people.persons["joost"].trust
+	assert_true(own < 100, "the check means something")
+	assert_eq(s.start_dialog("joost")["meter"]["trust"], own, "the meter's trust is theirs, not the maximum")
+
+
+func test_an_expert_talk_opens_its_trust_gated_topics() -> void:
+	var s := TalkReplay.session_for("henk_expert", "none")
+	assert_eq(s.people.trust["henk"], 100, "an expert's topics wait for trust")
+
+
 func test_every_content_dialog_is_listed_and_opens() -> void:
 	var catalog := Catalog.load_from()
 	var wanted := catalog.dialogs.filter(func(d: DialogDef) -> bool: return d.kind in _kinds())

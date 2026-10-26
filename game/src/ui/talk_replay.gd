@@ -6,6 +6,9 @@ extends Control
 ## thrown away when the talk closes; the summary card shows the route taken (TalkSummary). Esc
 ## leaves the talk for the list, and the list for the designer page. Dutch for the designer, as
 ## the page around it.
+## A replay starts from a fresh world: no team trust, no clues found, the talk's mission active
+## without accept (so none of its set-up ran), and only the default variant of the talk (the
+## preset's facts are the only ones that can pick another).
 
 ## Back to the designer page.
 signal back_requested
@@ -106,7 +109,7 @@ static func apply(preset: String, s: GameSession, d: DialogDef) -> void:
 
 
 ## This talk is the only one its person has, and open: the world is not asked for its mission,
-## clue, facts, trigger or expert trust.
+## clue, facts, trigger or (for an expert) trust.
 static func _open_up(s: GameSession, d: DialogDef) -> void:
 	for other: DialogDef in s.people.dialogs.values():
 		if other.person == d.person and other != d:
@@ -114,9 +117,10 @@ static func _open_up(s: GameSession, d: DialogDef) -> void:
 	d.needs = {}
 	d.requires_clue = ""
 	d.trigger = {}
-	s.people.trust[d.person] = 100
-	for topic: Dictionary in d.topics:
-		topic.erase("needs")
+	if d.kind == ExpertTalk.KIND:   # only an expert's topics wait for trust; a persuasion keeps theirs
+		s.people.trust[d.person] = 100
+		for topic: Dictionary in d.topics:
+			topic.erase("needs")
 	if s.missions.defs.has(d.mission):
 		s.missions.progress[d.mission] = {"status": "active", "asks": {}, "seen": {}}
 
