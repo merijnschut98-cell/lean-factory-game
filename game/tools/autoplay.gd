@@ -241,6 +241,8 @@ class Persona extends RefCounted:
 	var story_day := 0
 	## Stop after this day of play (> 0; the winter probe), else play on.
 	var stop_day := -1.0
+	## Stop once this Act is open (Missions.current_act; > 0), else play on.
+	var stop_act := -1
 
 	func _init(persona_name: String, seed_number: int, stop_after_main_missions: int = -1) -> void:
 		persona = persona_name
@@ -292,9 +294,13 @@ class Persona extends RefCounted:
 		if day() > MAX_PLAY_DAYS:
 			_end("horizon")
 			return
-		if stop_day > 0.0 and day() > stop_day:
-			_end("stop_day")
-			return
+		if _no_talk_open():  # a save is only taken between talks
+			if stop_day > 0.0 and day() > stop_day:
+				_end("stop_day")
+				return
+			if stop_act > 0 and s.missions.current_act() >= stop_act:
+				_end("stop_act")
+				return
 		if _actions >= MAX_ACTIONS:
 			_end("action_cap")
 			return
@@ -325,6 +331,15 @@ class Persona extends RefCounted:
 				_actions += 1
 				return
 		_wait(actives)
+
+	## Minutes until day() passes stop_day (-1: no stop_day).
+	func _minutes_to_stop_day() -> int:
+		if stop_day <= 0.0:
+			return -1
+		return maxi(1, ceili((stop_day - day()) * SimCalendar.MINUTES_PER_DAY) + 1)
+
+	func _no_talk_open() -> bool:
+		return s.talks.talk == null and s.talks.expert == null
 
 	func _end(reason: String) -> void:
 		record["end"] = reason
@@ -454,7 +469,11 @@ class Persona extends RefCounted:
 				due = st.check_at
 				problem = m.goal_problem
 		if not problem.is_empty():
-			s.wait_for_check(problem)
+			var to_stop := _minutes_to_stop_day()
+			if to_stop >= 0 and to_stop < due - s.region.net.time:
+				s.pass_time(to_stop)  # a save lands on its day, not a Check's due date after it
+			else:
+				s.wait_for_check(problem)
 			return
 		if actives.any(func(m: MissionDef) -> bool: return not s.missions.pending_talk(m).is_empty() \
 				or m.goal_type == "story_order"):
