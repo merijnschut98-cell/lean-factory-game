@@ -71,17 +71,30 @@ func test_load_into_autosave_copies_bytes() -> void:
 	_cleanup()
 
 
-## A done Act II side in a gap between mains makes Missions.current_act() say 2 (it counts every
-## completed mission); the stop wants an Act II main in play.
-func test_a_done_side_of_a_later_act_is_not_the_act_stop() -> void:
+## One step of a persona at the stop check: its session a new game with `progress` as given and
+## the action cap spent, so a step that does not stop for the act ends on "action_cap".
+func _step_at_the_act_stop(progress: Dictionary, done: Array[String]) -> Dictionary:
 	var persona := Autoplay.Persona.new("expert", 11)
 	persona.stop_act = 2
 	persona.s = GameSession.new_game(11, Catalog.DATA_DIR, false)
 	persona.s.missions.progress.clear()
-	persona.s.missions.done_once["fix_silent_meter"] = true
-	assert_eq(persona.s.missions.current_act(), 2, "the false Act II this guards against")
-	assert_false(persona.stop_act_reached(), "no Act II main is in play")
-	assert_eq(persona.act_in_play(), 2, "the gap falls back to current_act()")
+	persona.s.missions.progress.merge(progress)
+	for id in done:
+		persona.s.missions.done_once[id] = true
+	persona.record = {"end": "", "curve": []}
+	persona._actions = Autoplay.Persona.MAX_ACTIONS
+	persona._step()
+	return {"end": persona.record["end"], "current_act": persona.s.missions.current_act()}
+
+
+## A done Act II side in a gap between mains makes Missions.current_act() say 2 (it counts every
+## completed mission); the step must not stop for it, only for an Act II main in play.
+func test_a_done_side_of_a_later_act_is_not_the_act_stop() -> void:
+	var gap := _step_at_the_act_stop({}, ["fix_silent_meter"])
+	assert_eq(gap["current_act"], 2, "the false Act II this guards against")
+	assert_eq(gap["end"], "action_cap", "the step goes past the act stop")
+	var in_play := _step_at_the_act_stop({"fix_unused_capacity": {"status": "active", "asks": {}, "seen": {}}}, [])
+	assert_eq(in_play["end"], "stop_act", "an Act II main in play is the stop")
 
 
 func test_saved_act_is_the_act_of_the_main_in_play() -> void:
