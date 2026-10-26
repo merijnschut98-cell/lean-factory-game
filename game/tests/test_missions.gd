@@ -1157,3 +1157,29 @@ func test_a_debrief_reads_the_checks_numbers() -> void:
 	assert_eq(CoachNumbers.spoken("throughput", 31.0), "31")
 	assert_eq(CoachNumbers.spoken("capacity", 37.94), "37,9")
 	assert_eq(CoachNumbers.spoken("lead_time", 54.4), "54")
+
+
+## Behaviour-neutral split (TD-3): moving the coach and the sync passes out of Missions must
+## not change what Missions.to_dict writes. A session played to a fork (one branch taken, the
+## coach asked, one update) writes exactly these keys, and its progress entry exactly these.
+func test_split_keeps_save_keys() -> void:
+	var log := _coach_log([
+		_main("branch_b", {"goal": {"type": "solve", "problem": "incomplete_application"},
+			"fork": {"group": "g", "role": "bottleneck"}}),
+		_main("branch_n", {"goal": {"type": "solve", "problem": "custom_design"},
+			"fork": {"group": "g", "role": "non_bottleneck"}}),
+	])
+	assert_eq(log.accept("branch_n"), "")
+	log.update()
+	assert_true(log.region.uncounted.has("incomplete_application"), "played to the fork: the other branch waits")
+	assert_eq(log.ask_coach()["kind"], "question")
+	log.update()
+	var saved := log.to_dict()
+	var keys := saved.keys()
+	keys.sort()
+	assert_eq(keys, ["contained", "deadline_kept", "done_once", "facts", "failed_once", "heard", "held_paid",
+		"opened_at", "progress", "repair_due", "stewardship"])
+	var entry_keys: Array = saved["progress"]["branch_n"].keys()
+	entry_keys.sort()
+	assert_eq(entry_keys, ["asks", "said", "seen", "status"])
+	assert_eq(saved["heard"].size(), 1, "the coach's question memory is saved")
