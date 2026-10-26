@@ -48,7 +48,8 @@ extends SceneTree
 ## home screen on Monday of the training week, on Berichten, on Kaart) ·
 ## title (the title menu over a few saves) ·
 ## title_replace, title_keep ("Nieuw spel" over a filled autosave: the
-## question, then the slots to keep it in) ·
+## question, then the slots to keep it in) · designer_page (Phase 3 3.0: the title menu's
+## Ontwerper page over three designer saves, the last one made on old content) ·
 ## pause, pause_slots, pause_confirm (Esc in the office: the pause menu, its
 ## five slots, the overwrite question) ·
 ## open_reception … open_after (the opening, beat by beat; PLAN 2.7d) ·
@@ -112,7 +113,7 @@ func _run() -> void:
 		quit(2)
 		return
 	var state := args[0]
-	if state in ["title", "title_replace", "title_keep", "pause", "pause_slots", "pause_confirm"]:
+	if state in ["title", "title_replace", "title_keep", "designer_page", "pause", "pause_slots", "pause_confirm"]:
 		await _save_menus(state)
 		_capture(args)
 		return
@@ -401,6 +402,9 @@ func _save_menus(state: String) -> void:
 	old.store_buffer(var_to_bytes({"version": 0, "region": {}}))
 	old.close()
 	slots.now = func() -> float: return now
+	if state == "designer_page":
+		_designer_page(slots)
+		return
 	if state.begins_with("title"):
 		var menu: TitleMenu = load(TitleMenu.SCENE).instantiate()
 		menu.saves = slots
@@ -422,6 +426,28 @@ func _save_menus(state: String) -> void:
 		office.ui.pause_menu.show_slots()
 	if state == "pause_confirm":
 		office.ui.pause_menu.pick(3)
+
+
+## The title menu's Ontwerper page over three designer saves (the first played by the bot, the
+## others written at once); the last carries an old content hash.
+func _designer_page(slots: SaveSlots) -> void:
+	Designer.force(true)
+	var dir := SHOT_SAVES + "/designer"
+	for slot: String in DesignerSaves.SAVES.map(func(spec: Dictionary) -> String: return spec["slot"]):
+		DirAccess.remove_absolute(SaveFile.path_of(slot, dir))
+	var error := MakeSaves.write(DesignerSaves.SAVES[0], "expert", 11, dir)
+	for spec: Array in [[DesignerSaves.SAVES[1], 45, DesignerSaves.content_hash()], [DesignerSaves.SAVES[2], 70, "old"]]:
+		var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
+		s.region.advance_days(spec[1])
+		var made := {"persona": "expert", "seed": 11, "stop_day": float(spec[1]), "content_hash": spec[2]}
+		error += GameSave.write(spec[0]["slot"], s, SessionLayer.new(), dir, 0.0, {"designer": made})
+	if not error.is_empty():
+		printerr(error)
+	var menu: TitleMenu = load(TitleMenu.SCENE).instantiate()
+	menu.saves = slots
+	menu.designer_dir = dir
+	root.add_child(menu)
+	menu.open_designer()
 
 
 ## Monday of the training week at Werkvoorbereiding, Ruud's note in: the phone

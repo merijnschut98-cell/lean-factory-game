@@ -4,10 +4,11 @@ extends Control
 ## used first (the autosave among them), each a card to continue from (a
 ## save that will not load keeps the menu, with a line that says so);
 ## "Nieuw spel" (the character creator, PLAN 2.7b, then a fresh game),
-## "Instellingen" ("Tekst loopt vanzelf door", the rest later) and "Alles wissen" behind one
-## confirmation. A new game's first autosave replaces the autosave, so when
-## that holds a game "Nieuw spel" asks once: keep it in a slot first,
-## replace it, or go back (PLAN §10, review S3).
+## "Instellingen" ("Tekst loopt vanzelf door", the rest later), "Alles wissen" behind one
+## confirmation and, for the designer only (Designer), "Ontwerper": the jump-to-day saves.
+## A new game's first autosave replaces the autosave, so when that holds a
+## game "Nieuw spel" asks once: keep it in a slot first, replace it, or go
+## back (PLAN §10, review S3).
 
 ## The player chose a save to continue from, or "" for a new game (the
 ## creator comes first).
@@ -23,6 +24,8 @@ const PLAY := "Verder spelen"
 const NEW_GAME := "Nieuw spel"
 const SETTINGS := "Instellingen"
 const SETTINGS_LATER := "Toetsen en camera: deze instellingen komen later. Voor nu speel je met WASD, de muis en E."
+const DESIGNER := "Ontwerper"
+const STALE := "Oude inhoud: maak de opslag opnieuw (tools/make_designer_saves.py)"
 const WIPE := "Alles wissen"
 const WIPE_ASK := "Alle opgeslagen spellen wissen? Ook het automatisch opgeslagen spel. Dit kan niet ongedaan worden gemaakt."
 const WIPE_YES := "Ja, alles wissen"
@@ -39,14 +42,18 @@ const KEEP_FAILED := "Bewaren is niet gelukt. Je huidige spel staat nog in de au
 ## The five slots' scrolling height (px), so "Terug" stays on a 900 px screen.
 const KEEP_HEIGHT := 420.0
 
-enum Page { MAIN, SETTINGS, WIPE, REPLACE, KEEP, OVERWRITE }
+enum Page { MAIN, SETTINGS, WIPE, REPLACE, KEEP, OVERWRITE, DESIGNER }
 
 var saves := SaveSlots.new()
 ## The settings file (tests point it elsewhere).
 var settings_path := Settings.PATH
+## The designer's saves (tests point it elsewhere).
+var designer_dir := DesignerSaves.DIR
 var page := Page.MAIN
 ## The saves' cards.
 var list: SaveList
+## The designer's page (Page.DESIGNER), or null.
+var designer: DesignerPage
 ## The five slots to keep the autosave's game in (Page.KEEP).
 var keep_list: SaveList
 ## A line under the menu (the wipe's result, an error).
@@ -57,6 +64,8 @@ var _empty: Label
 var _saves_column: VBoxContainer
 ## The slot waiting for the overwrite answer (Page.OVERWRITE).
 var _pending := 0
+## The designer save waiting for the answer about the autosave (Page.REPLACE, Page.KEEP), or "".
+var _designer_slot := ""
 ## The character creator over the menu while a new player is made, or null.
 var creator: CreatorScreen
 
@@ -137,10 +146,14 @@ func refresh() -> void:
 	list.show_entries(saves.entries())
 	_empty.visible = list.get_child_count() == 0
 	UiPanel.clear(_menu)
+	designer = null
 	_saves_column.visible = page != Page.KEEP and page != Page.OVERWRITE
 	match page:
 		Page.MAIN:
-			for item: Array in [[NEW_GAME, new_game], [SETTINGS, open_settings], [WIPE, ask_wipe]]:
+			var items: Array[Array] = [[NEW_GAME, new_game], [SETTINGS, open_settings], [WIPE, ask_wipe]]
+			if Designer.enabled():
+				items.append([DESIGNER, open_designer])
+			for item in items:
 				_menu.add_child(UiPanel.button(tr(item[0]), item[1]))
 		Page.SETTINGS:
 			_menu.add_child(UiPanel.label(tr(SETTINGS), UiTheme.HEADING, Palette.VOLTANA_BLUE))
@@ -149,6 +162,15 @@ func refresh() -> void:
 				_menu.add_child(c)
 			_menu.add_child(UiPanel.paragraph(tr(SETTINGS_LATER)))
 			_menu.add_child(UiPanel.button(tr(BACK), cancel))
+		Page.DESIGNER:
+			designer = DesignerPage.new()
+			designer.dir = designer_dir
+			designer.autosave_dir = saves.dir
+			designer.play_requested.connect(start_requested.emit)
+			designer.back_requested.connect(cancel)
+			designer.replace_requested.connect(_ask_replace_for)
+			designer.build()
+			_menu.add_child(designer)
 		Page.WIPE:
 			_menu.add_child(UiPanel.paragraph(tr(WIPE_ASK)))
 			_menu.add_child(UiPanel.button(tr(WIPE_YES), confirm_wipe))
@@ -188,10 +210,26 @@ func keep_first() -> void:
 	_go(Page.KEEP)
 
 
-## "Vervangen": the new game starts; its first autosave replaces the old.
+## "Vervangen": the new game (or the designer save) starts; it replaces the autosave.
 func replace_autosave() -> void:
 	if page == Page.REPLACE:
+		_begin()
+
+
+## The game starts: the pending designer save, else a new game.
+func _begin() -> void:
+	if _designer_slot.is_empty():
 		start_requested.emit("")
+		return
+	var slot := _designer_slot
+	_go(Page.DESIGNER)  # forgets the pending slot; the page shows an error from start()
+	designer.start(slot)
+
+
+## "Spelen" on designer save `slot` while the autosave holds a game: the same question as a new game.
+func _ask_replace_for(slot: String) -> void:
+	_designer_slot = slot
+	_go(Page.REPLACE)
 
 
 ## A slot picked to keep the autosave's game in: an empty one at once, a
@@ -216,7 +254,7 @@ func confirm_keep() -> void:
 func _keep(number: int) -> void:
 	var error := saves.copy_autosave(number)
 	if error.is_empty():
-		start_requested.emit("")
+		_begin()
 		return
 	printerr("title menu: " + error)
 	_say(tr(KEEP_FAILED))
@@ -224,6 +262,11 @@ func _keep(number: int) -> void:
 
 func open_settings() -> void:
 	_go(Page.SETTINGS)
+
+
+func open_designer() -> void:
+	if Designer.enabled():
+		_go(Page.DESIGNER)
 
 
 func ask_wipe() -> void:
@@ -237,19 +280,28 @@ func confirm_wipe() -> void:
 	_say(tr(WIPED) if error.is_empty() else error)
 
 
-## Back: to the slots from an overwrite question, else to the main page.
+## Back: to the slots from an overwrite question; from the question about the autosave to the
+## designer page when that is where it came from; else to the main page.
 func cancel() -> void:
-	_go(Page.KEEP if page == Page.OVERWRITE else Page.MAIN)
+	if page == Page.OVERWRITE:
+		_go(Page.KEEP)
+		return
+	_go(Page.DESIGNER if page == Page.REPLACE and not _designer_slot.is_empty() else Page.MAIN)
 
 
 ## The main page with a line under the menu.
 func _say(line: String) -> void:
+	_designer_slot = ""
 	page = Page.MAIN
 	message = line
 	refresh()
 
 
+## Show page `to`. The pending designer save lives only in the question about the autosave and
+## the slots (Page.REPLACE, KEEP, OVERWRITE); any other page forgets it.
 func _go(to: Page) -> void:
+	if not to in [Page.REPLACE, Page.KEEP, Page.OVERWRITE]:
+		_designer_slot = ""
 	page = to
 	message = ""
 	refresh()
