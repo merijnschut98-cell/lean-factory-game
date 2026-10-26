@@ -62,9 +62,9 @@ func build() -> void:
 ## (damaged, not a designer save) are left out.
 func entries() -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
-	var current := DesignerSaves.content_hash()
 	if not DirAccess.dir_exists_absolute(dir):
 		return out  # none made yet
+	var current := DesignerSaves.content_hash()
 	for file in DirAccess.get_files_at(dir):
 		var slot := file.trim_suffix(".save")
 		if slot == file or not SaveFile.valid_slot(slot):

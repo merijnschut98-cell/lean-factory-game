@@ -10,8 +10,7 @@ extends SceneTree
 const Autoplay := preload("res://tools/autoplay.gd")
 const DEFAULT_PERSONA := "expert"
 const DEFAULT_SEED := 11
-
-
+## A spec's stops: one of them ends its run.
 const STOPS: Array[String] = ["stop_day", "stop_act"]
 
 
@@ -62,9 +61,8 @@ func _run(args: PackedStringArray) -> int:
 		var error := write(spec, persona, seed_value)
 		if error.is_empty():
 			var back: GameSession = GameSave.read(spec["slot"], Catalog.DATA_DIR, DesignerSaves.DIR)["session"]
-			var minute := back.minute_of_day()
-			print("%s: play day %d at %02d:%02d, act %d" % [spec["slot"], back.missions.play_day(), minute / 60,
-				minute % 60, back.missions.current_act()])
+			print("%s: play day %d (%s), act %d" % [spec["slot"], back.missions.play_day(),
+				GameSession.clock_at(back.region.net.time), back.missions.current_act()])
 		else:
 			printerr(error)
 			failed = true
