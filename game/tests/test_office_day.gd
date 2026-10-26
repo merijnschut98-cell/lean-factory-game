@@ -356,3 +356,15 @@ func test_the_openings_evening_has_one_lamp_at_anouks_desk() -> void:
 	assert_true(Vector2(lamp.position.x - desk.x, lamp.position.z - desk.z).length() < 0.5, "at Werkvoorbereiding, at hers")
 	assert_eq(office.daylight.band, "night")
 	office.free()
+
+
+func test_the_clock_can_be_set_forward_for_a_shot_never_back() -> void:
+	var office := _office()
+	var start := office.session.minute_of_day()
+	assert_true(office.set_minute_of_day(18 * 60 + 30), "half past six is ahead")
+	assert_eq(office.session.minute_of_day(), 18 * 60 + 30)
+	assert_eq(office.daylight.band, "night", "the light follows")
+	assert_true(start < 18 * 60 + 30)
+	assert_false(office.set_minute_of_day(9 * 60), "back in time is refused")
+	assert_eq(office.session.minute_of_day(), 18 * 60 + 30, "and the clock stays")
+	office.free()
