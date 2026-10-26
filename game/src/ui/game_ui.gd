@@ -368,16 +368,20 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 
 ## Open the marker line; false when it does not (not the designer's build, the game
-## has no session, the pause menu is up, or it is open already).
+## has no session, the pause menu is up, it is open already, or a ride, scene or view
+## holds the world).
 func open_marker() -> bool:
 	if not Designer.enabled() or not playable() or session_layer == null or paused() or marker_open():
 		return false
+	var held := is_busy()   # a panel already holds the player still
+	if not held and not _world_free():
+		return false   # a ride, a scene or a view holds the world: a marker must not change the moment
 	if _marker_input == null:
 		_marker_input = MarkerInput.new()
 		_marker_input.submitted.connect(_write_marker)
 		_marker_input.cancelled.connect(_marker_closed)
 		hud.get_parent().add_child(_marker_input)
-	_marker_froze = not is_busy()
+	_marker_froze = not held
 	if _marker_froze:
 		panel_opened.emit()   # the player stands still while typing
 	_marker_input.open()

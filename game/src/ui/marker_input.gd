@@ -34,6 +34,14 @@ func _init() -> void:
 	box.add_child(UiPanel.label(tr(HINT), UiTheme.SMALL, Palette.MUTED))
 
 
+## Tab lowers the phone before the GUI sees it (Phone._input, which sits earlier in the
+## tree than this field); typed here it is nothing.
+func _input(event: InputEvent) -> void:
+	var key := event as InputEventKey
+	if visible and key != null and key.keycode == KEY_TAB:
+		get_viewport().set_input_as_handled()
+
+
 func open() -> void:
 	field.clear()
 	show()

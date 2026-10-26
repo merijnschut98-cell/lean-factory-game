@@ -88,3 +88,47 @@ func test_the_line_over_a_panel_does_not_release_the_world() -> void:
 	assert_false(office.player.active, "the A3 still holds the world")
 	_cleanup()
 	office.free()
+
+
+## A marker must not change the moment it marks: in a van ride (or a scene, a view) the
+## line does not open and the ride goes on untouched.
+func test_the_line_does_not_open_in_a_ride_or_a_scene() -> void:
+	var office := _office()
+	Designer.force(true)
+	office.session.missions.progress["fix_wrong_joint"] = {"status": "active", "asks": {}, "seen": {}}
+	office.floors.go_to("yard", "exit", true)
+	office.yard.poll()
+	office.interact(office.interactable("ride:fix_wrong_joint"))
+	assert_true(office.ride != null, "the ride starts")
+	var stage: Variant = office.ride.stage
+	assert_false(office.ui.open_marker(), "no line in the cab")
+	assert_false(office.ui.marker_open())
+	assert_eq(office.ride.stage, stage, "the ride is untouched")
+	assert_false(office.player.active)
+	office.free()
+	var scene := _office()
+	scene._scene_holds = true
+	assert_false(scene.ui.open_marker(), "no line over a scene")
+	_cleanup()
+	scene.free()
+
+
+## Tab lowers the phone (Phone._input); typed in the line it must not.
+func test_tab_in_the_line_does_not_close_the_phone() -> void:
+	var office := _office()
+	Designer.force(true)
+	var tree := Engine.get_main_loop() as SceneTree
+	tree.root.add_child(office)
+	var ui := office.ui
+	ui.phone.show()
+	assert_true(ui.open_marker())
+	var tab := InputEventKey.new()
+	tab.physical_keycode = KEY_TAB
+	tab.keycode = KEY_TAB
+	tab.pressed = true
+	var closed := [false]
+	ui.phone.close_requested.connect(func() -> void: closed[0] = true)
+	tree.root.push_input(tab)
+	assert_false(closed[0], "the phone stays")
+	_cleanup()
+	office.free()
