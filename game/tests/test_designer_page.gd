@@ -126,6 +126,74 @@ func test_replay_button_emits_replay_requested_and_terug_goes_back() -> void:
 	_cleanup()
 
 
+## A menu over a designer save and an autosave holding a game; the autosave's bytes in `autosaved`.
+var autosaved: PackedByteArray
+
+
+func _menu_over_autosave() -> TitleMenu:
+	_save("designer_t1", 3)
+	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
+	s.region.advance_days(20)
+	assert_eq(SaveSlots.new(saves_dir).autosave(s, SessionLayer.new()), "")
+	autosaved = FileAccess.get_file_as_bytes(SaveFile.path_of(GameSave.AUTOSAVE, saves_dir))
+	Designer.force(true)
+	var menu := _menu()
+	menu.open_designer()
+	return menu
+
+
+func _asked(menu: TitleMenu) -> Array[String]:
+	var asked: Array[String] = []
+	menu.start_requested.connect(func(slot: String) -> void: asked.append(slot))
+	return asked
+
+
+func _autosave_bytes() -> PackedByteArray:
+	return FileAccess.get_file_as_bytes(SaveFile.path_of(GameSave.AUTOSAVE, saves_dir))
+
+
+func test_pick_over_a_playable_autosave_asks_first_and_replaces_after_the_answer() -> void:
+	var menu := _menu_over_autosave()
+	var asked := _asked(menu)
+	assert_eq(menu.designer.pick("designer_t1"), "")
+	assert_eq(menu.page, TitleMenu.Page.REPLACE, "asks before it replaces the game in the autosave")
+	assert_eq(_autosave_bytes(), autosaved, "nothing is overwritten yet")
+	assert_eq(asked, [])
+	menu.replace_autosave()
+	assert_eq(asked, [GameSave.AUTOSAVE])
+	assert_eq(_autosave_bytes(), FileAccess.get_file_as_bytes(SaveFile.path_of("designer_t1", designer_dir)), "now it is the designer save")
+	menu.free()
+	_cleanup()
+
+
+func test_pick_over_a_playable_autosave_can_keep_the_game_in_a_slot_first() -> void:
+	var menu := _menu_over_autosave()
+	var asked := _asked(menu)
+	menu.designer.pick("designer_t1")
+	menu.keep_first()
+	assert_eq(_autosave_bytes(), autosaved)
+	menu.keep_in(2)
+	assert_eq(FileAccess.get_file_as_bytes(SaveFile.path_of("slot_2", saves_dir)), autosaved, "the game is kept in the slot")
+	assert_eq(asked, [GameSave.AUTOSAVE])
+	assert_eq(_autosave_bytes(), FileAccess.get_file_as_bytes(SaveFile.path_of("designer_t1", designer_dir)))
+	menu.free()
+	_cleanup()
+
+
+func test_terug_from_the_question_returns_to_the_designer_page_and_changes_nothing() -> void:
+	var menu := _menu_over_autosave()
+	var asked := _asked(menu)
+	menu.designer.pick("designer_t1")
+	menu.cancel()
+	assert_eq(menu.page, TitleMenu.Page.DESIGNER)
+	assert_eq(_autosave_bytes(), autosaved)
+	assert_eq(asked, [])
+	menu.replace_autosave()  # no question open: nothing happens
+	assert_eq(asked, [])
+	menu.free()
+	_cleanup()
+
+
 func _press(root: Node, text: String) -> void:
 	for button: Node in root.find_children("*", "Button", true, false):
 		if (button as Button).text == text:

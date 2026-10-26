@@ -64,6 +64,8 @@ var _empty: Label
 var _saves_column: VBoxContainer
 ## The slot waiting for the overwrite answer (Page.OVERWRITE).
 var _pending := 0
+## The designer save waiting for the answer about the autosave (Page.REPLACE, Page.KEEP), or "".
+var _designer_slot := ""
 ## The character creator over the menu while a new player is made, or null.
 var creator: CreatorScreen
 
@@ -166,6 +168,7 @@ func refresh() -> void:
 			designer.autosave_dir = saves.dir
 			designer.play_requested.connect(start_requested.emit)
 			designer.back_requested.connect(cancel)
+			designer.replace_requested.connect(_ask_replace_for)
 			designer.build()
 			_menu.add_child(designer)
 		Page.WIPE:
@@ -207,10 +210,27 @@ func keep_first() -> void:
 	_go(Page.KEEP)
 
 
-## "Vervangen": the new game starts; its first autosave replaces the old.
+## "Vervangen": the new game (or the designer save) starts; it replaces the autosave.
 func replace_autosave() -> void:
 	if page == Page.REPLACE:
+		_begin()
+
+
+## The game starts: the pending designer save, else a new game.
+func _begin() -> void:
+	if _designer_slot.is_empty():
 		start_requested.emit("")
+		return
+	var slot := _designer_slot
+	_designer_slot = ""
+	_go(Page.DESIGNER)  # shows an error, if there is one
+	designer.start(slot)
+
+
+## "Spelen" on designer save `slot` while the autosave holds a game: the same question as a new game.
+func _ask_replace_for(slot: String) -> void:
+	_designer_slot = slot
+	_go(Page.REPLACE)
 
 
 ## A slot picked to keep the autosave's game in: an empty one at once, a
@@ -235,7 +255,7 @@ func confirm_keep() -> void:
 func _keep(number: int) -> void:
 	var error := saves.copy_autosave(number)
 	if error.is_empty():
-		start_requested.emit("")
+		_begin()
 		return
 	printerr("title menu: " + error)
 	_say(tr(KEEP_FAILED))
@@ -261,9 +281,15 @@ func confirm_wipe() -> void:
 	_say(tr(WIPED) if error.is_empty() else error)
 
 
-## Back: to the slots from an overwrite question, else to the main page.
+## Back: to the slots from an overwrite question; from the question about the autosave to the
+## designer page when that is where it came from; else to the main page.
 func cancel() -> void:
-	_go(Page.KEEP if page == Page.OVERWRITE else Page.MAIN)
+	if page == Page.OVERWRITE:
+		_go(Page.KEEP)
+		return
+	var back := Page.DESIGNER if page == Page.REPLACE and not _designer_slot.is_empty() else Page.MAIN
+	_designer_slot = ""
+	_go(back)
 
 
 ## The main page with a line under the menu.

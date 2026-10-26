@@ -9,6 +9,8 @@ extends VBoxContainer
 signal play_requested(slot: String)
 ## "Praat opnieuw" (the replay of a talk, slice 3.0).
 signal replay_requested
+## The autosave holds a game that "Spelen" on `slot` would replace: the title menu asks first.
+signal replace_requested(slot: String)
 signal back_requested
 
 const NONE := "Nog geen opslagen. Maak ze met: python tools/make_designer_saves.py"
@@ -77,9 +79,18 @@ func entries() -> Array[Dictionary]:
 	return out
 
 
-## Continue from designer save `slot`: it is copied into the autosave and the title menu starts
-## the office from there. "" or the error, which the page shows.
+## "Spelen": continue from designer save `slot`. When the autosave holds a game, the title menu
+## asks what to do with it first (replace_requested) and calls start() after. "" or the error.
 func pick(slot: String) -> String:
+	if SaveSlots.new(autosave_dir).entry(GameSave.AUTOSAVE).get("status") == SaveSlots.PLAYABLE:
+		replace_requested.emit(slot)
+		return ""
+	return start(slot)
+
+
+## Copy designer save `slot` into the autosave and ask the title menu to play from there.
+## "" or the error, which the page shows.
+func start(slot: String) -> String:
 	var error := DesignerSaves.load_into_autosave(slot, dir, autosave_dir)
 	if error.is_empty():
 		play_requested.emit(GameSave.AUTOSAVE)
