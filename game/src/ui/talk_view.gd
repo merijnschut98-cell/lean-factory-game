@@ -60,8 +60,9 @@ const SENTENCE_FONT := 17
 ## The key chip left of each sentence (UX audit #12: a key a player sees is a key they use).
 const KEY_CHIP := "KeyChip"
 const KEY_CHIP_FONT := 20
-## The trust pips and their ▲/▼, large enough to see trust move.
-const PIPS_FONT := 18
+## The trust pips and their ▲/▼, large enough to see trust move (the ● glyph is about
+## three quarters of the font size: ~18 px dots).
+const PIPS_FONT := 24
 ## The subtitle's width, as SceneLines' (the sentences line up over it).
 const WIDTH := 900.0
 ## Space at the screen's edges, and under the subtitle (as SceneLines').

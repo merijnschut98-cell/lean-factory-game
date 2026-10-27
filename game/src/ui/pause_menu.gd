@@ -114,10 +114,11 @@ func refresh() -> void:
 	clear(body)
 	match page:
 		Page.MAIN:
-			var items: Array[Array] = [[RESUME, close_requested.emit], [SAVE, show_slots], [LOOK, ask_look],
-					[CONTROLS, controls_requested.emit], [TO_TITLE, title_requested.emit]]
+			# Opslaan, Uiterlijk and the title stay together, last
+			var items: Array[Array] = [[RESUME, close_requested.emit], [CONTROLS, controls_requested.emit]]
 			if session != null and session.in_training():
-				items.insert(3, [SKIP_WEEK, ask_skip_week])
+				items.append([SKIP_WEEK, ask_skip_week])
+			items.append_array([[SAVE, show_slots], [LOOK, ask_look], [TO_TITLE, title_requested.emit]])
 			for item: Array in items:
 				var b := button(tr(item[0]), item[1])
 				b.custom_minimum_size.x = 360
