@@ -133,8 +133,9 @@ func chatter(s: GameSession, first: String, second: String) -> Array[String]:
 		return persons[id].team if persons.has(id) else "")
 	var loads := [load_of(s, first), load_of(s, second)]
 	var load := "busy" if "busy" in loads else ("calm" if loads.all(func(l: String) -> bool: return l == "calm") else "")
+	var band := Strain.band(maxf(s.strain_of(first), s.strain_of(second)))
 	out = s.catalog.reactions.chatter_for(teams, load, hash(pair) + today,
-		SimCalendar.weekday(now - SimCalendar.days(GameSession.WARMUP_DAYS)))
+		SimCalendar.weekday(now - SimCalendar.days(GameSession.WARMUP_DAYS)), band)
 	if not out.is_empty():
 		_chatted[pair] = today
 	out.assign(out.map(s.fill_tokens))

@@ -348,6 +348,26 @@ func test_a_fix_won_by_pressure_and_an_ignored_check_in_cost_morale() -> void:
 	assert_eq(ignored.morale["pim"], 40 + People.IGNORED_MORALE, "a check-in left to expire")
 
 
+func test_strain_state_survives_a_save_and_a_hand_edited_one_falls_back() -> void:
+	var people := DialogFixture.people()
+	people.morale["pim"] = 25
+	people.talk_log["pim"] = [{"dialog": "talk", "at": 0, "outcome": "ruined", "trace": [], "moves": ["pressure"]}]
+	_drift_days(people, Strain.ABSENT_AFTER_DAYS, {"loads": {"prep": 1.2}})
+	assert_true(not people.load_seen.is_empty() and not people.strained_since.is_empty() and not people.late_log.is_empty())
+	var restored := DialogFixture.people()
+	assert_eq(restored.load_dict(bytes_to_var(var_to_bytes(people.to_dict()))), [])
+	assert_eq(restored.to_dict(), people.to_dict())
+	assert_eq(restored.sick_days, people.sick_days)
+	var junk := DialogFixture.people()
+	var dropped := junk.load_dict({"load_seen": {"prep": 9.0, "ghost": 1.0, "other": "x"}, "strained_since": {"pim": -5, "ghost": 3},
+		"late_log": [3, "x", 40, 1.0e20, -2], "sick_days": -4})
+	assert_eq(dropped, ["ghost", "other", "ghost"])
+	assert_eq(junk.load_seen, {"prep": People.LOAD_SEEN_MAX} as Dictionary[String, float], "clamped, unknown teams dropped")
+	assert_eq(junk.strained_since, {"pim": 0} as Dictionary[String, int])
+	assert_eq(junk.sick_days, 0)
+	assert_true(junk.late_log.all(func(n: int) -> bool: return n >= 0 and n <= junk.persons.size()))
+
+
 func test_leaving_survives_a_save() -> void:
 	var people := _low_pim()
 	_days(people, 0, People.LEAVE_DAYS + 10)

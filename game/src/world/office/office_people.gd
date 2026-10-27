@@ -214,6 +214,7 @@ func refresh(session: Object) -> void:
 	if minute >= 0:
 		_decide_late(session)
 	var energy := session.has_method("energy_of")
+	var strained := session.has_method("strain_of")
 	for p in people:
 		_move_desk(p, done)
 		var where := _where(p, minute) if minute >= 0 else ALWAYS_AT_DESK
@@ -222,8 +223,17 @@ func refresh(session: Object) -> void:
 		p.at_lunch = where["place"] == OfficeDay.LUNCH and p.lunch is Dictionary
 		var shut_out := not _trips.has(p.id) and _behind_shut_door(p.position)
 		p.visible = _here.get(p.id, false) and p.present_for(active, done) and not gone.has(p.id) and not shut_out
-		var state: Variant = session.call("energy_of", p.id) if energy and p.visible else {}
-		p.show_energy(state if state is Dictionary else {})
+		p.show_energy(_state_of(session, p.id, energy, strained) if p.visible else {})
+
+
+## What `id` shows of themselves: the session's energy_of ({energy, needs_talk}) and strain_of
+## ({strain}), those it has.
+static func _state_of(session: Object, id: String, energy: bool, strained: bool) -> Dictionary:
+	var state: Variant = session.call("energy_of", id) if energy else {}
+	var out: Dictionary = (state as Dictionary).duplicate() if state is Dictionary else {}
+	if strained:
+		out["strain"] = float(session.call("strain_of", id))
+	return out
 
 
 ## `p`'s desk before or after it moves (cast `moves`), by the missions done; on a new desk
@@ -258,7 +268,7 @@ func day_of(id: String) -> OfficeDay:
 func _where(p: OfficePerson, minute: int) -> Dictionary:
 	if not stay_in.is_empty():
 		return ALWAYS_AT_DESK if p.id in stay_in else ALWAYS_OUT
-	if p.id in away:
+	if p.id in away or _off_sick(p):
 		return ALWAYS_OUT
 	var yard := OfficeYard.where(p, _session, office.floors.building.rides if office != null and office.floors != null else [],
 		minute)
@@ -267,6 +277,11 @@ func _where(p: OfficePerson, minute: int) -> Dictionary:
 	if not p.missions.is_empty():
 		return ALWAYS_AT_DESK
 	return day_of(p.id).place_at(minute, _late.has(p.id))
+
+
+## Whether the session says `p` is off sick today (GameSession.absent_today).
+func _off_sick(p: OfficePerson) -> bool:
+	return _session != null and _session.has_method("absent_today") and _session.call("absent_today", p.id)
 
 
 ## Who stays late, decided once a day (the region's day when the session has one).

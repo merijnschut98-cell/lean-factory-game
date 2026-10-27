@@ -7,11 +7,12 @@ extends TestCase
 const SCENE := "res://src/world/office/office.tscn"
 
 
-## A session stand-in with a clock (minutes since midnight) and morale by person.
+## A session stand-in with a clock (minutes since midnight), morale and strain by person.
 class Clock:
 	extends RefCounted
 	var minute := 9 * 60
 	var energy := {}
+	var strain := {}
 
 	func active_missions() -> Array[MissionDef]:
 		return []
@@ -21,6 +22,9 @@ class Clock:
 
 	func energy_of(person_id: String) -> Dictionary:
 		return energy.get(person_id, {})
+
+	func strain_of(person_id: String) -> float:
+		return strain.get(person_id, 0.0)
 
 
 func _office() -> Office:
@@ -231,7 +235,7 @@ func test_people_do_not_move_in_lockstep() -> void:
 func test_at_half_past_six_only_those_who_stay_late_are_still_in() -> void:
 	var office := _office()
 	var clock := Clock.new()
-	clock.energy = {"linda": {"energy": 0.2, "needs_talk": false}}
+	clock.strain = {"linda": 0.6}
 	clock.minute = 9 * 60
 	office.people.refresh(clock)
 	clock.minute = 18 * 60 + 30
@@ -246,12 +250,11 @@ func test_at_half_past_six_only_those_who_stay_late_are_still_in() -> void:
 	office.free()
 
 
-func test_who_stays_late_is_the_load_or_the_morale_in_one_rule() -> void:
-	assert_true(OfficeDay.stays_late(0.6, OfficeDay.LOAD_NORM + 0.05), "a team above the norm")
-	assert_true(OfficeDay.stays_late(OfficeDay.LOW_MORALE - 0.05, 0.5), "low morale")
-	assert_false(OfficeDay.stays_late(0.6, 0.5), "a normal day")
+func test_who_stays_late_is_the_strain() -> void:
+	assert_true(OfficeDay.stays_late(Strain.LATE_AT), "from the late threshold on")
+	assert_false(OfficeDay.stays_late(Strain.LATE_AT - 0.01), "an ordinary day")
 	var clock := Clock.new()
-	clock.energy = {"joost": {"energy": 0.1}, "anouk": {"energy": 0.7}}
+	clock.strain = {"joost": 0.9, "anouk": 0.1}
 	var late := OfficeDay.late_ids(clock, ["joost", "anouk", "sanne"])
 	assert_true(late.has("joost") and not late.has("anouk"), str(late))
 	var office := _office()
@@ -312,7 +315,7 @@ func test_the_light_follows_the_clock() -> void:
 func test_desk_lamps_burn_where_people_work_late() -> void:
 	var office := _office()
 	var clock := Clock.new()
-	clock.energy = {"linda": {"energy": 0.2}}
+	clock.strain = {"linda": 0.6}
 	clock.minute = 15 * 60
 	office.people.refresh(clock)
 	office.daylight.update(clock)

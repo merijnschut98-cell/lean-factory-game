@@ -37,6 +37,15 @@ class FakeSessionWithClock:
 		return known.get(person_id, {})
 
 
+## A clock session that also says who is off sick (GameSession.absent_today).
+class FakeSessionWithAbsence:
+	extends FakeSessionWithClock
+	var off := {}
+
+	func absent_today(person_id: String) -> bool:
+		return off.has(person_id)
+
+
 func _office(training := false) -> Office:
 	var office: Office = load(SCENE).instantiate()
 	office.seed_value = 11
@@ -401,6 +410,23 @@ func test_the_kcc_and_the_2e_are_peopled_once_their_rooms_open() -> void:
 	assert_true(thomas != null and not thomas.visible, "Thomas's Congestiedesk still shut")
 	_take(office, "fix_unused_capacity")
 	assert_true(thomas.visible, "the Congestiedesk open: Thomas at congestion.intake")
+	office.free()
+
+
+func test_someone_off_sick_is_not_in_the_office() -> void:
+	var office := _office()
+	var clock := FakeSessionWithAbsence.new()
+	clock.minute = 10 * 60
+	office.people.refresh(clock)
+	var anouk := office.people.person("anouk")
+	assert_true(anouk.visible, "Anouk is at her desk on an ordinary day")
+	clock.off = {"anouk": true}
+	office.people.refresh(clock)
+	assert_false(anouk.visible, "off sick: her desk is empty")
+	assert_true(office.people.person("joost").visible, "the others are in")
+	clock.off = {}
+	office.people.refresh(clock)
+	assert_true(anouk.visible, "back the next day")
 	office.free()
 
 

@@ -81,6 +81,27 @@ def test_passing_line_errors_are_caught(real, tmp_path, mutate, message):
         _load(tmp_path, docs)
 
 
+def test_the_real_chatter_has_snippets_for_every_strain_band(real):
+    """Strain.BANDS (game/src/rules/strain.gd) mirrored: two of each, between colleagues of any team."""
+    assert bc.CHATTER_STRAINS == ["low", "mid", "high"]
+    for band in bc.CHATTER_STRAINS:
+        snippets = [c for c in real["dialogs"]["chatter"] if c.get("strain") == band]
+        assert len(snippets) >= 2, band
+        assert all("teams" not in c for c in snippets), band
+
+
+@pytest.mark.parametrize("strain, message", [
+    ("stress", "chatter intake_half_requests: strain is one of low, mid, high"),
+    ("", "chatter intake_half_requests: strain is one of low, mid, high"),
+    (["high"], "chatter intake_half_requests: strain is one of low, mid, high"),
+])
+def test_chatter_strain_is_a_known_band(real, tmp_path, strain, message):
+    docs = copy.deepcopy(real)
+    docs["dialogs"]["chatter"][0]["strain"] = strain
+    with pytest.raises(bc.ContentError, match=message):
+        _load(tmp_path, docs)
+
+
 def test_a_banned_word_in_a_greeting_fails_the_build(real):
     docs = copy.deepcopy(real)
     docs["dialogs"]["greetings"]["sanne"]["day"][0] = "Hoi {speler}, klaar voor het volgende level?"

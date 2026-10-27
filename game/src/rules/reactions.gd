@@ -10,7 +10,8 @@ extends RefCounted
 ##   own line for the fact, else the shared one, else an ordinary morning (`day`).
 ## quick: {<person id>: {<mood>: [...]}, _all: {<mood>: [...]}}, moods as MOODS.
 ## chatter: [{id, lines: [first, second], teams: [...] (optional), load: busy|calm (optional),
-##   days: [mon..sun] (optional: only on those days, SimCalendar.DAY_NAMES)}].
+##   days: [mon..sun] (optional: only on those days, SimCalendar.DAY_NAMES),
+##   strain: low|mid|high (optional: only between colleagues at that Strain.band)}].
 
 ## What yesterday left, strongest first (GameSession.greeting_fact picks one).
 const FACTS: Array[String] = ["ruined", "pressured", "committed", "heard", "standardised"]
@@ -54,16 +55,18 @@ func quick_line(person_id: String, mood: String, n: int) -> String:
 ## A two-line exchange for two colleagues of `teams` (theirs, "" when unknown) at `load`
 ## (busy | calm | "") on `weekday` (0 Monday; -1 any day), variant `n` among those that fit:
 ## [first, second], or [] when none fits. A snippet with teams fits when one of the two is in
-## one of them; with a load, at that load; with days, on one of them.
-func chatter_for(teams: Array, load: String, n: int, weekday := -1) -> Array[String]:
+## one of them; with a load, at that load; with days, on one of them; with a strain, at that
+## band (`strain`, "" when not given: only the snippets without one).
+func chatter_for(teams: Array, load: String, n: int, weekday := -1, strain := "") -> Array[String]:
 	var fits: Array = chatter.filter(func(c: Variant) -> bool:
 		if not c is Dictionary or not (c.get("lines") is Array and c["lines"].size() == 2):
 			return false
 		var want: Array = c.get("teams", []) if c.get("teams") is Array else []
 		var at := str(c.get("load", ""))
 		var days: Array = c.get("days", []) if c.get("days") is Array else []
+		var band := str(c.get("strain", ""))
 		return (want.is_empty() or teams.any(func(t: Variant) -> bool: return t in want)) \
-			and (at.is_empty() or at == load) \
+			and (at.is_empty() or at == load) and (band.is_empty() or band == strain) \
 			and (days.is_empty() or weekday < 0 or SimCalendar.DAY_NAMES[weekday] in days))
 	var out: Array[String] = []
 	if fits.is_empty():
