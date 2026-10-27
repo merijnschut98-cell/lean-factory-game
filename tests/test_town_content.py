@@ -159,6 +159,17 @@ def test_unknown_keys_are_refused():
     _refused(lambda t: t["fields"][0].update(why="x"), "unknown key")
 
 
+def test_a_van_s_livery_is_a_non_empty_text():
+    _refused(lambda t: _prop(t, "van_peeters").update(livery=""), "livery")
+    _refused(lambda t: _prop(t, "van_peeters").update(livery=7), "livery")
+
+
+def test_the_street_runs_along_the_x_axis():
+    # the street builder and the game place everything by its distance along x
+    _refused(lambda t: t["segments"][0].update(to=[117, 12]), "along the x axis")
+    _refused(lambda t: t["segments"][0].update(**{"from": [0, 3]}), "along the x axis")
+
+
 def test_the_built_json_carries_the_street():
     data = json.loads((bc.DATA_DIR / "town.json").read_text(encoding="utf-8"))
     assert data == bc.load_content()["town"]

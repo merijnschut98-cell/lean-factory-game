@@ -85,7 +85,8 @@ COACH_DOOR = (20.0, 21.0)
 
 # Real-world size (m) one repeat of each tileable texture covers (textures.py).
 TEX_SIZE = {"carpet": 1.0, "ceiling": 1.2, "wood": 1.2, "plaster": 2.0, "concrete": 2.0,
-            "paving": 1.2, "grass": 2.0, "metal": 0.5, "fabric": 0.25}
+            "paving": 1.2, "grass": 2.0, "metal": 0.5, "fabric": 0.25,
+            "klinkers": 1.2, "roof_tiles": 2.0, "hedge": 2.0, "water": 2.0, "brick_red": 2.0, "brick_buff": 2.0}
 
 
 def srgb(r, g, b, a=1.0):
@@ -1822,8 +1823,8 @@ LIGHTMAPS = {"shell_floor": ("lightmap_floor", (2048, 1024)), "shell_walls": ("l
              "shell_ceiling": ("lightmap_ceiling", (1024, 512))}
 
 
-def lightmap_name(obname: str, floor_id: str) -> str:
-    return f"{LIGHTMAPS[obname][0]}_{floor_id}"
+def lightmap_name(obname: str, floor_id: str, maps: dict = LIGHTMAPS) -> str:
+    return f"{maps[obname][0]}_{floor_id}"
 
 
 def _gltf_output_group() -> bpy.types.NodeTree:
@@ -1835,9 +1836,9 @@ def _gltf_output_group() -> bpy.types.NodeTree:
     return ng
 
 
-def bake_lightmaps(spots, samples: int, floor_id: str) -> None:
+def bake_lightmaps(spots, samples: int, floor_id: str, maps: dict = LIGHTMAPS) -> None:
     """Bake diffuse irradiance (sky through the windows + the ceiling panels, no sun:
-    Godot adds the sun) into one image per shell object and normalise it."""
+    Godot adds the sun) into one image per shell object of `maps` and normalise it."""
     scene = bpy.context.scene
     scene.render.engine = "CYCLES"
     scene.cycles.device = "CPU"
@@ -1867,8 +1868,8 @@ def bake_lightmaps(spots, samples: int, floor_id: str) -> None:
               or o.name == "light_panels"]
     for o in hidden:
         o.hide_render = True
-    for obname, (_base, (w, h)) in LIGHTMAPS.items():
-        imname = lightmap_name(obname, floor_id)
+    for obname, (_base, (w, h)) in maps.items():
+        imname = lightmap_name(obname, floor_id, maps)
         ob = bpy.data.objects[obname]
         img = bpy.data.images.new(imname, w, h, alpha=False, float_buffer=True)
         for mat in ob.data.materials:
@@ -1953,11 +1954,11 @@ def write_png(path: Path, rgb01: np.ndarray) -> None:
     bpy.data.images.remove(img)
 
 
-def attach_lightmaps(floor_id: str) -> None:
+def attach_lightmaps(floor_id: str, maps: dict = LIGHTMAPS) -> None:
     """Wire each shell material's lightmap into the glTF occlusion output (TEXCOORD_1)."""
     group = _gltf_output_group()
-    for obname in LIGHTMAPS:
-        path = TEX / f"{lightmap_name(obname, floor_id)}.png"
+    for obname in maps:
+        path = TEX / f"{lightmap_name(obname, floor_id, maps)}.png"
         if not path.exists():
             print(f"warning: no {path.name}; run without --no-bake once", file=sys.stderr)
             continue

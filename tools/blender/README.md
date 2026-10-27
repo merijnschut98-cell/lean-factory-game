@@ -19,6 +19,9 @@ Blender's Python module from PyPI needs the Python version it was built for
     .bvenv/bin/python tools/blender/build_office.py --floors ground  # one floor
     .bvenv/bin/python tools/blender/build_office.py --no-bake  # seconds: reuses lightmap_*_<floor>.png on disk
     .bvenv/bin/python tools/blender/build_yard.py          # the yard (PLAN 2.2): office_yard.glb, no lightmaps
+    python3 tools/blender/textures.py klinkers roof_tiles hedge water brick_red brick_buff light_pool street_signs
+    .bvenv/bin/python tools/blender/build_street.py --samples 64   # the street (slice 3.2): street.glb + its two lightmaps (~25 min on 4 cores)
+    .bvenv/bin/python tools/blender/build_street.py --no-bake      # seconds: reuses lightmap_*_street.png
     godot --headless --path game --import
 
 `--samples N` sets the Cycles bake quality, `--blend out.blend` also saves each floor's scene.
@@ -53,6 +56,26 @@ Rebake after moving furniture or walls; the lightmaps hold the shell's AO and so
   names); the original id is in the node's `extras` metadata: `{"interaction": "place", "id": "connections.intake"}`.
 - Textures are external PNGs (`textures/`), referenced by URI, named like CC0 library materials
   (carpet, plaster, concrete, ...) so photo textures can replace them file for file.
+
+## The street (slice 3.2, `build_street.py`)
+`game/assets/office/street.glb`: the Zonnestraat, built from `game/data/town.json` (`content/town.yaml`)
+and loaded like a floor (copy `office_yard.glb.import` without its uid for a new model). Blender
+metres, Z up; the street runs +X from x = 0, the road's centre on y = 0, the even (north) side at +Y
+(Godot sees x, z = -y). No lights are exported: night is a runtime dim plus emissive parts.
+- Static meshes, merged per material (a test pins at most 160 primitives): `shell_floor` (the
+  walkable ground; lightmap on UV2, 4096 x 1024), `shell_walls` (house fronts and sides; lightmap
+  on UV2, 2048 x 2048), `outside`, `roofs`, `glass_windows` (casts no shadow), `light_pools`,
+  `lamp_heads`, `collision-colonly`. The bake is the sky only (no panels) plus contact AO, with the
+  same `bake_lightmaps(..., maps=STREET_LIGHTMAPS)` the floors use.
+- Markers (extras as on the floors): `arrive:van`, `ride:street`, `room:zonnestraat`, `lot:<id>`,
+  `bell:<n>` / `doorstep:<n>` (houses 4, 7, 9, 14), `home:<resident>`, `field:<step>`,
+  `explain:transformator`, `spot:<id>`.
+- Nodes the game switches: `kerb_van`, `heat_pump_9` (child `fan`), `card_7`, `trench_marks`,
+  `klic_board`, `trafo_vent`, `windows_lit` (an empty, a child per house), and the tells
+  `tell_street_lamp` (each `_low`/`_mid`/`_high` holds a `..._bulb`), `tell_dug_pavement`,
+  `tell_window_note`.
+- Textures (`textures.py`): `klinkers`, `roof_tiles`, `hedge`, `water`, `brick_red`, `brick_buff`,
+  `light_pool` and the `street_signs` atlas (`street_sign_rects()` lays it out).
 
 ## Characters (the CC0 Quaternius pack, re-dressed: PLAN 1.3a)
 Who the people are and how they look is one list, `game/assets/characters/cast.json`: the

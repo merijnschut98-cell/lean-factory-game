@@ -17,7 +17,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import re
 import sys
 from collections import Counter
@@ -3650,7 +3649,9 @@ def _town_length(doc: dict, source: str) -> float:
         ends.append(point)
     for key, (low, high) in TOWN_DIMENSIONS.items():
         _number(seg, key, where, low, high)
-    length = math.hypot(ends[1][0] - ends[0][0], ends[1][1] - ends[0][1])
+    if ends[0][1] != ends[1][1]:
+        raise ContentError(f"{where}: the street runs along the x axis ('from' and 'to' share their y)")
+    length = ends[1][0] - ends[0][0]
     if not TOWN_LENGTH[0] <= length <= TOWN_LENGTH[1]:
         raise ContentError(f"{where}: its length must be between {TOWN_LENGTH[0]} and {TOWN_LENGTH[1]} metres (got {length:g})")
     return length
@@ -3741,6 +3742,8 @@ def _town_prop(prop: dict, length: float, where: str) -> None:
     van = prop["kind"] == "van"
     if van != ("livery" in prop):
         raise ContentError(f"{where}: {'a van needs a livery' if van else 'only a van has a livery'}")
+    if van:
+        _require_strings(prop, ["livery"], where)
     if not van and ("kerb" in prop or "yard_van" in prop):
         raise ContentError(f"{where}: only a van stands at the kerb or comes from the yard")
     if "kerb" in prop and not isinstance(prop["kerb"], bool):
