@@ -850,7 +850,7 @@ places:
       reply: '"Trafo uit, aftakking om, trafo weer aan. Henk heeft het me laten zien."'
   # The three magazijn places on the werf (design agent, 2026-10-18). Dirk is met here
   # too: he runs the magazijn. No tier-1 clue sits here; the lines stay clear of the
-  # cause of De verkeerde mof in de bus (what belongs in a van, how it is restocked).
+  # cause of "Een storing duurt langer dan vier uur" (wrong_joint_in_van) (what belongs in a van, how it is restocked).
   outages.joint:
     people_also:
     - dirk

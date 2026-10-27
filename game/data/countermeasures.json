@@ -505,7 +505,7 @@
    "budget": 2500,
    "category": "flow",
    "decay_days": 45,
-   "description": "Het contactcentrum turft een week waarover statusbellers bellen. Bij de twee momenten waar het meest over gebeld wordt, stuurt de intake de klant voortaan zelf een korte mail met de stand en de volgende stap. Eerst met de hand; automatiseren als het werkt.",
+   "description": "Het contactcentrum turft een week waarover klanten bellen. Bij de twee momenten waar het meest over gebeld wordt, stuurt de intake de klant voortaan zelf een korte mail met de stand en de volgende stap. Eerst met de hand; automatiseren als het werkt.",
    "effects": [],
    "id": "milestone_mail_by_hand",
    "multipliers": {

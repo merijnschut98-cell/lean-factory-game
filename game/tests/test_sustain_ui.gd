@@ -13,7 +13,7 @@ const INTAKE := "connections.intake"
 var _made: Array[Node] = []
 
 
-## A returning player's game with "Maatwerk voor standaardwerk" solved
+## A returning player's game with "Ontwerpen blijven liggen" solved
 ## (standardised or not).
 func _solved(standardise: bool) -> GameSession:
 	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)

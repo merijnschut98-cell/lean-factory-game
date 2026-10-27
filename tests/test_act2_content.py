@@ -72,3 +72,51 @@ def test_debrief_numbers_are_checked(real, mission, debrief, message):
     next(m for m in doc["missions"] if m["id"] == mission)["debrief"] = debrief
     with pytest.raises(bc.ContentError, match=message):
         bc.validate_missions(doc, "missions.yaml")
+
+
+# ── Act II gets one deadline (Merijn, 2026-10-27, M1) ────────────────────────
+# Digging damage must be fixed in time, and the cheap contractor briefing is the door that
+# closes. The clock counts from when the mission opens (deadline_days, as Henk's does): a fixed
+# day was toothless or failed a slow player on opening. 63 days = nine weeks, the average
+# persona's slowest opening-to-solve (42.5 days, autoplay seeds 11 and 13) times 1.5, to whole
+# weeks. No Act II fork (the next is planned in Act III).
+DEADLINE_DAYS = 63
+SLOWEST_AVERAGE_SOLVE = 42.5
+
+
+def test_act_two_has_exactly_one_deadline_and_no_fork(real):
+    missions = _missions(real)
+    timed = [m for m in ACT2_MAINS if "deadline_on_day" in missions[m] or "deadline_days" in missions[m]]
+    assert timed == ["fix_digging_damage"]
+    assert not [m for m in ACT2_MAINS if "fork" in missions[m]]
+
+
+def test_digging_damage_has_nine_weeks_from_when_it_opens(real):
+    digging = _missions(real)["fix_digging_damage"]
+    assert digging["deadline_days"] == DEADLINE_DAYS and "deadline_on_day" not in digging
+    assert DEADLINE_DAYS % 7 == 0 and 1.4 <= DEADLINE_DAYS / SLOWEST_AVERAGE_SOLVE <= 1.6
+    assert digging["fail"]
+
+
+def test_the_briefing_states_the_clock_without_naming_the_door(real):
+    briefing = _missions(real)["fix_digging_damage"]["briefing"].lower()
+    assert "over negen weken" in briefing
+    assert "briefing" not in briefing and "briefen" not in briefing, "the way out is the player's to find"
+
+
+def test_a_missed_deadline_closes_the_cheap_contractor_briefing_and_nothing_else(real):
+    digging = _missions(real)["fix_digging_damage"]
+    assert digging["fail_closes"] == ["contractor_briefing"]
+    problem = next(p for p in real["problems_tier1"]["problems"] if p["id"] == "digging_damage")
+    left = [cm for cm in problem["countermeasures"] if cm not in digging["fail_closes"]]
+    assert "standard_test_trenches" in left, "another countermeasure still solves it"
+    assert _eff(real, "digging_damage", "standard_test_trenches", 2) >= CHECK_PASS, "at Act II's maturity"
+
+
+def test_a_door_closed_by_a_deadline_needs_that_deadline(real):
+    docs = copy.deepcopy(real["missions"])
+    digging = next(m for m in docs["missions"] if m["id"] == "fix_digging_damage")
+    bc.validate_missions(docs, "missions.yaml")
+    del digging["deadline_days"]
+    with pytest.raises(bc.ContentError, match="'fail_closes' needs a deadline"):
+        bc.validate_missions(docs, "missions.yaml")

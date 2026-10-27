@@ -352,7 +352,7 @@ missions:
   # (audit L2): the briefings are symmetric, two team leads with a true
   # number each, and neither names a queue: the player has to count.
   - id: fix_incomplete_application
-    name: De onvolledige aanvraag
+    name: Aanvragen gaan terug naar de klant
     kind: main
     tier: 1
     act: 1
@@ -385,7 +385,7 @@ missions:
         - "Een extra controleur had ook geholpen. Wat was daar over een jaar van over geweest?"
 
   - id: fix_installer_not_ready
-    name: Meterkast niet gereed
+    name: Voor niks gereden
     kind: main
     tier: 1
     act: 1
@@ -557,7 +557,26 @@ missions:
     # digging damages in 2022, about 900 a week over every utility; electricity's share
     # and Zuidmark's ~2 % of the country (company.yaml) put a region at a few a week.
     # The compensation after four hours: the compensatieregeling (concepts.yaml).
-    briefing: "Dinsdag 10.12 uur: een graafmachine raakt een middenspanningskabel. Driehonderd huizen en zorgcentrum De Linde zitten zonder stroom; De Linde draait op het noodaggregaat. Gert Peeters ({functie:gert}) laat zijn KLIC-melding zien: 'Volgens deze kaart lag hier niks.' Het is de vijfde graafschade deze week. Elke schade kost ons geld, en na vier uur krijgt elke getroffen klant een vergoeding."
+    #
+    # Act II's one deadline (Merijn, 2026-10-27, M1): fixed in time, or the cheap contractor
+    # briefing is gone. It counts from when the mission opens (deadline_days, as Henk's 56 does),
+    # so every pace gets the same window: a fixed day was either toothless (the next winter's
+    # frost, day 435) or failed a slow player on opening (winter 1's, day 70, is past by the time
+    # Act II opens).
+    # estimate: 63 days = nine weeks. Autoplay (2026-10-27, seeds 11 and 13): the average persona
+    # needed 28.4 and 42.5 days from opening to solving, the expert 14.2; 42.5 x 1.5 = 63.8, to
+    # whole weeks. A typical opening (the expert's, day 76 = 14 December 2026) puts the
+    # deadline on day 139, Sunday 28 February 2027, the end of winter; the briefing says nine
+    # weeks because the opening date moves with the player.
+    # estimate (story): the aannemers write their bestekken for the next building round then
+    # (graafwerk stands still in a spell of frost, vorstverlet), and a briefing after it changes
+    # nothing for a while. The briefing is the shortcut (decay 30 days, a poor fix), so the
+    # door that closes is the cheap one, never the problem: standard_test_trenches (fit 0.8)
+    # and revision_at_source (too early at maturity 2) still list. No Act II fork.
+    deadline_days: 63
+    fail_closes: [contractor_briefing]
+    fail: "De aannemers hebben hun bestekken geschreven, op de kaart van nu. Gert: 'Daar kan ik nu niks meer aan veranderen. Voorlopig graven ze zoals ze gewend zijn.' De snelle weg is dicht."
+    briefing: "Dinsdag 10.12 uur: een graafmachine raakt een middenspanningskabel. Driehonderd huizen en zorgcentrum De Linde zitten zonder stroom; De Linde draait op het noodaggregaat. Gert Peeters ({functie:gert}) laat zijn KLIC-melding zien: 'Volgens deze kaart lag hier niks.' Het is de vijfde graafschade deze week. Elke schade kost ons geld, en na vier uur krijgt elke getroffen klant een vergoeding. Gert kijkt in zijn agenda: 'Over negen weken schrijven de aannemers hun bestekken voor de volgende bouwronde. Wat daar dan niet in staat, verandert voorlopig niet meer.'"
     debrief: "Er zijn minder graafschades. Bij de Check konden de monteurs zonder je aanpak {kpi_before} storingen per week aan, met je aanpak {kpi_after}. Gert deed alles volgens het boekje; de oorzaak zat in ons proces. Maar de kaart klopt nog steeds niet overal. Wie houdt de kaart eigenlijk bij?"
     debrief_variants:
       blamed: "De schades zijn minder. Gert werkt mee, maar hij vertelt je niets meer dan nodig. Wie houdt de kaart eigenlijk bij?"
@@ -672,7 +691,7 @@ missions:
         - "Femke maakte lange dagen. Hoe zie je of dat nu anders is?"
 
   - id: fix_transformer_wait
-    name: Wachten op de trafo
+    name: Een half jaar wachten in volle straten
     kind: main
     tier: 1
     act: 2
@@ -830,7 +849,7 @@ missions:
     rewards: {xp: 200}
 
   - id: fix_wrong_joint
-    name: De verkeerde mof in de bus
+    name: Een storing duurt langer dan vier uur
     kind: side
     tier: 1
     act: 1
@@ -885,7 +904,7 @@ missions:
   # Rewrite (audit S6, correctness L1): a batch at a wait step adds no
   # capacity, but every order waits for it: the lesson is lead time.
   - id: fix_permits_in_batches
-    name: Vergunningen in batches
+    name: Dagen stilstand voor de vergunning
     kind: side
     tier: 1
     act: 1
@@ -1049,7 +1068,7 @@ missions:
     rewards: {xp: 400, budget: 5000}
 
   - id: fix_overtime_planning
-    name: Overwerk dat in de planning zit
+    name: Overuren, ook in een rustige week
     kind: side
     tier: 1
     act: 1
