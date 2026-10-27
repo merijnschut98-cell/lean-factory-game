@@ -188,6 +188,7 @@ func build() -> void:
 		enter_saved_floor(ui.session_layer.floor_id)
 		ui.title_requested.connect(to_title)
 		ui.pause_menu.look_requested.connect(open_look)
+		ui.pause_menu.skip_week_requested.connect(skip_week)
 		ui.pause_changed.connect(_on_pause_changed)
 		ui.pause_menu.auto_text_changed.connect(_on_auto_text)
 		milestone = OfficeMilestone.create(self)
@@ -264,6 +265,35 @@ func _process(delta: float) -> void:
 			if p != null:
 				tagged.append(p)
 	people.show_tags(tagged)
+	fade_rings(delta)
+	quiet_layers()
+
+
+## One thing at a time (UX audit #9): while a panel, view or scene holds the world, or a
+## call rings, the HUD's prompt, controls and toasts step aside (Hud.hold), and no name
+## tag or greeting floats over it.
+func quiet_layers() -> void:
+	var held := not world_free()
+	var ringing := call_ringing()
+	ui.hud.hold(held, ringing)
+	if (held or ringing) and people != null:
+		people.show_tags([])
+		for p: OfficePerson in people.people:
+			if p.saying():
+				p.say("")
+
+
+## A customer's call is ringing (GameUI.incoming): not a panel, but it has the player's attention.
+func call_ringing() -> bool:
+	return ui.incoming != null and ui.incoming.visible
+
+
+## The rings near the player or under the cursor fade in, the rest out; none while a panel,
+## talk or scene holds the world or a call rings (Interactable.fade_ring).
+func fade_rings(delta: float) -> void:
+	var free := world_free() and not call_ringing()
+	for i in interactables:
+		i.fade_ring(Vector2(player.position.x - i.position.x, player.position.z - i.position.z).length(), free, delta)
 
 
 ## The model when it has been imported, else the stand-in.
@@ -678,6 +708,17 @@ func open_look() -> CreatorScreen:
 	look_editor.get_parent().process_mode = Node.PROCESS_MODE_ALWAYS
 	_pause_world(true)   # the scene under it stays where the pause menu left it
 	return look_editor
+
+
+## "Inwerkweek overslaan" in the pause menu (spec rule 6): the first day's scene ends as
+## its own skip does; later in the week it is skipped as on the board.
+func skip_week() -> void:
+	ui.resume()
+	if first_day != null:
+		first_day.skip_week()
+		return
+	session.skip_training()
+	ui.after_action()
 
 
 func apply_look(made: PlayerProfile) -> void:

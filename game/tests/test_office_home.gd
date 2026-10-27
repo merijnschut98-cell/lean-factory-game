@@ -84,28 +84,31 @@ func test_going_home_ends_the_day_on_the_next_working_morning_with_the_dagstart(
 	office.free()
 
 
+## Staying late is never forced: the objective line's home hint suggests it from five, and
+## no toast says the same thing again at seven (UX audit #18, review).
 func test_staying_late_is_never_forced_and_one_line_suggests_home() -> void:
 	var office := _office()
-	_clock_to(office, 18 * 60 + 50)
-	assert_false(office.ui.hud.toast_texts().has(OfficeHome.LATE_NOTE), "not yet")
-	_clock_to(office, 19 * 60 + 20)
-	assert_true(office.ui.hud.toast_texts().has(OfficeHome.LATE_NOTE), "past seven: a suggestion")
-	assert_eq(office.ui.hud.toast_texts().count(OfficeHome.LATE_NOTE), 1)
+	_clock_to(office, 16 * 60 + 50)
+	assert_false(office.ui.hud.objective_label.text.contains(Objective.HOME_HINT), "not yet")
+	_clock_to(office, 17 * 60 + 5)
+	assert_true(office.ui.hud.objective_label.text.ends_with(Objective.HOME_HINT), office.ui.hud.objective_label.text)
 	_clock_to(office, 21 * 60)
-	assert_eq(office.ui.hud.toast_texts().count(OfficeHome.LATE_NOTE), 1, "once an evening")
+	assert_false(office.ui.hud.toast_texts().any(func(t: String) -> bool: return t.contains("voordeur")), "no second line")
 	assert_eq(office.session.minute_of_day(), 21 * 60, "and the evening goes on")
 	office.free()
 
 
-## The suggestion waits while a panel or a scene holds the world (a talk, the phone).
-func test_the_late_line_waits_until_the_world_is_free() -> void:
+## The front door offers home over the same window as the line: through the night too.
+func test_the_front_door_offers_home_through_the_night() -> void:
 	var office := _office()
-	office.hold_for_scene(true)
-	_clock_to(office, 19 * 60 + 20)
-	assert_false(office.ui.hud.toast_texts().has(OfficeHome.LATE_NOTE), "not over a scene")
-	office.hold_for_scene(false)
+	office.floors.go_to("ground", "lift", true)
+	_clock_to(office, 23 * 60)
+	office.session.pass_time(2 * 60)   # 01:00
+	office.ui.after_action()
 	office.home.poll()
-	assert_true(office.ui.hud.toast_texts().has(OfficeHome.LATE_NOTE), "once it is over")
+	office.player.position = _entrance(office)
+	assert_eq(office.prompt_near(office.player.position), OfficeHome.PROMPT, "one o'clock: the door still offers home")
+	assert_true(office.ui.hud.objective_label.text.ends_with(Objective.HOME_HINT), "and the line says so")
 	office.free()
 
 

@@ -50,7 +50,8 @@ extends SceneTree
 ## five at the front door: "Naar huis", then the fade with the next morning's date) ·
 ## phone_home, phone_messages, phone_map, phone_settings (PLAN 2.14 S1-F: the phone raised on its
 ## home screen on Monday of the training week, on Berichten, on Kaart) ·
-## title (the title menu over a few saves) ·
+## title (the title menu over a few saves) · designer_loaded (the title menu after the
+## training-week designer save went into the autosave: its card names the made player) ·
 ## title_replace, title_keep ("Nieuw spel" over a filled autosave: the
 ## question, then the slots to keep it in) · designer_page (Phase 3 3.0: the title menu's
 ## Ontwerper page over three designer saves, the last one made on old content) ·
@@ -120,7 +121,7 @@ func _run() -> void:
 		quit(2)
 		return
 	var state: String = shot["state"]
-	if state in ["title", "title_replace", "title_keep", "designer_page", "designer_replay", "designer_replay_talk", "pause", "pause_slots", "pause_confirm"]:
+	if state in ["title", "title_replace", "title_keep", "designer_loaded", "designer_page", "designer_replay", "designer_replay_talk", "pause", "pause_slots", "pause_confirm"]:
 		await _save_menus(state)
 		_say_flag_errors(shot)
 		if shot["at"] >= 0:
@@ -427,6 +428,15 @@ func _save_menus(state: String) -> void:
 	old.store_buffer(var_to_bytes({"version": 0, "region": {}}))
 	old.close()
 	slots.now = func() -> float: return now
+	if state == "designer_loaded":   # MakeSaves gives the bot's save a made player (UX audit #1)
+		var dir := SHOT_SAVES + "/designer"
+		var spec: Dictionary = DesignerSaves.SAVES[0]
+		var error := MakeSaves.write(spec, "expert", 11, dir)
+		if error.is_empty():
+			error = DesignerSaves.load_into_autosave(spec["slot"], dir, SHOT_SAVES)
+		if not error.is_empty():
+			printerr(error)
+		state = "title"
 	if state.begins_with("designer_"):
 		var menu := _designer_page(slots)
 		if state != "designer_page":

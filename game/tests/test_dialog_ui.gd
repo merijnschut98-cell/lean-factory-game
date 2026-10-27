@@ -210,17 +210,17 @@ func test_a_trust_change_flashes_beside_the_pips() -> void:
 	panel.free()
 
 
-## U14: every sentence carries its key, small and dimmed in its corner, 1–4;
-## the key says it.
+## U14: every sentence carries its key, 1–4, on a chip to its left (UX audit #12); the
+## key says it.
 func test_each_sentence_carries_a_key_that_says_it() -> void:
 	var s := _silo()
 	var panel := _panel(s)
 	var buttons := _chips_of(panel)
 	for i in panel.offers.size():
 		var b: Button = buttons[panel.offers[i]["line"]]
-		var hint := b.get_child(0) as Label if b.get_child_count() > 0 else null
-		assert_true(hint != null, "a hint in the corner of sentence %d" % (i + 1))
-		assert_eq(hint.text, OS.get_keycode_string(TalkView.OPTION_KEYS[i]))
+		var chip := b.get_parent().get_child(0)
+		assert_eq(chip.name, TalkView.KEY_CHIP, "a chip left of sentence %d" % (i + 1))
+		assert_eq((chip.get_child(0) as Label).text, OS.get_keycode_string(TalkView.OPTION_KEYS[i]))
 	var second: Dictionary = panel.offers[1]
 	panel.lines.finish()   # their words first, then the choice
 	assert_true(panel.press_key(KEY_2), "2 says the second sentence")

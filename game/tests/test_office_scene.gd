@@ -69,6 +69,112 @@ func test_standing_at_a_point_puts_it_in_reach() -> void:
 	_close(office)
 
 
+## A place's ring is no quest marker (UX audit #2): it shows only near the player or under
+## the cursor, and never while a panel, talk or scene holds the world.
+func test_a_ring_shows_only_near_or_hovered_and_never_under_a_panel() -> void:
+	var office := _office()
+	var design := office.interactable(DESIGN)
+	var board := office.interactable("mission_board")
+	office.player.position = design.position + Vector3(Interactable.RING_SHOW - 0.5, 0, 0)
+	office.fade_rings(1.0)
+	assert_true(design.ring_shown(), "near: shown")
+	var far := office.interactables.filter(func(i: Interactable) -> bool:
+		return i.has_ring and Vector2(i.position.x - design.position.x, i.position.z - design.position.z).length() > 2 * Interactable.RING_SHOW)
+	assert_false(far.is_empty(), "a ring far from the player")
+	assert_false(far.any(func(i: Interactable) -> bool: return i.ring_shown()), "far rings stay hidden")
+	far[0].set_hovered(true)
+	office.fade_rings(1.0)
+	assert_true(far[0].ring_shown(), "hovered: shown, however far")
+	office.interact(board)
+	office.fade_rings(1.0)
+	assert_true(office.ui.is_busy(), "a panel is open")
+	assert_false(office.interactables.any(func(i: Interactable) -> bool: return i.ring_shown()), "no ring under a panel")
+	assert_false(office.interactable("door:meter_data").ring_shown() if office.interactable("door:meter_data") != null else false,
+		"a shut door never has one")
+	_close(office)
+
+
+## One thing at a time (UX audit #9): a ringing call, a scene or a panel quiets the prompt,
+## the controls, the toasts and what people say; under a panel or a scene the objective
+## line steps aside too, but a call leaves it.
+func test_a_call_a_scene_or_a_panel_quiets_the_other_layers() -> void:
+	var office := _office()
+	var hud := office.ui.hud
+	var anouk := office.people.person("anouk")
+	var layers := func() -> Array: return [hud.prompt_label.visible, hud.help_label.visible, hud.toast_texts().size() > 0 and hud._toasts.visible]
+	hud.toast("Iets nieuws")
+	hud.show_prompt("E — Werkvoorbereiding & ontwerp")
+	office.quiet_layers()
+	assert_eq(layers.call(), [true, true, true], "the world free: all there")
+	assert_true(hud.objective_label.visible)
+	office.ui.incoming.visible = true   # a call rings
+	anouk.say("Hoi!")
+	anouk.show_tag(true)
+	office.quiet_layers()
+	assert_eq(layers.call(), [false, false, false], "a call: prompt, controls and toasts step aside")
+	assert_false(anouk.saying(), "and the greeting bubble")
+	assert_false(anouk.tag.visible, "and the name tag")
+	assert_true(hud.objective_label.visible, "the objective stays during a call")
+	office.player.position = office.interactable(DESIGN).position
+	office.fade_rings(1.0)
+	assert_false(office.interactables.any(func(i: Interactable) -> bool: return i.ring_shown()), "no ring while it rings")
+	office.ui.incoming.visible = false
+	office.quiet_layers()
+	assert_eq(layers.call(), [true, true, true], "back once the call is gone")
+	office.hold_for_scene(true)
+	office.quiet_layers()
+	assert_eq(layers.call(), [false, false, false], "a scene")
+	assert_false(hud.objective_label.visible, "no objective under a scene")
+	office.hold_for_scene(false)
+	office.interact(office.interactable("mission_board"))
+	office.quiet_layers()
+	assert_eq(layers.call(), [false, false, false], "a panel")
+	assert_false(hud.objective_label.visible, "no objective under a panel")
+	_close(office)
+
+
+static func _key(code: Key) -> InputEventKey:
+	var e := InputEventKey.new()
+	e.physical_keycode = code
+	e.keycode = code
+	e.pressed = true
+	return e
+
+
+## The controls line is no fixture (UX audit #11; first-five-minutes §3 "each once,
+## fading"): a hint goes once its key is used, the whole line after CONTROLS_SECONDS on
+## screen, and F1 or the pause menu's "Toetsen tonen" brings it back.
+func test_each_control_hint_goes_once_its_key_is_used_and_comes_back_on_request() -> void:
+	var office := _office()
+	var hud := office.ui.hud
+	var full := hud.controls_text()
+	var wheel := InputEventMouseButton.new()
+	wheel.button_index = MOUSE_BUTTON_WHEEL_UP
+	wheel.pressed = true
+	var tab := InputEventAction.new()
+	tab.action = Phone.ACTION
+	tab.pressed = true
+	assert_eq([Hud.hint_of(_key(KEY_W)), Hud.hint_of(_key(KEY_SHIFT)), Hud.hint_of(_key(KEY_C)), Hud.hint_of(wheel),
+		Hud.hint_of(_key(KEY_E)), Hud.hint_of(tab), Hud.hint_of(_key(KEY_X))], ["walk", "run", "turn", "zoom", "use", "phone", ""])
+	hud.used("walk")
+	assert_false(hud.controls_text().contains("lopen"), "a used key's hint is gone")
+	assert_true(hud.controls_text().begins_with("Shift rennen"), hud.controls_text())
+	for hint: String in ["run", "turn", "zoom", "use", "phone"]:
+		hud.used(hint)
+	assert_eq(hud.controls_text(), "", "every key used: no line")
+	assert_false(hud.help_label.visible)
+	hud.show_controls()
+	assert_eq(hud.controls_text(), full, "F1 brings every hint back")
+	assert_true(hud.help_label.visible)
+	hud.tick_controls(Hud.CONTROLS_SECONDS + 1.0)
+	assert_false(hud.help_label.visible, "after the first minutes the line goes on its own")
+	office.ui.pause_menu.refresh()
+	assert_true(texts_in(office.ui.pause_menu).has(PauseMenu.CONTROLS), "the pause menu offers them")
+	office.ui.pause_menu.controls_requested.emit()
+	assert_eq(hud.controls_text(), full, "and brings them back")
+	_close(office)
+
+
 func test_the_player_starts_at_the_spawn_point() -> void:
 	var office := _office()
 	var spawn := office.find_marker("spawn")
@@ -195,6 +301,20 @@ func test_the_coach_answers_with_a_question_about_the_main_mission() -> void:
 	var coach: Dictionary = office.session.catalog.coach
 	assert_true(office.ui.coach_panel.ask().ends_with(coach["numbers"]["go_see"]), "first he reads the number (design §3.6)")
 	assert_true(office.ui.coach_panel.ask() in coach["stages"]["go_see"], "then a go-see question")
+	_close(office)
+
+
+## Ruud is a man (UX audit #8): the panel's words for the coach come from the cast, not "Ze".
+func test_the_coach_panel_speaks_of_the_coach_as_the_cast_has_him() -> void:
+	assert_eq(CharacterModel.coach_id(), "ruud", "the cast member the coach opens")
+	assert_eq(CharacterModel.pronoun("ruud"), "hij")
+	assert_eq(CharacterModel.pronoun("anouk"), "zij")
+	var office := _office()
+	office.interact(office.interactable("coach"))
+	var texts := "\n".join(texts_in(office.ui.coach_panel))
+	assert_true(texts.contains("Hij helpt met je hoofdmissie"), texts)
+	assert_true(texts.contains("Hij kijkt op van zijn scherm"), texts)
+	assert_false(texts.contains("Ze "), texts)
 	_close(office)
 
 
@@ -390,10 +510,10 @@ func test_skipping_the_week_asks_first() -> void:
 	var board := office.ui.mission_board
 	office.interact(office.interactable("mission_board"))
 	board.ask_skip()
-	assert_true(shows(board, "Je mist de oefenweek, het echte werk begint direct."), "the confirm line")
+	assert_true(shows(board, UiText.SKIP_CONFIRM), "the confirm line")
 	assert_true(office.session.in_training(), "nothing skipped yet")
 	board.cancel_skip()
-	assert_false(shows(board, "Je mist de oefenweek"))
+	assert_false(shows(board, UiText.SKIP_CONFIRM))
 	board.ask_skip()
 	assert_eq(board.confirm_skip(), "")
 	assert_false(office.session.in_training())

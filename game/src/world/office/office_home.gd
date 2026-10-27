@@ -5,8 +5,9 @@ extends Node
 ## E there ends the day on the next working morning (a weekend skipped) through the
 ## session's own clock (GameSession.pass_time) and the UI's own dagstart
 ## (GameUI.after_action: autosave, Ruud's note, the people's day), behind a short fade
-## with the date; you come in by the front door. Nothing forces it: you may stay late,
-## and past seven one line suggests home, once an evening.
+## with the date; you come in by the front door. Nothing forces it: you may stay late, and
+## the HUD's objective line suggests home over the same window (Objective.home_time: the
+## evening and the night), no toast besides.
 ##
 ## A colleague an active mission needs (MinimapTargets) who is not at their desk leaves
 ## it answering for them: E there says where they are ("Sanne is al naar huis. Morgen
@@ -18,11 +19,9 @@ const HOME := "home"
 const ABSENT := "absent"
 ## The front door's arrival marker (the begane grond).
 const ENTRANCE := "arrive:entrance"
-## From this minute the front door offers going home (design: after 17:00).
-const HOME_FROM := 17 * 60
-## From this minute (until the morning) one line suggests going home, once an evening.
-const LATE_FROM := 19 * 60
-const LATE_UNTIL := 7 * 60
+## From this minute the front door offers going home (design: after 17:00), through the
+## night (Objective.home_time); the objective line says so over the same window.
+const HOME_FROM := Objective.HOME_FROM
 ## Seconds between looks at the clock (as OfficePeople.REFRESH_SECONDS).
 const POLL_SECONDS := 0.5
 ## The fade: black with the new day's date, clearing over this many seconds.
@@ -37,11 +36,8 @@ const GONE_HOME := "%s is al naar huis. Morgen weer."
 const NOT_IN_YET := "%s is er nog niet."
 const AT_LUNCH := "%s zit in de kantine."
 const AWAY := "%s is even weg."
-const LATE_NOTE := "Het is al na zevenen. De voordeur is beneden, als je naar huis wilt."
 
 var office: Office
-## The day (SimCalendar.day_of) the late line was shown on.
-var _noted_day := -1
 var _since := 0.0
 var _fade: CanvasLayer
 var _fade_label: Label
@@ -56,7 +52,7 @@ static func create(of_office: Office) -> OfficeHome:
 
 
 ## The interaction points as the clock and the missions have them now: the front door
-## after five, the empty desks of the colleagues the missions need; the late line.
+## in home time, the empty desks of the colleagues the missions need.
 func poll() -> void:
 	var s := office.session
 	if s == null or not s.error.is_empty() or office.people == null:
@@ -65,7 +61,7 @@ func poll() -> void:
 	var scripted := Opening.running(office.ui.session_layer)
 	var markers := office.floors.markers()
 	var want := {}
-	if minute >= HOME_FROM and not scripted and markers.has(ENTRANCE):
+	if Objective.home_time(minute) and not scripted and markers.has(ENTRANCE):
 		want[HOME] = office.in_office(markers[ENTRANCE])
 	if not scripted:
 		for id in _needed(s):
@@ -73,10 +69,6 @@ func poll() -> void:
 			if p != null and not p.visible and not p.desk.is_empty():
 				want["%s:%s" % [ABSENT, id]] = Transform3D(Basis.IDENTITY, p.desk["at"])
 	_keep(want)
-	var day := SimCalendar.day_of(s.region.net.time)
-	if (minute >= LATE_FROM or minute < LATE_UNTIL) and not scripted and day != _noted_day and not office.world_waits():
-		_noted_day = day
-		office.ui.hud.toast(tr(LATE_NOTE))
 
 
 ## The people the active missions point at (their next step is a talk with them).

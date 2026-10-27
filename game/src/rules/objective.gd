@@ -18,6 +18,14 @@ const MAX_CHARS := 60
 const BOARD_TEXT := "Kies je volgende opdracht op het missiebord"
 ## The first day's walk (Opening.WALK): Ruud leads.
 const FOLLOW_TEXT := "Loop met Ruud mee"
+## Home time (UX audit #18): from HOME_FROM through the night until HOME_UNTIL the front door
+## offers going home (OfficeHome) and the HUD's line says so (line): under the step as
+## HOME_HINT, or HOME_TEXT alone when there is no step. The step itself (of) never changes
+## with the hour: the phone's Missions card and the minimap read it.
+const HOME_FROM := 17 * 60
+const HOME_UNTIL := 7 * 60
+const HOME_TEXT := "Tijd om naar huis te gaan (voordeur, begane grond)"
+const HOME_HINT := "Na vijven: naar huis via de voordeur, begane grond"
 ## Each step's default text: {team} the team at the place (or the person's), {naam} the
 ## person. A mission's `steps:` override any of them.
 const DEFAULTS := {
@@ -59,6 +67,25 @@ static func of(s: GameSession, layer: SessionLayer = null) -> Dictionary:
 	if not leading.is_empty():
 		return step(leading[0], s)
 	return {"step": "board", "text": BOARD_TEXT} if not s.available_missions().is_empty() else {}
+
+
+## Whether `minute` of the day is home time: the evening and the night (HOME_FROM–HOME_UNTIL).
+static func home_time(minute: int) -> bool:
+	return minute >= HOME_FROM or minute < HOME_UNTIL
+
+
+## The HUD's objective line: the step's text, and in home time (not in the first day's
+## scene) the home hint under it, or the home line alone when there is no step.
+static func line(s: GameSession, layer: SessionLayer = null) -> String:
+	var step := str(of(s, layer).get("text", ""))
+	return step if layer != null and Opening.running(layer) else with_home(step, s.minute_of_day())
+
+
+## `step`'s line at `minute`: in home time the hint under it, or HOME_TEXT for no step.
+static func with_home(step: String, minute: int) -> String:
+	if not home_time(minute):
+		return step
+	return HOME_TEXT if step.is_empty() else step + "\n" + HOME_HINT
 
 
 ## Mission `m`'s next step (see the class doc). `reachable(place) -> bool`, when given,

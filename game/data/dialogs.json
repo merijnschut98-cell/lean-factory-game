@@ -1482,7 +1482,7 @@
    "mission": "training_tue",
    "mood": "neutraal",
    "name": "Sanne op dinsdagochtend",
-   "opening": "Goedemorgen! Ik zou gisteren nog langskomen, hè. Sorry. Alles van het weekend ligt er nog.",
+   "opening": "{groet}! Ik zou gisteren nog langskomen, hè. Sorry. Alles van het weekend ligt er nog.",
    "outcomes": {
     "commitment": "Kom maar, na drieën. En neem koffie mee, de onze is op.",
     "compliance": "Nou. Als Ruud het zegt.",
@@ -2652,7 +2652,7 @@
     "tags": [
      "claim"
     ],
-    "text": "Ik heb twee werkvoorbereiders extra nodig. Ruim honderd dossiers in de bak, zes weken overwerk. Dat is gewoon een feit."
+    "text": "Ik heb twee werkvoorbereiders extra nodig. Zes weken overwerk, en elke week ligt de bak weer vol. Dat is gewoon een feit."
    },
    "proposals": [
     {
@@ -3182,7 +3182,7 @@
    ],
    "mood": "gespannen",
    "name": "Het vierde telefoontje van mevrouw El Amrani",
-   "opening": "Goedemiddag. U spreekt met Fatima El Amrani. Ik bel voor de vierde keer, en ik heb ze allemaal opgeschreven.",
+   "opening": "{groet}. U spreekt met Fatima El Amrani. Ik bel voor de vierde keer, en ik heb ze allemaal opgeschreven.",
    "outcomes": {
     "commitment": "Goed. Ik wacht op uw telefoontje. En als u niet belt, bel ik. Dat weet u.",
     "compliance": "Ik heb geen keus, hè. Ik schrijf het op.",
@@ -3295,7 +3295,7 @@
        "promise_broken:el_amrani_fourth_call"
       ]
      },
-     "opening": "Goedemiddag, met Fatima El Amrani. Ik heb mijn schrift voor me. Hier staat: 'Volgens de planning over een week of zes aangesloten.' Met de datum erbij, en uw naam. Die datum is geweest."
+     "opening": "{groet}, met Fatima El Amrani. Ik heb mijn schrift voor me. Hier staat: 'Volgens de planning over een week of zes aangesloten.' Met de datum erbij, en uw naam. Die datum is geweest."
     }
    ],
    "warning": "Ik heb geen behoefte aan een riedeltje."
@@ -5448,7 +5448,7 @@
    "mission": "fix_inverters_tripping",
    "mood": "neutraal",
    "name": "Wim en tabblad drie",
-   "opening": "Goedemiddag. Kortekaas, Zonnestraat veertien. U kent mij waarschijnlijk van de spreadsheets.",
+   "opening": "{groet}. Kortekaas, Zonnestraat veertien. U kent mij waarschijnlijk van de spreadsheets.",
    "outcomes": {
     "commitment": "Dan neem ik mijn laptop mee. En een verlengsnoer; die hebben jullie hier vast niet.",
     "compliance": "Goed. Dan wacht ik weer op de ontvangstbevestiging.",

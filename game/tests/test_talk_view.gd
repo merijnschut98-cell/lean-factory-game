@@ -71,6 +71,29 @@ func test_the_name_role_and_five_small_trust_pips_are_on_screen() -> void:
 	view.free()
 
 
+## Keys a player sees and trust they see move (UX audit #12): a 20 px key chip left of each
+## sentence, and the pips and their ▲/▼ at 18 px.
+func test_each_sentence_has_its_key_chip_and_the_pips_are_readable() -> void:
+	var view := _view(_silo())
+	view.lines.finish()
+	assert_eq(view.phase(), TalkView.CHOOSE)
+	var chips := view.find_children(TalkView.KEY_CHIP, "PanelContainer", true, false)
+	assert_eq(chips.size(), view.offers.size(), "one chip per sentence")
+	for i in chips.size():
+		var key: Label = chips[i].get_child(0)
+		assert_eq(key.text, OS.get_keycode_string(TalkView.OPTION_KEYS[i]), "the chip shows its key")
+		assert_eq(key.get_theme_font_size("font_size"), TalkView.KEY_CHIP_FONT)
+		var row: Node = chips[i].get_parent()
+		assert_true(row is HBoxContainer and row.get_child(0) == chips[i] and row.get_child(1) is Button,
+			"left of its sentence, not on it")
+	assert_eq(TalkView.KEY_CHIP_FONT, 20)
+	view.choose("pressure")
+	for l: Label in [view._pips, view.trust_flash]:
+		assert_true(l.get_theme_font_size("font_size") >= 18, "readable: %d" % l.get_theme_font_size("font_size"))
+	assert_eq(view.trust_flash.text, "▼", "the flash still works")
+	view.free()
+
+
 func test_your_line_carries_the_arrow_after_it() -> void:
 	var view := _view(_silo())
 	var said: Dictionary = view.offers[0]

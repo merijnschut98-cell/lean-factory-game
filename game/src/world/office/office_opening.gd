@@ -24,7 +24,6 @@ const MARCO := "Marco"
 const JOOST := "Joost"
 const ANOUK := "Anouk"
 const BADGE_ROLE := "CI-lead · Aansluitingen"
-const SKIP_WEEK := "Ik ken Voltana al: sla de inwerkweek over"
 const HINT_WALK := "Lopen: WASD of klik op de vloer"
 const HINT_LOOK := "Draaien: Z en C  ·  Zoomen: muiswiel"
 const HINT_JOURNAL := "Tab  je telefoon: wat Anouk je vertelde staat in Wie is wie"
@@ -36,7 +35,7 @@ const LETTER := ["Geachte heer Hoekstra,",
 	"Met vriendelijke groet,", "F. El Amrani, Nova-Oost"]
 ## The lines of each beat (spec §2): [who, text].
 const LINES := {
-	"yvonne": [[YVONNE, "Goedemorgen! Jij bent {speler}, toch? Ik herkende je van de foto."]],
+	"yvonne": [[YVONNE, "{groet}! Jij bent {speler}, toch? Ik herkende je van de foto."]],
 	"yvonne_badge": [[YVONNE, "Hier is je pas. Daarmee kom je overal in, behalve in het onderstation. Daarvoor moet je bij Ruud zijn. Hij komt je zo halen, hij zit nog even in het MT."],
 		[YVONNE, "Kijk, daar is hij al. Nooit te laat, wel altijd net op tijd."]],
 	"leg1": [[RUUD, "Hoi {speler}, ik ben Ruud. Welkom! Ik wilde je om half negen zelf ophalen, maar het MT liep uit. Dat gebeurt vaker, en meestal is dat geen goed teken."],
@@ -70,7 +69,8 @@ const LINES := {
 }
 ## The rest of the first day, as the phone (B6): [from, at, text].
 const PHONE := [["IT Servicedesk", "10:40", "Je laptop staat klaar. Bij de eerste keer inloggen moet je je wachtwoord wijzigen."],
-	["IT Servicedesk", "11:20", "Je wachtwoord is gewijzigd. Je wachtwoord is gewijzigd. Je account is tijdelijk geblokkeerd."],
+	["IT Servicedesk", "11:15", "Je wachtwoord is gewijzigd."], ["IT Servicedesk", "11:16", "Je wachtwoord is gewijzigd."],
+	["IT Servicedesk", "11:20", "Je account is tijdelijk geblokkeerd."],
 	["Leerplatform", "16:50", "Je hebt de e-learning Veilig werken bij Voltana afgerond. Resultaat: geslaagd."]]
 ## The scene's evening (B6): the clock after the skip.
 const EVENING_MINUTE := 19 * 60 + 2
@@ -110,7 +110,6 @@ var _guide_route := PackedVector3Array()
 var _start := Vector3.ZERO
 var _walk_hint_shown := false
 var _look_hint_shown := false
-var _skip_link: Button
 ## A line, a choice or a paper holds the player now (Office.hold_for_scene).
 var _holding := false
 ## Who the camera frames now ("" for none).
@@ -227,13 +226,6 @@ func _arrival() -> void:
 	var chair := _point("reception_chair", RECEPTION_CHAIR)
 	yvonne.place(chair + (desk - chair) * 0.45, stand - desk)   # standing behind the counter, by her chair
 	office.staging.frame_scene(yvonne, FRAME_LIFT)
-	_skip_link = UiPanel.button(tr(SKIP_WEEK), skip_week)
-	_skip_link.flat = true
-	_skip_link.add_theme_color_override("font_color", Color(1, 1, 1, 0.7))
-	_skip_link.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	_skip_link.offset_left = 16
-	_skip_link.offset_top = 56
-	lines.add_child(_skip_link)
 	lines.skip_hint(true)   # the first scene says how to skip (Merijn 2026-10-19)
 	_run([_wait(1.0), _say("yvonne"), _badge(), _say("yvonne_badge"), _do(_ruud_arrives), _do(_walk)])
 
@@ -262,13 +254,10 @@ func _ruud_arrives() -> void:
 	office.rig.release()
 	guide = _person("ruud", "Ruud Hoekstra", "")
 	guide.place(_marker("arrive:lift", Vector2(-1.4, -4.2)), office.player.position - guide.position)
-	if _skip_link != null:
-		_skip_link.queue_free()
-		_skip_link = null
 
 
-## "Ik ken Voltana al" (a returning player, spec rule 6): the week skipped, the
-## full HUD, at your desk's floor.
+## "Inwerkweek overslaan" from the pause menu (a returning player, spec rule 6; never a
+## link in the scene, UX audit #22): the week skipped, the full HUD, at your desk's floor.
 func skip_week() -> void:
 	office.session.skip_training()
 	layer.opening_beat = ""
@@ -576,12 +565,11 @@ func _after_talk() -> void:
 func _end() -> void:
 	office.people.stay_in = []
 	_hide_seated_ruud(false)
-	for n: Node in [guide, yvonne, _skip_link]:
+	for n: Node in [guide, yvonne]:
 		if n != null:
 			n.queue_free()
 	guide = null
 	yvonne = null
-	_skip_link = null
 	_cues.clear()
 
 

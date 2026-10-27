@@ -7,8 +7,10 @@ extends Control
 ## the next step, never a mission title), the interaction prompt, the controls,
 ## and short messages (toasts, bottom right) when something happens. Whatever
 ## stays a while (Ruud's notes, a debrief, new concepts) is on the phone
-## (Phone), never a card over the world. It is drawn over the panels; the
-## toasts hide while one is open.
+## (Phone), never a card over the world. It is drawn over the panels; one thing
+## at a time (UX audit #9): while a panel, view or scene holds the world, or a
+## call rings, the prompt, the controls and the toasts step aside (hold), and
+## the objective line too under a panel, view or scene.
 
 const TOAST_SECONDS := 7.0
 const MAX_TOASTS := 4
@@ -18,6 +20,16 @@ const PHONE := "Telefoon"
 const PHONE_NEW := "%d nieuw"
 ## The phone wiggles this far (degrees) when it buzzes.
 const SHAKE_DEGREES := 4.0
+## The controls line's hints, [id, text] (first-five-minutes §3: "each once, fading"; UX
+## audit #11): a hint goes once its key is used (hint_of), the whole line after
+## CONTROLS_SECONDS on screen; F1 or the pause menu brings them back (show_controls).
+const HINTS: Array[Array] = [["walk", "WASD/klik lopen"], ["run", "Shift rennen"], ["turn", "Z/C draaien"],
+	["zoom", "wiel zoomen"], ["use", "E gebruiken"], ["phone", "%s telefoon"]]
+## estimate: five minutes of play is enough to have walked, turned and used something;
+## the keys that are left by then are in the pause menu.
+const CONTROLS_SECONDS := 300.0
+## Seconds the line takes to fade out once its last hint has gone.
+const CONTROLS_FADE := 0.8
 
 var session: GameSession
 var clock_label: Label
@@ -38,14 +50,22 @@ var _objective_beat := ""
 ## The phone in the bar (Phone), from its moment on (Opening.hud "phone").
 var phone_label: Label
 var prompt_label: Label
-## The controls line, bottom left (hidden while a panel is open).
+## The controls line, bottom left (hidden while a panel is open, or once every hint has gone).
 var help_label: Label
+## The hints whose key the player has used (HINTS ids).
+var _used := {}
+## Seconds the controls line has been on screen since it last came back.
+var _controls_seen := 0.0
+var _fade: Tween
 var _toasts: VBoxContainer
 ## In a talk the bar shows only the date and time: no budget, XP or mission.
 var _talking := false
 ## A panel is open over the world (show_overlay): the objective line steps aside, so it
 ## never covers the panel's title (a tall one reaches the top bar; PLAN 2.10 S3-D).
 var _panel_open := false
+## Something over the world (hold): a panel, a view or a scene; a call ringing.
+var _held_world := false
+var _held_call := false
 ## Which element may show (Opening.hud: the first day reveals them one at a
 ## time); everything when not set.
 var revealed: Dictionary = {}
@@ -175,7 +195,7 @@ func refresh() -> void:
 	drift_label.text = "Achteruitgang %d%%" % drift
 	_objective = Objective.of(session, layer)
 	_objective_beat = layer.opening_beat if layer != null else ""
-	objective_label.text = tr(str(_objective.get("text", "")))
+	objective_label.text = "\n".join(Array(Objective.line(session, layer).split("\n")).map(tr))
 	_apply_reveal()
 
 
@@ -193,22 +213,104 @@ func _apply_reveal() -> void:
 	clock_label.visible = may_show("clock")
 	budget_label.visible = may_show("budget") and not _talking
 	xp_label.visible = may_show("xp") and not _talking
-	objective_label.visible = _objective_shown()
 	phone_label.visible = may_show("phone") and not _talking
-	if not may_show("controls"):
-		help_label.visible = false
+	_apply_layers()
 
 
+## The hints still on the controls line, "" when every one has gone.
 func controls_text() -> String:
-	return tr("WASD/klik lopen   ·   Shift rennen   ·   Z/C draaien   ·   wiel zoomen   ·   E gebruiken   ·   %s telefoon") \
-		% Phone.key_text()
+	var parts: PackedStringArray = []
+	for hint: Array in HINTS:
+		if not _used.has(hint[0]):
+			parts.append(tr(hint[1]) % Phone.key_text() if hint[0] == "phone" else tr(hint[1]))
+	return "   ·   ".join(parts)
+
+
+## The hint a key or click is for ("" for none): what the player just did.
+static func hint_of(event: InputEvent) -> String:
+	if event.is_action_pressed(Phone.ACTION):
+		return "phone"
+	var key := event as InputEventKey
+	if key != null and key.pressed:
+		match key.physical_keycode:
+			KEY_W, KEY_A, KEY_S, KEY_D:
+				return "walk"
+			KEY_SHIFT:
+				return "run"
+			CameraRig.TURN_LEFT, CameraRig.TURN_RIGHT:
+				return "turn"
+			KEY_E:
+				return "use"
+	var click := event as InputEventMouseButton
+	if click != null and click.pressed:
+		match click.button_index:
+			MOUSE_BUTTON_LEFT:
+				return "walk"
+			MOUSE_BUTTON_RIGHT:
+				return "turn"
+			MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN:
+				return "zoom"
+	return ""
+
+
+## The player used `hint`'s key: its hint goes from the line.
+func used(hint: String) -> void:
+	if _used.has(hint):
+		return
+	_used[hint] = true
+	_show_controls_text()
+
+
+## F1 or the pause menu: every hint back on the line, for another CONTROLS_SECONDS.
+func show_controls() -> void:
+	_used.clear()
+	_controls_seen = 0.0
+	_show_controls_text()
+
+
+## Seconds the line was on screen: after CONTROLS_SECONDS every hint goes.
+func tick_controls(delta: float) -> void:
+	if not help_label.visible:
+		return
+	_controls_seen += delta
+	if _controls_seen >= CONTROLS_SECONDS:
+		for hint: Array in HINTS:
+			_used[hint[0]] = true
+		_show_controls_text()
+
+
+## The line as the hints left on it; the last one fades out (CONTROLS_FADE).
+func _show_controls_text() -> void:
+	if _fade != null:
+		_fade.kill()
+	help_label.modulate.a = 1.0
+	var text := controls_text()
+	if text.is_empty() and help_label.visible and is_inside_tree():
+		_fade = create_tween()
+		_fade.tween_property(help_label, "modulate:a", 0.0, CONTROLS_FADE)
+		_fade.tween_callback(func() -> void:
+			help_label.text = ""
+			help_label.modulate.a = 1.0
+			_apply_layers())
+		return
+	help_label.text = text
+	_apply_layers()
+
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_F1:
+		show_controls()
+	elif help_label.visible:
+		var hint := hint_of(event)
+		if not hint.is_empty():
+			used(hint)
 
 
 ## The objective line shows from its moment (Opening.hud "mission"; the first day's
 ## walk behind Ruud before it), never in a talk, over a panel or while a scene speaks.
 func _objective_shown() -> bool:
-	return not objective_label.text.is_empty() and not _talking and not _panel_open and not _scene_running() \
-		and (may_show("mission") or _objective.get("step") == "follow")
+	return not objective_label.text.is_empty() and not _talking and not _panel_open and not _held_world \
+		and not _scene_running() and (may_show("mission") or _objective.get("step") == "follow")
 
 
 ## A scene's lines, question or paper are up (SceneLines, a child of the HUD).
@@ -234,8 +336,25 @@ func set_talking(on: bool) -> void:
 ## The toasts, the controls line and the objective line; hidden while a panel is open.
 func show_overlay(on: bool) -> void:
 	_panel_open = not on
-	help_label.visible = on and may_show("controls")
-	_toasts.visible = on
+	_apply_layers()
+
+
+## What holds the player now (Office.quiet_layers): `world` a panel, view or scene; `call` a
+## call ringing. Either quiets the prompt, the controls and the toasts.
+func hold(world: bool, call: bool) -> void:
+	if world == _held_world and call == _held_call:
+		return
+	_held_world = world
+	_held_call = call
+	_apply_layers()
+
+
+## The prompt, the controls, the toasts and the objective line as what is open allows.
+func _apply_layers() -> void:
+	var quiet := _panel_open or _held_world or _held_call
+	help_label.visible = not quiet and may_show("controls") and not help_label.text.is_empty()
+	_toasts.visible = not quiet
+	prompt_label.visible = not quiet and not prompt_label.text.is_empty()
 	objective_label.visible = _objective_shown()
 
 
@@ -259,16 +378,17 @@ func buzz() -> void:
 		t.tween_property(phone_label, "rotation_degrees", degrees, 0.06)
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	tick_controls(delta)
 	if session != null and layer != null and layer.opening_beat != _objective_beat:
 		refresh()   # the first day moved on without an action (Opening)
 	objective_label.visible = _objective_shown()
 
 
-## "" hides the prompt.
+## "" hides the prompt; so does anything holding the player (hold).
 func show_prompt(text: String) -> void:
 	prompt_label.text = text
-	prompt_label.visible = not text.is_empty()
+	_apply_layers()
 
 
 func toast(text: String) -> void:

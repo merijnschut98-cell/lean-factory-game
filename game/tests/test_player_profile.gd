@@ -79,10 +79,34 @@ func test_tokens_fill_in_one_pass_and_unknown_tokens_stay() -> void:
 	assert_eq(p.fill(""), "")
 
 
-func test_a_nameless_player_is_the_new_ci_lead() -> void:
+## A player without a name is never greeted by a job title (UX audit #1): a greeting drops
+## the name with its comma, and elsewhere a colleague says "de nieuwe".
+func test_a_nameless_player_is_greeted_without_a_name() -> void:
 	var p := PlayerProfile.new()
-	assert_eq(p.fill("{speler}"), PlayerProfile.NAMELESS)
+	assert_eq(p.fill("O, hoi {speler}!"), "O, hoi!")
+	assert_eq(p.fill("Hoi {speler}, ik ben Ruud."), "Hoi, ik ben Ruud.")
+	assert_eq(p.fill("Goedendag, {speler}. Veertig jaar."), "Goedendag. Veertig jaar.")
+	assert_eq(p.fill("Hé {speler}. Zoek je wat?"), "Hé. Zoek je wat?")
+	assert_eq(p.fill("Nou, daar is {speler}."), "Nou, daar is de nieuwe.")
+	assert_eq(p.fill("Goedemorgen! Jij bent {speler}, toch?"), "Goedemorgen! Jij bent de nieuwe, toch?")
+	assert_eq(p.fill("Beste {speler},\n\nDank u."), "Beste collega,\n\nDank u.", "a letter: never a bare Beste")
 	assert_eq(p.fill("{hij_zij}"), "hij", "the default look's body")
+	assert_eq(_profile("Bo").fill("Hoi {speler}, ik ben Ruud."), "Hoi Bo, ik ben Ruud.", "a name stays")
+
+
+## Every line in the content that names the player still reads as Dutch without a name.
+func test_no_content_line_says_the_job_title_for_a_nameless_player() -> void:
+	var p := PlayerProfile.new()
+	var bad := RegEx.create_from_string("CI-lead|\\{speler\\}| [,.!?]|^[,.!? ]|(?i)beste,")
+	var checked := 0
+	for file: String in ["dialogs.json", "missions.json"]:
+		var text := FileAccess.get_file_as_string(Catalog.DATA_DIR.path_join(file))
+		for line: String in text.split("\n"):
+			if line.contains("{speler}"):
+				checked += 1
+				var said := p.fill(line.strip_edges())
+				assert_true(bad.search(said) == null, said)
+	assert_true(checked > 50, "the greetings were found (%d)" % checked)
 
 
 func test_fill_all_reaches_every_string_in_a_result() -> void:

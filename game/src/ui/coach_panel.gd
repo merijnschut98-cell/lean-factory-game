@@ -1,7 +1,11 @@
 class_name CoachPanel
 extends UiPanel
-## The coach, a senior manager, in her glass room. She coaches the main
-## mission only and mostly answers with a Kata question.
+## The coach, a senior manager, in the coach's glass room: coaches the main
+## mission only and mostly answers with a Kata question. The panel speaks of
+## the coach as the cast has them (CharacterModel.pronoun).
+
+## The coach's words by pronoun: [subject, possessive].
+const WORDS := {"hij": ["Hij", "zijn"], "zij": ["Zij", "haar"]}
 
 var reply := ""
 
@@ -29,8 +33,10 @@ func refresh() -> void:
 		body.add_child(paragraph(UiText.mission_title(days[0], session)))
 	else:
 		body.add_child(paragraph("Hoofdmissie: " + (mains[0].name if not mains.is_empty() else "nog geen")))
+	var words: Array = WORDS[CharacterModel.pronoun(CharacterModel.coach_id())]
 	var said := add_card(body, "", Palette.BLUE_PALE)
 	said.add_child(paragraph(("'%s'" % reply) if not reply.is_empty()
-		else "Ze kijkt op van haar scherm. 'Kom binnen. Waar sta je?'", Palette.VOLTANA_BLUE, 24))
+		else tr("%s kijkt op van %s scherm. 'Kom binnen. Waar sta je?'") % words, Palette.VOLTANA_BLUE, 24))
 	body.add_child(button("Vraag om coaching", ask))
-	body.add_child(paragraph("Ze helpt met je hoofdmissie en je inwerkweek, en antwoordt meestal met een vraag.", Palette.MUTED, UiTheme.SMALL))
+	body.add_child(paragraph(tr("%s helpt met je hoofdmissie en je inwerkweek, en antwoordt meestal met een vraag.") % words[0],
+		Palette.MUTED, UiTheme.SMALL))

@@ -57,8 +57,12 @@ const RUUD_HOME_AT := 18 * 60
 ## The keys of the offered sentences, in order.
 const OPTION_KEYS: Array[Key] = [KEY_1, KEY_2, KEY_3, KEY_4]
 const SENTENCE_FONT := 17
-const KEY_HINT_FONT := 11
-const KEY_HINT_AT := Vector2(4, 0)
+## The key chip left of each sentence (UX audit #12: a key a player sees is a key they use).
+const KEY_CHIP := "KeyChip"
+const KEY_CHIP_FONT := 20
+## The trust pips and their ▲/▼, large enough to see trust move (the ● glyph is about
+## three quarters of the font size: ~18 px dots).
+const PIPS_FONT := 24
 ## The subtitle's width, as SceneLines' (the sentences line up over it).
 const WIDTH := 900.0
 ## Space at the screen's edges, and under the subtitle (as SceneLines').
@@ -159,10 +163,10 @@ func _name_tag() -> PanelContainer:
 	title_label.add_theme_font_size_override("font_size", UiTheme.SMALL + 2)
 	title_label.size_flags_horizontal = Control.SIZE_FILL
 	row.add_child(title_label)
-	_pips = label("", UiTheme.SMALL, Palette.VOLTANA_GREEN)
+	_pips = label("", PIPS_FONT, Palette.VOLTANA_GREEN)
 	_pips.tooltip_text = TRUST
 	row.add_child(_pips)
-	trust_flash = label("", UiTheme.SMALL, Color.WHITE)
+	trust_flash = label("", PIPS_FONT, Color.WHITE)
 	trust_flash.visible = false
 	row.add_child(trust_flash)
 	return tag
@@ -522,16 +526,28 @@ func _fill_sentences() -> void:
 	_sentences.add_child(end)
 
 
-## A sentence with its key in its top-left corner, small and dimmed, taking
-## no width of the line (KEY_NONE: the sentence alone).
-static func _with_key(sentence: Button, key: Key) -> Button:
-	if key != KEY_NONE:
-		var hint := label(OS.get_keycode_string(key), KEY_HINT_FONT, Color.WHITE)
-		hint.modulate.a = 0.6
-		hint.position = KEY_HINT_AT
-		hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		sentence.add_child(hint)
-	return sentence
+## A sentence with its key on a chip to its left (KEY_NONE: no chip, the line in its place).
+static func _with_key(sentence: Button, key: Key) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	var chip := PanelContainer.new()
+	chip.name = KEY_CHIP
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(Palette.HUD_BAR, 0.85)
+	style.border_color = Color(1, 1, 1, 0.7)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(6)
+	style.content_margin_left = 9
+	style.content_margin_right = 9
+	chip.add_theme_stylebox_override("panel", style)
+	chip.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	chip.add_child(label(OS.get_keycode_string(key), KEY_CHIP_FONT, Color.WHITE))
+	chip.modulate.a = 1.0 if key != KEY_NONE else 0.0
+	row.add_child(chip)
+	sentence.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(sentence)
+	return row
 
 
 ## The talk's note as the rules kept it (TalkSummary), with Ruud's word after
