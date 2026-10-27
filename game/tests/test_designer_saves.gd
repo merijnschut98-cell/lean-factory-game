@@ -52,12 +52,13 @@ func test_write_stops_at_day_and_saves_meta() -> void:
 ## A designer save's player (UX audit #1): a valid Dutch first name and a look from the
 ## creator's options, the same for a slot every time the saves are made.
 func test_every_designer_slot_has_its_own_fixed_made_player() -> void:
+	for made: Dictionary in MakeSaves.MADE_PLAYERS:   # as written: every trait named, every option real
+		assert_eq(made["look"], CreatorLook.normalized(made["look"]), "%s: every trait a creator option" % made["name"])
 	var names := {}
 	for spec: Dictionary in DesignerSaves.SAVES:
 		var p := MakeSaves.made_player(spec["slot"])
 		assert_false(p.name.is_empty(), spec["slot"])
 		assert_eq(PlayerProfile.clean_name(p.name), p.name, "a valid name: %s" % p.name)
-		assert_eq(p.look, CreatorLook.normalized(p.look), "every trait a creator option")
 		assert_eq(MakeSaves.made_player(spec["slot"]).name, p.name, "reproducible")
 		names[p.name] = true
 	assert_true(names.size() > 1, "not one name for every slot")

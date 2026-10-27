@@ -4,8 +4,8 @@ extends Control
 ## used first (the autosave among them), each a card to continue from (a
 ## save that will not load keeps the menu, with a line that says so);
 ## "Nieuw spel" (the character creator, PLAN 2.7b, then a fresh game),
-## "Inwerkweek overslaan" (the same, past the first day's scene and the training
-## week: a returning player, spec rule 6),
+## "Nieuw spel zonder inwerkweek" (after one question, the same past the first day's scene
+## and the training week: a returning player, spec rule 6),
 ## "Instellingen" ("Tekst loopt vanzelf door", the rest later), "Alles wissen" behind one
 ## confirmation and, for the designer only (Designer), "Ontwerper": the jump-to-day saves.
 ## A new game's first autosave replaces the autosave, so when that holds a
@@ -24,7 +24,8 @@ const SAVES := "Opgeslagen spellen"
 const NO_SAVES := "Nog geen opgeslagen spel. Begin met \"Nieuw spel\"."
 const PLAY := "Verder spelen"
 const NEW_GAME := "Nieuw spel"
-const SKIP_WEEK := "Inwerkweek overslaan"
+const SKIP_WEEK := "Nieuw spel zonder inwerkweek"
+const SKIP_YES := "Ja, zonder inwerkweek"
 const SETTINGS := "Instellingen"
 const SETTINGS_LATER := "Toetsen en camera: deze instellingen komen later. Voor nu speel je met WASD, de muis en E."
 const DESIGNER := "Ontwerper"
@@ -45,7 +46,7 @@ const KEEP_FAILED := "Bewaren is niet gelukt. Je huidige spel staat nog in de au
 ## The five slots' scrolling height (px), so "Terug" stays on a 900 px screen.
 const KEEP_HEIGHT := 420.0
 
-enum Page { MAIN, SETTINGS, WIPE, REPLACE, KEEP, OVERWRITE, DESIGNER }
+enum Page { MAIN, SETTINGS, WIPE, REPLACE, KEEP, OVERWRITE, DESIGNER, SKIP_ASK }
 
 var saves := SaveSlots.new()
 ## The settings file (tests point it elsewhere).
@@ -180,6 +181,10 @@ func refresh() -> void:
 			designer.replay_requested.connect(open_replay)
 			designer.build()
 			_menu.add_child(designer)
+		Page.SKIP_ASK:
+			_menu.add_child(UiPanel.paragraph(tr(UiText.SKIP_CONFIRM)))
+			_menu.add_child(UiPanel.button(tr(SKIP_YES), confirm_skip_week))
+			_menu.add_child(UiPanel.button(tr(BACK), cancel))
 		Page.WIPE:
 			_menu.add_child(UiPanel.paragraph(tr(WIPE_ASK)))
 			_menu.add_child(UiPanel.button(tr(WIPE_YES), confirm_wipe))
@@ -214,8 +219,15 @@ func new_game() -> void:
 		start_requested.emit("")
 
 
-## "Inwerkweek overslaan": a new game that opens past the training week.
+## "Nieuw spel zonder inwerkweek": first the question (UiText.SKIP_CONFIRM).
 func new_game_skipping_week() -> void:
+	_go(Page.SKIP_ASK)
+
+
+## The answer: a new game that opens past the training week.
+func confirm_skip_week() -> void:
+	if page != Page.SKIP_ASK:
+		return
 	skip_week = true
 	new_game()
 

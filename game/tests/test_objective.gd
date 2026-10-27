@@ -207,19 +207,30 @@ func test_without_a_main_mission_the_board_is_the_next_step() -> void:
 
 ## After closing time (the front door's own rule, OfficeHome.HOME_FROM) the line sends you
 ## home, by the front door, not to the board in a dark office (UX audit #18).
-func test_after_closing_time_the_objective_is_going_home() -> void:
+## After closing time (UX audit #18, review): the objective stays the mission's step (the phone's
+## Missions card and the minimap read it); the HUD's line adds a short home hint under it,
+## from HOME_FROM through the night until HOME_UNTIL, and with no step shows the home line alone.
+func test_after_closing_time_the_line_adds_home_and_the_step_stays() -> void:
 	var s := _campaign()
 	s.pass_time(Objective.HOME_FROM - 1 - s.minute_of_day())
-	assert_ne(Objective.of(s).get("step"), "home", "16:59: the work's own step")
-	var working := _text(s)
+	var step := Objective.of(s)
+	var working := str(step["text"])
+	assert_eq(Objective.line(s), working, "16:59: the step alone")
 	s.pass_time(1)
-	assert_eq(Objective.of(s), {"step": "home", "text": Objective.HOME_TEXT})
-	assert_true(Objective.HOME_TEXT.begins_with("Tijd om naar huis te gaan") and Objective.HOME_TEXT.contains("voordeur"),
-		Objective.HOME_TEXT)
-	assert_eq(OfficeHome.HOME_FROM, Objective.HOME_FROM, "the same rule as the front door")
+	assert_eq(Objective.of(s), step, "the step itself never changes with the hour")
+	assert_eq(Objective.line(s), working + "\n" + Objective.HOME_HINT, "17:00: the step, then home")
+	s.pass_time(8 * 60)   # 01:00
+	assert_eq(Objective.line(s), working + "\n" + Objective.HOME_HINT, "through the night")
+	s.pass_time(6 * 60)   # 07:00
+	assert_eq(Objective.line(s), working, "the morning: the step alone")
+	for minute: int in [17 * 60, 20 * 60, 23 * 60 + 59, 0, 60, 6 * 60 + 59]:
+		assert_true(Objective.home_time(minute), "home time at %d" % minute)
+	for minute: int in [7 * 60, 8 * 60 + 30, 16 * 60 + 59]:
+		assert_false(Objective.home_time(minute), "working time at %d" % minute)
 	_assert_clean(s, Objective.HOME_TEXT, "home")
-	s.pass_time(SimCalendar.days(1) - 1)   # the next morning, 16:59
-	assert_eq(_text(s), working, "the next day the work's step again")
+	assert_true(Objective.HOME_HINT.length() <= Objective.MAX_CHARS, Objective.HOME_HINT)
+	assert_eq(Objective.with_home("", 20 * 60), Objective.HOME_TEXT, "nothing open: the home line alone")
+	assert_eq(Objective.with_home("", 10 * 60), "", "and by day nothing")
 
 
 func test_a_side_mission_is_never_the_objective() -> void:

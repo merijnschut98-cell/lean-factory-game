@@ -195,7 +195,7 @@ func refresh() -> void:
 	drift_label.text = "Achteruitgang %d%%" % drift
 	_objective = Objective.of(session, layer)
 	_objective_beat = layer.opening_beat if layer != null else ""
-	objective_label.text = tr(str(_objective.get("text", "")))
+	objective_label.text = "\n".join(Array(Objective.line(session, layer).split("\n")).map(tr))
 	_apply_reveal()
 
 

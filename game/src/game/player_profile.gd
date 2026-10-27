@@ -28,7 +28,9 @@ const _TYPEABLE := "^[\\p{L} '\\-]$"
 const _PNG_MAGIC := [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]
 const _TOKEN := "\\{([A-Za-z_]+)\\}"
 ## {speler} right after a greeting, with the comma and space before it: "O, hoi {speler}!".
-const _GREETED := "(?i)(?<!\\p{L})(hoi|hé|ha|hallo|dag|goedendag|goedemorgen|goedemiddag|goedenavond|beste),? \\{speler\\}"
+const _GREETED := "(?i)(?<!\\p{L})(hoi|hé|ha|hallo|dag|goedendag|goedemorgen|goedemiddag|goedenavond),? \\{speler\\}"
+## A letter's salutation: "Beste {speler}," is "Beste collega," without a name.
+const _SALUTED := "(?i)(?<!\\p{L})(beste) \\{speler\\}"
 ## The body's words for third-person lines about the player (§1.6): token ->
 ## [man, vrouw].
 const _BODY_WORDS := {
@@ -42,6 +44,7 @@ static var _name_re := RegEx.create_from_string(_NAME)
 static var _typeable_re := RegEx.create_from_string(_TYPEABLE)
 static var _token_re := RegEx.create_from_string(_TOKEN)
 static var _greeted_re := RegEx.create_from_string(_GREETED)
+static var _saluted_re := RegEx.create_from_string(_SALUTED)
 
 ## The valid first name, or "" (shown as NAMELESS).
 var name := ""
@@ -144,12 +147,12 @@ func tokens() -> Dictionary:
 
 ## `text` with the player's tokens filled, in one pass; any other {token} is
 ## left for its own filler (e.g. {dossier_weken}). Without a name a greeting
-## drops it ("O, hoi {speler}!" is "O, hoi!").
+## drops it ("O, hoi {speler}!" is "O, hoi!") and a letter says "Beste collega".
 func fill(text: String) -> String:
 	if not text.contains("{"):
 		return text
 	if name.is_empty():
-		text = _greeted_re.sub(text, "$1", true)
+		text = _saluted_re.sub(_greeted_re.sub(text, "$1", true), "$1 collega", true)
 	var values := tokens()
 	var out := ""
 	var at := 0

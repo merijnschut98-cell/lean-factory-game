@@ -87,6 +87,9 @@ func test_a_greeting_follows_the_clock() -> void:
 ## Joost say about the stack at Werkvoorbereiding fits the queue "Tel de stapel" counts.
 func test_the_stack_s_words_fit_the_queue_the_player_counts() -> void:
 	var s := _accepted()
+	var at_accept: Dictionary = s.region.queue_at(DESIGN)
+	assert_between(at_accept["count"], 3, 10, "a handful when the mission starts")
+	assert_between(at_accept["days"], 0.3, 1.5, "about a day of work")
 	var most := 0
 	for d in 30:
 		most = maxi(most, s.region.queue_at(DESIGN)["count"])
@@ -97,7 +100,8 @@ func test_the_stack_s_words_fit_the_queue_the_player_counts() -> void:
 	var joost: DialogDef = s.people.dialogs["joost_vacancies"]
 	for text: String in [s.missions.briefing_of(MISSION), clue.text, str(joost.position["text"])]:
 		assert_false(text.contains("honderd"), "no count the queue never reaches: " + text)
-	assert_true(s.missions.briefing_of(MISSION).contains("een stuk of vijftien dossiers"))
+	assert_true(s.missions.briefing_of(MISSION).contains("op tot een stuk of vijftien dossiers"), "it builds up to the peak")
+	assert_true(clue.text.contains("een dag werk") and clue.text.contains("een paar dagen"), clue.text)
 
 
 ## No line in the content or the first day's scene greets by a fixed part of the day: a

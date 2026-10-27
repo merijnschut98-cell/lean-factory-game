@@ -274,7 +274,7 @@ func _process(delta: float) -> void:
 ## tag or greeting floats over it.
 func quiet_layers() -> void:
 	var held := not world_free()
-	var ringing := ui.incoming != null and ui.incoming.visible
+	var ringing := call_ringing()
 	ui.hud.hold(held, ringing)
 	if (held or ringing) and people != null:
 		people.show_tags([])
@@ -283,10 +283,15 @@ func quiet_layers() -> void:
 				p.say("")
 
 
+## A customer's call is ringing (GameUI.incoming): not a panel, but it has the player's attention.
+func call_ringing() -> bool:
+	return ui.incoming != null and ui.incoming.visible
+
+
 ## The rings near the player or under the cursor fade in, the rest out; none while a panel,
-## talk or scene holds the world (Interactable.fade_ring).
+## talk or scene holds the world or a call rings (Interactable.fade_ring).
 func fade_rings(delta: float) -> void:
-	var free := world_free()
+	var free := world_free() and not call_ringing()
 	for i in interactables:
 		i.fade_ring(Vector2(player.position.x - i.position.x, player.position.z - i.position.z).length(), free, delta)
 

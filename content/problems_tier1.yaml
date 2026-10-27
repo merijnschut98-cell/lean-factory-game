@@ -168,7 +168,7 @@ problems:
       - {tell: prep_tray, text: "In het postbakje bij Werkvoorbereiding liggen de dossiers hoger dan het bakje."}
     clues:
       - {tool: time_study, key: true, depth: 0, text: "Een gewone woningaansluiting kost vijf uur ontwerp, net zoveel als een bedrijfsaansluiting."}
-      - {tool: queue_count, key: false, depth: 0, text: "In de bak ligt een paar dagen werk aan dossiers, geen weken."}   # the simulation's queue (fix_custom_design's note)
+      - {tool: queue_count, key: false, depth: 0, text: "In de bak ligt ongeveer een dag werk aan dossiers; als de stapel oploopt een paar dagen, geen weken."}   # the simulation's queue (fix_custom_design's note)
       - {tool: documents, key: true, depth: 1, text: "Elk ontwerp, ook een standaard huisaansluiting, gaat langs drie handtekeningen."}
       - {tool: conversation, key: true, depth: 1, at: connections.intake, text: "'Wij vragen nooit of het een standaardaansluiting is. Alles gaat als maatwerk door.'"}
       - {tool: data, key: true, depth: 2, text: "Driekwart van de ontwerpen is een standaard 3x25A-aansluiting zonder netuitbreiding."}

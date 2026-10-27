@@ -115,6 +115,9 @@ func test_a_call_a_scene_or_a_panel_quiets_the_other_layers() -> void:
 	assert_false(anouk.saying(), "and the greeting bubble")
 	assert_false(anouk.tag.visible, "and the name tag")
 	assert_true(hud.objective_label.visible, "the objective stays during a call")
+	office.player.position = office.interactable(DESIGN).position
+	office.fade_rings(1.0)
+	assert_false(office.interactables.any(func(i: Interactable) -> bool: return i.ring_shown()), "no ring while it rings")
 	office.ui.incoming.visible = false
 	office.quiet_layers()
 	assert_eq(layers.call(), [true, true, true], "back once the call is gone")
@@ -507,10 +510,10 @@ func test_skipping_the_week_asks_first() -> void:
 	var board := office.ui.mission_board
 	office.interact(office.interactable("mission_board"))
 	board.ask_skip()
-	assert_true(shows(board, "Je mist de oefenweek, het echte werk begint direct."), "the confirm line")
+	assert_true(shows(board, UiText.SKIP_CONFIRM), "the confirm line")
 	assert_true(office.session.in_training(), "nothing skipped yet")
 	board.cancel_skip()
-	assert_false(shows(board, "Je mist de oefenweek"))
+	assert_false(shows(board, UiText.SKIP_CONFIRM))
 	board.ask_skip()
 	assert_eq(board.confirm_skip(), "")
 	assert_false(office.session.in_training())

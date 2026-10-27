@@ -89,6 +89,7 @@ func test_a_nameless_player_is_greeted_without_a_name() -> void:
 	assert_eq(p.fill("Hé {speler}. Zoek je wat?"), "Hé. Zoek je wat?")
 	assert_eq(p.fill("Nou, daar is {speler}."), "Nou, daar is de nieuwe.")
 	assert_eq(p.fill("Goedemorgen! Jij bent {speler}, toch?"), "Goedemorgen! Jij bent de nieuwe, toch?")
+	assert_eq(p.fill("Beste {speler},\n\nDank u."), "Beste collega,\n\nDank u.", "a letter: never a bare Beste")
 	assert_eq(p.fill("{hij_zij}"), "hij", "the default look's body")
 	assert_eq(_profile("Bo").fill("Hoi {speler}, ik ben Ruud."), "Hoi Bo, ik ben Ruud.", "a name stays")
 
@@ -96,7 +97,7 @@ func test_a_nameless_player_is_greeted_without_a_name() -> void:
 ## Every line in the content that names the player still reads as Dutch without a name.
 func test_no_content_line_says_the_job_title_for_a_nameless_player() -> void:
 	var p := PlayerProfile.new()
-	var bad := RegEx.create_from_string("CI-lead|\\{speler\\}| [,.!?]|^[,.!? ]")
+	var bad := RegEx.create_from_string("CI-lead|\\{speler\\}| [,.!?]|^[,.!? ]|(?i)beste,")
 	var checked := 0
 	for file: String in ["dialogs.json", "missions.json"]:
 		var text := FileAccess.get_file_as_string(Catalog.DATA_DIR.path_join(file))

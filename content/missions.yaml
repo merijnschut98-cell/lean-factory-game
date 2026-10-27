@@ -326,8 +326,9 @@ missions:
     # The stack's numbers follow the simulation (UX audit #6, measured 2026-10-27, seed 11): a returning
     # player's queue at Werkvoorbereiding over the 30 days after accepting, problem untreated, is 0-16
     # dossiers (0-2.5 days of work; 6 at the start), peaking at 11-16 every week; the expert during its
-    # experiment 13-34 (1.7-4.9 days). The briefing, the queue_count clue and Joost say so.
-    briefing: "Werkvoorbereiding maakt al zes weken overuren, en toch ligt er elke week weer een stapel van een stuk of vijftien dossiers. Joost van Dijk ({functie:joost}) vraagt het MT om twee extra werkvoorbereiders. Anouk de Vries ({functie:anouk}) zat gisteravond om zeven uur nog te tekenen. Wat is hier echt aan de hand?"
+    # experiment 13-34 (1.7-4.9 days). The briefing, the queue_count clue and Joost say so: the count
+    # at the start (about a day of work) and the peak (a few days) both read true.
+    briefing: "Werkvoorbereiding maakt al zes weken overuren, en toch loopt de stapel elke week weer op tot een stuk of vijftien dossiers. Joost van Dijk ({functie:joost}) vraagt het MT om twee extra werkvoorbereiders. Anouk de Vries ({functie:anouk}) zat gisteravond om zeven uur nog te tekenen. Wat is hier echt aan de hand?"
     debrief: "Een standaardaansluiting krijgt nu een vast ontwerp (wat) en Anouk tekent het op een vaste manier, met één controle in plaats van drie handtekeningen (hoe). Joost trekt zijn vacatures in, en Anouk is om vier uur thuis. Eén vraag voor je volgende stap: als Werkvoorbereiding nu sneller is, waar gaat het werk dan wachten?"
     debrief_variants:
       poor_fix: "Er zijn minder handtekeningen, maar elk ontwerp wordt nog steeds van nul getekend. De stapel zakt, langzaam. Joost houdt zijn vacatures nog even aan. Wat zou het werk zelf lichter maken?"
