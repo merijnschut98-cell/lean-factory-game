@@ -612,7 +612,7 @@
    "payoff": [
     {
      "by": "call",
-     "text": "Goedemiddag, u spreekt met Fatima El Amrani. Ik bel alleen even om te zeggen dat mijn moeder het warm heeft. Ze vroeg wie u bent. Ik heb gezegd: iemand die terugbelde. Dat was het. Dag.",
+     "text": "{groet}, u spreekt met Fatima El Amrani. Ik bel alleen even om te zeggen dat mijn moeder het warm heeft. Ze vroeg wie u bent. Ik heb gezegd: iemand die terugbelde. Dat was het. Dag.",
      "who": "el_amrani"
     },
     {

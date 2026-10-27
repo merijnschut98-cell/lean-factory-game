@@ -931,7 +931,7 @@ dialogs:
     teaches: [open_question]
     mood: neutraal   # a friendly week: busy, not worn out (PLAN 2.13 D)
     patience: 12
-    opening: "Goedemorgen! Ik zou gisteren nog langskomen, hè. Sorry. Alles van het weekend ligt er nog."
+    opening: "{groet}! Ik zou gisteren nog langskomen, hè. Sorry. Alles van het weekend ligt er nog."
     position: {text: "Na een weekend ben je hier twee dagen aan het bijwerken. Alles wat zaterdag en zondag binnenkwam, plus wat gisteren bleef liggen. Maar dat ziet boven niemand, hè.", tags: [claim], tell: recognition}
     layers:
       - id: interest
@@ -1781,12 +1781,12 @@ dialogs:
     missions: [fix_status_callers, winter_el_amrani]
     mood: gespannen
     patience: 10
-    opening: "Goedemiddag. U spreekt met Fatima El Amrani. Ik bel voor de vierde keer, en ik heb ze allemaal opgeschreven."
+    opening: "{groet}. U spreekt met Fatima El Amrani. Ik bel voor de vierde keer, en ik heb ze allemaal opgeschreven."
     variants:
       # The date she was given has passed without a connection (Missions: promise_broken): she
       # reads it from her notebook (drie winters §3); the talk opens lower (People memory).
       - needs: {all: ["promise_broken:el_amrani_fourth_call"]}
-        opening: "Goedemiddag, met Fatima El Amrani. Ik heb mijn schrift voor me. Hier staat: 'Volgens de planning over een week of zes aangesloten.' Met de datum erbij, en uw naam. Die datum is geweest."
+        opening: "{groet}, met Fatima El Amrani. Ik heb mijn schrift voor me. Hier staat: 'Volgens de planning over een week of zes aangesloten.' Met de datum erbij, en uw naam. Die datum is geweest."
     warning: "Ik heb geen behoefte aan een riedeltje."
     position: {text: "Ik wil een datum. Een echte. Anders ga ik naar de Geschillencommissie.", tags: [claim], tell: facts}
     layers:
@@ -2847,7 +2847,7 @@ dialogs:
     owns: inverters_tripping
     mood: neutraal
     patience: 10
-    opening: "Goedemiddag. Kortekaas, Zonnestraat veertien. U kent mij waarschijnlijk van de spreadsheets."
+    opening: "{groet}. Kortekaas, Zonnestraat veertien. U kent mij waarschijnlijk van de spreadsheets."
     warning: "Met alle respect: dit zei de vorige meneer ook."
     position: {text: "Elke maand stuur ik u mijn metingen. Elke maand krijg ik een ontvangstbevestiging. Zesendertig ontvangstbevestigingen. Ik heb ze bewaard.", tags: [claim, feeling], tell: recognition}
     layers:

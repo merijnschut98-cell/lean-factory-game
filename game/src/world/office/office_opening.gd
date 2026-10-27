@@ -36,7 +36,7 @@ const LETTER := ["Geachte heer Hoekstra,",
 	"Met vriendelijke groet,", "F. El Amrani, Nova-Oost"]
 ## The lines of each beat (spec §2): [who, text].
 const LINES := {
-	"yvonne": [[YVONNE, "Goedemorgen! Jij bent {speler}, toch? Ik herkende je van de foto."]],
+	"yvonne": [[YVONNE, "{groet}! Jij bent {speler}, toch? Ik herkende je van de foto."]],
 	"yvonne_badge": [[YVONNE, "Hier is je pas. Daarmee kom je overal in, behalve in het onderstation. Daarvoor moet je bij Ruud zijn. Hij komt je zo halen, hij zit nog even in het MT."],
 		[YVONNE, "Kijk, daar is hij al. Nooit te laat, wel altijd net op tijd."]],
 	"leg1": [[RUUD, "Hoi {speler}, ik ben Ruud. Welkom! Ik wilde je om half negen zelf ophalen, maar het MT liep uit. Dat gebeurt vaker, en meestal is dat geen goed teken."],
@@ -70,7 +70,8 @@ const LINES := {
 }
 ## The rest of the first day, as the phone (B6): [from, at, text].
 const PHONE := [["IT Servicedesk", "10:40", "Je laptop staat klaar. Bij de eerste keer inloggen moet je je wachtwoord wijzigen."],
-	["IT Servicedesk", "11:20", "Je wachtwoord is gewijzigd. Je wachtwoord is gewijzigd. Je account is tijdelijk geblokkeerd."],
+	["IT Servicedesk", "11:15", "Je wachtwoord is gewijzigd."], ["IT Servicedesk", "11:16", "Je wachtwoord is gewijzigd."],
+	["IT Servicedesk", "11:20", "Je account is tijdelijk geblokkeerd."],
 	["Leerplatform", "16:50", "Je hebt de e-learning Veilig werken bij Voltana afgerond. Resultaat: geslaagd."]]
 ## The scene's evening (B6): the clock after the skip.
 const EVENING_MINUTE := 19 * 60 + 2

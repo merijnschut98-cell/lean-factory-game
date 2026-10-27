@@ -502,6 +502,14 @@ static func minute_at(t: int) -> int:
 	return (t - SimCalendar.days(WARMUP_DAYS)) % SimCalendar.MINUTES_PER_DAY
 
 
+## The greeting for `minute` of the day ({groet}): goedemorgen until noon, goedemiddag until
+## six, goedenavond after (and through the night; goedenacht is a goodbye).
+static func greeting_at(minute: int) -> String:
+	if minute >= 6 * 60 and minute < 12 * 60:
+		return "Goedemorgen"
+	return "Goedemiddag" if minute >= 12 * 60 and minute < 18 * 60 else "Goedenavond"
+
+
 ## The El Amrani dossier: {age_days, touch_hours, step, delivered_days}
 ## (FollowedOrder.view).
 func followed_order() -> Dictionary:
@@ -983,13 +991,15 @@ func set_note(person_id: String, text: String) -> bool:
 
 
 ## The tokens talk lines speak through: the player's (PlayerProfile.fill:
-## {speler}, {jongen_meid} …) and {aanvraag_datum}, the day the El Amrani
-## family applied (D9 talks audit #20). No filled value holds a brace.
+## {speler}, {jongen_meid} …), {aanvraag_datum}, the day the El Amrani
+## family applied (D9 talks audit #20), and {groet}, the greeting for the hour
+## (greeting_at). No filled value holds a brace.
 func fill_tokens(text: String) -> String:
 	if not "{" in text:
 		return text
 	var born := date_of(followed.born)
-	var out := player.fill(text).replace("{aanvraag_datum}", "%d %s" % [born["day"], MONTH_NAMES[born["month"] - 1]])
+	var out := player.fill(text).replace("{aanvraag_datum}", "%d %s" % [born["day"], MONTH_NAMES[born["month"] - 1]]) \
+		.replace("{groet}", greeting_at(minute_of_day()))
 	for found in _PROMISE_DATE.search_all(out):   # {promise_date:N}: the date N days from now (the promise checked)
 		var t := region.net.time + SimCalendar.days(found.get_string(1).to_int())
 		var date := date_of(t)

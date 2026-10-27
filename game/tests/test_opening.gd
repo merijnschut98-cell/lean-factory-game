@@ -311,6 +311,19 @@ func test_a_line_holds_the_player_and_frames_the_speaker() -> void:
 	office.free()
 
 
+## The IT joke is three messages a minute apart (spec B6, UX audit #10): merged into one
+## bubble the repeat reads as a typo.
+func test_the_it_desk_sends_three_messages_not_one_with_a_repeat() -> void:
+	var it := OfficeOpening.PHONE.filter(func(p: Array) -> bool: return p[0] == "IT Servicedesk")
+	assert_eq(it.map(func(p: Array) -> String: return p[1]), ["10:40", "11:15", "11:16", "11:20"])
+	assert_eq(it.slice(1).map(func(p: Array) -> String: return p[2]),
+		["Je wachtwoord is gewijzigd.", "Je wachtwoord is gewijzigd.", "Je account is tijdelijk geblokkeerd."])
+	for p: Array in OfficeOpening.PHONE:
+		var sentences := (p[2] as String).split(". ")
+		assert_eq(sentences.size(), Array(sentences).reduce(func(seen: Array, x: String) -> Array:
+			return seen if x in seen else seen + [x], []).size(), "no sentence twice in one message: " + p[2])
+
+
 func test_the_first_scene_shows_how_to_skip() -> void:
 	var office := _named_opening()
 	var o := office.first_day

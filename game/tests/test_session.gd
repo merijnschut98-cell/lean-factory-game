@@ -67,6 +67,34 @@ func test_the_clock_is_dutch_and_follows_the_simulation() -> void:
 	assert_eq(s.clock_text(), "zo 1 nov, 09:30", "the month rolls over")
 
 
+## A greeting follows the clock (UX audit #10): {groet} is goedemorgen, goedemiddag or
+## goedenavond for the hour the line is said.
+func test_a_greeting_follows_the_clock() -> void:
+	assert_eq(GameSession.greeting_at(8 * 60 + 30), "Goedemorgen")
+	assert_eq(GameSession.greeting_at(11 * 60 + 59), "Goedemorgen")
+	assert_eq(GameSession.greeting_at(12 * 60), "Goedemiddag")
+	assert_eq(GameSession.greeting_at(17 * 60 + 59), "Goedemiddag")
+	assert_eq(GameSession.greeting_at(18 * 60), "Goedenavond")
+	assert_eq(GameSession.greeting_at(2 * 60), "Goedenavond", "a night call is still an evening's")
+	var s := _campaign()
+	s.region.advance(90)   # ten o'clock: Mevrouw El Amrani's call
+	assert_eq(s.fill_tokens("{groet}. U spreekt met Fatima El Amrani."), "Goedemorgen. U spreekt met Fatima El Amrani.")
+	s.region.advance(4 * 60)
+	assert_eq(s.fill_tokens("{groet}, met Fatima El Amrani."), "Goedemiddag, met Fatima El Amrani.")
+
+
+## No line in the content or the first day's scene greets by a fixed part of the day: a
+## call at ten opening with "Goedemiddag" reads as a mistake. They say {groet}.
+func test_no_line_greets_by_a_fixed_part_of_the_day() -> void:
+	var fixed := RegEx.create_from_string("(?i)goede(morgen|middag|navond)")
+	for file: String in ["dialogs.json", "missions.json", "scenes.json"]:
+		for line: String in FileAccess.get_file_as_string(Catalog.DATA_DIR.path_join(file)).split("\n"):
+			assert_true(fixed.search(line) == null, "%s: %s" % [file, line.strip_edges()])
+	for key: String in OfficeOpening.LINES:
+		for said: Array in OfficeOpening.LINES[key]:
+			assert_true(fixed.search(said[1]) == null, said[1])
+
+
 func test_a_tool_costs_its_minutes() -> void:
 	var s := _accepted()
 	var before := s.region.net.time
