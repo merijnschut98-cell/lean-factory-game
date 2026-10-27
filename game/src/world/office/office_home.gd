@@ -18,8 +18,9 @@ const HOME := "home"
 const ABSENT := "absent"
 ## The front door's arrival marker (the begane grond).
 const ENTRANCE := "arrive:entrance"
-## From this minute the front door offers going home (design: after 17:00).
-const HOME_FROM := 17 * 60
+## From this minute the front door offers going home (design: after 17:00); the objective
+## line says so from the same minute.
+const HOME_FROM := Objective.HOME_FROM
 ## From this minute (until the morning) one line suggests going home, once an evening.
 const LATE_FROM := 19 * 60
 const LATE_UNTIL := 7 * 60

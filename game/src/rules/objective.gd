@@ -18,6 +18,10 @@ const MAX_CHARS := 60
 const BOARD_TEXT := "Kies je volgende opdracht op het missiebord"
 ## The first day's walk (Opening.WALK): Ruud leads.
 const FOLLOW_TEXT := "Loop met Ruud mee"
+## From this minute of the day the front door offers going home (OfficeHome; design: after
+## 17:00), and the line says so in place of the work's step (UX audit #18).
+const HOME_FROM := 17 * 60
+const HOME_TEXT := "Tijd om naar huis te gaan (voordeur, begane grond)"
 ## Each step's default text: {team} the team at the place (or the person's), {naam} the
 ## person. A mission's `steps:` override any of them.
 const DEFAULTS := {
@@ -49,10 +53,12 @@ const P := ProblemState.Phase
 ## The objective now: the training day's step, else a scene milestone's (the story's
 ## moment waits in its room), else the (first) main mission's, else the board when a
 ## mission waits there; {} when there is nothing to do. During the first day's scene
-## (`layer`, Opening) only the walk behind Ruud has a line.
+## (`layer`, Opening) only the walk behind Ruud has a line; after closing time, home.
 static func of(s: GameSession, layer: SessionLayer = null) -> Dictionary:
 	if layer != null and Opening.running(layer):
 		return {"step": "follow", "text": FOLLOW_TEXT} if layer.opening_beat == Opening.WALK else {}
+	if s.minute_of_day() >= HOME_FROM:
+		return {"step": "home", "text": HOME_TEXT}
 	var leading := s.missions.active("training")
 	leading.append_array(s.missions.active("milestone").filter(func(m: MissionDef) -> bool: return m.goal_type == "scene"))
 	leading.append_array(s.missions.active("main"))

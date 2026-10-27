@@ -205,6 +205,23 @@ func test_without_a_main_mission_the_board_is_the_next_step() -> void:
 	assert_eq(Objective.of(s)["text"], Objective.BOARD_TEXT)
 
 
+## After closing time (the front door's own rule, OfficeHome.HOME_FROM) the line sends you
+## home, by the front door, not to the board in a dark office (UX audit #18).
+func test_after_closing_time_the_objective_is_going_home() -> void:
+	var s := _campaign()
+	s.pass_time(Objective.HOME_FROM - 1 - s.minute_of_day())
+	assert_ne(Objective.of(s).get("step"), "home", "16:59: the work's own step")
+	var working := _text(s)
+	s.pass_time(1)
+	assert_eq(Objective.of(s), {"step": "home", "text": Objective.HOME_TEXT})
+	assert_true(Objective.HOME_TEXT.begins_with("Tijd om naar huis te gaan") and Objective.HOME_TEXT.contains("voordeur"),
+		Objective.HOME_TEXT)
+	assert_eq(OfficeHome.HOME_FROM, Objective.HOME_FROM, "the same rule as the front door")
+	_assert_clean(s, Objective.HOME_TEXT, "home")
+	s.pass_time(SimCalendar.days(1) - 1)   # the next morning, 16:59
+	assert_eq(_text(s), working, "the next day the work's step again")
+
+
 func test_a_side_mission_is_never_the_objective() -> void:
 	var s := _campaign()
 	for id: String in s.missions.progress.keys():
