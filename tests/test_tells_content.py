@@ -85,7 +85,7 @@ def test_an_unknown_tell_is_refused():
 def test_a_tell_that_names_its_problem_is_refused():
     def mutate(docs):
         _problem(docs, "custom_design")["tells"] = [
-            {"tell": "prep_tray", "text": "Het bakje ligt vol: maatwerk voor standaardwerk."}]
+            {"tell": "prep_tray", "text": "Het bakje ligt vol: ontwerpen blijven liggen."}]
     with pytest.raises(bc.ContentError, match="names the problem"):
         _check(mutate)
 
@@ -155,7 +155,7 @@ def test_every_problem_on_the_yard_needs_a_tell():
 
 
 def test_a_problem_needs_a_tell_on_its_own_floor():
-    """Meterkast niet gereed shows on the planners' board upstairs too, but its place is on the
+    """"Voor niks gereden" shows on the planners' board upstairs too, but its place is on the
     yard: a tell only on the 1e leaves the yard silent about it."""
     def mutate(docs):
         _problem(docs, "installer_not_ready")["tells"] = [

@@ -60,7 +60,7 @@
    "id": "incomplete_application",
    "kpi": "capacity",
    "mismatch_note": "Sneller of strenger controleren verandert niets aan wat er binnenkomt. De fout ontstaat in het formulier.",
-   "name": "De onvolledige aanvraag",
+   "name": "Aanvragen gaan terug naar de klant",
    "plausible_causes": [
     "Klanten lezen de instructies niet.",
     "De intakemedewerkers controleren niet zorgvuldig genoeg."
@@ -144,7 +144,7 @@
    "id": "installer_not_ready",
    "kpi": "first_time_right",
    "mismatch_note": "De monteur doet zijn werk goed; het probleem ontstaat bij het plannen, voordat hij rijdt.",
-   "name": "Meterkast niet gereed",
+   "name": "Voor niks gereden",
    "plausible_causes": [
     "De monteurs zijn te laat op locatie.",
     "Klanten zeggen hun afspraak af."
@@ -236,7 +236,7 @@
    "id": "wrong_joint_in_van",
    "kpi": "on_time",
    "mismatch_note": "Het magazijn heeft de moffen wel; ze liggen alleen niet in de bus op het moment dat het nodig is.",
-   "name": "De verkeerde mof in de bus",
+   "name": "Een storing duurt langer dan vier uur",
    "plausible_causes": [
     "De monteurs pakken de verkeerde mof mee.",
     "Het magazijn levert te laat."
@@ -323,7 +323,7 @@
    "id": "custom_design",
    "kpi": "throughput",
    "mismatch_note": "Harder werken of betere software verandert niets aan de hoeveelheid werk per standaardaansluiting.",
-   "name": "Maatwerk voor standaardwerk",
+   "name": "Ontwerpen blijven liggen",
    "plausible_causes": [
     "De werkvoorbereiders werken te langzaam.",
     "De ontwerpsoftware is verouderd."
@@ -474,7 +474,7 @@
    "id": "permits_in_batches",
    "kpi": "lead_time",
    "mismatch_note": "De gemeente is niet het knelpunt; de aanvraag ligt al stil voordat zij hem krijgt.",
-   "name": "Vergunningen in batches",
+   "name": "Dagen stilstand voor de vergunning",
    "plausible_causes": [
     "De gemeente werkt te langzaam.",
     "Het vergunningsportaal is te ingewikkeld."
@@ -734,7 +734,7 @@
    "id": "knowledge_drain",
    "kpi": "on_time",
    "mismatch_note": "Een opleiding alleen leert niet wat alleen in de hoofden van de ervaren monteurs zit.",
-   "name": "De laatste kennisdrager",
+   "name": "Herstel in de oude wijken duurt lang",
    "plausible_causes": [
     "De jonge monteurs zijn onvoldoende opgeleid.",
     "De meetapparatuur is verouderd."
@@ -810,7 +810,7 @@
    "id": "status_callers",
    "kpi": "on_time",
    "mismatch_note": "Meer agents beantwoorden de vragen sneller, maar de vragen blijven komen. Dit is faalvraag.",
-   "name": "De statusbellers",
+   "name": "Klanten hangen in de wacht",
    "plausible_causes": [
     "Het contactcentrum heeft te weinig agents.",
     "Klanten zijn ongeduldig."
@@ -1237,7 +1237,7 @@
    "id": "transformer_wait",
    "kpi": "wip_age",
    "mismatch_note": "De levertijd van de fabrikant kun je niet veranderen. Wanneer je bestelt wel.",
-   "name": "Wachten op de trafo",
+   "name": "Een half jaar wachten in volle straten",
    "plausible_causes": [
     "De fabrikant levert te traag.",
     "Er zijn te weinig monteurs voor netverzwaring."
@@ -1320,7 +1320,7 @@
    "id": "unused_capacity",
    "kpi": "throughput",
    "mismatch_note": "Op papier is het net vol, in werkelijkheid niet. Wie alleen verzwaart, laat de ongebruikte reserveringen liggen.",
-   "name": "Gereserveerd maar ongebruikt",
+   "name": "Ondernemers wachten op transportcapaciteit",
    "plausible_causes": [
     "Het net is gewoon vol; alleen verzwaren helpt.",
     "De congestieonderzoeken rekenen te voorzichtig."
@@ -1399,7 +1399,7 @@
    "id": "planning_reshuffle",
    "kpi": "first_time_right",
    "mismatch_note": "Sneller omplannen bestrijdt het symptoom. Storingen komen elke dag; de planning houdt er geen rekening mee.",
-   "name": "Storing gooit de planning om",
+   "name": "Afspraken die op de dag zelf vervallen",
    "plausible_causes": [
     "Klanten zijn niet flexibel genoeg.",
     "Er zijn te weinig planners."
@@ -1515,7 +1515,7 @@
    "id": "silo_kpis",
    "kpi": "first_time_right",
    "mismatch_note": "Meer overleg of rustiger werken verandert niets zolang elk team op eigen aantallen wordt beoordeeld. De mensen doen precies wat hun cijfers vragen.",
-   "name": "KPI's die elkaar bevechten",
+   "name": "Doelen gehaald, klant wacht nog",
    "plausible_causes": [
     "De afdelingen willen niet samenwerken.",
     "De teams werken te snel; ze moeten gewoon rustiger aan doen.",
@@ -1592,7 +1592,7 @@
    "id": "training_tray",
    "kpi": "capacity",
    "mismatch_note": "Harder of sneller werken haalt het zoeken niet weg. Het zit in hoe het werk binnenkomt, niet in de mensen.",
-   "name": "Twee bakken voor hetzelfde werk",
+   "name": "Waar ligt het volgende dossier?",
    "plausible_causes": [
     "De werkvoorbereiders werken te traag.",
     "Er komen te veel aanvragen tegelijk binnen."
@@ -1756,7 +1756,7 @@
    "id": "overtime_planning",
    "kpi": "on_time",
    "mismatch_note": "Meer mensen of harder werken haalt de kilometers er niet uit. De rit tussen de adressen zit in de planning.",
-   "name": "Overwerk dat in de planning zit",
+   "name": "Overuren, ook in een rustige week",
    "plausible_causes": [
     "De monteurs werken te langzaam.",
     "Er zijn te weinig meterwisselaars."

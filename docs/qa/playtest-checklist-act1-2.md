@@ -61,7 +61,7 @@ The other honest shortcuts, in a game you play yourself:
 ## 1. Act I opens up (after the training week)
 At the mission board (1e, Aansluitingen) and in *Opdrachten* on the phone (Tab):
 - [ ] One main at a time, at most three sides. Did the board ever offer too much at once?
-- [ ] **The fork** after "De stapel bij Werkvoorbereiding": "De onvolledige aanvraag" (Sanne, the bottleneck) and "Meterkast niet gereed" (Marco, not the bottleneck) are offered together.
+- [ ] **The fork** after "De stapel bij Werkvoorbereiding": "Aanvragen gaan terug naar de klant" (Sanne, the bottleneck) and "Voor niks gereden" (Marco, not the bottleneck) are offered together.
   - Which did you pick, and why?
   - Did Marco's pressure make the wrong one feel right?
 - [ ] After the Check on Marco's branch: did the Check show you that fixing a step that is not the bottleneck brings no flow gain? (Known weak: the autoplay finds the gap inside the noise. Look for the note "dit was niet het knelpunt".)
@@ -78,10 +78,10 @@ At the mission board (1e, Aansluitingen) and in *Opdrachten* on the phone (Tab):
   - Useful habit, or a chore?
   - **Your call (§10):** this routine does not take one of the three side slots. That changes a CLAUDE.md rule. Keep it, or count it?
   - Also §10: the round pays no trust (+1 a week could be farmed); its debrief asks whether the agreed way still holds. Fair?
-- [ ] **Sanne's talk** for "De onvolledige aanvraag" (`sanne_checker`): try pressing her once on purpose.
+- [ ] **Sanne's talk** for "Aanvragen gaan terug naar de klant" (`sanne_checker`): try pressing her once on purpose.
   - **Your call (§7, careless and Sanne):** the autoplay bot pressed her 20 times and never got through, which stops the main chain. Should a presser ever get through? Or should the coach ask one question that points at listening?
   - **Kon je voorspellen waarom dit antwoord werkte?** Verdict: houden / herschrijven / anders in beeld (note it in the table at the end).
-- [ ] Mission names: "Maatwerk voor standaardwerk", "De statusbellers" and "De laatste kennisdrager" still name the cause in the A3 and in Notities.
+- [ ] Problem names (Merijn's M3, 2026-10-27): in the A3 and in Notities, "Ontwerpen blijven liggen", "Klanten hangen in de wacht" and "Herstel in de oude wijken duurt lang" read as what you see, never as the cause.
   - **Your call (§7):** rename them after the symptom, like "De stapel bij Werkvoorbereiding"?
 
 ## 2. The phone rings: customer calls
@@ -105,7 +105,7 @@ From "De telefoon staat roodgloeiend" (Esra's main), and again from day 49 in th
 ## 3. The yard (werf), the van ride and the opleidingsterrein
 The yard is behind the kantine's back door (begane grond). It opens with "Een nacht met de storingsdienst" or "Acht adressen" (sides after "Volg het dossier").
 - [ ] **The van ride:** at the van park, E at the monteur's van. You sit in the cab beside them while the edge of town goes by (about 26 s, hold Space to skip, no game time passes). Then a fade, and you stand at the job.
-  - Rides: "Acht adressen" and "Niet thuis" with Sandra Vermeulen; "De verkeerde mof in de bus" with Ahmed; "Henks kennis" with Henk.
+  - Rides: "Acht adressen" and "Niet thuis" with Sandra Vermeulen; "Een storing duurt langer dan vier uur" with Ahmed; "Henks kennis" with Henk.
   - Does the drive feel like going out with someone, or like a loading screen?
   - Is 26 s too long?
 - [ ] **Henk's talk in the cab** ("Henks kennis", `henk_camera`): his face while he speaks, the two of you while you choose. Natural?
@@ -131,7 +131,7 @@ The yard is behind the kantine's back door (begane grond). It opens with "Een na
   - Did any tell feel like it was *telling* you the answer?
 - [ ] **Your call (§10, minor 7)**, read these where they appear (each shows from the middle height up while its problem is open):
   - Netstrategie's tray (2e, "De netstudie-wachtrij"): *"Bovenop de stapel in het bakje ligt een studieaanvraag voor een gewone woning met een warmtepomp."*
-  - The Netverzwaring board (2e, "Wachten op de trafo"): *"Achter de oudste straatnamen op het bord staat in pen: 'trafo nog niet binnen'."*
+  - The Netverzwaring board (2e, "Een half jaar wachten in volle straten"): *"Achter de oudste straatnamen op het bord staat in pen: 'trafo nog niet binnen'."*
   - The storingsbord (yard, werkplaats, while "Henks kennis" runs): *"… en daarachter in hoofdletters: HENK."*
   - Too close to naming the cause? Keep, soften, or cut?
 - [ ] **"Hoe werkt het? 2: de transformator"**:
@@ -161,7 +161,7 @@ E at Ruud ("E — Coach: Ruud"). He is on the 1e until day 100, then in his own 
 - [ ] **Missed:** a short toast (*"Het vriest. In Nova-Oost staat een warmtepomp nog steeds uit."*). Her mother stays with her other daughter, and a letter goes to the directie with a copy to the ACM. It comes back at day 100.
   - Fair? Too soft? Too harsh?
 - [ ] There is no frost in the world (no weather, no season yet). Did you miss it?
-- [ ] **Your call (§10, winter 1's stakes):** her dossier is an incomplete application that loops back to her until "De onvolledige aanvraag" holds. Picking the bottleneck first keeps her warm (the bot: connected on day 56–63); the other branch misses (day 78–81).
+- [ ] **Your call (§10, winter 1's stakes):** her dossier is an incomplete application that loops back to her until "Aanvragen gaan terug naar de klant" holds. Picking the bottleneck first keeps her warm (the bot: connected on day 56–63); the other branch misses (day 78–81).
   - Does that teach the fork, or feel rigged?
 - [ ] **Your call (autoplay backlog 6):** a player who never phones her still keeps the promise if the flow is right. Should the winter also need her fourth call?
 
@@ -183,7 +183,7 @@ The order of the mains:
 1. "Graafschade" (Gert; a containment "Stop en bel" for 14 days)
 2. "De revisieberg" (Mieke)
 3. "De netstudie-wachtrij" (Femke; needs belt 2)
-4. "Wachten op de trafo" (Rob)
+4. "Een half jaar wachten in volle straten" (Rob)
 5. "Twee jaar op de wachtlijst" (Thomas; Ilse calls)
 6. "Twee recordmaanden" (Sanne, Joost, Frank)
 

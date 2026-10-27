@@ -352,7 +352,7 @@ missions:
   # (audit L2): the briefings are symmetric, two team leads with a true
   # number each, and neither names a queue: the player has to count.
   - id: fix_incomplete_application
-    name: De onvolledige aanvraag
+    name: Aanvragen gaan terug naar de klant
     kind: main
     tier: 1
     act: 1
@@ -385,7 +385,7 @@ missions:
         - "Een extra controleur had ook geholpen. Wat was daar over een jaar van over geweest?"
 
   - id: fix_installer_not_ready
-    name: Meterkast niet gereed
+    name: Voor niks gereden
     kind: main
     tier: 1
     act: 1
@@ -672,7 +672,7 @@ missions:
         - "Femke maakte lange dagen. Hoe zie je of dat nu anders is?"
 
   - id: fix_transformer_wait
-    name: Wachten op de trafo
+    name: Een half jaar wachten in volle straten
     kind: main
     tier: 1
     act: 2
@@ -830,7 +830,7 @@ missions:
     rewards: {xp: 200}
 
   - id: fix_wrong_joint
-    name: De verkeerde mof in de bus
+    name: Een storing duurt langer dan vier uur
     kind: side
     tier: 1
     act: 1
@@ -885,7 +885,7 @@ missions:
   # Rewrite (audit S6, correctness L1): a batch at a wait step adds no
   # capacity, but every order waits for it: the lesson is lead time.
   - id: fix_permits_in_batches
-    name: Vergunningen in batches
+    name: Dagen stilstand voor de vergunning
     kind: side
     tier: 1
     act: 1
@@ -1049,7 +1049,7 @@ missions:
     rewards: {xp: 400, budget: 5000}
 
   - id: fix_overtime_planning
-    name: Overwerk dat in de planning zit
+    name: Overuren, ook in een rustige week
     kind: side
     tier: 1
     act: 1

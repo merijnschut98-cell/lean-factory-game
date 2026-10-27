@@ -394,7 +394,7 @@
     "understand": "Waar ontstaat de fout: bij Sanne, of al eerder? Hoe weet je dat?"
    },
    "kind": "main",
-   "name": "De onvolledige aanvraag",
+   "name": "Aanvragen gaan terug naar de klant",
    "reopen": "Bij de Intake gaan weer aanvragen terug naar de klant. Sannes turflijst is terug. Wat is er sinds de vorige keer veranderd?",
    "requires": {
     "missions": [
@@ -450,7 +450,7 @@
     "understand": "Wie weet als eerste dat een meterkast niet klaar is, en wanneer hoort de planner het?"
    },
    "kind": "main",
-   "name": "Meterkast niet gereed",
+   "name": "Voor niks gereden",
    "reopen": "Monteurs staan weer voor meterkasten die niet klaar zijn. Marco belt. Wat is er weggezakt?",
    "requires": {
     "missions": [
@@ -858,7 +858,7 @@
     "understand": "Welke wachttijden lopen nu na elkaar die naast elkaar zouden kunnen?"
    },
    "kind": "main",
-   "name": "Wachten op de trafo",
+   "name": "Een half jaar wachten in volle straten",
    "reopen": "De trafo's worden weer pas besteld als het ontwerp klaar is. Hermans Bouw belt opnieuw. Wat is er in de bestelroute teruggeslopen?",
    "requires": {
     "missions": [
@@ -1090,7 +1090,7 @@
    },
    "id": "fix_wrong_joint",
    "kind": "side",
-   "name": "De verkeerde mof in de bus",
+   "name": "Een storing duurt langer dan vier uur",
    "requires": {
     "missions": [
      "walk_outages"
@@ -1182,7 +1182,7 @@
    },
    "id": "fix_permits_in_batches",
    "kind": "side",
-   "name": "Vergunningen in batches",
+   "name": "Dagen stilstand voor de vergunning",
    "requires": {
     "missions": [
      "fix_custom_design"
@@ -1472,7 +1472,7 @@
    },
    "id": "fix_overtime_planning",
    "kind": "side",
-   "name": "Overwerk dat in de planning zit",
+   "name": "Overuren, ook in een rustige week",
    "requires": {
     "missions": [
      "fix_double_visits"

@@ -610,6 +610,37 @@ def _check_countermeasure(cm: dict, net: dict) -> None:
         _check_effect(e, where, net)
 
 
+_NAME_WORD = 5   # shorter words are function words, never a cause word
+
+
+def _same_stem(a: str, b: str) -> bool:
+    """Two words of a family: "klant" and "klanten", "maatwerk" and "maatwerkontwerp"."""
+    if min(len(a), len(b)) < _NAME_WORD:
+        return False
+    shared = next((i for i, (x, y) in enumerate(zip(a, b)) if x != y), min(len(a), len(b)))
+    return shared >= 6 or shared == min(len(a), len(b))
+
+
+def _check_problem_name(p: dict, where: str, cms: dict) -> None:
+    """The name shows in the A3, the journal and the debriefs, so it says what the player sees
+    and not what causes it (M3, 2026-10-27): no countermeasure name of its own, and no word of
+    its cause bank (root cause, plausible causes, the words of its countermeasure names) that
+    the symptoms do not already show."""
+    name = p["name"].lower()
+    for cm_id in p["countermeasures"]:
+        if cms[cm_id]["name"].lower() in name:
+            raise ContentError(f"{where}: the name {p['name']!r} names countermeasure {cm_id!r}; "
+                               f"a name shows what is seen, never the way out")
+    shown = [w for w in _WORD.findall(" ".join(p["symptoms"]).lower()) if len(w) >= _NAME_WORD]
+    causes = [w for text in [p["root_cause"], *p["plausible_causes"], *(cms[c]["name"] for c in p["countermeasures"])]
+              for w in _WORD.findall(text.lower()) if len(w) >= _NAME_WORD]
+    for word in _WORD.findall(name):
+        if len(word) >= _NAME_WORD and not any(_same_stem(word, s) for s in shown) \
+                and any(_same_stem(word, c) for c in causes):
+            raise ContentError(f"{where}: the name {p['name']!r} names a word of the cause bank ({word!r}) "
+                               f"that the symptoms do not show")
+
+
 def _check_problem(p: dict, where: str, net: dict, cms: dict) -> None:
     if p["step"] not in net["step"]:
         raise ContentError(f"{where}: unknown step {p['step']!r}")
@@ -629,6 +660,7 @@ def _check_problem(p: dict, where: str, net: dict, cms: dict) -> None:
         if cms[cm_id]["multipliers"]["full"] * fit < CHECK_PASS:
             raise ContentError(f"{where}: {cm_id!r} can never pass the Check "
                                f"(full multiplier x fit < {CHECK_PASS})")
+    _check_problem_name(p, where, cms)
     if not any(cms[c]["tier"] <= p["tier"] for c in p["countermeasures"]):
         raise ContentError(f"{where}: no countermeasure that can solve it at its tier")
     if p["tier"] == 1 and not any(cms[c]["budget"] <= DEBT_FUNDED_MINIMUM for c in p["countermeasures"]):

@@ -1,5 +1,5 @@
 extends TestCase
-## De verkeerde mof in de bus (wrong_joint_in_van): the waste is the drive back to the
+## "Een storing duurt langer dan vier uur" (wrong_joint_in_van): the waste is the drive back to the
 ## magazijn for the right joint ("materiaal halen"), a counted trip on outages.repair
 ## (Network.material_trips_since) that the storingsbord, the uitgiftelijst (each trip signs a
 ## second joint out) and the outage KPIs can see, and that the fixes take away.

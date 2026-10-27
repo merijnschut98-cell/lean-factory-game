@@ -262,7 +262,7 @@ CMS_YAML = """countermeasures:
 PROBLEMS_YAML = """problems:
   - id: custom_design
     tier: 1
-    name: Maatwerk voor standaardwerk
+    name: Ontwerpen blijven liggen
     step: connections.design
     waste: overprocessing
     severity: high

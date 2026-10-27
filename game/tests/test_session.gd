@@ -1,6 +1,6 @@
 extends TestCase
 ## GameSession: the one facade the 3D world and the UI call. Real content,
-## real network; the mission "Maatwerk voor standaardwerk" is played end to end.
+## real network; the mission "De stapel bij Werkvoorbereiding" is played end to end.
 
 const MISSION := "fix_custom_design"
 const PROBLEM := "custom_design"
