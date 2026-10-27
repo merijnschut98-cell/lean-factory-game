@@ -11,7 +11,8 @@ extends RefCounted
 const PATH := "user://saves/playtest_log.txt"
 ## The designer's F8 markers (Markdown, handed back after a playtest), beside the log.
 const MARKERS := "user://saves/playtest_markers.md"
-## A marker's own line is cut here, the events under it are the last RECENT of the layer.
+## A marker's own line is cut here (also the limit of the F8 field, MarkerInput); the events
+## under it are the last RECENT of the layer.
 const MARKER_MAX_CHARS := 500
 const MARKER_RECENT := 5
 const _SECTION := "privacy"
@@ -76,9 +77,11 @@ func marker(text: String, s: GameSession, layer: SessionLayer, place := "") -> S
 	return error
 
 
-## Player text on one line that starts no Markdown block (heading, quote, list, code, table).
+## Player text on one line that starts no Markdown block (heading, quote, list, code, table)
+## and holds no HTML tag, fence or strikethrough: \, < and ~ are backslash-escaped.
 static func _one_line(text: String, empty: String) -> String:
 	var line := " ".join(text.replace("\r", "\n").split("\n", false)).replace("\t", " ").strip_edges()
+	line = line.replace("\\", "\\\\").replace("<", "\\<").replace("~", "\\~")
 	if line.is_empty():
 		return empty
 	return "\\" + line if line[0] in "#>-*+`|" else line

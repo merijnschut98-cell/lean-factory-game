@@ -6,9 +6,10 @@ extends Control
 ## thrown away when the talk closes; the summary card shows the route taken (TalkSummary). Esc
 ## leaves the talk for the list, and the list for the designer page. Dutch for the designer, as
 ## the page around it.
-## A replay starts from a fresh world: no team trust, no clues found, the talk's mission active
-## without accept (so none of its set-up ran), and only the default variant of the talk (the
-## preset's facts are the only ones that can pick another).
+## A replay starts from a fresh world, a new game at day 0 (no clues found, nobody's trust
+## raised, no facts, nothing done), with the talk's mission forced active without accept (so
+## none of its set-up ran) and only the default variant of the talk (the preset's facts are
+## the only ones that can pick another).
 
 ## Back to the designer page.
 signal back_requested

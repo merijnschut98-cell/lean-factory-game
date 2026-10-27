@@ -52,9 +52,11 @@ func _run(args: PackedStringArray) -> int:
 	var which := args[0] if args.size() > 0 else "all"
 	var persona := args[1] if args.size() > 1 else DEFAULT_PERSONA
 	var seed_value := int(args[2]) if args.size() > 2 else DEFAULT_SEED
-	var specs := DesignerSaves.SAVES.filter(func(spec: Dictionary) -> bool: return which == "all" or spec["slot"] == which)
+	var specs := DesignerSaves.SAVES.filter(
+		func(spec: Dictionary) -> bool: return which == "all" or spec["slot"] == which)
 	if specs.is_empty():
-		printerr("no designer save %s (%s)" % [which, ", ".join(DesignerSaves.SAVES.map(func(spec: Dictionary) -> String: return spec["slot"]))])
+		var slots := DesignerSaves.SAVES.map(func(spec: Dictionary) -> String: return spec["slot"])
+		printerr("no designer save %s (%s)" % [which, ", ".join(slots)])
 		return 1
 	var failed := false
 	for spec: Dictionary in specs:
