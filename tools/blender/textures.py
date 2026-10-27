@@ -961,9 +961,219 @@ def wayfinding(w=WAYFINDING_SIZE, h=WAYFINDING_SIZE):
     save_img("wayfinding_albedo", img)
 
 
+# --------------------------------------------------------------------------- the street (build_street.py)
+
+def klinkers(n=960):
+    """Red-brown clinker bricks (waalformaat 200 x 100 mm) in 90-degree herringbone, laid on
+    the carriageway; covers 1.2 m (a 12 x 12 grid of 100 mm cells)."""
+    cells = 12
+    px = n // cells
+    ids = np.full((cells, cells), -1)
+    k = 0
+    for a in range(cells):
+        for b in range(cells):
+            phase = (a + b) % 4
+            if phase == 0:
+                members = [(a, b), (a + 1, b)]
+            elif phase == 2:
+                members = [(a, b), (a, b + 1)]
+            else:
+                continue
+            for cx, cy in members:
+                ids[cx % cells, cy % cells] = k
+            k += 1
+    rng = np.random.default_rng(71)
+    palette = [rgb(c) for c in ((142, 74, 56), (126, 66, 52), (150, 92, 68), (112, 70, 58), (136, 82, 62), (98, 66, 56))]
+    tones = np.array([palette[int(rng.integers(0, len(palette)))] * rng.uniform(0.88, 1.08) for _ in range(k)])
+    big = np.repeat(np.repeat(ids, px, 0), px, 1)
+    joint = np.zeros((n, n))
+    for axis in (0, 1):
+        for sh in (1, -1):
+            joint = np.maximum(joint, (big != np.roll(big, sh, axis)).astype(float))
+    blurred = Image.fromarray((joint * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.2))
+    joint = np.clip(np.asarray(blurred, float) / 255 * 1.6, 0, 1)
+    fine = noise(n, 72, beta=0.3)
+    mid = noise(n, 73, beta=2.0)
+    col = tones[big] * (0.92 + 0.1 * fine + 0.1 * mid)[..., None]
+    col = mix(col, rgb((74, 72, 66)), joint)
+    save_rgb("klinkers_albedo", col)
+    save_normal("klinkers", 0.25 * fine + 0.15 * mid - 0.9 * joint, 4.0)
+    save_orm("klinkers", 0.8 + 0.12 * fine)
+
+
+def _bricks(name: str, base, seed: int, n=1040, cols=10, rows=26):
+    """Brick facing in running bond; covers 2 m (about 200 x 77 mm a brick with its joint)."""
+    rng = np.random.default_rng(seed)
+    bh, bw = n // rows, n // cols
+    yy, xx = np.mgrid[0:n, 0:n]
+    row = yy // bh
+    shift = (row % 2) * (bw // 2)
+    key = row * cols + ((xx + shift) % n) // bw
+    tone = rng.uniform(0.86, 1.1, rows * cols)[key]
+    hue = rng.uniform(-8, 8, (rows * cols, 3))[key]
+    joint = ((((xx + shift) % bw) < 3) | ((yy % bh) < 3)).astype(float)
+    joint = np.asarray(Image.fromarray((joint * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(0.8)), float) / 255
+    fine = noise(n, seed + 1, beta=0.4)
+    mid = noise(n, seed + 2, beta=2.0)
+    col = np.clip((rgb(base) * 255 * tone[..., None] + hue) / 255, 0, 1) * (0.9 + 0.12 * fine + 0.08 * mid)[..., None]
+    col = mix(col, rgb((168, 164, 154)), joint)
+    save_rgb(f"{name}_albedo", col)
+    save_normal(name, 0.25 * fine + 0.2 * mid - 0.8 * joint, 4.0)
+    save_orm(name, 0.85 + 0.1 * fine - 0.1 * joint)
+
+
+def brick_red(n=1040):
+    """Red-brown brick facing for the eighties houses; covers 2 m."""
+    _bricks("brick_red", (150, 80, 60), 81, n)
+
+
+def brick_buff(n=1040):
+    """Pale yellow-buff brick facing (the other half of the street's houses); covers 2 m."""
+    _bricks("brick_buff", (196, 170, 120), 85, n)
+
+
+def roof_tiles(n=1024):
+    """Dark anthracite pantiles in courses; covers 2 m (8 pans wide, 6 courses)."""
+    cols, rows = 8, 6
+    yy, xx = np.mgrid[0:n, 0:n]
+    wave = 0.5 + 0.5 * np.sin((xx / n * cols) % 1.0 * 2 * np.pi - np.pi / 2)
+    lap = np.clip((yy / n * rows) % 1.0 * 4.0, 0, 1) ** 0.6   # each course shades from its overlap
+    key = (xx * cols // n) + (yy * rows // n) * cols
+    tone = np.random.default_rng(91).uniform(0.85, 1.12, cols * rows)[key]
+    fine = noise(n, 92, beta=0.4)
+    col = rgb((62, 64, 70)) * ((0.55 + 0.45 * wave) * (0.55 + 0.45 * lap) * tone * (0.92 + 0.14 * fine))[..., None]
+    save_rgb("roof_tiles_albedo", col)
+    save_normal("roof_tiles", 0.6 * wave + 0.2 * lap + 0.1 * fine, 5.0)
+    save_orm("roof_tiles", 0.55 + 0.2 * fine)
+
+
+def hedge(n=512):
+    """Clipped privet hedge: small dark leaves with lighter flecks; covers 2 m."""
+    a = noise(n, 101, beta=0.2)
+    b = noise(n, 102, beta=1.4)
+    c = noise(n, 103, beta=2.6)
+    col = mix(rgb((28, 56, 26)), rgb((78, 118, 46)), np.clip(0.9 * a + 0.5 * b - 0.35, 0, 1))
+    col *= (0.7 + 0.5 * c)[..., None]
+    save_rgb("hedge_albedo", col)
+    save_normal("hedge", 0.6 * a + 0.4 * b, 3.0)
+    save_orm("hedge", 0.9 - 0.1 * a)
+
+
+def water(n=512):
+    """Canal water: dull green-grey with soft ripples; covers 2 m."""
+    a = noise(n, 111, beta=2.2)
+    b = noise(n, 112, beta=1.0, stretch=(3, 1))
+    col = mix(rgb((46, 78, 84)), rgb((82, 112, 116)), np.clip(0.7 * a + 0.5 * b - 0.2, 0, 1))
+    save_rgb("water_albedo", col)
+    save_normal("water", 0.5 * a + 0.5 * b, 2.0)
+    save_orm("water", 0.12 + 0.1 * a)
+
+
+def light_pool(n=128):
+    """A pool of lamplight: white, alpha falling off from the middle (the game draws it additive at night)."""
+    yy, xx = np.mgrid[0:n, 0:n]
+    r = np.hypot(xx - n / 2 + 0.5, yy - n / 2 + 0.5) / (n / 2)
+    alpha = np.clip(1.0 - r, 0, 1) ** 2
+    img = np.concatenate([np.ones((n, n, 3)), alpha[..., None]], -1)
+    Image.fromarray((img * 255 + 0.5).astype(np.uint8), "RGBA").save(OUT / "light_pool_albedo.png", optimize=True)
+
+
+STREET_SIGN_SIZE = 1024
+# pixel boxes (x0, y0, x1, y1), y down, of the street_signs atlas
+_STREET_SIGN_BOXES = {
+    **{f"n{k}": (((k - 1) % 8) * 128, ((k - 1) // 8) * 64, ((k - 1) % 8) * 128 + 128, ((k - 1) // 8) * 64 + 64)
+       for k in range(1, 15)},
+    "zonnestraat": (768, 64, 1024, 128),
+    "klic": (0, 128, 272, 512),
+    "card": (288, 128, 672, 320),
+    "wanneer": (688, 128, 944, 320),
+    "peeters": (288, 336, 800, 464),
+    "papered": (0, 528, 384, 784),
+}
+
+
+def street_sign_rects() -> dict[str, tuple[float, float, float, float]]:
+    """(u0, v0, u1, v1), v up, of every sign in the street_signs atlas: n1..n14 (house
+    numbers), zonnestraat, klic, card, wanneer, peeters, papered. build_street.py shares it."""
+    s = STREET_SIGN_SIZE
+    return {k: (x0 / s, 1 - y1 / s, x1 / s, 1 - y0 / s) for k, (x0, y0, x1, y1) in _STREET_SIGN_BOXES.items()}
+
+
+def street_signs(n=STREET_SIGN_SIZE):
+    """House number plates, the street name sign, the KLIC printout, the 'helaas niet thuis'
+    card, a hand-written WANNEER? note, the Grondwerk Peeters van livery and a papered-over shop window."""
+    img = Image.new("RGB", (n, n), (255, 255, 255))
+    d = ImageDraw.Draw(img)
+    rng = np.random.default_rng(121)
+    for k in range(1, 15):   # white enamel plates, black digits
+        x0, y0, x1, y1 = _STREET_SIGN_BOXES[f"n{k}"]
+        d.rectangle([x0, y0, x1 - 1, y1 - 1], fill=(248, 248, 244), outline=(30, 34, 44), width=3)
+        f = _font(46, bold=True)
+        d.text((x0 + (128 - d.textlength(str(k), font=f)) / 2, y0 + 5), str(k), font=f, fill=(20, 22, 28))
+    x0, y0, x1, y1 = _STREET_SIGN_BOXES["zonnestraat"]
+    d.rectangle([x0, y0, x1 - 1, y1 - 1], fill=(18, 62, 128))
+    d.rectangle([x0 + 3, y0 + 3, x1 - 4, y1 - 4], outline=(240, 240, 240), width=2)
+    f = fit_font(d, "Zonnestraat", 220, 40)
+    d.text((x0 + (256 - d.textlength("Zonnestraat", font=f)) / 2, y0 + 10), "Zonnestraat", font=f, fill=(250, 250, 250))
+    # the KLIC printout: a map extract with the cables in colours (red electricity, orange data, green water)
+    x0, y0, x1, y1 = _STREET_SIGN_BOXES["klic"]
+    d.rectangle([x0, y0, x1 - 1, y1 - 1], fill=(250, 250, 246), outline=(120, 120, 120))
+    d.text((x0 + 10, y0 + 8), "KLIC-melding", font=_font(22, bold=True), fill=(20, 20, 28))
+    d.text((x0 + 10, y0 + 38), "Zonnestraat, Nova-Oost", font=_font(14), fill=(70, 70, 80))
+    mx0, my0, mx1, my1 = x0 + 10, y0 + 64, x1 - 11, y1 - 60
+    d.rectangle([mx0, my0, mx1, my1], fill=(236, 238, 232), outline=(150, 150, 150))
+    mid_y = (my0 + my1) // 2 - 8
+    d.line([(mx0, mid_y), (mx1, mid_y)], fill=(150, 150, 150), width=18)
+    d.line([(mx0, mid_y), (mx1, mid_y)], fill=(246, 246, 240), width=2)
+    for yy_, c in ((my0 + 40, (206, 40, 36)), (my0 + 62, (206, 40, 36)), (my1 - 40, (240, 150, 30)),
+                   (my1 - 62, (60, 140, 70))):
+        d.line([(mx0 + 4, yy_), (mx1 - 4, yy_ + int(rng.integers(-6, 7)))], fill=c, width=3)
+    for i in range(6):
+        bx = mx0 + 10 + i * 40
+        d.rectangle([bx, my0 + 6, bx + 28, my0 + 26], fill=(210, 206, 196), outline=(150, 150, 150))
+    for yy_ in range(y1 - 52, y1 - 10, 12):
+        d.line([(x0 + 10, yy_), (x1 - 12 - int(rng.integers(0, 60)), yy_)], fill=(90, 90, 100), width=2)
+    # the 'helaas niet thuis' card (a visit card posted through a door)
+    x0, y0, x1, y1 = _STREET_SIGN_BOXES["card"]
+    d.rectangle([x0, y0, x1 - 1, y1 - 1], fill=(246, 240, 214), outline=(180, 170, 130))
+    d.rectangle([x0, y0, x1 - 1, y0 + 44], fill=VOLTANA_BLUE)
+    d.text((x0 + 14, y0 + 8), "Voltana Netbeheer", font=_font(26, bold=True), fill=(255, 255, 255))
+    f = fit_font(d, "Helaas, u was niet thuis", 340, 34)
+    d.text((x0 + 16, y0 + 62), "Helaas, u was niet thuis", font=f, fill=(30, 30, 40))
+    d.text((x0 + 16, y0 + 112), "Wij komen graag terug.", font=_font(22), fill=(60, 60, 70))
+    d.line([(x0 + 16, y0 + 168), (x0 + 250, y0 + 168)], fill=(120, 120, 130), width=1)
+    # a WANNEER? note, marker on paper
+    x0, y0, x1, y1 = _STREET_SIGN_BOXES["wanneer"]
+    d.rectangle([x0, y0, x1 - 1, y1 - 1], fill=(250, 246, 226), outline=(200, 196, 170))
+    f = fit_font(d, "WANNEER?", 230, 52)
+    d.text((x0 + 14, y0 + 62), "WANNEER?", font=f, fill=(190, 30, 30))
+    d.line([(x0 + 14, y0 + 130), (x0 + 220, y0 + 124)], fill=(190, 30, 30), width=4)
+    # the Grondwerk Peeters livery: yellow with black type
+    x0, y0, x1, y1 = _STREET_SIGN_BOXES["peeters"]
+    d.rectangle([x0, y0, x1 - 1, y1 - 1], fill=(242, 196, 28))
+    d.rectangle([x0, y1 - 22, x1 - 1, y1 - 1], fill=(30, 30, 34))
+    f = fit_font(d, "Grondwerk Peeters", 470, 64)
+    d.text((x0 + (512 - d.textlength("Grondwerk Peeters", font=f)) / 2, y0 + 22), "Grondwerk Peeters", font=f, fill=(24, 24, 28))
+    d.text((x0 + 150, y0 + 88), "graven  ·  leggen  ·  herstraten", font=_font(18), fill=(40, 40, 44))
+    # a shop window papered over from inside: sheets of paper and newsprint, taped
+    x0, y0, x1, y1 = _STREET_SIGN_BOXES["papered"]
+    d.rectangle([x0, y0, x1 - 1, y1 - 1], fill=(226, 222, 208))
+    for col in range(4):
+        for row in range(3):
+            sx, sy = x0 + col * 96, y0 + row * 85
+            t = int(rng.integers(214, 246))
+            d.rectangle([sx + 2, sy + 2, sx + 94, sy + 83], fill=(t, t - 3, t - 14), outline=(170, 166, 150))
+            for ln in range(int(rng.integers(0, 7))):
+                ly = sy + 10 + ln * 10
+                d.line([(sx + 8, ly), (sx + 86 - int(rng.integers(0, 30)), ly)], fill=(150, 148, 140), width=1)
+            d.rectangle([sx + 36, sy - 2, sx + 62, sy + 8], fill=(232, 224, 190))   # tape
+    save_img("street_signs_albedo", img)
+
+
 GENERATORS = {f.__name__: f for f in (carpet, ceiling, wood, plaster, concrete, paving, grass, metal,
                                        fabric, glass, obeya, missions, signage, screens, dossier,
-                                       devices, leaves, trees, posters, wayfinding)}
+                                       devices, leaves, trees, posters, wayfinding, klinkers, brick_red,
+                                       brick_buff, roof_tiles, hedge, water, light_pool, street_signs)}
 
 
 def main(names: list[str]) -> None:
