@@ -213,15 +213,7 @@
 
 # Slice 3.2 — *De straat* (spec §4)
 
-**Task 3.2-A The street script** · Files: `content/town.yaml` (segments, lots, props for one 120 m street in Nova-Oost; validated), `tools/blender/build_street.py` (from the graph: road, pavements, twelve house shells with doors and meterkast panels, the bakery corner, the trafohuisje, the trench with cones and a KLIC board, vans, hedges, the canal edge; CC0 textures from the approved sources only; day lightmap; `--night` for a second bake or a runtime dim decided by a spike), `game/assets/town/street.glb`. Tests: `tests/test_town_content.py` (every lot a house, bakery or trafohuisje; the El Amrani lot named), a glb node-name test. Exit: `play_shot` states `street_day`, `street_evening`, `street_night` looked at.
-
-**Task 3.2-B Getting there** · Files: `content/world.yaml` (`rides:` gains `street`), `van_ride.gd` (ends at the kerb; the return ride), `map_app.gd` (a *Nova* page), `minimap.gd` (street mode), `office.gd`/`office_building.gd` (the street as a floor-like area: nav, people, tells). Tests: `test_street_travel.gd` (ride → player on the street; back → the yard). Exit: a screenshot of the arrival.
-
-**Task 3.2-C Missions onto the street** · Files: `missions.yaml` (`fix_not_at_home`: the bell and the note; `fix_digging_damage`: Gert at the trench, containment there), `scenes.yaml` (the El Amrani payoff at the door, kept and missed variants), `world.yaml` (street tells: the flickering lamp, the dug-up pavement, the "wanneer?" note), `office_tells.gd` (street readings), `build_content.py` (`check_tells` for the street), the trafohuisje place moved from the mock-up (the mock-up stays for Henk). Tests: `test_street_missions.gd`, the spoiler check on the new texts. Exit: Merijn's slice question.
-
-**Task 3.2-D People on the street** · Files: `cast.json` (three residents, Gert; `day:` schedules), `office_people.gd` (the street's spots). Tests: `test_office_people.gd` extended.
-
-**Slice 3.2 exit:** Merijn drives there from `designer_day045`, meets Gert, rings the bell; "voelde de buitenwereld als onderdeel van het bedrijf?"; frame time ≥ 30 fps on the reference machine; code review.
+Detailed to the step in `docs/superpowers/plans/2026-10-27-phase3-slice32-straat.md` (Tasks 1–14: 3.2-A1–A4, B1–B2, C1–C6, D, E; Task 13, El Amrani's missed-winter door, waits for Merijn's M2).
 
 ---
 
