@@ -94,6 +94,40 @@ func test_a_ring_shows_only_near_or_hovered_and_never_under_a_panel() -> void:
 	_close(office)
 
 
+## One thing at a time (UX audit #9): a ringing call, a scene or a panel quiets the prompt,
+## the controls, the toasts and what people say; under a panel or a scene the objective
+## line steps aside too, but a call leaves it.
+func test_a_call_a_scene_or_a_panel_quiets_the_other_layers() -> void:
+	var office := _office()
+	var hud := office.ui.hud
+	var anouk := office.people.person("anouk")
+	var layers := func() -> Array: return [hud.prompt_label.visible, hud.help_label.visible, hud.toast_texts().size() > 0 and hud._toasts.visible]
+	hud.toast("Iets nieuws")
+	hud.show_prompt("E — Werkvoorbereiding & ontwerp")
+	office.quiet_layers()
+	assert_eq(layers.call(), [true, true, true], "the world free: all there")
+	assert_true(hud.objective_label.visible)
+	office.ui.incoming.visible = true   # a call rings
+	anouk.say("Hoi!")
+	office.quiet_layers()
+	assert_eq(layers.call(), [false, false, false], "a call: prompt, controls and toasts step aside")
+	assert_false(anouk.saying(), "and the greeting bubble")
+	assert_true(hud.objective_label.visible, "the objective stays during a call")
+	office.ui.incoming.visible = false
+	office.quiet_layers()
+	assert_eq(layers.call(), [true, true, true], "back once the call is gone")
+	office.hold_for_scene(true)
+	office.quiet_layers()
+	assert_eq(layers.call(), [false, false, false], "a scene")
+	assert_false(hud.objective_label.visible, "no objective under a scene")
+	office.hold_for_scene(false)
+	office.interact(office.interactable("mission_board"))
+	office.quiet_layers()
+	assert_eq(layers.call(), [false, false, false], "a panel")
+	assert_false(hud.objective_label.visible, "no objective under a panel")
+	_close(office)
+
+
 func test_the_player_starts_at_the_spawn_point() -> void:
 	var office := _office()
 	var spawn := office.find_marker("spawn")

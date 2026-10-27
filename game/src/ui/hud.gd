@@ -7,8 +7,10 @@ extends Control
 ## the next step, never a mission title), the interaction prompt, the controls,
 ## and short messages (toasts, bottom right) when something happens. Whatever
 ## stays a while (Ruud's notes, a debrief, new concepts) is on the phone
-## (Phone), never a card over the world. It is drawn over the panels; the
-## toasts hide while one is open.
+## (Phone), never a card over the world. It is drawn over the panels; one thing
+## at a time (UX audit #9): while a panel, view or scene holds the world, or a
+## call rings, the prompt, the controls and the toasts step aside (hold), and
+## the objective line too under a panel, view or scene.
 
 const TOAST_SECONDS := 7.0
 const MAX_TOASTS := 4
@@ -46,6 +48,9 @@ var _talking := false
 ## A panel is open over the world (show_overlay): the objective line steps aside, so it
 ## never covers the panel's title (a tall one reaches the top bar; PLAN 2.10 S3-D).
 var _panel_open := false
+## Something over the world (hold): a panel, a view or a scene; a call ringing.
+var _held_world := false
+var _held_call := false
 ## Which element may show (Opening.hud: the first day reveals them one at a
 ## time); everything when not set.
 var revealed: Dictionary = {}
@@ -193,10 +198,8 @@ func _apply_reveal() -> void:
 	clock_label.visible = may_show("clock")
 	budget_label.visible = may_show("budget") and not _talking
 	xp_label.visible = may_show("xp") and not _talking
-	objective_label.visible = _objective_shown()
 	phone_label.visible = may_show("phone") and not _talking
-	if not may_show("controls"):
-		help_label.visible = false
+	_apply_layers()
 
 
 func controls_text() -> String:
@@ -207,8 +210,8 @@ func controls_text() -> String:
 ## The objective line shows from its moment (Opening.hud "mission"; the first day's
 ## walk behind Ruud before it), never in a talk, over a panel or while a scene speaks.
 func _objective_shown() -> bool:
-	return not objective_label.text.is_empty() and not _talking and not _panel_open and not _scene_running() \
-		and (may_show("mission") or _objective.get("step") == "follow")
+	return not objective_label.text.is_empty() and not _talking and not _panel_open and not _held_world \
+		and not _scene_running() and (may_show("mission") or _objective.get("step") == "follow")
 
 
 ## A scene's lines, question or paper are up (SceneLines, a child of the HUD).
@@ -234,8 +237,25 @@ func set_talking(on: bool) -> void:
 ## The toasts, the controls line and the objective line; hidden while a panel is open.
 func show_overlay(on: bool) -> void:
 	_panel_open = not on
-	help_label.visible = on and may_show("controls")
-	_toasts.visible = on
+	_apply_layers()
+
+
+## What holds the player now (Office.quiet_layers): `world` a panel, view or scene; `call` a
+## call ringing. Either quiets the prompt, the controls and the toasts.
+func hold(world: bool, call: bool) -> void:
+	if world == _held_world and call == _held_call:
+		return
+	_held_world = world
+	_held_call = call
+	_apply_layers()
+
+
+## The prompt, the controls, the toasts and the objective line as what is open allows.
+func _apply_layers() -> void:
+	var quiet := _panel_open or _held_world or _held_call
+	help_label.visible = not quiet and may_show("controls")
+	_toasts.visible = not quiet
+	prompt_label.visible = not quiet and not prompt_label.text.is_empty()
 	objective_label.visible = _objective_shown()
 
 
@@ -265,10 +285,10 @@ func _process(_delta: float) -> void:
 	objective_label.visible = _objective_shown()
 
 
-## "" hides the prompt.
+## "" hides the prompt; so does anything holding the player (hold).
 func show_prompt(text: String) -> void:
 	prompt_label.text = text
-	prompt_label.visible = not text.is_empty()
+	_apply_layers()
 
 
 func toast(text: String) -> void:

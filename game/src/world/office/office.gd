@@ -265,6 +265,20 @@ func _process(delta: float) -> void:
 				tagged.append(p)
 	people.show_tags(tagged)
 	fade_rings(delta)
+	quiet_layers()
+
+
+## One thing at a time (UX audit #9): while a panel, view or scene holds the world, or a
+## call rings, the HUD's prompt, controls and toasts step aside (Hud.hold) and nobody's
+## greeting floats over it.
+func quiet_layers() -> void:
+	var held := not world_free()
+	var ringing := ui.incoming != null and ui.incoming.visible
+	ui.hud.hold(held, ringing)
+	if (held or ringing) and people != null:
+		for p: OfficePerson in people.people:
+			if p.saying():
+				p.say("")
 
 
 ## The rings near the player or under the cursor fade in, the rest out; none while a panel,
