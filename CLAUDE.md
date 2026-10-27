@@ -56,7 +56,7 @@ If the missions are weak, the game is weak. Every mission must:
 
 ### Rules
 - **Progressive RPG through missions.** The player advances by completing missions. New and harder missions unlock as the player progresses; nothing is open from the start.
-- **One main quest, at most three side quests.** Never more than one main mission active at once, and at most three side missions. Side missions are small.
+- **One main quest, at most three side quests.** Never more than one main mission active at once, and at most three side missions. Side missions are small. A leader routine (a recurring side such as the weekly gemba round) takes no side slot (Merijn, 2026-10-27): dropping a sustaining habit to take on a new problem is the opposite of the lesson.
 - **Problems only arrive through missions.** The player never faces a list of problems to choose from: what is wrong right now is the active main mission's problem and at most three side missions' problems. Nothing else may switch a problem on (a fix that fades comes back through its mission).
 - **Sometimes the main quest forks.** Two main missions open at once: one tackles the bottleneck, the other a non-bottleneck problem. The player has to think and prioritise; the Check shows that fixing a non-bottleneck brings no flow gain. Use forks now and then, not everywhere.
 - **A senior manager is the coach.** The player can talk to the coach for insight. The coach mostly answers with a question (Toyota Kata style: target, actual condition, obstacles, next experiment, what did you learn), rarely with an answer.

@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-26-phase3-design.md` §4 *De straat* (binding), with §1 (Merijn's decisions: decision 3, "one real street") and §6 (the gate: "frame time on the street ≥ 30 fps on the reference machine"). The parent plan is `docs/superpowers/plans/2026-10-26-phase3-voelbaar.md`; its Global Constraints are copied below verbatim.
 
-**Who builds it:** spec §4 "One agent owns it for the whole phase; a plain look lands before a late one." One implementer takes Tasks 1–14 in order; each task lands alone through the gate (`scratchpad/gate`, `g.sh`, `land.sh`). Task 13 waits for Merijn.
+**Who builds it:** spec §4 "One agent owns it for the whole phase; a plain look lands before a late one." One implementer takes Tasks 1–14 in order; each task lands alone through the gate (`scratchpad/gate`, `g.sh`, `land.sh`). Task 13 builds shape A: Merijn decided M2 on 2026-10-27 — a missed winter closes her door for good.
 
 ## Global Constraints
 
@@ -57,7 +57,7 @@ Slice 3.2 adds:
 8. **The letter becomes the doorstep.** `winter_el_amrani`'s `by: letter` payoff entry is removed; its words, rewritten as speech, are her doorstep beats. Her phone call stays. Every player passes the street again in Act II (`fix_digging_damage` is a main), so nobody loses the thanks.
 9. **The trafohuisje explainer's ring moves to the street**; the mock-up on the opleidingsterrein keeps its geometry for Henk and loses its ring.
 10. **Residents are not talked to with E**; you ring their bell. Their phone talks (El Amrani's calls) stay calls and never point the minimap at the street.
-11. **The missed winter's door is Task 13, waiting for Merijn** (decision-day pack row M2). Until then a missed winter leaves house 9 like its neighbours with no bell offered: no claim either way.
+11. **The missed winter's door is Task 13, shape A** (Merijn, 2026-10-27, pack row M2: closed for good): house 9 stays dark, nobody opens, and a permanent fact records it for later acts.
 
 ## Review Focus
 
@@ -643,7 +643,7 @@ func test_missed_is_neutral_until_m2() -> void:                 # replaced by Ta
 
 **Shape A, "for good":** `state()` is unchanged. Door key `missed: []`. In `MISSED` house 9's `windows_lit` part stays dark at every hour, the curtains are drawn (a `curtains_9` node from `build_street.py`), `bell:9` is offered and rings with no answer and no line; nothing on the street ever changes it; Act IV's daughter thread reads the existing `flag:el_amrani_cold_winter` (no new fact). Tests: `test_missed_house_is_dark_and_nobody_opens`, `test_a_late_connection_does_not_open_the_door`.
 
-**Shape B, "a later door":** `state()` gains `const LATE := "late"`: `MISSED` becomes `LATE` once the followed order is delivered after the deadline (`delivered:el_amrani` known and `failed(MISSION)`). Door keys `missed: []` (dark and closed, as A, until then) and `late: [beats]` (cooler and short: her mother came home, no thanks to the player); the heat pump hums from `LATE`. The story order must still deliver after day 70 (`game/src/rules/followed_order.gd`; check that it does, add the path if not). Tests: `test_missed_house_is_dark_until_a_late_connection`, `test_a_late_connection_opens_the_door_with_the_late_lines`.
+**Shape B was not chosen** (Merijn, 2026-10-27: closed for good). Build shape A only.
 
 - [ ] **Step 1:** Write the failing tests of the chosen shape.
 - [ ] **Step 2:** Run, expect FAIL.
