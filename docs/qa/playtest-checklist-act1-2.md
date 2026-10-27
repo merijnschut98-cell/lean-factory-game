@@ -198,10 +198,8 @@ Sides: "De zwijgende meter", "Omvormers die afschakelen" (Wim).
   - Wim is not a customer, so he never rings; an expert who is a customer rings unasked at most once a week, and only while a topic serves an active mission. Should Wim be reachable by phone?
   - **Kon je voorspellen waarom dit antwoord werkte?** Verdict: houden / herschrijven / anders in beeld (note it in the table at the end).
 - [ ] Femke and Ilse can now be won by listening (QA (e)). Try it.
-- [ ] **Your call (§7, Act II fork and deadline):** after the act, Act II has neither a fork nor a deadline. Claude's proposal:
-  - no fork here; plan one in Act III;
-  - one deadline: digging damage before the winter, where the cheap contractor briefing is the door that closes.
-  - Did Act II feel flatter than Act I without them?
+- [ ] **Built (§7, M1, your answer 2026-10-27):** Act II has no fork and one deadline. "Graafschade"'s briefing names the clock (Gert: the first real frost, around 21 December 2027, the aannemers write their spring bestekken). Missing it closes the cheap contractor briefing, never the problem. The clock is the *next* winter's, because winter 1's frost (day 70) has begun when Act II opens for a player who plays in order.
+  - Did the clock in the briefing read as a deadline, a year ahead? Did Act II still feel flatter than Act I without a fork?
 - [ ] **Your call (§7, maturity rule):** the rule offers fixes at most one tier above where you are. That conflicts with the designed failed Checks, which assumed tier 3 works weakly in Act I; the content was changed (EAN registration is tier 2), not the rule. Did a fix you wanted never show up?
 
 ## 9. Het eerste kwartaal: the KPI board

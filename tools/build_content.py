@@ -935,7 +935,7 @@ def validate_missions(doc: Any, source: str) -> None:
             _number(m, "deadline_days", where, 1, integer=True)
             _require_strings(m, ["fail"], where)
         fail_closes = _string_list(m, "fail_closes", where)
-        if fail_closes and "deadline_days" not in m:
+        if fail_closes and "deadline_days" not in m and "deadline_on_day" not in m:
             raise ContentError(f"{where}: 'fail_closes' needs a deadline")
         _validate_milestone(m, where)
         _validate_deadline_beat(m, where, beats)

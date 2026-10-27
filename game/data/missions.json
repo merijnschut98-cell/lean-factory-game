@@ -669,7 +669,7 @@
   },
   {
    "act": 2,
-   "briefing": "Dinsdag 10.12 uur: een graafmachine raakt een middenspanningskabel. Driehonderd huizen en zorgcentrum De Linde zitten zonder stroom; De Linde draait op het noodaggregaat. Gert Peeters (uitvoerder, Grondwerk Peeters) laat zijn KLIC-melding zien: 'Volgens deze kaart lag hier niks.' Het is de vijfde graafschade deze week. Elke schade kost ons geld, en na vier uur krijgt elke getroffen klant een vergoeding.",
+   "briefing": "Dinsdag 10.12 uur: een graafmachine raakt een middenspanningskabel. Driehonderd huizen en zorgcentrum De Linde zitten zonder stroom; De Linde draait op het noodaggregaat. Gert Peeters (uitvoerder, Grondwerk Peeters) laat zijn KLIC-melding zien: 'Volgens deze kaart lag hier niks.' Het is de vijfde graafschade deze week. Elke schade kost ons geld, en na vier uur krijgt elke getroffen klant een vergoeding. Gert kijkt in zijn agenda: 'Met de eerste echte vorst, rond 21 december 2027, ligt het graafwerk stil. Dan schrijven de aannemers hun bestekken voor het voorjaar. Wat daar dan niet in staat, verandert tot de zomer niet meer.'",
    "chapter": "De kaart klopt niet",
    "containment": {
     "budget": 500,
@@ -683,11 +683,16 @@
     ],
     "name": "Stop en bel: niet graven bij MS-kabels zonder monteur"
    },
+   "deadline_on_day": 435,
    "debrief": "Er zijn minder graafschades. Bij de Check konden de monteurs zonder je aanpak {kpi_before} storingen per week aan, met je aanpak {kpi_after}. Gert deed alles volgens het boekje; de oorzaak zat in ons proces. Maar de kaart klopt nog steeds niet overal. Wie houdt de kaart eigenlijk bij?",
    "debrief_variants": {
     "blamed": "De schades zijn minder. Gert werkt mee, maar hij vertelt je niets meer dan nodig. Wie houdt de kaart eigenlijk bij?",
     "too_early": "Je verwachtte minder graafschade, omdat de kaart beter zou worden. De Check laat zien: nauwelijks minder. Over de kaart had je wel gelijk. Wat Revisie vanaf nu intekent, klopt. Maar de oude afwijkingen liggen er nog allemaal, en de aannemer die volgende week graaft, graaft op de kaart van vorig jaar. Wat maakt het graven deze week al veiliger, terwijl de kaart wordt rechtgezet?\n\nGert: \"Een goede kaart is mooi. Maar volgende week staat mijn ploeg weer te graven. Waar kijken we dan op?\""
    },
+   "fail": "Het heeft gevroren en het graafwerk ligt stil. De aannemers hebben hun bestekken voor het voorjaar geschreven, op de kaart van nu. Gert: 'Daar kan ik nu niks meer aan veranderen. Dit voorjaar graven ze zoals ze nu gewend zijn.' De snelle weg is dicht.",
+   "fail_closes": [
+    "contractor_briefing"
+   ],
    "goal": {
     "problem": "digging_damage",
     "type": "solve"
