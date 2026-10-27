@@ -187,27 +187,9 @@
 
 ---
 
-# Slice 3.1 — *Mensen* (spec §3; Opus details each task when 3.0's exit is met)
+# Slice 3.1 — *Mensen* (spec §3)
 
-**Task 3.1-A Strain** · Files: `game/src/rules/people.gd` (`PersonState.strain(team) -> float`, 0–1 from load above norm, morale and `pressured:` facts in the last 30 days; the formula and its estimates documented in the function's doc comment), `office_day.gd` (`late_until` from strain: ≥ 0.6 → 18:30, fading within 14 days of a holding fix), `office_person.gd` (posture clip by strain band), `content/dialogs.yaml` `chatter:` (a `strain:` condition), `office_people.gd` (absence: strain > 0.8 for 21 days → one sick day a week, the desk empty, capacity via the `People.left`-for-a-day path). Tests: `test_strain.gd` (holding fix → Anouk home at 17:00 within 14 days; slipped → 18:30 returns; every reading traces to a simulation value: no literal thresholds outside `PersonState`). Exit: screenshots at 17:30 before and after a holding fix.
-
-**Task 3.1-B Career content** · Files: `content/career.yaml` (steps: id, title, conditions `{held_fixes: N, team_trust: T, nobody_left: true, no_pressure_days: 90, customer_moved: {kpi, by}}`, review dates `{after_winter: 1}` / `{after_act: 2}`, salary estimate), `tools/build_content.py` (validator: three steps, each condition names a real KPI or fact kind; `DEBT`-style cross-check of the thresholds against `tests/`), `game/src/rules/career.gd` (`Career.next_step(s) -> Dictionary`, `Career.conditions_met(s, step) -> Array[Dictionary]` with `{id, met, text}`). Tests: `tests/test_career_content.py`, `test_career.gd`.
-
-**Task 3.1-C The review talk** · Files: `game/src/rules/dialog.gd` (kind `review`: Frank and Ruud, no meters, the three conditions read from `Career.conditions_met`, a refusal line names the first unmet one and the next review date), `content/dialogs.yaml` (`review_senior`, `review_manager`), `missions.yaml` (milestones `review_year_end`, `review_after_act2`, kind milestone, `opens_on`), the MT-room scene. Tests: `test_review_talk.gd` (met → promoted, title changes in `company.yaml` runtime copy; unmet → refusal names the condition; a second review later). Exit: the promotion scene screenshot.
-
-**Task 3.1-D Colleagues step up** · Files: `content/career.yaml` (`colleagues:` Anouk/Ahmed/Sanne with their fact triggers), `game/src/rules/career.gd` (`Career.colleague_promotions(s) -> Array[String]` evaluated at dagstart), `content/scenes.yaml` (the coffee-corner scene per person: cake, Ruud's two sentences, their one), `company.yaml` title updates at runtime (`Company.promote(id, title)`), greetings variants. Tests: `test_colleague_promotion.gd` (the talker persona's run promotes Anouk by day N; never-talks' does not). Exit: autoplay confirms.
-
-**Task 3.1-E Ruud comments** · Files: `content/dialogs.yaml` (`coach_comments:` three triggers × 3 variants), `game/src/rules/coach.gd` (`Coach.comment_due(s) -> Dictionary` reading `holds:`/`slipping:` facts and the month boundary), `game_ui.gd` (in-passing line when Ruud is met; Berichten note after 3 days). Tests: `test_coach_comments.gd`; `BANNED_SPOKEN` and the style guide on every line. Rule: never the number.
-
-**Task 3.1-F The monthly figures** · Files: `content/scenes.yaml` (`monthly_figures`: Frank at the board, four tiles, Ruud's sentence), `game/src/rules/missions.gd` (a recurring milestone on the first working day from day 100, no slot), `office_kpi_board.gd` (the board shows the month). Tests: `test_monthly_figures.gd` (fires once a month from day 100; skippable; missing it costs nothing).
-
-**Task 3.1-G The Voltana and Ik apps** · Files: `game/src/ui/phone/company_app.gd`, `ik_app.gd`, `game/src/rules/company_view.gd` (`CompanyView.tiles(s) -> Array[Dictionary]` with the four tiles' numbers, trend since start, 12 monthly samples kept in `SessionLayer.monthly: Array[Dictionary]`, and "what moved it" from the Check facts), `phone.gd` (two icons). Tests: `test_company_view.gd` (every tile number equals the simulation's; the same values Frank says in 3.1-F), `test_phone.gd` extended. Exit: screenshots of both apps.
-
-**Task 3.1-H The Acts I–II talk rewrite** · Files: `docs/superpowers/specs/2026-10-xx-voice-sheets.md` (one sheet per recurring person, written first), `content/dialogs.yaml` (lines only; routes unchanged unless a verdict says "anders in beeld"), the coach's listening question after N ruined tries for `sanne_checker`, `linda_replanning`, `marco_wasted_trips` (`Coach.listening_hint(dialog_id)`, main quest only), `tests/test_dialog_content.py` (the §2.6 limits enforced). Tests: route check ratchet unchanged or tighter; `test_dialog_routes.gd`. Exit: Merijn's verdict table all "houden".
-
-**Task 3.1-I Wire `agreed_kpis`** · Files: `people.gd` → `kpi_board.gd` (the KPIs a person committed to in a talk appear on the board's next review). Tests: `test_kpi_board.gd` extended.
-
-**Slice 3.1 exit:** Merijn plays `designer_day045` → day 110 and answers "zag ik iemand veranderen door wat ik deed?"; autoplay Acts 0–II, five personas: the talker's colleagues promoted, never-talks' not; code review.
+Detailed in `docs/superpowers/plans/2026-10-27-phase3-slice31-mensen.md` (tasks 3.1-A–G and I to the step; 3.1-H stays task-level there until Merijn's per-talk verdicts).
 
 ---
 
