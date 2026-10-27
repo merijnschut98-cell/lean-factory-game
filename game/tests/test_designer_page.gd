@@ -103,12 +103,37 @@ func test_pick_of_a_missing_save_says_so_and_starts_nothing() -> void:
 	menu.open_designer()
 	var asked: Array[String] = []
 	menu.start_requested.connect(func(slot: String) -> void: asked.append(slot))
+	expect_error("no designer save")  # the English cause goes to the log
 	var error: String = menu.designer.pick("designer_nope")
 	assert_false(error.is_empty())
-	assert_true(shows(menu, error), "the error shows on the page")
+	assert_true(shows(menu, DesignerPage.START_FAILED), "the page says it in Dutch")
+	assert_false(shows(menu, error), "the English cause stays in the log")
 	assert_eq(asked, [])
 	assert_false(SaveFile.exists(GameSave.AUTOSAVE, saves_dir))
 	menu.free()
+	_cleanup()
+
+
+## Every string the page shows goes through tr(): with a translation the card's label and its
+## info line change, not only the buttons.
+func test_the_cards_texts_go_through_tr() -> void:
+	_save("designer_day045", 45)
+	var translation := Translation.new()
+	translation.locale = "en"
+	translation.add_message("Dag 45", "Day 45")
+	translation.add_message(DesignerPage.CARD_INFO, "%s - seed %d - %s")
+	translation.add_message(DesignerPage.DAY, "day %d")
+	var before := TranslationServer.get_locale()
+	TranslationServer.add_translation(translation)
+	TranslationServer.set_locale("en")
+	var page := DesignerPage.new()
+	page.dir = designer_dir
+	page.build()
+	assert_true(shows(page, "Day 45"), "the label")
+	assert_true(shows(page, "expert - seed 11 - day 45"), "the info line")
+	TranslationServer.set_locale(before)
+	TranslationServer.remove_translation(translation)
+	page.free()
 	_cleanup()
 
 

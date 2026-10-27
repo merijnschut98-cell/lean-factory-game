@@ -17,6 +17,10 @@ const NONE := "Nog geen opslagen. Maak ze met: python tools/make_designer_saves.
 const DAY := "dag %d"
 const PLAY := "Spelen"
 const REPLAY := "Praat opnieuw"
+## A card's second line: persona, seed, play day (DAY).
+const CARD_INFO := "%s  ·  seed %d  ·  %s"
+## What the page says when a save cannot be started; the cause goes to the log.
+const START_FAILED := "Deze opslag kon niet gestart worden."
 ## A save this version cannot read: why (SaveList.STATUS), and what to do.
 const REMAKE := "%s: maak de opslag opnieuw (tools/make_designer_saves.py)"
 ## The load faults that list a save to be made again, with its status for SaveList.STATUS.
@@ -108,7 +112,8 @@ func start(slot: String) -> String:
 	if error.is_empty():
 		play_requested.emit(GameSave.AUTOSAVE)
 		return ""
-	message = error
+	printerr("designer page: " + error)  # a log line, in English
+	message = tr(START_FAILED)
 	build()
 	return error
 
@@ -120,11 +125,11 @@ func _card(parent: Node, e: Dictionary) -> void:
 	var texts := VBoxContainer.new()
 	texts.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(texts)
-	texts.add_child(UiPanel.label(e["label"], UiTheme.FONT_SIZE, Palette.VOLTANA_BLUE))
+	texts.add_child(UiPanel.label(tr(e["label"]), UiTheme.FONT_SIZE, Palette.VOLTANA_BLUE))
 	if not e["reason"].is_empty():   # cannot be read: only what to do about it
 		box.add_child(UiPanel.paragraph(tr(REMAKE) % tr(e["reason"]), Palette.SAFETY_ORANGE, UiTheme.SMALL))
 		return
-	texts.add_child(UiPanel.label("%s  ·  seed %d  ·  %s" % [e["persona"], e["seed"], tr(DAY) % e["play_day"]],
+	texts.add_child(UiPanel.label(tr(CARD_INFO) % [e["persona"], e["seed"], tr(DAY) % e["play_day"]],
 		UiTheme.SMALL, Palette.INK))
 	var go := UiPanel.button(tr(PLAY), pick.bind(e["slot"]))
 	go.size_flags_vertical = Control.SIZE_SHRINK_CENTER

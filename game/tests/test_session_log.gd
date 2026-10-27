@@ -113,6 +113,20 @@ func test_marker_text_cannot_break_the_markdown() -> void:
 	_cleanup()
 
 
+## No fence (~~~), no strikethrough and no HTML tag from typed text, in the line or the events.
+func test_marker_text_cannot_open_a_fence_or_a_tag() -> void:
+	var log := _marker_log()
+	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
+	var layer := SessionLayer.new()
+	layer.note_event("<b>vet</b>")
+	assert_eq(log.marker("~~~\n<script>x</script> en ~~weg~~ en \\<", s, layer), "")
+	var lines := Array(FileAccess.get_file_as_string(markers_path).split("\n"))
+	assert_true(lines.has("\\~\\~\\~ \\<script>x\\</script> en \\~\\~weg\\~\\~ en \\\\\\<"), str(lines))
+	assert_true(lines.has("- \\<b>vet\\</b>"), str(lines))
+	assert_true(lines.all(func(l: String) -> bool: return not l.begins_with("~") and not l.replace("\\<", "").contains("<")), str(lines))
+	_cleanup()
+
+
 ## A marker every minute for an evening must not fill the disk: the file rolls over like the log.
 func test_markers_file_rolls_over_at_max_bytes() -> void:
 	var log := _marker_log()

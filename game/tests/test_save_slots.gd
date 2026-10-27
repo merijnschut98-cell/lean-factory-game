@@ -223,6 +223,15 @@ func test_a_save_leaves_no_temporary_or_backup_file() -> void:
 	_cleanup()
 
 
+func test_a_failed_move_into_place_leaves_no_temporary_file() -> void:
+	DirAccess.make_dir_recursive_absolute(_autosave_path())  # a folder where the save belongs: the rename fails
+	var error := SaveFile.store(SaveSlots.AUTOSAVE, SaveFile.encode({"version": SaveFile.VERSION}), dir)
+	assert_true("cannot move" in error, "the failure is reported: %s" % error)
+	assert_false(FileAccess.file_exists(_autosave_path() + SaveFile.TEMP), "the unsaved copy is not left to be 'recovered'")
+	DirAccess.remove_absolute(_autosave_path())
+	_cleanup()
+
+
 func test_a_new_save_left_only_as_tmp_is_recovered() -> void:
 	var time := _staged(1, 3, _autosave_path() + ".tmp")
 	var slots := _slots()

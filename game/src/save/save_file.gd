@@ -95,7 +95,8 @@ static func write(slot: String, region: Region, extra: Dictionary = {}, dir: Str
 
 
 ## Put a save's bytes (encode) in a slot: the new file first (TEMP), the old
-## one aside (BACKUP) until the new one is in place. "" or what went wrong.
+## one aside (BACKUP) until the new one is in place. "" or what went wrong; on
+## a failure no TEMP is left and the old save is back in place.
 static func store(slot: String, bytes: PackedByteArray, dir: String = DIR) -> String:
 	if not valid_slot(slot):
 		return "invalid save slot name %s" % slot
@@ -122,7 +123,12 @@ static func store(slot: String, bytes: PackedByteArray, dir: String = DIR) -> St
 			return "cannot keep %s as a backup (%s)" % [path, error_string(aside)]
 	var moved := DirAccess.rename_absolute(temp, path)
 	if moved != OK:
-		return "cannot move %s into place (%s)" % [temp, error_string(moved)]  # loading recovers it
+		# The save failed: the unsaved copy must not be "recovered" later, and
+		# the old save goes back where it was.
+		DirAccess.remove_absolute(temp)
+		if FileAccess.file_exists(backup):
+			DirAccess.rename_absolute(backup, path)
+		return "cannot move %s into place (%s)" % [temp, error_string(moved)]
 	_remove_if_there(backup)
 	return ""
 
