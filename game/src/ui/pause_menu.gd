@@ -7,7 +7,9 @@ extends UiPanel
 ## the name (PLAN 2.7b: free, silent). "Naar het titelmenu" saves
 ## automatically and leaves. "Tekst loopt vanzelf door" switches the timed
 ## advance of a scene's lines (PLAN 2.13 A). "Toetsen tonen" brings the
-## controls line back (Hud.show_controls, as F1). While it is up the game is paused
+## controls line back (Hud.show_controls, as F1). During the training week
+## "Inwerkweek overslaan" skips it after one question (spec rule 6; UX audit #22:
+## never a link in the scene). While it is up the game is paused
 ## (GameUI.open_pause); it runs on its own (PROCESS_MODE_ALWAYS).
 
 ## The player chose to save into manual slot `number` (1–5), confirmed.
@@ -17,6 +19,8 @@ signal title_requested
 signal look_requested
 ## "Toetsen tonen": the controls line back on the HUD.
 signal controls_requested
+## "Inwerkweek overslaan", confirmed: the training week skipped.
+signal skip_week_requested
 ## "Tekst loopt vanzelf door" switched (kept in the settings; the scene on screen follows).
 signal auto_text_changed(on: bool)
 
@@ -25,6 +29,8 @@ const RESUME := "Verder spelen"
 const SAVE := "Opslaan"
 const LOOK := "Uiterlijk"
 const CONTROLS := "Toetsen tonen (F1)"
+const SKIP_WEEK := "Inwerkweek overslaan"
+const SKIP_YES := "Ja, overslaan"
 const TO_TITLE := "Naar het titelmenu"
 const PICK := "Kies een plek om op te slaan. Automatisch opslaan gebeurt apart, elke dagstart."
 const SAVE_HERE := "Hier opslaan"
@@ -32,7 +38,7 @@ const OVERWRITE := "Slot %d bevat al een opgeslagen spel. Overschrijven?"
 const YES := "Overschrijven"
 const BACK := "Terug"
 
-enum Page { MAIN, SLOTS, CONFIRM }
+enum Page { MAIN, SLOTS, CONFIRM, SKIP }
 
 ## The saves (the game's own folder; tests point it elsewhere).
 var saves: SaveSlots
@@ -73,6 +79,11 @@ func pick(number: int) -> void:
 	refresh()
 
 
+func ask_skip_week() -> void:
+	page = Page.SKIP
+	refresh()
+
+
 func ask_look() -> void:
 	look_requested.emit()
 
@@ -103,9 +114,11 @@ func refresh() -> void:
 	clear(body)
 	match page:
 		Page.MAIN:
-			for item: Array in [[RESUME, close_requested.emit], [SAVE, show_slots], [LOOK, ask_look],
-					[CONTROLS, controls_requested.emit],
-					[TO_TITLE, title_requested.emit]]:
+			var items: Array[Array] = [[RESUME, close_requested.emit], [SAVE, show_slots], [LOOK, ask_look],
+					[CONTROLS, controls_requested.emit], [TO_TITLE, title_requested.emit]]
+			if session != null and session.in_training():
+				items.insert(3, [SKIP_WEEK, ask_skip_week])
+			for item: Array in items:
 				var b := button(tr(item[0]), item[1])
 				b.custom_minimum_size.x = 360
 				b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -128,6 +141,9 @@ func refresh() -> void:
 		Page.CONFIRM:
 			body.add_child(paragraph(tr(OVERWRITE) % pending))
 			body.add_child(_row([button(tr(BACK), back), button(tr(YES), confirm)]))
+		Page.SKIP:
+			body.add_child(paragraph(tr(UiText.SKIP_CONFIRM)))
+			body.add_child(_row([button(tr(BACK), back), button(tr(SKIP_YES), skip_week_requested.emit)]))
 
 
 static func _row(buttons: Array) -> HBoxContainer:

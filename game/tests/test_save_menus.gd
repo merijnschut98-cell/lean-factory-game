@@ -74,6 +74,26 @@ func test_the_title_menu_lists_saves_most_recently_used_first() -> void:
 	_cleanup()
 
 
+## "Inwerkweek overslaan" on the title menu (spec rule 6; UX audit #22): the creator, then
+## the campaign without the first day's scene or the training week.
+func test_inwerkweek_overslaan_on_the_title_menu_starts_past_the_week() -> void:
+	var menu := _menu()
+	assert_true(texts_in(menu).has(TitleMenu.SKIP_WEEK), "on the title menu")
+	var asked: Array[String] = []
+	menu.start_requested.connect(func(slot: String) -> void: asked.append(slot))
+	menu.new_game_skipping_week()
+	assert_eq(asked, [""], "a new game: the creator first")
+	var me := PlayerProfile.new()
+	me.name = "Noor"
+	var office := menu.open_game("", me)
+	office.build()
+	assert_false(office.session.in_training(), "no training week")
+	assert_true(office.first_day == null, "no first day's scene")
+	office.free()
+	menu.free()
+	_cleanup()
+
+
 func test_picking_a_save_continues_from_it_and_new_game_touches_nothing() -> void:
 	var slots := _slots()
 	assert_eq(slots.save(3, _session(), SessionLayer.new()), "")

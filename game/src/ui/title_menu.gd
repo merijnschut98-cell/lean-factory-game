@@ -4,6 +4,8 @@ extends Control
 ## used first (the autosave among them), each a card to continue from (a
 ## save that will not load keeps the menu, with a line that says so);
 ## "Nieuw spel" (the character creator, PLAN 2.7b, then a fresh game),
+## "Inwerkweek overslaan" (the same, past the first day's scene and the training
+## week: a returning player, spec rule 6),
 ## "Instellingen" ("Tekst loopt vanzelf door", the rest later), "Alles wissen" behind one
 ## confirmation and, for the designer only (Designer), "Ontwerper": the jump-to-day saves.
 ## A new game's first autosave replaces the autosave, so when that holds a
@@ -22,6 +24,7 @@ const SAVES := "Opgeslagen spellen"
 const NO_SAVES := "Nog geen opgeslagen spel. Begin met \"Nieuw spel\"."
 const PLAY := "Verder spelen"
 const NEW_GAME := "Nieuw spel"
+const SKIP_WEEK := "Inwerkweek overslaan"
 const SETTINGS := "Instellingen"
 const SETTINGS_LATER := "Toetsen en camera: deze instellingen komen later. Voor nu speel je met WASD, de muis en E."
 const DESIGNER := "Ontwerper"
@@ -66,6 +69,8 @@ var _saves_column: VBoxContainer
 var _pending := 0
 ## The designer save waiting for the answer about the autosave (Page.REPLACE, Page.KEEP), or "".
 var _designer_slot := ""
+## The new game skips the training week ("Inwerkweek overslaan").
+var skip_week := false
 ## The character creator over the menu while a new player is made, or null.
 var creator: CreatorScreen
 ## The designer's talk replay over the menu (TalkReplay), or null.
@@ -152,7 +157,8 @@ func refresh() -> void:
 	_saves_column.visible = page != Page.KEEP and page != Page.OVERWRITE
 	match page:
 		Page.MAIN:
-			var items: Array[Array] = [[NEW_GAME, new_game], [SETTINGS, open_settings], [WIPE, ask_wipe]]
+			var items: Array[Array] = [[NEW_GAME, new_game], [SKIP_WEEK, new_game_skipping_week], [SETTINGS, open_settings],
+				[WIPE, ask_wipe]]
 			if Designer.enabled():
 				items.append([DESIGNER, open_designer])
 			for item in items:
@@ -206,6 +212,12 @@ func new_game() -> void:
 		_go(Page.REPLACE)
 	else:
 		start_requested.emit("")
+
+
+## "Inwerkweek overslaan": a new game that opens past the training week.
+func new_game_skipping_week() -> void:
+	skip_week = true
+	new_game()
 
 
 ## "Eerst bewaren in een slot": the five slots, the empty ones first.
@@ -305,6 +317,7 @@ func _say(line: String) -> void:
 func _go(to: Page) -> void:
 	if not to in [Page.REPLACE, Page.KEEP, Page.OVERWRITE]:
 		_designer_slot = ""
+		skip_week = false   # back on the menu: the next "Nieuw spel" is the full week
 	page = to
 	message = ""
 	refresh()
@@ -390,7 +403,8 @@ func open_game(slot: String, player: PlayerProfile = null) -> Office:
 	var office: Office = load(OFFICE).instantiate()
 	office.saves = saves
 	office.new_player = player
-	office.opening = slot.is_empty()   # a new game opens as one scene (PLAN 2.7d)
+	office.training = not skip_week
+	office.opening = slot.is_empty() and not skip_week   # a new game opens as one scene (PLAN 2.7d)
 	office.play(slot)
 	office.resumed = loaded
 	return office

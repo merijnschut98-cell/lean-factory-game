@@ -24,7 +24,6 @@ const MARCO := "Marco"
 const JOOST := "Joost"
 const ANOUK := "Anouk"
 const BADGE_ROLE := "CI-lead · Aansluitingen"
-const SKIP_WEEK := "Ik ken Voltana al: sla de inwerkweek over"
 const HINT_WALK := "Lopen: WASD of klik op de vloer"
 const HINT_LOOK := "Draaien: Z en C  ·  Zoomen: muiswiel"
 const HINT_JOURNAL := "Tab  je telefoon: wat Anouk je vertelde staat in Wie is wie"
@@ -111,7 +110,6 @@ var _guide_route := PackedVector3Array()
 var _start := Vector3.ZERO
 var _walk_hint_shown := false
 var _look_hint_shown := false
-var _skip_link: Button
 ## A line, a choice or a paper holds the player now (Office.hold_for_scene).
 var _holding := false
 ## Who the camera frames now ("" for none).
@@ -228,13 +226,6 @@ func _arrival() -> void:
 	var chair := _point("reception_chair", RECEPTION_CHAIR)
 	yvonne.place(chair + (desk - chair) * 0.45, stand - desk)   # standing behind the counter, by her chair
 	office.staging.frame_scene(yvonne, FRAME_LIFT)
-	_skip_link = UiPanel.button(tr(SKIP_WEEK), skip_week)
-	_skip_link.flat = true
-	_skip_link.add_theme_color_override("font_color", Color(1, 1, 1, 0.7))
-	_skip_link.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	_skip_link.offset_left = 16
-	_skip_link.offset_top = 56
-	lines.add_child(_skip_link)
 	lines.skip_hint(true)   # the first scene says how to skip (Merijn 2026-10-19)
 	_run([_wait(1.0), _say("yvonne"), _badge(), _say("yvonne_badge"), _do(_ruud_arrives), _do(_walk)])
 
@@ -263,13 +254,10 @@ func _ruud_arrives() -> void:
 	office.rig.release()
 	guide = _person("ruud", "Ruud Hoekstra", "")
 	guide.place(_marker("arrive:lift", Vector2(-1.4, -4.2)), office.player.position - guide.position)
-	if _skip_link != null:
-		_skip_link.queue_free()
-		_skip_link = null
 
 
-## "Ik ken Voltana al" (a returning player, spec rule 6): the week skipped, the
-## full HUD, at your desk's floor.
+## "Inwerkweek overslaan" from the pause menu (a returning player, spec rule 6; never a
+## link in the scene, UX audit #22): the week skipped, the full HUD, at your desk's floor.
 func skip_week() -> void:
 	office.session.skip_training()
 	layer.opening_beat = ""
@@ -577,12 +565,11 @@ func _after_talk() -> void:
 func _end() -> void:
 	office.people.stay_in = []
 	_hide_seated_ruud(false)
-	for n: Node in [guide, yvonne, _skip_link]:
+	for n: Node in [guide, yvonne]:
 		if n != null:
 			n.queue_free()
 	guide = null
 	yvonne = null
-	_skip_link = null
 	_cues.clear()
 
 

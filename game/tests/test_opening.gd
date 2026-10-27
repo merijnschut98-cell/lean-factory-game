@@ -311,6 +311,27 @@ func test_a_line_holds_the_player_and_frames_the_speaker() -> void:
 	office.free()
 
 
+## Skipping the week is chosen on the title menu or in the pause menu, never a link over
+## Yvonne's first line, the first thing on screen in the fiction (spec rule 6; UX audit #22).
+func test_the_first_scene_has_no_skip_link_and_the_pause_menu_skips_the_week() -> void:
+	var office := _named_opening()
+	assert_true(_until(office, _said(office, "Jij bent Noor")))
+	for b: Button in office.first_day.lines.find_children("*", "Button", true, false):
+		assert_false(b.text.to_lower().contains("inwerkweek"), "no skip link in the scene: " + b.text)
+	var pause := office.ui.pause_menu
+	pause.open()
+	pause.refresh()
+	assert_true(texts_in(pause).has(PauseMenu.SKIP_WEEK), "the pause menu offers it")
+	pause.ask_skip_week()
+	assert_true(texts_in(pause).has(UiText.SKIP_CONFIRM), "after one question")
+	pause.skip_week_requested.emit()   # "Ja, overslaan"
+	assert_false(office.session.in_training(), "the week is skipped")
+	assert_eq(office.ui.session_layer.opening_beat, "")
+	pause.refresh()
+	assert_false(texts_in(pause).has(PauseMenu.SKIP_WEEK), "and no longer offered")
+	office.free()
+
+
 ## The IT joke is three messages a minute apart (spec B6, UX audit #10): merged into one
 ## bubble the repeat reads as a typo.
 func test_the_it_desk_sends_three_messages_not_one_with_a_repeat() -> void:

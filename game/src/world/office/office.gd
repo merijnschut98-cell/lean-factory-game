@@ -188,6 +188,7 @@ func build() -> void:
 		enter_saved_floor(ui.session_layer.floor_id)
 		ui.title_requested.connect(to_title)
 		ui.pause_menu.look_requested.connect(open_look)
+		ui.pause_menu.skip_week_requested.connect(skip_week)
 		ui.pause_changed.connect(_on_pause_changed)
 		ui.pause_menu.auto_text_changed.connect(_on_auto_text)
 		milestone = OfficeMilestone.create(self)
@@ -701,6 +702,17 @@ func open_look() -> CreatorScreen:
 	look_editor.get_parent().process_mode = Node.PROCESS_MODE_ALWAYS
 	_pause_world(true)   # the scene under it stays where the pause menu left it
 	return look_editor
+
+
+## "Inwerkweek overslaan" in the pause menu (spec rule 6): the first day's scene ends as
+## its own skip does; later in the week it is skipped as on the board.
+func skip_week() -> void:
+	ui.resume()
+	if first_day != null:
+		first_day.skip_week()
+		return
+	session.skip_training()
+	ui.after_action()
 
 
 func apply_look(made: PlayerProfile) -> void:
