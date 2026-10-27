@@ -631,7 +631,7 @@ func test_missed_is_neutral_until_m2() -> void:                 # replaced by Ta
 
 ---
 
-### Task 13 (3.2-C6): El Amrani's door when the winter was missed — **WAITS FOR MERIJN (decision-day pack row M2)**
+### Task 13 (3.2-C6): El Amrani's door when the winter was missed (shape A, Merijn 2026-10-27)
 
 **Do not start until Merijn has answered M2** ("Does a missed El Amrani winter close her door for good?", `docs/qa/decision-day-2026-10.md`). The controller fills in the chosen shape and dispatches this task; the rest of the slice does not depend on it.
 
