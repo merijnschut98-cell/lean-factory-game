@@ -558,20 +558,25 @@ missions:
     # and Zuidmark's ~2 % of the country (company.yaml) put a region at a few a week.
     # The compensation after four hours: the compensatieregeling (concepts.yaml).
     #
-    # Act II's one deadline (Merijn, 2026-10-27, M1): fixed before the winter, or the cheap
-    # contractor briefing is gone. Winter 1's frost window (day 70, 21 December 2026) is already
-    # running when a player who played Act I in order opens Act II (the expert: day 76), so the
-    # winter meant here is the next one: the same shortest day a year on, day 435 (Tuesday 21
-    # December 2027, 365 days after winter_el_amrani's day 70; the deadline is judged after it).
-    # estimate (story): in a spell of frost the graafwerk stands still (vorstverlet); the
-    # aannemers write their bestekken for the spring then, so a briefing after it changes
-    # nothing until the summer. The briefing is the shortcut (decay 30 days, a poor fix), so the
+    # Act II's one deadline (Merijn, 2026-10-27, M1): fixed in time, or the cheap contractor
+    # briefing is gone. It counts from when the mission opens (deadline_days, as Henk's 56 does),
+    # so every pace gets the same window: a fixed day was either toothless (the next winter's
+    # frost, day 435) or failed a slow player on opening (winter 1's, day 70, is past by the time
+    # Act II opens).
+    # estimate: 63 days = nine weeks. Autoplay (2026-10-27, seeds 11 and 13): the average persona
+    # needed 28.4 and 42.5 days from opening to solving, the expert 14.2; 42.5 x 1.5 = 63.8, to
+    # whole weeks. A typical opening (the expert's, day 76 = 14 December 2026) puts the
+    # deadline on day 139, Sunday 28 February 2027, the end of winter; the briefing says nine
+    # weeks because the opening date moves with the player.
+    # estimate (story): the aannemers write their bestekken for the next building round then
+    # (graafwerk stands still in a spell of frost, vorstverlet), and a briefing after it changes
+    # nothing for a while. The briefing is the shortcut (decay 30 days, a poor fix), so the
     # door that closes is the cheap one, never the problem: standard_test_trenches (fit 0.8)
     # and revision_at_source (too early at maturity 2) still list. No Act II fork.
-    deadline_on_day: 435
+    deadline_days: 63
     fail_closes: [contractor_briefing]
-    fail: "Het heeft gevroren en het graafwerk ligt stil. De aannemers hebben hun bestekken voor het voorjaar geschreven, op de kaart van nu. Gert: 'Daar kan ik nu niks meer aan veranderen. Dit voorjaar graven ze zoals ze nu gewend zijn.' De snelle weg is dicht."
-    briefing: "Dinsdag 10.12 uur: een graafmachine raakt een middenspanningskabel. Driehonderd huizen en zorgcentrum De Linde zitten zonder stroom; De Linde draait op het noodaggregaat. Gert Peeters ({functie:gert}) laat zijn KLIC-melding zien: 'Volgens deze kaart lag hier niks.' Het is de vijfde graafschade deze week. Elke schade kost ons geld, en na vier uur krijgt elke getroffen klant een vergoeding. Gert kijkt in zijn agenda: 'Met de eerste echte vorst, rond 21 december 2027, ligt het graafwerk stil. Dan schrijven de aannemers hun bestekken voor het voorjaar. Wat daar dan niet in staat, verandert tot de zomer niet meer.'"
+    fail: "De aannemers hebben hun bestekken geschreven, op de kaart van nu. Gert: 'Daar kan ik nu niks meer aan veranderen. Voorlopig graven ze zoals ze gewend zijn.' De snelle weg is dicht."
+    briefing: "Dinsdag 10.12 uur: een graafmachine raakt een middenspanningskabel. Driehonderd huizen en zorgcentrum De Linde zitten zonder stroom; De Linde draait op het noodaggregaat. Gert Peeters ({functie:gert}) laat zijn KLIC-melding zien: 'Volgens deze kaart lag hier niks.' Het is de vijfde graafschade deze week. Elke schade kost ons geld, en na vier uur krijgt elke getroffen klant een vergoeding. Gert kijkt in zijn agenda: 'Over negen weken schrijven de aannemers hun bestekken voor de volgende bouwronde. Wat daar dan niet in staat, verandert voorlopig niet meer.'"
     debrief: "Er zijn minder graafschades. Bij de Check konden de monteurs zonder je aanpak {kpi_before} storingen per week aan, met je aanpak {kpi_after}. Gert deed alles volgens het boekje; de oorzaak zat in ons proces. Maar de kaart klopt nog steeds niet overal. Wie houdt de kaart eigenlijk bij?"
     debrief_variants:
       blamed: "De schades zijn minder. Gert werkt mee, maar hij vertelt je niets meer dan nodig. Wie houdt de kaart eigenlijk bij?"
