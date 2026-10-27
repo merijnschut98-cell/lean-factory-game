@@ -120,6 +120,9 @@ func _run() -> void:
 	var state: String = shot["state"]
 	if state in ["title", "title_replace", "title_keep", "designer_page", "designer_replay", "designer_replay_talk", "pause", "pause_slots", "pause_confirm"]:
 		await _save_menus(state)
+		_say_flag_errors(shot)
+		if shot["at"] >= 0:
+			printerr(PlayShotArgs.MENU_AT_NOTE)
 		_capture(shot)
 		return
 	var office: Office = load(SCENE).instantiate()
@@ -375,19 +378,23 @@ func _run() -> void:
 			printerr("unknown state ", state)
 			quit(2)
 			return
-	_apply_clock(office, args, shot)
+	_apply_clock(office, shot)
 	_capture(shot)
 
 
-## `--at` and `--season` of the shot: the office clock to that time of day (a bad or
-## past one is said and ignored); the season waits for 3.3.
-func _apply_clock(office: Office, args: PackedStringArray, shot: Dictionary) -> void:
+## `--at` and `--season` of the shot: the office clock to that time of day; a bad flag is
+## said and ignored; the season waits for 3.3.
+func _apply_clock(office: Office, shot: Dictionary) -> void:
+	_say_flag_errors(shot)
 	if shot["at"] >= 0:
 		office.set_minute_of_day(shot["at"])
-	elif "--at" in args:
-		printerr("--at wants a time of day like 18:30")
 	if shot["season"] != "":
 		printerr("season not built yet: ", shot["season"])
+
+
+func _say_flag_errors(shot: Dictionary) -> void:
+	if shot["error"] != "":
+		printerr(shot["error"])
 
 
 ## Wait `frames`, then save the screen to the shot's out file.

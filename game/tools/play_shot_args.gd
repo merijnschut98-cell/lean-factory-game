@@ -6,27 +6,39 @@ extends RefCounted
 
 const DEFAULT_FRAMES := 20
 const NAMED := ["--at", "--season"]
+## Said when a menu state is given `--at`: the menus have no office clock.
+const MENU_AT_NOTE := "--at has no effect on a menu state (there is no office clock)"
 
 
-## {state, out, frames, at (minute of day, -1 when absent or not a time of day), season ("" when absent)}.
+## {state, out, frames, at (minute of day, -1 when absent or bad), season ("" when absent),
+## error ("" or what is wrong with a flag: a missing or bad value)}. A flag's value never
+## starts with `--`: that is the next flag, and the value is missing.
 static func parse(args: PackedStringArray) -> Dictionary:
 	var positional: Array[String] = []
 	var named := {}
+	var errors: Array[String] = []
 	var i := 0
 	while i < args.size():
 		var arg := args[i]
 		if arg in NAMED:
-			named[arg] = args[i + 1] if i + 1 < args.size() else ""
-			i += 1
+			if i + 1 < args.size() and not args[i + 1].begins_with("--"):
+				named[arg] = args[i + 1]
+				i += 1
+			else:
+				errors.append("%s wants a value" % arg)
 		elif not arg.begins_with("--"):
 			positional.append(arg)
 		i += 1
+	var at := minute_of(str(named.get("--at", "")))
+	if "--at" in named and at < 0:
+		errors.append("--at wants a time of day like 18:30, not '%s'" % named["--at"])
 	return {
 		"state": positional[0] if positional.size() > 0 else "",
 		"out": positional[1] if positional.size() > 1 else "",
 		"frames": int(positional[2]) if positional.size() > 2 else DEFAULT_FRAMES,
-		"at": minute_of(str(named.get("--at", ""))),
+		"at": at,
 		"season": str(named.get("--season", "")),
+		"error": "; ".join(errors),
 	}
 
 

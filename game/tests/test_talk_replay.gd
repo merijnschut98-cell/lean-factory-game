@@ -80,9 +80,15 @@ func test_a_persuasion_keeps_the_trust_the_person_has() -> void:
 	assert_eq(s.start_dialog("joost")["meter"]["trust"], own, "the meter's trust is theirs, not the maximum")
 
 
+## Wim's "the_street" asks for trust 50, which a fresh game's Wim does not have.
 func test_an_expert_talk_opens_its_trust_gated_topics() -> void:
-	var s := TalkReplay.session_for("henk_expert", "none")
-	assert_eq(s.people.trust["henk"], 100, "an expert's topics wait for trust")
+	var fresh := GameSession.new_game(11, Catalog.DATA_DIR, false)
+	assert_true(fresh.people.trust["wim"] < 50, "in a fresh world the topic is closed")
+	var s := TalkReplay.session_for("wim_expert", "none")
+	assert_eq(s.people.trust["wim"], 100, "an expert's topics wait for trust")
+	var street: Dictionary = (s.people.dialogs["wim_expert"] as DialogDef).topics.filter(
+		func(t: Dictionary) -> bool: return t["id"] == "the_street")[0]
+	assert_true(s.people.trust["wim"] >= int(street["trust"]), "the replay's trust opens the topic's trust gate")
 
 
 func test_every_content_dialog_is_listed_and_opens() -> void:
