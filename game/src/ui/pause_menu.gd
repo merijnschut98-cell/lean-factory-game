@@ -6,7 +6,8 @@ extends UiPanel
 ## one itself. "Uiterlijk" opens the character creator to change the look and
 ## the name (PLAN 2.7b: free, silent). "Naar het titelmenu" saves
 ## automatically and leaves. "Tekst loopt vanzelf door" switches the timed
-## advance of a scene's lines (PLAN 2.13 A). While it is up the game is paused
+## advance of a scene's lines (PLAN 2.13 A). "Toetsen tonen" brings the
+## controls line back (Hud.show_controls, as F1). While it is up the game is paused
 ## (GameUI.open_pause); it runs on its own (PROCESS_MODE_ALWAYS).
 
 ## The player chose to save into manual slot `number` (1–5), confirmed.
@@ -14,6 +15,8 @@ signal save_requested(number: int)
 signal title_requested
 ## "Uiterlijk": the player wants to change their look or name.
 signal look_requested
+## "Toetsen tonen": the controls line back on the HUD.
+signal controls_requested
 ## "Tekst loopt vanzelf door" switched (kept in the settings; the scene on screen follows).
 signal auto_text_changed(on: bool)
 
@@ -21,6 +24,7 @@ const TITLE := "Pauze"
 const RESUME := "Verder spelen"
 const SAVE := "Opslaan"
 const LOOK := "Uiterlijk"
+const CONTROLS := "Toetsen tonen (F1)"
 const TO_TITLE := "Naar het titelmenu"
 const PICK := "Kies een plek om op te slaan. Automatisch opslaan gebeurt apart, elke dagstart."
 const SAVE_HERE := "Hier opslaan"
@@ -100,6 +104,7 @@ func refresh() -> void:
 	match page:
 		Page.MAIN:
 			for item: Array in [[RESUME, close_requested.emit], [SAVE, show_slots], [LOOK, ask_look],
+					[CONTROLS, controls_requested.emit],
 					[TO_TITLE, title_requested.emit]]:
 				var b := button(tr(item[0]), item[1])
 				b.custom_minimum_size.x = 360

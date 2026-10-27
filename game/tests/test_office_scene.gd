@@ -128,6 +128,48 @@ func test_a_call_a_scene_or_a_panel_quiets_the_other_layers() -> void:
 	_close(office)
 
 
+static func _key(code: Key) -> InputEventKey:
+	var e := InputEventKey.new()
+	e.physical_keycode = code
+	e.keycode = code
+	e.pressed = true
+	return e
+
+
+## The controls line is no fixture (UX audit #11; first-five-minutes §3 "each once,
+## fading"): a hint goes once its key is used, the whole line after CONTROLS_SECONDS on
+## screen, and F1 or the pause menu's "Toetsen tonen" brings it back.
+func test_each_control_hint_goes_once_its_key_is_used_and_comes_back_on_request() -> void:
+	var office := _office()
+	var hud := office.ui.hud
+	var full := hud.controls_text()
+	var wheel := InputEventMouseButton.new()
+	wheel.button_index = MOUSE_BUTTON_WHEEL_UP
+	wheel.pressed = true
+	var tab := InputEventAction.new()
+	tab.action = Phone.ACTION
+	tab.pressed = true
+	assert_eq([Hud.hint_of(_key(KEY_W)), Hud.hint_of(_key(KEY_SHIFT)), Hud.hint_of(_key(KEY_C)), Hud.hint_of(wheel),
+		Hud.hint_of(_key(KEY_E)), Hud.hint_of(tab), Hud.hint_of(_key(KEY_X))], ["walk", "run", "turn", "zoom", "use", "phone", ""])
+	hud.used("walk")
+	assert_false(hud.controls_text().contains("lopen"), "a used key's hint is gone")
+	assert_true(hud.controls_text().begins_with("Shift rennen"), hud.controls_text())
+	for hint: String in ["run", "turn", "zoom", "use", "phone"]:
+		hud.used(hint)
+	assert_eq(hud.controls_text(), "", "every key used: no line")
+	assert_false(hud.help_label.visible)
+	hud.show_controls()
+	assert_eq(hud.controls_text(), full, "F1 brings every hint back")
+	assert_true(hud.help_label.visible)
+	hud.tick_controls(Hud.CONTROLS_SECONDS + 1.0)
+	assert_false(hud.help_label.visible, "after the first minutes the line goes on its own")
+	office.ui.pause_menu.refresh()
+	assert_true(texts_in(office.ui.pause_menu).has(PauseMenu.CONTROLS), "the pause menu offers them")
+	office.ui.pause_menu.controls_requested.emit()
+	assert_eq(hud.controls_text(), full, "and brings them back")
+	_close(office)
+
+
 func test_the_player_starts_at_the_spawn_point() -> void:
 	var office := _office()
 	var spawn := office.find_marker("spawn")

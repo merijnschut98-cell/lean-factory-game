@@ -126,6 +126,9 @@ func setup(of_session: GameSession, of_layer: SessionLayer = null) -> void:
 	place_menu.talk_requested.connect(open_talk)
 	talk_view.coach_requested.connect(open_coach)
 	pause_menu.save_requested.connect(save_to)
+	pause_menu.controls_requested.connect(func() -> void:
+		resume()
+		hud.show_controls())
 	pause_menu.title_requested.connect(func() -> void:
 		end_session()
 		resume()   # the title menu must not start paused
