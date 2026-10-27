@@ -83,6 +83,23 @@ func test_a_greeting_follows_the_clock() -> void:
 	assert_eq(s.fill_tokens("{groet}, met Fatima El Amrani."), "Goedemiddag, met Fatima El Amrani.")
 
 
+## The simulation is the truth (UX audit #6): what the briefing, the queue_count clue and
+## Joost say about the stack at Werkvoorbereiding fits the queue "Tel de stapel" counts.
+func test_the_stack_s_words_fit_the_queue_the_player_counts() -> void:
+	var s := _accepted()
+	var most := 0
+	for d in 30:
+		most = maxi(most, s.region.queue_at(DESIGN)["count"])
+		s.pass_time(SimCalendar.days(1))
+	assert_between(most, 10, 20, "the weekly peak is a stuk of vijftien")
+	var clue: Clue = (s.region.problems[PROBLEM] as ProblemDef).clues.filter(func(c: Clue) -> bool:
+		return c.tool == "queue_count")[0]
+	var joost: DialogDef = s.people.dialogs["joost_vacancies"]
+	for text: String in [s.missions.briefing_of(MISSION), clue.text, str(joost.position["text"])]:
+		assert_false(text.contains("honderd"), "no count the queue never reaches: " + text)
+	assert_true(s.missions.briefing_of(MISSION).contains("een stuk of vijftien dossiers"))
+
+
 ## No line in the content or the first day's scene greets by a fixed part of the day: a
 ## call at ten opening with "Goedemiddag" reads as a mistake. They say {groet}.
 func test_no_line_greets_by_a_fixed_part_of_the_day() -> void:

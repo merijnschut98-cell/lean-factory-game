@@ -1502,7 +1502,7 @@ dialogs:
     patience: 10
     opening: "Als je komt vertellen dat we efficiënter moeten werken: dat weet ik. Ik heb het uitgerekend."
     warning: "Ik ga dit niet nog een keer uitleggen."
-    position: {text: "Ik heb twee werkvoorbereiders extra nodig. Ruim honderd dossiers in de bak, zes weken overwerk. Dat is gewoon een feit.", tags: [claim]}
+    position: {text: "Ik heb twee werkvoorbereiders extra nodig. Zes weken overwerk, en elke week ligt de bak weer vol. Dat is gewoon een feit.", tags: [claim]}
     layers:
       - id: interest
         at: 55
