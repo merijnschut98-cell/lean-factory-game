@@ -109,9 +109,11 @@ func test_a_call_a_scene_or_a_panel_quiets_the_other_layers() -> void:
 	assert_true(hud.objective_label.visible)
 	office.ui.incoming.visible = true   # a call rings
 	anouk.say("Hoi!")
+	anouk.show_tag(true)
 	office.quiet_layers()
 	assert_eq(layers.call(), [false, false, false], "a call: prompt, controls and toasts step aside")
 	assert_false(anouk.saying(), "and the greeting bubble")
+	assert_false(anouk.tag.visible, "and the name tag")
 	assert_true(hud.objective_label.visible, "the objective stays during a call")
 	office.ui.incoming.visible = false
 	office.quiet_layers()
