@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 import sys
 from collections import Counter
@@ -3600,6 +3601,212 @@ def check_scenes(docs: dict[str, Any]) -> None:
                 _atom_robust(atom, where, index)
 
 
+# ── town.yaml (the street the player reaches by van, slice 3.2) ──────────────
+TOWN_KEYS = {"segments", "lots", "props", "fields"}
+TOWN_SEGMENT_KEYS = {"id", "name", "district", "from", "to", "carriageway", "pavement", "front_garden", "house_depth"}
+TOWN_DIMENSIONS = {"carriageway": (3, 8), "pavement": (1, 4), "front_garden": (0, 10), "house_depth": (5, 15)}  # metres
+TOWN_LENGTH = (100, 140)  # the street's length in metres
+TOWN_LOT_KINDS = ("house", "shop", "trafohuisje")
+TOWN_LOT_KEYS = {"id", "kind", "side", "at", "width", "n", "resident", "story"}
+TOWN_LOT_WIDTH = 9  # metres, when a lot gives none
+TOWN_PROP_KINDS = ("trench", "van", "hedge", "canal", "lamp")
+TOWN_PROP_KEYS = {"id", "kind", "side", "across", "at", "length", "kerb", "livery", "yard_van"}
+TOWN_SIDES = ("even", "odd")  # even numbers on the north side, odd on the south
+TOWN_FIELD_KEYS = {"step", "at"}
+TOWN_HOUSES = 12
+TOWN_SHOP_REACH = 15  # the shop stands within this many metres of an end of the street
+TOWN_TRAFO_REACH = 25  # the trafohuisje, this close to the other end
+TOWN_PROP_BEFORE, TOWN_PROP_BEYOND = 5, 15  # a prop may lie this far before the start and beyond the far end (hedge, canal)
+TOWN_HEDGES = 2
+TOWN_LAMPS = (4, 8)
+
+
+def _town_list(doc: dict, key: str, source: str) -> list[dict]:
+    items = doc.get(key)
+    if not isinstance(items, list) or not all(isinstance(i, dict) for i in items):
+        raise ContentError(f"{source}: '{key}' must be a list of mappings")
+    return items
+
+
+def _town_length(doc: dict, source: str) -> float:
+    """Validate the one segment (Phase 4's town lifts the limit) and return its length in metres."""
+    segments = _town_list(doc, "segments", source)
+    if len(segments) != 1:
+        raise ContentError(f"{source}: exactly one segment for now (got {len(segments)})")
+    seg = segments[0]
+    where = f"{source}: segment {seg.get('id')!r}"
+    _known_keys(seg, TOWN_SEGMENT_KEYS, where)
+    _require_strings(seg, ["id", "name", "district"], where)
+    ends = []
+    for key in ("from", "to"):
+        point = seg.get(key)
+        if not isinstance(point, list) or len(point) != 2 \
+                or not all(isinstance(v, (int, float)) and not isinstance(v, bool) for v in point):
+            raise ContentError(f"{where}: '{key}' must be two numbers [x, y] in metres")
+        ends.append(point)
+    for key, (low, high) in TOWN_DIMENSIONS.items():
+        _number(seg, key, where, low, high)
+    length = math.hypot(ends[1][0] - ends[0][0], ends[1][1] - ends[0][1])
+    if not TOWN_LENGTH[0] <= length <= TOWN_LENGTH[1]:
+        raise ContentError(f"{where}: its length must be between {TOWN_LENGTH[0]} and {TOWN_LENGTH[1]} metres (got {length:g})")
+    return length
+
+
+def _town_lot(lot: dict, length: float, where: str) -> None:
+    _known_keys(lot, TOWN_LOT_KEYS, where)
+    _one_of(lot, "kind", TOWN_LOT_KINDS, where)
+    _one_of(lot, "side", TOWN_SIDES, where)
+    at = _number(lot, "at", where, -1000, 1000)
+    width = _number(lot, "width", where, 1, 30, default=TOWN_LOT_WIDTH)
+    if at < 0 or at + width > length:
+        raise ContentError(f"{where}: lies outside the street (it spans {at:g} to {at + width:g} m of {length:g})")
+    numbered = lot["kind"] != "trafohuisje"
+    if numbered != ("n" in lot):
+        raise ContentError(f"{where}: a {lot['kind']} {'needs a number' if numbered else 'has no number'}")
+    if numbered:
+        n = _number(lot, "n", where, 1, 99, integer=True)
+        if (n % 2 == 0) != (lot["side"] == "even"):
+            raise ContentError(f"{where}: number {n} belongs on the {'even' if n % 2 == 0 else 'odd'} side")
+    if "resident" in lot:
+        if lot["kind"] != "house":
+            raise ContentError(f"{where}: only a house has a resident")
+        _check_ids([lot["resident"]], "resident", where)
+    if "story" in lot and lot["story"] not in STORIES:
+        raise ContentError(f"{where}: unknown story {lot['story']!r} (one of {', '.join(STORIES)})")
+
+
+def _town_extent(lot: dict) -> tuple[float, float]:
+    return lot["at"], lot["at"] + lot.get("width", TOWN_LOT_WIDTH)
+
+
+def _town_check_lots(lots: list[dict], length: float, source: str) -> None:
+    kinds = Counter(lot["kind"] for lot in lots)
+    if kinds["house"] != TOWN_HOUSES:
+        raise ContentError(f"{source}: needs {TOWN_HOUSES} houses (got {kinds['house']})")
+    for kind in ("shop", "trafohuisje"):
+        if kinds[kind] != 1:
+            raise ContentError(f"{source}: needs exactly one {kind} (got {kinds[kind]})")
+    for key, label in (("n", "house number {} is used twice"), ("resident", "{!r} lives in one house only")):
+        twice = sorted(v for v, count in Counter(lot[key] for lot in lots if key in lot).items() if count > 1)
+        if twice:
+            raise ContentError(f"{source}: {label.format(twice[0])}")
+    for story in STORIES:
+        homes = [lot for lot in lots if lot.get("story") == story]
+        if len(homes) != 1:
+            raise ContentError(f"{source}: exactly one lot must carry the story {story!r} (got {len(homes)})")
+        if homes[0].get("resident") != story:
+            raise ContentError(f"{source}: story {story!r} needs its own resident on lot {homes[0]['id']!r}")
+    for side in TOWN_SIDES:
+        row = sorted((lot for lot in lots if lot["side"] == side), key=lambda lot: lot["at"])
+        for before, after in zip(row, row[1:]):
+            if after["at"] < _town_extent(before)[1]:
+                raise ContentError(f"{source}: lot {after['id']!r} overlaps {before['id']!r} on the {side} side")
+    shop = next(lot for lot in lots if lot["kind"] == "shop")
+    trafohuisje = next(lot for lot in lots if lot["kind"] == "trafohuisje")
+    _town_check_corners(shop, trafohuisje, length, source)
+
+
+def _town_check_corners(shop: dict, trafohuisje: dict, length: float, source: str) -> None:
+    """The shop stands on a corner, the trafohuisje near the far end."""
+    def gaps(lot: dict) -> tuple[float, float]:  # to the start end, to the far end
+        start, end = _town_extent(lot)
+        return start, length - end
+    shop_gaps = gaps(shop)
+    corner = shop_gaps.index(min(shop_gaps))
+    if shop_gaps[corner] > TOWN_SHOP_REACH:
+        raise ContentError(f"{source}: the shop must stand on a corner (within {TOWN_SHOP_REACH} m of an end)")
+    if gaps(trafohuisje)[1 - corner] > TOWN_TRAFO_REACH:
+        raise ContentError(f"{source}: the trafohuisje must stand at the far end from the shop "
+                           f"(within {TOWN_TRAFO_REACH} m of it)")
+
+
+def _town_prop(prop: dict, length: float, where: str) -> None:
+    _known_keys(prop, TOWN_PROP_KEYS, where)
+    _one_of(prop, "kind", TOWN_PROP_KINDS, where)
+    if ("side" in prop) == ("across" in prop):
+        raise ContentError(f"{where}: stands on a side or across the street (one of them)")
+    if "side" in prop:
+        _one_of(prop, "side", TOWN_SIDES, where)
+    elif prop["across"] is not True:
+        raise ContentError(f"{where}: 'across' must be true")
+    low, high = -TOWN_PROP_BEFORE, length + TOWN_PROP_BEYOND
+    if not low <= _number(prop, "at", where, -1000, 1000) <= high:
+        raise ContentError(f"{where}: lies outside the street (from {low:g} to {high:g} m)")
+    if "length" in prop or prop["kind"] in ("trench", "canal"):
+        _number(prop, "length", where, 1, 60)
+    van = prop["kind"] == "van"
+    if van != ("livery" in prop):
+        raise ContentError(f"{where}: {'a van needs a livery' if van else 'only a van has a livery'}")
+    if not van and ("kerb" in prop or "yard_van" in prop):
+        raise ContentError(f"{where}: only a van stands at the kerb or comes from the yard")
+    if "kerb" in prop and not isinstance(prop["kerb"], bool):
+        raise ContentError(f"{where}: 'kerb' must be true or false")
+    if "yard_van" in prop:
+        _number(prop, "yard_van", where, 0, integer=True)
+
+
+def _town_check_props(props: list[dict], source: str) -> None:
+    kinds = Counter(prop["kind"] for prop in props)
+    for kind in ("trench", "canal"):
+        if kinds[kind] != 1:
+            raise ContentError(f"{source}: needs exactly one {kind} (got {kinds[kind]})")
+    if kinds["hedge"] < TOWN_HEDGES:
+        raise ContentError(f"{source}: needs at least {TOWN_HEDGES} hedges (got {kinds['hedge']})")
+    low, high = TOWN_LAMPS
+    if not low <= kinds["lamp"] <= high:
+        raise ContentError(f"{source}: needs {low} to {high} lamps (got {kinds['lamp']})")
+    kerb_vans = [p for p in props if p.get("kerb") is True]
+    if len(kerb_vans) != 1:
+        raise ContentError(f"{source}: needs exactly one kerb van, the player's (got {len(kerb_vans)})")
+    if "yard_van" not in kerb_vans[0]:
+        raise ContentError(f"{source}: the kerb van needs a yard_van (which of the yard's vans it is)")
+    for prop in props:
+        if "yard_van" in prop and prop is not kerb_vans[0]:
+            raise ContentError(f"{source}: only the kerb van has a yard_van ({prop['id']!r} has one)")
+
+
+def _town_fields(doc: dict, source: str) -> None:
+    for field in _town_list(doc, "fields", source):
+        where = f"{source}: field {field.get('step')!r}"
+        _known_keys(field, TOWN_FIELD_KEYS, where)
+        _require_strings(field, sorted(TOWN_FIELD_KEYS), where)
+
+
+def validate_town(doc: Any, source: str) -> None:
+    if not isinstance(doc, dict):
+        raise ContentError(f"{source}: expected a mapping at the top level")
+    _known_keys(doc, TOWN_KEYS, source)
+    length = _town_length(doc, source)
+    lots, props = _town_list(doc, "lots", source), _town_list(doc, "props", source)
+    for lot in lots:
+        _town_lot(lot, length, f"{source}: lot {lot.get('id')!r}")
+    for prop in props:
+        _town_prop(prop, length, f"{source}: prop {prop.get('id')!r}")
+    _check_ids([e.get("id") for e in lots + props], "lot or prop", source)
+    _town_check_lots(lots, length, source)
+    _town_check_props(props, source)
+    _town_fields(doc, source)
+
+
+def check_town(docs: dict[str, Any]) -> None:
+    """A field marker stands for a real step, at a lot or prop of the street, once."""
+    town = docs.get("town")
+    if town is None:
+        return
+    steps = _network_index(docs["value_streams"], docs["kpis"])["step"]
+    spots = {e["id"] for e in town["lots"] + town["props"]}
+    seen: set[str] = set()
+    for field in town["fields"]:
+        where = f"town.yaml: field {field['step']!r}"
+        if field["step"] not in steps:
+            raise ContentError(f"{where}: unknown step")
+        if field["at"] not in spots:
+            raise ContentError(f"{where}: unknown lot or prop {field['at']!r}")
+        if field["step"] in seen:
+            raise ContentError(f"{where}: is marked twice")
+        seen.add(field["step"])
+
+
 VALIDATORS: dict[str, Callable[[Any, str], None]] = {
     "game": validate_game,
     "company": validate_company,
@@ -3612,17 +3819,18 @@ VALIDATORS: dict[str, Callable[[Any, str], None]] = {
     "discoveries": validate_discoveries,
     "explainers": validate_explainers,
     "world": validate_world,
+    "town": validate_town,
     "places": validate_places,
     "scenes": validate_scenes,
 }
 # Registered files a content set may leave out.
-OPTIONAL = {"dialogs", "explainers", "world", "places", "company", "scenes"}
+OPTIONAL = {"dialogs", "explainers", "world", "places", "company", "scenes", "town"}
 
 # Checks that need several files at once. Each gets {stem: document}.
 CROSS_CHECKS: list[Callable[[dict[str, Any]], None]] = [check_kpis, check_problems, check_missions, check_concepts,
                                                       check_dialogs, check_discoveries, check_explainers, check_world,
                                                       check_places, check_spoken, check_tells, check_company,
-                                                      check_scenes, check_clue_spoilers]
+                                                      check_scenes, check_town, check_clue_spoilers]
 
 
 def _validator_for(stem: str) -> Callable[[Any, str], None] | None:
