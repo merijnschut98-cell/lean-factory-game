@@ -909,14 +909,17 @@ func _apply_old_fix(st: ProblemState) -> void:
 
 # ── Sustain: fixes wear, audits refresh them (RegionSustain holds the rules) ──
 
+## The contract is RegionSustain.sustain.
 func sustain(problem_id: String) -> Dictionary:
 	return sustain_rules.sustain(problem_id)
 
 
+## The contract is RegionSustain.health.
 func health(problem_id: String) -> float:
 	return sustain_rules.health(problem_id)
 
 
+## The contract is RegionSustain.life_days.
 func life_days(problem_id: String) -> float:
 	return sustain_rules.life_days(problem_id)
 
@@ -930,24 +933,29 @@ func days_to_recur(problem_id: String) -> float:
 	return INF if held_by_routine(problem_id) else Sustain.days_left(state[problem_id].wear, life)
 
 
+## The contract is RegionSustain.held_by_routine.
 func held_by_routine(problem_id: String) -> bool:
 	return sustain_rules.held_by_routine(problem_id)
 
 
+## The contract is RegionSustain.audit.
 func audit(place: String) -> Dictionary:
 	return sustain_rules.audit(place)
 
 
+## The contract is RegionSustain.plan_routine.
 func plan_routine(place: String) -> String:
 	return sustain_rules.plan_routine(place)
 
 
+## The contract is RegionSustain.stop_routine.
 func stop_routine(place: String) -> String:
 	return sustain_rules.stop_routine(place)
 
 
 # ── Stagnation drift ────────────────────────────────────────────────────────
 
+## The contract is RegionSustain.start_drift.
 func start_drift() -> void:
 	sustain_rules.start_drift()
 
@@ -957,5 +965,6 @@ func stagnant_days() -> float:
 	return (net.time - drift_from) / float(SimCalendar.MINUTES_PER_DAY) if drift_from >= 0 else 0.0
 
 
+## The contract is RegionSustain.drift_level.
 func drift_level() -> float:
 	return sustain_rules.drift_level()
