@@ -69,6 +69,31 @@ func test_standing_at_a_point_puts_it_in_reach() -> void:
 	_close(office)
 
 
+## A place's ring is no quest marker (UX audit #2): it shows only near the player or under
+## the cursor, and never while a panel, talk or scene holds the world.
+func test_a_ring_shows_only_near_or_hovered_and_never_under_a_panel() -> void:
+	var office := _office()
+	var design := office.interactable(DESIGN)
+	var board := office.interactable("mission_board")
+	office.player.position = design.position + Vector3(Interactable.RING_SHOW - 0.5, 0, 0)
+	office.fade_rings(1.0)
+	assert_true(design.ring_shown(), "near: shown")
+	var far := office.interactables.filter(func(i: Interactable) -> bool:
+		return i.has_ring and Vector2(i.position.x - design.position.x, i.position.z - design.position.z).length() > 2 * Interactable.RING_SHOW)
+	assert_false(far.is_empty(), "a ring far from the player")
+	assert_false(far.any(func(i: Interactable) -> bool: return i.ring_shown()), "far rings stay hidden")
+	far[0].set_hovered(true)
+	office.fade_rings(1.0)
+	assert_true(far[0].ring_shown(), "hovered: shown, however far")
+	office.interact(board)
+	office.fade_rings(1.0)
+	assert_true(office.ui.is_busy(), "a panel is open")
+	assert_false(office.interactables.any(func(i: Interactable) -> bool: return i.ring_shown()), "no ring under a panel")
+	assert_false(office.interactable("door:meter_data").ring_shown() if office.interactable("door:meter_data") != null else false,
+		"a shut door never has one")
+	_close(office)
+
+
 func test_the_player_starts_at_the_spawn_point() -> void:
 	var office := _office()
 	var spawn := office.find_marker("spawn")

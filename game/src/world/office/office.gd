@@ -264,6 +264,15 @@ func _process(delta: float) -> void:
 			if p != null:
 				tagged.append(p)
 	people.show_tags(tagged)
+	fade_rings(delta)
+
+
+## The rings near the player or under the cursor fade in, the rest out; none while a panel,
+## talk or scene holds the world (Interactable.fade_ring).
+func fade_rings(delta: float) -> void:
+	var free := world_free()
+	for i in interactables:
+		i.fade_ring(Vector2(player.position.x - i.position.x, player.position.z - i.position.z).length(), free, delta)
 
 
 ## The model when it has been imported, else the stand-in.
