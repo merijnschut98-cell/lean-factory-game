@@ -38,6 +38,8 @@ const TRAINING_FIRST := "training_mon"
 const TRAINING_PROBLEM := "training_tray"
 ## A fade forecast looks at most a quarter ahead.
 const MAX_FORECAST_DAYS := 91
+## The source of the headcount effect for the people off sick tomorrow, per team (+ the team's pool id).
+const ABSENT_SOURCE := "absent:"
 ## A milestone's scene takes half an hour of the day (ESTIMATE: a sit-down with two managers).
 const SCENE_MINUTES := 30
 
@@ -1021,6 +1023,31 @@ func talked(dialog_id: String) -> bool:
 	return people.talks.has(dialog_id) or not people.dialogs.has(dialog_id)
 
 
+## How strained a person is now (People.strain): 0 to 1, what the office shows of them.
+func strain_of(person_id: String) -> float:
+	return people.strain(person_id, region.net.time)
+
+
+## Whether the person is off sick today (People.off_on): they are not in the office.
+func absent_today(person_id: String) -> bool:
+	return people.off_on(person_id, SimCalendar.day_of(region.net.time))
+
+
+## Those off sick on `day` take their hours from their team's pool for that day: attendance follows
+## the next morning (SimModifiers), so this is set at each day change for tomorrow, and cleared for
+## a team with nobody off.
+func _set_absences(day: int) -> void:
+	var off := people.absent_on(day)
+	for pool_id: String in people.team_ids():
+		var source := ABSENT_SOURCE + pool_id
+		if not off.has(pool_id):
+			region.net.clear_effects(source)
+			continue
+		var refused := region.net.set_effects(source, [{"target": pool_id, "property": "headcount", "value": -off[pool_id]}])
+		if not refused.is_empty():
+			push_warning("absence of %s: %s" % [pool_id, refused])
+
+
 ## Each team's planned load now: pool id → utilisation (Capacity; 1.0 is all its hours).
 func _team_loads() -> Dictionary:
 	var out := {}
@@ -1047,9 +1074,12 @@ func _sync_people() -> void:
 		return
 	var world_facts := SessionTalks.facts(self)
 	var world := {"now": region.net.time, "facts": world_facts, "beats": missions.beats(), "training": missions.in_training()}
-	if SimCalendar.day_of(region.net.time) != people.drift_day:
-		world["loads"] = _team_loads()  # morale's daily drift (People._drift)
+	var new_day := SimCalendar.day_of(region.net.time) != people.drift_day
+	if new_day:
+		world["loads"] = _team_loads()  # morale's daily drift and the strain (People._drift)
 	_people_events.append_array(people.daily(world))
+	if new_day:
+		_set_absences(SimCalendar.day_of(region.net.time) + 1)
 	var facts := people.facts(world_facts)
 	for fact: String in facts:
 		if fact.get_slice(":", 0) in People.FACT_KINDS:

@@ -5,7 +5,7 @@ extends RefCounted
 ## coffee at the coffee corner, lunch, home, or home late. A field that is missing or bad
 ## falls back to the person's default (with a warning for a bad one); a day out of order
 ## falls back whole. Defaults vary by person, so the office never moves in lockstep.
-## Who stays late follows the simulation, in one rule (stays_late).
+## Who stays late follows the simulation, in one rule (stays_late, Strain).
 
 const KEYS: Array[String] = ["arrive", "coffee", "lunch", "leave", "late_until"]
 ## Where someone is: not in the building, at their desk, at the coffee corner, at lunch.
@@ -29,12 +29,6 @@ const WALK_WINDOW := 20
 ## The default day's spreads (min) from 08:00, 09:50, 12:00 and 17:00 (design §1.1: in
 ## 08:00–08:45, coffee about ten, lunch 12:00–13:00, out 17:00–17:30).
 const SPREAD := {"arrive": [8 * 60, 45], "coffee": [9 * 60 + 50, 25], "lunch": [12 * 60, 30], "leave": [17 * 60, 30]}
-## Staying late (estimates). A team planned above 85 % of its hours: queueing theory
-## (Kingman) has waits climbing steeply past about 80–85 % utilisation, and such a team
-## catches up after hours. Morale under 0.35 (People's 0–100 as 0–1; FRIENDLY_MORALE is
-## 55, someone leaves under 20): a worn-down person stays to keep up.
-const LOAD_NORM := 0.85
-const LOW_MORALE := 0.35
 
 var arrive := 0
 var coffee := 0
@@ -129,29 +123,19 @@ func place_at(minute: int, late: bool) -> Dictionary:
 	return {"place": DESK, "since": since}
 
 
-## The one rule of who stays late (design §1.1, estimates above): their team's planned
-## load above the norm, or their morale low.
-static func stays_late(morale: float, utilisation: float) -> bool:
-	return utilisation > LOAD_NORM or morale < LOW_MORALE
+## The one rule of who stays late (design §1.1): their strain (Strain, from the team's load,
+## their morale and pressure) has reached Strain.LATE_AT.
+static func stays_late(strain: float) -> bool:
+	return strain >= Strain.LATE_AT
 
 
-## Who of `ids` stays late today, by the session: {person id: true}. Morale from
-## energy_of; the team's load from the region's capacity (its pools' utilisation) when
-## the session has a region and knows the person; without either, their day as authored.
+## Who of `ids` stays late today, by the session's strain_of: {person id: true}. Without
+## strain_of (a stand-in without a simulation), their day as authored.
 static func late_ids(session: Object, ids: Array) -> Dictionary:
 	var out := {}
-	if session == null or not session.has_method("energy_of"):
+	if session == null or not session.has_method("strain_of"):
 		return out
-	var region: Variant = session.get("region")
-	var people: Variant = session.get("people")
-	var pools: Dictionary = Capacity.analyse((region as Region).net)["pools"] if region is Region else {}
 	for id: Variant in ids:
-		var energy: Variant = session.call("energy_of", str(id))
-		var morale := float((energy as Dictionary).get("energy", 1.0)) if energy is Dictionary else 1.0
-		var load := 0.0
-		if not pools.is_empty() and people is People and (people as People).persons.has(id):
-			var team := (region as Region).team_at((people as People).persons[id].place)
-			load = float(pools.get(team, {}).get("utilisation", 0.0))
-		if stays_late(morale, load if is_finite(load) else 0.0):
+		if stays_late(float(session.call("strain_of", str(id)))):
 			out[str(id)] = true
 	return out

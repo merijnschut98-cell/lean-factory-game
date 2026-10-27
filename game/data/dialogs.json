@@ -467,6 +467,54 @@
     "key_accounts",
     "grid_analysts"
    ]
+  },
+  {
+   "id": "strain_high_tired",
+   "lines": [
+    "Ik ben echt moe, hoor. Het is al weken zo druk.",
+    "Ik merk het ook. Ik slaap er slechter van."
+   ],
+   "strain": "high"
+  },
+  {
+   "id": "strain_high_no_air",
+   "lines": [
+    "Ik kom nauwelijks nog aan mijn eigen werk toe.",
+    "Nee, ik ook niet. En morgen begint het weer van voren af aan."
+   ],
+   "strain": "high"
+  },
+  {
+   "id": "strain_mid_next_week",
+   "lines": [
+    "Heb je al gezien wat er volgende week op het bord staat?",
+    "Ja. Het is te doen, als er niks tussendoor komt."
+   ],
+   "strain": "mid"
+  },
+  {
+   "id": "strain_mid_meeting",
+   "lines": [
+    "Is het overleg van donderdag nou verzet of niet?",
+    "Volgens mij naar vrijdag. Ik kijk het straks nog even na in de agenda."
+   ],
+   "strain": "mid"
+  },
+  {
+   "id": "strain_low_coffee",
+   "lines": [
+    "Deze koffie is vandaag best te drinken, vind je niet?",
+    "Wacht maar tot de machine hoort dat je dat zegt."
+   ],
+   "strain": "low"
+  },
+  {
+   "id": "strain_low_tidy",
+   "lines": [
+    "Het is vandaag zo rustig dat ik bijna zin heb om mijn bureau op te ruimen.",
+    "Doe maar niet. Straks vind je nog iets wat je kwijt was."
+   ],
+   "strain": "low"
   }
  ],
  "dialogs": [

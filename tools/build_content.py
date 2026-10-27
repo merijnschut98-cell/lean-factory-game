@@ -2007,10 +2007,11 @@ def validate_dialogs(doc: Any, source: str) -> None:
 
 
 # ── In passing (Phase 2 design §1.4; game/src/rules/reactions.gd) ───────────
-# Mirrored in Reactions.FACTS / MOODS / LOADS.
+# Mirrored in Reactions.FACTS / MOODS / LOADS and Strain.BANDS.
 GREETING_FACTS = ["ruined", "pressured", "committed", "heard", "standardised"]
 QUICK_MOODS = ["tired", "busy", "calm", "morning", "afternoon", "late"]
 CHATTER_LOADS = ["busy", "calm"]
+CHATTER_STRAINS = ["low", "mid", "high"]
 GREETINGS_PER_PERSON = 3
 SHARED_LINES = "_all"
 
@@ -2040,7 +2041,7 @@ def _cast_ids() -> list[str]:
 
 def _validate_passing(doc: dict, source: str) -> None:
     """greetings (every cast member: GREETINGS_PER_PERSON ordinary ones; the shared lines per
-    fact), quick (the shared lines per mood), chatter (two lines, known teams and load)."""
+    fact), quick (the shared lines per mood), chatter (two lines, known teams, load and strain band)."""
     if not any(k in doc for k in ("greetings", "quick", "chatter")):
         return   # a content set without people
     cast = _cast_ids()
@@ -2067,7 +2068,7 @@ def _validate_passing(doc: dict, source: str) -> None:
             raise ContentError(f"{source}: greetings {pid}: needs at least three ordinary greetings (day)")
     for c in _entries(doc, "chatter", source, name="id"):
         where = f"{source}: chatter {c['id']}"
-        _known_keys(c, {"id", "teams", "load", "lines", "days"}, where)
+        _known_keys(c, {"id", "teams", "load", "lines", "days", "strain"}, where)
         if not (isinstance(c.get("lines"), list) and len(c["lines"]) == 2):
             raise ContentError(f"{where}: two lines, the first person's and the second's")
         _lines(c["lines"], where)
@@ -2076,6 +2077,9 @@ def _validate_passing(doc: dict, source: str) -> None:
             raise ContentError(f"{where}: teams names people's teams (unknown: {unknown})")
         if "load" in c and c["load"] not in CHATTER_LOADS:
             raise ContentError(f"{where}: load is one of {', '.join(CHATTER_LOADS)}")
+        # Only between colleagues at this Strain.band (the higher of the two).
+        if "strain" in c and c["strain"] not in CHATTER_STRAINS:
+            raise ContentError(f"{where}: strain is one of {', '.join(CHATTER_STRAINS)}")
         # Only on these days (the weekend's plans on Thursday or Friday, never on a Monday).
         days = c.get("days", DAY_NAMES)
         if not (isinstance(days, list) and days and all(d in DAY_NAMES for d in days)):

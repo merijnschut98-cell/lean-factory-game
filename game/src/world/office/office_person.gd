@@ -12,8 +12,9 @@ extends Node3D
 ## seated person swivels part of the way) and back to their work after; they say things as
 ## a short subtitle over their head (say: a greeting, a quick line, coffee chatter); in a
 ## talk their posture carries the openness band (pose_for_band) and a hesitation is a look
-## away (hesitate). Low energy shows in a tired idle. A clip the model lacks falls back to
-## the nearest one it has (FALLBACK).
+## away (hesitate). Strain (Strain, from GameSession.strain_of) shows in a tired idle, and a
+## hand to the neck when it is worse. A clip the model lacks falls back to the nearest one it
+## has (FALLBACK).
 
 const POSES: Array[String] = ["sit", "idle", "talk", "walk"]
 ## The talk's openness bands (Dialog.BANDS: Dicht, Op z'n hoede, Luistert, Open, Denkt mee)
@@ -26,10 +27,7 @@ const SEATED_BAND_CLIPS: Array[String] = ["sit", "sit_talk", "sit_talk", "sit_ta
 const SETTLES := {"nod": "talk"}
 ## The nearest clip a model built before the reaction clips has.
 const FALLBACK := {"arms_folded": "idle", "lean": "talk", "nod": "talk", "look_away": "idle", "tired": "idle",
-	"phone": "talk", "carry": "walk", "sit_talk": "sit", "sit_tired": "sit"}
-## Under this energy (morale 0–1) the idle and the typing are the tired ones (slower, the
-## back rounded, the head down). An ESTIMATE: People's leave clock starts at 0.2.
-const TIRED_ENERGY := 0.35
+	"phone": "talk", "carry": "walk", "sit_talk": "sit", "sit_tired": "sit", "neck": "tired", "sit_neck": "sit_tired"}
 ## How far (m, on the floor) a person notices you and turns to you; how fast they turn
 ## (rad/s); how far a seated person swivels on their chair (rad); the share of the turn a
 ## closed person (band 0, Dicht) gives you.
@@ -147,8 +145,10 @@ var _talking := false
 var held := false
 ## Seconds left of a hesitation's turn aside.
 var _hesitating := 0.0
-## Low energy: the idle and the typing are the tired clips.
+## Strained (Strain.SLUMP_AT): the idle and the typing are the tired clips (slower, the back
+## rounded, the head down); from Strain.NECK_AT also a hand to the neck.
 var tired := false
+var neck := false
 ## The clip asked for last (before FALLBACK), e.g. "arms_folded".
 var clip := ""
 
@@ -263,15 +263,18 @@ func show_tag(on: bool) -> void:
 	tag.visible = on
 
 
-## The energy bar from GameSession.energy_of: {energy (0–1), needs_talk}. Shown, with the
-## check-in mark, only while they need a talk; {} (no such accessor, an unknown person)
-## hides it.
+## The energy bar from GameSession.energy_of: {energy (0–1), needs_talk}, and the strain
+## from GameSession.strain_of: {strain (0–1)}. The bar is shown, with the check-in mark, only
+## while they need a talk; {} (no such accessor, an unknown person) hides it and eases the
+## posture. The posture follows the strain alone (Strain.SLUMP_AT, Strain.NECK_AT).
 func show_energy(state: Dictionary) -> void:
 	bar.visible = bool(state.get("needs_talk", false))
 	mark.visible = bar.visible
-	var was := tired
-	tired = state.has("energy") and float(state["energy"]) < TIRED_ENERGY
-	if tired != was and pose in ["idle", "sit"] and clip in ["idle", "sit", "tired", "sit_tired"]:
+	var was := [tired, neck]
+	var strain := float(state.get("strain", 0.0))
+	tired = strain >= Strain.SLUMP_AT
+	neck = strain >= Strain.NECK_AT
+	if was != [tired, neck] and pose in ["idle", "sit"] and clip in ["idle", "sit", "tired", "sit_tired", "neck", "sit_neck"]:
 		_play(pose)
 	if bar.visible:
 		(bar.material_override as ShaderMaterial).set_shader_parameter("fill", clampf(float(state.get("energy", 0.5)), 0.0, 1.0))
@@ -429,16 +432,17 @@ func _float_overhead() -> void:
 
 
 ## Play `animation` (a pose or a reaction clip) with a short blend: the tired version of the
-## idle and the typing when tired, the nearest clip the model has when it lacks this one, and
-## after a one-shot (the nod) the loop it settles into.
+## idle and the typing when tired (with a hand to the neck when strained worse), the nearest
+## clip the model has when it lacks this one, and after a one-shot (the nod) the loop it
+## settles into.
 func _play(animation: String) -> void:
 	if tired and animation in ["idle", "sit"]:
-		animation = "tired" if animation == "idle" else "sit_tired"
+		animation = ("sit_" if animation == "sit" else "") + ("neck" if neck else "tired")
 	clip = animation
 	if _animations == null:
 		return
-	if not _animations.has_animation(animation):
-		animation = FALLBACK.get(animation, animation)
+	while not _animations.has_animation(animation) and FALLBACK.has(animation):
+		animation = FALLBACK[animation]
 	if _animations.has_animation(animation):
 		_animations.play(animation, 0.25)
 		var then: String = SETTLES.get(animation, "")

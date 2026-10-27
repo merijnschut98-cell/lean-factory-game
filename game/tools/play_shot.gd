@@ -44,7 +44,9 @@ extends SceneTree
 ## people_whiteboard, people_explainer (Ruud's whiteboard, and E there) ·
 ## play_day_0830, play_day_1230, play_day_1830 (PLAN 2.14 S1-A: the office keeps time:
 ## people coming in by the lift and the stairs in the morning light, lunch in the kantine,
-## the 1e after six with the late stayers' desk lamps) · play_home, play_home_fade (after
+## the 1e after six with the late stayers' desk lamps) · play_day_1830_strain (PLAN 3.1-A: the
+## same after the stack at Werkvoorbereiding was left for three weeks: who is still in and
+## who is slumped follows GameSession.strain_of) · play_home, play_home_fade (after
 ## five at the front door: "Naar huis", then the fade with the next morning's date) ·
 ## phone_home, phone_messages, phone_map, phone_settings (PLAN 2.14 S1-F: the phone raised on its
 ## home screen on Monday of the training week, on Berichten, on Kaart) ·
@@ -349,7 +351,7 @@ func _run() -> void:
 		"people_kcc", "people_lunch", "people_directie", "people_netstrategie", "people_planning", "people_revisie", \
 				"people_whiteboard", "people_explainer", "people_dirk", "people_gert":
 			await _rooms(office, state)
-		"play_day_0830", "play_day_1230", "play_day_1830":
+		"play_day_0830", "play_day_1230", "play_day_1830", "play_day_1830_strain":
 			await _day(office, state)
 		"play_home", "play_home_fade":
 			_home(office, state)
@@ -799,7 +801,11 @@ func _rooms(office: Office, state: String) -> void:
 func _day(office: Office, state: String) -> void:
 	var spec: Array = {"play_day_0830": [8 * 60 + 30, "first", Vector3(7.0, 0, -6.6), 1.35, 2.0],
 		"play_day_1230": [12 * 60 + 30, "ground", Vector3(-11.8, 0, -7.6), 1.9, 3.0],
-		"play_day_1830": [18 * 60 + 30, "first", Vector3(5.8, 0, -6.0), -2.7, 3.0]}[state]
+		"play_day_1830": [18 * 60 + 30, "first", Vector3(5.8, 0, -6.0), -2.7, 3.0],
+		"play_day_1830_strain": [18 * 60 + 30, "first", Vector3(5.8, 0, -6.0), -2.7, 3.0]}[state]
+	if state == "play_day_1830_strain":   # the stack at Werkvoorbereiding, left for three weeks
+		office.session.accept(MISSION)
+		office.session.wait_days(21)
 	var minute: int = spec[0]
 	office.session.pass_time(minute - office.session.minute_of_day())
 	office.ui.after_action()

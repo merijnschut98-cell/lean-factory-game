@@ -159,6 +159,47 @@ func test_weekend_plans_are_not_chatted_about_on_a_monday() -> void:
 	assert_false("mon" in weekend.get("days", ["mon"]), "the real weekend chatter waits for the end of the week")
 
 
+## A chatter with a `strain` band is said only by colleagues at that band (the higher of the two):
+## a complaint about the load by the strained, a joke by the easy; one without is for any band.
+func test_chatter_by_strain_fits_only_its_band() -> void:
+	var r := Reactions.new({"chatter": [
+		{"id": "heavy", "strain": "high", "lines": ["Het wordt me te veel.", "Mij ook."]},
+		{"id": "joke", "strain": "low", "lines": ["Weet je hoe laat het is?", "Koffietijd."]},
+		{"id": "shop", "lines": ["Ging die aanvraag nog door?", "Ja, vanochtend."]}]})
+	for n in 6:
+		assert_ne(r.chatter_for([], "", n, -1, "high")[0], "Weet je hoe laat het is?", "high: no joke, n=%d" % n)
+		assert_ne(r.chatter_for([], "", n, -1, "low")[0], "Het wordt me te veel.", "low: no complaint, n=%d" % n)
+		assert_eq(r.chatter_for([], "", n, -1, "mid")[0], "Ging die aanvraag nog door?", "mid: shop talk only, n=%d" % n)
+		assert_eq(r.chatter_for([], "", n)[0], "Ging die aanvraag nog door?", "no band given: shop talk only, n=%d" % n)
+	var high := range(6).map(func(n: int) -> String: return r.chatter_for([], "", n, -1, "high")[0])
+	assert_true("Het wordt me te veel." in high and "Ging die aanvraag nog door?" in high, "high has both: %s" % [high])
+
+
+## The session gives the pair's band, that of the more strained of the two, and the real content
+## has snippets for every band.
+func test_colleagues_chat_by_the_higher_strain_of_the_two() -> void:
+	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
+	var bands := {}
+	for c: Dictionary in s.catalog.reactions.chatter:
+		bands[str(c.get("strain", ""))] = true
+	for band in Strain.BANDS:
+		assert_true(bands.has(band), "the content has chatter for %s" % band)
+	var by_first_line := {}
+	for c: Dictionary in s.catalog.reactions.chatter:
+		by_first_line[s.fill_tokens(c["lines"][0])] = str(c.get("strain", ""))
+	var heard := {}
+	for day in 60:
+		s.people.load_seen["work_prep"] = 1.2   # Anouk is strained, Sanne is not
+		s.people.morale["anouk"] = People.LEAVE_MORALE
+		s.people.load_seen["intake"] = 0.5
+		var lines := s.chatter("sanne", "anouk")
+		if not lines.is_empty():
+			heard[by_first_line[lines[0]]] = true
+		s.wait_days(1)
+	assert_false(heard.has("low") or heard.has("mid"), "the more strained of the two decides: %s" % [heard.keys()])
+	assert_true(heard.has("high"), "and the strained complain: %s" % [heard.keys()])
+
+
 ## The corners are found once when the floor loads, not every look round.
 func test_the_coffee_corners_are_found_once_per_floor() -> void:
 	var office := _office()
@@ -251,13 +292,23 @@ func test_a_hesitation_is_a_look_away() -> void:
 	p.free()
 
 
-func test_low_energy_shows_in_a_tired_idle() -> void:
+func test_strain_shows_in_a_tired_idle_and_a_hand_to_the_neck() -> void:
 	var p := _person("sanne", "idle")
-	p.show_energy({"energy": 0.2, "needs_talk": false})
+	p.show_energy({"energy": 0.2, "strain": Strain.SLUMP_AT, "needs_talk": false})
 	assert_eq(p.playing(), "tired")
-	p.show_energy({"energy": 0.8, "needs_talk": false})
-	assert_eq(p.playing(), "idle")
+	p.show_energy({"energy": 0.2, "strain": Strain.NECK_AT, "needs_talk": false})
+	assert_eq(p.clip, "neck", "the clip asked for")
+	assert_eq(p.playing(), "tired", "the model has no neck clip yet: the tired one (FALLBACK)")
+	p.show_energy({"energy": 0.2, "strain": Strain.SLUMP_AT - 0.01, "needs_talk": false})
+	assert_eq(p.playing(), "idle", "morale alone (the energy bar) no longer slumps anyone")
 	p.free()
+	var seated := _person("sanne", "sit")
+	seated.show_energy({"strain": Strain.NECK_AT})
+	assert_eq(seated.clip, "sit_neck")
+	assert_eq(seated.playing(), "sit_tired")
+	seated.show_energy({})
+	assert_eq(seated.playing(), "sit")
+	seated.free()
 
 
 func test_a_talk_turns_a_seated_person_to_the_player_at_once() -> void:

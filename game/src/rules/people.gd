@@ -51,6 +51,10 @@ const LOAD_DRIFT := 0.25
 const COMPLIED_DRIFT := 0.05
 const IGNORED_MORALE := -3
 const RECOVER_DRIFT := 0.1
+## The last LATE_LOG_DAYS working days of late_log are kept (an estimate: a month of work).
+const LATE_LOG_DAYS := 20
+## A saved smoothed load is clamped to this (an estimate: far above any team's utilisation).
+const LOAD_SEEN_MAX := 5.0
 ## A blame of their team.
 const MORALE_CONFRONTED := -10
 const REPUTATION := {"commitment": 1, "ruined": -1}
@@ -144,12 +148,23 @@ var beat_lines: Dictionary[String, bool] = {}
 ## person's part-point not yet taken from or added to morale.
 var drift_day := -1
 var drift_carry: Dictionary[String, float] = {}
+## Strain (rules/strain.gd): each team's load smoothed over Strain.SMOOTH_DAYS (team → utilisation;
+## absent before the team's first day seen), the day each person's strain first reached
+## Strain.ABSENT_AT (erased below it), how many people stood at Strain.LATE_AT or above on each of
+## the last LATE_LOG_DAYS working days, and the sick days taken, ever.
+var load_seen: Dictionary[String, float] = {}
+var strained_since: Dictionary[String, int] = {}
+var late_log: Array[int] = []
+var sick_days := 0
+## The teams the cast belongs to (the ids load_seen may hold).
+var _teams: Dictionary[String, bool] = {}
 
 
 func _init(person_defs: Array[PersonDef], dialog_defs: Array[DialogDef], lines: Dictionary) -> void:
 	bank = lines
 	for p in person_defs:
 		persons[p.id] = p
+		_teams[p.team] = true
 	for d in dialog_defs:
 		dialogs[d.id] = d
 	_reset()
@@ -157,9 +172,12 @@ func _init(person_defs: Array[PersonDef], dialog_defs: Array[DialogDef], lines: 
 
 func _reset() -> void:
 	for state: Dictionary in [trust, morale, memory, revealed, outcomes, agreed, talks, rest_until, heard_facts, prompts,
-			low_since, ignored, left, coach_after, last_prompt, observed, talk_log, note, beat_lines, drift_carry, judged]:
+			low_since, ignored, left, coach_after, last_prompt, observed, talk_log, note, beat_lines, drift_carry, judged,
+			load_seen, strained_since]:
 		state.clear()
 	prompt_log.clear()
+	late_log.clear()
+	sick_days = 0
 	drift_day = -1
 	coach_asks = 0
 	for p: PersonDef in persons.values():
@@ -567,16 +585,23 @@ func _pressured(known: Dictionary) -> Dictionary:
 	return out
 
 
-## Morale's drift for every day since the last (the constants above): world `loads`
-## (team → utilisation, Capacity) and the facts. Not in the training week (a friendly
-## first week, PLAN 2.13 D), and not before the first day it runs.
+## The daily drift for every day since the last (the constants above): world `loads`
+## (team → utilisation, Capacity) and the facts. The load is smoothed (Strain) on every
+## call, morale drifts not in the training week (a friendly first week, PLAN 2.13 D) and
+## not before the first day it runs, and the strain of the day is noted (_note_strain).
 func _drift(world: Dictionary, pressured: Dictionary) -> void:
-	var today := SimCalendar.day_of(int(world.get("now", 0)))
+	var now := int(world.get("now", 0))
+	var today := SimCalendar.day_of(now)
 	var days := today - drift_day if drift_day >= 0 else 0
 	drift_day = today
-	if days <= 0 or world.get("training", false):
-		return
 	var loads := JsonFile.dict_or_empty(world.get("loads"))
+	_smooth_loads(loads, days)
+	if days > 0 and not world.get("training", false):
+		_wear_morale(loads, days, pressured)
+	_note_strain(now, days)
+
+
+func _wear_morale(loads: Dictionary, days: int, pressured: Dictionary) -> void:
 	for p: PersonDef in persons.values():
 		if left.has(p.id):
 			continue
@@ -591,6 +616,86 @@ func _drift(world: Dictionary, pressured: Dictionary) -> void:
 		drift_carry[p.id] = change - whole
 		if whole != 0:
 			morale[p.id] = maxi(0, morale[p.id] + whole) if per_day < 0.0 else mini(morale[p.id] + whole, p.morale)
+
+
+## Each team's load as it is felt: a team seen for the first time takes today's load, one seen
+## before moves towards it over the `days` since (Strain.smoothed). A load that is no finite
+## number (a team with no hours) leaves what was seen as it is.
+func _smooth_loads(loads: Dictionary, days: int) -> void:
+	for team: String in _teams:
+		var load: Variant = loads.get(team)
+		if not (load is int or load is float) or not is_finite(float(load)):
+			continue
+		load_seen[team] = Strain.smoothed(load_seen[team], float(load), days) if load_seen.has(team) else float(load)
+
+
+## After the drift: whose strain first reached Strain.ABSENT_AT (or fell below it), and, for each
+## working day of the `days` since the last call, how many stand at Strain.LATE_AT or above and
+## how many are off sick. The span counts today's reading for each of its days: no invented
+## intermediate days.
+func _note_strain(now: int, days: int) -> void:
+	var today := SimCalendar.day_of(now)
+	var late := 0
+	for id: String in persons:
+		var strain_now := strain(id, now)
+		if strain_now >= Strain.ABSENT_AT:
+			strained_since[id] = strained_since.get(id, today)
+		else:
+			strained_since.erase(id)
+		if strain_now >= Strain.LATE_AT:
+			late += 1
+	for day in range(today - days + 1, today + 1):
+		if SimCalendar.weekday(SimCalendar.days(day)) >= 5:
+			continue
+		late_log.append(late)
+		sick_days += persons.keys().filter(func(id: String) -> bool: return off_on(id, day)).size()
+	while late_log.size() > LATE_LOG_DAYS:
+		late_log.pop_front()
+
+
+# ── Strain ──────────────────────────────────────────────────────────────────
+
+## What the work puts on `person_id` at `now` (Strain.reading, from their team's smoothed load, their
+## morale and recent pressure): 0 for an unknown person, one who left, or a team not seen yet.
+func strain(person_id: String, now: int) -> float:
+	var p: PersonDef = persons.get(person_id)
+	if p == null or left.has(person_id) or not load_seen.has(p.team):
+		return 0.0
+	return Strain.reading(load_seen[p.team], morale[person_id], pressed(person_id, now))
+
+
+## Whether they were pressed lately: a `pressure` or `confront` move in a talk within Strain.PRESSED_DAYS,
+## or a fix they own won by compliance (their best agreement, as saved: no facts needed).
+func pressed(person_id: String, now: int) -> bool:
+	var since := now - SimCalendar.days(Strain.PRESSED_DAYS)
+	for talk: Dictionary in talk_log.get(person_id, []):
+		if int(talk.get("at", -1)) >= since and talk.get("moves", []).any(func(m: Variant) -> bool: return m in ["pressure", "confront"]):
+			return true
+	return dialogs.values().any(func(d: DialogDef) -> bool:
+		return d.person == person_id and not d.owns.is_empty() and outcomes.get(d.id) == "compliance")
+
+
+## Whether they are off sick on `day`: their strain has stood at Strain.ABSENT_AT for Strain.ABSENT_AFTER_DAYS,
+## and `day` is the one working day of its week they are off (Strain.sick_weekday).
+func off_on(person_id: String, day: int) -> bool:
+	return strained_since.has(person_id) and not left.has(person_id) \
+		and day - strained_since[person_id] >= Strain.ABSENT_AFTER_DAYS \
+		and posmod(day, 7) == Strain.sick_weekday(person_id, floori(day / 7.0))
+
+
+## The ids of the teams the cast belongs to.
+func team_ids() -> Array:
+	return _teams.keys()
+
+
+## Team → how many of its people are off on `day`.
+func absent_on(day: int) -> Dictionary:
+	var out := {}
+	for id: String in persons:
+		if off_on(id, day):
+			var team := persons[id].team
+			out[team] = int(out.get(team, 0)) + 1
+	return out
 
 
 ## Whoever leaves on a dated beat that has come is gone (PersonDef.leaves_on),
@@ -768,7 +873,8 @@ func to_dict() -> Dictionary:
 		"prompt_log": prompt_log.duplicate(), "last_prompt": last_prompt.duplicate(),
 		"observed": observed.duplicate(true), "talk_log": talk_log.duplicate(true), "note": note.duplicate(),
 		"beat_lines": beat_lines.keys(), "drift_day": drift_day, "drift_carry": drift_carry.duplicate(),
-		"judged": judged.duplicate(),
+		"judged": judged.duplicate(), "load_seen": load_seen.duplicate(), "strained_since": strained_since.duplicate(),
+		"late_log": late_log.duplicate(), "sick_days": sick_days,
 	}
 
 
@@ -829,6 +935,18 @@ func load_dict(d: Dictionary) -> Array[String]:
 	drift_day = day if day != null else -1
 	dropped.append_array(_load_map(d.get("drift_carry"), persons, drift_carry,
 		func(v: Variant) -> Variant: return clampf(float(v), -1.0, 1.0) if v is int or v is float else null))
+	dropped.append_array(_load_map(d.get("load_seen"), _teams, load_seen,
+		func(v: Variant) -> Variant: return clampf(float(v), 0.0, LOAD_SEEN_MAX) if (v is int or v is float) and is_finite(float(v)) else null))
+	dropped.append_array(_load_map(d.get("strained_since"), persons, strained_since,
+		func(v: Variant) -> Variant: return maxi(0, int(v)) if (v is int or v is float) and is_finite(float(v)) else null))
+	var saved_late: Variant = d.get("late_log", [])
+	for n: Variant in saved_late if saved_late is Array else []:
+		if (n is int or n is float) and is_finite(float(n)):
+			late_log.append(clampi(int(n), 0, persons.size()))
+	while late_log.size() > LATE_LOG_DAYS:
+		late_log.pop_front()
+	var sick: Variant = whole.call(d.get("sick_days"))
+	sick_days = maxi(0, sick) if sick != null else 0
 	var saved_facts: Variant = d.get("facts", [])
 	for f: Variant in saved_facts if saved_facts is Array else []:
 		heard_facts[str(f)] = true
