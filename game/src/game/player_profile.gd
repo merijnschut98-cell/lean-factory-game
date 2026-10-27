@@ -13,8 +13,10 @@ extends RefCounted
 ## can never enter it, so it can never become a token or BBCode; fill() is
 ## single-pass besides (a substituted value is never scanned again).
 
-## What the save cards and {speler} show for a player without a valid name.
+## What the save cards show for a player without a valid name. Spoken lines never say it: a
+## greeting drops the name and elsewhere a colleague says ANONYMOUS (fill()).
 const NAMELESS := "Nieuwe CI-lead"
+const ANONYMOUS := "de nieuwe"
 const MAX_NAME := 16
 ## The badge photo: passport ratio 35:45 (estimate: sharp on a card and a badge).
 const PORTRAIT_SIZE := Vector2i(252, 324)
@@ -25,6 +27,8 @@ const _NAME := "^\\p{L}+(?:[ '\\-]\\p{L}+)*$"
 const _TYPEABLE := "^[\\p{L} '\\-]$"
 const _PNG_MAGIC := [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]
 const _TOKEN := "\\{([A-Za-z_]+)\\}"
+## {speler} right after a greeting, with the comma and space before it: "O, hoi {speler}!".
+const _GREETED := "(?i)(?<!\\p{L})(hoi|hé|ha|hallo|dag|goedendag|goedemorgen|goedemiddag|goedenavond|beste),? \\{speler\\}"
 ## The body's words for third-person lines about the player (§1.6): token ->
 ## [man, vrouw].
 const _BODY_WORDS := {
@@ -37,6 +41,7 @@ const _BODY_WORDS := {
 static var _name_re := RegEx.create_from_string(_NAME)
 static var _typeable_re := RegEx.create_from_string(_TYPEABLE)
 static var _token_re := RegEx.create_from_string(_TOKEN)
+static var _greeted_re := RegEx.create_from_string(_GREETED)
 
 ## The valid first name, or "" (shown as NAMELESS).
 var name := ""
@@ -127,20 +132,24 @@ static func texture_of(bytes: PackedByteArray) -> Texture2D:
 	return ImageTexture.create_from_image(image) if image.load_png_from_buffer(bytes) == OK else null
 
 
-## The player's tokens: {speler} and the body's words.
+## The player's tokens: {speler} and the body's words. Without a name, {speler} is how a
+## colleague says it (ANONYMOUS), never the save card's job title.
 func tokens() -> Dictionary:
 	var woman := CreatorLook.body_of(look) == "f"
-	var out := {"speler": display_name()}
+	var out := {"speler": name if not name.is_empty() else ANONYMOUS}
 	for token: String in _BODY_WORDS:
 		out[token] = _BODY_WORDS[token][1 if woman else 0]
 	return out
 
 
 ## `text` with the player's tokens filled, in one pass; any other {token} is
-## left for its own filler (e.g. {dossier_weken}).
+## left for its own filler (e.g. {dossier_weken}). Without a name a greeting
+## drops it ("O, hoi {speler}!" is "O, hoi!").
 func fill(text: String) -> String:
 	if not text.contains("{"):
 		return text
+	if name.is_empty():
+		text = _greeted_re.sub(text, "$1", true)
 	var values := tokens()
 	var out := ""
 	var at := 0

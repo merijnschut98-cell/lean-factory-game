@@ -44,7 +44,23 @@ func test_write_stops_at_day_and_saves_meta() -> void:
 	var back: GameSession = GameSave.read(SLOT, Catalog.DATA_DIR, dir)["session"]
 	assert_between(back.missions.play_day(), 10, 10, "the save is on the stop day")
 	_assert_working_morning(back)
+	assert_eq(back.player.name, MakeSaves.made_player(SLOT).name, "the bot never runs the creator: the save carries a made player")
+	assert_eq(back.player.look, MakeSaves.made_player(SLOT).look)
 	_cleanup()
+
+
+## A designer save's player (UX audit #1): a valid Dutch first name and a look from the
+## creator's options, the same for a slot every time the saves are made.
+func test_every_designer_slot_has_its_own_fixed_made_player() -> void:
+	var names := {}
+	for spec: Dictionary in DesignerSaves.SAVES:
+		var p := MakeSaves.made_player(spec["slot"])
+		assert_false(p.name.is_empty(), spec["slot"])
+		assert_eq(PlayerProfile.clean_name(p.name), p.name, "a valid name: %s" % p.name)
+		assert_eq(p.look, CreatorLook.normalized(p.look), "every trait a creator option")
+		assert_eq(MakeSaves.made_player(spec["slot"]).name, p.name, "reproducible")
+		names[p.name] = true
+	assert_true(names.size() > 1, "not one name for every slot")
 
 
 ## A save resumes the way a day starts in play: 08:30 on a working day (the office open,

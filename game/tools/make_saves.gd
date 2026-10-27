@@ -12,6 +12,20 @@ const DEFAULT_PERSONA := "expert"
 const DEFAULT_SEED := 11
 ## A spec's stops: one of them ends its run.
 const STOPS: Array[String] = ["stop_day", "stop_act"]
+## The bot never runs the creator, so a save gets one of these made players (a first name and
+## a look of creator options), picked by its slot: the same slot always has the same player.
+const MADE_PLAYERS: Array[Dictionary] = [
+	{"name": "Sanne", "look": {"lichaam": "vrouw", "huidskleur": "licht", "kapsel": "lob", "haarkleur": "donkerblond",
+		"ogen": "blauw", "gezicht": "naturel", "bril": "geen", "kleding": "blazer"}},
+	{"name": "Daan", "look": {"lichaam": "man", "huidskleur": "lichtgetint", "kapsel": "crop", "haarkleur": "bruin",
+		"ogen": "groen", "gezicht": "stoppels", "bril": "zwart_rechthoekig", "kleding": "quarterzip"}},
+	{"name": "Yasmina", "look": {"lichaam": "vrouw", "huidskleur": "getint", "kapsel": "lange_slagen", "haarkleur": "zwart",
+		"ogen": "bruin", "gezicht": "mascara", "bril": "groot_rond", "kleding": "overshirt"}},
+	{"name": "Ruben", "look": {"lichaam": "man", "huidskleur": "donker", "kapsel": "krullen_bovenop", "haarkleur": "zwart",
+		"ogen": "bruin", "gezicht": "korte_baard", "bril": "geen", "kleding": "trui"}},
+	{"name": "Femke", "look": {"lichaam": "vrouw", "huidskleur": "licht", "kapsel": "lang_steil", "haarkleur": "koperrood",
+		"ogen": "grijs", "gezicht": "geen", "bril": "rond_metaal", "kleding": "polo"}},
+]
 
 
 ## Play to the spec's stop (`stop_day` or `stop_act`), on to the next working morning, and
@@ -28,12 +42,23 @@ static func write(spec: Dictionary, persona: String, seed_value: int, dir: Strin
 		return "%s: the run ended on %s before its stop" % [spec["slot"], ended]
 	var s := bot.s
 	s.pass_time(working_morning(s.region.net.time) - s.region.net.time)
+	s.player = made_player(spec["slot"])
 	var designer := {"persona": persona, "seed": seed_value, "content_hash": DesignerSaves.content_hash()}
 	for stop: String in STOPS:
 		if spec.has(stop):
 			designer[stop] = spec[stop]
 	return GameSave.write(spec["slot"], s, SessionLayer.new(), dir, Time.get_unix_time_from_system(),
 		{"designer": designer})
+
+
+## The made player of `slot` (MADE_PLAYERS), with the drawn badge placeholder: headless there
+## is no camera for a photo.
+static func made_player(slot: String) -> PlayerProfile:
+	var made: Dictionary = MADE_PLAYERS[absi(slot.hash()) % MADE_PLAYERS.size()]
+	var p := PlayerProfile.new()
+	p.name = made["name"]
+	p.look = CreatorLook.normalized(made["look"])
+	return p
 
 
 ## Where a save resumes after a run stopped at `t`: the way a day starts in play, 08:30 on the
