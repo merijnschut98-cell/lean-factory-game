@@ -60,6 +60,22 @@ static func cast() -> Array[Dictionary]:
 	return _cast.duplicate()
 
 
+## "hij" or "zij" for the cast member `id`, by their look's sex ("hij" when unknown).
+static func pronoun(id: String) -> String:
+	for entry in cast():
+		if entry["id"] == id:
+			return "zij" if JsonFile.dict_or_empty(entry.get("look")).get("sex") == "f" else "hij"
+	return "hij"
+
+
+## The cast member the coach is: the one whose place opens the coach (office talk: coach).
+static func coach_id() -> String:
+	for entry in cast():
+		if JsonFile.dict_or_empty(entry.get("office")).get("talk") == "coach":
+			return entry["id"]
+	return ""
+
+
 static func _read_cast() -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	var text := FileAccess.get_file_as_string(CAST)

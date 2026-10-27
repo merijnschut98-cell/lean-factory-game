@@ -223,6 +223,20 @@ func test_the_coach_answers_with_a_question_about_the_main_mission() -> void:
 	_close(office)
 
 
+## Ruud is a man (UX audit #8): the panel's words for the coach come from the cast, not "Ze".
+func test_the_coach_panel_speaks_of_the_coach_as_the_cast_has_him() -> void:
+	assert_eq(CharacterModel.coach_id(), "ruud", "the cast member the coach opens")
+	assert_eq(CharacterModel.pronoun("ruud"), "hij")
+	assert_eq(CharacterModel.pronoun("anouk"), "zij")
+	var office := _office()
+	office.interact(office.interactable("coach"))
+	var texts := "\n".join(texts_in(office.ui.coach_panel))
+	assert_true(texts.contains("Hij helpt met je hoofdmissie"), texts)
+	assert_true(texts.contains("Hij kijkt op van zijn scherm"), texts)
+	assert_false(texts.contains("Ze "), texts)
+	_close(office)
+
+
 func test_one_panel_at_a_time_and_closing_frees_the_player() -> void:
 	var office := _office()
 	office.interact(office.interactable("mission_board"))
