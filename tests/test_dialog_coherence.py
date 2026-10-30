@@ -64,6 +64,11 @@ def _bank(docs: dict) -> dict:
     (lambda d: _dialog(d, "joost_output_kpi").setdefault("replies", {}).update(
         inquiry={"again": {"_": {"text": "Dat vroeg je al.", "tags": ["claim"]}}}), "tags"),
     (lambda d: _bank(d)["replies"]["mood"].update(lands=[{"text": "Goed."}]), "mapping"),
+    # The lead-in's short form, their idea taken up (review 1, #3 and #1): words, if given.
+    (lambda d: _dialog(d, "joost_output_kpi")["layers"][1]["lead_in"].update(again=3), "again"),
+    (lambda d: _bank(d)["special"].pop("lead_in_again"), "lead_in_again"),
+    (lambda d: _bank(d)["special"].pop("proposal_again"), "proposal_again"),
+    (lambda d: _dialog(d, "anouk_seven")["co_proposal"].update(take=" "), "take"),
 ])
 def test_incoherent_content_is_rejected(real, tmp_path, mutate, message):
     docs = copy.deepcopy(real)
@@ -89,3 +94,13 @@ def test_the_patterns_reach_the_game():
     assert bc._REPEAT_RE.search("Ja, dat zei je al.") and bc._REPEAT_RE.search("Dat heb ik je net verteld.")
     assert not bc._REPEAT_RE.search("Morgen zit ik hier alleen.")
     assert bc._CLARIFY_RE.search("Hoe bedoel je?") and not bc._CLARIFY_RE.search("Hoe gaat het?")
+
+
+def test_ruud_quotes_a_question_as_a_question_and_claims_no_sincerity(real):
+    """Review 1 (minor): "Je vroeg" for the question moves, no "en je meende het", no double "Je zei"."""
+    names = real["dialogs"]["bank"]["ruud_names"]
+    for move in ("mood", "open_question", "inquiry"):
+        assert names[move].startswith("Je vroeg: “{said}”"), move
+    for move, line in names.items():
+        assert "meende" not in line, move
+        assert line.count("Je zei") <= 1, move

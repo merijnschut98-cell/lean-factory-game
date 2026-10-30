@@ -1965,7 +1965,7 @@ LINE_TOPICS = ["position", "interest", "lead_in", "concern", "_"]
 BANK_REPLIES = {**{m: ["lands", "misses"] for m in LISTEN_MOVES + ["perspective", "show_data", "propose_experiment"]},
                 "pressure": ["lands"], "confront": ["lands"], "repair": ["lands"]}
 BANK_SPECIAL = ["repeat", "refusal", "no_proposal", "other_data", "lucky_guess", "no_repair", "patience_low",
-                "cooling_down"]
+                "cooling_down", "lead_in_again", "proposal_again"]
 # Ruud's line after a main-mission talk that ended this way (People.coach_question;
 # pressure: a yes under pressure).
 COACH_AFTER = ["pressure", "ruined", "blocked", "commitment"]
@@ -2328,8 +2328,8 @@ def _validate_dialog(d: dict, where: str) -> None:
         co = d["co_proposal"]
         if not isinstance(co, dict) or co.get("id") not in hidden:
             raise ContentError(f"{where}: co_proposal names a hidden proposal (their own idea)")
-        _known_keys(co, {"id", "text"}, f"{where} co_proposal")
-        _require_strings(co, ["text"], f"{where} co_proposal")
+        _known_keys(co, {"id", "text", "take"}, f"{where} co_proposal")   # take: the player taking it up
+        _require_strings(co, ["text"] + (["take"] if "take" in co else []), f"{where} co_proposal")
     _string_list(d, "data", where)
     for key in ("needs", "condition_needs"):
         if key in d:
@@ -2437,7 +2437,10 @@ def _layers(layers: Any, where: str) -> None:
         raise ContentError(f"{where}: the concern needs a lead_in (the line that carries the cue)")
     # The cue (four-tier audit §4.2): a hesitation opens to silence, a feeling
     # to reflect and empathy, never to silence (rules T4).
-    cue = set(_line(concern["lead_in"], f"{where} concern lead_in").get("tags", [])) & {"hesitation", "feeling"}
+    lead_in = {k: v for k, v in concern["lead_in"].items() if k != "again"}   # again: its short form, said later
+    if "again" in concern["lead_in"]:
+        _dialog_line("again", concern["lead_in"]["again"], f"{where} concern lead_in")   # a line or a list
+    cue = set(_line(lead_in, f"{where} concern lead_in").get("tags", [])) & {"hesitation", "feeling"}
     if not cue:
         raise ContentError(f"{where}: the concern's lead_in carries the tag hesitation or feeling")
     if cue == {"feeling"} and ("silence" in concern["via"] or "reflect" not in concern["via"]):
@@ -3218,6 +3221,8 @@ def _reactions(docs: dict[str, Any]) -> list[tuple[str, str, bool]]:
         if d.get("kind") == "expert":
             continue
         own = {k: d[k] for k in _PERSON_DIALOG if k in d}
+        if "co_proposal" in own:   # its `take` is the player's line
+            own["co_proposal"] = {"text": own["co_proposal"].get("text", "")}
         own["items"] = [i.get("reply", "") for i in d.get("proposals", []) + d.get("experiments", [])]
         for where, text in _strings(own, f"dialog {d['id']}"):
             out.append((where, text, not _in_slot(where, *_REACTION_KEYS) or _in_slot(where, "again")))

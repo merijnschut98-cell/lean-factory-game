@@ -441,6 +441,11 @@ bank:
     no_repair: "Herstellen? Er is niks misgegaan tussen ons."
     patience_low: "Ik heb nog vijf minuten."
     cooling_down: "Niet nu."
+    # The concern's lead-in when its moment passed and comes back (a layer may give
+    # its own: lead_in.again): never the same words twice (Merijn's review 2026-10-30).
+    lead_in_again: "Weet je, waar ik het daarnet over had…"
+    # A proposal made again: a short acknowledgement, not its first answer twice.
+    proposal_again: "Ja. Daar denk ik nog over na."
   # Ruud after a hard main-mission talk (spec §5.6, Kata): one question, then
   # back to the mission. `after` wins when the talk ended that way (pressure:
   # a yes under pressure); otherwise the questions in turn. {person}: the
@@ -463,10 +468,10 @@ bank:
   # the sentence the player said ({said}; Merijn's playtest 2026-10-30: a note
   # that describes a move the player does not recognise as theirs is no help).
   ruud_names:
-    mood: "Je zei: “{said}” Daarmee vroeg je hoe het met {person} ging, en je meende het. Dat heet Stemming peilen. Zag je hoe {person} daarna praatte?"
+    mood: "Je vroeg: “{said}” Je wilde weten hoe het met {person} ging. Dat heet Stemming peilen. Zag je hoe {person} daarna praatte?"
     open_question: "Je vroeg: “{said}” Daar past geen ja of nee op. Een Open vraag. Toen kwam het verhaal, niet het antwoord."
     empathy: "Je zei: “{said}” Je liet merken dat je snapt dat het zwaar is. Begrip tonen. Je hoefde het niet op te lossen om het te erkennen."
-    paraphrase: "Je zei: “{said}” Je zei in je eigen woorden terug wat {person} zei. Samenvatten. Vanaf dat moment wist {person} dat je luisterde."
+    paraphrase: "Je zei: “{said}” Dat was in je eigen woorden wat {person} net vertelde. Samenvatten. Vanaf dat moment wist {person} dat je luisterde."
     inquiry: "Je vroeg: “{said}” Daarmee ging je verder op wat {person} net zei. Doorvragen. Daar zat het."
     reflect: "Je zei: “{said}” Je benoemde wat {person} voelde, niet wat {person} zei. Gevoel benoemen. Wat gebeurde er daarna?"
     silence: "Toen {person} aarzelde, zei je niets. Stilte laten. Dat is het moeilijkste wat er is."
@@ -901,7 +906,8 @@ dialogs:
       - id: concern
         at: 65
         via: [silence, empathy, reflect]
-        lead_in: {text: "Sorry, mijn telefoon. Mijn vriend appte net…", tags: [hesitation]}
+        lead_in: {text: "Sorry, mijn telefoon. Mijn vriend appte net…", tags: [hesitation],
+                  again: ["Sorry. Mijn vriend weer…", "Ik zit er toch steeds aan te denken…", "Nee, laat maar. Of… nou ja."]}
         text: "Of ik weer laat ben. Ik zou Fenna vandaag van de opvang halen. Dat heeft hij nu weer gedaan. … Ik zeg steeds dat het maar tijdelijk is."
         tags: [admission]
         unlocks:
@@ -912,7 +918,7 @@ dialogs:
         label: "Samen naar buiten"
         say: "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog."
         addresses: [concern]
-        reply: "… Ja. Ja, goed. Ik pak mijn jas."
+        reply: "… Ja. Ja, goed. Samen naar buiten."
       - id: leave_one_drawing
         label: "Eén tekening laten liggen"
         say: "En als je er één laat liggen en die morgen als eerste oppakt?"
@@ -924,25 +930,27 @@ dialogs:
         hidden: true
         addresses: [concern]
         reply: "Ja, kom maar. Dan zie je ook eens hoe het hier overdag gaat, niet alleen om zeven uur 's avonds."
-    co_proposal: {id: come_tomorrow, text: "Weet je wat? Kom morgen overdag even langs. Dan zie je hoe het hier gaat. Al ziet het er overdag niet veel beter uit, hoor."}
+    co_proposal: {id: come_tomorrow, text: "Weet je wat? Kom morgen overdag even langs. Dan zie je hoe het hier gaat. Al ziet het er overdag niet veel beter uit, hoor.",
+                  take: "Graag. Dan kom ik morgen even kijken."}
     # The reference talk for coherence (Merijn's playtest 2026-10-30;
     # docs/qa/dialog-coherence-2026-10-30.md; read docs/qa/talk-transcripts/anouk_seven.md).
-    # The player's sentences answer what Anouk spoke of last (Dialog.TOPICS): at
-    # the start she asked you to keep quiet to Joost, so the first sentences
-    # answer that before they ask; a summary only sums up what she said.
+    # The player's sentences answer what Anouk spoke of last (Dialog.TOPICS): one
+    # of the first answers her question about Joost; a summary only sums up what she
+    # said. Her answers follow the question, and a list never says a line twice
+    # while another is left (test_talk_coherence: a reviewed talk has no echo).
     lines:
       mood:
-        position: ["Ik zeg niks, hoor. Maar hoe is het eigenlijk met je?", "Hoe gaat het met je, zo aan het eind van de dag?", "Hoe gaat het eigenlijk met jou?"]
+        position: ["Hoe gaat het met je, zo aan het eind van de dag?", "Hoe is het eigenlijk met je?"]
         lead_in: "Gaat het wel?"
-        _: ["En hoe gaat het nu met jou, eerlijk?", "Hoe is het eigenlijk met je, los van die tekeningen?"]
+        _: ["En hoe gaat het nu met jou, met dat allemaal?", "Gaat het een beetje, met al dat werk?"]
       open_question:
         position: ["Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?", "Wat moet er vanavond nog af, dan?", "Hoe ziet je avond er nog uit?"]
-        interest: ["Hoe ziet je dag morgen eruit, als je er alleen voor staat?", "Wie zitten er op die tekeningen te wachten?"]
+        interest: ["Hoe ziet je dag morgen eruit, als je er alleen voor staat?", "Wat komt er morgen allemaal op je af?"]
         lead_in: "Wat schreef hij?"
         concern: ["Hoe gaat het thuis, als jij zo laat bent?", "Hoe lang is het al tijdelijk?"]
         _: ["Hoe gaat dat hier meestal, 's avonds?", "Vertel eens, hoe ziet zo'n dag van jou eruit?"]
       empathy:
-        position: ["In je eentje hier, op een maandagavond. Dat is ook niet niks.", "Ik zeg niks. Maar om zeven uur nog twee tekeningen, dat is ook niet niks."]
+        position: ["In je eentje hier, op een maandagavond. Dat is ook niet niks.", "Om zeven uur nog twee tekeningen. Dat is ook niet niks."]
         interest: ["Morgen in je eentje de hele afdeling. Dat is veel.", "Dat je aan die mensen denkt die wachten, dat snap ik."]
         lead_in: ["Hé, rustig maar. Je hoeft niks te zeggen.", "Dat klinkt niet als goed nieuws."]
         concern: ["Wat balen. Voor jou, en voor Fenna.", "Dat zit je niet lekker, snap ik."]
@@ -954,19 +962,19 @@ dialogs:
         concern: ["Je voelt je schuldig, klinkt het.", "Het zit je dwars, merk ik."]
         _: ["Je klinkt moe.", "Volgens mij zit je er een beetje doorheen."]
       paraphrase:
-        position: ["Dus nog twee tekeningen, en dan ben je weg.", "Nog twee, en dan naar huis. Oké."]
+        position: ["Dus nog twee tekeningen, en dan ben je weg.", "Dus Joost mag niet weten dat je hier nog zit."]
         interest: ["Dus als het vanavond niet af is, sta je er morgen alleen voor.", "Dus morgen ben jij de enige, en dan ligt dit er ook nog."]
         lead_in: "Je vriend vraagt waar je blijft?"
         concern: ["Dus Fenna is weer door hem opgehaald, en jij zegt steeds dat het tijdelijk is.", "Dus dat tijdelijke duurt al een tijdje."]
         _: ["Dus je wilt dit vanavond nog af hebben.", "Als ik je goed hoor, moet het eigenlijk allemaal tegelijk."]
       inquiry:
         position: ["Waarom liever niet tegen Joost?", "Waarom mag Joost het niet weten?"]
-        interest: ["Wat gebeurt er als die tekeningen morgen pas af zijn?", "Wie wacht er het langst?"]
+        interest: ["Wat gebeurt er als die tekeningen morgen pas af zijn?", "Waarom moet het per se vanavond?"]
         lead_in: "Wat appte hij?"
         concern: ["Hoe vaak is dat de laatste tijd gebeurd?", "Wat bedoel je met tijdelijk?"]
         _: ["Hoe komt dat, denk je?", "Wat maakt dat het zo laat wordt?"]
       experience:
-        position: ["Ik zeg niks, hoor. Ik zit zelf ook nog hier.", "Ik ben er zelf ook nog, dus ik ga echt niet klikken."]
+        position: ["Ik zit zelf ook nog hier, hoor.", "Ik weet zelf ook nog niet hoe laat ik thuis ben."]
         lead_in: "Thuis appen ze mij ook al: waar blijf je?"
         concern: "Thuis vroegen ze vanavond ook al waar ik bleef. En het is pas mijn eerste dag."
         _: ["Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben.", "Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen."]
@@ -978,62 +986,88 @@ dialogs:
     replies:
       mood:
         lands:
-          position: {text: "Hoe het is? … Moe, eerlijk gezegd. Fijn dat je het vraagt.", tags: [feeling]}
+          position: [{text: "Hoe het is? … Moe, eerlijk gezegd. Fijn dat je het vraagt.", tags: [feeling]},
+                     {text: "Moe. Maar fijn dat je het vraagt, hoor.", tags: [feeling]}]
           lead_in: {text: "Jawel hoor. Het is niks."}
-          _: {text: "Eerlijk? Moe. Maar het gaat wel, hoor.", tags: [feeling]}
-        misses: {text: "Gaat wel, hoor. Echt."}
+          _: [{text: "Eerlijk? Moe. Maar het gaat wel, hoor.", tags: [feeling]}, {text: "Moe. Maar ik red me wel.", tags: [feeling]}]
+        misses: [{text: "Gaat wel, hoor. Echt."}, {text: "Prima, hoor."}]
         again:
           lead_in: {text: "Jawel, hoor. Het is niks."}
-          _: {text: "Nog steeds moe, hoor. Dat is niet veranderd."}
+          _: [{text: "Nog steeds moe, hoor. Dat is niet veranderd."}, {text: "Echt, het gaat wel. Moe, maar het gaat."},
+              {text: "Moe. Maar dat zei ik al, hè."}, {text: "Ja, ja. Prima."}]
+        worn:
+          concern: {text: "Het gaat wel weer. Echt. Dank je."}
+          _: {text: "Je blijft het vragen, hè? Het gaat echt wel."}
       open_question:
         lands:
-          position:   # the n-th open question at the start gets the n-th answer
+          position:
             - {text: "Die twee moeten de deur uit. Een rijtjeshuis in Lindeveld met een warmtepomp, en een school die een lokaal bijbouwt. Die liggen allebei al te lang.", tags: [claim]}
             - {text: "Alleen die twee, hoor. De rest kan tot morgen wachten.", tags: [claim]}
             - {text: "Echt, alleen die twee. Dan ben ik weg.", tags: [claim]}
-          interest: {text: "Morgen? Telefoon, portaal, en de tekeningen ertussendoor. In mijn eentje.", tags: [claim]}
+          interest: [{text: "Morgen? Telefoon, portaal, en de tekeningen ertussendoor. In mijn eentje.", tags: [claim]},
+                     {text: "Alles wat binnenkomt. En dat is altijd meer dan wat eruit gaat.", tags: [claim]}]
           lead_in: {text: "Niks bijzonders. Laat maar."}
-          concern: {text: "Al sinds de zomer, eigenlijk. Sinds we twee mensen kwijt zijn.", tags: [admission]}
-          _: {text: "Ach, het is gewoon veel. Maar ik zit erbovenop, hoor.", tags: [claim]}
+          concern: [{text: "Al sinds de zomer, eigenlijk. Sinds we twee mensen kwijt zijn.", tags: [admission]},
+                    {text: "Hij zegt er niks meer van. Dat is eigenlijk erger.", tags: [admission]}]
+          _: [{text: "Ach, het is gewoon veel. Maar ik zit erbovenop, hoor.", tags: [claim]}, {text: "Gewoon druk. Zoals altijd.", tags: [claim]}]
         misses:
           lead_in: {text: "Niks bijzonders. Laat maar."}
-          _: {text: "Ach, er is niet zoveel te vertellen. Gewoon tekeningen."}
-        again: {text: "Dat heb ik je al verteld, toch? Twee tekeningen."}
+          _: [{text: "Ach, er is niet zoveel te vertellen. Gewoon tekeningen."}, {text: "Niks bijzonders, hoor."}]
+        again: [{text: "Dat heb ik je al verteld, toch? Twee tekeningen."}, {text: "Nog steeds twee, hoor."}]
+        worn:
+          concern: {text: "Niet zo best. Maar daar wil ik het nu eigenlijk niet over hebben."}
+          _: {text: "Sorry, ik moet echt even door met die tekeningen."}
       empathy:
+        lands:
+          _: [{text: "Dank je. Dat hoor ik niet vaak."}, {text: "Ja. Fijn dat je dat zegt."}, {text: "Mm. Dank je."}]
         misses:
           lead_in: {text: "Nee, het is niks. Echt."}
-          _: [{text: "Ach, het valt wel mee, hoor. Ik zit erbovenop."}, {text: "Ja… Het is wat het is."}, {text: "Dank je. Maar echt, het gaat wel."}]
+          _: [{text: "Ach, het valt wel mee, hoor. Ik zit erbovenop."}, {text: "Ja… Het is wat het is."}, {text: "Dank je. Maar echt, het gaat wel."}, {text: "Mm. Ja."}]
         worn: {text: "Ja, ja. Lief van je, hoor. Maar ik moet echt door."}
       reflect:
+        lands:
+          _: [{text: "Ja. Zo voelt het wel."}, {text: "Ja… Dat klopt wel."}, {text: "Ja. Eigenlijk wel."}]
         misses:
           lead_in: {text: "Nee, nee. Het is niks."}
-          _: [{text: "Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe."}, {text: "Nee, echt niet. Nog even, en dan ben ik weg."}]
+          _: [{text: "Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe."}, {text: "Nee, echt niet. Nog even, en dan ben ik weg."}, {text: "Nee hoor."}]
+        worn: {text: "Ja, ja. Ik hoor je wel. Maar ik moet echt door."}
       paraphrase:
         lands:
-          position: {text: "Ja. Nou ja… als het meezit.", tags: [hesitation]}
-          interest: {text: "Precies. En niemand die het overneemt.", tags: [feeling]}
+          position: [{text: "Ja. Nou ja… als het meezit.", tags: [hesitation]}, {text: "Liever niet, nee. Hij heeft al genoeg aan zijn hoofd.", tags: [claim]}]
+          interest: [{text: "Precies. En niemand die het overneemt.", tags: [feeling]}, {text: "Ja. Zo is het wel.", tags: [feeling]}]
         misses:
           lead_in: {text: "Zoiets, ja. Laat maar."}
           concern: {text: "Ja. Dat is het eigenlijk wel."}
-          _: [{text: "Mm. Zo ongeveer."}, {text: "Ja. Zoiets."}, {text: "Mm."}]
+          _: [{text: "Mm. Zo ongeveer."}, {text: "Ja. Zoiets."}, {text: "Mm."}, {text: "Hm, ja."}, {text: "Ja."}]
+        worn: {text: "Ja. Zo is het wel zo'n beetje."}
       inquiry:
         lands:
-          position: {text: "Joost vindt dat ik om vijf uur naar huis moet. Daar heeft hij ook gelijk in, hoor. Maar dan ligt het er morgen nog.", tags: [claim]}
-          interest: {text: "Dan belt die school weer. En de mevrouw met de warmtepomp. En dan zit ik dat morgen ook nog uit te leggen.", tags: [claim]}
+          position: [{text: "Joost vindt dat ik om vijf uur naar huis moet. Daar heeft hij ook gelijk in, hoor. Maar dan ligt het er morgen nog.", tags: [claim]},
+                     {text: "Hij bedoelt het goed, hoor. Maar die tekeningen moeten gewoon af.", tags: [claim]}]
+          interest: [{text: "Dan belt die school weer. En de mevrouw met de warmtepomp. En dan zit ik dat morgen ook nog uit te leggen.", tags: [claim]},
+                     {text: "En dan heb ik het nog niet eens over de rest van de bak.", tags: [claim]}]
           lead_in: {text: "Ach, niks. Laat maar."}
-          concern: {text: "Te vaak. Deze maand al drie keer, geloof ik.", tags: [admission]}
+          concern: [{text: "Te vaak. Deze maand al drie keer, geloof ik.", tags: [admission]}, {text: "Ik weet het niet meer. Een tijdje.", tags: [admission]}]
         misses:
-          position: {text: "Ach. Hij maakt zich anders zorgen, en dat hoeft echt niet."}
+          position: [{text: "Ach. Hij maakt zich anders zorgen, en dat hoeft echt niet."}, {text: "Laat Joost maar even, echt."}]
           _: [{text: "Ach. Dat is een lang verhaal."}, {text: "Tja. Zo gaat dat hier."}, {text: "Weet ik eigenlijk niet."}]
-        again: {text: "Dat vroeg je al. Laat maar, echt."}
+        again: [{text: "Dat vroeg je al. Laat maar, echt."}, {text: "Echt, laat maar."}]
+        worn:
+          concern: {text: "Sorry. Ik wil het er nu even niet meer over hebben."}
+          _: {text: "Je bent wel nieuwsgierig, hè? Maar ik moet echt door."}
       experience:
         misses:
           lead_in: {text: "Ja… Laat maar."}
-          _: [{text: "Hm. Ja. Maar ik moet echt even door, hoor."}, {text: "Ja… Mm."}, {text: "Sorry, ik zit even met mijn hoofd hier."}]
+          _: [{text: "Hm. Ja. Maar ik moet echt even door, hoor."}, {text: "Ja… Mm."}, {text: "Sorry, ik zit even met mijn hoofd hier."},
+              {text: "Ja. Nou, ik ga even verder."}, {text: "Hm."}]
       silence:
         misses:
           concern: {text: "… Sorry. Dat hoort hier eigenlijk niet."}
-          _: [{text: "… Is er iets? Je kijkt zo."}, {text: "… Wat is er?"}, {text: "Ik ga maar even verder, hoor."}]
+          _: [{text: "… Is er iets? Je kijkt zo."}, {text: "… Wat is er?"}, {text: "Ik ga maar even verder, hoor."}, {text: "(ze kijkt weer naar haar scherm)"}]
+      propose:
+        again: [{text: "Ja, ja. Daar denk ik over na."}, {text: "Dat zei je, ja. Ik weet het nog niet."}]
+      ask_commitment:
+        misses: [{text: "Nee. Nog niet."}, {text: "Echt, nog even."}, {text: "Laat me eerst dit afmaken."}]
     outcomes:
       commitment: "Ik pak mijn jas. Dank je. Dat had ik even nodig: iemand die zegt dat het mag."
       partial: "Nog één tekening. Dan ga ik. Beloofd."

@@ -4,7 +4,9 @@ extends TestCase
 ## turn could offer (TalkWalk, a smaller walk than the transcripts'), no person says
 ## the player repeats themselves when they did not, asks them to clarify, says
 ## nothing, or ends a talk without their word on how it went, and Ruud's note after
-## an Act 0 talk quotes the player. The transcripts (game/tools/talk_transcripts.gd)
+## an Act 0 talk quotes the player; no story line (a layer, a lead-in, a proposal's
+## reply, their own idea) is said twice, and a reviewed talk (TalkWalk.REVIEWED) says
+## no line twice at all (review 1, 2026-10-30). The transcripts (game/tools/talk_transcripts.gd)
 ## show the same flags in context.
 
 ## States and random talks walked per talk (enough for every option of the first
@@ -22,10 +24,11 @@ func test_no_talk_says_what_the_player_s_sentences_cannot_have_earned() -> void:
 	for talk: Dialog in talks:
 		var walked := TalkWalk.walk(ctx, talk, BUDGET, DIVES)
 		var broken := []
+		var never: Array = TalkWalk.BROKEN + (["echo"] if talk.def.id in TalkWalk.REVIEWED else [])
 		for ex: Dictionary in walked["exchanges"].values():
 			for reply: String in ex["replies"]:
 				for f: String in ex["replies"][reply]:
-					if f in TalkWalk.BROKEN:
+					if f in never:
 						broken.append("%s: \"%s\" → \"%s\"" % [f, ex["said"], reply])
 		for e: Dictionary in walked["endings"].values():
 			for f: String in e["flags"]:

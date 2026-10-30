@@ -110,6 +110,93 @@ func test_a_reply_answers_the_layer_the_player_spoke_to() -> void:
 	assert_eq(listed.say("empathy")["reply"], "Tweede.", "the next one the next time")
 
 
+## Review 1 #1: they do not offer as their own idea what the player just proposed.
+func test_their_own_idea_is_not_offered_after_the_player_proposed_it() -> void:
+	var t := _talk(DialogFixture.bank(), DialogFixture.def(), 85)
+	t.revealed = {"interest": true, "concern": true}
+	t.say("paraphrase")   # heard
+	t._co_offered = false
+	var r := t.say("propose", "secret")
+	assert_eq(r["co_proposal"], {}, "the player's proposal is on the table: no 'weet je wat?'")
+
+
+## Review 1 #1: once they offered their idea, taking it up is on offer, in words
+## that take it up (the co-proposal's `take`).
+func test_taking_up_their_idea_is_offered_in_words_that_take_it_up() -> void:
+	var d := DialogFixture.def({"co_proposal": {"id": "secret", "text": "Ons eigen idee.", "take": "Graag, samen dan."}})
+	var t := _talk(DialogFixture.bank(), d, 85)
+	t.revealed = {"interest": true, "concern": true}
+	assert_false(t.say("paraphrase")["co_proposal"].is_empty(), "their own idea")
+	var take := t.offer().filter(func(o: Dictionary) -> bool: return o["move"] == "propose" and o["pick"] == "secret")
+	assert_eq(take.size(), 1, "taking it up is one of the sentences")
+	assert_eq(take[0]["line"], "Graag, samen dan.")
+
+
+## Review 1 #2: a proposal made again is answered with a short acknowledgement
+## (the talk's own `replies.propose.again`, else the bank's special.proposal_again),
+## never its first answer word for word; the rules read it as before.
+func test_a_proposal_made_again_is_acknowledged_not_answered_twice() -> void:
+	var t := _talk(DialogFixture.bank(), DialogFixture.def(), 50)
+	DialogFixture.play(t, ["paraphrase", "propose:good"])
+	var first_words := t.copy()
+	var again := t.say("propose", "good")
+	assert_eq(again["reply"], DialogFixture.bank()["special"]["proposal_again"], "not 'Dat helpt.' again")
+	first_words.said.clear()   # the same talk, the proposal as if new: the same numbers
+	var as_new := first_words.say("propose", "good")
+	assert_eq([again["delta"], again["tags"]], [as_new["delta"], as_new["tags"]], "the rules read it as before")
+	var own := _talk(DialogFixture.bank(), DialogFixture.def({"replies": {"propose": {"again": {"text": "Ja, ja."}}}}), 50)
+	DialogFixture.play(own, ["paraphrase", "propose:good"])
+	assert_eq(own.say("propose", "good")["reply"], "Ja, ja.", "the talk's own")
+
+
+## Review 1 #3: the lead-in is said once; when the moment passed and comes back,
+## the person says its short form (the layer's `again`, else the bank's), with the
+## same cue.
+func test_the_lead_in_is_said_once_then_its_short_form() -> void:
+	var t := _talk(DialogFixture.bank(), DialogFixture.def(), 66)
+	t.revealed = {"interest": true}
+	assert_eq(t.say("mood")["reply"], "En…", "the lead-in")
+	t.say("open_question")   # not a way in: the moment passes
+	var again := t.say("open_question")
+	assert_eq(again["reply"], DialogFixture.bank()["special"]["lead_in_again"], "its short form, not the same words")
+	assert_true("hesitation" in again["tags"], "the same cue")
+	var own := _talk(DialogFixture.bank(), DialogFixture.def({"layers": DialogFixture.dialog_data()["layers"].map(
+		func(l: Dictionary) -> Dictionary: return l.merged({"lead_in": {"text": "En…", "tags": ["hesitation"],
+			"again": "Dat van net…"}}, true) if l["id"] == "concern" else l)}), 66)
+	own.revealed = {"interest": true}
+	DialogFixture.play(own, ["mood", "open_question"])
+	assert_eq(own.say("open_question")["reply"], "Dat van net…", "the layer's own short form")
+
+
+## Review 1 #3/#4: a lead-in's short forms as a list, each said once while another
+## is left; a talk may give its own refusal ("Nee. Nog niet.") as a list too.
+func test_short_forms_and_refusals_turn_through_their_lists() -> void:
+	var layers: Array = DialogFixture.dialog_data()["layers"].map(func(l: Dictionary) -> Dictionary:
+		return l.merged({"lead_in": {"text": "En…", "tags": ["hesitation"], "again": ["Eén…", "Twee…"]}}, true) \
+			if l["id"] == "concern" else l)
+	var t := _talk(DialogFixture.bank(), DialogFixture.def({"layers": layers}), 66)
+	t.revealed = {"interest": true}
+	var said := []
+	for move: String in ["mood", "paraphrase", "open_question", "paraphrase", "open_question"]:
+		said.append(t.say(move)["reply"])
+	assert_eq(said.filter(func(r: String) -> bool: return r in ["En…", "Eén…", "Twee…"]), ["En…", "Eén…", "Twee…"],
+		"each lead-in in other words")
+	var no := _talk(DialogFixture.bank(), DialogFixture.def({"replies": {"ask_commitment": {"misses":
+		[{"text": "Nee, nog niet."}, {"text": "Echt nog niet."}]}}}), 50)
+	DialogFixture.play(no, ["mood", "propose:good"])
+	assert_eq([no.say("ask_commitment")["reply"], no.say("ask_commitment")["reply"]], ["Nee, nog niet.", "Echt nog niet."])
+
+
+## Review 1 #2/#6: a reply given as a list gives the next line they have not said yet.
+func test_a_list_reply_never_says_the_same_line_twice_while_another_is_left() -> void:
+	var d := DialogFixture.def({"replies": {"mood": {"again": [{"text": "Nog steeds moe."}, {"text": "Echt, het gaat."}]}}})
+	var t := _talk(DialogFixture.bank(), d, 50)
+	DialogFixture.play(t, ["mood", "paraphrase"])
+	var first := t.say("mood")
+	var second := t.say("mood")
+	assert_eq([first["reply"], second["reply"]], ["Nog steeds moe.", "Echt, het gaat."])
+
+
 ## The talk keeps the player's sentences, as said, in order.
 func test_the_talk_keeps_what_the_player_said() -> void:
 	var t := _talk(DialogFixture.bank())

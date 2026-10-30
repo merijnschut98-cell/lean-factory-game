@@ -58,22 +58,40 @@ the tier-1 ratchet still 2).
    talk). Inquiry's miss is now an honest non-answer ("Tja. Moeilijk te zeggen.").
 3. **Ruud quotes the player.** `People.ruud_named(d)` returns the move *and the sentence*
    the player said for it; every listening move's line in `bank.ruud_names` quotes it
-   with `{said}` ("Je zei: “Ik zeg niks, hoor. Maar hoe is het eigenlijk met je?”
-   Daarmee vroeg je hoe het met Anouk ging…"); silence is described ("Toen Anouk aarzelde,
-   zei je niets"), since it is no sentence. Checked by the build.
+   with `{said}`, a question as a question ("Je vroeg: “Hoe gaat het met je, zo aan het
+   eind van de dag?” Je wilde weten hoe het met Anouk ging…"), and claims nothing it
+   cannot know (no "en je meende het"); silence is described ("Toen Anouk aarzelde, zei je
+   niets"), since it is no sentence. Checked by the build.
 4. **Every ending carries the person's word.** `Dialog.say` returns `farewell`, the
    outcome line in the person's voice, whenever the talk ended and the reply did not
    already say it (not after a condition or a block, which name it); the talk view
    speaks it after their reply.
 5. **Lines follow what was said.** A talk's own `lines.<move>` and `replies.<move>.<case>`
    may be keyed by what the person spoke of last (`Dialog.TOPICS`: position, interest,
-   lead_in, concern, `_`), and a reply may be a list (the n-th for the move's n-th time),
-   so a summary sums up what was said and an answer fits the question. Validated by the
+   lead_in, concern, `_`), and a reply may be a list (the first line the person has not
+   said yet in this talk), so a summary sums up what was said and an answer fits the
+   question. Validated by the
    build; the bank stays plain and keeps no claim or feeling tags.
-6. **The gate.** `game/tests/test_talk_coherence.gd` walks every persuasion and check-in
+6. **Nobody says the same thing twice where it jars** (review 1). The talk keeps what
+   the person said (`Dialog.answered`). The concern's lead-in is said in its own words
+   once; when its moment passed and comes back, the person says a short form
+   (`lead_in.again`, a line or a list, else `special.lead_in_again`) with the same cue.
+   A proposal made again gets a short acknowledgement (`replies.propose.again`, else
+   `special.proposal_again`), not its first answer word for word. They no longer offer
+   as their own idea what the player just proposed; once they did offer it, taking it up
+   is one of the four sentences, in the talk's words (`co_proposal.take`). A talk may give
+   its own refusal (`replies.ask_commitment.misses`). None of this changes a number the
+   rules read: the short forms keep the original's tags, the acknowledgement the
+   proposal answer's.
+7. **The gate.** `game/tests/test_talk_coherence.gd` walks every persuasion and check-in
    through the real rules (TalkWalk, below) and fails on any of the flags `repeat`,
-   `clarify`, `empty`, `farewell`, `ruud`. On the old content it fails on every talk; it
-   passes now.
+   `clarify`, `empty`, `farewell`, `ruud` and `retold` (a story line said twice: a layer, a
+   lead-in, a proposal's answer, their own idea); a reviewed talk (`TalkWalk.REVIEWED`,
+   for now Anouk) also fails on any `echo` (a line the person already said, word for word,
+   to a sentence the player had not said before). On the old content it fails on every
+   talk; it passes now. Measured with the full walk: Anouk 177 echoes and 15 retold lines
+   → 0 and 0; Sanne (`sanne_checker`) 250 and 9 → 245 and 0; `sanne_tuesday` 213 and 30 →
+   188 and 0 (Sanne's talks are not rewritten yet, so their echoes stay a measure, not a gate).
 
 The first-talk hint now says what to watch: "Kies wat je zegt. Hoe het valt, zie je aan
 Anouk en aan het pijltje achter je zin: ▲ ze gaat meer open, ▼ ze klapt dicht. De
@@ -84,7 +102,9 @@ bolletjes linksboven: hoeveel ze je vertrouwt."
     godot --headless --path game --script res://tools/talk_transcripts.gd -- [talk ids…] [--out=<dir>] [--budget=<n>] [--full]
 
 Without ids it writes every persuasion and check-in to `docs/qa/talk-transcripts/<id>.md`
-and the ranking to `docs/qa/talk-transcripts/README.md` (about 90 s). Each transcript has:
+and the ranking to `docs/qa/talk-transcripts/README.md` (about 90 s). Only the ranking and
+`anouk_seven.md` are kept in git (`.gitignore`); the others are generated on demand. Each
+transcript has:
 
 - **Whole talks** as the player sees them, on the route check's deal: the four sentences
   each turn offers (the chosen one in bold), what the player said with the arrow they
@@ -98,7 +118,8 @@ and the ranking to `docs/qa/talk-transcripts/README.md` (about 90 s). Each trans
 
 Flags: `repeat` (says you repeat yourself; you did not), `clarify` (asks what you mean; no
 answer offered), `empty` (says nothing), `farewell` (the talk ends without their word),
-`ruud` (Ruud's note does not quote you), and the reading hint `question` (the person asked
+`ruud` (Ruud's note does not quote you), `retold` (a story line said twice), `echo` (a line
+said again word for word, to a new sentence), and the reading hint `question` (the person asked
 the player something and the player's sentence is a stock line of the bank, which cannot
 know the question). The walk lives in `game/tests/lib/talk_walk.gd` (TalkWalk), shared by
 the tool and the gate test.
@@ -106,9 +127,11 @@ the tool and the gate test.
 ## 5. Anouk, the reference talk
 
 Rewritten end to end by reading her transcripts until every branch read like two Dutch
-colleagues at seven in the evening: her question about Joost is answered before the
-player asks anything; a summary only sums up what she said; her answers follow the
-question (keyed by layer, lists for the second and third time); her interest opens with
+colleagues at seven in the evening: one first sentence answers her question about Joost
+("Ik zeg niks, beloofd.", in that one only); a summary only sums up what she said; her
+answers follow the question (keyed by layer) and never come back word for word to a new
+sentence (lists, review 1); her lead-in has three short forms; when she offers her own idea,
+the player can take it up ("Graag. Dan kom ik morgen even kijken."); her interest opens with
 "Eerlijk?", so it answers any of its three ways in; her lead-in starts with her phone
 ("Sorry, mijn telefoon. Mijn vriend appte net…"), so it never cuts across the player; her
 misses stay kind (no "Het gaat nu even niet over jou."); and every ending has her word.
@@ -123,23 +146,24 @@ twee moeten de deur uit. Een rijtjeshuis in Lindeveld met een warmtepomp, en een
 een lokaal bijbouwt."* → *"Dus nog twee tekeningen, en dan ben je weg."* → *"Ja. Nou ja…
 als het meezit."* → … → *"Ik pak mijn jas. Dank je."*, and Ruud quotes the sentence he names.
 
-Score 84.5 → 1.1 (no flags; stock replies 66 % → 11 %). Full text:
+Score 84.5 → 0.6 (no flags, no echo; stock replies 66 % → 6 %). Full text:
 [talk-transcripts/anouk_seven.md](talk-transcripts/anouk_seven.md).
 
 ## 6. The other talks, worst first
 
-All talks are free of the five hard flags now (the bank and the rules fixed those
-everywhere). What is left is the cause of symptom 4: 47–80 % of each talk's replies are
-stock lines of the bank, and the person's questions are answered by stock sentences.
-The ranking in [talk-transcripts/README.md](talk-transcripts/README.md) (10 × stock share
-+ √ question hints) puts these first:
+All talks are free of the hard flags now (the bank and the rules fixed those everywhere).
+What is left is the cause of symptom 4: 47–80 % of each talk's replies are stock lines of
+the bank, the same line comes back word for word to new sentences (`echo`), and the
+person's questions are answered by stock sentences. The ranking in
+[talk-transcripts/README.md](talk-transcripts/README.md) (10 × stock share + per flag its
+weight × √ count) puts these first:
 
-1. `linda_replanning` 21.3 · 2. `petra_batch` 20.9 · 3. `marco_wasted_trips` 20.0 ·
-4. `mieke_redraw` 19.7 · 5. `anouk_owns_tray` 19.6 · 6. `henk_camera` 19.4 ·
-7. `femke_triage` 19.3 · 8. `sanne_checker` 19.2 · 9. `joost_vacancies` 18.8 ·
-10. `linda_evenings` 18.7.
+1. `petra_batch` 38.3 · 2. `linda_replanning` 36.7 · 3. `mieke_redraw` 36.7 ·
+4. `joost_vacancies` 35.8 · 5. `anouk_owns_tray` 35.4 · 6. `marco_wasted_trips` 35.2 ·
+7. `sanne_checker` 35.0 · 8. `dirk_shelf` 34.9 · 9. `henk_camera` 34.9 ·
+10. `thomas_reclaim` 34.8.
 
-The spread is narrow (12–21) because every unrewritten talk shares the bank; read the
+The spread is narrow because every unrewritten talk shares the bank; read the
 order as "which talks lean hardest on stock lines", and weigh it with when the player meets
 them: the Act 0 week (`sanne_tuesday`, `rachid_counter`, `anouk_first_look`,
 `mieke_wednesday`, `joost_wednesday`, `linda_wednesday`, `anouk_thursday`,

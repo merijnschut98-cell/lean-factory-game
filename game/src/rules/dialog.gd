@@ -175,7 +175,7 @@ const COPIED := ["openness", "trust", "mood", "version", "revealed", "heard", "p
 	"patience", "outcome", "_repaired", "_last_move", "_streak", "_last_tags", "_uses", "_mood_asked",
 	"_lead_in_said", "_co_offered", "_warned", "_worn", "moves_made",
 	"trace", "made", "told", "steered_early", "concern_by", "start_openness", "_found", "_facts", "_retry", "_seed",
-	"said", "_topic"]
+	"said", "_topic", "answered", "_lead_ins"]
 const STATE_KEYS := 22  # COPIED up to "trace"; test_dialog_routes.gd checks it
 
 # Four sentences a turn (PLAN 2.13 B, Merijn 2026-10-19: "I'd prefer having 4
@@ -252,6 +252,11 @@ var _warned := false
 var _worn: Dictionary = {}
 ## What the person spoke of last (TOPICS): the line the player's next sentence answers.
 var _topic := "position"
+## What the person said, in order, starting with the position (a reply given as a
+## list gives a line not said yet: _entry).
+var answered: Array[String] = []
+## How often the concern's lead-in was said: after the first, its short form.
+var _lead_ins := 0
 ## How the talk went, for the discoveries: a steering move came before the
 ## concern was out; the move that revealed the concern.
 var steered_early := false
@@ -288,6 +293,7 @@ func _init(dialog: DialogDef, person: PersonDef, lines: Dictionary, start_or_nul
 		if def.patience > 0:
 			patience = mini(patience, def.patience)
 	trace.append(openness)
+	answered.append(str(position().get("text", "")))
 	_note(_told(position(), "position"), true)
 
 
@@ -344,6 +350,14 @@ func offer(n: int = OFFERED) -> Array[Dictionary]:
 		if not option in chosen:
 			chosen.append(option)
 	chosen = chosen.slice(0, n)
+	var take := _take_up()
+	if take in by_fit["decisive"] + by_fit["fits"] + weak and not take in chosen:
+		# They offered their idea: taking it up is a sentence, in place of a weak one.
+		var spare := chosen.filter(func(o: Dictionary) -> bool: return o in weak)
+		if chosen.size() < n:
+			chosen.append(take)
+		elif not spare.is_empty():
+			chosen[chosen.find(spare[-1])] = take
 	_shuffle(chosen, rng)
 	for option: Dictionary in chosen:
 		out.append(option.merged({"line": _player_line(option["move"], option["pick"])}))
@@ -443,6 +457,11 @@ func say(move: String, pick: String = "") -> Dictionary:
 		var factor: float = USE_DECAY[mini(int(_uses.get(move, 0)), USE_DECAY.size() - 1)]
 		delta = maxi(1, roundi(delta * factor))
 		worn = factor < REPEAT_FACTOR
+	if move in ["propose", "propose_experiment"] and repeated and _streak < 3:
+		# The same proposal again: a short acknowledgement, never the first answer word
+		# for word (review 1, 2026-10-30); read as that answer (its tags).
+		var own := _entry(def.replies, move, "again")
+		reply = reply.merged({"text": str(own.get("text", bank["special"].get("proposal_again", reply["text"])))}, true)
 	if worn and move in LISTEN and move != "silence" and not _worn.has(move):
 		_worn[move] = true
 		reply = _wear_line(move)
@@ -469,7 +488,8 @@ func say(move: String, pick: String = "") -> Dictionary:
 		elif lands and move in LISTEN and layer.has("lead_in") and openness >= CUE_AT:
 			_lead_in_said = true
 			lead_in_now = true
-			reply = _told(layer["lead_in"], layer["id"] + ".lead_in")
+			reply = _told(_lead_in(layer["lead_in"]), layer["id"] + ".lead_in")
+			_lead_ins += 1
 			_topic = "lead_in"
 		var next := _next_layer()
 		if not next.is_empty():
@@ -487,7 +507,7 @@ func say(move: String, pick: String = "") -> Dictionary:
 		reply = _line(_outcome_text(outcome))
 	var co := {}
 	if outcome.is_empty() and not _co_offered and not def.co_proposal.is_empty() and revealed.has("concern") \
-			and shown != "concern" and openness >= BANDS[4]:
+			and shown != "concern" and openness >= BANDS[4] and table != str(def.co_proposal.get("id", "")):
 		_co_offered = true
 		co = {"id": def.co_proposal["id"], "text": def.co_proposal.get("text", "")}
 	_last_move = move
@@ -498,6 +518,9 @@ func say(move: String, pick: String = "") -> Dictionary:
 	moves_made += 1
 	made.append(move)
 	said.append(line)
+	answered.append(str(reply["text"]))
+	if not co.is_empty():
+		answered.append(str(co["text"]))
 	_note(reply, not shown.is_empty())
 	trace.append(openness)
 	return {
@@ -565,7 +588,8 @@ static func bank_error(lines: Dictionary) -> String:
 		if not _is_line(player.get(move)):
 			return "dialog bank: player.%s is missing (a line or a list of lines)" % move
 	for section: Array in [["outcomes", OUTCOMES],
-			["special", ["repeat", "refusal", "no_proposal", "other_data", "lucky_guess", "no_repair"]]]:
+			["special", ["repeat", "refusal", "no_proposal", "other_data", "lucky_guess", "no_repair", "lead_in_again",
+				"proposal_again"]]]:
 		var lines_of := JsonFile.dict_or_empty(lines.get(section[0]))
 		for key: String in section[1]:
 			if not lines_of.get(key) is String:
@@ -743,7 +767,8 @@ func _ask() -> Dictionary:
 		return _result(0, partial, false, "partial")
 	if openness >= PARTIAL_AT:
 		return _result(0, partial, false, "partial")
-	return _result(REFUSAL, _shared(bank["special"]["refusal"]), false)
+	var own := _entry(def.replies, "ask_commitment", "misses")   # their own "not yet", else the bank's
+	return _result(REFUSAL, _shared(str(own.get("text", bank["special"]["refusal"]))), false)
 
 
 func _route_met() -> bool:
@@ -868,16 +893,44 @@ func _plain(move: String, reply: Dictionary) -> Dictionary:
 
 
 ## The line `replies` (a dialog's own or the bank's) hold for `move` in `case`
-## ({} for none): a line, or a list of lines (the n-th for the move's n-th time,
-## the last one stays), or a mapping from TOPICS (the layer the player spoke
-## to; `_` for any) to either.
+## ({} for none): a line, or a list of lines (the first they have not said yet
+## in this talk, else the last), or a mapping from TOPICS (the layer the player
+## spoke to; `_` for any) to either.
 func _entry(replies: Dictionary, move: String, case: String) -> Dictionary:
 	var entry: Variant = JsonFile.dict_or_empty(replies.get(move)).get(case)
 	if entry is Dictionary and not entry.has("text"):
 		entry = entry.get(_topic, entry.get("_"))
 	if entry is Array and not entry.is_empty():
-		entry = entry[mini(int(_uses.get(move, 0)), entry.size() - 1)]
+		var texts: Array = entry.map(func(e: Variant) -> String: return str(JsonFile.dict_or_empty(e).get("text", "")))
+		entry = entry[texts.find(_fresh(texts))]
 	return JsonFile.dict_or_empty(entry)
+
+
+## The concern's lead-in as said now: the first time its words; when the moment
+## passed and comes back, its short form (`again`, else the bank's
+## special.lead_in_again) with the same cue (Merijn's review 2026-10-30: never the
+## same words twice).
+func _lead_in(lead_in: Dictionary) -> Dictionary:
+	if _lead_ins == 0:
+		return lead_in
+	var forms: Variant = lead_in.get("again", bank["special"].get("lead_in_again", ""))
+	var again := _fresh(forms if forms is Array else [forms])
+	return lead_in.merged({"text": again if not again.is_empty() else lead_in.get("text", "")}, true)
+
+
+## Of `texts`, the first the person has not said yet in this talk, else the last ("" for none).
+func _fresh(texts: Array) -> String:
+	for text: Variant in texts:
+		if not str(text) in answered:
+			return str(text)
+	return str(texts[-1]) if not texts.is_empty() else ""
+
+
+## Their own idea, once they offered it and it is not on the table: {move:
+## propose, pick} to take it up ({} otherwise; offer() deals it only when a turn allows it).
+func _take_up() -> Dictionary:
+	var id := str(def.co_proposal.get("id", ""))
+	return {"move": "propose", "pick": id} if _co_offered and table != id else {}
 
 
 ## A sentence said before, made a third time in a row: the move's `again` line (a dialog's
@@ -897,6 +950,9 @@ func _again(move: String) -> Dictionary:
 ## next one each time the move is said in this talk (where it starts differs
 ## per seed and move), so a line comes back only once all were said.
 func _player_line(move: String, pick: String = "") -> String:
+	if move == "propose" and _co_offered and pick == str(def.co_proposal.get("id", "")) \
+			and not str(def.co_proposal.get("take", "")).is_empty():
+		return str(def.co_proposal["take"])   # their idea, taken up in the player's words
 	if move in ["propose", "propose_experiment"] and not pick.is_empty():
 		return str(def.item(pick).get("text", ""))
 	var own: Variant = def.lines.get(move, bank["player"].get(move, ""))

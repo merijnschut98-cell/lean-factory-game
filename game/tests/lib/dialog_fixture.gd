@@ -38,7 +38,8 @@ static func bank() -> Dictionary:
 			"after": {"pressure": "{person} zei ja. En het gezicht?", "ruined": "Wie praatte er?",
 				"blocked": "Wie kan het wel beslissen?", "commitment": "Wiens idee was het?"}},
 		"special": {"no_repair": "niets te herstellen", "repeat": "herhaling", "refusal": "weigering", "no_proposal": "geen voorstel", "other_data": "En?",
-			"lucky_guess": "Hm. Misschien.", "patience_low": "Ik heb nog vijf minuten.", "cooling_down": "Niet nu."},
+			"lucky_guess": "Hm. Misschien.", "patience_low": "Ik heb nog vijf minuten.", "cooling_down": "Niet nu.",
+			"lead_in_again": "Weet je, van daarnet…", "proposal_again": "Daar denk ik over na."},
 	}
 
 
