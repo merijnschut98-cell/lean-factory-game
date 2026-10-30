@@ -1,0 +1,9 @@
+# Core identity of the game world. Game text is Dutch; keys are English.
+# Built into game/data/game.json by tools/build_content.py — do not edit the JSON.
+
+company: Voltana Netbeheer
+region: Zuidmark
+town: Nova
+campus: Campus Nova
+player_role: CI-lead
+locale: nl

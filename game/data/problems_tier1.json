@@ -1,0 +1,1786 @@
+{
+ "problems": [
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Van de laatste twintig aanvragen missen er negen het aansluitvermogen of de gegevens van de installateur.",
+     "tool": "documents"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "De wachtrij bij Intake is lang, maar hij staat netjes op datum: wie vrij is, pakt de oudste aanvraag.",
+     "tool": "queue_count"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "Bijna de helft van de aanvragen gaat terug naar de klant voor aanvulling; die wachten gemiddeld een week.",
+     "tool": "data"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "'Het webformulier laat je gewoon doorklikken zonder vermogen of meterkastfoto. Wij zien het pas als we het dossier openen.'",
+     "tool": "conversation"
+    },
+    {
+     "depth": 2,
+     "key": true,
+     "text": "Een klant aan de telefoon: 'Ik wist niet dat ik dat moest invullen, het formulier vroeg er niet om.'",
+     "tool": "listen_in"
+    },
+    {
+     "at": "connections.intake",
+     "depth": 2,
+     "dialog": "sanne_checker",
+     "key": true,
+     "text": "'Wat er mist, is altijd hetzelfde: het vermogen, de meterkastfoto, de installateur. Wij zien het elke dag. Niemand heeft ons ooit gevraagd wat er op het formulier moet.'",
+     "tool": "conversation"
+    }
+   ],
+   "countermeasures": {
+    "intake_checklist": 0.7,
+    "poka_yoke_application": 1.0
+   },
+   "effects": [
+    {
+     "property": "ftr",
+     "target": "connections.intake",
+     "value": -0.2
+    },
+    {
+     "property": "touch_time",
+     "target": "connections.intake",
+     "value": 1.3
+    }
+   ],
+   "id": "incomplete_application",
+   "kpi": "capacity",
+   "mismatch_note": "Sneller of strenger controleren verandert niets aan wat er binnenkomt. De fout ontstaat in het formulier.",
+   "name": "Aanvragen gaan terug naar de klant",
+   "plausible_causes": [
+    "Klanten lezen de instructies niet.",
+    "De intakemedewerkers controleren niet zorgvuldig genoeg."
+   ],
+   "root_cause": "Het webformulier accepteert aanvragen zonder vermogen, installateur en meterkastgegevens; niemand voorkomt de fout aan de bron.",
+   "severity": "medium",
+   "step": "connections.intake",
+   "symptoms": [
+    "Veel aanvragen gaan terug naar de klant met een verzoek om aanvulling.",
+    "Klanten bellen na weken om te vragen waar hun aansluiting blijft."
+   ],
+   "teaches": [
+    "quality_at_the_source",
+    "poka_yoke"
+   ],
+   "tells": [
+    {
+     "tell": "intake_stack",
+     "text": "Op de kast bij Intake ligt meer dan een dag werk aan dossiers."
+    }
+   ],
+   "tier": 1,
+   "visibility": "obvious",
+   "waste": "defects"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Op twee van de vijf adressen is de meterkast niet klaar (geen ruimte, geen aarding, de installateur is nog niet geweest). De monteur rijdt onverrichter zake terug.",
+     "tool": "shadow"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "Een aansluiting maken kost de monteur ruim vier uur, binnen de norm.",
+     "tool": "time_study"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "Van de herplande klussen heeft zeventig procent als reden 'meterkast niet gereed'.",
+     "tool": "data"
+    },
+    {
+     "at": "connections.planning",
+     "depth": 1,
+     "key": true,
+     "text": "Planning plant op de datum van het offerte-akkoord. Nergens staat of de installateur klaar is.",
+     "tool": "documents"
+    },
+    {
+     "at": "connections.planning",
+     "depth": 2,
+     "key": true,
+     "text": "'We bellen de klant nooit vooraf. We weten pas dat het niet klaar is als de monteur er staat.'",
+     "tool": "conversation"
+    },
+    {
+     "at": "connections.execution",
+     "depth": 2,
+     "dialog": "marco_wasted_trips",
+     "key": true,
+     "text": "'Mijn mannen zien op een foto in één oogopslag of een meterkast klaar is. Maar niemand vraagt ze iets voordat ze rijden.'",
+     "tool": "conversation"
+    }
+   ],
+   "countermeasures": {
+    "backup_job_per_day": 0.6,
+    "installer_photo_upload": 0.9,
+    "readiness_check": 1.0
+   },
+   "effects": [
+    {
+     "property": "ftr",
+     "target": "connections.execution",
+     "value": -0.25
+    }
+   ],
+   "id": "installer_not_ready",
+   "kpi": "first_time_right",
+   "mismatch_note": "De monteur doet zijn werk goed; het probleem ontstaat bij het plannen, voordat hij rijdt.",
+   "name": "Voor niks gereden",
+   "plausible_causes": [
+    "De monteurs zijn te laat op locatie.",
+    "Klanten zeggen hun afspraak af."
+   ],
+   "root_cause": "Klussen worden ingepland zonder te controleren of de installateur en de meterkast klaar zijn.",
+   "severity": "high",
+   "step": "connections.execution",
+   "symptoms": [
+    "Monteurs rijden terug zonder dat de aansluiting is gemaakt.",
+    "Klussen worden steeds opnieuw ingepland."
+   ],
+   "teaches": [
+    "readiness_check",
+    "quality_at_the_source"
+   ],
+   "tells": [
+    {
+     "tell": "planning_board",
+     "text": "Op het weekbord bij de planners hangen rode kaartjes: klussen die verzet zijn."
+    },
+    {
+     "tell": "van_returns",
+     "text": "Op de retourpallet staan aansluitsets die nog in hun folie zitten."
+    }
+   ],
+   "tier": 1,
+   "visibility": "subtle",
+   "waste": "waiting"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Bij een kabelstoring ligt de juiste mof niet in de bus. De monteur rijdt veertig minuten heen en terug naar het magazijn.",
+     "tool": "shadow"
+    },
+    {
+     "at": "outages.locate",
+     "depth": 0,
+     "key": false,
+     "text": "Het lokaliseren van de fout duurt steeds rond het uur.",
+     "tool": "time_study"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "Geen twee bussen hebben dezelfde voorraad. Er is geen lijst van wat erin hoort.",
+     "tool": "material_check"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "In een kwart van de storingslogboeken staat 'materiaal halen'.",
+     "tool": "data"
+    },
+    {
+     "depth": 2,
+     "key": true,
+     "text": "'Wat op is, vul ik aan als ik toevallig langs het magazijn kom. Niemand houdt bij wat eruit gaat.'",
+     "tool": "conversation"
+    },
+    {
+     "at": "outages.locate",
+     "depth": 1,
+     "dialog": "henk_expert",
+     "key": false,
+     "text": "'Een overgangsmof, van papierlood naar kunststof, ligt niet in elke bus. Met de verkeerde sta je met lege handen in de sleuf.'",
+     "tool": "conversation"
+    }
+   ],
+   "countermeasures": {
+    "standard_van_stock": 0.85,
+    "two_bin_van_kanban": 1.0,
+    "van_refill_card": 0.65
+   },
+   "effects": [
+    {
+     "property": "trip_share",
+     "target": "outages.repair",
+     "value": 0.25
+    },
+    {
+     "property": "touch_time",
+     "target": "outages.repair",
+     "value": 1.15
+    }
+   ],
+   "id": "wrong_joint_in_van",
+   "kpi": "on_time",
+   "mismatch_note": "Het magazijn heeft de moffen wel; ze liggen alleen niet in de bus op het moment dat het nodig is.",
+   "name": "Een storing duurt langer dan vier uur",
+   "plausible_causes": [
+    "De monteurs pakken de verkeerde mof mee.",
+    "Het magazijn levert te laat."
+   ],
+   "root_cause": "Er is geen standaard busvoorraad en geen aanvulsignaal; wat op is, merkt de monteur pas bij de storing.",
+   "severity": "medium",
+   "step": "outages.repair",
+   "symptoms": [
+    "Storingen duren soms ruim langer dan vier uur.",
+    "Monteurs rijden tijdens een storing naar het magazijn."
+   ],
+   "teaches": [
+    "5s",
+    "kanban",
+    "standard_work"
+   ],
+   "tells": [
+    {
+     "tell": "uitgiftelijst",
+     "text": "Op de uitgiftelijst bij de balie staat dezelfde storingsbus soms twee keer op één dag, met een paar uur ertussen."
+    },
+    {
+     "tell": "storingsbord",
+     "text": "Op het storingsbord staat bij een paar kabelstoringen een hersteltijd van ruim vier uur."
+    }
+   ],
+   "tier": 1,
+   "visibility": "subtle",
+   "waste": "transport"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Een gewone woningaansluiting kost vijf uur ontwerp, net zoveel als een bedrijfsaansluiting.",
+     "tool": "time_study"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "In de bak ligt ongeveer een dag werk aan dossiers; als de stapel oploopt een paar dagen, geen weken.",
+     "tool": "queue_count"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "Elk ontwerp, ook een standaard huisaansluiting, gaat langs drie handtekeningen.",
+     "tool": "documents"
+    },
+    {
+     "at": "connections.intake",
+     "depth": 1,
+     "key": true,
+     "text": "'Wij vragen nooit of het een standaardaansluiting is. Alles gaat als maatwerk door.'",
+     "tool": "conversation"
+    },
+    {
+     "depth": 2,
+     "key": true,
+     "text": "Driekwart van de ontwerpen is een standaard 3x25A-aansluiting zonder netuitbreiding.",
+     "tool": "data"
+    },
+    {
+     "at": "connections.design",
+     "depth": 2,
+     "dialog": "joost_vacancies",
+     "key": true,
+     "text": "'Niemand heeft ooit gevraagd of het anders mocht. Drie handtekeningen, zo is het altijd gegaan. Ook voor een gewone woning.'",
+     "tool": "conversation"
+    }
+   ],
+   "countermeasures": {
+    "delegated_approval": 0.65,
+    "standard_designs": 1.0
+   },
+   "effects": [
+    {
+     "property": "touch_time",
+     "target": "connections.design",
+     "value": 1.3
+    }
+   ],
+   "id": "custom_design",
+   "kpi": "throughput",
+   "mismatch_note": "Harder werken of betere software verandert niets aan de hoeveelheid werk per standaardaansluiting.",
+   "name": "Ontwerpen blijven liggen",
+   "plausible_causes": [
+    "De werkvoorbereiders werken te langzaam.",
+    "De ontwerpsoftware is verouderd."
+   ],
+   "root_cause": "Standaardaansluitingen krijgen een volledig maatwerkontwerp met drie goedkeuringen.",
+   "severity": "high",
+   "step": "connections.design",
+   "symptoms": [
+    "De stapel ontwerpen bij Werkvoorbereiding groeit elke week.",
+    "Werkvoorbereiders maken overuren, en toch duurt een aansluiting langer."
+   ],
+   "teaches": [
+    "standard_work",
+    "waste_overprocessing"
+   ],
+   "tells": [
+    {
+     "tell": "prep_tray",
+     "text": "In het postbakje bij Werkvoorbereiding liggen de dossiers hoger dan het bakje."
+    }
+   ],
+   "tier": 1,
+   "visibility": "obvious",
+   "waste": "overprocessing"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Bij drie van de acht adressen doet niemand open. De monteur laat een kaartje achter.",
+     "tool": "shadow"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "Een meterwissel zelf duurt vijfendertig minuten, ruim binnen de planning.",
+     "tool": "time_study"
+    },
+    {
+     "at": "meters.appointment",
+     "depth": 1,
+     "key": true,
+     "text": "Klanten krijgen een tijdvak van 8 tot 17 uur en geen bevestiging of herinnering.",
+     "tool": "documents"
+    },
+    {
+     "at": "meters.appointment",
+     "depth": 1,
+     "key": true,
+     "text": "'Ik heb een halve dag vrij genomen en er kwam niemand.' En: 'Ik wist niet dat het vandaag was.'",
+     "tool": "listen_in"
+    },
+    {
+     "depth": 2,
+     "key": true,
+     "text": "Van de mislukte bezoeken had tachtig procent geen herinnering ontvangen.",
+     "tool": "data"
+    }
+   ],
+   "countermeasures": {
+    "appointment_reminder": 1.0,
+    "two_hour_window": 0.9
+   },
+   "effects": [
+    {
+     "property": "ftr",
+     "target": "meters.visit",
+     "value": -0.15
+    }
+   ],
+   "id": "not_at_home",
+   "kpi": "first_time_right",
+   "mismatch_note": "De klanten willen wel thuis zijn; ze weten niet wanneer.",
+   "name": "Niet thuis",
+   "plausible_causes": [
+    "Klanten zijn onbetrouwbaar.",
+    "De monteurs komen te laat."
+   ],
+   "root_cause": "Afspraken hebben een tijdvak van een hele dag en worden niet bevestigd of herinnerd.",
+   "severity": "medium",
+   "step": "meters.visit",
+   "symptoms": [
+    "Monteurs laten veel kaartjes 'helaas niet thuis' achter.",
+    "De planning van meterwissels loopt steeds verder uit."
+   ],
+   "teaches": [
+    "failure_demand",
+    "customer_value"
+   ],
+   "tells": [
+    {
+     "tell": "van_returns",
+     "text": "Op de retourpallet staan meterdozen die nog dicht zijn, elk met een afspraakbon eraan."
+    }
+   ],
+   "tier": 1,
+   "visibility": "obvious",
+   "waste": "transport"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Vergunningsaanvragen gaan per project de deur uit. Een dossier dat klaar is, wacht gemiddeld een week op de rest van de straat.",
+     "tool": "data"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "De gemeente haalt haar wettelijke termijn bijna altijd.",
+     "tool": "documents"
+    },
+    {
+     "at": "connections.design",
+     "depth": 1,
+     "key": true,
+     "text": "'Ik vraag de vergunning aan als het hele project ontworpen is; dan hoeft de gemeente maar één tracé te beoordelen.'",
+     "tool": "conversation"
+    },
+    {
+     "at": "connections.design",
+     "depth": 1,
+     "key": true,
+     "text": "De vergunning wordt pas aangevraagd als het ontwerp helemaal af is, terwijl de gemeente alleen het tracé nodig heeft.",
+     "tool": "documents"
+    },
+    {
+     "at": "connections.design",
+     "depth": 2,
+     "key": true,
+     "text": "Een aanvraag indienen kost tien minuten; het tracé is al na een uur ontwerpen bekend.",
+     "tool": "time_study"
+    }
+   ],
+   "countermeasures": {
+    "parallel_permits": 1.0,
+    "request_permits_daily": 1.0
+   },
+   "effects": [
+    {
+     "property": "batch_days",
+     "target": "connections.permit",
+     "value": 14
+    }
+   ],
+   "id": "permits_in_batches",
+   "kpi": "lead_time",
+   "mismatch_note": "De gemeente is niet het knelpunt; de aanvraag ligt al stil voordat zij hem krijgt.",
+   "name": "Dagen stilstand voor de vergunning",
+   "plausible_causes": [
+    "De gemeente werkt te langzaam.",
+    "Het vergunningsportaal is te ingewikkeld."
+   ],
+   "root_cause": "Vergunningen worden per project in één batch aangevraagd, pas als het laatste ontwerp van het project af is.",
+   "severity": "medium",
+   "step": "connections.permit",
+   "symptoms": [
+    "Dossiers liggen dagen stil tussen ontwerp en vergunning.",
+    "De doorlooptijd van aansluitingen is lang, terwijl de gemeente haar termijn haalt."
+   ],
+   "teaches": [
+    "batching",
+    "flow"
+   ],
+   "tells": [
+    {
+     "tell": "prep_tray",
+     "text": "Bij Werkvoorbereiding ligt een stapel dossiers waarvan het ontwerp af lijkt."
+    }
+   ],
+   "tier": 1,
+   "visibility": "subtle",
+   "waste": "waiting"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Er staan 240 opgeleverde aansluitingen open in GIS; de oudste is vier maanden oud.",
+     "tool": "data"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "De bak met schetsen is overzichtelijk geordend op datum.",
+     "tool": "queue_count"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "Een schets overtekenen kost anderhalf uur, onder meer door uitzoeken wat er bedoeld is.",
+     "tool": "time_study"
+    },
+    {
+     "at": "connections.commissioning",
+     "depth": 1,
+     "key": true,
+     "text": "De monteur schetst het as-built met de hand op een A4; foto's en maten ontbreken vaak.",
+     "tool": "documents"
+    },
+    {
+     "at": "connections.commissioning",
+     "depth": 2,
+     "key": true,
+     "text": "'Ik teken het op de motorkap. Of ze het later kunnen lezen? Ze bellen me wel als het niet klopt.'",
+     "tool": "conversation"
+    }
+   ],
+   "cost_per_week": 425,
+   "countermeasures": {
+    "daily_revision_template": 0.7,
+    "revision_at_source": 1.0
+   },
+   "effects": [
+    {
+     "property": "touch_time",
+     "target": "connections.revision",
+     "value": 1.4
+    },
+    {
+     "property": "demand",
+     "target": "outages.daytime",
+     "value": 1.05
+    }
+   ],
+   "id": "revision_backlog",
+   "kpi": "capacity",
+   "mismatch_note": "Meer mensen bij GIS verwerken de stapel sneller, maar het overtekenen blijft dubbel werk.",
+   "name": "De revisieberg",
+   "plausible_causes": [
+    "Het GIS-team is te klein.",
+    "De monteurs leveren hun schetsen te laat in."
+   ],
+   "root_cause": "Wijzigingen worden na de klus op papier geschetst en weken later door een klein team overgetekend; het werk wordt dubbel gedaan.",
+   "severity": "medium",
+   "step": "connections.revision",
+   "symptoms": [
+    "Bij Revisie & GIS ligt een stapel schetsen van opgeleverde aansluitingen.",
+    "Aansluitingen zijn technisch klaar maar administratief nog niet af."
+   ],
+   "teaches": [
+    "waste_inventory",
+    "quality_at_the_source"
+   ],
+   "tells": [
+    {
+     "tell": "revision_cabinet",
+     "text": "Op de kast bij Revisie & GIS liggen stapels schetsen; op de onderste staat een datum van maanden terug."
+    }
+   ],
+   "tier": 1,
+   "visibility": "hidden",
+   "waste": "inventory"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Een derde van de storingen overdag is graafschade; zeven procent van de graafwerken raakt een kabel.",
+     "tool": "data"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "De monteurs herstellen graafschade snel en vakkundig.",
+     "tool": "shadow"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "Bij de helft van de schades lag de kabel anders dan op de KLIC-kaart.",
+     "tool": "documents"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "'Proefsleuven? Daar is in de planning van de aannemer nooit tijd voor.'",
+     "tool": "conversation"
+    },
+    {
+     "at": "connections.revision",
+     "depth": 2,
+     "key": true,
+     "text": "De kabels die anders lagen dan op de kaart, zijn bijna allemaal nog niet gerevideerd.",
+     "tool": "data"
+    },
+    {
+     "at": "outages.locate",
+     "depth": 1,
+     "dialog": "henk_expert",
+     "key": false,
+     "text": "'De KLIC-kaart klopt niet altijd. Kabels die in de jaren tachtig zijn verlegd, staan er soms nooit op.'",
+     "tool": "conversation"
+    }
+   ],
+   "cost_per_week": 4250,
+   "countermeasures": {
+    "contractor_briefing": 0.7,
+    "revision_at_source": 0.6,
+    "standard_test_trenches": 0.8
+   },
+   "effects": [
+    {
+     "property": "demand",
+     "target": "outages.daytime",
+     "value": 1.5
+    }
+   ],
+   "id": "digging_damage",
+   "kpi": "capacity",
+   "mismatch_note": "Aannemers doen wel een KLIC-melding; de kaart die ze krijgen klopt niet en de planning laat geen tijd voor proefsleuven.",
+   "name": "Graafschade",
+   "plausible_causes": [
+    "Aannemers graven onvoorzichtig.",
+    "De KLIC-melding wordt niet gedaan."
+   ],
+   "root_cause": "KLIC-kaarten zijn verouderd (de revisieberg) en proefsleuven worden onder tijdsdruk overgeslagen.",
+   "severity": "high",
+   "step": "outages.locate",
+   "symptoms": [
+    "Overdag komen veel storingen binnen door kabelschade bij graafwerk.",
+    "Monteurs worden voor graafschade van gepland werk gehaald."
+   ],
+   "teaches": [
+    "waste_defects",
+    "systems_thinking"
+   ],
+   "tells": [
+    {
+     "tell": "storingsbord",
+     "text": "Op het storingsbord staan overdag storingen achter elkaar, steeds met 'kabel geraakt' en de naam van een aannemer."
+    },
+    {
+     "tell": "magazijn_rack",
+     "text": "Op de stelling met moffen zijn de meeste vakken leeg; op de toonbank ligt een bestelbon voor nog een doos."
+    }
+   ],
+   "tier": 1,
+   "visibility": "obvious",
+   "waste": "defects"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Een jonge monteur zoekt anderhalf uur naar de fout in een oude papierloodkabel (GPLK) en belt dan een collega.",
+     "tool": "shadow"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "Het herstel zelf duurt bij iedereen ongeveer even lang.",
+     "tool": "time_study"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "Storingen in netten van voor 1970 worden twee keer zo vaak opnieuw gelokaliseerd.",
+     "tool": "data"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "'Als Henk het niet weet, weet niemand het. En Henk gaat over twee maanden met pensioen.'",
+     "tool": "conversation"
+    },
+    {
+     "depth": 2,
+     "key": true,
+     "text": "Er is geen overzicht van wie welke kabeltypes en schakelingen beheerst.",
+     "tool": "documents"
+    },
+    {
+     "at": "outages.locate",
+     "depth": 2,
+     "dialog": "henk_camera",
+     "key": true,
+     "text": "'Dit vak leer je niet uit een boek. Je leert het naast iemand die het kan, tot je het zelf doet en hij alleen nog kijkt.'",
+     "tool": "conversation"
+    },
+    {
+     "at": "outages.locate",
+     "depth": 1,
+     "dialog": "henk_expert",
+     "key": false,
+     "text": "'Een GPLK-kabel pak je anders aan dan kunststof. Dat lood moet je netjes dichtsolderen, anders trekt er vocht in. Dat staat nergens opgeschreven.'",
+     "tool": "conversation"
+    }
+   ],
+   "countermeasures": {
+    "henks_one_point_lessons": 0.6,
+    "skills_matrix_buddy": 1.0,
+    "twi_job_instruction": 0.9,
+    "work_instruction_videos": 0.7
+   },
+   "effects": [
+    {
+     "property": "ftr",
+     "target": "outages.locate",
+     "value": -0.3
+    }
+   ],
+   "id": "knowledge_drain",
+   "kpi": "on_time",
+   "mismatch_note": "Een opleiding alleen leert niet wat alleen in de hoofden van de ervaren monteurs zit.",
+   "name": "Herstel in de oude wijken duurt lang",
+   "plausible_causes": [
+    "De jonge monteurs zijn onvoldoende opgeleid.",
+    "De meetapparatuur is verouderd."
+   ],
+   "root_cause": "Kennis van oude kabeltypes en schakelingen zit bij een paar monteurs die met pensioen gaan; er is geen skills-matrix en geen overdracht.",
+   "severity": "high",
+   "step": "outages.locate",
+   "symptoms": [
+    "Storingen in oude wijken duren veel langer dan elders.",
+    "Bij lastige storingen wordt steeds dezelfde oudere monteur gebeld."
+   ],
+   "teaches": [
+    "waste_skills",
+    "respect_for_people"
+   ],
+   "tells": [
+    {
+     "tell": "storingsbord",
+     "text": "Op het storingsbord staat bij de storingen in Nova-Oud vaak een tweede tijd, en daarachter in hoofdletters: HENK."
+    }
+   ],
+   "tier": 1,
+   "visibility": "subtle",
+   "waste": "skills"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Van de tien gesprekken gaan er vier over één vraag: 'Waar blijft mijn aansluiting?'",
+     "tool": "listen_in"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "Een gesprek duurt gemiddeld vijftien minuten; de agents zijn vriendelijk en snel.",
+     "tool": "time_study"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "Statusvragen komen bijna allemaal van klanten die al meer dan twee maanden wachten; sommigen bellen elke week.",
+     "tool": "data"
+    },
+    {
+     "at": "connections.intake",
+     "depth": 1,
+     "key": true,
+     "text": "Na de ontvangstbevestiging hoort de klant niets meer, tot de monteur belt voor een afspraak.",
+     "tool": "documents"
+    },
+    {
+     "at": "connections.design",
+     "depth": 2,
+     "key": true,
+     "text": "'Wij weten zelf ook niet wanneer het klaar is. Er is geen planning die we met de klant kunnen delen.'",
+     "tool": "conversation"
+    }
+   ],
+   "countermeasures": {
+    "milestone_mail_by_hand": 0.85,
+    "proactive_status_updates": 1.0,
+    "realistic_promise": 0.7
+   },
+   "effects": [
+    {
+     "property": "call_rate",
+     "target": "connections",
+     "value": 3.0
+    }
+   ],
+   "id": "status_callers",
+   "kpi": "on_time",
+   "mismatch_note": "Meer agents beantwoorden de vragen sneller, maar de vragen blijven komen. Dit is faalvraag.",
+   "name": "Klanten hangen in de wacht",
+   "plausible_causes": [
+    "Het contactcentrum heeft te weinig agents.",
+    "Klanten zijn ongeduldig."
+   ],
+   "root_cause": "Klanten horen na hun aanvraag niets meer over de voortgang, dus bellen ze; de vragen komen voort uit de wachttijd, niet uit het contactcentrum.",
+   "severity": "high",
+   "step": "customer_contact.answer",
+   "symptoms": [
+    "Het klantcontactcentrum is onbereikbaar; klanten hangen lang in de wacht.",
+    "Agents beantwoorden steeds dezelfde vraag."
+   ],
+   "teaches": [
+    "failure_demand",
+    "value_demand"
+   ],
+   "tells": [
+    {
+     "tell": "terugbelbord",
+     "text": "Het bord hangt vol terugbelbriefjes, in verschillende handschriften. Sommige namen hangen er twee of drie keer."
+    }
+   ],
+   "tier": 1,
+   "visibility": "obvious",
+   "waste": "defects"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Aansluitingen die technisch klaar zijn, staan gemiddeld twee weken op 'administratief open'.",
+     "tool": "data"
+    },
+    {
+     "at": "connections.close_out",
+     "depth": 0,
+     "key": false,
+     "text": "Bij Meetdata & registratie ligt weinig werk; het team heeft tijd over.",
+     "tool": "queue_count"
+    },
+    {
+     "at": "connections.close_out",
+     "depth": 1,
+     "key": true,
+     "text": "De afhandeling (EAN aanmelden, dossier sluiten) gebeurt één keer per maand, in één keer voor alle dossiers.",
+     "tool": "documents"
+    },
+    {
+     "at": "customer_contact.answer",
+     "depth": 1,
+     "key": true,
+     "text": "'Mijn aansluiting is vorige week aangelegd, maar de leverancier zegt dat mijn EAN niet bestaat.'",
+     "tool": "listen_in"
+    },
+    {
+     "at": "connections.close_out",
+     "depth": 2,
+     "key": true,
+     "text": "'We doen het maandelijks; dan hoef je maar één keer in te loggen in het registratiesysteem.'",
+     "tool": "conversation"
+    }
+   ],
+   "countermeasures": {
+    "automatic_ean_registration": 0.9,
+    "close_out_at_completion": 1.0,
+    "mid_month_run": 0.6
+   },
+   "effects": [
+    {
+     "property": "batch_days",
+     "target": "connections.close_out_wait",
+     "value": 28
+    }
+   ],
+   "id": "done_but_not_closed",
+   "kpi": "lead_time",
+   "mismatch_note": "Het team heeft genoeg tijd; het werk wacht op de maandelijkse batch, niet op mensen.",
+   "name": "Klaar maar niet af",
+   "plausible_causes": [
+    "De energieleverancier is traag.",
+    "Meetdata & registratie heeft te weinig mensen."
+   ],
+   "root_cause": "De administratieve afhandeling gebeurt één keer per maand in een batch, en het aanmelden van de EAN gaat met de hand.",
+   "severity": "medium",
+   "step": "connections.close_out_wait",
+   "symptoms": [
+    "Klanten met een nieuwe aansluiting kunnen nog geen energiecontract afsluiten.",
+    "Aansluitingen staan weken op 'technisch gereed, administratief open'."
+   ],
+   "teaches": [
+    "batching",
+    "one_piece_flow"
+   ],
+   "tells": [
+    {
+     "tell": "close_out_cabinet",
+     "text": "Op en naast de kast bij de deur liggen dossiers met 'gereed gemeld' erop, de oudste van weken geleden."
+    }
+   ],
+   "tier": 1,
+   "visibility": "subtle",
+   "waste": "inventory"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Vier op de tien nieuwe aansluitingen krijgen een netstudie; vorig jaar was dat een kwart.",
+     "tool": "data"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "De analisten maken lange dagen en werken geconcentreerd; niemand zit stil.",
+     "tool": "shadow"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "De werkinstructie zegt: netstudie bij elke aanvraag boven 3x25A. Een grens voor de vrije capaciteit in de wijk staat er niet in.",
+     "tool": "documents"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "'Bij de meeste studies weten we na vijf minuten al dat het past. Maar de procedure is de procedure.'",
+     "tool": "conversation"
+    },
+    {
+     "depth": 2,
+     "key": true,
+     "text": "Een volledige netstudie kost vier uur; een snelle check op de vrije capaciteit van het station kost een kwartier.",
+     "tool": "time_study"
+    },
+    {
+     "at": "connections.grid_study",
+     "depth": 2,
+     "dialog": "femke_triage",
+     "key": true,
+     "text": "'De grens van 3x25A in de werkinstructie komt uit 2019, toen bijna niemand zwaarder vroeg. Nu vraagt bijna elke warmtepompklant meer.'",
+     "tool": "conversation"
+    }
+   ],
+   "countermeasures": {
+    "calculation_templates": 0.7,
+    "study_overtime_sprint": 0.6,
+    "triage_fast_lane": 1.0
+   },
+   "effects": [
+    {
+     "property": "applies",
+     "target": "connections.grid_study",
+     "value": 0.15
+    }
+   ],
+   "id": "grid_study_queue",
+   "kpi": "capacity",
+   "mismatch_note": "Meer analisten werken de stapel sneller weg, maar een groot deel van de studies is niet nodig.",
+   "name": "De netstudie-wachtrij",
+   "plausible_causes": [
+    "Er zijn te weinig netanalisten.",
+    "De rekensoftware is te traag."
+   ],
+   "root_cause": "Elke aanvraag boven 3x25A krijgt een volledige netstudie, ook als de aansluiting ruim binnen de vrije capaciteit valt; er is geen triage vooraf.",
+   "severity": "high",
+   "step": "connections.grid_study",
+   "symptoms": [
+    "Op het bord van Netstrategie staan tientallen netstudies in de wachtrij.",
+    "Nieuwe aansluitingen wachten weken op een netstudie, omdat congestieonderzoeken voorgaan."
+   ],
+   "teaches": [
+    "triage",
+    "theory_of_constraints",
+    "waste_overprocessing"
+   ],
+   "tells": [
+    {
+     "tell": "grid_study_tray",
+     "text": "Bovenop de stapel in het bakje ligt een studieaanvraag voor een gewone woning met een warmtepomp."
+    }
+   ],
+   "tier": 1,
+   "visibility": "subtle",
+   "waste": "waiting"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "In de nieuwe flats met een betonnen kelderberging stuurt drie op de tien nieuwe meters de eerste week geen standen; elders één op de twintig.",
+     "tool": "data"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "Bij Meetdata & registratie ligt weinig werk; de lijst is kort en netjes op volgorde.",
+     "tool": "queue_count"
+    },
+    {
+     "at": "meters.visit",
+     "depth": 1,
+     "key": true,
+     "text": "De monteur plaatst de meter, sluit de kast en rijdt door. Of de meter verbinding maakt, kijkt niemand na.",
+     "tool": "shadow"
+    },
+    {
+     "at": "meters.appointment",
+     "depth": 1,
+     "key": true,
+     "text": "Bij het plannen gaat standaard een GPRS-module mee; de dekkingskaart van het adres wordt niet bekeken.",
+     "tool": "documents"
+    },
+    {
+     "at": "meters.visit",
+     "depth": 2,
+     "key": true,
+     "text": "'Testen? Dan sta ik er tien minuten langer. Als hij niet werkt, hoor ik het vanzelf.'",
+     "tool": "conversation"
+    },
+    {
+     "at": "connections.close_out",
+     "depth": 2,
+     "dialog": "petra_silent_meters",
+     "key": true,
+     "text": "'Het lampje op de meter zegt na een paar minuten of hij verbinding heeft. Maar dan is de monteur al weg. Niemand wacht erop.'",
+     "tool": "conversation"
+    }
+   ],
+   "countermeasures": {
+    "coverage_check_in_planning": 0.8,
+    "on_site_comm_test": 1.0
+   },
+   "effects": [
+    {
+     "property": "ftr",
+     "target": "meters.registration",
+     "value": -0.1
+    }
+   ],
+   "id": "silent_meter",
+   "kpi": "first_time_right",
+   "mismatch_note": "De meters zijn in orde; de fout wordt pas ontdekt als de monteur al weg is.",
+   "name": "De zwijgende meter",
+   "plausible_causes": [
+    "De meters van de nieuwe leverancier zijn slecht.",
+    "Het mobiele netwerk is onbetrouwbaar."
+   ],
+   "root_cause": "De communicatiemodule wordt gekozen zonder dekkingscheck, en niemand test de verbinding voordat de monteur vertrekt.",
+   "severity": "medium",
+   "step": "meters.registration",
+   "symptoms": [
+    "Bij Meetdata & registratie komen nieuwe meters binnen die geen standen sturen.",
+    "Monteurs moeten terug naar adressen waar ze vorige week al een meter plaatsten."
+   ],
+   "teaches": [
+    "jidoka",
+    "quality_at_the_source"
+   ],
+   "tells": [
+    {
+     "tell": "meter_board",
+     "text": "Op het whiteboard bij Meetdata staan twee kolommen adressen, elk met een rood streepje erachter."
+    }
+   ],
+   "tier": 1,
+   "visibility": "subtle",
+   "waste": "defects"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Negen van de tien spanningsklachten komen binnen tussen elf en drie uur, op zonnige dagen.",
+     "tool": "data"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "'Het zijn die goedkope omvormers. Met een goed merk heb je hier geen last van.'",
+     "tool": "conversation"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "De meting bij het adres laat zien dat de spanning 's middags oploopt tot 254 volt. Boven 253 volt moet een omvormer afschakelen; dat is de norm.",
+     "tool": "shadow"
+    },
+    {
+     "at": "voltage_complaints.tap_change",
+     "depth": 1,
+     "key": true,
+     "text": "De aftakking van de wijktrafo staat sinds 2009 op dezelfde stand. Inmiddels liggen er op de helft van de daken zonnepanelen.",
+     "tool": "documents"
+    },
+    {
+     "at": "voltage_complaints.analysis",
+     "depth": 2,
+     "key": true,
+     "text": "De slimme meters in de straat registreren elk kwartier de spanning. Niemand bij Voltana kijkt ernaar.",
+     "tool": "data"
+    },
+    {
+     "at": "customer_contact.answer",
+     "depth": 2,
+     "dialog": "wim_spreadsheet",
+     "key": true,
+     "text": "'Het is niet één huis. Kijk op een zonnige middag naar de hele straat tegelijk. En kijk dan naar de trafo, niet naar mijn omvormer.'",
+     "tool": "conversation"
+    },
+    {
+     "at": "customer_contact.answer",
+     "depth": 1,
+     "dialog": "wim_expert",
+     "key": false,
+     "text": "'Hoe zonniger de middag, hoe hoger de spanning. En elk voorjaar een paar volt meer, sinds de halve straat panelen heeft.'",
+     "tool": "conversation"
+    },
+    {
+     "at": "customer_contact.answer",
+     "depth": 2,
+     "dialog": "wim_expert",
+     "key": false,
+     "text": "'Leg de meters van de straat naast elkaar, per kabel. Aan het eind van de kabel, het verst van de trafo, is de spanning het hoogst.'",
+     "tool": "conversation"
+    }
+   ],
+   "countermeasures": {
+    "smart_meter_voltage_data": 0.8,
+    "tap_review_per_neighbourhood": 1.0,
+    "tap_trial_one_station": 0.6,
+    "targeted_reinforcement": 0.7
+   },
+   "effects": [
+    {
+     "property": "demand",
+     "target": "voltage_complaints",
+     "value": 3.0
+    },
+    {
+     "property": "ftr",
+     "target": "voltage_complaints.tap_change",
+     "value": -0.3
+    }
+   ],
+   "id": "inverters_tripping",
+   "kpi": "first_time_right",
+   "measure_days": 263,
+   "mismatch_note": "Elke klacht apart meten en oplossen bestrijdt het symptoom. De spanning is te hoog in de hele straat.",
+   "name": "Omvormers die afschakelen",
+   "plausible_causes": [
+    "Goedkope omvormers zijn slecht afgesteld.",
+    "Klanten hebben te veel panelen voor hun aansluiting."
+   ],
+   "root_cause": "De aftakkingen van de wijktransformatoren staan nog zoals voor de zonnepanelen, en niemand kijkt naar de spanning in het laagspanningsnet. Elke klacht wordt los opgelost met een meting bij één adres.",
+   "severity": "medium",
+   "step": "voltage_complaints.measurement",
+   "symptoms": [
+    "Het aantal spanningsklachten is in twee jaar verdrievoudigd, vooral op zonnige middagen.",
+    "Klanten melden dat hun omvormer uitvalt en hun zonnepanelen niets opleveren."
+   ],
+   "teaches": [
+    "root_cause",
+    "systems_thinking"
+   ],
+   "tells": [
+    {
+     "tell": "measurement_tray",
+     "text": "De spanningsklachten in het bakje zitten met een paperclip per adres bij elkaar, en op bijna elke klacht staat een tijd rond het middaguur."
+    }
+   ],
+   "tier": 1,
+   "visibility": "obvious",
+   "waste": "defects"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Een netverzwaring duurt gemiddeld zeven maanden. Het werk in de straat zelf duurt twee weken.",
+     "tool": "data"
+    },
+    {
+     "at": "connections.design",
+     "depth": 0,
+     "key": false,
+     "text": "'De fabrikanten hebben het druk. Heel Europa wil transformatoren.'",
+     "tool": "conversation"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "Het bestelproces: eerst het ontwerp van de verzwaring afronden en laten goedkeuren, dan pas de transformator bestellen. Levertijd: zes maanden.",
+     "tool": "documents"
+    },
+    {
+     "at": "connections.grid_study",
+     "depth": 2,
+     "key": true,
+     "text": "'Bij de netstudie weten we al dat er een trafo bij moet. Maar bestellen mag pas met een goedgekeurd ontwerp; zo is het altijd gegaan.'",
+     "tool": "conversation"
+    }
+   ],
+   "countermeasures": {
+    "early_transformer_order": 1.0,
+    "framework_contracts": 0.9,
+    "strategic_transformer_stock": 0.8
+   },
+   "effects": [
+    {
+     "property": "wait_time",
+     "target": "connections.grid_reinforcement",
+     "value": 1.75
+    },
+    {
+     "property": "wait_time",
+     "target": "congestion.capacity_queue",
+     "value": 1.2
+    }
+   ],
+   "id": "transformer_wait",
+   "kpi": "wip_age",
+   "mismatch_note": "De levertijd van de fabrikant kun je niet veranderen. Wanneer je bestelt wel.",
+   "name": "Een half jaar wachten in volle straten",
+   "plausible_causes": [
+    "De fabrikant levert te traag.",
+    "Er zijn te weinig monteurs voor netverzwaring."
+   ],
+   "root_cause": "Transformatoren worden per project besteld, pas als het ontwerp van de verzwaring is goedgekeurd. De levertijd van de fabrikant komt daardoor na het ontwerp in plaats van ernaast.",
+   "severity": "high",
+   "step": "connections.grid_reinforcement",
+   "symptoms": [
+    "Aansluitingen in volle straten wachten een half jaar of langer op netverzwaring.",
+    "Het projectteam netverzwaring zegt dat de fabrikant niet op tijd levert."
+   ],
+   "teaches": [
+    "waste_waiting",
+    "flow"
+   ],
+   "tells": [
+    {
+     "tell": "reinforcement_board",
+     "text": "Achter de oudste straatnamen op het bord staat in pen: 'trafo nog niet binnen'."
+    }
+   ],
+   "tier": 1,
+   "visibility": "subtle",
+   "waste": "waiting"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Op het drukste kwartier van het jaar gebruiken de grootzakelijke klanten samen 62% van het vermogen dat ze gecontracteerd hebben.",
+     "tool": "data"
+    },
+    {
+     "at": "congestion.congestion_study",
+     "depth": 0,
+     "key": false,
+     "text": "'Het net is vol. Tot de verzwaring klaar is, kunnen we niets doen.'",
+     "tool": "conversation"
+    },
+    {
+     "at": "congestion.intake",
+     "depth": 1,
+     "key": true,
+     "text": "Een ondernemer aan de telefoon: 'Mijn buurman heeft twee megawatt gecontracteerd en zijn hal staat leeg.'",
+     "tool": "listen_in"
+    },
+    {
+     "at": "congestion.congestion_study",
+     "depth": 1,
+     "key": true,
+     "text": "Het congestieonderzoek rekent met het gecontracteerde vermogen van iedereen, niet met wat er werkelijk loopt.",
+     "tool": "documents"
+    },
+    {
+     "at": "congestion.offer",
+     "depth": 2,
+     "key": true,
+     "text": "In de contracten staat niets over ongebruikte capaciteit, en niemand heeft de taak om contract en meting naast elkaar te leggen.",
+     "tool": "documents"
+    }
+   ],
+   "countermeasures": {
+    "capacity_usage_dashboard": 0.7,
+    "flexible_contracts": 0.8,
+    "use_it_or_lose_it": 1.0
+   },
+   "effects": [
+    {
+     "property": "wait_time",
+     "target": "congestion.capacity_queue",
+     "value": 1.4
+    },
+    {
+     "property": "applies",
+     "target": "congestion.capacity_queue",
+     "value": 0.1
+    }
+   ],
+   "id": "unused_capacity",
+   "kpi": "throughput",
+   "mismatch_note": "Op papier is het net vol, in werkelijkheid niet. Wie alleen verzwaart, laat de ongebruikte reserveringen liggen.",
+   "name": "Ondernemers wachten op transportcapaciteit",
+   "plausible_causes": [
+    "Het net is gewoon vol; alleen verzwaren helpt.",
+    "De congestieonderzoeken rekenen te voorzichtig."
+   ],
+   "root_cause": "Gecontracteerde transportcapaciteit wordt nooit vergeleken met het werkelijke gebruik, dus ongebruikte capaciteit komt niet terug voor de wachtrij.",
+   "severity": "high",
+   "step": "congestion.capacity_queue",
+   "symptoms": [
+    "De wachtrij voor transportcapaciteit groeit, terwijl de stations op het drukste moment niet vol zitten.",
+    "Ondernemers op de wachtlijst vragen waarom hun buurman wel capaciteit heeft en die niet gebruikt."
+   ],
+   "teaches": [
+    "waste_inventory",
+    "visual_management"
+   ],
+   "tells": [
+    {
+     "tell": "congestion_list",
+     "text": "Naast een paar bedrijfsnamen op de lijst staat in de kantlijn een vraagteken in potlood."
+    }
+   ],
+   "tier": 1,
+   "visibility": "hidden",
+   "waste": "inventory"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Een op de drie geplande klussen van vorige week is verschoven, de meeste op de dag zelf.",
+     "tool": "data"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "'Klanten zijn gewoon niet flexibel. Als we een nieuwe afspraak voorstellen, kan het nooit.'",
+     "tool": "conversation"
+    },
+    {
+     "at": "connections.execution",
+     "depth": 1,
+     "key": true,
+     "text": "Om tien uur komt een storing binnen. De monteur rijdt weg en zijn klussen van die middag vervallen; de planner belt de klanten af.",
+     "tool": "shadow"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "De weekplanning vult elke monteur voor 100%. Ruimte voor storingen staat er niet in, terwijl die altijd voorgaan.",
+     "tool": "documents"
+    }
+   ],
+   "countermeasures": {
+    "daytime_outage_crew": 1.0,
+    "heijunka_release": 0.7,
+    "planning_with_fault_windows": 0.85
+   },
+   "effects": [
+    {
+     "property": "ftr",
+     "target": "connections.execution",
+     "value": -0.25
+    },
+    {
+     "property": "ftr",
+     "target": "meters.visit",
+     "value": -0.1
+    },
+    {
+     "property": "touch_time",
+     "target": "connections.planning",
+     "value": 2.0
+    }
+   ],
+   "id": "planning_reshuffle",
+   "kpi": "first_time_right",
+   "mismatch_note": "Sneller omplannen bestrijdt het symptoom. Storingen komen elke dag; de planning houdt er geen rekening mee.",
+   "name": "Afspraken die op de dag zelf vervallen",
+   "plausible_causes": [
+    "Klanten zijn niet flexibel genoeg.",
+    "Er zijn te weinig planners."
+   ],
+   "root_cause": "Elke monteur wordt voor 100% ingepland, zonder ruimte voor storingen. Elke storing trekt een monteur weg en zet de rest van zijn dag om, en daarmee die van de klanten.",
+   "severity": "medium",
+   "step": "connections.planning",
+   "symptoms": [
+    "Klanten krijgen op de dag zelf te horen dat de monteur niet komt.",
+    "De planners zijn de halve week bezig met omplannen."
+   ],
+   "teaches": [
+    "heijunka",
+    "capacity_planning"
+   ],
+   "tells": [
+    {
+     "tell": "planning_board",
+     "text": "Op het weekbord bij de planners hangen veel rode kaartjes tussen de gele."
+    }
+   ],
+   "tier": 1,
+   "visibility": "subtle",
+   "waste": "waiting"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Intake zette vorige maand een record aan aanvragen door en Werkvoorbereiding leverde een record aan ontwerpen af. Toch gaan er niet meer aansluitingen per week uit, en er komt meer terug.",
+     "tool": "data"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "Een ontwerp maken kost de werkvoorbereider bijna drie uur, binnen de norm.",
+     "tool": "time_study"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "Het aandeel ontwerpen dat de monteur zonder aanpassing kan bouwen is in een kwartaal gezakt van 85% naar 80%, en bij Intake van 75% naar 70%.",
+     "tool": "data"
+    },
+    {
+     "at": "connections.intake",
+     "depth": 1,
+     "key": true,
+     "text": "Het weekrapport van Intake telt aanvragen per week en bezettingsgraad. Hoeveel er later terugkomt voor aanvulling, staat er niet in.",
+     "tool": "documents"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "'Mijn doel is dertig ontwerpen per week. Ik werk ze zo snel mogelijk weg, dan haal ik het. Dat de monteur er later iets aan moet aanpassen, staat niet in mijn cijfers.'",
+     "tool": "conversation"
+    },
+    {
+     "at": "connections.intake",
+     "depth": 2,
+     "key": true,
+     "text": "In het teamoverleg: 'Nog vier aanvragen voor vrijdag, dan halen we het weekdoel. Ontbrekende gegevens vragen we later wel op.'",
+     "tool": "listen_in"
+    },
+    {
+     "at": "connections.execution",
+     "depth": 2,
+     "key": true,
+     "text": "'Intake en Werkvoorbereiding zijn tevreden, hun cijfers zijn goed. Maar niemand kijkt naar mijn terugrit, of naar de klant die wacht tot de aansluiting echt klaar is.'",
+     "tool": "conversation"
+    },
+    {
+     "at": "connections.design",
+     "depth": 2,
+     "dialog": "joost_output_kpi",
+     "key": true,
+     "text": "'Werkvoorbereiding stuurt op ontwerpen per week omdat de manager er elke maandag naar vraagt. Een doorlooptijd die pas na maanden beter wordt, voelt als een risico voor wie erop wordt afgerekend.'",
+     "tool": "conversation"
+    },
+    {
+     "at": "connections.design",
+     "depth": 2,
+     "dialog": "frank_kpi_targets",
+     "key": true,
+     "text": "'De directie vraagt elk kwartaal naar aantallen. Hoe lang een klant wacht, vraagt alleen de ACM. Eén keer per jaar.'",
+     "tool": "conversation"
+    }
+   ],
+   "countermeasures": {
+    "connections_wip_limit": 0.8,
+    "obeya_end_to_end": 1.0,
+    "shared_team_goals": 0.7
+   },
+   "effects": [
+    {
+     "property": "kpis",
+     "target": "intake",
+     "value": [
+      "intake_output",
+      "intake_utilisation"
+     ]
+    },
+    {
+     "property": "kpis",
+     "target": "work_prep",
+     "value": [
+      "work_prep_output",
+      "work_prep_utilisation"
+     ]
+    }
+   ],
+   "id": "silo_kpis",
+   "kpi": "first_time_right",
+   "mismatch_note": "Meer overleg of rustiger werken verandert niets zolang elk team op eigen aantallen wordt beoordeeld. De mensen doen precies wat hun cijfers vragen.",
+   "name": "Doelen gehaald, klant wacht nog",
+   "plausible_causes": [
+    "De afdelingen willen niet samenwerken.",
+    "De teams werken te snel; ze moeten gewoon rustiger aan doen.",
+    "Er is te weinig overleg tussen de teamleiders."
+   ],
+   "root_cause": "Elke afdeling wordt afgerekend op haar eigen aantallen (aanvragen of ontwerpen per week, bezetting), niet op de aansluiting als geheel. Wat een afdeling sneller doorzet, komt als fout of als stapel bij de volgende terug.",
+   "severity": "medium",
+   "step": "connections.design",
+   "symptoms": [
+    "Intake en Werkvoorbereiding halen allebei hun weekdoel, maar de aansluitingen komen niet sneller klaar.",
+    "Monteurs krijgen ontwerpen die ze ter plekke moeten aanpassen, en aanvragen komen terug voor aanvulling."
+   ],
+   "teaches": [
+    "flow",
+    "waste_overproduction",
+    "kpi_alignment"
+   ],
+   "tells": [
+    {
+     "tell": "intake_stack",
+     "text": "Op de kast bij Intake liggen meer dossiers dan het team op een dag wegwerkt."
+    },
+    {
+     "tell": "prep_tray",
+     "text": "Het postbakje bij Werkvoorbereiding ligt vol."
+    },
+    {
+     "tell": "obeya_board",
+     "text": "Onder de kaart van de aansluitingen hangen de weekcijfers van Intake en Werkvoorbereiding, allebei met een groen vinkje."
+    }
+   ],
+   "tier": 1,
+   "visibility": "subtle",
+   "waste": "overproduction"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Bij elk dossier kijkt de werkvoorbereider eerst in twee bakken welk dossier het oudst is, en sorteert dan om.",
+     "tool": "shadow"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "De stapel is groot nu drie van de vier werkvoorbereiders op cursus zijn. Aan de cursus verander jij deze week niets; aan wat de ene werkvoorbereider met haar tijd doet misschien wel.",
+     "tool": "queue_count"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "Zoeken, omsorteren en uitzoeken welke versie van een dossier geldt kost zo'n half uur per dossier: ongeveer een zevende bovenop ruim drie uur ontwerpwerk.",
+     "tool": "time_study"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "'De ene bak is voor nieuwe dossiers van de Intake, de andere voor dossiers die terugkomen met aanvullingen van de klant. Zo is het ooit gegroeid; niemand weet meer waarom.'",
+     "tool": "conversation"
+    }
+   ],
+   "countermeasures": {
+    "one_tray_fifo": 1.0,
+    "tray_labels": 0.7
+   },
+   "effects": [
+    {
+     "property": "touch_time",
+     "target": "connections.design",
+     "value": 1.12
+    }
+   ],
+   "id": "training_tray",
+   "kpi": "capacity",
+   "mismatch_note": "Harder of sneller werken haalt het zoeken niet weg. Het zit in hoe het werk binnenkomt, niet in de mensen.",
+   "name": "Waar ligt het volgende dossier?",
+   "plausible_causes": [
+    "De werkvoorbereiders werken te traag.",
+    "Er komen te veel aanvragen tegelijk binnen."
+   ],
+   "root_cause": "Er zijn twee bakken voor hetzelfde werk zonder vaste volgorde; zoeken en omsorteren kost bij elk dossier extra tijd.",
+   "severity": "low",
+   "step": "connections.design",
+   "symptoms": [
+    "Bij Werkvoorbereiding zoekt de werkvoorbereider eerst in twee bakken voordat ze een dossier oppakt."
+   ],
+   "teaches": [
+    "waste_motion",
+    "5s"
+   ],
+   "tells": [
+    {
+     "tell": "prep_tray",
+     "text": "Naast het postbakje bij Werkvoorbereiding ligt nog een stapel dossiers."
+    }
+   ],
+   "tier": 1,
+   "visibility": "obvious",
+   "waste": "motion"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "Op het vierde adres kijkt de monteur in de meterkast en schudt zijn hoofd: een oude stoppenkast, met een plaat die asbest kan bevatten. Hij plakt er een sticker op. Eerst moet er een aansluitmonteur komen; daarna komt hij terug.",
+     "tool": "shadow"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "Een meterwissel duurt veertig minuten, netjes binnen de norm.",
+     "tool": "time_study"
+    },
+    {
+     "depth": 0,
+     "key": false,
+     "text": "In de bus liggen genoeg meters, ook driefasemeters. Aan materiaal ligt het niet.",
+     "tool": "material_check"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "Bij één op de zeven bezoeken staat als uitkomst 'kast niet geschikt'. Bijna allemaal in huizen van voor 1990.",
+     "tool": "data"
+    },
+    {
+     "at": "meters.appointment",
+     "depth": 1,
+     "key": true,
+     "text": "De afspraakbrief vraagt de klant de meterkast vrij te maken. Naar de meterkast zelf vraagt niemand, ook niet aan de telefoon.",
+     "tool": "documents"
+    },
+    {
+     "at": "meters.appointment",
+     "depth": 2,
+     "key": true,
+     "text": "Linda plant een meterwissel in Nova-Oud: 'Postcode, dag, klaar.' Het bouwjaar van het huis staat in het register, maar dat scherm heeft ze niet open.",
+     "tool": "listen_in"
+    }
+   ],
+   "cost_per_week": 600,
+   "countermeasures": {
+    "cupboard_photo_at_booking": 1.0,
+    "customer_self_report": 0.6,
+    "register_cupboard_check": 0.85
+   },
+   "effects": [
+    {
+     "property": "ftr",
+     "target": "meters.visit",
+     "value": -0.15
+    }
+   ],
+   "id": "double_visits",
+   "kpi": "first_time_right",
+   "mismatch_note": "Aan de deur valt niets meer te winnen; de kast was al oud voordat de monteur kwam. Wat ontbreekt, is een blik op de kast bij het inplannen.",
+   "name": "Twee keer naar hetzelfde adres",
+   "plausible_causes": [
+    "De monteurs zijn niet opgeleid voor oude meterkasten.",
+    "Klanten maken de meterkast niet vrij."
+   ],
+   "root_cause": "Bij het inplannen kijkt niemand naar de meterkast; pas aan de deur blijkt dat eerst een aansluitmonteur moet komen, en dan rijdt de meterwisselaar een tweede keer.",
+   "severity": "medium",
+   "step": "meters.visit",
+   "symptoms": [
+    "Meterwisselaars rijden terug naar adressen waar ze vorige week al waren.",
+    "Het programma voor de laatste analoge meters loopt achter, terwijl de monteurs volle dagen maken."
+   ],
+   "teaches": [
+    "waste_defects",
+    "quality_at_the_source"
+   ],
+   "tells": [
+    {
+     "tell": "van_returns",
+     "text": "Op de retourpallet staan meterdozen die weer terug zijn; op een paar zit een oranje sticker."
+    }
+   ],
+   "tier": 1,
+   "visibility": "subtle",
+   "waste": "defects"
+  },
+  {
+   "clues": [
+    {
+     "depth": 0,
+     "key": true,
+     "text": "De meterwisselaars schreven de laatste acht weken samen 140 overuren, in rustige weken net zoveel als in drukke.",
+     "tool": "data"
+    },
+    {
+     "at": "meters.visit",
+     "depth": 0,
+     "key": true,
+     "text": "Je rijdt een dag mee: Nova-Oud, De Hofstede, terug naar Nova-Oud, dan de Kanaalzone. Van de acht uur zit de monteur er drie in de bus.",
+     "tool": "shadow"
+    },
+    {
+     "at": "meters.visit",
+     "depth": 0,
+     "key": false,
+     "text": "Bij de klant werkt de monteur vlot: de wissel zelf zit binnen de norm.",
+     "tool": "time_study"
+    },
+    {
+     "depth": 1,
+     "key": true,
+     "text": "De planning zet afspraken op volgorde van aanvraagdatum. Een wijk of postcode komt in de planningsregels niet voor.",
+     "tool": "documents"
+    },
+    {
+     "depth": 2,
+     "key": true,
+     "text": "Een klant uit Nova-Oud wil dinsdag. Linda zet hem erin, al werkt die monteur dinsdag verder alleen in de Kanaalzone. 'Wie het eerst belt, krijgt de eerste plek.'",
+     "tool": "listen_in"
+    }
+   ],
+   "cost_per_week": 1100,
+   "countermeasures": {
+    "area_teams": 0.85,
+    "overtime_cap": 0.6,
+    "route_by_area": 1.0
+   },
+   "effects": [
+    {
+     "property": "touch_time",
+     "target": "meters.visit",
+     "value": 1.3
+    },
+    {
+     "property": "ftr",
+     "target": "meters.visit",
+     "value": -0.1
+    }
+   ],
+   "id": "overtime_planning",
+   "kpi": "on_time",
+   "mismatch_note": "Meer mensen of harder werken haalt de kilometers er niet uit. De rit tussen de adressen zit in de planning.",
+   "name": "Overuren, ook in een rustige week",
+   "plausible_causes": [
+    "De monteurs werken te langzaam.",
+    "Er zijn te weinig meterwisselaars."
+   ],
+   "root_cause": "Afspraken worden ingepland op volgorde van binnenkomst, niet per wijk; de monteurs rijden kriskras door de regio, en wat aan het eind van de dag overblijft, wordt overwerk.",
+   "severity": "high",
+   "step": "meters.appointment",
+   "symptoms": [
+    "De meterwisselaars schrijven elke week overuren, ook in een rustige week.",
+    "Een monteur rijdt op één dag naar adressen in drie of vier wijken."
+   ],
+   "teaches": [
+    "waste_transport",
+    "heijunka"
+   ],
+   "tells": [
+    {
+     "tell": "planning_board",
+     "text": "Op het weekbord bij de planners staat achter de namen van de meterwisselaars bijna elke dag een overuur in rood."
+    }
+   ],
+   "tier": 1,
+   "visibility": "subtle",
+   "waste": "transport"
+  }
+ ]
+}

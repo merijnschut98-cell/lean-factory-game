@@ -1,0 +1,2875 @@
+{
+ "people": [
+  {
+   "id": "joost",
+   "name": "joost",
+   "archetype": "defender",
+   "trust": 50,
+   "morale": 50,
+   "need": "safety"
+  },
+  {
+   "id": "anouk",
+   "name": "anouk",
+   "archetype": "overloaded",
+   "trust": 50,
+   "morale": 50,
+   "need": "safety"
+  },
+  {
+   "id": "sanne",
+   "name": "sanne",
+   "archetype": "overloaded",
+   "trust": 50,
+   "morale": 50,
+   "need": "recognition"
+  },
+  {
+   "id": "marco",
+   "name": "marco",
+   "archetype": "cynic",
+   "trust": 50,
+   "morale": 50,
+   "need": "fairness"
+  },
+  {
+   "id": "esra",
+   "name": "esra",
+   "archetype": "defender",
+   "trust": 50,
+   "morale": 50,
+   "need": "fairness"
+  },
+  {
+   "id": "el_amrani",
+   "name": "el_amrani",
+   "archetype": "customer_upset",
+   "trust": 50,
+   "morale": 50,
+   "need": "facts"
+  },
+  {
+   "id": "petra",
+   "name": "petra",
+   "archetype": "defender",
+   "trust": 50,
+   "morale": 50,
+   "need": "facts"
+  },
+  {
+   "id": "henk",
+   "name": "henk",
+   "archetype": "craftsman",
+   "trust": 50,
+   "morale": 50,
+   "need": "recognition"
+  },
+  {
+   "id": "linda",
+   "name": "linda",
+   "archetype": "overloaded",
+   "trust": 50,
+   "morale": 50,
+   "need": "time"
+  },
+  {
+   "id": "dirk",
+   "name": "dirk",
+   "archetype": "defender",
+   "trust": 50,
+   "morale": 50,
+   "need": "fairness"
+  },
+  {
+   "id": "gert",
+   "name": "gert",
+   "archetype": "defender",
+   "trust": 50,
+   "morale": 50,
+   "need": "safety"
+  },
+  {
+   "id": "mieke",
+   "name": "mieke",
+   "archetype": "craftsman",
+   "trust": 50,
+   "morale": 50,
+   "need": "recognition"
+  },
+  {
+   "id": "femke",
+   "name": "femke",
+   "archetype": "craftsman",
+   "trust": 50,
+   "morale": 50,
+   "need": "time"
+  },
+  {
+   "id": "rob",
+   "name": "rob",
+   "archetype": "rule_bound",
+   "trust": 50,
+   "morale": 50,
+   "need": "safety"
+  },
+  {
+   "id": "thomas",
+   "name": "thomas",
+   "archetype": "defender",
+   "trust": 50,
+   "morale": 50,
+   "need": "fairness"
+  },
+  {
+   "id": "ilse",
+   "name": "ilse",
+   "archetype": "customer_upset",
+   "trust": 50,
+   "morale": 50,
+   "need": "time"
+  },
+  {
+   "id": "frank",
+   "name": "frank",
+   "archetype": "rule_bound",
+   "trust": 50,
+   "morale": 50,
+   "need": "facts"
+  }
+ ],
+ "dialogs": [
+  {
+   "id": "joost_output_kpi",
+   "person": "joost",
+   "kind": "persuade",
+   "mission": "fix_silo_kpis",
+   "requires_clue": "silo_kpis:4",
+   "owns": "silo_kpis",
+   "kpi_team": "work_prep",
+   "mood": "gespannen",
+   "patience": 10,
+   "opening": "Ik heb tien minuten. Morgen is het MT.",
+   "position": {
+    "text": "Mijn team haalt dertig ontwerpen per week. Een record. Als de aansluitingen niet sneller gaan, ligt dat niet aan ons.",
+    "tags": [
+     "claim"
+    ]
+   },
+   "layers": [
+    {
+     "id": "interest",
+     "at": 55,
+     "via": [
+      "inquiry",
+      "open_question",
+      "paraphrase"
+     ],
+     "text": "Frank. Elke maandag om negen uur. Ontwerpen per week staat bovenaan zijn lijst, dus staat het bovenaan de mijne.",
+     "tags": [
+      "claim",
+      "feeling"
+     ]
+    },
+    {
+     "id": "concern",
+     "at": 70,
+     "via": [
+      "silence",
+      "reflect",
+      "empathy",
+      "inquiry"
+     ],
+     "lead_in": {
+      "text": "Ja. En…",
+      "tags": [
+       "hesitation"
+      ]
+     },
+     "text": "Mijn voorganger had één slecht kwartaal. Hij werkt nu bij Inkoop. … Als ik op doorlooptijd ga sturen, wordt dat getal eerst slechter. Dat weet ik gewoon. En dan sta ik in het MT met lege handen.",
+     "tags": [
+      "admission"
+     ],
+     "condition": "Ik doe mee. Maar Frank moet het goedvinden. Het blijft zijn lijst.",
+     "unlocks": {
+      "clue": {
+       "key": true,
+       "depth": 2,
+       "text": "Werkvoorbereiding stuurt op ontwerpen per week omdat de manager er elke maandag naar vraagt. Een doorlooptijd die pas na maanden beter wordt, voelt als een risico voor wie erop wordt afgerekend."
+      },
+      "facts": [
+       "heard:joost_kpi"
+      ],
+      "proposals": [
+       "present_with_sanne"
+      ]
+     }
+    }
+   ],
+   "warning": "Hm. Ik heb hier eigenlijk geen tijd voor.",
+   "data": [
+    "silo_kpis:0",
+    "silo_kpis:2"
+   ],
+   "co_proposal": {
+    "id": "present_with_sanne",
+    "text": "En als Sanne hetzelfde doet, presenteren we het samen. Dan sta ik er niet alleen."
+   },
+   "condition_needs": {
+    "all": [
+     "committed:frank_kpi_targets"
+    ]
+   },
+   "outcomes": {
+    "commitment": "Afgesproken. En als het eerst slechter wordt, zeg ik dat zelf in het MT. Voordat Frank het vraagt.",
+    "partial": "Ik doe mee. Maar Frank moet het goedvinden. Het blijft zijn lijst.",
+    "heard": "Fijn dat je het vroeg. Echt.",
+    "compliance": "Prima. Dan meet ik wat jullie willen.",
+    "ruined": "Je kwam binnen met je antwoord al klaar. Dan moet Ruud het maar tegen mij zeggen."
+   },
+   "beats_after": [
+    {
+     "when": "committed:frank_kpi_targets",
+     "text": "Frank heeft getekend. Nu sta ik er ook echt achter."
+    }
+   ],
+   "proposals": [
+    {
+     "id": "lead_and_oldest",
+     "kpis": [
+      "work_prep_lead_time",
+      "work_prep_oldest"
+     ],
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Het oudste dossier… dat zie ik volgende week al zakken.",
+     "name": "Doorlooptijd + oudste dossier",
+     "text": "Wat als je naast de doorlooptijd het oudste dossier meet? Dat beweegt binnen een paar weken, en dat heb jij in de hand."
+    },
+    {
+     "id": "ftr_and_oldest",
+     "kpis": [
+      "work_prep_ftr",
+      "work_prep_oldest"
+     ],
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Eerste keer goed, en iets wat ik deze week kan laten zien. Dat is eerlijk.",
+     "name": "Eerste keer goed + oudste dossier",
+     "text": "Meet wat er bij de monteur goed aankomt, en het oudste dossier in je bak."
+    },
+    {
+     "id": "output_and_ftr",
+     "kpis": [
+      "work_prep_output",
+      "work_prep_ftr"
+     ],
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Dat kan ik wel aan Frank verkopen.",
+     "name": "Ontwerpen per week + eerste keer goed",
+     "text": "Houd je ontwerpen per week, en zet eerste keer goed ernaast."
+    },
+    {
+     "id": "lead_and_ftr",
+     "kpis": [
+      "work_prep_lead_time",
+      "work_prep_ftr"
+     ],
+     "addresses": [],
+     "reply": "Twee getallen die pas na maanden bewegen? Dat is precies wat ik bedoel.",
+     "name": "Doorlooptijd + eerste keer goed",
+     "text": "Stuur op de doorlooptijd en op eerste keer goed."
+    },
+    {
+     "id": "present_with_sanne",
+     "hidden": true,
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Samen. Dan sta ik er niet alleen.",
+     "name": "Samen met Sanne presenteren",
+     "text": "En als je het niet alleen presenteert, maar samen met Sanne?"
+    }
+   ],
+   "experiments": [
+    {
+     "id": "one_quarter_trial",
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Met de oude ernaast. Dan kan ik altijd laten zien wat we deden.",
+     "name": "Een kwartaal proberen",
+     "text": "Probeer het een kwartaal, met de oude cijfers er gewoon naast zichtbaar."
+    }
+   ],
+   "lines": {
+    "mood": "Hoe ging het MT?",
+    "confront": "Jouw team zet toch gewoon te snel door?"
+   },
+   "replies": {
+    "show_data": {
+     "lands": {
+      "text": "Laat eens zien… van 85 naar 80 procent? Dat had ik niet zo gezien."
+     },
+     "misses": {
+      "text": "Dus mijn mensen werken slordig? Ze halen elke week hun doel. Elke week."
+     }
+    },
+    "perspective": {
+     "lands": {
+      "text": "Vanuit de monteur gezien… die krijgt mijn record als een stapel tekeningen waar hij mee terug moet. Ja. Dat is geen record, dat is een rekening."
+     }
+    }
+   },
+   "start": 35
+  },
+  {
+   "id": "anouk_first_look",
+   "person": "anouk",
+   "kind": "persuade",
+   "mission": "training_tue",
+   "tutorial": true,
+   "patience": 12,
+   "opening": "O, hoi. Sorry, het is een beetje een bende. Drie collega's zitten op cursus.",
+   "position": {
+    "text": "Het is gewoon druk deze week. Ik zit erbovenop.",
+    "tags": [
+     "claim"
+    ]
+   },
+   "layers": [
+    {
+     "id": "interest",
+     "at": 45,
+     "via": [
+      "empathy",
+      "mood",
+      "open_question"
+     ],
+     "text": "Achter elk dossier zit iemand die wacht. Een gezin, een bakker, een school. Dus ik wil het niet laten liggen.",
+     "tags": [
+      "claim",
+      "feeling"
+     ]
+    },
+    {
+     "id": "concern",
+     "at": 65,
+     "via": [
+      "reflect",
+      "empathy"
+     ],
+     "lead_in": {
+      "text": "Het is alleen… ik word er zenuwachtig van. Sorry.",
+      "tags": [
+       "feeling"
+      ]
+     },
+     "text": "Iedereen komt kijken als het druk is. Met een stopwatch. En dan denk ik: nu zien ze hoe langzaam ik ben.",
+     "tags": [
+      "admission"
+     ],
+     "unlocks": {
+      "facts": [
+       "heard:anouk_first_look"
+      ],
+      "proposals": [
+       "come_at_eight"
+      ]
+     }
+    }
+   ],
+   "co_proposal": {
+    "id": "come_at_eight",
+    "text": "Kom morgen om acht uur. Dan zie je hoe het begint: koffie, de twee bakken, en dan zoeken."
+   },
+   "outcomes": {
+    "commitment": "Kom maar. Ik zet koffie. Slechte koffie, maar koffie.",
+    "partial": "Goed. Maar zonder stopwatch, hè.",
+    "heard": "Fijn dat je eerst vroeg. Dat doet niet iedereen."
+   },
+   "proposals": [
+    {
+     "id": "sit_beside",
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Naar het werk. Oké. Dat… is eigenlijk wel fijn.",
+     "name": "Een uur meekijken, zonder oordeel",
+     "text": "Mag ik een uur naast je zitten? Ik kijk naar het werk, niet naar jou."
+    },
+    {
+     "id": "stopwatch",
+     "addresses": [],
+     "reply": "Timen. Dus toch.",
+     "name": "Je werk timen",
+     "text": "Ik wil even timen hoe lang een ontwerp duurt."
+    },
+    {
+     "id": "come_at_eight",
+     "hidden": true,
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Kom maar. Dan zie je hoe het begint: koffie, de twee bakken, en dan zoeken.",
+     "name": "Morgen om acht uur",
+     "text": "Mag ik morgen om acht uur komen, als de dag begint?"
+    }
+   ],
+   "experiments": [],
+   "lines": {},
+   "replies": {
+    "perspective": {
+     "lands": {
+      "text": "Vanuit het dossier gezien? Ha. Dat ligt vooral. In een bak."
+     }
+    }
+   },
+   "start": 35
+  },
+  {
+   "id": "anouk_owns_tray",
+   "person": "anouk",
+   "kind": "persuade",
+   "mission": "training_fri",
+   "owns": "training_tray",
+   "tutorial": true,
+   "patience": 12,
+   "mood": "goed",
+   "opening": "Het werkt. Ik heb vandaag niet één keer gezocht. Niet één keer!",
+   "position": {
+    "text": "Maandag komen de anderen terug. Dan leg ik het wel even uit.",
+    "tags": [
+     "claim"
+    ]
+   },
+   "layers": [
+    {
+     "id": "interest",
+     "at": 62,
+     "via": [
+      "empathy",
+      "mood",
+      "open_question"
+     ],
+     "text": "Eén bak, oudste bovenop. Het is zo simpel dat je het vergeet. Dat is het gevaarlijke.",
+     "tags": [
+      "claim",
+      "feeling"
+     ]
+    },
+    {
+     "id": "concern",
+     "at": 72,
+     "via": [
+      "reflect",
+      "empathy",
+      "silence",
+      "inquiry"
+     ],
+     "lead_in": {
+      "text": "Alleen…",
+      "tags": [
+       "hesitation"
+      ]
+     },
+     "text": "Ze werken alle drie langer hier dan ik. Wie ben ik om te zeggen hoe het moet?",
+     "tags": [
+      "admission",
+      "doubt"
+     ],
+     "unlocks": {
+      "facts": [
+       "heard:anouk_owner"
+      ],
+      "proposals": [
+       "anouk_writes_a4"
+      ]
+     }
+    }
+   ],
+   "co_proposal": {
+    "id": "anouk_writes_a4",
+    "text": "Als ik het A4 zelf mag schrijven. En jij er maandag bij staat. Niet om te praten, gewoon erbij."
+   },
+   "outcomes": {
+    "commitment": "Afgesproken. Ik teken er een bergje bij. Met een vlag.",
+    "partial": "Goed. Als Joost het ook zegt.",
+    "heard": "Dank je. Ik ga het A4 in elk geval maken."
+   },
+   "proposals": [
+    {
+     "id": "joost_announces",
+     "addresses": [],
+     "reply": "Ja. Dat kan. Dan is het van Joost.",
+     "name": "Joost kondigt het aan",
+     "text": "Joost kan het maandag in het werkoverleg aankondigen. Dan is het geregeld."
+    },
+    {
+     "id": "a4_above_tray",
+     "addresses": [
+      "interest"
+     ],
+     "reply": "Een A4. Ja. Al hangen er hier al zes A4'tjes die niemand leest.",
+     "name": "Een A4 boven de bak",
+     "text": "Een A4 boven de bak, met de regel erop. Dan hoeft niemand het te onthouden."
+    },
+    {
+     "id": "anouk_writes_a4",
+     "hidden": true,
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Als wat ik ontdekte. Dan is het geen regel van de nieuwe. Dan is het… mijn trucje.",
+     "name": "Jij schrijft het A4, in jouw woorden",
+     "text": "Wat als jij het A4 schrijft, in jouw woorden, en het maandag zelf laat zien? Niet als regel. Als wat je ontdekte."
+    }
+   ],
+   "experiments": [
+    {
+     "id": "decide_together_friday",
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Samen beslissen. Dan is het niet mijn regel. Dan is het de onze.",
+     "name": "Een week proberen, samen beslissen",
+     "text": "Probeer het een week met z'n vieren, en beslis vrijdag samen of het blijft."
+    }
+   ],
+   "lines": {},
+   "replies": {
+    "perspective": {
+     "lands": {
+      "text": "Vanuit de nieuwe collega die volgend jaar begint? Die ziet twee bakken en denkt: zo hoort het. Hm."
+     }
+    }
+   },
+   "start": 60
+  },
+  {
+   "id": "joost_vacancies",
+   "person": "joost",
+   "kind": "persuade",
+   "mission": "fix_custom_design",
+   "owns": "custom_design",
+   "mood": "gespannen",
+   "patience": 10,
+   "opening": "Als je komt vertellen dat we efficiënter moeten werken: dat weet ik. Ik heb het uitgerekend.",
+   "position": {
+    "text": "Ik heb twee werkvoorbereiders extra nodig. Ruim honderd dossiers in de bak, zes weken overwerk. Dat is gewoon een feit.",
+    "tags": [
+     "claim"
+    ]
+   },
+   "layers": [
+    {
+     "id": "interest",
+     "at": 55,
+     "via": [
+      "open_question",
+      "inquiry",
+      "paraphrase"
+     ],
+     "text": "Elke week komen er meer dossiers binnen dan we eruit krijgen. Anouk zat gisteren om zeven uur nog te tekenen. Dat wil ik niet meer.",
+     "tags": [
+      "claim",
+      "feeling"
+     ]
+    },
+    {
+     "id": "concern",
+     "at": 70,
+     "via": [
+      "reflect",
+      "empathy",
+      "silence",
+      "inquiry"
+     ],
+     "lead_in": {
+      "text": "Kijk, en als het niet aan mensen ligt…",
+      "tags": [
+       "hesitation"
+      ]
+     },
+     "text": "…dan zeg ik eigenlijk dat mijn team het al die tijd verkeerd deed. Anouk heeft zich zes weken kapotgewerkt. Ik ga niet in het MT zeggen dat het ook anders had gekund.",
+     "tags": [
+      "admission"
+     ],
+     "unlocks": {
+      "clue": {
+       "key": true,
+       "depth": 2,
+       "text": "'Niemand heeft ooit gevraagd of het anders mocht. Drie handtekeningen, zo is het altijd gegaan. Ook voor een gewone woning.'"
+      },
+      "facts": [
+       "heard:joost_vacancies"
+      ],
+      "proposals": [
+       "anouk_leads"
+      ]
+     }
+    }
+   ],
+   "warning": "Ik ga dit niet nog een keer uitleggen.",
+   "data": [
+    "custom_design:0",
+    "custom_design:4"
+   ],
+   "co_proposal": {
+    "id": "anouk_leads",
+    "text": "Laat Anouk het eerste standaardontwerp tekenen. Ze tekent ze toch al allemaal hetzelfde."
+   },
+   "outcomes": {
+    "commitment": "Goed. Ik zeg in het MT dat we de vacatures drie weken aanhouden. Omdat het team iets wil proberen.",
+    "partial": "Ik wil het proberen. Maar de vacatures blijven staan tot ik iets zie.",
+    "heard": "Je bent de eerste die vraagt hoe het met ze gaat in plaats van hoeveel ze maken.",
+    "compliance": "Als Ruud dat wil. Dan schrijf ik het zo op.",
+    "ruined": "Dus het ligt aan ons. Duidelijk. Ik zie je in het MT."
+   },
+   "proposals": [
+    {
+     "id": "hold_and_trial",
+     "addresses": [
+      "interest"
+     ],
+     "reply": "En als het niks wordt, ben ik drie weken kwijt en is Anouk nog steeds om zeven uur hier.",
+     "name": "Vacatures drie weken aanhouden, standaardontwerp proberen",
+     "text": "Houd de vacatures drie weken aan. In die tijd probeert het team een standaardontwerp voor een gewone woning."
+    },
+    {
+     "id": "team_presents",
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Wat ze ontdekten. Ja. Dat is iets anders dan 'we deden het fout'.",
+     "name": "Het team presenteert wat het ontdekte",
+     "text": "Laat het team het zelf in het MT vertellen: wat ze ontdekten. Niet wat er fout ging."
+    },
+    {
+     "id": "anouk_leads",
+     "hidden": true,
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Dan is het hun idee. Niet het mijne, niet het jouwe. Dat kan ik in het MT vertellen.",
+     "name": "Anouk tekent het standaardontwerp",
+     "text": "Wat als Anouk het standaardontwerp uittekent? Zij weet het beste wat er altijd hetzelfde is."
+    },
+    {
+     "id": "temp_hire",
+     "addresses": [],
+     "reply": "Dat vraag ik al zes weken. … Al moet Anouk ze dan wel eerst inwerken. Naast haar eigen bak.",
+     "name": "Tijdelijk twee mensen inhuren",
+     "text": "Neem tijdelijk twee mensen in, terwijl we kijken."
+    }
+   ],
+   "experiments": [
+    {
+     "id": "one_signature_week",
+     "addresses": [
+      "interest"
+     ],
+     "reply": "Eén week. Dat overleeft het MT wel.",
+     "name": "Eén week één handtekening",
+     "text": "Eén week: een standaardaansluiting met één handtekening in plaats van drie."
+    }
+   ],
+   "lines": {},
+   "replies": {
+    "show_data": {
+     "lands": {
+      "text": "Vijf uur voor een gewone woning… even voor de duidelijkheid: dat is net zo lang als voor de bakker op de hoek."
+     },
+     "misses": {
+      "text": "Dus we zijn traag. Dank je."
+     }
+    },
+    "perspective": {
+     "lands": {
+      "text": "Vanuit de klant? Die ziet niet hoeveel uur er in een tekening zit. Die ziet alleen dat hij wacht."
+     }
+    }
+   },
+   "start": 35
+  },
+  {
+   "id": "sanne_checker",
+   "person": "sanne",
+   "kind": "persuade",
+   "mission": "fix_incomplete_application",
+   "owns": "incomplete_application",
+   "mood": "gespannen",
+   "patience": 9,
+   "opening": "Twee minuten. Ik heb vier mensen in de wacht en één aan de lijn.",
+   "position": {
+    "text": "Ik heb iemand extra nodig om alles na te lopen. Negentien van de laatste veertig aanvragen moesten terug.",
+    "tags": [
+     "claim"
+    ]
+   },
+   "layers": [
+    {
+     "id": "interest",
+     "at": 50,
+     "via": [
+      "empathy",
+      "mood",
+      "open_question"
+     ],
+     "text": "Elke aanvraag die terug moet, kost ons twee telefoontjes en een mail. En de klant is boos op óns. Wij hebben dat formulier niet gemaakt.",
+     "tags": [
+      "claim",
+      "feeling"
+     ]
+    },
+    {
+     "id": "concern",
+     "at": 68,
+     "via": [
+      "reflect",
+      "empathy"
+     ],
+     "lead_in": {
+      "text": "Weet je wat het is… ik ben er gewoon boos over. Al jaren.",
+      "tags": [
+       "feeling"
+      ]
+     },
+     "text": "Hier denken ze dat Intake het postkantoor is. Stempel erop, doorsturen. Als er iets misgaat, is het de Intake. Met een controleur kan ik tenminste laten zíen dat het niet aan ons ligt.",
+     "tags": [
+      "admission"
+     ],
+     "unlocks": {
+      "clue": {
+       "key": true,
+       "depth": 2,
+       "text": "'Wat er mist, is altijd hetzelfde: het vermogen, de meterkastfoto, de installateur. Wij zien het elke dag. Niemand heeft ons ooit gevraagd wat er op het formulier moet.'"
+      },
+      "facts": [
+       "heard:sanne_checker"
+      ],
+      "proposals": [
+       "team_designs_form"
+      ]
+     }
+    }
+   ],
+   "warning": "Joh, ik heb echt geen tijd voor een praatje.",
+   "data": [
+    "incomplete_application:2",
+    "incomplete_application:4"
+   ],
+   "co_proposal": {
+    "id": "team_designs_form",
+    "text": "Laat ons de verplichte velden kiezen. Wij weten precies wat er altijd mist."
+   },
+   "outcomes": {
+    "commitment": "Afgesproken. En als het werkt, wil ik dat het in het MT gezegd wordt. Door jou. Dat het het formulier was, niet mijn team.",
+    "partial": "Ik doe het. Maar mijn aanvraag voor een controleur gaat niet van tafel tot ik het zie.",
+    "heard": "Zo. Dat moest er even uit.",
+    "compliance": "Prima. Weer iets erbij.",
+    "ruined": "Dus wij moeten beter opletten. Dank je, dat zeggen ze al tien jaar."
+   },
+   "proposals": [
+    {
+     "id": "extra_checker",
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Ja! Dat vraag ik al een halfjaar.",
+     "name": "Een extra controleur",
+     "text": "Goed: één iemand die elke aanvraag naloopt voordat hij verder gaat."
+    },
+    {
+     "id": "required_fields",
+     "addresses": [
+      "interest"
+     ],
+     "reply": "Dan zien we het niet eens meer… als het werkt. Wie bouwt dat dan?",
+     "name": "Verplichte velden in het webformulier",
+     "text": "Wat als het formulier pas verder gaat als vermogen, foto en installateur erin staan?"
+    },
+    {
+     "id": "team_designs_form",
+     "hidden": true,
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Wij. Ontwerpen. Het postkantoor ontwerpt het formulier. … Dat wil ik Joost weleens horen zeggen.",
+     "name": "Jullie ontwerpen het formulier",
+     "text": "Jouw team weet als enige wat er altijd mist. Wat als jullie het nieuwe formulier ontwerpen?"
+    }
+   ],
+   "experiments": [
+    {
+     "id": "tally_per_field",
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Een turflijst heb ik al. Maar per veld… dan zie je waar het vandaan komt. Niet bij ons.",
+     "name": "Twee weken turven per veld",
+     "text": "Twee weken turven wat er mist, per veld, op een A4 aan de muur."
+    }
+   ],
+   "lines": {},
+   "replies": {
+    "show_data": {
+     "lands": {
+      "text": "Een week wachten voor een meterkastfoto. Ja. Dat geloof ik meteen."
+     },
+     "misses": {
+      "text": "Ja, dat wéét ik. Daarom vraag ik om iemand."
+     }
+    },
+    "perspective": {
+     "lands": {
+      "text": "Vanuit de klant gezien… die vult in wat wij vragen. En wij vragen het niet. Hè. Dat is eigenlijk best gek."
+     }
+    }
+   },
+   "start": 30
+  },
+  {
+   "id": "marco_wasted_trips",
+   "person": "marco",
+   "kind": "persuade",
+   "mission": "fix_installer_not_ready",
+   "owns": "installer_not_ready",
+   "patience": 10,
+   "opening": "Ah. De nieuwe verbetermanager. Ik heb er al drie gehad. Koffie staat daar.",
+   "position": {
+    "text": "Twee op de vijf adressen zijn niet klaar als mijn mannen voor de deur staan. Twintig monteursuren per week. Die heb ik niet.",
+    "tags": [
+     "claim"
+    ]
+   },
+   "layers": [
+    {
+     "id": "interest",
+     "at": 50,
+     "via": [
+      "paraphrase",
+      "inquiry"
+     ],
+     "text": "Elke rit voor niks is een klant die wél klaar was en een week langer wacht. En mijn mannen zitten in de bus te bellen met een installateur die z'n telefoon niet opneemt.",
+     "tags": [
+      "claim",
+      "feeling"
+     ]
+    },
+    {
+     "id": "concern",
+     "at": 70,
+     "via": [
+      "inquiry",
+      "silence",
+      "empathy"
+     ],
+     "lead_in": {
+      "text": "Kijk. In 2012…",
+      "tags": [
+       "hesitation"
+      ]
+     },
+     "text": "In 2012 kwam er ook een programma. Consultants, mooie plaatjes, workshops. Mijn mannen zaten twee dagen per maand in een zaaltje in plaats van op straat. Toen de consultants weggingen, was alles weer bij het oude. Ik heb mijn mannen beloofd: nooit meer. Als ik nu weer ja zeg, ben ik een leugenaar.",
+     "tags": [
+      "admission"
+     ],
+     "unlocks": {
+      "clue": {
+       "key": true,
+       "depth": 2,
+       "text": "'Mijn mannen zien op een foto in één oogopslag of een meterkast klaar is. Maar niemand vraagt ze iets voordat ze rijden.'"
+      },
+      "facts": [
+       "heard:marco_2012"
+      ],
+      "proposals": [
+       "monteurs_judge_photos"
+      ]
+     }
+    }
+   ],
+   "warning": "Zeg het maar gewoon. Wat moet ik doen?",
+   "data": [
+    "installer_not_ready:2"
+   ],
+   "co_proposal": {
+    "id": "monteurs_judge_photos",
+    "text": "Laat Ricardo het doen. Die ziet aan een foto of de aarding goed is."
+   },
+   "outcomes": {
+    "commitment": "Goed. Eén maand. En als het na een maand weg is, ben jij de vierde.",
+    "partial": "Ik doe mee. Als het na een maand nog loopt.",
+    "heard": "Hm. Jij luistert tenminste. Dat deed de vorige niet.",
+    "compliance": "Komt op de stapel.",
+    "ruined": "Zie je. Mooie woorden. En wie bouwt dat na?"
+   },
+   "proposals": [
+    {
+     "id": "readiness_call",
+     "addresses": [
+      "interest"
+     ],
+     "reply": "Bellen. Ja. Als ze het volhouden.",
+     "name": "Planning belt vooraf",
+     "text": "Wat als Planning twee dagen vooraf belt of de meterkast klaar is?"
+    },
+    {
+     "id": "photo_upload",
+     "addresses": [
+      "interest"
+     ],
+     "reply": "Een foto. Daar zie ik meer op dan op tien formulieren.",
+     "name": "Foto van de meterkast vooraf",
+     "text": "De installateur stuurt een foto van de meterkast voordat er een monteur rijdt."
+    },
+    {
+     "id": "monteurs_judge_photos",
+     "hidden": true,
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Tien minuten bij de koffie. Op de werkplaats. Dat… is iets anders dan 2012.",
+     "name": "Jouw mannen beoordelen de foto's",
+     "text": "Wat als jouw mannen de foto's beoordelen? Geen zaaltje. Tien minuten bij de koffie op de werkplaats."
+    }
+   ],
+   "experiments": [
+    {
+     "id": "one_month_you_decide",
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Ik zeg of het blijft. Ik. Goed.",
+     "name": "Eén maand, één wijk, jij beslist",
+     "text": "Eén maand, één wijk. En na die maand zeg jij of het blijft. Niet Ruud, niet ik."
+    }
+   ],
+   "lines": {},
+   "replies": {
+    "show_data": {
+     "lands": {
+      "text": "Zeventig procent. Zie je. Dat zeg ik al twee jaar. Nu staat het tenminste ergens."
+     },
+     "misses": {
+      "text": "Cijfers. Ik heb mannen nodig, geen cijfers."
+     }
+    },
+    "experience": {
+     "misses": {
+      "text": "Bij jouw vorige baan. Ja. Hier is het Nova."
+     }
+    },
+    "perspective": {
+     "lands": {
+      "text": "Vanuit de planner? Die plant op de datum van het akkoord. Die weet ook niet dat de kast niet klaar is. Nee. Die heeft het ook niet makkelijk."
+     }
+    }
+   },
+   "start": 30
+  },
+  {
+   "id": "esra_agents",
+   "person": "esra",
+   "kind": "persuade",
+   "mission": "fix_status_callers",
+   "owns": "status_callers",
+   "mood": "moe",
+   "patience": 9,
+   "opening": "Kijk, ik geef je tien minuten. Dan moet ik de wachtrij weer in.",
+   "position": {
+    "text": "Ik heb vier agents extra nodig. Een kwartier in de wacht, de hele dag. Dat is niet normaal.",
+    "tags": [
+     "claim"
+    ]
+   },
+   "layers": [
+    {
+     "id": "interest",
+     "at": 50,
+     "via": [
+      "open_question",
+      "inquiry",
+      "paraphrase"
+     ],
+     "text": "Dat scherm daar staat de hele dag op rood. Mijn mensen krijgen elk uur iemand aan de lijn die al vier keer gebeld heeft en dat op hén afreageert.",
+     "tags": [
+      "claim",
+      "feeling"
+     ]
+    },
+    {
+     "id": "concern",
+     "at": 70,
+     "via": [
+      "reflect",
+      "empathy"
+     ],
+     "lead_in": {
+      "text": "En eerlijk gezegd… ik voel me er schuldig over.",
+      "tags": [
+       "feeling"
+      ]
+     },
+     "text": "Saskia zit thuis. Stress. En Kim zat vorige week te huilen in haar auto op de parkeerplaats. Op een team van vier. Ik had het moeten zien. Ik ga er niet nog een kwijtraken.",
+     "tags": [
+      "admission"
+     ],
+     "unlocks": {
+      "facts": [
+       "heard:esra_people"
+      ],
+      "proposals": [
+       "one_agent_calls_back"
+      ]
+     }
+    }
+   ],
+   "warning": "Serieus? Ik heb hier geen tijd voor.",
+   "data": [
+    "status_callers:0",
+    "status_callers:2"
+   ],
+   "co_proposal": {
+    "id": "one_agent_calls_back",
+    "text": "Laat Kim de wachtenden terugbellen. Een week. Die kent de dossiers, en zij heeft het het hardst nodig."
+   },
+   "outcomes": {
+    "commitment": "Deal. En als het werkt, wil ik niet horen dat ik dus geen agents nodig had. Ik had ze nodig. Alleen niet hiervoor.",
+    "partial": "Ik doe het. Maar mijn aanvraag voor vier agents blijft liggen tot ik de wachtrij groen zie.",
+    "heard": "Fijn dat iemand een keer vraagt hoe het met ze gaat.",
+    "compliance": "Prima. Komt erbij.",
+    "ruined": "Mijn mensen zijn geen stootkussen. En ik ook niet."
+   },
+   "proposals": [
+    {
+     "id": "four_agents",
+     "addresses": [],
+     "reply": "Vier. Ja. … Al moeten ze dan eerst zes weken worden ingewerkt. Door de mensen die nu al op hun tandvlees lopen.",
+     "name": "Vier agents extra",
+     "text": "Vier extra agents, tijdelijk."
+    },
+    {
+     "id": "status_messages",
+     "addresses": [
+      "interest"
+     ],
+     "reply": "Dan bellen ze niet. … Als het bericht klopt. Werkvoorbereiding weet zelf niet eens wanneer iets klaar is.",
+     "name": "Klanten krijgen vanzelf bericht",
+     "text": "Klanten krijgen bij elke stap vanzelf een bericht waar hun aansluiting is."
+    },
+    {
+     "id": "one_agent_calls_back",
+     "hidden": true,
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Kim. Die kent de dossiers. En die zit dan een week niet in de vuurlinie.",
+     "name": "Eén agent belt de wachtenden zelf",
+     "text": "Eén van je mensen gaat een week uit de wachtrij en belt de klanten die al drie weken wachten. Vóórdat die ons bellen."
+    }
+   ],
+   "experiments": [
+    {
+     "id": "listen_and_tally",
+     "addresses": [
+      "interest"
+     ],
+     "reply": "Turven. Ik heb het gevoel al. Maar goed, een getal is sterker dan een gevoel in het MT.",
+     "name": "Een middag meeluisteren en turven",
+     "text": "Eén middag samen meeluisteren en turven waarom mensen bellen."
+    },
+    {
+     "id": "rotate_off_the_queue",
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Om de beurt een uur niet in de vuurlinie. Dat merken ze. Dat merk ik.",
+     "name": "Om de beurt een uur uit de wachtrij",
+     "text": "Elke agent een uur per dag uit de wachtrij om wachtende klanten zelf te bellen. Om de beurt."
+    }
+   ],
+   "lines": {},
+   "replies": {
+    "show_data": {
+     "lands": {
+      "text": "Vier op de tien. Dat zijn… dat zijn mijn rode uren. Allemaal dezelfde vraag."
+     },
+     "misses": {
+      "text": "Ja. En? Dan heb ik nog steeds mensen tekort."
+     }
+    },
+    "perspective": {
+     "lands": {
+      "text": "Vanuit de beller? Die heeft een warmtepomp aan de muur en geen stroom. Ik zou ook bellen. Vier keer."
+     }
+    }
+   },
+   "start": 30
+  },
+  {
+   "id": "el_amrani_fourth_call",
+   "person": "el_amrani",
+   "kind": "persuade",
+   "missions": [
+    "fix_status_callers",
+    "winter_el_amrani"
+   ],
+   "place": "customer_contact.answer",
+   "mood": "gespannen",
+   "patience": 10,
+   "opening": "Goedemiddag. U spreekt met Fatima El Amrani. Ik bel voor de vierde keer deze maand, en ik heb ze allemaal opgeschreven.",
+   "position": {
+    "text": "Ik wil een datum. Een echte. Anders ga ik naar de Geschillencommissie.",
+    "tags": [
+     "claim"
+    ],
+    "tell": "facts"
+   },
+   "layers": [
+    {
+     "id": "interest",
+     "at": 45,
+     "via": [
+      "paraphrase",
+      "inquiry"
+     ],
+     "text": "Op 7 september zei iemand 'binnenkort'. Op 21 september 'we zijn ermee bezig'. Op 5 oktober wist niemand het. Ik wil gewoon weten waar ik aan toe ben.",
+     "tags": [
+      "claim",
+      "feeling"
+     ]
+    },
+    {
+     "id": "concern",
+     "at": 65,
+     "via": [
+      "reflect",
+      "empathy"
+     ],
+     "lead_in": {
+      "text": "Het gaat niet eens om mij… Ik ben bang, als ik eerlijk ben.",
+      "tags": [
+       "feeling"
+      ]
+     },
+     "text": "Mijn moeder woont bij ons. Ze is eenentachtig en heeft het altijd koud. De installateur zei: haal die cv-ketel eruit, de warmtepomp is beter. Die hangt nu aan de muur. Zonder stroom. Het wordt elke nacht kouder.",
+     "tags": [
+      "admission"
+     ],
+     "unlocks": {
+      "clue": {
+       "key": true,
+       "depth": 2,
+       "text": "'Niemand belt me terug. Dus bel ik zelf. Elke twee weken, met mijn schrift erbij.'"
+      },
+      "facts": [
+       "heard:el_amrani"
+      ],
+      "proposals": [
+       "check_existing_connection"
+      ]
+     }
+    }
+   ],
+   "warning": "Ik heb geen behoefte aan een riedeltje.",
+   "outcomes": {
+    "commitment": "Goed. Ik wacht op uw telefoontje. En als u niet belt, bel ik. Dat weet u.",
+    "partial": "Ik schrijf het op. Als het niet klopt, hoort u van me.",
+    "heard": "Dank u dat u luisterde. Dat is de eerste keer.",
+    "compliance": "Ik heb geen keus, hè. Ik schrijf het op.",
+    "ruined": "Dan bel ik de Geschillencommissie. Het nummer staat al in mijn schrift."
+   },
+   "proposals": [
+    {
+     "id": "name_a_date",
+     "addresses": [
+      "interest"
+     ],
+     "reply": "Veertien november. Ik schrijf het op.",
+     "promise": {
+      "kind": "delivery_date",
+      "source": "planning_estimate"
+     },
+     "name": "Een datum noemen",
+     "text": "Ik zie hier {promise_date}. Dan wordt u aangesloten."
+    },
+    {
+     "id": "honest_window_and_contact",
+     "addresses": [
+      "interest",
+      "concern"
+     ],
+     "reply": "Vrijdag. U. Goed. Ik schrijf uw naam op.",
+     "name": "Eerlijk zijn, en één aanspreekpunt",
+     "text": "Ik ga u geen datum beloven die ik niet zeker weet. Ik zoek uit waar uw dossier ligt, ik bel u vrijdag terug, en vanaf nu heeft u één aanspreekpunt: mij."
+    },
+    {
+     "id": "check_existing_connection",
+     "hidden": true,
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Dus… mijn moeder zit misschien volgende week al warm? Waarom heeft niemand dat gezegd?",
+     "name": "Kan de warmtepomp nu al draaien?",
+     "text": "Er is misschien iets wat sneller kan. Veel warmtepompen kunnen al op een gewone aansluiting draaien, op een lagere stand. Mag ik een monteur laten kijken of dat bij u kan, voor de winter?"
+    }
+   ],
+   "experiments": [],
+   "lines": {
+    "confront": "Mevrouw, als u de aanvraag compleet had ingevuld, was het sneller gegaan.",
+    "inquiry": "Wat wilt u het liefst weten, als u één ding mocht vragen?"
+   },
+   "replies": {
+    "mood": {
+     "lands": {
+      "text": "Hoe het gaat? Ik ken uw wachtmuziek inmiddels uit mijn hoofd. Vivaldi, toch?"
+     }
+    },
+    "open_question": {
+     "lands": {
+      "text": "Aangevraagd op 27 juli. Ontvangstbevestiging op 3 augustus, nummer erbij. Sindsdien hoor ik alleen Vivaldi.",
+      "tags": [
+       "claim"
+      ],
+      "tell": "facts"
+     }
+    },
+    "paraphrase": {
+     "lands": {
+      "text": "Vier keer, ja. Ik heb ze genummerd. Datum, tijd, en de naam van wie ik sprak.",
+      "tags": [
+       "claim"
+      ],
+      "tell": "facts"
+     }
+    },
+    "empathy": {
+     "lands": {
+      "text": "Begrip heb ik genoeg gehad. Drie keer. Ik heb het opgeschreven, kijk: 'begrip'.",
+      "tell": "facts"
+     }
+    },
+    "inquiry": {
+     "lands": {
+      "text": "Waar mijn aanvraag nu ligt. Bij wie. Sinds wanneer. Dat staat toch ergens in een systeem? En… of ik deze winter warm zit.",
+      "tags": [
+       "claim",
+       "hesitation"
+      ]
+     }
+    },
+    "perspective": {
+     "lands": {
+      "text": "Vanuit uw kant? U zit daar met honderd mensen zoals ik. … Goed. Maar ik ben wel deze."
+     }
+    }
+   },
+   "start": 20
+  },
+  {
+   "id": "petra_batch",
+   "person": "petra",
+   "kind": "persuade",
+   "mission": "fix_done_but_not_closed",
+   "owns": "done_but_not_closed",
+   "patience": 10,
+   "opening": "Als je komt voor de EAN van die familie: die zit in de maandrun. Volgende week dinsdag.",
+   "position": {
+    "text": "Eens per maand registreren is efficiënter. Dan doe ik de hele stapel in één keer, en alles klopt.",
+    "tags": [
+     "claim"
+    ]
+   },
+   "layers": [
+    {
+     "id": "interest",
+     "at": 55,
+     "via": [
+      "inquiry",
+      "open_question",
+      "paraphrase"
+     ],
+     "text": "Elke keer dat ik in het register ga, ben ik een kwartier kwijt voordat ik iets heb gedaan. Twee tokens, de controles, de export. De Molen maalt, maar langzaam.",
+     "tags": [
+      "claim",
+      "feeling"
+     ]
+    },
+    {
+     "id": "concern",
+     "at": 72,
+     "via": [
+      "show_data",
+      "paraphrase"
+     ],
+     "lead_in": {
+      "text": "Het klopt allemaal, hoor. Het staat in mijn map. Alleen…",
+      "tags": [
+       "hesitation",
+       "claim"
+      ],
+      "tell": "facts"
+     },
+     "text": "Ik ben alleen. Als ik het elke dag doe en ik ben een week ziek, dan ligt het stil en ziet iedereen het meteen. Nu merkt niemand het als ik er een week niet ben. De maandrun schuift gewoon een weekje op.",
+     "tags": [
+      "admission"
+     ],
+     "condition": "Ik wil het wel. Maar niet zolang ik de enige ben.",
+     "unlocks": {
+      "facts": [
+       "heard:petra_alone"
+      ],
+      "proposals": [
+       "rachid_backup"
+      ]
+     }
+    }
+   ],
+   "warning": "Mijn cijfers kloppen. Wat wil je nog meer?",
+   "data": [
+    "done_but_not_closed:0",
+    "done_but_not_closed:3"
+   ],
+   "co_proposal": {
+    "id": "rachid_backup",
+    "text": "Als Rachid het leert, wil ik het wel elke ochtend doen. Dan zie ik het werk ook eens stromen in plaats van stapelen."
+   },
+   "outcomes": {
+    "commitment": "Afgesproken. Elke ochtend. En jij regelt die token.",
+    "partial": "Ik wil het wel. Maar niet zolang ik de enige ben.",
+    "heard": "Je bent de eerste die naar de Molen vraagt.",
+    "compliance": "Als het moet. Dan doe ik het elke dag. Tot ik ziek ben.",
+    "ruined": "Dus ik doe het al elf jaar fout. Fijn om te horen."
+   },
+   "proposals": [
+    {
+     "id": "daily_run",
+     "addresses": [
+      "interest"
+     ],
+     "reply": "Elke dag een kwartier opstarten. Dat is twintig keer zoveel opstarten.",
+     "name": "Elke dag één sessie",
+     "text": "Wat als je elke dag om vier uur één sessie doet, met wat er die dag klaar is?"
+    },
+    {
+     "id": "same_day",
+     "addresses": [],
+     "reply": "Dezelfde dag. En als ik er niet ben?",
+     "name": "Registreren op de dag zelf",
+     "text": "De monteur meldt het af, en jij registreert het dezelfde dag."
+    },
+    {
+     "id": "rachid_backup",
+     "hidden": true,
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Rachid. Die is precies. … Dan kan ik ook eens op vakantie zonder de maandrun in mijn hoofd.",
+     "name": "Rachid leert het van je",
+     "text": "Wat als Rachid van Intake het van je leert? Eén middag per week naast je. Dan ben je niet meer de enige."
+    }
+   ],
+   "experiments": [
+    {
+     "id": "shorter_login",
+     "addresses": [
+      "interest"
+     ],
+     "reply": "Dat vraag ik al vier jaar. Maar goed. Als jij het vraagt…",
+     "name": "De inlog van de Molen korter",
+     "text": "Ik vraag IT of de inlog korter kan. Eén token in plaats van twee, en de controles automatisch."
+    },
+    {
+     "id": "sick_week_a4",
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Een A4 voor als ik ziek ben. Dan hoef ik niet ziek te zijn met mijn laptop op schoot.",
+     "name": "Eén A4 voor als Petra er niet is",
+     "text": "We schrijven samen op wat er moet gebeuren als jij een week weg bent. Eén A4, en iemand oefent het één keer."
+    }
+   ],
+   "lines": {},
+   "replies": {
+    "show_data": {
+     "lands": {
+      "text": "Twee weken… voor elke aansluiting? Ik dacht altijd: het is maar administratie."
+     },
+     "misses": {
+      "text": "Mijn cijfers kloppen. Tot op de laatste EAN."
+     }
+    },
+    "perspective": {
+     "lands": {
+      "text": "Vanuit de klant… die heeft een kabel in de grond en een leverancier die zegt dat hij niet bestaat. Ja. Dat is geen administratie meer. Dat is een koude woonkamer."
+     }
+    }
+   },
+   "start": 40
+  },
+  {
+   "id": "henk_camera",
+   "person": "henk",
+   "kind": "persuade",
+   "mission": "save_henks_knowledge",
+   "owns": "knowledge_drain",
+   "patience": 10,
+   "opening": "Je komt zeker voor die camera. Jongen, ik zeg het maar meteen.",
+   "position": {
+    "text": "Ik laat me niet filmen.",
+    "tags": [
+     "claim"
+    ]
+   },
+   "layers": [
+    {
+     "id": "interest",
+     "at": 55,
+     "via": [
+      "inquiry",
+      "open_question"
+     ],
+     "text": "Wat ik weet, zit in m'n handen. Niet in m'n mond. Je ruikt of een mof vocht heeft. Je voelt aan de kabel of hij van voor '70 is. Dat zie je niet op een filmpje.",
+     "tags": [
+      "claim",
+      "feeling"
+     ]
+    },
+    {
+     "id": "concern",
+     "at": 72,
+     "via": [
+      "inquiry",
+      "silence",
+      "empathy"
+     ],
+     "lead_in": {
+      "text": "Kijk, het is niet dat ik niet wil…",
+      "tags": [
+       "hesitation"
+      ]
+     },
+     "text": "Ik ben bang dat ze straks een filmpje van mij hebben en denken: klaar, Henk is geregeld. En dat ze die jongen, Ahmed, 's nachts alleen naar Nova-Oud sturen met een tablet. Die jongen is goed. Maar hij is nog niet klaar.",
+     "tags": [
+      "admission"
+     ],
+     "unlocks": {
+      "clue": {
+       "key": true,
+       "depth": 2,
+       "text": "'Dit vak leer je niet uit een boek. Je leert het naast iemand die het kan, tot je het zelf doet en hij alleen nog kijkt.'"
+      },
+      "facts": [
+       "heard:henk_teach"
+      ],
+      "proposals": [
+       "teach_ahmed_four_steps"
+      ]
+     }
+    }
+   ],
+   "warning": "Ik ga zo naar huis, hè.",
+   "data": [
+    "knowledge_drain:2"
+   ],
+   "co_proposal": {
+    "id": "teach_ahmed_four_steps",
+    "text": "Laat 'm de komende nachten met mij meerijden. Eerst doe ik het. Dan doet hij het en ik kijk. En de laatste week zit ik in de bus en doet hij het alleen."
+   },
+   "outcomes": {
+    "commitment": "Ik laat het je wel zien. Maar ik bepaal wanneer hij klaar is. Niet de planning.",
+    "partial": "Ik doe mee. Als die jongen niet alleen de nacht in gaat voordat ik zeg dat het kan.",
+    "heard": "Jij bent de eerste die vraagt hoe ik het geleerd heb.",
+    "compliance": "Zet die camera dan maar neer. Ik zeg niks.",
+    "ruined": "Film dan maar wat je wilt. Zonder mij."
+   },
+   "proposals": [
+    {
+     "id": "hands_only_video",
+     "addresses": [],
+     "reply": "M'n handen. En wie vertelt dat filmpje wat 't moet doen als het anders loopt dan op het filmpje?",
+     "name": "Alleen je handen filmen",
+     "text": "Dan filmen we alleen je handen, niet jou."
+    },
+    {
+     "id": "buddy_nights",
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Meegaan is goed. Maar meegaan is kijken. Kijken is nog niet kunnen.",
+     "name": "Ahmed rijdt mee",
+     "text": "Wat als Ahmed de komende weken bij elke storing in de oude wijken met je meegaat?"
+    },
+    {
+     "id": "teach_ahmed_four_steps",
+     "hidden": true,
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Zo heeft ouwe Toon het mij geleerd. In 1984. Ja. Zo.",
+     "name": "Henk leert het Ahmed zoals hij het zelf leerde",
+     "text": "Hoe leerde jij het vroeger? Wat als je het Ahmed precies zo leert: jij doet het voor, hij doet het na terwijl jij kijkt, en op het eind doet hij het alleen en bel jij hem de dag erna."
+    }
+   ],
+   "experiments": [],
+   "lines": {
+    "inquiry": "Hoe weet je eigenlijk dat een mof vocht heeft, voordat je hem openmaakt?"
+   },
+   "replies": {
+    "show_data": {
+     "lands": {
+      "text": "Twee keer zo vaak opnieuw zoeken. Ja. Die oude netten liggen nergens zoals op de kaart."
+     },
+     "misses": {
+      "text": "Cijfers. Ik heb een kabel nodig, geen cijfers."
+     }
+    },
+    "perspective": {
+     "lands": {
+      "text": "Vanuit Ahmed? … Die staat om twee uur 's nachts in de regen bij een kabel die ouder is dan z'n vader. Met een filmpje. Nee."
+     }
+    }
+   },
+   "start": 40
+  },
+  {
+   "id": "linda_replanning",
+   "person": "linda",
+   "kind": "persuade",
+   "mission": "fix_planning_reshuffle",
+   "owns": "planning_reshuffle",
+   "mood": "moe",
+   "patience": 9,
+   "opening": "Als het over de planning gaat: die klopt niet. Hij klopt nooit. Ga zitten, als je een stoel vindt.",
+   "position": {
+    "text": "Ik werk harder dan ooit, en het wordt alleen maar erger. Een op de drie klussen schuift.",
+    "tags": [
+     "claim"
+    ]
+   },
+   "layers": [
+    {
+     "id": "interest",
+     "at": 45,
+     "via": [
+      "empathy",
+      "mood",
+      "open_question"
+     ],
+     "text": "Om tien uur komt er een storing, dan gaan er twee monteurs weg en vallen er zes klanten om. Elke dag. Mijn kaartenhuis.",
+     "tags": [
+      "claim",
+      "feeling"
+     ]
+    },
+    {
+     "id": "concern",
+     "at": 66,
+     "via": [
+      "reflect",
+      "empathy"
+     ],
+     "lead_in": {
+      "text": "Sorry, ik word hier onrustig van. En als ik ruimte inplan…",
+      "tags": [
+       "feeling"
+      ]
+     },
+     "text": "…dan zit er om twee uur een monteur koffie te drinken omdat er toevallig geen storing was. En dan zegt Marco dat ik niet kan plannen. Dan plan ik liever 's avonds om, als de kinderen slapen.",
+     "tags": [
+      "admission"
+     ],
+     "unlocks": {
+      "facts": [
+       "heard:linda_buffer"
+      ],
+      "proposals": [
+       "daytime_crew_with_marco"
+      ]
+     }
+    }
+   ],
+   "warning": "Sorry. Ik moet dit kaartenhuis voor morgen nog overeind krijgen.",
+   "data": [
+    "planning_reshuffle:0",
+    "planning_reshuffle:2"
+   ],
+   "outcomes": {
+    "commitment": "Goed. Een maand. En ik ga om vijf uur naar huis.",
+    "partial": "Ik probeer het. Als Marco het niet afschiet.",
+    "heard": "Dank je. Je bent de eerste die gaat zitten.",
+    "compliance": "Prima. Nog een regel erbij in het kaartenhuis.",
+    "ruined": "Dus ik plan slecht. Fijn. Dat wist ik al."
+   },
+   "proposals": [
+    {
+     "id": "jobs_after_noon",
+     "addresses": [
+      "interest"
+     ],
+     "reply": "Na twaalven. Hm. Dat kan ik zelf.",
+     "name": "Klussen na twaalven",
+     "text": "Plan de klantafspraken na twaalven, als de ochtendstoringen meestal voorbij zijn."
+    },
+    {
+     "id": "daytime_crew_with_marco",
+     "hidden": true,
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Marco tekent mee. Dan is het niet mijn idee als er iemand koffie drinkt.",
+     "name": "Een storingsploeg overdag, met Marco",
+     "text": "Een maand lang twee monteurs per dag vrij voor storingen. Is het rustig, dan doen ze kleine klussen van een lijstje. En Marco tekent het mee."
+    }
+   ],
+   "experiments": [
+    {
+     "id": "buffer_week_counted",
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Met cijfers. Dan hoef ik me niet te verdedigen. Dan laat ik het zien.",
+     "name": "Eén week ruimte, elke middag geteld",
+     "text": "Eén week houden we per monteur twee uur vrij, en we tellen elke middag wat ermee gebeurde. Dan heb jij de cijfers als iemand iets zegt."
+    }
+   ],
+   "lines": {},
+   "replies": {
+    "perspective": {
+     "lands": {
+      "text": "Vanuit de klant die om acht uur vrij heeft genomen? Die ziet geen storing. Die ziet niemand."
+     }
+    }
+   },
+   "start": 25
+  },
+  {
+   "id": "dirk_shelf",
+   "person": "dirk",
+   "kind": "persuade",
+   "mission": "fix_wrong_joint",
+   "owns": "wrong_joint_in_van",
+   "mood": "goed",
+   "patience": 10,
+   "opening": "Als je een mof zoekt: rij drie, vak twaalf. Ik heb ze gewoon liggen.",
+   "position": {
+    "text": "Ik heb ze gewoon liggen. Als ze in de bus missen, moeten ze ze komen halen.",
+    "tags": [
+     "claim"
+    ]
+   },
+   "layers": [
+    {
+     "id": "interest",
+     "at": 58,
+     "via": [
+      "inquiry",
+      "open_question"
+     ],
+     "text": "Ik weet niet wat er in die bussen ligt. Ze pakken wat ze pakken. Een bus is een magazijn op wielen, alleen zonder magazijnman.",
+     "tags": [
+      "claim"
+     ]
+    },
+    {
+     "id": "concern",
+     "at": 70,
+     "via": [
+      "silence",
+      "empathy",
+      "reflect"
+     ],
+     "lead_in": {
+      "text": "En weet je wat ik hoor…",
+      "tags": [
+       "hesitation"
+      ]
+     },
+     "text": "In de kantine zeggen ze: het magazijn levert te laat. Vierendertig jaar sta ik hier. Er heeft nog nooit een mof ontbroken op die plank. Nooit.",
+     "tags": [
+      "admission",
+      "feeling"
+     ],
+     "unlocks": {
+      "facts": [
+       "heard:dirk_shelf"
+      ],
+      "proposals": [
+       "dirk_fills_bins"
+      ]
+     }
+    }
+   ],
+   "outcomes": {
+    "commitment": "Doen we. En als er dan nog een mof ontbreekt, wil ik dat lege bakje zien.",
+    "partial": "Prima. Maar ik ga niet elke bus zelf nalopen.",
+    "heard": "Hm. Fijn dat iemand het vraagt.",
+    "compliance": "Als het moet. Ik heb ze gewoon liggen.",
+    "ruined": "Ik heb ze gewoon liggen. Zoek het verder zelf maar uit."
+   },
+   "proposals": [
+    {
+     "id": "standard_list",
+     "addresses": [
+      "interest"
+     ],
+     "reply": "Een lijst. Die hangt over een maand onder de koffievlekken.",
+     "name": "Een vaste lijst per bus",
+     "text": "Een vaste lijst per bus met wat erin hoort."
+    },
+    {
+     "id": "dirk_fills_bins",
+     "hidden": true,
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Mijn plank, maar dan op wielen. Dan ben ik de magazijnman van die bus ook.",
+     "name": "Twee bakjes per mof, Dirk vult",
+     "text": "Twee bakjes per moftype in elke bus. Is er één leeg, dan legt de monteur het lege bakje bij jou neer, en jij vult het. Jouw plank, in de bus."
+    }
+   ],
+   "experiments": [
+    {
+     "id": "monday_van_check",
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Met de monteur erbij. Dan hoort hij het van mij, niet uit de kantine.",
+     "name": "Elke maandag één bus, samen",
+     "text": "Loop elke maandag één bus na, met de monteur erbij."
+    }
+   ],
+   "lines": {},
+   "replies": {
+    "perspective": {
+     "lands": {
+      "text": "Vanuit Ahmed, om half drie 's nachts, veertig minuten van rij drie? Ja. Dan is mijn plank ver weg."
+     }
+    }
+   },
+   "start": 50
+  },
+  {
+   "id": "gert_klic",
+   "person": "gert",
+   "kind": "persuade",
+   "mission": "fix_digging_damage",
+   "mood": "gespannen",
+   "patience": 10,
+   "opening": "Ik heb mijn verzekeraar al gebeld, als je daarvoor komt.",
+   "position": {
+    "text": "Ik heb gewoon een KLIC-melding gedaan. Volgens de kaart lag hier niks.",
+    "tags": [
+     "claim"
+    ]
+   },
+   "layers": [
+    {
+     "id": "interest",
+     "at": 55,
+     "via": [
+      "open_question",
+      "inquiry",
+      "paraphrase"
+     ],
+     "text": "Proefsleuven graven kost tijd, en die tijd staat niet in de planning van mijn opdrachtgever. Die betaalt per meter. Als ik bij elke kabel ga zoeken, ben ik de duurste van de regio.",
+     "tags": [
+      "claim",
+      "feeling"
+     ]
+    },
+    {
+     "id": "concern",
+     "at": 70,
+     "via": [
+      "silence",
+      "empathy",
+      "reflect"
+     ],
+     "lead_in": {
+      "text": "Weet je wat het is…",
+      "tags": [
+       "hesitation"
+      ]
+     },
+     "text": "In 2019 stond ik ernaast toen een jongen van ons een middenspanningskabel raakte. Een flits, en hij lag. Hij leeft nog. Maar ik slaap er slecht van, elke keer dat er een schop de grond in gaat. En dan zegt Voltana dat het mijn schuld is.",
+     "tags": [
+      "admission",
+      "feeling"
+     ],
+     "unlocks": {
+      "clue": {
+       "key": true,
+       "depth": 1,
+       "text": "'Die kabel lag twee meter verder dan op mijn KLIC. Jullie monteur zei: die is in het voorjaar verlegd. Op mijn kaart stond nog de oude ligging.'"
+      },
+      "facts": [
+       "heard:gert_safety"
+      ],
+      "proposals": [
+       "stop_and_call_near_ms",
+       "first_metre_together"
+      ]
+     }
+    }
+   ],
+   "warning": "Moet ik mijn advocaat erbij halen?",
+   "data": [
+    "digging_damage:2"
+   ],
+   "co_proposal": {
+    "id": "first_metre_together",
+    "text": "Laat jullie monteur en mijn uitvoerder bij de eerste meter samen kijken. Vijf minuten. Dan weten we het allebei."
+   },
+   "outcomes": {
+    "commitment": "Afgesproken. En als jullie kaart weer niet klopt, wil ik dat ook horen. Niet alleen ik van jullie.",
+    "partial": "Ik doe mee. Als het in de opdracht komt te staan.",
+    "heard": "Je bent de eerste van Voltana die vraagt hoe het met mijn jongens gaat.",
+    "compliance": "Als het moet voor het contract.",
+    "ruined": "Dan zie ik je bij de rechter. Ik heb gewoon een melding gedaan."
+   },
+   "proposals": [
+    {
+     "id": "trenches_in_the_order",
+     "addresses": [
+      "interest"
+     ],
+     "reply": "Als het in de opdracht staat, betaalt hij het. Dan ben ik niet de duurste.",
+     "name": "Proefsleuven in de opdracht",
+     "text": "Wat als Voltana bij elke opdracht vooraf aangeeft waar proefsleuven nodig zijn, en jouw opdrachtgever die in de planning moet opnemen?"
+    },
+    {
+     "id": "stop_and_call_near_ms",
+     "hidden": true,
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Vanaf morgen. … Dan hoeft mijn jongen niet te gokken.",
+     "name": "Bij middenspanning: eerst bellen",
+     "text": "Binnen twee meter van een middenspanningskabel: eerst bellen, en een monteur van ons wijst ter plekke aan. Vanaf morgen."
+    },
+    {
+     "id": "first_metre_together",
+     "hidden": true,
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Samen. Dan zie jij ook eens hoe het op straat gaat.",
+     "name": "De eerste meter samen",
+     "text": "Laat onze monteur en jouw uitvoerder bij de eerste meter samen kijken. Vijf minuten."
+    }
+   ],
+   "experiments": [],
+   "lines": {
+    "confront": "Jullie graven gewoon te snel.",
+    "pressure": "Tot we weten waar die kabels liggen, graaft niemand binnen twee meter van een middenspanningskabel. Dat is geen verzoek."
+   },
+   "replies": {
+    "show_data": {
+     "lands": {
+      "text": "De helft lag anders dan op de kaart? Dus het ligt niet aan ons. … Al raak je hem dan nog steeds."
+     },
+     "misses": {
+      "text": "Dus jullie gaan het met cijfers op mij schuiven."
+     }
+    },
+    "perspective": {
+     "lands": {
+      "text": "Vanuit de mensen in De Linde? … Die zaten op een aggregaat omdat ik op een kaart vertrouwde. Ja. Dat is ook niet niks."
+     }
+    }
+   },
+   "start": 35
+  },
+  {
+   "id": "mieke_redraw",
+   "person": "mieke",
+   "kind": "persuade",
+   "mission": "fix_revision_backlog",
+   "owns": "revision_backlog",
+   "mood": "gespannen",
+   "patience": 10,
+   "opening": "Als je komt voor de kabel van Gert: die zat in de doos. Ergens tussen juni en nu.",
+   "position": {
+    "text": "We tekenen ze over zo snel als we kunnen. Tweehonderdveertig schetsen. Met z'n tweeën.",
+    "tags": [
+     "claim"
+    ]
+   },
+   "layers": [
+    {
+     "id": "interest",
+     "at": 55,
+     "via": [
+      "inquiry",
+      "open_question"
+     ],
+     "text": "Het tekenen is het probleem niet. Het uitzoeken. Welke kabel, welke mof, wat bedoelt hij met dat pijltje? Deze is op een broodzakje getekend. Met pindakaasvlek.",
+     "tags": [
+      "claim",
+      "feeling"
+     ]
+    },
+    {
+     "id": "concern",
+     "at": 72,
+     "via": [
+      "paraphrase",
+      "empathy"
+     ],
+     "lead_in": {
+      "text": "Zesentwintig jaar teken ik dit. Zesentwintig. En nu wil iedereen…",
+      "tags": [
+       "hesitation",
+       "claim"
+      ],
+      "tell": "recognition"
+     },
+     "text": "…dat de monteur het zelf intekent op een tablet. Prima. Maar wat zijn wij dan nog? Ik doe dit zesentwintig jaar. Ik zie aan een schets of een monteur haast had. En sinds die graafschade kijkt het hele gebouw naar GIS, alsof wíj die kabel hebben verlegd.",
+     "tags": [
+      "admission"
+     ],
+     "unlocks": {
+      "facts": [
+       "heard:mieke_craft"
+      ],
+      "proposals": [
+       "mieke_sets_the_standard",
+       "mieke_rides_along"
+      ]
+     }
+    }
+   ],
+   "warning": "Ik heb hier een doos die niet kleiner wordt van praten.",
+   "data": [
+    "revision_backlog:0",
+    "revision_backlog:2"
+   ],
+   "co_proposal": {
+    "id": "mieke_rides_along",
+    "text": "Laat mij één dag met de monteurs meelopen. Dan zie ik waarom het pijltje een pijltje is. En dan leer ik ze wat ik nodig heb."
+   },
+   "outcomes": {
+    "commitment": "Dat moet kloppen, dus ja. En het broodzakje lijst ik in. Als laatste van zijn soort.",
+    "partial": "Ik wil het proberen. Als de monteurs het ook willen.",
+    "heard": "Je bent de eerste die vraagt wát we eigenlijk doen.",
+    "compliance": "Als het moet. Dan teken ik wat er komt.",
+    "ruined": "Dus GIS is het probleem. Dank je. Dat hoorde ik al in de kantine."
+   },
+   "proposals": [
+    {
+     "id": "tablet_at_source",
+     "addresses": [
+      "interest"
+     ],
+     "reply": "En wie controleert of het klopt?",
+     "name": "De monteur tekent in op de dag zelf",
+     "text": "De monteur tekent het as-built in op de dag zelf, met foto's en maten."
+    },
+    {
+     "id": "daily_template",
+     "addresses": [
+      "interest"
+     ],
+     "reply": "Een sjabloon helpt. Een broodzakje is ook een sjabloon, als je het vriendelijk bekijkt.",
+     "name": "Een vast sjabloon",
+     "text": "Een vast sjabloon voor de schets, elke dag ingeleverd."
+    },
+    {
+     "id": "mieke_sets_the_standard",
+     "hidden": true,
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Controleren in plaats van overtekenen. Dan zijn wij… de kwaliteit. Niet de achterstand.",
+     "name": "Mieke bepaalt wat een goed as-built is",
+     "text": "Wat als jij bepaalt wat een goed as-built is? Jouw A4 met wat er altijd mist. En jouw team controleert, in plaats van over te tekenen."
+    },
+    {
+     "id": "mieke_rides_along",
+     "hidden": true,
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Een dag op straat. Ik ben in twintig jaar niet bij een oplevering geweest.",
+     "name": "Mieke loopt een dag mee met de monteurs",
+     "text": "Loop één dag met de monteurs mee, en neem je A4 mee."
+    }
+   ],
+   "experiments": [],
+   "lines": {},
+   "replies": {
+    "show_data": {
+     "lands": {
+      "text": "Anderhalf uur per schets, waarvan een uur uitzoeken. Ja. Dat klopt precies."
+     },
+     "misses": {
+      "text": "Ja, er staan er 240 open. Dat weet ik. Ik zie de doos elke dag."
+     }
+    },
+    "perspective": {
+     "lands": {
+      "text": "Vanuit Gert? Die graaft op mijn kaart. Op mijn kaart van vier maanden geleden. … Ja."
+     }
+    }
+   },
+   "start": 35
+  },
+  {
+   "id": "femke_triage",
+   "person": "femke",
+   "kind": "persuade",
+   "mission": "fix_grid_study_queue",
+   "owns": "grid_study_queue",
+   "mood": "moe",
+   "patience": 9,
+   "opening": "Vijf minuten werk, als ik eraan toekom. Dat zeg ik nu over alles. Sorry. Ga zitten.",
+   "position": {
+    "text": "We hebben twee analisten extra nodig. Achtendertig studies op het bord.",
+    "tags": [
+     "claim"
+    ]
+   },
+   "layers": [
+    {
+     "id": "interest",
+     "at": 52,
+     "via": [
+      "inquiry",
+      "open_question"
+     ],
+     "text": "Bij de meeste studies weet ik na vijf minuten al dat het past. Daarna reken ik nog vier uur, omdat de werkinstructie het zegt. En die school in Nova-Oost wacht.",
+     "tags": [
+      "claim",
+      "feeling"
+     ]
+    },
+    {
+     "id": "concern",
+     "at": 70,
+     "via": [
+      "inquiry",
+      "silence",
+      "empathy"
+     ],
+     "lead_in": {
+      "text": "Maar…",
+      "tags": [
+       "hesitation"
+      ]
+     },
+     "text": "Als ik een snelle check doe en ik zit ernaast, en er brandt in februari een station door, dan staat mijn naam eronder. Niemand heeft ooit gezegd dat het mag. En die werkinstructie… die heb ik zelf geschreven. In 2019. Toen vroeg bijna niemand 3x35.",
+     "tags": [
+      "admission"
+     ],
+     "condition": "Ik doe het. Maar het moet op papier, met een handtekening van boven mij.",
+     "unlocks": {
+      "clue": {
+       "key": true,
+       "depth": 2,
+       "text": "'De grens van 3x25A in de werkinstructie komt uit 2019, toen bijna niemand zwaarder vroeg. Nu vraagt bijna elke warmtepompklant meer.'"
+      },
+      "facts": [
+       "heard:femke_authority"
+      ],
+      "proposals": [
+       "signed_triage_rule"
+      ]
+     }
+    }
+   ],
+   "warning": "Ik moet echt verder rekenen.",
+   "data": [
+    "grid_study_queue:0",
+    "grid_study_queue:4"
+   ],
+   "co_proposal": {
+    "id": "signed_triage_rule",
+    "text": "Ik schrijf de grens. Op basis van de vrije ruimte per station, niet per aansluiting. Dat had ik in 2019 al moeten doen."
+   },
+   "outcomes": {
+    "commitment": "Afgesproken. En die twee analisten: die vraag ik over een halfjaar opnieuw. Als het dan nog nodig is.",
+    "partial": "Ik wil het. Maar niet zonder handtekening.",
+    "heard": "Fijn dat je even bleef. Echt.",
+    "compliance": "Prima. Op jouw verantwoording dan.",
+    "ruined": "Dus ik reken te veel. Fijn. Dan reken ik vanaf nu niks meer zonder brief."
+   },
+   "proposals": [
+    {
+     "id": "two_analysts",
+     "addresses": [],
+     "reply": "Als je ze kunt vinden. Heel Nederland zoekt ze.",
+     "name": "Twee analisten erbij",
+     "text": "Twee extra analisten."
+    },
+    {
+     "id": "fast_lane",
+     "addresses": [
+      "interest"
+     ],
+     "reply": "Een snelweg. Ja. Maar wie bepaalt de grens?",
+     "name": "Een snelle check, alleen het twijfelgeval volledig",
+     "text": "Een snelle check van een kwartier voor alles onder een grens. Alleen wat niet zeker past, krijgt de volle studie."
+    },
+    {
+     "id": "signed_triage_rule",
+     "hidden": true,
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Ruud tekent. Dan… ja. Dan durf ik.",
+     "name": "Jij schrijft de grens, Ruud tekent",
+     "text": "Jij schrijft de nieuwe grens, en ik zorg dat Ruud hem tekent. Dan is het de regel van Voltana, niet jouw gok."
+    }
+   ],
+   "experiments": [
+    {
+     "id": "one_in_ten_check",
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Eén op de tien nalopen. Dan weet ik het zeker. Dat is gewoon goede techniek.",
+     "name": "Eén op de tien toch volledig",
+     "text": "Een maand de snelle check, en bij één op de tien doet een collega toch de volle studie. Om te zien of je ernaast zat."
+    }
+   ],
+   "lines": {},
+   "replies": {
+    "show_data": {
+     "lands": {
+      "text": "Vier uur tegen een kwartier. Ja. Ik weet het. Ik zie het elke dag gebeuren."
+     },
+     "misses": {
+      "text": "Ik weet hoe lang een studie duurt. Ik maak ze."
+     }
+    },
+    "perspective": {
+     "lands": {
+      "text": "Vanuit de school? Negen weken wachten op een antwoord dat ik in vijf minuten had kunnen geven. … Ja. Dat is eigenlijk niet te verdedigen."
+     }
+    }
+   },
+   "start": 31
+  },
+  {
+   "id": "rob_order_rule",
+   "person": "rob",
+   "kind": "persuade",
+   "mission": "fix_transformer_wait",
+   "owns": "transformer_wait",
+   "patience": 10,
+   "opening": "Als het over de trafo's gaat: ik heb de procedure voor u uitgeprint.",
+   "position": {
+    "text": "Zonder goedgekeurd ontwerp geen bestelling. Zo staat het in de inkoopprocedure.",
+    "tags": [
+     "claim"
+    ]
+   },
+   "layers": [
+    {
+     "id": "interest",
+     "at": 52,
+     "via": [
+      "inquiry",
+      "paraphrase"
+     ],
+     "text": "Een trafo is veel geld en een half jaar levertijd. Bestelt u de verkeerde maat, dan staat hij een jaar in het magazijn. Een dure kapstok.",
+     "tags": [
+      "claim"
+     ]
+    },
+    {
+     "id": "concern",
+     "at": 70,
+     "via": [
+      "experience",
+      "empathy"
+     ],
+     "lead_in": {
+      "text": "Er is een reden dat die regel er staat. Ik weet niet of u dat… nou ja.",
+      "tags": [
+       "hesitation",
+       "doubt"
+      ],
+      "tell": "safety"
+     },
+     "text": "In 2022 hebben we twee 630's besteld voor een project dat uiteindelijk 400 werd. De accountant schreef het in zijn rapport. Met mijn naam. Ik ben niet tegen sneller. Ik ben tegen nog een keer.",
+     "tags": [
+      "admission"
+     ],
+     "unlocks": {
+      "facts": [
+       "heard:rob_audit"
+      ],
+      "proposals": [
+       "standard_sizes"
+      ]
+     }
+    }
+   ],
+   "warning": "Als u de procedure wilt wijzigen, loopt dat via de directie.",
+   "data": [
+    "transformer_wait:0",
+    "transformer_wait:2"
+   ],
+   "co_proposal": {
+    "id": "standard_sizes",
+    "text": "Als ik die drie maten in de procedure mag zetten. Met mijn naam eronder. Dan staat er een keer iets goeds van mij in een rapport."
+   },
+   "outcomes": {
+    "commitment": "Conform. Ik pas de procedure aan. En die uitdraai mag je houden; die klopt vanaf maandag niet meer.",
+    "partial": "Ik wil het wel. Maar niet zonder standaardmaten.",
+    "heard": "U bent de eerste die vraagt wáárom die regel er staat.",
+    "compliance": "Als de directie het wil, bestel ik. Op uw naam.",
+    "ruined": "Ik volg de procedure. Als u die wilt veranderen, loopt dat via de directie."
+   },
+   "proposals": [
+    {
+     "id": "order_at_study",
+     "addresses": [
+      "interest"
+     ],
+     "reply": "En als de maat dan nog verandert? Dan sta ik weer in het rapport.",
+     "name": "Bestellen zodra de netstudie het zegt",
+     "text": "Bestel de trafo zodra de netstudie zegt dat hij nodig is, niet pas na het goedgekeurde ontwerp."
+    },
+    {
+     "id": "standard_sizes",
+     "hidden": true,
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Drie maten. Een 400 die we niet nodig hebben, gaat naar het volgende project. Dat is geen kapstok. Dat is voorraad.",
+     "name": "Drie standaardmaten",
+     "text": "Wat als we drie standaardmaten afspreken? Zodra de netstudie een maat kiest, bestellen we die. Een standaardmaat kun je altijd bij het volgende project kwijt."
+    },
+    {
+     "id": "framework_contract",
+     "addresses": [
+      "interest"
+     ],
+     "reply": "Een raamcontract gaat via een aanbesteding. Dat duurt. Maar het is netjes.",
+     "name": "Een raamcontract met de fabrikant",
+     "text": "Een raamcontract met de fabrikant: vaste productieplekken, en wij roepen per project af."
+    }
+   ],
+   "experiments": [
+    {
+     "id": "one_project_you_evaluate",
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Eén project, en ik schrijf de evaluatie. Daar kan ik mee leven.",
+     "name": "Eén project, Rob beoordeelt",
+     "text": "Eén project, De Boomgaard: bestellen na de netstudie, in een standaardmaat. U schrijft zelf de evaluatie."
+    }
+   ],
+   "lines": {
+    "experience": "Ik heb ooit een verkeerde bestelling op mijn naam gehad. Niemand weet het meer, behalve ik."
+   },
+   "replies": {
+    "show_data": {
+     "lands": {
+      "text": "Zeven maanden doorlooptijd, waarvan twee weken werk in de straat. Dus de rest is… wachten op ons eigen papier."
+     },
+     "misses": {
+      "text": "Cijfers zonder procedure zijn een mening."
+     }
+    },
+    "experience": {
+     "lands": {
+      "text": "Dan weet u het. Zo'n rapport gaat niet weg. Het staat er gewoon, elk jaar weer.",
+      "tags": [
+       "admission"
+      ]
+     }
+    },
+    "perspective": {
+     "lands": {
+      "text": "Vanuit die kopers in De Boomgaard? Die hebben hun huur opgezegd. En wij hebben een regel die zegt: wacht maar. Hm."
+     }
+    }
+   },
+   "start": 35
+  },
+  {
+   "id": "thomas_reclaim",
+   "person": "thomas",
+   "kind": "persuade",
+   "mission": "fix_unused_capacity",
+   "owns": "unused_capacity",
+   "patience": 10,
+   "opening": "Als je komt om mijn klanten capaciteit af te pakken: ik heb om drie uur een lunch op de Kanaalzone.",
+   "position": {
+    "text": "Ik ga mijn klanten niet vragen capaciteit in te leveren. Ze hebben een contract. Dat is hun recht.",
+    "tags": [
+     "claim"
+    ]
+   },
+   "layers": [
+    {
+     "id": "interest",
+     "at": 55,
+     "via": [
+      "reflect",
+      "open_question",
+      "paraphrase"
+     ],
+     "text": "Logistiek Zuid heeft twee megawatt omdat ze willen uitbreiden. Over twee jaar, misschien. Als ik dat nu afpak en ze groeien, staan zíj in de rij.",
+     "tags": [
+      "claim"
+     ]
+    },
+    {
+     "id": "concern",
+     "at": 70,
+     "via": [
+      "silence",
+      "empathy",
+      "inquiry"
+     ],
+     "lead_in": {
+      "text": "Kijk, het is…",
+      "tags": [
+       "hesitation"
+      ]
+     },
+     "text": "Ik ken die mensen twintig jaar. Ik was bij hun opening, bij de begrafenis van de oude Van Hal. Als ik nu bel om iets af te pakken, ben ik de man die afpakt. Dan bellen ze mij nooit meer als eerste.",
+     "tags": [
+      "admission"
+     ],
+     "unlocks": {
+      "facts": [
+       "heard:thomas_relations"
+      ],
+      "proposals": [
+       "offer_a_cbc"
+      ]
+     }
+    }
+   ],
+   "warning": "Mijn klanten zijn geen spreadsheet.",
+   "data": [
+    "unused_capacity:0",
+    "unused_capacity:2"
+   ],
+   "co_proposal": {
+    "id": "offer_a_cbc",
+    "text": "Laat mij de eerste drie bellen. Ik weet wie ruimte heeft en wie niet. Logistiek Zuid niet als eerste; die zitten midden in een herfinanciering."
+   },
+   "outcomes": {
+    "commitment": "Afgesproken. Ik bel. Met een aanbod, niet met een rekening.",
+    "partial": "Ik doe mee. Als het in de taal van een aanbod blijft.",
+    "heard": "Fijn dat je het vroeg. De meeste mensen hier zien alleen megawatts.",
+    "compliance": "Goed. Ik stuur ze de brief. Mijn naam staat er niet onder.",
+    "ruined": "Ik bel mijn klanten niet om ze te bedreigen. Ook niet voor jou."
+   },
+   "proposals": [
+    {
+     "id": "reclaim_by_the_rules",
+     "addresses": [
+      "interest"
+     ],
+     "reply": "Volgens de regels. Ja. Maar ík ben degene die belt.",
+     "name": "Terugvragen, volgens de ACM-regels",
+     "text": "Wie structureel veel minder gebruikt dan hij gecontracteerd heeft, krijgt het verzoek een deel terug te geven. Volgens de regels van de ACM en het contract."
+    },
+    {
+     "id": "usage_dashboard",
+     "addresses": [
+      "interest"
+     ],
+     "reply": "Dat zou ik zelf ook weleens willen zien, eerlijk gezegd.",
+     "name": "Klanten zien hun eigen gebruik",
+     "text": "Laat klanten elk kwartaal zien wat ze gebruiken tegenover wat ze hebben."
+    },
+    {
+     "id": "offer_a_cbc",
+     "hidden": true,
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Ik bel om ze geld te bieden. Dat is een heel ander gesprek.",
+     "name": "Bellen met een aanbod",
+     "text": "Bel ze niet om iets af te pakken, maar met een aanbod: een capaciteitsbeperkingscontract. Ze houden hun contract, en krijgen betaald als ze op de drukste uren minder afnemen."
+    }
+   ],
+   "experiments": [
+    {
+     "id": "ask_one_customer",
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Een vraag. Dat kan ik. Dat doe ik al twintig jaar.",
+     "name": "Eén klant bellen, alleen met een vraag",
+     "text": "Bel één klant die je goed kent, en vraag alleen hoe ze hun capaciteit gebruiken. Geen verzoek. Een vraag."
+    }
+   ],
+   "lines": {},
+   "replies": {
+    "show_data": {
+     "lands": {
+      "text": "Tweeënzestig procent. Op het drukste kwartier van het jaar. Dus de rest staat er voor… voor de zekerheid."
+     },
+     "misses": {
+      "text": "Een gemiddelde. Mijn klanten zijn geen gemiddelde."
+     }
+    },
+    "perspective": {
+     "lands": {
+      "text": "Vanuit Ilse? Die staat om vier uur 's nachts bij gasovens van 1998, naast een lege hal met twee megawatt. … Ja. Dat zou ik ook niet kunnen uitleggen."
+     }
+    }
+   },
+   "start": 41
+  },
+  {
+   "id": "ilse_queue",
+   "person": "ilse",
+   "kind": "persuade",
+   "mission": "fix_unused_capacity",
+   "place": "congestion.intake",
+   "mood": "gespannen",
+   "patience": 10,
+   "opening": "Met Ilse de Graaf. Bakkerij De Graaf. Ik sta hier sinds vier uur, dus maak het kort.",
+   "position": {
+    "text": "Twee jaar. Twee jaar sta ik op jullie lijst.",
+    "tags": [
+     "claim"
+    ]
+   },
+   "layers": [
+    {
+     "id": "interest",
+     "at": 45,
+     "via": [
+      "paraphrase",
+      "empathy"
+     ],
+     "text": "En naast me staat een hal met twee megawatt. Leeg. Leg me eens uit waarom het net vol is.",
+     "tags": [
+      "claim",
+      "feeling"
+     ]
+    },
+    {
+     "id": "concern",
+     "at": 66,
+     "via": [
+      "reflect",
+      "empathy"
+     ],
+     "lead_in": {
+      "text": "Ik slaap er slecht van, weet je dat? Wat ik echt bang voor ben…",
+      "tags": [
+       "feeling"
+      ]
+     },
+     "text": "Mijn ovens zijn van 1998. Gaat er één kapot, dan koop ik een nieuwe gasoven. Want dat kan wél, morgen. En dan zit ik nog twintig jaar aan het gas. Dat wil ik niet. Mijn dochter wil de zaak overnemen.",
+     "tags": [
+      "admission"
+     ],
+     "unlocks": {
+      "facts": [
+       "heard:ilse_lockin"
+      ],
+      "proposals": [
+       "night_contract",
+       "call_before_gas"
+      ]
+     }
+    }
+   ],
+   "warning": "Als je me een folder gaat voorlezen, hang ik op.",
+   "co_proposal": {
+    "id": "night_contract",
+    "text": "Ik bak om vier uur 's nachts. Is jullie net dan ook vol?"
+   },
+   "outcomes": {
+    "commitment": "Om vier uur sta ik hier toch. Als het lukt, krijgt die accountmanager van jullie een krentenbol. Twee.",
+    "partial": "Ik wacht. Maar niet nog twee jaar.",
+    "heard": "Fijn dat er eens iemand luistert in plaats van voorleest.",
+    "compliance": "Ik heb geen keus, hè.",
+    "ruined": "Dan ga ik naar de ACM. En naar de krant."
+   },
+   "proposals": [
+    {
+     "id": "honest_status",
+     "addresses": [
+      "interest"
+     ],
+     "reply": "Elk kwartaal. Nou. Dat is meer dan ik nu krijg.",
+     "name": "Eerlijk zeggen waar ze staat",
+     "text": "Ik kan geen datum beloven. Wel eerlijk zeggen waar u staat, en u elk kwartaal bellen."
+    },
+    {
+     "id": "night_contract",
+     "hidden": true,
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Een contract voor de nacht. Dan bak ik elektrisch voordat de rest wakker is.",
+     "name": "Een contract voor de nacht",
+     "text": "U bakt 's nachts, als het net leeg is. Ik ga met onze accountmanager kijken of er een contract kan voor de daluren, zodat u niet hoeft te wachten tot alles verzwaard is."
+    },
+    {
+     "id": "call_before_gas",
+     "hidden": true,
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Bellen voordat ik een gasoven koop. Ja. Dat beloof ik.",
+     "name": "Eerst bellen, dan pas een oven kopen",
+     "text": "Als een oven het begeeft voordat u aangesloten bent: bel mij, voordat u een gasoven koopt. Dan kijken we samen wat er op uw huidige aansluiting kan."
+    }
+   ],
+   "experiments": [],
+   "lines": {},
+   "replies": {
+    "reflect": {
+     "lands": {
+      "text": "Ja. Ik ben moe. Ik bak al dertig jaar op dezelfde plek, en ik wil gewoon verder.",
+      "tags": [
+       "claim",
+       "feeling"
+      ]
+     }
+    },
+    "perspective": {
+     "lands": {
+      "text": "Vanuit jullie? Ja, ja. Iedereen wil tegelijk. Maar ik bak niet tegelijk. Ik bak als iedereen slaapt."
+     }
+    }
+   },
+   "start": 20
+  },
+  {
+   "id": "sanne_kpi",
+   "person": "sanne",
+   "kind": "persuade",
+   "mission": "fix_silo_kpis",
+   "kpi_team": "intake",
+   "patience": 9,
+   "opening": "Als het over het MT gaat: ja, ik had een recordmaand. Nee, ik weet ook niet waarom er niks meer doorkomt.",
+   "position": {
+    "text": "Ik stuur op aanvragen per week. Dat werkt: we halen het.",
+    "tags": [
+     "claim"
+    ]
+   },
+   "layers": [
+    {
+     "id": "interest",
+     "at": 55,
+     "via": [
+      "empathy",
+      "mood",
+      "open_question"
+     ],
+     "text": "Elke vrijdag om drie uur tellen we. Nog vier voor het weekdoel? Dan zet je ze door. Ook als de meterkastfoto mist. Dat vraagt Werkvoorbereiding dan maar.",
+     "tags": [
+      "claim",
+      "feeling"
+     ]
+    },
+    {
+     "id": "concern",
+     "at": 70,
+     "via": [
+      "reflect",
+      "empathy"
+     ],
+     "lead_in": {
+      "text": "Ik baal er nu al van, als ik eraan denk. Alleen…",
+      "tags": [
+       "feeling"
+      ]
+     },
+     "text": "Als ik op 'compleet doorgezet' ga sturen, zakt mijn aantal per week. Eerst. En dan is Intake weer het postkantoor dat traag is. Ik heb twee jaar gedaan over dat beeld.",
+     "tags": [
+      "admission"
+     ],
+     "condition": "Ik doe mee. Als Frank het goedvindt. Het jaarplan is van hem.",
+     "unlocks": {
+      "facts": [
+       "heard:sanne_kpi"
+      ],
+      "proposals": [
+       "present_with_joost"
+      ]
+     }
+    }
+   ],
+   "warning": "Joh. Niet nu.",
+   "data": [
+    "silo_kpis:3",
+    "silo_kpis:5"
+   ],
+   "co_proposal": {
+    "id": "present_with_joost",
+    "text": "Als Joost en ik dezelfde aansluiting volgen, van aanvraag tot monteur. Eén dossier, op het bord. Dan ziet iedereen waar het blijft."
+   },
+   "condition_needs": {
+    "all": [
+     "committed:frank_kpi_targets"
+    ]
+   },
+   "outcomes": {
+    "commitment": "Afgesproken. En ik zeg het zelf in het MT: ons getal gaat eerst omlaag. Met reden.",
+    "partial": "Ik doe mee. Als Frank het goedvindt. Het jaarplan is van hem.",
+    "heard": "Zo. Dat had ik nog nooit hardop gezegd.",
+    "compliance": "Prima. Weer een getal.",
+    "ruined": "Dus het ligt weer aan de Intake. Natuurlijk."
+   },
+   "beats_after": [
+    {
+     "when": "committed:frank_kpi_targets",
+     "text": "Frank heeft getekend. Joost en ik presenteren donderdag. Samen. Ik ben zenuwachtig, en dat is lang geleden."
+    }
+   ],
+   "proposals": [
+    {
+     "id": "complete_and_oldest",
+     "kpis": [
+      "intake_complete",
+      "intake_oldest"
+     ],
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Die oudste aanvraag… die ligt er nu drie weken. Die kan ik morgen pakken.",
+     "name": "Compleet doorgezet + oudste aanvraag",
+     "text": "Compleet doorgezet, en de oudste aanvraag in de bak. Allebei getallen die je deze week ziet bewegen."
+    },
+    {
+     "id": "lead_and_complete",
+     "kpis": [
+      "intake_lead_time",
+      "intake_complete"
+     ],
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Eentje kijkt ver vooruit, eentje kijkt naar ons. Oké. Dat is eerlijk.",
+     "name": "Doorlooptijd + compleet doorgezet",
+     "text": "De doorlooptijd van de hele stroom, en compleet doorgezet ernaast."
+    },
+    {
+     "id": "output_and_complete",
+     "kpis": [
+      "intake_output",
+      "intake_complete"
+     ],
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Dan zie ik ze elkaar bevechten. Maar goed. Dan zie ik het tenminste.",
+     "name": "Aanvragen per week + compleet doorgezet",
+     "text": "Houd je aantal per week, en zet compleet doorgezet ernaast."
+    },
+    {
+     "id": "output_and_utilisation",
+     "kpis": [
+      "intake_output",
+      "intake_utilisation"
+     ],
+     "addresses": [],
+     "reply": "Dat is wat ik nu heb. En dat werkt dus niet, hè.",
+     "name": "Aanvragen per week + bezettingsgraad",
+     "text": "Je houdt wat je hebt: aanvragen per week en bezettingsgraad."
+    },
+    {
+     "id": "present_with_joost",
+     "hidden": true,
+     "needs": {
+      "any": [
+       "heard:joost_kpi"
+      ]
+     },
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Joost? Samen? … Dan is het geen postkantoor tegen de ingenieurs. Dan is het één stroom.",
+     "name": "Samen met Joost presenteren",
+     "text": "Joost wil het samen met jou presenteren. Eén stroom, niet twee teams."
+    }
+   ],
+   "experiments": [],
+   "lines": {},
+   "replies": {
+    "show_data": {
+     "lands": {
+      "text": "'Nog vier voor vrijdag.' Ja. Dat zijn wij. Dat klinkt anders als je het zo terughoort."
+     },
+     "misses": {
+      "text": "Mijn cijfers zijn goed. Die van Joost ook. Dat is toch het hele punt?"
+     }
+    },
+    "perspective": {
+     "lands": {
+      "text": "Vanuit Joost? Die krijgt mijn vrijdagmiddag op maandag op zijn bord. Halve dossiers. Ja. Dat zou ik ook niet leuk vinden."
+     }
+    }
+   },
+   "start": 35
+  },
+  {
+   "id": "frank_kpi_targets",
+   "person": "frank",
+   "kind": "persuade",
+   "mission": "fix_silo_kpis",
+   "needs": {
+    "any": [
+     "partial:joost_output_kpi",
+     "partial:sanne_kpi",
+     "heard:joost_kpi"
+    ]
+   },
+   "patience": 8,
+   "opening": "Ik heb een kwartier. Daarna de regiegroep. Gaat het over het jaarplan, dan weet je dat het vastligt.",
+   "position": {
+    "text": "Ontwerpen en aanvragen per week staan in het jaarplan. Daar stuur ik op.",
+    "tags": [
+     "claim"
+    ]
+   },
+   "layers": [
+    {
+     "id": "interest",
+     "at": 52,
+     "via": [
+      "inquiry",
+      "paraphrase"
+     ],
+     "text": "Het jaarplan gaat naar de directie, en het aantal aansluitingen per jaar gaat naar de ACM. Dat moet ik kunnen uitleggen. Elk kwartaal.",
+     "tags": [
+      "claim"
+     ]
+    },
+    {
+     "id": "concern",
+     "at": 72,
+     "via": [
+      "inquiry",
+      "silence",
+      "empathy"
+     ],
+     "lead_in": {
+      "text": "En daar komt bij…",
+      "tags": [
+       "hesitation"
+      ]
+     },
+     "text": "In de najaarsronde wordt het budget voor netverzwaring over de regio's verdeeld. Als onze cijfers een kwartaal slechter worden, gaat dat geld naar het westen. Ik ga niet op gevoel een kwartaal gokken met de verzwaring van Zuidmark.",
+     "tags": [
+      "admission"
+     ],
+     "unlocks": {
+      "clue": {
+       "key": true,
+       "depth": 2,
+       "text": "'De directie vraagt elk kwartaal naar aantallen. Hoe lang een klant wacht, vraagt alleen de ACM. Eén keer per jaar.'"
+      },
+      "facts": [
+       "heard:frank_budget"
+      ]
+     }
+    }
+   ],
+   "warning": "Ik heb een regiegroep. Kom ter zake.",
+   "data": [
+    "silo_kpis:0",
+    "silo_kpis:2"
+   ],
+   "block": {
+    "text": "Ik kan dit niet toezeggen. Laat het me eerst zien.",
+    "routes": [
+     {
+      "needs": {
+       "all": [
+        "checked:silo_kpis"
+       ]
+      },
+      "hint": "Laat het me zien op één stroom."
+     },
+     {
+      "needs": {
+       "all": [
+        "partial:joost_output_kpi",
+        "partial:sanne_kpi",
+        "reputation>=40"
+       ]
+      },
+      "hint": "Als Sanne en Joost het zelf komen uitleggen, sta ik er niet alleen voor."
+     },
+     {
+      "needs": {
+       "all": [
+        "forecast_positive:kpi_board"
+       ]
+      },
+      "hint": "Als het bord laat zien dat volgend kwartaal niet slechter wordt."
+     }
+    ]
+   },
+   "outcomes": {
+    "commitment": "Goed. Ik zet mijn handtekening eronder. En als het eerst slechter wordt, leg ík het uit. Daar word ik voor betaald.",
+    "blocked": "Ik kan dit niet toezeggen. Laat het me eerst zien.",
+    "heard": "Interessant. Kom terug als je iets te laten zien hebt.",
+    "compliance": "Als Ruud het zo wil, staat het in het verslag. Op zijn naam.",
+    "ruined": "Ik heb een regiegroep. Plan maar iets in via mijn secretariaat."
+   },
+   "proposals": [
+    {
+     "id": "keep_targets",
+     "addresses": [],
+     "reply": "Dat is wat ik heb.",
+     "name": "De doelen houden zoals ze zijn",
+     "text": "We houden de doelen zoals ze zijn."
+    },
+    {
+     "id": "obeya_one_stream",
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Met de oude ernaast. Dan kan ik het in de regiegroep altijd uitleggen.",
+     "name": "Eén kwartaal, één stroom, oude cijfers ernaast",
+     "text": "Eén kwartaal, alleen de aansluitingenstroom, met de oude getallen ernaast zichtbaar. Als het eerst zakt, zie je ook waarom."
+    }
+   ],
+   "experiments": [
+    {
+     "id": "obeya_trial",
+     "addresses": [
+      "concern"
+     ],
+     "reply": "Elke vrijdag. Tien minuten. En als ik iets zie wat ik niet kan uitleggen, stoppen we.",
+     "name": "Een Obeya op één stroom, zes weken",
+     "text": "Zes weken een Obeya op de aansluitingenstroom. Sanne, Joost en Marco aan één bord. U komt elke vrijdag kijken."
+    }
+   ],
+   "lines": {},
+   "replies": {
+    "show_data": {
+     "lands": {
+      "text": "Twee recordmaanden, en niet één aansluiting meer de deur uit. Dat is geen record. Dat is een rapport."
+     },
+     "misses": {
+      "text": "Een kwartaalcijfer is een kwartaalcijfer."
+     }
+    },
+    "perspective": {
+     "lands": {
+      "text": "Vanuit de ACM gezien… die meet de termijn vanaf de aanvraag. Niet het aantal ontwerpen. Hm. Dat is eigenlijk een ander getal dan het mijne."
+     }
+    }
+   },
+   "start": 35
+  }
+ ]
+}

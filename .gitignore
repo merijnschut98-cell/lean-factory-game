@@ -49,3 +49,21 @@ desktop.ini
 
 # Logs
 *.log
+
+# Godot
+game/.godot/
+build/
+*.translation
+
+# Character pack downloads (tools/blender/fetch_pack.py), and the Blender venv
+.pack/
+.bvenv
+
+# Generated design proof of an explainer (node tools/explainers/*/build.mjs)
+tools/explainers/*/*.html
+
+# Talk transcripts (game/tools/talk_transcripts.gd): generated on demand; only the
+# ranking and the reference talk are kept (docs/qa/dialog-coherence-2026-10-30.md).
+docs/qa/talk-transcripts/*.md
+!docs/qa/talk-transcripts/README.md
+!docs/qa/talk-transcripts/anouk_seven.md

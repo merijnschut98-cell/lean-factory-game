@@ -1,0 +1,236 @@
+# The head office in Nova (PLAN 2.1, §5.2): three floors joined by a stairwell and a lift.
+# tools/blender/build_office.py builds one glb per floor (game/assets/office/<model>) and reads
+# the floor and room names from game/data/world.json for its signs; the game loads one floor
+# at a time (game/src/world/office/office_floors.gd).
+#
+# start_floor  the floor a game starts on (where the player's desk is)
+# floors       id, name (Dutch: the signs, the lift and the map), level (0 = begane grond),
+#              model (the floor's glb under game/assets/office/); an outside area (the yard,
+#              PLAN 2.2) has outside_of: <floor> instead of a level: a door on that floor
+#              leads there (tools/blender/build_yard.py builds it)
+# rooms        id, floor, name (Dutch), places (the "stream.step" places inside it: the
+#              markers the model puts in the room), opens_with: what opens its door. The
+#              progressive rule: nothing is open before a mission needs it.
+#                start          open from the first day
+#                <mission id>   open once that mission has been taken on
+#                <prefix>*      a mission made during play: terugval_* (a check-in on a
+#                               slipping fix), repair_* (a poor fix shows its weakness)
+#              An empty list keeps the door shut until a mission names the room. A mission
+#              whose goal or clues lead to one of a room's places must open it (checked).
+#              A floor is open when one of its rooms is.
+
+start_floor: first
+
+floors:
+  - {id: ground, level: 0, name: Begane grond, model: office_ground.glb}
+  - {id: first, level: 1, name: 1e verdieping, model: office.glb}
+  - {id: second, level: 2, name: 2e verdieping, model: office_second.glb}
+  - {id: yard, outside_of: ground, name: Werf, model: office_yard.glb}   # the kantine's back door
+
+rooms:
+  # Begane grond: customer-facing.
+  - id: reception
+    floor: ground
+    name: Ontvangst
+    places: []
+    opens_with: [start]          # the way in: you came through it on your first day
+  - id: contact_centre
+    floor: ground
+    name: Klantcontactcentrum
+    places: [customer_contact.answer]
+    # Wim Kortekaas's talk (Act II side); every customer's call, taken at the headset (PLAN 2.4)
+    opens_with: [fix_status_callers, winter_el_amrani, fix_unused_capacity, fix_done_but_not_closed,
+                 fix_inverters_tripping]
+  - id: canteen
+    floor: ground
+    name: Kantine
+    places: []
+    opens_with: [training_mon, "terugval_*"]   # Ruud's tour shows it on day one; check-ins on
+                                                # slipping fixes happen over coffee (§5.2)
+
+  # 1e verdieping: operations.
+  - id: connections
+    floor: first
+    name: Aansluitingen
+    places: [connections.intake, connections.design, connections.planning, connections.permit, meters.appointment]
+    # Linda plans beside Werkvoorbereiding (D9 audit A1); the permits wait on Werkvoorbereiding's sideboard;
+    # the meter appointments are the planners' too
+    opens_with: [start]
+  - id: revision_gis
+    floor: first
+    name: Revisie & GIS
+    places: [connections.revision]
+    opens_with: [training_wed, fix_revision_backlog, fix_digging_damage]   # Mieke's Wednesday talk
+  - id: meter_data
+    floor: first
+    name: Meetdata & registratie
+    places: [connections.close_out, connections.close_out_wait, meters.registration, voltage_complaints.analysis]
+    opens_with: [training_thu, walk_meters, fix_done_but_not_closed, fix_silent_meter, fix_inverters_tripping]
+    # Petra's Thursday talk; Meetdata analyses the voltage complaints (fix_inverters_tripping)
+
+  # 2e verdieping: direction.
+  - id: directors_obeya
+    floor: second
+    name: Directie & Obeya
+    places: []
+    opens_with: [fix_silo_kpis, first_kpi_review]  # the KPI board's home; its first quarterly review plays here
+  - id: grid_strategy
+    floor: second
+    name: Netstrategie
+    places: [connections.grid_study, connections.grid_reinforcement, congestion.congestion_study]
+    opens_with: [look_at_grid_study, fix_grid_study_queue, fix_transformer_wait, fix_unused_capacity, talk_netplanner]
+  - id: congestion_desk
+    floor: second
+    name: Congestiedesk
+    places: [congestion.intake, congestion.capacity_queue, congestion.offer]
+    opens_with: [fix_unused_capacity]
+  - id: mt_room
+    floor: second
+    name: MT-kamer
+    places: []
+    opens_with: [review_100_days]   # day 100 (its scene plays here); the ACM visit, hoshin: their missions open it
+  # Ruud's office (Merijn, 2026-10-16, Q10). In Act 0-I he sits with Aansluitingen by choice
+  # (the coach's room on the 1e: "Boven zit ik te ver van het werk."), so it stays shut until day 100; then he moves back up
+  # (the coach's room on the 1e becomes the team's overlegkamer). Phase 3: Frank Hulshof takes this office in the
+  # interim year (Act IV); the room shows it by the sponsor/regime fact.
+  - id: ruud_office
+    floor: second
+    name: Directeur Netbeheer
+    places: []
+    opens_with: [review_100_days]   # day 100: he moves back up (cast.json `moves`)
+
+  # De werf (PLAN 2.2, docs/superpowers/specs/2026-10-17-the-yard.md): the field steps' home
+  # until the town exists. Each opens with every mission that leads to one of its places.
+  - id: magazijn
+    floor: yard
+    name: Magazijn
+    places: [outages.joint, connections.materials, meters.reserve_meter]
+    opens_with: [walk_outages, walk_meters, fix_wrong_joint]
+  - id: werkplaats
+    floor: yard
+    name: Werkplaats & storingsdienst
+    places: [outages.locate, connections.execution, connections.commissioning, voltage_complaints.measurement,
+             voltage_complaints.tap_change]
+    opens_with: [walk_outages, fix_wrong_joint, save_henks_knowledge, fix_digging_damage, fix_installer_not_ready,
+                 fix_planning_reshuffle, fix_silo_kpis, fix_revision_backlog, fix_inverters_tripping]
+  - id: van_park
+    floor: yard
+    name: Bussen
+    places: [outages.repair, meters.visit]
+    opens_with: [walk_outages, walk_meters, fix_wrong_joint, fix_not_at_home, fix_silent_meter,
+                 save_henks_knowledge, fix_double_visits, fix_overtime_planning]   # the rides start at the vans (rides below)
+  # PLAN 2.3: a small fenced training ground off the yard, south of the werkplaats: a practice
+  # trench with a cable and a joint, a meterkast on a stand, a trafohuisje mock-up. Henk
+  # teaches Ahmed there by doing while his knowledge is still in the building.
+  - id: opleidingsterrein
+    floor: yard
+    name: Opleidingsterrein
+    places: []
+    opens_with: [save_henks_knowledge]
+
+# The van ride (phase 2 design §1.7; game/src/world/office/van_ride.gd): a side that sends you
+# out rides there. At the van park its monteur waits at their van (cast.json `office.van`);
+# E there and you sit beside them in the cab while the edge of town goes by; the mission's
+# talk with them runs in the cab; you arrive at the field step `to` (a place on the yard,
+# standing in for the field until the town exists) and ride back after.
+#   mission  the side (one ride each); the van park must open with it
+#   with     the monteur (a cast id with a van)
+#   to       where the ride ends: a place in a yard room the mission opens
+rides:
+  - {mission: fix_wrong_joint, with: ahmed, to: outages.repair}        # the storingsdienst to the Lindelaan
+  - {mission: fix_not_at_home, with: sandra, to: meters.visit}         # Sandra's addresses
+  - {mission: walk_meters, with: sandra, to: meters.visit}             # Acht adressen: a day along with Sandra
+  - {mission: save_henks_knowledge, with: henk, to: outages.locate}    # an old paper-lead cable in Nova-Oud
+
+# The tells (PLAN 2.6, design §1.5): the props that read the simulation. Each `id` is a
+# `tell_<id>` node in its floor's model (tools/blender/build_office.py; the yard's build_yard.py) with three heights
+# (game/src/world/office/office_tells.gd picks one by the numbers). When the player looks
+# closer, one line says what anyone would see at the height shown: low, mid, high. An open
+# problem that lists the tell (problems_tier*.yaml `tells:`) speaks instead from mid up.
+# A line describes, never explains: it never names a problem or its cause (checked).
+# `place` is where the journal (Notities, "Waarneming") files what was seen; a tell in a room with
+# no team's place (the directie's KPI board) names its `room` instead and is filed under its name.
+tells:
+  - id: intake_stack
+    place: connections.intake
+    low: "Op de kast bij Intake ligt een dun stapeltje dossiers."
+    mid: "Op de kast bij Intake liggen twee stapels dossiers."
+    high: "Op de kast bij Intake liggen drie hoge stapels dossiers; op de onderste staat een datum van weken terug."
+  - id: prep_tray
+    place: connections.design
+    low: "Het postbakje bij Werkvoorbereiding is bijna leeg."
+    mid: "In het postbakje bij Werkvoorbereiding ligt een stapeltje dossiers."
+    high: "Het postbakje bij Werkvoorbereiding puilt uit, en ernaast ligt nog een stapel."
+  - id: planning_board
+    place: connections.planning
+    low: "Op het weekbord van de planners hangt één rood kaartje tussen de gele en witte."
+    mid: "Op het weekbord van de planners hangen een paar rode kaartjes tussen de gele en witte."
+    high: "Op het weekbord van de planners hangen bij bijna elke dag rode kaartjes."
+  - id: revision_cabinet
+    place: connections.revision
+    low: "Op de kast bij Revisie & GIS ligt een dun stapeltje schetsen naast een paar opgerolde tekeningen."
+    mid: "Op de kast bij Revisie & GIS liggen twee stapels schetsen en een paar opgerolde tekeningen."
+    high: "De kast bij Revisie & GIS ligt vol schetsen, en op de vloer ernaast ligt nog een stapel."
+  - id: close_out_cabinet
+    place: connections.close_out_wait
+    low: "Op de kast bij de deur liggen twee stapeltjes dossiers."
+    mid: "Op de kast bij de deur liggen vier stapels dossiers naast elkaar."
+    high: "De kast bij de deur ligt vol dossiers, en op de vloer ernaast staan er nog twee stapels."
+  - id: meter_board
+    place: meters.registration
+    low: "Op het whiteboard bij Meetdata staat één adres, met een rood streepje erachter."
+    mid: "Op het whiteboard bij Meetdata staat een rijtje adressen, elk met een rood streepje erachter."
+    high: "Het whiteboard bij Meetdata staat vol adressen in twee kolommen, elk met een rood streepje erachter."
+  # The 2e (PLAN 2.16).
+  - id: obeya_board
+    room: directors_obeya
+    low: "Op het bord van de directie hangt voor elk proces een kaart met een grafiekje. Bijna alles staat op groen."
+    mid: "Op het bord van de directie staan een paar van de kaarten op rood."
+    high: "Op het bord van de directie staan bijna alle kaarten op rood."
+  - id: grid_study_tray
+    place: connections.grid_study
+    low: "In het bakje bij de netplanners ligt één nieuwe studieaanvraag."
+    mid: "In het bakje bij de netplanners ligt een stapeltje studieaanvragen."
+    high: "Het bakje bij de netplanners puilt uit, en op de kast ernaast liggen nog twee stapels studieaanvragen."
+  - id: reinforcement_board
+    place: connections.grid_reinforcement
+    low: "Op het bord Netverzwaring hangen een paar kaartjes met straatnamen."
+    mid: "Op het bord Netverzwaring hangt een flinke rij kaartjes met straatnamen."
+    high: "Het bord Netverzwaring hangt vol kaartjes met straatnamen; de oudste zijn al vergeeld."
+  - id: congestion_list
+    place: congestion.capacity_queue
+    low: "Op het bureau van Thomas ligt een uitgeprinte wachtlijst van één kantje."
+    mid: "Op het bureau van Thomas ligt een uitgeprinte wachtlijst van een paar kantjes, aan elkaar geplakt."
+    high: "De uitgeprinte wachtlijst op het bureau van Thomas is zo lang geworden dat hij over de rand tot op de vloer hangt."
+  # De werf (S3-Y): the field work.
+  - id: uitgiftelijst
+    place: outages.joint
+    low: "Op de balie van het magazijn ligt de uitgiftelijst van deze week, met een paar regels erop."
+    mid: "De uitgiftelijst op de balie van het magazijn is deze week al een vol kantje: datum, bus, wat er mee is gegaan en een paraaf."
+    high: "De uitgiftelijst op de balie van het magazijn is deze week al op het derde kantje; de eerste twee zijn over de klem geslagen."
+  - id: magazijn_rack
+    place: outages.joint
+    low: "In het magazijn staat de stelling met moffen vol dozen."
+    mid: "In het magazijn is de stelling met moffen half leeg."
+    high: "In het magazijn staan op de stelling met moffen nog een paar dozen; de meeste vakken zijn leeg."
+  - id: van_returns
+    place: meters.visit
+    low: "Op de retourpallet bij de bussen staan een paar meterdozen."
+    mid: "Op de retourpallet bij de bussen staat een stapel meterdozen en een aansluitset, elk met een bon eraan."
+    high: "De retourpallet bij de bussen staat vol meterdozen en aansluitsets, en ernaast staat er nog een, ook vol."
+  - id: storingsbord
+    place: outages.locate
+    low: "Op het storingsbord in de werkplaats staan de storingen van deze week: een kort rijtje, alles afgevinkt."
+    mid: "Het storingsbord in de werkplaats staat half vol storingen; bij een paar staat een rode streep."
+    high: "Het storingsbord in de werkplaats staat vol storingen tot in de hoek, met rode strepen en hier en daar een tweede tijd."
+  # The begane grond (R-1 #4): the KCC's callback board, built in Godot (office_terugbelbord.gd).
+  - id: terugbelbord
+    place: customer_contact.answer
+    low: "Op het prikbord van het klantcontactcentrum hangen een paar gele terugbelbriefjes."
+    mid: "Op het prikbord van het klantcontactcentrum hangen twee rijen gele terugbelbriefjes."
+    high: "Het prikbord van het klantcontactcentrum hangt vol gele terugbelbriefjes, sommige over elkaar heen."
+  - id: measurement_tray
+    place: voltage_complaints.measurement
+    low: "In het bakje bij de meetkoffers liggen een paar spanningsklachten."
+    mid: "In het bakje bij de meetkoffers ligt een stapeltje spanningsklachten, met een paperclip per adres."
+    high: "Het bakje bij de meetkoffers puilt uit van de spanningsklachten, en op de kast ernaast liggen nog twee stapels."

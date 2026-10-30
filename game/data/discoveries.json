@@ -1,0 +1,501 @@
+{
+ "discoveries": [
+  {
+   "act": 1,
+   "hint": "Sommige hoofdstukken worden beter door wat je níet vraagt.",
+   "id": "veilige_haven",
+   "line": "Waar niemand de schuld krijgt, vertellen mensen wat ze zien.",
+   "name": "Veilige haven",
+   "reward": {
+    "note": "Respect voor mensen is geen beleefdheid. Het is hoe je aan de waarheid komt.",
+    "title": "Veilige haven"
+   },
+   "trigger": {
+    "type": "no_blame_act"
+   }
+  },
+  {
+   "act": 1,
+   "hint": "Een verkeerde vraag hoeft niet het laatste woord te zijn.",
+   "id": "excuses_aanvaard",
+   "line": "Vertrouwen herstellen is ook verbeteren.",
+   "name": "Excuses aanvaard",
+   "reward": {
+    "note": "Je vroeg wie het fout deed, en je kwam erop terug. Daarna vertelden ze het je.",
+    "object": "Een koffiemok van het team"
+   },
+   "trigger": {
+    "type": "blame_repair_clue"
+   }
+  },
+  {
+   "act": 1,
+   "hint": "Twee teams vroegen om je aandacht. Wat had je kunnen tellen?",
+   "id": "het_knelpunt_eerst",
+   "line": "Meten voordat je kiest.",
+   "name": "Het knelpunt eerst",
+   "reward": {
+    "object": "Een zandloper",
+    "reputation": 3,
+    "title": "Knelpuntjager"
+   },
+   "trigger": {
+    "type": "fork_measured",
+    "window_days": 7
+   }
+  },
+  {
+   "act": 1,
+   "hint": "Ook de andere kant van een keuze kan iets leren.",
+   "id": "leren_van_de_check",
+   "line": "Een experiment dat niet uitkomt, is geen mislukking.",
+   "name": "Leren van de Check",
+   "reward": {
+    "note": "Je koos eerst het team dat niet het knelpunt was, en je zag het in de cijfers. Zo leer je het pas echt.",
+    "object": "De ingelijste Check"
+   },
+   "trigger": {
+    "type": "fork_learned"
+   }
+  },
+  {
+   "act": 1,
+   "hint": "Een Check die tegenvalt, is het begin van iets.",
+   "id": "terug_naar_de_gemba",
+   "line": "De belangrijkste pijl is de pijl terug.",
+   "name": "Terug naar de gemba",
+   "reward": {
+    "note": "Na een tegenvallende Check ging je terug naar de werkvloer, niet naar je bureau.",
+    "object": "Modderige werkschoenen"
+   },
+   "trigger": {
+    "type": "check_recovery"
+   }
+  },
+  {
+   "act": 2,
+   "hint": "Sommige dingen zie je pas na een jaar.",
+   "id": "een_jaar_later",
+   "line": "Het werkt nog steeds.",
+   "name": "Een jaar later",
+   "reward": {
+    "note": "Een jaar later doet het team het nog zo. Dat is borgen.",
+    "object": "Een teamfoto bij de verbetering"
+   },
+   "trigger": {
+    "days": 365,
+    "type": "held"
+   }
+  },
+  {
+   "act": 1,
+   "hint": "Sommige teams werken als jij slaapt.",
+   "id": "nachtdienst",
+   "line": "De gemba slaapt nooit.",
+   "name": "Nachtdienst",
+   "reward": {
+    "note": "Kees vertelde je over Diemen, 27 maart 2015: een miljoen huishoudens zonder stroom. Vraag hem ernaar.",
+    "object": "De thermosbeker van de meldkamer"
+   },
+   "trigger": {
+    "hours": [
+     22,
+     5
+    ],
+    "place": "outages.",
+    "type": "tool_at"
+   }
+  },
+  {
+   "act": 2,
+   "hint": "Wie vooraf het goede getal noemt, leert het meest van de Check.",
+   "id": "voorspeller",
+   "line": "Een voorspelling is een hypothese, geen gok.",
+   "name": "Voorspeller",
+   "reward": {
+    "note": "Vijf keer noemde je vooraf het getal dat zou bewegen, en het bewoog. Rother noemt dat de kern van de Kata.",
+    "title": "Voorspeller"
+   },
+   "trigger": {
+    "count": 5,
+    "type": "predictions"
+   }
+  },
+  {
+   "act": 1,
+   "hint": "Luister eens mee waar de klanten bellen, vaker dan één keer.",
+   "id": "faalvraag_jager",
+   "line": "De klant vertelt je waar het proces faalt.",
+   "name": "Faalvraag-jager",
+   "reward": {
+    "note": "Seddon noemt het faalvraag: vraag die ontstaat omdat iets eerder niet goed ging.",
+    "object": "Een kaartje van Esra"
+   },
+   "trigger": {
+    "countermeasure": "proactive_status_updates",
+    "missions": 3,
+    "place": "customer_contact.answer",
+    "problem": "status_callers",
+    "tool": "listen_in",
+    "type": "tool_in_missions"
+   }
+  },
+  {
+   "act": 1,
+   "hint": "Een afscheid is ook een gesprek.",
+   "id": "henks_mes",
+   "line": "Vakmanschap geef je door door het voor te doen.",
+   "name": "Henks mes",
+   "reward": {
+    "object": "Henks kabelmes",
+    "trust": {
+     "monteurs": 1
+    }
+   },
+   "trigger": {
+    "countermeasures": [
+     "skills_matrix_buddy",
+     "twi_job_instruction"
+    ],
+    "days": 7,
+    "mission": "save_henks_knowledge",
+    "place": "outages.locate",
+    "type": "farewell"
+   }
+  },
+  {
+   "act": 2,
+   "hint": "Sommige problemen zie je alleen als de zon schijnt.",
+   "id": "wims_spreadsheet",
+   "line": "Ga kijken wanneer het probleem zich voordoet.",
+   "name": "Wims spreadsheet",
+   "reward": {
+    "note": "Wim had het al drie jaar bijgehouden. Wie op het goede moment kijkt, ziet wat de klant ziet.",
+    "object": "Een zonnepaneel-speldje"
+   },
+   "trigger": {
+    "hours": [
+     11,
+     15
+    ],
+    "months": [
+     4,
+     5,
+     6,
+     7,
+     8,
+     9
+    ],
+    "place": "voltage_complaints.measurement",
+    "problem_active": "inverters_tripping",
+    "tool": "data",
+    "type": "tool_at"
+   }
+  },
+  {
+   "act": 2,
+   "hint": "Ook waar niets mis is, valt iets te zien.",
+   "id": "het_eerste_net",
+   "line": "Wie nieuwsgierig is, vindt ook wat niemand zocht.",
+   "name": "Het eerste net",
+   "reward": {
+    "object": "Een ingelijste kaart van Nova's eerste net (1930, verzonnen)"
+   },
+   "trigger": {
+    "no_problem_at": true,
+    "place": "connections.revision",
+    "tool": "documents",
+    "type": "tool_at"
+   }
+  },
+  {
+   "act": 2,
+   "hint": "Drie keer vroeg iemand om meer mensen.",
+   "id": "capaciteit_gevonden",
+   "line": "Capaciteit zit vaak verstopt in het werk zelf.",
+   "name": "Capaciteit gevonden",
+   "reward": {
+    "note": "Enexis ging met standaardstations van ongeveer tien naar honderd stations per jaar, met dezelfde mensen.",
+    "title": "Capaciteit gevonden"
+   },
+   "trigger": {
+    "missions": [
+     "fix_custom_design",
+     "fix_status_callers",
+     "fix_grid_study_queue"
+    ],
+    "score": 20,
+    "type": "missions_scored"
+   }
+  },
+  {
+   "act": 1,
+   "hint": "Ook na een gemiste kans kan het nog goed komen.",
+   "id": "een_andere_weg",
+   "line": "Een gesloten deur is geen einde.",
+   "name": "Een andere weg",
+   "reward": {
+    "note": "De deadline was weg, het probleem niet. Je loste het toch op, op een andere manier.",
+    "reputation": 3
+   },
+   "trigger": {
+    "score": 20,
+    "type": "recovered_after_fail"
+   }
+  },
+  {
+   "act": 1,
+   "hint": "Ruud stelt in elke fase andere vragen.",
+   "id": "de_hele_cyclus",
+   "line": "Doel, situatie, obstakel, experiment, leren.",
+   "name": "De hele cyclus",
+   "reward": {
+    "note": "De vijf vragen van Toyota Kata (Rother, 2009). Ze passen in een borstzak.",
+    "object": "Ruuds Kata-kaartje"
+   },
+   "trigger": {
+    "type": "coach_cycle"
+   }
+  },
+  {
+   "act": 2,
+   "hint": "Een A3 mag dieper gaan dan nodig.",
+   "id": "nog_een_waarom",
+   "line": "Het eerste antwoord is zelden het laatste.",
+   "name": "Nog één waarom",
+   "reward": {
+    "title": "Nog één waarom"
+   },
+   "trigger": {
+    "count": 5,
+    "type": "deepest_why"
+   }
+  },
+  {
+   "act": 2,
+   "hint": "Soms kost de goede keuze vandaag meer en levert ze pas later op.",
+   "id": "de_lange_adem",
+   "line": "Gebouwd om te blijven.",
+   "name": "De lange adem",
+   "reward": {
+    "note": "Drie keer koos je wat bleef boven wat snel was, en een half jaar later hield het nog. Lange termijn boven korte termijn.",
+    "object": "Een oude eikenhouten kabelhaspel",
+    "reputation": 2
+   },
+   "trigger": {
+    "count": 3,
+    "days": 180,
+    "type": "durable_held"
+   }
+  },
+  {
+   "act": 1,
+   "hint": "Hoe vol zat de agenda van de teams die je experimenten droegen?",
+   "id": "niemand_opgebrand",
+   "line": "Een team dat altijd op honderd procent draait, heeft geen ruimte om te verbeteren.",
+   "name": "Niemand opgebrand",
+   "reward": {
+    "title": "Goede werkgever"
+   },
+   "trigger": {
+    "experiments": 3,
+    "type": "no_overload_act"
+   }
+  },
+  {
+   "act": 1,
+   "hint": "Eén dossier liep de hele tijd met je mee. Weet je nog waar het lag?",
+   "id": "dossier_el_amrani",
+   "line": "De warmtepomp draait. Doorlooptijd is wat een klant voelt.",
+   "name": "Het dossier van de familie El Amrani",
+   "reward": {
+    "note": "Achttien weken is de norm. Voor hen was het geen norm, het was een winter.",
+    "object": "Een bedankkaart van de familie El Amrani",
+    "reputation": 2
+   },
+   "trigger": {
+    "days": 126,
+    "type": "followed_order"
+   }
+  },
+  {
+   "act": 2,
+   "hint": "Bij een acuut gevaar telt wat je in de eerste dagen doet, en wat je daarna doet.",
+   "id": "eerst_veilig",
+   "line": "Indammen is geen oplossen, maar soms moet het eerst.",
+   "name": "Eerst veilig, dan beter",
+   "reward": {
+    "note": "Indammen is geen oplossen, maar soms moet het eerst.",
+    "object": "Een veiligheidshelm met een Voltana-sticker"
+   },
+   "trigger": {
+    "days": 2,
+    "type": "contain_then_fix"
+   }
+  },
+  {
+   "act": 1,
+   "hint": "Als Werkvoorbereiding sneller wordt, waar gaat het werk dan wachten?",
+   "id": "het_volgende_knelpunt",
+   "line": "Een knelpunt verdwijnt niet; het verhuist.",
+   "name": "Het volgende knelpunt",
+   "reward": {
+    "note": "Je keek al waar het werk zou gaan wachten voordat het daar wachtte. Goldratt noemt het de vijfde stap: is het knelpunt verschoven, begin dan opnieuw.",
+    "object": "Een turflijst met twee kolommen: Intake en Werkvoorbereiding"
+   },
+   "trigger": {
+    "place": "connections.intake",
+    "problem_active": "custom_design",
+    "tool": "queue_count",
+    "type": "tool_at"
+   }
+  },
+  {
+   "act": 2,
+   "hint": "Een kabel die geraakt wordt, is ooit ergens getekend.",
+   "id": "stroomopwaarts",
+   "line": "De schade zit in de straat; waar begint ze?",
+   "name": "Stroomopwaarts",
+   "reward": {
+    "note": "Je zocht de oorzaak van een schade niet bij wie groef, maar bij wie de kaart bijhield. Zo los je iets van begin tot eind op.",
+    "object": "Een oude KLIC-kaart met een rode pijl"
+   },
+   "trigger": {
+    "place": "connections.revision",
+    "problem_active": "digging_damage",
+    "tool": "data",
+    "type": "tool_at"
+   }
+  },
+  {
+   "act": 2,
+   "hint": "Een net is niet de hele dag even vol.",
+   "id": "het_drukste_kwartier",
+   "line": "Of het net vol is, zie je op het drukste moment.",
+   "name": "Het drukste kwartier",
+   "reward": {
+    "note": "Je ging kijken op het uur dat het ertoe doet. Wat op papier vol is, is dat op de piek niet altijd.",
+    "object": "Een uitdraai van de avondpiek, met een potloodstreep"
+   },
+   "trigger": {
+    "hours": [
+     17,
+     20
+    ],
+    "place": "congestion.",
+    "problem_active": "unused_capacity",
+    "tool": "data",
+    "type": "tool_at"
+   }
+  },
+  {
+   "act": 2,
+   "hint": "Drie keer zei iemand dat het vol zat.",
+   "id": "het_net_was_niet_vol",
+   "line": "Eerst benutten wat er is, dan pas bijbouwen.",
+   "name": "Het net was niet vol",
+   "reward": {
+    "note": "Een netstudie die niet hoefde, een trafo die te laat werd besteld, capaciteit die niemand gebruikte. Drie keer was er meer ruimte dan het leek.",
+    "reputation": 2,
+    "title": "Ruimtezoeker"
+   },
+   "trigger": {
+    "missions": [
+     "fix_grid_study_queue",
+     "fix_transformer_wait",
+     "fix_unused_capacity"
+    ],
+    "score": 20,
+    "type": "missions_scored"
+   }
+  },
+  {
+   "act": 2,
+   "hint": "Sommige mensen zeggen pas ja als ze eerst gehoord zijn.",
+   "id": "twee_oren_een_mond",
+   "line": "Wie eerst begrijpt, hoeft daarna minder te overtuigen.",
+   "name": "Twee oren, één mond",
+   "reward": {
+    "note": "Wie eerst begrijpt, hoeft daarna minder te overtuigen.",
+    "title": "Luisteraar"
+   },
+   "trigger": {
+    "count": 3,
+    "type": "listened_first"
+   }
+  },
+  {
+   "act": 2,
+   "hint": "Niet elk antwoord komt op een vraag.",
+   "id": "de_stilte_die_sprak",
+   "line": "Soms zegt iemand het pas als jij even niets zegt.",
+   "name": "De stilte die sprak",
+   "reward": {
+    "note": "In een onderhandeling is wie de stilte kan verdragen vaak degene die het meest hoort.",
+    "object": "Een lege koffiebeker"
+   },
+   "trigger": {
+    "count": 3,
+    "type": "silence_reveal"
+   }
+  },
+  {
+   "act": 1,
+   "hint": "Een deur die dichtging, kan weer open.",
+   "id": "tweede_kans",
+   "line": "Een gesprek dat misgaat, is het begin van het volgende.",
+   "name": "Tweede kans",
+   "reward": {
+    "note": "Een gesprek dat misgaat, is het begin van het volgende."
+   },
+   "trigger": {
+    "type": "second_chance"
+   }
+  },
+  {
+   "act": 2,
+   "hint": "Wie meedenkt, heeft soms zelf het antwoord.",
+   "id": "haar_eigen_idee",
+   "line": "Het beste voorstel was niet het jouwe.",
+   "name": "Haar eigen idee",
+   "reward": {
+    "note": "Een verbetering van henzelf houden ze zelf vol. Het team vertrouwt je wat meer.",
+    "object": "De whiteboardstift"
+   },
+   "trigger": {
+    "type": "own_idea"
+   }
+  },
+  {
+   "act": 2,
+   "hint": "Wie stil is, heeft soms iemand nodig die vraagt hoe het gaat.",
+   "id": "iemand_die_er_is",
+   "line": "Respect voor mensen begint met even langslopen.",
+   "name": "Iemand die er is",
+   "reward": {
+    "note": "Vijf collega's zaten in een dip, en jij liep langs. Zonder agenda.",
+    "title": "Er zijn"
+   },
+   "trigger": {
+    "count": 5,
+    "morale": 50,
+    "type": "lifted_low"
+   }
+  },
+  {
+   "act": 1,
+   "hint": "Een ja onder druk telt, maar houdt niet lang.",
+   "id": "geen_druk_nodig",
+   "line": "Een hoofdstuk lang overtuigd, nooit gedwongen.",
+   "name": "Geen druk nodig",
+   "reward": {
+    "note": "Dwang werkt snel en houdt kort (Kotter en Schlesinger, 1979). Jij had het niet nodig.",
+    "reputation": 2
+   },
+   "trigger": {
+    "commitments": 3,
+    "type": "no_pressure_act"
+   }
+  }
+ ]
+}

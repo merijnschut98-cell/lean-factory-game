@@ -1,0 +1,256 @@
+{
+  "_about": [
+    "The people of Spanning: one list for the whole character pipeline (PLAN 1.3, 5.4).",
+    "look: how tools/blender/build_character.py builds <id>.glb from the CC0 Quaternius pack (PLAN 1.3a;",
+    "  sex f|m, height m crown to sole, build 0 slim..1 heavy, skin/hair/eye/brow colours sRGB 0..255,",
+    "  hair_style bob|short|receding|buzz|ponytail|buns, beard full|short, glasses, outfit",
+    "  business|shirt|manager|monteur, helmet (monteur), stubble 0..1 (scripted method only),",
+    "  stoop 0..1 (age), colors: garment colour overrides). The ids, the glb names and office stay",
+    "  whatever builds them.",
+    "office: where the world puts them (game/src/world/office/office_people.gd), in the office's",
+    "  Godot space (x, z): seat (a workstation in the office model: <seat>_desk and <seat>_chair),",
+    "  or at + face, or route (walked back and forth); pose sit|idle|talk|walk; missions: present",
+    "  only while one of these missions is active; after: away until one of these missions is done; talk: coach opens the coach instead of a talk;",
+    "  floor: its floor (the start floor when none); chair: a chair marker, sat on facing its way; headset;",
+    "  lunch: a second spot (with its own floor), the kantine, for lunch; without one they lunch at their desk;",
+    "  van: the yard's van they drive (office_yard.gd): a spot with no at/seat/route is by its back (driver:van<k>),",
+    "  they are out with it while it is out, and a ride with them (world.yaml rides) starts there;",
+    "  during: {mission: spot}, where they are instead while that mission is active (the opleidingsterrein).",
+    "  moves: {after: [missions], <a spot with its floor>}: their desk from the day one of these missions is",
+    "  done (Ruud back up to his own office on the 2e after the first hundred days, PLAN 2.1c Q10).",
+    "day: their working day (office_day.gd, PLAN 2.14 S1-A), times HH:MM: arrive (by the lift or the stairs,",
+    "  the front door on the begane grond), coffee (10 min at the floor's coffee corner), lunch (30 min at the",
+    "  lunch spot), leave; late_until (optional) keeps them later, else the simulation does (load or morale).",
+    "  Without a day (or a bad one) a default per person; people tied to missions keep to the story.",
+    "Names and roles follow the dialog spec (docs/superpowers/specs/2026-10-15-dialog-system-design.md 6)."
+  ],
+  "characters": [
+    {
+      "id": "player", "name": "", "role": "CI-lead",
+      "look": {"sex": "f", "height": 1.69, "build": 0.38, "skin": [226, 178, 148], "hair_style": "bob",
+               "hair_color": [86, 56, 36], "outfit": "business", "eye_color": [70, 98, 120]}
+    },
+    {
+      "id": "joost", "name": "Joost van Dijk", "role": "teamleider Werkvoorbereiding",
+      "look": {"sex": "m", "height": 1.86, "build": 0.45, "skin": [232, 190, 160], "hair_style": "short",
+               "hair_color": [122, 86, 52], "outfit": "shirt", "eye_color": [74, 96, 112], "stubble": 0.15,
+               "colors": {"shirt": [232, 236, 242], "trousers": [52, 60, 78]}},
+      "office": {"seat": "design3", "pose": "sit",
+                 "lunch": {"floor": "ground", "chair": "canteen_table1_chair_s0", "pose": "sit"}},
+      "day": {"arrive": "08:10", "coffee": "10:00", "lunch": "12:20", "leave": "17:15"}
+    },
+    {
+      "id": "anouk", "name": "Anouk de Vries", "role": "werkvoorbereider",
+      "look": {"sex": "f", "height": 1.66, "build": 0.3, "skin": [238, 198, 172], "hair_style": "ponytail",
+               "hair_color": [168, 128, 78], "outfit": "business", "eye_color": [88, 110, 82],
+               "colors": {"polo": [128, 38, 58], "chinos": [58, 58, 66]}},
+      "office": {"seat": "design2", "pose": "sit",
+                 "lunch": {"floor": "ground", "chair": "canteen_table1_chair_s1", "pose": "sit"}},
+      "day": {"arrive": "07:55", "coffee": "09:55", "lunch": "12:05", "leave": "17:05"}
+    },
+    {
+      "id": "sanne", "name": "Sanne Bakker", "role": "teamleider Intake",
+      "look": {"sex": "f", "height": 1.72, "build": 0.5, "skin": [190, 136, 104], "hair_style": "bob",
+               "hair_color": [34, 26, 22], "outfit": "business", "eye_color": [56, 38, 26],
+               "colors": {"polo": [30, 118, 108], "chinos": [196, 186, 164]}},
+      "office": {"seat": "intake0", "pose": "sit",
+                 "lunch": {"floor": "ground", "chair": "canteen_table3_chair_s2", "pose": "sit"}},
+      "day": {"arrive": "08:02", "coffee": "10:10", "lunch": "12:00", "leave": "17:00"}
+    },
+    {
+      "id": "petra", "name": "Petra Vos", "role": "Meetdata & registratie",
+      "look": {"sex": "f", "height": 1.64, "build": 0.62, "skin": [230, 186, 160], "hair_style": "bob",
+               "hair_color": [158, 140, 120], "outfit": "shirt", "glasses": true, "stoop": 0.2,
+               "colors": {"shirt": [146, 62, 92], "trousers": [50, 50, 58]}},
+      "office": {"seat": "meetdata", "pose": "sit"},
+      "day": {"arrive": "08:20", "coffee": "10:15", "lunch": "12:30", "leave": "17:20"}
+    },
+    {
+      "id": "ruud", "name": "Ruud Hoekstra", "role": "Directeur Netbeheer regio Zuidmark",
+      "look": {"sex": "m", "height": 1.83, "build": 0.66, "skin": [222, 170, 140], "hair_style": "receding",
+               "hair_color": [168, 166, 162], "outfit": "manager", "brow_color": [110, 104, 98],
+               "stubble": 0.25, "glasses": true},
+      "office": {"seat": "coach", "pose": "sit", "talk": "coach",
+                 "moves": {"after": ["review_100_days"], "floor": "second", "seat": "ruud_office", "pose": "sit"}},
+      "day": {"arrive": "07:45", "coffee": "10:00", "lunch": "12:15", "leave": "17:30"}
+    },
+    {
+      "id": "marco", "name": "Marco Peters", "role": "teamleider Monteurs",
+      "look": {"sex": "m", "height": 1.81, "build": 0.6, "skin": [214, 160, 126], "hair_style": "buzz",
+               "hair_color": [62, 50, 42], "outfit": "monteur", "helmet": false, "eye_color": [60, 46, 34],
+               "stubble": 0.45, "beard": "short"},
+      "office": {"route": [[1.1, -7.6], [16.2, -7.6]], "pose": "walk",
+                 "lunch": {"floor": "ground", "chair": "canteen_table1_chair_n2", "pose": "sit"}},
+      "day": {"arrive": "08:15", "coffee": "10:05", "lunch": "12:25", "leave": "17:10"}
+    },
+    {
+      "id": "henk", "name": "Henk Verbeek", "role": "senior monteur",
+      "look": {"sex": "m", "height": 1.76, "build": 0.62, "skin": [220, 168, 140], "hair_style": "receding",
+               "hair_color": [222, 220, 214], "brow_color": [170, 166, 160], "outfit": "monteur",
+               "helmet": false, "stubble": 0.3, "stoop": 0.7, "beard": "full"},
+      "office": {"floor": "yard", "at": [-30.0, 1.2], "face": [-31.2, 0.4], "pose": "talk", "van": 0,
+                 "during": {"save_henks_knowledge": {"at": [-26.6, 10.9], "face": [-25.6, 12.0], "pose": "talk"}}},
+      "day": {"arrive": "07:20", "coffee": "09:45", "lunch": "12:10", "leave": "16:20"}
+    },
+    {
+      "id": "ahmed", "name": "Ahmed Bouzid", "role": "jonge monteur",
+      "look": {"sex": "m", "height": 1.78, "build": 0.42, "skin": [168, 116, 84], "hair_style": "short",
+               "hair_color": [28, 22, 20], "outfit": "monteur", "eye_color": [44, 30, 22], "stubble": 0.5},
+      "office": {"floor": "yard", "at": [-32.4, -0.3], "face": [-31.0, 0.6], "pose": "idle", "van": 0,
+                 "during": {"save_henks_knowledge": {"at": [-25.3, 11.0], "face": [-25.5, 12.0], "pose": "idle"}}},
+      "day": {"arrive": "07:30", "coffee": "10:00", "lunch": "12:00", "leave": "16:30"}
+    },
+    {
+      "id": "rachid", "name": "Rachid Ouali", "role": "medewerker Intake",
+      "look": {"sex": "m", "height": 1.75, "build": 0.32, "skin": [176, 124, 92], "hair_style": "short",
+               "hair_color": [26, 20, 18], "outfit": "business", "eye_color": [52, 36, 26], "stubble": 0.5,
+               "beard": "short", "colors": {"polo": [196, 152, 58], "chinos": [70, 72, 80]}},
+      "office": {"seat": "intake1", "pose": "sit",
+                 "lunch": {"floor": "ground", "chair": "canteen_table3_chair_s1", "pose": "sit"}},
+      "day": {"arrive": "08:00", "coffee": "10:20", "lunch": "12:10", "leave": "17:25"}
+    },
+    {
+      "id": "linda", "name": "Linda Jansen", "role": "planner",
+      "look": {"sex": "f", "height": 1.62, "build": 0.7, "skin": [234, 192, 166], "hair_style": "short",
+               "hair_color": [214, 180, 120], "outfit": "business", "eye_color": [84, 110, 132],
+               "colors": {"polo": [70, 96, 160], "chinos": [46, 48, 58]}},
+      "office": {"seat": "planning1", "pose": "sit",
+                 "lunch": {"floor": "ground", "chair": "canteen_table1_chair_n0", "pose": "sit"}},
+      "day": {"arrive": "08:25", "coffee": "10:05", "lunch": "12:15", "leave": "17:30"}
+    },
+    {
+      "id": "mieke", "name": "Mieke van der Veen", "role": "tekenaar Revisie & GIS",
+      "look": {"sex": "f", "height": 1.7, "build": 0.45, "skin": [232, 194, 170], "hair_style": "buns",
+               "hair_color": [200, 184, 150], "outfit": "shirt", "glasses": true, "stoop": 0.15,
+               "eye_color": [96, 112, 96], "colors": {"shirt": [96, 128, 96], "trousers": [60, 52, 46]}},
+      "office": {"seat": "revision0", "pose": "sit"},
+      "day": {"arrive": "08:12", "coffee": "09:50", "lunch": "12:00", "leave": "16:50"}
+    },
+    {
+      "id": "frank", "name": "Frank Hulshof", "role": "manager Aansluitingen & Netverzwaring",
+      "look": {"sex": "m", "height": 1.91, "build": 0.78, "skin": [226, 176, 150], "hair_style": "short",
+               "hair_color": [96, 94, 92], "brow_color": [80, 76, 72], "outfit": "manager", "eye_color": [70, 84, 96],
+               "stubble": 0.1, "stoop": 0.1,
+               "colors": {"blazer": [58, 62, 70], "shirt": [176, 200, 228], "trousers": [44, 46, 52]}},
+      "office": {"floor": "second", "seat": "director0", "pose": "sit"},
+      "day": {"arrive": "07:40", "coffee": "10:10", "lunch": "12:30", "leave": "17:30"}
+    },
+    {
+      "id": "femke", "name": "Femke de Wit", "role": "netplanner",
+      "look": {"sex": "f", "height": 1.78, "build": 0.4, "skin": [240, 204, 180], "hair_style": "ponytail",
+               "hair_color": [210, 176, 110], "outfit": "business", "glasses": true, "eye_color": [70, 104, 140],
+               "colors": {"polo": [60, 130, 190], "chinos": [196, 186, 164]}},
+      "office": {"floor": "second", "seat": "grid_a0", "pose": "sit",
+                 "lunch": {"floor": "ground", "chair": "canteen_table5_chair_s0", "pose": "sit"}},
+      "day": {"arrive": "08:15", "coffee": "09:55", "lunch": "12:20", "leave": "17:05"}
+    },
+    {
+      "id": "ingrid", "name": "Ingrid Bos", "role": "assetmanager",
+      "look": {"sex": "f", "height": 1.73, "build": 0.52, "skin": [228, 184, 156], "hair_style": "short",
+               "hair_color": [132, 128, 124], "brow_color": [104, 98, 92], "outfit": "manager", "eye_color": [92, 112, 104],
+               "glasses": true, "stoop": 0.1,
+               "colors": {"blazer": [96, 54, 62], "shirt": [238, 234, 226], "trousers": [48, 48, 56]}},
+      "office": {"floor": "second", "seat": "grid_b1", "pose": "sit",
+                 "lunch": {"floor": "ground", "chair": "canteen_table5_chair_s2", "pose": "sit"}},
+      "day": {"arrive": "07:50", "coffee": "10:05", "lunch": "12:30", "leave": "17:15"}
+    },
+    {
+      "id": "esra", "name": "Esra Yilmaz", "role": "teamleider Klantcontactcentrum",
+      "look": {"sex": "f", "height": 1.68, "build": 0.55, "skin": [200, 150, 116], "hair_style": "ponytail",
+               "hair_color": [30, 24, 22], "outfit": "manager", "eye_color": [50, 34, 24],
+               "colors": {"blazer": [36, 72, 80], "shirt": [236, 238, 240], "trousers": [40, 42, 48]}},
+      "office": {"floor": "ground", "seat": "kcc_lead", "pose": "sit", "headset": true,
+                 "lunch": {"floor": "ground", "chair": "canteen_table3_chair_n2", "pose": "sit"}},
+      "day": {"arrive": "07:50", "coffee": "10:15", "lunch": "12:05", "leave": "17:00"}
+    },
+    {
+      "id": "kim", "name": "Kim de Jong", "role": "agent Klantcontactcentrum",
+      "look": {"sex": "f", "height": 1.65, "build": 0.35, "skin": [236, 200, 176], "hair_style": "buns",
+               "hair_color": [110, 72, 44], "outfit": "business", "eye_color": [88, 70, 50],
+               "colors": {"polo": [220, 120, 96], "chinos": [58, 58, 66]}},
+      "office": {"floor": "ground", "seat": "kcc10", "pose": "sit", "headset": true,
+                 "lunch": {"floor": "ground", "chair": "canteen_table3_chair_n1", "pose": "sit"}},
+      "day": {"arrive": "07:55", "coffee": "10:00", "lunch": "12:00", "leave": "17:00"}
+    },
+    {
+      "id": "yvonne", "name": "Yvonne Kramer", "role": "Receptie",
+      "look": {"sex": "f", "height": 1.67, "build": 0.56, "skin": [232, 190, 162], "hair_style": "bob",
+               "hair_color": [176, 150, 116], "brow_color": [120, 96, 74], "outfit": "sweater", "eye_color": [76, 104, 92],
+               "glasses": true, "stoop": 0.05,
+               "colors": {"sweater": [168, 64, 82], "shirt": [240, 238, 232], "chinos": [52, 54, 64]}}
+    },
+    {
+      "id": "saskia", "name": "Saskia Mulder", "role": "agent Klantcontactcentrum",
+      "look": {"sex": "f", "height": 1.74, "build": 0.6, "skin": [222, 176, 146], "hair_style": "bob",
+               "hair_color": [150, 62, 36], "outfit": "shirt", "eye_color": [70, 90, 70],
+               "colors": {"shirt": [236, 226, 200], "trousers": [36, 38, 46]}},
+      "office": {"floor": "ground", "seat": "kcc13", "pose": "sit", "headset": true,
+                 "after": ["fix_status_callers"]},
+      "day": {"arrive": "08:00", "coffee": "10:10", "lunch": "12:25", "leave": "17:15"}
+    },
+    {
+      "id": "rob", "name": "Rob Verhagen", "role": "inkoper",
+      "look": {"sex": "m", "height": 1.79, "build": 0.55, "skin": [228, 184, 156], "hair_style": "buzz",
+               "hair_color": [150, 120, 84], "outfit": "shirt", "glasses": true, "eye_color": [80, 96, 110],
+               "stubble": 0.2, "colors": {"shirt": [210, 222, 236], "trousers": [96, 88, 76]}},
+      "office": {"seat": "klant0", "pose": "sit",
+                 "lunch": {"floor": "ground", "chair": "canteen_table3_chair_s0", "pose": "sit"}},
+      "day": {"arrive": "08:28", "coffee": "10:20", "lunch": "12:30", "leave": "17:20"}
+    },
+    {
+      "id": "thomas", "name": "Thomas Visser", "role": "accountmanager grootzakelijk",
+      "look": {"sex": "m", "height": 1.84, "build": 0.4, "skin": [236, 196, 170], "hair_style": "short",
+               "hair_color": [190, 150, 96], "outfit": "manager", "eye_color": [66, 108, 140],
+               "colors": {"blazer": [40, 56, 92], "shirt": [244, 244, 246], "trousers": [40, 44, 56]}},
+      "office": {"floor": "second", "seat": "congestion0", "pose": "sit",
+                 "lunch": {"floor": "ground", "chair": "canteen_table5_chair_s1", "pose": "sit"}},
+      "day": {"arrive": "08:20", "coffee": "10:00", "lunch": "12:10", "leave": "17:25"}
+    },
+    {
+      "id": "dirk", "name": "Dirk Smits", "role": "magazijn",
+      "look": {"sex": "m", "height": 1.74, "build": 0.72, "skin": [218, 164, 132], "hair_style": "buzz",
+               "hair_color": [120, 112, 104], "outfit": "monteur", "helmet": false, "eye_color": [70, 80, 90],
+               "stubble": 0.6, "stoop": 0.25},
+      "office": {"floor": "yard", "at": [-31.8, -14.8], "face": [-31.8, -13.0], "pose": "idle"},
+      "day": {"arrive": "07:15", "coffee": "09:45", "lunch": "12:00", "leave": "16:00"}
+    },
+    {
+      "id": "gert", "name": "Gert Peeters", "role": "uitvoerder, Grondwerk Peeters",
+      "look": {"sex": "m", "height": 1.88, "build": 0.8, "skin": [206, 150, 118], "hair_style": "receding",
+               "hair_color": [92, 74, 60], "outfit": "monteur", "helmet": false, "eye_color": [56, 70, 60],
+               "stubble": 0.4, "beard": "full", "colors": {"workshirt": [70, 84, 64]}},
+      "office": {"floor": "ground", "at": [-3.4, -4.4], "face": [-4.6, -4.7], "pose": "idle",
+                 "missions": ["fix_digging_damage"]}
+    },
+    {
+      "id": "wim", "name": "Wim Kortekaas", "role": "bewoner Zonnestraat, gepensioneerd elektrotechnicus",
+      "look": {"sex": "m", "height": 1.77, "build": 0.5, "skin": [232, 190, 166], "hair_style": "receding",
+               "hair_color": [206, 204, 200], "brow_color": [176, 172, 166], "outfit": "shirt", "glasses": true,
+               "eye_color": [84, 100, 116], "stoop": 0.5,
+               "colors": {"shirt": [150, 118, 82], "trousers": [70, 66, 60]}},
+      "office": {"floor": "ground", "at": [-2.2, -3.4], "face": [-4.6, -4.7], "pose": "idle",
+                 "missions": ["fix_inverters_tripping"]}
+    },
+    {
+      "id": "sandra", "name": "Sandra Vermeulen", "role": "meterwisselaar",
+      "look": {"sex": "f", "height": 1.68, "build": 0.55, "skin": [224, 176, 146], "hair_style": "ponytail",
+               "hair_color": [112, 78, 52], "outfit": "monteur", "helmet": false, "eye_color": [80, 98, 70]},
+      "office": {"floor": "yard", "van": 5, "pose": "idle", "missions": ["walk_meters", "fix_not_at_home"]}
+    },
+    {
+      "id": "ricardo", "name": "Ricardo Martens", "role": "monteur",
+      "look": {"sex": "m", "height": 1.83, "build": 0.6, "skin": [196, 142, 108], "hair_style": "short",
+               "hair_color": [36, 28, 24], "outfit": "monteur", "helmet": false, "eye_color": [60, 44, 30],
+               "stubble": 0.7},
+      "office": {"floor": "yard", "van": 2, "pose": "idle"},
+      "day": {"arrive": "08:32", "coffee": "10:00", "lunch": "12:00", "leave": "16:35"}
+    },
+    {
+      "id": "joyce", "name": "Joyce Hoekstra", "role": "monteur",
+      "look": {"sex": "f", "height": 1.71, "build": 0.48, "skin": [236, 196, 170], "hair_style": "buns",
+               "hair_color": [196, 160, 104], "outfit": "monteur", "helmet": false, "eye_color": [70, 96, 120]},
+      "office": {"floor": "yard", "van": 3, "pose": "idle"},
+      "day": {"arrive": "08:38", "coffee": "10:00", "lunch": "12:00", "leave": "16:40"}
+    }
+  ]
+}

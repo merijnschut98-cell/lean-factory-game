@@ -16,6 +16,7 @@ problems:
   - id: T2-001
     name: "The Invisible Andon"
     category: Quality
+    waste: waiting
     severity: high
     visibility: subtle
     zone_id: z4
@@ -57,6 +58,7 @@ problems:
         choices:
           - text: "Time how long it takes for a quality stop to be noticed and responded to"
             outcome: CORRECT
+            tool: time
             evidence: >
               Observed three stoppages. Average time from operator stopping
               to team leader arriving: 18 minutes. No signal was ever
@@ -69,6 +71,7 @@ problems:
             score_feed: RCA
           - text: "Check if there is a documented quality stop procedure at this station"
             outcome: PLAUSIBLE
+            tool: docs
             evidence: >
               The station file has a general 'stop and report' instruction
               from product launch — but no contact, no signal, no response
@@ -93,6 +96,7 @@ problems:
           choices:
             - text: "There is no signal mechanism — the operator has no way to alert anyone without leaving their post"
               outcome: CORRECT
+              tool: observe
               evidence: >
                 Operator confirmed: 'I stop the line and wait. There's no
                 light, no button, nothing. I just hope someone walks by.'
@@ -103,6 +107,7 @@ problems:
               score_feed: RCA
             - text: "The team leader is usually occupied with another station during this time"
               outcome: PLAUSIBLE
+              tool: observe
               evidence: null
               hint: >
                 Team leader occupancy contributes — but even with a better
@@ -123,6 +128,7 @@ problems:
           choices:
             - text: "The station was skipped during the Visual Management rollout and the deferral was never revisited"
               outcome: CORRECT
+              tool: docs
               evidence: >
                 Visual management rollout records show Integration 3 was
                 deferred 'pending workload assessment' two years ago.
@@ -135,6 +141,7 @@ problems:
               score_feed: RCA
             - text: "The team leader decided an Andon system was not needed at this station"
               outcome: PLAUSIBLE
+              tool: observe
               evidence: null
               hint: >
                 A team leader may have made that judgment — but without
@@ -152,6 +159,7 @@ problems:
   - id: T2-002
     name: "The Missing Huddle"
     category: Management
+    waste: waiting
     severity: medium
     visibility: subtle
     zone_id: z5
@@ -192,6 +200,7 @@ problems:
         choices:
           - text: "Observe the first 20 minutes of two consecutive shifts back to back"
             outcome: CORRECT
+            tool: observe
             evidence: >
               Morning shift: team leader briefs the crew for 4 minutes,
               priorities are clear, first unit enters burn-in within
@@ -205,6 +214,7 @@ problems:
             score_feed: RCA
           - text: "Compare the technical skill levels of operators across shifts"
             outcome: PLAUSIBLE
+            tool: observe
             evidence: null
             hint: >
               Skill differences exist — but the same operators on the
@@ -223,6 +233,7 @@ problems:
   - id: T2-003
     name: "The Lone Expert"
     category: People
+    waste: skills
     severity: high
     visibility: subtle
     zone_id: z5
@@ -263,6 +274,7 @@ problems:
         choices:
           - text: "Map which tasks at flight test only one person can currently perform"
             outcome: CORRECT
+            tool: data
             evidence: >
               Skill matrix for flight test: calibration setup can only be
               performed by one operator. Seven others are rated 'untrained'
@@ -275,6 +287,7 @@ problems:
             score_feed: RCA
           - text: "Ask the expert operator to write down their calibration process"
             outcome: PLAUSIBLE
+            tool: ask
             evidence: null
             hint: >
               A written process helps — but asking one person to self-document
@@ -295,6 +308,7 @@ problems:
           choices:
             - text: "There is no documented calibration procedure — nothing to train against"
               outcome: CORRECT
+              tool: machine
               evidence: >
                 Checked the station file and training records. No calibration
                 procedure document exists. The expert learned by doing and
@@ -307,6 +321,7 @@ problems:
               score_feed: RCA
             - text: "Cross-training has been planned but not scheduled due to production pressure"
               outcome: PLAUSIBLE
+              tool: docs
               evidence: null
               hint: >
                 Production pressure is real — but even if training time
@@ -329,6 +344,7 @@ problems:
                 passed down verbally — it was never treated as a formal work
                 instruction
               outcome: CORRECT
+              tool: machine
               evidence: >
                 HR record confirms: the current expert was trained by the
                 original technician through side-by-side working. That
@@ -341,6 +357,7 @@ problems:
               score_feed: RCA
             - text: "The calibration procedure is in a system that only one engineer can access"
               outcome: PLAUSIBLE
+              tool: machine
               evidence: null
               hint: >
                 Access restrictions matter — but no document was found in
@@ -358,6 +375,7 @@ problems:
   - id: T2-004
     name: "Blind Management"
     category: Management
+    waste: waiting
     severity: medium
     visibility: hidden
     zone_id: z1
@@ -398,6 +416,7 @@ problems:
         choices:
           - text: "Track when management last physically visited the production floor and what they observed"
             outcome: CORRECT
+            tool: ask
             evidence: >
               Asked four team leaders and two supervisors. Last documented
               floor visit by any supervisor: 11 days ago, unplanned, for
@@ -410,6 +429,7 @@ problems:
             score_feed: RCA
           - text: "Review the weekly KPI report to find where the decision lag is worst"
             outcome: PLAUSIBLE
+            tool: docs
             evidence: null
             hint: >
               The KPI report is the system that's creating the lag. You
@@ -428,6 +448,7 @@ problems:
   - id: T2-005
     name: "The Blame Game"
     category: People
+    waste: skills
     severity: high
     visibility: hidden
     zone_id: z4
@@ -469,6 +490,7 @@ problems:
         choices:
           - text: "Have private, informal conversations with 2–3 operators about what happens when they notice a problem"
             outcome: CORRECT
+            tool: ask
             evidence: >
               Three separate operators, independently, described being
               questioned and blamed after their last report. One said:
@@ -481,6 +503,7 @@ problems:
             score_feed: RCA
           - text: "Review the formal defect log and compare it to the rework record"
             outcome: PLAUSIBLE
+            tool: defects
             evidence: >
               The discrepancy is confirmed: 47 rework events in the
               physical record vs 12 in the formal log over the same period.
@@ -504,6 +527,7 @@ problems:
           choices:
             - text: "They have experienced blame or negative consequences when reporting in the past"
               outcome: CORRECT
+              tool: docs
               evidence: >
                 All three operators described an incident where a report
                 led to an escalation that felt punitive rather than
@@ -516,6 +540,7 @@ problems:
               score_feed: RCA
             - text: "Operators do not understand that small defects need to be reported"
               outcome: PLAUSIBLE
+              tool: defects
               evidence: null
               hint: >
                 Operators clearly understand — they described the specific
@@ -536,6 +561,7 @@ problems:
           choices:
             - text: "There is no formal blameless investigation process — each incident is handled differently by whoever is nearby"
               outcome: CORRECT
+              tool: defects
               evidence: >
                 Reviewed five past incident records. No structured format.
                 Operator names appear prominently next to defect descriptions
@@ -548,6 +574,7 @@ problems:
               score_feed: RCA
             - text: "Management has explicitly told supervisors to identify who made the mistake"
               outcome: PLAUSIBLE
+              tool: observe
               evidence: null
               hint: >
                 Management tone matters — but the records show inconsistency,
@@ -566,6 +593,7 @@ problems:
   - id: T2-006
     name: "The KPI Graveyard Board"
     category: Management
+    waste: overprocessing
     severity: medium
     visibility: obvious
     zone_id: z3
@@ -606,6 +634,7 @@ problems:
         choices:
           - text: "Find out when the board was last updated and who is responsible for updating it"
             outcome: CORRECT
+            tool: ask
             evidence: >
               Last update: 18 days ago by a visiting quality engineer
               during audit preparation. There is no designated owner.
@@ -618,6 +647,7 @@ problems:
             score_feed: RCA
           - text: "Update the board right now with today's numbers"
             outcome: PLAUSIBLE
+            tool: machine
             evidence: null
             hint: >
               Updating it solves today's problem — but in three days it
@@ -636,6 +666,7 @@ problems:
   - id: T2-007
     name: "The Escalation Vacuum"
     category: Management
+    waste: defects
     severity: medium
     visibility: subtle
     zone_id: z2
@@ -676,6 +707,7 @@ problems:
         choices:
           - text: "Trace the full history of the solder mask defect — what was done each of the nine times?"
             outcome: CORRECT
+            tool: ask
             evidence: >
               Reviewed all nine entries. Six were 'sort and rework'.
               Two were 'spoke to operator'. One was 'checked material
@@ -689,6 +721,7 @@ problems:
             score_feed: RCA
           - text: "Ask the team leader what they tried each time"
             outcome: PLAUSIBLE
+            tool: ask
             evidence: >
               Team leader described each action accurately. 'I just didn't
               know I was supposed to get someone else involved.'
@@ -710,6 +743,7 @@ problems:
   - id: T2-008
     name: "The Reactive Loop"
     category: Quality
+    waste: defects
     severity: high
     visibility: subtle
     zone_id: z4
@@ -753,6 +787,7 @@ problems:
         choices:
           - text: "Find the most recent countermeasure that fixed the problem and trace what happened in the two weeks after it was applied"
             outcome: CORRECT
+            tool: count
             evidence: >
               Last applied CM: Basic Quality Gates, Day 47. Review of
               the following 14 days shows no inspection records, no
@@ -766,6 +801,7 @@ problems:
             score_feed: RCA
           - text: "Identify which countermeasure is causing the regression"
             outcome: PLAUSIBLE
+            tool: data
             evidence: null
             hint: >
               A CM causing regression is possible — but the pattern here
@@ -789,6 +825,7 @@ problems:
           choices:
             - text: "There is no defined follow-up step in the countermeasure process — once applied, it is considered done"
               outcome: CORRECT
+              tool: docs
               evidence: >
                 Reviewed 12 CM application records. None have a scheduled
                 review date. The apply action has a timestamp; the outcome
@@ -801,6 +838,7 @@ problems:
               score_feed: RCA
             - text: "Team leaders are too busy to schedule follow-up reviews"
               outcome: PLAUSIBLE
+              tool: docs
               evidence: null
               hint: >
                 Capacity is a real constraint — but no one designed a check
@@ -824,6 +862,7 @@ problems:
                 prioritised because they show visible action; Check and
                 Act were seen as overhead
               outcome: CORRECT
+              tool: machine
               evidence: >
                 Reviewed the original CM rollout documentation. Explicitly
                 states: 'apply and observe'. No review cadence defined.
@@ -836,6 +875,7 @@ problems:
               score_feed: RCA
             - text: "The team responsible was not trained in PDCA"
               outcome: PLAUSIBLE
+              tool: docs
               evidence: null
               hint: >
                 Training gaps contribute — but the documentation shows
@@ -854,6 +894,7 @@ problems:
   - id: T2-009
     name: "Nobody Asked Us"
     category: People
+    waste: skills
     severity: medium
     visibility: hidden
     zone_id: z3
@@ -893,6 +934,7 @@ problems:
         choices:
           - text: "Speak directly with 3–5 operators: 'Have you ever had an idea for improvement that wasn't implemented?'"
             outcome: CORRECT
+            tool: machine
             evidence: >
               Five operators. Five separate improvement ideas — layout,
               tool positioning, material sequence, temperature check
@@ -906,6 +948,7 @@ problems:
             score_feed: RCA
           - text: "Post a suggestion box at the entrance to Propulsion Build"
             outcome: PLAUSIBLE
+            tool: observe
             evidence: null
             hint: >
               A box is a start — but without a defined review process,
@@ -924,6 +967,7 @@ problems:
   - id: T2-010
     name: "The Fishbone in the Drawer"
     category: Quality
+    waste: defects
     severity: medium
     visibility: subtle
     zone_id: z5
@@ -966,6 +1010,7 @@ problems:
         choices:
           - text: "Take the most recent recurring defect and map all possible contributing factors across Man, Machine, Method, and Material"
             outcome: CORRECT
+            tool: data
             evidence: >
               4M analysis on the burn-in thermal cycling failure:
               Man (one operator trains all others — variation source),
@@ -982,6 +1027,7 @@ problems:
             score_feed: RCA
           - text: "Ask the team leader to write a more detailed investigation report"
             outcome: PLAUSIBLE
+            tool: ask
             evidence: null
             hint: >
               More detail in the same informal format still produces an
@@ -1001,6 +1047,7 @@ problems:
   - id: T2-011
     name: "The Manager's Ghost"
     category: Management
+    waste: waiting
     severity: high
     visibility: hidden
     zone_id: z1
@@ -1041,6 +1088,7 @@ problems:
         choices:
           - text: "Track exactly how the supervisor spends their time across one full shift — in 30-minute blocks"
             outcome: CORRECT
+            tool: docs
             evidence: >
               Time observation over one shift: 6.2 hours at desk
               (email, reporting, meetings). 1.8 hours on floor
@@ -1054,6 +1102,7 @@ problems:
             score_feed: RCA
           - text: "Talk to the supervisor about spending more time on the floor"
             outcome: PLAUSIBLE
+            tool: ask
             evidence: null
             hint: >
               The conversation might raise awareness — but without data
@@ -1072,6 +1121,7 @@ problems:
   - id: T2-012
     name: "The Kaizen That Never Happened"
     category: Management
+    waste: skills
     severity: medium
     visibility: obvious
     zone_id: z6
@@ -1111,6 +1161,7 @@ problems:
         choices:
           - text: "Interview the team members who raised the packaging issue — what happened after they raised it each time?"
             outcome: CORRECT
+            tool: ask
             evidence: >
               Three team members interviewed. Consistent account: issue
               raised, acknowledged, added to next meeting agenda, repeated.
@@ -1124,6 +1175,7 @@ problems:
             score_feed: RCA
           - text: "Schedule a dedicated meeting to resolve the packaging issue"
             outcome: PLAUSIBLE
+            tool: docs
             evidence: null
             hint: >
               Another meeting is the pattern that isn't working. The
@@ -1144,6 +1196,7 @@ problems:
   - id: T2-013
     name: "Misaligned Targets"
     category: Management
+    waste: overproduction
     severity: medium
     visibility: hidden
     zone_id: z2
@@ -1186,6 +1239,7 @@ problems:
         choices:
           - text: "Compare the team leader's declared daily target against the plant-level KPI report side by side"
             outcome: CORRECT
+            tool: data
             evidence: >
               Team leader target: 'achieve 220 cut decks per shift'.
               Plant KPI: FTR ≥ 92%. The team leader's target has no
@@ -1201,6 +1255,7 @@ problems:
             score_feed: RCA
           - text: "Ask the team leader to explain why their metrics are improving while FTR drops"
             outcome: PLAUSIBLE
+            tool: ask
             evidence: >
               Team leader is surprised: 'I didn't know my throughput
               was causing the FTR issue — I've never seen those numbers
@@ -1223,6 +1278,7 @@ problems:
   - id: T2-014
     name: "Silent Shift Change"
     category: Management
+    waste: defects
     severity: medium
     visibility: subtle
     zone_id: z5
@@ -1265,6 +1321,7 @@ problems:
         choices:
           - text: "Observe two consecutive shift changes from the team leader perspective — what information is transferred and how?"
             outcome: CORRECT
+            tool: observe
             evidence: >
               Observed three handovers. Average duration: 90 seconds in
               the corridor. Outgoing team leader mentions one or two
@@ -1278,6 +1335,7 @@ problems:
             score_feed: RCA
           - text: "Check whether the operator handover protocol from Tier 1 is being followed"
             outcome: PLAUSIBLE
+            tool: observe
             evidence: null
             hint: >
               The operator handover improvement is working — the quality
@@ -1297,6 +1355,7 @@ problems:
   - id: T2-015
     name: "The Unfinished Root Cause"
     category: Quality
+    waste: defects
     severity: medium
     visibility: subtle
     zone_id: z2
@@ -1340,6 +1399,7 @@ problems:
         choices:
           - text: "Take the most recently 'resolved' problem and check whether the stated root cause actually changed anything in the process"
             outcome: CORRECT
+            tool: docs
             evidence: >
               Pulled the last three 5 Whys sheets. Problem A concluded
               'operator inattention' — standard work unchanged after the
@@ -1355,6 +1415,7 @@ problems:
             score_feed: RCA
           - text: "Review the last 5 Whys document and count whether it has five questions"
             outcome: PLAUSIBLE
+            tool: count
             evidence: >
               The latest worksheet has five questions. Why 4 and Why 5
               are: 'Because of material variation (again)' and 'Because
@@ -1379,6 +1440,7 @@ problems:
           choices:
             - text: "Investigators accept the first answer that feels complete — there is no criterion for when to keep asking"
               outcome: CORRECT
+              tool: ask
               evidence: >
                 Spoke with two facilitators. Both described stopping when
                 'it felt like we found the cause'. Neither had been trained
@@ -1391,6 +1453,7 @@ problems:
               score_feed: RCA
             - text: "The investigation is stopped by a manager who wants a quick resolution"
               outcome: PLAUSIBLE
+              tool: observe
               evidence: null
               hint: >
                 Managerial pressure is real — but the facilitators described
@@ -1412,6 +1475,7 @@ problems:
           choices:
             - text: "The 5 Whys method was adopted from a checklist without any facilitation training or worked examples"
               outcome: CORRECT
+              tool: machine
               evidence: >
                 Found the original rollout email: 'We will now use 5 Whys.
                 See attached blank template. Start using from Monday.'
@@ -1424,6 +1488,7 @@ problems:
               score_feed: RCA
             - text: "Training was provided but the operators did not retain it"
               outcome: PLAUSIBLE
+              tool: docs
               evidence: null
               hint: >
                 The rollout records show no training was provided. Assuming

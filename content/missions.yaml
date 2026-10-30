@@ -1,0 +1,1095 @@
+# The campaign of region Zuidmark (CLAUDE.md §2): missions unlock new and
+# harder missions as the player progresses. At most one main mission and
+# three side missions are active at once. The coach, a senior manager, mostly
+# asks questions (Toyota Kata), and only about the main mission.
+# Game text is Dutch; ids and keys are English. Built by tools/build_content.py.
+#
+# requires   missions that must be completed first, and a belt (0 white,
+#            1 yellow, 2 green, 3 black, 4 master black)
+# goal       walk {stream}: see every work step of a stream at the gemba
+#            investigate {problem, clues}: find that many key clues
+#            solve {problem}: resolve the problem (Check passed, Act done)
+# deadline_days  days to complete from when the mission opens (a real event:
+#                the clock runs whether or not it is taken on); then `fail` is told
+# fail_closes    countermeasures a missed deadline closes for good (never all
+#                of the problem's: it can still be solved another way)
+#            observe {places, tool?, uses?}: use a gemba tool (`tool`, or any
+#            tool or question) at every place, `uses` different place-tool
+#            pairs in all (default 1)
+#            check {problem}: the problem's Check passed
+# insights   main and training missions only: what the coach shares now and
+#            then at a stage (go_see, understand, experiment, reflect)
+# teaches    concept ids (content/concepts.yaml) whose glossary card the
+#            mission brings when it is accepted
+# check_days a shorter Check for this mission's problem (training only; the
+#            real Check takes Region.CHECK_DAYS, 14)
+# setup      training only: a staged situation for the week's lessons, effects
+#            on the simulation from the day it is accepted until the training
+#            week ends or is skipped (not real numbers)
+#
+# Story and path dependence (mission-system spec §2, C1 and C19):
+# act, chapter, arc   the act (0 training … 6 IT), the chapter title on the
+#            board, a side chain (sector, henk, …)
+# fork       {group, role: bottleneck | non_bottleneck}: main missions that open
+#            together; debrief_first is the debrief when this branch is done first
+# reopen     the briefing when the mission is back because its fix faded
+# requires   also maturity (1-4), reputation (0-100), trust {team: n},
+#            any_of [missions], facts {all, any, none} (facts such as
+#            done:<mission>, chose:<problem>:<cm>, poor_fix:<problem> (a poor
+#            fit), wrong_cause:<problem> (the A3's root cause was wrong),
+#            flag:<name>, or measures such as maturity>=3)
+# rewards    also reputation (default: main 5, side 2) and trust {team: n}
+# sets_flags [flag:<name>] facts its completion sets
+# debrief_variants {blamed, poor_fix, not_standardised}: debriefs that read
+#            the play, in that order before debrief_first and debrief
+# questions  main and training: the mission's own coach questions per stage,
+#            asked before the general bank; insights may list several per stage
+# containment {name, budget, days, effects}: a safety mission's short measure
+#            against an acute risk (audit §2.4.1), taken once while the mission
+#            is active; its effects fade after `days` (at most 30) and it is
+#            not the fix (hidden reward eerst_veilig when the fix follows)
+# steps      main and training: the objective line's own words per step (the HUD's one
+#            line and the minimap marker, Objective): look (go and see; for an observe
+#            goal it may map each place to its text), again (one more look there),
+#            dig (find out what is going on), a3, wait (the experiment runs), check,
+#            act, talk. Short (at most 60 characters), in-world, the where and with
+#            whom: never a tool, a problem, a countermeasure or what is wrong. A step
+#            without one gets Objective.DEFAULTS ({team}: the team there; {naam}: the
+#            person).
+# {dossier_weken} in a briefing: the El Amrani dossier's age in weeks, read
+#            from the followed order in the simulation (GameSession.mission_briefing)
+#
+# Goal names: `sustain {problem}` is the check-in's (a slipping fix back in
+# use; the game builds these). Holding a KPI for some weeks (catalogue §2.1)
+# will be `hold_kpi`.
+#
+# kind training: the Inwerkweek (docs/superpowers/specs/2026-10-14-training-arc-design.md),
+# five small Starter Kata days before the campaign, in order Monday to Friday
+# (the game shows them as "Inwerkweek — ma: <name>"). Each day opens the next;
+# they take no side slot, have no deadline, and the coach helps with them.
+# A returning player skips the week (GameSession.skip_training): done, without
+# rewards, and the campaign opens.
+
+coach:
+  name: Ruud Hoekstra
+  role: Directeur Netbeheer regio Zuidmark
+  # Toyota Kata (Rother): target, actual condition, obstacles, next step,
+  # what did you learn; plus a long-term, a respect and an always-improve
+  # question per stage (CLAUDE.md §2, the three principles; audit §3A.2).
+  stages:
+    go_see:
+      - "Wat wil je bereiken? Hoe ziet het eruit als het hier goed loopt?"
+      - "Wat heb je zelf gezien op de werkvloer, niet in het rapport?"
+      - "Waar in de stroom ligt het werk stil?"
+      - "Wie doet dit werk elke dag? Wat heb je hem of haar gevraagd?"
+      - "Als je over een jaar terugkijkt, welk getal wil je dan veranderd hebben?"
+      - "Wat zie je hier dat de mensen zelf al lang niet meer zien?"
+    understand:
+      - "Hoe is de situatie nu, in cijfers?"
+      - "Welke obstakels staan tussen jou en de doelsituatie? Welke pak je nu aan?"
+      - "Hoe weet je dat dit de oorzaak is, en niet een symptoom?"
+      - "Met wie heb je gesproken die het werk zelf doet?"
+      - "Welke 'waarom' heb je nog niet gesteld?"
+      - "Wat zou de snelste oplossing zijn, en hoe ziet die er over een half jaar uit?"
+    experiment:
+      - "Wat is je volgende stap, en wat verwacht je dat er gebeurt?"
+      - "Wanneer kunnen we zien wat je van die stap hebt geleerd?"
+      - "Welk getal vertelt je of het werkt?"
+      - "Hoeveel uren kost dit experiment het team, en wie draagt die?"
+      - "Wat moet er gebeuren zodat dit ook werkt als jij er niet bent?"
+      - "Wat doe je als het tegenvalt?"
+    reflect:
+      - "Wat had je verwacht, en wat gebeurde er echt?"
+      - "Wat heb je geleerd?"
+      - "Hoe zorg je dat de verbetering blijft?"
+      - "Wie heeft dit mogelijk gemaakt, en weten ze dat?"
+      - "Wat is de volgende kleine stap?"
+      - "Wat zou je anders doen als je opnieuw begon?"
+  # Asked once per mission when the situation holds (Coach.conditions).
+  conditional:
+    blamed: "Wat wilde je eigenlijk weten toen je dat vroeg?"
+    fading_fix: "Hoe lang verwacht je dat dit blijft werken? En dan?"
+  # The coach reads the numbers (phase-2 design §3.6; CoachNumbers): a number as it is now
+  # on the main mission's stream, said the way Ruud says it ({value}: the number), put
+  # before a question once at go_see (the stream's lead time, or its on-time share: never
+  # the problem's own KPI before the A3) and once at reflect (the problem's own KPI).
+  numbers:
+    kpi_now:
+      throughput: "Er komen nu {value} per week klaar"
+      lead_time: "De doorlooptijd is nu {value} dagen"
+      first_time_right: "Nu gaat {value} procent in één keer goed"
+      on_time: "Nu is {value} procent op tijd"
+      wip_age: "Het werk dat openstaat, is nu {value} dagen oud"
+      capacity: "De stroom kan nu {value} per week aan"
+    go_see: "Waar wil je naartoe, en waarom juist dat getal?"
+    reflect: "Wat had je voorspeld, en wat zegt het verschil je?"
+  # The Kata five (Rother, Toyota Kata: target, actual condition, obstacles, next step,
+  # when we go and see), asked in order during an experiment, once an experiment; the
+  # first comes after the KPI as it is now.
+  kata:
+    - "Wat was je doel?"
+    - "En hoe is het nu echt, op de werkvloer? Wat zie je daar?"
+    - "Wat staat er nog tussen nu en je doel? Aan welk obstakel werk je nu?"
+    - "Wat is je volgende stap, en wat verwacht je dat er gebeurt?"
+    - "Wanneer kunnen we gaan kijken wat je van die stap hebt geleerd?"
+
+# The principle line (phase-2 design §3.7; game/src/rules/principle_line.gd): one
+# sentence after every main mission's debrief, Ruud's note on which of the three
+# principles paid or cost (CLAUDE.md §2: long term over short term, respect for people,
+# always improve), chosen from what the play left, first that holds: a poor or fading
+# fix (long_term_cost), someone blamed (respect_blamed), a talk that ended in compliance
+# without anyone committing (respect_complied, {wie}: who complied), the fix not
+# standardised (improve_cost), someone who committed (respect_committed, {wie}), a
+# failed Check that was learned from (improve_paid), else the patient fix
+# (long_term_paid). One line per code is picked per mission, the same each time.
+# Observations and questions, never a lesson.
+principles:
+  long_term_cost:
+    - "Snel was het zeker, maar wie staat hier over een half jaar weer met hetzelfde probleem?"
+    - "Dit werkt voor nu; de rekening komt later, en meestal bij iemand anders."
+  respect_blamed:
+    - "Het werk loopt beter, maar wie de schuld kreeg van een fout, vertelt je de volgende keer minder."
+    - "De cijfers zijn beter; of de mensen je de volgende keer nog iets vertellen, is een andere vraag."
+  respect_complied:
+    - "{wie} doet wat er is afgesproken; wat zou er nodig zijn om het ook echt van het team zelf te maken?"
+    - "{wie} volgt de nieuwe afspraak keurig, maar een afspraak die je niet zelf bedacht hebt, laat je ook makkelijk weer los."
+  improve_cost:
+    - "Zonder vaste afspraak gaat het vanzelf weer zoals het was; wie gaat het bijhouden?"
+    - "Niemand heeft dit vastgelegd, en wat niemand bijhoudt, zakt langzaam terug."
+  respect_committed:
+    - "{wie} draagt dit nu zelf; zo'n verandering hoeft niemand te bewaken."
+    - "Dat {wie} er zelf achter staat, merk je de komende maanden: het blijft staan, ook als jij er niet bij bent."
+  improve_paid:
+    - "Je eerste experiment liep anders dan je dacht, en toch ging je door; zo wordt het hier beter."
+    - "Je zat er eerst naast, je hebt gekeken waarom en het opnieuw geprobeerd."
+  long_term_paid:
+    - "Dit kostte meer tijd dan een snelle oplossing, maar het staat er over een jaar nog."
+    - "Je koos de langere weg, en die verdient zich elke week terug zonder dat iemand ernaar omkijkt."
+
+missions:
+  # ── Inwerkweek: five safe days in the connections office ──────────────────
+  - id: training_mon
+    name: Rondleiding
+    kind: training
+    tier: 1
+    act: 0
+    chapter: Inwerkweek
+    briefing: "Welkom bij Voltana Netbeheer. Ik ben Ruud Hoekstra. Deze week oefen je in het klein; als er iets misgaat, raakt niemand iets kwijt. Vanochtend lag er een brief op mijn bureau van de familie El Amrani uit Nova-Oost: ze wachten al {dossier_weken} op een aansluiting voor hun warmtepomp. Zoek met de kaart (M) de Intake en Werkvoorbereiding op en vraag bij elk team hoe het werk binnenkomt. En loop vanavond niet meteen naar huis: wie er dan nog zit, maak je het beste kennis mee."
+    debrief: "Je kent nu twee plekken waar een aanvraag langskomt. Het dossier is al weken onderweg: hoeveel uur is er al echt aan gewerkt, denk je? Morgen ga je beter kijken."
+    goal: {type: observe, places: [connections.intake, connections.design]}
+    grant_tools: [conversation]
+    steps:
+      look:
+        connections.intake: "Kijk bij Intake hoe een aanvraag binnenkomt"
+        connections.design: "Vraag bij Werkvoorbereiding hoe het werk binnenkomt"
+    # The first talk of the game ends the day (first five minutes B7; D9 talks
+    # audit A2): the walk meets the goal in the morning, Anouk at seven closes it.
+    ends_with_talk: anouk_seven
+    teaches: [netbeheerder, aansluiting, aansluittermijn]
+    # TRAINING SETUP (staged, not a real number): this week three of the four
+    # work preparers are on a course, so Werkvoorbereiding is clearly the
+    # bottleneck all week: Wednesday counts it, Thursday's practice problem
+    # sits there. At the base load the intake and design queues are too close
+    # to call (a few orders each). It holds Monday to Friday and goes when the
+    # week ends or is skipped.
+    setup:
+      - {target: work_prep, property: availability, value: -0.75}
+    rewards: {xp: 50}
+    insights:
+      go_see: "Een aanvraag doet er maanden over. Hoeveel van die tijd wordt er echt aan gewerkt, denk je? En hoe zou je dat kunnen zien?"
+
+  - id: training_tue
+    name: Kijken zonder oordeel
+    kind: training
+    tier: 1
+    act: 0
+    chapter: Inwerkweek
+    requires: {missions: [training_mon]}
+    briefing: "Bij Werkvoorbereiding zit deze week alleen Anouk de Vries; haar drie collega's zitten op cursus. Ga bij haar kijken met twee verschillende gemba-hulpmiddelen. Elk hulpmiddel kost tijd en laat iets anders zien. Oordeel nog niet, ook niet in je hoofd: schrijf op wát je ziet, niet wat je ervan vindt."
+    debrief: "Wat liet het ene hulpmiddel zien dat het andere miste? Anouk werkt snel. Toch ligt er veel. Waar zit dan de tijd?"
+    goal: {type: observe, places: [connections.design], uses: 2}
+    steps:
+      look: "Kijk bij Anouk hoe ze werkt"
+      again: "Kijk nog eens bij Anouk, op een andere manier"
+    grant_tools: [shadow, documents]
+    teaches: [gemba, five_whys, eight_wastes]
+    rewards: {xp: 50}
+    insights:
+      go_see: "Wat deed Anouk, en wat deed het werk terwijl zij bezig was?"
+
+  - id: training_wed
+    name: Waar zit de stapel?
+    kind: training
+    tier: 1
+    act: 0
+    chapter: Inwerkweek
+    requires: {missions: [training_tue]}
+    # Correctness (audit L3): the constraint is where the most days of work
+    # wait, not the most orders; queue_count reports both (Region.queue_at).
+    briefing: "Tel vandaag de wachtrij bij Intake en bij Werkvoorbereiding. Let op: twintig dossiers van een kwartier zijn minder werk dan tien dossiers van vier uur. Waar ligt het meeste werk te wachten, in dagen werk? Schrijf het op voordat je het met je gevoel vergelijkt."
+    debrief: "Je telde de dossiers én de dagen werk die ze vragen. Een stroom gaat zo snel als de plek waar het meeste werk wacht. Als Intake morgen twee keer zo hard werkt, waar ligt het werk dan overmorgen?"
+    goal: {type: observe, places: [connections.intake, connections.design], tool: queue_count}
+    steps:
+      look:
+        connections.intake: "Tel wat er bij Intake ligt te wachten"
+        connections.design: "Tel wat er bij Werkvoorbereiding ligt te wachten"
+    grant_tools: [queue_count]
+    # The week's training setup (on Monday) makes the counts give a clear
+    # answer; the debrief adds what the player measured and names the longer queue.
+    teaches: [flow, wip, bottleneck_focus, netcongestie]
+    rewards: {xp: 50}
+    insights:
+      go_see: "Welke van de twee getallen vertelt je meer: het aantal dossiers of de dagen werk? Waarom?"
+
+  - id: training_thu
+    name: Een klein experiment
+    kind: training
+    tier: 1
+    act: 0
+    chapter: Inwerkweek
+    requires: {missions: [training_wed]}
+    briefing: "Anouk pakt altijd het oudste dossier. Toch ligt het dossier van de familie Koster uit Nova-Oost al negen dagen bij haar. Hoe kan dat? Zoek het uit, schrijf een oefen-A3 met een voorspelling en probeer een tegenmaatregel. Morgen kijken we samen of je voorspelling uitkwam."
+    debrief: "Je voorspelling is getoetst aan wat er echt gebeurde. Of het tegenviel of meeviel: je weet nu iets wat je gisteren niet wist. Dat is een experiment."
+    goal: {type: check, problem: training_tray}
+    steps:
+      look: "Kijk bij Anouk waar het dossier van de familie Koster ligt"
+      dig: "Zoek uit waarom het dossier van Koster blijft liggen"
+      a3: "Schrijf je oefen-A3 aan je bureau"
+      wait: "Wacht tot morgen: kijk hoe het bij Anouk gaat"
+    grant_tools: [time_study, data, listen_in, material_check]
+    check_days: 1
+    teaches: [PDCA, A3, leading_lagging]
+    rewards: {xp: 50}
+    insights:
+      go_see: "Gisteren telde je waar het werk wacht. Wat wil je morgen anders zien bij Anouk, in een getal?"
+      understand: "Wat doet Anouk voordat het echte werk aan een dossier begint? Hoe lang duurt dat?"
+      experiment: "Welk getal laat morgen zien of het werkt, en wat verwacht je dat het dan is?"
+      reflect: "Wat had je verwacht, en wat gebeurde er? Wat neem je mee naar maandag?"
+
+  - id: training_fri
+    name: Borgen of laten wegzakken
+    kind: training
+    tier: 1
+    act: 0
+    chapter: Inwerkweek
+    requires: {missions: [training_thu]}
+    briefing: "Je experiment werkt: Anouk zoekt niet meer. Maandag komen haar drie collega's terug van hun cursus. Weten zij van de ene bak? Beslis: borg je het als standaard werk (dat kost budget), of laat je het zo? Kijk daarna een maand vooruit: hoe loopt het werk met en zonder borgen?"
+    debrief_variants:
+      not_standardised: "Een maand later wordt er weer gezocht en omgesorteerd. Niemand deed iets fout; niemand wist het nog. Een verbetering blijft alleen als iemand haar borgt. Je inwerkweek zit erop. Maandag vraagt Joost van Dijk het MT om twee extra werkvoorbereiders; ik heb gezegd dat jij eerst gaat kijken."
+    debrief: "Een maand later werkt iedereen nog zoals jullie het hebben afgesproken. Het staat op een A4 bij het postbakje, en Anouk legt het aan nieuwe collega's uit. Je inwerkweek zit erop. Maandag vraagt Joost van Dijk het MT om twee extra werkvoorbereiders; ik heb gezegd dat jij eerst gaat kijken."
+    goal: {type: solve, problem: training_tray}
+    steps:
+      act: "Beslis bij Petra's scherm: borg je het, of laat je het zo?"
+    check_days: 1
+    teaches: [standard_work, improvement_kata]
+    rewards: {xp: 50}
+    insights:
+      reflect:
+        - "Wat gebeurt er met de nieuwe werkwijze als het team het druk krijgt en niemand erop let? Wie zou erop moeten letten?"
+        - "Wat kost borgen nu, en wat kost niet borgen over een jaar?"
+
+  # ── Act I: De eerste honderd dagen ─────────────────────────────────────────
+  # Correctness (audit M1): the walk is a real action, no longer done for the
+  # player. The office has two of the stream's places, so the player counts
+  # what lies there; a returning player who skips the training week has done
+  # it before (GameSession). It becomes a walk of the whole stream once the
+  # campus exists.
+  - id: walk_connections
+    name: Volg het dossier
+    kind: main
+    tier: 1
+    act: 1
+    chapter: De stapel
+    requires: {missions: [training_fri]}
+    briefing: "Voordat je iets verandert, wil ik dat je de weg van één aansluiting hebt gezien. Het dossier van de familie El Amrani is nu {dossier_weken} onderweg. Volg het: tel bij Intake en bij Werkvoorbereiding hoeveel er ligt en hoeveel dagen werk dat is. Waar zou jij als dossier het liefst niet liggen?"
+    # About fifteen hours: the touch hours of value_streams.yaml add up to 14.5 (intake 1,
+    # quote 1.5, design 3.2, planning 0.5, execution 5, commissioning 1.5, revision 1.6,
+    # close-out 0.25), four more for the quarter that needs a grid study.
+    debrief: "Een aansluiting vraagt bij elkaar zo'n vijftien uur werk, verdeeld over een handvol teams, en toch is het dossier weken onderweg. De rest van de tijd ligt het ergens te wachten. Onthoud waar het werk stil lag; daar beginnen we maandag."
+    goal: {type: observe, places: [connections.intake, connections.design], tool: queue_count}
+    steps:
+      look:
+        connections.intake: "Tel wat er bij Intake ligt te wachten"
+        connections.design: "Tel wat er bij Werkvoorbereiding ligt te wachten"
+    teaches: [lead_time, flow]
+    rewards: {xp: 300}
+    insights:
+      go_see: "Waar zou jij als dossier het liefst niet liggen, en waarom ligt het er toch?"
+
+  - id: fix_custom_design
+    name: De stapel bij Werkvoorbereiding
+    kind: main
+    tier: 1
+    act: 1
+    chapter: De stapel
+    requires: {missions: [walk_connections]}
+    # The stack's numbers follow the simulation (UX audit #6, measured 2026-10-27, seed 11): a returning
+    # player's queue at Werkvoorbereiding over the 30 days after accepting, problem untreated, is 0-16
+    # dossiers (0-2.5 days of work; 6 at the start), peaking at 11-16 every week; the expert during its
+    # experiment 13-34 (1.7-4.9 days). The briefing, the queue_count clue and Joost say so: the count
+    # at the start (about a day of work) and the peak (a few days) both read true.
+    briefing: "Werkvoorbereiding maakt al zes weken overuren, en toch loopt de stapel elke week weer op tot een stuk of vijftien dossiers. Joost van Dijk ({functie:joost}) vraagt het MT om twee extra werkvoorbereiders. Anouk de Vries ({functie:anouk}) zat gisteravond om zeven uur nog te tekenen. Wat is hier echt aan de hand?"
+    debrief: "Een standaardaansluiting krijgt nu een vast ontwerp (wat) en Anouk tekent het op een vaste manier, met één controle in plaats van drie handtekeningen (hoe). Joost trekt zijn vacatures in, en Anouk is om vier uur thuis. Eén vraag voor je volgende stap: als Werkvoorbereiding nu sneller is, waar gaat het werk dan wachten?"
+    debrief_variants:
+      poor_fix: "Er zijn minder handtekeningen, maar elk ontwerp wordt nog steeds van nul getekend. De stapel zakt, langzaam. Joost houdt zijn vacatures nog even aan. Wat zou het werk zelf lichter maken?"
+    reopen: "De stapel bij Werkvoorbereiding groeit weer en Anouk blijft weer tot zeven uur. Wat er ooit werkte, wordt niet meer gedaan. Waarom niet?"
+    goal: {type: solve, problem: custom_design}
+    talk_to: [{dialog: joost_vacancies, outcome: partial}]
+    steps:
+      talk: "Praat met Joost (Werkvoorbereiding)"
+      look: "Ga bij Werkvoorbereiding kijken hoe een ontwerp ontstaat"
+      dig: "Zoek uit waar de uren van Anouk naartoe gaan"
+      a3: "Schrijf je A3 voor Werkvoorbereiding aan je bureau"
+      wait: "Kijk bij Werkvoorbereiding hoe het experiment loopt"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe Werkvoorbereiding verdergaat"
+    rewards: {xp: 600, budget: 10000}
+    insights:
+      go_see: "Wat is je doel voor Werkvoorbereiding, in een getal? En hoe ziet het er nu uit?"
+      understand: "Welk deel van wat Anouk doet, merkt de klant? En welk deel niet?"
+      experiment: "Wat verwacht je dat er met de stapel gebeurt: hoeveel, en wanneer kun je het zien?"
+      reflect:
+        - "Wie in het team wist het antwoord al voordat jij kwam? Wat betekent dat voor hoe je de volgende keer begint?"
+        - "Joost vroeg om twee mensen. Wat heeft zijn team nu nodig om dit vast te houden?"
+
+  # The fork (Merijn, 2026-10-13): after the first bottleneck two main missions
+  # open. The intake is the next bottleneck; the monteurs are not. Correctness
+  # (audit L2): the briefings are symmetric, two team leads with a true
+  # number each, and neither names a queue: the player has to count.
+  - id: fix_incomplete_application
+    name: Aanvragen gaan terug naar de klant
+    kind: main
+    tier: 1
+    act: 1
+    chapter: De stapel
+    requires: {missions: [fix_custom_design]}
+    fork: {group: t1_after_design, role: bottleneck}
+    briefing: "Sanne Bakker ({functie:sanne}) heeft een turflijst: van de laatste veertig aanvragen stuurde haar team er negentien terug naar de klant. 'We zijn een postkantoor geworden,' zegt ze. 'Ik heb iemand extra nodig om alles na te lopen.' Marco Peters ({functie:marco}) vraagt ook om je aandacht. Jij kiest wat eerst gaat."
+    debrief: "Wat binnenkomt is nu compleet: het formulier voorkomt de fout, niemand hoeft harder te controleren. Sanne heeft niemand extra nodig. Kijk naar de stroom: er gaan nu méér aansluitingen per week door. Waarom hier wel, en waar wacht het werk nu?"
+    debrief_first: "Wat binnenkomt is nu compleet: het formulier voorkomt de fout, niemand hoeft harder te controleren. Sanne heeft niemand extra nodig, en er gaan méér aansluitingen per week door: je pakte het knelpunt. Marco wacht nog. Wat verwacht je dat zijn verbetering met de stroom doet?"
+    debrief_variants:
+      poor_fix: "Je team loopt nu elke aanvraag na met een checklist en vraagt meteen op wat ontbreekt. Er gaat minder heen en weer. Maar het formulier laat nog steeds doorklikken zonder vermogen of meterkastfoto: elke fout wordt nog gemaakt, alleen eerder gevonden, en het nalopen kost Sannes team elke dag tijd. Waar ontstaat die fout eigenlijk?"
+    reopen: "Bij de Intake gaan weer aanvragen terug naar de klant. Sannes turflijst is terug. Wat is er sinds de vorige keer veranderd?"
+    goal: {type: solve, problem: incomplete_application}
+    talk_to: [{dialog: sanne_checker, outcome: partial}]
+    steps:
+      talk: "Praat met Sanne (Intake)"
+      look: "Ga bij Intake kijken wat er met een aanvraag gebeurt"
+      dig: "Zoek uit waarom aanvragen terug naar de klant gaan"
+      a3: "Schrijf je A3 voor Intake aan je bureau"
+      wait: "Kijk bij Intake hoe het experiment loopt"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe Intake verdergaat"
+    rewards: {xp: 700, budget: 8000}
+    insights:
+      go_see: "Twee teams vragen om je aandacht. Waar ligt het meeste werk te wachten, in dagen werk? Heb je dat zelf geteld?"
+      understand: "Waar ontstaat de fout: bij Sanne, of al eerder? Hoe weet je dat?"
+      experiment: "Als je voorspelling klopt, welk getal bij de intake verandert, en welk getal aan het eind van de stroom?"
+      reflect:
+        - "Wat is het verschil tussen een fout vinden en een fout voorkomen?"
+        - "Een extra controleur had ook geholpen. Wat was daar over een jaar van over geweest?"
+
+  - id: fix_installer_not_ready
+    name: Voor niks gereden
+    kind: main
+    tier: 1
+    act: 1
+    chapter: De stapel
+    requires: {missions: [fix_custom_design]}
+    fork: {group: t1_after_design, role: non_bottleneck}
+    briefing: "Marco Peters ({functie:marco}) is er klaar mee: 'Twee op de vijf adressen zijn niet klaar als mijn mensen voor de deur staan. Dat zijn monteursuren die we niet hebben.' Hij wil dat dit eerst wordt opgelost. Sanne Bakker ({functie:sanne}) vraagt ook om je aandacht. Jij kiest wat eerst gaat."
+    # Correctness (audit L1): throughput and lead time are different levers.
+    debrief: "Er rijdt pas een monteur als de meterkast klaar is: minder ritten voor niets en minder monteursuren verspild. Klanten van wie het adres niet klaar was, zijn eerder aangesloten. Wat de stroom per week aankan, veranderde nauwelijks: de ritten voor niets waren niet wat de aansluitingen tegenhield. Wat doe je met de uren die Marco's team terugkrijgt?"
+    debrief_first: "Er rijdt pas een monteur als de meterkast klaar is: minder ritten voor niets, en de klanten van wie het adres niet klaar was, zijn eerder aangesloten. Maar kijk wat de stroom per week aankan: dat is niet veranderd. Komen er deze weken toch iets meer klaar, dan zijn dat klanten die eerder aan de beurt waren, geen extra klanten. Het werk wacht nog ergens anders. Bewaar die monteursuren goed; je zult ze nog nodig hebben."
+    debrief_variants:
+      poor_fix: "Elke monteur heeft nu een reserveklus, dus een rit is zelden helemaal voor niets. Maar de klant van wie de meterkast niet klaar was, hoort het nog steeds pas als de monteur voor de deur staat, en wacht dan weer op een nieuwe afspraak. Wie had het eerder kunnen weten, en wanneer?"
+    reopen: "Monteurs staan weer voor meterkasten die niet klaar zijn. Marco belt. Wat is er weggezakt?"
+    goal: {type: solve, problem: installer_not_ready}
+    talk_to: [{dialog: marco_wasted_trips, outcome: partial}]
+    steps:
+      talk: "Praat met Marco (Monteurs)"
+      look: "Ga bij de monteurs kijken hoe een klus bij de klant loopt"
+      dig: "Zoek uit waarom monteurs voor niks voor de deur staan"
+      a3: "Schrijf je A3 voor de monteurs aan je bureau"
+      wait: "Kijk bij de monteurs hoe het experiment loopt"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe de monteurs verdergaan"
+    rewards: {xp: 500, budget: 5000}
+    insights:
+      go_see: "Twee teams vragen om je aandacht. Waar staat het werk het langst te wachten?"
+      understand: "Wie weet als eerste dat een meterkast niet klaar is, en wanneer hoort de planner het?"
+      experiment: "Welk getal verwacht je dat verandert: de monteursuren, de doorlooptijd, het aantal aansluitingen per week? Allemaal?"
+      reflect:
+        - "Gaan er nu meer aansluitingen per week door? Wat is er wél beter geworden, en voor wie?"
+        - "Marco's monteurs hebben uren terug. Wat wil je dat ze ermee doen?"
+
+  - id: fix_status_callers
+    name: De telefoon staat roodgloeiend
+    kind: main
+    tier: 1
+    act: 1
+    chapter: De telefoon
+    requires: {missions: [fix_incomplete_application]}
+    briefing: "Wie het klantcontactcentrum belt, hangt lang in de wacht. Esra Yilmaz ({functie:esra}) vraagt om vier extra agents. Voordat het MT ja zegt: wie bellen er eigenlijk, en waarom? Eén van hen ken je al: mevrouw El Amrani belt deze maand voor de vierde keer."
+    debrief: "Er komen minder statusvragen binnen. Esra houdt haar team zoals het is, en haar agents hebben weer tijd voor de vragen die ertoe doen. Een groot deel van wat ze binnenkregen, was vraag die wíj veroorzaakten: niemand vertelde de klant hoe het ervoor stond. Mevrouw El Amrani kreeg een bericht en hoefde niet meer te bellen. Wat zegt dit over meer agents?"
+    debrief_variants:
+      poor_fix: "De klant krijgt nu een datum en kan zijn aanvraag online volgen. Wie op de site kijkt, belt minder. Maar wie niet kijkt, hoort nog steeds niets tot de monteur belt, en elke datum die verschuift, levert een nieuw telefoontje op. Esra's agents krijgen minder van dezelfde vraag, maar ze blijft komen. Wie zou de klant moeten vertellen hoe het ervoor staat?"
+    reopen: "De telefoon staat weer roodgloeiend. Esra's agents beantwoorden weer dezelfde vraag. Wat hoort de klant nu niet meer?"
+    goal: {type: solve, problem: status_callers}
+    talk_to: [{dialog: esra_agents, outcome: partial}]
+    steps:
+      talk: "Praat met Esra (Klantcontactcentrum)"
+      look: "Ga bij het KCC kijken wie er belt, en waarom"
+      dig: "Zoek uit waar de telefoontjes bij het KCC vandaan komen"
+      a3: "Schrijf je A3 voor het KCC aan je bureau"
+      wait: "Kijk bij het KCC hoe het experiment loopt"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe het KCC verdergaat"
+    rewards: {xp: 800, budget: 8000}
+    insights:
+      go_see: "Wat wil je dat er over vier weken anders is aan de telefoon? In een getal?"
+      understand: "Welk deel van de gesprekken had de klant liever niet gevoerd? Hoe heb je dat geteld?"
+      experiment: "Welk getal laat over twee weken zien of je experiment werkt: de wachttijd, of het aantal statusvragen? Waarom kies je dat?"
+      reflect:
+        - "Waar ontstond de vraag die je hebt weggenomen? Wat zegt dat over meer agents?"
+        - "Esra's agents hebben nu tijd over. Wat zou jij met die tijd doen, samen met hen?"
+
+  - id: fix_done_but_not_closed
+    name: Klaar maar niet af
+    kind: main
+    tier: 1
+    act: 1
+    chapter: De telefoon
+    requires: {missions: [fix_status_callers], belt: 1}
+    briefing: "De aansluiting van de familie Hendriks in Nova-Oost ligt er al acht dagen. Toch zegt hun energieleverancier dat hun EAN-code niet bestaat, en hun nieuwe warmtepomp staat uit. Bij Meetdata & registratie heeft Petra Vos tijd over. Ergens ligt werk dat niemand ziet."
+    debrief: "Een dossier wordt nu afgehandeld op de dag dat het klaar is. De warmtepomp van de familie Hendriks draait. Bij Petra is de stapel niet kleiner geworden, want er was geen stapel werk: er was een stapel wachten. Welke andere batches zie je in de stroom die niemand een batch noemt?"
+    reopen: "Klanten bellen weer dat hun EAN-code niet bestaat. Bij Petra staat het werk weer te wachten tot het einde van de maand. Wie heeft dat zo besloten?"
+    debrief_variants:
+      poor_fix: "Meetdata draait de afhandeling nu twee keer per maand. Een dossier wacht gemiddeld een week in plaats van twee, maar wie net na de run klaar is, wacht nog steeds twee weken op zijn EAN. De batch is kleiner, niet weg. Waarom moet een dossier eigenlijk op een run wachten?"
+      # The designed failed Check (docs/superpowers/specs/2026-10-16-designed-failed-checks.md §1):
+      # automatic EAN registration is tier 2; at maturity 1 it works at its reduced level
+      # (fit 0.9 x 0.5 = 0.45), below the Check's pass.
+      too_early: "Je verwachtte dat dossiers sneller afgemeld zouden worden als het systeem de EAN-codes zelf aanmeldt. De Check laat zien: dat helpt maar half. De koppeling werkt wel. Een dossier dat Petra invoert, staat nu binnen een uur bij de leverancier. Alleen voert Petra de dossiers nog steeds aan het eind van de maand in, want zo is het ooit afgesproken. Het wachten zat niet in het systeem. Wanneer gaat een dossier eigenlijk van de stapel af, en wie heeft dat zo bepaald?\n\nPetra: \"Die koppeling is mooi, hoor. Maar die had ik niet nodig om morgen anders te beginnen.\""
+    goal: {type: solve, problem: done_but_not_closed}
+    talk_to: [{dialog: petra_batch, outcome: partial}]
+    steps:
+      talk: "Praat met Petra (Meetdata)"
+      look: "Ga bij Meetdata kijken wat er na de aansluiting gebeurt"
+      dig: "Zoek uit waar een dossier op wacht als het klaar is"
+      a3: "Schrijf je A3 voor Meetdata aan je bureau"
+      wait: "Kijk bij Meetdata hoe het experiment loopt"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe Meetdata verdergaat"
+    teaches: [ean_code]
+    rewards: {xp: 900, budget: 8000}
+    insights:
+      go_see: "Hoe lang staat een aansluiting die technisch klaar is op 'administratief open'? Hoe weet je dat?"
+      understand: "Waarop wacht een aansluiting die technisch klaar is? Wie wacht er nog meer op?"
+      experiment: "Als de batch kleiner wordt, wat verwacht je dan van de doorlooptijd? En van Petra's werkdag?"
+      reflect: "Welke andere batches zie je in de stroom die niemand een batch noemt?"
+
+  # ── Act I milestones (phase-2 design §3.2): they open themselves on their day and take
+  # no slot; the story's moments, not problems.
+  - id: winter_el_amrani
+    name: Voor de vorst
+    kind: milestone
+    tier: 1
+    act: 1
+    chapter: De telefoon
+    arc: winters
+    requires: {missions: [walk_connections]}
+    # Monday 30 November 2026, day 49: three weeks before the frost (drie winters §3).
+    opens_on: {date: "2026-11-30"}
+    # estimate: the first frost PERIOD is Monday 21 December 2026 (day 70, the shortest day).
+    # Reasoning: KNMI counts frost days from October to April; the first single frost night
+    # comes much earlier (national average about 21 October over 1991-2020, De Bilt early
+    # November in older tables; in 2024 Eelde froze on 15 October while Beek in Limburg still
+    # reached 23 degrees on 26 October), but one frost night leaves no family cold. A run of
+    # frost nights, when a house without heating gets cold, is a December-January event in
+    # the south. Sources: knmi.nl/kennis-en-datacentrum/uitleg/vorstdagen;
+    # knmi.nl/nederland-nu/klimatologie/maand-en-seizoensoverzichten/2024/jaar (search
+    # extracts; the 1991-2020 station tables in the KNMI Klimaatviewer can sharpen it).
+    deadline_on_day: 70
+    goal:
+      type: story_order
+      story: el_amrani
+      by: deadline
+      # warm in time: the followed order connected, or the heat pump on the existing
+      # connection after a monteur looked (the hidden proposal a listener finds)
+      met_if: {any: ["delivered:el_amrani", "agreed:el_amrani_fourth_call:check_existing_connection"]}
+      promise: el_amrani_fourth_call   # the date named on the phone is checked on its day
+    briefing: "Rond de kortste dag, 21 december, gaat het meestal echt vriezen: een paar nachten achter elkaar onder nul. In Nova-Oost hangt een warmtepomp zonder stroom aan de muur, en de cv-ketel is al weg. Mevrouw El Amrani belt vast nog een keer."
+    debrief: "In de eerste vorstnacht draaide de warmtepomp van de familie El Amrani. Haar moeder had het warm. Wie wacht er nog meer op een aansluiting, en weet die waar hij aan toe is?"
+    fail: "Tijdens de eerste vorstnachten logeert de moeder van mevrouw El Amrani bij haar andere dochter in Havenzij. 'Het is maar voor even,' zegt mevrouw El Amrani. Ze schrijft het op, en ze stuurt een brief. Aan de directie, met een kopie aan de ACM."
+    sets_flags_on_fail: ["flag:el_amrani_complaint", "flag:el_amrani_cold_winter"]   # Act III's ACM visit, Act IV's bakery
+    missed: "Het vriest. In Nova-Oost staat een warmtepomp nog steeds uit."   # the toast when the frost comes first
+    # Kept: her call on your phone and her letter on your desk (Phase 4: her front door).
+    payoff:
+      - who: el_amrani
+        by: call
+        text: "{groet}, u spreekt met Fatima El Amrani. Ik bel alleen even om te zeggen dat mijn moeder het warm heeft. Ze vroeg wie u bent. Ik heb gezegd: iemand die terugbelde. Dat was het. Dag."
+      - who: el_amrani
+        by: letter
+        text: "Beste {speler},\n\nToen het ging vriezen, draaide de warmtepomp. Mijn moeder zit 's avonds weer gewoon in de kamer, en niet meer onder twee dekens. U weet dat ik alles opschrijf. Deze keer schrijf ik iets anders op: dank u wel.\n\nMet vriendelijke groet,\nFatima El Amrani"
+    teaches: [lead_time]
+    rewards: {xp: 300, reputation: 3}
+
+  - id: review_100_days
+    name: Honderd dagen
+    kind: milestone
+    tier: 1
+    act: 1
+    chapter: De eerste honderd dagen
+    requires: {missions: [walk_connections]}
+    opens_on: {day: 100}   # Wednesday 20 January 2027 (drie winters §1)
+    goal: {type: scene}
+    scene: review_100_days
+    steps: {go: "Ga naar de MT-kamer op de 2e"}
+    briefing: "Frank Hulshof ({functie:frank}) en ik willen je even spreken, in de MT-kamer op de 2e. Je werkt hier nu honderd dagen. Je hoeft niks voor te bereiden."
+    debrief: "Honderd dagen. Wat zou je anders doen als je morgen opnieuw begon?"
+    rewards: {xp: 200}
+
+  # ── Act II: Wat onder de grond zit ─────────────────────────────────────────
+  - id: fix_digging_damage
+    name: Graafschade
+    kind: main
+    tier: 1
+    act: 2
+    chapter: De kaart klopt niet
+    requires: {missions: [fix_done_but_not_closed]}
+    # "De vijfde deze week" (estimate): the problem adds 5 daytime outages a week to the
+    # stream's 10 (a third of them, the depth-0 clue). Nationally Wibon counted 46,799
+    # digging damages in 2022, about 900 a week over every utility; electricity's share
+    # and Zuidmark's ~2 % of the country (company.yaml) put a region at a few a week.
+    # The compensation after four hours: the compensatieregeling (concepts.yaml).
+    #
+    # Act II's one deadline (Merijn, 2026-10-27, M1): fixed in time, or the cheap contractor
+    # briefing is gone. It counts from when the mission opens (deadline_days, as Henk's 56 does),
+    # so every pace gets the same window: a fixed day was either toothless (the next winter's
+    # frost, day 435) or failed a slow player on opening (winter 1's, day 70, is past by the time
+    # Act II opens).
+    # estimate: 63 days = nine weeks. Autoplay (2026-10-27, seeds 11 and 13): the average persona
+    # needed 28.4 and 42.5 days from opening to solving, the expert 14.2; 42.5 x 1.5 = 63.8, to
+    # whole weeks. A typical opening (the expert's, day 76 = 14 December 2026) puts the
+    # deadline on day 139, Sunday 28 February 2027, the end of winter; the briefing says nine
+    # weeks because the opening date moves with the player.
+    # estimate (story): the aannemers write their bestekken for the next building round then
+    # (graafwerk stands still in a spell of frost, vorstverlet), and a briefing after it changes
+    # nothing for a while. The briefing is the shortcut (decay 30 days, a poor fix), so the
+    # door that closes is the cheap one, never the problem: standard_test_trenches (fit 0.8)
+    # and revision_at_source (too early at maturity 2) still list. No Act II fork.
+    deadline_days: 63
+    fail_closes: [contractor_briefing]
+    fail: "De aannemers hebben hun bestekken geschreven, op de kaart van nu. Gert: 'Daar kan ik nu niks meer aan veranderen. Voorlopig graven ze zoals ze gewend zijn.' De snelle weg is dicht."
+    briefing: "Dinsdag 10.12 uur: een graafmachine raakt een middenspanningskabel. Driehonderd huizen en zorgcentrum De Linde zitten zonder stroom; De Linde draait op het noodaggregaat. Gert Peeters ({functie:gert}) laat zijn KLIC-melding zien: 'Volgens deze kaart lag hier niks.' Het is de vijfde graafschade deze week. Elke schade kost ons geld, en na vier uur krijgt elke getroffen klant een vergoeding. Gert kijkt in zijn agenda: 'Over negen weken schrijven de aannemers hun bestekken voor de volgende bouwronde. Wat daar dan niet in staat, verandert voorlopig niet meer.'"
+    debrief: "Er zijn minder graafschades. Bij de Check konden de monteurs zonder je aanpak {kpi_before} storingen per week aan, met je aanpak {kpi_after}. Gert deed alles volgens het boekje; de oorzaak zat in ons proces. Maar de kaart klopt nog steeds niet overal. Wie houdt de kaart eigenlijk bij?"
+    debrief_variants:
+      blamed: "De schades zijn minder. Gert werkt mee, maar hij vertelt je niets meer dan nodig. Wie houdt de kaart eigenlijk bij?"
+      # The designed failed Check (2026-10-16 spec §2): revision at the source is tier 3,
+      # at maturity 1-2 it works at 0.15-0.30. The cause is right, the order is not.
+      too_early: "Je verwachtte minder graafschade, omdat de kaart beter zou worden. De Check laat zien: nauwelijks minder. Over de kaart had je wel gelijk. Wat Revisie vanaf nu intekent, klopt. Maar de oude afwijkingen liggen er nog allemaal, en de aannemer die volgende week graaft, graaft op de kaart van vorig jaar. Wat maakt het graven deze week al veiliger, terwijl de kaart wordt rechtgezet?\n\nGert: \"Een goede kaart is mooi. Maar volgende week staat mijn ploeg weer te graven. Waar kijken we dan op?\""
+    reopen: "Er komen weer graafschades binnen. Gert belt: 'We graven zoals afgesproken. Klopt jullie kaart nog?'"
+    goal: {type: solve, problem: digging_damage}
+    talk_to: [{dialog: gert_klic, outcome: partial}]
+    steps:
+      talk: "Praat met Gert (Grondwerk Peeters)"
+      look: "Ga bij de storingsdienst kijken wat er dinsdag gebeurde"
+      dig: "Zoek uit wat Gert van ons kreeg voordat hij ging graven"
+      a3: "Schrijf je A3 voor de storingsdienst aan je bureau"
+      wait: "Kijk bij de storingsdienst hoe het experiment loopt"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe de storingsdienst verdergaat"
+    # Containment (audit §2.4.1): until the cause is fixed, contractors stop
+    # and call the storingsdienst before digging within a metre of a
+    # middenspanningskabel, and a monteur points out the cable on site. All
+    # estimates: about one in ten daytime outages avoided (the MS strikes
+    # caught by the call; graafschade is about a third of daytime outages
+    # here), EUR 500 for the call line and site visits for two weeks, and two
+    # weeks because it leans on goodwill and overtime, not on a fixed process.
+    containment:
+      name: "Stop en bel: niet graven bij MS-kabels zonder monteur"
+      budget: 500
+      days: 14
+      effects:
+        - {target: outages.daytime, property: demand, value: 0.9}
+    teaches: [klic_melding, compensatieregeling]
+    rewards: {xp: 1000, budget: 12000}
+    insights:
+      go_see: "Wat moet er vandaag gebeuren zodat er deze week niemand gewond raakt? En wat pas daarna?"
+      understand: "Gert deed een KLIC-melding. Wat kreeg hij terug, en klopte dat?"
+      experiment: "Hoeveel schades per week verwacht je over een maand? Waar meet je dat?"
+      reflect:
+        - "Zocht je de oorzaak bij Gert, of in het proces? Wat leverde dat je op?"
+        - "Waar in ons eigen huis begint deze schade?"
+
+  - id: fix_revision_backlog
+    name: De revisieberg
+    kind: main
+    tier: 1
+    act: 2
+    chapter: De kaart klopt niet
+    requires: {missions: [fix_digging_damage]}
+    # The problem's KPI is the stream's capacity (problems_tier1.yaml: GIS is the
+    # constraint while the box grows). The numbers hold by Little's law (estimate): 30
+    # connections a week come in, 240 sketches open and the oldest four months old means
+    # GIS draws about 15 a week, so the box grew by about 15 a week for four months.
+    # The oldest sketch is "van maanden terug", never a month name: Act II starts on a
+    # different date in every play.
+    briefing: "De kabel die Gert Peeters raakte, lag twee meter naast de plek op de kaart; hij was vier maanden eerder verlegd. Bij Revisie & GIS staat een doos met 240 schetsen van opgeleverde aansluitingen. Onderop liggen er van maanden terug; één is getekend op een boterhamzakje. 'We tekenen ze over zo snel als we kunnen,' zegt Mieke van der Veen ({functie:mieke}). Het GIS-team vraagt om versterking. Hoe oud wordt een schets voordat hij op de kaart staat, en waarom?"
+    debrief: "Een nieuwe kabel staat nu eerder op de kaart, en de doos bij Revisie & GIS wordt kleiner. Volgens de Check kan de stroom met je aanpak {kpi_after} aansluitingen per week aan; zonder was dat {kpi_before}. Wie merkt het als dit over een jaar wegzakt, en hoe snel?"
+    debrief_variants:
+      # A poor fix here is the daily template: drawn sooner, but still drawn twice.
+      poor_fix: "De doos wordt kleiner: er wordt nu elke dag getekend. Volgens de Check kan de stroom met je aanpak {kpi_after} aansluitingen per week aan; zonder was dat {kpi_before}. Maar Mieke tekent nog steeds over wat een monteur op de motorkap schetste. Het dubbele werk is er nog; het gaat alleen sneller. Wat gebeurt er met de doos in de eerste drukke maand?"
+    reopen: "De doos bij Revisie & GIS vult zich weer. Mieke tekent weer over. Wat werd er niet meer gedaan?"
+    goal: {type: solve, problem: revision_backlog}
+    talk_to: [{dialog: mieke_redraw, outcome: partial}]
+    steps:
+      talk: "Praat met Mieke (Revisie & GIS)"
+      look: "Ga bij Revisie & GIS kijken naar de doos met schetsen"
+      dig: "Zoek uit hoe een schets op de kaart komt"
+      a3: "Schrijf je A3 voor Revisie & GIS aan je bureau"
+      wait: "Kijk bij Revisie & GIS hoe het experiment loopt"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe Revisie & GIS verdergaat"
+    rewards: {xp: 900, budget: 10000}
+    insights:
+      go_see: "Hoe oud is de oudste schets in de doos? Wat betekent dat voor wie morgen gaat graven?"
+      understand: "Hoe vaak wordt dezelfde kabel getekend voordat hij op de kaart staat? Door wie?"
+      experiment: "Welk getal laat zien dat de kaart bijblijft: de stapel, of de leeftijd van de oudste schets?"
+      reflect: "Wie merkt het als dit over een jaar wegzakt, en hoe snel? Wat houdt het vast?"
+
+  - id: fix_grid_study_queue
+    name: De netstudie-wachtrij
+    kind: main
+    tier: 1
+    act: 2
+    chapter: Het net is vol
+    requires: {missions: [fix_revision_backlog], belt: 2}
+    # Femke's "five minutes" is a key clue (her conversation, depth 1): the briefing gives
+    # her struggle, not the answer. 38 studies at four hours is two weeks for the two
+    # analysts (value_streams.yaml, grid_analysts), yet the school waits nine: congestion
+    # studies go first and more come in than go out (estimate).
+    briefing: "Femke de Wit ({functie:femke}) en haar collega maken lange dagen: er staan 38 netstudies op het bord. De uitbreiding van de basisschool in Nova-Oost wacht al negen weken op een studie. 'Er komen er elke week meer bij dan we af krijgen,' zegt Femke. 'Ik kom niet eens toe aan de studies die er echt toe doen.' Netstrategie vraagt om twee extra analisten, en die zijn in heel Nederland schaars. Wat kan er nog meer?"
+    debrief: "Niet elke aanvraag heeft een volledige studie nodig. Bij de Check kon de stroom zonder je aanpak {kpi_before} aansluitingen per week aan, met je aanpak {kpi_after}. Femke rekent weer aan de studies die ertoe doen, en de school had binnen een week antwoord. Je hebt het knelpunt eerst beter benut voordat je het groter maakte. Wanneer is extra analisten aannemen wél de goede stap?"
+    debrief_variants:
+      # A poor fix: the overtime sprint or the templates. Faster or longer, still every study.
+      poor_fix: "Het bord is korter. Bij de Check kon de stroom zonder je aanpak {kpi_before} aansluitingen per week aan, met je aanpak {kpi_after}. Maar nog steeds krijgt elke aanvraag boven 3x25A de volle studie, ook de warmtepomp in een straat waar ruimte genoeg is. Femke rekent sneller of langer, niet minder. Hoeveel van die studies hadden eigenlijk gehoeven?"
+    reopen: "Op Femke's bord staan weer bijna veertig studies. Elke aanvraag krijgt weer de volle studie. Wie besliste dat, en wanneer?"
+    goal: {type: solve, problem: grid_study_queue}
+    talk_to: [{dialog: femke_triage, outcome: partial}]
+    steps:
+      talk: "Praat met Femke (Netstrategie)"
+      look: "Ga bij Femke kijken naar het bord met netstudies"
+      dig: "Zoek uit wat Femke op een dag allemaal doet"
+      a3: "Schrijf je A3 voor Netstrategie aan je bureau"
+      wait: "Kijk bij Netstrategie hoe het experiment loopt"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe Netstrategie verdergaat"
+    teaches: [netcongestie]
+    rewards: {xp: 1200, budget: 12000}
+    insights:
+      go_see: "Wat doet Femke in een uur? Welk deel daarvan kan alleen zij?"
+      understand: "Hoeveel van de studies leveren een ander antwoord op dan 'het past'?"
+      experiment: "Als je dit knelpunt beter benut, hoeveel studies per week verwacht je? Wanneer zie je dat?"
+      reflect:
+        - "Wanneer is extra analisten aannemen wél de goede stap? Wat moet er dan eerst kloppen?"
+        - "Femke maakte lange dagen. Hoe zie je of dat nu anders is?"
+
+  - id: fix_transformer_wait
+    name: Een half jaar wachten in volle straten
+    kind: main
+    tier: 1
+    act: 2
+    chapter: Het net is vol
+    requires: {missions: [fix_grid_study_queue]}
+    # Rob is the talk this mission needs (rob_order_rule): the briefing names him. The
+    # plain debrief holds for the early order and the framework contract alike; the
+    # stock is a poor fix (fit 0.8 against 1.0): it hides the late order, at a price.
+    briefing: "Projectontwikkelaar Hermans Bouw levert over vijf maanden 48 woningen op in De Boomgaard. Volgens onze planning hebben die dan nog geen stroom: de trafo voor het nieuwe station heeft zes maanden levertijd. 'Heel Europa wil trafo's,' zegt Rob Verhagen ({functie:rob}). Dat klopt. Wat kunnen wíj dan nog doen?"
+    debrief: "De fabrikant is niet sneller geworden; wij hebben veranderd wanneer en hoe we bestellen. Bij de Check waren de oudste openstaande aansluitingen zonder je aanpak {kpi_before} dagen oud, met je aanpak {kpi_after}. De oudste wachtende verzwaring is jonger geworden, en De Boomgaard krijgt eerder stroom. Welke andere wachttijd leggen we bij een ander neer, terwijl hij bij ons begint?"
+    debrief_variants:
+      poor_fix: "De Boomgaard krijgt eerder stroom: er staan nu trafo's op voorraad. Bij de Check waren de oudste openstaande aansluitingen zonder je aanpak {kpi_before} dagen oud, met je aanpak {kpi_after}. Maar we bestellen nog steeds pas als het ontwerp is goedgekeurd. De voorraad vangt dat op, maar die kost geld: opslag, verzekering en het geld dat erin vastzit. Wat gebeurt er als drie projecten tegelijk een trafo uit die voorraad willen?"
+    reopen: "De trafo's worden weer pas besteld als het ontwerp klaar is. Hermans Bouw belt opnieuw. Wat is er in de bestelroute teruggeslopen?"
+    goal: {type: solve, problem: transformer_wait}
+    talk_to: [{dialog: rob_order_rule, outcome: partial}]
+    steps:
+      talk: "Praat met Rob (Inkoop)"
+      look: "Ga bij Netstrategie kijken waar De Boomgaard op wacht"
+      dig: "Zoek uit wat er gebeurt tussen netstudie en trafo"
+      a3: "Schrijf je A3 voor Netstrategie aan je bureau"
+      wait: "Kijk bij Netstrategie hoe het experiment loopt"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe Netstrategie verdergaat"
+    teaches: [transformator]
+    rewards: {xp: 1300, budget: 12000}
+    insights:
+      go_see: "Op welk moment weten we dat er een trafo nodig is? En op welk moment bestellen we hem?"
+      understand: "Welke wachttijden lopen nu na elkaar die naast elkaar zouden kunnen?"
+      experiment: "Wat is het risico als je bestelt vóór het ontwerp is goedgekeurd? Hoe maak je dat risico klein?"
+      reflect: "Wat kon je niet veranderen, en wat wel? Waar geldt dat nog meer?"
+
+  - id: fix_unused_capacity
+    # The name and the briefing never say the capacity is unused: the empty hall next door
+    # is the listen-in clue's to find (depth 1), so the briefing has no dark or empty halls. The ACM's rule is GOTORK (company.yaml
+    # numbers: twelve months at most half used, or 1 MW or more unused).
+    name: Twee jaar op de wachtlijst
+    kind: main
+    tier: 1
+    act: 2
+    chapter: Het net is vol
+    requires: {missions: [fix_transformer_wait]}
+    briefing: "Ilse de Graaf ({functie:ilse}) wil haar gasovens vervangen door elektrische. Ze staat al twee jaar op de wachtlijst voor transportcapaciteit, en zolang ze wacht, stookt ze op gas dat elk jaar duurder wordt. 'Leg me eens uit waarom het net vol is,' zei ze tegen Thomas Visser ({functie:thomas}). 'Anders zoek ik een plek waar ik wél stroom krijg, en ik stap naar de ACM.' Volgens Netstrategie is het net vol. Is het dat ook?"
+    debrief: "Op het drukste kwartier van het jaar gebruikten de grote klanten maar een deel van wat ze gecontracteerd hadden. Bij de Check kregen zonder je aanpak {kpi_before} aanvragen per week capaciteit, met je aanpak {kpi_after}. Een deel daarvan komt, volgens de regels van de ACM, terug in de wachtrij. Welke andere voorraad houden wij aan die op papier vol lijkt?"
+    debrief_variants:
+      # A poor fix: the dashboard (it shows, nobody hands back) or flexible contracts for
+      # newcomers (they fit beside the old contracts, which stay as they are).
+      poor_fix: "Er past weer wat meer op het net. Bij de Check kregen zonder je aanpak {kpi_before} aanvragen per week capaciteit, met je aanpak {kpi_after}. Maar de capaciteit die al jaren gecontracteerd is en niet gebruikt wordt, staat nog steeds op naam van wie hem niet gebruikt. Ilse wacht daar nog steeds naast. Wie gaat met die klanten in gesprek?"
+    reopen: "De wachtlijst groeit weer, terwijl het gebruik niemand meer bijhoudt. Thomas krijgt weer boze telefoontjes. Wie keek er naar de cijfers, en waarom nu niet meer?"
+    goal: {type: solve, problem: unused_capacity}
+    talk_to: [{dialog: thomas_reclaim, outcome: partial}]
+    steps:
+      talk: "Praat met Thomas (Grootzakelijke klanten)"
+      look: "Ga bij de congestiedesk kijken wie er op de wachtlijst staat"
+      dig: "Zoek uit hoeveel gecontracteerd vermogen echt wordt gebruikt"
+      a3: "Schrijf je A3 voor de congestiedesk aan je bureau"
+      wait: "Kijk bij de congestiedesk hoe het experiment loopt"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe de congestiedesk verdergaat"
+    teaches: [netcongestie, acm]
+    rewards: {xp: 1400, budget: 12000}
+    insights:
+      go_see: "Wat wil je weten over het drukste moment van het jaar? Waar zou je dat kunnen zien?"
+      understand: "Is het net vol, of zijn de contracten vol?"
+      experiment: "Hoeveel megawatt verwacht je terug te krijgen, en hoeveel bedrijven op de wachtlijst helpt dat?"
+      reflect:
+        - "Welke andere voorraad houden wij aan die op papier vol lijkt?"
+        - "Hoe heb je de klanten behandeld die capaciteit teruggaven? Komen ze bij ons terug als ze groeien?"
+
+  - id: fix_silo_kpis
+    # The name and the briefing show the symptom (two records, no more connections); that
+    # the KPIs pull against each other is for the player to find.
+    name: Twee recordmaanden
+    kind: main
+    tier: 1
+    act: 2
+    chapter: Wat je meet
+    requires: {missions: [fix_unused_capacity]}
+    # The record month (ESTIMATE, the stream's 30 requests a week): 132 requests through,
+    # 128 designs done; their local counts, not the stream's.
+    briefing: "In het MT presenteerden Sanne Bakker ({functie:sanne}) en Joost van Dijk ({functie:joost}) allebei een recordmaand: 132 aanvragen door bij Intake, 128 ontwerpen af bij Werkvoorbereiding. Marco Peters ({functie:marco}) zei niets, tot het einde: 'Mooi. En wie bouwt jullie fouten na?' Hoe kunnen twee teams allebei een record halen, terwijl de klant niets merkt?"
+    debrief: "Intake en Werkvoorbereiding kijken nu naar dezelfde aansluiting en hetzelfde getal. Bij de Check was zonder je aanpak {kpi_before} procent van de aansluitingen in één keer goed, met je aanpak {kpi_after} procent. Wat je meet, bepaalt wat mensen doen; en wat je níet meet, bepaalt wat ze laten liggen. Wie heeft last gehad van de oude cijfers, en weten ze dat het niet aan hen lag?"
+    debrief_variants:
+      # A poor fix: the WIP limit (the counts still steer) or shared goals without one
+      # board (each team still sees its own part).
+      poor_fix: "Er komt minder terug bij de monteurs. Bij de Check was zonder je aanpak {kpi_before} procent van de aansluitingen in één keer goed, met je aanpak {kpi_after} procent. Maar de aansluiting van aanvraag tot meter staat nog nergens op één plek; elk team ziet vooral zijn eigen stuk. Waar zou Marco moeten kijken om te zien of het beter gaat?"
+    reopen: "In het MT liggen weer twee recordmaanden op tafel en de aansluitingen gaan niet sneller. Waar kijken de teams nu weer naar?"
+    goal: {type: solve, problem: silo_kpis}
+    talk_to: [{dialog: sanne_kpi, outcome: partial}]
+    steps:
+      talk: "Praat met Sanne (Intake)"
+      look: "Ga bij Intake en Werkvoorbereiding naar hun borden kijken"
+      dig: "Zoek uit waarop beide teams worden afgerekend"
+      a3: "Schrijf je A3 voor beide teams aan je bureau"
+      wait: "Kijk bij beide teams hoe het experiment loopt"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe beide teams verdergaan"
+    rewards: {xp: 1500, budget: 12000}
+    insights:
+      go_see: "Vraag eens aan twee teams waar ze op worden beoordeeld. Passen die doelen bij elkaar?"
+      understand: "Wat doe jij als je op aantallen wordt afgerekend en het werk is bijna niet te halen?"
+      experiment: "Welk getal zou beide teams naar hetzelfde doel laten kijken?"
+      reflect:
+        - "Wat gebeurt er als je een team op één getal afrekent: wat verbetert, en wat gaat er stilletjes mis?"
+        - "Wie heeft last gehad van de oude cijfers, en weten ze dat het niet aan hen lag?"
+
+  # The KPI board's birth (catalogue: first_kpi_review; PLAN 2.4c and 2.5): the first
+  # quarterly review, a scene at Directie & Obeya with Ruud and Frank that reads what the
+  # silo fix left (holds, Frank committed or only complied) and ends at the KPI board,
+  # where the player hangs the teams' KPIs; what is said after reads the choice
+  # (steers:<focus>) and the analysts' forecast. A board no fix hung is hung here.
+  - id: first_kpi_review
+    name: Het eerste kwartaal
+    kind: milestone
+    tier: 1
+    act: 2
+    chapter: Wat je meet
+    requires: {missions: [fix_silo_kpis]}
+    goal: {type: scene}
+    scene: first_kpi_review
+    steps: {go: "Ga naar Directie & Obeya op de 2e"}
+    briefing: "Elk kwartaal kijken Frank Hulshof ({functie:frank}) en ik samen naar de getallen waar de teams op sturen. Deze keer wil ik dat jij erbij bent. Directie & Obeya, op de 2e."
+    debrief: "Het bord hangt. Over een kwartaal zien we of de getallen deden wat we ervan verwachtten. Welk getal ga jij zelf in de gaten houden?"
+    teaches: [kpi, leading_lagging]
+    rewards: {xp: 800, budget: 8000, reputation: 5}
+
+  # ── Side missions: small, without the coach ────────────────────────────────
+  - id: walk_outages
+    name: Een nacht met de storingsdienst
+    kind: side
+    tier: 1
+    act: 1
+    requires: {missions: [walk_connections]}
+    # Compensation (ACM, "Vergoeding stroomstoring en gasstoring", acm.nl): up to 3x25A,
+    # EUR 35 for an outage of 4 to 8 hours, EUR 20 for every 4 hours more; paid unasked.
+    briefing: "De storingsdienst werkt als de rest slaapt. Loop een dienst mee met monteur Ahmed Bouzid, van melding tot herstel. Let op de klok: na vier uur zonder stroom krijgt elke klant een vergoeding. Waar gaat de tijd naartoe?"
+    debrief: "Je zag een storing van melding tot herstel. Halverwege reed Ahmed naar het magazijn voor een mof. Dat onthoud je."
+    goal: {type: walk, stream: outages}
+    steps:
+      look: "Loop met Ahmed mee en kijk bij {team}"
+    teaches: [compensatieregeling]
+    rewards: {xp: 200}
+
+  # Rewrite (audit S2): a walk with a question to answer by looking.
+  - id: walk_meters
+    name: Acht adressen
+    kind: side
+    tier: 1
+    act: 1
+    requires: {missions: [walk_connections]}
+    briefing: "Loop een dag mee met meterwisselaar Sandra Vermeulen. Er staan acht adressen op haar lijst; de laatste analoge meters in Nova moeten eruit. Tel hoe vaak de deur opengaat."
+    debrief: "Niet elke deur ging open. Sandra liet weer een kaartje achter: 'helaas niet thuis'. Ze heeft er een dikke stapel van in de bus."
+    goal: {type: walk, stream: meters}
+    steps:
+      look: "Rijd met Sandra mee en kijk bij {team}"
+    rewards: {xp: 200}
+
+  - id: fix_wrong_joint
+    name: Een storing duurt langer dan vier uur
+    kind: side
+    tier: 1
+    act: 1
+    requires: {missions: [walk_outages]}
+    briefing: "Bij de storing in de Lindelaan was de stroom vijf uur weg; 140 huishoudens krijgen elk 35 euro vergoeding. Ahmed moest halverwege de reparatie terug naar het magazijn, voor een mof. 'Het magazijn levert te laat,' zeggen de monteurs. Dirk Smits van het magazijn: 'Ik heb ze gewoon liggen.' Ze hebben allebei gelijk. Hoe kan dat?"
+    debrief: "Wat in de bus hoort, ligt er nu ook, en wat eruit gaat, wordt aangevuld voordat de bus weer uitrukt. De volgende lange storing kostte geen rit naar het magazijn."
+    debrief_variants:
+      poor_fix: "Bij de schuifdeur hangt nu een kaart, en Dirk vult 's ochtends aan wat is aangestreept. Na een drukke nacht vergeet de monteur weleens een streepje, en dan is bij de volgende storing precies dat vak leeg. Hoe weet Dirk wat er op is, als niemand iets aanstreept?"
+    goal: {type: solve, problem: wrong_joint_in_van}
+    talk_to: [{dialog: dirk_shelf, outcome: partial}]
+    steps:
+      talk: "Praat met Dirk (magazijn)"
+      look: "Ga bij de storingsdienst kijken hoe een herstel loopt"
+      dig: "Zoek uit waarom Ahmed halverwege naar het magazijn reed"
+      a3: "Schrijf je A3 voor de storingsdienst aan je bureau"
+      wait: "Kijk bij de storingsdienst hoe het experiment loopt"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe de storingsdienst verdergaat"
+    rewards: {xp: 400, budget: 4000}
+
+  - id: fix_not_at_home
+    name: Niet thuis
+    kind: side
+    tier: 1
+    act: 1
+    requires: {missions: [walk_meters]}
+    briefing: "Sandra Vermeulen laat elke dag drie kaartjes achter: 'helaas niet thuis'. Het programma om de laatste analoge meters te vervangen loopt achter. Meneer De Jong belde boos: hij had de hele ochtend thuis gezeten, en er kwam niemand. Wie is hier eigenlijk niet thuis?"
+    debrief: "Klanten zijn thuis als ze weten wanneer we komen. Sandra's stapel kaartjes is bijna op; ze bestelt geen nieuwe."
+    goal: {type: solve, problem: not_at_home}
+    steps:
+      look: "Ga met Sandra mee langs haar adressen"
+      dig: "Zoek uit waarom de deur zo vaak dicht blijft"
+      a3: "Schrijf je A3 voor de meterwisselaars aan je bureau"
+      wait: "Kijk bij Sandra hoe het experiment loopt"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe de meterwisselaars verdergaan"
+    rewards: {xp: 400, budget: 4000}
+
+  - id: fix_silent_meter
+    name: De zwijgende meter
+    kind: side
+    tier: 1
+    act: 2
+    requires: {missions: [fix_not_at_home]}
+    briefing: "Petra Vos heeft een lijst met nieuwe slimme meters die geen standen sturen. Bijna allemaal in dezelfde straten. Monteurs moeten terug naar adressen waar ze vorige week al waren. 'De meters van de nieuwe leverancier deugen niet,' zegt iedereen. Petra twijfelt."
+    debrief: "Een meter is pas klaar als hij praat. De monteur ziet het nu voordat hij wegrijdt, niet een week later."
+    debrief_variants:
+      poor_fix: "Bij het plannen kijkt iemand nu naar de dekkingskaart, en in de kelderflats gaat een andere module mee. Maar of een meter echt praat, ziet nog steeds niemand voordat de monteur wegrijdt; wat de kaart mist, hoor je een week later. Wie kan het als eerste zien?"
+    goal: {type: solve, problem: silent_meter}
+    rewards: {xp: 400, budget: 4000}
+
+  # Rewrite (audit S6, correctness L1): a batch at a wait step adds no
+  # capacity, but every order waits for it: the lesson is lead time.
+  - id: fix_permits_in_batches
+    name: Dagen stilstand voor de vergunning
+    kind: side
+    tier: 1
+    act: 1
+    requires: {missions: [fix_custom_design]}
+    briefing: "Het dossier van de familie Bos is al bijna twee weken klaar bij Werkvoorbereiding. Het ligt in een map, bij de dossiers van de andere elf woningen van De Appelgaard. De gemeente haalt haar termijn bijna altijd. Waar wacht het dossier dan op?"
+    debrief: "Een vergunningsaanvraag wacht nu niet meer op de rest van de straat: die gaat naar de gemeente zodra het dossier zover is. Er gaan niet méér aansluitingen per week door, want de capaciteit is gelijk gebleven. Maar elke klant is eerder klaar, en de aanvraag van de familie Bos lag niet meer weken op een stapel te wachten. Een knelpunt bepaalt hoeveel er doorgaat; elke wachttijd onderweg bepaalt hoe lang het duurt."
+    goal: {type: solve, problem: permits_in_batches}
+    steps:
+      look: "Kijk bij Werkvoorbereiding waar het dossier van Bos ligt"
+      dig: "Zoek uit waar het dossier van de familie Bos op wacht"
+      a3: "Schrijf je A3 voor Werkvoorbereiding aan je bureau"
+      wait: "Kijk bij Werkvoorbereiding hoe het experiment loopt"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe Werkvoorbereiding verdergaat"
+    rewards: {xp: 400, budget: 4000}
+
+  - id: look_at_grid_study
+    name: Het bord van Femke
+    kind: side
+    tier: 1
+    act: 1
+    requires: {missions: [fix_status_callers]}
+    briefing: "Bij Netstrategie hangt een bord vol netstudies, met gele briefjes die er al maanden hangen. Femke de Wit heeft vijf minuten voor je. Zoek twee feiten over waarom het zo vol is. Oplossen hoeft nog niet."
+    debrief: "Je weet nu twee dingen over dat bord. Femke ook: ze vroeg of je terugkomt."
+    goal: {type: investigate, problem: grid_study_queue, clues: 2}
+    steps:
+      look: "Ga bij Netstrategie naar het bord van Femke kijken"
+      dig: "Zoek twee dingen uit over het bord van Femke"
+    rewards: {xp: 250}
+
+  - id: fix_inverters_tripping
+    name: Omvormers die afschakelen
+    kind: side
+    tier: 1
+    act: 2
+    requires: {missions: [fix_silent_meter]}
+    briefing: "Wim Kortekaas, gepensioneerd elektrotechnicus in de Zonnestraat, stuurt ons elke maand een spreadsheet: zijn omvormer schakelt op zonnige middagen uit, al drie jaar. Inmiddels klagen er twintig buren. Onze monteurs meten adres na adres en vinden in de woning niets mis. Wat zien ze niet?"
+    debrief: "Eén aftakking per wijk lost tientallen klachten op. De slimme meters hadden het al die tijd gezien. Wim stuurt geen spreadsheet meer, alleen een kerstkaart. Eén ding nog: wie de spanning in juli omlaag zet, moet in januari kijken wat de warmtepompen ervan vinden."
+    debrief_variants:
+      poor_fix: "In de Zonnestraat zijn de klachten minder geworden. Maar in de meeste wijken staat de aftakking nog zoals hij stond, en elders valt op een zonnige middag nog steeds een omvormer uit. Wim is tevreden; zijn buren twee straten verderop nog niet. Waar staat de aftakking nog zoals in 2009?"
+    goal: {type: solve, problem: inverters_tripping}
+    rewards: {xp: 400, budget: 4000}
+
+  # A real event (Merijn, 2026-10-12): Henk retires 56 days after this mission
+  # opens, taken on or not. Miss it and the knowledge transfer is gone (the
+  # buddy system and TWI need Henk); the problem can still be solved another way.
+  - id: save_henks_knowledge
+    name: Henks kennis
+    kind: side
+    tier: 1
+    act: 1
+    arc: henk
+    requires: {missions: [fix_wrong_joint]}
+    briefing: "Henk Verbeek werkt veertig jaar bij Voltana. Als in een oude wijk de stroom uitvalt, belt iedereen Henk. Over acht weken geeft hij zijn afscheidsfeest; de uitnodiging hangt al op het prikbord. Vorige week stond Ahmed Bouzid bij een storing in een oude wijk, en belde toen... Henk. Zorg dat Henks vakmanschap niet met hem de deur uit gaat."
+    debrief: "Gisteren vond Ahmed zelf de fout in een papierloodkabel in Nova-Oud. Henk stond ernaast en zei niets. Dat was het compliment. Henk kan met een gerust hart met pensioen."
+    debrief_variants:
+      poor_fix: "Een deel van wat Henk weet, staat nu vastgelegd. Of dat genoeg is, merk je bij de eerste lastige storing zonder hem. Voelen of een kabel nat is, leer je niet uit een instructie alleen."
+    fail: "Henk is met pensioen. Zijn afscheid was mooi, maar zijn kennis van de oude netten is met hem vertrokken. Een buddy die het kan voordoen is er niet meer. Wat er op papier staat, en wat Ahmed zelf leert, moet het nu doen."
+    goal: {type: solve, problem: knowledge_drain}
+    talk_to: [{dialog: henk_camera, outcome: partial}]
+    steps:
+      talk: "Praat met Henk (Storingsdienst)"
+      look: "Ga bij de storingsdienst kijken hoe Henk werkt"
+      dig: "Zoek uit wat er wegvalt als Henk met pensioen gaat"
+      a3: "Schrijf je A3 voor de storingsdienst aan je bureau"
+      wait: "Kijk bij de storingsdienst hoe het experiment loopt"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe de storingsdienst verdergaat"
+    deadline_days: 56
+    deadline_beat: henk_farewell   # his farewell party is that day, his knowledge saved or not (dated beat)
+    fail_closes: [skills_matrix_buddy, twi_job_instruction, henks_one_point_lessons]
+    teaches: [monteurstekort]
+    rewards: {xp: 600, budget: 6000}
+
+  - id: fix_planning_reshuffle
+    name: De planning die nooit klopt
+    kind: side
+    tier: 1
+    act: 1
+    requires: {missions: [walk_outages]}
+    briefing: "Planner Linda Jansen is de halve week bezig met omplannen. 'Ik werk harder dan ooit,' zegt ze, 'en het wordt alleen maar erger.' Storingen gaan altijd voor. Waar komen al die wijzigingen vandaan?"
+    debrief: "Er is nu elke dag ruimte voor storingen, en de rest van de planning blijft staan. Een planning die voor honderd procent vol zit, breekt bij het eerste onverwachte; hoe voller, hoe harder."
+    goal: {type: solve, problem: planning_reshuffle}
+    talk_to: [{dialog: linda_replanning, outcome: partial}]
+    steps:
+      talk: "Praat met Linda (Planning)"
+      look: "Ga bij Planning kijken hoe een week wordt ingepland"
+      dig: "Zoek uit waarom de planning steeds wordt omgegooid"
+      a3: "Schrijf je A3 voor Planning aan je bureau"
+      wait: "Kijk bij Planning hoe het experiment loopt"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe Planning verdergaat"
+    rewards: {xp: 500, budget: 5000}
+
+
+  # ── Act I sides from the catalogue (mission-system spec §3.3; phase-2 design §3.2) ──
+  # The sector arc's first side: why is the grid full? Femke explains in her expert talk
+  # (femke_expert, dialogs.yaml); two of its topics heard meet the goal.
+  - id: talk_netplanner
+    name: Waarom is het net vol?
+    kind: side
+    tier: 1
+    act: 1
+    arc: sector
+    requires: {missions: [training_fri]}
+    briefing: "Je hoort het overal in dit gebouw: het net is vol. Maar wat betekent dat voor een straat in Nova-Oost? Femke de Wit van Netstrategie weet het beter dan wie ook. Ze heeft het druk, dus neem koffie mee. Vraag haar hoe een netstudie gaat, en hoe ze ziet of een station vol is."
+    debrief: "Een wijk krijgt stroom via een middenspanningsruimte, en die is berekend op wat een straat tegelijk vraagt. Een warmtepomp en een laadpaal vragen meer, en vaak op hetzelfde moment. Femke rekent dat elke dag door. Je weet nu waar haar bord vandaan komt."
+    goal: {type: talk_to, dialog: femke_expert, topics: 2}
+    steps:
+      talk: "Vraag Femke (Netstrategie) waarom het net vol is"
+    teaches: [netcongestie, middenspanningsruimte, transformator]
+    rewards: {xp: 150, trust: {grid_analysts: 1}}
+
+  # Leader standard work (spec §2.9): a weekly round of the stream, to see, not to check.
+  # It brings the routine and the audit that hold a fix (Sustain; the place's "vaste
+  # routine"). Weekly: XP the first time, after that reputation and the teams' trust.
+  - id: lsw_gemba_round
+    name: De gemba-ronde
+    kind: side
+    tier: 1
+    act: 1
+    requires: {missions: [fix_custom_design]}
+    briefing: "Een verbetering die niemand meer ziet, zakt weg. Dat is geen gebrek aan discipline; zo gaat werk als niemand kijkt. Ik loop zelf elke week een vaste ronde. Loop deze week mee: kijk bij Intake, Werkvoorbereiding en Planning hoe het werk gaat, en vraag wat er schuurt. Niet om te controleren. Om te zien."
+    # Review S3 #6: no claim that a fix still holds (it may have faded): the round asks.
+    debrief: "Drie plekken in één ronde, en je weet hoe het er deze week voor staat. Werken ze bij Werkvoorbereiding nog zoals jullie hadden afgesproken, of sluipt het oude er weer in? Een vaste routine op zo'n plek houdt een verbetering vast, en kost het team maar een paar uur per week."
+    recurring: {every_days: 7}
+    goal: {type: observe, places: [connections.intake, connections.design, connections.planning]}
+    steps:
+      look:
+        connections.intake: "Kijk bij Intake hoe het werk deze week gaat"
+        connections.design: "Kijk bij Werkvoorbereiding of de standaard nog leeft"
+        connections.planning: "Vraag bij Planning wat er deze week schuurt"
+    teaches: [leader_standard_work, gemba]
+    rewards: {xp: 150}
+
+  # ── The way back (QA 2.12 (c), phase-2 design §3.5) ──────────────────────────
+  # A region whose budget sat at the debt floor for four weeks (in all) gets a
+  # cost-saving side chain: real waste in the meter round that costs money every
+  # week. Not a bailout: the region climbs back only through the fixes (their
+  # rewards, the Act's grant and the savings of a fix that holds).
+  - id: fix_double_visits
+    name: Twee keer naar hetzelfde adres
+    kind: side
+    tier: 1
+    act: 1
+    arc: way_back
+    requires: {missions: [walk_connections], facts: {all: ["floor_days>=28"]}}
+    briefing: "Financiën belde. We zitten al weken aan de grens van ons budget; geen verwijt, wel een vraag. Bij de meterwisselaars staan elke week zo'n zes adressen twee keer op de lijst, en elke rit voor niks kost ons zo'n honderd euro. Waarom gaan we twee keer?"
+    debrief: "Een oude meterkast zie je nu bij het plannen, niet pas aan de deur. De meterwisselaar komt één keer, samen met de aansluitmonteur als dat moet. Dat scheelt elke week ritten, en Financiën ziet het. Waar rijden we nog meer voor niks?"
+    debrief_variants:
+      poor_fix: "Een paar klanten bellen nu zelf over hun meterkast. De meeste weten niet waar ze naar moeten kijken, dus de monteurs rijden nog steeds terug. Wie kan die kast wél beoordelen, en wanneer?"
+    goal: {type: solve, problem: double_visits}
+    steps:
+      look: "Rijd mee met een meterwisselaar en kijk bij {team}"
+      dig: "Zoek uit waarom de meterwisselaar terug moet"
+      a3: "Schrijf je A3 voor de meterwisselaars aan je bureau"
+      wait: "Kijk bij de meterwisselaars hoe het experiment loopt"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe de meterwisselaars verdergaan"
+    teaches: [waste_defects, quality_at_the_source]
+    rewards: {xp: 400, budget: 5000}
+
+  - id: fix_overtime_planning
+    name: Overuren, ook in een rustige week
+    kind: side
+    tier: 1
+    act: 1
+    arc: way_back
+    requires: {missions: [fix_double_visits]}
+    briefing: "De meterwisselaars schrijven samen zo'n achttien overuren per week, ook als het rustig is. Financiën vraagt om een overwerkstop. Dat kan morgen, maar dan schuift het werk door. Kijk eerst waar die uren naartoe gaan."
+    debrief: "De monteurs werken nu per wijk. Minder kilometers, minder overuren, en een monteur rijdt niet meer van de ene kant van de regio naar de andere. Een overwerkstop had de uren weggehaald, niet de kilometers. Wat zie je nog meer in de planning dat niemand een keuze noemt?"
+    debrief_variants:
+      poor_fix: "De overuren zijn gezakt, want het mag niet meer. De kilometers zijn gebleven, en de klanten wachten langer op hun afspraak. Waar zitten die uren nu?"
+    goal: {type: solve, problem: overtime_planning}
+    steps:
+      look: "Kijk bij Planning hoe de meterwissels worden ingepland"
+      dig: "Zoek uit waar de overuren van de monteurs vandaan komen"
+      a3: "Schrijf je A3 voor Planning aan je bureau"
+      wait: "Kijk bij Planning hoe het experiment loopt"
+      check: "Lees op Petra's scherm af wat je experiment opleverde"
+      act: "Beslis bij Petra's scherm hoe Planning verdergaat"
+    teaches: [waste_transport, heijunka]
+    rewards: {xp: 400, budget: 5000}

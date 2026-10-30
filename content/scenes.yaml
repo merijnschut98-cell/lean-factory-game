@@ -1,0 +1,171 @@
+# A milestone's scene (phase-2 design §3.1; tools/build_content.py validate_scenes):
+# played where it happens, as SceneLines (one line at a time, who says it).
+#
+# id        the scene (a milestone's `scene:` names it; one milestone each)
+# room      where it plays (world.yaml; the room opens with its milestone)
+# present   who is in the room (the cast's ids)
+# stands    one of present who presents standing beside the screen (optional; the others sit
+#           round the table where the room's model has scene spots, PLAN 2.16)
+# beats     speaker (one of present), line; `needs` (the facts grammar, Facts.met):
+#           the line is said only when it holds, so the facts choose the lines;
+#           at most one beat has a `choice`: 2-4 answers {label (the player's words,
+#           UI), fact (flag:<name>, remembered), reply (said back, optional)}.
+#           Or, instead of a choice, `board: true`: after this line the KPI board
+#           opens (PLAN 2.4c) and the player hangs the teams' KPIs; the beats after it
+#           are chosen once the board closes, so they can read the choice
+#           (steers:<output | flow | customer>) and the forecast (forecast_positive:kpi_board).
+#           `stand_at: scene:<room>:<spot>` (a spot in the room's model): from this line on
+#           the people present stand there side by side (Ruud and Frank at the KPI board).
+# No score screen: the scene reads the facts out loud, through people.
+
+scenes:
+  # ── Honderd dagen (Act I, around day 100: 20 January 2027) ─────────────────────
+  # Ruud and Frank in the MT-kamer read what the first hundred days left behind: the
+  # fixes that hold, who carries a change and who only follows it, who left. Frank asks
+  # one question; the answer is remembered (flag:day100_*) for what comes later.
+  - id: review_100_days
+    room: mt_room
+    present: [ruud, frank]
+    stands: frank   # "Ik heb de cijfers van Aansluitingen bij me"
+    beats:
+      - {speaker: ruud, line: "Kom erbij zitten. Na honderd dagen kijken Frank en ik altijd even terug met iemand die nieuw is. Het is geen beoordeling, hoor."}
+      - {speaker: frank, line: "Ik heb de cijfers van Aansluitingen bij me. Maar ik hoor eerst graag van jou wat er nu anders gaat dan in oktober."}
+
+      # Werkvoorbereiding: the first fix.
+      - speaker: frank
+        line: "Bij Werkvoorbereiding werken ze nog steeds met de standaardontwerpen. Joost laat ze me zelf zien als ik langskom."
+        needs: {all: ["holds:custom_design"]}
+      - speaker: ruud
+        line: "Bij Werkvoorbereiding ging het een tijd goed. Nu ligt de stapel van Anouk weer net zo hoog als in oktober. Hoe komt dat, denk je?"
+        needs: {all: ["done:fix_custom_design"], none: ["holds:custom_design"]}
+      - speaker: ruud
+        line: "Aan Werkvoorbereiding ben je nog niet toegekomen. Dat geeft niet. Honderd dagen is kort."
+        needs: {none: ["done:fix_custom_design"]}
+
+      # Meetdata: the batch at the end of the month.
+      - speaker: frank
+        line: "En Meetdata meldt aansluitingen nu af op de dag dat ze klaar zijn. Het KCC krijgt daar een stuk minder telefoontjes over."
+        needs: {all: ["holds:done_but_not_closed"]}
+
+      # Who carries a change, and who only does what was agreed.
+      - speaker: ruud
+        line: "Joost zei vorige week tegen me: 'Dit is ons eigen werk geworden.' Dat hoor je niet vaak van een teamleider."
+        needs: {all: ["committed:joost_vacancies"]}
+      - speaker: ruud
+        line: "Joost doet wat er is afgesproken. Maar hij begint er zelf nooit meer over. Merk jij dat ook?"
+        needs: {all: ["complied:joost_vacancies"]}
+      - speaker: frank
+        line: "Petra heeft haar eigen werkinstructie herschreven, hoorde ik. Zonder dat iemand erom vroeg."
+        needs: {all: ["committed:petra_batch"]}
+      - speaker: frank
+        line: "Petra volgt de nieuwe afspraak keurig. Ze zegt alleen wel tegen iedereen dat het niet haar idee was."
+        needs: {all: ["complied:petra_batch"]}
+
+      # Who left.
+      - speaker: ruud
+        line: "Henk is met pensioen. Zijn tang ligt nog bij Ahmed in de bus. Ahmed laat hem aan iedereen zien."
+        needs: {all: ["left:henk", "done:save_henks_knowledge"]}
+      - speaker: ruud
+        line: "Henk is met pensioen. Ahmed belt hem nog wel eens, als hij een mof niet vertrouwt."
+        needs: {all: ["left:henk"], none: ["done:save_henks_knowledge"]}
+      - speaker: frank
+        line: "Anouk heeft ontslag genomen. Ze gaat naar een ingenieursbureau. Haar stapel is er nog, zij niet meer."
+        needs: {all: ["left:anouk"]}
+      - speaker: frank
+        line: "Marco is weg. Zijn ploeg heeft het er nog steeds over. Ik heb het niet zien aankomen, eerlijk gezegd."
+        needs: {all: ["left:marco"]}
+      - speaker: ruud
+        line: "Sanne is vertrokken. Rachid doet de intake nu bijna alleen. Hij vraagt het nog steeds drie keer na."
+        needs: {all: ["left:sanne"]}
+      - speaker: ruud
+        line: "Wat ik wel fijn vind: iedereen die er in oktober zat, zit er nog. Dat is minder vanzelfsprekend dan het klinkt."
+        needs: {none: ["left:anouk", "left:marco", "left:sanne", "left:joost", "left:petra"]}
+
+      # The family before the frost.
+      - speaker: frank
+        line: "Mevrouw El Amrani heeft een brief gestuurd. Aan de directie, met een kopie aan de ACM. Die moet ik beantwoorden."
+        needs: {all: ["failed:winter_el_amrani"]}
+      - speaker: ruud
+        line: "Ik hoorde dat mevrouw El Amrani nog heeft gebeld. Alleen om te zeggen dat haar moeder het warm heeft."
+        needs: {all: ["done:winter_el_amrani"]}
+
+      # The one question.
+      - speaker: frank
+        line: "Over twee weken moet ik de directie vertellen hoe het met Aansluitingen gaat. Wat zou jij ze vertellen?"
+        choice:
+          - label: "Dat het werk beter loopt, in getallen."
+            fact: "flag:day100_numbers"
+            reply: "Getallen kan ik verantwoorden. Daar ben ik eerlijk gezegd blij mee."
+          - label: "Dat de mensen het zelf doen."
+            fact: "flag:day100_people"
+            reply: "Dat is lastiger uit te leggen aan de directie. Maar ik snap wat je bedoelt."
+          - label: "Dat het nog te vroeg is."
+            fact: "flag:day100_patience"
+            reply: "Dat zeg ik liever niet hardop. Maar het is wel eerlijk."
+      - {speaker: ruud, line: "Dank je. Ik ben benieuwd waar we over honderd dagen staan. Jij ook?"}
+
+  # ── Het eerste kwartaal (Act II, after fix_silo_kpis: the KPI board's birth) ──────────
+  # Ruud and Frank at the KPI board of Directie & Obeya: whether the teams still look at one
+  # number (holds:silo_kpis), where Frank stands (committed, only complied, still blocked,
+  # never asked), then the board: the player hangs the teams' KPIs. After it Frank reads
+  # the choice out loud in his own words, and Ruud asks about the analysts' forecast.
+  - id: first_kpi_review
+    room: directors_obeya
+    present: [ruud, frank]
+    beats:
+      - {speaker: ruud, line: "Kom erbij staan. Frank en ik kijken elk kwartaal naar de getallen waar de teams op sturen. Vandaag doen we dat met z'n drieën."}
+      - {speaker: frank, line: "Ik heb een kwartier. Daarna moet ik naar de regiegroep."}
+
+      # What the silo fix left.
+      - speaker: frank
+        line: "Sanne en Joost kwamen vorige week samen bij me, met één getal: de doorlooptijd. Dat had ik nog niet eerder gezien."
+        needs: {all: ["holds:silo_kpis"]}
+      - speaker: ruud
+        line: "In het MT lagen vorige week toch weer twee recordmaanden op tafel. Hoe kan dat, denk je?"
+        needs: {none: ["holds:silo_kpis"]}
+
+      # Where Frank stands.
+      - speaker: frank
+        line: "Ik heb het jaarplan aangepast. De doorlooptijd staat nu bovenaan, de aantallen eronder. De directie vroeg ernaar, en ik kon het uitleggen."
+        needs: {all: ["committed:frank_kpi_targets"]}
+      - speaker: frank
+        line: "Ik heb ermee ingestemd, dat weet je. Maar in de najaarsronde moet ik het kunnen verantwoorden. Ik wil vandaag getallen zien."
+        needs: {all: ["complied:frank_kpi_targets"], none: ["committed:frank_kpi_targets"]}
+      - speaker: frank
+        line: "Ik zeg het eerlijk: ik ben nog niet overtuigd. Het jaarplan stuurt op aantallen, en dat moet ik kunnen uitleggen."
+        needs: {all: ["blocked:frank_kpi_targets"], none: ["committed:frank_kpi_targets", "complied:frank_kpi_targets"]}
+      - speaker: frank
+        line: "Ik heb er eerlijk gezegd weinig van meegekregen. Laat maar zien wat er op het bord komt."
+        needs: {none: ["committed:frank_kpi_targets", "complied:frank_kpi_targets", "blocked:frank_kpi_targets"]}
+
+      # The board: the player hangs the teams' KPIs for the coming quarter.
+      - speaker: ruud
+        line: "Het bord is vandaag van jou. Waar laten we de teams het komende kwartaal op sturen?"
+        board: true
+        stand_at: "scene:directors_obeya:board"
+
+      # What hangs now, in Frank's words.
+      - speaker: frank
+        line: "Aanvragen en ontwerpen per week. Dat ken ik, dat kan ik verantwoorden."
+        needs: {all: ["steers:output"]}
+      - speaker: ruud
+        line: "En mevrouw El Amrani? Aan welk van deze getallen ziet zij dat haar aansluiting sneller komt?"
+        needs: {all: ["steers:output"]}
+      - speaker: frank
+        line: "Hoe lang iets duurt, en wat er blijft liggen. Dat zijn andere getallen dan in mijn jaarplan. Die moet ik straks wel kunnen uitleggen."
+        needs: {all: ["steers:flow"], none: ["steers:output"]}
+      - speaker: frank
+        line: "Op tijd, en afspraak is afspraak. Dat vraagt de ACM ook. Dat kan ik aan de directie uitleggen."
+        needs: {all: ["steers:customer"], none: ["steers:output"]}
+
+      # The analysts' forecast: the quarter reckoned twice.
+      - speaker: ruud
+        line: "De analisten zien met deze getallen een beter kwartaal dan met hoe we het altijd deden. Frank, kun je daar iets mee in de regiegroep?"
+        needs: {all: ["forecast_positive:kpi_board"]}
+      - speaker: frank
+        line: "Met de oude getallen ernaast, ja. Dan kan ik het uitleggen."
+        needs: {all: ["forecast_positive:kpi_board"]}
+      - speaker: ruud
+        line: "De analisten zien nog weinig verschil met hoe we het altijd deden. Wat zou jij over een kwartaal anders willen zien?"
+        needs: {none: ["forecast_positive:kpi_board"]}
+      - {speaker: ruud, line: "Over drie maanden staan we hier weer. Dan kijken we samen of de getallen deden wat we dachten."}

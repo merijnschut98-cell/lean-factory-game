@@ -1,0 +1,776 @@
+# Tier-1 problems of region Zuidmark (GDD, Problem catalogue v1).
+# Game text is Dutch; ids and keys are English. Built by tools/build_content.py.
+#
+# step            where the problem shows ("stream.step"): the gemba place to spot it
+# effects         what it does to the simulation while it is active
+#                 (property → see game/src/sim/modifiers.gd)
+# countermeasures countermeasure id → fit (0–1): several can help, some more
+#                 than others; each shapes the process in its own way
+# clues           tool, depth (the 5 Whys as an investigation: depth n shows
+#                 once a key clue at depth n − 1 is found), key (points at the
+#                 real cause) or not (a red herring: true, but not causal),
+#                 at (a place upstream or downstream; default: step)
+# kpi             what a good prediction names (wip_age: the age of open work,
+#                 for problems whose harm hides in orders that have not finished)
+# plausible_causes  wrong but believable causes for the A3's cause bank
+# tells           what a prop on the floor shows of it (PLAN 2.6): {tell, text}; tell is
+#                 a node in the floor's model (build_content.TELLS), text what anyone can
+#                 see there. Ambiguous on purpose: a tall stack can be a normal week, and
+#                 a text never names the problem. Every problem whose place is on a floor
+#                 with tells (the 1e, the 2e, the yard) lists at least one on that floor
+#                 (checked).
+#
+# Quote clue texts: inside {…} an unquoted comma ends the text (the build refuses it).
+
+problems:
+  - id: incomplete_application
+    tier: 1
+    name: Aanvragen gaan terug naar de klant
+    step: connections.intake
+    waste: defects
+    severity: medium
+    visibility: obvious
+    # Less rework gives the intake team back time (capacity, the same on every
+    # seed). First time right over finished orders lags: a returned
+    # application finishes weeks later, so a fresh problem's Check shows it
+    # on some seeds only (probe 2026-10-15: −1 to +43 %); lead time hardly
+    # moves, since most of it is waiting further down the stream.
+    kpi: capacity
+    symptoms:
+      - Veel aanvragen gaan terug naar de klant met een verzoek om aanvulling.
+      - Klanten bellen na weken om te vragen waar hun aansluiting blijft.
+    root_cause: Het webformulier accepteert aanvragen zonder vermogen, installateur en meterkastgegevens; niemand voorkomt de fout aan de bron.
+    plausible_causes:
+      - Klanten lezen de instructies niet.
+      - De intakemedewerkers controleren niet zorgvuldig genoeg.
+    mismatch_note: Sneller of strenger controleren verandert niets aan wat er binnenkomt. De fout ontstaat in het formulier.
+    countermeasures: {poka_yoke_application: 1.0, intake_checklist: 0.7}
+    teaches: [quality_at_the_source, poka_yoke]
+    # Nine in twenty applications come back (the clues): ftr 0.75 -> 0.55. Each return also
+    # costs the chase: the request for completion, the calls with the customer and the
+    # installer, logging it. ESTIMATE: about 40 minutes a return, x1.3 on every intake visit.
+    # With it the intake clearly fails demand (gate backlog 3, 2026-10-24: with the ftr alone
+    # it ran at 1.03, so the fix's flow gain hid in the seed noise): 25.9 a week against
+    # 30 arriving (Capacity.analyse, seeds 11-13), 35 once fixed. Fixing the monteurs'
+    # problem moves none of it.
+    effects:
+      - {target: connections.intake, property: ftr, value: -0.2}
+      - {target: connections.intake, property: touch_time, value: 1.3}
+    tells:
+      - {tell: intake_stack, text: "Op de kast bij Intake ligt meer dan een dag werk aan dossiers."}
+    clues:
+      - {tool: documents, key: true, depth: 0, text: "Van de laatste twintig aanvragen missen er negen het aansluitvermogen of de gegevens van de installateur."}
+      - {tool: queue_count, key: false, depth: 0, text: "De wachtrij bij Intake is lang, maar hij staat netjes op datum: wie vrij is, pakt de oudste aanvraag."}
+      - {tool: data, key: true, depth: 1, text: "Bijna de helft van de aanvragen gaat terug naar de klant voor aanvulling; die wachten gemiddeld een week."}
+      - {tool: conversation, key: true, depth: 1, text: "'Het webformulier laat je gewoon doorklikken zonder vermogen of meterkastfoto. Wij zien het pas als we het dossier openen.'"}
+      - {tool: listen_in, key: true, depth: 2, text: "Een klant aan de telefoon: 'Ik wist niet dat ik dat moest invullen, het formulier vroeg er niet om.'"}
+
+  - id: installer_not_ready
+    tier: 1
+    name: Voor niks gereden
+    step: connections.execution
+    waste: waiting
+    severity: high
+    visibility: subtle
+    # A wasted trip is a job not done right the first time: two in five addresses send the
+    # job back to planning (first time right falls by a third). Lead time hardly moves, since
+    # the median order is not one of them (gate backlog 4, 2026-10-24: the best fix gained
+    # +0.1 to +1.4 % lead time on some seeds, inside the Check's 2 % noise).
+    kpi: first_time_right
+    symptoms:
+      - Monteurs rijden terug zonder dat de aansluiting is gemaakt.
+      - Klussen worden steeds opnieuw ingepland.
+    root_cause: Klussen worden ingepland zonder te controleren of de installateur en de meterkast klaar zijn.
+    plausible_causes:
+      - De monteurs zijn te laat op locatie.
+      - Klanten zeggen hun afspraak af.
+    mismatch_note: De monteur doet zijn werk goed; het probleem ontstaat bij het plannen, voordat hij rijdt.
+    countermeasures: {readiness_check: 1.0, installer_photo_upload: 0.9, backup_job_per_day: 0.6}
+    teaches: [readiness_check, quality_at_the_source]
+    effects:
+      - {target: connections.execution, property: ftr, value: -0.25}  # 2 of 5 addresses not ready
+    tells:
+      - {tell: planning_board, text: "Op het weekbord bij de planners hangen rode kaartjes: klussen die verzet zijn."}
+      - {tell: van_returns, text: "Op de retourpallet staan aansluitsets die nog in hun folie zitten."}
+    clues:
+      - {tool: shadow, key: true, depth: 0, text: "Op twee van de vijf adressen is de meterkast niet klaar (geen ruimte, geen aarding, de installateur is nog niet geweest). De monteur rijdt onverrichter zake terug."}
+      - {tool: time_study, key: false, depth: 0, text: "Een aansluiting maken kost de monteur ruim vier uur, binnen de norm."}
+      - {tool: data, key: true, depth: 1, text: "Van de herplande klussen heeft zeventig procent als reden 'meterkast niet gereed'."}
+      - {tool: documents, key: true, depth: 1, at: connections.planning, text: "Planning plant op de datum van het offerte-akkoord. Nergens staat of de installateur klaar is."}
+      - {tool: conversation, key: true, depth: 2, at: connections.planning, text: "'We bellen de klant nooit vooraf. We weten pas dat het niet klaar is als de monteur er staat.'"}
+
+  - id: wrong_joint_in_van
+    tier: 1
+    name: Een storing duurt langer dan vier uur
+    step: outages.repair
+    waste: transport
+    severity: medium
+    visibility: subtle
+    kpi: on_time
+    symptoms:
+      - Storingen duren soms ruim langer dan vier uur.
+      - Monteurs rijden tijdens een storing naar het magazijn.
+    root_cause: Er is geen standaard busvoorraad en geen aanvulsignaal; wat op is, merkt de monteur pas bij de storing.
+    plausible_causes:
+      - De monteurs pakken de verkeerde mof mee.
+      - Het magazijn levert te laat.
+    mismatch_note: Het magazijn heeft de moffen wel; ze liggen alleen niet in de bus op het moment dat het nodig is.
+    # Act 0/I audit (2026-10-24): the standard stock is refilled at the end of every shift
+    # (its description), so it removes most of the cause; only the signal still leans on a
+    # routine, which the kanban (tier 3, offered from maturity 2) builds in. At 0.8 every fix
+    # Act I offers was a poor fix and even the expert got a repair quest.
+    countermeasures: {van_refill_card: 0.65, standard_van_stock: 0.85, two_bin_van_kanban: 1.0}
+    teaches: [5s, kanban, standard_work]
+    # The waste is mostly the drive back for the right joint (QA 2026-10-24: a touch time
+    # x 1.5 alone hid it from the storingsbord). A quarter of the outages takes the trip
+    # (the data clue: 'materiaal halen' in a quarter of the logs), each an hour of the
+    # monteur while the customer waits (outages.repair trip_hours, an estimate). The rest
+    # is motion: no two vans are stocked alike, so every repair starts with a search.
+    # ESTIMATE: about 15 minutes of a 1.5-hour repair, x 1.15.
+    effects:
+      - {target: outages.repair, property: trip_share, value: 0.25}
+      - {target: outages.repair, property: touch_time, value: 1.15}
+    # Each trip signs a second joint out at the counter and marks the board (Network.
+    # material_trips_since): the uitgiftelijst and the storingsbord read it (OfficeTells.THRESHOLDS,
+    # probe 2026-10-24). The tell is what anyone at the counter sees (a bus back for material the
+    # same day), never the missing standard stock.
+    tells:
+      - {tell: uitgiftelijst, text: "Op de uitgiftelijst bij de balie staat dezelfde storingsbus soms twee keer op één dag, met een paar uur ertussen."}
+      - {tell: storingsbord, text: "Op het storingsbord staat bij een paar kabelstoringen een hersteltijd van ruim vier uur."}
+    clues:
+      - {tool: shadow, key: true, depth: 0, text: "Bij een kabelstoring ligt de juiste mof niet in de bus. De monteur rijdt veertig minuten heen en terug naar het magazijn."}
+      - {tool: time_study, key: false, depth: 0, at: outages.locate, text: "Het lokaliseren van de fout duurt steeds rond het uur."}
+      - {tool: material_check, key: true, depth: 1, text: "Geen twee bussen hebben dezelfde voorraad. Er is geen lijst van wat erin hoort."}
+      - {tool: data, key: true, depth: 1, text: "In een kwart van de storingslogboeken staat 'materiaal halen'."}
+      - {tool: conversation, key: true, depth: 2, text: "'Wat op is, vul ik aan als ik toevallig langs het magazijn kom. Niemand houdt bij wat eruit gaat.'"}
+
+  - id: custom_design
+    tier: 1
+    name: Ontwerpen blijven liggen
+    step: connections.design
+    waste: overprocessing
+    severity: high
+    visibility: obvious
+    kpi: throughput
+    symptoms:
+      - De stapel ontwerpen bij Werkvoorbereiding groeit elke week.
+      - Werkvoorbereiders maken overuren, en toch duurt een aansluiting langer.
+    root_cause: Standaardaansluitingen krijgen een volledig maatwerkontwerp met drie goedkeuringen.
+    plausible_causes:
+      - De werkvoorbereiders werken te langzaam.
+      - De ontwerpsoftware is verouderd.
+    mismatch_note: Harder werken of betere software verandert niets aan de hoeveelheid werk per standaardaansluiting.
+    countermeasures: {standard_designs: 1.0, delegated_approval: 0.65}
+    teaches: [standard_work, waste_overprocessing]
+    effects:
+      - {target: connections.design, property: touch_time, value: 1.3}
+    tells:
+      - {tell: prep_tray, text: "In het postbakje bij Werkvoorbereiding liggen de dossiers hoger dan het bakje."}
+    clues:
+      - {tool: time_study, key: true, depth: 0, text: "Een gewone woningaansluiting kost vijf uur ontwerp, net zoveel als een bedrijfsaansluiting."}
+      - {tool: queue_count, key: false, depth: 0, text: "In de bak ligt ongeveer een dag werk aan dossiers; als de stapel oploopt een paar dagen, geen weken."}   # the simulation's queue (fix_custom_design's note)
+      - {tool: documents, key: true, depth: 1, text: "Elk ontwerp, ook een standaard huisaansluiting, gaat langs drie handtekeningen."}
+      - {tool: conversation, key: true, depth: 1, at: connections.intake, text: "'Wij vragen nooit of het een standaardaansluiting is. Alles gaat als maatwerk door.'"}
+      - {tool: data, key: true, depth: 2, text: "Driekwart van de ontwerpen is een standaard 3x25A-aansluiting zonder netuitbreiding."}
+
+  - id: not_at_home
+    tier: 1
+    name: Niet thuis
+    step: meters.visit
+    waste: transport
+    severity: medium
+    visibility: obvious
+    kpi: first_time_right
+    symptoms:
+      - Monteurs laten veel kaartjes 'helaas niet thuis' achter.
+      - De planning van meterwissels loopt steeds verder uit.
+    root_cause: Afspraken hebben een tijdvak van een hele dag en worden niet bevestigd of herinnerd.
+    plausible_causes:
+      - Klanten zijn onbetrouwbaar.
+      - De monteurs komen te laat.
+    mismatch_note: De klanten willen wel thuis zijn; ze weten niet wanneer.
+    countermeasures: {appointment_reminder: 1.0, two_hour_window: 0.9}
+    teaches: [failure_demand, customer_value]
+    effects:
+      - {target: meters.visit, property: ftr, value: -0.15}
+    tells:
+      - {tell: van_returns, text: "Op de retourpallet staan meterdozen die nog dicht zijn, elk met een afspraakbon eraan."}
+    clues:
+      - {tool: shadow, key: true, depth: 0, text: "Bij drie van de acht adressen doet niemand open. De monteur laat een kaartje achter."}
+      - {tool: time_study, key: false, depth: 0, text: "Een meterwissel zelf duurt vijfendertig minuten, ruim binnen de planning."}
+      - {tool: documents, key: true, depth: 1, at: meters.appointment, text: "Klanten krijgen een tijdvak van 8 tot 17 uur en geen bevestiging of herinnering."}
+      - {tool: listen_in, key: true, depth: 1, at: meters.appointment, text: "'Ik heb een halve dag vrij genomen en er kwam niemand.' En: 'Ik wist niet dat het vandaag was.'"}
+      - {tool: data, key: true, depth: 2, text: "Van de mislukte bezoeken had tachtig procent geen herinnering ontvangen."}
+
+  - id: permits_in_batches
+    tier: 1
+    name: Dagen stilstand voor de vergunning
+    step: connections.permit
+    waste: waiting
+    severity: medium
+    visibility: subtle
+    kpi: lead_time
+    symptoms:
+      - Dossiers liggen dagen stil tussen ontwerp en vergunning.
+      - De doorlooptijd van aansluitingen is lang, terwijl de gemeente haar termijn haalt.
+    root_cause: Vergunningen worden per project in één batch aangevraagd, pas als het laatste ontwerp van het project af is.
+    plausible_causes:
+      - De gemeente werkt te langzaam.
+      - Het vergunningsportaal is te ingewikkeld.
+    mismatch_note: De gemeente is niet het knelpunt; de aanvraag ligt al stil voordat zij hem krijgt.
+    countermeasures: {request_permits_daily: 1.0, parallel_permits: 1.0}
+    teaches: [batching, flow]
+    effects:
+      # Per project (Merijn, 2026-10-13): a street's connections go together once
+      # the last design is done; about every two weeks (an estimate).
+      - {target: connections.permit, property: batch_days, value: 14}
+    tells:
+      - {tell: prep_tray, text: "Bij Werkvoorbereiding ligt een stapel dossiers waarvan het ontwerp af lijkt."}
+    clues:
+      - {tool: data, key: true, depth: 0, text: "Vergunningsaanvragen gaan per project de deur uit. Een dossier dat klaar is, wacht gemiddeld een week op de rest van de straat."}
+      - {tool: documents, key: false, depth: 0, text: "De gemeente haalt haar wettelijke termijn bijna altijd."}
+      - {tool: conversation, key: true, depth: 1, at: connections.design, text: "'Ik vraag de vergunning aan als het hele project ontworpen is; dan hoeft de gemeente maar één tracé te beoordelen.'"}
+      - {tool: documents, key: true, depth: 1, at: connections.design, text: "De vergunning wordt pas aangevraagd als het ontwerp helemaal af is, terwijl de gemeente alleen het tracé nodig heeft."}
+      - {tool: time_study, key: true, depth: 2, at: connections.design, text: "Een aanvraag indienen kost tien minuten; het tracé is al na een uur ontwerpen bekend."}
+
+  - id: revision_backlog
+    tier: 1
+    name: De revisieberg
+    step: connections.revision
+    waste: inventory
+    severity: medium
+    visibility: hidden
+    # Audit L5 asked for wip_age, but revision comes before the close-out and
+    # the stream's open-work age is set by the reinforcement waits (97 → 97
+    # days). The daily template gives the GIS team back a fifth of its time
+    # (+21 % capacity); throughput only follows once a backlog has built up
+    # (probe 2026-10-15: −0 to +16 %).
+    kpi: capacity
+    symptoms:
+      - Bij Revisie & GIS ligt een stapel schetsen van opgeleverde aansluitingen.
+      - Aansluitingen zijn technisch klaar maar administratief nog niet af.
+    root_cause: Wijzigingen worden na de klus op papier geschetst en weken later door een klein team overgetekend; het werk wordt dubbel gedaan.
+    plausible_causes:
+      - Het GIS-team is te klein.
+      - De monteurs leveren hun schetsen te laat in.
+    mismatch_note: Meer mensen bij GIS verwerken de stapel sneller, maar het overtekenen blijft dubbel werk.
+    countermeasures: {revision_at_source: 1.0, daily_revision_template: 0.7}
+    teaches: [waste_inventory, quality_at_the_source]
+    effects:
+      - {target: connections.revision, property: touch_time, value: 1.4}
+      # Outdated KLIC maps: more cables hit. Estimate: ~60% of digging damage
+      # comes from not knowing exactly what lies where (Bouwend Nederland); a
+      # four-month backlog leaves a few percent of cables unmapped, mostly in
+      # new-build streets where digging happens.
+      - {target: outages.daytime, property: demand, value: 1.05}
+    cost_per_week: 425  # ~0.5 extra damage a week x EUR 850
+    tells:
+      - {tell: revision_cabinet, text: "Op de kast bij Revisie & GIS liggen stapels schetsen; op de onderste staat een datum van maanden terug."}
+    clues:
+      - {tool: data, key: true, depth: 0, text: "Er staan 240 opgeleverde aansluitingen open in GIS; de oudste is vier maanden oud."}
+      - {tool: queue_count, key: false, depth: 0, text: "De bak met schetsen is overzichtelijk geordend op datum."}
+      - {tool: time_study, key: true, depth: 1, text: "Een schets overtekenen kost anderhalf uur, onder meer door uitzoeken wat er bedoeld is."}
+      - {tool: documents, key: true, depth: 1, at: connections.commissioning, text: "De monteur schetst het as-built met de hand op een A4; foto's en maten ontbreken vaak."}
+      - {tool: conversation, key: true, depth: 2, at: connections.commissioning, text: "'Ik teken het op de motorkap. Of ze het later kunnen lezen? Ze bellen me wel als het niet klopt.'"}
+
+  - id: digging_damage
+    tier: 1
+    name: Graafschade
+    step: outages.locate
+    waste: defects
+    severity: high
+    visibility: obvious
+    # Digging damage adds outages, not longer ones: outage lead time does not
+    # move. Fewer damages give the monteurs back time (+6 % capacity, probe
+    # 2026-10-15).
+    kpi: capacity
+    symptoms:
+      - Overdag komen veel storingen binnen door kabelschade bij graafwerk.
+      - Monteurs worden voor graafschade van gepland werk gehaald.
+    root_cause: KLIC-kaarten zijn verouderd (de revisieberg) en proefsleuven worden onder tijdsdruk overgeslagen.
+    plausible_causes:
+      - Aannemers graven onvoorzichtig.
+      - De KLIC-melding wordt niet gedaan.
+    mismatch_note: Aannemers doen wel een KLIC-melding; de kaart die ze krijgen klopt niet en de planning laat geen tijd voor proefsleuven.
+    countermeasures: {standard_test_trenches: 0.8, contractor_briefing: 0.7, revision_at_source: 0.6}
+    teaches: [waste_defects, systems_thinking]
+    effects:
+      - {target: outages.daytime, property: demand, value: 1.5}  # a third of daytime outages
+    # Repairs and claims: ~5 extra damages a week x ~EUR 850 direct repair cost
+    # each (Wibon evaluation: EUR 38.8M a year over 46,799 damages, 2022).
+    cost_per_week: 4250
+    tells:
+      - {tell: storingsbord, text: "Op het storingsbord staan overdag storingen achter elkaar, steeds met 'kabel geraakt' en de naam van een aannemer."}
+      - {tell: magazijn_rack, text: "Op de stelling met moffen zijn de meeste vakken leeg; op de toonbank ligt een bestelbon voor nog een doos."}
+    # "Zeven procent" (estimate): Wibon's 46,799 damages a year (2022) against several
+    # hundred thousand KLIC-meldingen a year is a few to seven in a hundred digs; the
+    # count of meldingen is Kadaster's, not on an approved domain, so not checked here.
+    clues:
+      - {tool: data, key: true, depth: 0, text: "Een derde van de storingen overdag is graafschade; zeven procent van de graafwerken raakt een kabel."}
+      - {tool: shadow, key: false, depth: 0, text: "De monteurs herstellen graafschade snel en vakkundig."}
+      - {tool: documents, key: true, depth: 1, text: "Bij de helft van de schades lag de kabel anders dan op de KLIC-kaart."}
+      - {tool: conversation, key: true, depth: 1, text: "'Proefsleuven? Daar is in de planning van de aannemer nooit tijd voor.'"}
+      - {tool: data, key: true, depth: 2, at: connections.revision, text: "De kabels die anders lagen dan op de kaart, zijn bijna allemaal nog niet gerevideerd."}
+
+  - id: knowledge_drain
+    tier: 1
+    name: Herstel in de oude wijken duurt lang
+    step: outages.locate
+    waste: skills
+    severity: high
+    visibility: subtle
+    kpi: on_time
+    symptoms:
+      - Storingen in oude wijken duren veel langer dan elders.
+      - Bij lastige storingen wordt steeds dezelfde oudere monteur gebeld.
+    root_cause: Kennis van oude kabeltypes en schakelingen zit bij een paar monteurs die met pensioen gaan; er is geen skills-matrix en geen overdracht.
+    plausible_causes:
+      - De jonge monteurs zijn onvoldoende opgeleid.
+      - De meetapparatuur is verouderd.
+    mismatch_note: Een opleiding alleen leert niet wat alleen in de hoofden van de ervaren monteurs zit.
+    # Audit L10: documentation alone transfers less than practice under a master.
+    countermeasures: {henks_one_point_lessons: 0.6, work_instruction_videos: 0.7, twi_job_instruction: 0.9, skills_matrix_buddy: 1.0}
+    teaches: [waste_skills, respect_for_people]
+    effects:
+      - {target: outages.locate, property: ftr, value: -0.3}
+    tells:
+      - {tell: storingsbord, text: "Op het storingsbord staat bij de storingen in Nova-Oud vaak een tweede tijd, en daarachter in hoofdletters: HENK."}
+    clues:
+      - {tool: shadow, key: true, depth: 0, text: "Een jonge monteur zoekt anderhalf uur naar de fout in een oude papierloodkabel (GPLK) en belt dan een collega."}
+      - {tool: time_study, key: false, depth: 0, text: "Het herstel zelf duurt bij iedereen ongeveer even lang."}
+      - {tool: data, key: true, depth: 1, text: "Storingen in netten van voor 1970 worden twee keer zo vaak opnieuw gelokaliseerd."}
+      - {tool: conversation, key: true, depth: 1, text: "'Als Henk het niet weet, weet niemand het. En Henk gaat over twee maanden met pensioen.'"}
+      - {tool: documents, key: true, depth: 2, text: "Er is geen overzicht van wie welke kabeltypes en schakelingen beheerst."}
+
+  - id: status_callers
+    tier: 1
+    name: Klanten hangen in de wacht
+    step: customer_contact.answer
+    waste: defects
+    severity: high
+    visibility: obvious
+    kpi: on_time
+    symptoms:
+      - Het klantcontactcentrum is onbereikbaar; klanten hangen lang in de wacht.
+      - Agents beantwoorden steeds dezelfde vraag.
+    root_cause: Klanten horen na hun aanvraag niets meer over de voortgang, dus bellen ze; de vragen komen voort uit de wachttijd, niet uit het contactcentrum.
+    plausible_causes:
+      - Het contactcentrum heeft te weinig agents.
+      - Klanten zijn ongeduldig.
+    mismatch_note: Meer agents beantwoorden de vragen sneller, maar de vragen blijven komen. Dit is faalvraag.
+    # Act 0/I audit (2026-10-24): the hand-made mail at the two moments most calls are about
+    # (a week's tally, Pareto) takes away most of the failure demand; it is the patient first
+    # step, not a poor fix (0.75 was one), and it fades sooner than the built-in messages.
+    countermeasures: {realistic_promise: 0.7, milestone_mail_by_hand: 0.85, proactive_status_updates: 1.0}
+    teaches: [failure_demand, value_demand]
+    effects:
+      - {target: connections, property: call_rate, value: 3.0}
+    tells:
+      - {tell: terugbelbord, text: "Het bord hangt vol terugbelbriefjes, in verschillende handschriften. Sommige namen hangen er twee of drie keer."}
+    clues:
+      - {tool: listen_in, key: true, depth: 0, text: "Van de tien gesprekken gaan er vier over één vraag: 'Waar blijft mijn aansluiting?'"}
+      - {tool: time_study, key: false, depth: 0, text: "Een gesprek duurt gemiddeld vijftien minuten; de agents zijn vriendelijk en snel."}
+      - {tool: data, key: true, depth: 1, text: "Statusvragen komen bijna allemaal van klanten die al meer dan twee maanden wachten; sommigen bellen elke week."}
+      - {tool: documents, key: true, depth: 1, at: connections.intake, text: "Na de ontvangstbevestiging hoort de klant niets meer, tot de monteur belt voor een afspraak."}
+      - {tool: conversation, key: true, depth: 2, at: connections.design, text: "'Wij weten zelf ook niet wanneer het klaar is. Er is geen planning die we met de klant kunnen delen.'"}
+
+  - id: done_but_not_closed
+    tier: 1
+    name: Klaar maar niet af
+    step: connections.close_out_wait
+    waste: inventory
+    severity: medium
+    visibility: subtle
+    kpi: lead_time
+    symptoms:
+      - Klanten met een nieuwe aansluiting kunnen nog geen energiecontract afsluiten.
+      - Aansluitingen staan weken op 'technisch gereed, administratief open'.
+    root_cause: De administratieve afhandeling gebeurt één keer per maand in een batch, en het aanmelden van de EAN gaat met de hand.
+    plausible_causes:
+      - De energieleverancier is traag.
+      - Meetdata & registratie heeft te weinig mensen.
+    mismatch_note: Het team heeft genoeg tijd; het werk wacht op de maandelijkse batch, niet op mensen.
+    countermeasures: {close_out_at_completion: 1.0, automatic_ean_registration: 0.9, mid_month_run: 0.6}
+    teaches: [batching, one_piece_flow]
+    effects:
+      - {target: connections.close_out_wait, property: batch_days, value: 28}
+    tells:
+      - {tell: close_out_cabinet, text: "Op en naast de kast bij de deur liggen dossiers met 'gereed gemeld' erop, de oudste van weken geleden."}
+    clues:
+      - {tool: data, key: true, depth: 0, text: "Aansluitingen die technisch klaar zijn, staan gemiddeld twee weken op 'administratief open'."}
+      - {tool: queue_count, key: false, depth: 0, at: connections.close_out, text: "Bij Meetdata & registratie ligt weinig werk; het team heeft tijd over."}
+      - {tool: documents, key: true, depth: 1, at: connections.close_out, text: "De afhandeling (EAN aanmelden, dossier sluiten) gebeurt één keer per maand, in één keer voor alle dossiers."}
+      - {tool: listen_in, key: true, depth: 1, at: customer_contact.answer, text: "'Mijn aansluiting is vorige week aangelegd, maar de leverancier zegt dat mijn EAN niet bestaat.'"}
+      - {tool: conversation, key: true, depth: 2, at: connections.close_out, text: "'We doen het maandelijks; dan hoef je maar één keer in te loggen in het registratiesysteem.'"}
+
+  - id: grid_study_queue
+    tier: 1
+    name: De netstudie-wachtrij
+    step: connections.grid_study
+    waste: waiting
+    severity: high
+    visibility: subtle
+    # The fast lane frees the grid analysts (+38 % capacity); throughput only
+    # follows where demand waits for them (probe 2026-10-15: +0 to +13 %).
+    kpi: capacity
+    symptoms:
+      - Op het bord van Netstrategie staan tientallen netstudies in de wachtrij.
+      - Nieuwe aansluitingen wachten weken op een netstudie, omdat congestieonderzoeken voorgaan.
+    root_cause: Elke aanvraag boven 3x25A krijgt een volledige netstudie, ook als de aansluiting ruim binnen de vrije capaciteit valt; er is geen triage vooraf.
+    plausible_causes:
+      - Er zijn te weinig netanalisten.
+      - De rekensoftware is te traag.
+    mismatch_note: Meer analisten werken de stapel sneller weg, maar een groot deel van de studies is niet nodig.
+    countermeasures: {triage_fast_lane: 1.0, calculation_templates: 0.7, study_overtime_sprint: 0.6}
+    teaches: [triage, theory_of_constraints, waste_overprocessing]
+    effects:
+      - {target: connections.grid_study, property: applies, value: 0.15}  # 40% of connections instead of 25%
+    tells:
+      - {tell: grid_study_tray, text: "Bovenop de stapel in het bakje ligt een studieaanvraag voor een gewone woning met een warmtepomp."}
+    clues:
+      - {tool: data, key: true, depth: 0, text: "Vier op de tien nieuwe aansluitingen krijgen een netstudie; vorig jaar was dat een kwart."}
+      - {tool: shadow, key: false, depth: 0, text: "De analisten maken lange dagen en werken geconcentreerd; niemand zit stil."}
+      - {tool: documents, key: true, depth: 1, text: "De werkinstructie zegt: netstudie bij elke aanvraag boven 3x25A. Een grens voor de vrije capaciteit in de wijk staat er niet in."}
+      - {tool: conversation, key: true, depth: 1, text: "'Bij de meeste studies weten we na vijf minuten al dat het past. Maar de procedure is de procedure.'"}
+      - {tool: time_study, key: true, depth: 2, text: "Een volledige netstudie kost vier uur; een snelle check op de vrije capaciteit van het station kost een kwartier."}
+
+  - id: silent_meter
+    tier: 1
+    name: De zwijgende meter
+    step: meters.registration
+    waste: defects
+    severity: medium
+    visibility: subtle
+    kpi: first_time_right
+    symptoms:
+      - Bij Meetdata & registratie komen nieuwe meters binnen die geen standen sturen.
+      - Monteurs moeten terug naar adressen waar ze vorige week al een meter plaatsten.
+    root_cause: De communicatiemodule wordt gekozen zonder dekkingscheck, en niemand test de verbinding voordat de monteur vertrekt.
+    plausible_causes:
+      - De meters van de nieuwe leverancier zijn slecht.
+      - Het mobiele netwerk is onbetrouwbaar.
+    mismatch_note: De meters zijn in orde; de fout wordt pas ontdekt als de monteur al weg is.
+    countermeasures: {on_site_comm_test: 1.0, coverage_check_in_planning: 0.8}
+    teaches: [jidoka, quality_at_the_source]
+    effects:
+      # ESTIMATE (audit L7): three in ten meters in concrete basement meter rooms
+      # stay silent, one in twenty elsewhere; with about a quarter of new meters
+      # in basements that is roughly one in nine overall.
+      - {target: meters.registration, property: ftr, value: -0.1}
+    tells:
+      - {tell: meter_board, text: "Op het whiteboard bij Meetdata staan twee kolommen adressen, elk met een rood streepje erachter."}
+    clues:
+      - {tool: data, key: true, depth: 0, text: "In de nieuwe flats met een betonnen kelderberging stuurt drie op de tien nieuwe meters de eerste week geen standen; elders één op de twintig."}
+      - {tool: queue_count, key: false, depth: 0, text: "Bij Meetdata & registratie ligt weinig werk; de lijst is kort en netjes op volgorde."}
+      - {tool: shadow, key: true, depth: 1, at: meters.visit, text: "De monteur plaatst de meter, sluit de kast en rijdt door. Of de meter verbinding maakt, kijkt niemand na."}
+      - {tool: documents, key: true, depth: 1, at: meters.appointment, text: "Bij het plannen gaat standaard een GPRS-module mee; de dekkingskaart van het adres wordt niet bekeken."}
+      - {tool: conversation, key: true, depth: 2, at: meters.visit, text: "'Testen? Dan sta ik er tien minuten langer. Als hij niet werkt, hoor ik het vanzelf.'"}
+
+  - id: inverters_tripping
+    tier: 1
+    name: Omvormers die afschakelen
+    step: voltage_complaints.measurement
+    waste: defects
+    severity: medium
+    visibility: obvious
+    kpi: first_time_right
+    # Five complaints a week, most of them in the sunny months: eight weeks hold too few to
+    # read first time right (gate backlog 5, 2026-10-24: the best fix gained +0.8 to +17 %
+    # over 12 probe runs, 2 of them inside the 2 % noise; +4 to +21 % over the longest
+    # horizon). The fix's own standard measures a summer and a winter week, so the Check
+    # measures the longest window it has (Region.check_window), not a sunny spell.
+    measure_days: 263
+    symptoms:
+      - Het aantal spanningsklachten is in twee jaar verdrievoudigd, vooral op zonnige middagen.
+      - Klanten melden dat hun omvormer uitvalt en hun zonnepanelen niets opleveren.
+    root_cause: De aftakkingen van de wijktransformatoren staan nog zoals voor de zonnepanelen, en niemand kijkt naar de spanning in het laagspanningsnet. Elke klacht wordt los opgelost met een meting bij één adres.
+    plausible_causes:
+      - Goedkope omvormers zijn slecht afgesteld.
+      - Klanten hebben te veel panelen voor hun aansluiting.
+    mismatch_note: Elke klacht apart meten en oplossen bestrijdt het symptoom. De spanning is te hoog in de hele straat.
+    countermeasures: {tap_trial_one_station: 0.6, tap_review_per_neighbourhood: 1.0, smart_meter_voltage_data: 0.8, targeted_reinforcement: 0.7}
+    teaches: [root_cause, systems_thinking]
+    effects:
+      - {target: voltage_complaints, property: demand, value: 3.0}  # complaints tripled (Solar Magazine)
+      # A tap set for one address does not hold for the street: three in ten
+      # complaints come back after the change (an estimate).
+      - {target: voltage_complaints.tap_change, property: ftr, value: -0.3}
+    tells:
+      - {tell: measurement_tray, text: "De spanningsklachten in het bakje zitten met een paperclip per adres bij elkaar, en op bijna elke klacht staat een tijd rond het middaguur."}
+    clues:
+      - {tool: data, key: true, depth: 0, text: "Negen van de tien spanningsklachten komen binnen tussen elf en drie uur, op zonnige dagen."}
+      - {tool: conversation, key: false, depth: 0, text: "'Het zijn die goedkope omvormers. Met een goed merk heb je hier geen last van.'"}
+      - {tool: shadow, key: true, depth: 1, text: "De meting bij het adres laat zien dat de spanning 's middags oploopt tot 254 volt. Boven 253 volt moet een omvormer afschakelen; dat is de norm."}
+      - {tool: documents, key: true, depth: 1, at: voltage_complaints.tap_change, text: "De aftakking van de wijktrafo staat sinds 2009 op dezelfde stand. Inmiddels liggen er op de helft van de daken zonnepanelen."}
+      - {tool: data, key: true, depth: 2, at: voltage_complaints.analysis, text: "De slimme meters in de straat registreren elk kwartier de spanning. Niemand bij Voltana kijkt ernaar."}
+
+  - id: transformer_wait
+    tier: 1
+    name: Een half jaar wachten in volle straten
+    step: connections.grid_reinforcement
+    waste: waiting
+    severity: high
+    visibility: subtle
+    kpi: wip_age            # finished-order lead time hides the orders still waiting
+    symptoms:
+      - Aansluitingen in volle straten wachten een half jaar of langer op netverzwaring.
+      - Het projectteam netverzwaring zegt dat de fabrikant niet op tijd levert.
+    root_cause: Transformatoren worden per project besteld, pas als het ontwerp van de verzwaring is goedgekeurd. De levertijd van de fabrikant komt daardoor na het ontwerp in plaats van ernaast.
+    plausible_causes:
+      - De fabrikant levert te traag.
+      - Er zijn te weinig monteurs voor netverzwaring.
+    mismatch_note: De levertijd van de fabrikant kun je niet veranderen. Wanneer je bestelt wel.
+    countermeasures: {early_transformer_order: 1.0, framework_contracts: 0.9, strategic_transformer_stock: 0.8}
+    teaches: [waste_waiting, flow]
+    effects:
+      # Estimate: about six months of supplier lead time after the design, where
+      # four months is the reinforcement itself.
+      - {target: connections.grid_reinforcement, property: wait_time, value: 1.75}
+      # Estimate: the station reinforcements that free capacity for large
+      # consumers wait for the same late-ordered transformers.
+      - {target: congestion.capacity_queue, property: wait_time, value: 1.2}
+    tells:
+      - {tell: reinforcement_board, text: "Achter de oudste straatnamen op het bord staat in pen: 'trafo nog niet binnen'."}
+    clues:
+      - {tool: data, key: true, depth: 0, text: "Een netverzwaring duurt gemiddeld zeven maanden. Het werk in de straat zelf duurt twee weken."}
+      - {tool: conversation, key: false, depth: 0, at: connections.design, text: "'De fabrikanten hebben het druk. Heel Europa wil transformatoren.'"}
+      - {tool: documents, key: true, depth: 1, text: "Het bestelproces: eerst het ontwerp van de verzwaring afronden en laten goedkeuren, dan pas de transformator bestellen. Levertijd: zes maanden."}
+      - {tool: conversation, key: true, depth: 2, at: connections.grid_study, text: "'Bij de netstudie weten we al dat er een trafo bij moet. Maar bestellen mag pas met een goedgekeurd ontwerp; zo is het altijd gegaan.'"}
+
+  - id: unused_capacity
+    tier: 1
+    name: Ondernemers wachten op transportcapaciteit
+    step: congestion.capacity_queue
+    waste: inventory
+    severity: high
+    visibility: hidden
+    # Released capacity lets more requests through (+9 to +30 % granted a week
+    # over 6 seeds, probe 2026-10-15); their lead time is months long and noisy.
+    kpi: throughput
+    symptoms:
+      - De wachtrij voor transportcapaciteit groeit, terwijl de stations op het drukste moment niet vol zitten.
+      - Ondernemers op de wachtlijst vragen waarom hun buurman wel capaciteit heeft en die niet gebruikt.
+    root_cause: Gecontracteerde transportcapaciteit wordt nooit vergeleken met het werkelijke gebruik, dus ongebruikte capaciteit komt niet terug voor de wachtrij.
+    plausible_causes:
+      - Het net is gewoon vol; alleen verzwaren helpt.
+      - De congestieonderzoeken rekenen te voorzichtig.
+    mismatch_note: Op papier is het net vol, in werkelijkheid niet. Wie alleen verzwaart, laat de ongebruikte reserveringen liggen.
+    countermeasures: {use_it_or_lose_it: 1.0, capacity_usage_dashboard: 0.7, flexible_contracts: 0.8}
+    teaches: [waste_inventory, visual_management]
+    effects:
+      # Capacity frees up only through reinforcement, so the queue moves slower
+      # and fewer requests fit straight away (an estimate).
+      - {target: congestion.capacity_queue, property: wait_time, value: 1.4}
+      - {target: congestion.capacity_queue, property: applies, value: 0.1}
+    tells:
+      # The empty hall is the listen-in clue's (depth 1); the tell only shows that someone wondered.
+      - {tell: congestion_list, text: "Naast een paar bedrijfsnamen op de lijst staat in de kantlijn een vraagteken in potlood."}
+    clues:
+      - {tool: data, key: true, depth: 0, text: "Op het drukste kwartier van het jaar gebruiken de grootzakelijke klanten samen 62% van het vermogen dat ze gecontracteerd hebben."}
+      - {tool: conversation, key: false, depth: 0, at: congestion.congestion_study, text: "'Het net is vol. Tot de verzwaring klaar is, kunnen we niets doen.'"}
+      - {tool: listen_in, key: true, depth: 1, at: congestion.intake, text: "Een ondernemer aan de telefoon: 'Mijn buurman heeft twee megawatt gecontracteerd en zijn hal staat leeg.'"}
+      - {tool: documents, key: true, depth: 1, at: congestion.congestion_study, text: "Het congestieonderzoek rekent met het gecontracteerde vermogen van iedereen, niet met wat er werkelijk loopt."}
+      - {tool: documents, key: true, depth: 2, at: congestion.offer, text: "In de contracten staat niets over ongebruikte capaciteit, en niemand heeft de taak om contract en meting naast elkaar te leggen."}
+
+  - id: planning_reshuffle
+    tier: 1
+    name: Afspraken die op de dag zelf vervallen
+    step: connections.planning
+    waste: waiting
+    severity: medium
+    visibility: subtle
+    kpi: first_time_right
+    symptoms:
+      - Klanten krijgen op de dag zelf te horen dat de monteur niet komt.
+      - De planners zijn de halve week bezig met omplannen.
+    root_cause: Elke monteur wordt voor 100% ingepland, zonder ruimte voor storingen. Elke storing trekt een monteur weg en zet de rest van zijn dag om, en daarmee die van de klanten.
+    plausible_causes:
+      - Klanten zijn niet flexibel genoeg.
+      - Er zijn te weinig planners.
+    mismatch_note: Sneller omplannen bestrijdt het symptoom. Storingen komen elke dag; de planning houdt er geen rekening mee.
+    countermeasures: {daytime_outage_crew: 1.0, planning_with_fault_windows: 0.85, heijunka_release: 0.7}
+    teaches: [heijunka, capacity_planning]
+    effects:
+      # Estimates: about ten daytime outages a week each cancel the rest of a
+      # monteur's day; the moved appointments often do not hold.
+      - {target: connections.execution, property: ftr, value: -0.25}  # a quarter of the planned jobs need a new appointment
+      - {target: meters.visit, property: ftr, value: -0.1}
+      - {target: connections.planning, property: touch_time, value: 2.0}  # re-planning the week
+    tells:
+      - {tell: planning_board, text: "Op het weekbord bij de planners hangen veel rode kaartjes tussen de gele."}
+    clues:
+      - {tool: data, key: true, depth: 0, text: "Een op de drie geplande klussen van vorige week is verschoven, de meeste op de dag zelf."}
+      - {tool: conversation, key: false, depth: 0, text: "'Klanten zijn gewoon niet flexibel. Als we een nieuwe afspraak voorstellen, kan het nooit.'"}
+      - {tool: shadow, key: true, depth: 1, at: connections.execution, text: "Om tien uur komt een storing binnen. De monteur rijdt weg en zijn klussen van die middag vervallen; de planner belt de klanten af."}
+      - {tool: documents, key: true, depth: 1, text: "De weekplanning vult elke monteur voor 100%. Ruimte voor storingen staat er niet in, terwijl die altijd voorgaan."}
+
+  - id: silo_kpis
+    tier: 1
+    name: Doelen gehaald, klant wacht nog
+    step: connections.design
+    waste: overproduction
+    severity: medium
+    visibility: subtle
+    kpi: first_time_right   # the harm shows in the share of work that is right the first time
+    symptoms:
+      - Intake en Werkvoorbereiding halen allebei hun weekdoel, maar de aansluitingen komen niet sneller klaar.
+      - Monteurs krijgen ontwerpen die ze ter plekke moeten aanpassen, en aanvragen komen terug voor aanvulling.
+    root_cause: Elke afdeling wordt afgerekend op haar eigen aantallen (aanvragen of ontwerpen per week, bezetting), niet op de aansluiting als geheel. Wat een afdeling sneller doorzet, komt als fout of als stapel bij de volgende terug.
+    plausible_causes:
+      - De afdelingen willen niet samenwerken.
+      - De teams werken te snel; ze moeten gewoon rustiger aan doen.
+      - Er is te weinig overleg tussen de teamleiders.
+    mismatch_note: Meer overleg of rustiger werken verandert niets zolang elk team op eigen aantallen wordt beoordeeld. De mensen doen precies wat hun cijfers vragen.
+    countermeasures: {obeya_end_to_end: 1.0, connections_wip_limit: 0.8, shared_team_goals: 0.7}
+    teaches: [flow, waste_overproduction, kpi_alignment]
+    effects:
+      # Two departments steered by volume and utilisation (KPI menus in
+      # content/kpis.yaml): they push work in, take the short jobs first and
+      # hurry (hasty care). Rushing to hit a weekly number causes errors
+      # downstream (Goodhart's law); the care values are estimates.
+      - {target: intake, property: kpis, value: [intake_output, intake_utilisation]}
+      - {target: work_prep, property: kpis, value: [work_prep_output, work_prep_utilisation]}
+    # The clue figures are derived from the content, not measured: first-time-
+    # right falls by the hasty care of kpis.yaml (ftr -0.05) from the design
+    # step's 0.85 to 80 % and intake's 0.75 to 70 % (value_streams.yaml); a
+    # design takes the design touch time of 3.2 h x 0.9 (hasty) = 2.9 h, so
+    # "bijna drie uur".
+    tells:
+      - {tell: intake_stack, text: "Op de kast bij Intake liggen meer dossiers dan het team op een dag wegwerkt."}
+      - {tell: prep_tray, text: "Het postbakje bij Werkvoorbereiding ligt vol."}
+      - {tell: obeya_board, text: "Onder de kaart van de aansluitingen hangen de weekcijfers van Intake en Werkvoorbereiding, allebei met een groen vinkje."}
+    clues:
+      - {tool: data, key: true, depth: 0, text: "Intake zette vorige maand een record aan aanvragen door en Werkvoorbereiding leverde een record aan ontwerpen af. Toch gaan er niet meer aansluitingen per week uit, en er komt meer terug."}
+      - {tool: time_study, key: false, depth: 0, text: "Een ontwerp maken kost de werkvoorbereider bijna drie uur, binnen de norm."}
+      - {tool: data, key: true, depth: 1, text: "Het aandeel ontwerpen dat de monteur zonder aanpassing kan bouwen is in een kwartaal gezakt van 85% naar 80%, en bij Intake van 75% naar 70%."}
+      - {tool: documents, key: true, depth: 1, at: connections.intake, text: "Het weekrapport van Intake telt aanvragen per week en bezettingsgraad. Hoeveel er later terugkomt voor aanvulling, staat er niet in."}
+      - {tool: conversation, key: true, depth: 1, text: "'Mijn doel is dertig ontwerpen per week. Ik werk ze zo snel mogelijk weg, dan haal ik het. Dat de monteur er later iets aan moet aanpassen, staat niet in mijn cijfers.'"}
+      - {tool: listen_in, key: true, depth: 2, at: connections.intake, text: "In het teamoverleg: 'Nog vier aanvragen voor vrijdag, dan halen we het weekdoel. Ontbrekende gegevens vragen we later wel op.'"}
+      - {tool: conversation, key: true, depth: 2, at: connections.execution, text: "'Intake en Werkvoorbereiding zijn tevreden, hun cijfers zijn goed. Maar niemand kijkt naar mijn terugrit, of naar de klant die wacht tot de aansluiting echt klaar is.'"}
+
+  # ── Inwerkweek: the practice problem (Thursday and Friday) ──────────────────
+  # Invented and harmless (Merijn's decision, 2026-10-14): it exists only to
+  # practise the A3, the Check and the Act. Opened only by the training week.
+  # It sits at Werkvoorbereiding, the step Wednesday's count shows as the
+  # bottleneck this week (the training setup: three of four work preparers on
+  # a course), so Thursday's experiment works on the bottleneck.
+  - id: training_tray
+    tier: 1
+    name: Waar ligt het volgende dossier?
+    step: connections.design
+    waste: motion
+    severity: low
+    visibility: obvious
+    # A leading indicator: the three-day Check and Friday's month-ahead
+    # forecast can only see one. Lead time lags by about one lead time
+    # (months here: the permit wait follows design), so it cannot show this
+    # week's fix, nor its fade within a month.
+    kpi: capacity
+    symptoms:
+      - Bij Werkvoorbereiding zoekt de werkvoorbereider eerst in twee bakken voordat ze een dossier oppakt.
+    root_cause: Er zijn twee bakken voor hetzelfde werk zonder vaste volgorde; zoeken en omsorteren kost bij elk dossier extra tijd.
+    plausible_causes:
+      - De werkvoorbereiders werken te traag.
+      - Er komen te veel aanvragen tegelijk binnen.
+    mismatch_note: Harder of sneller werken haalt het zoeken niet weg. Het zit in hoe het werk binnenkomt, niet in de mensen.
+    countermeasures: {one_tray_fifo: 1.0, tray_labels: 0.7}
+    teaches: [waste_motion, 5s]
+    effects:
+      # ESTIMATE (invented for the training week): searching two trays for the
+      # oldest dossier, re-sorting, and checking which version of a returned
+      # dossier holds, about half an hour on the 3.2 h design touch time
+      # (value_streams.yaml): roughly a seventh extra.
+      - {target: connections.design, property: touch_time, value: 1.12}
+    tells:
+      - {tell: prep_tray, text: "Naast het postbakje bij Werkvoorbereiding ligt nog een stapel dossiers."}
+    clues:
+      - {tool: shadow, key: true, depth: 0, text: "Bij elk dossier kijkt de werkvoorbereider eerst in twee bakken welk dossier het oudst is, en sorteert dan om."}
+      - {tool: queue_count, key: false, depth: 0, text: "De stapel is groot nu drie van de vier werkvoorbereiders op cursus zijn. Aan de cursus verander jij deze week niets; aan wat de ene werkvoorbereider met haar tijd doet misschien wel."}
+      - {tool: time_study, key: true, depth: 1, text: "Zoeken, omsorteren en uitzoeken welke versie van een dossier geldt kost zo'n half uur per dossier: ongeveer een zevende bovenop ruim drie uur ontwerpwerk."}
+      - {tool: conversation, key: true, depth: 1, text: "'De ene bak is voor nieuwe dossiers van de Intake, de andere voor dossiers die terugkomen met aanvullingen van de klant. Zo is het ooit gegroeid; niemand weet meer waarom.'"}
+
+  # ── The way back (QA 2.12 (c), phase-2 design §3.5) ──────────────────────────
+  # Two real wastes in the meter round, money lost every week, opened only through
+  # their side missions when the budget sits at the debt floor (missions.yaml,
+  # fix_double_visits). Fixing them is how the region climbs back; nothing is given.
+  - id: double_visits
+    tier: 1
+    name: Twee keer naar hetzelfde adres
+    step: meters.visit
+    waste: defects
+    severity: medium
+    visibility: subtle
+    # The return visit is rework at the visit step (ftr). ESTIMATE: about one meter
+    # visit in seven ends 'kast niet geschikt' (an old fuse box, no room, a plate that
+    # may hold asbestos in a house from before the 1993 ban), so a connection monteur
+    # must come first and the meter monteur comes back. Measured where rework shows: the
+    # share of meter visits right the first time.
+    kpi: first_time_right
+    symptoms:
+      - Meterwisselaars rijden terug naar adressen waar ze vorige week al waren.
+      - Het programma voor de laatste analoge meters loopt achter, terwijl de monteurs volle dagen maken.
+    root_cause: Bij het inplannen kijkt niemand naar de meterkast; pas aan de deur blijkt dat eerst een aansluitmonteur moet komen, en dan rijdt de meterwisselaar een tweede keer.
+    plausible_causes:
+      - De monteurs zijn niet opgeleid voor oude meterkasten.
+      - Klanten maken de meterkast niet vrij.
+    mismatch_note: Aan de deur valt niets meer te winnen; de kast was al oud voordat de monteur kwam. Wat ontbreekt, is een blik op de kast bij het inplannen.
+    # Act 0/I audit (2026-10-24): the build year looks at the cupboard at planning, the root
+    # cause, built into the tool; a little less than the photo (a renovated old house reads as
+    # old), not a poor fix. The poor_fix debrief is the shortcut's.
+    countermeasures: {cupboard_photo_at_booking: 1.0, register_cupboard_check: 0.85, customer_self_report: 0.6}
+    teaches: [waste_defects, quality_at_the_source]
+    effects:
+      - {target: meters.visit, property: ftr, value: -0.15}
+    # ESTIMATE: 40 meter visits a week, one in seven back again (about 6), at about
+    # EUR 100 a return trip (1.5 h of a monteur at ~EUR 55 an hour, the van ~EUR 20).
+    cost_per_week: 600
+    tells:
+      - {tell: van_returns, text: "Op de retourpallet staan meterdozen die weer terug zijn; op een paar zit een oranje sticker."}
+    clues:
+      - {tool: shadow, key: true, depth: 0, text: "Op het vierde adres kijkt de monteur in de meterkast en schudt zijn hoofd: een oude stoppenkast, met een plaat die asbest kan bevatten. Hij plakt er een sticker op. Eerst moet er een aansluitmonteur komen; daarna komt hij terug."}
+      - {tool: time_study, key: false, depth: 0, text: "Een meterwissel duurt veertig minuten, netjes binnen de norm."}
+      - {tool: material_check, key: false, depth: 0, text: "In de bus liggen genoeg meters, ook driefasemeters. Aan materiaal ligt het niet."}
+      - {tool: data, key: true, depth: 1, text: "Bij één op de zeven bezoeken staat als uitkomst 'kast niet geschikt'. Bijna allemaal in huizen van voor 1990."}
+      - {tool: documents, key: true, depth: 1, at: meters.appointment, text: "De afspraakbrief vraagt de klant de meterkast vrij te maken. Naar de meterkast zelf vraagt niemand, ook niet aan de telefoon."}
+      - {tool: listen_in, key: true, depth: 2, at: meters.appointment, text: "Linda plant een meterwissel in Nova-Oud: 'Postcode, dag, klaar.' Het bouwjaar van het huis staat in het register, maar dat scherm heeft ze niet open."}
+
+  - id: overtime_planning
+    tier: 1
+    name: Overuren, ook in een rustige week
+    step: meters.appointment
+    waste: transport
+    severity: high
+    visibility: subtle
+    # The zigzag adds driving to every visit (touch_time; ESTIMATE: three of a monteur's
+    # eight hours in the van on a day across four districts, against about one and a
+    # half when a day stays in one or two, so 5 h of work where 6.5 h fit: x1.3), and the
+    # last address of a day that overruns is moved to another day (ftr; ESTIMATE: one
+    # visit in ten). The overtime itself is money (cost_per_week); with slack in the
+    # monteurs' week the flow shows it in appointments kept on time.
+    kpi: on_time
+    symptoms:
+      - De meterwisselaars schrijven elke week overuren, ook in een rustige week.
+      - Een monteur rijdt op één dag naar adressen in drie of vier wijken.
+    root_cause: Afspraken worden ingepland op volgorde van binnenkomst, niet per wijk; de monteurs rijden kriskras door de regio, en wat aan het eind van de dag overblijft, wordt overwerk.
+    plausible_causes:
+      - De monteurs werken te langzaam.
+      - Er zijn te weinig meterwisselaars.
+    mismatch_note: Meer mensen of harder werken haalt de kilometers er niet uit. De rit tussen de adressen zit in de planning.
+    # Act 0/I audit (2026-10-24): fixed district teams take the zigzag out as well (the
+    # planning follows the districts); not a poor fix. The poor_fix debrief is the cap's.
+    countermeasures: {route_by_area: 1.0, area_teams: 0.85, overtime_cap: 0.6}
+    teaches: [waste_transport, heijunka]
+    effects:
+      - {target: meters.visit, property: touch_time, value: 1.3}
+      - {target: meters.visit, property: ftr, value: -0.1}
+    # ESTIMATE: six meter monteurs with about three hours of overtime a week each, at
+    # ~EUR 60 an hour with the overtime surcharge: about EUR 1,100 a week.
+    cost_per_week: 1100
+    tells:
+      - {tell: planning_board, text: "Op het weekbord bij de planners staat achter de namen van de meterwisselaars bijna elke dag een overuur in rood."}
+    clues:
+      - {tool: data, key: true, depth: 0, text: "De meterwisselaars schreven de laatste acht weken samen 140 overuren, in rustige weken net zoveel als in drukke."}
+      - {tool: shadow, key: true, depth: 0, at: meters.visit, text: "Je rijdt een dag mee: Nova-Oud, De Hofstede, terug naar Nova-Oud, dan de Kanaalzone. Van de acht uur zit de monteur er drie in de bus."}
+      - {tool: time_study, key: false, depth: 0, at: meters.visit, text: "Bij de klant werkt de monteur vlot: de wissel zelf zit binnen de norm."}
+      - {tool: documents, key: true, depth: 1, text: "De planning zet afspraken op volgorde van aanvraagdatum. Een wijk of postcode komt in de planningsregels niet voor."}
+      - {tool: listen_in, key: true, depth: 2, text: "Een klant uit Nova-Oud wil dinsdag. Linda zet hem erin, al werkt die monteur dinsdag verder alleen in de Kanaalzone. 'Wie het eerst belt, krijgt de eerste plek.'"}
