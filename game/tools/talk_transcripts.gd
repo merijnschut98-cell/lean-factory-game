@@ -2,14 +2,14 @@ extends SceneTree
 ## Talk transcripts (Merijn's playtest 2026-10-30): every talk's branches walked
 ## through the real rules (TalkWalk) and written as readable Dutch, so a talk can be
 ## read instead of played:
-##   godot --headless --path game --script res://tools/talk_transcripts.gd -- [talk ids…] [--out=<dir>] [--budget=<n>]
+##   godot --headless --path game --script res://tools/talk_transcripts.gd -- [talk ids…] [--out=<dir>] [--budget=<n>] [--full]
 ## Writes docs/qa/talk-transcripts/<talk>.md (whole talks as the player sees them,
-## then every exchange the walk found, flagged where a line cannot be true) and,
-## for a run over every talk, README.md: the talks ranked by how broken they read.
+## then the exchanges the walk found that carry a flag or a stock reply, `--full`
+## all of them, then every ending) and, for a run over every talk, README.md: the
+## talks ranked by how broken they read (docs/qa/dialog-coherence-2026-10-30.md).
 ## Expert talks (topic by topic, ExpertTalk) are left out: they hold no moves.
 
 const OUT := "res://../docs/qa/talk-transcripts"
-const ARROWS := {2: "▲▲", 1: "▲", 0: "", -1: "▼", -2: "▼▼"}
 const FLAG_NAMES := {"repeat": "says you repeat yourself, you did not", "clarify": "asks what you mean, no answer offered",
 	"empty": "says nothing", "question": "asked you something, you answer with a stock line",
 	"farewell": "the talk ends without their word on how it went", "ruud": "Ruud's note does not quote you"}
@@ -19,9 +19,12 @@ func _initialize() -> void:
 	var ids := []
 	var out := OUT
 	var budget := TalkWalk.BUDGET
+	var full := false
 	for arg: String in OS.get_cmdline_user_args():
 		if arg.begins_with("--out="):
 			out = arg.trim_prefix("--out=")
+		elif arg == "--full":
+			full = true
 		elif arg.begins_with("--budget="):
 			budget = int(arg.trim_prefix("--budget="))
 		else:
@@ -41,7 +44,7 @@ func _initialize() -> void:
 		scored["id"] = talk.def.id
 		scored["name"] = talk.def.name
 		ranked.append(scored)
-		_write(dir.path_join(talk.def.id + ".md"), _transcript(ctx, talk, walked, scored))
+		_write(dir.path_join(talk.def.id + ".md"), _transcript(ctx, talk, walked, scored, full))
 		print("%-26s score %5.1f  %s" % [talk.def.id, scored["score"], _counts(scored)])
 	if ids.is_empty():
 		ranked.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["score"] > b["score"])
@@ -81,7 +84,7 @@ func _ranking(ranked: Array[Dictionary]) -> String:
 	return "\n".join(md) + "\n"
 
 
-func _transcript(ctx: Dictionary, talk: Dialog, walked: Dictionary, scored: Dictionary) -> String:
+func _transcript(ctx: Dictionary, talk: Dialog, walked: Dictionary, scored: Dictionary, full: bool) -> String:
 	var who := talk.who
 	var c: Catalog = ctx["catalog"]
 	var md := ["# %s (`%s`)" % [talk.def.name, talk.def.id], "",
@@ -99,7 +102,7 @@ func _transcript(ctx: Dictionary, talk: Dialog, walked: Dictionary, scored: Dict
 		md.append("")
 		md.append("### %s" % p["name"])
 		md.append("")
-		md.append("**%s:** %s  " % [who.short, _opening(c, talk)])
+		md.append("**%s:** %s  " % [who.short, talk.def.opening])
 		md.append("**%s:** %s" % [who.short, talk.position().get("text", "")])
 		for x: Dictionary in played["turns"]:
 			md.append("")
@@ -110,7 +113,7 @@ func _transcript(ctx: Dictionary, talk: Dialog, walked: Dictionary, scored: Dict
 				opts.append("**Afronden**")
 			md.append("> " + " · ".join(opts))
 			md.append("")
-			md.append("**Jij:** %s %s *(%s %d)*  " % [x["said"], ARROWS[clampi(x["arrow"], -2, 2)],
+			md.append("**Jij:** %s %s *(%s %d)*  " % [x["said"], TalkView.arrow_text(x["arrow"]),
 				_band(c, x["openness"]), x["openness"]])
 			md.append("**%s:** %s%s" % [who.short, x["reply"], _flags(x["flags"])])
 			if not x["more"].is_empty():
@@ -119,12 +122,18 @@ func _transcript(ctx: Dictionary, talk: Dialog, walked: Dictionary, scored: Dict
 				md.append("**%s:** %s" % [who.short, x["farewell"]])
 		md.append_array(_ending(c, played["ending"]))
 	md.append("")
-	md.append("## Every exchange")
+	md.append("## Exchanges to read" if not full else "## Every exchange")
 	md.append("")
-	md.append("Every option any deal could offer, after every line the person can say (%d states walked%s)." % [
-		walked["states"], ", all of them" if walked["complete"] else ", breadth first: the deepest turns sampled"])
+	var bank: Dictionary = ctx["bank_replies"]
+	var shown: Array = walked["exchanges"].values().filter(func(ex: Dictionary) -> bool:
+		return full or ex["replies"].keys().any(func(r: String) -> bool:
+			return not ex["replies"][r].is_empty() or bank.has(r)))
+	md.append("%s, after every line the person can say (%d states walked%s): %d of %d exchanges%s." % [
+		"Every option any deal could offer", walked["states"],
+		", all of them" if walked["complete"] else ", breadth first, then random talks to the end", shown.size(),
+		walked["exchanges"].size(), "" if full else ", those with a flag or a stock reply of the bank (`--full` for all)"])
 	var by_before := {}
-	for ex: Dictionary in walked["exchanges"].values():
+	for ex: Dictionary in shown:
 		var list: Array = by_before.get(ex["before"], [])
 		list.append(ex)
 		by_before[ex["before"]] = list
@@ -139,16 +148,21 @@ func _transcript(ctx: Dictionary, talk: Dialog, walked: Dictionary, scored: Dict
 			md.append("- *%s* \"%s\" → %s" % [ex["move"], ex["said"], " / ".join(replies)])
 	md.append("")
 	md.append("## Every ending")
+	md.append("")
+	md.append("Each way the walk saw a talk end (outcome, their last word), once; Ruud's note of the first such talk.")
+	var ends := {}
 	for e: Dictionary in walked["endings"].values():
-		md.append_array(_ending(c, e))
+		var key := "%s|%s|%s" % [e["outcome"], e["farewell"] if not e["farewell"].is_empty() else e["reply"], e["flags"]]
+		if not ends.has(key):
+			ends[key] = e
+	for e: Dictionary in ends.values():
+		md.append_array(_ending(c, e, false))
 	return "\n".join(md) + "\n"
 
 
-static func _opening(c: Catalog, talk: Dialog) -> String:
-	return talk.def.opening
-
-
-static func _ending(c: Catalog, e: Dictionary) -> Array:
+## How a talk ended, as the player meets it: the outcome, their last words, the
+## note (with `whole`: the curve and what was heard) and Ruud's word.
+static func _ending(c: Catalog, e: Dictionary, whole: bool = true) -> Array:
 	var labels := JsonFile.dict_or_empty(c.dialog_bank.get("labels"))
 	var chips := JsonFile.dict_or_empty(labels.get("chips"))
 	var note: Dictionary = e["note"]
@@ -158,6 +172,11 @@ static func _ending(c: Catalog, e: Dictionary) -> Array:
 			heard.append("%s: \"%s\"" % [TalkSummary.LAYERS[layer], note["heard"][layer]])
 	var out := ["", "**End: %s** (%s)%s  " % [JsonFile.dict_or_empty(labels.get("outcomes")).get(e["outcome"], e["outcome"]),
 		e["outcome"], _flags(e["flags"])]]
+	if not whole:
+		out.append("Last words: \"%s\"%s  " % [e["reply"], (" + \"%s\"" % e["farewell"]) if not e["farewell"].is_empty() else ""])
+		if not e["ruud"].is_empty():
+			out.append("Ruud: \"%s\"" % e["ruud"])
+		return out
 	if not e["farewell"].is_empty():
 		out.append("Their last words: \"%s\"  " % e["farewell"])
 	out.append("Note: ended %s · curve %s  " % [_band(c, -1, note["band"]),

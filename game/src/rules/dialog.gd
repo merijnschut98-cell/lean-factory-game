@@ -196,6 +196,9 @@ const DATA_TOKEN := "{data}"
 ## Merijn's playtest 2026-10-30): the layer the person spoke of last, `_` for
 ## any. The player summarises what was said, never what is still to come.
 const TOPICS := ["position", "interest", "lead_in", "concern", "_"]
+## Moves whose sentences all say the same, whatever the words (how are you;
+## nothing): made twice, the player said the same thing twice (_repeats).
+const SAME_SAYING := ["mood", "silence"]
 
 var def: DialogDef
 var who: PersonDef
@@ -420,6 +423,7 @@ func say(move: String, pick: String = "") -> Dictionary:
 	var before := openness
 	var line := _player_line(move, pick)  # before the move counts as used: the line offered
 	var at_lead_in := _lead_in_said and not revealed.has("concern")
+	var repeated := _repeats(move, line)
 	var effect := _effect(move, pick)
 	var delta: int = effect["delta"]
 	var reply: Dictionary = effect["reply"]
@@ -430,7 +434,9 @@ func say(move: String, pick: String = "") -> Dictionary:
 		delta = roundi(delta * REPEAT_FACTOR)
 	elif _streak >= 3:
 		delta = REPEAT_THIRD
-		reply = _again(move)
+		# Said before: "you said that". A new sentence of the same kind is answered as
+		# a miss (a new proposal or clue as itself), read like the repeat it counts as.
+		reply = _again(move) if repeated else _shared(str(_plain(move, reply)["text"]))
 		lands = false
 		worn = true
 	elif lands and move in LISTEN:
@@ -782,7 +788,7 @@ func need() -> String:
 
 ## The person's line when a move wears out: the dialog's own, else the archetype's.
 func _wear_line(move: String) -> Dictionary:
-	var own := JsonFile.dict_or_empty(JsonFile.dict_or_empty(def.replies.get(move)).get("worn"))
+	var own := _entry(def.replies, move, "worn")
 	if not own.is_empty():
 		return _told(own, "replies.%s.worn" % move)
 	var lines := JsonFile.dict_or_empty(JsonFile.dict_or_empty(bank.get("wear_out")).get(who.archetype))
@@ -825,14 +831,16 @@ func _note(reply: Dictionary, always: bool = false) -> void:
 
 
 ## The person's reply to a move: the dialog's own, the bank's, or (too early)
-## the position, repeated defensively. A miss of a move said before in this talk
-## may be its `again` line ("Ja, dat zei je al."): only then (Merijn's playtest
-## 2026-10-30), and never tagged, so the rules read the miss as before.
+## the position, repeated defensively. A miss of a sentence said before in this
+## talk (_repeats) may be its `again` line ("Ja, dat zei je al."): only then
+## (Merijn's playtest 2026-10-30), and never tagged, so the rules read the miss
+## as before.
 func _reply(move: String, situation: String) -> Dictionary:
-	var situations := ["again", situation] if situation == "misses" and int(_uses.get(move, 0)) > 0 else [situation]
+	var situations := ["again", situation] if situation == "misses" and _repeats(move, _player_line(move)) \
+		else [situation]
 	for source: Dictionary in [def.replies, bank.get("replies", {})]:
 		for case: String in situations:
-			var line: Dictionary = JsonFile.dict_or_empty(JsonFile.dict_or_empty(source.get(move)).get(case))
+			var line := _entry(source, move, case)
 			if line.is_empty():
 				continue
 			var tags: Array = line.get("tags", [])
@@ -845,19 +853,47 @@ func _reply(move: String, situation: String) -> Dictionary:
 	return _told(position(), "position") if situation == "too_early" else _shared("")
 
 
-## The same move a third time in a row: the move's `again` line (a dialog's
+## Whether the player's sentence `line` for `move` repeats one said before in
+## this talk (Merijn's playtest 2026-10-30: "dat zei je al" only then): the same
+## sentence, or a move whose sentences all say the same (SAME_SAYING) made before.
+func _repeats(move: String, line: String) -> bool:
+	return line in said or (move in SAME_SAYING and int(_uses.get(move, 0)) > 0)
+
+
+## The person's plain reply to a move made a third time in a row with a new
+## sentence: a listening move's miss, else (a new proposal or clue) its own reply.
+func _plain(move: String, reply: Dictionary) -> Dictionary:
+	var miss := _reply(move, "misses") if not move in PICK_MOVES else {}
+	return miss if not str(miss.get("text", "")).is_empty() else reply
+
+
+## The line `replies` (a dialog's own or the bank's) hold for `move` in `case`
+## ({} for none): a line, or a list of lines (the n-th for the move's n-th time,
+## the last one stays), or a mapping from TOPICS (the layer the player spoke
+## to; `_` for any) to either.
+func _entry(replies: Dictionary, move: String, case: String) -> Dictionary:
+	var entry: Variant = JsonFile.dict_or_empty(replies.get(move)).get(case)
+	if entry is Dictionary and not entry.has("text"):
+		entry = entry.get(_topic, entry.get("_"))
+	if entry is Array and not entry.is_empty():
+		entry = entry[mini(int(_uses.get(move, 0)), entry.size() - 1)]
+	return JsonFile.dict_or_empty(entry)
+
+
+## A sentence said before, made a third time in a row: the move's `again` line (a dialog's
 ## own, else the bank's), in the form of what was said (a silence is no
 ## question); else the bank's special.repeat. Untagged, as before.
 func _again(move: String) -> Dictionary:
 	for source: Dictionary in [def.replies, bank.get("replies", {})]:
-		var line := JsonFile.dict_or_empty(JsonFile.dict_or_empty(source.get(move)).get("again"))
+		var line := _entry(source, move, "again")
 		if not line.is_empty():
 			return _shared(str(line.get("text", "")))
 	return _shared(bank["special"]["repeat"])
 
 
 ## What the player says: a proposal's or experiment's own sentence, else the
-## dialog's line for the move, else the bank's. A list of variants gives the
+## dialog's line for the move (for the layer spoken of last, TOPICS, when keyed),
+## else the bank's. A list of variants gives the
 ## next one each time the move is said in this talk (where it starts differs
 ## per seed and move), so a line comes back only once all were said.
 func _player_line(move: String, pick: String = "") -> String:

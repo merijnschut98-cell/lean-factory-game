@@ -29,6 +29,24 @@ func test_a_person_says_you_repeat_yourself_only_when_you_did() -> void:
 	assert_eq(second["reply"], "empathy nog eens", "the second time they may say you said it before")
 
 
+## A new sentence of the same kind is no repeat: "dat zei je al" needs the same
+## sentence (or a move whose sentences all say the same: how are you, nothing).
+func test_a_new_sentence_of_the_same_kind_is_no_repeat() -> void:
+	var d := DialogFixture.def({"lines": {"empathy": ["Dat is veel.", "Dat lijkt me zwaar."]}})
+	var t := _talk(_bank_with_again(), d)
+	DialogFixture.play(t, ["mood", "open_question", "empathy", "paraphrase"])
+	var second := t.say("empathy")
+	assert_false(second["lands"])
+	assert_true(t.said.count(second["line"]) == 1, "a sentence not said before")
+	assert_eq(second["reply"], "empathy mist", "so no 'you said that'")
+	var four := _talk(_bank_with_again(), d, 50)
+	DialogFixture.play(four, ["empathy", "empathy"])
+	assert_eq(four.say("empathy")["reply"], "defender zegt", "the third in a row: the pattern, in their words")
+	var fourth := four.say("empathy")
+	assert_true(fourth["line"] in four.said.slice(0, 3), "the fourth: a sentence said before")
+	assert_eq(fourth["reply"], "empathy nog eens", "now they may say you said it")
+
+
 ## Without an `again` line the miss stays the ordinary one (a dialog's own, or the bank's).
 func test_without_an_again_line_the_miss_is_the_ordinary_one() -> void:
 	var t := _talk(DialogFixture.bank())
@@ -46,6 +64,19 @@ func test_three_in_a_row_is_answered_in_the_form_of_the_move() -> void:
 	assert_eq(third["delta"], Dialog.REPEAT_THIRD, "the rules are unchanged: a third in a row costs")
 
 
+## A third proposal in a row that is a new one is answered as a proposal, not
+## called a repeat (the rules still count the streak).
+func test_a_new_proposal_after_two_others_is_no_repeat() -> void:
+	var t := _talk(_bank_with_again(), DialogFixture.def(), 50)
+	DialogFixture.play(t, ["paraphrase", "reflect", "propose:good", "propose:good"])
+	var third := t.say("propose", "bare")
+	assert_eq(third["reply"], "Bezwaar.", "their answer to the new proposal")
+	assert_eq(third["delta"], Dialog.REPEAT_THIRD, "the third in a row still costs")
+	var same := _talk(_bank_with_again(), DialogFixture.def(), 50)
+	DialogFixture.play(same, ["paraphrase", "reflect", "propose:good", "propose:bare"])
+	assert_eq(same.say("propose", "good")["reply"], "herhaling", "the same proposal again: a repeat")
+
+
 ## The player's line answers what the person said last: a talk's own line for a
 ## move may be keyed by the layer the talk is at (position, interest, lead_in,
 ## concern, `_` for any).
@@ -61,6 +92,22 @@ func test_the_player_s_line_answers_what_the_person_said_last() -> void:
 	assert_eq(t.say("paraphrase")["line"], "Dus het belang.", "now a summary of the interest")
 	assert_eq(t.say("mood")["line"], "Hoe gaat het?", "`_` stands for any layer; a list still turns")
 	assert_eq(t.say("mood")["line"], "En verder?")
+
+
+## A talk's own reply may answer the layer the player spoke to (keyed by TOPICS),
+## and a list gives the next line each time the move is made (the last one stays).
+func test_a_reply_answers_the_layer_the_player_spoke_to() -> void:
+	var replies := {"open_question": {"lands": {"position": {"text": "Over de positie.", "tags": ["claim"]},
+		"_": {"text": "Over iets anders."}}}, "empathy": {"lands": [{"text": "Eerste."}, {"text": "Tweede."}]}}
+	var d := DialogFixture.def({"replies": replies})
+	var r := _talk(DialogFixture.bank(), d).say("open_question")
+	assert_eq([r["reply"], r["tags"]], ["Over de positie.", ["claim"]], "an answer to the position")
+	var t := _talk(DialogFixture.bank(), d, 50)
+	assert_eq(t.say("paraphrase")["revealed"], "interest")
+	assert_eq(t.say("open_question")["reply"], "Over iets anders.", "past the position: `_`")
+	var listed := _talk(DialogFixture.bank(), d)
+	assert_eq(listed.say("empathy")["reply"], "Eerste.", "a list: the first line the first time")
+	assert_eq(listed.say("empathy")["reply"], "Tweede.", "the next one the next time")
 
 
 ## The talk keeps the player's sentences, as said, in order.

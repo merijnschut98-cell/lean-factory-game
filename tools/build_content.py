@@ -2193,18 +2193,36 @@ def _player_lines(player: dict, where: str) -> None:
             raise ContentError(f"{where} show_data: every line names the clue with {DATA_TOKEN}")
 
 
-def _replies(replies: dict, where: str) -> None:
+def _replies(replies: dict, where: str, keyed: bool = False) -> None:
+    """Replies per move and situation. `keyed` (a talk's own, not the bank's): an
+    entry may also be a list of lines (the n-th for the move's n-th time) or a
+    mapping from the layer the player spoke to (LINE_TOPICS) to either (Dialog._entry)."""
     for move, by_situation in replies.items():
         if move not in DIALOG_MOVES:
             raise ContentError(f"{where}: unknown move {move!r}")
         if not isinstance(by_situation, dict):
             raise ContentError(f"{where} {move}: maps a situation to a line")
-        for situation, line in by_situation.items():
+        for situation, entry in by_situation.items():
+            at = f"{where} {move} {situation}"
             if situation not in REPLY_SITUATIONS:
                 raise ContentError(f"{where} {move}: unknown situation {situation!r} ({', '.join(REPLY_SITUATIONS)})")
-            _line(line, f"{where} {move} {situation}")
-            if situation == "again" and line.get("tags"):
-                raise ContentError(f"{where} {move} again: carries no tags (the rules read it as the miss it replaces)")
+            for line in _reply_entry(entry, at) if keyed else [_line(entry, at)]:
+                if situation == "again" and line.get("tags"):
+                    raise ContentError(f"{at}: carries no tags (the rules read it as the miss it replaces)")
+
+
+def _reply_entry(entry: Any, where: str) -> list[dict]:
+    """The lines of a talk's own reply entry: a line, a non-empty list, or a mapping from LINE_TOPICS to either."""
+    if isinstance(entry, dict) and "text" not in entry:
+        unknown = set(entry) - set(LINE_TOPICS)
+        if unknown or not entry:
+            raise ContentError(f"{where}: keyed by the layer it answers ({', '.join(LINE_TOPICS)}), not {sorted(unknown)}")
+        return [line for topic, value in entry.items() for line in _reply_entry(value, f"{where} {topic}")]
+    if isinstance(entry, list):
+        if not entry:
+            raise ContentError(f"{where}: a line, or a non-empty list of lines")
+        return [_line(line, f"{where} {i}") for i, line in enumerate(entry)]
+    return [_line(entry, where)]
 
 
 def _validate_expert(d: dict, where: str) -> None:
@@ -2328,7 +2346,7 @@ def _validate_dialog(d: dict, where: str) -> None:
     replies = d.get("replies", {})
     if not isinstance(replies, dict):
         raise ContentError(f"{where}: 'replies' maps a move to its replies")
-    _replies(replies, f"{where} replies")
+    _replies(replies, f"{where} replies", keyed=True)
     outcomes = d.get("outcomes", {})
     if not isinstance(outcomes, dict) or set(outcomes) - set(DIALOG_OUTCOMES):
         raise ContentError(f"{where}: 'outcomes' overrides texts of known outcome(s) only: {', '.join(DIALOG_OUTCOMES)}")
@@ -3164,9 +3182,10 @@ def check_spoken(docs: dict[str, Any]) -> None:
 
 # ── A reply presupposes nothing that was not said (Merijn's playtest 2026-10-30) ──
 # docs/qa/dialog-coherence-2026-10-30.md. A person's reaction that says the player
-# repeats themselves ("Ja, dat zei je al.") is true only after the player said the
-# same kind of sentence before: the rules (Dialog) say it only from the `again`
-# slot, the wear-out lines and special.repeat, which they reach only then. A
+# repeats themselves ("Ja, dat zei je al.") is true only after the player said that
+# sentence before (Dialog._repeats): the rules say it only from the `again` slot
+# and special.repeat, which they reach only then (a wear-out line answers the same
+# kind of sentence in other words, so it claims no repeat). A
 # reaction that asks the player to clarify ("Hoe bedoel je?") has no answer: no
 # turn offers a clarification, so no person says it. Exported in
 # vocabulary.json: the Godot transcript walk (TalkWalk) flags the same lines.
@@ -3187,22 +3206,27 @@ _REACTION_KEYS = ("replies", "outcomes", "warning", "items")
 def _reactions(docs: dict[str, Any]) -> list[tuple[str, str, bool]]:
     """(where, text, may_repeat) for every line a person says in a talk; may_repeat:
     a reply the rules say only after the player said the same kind before (an
-    `again` or `worn` line, a wear-out line, special.repeat), or a story line."""
+    `again` line, special.repeat: Dialog._repeats), or a story line. A wear-out
+    line answers the same kind of sentence made again in other words: no claim."""
     dialogs = docs.get("dialogs") or {}
     bank = dialogs.get("bank") or {}
     out: list[tuple[str, str, bool]] = []
     for where, text in _strings({k: bank[k] for k in ("replies", "special", "outcomes") if k in bank}, "bank"):
-        out.append((where, text, where.endswith((" again text", " special repeat"))))
-    out += [(where, text, True) for where, text in _strings(bank.get("wear_out", {}), "bank wear_out")]
+        out.append((where, text, _in_slot(where, "again", "repeat")))
+    out += [(where, text, False) for where, text in _strings(bank.get("wear_out", {}), "bank wear_out")]
     for d in dialogs.get("dialogs", []):
         if d.get("kind") == "expert":
             continue
         own = {k: d[k] for k in _PERSON_DIALOG if k in d}
         own["items"] = [i.get("reply", "") for i in d.get("proposals", []) + d.get("experiments", [])]
         for where, text in _strings(own, f"dialog {d['id']}"):
-            story = not any(f" {k} " in f"{where} " for k in _REACTION_KEYS)
-            out.append((where, text, story or where.endswith((" again text", " worn text"))))
+            out.append((where, text, not _in_slot(where, *_REACTION_KEYS) or _in_slot(where, "again")))
     return out
+
+
+def _in_slot(where: str, *keys: str) -> bool:
+    """Whether the path `where` (_strings') passes through one of `keys`."""
+    return any(f" {k} " in f"{where} " for k in keys)
 
 
 def check_coherence(docs: dict[str, Any]) -> None:

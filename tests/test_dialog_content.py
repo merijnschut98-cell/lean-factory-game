@@ -287,7 +287,7 @@ def test_no_false_experience_and_no_untracked_promise(real):
 
 def test_a_dialog_may_give_the_person_their_own_worn_line(real, tmp_path):
     docs = copy.deepcopy(real)
-    _dialog(docs, "joost_output_kpi")["replies"]["paraphrase"]["worn"] = {"text": "Ja. Dat zei je al."}
+    _dialog(docs, "joost_output_kpi")["replies"]["paraphrase"]["worn"] = {"text": "Ja, ja. Ik hoor je wel."}
     _load(tmp_path, docs)
 
 

@@ -27,7 +27,9 @@ const BADGE_ROLE := "CI-lead · Aansluitingen"
 const HINT_WALK := "Lopen: WASD of klik op de vloer"
 const HINT_LOOK := "Draaien: Z en C  ·  Zoomen: muiswiel"
 const HINT_JOURNAL := "Tab  je telefoon: wat Anouk je vertelde staat in Wie is wie"
-const TALK_HINT := "Openheid: hoe open Anouk nu met je praat. Kies hoe je reageert; je ziet aan haar wat het doet."
+## The first talk of the game (Merijn's playtest 2026-10-30: "Openheid" was named with no
+## introduction, and no meter is on screen): what to watch, in words, once.
+const TALK_HINT := "Kies wat je zegt. Hoe het valt, zie je aan Anouk en aan het pijltje achter je zin: ▲ ze gaat meer open, ▼ ze klapt dicht. De bolletjes linksboven: hoeveel ze je vertrouwt."
 const EXPLAIN := "Leg maar uit"
 const KNOW_IT := "Dat verhaal ken ik al, Ruud"
 const LETTER := ["Geachte heer Hoekstra,",

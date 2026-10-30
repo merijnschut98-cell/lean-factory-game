@@ -11,9 +11,9 @@ class_name TalkWalk
 ##   farewell the talk ended and the person never said how it landed
 ##   ruud     Ruud's note after a tutorial talk does not quote a sentence the player said
 ## Two walks: every option a turn could offer under any deal (Dialog._candidates),
-## breadth first, states merged, for the table of every exchange; and a few whole
-## talks as the player sees them (four sentences a turn on the route check's deal),
-## chosen by simple players, to read from start to end.
+## breadth first with states merged, then random talks to the end, for the table of
+## every exchange; and a few whole talks as the player sees them (four sentences a
+## turn on the route check's deal), chosen by simple players, to read start to end.
 ## Used by game/tools/talk_transcripts.gd and test_talk_coherence.gd.
 
 ## States expanded per talk in the exchange walk (an estimate: the first three
@@ -22,15 +22,12 @@ const BUDGET := 1500
 ## Random talks played to the end after it, over every option (an estimate).
 const DIVES := 300
 ## Flags a talk in content may never show (test_talk_coherence.gd); `question`
-## is a reading hint, `generic` a measure.
+## is a reading hint, the share of stock replies a measure (score).
 const BROKEN := ["repeat", "clarify", "empty", "farewell", "ruud"]
 ## How much each flag weighs in the ranking of talks (the worst read first).
 const WEIGHT := {"repeat": 3.0, "clarify": 3.0, "empty": 2.0, "farewell": 2.0, "ruud": 2.0, "question": 1.0}
 ## Seeds of the random players.
 const RANDOM_PLAYERS := 3
-## A player's choice: the move a person's last words call for (DialogRoutes' listener).
-const ANSWER := {"feeling": "reflect", "admission": "empathy", "hesitation": "silence", "claim": "paraphrase",
-	"doubt": "experience"}
 
 
 ## What the flags read: the patterns of vocabulary.json (tools/build_content.py
@@ -44,7 +41,8 @@ static func context(c: Catalog) -> Dictionary:
 		for line: Variant in (lines if lines is Array else [lines]):
 			stock[str(line)] = true
 	return {"repeat": _regex(str(coherence.get("repeat", ""))), "clarify": _regex(str(coherence.get("clarify", ""))),
-		"stock": stock, "people": People.new(c.persons, c.dialogs, c.dialog_bank), "catalog": c}
+		"stock": stock, "bank_replies": _bank_replies(c), "people": People.new(c.persons, c.dialogs, c.dialog_bank),
+		"catalog": c}
 
 
 static func _regex(pattern: String) -> RegEx:
@@ -75,7 +73,8 @@ static func talks(c: Catalog, ids: Array = []) -> Array[Dialog]:
 static func turn(ctx: Dictionary, before: String, moves: Array, lines: Array, r: Dictionary) -> Dictionary:
 	var reply := str(r["reply"])
 	var flags: Array[String] = []
-	var again: bool = r["move"] in moves or r["line"] in lines
+	# Said before (Dialog._repeats): the same sentence, or a move whose sentences all say the same.
+	var again: bool = r["line"] in lines or (r["move"] in Dialog.SAME_SAYING and r["move"] in moves)
 	if _hits(ctx["repeat"], reply) and not again:
 		flags.append("repeat")
 	if _hits(ctx["clarify"], reply):
@@ -241,8 +240,8 @@ static func listener(t: Dialog, offers: Array, turns: Array) -> int:
 	if t.def.kind == "checkin" and t.revealed.has("concern"):
 		want = ["close"]
 	for tag: String in t._last_tags:
-		if ANSWER.has(tag):
-			want.append(ANSWER[tag])
+		if DialogRoutes.ANSWER.has(tag):
+			want.append(DialogRoutes.ANSWER[tag])
 	want.append_array(["open_question", "mood", "empathy", "inquiry", "paraphrase", "silence"])
 	var last := str(turns[-1]["move"]) if not turns.is_empty() else ""
 	for move: String in want:
@@ -273,7 +272,7 @@ static func score(ctx: Dictionary, walked: Dictionary) -> Dictionary:
 	var counts := {}
 	var replies := 0
 	var stock := 0
-	var bank_texts := _bank_replies(ctx["catalog"])
+	var bank_texts: Dictionary = ctx["bank_replies"]
 	for ex: Dictionary in walked["exchanges"].values():
 		for reply: String in ex["replies"]:
 			replies += 1

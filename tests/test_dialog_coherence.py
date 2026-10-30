@@ -38,6 +38,10 @@ def _bank(docs: dict) -> dict:
     (lambda d: _bank(d)["replies"]["empathy"].update(misses={"text": "Ja, dat zei je al."}), "repeat"),
     (lambda d: _bank(d)["replies"]["open_question"].update(misses={"text": "Dat heb ik je net verteld."}), "repeat"),
     (lambda d: _bank(d)["special"].update(refusal="Dat vroeg je net ook."), "repeat"),
+    # A wear-out line answers the same kind of sentence in other words: no "you said that".
+    (lambda d: _bank(d)["wear_out"]["quiet"].update(say="Mm. Ja. Dat zei je."), "repeat"),
+    (lambda d: _dialog(d, "joost_output_kpi").setdefault("replies", {}).update(
+        paraphrase={"worn": {"text": "Ja. Dat zei je al."}}), "repeat"),
     (lambda d: _dialog(d, "joost_output_kpi").setdefault("replies", {}).update(
         inquiry={"misses": {"text": "Dat zei ik, ja."}}), "repeat"),
     (lambda d: _dialog(d, "joost_output_kpi")["outcomes"].update(none="Dat zei je al. Tot later."), "repeat"),
@@ -53,6 +57,13 @@ def _bank(docs: dict) -> dict:
     (lambda d: _dialog(d, "joost_output_kpi")["lines"].update(paraphrase={"later": "Dus straks."}), "position"),
     (lambda d: _dialog(d, "joost_output_kpi")["lines"].update(paraphrase={"position": []}), "line"),
     (lambda d: _dialog(d, "joost_output_kpi")["lines"].update(show_data={"position": "Kijk."}), "{data}"),
+    # A talk's own reply may answer the layer spoken to, or turn through a list; the bank's stay plain.
+    (lambda d: _dialog(d, "joost_output_kpi").setdefault("replies", {}).update(
+        inquiry={"lands": {"later": {"text": "Straks."}}}), "position"),
+    (lambda d: _dialog(d, "joost_output_kpi").setdefault("replies", {}).update(inquiry={"lands": []}), "line"),
+    (lambda d: _dialog(d, "joost_output_kpi").setdefault("replies", {}).update(
+        inquiry={"again": {"_": {"text": "Dat vroeg je al.", "tags": ["claim"]}}}), "tags"),
+    (lambda d: _bank(d)["replies"]["mood"].update(lands=[{"text": "Goed."}]), "mapping"),
 ])
 def test_incoherent_content_is_rejected(real, tmp_path, mutate, message):
     docs = copy.deepcopy(real)
@@ -67,6 +78,8 @@ def test_a_repeat_may_be_said_from_the_again_slot_and_lines_may_answer_a_layer(r
     _dialog(docs, "joost_output_kpi").setdefault("replies", {})["inquiry"] = {"again": {"text": "Dat vroeg je al."}}
     _dialog(docs, "joost_output_kpi")["lines"]["paraphrase"] = {
         "position": "Dus het getal klopt.", "interest": ["Dus je wilt…", "Als ik je goed hoor…"], "_": "Dus…"}
+    _dialog(docs, "joost_output_kpi")["replies"]["empathy"] = {
+        "lands": {"position": {"text": "Dank je.", "tags": ["feeling"]}, "_": [{"text": "Ja."}, {"text": "Mm."}]}}
     _load(tmp_path, docs)
 
 
