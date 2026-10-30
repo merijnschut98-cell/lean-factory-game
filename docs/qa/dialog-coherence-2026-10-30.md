@@ -69,9 +69,10 @@ the tier-1 ratchet still 2).
 5. **Lines follow what was said.** A talk's own `lines.<move>` and `replies.<move>.<case>`
    may be keyed by what the person spoke of last (`Dialog.TOPICS`: position, interest,
    lead_in, concern, `_`), and a reply may be a list (the first line the person has not
-   said yet in this talk), so a summary sums up what was said and an answer fits the
-   question. Validated by the
-   build; the bank stays plain and keeps no claim or feeling tags.
+   said yet in this talk); keyed player lines are said in the order written on any deal
+   (review 2: a follow-up never comes before its question), so a summary sums up what was
+   said and an answer fits the question. Validated by the build; the bank stays plain and
+   keeps no claim or feeling tags.
 6. **Nobody says the same thing twice where it jars** (review 1). The talk keeps what
    the person said (`Dialog.answered`). The concern's lead-in is said in its own words
    once; when its moment passed and comes back, the person says a short form
@@ -86,8 +87,8 @@ the tier-1 ratchet still 2).
 7. **The gate.** `game/tests/test_talk_coherence.gd` walks every persuasion and check-in
    through the real rules (TalkWalk, below) and fails on any of the flags `repeat`,
    `clarify`, `empty`, `farewell`, `ruud` and `retold` (a story line said twice: a layer, a
-   lead-in, a proposal's answer, their own idea); a reviewed talk (`TalkWalk.REVIEWED`,
-   for now Anouk) also fails on any `echo` (a line the person already said, word for word,
+   lead-in, a proposal's answer, their own idea; whatever the player said, review 2); a
+   reviewed talk (`TalkWalk.REVIEWED`, for now Anouk) also fails on any `echo` (a line the person already said, word for word,
    to a sentence the player had not said before). On the old content it fails on every
    talk; it passes now. Measured with the full walk: Anouk 177 echoes and 15 retold lines
    → 0 and 0; Sanne (`sanne_checker`) 250 and 9 → 245 and 0; `sanne_tuesday` 213 and 30 →

@@ -12,7 +12,7 @@ class_name TalkWalk
 ##   ruud     Ruud's note after a tutorial talk does not quote a sentence the player said
 ##   echo     the person says a line they already said in this talk, word for word,
 ##            to a sentence the player had not said before
-##   retold   an echo of a story line said once: a layer, a lead-in, a proposal's reply,
+##   retold   a story line said a second time (whatever the player said): a layer, a lead-in, a proposal's reply,
 ##            their own idea (review 1 of 2026-10-30)
 ## Two walks: every option a turn could offer under any deal (Dialog._candidates),
 ## breadth first with states merged, then random talks to the end, for the table of
@@ -104,9 +104,13 @@ static func turn(ctx: Dictionary, t: Dialog, before: String, path: Dictionary, r
 	if before.strip_edges().ends_with("?") and ctx["stock"].has(r["line"]):
 		flags.append("question")
 	var more := str(r.get("co_proposal", {}).get("text", ""))
-	for line: String in [reply, more]:   # the same answer to the same sentence is no echo
-		if not line.strip_edges().is_empty() and line in path["heard"] and not r["line"] in path["lines"]:
-			flags.append("retold" if _story(t.def).has(line) else "echo")
+	for line: String in [reply, more]:
+		if line.strip_edges().is_empty() or not line in path["heard"]:
+			continue
+		if _story(t.def).has(line):
+			flags.append("retold")   # a story line never comes twice, whatever the player said
+		elif not r["line"] in path["lines"]:
+			flags.append("echo")   # the same answer to the same sentence is no echo
 	return {"before": before, "said": str(r["line"]), "move": str(r["move"]), "reply": reply, "more": more,
 		"farewell": str(r.get("farewell", "")), "arrow": int(r.get("arrow", 0)), "band": int(r.get("band", -1)),
 		"openness": int(r.get("openness", 0)), "flags": flags}

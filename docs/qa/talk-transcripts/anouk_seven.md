@@ -16,48 +16,48 @@ The four sentences a turn offers on the route check's deal; the chosen one in bo
 **Anouk:** O, hoi! Ben jij er ook nog? Ik dacht dat ik de laatste was.  
 **Anouk:** Nog twee tekeningen en dan ga ik. Echt waar. Niet tegen Joost zeggen dat ik hier nog zit, hè?
 
-> 1. Hoe gaat het met je, zo aan het eind van de dag? · 2. Ik weet zelf ook nog niet hoe laat ik thuis ben. · 3. (je glimlacht en wacht) · **4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?**
+> 1. Hoe gaat het met je, zo aan het eind van de dag? · 2. Ik zit zelf ook nog hier, hoor. · 3. (je glimlacht en wacht) · **4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?**
 
 **Jij:** Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? ▲ *(Op z'n hoede 32)*  
 **Anouk:** Die twee moeten de deur uit. Een rijtjeshuis in Lindeveld met een warmtepomp, en een school die een lokaal bijbouwt. Die liggen allebei al te lang.
 
-> 1. Wat moet er vanavond nog af, dan? · 2. Hoe gaat het met je, zo aan het eind van de dag? · 3. Je klinkt alsof je eigenlijk al lang thuis had willen zijn. · **4. Dus nog twee tekeningen, en dan ben je weg.**
+> 1. En is dat alles wat er vanavond nog moet? · 2. Hoe gaat het met je, zo aan het eind van de dag? · 3. Je klinkt alsof je eigenlijk al lang thuis had willen zijn. · **4. Dus nog twee tekeningen, en dan ben je weg.**
 
 **Jij:** Dus nog twee tekeningen, en dan ben je weg. ▲ *(Op z'n hoede 39)*  
 **Anouk:** Ja. Nou ja… als het meezit.
 
-> 1. Om zeven uur nog twee tekeningen. Dat is ook niet niks. · **2. Hoe gaat het met je, zo aan het eind van de dag?** · 3. Ik weet zelf ook nog niet hoe laat ik thuis ben. · 4. Dus Joost mag niet weten dat je hier nog zit.
+> 1. In je eentje hier, op een maandagavond. Dat is ook niet niks. · **2. Hoe gaat het met je, zo aan het eind van de dag?** · 3. Ik zit zelf ook nog hier, hoor. · 4. Dus Joost mag niet weten dat je hier nog zit.
 
 **Jij:** Hoe gaat het met je, zo aan het eind van de dag? ▲▲ *(Luistert 51)*  
 **Anouk:** Eerlijk? Morgen zit ik hier alleen. Joost zit de hele dag in overleg en de anderen zitten op cursus. Als dit vanavond niet af is, ligt het er morgen nog. En achter elke tekening zit iemand die wacht.
 
-> 1. En als je er één laat liggen en die morgen als eerste oppakt? · 2. Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog. · **3. Dat je aan die mensen denkt die wachten, dat snap ik.** · 4. Gaat het een beetje, met al dat werk?
+> 1. En als je er één laat liggen en die morgen als eerste oppakt? · 2. Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog. · **3. Morgen in je eentje de hele afdeling. Dat is veel.** · 4. En hoe gaat het nu met jou, met dat allemaal?
 
-**Jij:** Dat je aan die mensen denkt die wachten, dat snap ik. ▲▲ *(Open 61)*  
+**Jij:** Morgen in je eentje de hele afdeling. Dat is veel. ▲▲ *(Open 61)*  
 **Anouk:** Dank je. Dat hoor ik niet vaak.
 
-> 1. Wat gebeurt er als die tekeningen morgen pas af zijn? · **2. Wat komt er morgen allemaal op je af?** · 3. Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen. · 4. (je zegt niets en wacht af)
+> 1. Wat gebeurt er als die tekeningen morgen pas af zijn? · **2. Hoe ziet je dag morgen eruit, als je er alleen voor staat?** · 3. Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben. · 4. (je blijft staan en wacht)
 
-**Jij:** Wat komt er morgen allemaal op je af? ▲ *(Open 65)*  
+**Jij:** Hoe ziet je dag morgen eruit, als je er alleen voor staat? ▲ *(Open 65)*  
 **Anouk:** Sorry, mijn telefoon. Mijn vriend appte net…
 
-> 1. Wat appte hij? · 2. En als je er één laat liggen en die morgen als eerste oppakt? · **3. (je zegt niets en wacht af)** · 4. Hé, rustig maar. Je hoeft niks te zeggen.
+> 1. Wat appte hij? · 2. En als je er één laat liggen en die morgen als eerste oppakt? · **3. (je blijft staan en wacht)** · 4. Hé, rustig maar. Je hoeft niks te zeggen.
 
-**Jij:** (je zegt niets en wacht af) ▲▲ *(Open 77)*  
+**Jij:** (je blijft staan en wacht) ▲▲ *(Open 77)*  
 **Anouk:** Of ik weer laat ben. Ik zou Fenna vandaag van de opvang halen. Dat heeft hij nu weer gedaan. … Ik zeg steeds dat het maar tijdelijk is.
 
-> 1. Thuis vroegen ze vanavond ook al waar ik bleef. En het is pas mijn eerste dag. · 2. Hoe vaak is dat de laatste tijd gebeurd? · **3. Hoe gaat het thuis, als jij zo laat bent?** · 4. Gaat het een beetje, met al dat werk?
+> 1. Thuis vroegen ze vanavond ook al waar ik bleef. En het is pas mijn eerste dag. · 2. Hoe vaak is dat de laatste tijd gebeurd? · **3. Hoe lang is het al tijdelijk?** · 4. En hoe gaat het nu met jou, met dat allemaal?
 
-**Jij:** Hoe gaat het thuis, als jij zo laat bent? ▲ *(Open 79)*  
-**Anouk:** Niet zo best. Maar daar wil ik het nu eigenlijk niet over hebben.
+**Jij:** Hoe lang is het al tijdelijk? ▲ *(Open 79)*  
+**Anouk:** Daar wil ik het nu eigenlijk niet over hebben, als je het niet erg vindt.
 
-> **1. Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog.** · 2. En als je er één laat liggen en die morgen als eerste oppakt? · 3. Hoe lang is het al tijdelijk? · 4. Mag ik morgen overdag even langskomen? Gewoon kijken hoe het gaat als je hier alleen zit.
+> **1. Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog.** · 2. En als je er één laat liggen en die morgen als eerste oppakt? · 3. Hoe gaat het thuis, als jij zo laat bent? · 4. Mag ik morgen overdag even langskomen? Gewoon kijken hoe het gaat als je hier alleen zit.
 
 **Jij:** Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog. ▲▲ *(Denkt mee 87)*  
 **Anouk:** … Ja. Ja, goed. Samen naar buiten.
-**Anouk:** Weet je wat? Kom morgen overdag even langs. Dan zie je hoe het hier gaat. Al ziet het er overdag niet veel beter uit, hoor.
+**Anouk:** Weet je wat? Kom morgen overdag ook even langs. Dan zie je hoe het hier gaat. Al ziet het er overdag niet veel beter uit, hoor.
 
-> **1. Doen we het zo?** · 2. Graag. Dan kom ik morgen even kijken. · 3. Thuis vroegen ze vanavond ook al waar ik bleef. En het is pas mijn eerste dag. · 4. (je blijft staan en wacht)
+> **1. Doen we het zo?** · 2. Graag. Dan kom ik morgen even kijken. · 3. Thuis vroegen ze vanavond ook al waar ik bleef. En het is pas mijn eerste dag. · 4. (je zegt niets en wacht af)
 
 **Jij:** Doen we het zo?  *(Denkt mee 87)*  
 **Anouk:** Ik pak mijn jas. Dank je. Dat had ik even nodig: iemand die zegt dat het mag.
@@ -72,14 +72,14 @@ Ruud: "Je vroeg: “Hoe gaat het met je, zo aan het eind van de dag?” Je wilde
 **Anouk:** O, hoi! Ben jij er ook nog? Ik dacht dat ik de laatste was.  
 **Anouk:** Nog twee tekeningen en dan ga ik. Echt waar. Niet tegen Joost zeggen dat ik hier nog zit, hè?
 
-> **1. Hoe gaat het met je, zo aan het eind van de dag?** · 2. Ik weet zelf ook nog niet hoe laat ik thuis ben. · 3. (je glimlacht en wacht) · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
+> **1. Hoe gaat het met je, zo aan het eind van de dag?** · 2. Ik zit zelf ook nog hier, hoor. · 3. (je glimlacht en wacht) · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
 
 **Jij:** Hoe gaat het met je, zo aan het eind van de dag? ▲▲ *(Op z'n hoede 38)*  
 **Anouk:** Hoe het is? … Moe, eerlijk gezegd. Fijn dat je het vraagt.
 
-> **1. Om zeven uur nog twee tekeningen. Dat is ook niet niks.** · 2. Waarom liever niet tegen Joost? · 3. Dus nog twee tekeningen, en dan ben je weg. · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
+> **1. In je eentje hier, op een maandagavond. Dat is ook niet niks.** · 2. Waarom liever niet tegen Joost? · 3. Dus nog twee tekeningen, en dan ben je weg. · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
 
-**Jij:** Om zeven uur nog twee tekeningen. Dat is ook niet niks. ▲▲ *(Luistert 48)*  
+**Jij:** In je eentje hier, op een maandagavond. Dat is ook niet niks. ▲▲ *(Luistert 48)*  
 **Anouk:** Eerlijk? Morgen zit ik hier alleen. Joost zit de hele dag in overleg en de anderen zitten op cursus. Als dit vanavond niet af is, ligt het er morgen nog. En achter elke tekening zit iemand die wacht.
 
 > **1. Morgen in je eentje de hele afdeling. Dat is veel.** · 2. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · 3. Wat gebeurt er als die tekeningen morgen pas af zijn? · 4. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht.
@@ -87,47 +87,47 @@ Ruud: "Je vroeg: “Hoe gaat het met je, zo aan het eind van de dag?” Je wilde
 **Jij:** Morgen in je eentje de hele afdeling. Dat is veel. ▲ *(Luistert 53)*  
 **Anouk:** Dank je. Dat hoor ik niet vaak.
 
-> **1. Gaat het een beetje, met al dat werk?** · 2. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · 3. (je zegt niets en wacht af) · 4. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht.
+> **1. En hoe gaat het nu met jou, met dat allemaal?** · 2. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · 3. (je blijft staan en wacht) · 4. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht.
 
-**Jij:** Gaat het een beetje, met al dat werk? ▲ *(Luistert 55)*  
+**Jij:** En hoe gaat het nu met jou, met dat allemaal? ▲ *(Luistert 55)*  
 **Anouk:** Nog steeds moe, hoor. Dat is niet veranderd.
 
-> **1. Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen.** · 2. Wat gebeurt er als die tekeningen morgen pas af zijn? · 3. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · 4. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht.
+> **1. Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben.** · 2. Wat gebeurt er als die tekeningen morgen pas af zijn? · 3. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · 4. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht.
 
-**Jij:** Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen. ▼ *(Luistert 50)*  
-**Anouk:** Hm. Ja. Maar ik moet echt even door, hoor.
+**Jij:** Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben. ▼ *(Luistert 50)*  
+**Anouk:** Hm. Ja.
 
-> **1. Dat je aan die mensen denkt die wachten, dat snap ik.** · 2. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · 3. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht. · 4. Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben.
+> **1. Dat je aan die mensen denkt die wachten, dat snap ik.** · 2. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · 3. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht. · 4. Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen.
 
 **Jij:** Dat je aan die mensen denkt die wachten, dat snap ik. ▲ *(Luistert 52)*  
 **Anouk:** Ach, het valt wel mee, hoor. Ik zit erbovenop.
 
-> **1. (je zegt niets en wacht af)** · 2. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · 3. Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben. · 4. Wat gebeurt er als die tekeningen morgen pas af zijn?
+> **1. (je blijft staan en wacht)** · 2. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · 3. Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen. · 4. Wat gebeurt er als die tekeningen morgen pas af zijn?
 
-**Jij:** (je zegt niets en wacht af) ▼ *(Luistert 48)*  
+**Jij:** (je blijft staan en wacht) ▼ *(Luistert 48)*  
 **Anouk:** … Is er iets? Je kijkt zo.
 
-> **1. En hoe gaat het nu met jou, met dat allemaal?** · 2. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht. · 3. Morgen in je eentje de hele afdeling. Dat is veel. · 4. Hoe ziet je dag morgen eruit, als je er alleen voor staat?
+> **1. Gaat het een beetje, met al dat werk?** · 2. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht. · 3. Dat is veel, voor één persoon. · 4. Hoe ziet je dag morgen eruit, als je er alleen voor staat?
 
-**Jij:** En hoe gaat het nu met jou, met dat allemaal? ▲ *(Luistert 50)*  
+**Jij:** Gaat het een beetje, met al dat werk? ▲ *(Luistert 50)*  
 **Anouk:** Echt, het gaat wel. Moe, maar het gaat.
 
-> **1. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht.** · 2. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · 3. Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben. · 4. Wat gebeurt er als die tekeningen morgen pas af zijn?
+> **1. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht.** · 2. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · 3. Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen. · 4. Wat gebeurt er als die tekeningen morgen pas af zijn?
 
 **Jij:** Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht. ▼ *(Luistert 47)*  
 **Anouk:** Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe.
 
-> **1. Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben.** · 2. Je klinkt alsof het allemaal op jou neerkomt. · 3. Morgen in je eentje de hele afdeling. Dat is veel. · 4. Hoe ziet je dag morgen eruit, als je er alleen voor staat?
+> **1. Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen.** · 2. Je klinkt alsof het allemaal op jou neerkomt. · 3. Dat is veel, voor één persoon. · 4. Hoe ziet je dag morgen eruit, als je er alleen voor staat?
 
-**Jij:** Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben. ▼ *(Luistert 42)*  
+**Jij:** Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen. ▼ *(Luistert 42)*  
 **Anouk:** Ja… Mm.
 
-> **1. Morgen in je eentje de hele afdeling. Dat is veel.** · 2. Dus als het vanavond niet af is, sta je er morgen alleen voor. · 3. Wat gebeurt er als die tekeningen morgen pas af zijn? · 4. Hoe ziet je dag morgen eruit, als je er alleen voor staat?
+> **1. Dat is veel, voor één persoon.** · 2. Dus als het vanavond niet af is, sta je er morgen alleen voor. · 3. Wat gebeurt er als die tekeningen morgen pas af zijn? · 4. Hoe ziet je dag morgen eruit, als je er alleen voor staat?
 
-**Jij:** Morgen in je eentje de hele afdeling. Dat is veel. ▲ *(Luistert 44)*  
+**Jij:** Dat is veel, voor één persoon. ▲ *(Luistert 44)*  
 **Anouk:** Ja… Het is wat het is.
 
-> **1. Hoe ziet je dag morgen eruit, als je er alleen voor staat?** · 2. Je klinkt alsof het allemaal op jou neerkomt. · 3. Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen. · 4. Gaat het een beetje, met al dat werk?
+> **1. Hoe ziet je dag morgen eruit, als je er alleen voor staat?** · 2. Je klinkt alsof het allemaal op jou neerkomt. · 3. Ik herken dat wel, dat je alles af wilt hebben. · 4. En jij zelf? Hoe gaat het?
 
 **Jij:** Hoe ziet je dag morgen eruit, als je er alleen voor staat? ▲ *(Luistert 50)*  
 **Anouk:** Morgen? Telefoon, portaal, en de tekeningen ertussendoor. In mijn eentje.
@@ -144,27 +144,27 @@ Ruud: "Je vroeg: “Hoe gaat het met je, zo aan het eind van de dag?” Je wilde
 **Anouk:** O, hoi! Ben jij er ook nog? Ik dacht dat ik de laatste was.  
 **Anouk:** Nog twee tekeningen en dan ga ik. Echt waar. Niet tegen Joost zeggen dat ik hier nog zit, hè?
 
-> 1. Hoe gaat het met je, zo aan het eind van de dag? · **2. Ik weet zelf ook nog niet hoe laat ik thuis ben.** · 3. (je glimlacht en wacht) · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
+> 1. Hoe gaat het met je, zo aan het eind van de dag? · **2. Ik zit zelf ook nog hier, hoor.** · 3. (je glimlacht en wacht) · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
 
-**Jij:** Ik weet zelf ook nog niet hoe laat ik thuis ben. ▼ *(Op z'n hoede 21)*  
-**Anouk:** Hm. Ja. Maar ik moet echt even door, hoor.
+**Jij:** Ik zit zelf ook nog hier, hoor. ▼ *(Op z'n hoede 21)*  
+**Anouk:** Hm. Ja.
 
-> 1. Ik zit zelf ook nog hier, hoor. · **2. (je glimlacht en wacht)** · 3. Om zeven uur nog twee tekeningen. Dat is ook niet niks. · 4. Dus nog twee tekeningen, en dan ben je weg.
+> 1. Ik weet zelf ook nog niet hoe laat ik thuis ben. · **2. (je glimlacht en wacht)** · 3. In je eentje hier, op een maandagavond. Dat is ook niet niks. · 4. Dus nog twee tekeningen, en dan ben je weg.
 
 **Jij:** (je glimlacht en wacht) ▼ *(Dicht 17)*  
-**Anouk:** Sorry, ik moet echt nog even door.
+**Anouk:** Sorry, ik wil die tekeningen echt nog af hebben.
 
-> 1. Waarom liever niet tegen Joost? · **2. Hoe gaat het met je, zo aan het eind van de dag?** · 3. Ik zit zelf ook nog hier, hoor. · 4. Je klinkt alsof je eigenlijk al lang thuis had willen zijn.
+> 1. Waarom liever niet tegen Joost? · **2. Hoe gaat het met je, zo aan het eind van de dag?** · 3. Ik weet zelf ook nog niet hoe laat ik thuis ben. · 4. Je klinkt alsof je eigenlijk al lang thuis had willen zijn.
 
 **Jij:** Hoe gaat het met je, zo aan het eind van de dag? ▲▲ *(Op z'n hoede 29)*  
 **Anouk:** Hoe het is? … Moe, eerlijk gezegd. Fijn dat je het vraagt.
 
-> 1. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? · **2. Om zeven uur nog twee tekeningen. Dat is ook niet niks.** · 3. Je klinkt alsof je eigenlijk al lang thuis had willen zijn. · 4. Dus nog twee tekeningen, en dan ben je weg.
+> 1. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? · **2. In je eentje hier, op een maandagavond. Dat is ook niet niks.** · 3. Je klinkt alsof je eigenlijk al lang thuis had willen zijn. · 4. Dus nog twee tekeningen, en dan ben je weg.
 
-**Jij:** Om zeven uur nog twee tekeningen. Dat is ook niet niks. ▲▲ *(Op z'n hoede 39)*  
+**Jij:** In je eentje hier, op een maandagavond. Dat is ook niet niks. ▲▲ *(Op z'n hoede 39)*  
 **Anouk:** Dank je. Dat hoor ik niet vaak.
 
-> 1. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? · **2. Hoe is het eigenlijk met je?** · 3. Dus nog twee tekeningen, en dan ben je weg. · 4. In je eentje hier, op een maandagavond. Dat is ook niet niks.
+> 1. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? · **2. Hoe is het eigenlijk met je?** · 3. Dus nog twee tekeningen, en dan ben je weg. · 4. Om zeven uur nog twee tekeningen. Dat is ook niet niks.
 
 **Jij:** Hoe is het eigenlijk met je? ▲ *(Luistert 41)*  
 **Anouk:** Nog steeds moe, hoor. Dat is niet veranderd.
@@ -174,24 +174,24 @@ Ruud: "Je vroeg: “Hoe gaat het met je, zo aan het eind van de dag?” Je wilde
 **Jij:** (je glimlacht en wacht) ▼ *(Op z'n hoede 37)*  
 **Anouk:** … Is er iets? Je kijkt zo.
 
-> 1. (je glimlacht en wacht) · **2. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?** · 3. Ik zit zelf ook nog hier, hoor. · 4. Waarom liever niet tegen Joost?
+> 1. (je glimlacht en wacht) · **2. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?** · 3. Ik weet zelf ook nog niet hoe laat ik thuis ben. · 4. Waarom liever niet tegen Joost?
 
 **Jij:** Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? ▲ *(Luistert 43)*  
 **Anouk:** Die twee moeten de deur uit. Een rijtjeshuis in Lindeveld met een warmtepomp, en een school die een lokaal bijbouwt. Die liggen allebei al te lang.
 
-> 1. (je glimlacht en wacht) · **2. Hoe gaat het met je, zo aan het eind van de dag?** · 3. Ik zit zelf ook nog hier, hoor. · 4. Wat moet er vanavond nog af, dan?
+> 1. (je glimlacht en wacht) · **2. Hoe gaat het met je, zo aan het eind van de dag?** · 3. Ik weet zelf ook nog niet hoe laat ik thuis ben. · 4. En is dat alles wat er vanavond nog moet?
 
 **Jij:** Hoe gaat het met je, zo aan het eind van de dag? ▲ *(Luistert 45)*  
 **Anouk:** Echt, het gaat wel. Moe, maar het gaat.
 
-> 1. Wat moet er vanavond nog af, dan? · **2. Hoe is het eigenlijk met je?** · 3. In je eentje hier, op een maandagavond. Dat is ook niet niks. · 4. Waarom liever niet tegen Joost?
+> 1. En is dat alles wat er vanavond nog moet? · **2. Hoe is het eigenlijk met je?** · 3. Om zeven uur nog twee tekeningen. Dat is ook niet niks. · 4. Waarom liever niet tegen Joost?
 
 **Jij:** Hoe is het eigenlijk met je? ▲ *(Luistert 46)*  
 **Anouk:** Moe. Maar dat zei ik al, hè.
 
-> 1. (je glimlacht en wacht) · **2. Wat moet er vanavond nog af, dan?** · 3. Waarom liever niet tegen Joost? · 4. Je klinkt alsof je eigenlijk al lang thuis had willen zijn.
+> 1. (je glimlacht en wacht) · **2. En is dat alles wat er vanavond nog moet?** · 3. Waarom liever niet tegen Joost? · 4. Je klinkt alsof je eigenlijk al lang thuis had willen zijn.
 
-**Jij:** Wat moet er vanavond nog af, dan? ▲ *(Luistert 50)*  
+**Jij:** En is dat alles wat er vanavond nog moet? ▲ *(Luistert 50)*  
 **Anouk:** Eerlijk? Morgen zit ik hier alleen. Joost zit de hele dag in overleg en de anderen zitten op cursus. Als dit vanavond niet af is, ligt het er morgen nog. En achter elke tekening zit iemand die wacht.
 
 > 1. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht. · **2. En hoe gaat het nu met jou, met dat allemaal?** · 3. Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben. · 4. Hoe ziet je dag morgen eruit, als je er alleen voor staat?
@@ -216,65 +216,65 @@ Ruud: "Je vroeg: “Hoe gaat het met je, zo aan het eind van de dag?” Je wilde
 **Anouk:** O, hoi! Ben jij er ook nog? Ik dacht dat ik de laatste was.  
 **Anouk:** Nog twee tekeningen en dan ga ik. Echt waar. Niet tegen Joost zeggen dat ik hier nog zit, hè?
 
-> 1. Hoe gaat het met je, zo aan het eind van de dag? · 2. Ik weet zelf ook nog niet hoe laat ik thuis ben. · **3. (je glimlacht en wacht)** · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
+> 1. Hoe gaat het met je, zo aan het eind van de dag? · 2. Ik zit zelf ook nog hier, hoor. · **3. (je glimlacht en wacht)** · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
 
 **Jij:** (je glimlacht en wacht) ▼ *(Op z'n hoede 22)*  
 **Anouk:** … Is er iets? Je kijkt zo.
 
-> 1. (je glimlacht en wacht) · 2. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? · **3. Ik weet zelf ook nog niet hoe laat ik thuis ben.** · 4. Dus nog twee tekeningen, en dan ben je weg.
+> 1. (je glimlacht en wacht) · 2. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? · **3. Ik zit zelf ook nog hier, hoor.** · 4. Dus nog twee tekeningen, en dan ben je weg.
 
-**Jij:** Ik weet zelf ook nog niet hoe laat ik thuis ben. ▼ *(Dicht 17)*  
-**Anouk:** Sorry, ik moet echt nog even door.
+**Jij:** Ik zit zelf ook nog hier, hoor. ▼ *(Dicht 17)*  
+**Anouk:** Sorry, ik wil die tekeningen echt nog af hebben.
 
-> 1. Ik zit zelf ook nog hier, hoor. · 2. Hoe gaat het met je, zo aan het eind van de dag? · **3. Waarom liever niet tegen Joost?** · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
+> 1. Ik weet zelf ook nog niet hoe laat ik thuis ben. · 2. Hoe gaat het met je, zo aan het eind van de dag? · **3. Waarom liever niet tegen Joost?** · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
 
 **Jij:** Waarom liever niet tegen Joost? ▲ *(Dicht 19)*  
 **Anouk:** Ach. Hij maakt zich anders zorgen, en dat hoeft echt niet.
 
-> 1. Ik zit zelf ook nog hier, hoor. · 2. Je klinkt alsof je eigenlijk al lang thuis had willen zijn. · **3. Hoe gaat het met je, zo aan het eind van de dag?** · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
+> 1. Ik weet zelf ook nog niet hoe laat ik thuis ben. · 2. Je klinkt alsof je eigenlijk al lang thuis had willen zijn. · **3. Hoe gaat het met je, zo aan het eind van de dag?** · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
 
 **Jij:** Hoe gaat het met je, zo aan het eind van de dag? ▲▲ *(Op z'n hoede 31)*  
 **Anouk:** Hoe het is? … Moe, eerlijk gezegd. Fijn dat je het vraagt.
 
-> 1. Ik zit zelf ook nog hier, hoor. · 2. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? · **3. Waarom mag Joost het niet weten?** · 4. Je klinkt alsof je eigenlijk al lang thuis had willen zijn.
+> 1. Ik weet zelf ook nog niet hoe laat ik thuis ben. · 2. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? · **3. Weet Joost dat je vaak zo laat bent?** · 4. Je klinkt alsof je eigenlijk al lang thuis had willen zijn.
 
-**Jij:** Waarom mag Joost het niet weten? ▲ *(Op z'n hoede 33)*  
+**Jij:** Weet Joost dat je vaak zo laat bent? ▲ *(Op z'n hoede 33)*  
 **Anouk:** Laat Joost maar even, echt.
 
-> 1. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? · 2. Waarom liever niet tegen Joost? · **3. Je klinkt alsof je eigenlijk al lang thuis had willen zijn.** · 4. Om zeven uur nog twee tekeningen. Dat is ook niet niks.
+> 1. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? · 2. Waarom liever niet tegen Joost? · **3. Je klinkt alsof je eigenlijk al lang thuis had willen zijn.** · 4. In je eentje hier, op een maandagavond. Dat is ook niet niks.
 
 **Jij:** Je klinkt alsof je eigenlijk al lang thuis had willen zijn. ▼ *(Op z'n hoede 30)*  
 **Anouk:** Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe.
 
-> 1. Hoe is het eigenlijk met je? · 2. Ik zit zelf ook nog hier, hoor. · **3. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?** · 4. Waarom liever niet tegen Joost?
+> 1. Hoe is het eigenlijk met je? · 2. Ik weet zelf ook nog niet hoe laat ik thuis ben. · **3. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?** · 4. Waarom liever niet tegen Joost?
 
 **Jij:** Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? ▲ *(Op z'n hoede 36)*  
 **Anouk:** Die twee moeten de deur uit. Een rijtjeshuis in Lindeveld met een warmtepomp, en een school die een lokaal bijbouwt. Die liggen allebei al te lang.
 
-> 1. Dus nog twee tekeningen, en dan ben je weg. · 2. Waarom liever niet tegen Joost? · **3. (je glimlacht en wacht)** · 4. Wat moet er vanavond nog af, dan?
+> 1. Dus nog twee tekeningen, en dan ben je weg. · 2. Waarom liever niet tegen Joost? · **3. (je glimlacht en wacht)** · 4. En is dat alles wat er vanavond nog moet?
 
 **Jij:** (je glimlacht en wacht) ▼ *(Op z'n hoede 32)*  
 **Anouk:** … Wat is er?
 
-> 1. Wat moet er vanavond nog af, dan? · 2. Om zeven uur nog twee tekeningen. Dat is ook niet niks. · **3. Waarom liever niet tegen Joost?** · 4. (je glimlacht en wacht)
+> 1. En is dat alles wat er vanavond nog moet? · 2. In je eentje hier, op een maandagavond. Dat is ook niet niks. · **3. Waarom liever niet tegen Joost?** · 4. (je glimlacht en wacht)
 
 **Jij:** Waarom liever niet tegen Joost? ▲ *(Op z'n hoede 34)*  
 **Anouk:** Dat vroeg je al. Laat maar, echt.
 
-> 1. Hoe is het eigenlijk met je? · 2. Wat moet er vanavond nog af, dan? · **3. Om zeven uur nog twee tekeningen. Dat is ook niet niks.** · 4. Ik zit zelf ook nog hier, hoor.
+> 1. Hoe is het eigenlijk met je? · 2. En is dat alles wat er vanavond nog moet? · **3. In je eentje hier, op een maandagavond. Dat is ook niet niks.** · 4. Ik weet zelf ook nog niet hoe laat ik thuis ben.
 
-**Jij:** Om zeven uur nog twee tekeningen. Dat is ook niet niks. ▲ *(Op z'n hoede 36)*  
+**Jij:** In je eentje hier, op een maandagavond. Dat is ook niet niks. ▲ *(Op z'n hoede 36)*  
 **Anouk:** Ach, het valt wel mee, hoor. Ik zit erbovenop.
 
-> 1. Hoe is het eigenlijk met je? · 2. Waarom mag Joost het niet weten? · **3. Ik zit zelf ook nog hier, hoor.** · 4. Wat moet er vanavond nog af, dan?
+> 1. Hoe is het eigenlijk met je? · 2. Weet Joost dat je vaak zo laat bent? · **3. Ik weet zelf ook nog niet hoe laat ik thuis ben.** · 4. En is dat alles wat er vanavond nog moet?
 
-**Jij:** Ik zit zelf ook nog hier, hoor. ▼ *(Op z'n hoede 31)*  
-**Anouk:** Hm. Ja. Maar ik moet echt even door, hoor.
+**Jij:** Ik weet zelf ook nog niet hoe laat ik thuis ben. ▼ *(Op z'n hoede 31)*  
+**Anouk:** Hm. Ja.
 
-> 1. Volgens mij wil je eigenlijk gewoon naar huis. · 2. Ik weet zelf ook nog niet hoe laat ik thuis ben. · **3. Wat moet er vanavond nog af, dan?** · 4. Dus nog twee tekeningen, en dan ben je weg.
+> 1. Volgens mij wil je eigenlijk gewoon naar huis. · 2. Ik zit zelf ook nog hier, hoor. · **3. En is dat alles wat er vanavond nog moet?** · 4. Dus nog twee tekeningen, en dan ben je weg.
 
-**Jij:** Wat moet er vanavond nog af, dan? ▲ *(Op z'n hoede 35)*  
-**Anouk:** Alleen die twee, hoor. De rest kan tot morgen wachten.
+**Jij:** En is dat alles wat er vanavond nog moet? ▲ *(Op z'n hoede 35)*  
+**Anouk:** Ja, alleen die twee. De rest kan tot morgen wachten.
 **Anouk:** Nou, ik ga nog even door. Tot morgen, hè!
 
 **End: Geen uitkomst** (none)  
@@ -288,64 +288,64 @@ Ruud: "Je vroeg: “Hoe gaat het met je, zo aan het eind van de dag?” Je wilde
 **Anouk:** O, hoi! Ben jij er ook nog? Ik dacht dat ik de laatste was.  
 **Anouk:** Nog twee tekeningen en dan ga ik. Echt waar. Niet tegen Joost zeggen dat ik hier nog zit, hè?
 
-> 1. Hoe gaat het met je, zo aan het eind van de dag? · 2. Ik weet zelf ook nog niet hoe laat ik thuis ben. · 3. (je glimlacht en wacht) · **4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?**
+> 1. Hoe gaat het met je, zo aan het eind van de dag? · 2. Ik zit zelf ook nog hier, hoor. · 3. (je glimlacht en wacht) · **4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?**
 
 **Jij:** Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? ▲ *(Op z'n hoede 32)*  
 **Anouk:** Die twee moeten de deur uit. Een rijtjeshuis in Lindeveld met een warmtepomp, en een school die een lokaal bijbouwt. Die liggen allebei al te lang.
 
-> 1. Wat moet er vanavond nog af, dan? · 2. Hoe gaat het met je, zo aan het eind van de dag? · 3. Je klinkt alsof je eigenlijk al lang thuis had willen zijn. · **4. Dus nog twee tekeningen, en dan ben je weg.**
+> 1. En is dat alles wat er vanavond nog moet? · 2. Hoe gaat het met je, zo aan het eind van de dag? · 3. Je klinkt alsof je eigenlijk al lang thuis had willen zijn. · **4. Dus nog twee tekeningen, en dan ben je weg.**
 
 **Jij:** Dus nog twee tekeningen, en dan ben je weg. ▲ *(Op z'n hoede 39)*  
 **Anouk:** Ja. Nou ja… als het meezit.
 
-> 1. Om zeven uur nog twee tekeningen. Dat is ook niet niks. · 2. Hoe gaat het met je, zo aan het eind van de dag? · 3. Ik weet zelf ook nog niet hoe laat ik thuis ben. · **4. Dus Joost mag niet weten dat je hier nog zit.**
+> 1. In je eentje hier, op een maandagavond. Dat is ook niet niks. · 2. Hoe gaat het met je, zo aan het eind van de dag? · 3. Ik zit zelf ook nog hier, hoor. · **4. Dus Joost mag niet weten dat je hier nog zit.**
 
 **Jij:** Dus Joost mag niet weten dat je hier nog zit. ▲ *(Luistert 40)*  
 **Anouk:** Mm. Zo ongeveer.
 
-> 1. Om zeven uur nog twee tekeningen. Dat is ook niet niks. · 2. Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog. · 3. Wat moet er vanavond nog af, dan? · **4. Hoe gaat het met je, zo aan het eind van de dag?**
+> 1. In je eentje hier, op een maandagavond. Dat is ook niet niks. · 2. Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog. · 3. En is dat alles wat er vanavond nog moet? · **4. Hoe gaat het met je, zo aan het eind van de dag?**
 
 **Jij:** Hoe gaat het met je, zo aan het eind van de dag? ▲▲ *(Luistert 52)*  
 **Anouk:** Eerlijk? Morgen zit ik hier alleen. Joost zit de hele dag in overleg en de anderen zitten op cursus. Als dit vanavond niet af is, ligt het er morgen nog. En achter elke tekening zit iemand die wacht.
 
-> 1. En als je er één laat liggen en die morgen als eerste oppakt? · 2. Gaat het een beetje, met al dat werk? · 3. Wat gebeurt er als die tekeningen morgen pas af zijn? · **4. Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen.**
+> 1. En als je er één laat liggen en die morgen als eerste oppakt? · 2. En hoe gaat het nu met jou, met dat allemaal? · 3. Wat gebeurt er als die tekeningen morgen pas af zijn? · **4. Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben.**
 
-**Jij:** Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen. ▼ *(Luistert 47)*  
-**Anouk:** Hm. Ja. Maar ik moet echt even door, hoor.
+**Jij:** Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben. ▼ *(Luistert 47)*  
+**Anouk:** Hm. Ja.
 
-> 1. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht. · 2. Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog. · 3. Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben. · **4. En als je er één laat liggen en die morgen als eerste oppakt?**
+> 1. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht. · 2. Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog. · 3. Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen. · **4. En als je er één laat liggen en die morgen als eerste oppakt?**
 
 **Jij:** En als je er één laat liggen en die morgen als eerste oppakt? ▲▲ *(Luistert 55)*  
 **Anouk:** Eén laten liggen. Hm. Die van de school kan wel een dagje wachten. Die hebben hem pas in januari nodig.
 
-> 1. Wat komt er morgen allemaal op je af? · 2. Wat gebeurt er als die tekeningen morgen pas af zijn? · 3. Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog. · **4. Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben.**
+> 1. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · 2. Wat gebeurt er als die tekeningen morgen pas af zijn? · 3. Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog. · **4. Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen.**
 
-**Jij:** Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben. ▼ *(Luistert 50)*  
+**Jij:** Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen. ▼ *(Luistert 50)*  
 **Anouk:** Ja… Mm.
 
-> 1. Dus als het vanavond niet af is, sta je er morgen alleen voor. · 2. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht. · 3. Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog. · **4. Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen.**
+> 1. Dus als het vanavond niet af is, sta je er morgen alleen voor. · 2. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht. · 3. Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog. · **4. Ik herken dat wel, dat je alles af wilt hebben.**
 
-**Jij:** Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen. ▼ *(Luistert 45)*  
+**Jij:** Ik herken dat wel, dat je alles af wilt hebben. ▼ *(Luistert 45)*  
 **Anouk:** Sorry, ik zit even met mijn hoofd hier.
 
-> 1. Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog. · 2. Doen we het zo? · 3. (je zegt niets en wacht af) · **4. En als je er één laat liggen en die morgen als eerste oppakt?**
+> 1. Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog. · 2. Doen we het zo? · 3. (je blijft staan en wacht) · **4. En als je er één laat liggen en die morgen als eerste oppakt?**
 
 **Jij:** En als je er één laat liggen en die morgen als eerste oppakt? ▲▲ *(Luistert 53)*  
 **Anouk:** Ja, ja. Daar denk ik over na.
 
-> 1. Doen we het zo? · 2. En als je er één laat liggen en die morgen als eerste oppakt? · 3. Dat je aan die mensen denkt die wachten, dat snap ik. · **4. (je zegt niets en wacht af)**
-
-**Jij:** (je zegt niets en wacht af) ▼ *(Luistert 49)*  
-**Anouk:** … Is er iets? Je kijkt zo.
-
-> 1. Wat gebeurt er als die tekeningen morgen pas af zijn? · 2. (je blijft staan en wacht) · 3. Doen we het zo? · **4. Wat komt er morgen allemaal op je af?**
-
-**Jij:** Wat komt er morgen allemaal op je af? ▲ *(Luistert 53)*  
-**Anouk:** Morgen? Telefoon, portaal, en de tekeningen ertussendoor. In mijn eentje.
-
-> 1. Wat gebeurt er als die tekeningen morgen pas af zijn? · 2. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · 3. Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben. · **4. (je blijft staan en wacht)**
+> 1. Doen we het zo? · 2. En als je er één laat liggen en die morgen als eerste oppakt? · 3. Morgen in je eentje de hele afdeling. Dat is veel. · **4. (je blijft staan en wacht)**
 
 **Jij:** (je blijft staan en wacht) ▼ *(Luistert 49)*  
+**Anouk:** … Is er iets? Je kijkt zo.
+
+> 1. Wat gebeurt er als die tekeningen morgen pas af zijn? · 2. (je zegt niets en wacht af) · 3. Doen we het zo? · **4. Hoe ziet je dag morgen eruit, als je er alleen voor staat?**
+
+**Jij:** Hoe ziet je dag morgen eruit, als je er alleen voor staat? ▲ *(Luistert 53)*  
+**Anouk:** Morgen? Telefoon, portaal, en de tekeningen ertussendoor. In mijn eentje.
+
+> 1. Wat gebeurt er als die tekeningen morgen pas af zijn? · 2. Wie wachten er op die tekeningen? · 3. Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben. · **4. (je zegt niets en wacht af)**
+
+**Jij:** (je zegt niets en wacht af) ▼ *(Luistert 49)*  
 **Anouk:** … Wat is er?
 **Anouk:** Fijn dat je even bleef staan. Dat doet niet iedereen om deze tijd.
 
@@ -360,14 +360,14 @@ Ruud: "Je vroeg: “Hoe gaat het met je, zo aan het eind van de dag?” Je wilde
 **Anouk:** O, hoi! Ben jij er ook nog? Ik dacht dat ik de laatste was.  
 **Anouk:** Nog twee tekeningen en dan ga ik. Echt waar. Niet tegen Joost zeggen dat ik hier nog zit, hè?
 
-> **1. Hoe gaat het met je, zo aan het eind van de dag?** · 2. Ik weet zelf ook nog niet hoe laat ik thuis ben. · 3. (je glimlacht en wacht) · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
+> **1. Hoe gaat het met je, zo aan het eind van de dag?** · 2. Ik zit zelf ook nog hier, hoor. · 3. (je glimlacht en wacht) · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
 
 **Jij:** Hoe gaat het met je, zo aan het eind van de dag? ▲▲ *(Op z'n hoede 38)*  
 **Anouk:** Hoe het is? … Moe, eerlijk gezegd. Fijn dat je het vraagt.
 
-> **1. Om zeven uur nog twee tekeningen. Dat is ook niet niks.** · 2. Waarom liever niet tegen Joost? · 3. Dus nog twee tekeningen, en dan ben je weg. · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
+> **1. In je eentje hier, op een maandagavond. Dat is ook niet niks.** · 2. Waarom liever niet tegen Joost? · 3. Dus nog twee tekeningen, en dan ben je weg. · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
 
-**Jij:** Om zeven uur nog twee tekeningen. Dat is ook niet niks. ▲▲ *(Luistert 48)*  
+**Jij:** In je eentje hier, op een maandagavond. Dat is ook niet niks. ▲▲ *(Luistert 48)*  
 **Anouk:** Eerlijk? Morgen zit ik hier alleen. Joost zit de hele dag in overleg en de anderen zitten op cursus. Als dit vanavond niet af is, ligt het er morgen nog. En achter elke tekening zit iemand die wacht.
 
 > **1. Morgen in je eentje de hele afdeling. Dat is veel.** · 2. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · 3. Wat gebeurt er als die tekeningen morgen pas af zijn? · 4. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht.
@@ -375,47 +375,47 @@ Ruud: "Je vroeg: “Hoe gaat het met je, zo aan het eind van de dag?” Je wilde
 **Jij:** Morgen in je eentje de hele afdeling. Dat is veel. ▲ *(Luistert 53)*  
 **Anouk:** Dank je. Dat hoor ik niet vaak.
 
-> **1. Gaat het een beetje, met al dat werk?** · 2. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · 3. (je zegt niets en wacht af) · 4. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht.
+> **1. En hoe gaat het nu met jou, met dat allemaal?** · 2. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · 3. (je blijft staan en wacht) · 4. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht.
 
-**Jij:** Gaat het een beetje, met al dat werk? ▲ *(Luistert 55)*  
+**Jij:** En hoe gaat het nu met jou, met dat allemaal? ▲ *(Luistert 55)*  
 **Anouk:** Nog steeds moe, hoor. Dat is niet veranderd.
 
-> **1. Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen.** · 2. Wat gebeurt er als die tekeningen morgen pas af zijn? · 3. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · 4. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht.
+> **1. Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben.** · 2. Wat gebeurt er als die tekeningen morgen pas af zijn? · 3. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · 4. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht.
 
-**Jij:** Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen. ▼ *(Luistert 50)*  
-**Anouk:** Hm. Ja. Maar ik moet echt even door, hoor.
+**Jij:** Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben. ▼ *(Luistert 50)*  
+**Anouk:** Hm. Ja.
 
-> **1. Dat je aan die mensen denkt die wachten, dat snap ik.** · 2. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · 3. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht. · 4. Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben.
+> **1. Dat je aan die mensen denkt die wachten, dat snap ik.** · 2. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · 3. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht. · 4. Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen.
 
 **Jij:** Dat je aan die mensen denkt die wachten, dat snap ik. ▲ *(Luistert 52)*  
 **Anouk:** Ach, het valt wel mee, hoor. Ik zit erbovenop.
 
-> **1. (je zegt niets en wacht af)** · 2. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · 3. Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben. · 4. Wat gebeurt er als die tekeningen morgen pas af zijn?
+> **1. (je blijft staan en wacht)** · 2. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · 3. Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen. · 4. Wat gebeurt er als die tekeningen morgen pas af zijn?
 
-**Jij:** (je zegt niets en wacht af) ▼ *(Luistert 48)*  
+**Jij:** (je blijft staan en wacht) ▼ *(Luistert 48)*  
 **Anouk:** … Is er iets? Je kijkt zo.
 
-> **1. En hoe gaat het nu met jou, met dat allemaal?** · 2. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht. · 3. Morgen in je eentje de hele afdeling. Dat is veel. · 4. Hoe ziet je dag morgen eruit, als je er alleen voor staat?
+> **1. Gaat het een beetje, met al dat werk?** · 2. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht. · 3. Dat is veel, voor één persoon. · 4. Hoe ziet je dag morgen eruit, als je er alleen voor staat?
 
-**Jij:** En hoe gaat het nu met jou, met dat allemaal? ▲ *(Luistert 50)*  
+**Jij:** Gaat het een beetje, met al dat werk? ▲ *(Luistert 50)*  
 **Anouk:** Echt, het gaat wel. Moe, maar het gaat.
 
-> **1. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht.** · 2. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · 3. Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben. · 4. Wat gebeurt er als die tekeningen morgen pas af zijn?
+> **1. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht.** · 2. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · 3. Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen. · 4. Wat gebeurt er als die tekeningen morgen pas af zijn?
 
 **Jij:** Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht. ▼ *(Luistert 47)*  
 **Anouk:** Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe.
 
-> **1. Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben.** · 2. Je klinkt alsof het allemaal op jou neerkomt. · 3. Morgen in je eentje de hele afdeling. Dat is veel. · 4. Hoe ziet je dag morgen eruit, als je er alleen voor staat?
+> **1. Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen.** · 2. Je klinkt alsof het allemaal op jou neerkomt. · 3. Dat is veel, voor één persoon. · 4. Hoe ziet je dag morgen eruit, als je er alleen voor staat?
 
-**Jij:** Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben. ▼ *(Luistert 42)*  
+**Jij:** Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen. ▼ *(Luistert 42)*  
 **Anouk:** Ja… Mm.
 
-> **1. Morgen in je eentje de hele afdeling. Dat is veel.** · 2. Dus als het vanavond niet af is, sta je er morgen alleen voor. · 3. Wat gebeurt er als die tekeningen morgen pas af zijn? · 4. Hoe ziet je dag morgen eruit, als je er alleen voor staat?
+> **1. Dat is veel, voor één persoon.** · 2. Dus als het vanavond niet af is, sta je er morgen alleen voor. · 3. Wat gebeurt er als die tekeningen morgen pas af zijn? · 4. Hoe ziet je dag morgen eruit, als je er alleen voor staat?
 
-**Jij:** Morgen in je eentje de hele afdeling. Dat is veel. ▲ *(Luistert 44)*  
+**Jij:** Dat is veel, voor één persoon. ▲ *(Luistert 44)*  
 **Anouk:** Ja… Het is wat het is.
 
-> **1. Hoe ziet je dag morgen eruit, als je er alleen voor staat?** · 2. Je klinkt alsof het allemaal op jou neerkomt. · 3. Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen. · 4. Gaat het een beetje, met al dat werk?
+> **1. Hoe ziet je dag morgen eruit, als je er alleen voor staat?** · 2. Je klinkt alsof het allemaal op jou neerkomt. · 3. Ik herken dat wel, dat je alles af wilt hebben. · 4. En jij zelf? Hoe gaat het?
 
 **Jij:** Hoe ziet je dag morgen eruit, als je er alleen voor staat? ▲ *(Luistert 50)*  
 **Anouk:** Morgen? Telefoon, portaal, en de tekeningen ertussendoor. In mijn eentje.
@@ -432,27 +432,27 @@ Ruud: "Je vroeg: “Hoe gaat het met je, zo aan het eind van de dag?” Je wilde
 **Anouk:** O, hoi! Ben jij er ook nog? Ik dacht dat ik de laatste was.  
 **Anouk:** Nog twee tekeningen en dan ga ik. Echt waar. Niet tegen Joost zeggen dat ik hier nog zit, hè?
 
-> 1. Hoe gaat het met je, zo aan het eind van de dag? · **2. Ik weet zelf ook nog niet hoe laat ik thuis ben.** · 3. (je glimlacht en wacht) · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
+> 1. Hoe gaat het met je, zo aan het eind van de dag? · **2. Ik zit zelf ook nog hier, hoor.** · 3. (je glimlacht en wacht) · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
 
-**Jij:** Ik weet zelf ook nog niet hoe laat ik thuis ben. ▼ *(Op z'n hoede 21)*  
-**Anouk:** Hm. Ja. Maar ik moet echt even door, hoor.
+**Jij:** Ik zit zelf ook nog hier, hoor. ▼ *(Op z'n hoede 21)*  
+**Anouk:** Hm. Ja.
 
-> **1. Ik zit zelf ook nog hier, hoor.** · 2. (je glimlacht en wacht) · 3. Om zeven uur nog twee tekeningen. Dat is ook niet niks. · 4. Dus nog twee tekeningen, en dan ben je weg.
+> **1. Ik weet zelf ook nog niet hoe laat ik thuis ben.** · 2. (je glimlacht en wacht) · 3. In je eentje hier, op een maandagavond. Dat is ook niet niks. · 4. Dus nog twee tekeningen, en dan ben je weg.
 
-**Jij:** Ik zit zelf ook nog hier, hoor. ▼ *(Dicht 16)*  
-**Anouk:** Sorry, ik moet echt nog even door.
+**Jij:** Ik weet zelf ook nog niet hoe laat ik thuis ben. ▼ *(Dicht 16)*  
+**Anouk:** Sorry, ik wil die tekeningen echt nog af hebben.
 
-> 1. Om zeven uur nog twee tekeningen. Dat is ook niet niks. · **2. Dus nog twee tekeningen, en dan ben je weg.** · 3. Hoe gaat het met je, zo aan het eind van de dag? · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
+> 1. In je eentje hier, op een maandagavond. Dat is ook niet niks. · **2. Dus nog twee tekeningen, en dan ben je weg.** · 3. Hoe gaat het met je, zo aan het eind van de dag? · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
 
 **Jij:** Dus nog twee tekeningen, en dan ben je weg. ▲ *(Dicht 17)*  
 **Anouk:** Mm. Zo ongeveer.
 
-> **1. Hoe gaat het met je, zo aan het eind van de dag?** · 2. (je glimlacht en wacht) · 3. Je klinkt alsof je eigenlijk al lang thuis had willen zijn. · 4. Ik weet zelf ook nog niet hoe laat ik thuis ben.
+> **1. Hoe gaat het met je, zo aan het eind van de dag?** · 2. (je glimlacht en wacht) · 3. Je klinkt alsof je eigenlijk al lang thuis had willen zijn. · 4. Ik zit zelf ook nog hier, hoor.
 
 **Jij:** Hoe gaat het met je, zo aan het eind van de dag? ▲▲ *(Op z'n hoede 29)*  
 **Anouk:** Hoe het is? … Moe, eerlijk gezegd. Fijn dat je het vraagt.
 
-> 1. (je glimlacht en wacht) · **2. Je klinkt alsof je eigenlijk al lang thuis had willen zijn.** · 3. Om zeven uur nog twee tekeningen. Dat is ook niet niks. · 4. Hoe is het eigenlijk met je?
+> 1. (je glimlacht en wacht) · **2. Je klinkt alsof je eigenlijk al lang thuis had willen zijn.** · 3. In je eentje hier, op een maandagavond. Dat is ook niet niks. · 4. Hoe is het eigenlijk met je?
 
 **Jij:** Je klinkt alsof je eigenlijk al lang thuis had willen zijn. ▲▲ *(Luistert 40)*  
 **Anouk:** Ja. Zo voelt het wel.
@@ -462,32 +462,32 @@ Ruud: "Je vroeg: “Hoe gaat het met je, zo aan het eind van de dag?” Je wilde
 **Jij:** Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? ▲ *(Luistert 46)*  
 **Anouk:** Eerlijk? Morgen zit ik hier alleen. Joost zit de hele dag in overleg en de anderen zitten op cursus. Als dit vanavond niet af is, ligt het er morgen nog. En achter elke tekening zit iemand die wacht.
 
-> 1. Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog. · **2. Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen.** · 3. Dus morgen ben jij de enige, en dan ligt dit er ook nog. · 4. Gaat het een beetje, met al dat werk?
+> 1. Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog. · **2. Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben.** · 3. Dus als het vanavond niet af is, sta je er morgen alleen voor. · 4. En hoe gaat het nu met jou, met dat allemaal?
 
-**Jij:** Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen. ▼ *(Luistert 41)*  
+**Jij:** Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben. ▼ *(Luistert 41)*  
 **Anouk:** Ja… Mm.
 
-> 1. Wat komt er morgen allemaal op je af? · **2. En als je er één laat liggen en die morgen als eerste oppakt?** · 3. Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog. · 4. Je klinkt alsof het allemaal op jou neerkomt.
+> 1. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · **2. En als je er één laat liggen en die morgen als eerste oppakt?** · 3. Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog. · 4. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht.
 
 **Jij:** En als je er één laat liggen en die morgen als eerste oppakt? ▲▲ *(Luistert 49)*  
 **Anouk:** Eén laten liggen. Hm. Die van de school kan wel een dagje wachten. Die hebben hem pas in januari nodig.
 
-> 1. Wat komt er morgen allemaal op je af? · 2. Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog. · 3. Dat je aan die mensen denkt die wachten, dat snap ik. · **4. Gaat het een beetje, met al dat werk?**
+> 1. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · 2. Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog. · 3. Morgen in je eentje de hele afdeling. Dat is veel. · **4. En hoe gaat het nu met jou, met dat allemaal?**
 
-**Jij:** Gaat het een beetje, met al dat werk? ▲ *(Luistert 51)*  
+**Jij:** En hoe gaat het nu met jou, met dat allemaal? ▲ *(Luistert 51)*  
 **Anouk:** Nog steeds moe, hoor. Dat is niet veranderd.
 
-> 1. Dat je aan die mensen denkt die wachten, dat snap ik. · 2. Doen we het zo? · 3. Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog. · **4. Dus morgen ben jij de enige, en dan ligt dit er ook nog.**
+> 1. Morgen in je eentje de hele afdeling. Dat is veel. · 2. Doen we het zo? · 3. Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog. · **4. Dus als het vanavond niet af is, sta je er morgen alleen voor.**
 
-**Jij:** Dus morgen ben jij de enige, en dan ligt dit er ook nog. ▲ *(Luistert 52)*  
+**Jij:** Dus als het vanavond niet af is, sta je er morgen alleen voor. ▲ *(Luistert 52)*  
 **Anouk:** Ja. Zoiets.
 
-> 1. Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog. · **2. (je zegt niets en wacht af)** · 3. Wat gebeurt er als die tekeningen morgen pas af zijn? · 4. En als je er één laat liggen en die morgen als eerste oppakt?
+> 1. Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog. · **2. (je blijft staan en wacht)** · 3. Wat gebeurt er als die tekeningen morgen pas af zijn? · 4. En als je er één laat liggen en die morgen als eerste oppakt?
 
-**Jij:** (je zegt niets en wacht af) ▼ *(Luistert 48)*  
+**Jij:** (je blijft staan en wacht) ▼ *(Luistert 48)*  
 **Anouk:** … Is er iets? Je kijkt zo.
 
-> 1. Wat komt er morgen allemaal op je af? · 2. Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben. · **3. En als je er één laat liggen en die morgen als eerste oppakt?** · 4. Je klinkt alsof het allemaal op jou neerkomt.
+> 1. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · 2. Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen. · **3. En als je er één laat liggen en die morgen als eerste oppakt?** · 4. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht.
 
 **Jij:** En als je er één laat liggen en die morgen als eerste oppakt? ▲▲ *(Luistert 56)*  
 **Anouk:** Ja, ja. Daar denk ik over na.
@@ -504,22 +504,22 @@ Ruud: "Je vroeg: “Hoe gaat het met je, zo aan het eind van de dag?” Je wilde
 **Anouk:** O, hoi! Ben jij er ook nog? Ik dacht dat ik de laatste was.  
 **Anouk:** Nog twee tekeningen en dan ga ik. Echt waar. Niet tegen Joost zeggen dat ik hier nog zit, hè?
 
-> 1. Hoe gaat het met je, zo aan het eind van de dag? · 2. Ik weet zelf ook nog niet hoe laat ik thuis ben. · **3. (je glimlacht en wacht)** · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
+> 1. Hoe gaat het met je, zo aan het eind van de dag? · 2. Ik zit zelf ook nog hier, hoor. · **3. (je glimlacht en wacht)** · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
 
 **Jij:** (je glimlacht en wacht) ▼ *(Op z'n hoede 22)*  
 **Anouk:** … Is er iets? Je kijkt zo.
 
-> 1. (je glimlacht en wacht) · 2. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? · 3. Ik weet zelf ook nog niet hoe laat ik thuis ben. · **4. Dus nog twee tekeningen, en dan ben je weg.**
+> 1. (je glimlacht en wacht) · 2. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? · 3. Ik zit zelf ook nog hier, hoor. · **4. Dus nog twee tekeningen, en dan ben je weg.**
 
 **Jij:** Dus nog twee tekeningen, en dan ben je weg. ▲ *(Op z'n hoede 23)*  
 **Anouk:** Mm. Zo ongeveer.
 
-> 1. Je klinkt alsof je eigenlijk al lang thuis had willen zijn. · 2. Ik weet zelf ook nog niet hoe laat ik thuis ben. · **3. Hoe gaat het met je, zo aan het eind van de dag?** · 4. Dus Joost mag niet weten dat je hier nog zit.
+> 1. Je klinkt alsof je eigenlijk al lang thuis had willen zijn. · 2. Ik zit zelf ook nog hier, hoor. · **3. Hoe gaat het met je, zo aan het eind van de dag?** · 4. Dus Joost mag niet weten dat je hier nog zit.
 
 **Jij:** Hoe gaat het met je, zo aan het eind van de dag? ▲▲ *(Op z'n hoede 35)*  
 **Anouk:** Hoe het is? … Moe, eerlijk gezegd. Fijn dat je het vraagt.
 
-> **1. Je klinkt alsof je eigenlijk al lang thuis had willen zijn.** · 2. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? · 3. Hoe is het eigenlijk met je? · 4. Om zeven uur nog twee tekeningen. Dat is ook niet niks.
+> **1. Je klinkt alsof je eigenlijk al lang thuis had willen zijn.** · 2. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? · 3. Hoe is het eigenlijk met je? · 4. In je eentje hier, op een maandagavond. Dat is ook niet niks.
 
 **Jij:** Je klinkt alsof je eigenlijk al lang thuis had willen zijn. ▲▲ *(Luistert 46)*  
 **Anouk:** Ja. Zo voelt het wel.
@@ -529,41 +529,41 @@ Ruud: "Je vroeg: “Hoe gaat het met je, zo aan het eind van de dag?” Je wilde
 **Jij:** Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? ▲ *(Luistert 52)*  
 **Anouk:** Eerlijk? Morgen zit ik hier alleen. Joost zit de hele dag in overleg en de anderen zitten op cursus. Als dit vanavond niet af is, ligt het er morgen nog. En achter elke tekening zit iemand die wacht.
 
-> 1. (je blijft staan en wacht) · 2. Gaat het een beetje, met al dat werk? · **3. Dus morgen ben jij de enige, en dan ligt dit er ook nog.** · 4. En als je er één laat liggen en die morgen als eerste oppakt?
+> 1. (je blijft staan en wacht) · 2. En hoe gaat het nu met jou, met dat allemaal? · **3. Dus als het vanavond niet af is, sta je er morgen alleen voor.** · 4. En als je er één laat liggen en die morgen als eerste oppakt?
 
-**Jij:** Dus morgen ben jij de enige, en dan ligt dit er ook nog. ▲ *(Luistert 57)*  
+**Jij:** Dus als het vanavond niet af is, sta je er morgen alleen voor. ▲ *(Luistert 57)*  
 **Anouk:** Precies. En niemand die het overneemt.
 
-> **1. Wat gebeurt er als die tekeningen morgen pas af zijn?** · 2. Je klinkt alsof het allemaal op jou neerkomt. · 3. (je blijft staan en wacht) · 4. Gaat het een beetje, met al dat werk?
+> **1. Wat gebeurt er als die tekeningen morgen pas af zijn?** · 2. Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht. · 3. (je blijft staan en wacht) · 4. En hoe gaat het nu met jou, met dat allemaal?
 
 **Jij:** Wat gebeurt er als die tekeningen morgen pas af zijn? ▲ *(Luistert 59)*  
-**Anouk:** Ach. Dat is een lang verhaal.
+**Anouk:** Goeie vraag. Dat weet ik eigenlijk niet.
 
-> 1. Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen. · 2. Wat komt er morgen allemaal op je af? · **3. Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog.** · 4. Dus als het vanavond niet af is, sta je er morgen alleen voor.
+> 1. Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben. · 2. Hoe ziet je dag morgen eruit, als je er alleen voor staat? · **3. Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog.** · 4. Dus die mensen die wachten, daar lig jij eigenlijk wakker van.
 
 **Jij:** Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog. ▲ *(Open 63)*  
 **Anouk:** Hm. Misschien.
 
-> **1. Wat komt er morgen allemaal op je af?** · 2. Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen. · 3. Gaat het een beetje, met al dat werk? · 4. Doen we het zo?
+> **1. Hoe ziet je dag morgen eruit, als je er alleen voor staat?** · 2. Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben. · 3. En hoe gaat het nu met jou, met dat allemaal? · 4. Doen we het zo?
 
-**Jij:** Wat komt er morgen allemaal op je af? ▲ *(Open 67)*  
+**Jij:** Hoe ziet je dag morgen eruit, als je er alleen voor staat? ▲ *(Open 67)*  
 **Anouk:** Sorry, mijn telefoon. Mijn vriend appte net…
 
-> 1. Dat klinkt niet als goed nieuws. · 2. Wat schreef hij? · **3. (je blijft staan en wacht)** · 4. Gaat het wel?
+> 1. Hé, rustig maar. Je hoeft niks te zeggen. · 2. Wat schreef hij? · **3. (je blijft staan en wacht)** · 4. Gaat het wel?
 
 **Jij:** (je blijft staan en wacht) ▲▲ *(Open 75)*  
 **Anouk:** Of ik weer laat ben. Ik zou Fenna vandaag van de opvang halen. Dat heeft hij nu weer gedaan. … Ik zeg steeds dat het maar tijdelijk is.
 
-> 1. Mag ik morgen overdag even langskomen? Gewoon kijken hoe het gaat als je hier alleen zit. · 2. Doen we het zo? · **3. En als je er één laat liggen en die morgen als eerste oppakt?** · 4. Het zit je dwars, merk ik.
+> 1. Mag ik morgen overdag even langskomen? Gewoon kijken hoe het gaat als je hier alleen zit. · 2. Doen we het zo? · **3. En als je er één laat liggen en die morgen als eerste oppakt?** · 4. Je voelt je schuldig, klinkt het.
 
 **Jij:** En als je er één laat liggen en die morgen als eerste oppakt? ▲▲ *(Denkt mee 83)*  
 **Anouk:** Eén laten liggen. Hm. Die van de school kan wel een dagje wachten. Die hebben hem pas in januari nodig.
-**Anouk:** Weet je wat? Kom morgen overdag even langs. Dan zie je hoe het hier gaat. Al ziet het er overdag niet veel beter uit, hoor.
+**Anouk:** Weet je wat? Kom morgen overdag ook even langs. Dan zie je hoe het hier gaat. Al ziet het er overdag niet veel beter uit, hoor.
 
-> 1. Graag. Dan kom ik morgen even kijken. · 2. En als je er één laat liggen en die morgen als eerste oppakt? · 3. Hoe gaat het thuis, als jij zo laat bent? · **4. Thuis vroegen ze vanavond ook al waar ik bleef. En het is pas mijn eerste dag.**
+> 1. Graag. Dan kom ik morgen even kijken. · 2. En als je er één laat liggen en die morgen als eerste oppakt? · 3. Hoe lang is het al tijdelijk? · **4. Thuis vroegen ze vanavond ook al waar ik bleef. En het is pas mijn eerste dag.**
 
 **Jij:** Thuis vroegen ze vanavond ook al waar ik bleef. En het is pas mijn eerste dag. ▼ *(Open 78)*  
-**Anouk:** Hm. Ja. Maar ik moet echt even door, hoor.
+**Anouk:** Hm. Ja.
 **Anouk:** Fijn dat je even bleef staan. Dat doet niet iedereen om deze tijd.
 
 **End: Gehoord** (heard)  
@@ -577,12 +577,12 @@ Ruud: "Je vroeg: “Hoe gaat het met je, zo aan het eind van de dag?” Je wilde
 **Anouk:** O, hoi! Ben jij er ook nog? Ik dacht dat ik de laatste was.  
 **Anouk:** Nog twee tekeningen en dan ga ik. Echt waar. Niet tegen Joost zeggen dat ik hier nog zit, hè?
 
-> **1. Hoe gaat het met je, zo aan het eind van de dag?** · 2. Ik weet zelf ook nog niet hoe laat ik thuis ben. · 3. (je glimlacht en wacht) · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
+> **1. Hoe gaat het met je, zo aan het eind van de dag?** · 2. Ik zit zelf ook nog hier, hoor. · 3. (je glimlacht en wacht) · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
 
 **Jij:** Hoe gaat het met je, zo aan het eind van de dag? ▲▲ *(Op z'n hoede 38)*  
 **Anouk:** Hoe het is? … Moe, eerlijk gezegd. Fijn dat je het vraagt.
 
-> 1. Om zeven uur nog twee tekeningen. Dat is ook niet niks. · 2. Waarom liever niet tegen Joost? · **3. Dus nog twee tekeningen, en dan ben je weg.** · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
+> 1. In je eentje hier, op een maandagavond. Dat is ook niet niks. · 2. Waarom liever niet tegen Joost? · **3. Dus nog twee tekeningen, en dan ben je weg.** · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
 
 **Jij:** Dus nog twee tekeningen, en dan ben je weg. ▲ *(Op z'n hoede 39)*  
 **Anouk:** Mm. Zo ongeveer.
@@ -592,14 +592,14 @@ Ruud: "Je vroeg: “Hoe gaat het met je, zo aan het eind van de dag?” Je wilde
 **Jij:** Hoe is het eigenlijk met je? ▲ *(Luistert 41)*  
 **Anouk:** Nog steeds moe, hoor. Dat is niet veranderd.
 
-> 1. (je glimlacht en wacht) · **2. Om zeven uur nog twee tekeningen. Dat is ook niet niks.** · 3. Dus Joost mag niet weten dat je hier nog zit. · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
+> 1. (je glimlacht en wacht) · **2. In je eentje hier, op een maandagavond. Dat is ook niet niks.** · 3. Dus Joost mag niet weten dat je hier nog zit. · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
 
-**Jij:** Om zeven uur nog twee tekeningen. Dat is ook niet niks. ▲ *(Luistert 43)*  
+**Jij:** In je eentje hier, op een maandagavond. Dat is ook niet niks. ▲ *(Luistert 43)*  
 **Anouk:** Ach, het valt wel mee, hoor. Ik zit erbovenop.
 
-> 1. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? · 2. Ik weet zelf ook nog niet hoe laat ik thuis ben. · 3. Waarom liever niet tegen Joost? · **4. In je eentje hier, op een maandagavond. Dat is ook niet niks.**
+> 1. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? · 2. Ik zit zelf ook nog hier, hoor. · 3. Waarom liever niet tegen Joost? · **4. Om zeven uur nog twee tekeningen. Dat is ook niet niks.**
 
-**Jij:** In je eentje hier, op een maandagavond. Dat is ook niet niks. ▲ *(Luistert 44)*  
+**Jij:** Om zeven uur nog twee tekeningen. Dat is ook niet niks. ▲ *(Luistert 44)*  
 **Anouk:** Ja… Het is wat het is.
 
 > 1. Waarom liever niet tegen Joost? · **2. Dus Joost mag niet weten dat je hier nog zit.** · 3. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? · 4. (je glimlacht en wacht)
@@ -607,7 +607,7 @@ Ruud: "Je vroeg: “Hoe gaat het met je, zo aan het eind van de dag?” Je wilde
 **Jij:** Dus Joost mag niet weten dat je hier nog zit. ▲ *(Luistert 45)*  
 **Anouk:** Ja. Zoiets.
 
-> 1. Ik weet zelf ook nog niet hoe laat ik thuis ben. · 2. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? · **3. Waarom liever niet tegen Joost?** · 4. Dus nog twee tekeningen, en dan ben je weg.
+> 1. Ik zit zelf ook nog hier, hoor. · 2. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? · **3. Waarom liever niet tegen Joost?** · 4. Dus nog twee tekeningen, en dan ben je weg.
 
 **Jij:** Waarom liever niet tegen Joost? ▲ *(Luistert 47)*  
 **Anouk:** Ach. Hij maakt zich anders zorgen, en dat hoeft echt niet.
@@ -617,22 +617,22 @@ Ruud: "Je vroeg: “Hoe gaat het met je, zo aan het eind van de dag?” Je wilde
 **Jij:** Hoe gaat het met je, zo aan het eind van de dag? ▲ *(Luistert 49)*  
 **Anouk:** Echt, het gaat wel. Moe, maar het gaat.
 
-> 1. Waarom mag Joost het niet weten? · **2. Je klinkt alsof je eigenlijk al lang thuis had willen zijn.** · 3. Om zeven uur nog twee tekeningen. Dat is ook niet niks. · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
+> 1. Weet Joost dat je vaak zo laat bent? · **2. Je klinkt alsof je eigenlijk al lang thuis had willen zijn.** · 3. Dat zou ik ook zwaar vinden, zo laat nog. · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
 
 **Jij:** Je klinkt alsof je eigenlijk al lang thuis had willen zijn. ▼ *(Luistert 46)*  
 **Anouk:** Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe.
 
-> **1. Volgens mij wil je eigenlijk gewoon naar huis.** · 2. (je glimlacht en wacht) · 3. Om zeven uur nog twee tekeningen. Dat is ook niet niks. · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
+> **1. Volgens mij wil je eigenlijk gewoon naar huis.** · 2. (je glimlacht en wacht) · 3. Dat zou ik ook zwaar vinden, zo laat nog. · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
 
 **Jij:** Volgens mij wil je eigenlijk gewoon naar huis. ▼ *(Luistert 43)*  
 **Anouk:** Nee, echt niet. Nog even, en dan ben ik weg.
 
-> 1. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? · **2. Om zeven uur nog twee tekeningen. Dat is ook niet niks.** · 3. Dus nog twee tekeningen, en dan ben je weg. · 4. Hoe is het eigenlijk met je?
+> 1. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit? · **2. Dat zou ik ook zwaar vinden, zo laat nog.** · 3. Dus nog twee tekeningen, en dan ben je weg. · 4. Hoe is het eigenlijk met je?
 
-**Jij:** Om zeven uur nog twee tekeningen. Dat is ook niet niks. ▲ *(Luistert 45)*  
+**Jij:** Dat zou ik ook zwaar vinden, zo laat nog. ▲ *(Luistert 45)*  
 **Anouk:** Dank je. Maar echt, het gaat wel.
 
-> **1. (je glimlacht en wacht)** · 2. Je klinkt alsof je eigenlijk al lang thuis had willen zijn. · 3. Dus nog twee tekeningen, en dan ben je weg. · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
+> **1. (je glimlacht en wacht)** · 2. Je klinkt alsof je er klaar mee bent. · 3. Dus nog twee tekeningen, en dan ben je weg. · 4. Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?
 
 **Jij:** (je glimlacht en wacht) ▼ *(Luistert 41)*  
 **Anouk:** … Is er iets? Je kijkt zo.
@@ -646,54 +646,54 @@ Ruud: "Je vroeg: “Hoe gaat het met je, zo aan het eind van de dag?” Je wilde
 
 ## Exchanges to read
 
-Every option any deal could offer, after every line the person can say (1500 states walked, breadth first, then random talks to the end): 112 of 1262 exchanges, those with a flag or a stock reply of the bank (`--full` for all).
+Every option any deal could offer, after every line the person can say (1500 states walked, breadth first, then random talks to the end): 106 of 1272 exchanges, those with a flag or a stock reply of the bank (`--full` for all).
 
 #### Anouk: "Nog twee tekeningen en dan ga ik. Echt waar. Niet tegen Joost zeggen dat ik hier nog zit, hè?"
 
-- *empathy* "Om zeven uur nog twee tekeningen. Dat is ook niet niks." → "Dank je. Dat hoor ik niet vaak."
+- *empathy* "In je eentje hier, op een maandagavond. Dat is ook niet niks." → "Dank je. Dat hoor ik niet vaak."
 
 #### Anouk: "Hoe het is? … Moe, eerlijk gezegd. Fijn dat je het vraagt."
 
-- *reflect* "Je klinkt alsof je eigenlijk al lang thuis had willen zijn." → "Ja. Zo voelt het wel." / "Ja, ja. Ik hoor je wel. Maar ik moet echt door."
-- *empathy* "Om zeven uur nog twee tekeningen. Dat is ook niet niks." → "Eerlijk? Morgen zit ik hier alleen. Joost zit de hele dag in overleg en de anderen zitten op cursus. Als dit vanavond niet af is, ligt het er morgen nog. En achter elke tekening zit iemand die wacht." / "Dank je. Dat hoor ik niet vaak."
-- *reflect* "Volgens mij wil je eigenlijk gewoon naar huis." → "Ja. Zo voelt het wel."
+- *reflect* "Je klinkt alsof je eigenlijk al lang thuis had willen zijn." → "Ja. Zo voelt het wel."
 - *empathy* "In je eentje hier, op een maandagavond. Dat is ook niet niks." → "Eerlijk? Morgen zit ik hier alleen. Joost zit de hele dag in overleg en de anderen zitten op cursus. Als dit vanavond niet af is, ligt het er morgen nog. En achter elke tekening zit iemand die wacht." / "Dank je. Dat hoor ik niet vaak."
+- *reflect* "Volgens mij wil je eigenlijk gewoon naar huis." → "Ja. Zo voelt het wel."
+- *empathy* "Om zeven uur nog twee tekeningen. Dat is ook niet niks." → "Eerlijk? Morgen zit ik hier alleen. Joost zit de hele dag in overleg en de anderen zitten op cursus. Als dit vanavond niet af is, ligt het er morgen nog. En achter elke tekening zit iemand die wacht." / "Dank je. Dat hoor ik niet vaak."
 - *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien."
 
 #### Anouk: "Die twee moeten de deur uit. Een rijtjeshuis in Lindeveld met een warmtepomp, en een school die een lokaal bijbouwt. Die liggen allebei al te lang."
 
-- *empathy* "Om zeven uur nog twee tekeningen. Dat is ook niet niks." → "Dank je. Dat hoor ik niet vaak." / "Ach, het valt wel mee, hoor. Ik zit erbovenop." / "Dank je. Maar echt, het gaat wel."
+- *empathy* "In je eentje hier, op een maandagavond. Dat is ook niet niks." → "Dank je. Dat hoor ik niet vaak." / "Ach, het valt wel mee, hoor. Ik zit erbovenop."
 - *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien."
 
 #### Anouk: "Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe."
 
-- *empathy* "Om zeven uur nog twee tekeningen. Dat is ook niet niks." → "Dank je. Dat hoor ik niet vaak." / "Ach, het valt wel mee, hoor. Ik zit erbovenop." / "Ja… Het is wat het is."
+- *empathy* "In je eentje hier, op een maandagavond. Dat is ook niet niks." → "Dank je. Dat hoor ik niet vaak." / "Ach, het valt wel mee, hoor. Ik zit erbovenop."
 - *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien." / "Ja, ja. Daar denk ik over na."
 - *ask_commitment* "Doen we het zo?" → "Nee. Nog niet."
 
 #### Anouk: "Ja. Nou ja… als het meezit."
 
-- *empathy* "Om zeven uur nog twee tekeningen. Dat is ook niet niks." → "Dank je. Dat hoor ik niet vaak." / "Ach, het valt wel mee, hoor. Ik zit erbovenop."
+- *empathy* "In je eentje hier, op een maandagavond. Dat is ook niet niks." → "Dank je. Dat hoor ik niet vaak." / "Ach, het valt wel mee, hoor. Ik zit erbovenop."
 - *silence* "(je glimlacht en wacht)" → "(denkt na) Ik weet het eigenlijk niet."
 - *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien."
 
 #### Anouk: "Ach. Hij maakt zich anders zorgen, en dat hoeft echt niet."
 
-- *empathy* "Om zeven uur nog twee tekeningen. Dat is ook niet niks." → "Dank je. Dat hoor ik niet vaak." / "Ach, het valt wel mee, hoor. Ik zit erbovenop." / "Ja… Het is wat het is." / "Dank je. Maar echt, het gaat wel."
+- *empathy* "In je eentje hier, op een maandagavond. Dat is ook niet niks." → "Dank je. Dat hoor ik niet vaak." / "Ach, het valt wel mee, hoor. Ik zit erbovenop."
 - *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien." / "Ja, ja. Daar denk ik over na."
 - *ask_commitment* "Doen we het zo?" → "Nee. Nog niet."
 
-#### Anouk: "Hm. Ja. Maar ik moet echt even door, hoor."
+#### Anouk: "Hm. Ja."
 
-- *empathy* "Om zeven uur nog twee tekeningen. Dat is ook niet niks." → "Dank je. Dat hoor ik niet vaak." / "Ach, het valt wel mee, hoor. Ik zit erbovenop." / "Ja… Het is wat het is."
+- *empathy* "In je eentje hier, op een maandagavond. Dat is ook niet niks." → "Dank je. Dat hoor ik niet vaak." / "Ach, het valt wel mee, hoor. Ik zit erbovenop."
 - *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien." / "Ja, ja. Daar denk ik over na."
-- *experience* "Ik weet zelf ook nog niet hoe laat ik thuis ben." → "Ja. Ja. Dat weet ik nou wel. Wat wil je eigenlijk?" / "Ja… Mm."
+- *experience* "Ik zit zelf ook nog hier, hoor." → "Ja. Ja. Dat weet ik nou wel. Wat wil je eigenlijk?" / "Ja… Mm."
 - *ask_commitment* "Doen we het zo?" → "Nee. Nog niet."
 
 #### Anouk: "… Is er iets? Je kijkt zo."
 
-- *empathy* "Om zeven uur nog twee tekeningen. Dat is ook niet niks." → "Dank je. Dat hoor ik niet vaak." / "Ach, het valt wel mee, hoor. Ik zit erbovenop." / "Ja… Het is wat het is." / "Dank je. Maar echt, het gaat wel."
-- *silence* "(je glimlacht en wacht)" → "Sorry, ik moet echt nog even door." / "… Wat is er?" / "… Zeg jij ook nog eens wat?"
+- *empathy* "In je eentje hier, op een maandagavond. Dat is ook niet niks." → "Dank je. Dat hoor ik niet vaak." / "Ach, het valt wel mee, hoor. Ik zit erbovenop."
+- *silence* "(je glimlacht en wacht)" → "Sorry, ik wil die tekeningen echt nog af hebben." / "… Wat is er?" / "… Zeg jij ook nog eens wat?"
 - *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien." / "Ja, ja. Daar denk ik over na."
 - *ask_commitment* "Doen we het zo?" → "Nee. Nog niet." / "Nog één tekening. Dan ga ik. Beloofd."
 
@@ -707,18 +707,16 @@ Every option any deal could offer, after every line the person can say (1500 sta
 
 #### Anouk: "Eerlijk? Morgen zit ik hier alleen. Joost zit de hele dag in overleg en de anderen zitten op cursus. Als dit vanavond niet af is, ligt het er morgen nog. En achter elke tekening zit iemand die wacht."
 
-- *reflect* "Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht." → "Ja. Zo voelt het wel." / "Sorry, mijn telefoon. Mijn vriend appte net…" / "Ja, ja. Ik hoor je wel. Maar ik moet echt door."
-- *empathy* "Morgen in je eentje de hele afdeling. Dat is veel." → "Dank je. Dat hoor ik niet vaak." / "Ja. Fijn dat je dat zegt." / "Sorry, mijn telefoon. Mijn vriend appte net…"
-- *empathy* "Dat je aan die mensen denkt die wachten, dat snap ik." → "Dank je. Dat hoor ik niet vaak." / "Sorry, mijn telefoon. Mijn vriend appte net…" / "Ja, ja. Lief van je, hoor. Maar ik moet echt door."
+- *reflect* "Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht." → "Ja. Zo voelt het wel." / "Sorry, mijn telefoon. Mijn vriend appte net…" / "Ja… Dat klopt wel." / "Ja, ja. Ik hoor je wel. Maar ik moet echt door."
+- *empathy* "Morgen in je eentje de hele afdeling. Dat is veel." → "Dank je. Dat hoor ik niet vaak." / "Ja. Fijn dat je dat zegt." / "Sorry, mijn telefoon. Mijn vriend appte net…" / "Ja, ja. Lief van je, hoor. Maar ik moet echt door."
 - *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien." / "Ja, ja. Daar denk ik over na."
-- *reflect* "Je klinkt alsof het allemaal op jou neerkomt." → "Ja… Dat klopt wel." / "Ja. Zo voelt het wel." / "Sorry, mijn telefoon. Mijn vriend appte net…"
 
-#### Anouk: "Sorry, ik moet echt nog even door."
+#### Anouk: "Sorry, ik wil die tekeningen echt nog af hebben."
 
-- *reflect* "Volgens mij wil je eigenlijk gewoon naar huis." → "Nee, echt niet. Nog even, en dan ben ik weg." / "Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe." / "Nee. Dat zei je al, en zo is het niet." / "Nee hoor."
-- *experience* "Ik zit zelf ook nog hier, hoor." → "Hm. Ja. Maar ik moet echt even door, hoor." / "Ja… Mm." / "Ja, dat vertelde je al." / "Ja. Ja. Dat weet ik nou wel. Wat wil je eigenlijk?"
+- *experience* "Ik weet zelf ook nog niet hoe laat ik thuis ben." → "Hm. Ja." / "Ja… Mm." / "Ja, dat vertelde je al." / "Ja. Ja. Dat weet ik nou wel. Wat wil je eigenlijk?"
 - *silence* "(je glimlacht en wacht)" → "… Is er iets? Je kijkt zo." / "… Wat is er?" / "… Zeg jij ook nog eens wat?" / "Ik ga maar even verder, hoor."
-- *experience* "Ik weet zelf ook nog niet hoe laat ik thuis ben." → "Hm. Ja. Maar ik moet echt even door, hoor." / "Ja. Ja. Dat weet ik nou wel. Wat wil je eigenlijk?" / "Ja… Mm." / "Sorry, ik zit even met mijn hoofd hier." / "Ja. Nou, ik ga even verder."
+- *experience* "Ik zit zelf ook nog hier, hoor." → "Hm. Ja." / "Ja. Ja. Dat weet ik nou wel. Wat wil je eigenlijk?" / "Ja… Mm." / "Sorry, ik zit even met mijn hoofd hier." / "Mm. Ja, dat zal wel."
+- *reflect* "Je klinkt alsof je eigenlijk al lang thuis had willen zijn." → "Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe." / "Nee. Dat zei je al, en zo is het niet." / "Nee hoor."
 
 #### Anouk: "Dank je. Dat hoor ik niet vaak."
 
@@ -730,20 +728,19 @@ Every option any deal could offer, after every line the person can say (1500 sta
 
 #### Anouk: "(denkt na) Ik weet het eigenlijk niet."
 
-- *experience* "Ik weet zelf ook nog niet hoe laat ik thuis ben." → "Echt? Dan weet je hoe het is."
-- *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien."
 - *experience* "Ik zit zelf ook nog hier, hoor." → "Echt? Dan weet je hoe het is."
+- *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien."
+- *experience* "Ik weet zelf ook nog niet hoe laat ik thuis ben." → "Echt? Dan weet je hoe het is."
 
 #### Anouk: "Nog steeds moe, hoor. Dat is niet veranderd."
 
-- *reflect* "Je klinkt alsof je eigenlijk al lang thuis had willen zijn." → "Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe." / "Ja. Zo voelt het wel." / "Nee, echt niet. Nog even, en dan ben ik weg."
-- *empathy* "Om zeven uur nog twee tekeningen. Dat is ook niet niks." → "Ach, het valt wel mee, hoor. Ik zit erbovenop." / "Eerlijk? Morgen zit ik hier alleen. Joost zit de hele dag in overleg en de anderen zitten op cursus. Als dit vanavond niet af is, ligt het er morgen nog. En achter elke tekening zit iemand die wacht." / "Dank je. Dat hoor ik niet vaak."
+- *reflect* "Je klinkt alsof je eigenlijk al lang thuis had willen zijn." → "Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe." / "Ja. Zo voelt het wel."
+- *empathy* "In je eentje hier, op een maandagavond. Dat is ook niet niks." → "Ach, het valt wel mee, hoor. Ik zit erbovenop." / "Eerlijk? Morgen zit ik hier alleen. Joost zit de hele dag in overleg en de anderen zitten op cursus. Als dit vanavond niet af is, ligt het er morgen nog. En achter elke tekening zit iemand die wacht." / "Dank je. Dat hoor ik niet vaak."
 - *silence* "(je glimlacht en wacht)" → "… Is er iets? Je kijkt zo." / "… Wat is er?" / "(denkt na) Ik weet het eigenlijk niet." / "Ik ga maar even verder, hoor."
 - *reflect* "Volgens mij wil je eigenlijk gewoon naar huis." → "Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe." / "Ja. Zo voelt het wel." / "Nee, echt niet. Nog even, en dan ben ik weg."
 - *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien." / "Ja, ja. Daar denk ik over na."
 - *reflect* "Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht." → "Ja. Zo voelt het wel." / "Sorry, mijn telefoon. Mijn vriend appte net…" / "Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe."
-- *empathy* "Morgen in je eentje de hele afdeling. Dat is veel." → "Dank je. Dat hoor ik niet vaak." / "Ja. Fijn dat je dat zegt." / "Ach, het valt wel mee, hoor. Ik zit erbovenop." / "Ja… Het is wat het is." / "Dank je. Maar echt, het gaat wel."
-- *empathy* "Dat je aan die mensen denkt die wachten, dat snap ik." → "Dank je. Dat hoor ik niet vaak." / "Sorry, mijn telefoon. Mijn vriend appte net…" / "Ach, het valt wel mee, hoor. Ik zit erbovenop." / "Dank je. Maar echt, het gaat wel." / "Ja… Het is wat het is."
+- *empathy* "Morgen in je eentje de hele afdeling. Dat is veel." → "Dank je. Dat hoor ik niet vaak." / "Ja. Fijn dat je dat zegt." / "Sorry, mijn telefoon. Mijn vriend appte net…" / "Ach, het valt wel mee, hoor. Ik zit erbovenop." / "Dank je. Maar echt, het gaat wel."
 - *ask_commitment* "Doen we het zo?" → "Nee. Nog niet." / "Nog één tekening. Dan ga ik. Beloofd."
 
 #### Anouk: "Ach, het valt wel mee, hoor. Ik zit erbovenop."
@@ -758,11 +755,11 @@ Every option any deal could offer, after every line the person can say (1500 sta
 
 #### Anouk: "Hm. Misschien."
 
-- *experience* "Ik weet zelf ook nog niet hoe laat ik thuis ben." → "Hm. Ja. Maar ik moet echt even door, hoor." / "Echt? Dan weet je hoe het is."
+- *experience* "Ik zit zelf ook nog hier, hoor." → "Hm. Ja." / "Echt? Dan weet je hoe het is."
 - *silence* "(je glimlacht en wacht)" → "… Is er iets? Je kijkt zo." / "(denkt na) Ik weet het eigenlijk niet." / "… Wat is er?"
 - *ask_commitment* "Doen we het zo?" → "Nee. Nog niet." / "Nog één tekening. Dan ga ik. Beloofd."
 - *reflect* "Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht." → "Ja. Zo voelt het wel." / "Sorry, mijn telefoon. Mijn vriend appte net…" / "Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe."
-- *empathy* "Dat je aan die mensen denkt die wachten, dat snap ik." → "Dank je. Dat hoor ik niet vaak." / "Sorry, mijn telefoon. Mijn vriend appte net…" / "Ach, het valt wel mee, hoor. Ik zit erbovenop."
+- *empathy* "Morgen in je eentje de hele afdeling. Dat is veel." → "Dank je. Dat hoor ik niet vaak." / "Sorry, mijn telefoon. Mijn vriend appte net…" / "Ach, het valt wel mee, hoor. Ik zit erbovenop."
 
 #### Anouk: "Eén laten liggen. Hm. Die van de school kan wel een dagje wachten. Die hebben hem pas in januari nodig."
 
@@ -774,36 +771,33 @@ Every option any deal could offer, after every line the person can say (1500 sta
 - *reflect* "Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht." → "Sorry, mijn telefoon. Mijn vriend appte net…" / "Ja. Zo voelt het wel." / "Ja, ja. Ik hoor je wel. Maar ik moet echt door."
 - *empathy* "Morgen in je eentje de hele afdeling. Dat is veel." → "Dank je. Dat hoor ik niet vaak." / "Sorry, mijn telefoon. Mijn vriend appte net…" / "Ja. Fijn dat je dat zegt."
 - *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien."
-- *empathy* "Dat je aan die mensen denkt die wachten, dat snap ik." → "Dank je. Dat hoor ik niet vaak." / "Sorry, mijn telefoon. Mijn vriend appte net…"
-- *reflect* "Je klinkt alsof het allemaal op jou neerkomt." → "Sorry, mijn telefoon. Mijn vriend appte net…" / "Ja. Zo voelt het wel."
 
 #### Anouk: "Ja… Mm."
 
-- *experience* "Ik weet zelf ook nog niet hoe laat ik thuis ben." → "Ja. Ja. Dat weet ik nou wel. Wat wil je eigenlijk?" / "Sorry, ik moet echt nog even door." / "Sorry, ik zit even met mijn hoofd hier."
-- *experience* "Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen." → "Ja. Ja. Dat weet ik nou wel. Wat wil je eigenlijk?" / "Sorry, ik zit even met mijn hoofd hier."
+- *experience* "Ik zit zelf ook nog hier, hoor." → "Ja. Ja. Dat weet ik nou wel. Wat wil je eigenlijk?" / "Sorry, ik wil die tekeningen echt nog af hebben." / "Sorry, ik zit even met mijn hoofd hier."
+- *experience* "Ik herken dat wel, dat je alles af wilt hebben." → "Ja. Ja. Dat weet ik nou wel. Wat wil je eigenlijk?"
 - *ask_commitment* "Doen we het zo?" → "Nee. Nog niet."
 - *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien."
 
 #### Anouk: "… Wat is er?"
 
-- *silence* "(je glimlacht en wacht)" → "… Zeg jij ook nog eens wat?" / "Sorry, ik moet echt nog even door." / "Ik ga maar even verder, hoor."
+- *silence* "(je glimlacht en wacht)" → "… Zeg jij ook nog eens wat?" / "Sorry, ik wil die tekeningen echt nog af hebben." / "Ik ga maar even verder, hoor."
 - *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien."
-- *silence* "(je zegt niets en wacht af)" → "… Zeg jij ook nog eens wat?" / "Ik ga maar even verder, hoor."
+- *silence* "(je knikt en wacht)" → "… Zeg jij ook nog eens wat?" / "Ik ga maar even verder, hoor."
 
-#### Anouk: "Alleen die twee, hoor. De rest kan tot morgen wachten."
+#### Anouk: "Ja, alleen die twee. De rest kan tot morgen wachten."
 
 - *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien."
 
 #### Anouk: "Ja, ja. Lief van je, hoor. Maar ik moet echt door."
 
 - *empathy* "In je eentje hier, op een maandagavond. Dat is ook niet niks." → "Ja, dat zei je al."
-- *empathy* "Morgen in je eentje de hele afdeling. Dat is veel." → "Ja, dat zei je al."
 
 #### Anouk: "Morgen? Telefoon, portaal, en de tekeningen ertussendoor. In mijn eentje."
 
 - *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien."
 
-#### Anouk: "Ach. Dat is een lang verhaal."
+#### Anouk: "Goeie vraag. Dat weet ik eigenlijk niet."
 
 - *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien."
 
@@ -815,7 +809,7 @@ Every option any deal could offer, after every line the person can say (1500 sta
 
 - *paraphrase* "Dus Joost mag niet weten dat je hier nog zit." → "Ja, zo zei je het al."
 
-#### Anouk: "Hij bedoelt het goed, hoor. Maar die tekeningen moeten gewoon af."
+#### Anouk: "Hij vermoedt het wel, denk ik. Maar hij heeft al genoeg aan zijn hoofd."
 
 - *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien."
 
@@ -825,7 +819,7 @@ Every option any deal could offer, after every line the person can say (1500 sta
 
 #### Anouk: "Ja. Ja. Dat weet ik nou wel. Wat wil je eigenlijk?"
 
-- *experience* "Ik zit zelf ook nog hier, hoor." → "Ja, dat vertelde je al."
+- *experience* "Ik weet zelf ook nog niet hoe laat ik thuis ben." → "Ja, dat vertelde je al."
 - *experience* "Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben." → "Ja, dat vertelde je al."
 
 #### Anouk: "… Zeg jij ook nog eens wat?"
@@ -839,7 +833,7 @@ Every option any deal could offer, after every line the person can say (1500 sta
 #### Anouk: "Echt, het gaat wel. Moe, maar het gaat."
 
 - *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien." / "… Ja. Ja, goed. Samen naar buiten."
-- *reflect* "Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht." → "Ja. Zo voelt het wel." / "Nee hoor."
+- *reflect* "Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht." → "Ja. Zo voelt het wel."
 - *empathy* "Morgen in je eentje de hele afdeling. Dat is veel." → "Dank je. Dat hoor ik niet vaak." / "Ach, het valt wel mee, hoor. Ik zit erbovenop."
 - *ask_commitment* "Doen we het zo?" → "Nee. Nog niet."
 
@@ -853,7 +847,7 @@ Every option any deal could offer, after every line the person can say (1500 sta
 
 #### Anouk: "Ja, ja. Ik hoor je wel. Maar ik moet echt door."
 
-- *reflect* "Volgens mij wil je eigenlijk gewoon naar huis." → "Nee. Dat zei je al, en zo is het niet."
+- *reflect* "Je klinkt alsof je eigenlijk al lang thuis had willen zijn." → "Nee. Dat zei je al, en zo is het niet."
 - *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien."
 
 #### Anouk: "Ja… Het is wat het is."
@@ -886,6 +880,10 @@ Every option any deal could offer, after every line the person can say (1500 sta
 
 - *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Ja, ja. Daar denk ik over na." / "Hm. Misschien."
 
+#### Anouk: "Dat vroeg je al. Laat maar, echt."
+
+- *reflect* "Je klinkt alsof je eigenlijk al lang thuis had willen zijn." → "Nee hoor." / "Ja. Zo voelt het wel."
+
 #### Anouk: "Nee, echt niet. Nog even, en dan ben ik weg."
 
 - *ask_commitment* "Doen we het zo?" → "Nee. Nog niet."
@@ -893,10 +891,6 @@ Every option any deal could offer, after every line the person can say (1500 sta
 #### Anouk: "Moe. Maar dat zei ik al, hè."
 
 - *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien."
-
-#### Anouk: "Dat vroeg je al. Laat maar, echt."
-
-- *reflect* "Je klinkt alsof je eigenlijk al lang thuis had willen zijn." → "Ja. Zo voelt het wel." / "Nee hoor."
 
 #### Anouk: "Mm."
 
@@ -906,9 +900,9 @@ Every option any deal could offer, after every line the person can say (1500 sta
 
 - *empathy* "Dat je aan die mensen denkt die wachten, dat snap ik." → "Mm. Ja."
 
-#### Anouk: "Weet je wat? Kom morgen overdag even langs. Dan zie je hoe het hier gaat. Al ziet het er overdag niet veel beter uit, hoor."
+#### Anouk: "Weet je wat? Kom morgen overdag ook even langs. Dan zie je hoe het hier gaat. Al ziet het er overdag niet veel beter uit, hoor."
 
-- *empathy* "Dat zit je niet lekker, snap ik." → "Dank je. Dat hoor ik niet vaak."
+- *empathy* "Wat balen. Voor jou, en voor Fenna." → "Dank je. Dat hoor ik niet vaak."
 
 #### Anouk: "Dat zei je, ja. Ik weet het nog niet."
 

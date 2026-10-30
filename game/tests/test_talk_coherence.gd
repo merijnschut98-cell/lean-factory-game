@@ -36,3 +36,20 @@ func test_no_talk_says_what_the_player_s_sentences_cannot_have_earned() -> void:
 					broken.append("%s: ends %s on \"%s\"%s" % [f, e["outcome"], e["reply"],
 						(" (Ruud: \"%s\")" % e["ruud"]) if f == "ruud" else ""])
 		assert_true(broken.is_empty(), "%s: %d broken, e.g. %s" % [talk.def.id, broken.size(), broken.slice(0, 3)])
+
+
+## Review round 2: the walk flags a story line said twice even when the player
+## said the same sentence again (a proposal's answer, a lead-in, a layer never
+## comes twice), and an echo only to a new sentence.
+func test_the_walk_flags_a_retold_story_line_and_an_echo() -> void:
+	var ctx := {"repeat": null, "clarify": null, "stock": {}}
+	var t := DialogFixture.talk(50)
+	var path := {"moves": ["propose"], "lines": ["Voorstel goed."], "heard": ["Positie.", "Dat helpt.", "Gaat wel."]}
+	var said_again := {"move": "propose", "line": "Voorstel goed.", "reply": "Dat helpt."}
+	assert_true("retold" in TalkWalk.turn(ctx, t, "Gaat wel.", path, said_again)["flags"],
+		"the proposal's answer twice, though the player repeated the proposal")
+	var new_line := {"move": "mood", "line": "Hoe is het?", "reply": "Gaat wel."}
+	assert_true("echo" in TalkWalk.turn(ctx, t, "Dat helpt.", path, new_line)["flags"], "a line again, to a new sentence")
+	var same_line := {"move": "mood", "line": "Voorstel goed.", "reply": "Gaat wel."}
+	assert_false("echo" in TalkWalk.turn(ctx, t, "Dat helpt.", path, same_line)["flags"],
+		"the same answer to the same sentence is no echo")

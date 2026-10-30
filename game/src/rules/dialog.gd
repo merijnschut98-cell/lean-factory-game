@@ -946,9 +946,9 @@ func _again(move: String) -> Dictionary:
 
 ## What the player says: a proposal's or experiment's own sentence, else the
 ## dialog's line for the move (for the layer spoken of last, TOPICS, when keyed),
-## else the bank's. A list of variants gives the
-## next one each time the move is said in this talk (where it starts differs
-## per seed and move), so a line comes back only once all were said.
+## else the bank's. A list of variants gives the next one each time the move is
+## said in this talk, so a line comes back only once all were said: a keyed list
+## in the order written, any other from where the seed and move start it.
 func _player_line(move: String, pick: String = "") -> String:
 	if move == "propose" and _co_offered and pick == str(def.co_proposal.get("id", "")) \
 			and not str(def.co_proposal.get("take", "")).is_empty():
@@ -956,11 +956,15 @@ func _player_line(move: String, pick: String = "") -> String:
 	if move in ["propose", "propose_experiment"] and not pick.is_empty():
 		return str(def.item(pick).get("text", ""))
 	var own: Variant = def.lines.get(move, bank["player"].get(move, ""))
-	if own is Dictionary:  # keyed by what the person spoke of last (TOPICS)
+	var keyed: bool = own is Dictionary
+	if keyed:  # keyed by what the person spoke of last (TOPICS)
 		own = own.get(_topic, own.get("_", bank["player"].get(move, "")))
 	if not own is Array:
 		return str(own)
 	var variants: Array = own
+	if keyed:  # written in order (a follow-up after its question), on any deal; once all were said, in turn
+		var fresh := variants.filter(func(v: Variant) -> bool: return not str(v) in said)
+		return str(fresh[0] if not fresh.is_empty() else variants[int(_uses.get(move, 0)) % variants.size()])
 	return str(variants[(absi(hash([_seed, def.id, move])) + int(_uses.get(move, 0))) % variants.size()])
 
 

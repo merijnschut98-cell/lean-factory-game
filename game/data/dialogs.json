@@ -1332,7 +1332,7 @@
    "co_proposal": {
     "id": "come_tomorrow",
     "take": "Graag. Dan kom ik morgen even kijken.",
-    "text": "Weet je wat? Kom morgen overdag even langs. Dan zie je hoe het hier gaat. Al ziet het er overdag niet veel beter uit, hoor."
+    "text": "Weet je wat? Kom morgen overdag ook even langs. Dan zie je hoe het hier gaat. Al ziet het er overdag niet veel beter uit, hoor."
    },
    "id": "anouk_seven",
    "kind": "persuade",
@@ -1400,7 +1400,8 @@
      ],
      "interest": [
       "Morgen in je eentje de hele afdeling. Dat is veel.",
-      "Dat je aan die mensen denkt die wachten, dat snap ik."
+      "Dat je aan die mensen denkt die wachten, dat snap ik.",
+      "Dat is veel, voor één persoon."
      ],
      "lead_in": [
       "Hé, rustig maar. Je hoeft niks te zeggen.",
@@ -1408,13 +1409,15 @@
      ],
      "position": [
       "In je eentje hier, op een maandagavond. Dat is ook niet niks.",
-      "Om zeven uur nog twee tekeningen. Dat is ook niet niks."
+      "Om zeven uur nog twee tekeningen. Dat is ook niet niks.",
+      "Dat zou ik ook zwaar vinden, zo laat nog."
      ]
     },
     "experience": {
      "_": [
       "Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben.",
-      "Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen."
+      "Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen.",
+      "Ik herken dat wel, dat je alles af wilt hebben."
      ],
      "concern": "Thuis vroegen ze vanavond ook al waar ik bleef. En het is pas mijn eerste dag.",
      "lead_in": "Thuis appen ze mij ook al: waar blijf je?",
@@ -1439,13 +1442,14 @@
      "lead_in": "Wat appte hij?",
      "position": [
       "Waarom liever niet tegen Joost?",
-      "Waarom mag Joost het niet weten?"
+      "Weet Joost dat je vaak zo laat bent?"
      ]
     },
     "mood": {
      "_": [
       "En hoe gaat het nu met jou, met dat allemaal?",
-      "Gaat het een beetje, met al dat werk?"
+      "Gaat het een beetje, met al dat werk?",
+      "En jij zelf? Hoe gaat het?"
      ],
      "lead_in": "Gaat het wel?",
      "position": [
@@ -1459,18 +1463,18 @@
       "Vertel eens, hoe ziet zo'n dag van jou eruit?"
      ],
      "concern": [
-      "Hoe gaat het thuis, als jij zo laat bent?",
-      "Hoe lang is het al tijdelijk?"
+      "Hoe lang is het al tijdelijk?",
+      "Hoe gaat het thuis, als jij zo laat bent?"
      ],
      "interest": [
       "Hoe ziet je dag morgen eruit, als je er alleen voor staat?",
-      "Wat komt er morgen allemaal op je af?"
+      "Wie wachten er op die tekeningen?"
      ],
      "lead_in": "Wat schreef hij?",
      "position": [
       "Ik zeg niks, beloofd. Hoe komt het dat je hier nog zit?",
-      "Wat moet er vanavond nog af, dan?",
-      "Hoe ziet je avond er nog uit?"
+      "En is dat alles wat er vanavond nog moet?",
+      "Wat maakt die twee zo dringend?"
      ]
     },
     "paraphrase": {
@@ -1484,7 +1488,7 @@
      ],
      "interest": [
       "Dus als het vanavond niet af is, sta je er morgen alleen voor.",
-      "Dus morgen ben jij de enige, en dan ligt dit er ook nog."
+      "Dus die mensen die wachten, daar lig jij eigenlijk wakker van."
      ],
      "lead_in": "Je vriend vraagt waar je blijft?",
      "position": [
@@ -1503,7 +1507,8 @@
      ],
      "interest": [
       "Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht.",
-      "Je klinkt alsof het allemaal op jou neerkomt."
+      "Je klinkt alsof het allemaal op jou neerkomt.",
+      "Je klinkt alsof je je zorgen maakt om morgen."
      ],
      "lead_in": [
       "Je schrikt ervan, zie ik.",
@@ -1511,13 +1516,15 @@
      ],
      "position": [
       "Je klinkt alsof je eigenlijk al lang thuis had willen zijn.",
-      "Volgens mij wil je eigenlijk gewoon naar huis."
+      "Volgens mij wil je eigenlijk gewoon naar huis.",
+      "Je klinkt alsof je er klaar mee bent."
      ]
     },
     "silence": {
      "_": [
       "(je blijft staan en wacht)",
-      "(je zegt niets en wacht af)"
+      "(je zegt niets en wacht af)",
+      "(je knikt en wacht)"
      ],
      "position": "(je glimlacht en wacht)"
     }
@@ -1628,7 +1635,7 @@
      "misses": {
       "_": [
        {
-        "text": "Hm. Ja. Maar ik moet echt even door, hoor."
+        "text": "Hm. Ja."
        },
        {
         "text": "Ja… Mm."
@@ -1637,7 +1644,7 @@
         "text": "Sorry, ik zit even met mijn hoofd hier."
        },
        {
-        "text": "Ja. Nou, ik ga even verder."
+        "text": "Mm. Ja, dat zal wel."
        },
        {
         "text": "Hm."
@@ -1669,7 +1676,7 @@
         "tags": [
          "admission"
         ],
-        "text": "Ik weet het niet meer. Een tijdje."
+        "text": "Tot er weer genoeg mensen zijn. Maar dat zeg ik al sinds de zomer."
        }
       ],
       "interest": [
@@ -1683,7 +1690,7 @@
         "tags": [
          "claim"
         ],
-        "text": "En dan heb ik het nog niet eens over de rest van de bak."
+        "text": "Omdat ik morgen alleen ben. Dan komt er niks meer af."
        }
       ],
       "lead_in": {
@@ -1700,20 +1707,20 @@
         "tags": [
          "claim"
         ],
-        "text": "Hij bedoelt het goed, hoor. Maar die tekeningen moeten gewoon af."
+        "text": "Hij vermoedt het wel, denk ik. Maar hij heeft al genoeg aan zijn hoofd."
        }
       ]
      },
      "misses": {
       "_": [
        {
-        "text": "Ach. Dat is een lang verhaal."
+        "text": "Goeie vraag. Dat weet ik eigenlijk niet."
        },
        {
         "text": "Tja. Zo gaat dat hier."
        },
        {
-        "text": "Weet ik eigenlijk niet."
+        "text": "Hm. Daar moet ik over nadenken."
        }
       ],
       "position": [
@@ -1853,7 +1860,7 @@
         "tags": [
          "claim"
         ],
-        "text": "Alles wat binnenkomt. En dat is altijd meer dan wat eruit gaat."
+        "text": "Een gezin met een warmtepomp die er nog niet op kan, en een school met een lokaal in de steigers."
        }
       ],
       "lead_in": {
@@ -1870,13 +1877,13 @@
         "tags": [
          "claim"
         ],
-        "text": "Alleen die twee, hoor. De rest kan tot morgen wachten."
+        "text": "Ja, alleen die twee. De rest kan tot morgen wachten."
        },
        {
         "tags": [
          "claim"
         ],
-        "text": "Echt, alleen die twee. Dan ben ik weg."
+        "text": "Ze liggen al te lang. Die mensen hebben al twee keer gebeld."
        }
       ]
      },
@@ -1898,7 +1905,7 @@
        "text": "Sorry, ik moet echt even door met die tekeningen."
       },
       "concern": {
-       "text": "Niet zo best. Maar daar wil ik het nu eigenlijk niet over hebben."
+       "text": "Daar wil ik het nu eigenlijk niet over hebben, als je het niet erg vindt."
       }
      }
     },
@@ -2032,7 +2039,7 @@
     "mood"
    ],
    "tutorial": true,
-   "warning": "Sorry, ik moet echt nog even door."
+   "warning": "Sorry, ik wil die tekeningen echt nog af hebben."
   },
   {
    "co_proposal": {

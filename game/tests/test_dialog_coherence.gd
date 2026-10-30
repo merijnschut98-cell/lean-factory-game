@@ -197,6 +197,19 @@ func test_a_list_reply_never_says_the_same_line_twice_while_another_is_left() ->
 	assert_eq([first["reply"], second["reply"]], ["Nog steeds moe.", "Echt, het gaat."])
 
 
+## Review round 2: a talk's own keyed lines are said in the order written, on any
+## deal, so a follow-up question never comes before the question it follows.
+func test_keyed_lines_come_in_the_order_written_on_any_deal() -> void:
+	var d := DialogFixture.def({"lines": {"open_question": {"_": ["Eerst dit?", "En dan dat?", "En verder?"]}}})
+	for seed in 6:
+		var t := _talk(DialogFixture.bank(), d)
+		t._seed = seed
+		var asked := []
+		for i in 3:
+			asked.append(t.say("open_question")["line"])
+		assert_eq(asked, ["Eerst dit?", "En dan dat?", "En verder?"], "seed %d" % seed)
+
+
 ## The talk keeps the player's sentences, as said, in order.
 func test_the_talk_keeps_what_the_player_said() -> void:
 	var t := _talk(DialogFixture.bank())
