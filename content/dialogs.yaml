@@ -339,34 +339,47 @@ bank:
   # No bank reply carries a claim or feeling tag (tier-1 content audit C8):
   # whether a summary or a named feeling lands depends on what THIS person
   # said, in their authored lines, never on a shared fallback.
+  # A miss presupposes nothing the player did not say (Merijn's playtest
+  # 2026-10-30): "Ja, dat zei je al." only from `again`, which the rules say
+  # once the same kind of sentence was said before in the talk; and nobody asks
+  # "Hoe bedoel je?", because no turn lets the player explain (check_coherence).
   replies:
     mood:
       lands: {text: "Eerlijk gezegd? Het is een drukke week."}
       misses: {text: "Gaat wel."}
+      again: {text: "Dat vroeg je net ook al. Gaat wel, hoor."}
     open_question:
-      lands: {text: "Ach, je kent het. Te veel werk, te weinig tijd."}
-      misses: {text: "Dat heb ik je net verteld."}
+      lands: {text: "Ach, het is gewoon druk. Te veel werk, te weinig tijd."}
+      misses: {text: "Ach, er is niet zoveel te vertellen."}
+      again: {text: "Dat heb ik je net al verteld, toch?"}
     reflect:
       lands: {text: "Ja. Zo voelt het wel."}
-      misses: {text: "Nee, zo is het niet. Ik ben gewoon moe."}
+      misses: {text: "Nee, zo zou ik het niet zeggen."}
+      again: {text: "Nee. Dat zei je net ook al, en zo is het niet."}
     empathy:
       lands: {text: "Dank je. Dat hoor ik niet vaak."}
-      misses: {text: "Ja, dat zei je al."}
+      misses: {text: "Mm. Het valt wel mee, hoor."}
+      again: {text: "Ja, dat zei je al."}
     paraphrase:
       lands: {text: "Precies."}
-      misses: {text: "Dat zei ik, ja."}
+      misses: {text: "Mm. Zoiets."}
+      again: {text: "Ja, zo zei je het net ook al."}
     inquiry:
       lands: {text: "Goeie vraag. Daar moet ik even over nadenken."}
-      misses: {text: "Hoe bedoel je?"}
+      misses: {text: "Tja. Moeilijk te zeggen."}
+      again: {text: "Dat vroeg je net ook al. Ik weet het echt niet."}
     experience:
       lands: {text: "Echt? Dan weet je hoe het is."}
       misses: {text: "Het gaat nu even niet over jou."}
+      again: {text: "Ja, dat vertelde je net al."}
     silence:
       lands: {text: "(denkt na) Ik weet het eigenlijk niet.", tags: [doubt]}
       misses: {text: "… Was er nog iets?"}
+      again: {text: "… Zeg jij ook nog eens wat?"}
     perspective:
       lands: {text: "Zo had ik het nog niet bekeken."}
-      misses: {text: "Ik ben de monteur niet."}
+      misses: {text: "Dat kan ik moeilijk voor een ander zeggen."}
+      again: {text: "Dat vroeg je net ook al. Ik kan niet voor een ander praten."}
     show_data:
       lands: {text: "Laat eens zien… Dat had ik niet verwacht."}
       misses: {text: "Dus het ligt aan mijn mensen?"}
@@ -395,7 +408,7 @@ bank:
       ask: "Dezelfde vraag, andere woorden. Kom liever kijken, dan zie je het."
       say: "Je zegt het nu voor de derde keer. Ik geloof je wel, hoor."
     overloaded:
-      ask: "Sorry, maar dit vroeg je net. Ik heb echt niet veel tijd."
+      ask: "Sorry, maar dat vroeg je al. Ik heb echt niet veel tijd."
       say: "Ja. Ja. Dat weet ik nou wel. Wat wil je eigenlijk?"
     rule_bound:
       ask: "Die vraag is gesteld, en beantwoord. Wat is het volgende punt?"
@@ -413,7 +426,7 @@ bank:
       ask: "Je stelt me mijn eigen vraag terug. Goed geleerd. Wat wil je nu echt weten?"
       say: "Je herhaalt me nu. Wat zie je zelf?"
   special:
-    repeat: "Dat vroeg je net ook."
+    repeat: "Daar hadden we het net al over."
     refusal: "Nee. Nog niet."
     no_proposal: "Waar moet ik precies ja op zeggen?"
     other_data: "En?"
@@ -439,16 +452,18 @@ bank:
       commitment: "Wiens idee was het uiteindelijk?"
   # Ruud names one move after an Act 0 talk, and never again after it (tutorial
   # talks spec §3): the day's move if it landed, else the move that landed most;
-  # `none` when nothing landed; `week_end` after the week's last talk.
+  # `none` when nothing landed; `week_end` after the week's last talk. He quotes
+  # the sentence the player said ({said}; Merijn's playtest 2026-10-30: a note
+  # that describes a move the player does not recognise as theirs is no help).
   ruud_names:
-    mood: "Je vroeg eerst hoe het met {person} ging. Dat heet Stemming peilen. Daarna praatte {person} anders. Zag je dat?"
-    open_question: "Je stelde een vraag waar geen ja of nee op past. Een Open vraag. Toen kwam het verhaal, niet het antwoord."
-    empathy: "Je zei dat het niet niks is. Begrip tonen. Je hoefde het niet op te lossen om het te erkennen."
-    paraphrase: "Je zei in je eigen woorden terug wat {person} zei. Samenvatten. Vanaf dat moment wist {person} dat je luisterde."
-    inquiry: "Je vroeg door op precies dat ene woord. Doorvragen. Daar zat het."
-    reflect: "Je zei wat {person} voelde, niet wat {person} zei. Gevoel benoemen. Wat gebeurde er daarna?"
+    mood: "Je zei: “{said}” Daarmee vroeg je hoe het met {person} ging, en je meende het. Dat heet Stemming peilen. Zag je hoe {person} daarna praatte?"
+    open_question: "Je vroeg: “{said}” Daar past geen ja of nee op. Een Open vraag. Toen kwam het verhaal, niet het antwoord."
+    empathy: "Je zei: “{said}” Je liet merken dat je snapt dat het zwaar is. Begrip tonen. Je hoefde het niet op te lossen om het te erkennen."
+    paraphrase: "Je zei: “{said}” Je zei in je eigen woorden terug wat {person} zei. Samenvatten. Vanaf dat moment wist {person} dat je luisterde."
+    inquiry: "Je vroeg: “{said}” Daarmee ging je verder op wat {person} net zei. Doorvragen. Daar zat het."
+    reflect: "Je zei: “{said}” Je benoemde wat {person} voelde, niet wat {person} zei. Gevoel benoemen. Wat gebeurde er daarna?"
     silence: "Toen {person} aarzelde, zei je niets. Stilte laten. Dat is het moeilijkste wat er is."
-    experience: "Je vertelde iets van deze week, toen {person} twijfelde. Ervaring delen. Kort, en over jou."
+    experience: "Je zei: “{said}” Je vertelde iets van jezelf, toen {person} twijfelde. Ervaring delen. Kort, en over jou."
     none: "Wat zag je aan {person} toen je begon?"
     week_end: "Acht manieren van luisteren, in vijf dagen. Vanaf maandag noem ik ze niet meer. Eén vraag voor het weekend: wat werkte bij de één en niet bij de ander? Waar zag je dat aan?"
   outcomes:

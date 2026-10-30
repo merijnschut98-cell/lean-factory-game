@@ -364,6 +364,8 @@ func _answer(result: Dictionary) -> void:
 	var said: Array[Dictionary] = [reply]
 	if not result.get("co_proposal", {}).is_empty():
 		said.append(_line(result["co_proposal"]["text"]))
+	if not str(result.get("farewell", "")).is_empty():   # the talk ran out: their word on how it went
+		said.append(_line(result["farewell"]))
 	_speak(said)
 
 

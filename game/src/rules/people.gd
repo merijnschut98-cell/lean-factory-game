@@ -443,24 +443,35 @@ func promises() -> Dictionary:
 ## most; when none did he asks (`none`). "" after any other talk: from Act I he
 ## asks, he never names. (The spec's second rule, the move that drew out the
 ## concern, waits: the talk keeps no record of which move that was.)
+## His line quotes the sentence the player said for that move ({said}; Merijn's
+## playtest 2026-10-30: he named a move the player did not recognise as theirs).
 func ruud_names(d: Dialog) -> String:
-	if not d.def.tutorial:
+	var named := ruud_named(d)
+	if named.is_empty():
 		return ""
-	var best := "none"
+	var lines := JsonFile.dict_or_empty(bank.get("ruud_names"))
+	return str(lines.get(named["move"], "")).replace("{person}", d.who.short).replace("{said}", named["said"])
+
+
+## What Ruud names after an Act 0 talk: {move (a listening move, or none), said
+## (the player's sentence for it, "" for none)}; {} after any other talk.
+func ruud_named(d: Dialog) -> Dictionary:
+	if not d.def.tutorial:
+		return {}
+	var best := {"move": "none", "said": ""}
 	var most := 0
 	for i in d.made.size():
 		var gain := d.trace[i + 1] - d.trace[i] if i + 1 < d.trace.size() else 0
 		var move := d.made[i]
 		if not move in Dialog.LISTEN or gain <= 0:
 			continue
+		var named := {"move": move, "said": d.said[i] if i < d.said.size() else ""}
 		if move in d.def.teaches:
-			best = move
-			break
+			return named
 		if gain > most:
-			best = move
+			best = named
 			most = gain
-	var lines := JsonFile.dict_or_empty(bank.get("ruud_names"))
-	return str(lines.get(best, "")).replace("{person}", d.who.short)
+	return best
 
 
 func _remembers(flag: String, d: Dialog) -> bool:

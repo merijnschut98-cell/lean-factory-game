@@ -65,6 +65,10 @@
   "expert",
   "mentor"
  ],
+ "dialog_coherence": {
+  "clarify": "\\b(hoe|wat) bedoel (je|u)\\b",
+  "repeat": "\\b(dat|dit) (zei|vroeg|vertelde) (je|u)\\b|\\bzei (je|u) (al|net)\\b|\\bvroeg (je|u) (al|net)\\b|\\b(heb|had) ik (je|u) (dat )?(net|al|toch) (verteld|gezegd)\\b|\\bdat zei ik\\b|\\bvoor de (tweede|derde) keer\\b|\\bherhaal|\\bhadden we (net|al)\\b"
+ },
  "dialog_kinds": [
   "persuade",
   "checkin",

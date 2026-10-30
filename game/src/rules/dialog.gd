@@ -174,7 +174,8 @@ const ANSWERS := {"paraphrase": ["claim"], "inquiry": ["claim", "hesitation"], "
 const COPIED := ["openness", "trust", "mood", "version", "revealed", "heard", "pressured", "confronted", "table",
 	"patience", "outcome", "_repaired", "_last_move", "_streak", "_last_tags", "_uses", "_mood_asked",
 	"_lead_in_said", "_co_offered", "_warned", "_worn", "moves_made",
-	"trace", "made", "told", "steered_early", "concern_by", "start_openness", "_found", "_facts", "_retry", "_seed"]
+	"trace", "made", "told", "steered_early", "concern_by", "start_openness", "_found", "_facts", "_retry", "_seed",
+	"said", "_topic"]
 const STATE_KEYS := 22  # COPIED up to "trace"; test_dialog_routes.gd checks it
 
 # Four sentences a turn (PLAN 2.13 B, Merijn 2026-10-19: "I'd prefer having 4
@@ -191,6 +192,10 @@ const COSTLY_SHARE := 0.5
 const NOT_IN_TUTORIAL := ["perspective", "show_data", "propose_experiment", "pressure", "confront"]
 ## Where a shown clue goes in the player's line (GameSession puts its text in).
 const DATA_TOKEN := "{data}"
+## What a talk's own line for a move may answer (`lines.<move>` as a mapping;
+## Merijn's playtest 2026-10-30): the layer the person spoke of last, `_` for
+## any. The player summarises what was said, never what is still to come.
+const TOPICS := ["position", "interest", "lead_in", "concern", "_"]
 
 var def: DialogDef
 var who: PersonDef
@@ -219,6 +224,9 @@ var moves_made := 0
 var trace: Array[int] = []
 ## The moves made, in order (the Mensen tab's record of the talk).
 var made: Array[String] = []
+## The player's sentences, as said, in order (Ruud quotes them; the clue of
+## a shown clue still as DATA_TOKEN).
+var said: Array[String] = []
 ## What the person told that the player can note (person-needs spec §4): the
 ## position, each layer drawn out, and every line that shows their need (a
 ## `tell`), as [{key, text}] in the order said.
@@ -239,6 +247,8 @@ var _lead_in_said := false
 var _co_offered := false
 var _warned := false
 var _worn: Dictionary = {}
+## What the person spoke of last (TOPICS): the line the player's next sentence answers.
+var _topic := "position"
 ## How the talk went, for the discoveries: a steering move came before the
 ## concern was out; the move that revealed the concern.
 var steered_early := false
@@ -408,7 +418,7 @@ func say(move: String, pick: String = "") -> Dictionary:
 			or (not move in PICK_MOVES and not pick.is_empty()):
 		return {"error": "bad_pick"}
 	var before := openness
-	var said := _player_line(move, pick)  # before the move counts as used: the line offered
+	var line := _player_line(move, pick)  # before the move counts as used: the line offered
 	var at_lead_in := _lead_in_said and not revealed.has("concern")
 	var effect := _effect(move, pick)
 	var delta: int = effect["delta"]
@@ -420,7 +430,7 @@ func say(move: String, pick: String = "") -> Dictionary:
 		delta = roundi(delta * REPEAT_FACTOR)
 	elif _streak >= 3:
 		delta = REPEAT_THIRD
-		reply = _shared(bank["special"]["repeat"])
+		reply = _again(move)
 		lands = false
 		worn = true
 	elif lands and move in LISTEN:
@@ -446,12 +456,15 @@ func say(move: String, pick: String = "") -> Dictionary:
 			concern_by = move if shown == "concern" else concern_by
 			unlocked = JsonFile.dict_or_empty(layer.get("unlocks")).duplicate(true)
 			reply = _told(layer, shown)
+			_topic = shown
 		elif at_lead_in:
 			_lead_in_said = false  # only a fitting move draws the concern out; the moment passes
+			_topic = "interest" if revealed.has("interest") else "position"
 		elif lands and move in LISTEN and layer.has("lead_in") and openness >= CUE_AT:
 			_lead_in_said = true
 			lead_in_now = true
 			reply = _told(layer["lead_in"], layer["id"] + ".lead_in")
+			_topic = "lead_in"
 		var next := _next_layer()
 		if not next.is_empty():
 			openness = mini(openness, maxi(int(next["at"]) + CEILING, before))
@@ -478,10 +491,11 @@ func say(move: String, pick: String = "") -> Dictionary:
 		_last_tags = _last_tags.filter(func(tag: String) -> bool: return not tag in ANSWERS.get(move, []))
 	moves_made += 1
 	made.append(move)
+	said.append(line)
 	_note(reply, not shown.is_empty())
 	trace.append(openness)
 	return {
-		"move": move, "line": said, "reply": reply["text"], "tags": reply["tags"],
+		"move": move, "line": line, "reply": reply["text"], "tags": reply["tags"],
 		"delta": openness - before, "lands": lands, "arrow": arrow_of(openness - before), "openness": openness, "trust": trust, "band": band_of(openness), "heard": heard,
 		"cue": outcome.is_empty() and openness >= CUE_AT and not revealed.has("concern")
 			and (lead_in_now or "hesitation" in reply["tags"]),
@@ -489,7 +503,18 @@ func say(move: String, pick: String = "") -> Dictionary:
 		"patience_low": outcome.is_empty() and patience == PATIENCE_WARNING,
 		"ended": not outcome.is_empty(), "outcome": outcome,
 		"outcome_line": _outcome_text(outcome) if not outcome.is_empty() else "",
+		"farewell": _farewell(reply["text"]),
 	}
+
+
+## Their word on how the talk landed, after a reply that did not say it (the
+## talk ran out of time, or ended on a layer): the outcome line. "" while the
+## talk runs, when the reply was it, and after an agreement under condition or
+## a block (their reply names the condition).
+func _farewell(reply: String) -> String:
+	if outcome.is_empty() or outcome in ["partial", "blocked"] or reply == _outcome_text(outcome):
+		return ""
+	return _outcome_text(outcome)
 
 
 ## The talk as it stands, as a separate talk (the route check plays ahead on
@@ -800,17 +825,35 @@ func _note(reply: Dictionary, always: bool = false) -> void:
 
 
 ## The person's reply to a move: the dialog's own, the bank's, or (too early)
-## the position, repeated defensively.
+## the position, repeated defensively. A miss of a move said before in this talk
+## may be its `again` line ("Ja, dat zei je al."): only then (Merijn's playtest
+## 2026-10-30), and never tagged, so the rules read the miss as before.
 func _reply(move: String, situation: String) -> Dictionary:
+	var situations := ["again", situation] if situation == "misses" and int(_uses.get(move, 0)) > 0 else [situation]
 	for source: Dictionary in [def.replies, bank.get("replies", {})]:
-		var line: Dictionary = JsonFile.dict_or_empty(JsonFile.dict_or_empty(source.get(move)).get(situation))
-		if not line.is_empty():
+		for case: String in situations:
+			var line: Dictionary = JsonFile.dict_or_empty(JsonFile.dict_or_empty(source.get(move)).get(case))
+			if line.is_empty():
+				continue
 			var tags: Array = line.get("tags", [])
+			if case == "again":
+				return _shared(str(line.get("text", "")))
 			if source == def.replies:
-				return _told(line, "replies.%s.%s" % [move, situation])
+				return _told(line, "replies.%s.%s" % [move, case])
 			return _line(str(line.get("text", "")), tags) if not tags.is_empty() \
 				else _shared(str(line.get("text", "")))
 	return _told(position(), "position") if situation == "too_early" else _shared("")
+
+
+## The same move a third time in a row: the move's `again` line (a dialog's
+## own, else the bank's), in the form of what was said (a silence is no
+## question); else the bank's special.repeat. Untagged, as before.
+func _again(move: String) -> Dictionary:
+	for source: Dictionary in [def.replies, bank.get("replies", {})]:
+		var line := JsonFile.dict_or_empty(JsonFile.dict_or_empty(source.get(move)).get("again"))
+		if not line.is_empty():
+			return _shared(str(line.get("text", "")))
+	return _shared(bank["special"]["repeat"])
 
 
 ## What the player says: a proposal's or experiment's own sentence, else the
@@ -820,10 +863,12 @@ func _reply(move: String, situation: String) -> Dictionary:
 func _player_line(move: String, pick: String = "") -> String:
 	if move in ["propose", "propose_experiment"] and not pick.is_empty():
 		return str(def.item(pick).get("text", ""))
-	var said: Variant = def.lines.get(move, bank["player"].get(move, ""))
-	if not said is Array:
-		return str(said)
-	var variants: Array = said
+	var own: Variant = def.lines.get(move, bank["player"].get(move, ""))
+	if own is Dictionary:  # keyed by what the person spoke of last (TOPICS)
+		own = own.get(_topic, own.get("_", bank["player"].get(move, "")))
+	if not own is Array:
+		return str(own)
+	var variants: Array = own
 	return str(variants[(absi(hash([_seed, def.id, move])) + int(_uses.get(move, 0))) % variants.size()])
 
 

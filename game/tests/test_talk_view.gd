@@ -148,6 +148,19 @@ func test_the_body_takes_the_band_and_hesitates_on_the_cue() -> void:
 	joost.free()
 
 
+## A talk that runs out of time ends on the person's word on how it went, after
+## their reply (Merijn's playtest 2026-10-30: "no clarity about how the talk went").
+func test_a_talk_out_of_time_ends_on_their_word_on_how_it_went() -> void:
+	var view := _view(_silo())
+	var r := {}
+	while view.talking():
+		r = view.choose("mood")
+	assert_false(str(r["farewell"]).is_empty(), "ran out of time: a farewell")
+	var queued: Array = view.lines.queue.map(func(l: Dictionary) -> String: return str(l.get("text", "")))
+	assert_eq(queued.slice(-2), [r["reply"], r["farewell"]], "their reply, then their word on it")
+	view.free()
+
+
 func test_the_summary_lands_in_the_journal_and_shows_once() -> void:
 	var s := _silo()
 	var view := _view(s)

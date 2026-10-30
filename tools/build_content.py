@@ -1955,7 +1955,11 @@ DIALOG_KINDS = ["persuade", "checkin", "expert"]
 DIALOG_MOODS = ["goed", "neutraal", "gespannen", "moe", "stil"]
 DIALOG_OUTCOMES = ["commitment", "partial", "heard", "none", "blocked", "compliance", "ruined", "lifted"]
 LAYERS = {"interest": (40, 65), "concern": (60, 85)}  # layer id → the range its `at` threshold must lie in
-REPLY_SITUATIONS = ["lands", "misses", "too_early", "worn"]
+# again: a miss of a move said before in this talk (Dialog._reply), the only reply
+# that may say the player repeats themselves (check_coherence).
+REPLY_SITUATIONS = ["lands", "misses", "too_early", "worn", "again"]
+# What a talk's own line for a move may answer (Dialog.TOPICS): the layer spoken of last.
+LINE_TOPICS = ["position", "interest", "lead_in", "concern", "_"]
 # The bank's fallback replies: every move that has no reply of its own elsewhere
 # (a layer, a proposal, an outcome) needs these situations.
 BANK_REPLIES = {**{m: ["lands", "misses"] for m in LISTEN_MOVES + ["perspective", "show_data", "propose_experiment"]},
@@ -2135,12 +2139,16 @@ def _validate_bank(bank: Any, where: str) -> None:
     if not isinstance(bank, dict):
         raise ContentError(f"{where}: needs labels, player, replies, special and outcomes")
     _known_keys(bank, {"labels", "player", "replies", "special", "outcomes", "coach", "wear_out", "ruud_names"}, where)
-    # Ruud names one move after an Act 0 talk (tutorial talks spec §3).
+    # Ruud names one move after an Act 0 talk (tutorial talks spec §3), quoting the
+    # player's sentence for it (People.ruud_names; a silence is no sentence).
     names = LISTEN_MOVES + ["none", "week_end"]
     ruud = _mapping(bank, "ruud_names", set(names), where)
     if set(ruud) != set(names):
         raise ContentError(f"{where} ruud_names: a line for every listening move, 'none' and 'week_end'")
     _require_strings(ruud, names, f"{where} ruud_names")
+    for move in LISTEN_MOVES:
+        if move != "silence" and "{said}" not in ruud[move]:
+            raise ContentError(f"{where} ruud_names {move}: quotes the player's sentence with {{said}}")
     # Moves that wear out (person-needs spec §3.2): a question and a statement line per archetype.
     wear_out = _mapping(bank, "wear_out", set(DIALOG_ARCHETYPES), where)
     for archetype in DIALOG_ARCHETYPES:
@@ -2195,6 +2203,8 @@ def _replies(replies: dict, where: str) -> None:
             if situation not in REPLY_SITUATIONS:
                 raise ContentError(f"{where} {move}: unknown situation {situation!r} ({', '.join(REPLY_SITUATIONS)})")
             _line(line, f"{where} {move} {situation}")
+            if situation == "again" and line.get("tags"):
+                raise ContentError(f"{where} {move} again: carries no tags (the rules read it as the miss it replaces)")
 
 
 def _validate_expert(d: dict, where: str) -> None:
@@ -2313,9 +2323,8 @@ def _validate_dialog(d: dict, where: str) -> None:
     lines = d.get("lines", {})
     if not isinstance(lines, dict) or set(lines) - set(DIALOG_MOVES):
         raise ContentError(f"{where}: 'lines' maps a move to the player's line (unknown move in {sorted(lines)})")
-    _require_strings(lines, list(lines), f"{where} lines")
-    if DATA_TOKEN not in lines.get("show_data", DATA_TOKEN):
-        raise ContentError(f"{where} lines: show_data names the clue with {DATA_TOKEN}")
+    for move, said in lines.items():
+        _dialog_line(move, said, f"{where} lines")
     replies = d.get("replies", {})
     if not isinstance(replies, dict):
         raise ContentError(f"{where}: 'replies' maps a move to its replies")
@@ -2360,6 +2369,21 @@ def _validate_dialog(d: dict, where: str) -> None:
             missing = [o for o in PERSUADE_OUTCOMES + (["blocked"] if "block" in d else []) if o not in outcomes]
             if missing:
                 raise ContentError(f"{where}: a persuasion authors its own outcome lines; missing {', '.join(missing)}")
+
+
+def _dialog_line(move: str, said: Any, where: str) -> None:
+    """A talk's own line for a move: a line, a list of variants, or a mapping from
+    the layer spoken of last (LINE_TOPICS) to either (Dialog._player_line)."""
+    by_topic = said if isinstance(said, dict) else {"_": said}
+    unknown = set(by_topic) - set(LINE_TOPICS)
+    if unknown:
+        raise ContentError(f"{where}: {move} is keyed by what it answers ({', '.join(LINE_TOPICS)}), not {sorted(unknown)}")
+    for value in by_topic.values():
+        variants = [value] if isinstance(value, str) else value
+        if not isinstance(variants, list) or not variants or not all(isinstance(v, str) and v.strip() for v in variants):
+            raise ContentError(f"{where}: {move} is a line, or a non-empty list of lines")
+        if move == "show_data" and not all(DATA_TOKEN in v for v in variants):
+            raise ContentError(f"{where}: show_data names the clue with {DATA_TOKEN}")
 
 
 def _layers(layers: Any, where: str) -> None:
@@ -2823,6 +2847,7 @@ def vocabulary() -> dict[str, Any]:
         "dialog_needs": DIALOG_NEEDS,
         "dialog_kinds": DIALOG_KINDS, "dialog_moods": DIALOG_MOODS, "dialog_outcomes": DIALOG_OUTCOMES,
         "banned_spoken": {"words": BANNED_SPOKEN, "allowed": ALLOWED_SPOKEN},
+        "dialog_coherence": {"repeat": REPEAT_CLAIM, "clarify": CLARIFY_ASK},
     }
 
 
@@ -3135,6 +3160,61 @@ def check_spoken(docs: dict[str, Any]) -> None:
         hit = banned_word(text)
         if hit:
             raise ContentError(f"{where}: {hit!r} names the game in a spoken line (style guide §4): {text!r}")
+
+
+# ── A reply presupposes nothing that was not said (Merijn's playtest 2026-10-30) ──
+# docs/qa/dialog-coherence-2026-10-30.md. A person's reaction that says the player
+# repeats themselves ("Ja, dat zei je al.") is true only after the player said the
+# same kind of sentence before: the rules (Dialog) say it only from the `again`
+# slot, the wear-out lines and special.repeat, which they reach only then. A
+# reaction that asks the player to clarify ("Hoe bedoel je?") has no answer: no
+# turn offers a clarification, so no person says it. Exported in
+# vocabulary.json: the Godot transcript walk (TalkWalk) flags the same lines.
+REPEAT_CLAIM = (r"\b(dat|dit) (zei|vroeg|vertelde) (je|u)\b|\bzei (je|u) (al|net)\b|\bvroeg (je|u) (al|net)\b"
+                r"|\b(heb|had) ik (je|u) (dat )?(net|al|toch) (verteld|gezegd)\b|\bdat zei ik\b"
+                r"|\bvoor de (tweede|derde) keer\b|\bherhaal|\bhadden we (net|al)\b")
+CLARIFY_ASK = r"\b(hoe|wat) bedoel (je|u)\b"
+_REPEAT_RE = re.compile(REPEAT_CLAIM, re.IGNORECASE)
+_CLARIFY_RE = re.compile(CLARIFY_ASK, re.IGNORECASE)
+# What a person says in a talk (the player's `lines` and a proposal's `say` are the player's).
+_PERSON_DIALOG = ["opening", "retry_opening", "warning", "position", "layers", "co_proposal", "replies", "outcomes",
+                  "beats_after", "block", "variants"]
+# Where a reaction to the player's sentence stands (the rest is authored story:
+# a position's or a layer's "dat zei ik toch" is about the world, not this talk).
+_REACTION_KEYS = ("replies", "outcomes", "warning", "items")
+
+
+def _reactions(docs: dict[str, Any]) -> list[tuple[str, str, bool]]:
+    """(where, text, may_repeat) for every line a person says in a talk; may_repeat:
+    a reply the rules say only after the player said the same kind before (an
+    `again` or `worn` line, a wear-out line, special.repeat), or a story line."""
+    dialogs = docs.get("dialogs") or {}
+    bank = dialogs.get("bank") or {}
+    out: list[tuple[str, str, bool]] = []
+    for where, text in _strings({k: bank[k] for k in ("replies", "special", "outcomes") if k in bank}, "bank"):
+        out.append((where, text, where.endswith((" again text", " special repeat"))))
+    out += [(where, text, True) for where, text in _strings(bank.get("wear_out", {}), "bank wear_out")]
+    for d in dialogs.get("dialogs", []):
+        if d.get("kind") == "expert":
+            continue
+        own = {k: d[k] for k in _PERSON_DIALOG if k in d}
+        own["items"] = [i.get("reply", "") for i in d.get("proposals", []) + d.get("experiments", [])]
+        for where, text in _strings(own, f"dialog {d['id']}"):
+            story = not any(f" {k} " in f"{where} " for k in _REACTION_KEYS)
+            out.append((where, text, story or where.endswith((" again text", " worn text"))))
+    return out
+
+
+def check_coherence(docs: dict[str, Any]) -> None:
+    """No reaction says the player repeats themselves where the rules cannot know
+    they did, and no person asks the player to clarify (no turn offers it)."""
+    for where, text, may_repeat in _reactions(docs):
+        if _CLARIFY_RE.search(text):
+            raise ContentError(f"dialogs.yaml: {where}: asks the player to clarify, and no turn offers a "
+                               f"clarification: {text!r}")
+        if not may_repeat and _REPEAT_RE.search(text):
+            raise ContentError(f"dialogs.yaml: {where}: says the player repeats themselves; only an `again` line "
+                               f"may (the rules say it once the move was said before): {text!r}")
 
 
 # ── company.yaml (phase-2 design §1.6, S1-E) ─────────────────────────────────
@@ -3869,7 +3949,8 @@ OPTIONAL = {"dialogs", "explainers", "world", "places", "company", "scenes", "to
 CROSS_CHECKS: list[Callable[[dict[str, Any]], None]] = [check_kpis, check_problems, check_missions, check_concepts,
                                                       check_dialogs, check_discoveries, check_explainers, check_world,
                                                       check_places, check_spoken, check_tells, check_company,
-                                                      check_scenes, check_town, check_clue_spoilers]
+                                                      check_scenes, check_town, check_clue_spoilers,
+                                                      check_coherence]
 
 
 def _validator_for(stem: str) -> Callable[[Any, str], None] | None:

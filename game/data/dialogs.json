@@ -164,14 +164,20 @@
     }
    },
    "empathy": {
+    "again": {
+     "text": "Ja, dat zei je al."
+    },
     "lands": {
      "text": "Dank je. Dat hoor ik niet vaak."
     },
     "misses": {
-     "text": "Ja, dat zei je al."
+     "text": "Mm. Het valt wel mee, hoor."
     }
    },
    "experience": {
+    "again": {
+     "text": "Ja, dat vertelde je net al."
+    },
     "lands": {
      "text": "Echt? Dan weet je hoe het is."
     },
@@ -180,14 +186,20 @@
     }
    },
    "inquiry": {
+    "again": {
+     "text": "Dat vroeg je net ook al. Ik weet het echt niet."
+    },
     "lands": {
      "text": "Goeie vraag. Daar moet ik even over nadenken."
     },
     "misses": {
-     "text": "Hoe bedoel je?"
+     "text": "Tja. Moeilijk te zeggen."
     }
    },
    "mood": {
+    "again": {
+     "text": "Dat vroeg je net ook al. Gaat wel, hoor."
+    },
     "lands": {
      "text": "Eerlijk gezegd? Het is een drukke week."
     },
@@ -196,27 +208,36 @@
     }
    },
    "open_question": {
+    "again": {
+     "text": "Dat heb ik je net al verteld, toch?"
+    },
     "lands": {
-     "text": "Ach, je kent het. Te veel werk, te weinig tijd."
+     "text": "Ach, het is gewoon druk. Te veel werk, te weinig tijd."
     },
     "misses": {
-     "text": "Dat heb ik je net verteld."
+     "text": "Ach, er is niet zoveel te vertellen."
     }
    },
    "paraphrase": {
+    "again": {
+     "text": "Ja, zo zei je het net ook al."
+    },
     "lands": {
      "text": "Precies."
     },
     "misses": {
-     "text": "Dat zei ik, ja."
+     "text": "Mm. Zoiets."
     }
    },
    "perspective": {
+    "again": {
+     "text": "Dat vroeg je net ook al. Ik kan niet voor een ander praten."
+    },
     "lands": {
      "text": "Zo had ik het nog niet bekeken."
     },
     "misses": {
-     "text": "Ik ben de monteur niet."
+     "text": "Dat kan ik moeilijk voor een ander zeggen."
     }
    },
    "pressure": {
@@ -233,11 +254,14 @@
     }
    },
    "reflect": {
+    "again": {
+     "text": "Nee. Dat zei je net ook al, en zo is het niet."
+    },
     "lands": {
      "text": "Ja. Zo voelt het wel."
     },
     "misses": {
-     "text": "Nee, zo is het niet. Ik ben gewoon moe."
+     "text": "Nee, zo zou ik het niet zeggen."
     }
    },
    "repair": {
@@ -254,6 +278,9 @@
     }
    },
    "silence": {
+    "again": {
+     "text": "… Zeg jij ook nog eens wat?"
+    },
     "lands": {
      "tags": [
       "doubt"
@@ -266,14 +293,14 @@
    }
   },
   "ruud_names": {
-   "empathy": "Je zei dat het niet niks is. Begrip tonen. Je hoefde het niet op te lossen om het te erkennen.",
-   "experience": "Je vertelde iets van deze week, toen {person} twijfelde. Ervaring delen. Kort, en over jou.",
-   "inquiry": "Je vroeg door op precies dat ene woord. Doorvragen. Daar zat het.",
-   "mood": "Je vroeg eerst hoe het met {person} ging. Dat heet Stemming peilen. Daarna praatte {person} anders. Zag je dat?",
+   "empathy": "Je zei: “{said}” Je liet merken dat je snapt dat het zwaar is. Begrip tonen. Je hoefde het niet op te lossen om het te erkennen.",
+   "experience": "Je zei: “{said}” Je vertelde iets van jezelf, toen {person} twijfelde. Ervaring delen. Kort, en over jou.",
+   "inquiry": "Je vroeg: “{said}” Daarmee ging je verder op wat {person} net zei. Doorvragen. Daar zat het.",
+   "mood": "Je zei: “{said}” Daarmee vroeg je hoe het met {person} ging, en je meende het. Dat heet Stemming peilen. Zag je hoe {person} daarna praatte?",
    "none": "Wat zag je aan {person} toen je begon?",
-   "open_question": "Je stelde een vraag waar geen ja of nee op past. Een Open vraag. Toen kwam het verhaal, niet het antwoord.",
-   "paraphrase": "Je zei in je eigen woorden terug wat {person} zei. Samenvatten. Vanaf dat moment wist {person} dat je luisterde.",
-   "reflect": "Je zei wat {person} voelde, niet wat {person} zei. Gevoel benoemen. Wat gebeurde er daarna?",
+   "open_question": "Je vroeg: “{said}” Daar past geen ja of nee op. Een Open vraag. Toen kwam het verhaal, niet het antwoord.",
+   "paraphrase": "Je zei: “{said}” Je zei in je eigen woorden terug wat {person} zei. Samenvatten. Vanaf dat moment wist {person} dat je luisterde.",
+   "reflect": "Je zei: “{said}” Je benoemde wat {person} voelde, niet wat {person} zei. Gevoel benoemen. Wat gebeurde er daarna?",
    "silence": "Toen {person} aarzelde, zei je niets. Stilte laten. Dat is het moeilijkste wat er is.",
    "week_end": "Acht manieren van luisteren, in vijf dagen. Vanaf maandag noem ik ze niet meer. Eén vraag voor het weekend: wat werkte bij de één en niet bij de ander? Waar zag je dat aan?"
   },
@@ -285,7 +312,7 @@
    "other_data": "En?",
    "patience_low": "Ik heb nog vijf minuten.",
    "refusal": "Nee. Nog niet.",
-   "repeat": "Dat vroeg je net ook."
+   "repeat": "Daar hadden we het net al over."
   },
   "wear_out": {
    "craftsman": {
@@ -313,7 +340,7 @@
     "say": "Je herhaalt me nu. Wat zie je zelf?"
    },
    "overloaded": {
-    "ask": "Sorry, maar dit vroeg je net. Ik heb echt niet veel tijd.",
+    "ask": "Sorry, maar dat vroeg je al. Ik heb echt niet veel tijd.",
     "say": "Ja. Ja. Dat weet ik nou wel. Wat wil je eigenlijk?"
    },
    "quiet": {
