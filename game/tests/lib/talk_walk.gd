@@ -29,7 +29,7 @@ const DIVES := 300
 ## is a reading hint, the share of stock replies a measure (score).
 const BROKEN := ["repeat", "clarify", "empty", "farewell", "ruud", "retold"]
 ## Talks read through and rewritten (the reference talks): no echo at all either.
-const REVIEWED := ["anouk_seven"]
+const REVIEWED := ["anouk_seven", "sanne_tuesday", "anouk_first_look", "rachid_counter"]
 ## How much each flag weighs in the ranking of talks (the worst read first).
 const WEIGHT := {"repeat": 3.0, "clarify": 3.0, "empty": 2.0, "farewell": 2.0, "ruud": 2.0, "retold": 2.0,
 	"echo": 1.0, "question": 1.0}

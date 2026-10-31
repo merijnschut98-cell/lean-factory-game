@@ -735,7 +735,8 @@ func _steer(move: String, pick: String) -> Dictionary:
 	if addresses.any(func(layer: String) -> bool: return revealed.has(layer)):
 		return _result(PROPOSAL_ADDRESSES, _line(proposal.get("reply", "")), true)
 	if "concern" in addresses:
-		return _result(LUCKY_GUESS, _shared(bank["special"]["lucky_guess"]), true)
+		var own := _entry(def.replies, "propose", "misses")   # their own "maybe", else the bank's
+		return _result(LUCKY_GUESS, _shared(str(own.get("text", bank["special"]["lucky_guess"]))), true)
 	return _result(0, _line(proposal.get("reply", "")), false)
 
 

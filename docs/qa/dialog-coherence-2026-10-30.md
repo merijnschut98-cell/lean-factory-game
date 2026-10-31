@@ -7,6 +7,34 @@
 > document is the diagnosis, the rules that now make the incoherence impossible, the
 > transcript tool, and the order in which the other talks get fixed.
 
+## Run order (Merijn, 2026-10-31: the inwerkweek first)
+
+Every talk the player can meet in the inwerkweek (Act 0, `training_mon` to
+`training_fri`), in the order a player meets them, each rewritten to `anouk_seven`'s
+standard and then added to `TalkWalk.REVIEWED` (the echo gate). Ruud's opening on Monday
+morning is a scripted scene (`office_opening.gd`, `scenes.yaml`), not a talk of the
+dialog rules; no check-in or call opens that week. One expert talk can: `henk_expert` has
+no condition and Henk stands on the yard every day, so a player who walks out there meets
+him. Expert talks are question and answer, topic by topic, outside the move rules, so
+TalkWalk does not walk them; Henk's is read by hand after the persuasions.
+
+| Day | Talk | Person | Status |
+|---|---|---|---|
+| Mon 19:00 | `anouk_seven` | Anouk | reference talk (rounds 1–2) |
+| Tue 08:30 | `sanne_tuesday` | Sanne | rewritten, reviewed (score 30.4 → 0.5, echoes 188 → 0) |
+| Tue | `anouk_first_look` | Anouk | rewritten, reviewed (30.9 → 0.5, echoes 196 → 0) |
+| Tue–Thu, optional | `rachid_counter` | Rachid | rewritten, reviewed (30.6 → 3.5, echoes 193 → 0) |
+| Wed | `mieke_wednesday` | Mieke | |
+| Wed | `joost_wednesday` | Joost | |
+| Wed | `linda_wednesday` | Linda | |
+| Thu | `anouk_thursday` | Anouk | |
+| Thu | `petra_thursday` | Petra | |
+| Fri | `anouk_owns_tray` | Anouk | |
+| Fri | `sanne_friday` | Sanne | |
+| any day, the yard | `henk_expert` | Henk | expert talk, read by hand |
+
+After the week: the worst of the README ranking (Act I), worst first.
+
 ## 1. The one root cause
 
 **What a person answers was keyed to the kind of move the player made, never to the

@@ -197,6 +197,17 @@ func test_a_list_reply_never_says_the_same_line_twice_while_another_is_left() ->
 	assert_eq([first["reply"], second["reply"]], ["Nog steeds moe.", "Echt, het gaat."])
 
 
+## A proposal that guesses the concern before it is out ("Hm. Misschien.") may be
+## answered in the talk's own words (`replies.propose.misses`, a list), read as before.
+func test_a_lucky_guess_may_be_answered_in_the_talk_s_own_words() -> void:
+	var d := DialogFixture.def({"replies": {"propose": {"misses": [{"text": "Misschien, ja."}, {"text": "Hm."}]}}})
+	var t := _talk(DialogFixture.bank(), d, 50)
+	t.say("paraphrase")
+	var guess := t.say("propose", "good")
+	assert_eq(guess["reply"], "Misschien, ja.")
+	assert_eq(guess["tags"], [], "untagged, like the bank's line")
+
+
 ## Review round 2: a talk's own keyed lines are said in the order written, on any
 ## deal, so a follow-up question never comes before the question it follows.
 func test_keyed_lines_come_in_the_order_written_on_any_deal() -> void:

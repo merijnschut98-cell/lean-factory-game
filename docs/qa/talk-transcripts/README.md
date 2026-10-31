@@ -35,16 +35,16 @@ or endings it marks). Flags: `repeat` says you repeat yourself, you did not, `cl
 | 23 | [Anouk en het experiment](anouk_thursday.md) (`anouk_thursday`) | 31.2 | echo 196 · question 88 · stock replies 78 % | 603 |
 | 24 | [Ilse en de wachtrij](ilse_queue.md) (`ilse_queue`) | 31.0 | echo 183 · question 138 · stock replies 57 % | 578 |
 | 25 | [Esra en het rooster](esra_after.md) (`esra_after`) | 30.9 | echo 166 · question 107 · stock replies 77 % | 582 |
-| 26 | [Anouk en de stopwatch](anouk_first_look.md) (`anouk_first_look`) | 30.9 | echo 196 · question 91 · stock replies 74 % | 665 |
-| 27 | [Rachid aan de balie](rachid_counter.md) (`rachid_counter`) | 30.6 | echo 193 · question 83 · stock replies 76 % | 551 |
-| 28 | [Sanne op dinsdagochtend](sanne_tuesday.md) (`sanne_tuesday`) | 30.4 | echo 188 · question 78 · stock replies 79 % | 564 |
-| 29 | [Marco na honderd dagen](marco_day_100.md) (`marco_day_100`) | 30.4 | echo 151 · question 102 · stock replies 80 % | 564 |
-| 30 | [Henks laatste week](henk_last_week.md) (`henk_last_week`) | 30.3 | echo 177 · question 92 · stock replies 74 % | 584 |
-| 31 | [Linda en het kaartenhuis](linda_wednesday.md) (`linda_wednesday`) | 30.1 | echo 186 · question 89 · stock replies 70 % | 626 |
-| 32 | [Petra na de maandrun](petra_after.md) (`petra_after`) | 29.5 | echo 167 · question 80 · stock replies 76 % | 581 |
-| 33 | [Petra en de Molen](petra_thursday.md) (`petra_thursday`) | 29.2 | echo 185 · question 63 · stock replies 76 % | 636 |
-| 34 | [Joost en de stapel](joost_wednesday.md) (`joost_wednesday`) | 29.0 | echo 206 · question 54 · stock replies 73 % | 634 |
-| 35 | [Mieke en de schetsen](mieke_wednesday.md) (`mieke_wednesday`) | 28.9 | echo 199 · question 58 · stock replies 72 % | 644 |
-| 36 | [Het vierde telefoontje van mevrouw El Amrani](el_amrani_fourth_call.md) (`el_amrani_fourth_call`) | 27.7 | echo 122 · question 143 · stock replies 47 % | 496 |
-| 37 | [Ahmed na Henks afscheid](ahmed_after_henk.md) (`ahmed_after_henk`) | 22.2 | echo 99 · question 33 · stock replies 65 % | 401 |
-| 38 | [Anouk om zeven uur](anouk_seven.md) (`anouk_seven`) | 0.6 | stock replies 6 % | 1262 |
+| 26 | [Marco na honderd dagen](marco_day_100.md) (`marco_day_100`) | 30.4 | echo 151 · question 102 · stock replies 80 % | 564 |
+| 27 | [Henks laatste week](henk_last_week.md) (`henk_last_week`) | 30.3 | echo 177 · question 92 · stock replies 74 % | 584 |
+| 28 | [Linda en het kaartenhuis](linda_wednesday.md) (`linda_wednesday`) | 30.1 | echo 186 · question 89 · stock replies 70 % | 626 |
+| 29 | [Petra na de maandrun](petra_after.md) (`petra_after`) | 29.5 | echo 167 · question 80 · stock replies 76 % | 581 |
+| 30 | [Petra en de Molen](petra_thursday.md) (`petra_thursday`) | 29.2 | echo 185 · question 63 · stock replies 76 % | 636 |
+| 31 | [Joost en de stapel](joost_wednesday.md) (`joost_wednesday`) | 29.0 | echo 206 · question 54 · stock replies 73 % | 634 |
+| 32 | [Mieke en de schetsen](mieke_wednesday.md) (`mieke_wednesday`) | 28.9 | echo 199 · question 58 · stock replies 72 % | 644 |
+| 33 | [Het vierde telefoontje van mevrouw El Amrani](el_amrani_fourth_call.md) (`el_amrani_fourth_call`) | 27.7 | echo 122 · question 143 · stock replies 47 % | 496 |
+| 34 | [Ahmed na Henks afscheid](ahmed_after_henk.md) (`ahmed_after_henk`) | 22.2 | echo 99 · question 33 · stock replies 65 % | 401 |
+| 35 | [Rachid aan de balie](rachid_counter.md) (`rachid_counter`) | 2.1 | question 1 · stock replies 11 % | 1391 |
+| 36 | [Anouk om zeven uur](anouk_seven.md) (`anouk_seven`) | 0.6 | stock replies 6 % | 1272 |
+| 37 | [Sanne op dinsdagochtend](sanne_tuesday.md) (`sanne_tuesday`) | 0.5 | stock replies 5 % | 1340 |
+| 38 | [Anouk en de stopwatch](anouk_first_look.md) (`anouk_first_look`) | 0.5 | stock replies 5 % | 1436 |
