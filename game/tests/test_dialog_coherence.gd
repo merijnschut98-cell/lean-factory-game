@@ -217,6 +217,31 @@ func test_a_lucky_guess_may_be_answered_in_the_talk_s_own_words() -> void:
 	assert_eq(guess["tags"], [], "untagged, like the bank's line")
 
 
+## A clue that does not matter to them ("En?") may be answered in the talk's own
+## words (`replies.show_data.other`, a list), read as before.
+func test_a_clue_that_does_not_matter_may_be_answered_in_the_talk_s_own_words() -> void:
+	var d := DialogFixture.def({"replies": {"show_data": {"other": [{"text": "Wat heeft dat met mij te maken?"}, {"text": "En?"}]}}})
+	var t := Dialog.new(d, DialogFixture.person(), DialogFixture.bank(), {"openness": 60, "trust": 50, "mood": "neutraal",
+		"found": {"custom_design:1": true}, "facts": {}})
+	t.say("paraphrase")
+	var r := t.say("show_data", "custom_design:1")
+	assert_eq([r["reply"], r["tags"], r["delta"]], ["Wat heeft dat met mij te maken?", [], 0])
+
+
+## Two clues on offer in one turn are shown in two different sentences, not the
+## same opening twice (Act I playtest read, 2026-10-31).
+func test_two_clues_on_offer_are_shown_in_different_sentences() -> void:
+	var d := DialogFixture.def({"lines": {"show_data": ["Kijk: {data}", "Mag ik iets laten zien? {data}", "Dit vond ik: {data}"]}})
+	for seed in 6:
+		var t := Dialog.new(d, DialogFixture.person(), DialogFixture.bank(), {"openness": 60, "trust": 50, "mood": "neutraal",
+			"found": {"custom_design:0": true, "custom_design:1": true}, "facts": {}, "seed": seed})
+		t.say("paraphrase")
+		var lines := t.offer(20).filter(func(o: Dictionary) -> bool: return o["move"] == "show_data").map(
+			func(o: Dictionary) -> String: return o["line"])
+		assert_eq(lines.size(), 2, "both clues on offer, seed %d" % seed)
+		assert_ne(lines[0], lines[1], "seed %d" % seed)
+
+
 ## Review round 2: a talk's own keyed lines are said in the order written, on any
 ## deal, so a follow-up question never comes before the question it follows.
 func test_keyed_lines_come_in_the_order_written_on_any_deal() -> void:

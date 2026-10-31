@@ -1957,7 +1957,7 @@ DIALOG_OUTCOMES = ["commitment", "partial", "heard", "none", "blocked", "complia
 LAYERS = {"interest": (40, 65), "concern": (60, 85)}  # layer id → the range its `at` threshold must lie in
 # again: a miss of a move said before in this talk (Dialog._reply), the only reply
 # that may say the player repeats themselves (check_coherence).
-REPLY_SITUATIONS = ["lands", "misses", "too_early", "worn", "again"]
+REPLY_SITUATIONS = ["lands", "misses", "too_early", "worn", "again", "other"]   # other: a clue that does not matter to them
 # What a talk's own line for a move may answer (Dialog.TOPICS): the layer spoken of last.
 LINE_TOPICS = ["position", "interest", "lead_in", "concern", "_"]
 # The bank's fallback replies: every move that has no reply of its own elsewhere

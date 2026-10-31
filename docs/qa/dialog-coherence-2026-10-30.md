@@ -33,7 +33,25 @@ TalkWalk does not walk them; Henk's is read by hand after the persuasions.
 | Fri | `sanne_friday` | Sanne | rewritten, reviewed (33.6 → 0.3, echoes 226 → 0) |
 | any day, the yard | `henk_expert` | Henk | expert talk, read by hand: every answer fits its question; no change |
 
-After the week: the worst of the README ranking (Act I), worst first.
+After the week: the worst of the README ranking (Act I), worst first. Act I talks steer
+and push too (data, perspective, pressure, blame are not held back as in the tutorial), so
+each also got its own lines for those moves and their replies: a clue that matters, one
+that does not ("Wat heeft dat met de doos te maken?"), pressure and blame in the person's
+voice, and its own "Daar denk ik nog over na" lines.
+
+| Act I talk | Person | Status |
+|---|---|---|
+| `petra_batch` | Petra | rewritten, reviewed (38.3 → 0.6, echoes 294 → 0, no flag) |
+| `linda_replanning` | Linda | rewritten, reviewed (36.7 → 0.4, echoes 235 → 0, no flag) |
+| `mieke_redraw` | Mieke | rewritten, reviewed (36.7 → 0.4, echoes 285 → 0, no flag) |
+
+Each also has its own words where it used to take the bank's: the ending with no outcome
+(`outcomes.none`), an experiment proposed again, the refusal, the shrug at a silence, and
+its own sentence for the ask (the bank's "Zullen we dat afspreken?" after a question of
+theirs was a `question` flag). The stock share left (4–6 %) is the bank's "you said that"
+lines for a sentence said again (`again`) and its `repeat` for a clue shown again. One engine change came with them: two clues on offer in
+one turn are shown in two different sentences (`_player_line`, a clue that does not matter
+takes the next variant), test `test_two_clues_on_offer_are_shown_in_different_sentences`.
 
 ## 1. The one root cause
 
@@ -197,6 +215,10 @@ order as "which talks lean hardest on stock lines", and weigh it with when the p
 them: the Act 0 week (`sanne_tuesday`, `rachid_counter`, `anouk_first_look`,
 `mieke_wednesday`, `joost_wednesday`, `linda_wednesday`, `anouk_thursday`,
 `petra_thursday`, `anouk_owns_tray`, `sanne_friday`) is what Merijn plays next.
+
+Update 2026-10-31: the week and the first three are rewritten (see Run order). The ranking
+now starts with `joost_vacancies` 35.8 · `marco_wasted_trips` 35.2 · `sanne_checker` 35.1 ·
+`henk_camera` 34.9, the next Act I batch.
 
 ## 7. What a next run fixes (not in this one)
 

@@ -725,7 +725,8 @@ func _steer(move: String, pick: String) -> Dictionary:
 			return _graded(move, PERSPECTIVE, _reply(move, "lands"))
 		"show_data":
 			if not pick in def.data:
-				return _result(0, _shared(bank["special"]["other_data"]), false)
+				var other := _entry(def.replies, "show_data", "other")   # their own "en?", else the bank's
+				return _result(0, _shared(str(other.get("text", bank["special"]["other_data"]))), false)
 			return _graded(move, SHOW_DATA, _reply(move, "lands"))
 		"propose_experiment":
 			var reply: String = def.item(pick).get("reply", "")
@@ -956,7 +957,9 @@ func _again(move: String) -> Dictionary:
 ## dialog's line for the move (for the layer spoken of last, TOPICS, when keyed),
 ## else the bank's. A list of variants gives the next one each time the move is
 ## said in this talk, so a line comes back only once all were said: a keyed list
-## in the order written, any other from where the seed and move start it.
+## in the order written, any other from where the seed and move start it. A clue
+## that does not matter to them takes the variant after the one that does, so
+## the two clues a turn can offer are shown in two different sentences.
 func _player_line(move: String, pick: String = "") -> String:
 	if move == "propose" and _co_offered and pick == str(def.co_proposal.get("id", "")) \
 			and not str(def.co_proposal.get("take", "")).is_empty():
@@ -970,10 +973,12 @@ func _player_line(move: String, pick: String = "") -> String:
 	if not own is Array:
 		return str(own)
 	var variants: Array = own
+	var nth := 1 if move == "show_data" and not pick.is_empty() and not pick in def.data else 0
 	if keyed:  # written in order (a follow-up after its question), on any deal; once all were said, in turn
 		var fresh := variants.filter(func(v: Variant) -> bool: return not str(v) in said)
-		return str(fresh[0] if not fresh.is_empty() else variants[int(_uses.get(move, 0)) % variants.size()])
-	return str(variants[(absi(hash([_seed, def.id, move])) + int(_uses.get(move, 0))) % variants.size()])
+		return str(fresh[mini(nth, fresh.size() - 1)] if not fresh.is_empty() \
+			else variants[(int(_uses.get(move, 0)) + nth) % variants.size()])
+	return str(variants[(absi(hash([_seed, def.id, move])) + int(_uses.get(move, 0)) + nth) % variants.size()])
 
 
 func _outcome_text(o: String) -> String:
