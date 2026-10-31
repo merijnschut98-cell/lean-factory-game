@@ -507,7 +507,7 @@ func say(move: String, pick: String = "") -> Dictionary:
 		reply = _line(_outcome_text(outcome))
 	var co := {}
 	if outcome.is_empty() and not _co_offered and not def.co_proposal.is_empty() and revealed.has("concern") \
-			and shown != "concern" and openness >= BANDS[4] and table != str(def.co_proposal.get("id", "")):
+			and shown != "concern" and openness >= BANDS[4] and not _proposed(str(def.co_proposal.get("id", "")), line):
 		_co_offered = true
 		co = {"id": def.co_proposal["id"], "text": def.co_proposal.get("text", "")}
 	_last_move = move
@@ -932,6 +932,13 @@ func _fresh(texts: Array) -> String:
 func _take_up() -> Dictionary:
 	var id := str(def.co_proposal.get("id", ""))
 	return {"move": "propose", "pick": id} if _co_offered and table != id else {}
+
+
+## Whether the player put proposal `id` on the table in this talk (`line`: the
+## sentence said now): then it is no longer their own idea to offer.
+func _proposed(id: String, line: String) -> bool:
+	var said_it := str(def.item(id).get("text", ""))
+	return table == id or (not said_it.is_empty() and (said_it in said or said_it == line))
 
 
 ## A sentence said before, made a third time in a row: the move's `again` line (a dialog's

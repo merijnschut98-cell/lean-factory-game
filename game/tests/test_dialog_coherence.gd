@@ -120,6 +120,15 @@ func test_their_own_idea_is_not_offered_after_the_player_proposed_it() -> void:
 	assert_eq(r["co_proposal"], {}, "the player's proposal is on the table: no 'weet je wat?'")
 
 
+## Their own idea is not offered as theirs when the player proposed it earlier in
+## the talk (another proposal on the table since): she would only repeat her answer.
+func test_their_own_idea_is_not_offered_when_the_player_proposed_it_earlier() -> void:
+	var t := _talk(DialogFixture.bank(), DialogFixture.def(), 70)
+	t.revealed = {"interest": true, "concern": true}
+	DialogFixture.play(t, ["paraphrase", "propose:secret", "propose:good"])
+	assert_true(t.say("reflect")["co_proposal"].is_empty() and not t._co_offered, "no 'weet je wat?' for what was said")
+
+
 ## Review 1 #1: once they offered their idea, taking it up is on offer, in words
 ## that take it up (the co-proposal's `take`).
 func test_taking_up_their_idea_is_offered_in_words_that_take_it_up() -> void:

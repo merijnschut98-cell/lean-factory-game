@@ -23,15 +23,15 @@ TalkWalk does not walk them; Henk's is read by hand after the persuasions.
 | Mon 19:00 | `anouk_seven` | Anouk | reference talk (rounds 1–2) |
 | Tue 08:30 | `sanne_tuesday` | Sanne | rewritten, reviewed (score 30.4 → 0.5, echoes 188 → 0) |
 | Tue | `anouk_first_look` | Anouk | rewritten, reviewed (30.9 → 0.5, echoes 196 → 0) |
-| Tue–Thu, optional | `rachid_counter` | Rachid | rewritten, reviewed (30.6 → 3.5, echoes 193 → 0) |
-| Wed | `mieke_wednesday` | Mieke | |
-| Wed | `joost_wednesday` | Joost | |
-| Wed | `linda_wednesday` | Linda | |
-| Thu | `anouk_thursday` | Anouk | |
-| Thu | `petra_thursday` | Petra | |
-| Fri | `anouk_owns_tray` | Anouk | |
-| Fri | `sanne_friday` | Sanne | |
-| any day, the yard | `henk_expert` | Henk | expert talk, read by hand |
+| Tue–Thu, optional | `rachid_counter` | Rachid | rewritten, reviewed (30.6 → 2.1, echoes 193 → 0) |
+| Wed | `mieke_wednesday` | Mieke | rewritten, reviewed (28.9 → 1.3, echoes 199 → 0) |
+| Wed | `joost_wednesday` | Joost | rewritten, reviewed (29.0 → 0.8, echoes 206 → 0) |
+| Wed | `linda_wednesday` | Linda | rewritten, reviewed (30.1 → 0.9, echoes 186 → 0) |
+| Thu | `anouk_thursday` | Anouk | rewritten, reviewed (31.2 → 0.5, echoes 196 → 0) |
+| Thu | `petra_thursday` | Petra | rewritten, reviewed (29.2 → 0.9, echoes 185 → 0) |
+| Fri | `anouk_owns_tray` | Anouk | rewritten, reviewed (35.4 → 0.3, echoes 234 → 0) |
+| Fri | `sanne_friday` | Sanne | rewritten, reviewed (33.6 → 0.3, echoes 226 → 0) |
+| any day, the yard | `henk_expert` | Henk | expert talk, read by hand: every answer fits its question; no change |
 
 After the week: the worst of the README ranking (Act I), worst first.
 
