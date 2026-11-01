@@ -53,11 +53,28 @@ voice, and its own "Daar denk ik nog over na" lines.
 | `sanne_kpi` | Sanne | rewritten, batch 3 (35.0 → 0.8, echoes 241 → 0, no flag at budget 8000) |
 | `gert_klic` | Gert | rewritten, batch 3 (35.4 → 0.6, echoes 268 → 0, no flag at budget 8000) |
 | `wim_spreadsheet` | Wim | rewritten, batch 3 (37.1 → 0.8, echoes 301 → 0, no flag at budget 8000) |
+| `dirk_shelf` | Dirk | rewritten, batch 4 (35.0 → 0.1, echoes 265 → 0, no flag at budget 8000) |
+| `thomas_reclaim` | Thomas | rewritten, batch 4 (34.9 → 0.2, echoes 283 → 0, no flag at budget 8000) |
+| `rob_order_rule` | Rob | rewritten, batch 4 (34.8 → 0.2, echoes 258 → 0, no flag at budget 8000) |
+| `femke_triage` | Femke | rewritten, batch 4 (34.8 → 0.2, echoes 231 → 0, no flag at budget 8000) |
 
 The two KPI talks are the audited ones of `test_dialog_content.gd`: their reply tags stay
 the audited ones (a talk's own untagged reply clears the moment's tags, a bank reply keeps
 them; Joost's interest answers carry the `[feeling]` the bank's reply used to leave), so the
 scripted routes keep their exact traces. Gert's first pressure line stays the safety stop.
+
+Batch 4 (dirk_shelf, thomas_reclaim, rob_order_rule, femke_triage): each data clue its own
+answer, the person's own lead-in return lines (`again`) and ending with no outcome
+(`outcomes.none`), so the stock share falls to 1–2 %.
+
+Review 5 (honest tags): a talk's own reply that names no `tags` ("Mm.", "Hm. Dank je.") now
+leaves the person's last words standing, as the bank's shared line it replaces did; an
+explicit `tags: []` still clears them (`test_dialog.gd`, both cases). Before, an own untagged
+reply cleared the tags, so a rewrite had to tag acknowledgements ("Hm. Dank je." `[claim]`)
+to keep a listening route as open as the bank left it. Those invented tags are gone from
+every reviewed talk: an acknowledgement carries none, a line keeps the tag of what it voices.
+Femke's listen-first deals stay the five of ten (seeds 1, 2, 3, 5, 9) they were before the
+rewrite; the margin is the talk's own (patience 9), not the tags'.
 
 Batch 2, review round 1 (2026-11-01, `review3-findings.md`): no flag in the four at walk
 budget 8000 either (Marco's third clue answer). Commitments name only what every route to

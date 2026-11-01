@@ -2238,9 +2238,6 @@
        }
       ],
       "lead_in": {
-       "tags": [
-        "claim"
-       ],
        "text": "Ach. Laat maar, joh."
       },
       "position": [
@@ -2306,15 +2303,9 @@
      "lands": {
       "_": [
        {
-        "tags": [
-         "feeling"
-        ],
         "text": "Precies."
        },
        {
-        "tags": [
-         "feeling"
-        ],
         "text": "Ja, zo ongeveer."
        }
       ],
@@ -2536,9 +2527,6 @@
         "text": "Dat rapport klopt gewoon, joh."
        },
        {
-        "tags": [
-         "claim"
-        ],
         "text": "Ja. En?"
        }
       ],
@@ -2556,9 +2544,6 @@
         "text": "Zo gaat dat, met een weekdoel."
        },
        {
-        "tags": [
-         "claim"
-        ],
         "text": "Ja, en?"
        }
       ]
@@ -3658,9 +3643,17 @@
         "text": "Ja."
        }
       ],
-      "concern": {
-       "text": "Ja. Dat is het eigenlijk wel."
-      },
+      "concern": [
+       {
+        "text": "Ja. Dat is het eigenlijk wel."
+       },
+       {
+        "text": "Ja… zo is het."
+       },
+       {
+        "text": "Mm. Ja."
+       }
+      ],
       "lead_in": {
        "text": "Zoiets, ja. Laat maar."
       }
@@ -3708,9 +3701,17 @@
         "text": "Ach. Nee."
        }
       ],
-      "lead_in": {
-       "text": "Nee, nee. Het is niks."
-      }
+      "lead_in": [
+       {
+        "text": "Nee, nee. Het is niks."
+       },
+       {
+        "text": "Nee. Echt niet."
+       },
+       {
+        "text": "Laat maar. Het gaat wel."
+       }
+      ]
      },
      "worn": {
       "text": "Ja, ja. Ik hoor je wel. Maar ik moet echt door."
@@ -3730,6 +3731,12 @@
        },
        {
         "text": "(ze kijkt weer naar haar scherm)"
+       },
+       {
+        "text": "(ze schuift een tekening recht)"
+       },
+       {
+        "text": "… Nou?"
        }
       ],
       "concern": {
@@ -4837,6 +4844,12 @@
        },
        {
         "text": "Dank je. Maar het gaat wel."
+       },
+       {
+        "text": "Ach. Het is gewoon mijn werk."
+       },
+       {
+        "text": "Hm. Dank je."
        }
       ],
       "lead_in": [
@@ -6419,6 +6432,12 @@
        },
        {
         "text": "Dank je. Maar het gaat wel."
+       },
+       {
+        "text": "Ach. Het is gewoon tekenen."
+       },
+       {
+        "text": "Hm. Dank je."
        }
       ],
       "lead_in": [
@@ -6435,6 +6454,19 @@
      }
     },
     "experience": {
+     "lands": {
+      "_": [
+       {
+        "text": "Echt? Dan weet je hoe het is."
+       },
+       {
+        "text": "Ja. Dan snap je het."
+       },
+       {
+        "text": "Hm. Dat herken ik."
+       }
+      ]
+     },
      "misses": {
       "_": [
        {
@@ -11688,9 +11720,6 @@
         "text": "Ja… Zo voelt het wel."
        },
        {
-        "tags": [
-         "feeling"
-        ],
         "text": "Nou. Ja."
        }
       ]
@@ -13637,9 +13666,6 @@
         "text": "Ja… Zo voelt het wel."
        },
        {
-        "tags": [
-         "feeling"
-        ],
         "text": "Nou. Ja."
        }
       ]
@@ -18033,6 +18059,11 @@
      "at": 70,
      "id": "concern",
      "lead_in": {
+      "again": [
+       "Wat ik je zei, over wat ik hoor…",
+       "Dat gepraat, hè…",
+       "En dan hoor ik dus…"
+      ],
       "tags": [
        "hesitation"
       ],
@@ -18059,15 +18090,193 @@
      ]
     }
    ],
+   "lines": {
+    "ask_commitment": {
+     "_": [
+      "Zullen we dat zo doen?",
+      "Spreken we dat af?"
+     ]
+    },
+    "close": [
+     "Dank je, Dirk. Ik laat je.",
+     "Ik ga. Tot later."
+    ],
+    "confront": {
+     "_": [
+      "Ligt het niet gewoon aan het magazijn?",
+      "Eerlijk gezegd lijkt het erop dat het magazijn te laat levert.",
+      "Waarom ontbreken er dan steeds moffen?"
+     ]
+    },
+    "empathy": {
+     "_": [
+      "Dat is ook niet niks.",
+      "Dat lijkt me best lastig."
+     ],
+     "concern": [
+      "Vierendertig jaar, en dan zoiets horen. Dat doet zeer.",
+      "Dat is oneerlijk. Jij houdt je plank bij, en het wordt jou verweten."
+     ],
+     "interest": [
+      "Een magazijn op wielen zonder magazijnman. Dat is lastig voor jou.",
+      "Logisch dat je niet weet wat er in die bussen ligt. Daar kom je niet."
+     ],
+     "lead_in": [
+      "Zeg het maar.",
+      "Ik luister."
+     ],
+     "position": [
+      "Je plank is op orde. Dat zie ik.",
+      "Rij drie, vak twaalf. Dat noem ik bijhouden.",
+      "Dat je alles op voorraad hebt, is veel werk."
+     ]
+    },
+    "experience": {
+     "_": [
+      "Dat herken ik wel, dat het eerlijk moet zijn.",
+      "Ik ben hier nu een paar weken, maar ik zie het al."
+     ],
+     "concern": [
+      "Dat herken ik. Als ze over je praten in plaats van met je, doet dat meer pijn dan het werk.",
+      "Op mijn vorige werk kreeg de balie ook altijd de schuld. Terwijl het misging in de achterkamer."
+     ],
+     "lead_in": "Je hoeft het niet mooi te zeggen, hoor.",
+     "position": [
+      "Ik herken dat: als iets bij een ander misgaat, kijken ze naar jou.",
+      "Ik ken dat van mijn vorige werk: wat van iedereen is, houdt niemand bij."
+     ]
+    },
+    "inquiry": {
+     "_": [
+      "Waar komt dat door, denk je?",
+      "Hoe zit dat precies?"
+     ],
+     "concern": [
+      "Hoe lang hoor je dat al?",
+      "Wat zou er moeten gebeuren, zodat ze dat niet meer zeggen?"
+     ],
+     "interest": [
+      "Waarom vult niemand die bussen?",
+      "Wat pakken ze dan, als ze pakken wat ze pakken?"
+     ],
+     "lead_in": "Van wie?",
+     "position": [
+      "Wat ligt er eigenlijk in zo'n bus?",
+      "Wie houdt bij wat er in de bussen ligt?"
+     ]
+    },
+    "mood": {
+     "_": [
+      "Hoe gaat het nu echt met je, Dirk?",
+      "En jij, hoe hou je het vol?",
+      "Hoe is het met je, na al die jaren hier?"
+     ],
+     "lead_in": "Gaat het?",
+     "position": [
+      "Hoe gaat het met je, hier tussen de rekken?",
+      "En hoe is het met jou, na zo'n week vol storingen?"
+     ]
+    },
+    "open_question": {
+     "_": [
+      "Hoe gaat dat hier op een gewone dag?",
+      "Vertel eens, hoe loopt het werk in het magazijn?"
+     ],
+     "concern": [
+      "Wat zou je willen dat ze in de kantine zagen?",
+      "Wie zou het moeten weten, als er iets ontbreekt?"
+     ],
+     "interest": [
+      "Wat zou er in zo'n bus moeten liggen, volgens jou?",
+      "Hoe zou je die bussen zelf bijhouden?"
+     ],
+     "lead_in": "Wat hoor je?",
+     "position": [
+      "Wat weet jij van wat er in de bussen ligt?",
+      "Hoe komt een mof van jouw plank in een bus?",
+      "Wie vult de bussen eigenlijk?"
+     ]
+    },
+    "paraphrase": {
+     "_": [
+      "Dus het gaat om de bussen.",
+      "Als ik je goed hoor, ligt het niet aan de plank."
+     ],
+     "concern": [
+      "Dus in de kantine zeggen ze dat het magazijn te laat levert, terwijl er nooit iets ontbrak.",
+      "Dus je plank klopt al vierendertig jaar, en toch krijg jij de schuld."
+     ],
+     "interest": [
+      "Dus wat er in de bussen ligt, weet eigenlijk niemand.",
+      "Dus een bus is een magazijn zonder magazijnman."
+     ],
+     "lead_in": "Dus er is nog iets?",
+     "position": [
+      "Dus de moffen liggen hier, en wie ze nodig heeft, komt ze halen.",
+      "Dus volgens jou ligt het niet aan het magazijn."
+     ]
+    },
+    "perspective": {
+     "_": [
+      "Hoe zou Ahmed dit zien, om half drie 's nachts?",
+      "Wat merkt de klant ervan, als er een mof mist?"
+     ]
+    },
+    "pressure": {
+     "_": [
+      "Het MT wil dat er geen moffen meer ontbreken. Liever met jou dan zonder jou.",
+      "Dit moet echt anders, Dirk.",
+      "Ruud verwacht dat het magazijn hierin meegaat."
+     ]
+    },
+    "reflect": {
+     "_": [
+      "Je klinkt een beetje gespannen.",
+      "Het klinkt alsof je ermee zit."
+     ],
+     "concern": [
+      "Je voelt je aangevallen, klinkt het.",
+      "Het klinkt alsof dat je raakt, na al die jaren."
+     ],
+     "interest": [
+      "Het klinkt alsof het je stoort dat niemand die bussen bijhoudt.",
+      "Je klinkt alsof je wel zou willen helpen."
+     ],
+     "lead_in": [
+      "Er zit je iets dwars, merk ik.",
+      "Je aarzelt, zie ik."
+     ],
+     "position": [
+      "Het klinkt alsof je het gevoel hebt dat het niet aan jou ligt.",
+      "Je klinkt alsof je er klaar mee bent."
+     ]
+    },
+    "show_data": {
+     "_": [
+      "Kijk, dit vond ik: {data}",
+      "Mag ik je iets laten zien? {data}",
+      "Dit kwam ik tegen: {data} Klopt dat?"
+     ]
+    },
+    "silence": {
+     "_": [
+      "(je wacht even)",
+      "(je wacht rustig af)",
+      "(je kijkt naar vak twaalf en wacht)"
+     ],
+     "position": "(je kijkt langs de rekken en wacht)"
+    }
+   },
    "mission": "fix_wrong_joint",
    "mood": "goed",
    "name": "Dirk en de plank",
    "opening": "Als je een mof zoekt: rij drie, vak twaalf. Ik heb ze gewoon liggen.",
    "outcomes": {
-    "commitment": "Doen we. En als er dan nog een mof ontbreekt, wil ik dat lege bakje zien.",
+    "commitment": "Doen we. En als er dan nog een mof ontbreekt, wil ik dat als eerste horen.",
     "compliance": "Als het moet. Ik heb ze gewoon liggen.",
     "heard": "Hm. Fijn dat iemand het vraagt.",
-    "partial": "Prima. Maar ik ga niet elke bus zelf nalopen.",
+    "none": "Goed. Ik ga weer vullen.",
+    "partial": "Prima. Maar ik hou mijn plank, niet hun bus bij.",
     "ruined": "Ik heb ze gewoon liggen. Zoek het verder zelf maar uit."
    },
    "owns": "wrong_joint_in_van",
@@ -18102,18 +18311,617 @@
     }
    ],
    "replies": {
-    "open_question": {
+    "ask_commitment": {
+     "misses": [
+      {
+       "text": "Nee. Nog niet."
+      },
+      {
+       "text": "Eerst zien."
+      },
+      {
+       "text": "Nog even niet."
+      }
+     ]
+    },
+    "confront": {
      "lands": {
-      "tags": [
-       "claim"
+      "_": [
+       {
+        "text": "Aan het magazijn? Kom maar kijken op mijn plank."
+       },
+       {
+        "text": "Te laat? Ik lever dezelfde dag."
+       },
+       {
+        "text": "Omdat de bussen leeg raken. Niet mijn plank."
+       }
+      ]
+     }
+    },
+    "empathy": {
+     "lands": {
+      "_": [
+       {
+        "text": "Hm. Dank je."
+       },
+       {
+        "text": "Ja. Dat is het, ja."
+       },
+       {
+        "text": "Mm. Eindelijk."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Ach, het valt wel mee."
+       },
+       {
+        "text": "Het hoort erbij."
+       },
+       {
+        "text": "Mm."
+       },
+       {
+        "text": "Dank je. Maar mijn plank klopt toch al."
+       }
       ],
-      "tell": "fairness",
-      "text": "Ik vul mijn plank elke dag. Die bussen vult niemand. En dan is het magazijn de schuldige."
+      "lead_in": [
+       {
+        "text": "Nee, het is niks."
+       },
+       {
+        "text": "Nee. Laat maar."
+       }
+      ]
+     },
+     "worn": {
+      "text": "Ja. Dank je. Maar de bussen zijn nog steeds leeg."
+     }
+    },
+    "experience": {
+     "lands": {
+      "_": [
+       {
+        "text": "Hm. Dan weet je het."
+       },
+       {
+        "text": "Ja. Zo gaat dat."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Dat zeggen ze allemaal."
+       },
+       {
+        "text": "Mm."
+       },
+       {
+        "text": "Oké."
+       },
+       {
+        "text": "Kan zijn."
+       },
+       {
+        "text": "Hm."
+       }
+      ],
+      "lead_in": {
+       "text": "Ja… laat maar."
+      }
+     }
+    },
+    "inquiry": {
+     "again": [
+      {
+       "text": "Dat vroeg je al."
+      },
+      {
+       "text": "Ik zei het al, hè."
+      }
+     ],
+     "lands": {
+      "concern": [
+       {
+        "text": "Een jaar of twee. Sinds die nieuwe bussen."
+       },
+       {
+        "text": "Dat ze een keer komen kijken. Op mijn plank."
+       }
+      ],
+      "interest": [
+       {
+        "text": "Omdat het niemands werk is."
+       },
+       {
+        "text": "Wat er nog ligt. Wat het dichtst bij de deur ligt."
+       }
+      ],
+      "lead_in": {
+       "text": "Ach, niks. Laat maar."
+      },
+      "position": [
+       {
+        "text": "Wat de monteur erin legt. Ik kom er nooit in."
+       },
+       {
+        "text": "Niemand. Ik hou mijn plank bij."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Ach. Dat is een lang verhaal."
+       },
+       {
+        "text": "Hm. Dat ligt eraan."
+       },
+       {
+        "text": "Zo simpel is het niet."
+       }
+      ],
+      "concern": [
+       {
+        "text": "Daar heb ik het liever niet over."
+       },
+       {
+        "text": "Ach. Dat zien we nog wel."
+       }
+      ],
+      "interest": [
+       {
+        "text": "Ach. Zo is het altijd gegaan."
+       },
+       {
+        "text": "Wat er ligt."
+       }
+      ],
+      "lead_in": {
+       "text": "Ach. Vergeet het maar."
+      },
+      "position": [
+       {
+        "text": "Moffen. Hoop ik."
+       },
+       {
+        "text": "Ach. De monteurs zelf, denk ik."
+       }
+      ]
+     },
+     "worn": {
+      "_": {
+       "text": "Je vraagt veel. Ik moet de plank nog bijvullen."
+      },
+      "concern": {
+       "text": "Ik wil er nu even niet meer over praten."
+      }
+     }
+    },
+    "mood": {
+     "again": {
+      "_": [
+       {
+        "text": "Nog steeds hetzelfde."
+       },
+       {
+        "text": "Echt, het gaat."
+       },
+       {
+        "text": "Ja. Prima."
+       },
+       {
+        "text": "Gaat wel, hoor."
+       }
+      ],
+      "lead_in": {
+       "text": "Ja. Echt."
+      }
+     },
+     "lands": {
+      "_": [
+       {
+        "text": "Eerlijk? Een beetje moe van het gepraat."
+       },
+       {
+        "text": "Goed. Zoals altijd."
+       }
+      ],
+      "lead_in": {
+       "text": "Ja. Gaat wel."
+      },
+      "position": [
+       {
+        "text": "Goed, hoor. Mijn plank klopt. Fijn dat je het vraagt."
+       },
+       {
+        "text": "Druk. Maar alles ligt er."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Gaat. Druk."
+       },
+       {
+        "text": "Prima."
+       }
+      ],
+      "lead_in": {
+       "text": "Ja, hoor."
+      }
+     },
+     "worn": {
+      "_": {
+       "text": "Je vraagt het nu op drie manieren. Het antwoord blijft hetzelfde."
+      },
+      "concern": {
+       "text": "Het gaat. Laat maar."
+      }
+     }
+    },
+    "open_question": {
+     "again": [
+      {
+       "text": "Dat heb ik al verteld, toch?"
+      },
+      {
+       "text": "Hetzelfde als daarnet."
+      }
+     ],
+     "lands": {
+      "_": [
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Vullen, tellen, uitgeven."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Gewoon. Rij drie, vak twaalf."
+       }
+      ],
+      "concern": [
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Dat er nooit iets ontbrak. Niet bij mij."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Ik. Van de monteur zelf. Niet uit de kantine."
+       }
+      ],
+      "interest": [
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Twee van elke mof die ze vaak nodig hebben. Meer niet."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Met bakjes. Leeg is leeg, dat ziet iedereen."
+       }
+      ],
+      "lead_in": {
+       "text": "Ach. Laat maar."
+      },
+      "position": [
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Niks. Dat staat nergens. Mijn plank ken ik uit mijn hoofd."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Een monteur pakt hem. Wat hij denkt nodig te hebben. Daarna zie ik hem niet meer."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "tell": "fairness",
+        "text": "Ik vul mijn plank elke dag. Die bussen vult niemand. En dan is het magazijn de schuldige."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Gewoon, het werk."
+       },
+       {
+        "text": "Niet zoveel bijzonders."
+       }
+      ],
+      "concern": [
+       {
+        "text": "Dat zien we wel."
+       },
+       {
+        "text": "Ach. Laat maar zitten."
+       }
+      ],
+      "interest": [
+       {
+        "text": "Dat is mijn werk niet. Ik kom nooit in die bussen."
+       },
+       {
+        "text": "Dat is niet mijn werk."
+       }
+      ],
+      "lead_in": {
+       "text": "Niks. Laat maar."
+      }
+     },
+     "worn": {
+      "_": {
+       "text": "Nog een vraag? Ik moet de plank nog bijvullen."
+      },
+      "concern": {
+       "text": "Daar wil ik het nu even niet meer over hebben."
+      }
+     }
+    },
+    "paraphrase": {
+     "lands": {
+      "_": [
+       {
+        "text": "Klopt."
+       },
+       {
+        "text": "Ja, zo ongeveer."
+       }
+      ],
+      "interest": [
+       {
+        "text": "Precies. Niemand."
+       },
+       {
+        "text": "Ja. Zonder magazijnman."
+       }
+      ],
+      "position": [
+       {
+        "text": "Precies. Rij drie, vak twaalf."
+       },
+       {
+        "text": "Nee. Hier ontbreekt nooit iets."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Mm. Zo ongeveer."
+       },
+       {
+        "text": "Ja. Zoiets."
+       },
+       {
+        "text": "Mm, ja."
+       },
+       {
+        "text": "Hm, ja."
+       },
+       {
+        "text": "Klopt wel."
+       }
+      ],
+      "concern": [
+       {
+        "text": "Ja. Dat is het eigenlijk."
+       },
+       {
+        "text": "Ja."
+       }
+      ],
+      "lead_in": {
+       "text": "Zoiets. Laat maar."
+      }
+     },
+     "worn": {
+      "text": "Ja, ja. En nu?"
      }
     },
     "perspective": {
      "lands": {
-      "text": "Vanuit Ahmed, om half drie 's nachts, veertig minuten van rij drie? Ja. Dan is mijn plank ver weg."
+      "_": [
+       {
+        "text": "Vanuit Ahmed, om half drie 's nachts, veertig minuten van rij drie? Ja. Dan is mijn plank ver weg."
+       },
+       {
+        "text": "Vanuit de klant? Die zit in het donker, en die mof ligt hier. Hm."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Ahmed redt zich wel. Hij kent de weg."
+       },
+       {
+        "text": "De klant? Die ziet mijn plank niet."
+       }
+      ]
+     }
+    },
+    "pressure": {
+     "lands": {
+      "_": [
+       {
+        "text": "Het MT. Dan moeten ze het mij maar laten zien."
+       },
+       {
+        "text": "Anders? Mijn plank klopt."
+       },
+       {
+        "text": "Meegaan. Prima. Waarin precies?"
+       }
+      ]
+     }
+    },
+    "propose": {
+     "again": [
+      {
+       "text": "Ja, dat zei je. Ik denk erover na."
+      },
+      {
+       "text": "Dat stelde je al voor, ja."
+      }
+     ],
+     "misses": [
+      {
+       "text": "Hm. Misschien."
+      },
+      {
+       "text": "Dat moet ik zien."
+      },
+      {
+       "text": "Ik heb ze gewoon liggen, hoor."
+      }
+     ]
+    },
+    "propose_experiment": {
+     "again": [
+      {
+       "text": "Die proef, ja. Ik denk erover na."
+      },
+      {
+       "text": "Dat zei je al. Ik heb het gehoord."
+      }
+     ],
+     "misses": [
+      {
+       "text": "Nu even niet."
+      },
+      {
+       "text": "Niet nu. Eerst zien."
+      }
+     ]
+    },
+    "reflect": {
+     "lands": {
+      "_": [
+       {
+        "text": "Ja. Eigenlijk wel."
+       },
+       {
+        "text": "Ja… Dat klopt wel."
+       },
+       {
+        "text": "Mm. Ja."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Nee, dat zou ik zo niet zeggen."
+       },
+       {
+        "text": "Nee hoor. Ik doe gewoon mijn werk."
+       },
+       {
+        "text": "Nee."
+       },
+       {
+        "text": "Valt mee."
+       }
+      ],
+      "lead_in": [
+       {
+        "text": "Nee, nee."
+       },
+       {
+        "text": "Nee. Het is niks."
+       }
+      ]
+     },
+     "worn": {
+      "text": "Ja, ja. Ik weet wel hoe ik me voel, hoor."
+     }
+    },
+    "show_data": {
+     "other": [
+      {
+       "text": "Ja. En?"
+      },
+      {
+       "text": "Wat heeft dat met mijn plank te maken?"
+      },
+      {
+       "text": "Dat is niet van het magazijn."
+      }
+     ]
+    },
+    "silence": {
+     "lands": [
+      {
+       "tags": [
+        "doubt"
+       ],
+       "text": "(denkt na) Het zit me gewoon niet lekker."
+      },
+      {
+       "tags": [
+        "doubt"
+       ],
+       "text": "… Nou ja. Er klopt iets niet, ergens."
+      },
+      {
+       "tags": [
+        "doubt"
+       ],
+       "text": "… Eerlijk gezegd zit het me dwars."
+      }
+     ],
+     "misses": {
+      "_": [
+       {
+        "text": "… Was er nog wat?"
+       },
+       {
+        "text": "… Ja?"
+       },
+       {
+        "text": "(hij telt de moffen in vak twaalf)"
+       },
+       {
+        "text": "Ik moet de plank nog bijvullen, hè."
+       },
+       {
+        "text": "… Mm?"
+       }
+      ],
+      "concern": [
+       {
+        "text": "… Ja. Zo is het."
+       },
+       {
+        "text": "… Mm."
+       },
+       {
+        "text": "… Nou ja."
+       }
+      ]
      }
     }
    }
@@ -20623,6 +21431,11 @@
      "condition": "Ik doe het. Maar het moet op papier, met een handtekening van boven mij.",
      "id": "concern",
      "lead_in": {
+      "again": [
+       "Maar ja…",
+       "Alleen…",
+       "Zoals ik zei, maar…"
+      ],
       "tags": [
        "hesitation"
       ],
@@ -20648,6 +21461,183 @@
      ]
     }
    ],
+   "lines": {
+    "ask_commitment": {
+     "_": [
+      "Zullen we dat zo doen?",
+      "Spreken we dat af?"
+     ]
+    },
+    "close": [
+     "Dank je, Femke. Ik laat je rekenen.",
+     "Ik ga. Sterkte met het bord."
+    ],
+    "confront": {
+     "_": [
+      "Reken je niet gewoon te veel?",
+      "Eerlijk gezegd lijkt het erop dat jouw afdeling de wachtrij maakt.",
+      "Waarom duurt elke studie dan vier uur?"
+     ]
+    },
+    "empathy": {
+     "_": [
+      "Dat is ook niet niks.",
+      "Dat lijkt me best lastig."
+     ],
+     "concern": [
+      "Je naam onder een station dat doorbrandt. Logisch dat je dat niet wilt.",
+      "Dat je je eigen regel niet durft te veranderen, snap ik. Niemand heeft je gezegd dat het mag."
+     ],
+     "interest": [
+      "Vier uur rekenen aan iets wat je al weet. Dat is frustrerend.",
+      "Logisch dat die school je dwarszit. Je weet dat het antwoord klaarligt."
+     ],
+     "lead_in": [
+      "Neem je tijd.",
+      "Ik luister."
+     ],
+     "position": [
+      "Achtendertig studies, en jij alleen. Dat is zwaar.",
+      "Je werkt je een ongeluk. Dat zie ik.",
+      "Geen tijd voor een gesprek over tijd. Dat snap ik."
+     ]
+    },
+    "experience": {
+     "_": [
+      "Dat herken ik wel, dat je het goed wilt doen.",
+      "Ik ben hier nu een paar weken, maar ik zie het al."
+     ],
+     "concern": [
+      "Dat herken ik. Als je naam eronder staat, reken je liever twee keer.",
+      "Op mijn vorige werk durfde niemand een oude regel aan te passen. Tot iemand van boven zei dat het mocht."
+     ],
+     "lead_in": "Je hoeft het niet mooi te zeggen, hoor.",
+     "position": [
+      "Ik herken dat: hoe drukker het is, hoe minder tijd om het anders te doen.",
+      "Ik ken dat van mijn vorige werk: iedereen riep om meer mensen, en het werk zelf veranderde niet."
+     ]
+    },
+    "inquiry": {
+     "_": [
+      "Waar komt dat door, denk je?",
+      "Hoe zit dat precies?"
+     ],
+     "concern": [
+      "Wat zegt de werkinstructie precies, over die grens?",
+      "Wie zou die snelle check mogen goedkeuren?"
+     ],
+     "interest": [
+      "Wat zou er gebeuren, als je na vijf minuten stopt?",
+      "Hoe lang wacht die school in Nova-Oost al?"
+     ],
+     "lead_in": "Maar wat dan?",
+     "position": [
+      "Hoe lang duurt een volle studie?",
+      "Hoeveel van die achtendertig zijn er echt lastig?"
+     ]
+    },
+    "mood": {
+     "_": [
+      "Hoe gaat het nu echt met je, Femke?",
+      "En jij, hoe hou je het vol?",
+      "Hoe is het met je, na zo'n week?"
+     ],
+     "lead_in": "Gaat het?",
+     "position": [
+      "Hoe gaat het met je, met achtendertig studies op het bord?",
+      "En hoe is het met jou, los van het bord?"
+     ]
+    },
+    "open_question": {
+     "_": [
+      "Hoe gaat dat hier op een gewone dag?",
+      "Vertel eens, hoe loopt het werk bij netstudies?"
+     ],
+     "concern": [
+      "Wat zou je nodig hebben om die snelle check te durven doen?",
+      "Wie zou er naast je moeten staan, als het misgaat?"
+     ],
+     "interest": [
+      "Wat zou je doen met die vier uur, als je ze terugkreeg?",
+      "Hoe weet je na vijf minuten al dat het past?"
+     ],
+     "lead_in": "Maar wat?",
+     "position": [
+      "Hoe ziet een studie eruit, van begin tot eind?",
+      "Wat staat er nu bovenaan je bord?",
+      "Waar gaat je tijd eigenlijk heen, op een dag?"
+     ]
+    },
+    "paraphrase": {
+     "_": [
+      "Dus het gaat om de studies.",
+      "Als ik je goed hoor, gaat het niet om rekenen."
+     ],
+     "concern": [
+      "Dus het gaat om wie er verantwoordelijk is, als een snelle check misgaat.",
+      "Dus die werkinstructie is van jou, en hij past niet meer bij nu."
+     ],
+     "interest": [
+      "Dus je weet vaak na vijf minuten genoeg, en rekent dan nog vier uur door.",
+      "Dus de werkinstructie houdt je langer bezig dan het werk."
+     ],
+     "lead_in": "Dus er is nog iets?",
+     "position": [
+      "Dus je hebt meer mensen nodig, omdat het bord vol staat.",
+      "Dus voor een gesprek over tijd is geen tijd."
+     ]
+    },
+    "perspective": {
+     "_": [
+      "Hoe zou die school in Nova-Oost dit zien?",
+      "Wat merkt de klant met een warmtepomp ervan, als hij negen weken wacht?"
+     ]
+    },
+    "pressure": {
+     "_": [
+      "Het MT wil dat de wachtrij korter wordt. Liever met jou dan zonder jou.",
+      "Dit moet echt anders, Femke.",
+      "Ruud verwacht dat netstudies hierin meegaat."
+     ]
+    },
+    "reflect": {
+     "_": [
+      "Je klinkt een beetje gespannen.",
+      "Het klinkt alsof je ermee zit."
+     ],
+     "concern": [
+      "Het klinkt alsof je er alleen voor staat.",
+      "Je klinkt alsof je bang bent om het fout te doen."
+     ],
+     "interest": [
+      "Het klinkt alsof het je stoort, al dat dubbele werk.",
+      "Je klinkt alsof je die school wel wilt helpen."
+     ],
+     "lead_in": [
+      "Er zit je iets dwars, merk ik.",
+      "Je aarzelt, zie ik."
+     ],
+     "position": [
+      "Het klinkt alsof je je tijd liever ergens anders aan zou geven.",
+      "Je klinkt alsof je achter de feiten aan loopt."
+     ]
+    },
+    "show_data": {
+     "_": [
+      "Kijk, dit vond ik: {data}",
+      "Mag ik je iets laten zien? {data}",
+      "Dit kwam ik tegen: {data} Klopt dat?"
+     ]
+    },
+    "silence": {
+     "_": [
+      "(je wacht even)",
+      "(je wacht rustig af)",
+      "(je kijkt naar het bord en wacht)"
+     ],
+     "position": "(je gaat zitten en wacht)"
+    }
+   },
    "mission": "fix_grid_study_queue",
    "mood": "moe",
    "name": "Femke en de werkinstructie",
@@ -20656,6 +21646,7 @@
     "commitment": "Afgesproken. En die twee analisten: die vraag ik over een halfjaar opnieuw. Als het dan nog nodig is.",
     "compliance": "Prima. Op jouw verantwoording dan.",
     "heard": "Fijn dat je even bleef. Echt.",
+    "none": "Goed. Ik ga verder rekenen. Sorry.",
     "partial": "Ik wil het. Maar niet zonder handtekening.",
     "ruined": "Dus ik reken te veel. Fijn. Dan reken ik vanaf nu niks meer zonder brief."
    },
@@ -20699,26 +21690,760 @@
     }
    ],
    "replies": {
-    "mood": {
+    "ask_commitment": {
+     "misses": [
+      {
+       "text": "Nee. Nog niet."
+      },
+      {
+       "text": "Eerst zien."
+      },
+      {
+       "text": "Nog even niet."
+      }
+     ]
+    },
+    "confront": {
      "lands": {
-      "tags": [
-       "feeling"
+      "_": [
+       {
+        "text": "Te veel? Ik reken wat de werkinstructie zegt."
+       },
+       {
+        "text": "De wachtrij? Die komt van de warmtepompen, niet van mij."
+       },
+       {
+        "text": "Omdat het moet. Zo staat het er."
+       }
+      ]
+     }
+    },
+    "empathy": {
+     "lands": {
+      "_": [
+       {
+        "text": "Hm. Dank je."
+       },
+       {
+        "text": "Ja. Dat is het, ja."
+       },
+       {
+        "tags": [
+         "feeling"
+        ],
+        "text": "Mm. Fijn dat iemand het ziet."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Ach, het valt wel mee."
+       },
+       {
+        "text": "Het hoort erbij."
+       },
+       {
+        "text": "Mm."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Dank je. Maar het bord wordt er niet leger van."
+       }
       ],
-      "tell": "time",
-      "text": "Hoe het gaat? Ik heb vanochtend drie keer koffie gehaald. Drie keer koud laten worden. Zo gaat het."
+      "lead_in": [
+       {
+        "tags": [
+         "hesitation"
+        ],
+        "text": "Nee, het is niks."
+       },
+       {
+        "tags": [
+         "hesitation"
+        ],
+        "text": "Nee. Laat maar."
+       }
+      ]
+     },
+     "worn": {
+      "text": "Ja. Dank je. Maar er staan er nog steeds achtendertig."
+     }
+    },
+    "experience": {
+     "lands": {
+      "_": [
+       {
+        "text": "Hm. Dan weet je het."
+       },
+       {
+        "text": "Ja. Precies dat."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Dat zeggen ze allemaal."
+       },
+       {
+        "text": "Mm."
+       },
+       {
+        "text": "Oké."
+       },
+       {
+        "text": "Kan zijn."
+       },
+       {
+        "text": "Hm."
+       }
+      ],
+      "lead_in": {
+       "text": "Ja… laat maar."
+      }
+     }
+    },
+    "inquiry": {
+     "again": [
+      {
+       "text": "Dat vroeg je al."
+      },
+      {
+       "text": "Ik zei het al, hè."
+      }
+     ],
+     "lands": {
+      "concern": [
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Alles boven 3x25A krijgt de volle studie. Dat heb ik zelf zo opgeschreven."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Niemand, nu. Iemand boven mij zou moeten tekenen."
+       }
+      ],
+      "interest": [
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Als ik dan ernaast zit, kan ik niet uitleggen waarom. Daar is geen regel voor."
+       },
+       {
+        "tags": [
+         "claim",
+         "feeling"
+        ],
+        "text": "Negen weken. Voor een antwoord dat ik nu al weet."
+       }
+      ],
+      "lead_in": {
+       "text": "Ach, niks. Laat maar."
+      },
+      "position": [
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Vier uur. Een halve dag, met de telefoon erbij."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Vijf. Misschien zes. De rest past gewoon."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Ach. Dat is een lang verhaal."
+       },
+       {
+        "text": "Hm. Dat ligt eraan."
+       },
+       {
+        "text": "Zo simpel is het niet."
+       }
+      ],
+      "concern": [
+       {
+        "text": "Daar heb ik het liever niet over."
+       },
+       {
+        "text": "Ach. Dat zien we nog wel."
+       }
+      ],
+      "interest": [
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Dat doe ik niet. Zo staat het er niet."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Langer dan ze zou moeten."
+       }
+      ],
+      "lead_in": {
+       "text": "Ach. Vergeet het maar."
+      },
+      "position": [
+       {
+        "text": "Te lang."
+       },
+       {
+        "text": "Ach. Dat zie je pas als je begint."
+       }
+      ]
+     },
+     "worn": {
+      "_": {
+       "text": "Je vraagt veel. Ik moet echt verder rekenen."
+      },
+      "concern": {
+       "text": "Ik wil er nu even niet meer over praten."
+      }
+     }
+    },
+    "mood": {
+     "again": {
+      "_": [
+       {
+        "text": "Nog steeds hetzelfde."
+       },
+       {
+        "text": "Echt, het gaat."
+       },
+       {
+        "text": "Ja. Moe."
+       },
+       {
+        "text": "Gaat wel, hoor."
+       }
+      ],
+      "lead_in": {
+       "text": "Ja. Echt."
+      }
+     },
+     "lands": {
+      "_": [
+       {
+        "tags": [
+         "feeling"
+        ],
+        "text": "Eerlijk? Moe. Gewoon moe."
+       },
+       {
+        "text": "Druk. Zoals altijd."
+       }
+      ],
+      "lead_in": {
+       "text": "Ja. Gaat wel."
+      },
+      "position": [
+       {
+        "tags": [
+         "feeling"
+        ],
+        "tell": "time",
+        "text": "Hoe het gaat? Ik heb vanochtend drie keer koffie gehaald. Drie keer koud laten worden. Zo gaat het."
+       },
+       {
+        "tags": [
+         "feeling"
+        ],
+        "tell": "time",
+        "text": "Los van het bord? Er is geen los van het bord. Sorry."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "tags": [
+         "feeling"
+        ],
+        "text": "Gaat. Moe."
+       },
+       {
+        "text": "Prima. Druk."
+       }
+      ],
+      "lead_in": {
+       "text": "Ja, hoor."
+      }
+     },
+     "worn": {
+      "_": {
+       "text": "Je vraagt het nu op drie manieren. Het antwoord blijft hetzelfde."
+      },
+      "concern": {
+       "text": "Het gaat. Laat maar."
+      }
+     }
+    },
+    "open_question": {
+     "again": [
+      {
+       "text": "Dat heb ik al verteld, toch?"
+      },
+      {
+       "text": "Hetzelfde als daarnet."
+      }
+     ],
+     "lands": {
+      "_": [
+       {
+        "tags": [
+         "claim",
+         "feeling"
+        ],
+        "text": "Rekenen, bellen, rekenen."
+       },
+       {
+        "tags": [
+         "claim",
+         "feeling"
+        ],
+        "text": "Druk. Het bord loopt vol."
+       }
+      ],
+      "concern": [
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Iemand die zegt dat het mag. Op papier."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Iemand die zijn naam naast de mijne zet."
+       }
+      ],
+      "interest": [
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "De lastige studies. Die waar het echt spannend is."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Ervaring. Kleine aansluiting, ruim station. Dat zie je zo."
+       }
+      ],
+      "lead_in": {
+       "text": "Ach. Laat maar."
+      },
+      "position": [
+       {
+        "tags": [
+         "claim",
+         "feeling"
+        ],
+        "text": "Aansluiting, kabel, station, de vrije ruimte. Vier uur, als niemand belt. Er belt altijd iemand."
+       },
+       {
+        "tags": [
+         "claim",
+         "feeling"
+        ],
+        "text": "Een school in Nova-Oost. Een warmtepomp. Past bijna zeker. Ligt er al negen weken."
+       },
+       {
+        "tags": [
+         "claim",
+         "feeling"
+        ],
+        "tell": "time",
+        "text": "Naar rekenen. Ook als ik het antwoord al zie."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Gewoon, het werk."
+       },
+       {
+        "text": "Niet zoveel bijzonders."
+       }
+      ],
+      "concern": [
+       {
+        "text": "Dat zien we wel."
+       },
+       {
+        "text": "Ach. Laat maar zitten."
+       }
+      ],
+      "interest": [
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Weer rekenen. Er staan er achtendertig."
+       },
+       {
+        "text": "Gewoon. Je ziet het."
+       }
+      ],
+      "lead_in": {
+       "text": "Niks. Laat maar."
+      }
+     },
+     "worn": {
+      "_": {
+       "text": "Nog een vraag? Ik moet echt verder rekenen."
+      },
+      "concern": {
+       "text": "Daar wil ik het nu even niet meer over hebben."
+      }
+     }
+    },
+    "paraphrase": {
+     "lands": {
+      "_": [
+       {
+        "text": "Klopt."
+       },
+       {
+        "text": "Ja, zo ongeveer."
+       }
+      ],
+      "interest": [
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Precies. Vier uur. Voor niks, meestal."
+       },
+       {
+        "tags": [
+         "claim",
+         "feeling"
+        ],
+        "text": "Ja. Ik volg hem, maar hij houdt me op."
+       }
+      ],
+      "position": [
+       {
+        "text": "Precies. Twee erbij."
+       },
+       {
+        "text": "Ja. Sorry. Zo is het."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Mm. Zo ongeveer."
+       },
+       {
+        "text": "Ja. Zoiets."
+       },
+       {
+        "text": "Mm, ja."
+       },
+       {
+        "text": "Hm, ja."
+       },
+       {
+        "text": "Klopt wel."
+       }
+      ],
+      "concern": [
+       {
+        "text": "Ja. Dat is het eigenlijk."
+       },
+       {
+        "text": "Ja."
+       }
+      ],
+      "lead_in": {
+       "text": "Zoiets. Laat maar."
+      }
+     },
+     "worn": {
+      "text": "Ja, ja. En nu?"
      }
     },
     "perspective": {
      "lands": {
-      "text": "Vanuit de school? Negen weken wachten op een antwoord dat ik in vijf minuten had kunnen geven. … Ja. Dat is eigenlijk niet te verdedigen."
+      "_": [
+       {
+        "text": "Vanuit de school? Negen weken wachten op een antwoord dat ik in vijf minuten had kunnen geven. … Ja. Dat is eigenlijk niet te verdedigen."
+       },
+       {
+        "text": "Vanuit die klant? Die heeft zijn warmtepomp al in de schuur staan. En ik reken nog. Hm."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "De school wacht op een veilig antwoord. Dat kost tijd."
+       },
+       {
+        "text": "Die klant wil ook geen kapot station."
+       }
+      ]
+     }
+    },
+    "pressure": {
+     "lands": {
+      "_": [
+       {
+        "text": "Het MT. Dan moeten ze me die twee analisten maar geven."
+       },
+       {
+        "text": "Anders? Ik reken al zo snel als ik kan."
+       },
+       {
+        "text": "Meegaan. Prima. Waarin precies?"
+       }
+      ]
+     }
+    },
+    "propose": {
+     "again": [
+      {
+       "text": "Ja, dat zei je. Ik denk erover na."
+      },
+      {
+       "text": "Dat stelde je al voor, ja."
+      }
+     ],
+     "misses": [
+      {
+       "text": "Hm. Misschien."
+      },
+      {
+       "text": "Dat moet ik zien."
+      },
+      {
+       "text": "Daar heb ik nu geen tijd voor."
+      }
+     ]
+    },
+    "propose_experiment": {
+     "again": [
+      {
+       "text": "Die proef, ja. Ik denk erover na."
+      },
+      {
+       "text": "Dat zei je al. Ik heb het gehoord."
+      }
+     ],
+     "misses": [
+      {
+       "text": "Nu even niet."
+      },
+      {
+       "text": "Niet nu. Eerst het bord."
+      }
+     ]
+    },
+    "reflect": {
+     "lands": {
+      "_": [
+       {
+        "text": "Ja. Eigenlijk wel."
+       },
+       {
+        "text": "Ja… Dat klopt wel."
+       },
+       {
+        "text": "Mm. Ja."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Nee, dat zou ik zo niet zeggen."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Nee hoor. Het is gewoon druk."
+       },
+       {
+        "text": "Nee."
+       },
+       {
+        "text": "Valt mee."
+       }
+      ],
+      "lead_in": [
+       {
+        "tags": [
+         "hesitation"
+        ],
+        "text": "Nee, nee."
+       },
+       {
+        "tags": [
+         "hesitation"
+        ],
+        "text": "Nee. Het is niks."
+       }
+      ]
+     },
+     "worn": {
+      "text": "Ja, ja. Ik weet wel hoe ik me voel, hoor."
      }
     },
     "show_data": {
      "lands": {
-      "text": "Vier uur tegen een kwartier. Ja. Ik weet het. Ik zie het elke dag gebeuren."
+      "grid_study_queue:0": [
+       {
+        "tags": [
+         "claim",
+         "feeling"
+        ],
+        "text": "Vier op de tien. Vorig jaar een kwart. … Het bord groeit sneller dan ik reken."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Vier op de tien. Ja. En de meeste daarvan passen gewoon."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Ja. Vier op de tien. Ik heb het gezien."
+       }
+      ],
+      "grid_study_queue:4": [
+       {
+        "tags": [
+         "claim",
+         "feeling"
+        ],
+        "text": "Vier uur tegen een kwartier. Ja. Ik zie het elke dag gebeuren."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Een kwartier. Dan doe ik er een stuk of dertig op een dag. In plaats van twee."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Ja. Vier uur tegen een kwartier. Ik heb het gezien."
+       }
+      ]
      },
      "misses": {
-      "text": "Ik weet hoe lang een studie duurt. Ik maak ze."
+      "grid_study_queue:0": [
+       {
+        "text": "Dat zie ik ook. Ze komen bij mij binnen."
+       },
+       {
+        "text": "Daarom heb ik twee analisten nodig."
+       },
+       {
+        "text": "Ja, en dan?"
+       }
+      ],
+      "grid_study_queue:4": [
+       {
+        "text": "Ik weet hoe lang een studie duurt. Ik maak ze."
+       },
+       {
+        "text": "Een kwartier is geen studie. Dat is een gok."
+       },
+       {
+        "text": "Ja, en verder?"
+       }
+      ]
+     },
+     "other": [
+      {
+       "text": "En nu?"
+      },
+      {
+       "text": "Dat staat ook op mijn bord."
+      },
+      {
+       "text": "Wat moet ik daarmee?"
+      }
+     ]
+    },
+    "silence": {
+     "lands": [
+      {
+       "tags": [
+        "doubt"
+       ],
+       "text": "(wrijft in haar ogen) Het is gewoon veel."
+      },
+      {
+       "tags": [
+        "doubt"
+       ],
+       "text": "… Nou ja. Het is lastig."
+      },
+      {
+       "tags": [
+        "doubt"
+       ],
+       "text": "… Eerlijk gezegd zit het me dwars."
+      }
+     ],
+     "misses": {
+      "_": [
+       {
+        "text": "… Was er nog wat?"
+       },
+       {
+        "text": "… Ja?"
+       },
+       {
+        "text": "(ze kijkt naar haar scherm)"
+       },
+       {
+        "text": "Ik moet echt verder, hè."
+       },
+       {
+        "text": "… Mm?"
+       }
+      ],
+      "concern": [
+       {
+        "text": "… Ja. Zo is het."
+       },
+       {
+        "text": "… Mm."
+       },
+       {
+        "text": "… Nou ja."
+       }
+      ]
      }
     }
    },
@@ -20764,6 +22489,11 @@
      "at": 70,
      "id": "concern",
      "lead_in": {
+      "again": [
+       "Die regel staat er niet voor niets…",
+       "Er is een reden, zoals ik zei…",
+       "Nou ja. Die reden…"
+      ],
       "tags": [
        "hesitation",
        "doubt"
@@ -20791,16 +22521,191 @@
     }
    ],
    "lines": {
-    "experience": "Ik heb ooit een verkeerde bestelling op mijn naam gehad. Niemand weet het meer, behalve ik."
+    "ask_commitment": {
+     "_": [
+      "Zullen we dat zo doen?",
+      "Spreken we dat af?"
+     ]
+    },
+    "close": [
+     "Dank u, Rob. Ik laat u.",
+     "Ik ga. Tot later."
+    ],
+    "confront": {
+     "_": [
+      "Houdt die regel niet gewoon alles op?",
+      "Eerlijk gezegd lijkt het erop dat inkoop de bottleneck is.",
+      "Waarom wachten we dan zeven maanden?"
+     ]
+    },
+    "empathy": {
+     "_": [
+      "Dat is ook niet niks.",
+      "Dat lijkt me best lastig."
+     ],
+     "concern": [
+      "Uw naam in een rapport. Dat blijft hangen, dat snap ik.",
+      "Logisch dat u dat niet nog een keer wilt. Dat zou ik ook niet willen."
+     ],
+     "interest": [
+      "Logisch dat u voorzichtig bent. Het gaat om veel geld.",
+      "Een half jaar levertijd, en dan de verkeerde maat. Dat wil niemand."
+     ],
+     "lead_in": [
+      "Neem uw tijd.",
+      "Ik luister."
+     ],
+     "position": [
+      "U bewaakt het geld van het bedrijf. Dat is geen dankbaar werk.",
+      "Een regel volgen terwijl iedereen sneller wil. Dat vraagt wat.",
+      "U heeft het voor me uitgeprint. Dat waardeer ik."
+     ]
+    },
+    "experience": {
+     "_": [
+      "Dat herken ik wel, dat je het zeker wilt weten.",
+      "Ik ben hier nu een paar weken, maar ik zie het al."
+     ],
+     "concern": [
+      "Dat herken ik. Ik ben ooit ook genoemd in een rapport. Je leest het vaker terug dan wie dan ook.",
+      "Op mijn vorige werk stond mijn naam onder een dure misser. Daarna controleerde ik alles drie keer."
+     ],
+     "lead_in": "U hoeft het niet mooi te zeggen, hoor.",
+     "position": [
+      "Ik ken dat: een regel die er is omdat het ooit misging.",
+      "Ik ken dat: één fout op papier, en die raak je nooit meer kwijt."
+     ]
+    },
+    "inquiry": {
+     "_": [
+      "Waar komt dat door, denkt u?",
+      "Hoe zit dat precies?"
+     ],
+     "concern": [
+      "Wat deed dat rapport met u, toen het verscheen?",
+      "Wie heeft u toen geholpen, na dat rapport?"
+     ],
+     "interest": [
+      "Hoe vaak verandert de maat nog, na de netstudie?",
+      "Hoe lang duurt het van netstudie tot goedgekeurd ontwerp?"
+     ],
+     "lead_in": "Welke reden?",
+     "position": [
+      "Wat is het risico, als u eerder bestelt?",
+      "Wat kost zo'n trafo eigenlijk?"
+     ]
+    },
+    "mood": {
+     "_": [
+      "Hoe gaat het nu echt met u, Rob?",
+      "En u, hoe houdt u het vol?",
+      "Hoe is het met u, na al die jaren inkoop?"
+     ],
+     "lead_in": "Gaat het?",
+     "position": [
+      "Hoe gaat het met u, tussen al die procedures?",
+      "En hoe is het met u, nu iedereen over de trafo's begint?"
+     ]
+    },
+    "open_question": {
+     "_": [
+      "Hoe gaat dat, een gewone week bij inkoop?",
+      "Vertel eens, hoe loopt het werk bij u?"
+     ],
+     "concern": [
+      "Wat zou er in de procedure moeten staan, zodat het niet nog een keer gebeurt?",
+      "Wat zou u willen dat de accountant de volgende keer schrijft?"
+     ],
+     "interest": [
+      "Wat zou u nodig hebben om eerder te durven bestellen?",
+      "Hoe weet u welke maat er straks nodig is?"
+     ],
+     "lead_in": "Wat bedoelt u?",
+     "position": [
+      "Waarom staat die regel erin, volgens u?",
+      "Hoe gaat een trafobestelling, van begin tot eind?",
+      "Wat gebeurt er als een ontwerp lang op zich laat wachten?"
+     ]
+    },
+    "paraphrase": {
+     "_": [
+      "Dus het gaat om de bestelregel.",
+      "Als ik u goed hoor, gaat het om zekerheid."
+     ],
+     "concern": [
+      "Dus het gaat er niet om dat u tegen sneller bent. U wilt niet nog een keer in dat rapport.",
+      "Dus die regel is er gekomen na 2022."
+     ],
+     "interest": [
+      "Dus het risico is een dure trafo die een jaar in het magazijn staat.",
+      "Dus u wacht op het ontwerp omdat dan pas de maat vaststaat."
+     ],
+     "lead_in": "Dus er is nog iets?",
+     "position": [
+      "Dus eerst het ontwerp, dan pas de bestelling. Zo staat het er.",
+      "Dus u bestelt pas als het ontwerp is goedgekeurd."
+     ]
+    },
+    "perspective": {
+     "_": [
+      "Hoe zouden de kopers in De Boomgaard dit zien?",
+      "Wat merkt de monteur ervan, als de trafo een half jaar later komt?"
+     ]
+    },
+    "pressure": {
+     "_": [
+      "Het MT wil dat de trafo's sneller komen. Liever met u dan zonder u.",
+      "Dit moet echt anders, Rob.",
+      "Ruud verwacht dat inkoop hierin meegaat."
+     ]
+    },
+    "reflect": {
+     "_": [
+      "U klinkt een beetje gespannen.",
+      "Het klinkt alsof u ermee zit."
+     ],
+     "concern": [
+      "Het klinkt alsof dat rapport u nog steeds dwarszit.",
+      "U klinkt alsof het u persoonlijk heeft geraakt."
+     ],
+     "interest": [
+      "Het klinkt alsof u bang bent dat het geld verloren gaat.",
+      "U klinkt alsof u die kapstok al voor u ziet."
+     ],
+     "lead_in": [
+      "Er zit u iets dwars, merk ik.",
+      "U aarzelt, zie ik."
+     ],
+     "position": [
+      "Het klinkt alsof u zich ergens zorgen over maakt.",
+      "U klinkt alsof u die regel niet voor niets volgt."
+     ]
+    },
+    "show_data": {
+     "_": [
+      "Kijk, dit vond ik: {data}",
+      "Mag ik u iets laten zien? {data}",
+      "Dit kwam ik tegen: {data} Klopt dat?"
+     ]
+    },
+    "silence": {
+     "_": [
+      "(je wacht even)",
+      "(je wacht rustig af)",
+      "(je laat de stilte even staan)"
+     ],
+     "position": "(je knikt naar de uitdraai en wacht)"
+    }
    },
    "mission": "fix_transformer_wait",
    "name": "Rob en de bestelregel",
    "opening": "Als het over de trafo's gaat: ik heb de procedure voor u uitgeprint.",
    "outcomes": {
-    "commitment": "Conform. Ik pas de procedure aan. En die uitdraai mag u houden; die klopt vanaf maandag niet meer.",
+    "commitment": "Afgesproken. Ik zet het op papier, op mijn naam. Dan kan niemand zeggen dat het slordig ging.",
     "compliance": "Als de directie het wil, bestel ik. Op uw naam.",
-    "heard": "U bent de eerste die vraagt wáárom die regel er staat.",
-    "partial": "Ik wil het wel. Maar niet zonder standaardmaten.",
+    "heard": "Dank u. De meesten willen alleen dat ik teken.",
+    "none": "Goed. U weet waar de procedure ligt.",
+    "partial": "Ik wil het wel. Maar niet zonder dat ik zeker weet dat de maat klopt.",
     "ruined": "Ik volg de procedure. Als u die wilt veranderen, loopt dat via de directie."
    },
    "owns": "transformer_wait",
@@ -20843,26 +22748,690 @@
     }
    ],
    "replies": {
+    "ask_commitment": {
+     "misses": [
+      {
+       "text": "Nee. Nog niet."
+      },
+      {
+       "text": "Eerst zien."
+      },
+      {
+       "text": "Nog even niet."
+      }
+     ]
+    },
+    "confront": {
+     "lands": {
+      "_": [
+       {
+        "text": "Alles ophouden? Hij houdt het geld vast. Dat is iets anders."
+       },
+       {
+        "text": "De bottleneck? Ik bestel binnen een dag na goedkeuring."
+       },
+       {
+        "text": "Omdat het ontwerp zo lang duurt. Niet de bestelling."
+       }
+      ]
+     }
+    },
+    "empathy": {
+     "lands": {
+      "_": [
+       {
+        "text": "Hm. Dank u."
+       },
+       {
+        "text": "Ja. Dat is het, ja."
+       },
+       {
+        "text": "Mm. Dat hoor ik niet vaak."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Ach, het valt wel mee."
+       },
+       {
+        "text": "Het hoort bij het vak."
+       },
+       {
+        "text": "Mm."
+       },
+       {
+        "text": "Dank u. Maar de procedure blijft de procedure."
+       }
+      ],
+      "lead_in": [
+       {
+        "text": "Nee, het is niks."
+       },
+       {
+        "text": "Nee. Laat maar."
+       }
+      ]
+     },
+     "worn": {
+      "text": "Ja. Dank u. Maar de regel staat er nog steeds."
+     }
+    },
     "experience": {
      "lands": {
-      "tags": [
-       "admission"
+      "_": [
+       {
+        "tags": [
+         "admission"
+        ],
+        "tell": "safety",
+        "text": "Dan weet u het. Zo'n rapport gaat niet weg. Het staat er gewoon, elk jaar weer."
+       },
+       {
+        "tags": [
+         "admission"
+        ],
+        "tell": "safety",
+        "text": "Ja. Dat raak je nooit meer kwijt. Ik in elk geval niet."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Hm. Dat zal wel."
+       },
+       {
+        "text": "Mm."
+       },
+       {
+        "text": "Oké."
+       },
+       {
+        "text": "Kan zijn."
+       },
+       {
+        "text": "Hm."
+       }
       ],
-      "tell": "safety",
-      "text": "Dan weet u het. Zo'n rapport gaat niet weg. Het staat er gewoon, elk jaar weer."
+      "lead_in": {
+       "text": "Ja… laat maar."
+      }
+     }
+    },
+    "inquiry": {
+     "again": [
+      {
+       "text": "Dat vroeg u al."
+      },
+      {
+       "text": "Ik zei het al, hè."
+      }
+     ],
+     "lands": {
+      "concern": [
+       {
+        "text": "Het werd stil bij inkoop. Daarna keken ze naar elke bestelling."
+       },
+       {
+        "text": "Niemand. Ik heb de procedure aangescherpt. Dat was mijn antwoord."
+       }
+      ],
+      "interest": [
+       {
+        "text": "Zelden, eerlijk gezegd. Meestal blijft het een 400 of een 630."
+       },
+       {
+        "text": "Een maand, ruim. Soms twee. En pas dan begint de levertijd."
+       }
+      ],
+      "lead_in": {
+       "text": "Ach, niks. Laat maar."
+      },
+      "position": [
+       {
+        "text": "Dat de maat nog verandert. Dan heb ik een trafo die nergens past."
+       },
+       {
+        "text": "Een paar tienduizend euro. En een half jaar wachten op de volgende."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Ach. Dat is een lang verhaal."
+       },
+       {
+        "text": "Hm. Dat ligt eraan."
+       },
+       {
+        "text": "Zo simpel is het niet."
+       }
+      ],
+      "concern": [
+       {
+        "text": "Daar heb ik het liever niet over."
+       },
+       {
+        "text": "Ach. Dat is voorbij."
+       }
+      ],
+      "interest": [
+       {
+        "text": "Dat hangt van het project af."
+       },
+       {
+        "text": "Dat verschilt per ontwerp."
+       }
+      ],
+      "lead_in": {
+       "text": "Ach. Vergeet het maar."
+      },
+      "position": [
+       {
+        "text": "Dat staat in de procedure."
+       },
+       {
+        "text": "Veel. Dat staat op de offerte."
+       }
+      ]
+     },
+     "worn": {
+      "_": {
+       "text": "U vraagt veel. Ik heb nog drie offertes liggen."
+      },
+      "concern": {
+       "text": "Ik wil er nu even niet meer over praten."
+      }
+     }
+    },
+    "mood": {
+     "again": {
+      "_": [
+       {
+        "text": "Nog steeds hetzelfde."
+       },
+       {
+        "text": "Echt, het gaat."
+       },
+       {
+        "text": "Ja. Prima."
+       },
+       {
+        "text": "Gaat wel, hoor."
+       }
+      ],
+      "lead_in": {
+       "text": "Ja. Echt."
+      }
+     },
+     "lands": {
+      "_": [
+       {
+        "text": "Eerlijk? Een beetje moe van het gepraat over sneller."
+       },
+       {
+        "text": "Goed. Zoals altijd."
+       }
+      ],
+      "lead_in": {
+       "text": "Ja. Gaat wel."
+      },
+      "position": [
+       {
+        "text": "Goed, dank u. Het is druk, maar netjes."
+       },
+       {
+        "text": "Eerlijk? Iedereen kijkt naar mij. Dat is niet prettig."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Het gaat, dank u."
+       },
+       {
+        "text": "Prima, dank u."
+       }
+      ],
+      "lead_in": {
+       "text": "Ja, hoor."
+      }
+     },
+     "worn": {
+      "_": {
+       "text": "U vraagt het nu op drie manieren. Het antwoord blijft hetzelfde."
+      },
+      "concern": {
+       "text": "Het gaat. Laat maar."
+      }
+     }
+    },
+    "open_question": {
+     "again": [
+      {
+       "text": "Dat heb ik al verteld, toch?"
+      },
+      {
+       "text": "Hetzelfde als daarnet."
+      }
+     ],
+     "lands": {
+      "_": [
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Bestellingen, offertes, controles."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Netjes. Volgens de procedure."
+       }
+      ],
+      "concern": [
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Iets wat ik kan uitleggen. Aan elke accountant."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Dat inkoop het goed heeft gedaan. Voor de verandering."
+       }
+      ],
+      "interest": [
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Zekerheid over de maat. Of een maat die altijd ergens past."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Uit het ontwerp. Eerder niet, volgens de procedure."
+       }
+      ],
+      "lead_in": {
+       "text": "Ach. Laat maar."
+      },
+      "position": [
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Omdat een trafo veel geld is. En omdat we het een keer fout hebben gedaan."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Netstudie, ontwerp, goedkeuring, bestelling, een half jaar levertijd. In die volgorde."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Dan wacht de bestelling ook. Zo staat het er."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Gewoon, het werk."
+       },
+       {
+        "text": "Niet zoveel bijzonders."
+       }
+      ],
+      "concern": [
+       {
+        "text": "Dat zien we wel."
+       },
+       {
+        "text": "Ach. Laat maar zitten."
+       }
+      ],
+      "interest": [
+       {
+        "text": "Een besluit van de directie."
+       },
+       {
+        "text": "Dat staat in het ontwerp."
+       }
+      ],
+      "lead_in": {
+       "text": "Niks. Laat maar."
+      }
+     },
+     "worn": {
+      "_": {
+       "text": "Nog een vraag? Ik heb nog drie offertes liggen."
+      },
+      "concern": {
+       "text": "Daar wil ik het nu even niet meer over hebben."
+      }
+     }
+    },
+    "paraphrase": {
+     "lands": {
+      "_": [
+       {
+        "text": "Klopt."
+       },
+       {
+        "text": "Ja, zo ongeveer."
+       }
+      ],
+      "interest": [
+       {
+        "text": "Precies. Een dure kapstok."
+       },
+       {
+        "text": "Ja. Eerder weet niemand de maat."
+       }
+      ],
+      "position": [
+       {
+        "text": "Precies. In die volgorde."
+       },
+       {
+        "text": "Ja. Eerder niet."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Mm. Zo ongeveer."
+       },
+       {
+        "text": "Ja. Zoiets."
+       },
+       {
+        "text": "Mm, ja."
+       },
+       {
+        "text": "Hm, ja."
+       },
+       {
+        "text": "Klopt wel."
+       }
+      ],
+      "concern": [
+       {
+        "text": "Ja. Dat is het eigenlijk."
+       },
+       {
+        "text": "Ja."
+       }
+      ],
+      "lead_in": {
+       "text": "Zoiets. Laat maar."
+      }
+     },
+     "worn": {
+      "text": "Ja, ja. En nu?"
      }
     },
     "perspective": {
      "lands": {
-      "text": "Vanuit die kopers in De Boomgaard? Die hebben hun huur opgezegd. En wij hebben een regel die zegt: wacht maar. Hm."
+      "_": [
+       {
+        "text": "Vanuit die kopers in De Boomgaard? Die hebben hun huur opgezegd. En wij hebben een regel die zegt: wacht maar. Hm."
+       },
+       {
+        "text": "Vanuit de monteur? Die staat klaar, en de trafo niet. Hm. Dat is zonde van zijn tijd."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "De kopers hebben een contract met de projectontwikkelaar. Niet met mij."
+       },
+       {
+        "text": "De monteur plant om de levering heen. Zo hoort het."
+       }
+      ]
+     }
+    },
+    "pressure": {
+     "lands": {
+      "_": [
+       {
+        "text": "Het MT. Dan moet de directie de procedure maar wijzigen."
+       },
+       {
+        "text": "Anders? Dan loopt dat via de directie."
+       },
+       {
+        "text": "Meegaan. Prima. Op wiens naam?"
+       }
+      ]
+     }
+    },
+    "propose": {
+     "again": [
+      {
+       "text": "Ja, dat zei u. Ik denk erover na."
+      },
+      {
+       "text": "Dat stelde u al voor, ja."
+      }
+     ],
+     "misses": [
+      {
+       "text": "Hm. Misschien."
+      },
+      {
+       "text": "Dat moet ik zien."
+      },
+      {
+       "text": "Dat staat niet in de procedure."
+      }
+     ]
+    },
+    "propose_experiment": {
+     "again": [
+      {
+       "text": "Die proef, ja. Ik denk erover na."
+      },
+      {
+       "text": "Dat zei u al. Ik heb het gehoord."
+      }
+     ],
+     "misses": [
+      {
+       "text": "Nu even niet."
+      },
+      {
+       "text": "Niet zonder de procedure."
+      }
+     ]
+    },
+    "reflect": {
+     "lands": {
+      "_": [
+       {
+        "text": "Ja. Eigenlijk wel."
+       },
+       {
+        "text": "Ja… Dat klopt wel."
+       },
+       {
+        "text": "Mm. Ja."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Nee, dat zou ik zo niet zeggen."
+       },
+       {
+        "text": "Nee hoor. Ik volg de procedure."
+       },
+       {
+        "text": "Nee."
+       },
+       {
+        "text": "Valt mee."
+       }
+      ],
+      "lead_in": [
+       {
+        "text": "Nee, nee."
+       },
+       {
+        "text": "Nee. Het is niks."
+       }
+      ]
+     },
+     "worn": {
+      "text": "Ja, ja. Ik weet wel hoe ik me voel, hoor."
      }
     },
     "show_data": {
      "lands": {
-      "text": "Zeven maanden doorlooptijd, waarvan twee weken werk in de straat. Dus de rest is… wachten op ons eigen papier."
+      "transformer_wait:0": [
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Zeven maanden doorlooptijd, waarvan twee weken werk in de straat. Dus de rest is… wachten op ons eigen papier."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Twee weken werk. Zeven maanden wachten. Hm."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Ja. Zeven maanden. Ik heb het gezien."
+       }
+      ],
+      "transformer_wait:2": [
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Eerst het ontwerp, dan de bestelling, dan zes maanden. … Die zes maanden beginnen pas als het ontwerp klaar is."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Zes maanden levertijd, achter een ontwerp aan. Zo opgeschreven ziet het er lang uit."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Ja. Mijn procedure. Ik heb het gezien."
+       }
+      ]
      },
      "misses": {
-      "text": "Cijfers zonder procedure zijn een mening."
+      "transformer_wait:0": [
+       {
+        "text": "Cijfers zonder procedure zijn een mening."
+       },
+       {
+        "text": "Gemiddeld. Elk project is anders."
+       },
+       {
+        "text": "Ja, en dan?"
+       }
+      ],
+      "transformer_wait:2": [
+       {
+        "text": "Zo staat het er. Dat is de procedure."
+       },
+       {
+        "text": "Die volgorde klopt. Daar is hij voor."
+       },
+       {
+        "text": "Ja, en verder?"
+       }
+      ]
+     },
+     "other": [
+      {
+       "text": "En wat zegt dat?"
+      },
+      {
+       "text": "Wat heeft dat met de procedure te maken?"
+      },
+      {
+       "text": "Daar staat geen handtekening onder."
+      }
+     ]
+    },
+    "silence": {
+     "lands": [
+      {
+       "tags": [
+        "doubt"
+       ],
+       "text": "(schuift de uitdraai recht) Het is een goede regel. Denk ik."
+      },
+      {
+       "tags": [
+        "doubt"
+       ],
+       "text": "… Nou ja. Het is lastig."
+      },
+      {
+       "tags": [
+        "doubt"
+       ],
+       "text": "… Eerlijk gezegd twijfel ik soms zelf."
+      }
+     ],
+     "misses": {
+      "_": [
+       {
+        "text": "… Was er verder nog iets?"
+       },
+       {
+        "text": "… Ja?"
+       },
+       {
+        "text": "(hij schuift de uitdraai naar u toe)"
+       },
+       {
+        "text": "Ik heb nog drie offertes liggen, hè."
+       },
+       {
+        "text": "… Mm?"
+       }
+      ],
+      "concern": [
+       {
+        "text": "… Ja. Zo is het."
+       },
+       {
+        "text": "… Mm."
+       },
+       {
+        "text": "… Nou ja."
+       }
+      ]
      }
     }
    },
@@ -20908,6 +23477,11 @@
      "at": 70,
      "id": "concern",
      "lead_in": {
+      "again": [
+       "Kijk, wat ik zei…",
+       "Het is gewoon…",
+       "Zoals ik zei, het is…"
+      ],
       "tags": [
        "hesitation"
       ],
@@ -20933,14 +23507,192 @@
      ]
     }
    ],
+   "lines": {
+    "ask_commitment": {
+     "_": [
+      "Zullen we dat zo doen?",
+      "Spreken we dat af?"
+     ]
+    },
+    "close": [
+     "Dank je, Thomas. Ik laat je.",
+     "Ik ga. Succes met je lunch."
+    ],
+    "confront": {
+     "_": [
+      "Houden je klanten niet gewoon capaciteit vast die anderen nodig hebben?",
+      "Eerlijk gezegd lijkt het erop dat accountbeheer de rij laat staan.",
+      "Waarom blijft die capaciteit dan leeg?"
+     ]
+    },
+    "empathy": {
+     "_": [
+      "Dat is ook niet niks.",
+      "Dat lijkt me best lastig."
+     ],
+     "concern": [
+      "Twintig jaar vertrouwen. Dat gooi je niet weg met één telefoontje.",
+      "Logisch dat je niet de man wilt zijn die afpakt. Zo ken je jezelf niet."
+     ],
+     "interest": [
+      "Logisch dat je ze niet in de rij wilt zetten. Je hebt ze zekerheid verkocht.",
+      "Twee jaar vooruit plannen, en dan wordt het je afgepakt. Dat snap ik."
+     ],
+     "lead_in": [
+      "Neem je tijd.",
+      "Ik luister."
+     ],
+     "position": [
+      "Je staat voor je klanten. Dat is te zien.",
+      "Een contract is een belofte. Logisch dat je die wilt houden.",
+      "Je zit tussen je klanten en de wachtrij in. Dat is geen makkelijke plek."
+     ]
+    },
+    "experience": {
+     "_": [
+      "Dat herken ik wel, dat het persoonlijk is.",
+      "Ik ben hier nu een paar weken, maar ik zie het al."
+     ],
+     "concern": [
+      "Dat herken ik. Je wilt de man blijven die ze vertrouwen, niet de man met slecht nieuws.",
+      "Op mijn vorige werk moest ik ook een goede klant iets afnemen. Ik heb er weken van wakker gelegen."
+     ],
+     "lead_in": "Je hoeft het niet mooi te zeggen, hoor.",
+     "position": [
+      "Ik herken dat: als je iets moet terugvragen, voelt het als verraad.",
+      "Ik ken dat van mijn vorige werk: een belofte terugdraaien is het zwaarste gesprek."
+     ]
+    },
+    "inquiry": {
+     "_": [
+      "Waar komt dat door, denk je?",
+      "Hoe zit dat precies?"
+     ],
+     "concern": [
+      "Hoe lang ken je ze al?",
+      "Wat zou er moeten gebeuren, zodat ze jou nog steeds als eerste bellen?"
+     ],
+     "interest": [
+      "Wanneer weet Logistiek Zuid of ze gaan uitbreiden?",
+      "Wie krijgt de ruimte dan als eerste?"
+     ],
+     "lead_in": "Wat bedoel je?",
+     "position": [
+      "Hoeveel van je klanten gebruiken echt wat ze hebben?",
+      "Wat staat er precies in zo'n contract?"
+     ]
+    },
+    "mood": {
+     "_": [
+      "Hoe gaat het nu echt met je, Thomas?",
+      "En jij, hoe hou je het vol?",
+      "Hoe is het met je, na al die jaren accountbeheer?"
+     ],
+     "lead_in": "Gaat het?",
+     "position": [
+      "Hoe gaat het met je, zo tussen twee lunches door?",
+      "En hoe is het met jou, met al dat gedoe over capaciteit?"
+     ]
+    },
+    "open_question": {
+     "_": [
+      "Hoe gaat dat, een gewone week bij jou?",
+      "Vertel eens, hoe werkt accountbeheer hier?"
+     ],
+     "concern": [
+      "Wat zou je willen dat ze over je zeggen, als je belt?",
+      "Hoe zou zo'n telefoontje er goed uitzien, voor jou?"
+     ],
+     "interest": [
+      "Wat zou Logistiek Zuid nodig hebben om nu iets terug te geven?",
+      "Hoe weet je wat ze echt gaan gebruiken?"
+     ],
+     "lead_in": "Wat is het?",
+     "position": [
+      "Wat betekent zo'n contract voor je klanten?",
+      "Waarom hebben ze zoveel gecontracteerd?",
+      "Wat zou het voor je klanten betekenen, als ze iets moeten inleveren?"
+     ]
+    },
+    "paraphrase": {
+     "_": [
+      "Dus het gaat om je klanten.",
+      "Als ik je goed hoor, gaat het niet om de megawatts."
+     ],
+     "concern": [
+      "Dus je bent bang dat je de man wordt die afpakt.",
+      "Dus het gaat om twintig jaar vertrouwen, niet om twee megawatt."
+     ],
+     "interest": [
+      "Dus ze houden capaciteit vast voor een groei die misschien komt.",
+      "Dus als je het nu afpakt, staan ze straks zelf in de rij."
+     ],
+     "lead_in": "Dus er is nog iets?",
+     "position": [
+      "Dus een contract is een recht, en daar wil je niet aan komen.",
+      "Dus volgens jou ligt de oplossing niet bij je klanten."
+     ]
+    },
+    "perspective": {
+     "_": [
+      "Hoe zou Ilse dit zien, om vier uur 's nachts bij haar oven?",
+      "Wat merkt de wachtrij ervan, als die twee megawatt leeg blijft?"
+     ]
+    },
+    "pressure": {
+     "_": [
+      "Het MT wil die lege capaciteit terug. Liever met jou dan zonder jou.",
+      "Dit moet echt anders, Thomas.",
+      "Ruud verwacht dat accountbeheer hierin meegaat."
+     ]
+    },
+    "reflect": {
+     "_": [
+      "Je klinkt een beetje gespannen.",
+      "Het klinkt alsof je ermee zit."
+     ],
+     "concern": [
+      "Het klinkt alsof het om meer gaat dan een contract.",
+      "Je klinkt alsof die mensen je echt na staan."
+     ],
+     "interest": [
+      "Het klinkt alsof je bang bent dat ze er later spijt van krijgen.",
+      "Je klinkt alsof je ze niet in de steek wilt laten."
+     ],
+     "lead_in": [
+      "Er zit je iets dwars, merk ik.",
+      "Je aarzelt, zie ik."
+     ],
+     "position": [
+      "Het klinkt alsof je je klanten wilt beschermen.",
+      "Je klinkt alsof je je hierover zorgen maakt."
+     ]
+    },
+    "show_data": {
+     "_": [
+      "Kijk, dit vond ik: {data}",
+      "Mag ik je iets laten zien? {data}",
+      "Dit kwam ik tegen: {data} Klopt dat?"
+     ]
+    },
+    "silence": {
+     "_": [
+      "(je wacht even)",
+      "(je wacht rustig af)",
+      "(je laat de stilte even staan)"
+     ],
+     "position": "(je knikt en wacht)"
+    }
+   },
    "mission": "fix_unused_capacity",
    "name": "Thomas en de lege megawatts",
    "opening": "Als je komt om mijn klanten capaciteit af te pakken: ik heb om drie uur een lunch op de Kanaalzone.",
    "outcomes": {
-    "commitment": "Afgesproken. Ik bel. Met een aanbod, niet met een rekening.",
+    "commitment": "Afgesproken. Ik bel. Als iemand die luistert, niet als iemand die afpakt.",
     "compliance": "Goed. Ik stuur ze de brief. Mijn naam staat er niet onder.",
     "heard": "Fijn dat je het vroeg. De meeste mensen hier zien alleen megawatts.",
-    "partial": "Ik doe mee. Als het in de taal van een aanbod blijft.",
+    "none": "Goed. Ik moet naar mijn lunch.",
+    "partial": "Ik doe mee. Als het een gesprek blijft en geen brief.",
     "ruined": "Ik bel mijn klanten niet om ze te bedreigen. Ook niet voor jou."
    },
    "owns": "unused_capacity",
@@ -20984,23 +23736,683 @@
     }
    ],
    "replies": {
-    "open_question": {
+    "ask_commitment": {
+     "misses": [
+      {
+       "text": "Nee. Nog niet."
+      },
+      {
+       "text": "Dat klinkt nog als een brief, niet als een gesprek."
+      },
+      {
+       "text": "Nog even niet."
+      }
+     ]
+    },
+    "confront": {
      "lands": {
-      "tell": "fairness",
-      "text": "Ik verkoop die mensen al twintig jaar zekerheid. Nu moet ik ze bellen dat die zekerheid tijdelijk was. Dat vind ik niet netjes."
+      "_": [
+       {
+        "text": "Vasthouden? Ze hebben ervoor betaald."
+       },
+       {
+        "text": "De rij laten staan? Ik heb die rij niet gemaakt."
+       },
+       {
+        "text": "Omdat ze willen groeien. Dat mag."
+       }
+      ]
+     }
+    },
+    "empathy": {
+     "lands": {
+      "_": [
+       {
+        "text": "Hm. Dank je."
+       },
+       {
+        "text": "Ja. Dat is het, ja."
+       },
+       {
+        "text": "Mm. Fijn dat iemand dat ziet."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Ach, het valt wel mee."
+       },
+       {
+        "text": "Het hoort bij het vak."
+       },
+       {
+        "text": "Mm."
+       },
+       {
+        "text": "Dank je. Maar die megawatts blijven het probleem."
+       }
+      ],
+      "lead_in": [
+       {
+        "text": "Nee, het is niks."
+       },
+       {
+        "text": "Nee. Laat maar."
+       }
+      ]
+     },
+     "worn": {
+      "text": "Ja. Dank je. Maar ik moet ze nog steeds bellen."
+     }
+    },
+    "experience": {
+     "lands": {
+      "_": [
+       {
+        "text": "Hm. Dan weet je het."
+       },
+       {
+        "text": "Ja. Precies dat."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Dat zeggen ze allemaal."
+       },
+       {
+        "text": "Mm."
+       },
+       {
+        "text": "Oké."
+       },
+       {
+        "text": "Kan zijn."
+       },
+       {
+        "text": "Hm."
+       }
+      ],
+      "lead_in": {
+       "text": "Ja… laat maar."
+      }
+     }
+    },
+    "inquiry": {
+     "again": [
+      {
+       "text": "Dat vroeg je al."
+      },
+      {
+       "text": "Ik zei het al, hè."
+      }
+     ],
+     "lands": {
+      "concern": [
+       {
+        "text": "Twintig jaar. Ik was bij hun opening."
+       },
+       {
+        "text": "Dat ik bel met iets wat ze willen. Niet met iets wat ik wil."
+       }
+      ],
+      "interest": [
+       {
+        "text": "Als hun financiering rond is. Dat kan volgend jaar zijn. Of nooit."
+       },
+       {
+        "text": "Wie het eerst belt. En dat ben ik meestal niet."
+       }
+      ],
+      "lead_in": {
+       "text": "Ach, niks. Laat maar."
+      },
+      "position": [
+       {
+        "text": "Echt gebruiken? De helft, misschien. Op het drukste kwartier."
+       },
+       {
+        "text": "Een vermogen, een aansluiting, een prijs. En mijn handtekening."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Ach. Dat is een lang verhaal."
+       },
+       {
+        "text": "Hm. Dat ligt eraan."
+       },
+       {
+        "text": "Zo simpel is het niet."
+       }
+      ],
+      "concern": [
+       {
+        "text": "Daar heb ik het liever niet over."
+       },
+       {
+        "text": "Ach. Dat zien we nog wel."
+       }
+      ],
+      "interest": [
+       {
+        "text": "Als het zover is."
+       },
+       {
+        "text": "Wie er het eerst bij is."
+       }
+      ],
+      "lead_in": {
+       "text": "Ach. Vergeet het maar."
+      },
+      "position": [
+       {
+        "text": "Genoeg."
+       },
+       {
+        "text": "Ach. Dat staat in het contract."
+       }
+      ]
+     },
+     "worn": {
+      "_": {
+       "text": "Je vraagt veel. Ik heb om drie uur een lunch."
+      },
+      "concern": {
+       "text": "Ik wil er nu even niet meer over praten."
+      }
+     }
+    },
+    "mood": {
+     "again": {
+      "_": [
+       {
+        "text": "Nog steeds hetzelfde."
+       },
+       {
+        "text": "Echt, het gaat."
+       },
+       {
+        "text": "Ja. Prima."
+       },
+       {
+        "text": "Gaat wel, hoor."
+       }
+      ],
+      "lead_in": {
+       "text": "Ja. Echt."
+      }
+     },
+     "lands": {
+      "_": [
+       {
+        "text": "Eerlijk? Een beetje moe van het gepraat over megawatts."
+       },
+       {
+        "text": "Goed. Zoals altijd."
+       }
+      ],
+      "lead_in": {
+       "text": "Ja. Gaat wel."
+      },
+      "position": [
+       {
+        "text": "Druk. Maar goed druk. Fijn dat je het vraagt."
+       },
+       {
+        "text": "Eerlijk? Ik slaap er slecht van."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Gaat. Druk."
+       },
+       {
+        "text": "Prima."
+       }
+      ],
+      "lead_in": {
+       "text": "Ja, hoor."
+      }
+     },
+     "worn": {
+      "_": {
+       "text": "Je vraagt het nu op drie manieren. Het antwoord blijft hetzelfde."
+      },
+      "concern": {
+       "text": "Het gaat. Laat maar."
+      }
+     }
+    },
+    "open_question": {
+     "again": [
+      {
+       "text": "Dat heb ik al verteld, toch?"
+      },
+      {
+       "text": "Hetzelfde als daarnet."
+      }
+     ],
+     "lands": {
+      "_": [
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Bellen, lunchen, luisteren."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Gewoon. Mensen kennen."
+       }
+      ],
+      "concern": [
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Dat ik er was. Dat ik hielp. Niet dat ik afpakte."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Dat ik iets kom brengen. Niet halen."
+       }
+      ],
+      "interest": [
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Zekerheid dat het terugkomt, als ze groeien. Dan praten ze wel."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Door het te vragen. Maar dat vraagt niemand."
+       }
+      ],
+      "lead_in": {
+       "text": "Ach. Laat maar."
+      },
+      "position": [
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Zekerheid. Ze kunnen bouwen, ze kunnen groeien. Dat heb ik ze beloofd."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Omdat ze willen groeien. En omdat ik zei: neem maar ruim. Dan zit je goed."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "tell": "fairness",
+        "text": "Ik verkoop die mensen al twintig jaar zekerheid. Nu moet ik ze bellen dat die zekerheid tijdelijk was. Dat vind ik niet netjes."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Gewoon, het werk."
+       },
+       {
+        "text": "Niet zoveel bijzonders."
+       }
+      ],
+      "concern": [
+       {
+        "text": "Dat zien we wel."
+       },
+       {
+        "text": "Ach. Laat maar zitten."
+       }
+      ],
+      "interest": [
+       {
+        "text": "Een goede reden. En die heb ik niet."
+       },
+       {
+        "text": "Dat zie ik over twee jaar wel."
+       }
+      ],
+      "lead_in": {
+       "text": "Niks. Laat maar."
+      }
+     },
+     "worn": {
+      "_": {
+       "text": "Nog een vraag? Ik heb om drie uur een lunch."
+      },
+      "concern": {
+       "text": "Daar wil ik het nu even niet meer over hebben."
+      }
+     }
+    },
+    "paraphrase": {
+     "lands": {
+      "_": [
+       {
+        "text": "Klopt."
+       },
+       {
+        "text": "Ja, zo ongeveer."
+       }
+      ],
+      "interest": [
+       {
+        "text": "Precies. Misschien. Over twee jaar."
+       },
+       {
+        "text": "Ja. En dan ben ik het die ze daar heeft gezet."
+       }
+      ],
+      "position": [
+       {
+        "text": "Precies. Een contract is een contract."
+       },
+       {
+        "text": "Nee. Mijn klanten doen niks verkeerd."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Mm. Zo ongeveer."
+       },
+       {
+        "text": "Ja. Zoiets."
+       },
+       {
+        "text": "Mm, ja."
+       },
+       {
+        "text": "Hm, ja."
+       },
+       {
+        "text": "Klopt wel."
+       }
+      ],
+      "concern": [
+       {
+        "text": "Ja. Dat is het eigenlijk."
+       },
+       {
+        "text": "Ja."
+       }
+      ],
+      "lead_in": {
+       "text": "Zoiets. Laat maar."
+      }
+     },
+     "worn": {
+      "text": "Ja, ja. En nu?"
      }
     },
     "perspective": {
      "lands": {
-      "text": "Vanuit Ilse? Die staat om vier uur 's nachts bij gasovens van 1998, naast een lege hal met twee megawatt. … Ja. Dat zou ik ook niet kunnen uitleggen."
+      "_": [
+       {
+        "text": "Vanuit Ilse? Die staat om vier uur 's nachts bij gasovens van 1998, naast een lege hal met twee megawatt. … Ja. Dat zou ik ook niet kunnen uitleggen."
+       },
+       {
+        "text": "Vanuit de wachtrij? Daar staan ook klanten. Alleen niet de mijne. Hm."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Ilse is niet mijn klant."
+       },
+       {
+        "text": "Ik ken de wachtrij niet. Ik ken mijn klanten."
+       }
+      ]
+     }
+    },
+    "pressure": {
+     "lands": {
+      "_": [
+       {
+        "text": "Het MT. Dan bellen zij mijn klanten maar."
+       },
+       {
+        "text": "Anders? Mijn klanten hebben een contract."
+       },
+       {
+        "text": "Meegaan. Prima. Maar ík ben degene die belt."
+       }
+      ]
+     }
+    },
+    "propose": {
+     "again": [
+      {
+       "text": "Ja, dat zei je. Ik denk erover na."
+      },
+      {
+       "text": "Dat stelde je al voor, ja."
+      }
+     ],
+     "misses": [
+      {
+       "text": "Hm. Misschien."
+      },
+      {
+       "text": "Dat moet ik zien."
+      },
+      {
+       "text": "Dat moet ik eerst horen."
+      }
+     ]
+    },
+    "propose_experiment": {
+     "again": [
+      {
+       "text": "Die proef, ja. Ik denk erover na."
+      },
+      {
+       "text": "Dat zei je al. Ik heb het gehoord."
+      }
+     ],
+     "misses": [
+      {
+       "text": "Nu even niet."
+      },
+      {
+       "text": "Niet nu. Eerst zien."
+      }
+     ]
+    },
+    "reflect": {
+     "lands": {
+      "_": [
+       {
+        "text": "Ja. Eigenlijk wel."
+       },
+       {
+        "text": "Ja… Dat klopt wel."
+       },
+       {
+        "text": "Mm. Ja."
+       }
+      ]
+     },
+     "misses": {
+      "_": [
+       {
+        "text": "Nee, dat zou ik zo niet zeggen."
+       },
+       {
+        "text": "Nee hoor. Ik doe mijn werk."
+       },
+       {
+        "text": "Nee."
+       },
+       {
+        "text": "Valt mee."
+       }
+      ],
+      "lead_in": [
+       {
+        "text": "Nee, nee."
+       },
+       {
+        "text": "Nee. Het is niks."
+       }
+      ]
+     },
+     "worn": {
+      "text": "Ja, ja. Ik weet wel hoe ik me voel, hoor."
      }
     },
     "show_data": {
      "lands": {
-      "text": "Tweeënzestig procent. Op het drukste kwartier van het jaar. Dus de rest staat er voor… voor de zekerheid."
+      "unused_capacity:0": [
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Tweeënzestig procent. Op het drukste kwartier van het jaar. Dus de rest staat er voor… voor de zekerheid."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Achtendertig procent die niemand gebruikt. Op het drukste moment. Hm."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Ja. Tweeënzestig. Ik heb het gezien."
+       }
+      ],
+      "unused_capacity:2": [
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Twee megawatt en een lege hal. … Dat zou een van mijn klanten kunnen zijn. Daar heb ik nooit naar gekeken."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Een lege hal, en de buurman wacht. Zo had ik het nooit bekeken."
+       },
+       {
+        "tags": [
+         "claim"
+        ],
+        "text": "Ja. Die lege hal. Ik heb het gehoord."
+       }
+      ]
      },
      "misses": {
-      "text": "Een gemiddelde. Mijn klanten zijn geen gemiddelde."
+      "unused_capacity:0": [
+       {
+        "text": "Een gemiddelde. Mijn klanten zijn geen gemiddelde."
+       },
+       {
+        "text": "Samen. Maar ik bel ze niet samen. Ik bel ze één voor één."
+       },
+       {
+        "text": "Ja, en dan?"
+       }
+      ],
+      "unused_capacity:2": [
+       {
+        "text": "Een telefoontje. Mijn klanten bellen mij ook weleens boos."
+       },
+       {
+        "text": "Een buurman ziet niet wat er in een contract staat."
+       },
+       {
+        "text": "Ja, en verder?"
+       }
+      ]
+     },
+     "other": [
+      {
+       "text": "Ja. En?"
+      },
+      {
+       "text": "Wat zegt dat over mijn klanten?"
+      },
+      {
+       "text": "Een getal. Geen klant."
+      }
+     ]
+    },
+    "silence": {
+     "lands": [
+      {
+       "tags": [
+        "doubt"
+       ],
+       "text": "(kijkt naar zijn telefoon) Het voelt gewoon niet goed."
+      },
+      {
+       "tags": [
+        "doubt"
+       ],
+       "text": "… Nou ja. Het is lastig."
+      },
+      {
+       "tags": [
+        "doubt"
+       ],
+       "text": "… Eerlijk gezegd zit het me dwars."
+      }
+     ],
+     "misses": {
+      "_": [
+       {
+        "text": "… Was er nog wat?"
+       },
+       {
+        "text": "… Ja?"
+       },
+       {
+        "text": "(hij kijkt op zijn horloge)"
+       },
+       {
+        "text": "Ik heb om drie uur een lunch, hè."
+       },
+       {
+        "text": "… Mm?"
+       }
+      ],
+      "concern": [
+       {
+        "text": "… Ja. Zo is het."
+       },
+       {
+        "text": "… Mm."
+       },
+       {
+        "text": "… Nou ja."
+       }
+      ]
      }
     }
    },
@@ -22101,9 +25513,6 @@
         "text": "Ja. Zo voelt het wel."
        },
        {
-        "tags": [
-         "feeling"
-        ],
         "text": "Mm. Ja."
        }
       ],
