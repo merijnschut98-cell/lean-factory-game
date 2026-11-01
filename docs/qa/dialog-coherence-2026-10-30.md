@@ -44,6 +44,27 @@ voice, and its own "Daar denk ik nog over na" lines.
 | `petra_batch` | Petra | rewritten; review round 1 fixed (38.3 → 0.5, echoes 294 → 0, no flag) |
 | `linda_replanning` | Linda | rewritten; review round 1 fixed (36.7 → 0.4, echoes 235 → 0, no flag) |
 | `mieke_redraw` | Mieke | rewritten; review round 1 fixed (36.7 → 0.4, echoes 285 → 0, no flag) |
+| `joost_vacancies` | Joost | rewritten, batch 2 (35.8 → 1.0, echoes 284 → 0, no flag) |
+| `marco_wasted_trips` | Marco | rewritten, batch 2 (35.1 → 1.1, echoes 228 → 0, no flag) |
+| `sanne_checker` | Sanne | rewritten, batch 2 (35.1 → 0.7, echoes 245 → 0, no flag) |
+| `henk_camera` | Henk | rewritten, batch 2 (36.0 → 1.2, echoes 261 → 0, no flag) |
+
+| `joost_output_kpi` | Joost | rewritten, batch 3 (36.9 → 1.3, echoes 322 → 0, no flag at budget 8000) |
+| `sanne_kpi` | Sanne | rewritten, batch 3 (35.0 → 0.8, echoes 241 → 0, no flag at budget 8000) |
+| `gert_klic` | Gert | rewritten, batch 3 (35.4 → 0.6, echoes 268 → 0, no flag at budget 8000) |
+| `wim_spreadsheet` | Wim | rewritten, batch 3 (37.1 → 0.8, echoes 301 → 0, no flag at budget 8000) |
+
+The two KPI talks are the audited ones of `test_dialog_content.gd`: their reply tags stay
+the audited ones (a talk's own untagged reply clears the moment's tags, a bank reply keeps
+them; Joost's interest answers carry the `[feeling]` the bank's reply used to leave), so the
+scripted routes keep their exact traces. Gert's first pressure line stays the safety stop.
+
+Batch 2, review round 1 (2026-11-01, `review3-findings.md`): no flag in the four at walk
+budget 8000 either (Marco's third clue answer). Commitments name only what every route to
+them brings; `test_a_reviewed_talk_s_commitment_fits_every_route_to_it` checks it for every
+reviewed talk: a commitment word that a proposal or its answer brings, but not every
+proposal or experiment that meets the concern, fails, unless the person said it before
+any proposal. Its limit: a word the person said first can still lean on one route.
 
 Each also has its own words where it used to take the bank's: the ending with no outcome
 (`outcomes.none`), an experiment proposed again, the refusal, the shrug at a silence, and
@@ -260,9 +281,10 @@ them: the Act 0 week (`sanne_tuesday`, `rachid_counter`, `anouk_first_look`,
 `mieke_wednesday`, `joost_wednesday`, `linda_wednesday`, `anouk_thursday`,
 `petra_thursday`, `anouk_owns_tray`, `sanne_friday`) is what Merijn plays next.
 
-Update 2026-10-31: the week and the first three are rewritten (see Run order). The ranking
-now starts with `joost_vacancies` 35.8 · `marco_wasted_trips` 35.2 · `henk_camera` 35.1 ·
-`sanne_checker` 35.1, the next Act I batch.
+Update 2026-10-31: the week and the first three are rewritten (see Run order). Update
+2026-11-01: the second Act I batch too (`joost_vacancies`, `marco_wasted_trips`,
+`sanne_checker`, `henk_camera`); their pressure, blame and perspective answers are keyed
+`_`, so each line meets its own answer. The README ranking shows the next batch.
 
 ## 7. What a next run fixes (not in this one)
 

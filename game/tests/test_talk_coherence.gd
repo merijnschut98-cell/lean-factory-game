@@ -102,3 +102,51 @@ func test_the_walk_flags_a_long_sentence_told_twice() -> void:
 	path["lines"].append(long_proposal)
 	assert_false("told" in TalkWalk.turn(ctx, t, "Hm.", path, {"move": "propose", "line": long_proposal, "reply": "Ja."})["flags"],
 		"a proposal made again is acknowledged, not told")
+
+
+## Review 3 #2 (2026-11-01): a commitment follows any proposal or experiment that meets
+## the concern, so in a reviewed talk it may not name what only some of them bring: a
+## word (four letters or more) of the commitment that one of the talk's proposals or
+## replies uses, but not every one that can lead to the commitment, unless the person
+## said it before any proposal (the opening, the position, the interest). Spoken
+## small words (STOP) say nothing about a route; ROUTE_WORDS_READ are words read by
+## hand that fit every route (an invitation, a time of day). A limit: a word the person
+## said first can still lean on one route (Sanne's "formulier"); the transcripts show that.
+const STOP := ["goed", "maar", "toch", "even", "zelf", "zijn", "laat", "zien", "iets", "nodig", "werkt", "zonder",
+	"samen", "kijken", "eens", "wel", "niet", "want", "omdat"]
+const ROUTE_WORDS_READ := {
+	"anouk_first_look": ["koffie"],    # "Ik zet koffie": she receives whoever comes
+	"sanne_tuesday": ["drieën"],       # "na drieën": when it is quiet, for any visit
+	"mieke_wednesday": ["eentje"],     # "pak ik er eentje voor je uit": any look at a sketch
+	"anouk_thursday": ["vrijdag"],     # Friday is the week's review day for every route
+	"petra_batch": ["ziek", "laptop"], # being ill without the laptop: true after either route
+}
+
+
+func test_a_reviewed_talk_s_commitment_fits_every_route_to_it() -> void:
+	var c := Catalog.load_from()
+	var bad := []
+	for talk: Dialog in TalkWalk.talks(c, TalkWalk.REVIEWED):
+		var d := talk.def
+		var said_first := _words(d.opening + " " + str(d.position.get("text", "")) + " " + str(d.layers[0].get("text", "")))
+		var items: Array = d.proposals + d.experiments
+		var routes := items.filter(func(i: Dictionary) -> bool: return "concern" in i.get("addresses", []))
+		for w: String in _words(str(d.outcomes.get("commitment", ""))):
+			if w.length() < 4 or said_first.has(w) or w in STOP or w in ROUTE_WORDS_READ.get(d.id, []):
+				continue
+			var brought := items.any(func(i: Dictionary) -> bool: return _words(_item_text(i)).has(w))
+			var everywhere := routes.all(func(i: Dictionary) -> bool: return _words(_item_text(i)).has(w))
+			if brought and not everywhere:
+				bad.append("%s: \"%s\" comes from only some routes to the commitment" % [d.id, w])
+	assert_true(bad.is_empty(), "%d: %s" % [bad.size(), bad])
+
+
+static func _item_text(item: Dictionary) -> String:
+	return str(item.get("text", "")) + " " + str(item.get("reply", ""))
+
+
+static func _words(text: String) -> Dictionary:
+	var out := {}
+	for m: RegExMatch in RegEx.create_from_string("[\\p{L}']+").search_all(text.to_lower()):
+		out[m.get_string()] = true
+	return out
