@@ -64,19 +64,44 @@ static func _regex(pattern: String) -> RegEx:
 	return RegEx.create_from_string("(?i)" + pattern) if not pattern.is_empty() else null
 
 
-## Every persuasion and check-in in content, at the start People gives it on a
-## first meeting (as the route check starts them: its clues found, the facts its
-## condition and block need given).
+## Every persuasion and check-in in content, each in every version (review 7: a
+## variant is walked too), at the start People gives it on a first meeting (as the
+## route check starts them: its clues found, the facts its condition and block need given).
 static func talks(c: Catalog, ids: Array = []) -> Array[Dialog]:
 	var people := People.new(c.persons, c.dialogs, c.dialog_bank)
 	var out: Array[Dialog] = []
 	for d: DialogDef in c.dialogs:
-		if d.kind == ExpertTalk.KIND or (not ids.is_empty() and not d.id in ids):
-			continue
-		var first := people.start(d, {"main": Array(d.missions), "active": Array(d.missions), "found": {},
-			"facts": {}, "team_trust": 0, "blamed": false, "now": 0})
-		out.append(DialogRoutes.start(d, people.persons[d.person], c.dialog_bank, first.openness))
+		if d.kind != ExpertTalk.KIND and (ids.is_empty() or d.id in ids):
+			out.append_array(versions(d, people))
 	return out
+
+
+## Talk `d` as written, then each of its variants, started with the facts that
+## variant needs (the first atom of an `any`).
+static func versions(d: DialogDef, people: People) -> Array[Dialog]:
+	var out: Array[Dialog] = []
+	for v in range(-1, d.variants.size()):
+		var known := {}
+		if v >= 0:
+			var needs: Dictionary = d.variants[v].get("needs", {})
+			for atom in needs.get("all", []) + needs.get("any", []).slice(0, 1):
+				known[atom] = true
+		var first := people.start(d, {"main": Array(d.missions), "active": Array(d.missions), "found": {},
+			"facts": known, "team_trust": 0, "blamed": false, "now": 0})
+		assert(first.version == v, "%s: variant %d is reached by its own needs" % [d.id, v + 1])
+		out.append(DialogRoutes.start(d, people.persons[d.person], people.bank, first.openness, v, known))
+	return out
+
+
+## How a transcript names a version of a talk: its id, and which variant.
+static func label(t: Dialog) -> String:
+	return t.def.id + (" (variant %d)" % (t.version + 1) if t.version >= 0 else "")
+
+
+## The first line a version of a talk says (a variant may have its own).
+static func opening(t: Dialog) -> String:
+	var own: Variant = t.def.variants[t.version].get("opening") if t.version >= 0 else null
+	return own if own is String else t.def.opening
 
 
 # ── One turn ────────────────────────────────────────────────────────────────

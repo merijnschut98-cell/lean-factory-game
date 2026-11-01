@@ -35,7 +35,7 @@ func test_no_talk_says_what_the_player_s_sentences_cannot_have_earned() -> void:
 				if f in TalkWalk.BROKEN:
 					broken.append("%s: ends %s on \"%s\"%s" % [f, e["outcome"], e["reply"],
 						(" (Ruud: \"%s\")" % e["ruud"]) if f == "ruud" else ""])
-		assert_true(broken.is_empty(), "%s: %d broken, e.g. %s" % [talk.def.id, broken.size(), broken.slice(0, 3)])
+		assert_true(broken.is_empty(), "%s: %d broken, e.g. %s" % [TalkWalk.label(talk), broken.size(), broken.slice(0, 3)])
 
 
 ## Review round 2: the walk flags a story line said twice even when the player
@@ -53,6 +53,30 @@ func test_the_walk_flags_a_retold_story_line_and_an_echo() -> void:
 	var same_line := {"move": "mood", "line": "Voorstel goed.", "reply": "Gaat wel."}
 	assert_false("echo" in TalkWalk.turn(ctx, t, "Dat helpt.", path, same_line)["flags"],
 		"the same answer to the same sentence is no echo")
+
+
+## Review 7 (2026-11-01): a talk is walked in every version, the dialog as written
+## and each variant, so a fault only a variant holds is caught: here the variant's
+## position comes back, word for word, as the answer to the mood question.
+func test_the_walk_plays_every_version_of_a_talk() -> void:
+	var line := "Gaat wel, hoor."
+	var d := DialogFixture.def({"replies": {"mood": {"lands": {"text": line}}},
+		"variants": [{"needs": {"all": ["standardised:custom_design"]}, "position": {"text": line, "tags": ["claim"]}}]})
+	var people := DialogFixture.people([d])
+	var ctx := {"repeat": null, "clarify": null, "stock": {}, "people": people}
+	var versions := TalkWalk.versions(d, people)
+	assert_eq(versions.map(func(t: Dialog) -> int: return t.version), [-1, 0], "as written, then the variant")
+	var echoes := versions.map(func(t: Dialog) -> int: return _echoes_of(TalkWalk.walk(ctx, t, 60, 5), line))
+	assert_eq(echoes[0], 0, "as written, the mood's answer is new")
+	assert_true(echoes[1] > 0, "the variant's position, said again as the mood's answer")
+	assert_eq(TalkWalk.label(versions[1]), "dialog_id (variant 1)".replace("dialog_id", d.id))
+
+
+func _echoes_of(walked: Dictionary, line: String) -> int:
+	var n := 0
+	for ex: Dictionary in walked["exchanges"].values():
+		n += 1 if "echo" in ex["replies"].get(line, []) else 0
+	return n
 
 
 ## Review 2 #1 (2026-10-31): a question that misses in a reviewed talk is held back or

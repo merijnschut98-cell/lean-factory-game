@@ -41,20 +41,22 @@ static var _dealt: Dictionary = {}
 
 ## A talk ready to play: `openness` at the start (People's rule for content,
 ## the script's own number for a draft); facts meet its condition and one route
-## of its block.
-static func start(d: DialogDef, who: PersonDef, bank: Dictionary, openness: int) -> Dialog:
+## of its block; `version` a variant of it (-1: as written), with the facts it needs (`known`).
+static func start(d: DialogDef, who: PersonDef, bank: Dictionary, openness: int, version: int = -1,
+		known: Dictionary = {}) -> Dialog:
 	var found := {OTHER_CLUE: true}
 	for clue in d.data:
 		found[clue] = true
-	var facts := {}
+	var facts := known.duplicate()
 	var exprs := [d.condition_needs]
 	if not d.block.is_empty():
 		exprs.append(JsonFile.dict_or_empty(d.block["routes"][0].get("needs")))
 	for expr: Dictionary in exprs:
 		for atom in expr.get("all", []) + expr.get("any", []).slice(0, 1):
 			facts[atom] = true
+	var mood := d.mood_of(version)
 	return Dialog.new(d, who, bank, {"openness": openness, "trust": who.trust,
-		"mood": d.mood if not d.mood.is_empty() else "neutraal", "found": found, "facts": facts})
+		"mood": mood if not mood.is_empty() else "neutraal", "found": found, "facts": facts, "version": version})
 
 
 ## Every persuasion talk in content, at the start People gives it on a first

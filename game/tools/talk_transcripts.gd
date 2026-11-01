@@ -3,9 +3,10 @@ extends SceneTree
 ## through the real rules (TalkWalk) and written as readable Dutch, so a talk can be
 ## read instead of played:
 ##   godot --headless --path game --script res://tools/talk_transcripts.gd -- [talk ids…] [--out=<dir>] [--budget=<n>] [--full]
-## Writes docs/qa/talk-transcripts/<talk>.md (whole talks as the player sees them,
-## then the exchanges the walk found that carry a flag or a stock reply, `--full`
-## all of them, then every ending) and, for a run over every talk, README.md: the
+## Writes docs/qa/talk-transcripts/<talk>.md, and <talk>~v<n>.md for its n-th variant
+## (review 7: every version is walked): whole talks as the player sees them, then the
+## exchanges the walk found that carry a flag or a stock reply (`--full`: all of
+## them), then every ending; and, for a run over every talk, README.md: the
 ## talks ranked by how broken they read (docs/qa/dialog-coherence-2026-10-30.md).
 ## Expert talks (topic by topic, ExpertTalk) are left out: they hold no moves.
 
@@ -45,14 +46,20 @@ func _initialize() -> void:
 		var walked := TalkWalk.walk(ctx, talk, budget)
 		var scored := TalkWalk.score(ctx, walked)
 		scored["id"] = talk.def.id
-		scored["name"] = talk.def.name
+		scored["file"] = _file(talk)
+		scored["name"] = talk.def.name + (" (variant %d)" % (talk.version + 1) if talk.version >= 0 else "")
 		ranked.append(scored)
-		_write(dir.path_join(talk.def.id + ".md"), _transcript(ctx, talk, walked, scored, full))
-		print("%-26s score %5.1f  %s" % [talk.def.id, scored["score"], _counts(scored)])
+		_write(dir.path_join(scored["file"] + ".md"), _transcript(ctx, talk, walked, scored, full))
+		print("%-26s score %5.1f  %s" % [TalkWalk.label(talk), scored["score"], _counts(scored)])
 	if ids.is_empty():
 		ranked.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["score"] > b["score"])
 		_write(dir.path_join("README.md"), _ranking(ranked))
 	quit()
+
+
+## A version's transcript file: the talk's id, and `~v<n>` for its n-th variant.
+static func _file(talk: Dialog) -> String:
+	return talk.def.id + ("~v%d" % (talk.version + 1) if talk.version >= 0 else "")
 
 
 static func _write(path: String, text: String) -> void:
@@ -84,7 +91,7 @@ func _ranking(ranked: Array[Dictionary]) -> String:
 		"| # | Talk | Score | Flags | Exchanges |", "|---|---|---|---|---|"]
 	for i in ranked.size():
 		var r: Dictionary = ranked[i]
-		md.append("| %d | [%s](%s.md) (`%s`) | %.1f | %s | %d |" % [i + 1, r["name"], r["id"], r["id"], r["score"],
+		md.append("| %d | [%s](%s.md) (`%s`) | %.1f | %s | %d |" % [i + 1, r["name"], r["file"], r["id"], r["score"],
 			_counts(r), r["exchanges"]])
 	return "\n".join(md) + "\n"
 
@@ -92,7 +99,7 @@ func _ranking(ranked: Array[Dictionary]) -> String:
 func _transcript(ctx: Dictionary, talk: Dialog, walked: Dictionary, scored: Dictionary, full: bool) -> String:
 	var who := talk.who
 	var c: Catalog = ctx["catalog"]
-	var md := ["# %s (`%s`)" % [talk.def.name, talk.def.id], "",
+	var md := ["# %s (`%s`)" % [talk.def.name, TalkWalk.label(talk)], "",
 		"%s, %s · %s, needs %s · mood %s · starts at openness %d (%s) · %d moves of patience%s" % [who.name, who.role,
 			who.archetype, talk.need(), talk.mood, talk.openness, _band(c, talk.openness), talk.patience,
 			" · tutorial (Act 0)" if talk.def.tutorial else ""], "",
@@ -107,7 +114,7 @@ func _transcript(ctx: Dictionary, talk: Dialog, walked: Dictionary, scored: Dict
 		md.append("")
 		md.append("### %s" % p["name"])
 		md.append("")
-		md.append("**%s:** %s  " % [who.short, talk.def.opening])
+		md.append("**%s:** %s  " % [who.short, TalkWalk.opening(talk)])
 		md.append("**%s:** %s" % [who.short, talk.position().get("text", "")])
 		for x: Dictionary in played["turns"]:
 			md.append("")

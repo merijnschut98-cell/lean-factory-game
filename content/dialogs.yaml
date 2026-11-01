@@ -6052,7 +6052,7 @@ dialogs:
             at: 70
             via: [silence, empathy, reflect]
             lead_in: {text: "En als ik ziek word…", tags: [hesitation]}
-            text: "Dan ligt het stil. Dat zei ik toch. Niemand heeft geluisterd. Ik werk nu met koorts, want anders zien ze het meteen."
+            text: "Dan ligt het stil. Ik heb het gezegd, bij de maandrun. Niemand heeft geluisterd. Ik werk nu met koorts, want anders zien ze het meteen."
             tags: [admission]
             unlocks:
               facts: [heard:petra_after]
