@@ -56,11 +56,19 @@ voice, and its own "Daar denk ik nog over na" lines.
 | `dirk_shelf` | Dirk | rewritten, batch 4 (35.0 → 0.1, echoes 265 → 0, no flag at budget 8000) |
 | `thomas_reclaim` | Thomas | rewritten, batch 4 (34.9 → 0.2, echoes 283 → 0, no flag at budget 8000) |
 | `rob_order_rule` | Rob | rewritten, batch 4 (34.8 → 0.2, echoes 258 → 0, no flag at budget 8000) |
+| `femke_triage` | Femke | rewritten, batch 4 (34.8 → 0.2, echoes 231 → 0, no flag at budget 8000) |
 
 The two KPI talks are the audited ones of `test_dialog_content.gd`: their reply tags stay
 the audited ones (a talk's own untagged reply clears the moment's tags, a bank reply keeps
 them; Joost's interest answers carry the `[feeling]` the bank's reply used to leave), so the
 scripted routes keep their exact traces. Gert's first pressure line stays the safety stop.
+
+Batch 4 (dirk_shelf, thomas_reclaim, rob_order_rule, femke_triage): each data clue its own
+answer, the person's own lead-in return lines (`again`) and ending with no outcome
+(`outcomes.none`), so the stock share falls to 1–2 %. An own untagged reply clears the
+moment's tags where the bank's shared line left them standing, so Femke's misses and
+paraphrase landings carry the tag of what they voice: her listen-first deals
+(`test_listening_first_wins_femke_and_ilse`) stay the five of ten they were before.
 
 Batch 2, review round 1 (2026-11-01, `review3-findings.md`): no flag in the four at walk
 budget 8000 either (Marco's third clue answer). Commitments name only what every route to
