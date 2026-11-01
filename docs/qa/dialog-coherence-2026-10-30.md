@@ -61,10 +61,14 @@ voice, and its own "Daar denk ik nog over na" lines.
 | `frank_kpi_targets` | Frank | rewritten, batch 5; review round 4 fixed (33.6 → 0.4, echoes 229 → 0, no flag at budget 6000) |
 | `linda_evenings` | Linda | rewritten, batch 5; review round 4 fixed, a check-in (33.2 → 0.0, echoes 203 → 0, no flag at budget 6000) |
 | `esra_agents` | Esra | rewritten, batch 5; review round 4 fixed (33.1 → 0.3, echoes 239 → 0, no flag at budget 6000) |
-| `anouk_late` | Anouk | rewritten, batch 6, a check-in with a variant: lines and replies fit both versions (32.9 → 0.2, echoes 198 → 0, no flag at budget 6000) |
-| `esra_after` | Esra | rewritten, batch 6, a check-in (32.0 → 0.0, echoes 190 → 0, no flag at budget 6000) |
-| `marco_day_100` | Marco | rewritten, batch 6, a check-in (31.4 → 0.2, echoes 171 → 0, no flag at budget 6000) |
-| `henk_last_week` | Henk | rewritten, batch 6, a check-in with two variants: lines and replies fit all three versions (31.2 → 0.0, echoes 194 → 0, no flag at budget 6000) |
+| `anouk_late` | Anouk | rewritten, batch 6; review round 5 fixed, a check-in with a variant: lines and replies fit both versions (32.9 → 0.2, echoes 198 → 0, no flag at budget 6000) |
+| `esra_after` | Esra | rewritten, batch 6; review round 5 fixed, a check-in (32.0 → 0.0, echoes 190 → 0, no flag at budget 6000) |
+| `marco_day_100` | Marco | rewritten, batch 6; review round 5 fixed, a check-in (31.4 → 0.2, echoes 171 → 0, no flag at budget 6000) |
+| `henk_last_week` | Henk | rewritten, batch 6; review round 5 fixed, a check-in with two variants: lines and replies fit all three versions (31.2 → 0.0, echoes 194 → 0, no flag at budget 6000) |
+
+Review 7: the walk plays every variant (`TalkWalk.versions`; `test_the_walk_plays_every_version_of_a_talk`), so the
+flags above hold for each version; the transcripts write a variant to `<talk>~v<n>.md`. A variant still holds no
+lines of its own, so in anouk_late and henk_last_week every line and reply is written to fit every version.
 
 The two KPI talks are the audited ones of `test_dialog_content.gd`: their reply tags stay
 the audited ones (a talk's own untagged reply clears the moment's tags, a bank reply keeps

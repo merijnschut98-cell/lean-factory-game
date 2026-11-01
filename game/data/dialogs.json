@@ -15847,7 +15847,7 @@
      "lead_in": "Waarom schuldig?",
      "position": [
       "Hoe is het voor je mensen, aan de lijn?",
-      "Wat horen je mensen het vaakst?",
+      "Wat doet een dag aan die telefoon met je mensen?",
       "Wat zie je, als je naar dat scherm kijkt?"
      ]
     },
@@ -16335,7 +16335,7 @@
          "claim",
          "feeling"
         ],
-        "text": "'Waar blijft mijn aansluiting?' Elke keer weer. Elke keer bozer."
+        "text": "Ze worden stil. Of ze worden boos terug. Ik zie het elke dag."
        },
        {
         "tags": [
@@ -20759,9 +20759,9 @@
     ],
     "confront": {
      "_": [
-      "Waarom zit je hier eigenlijk nog?",
+      "Waarom maak je het jezelf zo moeilijk?",
       "Eerlijk gezegd lijkt het erop dat je het zelf niet loslaat.",
-      "Waarom duurt het bij jou zo lang?"
+      "Waarom laat je niemand meekijken?"
      ]
     },
     "empathy": {
@@ -20782,9 +20782,9 @@
       "Ik luister."
      ],
      "position": [
-      "Je zegt dat het goed gaat, en je bent er nog. Dat zie ik.",
+      "Je zegt dat het goed gaat. Ik hoor je.",
       "Je doet je best. Dat zie ik.",
-      "Nog eentje, zeg je. Je wilt het goed doen."
+      "Je wilt het goed doen, hè."
      ]
     },
     "experience": {
@@ -20798,7 +20798,7 @@
      ],
      "lead_in": "Je hoeft het niet mooi te zeggen, hoor.",
      "position": [
-      "Ik herken dat: zeggen dat het goed gaat, terwijl je nog zit.",
+      "Ik herken dat: zeggen dat het goed gaat, terwijl het je bezighoudt.",
       "Ik ken dat van mijn vorige werk: nog eentje, en dan is het acht uur."
      ]
     },
@@ -20817,8 +20817,8 @@
      ],
      "lead_in": "Alleen…?",
      "position": [
-      "Hoe lang zit je hier al?",
-      "Wat moet er vandaag nog af?"
+      "Hoe lang werk je er al aan?",
+      "Wat moet er deze week nog af?"
      ]
     },
     "mood": {
@@ -20830,7 +20830,7 @@
      "lead_in": "Gaat het?",
      "position": [
       "Hoe gaat het met je? Niet met de bak. Met jou.",
-      "En hoe is het met jou, zo laat nog?"
+      "En hoe is het met jou, deze week?"
      ]
     },
     "open_question": {
@@ -20848,9 +20848,9 @@
      ],
      "lead_in": "Alleen wat?",
      "position": [
-      "Waar werk je nog aan?",
+      "Waar werk je aan?",
       "Hoe ziet je dag eruit, de laatste tijd?",
-      "Wat houdt je hier nog?"
+      "Wat houdt je bezig?"
      ]
     },
     "paraphrase": {
@@ -20868,21 +20868,21 @@
      ],
      "lead_in": "Dus er is nog iets.",
      "position": [
-      "Dus het gaat goed, en je bent zo klaar.",
-      "Dus je wilt dit nog even afmaken."
+      "Dus het gaat goed.",
+      "Dus je zit erbovenop."
      ]
     },
     "perspective": {
      "_": [
       "Hoe zou een monteur dit zien, als hij wist hoeveel zorg erin zit?",
-      "Wat zou Joost zeggen, als hij je hier zag zitten?"
+      "Wat zou Joost zeggen, als hij wist dat je twijfelt?"
      ]
     },
     "pressure": {
      "_": [
-      "Het MT wil niet dat je zo lang doorwerkt. Liever met jou dan zonder jou.",
+      "Het MT wil dat je het volhoudt. Liever met jou dan zonder jou.",
       "Dit moet echt anders, Anouk.",
-      "Ruud verwacht dat je op tijd naar huis gaat."
+      "Ruud verwacht dat je het niet alleen draagt."
      ]
     },
     "reflect": {
@@ -20905,6 +20905,13 @@
      "position": [
       "Het klinkt alsof het minder goed gaat dan je zegt.",
       "Je klinkt moe."
+     ]
+    },
+    "show_data": {
+     "_": [
+      "Kijk, dit vond ik: {data}",
+      "Mag ik je iets laten zien? {data}",
+      "Dit kwam ik tegen: {data} Hoe kijk jij daarnaar?"
      ]
     },
     "silence": {
@@ -20938,13 +20945,13 @@
      "lands": {
       "_": [
        {
-        "text": "Omdat het af moet. Sorry."
+        "text": "Omdat het goed moet. Sorry."
        },
        {
         "text": "Loslaten? Dan klopt het misschien niet."
        },
        {
-        "text": "Zo lang? Ik kijk het gewoon goed na."
+        "text": "Meekijken? Iedereen heeft het druk."
        }
       ]
      }
@@ -20994,7 +21001,7 @@
       ]
      },
      "worn": {
-      "text": "Ja. Dank je. Maar dit ontwerp is nog niet klaar."
+      "text": "Ja. Dank je. Maar het werk is nog niet klaar."
      }
     },
     "experience": {
@@ -21085,13 +21092,13 @@
         "tags": [
          "claim"
         ],
-        "text": "Sinds vijf uur. Of zo. Sorry."
+        "text": "Sinds vanochtend. Of zo. Sorry."
        },
        {
         "tags": [
          "claim"
         ],
-        "text": "Eén ontwerp. Dan is de bak leeg."
+        "text": "Een paar ontwerpen. Dan is de bak leeg."
        }
       ]
      },
@@ -21137,7 +21144,7 @@
      },
      "worn": {
       "_": {
-       "text": "Je vraagt veel. Ik wil dit echt even afmaken."
+       "text": "Je vraagt veel. Ik wil echt bijna naar huis."
       },
       "concern": {
        "text": "Ik wil er nu even niet meer over praten."
@@ -21193,7 +21200,7 @@
         "tags": [
          "feeling"
         ],
-        "text": "Laat. Maar het is bijna af."
+        "text": "Druk. Maar het is bijna af."
        }
       ]
      },
@@ -21279,7 +21286,7 @@
         "tags": [
          "claim"
         ],
-        "text": "Een ontwerp voor morgen. Het laatste, echt."
+        "text": "Een ontwerp voor morgen."
        },
        {
         "tags": [
@@ -21327,7 +21334,7 @@
      },
      "worn": {
       "_": {
-       "text": "Nog een vraag? Ik wil dit echt even afmaken."
+       "text": "Nog een vraag? Ik wil echt bijna naar huis."
       },
       "concern": {
        "text": "Daar wil ik het nu even niet meer over hebben."
@@ -21445,7 +21452,7 @@
         "text": "Anders? Dan gaat er een fout naar buiten."
        },
        {
-        "text": "Op tijd. Ja. Als het af is."
+        "text": "Dragen. Ja. Als het moet."
        }
       ]
      }
@@ -21498,6 +21505,19 @@
       "text": "Ja, ja. Ik weet wel hoe ik me voel, hoor."
      }
     },
+    "show_data": {
+     "other": [
+      {
+       "text": "Cijfers. Joh. Niet nu."
+      },
+      {
+       "text": "Wat heeft dat met mijn ontwerpen te maken?"
+      },
+      {
+       "text": "Sorry. Daar kan ik nu even niet bij."
+      }
+     ]
+    },
     "silence": {
      "again": [
       {
@@ -21542,10 +21562,10 @@
         "text": "… Ja?"
        },
        {
-        "text": "(ze tekent verder)"
+        "text": "(ze ruimt haar pennen op)"
        },
        {
-        "text": "Nog eentje, hè."
+        "text": "Ik moet nog even opruimen, hè."
        },
        {
         "text": "… Mm?"
@@ -21582,7 +21602,7 @@
        "tags": [
         "feeling"
        ],
-       "text": "Ik ben om vier uur thuis. Mijn vriend vroeg of ik ontslagen was.",
+       "text": "Rustig, eigenlijk. Ik ben om vier uur thuis. Mijn vriend vroeg of ik ontslagen was.",
        "via": [
         "open_question",
         "inquiry"
@@ -21625,6 +21645,7 @@
        "standardised:custom_design"
       ]
      },
+     "opening": "Hoi! Kom erin. Ik ben net klaar, hoor.",
      "position": {
       "tags": [
        "claim"
@@ -21696,7 +21717,7 @@
      ],
      "concern": [
       "Dat is raar, als iets zo lang van jou was.",
-      "Logisch dat dat schuurt. Veertig jaar laat je niet zomaar los."
+      "Logisch dat je hierover piekert. Je hebt het jarenlang gedragen."
      ],
      "interest": [
       "Dat is een heel leven, in die straten.",
@@ -21733,14 +21754,14 @@
       "Hoe zit dat precies?"
      ],
      "concern": [
-      "Wat doe je, als het maandag stil is?",
+      "Wat zou je op een gewone ochtend nog willen kunnen doen?",
       "Wat zeg je tegen jezelf, als het raar voelt?"
      ],
      "interest": [
       "Wat was het mooiste stuk, in al die jaren?",
       "Wie heeft het je ooit geleerd?"
      ],
-     "lead_in": "Alleen…?",
+     "lead_in": "Wat is er dan?",
      "position": [
       "Wat ga je meenemen, van al die jaren?",
       "Waar denk je aan, deze dagen?"
@@ -21771,7 +21792,7 @@
       "Wat ga je het meest missen?",
       "Wie ga je het meest missen?"
      ],
-     "lead_in": "Alleen wat?",
+     "lead_in": "Wat wilde je zeggen?",
      "position": [
       "Hoe kijk je terug, nu het erop zit?",
       "Wat laat je achter, na veertig jaar?",
@@ -21784,7 +21805,7 @@
       "Als ik je goed hoor, gaat het om meer dan vissen."
      ],
      "concern": [
-      "Dus het afscheid valt zwaarder dan je laat zien.",
+      "Dus er zit je iets dwars dat niet over het afscheid zelf gaat.",
       "Dus je vraagt je af wat er na vrijdag van jou overblijft."
      ],
      "interest": [
@@ -21816,7 +21837,7 @@
       "Het klinkt alsof je ermee zit."
      ],
      "concern": [
-      "Het klinkt alsof loslaten moeilijker is dan je dacht.",
+      "Het klinkt alsof dit je meer bezighoudt dan je zegt.",
       "Je klinkt alsof je niet weet wat er straks van je overblijft."
      ],
      "interest": [
@@ -21982,9 +22003,9 @@
       "concern": [
        {
         "tags": [
-         "admission"
+         "feeling"
         ],
-        "text": "Koffie zetten. En dan… geen flauw benul. Echt."
+        "text": "Een storing oplossen. Zomaar. Voor het ontbijt."
        },
        {
         "tags": [
@@ -21998,7 +22019,7 @@
         "tags": [
          "feeling"
         ],
-        "text": "In '89, de Kerkstraat. Tot mijn knieën in het water, en hij deed het weer."
+        "text": "In '89, de Kerkstraat. Tot mijn knieën in het water, en de straat had weer stroom."
        },
        {
         "tags": [
@@ -22526,7 +22547,7 @@
        "tags": [
         "feeling"
        ],
-       "text": "Veertig jaar. En de laatste zes weken waren de beste. Raar, hè.",
+       "text": "Goed, eigenlijk. Veertig jaar, en de laatste weken waren de beste. Raar, hè.",
        "via": [
         "open_question",
         "inquiry"
@@ -22573,7 +22594,7 @@
        "tags": [
         "feeling"
        ],
-       "text": "Ze hebben me gefilmd, uiteindelijk. Twaalf filmpjes.",
+       "text": "Het meeste zit nu op film. Ze hebben me gefilmd, uiteindelijk. Een stuk of tien filmpjes.",
        "via": [
         "open_question",
         "inquiry"
@@ -22752,7 +22773,7 @@
      "lead_in": "Rot waarover?",
      "position": [
       "Wat staat er op dat rooster?",
-      "Wat houdt je bezig, nu de wachtrij groener is?",
+      "Wat houdt je bezig, nu de wachtrij groen is?",
       "Waar zit je al een uur over te puzzelen?"
      ]
     },
@@ -22771,7 +22792,7 @@
      ],
      "lead_in": "Dus je voelt je er rot over.",
      "position": [
-      "Dus het gaat wel, en de wachtrij is groener.",
+      "Dus het gaat wel, en de wachtrij is groen.",
       "Dus de cijfers zijn beter, maar daar kijk je nu niet naar."
      ]
     },
@@ -22840,7 +22861,7 @@
     "tags": [
      "claim"
     ],
-    "text": "Het gaat wel. De wachtrij is groener."
+    "text": "Het gaat wel. De wachtrij is groen."
    },
    "prompt": "Esra eet haar lunch achter het rooster. Het scherm staat op groen; zij kijkt er niet naar.",
    "replies": {
@@ -22914,7 +22935,7 @@
         "tags": [
          "feeling"
         ],
-        "text": "Hm. Wie, niet wat. … Ja."
+        "text": "Hm. Dan weet je het. … Ja."
        },
        {
         "tags": [
@@ -23272,7 +23293,7 @@
         "tags": [
          "claim"
         ],
-        "text": "Ja. Groener. Niet groen."
+        "text": "Ja. Groen. Dat wel."
        },
        {
         "tags": [
@@ -23720,7 +23741,7 @@
       "Hoe zit dat precies?"
      ],
      "concern": [
-      "Wat zou je ze willen kunnen zeggen?",
+      "Wat is voor jou het slechtste scenario?",
       "Van wie zou dat bord moeten zijn?"
      ],
      "interest": [
@@ -23923,7 +23944,7 @@
         "tags": [
          "feeling"
         ],
-        "text": "Hm. Niemand wist het meer. … Ja. Zo gaat het."
+        "text": "Hm. Zo gaat het hier. … Ja."
        },
        {
         "tags": [
@@ -23971,7 +23992,7 @@
         "tags": [
          "feeling"
         ],
-        "text": "Dat het blijft. En dat ik dat kan beloven."
+        "text": "Dat ze het weer van me aannemen. En dat het dan toch weer verdwijnt."
        },
        {
         "tags": [
@@ -24167,13 +24188,13 @@
         "tags": [
          "claim"
         ],
-        "text": "Dat het van ons is. Van de mannen. Niet van jou."
+        "text": "Iemand van ons die het bijhoudt. Elke week. Ook als niemand kijkt."
        },
        {
         "tags": [
          "claim"
         ],
-        "text": "Ricardo. Die houdt alles bij. Altijd al."
+        "text": "Ricardo. Die houdt de lijst al bij. Alleen het bord niet."
        }
       ],
       "interest": [

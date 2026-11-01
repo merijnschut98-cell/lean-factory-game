@@ -4278,7 +4278,7 @@ dialogs:
         lead_in: "Gaat het?"
         _: ["Hoe gaat het nu echt met je, Esra?", "En jij, hoe hou je het vol, met je team?", "Hoe is het met je, naast die wachtrij?"]
       open_question:
-        position: ["Hoe is het voor je mensen, aan de lijn?", "Wat horen je mensen het vaakst?", "Wat zie je, als je naar dat scherm kijkt?"]
+        position: ["Hoe is het voor je mensen, aan de lijn?", "Wat doet een dag aan die telefoon met je mensen?", "Wat zie je, als je naar dat scherm kijkt?"]
         interest: ["Wat zeggen die bellers als ze voor de vierde keer bellen?", "Wat zou je je mensen willen geven, als het kon?"]
         lead_in: "Waarom schuldig?"
         concern: ["Wat zou er moeten gebeuren, zodat je niemand meer kwijtraakt?", "Wie in je team heeft nu het meest nodig?"]
@@ -4357,7 +4357,7 @@ dialogs:
         lands:
           position:
             - {text: "Kijk, niemand kan ze vertellen wanneer het klaar is, en mijn mensen moeten het uitleggen. Serieus. Gewoon eerlijk is anders.", tags: [claim], tell: fairness}
-            - {text: "'Waar blijft mijn aansluiting?' Elke keer weer. Elke keer bozer.", tags: [claim, feeling]}
+            - {text: "Ze worden stil. Of ze worden boos terug. Ik zie het elke dag.", tags: [claim, feeling]}
             - {text: "Rood. Vanaf negen uur. Elke dag.", tags: [claim]}
           interest: [{text: "Dat we liegen. Dat het vorige keer ook 'binnenkort' was.", tags: [claim, feeling]},
                      {text: "Een antwoord. Gewoon een datum die klopt.", tags: [claim]}]
@@ -5446,17 +5446,17 @@ dialogs:
     # or the owner of the standard designs who doubts herself): a variant holds no lines.
     lines:
       mood:
-        position: ["Hoe gaat het met je? Niet met de bak. Met jou.", "En hoe is het met jou, zo laat nog?"]
+        position: ["Hoe gaat het met je? Niet met de bak. Met jou.", "En hoe is het met jou, deze week?"]
         lead_in: "Gaat het?"
         _: ["Hoe gaat het met je, los van het werk?", "En jij, hoe hou je het vol?", "Hoe is het thuis?"]
       open_question:
-        position: ["Waar werk je nog aan?", "Hoe ziet je dag eruit, de laatste tijd?", "Wat houdt je hier nog?"]
+        position: ["Waar werk je aan?", "Hoe ziet je dag eruit, de laatste tijd?", "Wat houdt je bezig?"]
         interest: ["Wat doet dat met je?", "Hoe kijken ze daar thuis tegenaan?"]
         lead_in: "Alleen wat?"
         concern: ["Wat zou je helpen, om dat los te laten?", "Wie zou er met je mee kunnen kijken?"]
         _: ["Hoe gaat dat, zo'n dag bij jou?", "Vertel eens, hoe is het nu op de afdeling?"]
       empathy:
-        position: ["Je zegt dat het goed gaat, en je bent er nog. Dat zie ik.", "Je doet je best. Dat zie ik.", "Nog eentje, zeg je. Je wilt het goed doen."]
+        position: ["Je zegt dat het goed gaat. Ik hoor je.", "Je doet je best. Dat zie ik.", "Je wilt het goed doen, hè."]
         interest: ["Dat houdt je bezig, merk ik.", "Logisch dat je daar even over nadenkt."]
         lead_in: ["Neem je tijd.", "Ik luister."]
         concern: ["Logisch dat je bang bent voor een fout. Je neemt je werk serieus.", "Dat is veel, om dat allemaal op je te nemen."]
@@ -5468,19 +5468,19 @@ dialogs:
         concern: ["Het klinkt alsof je bang bent om iemand te laten zakken.", "Je klinkt alsof je het allemaal alleen draagt."]
         _: ["Je klinkt een beetje gespannen.", "Het klinkt alsof je ermee zit."]
       paraphrase:
-        position: ["Dus het gaat goed, en je bent zo klaar.", "Dus je wilt dit nog even afmaken."]
+        position: ["Dus het gaat goed.", "Dus je zit erbovenop."]
         interest: ["Dus het is meer dan het werk van vandaag.", "Dus het houdt je meer bezig dan je laat zien."]
         lead_in: "Dus er is nog iets."
         concern: ["Dus je bent bang dat een fout van jou bij een ander terechtkomt.", "Dus je wilt zeker weten dat het klopt, voordat een ander ermee werkt."]
         _: ["Dus het is gewoon veel.", "Als ik je goed hoor, gaat het niet om de bak."]
       inquiry:
-        position: ["Hoe lang zit je hier al?", "Wat moet er vandaag nog af?"]
+        position: ["Hoe lang werk je er al aan?", "Wat moet er deze week nog af?"]
         interest: ["Sinds wanneer is dat zo?", "Wie merkt dat, behalve jij?"]
         lead_in: "Alleen…?"
         concern: ["Hoe vaak is het echt misgegaan?", "Wat zou er gebeuren, als je het één keer niet nakijkt?"]
         _: ["Waar komt dat door, denk je?", "Hoe zit dat precies?"]
       experience:
-        position: ["Ik herken dat: zeggen dat het goed gaat, terwijl je nog zit.", "Ik ken dat van mijn vorige werk: nog eentje, en dan is het acht uur."]
+        position: ["Ik herken dat: zeggen dat het goed gaat, terwijl het je bezighoudt.", "Ik ken dat van mijn vorige werk: nog eentje, en dan is het acht uur."]
         lead_in: "Je hoeft het niet mooi te zeggen, hoor."
         concern: ["Dat herken ik. Als jouw fout bij een ander terechtkomt, voelt dat erger dan je eigen werk.", "Ik heb ooit een fout gemaakt die een collega moest oplossen. Daarna keek ik alles drie keer na."]
         _: ["Dat herken ik wel, dat het goed moet.", "Ik ben hier nu een paar weken, maar ik zie het al."]
@@ -5488,18 +5488,21 @@ dialogs:
         position: "(je gaat even op de rand van het bureau zitten en wacht)"
         _: ["(je wacht even)", "(je wacht rustig af)", "(je blijft even staan)"]
       perspective:
-        _: ["Hoe zou een monteur dit zien, als hij wist hoeveel zorg erin zit?", "Wat zou Joost zeggen, als hij je hier zag zitten?"]
-      pressure: {_: ["Het MT wil niet dat je zo lang doorwerkt. Liever met jou dan zonder jou.", "Dit moet echt anders, Anouk.", "Ruud verwacht dat je op tijd naar huis gaat."]}
-      confront: {_: ["Waarom zit je hier eigenlijk nog?", "Eerlijk gezegd lijkt het erop dat je het zelf niet loslaat.", "Waarom duurt het bij jou zo lang?"]}
+        _: ["Hoe zou een monteur dit zien, als hij wist hoeveel zorg erin zit?", "Wat zou Joost zeggen, als hij wist dat je twijfelt?"]
+      show_data: {_: ["Kijk, dit vond ik: {data}", "Mag ik je iets laten zien? {data}", "Dit kwam ik tegen: {data} Hoe kijk jij daarnaar?"]}
+      pressure: {_: ["Het MT wil dat je het volhoudt. Liever met jou dan zonder jou.", "Dit moet echt anders, Anouk.", "Ruud verwacht dat je het niet alleen draagt."]}
+      confront: {_: ["Waarom maak je het jezelf zo moeilijk?", "Eerlijk gezegd lijkt het erop dat je het zelf niet loslaat.", "Waarom laat je niemand meekijken?"]}
       close: ["Dank je, Anouk. Ga naar huis, hè.", "Ik ga. Tot morgen."]
     replies:
+      show_data:
+        other: [{text: "Cijfers. Joh. Niet nu."}, {text: "Wat heeft dat met mijn ontwerpen te maken?"}, {text: "Sorry. Daar kan ik nu even niet bij."}]
       perspective:
         lands: {_: [{text: "Een monteur? Die wil gewoon een tekening die klopt. … Die wil niet dat ik er tot zeven over doe.", tags: [feeling]},
                     {text: "Joost? Die zou zeggen: ga naar huis. … Ja. Dat zou hij zeggen.", tags: [feeling]}]}
         misses: {_: [{text: "Een monteur ziet alleen of het klopt."}, {text: "Joost heeft het zelf druk genoeg."}]}
       mood:
         lands:
-          position: [{text: "Met mij? … Eerlijk? Een beetje moe, joh.", tags: [feeling]}, {text: "Laat. Maar het is bijna af.", tags: [feeling]}]
+          position: [{text: "Met mij? … Eerlijk? Een beetje moe, joh.", tags: [feeling]}, {text: "Druk. Maar het is bijna af.", tags: [feeling]}]
           lead_in: {text: "Ja. Gaat wel."}
           _: [{text: "Eerlijk? Ik slaap niet zo goed.", tags: [feeling]}, {text: "Thuis is het goed. Echt.", tags: [feeling]}]
         misses:
@@ -5514,7 +5517,7 @@ dialogs:
       open_question:
         lands:
           position:
-            - {text: "Een ontwerp voor morgen. Het laatste, echt.", tags: [claim]}
+            - {text: "Een ontwerp voor morgen.", tags: [claim]}
             - {text: "Tekenen, nakijken, nog een keer nakijken.", tags: [claim]}
             - {text: "Ik wil het af hebben. Dan kan ik morgen schoon beginnen.", tags: [claim, feeling]}
           interest: [{text: "Het houdt me wel bezig. Ook als ik thuis ben.", tags: [feeling]},
@@ -5531,14 +5534,14 @@ dialogs:
         again: [{text: "Dat heb ik al verteld, toch?"}, {text: "Hetzelfde als daarnet."}]
         worn:
           concern: {text: "Daar wil ik het nu even niet meer over hebben."}
-          _: {text: "Nog een vraag? Ik wil dit echt even afmaken."}
+          _: {text: "Nog een vraag? Ik wil echt bijna naar huis."}
       empathy:
         lands:
           _: [{text: "Dank je. Dat hoor ik niet vaak.", tags: [feeling]}, {text: "Ja. Dat is het, ja."}, {text: "Mm. Fijn dat je dat zegt.", tags: [feeling]}]
         misses:
           lead_in: [{text: "Nee, het is niks."}, {text: "Nee. Laat maar."}]
           _: [{text: "Ach, het valt wel mee."}, {text: "Het hoort erbij, joh."}, {text: "Mm."}, {text: "Dank je. Maar het moet wel af."}]
-        worn: {text: "Ja. Dank je. Maar dit ontwerp is nog niet klaar."}
+        worn: {text: "Ja. Dank je. Maar het werk is nog niet klaar."}
       reflect:
         lands:
           _: [{text: "Ja. Eigenlijk wel.", tags: [feeling]}, {text: "Ja… Zo voelt het wel.", tags: [feeling]}, {text: "Mm. Ja."}]
@@ -5558,7 +5561,7 @@ dialogs:
         worn: {text: "Ja, ja. En nu?"}
       inquiry:
         lands:
-          position: [{text: "Sinds vijf uur. Of zo. Sorry.", tags: [claim]}, {text: "Eén ontwerp. Dan is de bak leeg.", tags: [claim]}]
+          position: [{text: "Sinds vanochtend. Of zo. Sorry.", tags: [claim]}, {text: "Een paar ontwerpen. Dan is de bak leeg.", tags: [claim]}]
           interest: [{text: "Een paar weken. Sinds het anders loopt.", tags: [claim]}, {text: "Niemand, denk ik. Behalve thuis.", tags: [claim, feeling]}]
           lead_in: {text: "Laat maar. Het is niks."}
           concern: [{text: "Bijna nooit. Maar bijna is niet nooit.", tags: [claim, feeling]}, {text: "Dan slaap ik slecht. Ook als het goed was.", tags: [feeling]}]
@@ -5571,7 +5574,7 @@ dialogs:
         again: [{text: "Dat vroeg je al."}, {text: "Ik zei het al, hè."}]
         worn:
           concern: {text: "Ik wil er nu even niet meer over praten."}
-          _: {text: "Je vraagt veel. Ik wil dit echt even afmaken."}
+          _: {text: "Je vraagt veel. Ik wil echt bijna naar huis."}
       experience:
         lands:
           _: [{text: "Hm. Dan weet je het.", tags: [feeling]}, {text: "Ja. Precies dat, joh.", tags: [feeling]}]
@@ -5583,11 +5586,11 @@ dialogs:
         lands: [{text: "(kijkt naar haar scherm) Het is gewoon veel, joh.", tags: [feeling]}, {text: "… Nou ja. Het is lastig.", tags: [doubt]}, {text: "… Eerlijk gezegd zit het me dwars.", tags: [feeling]}]
         misses:
           concern: [{text: "… Ja. Zo is het."}, {text: "… Mm."}, {text: "… Nou ja."}]
-          _: [{text: "… Was er nog wat?"}, {text: "… Ja?"}, {text: "(ze tekent verder)"}, {text: "Nog eentje, hè."}, {text: "… Mm?"}]
+          _: [{text: "… Was er nog wat?"}, {text: "… Ja?"}, {text: "(ze ruimt haar pennen op)"}, {text: "Ik moet nog even opruimen, hè."}, {text: "… Mm?"}]
       pressure:
-        lands: {_: [{text: "Het MT? Die zien niet wat er in een ontwerp zit."}, {text: "Anders? Dan gaat er een fout naar buiten."}, {text: "Op tijd. Ja. Als het af is."}]}
+        lands: {_: [{text: "Het MT? Die zien niet wat er in een ontwerp zit."}, {text: "Anders? Dan gaat er een fout naar buiten."}, {text: "Dragen. Ja. Als het moet."}]}
       confront:
-        lands: {_: [{text: "Omdat het af moet. Sorry."}, {text: "Loslaten? Dan klopt het misschien niet."}, {text: "Zo lang? Ik kijk het gewoon goed na."}]}
+        lands: {_: [{text: "Omdat het goed moet. Sorry."}, {text: "Loslaten? Dan klopt het misschien niet."}, {text: "Meekijken? Iedereen heeft het druk."}]}
     outcomes:
       lifted: "Ik ga naar huis. Echt. Morgen is er ook nog."
       heard: "Dank je. Echt."
@@ -5595,13 +5598,14 @@ dialogs:
       ruined: "Oké. Dan ga ik maar verder. Sorry."
     variants:
       - needs: {all: [standardised:custom_design]}
+        opening: "Hoi! Kom erin. Ik ben net klaar, hoor."
         mood: goed
         position: {text: "Goed! Echt.", tags: [claim]}
         layers:
           - id: interest
             at: 50
             via: [open_question, inquiry]
-            text: "Ik ben om vier uur thuis. Mijn vriend vroeg of ik ontslagen was."
+            text: "Rustig, eigenlijk. Ik ben om vier uur thuis. Mijn vriend vroeg of ik ontslagen was."
             tags: [feeling]
           - id: concern
             at: 68
@@ -5652,32 +5656,32 @@ dialogs:
       open_question:
         position: ["Hoe kijk je terug, nu het erop zit?", "Wat laat je achter, na veertig jaar?", "Hoe voelt het, die laatste week?"]
         interest: ["Wat ga je het meest missen?", "Wie ga je het meest missen?"]
-        lead_in: "Alleen wat?"
+        lead_in: "Wat wilde je zeggen?"
         concern: ["Wat zou je helpen, als het zover is?", "Wat zou je die jongen nog willen meegeven?"]
         _: ["Hoe gaat dat, zo'n laatste dag?", "Vertel eens, hoe was het vroeger hier?"]
       empathy:
         position: ["Veertig jaar, en nu een bus vol dozen. Dat is nogal wat.", "Je laatste week. Dat doet wat, denk ik.", "Vissen klinkt mooi. Maar het is wel een afscheid."]
         interest: ["Dat is een heel leven, in die straten.", "Logisch dat dat blijft hangen. Het is jouw werk geweest."]
         lead_in: ["Neem je tijd.", "Ik luister."]
-        concern: ["Dat is raar, als iets zo lang van jou was.", "Logisch dat dat schuurt. Veertig jaar laat je niet zomaar los."]
+        concern: ["Dat is raar, als iets zo lang van jou was.", "Logisch dat je hierover piekert. Je hebt het jarenlang gedragen."]
         _: ["Dat is ook niet niks.", "Dat lijkt me best lastig."]
       reflect:
         position: ["Het klinkt alsof het afscheid je meer doet dan je zegt.", "Je klinkt alsof je er nog niet helemaal klaar voor bent."]
         interest: ["Het klinkt alsof je er trots op bent.", "Je klinkt alsof je het gaat missen."]
         lead_in: ["Er zit je iets dwars, merk ik.", "Je aarzelt, zie ik."]
-        concern: ["Het klinkt alsof loslaten moeilijker is dan je dacht.", "Je klinkt alsof je niet weet wat er straks van je overblijft."]
+        concern: ["Het klinkt alsof dit je meer bezighoudt dan je zegt.", "Je klinkt alsof je niet weet wat er straks van je overblijft."]
         _: ["Je klinkt een beetje stil.", "Het klinkt alsof je ermee zit."]
       paraphrase:
         position: ["Dus nog vijf dagen, en dan ga je vissen.", "Dus het zit erop, na deze week."]
         interest: ["Dus er zit veertig jaar in, in wat je nu achterlaat.", "Dus het is meer dan een baan geweest."]
         lead_in: "Dus er is nog iets."
-        concern: ["Dus het afscheid valt zwaarder dan je laat zien.", "Dus je vraagt je af wat er na vrijdag van jou overblijft."]
+        concern: ["Dus er zit je iets dwars dat niet over het afscheid zelf gaat.", "Dus je vraagt je af wat er na vrijdag van jou overblijft."]
         _: ["Dus het is een afscheid.", "Als ik je goed hoor, gaat het om meer dan vissen."]
       inquiry:
         position: ["Wat ga je meenemen, van al die jaren?", "Waar denk je aan, deze dagen?"]
         interest: ["Wat was het mooiste stuk, in al die jaren?", "Wie heeft het je ooit geleerd?"]
-        lead_in: "Alleen…?"
-        concern: ["Wat doe je, als het maandag stil is?", "Wat zeg je tegen jezelf, als het raar voelt?"]
+        lead_in: "Wat is er dan?"
+        concern: ["Wat zou je op een gewone ochtend nog willen kunnen doen?", "Wat zeg je tegen jezelf, als het raar voelt?"]
         _: ["Waar komt dat door, denk je?", "Hoe zit dat precies?"]
       experience:
         position: ["Ik herken dat: als je ergens lang bent, ben je het zelf geworden.", "Ik ken dat van mijn vorige werk: de laatste week is de raarste."]
@@ -5762,9 +5766,9 @@ dialogs:
       inquiry:
         lands:
           position: [{text: "Die kaart. Met potlood. En de koffie bij het derde huis links.", tags: [claim, feeling]}, {text: "Aan vroeger. En aan maandag.", tags: [feeling]}]
-          interest: [{text: "In '89, de Kerkstraat. Tot mijn knieën in het water, en hij deed het weer.", tags: [feeling]}, {text: "Ome Gerrit. Die rook alles.", tags: [claim]}]
+          interest: [{text: "In '89, de Kerkstraat. Tot mijn knieën in het water, en de straat had weer stroom.", tags: [feeling]}, {text: "Ome Gerrit. Die rook alles.", tags: [claim]}]
           lead_in: {text: "Laat maar. Het is niks."}
-          concern: [{text: "Koffie zetten. En dan… geen flauw benul. Echt.", tags: [admission]}, {text: "Dat het goed is. Dat ik het goed heb gedaan.", tags: [feeling]}]
+          concern: [{text: "Een storing oplossen. Zomaar. Voor het ontbijt.", tags: [feeling]}, {text: "Dat het goed is. Dat ik het goed heb gedaan.", tags: [feeling]}]
         misses:
           position: [{text: "Te veel om op te noemen."}, {text: "Van alles."}]
           lead_in: {text: "Ach. Vergeet het maar."}
@@ -5803,7 +5807,7 @@ dialogs:
           - id: interest
             at: 55
             via: [open_question, inquiry]
-            text: "Veertig jaar. En de laatste zes weken waren de beste. Raar, hè."
+            text: "Goed, eigenlijk. Veertig jaar, en de laatste weken waren de beste. Raar, hè."
             tags: [feeling]
           - id: concern
             at: 70
@@ -5816,7 +5820,7 @@ dialogs:
           - id: interest
             at: 50
             via: [open_question, inquiry]
-            text: "Ze hebben me gefilmd, uiteindelijk. Twaalf filmpjes."
+            text: "Het meeste zit nu op film. Ze hebben me gefilmd, uiteindelijk. Een stuk of tien filmpjes."
             tags: [feeling]
           - id: concern
             at: 68
@@ -5837,7 +5841,7 @@ dialogs:
       needs: {all: [accepted:fix_status_callers]}
     opening: "Kom erin. Ik zit hier al een uur naar een rooster te staren."
     warning: "Serieus, ik moet dit rooster nog rond krijgen."
-    position: {text: "Het gaat wel. De wachtrij is groener.", tags: [claim]}
+    position: {text: "Het gaat wel. De wachtrij is groen.", tags: [claim]}
     layers:
       - id: interest
         at: 50
@@ -5860,7 +5864,7 @@ dialogs:
         lead_in: "Gaat het?"
         _: ["Hoe gaat het met je, los van de wachtrij?", "En jij, hoe hou je het vol?", "Hoe is het met je, deze week?"]
       open_question:
-        position: ["Wat staat er op dat rooster?", "Wat houdt je bezig, nu de wachtrij groener is?", "Waar zit je al een uur over te puzzelen?"]
+        position: ["Wat staat er op dat rooster?", "Wat houdt je bezig, nu de wachtrij groen is?", "Waar zit je al een uur over te puzzelen?"]
         interest: ["Wat zou je haar willen zeggen, als je het wist?", "Hoe wil je haar eerste week laten lopen?"]
         lead_in: "Rot waarover?"
         concern: ["Wat zou een goede teamleider nu doen, denk je?", "Wat zou je nodig hebben, om dit los te laten?"]
@@ -5878,7 +5882,7 @@ dialogs:
         concern: ["Het klinkt alsof je jezelf iets kwalijk neemt.", "Je klinkt alsof je twijfelt aan jezelf als teamleider."]
         _: ["Je klinkt een beetje gespannen.", "Het klinkt alsof je ermee zit."]
       paraphrase:
-        position: ["Dus het gaat wel, en de wachtrij is groener.", "Dus de cijfers zijn beter, maar daar kijk je nu niet naar."]
+        position: ["Dus het gaat wel, en de wachtrij is groen.", "Dus de cijfers zijn beter, maar daar kijk je nu niet naar."]
         interest: ["Dus Saskia komt terug, en je zoekt wat je tegen haar zegt.", "Dus halve dagen, en jij wilt dat het goed gaat."]
         lead_in: "Dus je voelt je er rot over."
         concern: ["Dus je keek naar het scherm, en niet naar haar.", "Dus je vraagt je af wat voor teamleider je bent."]
@@ -5961,7 +5965,7 @@ dialogs:
         worn: {text: "Ja, ja. Ik weet wel hoe ik me voel, hoor."}
       paraphrase:
         lands:
-          position: [{text: "Ja. Groener. Niet groen.", tags: [claim]}, {text: "Ja. Het scherm kan wachten.", tags: [feeling]}]
+          position: [{text: "Ja. Groen. Dat wel.", tags: [claim]}, {text: "Ja. Het scherm kan wachten.", tags: [feeling]}]
           interest: [{text: "Ja. En ik vind de woorden niet.", tags: [feeling]}, {text: "Precies. Halve dagen. Rustig aan.", tags: [claim]}]
           _: [{text: "Klopt."}, {text: "Ja, zo ongeveer."}]
         misses:
@@ -5987,7 +5991,7 @@ dialogs:
           _: {text: "Je vraagt veel. Dit rooster moet echt rond."}
       experience:
         lands:
-          _: [{text: "Hm. Wie, niet wat. … Ja.", tags: [feeling]}, {text: "Ja. Precies dat.", tags: [feeling]}]
+          _: [{text: "Hm. Dan weet je het. … Ja.", tags: [feeling]}, {text: "Ja. Precies dat.", tags: [feeling]}]
         misses:
           lead_in: {text: "Ja… laat maar."}
           _: [{text: "Hm. Dat zal wel."}, {text: "Mm."}, {text: "Oké."}, {text: "Kan zijn."}, {text: "Hm."}]
@@ -6121,7 +6125,7 @@ dialogs:
         position: ["Wat zeggen je mannen ervan?", "Wat vragen je mannen je, de laatste tijd?"]
         interest: ["Wat is er de vorige keren gebeurd?", "Wanneer gingen ze erin geloven, deze keer?"]
         lead_in: "Wat is eerlijk?"
-        concern: ["Wat zou je ze willen kunnen zeggen?", "Van wie zou dat bord moeten zijn?"]
+        concern: ["Wat is voor jou het slechtste scenario?", "Van wie zou dat bord moeten zijn?"]
         _: ["Waar komt dat door, denk je?", "Hoe zit dat precies?"]
       experience:
         position: ["Mijn eerste week liep ik langs dat bord in de gang, met de cijfers van 2023. Ik vroeg van wie het was. Niemand wist het meer.", "Ik ken dat van mijn vorige werk: iets werkt, en dan vraagt iedereen wanneer het weer stopt."]
@@ -6167,8 +6171,8 @@ dialogs:
           interest: [{text: "Dat het blijft. Maar dat weet ik zelf niet eens zeker.", tags: [doubt]},
                      {text: "Dat het van hen is. Niet van een project.", tags: [claim]}]
           lead_in: {text: "Laat maar. Het is niks."}
-          concern: [{text: "Dat het van ons is. Van de mannen. Niet van jou.", tags: [claim]},
-                    {text: "Ricardo. Die houdt alles bij. Altijd al.", tags: [claim]}]
+          concern: [{text: "Iemand van ons die het bijhoudt. Elke week. Ook als niemand kijkt.", tags: [claim]},
+                    {text: "Ricardo. Die houdt de lijst al bij. Alleen het bord niet.", tags: [claim]}]
           _: [{text: "Rijden, aansluiten, terug.", tags: [claim]}, {text: "Goed, eigenlijk. Rustiger.", tags: [claim]}]
         misses:
           lead_in: {text: "Niks. Laat maar."}
@@ -6208,7 +6212,7 @@ dialogs:
           position: [{text: "Dat ze minder vaak voor een dichte deur staan. Dat merken ze.", tags: [claim]}, {text: "Of het zo blijft. Elke ochtend weer.", tags: [claim, feeling]}]
           interest: [{text: "Een project, een bord, een nieuwe naam. En na een jaar was het weg.", tags: [claim, feeling]}, {text: "Toen Ricardo de lijst zelf ging bijhouden.", tags: [claim]}]
           lead_in: {text: "Laat maar. Het is niks."}
-          concern: [{text: "Dat het blijft. En dat ik dat kan beloven.", tags: [feeling]}, {text: "Van ons. Van de mannen zelf.", tags: [claim]}]
+          concern: [{text: "Dat ze het weer van me aannemen. En dat het dan toch weer verdwijnt.", tags: [feeling]}, {text: "Van ons. Van de mannen zelf.", tags: [claim]}]
         misses:
           position: [{text: "Niet zoveel. Ze werken."}, {text: "Van alles."}]
           lead_in: {text: "Ach. Vergeet het maar."}
@@ -6221,7 +6225,7 @@ dialogs:
           _: {text: "Je vraagt veel. De bussen wachten."}
       experience:
         lands:
-          _: [{text: "Hm. Niemand wist het meer. … Ja. Zo gaat het.", tags: [feeling]}, {text: "Ja. Precies dat.", tags: [feeling]}]
+          _: [{text: "Hm. Zo gaat het hier. … Ja.", tags: [feeling]}, {text: "Ja. Precies dat.", tags: [feeling]}]
         misses:
           lead_in: {text: "Ja… laat maar."}
           _: [{text: "Hm. Dat zal wel."}, {text: "Mm."}, {text: "Oké."}, {text: "Kan zijn."}, {text: "Hm."}]
