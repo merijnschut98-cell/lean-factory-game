@@ -220,6 +220,13 @@ func test_a_sentence_said_before_is_not_dealt_again() -> void:
 	var moves := dealt.map(func(o: Dictionary) -> String: return o["move"])
 	for again: String in ["silence", "ask_commitment", "propose"]:
 		assert_true(again in moves, again + " may come again")
+	# A talk's own list for the layer, used up: the move is not dealt (no bank line steps in).
+	var keyed := DialogFixture.def({"lines": {"experience": {"position": ["Eerste verhaal.", "Tweede verhaal."]}}})
+	var k := _talk(DialogFixture.bank(), keyed, 50)
+	k.say("experience")
+	k.say("experience")
+	assert_false("experience" in k._candidates().map(func(o: Dictionary) -> String: return o["move"]),
+		"both own lines said: experience is not dealt again")
 
 
 ## Review 2 (minor): while the person breaks off mid-sentence ("Al moet ik zeggen…"),
