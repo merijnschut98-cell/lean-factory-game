@@ -53,6 +53,7 @@ voice, and its own "Daar denk ik nog over na" lines.
 | `sanne_kpi` | Sanne | rewritten, batch 3 (35.0 → 0.8, echoes 241 → 0, no flag at budget 8000) |
 | `gert_klic` | Gert | rewritten, batch 3 (35.4 → 0.6, echoes 268 → 0, no flag at budget 8000) |
 | `wim_spreadsheet` | Wim | rewritten, batch 3 (37.1 → 0.8, echoes 301 → 0, no flag at budget 8000) |
+| `dirk_shelf` | Dirk | rewritten, batch 4 (35.0 → 0.1, echoes 265 → 0, no flag at budget 8000) |
 
 The two KPI talks are the audited ones of `test_dialog_content.gd`: their reply tags stay
 the audited ones (a talk's own untagged reply clears the moment's tags, a bank reply keeps
