@@ -1493,7 +1493,7 @@
         "text": "Laat eens zien… van 85 naar 80 procent? Dat had ik niet zo gezien."
        },
        {
-        "text": "Vijf procent. Hm. Dat zijn tekeningen die terugkomen."
+        "text": "Vijf procentpunt. Hm. Dat zijn tekeningen die terugkomen."
        },
        {
         "text": "Ja. Tachtig. Ik heb het gezien."
@@ -1514,7 +1514,7 @@
       ],
       "silo_kpis:2": [
        {
-        "text": "Vijf procent. Dat is ruis."
+        "text": "Vijf procentpunt. Dat is ruis."
        },
        {
         "text": "Dat zakt vanzelf weer."
@@ -2894,7 +2894,7 @@
     "compliance": "Als Ruud het zo wil, staat het in het verslag. Op zijn naam.",
     "heard": "Interessant. Kom terug als je iets te laten zien hebt.",
     "none": "Goed. Ik moet naar de regiegroep.",
-    "partial": "Als het op één stroom blijft, doe ik mee. Verder niet.",
+    "partial": "Ik doe mee, binnen het jaarplan. Verder niet.",
     "ruined": "Ik heb een regiegroep. Plan maar iets in via mijn secretariaat."
    },
    "owns": "silo_kpis",
@@ -3044,7 +3044,7 @@
         "tags": [
          "claim"
         ],
-        "text": "In het najaar. Dan wordt het verdeeld."
+        "text": "Over een paar weken. Daarna ligt het vast."
        },
        {
         "tags": [
@@ -3522,7 +3522,7 @@
         "tags": [
          "claim"
         ],
-        "text": "Twee recordmaanden, en niet één aansluiting meer de deur uit. Dat is geen record. Dat is een rapport."
+        "text": "Twee records in één maand, en niet één aansluiting meer de deur uit. Dat is geen record. Dat is een rapport."
        },
        {
         "tags": [
@@ -3548,13 +3548,13 @@
         "tags": [
          "claim"
         ],
-        "text": "Vijf procent minder dat in één keer goed is. In één kwartaal."
+        "text": "Vijf procentpunt minder dat in één keer goed is. In één kwartaal."
        },
        {
         "tags": [
          "claim"
         ],
-        "text": "Ja. Vijf procent. Ik heb het gezien."
+        "text": "Ja. Vijf punt. Ik heb het gezien."
        }
       ]
      },
@@ -3575,7 +3575,7 @@
       ],
       "silo_kpis:2": [
        {
-        "text": "Vijf procent. Dat is ruis."
+        "text": "Vijf procentpunt. Dat is ruis."
        },
        {
         "text": "Dat haal ik volgend kwartaal wel in."
@@ -15724,7 +15724,7 @@
       "tags": [
        "feeling"
       ],
-      "text": "En eerlijk gezegd… ik voel me er schuldig over."
+      "text": "En eerlijk gezegd… ik voel me schuldig."
      },
      "tags": [
       "admission"
@@ -15780,7 +15780,7 @@
       "Ik luister."
      ],
      "position": [
-      "Een kwartier wachttijd, de hele dag, en jij staat ervoor. Dat is zwaar.",
+      "Een volle wachtrij, de hele dag, en jij staat ervoor. Dat is zwaar.",
       "Je komt op voor je mensen. Dat zie ik.",
       "Tien minuten, uit een volle wachtrij. Fijn dat je ze me geeft."
      ]
@@ -15815,7 +15815,7 @@
      ],
      "lead_in": "Schuldig waarover?",
      "position": [
-      "Hoe vaak belt iemand voor de tweede keer?",
+      "Hoeveel van die bellers hebben al eerder gebeld?",
       "Wat vragen de meeste bellers?"
      ]
     },
@@ -15846,8 +15846,8 @@
      ],
      "lead_in": "Waarom schuldig?",
      "position": [
-      "Waar bellen al die mensen eigenlijk over?",
-      "Hoe ziet een uur aan de lijn eruit, voor jouw mensen?",
+      "Hoe is het voor je mensen, aan de lijn?",
+      "Wat horen je mensen het vaakst?",
       "Wat zie je, als je naar dat scherm kijkt?"
      ]
     },
@@ -15928,9 +15928,9 @@
    "outcomes": {
     "commitment": "Deal. En als het werkt, wil ik niet horen dat ik dus geen agents nodig had. Ik had ze nodig. Alleen niet hiervoor.",
     "compliance": "Prima. Komt erbij.",
-    "heard": "Oké. Het is eruit. Mijn mensen weten niet dat ik zo over ze praat, hè. Laat dat zo.",
+    "heard": "Oké. Het is eruit. Mijn mensen weten niet dat ik dit met jou deel, hè. Laat dat zo.",
     "none": "Goed. Terug de wachtrij in.",
-    "partial": "Ik doe het. Maar mijn aanvraag voor vier agents blijft liggen tot ik de wachtrij groen zie.",
+    "partial": "Goed. Maar ik geloof het pas als ik de wachtrij groen zie.",
     "ruined": "Mijn mensen zijn geen stootkussen. En ik ook niet."
    },
    "owns": "status_callers",
@@ -15941,14 +15941,14 @@
      "claim"
     ],
     "tell": "fairness",
-    "text": "Ik heb vier agents extra nodig. Een kwartier in de wacht, de hele dag. Dat is niet normaal. En het is niet eerlijk tegenover mijn mensen."
+    "text": "Ik heb vier agents extra nodig. Soms een kwartier in de wacht, de hele dag door. Dat is niet normaal. En het is niet eerlijk tegenover mijn mensen."
    },
    "proposals": [
     {
      "addresses": [],
      "id": "four_agents",
      "name": "Vier agents extra",
-     "reply": "Vier. Ja. … Al moeten ze dan eerst zes weken worden ingewerkt. Door de mensen die nu al op hun tandvlees lopen.",
+     "reply": "Vier. Ja. … Al moeten ze dan eerst weken worden ingewerkt. Door de mensen die nu al op hun tandvlees lopen.",
      "text": "Vier extra agents, tijdelijk."
     },
     {
@@ -16132,7 +16132,7 @@
         "tags": [
          "claim"
         ],
-        "text": "Vaker dan de eerste keer. Sommigen elke week."
+        "text": "Een flink deel. Sommigen elke week."
        },
        {
         "tags": [
@@ -16175,7 +16175,7 @@
       },
       "position": [
        {
-        "text": "Vaak genoeg."
+        "text": "Genoeg om de rij vol te houden."
        },
        {
         "text": "Van alles."
@@ -16335,7 +16335,7 @@
          "claim",
          "feeling"
         ],
-        "text": "Opnemen, sorry zeggen, uitleggen wat we niet weten. Vier keer per uur."
+        "text": "'Waar blijft mijn aansluiting?' Elke keer weer. Elke keer bozer."
        },
        {
         "tags": [
@@ -21339,7 +21339,7 @@
       "Hoe zit dat precies?"
      ],
      "concern": [
-      "Wat heb je haar geantwoord?",
+      "Wat deed je, toen ze dat vroeg?",
       "Wat zou er moeten veranderen, zodat jij ook gepland wordt?"
      ],
      "interest": [
@@ -21583,7 +21583,7 @@
         "tags": [
          "feeling"
         ],
-        "text": "Niks. Ik heb de laptop dichtgedaan en haar naar bed gebracht."
+        "text": "Ik heb haar naar bed gebracht. En daarna ging de laptop weer open."
        },
        {
         "tags": [
@@ -21718,7 +21718,7 @@
         "tags": [
          "feeling"
         ],
-        "text": "Echt? Moe. Maar het moet af."
+        "text": "Eerlijk? Moe. Maar het moet af."
        },
        {
         "tags": [
@@ -27262,7 +27262,7 @@
       "Hoe zit dat precies?"
      ],
      "concern": [
-      "Wat gebeurde er, die vorige keer?",
+      "Wat deed dat met jou, toen de hele kantine het wist?",
       "Wat zou er in je map moeten staan, voordat je het zegt?"
      ],
      "interest": [
@@ -27512,7 +27512,7 @@
      "misses": {
       "_": [
        {
-        "text": "Dat zeggen ze allemaal."
+        "text": "Hm. Dat zal wel."
        },
        {
         "text": "Mm."
@@ -27547,7 +27547,7 @@
         "tags": [
          "admission"
         ],
-        "text": "Een stapel die bleef liggen. Het hele gebouw wist het, voordat ik het wist."
+        "text": "Ik keek een week niemand aan. Sindsdien staat alles eerst in mijn map."
        },
        {
         "tags": [
