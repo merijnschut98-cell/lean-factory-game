@@ -104,3 +104,52 @@ def test_ruud_quotes_a_question_as_a_question_and_claims_no_sincerity(real):
     for move, line in names.items():
         assert "meende" not in line, move
         assert line.count("Je zei") <= 1, move
+
+
+# ── Review 2 (dialog lead run 2, 2026-10-31): the systemic faults fail a check ──
+
+def _lines(docs: dict, dialog_id: str) -> dict:
+    return _dialog(docs, dialog_id)["lines"]
+
+
+@pytest.mark.parametrize("mutate, message", [
+    # #6: one sentence under two keys is said twice in one talk (petra_thursday's Monday story).
+    (lambda d: _lines(d, "anouk_seven")["experience"].update(interest=_lines(d, "anouk_seven")["experience"]["lead_in"]),
+     "two places"),
+    (lambda d: _lines(d, "anouk_seven")["inquiry"].update(lead_in=_lines(d, "anouk_seven")["open_question"]["lead_in"]),
+     "two places"),
+    # #5: a promise or preface stacked over the lines of several moves.
+    (lambda d: (_lines(d, "anouk_seven")["open_question"].update(position=["Ik schrijf niks op, hoor. Wat doe je?"]),
+                _lines(d, "anouk_seven")["experience"].update(position=["Ik schrijf niks op, hoor. Ik kijk alleen."])),
+     "open the same way"),
+    # #10: a list turned by the seed, answered by replies in written order: they drift apart.
+    (lambda d: (_lines(d, "anouk_seven").update(pressure=["Het moet anders.", "Ruud wil het."]),
+                _dialog(d, "anouk_seven")["replies"].update(pressure={"lands": [{"text": "Aha. Ruud."}, {"text": "Goed."}]})),
+     "written order"),
+    # #4: two clues on offer, replies picked by order: the reply must be the shown clue's own.
+    (lambda d: _dialog(d, "joost_output_kpi").setdefault("replies", {}).update(
+        show_data={"lands": [{"text": "Dat klopt."}, {"text": "Ja."}]}), "each clue"),
+    # `other` (a clue that does not matter to them) belongs to show_data only.
+    (lambda d: _dialog(d, "anouk_seven")["replies"].update(mood={"other": {"text": "En?"}}), "show_data only"),
+])
+def test_review_2_faults_are_rejected(real, tmp_path, mutate, message):
+    docs = copy.deepcopy(real)
+    mutate(docs)
+    with pytest.raises(bc.ContentError, match=message):
+        _load(tmp_path, docs)
+
+
+def test_each_clue_may_have_its_own_reply(real, tmp_path):
+    docs = copy.deepcopy(real)
+    clues = _dialog(docs, "joost_output_kpi")["data"]
+    _dialog(docs, "joost_output_kpi").setdefault("replies", {})["show_data"] = {
+        "lands": {clues[0]: {"text": "Dat klopt."}, clues[1]: [{"text": "Ja."}, {"text": "Mm."}]},
+        "misses": {"_": {"text": "Ja. En?"}}}
+    _load(tmp_path, docs)
+
+
+def test_ruud_names_what_the_line_did_not_what_it_said(real):
+    """Review 2 #11: an empathy line may be pride or "no need to apologise"; Ruud's note
+    may not call it "snappen dat het zwaar is"."""
+    names = real["dialogs"]["bank"]["ruud_names"]
+    assert "zwaar" not in names["empathy"]

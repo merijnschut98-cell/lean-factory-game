@@ -53,3 +53,36 @@ func test_the_walk_flags_a_retold_story_line_and_an_echo() -> void:
 	var same_line := {"move": "mood", "line": "Voorstel goed.", "reply": "Gaat wel."}
 	assert_false("echo" in TalkWalk.turn(ctx, t, "Dat helpt.", path, same_line)["flags"],
 		"the same answer to the same sentence is no echo")
+
+
+## Review 2 #1 (2026-10-31): a question that misses in a reviewed talk is held back or
+## turned aside in the person's own words at every layer, never "I don't know" about
+## the work they just explained or do every day.
+const DISOWNS := "(?i)weet (ik )?(het )?(eigenlijk )?niet|geen idee|nakijken|zo gaat dat hier"
+
+
+func test_a_reviewed_talk_never_disowns_its_own_work_when_a_question_misses() -> void:
+	var c := Catalog.load_from()
+	var re := RegEx.create_from_string(DISOWNS)
+	var bad := []
+	for talk: Dialog in TalkWalk.talks(c, TalkWalk.REVIEWED):
+		var misses: Variant = JsonFile.dict_or_empty(talk.def.replies.get("inquiry")).get("misses")
+		for layer: String in ["interest", "concern"]:
+			if not (misses is Dictionary and (misses as Dictionary).has(layer)):
+				bad.append("%s: no own inquiry.misses.%s" % [talk.def.id, layer])
+		for move: String in ["inquiry", "open_question"]:
+			for case: String in ["misses", "again"]:
+				for text: String in _texts(JsonFile.dict_or_empty(talk.def.replies.get(move)).get(case)):
+					if re.search(text) != null:
+						bad.append("%s: %s.%s \"%s\"" % [talk.def.id, move, case, text])
+	assert_true(bad.is_empty(), "%d: %s" % [bad.size(), bad.slice(0, 6)])
+
+
+static func _texts(entry: Variant) -> Array[String]:
+	var out: Array[String] = []
+	if entry is Dictionary and (entry as Dictionary).has("text"):
+		out.append(str(entry["text"]))
+	elif entry is Dictionary or entry is Array:
+		for e: Variant in (entry.values() if entry is Dictionary else entry):
+			out.append_array(_texts(e))
+	return out

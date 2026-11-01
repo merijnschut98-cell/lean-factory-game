@@ -175,7 +175,7 @@ const COPIED := ["openness", "trust", "mood", "version", "revealed", "heard", "p
 	"patience", "outcome", "_repaired", "_last_move", "_streak", "_last_tags", "_uses", "_mood_asked",
 	"_lead_in_said", "_co_offered", "_warned", "_worn", "moves_made",
 	"trace", "made", "told", "steered_early", "concern_by", "start_openness", "_found", "_facts", "_retry", "_seed",
-	"said", "_topic", "answered", "_lead_ins"]
+	"said", "_topic", "answered", "_lead_ins", "_clue"]
 const STATE_KEYS := 22  # COPIED up to "trace"; test_dialog_routes.gd checks it
 
 # Four sentences a turn (PLAN 2.13 B, Merijn 2026-10-19: "I'd prefer having 4
@@ -252,6 +252,9 @@ var _warned := false
 var _worn: Dictionary = {}
 ## What the person spoke of last (TOPICS): the line the player's next sentence answers.
 var _topic := "position"
+## The clue being shown now (show_data's pick): a show_data reply keyed by it is that
+## clue's own (review 2 #4). Set by the move itself; copied with the talk.
+var _clue := ""
 ## What the person said, in order, starting with the position (a reply given as a
 ## list gives a line not said yet: _entry).
 var answered: Array[String] = []
@@ -369,21 +372,25 @@ func offer(n: int = OFFERED) -> Array[Dictionary]:
 ## a tutorial); steering once ready (heard and open enough: the rules' own
 ## "not too early"), a clue you found that matters to them and one that
 ## does not; the ask once a proposal is on the table; a check-in's close
-## once its concern is out.
+## once its concern is out. No proposal and no ask while the person breaks off
+## mid-sentence (the lead-in): nobody answers that with "Zullen we dat doen?".
 func _candidates() -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	var moves: Array = LISTEN + ["pressure", "confront"]
+	var broke_off := _topic == "lead_in"
 	if _retry and not _repaired:
 		moves.append("repair")
 	if not _too_early():
-		moves.append_array(["perspective", "propose_experiment", "propose"])
+		moves.append("perspective")
+		if not broke_off:
+			moves.append_array(["propose_experiment", "propose"])
 		var found := _found.keys()
 		found.sort()
 		var shown := found.filter(func(id: String) -> bool: return id in def.data).slice(0, 1) \
 			+ found.filter(func(id: String) -> bool: return not id in def.data).slice(0, 1)
 		for id: String in shown:
 			out.append({"move": "show_data", "pick": id})
-	if def.kind != "checkin" and not table.is_empty():
+	if def.kind != "checkin" and not table.is_empty() and not broke_off:
 		moves.append("ask_commitment")
 	if def.kind == "checkin" and revealed.has("concern"):
 		moves.append("close")
@@ -724,6 +731,7 @@ func _steer(move: String, pick: String) -> Dictionary:
 		"perspective":
 			return _graded(move, PERSPECTIVE, _reply(move, "lands"))
 		"show_data":
+			_clue = pick
 			if not pick in def.data:
 				var other := _entry(def.replies, "show_data", "other")   # their own "en?", else the bank's
 				return _result(0, _shared(str(other.get("text", bank["special"]["other_data"]))), false)
@@ -897,15 +905,33 @@ func _plain(move: String, reply: Dictionary) -> Dictionary:
 ## The line `replies` (a dialog's own or the bank's) hold for `move` in `case`
 ## ({} for none): a line, or a list of lines (the first they have not said yet
 ## in this talk, else the last), or a mapping from TOPICS (the layer the player
-## spoke to; `_` for any) to either.
+## spoke to; `_` for any; for show_data first the clue shown) to either. A list
+## keyed by the layer answers the talk's own questions for that layer place by
+## place: the n-th question's answer is the n-th line (the same question asked
+## again, the same answer).
 func _entry(replies: Dictionary, move: String, case: String) -> Dictionary:
 	var entry: Variant = JsonFile.dict_or_empty(replies.get(move)).get(case)
+	var asked := -1
 	if entry is Dictionary and not entry.has("text"):
-		entry = entry.get(_topic, entry.get("_"))
+		var key := _clue if move == "show_data" and entry.has(_clue) else (_topic if entry.has(_topic) else "_")
+		asked = _asked(move, key)
+		entry = entry.get(key)
 	if entry is Array and not entry.is_empty():
 		var texts: Array = entry.map(func(e: Variant) -> String: return str(JsonFile.dict_or_empty(e).get("text", "")))
-		entry = entry[texts.find(_fresh(texts))]
+		var at := asked if asked >= 0 and asked < texts.size() else texts.find(_fresh(texts))
+		entry = entry[at]
 	return JsonFile.dict_or_empty(entry)
+
+
+## Which of the talk's own lines for `move` the player says now: its place in
+## the list the lines hold under `key`, the layer spoken of last (or `_` when
+## the lines know no layer at all, as perspective's), -1 otherwise: a `_` reply
+## list beside lines per layer turns on its own.
+func _asked(move: String, key: String) -> int:
+	var lines := JsonFile.dict_or_empty(def.lines.get(move))
+	var same := (key == _topic and lines.has(_topic)) or (key == "_" and lines.keys() == ["_"])
+	var own: Variant = lines.get(key)
+	return (own as Array).find(_player_line(move)) if same and own is Array else -1
 
 
 ## The concern's lead-in as said now: the first time its words; when the moment

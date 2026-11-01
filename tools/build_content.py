@@ -2193,10 +2193,11 @@ def _player_lines(player: dict, where: str) -> None:
             raise ContentError(f"{where} show_data: every line names the clue with {DATA_TOKEN}")
 
 
-def _replies(replies: dict, where: str, keyed: bool = False) -> None:
+def _replies(replies: dict, where: str, keyed: bool = False, clues: tuple[str, ...] = ()) -> None:
     """Replies per move and situation. `keyed` (a talk's own, not the bank's): an
     entry may also be a list of lines (the n-th for the move's n-th time) or a
-    mapping from the layer the player spoke to (LINE_TOPICS) to either (Dialog._entry)."""
+    mapping from the layer the player spoke to (LINE_TOPICS) to either (Dialog._entry);
+    a show_data entry also from the shown clue (`clues`, the talk's data) to either."""
     for move, by_situation in replies.items():
         if move not in DIALOG_MOVES:
             raise ContentError(f"{where}: unknown move {move!r}")
@@ -2206,17 +2207,22 @@ def _replies(replies: dict, where: str, keyed: bool = False) -> None:
             at = f"{where} {move} {situation}"
             if situation not in REPLY_SITUATIONS:
                 raise ContentError(f"{where} {move}: unknown situation {situation!r} ({', '.join(REPLY_SITUATIONS)})")
-            for line in _reply_entry(entry, at) if keyed else [_line(entry, at)]:
+            if situation == "other" and move != "show_data":
+                raise ContentError(f"{at}: 'other' (a clue that does not matter to them) belongs to show_data only")
+            keys = clues if move == "show_data" else ()
+            for line in _reply_entry(entry, at, keys) if keyed else [_line(entry, at)]:
                 if situation == "again" and line.get("tags"):
                     raise ContentError(f"{at}: carries no tags (the rules read it as the miss it replaces)")
 
 
-def _reply_entry(entry: Any, where: str) -> list[dict]:
-    """The lines of a talk's own reply entry: a line, a non-empty list, or a mapping from LINE_TOPICS to either."""
+def _reply_entry(entry: Any, where: str, clues: tuple[str, ...] = ()) -> list[dict]:
+    """The lines of a talk's own reply entry: a line, a non-empty list, or a mapping from
+    LINE_TOPICS (or, for show_data, the shown clue in `clues`) to either."""
     if isinstance(entry, dict) and "text" not in entry:
-        unknown = set(entry) - set(LINE_TOPICS)
+        unknown = set(entry) - set(LINE_TOPICS) - set(clues)
         if unknown or not entry:
-            raise ContentError(f"{where}: keyed by the layer it answers ({', '.join(LINE_TOPICS)}), not {sorted(unknown)}")
+            raise ContentError(f"{where}: keyed by the layer it answers ({', '.join(LINE_TOPICS + list(clues))}), "
+                               f"not {sorted(unknown)}")
         return [line for topic, value in entry.items() for line in _reply_entry(value, f"{where} {topic}")]
     if isinstance(entry, list):
         if not entry:
@@ -2346,7 +2352,8 @@ def _validate_dialog(d: dict, where: str) -> None:
     replies = d.get("replies", {})
     if not isinstance(replies, dict):
         raise ContentError(f"{where}: 'replies' maps a move to its replies")
-    _replies(replies, f"{where} replies", keyed=True)
+    _replies(replies, f"{where} replies", keyed=True, clues=tuple(d.get("data", [])))
+    _talk_holds(d, where)
     outcomes = d.get("outcomes", {})
     if not isinstance(outcomes, dict) or set(outcomes) - set(DIALOG_OUTCOMES):
         raise ContentError(f"{where}: 'outcomes' overrides texts of known outcome(s) only: {', '.join(DIALOG_OUTCOMES)}")
@@ -2402,6 +2409,65 @@ def _dialog_line(move: str, said: Any, where: str) -> None:
             raise ContentError(f"{where}: {move} is a line, or a non-empty list of lines")
         if move == "show_data" and not all(DATA_TOKEN in v for v in variants):
             raise ContentError(f"{where}: show_data names the clue with {DATA_TOKEN}")
+
+
+# The opening clause of a player's line (up to the first stop or comma), for _talk_holds.
+_OPENING_RE = re.compile(r"^(.+?)[.,?!…:]")
+# A clause this long or longer is a preface (a promise, "Ik hou het kort"), not a common word.
+_PREFACE_WORDS = 3
+
+
+def _player_sentences(lines: dict) -> list[tuple[str, str, str]]:
+    """A talk's own player lines as (move, topic, sentence); stage directions left out."""
+    out = []
+    for move, said in lines.items():
+        for topic, value in (said if isinstance(said, dict) else {"_": said}).items():
+            out.extend((move, topic, v) for v in ([value] if isinstance(value, str) else value) if not v.startswith("("))
+    return out
+
+
+def _talk_holds(d: dict, where: str) -> None:
+    """Review 2 (2026-10-31): what a walk of the talk would show, checked on the text.
+    A sentence is said twice when it stands in two places; a preface stacked over the
+    lines of several moves reads as a promise made again; a list turned by the seed
+    drifts from replies said in written order; with two clues on offer, a reply
+    picked by order answers the other clue."""
+    first: dict[str, tuple[str, str]] = {}
+    opened: dict[str, str] = {}
+    for move, topic, text in _player_sentences(d.get("lines", {})):
+        place = first.setdefault(text.strip(), (move, topic))
+        if place != (move, topic):
+            raise ContentError(f"{where} lines: {text!r} stands in two places ({place[0]}.{place[1]} and "
+                               f"{move}.{topic}), so the player says it twice")
+        m = _OPENING_RE.match(text)
+        clause = m.group(1).strip().lower() if m else ""
+        if len(clause.split()) >= _PREFACE_WORDS and clause != text.strip().lower().rstrip(".?!…"):
+            if opened.setdefault(clause, move) != move:
+                raise ContentError(f"{where} lines: {move} and {opened[clause]} both open the same way "
+                                   f"({clause!r}): say it in one line")
+    replies = d.get("replies", {})
+    for move, said in d.get("lines", {}).items():
+        ordered = [e for e in _entries_of(replies.get(move, {})) if isinstance(e, list) and len(e) > 1]
+        if isinstance(said, list) and len(said) > 1 and ordered:
+            raise ContentError(f"{where} lines: {move} turns through its lines by the seed, and its replies come in "
+                               f"written order; key the lines ({{_: [...]}}) so they are said in written order too")
+    if len(d.get("data", [])) >= 2:
+        for situation in ("lands", "misses"):
+            entry = replies.get("show_data", {}).get(situation)
+            by_order = isinstance(entry, list) or (isinstance(entry, dict) and "text" not in entry and any(
+                isinstance(v, list) and len(v) > 1 for k, v in entry.items() if k not in d["data"]))
+            if by_order:
+                raise ContentError(f"{where} replies show_data {situation}: two clues on offer; give each clue "
+                                   f"its own reply (keyed by {', '.join(d['data'])}), not one picked by order")
+
+
+def _entries_of(by_situation: dict) -> list[Any]:
+    """Every reply entry of a move: per situation, and per key of a keyed one."""
+    out = []
+    for entry in by_situation.values():
+        keyed = isinstance(entry, dict) and "text" not in entry
+        out.extend(entry.values() if keyed else [entry])
+    return out
 
 
 def _layers(layers: Any, where: str) -> None:

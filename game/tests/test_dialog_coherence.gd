@@ -177,6 +177,47 @@ func test_the_lead_in_is_said_once_then_its_short_form() -> void:
 	assert_eq(own.say("open_question")["reply"], "Dat van net…", "the layer's own short form")
 
 
+## Review 2 (read of the branches): a reply list keyed by the layer answers the
+## player's keyed questions place by place, so when the first question missed and
+## the second lands, the answer is the second's, not the first's.
+func test_an_answer_stands_at_the_place_of_its_question() -> void:
+	var d := DialogFixture.def({"lines": {"inquiry": {"position": ["Eerste vraag?", "Tweede vraag?"]}},
+		"replies": {"inquiry": {
+			"lands": {"position": [{"text": "Antwoord één.", "tags": ["claim"]}, {"text": "Antwoord twee.", "tags": ["claim"]}]},
+			"misses": {"position": [{"text": "Mis één."}, {"text": "Mis twee."}]}}}})
+	var t := _talk(DialogFixture.bank(), d, 20)
+	var first := t.say("inquiry")
+	assert_eq([first["line"], first["reply"]], ["Eerste vraag?", "Mis één."])
+	t.openness = 40
+	t._last_tags = ["claim"]
+	var second := t.say("inquiry")
+	assert_eq([second["line"], second["reply"]], ["Tweede vraag?", "Antwoord twee."], "the second question's own answer")
+	# The same for lines and replies keyed by `_` (any layer), as perspective is in Act I.
+	var any := DialogFixture.def({"lines": {"inquiry": {"_": ["Eerste vraag?", "Tweede vraag?"]}},
+		"replies": {"inquiry": {
+			"lands": {"_": [{"text": "Antwoord één.", "tags": ["claim"]}, {"text": "Antwoord twee.", "tags": ["claim"]}]},
+			"misses": {"_": [{"text": "Mis één."}, {"text": "Mis twee."}]}}}})
+	var u := _talk(DialogFixture.bank(), any, 20)
+	u.say("inquiry")
+	u.openness = 40
+	u._last_tags = ["claim"]
+	assert_eq(u.say("inquiry")["reply"], "Antwoord twee.", "keyed by `_`")
+
+
+## Review 2 (minor): while the person breaks off mid-sentence ("Al moet ik zeggen…"),
+## no turn deals a proposal or the ask: the player cannot answer "Zullen we dat doen?".
+func test_no_proposal_or_ask_is_dealt_while_the_person_breaks_off() -> void:
+	var t := _talk(DialogFixture.bank(), DialogFixture.def(), 66)
+	t.revealed = {"interest": true}
+	t.heard = true
+	t.table = "good"
+	assert_eq(t.say("mood")["reply"], "En…", "the lead-in")
+	var moves := t.offer(30).map(func(o: Dictionary) -> String: return o["move"])
+	for steer: String in ["propose", "propose_experiment", "ask_commitment"]:
+		assert_false(steer in moves, steer)
+	assert_true("silence" in moves, "the ways in stay")
+
+
 ## Review 1 #3/#4: a lead-in's short forms as a list, each said once while another
 ## is left; a talk may give its own refusal ("Nee. Nog niet.") as a list too.
 func test_short_forms_and_refusals_turn_through_their_lists() -> void:
@@ -226,6 +267,22 @@ func test_a_clue_that_does_not_matter_may_be_answered_in_the_talk_s_own_words() 
 	t.say("paraphrase")
 	var r := t.say("show_data", "custom_design:1")
 	assert_eq([r["reply"], r["tags"], r["delta"]], ["Wat heeft dat met mij te maken?", [], 0])
+
+
+## Review 2 #4 (2026-10-31): with two clues on offer, each is answered by its own
+## reply (`replies.show_data.<situation>` keyed by the clue), not one picked by order.
+func test_each_clue_shown_is_answered_by_its_own_reply() -> void:
+	var d := DialogFixture.def({"data": ["custom_design:0", "custom_design:1"], "replies": {"show_data": {
+		"lands": {"custom_design:0": {"text": "Die van nul klopt."}, "custom_design:1": {"text": "Die van één klopt."}},
+		"misses": {"custom_design:0": {"text": "Nul ken ik."}, "_": {"text": "Ken ik."}}}}})
+	for openness: int in [90, 36]:
+		for clue: String in ["custom_design:1", "custom_design:0"]:
+			var t := Dialog.new(d, DialogFixture.person(), DialogFixture.bank(), {"openness": openness, "trust": 50,
+				"mood": "neutraal", "found": {"custom_design:0": true, "custom_design:1": true}, "facts": {}})
+			t.say("paraphrase")
+			var want := {90: {"custom_design:0": "Die van nul klopt.", "custom_design:1": "Die van één klopt."},
+				36: {"custom_design:0": "Nul ken ik.", "custom_design:1": "Ken ik."}}
+			assert_eq(t.say("show_data", clue)["reply"], want[openness][clue], "%s at %d" % [clue, openness])
 
 
 ## Two clues on offer in one turn are shown in two different sentences, not the
