@@ -57,10 +57,11 @@ voice, and its own "Daar denk ik nog over na" lines.
 | `thomas_reclaim` | Thomas | rewritten, batch 4; review round 3 fixed (34.9 → 0.2, echoes 283 → 0, no flag at budget 8000) |
 | `rob_order_rule` | Rob | rewritten, batch 4; review round 3 fixed (34.8 → 0.2, echoes 258 → 0, no flag at budget 8000) |
 | `femke_triage` | Femke | rewritten, batch 4; review round 3 fixed (34.8 → 0.2, echoes 231 → 0, no flag at budget 8000) |
-| `petra_silent_meters` | Petra | rewritten, batch 5 (33.7 → 0.2, echoes 258 → 0, no flag at budget 6000) |
-| `frank_kpi_targets` | Frank | rewritten, batch 5 (33.6 → 0.4, echoes 229 → 0, no flag at budget 6000) |
-| `linda_evenings` | Linda | rewritten, batch 5, a check-in (33.2 → 0.0, echoes 203 → 0, no flag at budget 6000) |
-| `esra_agents` | Esra | rewritten, batch 5 (33.1 → 0.3, echoes 239 → 0, no flag at budget 6000) |
+| `petra_silent_meters` | Petra | rewritten, batch 5; review round 4 fixed (33.7 → 0.2, echoes 258 → 0, no flag at budget 6000) |
+| `frank_kpi_targets` | Frank | rewritten, batch 5; review round 4 fixed (33.6 → 0.4, echoes 229 → 0, no flag at budget 6000) |
+| `linda_evenings` | Linda | rewritten, batch 5; review round 4 fixed, a check-in (33.2 → 0.0, echoes 203 → 0, no flag at budget 6000) |
+| `esra_agents` | Esra | rewritten, batch 5; review round 4 fixed (33.1 → 0.3, echoes 239 → 0, no flag at budget 6000) |
+| `anouk_late` | Anouk | rewritten, batch 6, a check-in with a variant: lines and replies fit both versions (32.9 → 0.2, echoes 198 → 0, no flag at budget 6000) |
 
 The two KPI talks are the audited ones of `test_dialog_content.gd`: their reply tags stay
 the audited ones (a talk's own untagged reply clears the moment's tags, a bank reply keeps
