@@ -5883,7 +5883,8 @@ dialogs:
       - id: concern
         at: 70
         via: [experience, empathy]
-        lead_in: {text: "Er is een reden dat die regel er staat. Ik weet niet of u dat… nou ja.", tags: [hesitation, doubt], tell: safety}
+        lead_in: {text: "Er is een reden dat die regel er staat. Ik weet niet of u dat… nou ja.", tags: [hesitation, doubt], tell: safety,
+                  again: ["Die regel staat er niet voor niets…", "Er is een reden, zoals ik zei…", "Nou ja. Die reden…"]}
         text: "In 2022 hebben we twee 630's besteld voor een project dat uiteindelijk 400 werd. De accountant schreef het in zijn rapport. Met mijn naam. Ik ben niet tegen sneller. Ik ben tegen nog een keer."
         tags: [admission]
         tell: safety
@@ -5915,20 +5916,180 @@ dialogs:
         addresses: [concern]
         reply: "Eén project, en ik schrijf de evaluatie. Daar kan ik mee leven."
     co_proposal: {id: standard_sizes, text: "Als ik die drie maten in de procedure mag zetten. Met mijn naam eronder. Dan staat er een keer iets goeds van mij in een rapport."}
+    # Rewritten to the reference standard (docs/qa/dialog-coherence-2026-10-30.md):
+    # the player's sentences answer what Rob spoke of last, in the order written;
+    # his answers fit the question and never come back word for word.
     lines:
-      experience: "Ik heb ooit een verkeerde bestelling op mijn naam gehad. Niemand weet het meer, behalve ik."
-    replies:
-      show_data:
-        lands: {text: "Zeven maanden doorlooptijd, waarvan twee weken werk in de straat. Dus de rest is… wachten op ons eigen papier."}
-        misses: {text: "Cijfers zonder procedure zijn een mening."}
+      mood:
+        position: ["Hoe gaat het met u, tussen al die procedures?", "En hoe is het met u, nu iedereen over de trafo's begint?"]
+        lead_in: "Gaat het?"
+        _: ["Hoe gaat het nu echt met u, Rob?", "En u, hoe houdt u het vol?", "Hoe is het met u, na al die jaren inkoop?"]
+      open_question:
+        position: ["Waarom staat die regel erin, volgens u?", "Hoe gaat een trafobestelling, van begin tot eind?", "Wat gebeurt er als een ontwerp lang op zich laat wachten?"]
+        interest: ["Wat zou u nodig hebben om eerder te durven bestellen?", "Hoe weet u welke maat er straks nodig is?"]
+        lead_in: "Wat bedoelt u?"
+        concern: ["Wat zou er in de procedure moeten staan, zodat het niet nog een keer gebeurt?", "Wat zou u willen dat de accountant de volgende keer schrijft?"]
+        _: ["Hoe gaat dat, een gewone week bij inkoop?", "Vertel eens, hoe loopt het werk bij u?"]
+      empathy:
+        position: ["U bewaakt het geld van het bedrijf. Dat is geen dankbaar werk.", "Een regel volgen terwijl iedereen sneller wil. Dat vraagt wat.", "U heeft het voor me uitgeprint. Dat waardeer ik."]
+        interest: ["Logisch dat u voorzichtig bent. Het gaat om veel geld.", "Een half jaar levertijd, en dan de verkeerde maat. Dat wil niemand."]
+        lead_in: ["Neem uw tijd.", "Ik luister."]
+        concern: ["Uw naam in een rapport. Dat blijft hangen, dat snap ik.", "Logisch dat u dat niet nog een keer wilt. Dat zou ik ook niet willen."]
+        _: ["Dat is ook niet niks.", "Dat lijkt me best lastig."]
+      reflect:
+        position: ["Het klinkt alsof u zich ergens zorgen over maakt.", "U klinkt alsof u die regel niet voor niets volgt."]
+        interest: ["Het klinkt alsof u bang bent dat het geld verloren gaat.", "U klinkt alsof u die kapstok al voor u ziet."]
+        lead_in: ["Er zit u iets dwars, merk ik.", "U aarzelt, zie ik."]
+        concern: ["Het klinkt alsof dat rapport u nog steeds dwarszit.", "U klinkt alsof het u persoonlijk heeft geraakt."]
+        _: ["U klinkt een beetje gespannen.", "Het klinkt alsof u ermee zit."]
+      paraphrase:
+        position: ["Dus eerst het ontwerp, dan pas de bestelling. Zo staat het er.", "Dus u bestelt pas als het ontwerp is goedgekeurd."]
+        interest: ["Dus het risico is een dure trafo die een jaar in het magazijn staat.", "Dus u wacht op het ontwerp omdat dan pas de maat vaststaat."]
+        lead_in: "Dus er is nog iets?"
+        concern: ["Dus het gaat er niet om dat u tegen sneller bent. U wilt niet nog een keer in dat rapport.", "Dus die regel is er gekomen na 2022."]
+        _: ["Dus het gaat om de bestelregel.", "Als ik u goed hoor, gaat het om zekerheid."]
+      inquiry:
+        position: ["Wat is het risico, als u eerder bestelt?", "Wat kost zo'n trafo eigenlijk?"]
+        interest: ["Hoe vaak verandert de maat nog, na de netstudie?", "Hoe lang duurt het van netstudie tot goedgekeurd ontwerp?"]
+        lead_in: "Welke reden?"
+        concern: ["Wat stond er precies in dat rapport?", "Wie heeft u toen geholpen, na dat rapport?"]
+        _: ["Waar komt dat door, denkt u?", "Hoe zit dat precies?"]
       experience:
-        lands: {text: "Dan weet u het. Zo'n rapport gaat niet weg. Het staat er gewoon, elk jaar weer.", tags: [admission], tell: safety}
+        position: ["Ik heb ooit een verkeerde bestelling op mijn naam gehad. Niemand weet het meer, behalve ik.", "Ik ken dat: één fout op papier, en die raak je nooit meer kwijt."]
+        lead_in: "U hoeft het niet mooi te zeggen, hoor."
+        concern: ["Dat herken ik. Ik ben ooit ook genoemd in een rapport. Je leest het vaker terug dan wie dan ook.", "Op mijn vorige werk stond mijn naam onder een dure misser. Daarna controleerde ik alles drie keer."]
+        _: ["Dat herken ik wel, dat je het zeker wilt weten.", "Ik ben hier nu een paar weken, maar ik zie het al."]
+      silence:
+        position: "(je knikt naar de uitdraai en wacht)"
+        _: ["(je wacht even)", "(je wacht rustig af)", "(je laat de stilte even staan)"]
       perspective:
-        lands: {text: "Vanuit die kopers in De Boomgaard? Die hebben hun huur opgezegd. En wij hebben een regel die zegt: wacht maar. Hm."}
+        _: ["Hoe zouden de kopers in De Boomgaard dit zien?", "Wat merkt de monteur ervan, als de trafo een half jaar later komt?"]
+      show_data: {_: ["Kijk, dit vond ik: {data}", "Mag ik u iets laten zien? {data}", "Dit kwam ik tegen: {data} Klopt dat?"]}
+      pressure: {_: ["Het MT wil dat de trafo's sneller komen. Liever met u dan zonder u.", "Dit moet echt anders, Rob.", "Ruud verwacht dat inkoop hierin meegaat."]}
+      confront: {_: ["Houdt die regel niet gewoon alles op?", "Eerlijk gezegd lijkt het erop dat inkoop de bottleneck is.", "Waarom wachten we dan zeven maanden?"]}
+      ask_commitment: {_: ["Zullen we dat zo doen?", "Spreken we dat af?"]}
+      close: ["Dank u, Rob. Ik laat u.", "Ik ga. Tot later."]
+    replies:
+      show_data:   # each clue its own answer
+        lands:
+          "transformer_wait:0": [{text: "Zeven maanden doorlooptijd, waarvan twee weken werk in de straat. Dus de rest is… wachten op ons eigen papier.", tags: [claim]},
+                                 {text: "Twee weken werk. Zeven maanden wachten. Hm.", tags: [claim]},
+                                 {text: "Ja. Zeven maanden. Ik heb het gezien.", tags: [claim]}]
+          "transformer_wait:2": [{text: "Eerst het ontwerp, dan de bestelling, dan zes maanden. … Die zes maanden beginnen pas als het ontwerp klaar is.", tags: [claim]},
+                                 {text: "Zes maanden levertijd, achter een ontwerp aan. Zo opgeschreven ziet het er lang uit.", tags: [claim]},
+                                 {text: "Ja. Mijn procedure. Ik heb het gezien.", tags: [claim]}]
+        misses:
+          "transformer_wait:0": [{text: "Cijfers zonder procedure zijn een mening."}, {text: "Gemiddeld. Elk project is anders."}, {text: "Ja, en dan?"}]
+          "transformer_wait:2": [{text: "Zo staat het er. Dat is de procedure."}, {text: "Die volgorde klopt. Daar is hij voor."}, {text: "Ja, en verder?"}]
+        other: [{text: "En wat zegt dat?"}, {text: "Wat heeft dat met de procedure te maken?"}, {text: "Daar staat geen handtekening onder."}]
+      perspective:
+        lands: {_: [{text: "Vanuit die kopers in De Boomgaard? Die hebben hun huur opgezegd. En wij hebben een regel die zegt: wacht maar. Hm."},
+                    {text: "Vanuit de monteur? Die staat klaar, en de trafo niet. Hm. Dat is zonde van zijn tijd."}]}
+        misses: {_: [{text: "De kopers hebben een contract met de projectontwikkelaar. Niet met mij."}, {text: "De monteur plant om de levering heen. Zo hoort het."}]}
+      mood:
+        lands:
+          position: [{text: "Goed, dank u. Het is druk, maar netjes."}, {text: "Eerlijk? Iedereen kijkt naar mij. Dat is niet prettig."}]
+          lead_in: {text: "Ja. Gaat wel."}
+          _: [{text: "Eerlijk? Een beetje moe van het gepraat over sneller."}, {text: "Goed. Zoals altijd."}]
+        misses:
+          lead_in: {text: "Ja, hoor."}
+          _: [{text: "Het gaat, dank u."}, {text: "Prima, dank u."}]
+        again:
+          lead_in: {text: "Ja. Echt."}
+          _: [{text: "Nog steeds hetzelfde."}, {text: "Echt, het gaat."}, {text: "Ja. Prima."}, {text: "Gaat wel, hoor."}]
+        worn:
+          concern: {text: "Het gaat. Laat maar."}
+          _: {text: "U vraagt het nu op drie manieren. Het antwoord blijft hetzelfde."}
+      open_question:
+        lands:
+          position:
+            - {text: "Omdat een trafo veel geld is. En omdat we het een keer fout hebben gedaan.", tags: [claim]}
+            - {text: "Netstudie, ontwerp, goedkeuring, bestelling, een half jaar levertijd. In die volgorde.", tags: [claim]}
+            - {text: "Dan wacht de bestelling ook. Zo staat het er.", tags: [claim]}
+          interest: [{text: "Zekerheid over de maat. Of een maat die altijd ergens past.", tags: [claim]},
+                     {text: "Uit het ontwerp. Eerder niet, volgens de procedure.", tags: [claim]}]
+          lead_in: {text: "Ach. Laat maar.", tags: [claim]}
+          concern: [{text: "Iets wat ik kan uitleggen. Aan elke accountant.", tags: [claim]},
+                    {text: "Dat inkoop het goed heeft gedaan. Voor de verandering.", tags: [claim]}]
+          _: [{text: "Bestellingen, offertes, controles.", tags: [claim]}, {text: "Netjes. Volgens de procedure.", tags: [claim]}]
+        misses:
+          lead_in: {text: "Niks. Laat maar."}
+          interest: [{text: "Een besluit van de directie."}, {text: "Dat staat in het ontwerp."}]
+          concern: [{text: "Dat zien we wel."}, {text: "Ach. Laat maar zitten."}]
+          _: [{text: "Gewoon, het werk."}, {text: "Niet zoveel bijzonders."}]
+        again: [{text: "Dat heb ik al verteld, toch?"}, {text: "Hetzelfde als daarnet."}]
+        worn:
+          concern: {text: "Daar wil ik het nu even niet meer over hebben."}
+          _: {text: "Nog een vraag? Ik heb nog drie offertes liggen."}
+      empathy:
+        lands:
+          _: [{text: "Hm. Dank u."}, {text: "Ja. Dat is het, ja."}, {text: "Mm. Dat hoor ik niet vaak."}]
+        misses:
+          lead_in: [{text: "Nee, het is niks."}, {text: "Nee. Laat maar."}]
+          _: [{text: "Ach, het valt wel mee."}, {text: "Het hoort bij het vak."}, {text: "Mm."}, {text: "Dank u. Maar de procedure blijft de procedure."}]
+        worn: {text: "Ja. Dank u. Maar de regel staat er nog steeds."}
+      reflect:
+        lands:
+          _: [{text: "Ja. Eigenlijk wel."}, {text: "Ja… Dat klopt wel."}, {text: "Mm. Ja."}]
+        misses:
+          lead_in: [{text: "Nee, nee."}, {text: "Nee. Het is niks."}]
+          _: [{text: "Nee, dat zou ik zo niet zeggen."}, {text: "Nee hoor. Ik volg de procedure."}, {text: "Nee."}, {text: "Valt mee."}]
+        worn: {text: "Ja, ja. Ik weet wel hoe ik me voel, hoor."}
+      paraphrase:
+        lands:
+          position: [{text: "Precies. In die volgorde."}, {text: "Ja. Eerder niet."}]
+          interest: [{text: "Precies. Een dure kapstok."}, {text: "Ja. Eerder weet niemand de maat."}]
+          _: [{text: "Klopt."}, {text: "Ja, zo ongeveer."}]
+        misses:
+          lead_in: {text: "Zoiets. Laat maar."}
+          concern: [{text: "Ja. Dat is het eigenlijk."}, {text: "Ja."}]
+          _: [{text: "Mm. Zo ongeveer."}, {text: "Ja. Zoiets."}, {text: "Mm, ja."}, {text: "Hm, ja."}, {text: "Klopt wel."}]
+        worn: {text: "Ja, ja. En nu?"}
+      inquiry:
+        lands:
+          position: [{text: "Dat de maat nog verandert. Dan heb ik een trafo die nergens past."}, {text: "Een paar ton. En een half jaar wachten op de volgende."}]
+          interest: [{text: "Zelden, eerlijk gezegd. Meestal blijft het een 400 of een 630."}, {text: "Een maand of vijf. Soms zes. En pas dan begint de levertijd."}]
+          lead_in: {text: "Ach, niks. Laat maar."}
+          concern: [{text: "Twee 630's voor een project van 400. Met mijn naam erbij."}, {text: "Niemand. Ik heb de procedure aangescherpt. Dat was mijn antwoord."}]
+        misses:
+          position: [{text: "Dat staat in de procedure."}, {text: "Veel. Dat staat op de offerte."}]
+          lead_in: {text: "Ach. Vergeet het maar."}
+          interest: [{text: "Dat hangt van het project af."}, {text: "Te lang."}]
+          concern: [{text: "Daar heb ik het liever niet over."}, {text: "Ach. Dat is voorbij."}]
+          _: [{text: "Ach. Dat is een lang verhaal."}, {text: "Hm. Dat ligt eraan."}, {text: "Zo simpel is het niet."}]
+        again: [{text: "Dat vroeg u al."}, {text: "Ik zei het al, hè."}]
+        worn:
+          concern: {text: "Ik wil er nu even niet meer over praten."}
+          _: {text: "U vraagt veel. Ik heb nog drie offertes liggen."}
+      experience:
+        lands:
+          _: [{text: "Dan weet u het. Zo'n rapport gaat niet weg. Het staat er gewoon, elk jaar weer.", tags: [admission], tell: safety},
+              {text: "Ja. Dat raak je nooit meer kwijt. Ik in elk geval niet.", tags: [admission], tell: safety}]
+        misses:
+          lead_in: {text: "Ja… laat maar."}
+          _: [{text: "Dat zeggen ze allemaal."}, {text: "Mm."}, {text: "Oké."}, {text: "Kan zijn."}, {text: "Hm."}]
+      silence:
+        lands: [{text: "(schuift de uitdraai recht) Het is een goede regel. Denk ik.", tags: [doubt]}, {text: "… Nou ja. Het is lastig.", tags: [doubt]}, {text: "… Eerlijk gezegd twijfel ik soms zelf.", tags: [doubt]}]
+        misses:
+          concern: [{text: "… Ja. Zo is het."}, {text: "… Mm."}, {text: "… Nou ja."}]
+          _: [{text: "… Was er verder nog iets?"}, {text: "… Ja?"}, {text: "(hij schuift de uitdraai naar u toe)"}, {text: "Ik heb nog drie offertes liggen, hè."}, {text: "… Mm?"}]
+      pressure:
+        lands: {_: [{text: "Het MT. Dan moet de directie de procedure maar wijzigen."}, {text: "Anders? Dan loopt dat via de directie."}, {text: "Meegaan. Prima. Op wiens naam?"}]}
+      confront:
+        lands: {_: [{text: "Alles ophouden? Hij houdt het geld vast. Dat is iets anders."}, {text: "De bottleneck? Ik bestel binnen een dag na goedkeuring."}, {text: "Omdat het ontwerp zo lang duurt. Niet de bestelling."}]}
+      propose_experiment:
+        misses: [{text: "Nu even niet."}, {text: "Niet zonder de procedure."}]
+        again: [{text: "Die proef, ja. Ik denk erover na."}, {text: "Dat zei u al. Ik heb het gehoord."}]
+      propose:
+        misses: [{text: "Hm. Misschien."}, {text: "Dat moet ik zien."}, {text: "Dat staat niet in de procedure."}]
+        again: [{text: "Ja, dat zei u. Ik denk erover na."}, {text: "Dat stelde u al voor, ja."}]
+      ask_commitment:
+        misses: [{text: "Nee. Nog niet."}, {text: "Eerst zien."}, {text: "Nog even niet."}]
     outcomes:
       commitment: "Conform. Ik pas de procedure aan. En die uitdraai mag u houden; die klopt vanaf maandag niet meer."
       partial: "Ik wil het wel. Maar niet zonder standaardmaten."
       heard: "U bent de eerste die vraagt wáárom die regel er staat."
+      none: "Goed. U weet waar de procedure ligt."
       compliance: "Als de directie het wil, bestel ik. Op uw naam."
       ruined: "Ik volg de procedure. Als u die wilt veranderen, loopt dat via de directie."
 
