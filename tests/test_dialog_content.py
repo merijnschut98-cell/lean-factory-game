@@ -102,7 +102,9 @@ def _drop_route(d: dict) -> None:
     (lambda d: _dialog(d, "joost_output_kpi")["proposals"][0].update(kpis=["intake_output"]), "not on the menu"),
     (lambda d: _dialog(d, "joost_output_kpi")["proposals"][0].update(kpis=[]), "one or two"),
     (lambda d: _dialog(d, "joost_output_kpi").update(requires_clue="silo_kpis:99"), "unknown clue"),
-    (lambda d: _dialog(d, "joost_output_kpi").update(data=["custom_design:0"]), "mission's problem"),
+    # (its show_data replies are keyed by its own clues: drop them, or that is the first error)
+    (lambda d: (_dialog(d, "joost_output_kpi").update(data=["custom_design:0"]),
+                _dialog(d, "joost_output_kpi")["replies"].pop("show_data")), "mission's problem"),
     (lambda d: _dialog(d, "joost_output_kpi").update(mood="blij"), "mood"),
     (lambda d: _layer(d, "joost_output_kpi", "interest").update(at=30), "between 40 and 65"),
     (lambda d: _layer(d, "joost_output_kpi", "concern").update(at=95), "between 60 and 85"),
