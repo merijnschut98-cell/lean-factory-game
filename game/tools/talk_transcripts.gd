@@ -14,6 +14,7 @@ const FLAG_NAMES := {"repeat": "says you repeat yourself, you did not", "clarify
 	"empty": "says nothing", "question": "asked you something, you answer with a stock line",
 	"farewell": "the talk ends without their word on how it went", "ruud": "Ruud's note does not quote you",
 	"retold": "a story line (layer, lead-in, proposal answer, their idea) said twice",
+	"told": "you tell the same long sentence (a story, a promise) a second time in one route",
 	"echo": "a line they already said, word for word, to a new sentence"}
 
 

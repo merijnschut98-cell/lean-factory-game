@@ -14,6 +14,8 @@ class_name TalkWalk
 ##            to a sentence the player had not said before
 ##   retold   a story line said a second time (whatever the player said): a layer, a lead-in, a proposal's reply,
 ##            their own idea (review 1 of 2026-10-30)
+##   told     the player says a long sentence (more than TOLD_WORDS words) a second time in one route: a
+##            story is told once (review 2, R1); a proposal made again is a choice, acknowledged, not this
 ## Two walks: every option a turn could offer under any deal (Dialog._candidates),
 ## breadth first with states merged, then random talks to the end, for the table of
 ## every exchange; and a few whole talks as the player sees them (four sentences a
@@ -27,13 +29,15 @@ const BUDGET := 1500
 const DIVES := 300
 ## Flags a talk in content may never show (test_talk_coherence.gd); `question`
 ## is a reading hint, the share of stock replies a measure (score).
-const BROKEN := ["repeat", "clarify", "empty", "farewell", "ruud", "retold"]
+const BROKEN := ["repeat", "clarify", "empty", "farewell", "ruud", "retold", "told"]
+## A player sentence longer than this is a story or a promise: said once per route (flag `told`).
+const TOLD_WORDS := Dialog.STORY_WORDS
 ## Talks read through and rewritten (the reference talks): no echo at all either.
 const REVIEWED := ["anouk_seven", "sanne_tuesday", "anouk_first_look", "rachid_counter", "mieke_wednesday",
 	"joost_wednesday", "linda_wednesday", "anouk_thursday", "petra_thursday", "anouk_owns_tray", "sanne_friday",
 	"petra_batch", "linda_replanning", "mieke_redraw"]
 ## How much each flag weighs in the ranking of talks (the worst read first).
-const WEIGHT := {"repeat": 3.0, "clarify": 3.0, "empty": 2.0, "farewell": 2.0, "ruud": 2.0, "retold": 2.0,
+const WEIGHT := {"repeat": 3.0, "clarify": 3.0, "empty": 2.0, "farewell": 2.0, "ruud": 2.0, "retold": 2.0, "told": 2.0,
 	"echo": 1.0, "question": 1.0}
 ## Seeds of the random players.
 const RANDOM_PLAYERS := 3
@@ -105,6 +109,9 @@ static func turn(ctx: Dictionary, t: Dialog, before: String, path: Dictionary, r
 		flags.append("empty")
 	if before.strip_edges().ends_with("?") and ctx["stock"].has(r["line"]):
 		flags.append("question")
+	if r["line"] in path["lines"] and not r["move"] in ["propose", "propose_experiment"] \
+			and str(r["line"]).split(" ", false).size() > TOLD_WORDS:
+		flags.append("told")
 	var more := str(r.get("co_proposal", {}).get("text", ""))
 	for line: String in [reply, more]:
 		if line.strip_edges().is_empty() or not line in path["heard"]:

@@ -204,6 +204,24 @@ func test_an_answer_stands_at_the_place_of_its_question() -> void:
 	assert_eq(u.say("inquiry")["reply"], "Antwoord twee.", "keyed by `_`")
 
 
+## Review 2, R1: a sentence the player already said in this talk is not dealt again
+## (a story is told once); a gesture, the ask and a proposal may come again.
+func test_a_sentence_said_before_is_not_dealt_again() -> void:
+	var story := "Maandagavond kon ik de uitgang niet vinden, en niemand hier wist wat ik kwam doen."
+	var d := DialogFixture.def({"lines": {"experience": story, "silence": "(je wacht even)"}})
+	var t := _talk(DialogFixture.bank(), d, 50)
+	t.heard = true
+	t.table = "good"
+	assert_eq(t.say("experience")["line"], story)
+	t.say("silence")
+	var dealt := t._candidates()   # every option any deal could offer now
+	var lines := dealt.map(func(o: Dictionary) -> String: return t._player_line(o["move"], o["pick"]))
+	assert_false(story in lines, "the story is not dealt a second time")
+	var moves := dealt.map(func(o: Dictionary) -> String: return o["move"])
+	for again: String in ["silence", "ask_commitment", "propose"]:
+		assert_true(again in moves, again + " may come again")
+
+
 ## Review 2 (minor): while the person breaks off mid-sentence ("Al moet ik zeggen…"),
 ## no turn deals a proposal or the ask: the player cannot answer "Zullen we dat doen?".
 func test_no_proposal_or_ask_is_dealt_while_the_person_breaks_off() -> void:

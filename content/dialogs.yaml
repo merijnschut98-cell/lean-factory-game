@@ -979,7 +979,7 @@ dialogs:
       experience:
         position: ["Ik zit zelf ook nog hier, hoor.", "Ik weet zelf ook nog niet hoe laat ik thuis ben."]
         lead_in: "Thuis appen ze mij ook al: waar blijf je?"
-        concern: "Thuis vroegen ze vanavond ook al waar ik bleef. En het is pas mijn eerste dag."
+        concern: ["Thuis vroegen ze vanavond ook al waar ik bleef. En het is pas mijn eerste dag.", "Ik ken dat. Thuis wachten ze ook op mij."]
         _: ["Dat herken ik. Ik wilde vandaag ook alles in één keer af hebben.", "Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen.", "Ik herken dat wel, dat je alles af wilt hebben."]
       silence:
         position: "(je glimlacht en wacht)"
@@ -1034,7 +1034,7 @@ dialogs:
           _: [{text: "Ja. Zo voelt het wel."}, {text: "Ja… Dat klopt wel."}, {text: "Ja. Eigenlijk wel."}]
         misses:
           lead_in: {text: "Nee, nee. Het is niks."}
-          _: [{text: "Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe."}, {text: "Nee, echt niet. Nog even, en dan ben ik weg."}, {text: "Nee hoor."}]
+          _: [{text: "Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe."}, {text: "Nee, echt niet. Nog even, en dan ben ik weg."}, {text: "Nee hoor."}, {text: "Ach. Nee."}]
         worn: {text: "Ja, ja. Ik hoor je wel. Maar ik moet echt door."}
       paraphrase:
         lands:
@@ -1171,7 +1171,7 @@ dialogs:
       experience:
         position: ["Ik ken dat wel, na een weekend eerst een berg wegwerken.", "Ik zag gisteren bij Anouk hetzelfde: een berg die niemand ziet."]
         lead_in: "Je hoeft niks te zeggen, hoor."
-        concern: "Dat herken ik. Ik ben pas twee dagen hier, en ik merk nu al hoeveel er in hoofden zit."
+        concern: ["Dat herken ik. Ik ben pas twee dagen hier, en ik merk nu al hoeveel er in hoofden zit.", "Ik merk het nu al: wat jij weet, staat nergens."]
         _: ["Ik zag gisteren bij Anouk ook een stapel die niemand ziet.", "Ik ben hier pas twee dagen, maar ik herken dat al."]
       silence:
         position: "(je knikt en wacht)"
@@ -1236,7 +1236,7 @@ dialogs:
         misses:
           lead_in: {text: "Zoiets. Laat maar."}
           concern: [{text: "Ja. Dat is het eigenlijk."}, {text: "Ja. Zoiets, joh."}]
-          _: [{text: "Mm. Zo ongeveer."}, {text: "Ja. Zoiets."}, {text: "Mwah."}]
+          _: [{text: "Mm. Zo ongeveer."}, {text: "Ja. Zoiets."}, {text: "Mwah."}, {text: "Nou ja. Zo ongeveer, joh."}]
         worn: {text: "Ja, ja. En nu?"}
       inquiry:
         lands:
@@ -1248,7 +1248,7 @@ dialogs:
           concern: [{text: "Dan stuurde ik er de helft minder terug. Echt waar.", tags: [admission]},
                     {text: "Gewoon, ervaring. Je ziet het aan het adres, aan de installateur.", tags: [admission]}]
         misses:
-          position: [{text: "Ach, joh. Dat is een lang verhaal."}, {text: "Laat maar. Zo gaat het hier."}]
+          position: [{text: "Ach, joh. Dat is een lang verhaal."}, {text: "Laat maar, joh. Dat is altijd zo na een weekend."}]
           lead_in: {text: "Joh. Vergeet het maar."}
           interest: [{text: "Dat formulier is van IT, niet van mij."}, {text: "Joh, dat is een verhaal voor een andere keer."}]
           concern: [{text: "Ach. Daar vraagt toch niemand naar."}, {text: "Laat maar, joh. Het is gewoon zo."}]
@@ -1365,7 +1365,7 @@ dialogs:
       experience:
         position: ["Ik ben hier zelf ook nog maar net. Ik leer elke dag wat.", "Ik herken dat wel: je werk hangt af van iemand anders."]
         lead_in: "Dat ken ik. Als je nieuw bent, wil je niks fout doen."
-        concern: "Dat herken ik. Als je nieuw bent, wil je vooral niks fout doen."
+        concern: ["Dat herken ik. Als je nieuw bent, wil je vooral niks fout doen.", "Ik ben ook nieuw. Ik bel ook liever één keer te veel."]
         _: ["Ik ben hier pas een paar dagen. Ik vraag ook steeds alles na.", "Dat herken ik wel, dat je het goed wilt doen."]
       silence:
         position: "(je kijkt mee naar de bakken en wacht)"
@@ -1559,7 +1559,7 @@ dialogs:
       experience:
         position: ["Ik kom zelf ook nog maar net kijken. Ik weet ook nog niet hoe het hier gaat.", "Ik ben hier ook nog maar net. Ik wil vooral leren hoe het gaat."]
         lead_in: "Dat ken ik. Ik word ook zenuwachtig als iemand meekijkt."
-        concern: "Dat ken ik. Als iemand over mijn schouder meekijkt, ga ik ook fouten maken."
+        concern: ["Dat ken ik. Als iemand over mijn schouder meekijkt, ga ik ook fouten maken.", "Ik werk zelf ook slechter als er iemand meekijkt."]
         _: ["Dat herken ik wel, dat je alles af wilt hebben.", "Ik ben hier pas twee dagen, maar ik zie het al."]
       silence:
         position: "(je knikt en wacht)"
@@ -1753,7 +1753,7 @@ dialogs:
       experience:
         position: ["Ik ben hier pas een paar dagen, maar ik zie nu al hoeveel werk achter een tekening zit.", "Ik herken dat wel: werk dat pas opvalt als het misgaat."]
         lead_in: "Je hoeft het niet mooi te zeggen, hoor."
-        concern: "Dat herken ik. Goed werk zie je pas als het een keer misgaat."
+        concern: ["Dat herken ik. Goed werk zie je pas als het een keer misgaat.", "Ik merk het hier al: wie het goed doet, hoor je nooit."]
         _: ["Dat herken ik wel, dat het moet kloppen.", "Ik ben hier pas drie dagen, maar ik zie het al."]
       silence:
         position: "(je kijkt mee naar de schets en wacht)"
@@ -1832,9 +1832,9 @@ dialogs:
           concern: [{text: "Twee jaar geleden. In Lindeveld. Niemand gewond, gelukkig.", tags: [admission]},
                     {text: "Een diepte en een foto. Meer niet.", tags: [admission]}]
         misses:
-          position: [{text: "Ach. Dat is een lang verhaal."}, {text: "Laat maar."}]
+          position: [{text: "Ach. Dat is een lang verhaal."}, {text: "Dat zie je pas als je er een probeert te tekenen."}]
           lead_in: {text: "Ach. Vergeet het maar."}
-          interest: [{text: "Dat hangt van de schets af. Kom maar eens kijken."}, {text: "Ach. Dat zoek ik wel uit."}]
+          interest: [{text: "Dat hangt van de schets af. Kom maar eens kijken."}, {text: "Ach. Dat verschilt per week."}]
           concern: [{text: "Daar wil ik liever niet aan denken."}, {text: "Ach. Dat is niet aan mij."}]
           _: [{text: "Dat is precies werk. Dat leg je niet in één zin uit."}, {text: "Hm. Dat hangt ervan af."}, {text: "Dat zit in de details."}]
         again: [{text: "Dat vroeg je al."}, {text: "Zoals ik zei."}]
@@ -1948,7 +1948,7 @@ dialogs:
       experience:
         position: ["Op mijn vorige werk las ik ook alles na voordat het naar boven ging.", "Ik herken dat: je wilt dat je team er goed uitkomt."]
         lead_in: "Je hoeft het niet mooi te maken, hoor."
-        concern: "Dat herken ik. 'Het is tijdelijk' zeg je makkelijk, en dan blijft het."
+        concern: ["Dat herken ik. 'Het is tijdelijk' zeg je makkelijk, en dan blijft het.", "Ik ken dat: tijdelijk wordt zo gewoon."]
         _: ["Dat herken ik wel, dat je het eerst wilt zien.", "Ik ben hier pas drie dagen, maar ik zie het al."]
       silence:
         position: "(je knikt en wacht)"
@@ -2026,7 +2026,7 @@ dialogs:
           concern: [{text: "Sinds de zomer. Eerlijk is eerlijk.", tags: [admission]},
                     {text: "Dan zie je het in het getal. En dan zit ik bij Frank.", tags: [admission]}]
         misses:
-          position: [{text: "Even voor de duidelijkheid: het is onder controle."}, {text: "Laat maar."}]
+          position: [{text: "Even voor de duidelijkheid: het is onder controle."}, {text: "Dat staat in mijn Excel."}]
           lead_in: {text: "Ach. Vergeet het maar."}
           interest: [{text: "Inhalen is inhalen. Dat doen we altijd."}, {text: "Dat staat in mijn Excel. Even voor de duidelijkheid."}]
           concern: [{text: "Daar heb ik nu geen antwoord op."}, {text: "Ach. Het is tijdelijk."}]
@@ -2049,7 +2049,7 @@ dialogs:
       ask_commitment:
         misses: [{text: "Nee. Nog niet."}, {text: "Eerst wil ik het getal zien."}, {text: "Nog even niet."}]
     outcomes:
-      commitment: "Goed. Om twee uur, hier. Ik leg de lijst klaar."
+      commitment: "Goed. Kom maar langs, dan kijken we samen."
       partial: "Tel eerst maar. Dan praten we."
       heard: "Eerlijk is eerlijk: niemand vraagt wat 'inhalen' kost."
       none: "Ik heb om elf uur overleg."
@@ -2137,14 +2137,14 @@ dialogs:
         _: ["Dus het is elke dag weer puzzelen.", "Als ik je goed hoor, plan je vooral om."]
       inquiry:
         position: ["Waarom gaan de monteurs altijd naar de storing?", "Hoe vaak gebeurt dat, zo'n storing?"]
-        interest: ["Waarom valt het altijd om tien uur om?", "Wie belt jou terug, als ze boos zijn?"]
+        interest: ["Waarom valt het altijd om tien uur om?", "Wat doen ze, als ze boos zijn?"]
         lead_in: "Waar word je moe van?"
         concern: ["Hoe lang voelt het al zo?", "Wat zou je helpen, denk je?"]
         _: ["Waar komt dat door, denk je?", "Hoe zit dat precies?"]
       experience:
         position: ["Ik ken dat een beetje: deze week loopt mijn planning ook steeds anders.", "Ik herken dat: hoe harder je werkt, hoe meer er bij komt."]
         lead_in: "Dat ken ik. Moe worden van iets wat je gewoon blijft doen."
-        concern: "Dat herken ik. Als je iets vaak genoeg doet, voel je het niet meer. Daar schrik je van."
+        concern: ["Dat herken ik. Als je iets vaak genoeg doet, voel je het niet meer. Daar schrik je van.", "Ik ken dat: je went eraan, en dat is het ergste."]
         _: ["Dat herken ik wel, dat het nooit loopt zoals gepland.", "Ik ben hier pas drie dagen, maar ik zie het al."]
       silence:
         position: "(je wacht even)"
@@ -2336,7 +2336,7 @@ dialogs:
       experience:
         position: ["Ik probeer deze week ook van alles voor het eerst.", "Ik vind het zelf ook spannend, eerlijk gezegd."]
         lead_in: "Je hoeft het niet mooi te zeggen, hoor."
-        concern: "Dat herken ik. Als iets ineens wél werkt, vraag je je af waarom je het niet eerder zag."
+        concern: ["Dat herken ik. Als iets ineens wél werkt, vraag je je af waarom je het niet eerder zag.", "Achteraf is alles logisch. Dat geldt voor iedereen."]
         _: ["Dat herken ik wel, dat je het eerst wilt zien.", "Ik ben hier pas vier dagen, maar ik zie het al."]
       silence:
         position: "(je knikt, en wacht)"
@@ -2510,7 +2510,7 @@ dialogs:
       reflect:
         position: ["Het klinkt alsof je er trots op bent dat het klopt.", "Je klinkt alsof je liever niet hebt dat iemand eraan zit."]
         interest: ["Je klinkt er moe van, van die Molen.", "Het klinkt alsof je je ergert aan al die stappen."]
-        lead_in: ["Er klopt iets niet voor je, merk ik.", "Je aarzelt, zie ik."]
+        lead_in: ["Er klopt iets niet, merk ik.", "Je aarzelt, zie ik."]
         concern: ["Je maakt je zorgen over wat er gebeurt als jij er niet bent, klinkt het.", "Het klinkt alsof je je er alleen in voelt."]
         _: ["Je klinkt een beetje gespannen.", "Het klinkt alsof je ermee zit."]
       paraphrase:
@@ -2527,9 +2527,9 @@ dialogs:
         _: ["Waar komt dat door, denk je?", "Hoe zit dat precies?"]
       experience:
         position: ["Ik raak hem niet aan. Ik heb thuis ook zo'n map waar niemand aan mag komen.", "Ik herken dat: als je het zelf doet, weet je dat het klopt."]
-        interest: "Maandagavond kon ik de uitgang niet vinden. Ik heb het aan de schoonmaker gevraagd. En ik dacht: als Ruud morgen ziek is, weet hier niemand wat ik kom doen."
+        interest: ["Maandagavond kon ik de uitgang niet vinden. Ik heb het aan de schoonmaker gevraagd. En ik dacht: als Ruud morgen ziek is, weet hier niemand wat ik kom doen.", "Ik stond maandag ook ergens waar niemand wist wat ik moest doen."]
         lead_in: "Ik weet hoe het is als niemand weet wat je doet."
-        concern: "Dat herken ik. Toen ik hier maandag begon, wist niemand wat ik kwam doen. Als jij er niet bent, is het net zo."
+        concern: ["Dat herken ik. Toen ik hier maandag begon, wist niemand wat ik kwam doen. Als jij er niet bent, is het net zo.", "Als niemand anders het kan, kun je ook nooit weg."]
         _: ["Dat herken ik wel, dat het moet kloppen.", "Ik ben hier pas vier dagen, maar ik zie het al."]
       silence:
         position: "(je blijft van de map af en wacht)"
@@ -2607,7 +2607,7 @@ dialogs:
           concern: [{text: "Nee. Het zit in mijn hoofd.", tags: [admission, doubt]},
                     {text: "Dan ligt het stil. Dan bellen ze mij thuis.", tags: [admission]}]
         misses:
-          position: [{text: "Ach. Het klopt. Dat is genoeg."}, {text: "Laat maar."}]
+          position: [{text: "Ach. Het klopt. Dat is genoeg."}, {text: "Dat maakt niet uit. Het klopt."}]
           lead_in: {text: "Ach. Vergeet het maar."}
           interest: [{text: "Dat is techniek. Daar ga ik niet over."}, {text: "Dat moet je IT vragen."}]
           concern: [{text: "Daar heb ik het liever niet over."}, {text: "Dat regel ik zelf wel."}]
@@ -2733,7 +2733,7 @@ dialogs:
       experience:
         position: ["Mooi. Ik heb deze week ook gemerkt hoe snel iets nieuws weer wegzakt.", "Dat herken ik: als iets ineens werkt, wil je het vasthouden."]
         lead_in: "Je hoeft het niet mooi te zeggen, hoor."
-        concern: "Dat herken ik. Ik ben hier een week, en maandag moet ik ook iets vertellen aan mensen die hier twintig jaar zitten."
+        concern: ["Dat herken ik. Ik ben hier een week, en maandag moet ik ook iets vertellen aan mensen die hier twintig jaar zitten.", "Ik moet maandag ook iets zeggen tegen mensen die hier langer zitten."]
         _: ["Dat herken ik wel, dat je het goed wilt doen.", "Ik ben hier pas een week, maar ik zie het al."]
       silence:
         position: "(je glimlacht en wacht)"
@@ -2923,7 +2923,7 @@ dialogs:
       experience:
         position: ["Ik ben hier pas een week. Vragen is het enige wat ik al kan.", "Ik herken dat: als nieuwe val je altijd op."]
         lead_in: "Je hoeft het niet mooi te zeggen, hoor."
-        concern: "Dat herken ik. Als het ergens beter gaat, zoekt iedereen meteen de volgende schuldige."
+        concern: ["Dat herken ik. Als het ergens beter gaat, zoekt iedereen meteen de volgende schuldige.", "Ik ken dat: wie vooraan staat, krijgt de schuld."]
         _: ["Dat herken ik wel, als nieuwe.", "Ik ben hier pas een week, maar ik zie het al."]
       silence:
         position: "(je glimlacht en wacht)"
@@ -3011,12 +3011,14 @@ dialogs:
           concern: {text: "Joh, ik wil het er nu even niet meer over hebben."}
           _: {text: "Jij vraagt wel door, hè? Maar het is vrijdag."}
       experience:
+        lands:
+          _: [{text: "Joh. Jij snapt het, hè.", tags: [feeling]}, {text: "Ja. Precies zo, joh.", tags: [feeling]}]
         misses:
           lead_in: {text: "Ja… laat maar."}
           _: [{text: "Hm. Ja."}, {text: "Ja… Mm."}, {text: "Kan zijn."}, {text: "Hm."}, {text: "Ja, ja."}]
       silence:
         misses:
-          concern: [{text: "… Nou ja. Zo is het."}, {text: "… Ja."}]
+          concern: [{text: "… Nou ja. Zo is het."}, {text: "… Ja."}, {text: "… Mm."}]
           _: [{text: "… Zeg het maar, hoor."}, {text: "… Wat is er?"}, {text: "Ik ga even verder, hè."}, {text: "(ze tikt weer verder)"}]
       propose:
         misses: [{text: "Hm. Misschien."}, {text: "Kan. Ik weet het nog niet."}]
@@ -3473,7 +3475,7 @@ dialogs:
       reflect:
         position: ["Het klinkt alsof je er zeker van bent dat het zo het beste is.", "Je klinkt alsof je je werk moet verdedigen."]
         interest: ["Het klinkt alsof die familie je toch dwarszit.", "Je klinkt alsof de rekensom voor jou niet meer helemaal klopt."]
-        lead_in: ["Er klopt iets niet voor je, merk ik.", "Je aarzelt, zie ik."]
+        lead_in: ["Er klopt iets niet, merk ik.", "Je aarzelt, zie ik."]
         concern: ["Je bent bang dat jij het probleem wordt, klinkt het.", "Het klinkt alsof je je er alleen in voelt."]
         _: ["Je klinkt een beetje gespannen.", "Het klinkt alsof je ermee zit."]
       paraphrase:
@@ -3491,7 +3493,7 @@ dialogs:
       experience:
         position: ["Ik herken dat: als je het zelf doet, weet je dat het klopt.", "Ik zag het in mijn eerste week al: jouw map is goud waard."]
         lead_in: "Je hoeft het niet mooi te zeggen, hoor."
-        concern: "Dat herken ik. Als je de enige bent die iets kan, durf je niet weg."
+        concern: ["Dat herken ik. Als je de enige bent die iets kan, durf je niet weg.", "Als niemand anders het kan, kun je ook nooit weg."]
         _: ["Dat herken ik wel, dat het moet kloppen.", "Ik ben hier nu een paar weken, maar ik zie het al."]
       silence:
         position: "(je knikt en wacht)"
@@ -3588,7 +3590,7 @@ dialogs:
           concern: [{text: "Dan wacht het. Een week, twee weken. Niemand merkt het.", tags: [admission]},
                     {text: "Nee. Nooit.", tags: [admission]}]
         misses:
-          position: [{text: "Ach. Het klopt. Dat is genoeg."}, {text: "Laat maar."}]
+          position: [{text: "Ach. Het klopt. Dat is genoeg."}, {text: "Iedereen wacht wel ergens op."}]
           lead_in: {text: "Ach. Vergeet het maar."}
           interest: [{text: "Dat heb ik allemaal uitgezocht. Het klopt."}, {text: "Ach. Het is zoals het is."}]
           concern: [{text: "Daar heb ik het liever niet over."}, {text: "Dat regel ik zelf wel."}]
@@ -3778,7 +3780,7 @@ dialogs:
       experience:
         position: ["Ik weet hoe het is als er iemand binnenloopt terwijl je moet omplannen.", "Ik herken dat: hoe harder je werkt, hoe meer er bij komt."]
         lead_in: "Je hoeft het niet mooi te zeggen, hoor."
-        concern: "Dat herken ik. Als je ruimte laat, lijkt het of je niks doet."
+        concern: ["Dat herken ik. Als je ruimte laat, lijkt het of je niks doet.", "Ik ken dat: ruimte lijkt al snel op niksdoen."]
         _: ["Dat herken ik wel, dat het nooit loopt zoals gepland.", "Ik zie het bij meer teams, eerlijk gezegd."]
       silence:
         position: "(je wacht even)"
@@ -3865,9 +3867,9 @@ dialogs:
           concern: [{text: "'Linda kan niet plannen.' Dat.", tags: [admission]},
                     {text: "Dan had ik 's avonds tijd voor mijn kinderen.", tags: [admission]}]
         misses:
-          position: [{text: "Ach. Zo gaat het nu eenmaal."}, {text: "Laat maar."}]
+          position: [{text: "Ach. Bijna alles schuift wel eens."}, {text: "Laat maar."}]
           lead_in: {text: "Sorry. Vergeet het maar."}
-          interest: [{text: "Zo gaat het hier. Daar plan ik niet omheen."}, {text: "Sorry, dat is te veel om nu uit te leggen."}]
+          interest: [{text: "Storingen houden zich niet aan mijn planning."}, {text: "Sorry, dat is te veel om nu uit te leggen."}]
           concern: [{text: "Sorry. Daar wil ik nu niet aan denken."}, {text: "Ach. Het moet gewoon."}]
           _: [{text: "Sorry, dat is een lang verhaal."}, {text: "Ach. Het is gewoon elke dag zo."}, {text: "Hm. Dat hangt van de dag af."}]
         again: [{text: "Dat vroeg je al."}, {text: "Sorry, zoals ik zei."}]
@@ -4395,7 +4397,7 @@ dialogs:
       experience:
         position: ["Ik zag in mijn eerste week al hoeveel werk er achter een tekening zit.", "Ik herken dat: werk dat pas opvalt als het misgaat."]
         lead_in: "Je hoeft het niet mooi te zeggen, hoor."
-        concern: "Dat herken ik. Als er iets nieuws komt, voelt het alsof wat je kon niet meer telt."
+        concern: ["Dat herken ik. Als er iets nieuws komt, voelt het alsof wat je kon niet meer telt.", "Ik ken dat: iets nieuws, en dan lijkt je vak ineens minder waard."]
         _: ["Dat herken ik wel, dat het moet kloppen.", "Ik zie het bij meer teams, eerlijk gezegd."]
       silence:
         position: "(je kijkt naar de doos en wacht)"
@@ -4490,7 +4492,7 @@ dialogs:
           concern: [{text: "Of hij het zelf niet zeker wist. Dan staat er een vraagteken bij de mof.", tags: [admission]},
                     {text: "Iedereen. Het MT, de aannemers, de kantine.", tags: [admission]}]
         misses:
-          position: [{text: "Ach. Dat is een lang verhaal."}, {text: "Laat maar."}]
+          position: [{text: "Ach. Dat is een lang verhaal."}, {text: "Zo snel als het kan. Meer zeg ik er niet over."}]
           lead_in: {text: "Ach. Vergeet het maar."}
           interest: [{text: "Dat zie je pas als je het doet. Kom maar kijken."}, {text: "Dat verschilt per schets."}]
           concern: [{text: "Ach. Dat leg je niet zomaar uit."}, {text: "Laat maar. Je hoort het in de kantine wel."}]

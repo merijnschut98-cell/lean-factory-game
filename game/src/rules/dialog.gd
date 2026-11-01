@@ -176,6 +176,8 @@ const COPIED := ["openness", "trust", "mood", "version", "revealed", "heard", "p
 	"_lead_in_said", "_co_offered", "_warned", "_worn", "moves_made",
 	"trace", "made", "told", "steered_early", "concern_by", "start_openness", "_found", "_facts", "_retry", "_seed",
 	"said", "_topic", "answered", "_lead_ins", "_clue"]
+## A player sentence longer than this many words is a story: told once per talk (review 2, R1).
+const STORY_WORDS := 12
 const STATE_KEYS := 22  # COPIED up to "trace"; test_dialog_routes.gd checks it
 
 # Four sentences a turn (PLAN 2.13 B, Merijn 2026-10-19: "I'd prefer having 4
@@ -398,11 +400,26 @@ func _candidates() -> Array[Dictionary]:
 		if move in PICK_MOVES:
 			for p: Dictionary in _picks(move):
 				out.append({"move": move, "pick": p["id"]})
-		else:
+		elif not _said_before(move):
 			out.append({"move": move, "pick": ""})
 	if def.tutorial:
 		return out.filter(func(o: Dictionary) -> bool: return not o["move"] in NOT_IN_TUTORIAL)
 	return out
+
+
+## Whether the player's sentence for `move` now is one of the talk's own lines
+## they already said in this talk (review 2, R1: a story is told once): then the
+## move is not dealt. A proposal, a clue and the ask may come again (each has its
+## own acknowledgement), a gesture ("(je wacht even)") is no sentence, and the
+## bank's short general lines may come back (a talk without its own lines would
+## otherwise run out of ways to listen); a long one (a story) is told once too.
+func _said_before(move: String) -> bool:
+	if move in ["ask_commitment", "close"]:
+		return false
+	var line := _player_line(move)
+	if line.begins_with("(") or not line in said:
+		return false
+	return def.lines.has(move) or line.split(" ", false).size() > STORY_WORDS
 
 
 ## How `option` would land now, played on a copy: decisive (it wins, or draws
@@ -992,6 +1009,21 @@ func _player_line(move: String, pick: String = "") -> String:
 		return str(def.co_proposal["take"])   # their idea, taken up in the player's words
 	if move in ["propose", "propose_experiment"] and not pick.is_empty():
 		return str(def.item(pick).get("text", ""))
+	var line := _own_line(move, pick)
+	if line in said and not line.begins_with("(") and def.lines.get(move) is String \
+			and not move in PICK_MOVES + ["ask_commitment", "close"]:
+		# A talk with one own sentence for the move said it (review 2, R1: a story is
+		# told once): the bank's general line, while one is left unsaid. A talk with
+		# lines per layer has its own variants; said all, the move is not dealt.
+		var general: Variant = bank["player"].get(move, [])
+		for v: Variant in (general if general is Array else [general]):
+			if not str(v) in said and not str(v).is_empty():
+				return str(v)
+	return line
+
+
+## The talk's own line for `move` (else the bank's), as _player_line describes it.
+func _own_line(move: String, pick: String) -> String:
 	var own: Variant = def.lines.get(move, bank["player"].get(move, ""))
 	var keyed: bool = own is Dictionary
 	if keyed:  # keyed by what the person spoke of last (TOPICS)

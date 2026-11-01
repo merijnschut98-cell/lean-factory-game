@@ -153,3 +153,17 @@ def test_ruud_names_what_the_line_did_not_what_it_said(real):
     may not call it "snappen dat het zwaar is"."""
     names = real["dialogs"]["bank"]["ruud_names"]
     assert "zwaar" not in names["empathy"]
+
+
+def test_ordinary_openers_and_a_flat_ask_list_pass(real, tmp_path):
+    """Re-review (gate brittleness): a three-word opener shared by two moves ("Dat herken ik.")
+    is ordinary speech, not a stacked promise; a flat ask list beside ordered refusals is
+    fine (a refusal does not depend on how the player asked)."""
+    docs = copy.deepcopy(real)
+    lines = _lines(docs, "anouk_seven")
+    lines["empathy"]["position"] = ["Dat herken ik. Zo simpel dat het wegzakt."]
+    lines["experience"]["position"] = ["Dat herken ik. Ik ben hier ook nieuw."]
+    lines["ask_commitment"] = ["Zullen we dat doen?", "Afgesproken?"]
+    _dialog(docs, "anouk_seven")["replies"]["ask_commitment"] = {
+        "misses": [{"text": "Nee. Nog niet."}, {"text": "Nog even niet."}]}
+    _load(tmp_path, docs)

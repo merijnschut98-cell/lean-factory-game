@@ -2413,8 +2413,9 @@ def _dialog_line(move: str, said: Any, where: str) -> None:
 
 # The opening clause of a player's line (up to the first stop or comma), for _talk_holds.
 _OPENING_RE = re.compile(r"^(.+?)[.,?!…:]")
-# A clause this long or longer is a preface (a promise, "Ik hou het kort"), not a common word.
-_PREFACE_WORDS = 3
+# A clause this long or longer is a preface (a promise: "Ik hou het kort", "Het blijft tussen
+# ons"), not an ordinary opener ("Dat herken ik.", "Ik snap het."; re-review 2026-11-01).
+_PREFACE_WORDS = 4
 
 
 def _player_sentences(lines: dict) -> list[tuple[str, str, str]]:
@@ -2438,7 +2439,7 @@ def _talk_holds(d: dict, where: str) -> None:
         place = first.setdefault(text.strip(), (move, topic))
         if place != (move, topic):
             raise ContentError(f"{where} lines: {text!r} stands in two places ({place[0]}.{place[1]} and "
-                               f"{move}.{topic}), so the player says it twice")
+                               f"{move}.{topic}, two layers count as two places), so the player says it twice")
         m = _OPENING_RE.match(text)
         clause = m.group(1).strip().lower() if m else ""
         if len(clause.split()) >= _PREFACE_WORDS and clause != text.strip().lower().rstrip(".?!…"):
@@ -2448,7 +2449,8 @@ def _talk_holds(d: dict, where: str) -> None:
     replies = d.get("replies", {})
     for move, said in d.get("lines", {}).items():
         ordered = [e for e in _entries_of(replies.get(move, {})) if isinstance(e, list) and len(e) > 1]
-        if isinstance(said, list) and len(said) > 1 and ordered:
+        # The ask's refusals do not depend on how the player asked: its lines may turn freely.
+        if isinstance(said, list) and len(said) > 1 and ordered and move != "ask_commitment":
             raise ContentError(f"{where} lines: {move} turns through its lines by the seed, and its replies come in "
                                f"written order; key the lines ({{_: [...]}}) so they are said in written order too")
     if len(d.get("data", [])) >= 2:

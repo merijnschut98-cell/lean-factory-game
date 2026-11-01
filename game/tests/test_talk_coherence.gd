@@ -58,7 +58,7 @@ func test_the_walk_flags_a_retold_story_line_and_an_echo() -> void:
 ## Review 2 #1 (2026-10-31): a question that misses in a reviewed talk is held back or
 ## turned aside in the person's own words at every layer, never "I don't know" about
 ## the work they just explained or do every day.
-const DISOWNS := "(?i)weet (ik )?(het )?(eigenlijk )?niet|geen idee|nakijken|zo gaat dat hier"
+const DISOWNS := "(?i)weet (ik )?(het )?(eigenlijk )?niet|geen idee|nakijken|zo gaat (dat|het) (hier|nu eenmaal)"
 
 
 func test_a_reviewed_talk_never_disowns_its_own_work_when_a_question_misses() -> void:
@@ -86,3 +86,19 @@ static func _texts(entry: Variant) -> Array[String]:
 		for e: Variant in (entry.values() if entry is Dictionary else entry):
 			out.append_array(_texts(e))
 	return out
+
+
+## Review 2, R1: a long sentence of the player (a story, a promise) said a second time
+## in one route is flagged `told`; a short one, or a proposal made again, is not.
+func test_the_walk_flags_a_long_sentence_told_twice() -> void:
+	var ctx := {"repeat": null, "clarify": null, "stock": {}}
+	var t := DialogFixture.talk(50)
+	var story := "Maandagavond kon ik de uitgang niet vinden, en niemand hier wist wat ik kwam doen."
+	var path := {"moves": ["experience"], "lines": [story, "Gaat het?"], "heard": ["Positie."]}
+	assert_true("told" in TalkWalk.turn(ctx, t, "Hm.", path, {"move": "experience", "line": story, "reply": "Mm."})["flags"])
+	assert_false("told" in TalkWalk.turn(ctx, t, "Hm.", path, {"move": "mood", "line": "Gaat het?", "reply": "Ja."})["flags"],
+		"a short line again")
+	var long_proposal := "Wat als we samen een week lang elke ochtend tellen wat er binnenkomt en wat blijft liggen?"
+	path["lines"].append(long_proposal)
+	assert_false("told" in TalkWalk.turn(ctx, t, "Hm.", path, {"move": "propose", "line": long_proposal, "reply": "Ja."})["flags"],
+		"a proposal made again is acknowledged, not told")
