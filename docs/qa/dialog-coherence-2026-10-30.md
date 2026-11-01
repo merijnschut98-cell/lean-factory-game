@@ -49,6 +49,16 @@ voice, and its own "Daar denk ik nog over na" lines.
 | `sanne_checker` | Sanne | rewritten, batch 2 (35.1 → 0.7, echoes 245 → 0, no flag) |
 | `henk_camera` | Henk | rewritten, batch 2 (36.0 → 1.2, echoes 261 → 0, no flag) |
 
+| `joost_output_kpi` | Joost | rewritten, batch 3 (36.9 → 1.3, echoes 322 → 0, no flag at budget 8000) |
+| `sanne_kpi` | Sanne | rewritten, batch 3 (35.0 → 0.8, echoes 241 → 0, no flag at budget 8000) |
+| `gert_klic` | Gert | rewritten, batch 3 (35.4 → 0.6, echoes 268 → 0, no flag at budget 8000) |
+| `wim_spreadsheet` | Wim | rewritten, batch 3 (37.1 → 0.8, echoes 301 → 0, no flag at budget 8000) |
+
+The two KPI talks are the audited ones of `test_dialog_content.gd`: their reply tags stay
+the audited ones (a talk's own untagged reply clears the moment's tags, a bank reply keeps
+them; Joost's interest answers carry the `[feeling]` the bank's reply used to leave), so the
+scripted routes keep their exact traces. Gert's first pressure line stays the safety stop.
+
 Batch 2, review round 1 (2026-11-01, `review3-findings.md`): no flag in the four at walk
 budget 8000 either (Marco's third clue answer). Commitments name only what every route to
 them brings; `test_a_reviewed_talk_s_commitment_fits_every_route_to_it` checks it for every
