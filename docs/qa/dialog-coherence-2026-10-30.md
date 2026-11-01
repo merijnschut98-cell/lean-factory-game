@@ -44,6 +44,10 @@ voice, and its own "Daar denk ik nog over na" lines.
 | `petra_batch` | Petra | rewritten; review round 1 fixed (38.3 → 0.5, echoes 294 → 0, no flag) |
 | `linda_replanning` | Linda | rewritten; review round 1 fixed (36.7 → 0.4, echoes 235 → 0, no flag) |
 | `mieke_redraw` | Mieke | rewritten; review round 1 fixed (36.7 → 0.4, echoes 285 → 0, no flag) |
+| `joost_vacancies` | Joost | rewritten, batch 2 (35.8 → 1.0, echoes 284 → 0, no flag) |
+| `marco_wasted_trips` | Marco | rewritten, batch 2 (35.1 → 1.1, echoes 228 → 0, no flag) |
+| `sanne_checker` | Sanne | rewritten, batch 2 (35.1 → 0.7, echoes 245 → 0, no flag) |
+| `henk_camera` | Henk | rewritten, batch 2 (36.0 → 1.2, echoes 261 → 0, no flag) |
 
 Each also has its own words where it used to take the bank's: the ending with no outcome
 (`outcomes.none`), an experiment proposed again, the refusal, the shrug at a silence, and
@@ -260,9 +264,10 @@ them: the Act 0 week (`sanne_tuesday`, `rachid_counter`, `anouk_first_look`,
 `mieke_wednesday`, `joost_wednesday`, `linda_wednesday`, `anouk_thursday`,
 `petra_thursday`, `anouk_owns_tray`, `sanne_friday`) is what Merijn plays next.
 
-Update 2026-10-31: the week and the first three are rewritten (see Run order). The ranking
-now starts with `joost_vacancies` 35.8 · `marco_wasted_trips` 35.2 · `henk_camera` 35.1 ·
-`sanne_checker` 35.1, the next Act I batch.
+Update 2026-10-31: the week and the first three are rewritten (see Run order). Update
+2026-11-01: the second Act I batch too (`joost_vacancies`, `marco_wasted_trips`,
+`sanne_checker`, `henk_camera`); their pressure, blame and perspective answers are keyed
+`_`, so each line meets its own answer. The README ranking shows the next batch.
 
 ## 7. What a next run fixes (not in this one)
 
