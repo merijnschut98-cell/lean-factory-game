@@ -21,16 +21,16 @@ TalkWalk does not walk them; Henk's is read by hand after the persuasions.
 | Day | Talk | Person | Status |
 |---|---|---|---|
 | Mon 19:00 | `anouk_seven` | Anouk | reference talk (rounds 1–2) |
-| Tue 08:30 | `sanne_tuesday` | Sanne | rewritten, reviewed (score 30.4 → 0.5, echoes 188 → 0) |
-| Tue | `anouk_first_look` | Anouk | rewritten, reviewed (30.9 → 0.5, echoes 196 → 0) |
-| Tue–Thu, optional | `rachid_counter` | Rachid | rewritten, reviewed (30.6 → 2.1, echoes 193 → 0) |
-| Wed | `mieke_wednesday` | Mieke | rewritten, reviewed (28.9 → 1.3, echoes 199 → 0) |
-| Wed | `joost_wednesday` | Joost | rewritten, reviewed (29.0 → 0.8, echoes 206 → 0) |
-| Wed | `linda_wednesday` | Linda | rewritten, reviewed (30.1 → 0.9, echoes 186 → 0) |
-| Thu | `anouk_thursday` | Anouk | rewritten, reviewed (31.2 → 0.5, echoes 196 → 0) |
-| Thu | `petra_thursday` | Petra | rewritten, reviewed (29.2 → 0.9, echoes 185 → 0) |
-| Fri | `anouk_owns_tray` | Anouk | rewritten, reviewed (35.4 → 0.3, echoes 234 → 0) |
-| Fri | `sanne_friday` | Sanne | rewritten, reviewed (33.6 → 0.3, echoes 226 → 0) |
+| Tue 08:30 | `sanne_tuesday` | Sanne | rewritten; review round 1 fixed (score 30.4 → 0.5, echoes 188 → 0) |
+| Tue | `anouk_first_look` | Anouk | rewritten; review round 1 fixed (30.9 → 0.5, echoes 196 → 0) |
+| Tue–Thu, optional | `rachid_counter` | Rachid | rewritten; review round 1 fixed (30.6 → 1.1, echoes 193 → 0, no flag) |
+| Wed | `mieke_wednesday` | Mieke | rewritten; review round 1 fixed (28.9 → 1.2, echoes 199 → 0) |
+| Wed | `joost_wednesday` | Joost | rewritten; review round 1 fixed (29.0 → 0.9, echoes 206 → 0) |
+| Wed | `linda_wednesday` | Linda | rewritten; review round 1 fixed (30.1 → 0.8, echoes 186 → 0) |
+| Thu | `anouk_thursday` | Anouk | rewritten; review round 1 fixed (31.2 → 0.5, echoes 196 → 0) |
+| Thu | `petra_thursday` | Petra | rewritten; review round 1 fixed (29.2 → 0.9, echoes 185 → 0) |
+| Fri | `anouk_owns_tray` | Anouk | rewritten; review round 1 fixed (35.4 → 0.5, echoes 234 → 0) |
+| Fri | `sanne_friday` | Sanne | rewritten; review round 1 fixed (33.6 → 0.3, echoes 226 → 0) |
 | any day, the yard | `henk_expert` | Henk | expert talk, read by hand: every answer fits its question; no change |
 
 After the week: the worst of the README ranking (Act I), worst first. Act I talks steer
@@ -41,17 +41,46 @@ voice, and its own "Daar denk ik nog over na" lines.
 
 | Act I talk | Person | Status |
 |---|---|---|
-| `petra_batch` | Petra | rewritten, reviewed (38.3 → 0.6, echoes 294 → 0, no flag) |
-| `linda_replanning` | Linda | rewritten, reviewed (36.7 → 0.4, echoes 235 → 0, no flag) |
-| `mieke_redraw` | Mieke | rewritten, reviewed (36.7 → 0.4, echoes 285 → 0, no flag) |
+| `petra_batch` | Petra | rewritten; review round 1 fixed (38.3 → 0.5, echoes 294 → 0, no flag) |
+| `linda_replanning` | Linda | rewritten; review round 1 fixed (36.7 → 0.4, echoes 235 → 0, no flag) |
+| `mieke_redraw` | Mieke | rewritten; review round 1 fixed (36.7 → 0.4, echoes 285 → 0, no flag) |
 
 Each also has its own words where it used to take the bank's: the ending with no outcome
 (`outcomes.none`), an experiment proposed again, the refusal, the shrug at a silence, and
 its own sentence for the ask (the bank's "Zullen we dat afspreken?" after a question of
 theirs was a `question` flag). The stock share left (4–6 %) is the bank's "you said that"
-lines for a sentence said again (`again`) and its `repeat` for a clue shown again. One engine change came with them: two clues on offer in
-one turn are shown in two different sentences (`_player_line`, a clue that does not matter
-takes the next variant), test `test_two_clues_on_offer_are_shown_in_different_sentences`.
+lines for a sentence said again (`again`) and its `repeat` for a clue shown again.
+
+Engine changes that came with the week and the batch (each test first, in
+`game/tests/test_dialog_coherence.gd`): their own idea is not offered after the player
+proposed it earlier (`_proposed`); a clue that does not matter, a lucky guess and a
+refusal may be answered in the talk's own words (`replies.show_data.other`,
+`replies.propose.misses`, `replies.ask_commitment.misses`); two clues on offer in one turn
+are shown in two different sentences (`_player_line`).
+
+### Review round 1 of the week and the batch (2026-11-01)
+
+The task review (`.superpowers/sdd/dialog-lead/review2-findings.md`) found the same
+families one level deeper: answers that do not fit the question, endings that name what
+was never said. Fixed in content and, where the cause was structural, made a gate first:
+
+- `tools/build_content.py` `_talk_holds` (tests in `tests/test_dialog_coherence.py`): a
+  player sentence in two places of one talk; a preface of three words or more opening the
+  lines of two moves (a promise said again); a list turned by the seed beside replies in
+  written order (key the lines `{_: [...]}`); two clues on offer and a show_data reply
+  picked by order (key each clue's reply by its id). `other` belongs to show_data only.
+- `game/tests/test_talk_coherence.gd`: a reviewed talk has its own inquiry misses at the
+  interest and the concern, and no inquiry or open-question miss says "weet ik niet",
+  "geen idee", "nakijken" or "zo gaat dat hier" about the person's own work.
+- Engine (`dialog.gd`): a show_data reply keyed by the clue shown (`_clue`); no proposal
+  and no ask dealt while the person breaks off (the lead-in); a reply list keyed by the
+  layer answers the talk's questions for that layer place by place (`_asked`), so a
+  question that missed does not hand its answer to the next one.
+- Content, all reviewed talks: own inquiry and open-question misses per layer, each
+  fitting both questions of that layer; layer texts that open with a hinge every move into
+  them can meet ("Eerlijk?"); questions that re-asked what the layer just told, replaced;
+  commitment lines that fit every proposal leading there; `heard` lines about the person,
+  not a claimed action; Ruud's note on empathy names what the line did, not "dat het zwaar is".
 
 ## 1. The one root cause
 
@@ -217,8 +246,8 @@ them: the Act 0 week (`sanne_tuesday`, `rachid_counter`, `anouk_first_look`,
 `petra_thursday`, `anouk_owns_tray`, `sanne_friday`) is what Merijn plays next.
 
 Update 2026-10-31: the week and the first three are rewritten (see Run order). The ranking
-now starts with `joost_vacancies` 35.8 · `marco_wasted_trips` 35.2 · `sanne_checker` 35.1 ·
-`henk_camera` 34.9, the next Act I batch.
+now starts with `joost_vacancies` 35.8 · `marco_wasted_trips` 35.2 · `henk_camera` 35.1 ·
+`sanne_checker` 35.1, the next Act I batch.
 
 ## 7. What a next run fixes (not in this one)
 
