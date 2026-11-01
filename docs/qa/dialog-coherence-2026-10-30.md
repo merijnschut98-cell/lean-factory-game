@@ -82,6 +82,21 @@ was never said. Fixed in content and, where the cause was structural, made a gat
   commitment lines that fit every proposal leading there; `heard` lines about the person,
   not a claimed action; Ruud's note on empathy names what the line did, not "dat het zwaar is".
 
+### Review round 2 (2026-11-01)
+
+- A story is told once (R1). The rules no longer deal a sentence of the talk's own the
+  player already said (`Dialog._said_before`, in `_candidates`, so the walk sees it too); a
+  talk with one own sentence for a move falls back to the bank's unsaid general line, and a
+  bank line of more than 12 words (`Dialog.STORY_WORDS`) is told once too; the ask,
+  proposals, clues and gestures may come again. Every reviewed talk's
+  `experience.concern` (and Petra's `experience.interest`) got a second variant.
+- Walk gate `told` (`TalkWalk`, every talk): a player sentence of more than 12 words said
+  twice in one route. A proposal made again is a choice with its own acknowledgement and is
+  left out. Before the engine change it failed in 23 talks.
+- Gate brittleness: the shared-opening rule needs four words ("Dat herken ik." is ordinary
+  speech); a flat ask list may sit beside ordered refusals; the disowning pattern also
+  catches "zo gaat het hier" and "zo gaat het nu eenmaal".
+
 ## 1. The one root cause
 
 **What a person answers was keyed to the kind of move the player made, never to the
