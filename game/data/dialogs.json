@@ -697,7 +697,7 @@
       "Hoe zit dat precies?"
      ],
      "concern": [
-      "Wat is er met je voorganger gebeurd?",
+      "Hoe was dat voor je team, toen hij wegging?",
       "Hoe lang duurt het voordat doorlooptijd beter wordt?"
      ],
      "interest": [
@@ -737,7 +737,7 @@
      ],
      "lead_in": "En wat?",
      "position": [
-      "Hoe komt zo'n record tot stand?",
+      "Waarom staat dat getal bovenaan?",
       "Wat betekent dertig per week voor je team?",
       "Hoe kijk je zelf naar dat getal?"
      ]
@@ -981,7 +981,7 @@
      "misses": {
       "_": [
        {
-        "text": "Hm. Ander bedrijf."
+        "text": "Dat zeggen ze allemaal."
        },
        {
         "text": "Mm."
@@ -1013,7 +1013,7 @@
      "lands": {
       "concern": [
        {
-        "text": "Eén slecht kwartaal. Nu zit hij bij Inkoop."
+        "text": "Stil. Iedereen ging ineens heel precies tellen."
        },
        {
         "text": "Maanden. En al die tijd sta ik in het rood."
@@ -1125,8 +1125,7 @@
        },
        {
         "tags": [
-         "claim",
-         "feeling"
+         "claim"
         ],
         "text": "Goed. Het getal is goed."
        }
@@ -1216,7 +1215,7 @@
       },
       "position": [
        {
-        "text": "Elk dossier dezelfde dag eruit. Niet blijven hangen. Dat is het hele geheim."
+        "text": "Omdat Frank erom vraagt. Elke maandag."
        },
        {
         "text": "Dat ze elke maandag weten waar ze staan. En vrijdag dat ze het gehaald hebben."
@@ -1245,10 +1244,10 @@
       ],
       "interest": [
        {
-        "text": "Dat moet je Frank vragen."
+        "text": "Dat hoor je maandag zelf wel."
        },
        {
-        "text": "Daar heb ik nu geen antwoord op."
+        "text": "Dat wil ik liever niet uitproberen."
        }
       ],
       "lead_in": {
@@ -1269,15 +1268,13 @@
       "_": [
        {
         "tags": [
-         "claim",
-         "feeling"
+         "claim"
         ],
         "text": "Klopt."
        },
        {
         "tags": [
-         "claim",
-         "feeling"
+         "claim"
         ],
         "text": "Ja, zo ongeveer."
        }
@@ -1520,7 +1517,7 @@
         "text": "Vijf procent. Dat is ruis."
        },
        {
-        "text": "Dat zijn de monteurs die het anders willen."
+        "text": "Dat zakt vanzelf weer."
        },
        {
         "text": "Ja, en?"
@@ -1754,7 +1751,7 @@
      "_": [
       "Hoe is het nu echt met je, Sanne?",
       "En jij, hoe hou je het vol?",
-      "Hoe is het met je team, na die maand?"
+      "Hoe is het met jullie, na zo'n maand?"
      ],
      "lead_in": "Gaat het?",
      "position": [
@@ -1861,7 +1858,7 @@
     "heard": "Zo. Dat had ik nog nooit hardop gezegd.",
     "none": "Goed. Ik moet verder, joh.",
     "partial": "Ik doe mee. Als Frank het goedvindt. Het jaarplan is van hem.",
-    "ruined": "Dus het ligt weer aan de Intake. Natuurlijk."
+    "ruined": "Dus het ligt weer aan Intake. Natuurlijk."
    },
    "patience": 9,
    "person": "sanne",
@@ -1954,7 +1951,7 @@
         "text": "Te snel? We halen ons weekdoel. Daar word ik op afgerekend."
        },
        {
-        "text": "Vrijdagmiddag. Ja. Joh. Dat is wel erg makkelijk."
+        "text": "Vrijdagmiddag. Ja. Joh. Dat is wel erg makkelijk gezegd."
        },
        {
         "text": "Omdat het formulier er niet om vraagt, joh."
@@ -18849,19 +18846,19 @@
      ],
      "interest": [
       "Waarom staat een proefsleuf niet in de planning?",
-      "Wie betaalt het, als je wel gaat zoeken?"
+      "Hoe vaak sta je op zo'n plek te gokken?"
      ],
      "lead_in": "Wat dan?",
      "position": [
-      "Wat stond er precies op die kaart?",
-      "Wie heeft de melding gedaan?"
+      "Wat kost het, om bij elke kabel te zoeken?",
+      "Wie betaalt zo'n proefsleuf nu?"
      ]
     },
     "mood": {
      "_": [
       "Hoe gaat het nu echt met je, Gert?",
       "En jij, hoe zit je erbij?",
-      "Hoe is het met je jongens?"
+      "Hoe houden jullie het vol, met die schade?"
      ],
      "lead_in": "Gaat het?",
      "position": [
@@ -18879,14 +18876,14 @@
       "Wie zou er naast je moeten staan, bij de eerste meter?"
      ],
      "interest": [
-      "Wat kost een proefsleuf je eigenlijk?",
+      "Hoe vaak zou je eigenlijk moeten zoeken?",
       "Wat zegt je opdrachtgever als je gaat zoeken?"
      ],
      "lead_in": "Wat is het?",
      "position": [
       "Hoe gaat zo'n graafklus, van melding tot schop?",
       "Wat zou je moeten doen om het zeker te weten?",
-      "Wat gebeurt er als je jongens een kabel tegenkomen die niet op de kaart staat?"
+      "Waarom zoek je niet altijd?"
      ]
     },
     "paraphrase": {
@@ -18966,7 +18963,7 @@
    "outcomes": {
     "commitment": "Afgesproken. En als jullie kaart weer niet klopt, wil ik dat ook horen. Niet alleen ik van jullie.",
     "compliance": "Als het moet voor het contract.",
-    "heard": "Je laat me tenminste uitpraten. Dat doet jullie schadeafdeling niet.",
+    "heard": "Je laat me tenminste uitpraten. Dat gebeurt niet vaak.",
     "none": "Goed. Ik moet terug naar de put.",
     "partial": "Ik doe mee. Als het in de opdracht komt te staan.",
     "ruined": "Dan zie ik je bij de rechter. Ik heb gewoon een melding gedaan."
@@ -19096,7 +19093,7 @@
      "misses": {
       "_": [
        {
-        "text": "Hm. Ander vak."
+        "text": "Hm. Dat hoor ik wel vaker."
        },
        {
         "text": "Mm."
@@ -19139,7 +19136,7 @@
         "text": "Omdat niemand erom vraagt. Mijn opdrachtgever niet, jullie niet."
        },
        {
-        "text": "Ik. Of niemand. Meestal niemand."
+        "text": "Vaker dan je denkt. Elke week wel een keer."
        }
       ],
       "lead_in": {
@@ -19147,10 +19144,10 @@
       },
       "position": [
        {
-        "text": "Niks. Op die plek was het leeg. Op papier."
+        "text": "Een halve dag per sleuf. En er liggen er tien op een straat."
        },
        {
-        "text": "Ik. Zelf. Drie dagen van tevoren."
+        "text": "Niemand. Dat is het hem."
        }
       ]
      },
@@ -19179,7 +19176,7 @@
         "text": "Vraag dat maar aan de opdrachtgever."
        },
        {
-        "text": "Ach. Niemand."
+        "text": "Ach. Te vaak."
        }
       ],
       "lead_in": {
@@ -19187,10 +19184,10 @@
       },
       "position": [
        {
-        "text": "Ach. Dat staat in de melding."
+        "text": "Ach. Dat reken je zelf maar uit."
        },
        {
-        "text": "Dat heb ik toch gezegd. Ik."
+        "text": "Ach. Niemand, meestal."
        }
       ]
      },
@@ -19294,7 +19291,7 @@
       ],
       "interest": [
        {
-        "text": "Een halve dag per sleuf. Reken maar uit."
+        "text": "Bij bijna elke klus. Daarom doe ik het niet."
        },
        {
         "text": "Dat ik te duur ben. Dan gaat de volgende klus naar een ander."
@@ -19312,7 +19309,7 @@
        },
        {
         "tell": "safety",
-        "text": "Mijn jongens graven waar de kaart zegt dat het kan. Klopt die kaart niet, dan sta ík er straks naast. Niet jullie."
+        "text": "Omdat niemand het betaalt. Dus graven mijn jongens waar de kaart zegt dat het kan. Klopt die kaart niet, dan sta ík er straks naast."
        }
       ]
      },
@@ -19447,7 +19444,7 @@
         "text": "Voor iedereen? Ik ben degene die ernaast staat."
        },
        {
-        "text": "Ruud. Die graaft niet."
+        "text": "Ruud wil dat? Dan komt hij maar een keer in de put kijken."
        }
       ]
      }
@@ -21593,13 +21590,13 @@
     "ask_commitment": {
      "misses": [
       {
+       "text": "Dat zet ik in tabblad vier."
+      },
+      {
        "text": "Nee. Nog niet."
       },
       {
        "text": "Eerst wil ik iemand zien kijken."
-      },
-      {
-       "text": "Nog even niet."
       }
      ]
     },
@@ -22074,17 +22071,6 @@
       {
        "text": "Dat stelde u al voor, ja."
       }
-     ],
-     "misses": [
-      {
-       "text": "Hm. Misschien."
-      },
-      {
-       "text": "Dat zei de vorige meneer ook."
-      },
-      {
-       "text": "Dat zet ik in tabblad vier."
-      }
      ]
     },
     "propose_experiment": {
@@ -22153,7 +22139,7 @@
      "misses": {
       "_": [
        {
-        "text": "Nee, dat zou ik zo niet zeggen."
+        "text": "Zorgen? Nee. Ik meet."
        },
        {
         "text": "Nee hoor. Ik meet gewoon."

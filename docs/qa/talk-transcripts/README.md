@@ -32,9 +32,9 @@ or endings it marks). Flags: `repeat` says you repeat yourself, you did not, `cl
 | 20 | [Marco en de ritten voor niks](marco_wasted_trips.md) (`marco_wasted_trips`) | 1.1 | stock replies 11 % | 1226 |
 | 21 | [Rachid aan de balie](rachid_counter.md) (`rachid_counter`) | 1.1 | stock replies 11 % | 1207 |
 | 22 | [Joost en de vacatures](joost_vacancies.md) (`joost_vacancies`) | 1.0 | stock replies 10 % | 1415 |
-| 23 | [Wim en tabblad drie](wim_spreadsheet.md) (`wim_spreadsheet`) | 0.8 | stock replies 8 % | 1783 |
-| 24 | [Petra en de Molen](petra_thursday.md) (`petra_thursday`) | 0.8 | stock replies 8 % | 1076 |
-| 25 | [Linda en het kaartenhuis](linda_wednesday.md) (`linda_wednesday`) | 0.8 | stock replies 8 % | 1210 |
+| 23 | [Petra en de Molen](petra_thursday.md) (`petra_thursday`) | 0.8 | stock replies 8 % | 1076 |
+| 24 | [Linda en het kaartenhuis](linda_wednesday.md) (`linda_wednesday`) | 0.8 | stock replies 8 % | 1210 |
+| 25 | [Wim en tabblad drie](wim_spreadsheet.md) (`wim_spreadsheet`) | 0.8 | stock replies 8 % | 1783 |
 | 26 | [Sanne en de aanvragen per week](sanne_kpi.md) (`sanne_kpi`) | 0.8 | stock replies 8 % | 1171 |
 | 27 | [Joost en de stapel](joost_wednesday.md) (`joost_wednesday`) | 0.8 | stock replies 8 % | 1012 |
 | 28 | [Sanne en de controleur](sanne_checker.md) (`sanne_checker`) | 0.7 | stock replies 7 % | 1293 |
