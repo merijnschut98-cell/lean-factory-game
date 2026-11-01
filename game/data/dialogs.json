@@ -12014,7 +12014,7 @@
    "name": "Joost en de vacatures",
    "opening": "Als je komt vertellen dat we efficiënter moeten werken: dat weet ik. Ik heb het uitgerekend.",
    "outcomes": {
-    "commitment": "Goed. Ik zeg in het MT dat we de vacatures drie weken aanhouden. Omdat het team iets wil proberen.",
+    "commitment": "Goed. Ik zeg het in het MT. Omdat we iets willen proberen, en niet omdat het misging.",
     "compliance": "Als Ruud dat wil. Dan schrijf ik het zo op.",
     "heard": "Eerlijk is eerlijk: het was fijn om het eens kwijt te kunnen.",
     "none": "Goed. Ik moet weer verder.",
@@ -12199,7 +12199,7 @@
         "tags": [
          "admission"
         ],
-        "text": "Het MT. Frank. Die zoekt een schuldige."
+        "text": "Het MT. Bij een getal zoekt iemand snel een schuldige."
        }
       ],
       "interest": [
@@ -12927,7 +12927,7 @@
      "_": [
       "Hoe is het nu echt met je, Sanne?",
       "En jij, hoe hou je dat vol?",
-      "Hoe is het met je team?"
+      "Hoe is het met jullie, na zo'n week?"
      ],
      "lead_in": "Gaat het?",
      "position": [
@@ -13030,7 +13030,7 @@
    "name": "Sanne en de controleur",
    "opening": "Twee minuten. Ik heb vier mensen in de wacht en één aan de lijn.",
    "outcomes": {
-    "commitment": "Afgesproken. En als het werkt, wil ik dat het in het MT gezegd wordt. Door jou. Dat het het formulier was, niet mijn team.",
+    "commitment": "Afgesproken. En als het werkt, wil ik dat het in het MT gezegd wordt. Door jou. Dat het niet aan mijn mensen lag.",
     "compliance": "Prima. Weer iets erbij.",
     "heard": "Zo. Dat moest er even uit.",
     "none": "Ik moet echt opnemen. Sorry.",
@@ -13682,7 +13682,7 @@
         "text": "Een week wachten voor een meterkastfoto. Ja. Dat geloof ik meteen."
        },
        {
-        "text": "Zwart op wit. Joh. Dat hang ik bij Joost op de deur."
+        "text": "Zwart op wit. Joh. Dat neem ik mee naar het werkoverleg."
        },
        {
         "text": "Ja. De helft. Ik heb het gezien."
@@ -13898,7 +13898,7 @@
      "position": [
       "Twintig uur per week voor niks. Dat zou mij ook storen.",
       "Dat je mannen daarvoor betalen, is niet eerlijk.",
-      "Drie verbetermanagers al. Dat zegt genoeg."
+      "Drie verbetermanagers al. Dan snap ik dat je voorzichtig bent."
      ]
     },
     "experience": {
@@ -14041,7 +14041,7 @@
    "name": "Marco en de ritten voor niks",
    "opening": "Ah. De nieuwe verbetermanager. Ik heb er al drie gehad. Koffie staat daar.",
    "outcomes": {
-    "commitment": "Goed. We proberen het. En als het over een maand weer weg is, ben jij de vierde.",
+    "commitment": "Goed. We proberen het. En als het weer wegzakt, ben jij de vierde.",
     "compliance": "Komt op de stapel.",
     "heard": "Hm. Jij luistert tenminste. Dat deed de vorige niet.",
     "none": "Goed. Mijn mannen wachten.",
@@ -14109,7 +14109,7 @@
         "text": "Hoe wij rijden? Wij rijden waar de planning zegt."
        },
        {
-        "text": "Niet willen? Ik heb er drie gehad. Ik weet wat ik wil."
+        "text": "Niet willen? Ik heb er drie gehad. Drie keer heb ik meegedaan."
        },
        {
         "text": "Omdat dat niet ons werk is. Wij sluiten aan."
@@ -14179,7 +14179,7 @@
      "misses": {
       "_": [
        {
-        "text": "Jouw eerste weken. Ja. Ik zit hier drieëntwintig jaar. Hier is het Nova."
+        "text": "Dat zeggen ze allemaal. Ik zit hier drieëntwintig jaar."
        },
        {
         "text": "Hm. Ja."
@@ -14474,7 +14474,7 @@
       ],
       "interest": [
        {
-        "text": "Dat zie je als je een dag meerijdt."
+        "text": "Dat zie je aan de klachten."
        },
        {
         "text": "Ach. Dat ken je wel."
@@ -14688,6 +14688,9 @@
       },
       {
        "text": "Hm. Op papier ziet het er nog erger uit."
+      },
+      {
+       "text": "Ja. Zeventig procent. Ik heb het gehoord."
       }
      ],
      "misses": [
@@ -14766,7 +14769,7 @@
      }
     }
    },
-   "warning": "Zeg het maar gewoon. Wat moet ik doen?"
+   "warning": "Zeg het maar. Jullie weten het toch beter."
   },
   {
    "co_proposal": {
@@ -16233,14 +16236,14 @@
       "Hoe zou jij het hem willen leren?"
      ],
      "interest": [
-      "Hoe ruik je dat, vocht in een mof?",
-      "Wat voel je dan, aan een kabel van voor '70?"
+      "Wat voel je dan, aan een kabel van voor '70?",
+      "Hoe leer je dat, zoiets ruiken?"
      ],
      "lead_in": "Wat dan?",
      "position": [
       "Wat is er mis met die camera?",
-      "Hoe heb jij het vak eigenlijk geleerd?",
-      "Wat zou je willen dat er overblijft, als jij weg bent?"
+      "Wat zou er van jou op zo'n filmpje staan?",
+      "Wat moet een nieuwe monteur van jou leren?"
      ]
     },
     "paraphrase": {
@@ -16319,7 +16322,7 @@
    "outcomes": {
     "commitment": "Goed. Ik neem hem mee. Maar ik bepaal wanneer hij klaar is. Niet de planning.",
     "compliance": "Zet die camera dan maar neer. Ik zeg niks.",
-    "heard": "Hm. Het is lang geleden dat iemand naar het vak vroeg.",
+    "heard": "Hm. Fijn om eens gewoon te praten.",
     "none": "Goed. Ik ga naar huis.",
     "partial": "Ik doe mee. Als die jongen niet alleen de nacht in gaat voordat ik zeg dat het kan.",
     "ruined": "Film dan maar wat je wilt. Zonder mij."
@@ -16695,13 +16698,13 @@
         "tags": [
          "claim"
         ],
-        "text": "Zuur. Een beetje zoals een oude accu. Dat ruik je als je het honderd keer geroken hebt."
+        "text": "Dat het lood stugger is. Dat de mantel anders buigt."
        },
        {
         "tags": [
          "claim"
         ],
-        "text": "Dat het lood stugger is. Dat de mantel anders buigt."
+        "text": "Door het honderd keer te doen. Naast iemand die het al kan."
        }
       ],
       "lead_in": {
@@ -16718,13 +16721,13 @@
         "tags": [
          "claim"
         ],
-        "text": "Naast ouwe Toon. In de regen. Twee jaar lang."
+        "text": "Een man die een mof openmaakt. Meer niet."
        },
        {
         "tags": [
          "claim"
         ],
-        "text": "Iemand die het kan. Niet een filmpje."
+        "text": "Kijken. Ruiken. Voelen. Niet alleen doen wat de tablet zegt."
        }
       ]
      },
@@ -16747,10 +16750,10 @@
       ],
       "interest": [
        {
-        "text": "Dat leer je niet met praten."
+        "text": "Dat moet je voelen. Niet horen."
        },
        {
-        "text": "Dat moet je voelen. Niet horen."
+        "text": "Dat leer je niet met praten."
        }
       ],
       "lead_in": {
@@ -16871,7 +16874,7 @@
         "text": "Moet. Ja. Dat zeggen ze al een halfjaar."
        },
        {
-        "text": "Ruud. Die weet ook wel dat je dit niet filmt."
+        "text": "Ruud. Die weet ook wel dat je dit niet kunt filmen."
        }
       ]
      }

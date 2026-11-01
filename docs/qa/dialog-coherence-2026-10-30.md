@@ -49,6 +49,13 @@ voice, and its own "Daar denk ik nog over na" lines.
 | `sanne_checker` | Sanne | rewritten, batch 2 (35.1 → 0.7, echoes 245 → 0, no flag) |
 | `henk_camera` | Henk | rewritten, batch 2 (36.0 → 1.2, echoes 261 → 0, no flag) |
 
+Batch 2, review round 1 (2026-11-01, `review3-findings.md`): no flag in the four at walk
+budget 8000 either (Marco's third clue answer). Commitments name only what every route to
+them brings; `test_a_reviewed_talk_s_commitment_fits_every_route_to_it` checks it for every
+reviewed talk: a commitment word that a proposal or its answer brings, but not every
+proposal or experiment that meets the concern, fails, unless the person said it before
+any proposal. Its limit: a word the person said first can still lean on one route.
+
 Each also has its own words where it used to take the bank's: the ending with no outcome
 (`outcomes.none`), an experiment proposed again, the refusal, the shrug at a silence, and
 its own sentence for the ask (the bank's "Zullen we dat afspreken?" after a question of
