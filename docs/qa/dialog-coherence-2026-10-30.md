@@ -65,10 +65,16 @@ scripted routes keep their exact traces. Gert's first pressure line stays the sa
 
 Batch 4 (dirk_shelf, thomas_reclaim, rob_order_rule, femke_triage): each data clue its own
 answer, the person's own lead-in return lines (`again`) and ending with no outcome
-(`outcomes.none`), so the stock share falls to 1–2 %. An own untagged reply clears the
-moment's tags where the bank's shared line left them standing, so Femke's misses and
-paraphrase landings carry the tag of what they voice: her listen-first deals
-(`test_listening_first_wins_femke_and_ilse`) stay the five of ten they were before.
+(`outcomes.none`), so the stock share falls to 1–2 %.
+
+Review 5 (honest tags): a talk's own reply that names no `tags` ("Mm.", "Hm. Dank je.") now
+leaves the person's last words standing, as the bank's shared line it replaces did; an
+explicit `tags: []` still clears them (`test_dialog.gd`, both cases). Before, an own untagged
+reply cleared the tags, so a rewrite had to tag acknowledgements ("Hm. Dank je." `[claim]`)
+to keep a listening route as open as the bank left it. Those invented tags are gone from
+every reviewed talk: an acknowledgement carries none, a line keeps the tag of what it voices.
+Femke's listen-first deals stay the five of ten (seeds 1, 2, 3, 5, 9) they were before the
+rewrite; the margin is the talk's own (patience 9), not the tags'.
 
 Batch 2, review round 1 (2026-11-01, `review3-findings.md`): no flag in the four at walk
 budget 8000 either (Marco's third clue answer). Commitments name only what every route to

@@ -2238,9 +2238,6 @@
        }
       ],
       "lead_in": {
-       "tags": [
-        "claim"
-       ],
        "text": "Ach. Laat maar, joh."
       },
       "position": [
@@ -2306,15 +2303,9 @@
      "lands": {
       "_": [
        {
-        "tags": [
-         "feeling"
-        ],
         "text": "Precies."
        },
        {
-        "tags": [
-         "feeling"
-        ],
         "text": "Ja, zo ongeveer."
        }
       ],
@@ -2536,9 +2527,6 @@
         "text": "Dat rapport klopt gewoon, joh."
        },
        {
-        "tags": [
-         "claim"
-        ],
         "text": "Ja. En?"
        }
       ],
@@ -2556,9 +2544,6 @@
         "text": "Zo gaat dat, met een weekdoel."
        },
        {
-        "tags": [
-         "claim"
-        ],
         "text": "Ja, en?"
        }
       ]
@@ -3658,9 +3643,17 @@
         "text": "Ja."
        }
       ],
-      "concern": {
-       "text": "Ja. Dat is het eigenlijk wel."
-      },
+      "concern": [
+       {
+        "text": "Ja. Dat is het eigenlijk wel."
+       },
+       {
+        "text": "Ja… zo is het."
+       },
+       {
+        "text": "Mm. Ja."
+       }
+      ],
       "lead_in": {
        "text": "Zoiets, ja. Laat maar."
       }
@@ -3708,9 +3701,17 @@
         "text": "Ach. Nee."
        }
       ],
-      "lead_in": {
-       "text": "Nee, nee. Het is niks."
-      }
+      "lead_in": [
+       {
+        "text": "Nee, nee. Het is niks."
+       },
+       {
+        "text": "Nee. Echt niet."
+       },
+       {
+        "text": "Laat maar. Het gaat wel."
+       }
+      ]
      },
      "worn": {
       "text": "Ja, ja. Ik hoor je wel. Maar ik moet echt door."
@@ -3730,6 +3731,12 @@
        },
        {
         "text": "(ze kijkt weer naar haar scherm)"
+       },
+       {
+        "text": "(ze schuift een tekening recht)"
+       },
+       {
+        "text": "… Nou?"
        }
       ],
       "concern": {
@@ -4837,6 +4844,12 @@
        },
        {
         "text": "Dank je. Maar het gaat wel."
+       },
+       {
+        "text": "Ach. Het is gewoon mijn werk."
+       },
+       {
+        "text": "Hm. Dank je."
        }
       ],
       "lead_in": [
@@ -6419,6 +6432,12 @@
        },
        {
         "text": "Dank je. Maar het gaat wel."
+       },
+       {
+        "text": "Ach. Het is gewoon tekenen."
+       },
+       {
+        "text": "Hm. Dank je."
        }
       ],
       "lead_in": [
@@ -6435,6 +6454,19 @@
      }
     },
     "experience": {
+     "lands": {
+      "_": [
+       {
+        "text": "Echt? Dan weet je hoe het is."
+       },
+       {
+        "text": "Ja. Dan snap je het."
+       },
+       {
+        "text": "Hm. Dat herken ik."
+       }
+      ]
+     },
      "misses": {
       "_": [
        {
@@ -11688,9 +11720,6 @@
         "text": "Ja… Zo voelt het wel."
        },
        {
-        "tags": [
-         "feeling"
-        ],
         "text": "Nou. Ja."
        }
       ]
@@ -13637,9 +13666,6 @@
         "text": "Ja… Zo voelt het wel."
        },
        {
-        "tags": [
-         "feeling"
-        ],
         "text": "Nou. Ja."
        }
       ]
@@ -18250,7 +18276,7 @@
     "compliance": "Als het moet. Ik heb ze gewoon liggen.",
     "heard": "Hm. Fijn dat iemand het vraagt.",
     "none": "Goed. Ik ga weer vullen.",
-    "partial": "Prima. Maar ik ga niet elke bus zelf nalopen.",
+    "partial": "Prima. Maar ik hou mijn plank, niet hun bus bij.",
     "ruined": "Ik heb ze gewoon liggen. Zoek het verder zelf maar uit."
    },
    "owns": "wrong_joint_in_van",
@@ -18592,9 +18618,6 @@
        }
       ],
       "lead_in": {
-       "tags": [
-        "claim"
-       ],
        "text": "Ach. Laat maar."
       },
       "position": [
@@ -18638,7 +18661,7 @@
       ],
       "interest": [
        {
-        "text": "Ach. Wat erin past."
+        "text": "Dat is mijn werk niet. Ik kom nooit in die bussen."
        },
        {
         "text": "Dat is niet mijn werk."
@@ -21504,7 +21527,7 @@
       "Wie zou die snelle check mogen goedkeuren?"
      ],
      "interest": [
-      "Waarom reken je dan toch door?",
+      "Wat zou er gebeuren, als je na vijf minuten stopt?",
       "Hoe lang wacht die school in Nova-Oost al?"
      ],
      "lead_in": "Maar wat dan?",
@@ -21687,7 +21710,7 @@
         "text": "Te veel? Ik reken wat de werkinstructie zegt."
        },
        {
-        "text": "De wachtrij? Die maakt de warmtepomp, niet ik."
+        "text": "De wachtrij? Die komt van de warmtepompen, niet van mij."
        },
        {
         "text": "Omdat het moet. Zo staat het er."
@@ -21699,20 +21722,14 @@
      "lands": {
       "_": [
        {
-        "tags": [
-         "claim"
-        ],
         "text": "Hm. Dank je."
        },
        {
-        "tags": [
-         "claim"
-        ],
         "text": "Ja. Dat is het, ja."
        },
        {
         "tags": [
-         "claim"
+         "feeling"
         ],
         "text": "Mm. Fijn dat iemand het ziet."
        }
@@ -21721,26 +21738,17 @@
      "misses": {
       "_": [
        {
-        "tags": [
-         "feeling"
-        ],
         "text": "Ach, het valt wel mee."
        },
        {
-        "tags": [
-         "feeling"
-        ],
         "text": "Het hoort erbij."
        },
        {
-        "tags": [
-         "feeling"
-        ],
         "text": "Mm."
        },
        {
         "tags": [
-         "feeling"
+         "claim"
         ],
         "text": "Dank je. Maar het bord wordt er niet leger van."
        }
@@ -21827,7 +21835,7 @@
         "tags": [
          "claim"
         ],
-        "text": "Omdat de werkinstructie het zegt. Alles boven 3x25A: volle studie."
+        "text": "Als ik dan ernaast zit, kan ik niet uitleggen waarom. Daar is geen regel voor."
        },
        {
         "tags": [
@@ -21858,21 +21866,12 @@
      "misses": {
       "_": [
        {
-        "tags": [
-         "claim"
-        ],
         "text": "Ach. Dat is een lang verhaal."
        },
        {
-        "tags": [
-         "claim"
-        ],
         "text": "Hm. Dat ligt eraan."
        },
        {
-        "tags": [
-         "claim"
-        ],
         "text": "Zo simpel is het niet."
        }
       ],
@@ -21889,13 +21888,13 @@
         "tags": [
          "claim"
         ],
-        "text": "Omdat het moet."
+        "text": "Dat doe ik niet. Zo staat het er niet."
        },
        {
         "tags": [
          "claim"
         ],
-        "text": "Te lang."
+        "text": "Langer dan ze zou moeten."
        }
       ],
       "lead_in": {
@@ -21903,15 +21902,9 @@
       },
       "position": [
        {
-        "tags": [
-         "claim"
-        ],
         "text": "Te lang."
        },
        {
-        "tags": [
-         "claim"
-        ],
         "text": "Ach. Dat zie je pas als je begint."
        }
       ]
@@ -21954,16 +21947,10 @@
         "text": "Eerlijk? Moe. Gewoon moe."
        },
        {
-        "tags": [
-         "feeling"
-        ],
         "text": "Druk. Zoals altijd."
        }
       ],
       "lead_in": {
-       "tags": [
-        "feeling"
-       ],
        "text": "Ja. Gaat wel."
       },
       "position": [
@@ -21992,9 +21979,6 @@
         "text": "Gaat. Moe."
        },
        {
-        "tags": [
-         "feeling"
-        ],
         "text": "Prima. Druk."
        }
       ],
@@ -22066,9 +22050,6 @@
        }
       ],
       "lead_in": {
-       "tags": [
-        "claim"
-       ],
        "text": "Ach. Laat maar."
       },
       "position": [
@@ -22099,15 +22080,9 @@
      "misses": {
       "_": [
        {
-        "tags": [
-         "claim"
-        ],
         "text": "Gewoon, het werk."
        },
        {
-        "tags": [
-         "claim"
-        ],
         "text": "Niet zoveel bijzonders."
        }
       ],
@@ -22127,9 +22102,6 @@
         "text": "Weer rekenen. Er staan er achtendertig."
        },
        {
-        "tags": [
-         "claim"
-        ],
         "text": "Gewoon. Je ziet het."
        }
       ],
@@ -22159,12 +22131,13 @@
       "interest": [
        {
         "tags": [
-         "feeling"
+         "claim"
         ],
         "text": "Precies. Vier uur. Voor niks, meestal."
        },
        {
         "tags": [
+         "claim",
          "feeling"
         ],
         "text": "Ja. Ik volg hem, maar hij houdt me op."
@@ -22172,15 +22145,9 @@
       ],
       "position": [
        {
-        "tags": [
-         "feeling"
-        ],
         "text": "Precies. Twee erbij."
        },
        {
-        "tags": [
-         "feeling"
-        ],
         "text": "Ja. Sorry. Zo is het."
        }
       ]
@@ -22188,33 +22155,18 @@
      "misses": {
       "_": [
        {
-        "tags": [
-         "claim"
-        ],
         "text": "Mm. Zo ongeveer."
        },
        {
-        "tags": [
-         "claim"
-        ],
         "text": "Ja. Zoiets."
        },
        {
-        "tags": [
-         "claim"
-        ],
         "text": "Mm, ja."
        },
        {
-        "tags": [
-         "claim"
-        ],
         "text": "Hm, ja."
        },
        {
-        "tags": [
-         "claim"
-        ],
         "text": "Klopt wel."
        }
       ],
@@ -22314,21 +22266,12 @@
      "lands": {
       "_": [
        {
-        "tags": [
-         "claim"
-        ],
         "text": "Ja. Eigenlijk wel."
        },
        {
-        "tags": [
-         "claim"
-        ],
         "text": "Ja… Dat klopt wel."
        },
        {
-        "tags": [
-         "claim"
-        ],
         "text": "Mm. Ja."
        }
       ]
@@ -22336,9 +22279,6 @@
      "misses": {
       "_": [
        {
-        "tags": [
-         "claim"
-        ],
         "text": "Nee, dat zou ik zo niet zeggen."
        },
        {
@@ -22348,15 +22288,9 @@
         "text": "Nee hoor. Het is gewoon druk."
        },
        {
-        "tags": [
-         "claim"
-        ],
         "text": "Nee."
        },
        {
-        "tags": [
-         "claim"
-        ],
         "text": "Valt mee."
        }
       ],
@@ -22414,7 +22348,7 @@
         "tags": [
          "claim"
         ],
-        "text": "Een kwartier. Dan doe ik er dertig op een dag. In plaats van twee."
+        "text": "Een kwartier. Dan doe ik er een stuk of dertig op een dag. In plaats van twee."
        },
        {
         "tags": [
@@ -22638,7 +22572,7 @@
      ],
      "lead_in": "U hoeft het niet mooi te zeggen, hoor.",
      "position": [
-      "Ik heb ooit een verkeerde bestelling op mijn naam gehad. Niemand weet het meer, behalve ik.",
+      "Ik ken dat: een regel die er is omdat het ooit misging.",
       "Ik ken dat: één fout op papier, en die raak je nooit meer kwijt."
      ]
     },
@@ -22648,7 +22582,7 @@
       "Hoe zit dat precies?"
      ],
      "concern": [
-      "Wat stond er precies in dat rapport?",
+      "Wat deed dat rapport met u, toen het verscheen?",
       "Wie heeft u toen geholpen, na dat rapport?"
      ],
      "interest": [
@@ -22767,11 +22701,11 @@
    "name": "Rob en de bestelregel",
    "opening": "Als het over de trafo's gaat: ik heb de procedure voor u uitgeprint.",
    "outcomes": {
-    "commitment": "Conform. Ik pas de procedure aan. En die uitdraai mag u houden; die klopt vanaf maandag niet meer.",
+    "commitment": "Afgesproken. Ik zet het op papier, op mijn naam. Dan kan niemand zeggen dat het slordig ging.",
     "compliance": "Als de directie het wil, bestel ik. Op uw naam.",
-    "heard": "U bent de eerste die vraagt wáárom die regel er staat.",
+    "heard": "Dank u. De meesten willen alleen dat ik teken.",
     "none": "Goed. U weet waar de procedure ligt.",
-    "partial": "Ik wil het wel. Maar niet zonder standaardmaten.",
+    "partial": "Ik wil het wel. Maar niet zonder dat ik zeker weet dat de maat klopt.",
     "ruined": "Ik volg de procedure. Als u die wilt veranderen, loopt dat via de directie."
    },
    "owns": "transformer_wait",
@@ -22906,7 +22840,7 @@
      "misses": {
       "_": [
        {
-        "text": "Dat zeggen ze allemaal."
+        "text": "Hm. Dat zal wel."
        },
        {
         "text": "Mm."
@@ -22938,7 +22872,7 @@
      "lands": {
       "concern": [
        {
-        "text": "Twee 630's voor een project van 400. Met mijn naam erbij."
+        "text": "Het werd stil bij inkoop. Daarna keken ze naar elke bestelling."
        },
        {
         "text": "Niemand. Ik heb de procedure aangescherpt. Dat was mijn antwoord."
@@ -22949,7 +22883,7 @@
         "text": "Zelden, eerlijk gezegd. Meestal blijft het een 400 of een 630."
        },
        {
-        "text": "Een maand of vijf. Soms zes. En pas dan begint de levertijd."
+        "text": "Een maand, ruim. Soms twee. En pas dan begint de levertijd."
        }
       ],
       "lead_in": {
@@ -22960,7 +22894,7 @@
         "text": "Dat de maat nog verandert. Dan heb ik een trafo die nergens past."
        },
        {
-        "text": "Een paar ton. En een half jaar wachten op de volgende."
+        "text": "Een paar tienduizend euro. En een half jaar wachten op de volgende."
        }
       ]
      },
@@ -22989,7 +22923,7 @@
         "text": "Dat hangt van het project af."
        },
        {
-        "text": "Te lang."
+        "text": "Dat verschilt per ontwerp."
        }
       ],
       "lead_in": {
@@ -23129,9 +23063,6 @@
        }
       ],
       "lead_in": {
-       "tags": [
-        "claim"
-       ],
        "text": "Ach. Laat maar."
       },
       "position": [
@@ -23643,7 +23574,7 @@
      ],
      "interest": [
       "Wanneer weet Logistiek Zuid of ze gaan uitbreiden?",
-      "Wat gebeurt er als ze groeien en het ligt niet klaar?"
+      "Wie krijgt de ruimte dan als eerste?"
      ],
      "lead_in": "Wat bedoel je?",
      "position": [
@@ -23757,11 +23688,11 @@
    "name": "Thomas en de lege megawatts",
    "opening": "Als je komt om mijn klanten capaciteit af te pakken: ik heb om drie uur een lunch op de Kanaalzone.",
    "outcomes": {
-    "commitment": "Afgesproken. Ik bel. En ik kom iets brengen, niet halen.",
+    "commitment": "Afgesproken. Ik bel. Als iemand die luistert, niet als iemand die afpakt.",
     "compliance": "Goed. Ik stuur ze de brief. Mijn naam staat er niet onder.",
     "heard": "Fijn dat je het vroeg. De meeste mensen hier zien alleen megawatts.",
     "none": "Goed. Ik moet naar mijn lunch.",
-    "partial": "Ik doe mee. Als het in de taal van een aanbod blijft.",
+    "partial": "Ik doe mee. Als het een gesprek blijft en geen brief.",
     "ruined": "Ik bel mijn klanten niet om ze te bedreigen. Ook niet voor jou."
    },
    "owns": "unused_capacity",
@@ -23811,7 +23742,7 @@
        "text": "Nee. Nog niet."
       },
       {
-       "text": "Eerst zien."
+       "text": "Dat klinkt nog als een brief, niet als een gesprek."
       },
       {
        "text": "Nog even niet."
@@ -23932,7 +23863,7 @@
         "text": "Als hun financiering rond is. Dat kan volgend jaar zijn. Of nooit."
        },
        {
-        "text": "Dan staan ze in de rij. Achter Ilse."
+        "text": "Wie het eerst belt. En dat ben ik meestal niet."
        }
       ],
       "lead_in": {
@@ -23972,7 +23903,7 @@
         "text": "Als het zover is."
        },
        {
-        "text": "Ach. Dat zien we dan."
+        "text": "Wie er het eerst bij is."
        }
       ],
       "lead_in": {
@@ -24112,9 +24043,6 @@
        }
       ],
       "lead_in": {
-       "tags": [
-        "claim"
-       ],
        "text": "Ach. Laat maar."
       },
       "position": [
@@ -24292,7 +24220,7 @@
        "text": "Dat moet ik zien."
       },
       {
-       "text": "Dat klinkt als een brief, niet als een gesprek."
+       "text": "Dat moet ik eerst horen."
       }
      ]
     },
@@ -25585,9 +25513,6 @@
         "text": "Ja. Zo voelt het wel."
        },
        {
-        "tags": [
-         "feeling"
-        ],
         "text": "Mm. Ja."
        }
       ],

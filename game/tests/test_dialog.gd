@@ -512,9 +512,22 @@ func test_a_shared_line_leaves_what_the_person_last_said() -> void:
 	var d := DialogFixture.talk()
 	d.say("experience")  # "experience mist": the bank's, no words of Pim's own
 	assert_eq(d.say("paraphrase")["delta"], 7, "the position's claim is still what Pim said")
-	var own := DialogFixture.talk(35, {}, DialogFixture.def({"replies": {"experience": {"misses": {"text": "Jij? Hier?"}}}}))
+	var own := DialogFixture.talk(35, {}, DialogFixture.def({"replies": {"experience": {"misses": {"text": "Jij? Hier?", "tags": []}}}}))
 	own.say("experience")
-	assert_eq(own.say("paraphrase")["delta"], 1, "Pim's own untagged words: nothing claimed to summarise")
+	assert_eq(own.say("paraphrase")["delta"], 1, "Pim's own words, tagged as saying nothing: nothing claimed to summarise")
+
+
+## Review 5 (2026-11-01): a talk's own reply that names no tags ("Mm.", "Hm. Dank je.")
+## is as transparent as the bank's shared line it replaces: the person's last words
+## still stand, so content need not invent a claim to keep a listening route open.
+## An explicit `tags: []` still clears them (above).
+func test_an_own_reply_without_tags_leaves_what_the_person_last_said() -> void:
+	var own := DialogFixture.talk(35, {}, DialogFixture.def({"replies": {"experience": {"misses": {"text": "Mm."}}}}))
+	own.say("experience")
+	assert_eq(own.say("paraphrase")["delta"], 7, "the position's claim is still what Pim said")
+	var landed := DialogFixture.talk(35, {}, DialogFixture.def({"replies": {"paraphrase": {"lands": {"text": "Klopt."}}}}))
+	landed.say("paraphrase")
+	assert_eq(landed.say("paraphrase")["delta"], 1, "a landing still uses up the claim it answered")
 
 
 ## Route variety: a statement is answered once. A summary uses up the claim;

@@ -886,7 +886,8 @@ func _note(reply: Dictionary, always: bool = false) -> void:
 ## the position, repeated defensively. A miss of a sentence said before in this
 ## talk (_repeats) may be its `again` line ("Ja, dat zei je al."): only then
 ## (Merijn's playtest 2026-10-30), and never tagged, so the rules read the miss
-## as before.
+## as before. A dialog's own line that names no `tags` is shared like the bank's
+## (review 5): the person's last words still stand; `tags: []` clears them.
 func _reply(move: String, situation: String) -> Dictionary:
 	var situations := ["again", situation] if situation == "misses" and _repeats(move, _player_line(move)) \
 		else [situation]
@@ -899,7 +900,9 @@ func _reply(move: String, situation: String) -> Dictionary:
 			if case == "again":
 				return _shared(str(line.get("text", "")))
 			if source == def.replies:
-				return _told(line, "replies.%s.%s" % [move, case])
+				var own := _told(line, "replies.%s.%s" % [move, case])
+				own["shared"] = not line.has("tags")   # no tags named: as transparent as the bank's line
+				return own
 			return _line(str(line.get("text", "")), tags) if not tags.is_empty() \
 				else _shared(str(line.get("text", "")))
 	return _told(position(), "position") if situation == "too_early" else _shared("")
