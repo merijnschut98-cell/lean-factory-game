@@ -64,6 +64,7 @@ voice, and its own "Daar denk ik nog over na" lines.
 | `anouk_late` | Anouk | rewritten, batch 6, a check-in with a variant: lines and replies fit both versions (32.9 → 0.2, echoes 198 → 0, no flag at budget 6000) |
 | `esra_after` | Esra | rewritten, batch 6, a check-in (32.0 → 0.0, echoes 190 → 0, no flag at budget 6000) |
 | `marco_day_100` | Marco | rewritten, batch 6, a check-in (31.4 → 0.2, echoes 171 → 0, no flag at budget 6000) |
+| `henk_last_week` | Henk | rewritten, batch 6, a check-in with two variants: lines and replies fit all three versions (31.2 → 0.0, echoes 194 → 0, no flag at budget 6000) |
 
 The two KPI talks are the audited ones of `test_dialog_content.gd`: their reply tags stay
 the audited ones (a talk's own untagged reply clears the moment's tags, a bank reply keeps
