@@ -58,6 +58,7 @@ voice, and its own "Daar denk ik nog over na" lines.
 | `rob_order_rule` | Rob | rewritten, batch 4; review round 3 fixed (34.8 → 0.2, echoes 258 → 0, no flag at budget 8000) |
 | `femke_triage` | Femke | rewritten, batch 4; review round 3 fixed (34.8 → 0.2, echoes 231 → 0, no flag at budget 8000) |
 | `petra_silent_meters` | Petra | rewritten, batch 5 (33.7 → 0.2, echoes 258 → 0, no flag at budget 6000) |
+| `frank_kpi_targets` | Frank | rewritten, batch 5 (33.6 → 0.4, echoes 229 → 0, no flag at budget 6000) |
 
 The two KPI talks are the audited ones of `test_dialog_content.gd`: their reply tags stay
 the audited ones (a talk's own untagged reply clears the moment's tags, a bank reply keeps
