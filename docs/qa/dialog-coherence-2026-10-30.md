@@ -53,10 +53,14 @@ voice, and its own "Daar denk ik nog over na" lines.
 | `sanne_kpi` | Sanne | rewritten, batch 3 (35.0 → 0.8, echoes 241 → 0, no flag at budget 8000) |
 | `gert_klic` | Gert | rewritten, batch 3 (35.4 → 0.6, echoes 268 → 0, no flag at budget 8000) |
 | `wim_spreadsheet` | Wim | rewritten, batch 3 (37.1 → 0.8, echoes 301 → 0, no flag at budget 8000) |
-| `dirk_shelf` | Dirk | rewritten, batch 4 (35.0 → 0.1, echoes 265 → 0, no flag at budget 8000) |
-| `thomas_reclaim` | Thomas | rewritten, batch 4 (34.9 → 0.2, echoes 283 → 0, no flag at budget 8000) |
-| `rob_order_rule` | Rob | rewritten, batch 4 (34.8 → 0.2, echoes 258 → 0, no flag at budget 8000) |
-| `femke_triage` | Femke | rewritten, batch 4 (34.8 → 0.2, echoes 231 → 0, no flag at budget 8000) |
+| `dirk_shelf` | Dirk | rewritten, batch 4; review round 3 fixed (35.0 → 0.1, echoes 265 → 0, no flag at budget 8000) |
+| `thomas_reclaim` | Thomas | rewritten, batch 4; review round 3 fixed (34.9 → 0.2, echoes 283 → 0, no flag at budget 8000) |
+| `rob_order_rule` | Rob | rewritten, batch 4; review round 3 fixed (34.8 → 0.2, echoes 258 → 0, no flag at budget 8000) |
+| `femke_triage` | Femke | rewritten, batch 4; review round 3 fixed (34.8 → 0.2, echoes 231 → 0, no flag at budget 8000) |
+| `petra_silent_meters` | Petra | rewritten, batch 5 (33.7 → 0.2, echoes 258 → 0, no flag at budget 6000) |
+| `frank_kpi_targets` | Frank | rewritten, batch 5 (33.6 → 0.4, echoes 229 → 0, no flag at budget 6000) |
+| `linda_evenings` | Linda | rewritten, batch 5, a check-in (33.2 → 0.0, echoes 203 → 0, no flag at budget 6000) |
+| `esra_agents` | Esra | rewritten, batch 5 (33.1 → 0.3, echoes 239 → 0, no flag at budget 6000) |
 
 The two KPI talks are the audited ones of `test_dialog_content.gd`: their reply tags stay
 the audited ones (a talk's own untagged reply clears the moment's tags, a bank reply keeps

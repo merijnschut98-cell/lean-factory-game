@@ -214,6 +214,7 @@ def _talk_mission(real: dict, goal: dict) -> dict:
     frank = _dialog(docs, "frank_kpi_targets")
     frank["mission"] = "talk_frank"
     frank.pop("data")  # a talk_to mission holds no problem to show data of
+    frank["replies"].pop("show_data")  # nor the answers to its clues
     frank.pop("owns")  # nor a problem to own, so no clue to unlock
     frank["layers"][1]["unlocks"].pop("clue")
     return docs
