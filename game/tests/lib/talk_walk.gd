@@ -37,7 +37,7 @@ const REVIEWED := ["anouk_seven", "sanne_tuesday", "anouk_first_look", "rachid_c
 	"joost_wednesday", "linda_wednesday", "anouk_thursday", "petra_thursday", "anouk_owns_tray", "sanne_friday",
 	"petra_batch", "linda_replanning", "mieke_redraw", "joost_vacancies", "marco_wasted_trips",
 	"sanne_checker", "henk_camera", "joost_output_kpi", "sanne_kpi",
-	"gert_klic", "wim_spreadsheet", "dirk_shelf"]
+	"gert_klic", "wim_spreadsheet", "dirk_shelf", "thomas_reclaim"]
 ## How much each flag weighs in the ranking of talks (the worst read first).
 const WEIGHT := {"repeat": 3.0, "clarify": 3.0, "empty": 2.0, "farewell": 2.0, "ruud": 2.0, "retold": 2.0, "told": 2.0,
 	"echo": 1.0, "question": 1.0}
