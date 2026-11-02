@@ -944,12 +944,14 @@ func _entry(replies: Dictionary, move: String, case: String) -> Dictionary:
 
 
 ## Which of the talk's own lines for `move` the player says now: its place in
-## the list the lines hold under `key`, the layer spoken of last (or `_` when
-## the lines know no layer at all, as perspective's), -1 otherwise: a `_` reply
-## list beside lines per layer turns on its own.
+## the list the lines hold under `key`, the layer spoken of last (or `_` when the
+## lines are not written per layer of the talk, only perhaps for its concern:
+## perspective's, review 10), -1 otherwise: a `_` reply list beside lines for the
+## layer turns on its own.
 func _asked(move: String, key: String) -> int:
 	var lines := JsonFile.dict_or_empty(def.lines.get(move))
-	var same := (key == _topic and lines.has(_topic)) or (key == "_" and lines.keys() == ["_"])
+	var same := (key == _topic and lines.has(_topic)) \
+		or (key == "_" and not lines.has(_topic) and not lines.has("position"))
 	var own: Variant = lines.get(key)
 	return (own as Array).find(_player_line(move)) if same and own is Array else -1
 
