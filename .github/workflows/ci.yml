@@ -1,0 +1,126 @@
+# Spanning CI: Godot logic tests, the content check and the Python suite on
+# every push to master and every PR; downloadable Windows/Linux/web builds on
+# demand (Actions → CI → Run workflow).
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      export:
+        description: Export Windows, Linux and web builds
+        type: boolean
+        default: true
+
+env:
+  GODOT_VERSION: 4.7.2
+
+jobs:
+  godot-tests:
+    name: Godot logic tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-godot
+        with:
+          version: ${{ env.GODOT_VERSION }}
+      - run: godot --headless --path game --import
+      # One Godot process per test file (a crash or kill fails the run by name);
+      # GitHub's runner has 4 cores and 16 GB, a file peaks under 1 GB.
+      - run: python3 tools/run_godot_tests.py -j 4 -v
+
+  python:
+    name: Content pipeline + legacy Python game
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - run: pip install -r requirements-dev.txt
+      - name: Content is valid and game/data is up to date
+        run: python tools/build_content.py --check
+      - run: python -m pytest tests
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+
+  export:
+    name: Export ${{ matrix.preset }}
+    if: github.event_name == 'workflow_dispatch' && inputs.export
+    needs: [godot-tests, python]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - { preset: "Windows Desktop", dir: windows }
+          - { preset: "Linux", dir: linux }
+          - { preset: "Web", dir: web }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-godot
+        with:
+          version: ${{ env.GODOT_VERSION }}
+          templates: "true"
+      - name: Export (output path comes from game/export_presets.cfg)
+        run: |
+          godot --headless --path game --import
+          mkdir -p build/${{ matrix.dir }}
+          godot --headless --path game --export-release "${{ matrix.preset }}"
+          ls -la build/${{ matrix.dir }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Spanning-${{ matrix.dir }}
+          path: build/${{ matrix.dir }}
+
+  # A Windows build for playtesting without Godot, only for a PR commit whose
+  # subject starts with "[playtest]". It is published as the "playtest" GitHub
+  # Release (Releases → Playtest → Spanning-windows-playtest.zip), replaced on
+  # every playtest commit: release files do not count toward the Actions
+  # artifact storage quota, which a ~150 MB build per push filled up (2026-10-21).
+  # (The full export above needs "Run workflow", which GitHub only offers once
+  # this file is on the default branch.)
+  playtest-build:
+    name: Windows playtest build
+    if: github.event_name == 'pull_request'
+    needs: [godot-tests, python]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Is this a playtest commit?
+        id: want
+        run: |
+          subject="$(git log -1 --format=%s ${{ github.event.pull_request.head.sha }})"
+          if [[ "$subject" == "[playtest]"* ]]; then echo "build=true" >> "$GITHUB_OUTPUT"; else echo "No [playtest] in: $subject"; fi
+      - uses: ./.github/actions/setup-godot
+        if: steps.want.outputs.build == 'true'
+        with:
+          version: ${{ env.GODOT_VERSION }}
+          templates: "true"
+      - name: Export Windows
+        if: steps.want.outputs.build == 'true'
+        run: |
+          godot --headless --path game --import
+          mkdir -p build/windows
+          godot --headless --path game --export-release "Windows Desktop"
+          ls -la build/windows
+      - name: Publish as the playtest release
+        if: steps.want.outputs.build == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          (cd build/windows && zip -9 -q ../Spanning-windows-playtest.zip ./*)
+          subject="$(git log -1 --format=%s "$SHA")"
+          gh release delete playtest --cleanup-tag --yes || true
+          gh release create playtest build/Spanning-windows-playtest.zip \
+            --prerelease --target "$SHA" --title "Playtest" \
+            --notes "Windows playtest build of ${SHA::7}: ${subject}. Unzip and run Spanning.exe."

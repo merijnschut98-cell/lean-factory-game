@@ -1,0 +1,747 @@
+# Countermeasures: what a player can try in the A3, in a grid-operator setting.
+# Game text is Dutch; ids and keys are English. Built by tools/build_content.py.
+#
+# tier         1 Stabiel · 2 Zichtbaar · 3 Flow · 4 Systeem (GDD, Countermeasures).
+#              Above the region's maturity a countermeasure only partly works.
+# budget       improvement budget in euros
+# team_hours   hours the team spends on the improvement: taken from daily
+#              work while the experiment runs
+# decay_days   days an improvement lasts with no sustaining habit (null: built
+#              into a system or contract; it still erodes, over about a year).
+#              Habits slow the wear: standard work at the Act, a board on the
+#              stream (sustains), KPIs the team steers by (game/src/rules/sustain.gd)
+# sustains     true: a board the teams look at daily; while it holds, it helps
+#              sustain the other fixes in its value stream
+# multipliers  effectiveness at a maturity gap of 0, 1 and 2
+# effects      what it changes in the simulation once it works (on top of
+#              removing the problem): its own shape of a healthier process
+
+countermeasures:
+  # ── Inwerkweek: the practice problem (training_tray) ──────────────────────
+  # Invented for the training week (no source): small, cheap, and with a short
+  # decay so the Friday time-lapse shows a fix fading when it is not standardised.
+  - id: one_tray_fifo
+    name: Eén bak, op volgorde van binnenkomst
+    tier: 1
+    category: flow
+    description: Alle dossiers voor Werkvoorbereiding gaan in één bak; wie een dossier pakt, neemt het oudste. Niemand hoeft meer te zoeken of om te sorteren.
+    budget: 200
+    team_hours: {work_prep: 2}
+    decay_days: 10
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: tray_labels
+    name: Vaste plek en labels voor de bakken
+    tier: 1
+    category: visual_management
+    description: Elke bak krijgt een vaste plek en een duidelijk label (5S), zodat iedereen ziet waar welk dossier ligt.
+    budget: 100
+    team_hours: {work_prep: 1}
+    decay_days: 7
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+
+  # ── Nieuwe aansluitingen ──────────────────────────────────────────────────
+  - id: poka_yoke_application
+    name: Poka-yoke aanvraagformulier
+    tier: 1
+    category: quality
+    description: Het webformulier gaat pas verder als vermogen, installateur en een foto van de meterkast zijn ingevuld. Fouten worden aan de bron voorkomen in plaats van later gevonden.
+    budget: 6000
+    team_hours: {intake: 30}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: connections.intake, property: ftr, value: 0.05}
+  - id: intake_checklist
+    name: Checklist bij de intake
+    shortcut: true   # tempting, costs later: checking harder instead of preventing: a poor fix that fades in a month
+    tier: 1
+    category: standard_work
+    description: De intakemedewerker loopt elke aanvraag na met een checklist en vraagt ontbrekende gegevens direct op.
+    budget: 1000
+    team_hours: {intake: 10}
+    decay_days: 30
+    multipliers: {full: 0.8, reduced: 0.45, minimal: 0.2}
+    effects: []
+  - id: readiness_check
+    name: Gereedheidscheck 48 uur vooraf
+    tier: 1
+    category: standard_work
+    description: Planning belt of mailt de klant twee dagen voor de uitvoering met een korte checklist. Is de meterkast niet klaar, dan wordt de klus verplaatst voordat de monteur rijdt.
+    budget: 2000
+    team_hours: {planners: 20}
+    decay_days: 45
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: installer_photo_upload
+    name: Foto-upload door de installateur
+    tier: 2
+    category: quality
+    description: De installateur meldt de meterkast gereed met een foto in het portaal; pas dan kan de klus worden ingepland.
+    budget: 9000
+    team_hours: {planners: 30, intake: 20}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: connections.execution, property: ftr, value: 0.03}
+  - id: standard_designs
+    name: Standaardontwerpen voor standaardwerk
+    tier: 1
+    category: standard_work
+    description: Een vast ontwerp voor standaard woningaansluitingen (tot 3x25A, zonder netuitbreiding), zonder extra goedkeuringen.
+    budget: 8000
+    team_hours: {work_prep: 60}
+    decay_days: 60
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: connections.design, property: touch_time, value: 0.85}
+  - id: delegated_approval
+    name: Gedelegeerde goedkeuring
+    shortcut: true   # tempting, costs later: fewer signatures, the same maatwerk: a poor fix that fades in a month
+    tier: 1
+    category: flow
+    description: De werkvoorbereider keurt standaardontwerpen zelf goed; alleen afwijkingen gaan naar de teamleider.
+    budget: 1500
+    team_hours: {work_prep: 10}
+    decay_days: 30
+    multipliers: {full: 0.85, reduced: 0.45, minimal: 0.2}
+    effects: []
+  - id: request_permits_daily
+    name: Vergunning direct aanvragen
+    tier: 1
+    category: flow
+    description: Een vergunningsaanvraag gaat de deur uit zodra het dossier klaar is, niet meer verzameld per project.
+    budget: 500
+    team_hours: {work_prep: 5}
+    decay_days: 30
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: parallel_permits
+    name: Vergunning parallel aan het ontwerp
+    tier: 3
+    category: flow
+    description: Zodra het tracé bekend is, gaat de vergunningsaanvraag eruit; het ontwerp wordt intussen afgemaakt. Wachten en werken lopen naast elkaar.
+    budget: 12000
+    team_hours: {work_prep: 40}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: connections.permit, property: starts_with, value: design}
+
+  # ── Storingen ─────────────────────────────────────────────────────────────
+  - id: standard_van_stock
+    name: Standaard busvoorraad
+    tier: 1
+    category: workplace_organization
+    description: Elke storingsbus heeft dezelfde vaste lijst materialen, op een vaste plek. Wat eruit gaat, wordt aan het eind van de dienst aangevuld.
+    budget: 4000
+    team_hours: {monteurs: 40}
+    decay_days: 45
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: outages.repair, property: touch_time, value: 0.95}
+  - id: two_bin_van_kanban
+    name: Two-bin kanban in de bus
+    tier: 3
+    category: flow
+    description: Twee bakken per artikel; een lege bak is het bestelsignaal voor het magazijn. Aanvullen hangt niet meer van het geheugen af.
+    budget: 10000
+    team_hours: {monteurs: 30}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: outages.repair, property: touch_time, value: 0.9}
+  # Review S3 #1: a small first step towards the standard van stock: a one-card
+  # replenishment signal. ESTIMATE: cards and a holder per van, about 10 hours of
+  # the monteurs to agree with the warehouse what goes on the card: EUR 1,000.
+  - id: van_refill_card
+    name: Aanvulkaart in de bus
+    tier: 1
+    category: workplace_organization
+    description: Bij de schuifdeur van elke bus hangt een kaart met de moffen en verbinders die erin horen. Wat de monteur gebruikt, streept hij aan; het magazijn vult 's ochtends aan wat is aangestreept.
+    budget: 1000
+    team_hours: {monteurs: 10}
+    decay_days: 30
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+
+  # ── Veldservice & slimme meters ───────────────────────────────────────────
+  - id: appointment_reminder
+    name: Bevestiging en herinnering van de afspraak
+    tier: 1
+    category: quality
+    description: De klant krijgt een bevestiging bij het plannen en de dag ervoor een herinnering, met een knop om te verzetten.
+    budget: 3000
+    team_hours: {planners: 15}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: two_hour_window
+    name: Tijdvak van twee uur en een onderweg-bericht
+    tier: 2
+    category: flow
+    description: Een afspraak in een tijdvak van twee uur, en een bericht als de monteur onderweg is.
+    budget: 8000
+    team_hours: {planners: 30}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: meters.visit, property: ftr, value: 0.05}
+
+  # ── Revisie & GIS, graafschade ────────────────────────────────────────────
+  - id: revision_at_source
+    name: Revisie aan de bron
+    tier: 3
+    category: flow
+    description: De monteur legt het as-built direct bij oplevering vast op een tablet; geen papieren schets die weken later wordt overgetekend.
+    budget: 18000
+    team_hours: {gis: 40, monteurs: 30}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: connections.revision, property: touch_time, value: 0.8}
+  - id: daily_revision_template
+    name: Standaard revisieschets en dagelijks verwerken
+    shortcut: true   # tempting, costs later: draws faster instead of at the source: a poor fix that fades
+    tier: 1
+    category: standard_work
+    description: Eén vaste schets per standaardaansluiting, elke dag verwerkt in plaats van per maand opgespaard.
+    budget: 2500
+    team_hours: {gis: 15, monteurs: 10}
+    decay_days: 45
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: standard_test_trenches
+    name: Proefsleuven als standaard
+    tier: 1
+    category: safety
+    description: Bij graven in de buurt van kabels altijd eerst een proefsleuf; de opdrachtgever plant er tijd voor in.
+    budget: 3000
+    # Werkvoorbereiding writes where a test trench is needed into every work order and its
+    # planning (the dialog's 'Proefsleuven in de opdracht': Voltana says so in advance), not
+    # the account managers (gate backlog, 2026-10-24). ESTIMATE: 10 hours to set the standard.
+    team_hours: {work_prep: 10}
+    decay_days: 60
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: contractor_briefing
+    name: Briefing van graafaannemers
+    shortcut: true   # tempting, costs later: puts it on the contractor, the map stays wrong: a poor fix that fades in a month
+    tier: 1
+    category: people
+    description: Aannemers krijgen voor de start een briefing met actuele kaarten en de afspraak over proefsleuven.
+    budget: 1500
+    team_hours: {key_accounts: 8}
+    decay_days: 30
+    multipliers: {full: 0.8, reduced: 0.4, minimal: 0.2}
+    effects: []
+
+  # ── Kennis en vakmanschap ─────────────────────────────────────────────────
+  - id: work_instruction_videos
+    name: Werkinstructies met video
+    tier: 1
+    category: standard_work
+    description: De ervaren monteurs leggen het lokaliseren in oude kabelnetten vast in korte video's en werkinstructies.
+    budget: 5000
+    team_hours: {monteurs: 40}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  # Review S3 #1: one-point lessons (TPM): a start, not the feel for it that only
+  # doing it beside Henk passes on (the fit says so). It needs Henk, so his
+  # deadline closes it. ESTIMATE: about ten lessons of half a day each for Henk
+  # and a young monteur (10 x 4 h x 2 = 80 h of their time), printing and a binder
+  # per van: EUR 2,000.
+  - id: henks_one_point_lessons
+    name: Eénpuntslessen van Henk
+    tier: 1
+    category: standard_work
+    description: Henk zet per oud kabeltype zijn vaste trucs op één A4, met een foto en de fout die je het makkelijkst maakt. Een jonge monteur schrijft mee en probeert elke les uit op een echte storing.
+    budget: 2000
+    team_hours: {monteurs: 80}
+    decay_days: 60
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  # Audit L10: TWI Job Instruction, Henk teaching the way he knows; it needs Henk
+  # (Henk's deadline closes it). Effects and hours: estimates, between the
+  # videos and the buddy system.
+  - id: twi_job_instruction
+    name: TWI Job Instruction met Henk
+    tier: 1
+    category: people
+    description: "Henk leert Ahmed en de andere jonge monteurs het lokaliseren in oude kabelnetten in vier stappen: voorbereiden, voordoen, laten doen, opvolgen. Op echte storingen, met Henk ernaast."
+    budget: 4000
+    team_hours: {monteurs: 60}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: outages.locate, property: ftr, value: 0.02}
+  - id: skills_matrix_buddy
+    name: Skills-matrix en buddysysteem
+    tier: 2
+    category: people
+    description: Zichtbaar wie wat kan; elke jonge monteur draait mee met een ervaren buddy op storingen in oude netten.
+    budget: 7000
+    team_hours: {monteurs: 80}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: outages.locate, property: ftr, value: 0.03}
+
+  # ── Klantcontact ─────────────────────────────────────────────────────────
+  - id: realistic_promise
+    name: Realistische toezegging en statuspagina
+    shortcut: true   # tempting, costs later: managing the expectation instead of telling the customer: a poor fix
+    tier: 1
+    category: visual_management
+    description: De klant krijgt bij de aanvraag een realistische datum en kan de stand van zijn aanvraag online volgen.
+    budget: 6000
+    team_hours: {contact_centre: 20, intake: 10}
+    decay_days: 60
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  # Review S3 #1: do it by hand before you automate it: the intake tells the customer
+  # at the two moments they call about most. ESTIMATE: a week of tallying the calls,
+  # two mail templates and a list, about 20 hours of the intake and the contact
+  # centre: EUR 2,500.
+  - id: milestone_mail_by_hand
+    name: Mijlpaalmail met de hand
+    tier: 1
+    category: flow
+    description: Het contactcentrum turft een week waarover klanten bellen. Bij de twee momenten waar het meest over gebeld wordt, stuurt de intake de klant voortaan zelf een korte mail met de stand en de volgende stap. Eerst met de hand; automatiseren als het werkt.
+    budget: 2500
+    team_hours: {contact_centre: 10, intake: 10}
+    decay_days: 45
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: proactive_status_updates
+    name: Proactieve statusberichten
+    tier: 2
+    category: flow
+    description: Bij elke stap in het proces krijgt de klant uit zichzelf een bericht, ook als het langer duurt. Faalvraag meten naast waardevraag.
+    budget: 12000
+    team_hours: {contact_centre: 30, planners: 20}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: connections, property: call_rate, value: 0.5}
+
+  # ── Administratie ────────────────────────────────────────────────────────
+  - id: close_out_at_completion
+    name: Afhandelen bij oplevering
+    tier: 1
+    category: flow
+    description: Elk dossier wordt afgehandeld op de dag dat het klaar is, met een korte checklist; geen maandelijkse batch meer (one-piece flow).
+    budget: 1500
+    team_hours: {meter_office: 10}
+    decay_days: 45
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  # Act 0/I audit (2026-10-24): tier 2, so Act I's A3 offers it (up to one tier above
+  # maturity 1) and it works at `reduced`: 0.5 x 0.9 = 0.45, the designed failed Check
+  # (docs/superpowers/specs/2026-10-16-designed-failed-checks.md §1, "dat helpt maar half").
+  # At tier 3 the A3 never offered it in Act I, so that Check could not happen.
+  - id: automatic_ean_registration
+    name: Automatische EAN-aanmelding
+    tier: 2
+    category: flow
+    description: Bij gereedmelding wordt de EAN automatisch aangemeld in het centraal aansluitregister; handwerk alleen bij afwijkingen.
+    budget: 25000
+    team_hours: {meter_office: 30}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: connections.close_out, property: touch_time, value: 0.4}
+
+  - id: triage_fast_lane
+    name: Triage met snelle baan
+    tier: 1
+    category: flow
+    description: Bij de intake bepaalt een korte checklist of een aanvraag ruim binnen de vrije capaciteit van het station valt. Alleen twijfelgevallen krijgen een volledige netstudie.
+    budget: 3000
+    team_hours: {grid_analysts: 20, intake: 10}
+    decay_days: 45
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+
+  - id: calculation_templates
+    name: Standaard rekentemplates
+    tier: 2
+    category: standard_work
+    description: Vaste rekentemplates per type aansluiting en station. Een studie is invullen en controleren in plaats van opnieuw modelleren, ook voor congestieonderzoek.
+    budget: 9000
+    team_hours: {grid_analysts: 40}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: connections.grid_study, property: touch_time, value: 0.8}
+      - {target: congestion.congestion_study, property: touch_time, value: 0.85}
+
+  - id: on_site_comm_test
+    name: Communicatietest voor vertrek
+    tier: 1
+    category: quality
+    description: De monteur vertrekt pas als de meter zijn eerste stand heeft verstuurd. Werkt de verbinding niet, dan wisselt hij de module ter plekke (jidoka).
+    budget: 2500
+    team_hours: {monteurs: 20}
+    decay_days: 45
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: meters.visit, property: touch_time, value: 1.05}   # ten minutes for the test
+      - {target: meters.registration, property: ftr, value: 0.05}   # also catches the base's silent meters
+
+  - id: coverage_check_in_planning
+    name: Dekkingscheck bij het plannen
+    tier: 2
+    category: standard_work
+    description: Planning kiest de communicatiemodule op basis van de dekkingskaart van het adres, zodat de juiste module meegaat.
+    budget: 6000
+    team_hours: {planners: 20}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+
+  # ── Spanningsklachten ─────────────────────────────────────────────────────
+  - id: tap_review_per_neighbourhood
+    name: Trafo-aftakkingen per wijk herzien
+    tier: 1
+    category: standard_work
+    description: In wijken met veel zonnepanelen gaat de aftakking van de wijktransformator een stand lager, op basis van een meetweek in de zomer én een in de winter (op een koude avond met warmtepompen mag de spanning niet onder 207 V zakken). De spanning klopt dan voor de hele straat in plaats van voor één klant.
+    budget: 4000
+    team_hours: {monteurs: 30, grid_analysts: 10}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  # Review S3 #1: the review per neighbourhood, first as one experiment. ESTIMATE: a
+  # crew for half a day, a short planned interruption announced to the street, and a
+  # measurement week at a few addresses before and after: EUR 1,500.
+  - id: tap_trial_one_station
+    name: Proef met één wijktrafo
+    tier: 1
+    category: standard_work
+    description: Eerst één station. Na een meetweek in de straat gaat de aftakking van die wijktransformator een stand lager; op een koude avond wordt nagemeten dat de spanning niet onder 207 V zakt. Klopt het, dan volgen de andere wijken.
+    budget: 1500
+    team_hours: {monteurs: 10, grid_analysts: 5}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+
+  - id: smart_meter_voltage_data
+    name: Spanningsdata uit slimme meters
+    tier: 2
+    category: visual_management
+    description: Meetdata bewaakt de spanning die slimme meters elk kwartier registreren. Een te hoge spanning is zichtbaar voordat er een klacht komt, en de meetweek bij het adres is meestal niet meer nodig.
+    budget: 8000
+    team_hours: {meter_office: 30}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: voltage_complaints.measurement, property: touch_time, value: 0.5}     # only a check at the address
+      - {target: voltage_complaints.measurement_week, property: wait_time, value: 0.3}
+
+  - id: targeted_reinforcement
+    name: Gerichte netverzwaring in de drukste straten
+    tier: 3
+    category: flow
+    description: De straten met de meeste zonnepanelen krijgen een zwaardere kabel of een extra station. Duur, maar de spanning blijft ook bij nog meer panelen binnen de norm.
+    budget: 60000
+    team_hours: {grid_analysts: 20, work_prep: 20}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: voltage_complaints, property: demand, value: 0.7}
+
+  # ── Netverzwaring en congestie ────────────────────────────────────────────
+  - id: early_transformer_order
+    name: Trafo bestellen bij de netstudie
+    tier: 1
+    category: flow
+    description: Zodra de netstudie laat zien dat een straat verzwaard moet worden, gaat de bestelling van de transformator de deur uit. Ontwerp en levertijd lopen naast elkaar in plaats van na elkaar. Een paar standaardmaten trafo houden het risico van een verkeerde maat klein.
+    budget: 2000
+    team_hours: {grid_analysts: 10, work_prep: 10}
+    decay_days: 45
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: connections.grid_reinforcement, property: starts_with, value: design}  # ordered as the design starts
+
+  - id: framework_contracts
+    name: Raamcontract met vaste levertijd
+    tier: 2
+    category: flow
+    description: Een raamcontract met de fabrikant voor standaardtransformatoren, met afgesproken aantallen en een vaste levertijd. Bestellen is afroepen in plaats van een aanbesteding per project.
+    budget: 12000
+    team_hours: {work_prep: 20}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: connections.grid_reinforcement, property: wait_time, value: 0.9}
+
+  - id: strategic_transformer_stock
+    name: Strategische voorraad transformatoren
+    shortcut: true   # tempting, costs later: buys the wait away (EUR 40k) instead of ordering on time: a poor fix
+    # Tier 1 (mission audit 2026-10-24): buying stock asks no maturity of the organisation,
+    # which is why it tempts. At tier 3 it failed every Act II Check (maturity 2: 0.5 x 0.8
+    # = 0.40), so the shortcut was never a real choice when the mission is played.
+    tier: 1
+    category: flow
+    description: Een kleine voorraad standaardtransformatoren op het magazijn, aangevuld via de fabrikant. Een verzwaring hoeft niet meer op de levering te wachten; de voorraad kost wel geld.
+    budget: 40000
+    team_hours: {work_prep: 10}
+    # ESTIMATE: EUR 40k buys three or four standard distribution transformers. Every
+    # reinforcement draws one, and the order moment did not change (still after design
+    # approval), so the stock runs empty within about four months and the wait is back.
+    decay_days: 120
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: connections.grid_reinforcement, property: wait_time, value: 0.85}
+      - {target: congestion.capacity_queue, property: wait_time, value: 0.95}
+    # The later cost (ESTIMATE): holding stock costs about a quarter of its value a year
+    # (the usual inventory carrying-cost rule of thumb: capital tied up, dry storage,
+    # insurance, the periodic inspection a stored transformer needs), EUR 10k a year on
+    # EUR 40k. Over the four months the stock lasts that is about EUR 3,500, billed after
+    # the first month.
+    aftermath:
+      after_days: 30
+      cost: 3500
+
+  - id: capacity_usage_dashboard
+    name: Dashboard gecontracteerd versus gebruikt
+    shortcut: true   # tempting, costs later: measures without giving capacity back: a poor fix that fades
+    tier: 1
+    category: visual_management
+    description: Per klant en per station staan het gecontracteerde en het werkelijk gebruikte vermogen naast elkaar, elke week bijgewerkt uit de meetdata. Ongebruikte capaciteit wordt zichtbaar; teruggeven gebeurt nog per geval.
+    budget: 3000
+    team_hours: {grid_analysts: 10, key_accounts: 10}
+    decay_days: 45
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+
+  # The ACM's GOTORK code decision (ACM/UIT/612014, acm.nl; company.yaml numbers): a large
+  # customer who uses at most half of the contracted capacity for twelve months, or leaves
+  # 1 MW or more unused, can be asked to hand the rest back.
+  - id: use_it_or_lose_it
+    name: Use-it-or-lose-it-gesprekken
+    tier: 2
+    category: flow
+    description: Klanten die twaalf maanden lang hooguit de helft gebruiken van wat ze gecontracteerd hebben, of 1 MW of meer laten liggen, krijgen een gesprek en een voorstel om capaciteit terug te geven, zoals de regels van de ACM het toestaan. Wat vrijkomt, gaat naar de wachtrij.
+    budget: 5000
+    team_hours: {key_accounts: 30, grid_analysts: 10}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+
+  - id: flexible_contracts
+    name: Flexibele en tijdsduurgebonden contracten
+    tier: 3
+    category: flow
+    description: Nieuwe klanten krijgen naast vaste capaciteit ook non-firm en tijdsduurgebonden contracten aangeboden. Meer aanvragen passen meteen, buiten de drukste uren.
+    budget: 8000
+    team_hours: {key_accounts: 40}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: congestion.capacity_queue, property: applies, value: -0.1}
+
+  # ── Planning en storingen ─────────────────────────────────────────────────
+  - id: daytime_outage_crew
+    name: Vaste storingsploeg overdag
+    tier: 1
+    category: flow
+    description: Elke dag staan twee monteurs ingeroosterd voor storingen. Is er geen storing, dan doen ze klein onderhoud dat kan wachten. De rest van de planning blijft staan.
+    budget: 2000
+    team_hours: {planners: 10, monteurs: 10}
+    decay_days: 45
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: monteurs, property: reserve, value: {stream: outages, people: 2}}
+
+  - id: planning_with_fault_windows
+    name: Planning met dagvensters voor storingen
+    tier: 2
+    category: standard_work
+    description: De planners vullen een monteur voor ongeveer 85%. Het vrije venster vangt storingen op, zodat een storing de dag niet meer omgooit.
+    budget: 3000
+    team_hours: {planners: 30}
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+
+  - id: heijunka_release
+    name: Heijunka-planning
+    tier: 3
+    category: flow
+    description: Gepland werk wordt gelijkmatig over de week vrijgegeven, met een vaste mix van aansluitingen en meterwissels per dag. Pieken en gaten verdwijnen, en er blijft ruimte voor het onverwachte.
+    budget: 6000
+    team_hours: {planners: 40}
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: connections.planning, property: touch_time, value: 0.9}
+
+  # ── Afdelingsdoelen ───────────────────────────────────────────────────────
+  - id: obeya_end_to_end
+    name: Obeya aansluitingen van begin tot eind
+    tier: 1
+    category: visual_management
+    description: Intake, Werkvoorbereiding, Planning en Uitvoering hangen één bord op met de aansluitingen van begin tot eind. De teams worden samen beoordeeld op doorlooptijd en op de oudste aanvraag in plaats van op hun eigen aantallen, en starten nieuw werk pas als het volgende team er ruimte voor heeft.
+    budget: 4000
+    team_hours: {intake: 10, work_prep: 10, planners: 5}
+    decay_days: 45
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    unlocks: kpi_board
+    sustains: true
+    effects:
+      - {target: intake, property: kpis, value: [intake_lead_time, intake_oldest]}
+      - {target: work_prep, property: kpis, value: [work_prep_lead_time, work_prep_oldest]}
+
+  - id: connections_wip_limit
+    name: Maximum aantal aansluitingen in uitvoering
+    tier: 2
+    category: flow
+    description: Er mogen niet meer aansluitingen tegelijk in behandeling zijn dan het team aankan. Nieuwe aanvragen wachten aan de poort tot er een klaar is, zodat afdelingen niet meer kunnen opstapelen.
+    budget: 1000
+    team_hours: {intake: 5, planners: 5}
+    decay_days: 45
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      # ESTIMATE: about the base backlog. The healthy base holds 230-270
+      # started connections (measured, 3 seeds, 150 days), so the limit only
+      # bites when work piles up.
+      - {target: connections, property: wip_limit, value: 300}
+
+  - id: shared_team_goals
+    name: Gezamenlijke teamdoelen
+    shortcut: true   # tempting, costs later: a shared goal on top of the old counts: a poor fix that fades
+    tier: 2
+    category: standard_work
+    description: Intake en Werkvoorbereiding krijgen als doel de doorlooptijd van een aansluiting en een complete overdracht (compleet doorgezet, eerste keer goed bij uitvoering). Aantallen per week blijven zichtbaar, maar sturen niet meer.
+    budget: 2000
+    team_hours: {intake: 10, work_prep: 10}
+    decay_days: 45
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects:
+      - {target: intake, property: kpis, value: [intake_lead_time, intake_complete]}
+      - {target: work_prep, property: kpis, value: [work_prep_lead_time, work_prep_ftr]}
+
+  # ── Shortcuts (phase-2 design §3.4: face, number, choice) ────────────────
+  # Tempting ways out that cost later (a poor fix: Missions.POOR_FIT_GAP; and they fade
+  # sooner than the patient fix). Numbers are estimates with their reasoning.
+  - id: backup_job_per_day
+    name: Een reserveklus per monteur
+    shortcut: true   # the trip is no longer lost, the customer whose cupboard was not ready still waits
+    tier: 1
+    category: flow
+    description: Planning geeft elke monteur een reserveklus mee. Staat hij voor een meterkast die niet klaar is, dan rijdt hij door naar de reserve. De rit is niet verloren, maar de klant van wie de kast niet klaar was, wacht nog steeds.
+    # ESTIMATE: a planner's afternoon to set it up (EUR 500, 8 h); it leans on the
+    # planners remembering it on busy days, so it fades in a month.
+    budget: 500
+    team_hours: {planners: 8}
+    decay_days: 30
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: mid_month_run
+    name: Een tweede maandrun halverwege
+    shortcut: true   # half the wait, still a batch
+    tier: 1
+    category: flow
+    description: Meetdata draait de afhandeling voortaan twee keer per maand in plaats van één keer. Een aansluiting wacht gemiddeld half zo lang, maar het blijft een batch, en wie net na de run klaar is, wacht nog twee weken.
+    # ESTIMATE: one extra login session a month (4 h); without a trigger in the
+    # process the second run is the first to go when it gets busy.
+    budget: 500
+    team_hours: {meter_office: 4}
+    decay_days: 30
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: study_overtime_sprint
+    name: Inhaalslag in overwerk
+    shortcut: true   # the board gets shorter, every request still gets the full study; tired analysts later
+    tier: 1
+    category: people
+    description: Zes weken lang werken de netplanners twee avonden per week over om het bord leeg te krijgen. Het bord wordt korter, maar elke aanvraag krijgt nog steeds de volle studie, en de vermoeidheid komt later.
+    # ESTIMATE: 2 analysts x 2 evenings x 3 h x 6 weeks = 72 h at about EUR 70 an hour
+    # with the overtime surcharge: EUR 5,000; overtime is no daily work taken away.
+    budget: 5000
+    team_hours: {}
+    decay_days: 21
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+    # The later cost (ESTIMATE): three weeks after the Act the tiredness shows for a
+    # month, a tenth of the analysts' time lost to sickness and recovery.
+    aftermath:
+      after_days: 21
+      days: 28
+      effects:
+        - {target: grid_analysts, property: availability, value: -0.1}
+
+  # ── The way back (QA 2.12 (c)): the meter round's double visits and overtime ──
+  - id: cupboard_photo_at_booking
+    name: Foto van de meterkast bij de afspraak
+    tier: 1
+    category: quality
+    description: Bij het maken van de afspraak vraagt planning de klant om een foto van de meterkast. Is de kast niet geschikt, dan komen de aansluitmonteur en de meterwisselaar samen, in één bezoek.
+    # ESTIMATE: the booking form and the letter changed, about a week of the planners' time.
+    budget: 2500
+    team_hours: {planners: 15}
+    decay_days: 60
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: register_cupboard_check
+    name: Bouwjaar uit het register bij het plannen
+    tier: 1
+    category: standard_work
+    description: Het planningsscherm toont het bouwjaar en het kasttype uit het aansluitregister. Bij een oude kast plant planning de aansluitmonteur en de meterwissel op dezelfde dag.
+    # ESTIMATE: a field in the planning tool (EUR 4,000) and the planners' rule.
+    budget: 4000
+    team_hours: {planners: 10}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: customer_self_report
+    name: De klant meldt zelf een oude meterkast
+    shortcut: true   # the check moves to the customer, who cannot judge a cupboard: a poor fix that fades in a month
+    tier: 1
+    category: quality
+    description: In de afspraakbrief komt te staan dat de klant moet bellen als de meterkast oud is. Het kost bijna niets, maar een klant weet zelden of zijn kast geschikt is.
+    budget: 300
+    team_hours: {planners: 2}
+    decay_days: 30
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: route_by_area
+    name: Plannen per wijk
+    tier: 1
+    category: flow
+    description: Planning bundelt de meterwissels per wijk. Een monteur werkt op een dag in één of twee wijken, en de klant kiest uit de dagen waarop de monteur toch in de buurt is.
+    # ESTIMATE: the planning rules and the letter changed, two weeks of a planner.
+    budget: 3000
+    team_hours: {planners: 20}
+    decay_days: 60
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: area_teams
+    name: Vaste wijkploegen
+    tier: 1
+    category: flow
+    description: Elke meterwisselaar krijgt een vaste wijk. Hij kent de straten, de parkeerplekken en de oude kasten, en de planning volgt de wijken vanzelf.
+    budget: 2000
+    team_hours: {planners: 10, monteurs: 10}
+    decay_days: null
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+  - id: overtime_cap
+    name: Een plafond op het overwerk
+    shortcut: true   # the hours drop at once, the kilometres stay and the work waits: a poor fix with an aftermath
+    tier: 1
+    category: flow
+    description: Vanaf nu hooguit twee uur overwerk per monteur per week. Wat niet past, schuift door naar een andere dag. De overuren dalen meteen; de kilometers blijven, en het werk wacht langer.
+    budget: 0
+    team_hours: {}
+    decay_days: 30
+    multipliers: {full: 0.9, reduced: 0.5, minimal: 0.25}
+    effects: []
+    # The later cost (ESTIMATE): two weeks after the Act the pushed work shows, and for
+    # six weeks a customer waits about a third longer for the meter appointment.
+    aftermath:
+      after_days: 14
+      days: 42
+      effects:
+        - {target: meters.customer_window, property: wait_time, value: 1.3}

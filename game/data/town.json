@@ -1,0 +1,217 @@
+{
+ "fields": [
+  {
+   "at": "house_7",
+   "step": "meters.visit"
+  },
+  {
+   "at": "trench",
+   "step": "outages.locate"
+  }
+ ],
+ "lots": [
+  {
+   "at": 0,
+   "id": "shop",
+   "kind": "shop",
+   "n": 1,
+   "side": "odd",
+   "width": 12
+  },
+  {
+   "at": 6,
+   "id": "house_2",
+   "kind": "house",
+   "n": 2,
+   "side": "even"
+  },
+  {
+   "at": 18,
+   "id": "house_4",
+   "kind": "house",
+   "n": 4,
+   "resident": "de_jong",
+   "side": "even"
+  },
+  {
+   "at": 30,
+   "id": "house_6",
+   "kind": "house",
+   "n": 6,
+   "side": "even"
+  },
+  {
+   "at": 42,
+   "id": "house_8",
+   "kind": "house",
+   "n": 8,
+   "side": "even"
+  },
+  {
+   "at": 54,
+   "id": "house_10",
+   "kind": "house",
+   "n": 10,
+   "side": "even"
+  },
+  {
+   "at": 66,
+   "id": "house_12",
+   "kind": "house",
+   "n": 12,
+   "side": "even"
+  },
+  {
+   "at": 78,
+   "id": "house_14",
+   "kind": "house",
+   "n": 14,
+   "resident": "wim",
+   "side": "even"
+  },
+  {
+   "at": 18,
+   "id": "house_3",
+   "kind": "house",
+   "n": 3,
+   "side": "odd"
+  },
+  {
+   "at": 30,
+   "id": "house_5",
+   "kind": "house",
+   "n": 5,
+   "side": "odd"
+  },
+  {
+   "at": 42,
+   "id": "house_7",
+   "kind": "house",
+   "n": 7,
+   "side": "odd"
+  },
+  {
+   "at": 54,
+   "id": "house_9",
+   "kind": "house",
+   "n": 9,
+   "resident": "el_amrani",
+   "side": "odd",
+   "story": "el_amrani"
+  },
+  {
+   "at": 66,
+   "id": "house_11",
+   "kind": "house",
+   "n": 11,
+   "side": "odd"
+  },
+  {
+   "at": 100,
+   "id": "trafohuisje",
+   "kind": "trafohuisje",
+   "side": "odd",
+   "width": 3
+  }
+ ],
+ "props": [
+  {
+   "at": 32,
+   "id": "trench",
+   "kind": "trench",
+   "length": 26,
+   "side": "even"
+  },
+  {
+   "at": 82,
+   "id": "van_kerb",
+   "kerb": true,
+   "kind": "van",
+   "livery": "voltana",
+   "side": "odd",
+   "yard_van": 5
+  },
+  {
+   "at": 61,
+   "id": "van_peeters",
+   "kind": "van",
+   "livery": "peeters",
+   "side": "even"
+  },
+  {
+   "across": true,
+   "at": -3,
+   "id": "hedge_west",
+   "kind": "hedge"
+  },
+  {
+   "at": 90,
+   "id": "hedge_green",
+   "kind": "hedge",
+   "length": 20,
+   "side": "even"
+  },
+  {
+   "across": true,
+   "at": 112,
+   "id": "canal",
+   "kind": "canal",
+   "length": 12
+  },
+  {
+   "at": 10,
+   "id": "lamp_1",
+   "kind": "lamp",
+   "side": "even"
+  },
+  {
+   "at": 30,
+   "id": "lamp_2",
+   "kind": "lamp",
+   "side": "odd"
+  },
+  {
+   "at": 50,
+   "id": "lamp_3",
+   "kind": "lamp",
+   "side": "even"
+  },
+  {
+   "at": 70,
+   "id": "lamp_4",
+   "kind": "lamp",
+   "side": "odd"
+  },
+  {
+   "at": 90,
+   "id": "lamp_5",
+   "kind": "lamp",
+   "side": "even"
+  },
+  {
+   "at": 108,
+   "id": "lamp_6",
+   "kind": "lamp",
+   "side": "odd"
+  }
+ ],
+ "segments": [
+  {
+   "carriageway": 5.0,
+   "district": "Nova-Oost",
+   "from": [
+    0,
+    0
+   ],
+   "front_garden": 4.0,
+   "house_depth": 9.0,
+   "id": "zonnestraat",
+   "name": "Zonnestraat",
+   "pavement": 1.8,
+   "to": [
+    120,
+    0
+   ]
+  }
+ ]
+}

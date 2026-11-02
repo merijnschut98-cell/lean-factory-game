@@ -1,0 +1,1374 @@
+{
+ "viewbox": [
+  1200,
+  794
+ ],
+ "projection": {
+  "origin": [
+   600,
+   504.74146521987973
+  ],
+  "scale": 1.7601218472731721,
+  "azimuth": 58,
+  "elevation": 30
+ },
+ "layers": [
+  {
+   "id": "base",
+   "file": "base.svg",
+   "z": 0,
+   "skin": "shared",
+   "group": "",
+   "rect": [
+    29,
+    275,
+    1145,
+    497
+   ]
+  },
+  {
+   "id": "wall_tap",
+   "file": "wall_tap.svg",
+   "z": 1,
+   "skin": "tuin",
+   "group": "source",
+   "rect": [
+    237,
+    18,
+    240,
+    346
+   ],
+   "pair": "panel"
+  },
+  {
+   "id": "panel",
+   "file": "panel.svg",
+   "z": 2,
+   "skin": "meterkast",
+   "group": "source",
+   "rect": [
+    243,
+    29,
+    228,
+    335
+   ],
+   "pair": "wall_tap"
+  },
+  {
+   "id": "tap_gauge",
+   "file": "tap_gauge.svg",
+   "z": 3,
+   "skin": "tuin",
+   "group": "source",
+   "rect": [
+    321,
+    177,
+    54,
+    48
+   ],
+   "pair": "kwh_meter"
+  },
+  {
+   "id": "kwh_meter",
+   "file": "kwh_meter.svg",
+   "z": 4,
+   "skin": "meterkast",
+   "group": "source",
+   "rect": [
+    363,
+    185,
+    87,
+    136
+   ],
+   "pair": "tap_gauge"
+  },
+  {
+   "id": "flowmeter_back",
+   "file": "flowmeter_back.svg",
+   "z": 5,
+   "skin": "tuin",
+   "group": "meter_flow",
+   "rect": [
+    497,
+    495,
+    24,
+    30
+   ],
+   "pair": "stroomtang_back"
+  },
+  {
+   "id": "stroomtang_back",
+   "file": "stroomtang_back.svg",
+   "z": 6,
+   "skin": "meterkast",
+   "group": "meter_flow",
+   "rect": [
+    496,
+    499,
+    24,
+    28
+   ],
+   "pair": "flowmeter_back"
+  },
+  {
+   "id": "hoselead1",
+   "file": "hoselead1.svg",
+   "z": 7,
+   "skin": "tuin",
+   "group": "reels",
+   "rect": [
+    277,
+    239,
+    166,
+    150
+   ],
+   "pair": "cordlead1",
+   "when": {
+    "haspel": 1,
+    "active": true
+   }
+  },
+  {
+   "id": "cordlead1",
+   "file": "cordlead1.svg",
+   "z": 8,
+   "skin": "meterkast",
+   "group": "reels",
+   "rect": [
+    244,
+    251,
+    197,
+    138
+   ],
+   "pair": "hoselead1",
+   "when": {
+    "haspel": 1,
+    "active": true
+   }
+  },
+  {
+   "id": "haspel1_frame_back",
+   "file": "haspel1_frame_back.svg",
+   "z": 9,
+   "skin": "shared",
+   "group": "",
+   "rect": [
+    362,
+    260,
+    162,
+    197
+   ]
+  },
+  {
+   "id": "hosereel1_rolled",
+   "file": "hosereel1_rolled.svg",
+   "z": 10,
+   "skin": "tuin",
+   "group": "reels",
+   "rect": [
+    368,
+    271,
+    145,
+    145
+   ],
+   "pair": "haspel1_rolled",
+   "when": {
+    "haspel": 1,
+    "active": false
+   }
+  },
+  {
+   "id": "haspel1_rolled",
+   "file": "haspel1_rolled.svg",
+   "z": 11,
+   "skin": "meterkast",
+   "group": "reels",
+   "rect": [
+    368,
+    271,
+    145,
+    145
+   ],
+   "pair": "hosereel1_rolled",
+   "when": {
+    "haspel": 1,
+    "active": false
+   }
+  },
+  {
+   "id": "hosereel1_unrolled",
+   "file": "hosereel1_unrolled.svg",
+   "z": 12,
+   "skin": "tuin",
+   "group": "reels",
+   "rect": [
+    383,
+    287,
+    115,
+    113
+   ],
+   "pair": "haspel1_unrolled",
+   "when": {
+    "haspel": 1,
+    "active": true
+   }
+  },
+  {
+   "id": "haspel1_unrolled",
+   "file": "haspel1_unrolled.svg",
+   "z": 13,
+   "skin": "meterkast",
+   "group": "reels",
+   "rect": [
+    383,
+    287,
+    115,
+    113
+   ],
+   "pair": "hosereel1_unrolled",
+   "when": {
+    "haspel": 1,
+    "active": true
+   }
+  },
+  {
+   "id": "hose_thin",
+   "file": "hose_thin.svg",
+   "z": 14,
+   "skin": "tuin",
+   "group": "cable",
+   "rect": [
+    425,
+    372,
+    399,
+    265
+   ],
+   "pair": "cable_thin",
+   "when": {
+    "haspel": 1,
+    "active": true
+   }
+  },
+  {
+   "id": "cable_thin",
+   "file": "cable_thin.svg",
+   "z": 15,
+   "skin": "meterkast",
+   "group": "cable",
+   "rect": [
+    427,
+    373,
+    396,
+    263
+   ],
+   "pair": "hose_thin",
+   "when": {
+    "haspel": 1,
+    "active": true
+   }
+  },
+  {
+   "id": "heat_tint_hose_thin",
+   "file": "heat_tint_hose_thin.svg",
+   "z": 16,
+   "skin": "tuin",
+   "group": "cable",
+   "rect": [
+    425,
+    372,
+    399,
+    265
+   ],
+   "pair": "heat_tint_cable_thin",
+   "heat": true,
+   "when": {
+    "haspel": 1,
+    "active": true
+   }
+  },
+  {
+   "id": "heat_tint_cable_thin",
+   "file": "heat_tint_cable_thin.svg",
+   "z": 17,
+   "skin": "meterkast",
+   "group": "cable",
+   "rect": [
+    427,
+    373,
+    396,
+    263
+   ],
+   "pair": "heat_tint_hose_thin",
+   "heat": true,
+   "when": {
+    "haspel": 1,
+    "active": true
+   }
+  },
+  {
+   "id": "haspel1_frame_front",
+   "file": "haspel1_frame_front.svg",
+   "z": 18,
+   "skin": "shared",
+   "group": "",
+   "rect": [
+    357,
+    289,
+    130,
+    146
+   ]
+  },
+  {
+   "id": "hoselead2",
+   "file": "hoselead2.svg",
+   "z": 19,
+   "skin": "tuin",
+   "group": "reels",
+   "rect": [
+    218,
+    239,
+    91,
+    156
+   ],
+   "pair": "cordlead2",
+   "when": {
+    "haspel": 2,
+    "active": true
+   }
+  },
+  {
+   "id": "cordlead2",
+   "file": "cordlead2.svg",
+   "z": 20,
+   "skin": "meterkast",
+   "group": "reels",
+   "rect": [
+    220,
+    251,
+    84,
+    144
+   ],
+   "pair": "hoselead2",
+   "when": {
+    "haspel": 2,
+    "active": true
+   }
+  },
+  {
+   "id": "haspel2_frame_back",
+   "file": "haspel2_frame_back.svg",
+   "z": 21,
+   "skin": "shared",
+   "group": "",
+   "rect": [
+    165,
+    267,
+    161,
+    197
+   ]
+  },
+  {
+   "id": "hosereel2_rolled",
+   "file": "hosereel2_rolled.svg",
+   "z": 22,
+   "skin": "tuin",
+   "group": "reels",
+   "rect": [
+    171,
+    277,
+    145,
+    146
+   ],
+   "pair": "haspel2_rolled",
+   "when": {
+    "haspel": 2,
+    "active": false
+   }
+  },
+  {
+   "id": "haspel2_rolled",
+   "file": "haspel2_rolled.svg",
+   "z": 23,
+   "skin": "meterkast",
+   "group": "reels",
+   "rect": [
+    171,
+    277,
+    145,
+    146
+   ],
+   "pair": "hosereel2_rolled",
+   "when": {
+    "haspel": 2,
+    "active": false
+   }
+  },
+  {
+   "id": "hosereel2_unrolled",
+   "file": "hosereel2_unrolled.svg",
+   "z": 24,
+   "skin": "tuin",
+   "group": "reels",
+   "rect": [
+    186,
+    293,
+    115,
+    113
+   ],
+   "pair": "haspel2_unrolled",
+   "when": {
+    "haspel": 2,
+    "active": true
+   }
+  },
+  {
+   "id": "haspel2_unrolled",
+   "file": "haspel2_unrolled.svg",
+   "z": 25,
+   "skin": "meterkast",
+   "group": "reels",
+   "rect": [
+    186,
+    293,
+    115,
+    113
+   ],
+   "pair": "hosereel2_unrolled",
+   "when": {
+    "haspel": 2,
+    "active": true
+   }
+  },
+  {
+   "id": "hose_thick",
+   "file": "hose_thick.svg",
+   "z": 26,
+   "skin": "tuin",
+   "group": "cable",
+   "rect": [
+    246,
+    377,
+    580,
+    260
+   ],
+   "pair": "cable_thick",
+   "when": {
+    "haspel": 2,
+    "active": true
+   }
+  },
+  {
+   "id": "cable_thick",
+   "file": "cable_thick.svg",
+   "z": 27,
+   "skin": "meterkast",
+   "group": "cable",
+   "rect": [
+    248,
+    378,
+    576,
+    259
+   ],
+   "pair": "hose_thick",
+   "when": {
+    "haspel": 2,
+    "active": true
+   }
+  },
+  {
+   "id": "heat_tint_hose_thick",
+   "file": "heat_tint_hose_thick.svg",
+   "z": 28,
+   "skin": "tuin",
+   "group": "cable",
+   "rect": [
+    246,
+    377,
+    580,
+    260
+   ],
+   "pair": "heat_tint_cable_thick",
+   "heat": true,
+   "when": {
+    "haspel": 2,
+    "active": true
+   }
+  },
+  {
+   "id": "heat_tint_cable_thick",
+   "file": "heat_tint_cable_thick.svg",
+   "z": 29,
+   "skin": "meterkast",
+   "group": "cable",
+   "rect": [
+    248,
+    378,
+    576,
+    259
+   ],
+   "pair": "heat_tint_hose_thick",
+   "heat": true,
+   "when": {
+    "haspel": 2,
+    "active": true
+   }
+  },
+  {
+   "id": "haspel2_frame_front",
+   "file": "haspel2_frame_front.svg",
+   "z": 30,
+   "skin": "shared",
+   "group": "",
+   "rect": [
+    160,
+    296,
+    130,
+    146
+   ]
+  },
+  {
+   "id": "flowmeter",
+   "file": "flowmeter.svg",
+   "z": 31,
+   "skin": "tuin",
+   "group": "meter_flow",
+   "rect": [
+    480,
+    469,
+    88,
+    73
+   ],
+   "pair": "stroomtang"
+  },
+  {
+   "id": "stroomtang",
+   "file": "stroomtang.svg",
+   "z": 32,
+   "skin": "meterkast",
+   "group": "meter_flow",
+   "rect": [
+    481,
+    471,
+    90,
+    70
+   ],
+   "pair": "flowmeter"
+  },
+  {
+   "id": "thermometer",
+   "file": "thermometer.svg",
+   "z": 33,
+   "skin": "meterkast",
+   "group": "meter_flow",
+   "rect": [
+    659,
+    540,
+    68,
+    57
+   ]
+  },
+  {
+   "id": "outlets",
+   "file": "outlets.svg",
+   "z": 34,
+   "skin": "tuin",
+   "group": "loads",
+   "rect": [
+    847,
+    509,
+    215,
+    140
+   ],
+   "pair": "appliances"
+  },
+  {
+   "id": "appliances",
+   "file": "appliances.svg",
+   "z": 35,
+   "skin": "meterkast",
+   "group": "loads",
+   "rect": [
+    840,
+    492,
+    233,
+    158
+   ],
+   "pair": "outlets"
+  },
+  {
+   "id": "kettle_lamp_on",
+   "file": "kettle_lamp_on.svg",
+   "z": 36,
+   "skin": "meterkast",
+   "group": "loads",
+   "rect": [
+    929,
+    515,
+    13,
+    12
+   ],
+   "when": {
+    "control": "kettle",
+    "on": true
+   }
+  },
+  {
+   "id": "heater_glow",
+   "file": "heater_glow.svg",
+   "z": 37,
+   "skin": "meterkast",
+   "group": "loads",
+   "rect": [
+    995,
+    548,
+    50,
+    67
+   ],
+   "heat": true,
+   "when": {
+    "control": "heater",
+    "on": true
+   }
+  },
+  {
+   "id": "spray_lamp_1",
+   "file": "spray_lamp_1.svg",
+   "z": 38,
+   "skin": "tuin",
+   "group": "loads",
+   "rect": [
+    860,
+    511,
+    14,
+    22
+   ],
+   "when": {
+    "spray": "lamp",
+    "level": 1
+   }
+  },
+  {
+   "id": "spray_lamp_2",
+   "file": "spray_lamp_2.svg",
+   "z": 39,
+   "skin": "tuin",
+   "group": "loads",
+   "rect": [
+    859,
+    511,
+    16,
+    23
+   ],
+   "when": {
+    "spray": "lamp",
+    "level": 2
+   }
+  },
+  {
+   "id": "spray_lamp_3",
+   "file": "spray_lamp_3.svg",
+   "z": 40,
+   "skin": "tuin",
+   "group": "loads",
+   "rect": [
+    858,
+    511,
+    18,
+    23
+   ],
+   "when": {
+    "spray": "lamp",
+    "level": 3
+   }
+  },
+  {
+   "id": "spray_kettle_1",
+   "file": "spray_kettle_1.svg",
+   "z": 41,
+   "skin": "tuin",
+   "group": "loads",
+   "rect": [
+    936,
+    508,
+    51,
+    32
+   ],
+   "when": {
+    "spray": "kettle",
+    "level": 1
+   }
+  },
+  {
+   "id": "spray_kettle_2",
+   "file": "spray_kettle_2.svg",
+   "z": 42,
+   "skin": "tuin",
+   "group": "loads",
+   "rect": [
+    922,
+    499,
+    79,
+    45
+   ],
+   "when": {
+    "spray": "kettle",
+    "level": 2
+   }
+  },
+  {
+   "id": "spray_kettle_3",
+   "file": "spray_kettle_3.svg",
+   "z": 43,
+   "skin": "tuin",
+   "group": "loads",
+   "rect": [
+    907,
+    489,
+    110,
+    61
+   ],
+   "when": {
+    "spray": "kettle",
+    "level": 3
+   }
+  },
+  {
+   "id": "spray_heater_1",
+   "file": "spray_heater_1.svg",
+   "z": 44,
+   "skin": "tuin",
+   "group": "loads",
+   "rect": [
+    1003,
+    541,
+    57,
+    35
+   ],
+   "when": {
+    "spray": "heater",
+    "level": 1
+   }
+  },
+  {
+   "id": "spray_heater_2",
+   "file": "spray_heater_2.svg",
+   "z": 45,
+   "skin": "tuin",
+   "group": "loads",
+   "rect": [
+    990,
+    533,
+    83,
+    47
+   ],
+   "when": {
+    "spray": "heater",
+    "level": 2
+   }
+  },
+  {
+   "id": "spray_heater_3",
+   "file": "spray_heater_3.svg",
+   "z": 46,
+   "skin": "tuin",
+   "group": "loads",
+   "rect": [
+    977,
+    524,
+    109,
+    61
+   ],
+   "when": {
+    "spray": "heater",
+    "level": 3
+   }
+  },
+  {
+   "id": "verdeelstuk",
+   "file": "verdeelstuk.svg",
+   "z": 47,
+   "skin": "tuin",
+   "group": "switches",
+   "rect": [
+    806,
+    590,
+    151,
+    94
+   ],
+   "pair": "stekkerdoos"
+  },
+  {
+   "id": "stekkerdoos",
+   "file": "stekkerdoos.svg",
+   "z": 48,
+   "skin": "meterkast",
+   "group": "switches",
+   "rect": [
+    808,
+    593,
+    149,
+    91
+   ],
+   "pair": "verdeelstuk"
+  },
+  {
+   "id": "tap_dripper_closed",
+   "file": "tap_dripper_closed.svg",
+   "z": 49,
+   "skin": "tuin",
+   "group": "switches",
+   "rect": [
+    830,
+    575,
+    35,
+    32
+   ],
+   "pair": "switch_lamp_off",
+   "when": {
+    "control": "lamp",
+    "on": false
+   }
+  },
+  {
+   "id": "switch_lamp_off",
+   "file": "switch_lamp_off.svg",
+   "z": 50,
+   "skin": "meterkast",
+   "group": "switches",
+   "rect": [
+    822,
+    626,
+    28,
+    29
+   ],
+   "pair": "tap_dripper_closed",
+   "when": {
+    "control": "lamp",
+    "on": false
+   }
+  },
+  {
+   "id": "tap_dripper_open",
+   "file": "tap_dripper_open.svg",
+   "z": 51,
+   "skin": "tuin",
+   "group": "switches",
+   "rect": [
+    838,
+    575,
+    43,
+    32
+   ],
+   "pair": "switch_lamp_on",
+   "when": {
+    "control": "lamp",
+    "on": true
+   }
+  },
+  {
+   "id": "switch_lamp_on",
+   "file": "switch_lamp_on.svg",
+   "z": 52,
+   "skin": "meterkast",
+   "group": "switches",
+   "rect": [
+    824,
+    626,
+    26,
+    29
+   ],
+   "pair": "tap_dripper_open",
+   "when": {
+    "control": "lamp",
+    "on": true
+   }
+  },
+  {
+   "id": "tap_big_closed",
+   "file": "tap_big_closed.svg",
+   "z": 53,
+   "skin": "tuin",
+   "group": "switches",
+   "rect": [
+    862,
+    585,
+    35,
+    32
+   ],
+   "pair": "switch_kettle_off",
+   "when": {
+    "control": "kettle",
+    "on": false
+   }
+  },
+  {
+   "id": "switch_kettle_off",
+   "file": "switch_kettle_off.svg",
+   "z": 54,
+   "skin": "meterkast",
+   "group": "switches",
+   "rect": [
+    854,
+    636,
+    28,
+    29
+   ],
+   "pair": "tap_big_closed",
+   "when": {
+    "control": "kettle",
+    "on": false
+   }
+  },
+  {
+   "id": "tap_big_open",
+   "file": "tap_big_open.svg",
+   "z": 55,
+   "skin": "tuin",
+   "group": "switches",
+   "rect": [
+    870,
+    585,
+    43,
+    32
+   ],
+   "pair": "switch_kettle_on",
+   "when": {
+    "control": "kettle",
+    "on": true
+   }
+  },
+  {
+   "id": "switch_kettle_on",
+   "file": "switch_kettle_on.svg",
+   "z": 56,
+   "skin": "meterkast",
+   "group": "switches",
+   "rect": [
+    856,
+    636,
+    26,
+    30
+   ],
+   "pair": "tap_big_open",
+   "when": {
+    "control": "kettle",
+    "on": true
+   }
+  },
+  {
+   "id": "tap_small_closed",
+   "file": "tap_small_closed.svg",
+   "z": 57,
+   "skin": "tuin",
+   "group": "switches",
+   "rect": [
+    894,
+    595,
+    35,
+    32
+   ],
+   "pair": "switch_heater_off",
+   "when": {
+    "control": "heater",
+    "on": false
+   }
+  },
+  {
+   "id": "switch_heater_off",
+   "file": "switch_heater_off.svg",
+   "z": 58,
+   "skin": "meterkast",
+   "group": "switches",
+   "rect": [
+    887,
+    646,
+    27,
+    29
+   ],
+   "pair": "tap_small_closed",
+   "when": {
+    "control": "heater",
+    "on": false
+   }
+  },
+  {
+   "id": "tap_small_open",
+   "file": "tap_small_open.svg",
+   "z": 59,
+   "skin": "tuin",
+   "group": "switches",
+   "rect": [
+    902,
+    595,
+    43,
+    32
+   ],
+   "pair": "switch_heater_on",
+   "when": {
+    "control": "heater",
+    "on": true
+   }
+  },
+  {
+   "id": "switch_heater_on",
+   "file": "switch_heater_on.svg",
+   "z": 60,
+   "skin": "meterkast",
+   "group": "switches",
+   "rect": [
+    888,
+    646,
+    26,
+    30
+   ],
+   "pair": "tap_small_open",
+   "when": {
+    "control": "heater",
+    "on": true
+   }
+  },
+  {
+   "id": "end_gauge",
+   "file": "end_gauge.svg",
+   "z": 61,
+   "skin": "tuin",
+   "group": "meter_end",
+   "rect": [
+    926,
+    613,
+    59,
+    58
+   ],
+   "pair": "multimeter"
+  },
+  {
+   "id": "multimeter",
+   "file": "multimeter.svg",
+   "z": 62,
+   "skin": "meterkast",
+   "group": "meter_end",
+   "rect": [
+    908,
+    611,
+    124,
+    114
+   ],
+   "pair": "end_gauge"
+  }
+ ],
+ "lcds": [
+  {
+   "id": "stroomtang",
+   "skin": "meterkast",
+   "w": 16,
+   "h": 11,
+   "origin": [
+    527.5461868321097,
+    477.217748241324
+   ],
+   "u": [
+    1.8880922448838646,
+    0.5899054887028115
+   ],
+   "v": [
+    -1.179810977405623,
+    0.9440461224419323
+   ],
+   "group": "meter_flow"
+  },
+  {
+   "id": "thermometer",
+   "skin": "meterkast",
+   "w": 13,
+   "h": 8,
+   "origin": [
+    690.5149854885858,
+    545.1585587225363
+   ],
+   "u": [
+    1.8880922448838646,
+    0.5899054887028115
+   ],
+   "v": [
+    -1.179810977405623,
+    0.9440461224419323
+   ],
+   "group": "meter_flow"
+  },
+  {
+   "id": "multimeter",
+   "skin": "meterkast",
+   "w": 22,
+   "h": 12,
+   "origin": [
+    971.4905361528901,
+    644.6147676223976
+   ],
+   "u": [
+    1.888092244883751,
+    0.5899054887028115
+   ],
+   "v": [
+    -1.179810977405623,
+    0.9440461224419323
+   ],
+   "group": "meter_end"
+  }
+ ],
+ "needles": [
+  {
+   "id": "tap_gauge_needle",
+   "skin": "tuin",
+   "length": 6.4,
+   "tail": 2,
+   "origin": [
+    346.7431003866168,
+    190.7445027928987
+   ],
+   "u": [
+    1.8880922448838078,
+    0.5899054887028115
+   ],
+   "v": [
+    -1.179810977405623,
+    0.9440461224419323
+   ],
+   "from": -0.75,
+   "to": 0.75,
+   "fixed": 0.45,
+   "group": "source"
+  },
+  {
+   "id": "end_gauge_needle",
+   "skin": "tuin",
+   "length": 7.4,
+   "tail": 2,
+   "origin": [
+    954.0281496441825,
+    628.3768630759208
+   ],
+   "u": [
+    1.8880922448838646,
+    0.5899054887028115
+   ],
+   "v": [
+    -1.1798109774055092,
+    0.9440461224419323
+   ],
+   "from": -0.75,
+   "to": 0.75,
+   "group": "meter_end"
+  }
+ ],
+ "wheels": [
+  {
+   "id": "flowmeter_wheel",
+   "skin": "tuin",
+   "r": 5.8,
+   "blades": 6,
+   "origin": [
+    528.4931930623134,
+    486.7099482302271
+   ],
+   "u": [
+    1.8880922448838646,
+    0.5899054887028115
+   ],
+   "v": [
+    -1.179810977405623,
+    0.9440461224419323
+   ],
+   "group": "meter_flow"
+  }
+ ],
+ "leds": [
+  {
+   "id": "kwh_pulse",
+   "skin": "meterkast",
+   "at": [
+    415.4227024699138,
+    221.61314289090137
+   ],
+   "group": "source"
+  }
+ ],
+ "tags": [
+  {
+   "id": "druk",
+   "at": [
+    363.2644008806442,
+    164.21116947116383
+   ]
+  },
+  {
+   "id": "stroom",
+   "at": [
+    527.3133820849077,
+    431.1601697857111
+   ]
+  },
+  {
+   "id": "tegenhouden",
+   "at": [
+    710.4642500541651,
+    539.1678602532147
+   ]
+  }
+ ],
+ "hits": [
+  {
+   "id": "haspel1",
+   "control": "haspel",
+   "skin": "shared",
+   "rect": [
+    351.71488309518577,
+    243.56366668685746,
+    169.91646160850019,
+    213.7486078792473
+   ]
+  },
+  {
+   "id": "haspel2",
+   "control": "haspel",
+   "skin": "shared",
+   "rect": [
+    154.4220706384569,
+    250.180869867236,
+    169.91646160850019,
+    213.74860787924732
+   ]
+  },
+  {
+   "id": "tap_lamp",
+   "control": "lamp",
+   "skin": "tuin",
+   "rect": [
+    818.5609845328212,
+    564.764902889809,
+    67.49387089036804,
+    56.88433799820427
+   ]
+  },
+  {
+   "id": "switch_lamp",
+   "control": "lamp",
+   "skin": "meterkast",
+   "rect": [
+    817.6179251129664,
+    617.6836725352343,
+    34.45521671266226,
+    43.51296340070985
+   ]
+  },
+  {
+   "id": "tap_lamp",
+   "control": "lamp",
+   "skin": "tuin",
+   "rect": [
+    818.5609845328212,
+    564.764902889809,
+    67.49387089036804,
+    56.88433799820427
+   ]
+  },
+  {
+   "id": "switch_lamp",
+   "control": "lamp",
+   "skin": "meterkast",
+   "rect": [
+    817.6179251129664,
+    617.6836725352343,
+    34.45521671266226,
+    43.51296340070985
+   ]
+  },
+  {
+   "id": "tap_kettle",
+   "control": "kettle",
+   "skin": "tuin",
+   "rect": [
+    850.6585526958467,
+    574.7932961977566,
+    67.49387089036804,
+    56.88433799820439
+   ]
+  },
+  {
+   "id": "switch_kettle",
+   "control": "kettle",
+   "skin": "meterkast",
+   "rect": [
+    849.715493275992,
+    627.7120658431819,
+    34.45521671266226,
+    43.51296340070985
+   ]
+  },
+  {
+   "id": "tap_kettle",
+   "control": "kettle",
+   "skin": "tuin",
+   "rect": [
+    850.6585526958467,
+    574.7932961977566,
+    67.49387089036804,
+    56.88433799820439
+   ]
+  },
+  {
+   "id": "switch_kettle",
+   "control": "kettle",
+   "skin": "meterkast",
+   "rect": [
+    849.715493275992,
+    627.7120658431819,
+    34.45521671266226,
+    43.51296340070985
+   ]
+  },
+  {
+   "id": "tap_heater",
+   "control": "heater",
+   "skin": "tuin",
+   "rect": [
+    882.7561208588722,
+    584.8216895057042,
+    67.49387089036804,
+    56.88433799820439
+   ]
+  },
+  {
+   "id": "switch_heater",
+   "control": "heater",
+   "skin": "meterkast",
+   "rect": [
+    881.8130614390175,
+    637.7404591511295,
+    34.45521671266238,
+    43.512963400709964
+   ]
+  },
+  {
+   "id": "tap_heater",
+   "control": "heater",
+   "skin": "tuin",
+   "rect": [
+    882.7561208588722,
+    584.8216895057042,
+    67.49387089036804,
+    56.88433799820439
+   ]
+  },
+  {
+   "id": "switch_heater",
+   "control": "heater",
+   "skin": "meterkast",
+   "rect": [
+    881.8130614390175,
+    637.7404591511295,
+    34.45521671266238,
+    43.512963400709964
+   ]
+  }
+ ]
+}

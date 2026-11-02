@@ -1,0 +1,1279 @@
+{
+ "countermeasures": [
+  {
+   "budget": 200,
+   "category": "flow",
+   "decay_days": 10,
+   "description": "Alle dossiers voor Werkvoorbereiding gaan in één bak; wie een dossier pakt, neemt het oudste. Niemand hoeft meer te zoeken of om te sorteren.",
+   "effects": [],
+   "id": "one_tray_fifo",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Eén bak, op volgorde van binnenkomst",
+   "team_hours": {
+    "work_prep": 2
+   },
+   "tier": 1
+  },
+  {
+   "budget": 100,
+   "category": "visual_management",
+   "decay_days": 7,
+   "description": "Elke bak krijgt een vaste plek en een duidelijk label (5S), zodat iedereen ziet waar welk dossier ligt.",
+   "effects": [],
+   "id": "tray_labels",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Vaste plek en labels voor de bakken",
+   "team_hours": {
+    "work_prep": 1
+   },
+   "tier": 1
+  },
+  {
+   "budget": 6000,
+   "category": "quality",
+   "decay_days": null,
+   "description": "Het webformulier gaat pas verder als vermogen, installateur en een foto van de meterkast zijn ingevuld. Fouten worden aan de bron voorkomen in plaats van later gevonden.",
+   "effects": [
+    {
+     "property": "ftr",
+     "target": "connections.intake",
+     "value": 0.05
+    }
+   ],
+   "id": "poka_yoke_application",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Poka-yoke aanvraagformulier",
+   "team_hours": {
+    "intake": 30
+   },
+   "tier": 1
+  },
+  {
+   "budget": 1000,
+   "category": "standard_work",
+   "decay_days": 30,
+   "description": "De intakemedewerker loopt elke aanvraag na met een checklist en vraagt ontbrekende gegevens direct op.",
+   "effects": [],
+   "id": "intake_checklist",
+   "multipliers": {
+    "full": 0.8,
+    "minimal": 0.2,
+    "reduced": 0.45
+   },
+   "name": "Checklist bij de intake",
+   "shortcut": true,
+   "team_hours": {
+    "intake": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 2000,
+   "category": "standard_work",
+   "decay_days": 45,
+   "description": "Planning belt of mailt de klant twee dagen voor de uitvoering met een korte checklist. Is de meterkast niet klaar, dan wordt de klus verplaatst voordat de monteur rijdt.",
+   "effects": [],
+   "id": "readiness_check",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Gereedheidscheck 48 uur vooraf",
+   "team_hours": {
+    "planners": 20
+   },
+   "tier": 1
+  },
+  {
+   "budget": 9000,
+   "category": "quality",
+   "decay_days": null,
+   "description": "De installateur meldt de meterkast gereed met een foto in het portaal; pas dan kan de klus worden ingepland.",
+   "effects": [
+    {
+     "property": "ftr",
+     "target": "connections.execution",
+     "value": 0.03
+    }
+   ],
+   "id": "installer_photo_upload",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Foto-upload door de installateur",
+   "team_hours": {
+    "intake": 20,
+    "planners": 30
+   },
+   "tier": 2
+  },
+  {
+   "budget": 8000,
+   "category": "standard_work",
+   "decay_days": 60,
+   "description": "Een vast ontwerp voor standaard woningaansluitingen (tot 3x25A, zonder netuitbreiding), zonder extra goedkeuringen.",
+   "effects": [
+    {
+     "property": "touch_time",
+     "target": "connections.design",
+     "value": 0.85
+    }
+   ],
+   "id": "standard_designs",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Standaardontwerpen voor standaardwerk",
+   "team_hours": {
+    "work_prep": 60
+   },
+   "tier": 1
+  },
+  {
+   "budget": 1500,
+   "category": "flow",
+   "decay_days": 30,
+   "description": "De werkvoorbereider keurt standaardontwerpen zelf goed; alleen afwijkingen gaan naar de teamleider.",
+   "effects": [],
+   "id": "delegated_approval",
+   "multipliers": {
+    "full": 0.85,
+    "minimal": 0.2,
+    "reduced": 0.45
+   },
+   "name": "Gedelegeerde goedkeuring",
+   "shortcut": true,
+   "team_hours": {
+    "work_prep": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 500,
+   "category": "flow",
+   "decay_days": 30,
+   "description": "Een vergunningsaanvraag gaat de deur uit zodra het dossier klaar is, niet meer verzameld per project.",
+   "effects": [],
+   "id": "request_permits_daily",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Vergunning direct aanvragen",
+   "team_hours": {
+    "work_prep": 5
+   },
+   "tier": 1
+  },
+  {
+   "budget": 12000,
+   "category": "flow",
+   "decay_days": null,
+   "description": "Zodra het tracé bekend is, gaat de vergunningsaanvraag eruit; het ontwerp wordt intussen afgemaakt. Wachten en werken lopen naast elkaar.",
+   "effects": [
+    {
+     "property": "starts_with",
+     "target": "connections.permit",
+     "value": "design"
+    }
+   ],
+   "id": "parallel_permits",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Vergunning parallel aan het ontwerp",
+   "team_hours": {
+    "work_prep": 40
+   },
+   "tier": 3
+  },
+  {
+   "budget": 4000,
+   "category": "workplace_organization",
+   "decay_days": 45,
+   "description": "Elke storingsbus heeft dezelfde vaste lijst materialen, op een vaste plek. Wat eruit gaat, wordt aan het eind van de dienst aangevuld.",
+   "effects": [
+    {
+     "property": "touch_time",
+     "target": "outages.repair",
+     "value": 0.95
+    }
+   ],
+   "id": "standard_van_stock",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Standaard busvoorraad",
+   "team_hours": {
+    "monteurs": 40
+   },
+   "tier": 1
+  },
+  {
+   "budget": 10000,
+   "category": "flow",
+   "decay_days": null,
+   "description": "Twee bakken per artikel; een lege bak is het bestelsignaal voor het magazijn. Aanvullen hangt niet meer van het geheugen af.",
+   "effects": [
+    {
+     "property": "touch_time",
+     "target": "outages.repair",
+     "value": 0.9
+    }
+   ],
+   "id": "two_bin_van_kanban",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Two-bin kanban in de bus",
+   "team_hours": {
+    "monteurs": 30
+   },
+   "tier": 3
+  },
+  {
+   "budget": 1000,
+   "category": "workplace_organization",
+   "decay_days": 30,
+   "description": "Bij de schuifdeur van elke bus hangt een kaart met de moffen en verbinders die erin horen. Wat de monteur gebruikt, streept hij aan; het magazijn vult 's ochtends aan wat is aangestreept.",
+   "effects": [],
+   "id": "van_refill_card",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Aanvulkaart in de bus",
+   "team_hours": {
+    "monteurs": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 3000,
+   "category": "quality",
+   "decay_days": null,
+   "description": "De klant krijgt een bevestiging bij het plannen en de dag ervoor een herinnering, met een knop om te verzetten.",
+   "effects": [],
+   "id": "appointment_reminder",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Bevestiging en herinnering van de afspraak",
+   "team_hours": {
+    "planners": 15
+   },
+   "tier": 1
+  },
+  {
+   "budget": 8000,
+   "category": "flow",
+   "decay_days": null,
+   "description": "Een afspraak in een tijdvak van twee uur, en een bericht als de monteur onderweg is.",
+   "effects": [
+    {
+     "property": "ftr",
+     "target": "meters.visit",
+     "value": 0.05
+    }
+   ],
+   "id": "two_hour_window",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Tijdvak van twee uur en een onderweg-bericht",
+   "team_hours": {
+    "planners": 30
+   },
+   "tier": 2
+  },
+  {
+   "budget": 18000,
+   "category": "flow",
+   "decay_days": null,
+   "description": "De monteur legt het as-built direct bij oplevering vast op een tablet; geen papieren schets die weken later wordt overgetekend.",
+   "effects": [
+    {
+     "property": "touch_time",
+     "target": "connections.revision",
+     "value": 0.8
+    }
+   ],
+   "id": "revision_at_source",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Revisie aan de bron",
+   "team_hours": {
+    "gis": 40,
+    "monteurs": 30
+   },
+   "tier": 3
+  },
+  {
+   "budget": 2500,
+   "category": "standard_work",
+   "decay_days": 45,
+   "description": "Eén vaste schets per standaardaansluiting, elke dag verwerkt in plaats van per maand opgespaard.",
+   "effects": [],
+   "id": "daily_revision_template",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Standaard revisieschets en dagelijks verwerken",
+   "shortcut": true,
+   "team_hours": {
+    "gis": 15,
+    "monteurs": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 3000,
+   "category": "safety",
+   "decay_days": 60,
+   "description": "Bij graven in de buurt van kabels altijd eerst een proefsleuf; de opdrachtgever plant er tijd voor in.",
+   "effects": [],
+   "id": "standard_test_trenches",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Proefsleuven als standaard",
+   "team_hours": {
+    "work_prep": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 1500,
+   "category": "people",
+   "decay_days": 30,
+   "description": "Aannemers krijgen voor de start een briefing met actuele kaarten en de afspraak over proefsleuven.",
+   "effects": [],
+   "id": "contractor_briefing",
+   "multipliers": {
+    "full": 0.8,
+    "minimal": 0.2,
+    "reduced": 0.4
+   },
+   "name": "Briefing van graafaannemers",
+   "shortcut": true,
+   "team_hours": {
+    "key_accounts": 8
+   },
+   "tier": 1
+  },
+  {
+   "budget": 5000,
+   "category": "standard_work",
+   "decay_days": null,
+   "description": "De ervaren monteurs leggen het lokaliseren in oude kabelnetten vast in korte video's en werkinstructies.",
+   "effects": [],
+   "id": "work_instruction_videos",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Werkinstructies met video",
+   "team_hours": {
+    "monteurs": 40
+   },
+   "tier": 1
+  },
+  {
+   "budget": 2000,
+   "category": "standard_work",
+   "decay_days": 60,
+   "description": "Henk zet per oud kabeltype zijn vaste trucs op één A4, met een foto en de fout die je het makkelijkst maakt. Een jonge monteur schrijft mee en probeert elke les uit op een echte storing.",
+   "effects": [],
+   "id": "henks_one_point_lessons",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Eénpuntslessen van Henk",
+   "team_hours": {
+    "monteurs": 80
+   },
+   "tier": 1
+  },
+  {
+   "budget": 4000,
+   "category": "people",
+   "decay_days": null,
+   "description": "Henk leert Ahmed en de andere jonge monteurs het lokaliseren in oude kabelnetten in vier stappen: voorbereiden, voordoen, laten doen, opvolgen. Op echte storingen, met Henk ernaast.",
+   "effects": [
+    {
+     "property": "ftr",
+     "target": "outages.locate",
+     "value": 0.02
+    }
+   ],
+   "id": "twi_job_instruction",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "TWI Job Instruction met Henk",
+   "team_hours": {
+    "monteurs": 60
+   },
+   "tier": 1
+  },
+  {
+   "budget": 7000,
+   "category": "people",
+   "decay_days": null,
+   "description": "Zichtbaar wie wat kan; elke jonge monteur draait mee met een ervaren buddy op storingen in oude netten.",
+   "effects": [
+    {
+     "property": "ftr",
+     "target": "outages.locate",
+     "value": 0.03
+    }
+   ],
+   "id": "skills_matrix_buddy",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Skills-matrix en buddysysteem",
+   "team_hours": {
+    "monteurs": 80
+   },
+   "tier": 2
+  },
+  {
+   "budget": 6000,
+   "category": "visual_management",
+   "decay_days": 60,
+   "description": "De klant krijgt bij de aanvraag een realistische datum en kan de stand van zijn aanvraag online volgen.",
+   "effects": [],
+   "id": "realistic_promise",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Realistische toezegging en statuspagina",
+   "shortcut": true,
+   "team_hours": {
+    "contact_centre": 20,
+    "intake": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 2500,
+   "category": "flow",
+   "decay_days": 45,
+   "description": "Het contactcentrum turft een week waarover klanten bellen. Bij de twee momenten waar het meest over gebeld wordt, stuurt de intake de klant voortaan zelf een korte mail met de stand en de volgende stap. Eerst met de hand; automatiseren als het werkt.",
+   "effects": [],
+   "id": "milestone_mail_by_hand",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Mijlpaalmail met de hand",
+   "team_hours": {
+    "contact_centre": 10,
+    "intake": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 12000,
+   "category": "flow",
+   "decay_days": null,
+   "description": "Bij elke stap in het proces krijgt de klant uit zichzelf een bericht, ook als het langer duurt. Faalvraag meten naast waardevraag.",
+   "effects": [
+    {
+     "property": "call_rate",
+     "target": "connections",
+     "value": 0.5
+    }
+   ],
+   "id": "proactive_status_updates",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Proactieve statusberichten",
+   "team_hours": {
+    "contact_centre": 30,
+    "planners": 20
+   },
+   "tier": 2
+  },
+  {
+   "budget": 1500,
+   "category": "flow",
+   "decay_days": 45,
+   "description": "Elk dossier wordt afgehandeld op de dag dat het klaar is, met een korte checklist; geen maandelijkse batch meer (one-piece flow).",
+   "effects": [],
+   "id": "close_out_at_completion",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Afhandelen bij oplevering",
+   "team_hours": {
+    "meter_office": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 25000,
+   "category": "flow",
+   "decay_days": null,
+   "description": "Bij gereedmelding wordt de EAN automatisch aangemeld in het centraal aansluitregister; handwerk alleen bij afwijkingen.",
+   "effects": [
+    {
+     "property": "touch_time",
+     "target": "connections.close_out",
+     "value": 0.4
+    }
+   ],
+   "id": "automatic_ean_registration",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Automatische EAN-aanmelding",
+   "team_hours": {
+    "meter_office": 30
+   },
+   "tier": 2
+  },
+  {
+   "budget": 3000,
+   "category": "flow",
+   "decay_days": 45,
+   "description": "Bij de intake bepaalt een korte checklist of een aanvraag ruim binnen de vrije capaciteit van het station valt. Alleen twijfelgevallen krijgen een volledige netstudie.",
+   "effects": [],
+   "id": "triage_fast_lane",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Triage met snelle baan",
+   "team_hours": {
+    "grid_analysts": 20,
+    "intake": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 9000,
+   "category": "standard_work",
+   "decay_days": null,
+   "description": "Vaste rekentemplates per type aansluiting en station. Een studie is invullen en controleren in plaats van opnieuw modelleren, ook voor congestieonderzoek.",
+   "effects": [
+    {
+     "property": "touch_time",
+     "target": "connections.grid_study",
+     "value": 0.8
+    },
+    {
+     "property": "touch_time",
+     "target": "congestion.congestion_study",
+     "value": 0.85
+    }
+   ],
+   "id": "calculation_templates",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Standaard rekentemplates",
+   "team_hours": {
+    "grid_analysts": 40
+   },
+   "tier": 2
+  },
+  {
+   "budget": 2500,
+   "category": "quality",
+   "decay_days": 45,
+   "description": "De monteur vertrekt pas als de meter zijn eerste stand heeft verstuurd. Werkt de verbinding niet, dan wisselt hij de module ter plekke (jidoka).",
+   "effects": [
+    {
+     "property": "touch_time",
+     "target": "meters.visit",
+     "value": 1.05
+    },
+    {
+     "property": "ftr",
+     "target": "meters.registration",
+     "value": 0.05
+    }
+   ],
+   "id": "on_site_comm_test",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Communicatietest voor vertrek",
+   "team_hours": {
+    "monteurs": 20
+   },
+   "tier": 1
+  },
+  {
+   "budget": 6000,
+   "category": "standard_work",
+   "decay_days": null,
+   "description": "Planning kiest de communicatiemodule op basis van de dekkingskaart van het adres, zodat de juiste module meegaat.",
+   "effects": [],
+   "id": "coverage_check_in_planning",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Dekkingscheck bij het plannen",
+   "team_hours": {
+    "planners": 20
+   },
+   "tier": 2
+  },
+  {
+   "budget": 4000,
+   "category": "standard_work",
+   "decay_days": null,
+   "description": "In wijken met veel zonnepanelen gaat de aftakking van de wijktransformator een stand lager, op basis van een meetweek in de zomer én een in de winter (op een koude avond met warmtepompen mag de spanning niet onder 207 V zakken). De spanning klopt dan voor de hele straat in plaats van voor één klant.",
+   "effects": [],
+   "id": "tap_review_per_neighbourhood",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Trafo-aftakkingen per wijk herzien",
+   "team_hours": {
+    "grid_analysts": 10,
+    "monteurs": 30
+   },
+   "tier": 1
+  },
+  {
+   "budget": 1500,
+   "category": "standard_work",
+   "decay_days": null,
+   "description": "Eerst één station. Na een meetweek in de straat gaat de aftakking van die wijktransformator een stand lager; op een koude avond wordt nagemeten dat de spanning niet onder 207 V zakt. Klopt het, dan volgen de andere wijken.",
+   "effects": [],
+   "id": "tap_trial_one_station",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Proef met één wijktrafo",
+   "team_hours": {
+    "grid_analysts": 5,
+    "monteurs": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 8000,
+   "category": "visual_management",
+   "decay_days": null,
+   "description": "Meetdata bewaakt de spanning die slimme meters elk kwartier registreren. Een te hoge spanning is zichtbaar voordat er een klacht komt, en de meetweek bij het adres is meestal niet meer nodig.",
+   "effects": [
+    {
+     "property": "touch_time",
+     "target": "voltage_complaints.measurement",
+     "value": 0.5
+    },
+    {
+     "property": "wait_time",
+     "target": "voltage_complaints.measurement_week",
+     "value": 0.3
+    }
+   ],
+   "id": "smart_meter_voltage_data",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Spanningsdata uit slimme meters",
+   "team_hours": {
+    "meter_office": 30
+   },
+   "tier": 2
+  },
+  {
+   "budget": 60000,
+   "category": "flow",
+   "decay_days": null,
+   "description": "De straten met de meeste zonnepanelen krijgen een zwaardere kabel of een extra station. Duur, maar de spanning blijft ook bij nog meer panelen binnen de norm.",
+   "effects": [
+    {
+     "property": "demand",
+     "target": "voltage_complaints",
+     "value": 0.7
+    }
+   ],
+   "id": "targeted_reinforcement",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Gerichte netverzwaring in de drukste straten",
+   "team_hours": {
+    "grid_analysts": 20,
+    "work_prep": 20
+   },
+   "tier": 3
+  },
+  {
+   "budget": 2000,
+   "category": "flow",
+   "decay_days": 45,
+   "description": "Zodra de netstudie laat zien dat een straat verzwaard moet worden, gaat de bestelling van de transformator de deur uit. Ontwerp en levertijd lopen naast elkaar in plaats van na elkaar. Een paar standaardmaten trafo houden het risico van een verkeerde maat klein.",
+   "effects": [
+    {
+     "property": "starts_with",
+     "target": "connections.grid_reinforcement",
+     "value": "design"
+    }
+   ],
+   "id": "early_transformer_order",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Trafo bestellen bij de netstudie",
+   "team_hours": {
+    "grid_analysts": 10,
+    "work_prep": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 12000,
+   "category": "flow",
+   "decay_days": null,
+   "description": "Een raamcontract met de fabrikant voor standaardtransformatoren, met afgesproken aantallen en een vaste levertijd. Bestellen is afroepen in plaats van een aanbesteding per project.",
+   "effects": [
+    {
+     "property": "wait_time",
+     "target": "connections.grid_reinforcement",
+     "value": 0.9
+    }
+   ],
+   "id": "framework_contracts",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Raamcontract met vaste levertijd",
+   "team_hours": {
+    "work_prep": 20
+   },
+   "tier": 2
+  },
+  {
+   "aftermath": {
+    "after_days": 30,
+    "cost": 3500
+   },
+   "budget": 40000,
+   "category": "flow",
+   "decay_days": 120,
+   "description": "Een kleine voorraad standaardtransformatoren op het magazijn, aangevuld via de fabrikant. Een verzwaring hoeft niet meer op de levering te wachten; de voorraad kost wel geld.",
+   "effects": [
+    {
+     "property": "wait_time",
+     "target": "connections.grid_reinforcement",
+     "value": 0.85
+    },
+    {
+     "property": "wait_time",
+     "target": "congestion.capacity_queue",
+     "value": 0.95
+    }
+   ],
+   "id": "strategic_transformer_stock",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Strategische voorraad transformatoren",
+   "shortcut": true,
+   "team_hours": {
+    "work_prep": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 3000,
+   "category": "visual_management",
+   "decay_days": 45,
+   "description": "Per klant en per station staan het gecontracteerde en het werkelijk gebruikte vermogen naast elkaar, elke week bijgewerkt uit de meetdata. Ongebruikte capaciteit wordt zichtbaar; teruggeven gebeurt nog per geval.",
+   "effects": [],
+   "id": "capacity_usage_dashboard",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Dashboard gecontracteerd versus gebruikt",
+   "shortcut": true,
+   "team_hours": {
+    "grid_analysts": 10,
+    "key_accounts": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 5000,
+   "category": "flow",
+   "decay_days": null,
+   "description": "Klanten die twaalf maanden lang hooguit de helft gebruiken van wat ze gecontracteerd hebben, of 1 MW of meer laten liggen, krijgen een gesprek en een voorstel om capaciteit terug te geven, zoals de regels van de ACM het toestaan. Wat vrijkomt, gaat naar de wachtrij.",
+   "effects": [],
+   "id": "use_it_or_lose_it",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Use-it-or-lose-it-gesprekken",
+   "team_hours": {
+    "grid_analysts": 10,
+    "key_accounts": 30
+   },
+   "tier": 2
+  },
+  {
+   "budget": 8000,
+   "category": "flow",
+   "decay_days": null,
+   "description": "Nieuwe klanten krijgen naast vaste capaciteit ook non-firm en tijdsduurgebonden contracten aangeboden. Meer aanvragen passen meteen, buiten de drukste uren.",
+   "effects": [
+    {
+     "property": "applies",
+     "target": "congestion.capacity_queue",
+     "value": -0.1
+    }
+   ],
+   "id": "flexible_contracts",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Flexibele en tijdsduurgebonden contracten",
+   "team_hours": {
+    "key_accounts": 40
+   },
+   "tier": 3
+  },
+  {
+   "budget": 2000,
+   "category": "flow",
+   "decay_days": 45,
+   "description": "Elke dag staan twee monteurs ingeroosterd voor storingen. Is er geen storing, dan doen ze klein onderhoud dat kan wachten. De rest van de planning blijft staan.",
+   "effects": [
+    {
+     "property": "reserve",
+     "target": "monteurs",
+     "value": {
+      "people": 2,
+      "stream": "outages"
+     }
+    }
+   ],
+   "id": "daytime_outage_crew",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Vaste storingsploeg overdag",
+   "team_hours": {
+    "monteurs": 10,
+    "planners": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 3000,
+   "category": "standard_work",
+   "description": "De planners vullen een monteur voor ongeveer 85%. Het vrije venster vangt storingen op, zodat een storing de dag niet meer omgooit.",
+   "effects": [],
+   "id": "planning_with_fault_windows",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Planning met dagvensters voor storingen",
+   "team_hours": {
+    "planners": 30
+   },
+   "tier": 2
+  },
+  {
+   "budget": 6000,
+   "category": "flow",
+   "description": "Gepland werk wordt gelijkmatig over de week vrijgegeven, met een vaste mix van aansluitingen en meterwissels per dag. Pieken en gaten verdwijnen, en er blijft ruimte voor het onverwachte.",
+   "effects": [
+    {
+     "property": "touch_time",
+     "target": "connections.planning",
+     "value": 0.9
+    }
+   ],
+   "id": "heijunka_release",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Heijunka-planning",
+   "team_hours": {
+    "planners": 40
+   },
+   "tier": 3
+  },
+  {
+   "budget": 4000,
+   "category": "visual_management",
+   "decay_days": 45,
+   "description": "Intake, Werkvoorbereiding, Planning en Uitvoering hangen één bord op met de aansluitingen van begin tot eind. De teams worden samen beoordeeld op doorlooptijd en op de oudste aanvraag in plaats van op hun eigen aantallen, en starten nieuw werk pas als het volgende team er ruimte voor heeft.",
+   "effects": [
+    {
+     "property": "kpis",
+     "target": "intake",
+     "value": [
+      "intake_lead_time",
+      "intake_oldest"
+     ]
+    },
+    {
+     "property": "kpis",
+     "target": "work_prep",
+     "value": [
+      "work_prep_lead_time",
+      "work_prep_oldest"
+     ]
+    }
+   ],
+   "id": "obeya_end_to_end",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Obeya aansluitingen van begin tot eind",
+   "sustains": true,
+   "team_hours": {
+    "intake": 10,
+    "planners": 5,
+    "work_prep": 10
+   },
+   "tier": 1,
+   "unlocks": "kpi_board"
+  },
+  {
+   "budget": 1000,
+   "category": "flow",
+   "decay_days": 45,
+   "description": "Er mogen niet meer aansluitingen tegelijk in behandeling zijn dan het team aankan. Nieuwe aanvragen wachten aan de poort tot er een klaar is, zodat afdelingen niet meer kunnen opstapelen.",
+   "effects": [
+    {
+     "property": "wip_limit",
+     "target": "connections",
+     "value": 300
+    }
+   ],
+   "id": "connections_wip_limit",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Maximum aantal aansluitingen in uitvoering",
+   "team_hours": {
+    "intake": 5,
+    "planners": 5
+   },
+   "tier": 2
+  },
+  {
+   "budget": 2000,
+   "category": "standard_work",
+   "decay_days": 45,
+   "description": "Intake en Werkvoorbereiding krijgen als doel de doorlooptijd van een aansluiting en een complete overdracht (compleet doorgezet, eerste keer goed bij uitvoering). Aantallen per week blijven zichtbaar, maar sturen niet meer.",
+   "effects": [
+    {
+     "property": "kpis",
+     "target": "intake",
+     "value": [
+      "intake_lead_time",
+      "intake_complete"
+     ]
+    },
+    {
+     "property": "kpis",
+     "target": "work_prep",
+     "value": [
+      "work_prep_lead_time",
+      "work_prep_ftr"
+     ]
+    }
+   ],
+   "id": "shared_team_goals",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Gezamenlijke teamdoelen",
+   "shortcut": true,
+   "team_hours": {
+    "intake": 10,
+    "work_prep": 10
+   },
+   "tier": 2
+  },
+  {
+   "budget": 500,
+   "category": "flow",
+   "decay_days": 30,
+   "description": "Planning geeft elke monteur een reserveklus mee. Staat hij voor een meterkast die niet klaar is, dan rijdt hij door naar de reserve. De rit is niet verloren, maar de klant van wie de kast niet klaar was, wacht nog steeds.",
+   "effects": [],
+   "id": "backup_job_per_day",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Een reserveklus per monteur",
+   "shortcut": true,
+   "team_hours": {
+    "planners": 8
+   },
+   "tier": 1
+  },
+  {
+   "budget": 500,
+   "category": "flow",
+   "decay_days": 30,
+   "description": "Meetdata draait de afhandeling voortaan twee keer per maand in plaats van één keer. Een aansluiting wacht gemiddeld half zo lang, maar het blijft een batch, en wie net na de run klaar is, wacht nog twee weken.",
+   "effects": [],
+   "id": "mid_month_run",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Een tweede maandrun halverwege",
+   "shortcut": true,
+   "team_hours": {
+    "meter_office": 4
+   },
+   "tier": 1
+  },
+  {
+   "aftermath": {
+    "after_days": 21,
+    "days": 28,
+    "effects": [
+     {
+      "property": "availability",
+      "target": "grid_analysts",
+      "value": -0.1
+     }
+    ]
+   },
+   "budget": 5000,
+   "category": "people",
+   "decay_days": 21,
+   "description": "Zes weken lang werken de netplanners twee avonden per week over om het bord leeg te krijgen. Het bord wordt korter, maar elke aanvraag krijgt nog steeds de volle studie, en de vermoeidheid komt later.",
+   "effects": [],
+   "id": "study_overtime_sprint",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Inhaalslag in overwerk",
+   "shortcut": true,
+   "team_hours": {},
+   "tier": 1
+  },
+  {
+   "budget": 2500,
+   "category": "quality",
+   "decay_days": 60,
+   "description": "Bij het maken van de afspraak vraagt planning de klant om een foto van de meterkast. Is de kast niet geschikt, dan komen de aansluitmonteur en de meterwisselaar samen, in één bezoek.",
+   "effects": [],
+   "id": "cupboard_photo_at_booking",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Foto van de meterkast bij de afspraak",
+   "team_hours": {
+    "planners": 15
+   },
+   "tier": 1
+  },
+  {
+   "budget": 4000,
+   "category": "standard_work",
+   "decay_days": null,
+   "description": "Het planningsscherm toont het bouwjaar en het kasttype uit het aansluitregister. Bij een oude kast plant planning de aansluitmonteur en de meterwissel op dezelfde dag.",
+   "effects": [],
+   "id": "register_cupboard_check",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Bouwjaar uit het register bij het plannen",
+   "team_hours": {
+    "planners": 10
+   },
+   "tier": 1
+  },
+  {
+   "budget": 300,
+   "category": "quality",
+   "decay_days": 30,
+   "description": "In de afspraakbrief komt te staan dat de klant moet bellen als de meterkast oud is. Het kost bijna niets, maar een klant weet zelden of zijn kast geschikt is.",
+   "effects": [],
+   "id": "customer_self_report",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "De klant meldt zelf een oude meterkast",
+   "shortcut": true,
+   "team_hours": {
+    "planners": 2
+   },
+   "tier": 1
+  },
+  {
+   "budget": 3000,
+   "category": "flow",
+   "decay_days": 60,
+   "description": "Planning bundelt de meterwissels per wijk. Een monteur werkt op een dag in één of twee wijken, en de klant kiest uit de dagen waarop de monteur toch in de buurt is.",
+   "effects": [],
+   "id": "route_by_area",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Plannen per wijk",
+   "team_hours": {
+    "planners": 20
+   },
+   "tier": 1
+  },
+  {
+   "budget": 2000,
+   "category": "flow",
+   "decay_days": null,
+   "description": "Elke meterwisselaar krijgt een vaste wijk. Hij kent de straten, de parkeerplekken en de oude kasten, en de planning volgt de wijken vanzelf.",
+   "effects": [],
+   "id": "area_teams",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Vaste wijkploegen",
+   "team_hours": {
+    "monteurs": 10,
+    "planners": 10
+   },
+   "tier": 1
+  },
+  {
+   "aftermath": {
+    "after_days": 14,
+    "days": 42,
+    "effects": [
+     {
+      "property": "wait_time",
+      "target": "meters.customer_window",
+      "value": 1.3
+     }
+    ]
+   },
+   "budget": 0,
+   "category": "flow",
+   "decay_days": 30,
+   "description": "Vanaf nu hooguit twee uur overwerk per monteur per week. Wat niet past, schuift door naar een andere dag. De overuren dalen meteen; de kilometers blijven, en het werk wacht langer.",
+   "effects": [],
+   "id": "overtime_cap",
+   "multipliers": {
+    "full": 0.9,
+    "minimal": 0.25,
+    "reduced": 0.5
+   },
+   "name": "Een plafond op het overwerk",
+   "shortcut": true,
+   "team_hours": {},
+   "tier": 1
+  }
+ ]
+}

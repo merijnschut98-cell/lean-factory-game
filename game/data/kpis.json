@@ -1,0 +1,243 @@
+{
+ "care": {
+  "careful": {
+   "ftr": 0.05,
+   "touch_time": 1.1
+  },
+  "hasty": {
+   "ftr": -0.05,
+   "touch_time": 0.9
+  }
+ },
+ "kpis": [
+  {
+   "at": "connections.intake",
+   "focus": "output",
+   "id": "intake_output",
+   "kind": "lagging",
+   "measure": "done_per_week",
+   "name": "Aanvragen per week",
+   "note": "Gangbare productiviteits-KPI. Wie op aantallen stuurt, pakt het makkelijke werk en haast zich: een aanvraag die snel de deur uit moet, komt later fout terug (de wet van Goodhart). Regels en haast zijn een schatting, zie care.",
+   "pool": "intake",
+   "rules": {
+    "care": "hasty",
+    "order": "shortest",
+    "start": "push"
+   }
+  },
+  {
+   "at": "connections",
+   "focus": "flow",
+   "id": "intake_lead_time",
+   "kind": "lagging",
+   "measure": "lead_days_p50",
+   "name": "Doorlooptijd end-to-end",
+   "note": "Doorlooptijd van aanvraag tot aansluiting (wet van Little: meer werk in uitvoering is langere doorlooptijd). Regel is een schatting.",
+   "pool": "intake",
+   "rules": {
+    "start": "pull"
+   }
+  },
+  {
+   "at": "connections",
+   "focus": "flow",
+   "id": "intake_oldest",
+   "kind": "leading",
+   "measure": "wip_age",
+   "name": "Oudste aanvraag in de bak",
+   "note": "Leeftijd van het oudste openstaande werk (wip_age). Wie op het oudste werk stuurt, pakt het oudste eerst. Regel is een schatting.",
+   "pool": "intake",
+   "rules": {
+    "order": "oldest"
+   }
+  },
+  {
+   "at": "connections.intake",
+   "focus": "flow",
+   "id": "intake_complete",
+   "kind": "leading",
+   "measure": "step_ftr",
+   "name": "Compleet doorgezet",
+   "note": "Aandeel aanvragen dat zonder ontbrekende gegevens doorgaat. Zorgvuldig werken is een schatting, zie care.",
+   "pool": "intake",
+   "rules": {
+    "care": "careful"
+   }
+  },
+  {
+   "focus": "output",
+   "id": "intake_utilisation",
+   "kind": "leading",
+   "measure": "utilisation",
+   "name": "Bezettingsgraad",
+   "note": "Gangbare KPI voor capaciteitsbenutting. Wie op bezetting stuurt, houdt iedereen bezig: werk duwen. Regel is een schatting.",
+   "pool": "intake",
+   "rules": {
+    "start": "push"
+   }
+  },
+  {
+   "at": "connections.design",
+   "focus": "output",
+   "id": "work_prep_output",
+   "kind": "lagging",
+   "measure": "done_per_week",
+   "name": "Ontwerpen per week",
+   "note": "Gangbare productiviteits-KPI. Wie op aantallen stuurt, pakt de korte ontwerpen en haast zich: wat snel af moet, komt later fout terug (de wet van Goodhart). Regels en haast zijn een schatting, zie care.",
+   "pool": "work_prep",
+   "rules": {
+    "care": "hasty",
+    "order": "shortest",
+    "start": "push"
+   }
+  },
+  {
+   "at": "connections",
+   "focus": "flow",
+   "id": "work_prep_lead_time",
+   "kind": "lagging",
+   "measure": "lead_days_p50",
+   "name": "Doorlooptijd end-to-end",
+   "note": "Doorlooptijd van aanvraag tot aansluiting (wet van Little). Regel is een schatting.",
+   "pool": "work_prep",
+   "rules": {
+    "start": "pull"
+   }
+  },
+  {
+   "at": "connections",
+   "focus": "flow",
+   "id": "work_prep_ftr",
+   "kind": "lagging",
+   "measure": "first_time_right",
+   "name": "Eerste keer goed bij uitvoering",
+   "note": "Aandeel ontwerpen dat de monteur zonder aanpassing kan bouwen (first-time-right). Zorgvuldig werken is een schatting, zie care.",
+   "pool": "work_prep",
+   "rules": {
+    "care": "careful"
+   }
+  },
+  {
+   "at": "connections",
+   "focus": "flow",
+   "id": "work_prep_oldest",
+   "kind": "leading",
+   "measure": "wip_age",
+   "name": "Oudste dossier",
+   "note": "Leeftijd van het oudste openstaande dossier (wip_age). Wie op het oudste dossier stuurt, pakt het oudste eerst. Regel is een schatting.",
+   "pool": "work_prep",
+   "rules": {
+    "order": "oldest"
+   }
+  },
+  {
+   "focus": "output",
+   "id": "work_prep_utilisation",
+   "kind": "leading",
+   "measure": "utilisation",
+   "name": "Bezettingsgraad",
+   "note": "Gangbare KPI voor capaciteitsbenutting. Wie op bezetting stuurt, houdt iedereen bezig: werk duwen. Regel is een schatting.",
+   "pool": "work_prep",
+   "rules": {
+    "start": "push"
+   }
+  },
+  {
+   "focus": "output",
+   "id": "planners_hours",
+   "kind": "leading",
+   "measure": "utilisation",
+   "name": "Ingeplande monteursuren",
+   "note": "Gangbare KPI voor volle agenda's. Wie op ingeplande uren stuurt, plant door. Regel is een schatting.",
+   "pool": "planners",
+   "rules": {
+    "start": "push"
+   }
+  },
+  {
+   "at": "meters",
+   "focus": "customer",
+   "id": "planners_kept",
+   "kind": "lagging",
+   "measure": "on_time",
+   "name": "Afspraak nagekomen",
+   "note": "Aandeel afspraken dat de klant krijgt zoals toegezegd. Zorgvuldig plannen is een schatting, zie care.",
+   "pool": "planners",
+   "rules": {
+    "care": "careful"
+   }
+  },
+  {
+   "at": "connections",
+   "focus": "customer",
+   "id": "planners_on_time",
+   "kind": "lagging",
+   "measure": "on_time",
+   "name": "Klussen op tijd",
+   "note": "Aandeel klussen binnen de afgesproken termijn (on_time). Wie op tijd stuurt, plant eerst de klus waarvan de termijn het eerst verloopt. Regel is een schatting.",
+   "pool": "planners",
+   "rules": {
+    "order": "due"
+   }
+  },
+  {
+   "at": "connections",
+   "focus": "flow",
+   "id": "planners_oldest",
+   "kind": "leading",
+   "measure": "wip_age",
+   "name": "Oudste klus",
+   "note": "Leeftijd van de oudste openstaande klus (wip_age). Wie op de oudste klus stuurt, plant de oudste eerst. Regel is een schatting.",
+   "pool": "planners",
+   "rules": {
+    "order": "oldest"
+   }
+  },
+  {
+   "at": "customer_contact.answer",
+   "focus": "output",
+   "id": "contact_centre_handle_time",
+   "kind": "leading",
+   "measure": "touch_minutes",
+   "name": "Gemiddelde afhandeltijd",
+   "note": "Gangbare callcenter-KPI (AHT). Wie op korte gesprekken stuurt, jaagt door. Haast is een schatting, zie care.",
+   "pool": "contact_centre",
+   "rules": {
+    "care": "hasty"
+   }
+  },
+  {
+   "at": "customer_contact.answer",
+   "focus": "customer",
+   "id": "contact_centre_resolved",
+   "kind": "lagging",
+   "measure": "step_ftr",
+   "name": "In één keer opgelost",
+   "note": "First contact resolution, gangbare callcenter-KPI. Zorgvuldig werken is een schatting, zie care.",
+   "pool": "contact_centre",
+   "rules": {
+    "care": "careful"
+   }
+  },
+  {
+   "at": "customer_contact",
+   "focus": "customer",
+   "id": "contact_centre_reachable",
+   "kind": "lagging",
+   "measure": "on_time",
+   "name": "Bereikbaar binnen 2 uur",
+   "note": "Klantvragen worden binnen twee uur beantwoord (norm van deze stroom, norm_hours). Wie op die termijn stuurt, beantwoordt eerst de vraag die het dichtst bij de twee uur zit. Regel is een schatting.",
+   "pool": "contact_centre",
+   "rules": {
+    "order": "due"
+   }
+  }
+ ],
+ "pull_limit_days": 3,
+ "review_lines": {
+  "flat": "De analisten hebben het kwartaal twee keer doorgerekend: met deze getallen, en zoals we het altijd deden. Veel verschil zit er niet in. Wat vragen deze getallen van de teams, denk je?",
+  "paid": "De analisten hebben het kwartaal twee keer doorgerekend: met deze getallen, en zoals we het altijd deden. Met deze getallen loopt het werk beter door. Welk getal ga jij zelf elke week bekijken?",
+  "read": "Dit is wat de teams dit kwartaal volgen. Wat zie je aan de getallen? En wat had je verwacht?"
+ },
+ "review_question": "Welke van deze KPI's stuurt het werk van morgen, en welke laat zien of je strategie klopt?"
+}

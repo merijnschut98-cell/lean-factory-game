@@ -13,6 +13,7 @@ problems:
   - id: T4-001
     name: "The Chart Nobody Understands"
     category: Quality
+    waste: overprocessing
     severity: medium
     visibility: obvious
     zone_id: z4
@@ -57,6 +58,7 @@ problems:
         choices:
           - text: "Observe an operator during a quality deviation and watch what they do with the SPC chart"
             outcome: CORRECT
+            tool: data
             evidence: >
               Watched for 30 minutes. Three process readings. Each time
               the reading varied from the previous one, the operator
@@ -73,6 +75,7 @@ problems:
             score_feed: RCA
           - text: "Check whether the SPC charts are up to date with current process data"
             outcome: PLAUSIBLE
+            tool: data
             evidence: null
             hint: >
               Stale charts are a problem — but the observations show
@@ -92,6 +95,7 @@ problems:
   - id: T4-002
     name: "The Lying Gage"
     category: Quality
+    waste: defects
     severity: high
     visibility: hidden
     zone_id: z5
@@ -135,6 +139,7 @@ problems:
         choices:
           - text: "Have three inspectors each measure the same 10 units twice and compare the results"
             outcome: CORRECT
+            tool: docs
             evidence: >
               Inspector A range across 10 units: 0.8 mm. Inspector B
               same 10 units: 1.3 mm. Inspector C: 0.9 mm. Average
@@ -152,6 +157,7 @@ problems:
             score_feed: RCA
           - text: "Review the calibration records to check whether the gauge is in calibration"
             outcome: PLAUSIBLE
+            tool: machine
             evidence: >
               Gauge is in calibration — calibrated 3 weeks ago. Calibration
               confirms the gauge reads correctly against a reference standard.
@@ -178,6 +184,7 @@ problems:
           choices:
             - text: "MSA was not in the quality system requirements when Final QA was designed — it has never been part of the station setup process"
               outcome: CORRECT
+              tool: data
               evidence: >
                 Reviewed quality system documentation for Final QA station
                 design. No MSA requirement listed. The calibration schedule
@@ -192,6 +199,7 @@ problems:
               score_feed: RCA
             - text: "Gage R&R was considered too time-consuming to run on every gauge"
               outcome: PLAUSIBLE
+              tool: machine
               evidence: null
               hint: >
                 MSA effort is proportional to gauge criticality. A Final
@@ -214,6 +222,7 @@ problems:
           choices:
             - text: "The station was designed by production engineers without Six Sigma or metrology expertise — MSA was simply not part of their toolkit"
               outcome: CORRECT
+              tool: docs
               evidence: >
                 Station design sign-off sheet: production engineering,
                 safety, standard work review. No quality engineer or
@@ -227,6 +236,7 @@ problems:
               score_feed: RCA
             - text: "The Six Sigma programme was not active when the station was set up"
               outcome: PLAUSIBLE
+              tool: observe
               evidence: null
               hint: >
                 Timing matters — but the corrective action is forward-looking.
@@ -247,6 +257,7 @@ problems:
   - id: T4-003
     name: "The Capability Mirage"
     category: Quality
+    waste: defects
     severity: high
     visibility: hidden
     zone_id: z2
@@ -291,6 +302,7 @@ problems:
         choices:
           - text: "Plot the solder paste data as a time-series control chart and look for patterns before calculating Cpk"
             outcome: CORRECT
+            tool: data
             evidence: >
               Control chart of 90 days of solder paste deposition data.
               Clear pattern: 8 points in a row below the centre line
@@ -306,6 +318,7 @@ problems:
             score_feed: RCA
           - text: "Re-run the Cpk calculation with a larger sample to improve precision"
             outcome: PLAUSIBLE
+            tool: data
             evidence: null
             hint: >
               A larger sample increases precision — but precision on an
@@ -326,6 +339,7 @@ problems:
   - id: T4-004
     name: "The DMAIC That Stopped Too Soon"
     category: Quality
+    waste: defects
     severity: high
     visibility: subtle
     zone_id: z3
@@ -371,6 +385,7 @@ problems:
         choices:
           - text: "Review the DMAIC project documentation — specifically what the team did after the Improve phase"
             outcome: CORRECT
+            tool: docs
             evidence: >
               DMAIC project file: Define ✓, Measure ✓, Analyze ✓,
               Improve ✓, Control — blank. Project was closed with a
@@ -386,6 +401,7 @@ problems:
             score_feed: RCA
           - text: "Investigate whether the root cause found in the DMAIC Analyze phase was wrong"
             outcome: PLAUSIBLE
+            tool: data
             evidence: null
             hint: >
               A wrong root cause would produce no improvement at all.
@@ -407,6 +423,7 @@ problems:
           choices:
             - text: "The project was declared complete when the Improve target was hit — there was no gate requiring Control phase completion before closure"
               outcome: CORRECT
+              tool: docs
               evidence: >
                 Project governance records: closure approval required
                 'Improve phase target met'. No Control phase deliverable
@@ -420,6 +437,7 @@ problems:
               score_feed: RCA
             - text: "The team did not have enough time to complete the Control phase before the project deadline"
               outcome: PLAUSIBLE
+              tool: observe
               evidence: null
               hint: >
                 Time pressure is real — but the root cause is the closure
@@ -442,6 +460,7 @@ problems:
           choices:
             - text: "The DMAIC programme was designed without input from someone with Six Sigma Black Belt experience — the Control phase was treated as optional documentation"
               outcome: CORRECT
+              tool: docs
               evidence: >
                 DMAIC programme design records: authored by the Quality
                 Manager and two Green Belts. No Black Belt review of the
@@ -456,6 +475,7 @@ problems:
               score_feed: RCA
             - text: "Previous DMAIC projects did not require Control plans and their improvements held"
               outcome: PLAUSIBLE
+              tool: docs
               evidence: null
               hint: >
                 Some improvements hold without formal control — usually
@@ -476,6 +496,7 @@ problems:
   - id: T4-005
     name: "The FMEA on the Shelf"
     category: Quality
+    waste: defects
     severity: medium
     visibility: hidden
     zone_id: z5
@@ -517,6 +538,7 @@ problems:
         choices:
           - text: "Trace the history of the failed process step — when was it last changed, and was the FMEA reviewed at the time of that change?"
             outcome: CORRECT
+            tool: docs
             evidence: >
               Process change log: flight test fixture redesigned 24 months
               ago. FMEA review log for that change: no entry. The change
@@ -532,6 +554,7 @@ problems:
             score_feed: RCA
           - text: "Update the FMEA with the new failure mode that just occurred"
             outcome: PLAUSIBLE
+            tool: defects
             evidence: null
             hint: >
               Updating the FMEA is necessary — but it is reactive. The
@@ -552,6 +575,7 @@ problems:
   - id: T4-006
     name: "The One-Variable Trap"
     category: Quality
+    waste: overprocessing
     severity: medium
     visibility: subtle
     zone_id: z2
@@ -598,6 +622,7 @@ problems:
         choices:
           - text: "Check whether any experiment has ever tested two factors simultaneously to see if they interact"
             outcome: CORRECT
+            tool: data
             evidence: >
               Reviewed all 23 experiments conducted over 7 months.
               Every single one changed one variable while holding others
@@ -616,6 +641,7 @@ problems:
             score_feed: RCA
           - text: "Add a fourth factor (blade angle) to the experiment set to expand the search space"
             outcome: PLAUSIBLE
+            tool: observe
             evidence: null
             hint: >
               Adding more factors to an OFAT programme makes the problem
@@ -636,6 +662,7 @@ problems:
   - id: T4-007
     name: "The Unpredictable Machine"
     category: Maintenance
+    waste: waiting
     severity: high
     visibility: subtle
     zone_id: z5
@@ -679,6 +706,7 @@ problems:
         choices:
           - text: "Plot every failure event by day-of-month and by thermal cycle count since last maintenance"
             outcome: CORRECT
+            tool: data
             evidence: >
               Plotted 18 months of failure data. Day-of-month analysis:
               11 of 52 failures occurred within 3 days of a maintenance
@@ -698,6 +726,7 @@ problems:
             score_feed: RCA
           - text: "Increase maintenance frequency to every 2 weeks to catch failures earlier"
             outcome: PLAUSIBLE
+            tool: defects
             evidence: null
             hint: >
               More frequent maintenance will increase the frequency of
@@ -719,6 +748,7 @@ problems:
   - id: T4-008
     name: "The Invisible Input"
     category: Quality
+    waste: defects
     severity: high
     visibility: hidden
     zone_id: z4
@@ -764,6 +794,7 @@ problems:
         choices:
           - text: "Collect structured data on all four suspected factors simultaneously and run a correlation analysis"
             outcome: CORRECT
+            tool: data
             evidence: >
               90-day data collection: operator, machine ID, shift,
               material batch number, temperature, and defect rate logged
@@ -782,6 +813,7 @@ problems:
             score_feed: RCA
           - text: "Run a designed experiment testing all four factors at two levels"
             outcome: PLAUSIBLE
+            tool: observe
             evidence: null
             hint: >
               DOE is a good approach — but it tests only the factors
@@ -803,6 +835,7 @@ problems:
   - id: T4-009
     name: "The 8D Stuck at D4"
     category: Quality
+    waste: defects
     severity: medium
     visibility: obvious
     zone_id: z1
@@ -846,6 +879,7 @@ problems:
         choices:
           - text: "Take the three proposed root causes and design a test that would distinguish between them"
             outcome: CORRECT
+            tool: defects
             evidence: >
               Three candidates: (A) incoming material out-of-spec,
               (B) assembly torque drift on night shift, (C) temperature
@@ -865,6 +899,7 @@ problems:
             score_feed: RCA
           - text: "Escalate the 8D to a Black Belt to break the deadlock"
             outcome: PLAUSIBLE
+            tool: observe
             evidence: null
             hint: >
               A Black Belt brings statistical tools — which is exactly
@@ -886,6 +921,7 @@ problems:
   - id: T4-010
     name: "The Spec Nobody Can Meet"
     category: Quality
+    waste: defects
     severity: high
     visibility: obvious
     zone_id: z6
@@ -932,6 +968,7 @@ problems:
         choices:
           - text: "Calculate the current process Cpk for weight against the ±2g specification and compare it to the capability at acceptance"
             outcome: CORRECT
+            tool: data
             evidence: >
               Current weight variation: ±5g (3-sigma). Specification: ±2g.
               Cpk against ±2g spec: 0.41. This process was never capable
@@ -951,6 +988,7 @@ problems:
             score_feed: RCA
           - text: "Increase inspection frequency at the final weight check to catch out-of-spec units earlier"
             outcome: PLAUSIBLE
+            tool: docs
             evidence: null
             hint: >
               Earlier detection reduces the cost per out-of-spec unit —
@@ -974,6 +1012,7 @@ problems:
   - id: T4-011
     name: "The OEE That Won't Move"
     category: Quality
+    waste: waiting
     severity: medium
     visibility: subtle
     zone_id: z4
@@ -1018,6 +1057,7 @@ problems:
         choices:
           - text: "Break down the Quality OEE losses into specific defect categories and plot each as a Pareto"
             outcome: CORRECT
+            tool: data
             evidence: >
               Recoded 3 months of rejection data into 8 defect categories.
               Pareto: Category A (connector seating failure) — 44% of all
@@ -1036,6 +1076,7 @@ problems:
             score_feed: RCA
           - text: "Increase the OEE target to create urgency and drive improvement activity"
             outcome: PLAUSIBLE
+            tool: observe
             evidence: null
             hint: >
               Higher targets motivate effort — but effort in the wrong
@@ -1056,6 +1097,7 @@ problems:
   - id: T4-012
     name: "The Change Nobody Recorded"
     category: Quality
+    waste: defects
     severity: high
     visibility: hidden
     zone_id: z3
@@ -1103,6 +1145,7 @@ problems:
         choices:
           - text: "Collect material batch numbers for all production in the 6 months before and after the defect increase and check for any supplier or specification changes"
             outcome: CORRECT
+            tool: defects
             evidence: >
               Traced material batches to supplier records. Battery cell
               coating supplier changed from Supplier A to Supplier B on
@@ -1122,6 +1165,7 @@ problems:
             score_feed: RCA
           - text: "Run a full capability study on all Battery Assembly process parameters"
             outcome: PLAUSIBLE
+            tool: observe
             evidence: null
             hint: >
               Capability analysis on process parameters will confirm
@@ -1147,6 +1191,7 @@ problems:
           choices:
             - text: "The supplier change was authorised as a commercial decision — quality review was not a required step in the approval process"
               outcome: CORRECT
+              tool: docs
               evidence: >
                 Supplier change approval record: signed by Procurement
                 and Finance. Quality Engineering sign-off not required
@@ -1161,6 +1206,7 @@ problems:
               score_feed: RCA
             - text: "The quality team was not informed of the supplier change"
               outcome: PLAUSIBLE
+              tool: observe
               evidence: null
               hint: >
                 The communication failure is a symptom of the process
@@ -1183,6 +1229,7 @@ problems:
           choices:
             - text: "Supplier changes were treated as a procurement function with no cross-functional impact — quality's scope was defined as the production process, not the supply chain"
               outcome: CORRECT
+              tool: docs
               evidence: >
                 Quality system scope document: 'Quality Engineering is
                 responsible for in-process and outgoing quality.' No
@@ -1199,6 +1246,7 @@ problems:
               score_feed: RCA
             - text: "Previous supplier changes had no quality impact, establishing a precedent"
               outcome: PLAUSIBLE
+              tool: observe
               evidence: null
               hint: >
                 Previous uneventful changes create survivorship bias.

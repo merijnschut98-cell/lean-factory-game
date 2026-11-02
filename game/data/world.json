@@ -1,0 +1,371 @@
+{
+ "floors": [
+  {
+   "id": "ground",
+   "level": 0,
+   "model": "office_ground.glb",
+   "name": "Begane grond"
+  },
+  {
+   "id": "first",
+   "level": 1,
+   "model": "office.glb",
+   "name": "1e verdieping"
+  },
+  {
+   "id": "second",
+   "level": 2,
+   "model": "office_second.glb",
+   "name": "2e verdieping"
+  },
+  {
+   "id": "yard",
+   "model": "office_yard.glb",
+   "name": "Werf",
+   "outside_of": "ground"
+  }
+ ],
+ "rides": [
+  {
+   "mission": "fix_wrong_joint",
+   "to": "outages.repair",
+   "with": "ahmed"
+  },
+  {
+   "mission": "fix_not_at_home",
+   "to": "meters.visit",
+   "with": "sandra"
+  },
+  {
+   "mission": "walk_meters",
+   "to": "meters.visit",
+   "with": "sandra"
+  },
+  {
+   "mission": "save_henks_knowledge",
+   "to": "outages.locate",
+   "with": "henk"
+  }
+ ],
+ "rooms": [
+  {
+   "floor": "ground",
+   "id": "reception",
+   "name": "Ontvangst",
+   "opens_with": [
+    "start"
+   ],
+   "places": []
+  },
+  {
+   "floor": "ground",
+   "id": "contact_centre",
+   "name": "Klantcontactcentrum",
+   "opens_with": [
+    "fix_status_callers",
+    "winter_el_amrani",
+    "fix_unused_capacity",
+    "fix_done_but_not_closed",
+    "fix_inverters_tripping"
+   ],
+   "places": [
+    "customer_contact.answer"
+   ]
+  },
+  {
+   "floor": "ground",
+   "id": "canteen",
+   "name": "Kantine",
+   "opens_with": [
+    "training_mon",
+    "terugval_*"
+   ],
+   "places": []
+  },
+  {
+   "floor": "first",
+   "id": "connections",
+   "name": "Aansluitingen",
+   "opens_with": [
+    "start"
+   ],
+   "places": [
+    "connections.intake",
+    "connections.design",
+    "connections.planning",
+    "connections.permit",
+    "meters.appointment"
+   ]
+  },
+  {
+   "floor": "first",
+   "id": "revision_gis",
+   "name": "Revisie & GIS",
+   "opens_with": [
+    "training_wed",
+    "fix_revision_backlog",
+    "fix_digging_damage"
+   ],
+   "places": [
+    "connections.revision"
+   ]
+  },
+  {
+   "floor": "first",
+   "id": "meter_data",
+   "name": "Meetdata & registratie",
+   "opens_with": [
+    "training_thu",
+    "walk_meters",
+    "fix_done_but_not_closed",
+    "fix_silent_meter",
+    "fix_inverters_tripping"
+   ],
+   "places": [
+    "connections.close_out",
+    "connections.close_out_wait",
+    "meters.registration",
+    "voltage_complaints.analysis"
+   ]
+  },
+  {
+   "floor": "second",
+   "id": "directors_obeya",
+   "name": "Directie & Obeya",
+   "opens_with": [
+    "fix_silo_kpis",
+    "first_kpi_review"
+   ],
+   "places": []
+  },
+  {
+   "floor": "second",
+   "id": "grid_strategy",
+   "name": "Netstrategie",
+   "opens_with": [
+    "look_at_grid_study",
+    "fix_grid_study_queue",
+    "fix_transformer_wait",
+    "fix_unused_capacity",
+    "talk_netplanner"
+   ],
+   "places": [
+    "connections.grid_study",
+    "connections.grid_reinforcement",
+    "congestion.congestion_study"
+   ]
+  },
+  {
+   "floor": "second",
+   "id": "congestion_desk",
+   "name": "Congestiedesk",
+   "opens_with": [
+    "fix_unused_capacity"
+   ],
+   "places": [
+    "congestion.intake",
+    "congestion.capacity_queue",
+    "congestion.offer"
+   ]
+  },
+  {
+   "floor": "second",
+   "id": "mt_room",
+   "name": "MT-kamer",
+   "opens_with": [
+    "review_100_days"
+   ],
+   "places": []
+  },
+  {
+   "floor": "second",
+   "id": "ruud_office",
+   "name": "Directeur Netbeheer",
+   "opens_with": [
+    "review_100_days"
+   ],
+   "places": []
+  },
+  {
+   "floor": "yard",
+   "id": "magazijn",
+   "name": "Magazijn",
+   "opens_with": [
+    "walk_outages",
+    "walk_meters",
+    "fix_wrong_joint"
+   ],
+   "places": [
+    "outages.joint",
+    "connections.materials",
+    "meters.reserve_meter"
+   ]
+  },
+  {
+   "floor": "yard",
+   "id": "werkplaats",
+   "name": "Werkplaats & storingsdienst",
+   "opens_with": [
+    "walk_outages",
+    "fix_wrong_joint",
+    "save_henks_knowledge",
+    "fix_digging_damage",
+    "fix_installer_not_ready",
+    "fix_planning_reshuffle",
+    "fix_silo_kpis",
+    "fix_revision_backlog",
+    "fix_inverters_tripping"
+   ],
+   "places": [
+    "outages.locate",
+    "connections.execution",
+    "connections.commissioning",
+    "voltage_complaints.measurement",
+    "voltage_complaints.tap_change"
+   ]
+  },
+  {
+   "floor": "yard",
+   "id": "van_park",
+   "name": "Bussen",
+   "opens_with": [
+    "walk_outages",
+    "walk_meters",
+    "fix_wrong_joint",
+    "fix_not_at_home",
+    "fix_silent_meter",
+    "save_henks_knowledge",
+    "fix_double_visits",
+    "fix_overtime_planning"
+   ],
+   "places": [
+    "outages.repair",
+    "meters.visit"
+   ]
+  },
+  {
+   "floor": "yard",
+   "id": "opleidingsterrein",
+   "name": "Opleidingsterrein",
+   "opens_with": [
+    "save_henks_knowledge"
+   ],
+   "places": []
+  }
+ ],
+ "start_floor": "first",
+ "tells": [
+  {
+   "high": "Op de kast bij Intake liggen drie hoge stapels dossiers; op de onderste staat een datum van weken terug.",
+   "id": "intake_stack",
+   "low": "Op de kast bij Intake ligt een dun stapeltje dossiers.",
+   "mid": "Op de kast bij Intake liggen twee stapels dossiers.",
+   "place": "connections.intake"
+  },
+  {
+   "high": "Het postbakje bij Werkvoorbereiding puilt uit, en ernaast ligt nog een stapel.",
+   "id": "prep_tray",
+   "low": "Het postbakje bij Werkvoorbereiding is bijna leeg.",
+   "mid": "In het postbakje bij Werkvoorbereiding ligt een stapeltje dossiers.",
+   "place": "connections.design"
+  },
+  {
+   "high": "Op het weekbord van de planners hangen bij bijna elke dag rode kaartjes.",
+   "id": "planning_board",
+   "low": "Op het weekbord van de planners hangt één rood kaartje tussen de gele en witte.",
+   "mid": "Op het weekbord van de planners hangen een paar rode kaartjes tussen de gele en witte.",
+   "place": "connections.planning"
+  },
+  {
+   "high": "De kast bij Revisie & GIS ligt vol schetsen, en op de vloer ernaast ligt nog een stapel.",
+   "id": "revision_cabinet",
+   "low": "Op de kast bij Revisie & GIS ligt een dun stapeltje schetsen naast een paar opgerolde tekeningen.",
+   "mid": "Op de kast bij Revisie & GIS liggen twee stapels schetsen en een paar opgerolde tekeningen.",
+   "place": "connections.revision"
+  },
+  {
+   "high": "De kast bij de deur ligt vol dossiers, en op de vloer ernaast staan er nog twee stapels.",
+   "id": "close_out_cabinet",
+   "low": "Op de kast bij de deur liggen twee stapeltjes dossiers.",
+   "mid": "Op de kast bij de deur liggen vier stapels dossiers naast elkaar.",
+   "place": "connections.close_out_wait"
+  },
+  {
+   "high": "Het whiteboard bij Meetdata staat vol adressen in twee kolommen, elk met een rood streepje erachter.",
+   "id": "meter_board",
+   "low": "Op het whiteboard bij Meetdata staat één adres, met een rood streepje erachter.",
+   "mid": "Op het whiteboard bij Meetdata staat een rijtje adressen, elk met een rood streepje erachter.",
+   "place": "meters.registration"
+  },
+  {
+   "high": "Op het bord van de directie staan bijna alle kaarten op rood.",
+   "id": "obeya_board",
+   "low": "Op het bord van de directie hangt voor elk proces een kaart met een grafiekje. Bijna alles staat op groen.",
+   "mid": "Op het bord van de directie staan een paar van de kaarten op rood.",
+   "room": "directors_obeya"
+  },
+  {
+   "high": "Het bakje bij de netplanners puilt uit, en op de kast ernaast liggen nog twee stapels studieaanvragen.",
+   "id": "grid_study_tray",
+   "low": "In het bakje bij de netplanners ligt één nieuwe studieaanvraag.",
+   "mid": "In het bakje bij de netplanners ligt een stapeltje studieaanvragen.",
+   "place": "connections.grid_study"
+  },
+  {
+   "high": "Het bord Netverzwaring hangt vol kaartjes met straatnamen; de oudste zijn al vergeeld.",
+   "id": "reinforcement_board",
+   "low": "Op het bord Netverzwaring hangen een paar kaartjes met straatnamen.",
+   "mid": "Op het bord Netverzwaring hangt een flinke rij kaartjes met straatnamen.",
+   "place": "connections.grid_reinforcement"
+  },
+  {
+   "high": "De uitgeprinte wachtlijst op het bureau van Thomas is zo lang geworden dat hij over de rand tot op de vloer hangt.",
+   "id": "congestion_list",
+   "low": "Op het bureau van Thomas ligt een uitgeprinte wachtlijst van één kantje.",
+   "mid": "Op het bureau van Thomas ligt een uitgeprinte wachtlijst van een paar kantjes, aan elkaar geplakt.",
+   "place": "congestion.capacity_queue"
+  },
+  {
+   "high": "De uitgiftelijst op de balie van het magazijn is deze week al op het derde kantje; de eerste twee zijn over de klem geslagen.",
+   "id": "uitgiftelijst",
+   "low": "Op de balie van het magazijn ligt de uitgiftelijst van deze week, met een paar regels erop.",
+   "mid": "De uitgiftelijst op de balie van het magazijn is deze week al een vol kantje: datum, bus, wat er mee is gegaan en een paraaf.",
+   "place": "outages.joint"
+  },
+  {
+   "high": "In het magazijn staan op de stelling met moffen nog een paar dozen; de meeste vakken zijn leeg.",
+   "id": "magazijn_rack",
+   "low": "In het magazijn staat de stelling met moffen vol dozen.",
+   "mid": "In het magazijn is de stelling met moffen half leeg.",
+   "place": "outages.joint"
+  },
+  {
+   "high": "De retourpallet bij de bussen staat vol meterdozen en aansluitsets, en ernaast staat er nog een, ook vol.",
+   "id": "van_returns",
+   "low": "Op de retourpallet bij de bussen staan een paar meterdozen.",
+   "mid": "Op de retourpallet bij de bussen staat een stapel meterdozen en een aansluitset, elk met een bon eraan.",
+   "place": "meters.visit"
+  },
+  {
+   "high": "Het storingsbord in de werkplaats staat vol storingen tot in de hoek, met rode strepen en hier en daar een tweede tijd.",
+   "id": "storingsbord",
+   "low": "Op het storingsbord in de werkplaats staan de storingen van deze week: een kort rijtje, alles afgevinkt.",
+   "mid": "Het storingsbord in de werkplaats staat half vol storingen; bij een paar staat een rode streep.",
+   "place": "outages.locate"
+  },
+  {
+   "high": "Het prikbord van het klantcontactcentrum hangt vol gele terugbelbriefjes, sommige over elkaar heen.",
+   "id": "terugbelbord",
+   "low": "Op het prikbord van het klantcontactcentrum hangen een paar gele terugbelbriefjes.",
+   "mid": "Op het prikbord van het klantcontactcentrum hangen twee rijen gele terugbelbriefjes.",
+   "place": "customer_contact.answer"
+  },
+  {
+   "high": "Het bakje bij de meetkoffers puilt uit van de spanningsklachten, en op de kast ernaast liggen nog twee stapels.",
+   "id": "measurement_tray",
+   "low": "In het bakje bij de meetkoffers liggen een paar spanningsklachten.",
+   "mid": "In het bakje bij de meetkoffers ligt een stapeltje spanningsklachten, met een paperclip per adres.",
+   "place": "voltage_complaints.measurement"
+  }
+ ]
+}

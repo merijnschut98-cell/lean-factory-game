@@ -1,0 +1,1535 @@
+{
+ "coach": {
+  "conditional": {
+   "blamed": "Wat wilde je eigenlijk weten toen je dat vroeg?",
+   "fading_fix": "Hoe lang verwacht je dat dit blijft werken? En dan?"
+  },
+  "kata": [
+   "Wat was je doel?",
+   "En hoe is het nu echt, op de werkvloer? Wat zie je daar?",
+   "Wat staat er nog tussen nu en je doel? Aan welk obstakel werk je nu?",
+   "Wat is je volgende stap, en wat verwacht je dat er gebeurt?",
+   "Wanneer kunnen we gaan kijken wat je van die stap hebt geleerd?"
+  ],
+  "name": "Ruud Hoekstra",
+  "numbers": {
+   "go_see": "Waar wil je naartoe, en waarom juist dat getal?",
+   "kpi_now": {
+    "capacity": "De stroom kan nu {value} per week aan",
+    "first_time_right": "Nu gaat {value} procent in één keer goed",
+    "lead_time": "De doorlooptijd is nu {value} dagen",
+    "on_time": "Nu is {value} procent op tijd",
+    "throughput": "Er komen nu {value} per week klaar",
+    "wip_age": "Het werk dat openstaat, is nu {value} dagen oud"
+   },
+   "reflect": "Wat had je voorspeld, en wat zegt het verschil je?"
+  },
+  "role": "Directeur Netbeheer regio Zuidmark",
+  "stages": {
+   "experiment": [
+    "Wat is je volgende stap, en wat verwacht je dat er gebeurt?",
+    "Wanneer kunnen we zien wat je van die stap hebt geleerd?",
+    "Welk getal vertelt je of het werkt?",
+    "Hoeveel uren kost dit experiment het team, en wie draagt die?",
+    "Wat moet er gebeuren zodat dit ook werkt als jij er niet bent?",
+    "Wat doe je als het tegenvalt?"
+   ],
+   "go_see": [
+    "Wat wil je bereiken? Hoe ziet het eruit als het hier goed loopt?",
+    "Wat heb je zelf gezien op de werkvloer, niet in het rapport?",
+    "Waar in de stroom ligt het werk stil?",
+    "Wie doet dit werk elke dag? Wat heb je hem of haar gevraagd?",
+    "Als je over een jaar terugkijkt, welk getal wil je dan veranderd hebben?",
+    "Wat zie je hier dat de mensen zelf al lang niet meer zien?"
+   ],
+   "reflect": [
+    "Wat had je verwacht, en wat gebeurde er echt?",
+    "Wat heb je geleerd?",
+    "Hoe zorg je dat de verbetering blijft?",
+    "Wie heeft dit mogelijk gemaakt, en weten ze dat?",
+    "Wat is de volgende kleine stap?",
+    "Wat zou je anders doen als je opnieuw begon?"
+   ],
+   "understand": [
+    "Hoe is de situatie nu, in cijfers?",
+    "Welke obstakels staan tussen jou en de doelsituatie? Welke pak je nu aan?",
+    "Hoe weet je dat dit de oorzaak is, en niet een symptoom?",
+    "Met wie heb je gesproken die het werk zelf doet?",
+    "Welke 'waarom' heb je nog niet gesteld?",
+    "Wat zou de snelste oplossing zijn, en hoe ziet die er over een half jaar uit?"
+   ]
+  }
+ },
+ "missions": [
+  {
+   "act": 0,
+   "briefing": "Welkom bij Voltana Netbeheer. Ik ben Ruud Hoekstra. Deze week oefen je in het klein; als er iets misgaat, raakt niemand iets kwijt. Vanochtend lag er een brief op mijn bureau van de familie El Amrani uit Nova-Oost: ze wachten al {dossier_weken} op een aansluiting voor hun warmtepomp. Zoek met de kaart (M) de Intake en Werkvoorbereiding op en vraag bij elk team hoe het werk binnenkomt. En loop vanavond niet meteen naar huis: wie er dan nog zit, maak je het beste kennis mee.",
+   "chapter": "Inwerkweek",
+   "debrief": "Je kent nu twee plekken waar een aanvraag langskomt. Het dossier is al weken onderweg: hoeveel uur is er al echt aan gewerkt, denk je? Morgen ga je beter kijken.",
+   "ends_with_talk": "anouk_seven",
+   "goal": {
+    "places": [
+     "connections.intake",
+     "connections.design"
+    ],
+    "type": "observe"
+   },
+   "grant_tools": [
+    "conversation"
+   ],
+   "id": "training_mon",
+   "insights": {
+    "go_see": "Een aanvraag doet er maanden over. Hoeveel van die tijd wordt er echt aan gewerkt, denk je? En hoe zou je dat kunnen zien?"
+   },
+   "kind": "training",
+   "name": "Rondleiding",
+   "rewards": {
+    "xp": 50
+   },
+   "setup": [
+    {
+     "property": "availability",
+     "target": "work_prep",
+     "value": -0.75
+    }
+   ],
+   "steps": {
+    "look": {
+     "connections.design": "Vraag bij Werkvoorbereiding hoe het werk binnenkomt",
+     "connections.intake": "Kijk bij Intake hoe een aanvraag binnenkomt"
+    }
+   },
+   "teaches": [
+    "netbeheerder",
+    "aansluiting",
+    "aansluittermijn"
+   ],
+   "tier": 1
+  },
+  {
+   "act": 0,
+   "briefing": "Bij Werkvoorbereiding zit deze week alleen Anouk de Vries; haar drie collega's zitten op cursus. Ga bij haar kijken met twee verschillende gemba-hulpmiddelen. Elk hulpmiddel kost tijd en laat iets anders zien. Oordeel nog niet, ook niet in je hoofd: schrijf op wát je ziet, niet wat je ervan vindt.",
+   "chapter": "Inwerkweek",
+   "debrief": "Wat liet het ene hulpmiddel zien dat het andere miste? Anouk werkt snel. Toch ligt er veel. Waar zit dan de tijd?",
+   "goal": {
+    "places": [
+     "connections.design"
+    ],
+    "type": "observe",
+    "uses": 2
+   },
+   "grant_tools": [
+    "shadow",
+    "documents"
+   ],
+   "id": "training_tue",
+   "insights": {
+    "go_see": "Wat deed Anouk, en wat deed het werk terwijl zij bezig was?"
+   },
+   "kind": "training",
+   "name": "Kijken zonder oordeel",
+   "requires": {
+    "missions": [
+     "training_mon"
+    ]
+   },
+   "rewards": {
+    "xp": 50
+   },
+   "steps": {
+    "again": "Kijk nog eens bij Anouk, op een andere manier",
+    "look": "Kijk bij Anouk hoe ze werkt"
+   },
+   "teaches": [
+    "gemba",
+    "five_whys",
+    "eight_wastes"
+   ],
+   "tier": 1
+  },
+  {
+   "act": 0,
+   "briefing": "Tel vandaag de wachtrij bij Intake en bij Werkvoorbereiding. Let op: twintig dossiers van een kwartier zijn minder werk dan tien dossiers van vier uur. Waar ligt het meeste werk te wachten, in dagen werk? Schrijf het op voordat je het met je gevoel vergelijkt.",
+   "chapter": "Inwerkweek",
+   "debrief": "Je telde de dossiers én de dagen werk die ze vragen. Een stroom gaat zo snel als de plek waar het meeste werk wacht. Als Intake morgen twee keer zo hard werkt, waar ligt het werk dan overmorgen?",
+   "goal": {
+    "places": [
+     "connections.intake",
+     "connections.design"
+    ],
+    "tool": "queue_count",
+    "type": "observe"
+   },
+   "grant_tools": [
+    "queue_count"
+   ],
+   "id": "training_wed",
+   "insights": {
+    "go_see": "Welke van de twee getallen vertelt je meer: het aantal dossiers of de dagen werk? Waarom?"
+   },
+   "kind": "training",
+   "name": "Waar zit de stapel?",
+   "requires": {
+    "missions": [
+     "training_tue"
+    ]
+   },
+   "rewards": {
+    "xp": 50
+   },
+   "steps": {
+    "look": {
+     "connections.design": "Tel wat er bij Werkvoorbereiding ligt te wachten",
+     "connections.intake": "Tel wat er bij Intake ligt te wachten"
+    }
+   },
+   "teaches": [
+    "flow",
+    "wip",
+    "bottleneck_focus",
+    "netcongestie"
+   ],
+   "tier": 1
+  },
+  {
+   "act": 0,
+   "briefing": "Anouk pakt altijd het oudste dossier. Toch ligt het dossier van de familie Koster uit Nova-Oost al negen dagen bij haar. Hoe kan dat? Zoek het uit, schrijf een oefen-A3 met een voorspelling en probeer een tegenmaatregel. Morgen kijken we samen of je voorspelling uitkwam.",
+   "chapter": "Inwerkweek",
+   "check_days": 1,
+   "debrief": "Je voorspelling is getoetst aan wat er echt gebeurde. Of het tegenviel of meeviel: je weet nu iets wat je gisteren niet wist. Dat is een experiment.",
+   "goal": {
+    "problem": "training_tray",
+    "type": "check"
+   },
+   "grant_tools": [
+    "time_study",
+    "data",
+    "listen_in",
+    "material_check"
+   ],
+   "id": "training_thu",
+   "insights": {
+    "experiment": "Welk getal laat morgen zien of het werkt, en wat verwacht je dat het dan is?",
+    "go_see": "Gisteren telde je waar het werk wacht. Wat wil je morgen anders zien bij Anouk, in een getal?",
+    "reflect": "Wat had je verwacht, en wat gebeurde er? Wat neem je mee naar maandag?",
+    "understand": "Wat doet Anouk voordat het echte werk aan een dossier begint? Hoe lang duurt dat?"
+   },
+   "kind": "training",
+   "name": "Een klein experiment",
+   "requires": {
+    "missions": [
+     "training_wed"
+    ]
+   },
+   "rewards": {
+    "xp": 50
+   },
+   "steps": {
+    "a3": "Schrijf je oefen-A3 aan je bureau",
+    "dig": "Zoek uit waarom het dossier van Koster blijft liggen",
+    "look": "Kijk bij Anouk waar het dossier van de familie Koster ligt",
+    "wait": "Wacht tot morgen: kijk hoe het bij Anouk gaat"
+   },
+   "teaches": [
+    "PDCA",
+    "A3",
+    "leading_lagging"
+   ],
+   "tier": 1
+  },
+  {
+   "act": 0,
+   "briefing": "Je experiment werkt: Anouk zoekt niet meer. Maandag komen haar drie collega's terug van hun cursus. Weten zij van de ene bak? Beslis: borg je het als standaard werk (dat kost budget), of laat je het zo? Kijk daarna een maand vooruit: hoe loopt het werk met en zonder borgen?",
+   "chapter": "Inwerkweek",
+   "check_days": 1,
+   "debrief": "Een maand later werkt iedereen nog zoals jullie het hebben afgesproken. Het staat op een A4 bij het postbakje, en Anouk legt het aan nieuwe collega's uit. Je inwerkweek zit erop. Maandag vraagt Joost van Dijk het MT om twee extra werkvoorbereiders; ik heb gezegd dat jij eerst gaat kijken.",
+   "debrief_variants": {
+    "not_standardised": "Een maand later wordt er weer gezocht en omgesorteerd. Niemand deed iets fout; niemand wist het nog. Een verbetering blijft alleen als iemand haar borgt. Je inwerkweek zit erop. Maandag vraagt Joost van Dijk het MT om twee extra werkvoorbereiders; ik heb gezegd dat jij eerst gaat kijken."
+   },
+   "goal": {
+    "problem": "training_tray",
+    "type": "solve"
+   },
+   "id": "training_fri",
+   "insights": {
+    "reflect": [
+     "Wat gebeurt er met de nieuwe werkwijze als het team het druk krijgt en niemand erop let? Wie zou erop moeten letten?",
+     "Wat kost borgen nu, en wat kost niet borgen over een jaar?"
+    ]
+   },
+   "kind": "training",
+   "name": "Borgen of laten wegzakken",
+   "requires": {
+    "missions": [
+     "training_thu"
+    ]
+   },
+   "rewards": {
+    "xp": 50
+   },
+   "steps": {
+    "act": "Beslis bij Petra's scherm: borg je het, of laat je het zo?"
+   },
+   "teaches": [
+    "standard_work",
+    "improvement_kata"
+   ],
+   "tier": 1
+  },
+  {
+   "act": 1,
+   "briefing": "Voordat je iets verandert, wil ik dat je de weg van één aansluiting hebt gezien. Het dossier van de familie El Amrani is nu {dossier_weken} onderweg. Volg het: tel bij Intake en bij Werkvoorbereiding hoeveel er ligt en hoeveel dagen werk dat is. Waar zou jij als dossier het liefst niet liggen?",
+   "chapter": "De stapel",
+   "debrief": "Een aansluiting vraagt bij elkaar zo'n vijftien uur werk, verdeeld over een handvol teams, en toch is het dossier weken onderweg. De rest van de tijd ligt het ergens te wachten. Onthoud waar het werk stil lag; daar beginnen we maandag.",
+   "goal": {
+    "places": [
+     "connections.intake",
+     "connections.design"
+    ],
+    "tool": "queue_count",
+    "type": "observe"
+   },
+   "id": "walk_connections",
+   "insights": {
+    "go_see": "Waar zou jij als dossier het liefst niet liggen, en waarom ligt het er toch?"
+   },
+   "kind": "main",
+   "name": "Volg het dossier",
+   "requires": {
+    "missions": [
+     "training_fri"
+    ]
+   },
+   "rewards": {
+    "xp": 300
+   },
+   "steps": {
+    "look": {
+     "connections.design": "Tel wat er bij Werkvoorbereiding ligt te wachten",
+     "connections.intake": "Tel wat er bij Intake ligt te wachten"
+    }
+   },
+   "teaches": [
+    "lead_time",
+    "flow"
+   ],
+   "tier": 1
+  },
+  {
+   "act": 1,
+   "briefing": "Werkvoorbereiding maakt al zes weken overuren, en toch loopt de stapel elke week weer op tot een stuk of vijftien dossiers. Joost van Dijk (teamleider Werkvoorbereiding) vraagt het MT om twee extra werkvoorbereiders. Anouk de Vries (werkvoorbereider) zat gisteravond om zeven uur nog te tekenen. Wat is hier echt aan de hand?",
+   "chapter": "De stapel",
+   "debrief": "Een standaardaansluiting krijgt nu een vast ontwerp (wat) en Anouk tekent het op een vaste manier, met één controle in plaats van drie handtekeningen (hoe). Joost trekt zijn vacatures in, en Anouk is om vier uur thuis. Eén vraag voor je volgende stap: als Werkvoorbereiding nu sneller is, waar gaat het werk dan wachten?",
+   "debrief_variants": {
+    "poor_fix": "Er zijn minder handtekeningen, maar elk ontwerp wordt nog steeds van nul getekend. De stapel zakt, langzaam. Joost houdt zijn vacatures nog even aan. Wat zou het werk zelf lichter maken?"
+   },
+   "goal": {
+    "problem": "custom_design",
+    "type": "solve"
+   },
+   "id": "fix_custom_design",
+   "insights": {
+    "experiment": "Wat verwacht je dat er met de stapel gebeurt: hoeveel, en wanneer kun je het zien?",
+    "go_see": "Wat is je doel voor Werkvoorbereiding, in een getal? En hoe ziet het er nu uit?",
+    "reflect": [
+     "Wie in het team wist het antwoord al voordat jij kwam? Wat betekent dat voor hoe je de volgende keer begint?",
+     "Joost vroeg om twee mensen. Wat heeft zijn team nu nodig om dit vast te houden?"
+    ],
+    "understand": "Welk deel van wat Anouk doet, merkt de klant? En welk deel niet?"
+   },
+   "kind": "main",
+   "name": "De stapel bij Werkvoorbereiding",
+   "reopen": "De stapel bij Werkvoorbereiding groeit weer en Anouk blijft weer tot zeven uur. Wat er ooit werkte, wordt niet meer gedaan. Waarom niet?",
+   "requires": {
+    "missions": [
+     "walk_connections"
+    ]
+   },
+   "rewards": {
+    "budget": 10000,
+    "xp": 600
+   },
+   "steps": {
+    "a3": "Schrijf je A3 voor Werkvoorbereiding aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe Werkvoorbereiding verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
+    "dig": "Zoek uit waar de uren van Anouk naartoe gaan",
+    "look": "Ga bij Werkvoorbereiding kijken hoe een ontwerp ontstaat",
+    "talk": "Praat met Joost (Werkvoorbereiding)",
+    "wait": "Kijk bij Werkvoorbereiding hoe het experiment loopt"
+   },
+   "talk_to": [
+    {
+     "dialog": "joost_vacancies",
+     "outcome": "partial"
+    }
+   ],
+   "tier": 1
+  },
+  {
+   "act": 1,
+   "briefing": "Sanne Bakker (teamleider Intake) heeft een turflijst: van de laatste veertig aanvragen stuurde haar team er negentien terug naar de klant. 'We zijn een postkantoor geworden,' zegt ze. 'Ik heb iemand extra nodig om alles na te lopen.' Marco Peters (teamleider Monteurs) vraagt ook om je aandacht. Jij kiest wat eerst gaat.",
+   "chapter": "De stapel",
+   "debrief": "Wat binnenkomt is nu compleet: het formulier voorkomt de fout, niemand hoeft harder te controleren. Sanne heeft niemand extra nodig. Kijk naar de stroom: er gaan nu méér aansluitingen per week door. Waarom hier wel, en waar wacht het werk nu?",
+   "debrief_first": "Wat binnenkomt is nu compleet: het formulier voorkomt de fout, niemand hoeft harder te controleren. Sanne heeft niemand extra nodig, en er gaan méér aansluitingen per week door: je pakte het knelpunt. Marco wacht nog. Wat verwacht je dat zijn verbetering met de stroom doet?",
+   "debrief_variants": {
+    "poor_fix": "Je team loopt nu elke aanvraag na met een checklist en vraagt meteen op wat ontbreekt. Er gaat minder heen en weer. Maar het formulier laat nog steeds doorklikken zonder vermogen of meterkastfoto: elke fout wordt nog gemaakt, alleen eerder gevonden, en het nalopen kost Sannes team elke dag tijd. Waar ontstaat die fout eigenlijk?"
+   },
+   "fork": {
+    "group": "t1_after_design",
+    "role": "bottleneck"
+   },
+   "goal": {
+    "problem": "incomplete_application",
+    "type": "solve"
+   },
+   "id": "fix_incomplete_application",
+   "insights": {
+    "experiment": "Als je voorspelling klopt, welk getal bij de intake verandert, en welk getal aan het eind van de stroom?",
+    "go_see": "Twee teams vragen om je aandacht. Waar ligt het meeste werk te wachten, in dagen werk? Heb je dat zelf geteld?",
+    "reflect": [
+     "Wat is het verschil tussen een fout vinden en een fout voorkomen?",
+     "Een extra controleur had ook geholpen. Wat was daar over een jaar van over geweest?"
+    ],
+    "understand": "Waar ontstaat de fout: bij Sanne, of al eerder? Hoe weet je dat?"
+   },
+   "kind": "main",
+   "name": "Aanvragen gaan terug naar de klant",
+   "reopen": "Bij de Intake gaan weer aanvragen terug naar de klant. Sannes turflijst is terug. Wat is er sinds de vorige keer veranderd?",
+   "requires": {
+    "missions": [
+     "fix_custom_design"
+    ]
+   },
+   "rewards": {
+    "budget": 8000,
+    "xp": 700
+   },
+   "steps": {
+    "a3": "Schrijf je A3 voor Intake aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe Intake verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
+    "dig": "Zoek uit waarom aanvragen terug naar de klant gaan",
+    "look": "Ga bij Intake kijken wat er met een aanvraag gebeurt",
+    "talk": "Praat met Sanne (Intake)",
+    "wait": "Kijk bij Intake hoe het experiment loopt"
+   },
+   "talk_to": [
+    {
+     "dialog": "sanne_checker",
+     "outcome": "partial"
+    }
+   ],
+   "tier": 1
+  },
+  {
+   "act": 1,
+   "briefing": "Marco Peters (teamleider Monteurs) is er klaar mee: 'Twee op de vijf adressen zijn niet klaar als mijn mensen voor de deur staan. Dat zijn monteursuren die we niet hebben.' Hij wil dat dit eerst wordt opgelost. Sanne Bakker (teamleider Intake) vraagt ook om je aandacht. Jij kiest wat eerst gaat.",
+   "chapter": "De stapel",
+   "debrief": "Er rijdt pas een monteur als de meterkast klaar is: minder ritten voor niets en minder monteursuren verspild. Klanten van wie het adres niet klaar was, zijn eerder aangesloten. Wat de stroom per week aankan, veranderde nauwelijks: de ritten voor niets waren niet wat de aansluitingen tegenhield. Wat doe je met de uren die Marco's team terugkrijgt?",
+   "debrief_first": "Er rijdt pas een monteur als de meterkast klaar is: minder ritten voor niets, en de klanten van wie het adres niet klaar was, zijn eerder aangesloten. Maar kijk wat de stroom per week aankan: dat is niet veranderd. Komen er deze weken toch iets meer klaar, dan zijn dat klanten die eerder aan de beurt waren, geen extra klanten. Het werk wacht nog ergens anders. Bewaar die monteursuren goed; je zult ze nog nodig hebben.",
+   "debrief_variants": {
+    "poor_fix": "Elke monteur heeft nu een reserveklus, dus een rit is zelden helemaal voor niets. Maar de klant van wie de meterkast niet klaar was, hoort het nog steeds pas als de monteur voor de deur staat, en wacht dan weer op een nieuwe afspraak. Wie had het eerder kunnen weten, en wanneer?"
+   },
+   "fork": {
+    "group": "t1_after_design",
+    "role": "non_bottleneck"
+   },
+   "goal": {
+    "problem": "installer_not_ready",
+    "type": "solve"
+   },
+   "id": "fix_installer_not_ready",
+   "insights": {
+    "experiment": "Welk getal verwacht je dat verandert: de monteursuren, de doorlooptijd, het aantal aansluitingen per week? Allemaal?",
+    "go_see": "Twee teams vragen om je aandacht. Waar staat het werk het langst te wachten?",
+    "reflect": [
+     "Gaan er nu meer aansluitingen per week door? Wat is er wél beter geworden, en voor wie?",
+     "Marco's monteurs hebben uren terug. Wat wil je dat ze ermee doen?"
+    ],
+    "understand": "Wie weet als eerste dat een meterkast niet klaar is, en wanneer hoort de planner het?"
+   },
+   "kind": "main",
+   "name": "Voor niks gereden",
+   "reopen": "Monteurs staan weer voor meterkasten die niet klaar zijn. Marco belt. Wat is er weggezakt?",
+   "requires": {
+    "missions": [
+     "fix_custom_design"
+    ]
+   },
+   "rewards": {
+    "budget": 5000,
+    "xp": 500
+   },
+   "steps": {
+    "a3": "Schrijf je A3 voor de monteurs aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe de monteurs verdergaan",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
+    "dig": "Zoek uit waarom monteurs voor niks voor de deur staan",
+    "look": "Ga bij de monteurs kijken hoe een klus bij de klant loopt",
+    "talk": "Praat met Marco (Monteurs)",
+    "wait": "Kijk bij de monteurs hoe het experiment loopt"
+   },
+   "talk_to": [
+    {
+     "dialog": "marco_wasted_trips",
+     "outcome": "partial"
+    }
+   ],
+   "tier": 1
+  },
+  {
+   "act": 1,
+   "briefing": "Wie het klantcontactcentrum belt, hangt lang in de wacht. Esra Yilmaz (teamleider Klantcontactcentrum) vraagt om vier extra agents. Voordat het MT ja zegt: wie bellen er eigenlijk, en waarom? Eén van hen ken je al: mevrouw El Amrani belt deze maand voor de vierde keer.",
+   "chapter": "De telefoon",
+   "debrief": "Er komen minder statusvragen binnen. Esra houdt haar team zoals het is, en haar agents hebben weer tijd voor de vragen die ertoe doen. Een groot deel van wat ze binnenkregen, was vraag die wíj veroorzaakten: niemand vertelde de klant hoe het ervoor stond. Mevrouw El Amrani kreeg een bericht en hoefde niet meer te bellen. Wat zegt dit over meer agents?",
+   "debrief_variants": {
+    "poor_fix": "De klant krijgt nu een datum en kan zijn aanvraag online volgen. Wie op de site kijkt, belt minder. Maar wie niet kijkt, hoort nog steeds niets tot de monteur belt, en elke datum die verschuift, levert een nieuw telefoontje op. Esra's agents krijgen minder van dezelfde vraag, maar ze blijft komen. Wie zou de klant moeten vertellen hoe het ervoor staat?"
+   },
+   "goal": {
+    "problem": "status_callers",
+    "type": "solve"
+   },
+   "id": "fix_status_callers",
+   "insights": {
+    "experiment": "Welk getal laat over twee weken zien of je experiment werkt: de wachttijd, of het aantal statusvragen? Waarom kies je dat?",
+    "go_see": "Wat wil je dat er over vier weken anders is aan de telefoon? In een getal?",
+    "reflect": [
+     "Waar ontstond de vraag die je hebt weggenomen? Wat zegt dat over meer agents?",
+     "Esra's agents hebben nu tijd over. Wat zou jij met die tijd doen, samen met hen?"
+    ],
+    "understand": "Welk deel van de gesprekken had de klant liever niet gevoerd? Hoe heb je dat geteld?"
+   },
+   "kind": "main",
+   "name": "De telefoon staat roodgloeiend",
+   "reopen": "De telefoon staat weer roodgloeiend. Esra's agents beantwoorden weer dezelfde vraag. Wat hoort de klant nu niet meer?",
+   "requires": {
+    "missions": [
+     "fix_incomplete_application"
+    ]
+   },
+   "rewards": {
+    "budget": 8000,
+    "xp": 800
+   },
+   "steps": {
+    "a3": "Schrijf je A3 voor het KCC aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe het KCC verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
+    "dig": "Zoek uit waar de telefoontjes bij het KCC vandaan komen",
+    "look": "Ga bij het KCC kijken wie er belt, en waarom",
+    "talk": "Praat met Esra (Klantcontactcentrum)",
+    "wait": "Kijk bij het KCC hoe het experiment loopt"
+   },
+   "talk_to": [
+    {
+     "dialog": "esra_agents",
+     "outcome": "partial"
+    }
+   ],
+   "tier": 1
+  },
+  {
+   "act": 1,
+   "briefing": "De aansluiting van de familie Hendriks in Nova-Oost ligt er al acht dagen. Toch zegt hun energieleverancier dat hun EAN-code niet bestaat, en hun nieuwe warmtepomp staat uit. Bij Meetdata & registratie heeft Petra Vos tijd over. Ergens ligt werk dat niemand ziet.",
+   "chapter": "De telefoon",
+   "debrief": "Een dossier wordt nu afgehandeld op de dag dat het klaar is. De warmtepomp van de familie Hendriks draait. Bij Petra is de stapel niet kleiner geworden, want er was geen stapel werk: er was een stapel wachten. Welke andere batches zie je in de stroom die niemand een batch noemt?",
+   "debrief_variants": {
+    "poor_fix": "Meetdata draait de afhandeling nu twee keer per maand. Een dossier wacht gemiddeld een week in plaats van twee, maar wie net na de run klaar is, wacht nog steeds twee weken op zijn EAN. De batch is kleiner, niet weg. Waarom moet een dossier eigenlijk op een run wachten?",
+    "too_early": "Je verwachtte dat dossiers sneller afgemeld zouden worden als het systeem de EAN-codes zelf aanmeldt. De Check laat zien: dat helpt maar half. De koppeling werkt wel. Een dossier dat Petra invoert, staat nu binnen een uur bij de leverancier. Alleen voert Petra de dossiers nog steeds aan het eind van de maand in, want zo is het ooit afgesproken. Het wachten zat niet in het systeem. Wanneer gaat een dossier eigenlijk van de stapel af, en wie heeft dat zo bepaald?\n\nPetra: \"Die koppeling is mooi, hoor. Maar die had ik niet nodig om morgen anders te beginnen.\""
+   },
+   "goal": {
+    "problem": "done_but_not_closed",
+    "type": "solve"
+   },
+   "id": "fix_done_but_not_closed",
+   "insights": {
+    "experiment": "Als de batch kleiner wordt, wat verwacht je dan van de doorlooptijd? En van Petra's werkdag?",
+    "go_see": "Hoe lang staat een aansluiting die technisch klaar is op 'administratief open'? Hoe weet je dat?",
+    "reflect": "Welke andere batches zie je in de stroom die niemand een batch noemt?",
+    "understand": "Waarop wacht een aansluiting die technisch klaar is? Wie wacht er nog meer op?"
+   },
+   "kind": "main",
+   "name": "Klaar maar niet af",
+   "reopen": "Klanten bellen weer dat hun EAN-code niet bestaat. Bij Petra staat het werk weer te wachten tot het einde van de maand. Wie heeft dat zo besloten?",
+   "requires": {
+    "belt": 1,
+    "missions": [
+     "fix_status_callers"
+    ]
+   },
+   "rewards": {
+    "budget": 8000,
+    "xp": 900
+   },
+   "steps": {
+    "a3": "Schrijf je A3 voor Meetdata aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe Meetdata verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
+    "dig": "Zoek uit waar een dossier op wacht als het klaar is",
+    "look": "Ga bij Meetdata kijken wat er na de aansluiting gebeurt",
+    "talk": "Praat met Petra (Meetdata)",
+    "wait": "Kijk bij Meetdata hoe het experiment loopt"
+   },
+   "talk_to": [
+    {
+     "dialog": "petra_batch",
+     "outcome": "partial"
+    }
+   ],
+   "teaches": [
+    "ean_code"
+   ],
+   "tier": 1
+  },
+  {
+   "act": 1,
+   "arc": "winters",
+   "briefing": "Rond de kortste dag, 21 december, gaat het meestal echt vriezen: een paar nachten achter elkaar onder nul. In Nova-Oost hangt een warmtepomp zonder stroom aan de muur, en de cv-ketel is al weg. Mevrouw El Amrani belt vast nog een keer.",
+   "chapter": "De telefoon",
+   "deadline_on_day": 70,
+   "debrief": "In de eerste vorstnacht draaide de warmtepomp van de familie El Amrani. Haar moeder had het warm. Wie wacht er nog meer op een aansluiting, en weet die waar hij aan toe is?",
+   "fail": "Tijdens de eerste vorstnachten logeert de moeder van mevrouw El Amrani bij haar andere dochter in Havenzij. 'Het is maar voor even,' zegt mevrouw El Amrani. Ze schrijft het op, en ze stuurt een brief. Aan de directie, met een kopie aan de ACM.",
+   "goal": {
+    "by": "deadline",
+    "met_if": {
+     "any": [
+      "delivered:el_amrani",
+      "agreed:el_amrani_fourth_call:check_existing_connection"
+     ]
+    },
+    "promise": "el_amrani_fourth_call",
+    "story": "el_amrani",
+    "type": "story_order"
+   },
+   "id": "winter_el_amrani",
+   "kind": "milestone",
+   "missed": "Het vriest. In Nova-Oost staat een warmtepomp nog steeds uit.",
+   "name": "Voor de vorst",
+   "opens_on": {
+    "date": "2026-11-30"
+   },
+   "payoff": [
+    {
+     "by": "call",
+     "text": "{groet}, u spreekt met Fatima El Amrani. Ik bel alleen even om te zeggen dat mijn moeder het warm heeft. Ze vroeg wie u bent. Ik heb gezegd: iemand die terugbelde. Dat was het. Dag.",
+     "who": "el_amrani"
+    },
+    {
+     "by": "letter",
+     "text": "Beste {speler},\n\nToen het ging vriezen, draaide de warmtepomp. Mijn moeder zit 's avonds weer gewoon in de kamer, en niet meer onder twee dekens. U weet dat ik alles opschrijf. Deze keer schrijf ik iets anders op: dank u wel.\n\nMet vriendelijke groet,\nFatima El Amrani",
+     "who": "el_amrani"
+    }
+   ],
+   "requires": {
+    "missions": [
+     "walk_connections"
+    ]
+   },
+   "rewards": {
+    "reputation": 3,
+    "xp": 300
+   },
+   "sets_flags_on_fail": [
+    "flag:el_amrani_complaint",
+    "flag:el_amrani_cold_winter"
+   ],
+   "teaches": [
+    "lead_time"
+   ],
+   "tier": 1
+  },
+  {
+   "act": 1,
+   "briefing": "Frank Hulshof (manager Aansluitingen & Netverzwaring) en ik willen je even spreken, in de MT-kamer op de 2e. Je werkt hier nu honderd dagen. Je hoeft niks voor te bereiden.",
+   "chapter": "De eerste honderd dagen",
+   "debrief": "Honderd dagen. Wat zou je anders doen als je morgen opnieuw begon?",
+   "goal": {
+    "type": "scene"
+   },
+   "id": "review_100_days",
+   "kind": "milestone",
+   "name": "Honderd dagen",
+   "opens_on": {
+    "day": 100
+   },
+   "requires": {
+    "missions": [
+     "walk_connections"
+    ]
+   },
+   "rewards": {
+    "xp": 200
+   },
+   "scene": "review_100_days",
+   "steps": {
+    "go": "Ga naar de MT-kamer op de 2e"
+   },
+   "tier": 1
+  },
+  {
+   "act": 2,
+   "briefing": "Dinsdag 10.12 uur: een graafmachine raakt een middenspanningskabel. Driehonderd huizen en zorgcentrum De Linde zitten zonder stroom; De Linde draait op het noodaggregaat. Gert Peeters (uitvoerder, Grondwerk Peeters) laat zijn KLIC-melding zien: 'Volgens deze kaart lag hier niks.' Het is de vijfde graafschade deze week. Elke schade kost ons geld, en na vier uur krijgt elke getroffen klant een vergoeding. Gert kijkt in zijn agenda: 'Over negen weken schrijven de aannemers hun bestekken voor de volgende bouwronde. Wat daar dan niet in staat, verandert voorlopig niet meer.'",
+   "chapter": "De kaart klopt niet",
+   "containment": {
+    "budget": 500,
+    "days": 14,
+    "effects": [
+     {
+      "property": "demand",
+      "target": "outages.daytime",
+      "value": 0.9
+     }
+    ],
+    "name": "Stop en bel: niet graven bij MS-kabels zonder monteur"
+   },
+   "deadline_days": 63,
+   "debrief": "Er zijn minder graafschades. Bij de Check konden de monteurs zonder je aanpak {kpi_before} storingen per week aan, met je aanpak {kpi_after}. Gert deed alles volgens het boekje; de oorzaak zat in ons proces. Maar de kaart klopt nog steeds niet overal. Wie houdt de kaart eigenlijk bij?",
+   "debrief_variants": {
+    "blamed": "De schades zijn minder. Gert werkt mee, maar hij vertelt je niets meer dan nodig. Wie houdt de kaart eigenlijk bij?",
+    "too_early": "Je verwachtte minder graafschade, omdat de kaart beter zou worden. De Check laat zien: nauwelijks minder. Over de kaart had je wel gelijk. Wat Revisie vanaf nu intekent, klopt. Maar de oude afwijkingen liggen er nog allemaal, en de aannemer die volgende week graaft, graaft op de kaart van vorig jaar. Wat maakt het graven deze week al veiliger, terwijl de kaart wordt rechtgezet?\n\nGert: \"Een goede kaart is mooi. Maar volgende week staat mijn ploeg weer te graven. Waar kijken we dan op?\""
+   },
+   "fail": "De aannemers hebben hun bestekken geschreven, op de kaart van nu. Gert: 'Daar kan ik nu niks meer aan veranderen. Voorlopig graven ze zoals ze gewend zijn.' De snelle weg is dicht.",
+   "fail_closes": [
+    "contractor_briefing"
+   ],
+   "goal": {
+    "problem": "digging_damage",
+    "type": "solve"
+   },
+   "id": "fix_digging_damage",
+   "insights": {
+    "experiment": "Hoeveel schades per week verwacht je over een maand? Waar meet je dat?",
+    "go_see": "Wat moet er vandaag gebeuren zodat er deze week niemand gewond raakt? En wat pas daarna?",
+    "reflect": [
+     "Zocht je de oorzaak bij Gert, of in het proces? Wat leverde dat je op?",
+     "Waar in ons eigen huis begint deze schade?"
+    ],
+    "understand": "Gert deed een KLIC-melding. Wat kreeg hij terug, en klopte dat?"
+   },
+   "kind": "main",
+   "name": "Graafschade",
+   "reopen": "Er komen weer graafschades binnen. Gert belt: 'We graven zoals afgesproken. Klopt jullie kaart nog?'",
+   "requires": {
+    "missions": [
+     "fix_done_but_not_closed"
+    ]
+   },
+   "rewards": {
+    "budget": 12000,
+    "xp": 1000
+   },
+   "steps": {
+    "a3": "Schrijf je A3 voor de storingsdienst aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe de storingsdienst verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
+    "dig": "Zoek uit wat Gert van ons kreeg voordat hij ging graven",
+    "look": "Ga bij de storingsdienst kijken wat er dinsdag gebeurde",
+    "talk": "Praat met Gert (Grondwerk Peeters)",
+    "wait": "Kijk bij de storingsdienst hoe het experiment loopt"
+   },
+   "talk_to": [
+    {
+     "dialog": "gert_klic",
+     "outcome": "partial"
+    }
+   ],
+   "teaches": [
+    "klic_melding",
+    "compensatieregeling"
+   ],
+   "tier": 1
+  },
+  {
+   "act": 2,
+   "briefing": "De kabel die Gert Peeters raakte, lag twee meter naast de plek op de kaart; hij was vier maanden eerder verlegd. Bij Revisie & GIS staat een doos met 240 schetsen van opgeleverde aansluitingen. Onderop liggen er van maanden terug; één is getekend op een boterhamzakje. 'We tekenen ze over zo snel als we kunnen,' zegt Mieke van der Veen (tekenaar Revisie & GIS). Het GIS-team vraagt om versterking. Hoe oud wordt een schets voordat hij op de kaart staat, en waarom?",
+   "chapter": "De kaart klopt niet",
+   "debrief": "Een nieuwe kabel staat nu eerder op de kaart, en de doos bij Revisie & GIS wordt kleiner. Volgens de Check kan de stroom met je aanpak {kpi_after} aansluitingen per week aan; zonder was dat {kpi_before}. Wie merkt het als dit over een jaar wegzakt, en hoe snel?",
+   "debrief_variants": {
+    "poor_fix": "De doos wordt kleiner: er wordt nu elke dag getekend. Volgens de Check kan de stroom met je aanpak {kpi_after} aansluitingen per week aan; zonder was dat {kpi_before}. Maar Mieke tekent nog steeds over wat een monteur op de motorkap schetste. Het dubbele werk is er nog; het gaat alleen sneller. Wat gebeurt er met de doos in de eerste drukke maand?"
+   },
+   "goal": {
+    "problem": "revision_backlog",
+    "type": "solve"
+   },
+   "id": "fix_revision_backlog",
+   "insights": {
+    "experiment": "Welk getal laat zien dat de kaart bijblijft: de stapel, of de leeftijd van de oudste schets?",
+    "go_see": "Hoe oud is de oudste schets in de doos? Wat betekent dat voor wie morgen gaat graven?",
+    "reflect": "Wie merkt het als dit over een jaar wegzakt, en hoe snel? Wat houdt het vast?",
+    "understand": "Hoe vaak wordt dezelfde kabel getekend voordat hij op de kaart staat? Door wie?"
+   },
+   "kind": "main",
+   "name": "De revisieberg",
+   "reopen": "De doos bij Revisie & GIS vult zich weer. Mieke tekent weer over. Wat werd er niet meer gedaan?",
+   "requires": {
+    "missions": [
+     "fix_digging_damage"
+    ]
+   },
+   "rewards": {
+    "budget": 10000,
+    "xp": 900
+   },
+   "steps": {
+    "a3": "Schrijf je A3 voor Revisie & GIS aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe Revisie & GIS verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
+    "dig": "Zoek uit hoe een schets op de kaart komt",
+    "look": "Ga bij Revisie & GIS kijken naar de doos met schetsen",
+    "talk": "Praat met Mieke (Revisie & GIS)",
+    "wait": "Kijk bij Revisie & GIS hoe het experiment loopt"
+   },
+   "talk_to": [
+    {
+     "dialog": "mieke_redraw",
+     "outcome": "partial"
+    }
+   ],
+   "tier": 1
+  },
+  {
+   "act": 2,
+   "briefing": "Femke de Wit (netplanner) en haar collega maken lange dagen: er staan 38 netstudies op het bord. De uitbreiding van de basisschool in Nova-Oost wacht al negen weken op een studie. 'Er komen er elke week meer bij dan we af krijgen,' zegt Femke. 'Ik kom niet eens toe aan de studies die er echt toe doen.' Netstrategie vraagt om twee extra analisten, en die zijn in heel Nederland schaars. Wat kan er nog meer?",
+   "chapter": "Het net is vol",
+   "debrief": "Niet elke aanvraag heeft een volledige studie nodig. Bij de Check kon de stroom zonder je aanpak {kpi_before} aansluitingen per week aan, met je aanpak {kpi_after}. Femke rekent weer aan de studies die ertoe doen, en de school had binnen een week antwoord. Je hebt het knelpunt eerst beter benut voordat je het groter maakte. Wanneer is extra analisten aannemen wél de goede stap?",
+   "debrief_variants": {
+    "poor_fix": "Het bord is korter. Bij de Check kon de stroom zonder je aanpak {kpi_before} aansluitingen per week aan, met je aanpak {kpi_after}. Maar nog steeds krijgt elke aanvraag boven 3x25A de volle studie, ook de warmtepomp in een straat waar ruimte genoeg is. Femke rekent sneller of langer, niet minder. Hoeveel van die studies hadden eigenlijk gehoeven?"
+   },
+   "goal": {
+    "problem": "grid_study_queue",
+    "type": "solve"
+   },
+   "id": "fix_grid_study_queue",
+   "insights": {
+    "experiment": "Als je dit knelpunt beter benut, hoeveel studies per week verwacht je? Wanneer zie je dat?",
+    "go_see": "Wat doet Femke in een uur? Welk deel daarvan kan alleen zij?",
+    "reflect": [
+     "Wanneer is extra analisten aannemen wél de goede stap? Wat moet er dan eerst kloppen?",
+     "Femke maakte lange dagen. Hoe zie je of dat nu anders is?"
+    ],
+    "understand": "Hoeveel van de studies leveren een ander antwoord op dan 'het past'?"
+   },
+   "kind": "main",
+   "name": "De netstudie-wachtrij",
+   "reopen": "Op Femke's bord staan weer bijna veertig studies. Elke aanvraag krijgt weer de volle studie. Wie besliste dat, en wanneer?",
+   "requires": {
+    "belt": 2,
+    "missions": [
+     "fix_revision_backlog"
+    ]
+   },
+   "rewards": {
+    "budget": 12000,
+    "xp": 1200
+   },
+   "steps": {
+    "a3": "Schrijf je A3 voor Netstrategie aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe Netstrategie verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
+    "dig": "Zoek uit wat Femke op een dag allemaal doet",
+    "look": "Ga bij Femke kijken naar het bord met netstudies",
+    "talk": "Praat met Femke (Netstrategie)",
+    "wait": "Kijk bij Netstrategie hoe het experiment loopt"
+   },
+   "talk_to": [
+    {
+     "dialog": "femke_triage",
+     "outcome": "partial"
+    }
+   ],
+   "teaches": [
+    "netcongestie"
+   ],
+   "tier": 1
+  },
+  {
+   "act": 2,
+   "briefing": "Projectontwikkelaar Hermans Bouw levert over vijf maanden 48 woningen op in De Boomgaard. Volgens onze planning hebben die dan nog geen stroom: de trafo voor het nieuwe station heeft zes maanden levertijd. 'Heel Europa wil trafo's,' zegt Rob Verhagen (inkoper). Dat klopt. Wat kunnen wíj dan nog doen?",
+   "chapter": "Het net is vol",
+   "debrief": "De fabrikant is niet sneller geworden; wij hebben veranderd wanneer en hoe we bestellen. Bij de Check waren de oudste openstaande aansluitingen zonder je aanpak {kpi_before} dagen oud, met je aanpak {kpi_after}. De oudste wachtende verzwaring is jonger geworden, en De Boomgaard krijgt eerder stroom. Welke andere wachttijd leggen we bij een ander neer, terwijl hij bij ons begint?",
+   "debrief_variants": {
+    "poor_fix": "De Boomgaard krijgt eerder stroom: er staan nu trafo's op voorraad. Bij de Check waren de oudste openstaande aansluitingen zonder je aanpak {kpi_before} dagen oud, met je aanpak {kpi_after}. Maar we bestellen nog steeds pas als het ontwerp is goedgekeurd. De voorraad vangt dat op, maar die kost geld: opslag, verzekering en het geld dat erin vastzit. Wat gebeurt er als drie projecten tegelijk een trafo uit die voorraad willen?"
+   },
+   "goal": {
+    "problem": "transformer_wait",
+    "type": "solve"
+   },
+   "id": "fix_transformer_wait",
+   "insights": {
+    "experiment": "Wat is het risico als je bestelt vóór het ontwerp is goedgekeurd? Hoe maak je dat risico klein?",
+    "go_see": "Op welk moment weten we dat er een trafo nodig is? En op welk moment bestellen we hem?",
+    "reflect": "Wat kon je niet veranderen, en wat wel? Waar geldt dat nog meer?",
+    "understand": "Welke wachttijden lopen nu na elkaar die naast elkaar zouden kunnen?"
+   },
+   "kind": "main",
+   "name": "Een half jaar wachten in volle straten",
+   "reopen": "De trafo's worden weer pas besteld als het ontwerp klaar is. Hermans Bouw belt opnieuw. Wat is er in de bestelroute teruggeslopen?",
+   "requires": {
+    "missions": [
+     "fix_grid_study_queue"
+    ]
+   },
+   "rewards": {
+    "budget": 12000,
+    "xp": 1300
+   },
+   "steps": {
+    "a3": "Schrijf je A3 voor Netstrategie aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe Netstrategie verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
+    "dig": "Zoek uit wat er gebeurt tussen netstudie en trafo",
+    "look": "Ga bij Netstrategie kijken waar De Boomgaard op wacht",
+    "talk": "Praat met Rob (Inkoop)",
+    "wait": "Kijk bij Netstrategie hoe het experiment loopt"
+   },
+   "talk_to": [
+    {
+     "dialog": "rob_order_rule",
+     "outcome": "partial"
+    }
+   ],
+   "teaches": [
+    "transformator"
+   ],
+   "tier": 1
+  },
+  {
+   "act": 2,
+   "briefing": "Ilse de Graaf (Bakkerij De Graaf) wil haar gasovens vervangen door elektrische. Ze staat al twee jaar op de wachtlijst voor transportcapaciteit, en zolang ze wacht, stookt ze op gas dat elk jaar duurder wordt. 'Leg me eens uit waarom het net vol is,' zei ze tegen Thomas Visser (accountmanager grootzakelijk). 'Anders zoek ik een plek waar ik wél stroom krijg, en ik stap naar de ACM.' Volgens Netstrategie is het net vol. Is het dat ook?",
+   "chapter": "Het net is vol",
+   "debrief": "Op het drukste kwartier van het jaar gebruikten de grote klanten maar een deel van wat ze gecontracteerd hadden. Bij de Check kregen zonder je aanpak {kpi_before} aanvragen per week capaciteit, met je aanpak {kpi_after}. Een deel daarvan komt, volgens de regels van de ACM, terug in de wachtrij. Welke andere voorraad houden wij aan die op papier vol lijkt?",
+   "debrief_variants": {
+    "poor_fix": "Er past weer wat meer op het net. Bij de Check kregen zonder je aanpak {kpi_before} aanvragen per week capaciteit, met je aanpak {kpi_after}. Maar de capaciteit die al jaren gecontracteerd is en niet gebruikt wordt, staat nog steeds op naam van wie hem niet gebruikt. Ilse wacht daar nog steeds naast. Wie gaat met die klanten in gesprek?"
+   },
+   "goal": {
+    "problem": "unused_capacity",
+    "type": "solve"
+   },
+   "id": "fix_unused_capacity",
+   "insights": {
+    "experiment": "Hoeveel megawatt verwacht je terug te krijgen, en hoeveel bedrijven op de wachtlijst helpt dat?",
+    "go_see": "Wat wil je weten over het drukste moment van het jaar? Waar zou je dat kunnen zien?",
+    "reflect": [
+     "Welke andere voorraad houden wij aan die op papier vol lijkt?",
+     "Hoe heb je de klanten behandeld die capaciteit teruggaven? Komen ze bij ons terug als ze groeien?"
+    ],
+    "understand": "Is het net vol, of zijn de contracten vol?"
+   },
+   "kind": "main",
+   "name": "Twee jaar op de wachtlijst",
+   "reopen": "De wachtlijst groeit weer, terwijl het gebruik niemand meer bijhoudt. Thomas krijgt weer boze telefoontjes. Wie keek er naar de cijfers, en waarom nu niet meer?",
+   "requires": {
+    "missions": [
+     "fix_transformer_wait"
+    ]
+   },
+   "rewards": {
+    "budget": 12000,
+    "xp": 1400
+   },
+   "steps": {
+    "a3": "Schrijf je A3 voor de congestiedesk aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe de congestiedesk verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
+    "dig": "Zoek uit hoeveel gecontracteerd vermogen echt wordt gebruikt",
+    "look": "Ga bij de congestiedesk kijken wie er op de wachtlijst staat",
+    "talk": "Praat met Thomas (Grootzakelijke klanten)",
+    "wait": "Kijk bij de congestiedesk hoe het experiment loopt"
+   },
+   "talk_to": [
+    {
+     "dialog": "thomas_reclaim",
+     "outcome": "partial"
+    }
+   ],
+   "teaches": [
+    "netcongestie",
+    "acm"
+   ],
+   "tier": 1
+  },
+  {
+   "act": 2,
+   "briefing": "In het MT presenteerden Sanne Bakker (teamleider Intake) en Joost van Dijk (teamleider Werkvoorbereiding) allebei een recordmaand: 132 aanvragen door bij Intake, 128 ontwerpen af bij Werkvoorbereiding. Marco Peters (teamleider Monteurs) zei niets, tot het einde: 'Mooi. En wie bouwt jullie fouten na?' Hoe kunnen twee teams allebei een record halen, terwijl de klant niets merkt?",
+   "chapter": "Wat je meet",
+   "debrief": "Intake en Werkvoorbereiding kijken nu naar dezelfde aansluiting en hetzelfde getal. Bij de Check was zonder je aanpak {kpi_before} procent van de aansluitingen in één keer goed, met je aanpak {kpi_after} procent. Wat je meet, bepaalt wat mensen doen; en wat je níet meet, bepaalt wat ze laten liggen. Wie heeft last gehad van de oude cijfers, en weten ze dat het niet aan hen lag?",
+   "debrief_variants": {
+    "poor_fix": "Er komt minder terug bij de monteurs. Bij de Check was zonder je aanpak {kpi_before} procent van de aansluitingen in één keer goed, met je aanpak {kpi_after} procent. Maar de aansluiting van aanvraag tot meter staat nog nergens op één plek; elk team ziet vooral zijn eigen stuk. Waar zou Marco moeten kijken om te zien of het beter gaat?"
+   },
+   "goal": {
+    "problem": "silo_kpis",
+    "type": "solve"
+   },
+   "id": "fix_silo_kpis",
+   "insights": {
+    "experiment": "Welk getal zou beide teams naar hetzelfde doel laten kijken?",
+    "go_see": "Vraag eens aan twee teams waar ze op worden beoordeeld. Passen die doelen bij elkaar?",
+    "reflect": [
+     "Wat gebeurt er als je een team op één getal afrekent: wat verbetert, en wat gaat er stilletjes mis?",
+     "Wie heeft last gehad van de oude cijfers, en weten ze dat het niet aan hen lag?"
+    ],
+    "understand": "Wat doe jij als je op aantallen wordt afgerekend en het werk is bijna niet te halen?"
+   },
+   "kind": "main",
+   "name": "Twee recordmaanden",
+   "reopen": "In het MT liggen weer twee recordmaanden op tafel en de aansluitingen gaan niet sneller. Waar kijken de teams nu weer naar?",
+   "requires": {
+    "missions": [
+     "fix_unused_capacity"
+    ]
+   },
+   "rewards": {
+    "budget": 12000,
+    "xp": 1500
+   },
+   "steps": {
+    "a3": "Schrijf je A3 voor beide teams aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe beide teams verdergaan",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
+    "dig": "Zoek uit waarop beide teams worden afgerekend",
+    "look": "Ga bij Intake en Werkvoorbereiding naar hun borden kijken",
+    "talk": "Praat met Sanne (Intake)",
+    "wait": "Kijk bij beide teams hoe het experiment loopt"
+   },
+   "talk_to": [
+    {
+     "dialog": "sanne_kpi",
+     "outcome": "partial"
+    }
+   ],
+   "tier": 1
+  },
+  {
+   "act": 2,
+   "briefing": "Elk kwartaal kijken Frank Hulshof (manager Aansluitingen & Netverzwaring) en ik samen naar de getallen waar de teams op sturen. Deze keer wil ik dat jij erbij bent. Directie & Obeya, op de 2e.",
+   "chapter": "Wat je meet",
+   "debrief": "Het bord hangt. Over een kwartaal zien we of de getallen deden wat we ervan verwachtten. Welk getal ga jij zelf in de gaten houden?",
+   "goal": {
+    "type": "scene"
+   },
+   "id": "first_kpi_review",
+   "kind": "milestone",
+   "name": "Het eerste kwartaal",
+   "requires": {
+    "missions": [
+     "fix_silo_kpis"
+    ]
+   },
+   "rewards": {
+    "budget": 8000,
+    "reputation": 5,
+    "xp": 800
+   },
+   "scene": "first_kpi_review",
+   "steps": {
+    "go": "Ga naar Directie & Obeya op de 2e"
+   },
+   "teaches": [
+    "kpi",
+    "leading_lagging"
+   ],
+   "tier": 1
+  },
+  {
+   "act": 1,
+   "briefing": "De storingsdienst werkt als de rest slaapt. Loop een dienst mee met monteur Ahmed Bouzid, van melding tot herstel. Let op de klok: na vier uur zonder stroom krijgt elke klant een vergoeding. Waar gaat de tijd naartoe?",
+   "debrief": "Je zag een storing van melding tot herstel. Halverwege reed Ahmed naar het magazijn voor een mof. Dat onthoud je.",
+   "goal": {
+    "stream": "outages",
+    "type": "walk"
+   },
+   "id": "walk_outages",
+   "kind": "side",
+   "name": "Een nacht met de storingsdienst",
+   "requires": {
+    "missions": [
+     "walk_connections"
+    ]
+   },
+   "rewards": {
+    "xp": 200
+   },
+   "steps": {
+    "look": "Loop met Ahmed mee en kijk bij {team}"
+   },
+   "teaches": [
+    "compensatieregeling"
+   ],
+   "tier": 1
+  },
+  {
+   "act": 1,
+   "briefing": "Loop een dag mee met meterwisselaar Sandra Vermeulen. Er staan acht adressen op haar lijst; de laatste analoge meters in Nova moeten eruit. Tel hoe vaak de deur opengaat.",
+   "debrief": "Niet elke deur ging open. Sandra liet weer een kaartje achter: 'helaas niet thuis'. Ze heeft er een dikke stapel van in de bus.",
+   "goal": {
+    "stream": "meters",
+    "type": "walk"
+   },
+   "id": "walk_meters",
+   "kind": "side",
+   "name": "Acht adressen",
+   "requires": {
+    "missions": [
+     "walk_connections"
+    ]
+   },
+   "rewards": {
+    "xp": 200
+   },
+   "steps": {
+    "look": "Rijd met Sandra mee en kijk bij {team}"
+   },
+   "tier": 1
+  },
+  {
+   "act": 1,
+   "briefing": "Bij de storing in de Lindelaan was de stroom vijf uur weg; 140 huishoudens krijgen elk 35 euro vergoeding. Ahmed moest halverwege de reparatie terug naar het magazijn, voor een mof. 'Het magazijn levert te laat,' zeggen de monteurs. Dirk Smits van het magazijn: 'Ik heb ze gewoon liggen.' Ze hebben allebei gelijk. Hoe kan dat?",
+   "debrief": "Wat in de bus hoort, ligt er nu ook, en wat eruit gaat, wordt aangevuld voordat de bus weer uitrukt. De volgende lange storing kostte geen rit naar het magazijn.",
+   "debrief_variants": {
+    "poor_fix": "Bij de schuifdeur hangt nu een kaart, en Dirk vult 's ochtends aan wat is aangestreept. Na een drukke nacht vergeet de monteur weleens een streepje, en dan is bij de volgende storing precies dat vak leeg. Hoe weet Dirk wat er op is, als niemand iets aanstreept?"
+   },
+   "goal": {
+    "problem": "wrong_joint_in_van",
+    "type": "solve"
+   },
+   "id": "fix_wrong_joint",
+   "kind": "side",
+   "name": "Een storing duurt langer dan vier uur",
+   "requires": {
+    "missions": [
+     "walk_outages"
+    ]
+   },
+   "rewards": {
+    "budget": 4000,
+    "xp": 400
+   },
+   "steps": {
+    "a3": "Schrijf je A3 voor de storingsdienst aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe de storingsdienst verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
+    "dig": "Zoek uit waarom Ahmed halverwege naar het magazijn reed",
+    "look": "Ga bij de storingsdienst kijken hoe een herstel loopt",
+    "talk": "Praat met Dirk (magazijn)",
+    "wait": "Kijk bij de storingsdienst hoe het experiment loopt"
+   },
+   "talk_to": [
+    {
+     "dialog": "dirk_shelf",
+     "outcome": "partial"
+    }
+   ],
+   "tier": 1
+  },
+  {
+   "act": 1,
+   "briefing": "Sandra Vermeulen laat elke dag drie kaartjes achter: 'helaas niet thuis'. Het programma om de laatste analoge meters te vervangen loopt achter. Meneer De Jong belde boos: hij had de hele ochtend thuis gezeten, en er kwam niemand. Wie is hier eigenlijk niet thuis?",
+   "debrief": "Klanten zijn thuis als ze weten wanneer we komen. Sandra's stapel kaartjes is bijna op; ze bestelt geen nieuwe.",
+   "goal": {
+    "problem": "not_at_home",
+    "type": "solve"
+   },
+   "id": "fix_not_at_home",
+   "kind": "side",
+   "name": "Niet thuis",
+   "requires": {
+    "missions": [
+     "walk_meters"
+    ]
+   },
+   "rewards": {
+    "budget": 4000,
+    "xp": 400
+   },
+   "steps": {
+    "a3": "Schrijf je A3 voor de meterwisselaars aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe de meterwisselaars verdergaan",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
+    "dig": "Zoek uit waarom de deur zo vaak dicht blijft",
+    "look": "Ga met Sandra mee langs haar adressen",
+    "wait": "Kijk bij Sandra hoe het experiment loopt"
+   },
+   "tier": 1
+  },
+  {
+   "act": 2,
+   "briefing": "Petra Vos heeft een lijst met nieuwe slimme meters die geen standen sturen. Bijna allemaal in dezelfde straten. Monteurs moeten terug naar adressen waar ze vorige week al waren. 'De meters van de nieuwe leverancier deugen niet,' zegt iedereen. Petra twijfelt.",
+   "debrief": "Een meter is pas klaar als hij praat. De monteur ziet het nu voordat hij wegrijdt, niet een week later.",
+   "debrief_variants": {
+    "poor_fix": "Bij het plannen kijkt iemand nu naar de dekkingskaart, en in de kelderflats gaat een andere module mee. Maar of een meter echt praat, ziet nog steeds niemand voordat de monteur wegrijdt; wat de kaart mist, hoor je een week later. Wie kan het als eerste zien?"
+   },
+   "goal": {
+    "problem": "silent_meter",
+    "type": "solve"
+   },
+   "id": "fix_silent_meter",
+   "kind": "side",
+   "name": "De zwijgende meter",
+   "requires": {
+    "missions": [
+     "fix_not_at_home"
+    ]
+   },
+   "rewards": {
+    "budget": 4000,
+    "xp": 400
+   },
+   "tier": 1
+  },
+  {
+   "act": 1,
+   "briefing": "Het dossier van de familie Bos is al bijna twee weken klaar bij Werkvoorbereiding. Het ligt in een map, bij de dossiers van de andere elf woningen van De Appelgaard. De gemeente haalt haar termijn bijna altijd. Waar wacht het dossier dan op?",
+   "debrief": "Een vergunningsaanvraag wacht nu niet meer op de rest van de straat: die gaat naar de gemeente zodra het dossier zover is. Er gaan niet méér aansluitingen per week door, want de capaciteit is gelijk gebleven. Maar elke klant is eerder klaar, en de aanvraag van de familie Bos lag niet meer weken op een stapel te wachten. Een knelpunt bepaalt hoeveel er doorgaat; elke wachttijd onderweg bepaalt hoe lang het duurt.",
+   "goal": {
+    "problem": "permits_in_batches",
+    "type": "solve"
+   },
+   "id": "fix_permits_in_batches",
+   "kind": "side",
+   "name": "Dagen stilstand voor de vergunning",
+   "requires": {
+    "missions": [
+     "fix_custom_design"
+    ]
+   },
+   "rewards": {
+    "budget": 4000,
+    "xp": 400
+   },
+   "steps": {
+    "a3": "Schrijf je A3 voor Werkvoorbereiding aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe Werkvoorbereiding verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
+    "dig": "Zoek uit waar het dossier van de familie Bos op wacht",
+    "look": "Kijk bij Werkvoorbereiding waar het dossier van Bos ligt",
+    "wait": "Kijk bij Werkvoorbereiding hoe het experiment loopt"
+   },
+   "tier": 1
+  },
+  {
+   "act": 1,
+   "briefing": "Bij Netstrategie hangt een bord vol netstudies, met gele briefjes die er al maanden hangen. Femke de Wit heeft vijf minuten voor je. Zoek twee feiten over waarom het zo vol is. Oplossen hoeft nog niet.",
+   "debrief": "Je weet nu twee dingen over dat bord. Femke ook: ze vroeg of je terugkomt.",
+   "goal": {
+    "clues": 2,
+    "problem": "grid_study_queue",
+    "type": "investigate"
+   },
+   "id": "look_at_grid_study",
+   "kind": "side",
+   "name": "Het bord van Femke",
+   "requires": {
+    "missions": [
+     "fix_status_callers"
+    ]
+   },
+   "rewards": {
+    "xp": 250
+   },
+   "steps": {
+    "dig": "Zoek twee dingen uit over het bord van Femke",
+    "look": "Ga bij Netstrategie naar het bord van Femke kijken"
+   },
+   "tier": 1
+  },
+  {
+   "act": 2,
+   "briefing": "Wim Kortekaas, gepensioneerd elektrotechnicus in de Zonnestraat, stuurt ons elke maand een spreadsheet: zijn omvormer schakelt op zonnige middagen uit, al drie jaar. Inmiddels klagen er twintig buren. Onze monteurs meten adres na adres en vinden in de woning niets mis. Wat zien ze niet?",
+   "debrief": "Eén aftakking per wijk lost tientallen klachten op. De slimme meters hadden het al die tijd gezien. Wim stuurt geen spreadsheet meer, alleen een kerstkaart. Eén ding nog: wie de spanning in juli omlaag zet, moet in januari kijken wat de warmtepompen ervan vinden.",
+   "debrief_variants": {
+    "poor_fix": "In de Zonnestraat zijn de klachten minder geworden. Maar in de meeste wijken staat de aftakking nog zoals hij stond, en elders valt op een zonnige middag nog steeds een omvormer uit. Wim is tevreden; zijn buren twee straten verderop nog niet. Waar staat de aftakking nog zoals in 2009?"
+   },
+   "goal": {
+    "problem": "inverters_tripping",
+    "type": "solve"
+   },
+   "id": "fix_inverters_tripping",
+   "kind": "side",
+   "name": "Omvormers die afschakelen",
+   "requires": {
+    "missions": [
+     "fix_silent_meter"
+    ]
+   },
+   "rewards": {
+    "budget": 4000,
+    "xp": 400
+   },
+   "tier": 1
+  },
+  {
+   "act": 1,
+   "arc": "henk",
+   "briefing": "Henk Verbeek werkt veertig jaar bij Voltana. Als in een oude wijk de stroom uitvalt, belt iedereen Henk. Over acht weken geeft hij zijn afscheidsfeest; de uitnodiging hangt al op het prikbord. Vorige week stond Ahmed Bouzid bij een storing in een oude wijk, en belde toen... Henk. Zorg dat Henks vakmanschap niet met hem de deur uit gaat.",
+   "deadline_beat": "henk_farewell",
+   "deadline_days": 56,
+   "debrief": "Gisteren vond Ahmed zelf de fout in een papierloodkabel in Nova-Oud. Henk stond ernaast en zei niets. Dat was het compliment. Henk kan met een gerust hart met pensioen.",
+   "debrief_variants": {
+    "poor_fix": "Een deel van wat Henk weet, staat nu vastgelegd. Of dat genoeg is, merk je bij de eerste lastige storing zonder hem. Voelen of een kabel nat is, leer je niet uit een instructie alleen."
+   },
+   "fail": "Henk is met pensioen. Zijn afscheid was mooi, maar zijn kennis van de oude netten is met hem vertrokken. Een buddy die het kan voordoen is er niet meer. Wat er op papier staat, en wat Ahmed zelf leert, moet het nu doen.",
+   "fail_closes": [
+    "skills_matrix_buddy",
+    "twi_job_instruction",
+    "henks_one_point_lessons"
+   ],
+   "goal": {
+    "problem": "knowledge_drain",
+    "type": "solve"
+   },
+   "id": "save_henks_knowledge",
+   "kind": "side",
+   "name": "Henks kennis",
+   "requires": {
+    "missions": [
+     "fix_wrong_joint"
+    ]
+   },
+   "rewards": {
+    "budget": 6000,
+    "xp": 600
+   },
+   "steps": {
+    "a3": "Schrijf je A3 voor de storingsdienst aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe de storingsdienst verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
+    "dig": "Zoek uit wat er wegvalt als Henk met pensioen gaat",
+    "look": "Ga bij de storingsdienst kijken hoe Henk werkt",
+    "talk": "Praat met Henk (Storingsdienst)",
+    "wait": "Kijk bij de storingsdienst hoe het experiment loopt"
+   },
+   "talk_to": [
+    {
+     "dialog": "henk_camera",
+     "outcome": "partial"
+    }
+   ],
+   "teaches": [
+    "monteurstekort"
+   ],
+   "tier": 1
+  },
+  {
+   "act": 1,
+   "briefing": "Planner Linda Jansen is de halve week bezig met omplannen. 'Ik werk harder dan ooit,' zegt ze, 'en het wordt alleen maar erger.' Storingen gaan altijd voor. Waar komen al die wijzigingen vandaan?",
+   "debrief": "Er is nu elke dag ruimte voor storingen, en de rest van de planning blijft staan. Een planning die voor honderd procent vol zit, breekt bij het eerste onverwachte; hoe voller, hoe harder.",
+   "goal": {
+    "problem": "planning_reshuffle",
+    "type": "solve"
+   },
+   "id": "fix_planning_reshuffle",
+   "kind": "side",
+   "name": "De planning die nooit klopt",
+   "requires": {
+    "missions": [
+     "walk_outages"
+    ]
+   },
+   "rewards": {
+    "budget": 5000,
+    "xp": 500
+   },
+   "steps": {
+    "a3": "Schrijf je A3 voor Planning aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe Planning verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
+    "dig": "Zoek uit waarom de planning steeds wordt omgegooid",
+    "look": "Ga bij Planning kijken hoe een week wordt ingepland",
+    "talk": "Praat met Linda (Planning)",
+    "wait": "Kijk bij Planning hoe het experiment loopt"
+   },
+   "talk_to": [
+    {
+     "dialog": "linda_replanning",
+     "outcome": "partial"
+    }
+   ],
+   "tier": 1
+  },
+  {
+   "act": 1,
+   "arc": "sector",
+   "briefing": "Je hoort het overal in dit gebouw: het net is vol. Maar wat betekent dat voor een straat in Nova-Oost? Femke de Wit van Netstrategie weet het beter dan wie ook. Ze heeft het druk, dus neem koffie mee. Vraag haar hoe een netstudie gaat, en hoe ze ziet of een station vol is.",
+   "debrief": "Een wijk krijgt stroom via een middenspanningsruimte, en die is berekend op wat een straat tegelijk vraagt. Een warmtepomp en een laadpaal vragen meer, en vaak op hetzelfde moment. Femke rekent dat elke dag door. Je weet nu waar haar bord vandaan komt.",
+   "goal": {
+    "dialog": "femke_expert",
+    "topics": 2,
+    "type": "talk_to"
+   },
+   "id": "talk_netplanner",
+   "kind": "side",
+   "name": "Waarom is het net vol?",
+   "requires": {
+    "missions": [
+     "training_fri"
+    ]
+   },
+   "rewards": {
+    "trust": {
+     "grid_analysts": 1
+    },
+    "xp": 150
+   },
+   "steps": {
+    "talk": "Vraag Femke (Netstrategie) waarom het net vol is"
+   },
+   "teaches": [
+    "netcongestie",
+    "middenspanningsruimte",
+    "transformator"
+   ],
+   "tier": 1
+  },
+  {
+   "act": 1,
+   "briefing": "Een verbetering die niemand meer ziet, zakt weg. Dat is geen gebrek aan discipline; zo gaat werk als niemand kijkt. Ik loop zelf elke week een vaste ronde. Loop deze week mee: kijk bij Intake, Werkvoorbereiding en Planning hoe het werk gaat, en vraag wat er schuurt. Niet om te controleren. Om te zien.",
+   "debrief": "Drie plekken in één ronde, en je weet hoe het er deze week voor staat. Werken ze bij Werkvoorbereiding nog zoals jullie hadden afgesproken, of sluipt het oude er weer in? Een vaste routine op zo'n plek houdt een verbetering vast, en kost het team maar een paar uur per week.",
+   "goal": {
+    "places": [
+     "connections.intake",
+     "connections.design",
+     "connections.planning"
+    ],
+    "type": "observe"
+   },
+   "id": "lsw_gemba_round",
+   "kind": "side",
+   "name": "De gemba-ronde",
+   "recurring": {
+    "every_days": 7
+   },
+   "requires": {
+    "missions": [
+     "fix_custom_design"
+    ]
+   },
+   "rewards": {
+    "xp": 150
+   },
+   "steps": {
+    "look": {
+     "connections.design": "Kijk bij Werkvoorbereiding of de standaard nog leeft",
+     "connections.intake": "Kijk bij Intake hoe het werk deze week gaat",
+     "connections.planning": "Vraag bij Planning wat er deze week schuurt"
+    }
+   },
+   "teaches": [
+    "leader_standard_work",
+    "gemba"
+   ],
+   "tier": 1
+  },
+  {
+   "act": 1,
+   "arc": "way_back",
+   "briefing": "Financiën belde. We zitten al weken aan de grens van ons budget; geen verwijt, wel een vraag. Bij de meterwisselaars staan elke week zo'n zes adressen twee keer op de lijst, en elke rit voor niks kost ons zo'n honderd euro. Waarom gaan we twee keer?",
+   "debrief": "Een oude meterkast zie je nu bij het plannen, niet pas aan de deur. De meterwisselaar komt één keer, samen met de aansluitmonteur als dat moet. Dat scheelt elke week ritten, en Financiën ziet het. Waar rijden we nog meer voor niks?",
+   "debrief_variants": {
+    "poor_fix": "Een paar klanten bellen nu zelf over hun meterkast. De meeste weten niet waar ze naar moeten kijken, dus de monteurs rijden nog steeds terug. Wie kan die kast wél beoordelen, en wanneer?"
+   },
+   "goal": {
+    "problem": "double_visits",
+    "type": "solve"
+   },
+   "id": "fix_double_visits",
+   "kind": "side",
+   "name": "Twee keer naar hetzelfde adres",
+   "requires": {
+    "facts": {
+     "all": [
+      "floor_days>=28"
+     ]
+    },
+    "missions": [
+     "walk_connections"
+    ]
+   },
+   "rewards": {
+    "budget": 5000,
+    "xp": 400
+   },
+   "steps": {
+    "a3": "Schrijf je A3 voor de meterwisselaars aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe de meterwisselaars verdergaan",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
+    "dig": "Zoek uit waarom de meterwisselaar terug moet",
+    "look": "Rijd mee met een meterwisselaar en kijk bij {team}",
+    "wait": "Kijk bij de meterwisselaars hoe het experiment loopt"
+   },
+   "teaches": [
+    "waste_defects",
+    "quality_at_the_source"
+   ],
+   "tier": 1
+  },
+  {
+   "act": 1,
+   "arc": "way_back",
+   "briefing": "De meterwisselaars schrijven samen zo'n achttien overuren per week, ook als het rustig is. Financiën vraagt om een overwerkstop. Dat kan morgen, maar dan schuift het werk door. Kijk eerst waar die uren naartoe gaan.",
+   "debrief": "De monteurs werken nu per wijk. Minder kilometers, minder overuren, en een monteur rijdt niet meer van de ene kant van de regio naar de andere. Een overwerkstop had de uren weggehaald, niet de kilometers. Wat zie je nog meer in de planning dat niemand een keuze noemt?",
+   "debrief_variants": {
+    "poor_fix": "De overuren zijn gezakt, want het mag niet meer. De kilometers zijn gebleven, en de klanten wachten langer op hun afspraak. Waar zitten die uren nu?"
+   },
+   "goal": {
+    "problem": "overtime_planning",
+    "type": "solve"
+   },
+   "id": "fix_overtime_planning",
+   "kind": "side",
+   "name": "Overuren, ook in een rustige week",
+   "requires": {
+    "missions": [
+     "fix_double_visits"
+    ]
+   },
+   "rewards": {
+    "budget": 5000,
+    "xp": 400
+   },
+   "steps": {
+    "a3": "Schrijf je A3 voor Planning aan je bureau",
+    "act": "Beslis bij Petra's scherm hoe Planning verdergaat",
+    "check": "Lees op Petra's scherm af wat je experiment opleverde",
+    "dig": "Zoek uit waar de overuren van de monteurs vandaan komen",
+    "look": "Kijk bij Planning hoe de meterwissels worden ingepland",
+    "wait": "Kijk bij Planning hoe het experiment loopt"
+   },
+   "teaches": [
+    "waste_transport",
+    "heijunka"
+   ],
+   "tier": 1
+  }
+ ],
+ "principles": {
+  "improve_cost": [
+   "Zonder vaste afspraak gaat het vanzelf weer zoals het was; wie gaat het bijhouden?",
+   "Niemand heeft dit vastgelegd, en wat niemand bijhoudt, zakt langzaam terug."
+  ],
+  "improve_paid": [
+   "Je eerste experiment liep anders dan je dacht, en toch ging je door; zo wordt het hier beter.",
+   "Je zat er eerst naast, je hebt gekeken waarom en het opnieuw geprobeerd."
+  ],
+  "long_term_cost": [
+   "Snel was het zeker, maar wie staat hier over een half jaar weer met hetzelfde probleem?",
+   "Dit werkt voor nu; de rekening komt later, en meestal bij iemand anders."
+  ],
+  "long_term_paid": [
+   "Dit kostte meer tijd dan een snelle oplossing, maar het staat er over een jaar nog.",
+   "Je koos de langere weg, en die verdient zich elke week terug zonder dat iemand ernaar omkijkt."
+  ],
+  "respect_blamed": [
+   "Het werk loopt beter, maar wie de schuld kreeg van een fout, vertelt je de volgende keer minder.",
+   "De cijfers zijn beter; of de mensen je de volgende keer nog iets vertellen, is een andere vraag."
+  ],
+  "respect_committed": [
+   "{wie} draagt dit nu zelf; zo'n verandering hoeft niemand te bewaken.",
+   "Dat {wie} er zelf achter staat, merk je de komende maanden: het blijft staan, ook als jij er niet bij bent."
+  ],
+  "respect_complied": [
+   "{wie} doet wat er is afgesproken; wat zou er nodig zijn om het ook echt van het team zelf te maken?",
+   "{wie} volgt de nieuwe afspraak keurig, maar een afspraak die je niet zelf bedacht hebt, laat je ook makkelijk weer los."
+  ]
+ }
+}

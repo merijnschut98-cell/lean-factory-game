@@ -1,0 +1,128 @@
+{
+  "_about": [
+    "The character creator's options (PLAN 2.7b): what the player can choose, per trait, in the order shown.",
+    "The UI builds the creator screen from this file; the save stores the look as trait id -> option id",
+    "(an unknown or missing id falls back to the trait's first option for that body, never a crash).",
+    "tools/blender/build_character.py --creator reads this file and builds every glb and mask it names, so",
+    "every option resolves; CreatorLook (game/src/world/office/creator_look.gd) puts a look together.",
+    "Traits: an ordered list of {id, label, options} or, for a trait that differs per body, {id, label,",
+    "  per_body: {m: [...], f: [...]}, any_body}; any_body true means every option of either list may be",
+    "  chosen on either body (the body's own list is only the default order and comes first).",
+    "Options: {id, label (Dutch, as shown), ...} with one of:",
+    "  model: the body's glb (assets/characters/<model>.glb: skeleton, skin, eyes, brows and the animations",
+    "    idle, walk, jog, sit, talk); body: m|f (the parts' suffix); pronoun: hij|zij ({hij_zij} in dialogs);",
+    "  color: [r, g, b] sRGB 0..255 (a tint: the material colour over a shared greyscale texture), or",
+    "    [r, g, b, a] with a in 0..1 for a see-through glasses frame;",
+    "  part: a mesh glb on the Head bone, built per body: assets/characters/parts/<part>_<body>.glb; \"\" is none;",
+    "  outfit: the clothes, skinned to the body's skeleton: assets/characters/parts/outfit_<outfit>_<body>.glb;",
+    "  layer: a face layer painted over the skin (stubble, make-up): assets/characters/textures/",
+    "    face_<layer>_<body>.png is the mask (white where it covers), color its colour, or \"hair\" for the",
+    "    chosen hair colour; \"\" is a bare face.",
+    "Tints apply to: huidskleur the skin (the material colour is the tone / 0.92: the skin texture keeps",
+    "  lips and cheeks around 0.92 of its mean), haarkleur the hair, beard and (x 0.8) the brows, ogen the iris,",
+    "  bril the glasses' frame (its option colour).",
+    "Choice of options: what Dutch people aged 18-35 wear now, a design estimate by the art agent",
+    "  (2026-10-16), revisit once a year. Skin tones: the Netherlands' real mix, light to dark (Dutch,",
+    "  Turkish/Moroccan, Indonesian/Hindustani, Afro-Surinamese/Antillean roots); the values are estimates",
+    "  picked to read under the office light, not measured skin colours. Body sizes: player_m 1.82 m,",
+    "  player_f 1.69 m, close to the average height of Dutch 20-30 year olds (CBS, rounded).",
+    "Dropped from the choices (Merijn's playtest, 2026-10-19: they read wrong; contact sheets",
+    "  docs/screenshots/creator_hair_*_2026-10-19.png): curtains (Middenscheiding, a helmet of flat cards),",
+    "  staart (Strakke staart, a bald cap with a loose cone), krullen (Krullen, flat card strips). Their glbs",
+    "  stay under parts/ for a rebuild; an old save's id falls back to the body's first style."
+  ],
+  "traits": [
+    {
+      "id": "lichaam", "label": "Lichaam",
+      "options": [
+        {"id": "man", "label": "Man", "model": "player_m", "body": "m", "pronoun": "hij"},
+        {"id": "vrouw", "label": "Vrouw", "model": "player_f", "body": "f", "pronoun": "zij"}
+      ]
+    },
+    {
+      "id": "huidskleur", "label": "Huidskleur",
+      "options": [
+        {"id": "licht", "label": "Licht", "color": [228, 186, 158]},
+        {"id": "lichtgetint", "label": "Licht getint", "color": [204, 152, 116]},
+        {"id": "getint", "label": "Getint", "color": [174, 120, 84]},
+        {"id": "bruin", "label": "Bruin", "color": [132, 86, 56]},
+        {"id": "donker", "label": "Donker", "color": [84, 54, 36]}
+      ]
+    },
+    {
+      "id": "kapsel", "label": "Haar", "any_body": true,
+      "per_body": {
+        "m": [
+          {"id": "fade", "label": "Korte fade", "part": "hair_fade"},
+          {"id": "crop", "label": "Textured crop", "part": "hair_crop"},
+          {"id": "buzzcut", "label": "Buzzcut", "part": "hair_buzzcut"},
+          {"id": "krullen_bovenop", "label": "Krullen bovenop", "part": "hair_curls_top"}
+        ],
+        "f": [
+          {"id": "lang_steil", "label": "Lang en steil", "part": "hair_long"},
+          {"id": "lange_slagen", "label": "Lange slagen", "part": "hair_waves"},
+          {"id": "lob", "label": "Schouderlengte", "part": "hair_lob"}
+        ]
+      }
+    },
+    {
+      "id": "haarkleur", "label": "Haarkleur",
+      "options": [
+        {"id": "blond", "label": "Blond", "color": [236, 200, 136]},
+        {"id": "donkerblond", "label": "Donkerblond", "color": [168, 128, 82]},
+        {"id": "bruin", "label": "Bruin", "color": [104, 70, 44]},
+        {"id": "zwart", "label": "Zwart", "color": [34, 28, 26]},
+        {"id": "koperrood", "label": "Koperrood", "color": [166, 76, 40]}
+      ]
+    },
+    {
+      "id": "ogen", "label": "Ogen",
+      "options": [
+        {"id": "blauw", "label": "Blauw", "color": [82, 128, 178]},
+        {"id": "grijs", "label": "Grijs", "color": [128, 138, 146]},
+        {"id": "groen", "label": "Groen", "color": [90, 132, 86]},
+        {"id": "hazel", "label": "Hazel", "color": [140, 104, 58]},
+        {"id": "bruin", "label": "Bruin", "color": [74, 46, 28]}
+      ]
+    },
+    {
+      "id": "gezicht", "label": "Gezicht", "any_body": false,
+      "per_body": {
+        "m": [
+          {"id": "glad", "label": "Glad", "layer": "", "part": ""},
+          {"id": "stoppels", "label": "Stoppels", "layer": "stubble", "color": "hair", "part": ""},
+          {"id": "korte_baard", "label": "Korte baard", "layer": "stubble", "color": "hair", "part": "beard_short"},
+          {"id": "volle_baard", "label": "Volle baard", "layer": "", "part": "beard_full"},
+          {"id": "snor", "label": "Snor", "layer": "stubble", "color": "hair", "part": "moustache"}
+        ],
+        "f": [
+          {"id": "geen", "label": "Geen make-up", "layer": "", "part": ""},
+          {"id": "naturel", "label": "Naturel", "layer": "natural", "color": [178, 92, 92], "part": ""},
+          {"id": "mascara", "label": "Mascara", "layer": "mascara", "color": [22, 18, 18], "part": ""},
+          {"id": "eyeliner", "label": "Eyeliner", "layer": "eyeliner", "color": [18, 14, 14], "part": ""},
+          {"id": "lippenstift", "label": "Lippenstift", "layer": "lipstick", "color": [164, 30, 50], "part": ""}
+        ]
+      }
+    },
+    {
+      "id": "bril", "label": "Bril",
+      "options": [
+        {"id": "geen", "label": "Geen", "part": ""},
+        {"id": "rond_metaal", "label": "Rond metaal", "part": "glasses_round", "color": [178, 156, 108]},
+        {"id": "zwart_rechthoekig", "label": "Zwart rechthoekig", "part": "glasses_rect", "color": [22, 22, 24]},
+        {"id": "transparant", "label": "Transparant montuur", "part": "glasses_clear", "color": [226, 218, 204, 0.55]},
+        {"id": "groot_rond", "label": "Groot rond", "part": "glasses_large", "color": [70, 48, 34]}
+      ]
+    },
+    {
+      "id": "kleding", "label": "Kleding",
+      "options": [
+        {"id": "overshirt", "label": "Overshirt en chino", "outfit": "overshirt"},
+        {"id": "trui", "label": "Trui met kraag", "outfit": "sweater"},
+        {"id": "blazer", "label": "Blazer op sneakers", "outfit": "blazer"},
+        {"id": "quarterzip", "label": "Quarter-zip", "outfit": "quarterzip"},
+        {"id": "polo", "label": "Voltana-polo", "outfit": "polo"}
+      ]
+    }
+  ]
+}

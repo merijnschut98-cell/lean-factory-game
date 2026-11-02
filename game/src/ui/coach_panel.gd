@@ -1,0 +1,42 @@
+class_name CoachPanel
+extends UiPanel
+## The coach, a senior manager, in the coach's glass room: coaches the main
+## mission only and mostly answers with a Kata question. The panel speaks of
+## the coach as the cast has them (CharacterModel.pronoun).
+
+## The coach's words by pronoun: [subject, possessive].
+const WORDS := {"hij": ["Hij", "zijn"], "zij": ["Zij", "haar"]}
+
+var reply := ""
+
+
+func _init() -> void:
+	super("Coach", Vector2(900, 0))
+
+
+## Ask for coaching: her reply in Dutch.
+func ask() -> String:
+	reply = UiText.coach_reply(session.ask_coach())
+	acted.emit()
+	refresh()
+	return reply
+
+
+func refresh() -> void:
+	var coach: Dictionary = session.catalog.coach
+	title_label.text = coach.get("name", "Coach")
+	clear(body)
+	body.add_child(label(coach.get("role", ""), UiTheme.SMALL, Palette.MUTED))
+	var mains := session.missions.active("main")
+	var days := session.missions.active("training")
+	if mains.is_empty() and not days.is_empty():
+		body.add_child(paragraph(UiText.mission_title(days[0], session)))
+	else:
+		body.add_child(paragraph("Hoofdmissie: " + (mains[0].name if not mains.is_empty() else "nog geen")))
+	var words: Array = WORDS[CharacterModel.pronoun(CharacterModel.coach_id())]
+	var said := add_card(body, "", Palette.BLUE_PALE)
+	said.add_child(paragraph(("'%s'" % reply) if not reply.is_empty()
+		else tr("%s kijkt op van %s scherm. 'Kom binnen. Waar sta je?'") % words, Palette.VOLTANA_BLUE, 24))
+	body.add_child(button("Vraag om coaching", ask))
+	body.add_child(paragraph(tr("%s helpt met je hoofdmissie en je inwerkweek, en antwoordt meestal met een vraag.") % words[0],
+		Palette.MUTED, UiTheme.SMALL))

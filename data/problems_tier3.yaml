@@ -12,6 +12,7 @@ problems:
   - id: T3-001
     name: "The Push Flood"
     category: Flow
+    waste: overproduction
     severity: high
     visibility: obvious
     zone_id: z4
@@ -55,6 +56,7 @@ problems:
         choices:
           - text: "Map the actual flow between Integration 1 and 2 — observe when units move and why"
             outcome: CORRECT
+            tool: observe
             evidence: >
               Observed for 4 hours. Integration 1 produces to a daily
               schedule target. When Integration 2 is busy, units stack
@@ -70,6 +72,7 @@ problems:
             score_feed: RCA
           - text: "Check whether the production schedule is accurate for both stations"
             outcome: PLAUSIBLE
+            tool: docs
             evidence: null
             hint: >
               The schedule may be accurate — but it is the schedule
@@ -90,6 +93,7 @@ problems:
   - id: T3-002
     name: "The Never-Ending Changeover"
     category: Flow
+    waste: waiting
     severity: high
     visibility: obvious
     zone_id: z2
@@ -131,6 +135,7 @@ problems:
         choices:
           - text: "Time every changeover step in detail — separate which steps require the machine to be stopped"
             outcome: CORRECT
+            tool: time
             evidence: >
               Timed 12 changeover steps. Eight require the machine stopped
               (internal). Four can be done while the machine runs (external).
@@ -147,6 +152,7 @@ problems:
             score_feed: RCA
           - text: "Ask the operator how the changeover has always been done"
             outcome: PLAUSIBLE
+            tool: ask
             evidence: null
             hint: >
               The operator's account is useful context — but it will
@@ -170,6 +176,7 @@ problems:
           choices:
             - text: "There is no standard changeover procedure — operators have always done the steps in the same order without questioning it"
               outcome: CORRECT
+              tool: machine
               evidence: >
                 The changeover 'procedure' is an informal handover learned
                 from a predecessor. No written sequence exists. When observed
@@ -183,6 +190,7 @@ problems:
               score_feed: RCA
             - text: "The operator does not have access to the next die while the machine is running"
               outcome: PLAUSIBLE
+              tool: machine
               evidence: null
               hint: >
                 This may contribute — but the analysis showed four external
@@ -203,6 +211,7 @@ problems:
           choices:
             - text: "Changeovers were seen as a skilled operator task — expertise was assumed to guarantee efficiency"
               outcome: CORRECT
+              tool: docs
               evidence: >
                 Previous Team Leader comment in the operations log from
                 two years ago: 'Changeovers are fine — the operator has
@@ -216,6 +225,7 @@ problems:
               score_feed: RCA
             - text: "No one has had time to document the changeover"
               outcome: PLAUSIBLE
+              tool: docs
               evidence: null
               hint: >
                 Time pressure is real — but the changeover is consuming
@@ -234,6 +244,7 @@ problems:
   - id: T3-003
     name: "The Production Rollercoaster"
     category: Flow
+    waste: overproduction
     severity: medium
     visibility: subtle
     zone_id: z3
@@ -275,6 +286,7 @@ problems:
         choices:
           - text: "Plot the production schedule against output for the last 4 weeks and look for the pattern"
             outcome: CORRECT
+            tool: data
             evidence: >
               The schedule shows large blocks of Model A followed by
               large blocks of Model B. Output is high during the middle
@@ -289,6 +301,7 @@ problems:
             score_feed: RCA
           - text: "Investigate whether the variation is caused by operator skill differences between shifts"
             outcome: PLAUSIBLE
+            tool: observe
             evidence: null
             hint: >
               Operator differences contribute at the margins — but the
@@ -309,6 +322,7 @@ problems:
   - id: T3-004
     name: "The Motion Marathon"
     category: Flow
+    waste: motion
     severity: medium
     visibility: subtle
     zone_id: z3
@@ -350,6 +364,7 @@ problems:
         choices:
           - text: "Draw a spaghetti diagram — trace the physical path of one operator over an entire shift"
             outcome: CORRECT
+            tool: docs
             evidence: >
               Spaghetti diagram for one shift: the operator walked
               2.3 km. Of that, 1.4 km was to and from the materials
@@ -366,6 +381,7 @@ problems:
             score_feed: RCA
           - text: "Review the standard work document to see whether material fetching is part of the cycle"
             outcome: PLAUSIBLE
+            tool: docs
             evidence: >
               Standard work does not mention material replenishment.
               The operator is performing a task that is invisible to
@@ -388,6 +404,7 @@ problems:
   - id: T3-005
     name: "The Invisible Bottleneck"
     category: Flow
+    waste: waiting
     severity: high
     visibility: hidden
     zone_id: z4
@@ -431,6 +448,7 @@ problems:
         choices:
           - text: "Map cycle times for every station and find which one limits total throughput"
             outcome: CORRECT
+            tool: time
             evidence: >
               Cycle times mapped across all integration stations.
               Integration 4: 4.2 minutes cycle time. All others: 2.8–3.5
@@ -447,6 +465,7 @@ problems:
             score_feed: RCA
           - text: "Check whether Integration 4 has equipment issues affecting its speed"
             outcome: PLAUSIBLE
+            tool: machine
             evidence: null
             hint: >
               Equipment issues at a bottleneck matter more than anywhere
@@ -468,6 +487,7 @@ problems:
   - id: T3-006
     name: "Queue Jumpers"
     category: Quality
+    waste: waiting
     severity: medium
     visibility: subtle
     zone_id: z2
@@ -511,6 +531,7 @@ problems:
         choices:
           - text: "Check the age of the WIP units at the time of the escapes — when were they produced vs. when they were processed?"
             outcome: CORRECT
+            tool: count
             evidence: >
               Cross-referenced 18 escape events with production records.
               Fourteen had WIP age greater than 3 days at the time of
@@ -526,6 +547,7 @@ problems:
             score_feed: RCA
           - text: "Analyse escape data by operator to identify skill gaps"
             outcome: PLAUSIBLE
+            tool: data
             evidence: null
             hint: >
               Operator analysis was the natural first step — but the
@@ -546,6 +568,7 @@ problems:
   - id: T3-007
     name: "Defects Discovered Too Late"
     category: Quality
+    waste: defects
     severity: high
     visibility: subtle
     zone_id: z4
@@ -589,6 +612,7 @@ problems:
         choices:
           - text: "Design a fixture or sensor at Integration 3 that prevents or detects the incorrect angle at the source"
             outcome: CORRECT
+            tool: machine
             evidence: >
               A simple angle-reference jig can be fitted to the Integration 3
               workbench in one day. With the jig, the operator's grip
@@ -603,6 +627,7 @@ problems:
             score_feed: RCA
           - text: "Add an inspection step between Integration 3 and Integration 4"
             outcome: PLAUSIBLE
+            tool: docs
             evidence: null
             hint: >
               An intermediate inspection step catches the defect earlier —
@@ -627,6 +652,7 @@ problems:
           choices:
             - text: "No quality check was designed into Integration 3 — the process relies on operator technique and downstream inspection"
               outcome: CORRECT
+              tool: defects
               evidence: >
                 Reviewed Integration 3 station design documents. Quality
                 check: 'visual confirmation by operator'. No fixture, no
@@ -642,6 +668,7 @@ problems:
               score_feed: RCA
             - text: "The defect is too subtle to be detected by any method available at Integration 3"
               outcome: PLAUSIBLE
+              tool: defects
               evidence: null
               hint: >
                 The bench test showed that a simple jig prevents the defect
@@ -663,6 +690,7 @@ problems:
           choices:
             - text: "The angle defect was not known at product launch — the station was designed before the failure mode was discovered"
               outcome: CORRECT
+              tool: defects
               evidence: >
                 Product launch records show zero angle defects in the
                 first three months — the defect emerged as a second
@@ -678,6 +706,7 @@ problems:
               score_feed: RCA
             - text: "Poka-Yoke was considered but rejected as too expensive to implement"
               outcome: PLAUSIBLE
+              tool: defects
               evidence: null
               hint: >
                 Cost assessment is valid — but the current rework cost is
@@ -698,6 +727,7 @@ problems:
   - id: T3-008
     name: "The Orphaned Supermarket"
     category: Flow
+    waste: inventory
     severity: medium
     visibility: subtle
     zone_id: z1
@@ -741,6 +771,7 @@ problems:
         choices:
           - text: "Trace exactly what triggers a replenishment — is it a consumption signal or a time schedule?"
             outcome: CORRECT
+            tool: machine
             evidence: >
               Replenishment record: 'Monday and Thursday, full restock
               to capacity.' No consumption signal is used. On weeks
@@ -756,6 +787,7 @@ problems:
             score_feed: RCA
           - text: "Increase the supermarket capacity to absorb the demand spikes"
             outcome: PLAUSIBLE
+            tool: observe
             evidence: null
             hint: >
               More capacity delays the stockout — but the time-based
@@ -775,6 +807,7 @@ problems:
   - id: T3-009
     name: "The Misread Value Stream"
     category: Flow
+    waste: overprocessing
     severity: medium
     visibility: hidden
     zone_id: z1
@@ -818,6 +851,7 @@ problems:
         choices:
           - text: "Walk the complete flow from dock to dispatch and map everything — including what happens before Battery Assembly"
             outcome: CORRECT
+            tool: observe
             evidence: >
               Walking the full flow: incoming material arrives at dock,
               waits an average of 2.1 days in the receiving queue before
@@ -834,6 +868,7 @@ problems:
             score_feed: RCA
           - text: "Re-do the Battery Assembly VSM with more detail to find the missed waste"
             outcome: PLAUSIBLE
+            tool: observe
             evidence: null
             hint: >
               More detail in the same scope will not reveal what is
@@ -855,6 +890,7 @@ problems:
           choices:
             - text: "The VSM team was drawn from Battery Assembly — they mapped what they knew and what they had access to"
               outcome: CORRECT
+              tool: observe
               evidence: >
                 VSM team roster: two Battery Assembly team leaders, one
                 quality engineer from z3, the Battery Assembly supervisor.
@@ -868,6 +904,7 @@ problems:
               score_feed: RCA
             - text: "The VSM facilitator did not explain that the map should cover the full value stream"
               outcome: PLAUSIBLE
+              tool: observe
               evidence: null
               hint: >
                 Facilitation quality matters — but the more fundamental
@@ -889,6 +926,7 @@ problems:
           choices:
             - text: "No formal VSM scoping process defined who needed to be included — it was assembled informally by the local supervisor"
               outcome: CORRECT
+              tool: observe
               evidence: >
                 VSM project notes: 'Team assembled by Battery Assembly supervisor
                 to address zone performance.' No cross-functional scoping review,
@@ -901,6 +939,7 @@ problems:
               score_feed: RCA
             - text: "The Plant Manager approved the scope without reviewing it"
               outcome: PLAUSIBLE
+              tool: docs
               evidence: null
               hint: >
                 Management approval matters — but the design error was
@@ -919,6 +958,7 @@ problems:
   - id: T3-010
     name: "The Starved Station"
     category: Flow
+    waste: waiting
     severity: medium
     visibility: subtle
     zone_id: z4
@@ -962,6 +1002,7 @@ problems:
         choices:
           - text: "Time the actual cycle time at Integration 4 and Integration 5 and compare them to takt"
             outcome: CORRECT
+            tool: time
             evidence: >
               Integration 4 cycle time: 2.1 minutes. Takt time: 3.4
               minutes. Integration 5 cycle time: 3.2 minutes. Integration 4
@@ -977,6 +1018,7 @@ problems:
             score_feed: RCA
           - text: "Investigate whether Integration 5 has a skill or equipment issue causing slowness"
             outcome: PLAUSIBLE
+            tool: machine
             evidence: null
             hint: >
               Integration 5 is not the problem — it is fast enough. The
@@ -995,6 +1037,7 @@ problems:
   - id: T3-011
     name: "Material Interruptions"
     category: Flow
+    waste: waiting
     severity: medium
     visibility: subtle
     zone_id: z5
@@ -1037,6 +1080,7 @@ problems:
         choices:
           - text: "Observe Burn-in for a full shift and log every time the operator leaves the station and why"
             outcome: CORRECT
+            tool: time
             evidence: >
               Logged 7 departures from Burn-in in one shift. All were
               material-related: 4 to replenish test fixtures, 2 to
@@ -1052,6 +1096,7 @@ problems:
             score_feed: RCA
           - text: "Check whether the burn-in racks have a mechanical issue reducing their capacity"
             outcome: PLAUSIBLE
+            tool: observe
             evidence: null
             hint: >
               Equipment issues would produce a consistent utilisation
@@ -1073,6 +1118,7 @@ problems:
   - id: T3-012
     name: "The Batch Trap"
     category: Quality
+    waste: overproduction
     severity: high
     visibility: obvious
     zone_id: z6
@@ -1118,6 +1164,7 @@ problems:
         choices:
           - text: "Trace the exact point in the packaging process where defects are first detectable vs. when they are actually detected"
             outcome: CORRECT
+            tool: defects
             evidence: >
               Mapped detection timing for 22 defect events. Defect
               became detectable at unit 1 of each batch in 18 of 22
@@ -1134,6 +1181,7 @@ problems:
             score_feed: RCA
           - text: "Investigate whether the incoming units from Final Assembly have quality issues"
             outcome: PLAUSIBLE
+            tool: observe
             evidence: null
             hint: >
               Incoming quality matters — but the batch-rework pattern
@@ -1155,6 +1203,7 @@ problems:
   - id: T3-013
     name: "The Layout That Doesn't Flow"
     category: Flow
+    waste: transport
     severity: medium
     visibility: hidden
     zone_id: z3
@@ -1201,6 +1250,7 @@ problems:
         choices:
           - text: "Draw a spaghetti diagram of the Zone 3 product flow and measure the transport distance between sequential operations"
             outcome: CORRECT
+            tool: observe
             evidence: >
               Spaghetti diagram: Battery Assembly → (18 m) → Propulsion
               Build → (12 m) → Integration 1. Total transport distance
@@ -1218,6 +1268,7 @@ problems:
             score_feed: RCA
           - text: "Improve the transport containers to prevent damage during the 18-metre journey"
             outcome: PLAUSIBLE
+            tool: observe
             evidence: null
             hint: >
               Better containers reduce damage — but 18 metres of transport
@@ -1236,6 +1287,7 @@ problems:
   - id: T3-014
     name: "The Pareto Nobody Reads"
     category: Quality
+    waste: overprocessing
     severity: medium
     visibility: subtle
     zone_id: z2
@@ -1278,6 +1330,7 @@ problems:
         choices:
           - text: "Map which defect types each current improvement project addresses and compare that to the Pareto chart"
             outcome: CORRECT
+            tool: data
             evidence: >
               Current improvement projects: 7 projects across 11 defect
               types. Top-3 defects (71% of impact): addressed by 1 project,
@@ -1294,6 +1347,7 @@ problems:
             score_feed: RCA
           - text: "Improve the accuracy of the Pareto data — check whether defects are being categorised correctly"
             outcome: PLAUSIBLE
+            tool: data
             evidence: null
             hint: >
               Data accuracy is always worth checking — but the Pareto
@@ -1314,6 +1368,7 @@ problems:
   - id: T3-015
     name: "One Product, All the Setup"
     category: Flow
+    waste: inventory
     severity: medium
     visibility: hidden
     zone_id: z5
@@ -1361,6 +1416,7 @@ problems:
         choices:
           - text: "Classify each model variant by volume and frequency — identify runners, repeaters, and strangers"
             outcome: CORRECT
+            tool: data
             evidence: >
               Analysis of last 90 days: Model A — 68% of volume,
               scheduled every day (Runner). Model B — 24% of volume,
@@ -1378,6 +1434,7 @@ problems:
             score_feed: RCA
           - text: "Reduce all changeover times through a SMED programme"
             outcome: PLAUSIBLE
+            tool: observe
             evidence: null
             hint: >
               SMED is needed — but without RRS analysis, you will apply

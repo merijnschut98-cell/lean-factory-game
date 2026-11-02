@@ -13,6 +13,7 @@ problems:
   - id: T1-001
     name: "The Graveyard Shelf"
     category: Waste
+    waste: inventory
     severity: medium
     visibility: obvious
     zone_id: z2
@@ -51,6 +52,7 @@ problems:
         choices:
           - text: "Count and categorize what's actually on the shelf"
             outcome: CORRECT
+            tool: count
             evidence: >
               You count 23 partially-wound coils — 20% to 95% complete. No
               labels, no dates, no owner. Someone was interrupted 23 times
@@ -62,6 +64,7 @@ problems:
             score_feed: RCA
           - text: "Check whether a WIP standard was ever defined for this station"
             outcome: PLAUSIBLE
+            tool: docs
             evidence: >
               HR records show no WIP standard has been documented for Coil
               Winding — ever.
@@ -82,6 +85,7 @@ problems:
   - id: T1-002
     name: "Nobody Knows Where Anything Is"
     category: Waste
+    waste: motion
     severity: medium
     visibility: obvious
     zone_id: z3
@@ -119,6 +123,7 @@ problems:
         choices:
           - text: "Do a time study — time every tool search across one full shift"
             outcome: CORRECT
+            tool: time
             evidence: >
               34 search events in one shift. Average 67 s each. 15 events over
               2 minutes. Total: 47 minutes of lost production time in a single
@@ -130,6 +135,7 @@ problems:
             score_feed: RCA
           - text: "Order shadow boards and tool holders immediately"
             outcome: PLAUSIBLE
+            tool: machine
             evidence: null
             hint: >
               Right direction — but without measuring first, you don't know
@@ -147,6 +153,7 @@ problems:
   - id: T1-003
     name: "The Rework Corner"
     category: Quality
+    waste: defects
     severity: high
     visibility: obvious
     zone_id: z4
@@ -186,6 +193,7 @@ problems:
         choices:
           - text: "Go to Integration 4 and inspect the rework pile right now"
             outcome: CORRECT
+            tool: observe
             evidence: >
               57% of rework units have the same defect: propulsion mount torque
               applied at wrong angle. Every single one traces back to Integration 3.
@@ -196,6 +204,7 @@ problems:
             score_feed: RCA
           - text: "Walk back to Integration 3 and observe what's happening"
             outcome: PLAUSIBLE
+            tool: observe
             evidence: >
               Operators at Integration 3 apply the mount by feel, without a
               fixture. Torque angle varies visibly between operators.
@@ -219,6 +228,7 @@ problems:
           choices:
             - text: "Operators apply the mount by hand with no fixture — angle varies between people"
               outcome: CORRECT
+              tool: observe
               evidence: >
                 Observed four operators at Integration 3. Each holds the mount
                 at a slightly different angle. No jig, no fixture, no reference mark.
@@ -229,6 +239,7 @@ problems:
               score_feed: RCA
             - text: "The torque specification is too tight for manual assembly"
               outcome: PLAUSIBLE
+              tool: docs
               evidence: null
               hint: >
                 The spec may be tight — but four operators produce four different
@@ -248,6 +259,7 @@ problems:
           choices:
             - text: "There is no standard work document specifying a fixture for this step"
               outcome: CORRECT
+              tool: machine
               evidence: >
                 Station file contains a general assembly diagram from product
                 launch — no fixture requirement, no reference angle, no method note.
@@ -258,6 +270,7 @@ problems:
               score_feed: RCA
             - text: "A fixture was removed when it slowed cycle time"
               outcome: PLAUSIBLE
+              tool: time
               evidence: null
               hint: >
                 Possible — but there is no fixture in the station record and no
@@ -278,6 +291,7 @@ problems:
                 The station was designed around one experienced operator's technique —
                 it was never translated into a transferable standard
               outcome: CORRECT
+              tool: machine
               evidence: >
                 The original operator trained their replacement verbally. That
                 person trained the next. Three generations of verbal handover with
@@ -290,6 +304,7 @@ problems:
               score_feed: RCA
             - text: "The standard work document was created but lost during a system migration"
               outcome: PLAUSIBLE
+              tool: docs
               evidence: null
               hint: >
                 Even if true, the result is the same: no documented standard in use
@@ -306,6 +321,7 @@ problems:
   - id: T1-004
     name: "The Invisible Handover"
     category: Behavior
+    waste: waiting
     severity: medium
     visibility: obvious
     zone_id: z4
@@ -343,6 +359,7 @@ problems:
         choices:
           - text: "Observe a shift change live — time exactly what happens during the handover"
             outcome: CORRECT
+            tool: time
             evidence: >
               Departing operator leaves 4 in-progress units unlabeled. Incoming
               operator spends 8 min locating materials and 12 min checking unit
@@ -355,6 +372,7 @@ problems:
             score_feed: RCA
           - text: "Ask the supervisor to document the current handover procedure"
             outcome: PLAUSIBLE
+            tool: ask
             evidence: >
               The supervisor confirms there is no written procedure. Each team
               leader runs handover differently.
@@ -374,6 +392,7 @@ problems:
   - id: T1-005
     name: "The Overqualified Packager"
     category: Waste
+    waste: skills
     severity: low
     visibility: obvious
     zone_id: z6
@@ -388,7 +407,6 @@ problems:
       has revisited the decision.
     effective_countermeasures:
       - Skill Matrix
-      - Operator Rebalancing
       - Cross-Training Programs
     maturity_prerequisite: null
     mismatch_note: >
@@ -411,6 +429,7 @@ problems:
         choices:
           - text: "Map all operator skills against all station requirements"
             outcome: CORRECT
+            tool: data
             evidence: >
               You build a 4×24 skill matrix. Your best operator has 4 advanced
               skills needed only at Integration 5 — a station running below
@@ -422,6 +441,7 @@ problems:
             score_feed: RCA
           - text: "Time the workload at each station to see who's idle and who's stretched"
             outcome: PLAUSIBLE
+            tool: time
             evidence: >
               Integration 5 runs at 62% capacity; Coil Winding at 110%. The
               imbalance is clear — but workload data alone doesn't show which
@@ -443,6 +463,7 @@ problems:
   - id: T1-006
     name: "The Flood Before the Drought"
     category: Flow
+    waste: inventory
     severity: high
     visibility: obvious
     zone_id: z1
@@ -480,6 +501,7 @@ problems:
         choices:
           - text: "Map the actual delivery schedule against daily takt requirements"
             outcome: CORRECT
+            tool: docs
             evidence: >
               The supplier delivers 60% of weekly volume on Monday and 35% on
               Thursday. Takt requires roughly equal daily input. The factory
@@ -492,6 +514,7 @@ problems:
             score_feed: RCA
           - text: "Expand the staging area to buffer the Monday floods"
             outcome: PLAUSIBLE
+            tool: count
             evidence: null
             hint: >
               A bigger buffer hides the variation — it doesn't eliminate it.
@@ -514,6 +537,7 @@ problems:
           choices:
             - text: "Purchase orders are placed once a week — the order timing drives the delivery pattern"
               outcome: CORRECT
+              tool: docs
               evidence: >
                 PO review log: orders raised every Monday morning for the coming
                 week's forecast. Supplier ships immediately on receipt.
@@ -524,6 +548,7 @@ problems:
               score_feed: RCA
             - text: "The supplier's distribution center only dispatches on Mondays and Thursdays"
               outcome: PLAUSIBLE
+              tool: observe
               evidence: null
               hint: >
                 Possible — but the order data shows Monday POs arriving Monday
@@ -544,6 +569,7 @@ problems:
                 There is no pull trigger between Component Prep and purchasing —
                 orders run from a weekly forecast, independent of actual use
               outcome: CORRECT
+              tool: count
               evidence: >
                 Component Prep depletes bins as production runs. No signal travels
                 back to purchasing until the Monday review. Gap can be 4-7 days.
@@ -555,6 +581,7 @@ problems:
               score_feed: RCA
             - text: "The ERP system generates orders automatically on a weekly cycle"
               outcome: PLAUSIBLE
+              tool: observe
               evidence: null
               hint: >
                 The ERP does run weekly — but it runs because no one has changed
@@ -575,6 +602,7 @@ problems:
                 The replenishment process was never redesigned when the factory
                 moved to continuous production — it still runs like a batch shop
               outcome: CORRECT
+              tool: machine
               evidence: >
                 Original plant records show a weekly batch production model from
                 2014. Continuous flow was introduced in 2019. Replenishment
@@ -587,6 +615,7 @@ problems:
               score_feed: RCA
             - text: "A kanban system was proposed but rejected by the supplier"
               outcome: PLAUSIBLE
+              tool: defects
               evidence: null
               hint: >
                 Supplier engagement would be needed eventually — but internal
@@ -604,6 +633,7 @@ problems:
   - id: T1-007
     name: "Instructions? What Instructions?"
     category: Quality / Behavior
+    waste: defects
     severity: high
     visibility: obvious
     zone_id: z3
@@ -644,6 +674,7 @@ problems:
         choices:
           - text: "Observe all three operators in one shift and document every difference"
             outcome: CORRECT
+            tool: observe
             evidence: >
               Operator A applies thermal paste before connectors. Operator B
               reverses this. Operator C skips the paste on 30% of units. The
@@ -656,6 +687,7 @@ problems:
             score_feed: RCA
           - text: "Pull the existing work instruction and compare it to what operators do"
             outcome: PLAUSIBLE
+            tool: observe
             evidence: null
             hint: >
               Smart — but the instruction lives on a drive nobody accesses.
@@ -674,6 +706,7 @@ problems:
   - id: T1-008
     name: "The Phantom Defect"
     category: Quality
+    waste: defects
     severity: medium
     visibility: obvious
     zone_id: z5
@@ -713,6 +746,7 @@ problems:
         choices:
           - text: "Run the test yourself three times on the same unit and record every variable"
             outcome: CORRECT
+            tool: docs
             evidence: >
               Three tests on the same board: fail, pass, pass. Test duration
               varied from 45 to 80 seconds. No standard for how long to hold the
@@ -725,6 +759,7 @@ problems:
             score_feed: RCA
           - text: "Interview inspectors about how they conduct the test"
             outcome: PLAUSIBLE
+            tool: ask
             evidence: null
             hint: >
               Good direction — but talking about a procedure is not the same
@@ -747,6 +782,7 @@ problems:
           choices:
             - text: "There is no standard for how long to hold the board or at what angle"
               outcome: CORRECT
+              tool: time
               evidence: >
                 Observed four inspectors back-to-back. Durations: 45s, 62s, 80s,
                 53s. Angles ranged from vertical to 20 degrees. No reference in
@@ -759,6 +795,7 @@ problems:
               score_feed: RCA
             - text: "Units with more battery charge require longer test duration"
               outcome: PLAUSIBLE
+              tool: time
               evidence: null
               hint: >
                 Battery state may affect results — but test duration is set by
@@ -779,6 +816,7 @@ problems:
                 The test procedure was created verbally — each inspector trained
                 the next one, and technique drifted with each handover
               outcome: CORRECT
+              tool: ask
               evidence: >
                 Asked three inspectors who trained them. Each names the previous
                 inspector. The original training record is a single-sentence note
@@ -790,6 +828,7 @@ problems:
               score_feed: RCA
             - text: "The test rig was installed by an external vendor who did not provide setup docs"
               outcome: PLAUSIBLE
+              tool: machine
               evidence: null
               hint: >
                 The vendor provided hardware documentation. The measurement
@@ -810,6 +849,7 @@ problems:
                 No one questioned the measurement system — the test was accepted
                 as reliable because it had always been used
               outcome: CORRECT
+              tool: docs
               evidence: >
                 QA records show the flight stability test was set up at product
                 launch and never reviewed. Pass/fail rates were tracked, not
@@ -822,6 +862,7 @@ problems:
               score_feed: RCA
             - text: "MSA was planned but deprioritized in the last improvement cycle"
               outcome: PLAUSIBLE
+              tool: data
               evidence: null
               hint: >
                 Even if true — the result is the same: no validation today. The
@@ -838,6 +879,7 @@ problems:
   - id: T1-009
     name: "The Island Station"
     category: Flow
+    waste: transport
     severity: medium
     visibility: obvious
     zone_id: z3
@@ -854,7 +896,7 @@ problems:
     effective_countermeasures:
       - Workplace Organization
       - Standard WIP Definition
-      - Visual Labels & Signs
+      - Visual Labels and Signs
     maturity_prerequisite: null
     mismatch_note: >
       Applying a Kanban system (Tier 3) without first establishing standard WIP
@@ -877,6 +919,7 @@ problems:
         choices:
           - text: "Walk the material path and count WIP at every handoff point"
             outcome: CORRECT
+            tool: observe
             evidence: >
               Propulsion Build output queue: 0 units waiting. Trolley between
               stations: 23 units. Final Assembly input queue: 3 units. The
@@ -889,6 +932,7 @@ problems:
             score_feed: RCA
           - text: "Review Propulsion Build cycle time data to see if it is overproducing"
             outcome: PLAUSIBLE
+            tool: data
             evidence: null
             hint: >
               Cycle time analysis is useful — but a spreadsheet will not show
@@ -906,6 +950,7 @@ problems:
   - id: T1-010
     name: "The Dirty Machine"
     category: Maintenance / Quality
+    waste: defects
     severity: medium
     visibility: obvious
     zone_id: z2
@@ -945,6 +990,7 @@ problems:
         choices:
           - text: "Inspect the machine closely and measure contamination at the soldering heads"
             outcome: CORRECT
+            tool: machine
             evidence: >
               Flux residue covers 40% of the soldering head surface, worse on
               the right side. Two joints on that side show cold-solder defects
@@ -957,6 +1003,7 @@ problems:
             score_feed: RCA
           - text: "Schedule a full machine overhaul with maintenance"
             outcome: PLAUSIBLE
+            tool: machine
             evidence: null
             hint: >
               An overhaul may be needed — but scheduling it without inspecting
@@ -975,6 +1022,7 @@ problems:
   - id: T1-011
     name: "The Unofficial Queue"
     category: Flow / Waste
+    waste: inventory
     severity: medium
     visibility: obvious
     zone_id: z4
@@ -989,7 +1037,7 @@ problems:
       because stopping feels wrong to the operator.
     effective_countermeasures:
       - Standard WIP Definition
-      - Visual Labels & Signs
+      - Visual Labels and Signs
       - Workplace Organization
     maturity_prerequisite: null
     mismatch_note: >
@@ -1013,6 +1061,7 @@ problems:
         choices:
           - text: "Time how long a unit waits in the queue before Integration 3 picks it up"
             outcome: CORRECT
+            tool: time
             evidence: >
               Average queue wait: 47 minutes. Longest observed: 2 hours 20
               minutes. Integration 2 cycle time is 320 s; Integration 3 is
@@ -1025,6 +1074,7 @@ problems:
             score_feed: RCA
           - text: "Ask Integration 2 operators to slow down slightly to match Integration 3"
             outcome: PLAUSIBLE
+            tool: ask
             evidence: null
             hint: >
               Asking operators to slow down is a workaround, not a fix. There
@@ -1043,6 +1093,7 @@ problems:
   - id: T1-012
     name: "The Hero Operator"
     category: Behavior
+    waste: skills
     severity: medium
     visibility: obvious
     zone_id: z4
@@ -1082,6 +1133,7 @@ problems:
         choices:
           - text: "Map what specific skills this operator has that others do not"
             outcome: CORRECT
+            tool: docs
             evidence: >
               Skill matrix reveals the hero operator is the only one certified
               on the torque verification jig, knows the undocumented propulsion
@@ -1094,6 +1146,7 @@ problems:
             score_feed: RCA
           - text: "Ask the hero operator to write down everything they know"
             outcome: PLAUSIBLE
+            tool: ask
             evidence: null
             hint: >
               Better than nothing — but asking someone to document their own
@@ -1118,6 +1171,7 @@ problems:
                 The operator learned by doing over years — the skills were never
                 captured as trainable standards others could follow
               outcome: CORRECT
+              tool: ask
               evidence: >
                 Asked three other operators to perform the torque verification
                 step. None could locate the undocumented housing fix. The method
@@ -1129,6 +1183,7 @@ problems:
               score_feed: RCA
             - text: "Integration 5 has had no time for cross-training under current demand"
               outcome: PLAUSIBLE
+              tool: docs
               evidence: null
               hint: >
                 Demand pressure is real — but the barrier is documentation, not
@@ -1149,6 +1204,7 @@ problems:
                 There was no process for converting tacit operator knowledge into
                 documented standards — the assumption was the operator would stay
               outcome: CORRECT
+              tool: docs
               evidence: >
                 Process improvement log reviewed. No standard work update
                 initiated for Integration 5 in five years. No owner assigned to
@@ -1161,6 +1217,7 @@ problems:
               score_feed: RCA
             - text: "The skills are too complex and intuitive to document in a standard format"
               outcome: PLAUSIBLE
+              tool: docs
               evidence: null
               hint: >
                 Complex skills take more effort to document — but the torque
@@ -1183,6 +1240,7 @@ problems:
                 Knowledge transfer was treated as informal — experts trained
                 newcomers by example with no expectation of creating lasting records
               outcome: CORRECT
+              tool: docs
               evidence: >
                 HR onboarding records show informal "buddy system" as the standard
                 training method for all stations. No formal knowledge-capture
@@ -1195,6 +1253,7 @@ problems:
               score_feed: RCA
             - text: "Knowledge transfer was planned but never prioritized on the improvement roadmap"
               outcome: PLAUSIBLE
+              tool: docs
               evidence: null
               hint: >
                 A common pattern — the improvement roadmap captures visible waste.
@@ -1211,6 +1270,7 @@ problems:
   - id: T1-013
     name: "Red Tags Everywhere, Nothing Done"
     category: Waste / Safety
+    waste: inventory
     severity: medium
     visibility: obvious
     zone_id: z2
@@ -1248,6 +1308,7 @@ problems:
         choices:
           - text: "Find out who owns each tag and what decision is blocking disposition"
             outcome: CORRECT
+            tool: ask
             evidence: >
               Of 15 tags: 8 need a scrapping decision (manager sign-off never
               obtained), 4 need an engineering part number check (pending three
@@ -1260,6 +1321,7 @@ problems:
             score_feed: RCA
           - text: "Run a 5S event to clear everything tagged and untagged in one day"
             outcome: PLAUSIBLE
+            tool: count
             evidence: null
             hint: >
               A 5S event might work — but without understanding why tags were
@@ -1277,6 +1339,7 @@ problems:
   - id: T1-014
     name: "The Missing Measurement"
     category: Quality / Information
+    waste: defects
     severity: medium
     visibility: subtle
     zone_id: z5
@@ -1316,6 +1379,7 @@ problems:
         choices:
           - text: "Talk to the engineers who designed the burn-in test and ask what failure modes it detects"
             outcome: CORRECT
+            tool: ask
             evidence: >
               The burn-in was designed to catch thermal stress failures. The
               critical variables are temperature, duration, and load cycling.
@@ -1328,6 +1392,7 @@ problems:
             score_feed: RCA
           - text: "Review the last 100 failure records to find patterns"
             outcome: PLAUSIBLE
+            tool: defects
             evidence: null
             hint: >
               Good instinct — but the records are just pass/fail checkboxes.
@@ -1346,6 +1411,7 @@ problems:
   - id: T1-015
     name: "Nobody Told Receiving"
     category: Information / Flow
+    waste: defects
     severity: medium
     visibility: subtle
     zone_id: z1
@@ -1360,7 +1426,7 @@ problems:
     effective_countermeasures:
       - Basic Documentation Control
       - Basic Quality Gates
-      - Visual Labels & Signs
+      - Visual Labels and Signs
     maturity_prerequisite: >
       Player must have inspected Final Assembly and observed the informal
       workaround behavior.
@@ -1384,6 +1450,7 @@ problems:
         choices:
           - text: "Map how quality alerts currently travel from Final Assembly to Incoming QA"
             outcome: CORRECT
+            tool: observe
             evidence: >
               There is no formal channel. Final Assembly sends a Slack message
               to the supervisor, who sometimes tells the team leader, who
@@ -1397,6 +1464,7 @@ problems:
             score_feed: RCA
           - text: "Hold a meeting between Final Assembly and Incoming QA to share the alert"
             outcome: PLAUSIBLE
+            tool: observe
             evidence: null
             hint: >
               One meeting transmits one alert. Without a repeatable channel,
@@ -1414,6 +1482,7 @@ problems:
   - id: T1-016
     name: "The Shrinking Bin"
     category: Waste / Flow
+    waste: waiting
     severity: low
     visibility: obvious
     zone_id: z3
@@ -1428,7 +1497,7 @@ problems:
       water spider role operates on a fixed time route disconnected from
       actual consumption.
     effective_countermeasures:
-      - Visual Labels & Signs
+      - Visual Labels and Signs
       - Workplace Organization
       - Standard WIP Definition
     maturity_prerequisite: null
@@ -1453,6 +1522,7 @@ problems:
         choices:
           - text: "Observe one full shift and record every time an operator leaves the station for components"
             outcome: CORRECT
+            tool: observe
             evidence: >
               11 interruptions in one shift. Total time lost: 34 minutes.
               Average bin empties every 48 minutes. No visual signal triggers
@@ -1465,6 +1535,7 @@ problems:
             score_feed: RCA
           - text: "Ask the water spider to check Battery Assembly bins more frequently"
             outcome: PLAUSIBLE
+            tool: ask
             evidence: null
             hint: >
               More frequent visits may help short-term — but more frequently
@@ -1483,6 +1554,7 @@ problems:
   - id: T1-017
     name: "The Approval Bottleneck"
     category: Flow / Behavior
+    waste: waiting
     severity: high
     visibility: obvious
     zone_id: z5
@@ -1522,6 +1594,7 @@ problems:
         choices:
           - text: "Understand what the supervisor actually decides when approving and whether an operator could decide instead"
             outcome: CORRECT
+            tool: docs
             evidence: >
               In 40 observed approvals: 35 were rework-and-retry decisions an
               operator could make with a simple decision tree. Only 5 required
@@ -1535,6 +1608,7 @@ problems:
             score_feed: RCA
           - text: "Ask the supervisor to delegate sign-off to a senior operator"
             outcome: PLAUSIBLE
+            tool: ask
             evidence: null
             hint: >
               Delegation is likely the solution — but delegating without clear
@@ -1552,6 +1626,7 @@ problems:
   - id: T1-018
     name: "The Unlabeled Everything"
     category: Waste / Safety
+    waste: motion
     severity: low
     visibility: obvious
     zone_id: z6
@@ -1568,7 +1643,7 @@ problems:
       - 5S System
       - Workplace Organization
       - Safety Routines
-      - Visual Labels & Signs
+      - Visual Labels and Signs
     maturity_prerequisite: null
     mismatch_note: >
       Applying a Kaizen Event (Tier 2) on an unlabeled, undemarcated zone spends
@@ -1591,6 +1666,7 @@ problems:
         choices:
           - text: "Walk the zone with a safety checklist and document every unmarked hazard and traffic conflict"
             outcome: CORRECT
+            tool: observe
             evidence: >
               You identify: 4 areas where forklifts and pedestrians share
               unmarked space, 2 fire exit routes partially blocked by returned
@@ -1604,6 +1680,7 @@ problems:
             score_feed: RCA
           - text: "Order floor marking tape and get operators to mark their own areas"
             outcome: PLAUSIBLE
+            tool: observe
             evidence: null
             hint: >
               Operator involvement is valuable — but without a safety-led
@@ -1622,6 +1699,7 @@ problems:
   - id: T1-019
     name: "The Forgotten Near-Miss"
     category: Safety / Behavior
+    waste: overprocessing
     severity: high
     visibility: subtle
     zone_id: z2
@@ -1663,6 +1741,7 @@ problems:
         choices:
           - text: "Observe a non-standard cut cycle and understand exactly why the guard gets bypassed"
             outcome: CORRECT
+            tool: observe
             evidence: >
               When lowered, the guard contacts the non-standard deck edge and
               deflects the cut by 2 to 3 mm. Operators discovered this months
@@ -1676,6 +1755,7 @@ problems:
             score_feed: RCA
           - text: "Retrain operators on the safety procedure and reinforce the guard rule"
             outcome: PLAUSIBLE
+            tool: docs
             evidence: null
             hint: >
               Retraining treats the behaviour, not the cause. If the guard
@@ -1694,6 +1774,7 @@ problems:
   - id: T1-020
     name: "The Ghost Inventory"
     category: Waste / Information
+    waste: inventory
     severity: medium
     visibility: subtle
     zone_id: z1
@@ -1734,6 +1815,7 @@ problems:
         choices:
           - text: "Do a physical count right now and compare it precisely to the system record"
             outcome: CORRECT
+            tool: count
             evidence: >
               Physical count: 187 units. System: 340. Delta: 153 units.
               Cross-referencing recent transactions reveals the gap grew over
@@ -1747,6 +1829,7 @@ problems:
             score_feed: RCA
           - text: "Ask the ERP team to reconcile the system record with the last GRN"
             outcome: PLAUSIBLE
+            tool: ask
             evidence: null
             hint: >
               ERP reconciliation helps — but it only covers receiving events.
@@ -1765,6 +1848,7 @@ problems:
   - id: T1-021
     name: "The Cold Start"
     category: Variation / Behavior
+    waste: waiting
     severity: medium
     visibility: obvious
     zone_id: z4
@@ -1805,6 +1889,7 @@ problems:
         choices:
           - text: "Time and document exactly what operators do in the first 10 minutes of a shift before the first unit is processed"
             outcome: CORRECT
+            tool: docs
             evidence: >
               Operators spend: 8 min locating consumables stored in a shared
               cabinet not at the station, 4 min checking in-progress unit
@@ -1818,6 +1903,7 @@ problems:
             score_feed: RCA
           - text: "Implement a 5-minute team briefing at shift start"
             outcome: PLAUSIBLE
+            tool: observe
             evidence: null
             hint: >
               Briefings add information — but the problem is the physical
@@ -1836,6 +1922,7 @@ problems:
   - id: T1-022
     name: "The Inspection That Inspects Nothing"
     category: Quality / Information
+    waste: overprocessing
     severity: medium
     visibility: obvious
     zone_id: z1
@@ -1874,6 +1961,7 @@ problems:
         choices:
           - text: "Pull the Incoming QA procedure and check what it actually specifies"
             outcome: CORRECT
+            tool: docs
             evidence: >
               The procedure states: Verify quantity against PO. That is all.
               There is no sampling plan, no dimensional check, no visual
@@ -1887,6 +1975,7 @@ problems:
             score_feed: RCA
           - text: "Observe Incoming QA operators and see if they follow the procedure"
             outcome: PLAUSIBLE
+            tool: observe
             evidence: null
             hint: >
               Observation is valuable — but here the procedure itself is wrong.
@@ -1905,6 +1994,7 @@ problems:
   - id: T1-023
     name: "The Workaround That Became the Process"
     category: Behavior / Quality
+    waste: overprocessing
     severity: high
     visibility: subtle
     zone_id: z3
@@ -1947,6 +2037,7 @@ problems:
         choices:
           - text: "Film an experienced operator performing the full process and identify the exact adjustment"
             outcome: CORRECT
+            tool: observe
             evidence: >
               The adjustment is a 3 to 4 mm repositioning of the housing
               before torquing the rear mount. It happens when the housing
@@ -1960,6 +2051,7 @@ problems:
             score_feed: RCA
           - text: "Interview experienced operators to document what they do differently"
             outcome: PLAUSIBLE
+            tool: ask
             evidence: null
             hint: >
               Interviews capture intent, not behaviour. The experienced
@@ -1978,6 +2070,7 @@ problems:
   - id: T1-024
     name: "The Shifting Standard"
     category: Variation / Behavior
+    waste: defects
     severity: medium
     visibility: subtle
     zone_id: z5
@@ -2019,6 +2112,7 @@ problems:
         choices:
           - text: "Collect the acceptance criteria document used by both shifts and compare version dates"
             outcome: CORRECT
+            tool: docs
             evidence: >
               Day shift uses v3 of the acceptance spec, revised 4 months ago.
               Night shift uses v1, the original from 18 months ago. Version 3
@@ -2032,6 +2126,7 @@ problems:
             score_feed: RCA
           - text: "Have both shifts test the same set of borderline units and compare results"
             outcome: PLAUSIBLE
+            tool: observe
             evidence: null
             hint: >
               A cross-shift comparison confirms measurement variation — but
@@ -2049,6 +2144,7 @@ problems:
   - id: T1-025
     name: "The Number Nobody Believes"
     category: Information / Behavior
+    waste: overprocessing
     severity: high
     visibility: hidden
     zone_id: z1
@@ -2092,6 +2188,7 @@ problems:
         choices:
           - text: "Trace exactly how the completed unit number in the report is calculated"
             outcome: CORRECT
+            tool: data
             evidence: >
               The report counts units that reach Integration 4 as completed.
               Units that fail Final QA or sit in rework at Integration 5 are
@@ -2106,6 +2203,7 @@ problems:
             score_feed: RCA
           - text: "Compare the report against physical shipment records from Dispatch"
             outcome: PLAUSIBLE
+            tool: docs
             evidence: null
             hint: >
               Good cross-check — and it will confirm the gap exists. But it

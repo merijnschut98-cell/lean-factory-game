@@ -1,0 +1,386 @@
+# Lean Codex — every concept a player can discover.
+# Key = the `teaches:` tag used in problems/countermeasures YAML.
+# Shared by the Python build (ui/codex_panel.py) and the 3D web build (web/).
+
+concepts:
+  5S: Sort, Set in order, Shine, Standardize, Sustain — the foundation of workplace organization.
+  5S_sort: 'The first S: separate necessary items from unnecessary ones, remove the unnecessary.'
+  standard_work: Documented work sequence, takt time, and WIP target — the baseline for all improvement.
+  WIP: Work In Progress — inventory between process steps. High WIP hides waste and delays quality feedback.
+  kanban: A pull signal that triggers replenishment only when downstream consumes — prevents overproduction.
+  heijunka: Production leveling — smoothing the schedule to match takt and avoid flood/drought cycles.
+  jidoka: Autonomation — the ability to stop on defect and call for help rather than passing the problem
+    forward.
+  poka_yoke: Error proofing — a device or method that prevents defects from occurring or passing to the
+    next step.
+  takt_time: 'The rate at which customers demand product: available time ÷ demand. The heartbeat of flow.'
+  gemba: The actual place where value is created. Go and see before drawing conclusions.
+  kaizen: Continuous incremental improvement — small, frequent changes by the people doing the work.
+  TPM: 'Total Productive Maintenance — operators take ownership of basic machine care: clean, inspect,
+    lubricate.'
+  FIFO: First In, First Out — oldest items consumed first, preventing inventory ageing and hidden defects.
+  flow: One-piece flow — processing one unit at a time through a connected, balanced sequence.
+  waste_muda: 'Muda: non-value-adding activity. Seven types: transport, inventory, motion, waiting, overproduction,
+    over-processing, defects.'
+  waste_mura: 'Mura: unevenness or variation in flow, workload, or quality — stresses the system unevenly.'
+  waste_muri: 'Muri: overburden — pushing people or machines beyond their sustainable capacity.'
+  skill_matrix: A visual grid mapping each operator's current skill level against each station or task
+    type.
+  cross_training: Training operators in multiple skills to increase flexibility and resilience.
+  line_balancing: Distributing work evenly across stations so no one is idle while another is overwhelmed.
+  quality_gate: A defined check point where defects are caught before passing to the next process step.
+  leader_standard_work: Defined daily leadership routines that audit, support, and sustain standard work
+    on the floor.
+  visual_management: Making process status, problems, and standards visible at a glance — reduces reliance
+    on memory.
+  information_flow: How information travels alongside material flow. Often the real bottleneck in lean
+    systems.
+  digitalization: Replacing paper-based processes with digital tools — only valuable when the process
+    is stable first.
+  MES: Manufacturing Execution System — tracks and controls production on the shop floor in real time.
+  andon: A signal (light, sound, or screen) alerting the team when a problem occurs. Stops the line to
+    fix at source.
+  OEE: Overall Equipment Effectiveness = Availability × Performance × Quality. The combined utilization
+    measure.
+  FTR: First Time Right — proportion of units passing quality checks on the first attempt. Reveals hidden
+    cost of poor quality.
+  shift_handover: Structured transfer of status, in-progress work, and issues between shifts. Prevents
+    cold-start losses.
+  documentation: Written records of processes and standards that can be used, taught, and improved by
+    anyone.
+  safety: Designing work so people cannot be hurt — physical conditions, procedures, and near-miss culture.
+  near_miss_reporting: Capturing incidents that nearly caused harm — the leading indicator that prevents
+    future accidents.
+  measurement_system: The full system of instrument, method, operator, and environment that produces a
+    measurement.
+  data_capture: Deciding what to record, when, and how before worrying about analysis.
+  data_accuracy: The degree to which system records match physical reality — lost trust is hard to rebuild.
+  inventory_management: Controlling quantity, location, and movement of materials to support stable flow.
+  supplier_quality: Ensuring incoming materials meet specification — cannot be compensated by downstream
+    inspection.
+  replenishment: Triggering resupply based on consumption signals, not a fixed schedule.
+  overproduction: Making more than the customer currently needs — considered the most dangerous of the
+    seven wastes.
+  time_study: Observing and timing work elements to understand current performance and locate waste.
+  tacit_knowledge: Knowledge that lives in people's heads and habits — only made explicit through observation
+    and documentation.
+  knowledge_management: Systems and practices for capturing, sharing, and retaining organisational knowledge.
+  decision_authority: Defining who is empowered to decide what — removes bottlenecks and builds operator
+    confidence.
+  variation: Differences in process output over time. Lean reduces common-cause variation; Six Sigma eliminates
+    special causes.
+  operator_variation: Differences in output between operators doing the same task — usually a sign that
+    standard work is missing.
+  shift_readiness: The physical and information state of a station at shift start — ready for the first
+    unit immediately.
+  version_control: Managing document versions so everyone works from the correct, current standard.
+  performance_reporting: The system producing KPI reports — only as trustworthy as its metric definitions.
+  data_integrity: Accuracy, consistency, and trustworthiness of data over its lifecycle.
+  management_system: Structured routines, meetings, and reports through which leaders manage performance.
+  leveled_production: Producing at a smooth, even rate — requires stable upstream supply and takt discipline.
+  push_vs_pull: 'Push: produce to forecast. Pull: produce only when downstream signals need. Pull eliminates
+    overproduction.'
+  autonomous_maintenance: Operators performing basic machine care — cleaning, inspecting, lubricating
+    — as part of standard work.
+  rework_waste: Correcting defects after the fact — the visible cost of poor quality, not the total cost.
+  inspection: Checking work against a standard — only valuable if the standard is clear and measurement
+    is valid.
+  maintenance: Keeping equipment in a condition that supports reliable, quality production.
+  PDCA: 'Plan, Do, Check, Act — the fundamental improvement cycle. All four phases must run: Plan and
+    Do without Check and Act is just firefighting.'
+  check_act: The back half of PDCA. Check verifies whether the fix held; Act standardises success or adjusts
+    the approach. Skipping these creates a reactive loop.
+  A3: 'One-page structured problem-solving format: problem → current state → root cause → countermeasure
+    → result. Forces clarity before action.'
+  fishbone: Ishikawa / Fishbone diagram — maps possible causes across Man, Machine, Method, and Material.
+    Prevents investigations from stopping at the first plausible answer.
+  4M_6M: 'Cause categorisation frameworks: 4M (Man, Machine, Method, Material) or 6M (adds Measurement,
+    Mother Nature). Used to broaden root cause searches.'
+  5_whys: 'A facilitation technique: ask ''why?'' iteratively until a systemic root cause is reached.
+    Stops when removing the cause would prevent all recurrence.'
+  root_cause_analysis: The practice of tracing a symptom back to its systemic origin. A root cause is
+    one whose removal prevents recurrence — not just the nearest cause.
+  structured_problem_solving: Using a defined method (5 Whys, A3, DMAIC) rather than verbal discussion.
+    Structure surfaces causes that intuition misses.
+  daily_management: 'Structured daily rhythm: short shift-start huddle, visible KPIs, an action log reviewed
+    every day. Makes problems visible within hours, not weeks.'
+  huddle: A brief (5–15 min) daily team meeting — shift start, standing, structured. Aligns priorities,
+    surfaces yesterday's issues, sets today's direction.
+  psychological_safety: The belief that raising a problem, disagreeing, or admitting a mistake will not
+    result in punishment. The foundation of honest improvement.
+  blameless_culture: Investigating problems as system failures, not people failures. Blame prevents reporting;
+    blameless culture creates the data needed to improve.
+  hidden_factory: The work done to fix, rework, sort, and re-inspect defects that never appears in planned
+    production. Often as large as 20–40% of total effort.
+  quality_culture: An environment where quality is everyone's responsibility — operators stop on defect,
+    managers respond, leadership supports honesty.
+  escalation: The defined path a problem travels when it cannot be resolved at the current tier. Without
+    escalation rules, chronic problems die at team leader level.
+  tiered_accountability: Each management tier owns a defined problem-solving scope. Tier 1 (operator/TL)
+    handles daily issues; Tier 2 (supervisor) handles cross-shift; Tier 3 handles systemic.
+  single_point_failure: A task, person, or component with no backup. When it fails, the whole system stops.
+    Detected through a skill matrix; fixed through cross-training.
+  knowledge_transfer: The deliberate act of making tacit knowledge explicit — observed, documented, practised
+    — so it survives personnel changes.
+  hoshin_kanri: Policy deployment / strategy cascading — translating plant-level goals into team-level
+    targets through a two-way conversation (catchball). Prevents local optimisation.
+  target_cascading: Breaking plant KPIs into team-level targets that, when met, add up to the plant goal.
+    Misaligned targets cause teams to optimise locally while global KPIs decline.
+  suggestion_system: A formal process for capturing, evaluating, and feeding back on operator improvement
+    ideas. Without it, ideas surface once, get no response, and disappear.
+  kaizen_mindset: The belief that every process can be improved and that the people doing the work are
+    best placed to improve it. The cultural foundation of lean.
+  employee_engagement: Active involvement of every employee in improvement — ideas submitted, acted on,
+    feedback given. Directly correlated with suggestion system health.
+  improvement_event: A bounded, time-limited workshop focused on one specific improvement scope. Kaizen
+    events produce changes; meetings produce agenda items.
+  sustain: 'The fifth S and the hardest: maintaining the improved state over time. Without sustain mechanisms
+    (audits, standard work, daily habits), improvements decay.'
+  standardize: 'The Act phase of PDCA: locking a successful fix into standard work, training, and audits
+    so it cannot regress. Standardise before the next improvement.'
+  systems_thinking: Viewing the factory as an interconnected system — changes in one area affect others.
+    A team metric that improves while a plant metric declines is a systems failure.
+  management_presence: Time spent by leaders on the production floor — not at desks. Management presence
+    makes problems visible faster and changes what people prioritise.
+  accountability: Ownership of a metric, action, or outcome — named, visible, reviewed. Without accountability,
+    KPI boards become decoration.
+  alert_fatigue: When an alert fires too often or without consequence, people stop responding. Andon systems
+    without defined response protocols create alert fatigue within days.
+  quick_response: The time between a problem occurring and a capable person arriving to address it. Andon
+    systems exist to make quick response possible; response protocols make it reliable.
+  shift_coordination: The synchronisation of people, materials, and information at shift boundaries. Poor
+    coordination creates a standing wave of waste at every shift change.
+  tier_meetings: 'Cascading daily meetings from floor to management: Tier 1 (team), Tier 2 (supervisor),
+    Tier 3 (plant). Each tier surfaces what the tier below couldn''t resolve.'
+  direct_observation: Watching work happen with your own eyes before drawing conclusions. Reports describe
+    what people remember; observation reveals what actually occurs.
+  go_see: The act of physically going to where the problem is before deciding what to do. 'Go see' prevents
+    solutions designed from desks for problems that don't exist as described.
+  management_information_lag: The delay between when a problem occurs on the floor and when management
+    learns of it. Gemba walks and daily management systems reduce the lag from days to hours.
+  information_vs_knowledge: Information is data in a report. Knowledge is understanding gained by direct
+    observation. Decisions made from information alone miss what cannot be written down.
+  KPI_ownership: Each KPI has a named owner who is accountable for its trend, acts when it moves, and
+    updates it on a defined cadence. Unowned KPIs drift and decay.
+  feedback_loops: The mechanism by which consequences of a decision return to the decision-maker. Blame
+    cultures destroy feedback loops — operators stop signalling, managers stop learning.
+  investigation_process: A defined, repeatable method for conducting problem investigations. Without it,
+    each investigation reflects the investigator's instincts rather than a structured search for causes.
+  problem_ownership: A named person responsible for a specific problem — tracking its status, escalating
+    when stuck, and closing it out. Problems without owners become chronic.
+  chronic_vs_acute: 'Acute problems: sudden, visible, receive immediate attention. Chronic problems: recurring
+    at low intensity, easy to normalise. Most chronic problems are more costly than acute ones.'
+  operator_flexibility: An operator's ability to work productively on more than one station or task. High
+    flexibility reduces the impact of absence and balances load; achieved through cross-training.
+  operator_involvement: Operators participating in problem-solving, improvement design, and standard-setting
+    — not just executing decisions made elsewhere. Increases quality and sustain rate.
+  operator_support: 'The systems, tools, and management behaviours that help operators succeed: Andon
+    responses, material supply, equipment availability, clear standards.'
+  CM_decay: The natural degradation of a countermeasure's effectiveness over time when not sustained.
+    Caused by drift in behaviour, turnover, or lack of audits. PDCA Check and Act prevent it.
+  follow_up: A scheduled review — days or weeks after a fix — to verify the improvement held. The most
+    commonly skipped step in problem-solving.
+  data_driven: Basing decisions on measured evidence rather than intuition or anecdote. Requires that
+    the data is accurate, relevant, and interpreted correctly — not just abundant.
+  process_design: Deliberately designing how work happens — sequence, method, tools, standards — rather
+    than letting it emerge. A designed process can be improved; an emergent one cannot.
+  structured_analysis: Using a defined framework (Fishbone, 5 Whys, A3) to investigate a problem rather
+    than verbal discussion. Structure surfaces causes that conversation misses.
+  structured_improvement: Using a defined method (kaizen event, PDCA, A3) to make changes rather than
+    informal ad-hoc action. Structure ensures the improvement is verified and sustained.
+  beyond_operator_error: The discipline of looking for systemic causes (method, machine, material, environment)
+    before concluding that an individual caused a problem.
+  confirmation_bias: The tendency to accept evidence that confirms your initial hypothesis and discount
+    evidence that contradicts it. Structured analysis tools are designed to counter it.
+  analysis_quality: How thoroughly and rigorously an investigation was conducted — not whether it produced
+    a document. A five-question 5 Whys with circular answers has low analysis quality.
+  root_cause_depth: How far down the causal chain an investigation went. Symptomatic root causes recur
+    in new forms; systemic root causes, when removed, prevent the whole class of problem.
+  systemic_vs_symptomatic: 'Symptomatic: the nearest, most obvious cause. Systemic: the structural or
+    cultural condition that made the problem possible. Fixing symptomatic is faster; fixing systemic is
+    permanent.'
+  countermeasure_quality: A countermeasure's match to the verified root cause. High-quality CMs address
+    systemic causes and are sustained; low-quality CMs address symptoms and recur.
+  tool_vs_thinking: The difference between following a tool's format (filling a template) and using its
+    underlying logic (changing how you think). 5 Whys filled perfunctorily teaches nothing.
+  tool_vs_system: A tool solves one problem once. A system creates the conditions for problems to be solved
+    repeatedly. Visual boards are tools; daily management is a system.
+  capability_building: Developing the skills and problem-solving capacity of people — not just resolving
+    individual problems. The goal is an organisation that improves itself.
+  decentralized_improvement: Problem-solving authority and capacity distributed to team leaders and operators
+    — not held centrally by engineers or managers. Scales improvement across the whole factory.
+  training: Structured development of a skill to a defined standard. Effective training uses real work,
+    observation, feedback, and practice — not just classroom instruction.
+  management_pressure: 'Urgency from management that shortens investigation or forces premature closure.
+    Well-intentioned but counterproductive: fast bad answers recur; slow good answers don''t.'
+  management_rituals: Repeated, structured management behaviours — daily huddles, gemba walks, handover
+    protocols — that create consistency and make deviations from standard visible.
+  management_systems: The collection of routines, meetings, and accountability mechanisms through which
+    leaders manage performance. Distinct from tools — a management system runs continuously.
+  cost_vs_value: The habit of asking whether the cost of a solution is proportionate to its value. Not
+    every problem needs a sophisticated tool; not every cheap solution is worth its limitations.
+  make_vs_buy: Deciding whether to develop capability internally or hire/purchase it externally. Internal
+    development is slower but builds organisational knowledge; external is faster but leaves.
+  production_vs_improvement: The tension between running today's production and stopping to improve the
+    process. Lean resolves it by making improvement part of standard work, not an alternative to it.
+  policy_deployment: Translating strategic objectives into operational targets at every level of the organisation.
+    Also called Hoshin Kanri. Prevents local optimisation that undermines plant-level goals.
+  local_vs_global_optimization: A team improving its own metric while degrading the system is local optimisation.
+    Lean targets global optimisation — the whole value stream improves, not just one step.
+  information_transfer: The reliable passing of status, decisions, and open issues from one person or
+    shift to another. Often the single largest source of quality escapes at shift boundaries.
+  improvement_ownership: A named person taking personal responsibility for seeing an improvement through
+    to completion and verification — not just initiating it.
+  waste_elimination: The systematic removal of non-value-adding activities. Unlike one-off fixes, waste
+    elimination is a continuous habit applied to every process, every day.
+  workplace_organization: The physical arrangement of tools, materials, and workspaces to support efficient,
+    error-free work. Foundation for 5S, standard work, and visual management.
+  workshop_structure: 'A kaizen event''s framework: defined scope, time-boxed phases (observe → analyse
+    → experiment → standardise), a team with authority to change things, and a follow-up date.'
+  just_do_it: 'In lean: improvements that are small, obvious, and low-risk can be implemented immediately
+    without a formal project. The opposite of analysis paralysis.'
+  quality_data: Measurement records that are accurate, timely, and complete enough to reveal patterns.
+    Quality data is the prerequisite for any data-driven improvement.
+  availability: The proportion of planned production time during which a station is actually running.
+    Lost availability comes from breakdowns, setups, and — often — unresponded quality stops.
+  structural_fix: A change to the system, process, or environment that prevents a problem — as opposed
+    to a workaround that tolerates it. Structural fixes outlast personnel changes.
+  change_management: The process of planning, communicating, and reinforcing organisational changes so
+    they are adopted and sustained rather than resisted or quietly reversed.
+  equipment_management: Systems for maintaining, tracking, and improving equipment performance — including
+    TPM, calibration schedules, and spare parts management.
+  time_allocation: How a leader or team distributes available time across activities. Leader standard
+    work makes time allocation explicit — protecting floor time from being consumed by reports.
+  trust: 'The foundation of honest improvement: operators trust that reporting problems won''t lead to
+    blame; leaders trust that floor data is accurate. Earned through consistent blameless behaviour.'
+  bottleneck: The single process step that limits total system output. The whole value stream produces
+    at the bottleneck's rate. Improving non-bottlenecks improves nothing.
+  theory_of_constraints: 'A management philosophy: find the constraint, exploit it, subordinate everything
+    else to it, elevate it, then find the new constraint. Repeat.'
+  value_stream: The complete sequence of steps — from raw material to customer delivery — that adds value
+    to the product. VSM makes the full stream visible on one page.
+  VSM: Value Stream Map — a current-state drawing of material and information flow. Required before designing
+    a future state. An incomplete VSM creates a partial solution.
+  batch_vs_flow: 'Batch: process many units together, quality feedback at the end. Flow: process one unit
+    at a time, quality feedback immediately. Flow eliminates batch-rework amplification.'
+  one_piece_flow: Processing one unit at a time through a connected sequence. Eliminates the WIP inventory
+    that hides defects, delays feedback, and masks flow problems.
+  cell_design: Reconfiguring layout to collocate sequential process steps, enabling one-piece flow. Eliminates
+    transport waste built into functional (department-based) layouts.
+  SMED: Single-Minute Exchange of Die — reducing changeover time by separating internal setup (machine
+    stopped) from external setup (can be done while running).
+  changeover: The time between the last good unit of one product variant and the first good unit of the
+    next. Changeover time limits scheduling flexibility and production leveling.
+  internal_external_setup: 'Internal: setup steps that require the machine to be stopped. External: steps
+    that can be prepared while the machine runs. SMED converts internal to external.'
+  milk_run: A scheduled material replenishment route (water spider) that separates material handling from
+    production work. Operators stay at their stations; materials come to them.
+  motion_waste: Unnecessary physical movement by operators — walking to fetch material, searching for
+    tools, reaching for parts. Motion does not add value; flow design eliminates it.
+  spaghetti_diagram: A map of the physical path an operator or unit travels in a process. Named for the
+    resulting tangle of lines. Makes motion and transport waste visible as distance.
+  pareto: 'A chart ranking problems or defect types by frequency or impact. The Pareto principle: 80%
+    of effects come from 20% of causes. Drives prioritisation of improvement effort.'
+  prioritization: Directing improvement energy to the highest-impact items first. Without prioritisation,
+    effort spreads equally across all problems regardless of their relative cost.
+  RRS_analysis: 'Runner-Repeater-Stranger analysis: classify products by demand volume and frequency.
+    Runners flow continuously; Repeaters run on cadence; Strangers batch in dedicated slots.'
+  standard_WIP: An explicit WIP target (minimum and maximum) between two process steps. Makes overproduction
+    and starvation visible as deviations from a defined standard.
+  traceability: The ability to track a unit's production history — who processed it, when, with what materials.
+    Required to contain defects to a defined batch rather than an unknown population.
+  defect_prevention: Designing the process so defects cannot form — using fixtures, sensors, or error-proofing
+    — rather than relying on inspection to catch them after they occur.
+  cross_functional: Involving people from multiple departments or roles in an analysis or project. Required
+    for VSM and kaizen events that cross departmental boundaries.
+  SPC: Statistical Process Control — control charts that distinguish signal (special cause) from noise
+    (common cause). Acts only on signals; ignoring noise reduces variation.
+  control_charts: Time-series plots with calculated control limits. Points outside limits signal a special
+    cause; patterns within limits reveal common cause drift.
+  common_cause_variation: Variation inherent to the process — present even when everything is working
+    correctly. Reduced by process redesign. Adjusting for it adds variation (tampering).
+  special_cause_variation: 'Variation from an assignable cause outside the normal process: a tool change,
+    a material batch shift, an operator error. Must be identified and removed.'
+  overadjustment: Adjusting a stable process in response to noise. Every adjustment adds variation. SPC
+    control limits define when adjustment is warranted and when it is harmful.
+  control_plan: A document specifying what to measure, how often, and what action to take when out of
+    control. The mechanism that sustains a DMAIC or improvement gain.
+  control_phase: The fifth phase of DMAIC. Implements monitoring (SPC), response plans, and control plans
+    that prevent the process from reverting to its previous state.
+  MSA: Measurement System Analysis — quantifying how much observed variation comes from the measurement
+    system vs. the process. A measurement system must be validated before data-driven decisions.
+  gage_RR: 'Gage Repeatability and Reproducibility — the two components of measurement system variation:
+    repeatability (same operator, repeated measurement) and reproducibility (between operators).'
+  measurement_variation: The portion of observed variation attributable to the measurement system rather
+    than the process. If measurement variation exceeds ~10% of tolerance, data cannot be trusted.
+  repeatability: A measurement system's ability to produce the same reading on the same part under the
+    same conditions. One component of Gage R&R.
+  reproducibility: A measurement system's consistency across different operators, instruments, or environments.
+    The second component of Gage R&R.
+  process_capability: How well a process performs relative to its specification limits. Cpk quantifies
+    this; a process must be in statistical control before capability can be meaningfully calculated.
+  control_state: A process is in statistical control when all variation is common cause — no assignable
+    causes present. Required before capability analysis; SPC control charts establish it.
+  statistical_thinking: Viewing all work as occurring in systems of interconnected processes subject to
+    variation. Understanding variation is the foundation of data-driven improvement.
+  DMAIC: Define → Measure → Analyze → Improve → Control. The Six Sigma project methodology for breakthrough
+    improvement. All five phases are required — Control is not optional.
+  FMEA: 'Failure Mode and Effects Analysis — prospective risk identification. For each process step: what
+    could go wrong, what effect does it have, how likely, how detectable. Drives prevention.'
+  risk_management: Identifying, quantifying, and mitigating risks before they become failures. FMEA is
+    the primary risk management tool for production processes.
+  DOE: Design of Experiments — testing multiple factors in structured combinations to detect interaction
+    effects invisible to one-factor-at-a-time testing. The most efficient path to process optimisation.
+  interaction_effects: When the effect of one factor depends on the level of another factor. OFAT experiments
+    miss interactions entirely; DOE is designed to find them.
+  OFAT: One Factor At a Time — the intuitive but flawed experimental approach of varying one variable
+    while holding all others constant. Cannot detect interaction effects.
+  experimental_design: 'The systematic plan for an experiment: which factors to test, at which levels,
+    in which combinations. Good design minimises runs while maximising information.'
+  regression_analysis: A statistical method to quantify the relationship between one or more input variables
+    and an output. Identifies which inputs have the greatest leverage on the output.
+  ANOVA: Analysis of Variance — tests whether group means differ significantly (e.g. shifts, operators,
+    machines). Separates real differences from random noise.
+  factor_analysis: The statistical exploration of which input variables (factors) are driving output variation.
+    Precedes DOE and regression; sets the list of factors worth studying.
+  8D: 'Eight Disciplines problem-solving: D1 Team → D2 Problem → D3 Containment → D4 Root Cause → D5 Corrective
+    Action → D6 Verify → D7 Prevent → D8 Close. Structured for customer-facing defects.'
+  hypothesis_testing: Using statistical tests to confirm whether an observed difference is real or could
+    be explained by chance. The discipline that makes root cause debate answerable with data.
+  QFD: Quality Function Deployment — translating customer requirements (voice of customer) into process
+    specifications. Prevents accepting specifications that no process can meet.
+  voice_of_customer: The customer's stated and unstated requirements, expressed in their language. QFD
+    translates these into measurable process parameters and tolerances.
+  specification_gap: The gap between what a customer specification requires and what the current process
+    is capable of delivering. Must be detected before acceptance, not discovered during production.
+  reliability_analysis: Statistical analysis of failure patterns to determine MTBF, optimal maintenance
+    intervals, and failure mode types. Replaces calendar-based maintenance with data-based maintenance.
+  MTBF: Mean Time Between Failures — the average operational time between failures. The foundation of
+    data-driven maintenance interval setting.
+  predictive_maintenance: Maintenance triggered by condition monitoring or failure prediction rather than
+    a calendar. More efficient than scheduled maintenance; prevents both over- and under-maintenance.
+  maintenance_induced_failures: 'Failures that occur as a direct result of a maintenance event: re-assembly
+    errors, disturbed components, contamination. A significant fraction of ''random'' failures are maintenance-induced.'
+  quality_loss_analysis: Breaking OEE Quality losses into specific defect categories to identify the highest-impact
+    improvement opportunities. Single-bucket recording hides actionable information.
+  stratification: Splitting data into meaningful subgroups (by shift, operator, machine, batch) to reveal
+    patterns invisible in the aggregate. The first step in most advanced quality analysis.
+  multi_vari: Multi-Vari analysis — a graphical technique for identifying which family of variation (positional,
+    cyclical, or temporal) is dominant. Used to focus DOE or regression.
+  respect_for_people: 'Respect for people — the second pillar of the Toyota Way. Problems are in the process, not the person. Blame closes mouths; curiosity opens them.'
+  open_questions: 'Open questions ("walk me through…", "what gets in your way?") invite stories and facts. Closed questions get yes/no. Leading or blaming questions get silence.'
+  kata_prediction: 'Toyota Kata: before every experiment, state what you expect to happen. Comparing expectation to result is where the learning is.'
+  littles_law: "Little's Law: lead time = WIP ÷ throughput. Cut WIP and lead time falls — without anyone working faster."
+  conwip: 'CONWIP (constant work in process): release a new job only when one leaves. A simple pull system that caps WIP for the whole line.'
+  rolled_throughput_yield: 'Rolled throughput yield (RTY): the chance a unit passes every step first time — the product of each step''s yield. Small per-step losses compound fast.'
+  red_herring: 'A true fact that is not the cause. Evidence must explain the symptom, not just sit near it.'
+  eight_wastes: 'The 8 wastes — TIMWOODS: Transport, Inventory, Motion, Waiting, Overproduction, Over-processing, Defects, Skills (unused talent). Learn to see them and you see the improvement potential.'
+  waste_transport: 'Transport: moving material further or more often than the process needs. It adds lead time, handling damage and cost — never value.'
+  waste_inventory: 'Inventory: material waiting between steps. It hides problems, ties up cash and stretches lead time (Little''s Law).'
+  waste_motion: 'Motion: people walking, searching, reaching or bending more than the work requires.'
+  waste_waiting: 'Waiting: people or machines idle — for parts, approvals, information, repair or the next shift.'
+  waste_overproduction: 'Overproduction: making more, or earlier, than the next process needs. The worst waste — it creates most of the others.'
+  waste_overprocessing: 'Over-processing: doing more than the customer values — extra steps, checks, reports or precision nobody uses.'
+  waste_defects: 'Defects: scrap, rework and inspection to catch errors. Quality first: build it in at the source instead of inspecting it in later.'
+  waste_skills: 'Skills (unused talent): not using people''s knowledge, ideas and abilities. The people closest to the work see the most.'
+  bottleneck_focus: 'Improve the constraint first. An hour gained at the bottleneck is an hour for the whole plant; an hour gained elsewhere is a mirage (Theory of Constraints).'

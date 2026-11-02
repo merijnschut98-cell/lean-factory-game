@@ -1,0 +1,65 @@
+# The street the player reaches by van (slice 3.2 "De straat", spec 2026-10-26-phase3-design.md §4):
+# the Zonnestraat in Nova-Oost, a tiny street graph. tools/blender/build_street.py builds
+# game/assets/office/street.glb from game/data/town.json; the game reads the same file for its
+# markers and doors. Today one segment; Phase 4's town adds segments (and a `segment` key on lots
+# and props that name one).
+#
+# estimate: every dimension is an estimate, no public source gives "the" street. The reasoning is
+#   the look of a 1980s Dutch woonerf-style residential street: a klinker carriageway of about
+#   5 m (one lane each way without markings, as a van and a car just pass), pavements of about
+#   1.8 m (two people side by side), front gardens of about 4 m (a hedge, a bin and a parking
+#   spot), semi-detached houses about 9 m wide and 9 m deep. The street is 120 m: six houses a
+#   side at a 12 m pitch (a 9 m house and a 3 m gap) take 72 m of it, the corner shop, the
+#   trafohuisje and the trench's open stretch the rest, and at a walking pace of about 1.4 m/s
+#   it is crossed in under 90 seconds. The `at` values are decisions, not measurements.
+#
+# segments   id, name, district, from / to ([x, y] in metres), carriageway, pavement, front_garden,
+#            house_depth (metres)
+# lots       id, kind (house, shop, trafohuisje), side (even = north, odd = south), at (metres along
+#            the segment from its `from` end), width (metres, 9 unless given), n (house number,
+#            on the side that matches its parity), resident (a cast id; one house each), story
+#            (the mission story whose door it is; the lot's resident is that story's person)
+# props      id, kind (trench, van, hedge, canal, lamp), side or across: true (a hedge or the canal
+#            that closes an end), at (metres along), length (metres, where it has one); a van
+#            has livery, and the one at the kerb has kerb: true and yard_van (which of the yard's
+#            vans takes the player there)
+# fields     step (a "stream.step" place), at (the lot or prop where its field marker stands):
+#            the same place panel as on the yard (the yard's stand-ins stay as they are)
+
+segments:
+  - {id: zonnestraat, name: Zonnestraat, district: Nova-Oost, from: [0, 0], to: [120, 0],
+     carriageway: 5.0, pavement: 1.8, front_garden: 4.0, house_depth: 9.0}
+
+lots:
+  - {id: shop, kind: shop, side: odd, at: 0, width: 12, n: 1}          # the shut corner shop
+  - {id: house_2,  kind: house, side: even, at: 6,  n: 2}
+  - {id: house_4,  kind: house, side: even, at: 18, n: 4, resident: de_jong}
+  - {id: house_6,  kind: house, side: even, at: 30, n: 6}
+  - {id: house_8,  kind: house, side: even, at: 42, n: 8}
+  - {id: house_10, kind: house, side: even, at: 54, n: 10}
+  - {id: house_12, kind: house, side: even, at: 66, n: 12}
+  - {id: house_14, kind: house, side: even, at: 78, n: 14, resident: wim}
+  - {id: house_3,  kind: house, side: odd, at: 18, n: 3}
+  - {id: house_5,  kind: house, side: odd, at: 30, n: 5}
+  - {id: house_7,  kind: house, side: odd, at: 42, n: 7}
+  - {id: house_9,  kind: house, side: odd, at: 54, n: 9, resident: el_amrani, story: el_amrani}
+  - {id: house_11, kind: house, side: odd, at: 66, n: 11}
+  - {id: trafohuisje, kind: trafohuisje, side: odd, at: 100, width: 3}
+
+props:
+  - {id: trench, kind: trench, side: even, at: 32, length: 26}          # in the north pavement, in front of houses 6 to 10
+  - {id: van_kerb, kind: van, side: odd, at: 82, kerb: true, livery: voltana, yard_van: 5}
+  - {id: van_peeters, kind: van, side: even, at: 61, livery: peeters}
+  - {id: hedge_west, kind: hedge, across: true, at: -3}
+  - {id: hedge_green, kind: hedge, side: even, at: 90, length: 20}
+  - {id: canal, kind: canal, across: true, at: 112, length: 12}
+  - {id: lamp_1, kind: lamp, side: even, at: 10}
+  - {id: lamp_2, kind: lamp, side: odd,  at: 30}
+  - {id: lamp_3, kind: lamp, side: even, at: 50}
+  - {id: lamp_4, kind: lamp, side: odd,  at: 70}
+  - {id: lamp_5, kind: lamp, side: even, at: 90}
+  - {id: lamp_6, kind: lamp, side: odd,  at: 108}
+
+fields:
+  - {step: meters.visit, at: house_7}
+  - {step: outages.locate, at: trench}

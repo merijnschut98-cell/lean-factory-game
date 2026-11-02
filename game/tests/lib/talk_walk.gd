@@ -1,0 +1,654 @@
+class_name TalkWalk
+## Read talks instead of playing them (Merijn's playtest 2026-10-30;
+## docs/qa/dialog-coherence-2026-10-30.md). Walks a talk's branches through the
+## real rules (Dialog) and keeps what was said turn by turn, flagged where a line
+## cannot be true for what came before it:
+##   repeat   the person says the player repeats themselves, and the player did not
+##   clarify  the person asks what the player means: no turn lets the player say it
+##   empty    the person says nothing
+##   question the person asked the player something and the player's sentence is a
+##            stock line of the bank (it cannot know the question)
+##   farewell the talk ended and the person never said how it landed
+##   ruud     Ruud's note after a tutorial talk does not quote a sentence the player said
+##   echo     the person says a line they already said in this talk, word for word,
+##            to a sentence the player had not said before
+##   retold   a story line said a second time (whatever the player said): a layer, a lead-in, a proposal's reply,
+##            their own idea (review 1 of 2026-10-30)
+##   told     the player says a long sentence (more than TOLD_WORDS words) a second time in one route: a
+##            story is told once (review 2, R1); a proposal made again is a choice, acknowledged, not this
+## Two walks: every option a turn could offer under any deal (Dialog._candidates),
+## breadth first with states merged, then random talks to the end, for the table of
+## every exchange; and a few whole talks as the player sees them (four sentences a
+## turn on the route check's deal), chosen by simple players, to read start to end.
+## Used by game/tools/talk_transcripts.gd and test_talk_coherence.gd.
+
+## States expanded per talk in the exchange walk (an estimate: the first three
+## turns in full, deeper turns sampled breadth first).
+const BUDGET := 1500
+## Random talks played to the end after it, over every option (an estimate).
+const DIVES := 300
+## Flags a talk in content may never show (test_talk_coherence.gd); `question`
+## is a reading hint, the share of stock replies a measure (score).
+const BROKEN := ["repeat", "clarify", "empty", "farewell", "ruud", "retold", "told"]
+## A player sentence longer than this is a story or a promise: said once per route (flag `told`).
+const TOLD_WORDS := Dialog.STORY_WORDS
+## Talks read through and rewritten (the reference talks): no echo at all either.
+const REVIEWED := ["anouk_seven", "sanne_tuesday", "anouk_first_look", "rachid_counter", "mieke_wednesday",
+	"joost_wednesday", "linda_wednesday", "anouk_thursday", "petra_thursday", "anouk_owns_tray", "sanne_friday",
+	"petra_batch", "linda_replanning", "mieke_redraw", "joost_vacancies", "marco_wasted_trips",
+	"sanne_checker", "henk_camera", "joost_output_kpi", "sanne_kpi",
+	"gert_klic", "wim_spreadsheet", "dirk_shelf", "thomas_reclaim", "rob_order_rule", "femke_triage", "petra_silent_meters", "frank_kpi_targets", "linda_evenings", "esra_agents", "anouk_late", "esra_after", "marco_day_100", "henk_last_week", "ilse_queue", "petra_after", "el_amrani_fourth_call", "ahmed_after_henk"]
+## How much each flag weighs in the ranking of talks (the worst read first).
+const WEIGHT := {"repeat": 3.0, "clarify": 3.0, "empty": 2.0, "farewell": 2.0, "ruud": 2.0, "retold": 2.0, "told": 2.0,
+	"echo": 1.0, "question": 1.0}
+## Seeds of the random players.
+const RANDOM_PLAYERS := 3
+
+
+## What the flags read: the patterns of vocabulary.json (tools/build_content.py
+## REPEAT_CLAIM, CLARIFY_ASK), every stock text of the bank, the outcome texts.
+static func context(c: Catalog) -> Dictionary:
+	var vocab := JsonFile.read_dict("res://data/vocabulary.json")
+	var coherence := JsonFile.dict_or_empty(JsonFile.dict_or_empty(vocab.get("data")).get("dialog_coherence"))
+	var stock := {}
+	for move: String in Dialog.MOVES:
+		var lines: Variant = JsonFile.dict_or_empty(c.dialog_bank.get("player")).get(move, [])
+		for line: Variant in (lines if lines is Array else [lines]):
+			stock[str(line)] = true
+	return {"repeat": _regex(str(coherence.get("repeat", ""))), "clarify": _regex(str(coherence.get("clarify", ""))),
+		"stock": stock, "bank_replies": _bank_replies(c), "people": People.new(c.persons, c.dialogs, c.dialog_bank),
+		"catalog": c}
+
+
+static func _regex(pattern: String) -> RegEx:
+	return RegEx.create_from_string("(?i)" + pattern) if not pattern.is_empty() else null
+
+
+## Every persuasion and check-in in content, each in every version (review 7: a
+## variant is walked too), at the start People gives it on a first meeting (as the
+## route check starts them: its clues found, the facts its condition and block need given).
+static func talks(c: Catalog, ids: Array = []) -> Array[Dialog]:
+	var people := People.new(c.persons, c.dialogs, c.dialog_bank)
+	var out: Array[Dialog] = []
+	for d: DialogDef in c.dialogs:
+		if d.kind != ExpertTalk.KIND and (ids.is_empty() or d.id in ids):
+			out.append_array(versions(d, people))
+	return out
+
+
+## Talk `d` as written, then each of its variants, started with the facts that
+## variant needs (the first atom of an `any`).
+static func versions(d: DialogDef, people: People) -> Array[Dialog]:
+	var out: Array[Dialog] = []
+	for v in range(-1, d.variants.size()):
+		var known := {}
+		if v >= 0:
+			var needs: Dictionary = d.variants[v].get("needs", {})
+			for atom in needs.get("all", []) + needs.get("any", []).slice(0, 1):
+				known[atom] = true
+		var first := people.start(d, {"main": Array(d.missions), "active": Array(d.missions), "found": {},
+			"facts": known, "team_trust": 0, "blamed": false, "now": 0})
+		assert(first.version == v, "%s: variant %d is reached by its own needs" % [d.id, v + 1])
+		out.append(DialogRoutes.start(d, people.persons[d.person], people.bank, first.openness, v, known))
+	return out
+
+
+## The player's lead-in options of talk `d` that answer only the dialog's own lead-in
+## (review 8): a word of four letters or more an option shares with that lead-in and a
+## variant's lead-in lacks ("Alleen wat?" after "En als ik ziek word…").
+static func lead_in_misfits(d: DialogDef) -> Array[String]:
+	var out: Array[String] = []
+	var own := _lead_in_words(d, -1)
+	for move: String in d.lines:
+		var keyed: Variant = d.lines[move]
+		if not keyed is Dictionary or not keyed.has("lead_in"):
+			continue
+		var options: Variant = keyed["lead_in"]
+		for option: Variant in (options if options is Array else [options]):
+			var shared := _long_words(str(option)).filter(func(w: String) -> bool: return own.has(w))
+			for v in d.variants.size():
+				var theirs := _lead_in_words(d, v)
+				var missing := shared.filter(func(w: String) -> bool: return not theirs.has(w))
+				if not missing.is_empty():
+					out.append("%s \"%s\" (%s) after variant %d's lead-in" % [move, option, ", ".join(missing), v + 1])
+	return out
+
+
+static func _lead_in_words(d: DialogDef, v: int) -> Dictionary:
+	var out := {}
+	for layer: Dictionary in d.layers_of(v):
+		for w: String in _long_words(str(JsonFile.dict_or_empty(layer.get("lead_in")).get("text", ""))):
+			out[w] = true
+	return out
+
+
+static func _long_words(text: String) -> Array:
+	return RegEx.create_from_string("\\p{L}{4,}").search_all(text.to_lower()).map(
+		func(m: RegExMatch) -> String: return m.get_string())
+
+
+## The talk's own sentences that `walked` never said (reviews 8 and 9: every line a
+## player can meet is judged by the walk at least once), for the listening and steering
+## moves: a plain list, and every list of a mapping by the layer the person spoke of
+## (their position, interest, concern; `_` while some layer has no list of its own).
+## Left out: the lead-in's second and later options (a short "Ik luister." beside the
+## first; the lead-in gate reads them, by their words only, review 10) and a `_` the
+## engine never draws (every layer keyed).
+static func unsaid(d: DialogDef, walked: Dictionary) -> Array[String]:
+	var said := {}
+	for ex: Dictionary in walked["exchanges"].values():
+		said[ex["said"]] = true
+	var out: Array[String] = []
+	for move: String in Dialog.LISTEN + ["perspective", "pressure", "confront"]:
+		for line: String in drawn(d.lines.get(move)):
+			if not said.has(line) and not line.begins_with("("):
+				out.append("%s \"%s\"" % [move, line])
+	return out
+
+
+## The moves whose answers belong to their questions place by place, landing or missing
+## (Dialog._asked): a perspective question and its own answer. A listening move's answer
+## is the person's next free line (a list of ways to say it, in turn), and a question
+## asked again draws the "you asked that" lines, so a later miss of mood may never come.
+const ANSWERED_IN_PLACE := ["perspective"]
+
+
+## The talk's own answers to its keyed lines that `walked` never gave (review 10): for
+## each layer's list of player lines of ANSWERED_IN_PLACE, the landing and the missing
+## answer at each of its places (the reply lists keyed alike).
+static func unanswered(d: DialogDef, walked: Dictionary) -> Array[String]:
+	var given := {}
+	for ex: Dictionary in walked["exchanges"].values():
+		for reply: String in ex["replies"]:
+			given[reply.get_slice("\n", 0)] = true
+	var out: Array[String] = []
+	for move: String in ANSWERED_IN_PLACE:
+		var lines: Variant = d.lines.get(move)
+		if not lines is Dictionary:
+			continue
+		for key: String in lines:
+			var asked := _all_lines(lines[key]).size()
+			if key == "lead_in" or (key == "_" and TOPICS.all(func(t: String) -> bool: return lines.has(t))):
+				continue
+			for case: String in ["lands", "misses"]:
+				var list: Variant = JsonFile.dict_or_empty(JsonFile.dict_or_empty(d.replies.get(move)).get(case)).get(key)
+				if not list is Array:
+					continue
+				for i in mini(asked, list.size()):
+					var text := str(JsonFile.dict_or_empty(list[i]).get("text", ""))
+					if not given.has(text):
+						out.append("%s %s %s[%d] \"%s\"" % [move, case, key, i, text])
+	return out
+
+
+## The answers `walked` gave to a question of ANSWERED_IN_PLACE that belong to another
+## question of the same list (review 10: Ilse's second perspective question answered
+## with the first's "Vanuit jullie?…").
+static func misanswered(d: DialogDef, walked: Dictionary) -> Array[String]:
+	var out: Array[String] = []
+	for move: String in ANSWERED_IN_PLACE:
+		var lines: Variant = d.lines.get(move)
+		if not lines is Dictionary:
+			continue
+		for key: String in lines:
+			var asked := _all_lines(lines[key])
+			var own := {}
+			var any := {}
+			for case: String in ["lands", "misses"]:
+				var list := _answers(d, move, case, key, 99)
+				for i in list.size():
+					any[list[i]] = true
+					if i < asked.size():
+						own[asked[i] + "|" + list[i]] = true
+			for ex: Dictionary in walked["exchanges"].values():
+				if not ex["move"] == move or not ex["said"] in asked:
+					continue
+				for reply: String in ex["replies"]:
+					var said_reply := reply.get_slice("\n", 0)
+					if any.has(said_reply) and not own.has(ex["said"] + "|" + said_reply):
+						out.append("%s \"%s\" → \"%s\"" % [move, ex["said"], said_reply])
+	return out
+
+
+## The topics a mapping of lines answers.
+const TOPICS := ["position", "interest", "lead_in", "concern"]
+
+
+## The lines of one move's entry a player can be dealt (unsaid() says which).
+static func drawn(lines: Variant) -> Array[String]:
+	if not lines is Dictionary:
+		return _all_lines(lines)
+	var out: Array[String] = []
+	for key: String in lines:
+		var entries := _all_lines(lines[key])
+		if key == "lead_in":
+			entries = entries.slice(0, 1)
+		elif key == "_" and TOPICS.all(func(t: String) -> bool: return lines.has(t)):
+			entries = []
+		out.append_array(entries)
+	return out
+
+
+static func _all_lines(lines: Variant) -> Array[String]:
+	var out: Array[String] = []
+	if lines is String:
+		out.append(lines)
+	elif lines is Array:
+		for l: Variant in lines:
+			out.append_array(_all_lines(l))
+	elif lines is Dictionary:
+		for v: Variant in lines.values():
+			out.append_array(_all_lines(v))
+	return out
+
+
+## How a transcript names a version of a talk: its id, and which variant.
+static func label(t: Dialog) -> String:
+	return t.def.id + (" (variant %d)" % (t.version + 1) if t.version >= 0 else "")
+
+
+## The first line a version of a talk says (a variant may have its own).
+static func opening(t: Dialog) -> String:
+	var own: Variant = t.def.variants[t.version].get("opening") if t.version >= 0 else null
+	return own if own is String else t.def.opening
+
+
+# ── One turn ────────────────────────────────────────────────────────────────
+
+## A path through a talk so far: the moves and sentences the player said, the
+## lines the person said (their position first).
+static func path_of(talk: Dialog) -> Dictionary:
+	return {"moves": [], "lines": [], "heard": [str(talk.position().get("text", ""))]}
+
+
+## The path after turn `r`.
+static func path_after(path: Dictionary, r: Dictionary) -> Dictionary:
+	var more := str(r.get("co_proposal", {}).get("text", ""))
+	return {"moves": path["moves"] + [r["move"]], "lines": path["lines"] + [r["line"]],
+		"heard": path["heard"] + [str(r["reply"])] + ([more] if not more.is_empty() else [])}
+
+
+## The turn the player just took in `t` (`r`: its say() result), after the person
+## said `before`, on `path` (what was said before it): {before, said, move,
+## reply, more (what they said after it: their own idea), arrow, band, flags}.
+static func turn(ctx: Dictionary, t: Dialog, before: String, path: Dictionary, r: Dictionary) -> Dictionary:
+	var reply := str(r["reply"])
+	var flags: Array[String] = []
+	var moves: Array = path["moves"]
+	# Said before (Dialog._repeats): the same sentence, or a move whose sentences all say the same.
+	var again: bool = r["line"] in path["lines"] or (r["move"] in Dialog.SAME_SAYING and r["move"] in moves)
+	if _hits(ctx["repeat"], reply) and not again:
+		flags.append("repeat")
+	if _hits(ctx["clarify"], reply):
+		flags.append("clarify")
+	if reply.strip_edges().is_empty():
+		flags.append("empty")
+	if before.strip_edges().ends_with("?") and ctx["stock"].has(r["line"]):
+		flags.append("question")
+	if r["line"] in path["lines"] and not r["move"] in ["propose", "propose_experiment"] \
+			and str(r["line"]).split(" ", false).size() > TOLD_WORDS:
+		flags.append("told")
+	var more := str(r.get("co_proposal", {}).get("text", ""))
+	for line: String in [reply, more]:
+		if line.strip_edges().is_empty() or not line in path["heard"]:
+			continue
+		if _story(t.def).has(line):
+			flags.append("retold")   # a story line never comes twice, whatever the player said
+		elif not r["line"] in path["lines"]:
+			flags.append("echo")   # the same answer to the same sentence is no echo
+	return {"before": before, "said": str(r["line"]), "move": str(r["move"]), "reply": reply, "more": more,
+		"farewell": str(r.get("farewell", "")), "arrow": int(r.get("arrow", 0)), "band": int(r.get("band", -1)),
+		"openness": int(r.get("openness", 0)), "flags": flags}
+
+
+## What the person said last after `t`'s turn (`r`): their own idea after their
+## reply, else the reply, else what they said before.
+static func last_words(before: String, r: Dictionary) -> String:
+	var more := str(r.get("co_proposal", {}).get("text", ""))
+	if not more.is_empty():
+		return more
+	return str(r["reply"]) if not str(r["reply"]).strip_edges().is_empty() else before
+
+
+## How an ended talk `t` closed (`r`: the last say() result): {outcome, reply,
+## farewell (their word on how it went after the reply, "" for none), ruud
+## (Ruud's note, "" outside Act 0), note (People.talk_note), moves, flags}.
+static func ending(ctx: Dictionary, t: Dialog, r: Dictionary) -> Dictionary:
+	var flags: Array[String] = []
+	var farewell := str(r.get("farewell", ""))
+	var closed := farewell.strip_edges() != "" or str(r["reply"]) == str(r["outcome_line"]) \
+		or t.outcome in ["partial", "blocked"]
+	if not closed:
+		flags.append("farewell")
+	var people: People = ctx["people"]
+	var ruud := people.ruud_names(t)
+	var named := people.ruud_named(t)
+	if not named.get("move", "none") in ["none", "silence"] and not str(named["said"]) in ruud:
+		flags.append("ruud")   # a silence is no sentence: he says the player said nothing
+	var result := {"clue": t.unlocked_clue(), "wait_for": t.wait_for(), "ruud_names": ruud,
+		"hints": t.def.block.get("routes", []).map(func(x: Dictionary) -> String: return str(x.get("hint", ""))) \
+			if t.outcome == "blocked" else []}
+	return {"outcome": t.outcome, "reply": str(r["reply"]), "farewell": farewell, "ruud": ruud,
+		"note": People.talk_note(t, result), "moves": Array(t.made), "flags": flags}
+
+
+## The lines a talk tells once (layers, lead-ins, proposal replies, their own idea).
+static func _story(d: DialogDef) -> Dictionary:
+	var out := {str(d.co_proposal.get("text", "")): true}
+	for v in range(-1, d.variants.size()):
+		for layer: Dictionary in d.layers_of(v):
+			out[str(layer.get("text", ""))] = true
+			out[str(JsonFile.dict_or_empty(layer.get("lead_in")).get("text", ""))] = true
+	for item: Dictionary in d.proposals + d.experiments:
+		out[str(item.get("reply", ""))] = true
+	out.erase("")
+	return out
+
+
+static func _hits(re: RegEx, text: String) -> bool:
+	return re != null and re.search(text) != null
+
+
+# ── Every exchange ──────────────────────────────────────────────────────────
+
+## Every exchange `talk` can hold: breadth first over every option a turn could
+## offer, states merged, at most `budget` states expanded (the first turns in
+## full), then `dives` random talks to the end over the same options (the late
+## turns and the endings): {exchanges (key → {before, said, move, replies: {reply
+## → flags}}), endings (key → ending()), states (expanded), complete (the breadth
+## first walk ran out of states before the budget)}.
+static func walk(ctx: Dictionary, talk: Dialog, budget: int = BUDGET, dives: int = DIVES) -> Dictionary:
+	var start := {"talk": talk.copy(), "before": str(talk.position().get("text", "")), "path": path_of(talk)}
+	var queue: Array = [start]
+	var head := 0
+	var seen := {}
+	var out := {"exchanges": {}, "endings": {}, "states": 0, "complete": false}
+	while head < queue.size() and out["states"] < budget:
+		var node: Dictionary = queue[head]
+		head += 1
+		var key := (node["talk"] as Dialog).state_key() + "|" + str(node["before"])
+		if seen.has(key):
+			continue
+		seen[key] = true
+		out["states"] += 1
+		for option: Dictionary in _options(node["talk"]):
+			var next := _step(ctx, node, option, out)
+			if not next.is_empty():
+				queue.append(next)
+	out["complete"] = head >= queue.size()
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash(talk.def.id)
+	for i in dives:
+		var node := start
+		while not node.is_empty():
+			var options := _options(node["talk"])
+			node = _step(ctx, node, options[rng.randi_range(0, options.size() - 2)], out)  # never the close
+	_reach(ctx, talk, out)
+	_forced(ctx, talk, out)
+	return out
+
+
+## Review 9: a list keyed by the layer the person spoke of is dealt in order, so its
+## later lines come only as late in a talk as no walk may get. Each such line is said
+## once from that layer, and answered twice: as a move that lands (the person's words
+## still standing, open) and as one that misses (nothing to answer; a steering move
+## heard but not yet welcome, review 10). The state carries the history a route to it
+## has (review 10): the earlier lines said, their answers given, what the person told.
+static func _forced(ctx: Dictionary, talk: Dialog, out: Dictionary) -> void:
+	for move: String in Dialog.LISTEN + ["perspective", "pressure", "confront"]:
+		var lines: Variant = talk.def.lines.get(move)
+		if not lines is Dictionary:
+			continue
+		for key: String in lines:
+			var entries := _all_lines(lines[key])
+			var drawn_here := drawn({key: lines[key]}) if key != "_" else drawn(lines)
+			for i in entries.size():
+				if not entries[i] in drawn_here:
+					continue
+				for lands: bool in [true, false]:
+					for earlier: String in ["lands", "misses"]:   # the earlier questions landed, or missed
+						var answers := _answers(talk.def, move, earlier, key, i)
+						var option := {"move": move, "pick": ""}
+						var node := _put_on(talk, move, _topic_for(key, lines), entries.slice(0, i), answers, lands, false)
+						if not option in _options(node["talk"]):
+							node = _put_on(talk, move, _topic_for(key, lines), entries.slice(0, i), answers, lands, true)   # after the concern
+						if option in _options(node["talk"]):
+							_step(ctx, node, option, out)
+
+
+## The first `n` answers the talk holds for `move` in `case` at `key` (what a route that
+## asked the earlier questions heard).
+static func _answers(d: DialogDef, move: String, case: String, key: String, n: int) -> Array:
+	var list: Variant = JsonFile.dict_or_empty(JsonFile.dict_or_empty(d.replies.get(move)).get(case)).get(key)
+	if not list is Array:
+		return []
+	return list.slice(0, n).map(func(e: Variant) -> String: return str(JsonFile.dict_or_empty(e).get("text", "")))
+
+
+## The layer a `_` list answers: the first a mapping has no list of its own for.
+static func _topic_for(key: String, lines: Dictionary) -> String:
+	if key != "_":
+		return key
+	for t: String in TOPICS:
+		if not lines.has(t):
+			return t
+	return "position"
+
+
+## A node of `talk` put on layer `topic` for `move`, with `said` and `answers` behind it
+## and the person's story so far heard, ready for a move that lands (`lands`: their
+## words standing, heard, open) or misses (nothing standing; a steering move heard but
+## not yet welcome; a question past those that land); `told_all`: the concern out.
+static func _put_on(talk: Dialog, move: String, topic: String, said: Array, answers: Array, lands: bool,
+		told_all: bool) -> Dictionary:
+	var t := talk.copy()
+	var layers: Array = t.layers()
+	t._topic = topic
+	var path := path_of(t)
+	if topic in ["interest", "lead_in", "concern"] or told_all:
+		t.revealed["interest"] = true
+		path["heard"].append(str(layers[0].get("text", "")))
+	if topic in ["lead_in", "concern"] or told_all:
+		t._lead_ins = 1
+		path["heard"].append(str(JsonFile.dict_or_empty(layers[1].get("lead_in")).get("text", "")))
+	if topic == "concern" or told_all:
+		t.revealed["concern"] = true
+		path["heard"].append(str(layers[1].get("text", "")))
+	t.said.assign(said)
+	t.answered.assign(answers)
+	path["heard"].append_array(answers)
+	var steering := not move in Dialog.LISTEN
+	t.heard = lands or steering
+	t.openness = 80 if lands else (Dialog.STEER_FROM if steering else 30)
+	t._last_tags = ["claim", "feeling", "hesitation", "admission", "doubt"] if lands else []
+	t._uses[move] = said.size()   # the earlier lines were this move too
+	if said.size() >= 2:
+		t._worn[move] = true   # and the person said once that it wears
+	if not lands:
+		t.moves_made = Dialog.EARLY_MOVES
+		t._mood_asked = true
+		if move == "open_question":
+			t._uses[move] = maxi(said.size(), Dialog.OPEN_QUESTIONS_THAT_LAND)
+	var before := str(t.position().get("text", ""))
+	if topic == "interest":
+		before = str(layers[0].get("text", ""))
+	elif topic == "concern":
+		before = str(layers[1].get("text", ""))
+	elif topic == "lead_in":
+		before = str(JsonFile.dict_or_empty(layers[1].get("lead_in")).get("text", ""))
+	return {"talk": t, "before": before, "path": path}
+
+
+## Deals the reach pass plays (review 8: a line drawn by the seed is walked under each).
+const REACH_SEEDS := 3
+## How often the reach pass makes a move again in a row (a list holds three lines at most).
+const REACH_REPEATS := 2
+
+
+## The late turns a breadth first walk and random talks seldom get to (review 8): a
+## listener plays the talk to its end on REACH_SEEDS deals, and from each turn on its
+## way every option is tried, and every option after that, so each line of a list (the
+## second perspective question, the line a seed draws) is said and answered once.
+static func _reach(ctx: Dictionary, talk: Dialog, out: Dictionary) -> void:
+	for s in REACH_SEEDS:
+		var t := talk.copy()
+		t._seed = s
+		var node := {"talk": t, "before": str(t.position().get("text", "")), "path": path_of(t)}
+		var turns: Array[Dictionary] = []
+		while not node.is_empty():
+			for option: Dictionary in _options(node["talk"]):
+				var next := _step(ctx, node, option, out)
+				if not next.is_empty():
+					for again: Dictionary in _options(next["talk"]):
+						_step(ctx, next, again, out)
+				for i in REACH_REPEATS:   # the same move again, while a turn could still offer it
+					if next.is_empty() or not option in _options(next["talk"]):
+						break
+					next = _step(ctx, next, option, out)
+			var here: Dialog = node["talk"]
+			var offers := here.offer()
+			var i := listener(here, offers, turns)
+			var chosen: Dictionary = offers[i] if i >= 0 and i < offers.size() else {"move": "close", "pick": ""}
+			turns.append({"move": chosen["move"]})
+			node = _step(ctx, node, chosen, out)
+
+
+## Every option a turn of `t` could offer under any deal, the close last.
+static func _options(t: Dialog) -> Array:
+	return t._candidates() + [{"move": "close", "pick": ""}]
+
+
+## Play `option` on a copy of `node`'s talk and keep the exchange (and the
+## ending) in `out`: the next node, {} when the talk ended or refused it.
+static func _step(ctx: Dictionary, node: Dictionary, option: Dictionary, out: Dictionary) -> Dictionary:
+	var c := (node["talk"] as Dialog).copy()
+	var r := c.say(option["move"], option["pick"])
+	if r.has("error"):
+		return {}
+	var x := turn(ctx, c, node["before"], node["path"], r)
+	var ex_key: String = x["before"] + "\n" + x["said"]
+	var ex: Dictionary = out["exchanges"].get(ex_key, {"before": x["before"], "said": x["said"], "move": x["move"],
+		"replies": {}})
+	ex["replies"][x["reply"] + ("\n" + x["more"] if not x["more"].is_empty() else "")] = x["flags"]
+	out["exchanges"][ex_key] = ex
+	if r["ended"]:
+		var e := ending(ctx, c, r)
+		out["endings"]["%s|%s|%s|%s" % [e["outcome"], e["reply"], e["farewell"], e["ruud"]]] = e
+		return {}
+	return {"talk": c, "before": last_words(node["before"], r), "path": path_after(node["path"], r)}
+
+
+# ── Whole talks, as the player sees them ────────────────────────────────────
+
+## A whole talk played by `player` (a Callable (talk, offers, turns) → index into
+## offers, -1 to close) through the turns' offers: {turns: [turn() + {offers,
+## chosen}], ending}.
+static func play(ctx: Dictionary, talk: Dialog, player: Callable) -> Dictionary:
+	var t := talk.copy()
+	var before := str(t.position().get("text", ""))
+	var turns: Array[Dictionary] = []
+	var path := path_of(t)
+	var r := {}
+	while t.outcome.is_empty():
+		var offers := t.offer()
+		var i: int = player.call(t, offers, turns)
+		var option: Dictionary = offers[i] if i >= 0 and i < offers.size() else {"move": "close", "pick": ""}
+		r = t.say(option["move"], option["pick"])
+		var x := turn(ctx, t, before, path, r)
+		x["offers"] = offers.map(func(o: Dictionary) -> String: return str(o["line"]))
+		x["chosen"] = i if i >= 0 and i < offers.size() else -1
+		turns.append(x)
+		path = path_after(path, r)
+		before = last_words(before, r)
+	return {"turns": turns, "ending": ending(ctx, t, r)}
+
+
+## The players a transcript shows: [{name, play (Callable)}].
+static func players() -> Array[Dictionary]:
+	var out: Array[Dictionary] = [{"name": "Luistert eerst", "play": listener}]
+	for i in Dialog.OFFERED:
+		out.append({"name": "Kiest altijd zin %d" % (i + 1), "play": func(_t: Dialog, offers: Array, _turns: Array) -> int:
+			return mini(i, offers.size() - 1)})
+	out.append({"name": "Stuurt meteen", "play": steerer})
+	for s in RANDOM_PLAYERS:
+		var rng := RandomNumberGenerator.new()
+		rng.seed = s + 1
+		out.append({"name": "Kiest willekeurig (%d)" % (s + 1), "play": func(_t: Dialog, offers: Array, _turns: Array) -> int:
+			return rng.randi_range(0, offers.size() - 1)})
+	return out
+
+
+## Listens first: answers the person's last words with the move that fits them,
+## puts a proposal on the table once the concern is out, then asks; never presses.
+static func listener(t: Dialog, offers: Array, turns: Array) -> int:
+	var want: Array = []
+	if not t.table.is_empty():
+		want = ["ask_commitment"]
+	elif t.revealed.has("concern") and (t.openness >= Dialog.COMMIT_AT or t.patience <= 2):
+		want = ["propose", "propose_experiment"]
+	if t.def.kind == "checkin" and t.revealed.has("concern"):
+		want = ["close"]
+	for tag: String in t._last_tags:
+		if DialogRoutes.ANSWER.has(tag):
+			want.append(DialogRoutes.ANSWER[tag])
+	want.append_array(["open_question", "mood", "empathy", "inquiry", "paraphrase", "silence"])
+	var last := str(turns[-1]["move"]) if not turns.is_empty() else ""
+	for move: String in want:
+		for i in offers.size():
+			if offers[i]["move"] == move and move != last:
+				return i
+	for i in offers.size():
+		if not offers[i]["move"] in ["pressure", "confront"]:
+			return i
+	return 0
+
+
+## Steers as soon as a turn offers it (a proposal, the ask, data), else presses.
+static func steerer(_t: Dialog, offers: Array, _turns: Array) -> int:
+	for wanted: Array in [["ask_commitment"], ["propose", "propose_experiment", "show_data", "perspective"],
+			["pressure", "confront"]]:
+		for i in offers.size():
+			if offers[i]["move"] in wanted:
+				return i
+	return 0
+
+
+# ── Reading ─────────────────────────────────────────────────────────────────
+
+## How broken a walk reads: {score, counts (flag → distinct exchanges or endings
+## with it), generic (the share of replies that are stock lines), exchanges}.
+static func score(ctx: Dictionary, walked: Dictionary) -> Dictionary:
+	var counts := {}
+	var replies := 0
+	var stock := 0
+	var bank_texts: Dictionary = ctx["bank_replies"]
+	for ex: Dictionary in walked["exchanges"].values():
+		for reply: String in ex["replies"]:
+			replies += 1
+			stock += 1 if bank_texts.has(reply) else 0
+			for f: String in ex["replies"][reply]:
+				counts[f] = int(counts.get(f, 0)) + 1
+	for e: Dictionary in walked["endings"].values():
+		for f: String in e["flags"]:
+			counts[f] = int(counts.get(f, 0)) + 1
+	var generic := stock / float(maxi(replies, 1))
+	var total := 10.0 * generic
+	for f: String in counts:
+		total += float(WEIGHT.get(f, 0.0)) * sqrt(float(counts[f]))
+	return {"score": total, "counts": counts, "generic": generic, "exchanges": walked["exchanges"].size()}
+
+
+## Every text the bank's replies, special lines and wear-out lines hold.
+static func _bank_replies(c: Catalog) -> Dictionary:
+	var out := {}
+	var bank := c.dialog_bank
+	for move: Variant in JsonFile.dict_or_empty(bank.get("replies")):
+		for situation: Variant in bank["replies"][move]:
+			out[str(bank["replies"][move][situation].get("text", ""))] = true
+	for key: String in ["special", "outcomes"]:
+		for k: Variant in JsonFile.dict_or_empty(bank.get(key)):
+			out[str(bank[key][k])] = true
+	for archetype: Variant in JsonFile.dict_or_empty(bank.get("wear_out")):
+		for k: Variant in bank["wear_out"][archetype]:
+			out[str(bank["wear_out"][archetype][k])] = true
+	return out

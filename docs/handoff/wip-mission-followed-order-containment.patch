@@ -1,0 +1,315 @@
+diff --git a/game/src/game/session.gd b/game/src/game/session.gd
+index c8eba63..49b3b5c 100644
+--- a/game/src/game/session.gd
++++ b/game/src/game/session.gd
+@@ -40,6 +40,8 @@ var region: Region
+ var missions: Missions
+ ## Hidden rewards for deep thinking; it hears what the player does.
+ var discoveries: Discoveries
++## The El Amrani family's dossier, followed through the stream.
++var followed := FollowedOrder.new()
+ ## The first thing wrong with the content; "" when the game is usable.
+ var error := ""
+ 
+@@ -65,6 +67,7 @@ static func new_game(seed_value: int = 1, data_dir: String = Catalog.DATA_DIR, t
+ 			return s
+ 	# No problems are active yet, so the warm-up costs nothing and teaches nothing.
+ 	net.advance(SimCalendar.days(WARMUP_DAYS) + START_MINUTE)
++	s.followed.pick(net)
+ 	if training:
+ 		s.missions.accept(TRAINING_FIRST)
+ 	else:
+@@ -184,6 +187,25 @@ func act(problem_id: String, standardise: bool) -> Dictionary:
+ 	return score.duplicate(true) if not score.is_empty() else {"error": "not_checked"}
+ 
+ 
++## Contain an acute risk in an active safety mission (Missions.contain): ""
++## or not_active | no_containment | contained.
++func contain(mission_id: String) -> String:
++	var refused := missions.contain(mission_id)
++	if refused.is_empty():
++		discoveries.note_contain(self, mission_id)
++	_after(0)
++	return refused
++
++
++## Let time pass (whole or part days, at most a quarter): the player waits
++## for something to happen. "" or bad_days.
++func wait_days(days: float) -> String:
++	if days <= 0.0 or days > MAX_FORECAST_DAYS * 3:
++		return "bad_days"
++	_after(roundi(days * SimCalendar.MINUTES_PER_DAY))
++	return ""
++
++
+ ## A gemba audit of the standard at a place (a leader routine, no mission
+ ## needed); Sustain.AUDIT_MINUTES pass. Standardised fixes there are back in
+ ## full use. Returns Region.audit's {refreshed, no_standard} (problem ids), or
+@@ -303,6 +325,12 @@ func clock_text() -> String:
+ 		int(minute_of_day / 60.0), minute_of_day % 60]
+ 
+ 
++## The El Amrani dossier: {age_days, touch_hours, step, delivered_days}
++## (FollowedOrder.view).
++func followed_order() -> Dictionary:
++	return followed.view(region.net)
++
++
+ ## The month of the game's date (1-12).
+ func month() -> int:
+ 	var played := region.net.time - SimCalendar.days(WARMUP_DAYS)
+@@ -498,6 +526,7 @@ func _after(minutes: int) -> void:
+ 	_start_training_day()
+ 	if not missions.in_training():
+ 		region.start_drift()
++	followed.update(region.net)
+ 	discoveries.update(self)
+ 
+ 
+diff --git a/game/src/rules/followed_order.gd b/game/src/rules/followed_order.gd
+new file mode 100644
+index 0000000..3a45be7
+--- /dev/null
++++ b/game/src/rules/followed_order.gd
+@@ -0,0 +1,79 @@
++class_name FollowedOrder
++extends RefCounted
++## One customer's dossier followed through the stream (Merijn, 2026-10-15;
++## audit §3.0): the El Amrani family's connection is a real work order in the
++## simulation, so how long it waits, how many hours are worked on it and when
++## it is delivered are computed, never scripted. It makes lead time personal.
++
++const STREAM := "connections"
++## Where the family's dossier lies when play starts: early in the stream
++## (Anouk's tray in the training week).
++const START_STEPS := ["intake", "design"]
++
++var order_id := -1
++var born := 0
++## When it was delivered (minutes); -1 while it is under way.
++var delivered_at := -1
++## Its last known step and touch hours (kept once it is delivered).
++var _step := ""
++var _touch_hours := 0.0
++
++
++## Follow the oldest open order waiting early in the stream.
++func pick(net: Network) -> void:
++	var oldest: WorkOrder = null
++	for o in net.open_orders(net.stream(STREAM)):
++		if o.current_step().id in START_STEPS and (oldest == null or o.born < oldest.born):
++			oldest = o
++	if oldest != null:
++		order_id = oldest.id
++		born = oldest.born
++		_note(oldest)
++
++
++## Where it is now; delivered once it is no longer open.
++func update(net: Network) -> void:
++	if order_id < 0 or delivered_at >= 0:
++		return
++	for o in net.open_orders(net.stream(STREAM)):
++		if o.id == order_id:
++			_note(o)
++			return
++	delivered_at = net.time
++	_step = ""
++
++
++## The hours of work it has had: every work step before its current one,
++## and what is done of the current one.
++func _note(o: WorkOrder) -> void:
++	_step = o.current_step().id
++	var minutes := 0
++	for i in o.step_index:
++		var step: SimStep = o.stream.steps[i]
++		if step.kind == SimStep.Kind.WORK:
++			minutes += step.touch_minutes
++	if o.started and o.current_step().kind == SimStep.Kind.WORK:
++		minutes += maxi(0, o.current_step().touch_minutes - o.remaining)
++	_touch_hours = minutes / 60.0
++
++
++## {age_days (born to now or delivery), touch_hours, step ("" once
++## delivered), delivered_days (-1 while under way)}.
++func view(net: Network) -> Dictionary:
++	var end := delivered_at if delivered_at >= 0 else net.time
++	return {
++		"age_days": (end - born) / float(SimCalendar.MINUTES_PER_DAY), "touch_hours": _touch_hours, "step": _step,
++		"delivered_days": (delivered_at - born) / float(SimCalendar.MINUTES_PER_DAY) if delivered_at >= 0 else -1.0,
++	}
++
++
++func to_dict() -> Dictionary:
++	return {"order": order_id, "born": born, "delivered_at": delivered_at, "step": _step, "touch_hours": _touch_hours}
++
++
++func load_dict(d: Dictionary) -> void:
++	order_id = int(d.get("order", -1))
++	born = int(d.get("born", 0))
++	delivered_at = int(d.get("delivered_at", -1))
++	_step = str(d.get("step", ""))
++	_touch_hours = float(d.get("touch_hours", 0.0))
+diff --git a/game/src/rules/mission_def.gd b/game/src/rules/mission_def.gd
+index c8e8d02..cfaa6f5 100644
+--- a/game/src/rules/mission_def.gd
++++ b/game/src/rules/mission_def.gd
+@@ -41,6 +41,10 @@ var debrief_first: String
+ var debrief_variants: Dictionary[String, String] = {}
+ ## The briefing when the mission is back because its fix faded.
+ var reopen_text: String
++## A safety mission's containment (audit §2.4.1): {name, budget, days,
++## effects}, a short measure against an acute risk, taken once while the
++## mission is active; it fades after `days` and is not the fix.
++var containment: Dictionary = {}
+ ## Facts ("flag:<name>") its completion sets.
+ var sets_flags := PackedStringArray()
+ var briefing: String
+@@ -117,6 +121,7 @@ static func from_dict(d: Dictionary) -> MissionDef:
+ 		m.debrief_variants[str(key)] = str(variants[key])
+ 	m.reopen_text = str(d.get("reopen", ""))
+ 	m.sets_flags = PackedStringArray(d.get("sets_flags", []))
++	m.containment = JsonFile.dict_or_empty(d.get("containment")).duplicate(true)
+ 	m.briefing = str(d.get("briefing", ""))
+ 	m.debrief = str(d.get("debrief", ""))
+ 	m.fail_text = str(d.get("fail", ""))
+diff --git a/game/src/rules/missions.gd b/game/src/rules/missions.gd
+index 6fa63f4..29d718c 100644
+--- a/game/src/rules/missions.gd
++++ b/game/src/rules/missions.gd
+@@ -42,6 +42,8 @@ const FADING_DAYS := 45
+ const CONDITIONS: Array[String] = ["blamed", "fading_fix"]
+ ## A debrief's variants, in the order they win (content: debrief_variants).
+ const DEBRIEF_VARIANTS: Array[String] = ["blamed", "poor_fix", "not_standardised"]
++## The effects source of a safety mission's containment.
++const CONTAIN_SOURCE := "contain:"
+ const P := ProblemState.Phase
+ ## Where the player stands, as the coach sees it (see stage_of).
+ const STAGES := ["go_see", "understand", "experiment", "reflect"]
+@@ -102,6 +104,9 @@ var repairs := Repairs.new()
+ var stewardship := Stewardship.new()
+ ## Deadlines met because the fix was in place when the date came (R5).
+ var deadline_kept: Dictionary[String, bool] = {}
++## Safety missions contained: mission → when the containment ends (minutes);
++## kept after it ends, so it is taken once per mission.
++var contained: Dictionary[String, int] = {}
+ 
+ 
+ func _init(of_region: Region, mission_defs: Array[MissionDef], coach_def: Dictionary) -> void:
+@@ -248,6 +253,30 @@ func update() -> void:
+ 				_fail(m)
+ 	_retire_orphans()
+ 	_lock_unprepared()
++	for id: String in contained:
++		if region.net.time >= contained[id]:
++			region.net.clear_effects(CONTAIN_SOURCE + id)
++
++
++## Contain an acute risk in an active safety mission (audit §2.4.1): pay the
++## containment, its effects hold for its days. "" or not_active |
++## no_containment | contained (once per mission).
++func contain(id: String) -> String:
++	if not defs.has(id) or status(id) != "active":
++		return "not_active"
++	var m := defs[id]
++	if m.containment.is_empty():
++		return "no_containment"
++	if contained.has(id):
++		return "contained"
++	var refused := region.net.set_effects(CONTAIN_SOURCE + id, m.containment.get("effects", []))
++	if not refused.is_empty():
++		push_warning("mission %s: containment refused: %s" % [id, refused])
++		return "no_containment"
++	region.grant(0, -int(m.containment.get("budget", 0)))
++	contained[id] = region.net.time + SimCalendar.days(int(m.containment.get("days", 14)))
++	events.append({"type": "contained", "mission": id})
++	return ""
+ 
+ 
+ ## Whether a fact or a measure holds (Facts): done: and failed: from the
+@@ -541,7 +570,8 @@ func drain_events() -> Array[Dictionary]:
+ func to_dict() -> Dictionary:
+ 	return {"progress": progress.duplicate(true), "opened_at": opened_at.duplicate(), "done_once": done_once.keys(),
+ 		"failed_once": failed_once.keys(), "facts": facts.to_list(), "repair_due": repairs.to_dict(),
+-		"heard": heard.duplicate(), "stewardship": stewardship.to_dict(), "deadline_kept": deadline_kept.keys()}
++		"heard": heard.duplicate(), "stewardship": stewardship.to_dict(), "deadline_kept": deadline_kept.keys(),
++		"contained": contained.duplicate()}
+ 
+ 
+ ## Restore to_dict() output. Returns the mission ids the content no longer
+@@ -555,6 +585,11 @@ func load_dict(d: Dictionary) -> Array[String]:
+ 	facts.load_list(d.get("facts", []))
+ 	repairs.load_dict(JsonFile.dict_or_empty(d.get("repair_due")))
+ 	stewardship.load_dict(JsonFile.dict_or_empty(d.get("stewardship")))
++	contained.clear()
++	var saved_contained := JsonFile.dict_or_empty(d.get("contained"))
++	for id: Variant in saved_contained:
++		if defs.has(str(id)):
++			contained[str(id)] = int(saved_contained[id])  # its effects come back with the network's
+ 	deadline_kept.clear()
+ 	var kept: Variant = d.get("deadline_kept", [])
+ 	for id: Variant in kept if kept is Array else []:
+diff --git a/game/tests/test_followed_order.gd b/game/tests/test_followed_order.gd
+new file mode 100644
+index 0000000..6bcc44a
+--- /dev/null
++++ b/game/tests/test_followed_order.gd
+@@ -0,0 +1,57 @@
++extends TestCase
++## One followed customer dossier (Merijn, 2026-10-15; audit §3.0): the El
++## Amrani family's connection is a real order in the simulation, so its
++## delivery day is computed, not scripted. And containment in a safety
++## mission (audit §2.4.1): contain now, fix the cause next.
++
++
++func _session() -> GameSession:
++	var s := GameSession.new_game(11, Catalog.DATA_DIR, false)
++	assert_eq(s.error, "")
++	return s
++
++
++func test_the_el_amrani_dossier_is_a_real_order() -> void:
++	var s := _session()
++	var dossier := s.followed_order()
++	assert_true(dossier["step"] in ["intake", "design"], "it waits early in the stream: %s" % dossier)
++	assert_true(dossier["age_days"] > 0.0)
++	assert_eq(dossier["delivered_days"], -1.0)
++	var age: float = dossier["age_days"]
++	assert_eq(s.wait_days(7), "")
++	assert_near(s.followed_order()["age_days"], age + 7.0, 0.01)
++	s.wait_days(200)
++	var done := s.followed_order()
++	assert_true(done["delivered_days"] > 0.0, "delivered at last: %s" % done)
++	assert_true(done["touch_hours"] > 1.0, "hours of work against weeks of waiting")
++
++
++func test_the_followed_order_survives_a_save() -> void:
++	var s := _session()
++	var copy := FollowedOrder.new()
++	copy.load_dict(bytes_to_var(var_to_bytes(s.followed.to_dict())))
++	assert_eq(copy.order_id, s.followed.order_id)
++	assert_eq(copy.born, s.followed.born)
++
++
++## Containment is the real exception to long term first: a short measure
++## against an acute risk, paid once, that fades by itself; it does not end the
++## mission (the root cause still needs its fix).
++func test_containment_in_a_safety_mission() -> void:
++	var s := _session()
++	var m: MissionDef = s.missions.defs["fix_digging_damage"]
++	assert_false(m.containment.is_empty(), "digging damage is a safety mission")
++	assert_eq(s.contain("fix_digging_damage"), "not_active")
++	for id in ["fix_done_but_not_closed", "fix_status_callers", "fix_incomplete_application", "fix_custom_design"]:
++		s.missions.done_once[id] = true
++	assert_eq(s.accept("fix_digging_damage"), "")
++	var budget := s.budget()
++	assert_eq(s.contain("fix_digging_damage"), "")
++	assert_eq(s.budget(), budget - int(m.containment["budget"]))
++	assert_true(s.region.net.effects().has("contain:fix_digging_damage"))
++	assert_eq(s.contain("fix_digging_damage"), "contained", "once")
++	assert_eq(s.missions.status("fix_digging_damage"), "active", "containing is not fixing")
++	s.wait_days(int(m.containment["days"]) + 1)
++	assert_false(s.region.net.effects().has("contain:fix_digging_damage"), "it fades by itself")
++	assert_eq(s.contain("fix_custom_design"), "not_active")
++	assert_eq(s.wait_days(0), "bad_days")

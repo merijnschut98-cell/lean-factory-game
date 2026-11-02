@@ -21,10 +21,67 @@ This is not an end-of-session cleanup — it is an inline, real-time habit. Ever
 
 ---
 
-## 2. Skill Triggers
+## 2. Game Design Rules — uphold in every change
+
+Merijn's design decisions that every feature, content file and test must respect. Change one only when Merijn says so; record the change in PLAN.md "Decisions Made".
+
+### Core directives (the game's purpose)
+- **A learning game about continuous improvement**: Lean first, later IT / Agile / DevOps / SAFe, set in the energy sector (a Dutch grid operator).
+- **People are the most valuable resource.** Problems live in the process, not the person; countermeasures develop people rather than replace them.
+- **An RPG where the main character has to search and think** to find out what is wrong and how to fix it. Nothing is handed over.
+- **Fix processes end to end.** Improving a step that is not the bottleneck brings no gain, and the simulation must show that.
+- **Measure.** KPIs and OKRs come up often: predictions name a KPI, the Check measures it, missions and the coach ask for numbers.
+- **Immersion is one of the most important directives (Merijn, 2026-10-16).** The player must feel they are in the company, as their own character: they make that character themselves (the character creator), the world reacts to them, and nothing needlessly breaks the spell (menus over the world, numbers where a person or place could show it, generic text where their name and choices could stand). Weigh every feature on whether it pulls the player in or pushes them out.
+- **The 8 wastes come up often** (TIMWOODS, in a service and field organisation).
+- **Sector-specific issues come up often**: congestion, permits, the technician shortage, regulation (ACM, NTA 8120), the energy transition.
+
+### The mission system decides the game (Merijn, 2026-10-15)
+If the missions are weak, the game is weak. Every mission must:
+1. simulate real problems with real fixes;
+2. be entertaining;
+3. be intriguing;
+4. be challenging;
+5. draw the player into it;
+6. be intuitive;
+7. be correct: the right Lean methods, the right numbers.
+
+- **Primary directives:** players learn Lean and the energy sector, and players keep playing (intriguing missions, rewarding play, hidden rewards for notable play).
+- **Secondary:** process management, SAFe, Agile, DevOps, Six Sigma, IT and project management.
+- **Reward deep thinking (Merijn, 2026-10-15).** Problem solving is the way forward, always under three principles, and the rewards must follow them:
+  1. **Long term outweighs short term in 95% of cases.** A quick win that costs the future scores lower than the patient fix; the rare exception must be a real one (e.g. a safety risk that needs containment now).
+  2. **Respect for people comes first.** Trust and reputation also measure respect: keeping, developing and rewarding talent pays; burning people out or blaming them costs.
+  3. **Always improve.** Standing still is sliding back (see sustain-or-decay and stagnation).
+- Always one main mission at a time and at most three side missions.
+- Dedicated agents keep designing, auditing and improving missions **and dialogs** (the same agents: bad dialogs make players quit) continuously; Claude tells Merijn when that stops.
+
+### Rules
+- **Progressive RPG through missions.** The player advances by completing missions. New and harder missions unlock as the player progresses; nothing is open from the start.
+- **One main quest, at most three side quests.** Never more than one main mission active at once, and at most three side missions. Side missions are small. A leader routine (a recurring side such as the weekly gemba round) takes no side slot (Merijn, 2026-10-27): dropping a sustaining habit to take on a new problem is the opposite of the lesson.
+- **Problems only arrive through missions.** The player never faces a list of problems to choose from: what is wrong right now is the active main mission's problem and at most three side missions' problems. Nothing else may switch a problem on (a fix that fades comes back through its mission).
+- **Sometimes the main quest forks.** Two main missions open at once: one tackles the bottleneck, the other a non-bottleneck problem. The player has to think and prioritise; the Check shows that fixing a non-bottleneck brings no flow gain. Use forks now and then, not everywhere.
+- **A senior manager is the coach.** The player can talk to the coach for insight. The coach mostly answers with a question (Toyota Kata style: target, actual condition, obstacles, next experiment, what did you learn), rarely with an answer.
+- **The coach helps only with the main quest.** Asking about a side mission gets no coaching.
+- **Action-based problem solving.** Clues are earned with gemba tools and questions; the player writes the A3; the simulation judges. No multiple-choice answers with one marked correct.
+- **Many healthier processes, not one.** Every problem lists several countermeasures with a fit; each one is a real improvement that can pass the Check, some more than others.
+- **Evidence first.** Numbers in content (norms, rates, durations, costs) come from public sources or industry norms where they exist; estimates are marked as estimates, with their reasoning, in the content file.
+- **Setbacks, never game over.** Costs and claims can push the budget into debt and the region into a bad period, but the company never goes down and the game never ends in failure. Recovery is always possible.
+- **Improvements must be sustained, or they decay.** Every improvement erodes over time unless something sustains it (standard work, visual management, audits, leader routines, the KPIs that steer). The weaker the sustaining habits and processes, the faster the decay; even "standardised" is not forever.
+- **Stagnation is regression.** When the player stops improving, processes slowly fall behind (demand grows, people change, the sector moves on), so continuous improvement is needed just to stand still.
+- **Respect the player's time (Merijn, 2026-10-15).** No real-time timers, no loss for stopping, no streaks, no guilt. Players come back for curiosity and consequences, never compulsion.
+- **Dialogs are give and take (Merijn, 2026-10-15).** Missions can hold conversations with managers, customers, employees and others. They voice struggles, resist or block changes, and the player has to bring them along: change a view, get the right KPIs used, win support. There is never one right answer that convinces. Progress comes from listening and helping them see another perspective (MORE PIES: Mood, Open questions, Reflecting, Empathy, Paraphrasing, Inquiry, Experience, Silence). A ruined dialog costs a few points, never a door: the same conversation can be retried later (e.g. a day on). Some dialogs build trust or lift someone's spirit with no mission attached, because respect for people means talking with your people.
+- **Missed deadlines have lasting consequences.** A failed mission closes a door (e.g. Henk retires and his knowledge transfer is no longer possible); the problem can still be solved another way.
+- **Dutch game text; English code and docs.**
+
+---
+
+## 3. Skill Triggers
 
 ### Always — every task, no exceptions
+- **Superpowers** — a core skill (Merijn, 2026-10-12). Check the superpowers skills before every task and use the ones that apply: `brainstorming` before designing a feature, `writing-plans` / `executing-plans` for multi-step work, `test-driven-development` for every behaviour change (watch the test fail first), `systematic-debugging` for every bug, `verification-before-completion` before calling anything done, `requesting-code-review` before a phase ends.
 - **`simplify`** — run after every code change. No exceptions. Code must pass the simplification checklist before the task is considered done.
+
+### Network access (Merijn, 2026-10-16) — a rule
+The environment has full network access, but **never access a domain Merijn has not approved**. Approved: assets `quaternius.com`, `opengameart.org`, `itch.io` incl. `quaternius.itch.io` and its file-storage host `itchio-mirror.cb031a832f44726753d6267436f3b414.r2.cloudflarestorage.com` for downloads; sources `rijksoverheid.nl`, `officielebekendmakingen.nl`, `wetten.overheid.nl`, `acm.nl`, `netbeheernederland.nl` (incl. subdomains), `cbs.nl`, `knmi.nl`, `nen.nl`, `tennet.eu`; tooling `docs.godotengine.org`, `github.com`, and the package managers the project already uses. Web search is allowed; opening a result is only allowed on this list. Any other domain (a mirror, a CDN a download redirects to, a source page): ask Merijn first, naming the domain and why. Agents stop and report instead of fetching. Every brief to an agent repeats this rule.
 
 ### `error-handling` — run whenever any of these are true
 - A function does file I/O, database access, or network/API calls
@@ -61,7 +118,10 @@ This is not an end-of-session cleanup — it is an inline, real-time habit. Ever
 - When any new function with business logic is added (score functions, simulation logic, catalog loading, state machines)
 - When a bug is fixed — write a test that would have caught it
 - When a stub is replaced with a real implementation
-- Run `python -m pytest tests/ -v` to verify the full suite still passes after every commit
+- Verify the full suite still passes after every commit:
+  - Godot logic tests (Spanning): `python tools/run_godot_tests.py` (one Godot process per test file, 2 at a time; `-j N` or `SPANNING_TEST_JOBS`; a crashed or killed file fails the run by name). One file: `godot --headless --path game --script res://tests/run_tests.gd -- /test_x.gd`
+  - Content pipeline: `python tools/build_content.py --check`
+  - Python tests (legacy factory game + content tools): `python -m pytest tests/ -v`
 
 ### `technical-debt` — run in any of these situations
 - Before starting each new phase

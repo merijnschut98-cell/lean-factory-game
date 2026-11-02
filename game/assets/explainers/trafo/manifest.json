@@ -1,0 +1,614 @@
+{
+ "viewbox": [
+  1200,
+  791
+ ],
+ "projection": {
+  "origin": [
+   600,
+   500.1546959328712
+  ],
+  "scale": 1.745797905955908,
+  "azimuth": 58,
+  "elevation": 30
+ },
+ "layers": [
+  {
+   "id": "base",
+   "file": "base.svg",
+   "z": 0,
+   "skin": "shared",
+   "group": "",
+   "rect": [
+    29,
+    268,
+    1145,
+    501
+   ]
+  },
+  {
+   "id": "backboard",
+   "file": "backboard.svg",
+   "z": 1,
+   "skin": "shared",
+   "group": "",
+   "rect": [
+    974,
+    269,
+    180,
+    300
+   ]
+  },
+  {
+   "id": "trainer_frame",
+   "file": "trainer_frame.svg",
+   "z": 2,
+   "skin": "fiets",
+   "group": "tank",
+   "rect": [
+    570,
+    363,
+    255,
+    225
+   ],
+   "pair": "tank_front"
+  },
+  {
+   "id": "tank_back",
+   "file": "tank_back.svg",
+   "z": 3,
+   "skin": "trafo",
+   "group": "tank",
+   "rect": [
+    220,
+    142,
+    475,
+    397
+   ]
+  },
+  {
+   "id": "core_inside",
+   "file": "core_inside.svg",
+   "z": 4,
+   "skin": "trafo",
+   "group": "core",
+   "rect": [
+    249,
+    162,
+    425,
+    346
+   ],
+   "pair": "chain"
+  },
+  {
+   "id": "heat_coils",
+   "file": "heat_coils.svg",
+   "z": 5,
+   "skin": "trafo",
+   "group": "core",
+   "rect": [
+    286,
+    202,
+    347,
+    255
+   ],
+   "pair": "heat_chain",
+   "heat": true
+  },
+  {
+   "id": "tank_front",
+   "file": "tank_front.svg",
+   "z": 6,
+   "skin": "trafo",
+   "group": "tank",
+   "rect": [
+    244,
+    115,
+    463,
+    400
+   ],
+   "pair": "trainer_frame"
+  },
+  {
+   "id": "crank",
+   "file": "crank.svg",
+   "z": 7,
+   "skin": "fiets",
+   "group": "source",
+   "rect": [
+    200,
+    98,
+    104,
+    323
+   ],
+   "pair": "hv_side"
+  },
+  {
+   "id": "hv_side",
+   "file": "hv_side.svg",
+   "z": 8,
+   "skin": "trafo",
+   "group": "source",
+   "rect": [
+    233,
+    29,
+    208,
+    343
+   ],
+   "pair": "crank"
+  },
+  {
+   "id": "wheel",
+   "file": "wheel.svg",
+   "z": 9,
+   "skin": "fiets",
+   "group": "out",
+   "rect": [
+    583,
+    286,
+    225,
+    237
+   ],
+   "pair": "lv_side"
+  },
+  {
+   "id": "lv_side",
+   "file": "lv_side.svg",
+   "z": 10,
+   "skin": "trafo",
+   "group": "out",
+   "rect": [
+    498,
+    144,
+    337,
+    406
+   ],
+   "pair": "wheel"
+  },
+  {
+   "id": "resistance",
+   "file": "resistance.svg",
+   "z": 11,
+   "skin": "fiets",
+   "group": "street",
+   "rect": [
+    625,
+    490,
+    230,
+    143
+   ],
+   "pair": "street"
+  },
+  {
+   "id": "street",
+   "file": "street.svg",
+   "z": 12,
+   "skin": "trafo",
+   "group": "street",
+   "rect": [
+    656,
+    378,
+    337,
+    280
+   ],
+   "pair": "resistance"
+  },
+  {
+   "id": "house1_lit",
+   "file": "house1_lit.svg",
+   "z": 13,
+   "skin": "trafo",
+   "group": "street",
+   "rect": [
+    797,
+    572,
+    32,
+    28
+   ],
+   "when": {
+    "load_at_least": 25
+   }
+  },
+  {
+   "id": "house2_lit",
+   "file": "house2_lit.svg",
+   "z": 14,
+   "skin": "trafo",
+   "group": "street",
+   "rect": [
+    842,
+    586,
+    32,
+    28
+   ],
+   "when": {
+    "load_at_least": 50
+   }
+  },
+  {
+   "id": "house3_lit",
+   "file": "house3_lit.svg",
+   "z": 15,
+   "skin": "trafo",
+   "group": "street",
+   "rect": [
+    887,
+    600,
+    32,
+    28
+   ],
+   "when": {
+    "load_at_least": 75
+   }
+  },
+  {
+   "id": "house4_lit",
+   "file": "house4_lit.svg",
+   "z": 16,
+   "skin": "trafo",
+   "group": "street",
+   "rect": [
+    932,
+    614,
+    32,
+    28
+   ],
+   "when": {
+    "load_at_least": 100
+   }
+  },
+  {
+   "id": "chain",
+   "file": "chain.svg",
+   "z": 17,
+   "skin": "fiets",
+   "group": "core",
+   "rect": [
+    203,
+    242,
+    551,
+    254
+   ],
+   "pair": "core_inside"
+  },
+  {
+   "id": "heat_chain",
+   "file": "heat_chain.svg",
+   "z": 18,
+   "skin": "fiets",
+   "group": "core",
+   "rect": [
+    203,
+    242,
+    551,
+    254
+   ],
+   "pair": "heat_coils",
+   "heat": true
+  },
+  {
+   "id": "gauge_pedal",
+   "file": "gauge_pedal.svg",
+   "z": 19,
+   "skin": "fiets",
+   "group": "meter_in",
+   "rect": [
+    107,
+    339,
+    76,
+    93
+   ],
+   "pair": "mv_meter"
+  },
+  {
+   "id": "mv_meter",
+   "file": "mv_meter.svg",
+   "z": 20,
+   "skin": "trafo",
+   "group": "meter_in",
+   "rect": [
+    94,
+    302,
+    157,
+    145
+   ],
+   "pair": "gauge_pedal"
+  },
+  {
+   "id": "gauge_wheel",
+   "file": "gauge_wheel.svg",
+   "z": 21,
+   "skin": "fiets",
+   "group": "meter_out",
+   "rect": [
+    702,
+    525,
+    76,
+    93
+   ],
+   "pair": "lv_meter"
+  },
+  {
+   "id": "lv_meter",
+   "file": "lv_meter.svg",
+   "z": 22,
+   "skin": "trafo",
+   "group": "meter_out",
+   "rect": [
+    690,
+    424,
+    122,
+    209
+   ],
+   "pair": "gauge_wheel"
+  },
+  {
+   "id": "control_box",
+   "file": "control_box.svg",
+   "z": 23,
+   "skin": "shared",
+   "group": "",
+   "rect": [
+    843,
+    618,
+    149,
+    100
+   ]
+  }
+ ],
+ "lcds": [
+  {
+   "id": "mv_meter",
+   "skin": "trafo",
+   "group": "meter_in",
+   "w": 30,
+   "h": 15,
+   "origin": [
+    125.50737000457622,
+    346.64979190537855
+   ],
+   "u": [
+    1.872726875401554,
+    0.5851048144676838
+   ],
+   "v": [
+    -1.1702096289353108,
+    0.936363437700777
+   ]
+  },
+  {
+   "id": "lv_meter",
+   "skin": "trafo",
+   "group": "meter_out",
+   "w": 30,
+   "h": 15,
+   "origin": [
+    721.0345163822569,
+    532.7131229060948
+   ],
+   "u": [
+    1.872726875401554,
+    0.585104814467627
+   ],
+   "v": [
+    -1.170209628935254,
+    0.9363634377007202
+   ]
+  }
+ ],
+ "needles": [
+  {
+   "id": "air_needle",
+   "skin": "shared",
+   "group": "",
+   "from": -0.75,
+   "to": 0.75,
+   "length": 11,
+   "tail": 2.4,
+   "width": 1.4,
+   "origin": [
+    1073.7811089595425,
+    372.24529839885435
+   ],
+   "u": [
+    1.8727268754016677,
+    0.585104814467627
+   ],
+   "v": [
+    0,
+    1.9124257878746107
+   ]
+  },
+  {
+   "id": "oil_needle",
+   "skin": "trafo",
+   "group": "tank",
+   "from": -0.75,
+   "to": 0.75,
+   "length": 5.4,
+   "tail": 2,
+   "origin": [
+    638.8517426188627,
+    241.4479969403742
+   ],
+   "u": [
+    1.872726875401554,
+    0.5851048144676838
+   ],
+   "v": [
+    -1.170209628935254,
+    0.936363437700777
+   ]
+  },
+  {
+   "id": "gauge_pedal",
+   "skin": "fiets",
+   "group": "meter_in",
+   "from": -0.75,
+   "to": 0.75,
+   "length": 11.4,
+   "tail": 2,
+   "origin": [
+    143.066386475181,
+    358.3076002768637
+   ],
+   "u": [
+    1.872726875401554,
+    0.5851048144677407
+   ],
+   "v": [
+    -1.1702096289353676,
+    0.9363634377008339
+   ]
+  },
+  {
+   "id": "gauge_wheel",
+   "skin": "fiets",
+   "group": "meter_out",
+   "from": -0.75,
+   "to": 0.75,
+   "length": 11.4,
+   "tail": 2,
+   "origin": [
+    738.5935328528617,
+    544.37093127758
+   ],
+   "u": [
+    1.872726875401554,
+    0.585104814467627
+   ],
+   "v": [
+    -1.170209628935254,
+    0.9363634377007202
+   ]
+  },
+  {
+   "id": "knob_pointer",
+   "skin": "shared",
+   "group": "",
+   "from": -0.75,
+   "to": 0.75,
+   "length": 6.6,
+   "tail": 0,
+   "width": 1.6,
+   "origin": [
+    922.5923737157291,
+    641.8878885352015
+   ],
+   "u": [
+    1.8727268754014403,
+    0.5851048144677407
+   ],
+   "v": [
+    -1.1702096289353676,
+    0.9363634377008339
+   ]
+  }
+ ],
+ "wheels": [
+  {
+   "id": "crank",
+   "skin": "fiets",
+   "group": "source",
+   "r": 19,
+   "r0": 0,
+   "blades": 1,
+   "width": 3.4,
+   "tip": 3.2,
+   "origin": [
+    232.48136326077952,
+    280.4614588204506
+   ],
+   "u": [
+    1.8727268754014972,
+    0.585104814467627
+   ],
+   "v": [
+    0,
+    1.9124257878746675
+   ]
+  },
+  {
+   "id": "valve",
+   "skin": "fiets",
+   "group": "out",
+   "r": 46,
+   "r0": 40,
+   "blades": 1,
+   "width": 2.6,
+   "origin": [
+    688.3704004398667,
+    407.4034701261797
+   ],
+   "u": [
+    1.8727268754014403,
+    0.585104814467627
+   ],
+   "v": [
+    0,
+    1.9124257878746107
+   ]
+  }
+ ],
+ "leds": [],
+ "tags": [
+  {
+   "id": "snel_licht",
+   "at": [
+    217.7328072451445,
+    194.9297434726048
+   ]
+  },
+  {
+   "id": "ketting",
+   "at": [
+    453.69639354573496,
+    272.4778016712794
+   ]
+  },
+  {
+   "id": "langzaam_sterk",
+   "at": [
+    734.6054248559617,
+    299.0458986294392
+   ]
+  }
+ ],
+ "hits": [
+  {
+   "id": "air",
+   "control": "ambient",
+   "skin": "shared",
+   "rect": [
+    1041.0085843745687,
+    324.9181882829908,
+    70.69397153726322,
+    90.5342211058437
+   ]
+  },
+  {
+   "id": "knob_down",
+   "control": "load",
+   "step": -1,
+   "skin": "shared",
+   "rect": [
+    855.6477706203186,
+    613.651282456126,
+    85.66795715837566,
+    63.753522853914546
+   ]
+  },
+  {
+   "id": "knob_up",
+   "control": "load",
+   "step": 1,
+   "skin": "shared",
+   "rect": [
+    896.8477618791519,
+    626.5235883744144,
+    85.66795715837554,
+    63.75352285391466
+   ]
+  }
+ ]
+}

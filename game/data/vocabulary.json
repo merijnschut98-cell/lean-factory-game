@@ -1,0 +1,384 @@
+{
+ "banned_spoken": {
+  "allowed": [
+   "op het spel"
+  ],
+  "words": [
+   "game",
+   "games",
+   "gamen",
+   "spel",
+   "spelletje",
+   "spelletjes",
+   "speler",
+   "spelers",
+   "speelster",
+   "level",
+   "levels",
+   "quest",
+   "quests",
+   "missie",
+   "missies",
+   "player"
+  ]
+ },
+ "belt_xp": [
+  0,
+  2000,
+  6000,
+  30000,
+  110000
+ ],
+ "care_rules": [
+  "normal",
+  "careful",
+  "hasty"
+ ],
+ "check_pass": 0.5,
+ "coach_conditions": [
+  "blamed",
+  "fading_fix"
+ ],
+ "coach_stages": [
+  "go_see",
+  "understand",
+  "experiment",
+  "reflect"
+ ],
+ "countermeasure_unlocks": [
+  "kpi_board"
+ ],
+ "debrief_variants": [
+  "blamed",
+  "poor_fix",
+  "not_standardised",
+  "too_early"
+ ],
+ "dialog_archetypes": [
+  "defender",
+  "cynic",
+  "craftsman",
+  "overloaded",
+  "rule_bound",
+  "quiet",
+  "customer_upset",
+  "expert",
+  "mentor"
+ ],
+ "dialog_coherence": {
+  "clarify": "\\b(hoe|wat) bedoel (je|u)\\b",
+  "repeat": "\\b(dat|dit) (zei|vroeg|vertelde) (je|u)\\b|\\bzei (je|u) (al|net)\\b|\\bvroeg (je|u) (al|net)\\b|\\b(heb|had) ik (je|u) (dat )?(net|al|toch) (verteld|gezegd)\\b|\\bdat zei ik\\b|\\bvoor de (tweede|derde) keer\\b|\\bherhaal|\\bhadden we (net|al)\\b"
+ },
+ "dialog_kinds": [
+  "persuade",
+  "checkin",
+  "expert"
+ ],
+ "dialog_moods": [
+  "goed",
+  "neutraal",
+  "gespannen",
+  "moe",
+  "stil"
+ ],
+ "dialog_moves": [
+  "mood",
+  "open_question",
+  "reflect",
+  "empathy",
+  "paraphrase",
+  "inquiry",
+  "experience",
+  "silence",
+  "perspective",
+  "show_data",
+  "propose_experiment",
+  "propose",
+  "ask_commitment",
+  "pressure",
+  "confront",
+  "repair",
+  "close"
+ ],
+ "dialog_needs": [
+  "facts",
+  "safety",
+  "recognition",
+  "time",
+  "fairness"
+ ],
+ "dialog_outcomes": [
+  "commitment",
+  "partial",
+  "heard",
+  "none",
+  "blocked",
+  "compliance",
+  "ruined",
+  "lifted"
+ ],
+ "dialog_tags": [
+  "claim",
+  "feeling",
+  "hesitation",
+  "admission",
+  "doubt"
+ ],
+ "discovery_triggers": {
+  "blame_repair_clue": [],
+  "check_recovery": [],
+  "coach_cycle": [],
+  "contain_then_fix": [
+   "days"
+  ],
+  "deepest_why": [
+   "count"
+  ],
+  "durable_held": [
+   "count",
+   "days"
+  ],
+  "farewell": [
+   "mission",
+   "place",
+   "days",
+   "countermeasures"
+  ],
+  "followed_order": [
+   "days"
+  ],
+  "fork_learned": [],
+  "fork_measured": [
+   "window_days"
+  ],
+  "held": [
+   "days"
+  ],
+  "lifted_low": [
+   "count",
+   "morale"
+  ],
+  "listened_first": [
+   "count"
+  ],
+  "missions_scored": [
+   "missions",
+   "score"
+  ],
+  "no_blame_act": [],
+  "no_overload_act": [
+   "experiments"
+  ],
+  "no_pressure_act": [
+   "commitments"
+  ],
+  "own_idea": [],
+  "predictions": [
+   "count"
+  ],
+  "recovered_after_fail": [
+   "score"
+  ],
+  "second_chance": [],
+  "silence_reveal": [
+   "count"
+  ],
+  "tool_at": [
+   "place",
+   "tool",
+   "hours",
+   "months",
+   "problem_active",
+   "no_problem_at"
+  ],
+  "tool_in_missions": [
+   "place",
+   "tool",
+   "missions",
+   "problem",
+   "countermeasure"
+  ]
+ },
+ "effect_properties": {
+  "applies": {
+   "kind": "step",
+   "step_kind": ""
+  },
+  "availability": {
+   "kind": "pool",
+   "step_kind": ""
+  },
+  "batch_days": {
+   "kind": "step",
+   "step_kind": "wait"
+  },
+  "call_rate": {
+   "kind": "stream",
+   "step_kind": ""
+  },
+  "demand": {
+   "kind": "arrivals",
+   "step_kind": ""
+  },
+  "ftr": {
+   "kind": "step",
+   "step_kind": "work"
+  },
+  "headcount": {
+   "kind": "pool",
+   "step_kind": ""
+  },
+  "lead_time": {
+   "kind": "stock",
+   "step_kind": ""
+  },
+  "order_rule": {
+   "kind": "pool",
+   "step_kind": ""
+  },
+  "preempts": {
+   "kind": "stream",
+   "step_kind": ""
+  },
+  "reorder_point": {
+   "kind": "stock",
+   "step_kind": ""
+  },
+  "reserve": {
+   "kind": "pool",
+   "step_kind": ""
+  },
+  "start_rule": {
+   "kind": "pool",
+   "step_kind": ""
+  },
+  "starts_with": {
+   "kind": "step",
+   "step_kind": "wait"
+  },
+  "touch_time": {
+   "kind": "step",
+   "step_kind": "work"
+  },
+  "trip_share": {
+   "kind": "step",
+   "step_kind": "work"
+  },
+  "wait_time": {
+   "kind": "step",
+   "step_kind": "wait"
+  },
+  "wip_limit": {
+   "kind": "stream",
+   "step_kind": ""
+  }
+ },
+ "fact_kinds": [
+  "accepted",
+  "agreed",
+  "blocked",
+  "checked",
+  "chose",
+  "committed",
+  "complied",
+  "delivered",
+  "done",
+  "failed",
+  "flag",
+  "forecast_positive",
+  "fork_first",
+  "heard",
+  "holds",
+  "left",
+  "partial",
+  "poor_fix",
+  "promise_broken",
+  "promise_kept",
+  "promised",
+  "repaired",
+  "standardised",
+  "steers",
+  "wrong_cause"
+ ],
+ "fork_roles": [
+  "bottleneck",
+  "non_bottleneck"
+ ],
+ "kpi_kinds": [
+  "leading",
+  "lagging"
+ ],
+ "kpis": [
+  "throughput",
+  "lead_time",
+  "first_time_right",
+  "on_time",
+  "wip_age",
+  "capacity"
+ ],
+ "measures": [
+  "floor_days",
+  "maturity",
+  "reputation"
+ ],
+ "min_reward_share": 0.6,
+ "mission_goals": [
+  "check",
+  "investigate",
+  "observe",
+  "rework_fix",
+  "scene",
+  "solve",
+  "story_order",
+  "sustain",
+  "talk_to",
+  "walk"
+ ],
+ "mission_kinds": [
+  "main",
+  "side",
+  "training",
+  "milestone"
+ ],
+ "order_rules": [
+  "first_come",
+  "oldest",
+  "shortest",
+  "due"
+ ],
+ "severities": [
+  "low",
+  "medium",
+  "high",
+  "critical"
+ ],
+ "start_rules": [
+  "push",
+  "pull"
+ ],
+ "tools": [
+  "conversation",
+  "data",
+  "documents",
+  "listen_in",
+  "material_check",
+  "queue_count",
+  "shadow",
+  "time_study"
+ ],
+ "visibilities": [
+  "obvious",
+  "subtle",
+  "hidden"
+ ],
+ "wastes": [
+  "transport",
+  "inventory",
+  "motion",
+  "waiting",
+  "overproduction",
+  "overprocessing",
+  "defects",
+  "skills"
+ ]
+}
