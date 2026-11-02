@@ -201,6 +201,21 @@ func test_every_drawn_line_of_a_reviewed_talk_is_walked() -> void:
 	assert_true(bad.is_empty(), "%d lines never walked: %s" % [bad.size(), bad.slice(0, 6)])
 
 
+## Review 10: and every answer written for those lines, landing and missing, is given
+## in the walk: a question answered with another question's reply (Ilse's second
+## perspective question with the first's "Vanuit jullie?…") leaves its own unread.
+func test_every_answer_to_a_reviewed_talk_s_keyed_lines_is_given() -> void:
+	var c := Catalog.load_from()
+	var ctx := TalkWalk.context(c)
+	var bad := []
+	for talk: Dialog in TalkWalk.talks(c, TalkWalk.REVIEWED):
+		for reply: String in TalkWalk.unanswered(talk.def, _walk(ctx, talk)):
+			bad.append("%s: never given %s" % [TalkWalk.label(talk), reply])
+		for pair: String in TalkWalk.misanswered(talk.def, _walk(ctx, talk)):
+			bad.append("%s: another question's answer %s" % [TalkWalk.label(talk), pair])
+	assert_true(bad.is_empty(), "%d answer faults: %s" % [bad.size(), bad.slice(0, 6)])
+
+
 ## A talk whose lead-in is "Het is alleen…", and "En als ik ziek word…" in its variant
 ## (petra_after), with `option` as the open question to it.
 static func _two_lead_ins(option: String) -> DialogDef:

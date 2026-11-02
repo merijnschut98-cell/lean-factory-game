@@ -145,6 +145,70 @@ static func unsaid(d: DialogDef, walked: Dictionary) -> Array[String]:
 	return out
 
 
+## The moves whose answers belong to their questions place by place, landing or missing
+## (Dialog._asked): a perspective question and its own answer. A listening move's answer
+## is the person's next free line (a list of ways to say it, in turn), and a question
+## asked again draws the "you asked that" lines, so a later miss of mood may never come.
+const ANSWERED_IN_PLACE := ["perspective"]
+
+
+## The talk's own answers to its keyed lines that `walked` never gave (review 10): for
+## each layer's list of player lines of ANSWERED_IN_PLACE, the landing and the missing
+## answer at each of its places (the reply lists keyed alike).
+static func unanswered(d: DialogDef, walked: Dictionary) -> Array[String]:
+	var given := {}
+	for ex: Dictionary in walked["exchanges"].values():
+		for reply: String in ex["replies"]:
+			given[reply.get_slice("\n", 0)] = true
+	var out: Array[String] = []
+	for move: String in ANSWERED_IN_PLACE:
+		var lines: Variant = d.lines.get(move)
+		if not lines is Dictionary:
+			continue
+		for key: String in lines:
+			var asked := _all_lines(lines[key]).size()
+			if key == "lead_in" or (key == "_" and TOPICS.all(func(t: String) -> bool: return lines.has(t))):
+				continue
+			for case: String in ["lands", "misses"]:
+				var list: Variant = JsonFile.dict_or_empty(JsonFile.dict_or_empty(d.replies.get(move)).get(case)).get(key)
+				if not list is Array:
+					continue
+				for i in mini(asked, list.size()):
+					var text := str(JsonFile.dict_or_empty(list[i]).get("text", ""))
+					if not given.has(text):
+						out.append("%s %s %s[%d] \"%s\"" % [move, case, key, i, text])
+	return out
+
+
+## The answers `walked` gave to a question of ANSWERED_IN_PLACE that belong to another
+## question of the same list (review 10: Ilse's second perspective question answered
+## with the first's "Vanuit jullie?…").
+static func misanswered(d: DialogDef, walked: Dictionary) -> Array[String]:
+	var out: Array[String] = []
+	for move: String in ANSWERED_IN_PLACE:
+		var lines: Variant = d.lines.get(move)
+		if not lines is Dictionary:
+			continue
+		for key: String in lines:
+			var asked := _all_lines(lines[key])
+			var own := {}
+			var any := {}
+			for case: String in ["lands", "misses"]:
+				var list := _answers(d, move, case, key, 99)
+				for i in list.size():
+					any[list[i]] = true
+					if i < asked.size():
+						own[asked[i] + "|" + list[i]] = true
+			for ex: Dictionary in walked["exchanges"].values():
+				if not ex["move"] == move or not ex["said"] in asked:
+					continue
+				for reply: String in ex["replies"]:
+					var said_reply := reply.get_slice("\n", 0)
+					if any.has(said_reply) and not own.has(ex["said"] + "|" + said_reply):
+						out.append("%s \"%s\" → \"%s\"" % [move, ex["said"], said_reply])
+	return out
+
+
 ## The topics a mapping of lines answers.
 const TOPICS := ["position", "interest", "lead_in", "concern"]
 
@@ -325,9 +389,10 @@ static func walk(ctx: Dictionary, talk: Dialog, budget: int = BUDGET, dives: int
 
 ## Review 9: a list keyed by the layer the person spoke of is dealt in order, so its
 ## later lines come only as late in a talk as no walk may get. Each such line is said
-## once from that layer (the talk put on it, its earlier lines said), and answered
-## twice: as a move that lands (the person's words still standing, open) and as one
-## that misses (nothing to answer, guarded).
+## once from that layer, and answered twice: as a move that lands (the person's words
+## still standing, open) and as one that misses (nothing to answer; a steering move
+## heard but not yet welcome, review 10). The state carries the history a route to it
+## has (review 10): the earlier lines said, their answers given, what the person told.
 static func _forced(ctx: Dictionary, talk: Dialog, out: Dictionary) -> void:
 	for move: String in Dialog.LISTEN + ["perspective", "pressure", "confront"]:
 		var lines: Variant = talk.def.lines.get(move)
@@ -340,11 +405,23 @@ static func _forced(ctx: Dictionary, talk: Dialog, out: Dictionary) -> void:
 				if not entries[i] in drawn_here:
 					continue
 				for lands: bool in [true, false]:
-					var node := _put_on(talk, _topic_for(key, lines), entries.slice(0, i), lands, false)
-					if not {"move": move, "pick": ""} in _options(node["talk"]):
-						node = _put_on(talk, _topic_for(key, lines), entries.slice(0, i), lands, true)   # a move for after the concern
-					if {"move": move, "pick": ""} in _options(node["talk"]):
-						_step(ctx, node, {"move": move, "pick": ""}, out)
+					for earlier: String in ["lands", "misses"]:   # the earlier questions landed, or missed
+						var answers := _answers(talk.def, move, earlier, key, i)
+						var option := {"move": move, "pick": ""}
+						var node := _put_on(talk, move, _topic_for(key, lines), entries.slice(0, i), answers, lands, false)
+						if not option in _options(node["talk"]):
+							node = _put_on(talk, move, _topic_for(key, lines), entries.slice(0, i), answers, lands, true)   # after the concern
+						if option in _options(node["talk"]):
+							_step(ctx, node, option, out)
+
+
+## The first `n` answers the talk holds for `move` in `case` at `key` (what a route that
+## asked the earlier questions heard).
+static func _answers(d: DialogDef, move: String, case: String, key: String, n: int) -> Array:
+	var list: Variant = JsonFile.dict_or_empty(JsonFile.dict_or_empty(d.replies.get(move)).get(case)).get(key)
+	if not list is Array:
+		return []
+	return list.slice(0, n).map(func(e: Variant) -> String: return str(JsonFile.dict_or_empty(e).get("text", "")))
 
 
 ## The layer a `_` list answers: the first a mapping has no list of its own for.
@@ -357,21 +434,40 @@ static func _topic_for(key: String, lines: Dictionary) -> String:
 	return "position"
 
 
-## A node of `talk` put on layer `topic`, with `said` behind it, ready for a move that
-## lands (`lands`: the person's words standing, heard, open) or misses (nothing standing);
-## `told_all`: the concern already out (a steering move that waits for it).
-static func _put_on(talk: Dialog, topic: String, said: Array, lands: bool, told_all: bool) -> Dictionary:
+## A node of `talk` put on layer `topic` for `move`, with `said` and `answers` behind it
+## and the person's story so far heard, ready for a move that lands (`lands`: their
+## words standing, heard, open) or misses (nothing standing; a steering move heard but
+## not yet welcome; a question past those that land); `told_all`: the concern out.
+static func _put_on(talk: Dialog, move: String, topic: String, said: Array, answers: Array, lands: bool,
+		told_all: bool) -> Dictionary:
 	var t := talk.copy()
 	var layers: Array = t.layers()
 	t._topic = topic
+	var path := path_of(t)
 	if topic in ["interest", "lead_in", "concern"] or told_all:
 		t.revealed["interest"] = true
+		path["heard"].append(str(layers[0].get("text", "")))
+	if topic in ["lead_in", "concern"] or told_all:
+		t._lead_ins = 1
+		path["heard"].append(str(JsonFile.dict_or_empty(layers[1].get("lead_in")).get("text", "")))
 	if topic == "concern" or told_all:
 		t.revealed["concern"] = true
+		path["heard"].append(str(layers[1].get("text", "")))
 	t.said.assign(said)
-	t.heard = lands
-	t.openness = 80 if lands else 30
+	t.answered.assign(answers)
+	path["heard"].append_array(answers)
+	var steering := not move in Dialog.LISTEN
+	t.heard = lands or steering
+	t.openness = 80 if lands else (Dialog.STEER_FROM if steering else 30)
 	t._last_tags = ["claim", "feeling", "hesitation", "admission", "doubt"] if lands else []
+	t._uses[move] = said.size()   # the earlier lines were this move too
+	if said.size() >= 2:
+		t._worn[move] = true   # and the person said once that it wears
+	if not lands:
+		t.moves_made = Dialog.EARLY_MOVES
+		t._mood_asked = true
+		if move == "open_question":
+			t._uses[move] = maxi(said.size(), Dialog.OPEN_QUESTIONS_THAT_LAND)
 	var before := str(t.position().get("text", ""))
 	if topic == "interest":
 		before = str(layers[0].get("text", ""))
@@ -379,7 +475,7 @@ static func _put_on(talk: Dialog, topic: String, said: Array, lands: bool, told_
 		before = str(layers[1].get("text", ""))
 	elif topic == "lead_in":
 		before = str(JsonFile.dict_or_empty(layers[1].get("lead_in")).get("text", ""))
-	return {"talk": t, "before": before, "path": path_of(t)}
+	return {"talk": t, "before": before, "path": path}
 
 
 ## Deals the reach pass plays (review 8: a line drawn by the seed is walked under each).
