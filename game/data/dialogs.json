@@ -3534,7 +3534,7 @@
         "tags": [
          "claim"
         ],
-        "text": "Ja. Twee records. Ik heb het gezien."
+        "text": "Twee records, en geen aansluiting meer. Ik zie het."
        }
       ],
       "silo_kpis:2": [
@@ -3777,7 +3777,7 @@
      ],
      "lead_in": "Wat is er dan?",
      "position": [
-      "Hoe vaak ben je nu zelf de eerste die het ziet?",
+      "Hoe vaak vind je de fout nu zelf?",
       "Wie rijdt er nu met je mee?"
      ]
     },
@@ -3823,7 +3823,7 @@
       "Dus het gaat om wat voor monteur je bent."
      ],
      "interest": [
-      "Dus je doet het steeds meer zelf.",
+      "Dus je moet het steeds meer zelf doen.",
       "Dus je staat er nu zelf voor, in die oude straten."
      ],
      "lead_in": "Dus er is nog iets.",
@@ -3855,7 +3855,7 @@
       "Je klinkt alsof je bang bent dat je het niet kunt."
      ],
      "interest": [
-      "Het klinkt alsof je groeit, maar het ook spannend vindt.",
+      "Het klinkt alsof dat veel van je vraagt, ook als het goed gaat.",
       "Je klinkt alsof dat je meer doet dan je laat zien."
      ],
      "lead_in": [
@@ -4072,7 +4072,7 @@
          "claim",
          "feeling"
         ],
-        "text": "Steeds vaker. Gisteren nog."
+        "text": "Vaker dan eerst. Niet altijd."
        },
        {
         "tags": [
@@ -4119,7 +4119,7 @@
         "text": "Wisselt."
        },
        {
-        "text": "Wie er dienst heeft."
+        "text": "Dat is mijn zaak."
        }
       ]
      },
@@ -4449,7 +4449,7 @@
         "text": "Nee hoor. Ik ben gewoon moe."
        },
        {
-        "text": "Ik ben niet ziek, hoor."
+        "text": "Nee."
        },
        {
         "text": "Valt mee."
@@ -17413,7 +17413,7 @@
         "tags": [
          "claim"
         ],
-        "text": "Ja. Vier op de tien. Ik heb het gezien."
+        "text": "Vier op de tien. Zwart op wit."
        }
       ],
       "status_callers:2": [
@@ -21399,10 +21399,10 @@
       ],
       "planning_reshuffle:2": [
        {
-        "text": "Om tien uur, ja. Elke dag. Zo ziet het eruit als iemand het opschrijft."
+        "text": "Om tien uur, ja. Dat ken ik. Zo ziet het eruit als iemand het opschrijft."
        },
        {
-        "text": "Elke dag om tien uur. Dat valt pas op als je het ziet."
+        "text": "Rond tien uur. Dat valt pas op als je het ziet."
        },
        {
         "text": "Om tien uur. Ja. Ik heb het gezien."
@@ -25218,7 +25218,7 @@
      "tags": [
       "feeling"
      ],
-     "text": "Een kwartier, en dan klaar. Rachid kan het nu ook. Hij is sneller dan ik, eerlijk gezegd. Jonge handen.",
+     "text": "Een kwartier, en dan klaar. De klant krijgt zijn EAN sneller, en Rachid kan het nu ook. Hij is sneller dan ik, eerlijk gezegd. Jonge handen.",
      "via": [
       "open_question",
       "inquiry",
@@ -25312,7 +25312,7 @@
      ],
      "concern": [
       "Sinds wanneer zit dit je dwars?",
-      "Wat zou je lucht geven?"
+      "Wat zou het lichter maken?"
      ],
      "interest": [
       "Wat mis je van de maandrun?",
@@ -27598,7 +27598,7 @@
        }
       ],
       "lead_in": {
-       "text": "Laat maar. Het is niks."
+       "text": "Iets simpels. En ik wist het niet."
       },
       "position": [
        {
@@ -29238,7 +29238,7 @@
         "tags": [
          "claim"
         ],
-        "text": "Anderhalf uur per schets, en daarvan een uur uitzoeken."
+        "text": "Anderhalf uur per schets, en veel daarvan is uitzoeken."
        },
        {
         "tags": [
@@ -29685,10 +29685,10 @@
       ],
       "revision_backlog:2": [
        {
-        "text": "Anderhalf uur per schets, waarvan een uur uitzoeken. Ja. Dat klopt precies."
+        "text": "Anderhalf uur per schets, en veel daarvan is uitzoeken. Ja. Dat klopt precies."
        },
        {
-        "text": "Een uur uitzoeken. Per schets. Hm."
+        "text": "Een flink deel uitzoeken. Per schets. Hm."
        },
        {
         "text": "Anderhalf uur. Ja. Ik heb het gezien."
@@ -33590,7 +33590,7 @@
         "text": "Vanuit jullie? Ja, ja. Iedereen wil tegelijk. Maar ik bak niet tegelijk. Ik bak als iedereen slaapt."
        },
        {
-        "text": "Andere bakkers? Die staan ook op die lijst. Of ze zijn al aan het gas gebleven."
+        "text": "Andere bakkers? Die wachten ook, of ze kopen toch maar gas. Ik snap ze."
        }
       ],
       "concern": [

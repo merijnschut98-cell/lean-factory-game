@@ -82,6 +82,12 @@ linda_evenings and el_amrani_fourth_call): each got its own lines. A trailing le
 tagged `hesitation` too (ilse_queue, linda_evenings), with a YAML comment; esra_agents' "ik voel me schuldig" is a
 whole sentence and stays `[feeling]`.
 
+Review 9: the forced pass (`TalkWalk._forced`) says every line of a list keyed by the person's layer from that
+layer, landing once and missing once, so `unsaid` now reads keyed lists too (the lead-in's second options and a `_`
+under four keyed layers stay out); 29 lines were never walked before, Ilse's and mevrouw El Amrani's second
+perspective questions among them. Left for a follow-up: the `_` lists of fully keyed moves are text the engine never
+draws (about 450 lines in the reviewed talks).
+
 Review 7: the walk plays every variant (`TalkWalk.versions`; `test_the_walk_plays_every_version_of_a_talk`), so the
 flags above hold for each version; the transcripts write a variant to `<talk>~v<n>.md`. A variant still holds no
 lines of its own, so in anouk_late and henk_last_week every line and reply is written to fit every version.

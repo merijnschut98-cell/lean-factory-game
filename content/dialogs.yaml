@@ -1152,7 +1152,7 @@ dialogs:
         lands:
           "silo_kpis:0": [{text: "Twee records in één maand, en niet één aansluiting meer de deur uit. Dat is geen record. Dat is een rapport.", tags: [claim]},
                           {text: "Records aan twee kanten, en de klant ziet er niks van. Hm.", tags: [claim]},
-                          {text: "Ja. Twee records. Ik heb het gezien.", tags: [claim]}]
+                          {text: "Twee records, en geen aansluiting meer. Ik zie het.", tags: [claim]}]
           "silo_kpis:2": [{text: "Van vijfentachtig naar tachtig. En bij Intake van vijfenzeventig naar zeventig. … Dat staat niet in mijn rapport.", tags: [claim]},
                           {text: "Vijf procentpunt minder dat in één keer goed is. In één kwartaal.", tags: [claim]},
                           {text: "Ja. Vijf punt. Ik heb het gezien.", tags: [claim]}]
@@ -1343,18 +1343,18 @@ dialogs:
         _: ["Dat is ook niet niks.", "Dat lijkt me best lastig."]
       reflect:
         position: ["Het klinkt alsof je hem mist.", "Je klinkt stiller dan anders."]
-        interest: ["Het klinkt alsof je groeit, maar het ook spannend vindt.", "Je klinkt alsof dat je meer doet dan je laat zien."]
+        interest: ["Het klinkt alsof dat veel van je vraagt, ook als het goed gaat.", "Je klinkt alsof dat je meer doet dan je laat zien."]
         lead_in: ["Er zit je iets dwars, merk ik.", "Je aarzelt, zie ik."]
         concern: ["Het klinkt alsof je aan jezelf twijfelt.", "Je klinkt alsof je bang bent dat je het niet kunt."]
         _: ["Je klinkt een beetje gespannen.", "Het klinkt alsof je ermee zit."]
       paraphrase:
         position: ["Dus het gaat wel.", "Dus het gaat, maar het is anders."]
-        interest: ["Dus je doet het steeds meer zelf.", "Dus je staat er nu zelf voor, in die oude straten."]
+        interest: ["Dus je moet het steeds meer zelf doen.", "Dus je staat er nu zelf voor, in die oude straten."]
         lead_in: "Dus er is nog iets."
         concern: ["Dus je vraagt je af of je het wel kunt.", "Dus het gaat om wat voor monteur je bent."]
         _: ["Dus het is gewoon anders.", "Als ik je goed hoor, gaat het om Henk."]
       inquiry:
-        position: ["Hoe vaak ben je nu zelf de eerste die het ziet?", "Wie rijdt er nu met je mee?"]
+        position: ["Hoe vaak vind je de fout nu zelf?", "Wie rijdt er nu met je mee?"]
         interest: ["Welke kabels zijn het lastigst, in Nova-Oud?", "Heb je Henk nog gesproken?"]
         lead_in: "Wat is er dan?"
         concern: ["Wat zou er gebeuren, als je het een keer niet weet?", "Wat heb jij nodig van ons?"]
@@ -1429,7 +1429,7 @@ dialogs:
           _: [{text: "Ja. Eigenlijk wel.", tags: [feeling]}, {text: "Ja… zo voelt het.", tags: [feeling]}, {text: "Mm. Ja."}]
         misses:
           lead_in: [{text: "Nee, nee."}, {text: "Nee. Het is niks."}]
-          _: [{text: "Nee, dat zou ik zo niet zeggen."}, {text: "Nee hoor. Ik ben gewoon moe."}, {text: "Ik ben niet ziek, hoor."}, {text: "Valt mee."}]
+          _: [{text: "Nee, dat zou ik zo niet zeggen."}, {text: "Nee hoor. Ik ben gewoon moe."}, {text: "Nee."}, {text: "Valt mee."}]
         worn: {text: "Ja, ja. Ik weet wel hoe ik me voel, hoor."}
       paraphrase:
         lands:
@@ -1443,12 +1443,12 @@ dialogs:
         worn: {text: "Ja, ja. En nu?"}
       inquiry:
         lands:
-          position: [{text: "Steeds vaker. Gisteren nog.", tags: [claim, feeling]}, {text: "Niemand. Ik rij alleen.", tags: [claim, feeling]}]
+          position: [{text: "Vaker dan eerst. Niet altijd.", tags: [claim, feeling]}, {text: "Niemand. Ik rij alleen.", tags: [claim, feeling]}]
           interest: [{text: "Papierlood. Ouder dan ik. Ouder dan Henk, bijna.", tags: [claim]}, {text: "Een keer, na zijn afscheid. Hij belde óns, voor de verandering.", tags: [feeling]}]
           lead_in: {text: "Niks. Echt niet."}
           concern: [{text: "Dan bel ik iemand. Of ik gok. Gokken wil ik niet.", tags: [feeling]}, {text: "Tijd. En dat niemand verwacht dat ik Henk ben.", tags: [feeling]}]
         misses:
-          position: [{text: "Wisselt."}, {text: "Wie er dienst heeft."}]
+          position: [{text: "Wisselt."}, {text: "Dat is mijn zaak."}]
           lead_in: {text: "Ach. Vergeet het maar."}
           interest: [{text: "Allemaal, 's nachts."}, {text: "Ach. Hij vist."}]
           concern: [{text: "Daar heb ik het liever niet over."}, {text: "Ach. Dat doet er niet toe."}]
@@ -4466,7 +4466,7 @@ dialogs:
         lands:
           "status_callers:0": [{text: "Vier op de tien. Dat zijn… dat zijn mijn rode uren. Allemaal dezelfde vraag.", tags: [claim]},
                                {text: "Vier van de tien over waar hun aansluiting blijft. Serieus.", tags: [claim]},
-                               {text: "Ja. Vier op de tien. Ik heb het gezien.", tags: [claim]}]
+                               {text: "Vier op de tien. Zwart op wit.", tags: [claim]}]
           "status_callers:2": [{text: "Twee maanden wachten, en dan elke week bellen. … Ja. Die ken ik bij naam.", tags: [claim, feeling]},
                                {text: "Dus het zijn niet meer bellers. Het zijn dezelfde, steeds weer.", tags: [claim]},
                                {text: "Ja. Twee maanden. Ik heb het gezien.", tags: [claim]}]
@@ -5490,7 +5490,7 @@ dialogs:
       show_data:   # each clue its own answer (review 2 #4)
         lands:
           "planning_reshuffle:0": [{text: "Laat eens zien… Een op de drie. Dat wist ik, maar zo zwart op wit…"}, {text: "Zo had ik het nog niet bekeken. Echt niet."}, {text: "Een op de drie. Ja. Ik heb het gezien."}]
-          "planning_reshuffle:2": [{text: "Om tien uur, ja. Elke dag. Zo ziet het eruit als iemand het opschrijft."}, {text: "Elke dag om tien uur. Dat valt pas op als je het ziet."}, {text: "Om tien uur. Ja. Ik heb het gezien."}]
+          "planning_reshuffle:2": [{text: "Om tien uur, ja. Dat ken ik. Zo ziet het eruit als iemand het opschrijft."}, {text: "Rond tien uur. Dat valt pas op als je het ziet."}, {text: "Om tien uur. Ja. Ik heb het gezien."}]
         misses:
           "planning_reshuffle:0": [{text: "Dus het ligt aan mijn planning?"}, {text: "Ja. Dat weet ik. Ik zie het elke dag."}, {text: "Ja. En?"}]
           "planning_reshuffle:2": [{text: "Dat hoef je mij niet te vertellen. Ik ben degene die belt."}, {text: "Ja. Dat weet ik. Ik zie het elke dag."}, {text: "Ja. En?"}]
@@ -6337,7 +6337,7 @@ dialogs:
       - id: interest
         at: 55
         via: [open_question, inquiry, paraphrase]
-        text: "Een kwartier, en dan klaar. Rachid kan het nu ook. Hij is sneller dan ik, eerlijk gezegd. Jonge handen."
+        text: "Een kwartier, en dan klaar. De klant krijgt zijn EAN sneller, en Rachid kan het nu ook. Hij is sneller dan ik, eerlijk gezegd. Jonge handen."
         tags: [feeling]
       - id: concern
         at: 70
@@ -6385,7 +6385,7 @@ dialogs:
         position: ["Hoe lang duurt zo'n sessie?", "Wat zegt de klant ervan?"]
         interest: ["Wat mis je van de maandrun?", "Wat gebeurt er, als de Molen een dag niet draait?"]
         lead_in: "Wat is er dan?"
-        concern: ["Sinds wanneer zit dit je dwars?", "Wat zou je lucht geven?"]
+        concern: ["Sinds wanneer zit dit je dwars?", "Wat zou het lichter maken?"]
         _: ["Waar komt dat door, denk je?", "Hoe zit dat precies?"]
       experience:
         position: ["Ik herken dat: iets nieuws doen, en zeggen dat alles klopt voordat iemand het vraagt.", "Ik ken dat van mijn vorige werk: een nieuwe manier, en je kijkt steeds over je schouder."]
@@ -6814,7 +6814,7 @@ dialogs:
             - {text: "De hele dinsdag. Eén storing, en alles erachter schuift door.", tags: [claim]}
           interest: [{text: "Dan staan er morgen twee monteurs voor niks bij een klant.", tags: [claim]},
                      {text: "Niemand. Het staat er 's ochtends gewoon.", tags: [claim]}]
-          lead_in: {text: "Laat maar. Het is niks."}
+          lead_in: {text: "Iets simpels. En ik wist het niet."}
           concern: [{text: "Een avond niks. Gewoon op de bank.", tags: [feeling]},
                     {text: "Iemand die zegt: tot hier, en de rest morgen.", tags: [feeling]}]
           _: [{text: "Plannen, omplannen, nog eens omplannen.", tags: [claim]}, {text: "Druk. Maar het moet.", tags: [claim]}]
@@ -7216,7 +7216,7 @@ dialogs:
       show_data:   # each clue its own answer (review 2 #4)
         lands:
           "revision_backlog:0": [{text: "Tweehonderdveertig. En de oudste vier maanden. … Zo had ik het nog nooit opgeteld."}, {text: "Hm. Zo zwart op wit is het anders."}, {text: "Tweehonderdveertig. Ja. Ik heb het gezien."}]
-          "revision_backlog:2": [{text: "Anderhalf uur per schets, waarvan een uur uitzoeken. Ja. Dat klopt precies."}, {text: "Een uur uitzoeken. Per schets. Hm."}, {text: "Anderhalf uur. Ja. Ik heb het gezien."}]
+          "revision_backlog:2": [{text: "Anderhalf uur per schets, en veel daarvan is uitzoeken. Ja. Dat klopt precies."}, {text: "Een flink deel uitzoeken. Per schets. Hm."}, {text: "Anderhalf uur. Ja. Ik heb het gezien."}]
         misses:
           "revision_backlog:0": [{text: "Ja, er staan er 240 open. Dat weet ik. Ik zie de doos elke dag."}, {text: "Dat ken ik. Daar hoef je me niet op te wijzen."}, {text: "Ja. En?"}]
           "revision_backlog:2": [{text: "Anderhalf uur, ja. Dat zeg ik al jaren."}, {text: "Dat ken ik. Daar hoef je me niet op te wijzen."}, {text: "Ja. En?"}]
@@ -7287,7 +7287,7 @@ dialogs:
         worn: {text: "Klopt, zo zei ik het. Zullen we verder?"}
       inquiry:
         lands:
-          position: [{text: "Anderhalf uur per schets, en daarvan een uur uitzoeken.", tags: [claim]},
+          position: [{text: "Anderhalf uur per schets, en veel daarvan is uitzoeken.", tags: [claim]},
                      {text: "Zo snel als het kan zonder dat het fout gaat. Dat is niet snel.", tags: [claim]}]
           interest: [{text: "Diepte, richting, welke kabel het is. Alles wat er niet op staat.", tags: [claim]},
                      {text: "Bij de helft mist er iets.", tags: [claim]}]
@@ -8141,7 +8141,7 @@ dialogs:
         other: [{text: "Cijfers. Daar bak ik geen brood van."}, {text: "Wat heeft dat met mijn aansluiting te maken?"}, {text: "Dat zeggen jullie elke keer."}]
       perspective:
         lands: {_: [{text: "Vanuit jullie? Ja, ja. Iedereen wil tegelijk. Maar ik bak niet tegelijk. Ik bak als iedereen slaapt."},
-                    {text: "Andere bakkers? Die staan ook op die lijst. Of ze zijn al aan het gas gebleven."}],
+                    {text: "Andere bakkers? Die wachten ook, of ze kopen toch maar gas. Ik snap ze."}],
                 concern: [{text: "Mijn dochter? Die zegt: mam, niet weer gas. … Ja. Dat zegt ze.", tags: [feeling]}]}
         misses: {_: [{text: "Het net? Dat moeten jullie weten."}, {text: "Andere bakkers moeten het zelf weten."}],
                  concern: [{text: "Mijn dochter? Die laat ik er liever buiten."}]}
