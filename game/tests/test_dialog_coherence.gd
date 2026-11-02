@@ -202,6 +202,24 @@ func test_an_answer_stands_at_the_place_of_its_question() -> void:
 	u.openness = 40
 	u._last_tags = ["claim"]
 	assert_eq(u.say("inquiry")["reply"], "Antwoord twee.", "keyed by `_`")
+	# Review 10: the same when `_` stands beside a layer of its own (Ilse's perspective
+	# questions, {_, concern}): "Hoe zouden andere bakkers…?" is not answered "Vanuit jullie?…".
+	var beside := DialogFixture.def({"lines": {"inquiry": {"_": ["Eerste vraag?", "Tweede vraag?"], "concern": ["Zorgvraag?"]}},
+		"replies": {"inquiry": {
+			"lands": {"_": [{"text": "Antwoord één.", "tags": ["claim"]}, {"text": "Antwoord twee.", "tags": ["claim"]}],
+				"concern": [{"text": "Zorgantwoord."}]},
+			"misses": {"_": [{"text": "Mis één."}, {"text": "Mis twee."}], "concern": [{"text": "Zorgmis."}]}}}})
+	var b := _talk(DialogFixture.bank(), beside, 20)
+	assert_eq(b.say("inquiry")["reply"], "Mis één.")
+	b.openness = 40
+	b._last_tags = ["claim"]
+	assert_eq(b.say("inquiry")["reply"], "Antwoord twee.", "the second `_` question's own answer, a layer of its own beside it")
+	var c := _talk(DialogFixture.bank(), beside, 40)
+	c._last_tags = ["claim"]
+	assert_eq(c.say("inquiry")["reply"], "Antwoord één.")
+	c.openness = 20
+	c._last_tags = []
+	assert_eq(c.say("inquiry")["reply"], "Mis twee.", "and its own miss")
 
 
 ## Review 2, R1: a sentence the player already said in this talk is not dealt again

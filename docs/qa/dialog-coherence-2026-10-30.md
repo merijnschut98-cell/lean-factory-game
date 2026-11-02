@@ -57,10 +57,40 @@ voice, and its own "Daar denk ik nog over na" lines.
 | `thomas_reclaim` | Thomas | rewritten, batch 4; review round 3 fixed (34.9 → 0.2, echoes 283 → 0, no flag at budget 8000) |
 | `rob_order_rule` | Rob | rewritten, batch 4; review round 3 fixed (34.8 → 0.2, echoes 258 → 0, no flag at budget 8000) |
 | `femke_triage` | Femke | rewritten, batch 4; review round 3 fixed (34.8 → 0.2, echoes 231 → 0, no flag at budget 8000) |
-| `petra_silent_meters` | Petra | rewritten, batch 5 (33.7 → 0.2, echoes 258 → 0, no flag at budget 6000) |
-| `frank_kpi_targets` | Frank | rewritten, batch 5 (33.6 → 0.4, echoes 229 → 0, no flag at budget 6000) |
-| `linda_evenings` | Linda | rewritten, batch 5, a check-in (33.2 → 0.0, echoes 203 → 0, no flag at budget 6000) |
-| `esra_agents` | Esra | rewritten, batch 5 (33.1 → 0.3, echoes 239 → 0, no flag at budget 6000) |
+| `petra_silent_meters` | Petra | rewritten, batch 5; review round 4 fixed (33.7 → 0.2, echoes 258 → 0, no flag at budget 6000) |
+| `frank_kpi_targets` | Frank | rewritten, batch 5; review round 4 fixed (33.6 → 0.4, echoes 229 → 0, no flag at budget 6000) |
+| `linda_evenings` | Linda | rewritten, batch 5; review round 4 fixed, a check-in (33.2 → 0.0, echoes 203 → 0, no flag at budget 6000) |
+| `esra_agents` | Esra | rewritten, batch 5; review round 4 fixed (33.1 → 0.3, echoes 239 → 0, no flag at budget 6000) |
+| `anouk_late` | Anouk | rewritten, batch 6; review round 5 fixed, a check-in with a variant: lines and replies fit both versions (32.9 → 0.2, echoes 198 → 0, no flag at budget 6000) |
+| `esra_after` | Esra | rewritten, batch 6; review round 5 fixed, a check-in (32.0 → 0.0, echoes 190 → 0, no flag at budget 6000) |
+| `marco_day_100` | Marco | rewritten, batch 6; review round 5 fixed, a check-in (31.4 → 0.2, echoes 171 → 0, no flag at budget 6000) |
+| `henk_last_week` | Henk | rewritten, batch 6; review round 5 fixed, a check-in with two variants: lines and replies fit all three versions (31.2 → 0.0, echoes 194 → 0, no flag at budget 6000) |
+| `ilse_queue` | Ilse | rewritten, batch 7 (30.9 → 0.0, echoes 183 → 0, no flag at budget 6000); her trailing lead-in is tagged `[feeling, hesitation]`, as it reads, and listening first wins 8 of 10 deals (was 6) |
+| `petra_after` | Petra | rewritten, batch 7, a check-in with a variant: lines, replies and the lifted ending fit both versions (30.4 → 0.0, echoes 187 → 0, no flag at budget 6000) |
+| `el_amrani_fourth_call` | mevrouw El Amrani | rewritten, batch 7, a phone call whose variant only opens differently (29.9 → 0.0, echoes 152 → 0, no flag at budget 6000) |
+| `ahmed_after_henk` | Ahmed | rewritten, batch 7, a check-in with a variant: lines, replies and the lifted ending fit both versions; the audited routes of `test_dialog_content.gd` keep their tags (28.4 → 0.0, echoes 211 → 0, no flag at budget 6000) |
+
+Review 8: two more gates. `TalkWalk.lead_in_misfits` (test_a_lead_in_option_fits_the_lead_in_of_every_version):
+a lead-in option shares no word of four letters or more with the dialog's own lead-in that a variant's lead-in
+lacks ("Alleen wat?" after "En als ik ziek word…"). The reach pass (`TalkWalk._reach`,
+test_every_drawn_line_of_a_reviewed_talk_is_walked): a listener plays each talk on three deals and every option is
+tried from each of its turns, so every line drawn from a plain list or a list keyed `_` (the second perspective
+question, the third pressure line) is said and answered in the walk and the transcripts; 64 were not before. The
+deeper walk found lists that ran dry (sanne_tuesday and sanne_friday's lead-in returns, anouk_seven's and three
+Wednesday talks' silences, the clue answers of petra_batch, linda_replanning and mieke_redraw, the bank's "En?" in
+linda_evenings and el_amrani_fourth_call): each got its own lines. A trailing lead-in that breaks off mid-sentence is
+tagged `hesitation` too (ilse_queue, linda_evenings), with a YAML comment; esra_agents' "ik voel me schuldig" is a
+whole sentence and stays `[feeling]`.
+
+Review 9: the forced pass (`TalkWalk._forced`) says every line of a list keyed by the person's layer from that
+layer, landing once and missing once, so `unsaid` now reads keyed lists too (the lead-in's second options and a `_`
+under four keyed layers stay out); 29 lines were never walked before, Ilse's and mevrouw El Amrani's second
+perspective questions among them. Left for a follow-up: the `_` lists of fully keyed moves are text the engine never
+draws (about 450 lines in the reviewed talks).
+
+Review 7: the walk plays every variant (`TalkWalk.versions`; `test_the_walk_plays_every_version_of_a_talk`), so the
+flags above hold for each version; the transcripts write a variant to `<talk>~v<n>.md`. A variant still holds no
+lines of its own, so in anouk_late and henk_last_week every line and reply is written to fit every version.
 
 The two KPI talks are the audited ones of `test_dialog_content.gd`: their reply tags stay
 the audited ones (a talk's own untagged reply clears the moment's tags, a bank reply keeps

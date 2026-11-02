@@ -612,11 +612,17 @@ Ruud: "Je vroeg: “Hoe gaat het met je, zo aan het eind van de dag?” Je wilde
 
 ## Exchanges to read
 
-Every option any deal could offer, after every line the person can say (1500 states walked, breadth first, then random talks to the end): 146 of 1155 exchanges, those with a flag or a stock reply of the bank (`--full` for all).
+Every option any deal could offer, after every line the person can say (1500 states walked, breadth first, then random talks to the end): 181 of 1558 exchanges, those with a flag or a stock reply of the bank (`--full` for all).
 
 #### Anouk: "Nog twee tekeningen en dan ga ik. Echt waar. Niet tegen Joost zeggen dat ik hier nog zit, hè?"
 
-- *empathy* "In je eentje hier, op een maandagavond. Dat is ook niet niks." → "Dank je. Dat hoor ik niet vaak."
+- *reflect* "Je klinkt alsof je eigenlijk al lang thuis had willen zijn." → "Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe." / "Ja. Zo voelt het wel."
+- *empathy* "In je eentje hier, op een maandagavond. Dat is ook niet niks." → "Dank je. Dat hoor ik niet vaak." / "Eerlijk? Morgen zit ik hier alleen. Joost zit de hele dag in overleg en de anderen zitten op cursus. Als dit vanavond niet af is, ligt het er morgen nog. En achter elke tekening zit iemand die wacht." / "Ach, het valt wel mee, hoor. Ik zit erbovenop."
+- *experience* "Ik zit zelf ook nog hier, hoor." → "Hm. Ja." / "Echt? Dan weet je hoe het is."
+- *silence* "(je glimlacht en wacht)" → "… Is er iets? Je kijkt zo." / "(denkt na) Ik weet het eigenlijk niet."
+- *reflect* "Volgens mij wil je eigenlijk gewoon naar huis." → "Ja. Zo voelt het wel." / "Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe."
+- *reflect* "Je klinkt alsof je er klaar mee bent." → "Ja. Zo voelt het wel." / "Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe."
+- *experience* "Ik weet zelf ook nog niet hoe laat ik thuis ben." → "Echt? Dan weet je hoe het is." / "Hm. Ja."
 
 #### Anouk: "Hoe het is? … Moe, eerlijk gezegd. Fijn dat je het vraagt."
 
@@ -635,13 +641,15 @@ Every option any deal could offer, after every line the person can say (1500 sta
 - *empathy* "In je eentje hier, op een maandagavond. Dat is ook niet niks." → "Dank je. Dat hoor ik niet vaak." / "Ach, het valt wel mee, hoor. Ik zit erbovenop."
 - *experience* "Ik zit zelf ook nog hier, hoor." → "Sorry, ik wil die tekeningen echt nog af hebben." / "Hm. Ja." / "Echt? Dan weet je hoe het is."
 - *silence* "(je glimlacht en wacht)" → "Sorry, ik wil die tekeningen echt nog af hebben." / "… Is er iets? Je kijkt zo." / "(denkt na) Ik weet het eigenlijk niet." / "… Wat is er?"
-- *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien." / "Ja, ja. Daar denk ik over na."
-- *ask_commitment* "Doen we het zo?" → "Nee. Nog niet."
+- *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien." / "Ja, ja. Daar denk ik over na." / "… Ja. Ja, goed. Samen naar buiten." + "Weet je wat? Kom morgen overdag ook even langs. Dan zie je hoe het hier gaat. Al ziet het er overdag niet veel beter uit, hoor." / "… Ja. Ja, goed. Samen naar buiten."
+- *ask_commitment* "Doen we het zo?" → "Nee. Nog niet." / "Ik pak mijn jas. Dank je. Dat had ik even nodig: iemand die zegt dat het mag."
+- *empathy* "Wat balen. Voor jou, en voor Fenna." → "Ja. Fijn dat je dat zegt." + "Weet je wat? Kom morgen overdag ook even langs. Dan zie je hoe het hier gaat. Al ziet het er overdag niet veel beter uit, hoor." / "Ach, het valt wel mee, hoor. Ik zit erbovenop." / "Dank je. Dat hoor ik niet vaak." + "Weet je wat? Kom morgen overdag ook even langs. Dan zie je hoe het hier gaat. Al ziet het er overdag niet veel beter uit, hoor." / "Dank je. Dat hoor ik niet vaak."
+- *experience* "Thuis vroegen ze vanavond ook al waar ik bleef. En het is pas mijn eerste dag." → "Echt? Dan weet je hoe het is." + "Weet je wat? Kom morgen overdag ook even langs. Dan zie je hoe het hier gaat. Al ziet het er overdag niet veel beter uit, hoor." / "Hm. Ja." / "Echt? Dan weet je hoe het is."
 
 #### Anouk: "Dank je. Dat hoor ik niet vaak."
 
 - *silence* "(je glimlacht en wacht)" → "… Is er iets? Je kijkt zo." / "(denkt na) Ik weet het eigenlijk niet." / "… Wat is er?" / "Ik ga maar even verder, hoor."
-- *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien."
+- *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien." / "… Ja. Ja, goed. Samen naar buiten."
 
 #### Anouk: "Ja. Nou ja… als het meezit."
 
@@ -665,10 +673,11 @@ Every option any deal could offer, after every line the person can say (1500 sta
 - *empathy* "In je eentje hier, op een maandagavond. Dat is ook niet niks." → "Dank je. Dat hoor ik niet vaak." / "Ach, het valt wel mee, hoor. Ik zit erbovenop." / "Eerlijk? Morgen zit ik hier alleen. Joost zit de hele dag in overleg en de anderen zitten op cursus. Als dit vanavond niet af is, ligt het er morgen nog. En achter elke tekening zit iemand die wacht."
 - *silence* "(je glimlacht en wacht)" → "Sorry, ik wil die tekeningen echt nog af hebben." / "… Is er iets? Je kijkt zo." / "(denkt na) Ik weet het eigenlijk niet." / "… Wat is er?" / "(ze kijkt weer naar haar scherm)"
 - *reflect* "Volgens mij wil je eigenlijk gewoon naar huis." → "Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe." / "Nee, echt niet. Nog even, en dan ben ik weg." / "Ja. Zo voelt het wel." / "Sorry, ik wil die tekeningen echt nog af hebben."
-- *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien." / "Ja, ja. Daar denk ik over na."
+- *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien." / "Ja, ja. Daar denk ik over na." / "… Ja. Ja, goed. Samen naar buiten."
 - *reflect* "Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht." → "Ja. Zo voelt het wel." / "Ja… Dat klopt wel." / "Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe." / "Nee, echt niet. Nog even, en dan ben ik weg."
 - *empathy* "Morgen in je eentje de hele afdeling. Dat is veel." → "Dank je. Dat hoor ik niet vaak." / "Ach, het valt wel mee, hoor. Ik zit erbovenop." / "Ja. Fijn dat je dat zegt."
-- *ask_commitment* "Doen we het zo?" → "Nee. Nog niet."
+- *experience* "Ik ben hier pas een dag, maar ik zat vanmiddag ook al te puzzelen." → "Ja… Mm." / "Ja. Ja. Dat weet ik nou wel. Wat wil je eigenlijk?"
+- *ask_commitment* "Doen we het zo?" → "Nee. Nog niet." / "Ik pak mijn jas. Dank je. Dat had ik even nodig: iemand die zegt dat het mag."
 
 #### Anouk: "… Is er iets? Je kijkt zo."
 
@@ -692,8 +701,8 @@ Every option any deal could offer, after every line the person can say (1500 sta
 
 #### Anouk: "Eerlijk? Morgen zit ik hier alleen. Joost zit de hele dag in overleg en de anderen zitten op cursus. Als dit vanavond niet af is, ligt het er morgen nog. En achter elke tekening zit iemand die wacht."
 
-- *reflect* "Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht." → "Ja. Zo voelt het wel." / "Sorry, mijn telefoon. Mijn vriend appte net…" / "Ja… Dat klopt wel." / "Ja, ja. Ik hoor je wel. Maar ik moet echt door."
-- *empathy* "Morgen in je eentje de hele afdeling. Dat is veel." → "Dank je. Dat hoor ik niet vaak." / "Ja. Fijn dat je dat zegt." / "Sorry, mijn telefoon. Mijn vriend appte net…" / "Ja, ja. Lief van je, hoor. Maar ik moet echt door."
+- *reflect* "Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht." → "Ja. Zo voelt het wel." / "Sorry, mijn telefoon. Mijn vriend appte net…" / "Ja… Dat klopt wel." / "Ja, ja. Ik hoor je wel. Maar ik moet echt door." / "Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe."
+- *empathy* "Morgen in je eentje de hele afdeling. Dat is veel." → "Dank je. Dat hoor ik niet vaak." / "Ja. Fijn dat je dat zegt." / "Sorry, mijn telefoon. Mijn vriend appte net…" / "Ja, ja. Lief van je, hoor. Maar ik moet echt door." / "Ach, het valt wel mee, hoor. Ik zit erbovenop."
 - *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien." / "Ja, ja. Daar denk ik over na." / "Dat zei je, ja. Ik weet het nog niet."
 - *ask_commitment* "Doen we het zo?" → "Nog één tekening. Dan ga ik. Beloofd." / "Nee. Nog niet."
 
@@ -706,7 +715,8 @@ Every option any deal could offer, after every line the person can say (1500 sta
 - *reflect* "Volgens mij wil je eigenlijk gewoon naar huis." → "Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe." / "Ja. Zo voelt het wel." / "Nee, echt niet. Nog even, en dan ben ik weg."
 - *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien." / "Ja, ja. Daar denk ik over na." / "Dat zei je, ja. Ik weet het nog niet."
 - *ask_commitment* "Doen we het zo?" → "Nee. Nog niet." / "Nog één tekening. Dan ga ik. Beloofd."
-- *empathy* "Morgen in je eentje de hele afdeling. Dat is veel." → "Dank je. Dat hoor ik niet vaak." / "Ach, het valt wel mee, hoor. Ik zit erbovenop."
+- *reflect* "Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht." → "Sorry, mijn telefoon. Mijn vriend appte net…" / "Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe." / "Ja. Zo voelt het wel."
+- *empathy* "Morgen in je eentje de hele afdeling. Dat is veel." → "Dank je. Dat hoor ik niet vaak." / "Ach, het valt wel mee, hoor. Ik zit erbovenop." / "Sorry, mijn telefoon. Mijn vriend appte net…"
 
 #### Anouk: "Nee, echt niet. Nog even, en dan ben ik weg."
 
@@ -741,30 +751,32 @@ Every option any deal could offer, after every line the person can say (1500 sta
 - *empathy* "In je eentje hier, op een maandagavond. Dat is ook niet niks." → "Ach, het valt wel mee, hoor. Ik zit erbovenop." / "Eerlijk? Morgen zit ik hier alleen. Joost zit de hele dag in overleg en de anderen zitten op cursus. Als dit vanavond niet af is, ligt het er morgen nog. En achter elke tekening zit iemand die wacht." / "Dank je. Dat hoor ik niet vaak."
 - *silence* "(je glimlacht en wacht)" → "… Is er iets? Je kijkt zo." / "… Wat is er?" / "(denkt na) Ik weet het eigenlijk niet." / "Ik ga maar even verder, hoor."
 - *reflect* "Volgens mij wil je eigenlijk gewoon naar huis." → "Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe." / "Ja. Zo voelt het wel." / "Nee, echt niet. Nog even, en dan ben ik weg."
-- *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien." / "Ja, ja. Daar denk ik over na."
+- *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien." / "Ja, ja. Daar denk ik over na." / "… Ja. Ja, goed. Samen naar buiten."
 - *reflect* "Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht." → "Ja. Zo voelt het wel." / "Sorry, mijn telefoon. Mijn vriend appte net…" / "Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe."
 - *empathy* "Morgen in je eentje de hele afdeling. Dat is veel." → "Dank je. Dat hoor ik niet vaak." / "Ja. Fijn dat je dat zegt." / "Sorry, mijn telefoon. Mijn vriend appte net…" / "Ach, het valt wel mee, hoor. Ik zit erbovenop." / "Ja, ja. Lief van je, hoor. Maar ik moet echt door."
-- *ask_commitment* "Doen we het zo?" → "Nee. Nog niet." / "Nog één tekening. Dan ga ik. Beloofd."
+- *ask_commitment* "Doen we het zo?" → "Nee. Nog niet." / "Nog één tekening. Dan ga ik. Beloofd." / "Ik pak mijn jas. Dank je. Dat had ik even nodig: iemand die zegt dat het mag."
 
 #### Anouk: "Ach, het valt wel mee, hoor. Ik zit erbovenop."
 
 - *experience* "Ik zit zelf ook nog hier, hoor." → "Hm. Ja." / "Sorry, ik wil die tekeningen echt nog af hebben." / "Echt? Dan weet je hoe het is."
 - *silence* "(je glimlacht en wacht)" → "… Is er iets? Je kijkt zo." / "(denkt na) Ik weet het eigenlijk niet." / "… Wat is er?" / "Sorry, ik wil die tekeningen echt nog af hebben." / "Ik ga maar even verder, hoor." / "(ze kijkt weer naar haar scherm)"
-- *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien." / "Ja, ja. Daar denk ik over na."
-- *ask_commitment* "Doen we het zo?" → "Nee. Nog niet."
+- *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien." / "Ja, ja. Daar denk ik over na." / "… Ja. Ja, goed. Samen naar buiten."
+- *ask_commitment* "Doen we het zo?" → "Nee. Nog niet." / "Ik pak mijn jas. Dank je. Dat had ik even nodig: iemand die zegt dat het mag."
 
 #### Anouk: "Hm. Misschien."
 
 - *experience* "Ik zit zelf ook nog hier, hoor." → "Hm. Ja." / "Echt? Dan weet je hoe het is."
 - *silence* "(je glimlacht en wacht)" → "… Is er iets? Je kijkt zo." / "(denkt na) Ik weet het eigenlijk niet." / "… Wat is er?"
 - *ask_commitment* "Doen we het zo?" → "Nee. Nog niet." / "Nog één tekening. Dan ga ik. Beloofd."
-- *reflect* "Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht." → "Ja. Zo voelt het wel." / "Sorry, mijn telefoon. Mijn vriend appte net…"
+- *reflect* "Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht." → "Ja. Zo voelt het wel." / "Sorry, mijn telefoon. Mijn vriend appte net…" / "Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe."
 - *empathy* "Morgen in je eentje de hele afdeling. Dat is veel." → "Dank je. Dat hoor ik niet vaak." / "Sorry, mijn telefoon. Mijn vriend appte net…" / "Ach, het valt wel mee, hoor. Ik zit erbovenop."
+- *ask_commitment* "Spreken we dit af?" → "Nee. Nog niet." / "Nog één tekening. Dan ga ik. Beloofd."
 
 #### Anouk: "Eén laten liggen. Hm. Die van de school kan wel een dagje wachten. Die hebben hem pas in januari nodig."
 
-- *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien." / "Ja, ja. Daar denk ik over na."
+- *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien." / "Ja, ja. Daar denk ik over na." / "… Ja. Ja, goed. Samen naar buiten."
 - *ask_commitment* "Doen we het zo?" → "Nee. Nog niet." / "Nog één tekening. Dan ga ik. Beloofd."
+- *ask_commitment* "Spreken we dit af?" → "Nee. Nog niet." / "Nog één tekening. Dan ga ik. Beloofd."
 
 #### Anouk: "Precies. En niemand die het overneemt."
 
@@ -775,7 +787,7 @@ Every option any deal could offer, after every line the person can say (1500 sta
 #### Anouk: "Ach. Het moet gewoon af, dat is alles."
 
 - *reflect* "Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht." → "Ja. Zo voelt het wel." / "Sorry, mijn telefoon. Mijn vriend appte net…"
-- *empathy* "Morgen in je eentje de hele afdeling. Dat is veel." → "Dank je. Dat hoor ik niet vaak." / "Ja. Fijn dat je dat zegt."
+- *empathy* "Morgen in je eentje de hele afdeling. Dat is veel." → "Dank je. Dat hoor ik niet vaak." / "Ja. Fijn dat je dat zegt." / "Sorry, mijn telefoon. Mijn vriend appte net…" / "Ach, het valt wel mee, hoor. Ik zit erbovenop."
 - *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien."
 
 #### Anouk: "Ja. Zoiets."
@@ -827,13 +839,14 @@ Every option any deal could offer, after every line the person can say (1500 sta
 
 #### Anouk: "Echt? Dan weet je hoe het is."
 
-- *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien."
+- *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien." / "… Ja. Ja, goed. Samen naar buiten."
 
 #### Anouk: "… Zeg jij ook nog eens wat?"
 
 - *reflect* "Je klinkt alsof je eigenlijk al lang thuis had willen zijn." → "Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe." / "Ja. Zo voelt het wel." / "Sorry, ik wil die tekeningen echt nog af hebben."
 - *empathy* "In je eentje hier, op een maandagavond. Dat is ook niet niks." → "Ach, het valt wel mee, hoor. Ik zit erbovenop." / "Dank je. Dat hoor ik niet vaak."
 - *silence* "(je glimlacht en wacht)" → "… Zeg jij ook nog eens wat?" / "Sorry, ik wil die tekeningen echt nog af hebben."
+- *silence* "(je blijft staan en wacht)" → "… Zeg jij ook nog eens wat?"
 
 #### Anouk: "Ja… Het is wat het is."
 
@@ -855,8 +868,8 @@ Every option any deal could offer, after every line the person can say (1500 sta
 
 #### Anouk: "Ja, ja. Daar denk ik over na."
 
-- *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Dat zei je, ja. Ik weet het nog niet." / "Hm. Misschien."
-- *ask_commitment* "Doen we het zo?" → "Nee. Nog niet." / "Nog één tekening. Dan ga ik. Beloofd."
+- *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Dat zei je, ja. Ik weet het nog niet." / "Hm. Misschien." / "… Ja. Ja, goed. Samen naar buiten."
+- *ask_commitment* "Doen we het zo?" → "Nee. Nog niet." / "Nog één tekening. Dan ga ik. Beloofd." / "Ik pak mijn jas. Dank je. Dat had ik even nodig: iemand die zegt dat het mag."
 
 #### Anouk: "Nee. Nog niet."
 
@@ -865,7 +878,10 @@ Every option any deal could offer, after every line the person can say (1500 sta
 #### Anouk: "Echt, het gaat wel. Moe, maar het gaat."
 
 - *reflect* "Het klinkt alsof je je verantwoordelijk voelt voor iedereen die wacht." → "Ja. Zo voelt het wel." / "Nee joh, zo erg is het niet. Ik ben gewoon een beetje moe." / "Sorry, mijn telefoon. Mijn vriend appte net…"
-- *empathy* "Morgen in je eentje de hele afdeling. Dat is veel." → "Dank je. Dat hoor ik niet vaak." / "Sorry, mijn telefoon. Mijn vriend appte net…"
+- *empathy* "Morgen in je eentje de hele afdeling. Dat is veel." → "Dank je. Dat hoor ik niet vaak." / "Sorry, mijn telefoon. Mijn vriend appte net…" / "Ach, het valt wel mee, hoor. Ik zit erbovenop."
+- *empathy* "Wat balen. Voor jou, en voor Fenna." → "Ach, het valt wel mee, hoor. Ik zit erbovenop." / "Dank je. Dat hoor ik niet vaak."
+- *experience* "Thuis vroegen ze vanavond ook al waar ik bleef. En het is pas mijn eerste dag." → "Hm. Ja." / "Echt? Dan weet je hoe het is."
+- *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "… Ja. Ja, goed. Samen naar buiten." / "Hm. Misschien."
 
 #### Anouk: "Sorry, ik moet echt even door met die tekeningen."
 
@@ -892,6 +908,7 @@ Every option any deal could offer, after every line the person can say (1500 sta
 #### Anouk: "Weet je wat? Kom morgen overdag ook even langs. Dan zie je hoe het hier gaat. Al ziet het er overdag niet veel beter uit, hoor."
 
 - *experience* "Thuis vroegen ze vanavond ook al waar ik bleef. En het is pas mijn eerste dag." → "Echt? Dan weet je hoe het is." / "Hm. Ja."
+- *empathy* "Wat balen. Voor jou, en voor Fenna." → "Ja. Fijn dat je dat zegt." / "Ach, het valt wel mee, hoor. Ik zit erbovenop." / "Dank je. Dat hoor ik niet vaak."
 
 #### Anouk: "Dank je. Maar echt, het gaat wel."
 
@@ -911,7 +928,58 @@ Every option any deal could offer, after every line the person can say (1500 sta
 
 #### Anouk: "Al sinds de zomer, eigenlijk. Sinds we twee mensen kwijt zijn."
 
+- *empathy* "Wat balen. Voor jou, en voor Fenna." → "Dank je. Dat hoor ik niet vaak." / "Ja. Fijn dat je dat zegt."
+- *experience* "Thuis vroegen ze vanavond ook al waar ik bleef. En het is pas mijn eerste dag." → "Echt? Dan weet je hoe het is."
+
+#### Anouk: "Jawel, hoor. Het is niks."
+
+- *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien."
+
+#### Anouk: "Nee, nee. Het is niks."
+
+- *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien."
+
+#### Anouk: "Nee, het is niks. Echt."
+
+- *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien."
+
+#### Anouk: "Zoiets, ja. Laat maar."
+
+- *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien."
+
+#### Anouk: "Ach, niks. Laat maar."
+
+- *propose* "Zullen we samen naar buiten lopen? De tekeningen zijn er morgen ook nog." → "Hm. Misschien."
+
+#### Anouk: "… Sorry. Dat hoort hier eigenlijk niet."
+
+- *silence* "(je knikt en wacht)" → "… Zeg jij ook nog eens wat?" / "… Mm."
+- *empathy* "Wat balen. Voor jou, en voor Fenna." → "Ja. Fijn dat je dat zegt." + "Weet je wat? Kom morgen overdag ook even langs. Dan zie je hoe het hier gaat. Al ziet het er overdag niet veel beter uit, hoor." / "Ach, het valt wel mee, hoor. Ik zit erbovenop." / "Dank je. Dat hoor ik niet vaak." + "Weet je wat? Kom morgen overdag ook even langs. Dan zie je hoe het hier gaat. Al ziet het er overdag niet veel beter uit, hoor." / "Dank je. Dat hoor ik niet vaak."
+- *experience* "Thuis vroegen ze vanavond ook al waar ik bleef. En het is pas mijn eerste dag." → "Echt? Dan weet je hoe het is." + "Weet je wat? Kom morgen overdag ook even langs. Dan zie je hoe het hier gaat. Al ziet het er overdag niet veel beter uit, hoor." / "Hm. Ja." / "Echt? Dan weet je hoe het is."
+
+#### Anouk: "Ja. Dat is het eigenlijk wel."
+
+- *empathy* "Wat balen. Voor jou, en voor Fenna." → "Ja. Fijn dat je dat zegt." + "Weet je wat? Kom morgen overdag ook even langs. Dan zie je hoe het hier gaat. Al ziet het er overdag niet veel beter uit, hoor." / "Ach, het valt wel mee, hoor. Ik zit erbovenop." / "Dank je. Dat hoor ik niet vaak."
+- *experience* "Thuis vroegen ze vanavond ook al waar ik bleef. En het is pas mijn eerste dag." → "Echt? Dan weet je hoe het is." + "Weet je wat? Kom morgen overdag ook even langs. Dan zie je hoe het hier gaat. Al ziet het er overdag niet veel beter uit, hoor." / "Hm. Ja." / "Echt? Dan weet je hoe het is."
+
+#### Anouk: "Dat is privé, eigenlijk. Sorry."
+
+- *empathy* "Wat balen. Voor jou, en voor Fenna." → "Ach, het valt wel mee, hoor. Ik zit erbovenop." / "Dank je. Dat hoor ik niet vaak."
+- *experience* "Thuis vroegen ze vanavond ook al waar ik bleef. En het is pas mijn eerste dag." → "Hm. Ja." / "Echt? Dan weet je hoe het is."
+
+#### Anouk: "… Mm."
+
+- *silence* "(je blijft staan en wacht)" → "… Zeg jij ook nog eens wat?"
+
+#### Anouk: "Laat maar. Dat los ik zelf wel op."
+
+- *empathy* "Wat balen. Voor jou, en voor Fenna." → "Ach, het valt wel mee, hoor. Ik zit erbovenop." / "Dank je. Dat hoor ik niet vaak."
+- *experience* "Thuis vroegen ze vanavond ook al waar ik bleef. En het is pas mijn eerste dag." → "Hm. Ja." / "Echt? Dan weet je hoe het is."
+
+#### Anouk: "Hij zegt er niks meer van. Dat is eigenlijk erger."
+
 - *empathy* "Wat balen. Voor jou, en voor Fenna." → "Dank je. Dat hoor ik niet vaak."
+- *experience* "Thuis vroegen ze vanavond ook al waar ik bleef. En het is pas mijn eerste dag." → "Echt? Dan weet je hoe het is."
 
 ## Every ending
 
@@ -927,4 +995,8 @@ Ruud: "Je vroeg: “Hoe gaat het met je, zo aan het eind van de dag?” Je wilde
 
 **End: Afspraak onder voorwaarde** (partial)  
 Last words: "Nog één tekening. Dan ga ik. Beloofd."  
+Ruud: "Je vroeg: “Hoe gaat het met je, zo aan het eind van de dag?” Je wilde weten hoe het met Anouk ging. Dat heet Stemming peilen. Zag je hoe Anouk daarna praatte?"
+
+**End: Staat erachter** (commitment)  
+Last words: "Ik pak mijn jas. Dank je. Dat had ik even nodig: iemand die zegt dat het mag."  
 Ruud: "Je vroeg: “Hoe gaat het met je, zo aan het eind van de dag?” Je wilde weten hoe het met Anouk ging. Dat heet Stemming peilen. Zag je hoe Anouk daarna praatte?"

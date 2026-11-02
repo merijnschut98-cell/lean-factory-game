@@ -13,6 +13,15 @@ extends TestCase
 ## turns and the endings; the transcripts walk more).
 const BUDGET := 150
 const DIVES := 40
+## Each version's walk, walked once for the tests that read it.
+static var _walks := {}
+
+
+static func _walk(ctx: Dictionary, talk: Dialog) -> Dictionary:
+	var key := TalkWalk.label(talk)
+	if not _walks.has(key):
+		_walks[key] = TalkWalk.walk(ctx, talk, BUDGET, DIVES)
+	return _walks[key]
 
 
 func test_no_talk_says_what_the_player_s_sentences_cannot_have_earned() -> void:
@@ -22,7 +31,7 @@ func test_no_talk_says_what_the_player_s_sentences_cannot_have_earned() -> void:
 	var talks := TalkWalk.talks(c)
 	assert_true(talks.size() > 30, "every persuasion and check-in")
 	for talk: Dialog in talks:
-		var walked := TalkWalk.walk(ctx, talk, BUDGET, DIVES)
+		var walked := _walk(ctx, talk)
 		var broken := []
 		var never: Array = TalkWalk.BROKEN + (["echo"] if talk.def.id in TalkWalk.REVIEWED else [])
 		for ex: Dictionary in walked["exchanges"].values():
@@ -35,7 +44,7 @@ func test_no_talk_says_what_the_player_s_sentences_cannot_have_earned() -> void:
 				if f in TalkWalk.BROKEN:
 					broken.append("%s: ends %s on \"%s\"%s" % [f, e["outcome"], e["reply"],
 						(" (Ruud: \"%s\")" % e["ruud"]) if f == "ruud" else ""])
-		assert_true(broken.is_empty(), "%s: %d broken, e.g. %s" % [talk.def.id, broken.size(), broken.slice(0, 3)])
+		assert_true(broken.is_empty(), "%s: %d broken, e.g. %s" % [TalkWalk.label(talk), broken.size(), broken.slice(0, 3)])
 
 
 ## Review round 2: the walk flags a story line said twice even when the player
@@ -53,6 +62,30 @@ func test_the_walk_flags_a_retold_story_line_and_an_echo() -> void:
 	var same_line := {"move": "mood", "line": "Voorstel goed.", "reply": "Gaat wel."}
 	assert_false("echo" in TalkWalk.turn(ctx, t, "Dat helpt.", path, same_line)["flags"],
 		"the same answer to the same sentence is no echo")
+
+
+## Review 7 (2026-11-01): a talk is walked in every version, the dialog as written
+## and each variant, so a fault only a variant holds is caught: here the variant's
+## position comes back, word for word, as the answer to the mood question.
+func test_the_walk_plays_every_version_of_a_talk() -> void:
+	var line := "Gaat wel, hoor."
+	var d := DialogFixture.def({"replies": {"mood": {"lands": {"text": line}}},
+		"variants": [{"needs": {"all": ["standardised:custom_design"]}, "position": {"text": line, "tags": ["claim"]}}]})
+	var people := DialogFixture.people([d])
+	var ctx := {"repeat": null, "clarify": null, "stock": {}, "people": people}
+	var versions := TalkWalk.versions(d, people)
+	assert_eq(versions.map(func(t: Dialog) -> int: return t.version), [-1, 0], "as written, then the variant")
+	var echoes := versions.map(func(t: Dialog) -> int: return _echoes_of(TalkWalk.walk(ctx, t, 60, 5), line))
+	assert_eq(echoes[0], 0, "as written, the mood's answer is new")
+	assert_true(echoes[1] > 0, "the variant's position, said again as the mood's answer")
+	assert_eq(TalkWalk.label(versions[1]), "dialog_id (variant 1)".replace("dialog_id", d.id))
+
+
+func _echoes_of(walked: Dictionary, line: String) -> int:
+	var n := 0
+	for ex: Dictionary in walked["exchanges"].values():
+		n += 1 if "echo" in ex["replies"].get(line, []) else 0
+	return n
 
 
 ## Review 2 #1 (2026-10-31): a question that misses in a reviewed talk is held back or
@@ -139,6 +172,58 @@ func test_a_reviewed_talk_s_commitment_fits_every_route_to_it() -> void:
 			if brought and not everywhere:
 				bad.append("%s: \"%s\" comes from only some routes to the commitment" % [d.id, w])
 	assert_true(bad.is_empty(), "%d: %s" % [bad.size(), bad])
+
+
+## Review 8 (2026-11-02): a lead-in option ("Alleen wat?") answers the lead-in of every
+## version of the talk, not only the one it was written for: each word of four letters
+## or more it shares with the dialog's own lead-in is in every variant's lead-in too.
+func test_a_lead_in_option_fits_the_lead_in_of_every_version() -> void:
+	assert_eq(TalkWalk.lead_in_misfits(_two_lead_ins("Alleen wat?")),
+		["open_question \"Alleen wat?\" (alleen) after variant 1's lead-in"], "written for the dialog's own lead-in")
+	assert_eq(TalkWalk.lead_in_misfits(_two_lead_ins("Wat is er dan?")), [], "fits any lead-in")
+	var bad := []
+	for d: DialogDef in Catalog.load_from().dialogs:
+		for misfit: String in TalkWalk.lead_in_misfits(d):
+			bad.append("%s: %s" % [d.id, misfit])
+	assert_true(bad.is_empty(), "%d lead-in options fit one version only: %s" % [bad.size(), bad])
+
+
+## Review 8 (2026-11-02): every line a reviewed talk draws from a list (the second
+## perspective question, the third pressure line) is said, and answered, in the walk the
+## gate reads, so no line reaches a player unread (TalkWalk._reach).
+func test_every_drawn_line_of_a_reviewed_talk_is_walked() -> void:
+	var c := Catalog.load_from()
+	var ctx := TalkWalk.context(c)
+	var bad := []
+	for talk: Dialog in TalkWalk.talks(c, TalkWalk.REVIEWED):
+		for line: String in TalkWalk.unsaid(talk.def, _walk(ctx, talk)):
+			bad.append("%s: %s" % [TalkWalk.label(talk), line])
+	assert_true(bad.is_empty(), "%d lines never walked: %s" % [bad.size(), bad.slice(0, 6)])
+
+
+## Review 10: and every answer written for those lines, landing and missing, is given
+## in the walk: a question answered with another question's reply (Ilse's second
+## perspective question with the first's "Vanuit jullie?…") leaves its own unread.
+func test_every_answer_to_a_reviewed_talk_s_keyed_lines_is_given() -> void:
+	var c := Catalog.load_from()
+	var ctx := TalkWalk.context(c)
+	var bad := []
+	for talk: Dialog in TalkWalk.talks(c, TalkWalk.REVIEWED):
+		for reply: String in TalkWalk.unanswered(talk.def, _walk(ctx, talk)):
+			bad.append("%s: never given %s" % [TalkWalk.label(talk), reply])
+		for pair: String in TalkWalk.misanswered(talk.def, _walk(ctx, talk)):
+			bad.append("%s: another question's answer %s" % [TalkWalk.label(talk), pair])
+	assert_true(bad.is_empty(), "%d answer faults: %s" % [bad.size(), bad.slice(0, 6)])
+
+
+## A talk whose lead-in is "Het is alleen…", and "En als ik ziek word…" in its variant
+## (petra_after), with `option` as the open question to it.
+static func _two_lead_ins(option: String) -> DialogDef:
+	var layers := func(lead: String) -> Array:
+		return [{"id": "interest", "at": 40, "via": ["inquiry"], "text": "Belang."},
+			{"id": "concern", "at": 70, "via": ["silence"], "lead_in": {"text": lead, "tags": ["hesitation"]}, "text": "Zorg."}]
+	return DialogFixture.def({"layers": layers.call("Het is alleen…"), "lines": {"open_question": {"lead_in": option}},
+		"variants": [{"needs": {"all": ["standardised:custom_design"]}, "layers": layers.call("En als ik ziek word…")}]})
 
 
 static func _item_text(item: Dictionary) -> String:
