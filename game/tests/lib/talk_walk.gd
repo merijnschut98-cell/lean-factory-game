@@ -127,23 +127,40 @@ static func _long_words(text: String) -> Array:
 		func(m: RegExMatch) -> String: return m.get_string())
 
 
-## The talk's own drawn sentences that `walked` never said (review 8: every line of a
-## list is judged by the walk at least once): a list the deal or the order draws from
-## whatever the person spoke of last (a plain list, or one keyed `_` alone: the
-## perspective questions, pressure, blame), for the listening and steering moves. A
-## list keyed by the layer the person spoke of answers that layer place by place.
+## The talk's own sentences that `walked` never said (reviews 8 and 9: every line a
+## player can meet is judged by the walk at least once), for the listening and steering
+## moves: a plain list, and every list of a mapping by the layer the person spoke of
+## (their position, interest, concern; `_` while some layer has no list of its own).
+## Left out: the lead-in's second and later options (a short "Ik luister." beside the
+## first; the lead-in gate reads them) and a `_` the engine never draws (every layer keyed).
 static func unsaid(d: DialogDef, walked: Dictionary) -> Array[String]:
 	var said := {}
 	for ex: Dictionary in walked["exchanges"].values():
 		said[ex["said"]] = true
 	var out: Array[String] = []
 	for move: String in Dialog.LISTEN + ["perspective", "pressure", "confront"]:
-		var lines: Variant = d.lines.get(move)
-		if lines is Dictionary and lines.keys() != ["_"]:
-			continue
-		for line: String in _all_lines(lines):
+		for line: String in drawn(d.lines.get(move)):
 			if not said.has(line) and not line.begins_with("("):
 				out.append("%s \"%s\"" % [move, line])
+	return out
+
+
+## The topics a mapping of lines answers.
+const TOPICS := ["position", "interest", "lead_in", "concern"]
+
+
+## The lines of one move's entry a player can be dealt (unsaid() says which).
+static func drawn(lines: Variant) -> Array[String]:
+	if not lines is Dictionary:
+		return _all_lines(lines)
+	var out: Array[String] = []
+	for key: String in lines:
+		var entries := _all_lines(lines[key])
+		if key == "lead_in":
+			entries = entries.slice(0, 1)
+		elif key == "_" and TOPICS.all(func(t: String) -> bool: return lines.has(t)):
+			entries = []
+		out.append_array(entries)
 	return out
 
 
@@ -302,7 +319,67 @@ static func walk(ctx: Dictionary, talk: Dialog, budget: int = BUDGET, dives: int
 			var options := _options(node["talk"])
 			node = _step(ctx, node, options[rng.randi_range(0, options.size() - 2)], out)  # never the close
 	_reach(ctx, talk, out)
+	_forced(ctx, talk, out)
 	return out
+
+
+## Review 9: a list keyed by the layer the person spoke of is dealt in order, so its
+## later lines come only as late in a talk as no walk may get. Each such line is said
+## once from that layer (the talk put on it, its earlier lines said), and answered
+## twice: as a move that lands (the person's words still standing, open) and as one
+## that misses (nothing to answer, guarded).
+static func _forced(ctx: Dictionary, talk: Dialog, out: Dictionary) -> void:
+	for move: String in Dialog.LISTEN + ["perspective", "pressure", "confront"]:
+		var lines: Variant = talk.def.lines.get(move)
+		if not lines is Dictionary:
+			continue
+		for key: String in lines:
+			var entries := _all_lines(lines[key])
+			var drawn_here := drawn({key: lines[key]}) if key != "_" else drawn(lines)
+			for i in entries.size():
+				if not entries[i] in drawn_here:
+					continue
+				for lands: bool in [true, false]:
+					var node := _put_on(talk, _topic_for(key, lines), entries.slice(0, i), lands, false)
+					if not {"move": move, "pick": ""} in _options(node["talk"]):
+						node = _put_on(talk, _topic_for(key, lines), entries.slice(0, i), lands, true)   # a move for after the concern
+					if {"move": move, "pick": ""} in _options(node["talk"]):
+						_step(ctx, node, {"move": move, "pick": ""}, out)
+
+
+## The layer a `_` list answers: the first a mapping has no list of its own for.
+static func _topic_for(key: String, lines: Dictionary) -> String:
+	if key != "_":
+		return key
+	for t: String in TOPICS:
+		if not lines.has(t):
+			return t
+	return "position"
+
+
+## A node of `talk` put on layer `topic`, with `said` behind it, ready for a move that
+## lands (`lands`: the person's words standing, heard, open) or misses (nothing standing);
+## `told_all`: the concern already out (a steering move that waits for it).
+static func _put_on(talk: Dialog, topic: String, said: Array, lands: bool, told_all: bool) -> Dictionary:
+	var t := talk.copy()
+	var layers: Array = t.layers()
+	t._topic = topic
+	if topic in ["interest", "lead_in", "concern"] or told_all:
+		t.revealed["interest"] = true
+	if topic == "concern" or told_all:
+		t.revealed["concern"] = true
+	t.said.assign(said)
+	t.heard = lands
+	t.openness = 80 if lands else 30
+	t._last_tags = ["claim", "feeling", "hesitation", "admission", "doubt"] if lands else []
+	var before := str(t.position().get("text", ""))
+	if topic == "interest":
+		before = str(layers[0].get("text", ""))
+	elif topic == "concern":
+		before = str(layers[1].get("text", ""))
+	elif topic == "lead_in":
+		before = str(JsonFile.dict_or_empty(layers[1].get("lead_in")).get("text", ""))
+	return {"talk": t, "before": before, "path": path_of(t)}
 
 
 ## Deals the reach pass plays (review 8: a line drawn by the seed is walked under each).

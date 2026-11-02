@@ -13,6 +13,15 @@ extends TestCase
 ## turns and the endings; the transcripts walk more).
 const BUDGET := 150
 const DIVES := 40
+## Each version's walk, walked once for the tests that read it.
+static var _walks := {}
+
+
+static func _walk(ctx: Dictionary, talk: Dialog) -> Dictionary:
+	var key := TalkWalk.label(talk)
+	if not _walks.has(key):
+		_walks[key] = TalkWalk.walk(ctx, talk, BUDGET, DIVES)
+	return _walks[key]
 
 
 func test_no_talk_says_what_the_player_s_sentences_cannot_have_earned() -> void:
@@ -22,7 +31,7 @@ func test_no_talk_says_what_the_player_s_sentences_cannot_have_earned() -> void:
 	var talks := TalkWalk.talks(c)
 	assert_true(talks.size() > 30, "every persuasion and check-in")
 	for talk: Dialog in talks:
-		var walked := TalkWalk.walk(ctx, talk, BUDGET, DIVES)
+		var walked := _walk(ctx, talk)
 		var broken := []
 		var never: Array = TalkWalk.BROKEN + (["echo"] if talk.def.id in TalkWalk.REVIEWED else [])
 		for ex: Dictionary in walked["exchanges"].values():
@@ -187,7 +196,7 @@ func test_every_drawn_line_of_a_reviewed_talk_is_walked() -> void:
 	var ctx := TalkWalk.context(c)
 	var bad := []
 	for talk: Dialog in TalkWalk.talks(c, TalkWalk.REVIEWED):
-		for line: String in TalkWalk.unsaid(talk.def, TalkWalk.walk(ctx, talk, BUDGET, DIVES)):
+		for line: String in TalkWalk.unsaid(talk.def, _walk(ctx, talk)):
 			bad.append("%s: %s" % [TalkWalk.label(talk), line])
 	assert_true(bad.is_empty(), "%d lines never walked: %s" % [bad.size(), bad.slice(0, 6)])
 
