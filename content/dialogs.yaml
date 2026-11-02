@@ -1152,7 +1152,7 @@ dialogs:
         lands:
           "silo_kpis:0": [{text: "Twee records in één maand, en niet één aansluiting meer de deur uit. Dat is geen record. Dat is een rapport.", tags: [claim]},
                           {text: "Records aan twee kanten, en de klant ziet er niks van. Hm.", tags: [claim]},
-                          {text: "Twee records, en geen aansluiting meer. Ik zie het.", tags: [claim]}]
+                          {text: "Twee records, en niet één aansluiting méér. Ik zie het.", tags: [claim]}]
           "silo_kpis:2": [{text: "Van vijfentachtig naar tachtig. En bij Intake van vijfenzeventig naar zeventig. … Dat staat niet in mijn rapport.", tags: [claim]},
                           {text: "Vijf procentpunt minder dat in één keer goed is. In één kwartaal.", tags: [claim]},
                           {text: "Ja. Vijf punt. Ik heb het gezien.", tags: [claim]}]
@@ -6814,7 +6814,7 @@ dialogs:
             - {text: "De hele dinsdag. Eén storing, en alles erachter schuift door.", tags: [claim]}
           interest: [{text: "Dan staan er morgen twee monteurs voor niks bij een klant.", tags: [claim]},
                      {text: "Niemand. Het staat er 's ochtends gewoon.", tags: [claim]}]
-          lead_in: {text: "Iets simpels. En ik wist het niet."}
+          lead_in: {text: "Iets wat ik niet kon beantwoorden."}
           concern: [{text: "Een avond niks. Gewoon op de bank.", tags: [feeling]},
                     {text: "Iemand die zegt: tot hier, en de rest morgen.", tags: [feeling]}]
           _: [{text: "Plannen, omplannen, nog eens omplannen.", tags: [claim]}, {text: "Druk. Maar het moet.", tags: [claim]}]
@@ -6855,7 +6855,7 @@ dialogs:
         lands:
           position: [{text: "Drie, vier avonden per week. Sorry. Het is gewoon zo.", tags: [claim, feeling]}, {text: "Een storing, een zieke monteur, een klant die afzegt. Dan valt de rest erachteraan.", tags: [claim]}]
           interest: [{text: "Sinds de zomer. Sinds het druk is.", tags: [claim]}, {text: "Dan begin ik om zeven uur met bellen. En dan haal ik het niet meer in.", tags: [claim, feeling]}]
-          lead_in: {text: "Iets wat ik niet kon beantwoorden."}
+          lead_in: {text: "Iets simpels. En ik wist het niet."}
           concern: [{text: "Ik heb haar naar bed gebracht. En daarna ging de laptop weer open.", tags: [feeling]}, {text: "Dat ik om vijf uur stop. En dat het dan ook klaar is.", tags: [feeling]}]
         misses:
           position: [{text: "Vaak genoeg."}, {text: "Alles. Altijd een beetje."}]

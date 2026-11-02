@@ -13,12 +13,12 @@ or endings it marks). Flags: `repeat` says you repeat yourself, you did not, `cl
 | 1 | [Mieke en de schetsen](mieke_wednesday.md) (`mieke_wednesday`) | 1.1 | stock replies 11 % | 1343 |
 | 2 | [Joost en de ontwerpen per week](joost_output_kpi.md) (`joost_output_kpi`) | 1.0 | stock replies 10 % | 2086 |
 | 3 | [Henk en de camera](henk_camera.md) (`henk_camera`) | 1.0 | stock replies 10 % | 1877 |
-| 4 | [Marco en de ritten voor niks](marco_wasted_trips.md) (`marco_wasted_trips`) | 0.9 | stock replies 9 % | 1769 |
+| 4 | [Marco en de ritten voor niks](marco_wasted_trips.md) (`marco_wasted_trips`) | 1.0 | stock replies 10 % | 1769 |
 | 5 | [Rachid aan de balie](rachid_counter.md) (`rachid_counter`) | 0.9 | stock replies 9 % | 1415 |
 | 6 | [Joost en de vacatures](joost_vacancies.md) (`joost_vacancies`) | 0.8 | stock replies 8 % | 2115 |
 | 7 | [Wim en tabblad drie](wim_spreadsheet.md) (`wim_spreadsheet`) | 0.8 | stock replies 8 % | 2079 |
-| 8 | [Anouk om zeven uur](anouk_seven.md) (`anouk_seven`) | 0.8 | stock replies 8 % | 1558 |
-| 9 | [Sanne en de aanvragen per week](sanne_kpi.md) (`sanne_kpi`) | 0.8 | stock replies 8 % | 1745 |
+| 8 | [Sanne en de aanvragen per week](sanne_kpi.md) (`sanne_kpi`) | 0.8 | stock replies 8 % | 1745 |
+| 9 | [Anouk om zeven uur](anouk_seven.md) (`anouk_seven`) | 0.8 | stock replies 8 % | 1558 |
 | 10 | [Petra en de Molen](petra_thursday.md) (`petra_thursday`) | 0.7 | stock replies 7 % | 1374 |
 | 11 | [Linda en het kaartenhuis](linda_wednesday.md) (`linda_wednesday`) | 0.6 | stock replies 6 % | 1541 |
 | 12 | [Joost en de stapel](joost_wednesday.md) (`joost_wednesday`) | 0.6 | stock replies 6 % | 1442 |
@@ -27,8 +27,8 @@ or endings it marks). Flags: `repeat` says you repeat yourself, you did not, `cl
 | 15 | [Gert en de KLIC-melding](gert_klic.md) (`gert_klic`) | 0.6 | stock replies 6 % | 1742 |
 | 16 | [Anouk en het A4](anouk_owns_tray.md) (`anouk_owns_tray`) | 0.6 | stock replies 6 % | 1405 |
 | 17 | [Anouk en de stopwatch](anouk_first_look.md) (`anouk_first_look`) | 0.6 | stock replies 6 % | 1459 |
-| 18 | [Sanne op dinsdagochtend](sanne_tuesday.md) (`sanne_tuesday`) | 0.5 | stock replies 5 % | 1406 |
-| 19 | [Petra en de maandrun](petra_batch.md) (`petra_batch`) | 0.5 | stock replies 5 % | 2219 |
+| 18 | [Petra en de maandrun](petra_batch.md) (`petra_batch`) | 0.5 | stock replies 5 % | 2219 |
+| 19 | [Sanne op dinsdagochtend](sanne_tuesday.md) (`sanne_tuesday`) | 0.5 | stock replies 5 % | 1406 |
 | 20 | [Mieke en de revisieberg](mieke_redraw.md) (`mieke_redraw`) | 0.4 | stock replies 4 % | 1961 |
 | 21 | [Linda en de volle planning](linda_replanning.md) (`linda_replanning`) | 0.4 | stock replies 4 % | 1582 |
 | 22 | [Frank en het jaarplan](frank_kpi_targets.md) (`frank_kpi_targets`) | 0.4 | stock replies 4 % | 1741 |

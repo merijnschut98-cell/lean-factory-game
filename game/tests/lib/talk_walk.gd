@@ -132,7 +132,8 @@ static func _long_words(text: String) -> Array:
 ## moves: a plain list, and every list of a mapping by the layer the person spoke of
 ## (their position, interest, concern; `_` while some layer has no list of its own).
 ## Left out: the lead-in's second and later options (a short "Ik luister." beside the
-## first; the lead-in gate reads them) and a `_` the engine never draws (every layer keyed).
+## first; the lead-in gate reads them, by their words only, review 10) and a `_` the
+## engine never draws (every layer keyed).
 static func unsaid(d: DialogDef, walked: Dictionary) -> Array[String]:
 	var said := {}
 	for ex: Dictionary in walked["exchanges"].values():
