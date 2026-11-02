@@ -31,6 +31,15 @@ def _dialog(docs: dict, dialog_id: str) -> dict:
     return next(d for d in docs["dialogs"]["dialogs"] if d["id"] == dialog_id)
 
 
+def _texts(lines) -> list[str]:
+    """Every sentence a talk's own lines for a move hold: a line, a list, or keyed by layer."""
+    if isinstance(lines, str):
+        return [lines]
+    if isinstance(lines, dict):
+        return [t for v in lines.values() for t in _texts(v)]
+    return [t for v in lines for t in _texts(v)]
+
+
 def _person(docs: dict, person_id: str) -> dict:
     return next(p for p in docs["dialogs"]["people"] if p["id"] == person_id)
 
@@ -282,8 +291,9 @@ def test_frank_sets_the_fact_the_arc_reads(real):
 def test_no_false_experience_and_no_untracked_promise(real):
     """Tier-1 content audit C2, C3: the player's experience is the CI lead's own."""
     ahmed = _dialog(real, "ahmed_after_henk")["lines"]
-    assert "eerste jaar" not in ahmed["experience"] and "Ruud" in ahmed["experience"]
-    assert "langs" not in ahmed["close"]
+    told = _texts(ahmed["experience"])  # a line, a list, or keyed by the layer it answers
+    assert not any("eerste jaar" in line for line in told) and any("Ruud" in line for line in told)
+    assert not any("langs" in line for line in _texts(ahmed["close"]))
     experience = real["dialogs"]["bank"]["player"]["experience"]
     assert not any("Toen ik net begon" in line for line in ([experience] if isinstance(experience, str) else experience))
 

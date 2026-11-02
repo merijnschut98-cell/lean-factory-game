@@ -68,6 +68,7 @@ voice, and its own "Daar denk ik nog over na" lines.
 | `ilse_queue` | Ilse | rewritten, batch 7 (30.9 → 0.0, echoes 183 → 0, no flag at budget 6000); her trailing lead-in is tagged `[feeling, hesitation]`, as it reads, and listening first wins 8 of 10 deals (was 6) |
 | `petra_after` | Petra | rewritten, batch 7, a check-in with a variant: lines, replies and the lifted ending fit both versions (30.4 → 0.0, echoes 187 → 0, no flag at budget 6000) |
 | `el_amrani_fourth_call` | mevrouw El Amrani | rewritten, batch 7, a phone call whose variant only opens differently (29.9 → 0.0, echoes 152 → 0, no flag at budget 6000) |
+| `ahmed_after_henk` | Ahmed | rewritten, batch 7, a check-in with a variant: lines, replies and the lifted ending fit both versions; the audited routes of `test_dialog_content.gd` keep their tags (28.4 → 0.0, echoes 211 → 0, no flag at budget 6000) |
 
 Review 7: the walk plays every variant (`TalkWalk.versions`; `test_the_walk_plays_every_version_of_a_talk`), so the
 flags above hold for each version; the transcripts write a variant to `<talk>~v<n>.md`. A variant still holds no
