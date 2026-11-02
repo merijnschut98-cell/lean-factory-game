@@ -3769,7 +3769,7 @@
      ],
      "concern": [
       "Wat zou er gebeuren, als je het een keer niet weet?",
-      "Wat heb jij nodig van Ruud?"
+      "Wat heb jij nodig van ons?"
      ],
      "interest": [
       "Welke kabels zijn het lastigst, in Nova-Oud?",
@@ -3777,7 +3777,7 @@
      ],
      "lead_in": "Wat is er dan?",
      "position": [
-      "Hoeveel nachtdiensten heb je gedraaid, sinds hij weg is?",
+      "Hoe vaak ben je nu zelf de eerste die het ziet?",
       "Wie rijdt er nu met je mee?"
      ]
     },
@@ -3823,7 +3823,7 @@
       "Dus het gaat om wat voor monteur je bent."
      ],
      "interest": [
-      "Dus Nova-Oud is anders, nu Henk er niet meer is.",
+      "Dus je doet het steeds meer zelf.",
       "Dus je staat er nu zelf voor, in die oude straten."
      ],
      "lead_in": "Dus er is nog iets.",
@@ -3855,7 +3855,7 @@
       "Je klinkt alsof je bang bent dat je het niet kunt."
      ],
      "interest": [
-      "Het klinkt alsof je er 's nachts alleen voor staat.",
+      "Het klinkt alsof je groeit, maar het ook spannend vindt.",
       "Je klinkt alsof dat je meer doet dan je laat zien."
      ],
      "lead_in": [
@@ -3987,6 +3987,14 @@
      "lands": {
       "_": [
        {
+        "text": "Hm. Dan weet je het."
+       },
+       {
+        "text": "Ja. Zo gaat het, hè."
+       }
+      ],
+      "position": [
+       {
         "text": "Henk zei: bel me maar, jongen. Ik denk dat hij het eigenlijk fijn vond. (lacht)"
        },
        {
@@ -4038,7 +4046,7 @@
         "tags": [
          "feeling"
         ],
-        "text": "Tijd. En dat hij niet denkt dat ik Henk ben."
+        "text": "Tijd. En dat niemand verwacht dat ik Henk ben."
        }
       ],
       "interest": [
@@ -4052,7 +4060,7 @@
         "tags": [
          "feeling"
         ],
-        "text": "Vorige week. Hij belde óns, voor de verandering."
+        "text": "Een keer, na zijn afscheid. Hij belde óns, voor de verandering."
        }
       ],
       "lead_in": {
@@ -4061,9 +4069,10 @@
       "position": [
        {
         "tags": [
-         "claim"
+         "claim",
+         "feeling"
         ],
-        "text": "Een stuk of tien. Ik heb niet geteld."
+        "text": "Steeds vaker. Gisteren nog."
        },
        {
         "tags": [
@@ -4107,10 +4116,10 @@
       },
       "position": [
        {
-        "text": "Genoeg."
+        "text": "Wisselt."
        },
        {
-        "text": "Wisselt."
+        "text": "Wie er dienst heeft."
        }
       ]
      },
@@ -4434,13 +4443,13 @@
      "misses": {
       "_": [
        {
-        "text": "Ik ben niet ziek, hoor."
+        "text": "Nee, dat zou ik zo niet zeggen."
        },
        {
         "text": "Nee hoor. Ik ben gewoon moe."
        },
        {
-        "text": "Nee."
+        "text": "Ik ben niet ziek, hoor."
        },
        {
         "text": "Valt mee."
@@ -5378,9 +5387,17 @@
         "text": "… Nou?"
        }
       ],
-      "concern": {
-       "text": "… Sorry. Dat hoort hier eigenlijk niet."
-      }
+      "concern": [
+       {
+        "text": "… Sorry. Dat hoort hier eigenlijk niet."
+       },
+       {
+        "text": "… Mm."
+       },
+       {
+        "text": "… Ja. Zo is het."
+       }
+      ]
      }
     }
    },
@@ -5420,7 +5437,9 @@
       "again": [
        "Nee, maar echt…",
        "Weet je wat het is…",
-       "Ach. Nou ja…"
+       "Ach. Nou ja…",
+       "Kijk, joh…",
+       "Het punt is…"
       ],
       "tags": [
        "hesitation"
@@ -8582,6 +8601,12 @@
        },
        {
         "text": "… Mm."
+       },
+       {
+        "text": "… Nou ja."
+       },
+       {
+        "text": "… Tja."
        }
       ]
      }
@@ -9382,6 +9407,12 @@
        },
        {
         "text": "… Mm."
+       },
+       {
+        "text": "… Nou ja."
+       },
+       {
+        "text": "… Tja."
        }
       ]
      }
@@ -10191,6 +10222,12 @@
        },
        {
         "text": "… Mm."
+       },
+       {
+        "text": "… Nou ja."
+       },
+       {
+        "text": "… Tja."
        }
       ]
      }
@@ -12639,7 +12676,9 @@
       "again": [
        "Nee, maar echt…",
        "Weet je wat het is…",
-       "Ach. Nou ja…"
+       "Ach. Nou ja…",
+       "Kijk, joh…",
+       "Het punt is…"
       ],
       "tags": [
        "hesitation"
@@ -16684,7 +16723,7 @@
      "_": [
       "(je wacht even)",
       "(je wacht rustig af)",
-      "(je laat het even stil)"
+      "(je laat de stilte even hangen)"
      ],
      "position": "(je kijkt mee naar het rode scherm en wacht)"
     }
@@ -17567,7 +17606,7 @@
       "Logisch dat u bang bent. Het wordt elke nacht kouder."
      ],
      "interest": [
-      "Elke keer een ander antwoord. Logisch dat u het niet meer gelooft.",
+      "Logisch dat u het niet meer gelooft, na alles wat u gehoord heeft.",
       "Dat is zwaar, als niemand het weet."
      ],
      "lead_in": [
@@ -17610,7 +17649,7 @@
      ],
      "lead_in": "Waar bent u dan bang voor?",
      "position": [
-      "Wanneer heeft u de aanvraag gedaan?",
+      "Wat heeft u de vorige keren gehoord?",
       "Wat wilt u het liefst weten, als u één ding mocht vragen?"
      ]
     },
@@ -17656,7 +17695,7 @@
       "Dus het gaat niet om u. Het gaat om uw moeder."
      ],
      "interest": [
-      "Dus u kreeg drie keer een ander antwoord, en u wilt weten waar u aan toe bent.",
+      "Dus u wilt weten waar u aan toe bent, en niemand zegt het u.",
       "Dus het gaat u om duidelijkheid, meer dan om snelheid."
      ],
      "lead_in": "Dus er is iets waar u bang voor bent.",
@@ -17668,6 +17707,9 @@
     "perspective": {
      "_": [
       "Hoe zou dit er vanaf onze kant uitzien, denkt u?",
+      "Hoe zouden uw buren dit zien?"
+     ],
+     "concern": [
       "Hoe zou uw moeder dit zien?"
      ]
     },
@@ -17698,6 +17740,13 @@
      "position": [
       "Het klinkt alsof u het vertrouwen kwijt bent.",
       "U klinkt alsof u het wachten meer dan zat bent."
+     ]
+    },
+    "show_data": {
+     "_": [
+      "Kijk, dit heb ik gevonden: {data}",
+      "Mag ik u iets laten zien? {data}",
+      "Dit kwam ik tegen: {data} Wat denkt u daarvan?"
      ]
     },
     "silence": {
@@ -17805,14 +17854,13 @@
      "lands": {
       "_": [
        {
-        "tell": "facts",
-        "text": "Begrip heb ik genoeg gehad. Drie keer. Ik heb het opgeschreven, kijk: 'begrip'."
-       },
-       {
         "text": "… Dank u. Dat klinkt deze keer anders."
        },
        {
         "text": "Mm. Dank u."
+       },
+       {
+        "text": "Ja. Dat is het."
        }
       ]
      },
@@ -17820,6 +17868,10 @@
       "_": [
        {
         "text": "Daar heb ik niks aan, met alle respect."
+       },
+       {
+        "tell": "facts",
+        "text": "Begrip heb ik genoeg gehad. Drie keer. Ik heb het opgeschreven, kijk: 'begrip'."
        },
        {
         "text": "Dat zei de vorige ook."
@@ -17931,7 +17983,7 @@
         "tags": [
          "claim"
         ],
-        "text": "Op {aanvraag_datum}. Het staat bovenaan in mijn schrift."
+        "text": "Drie keer iets anders. Het staat allemaal in mijn schrift."
        },
        {
         "tags": [
@@ -17975,7 +18027,7 @@
       },
       "position": [
        {
-        "text": "Dat heeft u toch in het systeem?"
+        "text": "Genoeg om het op te schrijven."
        },
        {
         "text": "Dat weet u toch."
@@ -18266,6 +18318,11 @@
         "text": "Vanuit uw kant? U zit daar met honderd mensen zoals ik. … Goed. Maar ik ben wel deze."
        },
        {
+        "text": "De buren? Die hebben het ook aangevraagd. Die bellen alleen niet."
+       }
+      ],
+      "concern": [
+       {
         "tags": [
          "feeling"
         ],
@@ -18278,6 +18335,11 @@
        {
         "text": "Uw kant ken ik. Vivaldi."
        },
+       {
+        "text": "De buren zijn mijn zaak niet."
+       }
+      ],
+      "concern": [
        {
         "text": "Mijn moeder klaagt niet. Daarom bel ik."
        }
@@ -18386,6 +18448,19 @@
       "text": "Ja, ja. Ik weet wel hoe ik me voel, hoor."
      }
     },
+    "show_data": {
+     "other": [
+      {
+       "text": "Cijfers. Ik wil een datum."
+      },
+      {
+       "text": "Wat heeft dat met mijn aansluiting te maken?"
+      },
+      {
+       "text": "Dat schrijf ik op. Maar het is geen antwoord."
+      }
+     ]
+    },
     "silence": {
      "lands": [
       {
@@ -18441,6 +18516,52 @@
    },
    "variants": [
     {
+     "layers": [
+      {
+       "at": 45,
+       "id": "interest",
+       "tags": [
+        "claim",
+        "feeling"
+       ],
+       "text": "Zes weken geleden zei u: over een week of zes. Ik heb het opgeschreven. Het is niks geworden. Ik wil gewoon weten waar ik aan toe ben.",
+       "via": [
+        "paraphrase",
+        "inquiry"
+       ]
+      },
+      {
+       "at": 65,
+       "id": "concern",
+       "lead_in": {
+        "again": [
+         "Zoals ik zei… ik ben bang.",
+         "Het gaat niet om mij, hè…",
+         "Nou ja. Bang…"
+        ],
+        "tags": [
+         "feeling"
+        ],
+        "text": "Het gaat niet eens om mij… Ik ben bang, als ik eerlijk ben."
+       },
+       "tags": [
+        "admission"
+       ],
+       "text": "Mijn moeder woont bij ons. Ze is eenentachtig en heeft het altijd koud. De installateur zei: haal die cv-ketel eruit, de warmtepomp is beter. Die hangt nu aan de muur. Zonder stroom. Het wordt elke nacht kouder.",
+       "unlocks": {
+        "facts": [
+         "heard:el_amrani"
+        ],
+        "proposals": [
+         "check_existing_connection"
+        ]
+       },
+       "via": [
+        "reflect",
+        "empathy"
+       ]
+      }
+     ],
      "needs": {
       "all": [
        "promise_broken:el_amrani_fourth_call"
@@ -19338,6 +19459,9 @@
        },
        {
         "text": "Hm. Dat staat niet in mijn map."
+       },
+       {
+        "text": "Twee weken. Ja. Ik heb het gezien."
        }
       ],
       "done_but_not_closed:3": [
@@ -19345,7 +19469,10 @@
         "text": "'Bestaat niet.' Terwijl hij gewoon in de grond ligt. … Dat is geen administratie meer."
        },
        {
-        "text": "Hm. Dat staat niet in mijn map."
+        "text": "Hm. Daar had ik nooit bij stilgestaan."
+       },
+       {
+        "text": "'Bestaat niet.' Ja. Ik heb het gezien."
        }
       ]
      },
@@ -21265,6 +21392,9 @@
        },
        {
         "text": "Zo had ik het nog niet bekeken. Echt niet."
+       },
+       {
+        "text": "Een op de drie. Ja. Ik heb het gezien."
        }
       ],
       "planning_reshuffle:2": [
@@ -21272,7 +21402,10 @@
         "text": "Om tien uur, ja. Elke dag. Zo ziet het eruit als iemand het opschrijft."
        },
        {
-        "text": "Zo had ik het nog niet bekeken. Echt niet."
+        "text": "Elke dag om tien uur. Dat valt pas op als je het ziet."
+       },
+       {
+        "text": "Om tien uur. Ja. Ik heb het gezien."
        }
       ]
      },
@@ -22356,7 +22489,7 @@
      "lead_in": "Je hoeft het niet mooi te zeggen, hoor.",
      "position": [
       "Ik herken dat: zeggen dat het goed gaat, terwijl het je bezighoudt.",
-      "Ik ken dat van mijn vorige werk: nog eentje, en dan is het acht uur."
+      "Ik ken dat van mijn vorige werk: een vaste dag die nooit af was."
      ]
     },
     "inquiry": {
@@ -22432,7 +22565,7 @@
     "perspective": {
      "_": [
       "Hoe zou een monteur dit zien, als hij wist hoeveel zorg erin zit?",
-      "Wat zou Joost zeggen, als hij wist dat je twijfelt?"
+      "Wat zou Joost zeggen, als hij hoorde hoe je erover denkt?"
      ]
     },
     "pressure": {
@@ -22484,7 +22617,7 @@
    "opening": "O. Hoi. Ik ben zo klaar, hoor. Nog eentje.",
    "outcomes": {
     "heard": "Dank je. Echt.",
-    "lifted": "Ik ga naar huis. Echt. Morgen is er ook nog.",
+    "lifted": "Weet je wat. Ik hoef niet alles alleen te dragen. Ik vraag Joost morgen om mee te kijken.",
     "none": "Ja. Ik ben zo klaar.",
     "ruined": "Oké. Dan ga ik maar verder. Sorry."
    },
@@ -24104,7 +24237,7 @@
        "tags": [
         "feeling"
        ],
-       "text": "Goed, eigenlijk. Veertig jaar, en de laatste weken waren de beste. Raar, hè.",
+       "text": "Goed, eigenlijk. Veertig jaar, en de laatste weken waren de beste. Dat neem ik mee. Raar, hè.",
        "via": [
         "open_question",
         "inquiry"
@@ -25085,7 +25218,7 @@
      "tags": [
       "feeling"
      ],
-     "text": "Rachid kan het nu ook. Hij is sneller dan ik, eerlijk gezegd. Jonge handen.",
+     "text": "Een kwartier, en dan klaar. Rachid kan het nu ook. Hij is sneller dan ik, eerlijk gezegd. Jonge handen.",
      "via": [
       "open_question",
       "inquiry",
@@ -25140,7 +25273,7 @@
       "Dat lijkt me best lastig."
      ],
      "concern": [
-      "Dat lijkt me zwaar, om dat alleen te dragen.",
+      "Dat lijkt me zwaar, om dat voor je te houden.",
       "Logisch dat je dat voor je houdt. Maar het mag hier."
      ],
      "interest": [
@@ -25179,13 +25312,13 @@
      ],
      "concern": [
       "Sinds wanneer zit dit je dwars?",
-      "Wat zou er moeten gebeuren, zodat het niet alleen op jou aankomt?"
+      "Wat zou je lucht geven?"
      ],
      "interest": [
-      "Wat kost het je, elke dag?",
-      "Wie doet het, als jij er niet bent?"
+      "Wat mis je van de maandrun?",
+      "Wat gebeurt er, als de Molen een dag niet draait?"
      ],
-     "lead_in": "Alleen…?",
+     "lead_in": "Wat is er dan?",
      "position": [
       "Hoe lang duurt zo'n sessie?",
       "Wat zegt de klant ervan?"
@@ -25210,13 +25343,13 @@
      ],
      "concern": [
       "Wat zou je nodig hebben?",
-      "Wie weet ervan?"
+      "Wie zou dit mogen weten?"
      ],
      "interest": [
       "Hoe bevalt het, zo elke dag?",
       "Wat is er anders dan vroeger?"
      ],
-     "lead_in": "Alleen wat?",
+     "lead_in": "Wat wilde je zeggen?",
      "position": [
       "Hoe gaat zo'n ochtend nu?",
       "Wat is er veranderd, sinds de maandrun weg is?",
@@ -25229,7 +25362,7 @@
       "Als ik je goed hoor, gaat het om meer dan de Molen."
      ],
      "concern": [
-      "Dus het komt allemaal op jou aan.",
+      "Dus het gaat niet om het werk, maar om wat anderen ervan denken.",
       "Dus je houdt het voor je, en het weegt."
      ],
      "interest": [
@@ -25262,7 +25395,7 @@
      ],
      "concern": [
       "Het klinkt alsof het zwaarder weegt dan je laat merken.",
-      "Je klinkt alsof je er alleen voor staat."
+      "Je klinkt alsof je het liever voor je houdt."
      ],
      "interest": [
       "Het klinkt alsof je er nog aan moet wennen.",
@@ -25288,7 +25421,7 @@
      "_": [
       "(je wacht even)",
       "(je wacht rustig af)",
-      "(je laat het even stil)"
+      "(je laat de stilte even hangen)"
      ],
      "position": "(je kijkt mee naar haar scherm en wacht)"
     }
@@ -25297,7 +25430,7 @@
    "opening": "Alles klopt. Tot op de laatste EAN. Ik zeg het maar even, voordat je het vraagt.",
    "outcomes": {
     "heard": "Hm. Dank je.",
-    "lifted": "Weet je wat. Ik vraag Rachid of hij het een week naast me doet. Dan klopt het ook als ik er niet ben.",
+    "lifted": "Weet je wat. Het hoeft niet foutloos, en het hoeft niet alleen. Ik vraag Rachid morgen mee te kijken.",
     "none": "Alles klopt. Echt.",
     "ruined": "Alles klopt. Meer hoef je niet te weten."
    },
@@ -25429,7 +25562,7 @@
         "tags": [
          "feeling"
         ],
-        "text": "Dat iemand het kan overnemen. Echt kan. Zonder dat ik het moet vragen."
+        "text": "Dat iemand zegt dat het goed was zoals het was. En dat iemand meekijkt, zodat het niet alleen aan mij hangt."
        }
       ],
       "interest": [
@@ -25438,13 +25571,13 @@
          "claim",
          "feeling"
         ],
-        "text": "Een kwartier per dag. En de zekerheid van één keer per maand."
+        "text": "Dat ik het alleen deed. En dat niemand keek."
        },
        {
         "tags": [
-         "hesitation"
+         "claim"
         ],
-        "text": "Dat… is precies de vraag."
+        "text": "Dan loopt de stapel op. Dat weet ik. Daarom zet ik hem elke ochtend aan."
        }
       ],
       "lead_in": {
@@ -25490,7 +25623,7 @@
         "text": "Niks. Het klopt."
        },
        {
-        "text": "Dat regel ik wel."
+        "text": "Dat gebeurt niet."
        }
       ],
       "lead_in": {
@@ -25618,13 +25751,13 @@
         "tags": [
          "feeling"
         ],
-        "text": "Dat het niet meer allemaal op mij aankomt."
+        "text": "Dat het niet meer allemaal aan mij hangt."
        },
        {
         "tags": [
          "admission"
         ],
-        "text": "Niemand. En zo wil ik het houden."
+        "text": "Rachid. En Ruud, als het moet. Niet de kantine."
        }
       ],
       "interest": [
@@ -26923,7 +27056,8 @@
        "Nou ja. Wat ze vroeg…"
       ],
       "tags": [
-       "feeling"
+       "feeling",
+       "hesitation"
       ],
       "text": "Ik word er een beetje verdrietig van, eigenlijk. Mijn dochter vroeg gisteren…"
      },
@@ -27090,6 +27224,13 @@
      "position": [
       "Het klinkt alsof je op bent.",
       "Je klinkt alsof het meer is dan je zegt."
+     ]
+    },
+    "show_data": {
+     "_": [
+      "Kijk, dit vond ik: {data}",
+      "Mag ik je iets laten zien? {data}",
+      "Dit kwam ik tegen: {data} Hoe kijk jij daarnaar?"
      ]
     },
     "silence": {
@@ -27262,7 +27403,7 @@
        }
       ],
       "lead_in": {
-       "text": "Laat maar. Het is niks."
+       "text": "Iets wat ik niet kon beantwoorden."
       },
       "position": [
        {
@@ -27682,6 +27823,19 @@
      "worn": {
       "text": "Ja, ja. Ik weet wel hoe ik me voel, hoor."
      }
+    },
+    "show_data": {
+     "other": [
+      {
+       "text": "Cijfers. Niet nu, sorry."
+      },
+      {
+       "text": "Wat heeft dat met vanavond te maken?"
+      },
+      {
+       "text": "Morgen. Dan kijk ik ernaar."
+      }
+     ]
     },
     "silence": {
      "again": [
@@ -29524,6 +29678,9 @@
        },
        {
         "text": "Hm. Zo zwart op wit is het anders."
+       },
+       {
+        "text": "Tweehonderdveertig. Ja. Ik heb het gezien."
        }
       ],
       "revision_backlog:2": [
@@ -29531,7 +29688,10 @@
         "text": "Anderhalf uur per schets, waarvan een uur uitzoeken. Ja. Dat klopt precies."
        },
        {
-        "text": "Hm. Zo zwart op wit is het anders."
+        "text": "Een uur uitzoeken. Per schets. Hm."
+       },
+       {
+        "text": "Anderhalf uur. Ja. Ik heb het gezien."
        }
       ]
      },
@@ -32772,7 +32932,7 @@
       "Hoe zit dat precies?"
      ],
      "concern": [
-      "Hoe oud zijn uw ovens precies?",
+      "Hoe lang houden die ovens het nog?",
       "Wanneer neemt uw dochter het over?"
      ],
      "interest": [
@@ -32781,7 +32941,7 @@
      ],
      "lead_in": "Waar bent u dan bang voor?",
      "position": [
-      "Wanneer heeft u de aanvraag gedaan?",
+      "In welke maand begon het?",
       "Wat heeft u in die twee jaar van ons gehoord?"
      ]
     },
@@ -32840,6 +33000,9 @@
     "perspective": {
      "_": [
       "Hoe zou het net er om vier uur 's nachts uitzien, denkt u?",
+      "Hoe zouden andere bakkers dit zien, denkt u?"
+     ],
+     "concern": [
       "Hoe zou uw dochter dit zien?"
      ]
     },
@@ -32873,6 +33036,13 @@
       "U klinkt alsof u niet meer gelooft dat er iets gebeurt."
      ]
     },
+    "show_data": {
+     "_": [
+      "Kijk, dit heb ik gevonden: {data}",
+      "Mag ik u iets laten zien? {data}",
+      "Dit kwam ik tegen: {data} Wat denkt u daarvan?"
+     ]
+    },
     "silence": {
      "_": [
       "(je wacht even)",
@@ -32887,7 +33057,7 @@
    "name": "Ilse en de wachtrij",
    "opening": "Met Ilse de Graaf. Bakkerij De Graaf. Ik sta hier sinds vier uur, dus maak het kort.",
    "outcomes": {
-    "commitment": "Om vier uur sta ik hier toch. Als het lukt, krijgen jullie een krentenbol. Twee.",
+    "commitment": "Afgesproken. Als het lukt, krijgen jullie een krentenbol. Twee.",
     "compliance": "Ik heb geen keus, hè.",
     "heard": "Fijn dat er eens iemand luistert in plaats van voorleest.",
     "none": "Goed. Ik hang op. De ovens roepen.",
@@ -33058,9 +33228,10 @@
       "concern": [
        {
         "tags": [
-         "claim"
+         "claim",
+         "feeling"
         ],
-        "text": "Van 1998. Allebei. Ze doen het nog. Nog."
+        "text": "De monteur zegt: een jaar, misschien twee. Maar ik hoor ze elke nacht."
        },
        {
         "tags": [
@@ -33092,7 +33263,7 @@
         "tags": [
          "claim"
         ],
-        "text": "Twee jaar geleden. In de herfst. Ik heb de bevestiging nog."
+        "text": "In de herfst. Ik heb de bevestiging nog."
        },
        {
         "tags": [
@@ -33117,7 +33288,7 @@
       ],
       "concern": [
        {
-        "text": "Daar heb ik het liever niet over."
+        "text": "Dat vraag ik me ook af."
        },
        {
         "text": "Ach. Dat zien we nog wel."
@@ -33419,6 +33590,14 @@
         "text": "Vanuit jullie? Ja, ja. Iedereen wil tegelijk. Maar ik bak niet tegelijk. Ik bak als iedereen slaapt."
        },
        {
+        "text": "Andere bakkers? Die staan ook op die lijst. Of ze zijn al aan het gas gebleven."
+       }
+      ],
+      "concern": [
+       {
+        "tags": [
+         "feeling"
+        ],
         "text": "Mijn dochter? Die zegt: mam, niet weer gas. … Ja. Dat zegt ze."
        }
       ]
@@ -33429,7 +33608,12 @@
         "text": "Het net? Dat moeten jullie weten."
        },
        {
-        "text": "Mijn dochter? Die heeft haar eigen zorgen."
+        "text": "Andere bakkers moeten het zelf weten."
+       }
+      ],
+      "concern": [
+       {
+        "text": "Mijn dochter? Die laat ik er liever buiten."
        }
       ]
      }
@@ -33542,6 +33726,19 @@
      "worn": {
       "text": "Ja, ja. Ik weet wel hoe ik me voel, hoor."
      }
+    },
+    "show_data": {
+     "other": [
+      {
+       "text": "Cijfers. Daar bak ik geen brood van."
+      },
+      {
+       "text": "Wat heeft dat met mijn aansluiting te maken?"
+      },
+      {
+       "text": "Dat zeggen jullie elke keer."
+      }
+     ]
     },
     "silence": {
      "lands": [

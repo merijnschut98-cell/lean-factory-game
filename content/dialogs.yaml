@@ -1343,21 +1343,21 @@ dialogs:
         _: ["Dat is ook niet niks.", "Dat lijkt me best lastig."]
       reflect:
         position: ["Het klinkt alsof je hem mist.", "Je klinkt stiller dan anders."]
-        interest: ["Het klinkt alsof je er 's nachts alleen voor staat.", "Je klinkt alsof dat je meer doet dan je laat zien."]
+        interest: ["Het klinkt alsof je groeit, maar het ook spannend vindt.", "Je klinkt alsof dat je meer doet dan je laat zien."]
         lead_in: ["Er zit je iets dwars, merk ik.", "Je aarzelt, zie ik."]
         concern: ["Het klinkt alsof je aan jezelf twijfelt.", "Je klinkt alsof je bang bent dat je het niet kunt."]
         _: ["Je klinkt een beetje gespannen.", "Het klinkt alsof je ermee zit."]
       paraphrase:
         position: ["Dus het gaat wel.", "Dus het gaat, maar het is anders."]
-        interest: ["Dus Nova-Oud is anders, nu Henk er niet meer is.", "Dus je staat er nu zelf voor, in die oude straten."]
+        interest: ["Dus je doet het steeds meer zelf.", "Dus je staat er nu zelf voor, in die oude straten."]
         lead_in: "Dus er is nog iets."
         concern: ["Dus je vraagt je af of je het wel kunt.", "Dus het gaat om wat voor monteur je bent."]
         _: ["Dus het is gewoon anders.", "Als ik je goed hoor, gaat het om Henk."]
       inquiry:
-        position: ["Hoeveel nachtdiensten heb je gedraaid, sinds hij weg is?", "Wie rijdt er nu met je mee?"]
+        position: ["Hoe vaak ben je nu zelf de eerste die het ziet?", "Wie rijdt er nu met je mee?"]
         interest: ["Welke kabels zijn het lastigst, in Nova-Oud?", "Heb je Henk nog gesproken?"]
         lead_in: "Wat is er dan?"
-        concern: ["Wat zou er gebeuren, als je het een keer niet weet?", "Wat heb jij nodig van Ruud?"]
+        concern: ["Wat zou er gebeuren, als je het een keer niet weet?", "Wat heb jij nodig van ons?"]
         _: ["Waar komt dat door, denk je?", "Hoe zit dat precies?"]
       experience:
         position: ["In mijn eerste maand hier belde ik Ruud drie keer per dag. Niemand vond dat raar.", "Ik ken dat: iemand die er altijd was, en dan ineens niet meer."]
@@ -1429,7 +1429,7 @@ dialogs:
           _: [{text: "Ja. Eigenlijk wel.", tags: [feeling]}, {text: "Ja… zo voelt het.", tags: [feeling]}, {text: "Mm. Ja."}]
         misses:
           lead_in: [{text: "Nee, nee."}, {text: "Nee. Het is niks."}]
-          _: [{text: "Ik ben niet ziek, hoor."}, {text: "Nee hoor. Ik ben gewoon moe."}, {text: "Nee."}, {text: "Valt mee."}]
+          _: [{text: "Nee, dat zou ik zo niet zeggen."}, {text: "Nee hoor. Ik ben gewoon moe."}, {text: "Ik ben niet ziek, hoor."}, {text: "Valt mee."}]
         worn: {text: "Ja, ja. Ik weet wel hoe ik me voel, hoor."}
       paraphrase:
         lands:
@@ -1443,12 +1443,12 @@ dialogs:
         worn: {text: "Ja, ja. En nu?"}
       inquiry:
         lands:
-          position: [{text: "Een stuk of tien. Ik heb niet geteld.", tags: [claim]}, {text: "Niemand. Ik rij alleen.", tags: [claim, feeling]}]
-          interest: [{text: "Papierlood. Ouder dan ik. Ouder dan Henk, bijna.", tags: [claim]}, {text: "Vorige week. Hij belde óns, voor de verandering.", tags: [feeling]}]
+          position: [{text: "Steeds vaker. Gisteren nog.", tags: [claim, feeling]}, {text: "Niemand. Ik rij alleen.", tags: [claim, feeling]}]
+          interest: [{text: "Papierlood. Ouder dan ik. Ouder dan Henk, bijna.", tags: [claim]}, {text: "Een keer, na zijn afscheid. Hij belde óns, voor de verandering.", tags: [feeling]}]
           lead_in: {text: "Niks. Echt niet."}
-          concern: [{text: "Dan bel ik iemand. Of ik gok. Gokken wil ik niet.", tags: [feeling]}, {text: "Tijd. En dat hij niet denkt dat ik Henk ben.", tags: [feeling]}]
+          concern: [{text: "Dan bel ik iemand. Of ik gok. Gokken wil ik niet.", tags: [feeling]}, {text: "Tijd. En dat niemand verwacht dat ik Henk ben.", tags: [feeling]}]
         misses:
-          position: [{text: "Genoeg."}, {text: "Wisselt."}]
+          position: [{text: "Wisselt."}, {text: "Wie er dienst heeft."}]
           lead_in: {text: "Ach. Vergeet het maar."}
           interest: [{text: "Allemaal, 's nachts."}, {text: "Ach. Hij vist."}]
           concern: [{text: "Daar heb ik het liever niet over."}, {text: "Ach. Dat doet er niet toe."}]
@@ -1459,8 +1459,8 @@ dialogs:
           _: {text: "Je vraagt veel. Ik moet zo rijden."}
       experience:
         lands:
-          _: [{text: "Henk zei: bel me maar, jongen. Ik denk dat hij het eigenlijk fijn vond. (lacht)"},
-              {text: "Hm. Dan weet je het."}]
+          position: [{text: "Henk zei: bel me maar, jongen. Ik denk dat hij het eigenlijk fijn vond. (lacht)"}, {text: "Hm. Dan weet je het."}]
+          _: [{text: "Hm. Dan weet je het."}, {text: "Ja. Zo gaat het, hè."}]
         misses:
           lead_in: {text: "Ja… laat maar."}
           _: [{text: "Hm. Dat zal wel."}, {text: "Mm."}, {text: "Oké."}, {text: "Kan zijn."}, {text: "Hm."}]
@@ -1685,7 +1685,7 @@ dialogs:
               {text: "Mm. Ja, dat zal wel."}, {text: "Hm."}]
       silence:
         misses:
-          concern: {text: "… Sorry. Dat hoort hier eigenlijk niet."}
+          concern: [{text: "… Sorry. Dat hoort hier eigenlijk niet."}, {text: "… Mm."}, {text: "… Ja. Zo is het."}]
           _: [{text: "… Is er iets? Je kijkt zo."}, {text: "… Wat is er?"}, {text: "Ik ga maar even verder, hoor."}, {text: "(ze kijkt weer naar haar scherm)"}, {text: "(ze schuift een tekening recht)"}, {text: "… Nou?"}]
       propose:
         again: [{text: "Ja, ja. Daar denk ik over na."}, {text: "Dat zei je, ja. Ik weet het nog niet."}]
@@ -1720,7 +1720,7 @@ dialogs:
       - id: concern
         at: 65
         via: [silence, empathy, reflect]
-        lead_in: {text: "En als ik eerlijk ben…", tags: [hesitation], again: ["Nee, maar echt…", "Weet je wat het is…", "Ach. Nou ja…"]}
+        lead_in: {text: "En als ik eerlijk ben…", tags: [hesitation], again: ["Nee, maar echt…", "Weet je wat het is…", "Ach. Nou ja…", "Kijk, joh…", "Het punt is…"]}
         text: "Ik werk hier al vijftien jaar. Ik weet precies welke aanvragen terugkomen. Maar niemand die het me vraagt. Ze tellen alleen hoeveel ik er doorzet."
         tags: [admission]
         unlocks:
@@ -2464,7 +2464,7 @@ dialogs:
           _: [{text: "Hm. Ja."}, {text: "Mm."}, {text: "Oké."}, {text: "Ja, misschien."}, {text: "Hm."}]
       silence:
         misses:
-          concern: [{text: "… Ja. Zo is het."}, {text: "… Mm."}]
+          concern: [{text: "… Ja. Zo is het."}, {text: "… Mm."}, {text: "… Nou ja."}, {text: "… Tja."}]
           _: [{text: "… Was er nog iets?"}, {text: "… Ja?"}, {text: "(ze kijkt weer naar de schets)"}, {text: "Ik ga even verder, hoor."}, {text: "… Mm?"}]
       propose:
         misses: [{text: "Hm. Misschien."}, {text: "Dat moet ik even zien."}]
@@ -2658,7 +2658,7 @@ dialogs:
           _: [{text: "Hm. Ja."}, {text: "Mm."}, {text: "Oké."}, {text: "Kan zijn."}, {text: "Hm."}]
       silence:
         misses:
-          concern: [{text: "… Ja. Zo is het."}, {text: "… Mm."}]
+          concern: [{text: "… Ja. Zo is het."}, {text: "… Mm."}, {text: "… Nou ja."}, {text: "… Tja."}]
           _: [{text: "… Was er nog iets?"}, {text: "… Ja?"}, {text: "(hij kijkt naar zijn scherm)"}, {text: "Ik heb om elf uur overleg, hè."}, {text: "… Mm?"}]
       propose:
         misses: [{text: "Hm. Misschien."}, {text: "Dat moet ik even zien."}]
@@ -2854,7 +2854,7 @@ dialogs:
           _: [{text: "Hm. Ja."}, {text: "Mm."}, {text: "Oké."}, {text: "Kan zijn."}, {text: "Hm."}]
       silence:
         misses:
-          concern: [{text: "… Ja. Zo is het."}, {text: "… Mm."}]
+          concern: [{text: "… Ja. Zo is het."}, {text: "… Mm."}, {text: "… Nou ja."}, {text: "… Tja."}]
           _: [{text: "… Was er nog iets?"}, {text: "… Ja?"}, {text: "(ze kijkt weer naar het planbord)"}, {text: "Sorry, ik moet verder."}, {text: "… Mm?"}]
       propose:
         misses: [{text: "Hm. Misschien."}, {text: "Als het rustig is. Dat is het nooit."}]
@@ -3478,7 +3478,7 @@ dialogs:
       - id: concern
         at: 70
         via: [silence, empathy, reflect, inquiry]
-        lead_in: {text: "Alleen, nou…", tags: [hesitation], again: ["Nee, maar echt…", "Weet je wat het is…", "Ach. Nou ja…"]}
+        lead_in: {text: "Alleen, nou…", tags: [hesitation], again: ["Nee, maar echt…", "Weet je wat het is…", "Ach. Nou ja…", "Kijk, joh…", "Het punt is…"]}
         text: "Volgende week begin je echt, toch? Waar je ook begint: als het daar beter gaat, kijkt iedereen naar wat wij doorsturen. Elke aanvraag die terugkomt, heet dan weer 'een fout van Intake'. En dan zijn wij weer het postkantoor."
         tags: [admission]
         tell: recognition
@@ -4453,7 +4453,7 @@ dialogs:
         _: ["Dat herken ik wel, dat je je mensen wilt beschermen.", "Ik ben hier nu een paar weken, maar ik zie het al."]
       silence:
         position: "(je kijkt mee naar het rode scherm en wacht)"
-        _: ["(je wacht even)", "(je wacht rustig af)", "(je laat het even stil)"]
+        _: ["(je wacht even)", "(je wacht rustig af)", "(je laat de stilte even hangen)"]
       perspective:
         _: ["Hoe zou iemand die al drie maanden wacht dit zien?", "Wat merkt Kim ervan, als ze de vierde keer dezelfde beller krijgt?"]
       show_data: {_: ["Kijk, dit vond ik: {data}", "Mag ik je iets laten zien? {data}", "Dit kwam ik tegen: {data} Hoe kijk jij daarnaar?"]}
@@ -4599,6 +4599,22 @@ dialogs:
       # reads it from her notebook (drie winters §3); the talk opens lower (People memory).
       - needs: {all: ["promise_broken:el_amrani_fourth_call"]}
         opening: "{groet}, met Fatima El Amrani. Ik heb mijn schrift voor me. Hier staat: 'Volgens de planning over een week of zes aangesloten.' Met de datum erbij, en uw naam. Die datum is geweest."
+        layers:
+          - id: interest
+            at: 45
+            via: [paraphrase, inquiry]
+            text: "Zes weken geleden zei u: over een week of zes. Ik heb het opgeschreven. Het is niks geworden. Ik wil gewoon weten waar ik aan toe ben."
+            tags: [claim, feeling]
+          - id: concern
+            at: 65
+            via: [reflect, empathy]
+            lead_in: {text: "Het gaat niet eens om mij… Ik ben bang, als ik eerlijk ben.", tags: [feeling],
+                      again: ["Zoals ik zei… ik ben bang.", "Het gaat niet om mij, hè…", "Nou ja. Bang…"]}
+            text: "Mijn moeder woont bij ons. Ze is eenentachtig en heeft het altijd koud. De installateur zei: haal die cv-ketel eruit, de warmtepomp is beter. Die hangt nu aan de muur. Zonder stroom. Het wordt elke nacht kouder."
+            tags: [admission]
+            unlocks:
+              facts: [heard:el_amrani]
+              proposals: [check_existing_connection]
     warning: "Ik heb geen behoefte aan een riedeltje."
     position: {text: "Ik wil een datum. Een echte. Anders ga ik naar de Geschillencommissie.", tags: [claim], tell: facts}
     layers:
@@ -4655,7 +4671,7 @@ dialogs:
         _: ["Hoe gaat het thuis, deze weken?", "Vertel eens, wat speelt er bij u?"]
       empathy:
         position: ["Vier keer bellen, en nog steeds geen datum. Dat is frustrerend.", "U heeft alles opgeschreven. Dat had niet nodig moeten zijn.", "U wilt gewoon weten waar u aan toe bent. Dat snap ik."]
-        interest: ["Elke keer een ander antwoord. Logisch dat u het niet meer gelooft.", "Dat is zwaar, als niemand het weet."]
+        interest: ["Logisch dat u het niet meer gelooft, na alles wat u gehoord heeft.", "Dat is zwaar, als niemand het weet."]
         lead_in: ["Neem uw tijd.", "Ik luister."]
         concern: ["Uw moeder in de kou, en een warmtepomp zonder stroom. Dat is beangstigend.", "Logisch dat u bang bent. Het wordt elke nacht kouder."]
         _: ["Dat is ook niet niks.", "Dat lijkt me best lastig."]
@@ -4667,12 +4683,12 @@ dialogs:
         _: ["U klinkt gespannen.", "Het klinkt alsof u ermee zit."]
       paraphrase:
         position: ["Dus u wilt een echte datum, anders stapt u naar de Geschillencommissie.", "Dus u belt voor de vierde keer, en u heeft alles bijgehouden."]
-        interest: ["Dus u kreeg drie keer een ander antwoord, en u wilt weten waar u aan toe bent.", "Dus het gaat u om duidelijkheid, meer dan om snelheid."]
+        interest: ["Dus u wilt weten waar u aan toe bent, en niemand zegt het u.", "Dus het gaat u om duidelijkheid, meer dan om snelheid."]
         lead_in: "Dus er is iets waar u bang voor bent."
         concern: ["Dus uw moeder zit in de kou, omdat de warmtepomp al hangt en de stroom er niet is.", "Dus het gaat niet om u. Het gaat om uw moeder."]
         _: ["Dus u wacht op een antwoord.", "Als ik u goed hoor, gaat het om duidelijkheid."]
       inquiry:
-        position: ["Wanneer heeft u de aanvraag gedaan?", "Wat wilt u het liefst weten, als u één ding mocht vragen?"]
+        position: ["Wat heeft u de vorige keren gehoord?", "Wat wilt u het liefst weten, als u één ding mocht vragen?"]
         interest: ["Wie heeft u de vorige keren gesproken?", "Wat heeft u nodig, om de winter door te komen?"]
         lead_in: "Waar bent u dan bang voor?"
         concern: ["Hoe gaat het nu met uw moeder?", "Wanneer is de cv-ketel eruit gehaald?"]
@@ -4686,12 +4702,16 @@ dialogs:
         position: "(je wacht aan de lijn)"
         _: ["(je wacht even)", "(je laat haar praten)", "(je zegt even niets aan de lijn)"]
       perspective:
-        _: ["Hoe zou dit er vanaf onze kant uitzien, denkt u?", "Hoe zou uw moeder dit zien?"]
+        _: ["Hoe zou dit er vanaf onze kant uitzien, denkt u?", "Hoe zouden uw buren dit zien?"]
+        concern: ["Hoe zou uw moeder dit zien?"]
+      show_data: {_: ["Kijk, dit heb ik gevonden: {data}", "Mag ik u iets laten zien? {data}", "Dit kwam ik tegen: {data} Wat denkt u daarvan?"]}
       pressure: {_: ["We hebben een wachtrij, mevrouw. Daar kan ik niet omheen.", "U moet echt geduld hebben, mevrouw El Amrani.", "Ruud verwacht dat we dit volgens de procedure doen."]}
       confront: {_: ["Mevrouw, als u de aanvraag compleet had ingevuld, was het sneller gegaan.", "Eerlijk gezegd helpt dreigen met de Geschillencommissie niet.", "Iedereen wacht. Waarom zou u voorgaan?"]}
       ask_commitment: {_: ["Zullen we het zo doen?", "Spreken we dat af?"]}
       close: ["Dank u, mevrouw El Amrani. Ik hou u op de hoogte.", "Ik hang op. Sterkte, en de groeten aan uw moeder."]
     replies:
+      show_data:
+        other: [{text: "Cijfers. Ik wil een datum."}, {text: "Wat heeft dat met mijn aansluiting te maken?"}, {text: "Dat schrijf ik op. Maar het is geen antwoord."}]
       confront:
         lands: {_: [{text: "Het formulier vroeg er niet om! Ik heb het hier, uitgeprint."},
                     {text: "Niet helpen? Het is het enige wat ik nog heb."},
@@ -4738,12 +4758,10 @@ dialogs:
           _: {text: "Nog een vraag? Ik heb mijn schrift voor me. Vraag maar."}
       empathy:
         lands:
-          _: [{text: "Begrip heb ik genoeg gehad. Drie keer. Ik heb het opgeschreven, kijk: 'begrip'.", tell: facts},
-              {text: "… Dank u. Dat klinkt deze keer anders."},
-              {text: "Mm. Dank u."}]
+          _: [{text: "… Dank u. Dat klinkt deze keer anders."}, {text: "Mm. Dank u."}, {text: "Ja. Dat is het."}]
         misses:
           lead_in: [{text: "Nee, het is niks."}, {text: "Nee. Laat maar."}]
-          _: [{text: "Daar heb ik niks aan, met alle respect."}, {text: "Dat zei de vorige ook."}, {text: "Mm."}, {text: "Dank u. Maar ik wil een datum."}]
+          _: [{text: "Daar heb ik niks aan, met alle respect."}, {text: "Begrip heb ik genoeg gehad. Drie keer. Ik heb het opgeschreven, kijk: 'begrip'.", tell: facts}, {text: "Dat zei de vorige ook."}, {text: "Mm."}, {text: "Dank u. Maar ik wil een datum."}]
         worn: {text: "Ja. Dank u. Maar het wordt er niet warmer van."}
       reflect:
         lands:
@@ -4765,14 +4783,14 @@ dialogs:
         worn: {text: "Ja, ja. En nu?"}
       inquiry:
         lands:
-          position: [{text: "Op {aanvraag_datum}. Het staat bovenaan in mijn schrift.", tags: [claim]},
+          position: [{text: "Drie keer iets anders. Het staat allemaal in mijn schrift.", tags: [claim]},
                      {text: "Waar mijn aanvraag nu ligt. Bij wie. Sinds wanneer. Dat staat toch ergens in een systeem? En… of ik deze winter warm zit.", tags: [claim, hesitation]}]
           interest: [{text: "Drie verschillende mensen. Drie verschillende antwoorden. Ik heb de namen.", tags: [claim]},
                      {text: "Een datum. En als die niet kan, een eerlijk 'we weten het niet'.", tags: [claim, feeling]}]
           lead_in: {text: "Niks. Echt niet."}
           concern: [{text: "Ze draagt twee vesten. Binnen.", tags: [feeling]}, {text: "Vorige maand. De installateur zei: dat is zo geregeld.", tags: [claim]}]
         misses:
-          position: [{text: "Dat heeft u toch in het systeem?"}, {text: "Dat weet u toch."}]
+          position: [{text: "Genoeg om het op te schrijven."}, {text: "Dat weet u toch."}]
           lead_in: {text: "Ach. Vergeet het maar."}
           interest: [{text: "Iemand. Ik heb hun namen, als u wilt."}, {text: "Geduld, kennelijk."}]
           concern: [{text: "Daar heb ik het liever niet over."}, {text: "Ach. Dat doet er nu niet toe."}]
@@ -4794,8 +4812,10 @@ dialogs:
           _: [{text: "… Bent u er nog?"}, {text: "… Hallo?"}, {text: "(je hoort haar iets opschrijven)"}, {text: "Ik wacht, hoor. Dat kan ik inmiddels."}, {text: "… Mm?"}]
       perspective:
         lands: {_: [{text: "Vanuit uw kant? U zit daar met honderd mensen zoals ik. … Goed. Maar ik ben wel deze."},
-                    {text: "Mijn moeder? Die zegt: Fatima, maak je niet druk. En dan trekt ze nog een vest aan.", tags: [feeling]}]}
-        misses: {_: [{text: "Uw kant ken ik. Vivaldi."}, {text: "Mijn moeder klaagt niet. Daarom bel ik."}]}
+                    {text: "De buren? Die hebben het ook aangevraagd. Die bellen alleen niet."}],
+                concern: [{text: "Mijn moeder? Die zegt: Fatima, maak je niet druk. En dan trekt ze nog een vest aan.", tags: [feeling]}]}
+        misses: {_: [{text: "Uw kant ken ik. Vivaldi."}, {text: "De buren zijn mijn zaak niet."}],
+                 concern: [{text: "Mijn moeder klaagt niet. Daarom bel ik."}]}
       propose_experiment:
         misses: [{text: "Nu even niet."}, {text: "Eerst een antwoord."}]
         again: [{text: "Die proef, ja. Ik denk erover na."}, {text: "Dat zei u al. Ik heb het genoteerd."}]
@@ -4928,9 +4948,9 @@ dialogs:
       show_data:   # each clue its own answer (review 2 #4)
         lands:
           "done_but_not_closed:0": [{text: "Twee weken… voor elke aansluiting? Ik dacht altijd: het is maar administratie."},
-                                    {text: "Hm. Dat staat niet in mijn map."}]
+                                    {text: "Hm. Dat staat niet in mijn map."}, {text: "Twee weken. Ja. Ik heb het gezien."}]
           "done_but_not_closed:3": [{text: "'Bestaat niet.' Terwijl hij gewoon in de grond ligt. … Dat is geen administratie meer."},
-                                    {text: "Hm. Dat staat niet in mijn map."}]
+                                    {text: "Hm. Daar had ik nooit bij stilgestaan."}, {text: "'Bestaat niet.' Ja. Ik heb het gezien."}]
         misses:
           "done_but_not_closed:0": [{text: "Twee weken is het gemiddelde. Mijn cijfers kloppen."}, {text: "Dat ken ik. Het staat in mijn map."}, {text: "Ja. En?"}]
           "done_but_not_closed:3": [{text: "Die klacht ken ik. Hij zit in de maandrun."}, {text: "Dat ken ik. Het staat in mijn map."}, {text: "Ja. En?"}]
@@ -5469,8 +5489,8 @@ dialogs:
         again: [{text: "Ja, die proef. Ik denk erover na."}, {text: "Dat zei je al. Ik heb het gehoord."}]
       show_data:   # each clue its own answer (review 2 #4)
         lands:
-          "planning_reshuffle:0": [{text: "Laat eens zien… Een op de drie. Dat wist ik, maar zo zwart op wit…"}, {text: "Zo had ik het nog niet bekeken. Echt niet."}]
-          "planning_reshuffle:2": [{text: "Om tien uur, ja. Elke dag. Zo ziet het eruit als iemand het opschrijft."}, {text: "Zo had ik het nog niet bekeken. Echt niet."}]
+          "planning_reshuffle:0": [{text: "Laat eens zien… Een op de drie. Dat wist ik, maar zo zwart op wit…"}, {text: "Zo had ik het nog niet bekeken. Echt niet."}, {text: "Een op de drie. Ja. Ik heb het gezien."}]
+          "planning_reshuffle:2": [{text: "Om tien uur, ja. Elke dag. Zo ziet het eruit als iemand het opschrijft."}, {text: "Elke dag om tien uur. Dat valt pas op als je het ziet."}, {text: "Om tien uur. Ja. Ik heb het gezien."}]
         misses:
           "planning_reshuffle:0": [{text: "Dus het ligt aan mijn planning?"}, {text: "Ja. Dat weet ik. Ik zie het elke dag."}, {text: "Ja. En?"}]
           "planning_reshuffle:2": [{text: "Dat hoef je mij niet te vertellen. Ik ben degene die belt."}, {text: "Ja. Dat weet ik. Ik zie het elke dag."}, {text: "Ja. En?"}]
@@ -5769,7 +5789,7 @@ dialogs:
         concern: ["Hoe vaak is het echt misgegaan?", "Wat zou er gebeuren, als je het één keer niet nakijkt?"]
         _: ["Waar komt dat door, denk je?", "Hoe zit dat precies?"]
       experience:
-        position: ["Ik herken dat: zeggen dat het goed gaat, terwijl het je bezighoudt.", "Ik ken dat van mijn vorige werk: nog eentje, en dan is het acht uur."]
+        position: ["Ik herken dat: zeggen dat het goed gaat, terwijl het je bezighoudt.", "Ik ken dat van mijn vorige werk: een vaste dag die nooit af was."]
         lead_in: "Je hoeft het niet mooi te zeggen, hoor."
         concern: ["Dat herken ik. Als jouw fout bij een ander terechtkomt, voelt dat erger dan je eigen werk.", "Ik heb ooit een fout gemaakt die een collega moest oplossen. Daarna keek ik alles drie keer na."]
         _: ["Dat herken ik wel, dat het goed moet.", "Ik ben hier nu een paar weken, maar ik zie het al."]
@@ -5777,7 +5797,7 @@ dialogs:
         position: "(je gaat even op de rand van het bureau zitten en wacht)"
         _: ["(je wacht even)", "(je wacht rustig af)", "(je blijft even staan)"]
       perspective:
-        _: ["Hoe zou een monteur dit zien, als hij wist hoeveel zorg erin zit?", "Wat zou Joost zeggen, als hij wist dat je twijfelt?"]
+        _: ["Hoe zou een monteur dit zien, als hij wist hoeveel zorg erin zit?", "Wat zou Joost zeggen, als hij hoorde hoe je erover denkt?"]
       show_data: {_: ["Kijk, dit vond ik: {data}", "Mag ik je iets laten zien? {data}", "Dit kwam ik tegen: {data} Hoe kijk jij daarnaar?"]}
       pressure: {_: ["Het MT wil dat je het volhoudt. Liever met jou dan zonder jou.", "Dit moet echt anders, Anouk.", "Ruud verwacht dat je het niet alleen draagt."]}
       confront: {_: ["Waarom maak je het jezelf zo moeilijk?", "Eerlijk gezegd lijkt het erop dat je het zelf niet loslaat.", "Waarom laat je niemand meekijken?"]}
@@ -5881,7 +5901,7 @@ dialogs:
       confront:
         lands: {_: [{text: "Omdat het goed moet. Sorry."}, {text: "Loslaten? Dan klopt het misschien niet."}, {text: "Meekijken? Iedereen heeft het druk."}]}
     outcomes:
-      lifted: "Ik ga naar huis. Echt. Morgen is er ook nog."
+      lifted: "Weet je wat. Ik hoef niet alles alleen te dragen. Ik vraag Joost morgen om mee te kijken."
       heard: "Dank je. Echt."
       none: "Ja. Ik ben zo klaar."
       ruined: "Oké. Dan ga ik maar verder. Sorry."
@@ -6096,7 +6116,7 @@ dialogs:
           - id: interest
             at: 55
             via: [open_question, inquiry]
-            text: "Goed, eigenlijk. Veertig jaar, en de laatste weken waren de beste. Raar, hè."
+            text: "Goed, eigenlijk. Veertig jaar, en de laatste weken waren de beste. Dat neem ik mee. Raar, hè."
             tags: [feeling]
           - id: concern
             at: 70
@@ -6317,7 +6337,7 @@ dialogs:
       - id: interest
         at: 55
         via: [open_question, inquiry, paraphrase]
-        text: "Rachid kan het nu ook. Hij is sneller dan ik, eerlijk gezegd. Jonge handen."
+        text: "Een kwartier, en dan klaar. Rachid kan het nu ook. Hij is sneller dan ik, eerlijk gezegd. Jonge handen."
         tags: [feeling]
       - id: concern
         at: 70
@@ -6340,32 +6360,32 @@ dialogs:
       open_question:
         position: ["Hoe gaat zo'n ochtend nu?", "Wat is er veranderd, sinds de maandrun weg is?", "Hoe voelt het, elke dag een sessie?"]
         interest: ["Hoe bevalt het, zo elke dag?", "Wat is er anders dan vroeger?"]
-        lead_in: "Alleen wat?"
-        concern: ["Wat zou je nodig hebben?", "Wie weet ervan?"]
+        lead_in: "Wat wilde je zeggen?"
+        concern: ["Wat zou je nodig hebben?", "Wie zou dit mogen weten?"]
         _: ["Hoe gaat dat nu, een gewone dag?", "Vertel eens, hoe loopt het bij Meetdata?"]
       empathy:
         position: ["Alles klopt, tot op de laatste EAN. Dat is veel werk.", "Je zegt het voordat ik het vraag. Ik geloof je, hoor.", "Elke ochtend de Molen opstarten. Dat is een nieuwe gewoonte."]
         interest: ["Een nieuwe manier van werken, na al die jaren. Dat vraagt wat.", "Dat je het gewoon doet, zegt veel."]
         lead_in: ["Neem je tijd.", "Ik luister."]
-        concern: ["Dat lijkt me zwaar, om dat alleen te dragen.", "Logisch dat je dat voor je houdt. Maar het mag hier."]
+        concern: ["Dat lijkt me zwaar, om dat voor je te houden.", "Logisch dat je dat voor je houdt. Maar het mag hier."]
         _: ["Dat is ook niet niks.", "Dat lijkt me best lastig."]
       reflect:
         position: ["Het klinkt alsof je vooral wilt dat niemand twijfelt.", "Je klinkt alsof er toch iets knaagt."]
         interest: ["Het klinkt alsof je er nog aan moet wennen.", "Je klinkt alsof je er dubbel over bent."]
         lead_in: ["Er klopt iets niet voor je, merk ik.", "Je aarzelt, zie ik."]
-        concern: ["Het klinkt alsof het zwaarder weegt dan je laat merken.", "Je klinkt alsof je er alleen voor staat."]
+        concern: ["Het klinkt alsof het zwaarder weegt dan je laat merken.", "Je klinkt alsof je het liever voor je houdt."]
         _: ["Je klinkt een beetje gespannen.", "Het klinkt alsof je ermee zit."]
       paraphrase:
         position: ["Dus elke ochtend één sessie, en het klopt.", "Dus de maandrun is weg, en de Molen draait elke dag."]
         interest: ["Dus het werkt, maar het is nog wennen.", "Dus het is anders dan je jaren gewend was."]
         lead_in: "Dus er is iets wat niet in je map staat."
-        concern: ["Dus het komt allemaal op jou aan.", "Dus je houdt het voor je, en het weegt."]
+        concern: ["Dus het gaat niet om het werk, maar om wat anderen ervan denken.", "Dus je houdt het voor je, en het weegt."]
         _: ["Dus het moet vooral kloppen.", "Als ik je goed hoor, gaat het om meer dan de Molen."]
       inquiry:
         position: ["Hoe lang duurt zo'n sessie?", "Wat zegt de klant ervan?"]
-        interest: ["Wat kost het je, elke dag?", "Wie doet het, als jij er niet bent?"]
-        lead_in: "Alleen…?"
-        concern: ["Sinds wanneer zit dit je dwars?", "Wat zou er moeten gebeuren, zodat het niet alleen op jou aankomt?"]
+        interest: ["Wat mis je van de maandrun?", "Wat gebeurt er, als de Molen een dag niet draait?"]
+        lead_in: "Wat is er dan?"
+        concern: ["Sinds wanneer zit dit je dwars?", "Wat zou je lucht geven?"]
         _: ["Waar komt dat door, denk je?", "Hoe zit dat precies?"]
       experience:
         position: ["Ik herken dat: iets nieuws doen, en zeggen dat alles klopt voordat iemand het vraagt.", "Ik ken dat van mijn vorige werk: een nieuwe manier, en je kijkt steeds over je schouder."]
@@ -6374,7 +6394,7 @@ dialogs:
         _: ["Dat herken ik wel, dat het moet kloppen.", "Ik ben hier nu een paar weken, maar ik zie het al."]
       silence:
         position: "(je kijkt mee naar haar scherm en wacht)"
-        _: ["(je wacht even)", "(je wacht rustig af)", "(je laat het even stil)"]
+        _: ["(je wacht even)", "(je wacht rustig af)", "(je laat de stilte even hangen)"]
       perspective:
         _: ["Hoe zou de familie die nu sneller een leverancier heeft dit zien?", "Wat zou Rachid zeggen, als hij dit hoorde?"]
       show_data: {_: ["Kijk, dit vond ik: {data}", "Mag ik je iets laten zien? {data}", "Dit kwam ik tegen: {data} Hoe kijk jij daarnaar?"]}
@@ -6411,8 +6431,8 @@ dialogs:
           interest: [{text: "Goed. Het werkt. Dat moet ik toegeven.", tags: [claim, feeling]},
                      {text: "Elke dag in plaats van één keer per maand. Het voelt nog raar.", tags: [claim, feeling]}]
           lead_in: {text: "Laat maar. Het is niks."}
-          concern: [{text: "Dat het niet meer allemaal op mij aankomt.", tags: [feeling]},
-                    {text: "Niemand. En zo wil ik het houden.", tags: [admission]}]
+          concern: [{text: "Dat het niet meer allemaal aan mij hangt.", tags: [feeling]},
+                    {text: "Rachid. En Ruud, als het moet. Niet de kantine.", tags: [admission]}]
           _: [{text: "Registreren, controleren, exporteren.", tags: [claim]}, {text: "Gewoon. Volgens de map.", tags: [claim]}]
         misses:
           lead_in: {text: "Niks. Laat maar."}
@@ -6450,13 +6470,13 @@ dialogs:
       inquiry:
         lands:
           position: [{text: "Een kwartier opstarten. Dan een uur, anderhalf. Klaar.", tags: [claim]}, {text: "Niks. Die heeft gewoon een leverancier. Zo hoort het.", tags: [claim]}]
-          interest: [{text: "Een kwartier per dag. En de zekerheid van één keer per maand.", tags: [claim, feeling]}, {text: "Dat… is precies de vraag.", tags: [hesitation]}]
+          interest: [{text: "Dat ik het alleen deed. En dat niemand keek.", tags: [claim, feeling]}, {text: "Dan loopt de stapel op. Dat weet ik. Daarom zet ik hem elke ochtend aan.", tags: [claim]}]
           lead_in: {text: "Niks. Echt niet."}
-          concern: [{text: "Een paar weken. Sinds het elke dag is.", tags: [claim]}, {text: "Dat iemand het kan overnemen. Echt kan. Zonder dat ik het moet vragen.", tags: [feeling]}]
+          concern: [{text: "Een paar weken. Sinds het elke dag is.", tags: [claim]}, {text: "Dat iemand zegt dat het goed was zoals het was. En dat iemand meekijkt, zodat het niet alleen aan mij hangt.", tags: [feeling]}]
         misses:
           position: [{text: "Dat staat in mijn map."}, {text: "Die belt niet meer. Dat is genoeg."}]
           lead_in: {text: "Ach. Vergeet het maar."}
-          interest: [{text: "Niks. Het klopt."}, {text: "Dat regel ik wel."}]
+          interest: [{text: "Niks. Het klopt."}, {text: "Dat gebeurt niet."}]
           concern: [{text: "Daar heb ik het liever niet over."}, {text: "Ach. Dat is geweest."}]
           _: [{text: "Ach. Dat is een lang verhaal."}, {text: "Hm. Dat ligt eraan."}, {text: "Zo simpel is het niet."}]
         again: [{text: "Dat vroeg je al."}, {text: "Ik zei het al, hè."}]
@@ -6480,7 +6500,7 @@ dialogs:
       confront:
         lands: {_: [{text: "Omdat het klopt."}, {text: "Verbergen? Alles staat in mijn map."}, {text: "Hulp? Ik red me wel."}]}
     outcomes:
-      lifted: "Weet je wat. Ik vraag Rachid of hij het een week naast me doet. Dan klopt het ook als ik er niet ben."
+      lifted: "Weet je wat. Het hoeft niet foutloos, en het hoeft niet alleen. Ik vraag Rachid morgen mee te kijken."
       heard: "Hm. Dank je."
       none: "Alles klopt. Echt."
       ruined: "Alles klopt. Meer hoef je niet te weten."
@@ -6708,7 +6728,8 @@ dialogs:
       - id: concern
         at: 65
         via: [reflect, empathy]
-        lead_in: {text: "Ik word er een beetje verdrietig van, eigenlijk. Mijn dochter vroeg gisteren…", tags: [feeling],
+        # hesitation: she breaks off in the middle of what her daughter asked; silence meets it
+        lead_in: {text: "Ik word er een beetje verdrietig van, eigenlijk. Mijn dochter vroeg gisteren…", tags: [feeling, hesitation],
                   again: ["Wat mijn dochter vroeg…", "Mijn dochter, hè…", "Nou ja. Wat ze vroeg…"]}
         text: "…waarom ik altijd op mijn laptop zit. Ik zei: mama plant de monteurs. Zij zei: en wie plant jou dan? … Ik plan iedereen. Behalve mezelf."
         tags: [admission]
@@ -6760,10 +6781,13 @@ dialogs:
         _: ["(je wacht even)", "(je wacht rustig af)", "(je blijft even naast haar zitten)"]
       perspective:
         _: ["Hoe zouden je kinderen deze avond zien?", "Wat zou jij zeggen, als een van je monteurs elke avond zo zat?"]
+      show_data: {_: ["Kijk, dit vond ik: {data}", "Mag ik je iets laten zien? {data}", "Dit kwam ik tegen: {data} Hoe kijk jij daarnaar?"]}
       pressure: {_: ["Het MT wil niet dat je zo doorwerkt. Liever met jou dan zonder jou.", "Dit moet echt anders, Linda.", "Ruud verwacht dat je 's avonds vrij bent."]}
       confront: {_: ["Waarom zit je hier eigenlijk nog?", "Eerlijk gezegd lijkt het erop dat je het zelf niet loslaat.", "Waarom gaat het steeds bij jullie mis?"]}
       close: ["Dank je, Linda. Doe de laptop dicht, hè.", "Ik ga. Tot morgen."]
     replies:
+      show_data:
+        other: [{text: "Cijfers. Niet nu, sorry."}, {text: "Wat heeft dat met vanavond te maken?"}, {text: "Morgen. Dan kijk ik ernaar."}]
       perspective:
         lands: {_: [{text: "Mijn kinderen? Die zien een moeder achter een scherm. … Ja. Dat is niet wat ik wil.", tags: [feeling]},
                     {text: "Een monteur die elke avond zo zat? Die stuurde ik naar huis. … Hm.", tags: [feeling]}]}
@@ -6831,7 +6855,7 @@ dialogs:
         lands:
           position: [{text: "Drie, vier avonden per week. Sorry. Het is gewoon zo.", tags: [claim, feeling]}, {text: "Een storing, een zieke monteur, een klant die afzegt. Dan valt de rest erachteraan.", tags: [claim]}]
           interest: [{text: "Sinds de zomer. Sinds het druk is.", tags: [claim]}, {text: "Dan begin ik om zeven uur met bellen. En dan haal ik het niet meer in.", tags: [claim, feeling]}]
-          lead_in: {text: "Laat maar. Het is niks."}
+          lead_in: {text: "Iets wat ik niet kon beantwoorden."}
           concern: [{text: "Ik heb haar naar bed gebracht. En daarna ging de laptop weer open.", tags: [feeling]}, {text: "Dat ik om vijf uur stop. En dat het dan ook klaar is.", tags: [feeling]}]
         misses:
           position: [{text: "Vaak genoeg."}, {text: "Alles. Altijd een beetje."}]
@@ -7191,8 +7215,8 @@ dialogs:
     replies:
       show_data:   # each clue its own answer (review 2 #4)
         lands:
-          "revision_backlog:0": [{text: "Tweehonderdveertig. En de oudste vier maanden. … Zo had ik het nog nooit opgeteld."}, {text: "Hm. Zo zwart op wit is het anders."}]
-          "revision_backlog:2": [{text: "Anderhalf uur per schets, waarvan een uur uitzoeken. Ja. Dat klopt precies."}, {text: "Hm. Zo zwart op wit is het anders."}]
+          "revision_backlog:0": [{text: "Tweehonderdveertig. En de oudste vier maanden. … Zo had ik het nog nooit opgeteld."}, {text: "Hm. Zo zwart op wit is het anders."}, {text: "Tweehonderdveertig. Ja. Ik heb het gezien."}]
+          "revision_backlog:2": [{text: "Anderhalf uur per schets, waarvan een uur uitzoeken. Ja. Dat klopt precies."}, {text: "Een uur uitzoeken. Per schets. Hm."}, {text: "Anderhalf uur. Ja. Ik heb het gezien."}]
         misses:
           "revision_backlog:0": [{text: "Ja, er staan er 240 open. Dat weet ik. Ik zie de doos elke dag."}, {text: "Dat ken ik. Daar hoef je me niet op te wijzen."}, {text: "Ja. En?"}]
           "revision_backlog:2": [{text: "Anderhalf uur, ja. Dat zeg ik al jaren."}, {text: "Dat ken ik. Daar hoef je me niet op te wijzen."}, {text: "Ja. En?"}]
@@ -8029,6 +8053,7 @@ dialogs:
       - id: concern
         at: 66
         via: [reflect, empathy]
+        # hesitation: she breaks off in the middle of what she fears; silence and inquiry meet it (QA 2.12 e)
         lead_in: {text: "Ik slaap er slecht van, weet je dat? Wat ik echt bang voor ben…", tags: [feeling, hesitation],
                   again: ["Wat ik zei… waar ik bang voor ben.", "Het is gewoon…", "Nou ja. Die angst…"]}
         text: "Mijn ovens zijn van 1998. Gaat er één kapot, dan koop ik een nieuwe gasoven. Want dat kan wél, morgen. En dan zit ik nog twintig jaar aan het gas. Dat wil ik niet. Mijn dochter wil de zaak overnemen."
@@ -8090,10 +8115,10 @@ dialogs:
         concern: ["Dus als een oven het begeeft, koopt u gas, en zit u er twintig jaar aan vast.", "Dus het gaat ook om uw dochter, en de zaak na u."]
         _: ["Dus u wacht.", "Als ik u goed hoor, gaat het om de tijd."]
       inquiry:
-        position: ["Wanneer heeft u de aanvraag gedaan?", "Wat heeft u in die twee jaar van ons gehoord?"]
+        position: ["In welke maand begon het?", "Wat heeft u in die twee jaar van ons gehoord?"]
         interest: ["Hoe weet u dat die hal leeg staat?", "Wat zou u doen, als het morgen kon?"]
         lead_in: "Waar bent u dan bang voor?"
-        concern: ["Hoe oud zijn uw ovens precies?", "Wanneer neemt uw dochter het over?"]
+        concern: ["Hoe lang houden die ovens het nog?", "Wanneer neemt uw dochter het over?"]
         _: ["Waar komt dat door, denkt u?", "Hoe zit dat precies?"]
       experience:
         position: ["Ik herken dat: wachten op iets wat je niet zelf kunt regelen.", "Ik ken dat van mijn vorige werk: klanten die alleen een brief kregen, nooit een mens."]
@@ -8104,16 +8129,22 @@ dialogs:
         position: "(je wacht aan de lijn)"
         _: ["(je wacht even)", "(je laat haar praten)", "(je zegt even niets aan de lijn)"]
       perspective:
-        _: ["Hoe zou het net er om vier uur 's nachts uitzien, denkt u?", "Hoe zou uw dochter dit zien?"]
+        _: ["Hoe zou het net er om vier uur 's nachts uitzien, denkt u?", "Hoe zouden andere bakkers dit zien, denkt u?"]
+        concern: ["Hoe zou uw dochter dit zien?"]
+      show_data: {_: ["Kijk, dit heb ik gevonden: {data}", "Mag ik u iets laten zien? {data}", "Dit kwam ik tegen: {data} Wat denkt u daarvan?"]}
       pressure: {_: ["We hebben regels voor de wachtrij. Daar kan ik niet omheen.", "U moet echt geduld hebben, mevrouw De Graaf.", "Ruud verwacht dat we dit volgens de regels doen."]}
       confront: {_: ["Iedereen wacht. Waarom zou u voorgaan?", "Eerlijk gezegd is boos worden aan de lijn niet handig.", "Waarom belt u dan niet gewoon terug als het zover is?"]}
       ask_commitment: {_: ["Zullen we het zo doen?", "Spreken we dat af?"]}
       close: ["Dank u, mevrouw De Graaf. Ik hou u op de hoogte.", "Ik hang op. Sterkte vannacht."]
     replies:
+      show_data:
+        other: [{text: "Cijfers. Daar bak ik geen brood van."}, {text: "Wat heeft dat met mijn aansluiting te maken?"}, {text: "Dat zeggen jullie elke keer."}]
       perspective:
         lands: {_: [{text: "Vanuit jullie? Ja, ja. Iedereen wil tegelijk. Maar ik bak niet tegelijk. Ik bak als iedereen slaapt."},
-                    {text: "Mijn dochter? Die zegt: mam, niet weer gas. … Ja. Dat zegt ze."}]}
-        misses: {_: [{text: "Het net? Dat moeten jullie weten."}, {text: "Mijn dochter? Die heeft haar eigen zorgen."}]}
+                    {text: "Andere bakkers? Die staan ook op die lijst. Of ze zijn al aan het gas gebleven."}],
+                concern: [{text: "Mijn dochter? Die zegt: mam, niet weer gas. … Ja. Dat zegt ze.", tags: [feeling]}]}
+        misses: {_: [{text: "Het net? Dat moeten jullie weten."}, {text: "Andere bakkers moeten het zelf weten."}],
+                 concern: [{text: "Mijn dochter? Die laat ik er liever buiten."}]}
       mood:   # QA 2.12 (e): a feeling to answer, so listening has somewhere to go
         lands:
           position: [{text: "Hoe het gaat? Mijn deeg rijst, mijn oven is oud, en ik hang bij jullie aan de lijn. Raad maar.", tags: [feeling], tell: time},
@@ -8178,15 +8209,15 @@ dialogs:
         worn: {text: "Ja, ja. En nu?"}
       inquiry:
         lands:
-          position: [{text: "Twee jaar geleden. In de herfst. Ik heb de bevestiging nog.", tags: [claim]}, {text: "Een brief. Dat het in behandeling is. Twee keer dezelfde.", tags: [claim, feeling]}]
+          position: [{text: "In de herfst. Ik heb de bevestiging nog.", tags: [claim]}, {text: "Een brief. Dat het in behandeling is. Twee keer dezelfde.", tags: [claim, feeling]}]
           interest: [{text: "Ik zie het elke nacht als ik naar de bakkerij fiets. Donker. Leeg.", tags: [claim]}, {text: "Morgen bestellen. Elektrisch.", tags: [claim]}]
           lead_in: {text: "Niks. Echt niet."}
-          concern: [{text: "Van 1998. Allebei. Ze doen het nog. Nog.", tags: [claim]}, {text: "Over een paar jaar. Als ik het dan nog volhoud.", tags: [claim, feeling]}]
+          concern: [{text: "De monteur zegt: een jaar, misschien twee. Maar ik hoor ze elke nacht.", tags: [claim, feeling]}, {text: "Over een paar jaar. Als ik het dan nog volhoud.", tags: [claim, feeling]}]
         misses:
           position: [{text: "Lang geleden."}, {text: "Niet genoeg."}]
           lead_in: {text: "Ach. Vergeet het maar."}
           interest: [{text: "Dat zie je zo."}, {text: "Wachten. Wat anders."}]
-          concern: [{text: "Daar heb ik het liever niet over."}, {text: "Ach. Dat zien we nog wel."}]
+          concern: [{text: "Dat vraag ik me ook af."}, {text: "Ach. Dat zien we nog wel."}]
           _: [{text: "Ach. Dat is een lang verhaal."}, {text: "Hm. Dat ligt eraan."}, {text: "Zo simpel is het niet."}]
         again: [{text: "Dat vroeg je al."}, {text: "Ik zei het al, hè."}]
         worn:
@@ -8216,7 +8247,7 @@ dialogs:
       ask_commitment:
         misses: [{text: "Nee. Nog niet."}, {text: "Eerst zien."}, {text: "Nog even niet."}]
     outcomes:
-      commitment: "Om vier uur sta ik hier toch. Als het lukt, krijgen jullie een krentenbol. Twee."
+      commitment: "Afgesproken. Als het lukt, krijgen jullie een krentenbol. Twee."
       partial: "Ik wacht. Maar niet nog twee jaar."
       heard: "Fijn dat er eens iemand luistert in plaats van voorleest."
       none: "Goed. Ik hang op. De ovens roepen."

@@ -70,6 +70,18 @@ voice, and its own "Daar denk ik nog over na" lines.
 | `el_amrani_fourth_call` | mevrouw El Amrani | rewritten, batch 7, a phone call whose variant only opens differently (29.9 → 0.0, echoes 152 → 0, no flag at budget 6000) |
 | `ahmed_after_henk` | Ahmed | rewritten, batch 7, a check-in with a variant: lines, replies and the lifted ending fit both versions; the audited routes of `test_dialog_content.gd` keep their tags (28.4 → 0.0, echoes 211 → 0, no flag at budget 6000) |
 
+Review 8: two more gates. `TalkWalk.lead_in_misfits` (test_a_lead_in_option_fits_the_lead_in_of_every_version):
+a lead-in option shares no word of four letters or more with the dialog's own lead-in that a variant's lead-in
+lacks ("Alleen wat?" after "En als ik ziek word…"). The reach pass (`TalkWalk._reach`,
+test_every_drawn_line_of_a_reviewed_talk_is_walked): a listener plays each talk on three deals and every option is
+tried from each of its turns, so every line drawn from a plain list or a list keyed `_` (the second perspective
+question, the third pressure line) is said and answered in the walk and the transcripts; 64 were not before. The
+deeper walk found lists that ran dry (sanne_tuesday and sanne_friday's lead-in returns, anouk_seven's and three
+Wednesday talks' silences, the clue answers of petra_batch, linda_replanning and mieke_redraw, the bank's "En?" in
+linda_evenings and el_amrani_fourth_call): each got its own lines. A trailing lead-in that breaks off mid-sentence is
+tagged `hesitation` too (ilse_queue, linda_evenings), with a YAML comment; esra_agents' "ik voel me schuldig" is a
+whole sentence and stays `[feeling]`.
+
 Review 7: the walk plays every variant (`TalkWalk.versions`; `test_the_walk_plays_every_version_of_a_talk`), so the
 flags above hold for each version; the transcripts write a variant to `<talk>~v<n>.md`. A variant still holds no
 lines of its own, so in anouk_late and henk_last_week every line and reply is written to fit every version.
