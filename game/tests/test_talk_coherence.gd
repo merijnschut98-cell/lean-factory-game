@@ -165,6 +165,43 @@ func test_a_reviewed_talk_s_commitment_fits_every_route_to_it() -> void:
 	assert_true(bad.is_empty(), "%d: %s" % [bad.size(), bad])
 
 
+## Review 8 (2026-11-02): a lead-in option ("Alleen wat?") answers the lead-in of every
+## version of the talk, not only the one it was written for: each word of four letters
+## or more it shares with the dialog's own lead-in is in every variant's lead-in too.
+func test_a_lead_in_option_fits_the_lead_in_of_every_version() -> void:
+	assert_eq(TalkWalk.lead_in_misfits(_two_lead_ins("Alleen wat?")),
+		["open_question \"Alleen wat?\" (alleen) after variant 1's lead-in"], "written for the dialog's own lead-in")
+	assert_eq(TalkWalk.lead_in_misfits(_two_lead_ins("Wat is er dan?")), [], "fits any lead-in")
+	var bad := []
+	for d: DialogDef in Catalog.load_from().dialogs:
+		for misfit: String in TalkWalk.lead_in_misfits(d):
+			bad.append("%s: %s" % [d.id, misfit])
+	assert_true(bad.is_empty(), "%d lead-in options fit one version only: %s" % [bad.size(), bad])
+
+
+## Review 8 (2026-11-02): every line a reviewed talk draws from a list (the second
+## perspective question, the third pressure line) is said, and answered, in the walk the
+## gate reads, so no line reaches a player unread (TalkWalk._reach).
+func test_every_drawn_line_of_a_reviewed_talk_is_walked() -> void:
+	var c := Catalog.load_from()
+	var ctx := TalkWalk.context(c)
+	var bad := []
+	for talk: Dialog in TalkWalk.talks(c, TalkWalk.REVIEWED):
+		for line: String in TalkWalk.unsaid(talk.def, TalkWalk.walk(ctx, talk, BUDGET, DIVES)):
+			bad.append("%s: %s" % [TalkWalk.label(talk), line])
+	assert_true(bad.is_empty(), "%d lines never walked: %s" % [bad.size(), bad.slice(0, 6)])
+
+
+## A talk whose lead-in is "Het is alleen…", and "En als ik ziek word…" in its variant
+## (petra_after), with `option` as the open question to it.
+static func _two_lead_ins(option: String) -> DialogDef:
+	var layers := func(lead: String) -> Array:
+		return [{"id": "interest", "at": 40, "via": ["inquiry"], "text": "Belang."},
+			{"id": "concern", "at": 70, "via": ["silence"], "lead_in": {"text": lead, "tags": ["hesitation"]}, "text": "Zorg."}]
+	return DialogFixture.def({"layers": layers.call("Het is alleen…"), "lines": {"open_question": {"lead_in": option}},
+		"variants": [{"needs": {"all": ["standardised:custom_design"]}, "layers": layers.call("En als ik ziek word…")}]})
+
+
 static func _item_text(item: Dictionary) -> String:
 	return str(item.get("text", "")) + " " + str(item.get("reply", ""))
 

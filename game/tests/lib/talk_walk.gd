@@ -93,6 +93,73 @@ static func versions(d: DialogDef, people: People) -> Array[Dialog]:
 	return out
 
 
+## The player's lead-in options of talk `d` that answer only the dialog's own lead-in
+## (review 8): a word of four letters or more an option shares with that lead-in and a
+## variant's lead-in lacks ("Alleen wat?" after "En als ik ziek word…").
+static func lead_in_misfits(d: DialogDef) -> Array[String]:
+	var out: Array[String] = []
+	var own := _lead_in_words(d, -1)
+	for move: String in d.lines:
+		var keyed: Variant = d.lines[move]
+		if not keyed is Dictionary or not keyed.has("lead_in"):
+			continue
+		var options: Variant = keyed["lead_in"]
+		for option: Variant in (options if options is Array else [options]):
+			var shared := _long_words(str(option)).filter(func(w: String) -> bool: return own.has(w))
+			for v in d.variants.size():
+				var theirs := _lead_in_words(d, v)
+				var missing := shared.filter(func(w: String) -> bool: return not theirs.has(w))
+				if not missing.is_empty():
+					out.append("%s \"%s\" (%s) after variant %d's lead-in" % [move, option, ", ".join(missing), v + 1])
+	return out
+
+
+static func _lead_in_words(d: DialogDef, v: int) -> Dictionary:
+	var out := {}
+	for layer: Dictionary in d.layers_of(v):
+		for w: String in _long_words(str(JsonFile.dict_or_empty(layer.get("lead_in")).get("text", ""))):
+			out[w] = true
+	return out
+
+
+static func _long_words(text: String) -> Array:
+	return RegEx.create_from_string("\\p{L}{4,}").search_all(text.to_lower()).map(
+		func(m: RegExMatch) -> String: return m.get_string())
+
+
+## The talk's own drawn sentences that `walked` never said (review 8: every line of a
+## list is judged by the walk at least once): a list the deal or the order draws from
+## whatever the person spoke of last (a plain list, or one keyed `_` alone: the
+## perspective questions, pressure, blame), for the listening and steering moves. A
+## list keyed by the layer the person spoke of answers that layer place by place.
+static func unsaid(d: DialogDef, walked: Dictionary) -> Array[String]:
+	var said := {}
+	for ex: Dictionary in walked["exchanges"].values():
+		said[ex["said"]] = true
+	var out: Array[String] = []
+	for move: String in Dialog.LISTEN + ["perspective", "pressure", "confront"]:
+		var lines: Variant = d.lines.get(move)
+		if lines is Dictionary and lines.keys() != ["_"]:
+			continue
+		for line: String in _all_lines(lines):
+			if not said.has(line) and not line.begins_with("("):
+				out.append("%s \"%s\"" % [move, line])
+	return out
+
+
+static func _all_lines(lines: Variant) -> Array[String]:
+	var out: Array[String] = []
+	if lines is String:
+		out.append(lines)
+	elif lines is Array:
+		for l: Variant in lines:
+			out.append_array(_all_lines(l))
+	elif lines is Dictionary:
+		for v: Variant in lines.values():
+			out.append_array(_all_lines(v))
+	return out
+
+
 ## How a transcript names a version of a talk: its id, and which variant.
 static func label(t: Dialog) -> String:
 	return t.def.id + (" (variant %d)" % (t.version + 1) if t.version >= 0 else "")
@@ -234,7 +301,42 @@ static func walk(ctx: Dictionary, talk: Dialog, budget: int = BUDGET, dives: int
 		while not node.is_empty():
 			var options := _options(node["talk"])
 			node = _step(ctx, node, options[rng.randi_range(0, options.size() - 2)], out)  # never the close
+	_reach(ctx, talk, out)
 	return out
+
+
+## Deals the reach pass plays (review 8: a line drawn by the seed is walked under each).
+const REACH_SEEDS := 3
+## How often the reach pass makes a move again in a row (a list holds three lines at most).
+const REACH_REPEATS := 2
+
+
+## The late turns a breadth first walk and random talks seldom get to (review 8): a
+## listener plays the talk to its end on REACH_SEEDS deals, and from each turn on its
+## way every option is tried, and every option after that, so each line of a list (the
+## second perspective question, the line a seed draws) is said and answered once.
+static func _reach(ctx: Dictionary, talk: Dialog, out: Dictionary) -> void:
+	for s in REACH_SEEDS:
+		var t := talk.copy()
+		t._seed = s
+		var node := {"talk": t, "before": str(t.position().get("text", "")), "path": path_of(t)}
+		var turns: Array[Dictionary] = []
+		while not node.is_empty():
+			for option: Dictionary in _options(node["talk"]):
+				var next := _step(ctx, node, option, out)
+				if not next.is_empty():
+					for again: Dictionary in _options(next["talk"]):
+						_step(ctx, next, again, out)
+				for i in REACH_REPEATS:   # the same move again, while a turn could still offer it
+					if next.is_empty() or not option in _options(next["talk"]):
+						break
+					next = _step(ctx, next, option, out)
+			var here: Dialog = node["talk"]
+			var offers := here.offer()
+			var i := listener(here, offers, turns)
+			var chosen: Dictionary = offers[i] if i >= 0 and i < offers.size() else {"move": "close", "pick": ""}
+			turns.append({"move": chosen["move"]})
+			node = _step(ctx, node, chosen, out)
 
 
 ## Every option a turn of `t` could offer under any deal, the close last.
